@@ -23,8 +23,7 @@ typedef struct MSXTRACK {           /* 0x128 bytes, MSX_TRACKS of them at msx_Tr
 
 #define MSX_TRACKS 10
 
-/* sound library (0x42b780..0x42c3a0), file not identified yet */
-int __stdcall AIL_get_timer_highest_delay(void);                                        /* 0x42c3a0, mss32 thunk: the import library's symbol is _AIL_get_timer_highest_delay@0 */
+/* sound library (0x42b780..0x42c3b0, sfx.h): msx reads the timer delay peak through sfx_TimerHighestDelay */
 
 extern MSXTRACK msx_Tracks[MSX_TRACKS];     /* 0x6325d0 */
 extern MSXTRACK msx_Dummy;                  /* 0x14612a0, returned when there is no driver */

@@ -8,9 +8,9 @@ int msx_Start(MSXTRACK *t, int once)
     if (msx_Driver && msx_AmbDriver) {
         EnterCriticalSection(&msx_Lock);
         if (msx_DelayPeak)
-            sprintf(msx_Msg, "Reporting last delaypeak: %d", AIL_get_timer_highest_delay());
+            sprintf(msx_Msg, "Reporting last delaypeak: %d", sfx_TimerHighestDelay());
         else
-            msx_DelayPeak = AIL_get_timer_highest_delay();
+            msx_DelayPeak = sfx_TimerHighestDelay();
         if (!t->playing) {
             strcpy(path, msx_Path);
             strcat(path, t->name);

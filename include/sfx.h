@@ -61,7 +61,9 @@ __declspec(dllimport) void __stdcall AIL_set_stream_loop_count(HSTREAM stream, i
 __declspec(dllimport) void __stdcall AIL_set_stream_ms_position(HSTREAM stream, int milliseconds);
 __declspec(dllimport) int __stdcall AIL_stream_status(HSTREAM stream);
 __declspec(dllimport) void __stdcall AIL_stream_ms_position(HSTREAM stream, int *total_ms, int *current_ms);
+__declspec(dllimport) int __stdcall AIL_get_timer_highest_delay(void);
 int MSS_auto_cleanup(void);                                                             /* 0x5de460, mss32.lib */
+int sfx_TimerHighestDelay(void);                                                        /* 0x42c3a0, AIL_get_timer_highest_delay for msx */
 
 void * mem_Alloc(int size, char *tag);                                                   /* 0x4223c0 */
 void mem_Free(void *p);                                                                 /* 0x422620 */
