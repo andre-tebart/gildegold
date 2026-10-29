@@ -17,3 +17,4 @@
 2026-10-29T22:08:26 0x5eaa30 func ai_Unk5eaa30 -> _stricmp by:main why:the link names the CRT member; the original placeholder was stale
 2026-10-29T22:08:26 - func crt_Sprintf -> sprintf by:main why:the link names the CRT member; the original placeholder was stale
 2026-10-29T22:08:26 - func crt_Itoa -> _itoa by:main why:the link names the CRT member; the original placeholder was stale
+2026-10-29T23:43:43 0x006f25a4 data full_data_6f25a4 -> main_ScreenRestart by:main why:set by the gfx options screen 0x5d5fd0 when the resolution changed; WinMain 0x53ccf0 then shuts the screen down and re-inits it (0x531c50) and clears it, 0x533850 pops the screen

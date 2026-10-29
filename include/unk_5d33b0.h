@@ -74,6 +74,13 @@ extern char ch_EmptyName[];         /* 0x631090, the empty status / character na
 extern unsigned short ai_ScreenImage[]; /* 0x766320, the 0x78 x 0xa0 16-bit screen image (as ls.c) */
 
 void ai_ApplyOptions(void);         /* 0x5d5e90, applies the option values to the run time */
+void ai_SaveOptions(void);          /* 0x5d4c70, writes the options to the INI */
+int ai_ApplyGfxOptions(void);     /* 0x5d5c40, applies the graphics options (the shadow setup) */
+void ai_LoadOptions(void);          /* 0x5d5640, reads the options from the INI */
+extern int main_ScreenRestart;      /* 0x6f25a4, main.c: nonzero = re-initialise the screen (the resolution changed) */
+extern char dd_Has1024x768;         /* 0x631226, dd_vesa.h */
+extern char dd_Has1152x864;         /* 0x631227, dd_vesa.h */
+void sv_Unk52e350(int f, int y, int *out, int n, ...); /* 0x52e350, rt.h: a row of n buttons, ids in out[] */
 void ai_ApplyVolumes(void);         /* 0x5d5f10, applies the sound option volumes to the mixer */
 void ai_LoadScreenImage(char *path); /* 0x5d7320, the loading screen reader */
 

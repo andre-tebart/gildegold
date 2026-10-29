@@ -149,13 +149,13 @@ L_fail:
         if (U_I((unsigned)&full_data_6f2434) == 0) {
             if (r == 0) {
                 main_Unk533850();
-                if (U_I((unsigned)&full_data_6f25a4) != 0) {
+                if (main_ScreenRestart != 0) {
                     main_ShutdownScreen();
                     sv_PumpMessages();
                     i = main_Unk531c50(mode);
                     if (i == 0)
                         goto L_fail;
-                    U_I((unsigned)&full_data_6f25a4) = r;
+                    main_ScreenRestart = r;
                     sv_PumpMessages();
                 }
             } else {

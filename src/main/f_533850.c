@@ -200,7 +200,7 @@ lback:
                     ai_OptionsGfxScreen();
                     d2_EnableObject(f, 1);
                     again = 1;
-                    if (U_I((unsigned)&full_data_6f25a4) != 0)
+                    if (main_ScreenRestart != 0)
                         U_I((unsigned)&sv_PopRequest) = 1;
                 } else if (ai_Unk5fe710 == bopt2) {
                     d2_EnableObject(f, 0);
