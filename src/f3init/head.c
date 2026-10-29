@@ -476,6 +476,22 @@ void d3snd_Play(struct D3SOUND *s, int a, int loops, int delay);  /* 0x417cf0, d
 int _isctype(int c, int mask);
 void init_SetDetailLevel(int *s, char f);
 int init_StatusForm = 0;  /* 0x75df00, the panel form the load status is printed in */
+/* 0x75e5a0, the player profile of the character creation: main_Unk5361d0 reads it from game.INI ([Network]
+   Name, Familienname, Wappen, Geschlecht, Glauben) and writes the result of its stage 5, main_Unk53b840
+   takes it for the start couple, 0x57bc30 is the default profile of the demo. Layout from those writers and
+   from the registration message 0xc (0x4c46d0: short + 0xc, byte + 0xe, int + 0xf, sex + 0x13, faith + 0x14) */
+typedef struct INIT_PLAYER {
+    unsigned char tool1;            /* 0x00, the first start tool (main_Unk534610) */
+    unsigned char tool2;            /* 0x01, the second start tool */
+    unsigned char status;           /* 0x02, 0x10 in the default profile, 0x12 when the creation is done */
+    unsigned char job;              /* 0x03, the job / title group (model chooser main_Unk534b30's p, gm_TitleGroup's argument) */
+    int coat;                       /* 0x04, the coat of arms as an object id (Wappen: 0x59a + the chosen index) */
+    unsigned char sex;              /* 0x08, 0 male / 1 female (Geschlecht) */
+    unsigned char faith;            /* 0x09, 0 / 1 (Glauben) */
+    char firstName[0x20];           /* 0x0a, the first name (Name) */
+    char familyName[0x20];          /* 0x2a, the family name (Familienname) */
+} INIT_PLAYER;
+INIT_PLAYER init_PlayerProfile = {0};  /* 0x75e5a0 */
 int ai_Unk7603a0[32] = {0};  /* 0x7603a0 .. INIT_WINDOWS_END: the */
 #define INIT_WINDOWS_END (unsigned)&ai_Unk760420       /* one past the scene window table 0x7603a0 (0x20 ints) */
 /* ai_NBauplaetze / ai_Bauplaetze: the building sites (rd.h's G15BK; rd.h cannot be included here, gv.h's

@@ -14,8 +14,9 @@ extern char d3_Scenes[];
 
 #define ORD_FLAG_BLOCKED 0x400000  /* the privilege flag that blocks the misappropriation order (0x4f6b40) */
 
-/* the clock's hour as am.h / cm.h / amt.h declare it (gv.h keeps ai_Time a char array) */
-unsigned short ai_TimeHour = 0;  /* 0x770ae4, AITIME.hour of ai_Time */
+/* the clock's hour as am.h / cm.h / amt.h declare it: a view of gv.h's ai_Time (0x770ae0 + 4), so it is not
+   an object of its own in the data area */
+#define ai_TimeHour (*(unsigned short *)((char *)&ai_Time + 0x4))
 
 /* the engine's generic unaligned block copy (D3_COPY in d3.h, which needs the DirectX headers): size and
    destination through temps, the source named directly in the asm (0x4f9190 copies the record 0x91b480) */
@@ -119,6 +120,7 @@ typedef struct ORDSTATROUND {           /* one 0x14-byte round of the statistics
     float base;                         /* 0x10, ai_RatingBaseF of the round */
 } ORDSTATROUND;
 extern ORDSTATS ord_Statistics;
+unsigned char ai_OwnPlayer = 0;  /* 0x6f1bc5: defined here because ord.c does not read it (the ai data area) */
 ORDSTIME ord_StatisticsClock = {0}; /* 0x91b470, the same bytes as ord_StatisticsTime */
 ORDSTATS ord_Statistics = {0}; /* 0x91b4c0, the same bytes as ord_StatisticsRecord */
 extern ORDSTIME ord_GameClock;           /* 0x770ae0, the same bytes as ai_Time */

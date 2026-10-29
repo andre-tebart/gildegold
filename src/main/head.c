@@ -578,3 +578,5 @@ int d2_UnlockSurface();                     /* 0x4790e0 */
 void d2_BlitPart();                     /* 0x479480 */
 void amt_CheckOffices(void);            /* 0x4e9260, amt.h */
 
+#include "time_view.h"
+

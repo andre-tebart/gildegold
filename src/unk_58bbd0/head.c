@@ -1273,3 +1273,5 @@ typedef struct HETIME {            /* the 14 byte game time (ai.h AITIME; he.c h
 extern HETIME ai_Time;                  /* 0x770ae0 (ai.h AITIME, defined in he.c) */
 float util_RandomF();                   /* the float roll (ai.h util_RandomF) */
 
+#include "time_view.h"
+

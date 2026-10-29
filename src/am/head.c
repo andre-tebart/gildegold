@@ -57,3 +57,5 @@ float ai_Unkf86894 = 0;  /* 0xf86894 */
 float ai_Unkf868b4 = 0;  /* 0xf868b4 */
 int ai_Unkf86900[73] = {0};  /* 0xf86900, the actions being evaluated */
 
+#include "time_view.h"
+

@@ -421,3 +421,5 @@ int sv_MessageBox(int text, unsigned flags);    /* 0x521150 */
 int sv_MessageBoxGreen();               /* 0x521410 */
 int sv_MessageBoxYesNo();               /* 0x5216a0 */
 
+#include "time_view.h"
+

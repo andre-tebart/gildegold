@@ -842,3 +842,5 @@ extern char *txt_Ptrs[]; /* 0x143a1c0 */
 char *const ai_Unk5eec60 = (char *)full_data_6fa020 + 0x40;  /* 0x5eec60, the pointer to the tutorial state record */
 #define S (*(char **)(unsigned)&ai_Unk5eec60)  /* 0x6fa060, the tutorial state record */
 
+#include "time_view.h"
+

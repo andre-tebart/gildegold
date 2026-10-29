@@ -313,3 +313,5 @@ void d2_MoveObj(short x, short y, int obj);
 void d2_SetObjValue();
 void d2_RaiseViewWindows(int view);
 
+#include "time_view.h"
+

@@ -4,7 +4,9 @@
 /* ai_Unk91f716: view of ai_Unk91f700 (tools/data_views.py) */
 extern int ai_Unk91b6e0[];              /* 0x91b6e0 .. 0x91f6e0: pairs of ints */
 extern int ai_Unk770ae0_day;            /* the clock's day (0x770ae0) */
+#ifndef TIME_VIEW_H
 extern unsigned short ai_TimeHour;     /* 0x770ae4, the clock's hour (unaligned view) */
+#endif
 extern char ai_Unk770ce4[];             /* 0x770ce4: the field +0x164 of the character records (stride 0x21c) */
 int ai_Unk5a86c0();                     /* 0x5a86c0 */
 int ai_Unk5a8560();                     /* 0x5a8560 */

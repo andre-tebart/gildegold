@@ -91,3 +91,5 @@ int unk_Unk4fd7e0();                    /* 0x4fd7e0 */
 #define CH(i) (ai_Chars[(unsigned short)(i)])
 #define REC_RATE(rec) ((rec)[6])
 
+#include "time_view.h"
+

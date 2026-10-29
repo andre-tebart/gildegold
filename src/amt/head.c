@@ -14,3 +14,5 @@ extern char gm_PlayerRecords[];
 #define AMT_TABA_END ((int)&amt_TabA[15 * 10])  /* 0x5edee8, the end of the 15 rows of amt_TabA */
 #define AMT_MONEY_UNIT 64  /* money in the character messages counts in multiples of this: the amounts of the 0x4c4830 sites are built as n * 0x40 */
 
+#include "time_view.h"
+

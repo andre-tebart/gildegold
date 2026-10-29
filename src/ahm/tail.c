@@ -17,8 +17,9 @@ int ai_PlayerPrototypeCount = 0;  /* 0x6f0e28 */
 AHMGRID * ai_PlayerPrototypes = 0;  /* 0x6f0e2c */
 int ai_RecipePrototypeCount = 0;  /* 0x6f0e30 */
 AHMGRID * ai_RecipePrototypes = 0;  /* 0x6f0e34 */
+unsigned short ai_PlayerId = 0;  /* 0x6f25b8: the local player's character id (the owner field of the building records); defined here because ahm.c does not read it */
 char ai_Chars[768][0x21c] = {0};  /* 0x770b80, the characters */
 char * ai_BTypes = 0;  /* 0x7e3f30 */
 signed char ai_Relations[768][768] = {0};  /* 0x7e5360 */
 signed char ai_RelationMemory[768][768] = {0};  /* 0x889f80 */
-unsigned char ai_OwnPlayer;  /* 0x6f1bc5 */
+unsigned short d2_HighBitMask = 0;  /* 0xf8a11c, mask of the half dark colours; defined here because ahm.c does not read it */

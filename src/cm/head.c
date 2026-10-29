@@ -43,3 +43,5 @@ void unk_Unk511600(int s);
    0x24-byte memset / memcpy in 0x4cd580 and 0x4cdxx cannot run over a neighbour that LINK placed there) */
 #define ai_Unk936424 (*(int (*)[8])(ai_Unk936420 + 1))  /* 0x936424, the eight player states (a view) */
 
+#include "time_view.h"
+

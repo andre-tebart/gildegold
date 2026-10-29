@@ -6,7 +6,6 @@ int d2_ShpX = 0;  /* 0xf8a108 */
 int d2_ShpY = 0;  /* 0xf8a10c */
 int d2_ShpRowX = 0;  /* 0xf8a110 */
 int d2_ShpRowGap = 0;  /* 0xf8a114 */
-unsigned short d2_HighBitMask;  /* 0xf8a11c, mask of the half dark colours */
 unsigned char d2_Palette[256][4] = {0};  /* 0xf8a120, palette */
 D2ANIM d2_Anims[16] = {0};  /* 0xf8a520 */
 int d2_LightTableExternal = 0;  /* 0xf8a630 */
