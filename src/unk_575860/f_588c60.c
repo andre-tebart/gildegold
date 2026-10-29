@@ -8,7 +8,7 @@
    0x53e400 / 0x53e300, 0x505df0 (ch) and 0x505df0 (ch + 0x68), 0x62a9d8, 0x62a9e4; the line 0x62a56c
    (0x5176d0), 0x473650, 0x52eb50 (0x64, 0x4df) and 0x576040; the sections via 0x475f70; the window */
 
-float gm_CharAge(); int ai_Unk5be1d0(); int ai_Unk5be720(); short * gm_FindChar(int id); int gm_TitlesLeft();
+float gm_CharAge(); int ai_AmountRowStatus(); int ai_Unk5be720(); short * gm_FindChar(int id); int gm_TitlesLeft();
 
 int ai_Unk588c60(char *ch)
 {
@@ -24,7 +24,7 @@ int ai_Unk588c60(char *ch)
     io_PrintText((unsigned)&full_data_62a9ec, *(unsigned short *)ch);
     d2_SetForm(0, 4);
     *(char **)line = ch;
-    if (ai_Unk5be1d0(line) != 0)
+    if (ai_AmountRowStatus(line) != 0)
         ai_Unk5be720(0xa6, 5, U_I((unsigned)&d2_LastWindow), line);
     d2_SetForm(0, 2);
     if (*(unsigned char *)(ch + 2) != 0x14)

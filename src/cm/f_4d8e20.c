@@ -95,8 +95,8 @@ void ai_Unk4d8e20(char *a)
             view3 = d2_OpenForm(0, 0, "cutscenes\\sitzung_top_absetzen");
             d2_PlaceMainWindow(view3, 3);
             d2_SetForm(view2, 1);
-            ai_Unk5be1d0(ent);
-            ai_Unk5be3b0(0x28, 0, d2_LastWindow, 0x54, ent, 1);
+            ai_AmountRowStatus(ent);
+            ai_AmountRow(0x28, 0, d2_LastWindow, 0x54, ent, 1);
             d2_SetForm(view2, 2);
             ai_Unk4d8cb0(d2_LastWindow, 1, 0);
             ai_Unk4e32d0(-8, ids[0], "_INTRO", nc - 1, 0x32);

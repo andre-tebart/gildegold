@@ -156,11 +156,11 @@ int ai_Unk4ab080(struct AIPER *p, int *a, int *b);                              
 void ai_Unk4c5d40(void *p);                                                     /* 0x4c5d40 */
 void cm_SendProofExecuted(int a, int b);                                             /* 0x4c4ed0 */
 int ai_Unk4ab2c0(struct AIPER *p, int *a, int *b);                                      /* 0x4ab2c0 */
-int gm_Unk50cf60(AIBLD *b);                                                      /* 0x50cf60 */
+int gm_BathObjectCount(AIBLD *b);                                                      /* 0x50cf60 */
 int amt_GetKindLevel(int k);                                                         /* 0x4e7c40 */
 unsigned int ai_Unk4a61d0(AIPER *p, unsigned int a, unsigned int fl, float lo, float hi, int d, unsigned short *id); /* 0x4a61d0, also in unk_4a3af0.h */
 int ai_Unk4ab3e0(int a, AIPER *p, int c, unsigned char *m, unsigned char *m2);  /* 0x4ab3e0 */
-void ai_Unk5a9470(AIPER *o, int n, AIPER **who);                                 /* 0x5a9470 */
+void ai_GypsyDeliveryText(AIPER *o, int n, AIPER **who);                                 /* 0x5a9470 */
 int ai_Unk4ab6b0(AIPER *p, unsigned char *m, unsigned char *m2);                 /* 0x4ab6b0 */
 int gm_Unk50cfd0(AIBLD *b);                                                      /* 0x50cfd0 */
 int ai_Unk4ab7f0(int a, AIPER *p, int c, unsigned char *m);                     /* 0x4ab7f0 */

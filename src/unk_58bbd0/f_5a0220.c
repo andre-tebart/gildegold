@@ -8,7 +8,7 @@
 
 int amt_GetFirstOffice(unsigned int k, struct AMTREC *out); int amt_ApplyForOffice(); int amt_KindColumn(); void sv_PumpNet();
 int ai_Unk5bea50(); int ai_Unk5c1a80(); int amt_GetOfficeCandidatesFull(); int amt_GetOfficeCandidates();
-int ai_Unk5be1d0(); int ai_Unk5be3b0(); int ai_Unk5c2160(); int ai_Unk5bd060();
+int ai_AmountRowStatus(); int ai_AmountRow(); int ai_Unk5c2160(); int ai_Unk5bd060();
 int amt_CanUseMayorPower2(); int sv_CheckMoney(); int ai_Unk5b2180(); void d2_SetObjEnabled();
 int sv_ReturnZero(void);
 
@@ -74,8 +74,8 @@ int ai_Unk5a0220(int param_1, unsigned int param_2)
                         items[i * 0xe + 4] = ((k & 1) + 1) * (w / 3) - 10 + (w % 3) / 2 + (s + 10) * (k & 1);
                         items[i * 0xe] = chars[k];
                         items[i * 0xe + 5] = (k / 2) * 0x82 + 0x28;
-                        ai_Unk5be1d0(items + i * 0xe);
-                        ai_Unk5be3b0(items[i * 0xe + 4], items[i * 0xe + 5], U_I((unsigned)&d2_LastWindow), 0x56,
+                        ai_AmountRowStatus(items + i * 0xe);
+                        ai_AmountRow(items[i * 0xe + 4], items[i * 0xe + 5], U_I((unsigned)&d2_LastWindow), 0x56,
                                      items + i * 0xe, 1);
                         k++;
                     }

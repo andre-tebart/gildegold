@@ -38,8 +38,9 @@ typedef struct D2OBJVIEW {                  /* 0x2ec, d2.h's D2OBJ: only the fie
     char pad34[0x14];
     int checkable;                          /* +0x48, D2OBJ.checkable: a checkbox / radio */
     int interactive;                        /* +0x4c, D2OBJ.interactive */
-    char pad50[0xc];
-    int centred;                            /* +0x5c, D2OBJ.centred */
+    int greyed;                             /* +0x50, D2OBJ.greyed: drawn in the inactive colour */
+    char pad54[8];
+    int centred;                           /* +0x5c, D2OBJ.centred */
     char pad60[0x18];
     int input;                              /* +0x78, D2OBJ.input */
     char pad7c[0x144];
@@ -48,7 +49,8 @@ typedef struct D2OBJVIEW {                  /* 0x2ec, d2.h's D2OBJ: only the fie
     char pad1c8[4];
     int captionX;                           /* +0x1cc, D2OBJ.captionX */
     int captionY;                           /* +0x1d0, D2OBJ.captionY */
-    char pad1d4[0x118];
+    char pad1d4[0x114];
+    int owner;                              /* +0x2e8, D2OBJ.pad2e8: unused by d2; the gypsy windows keep the row's record here */
 } D2OBJVIEW;
 
 typedef struct D2WINVIEW {

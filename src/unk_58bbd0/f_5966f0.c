@@ -3,7 +3,7 @@
    param_2, 3); ANSCHWAERZEN (0x143ff38, 0xc) -> 0x5b5010 (param_1) + 0x52d7a0 */
 
 int ai_Unk5b5e80(); int ai_Unk5b5010(); void sv_FitForm(int f); void sv_ButtonRow(int f, int y, int *out, int n, ...);
-int ai_Unk5be1d0(); int ai_Unk5be3b0(); short * gm_FindChar(int id); int sv_CheckMoney();
+int ai_AmountRowStatus(); int ai_AmountRow(); short * gm_FindChar(int id); int sv_CheckMoney();
 int cm_SendExSetHE(); /* @original: the callers here push the key as an int and read the return (byte-matched ai_Unk5ae870), against cm.h's void (unsigned char, char *) view */ void cm_SendRelations(int a, int b, int c, int d); void cm_SendMoneyDelta(int a, int b); void d2_SetObjEnabled();
 
 void ai_Unk5966f0(int param_1, int param_2)

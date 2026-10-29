@@ -11,7 +11,7 @@ int sv_ClearNamePlates(); struct D3OBJECT * d3if_Pick(float x, float y, int flag
 int gm_PlayerFactor(int a, unsigned char k); int gm_Unk50a250(); int gm_Unk50a150(); void d2_EnableViewObjects();
 void he_MessageBoxQuickjump(int a1, int a2, char *text, char fl, int a5, int a6, int a7, char *jump, char *text2); void he_Unk53e1f0(); void d2_RadioClear(int g); int d2_CreateRadioGroup(int n, ...);
 int ai_PersonnelBook(); int ai_StorageWindow(); void ai_MasterLetterWindow(); int ai_OpenTransport();
-int ai_Unk5b5a20(); int ai_Unk5b5690(); int ai_Unk5be1d0(); int ai_Unk5be3b0();
+int ai_Unk5b5a20(); int ai_Unk5b5690(); int ai_AmountRowStatus(); int ai_AmountRow();
 void ai_Unk5bd1f0(); void cm_BeginGroup(const char *s); void ai_Unk4c5d40(void *p); void cm_SendProofExecuted(int a, int b);
 
 void ai_Unk599af0(int param_1, int param_2)

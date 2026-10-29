@@ -34,7 +34,7 @@ void he_Unk547430(int ev)
         io_PrintText(0x1d6c);
         d2_SetForm(*(int *)(*(int *)(ev + 0x74) + 8), 2);
         arg = ebx;
-        if (ai_Unk5be1d0(&arg) != 0) {
+        if (ai_AmountRowStatus(&arg) != 0) {
             ai_Unk5be720(*(short *)(U_I((unsigned)&d2_LastWindowPtr) + 8) / 2 - 0x28, 0, U_I((unsigned)&d2_LastWindow), out);
             id = out[1];
             *(int *)(U_I((unsigned)&d2_Objs) + id * 0x2ec + 0x4c) = 1;

@@ -34,8 +34,8 @@ void ai_Unk5967c0(int param_1, unsigned short *param_2, int param_3)
     sv_ButtonRow(U_I((unsigned)&d2_LastWindow), 0, &ctl, 2, U_I((unsigned)&full_data_1440b30), U_I((unsigned)&full_data_1440b34));
     d2_SetForm(win, 2);
     list[0] = param_2;
-    ai_Unk5be1d0(list);
-    ai_Unk5be3b0(0x19, 0x19, U_I((unsigned)&d2_LastWindow), 0x54, list, 1);
+    ai_AmountRowStatus(list);
+    ai_AmountRow(0x19, 0x19, U_I((unsigned)&d2_LastWindow), 0x54, list, 1);
     U_I((unsigned)&d2_ClickedId) = -1;
     while (sv_RunFrame(ai_Unk5967c0, 0x677c7) != 0) {
         i = gm_FindChar(ui);

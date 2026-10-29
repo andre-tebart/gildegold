@@ -6,7 +6,7 @@
    the result 1 and 0x6f22a0; click 1 sets 0x6f22a0; the exit 0x4758f0, 0xf8a668 = -1 and 0x4115b0
    (0x11) */
 
-void sv_PumpNet(); int ai_Unk5be1d0(); int ai_Unk5be3b0();
+void sv_PumpNet(); int ai_AmountRowStatus(); int ai_AmountRow();
 void d2_EnableViewObjects(); void gm_AddTime(struct GCLOCK *c, int hours, int mins, int secs); 
 int sv_CheckGoodAmount(); int sv_MessageBox(); int cm_GetSlotState();
 

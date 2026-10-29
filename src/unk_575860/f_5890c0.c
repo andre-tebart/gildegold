@@ -27,7 +27,7 @@ int ai_Unk5890c0(char *ch)
     d2_SetForm(0, 4);
     memset(rec, 0, 0x38);
     *(char **)rec = ch;
-    if (ai_Unk5be1d0(rec) != 0)
+    if (ai_AmountRowStatus(rec) != 0)
         ai_Unk5be720(0xa6, 5, U_I((unsigned)&d2_LastWindow), line);
     d2_SetForm(0, 2);
     if (*(unsigned char *)(ch + 2) != 0x14)

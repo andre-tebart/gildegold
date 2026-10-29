@@ -58,8 +58,8 @@ void ai_Unk598b80(int param_1, int param_2)
                     p[0xc] = 1;
                     p[4] = ((i % 2) + 1) * (w / 3) - 10 + (w % 3) / 2 + (margin + 10) * (i % 2);
                     p[5] = (i / 2) * 0x82 + 100;
-                    ai_Unk5be1d0(p);
-                    ai_Unk5be3b0(p[4], p[5], U_I((unsigned)&d2_LastWindow), 0x54, p, 1);
+                    ai_AmountRowStatus(p);
+                    ai_AmountRow(p[4], p[5], U_I((unsigned)&d2_LastWindow), 0x54, p, 1);
                 }
             }
             d2_SetForm(win, 2);

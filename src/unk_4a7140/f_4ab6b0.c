@@ -27,6 +27,6 @@ int ai_Unk4ab6b0(AIPER *p, unsigned char *m, unsigned char *m2)
     cm_SendSetField(p->netId, 0x1cc, 4, 8, 0);
     for (i = 0; i < n; i++)
         cm_SendRelations(o->id, who[i]->id, -(50 - (int)(gm_Mix(p, who[i], 4) * -50.0f)), 1);
-    ai_Unk5a9470(o, n, who);
+    ai_GypsyDeliveryText(o, n, who);
     return 0x44;
 }

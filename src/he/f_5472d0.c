@@ -2,7 +2,7 @@
 
 void amt_ChangeDistrictOpinion();
 int amt_FindOffice();
-int ai_Unk5be1d0();
+int ai_AmountRowStatus();
 int ai_Unk5be720();
 struct SBSAMPLE * sb_PlaySample();
 int gm_FindById();

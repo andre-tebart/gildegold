@@ -50,8 +50,10 @@ typedef struct AICHARVIEW {
     unsigned char kind;                 /* +0x002, 6 / 7 = a player */
     char pad003;
     unsigned int netId;                 /* +0x004 */
-    char pad008[0x1c4];
-    unsigned int flags1cc;              /* +0x1cc, ai.h's flags1cc (bit 0x20000 = the blood revenge) */
+    char pad008[0x15e];
+    unsigned char officeKind;           /* +0x166, the kind of the office held (amt.h AMTCHARVIEW.officeKind) */
+    char pad167[0x65];
+    unsigned int flags1cc;             /* +0x1cc, ai.h's flags1cc (bit 0x20000 = the blood revenge) */
     char pad1d0[0x4c];
 } AICHARVIEW;
 

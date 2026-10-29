@@ -1,6 +1,6 @@
 /* 0x50cf60, the number of the kitchen / bath objects (0x27a, 0x27b, 0x292) the building b has: 1 + .. */
 
-int gm_Unk50cf60(char *b)
+int gm_BathObjectCount(char *b)
 {
     int n;
 

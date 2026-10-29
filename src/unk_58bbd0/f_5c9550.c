@@ -79,7 +79,7 @@ int ai_BlackmailBuildingListener(unsigned short *param_1, int param_2)  /* @orig
             p[0] = h;
             p[0xb] = keys[i];
             p[0xd] = ranks[i];
-            ai_Unk5be1d0(p);
+            ai_AmountRowStatus(p);
             p[0xc] = 1;
             n++;
         }
@@ -94,7 +94,7 @@ int ai_BlackmailBuildingListener(unsigned short *param_1, int param_2)  /* @orig
             txt_Format(names, (char *)(unsigned)&full_data_62cd9c, p[0], p[2], (p[0] != 1) + 0x1748);
             p[-7] = 0x32;
             p[-6] = y;
-            ai_Unk5be3b0(0x32, y, *(int *)(unsigned)&d2_LastWindow, 0x56, p - 0xb, 1);
+            ai_AmountRow(0x32, y, *(int *)(unsigned)&d2_LastWindow, 0x56, p - 0xb, 1);
             ai_Unk5bd190(names, *(short *)((unsigned)&ai_Unkf8f128 + *(int *)(unsigned)&d2_LastWindow * 0x3c4) - 0xf, y + 0x2d, 200,
                          0x55);
             y += 0x69;

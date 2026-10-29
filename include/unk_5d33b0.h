@@ -81,7 +81,19 @@ extern int sv_ScreenDirty;          /* 0x6f2358, sv.c: nonzero = rebuild the scr
 void sv_DestroyScreen(void);        /* 0x5223c0, sv.c: destroys the screen's widgets and views */
 int sv_PanelImage(void);            /* 0x522040, sv.c: the panel image number of the player's group */
 void sv_BuildScreenLayout(int s);   /* 0x521e70, sv.c: builds the main screen layout for the panel image s */
-extern int snd_SystemBank;         /* 0x6f2400, main.c: the handle of the system sample bank (system.sbf) */
+/* The gypsy windows' callees (the special-amount list of unk_58bbd0.c, the money / relation messages). */
+void cm_SendRelations(int a, int b, int c, int d);   /* 0x4c4b00, cm.c: message 0x1b, the relation of a to b changes by c */
+float gm_Mix(int a, int b, int c);                   /* 0x504e20, f3gm.c: the mix of two relation values */
+int sv_MessageBoxGreen(int a, int b, unsigned flags); /* 0x521410, sv.c: the green message box with the title text a and the text b */
+struct AIBLD;
+struct AIPER;
+int gm_BathObjectCount(struct AIBLD *b);             /* 0x50cf60, f3gm.c: 1 + the kitchen / bath objects of the building (as unk_4a7140.h) */
+void ai_GypsyDeliveryText(struct AIPER *o, int n, struct AIPER **who); /* 0x5a9470, unk_58bbd0.c: the delivery text for n chosen records (as unk_4a7140.h) */
+int ai_AmountRowStatus(int *row);                    /* 0x5be1d0, unk_58bbd0.c: the status fields of a list row */
+int ai_AmountRow(int x, int y, int win, int pic, int *row, int mode); /* 0x5be3b0, unk_58bbd0.c: draws a list row at (x, y) */
+void gm_SendMoneyDelta(int a, int b);                /* 0x50cc50, f3gm.c: forwards to cm_SendMoneyDelta */
+int amt_GetKindLevel(int k);                         /* 0x4e7c40, amt.c: the level of the office kind k */
+extern int snd_SystemBank;        /* 0x6f2400, main.c: the handle of the system sample bank (system.sbf) */
 extern int main_ScreenRestart;     /* 0x6f25a4, main.c: nonzero = re-initialise the screen (the resolution changed) */
 extern char dd_Has1024x768;         /* 0x631226, dd_vesa.h */
 extern char dd_Has1152x864;         /* 0x631227, dd_vesa.h */

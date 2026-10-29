@@ -4,7 +4,7 @@
    than 6 and the window list fields +0x4c / +0x1c0 / +0x2e8; the kinds 5 / 6 / 7 get the icon 0x54 at
    x - 0x20 */
 
-int ai_Unk5be3b0(int param_1, int param_2, int param_3, int param_4, int *param_5, int param_6)
+int ai_AmountRow(int param_1, int param_2, int param_3, int param_4, int *param_5, int param_6)
 {
     int x, y, ix, iy, t, kind;
     char *chr;

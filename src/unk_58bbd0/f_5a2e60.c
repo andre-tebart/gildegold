@@ -104,8 +104,8 @@ void ai_Unk5a2e60(int param_1)
                              *(char *)(rec + 0x1c) + 0x1990,
                              *(char *)(rec + 0x1d) + 0x1998, U_W(priest));
                 a[0] = (int)priest;
-                ai_Unk5be1d0(a);
-                ai_Unk5be3b0(half - w / 2, 0xc3, U_I((unsigned)&d2_LastWindow), 0x54, a, 1);
+                ai_AmountRowStatus(a);
+                ai_AmountRow(half - w / 2, 0xc3, U_I((unsigned)&d2_LastWindow), 0x54, a, 1);
                 d2_SetForm(win, 2);
                 d2_RemoveWindowObjects(U_I((unsigned)&d2_LastWindow), 1);
                 io_PrintText((char *)(unsigned)"$C");

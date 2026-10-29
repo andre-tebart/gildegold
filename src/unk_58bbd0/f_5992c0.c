@@ -72,8 +72,8 @@ void ai_Unk5992c0(int param_1, int param_2, int param_3)
                 p[4] = x;
                 p[5] = y - 0x1e;
                 p[0xc] = (*p != 0);
-                ai_Unk5be1d0(p);
-                ai_Unk5be3b0(p[4], p[5], U_I((unsigned)&d2_LastWindow), 0x54, p, 1);
+                ai_AmountRowStatus(p);
+                ai_AmountRow(p[4], p[5], U_I((unsigned)&d2_LastWindow), 0x54, p, 1);
                 if (slots[i] == -1)
                     txt_Format(text, 0x18a6);
                 else

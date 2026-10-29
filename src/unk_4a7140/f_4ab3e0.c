@@ -34,9 +34,9 @@ int ai_Unk4ab3e0(int a, AIPER *p, int c, unsigned char *m, unsigned char *m2)
             && gm_Query(b->objList, 2, 6, 0, 0x27c) != 0) {
             if (best == 0) {
                 best = b;
-                bestv = gm_Unk50cf60(b);
+                bestv = gm_BathObjectCount(b);
             } else {
-                k = gm_Unk50cf60(b);
+                k = gm_BathObjectCount(b);
                 if (k > bestv) {
                     best = b;
                     bestv = k;

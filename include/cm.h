@@ -971,8 +971,8 @@ int ai_Unk4e8530();  /* 0x4e8530 */
 int amt_CanTakeOffice();  /* 0x4e75c0 */
 void d2_SetViewEnabled(int view, int on);  /* 0x475590 */
 void d2_CloseView(int view);  /* 0x4758f0 */
-int ai_Unk5be1d0();  /* 0x5be1d0 */
-int ai_Unk5be3b0();  /* 0x5be3b0 */
+int ai_AmountRowStatus();  /* 0x5be1d0 */
+int ai_AmountRow();  /* 0x5be3b0 */
 int ai_Unk4e32d0();  /* 0x4e32d0 */
 int ai_Unk4e3570();  /* 0x4e3570 */
 int amt_SendOfficeMessage(unsigned char a, char *b, char *c, unsigned char d, unsigned char e);  /* 0x4e6680 */

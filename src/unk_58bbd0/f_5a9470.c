@@ -4,7 +4,7 @@
    for two or more, the last text 0x144a8b8 / 0x144a8b4) are appended; sent by param_1 + 4 (1, 0x5fb, the key
    0x62c2f4) */
 
-void ai_Unk5a9470(unsigned short *param_1, int param_2, int *param_3)
+void ai_GypsyDeliveryText(unsigned short *param_1, int param_2, int *param_3)
 {
     char local[128];
     int i;

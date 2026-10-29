@@ -32,10 +32,10 @@ int ai_Unk5c6aa0(short *param_1)
         row[5] = (i / 3) * 0x82 + 5;
         row[0] = gm_FindChar(ids[i]);
         row[0xc] = 1;
-        ai_Unk5be1d0(row);
+        ai_AmountRowStatus(row);
         row[0xb] = ai_Unk5c6620(U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x87), U_I(row[0] + 4));
         txt_Format(text, (char *)0x1ce4, row[0xb]);
-        ai_Unk5be3b0(row[4], row[5], U_I((unsigned)&d2_LastWindow), 0x56, row, 1);
+        ai_AmountRow(row[4], row[5], U_I((unsigned)&d2_LastWindow), 0x56, row, 1);
         ai_Unk5bd0c0(text, row[4] + 0x20, row[5] + 0x2b, 0xca, 0x56);
     }
     U_I((unsigned)&d2_ClickedId) = -1;

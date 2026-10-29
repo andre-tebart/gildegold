@@ -6,7 +6,7 @@
 int unk_Unk4f4130(); float gm_CharacterHealth(); int amt_HasColumn7Holder(); int d2_WinCreateSlider();
 void d2_SetObjWidth(int obj, short w); int ai_Unk4e70f0(); int amt_GetColumnOffices(int col, int max, struct AMTREC *out);
 
-int ai_Unk5be1d0(int *param_1)
+int ai_AmountRowStatus(int *param_1)
 {
     int chr;
     int car;

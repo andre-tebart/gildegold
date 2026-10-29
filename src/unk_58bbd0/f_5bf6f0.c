@@ -28,7 +28,7 @@ unsigned int ai_Unk5bf6f0(int param_1, unsigned int param_2, int *param_3, int p
         rec = param_3;
         for (x = 0; x < (int)i; x++) {
             rec[0] = ids[x];
-            ai_Unk5be1d0(rec);
+            ai_AmountRowStatus(rec);
             rec[0xc] = ai_Unk5c33c0(*(unsigned short *)param_1, *(unsigned short *)rec[0],
                                     (unsigned int *)param_4, 0);
             rec += 0xe;
