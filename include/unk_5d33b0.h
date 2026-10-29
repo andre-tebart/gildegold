@@ -55,7 +55,19 @@ typedef struct SPHEREVOLUME {
     float volume;       /* +0x0c, 4/3 pi size^3 */
     float reach;        /* +0x10, volume * radius */
 } SPHEREVOLUME;
-extern int ai_PokerWindow;          /* 0x62dda0, the view of the open poker window, -1 when closed */
+typedef struct POKERPANEL {             /* 0x1c bytes: one panel (form view) of the poker window */
+    int win;                            /* +0x00, the window the form view made (d2_LastWindow after d2_SetForm) */
+    int slot[5];                        /* +0x04, the panel's controls / seats, -1 = none yet */
+    int shown;                          /* +0x18, 1 for the form 6 panel, 0 for the forms 2 and 3 */
+} POKERPANEL;
+typedef struct POKERUI {                /* 0x70 bytes at 0x62dda0: the poker window state */
+    int window;                         /* +0x00, the view of the open poker window, -1 when closed */
+    int buttons[5];                     /* +0x04, the ids of the button row (the third is disabled at the start) */
+    int active;                         /* +0x18, -1 at the start (meaning not derived) */
+    POKERPANEL panel[3];                /* +0x1c, the panels of the forms 3, 1 and 2, in memory order */
+} POKERUI;
+extern POKERUI ai_PokerUi;          /* 0x62dda0 */
+int ai_OpenPokerWindow(void);       /* 0x5d9de0, opens the poker window (1 = opened, 0 = already open / refused) */
 /* Two entries of the run-time text table (the .data slots hold char * into the loaded text file; the
    contents are not in the exe). ai_Quicksave shows them when the network quicksave is refused. */
 

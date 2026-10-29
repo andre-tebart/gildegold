@@ -39,3 +39,5 @@
 2026-10-30T00:49:43 0x005912c0 func ai_Unk5912c0 -> ai_TradeContactChecks by:main why:0x5912c0 finishes the pending trade / master checks of the contact (its comment); every contact listener calls it once per frame
 2026-10-30T00:51:09 0x005d9c30 func ai_Unk5d9c30 -> ai_GypsyProductionContact by:main why:the contact plates of the gypsy production building (ZUTATEN_SUCHEN_ZIGEUNER, PRODUKTION_ZIGEUNER, BETTELN ...)
 2026-10-30T00:51:42 0x005d9890 func ai_GypsyGroupWindow -> ai_GypsyBeggingWindow by:main why:the only caller 0x5d9c30 opens it from contact_BETTELN
+2026-10-30T00:52:54 0x0062dda0 data ai_PokerWindow -> ai_PokerUi by:main why:0x62dda0 is the head of one 0x70 byte block: the window view, the button ids and three panel records (the poker window opener 0x5d9de0 fills them)
+2026-10-30T00:53:55 0x005d9de0 func ai_Unk5d9de0 -> ai_OpenPokerWindow by:main why:0x5d9de0 opens the poker window form and initialises its panels
