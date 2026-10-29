@@ -26,7 +26,7 @@ int amt_ExecuteShareMessage(short *c, int *m)
                 cnt = 0;
                 q = (int *)((char *)ai_CharInts + 0x168);
                 do {
-                    if ((short)q[-0x5b] != -1 && *q == (int)o && o->owner != k) {
+                    if ((unsigned short)q[-0x5b] != 0xffff && *q == (int)o && o->owner != k) {
                         cm_SendRelations(ai_CharInts[o->owner][0], q[-0x5a], -loss, 1);
                         cnt++;
                     }
@@ -38,7 +38,7 @@ int amt_ExecuteShareMessage(short *c, int *m)
                     q = (int *)((char *)ai_CharInts + 0x168);
                     k = 0;
                     do {
-                        if ((short)q[-0x5b] != -1 && *q == (int)o && o->owner != k)
+                        if ((unsigned short)q[-0x5b] != 0xffff && *q == (int)o && o->owner != k)
                             cm_SendMoveGoodsUnchecked(q[-0x5a], -1, ai_OwnPlayer, loss);
                         q += 0x87;
                         k++;
