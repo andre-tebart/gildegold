@@ -4,7 +4,7 @@
 
 extern char *ai_Goods;              /* 0x91aaf0 */
 int d2_BlitPartMode();                     /* 0x479150 */  /* @original: sv.c's call at 1099 passes 1 argument to d2.h's 8-parameter prototype */
-extern int ai_Unk6f22dc, sv_ResearchClass, ai_Unk6f2358, ai_Unk6f235c, ai_Unk6f2360, ai_Unk623e8c;  /* 0x6f22dc, 0x6f233c, 0x6f2358, 0x6f235c, 0x6f2360, 0x623e8c */
+extern int ai_Unk6f22dc, sv_ResearchClass, sv_ScreenDirty, ai_Unk6f235c, ai_Unk6f2360, ai_Unk623e8c;  /* 0x6f22dc, 0x6f233c, 0x6f2358, 0x6f235c, 0x6f2360, 0x623e8c */
 extern int sv_ResearchClass;  /* 0x6f233c, the class number of the research list the panel shows (gm_BuildingClass) */
 extern char ai_Unkf8ef80[];             /* 0xf8ef80, the data directory */
 extern char ai_Unk623794[];

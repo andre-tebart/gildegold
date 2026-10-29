@@ -5,7 +5,7 @@
 void main_Unk537de0(void)
 {
     he_Unk53d4b0();
-    U_I((unsigned)&ai_Unk6f2358) = 1;
+    U_I((unsigned)&sv_ScreenDirty) = 1;
     U_I((unsigned)&full_data_6f2598) = 1;
     U_I((unsigned)&ai_Time) = 2;
     U_I((unsigned)&ai_GameOver) = 0;

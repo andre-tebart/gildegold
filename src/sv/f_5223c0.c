@@ -1,7 +1,7 @@
 /* 0x5223c0, destroys the screen: the widgets of the table 0x7662e0, the groundplan views 0x6f22c4 / 0x6f22c8 (0x478fc0), the background 0x6f22c0, the button 0x6238a4, the strips 0x623850 / 0x623840, the panel
    widgets (0x522280), 0x529fb0, and sets the flag 0x6237cc */
 
-void sv_Unk5223c0(void)
+void sv_DestroyScreen(void)
 {
     int *q;
 

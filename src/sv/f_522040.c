@@ -1,6 +1,6 @@
 /* 0x522040, the image number of the panel for the player's group (0x6f3668, or when 0: the kind number 0x504ad0 of the first player character): 0x534 (1, 2, 10), 0x538 (3, 4), 0x53c (0xb, 0xc, 6), 0x540 (5, 7, 8, 9); 0x534 else */
 
-int sv_Unk522040(void)
+int sv_PanelImage(void)
 {
     int i, k;
     char *p;

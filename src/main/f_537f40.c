@@ -38,7 +38,7 @@ void main_Unk537f40(void)
     he_Unk53d590();
     he_Unk53d9b0();
     he_Unk53d5d0();
-    sv_Unk5223c0();
+    sv_DestroyScreen();
     gm_Unk503e80();
     gm_ClearBuildings();
     gm_ClearObjects();

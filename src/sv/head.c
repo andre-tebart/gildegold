@@ -397,7 +397,7 @@ void sv_PopTo(int v);                     /* 0x52fb50 */
 void ai_GameFrame(void);                     /* 0x591520 */
 int d2_DrawMousePointer(int x, int y);         /* 0x476f00, gfx.c */
 void d2_SetClipRect(int x0, int y0, int x1, int y1);                     /* 0x47cb40 */
-int d2_AddHitRect();                     /* 0x478890, @original: sv.c's callers were compiled against the non-prototype declaration (sv_Unk521e70 passes an int d2_ScreenW - 0x50 without a short conversion, 464 bytes vs 480) */
+int d2_AddHitRect();                     /* 0x478890, @original: sv.c's callers were compiled against the non-prototype declaration (sv_BuildScreenLayout passes an int d2_ScreenW - 0x50 without a short conversion, 464 bytes vs 480) */
 int d2_CreateWindow();                     /* 0x472390 */
 void d2_PlaceWindowScaled();                     /* 0x475730 */
 void mem_Free(void *p);                     /* 0x422620 */

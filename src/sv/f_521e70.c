@@ -1,7 +1,7 @@
 /* 0x521e70, builds the main screen layout for the scene s: clears the clip, creates the bar widgets 0x623850 / 0x623840 (a 0x288 x 0x30 strip), redraws the background bitmap (0x6ed92c, the rectangle 0x6248a4 ..
    0x6248b0) and sets up the groundplan view 0x6f22c8 (0x478cc0 with a table of 0x10 words: 0x68 / 0x6e) and the button 0x6238a4 (0x46cd80 (0x286, 0x23c, 0x544)). ROUGH */
 
-void sv_Unk521e70(int s)
+void sv_BuildScreenLayout(int s)
 {
     int t, i;
     int tab[16];

@@ -219,8 +219,8 @@ L_fail:
     sv_PumpMessages();
     main_Unk537be0();
     U_I((unsigned)&d2_CutsceneActive) = 0;
-    w = sv_Unk522040();
-    sv_Unk521e70(w);
+    w = sv_PanelImage();
+    sv_BuildScreenLayout(w);
     d3if_SelectScene(0, 0);
     if ((U_I((unsigned)&ai_GameFlags) & 1) != 0 && (U_I((unsigned)&ai_GameFlags) & 0x40) == 0) {
         unk_Unk511790();

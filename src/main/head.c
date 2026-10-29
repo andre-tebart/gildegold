@@ -282,7 +282,7 @@ extern unsigned char ai_GameState;
 extern unsigned char ai_LeaveGame;
 extern unsigned char ai_PlayerBuilding;
 extern unsigned char ai_Time;
-extern unsigned char ai_Unk6f2358;
+extern int sv_ScreenDirty;
 extern unsigned char ai_Unk75ec60;
 extern unsigned char ch_SndLib;
 extern unsigned char cm_RequestedSaveName;
