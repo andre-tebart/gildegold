@@ -34,10 +34,18 @@ and all 92 units compile. Readability is recomputed by dcp's rules.
 `dcp check` passes (gate=ok): no conflict error, and the link resolves every name. mss32.lib's code member
 (`MSS_auto_cleanup` and its exit callback) is the library unit `src/mss32lib/` (decl/text.dcl `libunit`): both
 byte, and the link adds its object to the generated mss32.lib, so LINK places it among the library
-contributions. Left:
+contributions.
 
-- **The `AIL_get_timer_highest_delay` thunk at 0x42c3a0** (a `jmp` through the import slot, the end of `sfx`'s
-  range) has no source: callers reach the stdcall import, and the linker supplies the thunk elsewhere.
+Libraries, all declared in `decompanion.toml` with their evidence:
+
+- **LIBC and DINPUT** come from VC98.
+- **`dxguid.lib` and `strmiids.lib`** come from the DirectX 8.0 SDK (`C:\Tools\DXSDK8`, see its
+  PROVENANCE.txt). Only their one-section-per-GUID layout reproduces the original's GUID block at 0x5eee50
+  in its order.
+- **The library order** is computed by `dcp link` from the image. In the relinked exe, the library
+  contributions sit at the original's relative offsets in `.text` (DINPUT stub, mss32's member, the
+  `AIL_shutdown` thunk, the DDRAW thunks, LIBC) and in `.rdata` (the DirectX GUIDs, the DirectShow GUIDs,
+  LIBC's data).
 
 Game runs, the debugger and frame dumps stay in rea (`uv run play`, `uv run dbg`, `uv run shot`) until decompanion
 has a run command.
