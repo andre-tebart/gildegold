@@ -1047,7 +1047,7 @@ exe	0x00458b20	d3_PointToRef	unk_458810	byte	readable
 exe	0x00458c10	d3_LocalToWorld	unk_458810	byte	readable	
 exe	0x00458ce0	d3_MatToWorld	unk_458810	byte	readable	
 exe	0x00458da0	d3_WorldMatrix	unk_458810	byte	readable	
-exe	0x00458e70	d3_EnvMapCoords	unk_4591a0	draft	draft	deep
+exe	0x00458e70	d3_EnvMapCoords	unk_4591a0	shape	draft	deep
 exe	0x004591a0	d3_AnimBlendWeights	unk_4591a0	byte	draft	deep
 exe	0x00459300	d3_TransformVerts	unk_4591a0	draft	draft	deep
 exe	0x004598d0	d3_TransformNormals	unk_4591a0	byte	readable	
@@ -1104,7 +1104,7 @@ exe	0x0045eeb0	d3sm_Create	d3_sm	byte	readable
 exe	0x0045ef60	d3sm_Destroy	d3_sm	byte	readable	
 exe	0x0045efc0	d3sm_FindGround	d3_sm	byte	readable	
 exe	0x0045f100	d3sm_GetVertex	d3_sm	byte	readable	
-exe	0x0045f170	d3_GetHeightAt	d3_sm	draft	readable	deep
+exe	0x0045f170	d3_GetHeightAt	d3_sm	shape	readable	deep
 exe	0x0045f2b0	d3sm_Pick	d3_sm	draft	readable	deep
 exe	0x0045f610	ts_InitCache	ts_texture	byte	draft	
 exe	0x0045f650	ts_FreeCache	ts_texture	byte	draft	
@@ -1294,7 +1294,7 @@ exe	0x0046f840	d2_ScrollWindow	d2	byte	readable
 exe	0x0046fad0	d2_LayoutButtons	d2	byte	readable	
 exe	0x0046fba0	d2_DrawWindowText	d2	draft	draft	deep
 exe	0x004713c0	d2_DrawWindowBackground	d2	byte	readable	
-exe	0x00471a90	d2_DrawWindow	d2	draft	readable	deep
+exe	0x00471a90	d2_DrawWindow	d2	shape	readable	deep
 exe	0x004721e0	d2_SetBackgroundTexture	d2	byte	readable	
 exe	0x00472270	d2_CreateScrollButtons	d2	byte	readable	
 exe	0x00472390	d2_CreateWindow	d2	draft	draft	deep
@@ -1401,7 +1401,7 @@ exe	0x004798f0	d2_GetPixelColour	gfx	draft	readable	deep
 exe	0x004799e0	d2_PutPixelRGB	gfx	byte	readable	
 exe	0x00479b60	d2_PutPixel	gfx	byte	readable	
 exe	0x00479b90	d2_PutPixelClipped	gfx	byte	readable	
-exe	0x00479bf0	d2_DrawRectOutline	gfx	draft	readable	deep
+exe	0x00479bf0	d2_DrawRectOutline	gfx	shape	readable	deep
 exe	0x00479cd0	d2_SetSurfaceClip	gfx	byte	readable	
 exe	0x00479d00	d2_MakeLightTable	shp	draft	readable	deep
 exe	0x00479df0	d2_SetColourFormat	shp	byte	readable	
@@ -2135,7 +2135,7 @@ exe	0x004c2c00	snd_UnloadBuildingVoices	f3snd	byte	readable
 exe	0x004c2c70	snd_PlayWorkerClick	f3snd	byte	readable	
 exe	0x004c2ce0	snd_PlaySelectedClick	f3snd	byte	readable	
 exe	0x004c2d20	snd_PlayFavourComment	f3snd	draft	draft	deep
-exe	0x004c2f30	ai_Unk4c2f30	f3snd	draft	draft	deep
+exe	0x004c2f30	ai_Unk4c2f30	f3snd	shape	draft	deep
 exe	0x004c30e0	snd_StartMarketAmbience	f3snd	byte	readable	
 exe	0x004c3140	snd_StopMarketAmbience	f3snd	byte	readable	
 exe	0x004c3180	ai_Unk4c3180	cm	draft	draft	
@@ -2196,7 +2196,7 @@ exe	0x004c4b00	cm_SendRelations	cm	byte	draft
 exe	0x004c4b70	cm_SendLongMessage	cm	byte	draft	
 exe	0x004c4bc0	ai_Unk4c4bc0	cm	byte	draft	
 exe	0x004c4c60	cm_SendExSetHE	cm	byte	draft	
-exe	0x004c4d40	ai_Unk4c4d40	cm	draft	draft	
+exe	0x004c4d40	ai_Unk4c4d40	cm	shape	draft	
 exe	0x004c4db0	cm_SendExSysMessage	cm	byte	draft	
 exe	0x004c4e00	cm_SendKillCharacter	cm	byte	draft	
 exe	0x004c4e40	ai_Unk4c4e40	cm	byte	draft	
@@ -2264,7 +2264,7 @@ exe	0x004c61b0	cm_SendCommand	cm	byte	draft
 exe	0x004c61f0	ai_Unk4c61f0	cm	byte	draft	
 exe	0x004c6230	ai_Unk4c6230	cm	byte	draft	
 exe	0x004c6260	ai_Unk4c6260	cm	byte	draft	
-exe	0x004c62a0	ai_Unk4c62a0	cm	draft	draft	
+exe	0x004c62a0	ai_Unk4c62a0	cm	shape	draft	
 exe	0x004c6320	ai_Unk4c6320	cm	byte	draft	
 exe	0x004c6350	ai_Unk4c6350	cm	byte	draft	
 exe	0x004c63e0	ai_Unk4c63e0	cm	draft	draft	
@@ -4636,9 +4636,9 @@ exe	0x005d8080	ai_TailorChatWindow	unk_5d33b0	shape	readable
 exe	0x005d8360	ai_TailorContact	unk_5d33b0	byte	readable	
 exe	0x005d8420	ai_ProductionContact	unk_5d33b0	shape	readable	
 exe	0x005d85e0	ai_BloodRevengeWindow	unk_5d33b0	draft	readable	deep
-exe	0x005d8c90	ai_CurseWindow	unk_5d33b0	draft	readable	deep
+exe	0x005d8c90	ai_CurseWindow	unk_5d33b0	shape	readable	deep
 exe	0x005d90e0	ai_CurseTargetWindow	unk_5d33b0	draft	readable	deep
-exe	0x005d95a0	ai_HomageWindow	unk_5d33b0	draft	readable	deep
+exe	0x005d95a0	ai_HomageWindow	unk_5d33b0	shape	readable	deep
 exe	0x005d9890	ai_Unk5d9890	unk_5d33b0	draft	draft	
 exe	0x005d9a80	ai_GypsyContact	unk_5d33b0	byte	readable	
 exe	0x005d9b20	ai_CurseContact	unk_5d33b0	byte	readable	
