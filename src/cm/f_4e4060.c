@@ -79,7 +79,7 @@ void ai_Unk4e4060(char *m)
         d3o_FogScale = 1.0f;
         ai_Unk631064 = 0;
         d2_SetPointerSprite(0, 0);
-        sv_Unk52ae40();
+        sv_ClearSelection();
         d2_ClearPointerItems();
         sv_ResetScreenClip();
         ai_Unkf8aae0[0] = 0;

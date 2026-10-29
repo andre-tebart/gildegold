@@ -30,7 +30,7 @@ void ai_Unk59e420(unsigned char *param_1, int param_2)
     sv_RunFrame(ai_Unk59e420, 0x20007);
     U_I((unsigned)&full_data_6237c8) = 0;
     sv_Unk52adb0();
-    sv_Unk52ae40();
+    sv_ClearSelection();
     kind = U_I((unsigned)&d3_CurrentScene);
     U_I((unsigned)&full_data_6f2314) = 0;
     *(short *)(param_1 + 0x29) = (short)param_2;
@@ -159,7 +159,7 @@ void ai_Unk59e420(unsigned char *param_1, int param_2)
         }
         if (sv_RunFrame(ai_Unk59e420, 0x67fff) == 0) {
             sv_Unk52adb0();
-            sv_Unk52ae40();
+            sv_ClearSelection();
             U_I((unsigned)&ai_Unk7662c0) = 0;
             snd_UnloadBuildingVoices();
             d3if_SelectScene(kind, 0);

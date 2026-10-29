@@ -281,7 +281,7 @@ void sv_Unk52eed0(void);
 void sv_Unk52ee50(void);
 void sv_Unk52eb50(int x, int y, int a, int b, unsigned k);
 void sv_Unk52eaa0(int x, int y, float len, int k);
-void sv_Unk52ae40(void);
+void sv_ClearSelection(void);
 void sv_Unk529fb0(void);
 void sv_Unk522f10(unsigned char a, int b);
 

@@ -16,7 +16,7 @@ void ai_Unk5a44e0(unsigned char *param_1)
     req[1] = 0x400;
     if (param_1 == 0)
         return;
-    sv_Unk525220(param_1, 0);
+    sv_OpenPlayerBar(param_1, 0);
     k = *(char *)(U_I((unsigned)&ai_BTypes) + *param_1 * 0x24d) != 0x13;
     req[2] = k ? 0xa7fd43b4 : 0x90010;
     req[3] = k;
@@ -25,5 +25,5 @@ void ai_Unk5a44e0(unsigned char *param_1)
     txt_Format(buf, 0x19f6);
     ai_Unk5b2180(1, req, buf, (void *)(unsigned)&ai_Unk5a41d0, 0);
     sv_ClosePlayerBar();
-    sv_Unk52ae40();
+    sv_ClearSelection();
 }

@@ -85,7 +85,7 @@ lfe4:
             if (SV_I((unsigned)&ai_Unk6f22f8) != 0 && *(char *)(SV_I((unsigned)&ai_Unk6f22f8) + 8) != 0) {
                 g = (unsigned short *)SV_I((unsigned)&ai_Unk6f22f8);
                 n = unk_Unk503530(ai_PlayerId, 0, 0, g);
-                sv_Unk52ae40();
+                sv_ClearSelection();
                 if ((n & 0x800) != 0 && (*(char *)((char *)g + 0x165) != 0x1c || (g[0xda] & 1) == 0)) {
                     SV_I((unsigned)&ai_Unk7662c0) = (int)g;
                     SV_B((unsigned)&ai_Selected + *g * 0x21c) = 1;
@@ -104,7 +104,7 @@ lfe4:
             if (SV_I((unsigned)&full_data_6f22f0) != 0) {
                 SV_I((unsigned)&ai_Unk6f2304) = SV_I((unsigned)&ai_Unk6f22e8);
                 if (ai_Goods[*(unsigned short *)SV_I((unsigned)&full_data_6f22f0) * 0x41] == 0x1d)
-                    sv_Unk52ae40();
+                    sv_ClearSelection();
             }
         }
     }

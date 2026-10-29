@@ -185,6 +185,10 @@ int sv_RegisterNamePlate(char *name, char *text, int b); /* 0x52e1c0, sv.c: find
                                        plate of the object called name (text shown, b the icon), returns
                                        the object or 0 */
 
+void sv_OpenPlayerBar(int building, char k);  /* 0x525220, sv.c: opens the player bar form (Misc\PlayerBar) for the building */
+void sv_ClosePlayerBar(void);       /* 0x525440, sv.c: closes the player bar again */
+void sv_ClearSelection(void);       /* 0x52ae40, sv.c: clears the group selection (the focus and the selected flag of every character) */
+
 /* The scene / contact values the listeners read. */
 extern int ai_BuildingPerms;        /* 0x6f231c, the permission bits of the player in the building the
                                        scene focus is on (f3gm.c 0x503530): bit 0x200 / 0x400 offer

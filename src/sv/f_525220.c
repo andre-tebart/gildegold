@@ -38,7 +38,7 @@ char d3_SetLightSet(unsigned int set, float t, float scale, char calc);         
 void sv_UpdateSkyColors(void);
 void sv_Unk525ad0(char *t);
 
-void sv_Unk525220(int a, char k)
+void sv_OpenPlayerBar(int a, char k)
 {
     int s, f, i;
     int *p;

@@ -18,8 +18,8 @@ void ai_Unk5a5f60(int param_1)
     req[2] = r;
     if (param_1 == 0)
         return;
-    sv_Unk525220(param_1, 0);
+    sv_OpenPlayerBar(param_1, 0);
     ai_Unk5b2180(1, req, (char *)U_I((unsigned)&full_data_1440b60), (void *)(unsigned)&ai_Unk5a5d70, 0);
     sv_ClosePlayerBar();
-    sv_Unk52ae40();
+    sv_ClearSelection();
 }

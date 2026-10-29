@@ -80,7 +80,7 @@ void ai_Unk584d70(char *b)
         io_PrintText(0x421e);
     else
         io_PrintText(0x4128);
-    sv_Unk525220(b, 0);
+    sv_OpenPlayerBar(b, 0);
     ai_Unk58bbd0();
     d2_CentreViewWindows(win);
     d2_SetForm(win, 2);
@@ -168,7 +168,7 @@ void ai_Unk584d70(char *b)
                     *(int *)(msg + 0x5c + j * 4) = -1;
                 if (k == 0) {
                     sv_MessageBox((char *)U_I((unsigned)&full_data_144a40c), 4);
-                    sv_Unk52ae40();
+                    sv_ClearSelection();
                 } else {
                     h = cm_SendLongMessage(msg);
                     if (h != -1) {
@@ -176,12 +176,12 @@ void ai_Unk584d70(char *b)
                             sv_RunFrame(0, 0x20007);
                     }
                     U_I((unsigned)&sv_FrameMask) = 0x677c7;
-                    sv_Unk52ae40();
+                    sv_ClearSelection();
                 }
             }
         }
     }
-    sv_Unk52ae40();
+    sv_ClearSelection();
     sv_ClosePlayerBar();
     d2_CloseView(win);
     sv_CameraFollow();

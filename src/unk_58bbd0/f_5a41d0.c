@@ -108,6 +108,6 @@ int ai_Unk5a41d0(int param_1)
             break;
     }
     d2_CloseView(win);
-    sv_Unk52ae40();
+    sv_ClearSelection();
     return done;
 }

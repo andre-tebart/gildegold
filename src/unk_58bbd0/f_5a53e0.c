@@ -34,7 +34,7 @@ void ai_Unk5a53e0(int param_1)
             req[2] = U_I(((unsigned)&ai_Unk5eeab8 + 0x2b0));
             req[3] = U_I(((unsigned)&ai_Unk5eeab8 + 0x2b4));
             txt_Format(buf, 0x19b8);
-            sv_Unk525220(param_1, 0);
+            sv_OpenPlayerBar(param_1, 0);
             ai_AmountMenu(req, buf, 0, (void *)(unsigned)&ai_Unk5a5120);
             sv_ClosePlayerBar();
             sv_CameraFollow();

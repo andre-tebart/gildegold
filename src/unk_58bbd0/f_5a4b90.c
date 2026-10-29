@@ -21,7 +21,7 @@ void ai_Unk5a4b90(int param_1)
 
     if (sv_CheckCharacterFlag(param_1) != 0)
         return;
-    sv_Unk525220(param_1, 0);
+    sv_OpenPlayerBar(param_1, 0);
     win = d2_OpenForm(0, 0, "locations\\diebesgilde\\taschendiebstahl");
     d2_SetPointerSprite(0, 0);
     d2_CentreViewWindows(win);
@@ -60,7 +60,7 @@ void ai_Unk5a4b90(int param_1)
                     U_I(msg + 0x80) = U_I(msg + 8);
                     cm_SendLongMessage(msg);
                     snd_PlayFavourComment();
-                    sv_Unk52ae40();
+                    sv_ClearSelection();
                     U_I((unsigned)&sv_PopRequest) = 1;
                 }
             } else if (U_I((unsigned)&d2_ClickedId) == 1) {

@@ -11,7 +11,7 @@
    (cm_SendLongMessage), the voice "_WAHRSAGERIN_FLUCH_0<v>" is played and the text 0x41da is shown. The pump ends with
    d2_CloseView and the camera follow. @deep body reconstructed and read whole against the disassembly: 316 = 316 instructions, 1103 = 1103 bytes, the amount-menu config (AMOUNTCFG, the 64-bit filter loaded from a const volatile object like the original's .rdata pair), form / slider / buttons, the strength loop, the confirm branch with the 0xf8-byte message and the tail jumps all match. ONE hunk of 4 differing instructions is left at 0x5d9026: the original stores the last word of the game time copy (mov [esp+0xa8],ax) after the push of the message pointer (mov ecx,[ebp+4]; lea edx,[esp+0x70]; push edx; mov [esp+0xa8],ax; mov [esp+0xd0],ecx) while ours stores it before (mov [esp+0xa4],ax; ...; push edx), a pure scheduling difference of one store across the push. Tried the order of msg.to / the time copy / msg.arg[2] (three orders tried: this one is the best, the others 16 and 49 instructions), memcpy vs a struct copy (the struct copy needs the Q4 cast of the char ai_Time[]). */
 /* batch 3: the gypsy / poker / particle stretch 0x5d8c90 .. 0x5dd3e0 */
-void sv_ButtonRow(int f, int y, int *out, int n, ...); int sv_CheckGoodAmount(); int sv_Unk525220(); int sv_ClosePlayerBar();
+void sv_ButtonRow(int f, int y, int *out, int n, ...); int sv_CheckGoodAmount();
 struct GCLOCK;
 int gm_ConvertMoney(int a, unsigned char k); int gm_PlayerFactor(int a, unsigned char k);
 int ai_Unk4a7140();

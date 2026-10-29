@@ -40,7 +40,7 @@ void ai_AquariumSearchWindow(int param_1, int param_2)
     sv_Unk52e6d0(U_I((unsigned)&d2_LastWindow), 0x70f, 0x741);
     d2_SetForm(win, 3);
     io_PrintText(0x1806);
-    sv_Unk525220(param_1, 0);
+    sv_OpenPlayerBar(param_1, 0);
     ai_Unk58bbd0();
     d2_CentreViewWindows(win);
     d2_SetForm(win, 2);
@@ -114,7 +114,7 @@ void ai_AquariumSearchWindow(int param_1, int param_2)
             U_I((unsigned)&sv_PopRequest) = 1;
         }
     }
-    sv_Unk52ae40();
+    sv_ClearSelection();
     sv_ClosePlayerBar();
     d2_CloseView(win);
     sv_CameraFollow();

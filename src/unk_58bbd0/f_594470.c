@@ -13,8 +13,8 @@ void ai_Unk594470(int param_1)
     cfg[1] = 0x400;
     cfg[4] = 7;
     cfg[2] = 0x93810;
-    sv_Unk525220(param_1, 0);
+    sv_OpenPlayerBar(param_1, 0);
     ai_Unk5b2180(1, cfg, U_I((unsigned)&full_data_1440974), (void *)ai_Unk5941c0, 0);
     sv_ClosePlayerBar();
-    sv_Unk52ae40();
+    sv_ClearSelection();
 }

@@ -26,7 +26,7 @@ int ai_Unk592b90(int param_1)
     if (sv_CheckCharacterFlag(param_1) == 0) {
         win = d2_OpenForm(0, 0, "Handel\\Handel_PRODUKTION");
         d2_CentreViewWindows(win);
-        sv_Unk525220(param_1, 0);
+        sv_OpenPlayerBar(param_1, 0);
         d2_SetForm(win, 3);
         io_PrintText(0xca);
         ai_Unk58bbd0();

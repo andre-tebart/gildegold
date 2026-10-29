@@ -26,7 +26,7 @@ void ai_Unk59f410(unsigned short *param_1)
     U_I((unsigned)&sv_FrameBase) = U_I((unsigned)&sv_FrameDepth) + 1;
     U_I((unsigned)&full_data_6237c8) = 0;
     sv_Unk52adb0();
-    sv_Unk52ae40();
+    sv_ClearSelection();
     idx = -1;
     room = param_1;
     if (*(signed char *)((unsigned)&init_ObjectUniverse + *param_1) != -2) {
@@ -72,7 +72,7 @@ void ai_Unk59f410(unsigned short *param_1)
     }
     U_I((unsigned)&snd_AmbientOn) |= 1;
     sv_Unk52adb0();
-    sv_Unk52ae40();
+    sv_ClearSelection();
     sv_ReleaseNamePlates();
     U_I((unsigned)&ai_Unk7662c0) = 0;
     /* ROUGH: the device callbacks as in 0x59ee40, then the room 0xfd restored (0x4ffe90, 0x5f1298) */

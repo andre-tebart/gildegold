@@ -64,7 +64,7 @@ int ai_Unk5a5d70(int param_1, int param_2)
                     cm_SendLongMessage(msg);
                     snd_PlayFavourComment();
                 }
-                sv_Unk52ae40();
+                sv_ClearSelection();
                 U_I((unsigned)&sv_PopRequest) = 2;
             } else if (U_I((unsigned)&ai_Unk5fe710) == ctl2) {
                 U_I((unsigned)&sv_PopRequest) = 1;

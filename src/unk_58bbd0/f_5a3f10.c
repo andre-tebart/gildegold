@@ -9,7 +9,7 @@
    the frame slots of the message and the two gates are from the disassembly */
 
 int he_Unk553cc0(); int gm_Unk509120(); void snd_PlayFavourComment(void); 
-int sv_Unk525220(); int ai_Unk5b2180(); int sv_ClosePlayerBar();
+int sv_OpenPlayerBar(); int ai_Unk5b2180(); int sv_ClosePlayerBar();
 
 int ai_Unk5a3f10(int param_1)
 {
@@ -68,7 +68,7 @@ int ai_Unk5a3f10(int param_1)
             } else {
                 sv_MessageBox((char *)U_I((unsigned)&full_data_144094c), 0);
             }
-            sv_Unk52ae40();
+            sv_ClearSelection();
             U_I((unsigned)&sv_PopRequest) = 1;
             done = 1;
         } else if (U_I((unsigned)&ai_Unk5fe710) == ctl2) {

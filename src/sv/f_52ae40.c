@@ -1,6 +1,6 @@
 /* 0x52ae40, clears the group selection: the focus 0x7662c0, 0x6f2304, the selected flag (+0x21c stride: +0x188 of the character records at 0x770d08) and 0x6f2334 */
 
-void sv_Unk52ae40(void)
+void sv_ClearSelection(void)
 {
     char *q;
 

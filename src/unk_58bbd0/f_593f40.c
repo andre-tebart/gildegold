@@ -71,7 +71,7 @@ int ai_Unk593f40(char *name)
             }
             cm_SendLongMessage(msg);
         }
-        sv_Unk52ae40();
+        sv_ClearSelection();
         U_I((unsigned)&sv_PopRequest) = 1;
     }
     d2_CloseView(win);

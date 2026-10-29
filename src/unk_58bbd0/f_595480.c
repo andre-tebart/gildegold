@@ -70,7 +70,7 @@ void ai_TradeSearchWindow(unsigned char *param_1, int param_2)
     sv_Unk52e6d0(U_I((unsigned)&d2_LastWindow), 0x70f, 0x741);
     d2_SetForm(win, 3);
     io_PrintText(0x17fe);
-    sv_Unk525220(param_1, 0);
+    sv_OpenPlayerBar(param_1, 0);
     ai_Unk58bbd0();
     d2_CentreViewWindows(win);
     d2_SetForm(win, 2);
@@ -149,7 +149,7 @@ void ai_TradeSearchWindow(unsigned char *param_1, int param_2)
                     sv_MessageBox(U_I((unsigned)&full_data_14401c4), 4);
                 } else {
                     snd_PlayFavourComment();
-                    sv_Unk52ae40();
+                    sv_ClearSelection();
                     *msg = 0;
                     /* ROUGH: the message goes through 0x4c4b70 / the confirmation 0x4c3ae0 / 0x4c3b10 */
                     kind = cm_SendLongMessage(msg);
@@ -163,7 +163,7 @@ void ai_TradeSearchWindow(unsigned char *param_1, int param_2)
             }
         }
     }
-    sv_Unk52ae40();
+    sv_ClearSelection();
     sv_ClosePlayerBar();
     d2_CloseView(win);
     sv_CameraFollow();

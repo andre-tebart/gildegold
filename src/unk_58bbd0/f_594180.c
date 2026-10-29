@@ -4,9 +4,9 @@
 void ai_Unk594180(int param_1)
 {
     if (sv_CheckCharacterFlag(param_1) == 0) {
-        sv_Unk525220(param_1, 0);
+        sv_OpenPlayerBar(param_1, 0);
         ai_Unk5b2180(4, 0, U_I((unsigned)&full_data_1440c10), (void *)ai_Unk593f40, 0);
         sv_ClosePlayerBar();
-        sv_Unk52ae40();
+        sv_ClearSelection();
     }
 }

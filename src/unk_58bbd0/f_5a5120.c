@@ -81,7 +81,7 @@ int ai_Unk5a5120(int param_1)
                     cm_SendMoneyDelta(U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x21c), -3);
                     unk_Unk4f2e30(0x1a, 1, U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x21c), U_I(param_1 + 4), -1);
                     snd_PlayFavourComment();
-                    sv_Unk52ae40();
+                    sv_ClearSelection();
                     ret = 1;
                     U_I((unsigned)&sv_PopRequest) = 3;
                 }

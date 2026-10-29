@@ -12,7 +12,7 @@
    and 1; the second entry -> 0x6f22a0 = 1; the pump 0 -> 0x4758f0 (window), 0x525440 (), 0x52ae40 (), the
    result */
 
-int sv_MessageBoxGreen(); int sv_Unk525220(); int sv_ClosePlayerBar();
+int sv_MessageBoxGreen(); int sv_OpenPlayerBar(); int sv_ClosePlayerBar();
 
 int ai_Unk584900(char *rec, char *ev)
 {
@@ -31,7 +31,7 @@ int ai_Unk584900(char *rec, char *ev)
         sv_MessageBoxGreen(U_I((unsigned)&full_data_144a638), U_I((unsigned)&full_data_144a63c), 0);
         return 0;
     }
-    sv_Unk525220(rec, 0);
+    sv_OpenPlayerBar(rec, 0);
     win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62a5bc);
     d2_SetPointerSprite(0, 0);
     d2_CentreViewWindows(win);
@@ -86,7 +86,7 @@ int ai_Unk584900(char *rec, char *ev)
         if (sv_RunFrame(ai_Unk584900, 0x677c7) == 0) {
             d2_CloseView(win);
             sv_ClosePlayerBar();
-            sv_Unk52ae40();
+            sv_ClearSelection();
             return r;
         }
     }

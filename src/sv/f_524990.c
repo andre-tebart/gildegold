@@ -171,7 +171,7 @@ void sv_Unk524990(unsigned char *g)
         for (p = &ai_Unk75f280[4]; (int)p < ((unsigned)&ai_Unk75f280 + 0x510); p += 10)
             if (p[4] != 0)
                 sv_MoveToGroup(g, 0, *p, 0);
-        sv_Unk52ae40();
+        sv_ClearSelection();
     }
     if (ai_Unk7662c0 != 0 && *(char *)(ai_Unk7662c0 + 0x188) == 0)
         ai_Unk7662c0 = 0;

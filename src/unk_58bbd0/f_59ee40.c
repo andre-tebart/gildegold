@@ -25,7 +25,7 @@ void ai_Unk59ee40(unsigned char *param_1)
     U_I((unsigned)&sv_FrameBase) = U_I((unsigned)&sv_FrameDepth) + 1;
     U_I((unsigned)&full_data_6237c8) = 0;
     sv_Unk52adb0();
-    sv_Unk52ae40();
+    sv_ClearSelection();
     saved1 = U_I((unsigned)&ai_Unk75fb80);
     saved2 = U_I((unsigned)&ai_Unk75fb84);
     saved3 = U_I((unsigned)&ai_Unk75fb88);
@@ -131,7 +131,7 @@ void ai_Unk59ee40(unsigned char *param_1)
         U_I((unsigned)&d3_Sky) = 0;
     }
     sv_Unk52adb0();
-    sv_Unk52ae40();
+    sv_ClearSelection();
     U_I((unsigned)&ai_Unk6f22cc) = 0;
     U_I((unsigned)&ai_Unk6f22d0) = 0;
     /* ROUGH: 0x4284a0 / 0x429e90 / 0x52bb70 of the device record and 0x5fb5b0 callback +0x294 */

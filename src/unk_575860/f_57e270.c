@@ -94,7 +94,7 @@ void ai_Unk57e270(char *rec)
     bg[3] = U_I((unsigned)&ai_Unkfb906c);
     bg5 = U_I((unsigned)&d3_CurrentScene);
     d2_SetPointerSprite(0, 0);
-    sv_Unk52ae40();
+    sv_ClearSelection();
     d2_ClearPointerItems();
     sv_ResetScreenClip();
     U_I((unsigned)&sv_PanelFlag) = 0;

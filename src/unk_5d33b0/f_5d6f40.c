@@ -52,7 +52,9 @@ typedef struct AICHARVIEW {
     unsigned int netId;                 /* +0x004 */
     char pad008[0x15e];
     unsigned char officeKind;           /* +0x166, the kind of the office held (amt.h AMTCHARVIEW.officeKind) */
-    char pad167[0x65];
+    char pad167[0x21];
+    char selected;                      /* +0x188, the group selection flag (sv.c ai_Selected, cleared by sv_ClearSelection) */
+    char pad189[0x43];
     unsigned int flags1cc;             /* +0x1cc, ai.h's flags1cc (bit 0x20000 = the blood revenge) */
     char pad1d0[0x4c];
 } AICHARVIEW;

@@ -9,7 +9,7 @@ void ai_Unk59a710(int param_1, int param_2)
     U_I((unsigned)&ai_Unk75ec60) = 0;
     U_I((unsigned)&ai_Unk6f2304) = 0;
     sv_Unk529fb0();
-    sv_Unk52ae40();
+    sv_ClearSelection();
     U_I((unsigned)&ai_Unk6f2318) = 1;
     if (U_I((unsigned)&sv_PanelForm) != -1)
         d2_SetViewEnabled(U_I((unsigned)&sv_PanelForm), 0);

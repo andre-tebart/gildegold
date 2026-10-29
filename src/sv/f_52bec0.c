@@ -108,7 +108,7 @@ lgroup:
                 }
                 pp++;
             } while ((int)pp < (unsigned)((unsigned)ai_Unk7603a0 + 0x80));
-            sv_Unk52ae40();
+            sv_ClearSelection();
             SV_I((unsigned)&full_data_6f22fc) = 0;
         }
 lafter:
@@ -141,5 +141,5 @@ lend:
         i++;
     } while ((int)p < ((unsigned)((unsigned)ai_Unk770cec + 0x65296) + 0x182));
     if (SV_I(((unsigned)&dm_L + 0x20)) != 0 && SV_I((unsigned)&ai_Unk6f2334) != 0)
-        sv_Unk52ae40();
+        sv_ClearSelection();
 }

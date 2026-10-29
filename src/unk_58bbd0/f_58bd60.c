@@ -13,7 +13,7 @@
 struct D3VECTOR; int d3_VecEqual(struct D3VECTOR *a, struct D3VECTOR *b, float eps); int sv_CheckCharacterFlag(); int d2_OpenForm(); void d2_CentreViewWindows(int view);
 float gm_GoodsPrice(unsigned id, unsigned char p);   /* 0x5089c0, the price (ai.h / cm.h / rt.h: float) */
 void gm_Unk508a80(int v, unsigned char k, char *out);  /* 0x508a80, above its first call (line 1119) */
-int sv_Unk525220(); int d2_SetForm(int view, int n); int io_PrintText(char *fmt, ...); int sv_Unk52e6d0();
+int sv_OpenPlayerBar(); int d2_SetForm(int view, int n); int io_PrintText(char *fmt, ...); int sv_Unk52e6d0();
 int d2_GetViewWin(); int sv_CreateFormSlider(); void d2_SetPointerSprite(int a, int pic); char * gm_Query(void *list, int n, ...);
 int gm_FreeCapacity(); int sv_MessageBox(); char * he_FindEvent(int n, ...); char * he_NextEvent(void);
 int ai_Unk576340(); int cm_SendLongMessage(char *msg); int cm_GetSlotState(); int cm_GetSlotValue(int h);
@@ -43,7 +43,7 @@ int ai_ProductionWindow(unsigned char *param_1)
     win = d2_OpenForm(0, 0, (char *)(unsigned)"Handel\\Handel_PRODUKTION");
     d2_CentreViewWindows(win);
     kind = *(char *)(U_I((unsigned)&ai_BTypes) + *param_1 * 0x24d);
-    sv_Unk525220(param_1, kind == 0x1e ? 2 : 0);
+    sv_OpenPlayerBar(param_1, kind == 0x1e ? 2 : 0);
     d2_SetForm(win, 3);
     io_PrintText(0xb7);
     ai_Unk58bbd0();

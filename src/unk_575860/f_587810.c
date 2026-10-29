@@ -51,7 +51,7 @@ void ai_Unk587810(char *rec)
     b1 = d2_GetWinObj(win, 3, n);
     b2 = d2_GetWinObj(win, 3, n + 1);
     b3 = d2_GetWinObj(win, 3, n + 2);
-    sv_Unk525220(rec, 0);
+    sv_OpenPlayerBar(rec, 0);
     while (sv_RunFrame(ai_Unk587810, 0x677c7) != 0) {
         if (U_I(((unsigned)&dm_L + 0x20)) != 0)
             U_I((unsigned)&sv_PopRequest) = 1;
@@ -85,6 +85,6 @@ void ai_Unk587810(char *rec)
     }
     d2_CloseView(win);
     sv_ClosePlayerBar();
-    sv_Unk52ae40();
+    sv_ClearSelection();
     sv_CameraFollow();
 }

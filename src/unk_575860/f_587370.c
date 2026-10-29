@@ -17,7 +17,7 @@ void ai_Unk587370(char *rec)
     int b2;
     int i;
 
-    sv_Unk525220(rec, 0);
+    sv_OpenPlayerBar(rec, 0);
     win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62a5bc);
     d2_SetPointerSprite(0, 0);
     d2_CentreViewWindows(win);
@@ -66,7 +66,7 @@ void ai_Unk587370(char *rec)
         if (sv_RunFrame(ai_Unk587370, 0x677c7) == 0) {
             d2_CloseView(win);
             sv_ClosePlayerBar();
-            sv_Unk52ae40();
+            sv_ClearSelection();
             return;
         }
     }

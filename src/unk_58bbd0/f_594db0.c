@@ -10,7 +10,7 @@ void ai_Unk594db0(int param_1)
         memset(cfg, 0, 0x50);
         cfg[1] = 0x400;
         if (param_1 != 0) {
-            sv_Unk525220(param_1, 0);
+            sv_OpenPlayerBar(param_1, 0);
             cfg[0x13] = 0x727;
             cfg[4] = 6;
             cfg[2] = 0xa07443a0;
@@ -18,7 +18,7 @@ void ai_Unk594db0(int param_1)
             txt_Format(text, 0x1a83);
             ai_Unk5b2180(1, cfg, text, (void *)ai_Unk594bb0, 0);
             sv_ClosePlayerBar();
-            sv_Unk52ae40();
+            sv_ClearSelection();
         }
     }
 }

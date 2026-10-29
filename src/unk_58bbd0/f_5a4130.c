@@ -15,7 +15,7 @@ void ai_Unk5a4130(int param_1)
     if (param_1 == 0)
         return;
     req[1] = 0x400;
-    sv_Unk525220(param_1, 0);
+    sv_OpenPlayerBar(param_1, 0);
     txt_Format(buf, 0x19e2);
     req[4] = 0xa07443b4;
     req[5] = 1;
@@ -23,5 +23,5 @@ void ai_Unk5a4130(int param_1)
     req[7] = 0x727;
     ai_Unk5b2180(1, req, buf, (void *)(unsigned)&ai_Unk5a3f10, 0);
     sv_ClosePlayerBar();
-    sv_Unk52ae40();
+    sv_ClearSelection();
 }

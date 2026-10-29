@@ -13,9 +13,9 @@ void ai_Unk594790(int param_1)
         cfg[4] = 6;
         cfg[2] = 0xa07c43a0;
         cfg[3] = 1;
-        sv_Unk525220(param_1, 0);
+        sv_OpenPlayerBar(param_1, 0);
         ai_Unk5b2180(1, cfg, U_I((unsigned)&full_data_1440be8), (void *)ai_Unk5944e0, 0);
         sv_ClosePlayerBar();
-        sv_Unk52ae40();
+        sv_ClearSelection();
     }
 }
