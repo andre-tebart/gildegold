@@ -144,8 +144,6 @@ int ai_Unk492e90(AIPER *p, int a, int *out);                    /* 0x492e90, dec
 
 int ai_Unk495520(AIACT *act, int a);                            /* 0x495520, registers an action */
 int ai_Unk4a49a0(float *a, float *b, int i, AIPER *p, int f, void *x, void *y);  /* 0x4a49a0 */
-int ai_SeanceDecide(void);                                    /* 0x52a040, a `return 0` stub (ICF folded) */
-int ai_SeanceExec(void);                                      /* 0x52a040, a `return 0` stub (ICF folded) */
 char * amt_GetOfficeHolder(int k);                            /* 0x4e7510 */
 int amt_GetOwnedOfficePay(void);                                         /* 0x4ea990 */
 int gv_GetTableRecord(int i, int *out);                              /* 0x4f2720, copies decision record i */
@@ -1029,6 +1027,8 @@ int ai_Unk4a13e0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  
 int ai_Unk4a1640(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x4a1640 */
 int ai_AlwaysTrue(void);                                                             /* 0x4a8c10, an execute callback */
 int sv_ReturnZero(void);                                                             /* 0x52a040, a decide / execute stub */
+int ai_SeanceDecide(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);    /* unlinked: LINK folds it (/OPT:ICF) into sv_ReturnZero */
+int ai_SeanceExec(G5CH *p, AIARG *s1, AIARG *s2);                   /* unlinked: LINK folds it (/OPT:ICF) into sv_ReturnZero */
 int ai_Unk4a16f0(int a);                                                        /* 0x4a16f0 */
 #define G8_4C4830(a, b, k, d) ((void (*)(int, unsigned int, unsigned char, int))cm_SendMoveGoodsUnchecked)(a, b, k, d)  /* above: c is int */
 int unk_Unk4f3a30(int p, int n);                                      /* 0x4f3a30 */

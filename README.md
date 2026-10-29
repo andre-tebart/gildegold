@@ -29,19 +29,16 @@ checks that the preprocessed output is unchanged.
 The migration checked byte parity against rea's baseline: 2664 of 2664 byte-matched functions stay byte-matched,
 and all 92 units compile. Readability is recomputed by dcp's rules.
 
-## Open since the migration
+## Open
 
-These issues come from rea, or from the exe having no base relocations. `dcp check` shows them all.
+`dcp check` passes (gate=ok): no conflict error, and the link resolves every name. Left, by design or by
+framework gap:
 
-- **Data debt.**
-  - Tentative definitions (D5).
-  - `__FILE__` literals: the original's are `D:\develop\Units\...` (M9).
-  - Data order, sizes and contents (D4, D1, M.data.content).
-- **One code-walk error (L1).** The walk swallows a call target at 0x4eba80.
-- **Unresolved link names.**
-  - CRT functions under placeholder names, and one ICF-folded stub; rea resolved these with alias tables in its `link.py`.
-  - GUID and IID symbols: the `dxguid`, `strmiids` and `uuid` archives are not declared.
-  - `MSS_auto_cleanup` and `AIL_get_timer_highest_delay`.
+- **mss32.lib's two functions** (`MSS_auto_cleanup` 0x5de460, its exit callback 0x5de470) are written in
+  `src/sfx/` for their behaviour. The original places them after the DINPUT stubs, a region no unit can own
+  yet, so the link puts them into `sfx`.
+- **The `AIL_get_timer_highest_delay` thunk at 0x42c3a0** (a `jmp` through the import slot, the end of `sfx`'s
+  range) has no source: callers reach the stdcall import, and the linker supplies the thunk elsewhere.
 
 Game runs, the debugger and frame dumps stay in rea (`uv run play`, `uv run dbg`, `uv run shot`) until decompanion
 has a run command.
