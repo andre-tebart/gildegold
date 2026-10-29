@@ -31,12 +31,11 @@ and all 92 units compile. Readability is recomputed by dcp's rules.
 
 ## Open
 
-`dcp check` passes (gate=ok): no conflict error, and the link resolves every name. Left, by design or by
-framework gap:
+`dcp check` passes (gate=ok): no conflict error, and the link resolves every name. mss32.lib's code member
+(`MSS_auto_cleanup` and its exit callback) is the library unit `src/mss32lib/` (decl/text.dcl `libunit`): both
+byte, and the link adds its object to the generated mss32.lib, so LINK places it among the library
+contributions. Left:
 
-- **mss32.lib's two functions** (`MSS_auto_cleanup` 0x5de460, its exit callback 0x5de470) are written in
-  `src/sfx/` for their behaviour. The original places them after the DINPUT stubs, a region no unit can own
-  yet, so the link puts them into `sfx`.
 - **The `AIL_get_timer_highest_delay` thunk at 0x42c3a0** (a `jmp` through the import slot, the end of `sfx`'s
   range) has no source: callers reach the stdcall import, and the linker supplies the thunk elsewhere.
 

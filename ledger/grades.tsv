@@ -4664,5 +4664,5 @@ exe	0x005dc9d0	ai_Unk5dc9d0	unk_5d33b0	draft	draft
 exe	0x005dcf00	ai_Unk5dcf00	unk_5d33b0	draft	draft	
 exe	0x005dd090	ai_NormalizeEffectScale	unk_5d33b0	draft	readable	deep
 exe	0x005dd100	ai_Unk5dd100	unk_5d33b0	draft	draft	
-exe	0x005de460	MSS_auto_cleanup	sfx	byte	readable	
-exe	0x005de470	mss_AutoCleanupExit	sfx	draft	readable	
+exe	0x005de460	MSS_auto_cleanup	mss32lib	byte	readable	
+exe	0x005de470	mss_AutoCleanupExit	mss32lib	byte	readable	
