@@ -618,6 +618,7 @@ exe	0x0042c2c0	sfx_FindStream	sfx	byte	readable
 exe	0x0042c300	sfx_SampleDriver	sfx	byte	readable	
 exe	0x0042c340	sfx_StreamDriver	sfx	byte	readable	
 exe	0x0042c380	sfx_NumDrivers	sfx	byte	readable	
+exe	0x0042c3a0	sfx_TimerHighestDelay	sfx	byte	readable	
 exe	0x0042c3b0	txt_Field	txt	byte	readable	
 exe	0x0042c430	txt_SkipSpaces	txt	byte	readable	
 exe	0x0042c480	txt_TrimRight	txt	byte	readable	
@@ -1899,7 +1900,7 @@ exe	0x004b17c0	ai_Unk4b17c0	hst	byte	draft
 exe	0x004b1880	ai_Unk4b1880	hst	byte	draft	
 exe	0x004b1950	ai_Unk4b1950	hst	byte	draft	
 exe	0x004b1a20	ai_Unk4b1a20	hst	byte	draft	
-exe	0x004b1bd0	ai_Unk4b1bd0	hst	draft	draft	
+exe	0x004b1bd0	ai_Unk4b1bd0	hst	shape	draft	
 exe	0x004b1c90	ai_CommandInventoryPlus	hst	byte	readable	
 exe	0x004b1d20	ai_Unk4b1d20	hst	byte	draft	
 exe	0x004b1e40	ai_Unk4b1e40	hst	byte	draft	
@@ -2345,7 +2346,7 @@ exe	0x004cb940	ai_Unk4cb940	cm	byte	draft
 exe	0x004cb9b0	ai_Unk4cb9b0	cm	byte	draft	
 exe	0x004cba10	ai_Unk4cba10	cm	draft	draft	
 exe	0x004cbb90	ai_Unk4cbb90	cm	byte	draft	
-exe	0x004cbbd0	ai_Unk4cbbd0	cm	shape	draft	
+exe	0x004cbbd0	ai_Unk4cbbd0	cm	draft	draft	
 exe	0x004cbca0	ai_Unk4cbca0	cm	draft	draft	
 exe	0x004cbff0	ai_Unk4cbff0	cm	byte	draft	
 exe	0x004cc050	ai_Unk4cc050	cm	draft	draft	
@@ -3014,7 +3015,7 @@ exe	0x00500ec0	gm_FindMarketObject	f3gm	shape	draft
 exe	0x00501000	gm_FindPlayerBuilding	f3gm	byte	draft	
 exe	0x00501030	gm_BuildNext	f3gm	draft	draft	
 exe	0x00501190	gm_BuildQuery	f3gm	draft	draft	
-exe	0x005012b0	gm_FindFreeBuilding	f3gm	shape	readable	
+exe	0x005012b0	gm_FindFreeBuilding	f3gm	draft	readable	
 exe	0x005012e0	gm_FreeBuilding	f3gm	draft	draft	
 exe	0x00501400	gm_StockBuildingObjects	f3gm	draft	draft	
 exe	0x005014b0	gm_SetCapacities	f3gm	draft	draft	
@@ -4344,7 +4345,7 @@ exe	0x005a8f90	ai_Unk5a8f90	unk_58bbd0	draft	draft
 exe	0x005a9050	ai_Unk5a9050	unk_58bbd0	draft	draft	
 exe	0x005a9110	ai_Unk5a9110	unk_58bbd0	byte	draft	
 exe	0x005a9170	ai_Unk5a9170	unk_58bbd0	byte	draft	
-exe	0x005a91c0	ai_Unk5a91c0	unk_58bbd0	draft	draft	
+exe	0x005a91c0	ai_Unk5a91c0	unk_58bbd0	shape	draft	
 exe	0x005a9240	ai_Unk5a9240	unk_58bbd0	draft	draft	
 exe	0x005a92b0	ai_Unk5a92b0	unk_58bbd0	draft	draft	
 exe	0x005a9330	ai_SendSwapText	unk_58bbd0	byte	draft	
