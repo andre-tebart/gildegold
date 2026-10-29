@@ -855,7 +855,7 @@ exe	0x00447340	d3if_Reload	d3_interface	byte	readable
 exe	0x004473f0	d3if_Reset	d3_interface	byte	draft	deep
 exe	0x004475f0	d3if_InitScene	d3_interface	byte	draft	deep
 exe	0x00447800	d3if_PrecacheCB	d3_interface	byte	readable	
-exe	0x00447860	d3if_Prerender	d3_interface	byte	draft	
+exe	0x00447860	d3if_Prerender	d3_interface	byte	readable	
 exe	0x004478e0	d3if_SelectScene	d3_interface	shape	draft	deep
 exe	0x00447e60	d3if_ClearScene	d3_interface	byte	readable	
 exe	0x00447f70	d3if_MoveCB	d3_interface	byte	readable	
