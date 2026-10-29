@@ -1,29 +1,133 @@
-/* 0x5d8c90, the "Fluch wirken" (curse) window "Locations\zigeuner\blutrache" 0x62dc68 (905 B):
-   param_1 the gypsy building. When the player's record byte 0x770d4c [0x6f25b8 * 0x87] has bit 0x10,
-   0x4c2760 (-7, 0, "RAUSWURF" 0x62dca0, -1) and 0x521410 (0x144a8c4, 0x144a8c8, 0) end it. Otherwise a
-   request 0x5c1130 (record 0x14 dwords, +0 = 1, +4 = 0x400, +0x10 = 6, +0xc = 1, +8 = 0xa7fdfbb6,
-   0x144a8cc) gives the target; the window (0x4741f0, 0x476f80, 0x475600, d2_SetForm (0 / 2)) shows the
-   slider 0x46a960 (0x57, 7, 200, 0, 100, 0x7b, 2, screen) with 0x475cb0 (.., 0, 5, 0, 1) and the
-   button 0x46bca0 (.., 6, 0x144a8e8 ..), d2_SetForm (3) and the controls 0x52e350 (.., 0x144a920,
-   0x144a924). Each pass: the limit 0x50cfd0 (param_1) - 1 and the slider value 0x475980 (min), the
-   number 0x5176d0 (buf, value + 0x41d0, *target), the texts 0x515960 (0x41d6, 0x41c1, value + 0x41c4,
-   buf) and for another owner (0x6f25b8 != word param_1 + 0x27) 0x515960 (0x41d7, max (value, 1) *
-   32000). A click on the button 0x521040 (.., value, 0x6f1bc5) sends the curse: 0x4c4a60 (.., 0x1cc,
-   4, 0x10, 0), the money 0x4c4830 (.., max (value, 1) * 32000) for another owner, a message record
-   (0x3e dwords: +1 = 0x9d, -1, +0x3a = 2, the player record, 0x770ae0 / e4 / e8 / ec, the target dword,
-   the value, +0x48 = 0x62dda0) through 0x4c4b70, 0x5176d0 (0x41da, 0x41c1), sprintf
-   "_WAHRSAGERIN_FLUCH_0%d" 0x62dc88 and 0x4c2760 (-7, 0, .., -1), then 0x521150 (buf, 0) and
-   0x6f22a0 = 1. The cancel 0x6f22a0 = 1. The pump 0x5309a0 (0x5d8c90, 0x677c7) ends with 0x4758f0 and
-   0x52d7a0.
-   ROUGH SKELETON (layout 2026-10-24): the record fields and the slider/button constants above. */
+/* 0x5d8c90, the "Fluch wirken" (curse) window "Locations\zigeuner\blutrache" 0x62dc68 (905 B): the building is the
+   gypsy house. When the player's status bit 0x10 (+0x1cc of its record) is set the voice "RAUSWURF" is played and the green
+   message box 0x41c1 / 0x41c2 refuses. Otherwise the target is chosen with the special-amount menu ai_AmountMenu (the same
+   config as the blood revenge window: +0 = 1, +4 = 0x400, +8 / +0xc the filter 0x1a7fdfbb6, +0x10 = 6, the id list from +0x1c all
+   0xffff); no target ends the window. The form shows a slider (0 .. 5 at first, then 0 .. the limit gm_CurseObjectCount - 1) with
+   the six strength names 0x41ca .. 0x41cf and the two buttons 0x41d4 / 0x41d5. Each pass the strength v is clamped to the limit,
+   the texts 0x41d0 + v (with the target's id), 0x41d6 / 0x41c1 / 0x41c4 + v and, for a building of another owner, the price
+   max (v, 1) * 32000 (0x41d7) are shown. The right mouse button and the second button leave; the first button curses when the
+   player has the goods (sv_CheckGoodAmount): the status bit 0x10 is set (cm_SendSetField), another owner is paid the price
+   (cm_SendMoveGoodsUnchecked), the message 0x9d (arg 0 = the strength, arg 2 = the target's net id, the game time, flags 2) is sent
+   (cm_SendLongMessage), the voice "_WAHRSAGERIN_FLUCH_0<v>" is played and the text 0x41da is shown. The pump ends with
+   d2_CloseView and the camera follow. @deep body reconstructed and read whole against the disassembly: 316 = 316 instructions, 1103 = 1103 bytes, the amount-menu config (AMOUNTCFG, the 64-bit filter loaded from a const volatile object like the original's .rdata pair), form / slider / buttons, the strength loop, the confirm branch with the 0xf8-byte message and the tail jumps all match. ONE hunk of 4 differing instructions is left at 0x5d9026: the original stores the last word of the game time copy (mov [esp+0xa8],ax) after the push of the message pointer (mov ecx,[ebp+4]; lea edx,[esp+0x70]; push edx; mov [esp+0xa8],ax; mov [esp+0xd0],ecx) while ours stores it before (mov [esp+0xa4],ax; ...; push edx), a pure scheduling difference of one store across the push. Tried the order of msg.to / the time copy / msg.arg[2] (three orders tried: this one is the best, the others 16 and 49 instructions), memcpy vs a struct copy (the struct copy needs the Q4 cast of the char ai_Time[]). */
 /* batch 3: the gypsy / poker / particle stretch 0x5d8c90 .. 0x5dd3e0 */
 void sv_ButtonRow(int f, int y, int *out, int n, ...); int sv_CheckGoodAmount(); int sv_Unk525220(); int sv_ClosePlayerBar();
 struct GCLOCK;
 int gm_ConvertMoney(int a, unsigned char k); int gm_PlayerFactor(int a, unsigned char k); int gm_BathObjectCount();
-int gm_Unk50cfd0(); int gm_Unk50d0b0(); int ai_Unk5741d0(); int ai_Unk4a7140();
+int gm_CurseObjectCount(); int gm_Unk50d0b0(); int ai_Unk5741d0(); int ai_Unk4a7140();
 int ai_Unk4a74e0(); int gm_BuildingSkill(); float ai_NormalizeEffectScale(float x);
 
-int ai_CurseWindow(int param_1)
+#pragma pack(push, 2)
+typedef struct CURSETIME {              /* the 14 bytes of ai.h's AITIME (ai_Time is char[] here) */
+    int a;
+    int b;
+    int c;
+    short d;
+} CURSETIME;
+#pragma pack(pop)
+
+typedef struct CURSEMSG {               /* 0xf8 bytes, ai.h's AIMSG (the long message cm_SendLongMessage sends) */
+    int unk00;
+    unsigned char type;                 /* +0x04 */
+    char pad05[3];
+    int to;                             /* +0x08, the net id of the sender (the message goes to the player's group) */
+    int fromId;                         /* +0x0c */
+    char pad10[0x18];
+    CURSETIME time;                     /* +0x28 */
+    unsigned char flags;                /* +0x36 */
+    char pad37;
+    int ids[8];                         /* +0x38 */
+    int arg[11];                        /* +0x58 */
+    char pad84[0x74];
+} CURSEMSG;
+
+#pragma pack(push, 1)
+typedef struct CURSEBLD {               /* the building record: only the owner */
+    char pad00[0x27];
+    unsigned short owner;               /* +0x27 */
+} CURSEBLD;
+#pragma pack(pop)
+
+void ai_CurseWindow(int building)
 {
-    return 0;
+    char text[0x200];
+    char name[100];
+    CURSEMSG msg;
+    AMOUNTCFG cfg;                      /* the config of the amount menu */
+    int ids[2];                         /* the two buttons */
+    int slider, form;
+    AICHARVIEW *target;
+    int limit, v;
+
+    if (((AICHARVIEW *)(ai_Chars + ai_PlayerId * 0x21c))->flags1cc & 0x10) {
+        snd_PlayVoice(-7, 0, "RAUSWURF", -1);
+        sv_MessageBoxGreen((int)txt_Ptrs[0x41c1], (int)txt_Ptrs[0x41c2], 0);
+        return;
+    }
+    memset(&cfg, 0, sizeof(cfg));
+    memset(cfg.ids, 0xff, sizeof(cfg.ids));
+    cfg.flags = 1;
+    cfg.mode = 0x400;
+    cfg.kind = 6;
+    cfg.filter = gypsyFilter;
+    target = (AICHARVIEW *)ai_AmountMenu((int)&cfg, (int)txt_Ptrs[0x41c3], 0, 0);
+    if (target == 0) {
+        sv_CameraFollow();
+        return;
+    }
+    form = d2_OpenForm(0, 0, "Locations\\zigeuner\\blutrache");
+    d2_SetPointerSprite(0, 0);
+    d2_CentreViewWindows(form);
+    d2_SetForm(form, 0);
+    sv_FitForm(d2_LastWindow);
+    d2_SetForm(form, 2);
+    slider = d2_WinOpenSlider(0x57, 7, 200, 0, 100, 0x7b, 2, d2_LastWindow);
+    d2_SetObjValue5(slider, 0, 5, 0, 1);
+    d2_SetList(slider, 6, txt_Ptrs[0x41ca], txt_Ptrs[0x41cb], txt_Ptrs[0x41cc], txt_Ptrs[0x41cd], txt_Ptrs[0x41ce],
+               txt_Ptrs[0x41cf]);
+    d2_SetForm(form, 3);
+    sv_ButtonRow(d2_LastWindow, 0, ids, 2, txt_Ptrs[0x41d4], txt_Ptrs[0x41d5]);
+    do {
+        limit = gm_CurseObjectCount((struct AIBLD *)building) - 1;
+        v = d2_GetObjValue(slider);
+        if (v >= limit)
+            v = limit;
+        d2_SetObjValue5(slider, 0, limit, v, 1);
+        txt_Format(text, v + 0x41d0, target->id);
+        d2_SetForm(form, 1);
+        io_PrintText("$C");
+        io_PrintText((char *)0x41d6, 0x41c1, v + 0x41c4, text);
+        if (ai_PlayerId != ((CURSEBLD *)building)->owner)
+            io_PrintText((char *)0x41d7, (v > 1 ? v : 1) * 32000);
+        if (dm_L.rup != 0) {
+            sv_PopRequest = 1;
+        } else if (d2_ClickedId != -1) {
+            if (d2_PointerObj == ids[0]) {
+                if (sv_CheckGoodAmount(ai_Chars + ai_PlayerId * 0x21c, v, ai_OwnPlayer) != 0) {
+                    cm_SendSetField(((AICHARVIEW *)(ai_Chars + ai_PlayerId * 0x21c))->netId, 0x1cc, 4, 0x10, 0);
+                    if (ai_PlayerId != ((CURSEBLD *)building)->owner)
+                        cm_SendMoveGoodsUnchecked(-1, ((AICHARVIEW *)(ai_Chars + ai_PlayerId * 0x21c))->netId, ai_OwnPlayer,
+                                                  (v > 1 ? v : 1) * 32000);
+                    memset(&msg, 0, sizeof(msg));
+                    msg.type = 0x9d;
+                    msg.fromId = -1;
+                    msg.flags = 2;
+                    msg.arg[0] = v;
+                    msg.to = ((AICHARVIEW *)(ai_Chars + ai_PlayerId * 0x21c))->netId;
+                    memcpy(&msg.time, ai_Time, sizeof(CURSETIME));
+                    msg.arg[2] = target->netId;
+                    cm_SendLongMessage((char *)&msg);
+                    txt_Format(text, 0x41da, 0x41c1);
+                    sprintf(name, "_WAHRSAGERIN_FLUCH_0%d", v);
+                    snd_PlayVoice(-7, 0, name, -1);
+                    sv_MessageBox((int)text, 0);
+                    sv_PopRequest = 1;
+                }
+            } else if (d2_PointerObj == ids[1]) {
+                sv_PopRequest = 1;
+            }
+        }
+    } while (sv_RunFrame((int)ai_CurseWindow, 0x677c7) != 0);
+    d2_CloseView(form);
+    sv_CameraFollow();
 }

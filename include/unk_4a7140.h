@@ -162,7 +162,7 @@ unsigned int ai_Unk4a61d0(AIPER *p, unsigned int a, unsigned int fl, float lo, f
 int ai_Unk4ab3e0(int a, AIPER *p, int c, unsigned char *m, unsigned char *m2);  /* 0x4ab3e0 */
 void ai_GypsyDeliveryText(AIPER *o, int n, AIPER **who);                                 /* 0x5a9470 */
 int ai_Unk4ab6b0(AIPER *p, unsigned char *m, unsigned char *m2);                 /* 0x4ab6b0 */
-int gm_Unk50cfd0(AIBLD *b);                                                      /* 0x50cfd0 */
+int gm_CurseObjectCount(AIBLD *b);                                                      /* 0x50cfd0 */
 int ai_Unk4ab7f0(int a, AIPER *p, int c, unsigned char *m);                     /* 0x4ab7f0 */
 int ai_Unk4ab9f0(AIPER *p, unsigned char *m);                                    /* 0x4ab9f0 */
 int ai_Unk5741d0(AIBLD *b);                                                      /* 0x5741d0 */

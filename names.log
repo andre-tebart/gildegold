@@ -29,3 +29,4 @@
 2026-10-30T00:01:09 0x005be3b0 func ai_Unk5be3b0 -> ai_AmountRow by:main why:0x5be3b0 draws one row of the special-amount list at (x, y): control, icon, texts, slider (its own header comment)
 2026-10-30T00:01:21 0x005a9470 func ai_Unk5a9470 -> ai_GypsyDeliveryText by:main why:0x5a9470 is the gypsy delivery text (its own header comment); the blood revenge window calls it with the chosen records
 2026-10-30T00:01:33 0x0050cf60 func gm_Unk50cf60 -> gm_BathObjectCount by:main why:0x50cf60 returns the number of the kitchen / bath objects (0x27a, 0x27b, 0x292) the building has, plus 1 (its own header comment)
+2026-10-30T00:08:10 0x0050cfd0 func gm_Unk50cfd0 -> gm_CurseObjectCount by:main why:0x50cfd0 counts 2 + the objects 0x274 / 0x27e / 0x28e / 0x291 of the building (its own body); its only caller, the curse window 0x5d8c90, takes count - 1 as the maximum of the curse strength slider

@@ -101,6 +101,24 @@ void d2_SetLabel(int id, char *s);                         /* 0x46bc70, d2.h: se
 void d2_SetList(int id, int n, ...);                       /* 0x46bca0, d2.h: sets the widget's "a|b|c|" item list */
 void d2_SetSliderFlags(int id, int flags);                 /* 0x46bdd0, d2.h: sets the slider's flags */
 void d2_SetObjValue();                                     /* 0x475cb0, d2.h (K&R: d2.c takes a 5th parameter, the call sites push 2, 4 or 5) */
+#define d2_SetObjValue5 ((void (*)(int, int, int, int, int))d2_SetObjValue) /* the 5-argument call of the gypsy windows */
+typedef struct AMOUNTCFG {              /* 0x50 bytes, the config of the special-amount menu ai_AmountMenu (unk_58bbd0.c) */
+    int flags;                          /* +0x00, 1 / 0x20400 / 0x2040a .. (the gypsy windows: 1) */
+    int mode;                           /* +0x04, 0x400 */
+    unsigned __int64 filter;            /* +0x08, 0x1a7fdfbb6 (the gypsy windows), 0x1a07c43a0 (the sabotage) */
+    int kind;                           /* +0x10, 6 */
+    int option14;                       /* +0x14, 2 in the blood revenge window (meaning not derived) */
+    int unk18;                          /* +0x18 */
+    unsigned short ids[16];             /* +0x1c, the character ids the menu leaves out / lists, 0xffff = none */
+    char pad3c[0x14];
+} AMOUNTCFG;
+/* the filter of the gypsy windows: a const object, the original loads it from .rdata 0x5eed68 (mov eax,[..]; mov ecx,[..+4]) */
+static const volatile unsigned __int64 gypsyFilter = 0x1a7fdfbb6;
+int d2_WinOpenSlider(int x, int y, int len, int p4, int p5, int pic, unsigned int flags, int win); /* 0x46a960, d2.c: a slider in a window */
+int sv_CheckGoodAmount(char *o, int n, unsigned char t);   /* 0x521040, sv.c: 1 when the character's stock covers n of the good t; @original: the definition takes unsigned, its callers push the good as a byte (no zero extension) */
+void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d); /* 0x4c4830, cm.c */
+int cm_SendLongMessage(char *msg);                         /* 0x4c4b70, cm.c: sends a long (0xf8 bytes) message */
+extern unsigned char ai_OwnPlayer;                         /* 0x6f1bc5, the player's own goods slot */
 #define d2_SetObjValue4 ((void (*)(int, int, int, int))d2_SetObjValue) /* the options screens' 4-argument call (rt.h does the same for its sv_ row) */
 void sv_ButtonRow(int f, int y, int *out, int n, ...); /* 0x52e350, rt.h: a row of n buttons, ids in out[] */
 void ai_ApplyVolumes(void);         /* 0x5d5f10, applies the sound option volumes to the mixer */
@@ -138,9 +156,9 @@ extern int ai_ClickedObject;        /* 0x6f22e4, the object clicked in the scene
 
 /* The windows and game screens the contact listeners open. They are defined below the listeners (see
    the order note in the .c): their bodies must not be visible to the callers, or VC6 drops the calls. */
-int ai_BloodRevengeWindow(int building); /* 0x5d85e0, the gypsy blood revenge window */
+void ai_BloodRevengeWindow(int building); /* 0x5d85e0, the gypsy blood revenge window (no result: every exit ends in a call) */
 int ai_HomageWindow(int building);       /* 0x5d95a0, the "Ehrerbietung" homage window */
-int ai_CurseWindow(int building);        /* 0x5d8c90, the curse window ("_WAHRSAGERIN_FLUCH_0%d") */
+void ai_CurseWindow(int building);       /* 0x5d8c90, the curse window ("_WAHRSAGERIN_FLUCH_0%d"; no result: every exit ends in a call) */
 int ai_CurseTargetWindow(int building);  /* 0x5d90e0, the curse victim / share picker */
 int ai_PokerGame(void);                  /* 0x5da030, the poker game window */
 

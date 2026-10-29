@@ -1,6 +1,6 @@
 /* 0x50cfd0, the same with 0x274 / 0x27e / 0x28e / 0x291 (2 + ..) */
 
-int gm_Unk50cfd0(char *b)
+int gm_CurseObjectCount(char *b)
 {
     int n;
 

@@ -29,11 +29,11 @@ typedef struct D2PICVIEW {              /* 0x54 bytes, d2.h's D2PIC: only the si
 } D2PICVIEW;
 extern D2PICVIEW *d2_Pics;              /* 0x6ed918, d2.h: D2PIC * */
 
-int ai_BloodRevengeWindow(int building)
+void ai_BloodRevengeWindow(int building)
 {
     char msg[0x800];
     GYPSYROW rows[5];
-    int cfg[0x14];                      /* the config of the amount menu */
+    AMOUNTCFG cfg;                      /* the config of the amount menu */
     int sel[9];                         /* 0 .. 4 the net id of the record in each row (-1 empty), 5 .. 8 the chosen records */
     int ids[2];                         /* the two buttons the row of buttons creates */
     int tick, refresh, form, total;
@@ -50,8 +50,10 @@ int ai_BloodRevengeWindow(int building)
     refresh = 1;
     total = 0;
     tick = 0;
-    if (((AICHARVIEW *)(ai_Chars + ai_PlayerId * 0x21c))->flags1cc & 8)
-        return sv_MessageBoxGreen((int)txt_Ptrs[0x41b2], (int)txt_Ptrs[0x41b3], 0);
+    if (((AICHARVIEW *)(ai_Chars + ai_PlayerId * 0x21c))->flags1cc & 8) {
+        sv_MessageBoxGreen((int)txt_Ptrs[0x41b2], (int)txt_Ptrs[0x41b3], 0);
+        return;
+    }
     form = d2_OpenForm(0, 0, "Locations\\zigeuner\\blutrache");
     d2_SetPointerSprite(0, 0);
     d2_CentreViewWindows(form);
@@ -148,21 +150,20 @@ int ai_BloodRevengeWindow(int building)
                     break;
             }
             if (i < 5) {
-                memset(cfg, 0, sizeof(cfg));
-                idp = (unsigned short *)&cfg[7];
+                memset(&cfg, 0, sizeof(cfg));
+                idp = cfg.ids;
                 for (k = 0; k < 5; k++) {
                     if (k != i) {
                         *idp = rows[k].rec != 0 ? rows[k].rec->id : 0xffff;
                         idp++;
                     }
                 }
-                cfg[2] = 0xa7fdfbb6;
-                cfg[3] = 1;
-                cfg[0] = 1;
-                cfg[1] = 0x400;
-                cfg[4] = 6;
-                cfg[5] = 2;
-                rows[i].rec = (AICHARVIEW *)ai_AmountMenu((int)cfg, (int)txt_Ptrs[0x41b4 + (i != 0)], 0, 0);
+                cfg.filter = gypsyFilter;
+                cfg.flags = 1;
+                cfg.mode = 0x400;
+                cfg.kind = 6;
+                cfg.option14 = 2;
+                rows[i].rec = (AICHARVIEW *)ai_AmountMenu((int)&cfg, (int)txt_Ptrs[0x41b4 + (i != 0)], 0, 0);
                 if (rows[i].rec != 0)
                     sel[i] = rows[i].rec->netId;
                 else
