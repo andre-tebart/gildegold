@@ -207,7 +207,7 @@ extern int ai_ClickedObject;        /* 0x6f22e4, the object clicked in the scene
 /* The windows and game screens the contact listeners open. They are defined below the listeners (see
    the order note in the .c): their bodies must not be visible to the callers, or VC6 drops the calls. */
 void ai_BloodRevengeWindow(int building); /* 0x5d85e0, the gypsy blood revenge window (no result: every exit ends in a call) */
-int ai_HomageWindow(int building);       /* 0x5d95a0, the "Ehrerbietung" homage window */
+void ai_HomageWindow(int building);      /* 0x5d95a0, the "Ehrerbietung" homage window (no result: every exit ends in a call) */
 void ai_CurseWindow(int building);       /* 0x5d8c90, the curse window ("_WAHRSAGERIN_FLUCH_0%d"; no result: every exit ends in a call) */
 void ai_CurseTargetWindow(int building); /* 0x5d90e0, the curse victim / share picker (no result: every exit ends in a call) */
 int ai_PokerGame(void);                  /* 0x5da030, the poker game window */
