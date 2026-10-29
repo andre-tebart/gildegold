@@ -25,6 +25,14 @@ tags.
   (61/256); the differences are the prologue / loop shape.
 
 ## Open work
+- **match-base 2026-10-30 left for the deep queue** (bodies written, all readable; asmdiff hunks left):
+  0x5d5fd0 ai_OptionsGfxScreen (6 ins: the original stores the obj8 result at once and reads dd_Has1024x768 into al, ours
+  keeps eax live; ids[4] fixes the frame), 0x5d6950 ai_OptionsGameScreen is shape (2 bytes: two stack-held control id
+  slots swapped), 0x5d8c90 ai_CurseWindow (4 ins: the last word store of the time copy sits after the push of the message
+  pointer in the original), 0x5d90e0 ai_CurseTargetWindow (one 28-ins FPU hunk: the original stores the first
+  gm_MinutesBetween result as an int and does `fild a; fidiv b`, ours converts early and spills a float; plus the 4-byte slot
+  shift from the float local), 0x5d95a0 ai_HomageWindow (6 ins: constant loads / the hoisted `push 0` around the two inline
+  memsets), 0x5d85e0 ai_BloodRevengeWindow (250 ins: constant hoisting, the original keeps 1 / 0 in ebx / esi and form in edi).
 - Every game-code function of the unit is drafted (0x5d33b0 .. 0x5dd100, 63 functions, contiguous; the
   ledger reports no undrafted byte inside the unit).
 - **The 0x5dd3e0 .. 0x5de450 data tail**: not code (a registration table); the ledger cannot claim it
@@ -643,3 +651,34 @@ argument, 0x527a50 / 0x528094 / 0x5280d7 use `fild` for the float comparisons. s
 the int to d3t_PlaceObject(V) and casts at the two float uses. Reading it as float gave the denormal 4.2e-44,
 i.e. a camera step of 0; the tutorial's camera focus then never moved. The header comment no longer calls it
 a type debt.
+
+## match-base 2026-10-30
+
+- **0x5d6580 ai_OptionsSfxScreen -> byte + readable** at the first build: the sound screen is the twin of the graphics screen
+  (five controls of the view 1, the ids copied out of the button row, the live preview with `fSfx * fMaster` and the one-shot
+  sample "NeuesUpgrade_s" of the system bank). 0x5d5fd0 / 0x5d6950 are the same family: `form = d2_OpenForm`, the controls
+  `d2_GetWinObj (form, 1, k)`, per control `d2_SetObjValue (4 args) / d2_SetSliderFlags / d2_SetLabel / d2_SetList`, the text
+  slots `txt_Ptrs[(addr - 0x143a1c0) / 4]` (labels 0x1c67 ..).
+- **Locals live in reverse declaration order**: the lowest stack slot is the last declared local (msg buffers declared first,
+  scalars last). That got the frames of 0x5d85e0 / 0x5d8c90 / 0x5d95a0 right at once. `int ids[4]` instead of `[2]` fixed the
+  frame of 0x5d5fd0 (the original keeps the ids and their copies in 4 slots); `okId = ids[0]; cancelId = ids[1]` is the copy
+  the original does between the button row and the pump.
+- **The amount menu config (AMOUNTCFG, 0x50 B, include/unk_5d33b0.h)**: the 64-bit filter 0x1a7fdfbb6 at +8 is loaded by the
+  original from .rdata (0x5eed68, two dword loads) - a `static const unsigned __int64` is folded by VC6, a
+  `static const volatile unsigned __int64` (gypsyFilter) is loaded like the original. The `unsigned char` third parameter
+  of sv_CheckGoodAmount (the original pushes the byte without zero extension) is an @original prototype.
+- **Windows are void**: every exit of the gypsy windows ends in a call (tail jmp to sv_CameraFollow, or the green box), no
+  result is set. ai_BloodRevengeWindow / ai_CurseWindow / ai_CurseTargetWindow / ai_HomageWindow are `void` now.
+- **Types**: GAMECLOCK (14 B, ai.h AITIME; `ai_Time` is `char[]` here, copied with memcpy, which VC6 inlines as the original's
+  dword / word moves), CURSEMSG (the 0xf8 B long message), CURSEBLD (type, id +1, owner +0x27), CURSEEVENT (the 0xa0 event:
+  from +0x44, due +0x52, done +0x70, victim +0xac), D2OBJVIEW +0x50 greyed / +0x2e8 owner, AICHARVIEW +0x166 officeKind,
+  GYPSYROW (the 0x38 B list row ai_AmountRow fills; rec +0, control +4, x +0x10, y +0x14).
+- **Derived**: the blood revenge window prices the rows by `amt_GetKindLevel (officeKind) / 3 + 2`, refreshes every 0x8c ms and
+  drops records that are free / changed; the curse target window schedules the curse for hour 21 + random 0 / 1 of the
+  next day and shows the share as the minutes elapsed over the minutes to the due time. Reasoned guess: AMOUNTCFG.option14
+  (2 in the blood revenge window) has no derived meaning.
+- **Renames**: sv_Unk52e350 -> sv_ButtonRow, sv_Unk5223c0 -> sv_DestroyScreen, sv_Unk522040 -> sv_PanelImage, sv_Unk521e70 ->
+  sv_BuildScreenLayout, full_data_6f25a4 -> main_ScreenRestart (int), ai_Unk6f2358 -> sv_ScreenDirty (int), full_data_6f2400 ->
+  snd_SystemBank (int), ai_Unk5be1d0 -> ai_AmountRowStatus, ai_Unk5be3b0 -> ai_AmountRow, ai_Unk5a9470 -> ai_GypsyDeliveryText,
+  gm_Unk50cf60 -> gm_BathObjectCount, gm_Unk50cfd0 -> gm_CurseObjectCount, gm_Unk50d0b0 -> gm_CurseTargetCount, ai_Unk5741d0 ->
+  ai_FindCurseEvent (the gm_CurseObjectCount / gm_CurseTargetCount / ai_FindCurseEvent names rest on the single caller: reasoned).

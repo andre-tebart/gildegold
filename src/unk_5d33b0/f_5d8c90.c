@@ -13,8 +13,8 @@
 /* batch 3: the gypsy / poker / particle stretch 0x5d8c90 .. 0x5dd3e0 */
 void sv_ButtonRow(int f, int y, int *out, int n, ...); int sv_CheckGoodAmount(); int sv_Unk525220(); int sv_ClosePlayerBar();
 struct GCLOCK;
-int gm_ConvertMoney(int a, unsigned char k); int gm_PlayerFactor(int a, unsigned char k); int gm_BathObjectCount();
-int gm_CurseObjectCount(); int gm_CurseTargetCount(); int ai_FindCurseEvent(); int ai_Unk4a7140();
+int gm_ConvertMoney(int a, unsigned char k); int gm_PlayerFactor(int a, unsigned char k);
+int ai_Unk4a7140();
 int ai_Unk4a74e0(); int gm_BuildingSkill(); float ai_NormalizeEffectScale(float x);
 
 void ai_CurseWindow(int building)

@@ -441,3 +441,9 @@ Migrated from the notes/tus.md table on 2026-10-23 (the row's prose, unchanged):
   - amt_GetOwnedOfficePay (0x4ea990): the decision record is **9 ints** (gv_GetTableRecord copies 9) and the pay
     rate index is `buf[6]`, not `buf[0]` (the draft read buf[0] out of an 8-int buffer): `int buf[9]; int pay;
     pay = (int)amt_Pay[buf[6]];` byte-matched at once (the frame 0x24 -> 0x2c, 4/112 bytes differ at session start).
+
+## match-base 2026-10-30
+
+- amt_ExecuteShareMessage (0x4e9a00) byte + readable: the two `cmp word ptr [..], -1` were `(unsigned short)q[-0x5b] != 0xffff`
+  (the record id is unsigned); that also removed the second epilogue. The money call goes through the f3gm thunk
+  gm_SendMoneyDelta (0x50cc50, a forwarder to cm_SendMoneyDelta): the original's site refers to the thunk (check M8).

@@ -161,7 +161,8 @@ struct AITIME;
 void gm_AddTime(struct GCLOCK *c, int hours, int mins, int secs);   /* 0x4fe140, f3gm.c: adds hours / minutes / seconds to the clock */
 int gm_MinutesBetween(struct AITIME *a, struct AITIME *b);          /* 0x4fe280, f3gm.c: the minutes from clock a to clock b */
 int ai_FindCurseEvent(struct AIBLD *b);                              /* 0x5741d0, he.c: the pending curse event of the building (as unk_4a7140.h) */
-int gm_CurseTargetCount(char *b);                                    /* 0x50d0b0, f3gm.c: counts from the objects 0x284 / 0x289 of the building */
+int gm_CurseObjectCount(struct AIBLD *b);                            /* 0x50cfd0, f3gm.c: 2 + the objects 0x274 / 0x27e / 0x28e / 0x291 of the building (as unk_4a7140.h) */
+int gm_CurseTargetCount(char *b);                                   /* 0x50d0b0, f3gm.c: counts from the objects 0x284 / 0x289 of the building */
 /* the filter of the gypsy windows: a const object, the original loads it from .rdata 0x5eed68 (mov eax,[..]; mov ecx,[..+4]) */
 static const volatile unsigned __int64 gypsyFilter = 0x1a7fdfbb6;
 int d2_WinOpenSlider(int x, int y, int len, int p4, int p5, int pic, unsigned int flags, int win); /* 0x46a960, d2.c: a slider in a window */
