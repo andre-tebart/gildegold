@@ -8,7 +8,7 @@ void main_Unk532700(int name, int net)
     d3if_SelectScene(0, 0);
     d3if_Reset();
     init_InitTown(name);
-    crt_Sprintf(path, net == 0 ? "%s/%s.CTY" : "%s/%s.NET", "gamedata/cities", name);
+    sprintf(path, net == 0 ? "%s/%s.CTY" : "%s/%s.NET", "gamedata/cities", name);
     U_I((unsigned)&ai_Time) = 0;
     *(unsigned short *)(unsigned)&ai_TimeHour = 6;
     *(unsigned short *)((unsigned)&ai_Time + 0x6) = 0;

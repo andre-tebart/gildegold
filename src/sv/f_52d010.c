@@ -14,7 +14,7 @@ void sv_Unk52d010(char *part)
         if (b == 0)
             return;
     }
-    if (ai_Unk5de6b0(part, (char *)(unsigned)"gate") == 0)
+    if (strstr(part, (char *)(unsigned)"gate") == 0)
         return;
     strcpy(name, part + 0x10);
     lst = SV_I((unsigned)&ai_FallbackBuilding) != 0 ? 6 : 2;

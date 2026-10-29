@@ -1,5 +1,8 @@
 /* 0x490c10, registers three actions */
 
+extern char ai_SeanceDecideStub[];  /* 0x52a040, the ICF-folded return-0 stub (sv_ReturnZero) */
+extern char ai_SeanceExecStub[];    /* 0x52a040, the same stub */
+
 int ai_Unk490c10(int a)
 {
     AIACT act;
@@ -26,8 +29,8 @@ int ai_Unk490c10(int a)
     act.id = 0x3f;
     strcpy(act.name, "Use Seance");
     act.eval = ai_Unk4a49a0;
-    act.decide = ai_SeanceDecide;
-    act.exec = ai_SeanceExec;
+    act.decide = (void *)ai_SeanceDecideStub;
+    act.exec = (void *)ai_SeanceExecStub;
     act.flags = 1;
     return ai_Unk495520(&act, a) != 0;
 }

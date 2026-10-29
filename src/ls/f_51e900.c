@@ -42,7 +42,7 @@ int unk_Unk51e900(int f)
             d3if_SelectScene(uni, 1);
             name = obj + 0x130;
             sprintf(buf, "%s_%s", obj + 0x170, name);
-            if (ai_Unk5de6b0(buf, "hozfaeller") != 0)
+            if (strstr(buf, "hozfaeller") != 0)
                 sprintf(buf, "holzfaeller_%s", name);
             sprintf(file, "*%s.bgf", buf);
             _strupr(file);

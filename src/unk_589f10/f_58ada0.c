@@ -27,7 +27,7 @@ void ai_Unk58ada0(void)
         u = (char *)U_I(((unsigned)&ai_Unk143a610 + 0x4));
         if ((char)p[4] != 0)
             u = (char *)U_I((unsigned)&full_data_143a63c);
-        crt_Sprintf(text, (char *)(unsigned)&full_data_62aab4, u, (char *)p + 0x12, (char *)p + 0x22);
+        sprintf(text, (char *)(unsigned)&full_data_62aab4, u, (char *)p + 0x12, (char *)p + 0x22);
         if (p[1] != 0)
             strcat(text, (char *)U_I((unsigned)&full_data_144abf4));
         n = id * 0x2ec;

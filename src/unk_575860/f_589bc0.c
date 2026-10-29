@@ -16,7 +16,7 @@ void ai_Unk589bc0(void)
     sv_RunFrame(0, U_I((unsigned)&sv_FrameMask));
     n = U_I((unsigned)&full_data_6f2674);
     U_I((unsigned)&full_data_6f2674) = n + 1;
-    crt_Sprintf(name, (char *)(unsigned)&full_data_62aa58, n);
+    sprintf(name, (char *)(unsigned)&full_data_62aa58, n);
     img = (char *)mem_Alloc(*(short *)(unsigned)&d2_ScreenW * *(short *)(unsigned)&d2_ScreenH * 3, (char *)(unsigned)&full_data_62aa4c);
     dd_Lock();
     d2_Convert16ToRgb(0, 0, *(short *)(unsigned)&d2_ScreenW, *(short *)(unsigned)&d2_ScreenH, U_I((unsigned)&dd_Surface), 0, 0, img);

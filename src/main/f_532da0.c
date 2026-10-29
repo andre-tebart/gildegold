@@ -65,7 +65,7 @@ int main_Unk532da0(int host)
                             k++;
                         } while (c != 0);
                     } else {
-                        crt_Sprintf(path, "Gamedata\\network\\%s.SAV", r + 0x3a);
+                        sprintf(path, "Gamedata\\network\\%s.SAV", r + 0x3a);
                         h = vfs_Tfopen(path, (char *)(unsigned)"rb", U_I((unsigned)&d3_Unk6333fc));
                         if (h == 0) {
                             ok = 0;
@@ -91,8 +91,8 @@ int main_Unk532da0(int host)
                     if (ok == 0) {
                         ent[i][0] = -1;
                     } else {
-                        ai_Unk5ea986(names[i]);
-                        crt_Sprintf(key, "_STADTWAPPEN_%s", names[i]);
+                        _strupr(names[i]);
+                        sprintf(key, "_STADTWAPPEN_%s", names[i]);
                         h = d2_FindPic(key);
                         if (h == -1)
                             h = d2_FindPic("_STADTWAPPEN_BERLIN");
@@ -153,7 +153,7 @@ int main_Unk532da0(int host)
                                 k++;
                             } while (c != 0);
                             U_I((unsigned)&ai_GameFlags) |= 0x40;
-                            crt_Sprintf(path, "Gamedata\\network\\%s.SAV", (char *)(unsigned)&full_data_75e360);
+                            sprintf(path, "Gamedata\\network\\%s.SAV", (char *)(unsigned)&full_data_75e360);
                             memset(hdr, 0, 0xfc);
                             h = vfs_Tfopen(path, (char *)(unsigned)"rb", U_I((unsigned)&d3_Unk6333fc));
                             if (h != 0) {

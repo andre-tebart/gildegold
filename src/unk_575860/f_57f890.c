@@ -13,7 +13,7 @@
    +0x14 = the width / 2, 0x4760b0 (0x54); the globals 0x925114 / 18 / 1c / 08 / 0c / 10 updated */
 
 float unk_Unk4eef50(); void unk_Unk4ef170(char *o, unsigned *a, unsigned *b); int unk_Unk4ef090(); float ai_GetDefaultEffectScale();
-int ai_Unk5de518(); float ai_Unk57fdb0(); int d2_CreateWinText(); void d2_SetObjFont();  /* @original: the call at 4110 passes 1 argument to d2.h's 4-parameter prototype */
+int _ftol(); float ai_Unk57fdb0(); int d2_CreateWinText(); void d2_SetObjFont();  /* @original: the call at 4110 passes 1 argument to d2.h's 4-parameter prototype */
 void txt_Format(char *out, int id0, ...); int gm_Unk509ee0(char *c, char p);
 
 void ai_Unk57f890(char *rec, char *sc, char *run)
@@ -54,8 +54,8 @@ void ai_Unk57f890(char *rec, char *sc, char *run)
     d2_SetObjEnabled(*(int *)(sc + 0xbc), (~*(unsigned int *)(run + 4) >> 1) & 1);
     d2_SetObjValue(*(int *)(sc + 0xa8), 0, 100, (int)ai_GetDefaultEffectScale(1));
     ai_Unk57fdb0(sc, 1);
-    d2_SetObjValue(*(int *)(sc + 0xac), 0, 100, (int)ai_Unk5de518());
-    d2_SetObjValue(*(int *)(sc + 0xc4), 0, 100, (int)ai_Unk5de518());
+    d2_SetObjValue(*(int *)(sc + 0xac), 0, 100, (int)_ftol());
+    d2_SetObjValue(*(int *)(sc + 0xc4), 0, 100, (int)_ftol());
     d2_SetForm(*(int *)(sc + 0xc0), 2);
     io_PrintText((char *)(unsigned)"$C");
     m = d2_CreateWinText(0, 0xf, (char *)U_I((unsigned)&full_data_144a360), U_I((unsigned)&d2_LastWindow));

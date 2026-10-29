@@ -177,7 +177,7 @@ int ai_CameraStep = 50;  /* 0x623814, the camera move step, 100 - camera speed; 
 SCREENMODE ai_ScreenModes[3] = { { 800, 600 }, { 1024, 768 }, { 1152, 864 } };  /* 0x62d7b8, the 640 / 800 / 1024 modes */
 int ai_ScreenModeW = 800;  /* 0x62d7d0, the width of the mode ai_GfxResolution picks */
 int ai_ScreenModeH = 600;  /* 0x62d7d4, its height */
-int crt_Itoa(int value, char *buf, int base); /* 0x5e56c4, the library's integer to text (base 10 here) */
+char *_itoa(int value, char *buf, int base); /* 0x5e56c4, the library's integer to text (base 10 here) */
 
 void ai_FillSaveSlots(int view, int form, SAVESLOTVIEW *slots, char *files, char *dir, int reserved)
 {
@@ -242,7 +242,7 @@ void ai_FillSaveSlots(int view, int form, SAVESLOTVIEW *slots, char *files, char
         d2_CreateChildWindow(0xa4, 0x12, d2_LastWindowPtr->w - 0xb0, 0x6e, 0x10, d2_LastWindow);
         d2_Wins[d2_LastWindow].font = 0x54;
         d2_Wins[d2_LastWindow].mt = 0;
-        crt_Sprintf(timebuf, "%i%c", hdr.money, 0x11);
+        sprintf(timebuf, "%i%c", hdr.money, 0x11);
         io_PrintText(0x1cc5, hdr.player, hdr.year + 0x578, hdr.hour, hdr.minute % 0x3c);
         io_PrintText(0x1cc6,
                      (hdr.compactTexts ? 10 : 0) + 0x114 + hdr.traitTextOffset,
@@ -257,7 +257,7 @@ void ai_FillSaveSlots(int view, int form, SAVESLOTVIEW *slots, char *files, char
         if (slots[i].win != -1)
             continue;
         memset(&req, 0, 0x210);
-        crt_Sprintf(req.name, ai_EmptySlotNameFormat, i);
+        sprintf(req.name, ai_EmptySlotNameFormat, i);
         slot = ai_RegisterSaveSlot(0x10, (int)slots, i, &req);
         if (slot == -1)
             continue;

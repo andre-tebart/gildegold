@@ -9,7 +9,7 @@ void ai_Unk5a92b0(void)
     unsigned short v;
 
     v = (unsigned short)util_Random(2);
-    crt_Sprintf(local, (char *)(unsigned)&full_data_62c2dc, v + 0x12);
+    sprintf(local, (char *)(unsigned)&full_data_62c2dc, v + 0x12);
     txt_Format((char *)(unsigned)&full_data_6f26c8, v + 0x20cd);
     p = (int *)(unsigned)&ai_CharInts;
     do {

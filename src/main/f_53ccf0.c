@@ -1,7 +1,7 @@
 /* 0x53ccf0, the program entry (WinMain: instance, previous, command line, show): reads game.INI (Network / Gfx / Sound / General), parses the command line (STADT=" BERUF=" IP=" PORT=" MO_MONEY FULLSCREEN DIRECTWINDOW), starts the engine
    (0x5324f0 / 0x531ba0 / 0x531c50 / 0x532160), then the game loop 0x53bb20 until the game ends (ROUGH) */
 
-int main_Unk53ccf0(HMODULE hInst, int prev, char *cmd, int show)
+int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, char *cmd, int show)
 {
     char mode;
     int net = 0;
@@ -43,18 +43,18 @@ int main_Unk53ccf0(HMODULE hInst, int prev, char *cmd, int show)
     } while (*p != 0);
     p = strrchr((char *)((unsigned)&ls_SavePath + 0x160), 0x5c);
     *p = 0;
-    ai_Unk5ea986(cmd);
+    _strupr(cmd);
     U_I((unsigned)&full_data_6f242c) = GetPrivateProfileIntA("Gfx", "TextureDivider", 0, (char *)(unsigned)&ai_OptionsFile);
     U_I((unsigned)&snd_MusicEnabled) = GetPrivateProfileIntA("Sound", "msx", 0, (char *)(unsigned)&ai_OptionsFile);
     U_I((unsigned)&full_data_624584) = GetPrivateProfileIntA("Sound", "ambient", 0, (char *)(unsigned)&ai_OptionsFile);
     snd_SfxEnabled = GetPrivateProfileIntA("Sound", "sfx", 0, (char *)(unsigned)&ai_OptionsFile);
     U_I((unsigned)&full_data_6f2580) = GetPrivateProfileIntA("Sound", "weather", 1, (char *)(unsigned)&ai_OptionsFile);
     GetPrivateProfileStringA("General", "Bildmodus", "FULLSCREEN", bm, 0x100, (char *)(unsigned)&ai_OptionsFile);
-    ai_Unk5ea986(bm);
+    _strupr(bm);
     mode = (strcmp(bm, "DIRECTWINDOW") != 0) * 2 + 1;
-    if (ai_Unk5de6b0(cmd, "DIRECTWINDOW") != 0)
+    if (strstr(cmd, "DIRECTWINDOW") != 0)
         mode = 1;
-    if (ai_Unk5de6b0(cmd, "FULLSCREEN") != 0)
+    if (strstr(cmd, "FULLSCREEN") != 0)
         mode = 3;
     GetPrivateProfileStringA("General", "GfxPath", "\\project\\gfx\\", (char *)(unsigned)&main_GfxPath, 0x104, (char *)(unsigned)&ai_OptionsFile);
     GetPrivateProfileStringA("General", "GamePath", "\\project\\game\\", (char *)(unsigned)&full_data_624690, 0x104, (char *)(unsigned)&ai_OptionsFile);
@@ -67,38 +67,38 @@ int main_Unk53ccf0(HMODULE hInst, int prev, char *cmd, int show)
     U_I((unsigned)&ai_ScreenModeW) = U_I((unsigned)&ai_ScreenModes + k);
     U_I((unsigned)&ai_ScreenModeH) = U_I(((unsigned)&ai_ScreenModes + 0x4) + k);
     *(char *)(unsigned)&ai_GfxResolution = (char)res;
-    if (ai_Unk5de6b0(cmd, "MO_MONEY") != 0)
+    if (strstr(cmd, "MO_MONEY") != 0)
         U_I((unsigned)&main_MoneyCheat) = 1;
     GetPrivateProfileStringA("General", "Stadt", "Augsburg", (char *)((unsigned)&ai_DataPath + 0x220), 0x40, (char *)(unsigned)&ai_OptionsFile);
     GetPrivateProfileStringA("Network", "Host", "128.0.0.1", (char *)(unsigned)&full_data_75e1c0, 0x80, (char *)(unsigned)&ai_OptionsFile);
     U_I(((unsigned)&ls_SavePath + 0x84)) = GetPrivateProfileIntA("Network", "Port", 0x1d6b, (char *)(unsigned)&ai_OptionsFile);
-    r = ai_Unk5de6b0(cmd, "STADT=\"");
+    r = strstr(cmd, "STADT=\"");
     if (r != 0) {
         s = (char *)(r + 7);
         d = (char *)((unsigned)&ai_DataPath + 0x220);
-        e = (char *)ai_Unk5defb0(s, 0x22);
+        e = (char *)strchr(s, 0x22);
         if (e != 0)
             for (; s < e; s++)
                 *d++ = *s;
         *d = 0;
     }
-    r = ai_Unk5de6b0(cmd, "BERUF=\"");
+    r = strstr(cmd, "BERUF=\"");
     if (r != 0) {
         s = (char *)(r + 7);
         d = (char *)(unsigned)&full_data_6f2470;
-        e = (char *)ai_Unk5defb0(s, 0x22);
+        e = (char *)strchr(s, 0x22);
         if (e != 0)
             for (; s < e; s++)
                 *d++ = *s;
         *d = 0;
     }
-    r = ai_Unk5de6b0(cmd, "IP=\"");
+    r = strstr(cmd, "IP=\"");
     if (r == 0) {
         r = 0;
     } else {
         s = (char *)(r + 4);
         d = (char *)(unsigned)&full_data_75e1c0;
-        e = (char *)ai_Unk5defb0(s, 0x22);
+        e = (char *)strchr(s, 0x22);
         if (e != 0)
             for (; s < e; s++)
                 *d++ = *s;
@@ -106,22 +106,22 @@ int main_Unk53ccf0(HMODULE hInst, int prev, char *cmd, int show)
         r = 1;
         net = 1;
     }
-    i = ai_Unk5de6b0(cmd, "PORT=\"");
+    i = strstr(cmd, "PORT=\"");
     if (i != 0) {
         s = (char *)(i + 6);
         d = num;
-        e = (char *)ai_Unk5defb0(s, 0x22);
+        e = (char *)strchr(s, 0x22);
         if (e != 0 && s < e) {
             k = e - s;
             memcpy(d, s, k);
             d += k;
         }
         *d = 0;
-        U_I(((unsigned)&ls_SavePath + 0x84)) = ai_Unk5df681(num);
+        U_I(((unsigned)&ls_SavePath + 0x84)) = atoi(num);
     }
     i = main_CreateMutex(c224);
     if (i != 0)
-        ai_Unk5de8e8(1);
+        exit(1);
     i = main_Unk5324f0(hInst, show, mode);
     if (i == 0) {
         main_Exit();

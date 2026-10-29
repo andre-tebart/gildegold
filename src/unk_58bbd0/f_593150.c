@@ -7,7 +7,7 @@
    pump 0x5309a0 (this, 0x677c7) */
 
 int ai_StorageWindow(); int ai_Unk5b9f30(); int ai_Unk5bba00(); int gm_BuildKindObjects(char *b);
-int ai_Unk5e56c4();
+char *_itoa(int, char *, int);
 
 int ai_Unk593150(int param_1)
 {
@@ -142,7 +142,7 @@ int ai_Unk593150(int param_1)
                     U_I((unsigned)&full_data_6f5320 + col * 0x58 + 0x54) = b == 0 ? 0 : gm_ListAmount(rec2, b);
                 }
             }
-            ai_Unk5e56c4(cols, a, 10);
+            _itoa(cols, a, 10);
             d2_SetObjText(a[2], a);
             ai_Unk58cc10(win, 2, cols, rec2, 2);
             ai_Unk58d720(param_1, rec2);

@@ -169,7 +169,7 @@ void txt_Format(char *out, int id0, ...); int sv_MessageBox(); void ai_Unk4cd610
 char * ai_Unk4cd5f0(); int d2_SetForm(int view, int n); int d2_GetWinObj(); void d2_SetObjMax();
 void d2_SetObjValue(); void d2_FocusInput(); int d2_GetObjValue(); void d2_EnableObject();
 void ai_Unk4cd6e0(char *text, int v); int ai_Unk4cd510(); void ai_Unk4cd6a0(); void ai_Unk4cd650(int v);
-void ai_Unk4cd7c0(char *p); char * ai_Unk4cd380(int id); void d3io_NoopCallback(); int crt_Sprintf(char *buf, const char *fmt, ...);
+void ai_Unk4cd7c0(char *p); char * ai_Unk4cd380(int id); void d3io_NoopCallback(); int sprintf(char *buf, const char *fmt, ...);
 int cm_GetSlotValue(int h); 
 int ai_Unk58af50(); int ai_Unk58b880();
 

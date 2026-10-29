@@ -14,7 +14,7 @@ void sv_Unk5290f0(unsigned short *p)
     sv_PanelForm = d2_OpenForm(d2_ScreenW - 0x68, 0x106, "panel\\infopanel_personen");
     d2_SetForm(sv_PanelForm, 1);
     if (p == 0 || 1 < ai_Unk6f2334) {
-        crt_Sprintf(text, "%i %s", ai_Unk6f2334, ai_Unk144adb0);
+        sprintf(text, "%i %s", ai_Unk6f2334, ai_Unk144adb0);
         io_PrintText(text);
     } else {
         hp = gm_Opinion(ai_PlayerId, *p);

@@ -88,7 +88,7 @@ void ai_Unk580a90(char *sc)
     d2_SetLabel(*(int *)(sc + 0xac), U_I((unsigned)&full_data_144a33c));
     v = d2_WinOpenSlider(0x96, 0x33, 200, 0, 100, 0x75, 0x4c2, U_I((unsigned)&d2_LastWindow));
     *(int *)(sc + 0xc4) = v;
-    d2_SetObjValue(v, 0, 100, (int)ai_Unk5de518());
+    d2_SetObjValue(v, 0, 100, (int)_ftol());
     d2_SetLabel(*(int *)(sc + 0xc4), U_I((unsigned)&full_data_144a340));
     v = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62a38c);
     *(int *)(sc + 0x74) = v;

@@ -8,7 +8,7 @@ int init_BuildingSceneUniverse();                     /* 0x511e60 */
 int init_ObjectSceneUniverse();                     /* 0x511dc0 */
 int gm_ClockSeason(void *t);           /* 0x4fe350, f3gm.c */                     /* 0x4fe350 */
 struct CHACTION * ch_AddAction(struct CHARACTER *ch, unsigned int type, ...);                   /* 0x40b2f0 */
-char *ai_Unk5de6b0();                   /* 0x5de6b0, strstr (LIBC; as ls.c) */
+char *strstr();                   /* 0x5de6b0, strstr (LIBC; as ls.c) */
 void cm_SendExSetHE(unsigned char k, char *p);                     /* 0x4c4c60 */
 void he_Unk53e1f0();                     /* 0x53e1f0 */
 int cm_AddFieldValue(unsigned char size, unsigned char n, unsigned short field, void *v);                     /* 0x4c3d90 */
@@ -52,7 +52,7 @@ void sv_MoveToGroup(unsigned char *o, short *it, int c, char *g)
     if (old == 0) {
         if (*(int *)(ch + 0x184) != 0 && *(int *)(*(int *)(ch + 0x184) + 0x28) != -1) {
             ev = (int)evt_FindById(*(int *)(*(int *)(ch + 0x184) + 0x28));
-            if (ev != 0 && (ai_Unk5de6b0(ev, "Pause") != 0 || ai_Unk5de6b0(ev, "pause") != 0))
+            if (ev != 0 && (strstr(ev, "Pause") != 0 || strstr(ev, "pause") != 0))
                 evt_Stop((EVTSCRIPT *)ev);
         }
     } else {

@@ -11,7 +11,7 @@
    0x429ab0) and 1; the second entry -> 0x6f22a0 = 1; the pump 0 -> 0x4758f0 (window), the result; 0 (the limit
    reached) -> the text 0x4135 (n, 0x229, o) through 0x5176d0 and 0x521150 (buf, 0), 0; -1 -> 0 */
 
-int unk_Unk4f1d50(unsigned char *o, int *n); int unk_Unk4f1170(); int cm_GetSlotValue(int h); int crt_Sprintf(char *buf, const char *fmt, ...);
+int unk_Unk4f1d50(unsigned char *o, int *n); int unk_Unk4f1170(); int cm_GetSlotValue(int h); int sprintf(char *buf, const char *fmt, ...);
 
 int ai_Unk584b70(char *o, int *ev)
 {
@@ -56,7 +56,7 @@ int ai_Unk584b70(char *o, int *ev)
                         }
                         a = (char *)cm_GetSlotValue(h);
                         if (a != 0) {
-                            crt_Sprintf(line, (char *)(unsigned)&full_data_62a62c, *(int *)(a + 4));
+                            sprintf(line, (char *)(unsigned)&full_data_62a62c, *(int *)(a + 4));
                             evt_RunScriptArgs(evt_Load((char *)(unsigned)&full_data_62a5f8), 1, line);
                         }
                         r = 1;

@@ -8,7 +8,7 @@ void ai_Unk5a9240(int param_1)
 
     v = (unsigned short)util_Random(2);
     if (*(char *)(param_1 + 2) == 6 || *(char *)(param_1 + 2) == 7) {
-        crt_Sprintf(local, (char *)(unsigned)&full_data_62c2c0, v + 3);
+        sprintf(local, (char *)(unsigned)&full_data_62c2c0, v + 3);
         txt_Format((char *)(unsigned)&full_data_6f26c8, v + 0x20ca);
         he_ShowNews(*(int *)(param_1 + 4), -1, (char *)(unsigned)&full_data_6f26c8, 0, 0x600, local);
     }

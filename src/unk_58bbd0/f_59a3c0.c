@@ -18,7 +18,7 @@ void ai_Unk59a3c0(void)
     objs[3] = 0;
     for (city = (char *)((unsigned)&ai_Unk7e422c + 0x8), i = 0; city < (char *)((unsigned)((unsigned)ai_Unk7e422c + 0x5c) + 0x888); city += 0x2f4, i++) {
         objs[i] = ai_Unk59a2c0(city);
-        crt_Sprintf((char *)objs[i], "stadt_%s", city);
+        sprintf((char *)objs[i], "stadt_%s", city);
         sv_RegisterNamePlate(objs[i], city, 0);
     }
     d2_SetPointerSprite(0, 0);

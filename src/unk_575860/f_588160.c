@@ -7,7 +7,7 @@
    idx * 0xe + 0x48f; not the kind 0xa: the section 3, the texts 0x2a (the record at +0x18 + [bldg + 0x247] *
    4), 0x28 (0x509dc0 (the player's character, idx)) and 0x29 (bldg + 0x243); the window */
 
-int gm_Unk509dc0(int unused, int kind); int ai_Unk5ea986(); int crt_Sprintf(char *buf, const char *fmt, ...);
+int gm_Unk509dc0(int unused, int kind); char *_strupr(char *); int sprintf(char *buf, const char *fmt, ...);
 
 int ai_Unk588160(int idx)
 {

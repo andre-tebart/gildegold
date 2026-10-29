@@ -17,7 +17,7 @@ int d2_OpenForm(); void d2_SetPointerSprite(int a, int pic); int d2_SetForm(int 
 void sv_FitForm(int f); int io_PrintText(char *fmt, ...); int d2_GetWinObj(); void d2_SetObjValue();
 int gm_ConvertMoney(int a, unsigned char k); int d2_GetObjValue(); int gm_PlayerFactor(int a, unsigned char k); int sv_CheckGoodAmount();
 void cm_SendMoveGoods(int a, int b, unsigned char c, int d); void cm_SendRelations(int a, int b, int c, int d); void txt_Format(char *out, int id0, ...); int sv_MessageBox();
-int sv_RunFrame(int cb, unsigned mask); void d2_CloseView(int view); void sv_CameraFollow(); int ai_Unk5de518();
+int sv_RunFrame(int cb, unsigned mask); void d2_CloseView(int view); void sv_CameraFollow(); int _ftol();
 
 void ai_Unk5a1af0(int param_1)
 {

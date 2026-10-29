@@ -133,7 +133,7 @@ void ai_Unk59d5e0(int param_1)
             d2_EnableObject(ctl[1], 1);
             d2_EnableObject(ctl[0], 1);
             d2_EnableObject(ctl[2], 1);
-            ai_Unk5e56c4(n, text, 10);
+            _itoa(n, text, 10);
             d2_SetObjText(ctl[2], text);
         }
         if (m < 5) {
@@ -144,7 +144,7 @@ void ai_Unk59d5e0(int param_1)
             d2_EnableObject(ctl[2], 1);
             d2_EnableObject(ctl[3], 1);
             d2_EnableObject(ctl[0], 1);
-            ai_Unk5e56c4(m, text, 10);
+            _itoa(m, text, 10);
             d2_SetObjText(ctl[0], text);
         }
         if (U_I((unsigned)&d2_ClickedId) == 3 || U_I((unsigned)&d2_ClickedId) == 4) {

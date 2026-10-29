@@ -19,7 +19,7 @@ int gm_FreeCapacity(); int sv_MessageBox(); char * he_FindEvent(int n, ...); cha
 int ai_Unk576340(); int cm_SendLongMessage(char *msg); int cm_GetSlotState(); int cm_GetSlotValue(int h);
 void snd_PlayFavourComment(void); void sv_MoveToGroup(unsigned char *o, short *it, int c, char *g); int sv_RunFrame(int cb, unsigned mask); void d2_CloseView(int view);
 int sv_ClosePlayerBar(); int gm_ListAmount(); char * gm_Query(void *list, int n, ...); void ai_Unk58cc10();
-int ai_Unk58d720(); void ai_Unk58dd00(int param_1, int param_2, int param_3, int param_4); int ai_Unk5e56c4(); void d2_SetObjText();
+int ai_Unk58d720(); void ai_Unk58dd00(int param_1, int param_2, int param_3, int param_4); char *_itoa(int, char *, int); void d2_SetObjText();
 
 int ai_ProductionWindow(unsigned char *param_1)
 {

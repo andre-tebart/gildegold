@@ -76,7 +76,7 @@ lrel:
 lgroup:
         if (map != 0 && SV_I(((unsigned)&dm_L + 0xc)) != 0 && SV_I((unsigned)&d2_HitWindow) == -1) {
             t = -1;
-            crt_Sprintf(name, "dummy_%s", (char *)SV_I((unsigned)&ai_ClickedObject) + 8);
+            sprintf(name, "dummy_%s", (char *)SV_I((unsigned)&ai_ClickedObject) + 8);
             if (d3_FindObject(SV_I((unsigned)&ai_ClickedObject), 0x100, 0, name) == 0)
                 strcpy(name, (char *)SV_I((unsigned)&ai_ClickedObject));
             pp = (unsigned *)(unsigned)&ai_Unk7603a0;

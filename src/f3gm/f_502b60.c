@@ -22,7 +22,7 @@ void gm_AddTime(struct GCLOCK *c, int hours, int mins, int secs);               
 int gm_CompareTime();                     /* 0x4fe210 */
 int gm_MinutesBetween();                     /* 0x4fe280 */
 int d3t_SceneIndex();                     /* 0x411be0 */
-double ai_Unk5de73a();                     /* 0x5de73a: a CRT call */
+double _CIfmod();                     /* 0x5de73a: a CRT call */
 extern int ai_CharCount;  /* 0x6f1bc0 */
 extern int f3gm_ObjectCount;  /* 0x6f1bdc */
 

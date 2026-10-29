@@ -2,7 +2,7 @@
 
 char sv_Unk528660(char *o, int *p)
 {
-    if (ai_Unk5de6b0(o, "sp_WIMPEL") != 0) {
+    if (strstr(o, "sp_WIMPEL") != 0) {
         p[p[0] + 1] = (int)o;
         p[0]++;
     }

@@ -14,7 +14,7 @@ void main_Unk538140(void)
     memset(hdr + 1, 0, 0x3ff);
     net_PrintStats();
     net_ClearStats();
-    crt_Sprintf(hdr, "main_RundenBeginn(): init round no %i", U_I((unsigned)&full_data_6f2598));
+    sprintf(hdr, "main_RundenBeginn(): init round no %i", U_I((unsigned)&full_data_6f2598));
     c = (unsigned char *)((unsigned)&ai_Chars + 0x2);
     do {
         if (*(short *)(c - 2) != -1 && *c != 0 && *c < 9 && (U_I((unsigned)&ai_Unk1460ae0) == -1 || (ai_CanAct(c - 2) != 0 && (U_I((unsigned)&ai_Unk1460ae0) == -1 || *c != 7)))) {

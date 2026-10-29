@@ -89,7 +89,7 @@ l7f0:
                     used[n] = 1;
                 for (p = (int *)(unsigned)&ai_Unk7603a0; (int)p < (unsigned)((unsigned)ai_Unk7603a0 + 0x80); p++) {
                     if (*p != 0 && (w = *(char **)(*p + 0x184)) != 0 && (v = *(int *)(w + 0x28)) != -1
-                        && (o4 = (char *)evt_FindById(v)) != 0 && (r = (char *)ai_Unk5de6b0(o4, name)) != 0) {
+                        && (o4 = (char *)evt_FindById(v)) != 0 && (r = (char *)strstr(o4, name)) != 0) {
                         len = strlen(name);
                         d = r[len] - '0';
                         if (d < 0 || d > 9)
@@ -138,7 +138,7 @@ lsecond:
                     do {
                         if (ok)
                             goto lfree;
-                        if (*(int *)(w - 4) != 0 && *w != 0 && ai_Unk5de6b0(o4, w) != 0)
+                        if (*(int *)(w - 4) != 0 && *w != 0 && strstr(o4, w) != 0)
                             ok = 1;
                         w += 0x20;
                     } while ((int)w < ((unsigned)((unsigned)full_data_75ec84 + 0x5fc) + 0x4));

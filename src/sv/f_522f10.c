@@ -36,7 +36,7 @@ char * gm_PlayerSeat(int p);                     /* 0x504a80 */
 int gm_Unk509e30(void *list, unsigned char p);                     /* 0x509e30 */
 int gm_ConvertMoney(int a, unsigned char k);                     /* 0x5085b0 */
 void txt_Format(char *out, int id0, ...);  /* 0x5176d0 */
-int ai_Unk5ea986();                     /* 0x5ea986 */
+char *_strupr(char *);                     /* 0x5ea986 */
 
 void sv_Unk522f10(unsigned char a, int b)
 {
@@ -165,7 +165,7 @@ void sv_Unk522f10(unsigned char a, int b)
         if (SV_I((unsigned)&ai_PlayerBuilding) == 0 && SV_I((unsigned)&ai_FallbackBuilding) == 0) {
             if (ai_Unk623828 == -1) {
                 strcpy(name, (char *)(unsigned)&ai_PlayerSlots + SV_B((unsigned)&ai_OwnPlayer) * 0x2f4);
-                ai_Unk5ea986(name);
+                _strupr(name);
                 sprintf(buf, "_STADTWAPPEN_%s", name);
                 p = (char *)d2_FindPic(buf);
                 if (p != 0)

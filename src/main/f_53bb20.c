@@ -329,23 +329,23 @@ L_fail:
                 U_I((unsigned)&ls_SaveSlot) = 0;
                 if ((u & 4) == 0) {
                     sprintf(ap, "%s\\gamedata\\saves\\autosave.sav", "\\project\\gfx\\");
-                    i5 = ai_Unk5deca8(ap, "rb");
+                    i5 = fopen(ap, "rb");
                     if (i5 != 0) {
                         sprintf(ab, "%s\\gamedata\\saves\\autosave.bak", "\\project\\gfx\\");
-                        ai_Unk5dee13(i5, 0, 2);
-                        w = ai_Unk5decbb(i5);
-                        ai_Unk5dee13(i5, 0, 0);
+                        fseek(i5, 0, 2);
+                        w = ftell(i5);
+                        fseek(i5, 0, 0);
                         i6 = mem_Alloc(w, (unsigned)&ai_Unk60c1ec);
-                        iv = ai_Unk5deca8(ab, "wb");
+                        iv = fopen(ab, "wb");
                         if (i6 != 0) {
                             if (iv != 0) {
-                                ai_Unk5df404(i6, w, 1, i5);
-                                ai_Unk5df4ec(i6, w, 1, iv);
-                                ai_Unk5debef(iv);
+                                fread(i6, w, 1, i5);
+                                fwrite(i6, w, 1, iv);
+                                fclose(iv);
                             }
                             mem_Free(i6);
                         }
-                        ai_Unk5debef(i5);
+                        fclose(i5);
                     }
                     sprintf(ap, "%s/standard.scr", "gamedata/cities");
                     ai_LoadScreenImage(ap);

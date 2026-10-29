@@ -8,7 +8,7 @@ int main_Init(void)
     err_Init((int)main_Exit, d3io_NoopCallback, main_Window, 0x10);
     mem_Init(48000);
     tr_startup(0x80);
-    crt_Sprintf(dir, "%sgamedata\\Screenshots", (char *)(unsigned)&main_GfxPath);
+    sprintf(dir, "%sgamedata\\Screenshots", (char *)(unsigned)&main_GfxPath);
     CreateDirectoryA(dir, 0);
     vfs_Init((char *)(unsigned)&main_GfxPath, 0);
     tb_Init(0xe, 0);

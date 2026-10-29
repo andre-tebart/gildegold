@@ -10,7 +10,7 @@ int main_Unk532a70(void)
     int *src, *dst;
 
     if (ai_JoinGameWindow() != 0) {
-        crt_Sprintf(path, "gamedata/network/%s.SAV", (char *)(unsigned)&full_data_75e360);
+        sprintf(path, "gamedata/network/%s.SAV", (char *)(unsigned)&full_data_75e360);
         f = vfs_Tfopen(path, (char *)(unsigned)"rb", U_I((unsigned)&d3_Unk6333fc));
         if (f != 0) {
             ls_ReadSaveHeader(f, hdr);

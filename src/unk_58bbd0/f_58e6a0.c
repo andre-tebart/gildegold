@@ -104,7 +104,7 @@ void ai_Unk58e6a0(int param_1, int param_2, int *param_3, int param_4, unsigned 
     U_I(U_I((unsigned)&d2_Objs) + 0x1c0 + param_3[4] * 0x2ec) = 0x22;
     U_I(U_I((unsigned)&d2_Objs) + 0x1cc + param_3[4] * 0x2ec) = 4;
     U_I(U_I((unsigned)&d2_Objs) + 0x1d0 + param_3[4] * 0x2ec) = 0;
-    crt_Sprintf((char *)(U_I((unsigned)&d2_Objs) + 0xbc + param_3[4] * 0x2ec), (char *)(unsigned)&full_data_62b098,
+    sprintf((char *)(U_I((unsigned)&d2_Objs) + 0xbc + param_3[4] * 0x2ec), (char *)(unsigned)&full_data_62b098,
                  U_I((unsigned)&ai_Unk143c860 + *param_3 * 8), param_3[0xc], U_I((unsigned)&ai_Unk144a160));
     /* ROUGH: the control positions 0x46cda0 of the icon, the two labels, the two amounts and the slider */
     n = U_I(((unsigned)&d2_Wins + 0x4) + scr * 0x3c4);

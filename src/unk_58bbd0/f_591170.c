@@ -15,7 +15,7 @@ int gm_Unk50c340(); int d2_GetWinObj(); int sv_SetResearchClass(); int ai_Unk5b7
 float gm_ItemPrice(int item, unsigned char n); int ai_Unk5049e0(); int sv_CheckStock(); int sv_CheckGoodAmount();
 void cm_BeginGroup(const char *s); void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d); void cm_SendMoveGoods(int a, int b, unsigned char c, int d); short * gm_PlayerRecord(char *c);
 int cm_SendLongMessage(char *msg); void cm_EndGroup(const char *s); int cm_GetSlotState(); void cm_SendMoneyDelta(int a, int b);
-int ai_Unk5ea986(); int ai_Unk50b9f0(); int gm_Unk50c4d0(); int ai_Unk5ac110();
+char *_strupr(char *); int ai_Unk50b9f0(); int gm_Unk50c4d0(); int ai_Unk5ac110();
 int ai_Unk5bb350(); void ai_MasterLetterWindow(); int ai_PersonnelBook(); void sv_ReleaseNamePlates(void);
 
 void ai_GameFrame(void);

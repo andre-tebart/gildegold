@@ -10,7 +10,7 @@
    0.7853982 (the speed sc + 0x58 zeroed at the stop) and the yaw set from 0x5de73a (float args lost by Ghidra;
    the CRT atan-like helper) */
 
-double ai_Unk5de73a();
+double _CIfmod();
 
 void ai_Unk57ec40(char *sc, float dt)
 {
@@ -152,5 +152,5 @@ clamp:
         *(float *)(sc + 0x10) = f;
         *(float *)(sc + 0x58) = 0;
     }
-    *(float *)(sc + 0x14) = (float)ai_Unk5de73a();
+    *(float *)(sc + 0x14) = (float)_CIfmod();
 }

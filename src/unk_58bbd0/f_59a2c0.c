@@ -22,7 +22,7 @@ int ai_Unk59a2c0(char *param_1)
     v[3] = 0;
     strcpy(upper, param_1);
     _strupr(upper);
-    crt_Sprintf(name, "dummy_%s", upper);
+    sprintf(name, "dummy_%s", upper);
     obj = d3_FindObject(0, 0x140, 0, name);
     if (obj == 0)
         return 0;

@@ -9,7 +9,7 @@
    player confirms; returns the chosen index or 0 */
 
 unsigned char * gm_BuildQuery(int n, ...); unsigned char * gm_BuildNext(void); char unk_Unk5020e0(int k, int c);
-int sv_MessageBox(); int ai_Unk5ea986(); int crt_Sprintf(char *buf, const char *fmt, ...); char * vfs_GetPath();
+int sv_MessageBox(); char *_strupr(char *); int sprintf(char *buf, const char *fmt, ...); char * vfs_GetPath();
 struct D3OBJECT * d3_LoadGroup(); int d3t_InflateObjectTree(); int d3t_DropObject();
 int ai_Unk527e90();
 struct D3OBJECT;
@@ -71,7 +71,7 @@ int ai_Unk58ff00(int kind, char *out)
     }
     if (n == 0) {
         /* 0x5de652 / 0x4222b0: "not a multiple ..." path */
-        crt_Sprintf(out, "%s", text);
+        sprintf(out, "%s", text);
         err_Message(text);
         return 0;
     }
@@ -84,7 +84,7 @@ int ai_Unk58ff00(int kind, char *out)
         for (i = 0; i < n; i++) {
             if (list2[i] != 0) {
                 d3_PointToWorld(list2[i], list2[i] + 0x4c, pos);
-                crt_Sprintf(chosen, "%s", text);
+                sprintf(chosen, "%s", text);
                 obj = d3_LoadGroup(chosen);
                 list1[i] = obj;
                 d3t_InflateObjectTree(obj);

@@ -1,0 +1,19 @@
+2026-10-29T21:54:06 0x0053ccf0 func main_Unk53ccf0 -> WinMain by:main why:0x53ccf0 is the CRT's user entry (WinMain, _WinMain@16); the placeholder name blocked the entry resolution
+2026-10-29T22:08:26 0x5de518 func ai_Unk5de518 -> _ftol by:main why:the link names the CRT member; the original placeholder was stale
+2026-10-29T22:08:26 0x5de6b0 func ai_Unk5de6b0 -> strstr by:main why:the link names the CRT member; the original placeholder was stale
+2026-10-29T22:08:26 0x5de73a func ai_Unk5de73a -> _CIfmod by:main why:the link names the CRT member; the original placeholder was stale
+2026-10-29T22:08:26 0x5de8e8 func ai_Unk5de8e8 -> exit by:main why:the link names the CRT member; the original placeholder was stale
+2026-10-29T22:08:26 0x5debef func ai_Unk5debef -> fclose by:main why:the link names the CRT member; the original placeholder was stale
+2026-10-29T22:08:26 0x5deca8 func ai_Unk5deca8 -> fopen by:main why:the link names the CRT member; the original placeholder was stale
+2026-10-29T22:08:26 0x5decbb func ai_Unk5decbb -> ftell by:main why:the link names the CRT member; the original placeholder was stale
+2026-10-29T22:08:26 0x5dee13 func ai_Unk5dee13 -> fseek by:main why:the link names the CRT member; the original placeholder was stale
+2026-10-29T22:08:26 0x5defb0 func ai_Unk5defb0 -> strchr by:main why:the link names the CRT member; the original placeholder was stale
+2026-10-29T22:08:26 0x5df404 func ai_Unk5df404 -> fread by:main why:the link names the CRT member; the original placeholder was stale
+2026-10-29T22:08:26 0x5df4ec func ai_Unk5df4ec -> fwrite by:main why:the link names the CRT member; the original placeholder was stale
+2026-10-29T22:08:26 0x5df681 func ai_Unk5df681 -> atoi by:main why:the link names the CRT member; the original placeholder was stale
+2026-10-29T22:08:26 0x5dfae1 func ai_Unk5dfae1 -> fgets by:main why:the link names the CRT member; the original placeholder was stale
+2026-10-29T22:08:26 0x5e56c4 func ai_Unk5e56c4 -> _itoa by:main why:the link names the CRT member; the original placeholder was stale
+2026-10-29T22:08:26 0x5ea986 func ai_Unk5ea986 -> _strupr by:main why:the link names the CRT member; the original placeholder was stale
+2026-10-29T22:08:26 0x5eaa30 func ai_Unk5eaa30 -> _stricmp by:main why:the link names the CRT member; the original placeholder was stale
+2026-10-29T22:08:26 - func crt_Sprintf -> sprintf by:main why:the link names the CRT member; the original placeholder was stale
+2026-10-29T22:08:26 - func crt_Itoa -> _itoa by:main why:the link names the CRT member; the original placeholder was stale

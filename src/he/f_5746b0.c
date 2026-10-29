@@ -34,14 +34,14 @@ void he_Unk5746b0(int ev)
             if (rec != 0) {
                 if (HM_I(rec, 0xe) >= 3) {
                     gm_GoodsPrice(tab[i][0], *(unsigned char *)(unsigned)&ai_OwnPlayer);
-                    HM_I(ev, 0xac) = HM_I(ev, 0xac) + ai_Unk5de518();
+                    HM_I(ev, 0xac) = HM_I(ev, 0xac) + _ftol();
                 } else {
                     cm_SendExSellObject(HM_I(per, 4), -1, 1, *(unsigned char *)(unsigned)&ai_OwnPlayer, 0, tab[i][0]);
                     pay[np++] = tab[i][0];
                 }
             } else if (words[0] >= 6) {
                 gm_GoodsPrice(tab[i][0], *(unsigned char *)(unsigned)&ai_OwnPlayer);
-                HM_I(ev, 0xac) = HM_I(ev, 0xac) + ai_Unk5de518();
+                HM_I(ev, 0xac) = HM_I(ev, 0xac) + _ftol();
             } else {
                 cm_SendExSellObject(HM_I(per, 4), -1, 1, *(unsigned char *)(unsigned)&ai_OwnPlayer, 0, tab[i][0]);
                 pay[np++] = tab[i][0];

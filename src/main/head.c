@@ -565,7 +565,7 @@ void err_Init(int started, void (*crashCB)(HANDLE), HWND hwnd, unsigned int flag
 void d3io_NoopCallback();               /* 0x44ee40, d3_io_a.h: the empty default callback, called with no argument (K&R on purpose) */
 void mem_Init(int max);                 /* 0x4226a0, mem.h */
 int tr_startup(unsigned short n);       /* 0x42ea90, tr.h */
-int crt_Sprintf(char *buf, const char *fmt, ...);                     /* 0x5de652 */
+int sprintf(char *buf, const char *fmt, ...);                     /* 0x5de652 */
 char vfs_Init(char *root, char unk);    /* 0x431490, vfs.h */
 int tb_Init(UINT delay, int oneshot);   /* 0x42e8c0, tb.h */
 char dd_Restore();                    /* 0x41bdd0 */

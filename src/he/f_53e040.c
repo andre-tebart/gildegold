@@ -25,7 +25,7 @@ void cm_BeginGroup(const char *s);
 void cm_EndGroup(const char *s);
 void ai_Unk4c5d80(int *p);
 void ai_Unk4c5d40(void *p);
-int crt_Sprintf(char *buf, const char *fmt, ...);
+int sprintf(char *buf, const char *fmt, ...);
 void mem_Free(void *p);
 void err_Message(char *text);
 

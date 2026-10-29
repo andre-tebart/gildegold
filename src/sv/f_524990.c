@@ -142,7 +142,7 @@ void sv_Unk524990(unsigned char *g)
         d2_SetForm(sv_PlayerBarForm, 1);
         if (p[3] != -1) {
             unk_Unk4fc8e0(ai_Chars[id]);
-            crt_Sprintf(text, "%s (%i)", ai_Chars[id] + 0x30, (int)0);
+            sprintf(text, "%s (%i)", ai_Chars[id] + 0x30, (int)0);
             d2_SetObjText(p[3], text);
             *(short *)(d2_Objs + 0x14 + p[3] * 0x2ec) = 0x5f;
         }

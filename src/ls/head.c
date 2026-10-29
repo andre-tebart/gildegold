@@ -166,7 +166,7 @@ extern int d3_CurrentScene;             /* 0x633444, the current scene index (d3
 char d3if_SelectScene(int index, char keep);  /* 0x4478e0, d3_interface.c */
 
 /* ai_Unk1469700: view of ch_Motions (tools/data_views.py) */
-char *ai_Unk5de6b0();                   /* 0x5de6b0, strstr-like (the "hozfaeller" misspelling check) */
+char *strstr();                   /* 0x5de6b0, strstr-like (the "hozfaeller" misspelling check) */
 
 extern unsigned ai_Unkf81220, ai_Unka68d28;  /* 0xf81220 / 0xa68d28, the received bytes and the expected length (compared unsigned, 0x520ba1 jae) */
 int ai_Unk430fa0(struct VFSFILE *f, long offset, int origin);                    /* 0x430fa0, fseek */

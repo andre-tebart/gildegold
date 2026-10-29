@@ -3,7 +3,7 @@
 
 char sv_Unk528290(char *o, char *b)
 {
-    if (ai_Unk5eaa30(o, "sp_WIMPEL") == 0) {
+    if (_stricmp(o, "sp_WIMPEL") == 0) {
         if (*(unsigned short *)(b + 0x27) != 0xffff)
             d3if_SelectTextureSet(o, *(int *)(o + 0x1cc), (char)(*(char *)(ai_Chars[*(unsigned short *)(b + 0x27)] + 0x54) + 'f'), 1);
     }

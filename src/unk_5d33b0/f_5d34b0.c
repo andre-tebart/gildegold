@@ -30,7 +30,7 @@ void cm_SendMoneyDelta(int character, int delta); /* 0x4c5f60, cm.c: message 0x5
                                                character's money (+0x194), clamped 0 .. 0x32 */
 int he_ShowNews(int pid, int fl, char *text, int unused, int ev, char *text2); /* 0x53dda0, he.c */
 void d2_SetObjValue(); int d2_GetObjValue(); int d2_CreateWinText(short x, short y, char *text, int win); void d2_SetObjText(int obj, char *text);
-int ai_Unk5e56c4(); void d2_SetObjFont(int obj, int font); int sv_RunFrame(int cb, unsigned mask);
+char *_itoa(int, char *, int); void d2_SetObjFont(int obj, int font); int sv_RunFrame(int cb, unsigned mask);
 
 int ai_Unk5d34b0(int param_1, int param_2, int param_3, int param_4, int param_5, int param_6)
 {
@@ -82,7 +82,7 @@ int ai_Unk5d34b0(int param_1, int param_2, int param_3, int param_4, int param_5
         *(unsigned short *)(U_I((unsigned)&d2_Objs) + 0x14 + ctrl * 0x2ec) = *(unsigned short *)(U_I((unsigned)&d2_LastWindowPtr) + 8);
         U_I(U_I((unsigned)&d2_Objs) + 0x1c0 + ctrl * 0x2ec) = 3;
     }
-    ai_Unk5e56c4(n, num, 10);
+    _itoa(n, num, 10);
     d2_SetObjText(sel, num);
     d2_SetObjFont(sel, 0x54);
     while (sv_RunFrame((int)ai_Unk5d34b0, param_1) != 0) {
@@ -94,7 +94,7 @@ int ai_Unk5d34b0(int param_1, int param_2, int param_3, int param_4, int param_5
                     if (flag == 0) {
                         d2_SetObjValue(x14, (int)(list + i * 0x210 + 9));
                     } else {
-                        crt_Sprintf(param_6, "%s\\%s%s", param_4, list + i * 0x210 + 9, param_5);
+                        sprintf(param_6, "%s\\%s%s", param_4, list + i * 0x210 + 9, param_5);
                         U_I((unsigned)&sv_PopRequest) = 1;
                         ret = 1;
                     }
@@ -105,7 +105,7 @@ int ai_Unk5d34b0(int param_1, int param_2, int param_3, int param_4, int param_5
         if (U_I((unsigned)&d2_ClickedId) != -1 && U_I((unsigned)&ai_Unk5fe710) == cancel) {
             if (flag == 0) {
                 i = d2_GetObjValue(x14, param_5);
-                crt_Sprintf(param_6, "%s\\%s%s", param_4, i, param_5);
+                sprintf(param_6, "%s\\%s%s", param_4, i, param_5);
             }
             U_I((unsigned)&sv_PopRequest) = 1;
             ret = 1;

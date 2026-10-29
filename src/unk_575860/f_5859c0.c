@@ -40,7 +40,7 @@ int ai_Unk5859c0(char *unused, char *ev)
         name2 = (char *)unk_Unk4fb330(U_I(ev + 0x4c), U_I(ev + 0x48));
         if (name2 == 0)
             name2 = (char *)unk_Unk4fb330(U_I(ev + 0x4c), 0);
-        crt_Sprintf(buf, (char *)(unsigned)"%s %s", name1 + 4, name2 + 4);
+        sprintf(buf, (char *)(unsigned)"%s %s", name1 + 4, name2 + 4);
         evt_RunCommand((EVTSCRIPT *)script, buf);
     }
     if (sb_IsInit() == 0) {
@@ -66,7 +66,7 @@ int ai_Unk5859c0(char *unused, char *ev)
         }
     } else {
         for (i = 0; i < 8; i++) {
-            crt_Sprintf(text, (char *)(unsigned)&full_data_62a69c, (ids[i] - 0x40d7) / 6 + 1, (ids[i] - 0x40d7) % 6);
+            sprintf(text, (char *)(unsigned)&full_data_62a69c, (ids[i] - 0x40d7) / 6 + 1, (ids[i] - 0x40d7) % 6);
             a[i] = snd_QueueVoice(-7, 0, text, -1, 100);
         }
         for (i = 0; i < 8; i++) {

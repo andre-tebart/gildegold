@@ -3,7 +3,7 @@
    0x458a20 is an uninitialised register in the original) */
 
 int d3t_PlaceObject(struct D3OBJECT *camera, float px, float py, float pz, float dx, float dy, float dz, int unk, char flags);                     /* 0x411680 */
-int ai_Unk5eaa30();                     /* 0x5eaa30 (_strcmpi) */
+int _stricmp();                     /* 0x5eaa30 (_strcmpi) */
 char d3if_SelectTextureSet(struct D3OBJECT *obj, struct D3SURF *surf, unsigned char set, char reload);                     /* 0x446f30 */
 unsigned char * gm_BuildQuery(int n, ...);                     /* 0x501190 */
 unsigned char * gm_BuildNext(void);                     /* 0x501030 */
@@ -18,7 +18,7 @@ char sv_Unk528180(char *part, char *b)
     char *o;
     int junk;
 
-    if (ai_Unk5eaa30(part, "dummy_FAHNE") == 0) {
+    if (_stricmp(part, "dummy_FAHNE") == 0) {
         z[0] = 0;
         z[1] = 0;
         z[2] = 0;

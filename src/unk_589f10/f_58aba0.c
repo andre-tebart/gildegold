@@ -25,15 +25,15 @@ void ai_Unk58aba0(void)
     u = (char *)U_I(((unsigned)&ai_Unk143a610 + 0x4));
     if (U_B((unsigned)&full_data_6f5e30) != 0)
         u = (char *)U_I((unsigned)&full_data_143a63c);
-    crt_Sprintf(text, (char *)(unsigned)"%s %s %s", u, (char *)(unsigned)&full_data_6f5e32, (char *)(unsigned)&full_data_6f5e42);
+    sprintf(text, (char *)(unsigned)"%s %s %s", u, (char *)(unsigned)&full_data_6f5e32, (char *)(unsigned)&full_data_6f5e42);
     id = d2_CreateWinText(x, 10, text, U_I((unsigned)&d2_LastWindow));
     y = *(short *)(U_I((unsigned)&d2_Objs) + 0x16 + id * 0x2ec);
     if (U_B((unsigned)&full_data_6f5e30) == 1)
         u = (char *)U_I(((unsigned)&ai_Unk143a680 + 0x17c) + U_B((unsigned)&full_data_6f5e2b) * 4);
     else
         u = (char *)U_I((unsigned)&ai_Unk143a680 + U_B((unsigned)&full_data_6f5e2b) * 4);
-    crt_Sprintf(text, (char *)(unsigned)&full_data_62aaac, U_I((unsigned)&full_data_144abe0), u);
+    sprintf(text, (char *)(unsigned)&full_data_62aaac, U_I((unsigned)&full_data_144abe0), u);
     d2_CreateWinText(x, y + 0xc, text, U_I((unsigned)&d2_LastWindow));
-    crt_Sprintf(text, (char *)(unsigned)&full_data_62aaac, U_I((unsigned)&full_data_144abe4), U_I((unsigned)&ai_Unk143b3d8 + U_B((unsigned)&full_data_6f5e31) * 4));
+    sprintf(text, (char *)(unsigned)&full_data_62aaac, U_I((unsigned)&full_data_144abe4), U_I((unsigned)&ai_Unk143b3d8 + U_B((unsigned)&full_data_6f5e31) * 4));
     d2_CreateWinText(x, y + 2 + y + 0xc, text, U_I((unsigned)&d2_LastWindow));
 }

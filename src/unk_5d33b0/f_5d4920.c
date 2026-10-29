@@ -52,7 +52,7 @@ int ai_SaveNameWindow(int image)
                     || (d2_HitWindow != -1
                         && d2_Objs[d2_Wins[d2_HitWindow].parent].win == &d2_Wins[slots[i].win])) {
                     exists = 0;
-                    crt_Sprintf(path, "Gamedata\\network\\%s.SAV", slots[i].name);
+                    sprintf(path, "Gamedata\\network\\%s.SAV", slots[i].name);
                     if (vfs_FindFile(path, vfs_Root, &found) != 0)
                         exists = 1;
                     d2_EnableObject(slots[i].obj, 0);

@@ -95,6 +95,6 @@ void ai_Unk583700(int *w)
     io_PrintText((char *)(unsigned)&full_data_62a54c, 0x4101, buf1);
     txt_Format(buf1, (char *)(unsigned)&full_data_62a544, *(unsigned short *)((char *)e + 10) + 0x578);
     io_PrintText((char *)(unsigned)&full_data_62a54c, 0x4102, buf1);
-    txt_Format(buf1, (char *)(unsigned)&full_data_62a53c, (int)ai_Unk5de518());
+    txt_Format(buf1, (char *)(unsigned)&full_data_62a53c, (int)_ftol());
     io_PrintText((char *)(unsigned)&full_data_62a54c, 0x4103, buf1);
 }

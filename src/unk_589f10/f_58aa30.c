@@ -18,14 +18,14 @@ void ai_Unk58aa30(void)
     io_PrintText((char *)(unsigned)"$C");
     strcpy(a, (char *)(unsigned)&full_data_936476);
     strcpy(b, (char *)(unsigned)&full_data_936476);
-    ai_Unk5ea986(a);
-    crt_Sprintf(c, (char *)(unsigned)"_STADTWAPPEN_%s", a);
+    _strupr(a);
+    sprintf(c, (char *)(unsigned)"_STADTWAPPEN_%s", a);
     id = d2_FindPic(c);
     if (id == -1)
         id = d2_FindPic((char *)(unsigned)"_STADTWAPPEN_BERLIN");
     id = d2_WinOpenPic(5, 5, id, U_I((unsigned)&d2_LastWindow));
     x = *(short *)(U_I((unsigned)&d2_Objs) + 0x14 + id * 0x2ec) + 0xf;
     y = d2_CreateWinText(x, 0x19, b, U_I((unsigned)&d2_LastWindow));
-    crt_Sprintf(a, (char *)(unsigned)&full_data_62aaa4, U_I((unsigned)&full_data_144abd4), U_B((unsigned)&ai_Unk936496));
+    sprintf(a, (char *)(unsigned)&full_data_62aaa4, U_I((unsigned)&full_data_144abd4), U_B((unsigned)&ai_Unk936496));
     d2_CreateWinText(x, *(short *)(U_I((unsigned)&d2_Objs) + 0x16 + y * 0x2ec) + 0x1b, a, U_I((unsigned)&d2_LastWindow));
 }

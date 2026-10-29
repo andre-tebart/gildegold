@@ -19,7 +19,7 @@ void main_Unk537040(int n)
     y = ((int)*(short *)(U_I((unsigned)&d2_LastWindowPtr) + 10) - h * n) / 2 + 0xe;
     if (0 < n) {
         do {
-            crt_Sprintf(buf, "%s %c", U_I((unsigned)&full_data_144acd8), i + 0x41);
+            sprintf(buf, "%s %c", U_I((unsigned)&full_data_144acd8), i + 0x41);
             ids[i] = d2_WinOpenSlider(0x80, y, 200, 0, 100, 0x7b, 0x802, d2_LastWindow);
             d2_SetObjValue(ids[i], 0, 4, U_I((unsigned)&ai_Opponents + i * 4));
             d2_SetSliderFlags(ids[i], 0x82);

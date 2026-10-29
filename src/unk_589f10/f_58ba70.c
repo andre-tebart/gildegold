@@ -29,10 +29,10 @@ void ai_Unk58ba70(void)
         else
             id = U_I(n + 0xc);
         if (U_I(p + 100) == 0) {
-            crt_Sprintf(text, (char *)(unsigned)&full_data_62aac0, id, (char *)(p + 0x40), (char *)p);
+            sprintf(text, (char *)(unsigned)&full_data_62aac0, id, (char *)(p + 0x40), (char *)p);
         } else if ((U_I((unsigned)&full_data_6f5e78) != 0 && U_I(p + 100) == U_I((unsigned)&full_data_6f5e78)) ||
                    U_I(p + 0x68) == U_I((unsigned)&full_data_6f5e78)) {
-            crt_Sprintf(text, (char *)(unsigned)&full_data_62aad0, id, (char *)(p + 0x40), U_I((unsigned)&full_data_144abf8), (char *)p);
+            sprintf(text, (char *)(unsigned)&full_data_62aad0, id, (char *)(p + 0x40), U_I((unsigned)&full_data_144abf8), (char *)p);
         }
         id = io_PrintText(text);
         p = ai_Unk4cd4c0();

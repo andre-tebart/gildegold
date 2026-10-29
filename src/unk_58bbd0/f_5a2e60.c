@@ -13,7 +13,7 @@
 
 void ai_Unk4c50b0(int a, int b, short c); int cm_GetSlotValue(int h); int cm_SendGroupState(); int cm_FlushSendQueue();
 int cm_ReceiveMessages(); int cm_ExecCommands(); int cm_SendLongMessage(char *msg); int cm_GetSlotState();
-int ai_AmountMenu(); void d2_SetObjEnabled(); int ai_Unk5e56c4();
+int ai_AmountMenu(); void d2_SetObjEnabled(); char *_itoa(int, char *, int);
 
 void ai_Unk5a2e60(int param_1)
 {

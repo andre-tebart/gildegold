@@ -116,7 +116,7 @@ int ai_Unk592b90(int param_1)
                     U_I((unsigned)&full_data_6f5320 + col * 0x58 + 0x54) = b == 0 ? 0 : gm_ListAmount(rec2, b);
                 }
             }
-            ai_Unk5e56c4(cols, a, 10);
+            _itoa(cols, a, 10);
             d2_SetObjText(a[2], a);
             ai_Unk58cc10(win, 2, cols, rec2, 1);
             ai_Unk58d720(param_1, rec1);

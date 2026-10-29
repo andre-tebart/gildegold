@@ -10,7 +10,7 @@ extern char ai_Unkf8ef80[];             /* 0xf8ef80, the data directory */
 extern char ai_Unk623794[];
 extern unsigned char ai_Unk623ee8[8];
 extern int d3_CurrentScene;                /* 0x633444 */
-int crt_Sprintf(char *buf, const char *fmt, ...);                     /* 0x5de652 */
+int sprintf(char *buf, const char *fmt, ...);                     /* 0x5de652 */
 struct D2SURF * d2_LoadBmpSurface();                     /* 0x478b50 */
 void d2_GetPixelColour();                     /* 0x4798f0 */
 int d2_PutPixelRGB();                     /* 0x4799e0 */
@@ -44,7 +44,7 @@ void sv_Unk5224a0(void)
         ai_Unk6f22c4 = 0;
     }
     rec = ai_BTypes + *b * 0x24d;
-    crt_Sprintf(name, "%sbmp\\groundplans\\riss_%s.bmp", ai_Unkf8ef80, rec + 1);
+    sprintf(name, "%sbmp\\groundplans\\riss_%s.bmp", ai_Unkf8ef80, rec + 1);
     ai_Unk6f22c4 = d2_LoadBmpSurface(name);
     if (ai_Unk6f22c4 == 0) {
         k = gm_BuildingClass(*b);
@@ -56,7 +56,7 @@ void sv_Unk5224a0(void)
             else if (rec[0] == 8)
                 dir = "%sbmp\\groundplans\\riss_tinkturei.bmp";
             else {
-                crt_Sprintf(name, "%sbmp\\groundplans\\riss_%s.bmp", ai_Unkf8ef80, rec + 1);
+                sprintf(name, "%sbmp\\groundplans\\riss_%s.bmp", ai_Unkf8ef80, rec + 1);
                 ai_Unk6f22c4 = d2_LoadBmpSurface(name);
                 if (ai_Unk6f22c4 != 0)
                     goto have;
@@ -81,7 +81,7 @@ void sv_Unk5224a0(void)
             else if (rec[0] == 0x13)
                 dir = "%sbmp\\groundplans\\riss_stadtwache.bmp";
             else {
-                crt_Sprintf(name, "%sbmp\\groundplans\\riss_%s.bmp", ai_Unkf8ef80, rec + 1);
+                sprintf(name, "%sbmp\\groundplans\\riss_%s.bmp", ai_Unkf8ef80, rec + 1);
                 ai_Unk6f22c4 = d2_LoadBmpSurface(name);
                 if (ai_Unk6f22c4 != 0)
                     goto have;
@@ -89,7 +89,7 @@ void sv_Unk5224a0(void)
             }
         }
         if (dir != 0)
-            crt_Sprintf(name, dir, ai_Unkf8ef80);
+            sprintf(name, dir, ai_Unkf8ef80);
         if (ai_Unk6f22c4 == 0) {
             ai_Unk6f22c4 = d2_LoadBmpSurface(name);
             if (ai_Unk6f22c4 == 0)

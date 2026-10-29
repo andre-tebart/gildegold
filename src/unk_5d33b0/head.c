@@ -117,5 +117,5 @@ extern int sv_PopRequest;               /* 0x6f22a0, nonzero: MASTER (sv_RunFram
 #define U_I(a) (*(int *)(a))
 #define U_B(a) (*(unsigned char *)(a))
 
-int crt_Sprintf(char *buf, const char *fmt, ...); /* 0x5de652, the CRT's sprintf (no CRT symbol available) */
+int sprintf(char *buf, const char *fmt, ...); /* 0x5de652, the CRT's sprintf (no CRT symbol available) */
 

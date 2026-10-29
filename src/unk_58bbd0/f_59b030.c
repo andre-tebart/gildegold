@@ -13,7 +13,7 @@ int gm_Unk50a880(); void d2_AddPointerItem(int id, int amount); void d2_ClearPoi
 void d2_EndInputEdit(void); void d2_EnableObject(); void d2_ScrollWindowBy(); void d2_MoveObj(short x, short y, int obj);
 int d2_WinOpenInputIcon(int x, int y, int icon, unsigned char flags, int win); void d2_SetObjFont(); void d2_CopyCaption(char *caption);
 void d2_SetObjPic(); int cm_AddFieldDelta(int size, int n, short field, void *v); void cm_SendFieldDeltas(void); void cm_BeginFieldBlock(char *o, int id);
-void sv_SetStatusText(char *s); int ai_Unk5e56c4(); void cm_BeginGroup(const char *s); void cm_EndGroup(const char *s);
+void sv_SetStatusText(char *s); char *_itoa(int, char *, int); void cm_BeginGroup(const char *s); void cm_EndGroup(const char *s);
 void cm_SendExSellObject(int a, int b, short c, int d, unsigned char e, int f); void cm_SendMoveGoods(int a, int b, unsigned char c, int d); int gm_GetGoodsValue(); int gm_ConvertMoney(int a, unsigned char k);
 
 void ai_Unk59b030(int param_1, int param_2)

@@ -53,7 +53,7 @@ void ai_Unk599ef0(char *param_1, int param_2)
                          *(unsigned short *)((unsigned)&ai_Unk7d6a60 + U_I(param_1 + 0x65) * 0xaa4));
             n = U_I(((unsigned)&d2_Views + 0xc) + win * 0x2ac);
             ctl = (char *)((unsigned)&d2_Wins + n * 0x3c4);
-            crt_Sprintf(text, "Wappen128_ns_Stadt_%s", (char *)(unsigned)&ai_PlayerSlots + U_I(param_1 + 0x65) * 0x2f4);
+            sprintf(text, "Wappen128_ns_Stadt_%s", (char *)(unsigned)&ai_PlayerSlots + U_I(param_1 + 0x65) * 0x2f4);
             d2_SetBackgroundTexture(text, U_I(ctl));
             tick = U_I((unsigned)&ai_Unk6333cc);
             U_I(((unsigned)&ai_Unkf8f39c + 0x118) + n * 0x3c4) = 0;

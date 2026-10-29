@@ -10,7 +10,7 @@
    saved: the file name "Gamedata/saves/GILDE_SAVEGAME_<i>.SAV", the screen image image (0x9600 bytes)
    into ai_ScreenImage, ls_SaveSlot = i, the message box 0x14414e8, ls_SaveGame (name, title, 1), the
    pop request. The slot object is enabled again. Returns 0.
-   @deep body written from tools/disasm 0x5d45d0 and the meaning matches (the twin setup with the caption 0x1c58, ai_FillSaveSlots gamedata/saves mode 0, the two disabled autosave/quicksave slots, the list control d2_GetViewWin(win, 1) and its scrollRemY test, the slot walk 2 .. 15, the hit test, the name editor ai_EditText on the slot title, the overwrite question 0x14414ec, the file GILDE_SAVEGAME_%i.SAV, the 0x9600-byte image copy, ls_SaveSlot, sv_OpenMessageBox 0x14414e8, ls_SaveGame, the pop request, the re-enable). The 19 remaining code hunks have ONE root: the original splits the pending argument cleanup of the d2_GetViewWin call as add esp,8 right after it (and then add esp,0x40 / add esp,0x18 later), ours cleans the same 24 dwords as add esp,0x40 / add esp,0x20, which shifts every later [esp+..] by 8 - VC6's deferred push cleanup / argument-slot reuse (the same split as ai_LoadGameWindow / ai_JoinGameWindow, which grade behaviour). Tried: the exists = 0 + if(vfs_FindFile(...)) exists = 1 spelling (a real gain, 36 -> 21 hunks), the exists = 0 placement before the crt_Sprintf (21 -> 19), the path/name buffer sizes to make the frame 0x6628 exactly, the 2-argument d2_GetViewWin prototype + a cast for the six-argument calls (byte-neutral, Q7 fixed); the push 0x101 / push ecx order is the cdecl argument order and is not chased. spell.py: no menu rule for the cleanup split */
+   @deep body written from tools/disasm 0x5d45d0 and the meaning matches (the twin setup with the caption 0x1c58, ai_FillSaveSlots gamedata/saves mode 0, the two disabled autosave/quicksave slots, the list control d2_GetViewWin(win, 1) and its scrollRemY test, the slot walk 2 .. 15, the hit test, the name editor ai_EditText on the slot title, the overwrite question 0x14414ec, the file GILDE_SAVEGAME_%i.SAV, the 0x9600-byte image copy, ls_SaveSlot, sv_OpenMessageBox 0x14414e8, ls_SaveGame, the pop request, the re-enable). The 19 remaining code hunks have ONE root: the original splits the pending argument cleanup of the d2_GetViewWin call as add esp,8 right after it (and then add esp,0x40 / add esp,0x18 later), ours cleans the same 24 dwords as add esp,0x40 / add esp,0x20, which shifts every later [esp+..] by 8 - VC6's deferred push cleanup / argument-slot reuse (the same split as ai_LoadGameWindow / ai_JoinGameWindow, which grade behaviour). Tried: the exists = 0 + if(vfs_FindFile(...)) exists = 1 spelling (a real gain, 36 -> 21 hunks), the exists = 0 placement before the sprintf (21 -> 19), the path/name buffer sizes to make the frame 0x6628 exactly, the 2-argument d2_GetViewWin prototype + a cast for the six-argument calls (byte-neutral, Q7 fixed); the push 0x101 / push ecx order is the cdecl argument order and is not chased. spell.py: no menu rule for the cleanup split */
 
 /* ---- the two save / load window bodies and the three option screen stubs are defined below
    0x5d7770 (out of address order: 0x5d45d0 / 0x5d4920 / 0x5d5fd0 / 0x5d6580 / 0x5d6950 belong before
@@ -62,7 +62,7 @@ int ai_SaveOptionWindow(int image)
                     || (d2_HitWindow != -1
                         && d2_Objs[d2_Wins[d2_HitWindow].parent].win == &d2_Wins[slots[i].win])) {
                     exists = 0;
-                    crt_Sprintf(path, "Gamedata\\Saves\\%s.SAV", slots[i].name);
+                    sprintf(path, "Gamedata\\Saves\\%s.SAV", slots[i].name);
                     if (vfs_FindFile(path, vfs_Root, &found) != 0)
                         exists = 1;
                     d2_EnableObject(slots[i].obj, 0);
@@ -72,7 +72,7 @@ int ai_SaveOptionWindow(int image)
                         break;
                     }
                     if (exists == 0 || ai_MessageBox(0x101, ai_SaveOverwriteText) != 0) {
-                        crt_Sprintf(name, "Gamedata/saves/GILDE_SAVEGAME_%i.SAV", i);
+                        sprintf(name, "Gamedata/saves/GILDE_SAVEGAME_%i.SAV", i);
                         memcpy(ai_ScreenImage, (void *)image, 0x9600);
                         ls_SaveSlot = i;
                         view = sv_OpenMessageBox(ai_SaveProgressText, 0);

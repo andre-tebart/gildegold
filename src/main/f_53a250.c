@@ -41,7 +41,7 @@ void main_Unk53a250(int i)
                     ev[0x1e] = 1;
                     ev[0x1c] = ev[2];
                     cm_SendLongMessage(ev);
-                    crt_Sprintf(txt, "Meisterpr\xfc" "fung started: player_id:%i beruf:%i grad:%i", U_I((unsigned)&ai_CharInts + base), *(char *)(((unsigned)&ai_CharInts + 0x160) + base), pr + 1);
+                    sprintf(txt, "Meisterpr\xfc" "fung started: player_id:%i beruf:%i grad:%i", U_I((unsigned)&ai_CharInts + base), *(char *)(((unsigned)&ai_CharInts + 0x160) + base), pr + 1);
                     cm_SendMoneyDelta(U_I((unsigned)&ai_CharInts + base), -4);
                 }
             }

@@ -12,7 +12,7 @@ int main_Unk537c70(char *f)
     int i;
 
     memset((char *)(unsigned)&full_data_75df20, 0, 0x200);
-    fp = (char *)ai_Unk5deca8(f, "rt");
+    fp = (char *)fopen(f, "rt");
     if (fp == 0) {
         MessageBoxA(0, "main_PreloadSound(): Could not open sound-definition!", "Error", 0x30);
         return 0;
@@ -20,7 +20,7 @@ int main_Unk537c70(char *f)
     slot = (int *)(unsigned)&full_data_75df20;
     do {
         memset(buf, 0, 0x100);
-        ai_Unk5dfae1(buf, 0x100, fp);
+        fgets(buf, 0x100, fp);
         if (strstr(buf, "//") == 0 && (inc = strstr(buf, "#include")) != 0) {
             q = strchr(inc, 0x22);
             if (q == 0)
@@ -40,7 +40,7 @@ int main_Unk537c70(char *f)
                 return 0;
         }
         if ((*(unsigned char *)(fp + 0xc) & 0x10) != 0) {
-            ai_Unk5debef(fp);
+            fclose(fp);
             return 1;
         }
     } while (1);

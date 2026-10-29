@@ -1239,7 +1239,7 @@ void he_Unk53e1f0();
 void sv_CameraFollow();
 int util_Random(unsigned short n);
 
-int crt_Sprintf(char *buf, const char *fmt, ...); /* 0x5de652, the CRT's sprintf */
+int sprintf(char *buf, const char *fmt, ...); /* 0x5de652, the CRT's sprintf */
 
 struct AMTREC;  /* file-scope tag for the prototypes below */
 

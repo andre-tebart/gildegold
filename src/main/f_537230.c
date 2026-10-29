@@ -38,8 +38,8 @@ int main_Unk537230(int unused, int host)
         h = ai_Unk59a2c0(hdr + 9);
         cityobj[i] = h;
         if (h != 0) {
-            crt_Sprintf(key, "_STADTAUSWAHL_%s_INFO+0", hdr + 5);
-            ai_Unk5ea986(key);
+            sprintf(key, "_STADTAUSWAHL_%s_INFO+0", hdr + 5);
+            _strupr(key);
             k = txt_FindKey(key);
             if (k == -1) {
                 k = 0;
@@ -56,7 +56,7 @@ int main_Unk537230(int unused, int host)
                     *d++ = c;
                 } while (c != 0);
             }
-            crt_Sprintf(buf4, "stadt_%s", hdr + 5);
+            sprintf(buf4, "stadt_%s", hdr + 5);
             s = buf4;
             d = (char *)h;
             do {
@@ -133,8 +133,8 @@ int main_Unk537230(int unused, int host)
                             c = *s++;
                             *d++ = c;
                         } while (c != 0);
-                        crt_Sprintf(key, "_STADTAUSWAHL_%s_BESCHR+0", (char *)((unsigned)&ai_DataPath + 0x220));
-                        ai_Unk5ea986(key);
+                        sprintf(key, "_STADTAUSWAHL_%s_BESCHR+0", (char *)((unsigned)&ai_DataPath + 0x220));
+                        _strupr(key);
                         k = txt_FindKey(key);
                         if (k != -1) {
                             d2_SetForm(f2, 1);

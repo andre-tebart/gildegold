@@ -158,7 +158,7 @@ int ai_Unk5923c0(int param_1)
                     /* ROUGH: the per-good price minimum and the amount of the record */
                 }
             }
-            ai_Unk5e56c4(cols - 1, a, 10);
+            _itoa(cols - 1, a, 10);
             d2_SetObjText(a[2], a);
             ai_Unk58c680(win, 2, cols, rec3);
             ai_Unk58d720(param_1, rec1);

@@ -10,8 +10,8 @@ int ai_Unk588bb0(char *s)
     int win;
 
     strcpy(buf, s);
-    ai_Unk5ea986(buf);
-    crt_Sprintf(buf + 0x88, (char *)(unsigned)&full_data_62a9cc, buf + 8);
+    _strupr(buf);
+    sprintf(buf + 0x88, (char *)(unsigned)&full_data_62a9cc, buf + 8);
     v = txt_FindKey(buf + 0x94);
     if (v == -1 || txt_Ptrs[v] == 0)
         return 0;

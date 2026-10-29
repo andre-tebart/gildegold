@@ -68,7 +68,7 @@ void ai_Unk58cc10(int param_1, int param_2, int param_3, int param_4, int param_
                     row[n] = rec;
                     U_I(U_I((unsigned)&d2_Objs) + 0x4c + rec * 0x2ec) = 1;
                     d2_SetObjFont(rec, 0x54);
-                    ai_Unk5e56c4(*(unsigned short *)(i + *(int *)((unsigned)&full_data_6f5320 + c * 0x58) * 0x41 + U_I((unsigned)&ai_Goods)),
+                    _itoa(*(unsigned short *)(i + *(int *)((unsigned)&full_data_6f5320 + c * 0x58) * 0x41 + U_I((unsigned)&ai_Goods)),
                                  buf, 10);
                     d2_SetCaption(rec, buf);
                     U_I(U_I((unsigned)&d2_Objs) + 0x1cc + rec * 0x2ec) = -8;

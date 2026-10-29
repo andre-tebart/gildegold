@@ -235,13 +235,13 @@ int ai_Unk589f10(void)
                                        (char *)(unsigned)&ai_OptionsFile);
             WritePrivateProfileStringA((char *)(unsigned)"Network", (char *)(unsigned)"Familienname", (char *)((unsigned)&init_PlayerProfile + 0x2a),
                                        (char *)(unsigned)&ai_OptionsFile);
-            crt_Sprintf(text, (char *)(unsigned)"%d", U_I(((unsigned)&init_PlayerProfile + 0x4)));
+            sprintf(text, (char *)(unsigned)"%d", U_I(((unsigned)&init_PlayerProfile + 0x4)));
             WritePrivateProfileStringA((char *)(unsigned)"Network", (char *)(unsigned)"Wappen", text, (char *)(unsigned)&ai_OptionsFile);
-            crt_Sprintf(text, (char *)(unsigned)"%d", U_B(((unsigned)&init_PlayerProfile + 0x8)));
+            sprintf(text, (char *)(unsigned)"%d", U_B(((unsigned)&init_PlayerProfile + 0x8)));
             WritePrivateProfileStringA((char *)(unsigned)"Network", (char *)(unsigned)"Geschlecht", text, (char *)(unsigned)&ai_OptionsFile);
-            crt_Sprintf(text, (char *)(unsigned)"%d", U_B(((unsigned)&init_PlayerProfile + 0x9)));
+            sprintf(text, (char *)(unsigned)"%d", U_B(((unsigned)&init_PlayerProfile + 0x9)));
             WritePrivateProfileStringA((char *)(unsigned)"Network", (char *)(unsigned)"Glauben", text, (char *)(unsigned)&ai_OptionsFile);
-            crt_Sprintf(text, (char *)(unsigned)"%d", U_B(((unsigned)&init_PlayerProfile + 0x3)));
+            sprintf(text, (char *)(unsigned)"%d", U_B(((unsigned)&init_PlayerProfile + 0x3)));
             WritePrivateProfileStringA((char *)(unsigned)"Network", (char *)(unsigned)&full_data_62aa9c, text, (char *)(unsigned)&ai_OptionsFile);
             d3io_NoopCallback();
             return ret;

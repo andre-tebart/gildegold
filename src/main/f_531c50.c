@@ -132,9 +132,9 @@ lab:
         U_I((unsigned)&ai_DataPath) = U_I((unsigned)&full_data_6249e8);
         U_I(((unsigned)&ai_DataPath + 0x4)) = U_I((unsigned)&full_data_6249ec);
         strcpy((char *)(unsigned)&evt_Path, "scripts/");
-        crt_Sprintf((char *)(unsigned)&d2_FormsDir, "forms\\");
+        sprintf((char *)(unsigned)&d2_FormsDir, "forms\\");
         ai_ApplyGfxOptions();
-        crt_Sprintf(path, "gilde_add_on_%s.gfx", (char *)(unsigned)"german");
+        sprintf(path, "gilde_add_on_%s.gfx", (char *)(unsigned)"german");
         if (d2_Open(U_I((unsigned)&main_Window), U_I((unsigned)&ai_ScreenModeW), U_I((unsigned)&ai_ScreenModeH), (char *)(unsigned)&full_data_624690, path) != 0) {
             U_I((unsigned)&di_MaxY) = *(short *)(unsigned)&d2_ScreenH;
             U_I((unsigned)&di_MaxX) = *(short *)(unsigned)&d2_ScreenW - 8;

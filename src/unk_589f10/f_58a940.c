@@ -7,7 +7,7 @@
 void sv_Unk52e350(int f, int y, int *out, int n, ...); int sv_CreateFormSlider(); int d2_WinOpenPic(short x, short y, int pic, int win); int d2_CreateWinText();  /* @original: the call at 284 passes 1 argument to d2.h's 4-parameter prototype */
 int d2_FindPic(); void ai_Unk4cd820(int v); int io_TownDisplayName(char *name, char *out); int d2_CreateRadioGroup(int n, ...);
 void d2_RadioAdd(int g, int obj); void d2_RadioSelect(int g, int sel); void d2_RadioClear(int g); void d2_MenuNavigate(int g);
-int ai_Unk5e56c4(); void d2_ClearInput(void); int ai_Unk5ea986();
+char *_itoa(int, char *, int); void d2_ClearInput(void); char *_strupr(char *);
 
 void ai_Unk58a940(void)
 {

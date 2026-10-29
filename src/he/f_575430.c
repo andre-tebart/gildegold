@@ -19,7 +19,7 @@ void he_Unk575430(char *per)
     }
     if (HM_I(rec, 0xe) >= 3) {
         gm_GoodsPrice(w[0], *(unsigned char *)(unsigned)&ai_OwnPlayer);
-        HM_I(per, 0xac) = HM_I(per, 0xac) + ai_Unk5de518();
+        HM_I(per, 0xac) = HM_I(per, 0xac) + _ftol();
         cm_SendMoveGoodsUnchecked(HM_I(per, 4), -1, *(unsigned char *)(unsigned)&ai_OwnPlayer, HM_I(per, 0xac));
         return;
     }

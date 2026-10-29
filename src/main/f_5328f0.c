@@ -14,7 +14,7 @@ int main_Unk5328f0(void)
     if (main_Unk5327e0() != 0) {
         d3io_NoopCallback();
         if (main_Unk537230(1, 1) != 0) {
-            crt_Sprintf((char *)(unsigned)&full_data_75e360, "%s/%s.net", "gamedata/cities", (char *)((unsigned)&ai_DataPath + 0x220));
+            sprintf((char *)(unsigned)&full_data_75e360, "%s/%s.net", "gamedata/cities", (char *)((unsigned)&ai_DataPath + 0x220));
             U_I((unsigned)&full_data_75e1c0) = U_I((unsigned)&full_data_624b48);
             U_I((unsigned)&full_data_75e1c4) = U_I((unsigned)&full_data_624b4c);
             U_I((unsigned)&ai_GameFlags) |= 0x10;

@@ -20,7 +20,7 @@ int d2_SetForm(int view, int n); void sv_FitForm(int f); int io_PrintText(char *
 int sv_CheckGoodAmount(); void cm_BeginFieldBlock(char *o, int id); int cm_AddFieldValues(unsigned char size, unsigned char n, unsigned short field, void *v); void cm_SendFieldDeltas(void);
 int unk_Unk4f3a30(int p, int n); void cm_SendMoveGoods(int a, int b, unsigned char c, int d); void ai_Unk5a8b80(); int cm_GetSlotState();
 void sv_PumpNet(); int gm_Unk50b170(); void txt_Format(char *out, int id0, ...); int sv_MessageBox();
-int sv_RunFrame(int cb, unsigned mask); void d2_CloseView(int view); void sv_CameraFollow(); int ai_Unk5de518();
+int sv_RunFrame(int cb, unsigned mask); void d2_CloseView(int view); void sv_CameraFollow(); int _ftol();
 void ai_Top5Window();
 
 void ai_IndulgenceWindow(int param_1, int param_2)

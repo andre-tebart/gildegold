@@ -42,7 +42,7 @@ void ai_SaveNetworkGame(char *saveName, char *name)
     strcpy(ls_SavePath, name);
     ls_SaveSlot = cm_RequestedSaveSlot;
     ai_LoadScreenImage("Gamedata/cities/standard.scr");
-    crt_Sprintf(path, "Gamedata/network/%s.SAV", saveName);
+    sprintf(path, "Gamedata/network/%s.SAV", saveName);
     h = vfs_Tfopen(path, "wb", vfs_Root);
     if (h != 0) {
         ls_WriteSaveHeader(h, 5);
@@ -68,9 +68,9 @@ void ai_SaveNetworkGame(char *saveName, char *name)
         } while (n < ai_NumPlayers);
     }
     sv_BroadcastText(sv_FrameMask, ai_SaveWaitText);
-    crt_Sprintf(path, "Gamedata/network/%s.SRV", saveName);
+    sprintf(path, "Gamedata/network/%s.SRV", saveName);
     ls_SaveGame(path, name, 6);
-    crt_Sprintf(path, "Gamedata/network/%s.SAV", saveName);
+    sprintf(path, "Gamedata/network/%s.SAV", saveName);
     ls_SaveGame(path, name, 5);
     sv_SetStatusText(ch_EmptyName);
 }
