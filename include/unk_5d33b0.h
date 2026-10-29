@@ -77,7 +77,8 @@ void ai_ApplyOptions(void);         /* 0x5d5e90, applies the option values to th
 void ai_SaveOptions(void);          /* 0x5d4c70, writes the options to the INI */
 int ai_ApplyGfxOptions(void);     /* 0x5d5c40, applies the graphics options (the shadow setup) */
 void ai_LoadOptions(void);          /* 0x5d5640, reads the options from the INI */
-extern int main_ScreenRestart;      /* 0x6f25a4, main.c: nonzero = re-initialise the screen (the resolution changed) */
+extern int snd_SystemBank;          /* 0x6f2400, main.c: the handle of the system sample bank (system.sbf) */
+extern int main_ScreenRestart;     /* 0x6f25a4, main.c: nonzero = re-initialise the screen (the resolution changed) */
 extern char dd_Has1024x768;         /* 0x631226, dd_vesa.h */
 extern char dd_Has1152x864;         /* 0x631227, dd_vesa.h */
 void d2_SetLabel(int id, char *s);                         /* 0x46bc70, d2.h: sets the widget's label */

@@ -50,7 +50,7 @@ int main_Unk532160(void)
         d3sndw_Init(0x30);
         sprintf(tmp, "%ssfx\\", (char *)(unsigned)&full_data_624690);
         sb_SetPath(tmp);
-        U_I((unsigned)&full_data_6f2400) = sb_LoadSampleBank("system.sbf", 0);
+        U_I((unsigned)&snd_SystemBank) = sb_LoadSampleBank("system.sbf", 0);
         sprintf(tmp2, "%s\\include_sfx.ini", (char *)(unsigned)&full_data_75e240);
         main_Unk537c70(tmp2);
     }

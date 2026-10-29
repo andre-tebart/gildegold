@@ -65,7 +65,7 @@ void he_Unk557190(int ev)
         d2_SetForm(*(int *)(*(int *)(ev + 0x74) + 8), 0);
         io_PrintText("%s", *(int *)(ev + 0x7c));
         if (*(unsigned char *)(unsigned)&ai_GameState != 2)
-            sb_PlaySample(U_I((unsigned)&full_data_6f2400), "NeueMessage_s_01", 1, 0x3f, 0x7f, 0, 0);
+            sb_PlaySample(U_I((unsigned)&snd_SystemBank), "NeueMessage_s_01", 1, 0x3f, 0x7f, 0, 0);
         if ((fl & 8) != 0)
             he_Unk53dcb0(*(int *)(ev + 0x74));
         if ((fl & 0x10) != 0) {

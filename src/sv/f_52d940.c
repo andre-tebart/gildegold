@@ -10,7 +10,7 @@ void sv_Unk52d940(unsigned fl)
     short *it;
 
     if (SV_I(((unsigned)&dm_L + 0x20)) != 0 && (SV_I(((unsigned)&ai_Unk75f280 + 0x500) + SV_I((unsigned)&sv_FrameDepth) * 8) != (int)ai_GameFrame || SV_I((unsigned)&ai_Unk6f2334) != 0 || SV_I((unsigned)&ai_Unk75ec5c) != 0 || SV_I((unsigned)&ai_Unk7662c0) != 0 || SV_I((unsigned)&ai_Unk75ec60) != 0))
-        sb_PlaySample(SV_I((unsigned)&full_data_6f2400), "MausclickRechts_s_01", 1, 0x3f, 0x7f, 0, 0);
+        sb_PlaySample(SV_I((unsigned)&snd_SystemBank), "MausclickRechts_s_01", 1, 0x3f, 0x7f, 0, 0);
     if (SV_I((unsigned)&full_data_6f262c) != 0) {
         if (SV_I(((unsigned)&dm_L + 0x20)) == 0 && *(char *)(unsigned)&kb_Last != 0x1c)
             return;

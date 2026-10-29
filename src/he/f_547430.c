@@ -29,7 +29,7 @@ void he_Unk547430(int ev)
             return;
         }
         if (*(unsigned char *)(unsigned)&ai_GameState != 2)
-            sb_PlaySample(U_I((unsigned)&full_data_6f2400), "NeueMessage_s_01", 1, 0x3f, 0x7f, 0, 0);
+            sb_PlaySample(U_I((unsigned)&snd_SystemBank), "NeueMessage_s_01", 1, 0x3f, 0x7f, 0, 0);
         d2_SetForm(*(int *)(*(int *)(ev + 0x74) + 8), 1);
         io_PrintText(0x1d6c);
         d2_SetForm(*(int *)(*(int *)(ev + 0x74) + 8), 2);

@@ -168,7 +168,7 @@ extern GAPDATA full_data_6f2320[];
 extern GAPDATA full_data_6f2338[];
 extern GAPDATA full_data_6f23e4[];
 extern GAPDATA full_data_6f23e8[];
-extern GAPDATA full_data_6f2400[];
+extern int snd_SystemBank;
 extern GAPDATA full_data_6f2410[];
 extern GAPDATA full_data_6f262c[];
 extern GAPDATA full_data_6f2630[];
