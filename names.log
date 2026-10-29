@@ -41,3 +41,4 @@
 2026-10-30T00:51:42 0x005d9890 func ai_GypsyGroupWindow -> ai_GypsyBeggingWindow by:main why:the only caller 0x5d9c30 opens it from contact_BETTELN
 2026-10-30T00:52:54 0x0062dda0 data ai_PokerWindow -> ai_PokerUi by:main why:0x62dda0 is the head of one 0x70 byte block: the window view, the button ids and three panel records (the poker window opener 0x5d9de0 fills them)
 2026-10-30T00:53:55 0x005d9de0 func ai_Unk5d9de0 -> ai_OpenPokerWindow by:main why:0x5d9de0 opens the poker window form and initialises its panels
+2026-10-30T00:58:01 0x005d9f50 func ai_Unk5d9f50 -> ai_PokerBetControl by:main why:0x5d9f50 makes the bet slider of the poker window (d2_WinOpenSlider, range from the bet limits) and enables it

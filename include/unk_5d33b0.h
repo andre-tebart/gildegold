@@ -63,9 +63,11 @@ typedef struct POKERPANEL {             /* 0x1c bytes: one panel (form view) of 
 typedef struct POKERUI {                /* 0x70 bytes at 0x62dda0: the poker window state */
     int window;                         /* +0x00, the view of the open poker window, -1 when closed */
     int buttons[5];                     /* +0x04, the ids of the button row (the third is disabled at the start) */
-    int active;                         /* +0x18, -1 at the start (meaning not derived) */
+    int betSlider;                      /* +0x18, the bet slider (made by ai_PokerBetControl), -1 until then */
     POKERPANEL panel[3];                /* +0x1c, the panels of the forms 3, 1 and 2, in memory order */
 } POKERUI;
+extern int ai_PokerMinBet;          /* 0x6f35a4, the poker bet limit shown by ai_PokerGame (text 0x4251): the slider's start and low end (reasoned) */
+extern int ai_PokerMaxBet;          /* 0x6f35a8, the poker bet slider's upper end (reasoned) */
 extern POKERUI ai_PokerUi;          /* 0x62dda0 */
 int ai_OpenPokerWindow(void);       /* 0x5d9de0, opens the poker window (1 = opened, 0 = already open / refused) */
 /* Two entries of the run-time text table (the .data slots hold char * into the loaded text file; the
