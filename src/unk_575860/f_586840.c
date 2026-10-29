@@ -11,7 +11,7 @@
    0x587340, VERSICHERUNG -> 0x587370, LIEGEPLAN -> 0x5871c0, TRANSPORT -> 0x5af1a0; with the byte 0x6f231c
    negative and GRAB_MIETEN clicked -> 0x5871e0 (rec); 0x5912c0 () each frame */
 
-void sv_ReleaseNamePlates(void); void ai_Unk587c90(); int sv_RegisterNamePlate(); int ai_Unk5912c0();
+void sv_ReleaseNamePlates(void); void ai_Unk587c90(); int sv_RegisterNamePlate(); int ai_TradeContactChecks();
 void ai_Unk586e40(); void ai_Unk587370(); void ai_Unk586ab0(); void ai_Unk587300();
 void ai_Unk5871e0(); void ai_Unk587340(); void ai_Unk5871c0();
 
@@ -62,7 +62,7 @@ void ai_Unk586840(char *rec)
                 else if (U_I((unsigned)&ai_ClickedObject) == c_heim)
                     ai_Unk586ab0(rec);
                 else if (U_I((unsigned)&ai_ClickedObject) == c_zut)
-                    ai_Unk584d70(rec);
+                    ai_GypsyHelperWindow(rec);
                 else if (U_I((unsigned)&ai_ClickedObject) == c_graeber)
                     ai_Unk587300(rec);
                 else if (U_I((unsigned)&ai_ClickedObject) == c_gehilfen)
@@ -77,6 +77,6 @@ void ai_Unk586840(char *rec)
             if ((char)U_I((unsigned)&ai_BuildingPerms) < 0 && U_I((unsigned)&ai_ClickedObject) == c_mieten)
                 ai_Unk5871e0(rec);
         }
-        ai_Unk5912c0();
+        ai_TradeContactChecks();
     }
 }

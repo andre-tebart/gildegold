@@ -34,7 +34,7 @@ void ai_Unk593960(int param_1)
             if (gm_Query(*(int *)(param_1 + 0x5d), 2, 6, 0, 0x34) != 0)
                 ziel = sv_RegisterNamePlate("ob_ZIELSCHEIBE", U_I((unsigned)&full_data_1440acc), 0x17);
         }
-        ai_Unk5912c0();
+        ai_TradeContactChecks();
         if (U_I((unsigned)&ai_ClickedObject) != 0) {
             if (U_I((unsigned)&ai_ClickedObject) == transport)
                 ai_OpenTransport(param_1);

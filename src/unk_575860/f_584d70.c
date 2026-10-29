@@ -22,7 +22,7 @@
 int sv_CheckCharacterFlag(); char * he_FindEvent(int n, ...); char * he_NextEvent(void); int sv_Unk52e6d0(); void d2_SetCaption();
 void ai_Unk58bbd0(void); int ai_Unk58d720(); void ai_Unk58dd00(int param_1, int param_2, int param_3, int param_4);
 
-void ai_Unk584d70(char *b)
+void ai_GypsyHelperWindow(char *b)
 {
     char line[0x100];
     char msg[0xf8];
@@ -100,7 +100,7 @@ void ai_Unk584d70(char *b)
     ai_Unk58d720(b, res);
     ai_Unk58dd00(win, 1, 0, b);
     for (;;) {
-        if (sv_RunFrame(ai_Unk584d70, 0x677c7) == 0)
+        if (sv_RunFrame(ai_GypsyHelperWindow, 0x677c7) == 0)
             break;
         ai_Unk58d720(b, res);
         ai_Unk58dd00(win, 1, 0, b);

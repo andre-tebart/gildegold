@@ -4,7 +4,7 @@
    0x6f229c); the pending request 0x75e8c0 / 0x75e8c8 / 0x75e8c4 resolves the same way; 0x6f22fc does so too;
    for the building kinds 0x1e / 0x1f / 0x20 (or the records' 0x1d / 0x1f) 0x58f510 runs */
 
-void ai_Unk5912c0(void)
+void ai_TradeContactChecks(void)
 {
     char c;
     int r;

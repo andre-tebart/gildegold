@@ -35,7 +35,7 @@ void ai_Unk593b00(int param_1)
             ziel = sv_RegisterNamePlate("ob_ZIELSCHEIBE", U_I((unsigned)&full_data_1440acc), 0xc);
             stroh = sv_RegisterNamePlate("ob_STROHPUPPE", U_I((unsigned)&full_data_1440ad0), 0xc);
         }
-        ai_Unk5912c0();
+        ai_TradeContactChecks();
         ai_Unk5b9db0(param_1, ctx);
         if (U_I((unsigned)&ai_ClickedObject) != 0) {
             if (U_I((unsigned)&ai_ClickedObject) == transport)

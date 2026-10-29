@@ -19,6 +19,7 @@ void ai_Unk58bbd0(void);                /* 0x58bbd0, the production window's tab
 void ai_MarketContact(struct AIBLD *b); /* 0x58f510, the shop-counter contact of a building */
 int ai_BuildingName(int id, char *out); /* 0x58f640, the building name of a kind id */
 /* 0x61168c: the "%1G" format of the map's city names (ai_FormatCityName). */
+void ai_TradeContactChecks(void);       /* 0x5912c0, the pending trade / master checks every contact listener runs once per frame */
 /* The windows the building contacts open (defined far below their callers in the .c). */
 int ai_StorageWindow(int building, int list);           /* 0x5b26b0, the store window */
 int ai_PersonnelBook(int building, char *text);         /* 0x5aab80, the personnel book */

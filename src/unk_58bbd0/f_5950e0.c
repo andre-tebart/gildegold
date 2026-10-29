@@ -13,7 +13,7 @@ void ai_Unk5950e0(int param_1)
     while (r != 0) {
         buy = sv_RegisterNamePlate("FERNEINKAUF", U_I((unsigned)&full_data_1442028), 0x10);
         sell = sv_RegisterNamePlate("VERKAUF", U_I((unsigned)&full_data_1442048), 0x10);
-        ai_Unk5912c0();
+        ai_TradeContactChecks();
         if (U_I((unsigned)&ai_ClickedObject) != 0) {
             if (U_I((unsigned)&ai_ClickedObject) == buy)
                 ai_OpenTransportBuy(param_1);

@@ -57,7 +57,7 @@ void ai_Unk594e50(int param_1)
             gelage = sv_RegisterNamePlate("contact_GELAGE", U_I((unsigned)&full_data_1441f88), 0xe);
             transport = sv_RegisterNamePlate("TRANSPORT", U_I((unsigned)&ai_ContactTextTransport), 0x15);
         }
-        ai_Unk5912c0();
+        ai_TradeContactChecks();
         if (U_I((unsigned)&ai_ClickedObject) != 0) {
             if (U_I((unsigned)&ai_ClickedObject) == lager)
                 ai_StorageWindow(param_1, U_I(param_1 + 0x5d));

@@ -26,6 +26,8 @@ extern char gm_PlayerRecords[];
 #include "d3.h"
 #include "surf.h"
 #include "unk_5d33b0.h"
+#include "unk_575860.h"
+#include "unk_58bbd0.h"
 #include "data_views.h"
 
 typedef struct D2OBJVIEW {                  /* 0x2ec, d2.h's D2OBJ: only the fields this unit reads */

@@ -7,7 +7,7 @@
    view state (0x4c2c00 / 0x5136b0 / 0x43db30 / 0x4478e0 / 0x513740) */
 
 int init_BuildingSceneUniverse(); int init_LoadBuildingScene(); void d3fl_SetDetail(unsigned int n); void veg_HidePlants();
-int ai_Unk586840(); int ai_Unk5d9c30(); int ai_Unk587ad0();
+int ai_Unk586840(); int ai_GypsyProductionContact(); int ai_Unk587ad0();
 int ai_Unk5876a0(); int ai_GypsyContact(); int ai_TheatreContact(); int ai_CurseContact();
 int ai_Unk587560();
 
@@ -120,7 +120,7 @@ void ai_Unk59ee40(unsigned char *param_1)
     case 0x4e:
     case 0x4f:
     case 0x50:
-        ai_Unk5d9c30(U_I((unsigned)&ai_FallbackBuilding));
+        ai_GypsyProductionContact(U_I((unsigned)&ai_FallbackBuilding));
         break;
     default:
         ai_PumpFrames(0);

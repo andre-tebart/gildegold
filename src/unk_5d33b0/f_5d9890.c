@@ -8,7 +8,7 @@
    the form is the one the other gypsy windows use; message 0xa1 is not read at its receiver. Body read whole
    against the disassembly. */
 
-void ai_GypsyGroupWindow(int building)
+void ai_GypsyBeggingWindow(int building)
 {
     CURSEMSG msg;
     int chosen[4];                      /* the indices of the collected characters */
@@ -56,7 +56,7 @@ void ai_GypsyGroupWindow(int building)
                 sv_PopRequest = 1;
             }
         }
-    } while (sv_RunFrame((int)ai_GypsyGroupWindow, 0x677c7) != 0);
+    } while (sv_RunFrame((int)ai_GypsyBeggingWindow, 0x677c7) != 0);
     d2_CloseView(form);
     sv_ClosePlayerBar();
     sv_ClearSelection();

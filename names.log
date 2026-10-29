@@ -35,3 +35,7 @@
 2026-10-30T00:44:25 0x005d9890 func ai_Unk5d9890 -> ai_GypsyGroupWindow by:main why:its message 0xa1 carries the building id, the clock and the net ids of up to four flagged characters
 2026-10-30T00:45:19 0x0052ae40 func sv_Unk52ae40 -> sv_ClearSelection by:main why:0x52ae40 clears the group selection (its own comment): the focus, the selected flag of every character, 0x6f2334
 2026-10-30T00:45:32 0x00525220 func sv_Unk525220 -> sv_OpenPlayerBar by:main why:0x525220 opens the Misc\PlayerBar form into sv_PlayerBarForm; sv_ClosePlayerBar (0x525440) closes it
+2026-10-30T00:49:31 0x00584d70 func ai_Unk584d70 -> ai_GypsyHelperWindow by:main why:its form HANDEL_SUCHEN and the 0x8c message with the selected characters; opened from contact_ZUTATEN_SUCHEN_ZIGEUNER
+2026-10-30T00:49:43 0x005912c0 func ai_Unk5912c0 -> ai_TradeContactChecks by:main why:0x5912c0 finishes the pending trade / master checks of the contact (its comment); every contact listener calls it once per frame
+2026-10-30T00:51:09 0x005d9c30 func ai_Unk5d9c30 -> ai_GypsyProductionContact by:main why:the contact plates of the gypsy production building (ZUTATEN_SUCHEN_ZIGEUNER, PRODUKTION_ZIGEUNER, BETTELN ...)
+2026-10-30T00:51:42 0x005d9890 func ai_GypsyGroupWindow -> ai_GypsyBeggingWindow by:main why:the only caller 0x5d9c30 opens it from contact_BETTELN
