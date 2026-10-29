@@ -112,6 +112,56 @@ typedef struct AMOUNTCFG {              /* 0x50 bytes, the config of the special
     unsigned short ids[16];             /* +0x1c, the character ids the menu leaves out / lists, 0xffff = none */
     char pad3c[0x14];
 } AMOUNTCFG;
+#pragma pack(push, 2)
+typedef struct GAMECLOCK {              /* 14 bytes, ai.h's AITIME (ai_Time itself is char[] here, f3snd.h) */
+    int year;                           /* +0x00 */
+    unsigned short hour;                /* +0x04 */
+    int min;                            /* +0x06 */
+    int xy;                             /* +0x0a */
+} GAMECLOCK;
+#pragma pack(pop)
+
+typedef struct CURSEMSG {               /* 0xf8 bytes, ai.h's AIMSG (the long message cm_SendLongMessage sends) */
+    int unk00;
+    unsigned char type;                 /* +0x04 */
+    char pad05[3];
+    int to;                             /* +0x08, the net id of the sender (the message goes to the player's group) */
+    int fromId;                         /* +0x0c */
+    char pad10[0x18];
+    GAMECLOCK time;                     /* +0x28 */
+    unsigned char flags;                /* +0x36 */
+    char pad37;
+    int ids[8];                         /* +0x38 */
+    int arg[11];                        /* +0x58 */
+    char pad84[0x74];
+} CURSEMSG;
+
+#pragma pack(push, 1)
+typedef struct CURSEBLD {               /* the building record: the id and the owner */
+    unsigned char type;                 /* +0x00 */
+    int id;                             /* +0x01 */
+    char pad05[0x22];
+    unsigned short owner;               /* +0x27 */
+} CURSEBLD;
+#pragma pack(pop)
+
+#pragma pack(push, 2)
+typedef struct CURSEEVENT {             /* the event 0xa0 ai_FindCurseEvent finds: only the fields the curse target window reads */
+    char pad00[0x44];
+    GAMECLOCK from;                     /* +0x44, the clock the event started */
+    GAMECLOCK due;                      /* +0x52, the clock it is due */
+    char pad60[0x10];
+    int done;                           /* +0x70 */
+    char pad74[0x38];
+    int victim;                         /* +0xac */
+} CURSEEVENT;
+#pragma pack(pop)
+struct GCLOCK;
+struct AITIME;
+void gm_AddTime(struct GCLOCK *c, int hours, int mins, int secs);   /* 0x4fe140, f3gm.c: adds hours / minutes / seconds to the clock */
+int gm_MinutesBetween(struct AITIME *a, struct AITIME *b);          /* 0x4fe280, f3gm.c: the minutes from clock a to clock b */
+int ai_FindCurseEvent(struct AIBLD *b);                              /* 0x5741d0, he.c: the pending curse event of the building (as unk_4a7140.h) */
+int gm_CurseTargetCount(char *b);                                    /* 0x50d0b0, f3gm.c: counts from the objects 0x284 / 0x289 of the building */
 /* the filter of the gypsy windows: a const object, the original loads it from .rdata 0x5eed68 (mov eax,[..]; mov ecx,[..+4]) */
 static const volatile unsigned __int64 gypsyFilter = 0x1a7fdfbb6;
 int d2_WinOpenSlider(int x, int y, int len, int p4, int p5, int pic, unsigned int flags, int win); /* 0x46a960, d2.c: a slider in a window */
@@ -159,7 +209,7 @@ extern int ai_ClickedObject;        /* 0x6f22e4, the object clicked in the scene
 void ai_BloodRevengeWindow(int building); /* 0x5d85e0, the gypsy blood revenge window (no result: every exit ends in a call) */
 int ai_HomageWindow(int building);       /* 0x5d95a0, the "Ehrerbietung" homage window */
 void ai_CurseWindow(int building);       /* 0x5d8c90, the curse window ("_WAHRSAGERIN_FLUCH_0%d"; no result: every exit ends in a call) */
-int ai_CurseTargetWindow(int building);  /* 0x5d90e0, the curse victim / share picker */
+void ai_CurseTargetWindow(int building); /* 0x5d90e0, the curse victim / share picker (no result: every exit ends in a call) */
 int ai_PokerGame(void);                  /* 0x5da030, the poker game window */
 
 /* The save / load windows and the three option screens of the options menu 0x5d7770. Their bodies are

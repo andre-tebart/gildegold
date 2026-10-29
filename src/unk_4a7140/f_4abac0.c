@@ -17,7 +17,7 @@ int ai_Unk4abac0(int a, AIPER *p, int c, unsigned char *m)
         for (i = 0x100; i != 0; i--) {
             if (b->type != 0 && b->owner == p->id) {
                 bt = &ai_BTypes[b->type];
-                if (bt->kind == 0x1f && gm_Query(b->objList, 2, 6, 0, 0x27f) != 0 && ai_Unk5741d0(b) == 0) {
+                if (bt->kind == 0x1f && gm_Query(b->objList, 2, 6, 0, 0x27f) != 0 && ai_FindCurseEvent(b) == 0) {
                     if (best == 0) {
                         n = bt->cap247 != 2 ? 4 : 7;
                     } else {

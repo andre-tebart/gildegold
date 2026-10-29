@@ -14,39 +14,8 @@
 void sv_ButtonRow(int f, int y, int *out, int n, ...); int sv_CheckGoodAmount(); int sv_Unk525220(); int sv_ClosePlayerBar();
 struct GCLOCK;
 int gm_ConvertMoney(int a, unsigned char k); int gm_PlayerFactor(int a, unsigned char k); int gm_BathObjectCount();
-int gm_CurseObjectCount(); int gm_Unk50d0b0(); int ai_Unk5741d0(); int ai_Unk4a7140();
+int gm_CurseObjectCount(); int gm_CurseTargetCount(); int ai_FindCurseEvent(); int ai_Unk4a7140();
 int ai_Unk4a74e0(); int gm_BuildingSkill(); float ai_NormalizeEffectScale(float x);
-
-#pragma pack(push, 2)
-typedef struct CURSETIME {              /* the 14 bytes of ai.h's AITIME (ai_Time is char[] here) */
-    int a;
-    int b;
-    int c;
-    short d;
-} CURSETIME;
-#pragma pack(pop)
-
-typedef struct CURSEMSG {               /* 0xf8 bytes, ai.h's AIMSG (the long message cm_SendLongMessage sends) */
-    int unk00;
-    unsigned char type;                 /* +0x04 */
-    char pad05[3];
-    int to;                             /* +0x08, the net id of the sender (the message goes to the player's group) */
-    int fromId;                         /* +0x0c */
-    char pad10[0x18];
-    CURSETIME time;                     /* +0x28 */
-    unsigned char flags;                /* +0x36 */
-    char pad37;
-    int ids[8];                         /* +0x38 */
-    int arg[11];                        /* +0x58 */
-    char pad84[0x74];
-} CURSEMSG;
-
-#pragma pack(push, 1)
-typedef struct CURSEBLD {               /* the building record: only the owner */
-    char pad00[0x27];
-    unsigned short owner;               /* +0x27 */
-} CURSEBLD;
-#pragma pack(pop)
 
 void ai_CurseWindow(int building)
 {
@@ -114,7 +83,7 @@ void ai_CurseWindow(int building)
                     msg.flags = 2;
                     msg.arg[0] = v;
                     msg.to = ((AICHARVIEW *)(ai_Chars + ai_PlayerId * 0x21c))->netId;
-                    memcpy(&msg.time, ai_Time, sizeof(CURSETIME));
+                    memcpy(&msg.time, ai_Time, sizeof(GAMECLOCK));
                     msg.arg[2] = target->netId;
                     cm_SendLongMessage((char *)&msg);
                     txt_Format(text, 0x41da, 0x41c1);

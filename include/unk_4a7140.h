@@ -165,7 +165,7 @@ int ai_Unk4ab6b0(AIPER *p, unsigned char *m, unsigned char *m2);                
 int gm_CurseObjectCount(AIBLD *b);                                                      /* 0x50cfd0 */
 int ai_Unk4ab7f0(int a, AIPER *p, int c, unsigned char *m);                     /* 0x4ab7f0 */
 int ai_Unk4ab9f0(AIPER *p, unsigned char *m);                                    /* 0x4ab9f0 */
-int ai_Unk5741d0(AIBLD *b);                                                      /* 0x5741d0 */
+int ai_FindCurseEvent(AIBLD *b);                                                      /* 0x5741d0 */
 int ai_Unk4abac0(int a, AIPER *p, int c, unsigned char *m);                     /* 0x4abac0 */
 int ai_Unk4abc60(AIPER *p, unsigned char *m);                                    /* 0x4abc60 */
 int ai_Unk4abd00(int a, AIPER *p, int c, unsigned char *m);                     /* 0x4abd00 */

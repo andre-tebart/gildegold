@@ -1,6 +1,6 @@
 /* 0x50d0b0, 0x284 (4 -> 7) / 0x289 (+ 3) */
 
-int gm_Unk50d0b0(char *b)
+int gm_CurseTargetCount(char *b)
 {
     int n;
 
