@@ -1,6 +1,6 @@
 /* 0x4fccc0, the yearly love / marriage step of the character c (kind < 10, active, byte +9 = 1, +0x1b1 = 0, +0x1c8 bit 0x40000 clear; its partner o = 0x505df0 (+0x5c)): a float +0x7c above 1.0 is pulled down by 0x4c4ac0 (-0.5 * random - the value) and the pair gets the event 0x4c4650 (8, ..) with a message 7 (0x4c4fa0, text number 0x12 ..); otherwise (the partner active, the age +10 below 0x27) the number of the relatives at +0x68 .. (4 .. 8; a player (6 / 7) or a priest (5) among them ends it) sets the float +0x7c to (random + 1) * the table value 0x617734 [count]. ROUGH */
 
-float ai_Unk617734[6] = { 0.240015402f, 0.222200006f, 0.125f, 0.0555500016f, 0.0138499998f, 0.0f };  /* 0x617734, a float per number of children / relatives */
+extern float ai_Unk617734[6];
 void gm_AddTime(struct GCLOCK *c, int hours, int mins, int secs);                     /* 0x4fe140 */
 void cm_SendCreateCharacter(unsigned char a, int b, int c, unsigned short d, int e, unsigned char f, unsigned char g, unsigned char h);                     /* 0x4c4650 */
 int cm_GetSlotState();                     /* 0x4c3ae0 */

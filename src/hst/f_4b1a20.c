@@ -20,10 +20,10 @@
     __asm rep movsb                                                 \
 }
 
-int hst_KeyFirst = -1;  /* 0x601064, first entry of the key list (-1: none) */
-int ai_Unk601068 = -1;  /* 0x601068, end of the key list */
-int hst_KeyNext = -1;  /* 0x60106c, next entry to look at */
-char hst_Key[0x20];  /* 0xf83520, the key to look for */
+extern int hst_KeyFirst;
+extern int ai_Unk601068;
+extern int hst_KeyNext;
+extern char hst_Key[0x20];
 int hst_ParseDate(int k, unsigned char mode, int *year, char *name);              /* 0x4b2ed0 */
 
 int ai_Unk4b1a20(void)

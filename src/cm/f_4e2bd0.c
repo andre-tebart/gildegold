@@ -13,7 +13,7 @@ typedef struct G28REC {
     unsigned char used;                 /* 0x30 */
     char pad31[0x114 - 0x31];
 } G28REC;
-G28REC ai_Unk925520[96];  /* 0x925520 */
+extern G28REC ai_Unk925520[96];
 /* ai_Unk925538: view of ai_Unk925520 (tools/data_views.py) */
 
 /* the random seed of the scenes (0x92c4e0), a linear congruence; the number is the high word modulo 0x7fff */

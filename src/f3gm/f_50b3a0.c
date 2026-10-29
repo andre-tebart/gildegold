@@ -10,8 +10,8 @@ typedef struct {
     unsigned char flag;
 } RTNODE;       /* 0x34 bytes, the nodes of the research tree layout 0x76fde0 */
 #define NODES ((RTNODE *)ai_Unk76fde0)
-int ai_Unk889f70;  /* 0x889f70 */
-unsigned short ai_Unk770b00[64];  /* 0x770b00 */
+extern int ai_Unk889f70;
+unsigned short ai_Unk770b00[64] = {0};  /* 0x770b00 */
 unsigned gm_Unk50b2f0();                /* 0x50b2f0 */
 
 int gm_Unk50b3a0(unsigned short *a, unsigned short *b, int w, int h)

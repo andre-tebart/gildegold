@@ -20,8 +20,7 @@ typedef struct INIT_PLAYER {
 /* 0x510e50, the start of a network game for the joining or hosting player (strings "%s/AUGSBURG.NET", "scenes/*network.ed3", "\\game.INI", section "Network"): waits for the flags in 0x6f2594 (1 = host, 4 = ready), loads the city file `name` (default "gamedata/cities/AUGSBURG.NET"), writes the player names to game.INI, registers the player profile (0x4c46d0), sets up the network scene, gives each player slot its start objects (0x4fec10 / 0x4ff450). Returns 1 when the city could not be loaded, 2 when 0x520b80 fails, else 0.
    The remaining difference is the frame (0x310 against the original's 0x384): 0x74 bytes of locals are missing, every local below ini is shifted. @deep frame job */
 extern HINSTANCE main_Instance;          /* 0x75e140 */
-INIT_PLAYER init_PlayerProfile;  /* 0x75e5a0 */
-int main_MoneyCheat = 0;  /* 0x6f2444, set from the command line switch "MO_MONEY" (main.c); nonzero gives 500000 start money instead of 2000 and the first kind 6 character its starter buildings */
+INIT_PLAYER init_PlayerProfile = {0};  /* 0x75e5a0 */
 extern unsigned ai_MissionSeed;           /* 0x75e120 */
 extern signed char ai_MissionMode;        /* 0x624580 */
 extern void *d2_ScreenSurf;                /* 0x6ed924 */

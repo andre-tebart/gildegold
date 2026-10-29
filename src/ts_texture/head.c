@@ -38,7 +38,7 @@ extern const char d3_ScrollPool[];
 /* engine globals used here */
 extern unsigned int d3_FrameCount;          /* 0x63343c */
 extern char d3_Hardware;                    /* 0x633450, nonzero: Direct3D textures (else software) */
-unsigned char d3_MipSkip = 0;  /* 0x63342c */
+extern unsigned char d3_MipSkip;
 /* 0xfe79c0 is one 0x50-byte D3DTEXFMTCTX (d3d_UsedTexFormat, d3_d3d.c).  The names below were
    separate definitions in this unit; they are its fields (pf at +0x08, bpp2 at +0x28, pf2 at
    +0x2c, same at +0x4d) and must not claim the block again. */
@@ -48,6 +48,7 @@ unsigned char d3_MipSkip = 0;  /* 0x63342c */
 #define d3_Unkfe7a0d d3d_UsedTexFormat.same           /* 0xfe7a0d */
 extern long d3_ddhr;                        /* 0x146356c, result of the last unchecked DirectDraw call */
 void * d3_Unk6333fc = 0;  /* 0x6333fc */
+unsigned char d3_MipSkip = 0;  /* 0x63342c */
 char d3_Unk633e00[256] = {0};  /* 0x633e00 */
 /* 0x5ebc20, the epsilon of d3sm_Pick and the scroll speed table are one block in the original: the double
    (a float 0.0001f promoted, d3_SnapEpsilon at +0) is at 0x5ebc20 and the speed table starts in its upper
@@ -85,21 +86,21 @@ TSTEXTURE *tex_CreateAlias(TSTEXTURE *src, TSFLAGS flags, char group);          
 
 struct TSTEXTURE * tex_Load(char *name, TSFLAGS flags, unsigned char opts, unsigned char fmt);/* 0x4605c0 */
 
-TSTEXTURE *d3_Textures;             /* 0xfb9074 */
-unsigned int ts_MaxHiCol;                   /* 0xfb9078 */
-unsigned int ts_CacheUsed;          /* 0xfb907c */
-unsigned int ts_CacheSize;          /* 0xfb9080 */
-unsigned int d3_TexCount;           /* 0xfb9084 */
-float ts_ScrollU[0x20] = {0}; /* 0xfb90a0 */
-float ts_ScrollV[0x20] = {0}; /* 0xfb9120 */
-int ts_NextGroup;                   /* 0xfb91a0 */
-TSHICOL *ts_HiCol;                  /* 0xfb91a4 */
-int ts_TexUsed;                     /* 0xfb91a8 */
-unsigned long ts_LastTime;          /* 0xfb91ac */
-unsigned int ts_HiColCount;         /* 0xfb91b0 */
-int ts_Unkfb91b4;                   /* 0xfb91b4 */
-void *ts_Palette;                   /* 0xfb91b8 */
 int ts_Unk633f00 = 0;               /* 0x633f00 */
 TSCACHE *ts_Cache = 0;              /* 0x633f08 */
+TSTEXTURE *d3_Textures = 0;             /* 0xfb9074 */
+unsigned int ts_MaxHiCol = 0;                   /* 0xfb9078 */
+unsigned int ts_CacheUsed = 0;          /* 0xfb907c */
+unsigned int ts_CacheSize = 0;          /* 0xfb9080 */
+unsigned int d3_TexCount = 0;           /* 0xfb9084 */
+float ts_ScrollU[0x20] = {0}; /* 0xfb90a0 */
+float ts_ScrollV[0x20] = {0}; /* 0xfb9120 */
+int ts_NextGroup = 0;                   /* 0xfb91a0 */
+TSHICOL *ts_HiCol = 0;                  /* 0xfb91a4 */
+int ts_TexUsed = 0;                     /* 0xfb91a8 */
+unsigned long ts_LastTime = 0;          /* 0xfb91ac */
+unsigned int ts_HiColCount = 0;         /* 0xfb91b0 */
+int ts_Unkfb91b4 = 0;                   /* 0xfb91b4 */
+void *ts_Palette = 0;                   /* 0xfb91b8 */
 int ts_Mips = 8;  /* 0x5fd0b0, initialized to 8; TODO define here once .data is matched */
 

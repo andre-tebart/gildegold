@@ -1,10 +1,10 @@
 
-/* ai_Unk7e3f94: view of ai_PlayerSlots (tools/data_views.py) */
-float ord_RatingRate = {0}; /* 0x91aaf4, the change rate of the rating (ord.c */
-char ord_StatisticsHistory[320] = {0}; /* 0x91ab00 */
-char ord_RatingBytes[16];  /* 0x91b460, 5 + 1 bytes */
-char ord_MessageRecord[0x24] = {0}; /* 0x91b480, the 9-int record the messages carry, then the tag */
+extern float ord_RatingRate;
+extern char ord_StatisticsHistory[320];
+extern char ord_RatingBytes[16];
+extern char ord_MessageRecord[0x24];
 const char ai_Unk5ebbb4[12] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };  /* 0x5ebbb4 */
+const float unk_Tab5ee034[] = { 0.800000012f, 0.699999988f, 0.600000024f, 0.5f, 15.0f, 12.5f, 10.0f, 7.5f };  /* 0x5ee034 */
 const int gv_EntryCounts[] = { 1, 2, 4, 8 };  /* 0x5ee054, entries per kind */
 const int unk_Tab5ee064[] = { 0, 12, 20, 30 };  /* 0x5ee064 */
 const int unk_Tab5ee074[] = { 0, 16, 32, 64 };  /* 0x5ee074 */
@@ -22,13 +22,18 @@ char ai_Unk6f0e42[2] = {0};  /* 0x6f0e42 */
 char ai_Unk6f0e44[2] = {0};  /* 0x6f0e44 */
 char ai_Unk6f0e48[448] = {0};  /* 0x6f0e48 */
 char gv_Effects[2944] = {0};  /* 0x6f1008, 8 slots of */
-char gm_IncomeHistory[0x154];  /* 0x91b580, the 17-round history of the five income sums (rows of */
-char ai_Unk925100[4] = {0}; /* 0x925100 */
-char ai_Unk925104[4];  /* 0x925104 */
-char ai_Unk925108[12];  /* 0x925108 */
-char ai_Unk925114[4];  /* 0x925114 */
-char ai_Unk925118[4];  /* 0x925118 */
-char ai_Unk92511c[4];  /* 0x92511c */
 int ai_RatingBase = 0;  /* 0x6f1b9c, the rating's old value (stored as bits; ai.h's ai_Rating follows it at */
 char * ai_JudgeCatholic = 0;  /* 0x6f1bfc / */
 char * ai_JudgeProtestant = 0;  /* 0x6f1c00 */
+/* ai_Unk7e3f94: view of ai_PlayerSlots (tools/data_views.py) */
+float ord_RatingRate = {0}; /* 0x91aaf4, the change rate of the rating (ord.c */
+char ord_StatisticsHistory[320] = {0}; /* 0x91ab00 */
+char ord_RatingBytes[16] = {0};  /* 0x91b460, 5 + 1 bytes */
+char ord_MessageRecord[0x24] = {0}; /* 0x91b480, the 9-int record the messages carry, then the tag */
+char gm_IncomeHistory[0x154] = {0};  /* 0x91b580, the 17-round history of the five income sums (rows of */
+char ai_Unk925100[4] = {0}; /* 0x925100 */
+char ai_Unk925104[4] = {0};  /* 0x925104 */
+char ai_Unk925108[12] = {0};  /* 0x925108 */
+char ai_Unk925114[4] = {0};  /* 0x925114 */
+char ai_Unk925118[4] = {0};  /* 0x925118 */
+char ai_Unk92511c[4] = {0};  /* 0x92511c */

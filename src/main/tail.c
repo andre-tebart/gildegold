@@ -1,5 +1,5 @@
 
-void * main_Instance;  /* 0x75e140, its instance handle (HINSTANCE) */
+extern void * main_Instance;
 
 /* ---- full-link gap data (tools/full_addrs.py) ---- */
 #define GAPDATA __declspec(align(1)) unsigned char
@@ -527,11 +527,14 @@ GAPDATA full_data_6f2470[260] = { 0 };  /* 0x6f2470 */
 GAPDATA full_data_6f2574[4] = { 0 };  /* 0x6f2574 */
 GAPDATA full_data_6f2580[4] = { 0 };  /* 0x6f2580 */
 GAPDATA full_data_6f2584[4] = { 0 };  /* 0x6f2584 */
+HWND main_Window = 0;  /* 0x6f2588, the game window ("Die Gilde") */
+char main_ScreenOpen = 0;  /* 0x6f258c, the video mode is open ( */
 GAPDATA full_data_6f2598[4] = { 0 };  /* 0x6f2598 */
 GAPDATA full_data_6f25a4[4] = { 0 };  /* 0x6f25a4 */
 GAPDATA full_data_6f25a8[4] = { 0 };  /* 0x6f25a8 */
 GAPDATA full_data_6f25b0[4] = { 0 };  /* 0x6f25b0 */
 GAPDATA full_data_6f25b4[4] = { 0 };  /* 0x6f25b4 */
+int main_ScreenSaverOff = 0;  /* 0x6f25bc, the screen saver was switched off and is restored at exit */
 GAPDATA full_data_6f25c0[4] = { 0 };  /* 0x6f25c0 */
 GAPDATA full_data_6f25c4[4] = { 0 };  /* 0x6f25c4 */
 GAPDATA full_data_6f2624[4] = { 0 };  /* 0x6f2624 */
@@ -688,6 +691,7 @@ GAPDATA full_data_6faa88[8] = { 0 };  /* 0x6faa88 */
 GAPDATA full_data_6faa90[176] = { 0 };  /* 0x6faa90 */
 GAPDATA full_data_7585f4[12] = { 0 };  /* 0x7585f4 */
 GAPDATA full_data_75df20[512] = { 0 };  /* 0x75df20 */
+void * main_Instance = 0;  /* 0x75e140, its instance handle (HINSTANCE) */
 GAPDATA full_data_75e180[24] = { 0 };  /* 0x75e180 */
 GAPDATA full_data_75e198[40] = { 0 };  /* 0x75e198 */
 GAPDATA full_data_75e1c0[4] = { 0 };  /* 0x75e1c0 */
@@ -701,6 +705,7 @@ GAPDATA full_data_75e5f0[4] = { 0 };  /* 0x75e5f0 */
 GAPDATA full_data_75e5f4[1] = { 0 };  /* 0x75e5f4 */
 GAPDATA full_data_75e5f5[51] = { 0 };  /* 0x75e5f5 */
 GAPDATA full_data_75e628[4] = { 0 };  /* 0x75e628 */
+int main_PlatformNT = 0;  /* 0x75e62c, the OS is NT based (dwPlatformId != VER_PLATFORM_WIN32_WINDOWS) */
 GAPDATA full_data_75e630[16] = { 0 };  /* 0x75e630 */
 GAPDATA full_data_75ec40[28] = { 0 };  /* 0x75ec40 */
 GAPDATA full_data_75ec80[4] = { 0 };  /* 0x75ec80 */

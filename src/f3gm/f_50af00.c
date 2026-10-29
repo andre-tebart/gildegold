@@ -1,9 +1,12 @@
 /* 0x50af00, collects what the person `id` carries into the record out (0x218 bytes: the first word counts the 0xe-byte units, +0x31 the free capacity, +0x41 .. the entries of 0x1e bytes built from the goods list 0x74e1f4 (0x29 words each, owner at -2 words) that belong to the person, the entry count +0x219 and the sum +0x215). The person's own character record is searched with 0x501190 / 0x501030 (0x502eb0 gives its fields; one with the id equal adds 0xe to the first word and to +0x31). Returns 0. ROUGH */
 
+int ai_Difficulty = 0;  /* 0x6f23fc */
+int ai_Unk6f2448 = 0;  /* 0x6f2448 */
+unsigned short ai_Unk76fdc4 = 0;  /* 0x76fdc4 */
+int ai_Unk76fdc8 = 0;  /* 0x76fdc8 */
 /* ---- layout 2026-10-23: the standing / family helpers 0x50b010 .. 0x50d0b0 (ROUGH drafts) ---- */
-char ai_Unk76fde0[3328];  /* 0x76fde0, the family records ( */
-int ai_Unk770af0;  /* 0x770af0, the window of the family tree */
-int ai_Unk76fdc8;  /* 0x76fdc8 */
+char ai_Unk76fde0[3328] = {0};  /* 0x76fde0, the family records ( */
+int ai_Unk770af0 = 0;  /* 0x770af0, the window of the family tree */
 /* ai_Unkfb1030: view of d2_Views (tools/data_views.py) */
 /* ai_Unkf8f128: view of d2_Wins (tools/data_views.py) */
 void d2_PlotLine();                     /* 0x4764f0 */

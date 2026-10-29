@@ -20,5 +20,5 @@ extern volatile unsigned long d3_Time;      /* 0x6333cc, see d3.h */
 /* d3_Time * 13, spelled so that the volatile is read three times */
 #define MSX_TIME ((d3_Time << 3) + (d3_Time << 2) + d3_Time)
 
-LARGE_INTEGER msx_Last = {0};  /* 0x6325b4, counter at the last update */
+extern LARGE_INTEGER msx_Last;
 

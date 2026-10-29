@@ -1,9 +1,9 @@
 
-int d3d_ZBufferCaps;  /* 0xfe7608, memory caps for the z buffer surface: */
-D3DZBUFCTX d3d_UsedZBufferFormat;  /* 0xfe7620 */
-D3DCONFIG d3d_Config = {0}; /* 0xfe7670 */
-D3DCARD d3d_UsedCard;  /* 0xfe7680 */
-D3DTLVERTEX d3d_PrecacheBuffer[3];  /* 0xfe7a20 */
+extern int d3d_ZBufferCaps;
+extern D3DZBUFCTX d3d_UsedZBufferFormat;
+extern D3DCONFIG d3d_Config;
+extern D3DCARD d3d_UsedCard;
+extern D3DTLVERTEX d3d_PrecacheBuffer[3];
 DWORD d3d_MinMipSize = 4;  /* 0x5f942c, smallest mip dimension kept (4) */
 float d3d_ViewW = -1.0f;  /* 0x5f9430, last viewport set, -1 = none */
 float d3d_ViewH = -1.0f;  /* 0x5f9434 */
@@ -21,7 +21,15 @@ LPDIRECTDRAWSURFACE4 d3d_ZBuffer = {0};  /* 0x633420 */
 /* d3d_balpha: view of d3_MipSkip (tools/data_views.py) */
 /* d3d_glow: view of d3_MipSkip (tools/data_views.py) */
 unsigned char d3d_colorkey = 0;  /* 0x633430 */
-unsigned char d3d_alphatest;  /* 0x633431 */
+unsigned char d3d_alphatest = 0;  /* 0x633431 */
 unsigned char d3d_fog = 0;  /* 0x633432 */
 char d3d_StatesSet = 0;  /* 0x633433 */
 char d3d_Mipmaps = 0;  /* 0x633434, mipmapping usable: d3d_UsedCard.info.maxMipFilter > 1 */
+int d3d_ZBufferCaps = 0;  /* 0xfe7608, memory caps for the z buffer surface: */
+D3DZBUFCTX d3d_UsedZBufferFormat = {0};  /* 0xfe7620 */
+D3DCONFIG d3d_Config = {0}; /* 0xfe7670 */
+D3DCARD d3d_UsedCard = {0};  /* 0xfe7680 */
+/* 0xfe79c0, the 0x50-byte texture-format context the callback fills (its fields are the d3_TexFormat*
+   names ts_texture.c used to define separately). */
+D3DTEXFMTCTX d3d_UsedTexFormat = {0};  /* 0xfe79c0 */
+D3DTLVERTEX d3d_PrecacheBuffer[3] = {0};  /* 0xfe7a20 */

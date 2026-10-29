@@ -9,13 +9,12 @@ typedef struct GCLOCK {                 /* the 14-byte game clock (0x770ae0) */
 } GCLOCK;
 #pragma pack(pop)
 
-int ai_Unk875360[32];  /* 0x875360 */
-int ai_Unk919f80[732];  /* 0x919f80 */
-char * ai_Goods;  /* 0x91aaf0, the object prototypes ( */
-unsigned ai_Unk91ac40[136];  /* 0x91ac40 */
-char * ai_Objects;  /* 0x7e3f34, the object instances ( */
-/* ai_Unk7e3ff8: view of ai_PlayerSlots (tools/data_views.py) */
-int ai_Unk6178c8[] = { 468, 0, 1084227584, 0, 0, 0, 0, 0, 0, 0, 0, 0 };  /* 0x6178c8 */
+extern int ai_Unk875360[32];
+extern int ai_Unk919f80[732];
+extern char * ai_Goods;
+extern unsigned ai_Unk91ac40[136];
+extern char * ai_Objects;
+extern int ai_Unk6178c8[];
 extern char ai_Unk61aa38[], ai_Unk61aa20[], ai_Unk61aa00[], ai_Unk61a9ec[];  /* 0x61aa38, 0x61aa20, 0x61aa00, 0x61a9ec */
 void * mem_Alloc(int size, char *tag);                   /* 0x4223c0 */
 void util_Randomize();                     /* 0x42ec80 */

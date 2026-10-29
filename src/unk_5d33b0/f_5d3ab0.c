@@ -138,31 +138,42 @@ int d2_GetViewWin(int view, int i);         /* 0x475ff0, d2.h: window i of a vie
                                                the six-argument calls below go through a cast, tagged
                                                @original (the original pushes four stray arguments) */
 
+int ai_LeaveGame = 0;  /* 0x6f25a0, set with ai_GameOver when the menu leaves the game (the
+                                       load window / the game loop end); main.c clears it when a game
+                                       starts ( */
+OPTIONBYTES ai_GfxResolution = {0};  /* 0x6f2f94: byte 0 cur_res */
+OPTIONBYTES ai_GfxSet = {0};  /* 0x6f35c0: byte 0 gfx_set */
 /* the option globals the writer 0x5d4c70 (and the reader 0x5d5640) use: each dword holds four option
    bytes, the INI keys name the bytes (see the key order in 0x5d4c70) */
 OPTIONBYTES ai_GfxDetail = {0}; /* 0x6f35c4: byte 1 texture_scale, 0 details, 2 lod_handling, 3 shadow_detail */
-OPTIONBYTES ai_GfxFloor;  /* 0x6f35c8: byte 0 floor_mipmapping, 1 camera_limits, 2 floor_lod, 3 character_detail */
-OPTIONBYTES ai_GfxSet;  /* 0x6f35c0: byte 0 gfx_set */
-OPTIONBYTES ai_GfxFog;  /* 0x6f35cc: byte 0 fog_plane */
-OPTIONBYTES ai_GfxResolution = {0};  /* 0x6f2f94: byte 0 cur_res */
-float ai_ScreenTuning[0xc];  /* 0x6f35d0: brightness r, g, b, a, contrast r, g, b, a, gamma
+OPTIONBYTES ai_GfxFloor = {0};  /* 0x6f35c8: byte 0 floor_mipmapping, 1 camera_limits, 2 floor_lod, 3 character_detail */
+OPTIONBYTES ai_GfxFog = {0};  /* 0x6f35cc: byte 0 fog_plane */
+float ai_ScreenTuning[0xc] = {0};  /* 0x6f35d0: brightness r, g, b, a, contrast r, g, b, a, gamma
                                                r, g, b, a (0 .. 1, the keys are the value * 100) */
-OPTIONBYTES ai_GameSwitches;  /* 0x6f3618: byte 0 invert_mouse, 1 nachtwaechter, 2 show_cursor_txt, 3 show_geb_info */
-OPTIONBYTES ai_GamePanel;  /* 0x6f3668: byte 0 panel_mode, 1 help_events, 2 difficulty, 3 hints */
+SNDOPTIONBYTES ai_SoundOptions = {0};  /* 0x6f3600 */
+int ai_OptionSpeed = 0;  /* 0x6f3608, the "speed" key: the game speed setting ( */
+int ai_OptionCameraSpeed = {0}; /* 0x6f360c, the "camera_speed" key (the reader stores the low byte) */
+int ai_OptionMouseSpeed = 0;  /* 0x6f3610, the "mouse_speed" key (the input base is this - */
+OPTIONBYTES ai_GameSwitches = {0};  /* 0x6f3618: byte 0 invert_mouse, 1 nachtwaechter, 2 show_cursor_txt, 3 show_geb_info */
+extern OPTIONBYTES ai_GamePanel;
 extern int ai_OptionScrollSpeed;            /* 0x6f3614, the "scroll_speed" key */
-char ai_TownName[64];  /* 0x6f361c, the "stadt" key (written as a string) */
-int ai_OptionHistorie;  /* 0x6f365c, the "historie" key */
-int ai_OptionMission;  /* 0x6f3660, the "mission" key */
-int ai_OptionNetMission;  /* 0x6f3664, the "net_mission" key */
-OPTIONBYTES ai_OptionPanelHelp;  /* 0x6f366c, the "panel_help" key */
-int ai_Opponents[7];  /* 0x75e160 .. */
-char ai_OptionsFile[288];  /* 0x75e480, the INI the options are read from and written to */
+char ai_TownName[64] = {0};  /* 0x6f361c, the "stadt" key (written as a string) */
+int ai_OptionHistorie = 0;  /* 0x6f365c, the "historie" key */
+int ai_OptionMission = 0;  /* 0x6f3660, the "mission" key */
+int ai_OptionNetMission = 0;  /* 0x6f3664, the "net_mission" key */
+OPTIONBYTES ai_GamePanel = {0};  /* 0x6f3668: byte 0 panel_mode, 1 help_events, 2 difficulty, 3 hints */
+OPTIONBYTES ai_OptionPanelHelp = {0};  /* 0x6f366c, the "panel_help" key */
+int ai_Opponents[7] = {0};  /* 0x75e160 .. */
+char ai_OptionsFile[288] = {0};  /* 0x75e480, the INI the options are read from and written to */
 extern unsigned char ai_OptionCameraSpeedByte; /* 0x6f360c, the byte the reader stores (the writer and the
                                                run time read ai_OptionCameraSpeed as an int) */
 typedef struct SCREENMODE {                 /* 8 bytes, a screen mode of the table 0x62d7b8 */
     int w;                                  /* +0x0, the width */
     int h;                                  /* +0x4, the height */
 } SCREENMODE;
+/* ai_ContactTextCardGame: view of txt_Ptrs (build/mk_txt_views.py) */
+int ai_CameraStep = 50;  /* 0x623814, the camera move step, 100 - camera speed; sv.c converts it
+                                       with fild at the float uses (the original loads an int) */
 SCREENMODE ai_ScreenModes[3] = { { 800, 600 }, { 1024, 768 }, { 1152, 864 } };  /* 0x62d7b8, the 640 / 800 / 1024 modes */
 int ai_ScreenModeW = 800;  /* 0x62d7d0, the width of the mode ai_GfxResolution picks */
 int ai_ScreenModeH = 600;  /* 0x62d7d4, its height */

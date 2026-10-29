@@ -20,9 +20,7 @@
 #undef d3_BeginScene
 #undef d3_SetBlendState
 #include "d3_d3d.h"
-/* 0xfe79c0, the 0x50-byte texture-format context the callback fills (its fields are the d3_TexFormat*
-   names ts_texture.c used to define separately). */
-D3DTEXFMTCTX d3d_UsedTexFormat;  /* 0xfe79c0 */
+extern D3DTEXFMTCTX d3d_UsedTexFormat;
 #include "surf.h"
 #include "di_input.h"
 #ifdef REA_FRAME_DUMP

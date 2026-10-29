@@ -34,6 +34,6 @@
 #include "data_views.h"
 
 int d2_ColourFormatSet = 0;  /* 0x6f0450 */
-unsigned int d2_HighBitMask32;  /* 0xf8a640 */
+extern unsigned int d2_HighBitMask32;
 extern int d2_PaletteDepth;                    /* 0xf8a64c */
 

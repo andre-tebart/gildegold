@@ -36,24 +36,24 @@ int gm_Unk5044b0(int i, int p);        /* 0x5044b0, @original: the byte-matched 
 int ai_Unk5ffd1c = -1;                  /* 0x5ffd1c */
 G6RING * ai_Unk60034c = ai_Unkf83c20;  /* 0x60034c, the next entry */
 int ai_Unk600350 = 1;  /* 0x600350, the step */
-char ai_DataPath[608];  /* 0x75dca0, the data path */
-/* ai_Unk7e3f80: view of ai_PlayerSlots (tools/data_views.py) */
-/* ai_Unk7e3f84: view of ai_PlayerSlots (tools/data_views.py) */
-/* ai_Unk7e4274: view of ai_PlayerSlots (tools/data_views.py) */
-G6RING ai_Unkf83c20[32];  /* 0xf83c20 */
-char ai_Unkf83da0[260];  /* 0xf83da0, the ini file of the actions */
-int ai_Unkf83ea4;  /* 0xf83ea4, the depth of the evaluation stack */
-AIACT ai_Unkf83ec0[36];  /* 0xf83ec0, the registered actions */
-/* ai_Unkf84c40: view of ai_Unkf83ec0 (tools/data_views.py) */
-/* ai_Unkf84c60: view of ai_Unkf83ec0 (tools/data_views.py) */
-/* ai_Unkf84cd4: view of ai_Unkf83ec0 (tools/data_views.py) */
-/* ai_Unkf84cf4: view of ai_Unkf83ec0 (tools/data_views.py) */
-float ai_Unkf86894;  /* 0xf86894 */
-float ai_Unkf868b4;  /* 0xf868b4 */
-int ai_Unkf86900[73];  /* 0xf86900, the actions being evaluated */
 int ai_Unk6f0470 = 0;  /* 0x6f0470, number of characters of kind 5, 6, 7 */
 AGCH ai_Unk6f0478 = {0};  /* 0x6f0478 */
 G9SHOT ai_Unk6f0698 = {0};  /* 0x6f0698 */
 unsigned int ai_Unk6f070c = 0;  /* 0x6f070c, the number of entries */
 int ai_Unk6f2464 = 0;  /* 0x6f2464, set: write the action table */
+char ai_DataPath[608] = {0};  /* 0x75dca0, the data path */
+/* ai_Unk7e3f80: view of ai_PlayerSlots (tools/data_views.py) */
+/* ai_Unk7e3f84: view of ai_PlayerSlots (tools/data_views.py) */
+/* ai_Unk7e4274: view of ai_PlayerSlots (tools/data_views.py) */
+G6RING ai_Unkf83c20[32] = {0};  /* 0xf83c20 */
+char ai_Unkf83da0[260] = {0};  /* 0xf83da0, the ini file of the actions */
+int ai_Unkf83ea4 = 0;  /* 0xf83ea4, the depth of the evaluation stack */
+AIACT ai_Unkf83ec0[36] = {0};  /* 0xf83ec0, the registered actions */
+/* ai_Unkf84c40: view of ai_Unkf83ec0 (tools/data_views.py) */
+/* ai_Unkf84c60: view of ai_Unkf83ec0 (tools/data_views.py) */
+/* ai_Unkf84cd4: view of ai_Unkf83ec0 (tools/data_views.py) */
+/* ai_Unkf84cf4: view of ai_Unkf83ec0 (tools/data_views.py) */
+float ai_Unkf86894 = 0;  /* 0xf86894 */
+float ai_Unkf868b4 = 0;  /* 0xf868b4 */
+int ai_Unkf86900[73] = {0};  /* 0xf86900, the actions being evaluated */
 

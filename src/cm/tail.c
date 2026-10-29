@@ -1,81 +1,77 @@
 
-/* ai_Unk6f35ca: view of ai_GfxFloor (tools/data_views.py) */
-unsigned int ai_MissionSeed;  /* 0x75e120, the random seed of the missions (as unk_4b39f0.h) */
-char ai_Unk75e130[4];  /* 0x75e130 */
-char * ai_Unk75ec60;  /* 0x75ec60 */
-char ai_Unk75fba0[2048];  /* 0x75fba0 */
-int cm_SaveAcks[8][2];  /* 0x76fa20 */
+extern unsigned int ai_MissionSeed;
+extern char ai_Unk75e130[4];
+extern char * ai_Unk75ec60;
+extern char ai_Unk75fba0[2048];
+extern int cm_SaveAcks[8][2];
 /* ai_Unk770b89: view of ai_Chars (tools/data_views.py) */
 /* ai_Unk770cec: view of ai_Chars (tools/data_views.py) */
-/* ai_Unk770d8c: view of ai_Chars (tools/data_views.py) */
-int ai_Unk91b6e0[0x800][2] = {0}; /* 0x91b6e0 */
-char ai_Unk91f700[0x5a00] = {0}; /* 0x91f700, the crime records (0x2d bytes each) up to 0x925100; f3gm's goods
-                                    table ai_Unk91f716 is the same storage, a view at +0x16 */
-int ai_Unk925510;  /* 0x925510 */
-int ai_Unk92bca0;  /* 0x92bca0 */
-int ai_Unk92bca4;  /* 0x92bca4 */
-int ai_Unk92bcc0[128];  /* 0x92bcc0 */
-int ai_Unk92bec0;  /* 0x92bec0 */
-unsigned short ai_Unk92bee0[768];  /* 0x92bee0 */
-unsigned int ai_Unk92c4e0;  /* 0x92c4e0, the random seed of the scenes */
-int ai_Unk92c500[1];  /* 0x92c500, the scene kind table: run, callbacks, flag, check */
-int ai_Unk92c504[1];  /* 0x92c504, the scene kind table (5 ints per kind) */
-int ai_Unk92c508[1];  /* 0x92c508 */
-char ai_Unk92c50c[4];  /* 0x92c50c */
-int ai_Unk92c510[60];  /* 0x92c510, the answer callbacks of the kind table (5 ints per kind) */
-char ai_Unk92c600[1152];  /* 0x92c600 */
-int ai_Unk92ca80[16];  /* 0x92ca80 */
-int ai_Unk92cac0;  /* 0x92cac0 */
-char ai_Unk92cae0[16][0x35c];  /* 0x92cae0 */
-float ai_Unk9300a0[0xb4];  /* 0x9300a0 */
-char * ai_Unk930380[32];  /* 0x930380 */
-char ai_Unk930400[192];  /* 0x930400 */
-G18POP ai_Unk9304c0[16];  /* 0x9304c0 */
-char ai_Unk930600[21376];  /* 0x930600 */
-char * ai_Unk935980[32];  /* 0x935980 */
-char ai_Unk935a00[512];  /* 0x935a00 */
-float ai_Unk935d00;  /* 0x935d00 */
-int ai_Unk935d20[32];  /* 0x935d20 */
-G18LOG ai_Unk935da0[15];  /* 0x935da0 */
-int ai_Unk9363f4;  /* 0x9363f4 */
-int ai_Unk936400;  /* 0x936400 */
-int ai_Unk936404;  /* 0x936404 */
-int ai_Unk936408;  /* 0x936408 */
-unsigned int ai_Unk936420[9];  /* 0x936420, the count then the eight player states (0x24 bytes) */
-unsigned char ai_Unk936496;  /* 0x936496 */
-int ai_Unk9364dc;  /* 0x9364dc */
-char ai_Unk9364e0[752];  /* 0x9364e0 */
-int ai_Unk9367d0;  /* 0x9367d0 */
-int ai_Unk9367d4;  /* 0x9367d4 */
-G17MSG ai_Unk9367e0[0x2000];  /* 0x9367e0, the free receive records */
-int cm_LastSyncCount;  /* 0xa687e0, "cm_LastSyncCount" (net.h) */
-int ai_Unka687e4;  /* 0xa687e4, d3_Time of the start */
-unsigned char ai_Unka68800[1024];  /* 0xa68800, a long message to split (ai_Unka68d30 bytes) */
-G17MSG * ai_Unka68c00;  /* 0xa68c00, the free list */
-unsigned int ai_Unka68c04;  /* 0xa68c04 */
-int ai_Unka68c08;  /* 0xa68c08, bytes used in ai_Unka68c20.buf */
-G17FIELDS ai_Unka68c20;  /* 0xa68c20 */
-G17FIELDS ai_Unka68ca0;  /* 0xa68ca0 */
-unsigned int ai_Unka68d1c;  /* 0xa68d1c, "cm_LastRequCount" */
-int ai_Unka68d20;  /* 0xa68d20, bytes used in ai_Unka68ca0.buf */
-G17MSG * ai_Unka68d24;  /* 0xa68d24, the received messages */
-char * cm_FieldObject;  /* 0xa68d2c, the object of the field block (fields are offsets into it) */
-int ai_Unka68d30;  /* 0xa68d30, length of ai_Unka68800 */
-char * ai_Unka68d34;  /* 0xa68d34 */
-unsigned char ai_Unka68d40[1024];  /* 0xa68d40, a joined long message */
-G17MSG ai_Unka69140[0x8000];  /* 0xa69140, the send ring */
-char * ai_Unkf31140;  /* 0xf31140, the load buffer ("cm_LoadBuf") */
-int ai_Unkf31144;  /* 0xf31144 */
-G17STAT ai_Unkf31160[0x8000];  /* 0xf31160 */
-G17MSG * cm_SendQueue;  /* 0xf81160, the messages to send */
-unsigned int ai_Unkf81164;  /* 0xf81164, length of ai_Unka68d40 */
-G17MSG ai_Unkf81180;  /* 0xf81180, the message being received */
-unsigned int ai_Unkf8121c;  /* 0xf8121c */
-char ai_Unkf895a0[0xb00] = {0}; /* 0xf895a0 */
-char ai_Unkf8aae0[0x80] = {0}; /* 0xf8aae0, the d2 caption / status text buffer (gfx.h's d2_CaptionCopy, 0x80 bytes up to d2_InputDragValue at 0xf8ab60) */
-/* ai_Unkf8f39c: view of d2_Wins (tools/data_views.py) */
-int ai_Unkfa5f00 = {0}; /* 0xfa5f00 */
-int ai_Unkfa5f04 = {0}; /* 0xfa5f04 */
+extern int ai_Unk91b6e0[0x800][2];
+extern char ai_Unk91f700[0x5a00];
+extern int ai_Unk925510;
+extern int ai_Unk92bca0;
+extern int ai_Unk92bca4;
+extern int ai_Unk92bcc0[128];
+extern int ai_Unk92bec0;
+extern unsigned short ai_Unk92bee0[768];
+extern unsigned int ai_Unk92c4e0;
+extern int ai_Unk92c500[1];
+extern int ai_Unk92c504[1];
+extern int ai_Unk92c508[1];
+extern char ai_Unk92c50c[4];
+extern int ai_Unk92c510[60];
+extern char ai_Unk92c600[1152];
+extern int ai_Unk92ca80[16];
+extern int ai_Unk92cac0;
+extern char ai_Unk92cae0[16][0x35c];
+extern float ai_Unk9300a0[0xb4];
+extern char * ai_Unk930380[32];
+extern char ai_Unk930400[192];
+extern G18POP ai_Unk9304c0[16];
+extern char ai_Unk930600[21376];
+extern char * ai_Unk935980[32];
+extern char ai_Unk935a00[512];
+extern float ai_Unk935d00;
+extern int ai_Unk935d20[32];
+extern G18LOG ai_Unk935da0[15];
+extern int ai_Unk9363f4;
+extern int ai_Unk936400;
+extern int ai_Unk936404;
+extern int ai_Unk936408;
+extern unsigned int ai_Unk936420[9];
+extern unsigned char ai_Unk936496;
+extern int ai_Unk9364dc;
+extern char ai_Unk9364e0[752];
+extern int ai_Unk9367d0;
+extern int ai_Unk9367d4;
+extern G17MSG ai_Unk9367e0[0x2000];
+extern int cm_LastSyncCount;
+extern int ai_Unka687e4;
+extern unsigned char ai_Unka68800[1024];
+extern G17MSG * ai_Unka68c00;
+extern unsigned int ai_Unka68c04;
+extern int ai_Unka68c08;
+extern G17FIELDS ai_Unka68c20;
+extern G17FIELDS ai_Unka68ca0;
+extern unsigned int ai_Unka68d1c;
+extern int ai_Unka68d20;
+extern G17MSG * ai_Unka68d24;
+extern char * cm_FieldObject;
+extern int ai_Unka68d30;
+extern char * ai_Unka68d34;
+extern unsigned char ai_Unka68d40[1024];
+extern G17MSG ai_Unka69140[0x8000];
+extern char * ai_Unkf31140;
+extern int ai_Unkf31144;
+extern G17STAT ai_Unkf31160[0x8000];
+extern G17MSG * cm_SendQueue;
+extern unsigned int ai_Unkf81164;
+extern G17MSG ai_Unkf81180;
+extern unsigned int ai_Unkf8121c;
+extern char ai_Unkf895a0[0xb00];
+extern char ai_Unkf8aae0[0x80];
+extern int ai_Unkfa5f00;
+extern int ai_Unkfa5f04;
 /* ai_Unkfd7c50: view of d3_Scenes (tools/data_views.py) */
 /* ai_Unk143a610: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_Unk143a680: view of txt_Ptrs (build/mk_txt_views.py) */
@@ -102,8 +98,7 @@ int ai_Unkfa5f04 = {0}; /* 0xfa5f04 */
 /* ai_Unk1440c88: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_Unk14413c8: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_Unk1441488: view of txt_Ptrs (build/mk_txt_views.py) */
-/* ai_Unk144a160: view of txt_Ptrs (build/mk_txt_views.py) */
-char * ai_Unk1468ae0[0x300] = {0}; /* 0x1468ae0, the objects */
+extern char * ai_Unk1468ae0[0x300];
 float ai_Unk5eb780 = 1.0f;  /* 0x5eb780 */
 float ai_Unk5eb788 = 0.0f;  /* 0x5eb788 */
 /* 0x5eb798 / 0x5eb79c are the pooled floats 70.0f / 0.25f (0x428c0000 / 0x3e800000), not a
@@ -161,6 +156,16 @@ int ai_Unk60d368 = -1;  /* 0x60d368 */
 int ai_Unk60d36c = -1;  /* 0x60d36c, -1 or the object waited for ( */
 int ai_Unk60d370 = 1;  /* 0x60d370 */
 int ai_Unk60d374 = 1;  /* 0x60d374 */
+char ai_Unk60dd24 = 48;  /* 0x60dd24 */
+char ai_Unk60dd68 = 49;  /* 0x60dd68 */
+/* 0x4db700 .. 0x4dd95d (one function; Ghidra's 0x4dc7c0 lies inside it), the trial scene (the run function of the scene kind 2, called with the party m) of a session request m (+0x30 count, +0x34 .. +0x48 the characters: accused, accuser, judge, two
+   assessors ..): "Gericht.ed3" / "ADDON\\PROZESS_NEU.sbf", the scenes "cutscenes\\prozess\\prozess-*.esc" (create, judge, assessors, intro,
+   accuser, accused), the texts 0x1491 .. 0x1557 through 0x515960 and the voices "_PROZESS_*" (0x4e32d0 / 0x4e32b0); the accusation, the
+   charge (witnesses), the question of guilt, the torture sub-scenes "cutscenes\\prozess\\folter*" (the instrument names 0x60dad0 ..
+   0x60db84 are the .esc names), the vote ("prozess-abstimmen-1 .. 3"), the verdict (guilty / not guilty, penalties 0x4f4420 / 0x4f48f0 /
+   0x4f4460) and the cleanup of all sound slots. The stack frame is 0x760 bytes. ROUGH: the structure and the calls (read from the call
+   digest, arguments in call order but mostly 0), not the arguments of 0x4f2720 / 0x4f3580 / 0x4f3b40 and the mood floats (0x3fb33333 ..) */
+char ai_Unk60de4c = 50;  /* 0x60de4c, scene slots of the trial */
 char ai_Unk60eae0[10][24] = { "DUMMY_NPC", "MEISTER_NPC", "POLITICIAN_NPC", "AI_NPC", "NPC", "PLAYER", "REMOTE_PLAYER", "RELATIVE_PLAYER", "USED_PLAYER", "INVISIBLE_NPC" };  /* 0x60eae0, the names of the NPC kinds */
 char ai_Unk623ac0[] = { 115, 107, 121, 95, 115, 99, 104, 119, 101, 114, 95, 48, 49, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 64, 64, -51, -52, 76, 63, 0, 0, -128, -66, 115, 107, 121, 95, 115, 99, 104, 119, 101, 114, 95, 48, 50, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 64, 64, -51, -52, 76, 63, 0, 0, -128, -66, 115, 107, 121, 95, 100, 117, 110, 107, 101, 108, 95, 48, 49, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 64, 64, -51, -52, 76, 63, 0, 0, -128, -66, 0, 0, 0, 0, 4 };  /* 0x623ac0, 76-byte sky records: Sky_Schwer / Sky_Mittel / Sky_Schoen */
 int ai_Unk624570 = 1;  /* 0x624570 */
@@ -240,3 +245,81 @@ int ai_Unk6f244c = 0;  /* 0x6f244c */
 int cm_NetFlags = 0;  /* 0x6f2594, flags */
 int cm_RequestedSaveSlot = 0;  /* 0x6f25c8 */
 char cm_RequestedSaveName[72] = {0};  /* 0x6f25d0 */
+/* ai_Unk6f35ca: view of ai_GfxFloor (tools/data_views.py) */
+unsigned int ai_MissionSeed = 0;  /* 0x75e120, the random seed of the missions (as unk_4b39f0.h) */
+char ai_Unk75e130[4] = {0};  /* 0x75e130 */
+char * ai_Unk75ec60 = 0;  /* 0x75ec60 */
+char ai_Unk75fba0[2048] = {0};  /* 0x75fba0 */
+int cm_SaveAcks[8][2] = {0};  /* 0x76fa20 */
+/* ai_Unk770d8c: view of ai_Chars (tools/data_views.py) */
+int ai_Unk91b6e0[0x800][2] = {0}; /* 0x91b6e0 */
+char ai_Unk91f700[0x5a00] = {0}; /* 0x91f700, the crime records (0x2d bytes each) up to 0x925100; f3gm's goods
+                                    table ai_Unk91f716 is the same storage, a view at +0x16 */
+int ai_Unk925510 = 0;  /* 0x925510 */
+G28REC ai_Unk925520[96] = {0};  /* 0x925520 */
+int ai_Unk92bca0 = 0;  /* 0x92bca0 */
+int ai_Unk92bca4 = 0;  /* 0x92bca4 */
+int ai_Unk92bcc0[128] = {0};  /* 0x92bcc0 */
+int ai_Unk92bec0 = 0;  /* 0x92bec0 */
+unsigned short ai_Unk92bee0[768] = {0};  /* 0x92bee0 */
+unsigned int ai_Unk92c4e0 = 0;  /* 0x92c4e0, the random seed of the scenes */
+int ai_Unk92c500[1] = {0};  /* 0x92c500, the scene kind table: run, callbacks, flag, check */
+int ai_Unk92c504[1] = {0};  /* 0x92c504, the scene kind table (5 ints per kind) */
+int ai_Unk92c508[1] = {0};  /* 0x92c508 */
+char ai_Unk92c50c[4] = {0};  /* 0x92c50c */
+int ai_Unk92c510[60] = {0};  /* 0x92c510, the answer callbacks of the kind table (5 ints per kind) */
+char ai_Unk92c600[1152] = {0};  /* 0x92c600 */
+int ai_Unk92ca80[16] = {0};  /* 0x92ca80 */
+int ai_Unk92cac0 = 0;  /* 0x92cac0 */
+char ai_Unk92cae0[16][0x35c] = {0};  /* 0x92cae0 */
+float ai_Unk9300a0[0xb4] = {0};  /* 0x9300a0 */
+char * ai_Unk930380[32] = {0};  /* 0x930380 */
+char ai_Unk930400[192] = {0};  /* 0x930400 */
+G18POP ai_Unk9304c0[16] = {0};  /* 0x9304c0 */
+char ai_Unk930600[21376] = {0};  /* 0x930600 */
+char * ai_Unk935980[32] = {0};  /* 0x935980 */
+char ai_Unk935a00[512] = {0};  /* 0x935a00 */
+float ai_Unk935d00 = 0;  /* 0x935d00 */
+int ai_Unk935d20[32] = {0};  /* 0x935d20 */
+G18LOG ai_Unk935da0[15] = {0};  /* 0x935da0 */
+int ai_Unk9363f4 = 0;  /* 0x9363f4 */
+int ai_Unk936400 = 0;  /* 0x936400 */
+int ai_Unk936404 = 0;  /* 0x936404 */
+int ai_Unk936408 = 0;  /* 0x936408 */
+unsigned int ai_Unk936420[9] = {0};  /* 0x936420, the count then the eight player states (0x24 bytes) */
+unsigned char ai_Unk936496 = 0;  /* 0x936496 */
+int ai_Unk9364dc = 0;  /* 0x9364dc */
+char ai_Unk9364e0[752] = {0};  /* 0x9364e0 */
+int ai_Unk9367d0 = 0;  /* 0x9367d0 */
+int ai_Unk9367d4 = 0;  /* 0x9367d4 */
+G17MSG ai_Unk9367e0[0x2000] = {0};  /* 0x9367e0, the free receive records */
+int cm_LastSyncCount = 0;  /* 0xa687e0, "cm_LastSyncCount" (net.h) */
+int ai_Unka687e4 = 0;  /* 0xa687e4, d3_Time of the start */
+unsigned char ai_Unka68800[1024] = {0};  /* 0xa68800, a long message to split (ai_Unka68d30 bytes) */
+G17MSG * ai_Unka68c00 = 0;  /* 0xa68c00, the free list */
+unsigned int ai_Unka68c04 = 0;  /* 0xa68c04 */
+int ai_Unka68c08 = 0;  /* 0xa68c08, bytes used in ai_Unka68c20.buf */
+G17FIELDS ai_Unka68c20 = {0};  /* 0xa68c20 */
+G17FIELDS ai_Unka68ca0 = {0};  /* 0xa68ca0 */
+unsigned int ai_Unka68d1c = 0;  /* 0xa68d1c, "cm_LastRequCount" */
+int ai_Unka68d20 = 0;  /* 0xa68d20, bytes used in ai_Unka68ca0.buf */
+G17MSG * ai_Unka68d24 = 0;  /* 0xa68d24, the received messages */
+char * cm_FieldObject = 0;  /* 0xa68d2c, the object of the field block (fields are offsets into it) */
+int ai_Unka68d30 = 0;  /* 0xa68d30, length of ai_Unka68800 */
+char * ai_Unka68d34 = 0;  /* 0xa68d34 */
+unsigned char ai_Unka68d40[1024] = {0};  /* 0xa68d40, a joined long message */
+G17MSG ai_Unka69140[0x8000] = {0};  /* 0xa69140, the send ring */
+char * ai_Unkf31140 = 0;  /* 0xf31140, the load buffer ("cm_LoadBuf") */
+int ai_Unkf31144 = 0;  /* 0xf31144 */
+G17STAT ai_Unkf31160[0x8000] = {0};  /* 0xf31160 */
+G17MSG * cm_SendQueue = 0;  /* 0xf81160, the messages to send */
+unsigned int ai_Unkf81164 = 0;  /* 0xf81164, length of ai_Unka68d40 */
+G17MSG ai_Unkf81180 = {0};  /* 0xf81180, the message being received */
+unsigned int ai_Unkf8121c = 0;  /* 0xf8121c */
+char ai_Unkf895a0[0xb00] = {0}; /* 0xf895a0 */
+char ai_Unkf8aae0[0x80] = {0}; /* 0xf8aae0, the d2 caption / status text buffer (gfx.h's d2_CaptionCopy, 0x80 bytes up to d2_InputDragValue at 0xf8ab60) */
+/* ai_Unkf8f39c: view of d2_Wins (tools/data_views.py) */
+int ai_Unkfa5f00 = {0}; /* 0xfa5f00 */
+int ai_Unkfa5f04 = {0}; /* 0xfa5f04 */
+/* ai_Unk144a160: view of txt_Ptrs (build/mk_txt_views.py) */
+char * ai_Unk1468ae0[0x300] = {0}; /* 0x1468ae0, the objects */

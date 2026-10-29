@@ -18,7 +18,7 @@ extern G13RADIO d2_Radios[8];           /* 0xfa5aa0 */
 extern int d2_PointerObj;                /* 0x5fe710, focused object */
 extern int d2_LastWindow;                /* 0x6ed938 */
 extern unsigned char kb_Last;           /* 0x1468410 */
-int sv_FrameMask;  /* 0x760638 */
+extern int sv_FrameMask;
 void d2_CreateScrollButtons(int x, int y, int win, int obj, int pic);                      /* 0x472270 */
 int d2_GetWinObj(int view, int idx, int k);                                      /* 0x475b80 */
 int d2_CreateRadioGroup(int n, ...);                                             /* 0x46c490 */

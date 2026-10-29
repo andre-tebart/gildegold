@@ -3,14 +3,15 @@
    -1 for a missing window or an overlong text. ROUGH: only the structure of the token loop and the simple tokens; the grammar cases of "%s" / "%S" and the "%i" dot grouping are summarised, the rest of the repeated string moves is txt_Subst. @deep behaviour: the draft is a skeleton, 2912 of 7536 bytes (only the token loop and the simple tokens); missing: the grammar cases of %s/%S (the txt_Field word forms of 0x42c3b0 by case 1 .. 6), the %r random text of a group, the %i dot grouping, the case flags (the original's param_2 .. param_10) and the detail of the window record 0xf8f13c + 0x3c4 * window (+0x10 text buffer, +0x24c / +0x250 flags, +0x264 / +0x268 the 0x41-entry table with count +0x368); readability Q1/Q2: the skeleton identifiers and the unnamed window / argument globals */
 
 
-/* ---- the text engine (0x515960 .. 0x519010) ---- */
-int ai_Unkfe7c20 = {0}; /* 0xfe7c20 */
+extern int ai_Unkfe7c20;
 extern int d2_LastWindow;                /* 0x6ed938, the current text window */
+int ai_Unk6333b8 = 0;  /* 0x6333b8 */
 int ai_Unk6ed978 = 0;  /* 0x6ed978 */
 /* ai_Unkf8f13c: view of d2_Wins (tools/data_views.py) */
 extern char *d2_Objs;  /* 0xf8f080, 0x2ec bytes each; @original: d2.h declares D2OBJ *; the units add byte offsets to it and cannot include d2.h (vfs_Root / vfs_Tfopen clash with vfs.h) */
+/* ---- the text engine (0x515960 .. 0x519010) ---- */
+int ai_Unkfe7c20 = {0}; /* 0xfe7c20 */
 int ai_Unk114fe60[18440] = {0}; /* 0x114fe60, a byte per text id (the gender / class) */
-int ai_Unk6333b8 = 0;  /* 0x6333b8 */
 int d2_SetForm(int view, int n);                    /* 0x475f70 */
 void d2_DrawAll(void);                    /* 0x46e150 */
 void d2_DrawWindow();                    /* 0x471a90 */

@@ -13,7 +13,7 @@ int d3t_CreateSunRays();                     /* 0x417190 */
 int d3t_FadeOutSunRays();                     /* 0x417150 */
 int ai_Unk5763c0();                     /* 0x5763c0 */
 void ai_Unk576040(int a, int b, int c, int d);                     /* 0x576040 */
-unsigned ai_Unk623ecc = 4294967295;  /* 0x623ecc */
+extern unsigned ai_Unk623ecc;
 
 void sv_Unk5301a0(void)
 {

@@ -4,9 +4,7 @@
    by the kind (0x504ad0), or inherits them from the two parents a2 / a3 (a random mix, the parents' child slots +0x5c ..) and picks names (0x143ac5c / 0x143af70 / 0x143b178, 0xf characters) and the portrait
    (+0x50). ROUGH */
 
-/* ---- layout 2026-10-23: the value / price helpers 0x5085b0 .. 0x509ee0 (ROUGH drafts) ---- */
-char ai_Unk61a8ac[] = "?*T\002iT*\025*\002TT*\025*\001TT\025\025*\001";  /* 0x61a8ac, a table of ints indexed by the word + */
-int ai_Difficulty = 0;  /* 0x6f23fc */
+extern int ai_Difficulty;
 /* ai_Unk143c860: view of txt_Ptrs (build/mk_txt_views.py) */
 unsigned char ai_GameFlags = 0;  /* 0x6f23f8 */
 extern float ai_Unk617830[], ai_Unk617840[];  /* 0x617830 / 0x617840 */

@@ -15,7 +15,7 @@ extern char d3_Scenes[];
 #define ORD_FLAG_BLOCKED 0x400000  /* the privilege flag that blocks the misappropriation order (0x4f6b40) */
 
 /* the clock's hour as am.h / cm.h / amt.h declare it (gv.h keeps ai_Time a char array) */
-unsigned short ai_TimeHour;  /* 0x770ae4, AITIME.hour of ai_Time */
+unsigned short ai_TimeHour = 0;  /* 0x770ae4, AITIME.hour of ai_Time */
 
 /* the engine's generic unaligned block copy (D3_COPY in d3.h, which needs the DirectX headers): size and
    destination through temps, the source named directly in the asm (0x4f9190 copies the record 0x91b480) */
@@ -118,8 +118,9 @@ typedef struct ORDSTATROUND {           /* one 0x14-byte round of the statistics
     float score;                        /* 0x0c, out[9]: the overall score the report's 0.55 / 0.45 use */
     float base;                         /* 0x10, ai_RatingBaseF of the round */
 } ORDSTATROUND;
-ORDSTATS ord_Statistics = {0}; /* 0x91b4c0, the same bytes as ord_StatisticsRecord */
+extern ORDSTATS ord_Statistics;
 ORDSTIME ord_StatisticsClock = {0}; /* 0x91b470, the same bytes as ord_StatisticsTime */
+ORDSTATS ord_Statistics = {0}; /* 0x91b4c0, the same bytes as ord_StatisticsRecord */
 extern ORDSTIME ord_GameClock;           /* 0x770ae0, the same bytes as ai_Time */
 extern ORDSTATROUND ord_StatisticsRounds[16]; /* 0x91ab00, the same bytes as ord_StatisticsHistory */
 extern int ord_RatingRateBits;           /* 0x91aaf4, the bits of ord_RatingRate */

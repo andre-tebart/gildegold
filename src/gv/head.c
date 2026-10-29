@@ -21,7 +21,7 @@ extern GAPDATA full_data_91f6e4[];
 extern unsigned char amt_Table;
 extern char gm_PlayerRecords[];
 
-const float unk_Tab5ee034[] = { 0.800000012f, 0.699999988f, 0.600000024f, 0.5f, 15.0f, 12.5f, 10.0f, 7.5f };  /* 0x5ee034 */
+extern const float unk_Tab5ee034[];
 int gm_ConvertMoney(int a, unsigned char k);   /* 0x5085b0 */
 int gm_PlayerFactor(int a, unsigned char k);   /* 0x5085f0 */
 int gm_Unk509e30(void *list, unsigned char p);   /* 0x509e30 */

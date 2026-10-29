@@ -82,15 +82,16 @@ int sb_Used = 0;  /* 0x633194 */
 SBBANK * sb_Banks = 0;  /* 0x633198 */
 int sb_Driver = 0;  /* 0x63319c */
 char sb_Path[256] = {0};  /* 0x6331a8 */
-int sb_Count = 0;  /* 0x6332ac */
+extern int sb_Count;
 SBSAMPLE * sb_Samples = 0;  /* 0x6332a8 */
+int sb_Count = 0;  /* 0x6332ac */
 int sb_Stopping = 0;  /* 0x6332b0 */
 unsigned int sb_FadeTime = 3000;  /* 0x5f8140 */
 unsigned int sb_StopTime = 3000;  /* 0x5f8144 */
-SBBANK sb_DummyBank;  /* 0x14607c0 */
-SBSAMPLE sb_Dummy;  /* 0x1460a20 */
-SBENTRY sb_DummyEntry;  /* 0x1460a60 */
-char sb_Msg[256];  /* 0x1460920 */
+SBBANK sb_DummyBank = {0};  /* 0x14607c0 */
+char sb_Msg[256] = {0};  /* 0x1460920 */
+SBSAMPLE sb_Dummy = {0};  /* 0x1460a20 */
+SBENTRY sb_DummyEntry = {0};  /* 0x1460a60 */
 
 /* d3_Time * 13, spelled so that the volatile is read three times */
 #define SB_TIME ((d3_Time << 3) + (d3_Time << 2) + d3_Time)

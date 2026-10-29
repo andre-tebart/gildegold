@@ -10,19 +10,19 @@ int kb_Base = 0x200;                    /* 0x5f3234 */
 int di_MaxX = 790;                      /* 0x5f3238 mouse limits (as in the exe image) */
 int di_MaxY = 599;                      /* 0x5f323c */
 int di_Absolute = 1;                    /* 0x5f3240 mouse position from GetCursorPos */
-unsigned short kb_Map[256];             /* 0x1467dc0 */
-unsigned char kb_Down[256];             /* 0x14681c0 */
-unsigned char kb_Pressed[256];          /* 0x1468420 */
-DIMOUSEST dm_L;                         /* 0x1467380 */
-DIMOUSEST dm_S;                         /* 0x14673e0 */
-DIMOUSEST dm_P;                         /* 0x14683c0 */
-DIMOUSEST dm_Q[32];                     /* 0x1467440 */
-LPDIRECTINPUT di_Main;                  /* 0x1468414 */
-LPDIRECTINPUTDEVICE di_Mouse;           /* 0x1467360 */
-LPDIRECTINPUTDEVICE di_Keyboard;        /* 0x14673cc */
-HANDLE di_Event;                        /* 0x146840c */
-HWND di_Hwnd;                           /* 0x146735c */
-HINSTANCE di_Hinst;                     /* 0x1467364 */
+extern unsigned short kb_Map[256];
+extern unsigned char kb_Down[256];
+extern unsigned char kb_Pressed[256];
+extern DIMOUSEST dm_L;
+extern DIMOUSEST dm_S;
+extern DIMOUSEST dm_P;
+extern DIMOUSEST dm_Q[32];
+extern LPDIRECTINPUT di_Main;
+extern LPDIRECTINPUTDEVICE di_Mouse;
+extern LPDIRECTINPUTDEVICE di_Keyboard;
+extern HANDLE di_Event;
+extern HWND di_Hwnd;
+extern HINSTANCE di_Hinst;
 unsigned int kb_RepeatTime = 0;         /* 0x631098 */
 int di_MinX = 0;                        /* 0x6310b0 */
 int di_MinY = 0;                        /* 0x6310b4 */
@@ -37,5 +37,18 @@ int di_PressX = 0;                      /* 0x6310d4 */
 int di_PressY = 0;                      /* 0x6310d8 */
 int di_LClickTime = 0;                  /* 0x6310dc (.bss: 0 at start) */
 union { int i; unsigned char b; } kb_RepeatKey = {0};     /* 0x6310e0 */
-unsigned char kb_Last;                  /* 0x1468410 */
+HWND di_Hwnd = 0;                           /* 0x146735c */
+LPDIRECTINPUTDEVICE di_Mouse = {0};           /* 0x1467360 */
+HINSTANCE di_Hinst = {0};                     /* 0x1467364 */
+DIMOUSEST dm_L = {0};                         /* 0x1467380 */
+LPDIRECTINPUTDEVICE di_Keyboard = {0};        /* 0x14673cc */
+DIMOUSEST dm_S = {0};                         /* 0x14673e0 */
+DIMOUSEST dm_Q[32] = {0};                     /* 0x1467440 */
+unsigned short kb_Map[256] = {0};             /* 0x1467dc0 */
+unsigned char kb_Down[256] = {0};             /* 0x14681c0 */
+DIMOUSEST dm_P = {0};                         /* 0x14683c0 */
+HANDLE di_Event = 0;                        /* 0x146840c */
+unsigned char kb_Last = 0;                  /* 0x1468410 */
+LPDIRECTINPUT di_Main = {0};                  /* 0x1468414 */
+unsigned char kb_Pressed[256] = {0};          /* 0x1468420 */
 

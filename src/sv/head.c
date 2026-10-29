@@ -265,7 +265,7 @@ extern unsigned char ai_Unk75e130;
 extern unsigned char ai_Unk75e134;
 extern GAPDATA full_data_6248b4[];
 
-int ai_Unk75f280[576];  /* 0x75f280, the member panel: */
+extern int ai_Unk75f280[576];
 int d2_CreateWinText(short x, short y, char *text, int win);
 int d2_WinOpenPic(short x, short y, int pic, int win);
 void d2_SetObjWidth(int obj, short w);
@@ -289,10 +289,10 @@ struct G16CHARCLICK;  /* file-scope tag for the prototypes below */
 struct GCLOCK;        /* f3gm.c typedef; file-scope tag for the gm_AddTime / gm_SetTime prototypes */
 struct D3SURF;        /* d3_engine.h typedef; file-scope tag for the d3if_SelectTextureSet prototype */
 
-int sv_TickFrames = 30;  /* 0x623790, the frames drawn since the last timer tick (counted by the frame loop) */
-float sv_FramesPerTick = 30.0f;  /* 0x62378c */
-int sv_SelectionFlags[0xc0];  /* 0x75e920, the mirror of the character selection flags (byte i per character) */
-int cm_Bombs[0x40];  /* 0x935c00, cm's 32 bomb records (object, time), cm.h */
+extern int sv_TickFrames;
+extern float sv_FramesPerTick;
+extern int sv_SelectionFlags[0xc0];
+extern int cm_Bombs[0x40];
 extern char ch_EmptyName[];             /* 0x631090 */
 extern int di_Absolute, di_MinX, di_MinY, di_MaxX, di_MaxY;  /* 0x5f3240, 0x6310b0, 0x6310b4, 0x5f3238, 0x5f323c (di_input.c) */
 extern short d2_ScreenW, d2_ScreenH;    /* 0xfb9072, 0xfb9070 (d2.h), the screen size */
@@ -328,24 +328,24 @@ void sv_FitForm(int f);                     /* 0x52ea30 */
 extern int ai_Unk623820, ai_Unk623824, ai_Unk623828, ai_Unk62382c, ai_Unk623830, ai_Unk623834, ai_Unk623838, ai_Unk62383c;  /* 0x623820, 0x623824, 0x623828, 0x62382c, 0x623830, 0x623834, 0x623838, 0x62383c */
 extern int ai_Unk623840, ai_Unk623844, ai_Unk623848, ai_Unk62384c, ai_Unk623850, sv_PanelPic, sv_PanelForm, ai_Unk6238a4;  /* 0x623840, 0x623844, 0x623848, 0x62384c, 0x623850, 0x623854, 0x623860, 0x6238a4 */
 extern int ai_Unk6237cc, ai_Unk623e88;  /* 0x6237cc, 0x623e88 */
-int sv_PlayerBarForm = -1;  /* 0x62385c, the player bar's form, -1 = closed */
-int ai_Unk7662e0[15];  /* 0x7662e0, 15 widget ids */
+extern int sv_PlayerBarForm;
+extern int ai_Unk7662e0[15];
 /* ai_Unk7e4048: view of ai_PlayerSlots (tools/data_views.py) */
 /* ai_Unk7e4058: view of ai_PlayerSlots (tools/data_views.py) */
 extern int ai_Unk6f22c0, ai_Unk6f22c4, ai_Unk6f22c8, ai_FrameWait;  /* 0x6f22c0, 0x6f22c4, 0x6f22c8, 0x6f22bc */
-int sv_FrameDepth = 0;  /* 0x6f229c, the depth of the frame callback stack */
-int sv_FrameBase = 0;  /* 0x6f22a4, the depth a screen was entered at (the base of the pop count) */
+extern int sv_FrameDepth;
+extern int sv_FrameBase;
 extern char ai_Unk6f0454;  /* 0x6f0454 */
 extern int sv_ViewRectLeft, sv_ViewRectTop, sv_ViewRectRight, sv_ViewRectBottom, ai_Unk6ed92c;  /* 0x6248a4, 0x6248a8, 0x6248ac, 0x6248b0, 0x6ed92c */
 extern int ai_Unkfb9060, ai_Unkfb9064, ai_Unkfb9068, ai_Unkfb906c;  /* 0xfb9060, 0xfb9064, 0xfb9068, 0xfb906c */
 extern char ai_GamePanel;  /* 0x6f3668 */
 extern char *ai_PlayerBuilding, *ai_FallbackBuilding;  /* 0x6f2308, 0x6f230c */
-unsigned short * sv_PanelShown = 0;  /* 0x6f2310, the scene record (room) the info panel shows now */
-int sv_PanelFlag;  /* 0x75e8c0, 1 when the panel is up (an int; cm.h / f3init.c) */
-char * sv_PanelObject;  /* 0x75e8c4, the object the info panel shows */
-unsigned short * sv_PanelRecord;  /* 0x75e8c8, its scene record */
-char sv_PanelText[76];  /* 0x75e8d4, the panel text */
-short d2_PointerLook = 0;  /* 0x6ed9d0, the pointer direction / panel layout code (1 .. 8) */
+extern unsigned short * sv_PanelShown;
+extern int sv_PanelFlag;
+extern char * sv_PanelObject;
+extern unsigned short * sv_PanelRecord;
+extern char sv_PanelText[76];
+extern short d2_PointerLook;
 /* ai_Unk6f0455: view of ai_Unk6f0454 (tools/data_views.py) */
 extern unsigned short ai_PlayerId;  /* 0x6f25b8 */
 /* the object / character record fields sv.c reads (AIBLD / AICHAR in ai.h; ai.h cannot be included here: its
@@ -384,10 +384,10 @@ typedef struct SVCHARREC {
     unsigned char flag1b1;              /* +0x1b1, nonzero: the info panel stays closed for the character */
 } SVCHARREC;
 #pragma pack(pop)
-int sv_BubbleObjects[4286];  /* 0x761fc8, the object of each speech bubble ( */
-SVPLATE sv_NamePlates[0x20];  /* 0x760640, the name plate records (200 bytes each) */
-char sv_StatusText[136];  /* 0x761f40, the status line text */
-int sv_StatusTime = -1;  /* 0x6237c4, when the status line was set (d3_Time) */
+extern int sv_BubbleObjects[4286];
+extern SVPLATE sv_NamePlates[0x20];
+extern char sv_StatusText[136];
+extern int sv_StatusTime;
 
 int gm_IsHomeType(unsigned char *b);     /* 0x502520, f3gm.c */
 int gm_IsType10(unsigned char *b);       /* 0x5024f0, f3gm.c */

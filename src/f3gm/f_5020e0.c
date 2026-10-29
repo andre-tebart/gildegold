@@ -2,7 +2,7 @@
 
 int gm_BuildingJob();                     /* 0x5048e0 */
 int gm_ListBuildingsOfType();                     /* 0x5020a0 */
-int ai_Unk6f2448 = 0;  /* 0x6f2448 */
+extern int ai_Unk6f2448;
 
 /* 0x5020e0, whether the character c may take the job of the building kind k: 0 no, 1 yes, 2 yes in a neighbouring building of the same type (0x5020a0 lists them) ; by the building's class (0x501d80): 1 / 7 / 8 the jobs of the kind (the six bytes at +0x223) match the character's job number (0x5044b0), 2 never, 3 by the character's kind (0xf: kinds 1 / 0xf / 6, 0xa: kind 3), 4 own list only, 6 by the rank byte at +0x9 of the character (limits 0 / 3 / 4 / 5 by the kind) giving 1 or 2. With the flag 0x6f2448 every person (kind 6 / 7) may. ROUGH */
 #define JOB_FIND(t0, base, v, code)                                                  \

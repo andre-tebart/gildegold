@@ -13,8 +13,7 @@ extern char d3_Scenes[];
 
 int rt_MarkGroup = -1;                  /* 0x602a90 */
 int ai_Unk62c26c = 1;  /* 0x62c26c */
-/* ai_Unk7e422c: view of ai_PlayerSlots (tools/data_views.py) */
-RTMARK rt_Marks[8];  /* 0xf812a0 */
+extern RTMARK rt_Marks[8];
 /* ai_Unk143a588: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_Unk144ad24: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_Unk144ad28: view of txt_Ptrs (build/mk_txt_views.py) */
@@ -36,4 +35,6 @@ int rt_MarkCount = 0;  /* 0x6f0750, the marks used */
 int rt_PickedBuilding = 0;  /* 0x6f0754, the building shown */
 RTPOINT * rt_EditRoute = 0;  /* 0x6f0758, the route being edited */
 char * ai_Unk6f26ac = 0;  /* 0x6f26ac, the screen surface */
+/* ai_Unk7e422c: view of ai_PlayerSlots (tools/data_views.py) */
+RTMARK rt_Marks[8] = {0};  /* 0xf812a0 */
 

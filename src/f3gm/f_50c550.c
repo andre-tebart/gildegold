@@ -1,6 +1,22 @@
 /* 0x50c550, how much the person a likes the person b, 0 .. 100 (100 for the same person, 50 when one of them is unknown (0xffff)): the sum of the liking of a's two bound persons (0x5092e0 of the words +0x170 and, for a person with a kind 4 spouse at +0xce6, of 0x50b010(1), and of the guild head of the faith byte 0x1e .. 0x21 -> the persons 0x17 .. 0x1a), the stored mutual rating of the two (0x7e5360 matrix, scaled to 0 .. 100), the best building of the class 0x21 the person a lives in (the byte +0x247, up to 3), the rating of 0x4e5e50, the bonuses per kind of b's job group (0x5ba6b0 of the goods 0x155 .. 0x166: 10 / 7 / 8 / 15 times the count), the kinds 0x2b6 (+5 when b has a spouse, +5 when b has the flags 0x3e00), the owner link (0x16b, times 7), minus 3 per level of the bits 14..16 (a different faith byte) and bits 23..24 of a's flags +0x1ac. ROUGH: converted from the pseudocode, the long float expression is lost in part */
 
-char * ai_Blds;  /* 0x889f74, the buildings ( */
+int gm_PlayerRecords[688] = {0};  /* 0x7d5f80, the 16 player records ( */
+int ai_Unk7d6a40 = 0;  /* 0x7d6a40, the number of family records */
+char ai_Unk7d6a60[0xd4d0] = {0}; /* 0x7d6a60, the five stock blocks (five rows of four header ints plus 0x55 records of 0x80 bytes); a tentative definition, so the COMMON linker reserves the whole span and no other global lands inside it. init_StockBlock is the same object (data.csv alias). */
+char * ai_Objects = 0;  /* 0x7e3f34, the object instances ( */
+int ai_Unk7e3f38 = 0;  /* 0x7e3f38, the depth of the child stack */
+int gm_NOffers = 0;  /* 0x7e3f3c, the number of offers */
+int gm_Offers[528] = {0};  /* 0x7e4b20, the offers (6 ints each: building, market, goods object, supply, price float, flag) */
+int ai_Unk875360[32] = {0};  /* 0x875360 */
+int ai_Unk8753e0[20488] = {0};  /* 0x8753e0, the child stack (the first word of */
+unsigned ai_Unk889400[732] = {0};  /* 0x889400 */
+int ai_Unk889f70 = 0;  /* 0x889f70 */
+char * ai_Blds = 0;  /* 0x889f74, the buildings ( */
+int ai_Unk919f80[732] = {0};  /* 0x919f80 */
+char * ai_Goods = 0;  /* 0x91aaf0, the object prototypes ( */
+unsigned ai_Unk91ac40[136] = {0};  /* 0x91ac40 */
+char gm_CharacterStatistics[128] = {0};  /* 0x91b500, the character statistics ( */
+char ai_Unkf8ef80[256] = {0}; /* 0xf8ef80, the game root path */
 float gm_Liking(unsigned a, unsigned b, int c)
 {
     float sum = 0.0f;

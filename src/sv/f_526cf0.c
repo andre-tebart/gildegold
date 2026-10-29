@@ -4,10 +4,10 @@
    button alone drags the map (the delta rotated by the view, 0x6f3614 * 0.0606, clamped to the map rectangle); releasing restores the clip window (0x4113f0). Returns the activity count. ROUGH */
 
 extern int ai_Unk6f23b8, ai_Unk6f23a0, ai_Unk6f23a4, ai_Unk6f2398, ai_Unk6f239c, ai_Unk6f1c88, ai_Unk6f1c48, ai_Unk6f1c50, ai_Unk6f1c40, ai_Unk6f1c84, ai_Unk6f2298, ai_Unk6f2290, ai_Unk6f1c8c;  /* 0x6f23b8, 0x6f23a0, 0x6f23a4, 0x6f2398, 0x6f239c, 0x6f1c88, 0x6f1c48, 0x6f1c50, 0x6f1c40, 0x6f1c84, 0x6f2298, 0x6f2290, 0x6f1c8c */
-int ai_OptionScrollSpeed;  /* 0x6f3614 */
+extern int ai_OptionScrollSpeed;
 extern float ai_Unk6f23a8, ai_Unk6f23ac, ai_Unk6f23b0, ai_Unk6f23b4, ai_Unk6f1c64[3];  /* 0x6f23a8, 0x6f23ac, 0x6f23b0, 0x6f23b4, 0x6f1c64 */
 extern int tb_Paused, ai_Unk760440, ai_Unk62a8cc, ai_Unk6f22b4, sv_FrameDepth, sv_FrameBase, ai_Unk75ec60, ai_Unk6f2304;  /* 0x6333e0, 0x760440, 0x62a8cc, 0x6f22b4, 0x6f229c, 0x6f22a4, 0x75ec60, 0x6f2304 */
-char ai_Unk62381c = 1;  /* 0x62381c */
+extern char ai_Unk62381c;
 int d3t_GetHeightRange();                     /* 0x411c70 */
 short * gm_PlayerRecord(char *ch);                   /* 0x506430 */
 void sv_PlaceCamera(float f);

@@ -45,9 +45,9 @@ extern unsigned char amt_Table;
 extern GAPDATA full_data_7585f4[];
 extern unsigned char he_QuickList;
 
-int gm_Offers[528];  /* 0x7e4b20, the offers (6 ints each: building, market, goods object, supply, price float, flag) */
-int gm_PlayerRecords[688];  /* 0x7d5f80, the 16 player records ( */
-int ai_Unk7d6a40;  /* 0x7d6a40, the number of family records */
+extern int gm_Offers[528];
+extern int gm_PlayerRecords[688];
+extern int ai_Unk7d6a40;
 void ch_PreloadAnims(struct CHARACTER *ch, int n, ...);
 struct CHARACTER * ch_Create();
 void ch_PreloadAnims(struct CHARACTER *ch, int n, ...);
@@ -66,10 +66,10 @@ struct D3SURF;  /* d3_engine.h typedef; file-scope tag for the d3if_SelectTextur
 
 unsigned char * gm_FirstBuilding(int n);                   /* 0x50b010 */
 
-int ai_Unk6f1b98 = 0;  /* 0x6f1b98, the number of queued messages ( */
-int ai_Unk61772c = -1;  /* 0x61772c */
-int ai_Unk617730 = -1000000;  /* 0x617730 */
-short * ai_Unk6f1bac = 0;  /* 0x6f1bac */
+extern int ai_Unk6f1b98;
+extern int ai_Unk61772c;
+extern int ai_Unk617730;
+extern short * ai_Unk6f1bac;
 /* The five income sums are the last int of the five 17-int rows of gm_IncomeHistory (0x91b580, 0x154
    bytes): the rows start 0x44 apart, so these aliases sit at the end of each row. They are views, not
    separate globals - a separate definition would reserve its own memory here and the 0x154-byte

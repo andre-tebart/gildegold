@@ -34,16 +34,13 @@ int ch_Enabled = 1;  /* 0x5f12a4 */
 int ch_DirtyX0 = 256;  /* 0x5f12a8, changed ground rectangle */
 int ch_DirtyZ0 = 256;  /* 0x5f12ac */
 
-D3SCENE d3_Scenes[D3_MAX_SCENES] = {0}; /* 0xfd7ba0 */
-unsigned char ch_PathBuf[1024];  /* 0x14686e0 */
-CHMOTION ch_Motions[64] = {0}; /* 0x14696e0, the 64 records end 0x20 before ch_Ground0 (its +0x20 dword is
-                                   ai_Unk1469700, the action id ls.c indexes); ch_Path (0x14696e0) is an alias view */
-char ch_MotionsTail[0x20] = {0};  /* 0x146a9e0, the 0x20 bytes the ch_ActDefs view (ch_Motions + 0x20, 0x1300 bytes) reaches
-                                     past ch_Motions; without a symbol here the full link put ch_Queue at +0x1300 and
-                                     ch_Open's memset(ch_ActDefs) zeroed it (anm_Update then crashed on a null queue) */
-int ch_Ground0[65536];  /* 0x146aa00, ground types of d3_Scenes[0] */
-int ch_Ground1[65536];  /* 0x14aaa20, ground types of the default scene */
-CHFADE ch_Fades[16];                /* 0x14eaa20 */
+extern D3SCENE d3_Scenes[D3_MAX_SCENES];
+extern unsigned char ch_PathBuf[1024];
+extern CHMOTION ch_Motions[64];
+extern char ch_MotionsTail[0x20];
+extern int ch_Ground0[65536];
+extern int ch_Ground1[65536];
+extern CHFADE ch_Fades[16];
 CHACTION * ch_Queue = 0;  /* 0x631050 */
 int ch_Time = 0;  /* 0x631054 */
 char ch_Unk631058 = 0;  /* 0x631058 */
@@ -55,4 +52,14 @@ int ch_DirtyZ1 = 0;  /* 0x631080 */
 D3SCENE * ch_Saved1 = 0;  /* 0x631088, the same for ch_Ground1 */
 D3SM * ch_PathMap = 0;  /* 0x63108c */
 char ch_EmptyName[1] = {0};  /* 0x631090, "" (d3fl_EmptyName) */
+D3SCENE d3_Scenes[D3_MAX_SCENES] = {0}; /* 0xfd7ba0 */
+unsigned char ch_PathBuf[1024] = {0};  /* 0x14686e0 */
+CHMOTION ch_Motions[64] = {0}; /* 0x14696e0, the 64 records end 0x20 before ch_Ground0 (its +0x20 dword is
+                                   ai_Unk1469700, the action id ls.c indexes); ch_Path (0x14696e0) is an alias view */
+char ch_MotionsTail[0x20] = {0};  /* 0x146a9e0, the 0x20 bytes the ch_ActDefs view (ch_Motions + 0x20, 0x1300 bytes) reaches
+                                     past ch_Motions; without a symbol here the full link put ch_Queue at +0x1300 and
+                                     ch_Open's memset(ch_ActDefs) zeroed it (anm_Update then crashed on a null queue) */
+int ch_Ground0[65536] = {0};  /* 0x146aa00, ground types of d3_Scenes[0] */
+int ch_Ground1[65536] = {0};  /* 0x14aaa20, ground types of the default scene */
+CHFADE ch_Fades[16] = {0};                /* 0x14eaa20 */
 

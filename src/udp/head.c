@@ -31,6 +31,6 @@
 
 
 static SOCKET udp_Socket = INVALID_SOCKET;  /* 0x5f10f8 */
-struct sockaddr_in udp_Bcast;        /* 0x14eaae0 */
-struct sockaddr_in udp_Local;        /* 0x14eaaf0 */
+struct sockaddr_in udp_Bcast = {0};        /* 0x14eaae0 */
+struct sockaddr_in udp_Local = {0};        /* 0x14eaaf0 */
 

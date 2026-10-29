@@ -49,6 +49,7 @@ extern unsigned char ai_Unk7e3f38;
 extern unsigned char gm_Offers;
 extern unsigned char ai_Unkf83654;
 
+int ai_Unk61a658 = 1;  /* 0x61a658 */
 int ls_Language = 65535;  /* 0x62364c, the language number ( */
 int ls_Version = 65626;  /* 0x623650 */
 const char ls_LanguageNames[][0x40] = { "GERMAN", "ENGLISH", "FRENCH", "ITALIAN", "SPANISH" };  /* 0x5ee978, the language names (5 of */
@@ -56,7 +57,7 @@ extern int gm_PlayerRecords[];          /* 0x7d5f80, the 16 player records (0xac
 /* gm_PlayerRecordBytes: view of gm_PlayerRecords (tools/data_views.py) */
 extern char *ls_ActionQueue;            /* 0x631050, the action queue (ch.h: CHACTION *ch_Queue) */
 extern char ch_EmptyName[];             /* 0x631090 */
-char ls_SavePath[640];  /* 0x75e640 */
+extern char ls_SavePath[640];
 extern int d3_CurrentScene;                /* 0x633444 */
 extern int ai_JudgeCatholic, ai_JudgeProtestant;  /* 0x6f1bfc / 0x6f1c00 */
 extern int *ai_KindBChars[];             /* 0x6f1c04, the eight slots of the kind 0xb characters (cm.h: char *) */
@@ -65,16 +66,17 @@ extern int ai_PlayerBuilding;                /* 0x6f2308 */
 extern int ai_FallbackBuilding;                /* 0x6f230c */
 extern int sv_PanelShown;                /* 0x6f2310 */
 extern unsigned short ai_PlayerId;              /* 0x6f25b8 */
+int ai_Unk6f1b88 = 0;  /* 0x6f1b88 .. */
+int ai_Unk6f1bcc = 0;  /* 0x6f1bcc */
 unsigned char ls_SaveSlot = 0;  /* 0x6f1c38, the slot the save header records */
 extern int ai_Difficulty;                /* 0x6f23fc */
-unsigned short ai_ScreenImage[19200];  /* 0x766320, the */
+extern unsigned short ai_ScreenImage[19200];
 /* ai_Unk76fa24: view of cm_SaveAcks (tools/data_views.py) */
 extern char ai_PlayerSlots[][0x2f4];      /* 0x7e3f40, the player slots */
 extern short *ai_Objects;             /* 0x7e3f34 */
 extern char ai_Time[];             /* 0x770ae0, the clock */
 extern char ai_UpdateStart[];             /* 0xf89580 */
 extern int ai_NextObjectId;                /* 0x61a654 */
-int ai_Unk61a658 = 1;  /* 0x61a658 */
 int ai_Unk6f2618 = 0;  /* 0x6f2618 */
 extern int ai_Unk6f1bb8, ai_Unk6f1bbc, ai_CharCount, ai_Unk6f1bcc, ai_Unk6f1b88;   /* 0x6f1bb8, 0x6f1bbc, 0x6f1bc0, 0x6f1bcc, 0x6f1b88 .. */
 /* ls_RefTargets: view of ai_Unkf31160 (tools/data_views.py) */
@@ -121,7 +123,7 @@ int unk_Unk4f17f0();                     /* 0x4f17f0 */
 int ahm_WriteRecord();                     /* 0x4ecf10 */
 
 #define LS_R(p, sz) if (ls_Read((int)(p), (sz), 1, f) == 0) return 0;
-int ai_Unk76f920[1];  /* 0x76f920, the header of the loaded save game (id, flag byte, name, ..) */
+extern int ai_Unk76f920[1];
 struct VFSFILE * vfs_Tfopen(char *name, char *mode, int unk);                     /* 0x430470 */
 DWORD dd_RGB(unsigned char r, unsigned char g, unsigned char b);          /* 0x41e670, an RGB triple to a 16 bit pixel */
 
@@ -148,15 +150,18 @@ int gm_FindById();                     /* 0x4fea50 */
 extern int ai_MarketBuilding;                /* 0x6f1bc8 */
 extern unsigned char ai_GameState;      /* 0x6f25ac */
 void sv_CountGroupMembers(char *g);     /* 0x5241d0, sv.c */
-void (*he_RunHandlers[5544])(unsigned char *);  /* 0x758600, the event run handlers by type (he.c */
-int ai_Unk75e134;  /* 0x75e134 */
-int ai_Unk75e138;  /* 0x75e138 .. the clock copy */
+/* ai_Unk6f261c: view of ai_Unk6f2618 (tools/data_views.py) */
+int ai_Unk6f2620 = 0;  /* 0x6f2620 / */
+unsigned char he_Events[339968] = {0};  /* 0x6fab40, the */
+char * he_QuickList[10921] = {0};  /* 0x74db40, pointers to the */
+int ai_Unk7585e4 = 0;  /* 0x7585e4 */
+void (*he_RunHandlers[5544])(unsigned char *) = {0};  /* 0x758600, the event run handlers by type (he.c */
+int ai_Unk75e134 = 0;  /* 0x75e134 */
+int ai_Unk75e138 = 0;  /* 0x75e138 .. the clock copy */
 
 extern int ai_Unk6f2620, ai_Unk7585e4;   /* 0x6f2620, 0x7585e4 */
 extern int ai_Unka68d24, ai_Unka68c00, cm_SendQueue, ai_Unkf81168;   /* 0xa68d24, 0xa68c00, 0xf81160, 0xf81168 .. */
 void he_Unk53d590();                    /* 0x53d590 */
-char * he_QuickList[10921];  /* 0x74db40, pointers to the */
-unsigned char he_Events[339968];  /* 0x6fab40, the */
 extern int d3_CurrentScene;             /* 0x633444, the current scene index (d3.h) */
 char d3if_SelectScene(int index, char keep);  /* 0x4478e0, d3_interface.c */
 

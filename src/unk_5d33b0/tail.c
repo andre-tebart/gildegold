@@ -1,9 +1,5 @@
 
 
-SNDOPTIONBYTES ai_SoundOptions;  /* 0x6f3600 */
-int ai_OptionSpeed;  /* 0x6f3608, the "speed" key: the game speed setting ( */
-int ai_OptionCameraSpeed = {0}; /* 0x6f360c, the "camera_speed" key (the reader stores the low byte) */
-int ai_OptionMouseSpeed;  /* 0x6f3610, the "mouse_speed" key (the input base is this - */
 /* ai_TextLoadGame: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_TextSaveGame: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_TextGameOptions: view of txt_Ptrs (build/mk_txt_views.py) */
@@ -21,15 +17,9 @@ int ai_OptionMouseSpeed;  /* 0x6f3610, the "mouse_speed" key (the input base is 
 /* ai_TailorBlockedText: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_TailorAmountText: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_ContactTextProductionTailor: view of txt_Ptrs (build/mk_txt_views.py) */
-/* ai_ContactTextCardGame: view of txt_Ptrs (build/mk_txt_views.py) */
-int ai_CameraStep = 50;  /* 0x623814, the camera move step, 100 - camera speed; sv.c converts it
-                                       with fild at the float uses (the original loads an int) */
 int ai_PokerWindow = -1;  /* 0x62dda0, the view of the open poker window, -1 when closed */
 char ai_DefaultEffect[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -128, 63 };  /* 0x62de60, the default effect record: an empty name, the scale
                                        1.0, the lifetime 25.0, then the entry's ids / callbacks */
 int ai_DefaultEffectScaleBits = 1103626240;  /* 0x62de6c, the scale of ai_DefaultEffect (a float 1.0) read as
                                        its bit pattern: */
-int ai_LeaveGame = 0;  /* 0x6f25a0, set with ai_GameOver when the menu leaves the game (the
-                                       load window / the game loop end); main.c clears it when a game
-                                       starts ( */
 /* sv_MenuOpen: view of ai_GameState (tools/data_views.py) */

@@ -514,10 +514,10 @@ extern unsigned char sv_PopRequest;
 
 #define U_I(a) (*(int *)(a))
 
-char main_ScreenOpen = 0;  /* 0x6f258c, the video mode is open ( */
-int main_PlatformNT;  /* 0x75e62c, the OS is NT based (dwPlatformId != VER_PLATFORM_WIN32_WINDOWS) */
-int main_ScreenSaverOff = 0;  /* 0x6f25bc, the screen saver was switched off and is restored at exit */
-HWND main_Window = 0;  /* 0x6f2588, the game window ("Die Gilde") */
+extern char main_ScreenOpen;
+extern int main_PlatformNT;
+extern int main_ScreenSaverOff;
+extern HWND main_Window;
 extern int d2_CutsceneActive;           /* 0x6ed9d4, gfx.h */
 extern int snd_SfxEnabled;              /* 0x6f257c, f3snd.h */
 extern int snd_MusicEnabled;            /* 0x6f2578, f3snd.h */

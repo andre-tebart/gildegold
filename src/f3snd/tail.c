@@ -1,14 +1,13 @@
 
-int * ai_Unk760618;  /* 0x760618, the rain level */
-/* ai_Selected: view of ai_Chars (tools/data_views.py) */
-char snd_TimeCopy[14];  /* 0xf81240, a copy of ai_Time */
-int snd_RainDrops;  /* 0xf81254, the "Tropfen_s" loop */
-int snd_RainLightNear;  /* 0xf8125c, "LeichtNah_l_01" */
-int snd_RainMediumNear;  /* 0xf81264, "MittelNah_l_01" */
-int snd_RainHeavyNear;  /* 0xf8126c, "StarkNah_l_01" */
-int snd_RainLightFar;  /* 0xf81274, "LeichtFern_l_01" */
-int snd_RainMediumFar;  /* 0xf8127c, "MittelFern_l_01" */
-int snd_RainHeavyFar;  /* 0xf81284, "StarkFern_l_01" */
+extern int * ai_Unk760618;
+extern char snd_TimeCopy[14];
+extern int snd_RainDrops;
+extern int snd_RainLightNear;
+extern int snd_RainMediumNear;
+extern int snd_RainHeavyNear;
+extern int snd_RainLightFar;
+extern int snd_RainMediumFar;
+extern int snd_RainHeavyFar;
 float snd_VoiceVolume = 1.0f;  /* 0x602b08, voice volume (1.0, scaled by 127) */
 char snd_GustNames[3][0x32] = { "Boehe_Leicht_s", "Boehe_Mittel_s", "Boehe_Stark_s" };  /* 0x602b10, "Boehe_Leicht_s", "Boehe_Mittel_s", "Boehe_Stark_s" */
 G16SEASON snd_Gusts[] = { { 0.699999988f, 0.5f, 16000 }, { 0.300000012f, 0.200000003f, 27000 }, { 0.899999976f, 0.600000024f, 12000 }, { 0.5f, 0.400000006f, 20000 } };  /* 0x602ba8, by season */
@@ -50,3 +49,13 @@ int snd_VoiceBankGreeting = 0;  /* 0x6f0ccc, voice bank: greeting */
 int snd_Bank = 0;  /* 0x6f2404, the sample bank */
 int snd_MusicEnabled = 0;  /* 0x6f2578, the "msx" setting of game.INI [Sound]: music enabled */
 int snd_SfxEnabled = 0;  /* 0x6f257c, the "sfx" setting of game.INI [Sound]: effects and voices on */
+int * ai_Unk760618 = 0;  /* 0x760618, the rain level */
+/* ai_Selected: view of ai_Chars (tools/data_views.py) */
+char snd_TimeCopy[14] = {0};  /* 0xf81240, a copy of ai_Time */
+int snd_RainDrops = 0;  /* 0xf81254, the "Tropfen_s" loop */
+int snd_RainLightNear = 0;  /* 0xf8125c, "LeichtNah_l_01" */
+int snd_RainMediumNear = 0;  /* 0xf81264, "MittelNah_l_01" */
+int snd_RainHeavyNear = 0;  /* 0xf8126c, "StarkNah_l_01" */
+int snd_RainLightFar = 0;  /* 0xf81274, "LeichtFern_l_01" */
+int snd_RainMediumFar = 0;  /* 0xf8127c, "MittelFern_l_01" */
+int snd_RainHeavyFar = 0;  /* 0xf81284, "StarkFern_l_01" */

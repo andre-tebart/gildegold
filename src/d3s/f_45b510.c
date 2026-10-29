@@ -15,15 +15,33 @@ void dd_UnlockSurface(LPDIRECTDRAWSURFACE4 surf);                               
 void d3d_BuildMipmaps(LPDIRECTDRAWSURFACE4 tex, DDSURFACEDESC2 *ddsd);                                /* 0x4371d0 */
 void ts_CacheFetch(D3TEXHANDLE *tex, int a, int b);                                     /* 0x45f8d0 */
 
-D3OBJECT * d3s_Object = 0;  /* 0x633448, object the shadow polygons go to */
 const float d3s_Dist[2] = { 60.0f, 200.0f };  /* 0x5ebbd8 */
+const unsigned char d3s_Palette[] = { 0, 0, 0, 0xff, 0xff, 0xff, 0, 0 };  /* 0x5ebbe0, palette */
 extern unsigned int d3_FrameCount;          /* 0x63343c */
-int d3s_Count = 0;  /* 0x633dc0 */
 extern char d3_Hardware;                    /* 0x633450 */
 extern D3VECTOR d3_ZAxis;                   /* 0x5ebb74 */
 
-D3OBJECT *d3s_Lights[4];                    /* 0xfb91e0 */
-unsigned int d3s_NumLights;                 /* 0xfb9264 */
+float * d3s_Verts = 0;  /* 0xfb9258, 6 floats each */
+int d3s_NumUVs = 0;  /* 0xfb925c */
+unsigned int d3s_TexSize = 0;  /* 0xfb9260 */
+unsigned int d3s_NumLights = 0;                 /* 0xfb9264 */
+char d3s_Byte = 0;  /* 0xfb9268 */
+int d3s_ShadowRadius = 0;  /* 0xfb926c, rows / pixels the marked span widens around the shadow */
+D3SPANPIX * d3s_SpanRow = 0;  /* 0xfb9270, current row of the span buffer */
+unsigned char * d3s_Dst = 0;  /* 0xfc2940 */
+int d3s_EdgeC[3] = {0};  /* 0xfc29b0 */
+int d3s_SlopeC = 0;  /* 0xfc2dd0, slope of the interpolated value along the left edge */
+int d3s_SlopeL = 0;  /* 0xfc2de4 */
+int d3s_CL = 0;  /* 0xfc2de8, interpolated value at the left edge */
+int d3s_SlopeR = 0;  /* 0xfc2df8 */
+int d3s_EdgeX[4] = {0};  /* 0xfc50d0 */
+int d3s_EdgeY[4] = {0};  /* 0xfc50e0 */
+int d3s_XL = 0;  /* 0xfc5334 */
+int d3s_XR = 0;  /* 0xfc533c */
+int d3s_SpanLen = 0;  /* 0xfe73a0 */
+unsigned short * d3s_Dst16 = 0;  /* 0xfe73b0 */
+int d3s_Area = 0;  /* 0xfe73b8 */
+int d3s_Fill = 0;  /* 0xfe75ac */
 
 char d3s_MeshFromMap(int *rect, int stride, unsigned char *map, float *origin, float *cell, float *uv,
                      D3SBUF *buf, D3TEXHANDLE *tex, unsigned long color)

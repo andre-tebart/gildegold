@@ -7,8 +7,8 @@ int d2_BlitPartMode();                     /* 0x479150 */  /* @original: sv.c's 
 extern int ai_Unk6f22dc, sv_ResearchClass, ai_Unk6f2358, ai_Unk6f235c, ai_Unk6f2360, ai_Unk623e8c;  /* 0x6f22dc, 0x6f233c, 0x6f2358, 0x6f235c, 0x6f2360, 0x623e8c */
 extern int sv_ResearchClass;  /* 0x6f233c, the class number of the research list the panel shows (gm_BuildingClass) */
 extern char ai_Unkf8ef80[];             /* 0xf8ef80, the data directory */
-char ai_Unk623794[] = "\377\376\005\005%\377\377/\021\005\377\030\3746\343\377\231\005\005\377\366z\005\005\266W\377<\005P\031H\005\013\304^\305\005g\357\234\231\005\010r";  /* 0x623794, the table of */
-unsigned char ai_Unk623ee8[8] = { 95, 67, 46, 98, 109, 112, 0, 0 };  /* 0x623ee8 */
+extern char ai_Unk623794[];
+extern unsigned char ai_Unk623ee8[8];
 extern int d3_CurrentScene;                /* 0x633444 */
 int crt_Sprintf(char *buf, const char *fmt, ...);                     /* 0x5de652 */
 struct D2SURF * d2_LoadBmpSurface();                     /* 0x478b50 */

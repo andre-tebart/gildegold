@@ -7,13 +7,13 @@
 
 /* Software mipmap chains of the snow texture, levels 1x1..256x256 (index = log2 size), built by
    d3t_CreateSnowMipmaps and freed by d3t_FreeSnowMipmaps. */
-D3RECT d3_Viewport;  /* 0xfc2930 */
-DDSURFACEDESC2 d3t_SnowMip8[9];       /* 0x14661c0, 8-bit palettized */
-D3VECTOR d3_Unk1466620;  /* 0x1466620, camera target position */
-D3VECTOR d3_Unk1466630;  /* 0x1466630, camera target angles */
-DDSURFACEDESC2 d3t_SnowDither[9];     /* 0x1466640, 8-bit blurred noise */
-DDSURFACEDESC2 d3t_SnowMip16[9];      /* 0x1466aa0 */
-DDSURFACEDESC2 d3t_SnowMip32[9];      /* 0x1466f00 */
+D3RECT d3_Viewport = {0};  /* 0xfc2930 */
+DDSURFACEDESC2 d3t_SnowMip8[9] = {0};       /* 0x14661c0, 8-bit palettized */
+D3VECTOR d3_Unk1466620 = {0};  /* 0x1466620, camera target position */
+D3VECTOR d3_Unk1466630 = {0};  /* 0x1466630, camera target angles */
+DDSURFACEDESC2 d3t_SnowDither[9] = {0};     /* 0x1466640, 8-bit blurred noise */
+DDSURFACEDESC2 d3t_SnowMip16[9] = {0};      /* 0x1466aa0 */
+DDSURFACEDESC2 d3t_SnowMip32[9] = {0};      /* 0x1466f00 */
 
 #define D3_MASK_RED 0xff0000u    /* red channel of the X8R8G8B8 snow surfaces below */
 void d3t_CreateSnowMipmaps(void)

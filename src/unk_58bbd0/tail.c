@@ -1,5 +1,5 @@
 
-int * ai_BauplatzList;  /* 0x6f5308 */
+extern int * ai_BauplatzList;
 /* ai_ContactTextPersonnelBook: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_ContactTextMasterLetter: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_ContactTextPond: view of txt_Ptrs (build/mk_txt_views.py) */
@@ -24,3 +24,4 @@ int ai_ClickedObject = 0;  /* 0x6f22e4: the object clicked in the scene (cm.h de
 int ai_BuildingPerms = 0;  /* 0x6f231c */
 unsigned short ai_PlayerId;  /* 0x6f25b8: the local player's character id (the owner field of the building records) */
 int ai_BauplatzCount = 0;  /* 0x6f2688 */
+int * ai_BauplatzList = 0;  /* 0x6f5308 */

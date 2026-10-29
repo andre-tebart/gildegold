@@ -264,15 +264,15 @@ unsigned char * gm_CreateBuilding(unsigned char kind, unsigned short owner);    
 extern char *ai_Goods;              /* 0x91aaf0, the object prototypes (0x2dc of 0x41 bytes) */
 struct D3SCENE;
 extern struct D3SCENE *d3_DefaultScene;  /* 0x5fb5b0, the current scene (d3.h: D3SCENE *) */
-int d3_QuadTree = 0;  /* 0x6f1c28 */
-signed char init_ObjectUniverse[0x2dc];  /* 0x76faa0, the universe of each object prototype's scene (-1 = not loaded) */
-signed char init_BuildingUniverse[0x22];  /* 0x76fa60, the universe of each building class's scene */
+extern int d3_QuadTree;
+extern signed char init_ObjectUniverse[0x2dc];
+extern signed char init_BuildingUniverse[0x22];
 /* init_SceneDirty: view of d3_Scenes (tools/data_views.py) */
 extern char init_SceneName[];             /* 0xfd7ba0, the name of each scene record (0x3e0 bytes apart) */
 extern int ai_Unk1468ae0[];             /* 0x1468ae0, the scene objects (0x100) */
 extern int d3_CurrentScene, ai_Unk633738;  /* 0x633444, 0x633738 */
 extern unsigned char ai_GameState;      /* 0x6f25ac */
-int ai_FrameWait = 0;  /* 0x6f22bc */
+extern int ai_FrameWait;
 extern unsigned sv_FrameMask;           /* 0x760638 */
 extern short d2_ScreenW, d2_ScreenH;/* 0xfb9072 / 0xfb9070 */
 extern unsigned char ai_GameFlags;      /* 0x6f23f8 */
@@ -320,7 +320,7 @@ int init_SceneNameToPrototype(char *o);
 extern int cm_FieldObject;                /* 0xa68d2c */
 extern char *ai_JudgeCatholic, *ai_JudgeProtestant;  /* 0x6f1bfc, 0x6f1c00, the two judges (0x6f1bfc Katholisch, 0x6f1c00 Evangelisch) */
 extern int ai_Opponents[];              /* 0x75e160, the difficulty level 0 .. 4 of each opponent (the seven globals ai_Opponents .. opponent_g of the options 0x5d4c70 / 0x5d5640 and of the selection menu 0x537040) */
-int ai_Unk6f2440 = 0;  /* 0x6f2440 */
+extern int ai_Unk6f2440;
 void cm_BeginSendGroup(void);                     /* 0x4c3b30 */
 void cm_EndSendGroup(void);                     /* 0x4c3b40 */
 int cm_SendGroupState();                     /* 0x4c3b50 */
@@ -347,7 +347,7 @@ void gm_Shuffle(unsigned n, int *out);                /* 0x505d30, f3gm.c */
 int ai_WorksForMaster(struct AICHAR *c);                 /* 0x47dd70, ai.c */
 void hmt_Begin(void);                           /* 0x4ad0a0, hmt.c */
 extern int sv_PanelFlag;                /* 0x75e8c0 */
-int init_StatusForm;  /* 0x75df00, the panel form the load status is printed in */
+extern int init_StatusForm;
 int gm_BuildingClass(int type);                     /* 0x501d80 */
 int gm_BuildingMainObject(unsigned char *b);                     /* 0x501b50 */
 int ai_BuildingName(int id, char *out);                  /* 0x58f640, unk_58bbd0.c: the name of a building kind id */
@@ -378,6 +378,10 @@ int d2_SetForm(int view, int n);                     /* 0x475f70 */
 unsigned short * gm_QueryNext(void);                   /* 0x4ffcc0 */
 float gm_ItemPrice(int item, unsigned char n);
 int gm_ListStock(short *l, int id);               /* 0x50ab50, f3gm.c */
+int ai_Unk633748 = 0;  /* 0x633748 */
+char ai_Unk6339db = 0;  /* 0x6339db */
+/* init_StatusFormat: view of txt_Ptrs (build/mk_txt_views.py) */
+int d2_CutsceneActive = 0;  /* 0x6ed9d4 */
 char * ai_KindBChars[8] = {0};  /* 0x6f1c04, the characters of the kind */
 extern char ai_PlayerSlots[][0x2f4];      /* 0x7e3f40, the player slots */
 extern INIT_STOCKBLOCK init_StockBlock[];  /* 0x7d6a60, one 0x2a90-byte stock block per player (the records start at +0x10) */
@@ -390,9 +394,12 @@ extern struct {
     int pad04[3];
     int closed;                         /* 0x10 */
 } net_Conn;                             /* 0x1460ae0 */
+int d3_QuadTree = 0;  /* 0x6f1c28 */
+int init_TownSoundCount = 0;  /* 0x6f1c34 */
+int ai_FrameWait = 0;  /* 0x6f22bc */
 int main_StartHouseCheat = 0;  /* 0x6f2430, no writer in the exe: nonzero gives the first kind 6 character its start house ( */
-int init_TownSounds[16];  /* 0x76fd80, the handles of the town's sounds (16 at most), stopped by */
-float init_SoundVolume = 0.699999988f;  /* 0x61adfc, 0.7f: the volume factor of a started town sound ( */
+extern int init_TownSounds[16];
+extern float init_SoundVolume;
 extern char ai_Unk7e3f40_[];
 
 
@@ -437,14 +444,15 @@ typedef struct INIT_ANIMSET {
     unsigned kind;                  /* 0x00, the building class (INIT_BLD.type) */
     char names[36][0x30];           /* 0x04 .. 0x6c3 */
 } INIT_ANIMSET;
-INIT_ANIMSET init_ClassAnims[19] = { { 20, { "bewegung/dreh_90_links", "bewegung/dreh_90_rechts", "bewegung/gehen", "gestik/kinn_kratzen", "gestik/kopf_kratzen", "gestik/bein_kratzen", "arbeit/mist_schaufeln", "arbeit/neufegen2", "arbeit/schweissab", "arbeit/schmieden", "", "", "spezial/runterbeug_such", "spezial/einhand_vom_tisch", "spezial/einhand_vom_tisch", "gestik/herranwinken", "gestik/gespraech1", "gestik/gespraech5", "gestik/gespraech6", "gestik/manipulieren_stehend", "gestik/zeigen", "gestik/kopf_nicken", "gestik/steh_noise7", "gestik/kopf_schuetteln", "gestik/durch_haar_fahr", "spezial/auf_tisch_legen", "spezial/meckern", "", "", "", "", "", "", "", "", "" } }, { 5, { "bewegung/dreh_90_links", "bewegung/dreh_90_rechts", "bewegung/gehen", "gestik/gespraech1", "gestik/kopf_nicken", "gestik/steh_noise7", "gestik/kopf_schuetteln", "gestik/durch_haar_fahr", "gestik/kinn_kratzen", "gestik/kopf_kratzen", "gestik/haende_reiben", "arbeit/schreiben", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "" } }, { 7, { "bewegung/dreh_90_links", "bewegung/dreh_90_rechts", "bewegung/gehen", "sitzend/hinsetzen", "sitzend/aufstehen", "gestik/manipulieren_stehend", "gestik/kopf_schuetteln", "gestik/durch_haar_fahr", "gestik/bein_kratzen", "gestik/zeigen", "spezial/runterbeug_such", "spezial/einhand_vom_tisch", "arbeit/neufegen2", "", "", "gestik/gespraech1", "gestik/kopf_nicken", "gestik/steh_noise7", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "" } }, { 6, { "bewegung/dreh_90_links", "bewegung/dreh_90_rechts", "bewegung/gehen", "sitzend/sitz_noise2", "sitzend/sitz_noise3", "sitzend/sitz_noise4", "sitzend/sitz_noise5", "sitzend/aufstehen", "sitzend/hinsetzen", "sitzend/wuerfeln", "spezial/meckern", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "" } }, { 8, { "bewegung/dreh_90_links", "bewegung/dreh_90_rechts", "bewegung/gehen", "gestik/manipulieren_sitzend", "spezial/runterbeug_such", "spezial/einhand_vom_tisch", "spezial/auf_tisch_legen", "spezial/meckern", "", "sitzend/hinsetzen", "sitzend/aufstehen", "sitzend/sitz_noise3", "sitzend/sitz_noise4", "sitzend/sitz_noise5", "sitzend/sitzgespraech3", "gestik/gespraech1", "gestik/kopf_nicken", "gestik/steh_noise7", "gestik/kopf_schuetteln", "gestik/durch_haar_fahr", "gestik/kinn_kratzen", "gestik/kopf_kratzen", "gestik/bein_kratzen", "gestik/herranwinken", "gestik/gespraech5", "gestik/gespraech6", "gestik/zeigen", "", "", "", "", "", "", "", "", "" } }, { 14, { "bewegung/dreh_90_links", "bewegung/dreh_90_rechts", "bewegung/gehen", "sitzend/hinsetzen", "sitzend/aufstehen", "sitzend/sitz_noise3", "spezial/meckern", "spezial/runterbeug_such", "spezial/einhand_vom_tisch", "spezial/auf_tisch_legen", "arbeit/umruehren_auftisch", "", "sitzend/sitz_noise4", "sitzend/sitz_noise5", "gestik/zeigen", "gestik/kinn_kratzen", "gestik/kopf_kratzen", "gestik/bein_kratzen", "gestik/herranwinken", "gestik/gespraech1", "gestik/gespraech5", "gestik/gespraech6", "gestik/kopf_nicken", "gestik/steh_noise7", "gestik/kopf_schuetteln", "gestik/durch_haar_fahr", "gestik/manipulieren_stehend", "", "", "", "", "", "", "", "", "" } }, { 15, { "bewegung/dreh_90_links", "bewegung/dreh_90_rechts", "bewegung/gehen", "gestik/steh_noise9", "gestik/durch_haar_fahr", "spezial/einhand_vom_tisch", "arbeit/neufegen2", "arbeit/schweissab", "", "sitzend/hinsetzen", "sitzend/aufstehen", "sitzend/sitz_noise2", "sitzend/sitz_noise3", "sitzend/sitz_noise4", "sitzend/sitz_noise5", "gestik/bein_kratzen", "gestik/steh_noise7", "gestik/steh_noise8", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "" } }, { 16, { "bewegung/dreh_90_links", "bewegung/dreh_90_rechts", "bewegung/gehen", "gestik/kopf_kratzen", "gestik/bein_kratzen", "arbeit/schoepfen", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "" } }, { 18, { "sitzend/sitz_noise4", "sitzend/sitz_noise5", "gestik/gespraech1", "gestik/kopf_nicken", "gestik/steh_noise7", "gestik/kopf_schuetteln", "gestik/durch_haar_fahr", "gestik/zeigen", "gestik/kinn_kratzen", "gestik/kopf_kratzen", "gestik/bein_kratzen", "gestik/herranwinken", "gestik/gespraech5", "gestik/gespraech6", "gestik/manipulieren_hockend", "bewegung/dreh_90_links", "bewegung/dreh_90_rechts", "bewegung/gehen", "spezial/auf_tisch_legen", "spezial/in_andere_hand_geben", "spezial/runterbeug_such", "spezial/einhaendig_vom_boden_nehmen", "arbeit/schweissab", "arbeit/schmieden", "arbeit/schoepfen", "arbeit/metall_erhitzen", "arbeit/neufegen2", "gestik/manipulieren_stehend", "spezial/meckern", "spezial/einhand_vom_tisch", "sitzend/hinsetzen", "sitzend/aufstehen", "sitzend/sitz_noise3", "", "", "" } }, { 19, { "bewegung/dreh_90_links", "bewegung/dreh_90_rechts", "bewegung/gehen", "sitzend/hinsetzen", "sitzend/aufstehen", "sitzend/sitz_noise2", "sitzend/sitz_noise3", "sitzend/sitz_noise4", "sitzend/sitz_noise5", "sitzend/sitzgespraech1", "sitzend/sitzgespraech2", "sitzend/sitzgespraech3", "sitzend/sitzgespraech4", "sitzend/sitzgespraech5", "sitzend/sitzgespraech6", "sitzend/sitzgespraech7", "gestik/steh_noise7", "gestik/steh_noise8", "gestik/steh_noise9", "gestik/gespraech1", "gestik/kopf_nicken", "gestik/kopf_schuetteln", "gestik/durch_haar_fahr", "gestik/gespraech5", "", "", "", "", "", "", "", "", "", "", "", "" } }, { 9, { "bewegung/dreh_90_links", "bewegung/dreh_90_rechts", "bewegung/gehen", "spezial/runterbeug_such", "spezial/einhand_vom_tisch", "spezial/auf_tisch_legen", "gestik/zeigen", "gestik/gespraech1", "gestik/kopf_nicken", "gestik/steh_noise7", "gestik/kopf_schuetteln", "gestik/durch_haar_fahr", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "" } }, { 13, { "bewegung/dreh_90_links", "bewegung/dreh_90_rechts", "bewegung/gehen", "arbeit/schreiben", "arbeit/schoepfen", "", "gestik/zeigen", "kampf/stechen", "kampf/streich", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "" } }, { 21, { "bewegung/dreh_90_links", "bewegung/dreh_90_rechts", "bewegung/gehen", "spezial/einhand_vom_tisch", "spezial/runterbeug_such", "arbeit/schweissab", "arbeit/schmieden", "arbeit/saegen", "arbeit/hobeln", "arbeit/neufegen2", "", "", "sitzend/sitz_noise3", "sitzend/sitz_noise4", "sitzend/sitz_noise5", "gestik/kinn_kratzen", "gestik/kopf_kratzen", "gestik/zeigen", "gestik/kopf_nicken", "gestik/bein_kratzen", "gestik/herranwinken", "gestik/gespraech1", "gestik/gespraech5", "gestik/gespraech6", "gestik/steh_noise7", "gestik/kopf_schuetteln", "gestik/durch_haar_fahr", "gestik/manipulieren_hockend", "spezial/meckern", "spezial/auf_tisch_legen", "", "", "", "", "", "" } }, { 11, { "bewegung/dreh_90_links", "bewegung/dreh_90_rechts", "bewegung/gehen", "spezial/einhand_vom_tisch", "arbeit/schreiben", "arbeit/schoepfen", "arbeit/schmieden", "arbeit/schweissab", "arbeit/baumfaellen", "gestik/kinn_kratzen", "gestik/kopf_kratzen", "gestik/bein_kratzen", "gestik/herranwinken", "gestik/gespraech1", "gestik/gespraech5", "gestik/gespraech6", "gestik/jubeln", "spezial/meckern", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "" } }, { 22, { "bewegung/dreh_90_links", "bewegung/dreh_90_rechts", "bewegung/gehen", "gestik/bein_kratzen", "gestik/herranwinken", "gestik/zeigen", "spezial/meckern", "spezial/runterbeug_such", "spezial/einhand_vom_tisch", "spezial/auf_tisch_legen", "arbeit/zapfen", "arbeit/umruehren_auftisch", "sitzend/hinsetzen", "sitzend/aufstehen", "sitzend/sitz_noise2", "sitzend/sitz_noise3", "sitzend/sitz_noise4", "sitzend/sitz_noise5", "sitzend/sitzgespraech1", "sitzend/sitzgespraech2", "sitzend/sitzgespraech3", "sitzend/sitzgespraech4", "sitzend/sitzgespraech5", "sitzend/sitzgespraech6", "sitzend/sitzgespraech7", "gestik/steh_noise7", "gestik/steh_noise8", "gestik/steh_noise9", "gestik/gespraech1", "gestik/gespraech5", "gestik/gespraech6", "gestik/kopf_nicken", "gestik/kopf_schuetteln", "gestik/durch_haar_fahr", "gestik/kinn_kratzen", "gestik/kopf_kratzen" } }, { 1, { "bewegung/dreh_90_links", "bewegung/dreh_90_rechts", "bewegung/gehen", "sitzend/hinsetzen", "sitzend/aufstehen", "sitzend/sitz_noise2", "sitzend/sitz_noise3", "sitzend/sitz_noise4", "sitzend/sitz_noise5", "gestik/steh_noise7", "gestik/steh_noise8", "gestik/steh_noise9", "gestik/gespraech1", "gestik/kopf_nicken", "gestik/kopf_schuetteln", "gestik/durch_haar_fahr", "gestik/gespraech5", "gestik/haende_reiben", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "" } }, { 4, { "bewegung/dreh_90_links", "bewegung/dreh_90_rechts", "bewegung/gehen", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "" } }, { 12, { "bewegung/dreh_90_links", "bewegung/dreh_90_rechts", "bewegung/gehen", "spezial/runterbeug_such", "spezial/einhand_vom_tisch", "arbeit/hacken", "arbeit/mist_schaufeln", "arbeit/schweissab", "", "gestik/manipulieren_stehend", "gestik/bein_kratzen", "gestik/manipulieren_hockend", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "" } }, { 0, { "bewegung/dreh_90_links", "bewegung/dreh_90_rechts", "bewegung/gehen", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "" } } };  /* 0x61ae08 .. */
-unsigned char init_Detail = 2;  /* 0x61adf8, the detail level of the scene (4 = high / 2 / 1 = low, a byte) */
-int init_ShopScript = -1;  /* 0x61ae00, the handle of the shopping script running in the town scene (-1 = none; */
+extern INIT_ANIMSET init_ClassAnims[19];
+extern unsigned char init_Detail;
+extern int init_ShopScript;
 extern unsigned short ai_PlayerId;              /* 0x6f25b8 */
-unsigned int d3_LightKeyBudgetVisible = 512;  /* 0x5fcc70 */
-int ai_Unk5fcc6c = 128;  /* 0x5fcc6c */
-int ai_MapSize;  /* 0x6f4ee8 */
-int ai_Unk633748 = 0;  /* 0x633748 */
+extern unsigned int d3_LightKeyBudgetVisible;
+extern int ai_Unk5fcc6c;
+int ai_Unk6f2440 = 0;  /* 0x6f2440 */
+int main_MoneyCheat = 0;  /* 0x6f2444, set from the command line switch "MO_MONEY" (main.c); nonzero gives 500000 start money instead of 2000 and the first kind 6 character its starter buildings */
+int ai_MapSize = 0;  /* 0x6f4ee8 */
 extern int ch_CurrentGroup;                /* 0x5f1294 */
 void ch_PreloadAnims(struct CHARACTER *ch, int n, ...);  /* 0x404200, ch.h (varargs) */
 void sv_CollectGroupCharacters(char *b);                 /* 0x52b2a0, sv.c: the characters of the group b into 0x7603a0 */
@@ -467,7 +475,8 @@ int d3snd_Attach(int smp, char *obj, int vol, float r);      /* 0x417710, d3_snd
 void d3snd_Play(struct D3SOUND *s, int a, int loops, int delay);  /* 0x417cf0, d3_snd.c */
 int _isctype(int c, int mask);
 void init_SetDetailLevel(int *s, char f);
-int ai_Unk7603a0[32];  /* 0x7603a0 .. INIT_WINDOWS_END: the */
+int init_StatusForm = 0;  /* 0x75df00, the panel form the load status is printed in */
+int ai_Unk7603a0[32] = {0};  /* 0x7603a0 .. INIT_WINDOWS_END: the */
 #define INIT_WINDOWS_END (unsigned)&ai_Unk760420       /* one past the scene window table 0x7603a0 (0x20 ints) */
 /* ai_NBauplaetze / ai_Bauplaetze: the building sites (rd.h's G15BK; rd.h cannot be included here, gv.h's
    d3sm_GetVertex collides, so the record is declared locally - type debt, see notes/units/f3init.md) */
@@ -478,13 +487,16 @@ typedef struct G15BK {
     float x1, y1, z1;               /* 0x50, the maximum corner */
     char pad5c[4];
 } G15BK;
-int ai_NBauplaetze;  /* 0xf812e0, the number of building sites */
-G15BK * ai_Bauplaetze;  /* 0xf812e4, the building sites */
+signed char init_BuildingUniverse[0x22] = {0};  /* 0x76fa60, the universe of each building class's scene */
+unsigned short * ai_SceneObject = 0;  /* 0x76fa84 */
+signed char init_ObjectUniverse[0x2dc] = {0};  /* 0x76faa0, the universe of each object prototype's scene (-1 = not loaded) */
+int init_TownSounds[16] = {0};  /* 0x76fd80, the handles of the town's sounds (16 at most), stopped by */
+unsigned char * ai_SceneBuilding = 0;  /* 0x76fdc0 */
+int ai_NBauplaetze = 0;  /* 0xf812e0, the number of building sites */
+G15BK * ai_Bauplaetze = 0;  /* 0xf812e4, the building sites */
 extern char ai_GfxDetail;               /* 0x6f35c4 */
 int evt_NoGroup = -1;  /* 0x5f8430 */
 float d3o_FogScale = 1.0f;  /* 0x5fbd04 */
-unsigned char * ai_SceneBuilding;  /* 0x76fdc0 */
-unsigned short * ai_SceneObject;  /* 0x76fa84 */
 /* init_SlotCurrency: view of ai_PlayerSlots (tools/data_views.py) */
 /* 0x50a810, f3gm.c: the first kind 6 / 7 / 1 / 2 character with a job whose master is m */
 struct VFSENTRY * vfs_FindFile(char *path, struct VFSDIR *d, struct VFSDIR **found);  /* 0x42f8f0, sv.c: the path lookup
@@ -529,7 +541,6 @@ void d3_MatIdentity(D3MATRIX *m);                                   /* 0x454510,
 /* ---- the town scene loading 0x5124f0 .. 0x5128d0, 0x510770, 0x510ad0, 0x513050 (ROUGH drafts) ---- */
 
 extern int ai_GfxFog;                /* 0x6f35cc, the detail byte */
-char ai_Unk6339db = 0;  /* 0x6339db */
 extern unsigned char d3_FogByDistance;               /* 0x6334a5 */
 extern unsigned char ai_Unk633751;      /* 0x633751 */
 extern unsigned int d3fl_DetailScale;   /* 0x633748 */

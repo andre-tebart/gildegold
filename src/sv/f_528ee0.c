@@ -5,7 +5,7 @@ extern int ai_Unk623884, ai_Unk623898, ai_Unk623880, ai_Unk6f2334, ai_GameState;
 extern char ai_Unk6f2338;  /* 0x6f2338 */
 extern int ai_Unk5fe710;  /* 0x5fe710 */
 extern char *ai_Unk7662c0p;
-unsigned short * ai_Unk75ec5c;  /* 0x75ec5c */
+extern unsigned short * ai_Unk75ec5c;
 extern int ai_Unk6f23bc, ai_Unk6f23c0, ai_Unk6f23c4, ai_Unk6f23c8, ai_Unk6f23cc, ai_Unk6f23d0, ai_Unk6f23d4, ai_Unk6f23d8, ai_Unk6f2294, ai_BuildingPerms, ai_Unk6f2320;  /* 0x6f23bc, 0x6f23c0, 0x6f23c4, 0x6f23c8, 0x6f23cc, 0x6f23d0, 0x6f23d4, 0x6f23d8, 0x6f2294, 0x6f231c, 0x6f2320 */
 extern int ai_Unk5fe7d0;  /* 0x5fe7d0 */
 int gm_Opinion(int a, int b);                     /* 0x50c520 */

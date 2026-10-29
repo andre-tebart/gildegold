@@ -4,8 +4,8 @@
    with the button state 0x51d the checked rows are moved (0x524260 (g, 0, id, 0)) and 0x52ae40 runs. ROUGH */
 
 extern int ai_Unk5fe710;  /* 0x5fe710 */
-int ai_Unk7662c0;  /* 0x7662c0 */
-char ai_Unk6f2368 = 0;  /* 0x6f2368 */
+extern int ai_Unk7662c0;
+extern char ai_Unk6f2368;
 int io_CharacterName();                     /* 0x5143d0 */
 int d2_CreateChildWindow(short x, short y, short w, short h, unsigned int flags, int win);                     /* 0x472aa0 */
 int d2_WinOpenPicStyled();                     /* 0x473350 */

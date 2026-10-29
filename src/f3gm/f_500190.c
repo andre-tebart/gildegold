@@ -1,8 +1,6 @@
 /* 0x500190, creates an object instance of the prototype proto with the amount n in the list of the owner id (a building, an object or a character, found by 0x4fea50): appends it to the owner's list (the owner list head: +0x5d building, +0x14 object, +0x178 character), takes a free record (0x4fffc0), fills it (+0 prototype, +2 a new id, +6 the owner id, +0xa the owner's number, +0xe the amount, +0x12 0x64 = 100, +0x3f next 0) and counts it (0x6f1bdc); a few prototypes get their own start values (0xb8, 0x12c, 0x12d, 0x15e / 0x160, 0x174 / 0x176, 0x24b / 0x256 / 0x266) and the three transport carts 0x134 / 0x135 / 0x136 get a model (cart or horse, 0x403390 at the dummy "dummy_TRANSPORTER") with a load object (ob_KARREN_*). Returns the instance, 0 on failure. ROUGH */
 
-int ai_NextObjectId = 1;  /* 0x61a654, the next object id */
-int gm_NOffers;  /* 0x7e3f3c, the number of offers */
-int d3_CurrentScene = 0;  /* 0x633444 */
+extern int gm_NOffers;
 int gm_ListStock();                     /* 0x50ab50 */
 int gm_ListAmount();                     /* 0x50aaf0 */
 float gm_GoodsPrice(unsigned id, unsigned char p);                   /* 0x5089c0 */

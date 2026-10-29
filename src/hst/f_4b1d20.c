@@ -8,7 +8,7 @@
 int hst_TextFirst = -1;  /* 0x601058, first text of the history file */
 int hst_TextLast = -1;  /* 0x60105c, last text of the history file */
 int hst_TextCurrent = -1;  /* 0x601060, the current text */
-char ai_PlayerSlots[4][0x2f4];  /* 0x7e3f40, per player: starts with the name of its history file */
+extern char ai_PlayerSlots[4][0x2f4];
 unsigned char hst_TextsOn = 0;  /* 0x6f0724, history texts on */
 
 void ai_Unk4b1d20(void)

@@ -21,45 +21,53 @@ extern char d3_MipSkip[];
 void *tex_Create(char *name, int size, char hicol, D3TEXFLAGS flags, unsigned char f0, unsigned char f6a,
                  int npal, unsigned char *pal, char mips);                              /* 0x461230 */
 
-int d3s_EdgeX[4];  /* 0xfc50d0 */
-int d3s_EdgeY[4];  /* 0xfc50e0 */
-int d3s_EdgeC[3];  /* 0xfc29b0 */
+extern int d3s_EdgeX[4];
+extern int d3s_EdgeY[4];
+extern int d3s_EdgeC[3];
 extern int d3s_Next[6];                     /* 0x5eba80, per vertex: the next and the previous one */
-int d3s_SlopeL;  /* 0xfc2de4 */
-int d3s_SlopeR;  /* 0xfc2df8 */
-int d3s_SlopeC;  /* 0xfc2dd0, slope of the interpolated value along the left edge */
-int d3s_XL;  /* 0xfc5334 */
-int d3s_XR;  /* 0xfc533c */
-int d3s_CL;  /* 0xfc2de8, interpolated value at the left edge */
-int d3s_Area;  /* 0xfe73b8 */
-unsigned char * d3s_Dst;  /* 0xfc2940 */
-D3SPANPIX * d3s_SpanRow;  /* 0xfb9270, current row of the span buffer */
-int d3s_ShadowRadius;  /* 0xfb926c, rows / pixels the marked span widens around the shadow */
-char d3s_Byte;  /* 0xfb9268 */
-unsigned short * d3s_Dst16;  /* 0xfe73b0 */
-int d3s_SpanLen;  /* 0xfe73a0 */
-int d3s_Fill;  /* 0xfe75ac */
+extern int d3s_SlopeL;
+extern int d3s_SlopeR;
+extern int d3s_SlopeC;
+extern int d3s_XL;
+extern int d3s_XR;
+extern int d3s_CL;
+extern int d3s_Area;
+extern unsigned char * d3s_Dst;
+extern D3SPANPIX * d3s_SpanRow;
+extern int d3s_ShadowRadius;
+extern char d3s_Byte;
+extern unsigned short * d3s_Dst16;
+extern int d3s_SpanLen;
+extern int d3s_Fill;
 extern int d3_Pitch16;                      /* 0x14661a0 */
 extern int d3_Pitch8;                       /* 0x1463588 */
 extern void *d3s_ShadowBits;                 /* 0x1463590 */
+D3OBJECT * d3s_Object = 0;  /* 0x633448, object the shadow polygons go to */
 unsigned int d3s_CacheCount = 0;  /* 0x633db8 */
 unsigned int d3s_CacheAge = 0;  /* 0x633dbc */
-D3SCENT * d3s_Cache = 0;  /* 0x633dd0 */
+extern D3SCENT * d3s_Cache;
+int d3s_Count = 0;  /* 0x633dc0 */
 unsigned int d3s_MaxPolys = 0;  /* 0x633dc4 */
 int d3s_MaxPolys2 = 0;  /* 0x633dc8 */
 extern int d3s_ShadowMapSize;              /* 0x633dcc, cells per side of the object shadow map */
-const unsigned char d3s_Palette[] = { 0, 0, 0, 0xff, 0xff, 0xff, 0, 0 };  /* 0x5ebbe0, palette */
-float * d3s_Verts;  /* 0xfb9258, 6 floats each */
-int d3s_NumVerts;  /* 0xfb9220 */
-float * d3s_UVs;  /* 0xfb9218 */
-int d3s_NumUVs;  /* 0xfb925c */
-char d3s_Enabled;  /* 0xfb91f0 */
-char d3s_LodTexSize;  /* 0xfb91d8, 1: the shadow texture size follows the mesh LOD */
-unsigned char d3s_ShadowMips;  /* 0xfb921c, mip flag of the cached shadow textures */
-unsigned int d3s_TexSize;  /* 0xfb9260 */
-unsigned int d3s_MaxTexSize;  /* 0xfb91dc */
-float d3s_QuadUV[6];  /* 0xfb9200 */
-float d3s_QuadUV2[6];  /* 0xfb9240 */
+extern const unsigned char d3s_Palette[];
+extern float * d3s_Verts;
+extern int d3s_NumVerts;
+extern float * d3s_UVs;
+extern int d3s_NumUVs;
+extern char d3s_Enabled;
+D3SCENT * d3s_Cache = 0;  /* 0x633dd0 */
+char d3s_LodTexSize = 0;  /* 0xfb91d8, 1: the shadow texture size follows the mesh LOD */
+extern unsigned char d3s_ShadowMips;
+extern unsigned int d3s_TexSize;
+unsigned int d3s_MaxTexSize = 0;  /* 0xfb91dc */
+D3OBJECT *d3s_Lights[4] = {0};                    /* 0xfb91e0 */
+char d3s_Enabled = 0;  /* 0xfb91f0 */
+float d3s_QuadUV[6] = {0};  /* 0xfb9200 */
+float * d3s_UVs = 0;  /* 0xfb9218 */
+unsigned char d3s_ShadowMips = 0;  /* 0xfb921c, mip flag of the cached shadow textures */
+int d3s_NumVerts = 0;  /* 0xfb9220 */
+float d3s_QuadUV2[6] = {0};  /* 0xfb9240 */
 extern D3OBJECT *d3s_Lights[4];             /* 0xfb91e0 */
 extern unsigned int d3s_NumLights;          /* 0xfb9264 */
 extern struct D3SM *d3sm_Shadow;            /* 0x633df8 */

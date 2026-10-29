@@ -53,10 +53,10 @@ int err_Started = 0;  /* 0x632368 */
 void (*err_CrashCB)(HANDLE) = 0;  /* 0x63236c, set by err_Init, called by the crash filter with the log handle (or -1 when no log was written) */
 unsigned int err_Flags = 0;  /* 0x632370 */
 char err_ShowUnknown = 0;  /* 0x632374 */
-char err_Buf[8192];  /* 0x1461440 */
-HWND err_Hwnd;  /* 0x1463440 */
-char err_Dir[260];  /* 0x1463460 */
-HANDLE err_Console;  /* 0x1463564 */
+char err_Buf[8192] = {0};  /* 0x1461440 */
+HWND err_Hwnd = 0;  /* 0x1463440 */
+char err_Dir[260] = {0};  /* 0x1463460 */
+HANDLE err_Console = 0;  /* 0x1463564 */
 
 LONG WINAPI err_ExceptionFilter(EXCEPTION_POINTERS *ep);
 ERRSTR *err_GetString(ERRMAP *map, unsigned int i);

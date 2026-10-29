@@ -1,12 +1,11 @@
 /* 0x4fd5c0, picks two characters (kinds 0 .. 5, active, old enough (age +10 not below the float +0x20), with a chance by the number of the relatives at +0x68 (table 0x60 0x4b 0x28 0x17 9 0 of 256) against random 1 .. 256; 16 tries each, the range shrinking by 3/4 on a free slot) and starts the event 0x507690 (0, id1, id2, param, 0, 0, 0, 2). Returns its result. ROUGH */
 
-char ai_Unk6f0454[1] = {0};  /* 0x6f0454 .. */
-char ai_Unkf8ef80[256] = {0}; /* 0xf8ef80, the game root path */
+extern char ai_Unkf8ef80[256];
 /* ai_Unk143ac5c: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_Unk143af70: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_Unk143b178: view of txt_Ptrs (build/mk_txt_views.py) */
 int ai_Unk6f1bb4 = 0;  /* 0x6f1bb4 */
-char gm_CharacterStatistics[128];  /* 0x91b500, the character statistics ( */
+extern char gm_CharacterStatistics[128];
 char * ai_Unk60c1ec = (void *)((unsigned)&he_Events + 0xc234);  /* 0x60c1ec, the memory pool tag */
 unsigned short gm_Unk507690(int type, int a2, int a3, int a4, unsigned char *a5, unsigned a6, int a7, int a8);                     /* 0x507690 */
 int gm_Unk503f30();                     /* 0x503f30 */
