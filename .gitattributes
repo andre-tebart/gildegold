@@ -1,0 +1,11 @@
+# LF and UTF-8 (no BOM) everywhere: the store hashes file contents.
+* text=auto eol=lf
+*.dll binary
+*.exe binary
+*.obj binary
+*.lib binary
+# append-only logs: keep both sides' additions
+names.log merge=union
+claims.log merge=union
+# the grade baseline is promoted on main only
+ledger/grades.tsv merge=ours

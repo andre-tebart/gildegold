@@ -1,0 +1,117 @@
+/* unk_476c00.h -- what d2.h lacks for unk_476c00.c (0x476c00..0x479610 of the "d2" 2D layer, GFX.C: item list
+   above the mouse cursor, cursor, hover / scroll wheel handling, input field editing, mouse hit rectangles, bmp
+   loading, surfaces). Names are ours. */
+#ifndef UNK_476C00_H
+#define UNK_476C00_H
+
+struct SBSAMPLE;
+#include "d2.h"
+
+typedef struct D2SLOT {             /* 12 bytes, a surface for the picture of an item list */
+    int unk00;
+    int unk04;
+    void *surf;                     /* 0x08 */
+} D2SLOT;
+
+#define D2CUR d2_FocusedInput     /* the input field being edited */
+
+/* data */
+extern int d2_PointerSprite;            /* 0x5febc8, sprite of the pointer, -1: none */
+extern int d2_TextCursorOffset;            /* 0x5febcc, -7 or 0 */
+extern int d2_Unk5febdc;            /* 0x5febdc */
+extern int d2_Unk5febe0;            /* 0x5febe0 */
+extern int d2_LimitsChanged;            /* 0x5febe4 */
+extern int d2_TextCursorSprite;            /* 0x5febe8, sprite of the text cursor, -1: none */
+extern int d2_Unk5febec;            /* 0x5febec */
+extern int d2_DragStartValue;            /* 0x6ed9c4 */
+extern void *d2_PointerPic;          /* 0x6ed9cc, "_MOUSE_CURSOR" data */
+extern short d2_PointerLook;          /* 0x6ed9d0 */
+extern int d2_CutsceneActive;            /* 0x6ed9d4 */
+extern int d2_Unk6ed9e4;            /* 0x6ed9e4 */
+extern int d2_DragStartX;            /* 0x6ed9e8 */
+extern int d2_DragStartY;            /* 0x6ed9ec */
+extern int d2_ClickUsed;            /* 0x6ed9f0 */
+extern int d2_DragActive;            /* 0x6ed9f4 */
+extern short d2_Unkf8a650;          /* 0xf8a650 */
+extern short d2_Unkf8a652;          /* 0xf8a652 */
+extern int d2_Unkf8a654;            /* 0xf8a654 */
+extern int d2_FocusObjIndex;            /* 0xf8a658 */
+extern int d2_InputDragOffsetY;            /* 0xf8a660 */
+extern int d2_SavedMaxY;            /* 0xf8a664 */
+extern int d2_SavedMinY;            /* 0xf8a66c */
+extern D2SLOT d2_ItemListSurf256;         /* 0xf8aa90 */
+extern D2SLOT d2_ItemListSurf128[3];      /* 0xf8aaa0 */
+extern int d2_Unkf8aac8;            /* 0xf8aac8 */
+extern int d2_Unkf8aacc;            /* 0xf8aacc */
+extern int d2_HitWindow;            /* 0xf8aad0 */
+extern int d2_TextCursorX;            /* 0xf8aad4 */
+extern int d2_TextCursorY;            /* 0xf8aad8 */
+extern void *d2_ItemListSurf64;          /* 0xf8aadc */
+extern int d2_InputDragValue;            /* 0xf8ab60 */
+extern int d2_Unkf8ab64;            /* 0xf8ab64 */
+extern int d2_InputDragReleased;            /* 0xf8ab68 */
+extern int di_MaxY;                 /* 0x5f323c (di_input.c) */
+extern int di_MinY;                 /* 0x6310b4 (di_input.c) */
+
+/* functions of other units, or declared differently by d2.h */
+void d2_CopyCaption(char *caption);                   /* 0x478870 */
+int d2_CountPointerItems(void);                             /* 0x476c90 */
+
+/* d2 functions of this file */
+void d2_SetPointerItem(int id, int amount);              /* 0x476c00 */
+void d2_ClearPointerItems(void);                            /* 0x476c70 */
+void d2_DrawPointer(void *surf, int x, int y, int a, int b);  /* 0x476cb0 */
+int d2_DrawMousePointer(int x, int y);                     /* 0x476f00 */
+void d2_SetPointerSprite(int a, int pic);                  /* 0x476f80 */
+void d2_Unk477000(void);                            /* 0x477000 */
+void d2_CreateItemListSurfaces(void);                            /* 0x477320 */
+void d2_FreeItemListSurfaces(void);                            /* 0x477420 */
+void d2_DragInputValue(D2INPUT *in, int val, int y0, int y1);    /* 0x4774a0 */
+void d2_EndInputEdit(void);                            /* 0x477530 */
+void d2_InputKey(void);                            /* 0x477590 */
+void d2_DragInput(void);                            /* 0x477a70 */
+void d2_SliderInput(void);                            /* 0x477ba0 */
+int d2_UpdateInput(void);                             /* 0x477ed0 */
+
+/* 0x478320..0x479610 (unk_478320.h until round 20) */
+typedef struct D2HIT {              /* 0x10 bytes, a mouse hit rectangle, d2_HitRects[] */
+    short x, y, w, h;               /* 0x00 */
+    int user;                       /* 0x08 */
+    int used;                       /* 0x0c */
+} D2HIT;
+
+typedef struct D2CTRLX {            /* D2CTRL as the mouse code sees it */
+    int id;                         /* 0x00 */
+    char pad04[0x194];
+    int loaded;                     /* 0x198, its two surfaces exist (D2CTRL.loaded) */
+    int shown;                      /* 0x19c, the view is displayed (D2VIEW.shown) */
+} D2CTRLX;
+
+extern int d2_Unkf8a65c;            /* 0xf8a65c */
+extern D2OBJ *d2_Unkf8a670;         /* 0xf8a670 */
+extern D2HIT d2_HitRects[];        /* 0xf8a680 */
+extern int d2_Unkf8aa80;            /* 0xf8aa80 */
+extern int d2_HitCount;            /* 0xf8aa84 */
+extern int d2_Unkf8aa9c;            /* 0xf8aa9c */
+extern int d2_Unkf8aac4;            /* 0xf8aac4 */
+extern char d2_CaptionCopy[];         /* 0xf8aae0 */
+extern int d2_HitClicked;            /* 0x5febd0 */
+extern int d2_HitUnderPointer;            /* 0x5febd4 */
+extern int d2_Unk6ed990;            /* 0x6ed990 */
+extern int di_GuiClick;            /* 0x6310bc */
+
+struct SBSAMPLE * sb_PlaySample(int a, char *name, int b, int pan, int vol, int c, int d);   /* 0x426fa0, plays a sample once */
+
+void d2_FocusInput(int obj);                                         /* 0x478320, gives an input object the focus */
+void d2_MouseUpdate(void);                                            /* 0x4784c0, mouse handling of the gui */
+int d2_AddHitRect(short x, short y, short w, short h, int user);     /* 0x478890, adds a hit rectangle */
+void d2_RemoveHitRect(int i);                                           /* 0x4788f0 */
+int d2_CompareColour(char *a, char *b);                                 /* 0x478930 */
+void d2_SetColour(D2RGB *c, unsigned char r, unsigned char g, unsigned char b);     /* 0x478960 */
+unsigned int d2_GetBmpSize(char *name);                              /* 0x478980, size of a bmp */
+int d2_ReadBmpPixels(char *name, unsigned char *dst);               /* 0x478a00, reads the pixels of a 24 bit bmp */
+D2SURF *d2_LoadBmpSurface(char *name);                             /* 0x478b50, surface from a bmp */
+void d2_ConvertRgbTo16(int a, int b, unsigned int w, unsigned int h, unsigned char *src, int c, int d, D2SURF *s);   /* 0x478bd0, rgb bytes to 16 bit pixels */
+void d2_Convert16ToRgb(int a, int b, unsigned int w, unsigned int h, unsigned short *src, int c, int d, unsigned char *dst);   /* 0x478c50, 16 bit pixels to rgb bytes */
+
+#endif

@@ -1,0 +1,28 @@
+/* 0x573c20, the approach 4 of the event 0x9d: posts a message 0x9e (0x4c4b70) from per +4 with the clock, -1 at +0xc, +0x58 =
+   pl +4 (-1 when pl is per) and +0x60 = per +4; then the name (0x629038 / 0x62901c) and the texts 0x41e2 / 0x41dd (else
+   0x41dc) and the message 0x5fb (0x53dda0) to per +4 */
+
+void he_Unk573c20(char *pl, char *per)
+{
+    char msg[0xf8];
+    char name[0x19];
+    char t1[0x400];
+    char t2[0x400];
+
+    memset(msg, 0, 0xf8);
+    HM_B(msg, 4) = 0x9e;
+    HM_I(msg, 8) = HM_I(per, 4);
+    HM_I(msg, 0xc) = -1;
+    *(HETIME *)(msg + 0x28) = ai_Time;
+    HM_B(msg, 0x36) = 1;
+    HM_I(msg, 0x58) = pl == per ? -1 : HM_I(pl, 4);
+    HM_I(msg, 0x60) = HM_I(per, 4);
+    cm_SendLongMessage(msg);
+    if (pl == per)
+        memcpy(name, (void *)(unsigned)&full_data_629038, 0x19);
+    else
+        memcpy(name, (void *)(unsigned)&full_data_62901c, 0x19);
+    txt_Format(t1, 0x41e2);
+    txt_Format(t2, pl == per ? 0x41dd : 0x41dc, t1);
+    he_ShowNews(HM_I(per, 4), -1, t2, 1, 0x5fb, name);
+}

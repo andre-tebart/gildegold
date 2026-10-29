@@ -1,0 +1,12 @@
+# the TU order of rea 8cef7d5b (src/game/unk_589f10.c): the source order, which differs from the address
+# order (a callee defined above its caller changes the caller's code; declarations precede use)
+f_589f10.c
+f_58a940.c
+f_58a9d0.c
+f_58aa30.c
+f_58aba0.c
+f_58ad20.c
+f_58ada0.c
+f_58b880.c
+f_58ba70.c
+f_58af50.c

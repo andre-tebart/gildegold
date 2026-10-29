@@ -1,0 +1,32 @@
+# the TU order of rea 8cef7d5b (src/game/hmt.c): the source order, which differs from the address
+# order (a callee defined above its caller changes the caller's code; declarations precede use)
+f_4ac140.c
+f_4ac150.c
+f_4ac170.c
+f_4ac1a0.c
+f_4ac1e0.c
+f_4ac200.c
+f_4ac2f0.c
+f_4ac440.c
+f_4ac8a0.c
+f_4aca90.c
+f_4acae0.c
+f_4acdc0.c
+f_4acde0.c
+f_4ace40.c
+f_4ad010.c
+f_4ad0a0.c
+f_4ad190.c
+f_4ad1b0.c
+f_4ad1c0.c
+f_4ad3b0.c
+f_4ad3e0.c
+f_4ad510.c
+f_4ad580.c
+f_4ada80.c
+f_4adb20.c
+f_4ad7a0.c
+f_4adbb0.c
+f_4ade60.c
+f_4adec0.c
+f_4adf20.c

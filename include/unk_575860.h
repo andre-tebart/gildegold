@@ -1,0 +1,84 @@
+/* unk_575860.h -- the unit after he.c (unnamed): the end-of-game tick and the campaign state machine,
+   see src/game/unk_575860.c and notes/units/unk_575860.md */
+#ifndef UNK_575860_H
+#define UNK_575860_H
+
+int ai_Unk575860(void);                 /* 0x575860, the end-of-game tick (ROUGH skeleton) */
+void unk_ClearEndGameGate(void);                /* 0x576020, clears the gate 0x6f2660 */
+void unk_SetEndGameGate(void);                /* 0x576030, sets the gate 0x6f2660 */
+void ai_Unk576040(int a, int b, int c, int d);  /* 0x576040, one step of the campaign state machine */
+int ai_Unk576340(int a, int b, int c, int d);   /* 0x576340, calls the run record's callback +0x3c */
+int ai_Unk5763c0(int mask);             /* 0x5763c0, run mask +0x68 */
+int ai_Unk576410(int mask);             /* 0x576410, run mask +0x6c */
+int ai_Unk576460(void);                 /* 0x576460, mode 2 / state 5 query */
+int ai_Unk576490(int *p);               /* 0x576490, step callback predicate */
+int ai_Unk5764b0(int *p);               /* 0x5764b0, step callback predicate */
+int ai_Unk576500(int *p);               /* 0x576500, step callback predicate */
+int ai_Unk576590(int *p);               /* 0x576590, step callback predicate */
+int ai_Unk5765e0(int *p);               /* 0x5765e0, step callback predicate */
+int ai_Unk576600(int *p);               /* 0x576600, step callback predicate */
+int ai_Unk576640(int *p);               /* 0x576640, step callback predicate */
+int ai_Unk576680(int *p);               /* 0x576680, step callback predicate */
+int ai_Unk5766d0(int *p);               /* 0x5766d0, transition callback */
+int ai_Unk5767d0(int *p);               /* 0x5767d0, transition callback */
+int ai_Unk576830(int *p);               /* 0x576830, transition callback */
+void ai_Unk5768a0(int arg);             /* 0x5768a0, writes a record word */
+int ai_Unk5768d0(int *p);               /* 0x5768d0, transition callback */
+int ai_Unk576920(int *p);               /* 0x576920, transition callback */
+int ai_Unk576970(int *p);               /* 0x576970, transition callback */
+int ai_Unk5769c0(int *p);               /* 0x5769c0, transition callback */
+void ai_Unk576a80(int arg);             /* 0x576a80, record lookup + 0x521960 */
+int ai_Unk576ab0(int *p);               /* 0x576ab0, transition callback */
+int ai_Unk576b50(int *p);               /* 0x576b50, transition callback */
+int ai_Unk576ba0(int *p);               /* 0x576ba0, transition callback */
+int ai_Unk576cd0(int *p);               /* 0x576cd0, step callback predicate */
+int ai_Unk576d40(int *p);               /* 0x576d40, transition callback */
+int ai_Unk576e70(int *p);               /* 0x576e70, step callback predicate */
+int ai_Unk576ee0(int *p);               /* 0x576ee0, transition callback */
+int ai_Unk577020(int *p);               /* 0x577020, step callback predicate */
+void ai_Unk5770a0(int arg);             /* 0x5770a0, posts the message 0x2bc0 */
+void ai_Unk577110(int arg);             /* 0x577110, posts to the player's character record */
+int ai_Unk5771b0(int *p);               /* 0x5771b0, transition callback */
+void ai_Unk577230(int arg);             /* 0x577230, posts messages */
+int ai_Unk577290(int *p);               /* 0x577290, step predicate */
+int ai_Unk5772d0(void);                 /* 0x5772d0, the record fight kind */
+int ai_Unk577320(void);                 /* 0x577320, the flag S+0x38 */
+int ai_Unk577330(int *p);               /* 0x577330, transition callback */
+int ai_Unk5773f0(void);                 /* 0x5773f0, fight kind + flag */
+int ai_Unk577450(int *p);               /* 0x577450, step predicate */
+int ai_Unk577490(void);                 /* 0x577490, releases the pending id S+0x50 */
+void ai_Unk5774d0(int arg);             /* 0x5774d0, posts a record message */
+void ai_Unk577540(int arg);             /* 0x577540, posts a record message */
+void ai_Unk5775c0(int arg);             /* 0x5775c0, posts two character messages */
+void ai_Unk577610(int arg);             /* 0x577610, character record lookup + 0x4e6180 */
+void ai_Unk577690(int arg);             /* 0x577690, builds a save record (ROUGH) */
+int ai_Unk577740(void);                 /* 0x577740, the tutorial start ("tutorial\main") */
+int ai_Unk577820(void);                 /* 0x577820, 0x53d800 (player) */
+int ai_Unk577850(void);                 /* 0x577850, run window controls 1 / 2 */
+int ai_Unk5778b0(void);                 /* 0x5778b0, the run window's text tick */
+int ai_Unk577a00(void);                 /* 0x577a00, the tutorial's escape check */
+void ai_Unk577a90(void);                /* 0x577a90, rewrites the text window */
+void ai_Unk577b60(void);                /* 0x577b60, clears the text window */
+void ai_Unk577b90(void);                /* 0x577b90, rewrites the second text window */
+void ai_Unk577c60(void);                /* 0x577c60, clears the second text window */
+void ai_Unk577cd0(void);                /* 0x577cd0, creates the progress form "tutorial\progress" */
+void ai_Unk577d60(void);                /* 0x577d60, releases the progress form */
+void ai_Unk577d90(void);                /* 0x577d90, the progress slider (state 0xa) */
+int ai_Unk577e50(void);                 /* 0x577e50, the tutorial chapter form */
+int ai_Unk5780e0(void);                 /* 0x5780e0, the control predicate on S+0x4c */
+int ai_Unk578120(char *per);            /* 0x578120, sets the player S+0x1c */
+void ai_Unk578150(void);                /* 0x578150, clears the player S+0x1c */
+int ai_Unk578170(void);                 /* 0x578170, the gate predicate */
+int ai_Unk578180(void);                 /* 0x578180, the tutorial start / record reset */
+void ai_Unk578370(void);                /* 0x578370, the tutorial stop (handle + chain reset) */
+void ai_Unk578440(char *rec);           /* 0x578440, frees the tutorial record chain */
+int ai_Unk5784a0(void);                 /* 0x5784a0, allocates the main-intro record */
+int ai_Unk578570(void);                 /* 0x578570, the chapter 1 chain (ROUGH) */
+int ai_Unk578e40(void);                 /* 0x578e40, the chapter 2 chain (ROUGH) */
+int ai_Unk579570(void);                 /* 0x579570, the chapter 3 chain (ROUGH) */
+int ai_Unk57aa80(void);                 /* 0x57aa80, the chapter 4 chain (ROUGH) */
+int ai_Unk57aeb0(void);                 /* 0x57aeb0, the chapter 5 chain (ROUGH) */
+int ai_Unk57b750(void);                 /* 0x57b750, the main-outro record */
+void ai_Unk57b810(float *a, float *b, float *c, float *d, float t, float *out);  /* 0x57b810, the Bezier */
+
+#endif

@@ -1,0 +1,507 @@
+struct D3SM;
+struct D3VECTOR;
+struct SNDHANDLE;
+struct UNKHITS;
+struct VFSFILE;
+struct D3OBJECT;
+/* Declarations of gv.c (0x4ed170.., the avatar table 0x60f310 and the effect slots 0x6f1008). Names are ours. */
+#ifndef GV_H
+#define GV_H
+
+extern char unk_Avatars[0x20][0xf4];    /* 0x60f310 */
+extern char gv_Effects[];             /* 0x6f1008, 8 slots of 0x170 bytes */
+extern char ai_Unk6f0e38[], ai_Unk6f0e3c[], ai_Unk6f0e3e[], ai_Unk6f0e42[], ai_Unk6f0e48[];  /* 0x6f0e38, 0x6f0e3c, 0x6f0e3e, 0x6f0e42, 0x6f0e48 */
+extern char ai_Unk925100[], ai_Unk925104[], ai_Unk925108[], ai_Unk925114[], ai_Unk925118[], ai_Unk92511c[];  /* 0x925100, 0x925104, 0x925108, 0x925114, 0x925118, 0x92511c */
+extern char ai_Time[];             /* 0x770ae0 */
+extern int ai_TimeYear;            /* 0x770ae0, ai_Time's first int: the game year (AITIME.year in ai.h;
+                                      the alias am.h / cm.h use for AITIME.hour is ai_TimeHour) */
+extern char ai_Chars[][0x21c];      /* 0x770b80, the characters */
+
+/* the 0x21c-byte character records (ai_Chars) as the order handlers read them */
+typedef struct ORDCHAR {
+    unsigned short id;              /* 0x000 */
+    unsigned char kind;             /* 0x002, 6 = player */
+    char pad003;
+    unsigned int netId;             /* 0x004, the id the order events carry */
+    unsigned char health;           /* 0x008, > 0 = the record is in use */
+    unsigned char textVariant;      /* 0x009, nonzero: the alternate text block (level texts +10, job texts +0x28) */
+    char pad00a[3];
+    unsigned char level;            /* 0x00d, the level the level orders test */
+    char pad00e[0x4e];
+    int partner;                    /* 0x05c, the partner character id, -1 = none */
+    char pad060[0x106];
+    unsigned char job;              /* 0x166, the profession id the job orders test (text 0x253 + job) */
+    char pad167[2];
+    unsigned char job2;             /* 0x169, the second profession field, tested by the same orders */
+    char pad16a[0x5e];
+    int flags1c8;                   /* 0x1c8, order flags: 0x100 answer, 0x200 / 0x80000 / 0x100000 / 0x200000 / 0x400000 */
+    int flags1cc;                   /* 0x1cc, privilege flags: 0xe00 */
+    char pad1d0[0x21c - 0x1d0];
+} ORDCHAR;
+#define ORD_CHARS ((ORDCHAR *)ai_Chars)
+#define ORD_CHAR(p) ((ORDCHAR *)(p))   /* a raw character record as the order handlers read it */
+
+/* the wage record of gm_CharacterWages (0x4fa700): the two profession ids, the wage kind and the three amounts */
+typedef struct ORDWAGES {
+    unsigned char job;              /* 0x000, the profession id (character +0x166) */
+    unsigned char job2;             /* 0x001, the second profession id (character +0x169) */
+    unsigned char kind;             /* 0x002, the wage kind 0x23 .. 0x27 */
+    char pad003;
+    int amount;                     /* 0x004, the wage of the first profession */
+    int amount2;                    /* 0x008, the wage of the second profession */
+    int amount3;                    /* 0x00c, the wage of the kind */
+} ORDWAGES;
+
+/* the message record of an order (c = the character, m = this record): the handlers write their text at +0x14 */
+typedef struct ORDMSG {
+    int kind;                       /* 0x000, 1 do / 2 answer / 3 ask / 4 answer */
+    char pad004[0x10];
+    char text[0x200];               /* 0x014, the text the handlers fill */
+    int answerFlag;                 /* 0x214, 1 = the answer handler picked this order; stored as an int */
+    char pad218[4];
+    ORDCHAR *partner;               /* 0x21c, the partner character of an answer */
+} ORDMSG;
+#define ORD_MSG(p) ((ORDMSG *)(p))
+
+/* a cell of the statistics grid ai_Grid (ai.h, 0x91ae60) as ord.c reads it: the same 24-byte record, which the
+   order statistics use beyond AIGRID's a / b / used (+8 the average value of the objects of the cell, +0xc /
+   +0x10 / +0x14 the float sums 0x4f8920 rebuilds); kept here because gv.h and ai.h cannot be in one TU */
+typedef struct ORDCELL {
+    unsigned short a;               /* 0x00, the sum over the 3 x 3 neighbourhood */
+    unsigned short b;               /* 0x02, the sum over the cell itself */
+    unsigned char used;             /* 0x04, the number of objects of the cell (read unsigned: and eax,0xff) */
+    char pad05[3];
+    int average;                    /* 0x08 */
+    float halfWeightSum;            /* 0x0c, the sum of half the weights w of 0x4f8920 (w * 0.5f) */
+    float weightSum;                /* 0x10, the sum of the weights w of 0x4f8920 */
+    float buildingCount;            /* 0x14, 0x4f8ae0 adds 1.0 per building object of the cell */
+} ORDCELL;
+
+#pragma pack(push, 1)
+/* the building record ai.h's AIBLD, as ord.c reads it (gv.h and ai.h cannot be in one TU: both declare
+   ai_Time / ai_Chars / ai_BTypes); the object list of gm_BuildQuery's records */
+typedef struct ORDBLD {
+    unsigned char type;             /* 0x00, index into ai_BTypes */
+    char pad01[0x5b];
+    char level;                     /* 0x5c, the building's level 0 .. 100 */
+    int objList;                    /* 0x5d */
+    char *object;                   /* 0x61, its object in the scene */
+    char pad65[0x44];
+} ORDBLD;
+#pragma pack(pop)
+
+/* a record of the event list (he_FindEvent / he_NextEvent) as the order handlers read it */
+typedef struct ORDEVENT {
+    char pad000[0xac];
+    int ownerId;                    /* 0x0ac, the character the event belongs to */
+    int targetId;                   /* 0x0b0, the event's other character */
+} ORDEVENT;
+extern int ai_Unk6333cc;                /* 0x6333cc */
+extern int d3_CurrentScene;                /* 0x633444 */
+
+unsigned short util_Random(int n);      /* 0x42ec00, @original: tr.c defines int util_Random(unsigned short n); the byte-matched callers read a 16-bit result (ch_RandomNear / anm_Update / ahm_ShufflePlayers: and eax,0xffff after the call) */
+unsigned vfs_fwrite(void *buf, int size, int n, struct VFSFILE *f);                       /* 0x430e30 */
+int ls_Read(void *buf, int size, int count, int f);  /* 0x51c920, ls.c's read (true when the fread returned a positive count); ls.c has no header yet */
+unsigned char * gm_BuildQuery(int n, ...);                     /* 0x501190 */
+int ai_Unk5a9e40();                     /* 0x5a9e40 */
+char d3if_Delete(struct D3OBJECT *obj);  /* 0x447190, d3_interface.h */
+int gm_MinutesBetween();                     /* 0x4fe280 */
+int ai_Unk5dc4a0();                     /* 0x5dc4a0 */
+int ai_Unk5dc9d0();                     /* 0x5dc9d0 */
+int d3t_GetMeshBounds();                     /* 0x413310 */
+int d3t_CreateSmoke();                     /* 0x416340 */
+int d3t_CreateEarth();                     /* 0x4168e0 */
+int d3t_CreateExplosion();                     /* 0x416040 */
+struct SBSAMPLE; struct SBBANK;
+struct SBSAMPLE * sb_GetSample(struct SBBANK *bank, char *name);   /* 0x426030 */
+int d3snd_PlayAt(struct SNDHANDLE *snd, struct D3OBJECT *obj, int volume, float range);                     /* 0x417e30 */
+int gm_FindById();                     /* 0x4fea50 */
+int cm_SendLongMessage(char *msg);                     /* 0x4c4b70 */
+void cm_BeginFieldBlock(char *o, int id);                     /* 0x4c3ba0 */
+int cm_AddFieldValues(unsigned char size, unsigned char n, unsigned short field, void *v);                     /* 0x4c3d00 */
+void cm_SendFieldDeltas(void);                     /* 0x4c49a0 */
+extern char *ai_Blds;                   /* 0x889f74, 256 records of 0xa9 bytes */
+extern char *ai_PlayerChar;              /* 0x6f1bf8 */
+extern const float ai_Unk5ebba4[];          /* 0x5ebba4, d3_Origin (as cm.h) */
+extern const char ai_Unk5ebbb4[];                 /* 0x5ebbb4 */
+extern char ai_Unk6f0e40[], ai_Unk6f0e44[];  /* 0x6f0e40, 0x6f0e44 */
+
+char *gv_AllocAvatar(void);              /* 0x4ed170 */
+int gv_WriteAvatars(void *f);             /* 0x4ed1e0 */
+int gv_ReadAvatars(void *f);             /* 0x4ed270 */
+int unk_Unk4ed3f0(int *p);              /* 0x4ed3f0 */
+int unk_Unk4ed480(void *f);             /* 0x4ed480 */
+int unk_Unk4ed910(void *f, int v);      /* 0x4ed910 */
+void unk_Unk4eddf0(void);               /* 0x4eddf0 */
+void gv_FreeEffectObjects(void);               /* 0x4ede70 */
+char *gv_FindEffect(int id);            /* 0x4eded0 */
+void unk_Unk4edf10(int id);             /* 0x4edf10 */
+void unk_Unk4ee360(int w, int sub, char *p, struct UNKHITS *out);  /* 0x4ee360 */
+void unk_Unk4edf80(void);               /* 0x4edf80 */
+void unk_Unk4eea70(char *o);             /* 0x4eea70 */
+int gv_ReserveEffect(int id);              /* 0x4eeaa0 */
+int unk_Unk4eeb00(int id);              /* 0x4eeb00 */
+int unk_Unk4eeb70(char *o, int *c, int *a, int *b, int *d, float v, int n, int x);  /* 0x4eeb70 */
+char *unk_Unk4eedd0(int id);            /* 0x4eedd0 */
+int unk_Unk4eee00(int *p, int w);       /* 0x4eee00 */
+void unk_Unk4eeee0(int id, void *cb, void *arg);  /* 0x4eeee0 */
+float unk_Unk4eef50(int a, int b, int c);  /* 0x4eef50 */
+void unk_Unk4ef000(int n, int *out);    /* 0x4ef000 */
+void ai_Unk4c6230(int *p);                     /* 0x4c6230 */
+int unk_Unk4f2e30();                     /* 0x4f2e30 */
+void cm_SendMoneyDelta(int a, int b);                     /* 0x4c5f60 */
+void ai_Unk4c6260(void *p);                     /* 0x4c6260 */
+extern unsigned char ai_OwnPlayer;      /* 0x6f1bc5 */
+void unk_Unk4ef170(char *o, unsigned *a, unsigned *b);  /* 0x4ef170 */
+void unk_Unk4ef260(char *o, float *a, float *b);  /* 0x4ef260 */
+float unk_Unk4ef330(char *o);           /* 0x4ef330 */
+int unk_Unk4ef3c0(unsigned char *o);    /* 0x4ef3c0 */
+int unk_Unk4ef440(unsigned char *o);    /* 0x4ef440 */
+int unk_Unk4ef470(unsigned char *o);    /* 0x4ef470 */
+int unk_Unk4ef4f0(char *r, int i);      /* 0x4ef4f0 */
+extern char *ai_BTypes;              /* 0x7e3f30 */
+int unk_Unk4ef570(char *r, int i, unsigned char n);  /* 0x4ef570 */
+int gv_EntryIndex(char *r, int *e);     /* 0x4ef6b0 */
+int unk_Unk4ef710(char *a, char *b);    /* 0x4ef710 */
+int gv_EntrySameId(int *a, int *b);      /* 0x4ef740 */
+int gv_EntryIsFree(int *a, int *b);      /* 0x4ef760 */
+int gv_EntryIsUsed(int *a, int *b);      /* 0x4ef770 */
+int gv_EntryHasId(int *a, int *b);      /* 0x4ef780 */
+unsigned gv_FindEntry(void *a, unsigned char *o, unsigned after, int (*cb)(), int l);  /* 0x4ef7c0 */
+unsigned gv_LoadGraveyard(unsigned char *o, int *e);  /* 0x4ef900 */
+int unk_Unk4ef930(unsigned char *o);    /* 0x4ef930 */
+extern const int gv_EntryCounts[];             /* 0x5ee054, entries per kind */
+extern const int unk_Tab5ee084[4][4];         /* 0x5ee084 */
+int unk_Unk4ef9c0(unsigned char *o, int n);  /* 0x4ef9c0 */
+int *gv_AllocGraveyard(unsigned char *o);   /* 0x4efc10, allocates the graveyard record of the building o ("gv_AllocGraveyardField", at +0x65 of o) */
+extern const int unk_Tab5ee064[];             /* 0x5ee064 */
+extern const int unk_Tab5ee074[];             /* 0x5ee074 */
+extern int ai_NextObjectId;                /* 0x61a654 */
+
+
+
+void * mem_Alloc(int size, char *tag);        /* 0x4223c0, allocates zeroed memory */
+void mem_Free(void *p);                 /* 0x422620 */
+int unk_Unk4eff50(unsigned char *o);    /* 0x4eff50 */
+void gv_FreeGraveyard(int *g);             /* 0x4f0180 */
+int unk_Unk4f01d0(int *g, char *o, int v, int b);  /* 0x4f01d0 */
+int unk_Unk4f0240(int *p);              /* 0x4f0240 */
+int unk_Unk4f0430(int *g, char *o, int v, short s, int x);  /* 0x4f0430 */
+void ai_Unk4c60b0(void *p);                     /* 0x4c60b0 */
+int unk_Unk4f0490(short *p);            /* 0x4f0490 */
+int unk_Unk4f0700(int *g, char *o, int v, int b, short s, int x);  /* 0x4f0700 */
+int unk_Unk4f0770(char *p);             /* 0x4f0770 */
+int unk_Unk4f0900(int *g, char *o, int v, int b);  /* 0x4f0900 */
+int unk_Unk4f0970(unsigned char *p);    /* 0x4f0970 */
+int unk_Unk4f0a90(int *g, char *o, int v);  /* 0x4f0a90 */
+int gm_AddNegative();                     /* 0x500ae0 */
+int gm_AddObjekt(int id, int proto, int n);                     /* 0x500970 */
+int ai_Unk5a96e0();                     /* 0x5a96e0 */
+int unk_Unk4f0af0(char *p);             /* 0x4f0af0 */
+int unk_Unk4f0c20(char *o, int v, int b, int x);  /* 0x4f0c20 */
+int unk_Unk4f0c80(unsigned char *p);    /* 0x4f0c80 */
+int unk_Unk4f0d70(char *o, int x);      /* 0x4f0d70 */
+int unk_Unk4f0dd0(unsigned char *p);    /* 0x4f0dd0 */
+void unk_Unk4f0e80(int *g, int x, char *o, int v, char b, int y);  /* 0x4f0e80 */
+void ai_Unk4c60f0(void *p);                     /* 0x4c60f0 */
+int unk_Unk4f0ed0(int *p);              /* 0x4f0ed0 */
+int unk_Unk4f1170(char *o, int v, int b, int x, int y);  /* 0x4f1170 */
+int gv_SendGrave(unsigned char *o);    /* 0x4f15e0 */
+int unk_Unk4f1660(char *c);             /* 0x4f1660 */
+int unk_Unk4f1d50(unsigned char *o, int *n);  /* 0x4f1d50 */
+float unk_Unk4f16f0(char *o);           /* 0x4f16f0 */
+void ai_Unk4c6130(void *p);                     /* 0x4c6130 */
+void ai_Unk4c4ac0(int a, int b, int c);                     /* 0x4c4ac0 */
+extern int ai_Unk1460ae0;               /* 0x1460ae0 */
+int unk_Unk4f17f0(void *f, unsigned char *o);  /* 0x4f17f0 */
+char * gm_Query(void *list, int n, ...);                   /* 0x4ffe90 */
+unsigned unk_Unk4f1200(char *p);        /* 0x4f1200 */
+int gv_ReadGraveyard(void *f, unsigned char *o);  /* 0x4f1aa0, reads the graveyard record of o from the file f (allocated by 0x4efc10) */
+float util_RandomF(void);               /* 0x42ec20 */
+extern signed char ai_Relations[768][768];  /* 0x7e5360 */
+extern signed char ai_RelationMemory[768][768];  /* 0x889f80 */
+extern int ai_CharCount;                /* 0x6f1bc0, the number of characters in use (of ai_Chars[0x300]) */
+int gm_PlaceOnStage(int id, int a, int b, int *p4, int *p5);                     /* 0x4fbd10 */
+int gm_ChooseHeadIcon(unsigned short *c);                     /* 0x4fb890 */
+int unk_Unk4f22a0(char *o, unsigned char m);  /* 0x4f22a0 */
+
+int unk_Unk4f2540(void *a, unsigned char **o, int *e);  /* 0x4f2540 */
+int unk_Unk4f25d0(void *a, unsigned char **o, int *e);  /* 0x4f25d0 */
+float unk_Unk4f2660(char *o);           /* 0x4f2660 */
+int gv_GetTableRecord(int i, int *out);     /* 0x4f2720 */
+int gv_FindTableRecord(char *c, unsigned b, int *out);  /* 0x4f2870 */
+extern char unk_Tab611258[];            /* 0x611258, 0x1d records of 0x24 bytes */
+
+int unk_Unk4f28d0(void *f);             /* 0x4f28d0 */
+float unk_Unk4f2da0(short *c);          /* 0x4f2da0 */
+extern char unk_Var6f1b88[];            /* 0x6f1b88 */
+extern char gv_Graveyard[];            /* 0x91f700 */
+extern char unk_Tab91b6e0[];            /* 0x91b6e0 */
+int gm_BuildingSkill();                     /* 0x5092e0 */
+
+int unk_Unk4f2b30(void *f);             /* 0x4f2b30 */
+int gv_TableRecordText(char *out, int i);    /* 0x4f2fe0 */
+extern int ls_Version;                /* 0x623650, the save version */
+void txt_Format(char *buf, int id, ...);  /* 0x5176d0 */
+
+void unk_Unk4f3610(int v, int *out);    /* 0x4f3610 */
+int unk_Unk4f3640(int b, int a);        /* 0x4f3640 */
+int unk_Unk4f36b0(void);                /* 0x4f36b0 */
+int unk_Unk4f36e0(int id);              /* 0x4f36e0 */
+int unk_Unk4f3780(int a, int b);        /* 0x4f3780 */
+
+int unk_Unk4f3910(int a, int b, int s, int m);  /* 0x4f3910 */
+int unk_Unk4f39b0(int c);               /* 0x4f39b0 */
+int unk_Unk4f39e0(int c);               /* 0x4f39e0 */
+
+int unk_Unk4f3fe0(int p, int *out, unsigned t);  /* 0x4f3fe0 */
+int unk_Unk4f4080(int p, int *out, unsigned t);  /* 0x4f4080 */
+int unk_Unk4f4130(int p, unsigned t);   /* 0x4f4130 */
+void gv_ClearGraveyard(void);               /* 0x4f4350 */
+int unk_Unk4f4420(char *c, unsigned k); /* 0x4f4420 */
+short * gm_FindChar(int id);                   /* 0x505df0 */
+
+void unk_Unk4f4d10(void);               /* 0x4f4d10 */
+int unk_Unk4f4d30(int id, short *a, int *v, short *c, unsigned *k);  /* 0x4f4d30 */
+void unk_Unk4f4970(unsigned i);              /* 0x4f4970 */
+int gm_Unk505e60(unsigned id, int again);                     /* 0x505e60 */
+float gm_Liking();                   /* 0x50c550 */
+
+void unk_Unk4f3700(void);               /* 0x4f3700 */
+int unk_Unk4f37e0(int id, int m);       /* 0x4f37e0 */
+void unk_Unk4f4390(int n, char *r);     /* 0x4f4390 */
+void ai_Unk4c4e90(int a, int b);                     /* 0x4c4e90 */
+char * he_FindEvent(int n, ...);         /* 0x53e400, as he.h */
+int cm_GetSlotState();                     /* 0x4c3ae0 */
+void sv_PumpNet();                    /* 0x52fe00 */
+int ai_Unk5a9430();                     /* 0x5a9430 */
+extern unsigned short ai_PlayerId;     /* 0x6f25b8 */
+
+int unk_Unk4f3a30(int p, int n);        /* 0x4f3a30 */
+int unk_Unk4f3b40(int p, int n, int *ids);  /* 0x4f3b40 */
+
+int unk_Unk4f3c50(int *ids, int *cnt, unsigned t);  /* 0x4f3c50 */
+
+int unk_Unk4f3dd0(int *ids, int *c1, int *c2, unsigned t);  /* 0x4f3dd0 */
+
+extern const int unk_Tab5ee0f8[];             /* 0x5ee0f8, experience thresholds per level */
+extern unsigned char ai_NumPlayers;     /* 0x62489c, the number of players (as ai.h / cm.h / unk_4b39f0.c) */
+int gm_GetWorth(unsigned short id);    /* 0x50a640 */
+void cm_SendSetField(int a, int b, int c, int d, int e);                     /* 0x4c4a60 */
+void he_MessageBoxQuickjump(int a1, int a2, char *text, char fl, int a5, int a6, int a7, char *jump, char *text2);                     /* 0x53dee0 */
+int cm_SendLongMessage(char *msg);                     /* 0x4c4b70 */
+void cm_BeginFieldBlock(char *o, int id);                     /* 0x4c3ba0 */
+int cm_AddFieldDelta(int size, int n, short field, void *v);                     /* 0x4c3c00 */
+void cm_SendFieldDeltas(void);                     /* 0x4c49a0 */
+struct GCLOCK;  /* f3gm.h typedef (gm_AddTime); file-scope so the gm_AddTime prototype below is stable */
+void gm_AddTime(struct GCLOCK *c, int hours, int mins, int secs);                     /* 0x4fe140 */
+
+typedef struct { char b[0x2d]; } UNKREC;      /* a 0x2d-byte record of 0x91f700, passed by value */
+int unk_Unk4ef090(char *o, int a, int b, int d, int *n, int *price);  /* 0x4ef090 */
+int unk_Unk4f2440(unsigned short *c, int k1, int k2, int *out);  /* 0x4f2440 */
+int unk_Unk4f24a0(unsigned short *c);  /* 0x4f24a0, returns gm_PlayerFactor's value (0x4f2532 ret after the 0x5085f0 call) */
+int unk_Unk4f30a0(char *out, UNKREC r, int mode);  /* 0x4f30a0 */
+int unk_Unk4f31d0(char *out, UNKREC r, int mode);  /* 0x4f31d0 */
+int unk_Unk4f3270(char *out, UNKREC r, int mode);  /* 0x4f3270 */
+int unk_Unk4f3580(char *out, UNKREC r, int mode);  /* 0x4f3580 */
+char *gv_FindAccused(char *c, int max, int *ids, int *cnt);  /* 0x4f41b0 */
+void unk_Unk4f4460(unsigned short *c, int a);  /* 0x4f4460 */
+void unk_Unk4f48f0(unsigned short *c, int a, char *out);  /* 0x4f48f0 */
+
+unsigned ord_ApplyForOffice(ORDCHAR *c, int *m);  /* 0x4f4e20 */
+int ai_OfficeApplication(short *c, int m);      /* 0x5c6d00, the office application window (kind 3 of the order) */
+char * he_NextEvent(void);                   /* 0x53e300 */
+
+int ord_LevelOrder(char *c, int *m);     /* 0x4f4f20 */
+int ord_EspionageResultOrder(char *c, int *m);     /* 0x4f4ff0 */
+int ord_PrivilegeDialog(char *text, int mode, int arg);  /* 0x4f8200, the privilege dialog */
+int ai_EspionageResult(char *c, int *m);  /* 0x5cd400, the espionage result window of the ask kind */
+
+int gv_SetTableRecord(short *c, int i, int v);  /* 0x4f2750 */
+int unk_Unk4f27d0(int *p);              /* 0x4f27d0 */
+void ai_Unk4c5930(char *p);                     /* 0x4c5930 */
+int ai_Unk5a9110();                     /* 0x5a9110 */
+
+int unk_Unk4f2e30(int i, int v, int a, int b, int obj);  /* 0x4f2e30 */
+float util_RandomF(void);               /* 0x42ec20 */
+int ai_InventoryHas(void *ch, int id);                     /* 0x5ba6b0 */
+void ai_Unk4c4e40(void *p);                     /* 0x4c4e40 */
+
+void unk_Unk4f1de0(char *o);            /* 0x4f1de0 */
+int unk_Unk4f2330(unsigned short *c, int a, int kind, int flag, int *out);  /* 0x4f2330 */
+int ai_Unk5a9780();                     /* 0x5a9780 */
+int ai_Unk5a9690();                     /* 0x5a9690 */
+int cm_FlushSendQueue();                     /* 0x4c3680 */
+int cm_ReceiveMessages();                     /* 0x4c3fd0 */
+int cm_ExecCommands();                     /* 0x4c4190 */
+void cm_SendRelations(int a, int b, int c, int d);                     /* 0x4c4b00 */
+int gm_Unk509ee0(char *c, char p);                   /* 0x509ee0 */
+
+int unk_Unk4f5070(char *c, int *m);     /* 0x4f5070 */
+int ai_Unk5c8bc0();                     /* 0x5c8bc0 */
+
+int ord_SpyTargetOrder(char *c, int *m);     /* 0x4f50f0 */
+int ai_SpyTargetHandler(char *c, int *m);      /* 0x5cde90, the spy target handler of the ask kind */
+
+int ord_BlackmailBuildingOrder(char *c, int *m);     /* 0x4f5190 */
+int ord_BlackmailContactVariantOrder(char *c, int *m);     /* 0x4f52e0 */
+int ord_BlackmailContactOrder(char *c, int *m);     /* 0x4f5350 */
+int ord_EmbezzlementOrder(char *c, int *m);     /* 0x4f5c30 */
+int ord_LawOrder(char *c, int *m);     /* 0x4f5d50 */
+int ord_LawOrder2(char *c, int *m);     /* 0x4f5f00 */
+int ord_Level3Order(char *c, int *m);     /* 0x4f5200 */
+int ord_Level4Order(char *c, int *m);     /* 0x4f53c0 */
+int ord_Level4Order2(char *c, int *m);     /* 0x4f54a0 */
+int ord_Level4To5Order(char *c, int *m);     /* 0x4f5580 */
+int ord_Level5UpOrder(char *c, int *m);     /* 0x4f5660 */
+int ord_Level5UpOrder2(char *c, int *m);     /* 0x4f5730 */
+int ord_Level6UpOrder(char *c, int *m);     /* 0x4f58e0 */
+int ord_Level6UpOrder2(char *c, int *m);     /* 0x4f59b0 */
+int ai_BlackmailBuildingListener(char *c, int *m);  /* 0x5c9550, the blackmail building listener of the ask kind */
+unsigned char ai_BlackmailContactVariant(char *c, int *m);  /* 0x5c9ff0, the blackmail contact variant of the ask kind */
+int ai_BlackmailContact(char *c, int *m);      /* 0x5c9c50, the blackmail contact of the ask kind */
+int ai_EmbezzlementPrivilege(char *c, int *m);  /* 0x5ca560, the embezzlement privilege handler of the ask kind */
+int ai_LawPrivilegeWindow(char *c, int *m);  /* 0x5ca150, the law / privilege window (privillegien_gesetz) of the ask kind */
+
+int ord_Job11Order(char *c, int *m);     /* 0x4f60b0 */
+int ord_JobMultiOrder(char *c, int *m);     /* 0x4f6180 */
+int ord_Job28Order(char *c, int *m);     /* 0x4f6270 */
+int ord_Job29Order(char *c, int *m);     /* 0x4f6340 */
+int ord_Job34Order(char *c, int *m);     /* 0x4f6410 */
+int ord_JobRangeOrder(char *c, int *m);     /* 0x4f64e0 */
+int ord_JobMultiOrder2(char *c, int *m);     /* 0x4f65c0 */
+
+int ord_EmbezzlementContractOrder(char *c, int *m);     /* 0x4f66b0 */
+char ai_EmbezzlementContract(char *c, int *m); /* 0x5cacd0, the embezzlement contract handler of the ask kind */
+
+int ord_Job17Order(char *c, int *m);     /* 0x4f68d0 */
+int ord_Job17Order2(char *c, int *m);     /* 0x4f69a0 */
+int ord_JobMultiOrder4(char *c, int *m);     /* 0x4f6a70 */
+int ord_Job10Order(char *c, int *m);     /* 0x4f6c60 */
+int ord_Job15Order(char *c, int *m);     /* 0x4f6d30 */
+int ord_CounterEspionageOrder(char *c, int *m);     /* 0x4f67c0 */
+int ord_MisappropriationOrder(char *c, int *m);     /* 0x4f6b40 */
+int ai_CounterEspionage(char *c, int *m);      /* 0x5cae00, the counter-espionage handler of the ask kind */
+int ai_MisappropriationWindow(char *c, int *m);  /* 0x5ca860, the misappropriation (privillegien unterschlagung) window of the ask kind */
+
+int ord_CounterEspionageWindowOrder(char *c, int *m);     /* 0x4f6e00 */
+int ord_EspionageWindowOrder(char *c, int *m);     /* 0x4f6f10 */
+int ord_EspionagePaymentOrder(char *c, int *m);     /* 0x4f70f0 */
+int ord_EspionageOrder(char *c, int *m);     /* 0x4f7200 */
+int ord_EspionagePaymentOrder2(char *c, int *m);     /* 0x4f7300 */
+int ord_EspionageRelationOrder(char *c, int *m);     /* 0x4f7400 */
+int ord_EspionageAmountOrder(char *c, int *m);     /* 0x4f74f0 */
+int ord_SpyTargetFlagOrder(char *c, int *m);     /* 0x4f75e0 */
+int ord_JobMultiOrder3(char *c, int *m);     /* 0x4f7000 */
+int ai_CounterEspionageWindow(char *c, int *m);  /* 0x5cb250, the counter-espionage window of the ask kind */
+int ai_EspionageWindow(char *c, int *m);  /* 0x5cb4f0, the espionage window of the ask kind */
+int ai_EspionagePayment(char *c, int *m);  /* 0x5cba90, the espionage payment handler of the ask kind */
+int ai_EspionageOrderHandler(char *c, int *m);  /* 0x5cbe00, the espionage order handler of the ask kind */
+int ai_EspionagePayment2(char *c, int *m);  /* 0x5cc700, the second espionage payment handler of the ask kind */
+int ai_EspionageRelation(char *c, int *m);  /* 0x5cc2b0, the espionage relation handler of the ask kind */
+int ai_EspionageAmountWindow(char *c, int *m);  /* 0x5cca40, the espionage amount window of the ask kind */
+int ai_SpyTargetFlagHandler(char *c, int *m);  /* 0x5ce1a0, the spy target handler with the flag set */
+
+int ord_EspionageOverviewOrder(char *c, int *m);     /* 0x4f76e0 */
+int ord_Level7Order(char *c, int *m);     /* 0x4f77d0 */
+int ord_Level8Order(char *c, int *m);     /* 0x4f78b0 */
+int ord_Level9UpOrder(char *c, int *m);     /* 0x4f7990 */
+int ord_Flag800Order(char *c, int *m);     /* 0x4f7ca0 */
+int ord_Flag800Order2(char *c, int *m);     /* 0x4f7d70 */
+int ord_Flag200Order(char *c, int *m);     /* 0x4f7ef0 */
+int ord_Flag400Order(char *c, int *m);     /* 0x4f8070 */
+int ord_InterrogationOrder(char *c, int *m);     /* 0x4f7a60 */
+int ord_DismissalOrder(char *c, int *m);     /* 0x4f7b80 */
+int ord_InterrogationOrder2(char *c, int *m);     /* 0x4f7e40 */
+int ord_InterrogationOrder3(char *c, int *m);     /* 0x4f7fc0 */
+int ord_DismissWorkerOrder(char *c, int *m);     /* 0x4f8140 */
+int ai_EspionageOverviewHandler(char *c, int *m);  /* 0x5cd2e0, the espionage overview handler of the ask kind */
+int ai_InterrogationWindow(char *c, int *m);  /* 0x5ce610, the interrogation window of the ask kind */
+int ai_DismissalHandler(char *c, int *m);  /* 0x5ce950, the dismissal handler of the ask kind */
+int ai_InterrogationWindow1(char *c, int *m);  /* 0x5cede0, the first interrogation window variant of the ask kind */
+int ai_InterrogationWindow2(char *c, int *m);  /* 0x5cf020, the second interrogation window variant of the ask kind */
+int ai_WorkerDismissalWindow(char *c, int *m);  /* 0x5ce7f0, the worker dismissal window (privillegien_arbeiter_ausweisen) of the ask kind */
+
+extern int (*ord_OrderHandlers[0x3a])(char *c, int *m);    /* 0x611768, the order handler of each order number */
+int d2_OpenForm(int x, int y, char *name);  /* 0x4741f0, d2.h: loads the view, returns its number */
+void d2_CentreViewWindows(int view);                     /* 0x475600 */
+int d2_SetForm(int view, int n);                       /* 0x475f70 */
+void d2_CloseView(int view);                     /* 0x4758f0 */
+void d2_SetPointerSprite(int a, int pic);            /* 0x476f80, d2.h / gfx.h */
+int io_PrintText(char *fmt, ...);                     /* 0x515960 */
+int sv_RunFrame(int cb, unsigned mask);                     /* 0x5309a0 */
+extern int sv_PopRequest;                /* 0x6f22a0 */
+extern int d2_ClickedId;                /* 0xf8a668 */
+int ord_DispatchOrder(int id, char *c, int *m);  /* 0x4f81c0 */
+
+int unk_Unk4f5800(char *c, int *m);     /* 0x4f5800 */
+int ord_WageReportOrder(char *c, int *m);     /* 0x4f5a80 */
+int ai_Unk5c8ef0();                     /* 0x5c8ef0 */
+int gm_CharacterWages(unsigned short id, int flag, unsigned char *out);  /* 0x4fa700, the wage record (ORDWAGES) of the character id for the report */
+
+/* the tables 0x4f82a0 clears */
+extern char ord_MessageRecord[0x24];        /* 0x91b480, the 9-int record the messages carry, then the tag */
+extern int ord_MessageRecordEnabled;    /* 0x91b480, the first int of ord_MessageRecord: 0x4f9710 sets it 1 / 0
+                                           on the 'enbl' / 'dsbl' message, 0x4f9220 runs the event only at 1 (a
+                                           separate name, so the compiler does not kill the record's clear) */
+extern char gm_IncomeHistory[];         /* 0x91b580, the 17-round history of the five income sums (rows of
+                                            0x44 bytes, the running sums behind them) */
+extern char gm_CharacterStatistics[];            /* 0x91b500 */
+extern char ord_StatisticsHistory[];            /* 0x91ab00 */
+extern char ord_StatisticsRecord[];            /* 0x91b4c0 */
+extern ORDCELL ord_GridCells[8][8];     /* 0x91ae60, ai.h's ai_Grid (the same address); see ORDCELL */
+extern int ai_RatingBase;                /* 0x6f1b9c, the rating's old value (stored as bits; ai.h's ai_Rating follows it at 0x6f1ba0) */
+extern float ai_Rating;                  /* 0x6f1ba0, the smoothed game rating (ai.h's name) */
+extern float ord_RatingRate;             /* 0x91aaf4, the change rate of the rating (ord.c 0x4f8ed0; ls.c saves it) */
+extern float ai_RatingBaseF;             /* 0x6f1b9c, ai_RatingBase read as the float its bits hold */
+#ifndef DATA_VIEWS_H
+extern char *unk_Ptrfd7c50;             /* 0xfd7c50, the scene */
+#endif
+char d3_GetHeightAt(struct D3SM *h, struct D3VECTOR *pos, int *px, int *pz, float *py);                    /* 0x45f170 */
+void ord_ResetStatistics(void);               /* 0x4f82a0 */
+int ord_GetGridCell(char *p, int *x, int *y);  /* 0x4f8300, the grid cell (x, y) of the position p */
+
+unsigned char * gm_BuildNext(void);                     /* 0x501030 */
+int gm_FindById(int *bld, int *obj, int *chr, int id);  /* 0x4fea50, fills *bld with the object of the id (ai.h's prototype) */
+int gm_EquipmentValue(unsigned char *b, int unused);                     /* 0x509b10 */
+void ord_CountGridObjects(void);               /* 0x4f8360 */
+
+int d3sm_GetVertex();                   /* 0x45f100, @original: d3_sm.c defines char d3sm_GetVertex(D3SM *, int, int, D3VECTOR *); the byte-matched unk_Unk4f86a0 (ord.c) reads an int result (no 0f be c0 after the call) */
+extern char ord_KindTable[];            /* 0x617468, 0x58 pairs of ints */
+int unk_Unk4f86a0(int x, int y, int z);  /* 0x4f86a0 */
+int ord_GetKindRecord(int i, int *out);     /* 0x4f8890 */
+
+void ord_AddGridAmount(int who, int kind, int *px, int *py);  /* 0x4f8460 */
+void ord_SubGridAmount(int who, int kind);  /* 0x4f8590 */
+
+int unk_Unk4f8700(char *c);             /* 0x4f8700 */
+
+void unk_Unk4f88c0(void);               /* 0x4f88c0 */
+
+extern char gv_Graveyard[], gv_GraveyardEnd[];  /* 0x91f700, 0x925100: 0x200 records of 0x2d bytes, and their end */
+void ord_RebuildGridSums(void);               /* 0x4f8920 */
+
+void cm_SendMessage56(void *p);                     /* 0x4c5e80 */
+void ord_GetMessageRecord(int *out);           /* 0x4f9170 */
+void ord_InitMessageRecord(int a, float b, float c, float d);  /* 0x4f9190 */
+
+extern char ord_RatingBytes[];            /* 0x91b460, 5 + 1 bytes */
+extern char *ai_Blds;             /* 0x889f74 */
+void ord_ComputeStatistics(float *out);         /* 0x4f8ae0 */
+void ord_UpdateStatistics(void);               /* 0x4f8ed0 */
+void ord_LoadStatistics(void *p);       /* 0x4f9020 */
+void ord_UpdateMessageEvent(void);               /* 0x4f9220 */
+void ord_ReportStatistics(void);        /* 0x4f9850 */
+int ord_HandleMessageRecord(int *m);              /* 0x4f9710 */
+unsigned char ord_GetRatingByte(int i);              /* 0x4f97a0 */
+float ord_BuildingCapacityRatio(void);              /* 0x4f97c0 */
+
+float ord_StatisticsRating(void);              /* 0x4f9ce0 */
+float ord_WeightedRecordSum(int *out);          /* 0x4f9d40 */
+float unk_Unk4f9e00(int *o);            /* 0x4f9e00 */
+
+extern char ord_StatisticsTime[];            /* 0x91b470, a clock stamp (14 bytes) */
+int gm_MinutesBetween();                     /* 0x4fe280 */
+void ord_AdvanceRatingBase(void);               /* 0x4f9c00 */
+
+#endif

@@ -1,0 +1,23 @@
+/* hmt.c -- historical events ("hmt_CreateBinaryFile", historical.ini / historical.dfn), 0x4ac140..; name from
+   the "hmt_" tag. The table of 51 records at 0x5ed1e8 (0x4ac140..0x4ac2f0: size, random picks, text ids 0x1e2b /
+   0x1e35 + n, prices, applying a record) has no .data; it is put here because the .data block of 0x4ac440.. starts
+   at 0x600f60 right after unk_4a7140.c's ("Blutrache" 0x600f54). Starts after the registration 0x4abed0 that ends
+   unk_4a7140.c. Names are ours.
+   unit of rea 8cef7d5b (src/game/hmt.c); boundaries in decl/text.dcl, notes in src/hmt/open.md */
+extern char ai_PlayerSlots[];
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "hmt.h"
+#include "data_views.h"
+extern char ai_Unkf31160[];
+
+/* the SDK calls of hmt_CreateBinaryFile; windows.h is not included (its min/max and the other SDL macros change the
+   emitted code of the unit), the two entry points are declared here as the SDK does, __stdcall */
+__declspec(dllimport) unsigned long __stdcall GetModuleFileNameA(void *hModule, char *file, unsigned long size);
+__declspec(dllimport) unsigned long __stdcall GetPrivateProfileStringA(const char *sec, const char *key,
+                                                const char *def, char *buf, unsigned long size, const char *file);
+
+/* ai.h declares cm_AddFieldValues with an int field; the caller 0x4ac2f0 passes an unsigned short (no masking) */
+#define CM_AddFieldValuesShort ((void (*)(int, int, unsigned short, void *))cm_AddFieldValues)
+

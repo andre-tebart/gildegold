@@ -1,0 +1,30 @@
+/* 0x487ea0 */
+
+void ai_Unk487ea0(AICHAR *ch)
+{
+    AIBLD *bld;
+    unsigned int fl;
+    int i, n;
+
+    if (ai_Time.hour == 7 || ai_Time.hour == 0xc || ai_Time.hour == 0x12) {
+        fl = ch->flags1b4;
+        if (!(fl & 0x40)) {
+            bld = ch->bld;
+            fl |= 0x40;
+            ch->flags1b4 = fl;
+            if ((ai_Chars[bld->owner].kind != 6 && ai_Chars[bld->owner].kind != 7) || (fl & 2)) {
+                n = 0;
+                for (i = 0; i < 768; i++) {
+                    if (ai_Chars[i].id != 0xffff && ai_Chars[i].bld == bld && ai_Chars[i].title != 0)
+                        n++;
+                }
+                if (n < ai_BTypes[bld->type].k231 + ai_BTypes[bld->type].k232) {
+                    if (n == 0 || (!(ch->flags1c8 & 8) && util_Random(0x48) >= (0x12 - n) * 2))
+                        gv_SendGrave(ch->bld);
+                }
+            }
+        }
+    } else {
+        ch->flags1b4 &= ~0x40;
+    }
+}

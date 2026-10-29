@@ -1,0 +1,23 @@
+# the TU order of rea 8cef7d5b (src/zlib/trees.c): the source order, which differs from the address
+# order (a callee defined above its caller changes the caller's code; declarations precede use)
+u_tr_static_init.c
+f_465e00.c
+f_465e70.c
+f_4665a0.c
+f_466680.c
+f_466890.c
+f_466380.c
+f_466980.c
+f_466cc0.c
+f_466910.c
+f_466a70.c
+f_465ee0.c
+f_465f80.c
+f_466190.c
+u__tr_tally.c
+f_4671e0.c
+f_4675f0.c
+f_467670.c
+f_467690.c
+f_467720.c
+f_4677a0.c
