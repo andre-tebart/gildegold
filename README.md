@@ -6,7 +6,8 @@ A decompanion target project for `GildeGold.exe` (The Guild Gold, GOG 2.06, Germ
 ## Origin
 
 The sources were migrated from the first attempt, `../rea` at commit 8cef7d5b, by `tools/import_rea.py`. That
-script is deterministic and reruns in rea's venv:
+script is deterministic. It runs in rea's venv and refuses any rea HEAD other than the pinned commit, so check
+out 8cef7d5b first (rea's HEAD is the freeze commit 08b43d57, which only changes AGENTS.md):
 
     uv run --directory C:/Users/andre/Documents/rea python C:/Users/andre/Documents/gildegold/tools/import_rea.py
 
