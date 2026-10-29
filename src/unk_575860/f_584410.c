@@ -11,7 +11,7 @@ void ai_Unk584410(char *rec, int *w)
 {
     int btns[2];
 
-    sv_Unk52e350(w[6], 0, btns, 2, U_I((unsigned)&full_data_144a620), U_I((unsigned)&full_data_144a624));
+    sv_ButtonRow(w[6], 0, btns, 2, U_I((unsigned)&full_data_144a620), U_I((unsigned)&full_data_144a624));
     if (*(int *)w[7] == 3)
         d2_SetObjEnabled(btns[1], 0);
     U_I((unsigned)&d2_ClickedId) = -1;

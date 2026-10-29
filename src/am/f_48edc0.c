@@ -11,7 +11,7 @@ int ai_Unk48edc0(AIPX *p, AIARGX *s1, AIARGX *s2)
     if (!c)
         return 0;
     cm_SendMoveGoodsUnchecked(-1, p->netId, ai_OwnPlayer, s2->unk08);
-    gm_Unk50cc50(p->netId, -(int)s1->unk08);
+    gm_SendMoneyDelta(p->netId, -(int)s1->unk08);
     memset(&msg, 0, sizeof(msg));
     msg.to = p->netId;
     TMX(msg) = NOWX;

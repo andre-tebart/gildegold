@@ -6,7 +6,7 @@
    character, -out[1]); out[0] 1 -> 0x585cb0 (rec, out), 2 -> 0x586200 (rec, out), 3 -> 0x585f30 (rec, out);
    0x52d7a0 () */
 
-void gm_Unk50cc50(int a, int b);
+void gm_SendMoneyDelta(int a, int b);
 
 void ai_Unk586610(char *rec)
 {
@@ -33,7 +33,7 @@ void ai_Unk586610(char *rec)
     if (p != 0) {
         cm_SendSetField(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c), 0x1cc, 4, ((unsigned)&ai_Relations + 0x1aca0), 0);
         if (out[1] != 0)
-            gm_Unk50cc50(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c), -out[1]);
+            gm_SendMoneyDelta(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c), -out[1]);
         if (out[0] == 1)
             ai_Unk585cb0(rec, (char *)out);
         else if (out[0] == 2) {

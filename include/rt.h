@@ -101,11 +101,11 @@ void d2_SetObjFont(int obj, int font);                                          
 void d2_RemoveObj(int obj);                                                      /* 0x46e710 */
 int gm_FindObjectInst(int id);                                                      /* 0x4fe980, a cart type (unsigned short kind 0x134..) */
 void d2_EnableViewObjects(int view, int on);                                             /* 0x4754d0 */
-void sv_Unk52e350(int f, int y, int *out, int n, ...);                         /* 0x52e350, a row of n buttons */
+void sv_ButtonRow(int f, int y, int *out, int n, ...);                         /* 0x52e350, a row of n buttons */
 int d2_CreateWinText(short x, short y, char *text, int win);                         /* 0x473650 */
 void d2_SetObjEnabled(int obj, int on);                                              /* 0x475e40 */
 void d2_SetObjValue(int obj, int a, int b, int c);                                 /* 0x475cb0, @original: d2.c takes a 5th parameter (value2); 139 original call sites push 4 arguments, 18 push 5; rt.c's push 4 */
-#define ai_Unk52e350x ((void (*)(int, int, int *, int, int, int, int))sv_Unk52e350) /* 3 button texts */
+#define ai_Unk52e350x ((void (*)(int, int, int *, int, int, int, int))sv_ButtonRow) /* 3 button texts */
 void d2_SetCaption(int obj, char *text);                                            /* 0x473540 */
 void d2_SetSliderFlags(int obj, int a);                                               /* 0x46bdd0 */
 void d2_SetList(int id, int n, ...);                                          /* 0x46bca0 */

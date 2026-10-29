@@ -1,7 +1,7 @@
 /* 0x544070, a Ghidra miss (disassembled): the init of the tribute / levy event (record fields +0xbc = the collector's id, +0xc4 = a random start slot of 0x300, +0xc8 = a random entry of the table 0x5ed100, +0xcc = 0x300 players left, +0xd0 = the 0x504ec0 amount): with more than 4 running events of type 0x35 the event is posted again (and 0x5a8d00 called), else the clocks are set, the message 0x4f2e30 (3, 1, ..) is sent and, by the 0x15c ability (0x5ba6b0) of the collector, 0x5a8d80 / 0x5a8d40 is called (ROUGH) */
 
 float gm_GetSkill(char *c, int skill);
-void gm_Unk50cc50(int a, int b);
+void gm_SendMoneyDelta(int a, int b);
 int unk_Unk4f2e30();
 int ai_Unk5a8d00();
 int ai_Unk5a8d40();
@@ -37,7 +37,7 @@ void he_Unk544070(int ev)
         gm_AddTime(ev + 0x52, 0, 1, 0);
         gm_AddTime(ev + 0xac, 0x18, 0, 0);
         idx = *(unsigned short *)(ev + 8) * 0x21c;
-        gm_Unk50cc50(U_I((unsigned)&ai_CharInts + idx), -1);
+        gm_SendMoneyDelta(U_I((unsigned)&ai_CharInts + idx), -1);
         t = U_I(((unsigned)&ai_Unk770cec + 0x4) + idx);
         if (t != 0)
             t2 = *(int *)(t + 1);

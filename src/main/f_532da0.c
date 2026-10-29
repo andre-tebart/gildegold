@@ -4,7 +4,7 @@
    the usable ones as rows (0x4731d0 / 0x472aa0 / 0x515960 0x1cbc), refreshes after 1.5 s or on the second button, the first button (join) writes the host address to game.INI ([Network] Host = 0x75e1c0) and
    copies the record to 0x936460; a saved game (0x7f) is only usable when its file "Gamedata\network\<name>.SAV" exists and its player ids match; the third button asks for an address (0x532c30); returns 1 when a game
    was chosen (ROUGH: from the disassembly, Ghidra lost all call arguments) */
-void sv_Unk52e350(int f, int y, int *out, int n, ...);
+void sv_ButtonRow(int f, int y, int *out, int n, ...);
 int d2_RemoveWindowObjects();
 void d2_RadioAdd(int g, int obj);
 int d2_CreateChildWindow(short x, short y, short w, short h, unsigned int flags, int win);
@@ -35,7 +35,7 @@ int main_Unk532da0(int host)
     d2_SetForm(f, 1);
     io_PrintText(0x1ca5);
     d2_SetForm(f, 3);
-    sv_Unk52e350(d2_LastWindow, 0, btn, 3, U_I((unsigned)&full_data_14414b4), U_I((unsigned)&full_data_14414b8), U_I((unsigned)&full_data_14414bc));
+    sv_ButtonRow(d2_LastWindow, 0, btn, 3, U_I((unsigned)&full_data_14414b4), U_I((unsigned)&full_data_14414b8), U_I((unsigned)&full_data_14414bc));
     d2_SetObjEnabled(btn[0], 0);
     run = sv_RunFrame((int)main_Unk532da0, 0x24087);
     if (run != 0) {

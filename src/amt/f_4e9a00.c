@@ -44,7 +44,7 @@ int amt_ExecuteShareMessage(short *c, int *m)
                         k++;
                     } while ((int)q < (int)AMT_CHARS_END + 0x168);
                 }
-                cm_SendMoneyDelta(AMT_NETID(c), -5);
+                gm_SendMoneyDelta(AMT_NETID(c), -5);
                 cm_SendSetField(AMT_NETID(c), 0x1c8, 4, 0x8000000, 0);
                 if (ai_Chars[o->owner][2] == 7 || ai_Chars[o->owner][2] == 6) {
                     txt_Format(msg, 0x1663, o);

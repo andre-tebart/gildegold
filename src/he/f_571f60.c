@@ -30,7 +30,7 @@ void he_Unk571f60(int ev)
     if (HM_I(ev, 0xb0) > 2)
         HM_I(ev, 0xb0) = 2;
     HM_I(ev, 0xb8) = 0;
-    gm_Unk50cc50(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -((HM_I(ev, 0xb4) + 2) * (HM_I(ev, 0xb0) + 2)));
+    gm_SendMoneyDelta(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -((HM_I(ev, 0xb4) + 2) * (HM_I(ev, 0xb0) + 2)));
     gm_AddTime(ev + 0x52, 0, 5, 0);
     HM_I(ev, 0x84) = cm_SendExSetHE(0, ev);
 }

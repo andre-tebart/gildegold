@@ -30,7 +30,7 @@ int ai_Unk5bcc70(void)
     d2_SetForm(win, 0);
     sv_FitForm(U_I((unsigned)&d2_LastWindow));
     d2_SetForm(win, 3);
-    sv_Unk52e350(U_I((unsigned)&d2_LastWindow), 0, out, 3, U_I((unsigned)&full_data_144a134), U_I((unsigned)&full_data_144a138), U_I((unsigned)&full_data_144a13c));
+    sv_ButtonRow(U_I((unsigned)&d2_LastWindow), 0, out, 3, U_I((unsigned)&full_data_144a134), U_I((unsigned)&full_data_144a138), U_I((unsigned)&full_data_144a13c));
     ctrlA = ai_Unk5bc420();
     ctrlB = ai_Unk5bc6d0();
     ctrlC = ai_Unk5bc9c0();

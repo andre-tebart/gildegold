@@ -29,7 +29,7 @@ void he_Unk570130(int ev)
     HM_I(ev, 0xbc) = 0;
     *(HETIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0, 1, 0);
-    gm_Unk50cc50(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -HM_I(ev, 0xb8));
+    gm_SendMoneyDelta(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -HM_I(ev, 0xb8));
     HM_I(ev, 0x70) = 0;
     if (per != 0 && HM_I(per, 0x170) != 0)
         id = *(int *)(HM_I(per, 0x170) + 1);

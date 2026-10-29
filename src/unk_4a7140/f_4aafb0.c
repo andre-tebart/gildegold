@@ -13,6 +13,6 @@ int ai_Unk4aafb0(AIPER *p, AIPER *o, unsigned char *m)
     msg.arg[1] = *(int *)(m + 4);
     msg.arg[0] = msg.fromId;
     cm_SendLongMessage(&msg);
-    gm_Unk50cc50(p->netId, -1);
+    gm_SendMoneyDelta(p->netId, -1);
     return 1;
 }

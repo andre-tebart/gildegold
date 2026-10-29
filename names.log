@@ -18,3 +18,5 @@
 2026-10-29T22:08:26 - func crt_Sprintf -> sprintf by:main why:the link names the CRT member; the original placeholder was stale
 2026-10-29T22:08:26 - func crt_Itoa -> _itoa by:main why:the link names the CRT member; the original placeholder was stale
 2026-10-29T23:43:43 0x006f25a4 data full_data_6f25a4 -> main_ScreenRestart by:main why:set by the gfx options screen 0x5d5fd0 when the resolution changed; WinMain 0x53ccf0 then shuts the screen down and re-inits it (0x531c50) and clears it, 0x533850 pops the screen
+2026-10-29T23:48:11 0x0052e350 func sv_Unk52e350 -> sv_ButtonRow by:main why:0x52e350 creates n buttons (kind 0xbf, picture 0x53) in a row of the form, labels from the n string arguments, ids returned in out[] (its own header comment); callers: the options screens, main menus
+2026-10-29T23:49:05 0x0050cc50 func gm_Unk50cc50 -> gm_SendMoneyDelta by:main why:0x50cc50 is a one-line forwarder to cm_SendMoneyDelta (0x4c5f60); every caller passes (character net id, money delta)

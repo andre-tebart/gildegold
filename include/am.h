@@ -559,7 +559,7 @@ int ai_Unk4a6ae0(struct AIPER *p, struct AIBLD *b);                             
 void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d);                 /* 0x4c4830 */
 int amt_GetKindLevel(int v);                                                 /* 0x4e7c40 */
 void unk_Unk4eea70(char *o);                                           /* 0x4eea70 */
-void gm_Unk50cc50(int a, int b);                                        /* 0x50cc50 */
+void gm_SendMoneyDelta(int a, int b);                                        /* 0x50cc50 */
 int he_Unk56f170(int id);                                                /* 0x56f170 */
 
 /* this unit, in address order */
@@ -999,7 +999,7 @@ int ai_Unk49f4f0(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2
 int gm_TitleNumber(int r, int n);                                                 /* 0x5043d0 */
 int ai_Unk49f5c0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49f5c0 */
 void ai_Unk4c59b0(int a, unsigned char b);                                      /* 0x4c59b0 */
-void gm_Unk50cc50(int a, int b);                                      /* 0x50cc50, unk_48e070.h: int id */
+void gm_SendMoneyDelta(int a, int b);                                      /* 0x50cc50, unk_48e070.h: int id */
 int ai_Unk49f7f0(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49f7f0 */
 int ai_Unk49f850(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49f850 */
 void ai_Unk4c5d80(int *p);                                                  /* 0x4c5d80 */

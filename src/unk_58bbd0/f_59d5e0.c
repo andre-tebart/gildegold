@@ -82,7 +82,7 @@ void ai_Unk59d5e0(int param_1)
     U_I(((unsigned)&ai_Unkf8f39c + 0x124) + n) = 0xe;
     U_I(((unsigned)&ai_Unkf8f39c + 0x128) + n) = 0xe;
     d2_SetForm(win, 3);
-    sv_Unk52e350(U_I((unsigned)&d2_LastWindow), 0, &ctl[0], 2, U_I((unsigned)&full_data_14405d8), U_I((unsigned)&full_data_144a118));
+    sv_ButtonRow(U_I((unsigned)&d2_LastWindow), 0, &ctl[0], 2, U_I((unsigned)&full_data_14405d8), U_I((unsigned)&full_data_144a118));
     ai_Unk59c450((int)recsB, win, 4, 0);
     for (i = 0; i < 16; i++)
         if (recsB[i * 7] != -1)

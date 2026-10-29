@@ -23,6 +23,6 @@ void he_Unk56fc50(int ev)
         HM_I(ev, 0x84) = cm_SendExSetHE(-1, ev);
     else {
         HM_I(ev, 0x84) = cm_SendExSetHE(0, ev);
-        gm_Unk50cc50(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -HM_I(ev, 0xb8));
+        gm_SendMoneyDelta(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -HM_I(ev, 0xb8));
     }
 }

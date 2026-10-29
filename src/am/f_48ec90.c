@@ -10,7 +10,7 @@ int ai_Unk48ec90(AIPX *p, AIARGX *s1, AIARGX *s2)
     c = (AIPX *)gm_FindChar(s1->unk0c);
     if (!c)
         return 0;
-    gm_Unk50cc50(p->netId, -(int)s1->unk08);
+    gm_SendMoneyDelta(p->netId, -(int)s1->unk08);
     memset(&msg, 0, sizeof(msg));
     msg.to = p->netId;
     msg.fromId = s1->unk0c;

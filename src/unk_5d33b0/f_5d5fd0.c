@@ -9,7 +9,7 @@
    options menu 0x5d7770 and main.c.
    Text slots (txt_Ptrs 0x1c67 ..): the labels of the nine controls 0x1c67 .. 0x1c6f, the item lists 0x1c70 .. 0x1c75 and
    0x1c7c / 0x1c7d, the two buttons 0x1ca2 / 0x1ca3 (read off the original's loads, not named by the text files).
-   The resolution default reads ids[1] before sv_Unk52e350 has filled it (the original does the same). @deep body reconstructed from the disassembly (nine controls of view 1, ids[2] row, ok/cancel copies, apply read-back in the original order, resolution change path); 449 = 449 instructions, ONE hunk of 6 differing instructions left at 0x5d60c5: the original stores the obj8 d2_GetWinObj result at once (mov [esp+0x50],eax) and reads the dd_Has1024x768 flag into al (mov al,[flag]; add esp,0x30; test al,al; mov eax,1), ours keeps eax live, reads the flag into cl and stores obj8 after the cleanup (mov [esp+0x20],eax). Tried: declaration order of obj7/obj8, ids[2] vs ids[4] (ids[4] fixes the frame 0x30 -> 0x38), mode from a separate uninit local vs ids[1] (the original reads the uninitialised slot of the second id), 'if (flag == 0)' forms. Allocation / scheduling only. */
+   The resolution default reads ids[1] before sv_ButtonRow has filled it (the original does the same). @deep body reconstructed from the disassembly (nine controls of view 1, ids[2] row, ok/cancel copies, apply read-back in the original order, resolution change path); 449 = 449 instructions, ONE hunk of 6 differing instructions left at 0x5d60c5: the original stores the obj8 d2_GetWinObj result at once (mov [esp+0x50],eax) and reads the dd_Has1024x768 flag into al (mov al,[flag]; add esp,0x30; test al,al; mov eax,1), ours keeps eax live, reads the flag into cl and stores obj8 after the cleanup (mov [esp+0x20],eax). Tried: declaration order of obj7/obj8, ids[2] vs ids[4] (ids[4] fixes the frame 0x30 -> 0x38), mode from a separate uninit local vs ids[1] (the original reads the uninitialised slot of the second id), 'if (flag == 0)' forms. Allocation / scheduling only. */
 
 void ai_OptionsGfxScreen(void)
 {
@@ -46,45 +46,45 @@ void ai_OptionsGfxScreen(void)
         mode = dflt;
     if (dd_Has1152x864 != 0)
         mode = 2;
-    d2_SetObjValue(res, 0, mode, ai_GfxResolution.word & 0xff);
+    d2_SetObjValue4(res, 0, mode, ai_GfxResolution.word & 0xff);
     d2_SetSliderFlags(res, 0x82);
     d2_SetLabel(res, txt_Ptrs[0x1c67]);
     d2_SetList(res, 3, txt_Ptrs[0x1c73], txt_Ptrs[0x1c74], txt_Ptrs[0x1c75]);
-    d2_SetObjValue(obj1, 0, 2, ai_GfxDetail.word & 0xff);
+    d2_SetObjValue4(obj1, 0, 2, ai_GfxDetail.word & 0xff);
     d2_SetSliderFlags(obj1, 0x82);
     d2_SetLabel(obj1, txt_Ptrs[0x1c68]);
     d2_SetList(obj1, 3, txt_Ptrs[0x1c70], txt_Ptrs[0x1c71], txt_Ptrs[0x1c72]);
-    d2_SetObjValue(obj2, 0, 2, ai_GfxDetail.byte[1]);
+    d2_SetObjValue4(obj2, 0, 2, ai_GfxDetail.byte[1]);
     d2_SetSliderFlags(obj2, 0x82);
     d2_SetLabel(obj2, txt_Ptrs[0x1c69]);
     d2_SetList(obj2, 3, txt_Ptrs[0x1c70], txt_Ptrs[0x1c71], txt_Ptrs[0x1c72]);
-    d2_SetObjValue(obj3, 0, 2, ai_GfxFloor.byte[2]);
+    d2_SetObjValue4(obj3, 0, 2, ai_GfxFloor.byte[2]);
     d2_SetSliderFlags(obj3, 0x82);
     d2_SetLabel(obj3, txt_Ptrs[0x1c6a]);
     d2_SetList(obj3, 3, txt_Ptrs[0x1c70], txt_Ptrs[0x1c71], txt_Ptrs[0x1c72]);
-    d2_SetObjValue(obj4, 0, 1, ai_GfxFloor.word & 0xff);
+    d2_SetObjValue4(obj4, 0, 1, ai_GfxFloor.word & 0xff);
     d2_SetSliderFlags(obj4, 0x82);
     d2_SetLabel(obj4, txt_Ptrs[0x1c6b]);
     d2_SetList(obj4, 2, txt_Ptrs[0x1c7c], txt_Ptrs[0x1c7d]);
-    d2_SetObjValue(obj5, 0, 1, ai_GfxDetail.byte[2]);
+    d2_SetObjValue4(obj5, 0, 1, ai_GfxDetail.byte[2]);
     d2_SetSliderFlags(obj5, 0x82);
     d2_SetLabel(obj5, txt_Ptrs[0x1c6c]);
     d2_SetList(obj5, 2, txt_Ptrs[0x1c70], txt_Ptrs[0x1c72]);
-    d2_SetObjValue(obj6, 0, 2, ai_GfxDetail.byte[3]);
+    d2_SetObjValue4(obj6, 0, 2, ai_GfxDetail.byte[3]);
     d2_SetSliderFlags(obj6, 0x82);
     d2_SetLabel(obj6, txt_Ptrs[0x1c6d]);
     d2_SetList(obj6, 3, txt_Ptrs[0x1c70], txt_Ptrs[0x1c71], txt_Ptrs[0x1c72]);
-    d2_SetObjValue(obj7, 0x32, 100, 100 - (ai_GfxFog.word & 0xff));
+    d2_SetObjValue4(obj7, 0x32, 100, 100 - (ai_GfxFog.word & 0xff));
     d2_SetSliderFlags(obj7, 0x882);
     d2_SetLabel(obj7, txt_Ptrs[0x1c6e]);
-    d2_SetObjValue(obj8, 0, 2, ai_GfxFloor.byte[1]);
+    d2_SetObjValue4(obj8, 0, 2, ai_GfxFloor.byte[1]);
     d2_SetSliderFlags(obj8, 0x82);
     d2_SetLabel(obj8, txt_Ptrs[0x1c6f]);
     d2_SetList(obj8, 3, txt_Ptrs[0x1c70], txt_Ptrs[0x1c71], txt_Ptrs[0x1c72]);
     if (ai_GameState != 0)
         d2_EnableObject(res, 0);
     d2_SetForm(form, 3);
-    sv_Unk52e350(d2_LastWindow, 0, ids, 2, txt_Ptrs[0x1ca2], txt_Ptrs[0x1ca3]);
+    sv_ButtonRow(d2_LastWindow, 0, ids, 2, txt_Ptrs[0x1ca2], txt_Ptrs[0x1ca3]);
     okId = ids[0];
     cancelId = ids[1];
     while (sv_RunFrame((int)ai_OptionsGfxScreen, mask) != 0) {

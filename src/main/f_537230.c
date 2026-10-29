@@ -95,7 +95,7 @@ int main_Unk537230(int unused, int host)
     d2_PlaceMainWindow(f2, 3);
     d2_PlaceViewWindows(f2, 1);
     d2_SetForm(f2, 2);
-    sv_Unk52e350(d2_LastWindow, 0, out, 2, U_I((unsigned)&full_data_144acf0), U_I((unsigned)&full_data_144acf4));
+    sv_ButtonRow(d2_LastWindow, 0, out, 2, U_I((unsigned)&full_data_144acf0), U_I((unsigned)&full_data_144acf4));
     ok = out[0];
     opp = out[1];
     run = sv_RunFrame((int)main_Unk537230, 0x10d6);

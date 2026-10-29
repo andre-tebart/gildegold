@@ -4,7 +4,7 @@
    and the two controls 0x475b80; the click 0xf8a668 / 0x5fe710 drives the message 0x4c4b70, the money
    0x50cc50, 0x4c2d20 and 0x521150; the pump 0x5309a0 (this, 0x677c7); the exit 0x4758f0 */
 
-void gm_Unk50cc50(int a, int b);
+void gm_SendMoneyDelta(int a, int b);
 
 void ai_Unk594bb0(int param_1, int rec)
 {

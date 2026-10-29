@@ -31,7 +31,7 @@ void ai_Unk5967c0(int param_1, unsigned short *param_2, int param_3)
     d2_SetForm(win, 1);
     io_PrintText("_C_Z_ _1N3_", *param_2);
     d2_SetForm(win, 3);
-    sv_Unk52e350(U_I((unsigned)&d2_LastWindow), 0, &ctl, 2, U_I((unsigned)&full_data_1440b30), U_I((unsigned)&full_data_1440b34));
+    sv_ButtonRow(U_I((unsigned)&d2_LastWindow), 0, &ctl, 2, U_I((unsigned)&full_data_1440b30), U_I((unsigned)&full_data_1440b34));
     d2_SetForm(win, 2);
     list[0] = param_2;
     ai_Unk5be1d0(list);

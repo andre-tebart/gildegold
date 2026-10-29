@@ -2,5 +2,5 @@
 
 void he_Unk575540(char *per)
 {
-    gm_Unk50cc50(HM_I(per, 4), (util_Random(4) & 0xffff) + 3);
+    gm_SendMoneyDelta(HM_I(per, 4), (util_Random(4) & 0xffff) + 3);
 }

@@ -32,12 +32,12 @@ int main_Unk5361d0(int mask, int flag)
     e2 = d2_GetWinObj(f, 2, io_PrintText(0x1ad1, 0x1ad3));
     d2_SetForm(f, 3);
     io_PrintText(0x1ad4);
-    sv_Unk52e350(d2_LastWindow, 0x1c, sfx, 2, U_I((unsigned)&full_data_1440d14), U_I((unsigned)&full_data_1440d18));
+    sv_ButtonRow(d2_LastWindow, 0x1c, sfx, 2, U_I((unsigned)&full_data_1440d14), U_I((unsigned)&full_data_1440d18));
     gb[0] = sfx[0];
     gb[1] = sfx[1];
     d2_SetForm(f, 4);
     io_PrintText(0x1ad7);
-    sv_Unk52e350(d2_LastWindow, 0x1c, sfx, 2, U_I((unsigned)&full_data_1440d20), U_I((unsigned)&full_data_1440d24));
+    sv_ButtonRow(d2_LastWindow, 0x1c, sfx, 2, U_I((unsigned)&full_data_1440d20), U_I((unsigned)&full_data_1440d24));
     d2_SetForm(f, 5);
     io_PrintText(0x1adb);
     cols = (*(short *)((unsigned)&ai_Unkf8f128 + d2_LastWindow * 0x3c4) - 0x20) / 0x30;

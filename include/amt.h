@@ -199,6 +199,7 @@ char * gm_FindGoods(int p, unsigned id);                     /* 0x4ffc40 */
 void cm_SendGoodsDelta(char *p, unsigned char k);                     /* 0x4c5710 */
 void cm_SendSetField(int a, int b, int c, int d, int e);                     /* 0x4c4a60 */
 void cm_SendMoneyDelta(int a, int b);                     /* 0x4c5f60 */
+void gm_SendMoneyDelta(int a, int b);                          /* 0x50cc50, f3gm.c: forwards to cm_SendMoneyDelta (the original calls this thunk) */
 int sv_MessageBox(int text, unsigned flags); /* 0x521150, sv.c */
 int gm_FindById(int *bld, int *obj, int *chr, int id);                     /* 0x4fea50 */
 void he_MessageBoxQuickjump(int a1, int a2, char *text, char fl, int a5, int a6, int a7, char *jump, char *text2);                     /* 0x53dee0 */

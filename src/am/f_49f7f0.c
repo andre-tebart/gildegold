@@ -7,6 +7,6 @@ int ai_Unk49f7f0(G5CH *p, AIARG *s1, AIARG *s2)
         return 0;
     cm_SendSetField(p->netId, 0x1c8, 4, ((unsigned)&txt_Keys + 0x181c0), 0);
     ai_Unk4c59b0(p->netId, s1->unk10);
-    gm_Unk50cc50(p->netId, 8);
+    gm_SendMoneyDelta(p->netId, 8);
     return 0x34;
 }

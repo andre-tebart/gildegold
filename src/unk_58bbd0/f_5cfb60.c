@@ -3,6 +3,6 @@
 
 int ai_Unk5cfb60(int param_1)
 {
-    gm_Unk50cc50(*(int *)(param_1 + 4), 2);
+    gm_SendMoneyDelta(*(int *)(param_1 + 4), 2);
     return 1;
 }

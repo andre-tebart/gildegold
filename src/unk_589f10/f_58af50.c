@@ -42,10 +42,10 @@ int ai_Unk58af50(int a, int b)
     g1 = d2_GetWinObj(win, 2, io_PrintText(0x1ad1, 0x1ad3));
     d2_SetForm(win, 3);
     io_PrintText(0x1ad4);
-    sv_Unk52e350(U_I((unsigned)&d2_LastWindow), 0x1c, (char *)&g2, 2, U_I((unsigned)&full_data_1440d14), U_I((unsigned)&full_data_1440d18));
+    sv_ButtonRow(U_I((unsigned)&d2_LastWindow), 0x1c, (char *)&g2, 2, U_I((unsigned)&full_data_1440d14), U_I((unsigned)&full_data_1440d18));
     d2_SetForm(win, 4);
     io_PrintText(0x1ad7);
-    sv_Unk52e350(U_I((unsigned)&d2_LastWindow), 0x1c, (char *)&g2, 2, U_I((unsigned)&full_data_1440d20), U_I((unsigned)&full_data_1440d24));
+    sv_ButtonRow(U_I((unsigned)&d2_LastWindow), 0x1c, (char *)&g2, 2, U_I((unsigned)&full_data_1440d20), U_I((unsigned)&full_data_1440d24));
     d2_SetForm(win, 5);
     io_PrintText(0x1adb);
     n = (*(short *)((unsigned)&ai_Unkf8f128 + U_I((unsigned)&d2_LastWindow) * 0x3c4) + -0x20) / 0x30;

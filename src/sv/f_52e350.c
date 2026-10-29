@@ -1,7 +1,7 @@
 /* 0x52e350, creates n buttons (widget kind 0xbf, picture 0x53) in a row in the form f at height y, the labels are the n string arguments; the widths are the widest label + 0x20, ids returned in out[];
    the row is centred (or the labels' width is used as the step when the form is too narrow) */
 
-void sv_Unk52e350(int f, int y, int *out, int n, ...)
+void sv_ButtonRow(int f, int y, int *out, int n, ...)
 {
     char labels[0x20][0x40];
     int wmax, w, step, x, i, id;

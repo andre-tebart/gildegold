@@ -49,7 +49,7 @@ void rt_Unk4be940(RTPOINT *p, int *win)
     d2_SetForm(w, 1);
     io_PrintText((int)"$Z%2N3$A%1G", *(unsigned short *)(bld + 0x27), bld);
     d2_SetForm(w, 3);
-    sv_Unk52e350(d2_LastWindow, 0, btns, 2, ai_Unk144ad3c, ai_Unk144ad44);
+    sv_ButtonRow(d2_LastWindow, 0, btns, 2, ai_Unk144ad3c, ai_Unk144ad44);
     ok = btns[0];
     n = cnt[*bt - 0x134];
     s = gm_Query(*(int *)((char *)bt + 0x14), 1, 0, 0x1dd);

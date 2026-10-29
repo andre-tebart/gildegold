@@ -50,7 +50,7 @@ void ai_Unk59bad0(int param_1)
     d2_SetForm(win, 1);
     io_PrintText(0x18d9);
     d2_SetForm(win, 3);
-    sv_Unk52e350(U_I((unsigned)&d2_LastWindow), 0, sel, 1, U_I((unsigned)&full_data_1440534));
+    sv_ButtonRow(U_I((unsigned)&d2_LastWindow), 0, sel, 1, U_I((unsigned)&full_data_1440534));
     cnt = 0;
     for (;;) {
         if (sv_RunFrame(ai_Unk59bad0, 0x677c7) == 0) {

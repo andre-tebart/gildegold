@@ -80,7 +80,12 @@ void ai_LoadOptions(void);          /* 0x5d5640, reads the options from the INI 
 extern int main_ScreenRestart;      /* 0x6f25a4, main.c: nonzero = re-initialise the screen (the resolution changed) */
 extern char dd_Has1024x768;         /* 0x631226, dd_vesa.h */
 extern char dd_Has1152x864;         /* 0x631227, dd_vesa.h */
-void sv_Unk52e350(int f, int y, int *out, int n, ...); /* 0x52e350, rt.h: a row of n buttons, ids in out[] */
+void d2_SetLabel(int id, char *s);                         /* 0x46bc70, d2.h: sets the widget's label */
+void d2_SetList(int id, int n, ...);                       /* 0x46bca0, d2.h: sets the widget's "a|b|c|" item list */
+void d2_SetSliderFlags(int id, int flags);                 /* 0x46bdd0, d2.h: sets the slider's flags */
+void d2_SetObjValue();                                     /* 0x475cb0, d2.h (K&R: d2.c takes a 5th parameter, the call sites push 2, 4 or 5) */
+#define d2_SetObjValue4 ((void (*)(int, int, int, int))d2_SetObjValue) /* the options screens' 4-argument call (rt.h does the same for its sv_ row) */
+void sv_ButtonRow(int f, int y, int *out, int n, ...); /* 0x52e350, rt.h: a row of n buttons, ids in out[] */
 void ai_ApplyVolumes(void);         /* 0x5d5f10, applies the sound option volumes to the mixer */
 void ai_LoadScreenImage(char *path); /* 0x5d7320, the loading screen reader */
 

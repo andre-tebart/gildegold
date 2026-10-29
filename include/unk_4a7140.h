@@ -147,7 +147,7 @@ int ai_InventoryHas(void *ch, int id);                                          
 int ai_TrustedOfTwo(AIPER *p, AIPER *b, AIPER *c, int *k);                          /* 0x4aab90 */
 int amt_GetOffice(int k, struct AMTREC *out);                                              /* 0x4e6f30, int k: 0x4aad30 pushes it raw (amt.h says unsigned char i, @original there) */
 int amt_GetOfficeRate(char *c, int x, float *out);                           /* 0x4e60b0 */
-void gm_Unk50cc50(int a, int b);                                                /* 0x50cc50 */
+void gm_SendMoneyDelta(int a, int b);                                                /* 0x50cc50 */
 int ai_TrustedOfFour(int k, AIPER *p, int *ids, int *out);                           /* 0x4aad30 */
 int ai_Unk4aaef0(struct AIPER *p, unsigned char *a, unsigned char *b);                  /* 0x4aaef0 */
 int ai_Unk4aafb0(struct AIPER *p, struct AIPER *o, unsigned char *m);                          /* 0x4aafb0 */

@@ -6,7 +6,7 @@ void cm_BeginGroup(const char *s);
 void cm_EndGroup(const char *s);
 int ord_DispatchOrder(int id, char *c, int *m);
 int ai_InventoryHas(void *ch, int id);
-void gm_Unk50cc50(int a, int b);
+void gm_SendMoneyDelta(int a, int b);
 
 void he_Unk558f10(int ev)
 {

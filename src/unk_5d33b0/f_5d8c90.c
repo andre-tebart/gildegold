@@ -17,7 +17,7 @@
    0x52d7a0.
    ROUGH SKELETON (layout 2026-10-24): the record fields and the slider/button constants above. */
 /* batch 3: the gypsy / poker / particle stretch 0x5d8c90 .. 0x5dd3e0 */
-void sv_Unk52e350(int f, int y, int *out, int n, ...); int sv_CheckGoodAmount(); int sv_Unk525220(); int sv_ClosePlayerBar();
+void sv_ButtonRow(int f, int y, int *out, int n, ...); int sv_CheckGoodAmount(); int sv_Unk525220(); int sv_ClosePlayerBar();
 struct GCLOCK;
 int gm_ConvertMoney(int a, unsigned char k); int gm_PlayerFactor(int a, unsigned char k); int gm_Unk50cf60();
 int gm_Unk50cfd0(); int gm_Unk50d0b0(); int ai_Unk5741d0(); int ai_Unk4a7140();

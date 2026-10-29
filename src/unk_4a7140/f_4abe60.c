@@ -9,7 +9,7 @@ int ai_Unk4abe60(AIPER *p, unsigned char *m)
     if (o == 0)
         return 0;
     cm_SendSetField(p->netId, 0x1cc, 4, 0x20, 0);
-    gm_Unk50cc50(p->netId, -*(int *)(m + 0x10));
+    gm_SendMoneyDelta(p->netId, -*(int *)(m + 0x10));
     cm_SendRelations(p->id, o->id, *(int *)(m + 0x10) * 5, 1);
     return 0x47;
 }

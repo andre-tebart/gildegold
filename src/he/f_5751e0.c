@@ -30,7 +30,7 @@ void he_Unk5751e0(int ev)
         x = (util_Random(2) & 0xffff) + 1;
         if (x < n)
             x = (util_Random(2) & 0xffff) + 1;
-        gm_Unk50cc50(HM_I(per, 4), -x);
+        gm_SendMoneyDelta(HM_I(per, 4), -x);
         if (HM_B(per, 2) == 6 || HM_B(per, 2) == 7) {
             txt_Format(text, 0x1008, x);
             he_ShowNews(HM_I(per, 4), -1, text, 0, 0x5fb, 0);

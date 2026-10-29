@@ -30,8 +30,8 @@ int ai_Unk49cb60(G5CH *p, AIARG *s1, AIARG *s2)
     }
     if (s2->kind == 0xf && o != 0) {
         unk_Unk4f3a30(p->netId, (int)s1->unk14);
-        gm_Unk50cc50(p->netId, -s1->unk10);
-        gm_Unk50cc50(ai_Chars[*(unsigned short *)(b + 0x27)].netId, 1);
+        gm_SendMoneyDelta(p->netId, -s1->unk10);
+        gm_SendMoneyDelta(ai_Chars[*(unsigned short *)(b + 0x27)].netId, 1);
         ai_Unk5a8c00(p, &ai_Chars[*(unsigned short *)(b + 0x27)], b);
         return 0x26;
     }

@@ -64,7 +64,7 @@ void ai_Unk5c2b90(char *param_1, short *param_2)
     }
     if (mode != -1) {
         d2_SetForm(win, 3);
-        sv_Unk52e350(U_I((unsigned)&d2_LastWindow), 0, &tab1, 2, (void *)(unsigned)&full_data_143df40, (void *)(unsigned)&full_data_144a714);
+        sv_ButtonRow(U_I((unsigned)&d2_LastWindow), 0, &tab1, 2, (void *)(unsigned)&full_data_143df40, (void *)(unsigned)&full_data_144a714);
         tab2 = tab1;
         /* ROUGH: local_64 = the second id the 0x52e350 block gives (the second tab control) */
     }

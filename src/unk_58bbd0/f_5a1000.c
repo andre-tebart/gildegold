@@ -55,7 +55,7 @@ void ai_Unk5a1000(int param_1)
         id = *(unsigned char *)(((unsigned)&ai_CharInts + 0x165) + U_W((unsigned)&ai_PlayerId) * 0x21c) + 0x27b;
     io_PrintText(0x1644, id, 3, 0x1649);
     d2_SetForm(win, 4);
-    sv_Unk52e350(U_I((unsigned)&d2_LastWindow), 0, outs, 3, U_I((unsigned)&full_data_143fad4), U_I((unsigned)&full_data_143fad8), U_I((unsigned)&full_data_143fadc));
+    sv_ButtonRow(U_I((unsigned)&d2_LastWindow), 0, outs, 3, U_I((unsigned)&full_data_143fad4), U_I((unsigned)&full_data_143fad8), U_I((unsigned)&full_data_143fadc));
     U_I((unsigned)&d2_ClickedId) = -1;
     for (;;) {
         if (U_I(((unsigned)&dm_L + 0x20)) != 0)

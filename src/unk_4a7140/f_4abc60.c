@@ -5,7 +5,7 @@ int ai_Unk4abc60(AIPER *p, unsigned char *m)
 {
     AIMSG msg;
 
-    gm_Unk50cc50(p->netId, -*(int *)(m + 0x10));
+    gm_SendMoneyDelta(p->netId, -*(int *)(m + 0x10));
     memset(&msg, 0, sizeof(msg));
     msg.to = p->netId;
     msg.fromId = *(int *)(m + 4);

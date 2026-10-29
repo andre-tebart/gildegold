@@ -54,7 +54,7 @@ int ai_Unk5a0220(int param_1, unsigned int param_2)
                     d2_SetForm(win, 1);
                     io_PrintText(0x1a07, param_2 + 0x253);
                     d2_SetForm(win, 3);
-                    sv_Unk52e350(U_I((unsigned)&d2_LastWindow), 0, outs, 3, U_I((unsigned)&full_data_14409e0), U_I((unsigned)&full_data_14409e4),
+                    sv_ButtonRow(U_I((unsigned)&d2_LastWindow), 0, outs, 3, U_I((unsigned)&full_data_14409e0), U_I((unsigned)&full_data_14409e4),
                                  U_I((unsigned)&full_data_14409e8));
                     ctl1 = outs[0];
                     ctl2 = outs[1];

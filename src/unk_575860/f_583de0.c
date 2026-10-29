@@ -4,7 +4,7 @@
    (this window, 0x677c7): the click 0x14673a0 -> 0x6f22a0 = 1; the first entry -> 0x4f0900 (0, rec, the two
    values), 1; the second -> 0x6f22a0 = 1; the pump 0 -> 0x4758f0 (window), the result */
 
-int unk_Unk4f0900(); int unk_Unk4ef4f0(); void sv_Unk52e350(int f, int y, int *out, int n, ...);
+int unk_Unk4f0900(); int unk_Unk4ef4f0(); void sv_ButtonRow(int f, int y, int *out, int n, ...);
 
 int ai_Unk583de0(char *rec, int a, unsigned char b)
 {

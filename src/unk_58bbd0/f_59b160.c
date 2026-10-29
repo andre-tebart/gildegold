@@ -79,11 +79,11 @@ void ai_Unk59b160(int param_1)
             d2_SetForm(win, 3);
             io_PrintText("$C");
             if (rebuild) {
-                sv_Unk52e350(U_I((unsigned)&d2_LastWindow), 0, out, 1, U_I((unsigned)&full_data_14404fc));
+                sv_ButtonRow(U_I((unsigned)&d2_LastWindow), 0, out, 1, U_I((unsigned)&full_data_14404fc));
                 ctl = -1;
                 ctl2 = out[0];
             } else {
-                sv_Unk52e350(U_I((unsigned)&d2_LastWindow), 0, out, 2, U_I((unsigned)&full_data_14404f8));
+                sv_ButtonRow(U_I((unsigned)&d2_LastWindow), 0, out, 2, U_I((unsigned)&full_data_14404f8));
                 ctl = out[0];
                 ctl2 = out[1];
             }

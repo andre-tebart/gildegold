@@ -23,7 +23,7 @@ int ai_Unk4ab6b0(AIPER *p, unsigned char *m, unsigned char *m2)
         n++;
     if ((who[n] = AI_505DF0(*(int *)(m2 + 8))) == 0)
         n++;
-    gm_Unk50cc50(p->netId, -cost);
+    gm_SendMoneyDelta(p->netId, -cost);
     cm_SendSetField(p->netId, 0x1cc, 4, 8, 0);
     for (i = 0; i < n; i++)
         cm_SendRelations(o->id, who[i]->id, -(50 - (int)(gm_Mix(p, who[i], 4) * -50.0f)), 1);

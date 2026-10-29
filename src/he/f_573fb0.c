@@ -20,12 +20,12 @@ void he_Unk573fb0(int ev)
     }
     n = HM_I(a, 0x194);
     if (n != 0) {
-        gm_Unk50cc50(HM_I(a, 4), -n);
+        gm_SendMoneyDelta(HM_I(a, 4), -n);
         x = n / 2;
         if (x <= 2)
             x = 2;
         if (b != 0)
-            gm_Unk50cc50(HM_I(b, 4), x);
+            gm_SendMoneyDelta(HM_I(b, 4), x);
     }
     if (HM_I(ev, 0x70) < 2) {
         gm_AddTime(ev + 0x52, 0x18, 0, 0);

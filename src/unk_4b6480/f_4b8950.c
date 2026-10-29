@@ -12,6 +12,6 @@ int ai_Unk4b8950(G14MSG *m)
     s = util_Random(3) + 3;
     txt_Format(buf, m->type + 0x12e7, gm_PlayerFactor(1, ai_OwnPlayer), s);
     he_ShowNews(c->netId, c->netId, buf, strlen(buf) > 0x100, 0x603, 0);
-    gm_Unk50cc50(c->netId, s);
+    gm_SendMoneyDelta(c->netId, s);
     return 0;
 }
