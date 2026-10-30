@@ -49,3 +49,4 @@
 2026-10-30T01:08:16 0x005db110 func ai_Unk5db110 -> ai_PokerWindow2 by:main why:the second poker window poker2 that the fifth button of the poker table opens
 2026-10-30T01:23:41 0x005dbc30 func ai_Unk5dbc30 -> ai_InitWind by:main why:the caller sv_Unk525510 passes the day phase and the sin / cos wind rose tables; the state holds per-direction base / gust / phase values
 2026-10-30T08:17:53 0x005dbed0 func ai_Unk5dbed0 -> ai_UpdateWind by:main why:advances ai_EffectState (built by ai_InitWind): angle += elapsed hours * phase[hour], the default effect (wind) vector / scale from the hour's sin / cos / base / gust; called once per frame by sv_RunFrame
+2026-10-30T08:20:43 0x005dbfc0 func ai_Unk5dbfc0 -> ai_SaveWind by:main why:writes the fields of ai_EffectState (the wind state) one by one with vfs_fwrite; called by the save writer 0x51c870 (ls.c) after the 0x7604e8 table, its reader counterpart 0x5dc0c0 is called by 0x5205f0
