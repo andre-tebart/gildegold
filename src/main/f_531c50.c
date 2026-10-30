@@ -116,7 +116,7 @@ sized:
     cfg.maxhicol = 0;
     cfg.zn = 4.0f;
     cfg.zf = 12000.0f;
-    d3io_Lod = 2;
+    d3io_Lod.all = 2;
     cfg.scale = (float)(512.0 / (640.0 / (double)cfg.w));
     if (d3_Init(&cfg, main_Window, (int)main_Instance) != 0) {
         d3if_CreateCameras();

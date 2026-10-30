@@ -41,7 +41,7 @@ int main_Unk5359f0(int unused)
     d2_PlaceMainWindow(f, 1);
     k = 4;
     ai_Unk4e32f0("Sky_Mittel_02");
-    d3_SetLightSet(4, 0, 0x3f800000, 1);
+    d3_SetLightSet(4, 0.0f, 1.0f, 1);
     if (U_I((unsigned)&full_data_624938) != -1) {
         d2_CloseView(U_I((unsigned)&full_data_624938));
         U_I((unsigned)&full_data_624938) = -1;

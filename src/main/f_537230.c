@@ -23,7 +23,7 @@ int main_ChooseCity(int unused, int host)
     d3if_SelectScene(0, 0);
     d3_SetObjectPos(U_I((unsigned)&ai_Unkfc2dec), U_I((unsigned)&ai_Unkfc2dec) + 0x5c);
     d3_SetObjectRot(U_I((unsigned)&ai_Unkfc2dec), U_I((unsigned)&ai_Unkfc2dec) + 0x90);
-    d3_SetLightSet(0, 0, 0x3f800000, 0);
+    d3_SetLightSet(0, 0.0f, 1.0f, 0);
     n = ai_ListFiles("gamedata/cities", host == 0 ? ".CTY" : ".NET", (char *)recs);
     for (i = 0; i < n; i++) {
         f = vfs_Tfopen(recs[i] + 0x109, (char *)(unsigned)"rb", U_I((unsigned)&d3_Unk6333fc));

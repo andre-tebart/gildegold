@@ -26,6 +26,10 @@ extern char gm_PlayerRecords[];
 #include "d3_engine.h"
 #include "data_views.h"
 #include "d2.h"
+#include "gfx.h"
+#include "dd_vesa.h"
+#include "d3_interface.h"
+#include "d3_int_io.h"
 #include "err.h"
 #include "tr.h"
 #include "vfs.h"
@@ -48,12 +52,7 @@ extern int ai_ScreenModeH;
 extern int ai_ScreenModeW;
 extern struct SCREENMODE { int w, h; } ai_ScreenModes[];
 extern char d3_AnimDir[];
-extern int d3io_Lod;
-extern unsigned char dd_Has1024x768;
-extern unsigned char dd_Has1152x864;
-extern unsigned char dd_Has800x600;
 extern int di_MaxX;
-extern int di_MaxY;
 extern char main_GamePath[];
 extern int main_TextureDivider;
 extern int sv_ViewRectBottom;
@@ -175,7 +174,6 @@ extern GAPDATA full_data_602568[];
 extern GAPDATA full_data_624938[];
 extern char ai_DataPath[];
 extern unsigned char ai_OptionsFile;
-extern unsigned char d2_Unkf8a670;
 
 
 
@@ -445,7 +443,6 @@ extern char main_ScreenOpen;
 extern int main_PlatformNT;
 extern int main_ScreenSaverOff;
 extern HWND main_Window;
-extern int d2_CutsceneActive;           /* 0x6ed9d4, gfx.h */
 extern int snd_SfxEnabled;              /* 0x6f257c, f3snd.h */
 extern int snd_MusicEnabled;            /* 0x6f2578, f3snd.h */
 
@@ -459,15 +456,10 @@ void main_Unk539870(void);
 void main_Unk53a520(unsigned short pl);
 void main_Unk53cb40(void);
 
-void d2_FreeItemListSurfaces(void);                /* 0x477420 */
 int ai_SaveOptions(void);               /* 0x5d4c70, unk_5d33b0.c */
 int ai_LoadOptions(void);               /* 0x5d5640, unk_5d33b0.h */
 void ai_ApplyOptions(void);             /* 0x5d5e90, cm.h */
 void ai_ApplyGfxOptions(void);          /* 0x5d5c40, unk_5d33b0.h */
-void d2_CreateItemListSurfaces(void);   /* 0x477320, gfx.h */
-char dd_CheckModes(int mode, int bpp, HWND parent, int c);  /* 0x41d230, dd_vesa.h */
-void d3if_CreateCameras(void);          /* 0x448910, d3_interface.h */
-void d3io_SetStockDir(char *path);      /* 0x44c510, d3_int_io.h */
 void tex_SetPalette(char *dir);         /* 0x45fb30 */
 extern unsigned int d3anim_CacheMax;   /* 0x5f927c, d3_anim.h */
 int txt_LoadIncludes(char *file);       /* 0x42c9c0 */
@@ -504,10 +496,8 @@ int ls_GetLanguage(void);               /* 0x5190a0, ai.h */
 int init_InitTown(char *city);          /* 0x510ad0, f3init */
 void gm_ResetCharacters(void);          /* 0x503e80, f3gm */
 void init_FreeScenes(void);             /* 0x50d490, f3init */
-char d3_LoadScene(char *name, void *f, void (*progress)(int a, int i, int n));  /* 0x44be60, cm.h */
 #define d2_MoveObjS ((void (*)(short, short, int))d2_MoveObj)  /* 0x46cda0 as its definition reads it (d2.c f_46cda0.c: short x, short y): this unit's callers push the short sums untruncated (0x532212 `sub dx, [..]; sub edx, 0x30; push edx`); d2.h keeps int for d2_CreatePicObj (@original) */
 #define d2_SetObjValue4 ((void (*)(int, int, int, int))d2_SetObjValue)  /* the 4-argument call (as unk_5d33b0.h) */
-void d2_SetPointerSprite(int a, int pic);  /* 0x476f80, gfx.h */
 #pragma pack(push, 2)
 struct NETHDR { short a, b, size; char name[0x20]; unsigned char players; char pad27; short x; char rest[0x40]; };  /* the 106-byte network game record at ls_SavePath + 0xa0 (reasoned from 0x5328f0's stores: +4 the size 0x6a, +6 the name, +0x26 the player count) */
 #pragma pack(pop)
@@ -515,7 +505,6 @@ int main_ChooseCity(int unused, int host);  /* 0x537230, main.c */
 struct LSSAVEVIEW { char pad0[0x84]; short cur; char pad86[0xa0 - 0x86]; struct NETHDR net; char pad10a[0x120 - 0x10a]; char version[0x40]; char rest[0x280 - 0x160]; };  /* the used parts of ls.c's char ls_SavePath[640] (+0x84 a short, +0xa0 the network game record, +0x120 the version text) */
 char d3if_SelectScene(int index, char keep);  /* 0x4478e0, cm.h */
 struct D3OBJECT;
-char d3if_Delete(struct D3OBJECT *obj);  /* 0x447190, d3_interface.h */
 void d3t_FreeSnowMipmaps(void);         /* 0x4175c0, d3_tools.h */
 void gm_FreeIconNames(void);            /* 0x4fdfb0, f3gm.c */
 void main_FreeSoundBanks(void);         /* 0x537db0 */
@@ -535,7 +524,6 @@ void txt_Format(char *out, int id0, ...); /* 0x5176d0 */
 void mem_Exit(void);                    /* 0x422910, mem.h */
 void mem_Init(int max);                 /* 0x4226a0, mem.h */
 int sprintf(char *buf, const char *fmt, ...);                     /* 0x5de652 */
-char dd_Restore();                    /* 0x41bdd0 */
 char d3d_Restore();                    /* 0x4370d0 */
 void amt_CheckOffices(void);            /* 0x4e9260, amt.h */
 

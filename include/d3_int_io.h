@@ -77,7 +77,7 @@ void d3_AppendSibling(D3OBJECT *first, D3OBJECT *obj);                          
 void d3e_LoadEvents(void *f, D3OBJECT *obj);                                            /* 0x43e970, d3_engine.c */
 int d3_SceneVersion(unsigned int version);                                                 /* 0x44a9e0, d3_obj.c */
 D3OBJECT *rd_object(void *f, D3OBJECT *parent, unsigned int version, char reload);  /* 0x44abb0 */
-D3FLMAP *d3io_ReadFloor(void *f, unsigned int version);                              /* 0x44b920 */
+struct D3FLMAP *d3io_ReadFloor(void *f, unsigned int version);                           /* 0x44b920 */
 
 /* --- 0x44be60..0x44cd40 (worker d3io): scene / group loading, stock objects --- */
 typedef struct D3IOSTOCK D3IOSTOCK;
@@ -104,9 +104,12 @@ char * vfs_GetPath(char *name, struct VFSDIR *d, struct VFSDIR *stop, char *out)
 void d3io_SetStockDir(char *path);                                                      /* 0x44c510 */
 char *d3io_StockFile(char *name, char *ext);                                            /* 0x44c530 */
 
-typedef struct D3IOLOD {            /* 0x5fbf78 (initialized to 2): which stock object LODs are loaded */
-    unsigned int mode : 7;          /* 1: all three, 2: the best one found */
-    unsigned int shadow : 1;        /* load the "_s" variant for lod < 0 */
+typedef union D3IOLOD {             /* 0x5fbf78 (initialized to 2): which stock object LODs are loaded */
+    unsigned int all;               /* the whole dword: main_OpenScreen stores 2 (0x531fcb mov dword [d3io_Lod], 2) */
+    struct {
+        unsigned int mode : 7;      /* 1: all three, 2: the best one found */
+        unsigned int shadow : 1;    /* load the "_s" variant for lod < 0 */
+    };
 } D3IOLOD;
 extern D3IOLOD d3io_Lod;                    /* 0x5fbf78, @original: d3_io_t.h declares D3IOLODBITS, the same 8 bits (mode : 7, shadow : 1) under its local name; both units only test .mode / .shadow and d3_io_t.c cannot include this header */
 char d3io_LodName(char *name, char *name2, int lod, char *out, char *out2);            /* 0x44c9d0 */
