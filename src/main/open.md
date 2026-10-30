@@ -10,6 +10,7 @@ Migrated from the notes/tus.md table on 2026-10-23 (the row's prose, unchanged):
 - Was: tag "main_"
 
 ## Open work
+- **headers (2026-10-30)**: the M5 pass removed the MPOOLITER, D3OBJBITS and ai_* data clashes the "unsettled" list below names; the includes are worth retrying, see notes/headers.md item 6.
 - **head typing pass (2026-10-30)**: head.c now includes d2.h, d3_engine.h, err.h, tr.h, vfs.h, tb.h, msx.h, evtc.h, sndc.h, net.h, gfx.h, dd_vesa.h, d3_interface.h, d3_int_io.h, ai.h, unk_5d33b0.h, unk_58bbd0.h, ecmd.h, ts_texture.h; the views D2VIEWV / D2WINV / D2SURF / D2FADE / VIDCFG / MAINCLOCK are gone. Left:
   - head: include/ch.h, ch_Open / ch_Close / ch_SndLib / ch_Motions / d3t_CamMove unsettled (ch.h redefines D3OBJBITS and d3anim_MapBones against d3_engine.h); include/chc.h (chc_Register) needs ch.h.
   - head: include/mem.h, mem_Init / mem_Exit unsettled (mem.h and vfs.h both define MPOOLITER).
