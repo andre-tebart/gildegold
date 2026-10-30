@@ -13,8 +13,8 @@ int main_HostNetworkGame(void)
     if (main_PlayerCountDialog() != 0) {
         ((void (*)(void))d3io_NoopCallback)();  /* called with no argument (no push at the call) */
         if (main_ChooseCity(1, 1) != 0) {
-            sprintf((char *)(unsigned)&main_NetSaveName, "%s/%s.net", "gamedata/cities", ai_DataPath + 0x220);
-            strcpy((char *)(unsigned)&main_NetHost, "127.0.0.1");
+            sprintf(main_NetSaveName, "%s/%s.net", "gamedata/cities", ai_DataPath + 0x220);
+            strcpy(main_NetHost, "127.0.0.1");
             ai_GameFlags |= 0x10;
             ls_SavePath.net.players = ai_NumPlayers;
             ls_SavePath.net.size = 0x6a;

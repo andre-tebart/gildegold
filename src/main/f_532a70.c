@@ -10,13 +10,11 @@ int main_Unk532a70(void)
     int *src, *dst;
 
     if (ai_JoinGameWindow() != 0) {
-        sprintf(path, "gamedata/network/%s.SAV", (char *)(unsigned)&main_NetSaveName);
+        sprintf(path, "gamedata/network/%s.SAV", main_NetSaveName);
         f = vfs_Tfopen(path, (char *)(unsigned)"rb", U_I((unsigned)&d3_Unk6333fc));
         if (f != 0) {
             ls_ReadSaveHeader(f, hdr);
-            U_I((unsigned)&main_NetHost) = U_I((unsigned)&full_data_624b48);
-            U_I((unsigned)&full_data_75e1c4) = U_I((unsigned)&full_data_624b4c);
-            U_I((unsigned)&full_data_75e1c8) = U_I((unsigned)&full_data_624b50);
+            strcpy(main_NetHost, "127.0.0.1");
             U_I((unsigned)&ai_GameFlags) |= 0x50;
             *(unsigned char *)(unsigned)&ai_NumPlayers = *((unsigned char *)hdr + 0x31);
             *(unsigned char *)((unsigned)&ls_SavePath + 0xc6) = *((unsigned char *)hdr + 0x31);
@@ -32,7 +30,7 @@ int main_Unk532a70(void)
             } while (c != 0);
             i = 0;
             do {
-                c = *(char *)((unsigned)&main_NetSaveName + i);
+                c = main_NetSaveName[i];
                 *(char *)(((unsigned)&ls_SavePath + 0xca) + i) = c;
                 i++;
             } while (c != 0);

@@ -103,7 +103,7 @@ void main_GameLoop(int ctl)
             udp_Init(0x3039);
             U_I((unsigned)&full_data_6f25c4) = 1;
         }
-        net_Connect((unsigned)&main_NetHost, U_I(((unsigned)&ls_SavePath + 0x84)));
+        net_Connect(main_NetHost, U_I(((unsigned)&ls_SavePath + 0x84)));
         d2_CloseView(w);
     }
     ai_InitStates();
@@ -138,7 +138,7 @@ void main_GameLoop(int ctl)
         if ((U_I((unsigned)&ai_GameFlags) & 0x40) == 0) {
             if ((U_I((unsigned)&ai_GameFlags) & 2) != 0) {
                 U_I((unsigned)&ai_Difficulty) = *(unsigned char *)((unsigned)&ai_GamePanel + 0x2);
-                iv = unk_Unk51c950((unsigned)&main_NetSaveName, 1);
+                iv = unk_Unk51c950(main_NetSaveName, 1);
                 if (iv == 0) {
                     U_I((unsigned)&sv_FrameMask) = 0x46086;
                     sv_MessageBox(U_I((unsigned)&full_data_14414d0), 0);
@@ -154,7 +154,7 @@ void main_GameLoop(int ctl)
             U_I((unsigned)&ai_Difficulty) = 2;
             if (U_I((unsigned)&ai_Unk1460ae0) == -1)
                 goto L_fail;
-            unk_Unk5112d0((unsigned)&main_NetSaveName);
+            unk_Unk5112d0(main_NetSaveName);
         }
     } else if ((U_I((unsigned)&ai_GameFlags) & 4) == 0) {
         sprintf(ap, "%s/%s.cty", "gamedata/cities", (char *)((unsigned)&ai_DataPath + 0x220));
@@ -180,7 +180,7 @@ L_fail:
             return;
         }
         if ((U_I((unsigned)&ai_GameFlags) & 0x40) == 0) {
-            init_StartNetworkGame((unsigned)&main_NetSaveName);
+            init_StartNetworkGame(main_NetSaveName);
             U_I((unsigned)&ai_Difficulty) = 2;
         } else {
             unk_Unk5112d0(((unsigned)&ls_SavePath + 0xca));

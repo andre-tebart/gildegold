@@ -8,6 +8,8 @@ extern void *main_Instance;             /* 0x75e140, its instance handle (HINSTA
 extern char main_ScreenOpen;            /* 0x6f258c, the video mode is open */
 extern int main_PlatformNT;             /* 0x75e62c, the OS is NT based (not Win9x) */
 extern int main_ScreenSaverOff;         /* 0x6f25bc, the screen saver was switched off and is restored at exit */
+extern char main_NetHost[0x80];        /* 0x75e1c0, the network host address (game.INI [Network] Host) */
+extern char main_NetSaveName[161];      /* 0x75e360, the network game's name */
 
 void main_DestroyWindow(void);          /* 0x531670 */
 void main_ShutdownScreen(void);         /* 0x531690 */
