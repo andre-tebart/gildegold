@@ -1,5 +1,7 @@
 """import_rea.py -- convert the first-attempt decomp (rea, one file per unit) into this decompanion project
-(one file per function). A migration tool: it reads rea's sources at a pinned commit with rea's own parser
+(one file per function). Historical: it writes decompanion's fragment layout of before docs/plan.md section 19
+(2026-10-30), which `dcp unit fold` converted into today's one file per unit; rerun, it needs that fold after it.
+A migration tool: it reads rea's sources at a pinned commit with rea's own parser
 (tools/gildegold/core/gen.py) and writes src/, include/, decl/text.dcl and notes/rea/. Deterministic: two runs
 on the same rea commit write the same bytes. It owns what it writes and replaces it on every run.
 
