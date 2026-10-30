@@ -2786,23 +2786,15 @@ char ai_FindBauplatz(int obj, AIBUILDSITE *ctx)
 {
     float pos[4];
     char *s;
-    int d;
-    char c;
 
     if (_strnicmp((char *)obj, "bk_", 3) != 0 && _strnicmp((char *)(obj + 1), "bk_", 3) != 0)
         return 1;
     d3_PointToWorld((struct D3OBJECT *)obj, (struct D3VECTOR *)(obj + 0x4c), (struct D3VECTOR *)pos);
     if (d3_VecEqual((struct D3VECTOR *)ctx->pos, (struct D3VECTOR *)pos, 100.0f) != 0) {
-        s = strstr((char *)obj, "bk_");
-        if (s != 0) {
-            d = ctx->name - s;
-            do {
-                c = *s;
-                s[d] = c;
-                s++;
-            } while (c != '\0');
-        }
         ctx->object = obj;
+        s = strstr((char *)obj, "bk_");
+        if (s != 0)
+            strcpy(ctx->name, s);
         return 0;
     }
     return 1;
