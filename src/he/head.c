@@ -47,7 +47,7 @@ extern unsigned char d2_ScreenH;
 extern unsigned char d2_ScreenW;
 extern GAPDATA full_data_62571c[];
 extern GAPDATA full_data_6faa88[];
-extern unsigned char ai_GameFlags;
+extern int ai_GameFlags;
 extern unsigned char tb_Paused;
 extern char ai_Unk6f2618[];
 extern unsigned char ai_Unk6f2620;
@@ -131,7 +131,7 @@ extern unsigned char ai_FallbackBuilding;
 
 extern char ai_Chars[];
 extern unsigned char ai_FallbackBuilding;
-extern unsigned char ai_GameFlags;
+extern int ai_GameFlags;
 extern unsigned char ai_GameState;
 extern unsigned char ai_PlayerBuilding;
 extern unsigned char ai_PlayerId;

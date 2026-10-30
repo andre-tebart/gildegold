@@ -6,7 +6,7 @@
 
 extern int ai_Difficulty;
 /* ai_Unk143c860: view of txt_Ptrs (build/mk_txt_views.py) */
-unsigned char ai_GameFlags = 0;  /* 0x6f23f8 */
+int ai_GameFlags = 0;  /* 0x6f23f8 */
 extern float ai_Unk617830[], ai_Unk617840[];  /* 0x617830 / 0x617840 */
 char * ahm_OwnerChar();                     /* 0x4eaa50 */
 int ahm_ObjectValue();                     /* 0x4ec3d0 */

@@ -35,7 +35,7 @@ void msx_SetVolume(int vol);        /* 0x4239a0, the music master volume */
 void msx_SetAmbVolume(int vol);     /* 0x423a50, the ambient master volume */
 
 /* The run-time values ai_ApplyOptions writes; their own units declare them too (ai.h / cm.h / sv.c). */
-extern unsigned char ai_GameFlags;  /* 0x6f23f8, the game mode flags: bit 2 = network game (ai.h, cm.h) */
+extern int ai_GameFlags;  /* 0x6f23f8, the game mode flags: bit 2 = network game (ai.h, cm.h) */
 extern unsigned int cm_SpeedLevel;  /* 0x60bd84, the shared speed level 0..4 of a network game (cm.h) */
 extern float cm_SpeedFactor;        /* 0x5f1290, the game speed factor (cm.h) */
 extern int ai_CameraStep;           /* 0x623814, the camera move step, 100 - camera speed; sv.c converts

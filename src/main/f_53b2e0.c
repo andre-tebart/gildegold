@@ -32,7 +32,7 @@ void main_Unk53b2e0(void)
     } while ((int)pf < ((unsigned)((unsigned)ai_Selected + 0x6527a) + 0x1c6));
     *(short *)(unsigned)&ai_PlayerId = (short)cur;
     he_Unk53ee40();
-    if ((U_I((unsigned)&ai_GameFlags) & 4) == 0 && (r = util_Random(10)) > 6) {
+    if ((U_I((unsigned)&ai_GameFlags) & 4) == 0 && (r = util_RandomInt(10)) > 6) {
         n = main_Unk53b830();
         while (n != 1) {
             U_I((unsigned)&d2_CutsceneActive) = 0;

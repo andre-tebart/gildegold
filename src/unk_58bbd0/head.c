@@ -285,7 +285,7 @@ extern unsigned char sv_PanelRecord;
 extern unsigned char ai_Unk75f280;
 extern unsigned char ai_Unkfc2dec;
 extern char ai_Chars[];
-extern unsigned char ai_GameFlags;
+extern int ai_GameFlags;
 extern unsigned char ai_GameState;
 extern unsigned char ai_MarketBuilding;
 extern unsigned char ai_TimeHour;
@@ -571,7 +571,7 @@ extern GAPDATA full_data_62afa0[];
 extern GAPDATA full_data_62afa4[];
 extern GAPDATA full_data_62afa5[];
 extern GAPDATA full_data_62afa8[];
-extern unsigned char ai_GameFlags;
+extern int ai_GameFlags;
 
 extern unsigned char sv_PanelFlag;
 extern unsigned char ai_FrameWait;

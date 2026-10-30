@@ -21,8 +21,8 @@ void main_Unk53b840(void)
         }
         a = cm_GetSlotValue(r6);
         cm_BeginSendGroup();
-        r6 = cm_SendCreateCharacter(9, -1, -1, util_Random(4) + 0x20, -1, *(char *)((unsigned)&init_PlayerProfile + 0x1), 0, 1);
-        r7 = cm_SendCreateCharacter(9, -1, -1, util_Random(4) + 0x20, -1, *(char *)(unsigned)&init_PlayerProfile, 0, 0);
+        r6 = cm_SendCreateCharacter(9, -1, -1, util_RandomInt(4) + 0x20, -1, *(char *)((unsigned)&init_PlayerProfile + 0x1), 0, 1);
+        r7 = cm_SendCreateCharacter(9, -1, -1, util_RandomInt(4) + 0x20, -1, *(char *)(unsigned)&init_PlayerProfile, 0, 0);
         cm_EndSendGroup();
         b = cm_SendGroupState();
         while (b == 0) {
@@ -35,7 +35,7 @@ void main_Unk53b840(void)
         p6[0x28] = *(unsigned short *)(a + 0x50);
         *(int *)(p6 + 0x2a) = *(int *)(a + 0x54);
         *(int *)(p6 + 0x34) = *(int *)(a + 4);
-        u = util_Random(0x70);
+        u = util_RandomInt(0x70);
         d = (char *)(p6 + 0x18);
         s = *(char **)((unsigned)&ai_Unk143af70 + (u & 0xffff) * 4);
         do { *d++ = *s; } while (*s++ != 0);
@@ -43,7 +43,7 @@ void main_Unk53b840(void)
         p7[0x28] = *(unsigned short *)(a + 0x50);
         *(int *)(p7 + 0x2a) = *(int *)(a + 0x54);
         *(int *)(p7 + 0x34) = *(int *)(a + 4);
-        u = util_Random(0xbf);
+        u = util_RandomInt(0xbf);
         d = (char *)(p7 + 0x18);
         s = *(char **)((unsigned)&ai_Unk143ac5c + (u & 0xffff) * 4);
         do { *d++ = *s; } while (*s++ != 0);
@@ -63,9 +63,9 @@ void main_Unk53b840(void)
         cm_SendRelations(*(int *)(p6 + 2), *(int *)(a + 4), 0x7f, 0);
         cm_SendRelations(*(int *)(p7 + 2), *(int *)(p6 + 2), 0x7f, 0);
         cm_SendRelations(*(int *)(p6 + 2), *(int *)(p7 + 2), 0x7f, 0);
-        u = util_Random(0x200);
+        u = util_RandomInt(0x200);
         cm_SendMoveGoods(*(int *)(p7 + 2), -1, *(unsigned char *)(unsigned)&ai_OwnPlayer, ((u & 0xffff) + 500) * 0x20);
-        u = util_Random(0x200);
+        u = util_RandomInt(0x200);
         k = ((u & 0xffff) + 500) * 0x20;
         cm_SendMoveGoods(*(int *)(p6 + 2), -1, *(unsigned char *)(unsigned)&ai_OwnPlayer, k);
         if (U_I((unsigned)&ai_MissionMode) >= 0)

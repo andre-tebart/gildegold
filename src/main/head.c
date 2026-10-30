@@ -26,6 +26,7 @@ extern char gm_PlayerRecords[];
 #include "d3_engine.h"
 #include "data_views.h"
 #include "d2.h"
+#include "ai.h"
 #include "gfx.h"
 #include "dd_vesa.h"
 #include "d3_interface.h"
@@ -41,9 +42,6 @@ extern char gm_PlayerRecords[];
 #define GAPDATA __declspec(align(1)) unsigned char
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
-#pragma pack(push, 2)
-struct MAINCLOCK { int year; unsigned short hour; int min; };  /* the used head of ai.h's AITIME (14 bytes: year, hour, minute, ..) */
-#pragma pack(pop)
 extern unsigned char d3_Hardware;
 extern int main_Inactive;       /* 0x6f2584, 1 while the app is deactivated */
 extern char ai_DataPath[];
@@ -69,11 +67,8 @@ extern char main_AppDir[];
 extern unsigned char init_PlayerProfile[];
 extern GAPDATA full_data_60da10[];
 extern struct LSSAVEVIEW ls_SavePath;
-extern struct MAINCLOCK ai_Time;
 extern unsigned char ai_TimeHour;
-extern unsigned char ai_NumPlayers;
 extern int sv_PopRequest;
-extern int ai_GameFlags;
 extern int ai_ModeMask;
 extern GAPDATA full_data_624b48[];
 extern GAPDATA full_data_624b4c[];
@@ -83,8 +78,6 @@ extern GAPDATA full_data_75e1c4[];
 extern GAPDATA full_data_75e1c8[];
 extern GAPDATA main_NetSaveName[];
 extern GAPDATA main_NetGameRecord[];
-extern int ai_GameFlags;
-extern unsigned char ai_NumPlayers;
 extern int ai_ModeMask;
 extern unsigned char ai_Unk9364e0;
 extern unsigned char d3_Unk6333fc;
@@ -102,7 +95,6 @@ extern unsigned char ai_OptionsFile;
 extern int sv_PopRequest;
 extern char ai_DataPath[];
 
-extern int ai_GameFlags;
 extern unsigned char ai_OptionsFile;
 extern unsigned char ai_Unk6333cc;
 extern unsigned char ai_Unk9364e0;
@@ -116,7 +108,6 @@ extern GAPDATA main_NetSaveName[];
 extern GAPDATA full_data_936460[];
 extern struct LSSAVEVIEW ls_SavePath;
 extern int sv_PopRequest;
-extern int ai_GameFlags;
 extern unsigned char ai_MissionMode;
 extern unsigned char ai_Unkfb9060;
 extern unsigned char ai_Unkfb9064;
@@ -124,7 +115,6 @@ extern unsigned char ai_Unkfb9068;
 extern unsigned char ai_Unkfb906c;
 extern char ai_DataPath[];
 extern unsigned char ai_GameOver;
-extern unsigned char ai_NumPlayers;
 
 
 
@@ -150,7 +140,6 @@ extern unsigned char sv_FrameMask;
 extern int sv_PopRequest;
 extern const unsigned char ai_AxisPair;
 
-extern unsigned char ai_OwnPlayer;
 extern GAPDATA full_data_624ce0[];
 extern GAPDATA full_data_624ce4[];
 extern GAPDATA full_data_624ce8[];
@@ -180,7 +169,6 @@ extern unsigned char ai_OptionsFile;
 
 extern unsigned char init_PlayerProfile[];
 extern int sv_PopRequest;
-extern int ai_GameFlags;
 extern unsigned char ai_OptionHistorie;
 
 extern GAPDATA full_data_624938[];
@@ -193,7 +181,6 @@ extern unsigned char init_PlayerProfile[];
 extern unsigned char sv_FrameMask;
 extern int sv_PopRequest;
 extern unsigned char ai_MissionMode;
-extern unsigned char ai_Difficulty;
 extern unsigned char ai_GamePanel;
 extern unsigned char ai_Opponents;
 
@@ -205,7 +192,6 @@ extern unsigned char ai_Opponents;
 extern int sv_PopRequest;
 extern unsigned char ai_ClickedObject;
 extern char ai_DataPath[];
-extern unsigned char ai_NumPlayers;
 extern unsigned char ai_Unk60d360;
 extern unsigned char ai_Unk6f22e8;
 extern unsigned char ai_Unkfc2dec;
@@ -217,9 +203,6 @@ extern GAPDATA full_data_5f1084[];
 extern GAPDATA full_data_602568[];
 extern unsigned char sv_FrameMask;
 extern int sv_PopRequest;
-extern int ai_GameFlags;
-extern unsigned char ai_NumPlayers;
-extern int ai_GameFlags;
 extern unsigned char ai_Unkfb9060;
 extern unsigned char ai_Unkfb9064;
 extern unsigned char ai_Unkfb9068;
@@ -229,12 +212,9 @@ extern unsigned char cm_RequestedSaveName;
 extern unsigned char ai_Unk1460ae0;
 extern unsigned char ai_MissionSeed;
 extern GAPDATA full_data_75df20[];
-extern unsigned char ai_FallbackBuilding;
 extern unsigned char ai_GameOver;
 extern unsigned char ai_GameState;
 extern unsigned char ai_LeaveGame;
-extern unsigned char ai_PlayerBuilding;
-extern struct MAINCLOCK ai_Time;
 extern int sv_ScreenDirty;
 extern unsigned char ai_Unk75ec60;
 extern unsigned char ch_SndLib;
@@ -259,15 +239,11 @@ extern unsigned char d3t_CamMove;
 extern unsigned char d3t_SunRays;
 extern GAPDATA full_data_6f25c4[];
 extern unsigned char sv_FrameMask;
-extern char ai_Chars[];
 extern unsigned char ai_PlayerId;
 extern unsigned char ai_TimeHour;
 extern unsigned char ai_Unk1460ae0;
-extern unsigned char ai_BTypes;
-extern int ai_GameFlags;
 extern unsigned char ai_GamePanel;
 extern unsigned char ai_MissionMode;
-extern unsigned char ai_OwnPlayer;
 extern unsigned char ai_Unk6f2438;
 extern unsigned char ai_Unkf83650;
 extern unsigned char ai_Unkfb9060;
@@ -293,9 +269,7 @@ extern char ai_Unk925520[];
 extern GAPDATA full_data_92bca8[];
 extern unsigned char he_Events;
 extern unsigned char he_QuickList;
-extern char ai_Chars[];
 extern unsigned char ai_PlayerId;
-extern struct MAINCLOCK ai_Time;
 extern unsigned char ai_Unkfb9060;
 extern unsigned char ai_Unkfb9064;
 extern unsigned char ai_Unkfb9068;
@@ -308,10 +282,7 @@ extern GAPDATA full_data_6f25c0[];
 extern unsigned char sv_FrameMask;
 extern unsigned char sv_PanelFlag;
 extern int sv_PopRequest;
-extern char ai_Chars[];
-extern unsigned char cm_FieldObject;
 extern unsigned char ai_MissionMode;
-extern unsigned char ai_OwnPlayer;
 
 
 extern GAPDATA full_data_75e401[];
@@ -320,13 +291,9 @@ extern GAPDATA full_data_75e5f0[];
 extern GAPDATA full_data_75e5f5[];
 extern GAPDATA full_data_75e628[];
 extern unsigned char init_PlayerProfile[];
-extern unsigned char ai_BTypes;
-extern unsigned char ai_Difficulty;
-extern int ai_GameFlags;
 extern unsigned char ai_GameOver;
 extern unsigned char ai_GameState;
 extern unsigned char ai_PlayerId;
-extern struct MAINCLOCK ai_Time;
 extern unsigned char ai_Unk1460ae0;
 extern unsigned char ai_Unkfb9060;
 extern unsigned char ai_Unkfb9064;
@@ -338,26 +305,14 @@ extern unsigned char init_BuildingUniverse;
 extern unsigned char snd_AmbientOn;
 extern unsigned char sv_FrameMask;
 extern int sv_PopRequest;
-extern unsigned char ai_BTypes;
-extern unsigned char ai_Blds;
-extern char ai_Chars[];
-extern unsigned char ai_OwnPlayer;
-extern unsigned char ai_PlayerChar;
-extern struct MAINCLOCK ai_Time;
 extern unsigned char ai_TimeHour;
-extern unsigned char cm_FieldObject;
-extern unsigned char ai_CurrentPlayer;
 extern char ai_DataPath[];
-extern unsigned char ai_Difficulty;
 
 extern unsigned char ai_FrameWait;
-extern int ai_GameFlags;
 extern unsigned char ai_GameOver;
 extern unsigned char ai_GamePanel;
 extern unsigned char ai_LeaveGame;
-extern unsigned char ai_OwnPlayer;
 extern unsigned char ai_PlayerId;
-extern struct MAINCLOCK ai_Time;
 extern unsigned char ai_TimeHour;
 extern unsigned char ai_Unk1460ae0;
 extern unsigned char ai_Unk60bd94;
@@ -393,7 +348,6 @@ extern unsigned char di_Disabled;
 extern GAPDATA full_data_6f2574[];
 extern unsigned char snd_AmbientOn;
 extern char ai_DataPath[];
-extern int ai_GameFlags;
 extern unsigned char ai_GfxResolution;
 extern unsigned char ai_LeaveGame;
 extern unsigned char ai_OptionsFile;
@@ -471,7 +425,6 @@ void ai_ClearTurnTable(void);           /* 0x587de0, unk_575860.h */
 int gm_LoadTables(char *root);          /* 0x4fe570, f3gm.h */
 void unk_ResetEffectSlots(void);        /* 0x4eddf0 */
 void unk_LoadIconNames(void);           /* 0x4fde90 */
-float gm_ItemPrice(int item, unsigned char n);  /* 0x5087f0 */
 int sfx_Startup(void);                  /* 0x42b720 */
 int sb_Init(int mem, int count, int a, int b, int c);  /* 0x425bc0 */
 int d3snd_Init(int max);                /* 0x417650 */
@@ -483,7 +436,6 @@ void sv_InitTick(void);                 /* 0x520ee0 */
 char init_ResetSceneUniverses(void);    /* 0x50d460 */
 int ch_Open(void);                      /* 0x40afb0 */
 void d3t_CreateSnowMipmaps(void);       /* 0x416980 */
-int ai_Init(void);                      /* 0x47d9e0 */
 int ahm_LoadPrototypes(int mode);       /* 0x4eb480 */
 int hmt_CreateBinaryFile(void);         /* 0x4ac440 */
 void hmt_Init(void);                    /* 0x4aca90 */
@@ -492,11 +444,11 @@ void ocmd_Register(void);               /* 0x40f960 */
 void chc_Register(void);                /* 0x40d270 */
 void d3if_Reset(void);                  /* 0x4473f0, cm.h */
 int ls_SaveGame(char *path, char *name, unsigned flags);  /* 0x5190b0, ls.c (as unk_5d33b0.h) */
-int ls_GetLanguage(void);               /* 0x5190a0, ai.h */
 int init_InitTown(char *city);          /* 0x510ad0, f3init */
 void gm_ResetCharacters(void);          /* 0x503e80, f3gm */
 void init_FreeScenes(void);             /* 0x50d490, f3init */
 #define d2_MoveObjS ((void (*)(short, short, int))d2_MoveObj)  /* 0x46cda0 as its definition reads it (d2.c f_46cda0.c: short x, short y): this unit's callers push the short sums untruncated (0x532212 `sub dx, [..]; sub edx, 0x30; push edx`); d2.h keeps int for d2_CreatePicObj (@original) */
+#define util_RandomInt ((int (*)(unsigned short))util_Random)  /* 0x42ec00 as tr.c defines it: @original this unit reads the full int result (0x53b8c9 util_Random(4) + 0x20 pushed without the 16-bit mask ai.h's unsigned short prototype adds) */
 #define d2_SetObjValue4 ((void (*)(int, int, int, int))d2_SetObjValue)  /* the 4-argument call (as unk_5d33b0.h) */
 #pragma pack(push, 2)
 struct NETHDR { short a, b, size; char name[0x20]; unsigned char players; char pad27; short x; char rest[0x40]; };  /* the 106-byte network game record at ls_SavePath + 0xa0 (reasoned from 0x5328f0's stores: +4 the size 0x6a, +6 the name, +0x26 the player count) */
@@ -520,7 +472,6 @@ int hmt_Exit(void);                     /* 0x4acde0, hmt.h */
 void gv_FreeEffectObjects(void);        /* 0x4ede70, gv.h */
 void ch_Close(void);                    /* 0x40b1a0, ch.h */
 void ai_ResetMessages(void);                /* 0x4c3560 */
-void txt_Format(char *out, int id0, ...); /* 0x5176d0 */
 void mem_Exit(void);                    /* 0x422910, mem.h */
 void mem_Init(int max);                 /* 0x4226a0, mem.h */
 int sprintf(char *buf, const char *fmt, ...);                     /* 0x5de652 */

@@ -59,10 +59,10 @@ void main_Unk539620(unsigned p)
         } while ((int)e < (unsigned)((unsigned)he_Events + 0x53000));
         *(char *)(((unsigned)&ai_Chars + 0x2) + d) = 5;
         if (*(char *)((unsigned)&ai_Unk770b89 + d) == 0) {
-            u = util_Random(0xbf);
+            u = util_RandomInt(0xbf);
             s = *(char **)((unsigned)&ai_Unk143ac5c + (u & 0xffff) * 4);
         } else {
-            u = util_Random(0x70);
+            u = util_RandomInt(0x70);
             s = *(char **)((unsigned)&ai_Unk143af70 + (u & 0xffff) * 4);
         }
         strcpy((char *)((unsigned)&ai_Chars + d + 0x30), s);

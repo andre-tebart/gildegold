@@ -490,7 +490,7 @@ extern unsigned short *ai_PlayerChar;    /* 0x6f1bf8 */
 extern AIBLD *ai_PlayerBuilding;             /* 0x6f2308, the building the player is in (f3snd.h declares it unsigned char *, see cm.h) */
 extern AIBLD *ai_FallbackBuilding;             /* 0x6f230c, the second current building, used when 0x6f2308 is 0 (f3snd.c 0x4c18a0; f3snd.h declares it unsigned char *, see cm.h) */
 extern int ai_CurrentPlayer;                /* 0x6f2590, the player index whose turn the local round loop simulates */
-extern unsigned char ai_GameFlags;      /* 0x6f23f8 */
+extern int ai_GameFlags;      /* 0x6f23f8 */
 extern int ai_Difficulty;                 /* 0x6f23fc, the game difficulty 0 .. 4 */
 extern signed char ai_Relations[768][768];  /* 0x7e5360 */
 extern AIOBJ *ai_Objects;             /* 0x7e3f34, the objects of the world (0x5008 rows) */

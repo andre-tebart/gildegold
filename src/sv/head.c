@@ -220,7 +220,7 @@ extern unsigned char ch_Unk5f1290;
 extern GAPDATA full_data_6f22ac[];
 extern unsigned char d2_HalfScreenH;
 extern unsigned char d2_HalfScreenW;
-extern unsigned char ai_GameFlags;
+extern int ai_GameFlags;
 extern unsigned char ai_GameOver;
 extern unsigned char ai_MissionPartner;
 
@@ -258,7 +258,7 @@ extern GAPDATA full_data_6f262c[];
 extern unsigned char snd_MusicEnabled;
 extern unsigned char snd_SfxEnabled;
 extern void *d2_ScreenSurf;  /* 0x6ed924 */
-extern unsigned char ai_GameFlags;
+extern int ai_GameFlags;
 extern unsigned char ai_OptionSpeed;
 extern unsigned char ai_TimeHour;
 extern unsigned char ai_Unk75e130;

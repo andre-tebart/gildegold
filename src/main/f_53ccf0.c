@@ -175,8 +175,8 @@ L_fail:
                 } while (i < 0x5f);
             }
             U_I((unsigned)&ai_GameFlags) = 9;
-            *(char *)(unsigned)&init_PlayerProfile = (char)util_Random(0x5f) + 1;
-            *(char *)((unsigned)&init_PlayerProfile + 0x1) = (char)util_Random(0x5f) + 1;
+            *(char *)(unsigned)&init_PlayerProfile = (char)util_RandomInt(0x5f) + 1;
+            *(char *)((unsigned)&init_PlayerProfile + 0x1) = (char)util_RandomInt(0x5f) + 1;
             *(char *)((unsigned)&init_PlayerProfile + 0x3) = (char)r;
             *(char *)((unsigned)&init_PlayerProfile + 0x2) = 0x12;
             *(short *)((unsigned)&init_PlayerProfile + 0x4) = 0x59a;

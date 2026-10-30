@@ -216,7 +216,7 @@ void main_Unk5384e0(void)
                         uv += 8;
                 }
                 if (ai_IsLocalMaster(c) != 0 || c[2] == 1) {
-                    unsigned short lim = (unsigned short)util_Random(0x5a);
+                    unsigned short lim = (unsigned short)util_RandomInt(0x5a);
                     if (gm_BuildingLevel(o) < (int)lim) {
                         fa = (float)gm_EquipmentValue(o, 100) * 0.005;
                         if (fa < 32.0f)

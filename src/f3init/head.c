@@ -275,7 +275,7 @@ extern unsigned char ai_GameState;      /* 0x6f25ac */
 extern int ai_FrameWait;
 extern unsigned sv_FrameMask;           /* 0x760638 */
 extern short d2_ScreenW, d2_ScreenH;/* 0xfb9072 / 0xfb9070 */
-extern unsigned char ai_GameFlags;      /* 0x6f23f8 */
+extern int ai_GameFlags;      /* 0x6f23f8 */
 void he_RemoveGfxInfos(int obj);            /* 0x53ebe0, he.h */
 char d3if_ShowTree(struct D3OBJECT *obj, char show);                     /* 0x447300 */
 char d3if_SelectScene(int index, char keep);   /* 0x4478e0, d3_interface.c */

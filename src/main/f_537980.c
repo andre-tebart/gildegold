@@ -9,7 +9,7 @@ void main_Unk537980(void)
     U_I((unsigned)&d2_CutsceneActive) = 1;
     d2_ClearScreen();
     sv_SetScreenCenter(0x24087);
-    s = (short)util_Random(2);
+    s = (short)util_RandomInt(2);
     d2_ShowPicture((-(unsigned)(s != 1) & 3) + 0x78e);
     U_I((unsigned)&ai_Unkfb9060) = -1;
     U_I((unsigned)&ai_Unkfb9068) = -1;

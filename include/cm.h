@@ -385,7 +385,7 @@ extern int d3_CurrentScene;  /* 0x633444 */
 extern int ai_Unk633738;  /* 0x633738 */
 extern int ai_TradeMsgCount;  /* 0x6f046c */
 extern int ai_Unk6f0cd4;  /* 0x6f0cd4 */
-extern unsigned char ai_GameFlags;  /* 0x6f23f8 */
+extern int ai_GameFlags;  /* 0x6f23f8 */
 extern int cm_RequestedSaveSlot;  /* 0x6f25c8 */
 extern char cm_RequestedSaveName[];  /* 0x6f25d0 */
 extern unsigned int ai_MissionSeed;  /* 0x75e120, the random seed of the missions (as unk_4b39f0.h) */

@@ -137,11 +137,11 @@ void main_Unk53a520(unsigned short pl)
                     } while ((int)pp < ((unsigned)((unsigned)ai_CharInts + 0x653fe) + 0x2));
                 }
             }
-            u = util_Random(100);
+            u = util_RandomInt(100);
             if ((unsigned short)u > 0x1e) {
                 cv = *k;
                 if (cv != 0xd && cv != 0xc && cv != 0xb && cv != 0x10 && (c[0x5a] & 1) == 0 && cv != 10) {
-                    u = util_Random(3);
+                    u = util_RandomInt(3);
                     gm_Unk50cad0(c, -((int)(u & 0xffff) + 2));
                     cnt++;
                 }
@@ -267,9 +267,9 @@ void main_Unk53a520(unsigned short pl)
                                 m = gm_Opinion(pl, *(int *)pq);
                                 cnt2 = cnt + 1;
                                 if (m + cv < -0x1a) {
-                                    u = util_Random(0x4a);
+                                    u = util_RandomInt(0x4a);
                                     if (-(int)(u & 0xffff) < m + cv) {
-                                        u = util_Random(100);
+                                        u = util_RandomInt(100);
                                         memset(ev, 0, 0xf8);
                                         MSG_B(ev, 4) = ((unsigned short)u < 0x33) ? 0x34 : 0x33;
                                         MSG_I(ev, 8) = U_I((unsigned)&ai_CharInts + pe);
@@ -280,8 +280,7 @@ void main_Unk53a520(unsigned short pl)
                                         *(short *)((char *)ev + 0x34) = *(short *)((unsigned)&ai_Time + 0xc);
                                         MSG_B(ev, 0x36) = 1;
                                         MSG_I(ev, 0x58) = U_I((unsigned)&ai_CharInts + qb);
-                                        u = util_Random(6, 0, 0);
-                                        gm_AddTime((char *)ev + 0x28, (u & 0xffff) + 4);
+                                        gm_AddTime((struct GCLOCK *)((char *)ev + 0x28), (util_RandomInt(6) & 0xffff) + 4, 0, 0);  /* the 0, 0 are pushed first (0x53ae4e) */
                                         cm_SendLongMessage(ev);
                                         cnt2 = cnt + 2;
                                     }

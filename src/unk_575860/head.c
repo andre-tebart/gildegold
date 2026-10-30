@@ -757,7 +757,7 @@ extern GAPDATA full_data_6f5ec0[];
 extern GAPDATA full_data_6f5f44[];
 extern unsigned char kb_Last;
 extern unsigned char sv_PanelFlag;
-extern unsigned char ai_GameFlags;
+extern int ai_GameFlags;
 extern unsigned char ai_OptionSpeed;
 extern unsigned char d2_FocusedInput;
 
