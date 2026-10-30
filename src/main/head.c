@@ -23,6 +23,7 @@ extern char gm_PlayerRecords[];
 #include <d3d.h>
 #include "d3.h"
 #include "d3_light.h"
+#include "d3_engine.h"
 #include "data_views.h"
 #include "d2.h"
 #define GAPDATA __declspec(align(1)) unsigned char
@@ -40,7 +41,6 @@ extern int ai_ScreenModeH;
 extern int ai_ScreenModeW;
 extern struct SCREENMODE { int w, h; } ai_ScreenModes[];
 extern char d3_AnimDir[];
-extern unsigned char d3_DefaultD3DConfig[];
 extern int d3io_Lod;
 extern unsigned char dd_Has1024x768;
 extern unsigned char dd_Has1152x864;
@@ -54,7 +54,6 @@ extern int sv_ViewRectLeft;
 extern int sv_ViewRectRight;
 extern int sv_ViewRectTop;
 extern unsigned char ai_Unk9367e0;
-extern void *(*d3e_Resolve)(void);  /* 0x5fb920 */
 extern GAPDATA full_data_5f320c[];
 extern int snd_SystemBank;
 extern int main_TextReopen;
@@ -70,9 +69,6 @@ extern unsigned char ai_NumPlayers;
 extern int sv_PopRequest;
 extern int ai_GameFlags;
 extern int ai_ModeMask;
-extern float d3_ScaleX;
-extern float d3_ZFar;
-extern float d3_ZNear;
 extern GAPDATA full_data_624b48[];
 extern GAPDATA full_data_624b4c[];
 extern GAPDATA full_data_624b50[];
@@ -209,10 +205,7 @@ extern unsigned char ai_Unk60d360;
 extern unsigned char ai_Unk6f22e8;
 extern unsigned char ai_Unkfc2dec;
 
-extern float d3_ScaleX;
 extern unsigned char d3_Unk6333fc;
-extern float d3_ZFar;
-extern float d3_ZNear;
 
 
 extern GAPDATA full_data_5f1084[];
@@ -226,9 +219,6 @@ extern unsigned char ai_Unkfb9060;
 extern unsigned char ai_Unkfb9064;
 extern unsigned char ai_Unkfb9068;
 extern unsigned char ai_Unkfb906c;
-extern float d3_ScaleX;
-extern float d3_ZFar;
-extern float d3_ZNear;
 extern unsigned char init_StatusForm;
 extern unsigned char cm_RequestedSaveName;
 extern unsigned char ai_Unk1460ae0;
@@ -255,13 +245,11 @@ extern GAPDATA full_data_75e630[];
 extern unsigned char snd_Bank;
 extern unsigned char sv_PanelShown;
 extern unsigned char ai_Unk1468ae0;
-extern unsigned char d3_FogByDistance;
 extern unsigned char ai_Unk6f0d8c;
 extern unsigned char ai_Unk760618;
 extern unsigned char ai_Unk76061c;
 extern unsigned char ai_Unk760620;
 extern unsigned char ch_Motions;
-extern unsigned char d3_Sky;
 extern unsigned char d3t_CamMove;
 extern unsigned char d3t_SunRays;
 extern GAPDATA full_data_6f25c4[];
@@ -373,9 +361,6 @@ extern unsigned char ai_Unk6f2440;
 extern unsigned char ai_Unkf31144;
 extern unsigned char cm_NetFlags;
 
-extern float d3_ScaleX;
-extern float d3_ZFar;
-extern float d3_ZNear;
 
 extern GAPDATA full_data_62456c[];
 extern GAPDATA full_data_6f2428[];
@@ -468,17 +453,8 @@ void main_Unk539870(void);
 void main_Unk53a520(unsigned short pl);
 void main_Unk53cb40(void);
 
-void d2_FreeItemListSurfaces(void);                /* 0x477420 */ void d3_SetViewport(float w, float h, float x, float y, float zn, float zf, float scale, int a, int b);
+void d2_FreeItemListSurfaces(void);                /* 0x477420 */
 int ai_SaveOptions(void);               /* 0x5d4c70, unk_5d33b0.c */
-typedef struct VIDCFG {          /* the video record d3_Init reads: d3_engine.h's D3INITCFG (that header cannot be included here: its externs conflict with this unit's data views) */
-    unsigned int w, h;
-    int bpp, mode, d3d;
-    int triple;                  /* d3_engine.h has an unsigned char + pad here; the original stores a dword */
-    int maxpolys, texcount, maxhicol, texParam, zbpp, texbpp;   /* texParam: tex_Init's 3rd argument */
-    int flFlag, flShift, flArg, texShift, shadowSize;           /* d3fl_Init (0x400, 0x40 >> flShift, flArg, flFlag), d3d_TexShift, d3_InitShadows' first argument (names from their use in d3_Init) */
-    float viewW, viewH, viewX, viewY, zn, zf, scale;
-} VIDCFG;
-char d3_Init(VIDCFG *cfg, HWND hwnd, void *hinst);   /* 0x43bc20, d3_engine.h */
 int ai_LoadOptions(void);               /* 0x5d5640, unk_5d33b0.h */
 void ai_ApplyOptions(void);             /* 0x5d5e90, cm.h */
 void ai_ApplyGfxOptions(void);          /* 0x5d5c40, unk_5d33b0.h */
@@ -541,7 +517,6 @@ char d3if_SelectScene(int index, char keep);  /* 0x4478e0, cm.h */
 struct D3OBJECT;
 char d3if_Delete(struct D3OBJECT *obj);  /* 0x447190, d3_interface.h */
 void d3t_FreeSnowMipmaps(void);         /* 0x4175c0, d3_tools.h */
-void d3_Shutdown(void);                 /* 0x43c240, d3_engine.h */
 void gm_FreeIconNames(void);            /* 0x4fdfb0, f3gm.c */
 void main_FreeSoundBanks(void);         /* 0x537db0 */
 void sv_UnregisterTick(void);           /* 0x520f10, sv.c */

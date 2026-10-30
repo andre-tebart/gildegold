@@ -62,18 +62,18 @@ char d3_Init(D3INITCFG *cfg, HWND wnd, int unk)
     d3_ShadeInit(0x200, 1);
     d3_FrameCount = 0;
     d3_Unkfe7400 = 0;
-    tex_Init(d3_Cfg.texcount, 0, d3_Cfg.unk24, 0x40);
+    tex_Init(d3_Cfg.texcount, 0, d3_Cfg.texParam, 0x40);
     if (d3_D3DActive) {
         d3_D3DActive = d3d_CreateDevice(8, d3_Cfg.texbpp, d3_Unk1463570 + d3_Unk1463580 + d3_Unk1464fbd, d3_Cfg.zbpp);
         if (d3_D3DActive) {
             d3d_SetConfig(d3_DefaultD3DConfig);
             d3d_SetWBuffer(1);
             d3_FogColor = 0;
-            d3d_TexShift = d3_Cfg.unk3c;
+            d3d_TexShift = d3_Cfg.texShift;
         }
     }
-    d3fl_Init(0x400, 0x40 >> d3_Cfg.unk34, d3_Cfg.unk38, d3_Cfg.unk30);
-    d3_InitShadows(d3_Cfg.unk40, 0x80, 0x40, 0x20, 0, 0x40, 0x20);
+    d3fl_Init(0x400, 0x40 >> d3_Cfg.flShift, d3_Cfg.flArg, d3_Cfg.flFlag);
+    d3_InitShadows(d3_Cfg.shadowSize, 0x80, 0x40, 0x20, 0, 0x40, 0x20);
     d3sky_InitColors();
     d3s_Object = d3_SpawnObject(4, "shadow_fake");
     D3_X(d3s_Object)->unk214 = 3;

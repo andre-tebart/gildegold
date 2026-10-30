@@ -489,33 +489,31 @@ extern D3VECTOR4 d3_Frustum[5];             /* 0xfc2960, corner directions of th
 #ifndef DATA_VIEWS_H
 extern float d3_FovX, d3_FovY;              /* 0xfc4a20, 0xfc4c4c, half view angles */
 #endif
-typedef struct D3INITCFG {          /* 0x60 bytes, d3_Init's configuration (copied to d3_Cfg) */
+typedef struct D3INITCFG {          /* 0x60 bytes, d3_Init's configuration (copied to d3_Cfg); main_OpenScreen 0x531c50 fills it on the stack with dword stores */
     unsigned int w, h;              /* screen size */
     int bpp;                        /* 0x08 */
     int mode;                       /* 0x0c, dd mode, 0: none */
     int d3d;                        /* 0x10, use Direct3D */
-    unsigned char triple;           /* 0x14 */
-    char pad15[0x3];
+    int triple;                     /* 0x14, dd_SetMode's last argument (d3_Init reads its low byte) */
     int maxpolys;                   /* 0x18, sort buffer entries (d3_SortMax) */
     int texcount;                   /* 0x1c */
     int maxhicol;                   /* 0x20 */
-    int unk24;
+    int texParam;                   /* 0x24, tex_Init's 3rd argument */
     int zbpp;                       /* 0x28 */
     int texbpp;                     /* 0x2c */
-    unsigned char unk30;
-    char pad31[0x3];
-    int unk34;                      /* shift */
-    unsigned char unk38;
-    char pad39[0x3];
-    unsigned char unk3c;
-    char pad3d[0x3];
-    int unk40;
+    int flFlag;                     /* 0x30, d3fl_Init's 4th argument (read as a byte) */
+    int flShift;                    /* 0x34, d3fl_Init's 2nd argument is 0x40 >> flShift */
+    int flArg;                      /* 0x38, d3fl_Init's 3rd argument (read as a byte) */
+    int texShift;                   /* 0x3c, d3d_TexShift (read as a byte) */
+    int shadowSize;                 /* 0x40, d3_InitShadows' first argument */
     float viewW, viewH;             /* 0x44 */
     float viewX, viewY;             /* 0x4c */
     float zn, zf;                   /* 0x54 */
     float scale;                    /* 0x5c */
 } D3INITCFG;
 extern D3INITCFG d3_Cfg;                    /* 0xfe73e0 */
+char d3_Init(D3INITCFG *cfg, HWND wnd, int unk);  /* 0x43bc20, starts the engine (unk: the instance, handed to dd_Init / d3d_Init / dd_SetMode) */
+void d3_Shutdown(void);                     /* 0x43c240, stops the engine */
 /* 0xfe73f8 / 0xfe7400 lie inside D3INITCFG (.maxpolys / .maxhicol), but they stay separate definitions:
    spelling them as struct fields costs d3_MirDrawObject's and d3sm_GetGround's byte grade (the load
    schedule changes).  The two ledger overlaps are the price; the macro form is in the note. */

@@ -153,7 +153,7 @@ extern float d3d_ViewY;                 /* 0x5f943c */
 extern float d3d_Near;                  /* 0x5f9440, last projection set */
 extern float d3d_Far;                   /* 0x5f9444 */
 extern unsigned char d3d_zbuffer;                    /* 0x5f9448, z buffer enabled (render state cache) */
-extern unsigned char d3d_TexShift;                 /* 0x63342c, shift applied to texture width/height, from d3_Cfg.unk3c */
+extern unsigned char d3d_TexShift;                 /* 0x63342c, shift applied to texture width/height, from d3_Cfg.texShift */
 #ifndef DATA_VIEWS_H
 extern unsigned char d3d_balpha;                     /* 0x63342e, alpha blending enabled */
 #endif
