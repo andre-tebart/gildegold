@@ -305,7 +305,7 @@ int ch_PlaceOnGround();                     /* 0x404a80 */
    gv.h conflicts in; the types match the canonical prototypes, the CHARACTER arguments are cast through the
    SCENEOBJ view - type debt, see notes/units/f3init.md) */
 struct CHARACTER;
-extern struct SCENEOBJ *ch_List[INIT_CHARACTER_COUNT];   /* 0x1468ae0, ch.h's CHARACTER *ch_List[CH_MAX] */
+extern struct CHARACTER *ch_List[INIT_CHARACTER_COUNT];  /* 0x1468ae0, as ch.h (CH_MAX); this unit reads the characters as their SCENEOBJ */
 struct D3HMAP *ch_GetSceneHMap(struct D3SCENE *scene);                           /* 0x402220, ch.h */
 void ch_SetPos(struct CHARACTER *ch, D3VECTOR *pos, int unk);                    /* 0x4025c0, ch.h */
 int ch_PlaceOnGround(struct CHARACTER *ch, int force);                           /* 0x404a80, ch.h */

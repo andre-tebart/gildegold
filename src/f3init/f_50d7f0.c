@@ -74,7 +74,7 @@ void init_LoadObjectScene(int n)
                 d3_ForEachObject2(d3_DefaultScene, 0, 0x1e0, init_SceneNameToPrototype);
                 d3_ForEachObject2(d3_DefaultScene, 0, 6, init_AdjustSceneLights);
                 /* the original compares the walk pointer as an int (jl): a plain pointer compare would be jb */
-                for (q = ch_List; (int)q < (int)(ch_List + INIT_CHARACTER_COUNT); q++) {
+                for (q = (struct SCENEOBJ **)ch_List; (int)q < (int)(ch_List + INIT_CHARACTER_COUNT); q++) {
                     o = *q;
                     if (o != 0 && o->scene == &d3_Scenes[uni]) {
                         /* 0x38: the character's stored position, a D3VECTOR the sources do not name yet */

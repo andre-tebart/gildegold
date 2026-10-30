@@ -70,7 +70,7 @@ void init_ShowBuildingScene(unsigned char *b, int slot)
             limit = 8;
         else
             limit = (*p != 1) * 4 + 4;
-        q = ch_List;
+        q = (SCENEOBJ **)ch_List;
         do {
             t = *q;
             if (t != 0 && d3t_SceneIndex(t->scene) == uni) {

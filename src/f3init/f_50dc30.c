@@ -92,7 +92,7 @@ void init_LoadBuildingScene(int k)
             d3sm_Build(d3_DefaultScene->hmap, d3_Terrain);
             d3_ForEachObject2(d3_DefaultScene, 0, 0x160, init_SceneNameToPrototype);
             d3_ForEachObject2(d3_DefaultScene, 0, 6, init_AdjustSceneLights);
-            for (q = ch_List; (int)q < (int)(ch_List + INIT_CHARACTER_COUNT); q++) {
+            for (q = (struct SCENEOBJ **)ch_List; (int)q < (int)(ch_List + INIT_CHARACTER_COUNT); q++) {
                 co = *q;
                 if (co != 0 && co->scene == &d3_Scenes[cls]) {
                     if (d3_VecEqual((D3VECTOR *)((char *)co + 0x38), &d3_Origin, 0.5f) != 0) {
