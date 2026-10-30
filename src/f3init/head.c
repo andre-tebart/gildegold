@@ -486,15 +486,7 @@ int init_StatusForm = 0;  /* 0x75df00, the panel form the load status is printed
 INIT_PLAYER init_PlayerProfile = {0};  /* 0x75e5a0 */
 int ai_Unk7603a0[32] = {0};  /* 0x7603a0 .. INIT_WINDOWS_END: the */
 #define INIT_WINDOWS_END (unsigned)&ai_Unk760420       /* one past the scene window table 0x7603a0 (0x20 ints) */
-/* ai_NBauplaetze / ai_Bauplaetze: the building sites (rd.h's G15BK; rd.h cannot be included here, gv.h's
-   d3sm_GetVertex collides, so the record is declared locally - type debt, see notes/units/f3init.md) */
-typedef struct G15BK {
-    char name[0x40];                /* 0x00 */
-    float x0, y0, z0;               /* 0x40, the minimum corner */
-    char pad4c[4];
-    float x1, y1, z1;               /* 0x50, the maximum corner */
-    char pad5c[4];
-} G15BK;
+#include "rd_types.h"                 /* G15BK, the building sites ai_Bauplaetze (rd.h cannot be included here) */
 signed char init_BuildingUniverse[0x22] = {0};  /* 0x76fa60, the universe of each building class's scene */
 unsigned short * ai_SceneObject = 0;  /* 0x76fa84 */
 signed char init_ObjectUniverse[0x2dc] = {0};  /* 0x76faa0, the universe of each object prototype's scene (-1 = not loaded) */

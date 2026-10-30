@@ -90,13 +90,7 @@ typedef struct G15ROAD {                /* 0x1020 bytes, rd_Road */
     void *pts;                          /* 0x101c */
 } G15ROAD;
 
-typedef struct G15BK {                  /* 0x60 bytes, a building site (ai_Bauplaetze[ai_NBauplaetze]) */
-    char name[0x40];                    /* 0x00 */
-    float x0, y0, z0;                   /* 0x40 */
-    char pad4c[4];
-    float x1, y1, z1;                   /* 0x50 */
-    char pad5c[4];
-} G15BK;
+#include "rd_types.h"                 /* G15BK */
 
 typedef struct G15BKFIND {              /* context of rd_FindSiteCB */
     char name[0x40];                    /* 0x00 */

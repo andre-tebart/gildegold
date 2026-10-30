@@ -3,7 +3,7 @@
 
 int unk_Unk519d20(int f)
 {
-    int n = 0, off = 0, i, j, cnt;
+    int n = 0, off = 0, i, j;
     char *p, c;
 
     p = ai_Blds;
@@ -64,13 +64,11 @@ int unk_Unk519d20(int f)
         off += 0xa9;
     } while (off < 0xa900);
     LS_W(&ai_NBauplaetze, 4)
-    ai_BauplaetzeV = realloc(ai_BauplaetzeV, ai_NBauplaetze * 0x60);
-    cnt = 0;
+    ai_Bauplaetze = (G15BK *)realloc(ai_Bauplaetze, ai_NBauplaetze * 0x60);
     for (i = 0; i < ai_NBauplaetze; i++) {
-        LS_W(ai_BauplaetzeV + cnt, 0x40)
-        LS_W(ai_BauplaetzeV + cnt + 0x40, 0x10)
-        LS_W(ai_BauplaetzeV + cnt + 0x50, 0x10)
-        cnt += 0x60;
+        LS_W(ai_Bauplaetze[i].name, 0x40)
+        LS_W(&ai_Bauplaetze[i].x0, 0x10)
+        LS_W(&ai_Bauplaetze[i].x1, 0x10)
     }
     return 1;
 }

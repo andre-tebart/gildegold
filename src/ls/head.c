@@ -122,7 +122,8 @@ int rt_SaveRoutes();                     /* 0x4bff40 */
 
 #define LS_W(p, sz) if (vfs_fwrite((p), (sz), 1, f) <= 0) return 0;
 extern int ai_NBauplaetze;                /* 0xf812e0 */
-extern struct G15BK *ai_Bauplaetze;              /* 0xf812e4 */
+#include "rd_types.h"                 /* G15BK */
+extern G15BK *ai_Bauplaetze;              /* 0xf812e4 */
 int unk_Unk4f17f0();                     /* 0x4f17f0 */
 int ahm_WriteRecord();                     /* 0x4ecf10 */
 
@@ -183,5 +184,4 @@ void cm_SendLoadSize(int size);         /* 0x4c44d0, cm.h's prototype (that head
 int cm_SendLoadBlock(void *p);          /* 0x4c4500, the 0x80-byte block of the load buffer; -1: send ring full */
 int sv_PumpMessages(void);              /* 0x52fb80, sv.c: pumps the window messages */
 void sv_PumpNet(void);                  /* 0x52fe00, sv.c: sends the queued messages, receives and runs the waiting ones */
-#define ai_BauplaetzeV (*(char * (*))&ai_Bauplaetze)  /* 0xf812e4, this unit reads it as `char *ai_Bauplaetze` */
 #define ai_Unk75e130I (*(int (*))&ai_Unk75e130)  /* 0x75e130, this unit reads it as `int ai_Unk75e130` */

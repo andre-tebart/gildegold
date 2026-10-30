@@ -2,7 +2,7 @@
 
 int ls_ReadBuildings(int f)
 {
-    int n, k, off = 0, i, j, r;
+    int n, k, off = 0, i, r;
     char *p;
     char *q;
     int *pi;
@@ -102,12 +102,11 @@ tail:
         off += 0xa9;
     }
     LS_R(&ai_NBauplaetze, 4)
-    ai_BauplaetzeV = realloc(ai_BauplaetzeV, ai_NBauplaetze * 0x60);
-    for (i = 0, j = 0; i < ai_NBauplaetze; i++) {
-        LS_R(ai_BauplaetzeV + j, 0x40)
-        LS_R(ai_BauplaetzeV + j + 0x40, 0x10)
-        LS_R(ai_BauplaetzeV + j + 0x50, 0x10)
-        j += 0x60;
+    ai_Bauplaetze = (G15BK *)realloc(ai_Bauplaetze, ai_NBauplaetze * 0x60);
+    for (i = 0; i < ai_NBauplaetze; i++) {
+        LS_R(ai_Bauplaetze[i].name, 0x40)
+        LS_R(&ai_Bauplaetze[i].x0, 0x10)
+        LS_R(&ai_Bauplaetze[i].x1, 0x10)
     }
     return 1;
 }
