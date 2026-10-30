@@ -107,7 +107,7 @@ int ai_Unk5a9e40();                     /* 0x5a9e40 */
 char d3if_Delete(struct D3OBJECT *obj);  /* 0x447190, d3_interface.h */
 int gm_MinutesBetween();                     /* 0x4fe280 */
 int ai_StepShot();                     /* 0x5dc4a0 */
-int ai_Unk5dc9d0();                     /* 0x5dc9d0 */
+int ai_StepShotSlow();                     /* 0x5dc9d0 */
 int d3t_GetMeshBounds();                     /* 0x413310 */
 int d3t_CreateSmoke();                     /* 0x416340 */
 int d3t_CreateEarth();                     /* 0x4168e0 */
