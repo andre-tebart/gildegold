@@ -213,6 +213,7 @@ typedef struct INIT_TERRAIN {
 #endif
 #include "data_views.h"
 #include "d3_snd.h"
+#include "sblib.h"
 #define d3snd_AttachI ((int (*)(int, char *, int, float))d3snd_Attach)  /* 0x417710 (d3_snd.h: D3SOUND *(SNDHANDLE *, D3OBJECT *, int, float)): this unit's int handle / char * object view */
 #define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
 
@@ -428,11 +429,9 @@ void d2_SetViewEnabled(int view, int on);       /* 0x475590, d2.h */
 int init_SetupNewGame(int n);                   /* 0x511400 */
 void init_FillMarkets(int p);                   /* 0x511bc0 */
 int main_Unk534040();                     /* 0x534040, main.c range: gm_BuildQuery(1, 0, 6) makes the "Home-Sweet" house and hands it to character c (0x502b60) */
-struct SBSAMPLE * sb_PlaySample(int bank, char *name, int a, int b, int vol, int c, int d);  /* 0x426fa0, f3snd.h */
 struct D3FLMAP;
 char *tex_FindFile(char *name);                                     /* 0x45f9f0, d3_fl.h */
 int d3fl_ReplaceTexture(struct D3FLMAP *map, char *name, int idx);  /* 0x442210, d3_fl.c */
-void sb_Stop();                     /* 0x427290 */
 char d3if_SelectTextureSet(struct D3OBJECT *obj, struct D3SURF *surf, unsigned char set, char reload);   /* 0x446f30, ecmd.c */
 void cm_SendExSysMessage(unsigned char id, void *msg);                     /* 0x4c4db0 */
 void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d);  /* 0x4c4830, cm.h */
@@ -472,7 +471,6 @@ void init_SoundObjectHook(char *o);
 char init_BuildingTextureSetHook(int unused, unsigned char *b, int o);
 extern int snd_SfxEnabled;              /* 0x6f257c, sound on */
 struct SBSAMPLE; struct SBBANK;
-struct SBSAMPLE *sb_GetSample(struct SBBANK *bank, char *name);  /* 0x426030, d3_snd.c: the sample of the name */
 int _isctype(int c, int mask);
 void init_SetDetailLevel(int *s, char f);
 int init_StatusForm = 0;  /* 0x75df00, the panel form the load status is printed in */

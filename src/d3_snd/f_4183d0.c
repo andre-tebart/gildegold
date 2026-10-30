@@ -17,7 +17,6 @@ typedef struct D3MAP {
 
 char map_Pick(struct D3FLMAP *map, struct D3VECTOR *pos, char lod, int *x, int *y, float *h);          /* 0x4463b0 */
 int map_Region(D3MAP *map, int x, int y);                                              /* 0x446910, index into regions or < 0 */
-struct SBSAMPLE * sb_PlaySample(int a, char *name, int b, int pan, int vol, int c, int d);          /* 0x426fa0, plays a sample once */
 
 extern char snd_Unk6f0b60;                  /* 0x6f0b60 */
 float d3sndw_Range[] = { 0.0f, 30.0f, 25.0f, 20.0f, 15.0f, 10.0f };  /* 0x5f38a4, per water type, in meters */
@@ -159,7 +158,7 @@ void d3sndw_Update(void)
                     t = D3SNDW_TIME;
                     t -= d3sndw_LastSplash;
                     if (t > 60000 && t < 120000) {
-                        sb_PlaySample(0, d3sndw_Names[type], 1,
+                        sb_PlaySampleI(0, d3sndw_Names[type], 1,
                                       (int)((sum / cnt + 1.0f) * 63.0f),
                                       (int)((d3sndw_Vol[type] - d3sndw_Vol[type] * k * k
                                              / (d3sndw_Range[type] * d3sndw_Range[type]))
@@ -187,7 +186,7 @@ void d3sndw_Update(void)
         if (s) {
             if (s->snd) {
                 sb_SetVolume(s->snd, found[0].vol);
-                sb_SetPan(s->snd, found[0].pan);
+                sb_SetPanH(s->snd, found[0].pan);
             }
             if (!d3snd_IsPlaying(s))
                 d3snd_Play(s, 0, 0, 0);
@@ -201,7 +200,7 @@ void d3sndw_Update(void)
             if (s) {
                 if (s->snd) {
                     sb_SetVolume(s->snd, found[i].vol);
-                    sb_SetPan(s->snd, found[i].pan);
+                    sb_SetPanH(s->snd, found[i].pan);
                 }
                 if (!d3snd_IsPlaying(s))
                     d3snd_Play(s, 0, 0, 0);
@@ -212,12 +211,12 @@ void d3sndw_Update(void)
 off:
     if (d3sndw_Snd[0].snd) {
         sb_Stop(d3sndw_Snd[0].snd, 0);
-        sb_SetRestart((char *)d3sndw_Snd[0].snd, 0);
+        sb_SetRestartC((char *)d3sndw_Snd[0].snd, 0);
         d3sndw_Snd[0].snd = NULL;
     }
     if (d3sndw_Snd[1].snd) {
         sb_Stop(d3sndw_Snd[1].snd, 0);
-        sb_SetRestart((char *)d3sndw_Snd[1].snd, 0);
+        sb_SetRestartC((char *)d3sndw_Snd[1].snd, 0);
         d3sndw_Snd[1].snd = NULL;
     }
 }

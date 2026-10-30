@@ -39,7 +39,7 @@ void d2_MouseUpdate(void)
             } else if (c->shown != 0 && c->loaded == 0) {
                 d2_Unkf8aac4 = c->id;
             }
-            sb_PlaySample(d2_Unk6ed990,
+            sb_PlaySampleI(d2_Unk6ed990,
                           o->checkable != 0 ? (o->checked ^= 1, d2_Objs[d2_PointerObj].highlighted = d2_Objs[d2_PointerObj].checked,
                                            "MausclickLinks_s_01")
                                         : d2_Unkf8aacc == 1 ? "MausclickRechts_s_01" : "MausclickLinks_s_01",

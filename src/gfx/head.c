@@ -23,6 +23,7 @@
 #include "rea_dump.h"           /* debug build: REA_DUMP_TRACE */
 #endif
 #include "data_views.h"
+#define sb_PlaySampleI ((struct SBSAMPLE *(*)(int, char *, int, int, int, int, int))sb_PlaySample)  /* 0x426fa0 (sblib.c: SBBANK *bank): this unit passes the bank as an int */
 #define d2_MoveObjI ((void (*)(int, int, int))d2_MoveObj)  /* 0x46cda0 (d2.c: short x, short y): @original this unit passes the coordinates as ints (d2_CreatePicObj) */
 extern char ai_Unkfa5f04[];
 

@@ -19,7 +19,7 @@ int ai_Unk4d3390(char *c)
     c[8] = 0;
     m = *(char **)(*(char **)(c + 0x184) + 0x34);
     *(int *)(m + 0x220) = 0;
-    sb_PlaySample(0, "Schmerzschrei", 1, 0x3f, 0x7f, 0, 0);
+    sb_PlaySampleI(0, "Schmerzschrei", 1, 0x3f, 0x7f, 0, 0);
     if (ai_Unk4e52f0(100) > 0x32) {
         *(int *)(c + 0x24) = (int)((double)(-(int)*(float *)(c + 0x1c)) - ai_Unk5eb8e0);
         G19_5176D0(buf, (char *)0x1181, *(unsigned short *)c);

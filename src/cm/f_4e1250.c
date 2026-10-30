@@ -49,7 +49,7 @@ int ai_Unk4e1250(char *m)
             rc = 0;
         }
     }
-    sb_PlaySample(0, "GLOCKEN_r", 1, 0x3f, 0x7f, 0, 0);
+    sb_PlaySampleI(0, "GLOCKEN_r", 1, 0x3f, 0x7f, 0, 0);
     d2_CutsceneActive = 0;
     ok = gm_Unk506480(a, v);
     if (ok != 0) {

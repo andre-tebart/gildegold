@@ -55,10 +55,10 @@ void ai_Unk4c0e60(void)
         if ((unsigned int)(rand() % 2000 + a[0].interval) < t - a[0].last && n < 0x15e) {
             a[0].last = t;
             if (rand() * 3.0518509e-05f + ai_Unk602bd8[ai_Unk6f0b9c][0].chance > 1.0f)
-                sb_PlaySample(0, "Voegel_s", rand() % ai_Unk602bd8[ai_Unk6f0b9c][0].count + 1, 0x3f,
+                sb_PlaySampleI(0, "Voegel_s", rand() % ai_Unk602bd8[ai_Unk6f0b9c][0].count + 1, 0x3f,
                     (int)(ai_Unk602bd8[ai_Unk6f0b9c][0].vol * 127.0f), 0, 0);
             if (rand() % 10 > 6)
-                sb_PlaySample(0, "Voegel_s", rand() % ai_Unk602bd8[ai_Unk6f0b9c][0].count + 1, 0x3f,
+                sb_PlaySampleI(0, "Voegel_s", rand() % ai_Unk602bd8[ai_Unk6f0b9c][0].count + 1, 0x3f,
                     (int)(ai_Unk602bd8[ai_Unk6f0b9c][0].vol * 127.0f), 0, 0);
         }
         a = ai_Unk602bd8[ai_Unk6f0b9c];
@@ -71,17 +71,17 @@ void ai_Unk4c0e60(void)
                     k = *(int *)(ai_Unk6f0b98 + 0xc);
                 if (ai_Unk6f0b98 == 0 || k <= 2) {
                     sprintf(ai_Unk6f0960, "About to trigger hpLocusts! Handle: %i Count: %i", ai_Unk6f0b98, k);
-                    ai_Unk6f0b98 = sb_PlaySample(0, "Grillen_l", rand() % ai_Unk602bd8[ai_Unk6f0b9c][1].count + 2,
+                    ai_Unk6f0b98 = sb_PlaySampleI(0, "Grillen_l", rand() % ai_Unk602bd8[ai_Unk6f0b9c][1].count + 2,
                         0x3f, (int)(h * ai_Unk602bd8[ai_Unk6f0b9c][1].vol * 127.0f), 0, 0);
                     sprintf(ai_Unk6f0960, "hpLocusts triggered!  Handlevalue: %i", ai_Unk6f0b98);
                 }
             }
             if (ai_Unk6f0b9c == 1) {
                 if (ai_Unk6f0b94 == 0) {
-                    ai_Unk6f0b94 = sb_PlaySample(0, "Grillen_l", 0, 0x3f, (int)(0.7f * h * 127.0f) >> 1, 0, 0);
+                    ai_Unk6f0b94 = sb_PlaySampleI(0, "Grillen_l", 0, 0x3f, (int)(0.7f * h * 127.0f) >> 1, 0, 0);
                     sprintf(ai_Unk6f0960, "hpLocustsPerm triggered!  Handlevalue: %i", ai_Unk6f0b94);
                 } else {
-                    sb_SetVolume(ai_Unk6f0b94, (int)(0.7f * h * 127.0f) >> 1);
+                    sb_SetVolumeI(ai_Unk6f0b94, (int)(0.7f * h * 127.0f) >> 1);
                     sprintf(ai_Unk6f0960, "hpLocustsPerm volume adjusted!  Handlevalue: %i", ai_Unk6f0b94);
                 }
             } else if (ai_Unk6f0b94 != 0) {
@@ -93,9 +93,9 @@ void ai_Unk4c0e60(void)
         } else if (n < 0x65 && ai_Unk6f0b9c != 3) {
             sprintf(ai_Unk6f0960, "Adjusting Volume for hpLocusts: %i %i", ai_Unk6f0b98, ai_Unk6f0b94);
             if (ai_Unk6f0b94 != 0)
-                sb_SetVolume(ai_Unk6f0b94, (int)(h * ai_Unk602bd8[ai_Unk6f0b9c][1].vol * 127.0f) >> 1);
+                sb_SetVolumeI(ai_Unk6f0b94, (int)(h * ai_Unk602bd8[ai_Unk6f0b9c][1].vol * 127.0f) >> 1);
             if (ai_Unk6f0b98 != 0)
-                sb_SetVolume(ai_Unk6f0b98, (int)(h * ai_Unk602bd8[ai_Unk6f0b9c][1].vol * 127.0f) >> 1);
+                sb_SetVolumeI(ai_Unk6f0b98, (int)(h * ai_Unk602bd8[ai_Unk6f0b9c][1].vol * 127.0f) >> 1);
         } else {
             SND_STOPLOG(ai_Unk6f0b94, "hpLocustsPerm stopped (reason: numDrops) %i");
             SND_STOPLOG(ai_Unk6f0b98, "hpLocusts stopped (reason: numDrops) %i");
@@ -104,7 +104,7 @@ void ai_Unk4c0e60(void)
         if ((unsigned int)(rand() % 2000 + a[4].interval) < t - a[4].last) {
             a[4].last = t;
             if (rand() * 3.0518509e-05f + ai_Unk602bd8[ai_Unk6f0b9c][0].chance > 1.0f)
-                sb_PlaySample(0, "Bellt_s", 1, 0x3f, (int)(h * ai_Unk602bd8[ai_Unk6f0b9c][4].vol * 127.0f), 0, 0);
+                sb_PlaySampleI(0, "Bellt_s", 1, 0x3f, (int)(h * ai_Unk602bd8[ai_Unk6f0b9c][4].vol * 127.0f), 0, 0);
         }
         a = ai_Unk602bd8[ai_Unk6f0b9c];
         if ((unsigned int)(rand() % 2000 + a[3].interval) < t - a[3].last) {
@@ -113,14 +113,14 @@ void ai_Unk4c0e60(void)
                 name = "Wiehern_s";
                 if (rand() % 10 > 4)
                     name = "Schnauben_s";
-                sb_PlaySample(0, name, 1, 0x3f, (int)(h * ai_Unk602bd8[ai_Unk6f0b9c][3].vol * 127.0f), 0, 0);
+                sb_PlaySampleI(0, name, 1, 0x3f, (int)(h * ai_Unk602bd8[ai_Unk6f0b9c][3].vol * 127.0f), 0, 0);
             }
         }
         a = ai_Unk602bd8[ai_Unk6f0b9c];
         if ((unsigned int)(rand() % 2000 + a[2].interval) < t - a[2].last) {
             a[2].last = t;
             if (rand() * 3.0518509e-05f + ai_Unk602bd8[ai_Unk6f0b9c][2].chance > 1.0f)
-                sb_PlaySample(0, "Gackern_s", rand() % ai_Unk602bd8[ai_Unk6f0b9c][2].count + 1, 0x3f,
+                sb_PlaySampleI(0, "Gackern_s", rand() % ai_Unk602bd8[ai_Unk6f0b9c][2].count + 1, 0x3f,
                     (int)(h * ai_Unk602bd8[ai_Unk6f0b9c][2].vol * 127.0f), 0, 0);
         }
         if (snd_AmbientTrack != 0 && ai_MarketBuildingV != 0) {

@@ -10,7 +10,7 @@ void snd_ClearQueue(void)
     if (snd_Queue != 0) {
         do {
             n = snd_Queue->next;
-            sb_SetRestart(snd_Queue->smp, 0);
+            sb_SetRestartC(snd_Queue->smp, 0);
             mem_Free(snd_Queue);
             snd_Queue = n;
         } while (n != 0);

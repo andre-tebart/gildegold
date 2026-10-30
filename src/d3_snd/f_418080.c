@@ -11,10 +11,10 @@ D3SOUND *d3sndw_GetSound(int type, int *slot)
         if (!d3snd_IsPlaying(&d3sndw_Snd[0])) {
             s = &d3sndw_Snd[0];
             if (d3sndw_Snd[0].snd)
-                sb_SetRestart((char *)d3sndw_Snd[0].snd, 0);
+                sb_SetRestartC((char *)d3sndw_Snd[0].snd, 0);
             d3sndw_Snd[0].snd = (SNDHANDLE *)sb_GetSample(0, d3sndw_Names[type]);
             if (d3sndw_Snd[0].snd && d3sndw_Snd[0].snd->entry) {
-                sb_SetRestart((char *)d3sndw_Snd[0].snd, 1);
+                sb_SetRestartC((char *)d3sndw_Snd[0].snd, 1);
                 strncpy(d3sndw_Snd[0].name, d3sndw_Snd[0].snd->entry->name, 0x32);
                 *slot = 0;
             } else
@@ -25,10 +25,10 @@ D3SOUND *d3sndw_GetSound(int type, int *slot)
         } else if (!d3snd_IsPlaying(&d3sndw_Snd[1])) {
             s = &d3sndw_Snd[1];
             if (d3sndw_Snd[1].snd)
-                sb_SetRestart((char *)d3sndw_Snd[1].snd, 0);
+                sb_SetRestartC((char *)d3sndw_Snd[1].snd, 0);
             d3sndw_Snd[1].snd = (SNDHANDLE *)sb_GetSample(0, d3sndw_Names[type]);
             if (d3sndw_Snd[1].snd && d3sndw_Snd[1].snd->entry) {
-                sb_SetRestart((char *)d3sndw_Snd[1].snd, 1);
+                sb_SetRestartC((char *)d3sndw_Snd[1].snd, 1);
                 strncpy(d3sndw_Snd[1].name, d3sndw_Snd[1].snd->entry->name, 0x32);
                 *slot = 1;
             } else
@@ -42,10 +42,10 @@ D3SOUND *d3sndw_GetSound(int type, int *slot)
         if (!d3snd_IsPlaying(&d3sndw_Snd[1])) {
             s = &d3sndw_Snd[1];
             if (d3sndw_Snd[1].snd)
-                sb_SetRestart((char *)d3sndw_Snd[1].snd, 0);
+                sb_SetRestartC((char *)d3sndw_Snd[1].snd, 0);
             d3sndw_Snd[1].snd = (SNDHANDLE *)sb_GetSample(0, d3sndw_Names[type]);
             if (d3sndw_Snd[1].snd && d3sndw_Snd[1].snd->entry) {
-                sb_SetRestart((char *)d3sndw_Snd[1].snd, 1);
+                sb_SetRestartC((char *)d3sndw_Snd[1].snd, 1);
                 strncpy(d3sndw_Snd[1].name, d3sndw_Snd[1].snd->entry->name, 0x32);
                 *slot = 1;
             } else
@@ -59,13 +59,13 @@ D3SOUND *d3sndw_GetSound(int type, int *slot)
         if (!d3snd_IsPlaying(&d3sndw_Snd[0])) {
             s = &d3sndw_Snd[0];
             if (d3sndw_Snd[0].snd)
-                sb_SetRestart((char *)d3sndw_Snd[0].snd, 0);
+                sb_SetRestartC((char *)d3sndw_Snd[0].snd, 0);
             d3sndw_Snd[0].snd = (SNDHANDLE *)sb_GetSample(0, d3sndw_Names[type]);
             if (!d3sndw_Snd[0].snd || !d3sndw_Snd[0].snd->entry) {
                 s = NULL;
                 *slot = 0;
             } else {
-                sb_SetRestart((char *)d3sndw_Snd[0].snd, 1);
+                sb_SetRestartC((char *)d3sndw_Snd[0].snd, 1);
                 strncpy(d3sndw_Snd[0].name, d3sndw_Snd[0].snd->entry->name, 0x32);
                 *slot = 0;
             }

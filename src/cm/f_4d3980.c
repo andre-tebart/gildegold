@@ -8,7 +8,7 @@ void ai_Unk4d3980(char *ev)
 
     k = ai_Unk4cda50(att);
     ai_Unk4ce290(*(char **)(*(char **)(att + 0x184) + 0x34) + 0x4c);
-    sb_PlaySample(ai_Unk6f0d14, "ZuendschnurBrennt_l_01", 3, 0x3f, 0x7f, 0, 0);
+    sb_PlaySampleI(ai_Unk6f0d14, "ZuendschnurBrennt_l_01", 3, 0x3f, 0x7f, 0, 0);
     if (*(int *)(ai_Unk6f0d74 + 4) == ai_Unk60cb5c && (*(int *)(k + 0x58) == 1 || *(int *)(k + 0x58) == 2)) {
         G19_FIGHTER_SYNC(att);
     }

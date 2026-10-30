@@ -8,7 +8,7 @@ int snd_QueueVoice(int id, int bank, char *text, int var, unsigned int delay)
         return 0;
     s = snd_FindVoiceSample(id, bank, text, var);
     if (s != 0) {
-        sb_SetVolume(s, (int)(snd_VoiceVolume * 127.0f));
+        sb_SetVolumeI(s, (int)(snd_VoiceVolume * 127.0f));
         snd_AddToQueue((char *)s, delay);
     }
     return s;

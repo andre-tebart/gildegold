@@ -12,7 +12,7 @@ int snd_PlayVoice(int id, int bank, char *text, int var)
     s = snd_FindVoiceSample(id, bank, text, var);
     if (s != 0) {
         sb_Play((char *)s, 0, 0);
-        sb_SetVolume(s, (int)(snd_VoiceVolume * 127.0f));
+        sb_SetVolumeI(s, (int)(snd_VoiceVolume * 127.0f));
     }
     return s;
 }

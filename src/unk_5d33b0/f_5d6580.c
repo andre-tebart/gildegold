@@ -73,7 +73,7 @@ void ai_OptionsSfxScreen(void)
             sb_SetMasterVolume((int)(fSfx * fMaster));
             msx_SetVolume((int)(fMsx * fMaster));
             if (d2_PointerObj == sfx && sample == 0)
-                sample = (int)sb_PlaySample(snd_SystemBank, "NeuesUpgrade_s", 1, 0x3f, 0x7f, 0, 0);
+                sample = (int)sb_PlaySampleI(snd_SystemBank, "NeuesUpgrade_s", 1, 0x3f, 0x7f, 0, 0);
         }
     }
     if (apply != 0) {

@@ -15,6 +15,11 @@
 #define min(a, b) (((a) < (b)) ? (a) : (b))
 #endif
 #include "data_views.h"
+#define sb_PlaySampleI ((struct SBSAMPLE *(*)(int, char *, int, int, int, int, int))sb_PlaySample)  /* 0x426fa0 (sblib.c: SBBANK *bank): this unit passes the bank as an int */
+#define sb_SetVolumeI ((void (*)(int, int))sb_SetVolume)  /* 0x427330 (sblib.c: SBSAMPLE *): @original f3snd.c passes the int handle view of the sample */
+#define sb_IsVariationI ((int (*)(int, char *))sb_IsVariation)  /* 0x426f60 (sblib.c: SBBANK *): this unit's int bank view */
+#define sb_GetVariationI ((int (*)(int, char *, int))sb_GetVariation)  /* 0x426190 (sblib.c: SBSAMPLE *(SBBANK *, char *, int)): this unit's int bank / handle view */
+#define sb_SetRestartC ((void (*)(char *, int))sb_SetRestart)  /* 0x426170 (sblib.c: SBSAMPLE *): this unit's char * view of the sample */
 #define d3snd_DetachI ((void (*)(int))d3snd_Detach)  /* 0x4177b0 (d3_snd.c: D3SOUND *): this unit's int handle */
 #define d3snd_StopI ((void (*)(int, int))d3snd_Stop)  /* 0x417db0 (d3_snd.c: D3SOUND *): this unit's int handle */
 #define d3snd_SetHoldI ((void (*)(int, int))d3snd_SetHold)  /* 0x417dd0 (d3_snd.c: D3SOUND *): this unit's int handle */

@@ -164,7 +164,7 @@ unsigned short * unk_Unk5031b0(unsigned char *b, unsigned n);                   
 /* 0x500190 */
 void txt_Format(char *buf, int id, ...);                                       /* 0x5176d0 */
 void sv_SetStatusText(char *s);                                                   /* 0x52e330 */
-struct SBSAMPLE * sb_PlaySample(int bank, char *name, int a, int b, int vol, int c, int d);    /* 0x426fa0, sblib.c */
+struct SBSAMPLE *sb_PlaySample(struct SBBANK *bank, char *name, int loops, int pan, int volume, int fade, int delay); /* 0x426fa0, sblib.c (this header's units: sb_PlaySampleI) */
 float gm_ItemPrice(int item, unsigned char n);                                   /* 0x5087f0 */
 int gm_Unk50a0f0(int y);                                                     /* 0x50a0f0 */
 void util_Seed(unsigned int seed);                                               /* 0x42ec90, tr.c */

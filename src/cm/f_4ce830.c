@@ -51,7 +51,7 @@ int ai_Unk4ce830()
             d3fl_MakeDivide(ai_Unk633738);
             d3fl_MakeLight(ai_Unk633738);
         }
-        sb_PlaySample(ai_Unk6f0d14, "Explosion_s", 1, 0x3f, 0x7f, 0, 0);
+        sb_PlaySampleI(ai_Unk6f0d14, "Explosion_s", 1, 0x3f, 0x7f, 0, 0);
         for (pp = (char **)ai_Unk7603a0; (int)pp < (int)ai_Unk760420; pp++) {
             c = *pp;
             if (c == 0)

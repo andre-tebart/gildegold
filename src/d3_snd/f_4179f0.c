@@ -16,6 +16,6 @@ void d3snd_UpdatePan(D3SOUND *s)
         rel.x = pos.x - d3_Camera->pos.x;
         rel.y = pos.y - d3_Camera->pos.y;
         rel.z = pos.z - d3_Camera->pos.z;
-        sb_SetPan(s->snd, (int)(sin(d3_VecAngle((D3VECTOR *)&rel, (D3VECTOR *)&dir)) * 63.5 + 63.0));
+        sb_SetPanH(s->snd, (int)(sin(d3_VecAngle((D3VECTOR *)&rel, (D3VECTOR *)&dir)) * 63.5 + 63.0));
     }
 }

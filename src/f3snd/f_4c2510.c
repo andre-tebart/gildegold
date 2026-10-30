@@ -34,14 +34,14 @@ int snd_FindVoiceSample(int id, int bank, char *text, int var)
         else if (id == -8)
             sfx[0] = ch_EmptyName[0];
         sprintf(buf, "%s%s", text, sfx);
-        s = sb_IsVariation(bank, buf);
+        s = sb_IsVariationI(bank, buf);
         if (var >= 0 && s == 0) {
             sprintf(num, "%02i", var);
             strcat(sfx, num);
         }
         sprintf(buf, "%s%s", text, sfx);
         if (s != 0 && var >= 0) {
-            s = sb_GetVariation(bank, buf, var);
+            s = sb_GetVariationI(bank, buf, var);
             if (s != 0)
                 return s;
             sprintf(buf, "Voicesample not found in variation: %s %i", text, var);

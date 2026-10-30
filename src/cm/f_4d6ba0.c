@@ -78,7 +78,7 @@ void ai_Unk4d6ba0(char *f)
         for (s = k + 0x11, d = ev + 0xf0; (*d++ = *s++) != 0;)
             ;
         ch_AddAction(*(char **)(c + 0x184), 0x3b, ai_Unk4e52f0(0x1e) + 0x8c);
-        sb_PlaySample(ai_Unk6f0d14, "topfwerfen_s", 1, 0x3f, 0x7f, 0, 0);
+        sb_PlaySampleI(ai_Unk6f0d14, "topfwerfen_s", 1, 0x3f, 0x7f, 0, 0);
         *(int *)f = -1;
         *(int *)(f + 4) = 0;
     }

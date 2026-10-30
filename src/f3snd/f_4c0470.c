@@ -7,8 +7,8 @@
 #define SND_STOP(s) if ((s) != 0) { sb_Stop((s), 0); (s) = 0; }
 
 /* plays ambient sound s (name n, volume v; a, b the last two arguments) or sets its volume */
-#define SND_SET(s, n, v, a, b) if ((s) == 0) (s) = sb_PlaySample(snd_Bank, (n), 0, 0x3f, (v), (a), (b)); \
-    else sb_SetVolume((s), (v))
+#define SND_SET(s, n, v, a, b) if ((s) == 0) (s) = sb_PlaySampleI(snd_Bank, (n), 0, 0x3f, (v), (a), (b)); \
+    else sb_SetVolumeI((s), (v))
 
 void snd_UpdateRain(void)
 {
@@ -48,9 +48,9 @@ void snd_UpdateRain(void)
             SND_SET(snd_RainHeavyNear, "StarkNah_l_01", v, 0, 0);
             SND_SET(snd_RainHeavyFar, "StarkFern_l_01", (int)(f * 88.9f * 0.000384615385f), 0, 0);
             if (snd_RainDrops == 0)
-                snd_RainDrops = sb_PlaySample(snd_Bank, "Tropfen_s", 0, 0x3f, v, 0, 1000);
+                snd_RainDrops = sb_PlaySampleI(snd_Bank, "Tropfen_s", 0, 0x3f, v, 0, 1000);
             else
-                sb_SetVolume(snd_RainDrops, v);
+                sb_SetVolumeI(snd_RainDrops, v);
             SND_STOP(snd_RainMediumNear);
             SND_STOP(snd_RainLightNear);
             SND_STOP(snd_RainMediumFar);
@@ -64,10 +64,10 @@ void snd_UpdateRain(void)
             SND_SET(snd_RainMediumNear, "MittelNah_l_01", v2, 0, 0);
             SND_SET(snd_RainMediumFar, "MittelFern_l_01", (int)((499 - k) * f * 88.9f * 7.6923078e-07f), 0, 0);
             if (snd_RainDrops == 0)
-                snd_RainDrops = sb_PlaySample(snd_Bank, "Tropfen_s", 0, 0x3f, v, 0, 0xa28);
+                snd_RainDrops = sb_PlaySampleI(snd_Bank, "Tropfen_s", 0, 0x3f, v, 0, 0xa28);
             else {
                 *(int *)(snd_RainDrops + 0x18) = 2000;
-                sb_SetVolume(snd_RainDrops, v);
+                sb_SetVolumeI(snd_RainDrops, v);
             }
             SND_STOP(snd_RainLightFar);
             SND_STOP(snd_RainLightNear);
@@ -80,10 +80,10 @@ void snd_UpdateRain(void)
             SND_SET(snd_RainLightNear, "LeichtNah_l_01", v2, 0, 0);
             SND_SET(snd_RainLightFar, "LeichtFern_l_01", (int)((350 - k) * f * 88.9f * 1.0989011e-06f), 0, 0);
             if (snd_RainDrops == 0)
-                snd_RainDrops = sb_PlaySample(snd_Bank, "Tropfen_s", 1, 0x3f, v, 0, 3000);
+                snd_RainDrops = sb_PlaySampleI(snd_Bank, "Tropfen_s", 1, 0x3f, v, 0, 3000);
             else {
                 *(int *)(snd_RainDrops + 0x18) = 3000;
-                sb_SetVolume(snd_RainDrops, v);
+                sb_SetVolumeI(snd_RainDrops, v);
             }
             SND_STOP(snd_RainHeavyFar);
             SND_STOP(snd_RainHeavyNear);
@@ -92,10 +92,10 @@ void snd_UpdateRain(void)
             SND_SET(snd_RainLightNear, "LeichtNah_l_01", v, 0, 0);
             SND_SET(snd_RainLightFar, "LeichtFern_l_01", (int)(n * f * 88.9f * 2.5813113e-06f), 0, 0);
             if (snd_RainDrops == 0)
-                snd_RainDrops = sb_PlaySample(snd_Bank, "Tropfen_s", 0, 0x3f, v, 0, 4000);
+                snd_RainDrops = sb_PlaySampleI(snd_Bank, "Tropfen_s", 0, 0x3f, v, 0, 4000);
             else {
                 *(int *)(snd_RainDrops + 0x18) = 4000;
-                sb_SetVolume(snd_RainDrops, v);
+                sb_SetVolumeI(snd_RainDrops, v);
             }
             SND_STOP(snd_RainHeavyFar);
             SND_STOP(snd_RainHeavyNear);
@@ -112,7 +112,7 @@ void snd_UpdateRain(void)
                 k = rand() % 3;
             else if (w > 0xfa)
                 k = rand() % 2;
-            sb_PlaySample(0, snd_GustNames[k], 1, 0x3f, (int)(snd_Gusts[snd_Season].vol * 127.0f), 0, 0);
+            sb_PlaySampleI(0, snd_GustNames[k], 1, 0x3f, (int)(snd_Gusts[snd_Season].vol * 127.0f), 0, 0);
         }
     }
 }

@@ -153,13 +153,13 @@ extern int snd_QueuePaused;             /* 0x6f0b68, nonzero: the queue does not
 extern int snd_QueueTime;               /* 0x6f0b88, time of the last queue change */
 extern volatile unsigned long d3_Time;  /* 0x6333cc */
 
-void sb_SetRestart(char *smp, int on);                                           /* 0x426170, sblib.c: SBSAMPLE * */
+void sb_SetRestart(struct SBSAMPLE *s, int on);                                  /* 0x426170, sblib.c (this header's units: sb_SetRestartC) */
 int sb_IsPlaying(struct SBSAMPLE *s);                                                     /* 0x426f20 */
 int sb_Play(struct SBSAMPLE *s, int fade, int delay);                                     /* 0x427110 */
 int gm_ClockSeason(void *t);                                                       /* 0x4fe350, the season */
 float d3t_GetMeanHeight(struct D3VECTOR *pos);                                              /* 0x412550, d3_tools.c */
-struct SBSAMPLE * sb_PlaySample(int bank, char *name, int a, int b, int vol, int c, int d);    /* 0x426fa0, sblib.c */
-void sb_SetVolume(int s, int vol);                                               /* 0x427330 */
+struct SBSAMPLE *sb_PlaySample(struct SBBANK *bank, char *name, int loops, int pan, int volume, int fade, int delay); /* 0x426fa0, sblib.c (this header's units: sb_PlaySampleI) */
+void sb_SetVolume(struct SBSAMPLE *s, int volume);                               /* 0x427330, sblib.c (f3snd.c: sb_SetVolumeI) */
 void sb_Stop(struct SBSAMPLE *s, int fade);                                                      /* 0x427290 */
 void d3_PointToWorld(struct D3OBJECT *obj_, struct D3VECTOR *in, struct D3VECTOR *out);                               /* 0x458a20 */
 int ch_CountAt(int scene, int all, struct D3VECTOR *pos, float eps);                               /* 0x402720 */
@@ -174,8 +174,8 @@ struct MSXTRACK * msx_Play(char *name, int once);                               
 float util_RandomF(void);                                                        /* 0x42ec20 */
 void msx_Stop(struct MSXTRACK *t, int fade);                                                /* 0x423df0 */
 void msx_FadeMaster(float vol, int ms);                                          /* 0x4241a0 */
-int sb_IsVariation(int bank, char *name);                                        /* 0x426f60 */
-int sb_GetVariation(int bank, char *name, int var);                              /* 0x426190 */
+int sb_IsVariation(struct SBBANK *bank, char *name);                            /* 0x426f60, sblib.c (f3snd.c: sb_IsVariationI) */
+struct SBSAMPLE *sb_GetVariation(struct SBBANK *bank, char *name, int idx);       /* 0x426190, sblib.c (f3snd.c: sb_GetVariationI) */
 struct SBSAMPLE * sb_GetSample(struct SBBANK *bank, char *name);                                          /* 0x426030 */
 struct SBBANK * sb_LoadSampleBank(char *name, int preload);                                        /* 0x426950 */
 int sb_UnloadSampleBank(struct SBBANK *bank);                                                 /* 0x426ba0 */

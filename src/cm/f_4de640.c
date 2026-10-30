@@ -34,7 +34,7 @@ void ai_Unk4de640(char *o)
         hit = 0;
         dmg = 0;
     }
-    sb_PlaySample(0, "Schuss", 1, 0x3f, 0x7f, 0, 0);
+    sb_PlaySampleI(0, "Schuss", 1, 0x3f, 0x7f, 0, 0);
     if (ai_Unk4de530(tg, dmg) != 0) {
         ai_Unk6f0d94 = 1;
         return;

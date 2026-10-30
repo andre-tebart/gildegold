@@ -5,7 +5,7 @@ void d3snd_Detach(D3SOUND *s)
     if (s->snd) {
         sb_Stop(s->snd, 0);
         s->snd->flags |= 8;
-        sb_SetRestart((char *)s->snd, 0);
+        sb_SetRestartC((char *)s->snd, 0);
         s->snd = NULL;
     }
     if (s->obj) {

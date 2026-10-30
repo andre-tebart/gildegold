@@ -12,6 +12,7 @@
 #include <d3d.h>
 #include "d3.h"
 #include "d3_snd.h"
+#define sb_SetRestartC ((void (*)(char *, int))sb_SetRestart)  /* 0x426170 (sblib.c: SBSAMPLE *): this unit's char * view of the sample */
 
 /* Sound library (0x426030..0x427390), file not identified yet. */
 typedef struct SNDENTRY {
@@ -31,17 +32,10 @@ typedef struct SNDHANDLE {
     int volume;                     /* 0x24, SBSAMPLE.volume: set by sb_SetVolume, 0 = inaudible */
 } SNDHANDLE;
 
-struct SBBANK;
-struct SBSAMPLE;
-struct SBSAMPLE * sb_GetSample(struct SBBANK *bank, char *name);                       /* 0x426030, sblib.c (sndc.h's view) */
-void sb_SetRestart(char *smp, int on);                                                  /* 0x426170, sblib.c: SBSAMPLE *; 1 after open, 0 to let go (f3snd.h's view) */
-int sb_IsPlaying(struct SBSAMPLE *s);                                                      /* 0x426f20 */
-void sb_Resume(struct SBSAMPLE *s);                                                     /* 0x427010, sblib.c */
-void sb_Play(SNDHANDLE *snd, int a, int b);                                            /* 0x427110 */  /* @original: d3_snd.c sees a SNDHANDLE pointer and void, sblib.c's definition an SBSAMPLE pointer and int; both are pointers in the original */
-void sb_Stop(struct SBSAMPLE *s, int fade);                                                 /* 0x427290 */
-void sb_SetPan(SNDHANDLE *snd, int pan);                                               /* 0x4272f0, 0..127 */
-void sb_SetVolume(struct SBSAMPLE *s, int volume);                                            /* 0x427330 */  /* @original: d3_snd.c passes the SBSAMPLE*, f3snd.h the int handle view of the same original call */
-void sb_SetLoops(struct SBSAMPLE *s, int loops);                                        /* 0x427390, sblib.c (sndc.h's view) */
+#include "sblib.h"
+#define sb_PlayH ((void (*)(SNDHANDLE *, int, int))sb_Play)  /* 0x427110 (sblib.c: int (SBSAMPLE *, int, int)): @original d3_snd.c sees a SNDHANDLE pointer and void */
+#define sb_SetPanH ((void (*)(SNDHANDLE *, int))sb_SetPan)  /* 0x4272f0 (sblib.c: SBSAMPLE *): this unit's SNDHANDLE view of the sample, 0..127 */
+#define sb_PlaySampleI ((struct SBSAMPLE *(*)(int, char *, int, int, int, int, int))sb_PlaySample)  /* 0x426fa0 (sblib.c: SBBANK *bank): this unit passes the bank as an int */
 
 void d3_MatTranspose(D3MATRIX *src, D3MATRIX *dst);                                        /* 0x454040 */
 float d3_VecAngle(D3VECTOR *a, D3VECTOR *b);                                            /* 0x4539f0 */

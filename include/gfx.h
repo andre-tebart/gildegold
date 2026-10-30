@@ -100,7 +100,7 @@ extern int d2_HitUnderPointer;            /* 0x5febd4 */
 extern int d2_Unk6ed990;            /* 0x6ed990 */
 extern int di_GuiClick;            /* 0x6310bc */
 
-struct SBSAMPLE * sb_PlaySample(int a, char *name, int b, int pan, int vol, int c, int d);   /* 0x426fa0, plays a sample once */
+struct SBSAMPLE *sb_PlaySample(struct SBBANK *bank, char *name, int loops, int pan, int volume, int fade, int delay); /* 0x426fa0, sblib.c (this header's units: sb_PlaySampleI) */
 
 void d2_FocusInput(int obj);                                         /* 0x478320, gives an input object the focus */
 void d2_MouseUpdate(void);                                            /* 0x4784c0, mouse handling of the gui */

@@ -15,7 +15,7 @@ int d3snd_PlayAt(SNDHANDLE *snd, D3OBJECT *obj, int volume, float range)
         d3snd_UpdatePan(&s);
         d3snd_UpdateVolume(&s);
         if (snd->volume) {
-            sb_Play(snd, 0, 0);
+            sb_PlayH(snd, 0, 0);
             return 1;
         }
     }

@@ -9,7 +9,7 @@ D3SOUND *d3snd_Attach(SNDHANDLE *snd, D3OBJECT *obj, int volume, float range)
     if (snd && obj && !obj->sound) {
         s = d3snd_Alloc();
         if (s && snd->entry) {
-            sb_SetRestart((char *)snd, 1);
+            sb_SetRestartC((char *)snd, 1);
             strncpy(s->name, snd->entry->name, 0x32);
             s->obj = obj;
             obj->sound = s;

@@ -24,7 +24,7 @@ int ai_Unk4ce300()
         cnt++;
         if (d3_Time <= (unsigned int)(*(int *)(rec + 4) + 0x15e))
             continue;
-        sb_PlaySample(ai_Unk6f0d14, "Explosion_s", 1, 0x3f, 0x7f, 0, 0);
+        sb_PlaySampleI(ai_Unk6f0d14, "Explosion_s", 1, 0x3f, 0x7f, 0, 0);
         v[0] = -243.0f;
         v[1] = -90.0f;
         v[2] = 190.0f;

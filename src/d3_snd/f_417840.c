@@ -14,7 +14,7 @@ void d3snd_Update(void)
                 sb_Stop(d3snd_List[i].snd, 0);
                 d3snd_List[i].snd->flags |= 8;
                 if (!d3snd_List[i].hold) {
-                    sb_SetRestart((char *)d3snd_List[i].snd, 0);
+                    sb_SetRestartC((char *)d3snd_List[i].snd, 0);
                     d3snd_List[i].snd = NULL;
                 }
             }
@@ -27,7 +27,7 @@ void d3snd_Update(void)
                     if (d3snd_List[i].loops)
                         d3snd_Detach(&d3snd_List[i]);
                     else {
-                        sb_SetRestart((char *)d3snd_List[i].snd, 0);
+                        sb_SetRestartC((char *)d3snd_List[i].snd, 0);
                         d3snd_List[i].snd->flags |= 8;
                         d3snd_List[i].snd = NULL;
                     }

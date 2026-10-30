@@ -26,14 +26,14 @@ void snd_UpdateQueue(void)
         }
     } else if (!sb_IsPlaying(snd_Queue->smp)) {
         n = snd_Queue->next;
-        sb_SetRestart(snd_Queue->smp, 0);
+        sb_SetRestartC(snd_Queue->smp, 0);
         mem_Free(snd_Queue);
         snd_Queue = n;
         snd_QueueTime = t;
         if (n != 0 && n->sample != 0 && n->sample->info != 0 && snd_FanfareFade != 0
             && strstr(n->sample->info->name, "MausclickLinks")) {
             n = snd_Queue->next;
-            sb_SetRestart(snd_Queue->smp, 0);
+            sb_SetRestartC(snd_Queue->smp, 0);
             mem_Free(snd_Queue);
             snd_Queue = n;
             snd_FadeMusic(1.0f, 2000);

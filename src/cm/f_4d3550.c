@@ -48,29 +48,29 @@ void ai_Unk4d3550(char *ev)
             else
                 snd_QueueVoice(*(unsigned short *)att, ai_Unk6f0d48, "_K_C2C_SCHMERZ", -1, 500);
         } else if (rnd > 5)
-            sb_PlaySample(0, "Schmerzschrei", 1, 0x3f, 0x7f, 0, 0);
+            sb_PlaySampleI(0, "Schmerzschrei", 1, 0x3f, 0x7f, 0, 0);
     }
     if (att[8] != 0 && tgt[8] != 0 && kt1 != 0) {
         switch (*(int *)ka) {
         case 0x156:
         case 0x158:
-            sb_PlaySample(hitv ? 0 : ai_Unk6f0d20, hitv ? "Treffer" : "Daneben_s", 1, 0x3f, 0x7f, 0, 0);
+            sb_PlaySampleI(hitv ? 0 : ai_Unk6f0d20, hitv ? "Treffer" : "Daneben_s", 1, 0x3f, 0x7f, 0, 0);
             break;
         case 0x154:
         case 0x16e:
         case 0x172:
-            sb_PlaySample(hitv ? 0 : ai_Unk6f0d18, hitv ? "Treffer" : "Daneben_s", 1, 0x3f, 0x7f, 0, 0);
+            sb_PlaySampleI(hitv ? 0 : ai_Unk6f0d18, hitv ? "Treffer" : "Daneben_s", 1, 0x3f, 0x7f, 0, 0);
             break;
         case 0x15e:
-            sb_PlaySample(ai_Unk6f0d1c, "schuss_s", 1, 0x3f, 0x7f, 0, 0);
+            sb_PlaySampleI(ai_Unk6f0d1c, "schuss_s", 1, 0x3f, 0x7f, 0, 0);
             break;
         case 0x160:
             if (hitv != 0)
-                sb_PlaySample(0, "Treffer", 1, 0x3f, 0x7f, 0, 0);
+                sb_PlaySampleI(0, "Treffer", 1, 0x3f, 0x7f, 0, 0);
             break;
         default:
             if (*(int *)ka == 0 && hitv == 0)
-                sb_PlaySample(0, "Treffer", 1, 0x3f, 0x7f, 0, 0);
+                sb_PlaySampleI(0, "Treffer", 1, 0x3f, 0x7f, 0, 0);
             break;
         }
         if (ai_Unk4d3390(att) == 0) {

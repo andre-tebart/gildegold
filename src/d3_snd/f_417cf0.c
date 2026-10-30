@@ -16,7 +16,7 @@ void d3snd_Play(D3SOUND *s, int a, int loops, int delay)
     sb_SetLoops((struct SBSAMPLE *)s->snd,loops);
     s->delay = delay;
     if (!s->hold)
-        sb_Play(s->snd, a, delay);
+        sb_PlayH(s->snd, a, delay);
     else
         sb_Resume((struct SBSAMPLE *)s->snd);
     s->idle = 0;

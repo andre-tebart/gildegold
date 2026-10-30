@@ -9,7 +9,7 @@ int snd_AddToQueue(char *smp, unsigned int delay)
         s = mem_Alloc(0x10, "f3snd: snd_AddToQueue");
         if (s != 0) {
             memset(s, 0, 0x10);
-            sb_SetRestart(smp, 1);
+            sb_SetRestartC(smp, 1);
             s->smp = smp;
             s->delay = delay;
             l = snd_QueueTail();

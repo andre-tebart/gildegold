@@ -35,7 +35,7 @@ void d3snd_UpdateVolume(D3SOUND *s)
             s->snd = (SNDHANDLE *)sb_GetSample(0, s->name);
             if (!s->snd)
                 return;
-            sb_SetRestart((char *)s->snd, 1);
+            sb_SetRestartC((char *)s->snd, 1);
             s->snd->loops = s->loops;
             s->snd->delay = s->delay;
             sb_SetVolume(s->snd, vol);
@@ -46,7 +46,7 @@ void d3snd_UpdateVolume(D3SOUND *s)
         sb_SetVolume(s->snd, vol);
         sb_Stop(s->snd, 0);
         if (!s->hold) {
-            sb_SetRestart((char *)s->snd, 0);
+            sb_SetRestartC((char *)s->snd, 0);
             s->snd = NULL;
         }
     }

@@ -178,7 +178,7 @@ money:
         if (x1 != 0) {
             txt_Format(text, 0x7c, *(unsigned char *)x1 * 14 + 0x48e, *(int *)&m->data[0x13]);
             sv_SetStatusText(text);
-            sb_PlaySample(0, "RollenKurz_s_01", 1, 0x3f, 0x7f, 0, 0);
+            sb_PlaySampleI(0, "RollenKurz_s_01", 1, 0x3f, 0x7f, 0, 0);
         }
     }
     if (s != 0) {
