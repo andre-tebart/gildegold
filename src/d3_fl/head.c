@@ -16,6 +16,7 @@
 #include "d3_light.h"
 #include "d3_d3d.h"
 #include "data_views.h"
+#define d3_DirToWorldD ((void (*)(D3OBJECT *, D3VECTOR *, D3VECTOR *))d3_DirToWorld)  /* 0x458810 (unk_458810.h: XOBJ *, float *, float *): this unit's D3OBJECT / vector view */
 extern const char d3_ScrollPool[];
 
 /* 0xfe79fc / 0xfe7a00 / 0xfe7a04 are d3d_UsedTexFormat.pf2 (+0x2c) + 0x10 / 0x14 / 0x18. */

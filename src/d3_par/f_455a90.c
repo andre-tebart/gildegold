@@ -19,7 +19,7 @@ void par_Draw(D3PARTSYS *ps)
     if (ps->callback && ps->callback(ps, d3_Time)) {
         d3_TriCount += ps->count * 2;
         d3_VertCount += ps->count * 4;
-        d3_WorldMatrix(PAR_OBJ(ps), (PAR_OBJ(ps)->state & 0x80) ? 0 : d3_Camera, 0, &m);
+        d3_WorldMatrixD(PAR_OBJ(ps), (PAR_OBJ(ps)->state & 0x80) ? 0 : d3_Camera, 0, &m);
         for (i = 0; i < ps->count; i++) {
             p = &ps->particles[i];
             vis = 0;

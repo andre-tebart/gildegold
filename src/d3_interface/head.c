@@ -37,6 +37,8 @@
 #include "bio.h"
 #include "d3_light.h"
 #include "data_views.h"
+#define d3_PointToRefD ((void (*)(D3OBJECT *, D3OBJECT *, D3VECTOR *, D3VECTOR4 *))d3_PointToRef)  /* 0x458b20 (unk_458810.h: XOBJ *, XOBJ *, float *, float *): this unit's D3OBJECT / vector view */
+#define d3_WorldMatrixD ((void (*)(D3OBJECT *, D3OBJECT *, int, void *))d3_WorldMatrix)  /* 0x458da0 (unk_458810.h: XOBJ *, XOBJ *, char, D3MATRIX *): this unit's D3OBJECT view of the object */
 extern char ai_Unk6339db[];
 
 struct D3IOOBJ *d3io_LoadObject(char *a, char *b);  /* 0x44e080, d3_io_t.c (d3_io_t.h cannot be included here: d3_fl.h vfs views) */

@@ -6,7 +6,7 @@ void d3_UpdateWorldMatrix(D3OBJECT *obj, D3OBJECT *camera, char force)
     D3MATRIX m;
 
     if (!(obj->stateFlags & 0x80) || force) {
-        d3_WorldMatrix(obj, 0, 0, D3_MESH(obj)->worldMatrix);
+        d3_WorldMatrixD(obj, 0, 0, D3_MESH(obj)->worldMatrix);
         obj->stateFlags |= 0x80;
     }
     if (!(obj->flags & 1) || force || D3_MESH(obj)->camera != camera) {

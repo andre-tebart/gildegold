@@ -29,12 +29,12 @@ char d3_SetParent(D3OBJECT *obj, D3OBJECT *parent)
         for (i = 0; i < 7; i++) {
             d3_PointToWorld(obj, &D3O_LIGHT(obj)->k[i].pos, (D3VECTOR *)&kpos[i]);
             d3_SetObjectRot(obj, &D3O_LIGHT(obj)->k[i].rot);
-            d3_WorldMatrix(obj, 0, 1, &km[i]);
+            d3_WorldMatrixD(obj, 0, 1, &km[i]);
         }
         d3_SetObjectRot(obj, &rot);
     }
     d3_PointToWorld(obj, &D3_X(obj)->pos, (D3VECTOR *)&pos);
-    d3_WorldMatrix(obj, 0, 1, &m);
+    d3_WorldMatrixD(obj, 0, 1, &m);
     d3_Unlink(obj);
     if (!parent)
         d3_LinkTop(obj);

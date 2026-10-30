@@ -68,7 +68,7 @@ char d3_LightApply(D3OBJECT *obj, D3LCTX *set)
                 break;
         if (i < set->count) {
             if (obj->kind == 1) {
-                d3_WorldMatrix(obj, (obj->state & 0x80) ? 0 : d3_Camera, 1, &m);
+                d3_WorldMatrixD(obj, (obj->state & 0x80) ? 0 : d3_Camera, 1, &m);
                 sc = 20.0f / info->ops->radius;
                 acc.y = info->ops->originY;
                 for (j = i; j < set->count; j++) {

@@ -15,12 +15,12 @@ void d3_WorldToParent(D3OBJECT *obj, float *pos, D3MATRIX *rot, D3VECTOR *outpos
         d3_MatToAngles((D3VECTOR4 *)rot, (D3VECTOR4 *)outrot);
         return;
     }
-    d3_WorldMatrix(parent, 0, 0, &m);
+    d3_WorldMatrixD(parent, 0, 0, &m);
     d3_MatInverse(&m, &w);
     outpos->x = w._31 * pos[2] + w._11 * pos[0] + w._21 * pos[1] + w._41;
     outpos->y = w._32 * pos[2] + w._12 * pos[0] + w._22 * pos[1] + w._42;
     outpos->z = w._33 * pos[2] + w._13 * pos[0] + w._23 * pos[1] + w._43;
-    d3_WorldMatrix(parent, 0, 1, &m);
+    d3_WorldMatrixD(parent, 0, 1, &m);
     d3_MatTranspose(&m, &w);
     d3_MatMul43(rot, &w, &m);
     d3_MatToAngles((D3VECTOR4 *)&m, (D3VECTOR4 *)outrot);

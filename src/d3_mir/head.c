@@ -17,6 +17,7 @@
 #undef d3_MirDrawObject
 #include "d3_mir.h"
 #include "data_views.h"
+#define d3_DirToRefD ((void (*)(D3OBJECT *, D3OBJECT *, D3VECTOR *, D3VECTOR4 *))d3_DirToRef)  /* 0x458950 (unk_458810.h: XOBJ *, XOBJ *, float *, float *): this unit's D3OBJECT / vector view */
 
 #define D3M_SURF(o) ((D3MIRSURF *)(o)->info)
 #define D3M_BITS(o) (*(D3MIRBITS *)&(o)->objectFlags)

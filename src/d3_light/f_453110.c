@@ -5,10 +5,10 @@ char d3_LightCollectCB(D3OBJECT *obj, D3LCTX *ctx)
 {
     if (!ctx->list) {
         D3_L(obj)->light->on = 0;
-        d3_PointToRef(obj, d3_Camera, &obj->pos, (D3VECTOR4 *)&D3_L(obj)->cam);
+        d3_PointToRefD(obj, d3_Camera, &obj->pos, (D3VECTOR4 *)&D3_L(obj)->cam);
         if (obj->type == 7) {
             if (D3_L(obj)->power != 0.0 && !(obj->objectFlags & 0x10)) {
-                d3_DirToRef(obj, d3_Camera, &d3_ZAxis, (D3VECTOR4 *)&D3_L(obj)->light->dir);
+                d3_DirToRefD(obj, d3_Camera, &d3_ZAxis, (D3VECTOR4 *)&D3_L(obj)->light->dir);
                 ctx->count++;
                 D3_L(obj)->light->on = 1;
             }

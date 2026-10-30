@@ -26,7 +26,7 @@ void d3fl_MakeLight(D3FLMAP *map)
             map->ambient[0] = D3_L(ctx.light)->color.x * (1.0f / 255.0f);
             map->ambient[1] = D3_L(ctx.light)->color.y * (1.0f / 255.0f);
             map->ambient[2] = D3_L(ctx.light)->color.z * (1.0f / 255.0f);
-            d3_DirToWorld(ctx.light, &d3fl_Down, (D3VECTOR *)&dir);
+            d3_DirToWorldD(ctx.light, &d3fl_Down, (D3VECTOR *)&dir);
             lp = map->light;
             h = map->height;
             kx = map->negScale * map->hscale * 2.0f;

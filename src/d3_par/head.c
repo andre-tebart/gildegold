@@ -20,4 +20,5 @@
 #include "ecmd.h"
 #include "d3_par.h"
 #include "data_views.h"
+#define d3_WorldMatrixD ((void (*)(D3OBJECT *, D3OBJECT *, int, void *))d3_WorldMatrix)  /* 0x458da0 (unk_458810.h: XOBJ *, XOBJ *, char, D3MATRIX *): this unit's D3OBJECT view of the object */
 

@@ -11,7 +11,7 @@ char d3if_ScreenBox(D3OBJECT *obj, D3RECT *r)
 
     if (r && obj) {
         if (obj->type == 0) {
-            d3_PointToRef(obj, d3_Camera, &obj->pos, &v);
+            d3_PointToRefD(obj, d3_Camera, &obj->pos, &v);
             f = 1.0f / v.z;
             x = d3_ScaleX * v.x * f + d3_CenterX;
             y = d3_ScaleY * v.y * f + d3_CenterY;

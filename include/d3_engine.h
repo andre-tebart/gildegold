@@ -210,7 +210,7 @@ extern unsigned int d3_SceneFlags;           /* 0x63349c */
 
 void d3s_ResetShadows(D3OBJECT *obj);       /* 0x45ce00, d3s.c, d3_ForEachObject2 callback */
 void d3s_FreeShadows(D3OBJECT *obj);        /* 0x45ccd0, d3s.c, d3_ForEachObject2 callback */
-void d3_WorldMatrix(D3OBJECT *obj, D3OBJECT *camera, int unk, void *out);   /* 0x458da0, @original: unk_458810.h types it XOBJ *, XOBJ *, char, D3MATRIX *; this view and its spelling keep the /O2 operand order of the byte-matched d3_LoadScene (d3_int_io.c, 0x27f) */
+void d3_WorldMatrix(struct XOBJ *obj, struct XOBJ *ref, char orientOnly, D3MATRIX *out);   /* 0x458da0 */
 void d3fl_SetMips(char a);               /* 0x43f930, d3_fl.c (takes char; the 0x43c4e0 caller pushes an int) */
 void d3fl_SetDetail(unsigned int n); /* 0x43f8a0, d3_fl.c (takes unsigned int; the 0x43c4e0 caller pushes an int) */
 void tex_ReloadAll(int keep, int cb);       /* 0x461090, ts_texture.c: void tex_ReloadAll(char, void (*)(int, int, int)) */
@@ -341,7 +341,7 @@ void d3_SetupFrustum(void);                                                     
 
 void d3_UpdateWorldMatrix(struct D3OBJECT *obj, struct D3OBJECT *camera, char force);                       /* 0x439870 */
 
-void d3_PointToRef(D3OBJECT *obj, D3OBJECT *camera, D3VECTOR *pos, D3VECTOR4 *out);    /* 0x458b20, @original: unk_458810.h types it XOBJ *, XOBJ *, float *, float *; this view and its spelling keep the /O2 operand order of the byte-matched d3_LoadScene (d3_int_io.c, 0x27f) */
+void d3_PointToRef(struct XOBJ *obj, struct XOBJ *ref, float *in, float *out);             /* 0x458b20 */
 
 typedef struct D3TEXMAP {           /* d3_SetObjectAlpha: a texture and its replacement */
     D3TEXTURE *from;

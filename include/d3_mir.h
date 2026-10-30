@@ -77,7 +77,7 @@ typedef struct D3MIRBITS {          /* view of D3OBJECT::objectFlags */
 
 extern D3MIRROR d3_Mirror;        /* 0xfb9900 (d3_Unkfb9900.. in d3_engine.h) */
 
-void d3_DirToRef(D3OBJECT *obj, D3OBJECT *camera, D3VECTOR *dir, D3VECTOR4 *out);     /* 0x458950 */  /* @original: unk_458810.h: XOBJ *, float *; this typing keeps d3_MirDrawObject's load order */
+void d3_DirToRef(struct XOBJ *obj, struct XOBJ *ref, float *in, float *out);             /* 0x458950 */
 void d3_TriNormal(D3VECTOR *a, D3PVERT *b, D3PVERT *c, D3VECTOR4 *n);  /* 0x454700, face normal */  /* @original: d3_vec.h: D3VECTOR4 * x4; this typing keeps d3_MirDrawObject's load order */
 /* 0x454780: the outline edges of the convex point set pts (pairs into edges, 2 * count into *ne) */
 char d3_MirBoundaryEdges(unsigned int n, unsigned char *conn, D3PVERT **pts, unsigned int *ne, D3PVERT **edges);

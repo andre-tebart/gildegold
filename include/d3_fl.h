@@ -185,7 +185,7 @@ extern float d3fl_LightMargin;            /* 0x633740, world units added to map-
 char map_Pick(D3FLMAP *map, D3VECTOR *pos, char lod, int *x, int *y, float *h);      /* 0x4463b0 */
 extern D3VECTOR d3fl_Down;                  /* 0x5ebb74, {0, 0, 1} */
 extern float d3fl_Shade[1024];              /* 0xfb9940, sun shade by -cos(angle) * 1023 */
-void d3_DirToWorld(D3OBJECT *obj, D3VECTOR *v, D3VECTOR *out);                           /* 0x458810, @original: unk_458810.h types it XOBJ *, float *; this is d3_fl.c's view, and the struct XOBJ forward that the XOBJ spelling needs changes the /O2 operand order of the byte-matched d3_LoadScene (d3_int_io.c, 0x27f) */
+void d3_DirToWorld(struct XOBJ *obj, float *in, float *out);                        /* 0x458810, unk_458810.h (d3_fl.c calls it through its D3OBJECT view d3_DirToWorldD) */
 /* float to int with fistp (current rounding mode), as d3_FtoI in d3_engine.h */
 __inline void d3fl_FtoI(int *dst, float f)
 {

@@ -11,7 +11,7 @@ char d3_GetBounds(D3OBJECT *obj, D3OBJECT *camera, D3VECTOR *center, float *radi
 
     if (obj && (center || radius)) {
         if (!obj->type) {
-            d3_PointToRef(obj, camera, &obj->pos, &c);
+            d3_PointToRefD(obj, camera, &obj->pos, &c);
             r = D3_X(obj)->radius;
         } else {
             info = obj->info;

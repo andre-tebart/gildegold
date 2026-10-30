@@ -35,6 +35,8 @@
 #undef d3_MirBeginFrame
 #include "d3_light.h"
 #include "data_views.h"
+#define d3_PointToRefD ((void (*)(D3OBJECT *, D3OBJECT *, D3VECTOR *, D3VECTOR4 *))d3_PointToRef)  /* 0x458b20 (unk_458810.h: XOBJ *, XOBJ *, float *, float *): this unit's D3OBJECT / vector view */
+#define d3_WorldMatrixD ((void (*)(D3OBJECT *, D3OBJECT *, int, void *))d3_WorldMatrix)  /* 0x458da0 (unk_458810.h: XOBJ *, XOBJ *, char, D3MATRIX *): this unit's D3OBJECT view of the object */
 /* The two list heads live inside their 0xfc2e00 / 0xfc2580 head sentinels (the original's +0x1fc /
    +0x160 relationship). As separate COMMON pointers the linker would not keep them adjacent, so the
    loader would link the first object into one address while the readers start from another. */

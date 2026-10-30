@@ -10,7 +10,7 @@ void d3_TransformSurf(D3OBJECT *obj)
     if (info) {
         if (info != obj->info)
             obj->info = info;
-        d3_WorldMatrix(obj, (obj->state & 0x80) ? 0 : d3_Camera, 0, buf);
+        d3_WorldMatrixD(obj, (obj->state & 0x80) ? 0 : d3_Camera, 0, buf);
         D3_OPS(info)->Transform(obj, info, buf);
         obj->state |= 4;
     }

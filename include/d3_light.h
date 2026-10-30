@@ -170,7 +170,7 @@ char d3_RelightObject(D3OBJECT *obj);           /* 0x453280 */
 void d3_RelightObjects(D3OBJECT *obj);          /* 0x453580, recomputes the vertex colours of the selected objects */
 void d3_RelightObjectFrame(D3OBJECT *obj, struct D3ANIMFRAME *f); /* 0x4535b0 */
 void d3_TriNormal(struct D3VECTOR4 *a, struct D3VECTOR4 *b, struct D3VECTOR4 *c, struct D3VECTOR4 *n);   /* 0x454700, face normal */
-void d3_DirToRef(D3OBJECT *obj, D3OBJECT *camera, D3VECTOR *dir, D3VECTOR4 *out);   /* 0x458950 */  /* @original: unk_458810.h types it XOBJ *, float *; this typing keeps d3_MirDrawObject's load order */
+void d3_DirToRef(struct XOBJ *obj, struct XOBJ *ref, float *in, float *out);             /* 0x458950, unk_458810.h */
 void d3_FrameNormals(D3OBJECT *obj, D3LINFO *info, struct D3ANIMFRAME *f);              /* 0x459980, f: key frame (d3_anim.h) */
 char d3_ForEachObject2(D3SCENE *scene, D3OBJECT *obj, unsigned int mask, void (*cb)(D3OBJECT *obj)); /* 0x438e60 */
 struct D3FLMAP;

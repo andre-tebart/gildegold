@@ -18,7 +18,7 @@ void d3_RelightObjectFrame(D3OBJECT *obj, struct D3ANIMFRAME *frame)
         }
         info = D3_L(obj)->info;
         d3_Busy++;
-        d3_PointToRef(obj, d3_Camera, &obj->pos, (D3VECTOR4 *)&D3_L(obj)->cam);
+        d3_PointToRefD(obj, d3_Camera, &obj->pos, (D3VECTOR4 *)&D3_L(obj)->cam);
         if (frame)
             d3_LightRadiusMargin = ((D3LFRAME *)frame)->radius;
         else

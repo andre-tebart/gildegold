@@ -8,7 +8,7 @@ void d3_LightPrepare(D3OBJECT *obj)
         if (!obj->info)
             return;
     }
-    d3_PointToRef(obj, d3_Camera, &obj->pos, (D3VECTOR4 *)&D3_L(obj)->cam);
+    d3_PointToRefD(obj, d3_Camera, &obj->pos, (D3VECTOR4 *)&D3_L(obj)->cam);
     if (D3_L(obj)->info->ops)
         r = D3_L(obj)->info->ops->Radius(obj, obj->info);
     D3_L(obj)->radius2 = r * r;

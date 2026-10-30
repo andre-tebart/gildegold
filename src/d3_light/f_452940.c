@@ -12,7 +12,7 @@ char d3_LightAddObject(D3OBJECT *obj, D3LCTX2 *ctx)
     int n, i, idx;
 
     if (info) {
-        d3_PointToRef(obj, d3_Camera, &obj->pos, (D3VECTOR4 *)&D3_L(obj)->cam);
+        d3_PointToRefD(obj, d3_Camera, &obj->pos, (D3VECTOR4 *)&D3_L(obj)->cam);
         D3_L(obj)->radius2 = (d3_LightRadiusMargin + info->ops->radius) * (d3_LightRadiusMargin + info->ops->radius);
         n = 0;
         light = ctx->light;

@@ -8,7 +8,7 @@ char d3_LightAttach(D3OBJECT *light, D3OBJECT *obj)
     ctx.normals = (obj->state >> 5) & 1;
     d3_LightRemoveRecords(light, obj);
     if (D3_L(light)->power != 0.0) {
-        d3_PointToRef(light, d3_Camera, &light->pos, (D3VECTOR4 *)&D3_L(light)->cam);
+        d3_PointToRefD(light, d3_Camera, &light->pos, (D3VECTOR4 *)&D3_L(light)->cam);
         D3_L(light)->radius2 = D3_L(light)->range * D3_L(light)->range;
         d3_LightAddObject(obj, &ctx);
     }
