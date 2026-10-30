@@ -783,7 +783,7 @@ void ai_Unk4c4a20(void);                                        /* 0x4c4a20 */
 int unk_Unk4fc7a0(G5CH *p);                                      /* 0x4fc7a0 */
 int amt_GetOfficeCandidates(char *c, int n, struct AMTCAND *out);                     /* 0x4e7150 */
 int ai_Unk4a9a00(int a, struct AIPER *p, int c, unsigned char *in, unsigned char *m);  /* 0x4a9a00 */
-extern unsigned short ai_TimeHour;  /* 0x770ae4 */
+/* ai_TimeHour (0x770ae4, the clock's hour) is no object: time_view.h views it in ai_Time + 4 */
 extern void *main_Instance;              /* 0x75e140, the module handle */
 int ai_Unk48fb70(int a);                                                        /* 0x48fb70 */
 int ai_Unk4a16f0(int a);                                                        /* 0x4a16f0 */

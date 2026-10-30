@@ -1,4 +1,5 @@
 /* header created automatically with -DGEN_TREES_H */
+/* @private trees: zlib-internal tables (local / const definitions), included only by trees.c (src/trees/head.c, the STDC branch) */
 
 local const ct_data static_ltree[L_CODES+2] = {
 {{ 12},{  8}}, {{140},{  8}}, {{ 76},{  8}}, {{204},{  8}}, {{ 44},{  8}},

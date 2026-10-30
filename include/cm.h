@@ -1073,7 +1073,7 @@ int gm_Unk506480();  /* 0x506480 */
 int gm_Unk506e70();  /* 0x506e70 */
 int ai_Unk5c4150();  /* 0x5c4150 */
 int ai_Unk4e1250(char *m);  /* 0x4e1250 */
-extern unsigned short ai_TimeHour;  /* 0x770ae4, the clock's hour (AITIME +4; as am.h / amt.h) */
+/* ai_TimeHour (0x770ae4, the clock's hour) is no object: time_view.h views it in ai_Time + 4 */
 
 
 

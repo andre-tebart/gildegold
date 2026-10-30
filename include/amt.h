@@ -219,7 +219,7 @@ int ai_TrustedOfFour(int k, struct AIPER *p, int *ids, int *out);               
 void cm_SendRelations(int a, int b, int c, int d);                     /* 0x4c4b00 */
 int cm_GetSlotState(int h);                     /* 0x4c3ae0 */
 void sv_PumpNet();                    /* 0x52fe00 */
-extern unsigned short ai_TimeHour;     /* 0x770ae4, the hour of the game clock ai_Time (ai.h AITIME.hour) */
+/* ai_TimeHour (0x770ae4, the clock's hour) is no object: time_view.h views it in ai_Time + 4 */
 extern unsigned short ai_PlayerId;     /* 0x6f25b8 (as am.h / cm.h / gv.h) */
 void cm_SendTradeMessage(char *p);                     /* 0x4c5fe0 */
 void ai_Unk5a8cb0(unsigned short *x, char *c);   /* 0x5a8cb0, unk_58bbd0.c: sends the office text 0x20bb to c for x */
