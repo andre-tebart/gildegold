@@ -252,7 +252,7 @@ extern GAPDATA full_data_6f22ac[];
 extern GAPDATA full_data_6f22f0[];
 extern GAPDATA full_data_6f23f1[];
 extern GAPDATA full_data_6f2580[];
-extern GAPDATA full_data_6f2584[];
+extern int main_Inactive;
 extern GAPDATA full_data_6f25a8[];
 extern GAPDATA full_data_6f262c[];
 extern unsigned char snd_MusicEnabled;

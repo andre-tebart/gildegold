@@ -13,7 +13,7 @@ int main_Unk5324f0(HINSTANCE inst, int unused, int mode)
     memset(&wc, 0, sizeof(wc));
     exs = 0;
     wc.style = 0;
-    wc.lpfnWndProc = main_Unk531780;
+    wc.lpfnWndProc = main_WindowProc;
     wc.cbClsExtra = 0;
     wc.cbWndExtra = 0;
     wc.hInstance = inst;

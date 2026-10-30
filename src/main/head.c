@@ -29,10 +29,10 @@ extern char d2_Radios[];
 #define GAPDATA __declspec(align(1)) unsigned char
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
-extern unsigned char d2_BackSurf;
+extern void *d2_BackSurf;     /* 0x6ed92c, the back surface (d2.c) */
 extern unsigned char d3_Hardware;
-extern GAPDATA full_data_6f2584[];
-extern unsigned char tb_Paused;
+extern int main_Inactive;       /* 0x6f2584, 1 while the app is deactivated */
+extern int tb_Paused;           /* 0x6333e0 (tb.h) */
 extern void *d2_ScreenSurf;  /* 0x6ed924, the screen surface (d2.c) */  /* 0x5fe710, 0x6ed924, 0x6ed938 */
 extern unsigned char ai_DataPath;
 extern unsigned char ai_GfxResolution;
@@ -496,7 +496,7 @@ extern GAPDATA full_data_6f2434[];
 extern GAPDATA full_data_6f2470[];
 extern GAPDATA full_data_6f2574[];
 extern GAPDATA full_data_6f2580[];
-extern GAPDATA full_data_6f2584[];
+extern int main_Inactive;       /* 0x6f2584, 1 while the app is deactivated */
 extern GAPDATA full_data_6f2598[];
 extern int main_ScreenRestart;
 extern GAPDATA full_data_6f25a8[];
@@ -535,6 +535,10 @@ void main_Unk53cb40(void);
 void d2_FreeItemListSurfaces(void);                /* 0x477420 */ void d3_SetViewport(float w, float h, float x, float y, float zn, float zf, float scale, int a, int b);
 int ai_SaveOptions(void);               /* 0x5d4c70, unk_5d33b0.c */
 void d2_Exit(void);                     /* 0x468a90, d2.h */
+struct D2SURF { int makeFlags; int w; int h; };  /* the head of d2.h's D2SURF (d2.h cannot be included here: its externs conflict with this unit's data views) */
+void d2_BlitPart(int sx, int sy, int w, int h, struct D2SURF *src, int x, int y, struct D2SURF *dst);  /* 0x479480, d2.h */
+int d2_LockSurface(struct D2SURF *s);   /* 0x479020, d2.h */
+int d2_UnlockSurface(struct D2SURF *s);  /* 0x4790e0, d2.h */
 char d3if_SelectScene(int index, char keep);  /* 0x4478e0, cm.h */
 struct D3OBJECT;
 char d3if_Delete(struct D3OBJECT *obj);  /* 0x447190, d3_interface.h */
@@ -573,8 +577,6 @@ char d3d_Restore();                    /* 0x4370d0 */
 void d2_FlushDirty();                     /* 0x468e30 */
 void d2_DrawObjects();                     /* 0x46d3d0 */
 void dd_Flip();                     /* 0x41e390 */
-int d2_LockSurface();                     /* 0x479020 */
-int d2_UnlockSurface();                     /* 0x4790e0 */
 void d2_BlitPart();                     /* 0x479480 */
 void amt_CheckOffices(void);            /* 0x4e9260, amt.h */
 

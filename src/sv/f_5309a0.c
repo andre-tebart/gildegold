@@ -29,10 +29,10 @@ int sv_RunFrame(int cb, unsigned mask)
             }
         }
     }
-    if (SV_I((unsigned)&full_data_6f2584) != 0)
+    if (SV_I((unsigned)&main_Inactive) != 0)
         return 1;
     cv = (char)mask;
-    if ((mask & 4) != 0 && (d2_MouseUpdate(), SV_I((unsigned)&full_data_6f2584) != 0))
+    if ((mask & 4) != 0 && (d2_MouseUpdate(), SV_I((unsigned)&main_Inactive) != 0))
         SV_I((unsigned)&ai_FrameWait) = 1;
     if (SV_I((unsigned)&sv_PopRequest) == 0 && (mask & 0x100) != 0 && (mask & 0x100000) == 0)
         sv_Unk52d940(mask);
