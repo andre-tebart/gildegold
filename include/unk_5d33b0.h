@@ -167,9 +167,6 @@ typedef struct CMQUICKSAVE {
     char name[0x78];                    /* +0x04, "QUICKSAVE" */
 } CMQUICKSAVE;
 extern unsigned char ai_GameState; /* 0x6f25ac, the game state: 0 loading / paused, 1 running, 2 ... (as cm.h / f3snd.h) */
-extern unsigned char ls_SaveSlot;   /* 0x6f1c38, the save slot the next save records: 0 autosave, 1 quicksave,
-                                       the network save slot (as ls.c, which writes it into the save header) */
-extern unsigned short ai_ScreenImage[]; /* 0x766320, the 0x78 x 0xa0 16-bit screen image (as ls.c) */
 
 void ai_ApplyOptions(void);         /* 0x5d5e90, applies the option values to the run time */
 void ai_SaveOptions(void);          /* 0x5d4c70, writes the options to the INI */
@@ -258,7 +255,6 @@ struct GCLOCK;
 struct AITIME;
 void gm_AddTime(struct GCLOCK *c, int hours, int mins, int secs);   /* 0x4fe140, f3gm.c: adds hours / minutes / seconds to the clock */
 int gm_MinutesBetween(struct AITIME *a, struct AITIME *b);          /* 0x4fe280, f3gm.c: the minutes from clock a to clock b */
-int ls_Read(void *buf, int size, int count, int f);                 /* 0x51c920, ls.c's read (true when the fread returned a positive count); ls.c has no header yet */
 char *ai_FindCurseEvent(char *a);                              /* 0x5741d0, he.c: the pending curse event of the building (as unk_4a7140.h) */
 int gm_CurseObjectCount(char *b);                            /* 0x50cfd0, f3gm.c: 2 + the objects 0x274 / 0x27e / 0x28e / 0x291 of the building (as unk_4a7140.h) */
 int gm_CurseTargetCount(char *b);                                   /* 0x50d0b0, f3gm.c: counts from the objects 0x284 / 0x289 of the building */
@@ -284,8 +280,6 @@ void ai_ApplyVolumes(void);         /* 0x5d5f10, applies the sound option volume
 void ai_LoadScreenImage(char *path); /* 0x5d7320, the loading screen reader */
 
 /* Callees whose units have no header yet (type debt: the prototype should live there). */
-int ls_SaveGame(int name, char *path, unsigned flags); /* 0x5190b0, ls.c: the save writer; the
-                                       definition names the two char * arguments name / path (swapped) */
 int cm_GetSlotState(int h);         /* 0x4c3ae0, cm.c (as include/cm.h): the state of message slot h */
 void sv_ReleaseNamePlates(void);    /* 0x52e190, sv.c: drops the contact plates (the objects lose their
                                        +0x224 hook, the plate table is cleared) */
