@@ -26,6 +26,9 @@ extern char gm_PlayerRecords[];
 #include "d3_engine.h"
 #include "data_views.h"
 #include "d2.h"
+#include "unk_58bbd0.h"
+#include "ecmd.h"
+#include "ts_texture.h"
 #include "unk_5d33b0.h"
 #include "ai.h"
 #include "gfx.h"
@@ -43,7 +46,6 @@ extern char gm_PlayerRecords[];
 #define GAPDATA __declspec(align(1)) unsigned char
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
-extern unsigned char d3_Hardware;
 extern int main_Inactive;       /* 0x6f2584, 1 while the app is deactivated */
 extern char ai_DataPath[];
 extern unsigned char ai_GfxResolution;
@@ -67,7 +69,6 @@ extern char main_AppDir[];
 extern unsigned char init_PlayerProfile[];
 extern GAPDATA full_data_60da10[];
 extern struct LSSAVEVIEW ls_SavePath;
-extern unsigned char ai_TimeHour;
 extern int sv_PopRequest;
 extern int ai_ModeMask;
 extern GAPDATA full_data_624b48[];
@@ -229,8 +230,6 @@ extern unsigned char d3t_CamMove;
 extern unsigned char d3t_SunRays;
 extern GAPDATA full_data_6f25c4[];
 extern unsigned char sv_FrameMask;
-extern unsigned char ai_PlayerId;
-extern unsigned char ai_TimeHour;
 extern unsigned char ai_Unk1460ae0;
 extern unsigned char ai_GamePanel;
 extern unsigned char ai_MissionMode;
@@ -259,7 +258,6 @@ extern char ai_Unk925520[];
 extern GAPDATA full_data_92bca8[];
 extern unsigned char he_Events;
 extern unsigned char he_QuickList;
-extern unsigned char ai_PlayerId;
 extern unsigned char ai_Unkfb9060;
 extern unsigned char ai_Unkfb9064;
 extern unsigned char ai_Unkfb9068;
@@ -281,7 +279,6 @@ extern GAPDATA full_data_75e5f0[];
 extern GAPDATA full_data_75e5f5[];
 extern GAPDATA full_data_75e628[];
 extern unsigned char init_PlayerProfile[];
-extern unsigned char ai_PlayerId;
 extern unsigned char ai_Unk1460ae0;
 extern unsigned char ai_Unkfb9060;
 extern unsigned char ai_Unkfb9064;
@@ -293,13 +290,10 @@ extern unsigned char init_BuildingUniverse;
 extern unsigned char snd_AmbientOn;
 extern unsigned char sv_FrameMask;
 extern int sv_PopRequest;
-extern unsigned char ai_TimeHour;
 extern char ai_DataPath[];
 
 extern unsigned char ai_FrameWait;
 extern unsigned char ai_GamePanel;
-extern unsigned char ai_PlayerId;
-extern unsigned char ai_TimeHour;
 extern unsigned char ai_Unk1460ae0;
 extern unsigned char ai_Unk60bd94;
 extern unsigned char ai_Unk60c1ec;
@@ -374,9 +368,6 @@ extern int sv_PopRequest;
 
 #define U_I(a) (*(int *)(a))
 
-extern char main_ScreenOpen;
-extern int main_PlatformNT;
-extern int main_ScreenSaverOff;
 extern HWND main_Window;
 extern int snd_SfxEnabled;              /* 0x6f257c, f3snd.h */
 extern int snd_MusicEnabled;            /* 0x6f2578, f3snd.h */
@@ -390,18 +381,12 @@ void main_Unk539870(void);
 void main_Unk53a520(unsigned short pl);
 void main_Unk53cb40(void);
 
-void tex_SetPalette(char *dir);         /* 0x45fb30 */
 extern unsigned int d3anim_CacheMax;   /* 0x5f927c, d3_anim.h */
-int txt_LoadIncludes(char *file);       /* 0x42c9c0 */
-int txt_OpenText(char *file, int mode);  /* 0x42cbc0 */
 void hst_ResetLists(void);              /* 0x4b1f30, hst.c */
 int io_PrintText(char *fmt, ...);       /* 0x515960 */
+void ai_ClearTurnTable(void);           /* 0x587de0, unk_575860.c: not in unk_575860.h (adding it there moves unk_575860's drafts ai_Unk579570 / ai_Unk57aeb0, see open.md) */
 void ai_InitStates(void);               /* 0x4c3480 */
-void ai_ClearTurnTable(void);           /* 0x587de0, unk_575860.h */
-int gm_LoadTables(char *root);          /* 0x4fe570, f3gm.h */
 void unk_ResetEffectSlots(void);        /* 0x4eddf0 */
-void unk_LoadIconNames(void);           /* 0x4fde90 */
-int sfx_Startup(void);                  /* 0x42b720 */
 int sb_Init(int mem, int count, int a, int b, int c);  /* 0x425bc0 */
 int d3snd_Init(int max);                /* 0x417650 */
 int d3sndw_Init(unsigned short n);      /* 0x417ec0 */
@@ -417,9 +402,7 @@ void hmt_Init(void);                    /* 0x4aca90 */
 void ai_BuildFloatTable(void);          /* 0x4d27a0 */
 void ocmd_Register(void);               /* 0x40f960 */
 void chc_Register(void);                /* 0x40d270 */
-void d3if_Reset(void);                  /* 0x4473f0, cm.h */
 int init_InitTown(char *city);          /* 0x510ad0, f3init */
-void gm_ResetCharacters(void);          /* 0x503e80, f3gm */
 void init_FreeScenes(void);             /* 0x50d490, f3init */
 #define d2_MoveObjS ((void (*)(short, short, int))d2_MoveObj)  /* 0x46cda0 as its definition reads it (d2.c f_46cda0.c: short x, short y): this unit's callers push the short sums untruncated (0x532212 `sub dx, [..]; sub edx, 0x30; push edx`); d2.h keeps int for d2_CreatePicObj (@original) */
 #define util_RandomInt ((int (*)(unsigned short))util_Random)  /* 0x42ec00 as tr.c defines it: @original this unit reads the full int result (0x53b8c9 util_Random(4) + 0x20 pushed without the 16-bit mask ai.h's unsigned short prototype adds) */
@@ -429,17 +412,13 @@ struct NETHDR { short a, b, size; char name[0x20]; unsigned char players; char p
 #pragma pack(pop)
 int main_ChooseCity(int unused, int host);  /* 0x537230, main.c */
 struct LSSAVEVIEW { char pad0[0x84]; short cur; char pad86[0xa0 - 0x86]; struct NETHDR net; char pad10a[0x120 - 0x10a]; char version[0x40]; char rest[0x280 - 0x160]; };  /* the used parts of ls.c's char ls_SavePath[640] (+0x84 a short, +0xa0 the network game record, +0x120 the version text) */
-char d3if_SelectScene(int index, char keep);  /* 0x4478e0, cm.h */
 struct D3OBJECT;
 void d3t_FreeSnowMipmaps(void);         /* 0x4175c0, d3_tools.h */
-void gm_FreeIconNames(void);            /* 0x4fdfb0, f3gm.c */
 void main_FreeSoundBanks(void);         /* 0x537db0 */
 void sv_UnregisterTick(void);           /* 0x520f10, sv.c */
 void sb_Exit(void);                     /* 0x425ce0, sblib.c */
 void d3snd_Exit(void);                  /* 0x4176f0, d3_snd.c */
 void d3sndw_Exit(void);                 /* 0x418030, d3_snd.c */
-void he_SaveMessageFilter(void);        /* 0x575600, he.c */
-void gm_Free(void);                     /* 0x4fe9c0, f3gm.c */
 void ai_FreeSettings(void);             /* 0x5a8920, unk_58bbd0.c */
 void ahm_FreePrototypes(void);          /* 0x4ebf60, ahm.h */
 int hmt_Exit(void);                     /* 0x4acde0, hmt.h */
@@ -448,7 +427,6 @@ void ch_Close(void);                    /* 0x40b1a0, ch.h */
 void ai_ResetMessages(void);                /* 0x4c3560 */
 void mem_Exit(void);                    /* 0x422910, mem.h */
 void mem_Init(int max);                 /* 0x4226a0, mem.h */
-int sprintf(char *buf, const char *fmt, ...);                     /* 0x5de652 */
 char d3d_Restore();                    /* 0x4370d0 */
 void amt_CheckOffices(void);            /* 0x4e9260, amt.h */
 

@@ -188,4 +188,5 @@ int ocmd_SetEmitterMaxTrigger(D3EMITTER **e, int *n);                           
 int ocmd_TriggerEmitter(D3EMITTER **e);                                              /* 0x40f8a0 */
 int ocmd_SetParticlePos(D3PARTSYS **ps, int *x, int *y, int *z);                     /* 0x40f8f0 */
 
+void ocmd_Register(void);                                                /* 0x40f960 */
 #endif

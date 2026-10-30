@@ -99,4 +99,5 @@ typedef struct TSHICOL {            /* 0x308 bytes, ts_HiColCount of them at ts_
     unsigned int free;              /* 0x304, unused palette entries */
 } TSHICOL;
 
+void tex_SetPalette(void *pal);                                    /* 0x45fb30 */
 #endif

@@ -177,4 +177,5 @@ unsigned char bmp_Load(char *path, unsigned char *data, unsigned char *pal, int 
 char dd_StringToGuid(char *s, GUID *guid);                                                 /* 0x41c760, Dd_vesa.c */
 void dd_DeviceDialog(int bitplanes, int b, int a, int unk, LPDIRECT3D3 d3d);              /* 0x41cf60, Dd_vesa.c */
 
+char d3d_Restore(void);                                                /* 0x4370d0 */
 #endif

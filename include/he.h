@@ -104,4 +104,5 @@ void he_Unk542b60(int ev);
 
 void he_Unk542100(int ev);
 
+void he_SaveMessageFilter(void);                                       /* 0x575600 */
 #endif

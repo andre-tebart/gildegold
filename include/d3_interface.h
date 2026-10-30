@@ -279,4 +279,5 @@ void d3_WriteMap(struct VFSFILE *f, struct D3FLMAP *map);                       
 int d3_SceneVersion(unsigned int version);                                              /* 0x44a9e0 */
 void d3_SaveScene(char *name, struct VFSFILE *f);                                              /* 0x44aa10 */
 
+void d3if_Reset(void);                                         /* 0x4473f0 */
 #endif

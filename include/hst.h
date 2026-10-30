@@ -59,4 +59,5 @@ int ai_CommandRiot(void);                                                       
 int ai_Unk4b1060(int a, int b, char *fmt);                                       /* 0x4b1060 */
 float gm_CharacterHealth(short *c);                                              /* 0x4fc820, the health of the character c now (-1 for a free slot / an inactive one) */
 float gm_AddHealth(unsigned short id, int v);                                    /* 0x4fca40, @original: f3gm.c defines `unsigned id, int d`; the byte-matched ai_CommandKillPlayer (hst.c) pushes c->id as 16 bits */
+void hst_ResetLists(void);                                                /* 0x4b1f30 */
 #endif

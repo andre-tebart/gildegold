@@ -19,4 +19,9 @@ void gm_ClearBuildings(void);                   /* 0x4fe7f0, clears the 0x100 re
 float gm_Mix2(float u, float v);                /* 0x504e80 */
 void gm_ClearObjects(void);                     /* 0x4fe830, returns the instances of live owners and clears the 0x5008-record table */
 
+int gm_LoadTables(char *root);                                       /* 0x4fe570 */
+void unk_LoadIconNames(void);                                         /* 0x4fde90 */
+void gm_ResetCharacters(void);                                        /* 0x503e80 */
+void gm_FreeIconNames(void);                                          /* 0x4fdfb0 */
+void gm_Free(void);                                                   /* 0x4fe9c0 */
 #endif
