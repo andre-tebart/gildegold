@@ -92,5 +92,6 @@ int unk_Unk4fd7e0();                    /* 0x4fd7e0 */
 #define REC_RATE(rec) ((rec)[6])
 
 #include "time_view.h"
+#include "io_text.h"
 #define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
 

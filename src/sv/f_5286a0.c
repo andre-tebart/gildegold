@@ -7,7 +7,6 @@ int d2_WinCreateSlider();                     /* 0x46bf10 */
 void d2_SetObjFont();                     /* 0x4760b0 */
 void d2_SetObjWidth(int obj, short w);                     /* 0x46c260 */
 int gm_BuildingLevel();                     /* 0x508d70 */
-int io_CharacterNameMarkup();                     /* 0x514e90 */
 int d2_WinOpenSlider(int x, int y, int len, int p4, int p5, int pic, unsigned int flags, int win);                     /* 0x46a960 */
 int unk_Unk503530();                     /* 0x503530 */
 unsigned short * gm_Unk50a050(unsigned short *p);                     /* 0x50a050 */

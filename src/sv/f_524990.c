@@ -6,7 +6,6 @@
 extern int ai_Unk5fe710;  /* 0x5fe710 */
 extern int ai_Unk7662c0;
 extern char ai_Unk6f2368;
-int io_CharacterName();                     /* 0x5143d0 */
 int d2_CreateChildWindow(short x, short y, short w, short h, unsigned int flags, int win);                     /* 0x472aa0 */
 int d2_WinOpenPicStyled();                     /* 0x473350 */
 int d2_CreateWinText(short x, short y, char *text, int win);                     /* 0x473650 */

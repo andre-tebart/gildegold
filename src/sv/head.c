@@ -422,5 +422,6 @@ int sv_MessageBoxGreen();               /* 0x521410 */
 int sv_MessageBoxYesNo();               /* 0x5216a0 */
 
 #include "time_view.h"
+#include "io_text.h"
 #define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
 
