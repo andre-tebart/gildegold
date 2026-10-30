@@ -7,7 +7,7 @@ int ai_Unk4cd510()
     int *p;
     char *q;
 
-    if (ai_Unk9364dc == 0x3f)
+    if (ai_ModeMask == 0x3f)
         n = ai_Unk936496;
     else
         n = ai_Unk936496;

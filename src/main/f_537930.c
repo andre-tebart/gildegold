@@ -7,7 +7,7 @@ int main_Unk537930(void)
     U_I((unsigned)&ai_GameFlags) = 0;
     d2_SetPointerSprite(0, 0);
     *(unsigned char *)(unsigned)&ai_NumPlayers = 1;
-    r = main_Unk537230(1, 0);
+    r = main_ChooseCity(1, 0);
     if (r == 0) {
         d2_ClearSurface(d2_ScreenSurf);
         d2_ShowPicture(0x797);

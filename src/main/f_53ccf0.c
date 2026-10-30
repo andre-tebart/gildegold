@@ -70,7 +70,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, char *cmd, int show)
     if (strstr(cmd, "MO_MONEY") != 0)
         U_I((unsigned)&main_MoneyCheat) = 1;
     GetPrivateProfileStringA("General", "Stadt", "Augsburg", (char *)((unsigned)&ai_DataPath + 0x220), 0x40, (char *)(unsigned)&ai_OptionsFile);
-    GetPrivateProfileStringA("Network", "Host", "128.0.0.1", (char *)(unsigned)&full_data_75e1c0, 0x80, (char *)(unsigned)&ai_OptionsFile);
+    GetPrivateProfileStringA("Network", "Host", "128.0.0.1", (char *)(unsigned)&main_NetHost, 0x80, (char *)(unsigned)&ai_OptionsFile);
     U_I(((unsigned)&ls_SavePath + 0x84)) = GetPrivateProfileIntA("Network", "Port", 0x1d6b, (char *)(unsigned)&ai_OptionsFile);
     r = strstr(cmd, "STADT=\"");
     if (r != 0) {
@@ -97,7 +97,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, char *cmd, int show)
         r = 0;
     } else {
         s = (char *)(r + 4);
-        d = (char *)(unsigned)&full_data_75e1c0;
+        d = (char *)(unsigned)&main_NetHost;
         e = (char *)strchr(s, 0x22);
         if (e != 0)
             for (; s < e; s++)

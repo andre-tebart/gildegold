@@ -123,10 +123,10 @@ int main_Unk532da0(int host)
                         k = 0;
                         do {
                             c = r[k];
-                            *(char *)((unsigned)&full_data_75e1c0 + k) = c;
+                            *(char *)((unsigned)&main_NetHost + k) = c;
                             k++;
                         } while (c != 0);
-                        WritePrivateProfileStringA("Network", "Host", (char *)(unsigned)&full_data_75e1c0, (char *)(unsigned)&ai_OptionsFile);
+                        WritePrivateProfileStringA("Network", "Host", (char *)(unsigned)&main_NetHost, (char *)(unsigned)&ai_OptionsFile);
                         U_I((unsigned)&sv_PopRequest) = 1;
                         ret = 1;
                         d = (int *)(unsigned)&full_data_936460;
@@ -143,7 +143,7 @@ int main_Unk532da0(int host)
                             k = 0;
                             do {
                                 c = s[k];
-                                *(char *)((unsigned)&full_data_75e360 + k) = c;
+                                *(char *)((unsigned)&main_NetSaveName + k) = c;
                                 k++;
                             } while (c != 0);
                             k = 0;
@@ -153,7 +153,7 @@ int main_Unk532da0(int host)
                                 k++;
                             } while (c != 0);
                             U_I((unsigned)&ai_GameFlags) |= 0x40;
-                            sprintf(path, "Gamedata\\network\\%s.SAV", (char *)(unsigned)&full_data_75e360);
+                            sprintf(path, "Gamedata\\network\\%s.SAV", (char *)(unsigned)&main_NetSaveName);
                             memset(hdr, 0, 0xfc);
                             h = vfs_Tfopen(path, (char *)(unsigned)"rb", U_I((unsigned)&d3_Unk6333fc));
                             if (h != 0) {

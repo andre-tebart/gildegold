@@ -691,11 +691,11 @@ GAPDATA full_data_75df20[512] = { 0 };  /* 0x75df20 */
 void * main_Instance = 0;  /* 0x75e140, its instance handle (HINSTANCE) */
 GAPDATA full_data_75e180[24] = { 0 };  /* 0x75e180 */
 GAPDATA full_data_75e198[40] = { 0 };  /* 0x75e198 */
-GAPDATA full_data_75e1c0[4] = { 0 };  /* 0x75e1c0 */
+GAPDATA main_NetHost[4] = { 0 };  /* 0x75e1c0 */
 GAPDATA full_data_75e1c4[4] = { 0 };  /* 0x75e1c4 */
 GAPDATA full_data_75e1c8[120] = { 0 };  /* 0x75e1c8 */
 char main_AppDir[288] = { 0 };  /* 0x75e240 */
-GAPDATA full_data_75e360[161] = { 0 };  /* 0x75e360 */
+GAPDATA main_NetSaveName[161] = { 0 };  /* 0x75e360 */
 GAPDATA full_data_75e401[127] = { 0 };  /* 0x75e401 */
 GAPDATA full_data_75e5ec[4] = { 0 };  /* 0x75e5ec */
 GAPDATA full_data_75e5f0[4] = { 0 };  /* 0x75e5f0 */
@@ -729,7 +729,7 @@ GAPDATA full_data_92bcb3[5] = { 0 };  /* 0x92bcb3 */
 GAPDATA full_data_92bcb8[8] = { 0 };  /* 0x92bcb8 */
 GAPDATA full_data_930370[16] = { 0 };  /* 0x930370 */
 GAPDATA full_data_936460[16] = { 0 };  /* 0x936460 */
-GAPDATA full_data_936470[6] = { 0 };  /* 0x936470 */
+GAPDATA main_NetGameRecord[6] = { 0 };  /* 0x936470 */
 GAPDATA full_data_936476[32] = { 0 };  /* 0x936476 */
 /* full_data_143a3c4: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_143a3cc: view of txt_Ptrs (build/mk_txt_views.py) */

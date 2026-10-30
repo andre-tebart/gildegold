@@ -10,11 +10,11 @@ int main_Unk532a70(void)
     int *src, *dst;
 
     if (ai_JoinGameWindow() != 0) {
-        sprintf(path, "gamedata/network/%s.SAV", (char *)(unsigned)&full_data_75e360);
+        sprintf(path, "gamedata/network/%s.SAV", (char *)(unsigned)&main_NetSaveName);
         f = vfs_Tfopen(path, (char *)(unsigned)"rb", U_I((unsigned)&d3_Unk6333fc));
         if (f != 0) {
             ls_ReadSaveHeader(f, hdr);
-            U_I((unsigned)&full_data_75e1c0) = U_I((unsigned)&full_data_624b48);
+            U_I((unsigned)&main_NetHost) = U_I((unsigned)&full_data_624b48);
             U_I((unsigned)&full_data_75e1c4) = U_I((unsigned)&full_data_624b4c);
             U_I((unsigned)&full_data_75e1c8) = U_I((unsigned)&full_data_624b50);
             U_I((unsigned)&ai_GameFlags) |= 0x50;
@@ -32,7 +32,7 @@ int main_Unk532a70(void)
             } while (c != 0);
             i = 0;
             do {
-                c = *(char *)((unsigned)&full_data_75e360 + i);
+                c = *(char *)((unsigned)&main_NetSaveName + i);
                 *(char *)(((unsigned)&ls_SavePath + 0xca) + i) = c;
                 i++;
             } while (c != 0);
@@ -41,7 +41,7 @@ int main_Unk532a70(void)
             for (i = 8; i != 0; i--)
                 *dst++ = *src++;
             src = (int *)((unsigned)&ls_SavePath + 0xa0);
-            dst = (int *)(unsigned)&full_data_936470;
+            dst = (int *)(unsigned)&main_NetGameRecord;
             for (i = 0x1a; i != 0; i--)
                 *dst++ = *src++;
             *(short *)dst = *(short *)src;
@@ -50,7 +50,7 @@ int main_Unk532a70(void)
                 *dst++ = 0;
             U_I(((unsigned)&ai_Unk9364e0 + 0x2e0)) = *((unsigned *)hdr + 0x60 / 4) & 0xff;
             U_I(((unsigned)&ai_Unk9364e0 + 0x2e4)) = *((unsigned *)hdr + 0x6c / 4) & 0xff;
-            U_I((unsigned)&ai_Unk9364dc) = 0x7f;
+            U_I((unsigned)&ai_ModeMask) = 0x7f;
             i = 0;
             do {
                 c = *((char *)hdr + 0x40 + i);

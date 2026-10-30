@@ -5,7 +5,7 @@
    ("_STADTAUSWAHL_<NAME>_BESCHR+0"); the buttons: ok (or enter / 0x1c) goes on to the difficulty choice 0x536e80 and the history choice 0x536980 (host: ends at once), the second button opens the opponent
    selection 0x537040 (diff of the picked city); returns 1 when a game was set up (ROUGH: from the disassembly; the arrays sit at fixed offsets of the 0x8984 frame, the second parameter is the host flag, the first unused) */
 
-int main_Unk537230(int unused, int host)
+int main_ChooseCity(int unused, int host)
 {
     int ret, tower, last, cap, n, i, k, f, sel, f1, f2, run, h, ok, opp, out[2];
     int cityobj[64], diff[64];
@@ -98,7 +98,7 @@ int main_Unk537230(int unused, int host)
     sv_ButtonRow(d2_LastWindow, 0, out, 2, U_I((unsigned)&full_data_144acf0), U_I((unsigned)&full_data_144acf4));
     ok = out[0];
     opp = out[1];
-    run = sv_RunFrame((int)main_Unk537230, 0x10d6);
+    run = sv_RunFrame((int)main_ChooseCity, 0x10d6);
     while (run != 0) {
         U_I((unsigned)&ai_ClickedObject) = 0;
         h = d3if_Pick((float)(int)*(short *)(unsigned)&dm_L, (float)(int)*(short *)((unsigned)&dm_L + 0x2), 0x60, 1);
@@ -184,7 +184,7 @@ lgo:
                 }
             }
         }
-        run = sv_RunFrame((int)main_Unk537230, 0x10d6);
+        run = sv_RunFrame((int)main_ChooseCity, 0x10d6);
     }
     if (f2 != -1)
         d2_CloseView(f2);

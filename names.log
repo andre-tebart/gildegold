@@ -81,3 +81,9 @@
 2026-10-30T10:45:35 0x00503e80 func gm_Unk503e80 -> gm_ResetCharacters by:main why:its comment: resets the character state (0x503c60 for all 0x300 characters, the record table, the counters)
 2026-10-30T10:47:00 0x00532700 func main_Unk532700 -> main_StartCityGame by:main why:loads the city file <name>.CTY / .NET and opens the ChooseCity scene; called by the main menu 0x533850 with (name, 0 / 1)
 2026-10-30T10:48:28 0x005327e0 func main_Unk5327e0 -> main_PlayerCountDialog by:main why:opens the form Menu\CHOOSE_PLAYERCOUNT (a count slider, ok / cancel) and stores the chosen player count in ai_NumPlayers; the network lobby code calls it
+2026-10-30T10:52:30 0x005328f0 func main_Unk5328f0 -> main_HostNetworkGame by:main why:hosts a network game: player count dialog, player setup, fills the game record 0x75e6e0 and copies it to 0x936470; the main menu's network sub menu calls it
+2026-10-30T10:52:35 0x0075e1c0 data full_data_75e1c0 -> main_NetHost by:main why:[Network] Host address buffer: 0x532c30 / 0x532da0 write it to game.INI (Host key), 0x5328f0 / 0x532a70 preset it to 127.0.0.1
+2026-10-30T10:52:40 0x0075e360 data full_data_75e360 -> main_NetSaveName by:main why:formatted as the name of the network save file gamedata/network/%s.SAV (0x532a70, 0x532da0)
+2026-10-30T10:52:44 0x00936470 data full_data_936470 -> main_NetGameRecord by:main why:the 106-byte game record copy (26 dwords + a word) of the header at 0x75e6e0; 0x532a70 and 0x5328f0 fill it
+2026-10-30T10:55:17 0x00537230 func main_Unk537230 -> main_ChooseCity by:main why:its comment: the player setup / city choice of a new game (form Menu\CHOOSECITY); host = 1 selects the network (.NET) files
+2026-10-30T10:55:22 0x009364dc data ai_Unk9364dc -> ai_ModeMask by:main why:0x7f in single-player mode (0x532a70 / 0x589f10 / 0x58a940 disable the controls on it), 0x3f set by the network host here and checked by 0x4cd510

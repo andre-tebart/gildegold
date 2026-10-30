@@ -30,7 +30,7 @@ int main_Unk532c30(void)
             i = 0;
             do {
                 c = buf[i];
-                *(char *)((unsigned)&full_data_75e1c0 + i) = c;
+                *(char *)((unsigned)&main_NetHost + i) = c;
                 i++;
             } while (c != 0);
             WritePrivateProfileStringA("Network", "Host", buf, (char *)(unsigned)&ai_OptionsFile);

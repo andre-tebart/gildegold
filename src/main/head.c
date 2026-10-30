@@ -73,48 +73,48 @@ extern int main_HmtBuild;
 extern char main_AppDir[];
 extern unsigned char init_PlayerProfile[];
 extern GAPDATA full_data_60da10[];
-extern char ls_SavePath[];
+extern struct LSSAVEVIEW ls_SavePath;
 extern struct MAINCLOCK ai_Time;
 extern unsigned char ai_TimeHour;
 extern unsigned char ai_NumPlayers;
 extern int d2_ClickedId;
 extern int sv_PopRequest;
-extern unsigned char ai_GameFlags;
-extern unsigned char ai_Unk9364dc;
-extern unsigned char d3_ScaleX;
-extern unsigned char d3_ZFar;
-extern unsigned char d3_ZNear;
+extern int ai_GameFlags;
+extern int ai_ModeMask;
+extern float d3_ScaleX;
+extern float d3_ZFar;
+extern float d3_ZNear;
 extern GAPDATA full_data_624b48[];
 extern GAPDATA full_data_624b4c[];
 extern GAPDATA full_data_624b50[];
-extern GAPDATA full_data_75e1c0[];
+extern GAPDATA main_NetHost[];
 extern GAPDATA full_data_75e1c4[];
 extern GAPDATA full_data_75e1c8[];
-extern GAPDATA full_data_75e360[];
-extern GAPDATA full_data_936470[];
+extern GAPDATA main_NetSaveName[];
+extern GAPDATA main_NetGameRecord[];
 extern void *d2_ScreenSurf;  /* 0x6ed924, the screen surface (d2.c) */  /* 0x5fe710, 0x6ed924, 0x6ed938 */
-extern unsigned char ai_GameFlags;
+extern int ai_GameFlags;
 extern unsigned char ai_NumPlayers;
-extern unsigned char ai_Unk9364dc;
+extern int ai_ModeMask;
 extern unsigned char ai_Unk9364e0;
 extern unsigned char d3_Unk6333fc;
 extern GAPDATA full_data_5f1084[];
 extern GAPDATA full_data_624b48[];
 extern GAPDATA full_data_624b4c[];
 extern GAPDATA full_data_624b50[];
-extern GAPDATA full_data_75e1c0[];
+extern GAPDATA main_NetHost[];
 extern GAPDATA full_data_75e1c4[];
 extern GAPDATA full_data_75e1c8[];
-extern GAPDATA full_data_75e360[];
-extern GAPDATA full_data_936470[];
-extern char ls_SavePath[];
+extern GAPDATA main_NetSaveName[];
+extern GAPDATA main_NetGameRecord[];
+extern struct LSSAVEVIEW ls_SavePath;
 extern unsigned char ai_OptionsFile;
 extern int d2_ClickedId;
 extern unsigned char kb_Last;
 extern int sv_PopRequest;
 extern char ai_DataPath[];
 
-extern unsigned char ai_GameFlags;
+extern int ai_GameFlags;
 extern unsigned char ai_OptionsFile;
 extern unsigned char ai_Unk6333cc;
 extern unsigned char ai_Unk9364e0;
@@ -125,14 +125,14 @@ extern unsigned char d3_Unk6333fc;
 
 
 extern GAPDATA full_data_5f1084[];
-extern GAPDATA full_data_75e1c0[];
-extern GAPDATA full_data_75e360[];
+extern GAPDATA main_NetHost[];
+extern GAPDATA main_NetSaveName[];
 extern GAPDATA full_data_936460[];
 extern unsigned char kb_Last;
-extern char ls_SavePath[];
+extern struct LSSAVEVIEW ls_SavePath;
 extern int sv_PopRequest;
 extern int d2_ClickedId;
-extern unsigned char ai_GameFlags;
+extern int ai_GameFlags;
 extern unsigned char ai_MissionMode;
 extern unsigned char ai_Unkfb9060;
 extern unsigned char ai_Unkfb9064;
@@ -208,7 +208,7 @@ extern unsigned char d2_Unkf8a670;
 extern unsigned char init_PlayerProfile[];
 extern unsigned char kb_Last;
 extern int sv_PopRequest;
-extern unsigned char ai_GameFlags;
+extern int ai_GameFlags;
 extern unsigned char ai_OptionHistorie;
 extern int d2_ClickedId;
 
@@ -246,10 +246,10 @@ extern int d2_ClickedId;
 extern short d2_ScreenH;
 extern short d2_ScreenW;
 
-extern unsigned char d3_ScaleX;
+extern float d3_ScaleX;
 extern unsigned char d3_Unk6333fc;
-extern unsigned char d3_ZFar;
-extern unsigned char d3_ZNear;
+extern float d3_ZFar;
+extern float d3_ZNear;
 
 
 extern GAPDATA full_data_5f1084[];
@@ -257,10 +257,10 @@ extern GAPDATA full_data_602568[];
 extern unsigned char kb_Last;
 extern unsigned char sv_FrameMask;
 extern int sv_PopRequest;
-extern unsigned char ai_GameFlags;
+extern int ai_GameFlags;
 extern unsigned char ai_NumPlayers;
 extern void *d2_ScreenSurf;  /* 0x6ed924, the screen surface (d2.c) */  /* 0x5fe710, 0x6ed924, 0x6ed938 */
-extern unsigned char ai_GameFlags;
+extern int ai_GameFlags;
 extern unsigned char ai_Unkfb9060;
 extern unsigned char ai_Unkfb9064;
 extern unsigned char ai_Unkfb9068;
@@ -268,9 +268,9 @@ extern unsigned char ai_Unkfb906c;
 extern short d2_ScreenH;
 extern short d2_ScreenW;
 extern struct D2VIEWV d2_Views[];
-extern unsigned char d3_ScaleX;
-extern unsigned char d3_ZFar;
-extern unsigned char d3_ZNear;
+extern float d3_ScaleX;
+extern float d3_ZFar;
+extern float d3_ZNear;
 extern unsigned char init_StatusForm;
 extern unsigned char cm_RequestedSaveName;
 extern unsigned char ai_Unk1460ae0;
@@ -315,7 +315,7 @@ extern unsigned char ai_PlayerId;
 extern unsigned char ai_TimeHour;
 extern unsigned char ai_Unk1460ae0;
 extern unsigned char ai_BTypes;
-extern unsigned char ai_GameFlags;
+extern int ai_GameFlags;
 extern unsigned char ai_GamePanel;
 extern unsigned char ai_MissionMode;
 extern unsigned char ai_OwnPlayer;
@@ -383,7 +383,7 @@ extern GAPDATA full_data_75e628[];
 extern unsigned char init_PlayerProfile[];
 extern unsigned char ai_BTypes;
 extern unsigned char ai_Difficulty;
-extern unsigned char ai_GameFlags;
+extern int ai_GameFlags;
 extern unsigned char ai_GameOver;
 extern unsigned char ai_GameState;
 extern unsigned char ai_PlayerId;
@@ -416,7 +416,7 @@ extern char ai_DataPath[];
 extern unsigned char ai_Difficulty;
 
 extern unsigned char ai_FrameWait;
-extern unsigned char ai_GameFlags;
+extern int ai_GameFlags;
 extern unsigned char ai_GameOver;
 extern unsigned char ai_GamePanel;
 extern unsigned char ai_LeaveGame;
@@ -434,22 +434,22 @@ extern unsigned char cm_NetFlags;
 extern short d2_ScreenH;
 extern short d2_ScreenW;
 
-extern unsigned char d3_ScaleX;
-extern unsigned char d3_ZFar;
-extern unsigned char d3_ZNear;
+extern float d3_ScaleX;
+extern float d3_ZFar;
+extern float d3_ZNear;
 
 extern GAPDATA full_data_62456c[];
 extern GAPDATA full_data_6f2428[];
 extern GAPDATA full_data_6f2598[];
 extern GAPDATA full_data_6f25a8[];
 extern GAPDATA full_data_6f25c4[];
-extern GAPDATA full_data_75e1c0[];
-extern GAPDATA full_data_75e360[];
+extern GAPDATA main_NetHost[];
+extern GAPDATA main_NetSaveName[];
 extern GAPDATA full_data_760454[];
 extern GAPDATA full_data_76f990[];
 extern GAPDATA full_data_76f994[];
 extern unsigned char init_StatusForm;
-extern char ls_SavePath[];
+extern struct LSSAVEVIEW ls_SavePath;
 extern unsigned char ls_SaveSlot;
 extern unsigned char main_MoneyCheat;
 extern unsigned char sv_FrameMask;
@@ -468,7 +468,7 @@ extern unsigned char kb_Last;
 extern unsigned char msx_FadeTo;
 extern unsigned char snd_AmbientOn;
 extern char ai_DataPath[];
-extern unsigned char ai_GameFlags;
+extern int ai_GameFlags;
 extern unsigned char ai_GfxResolution;
 extern unsigned char ai_LeaveGame;
 extern unsigned char ai_OptionsFile;
@@ -501,13 +501,13 @@ extern GAPDATA full_data_6f2598[];
 extern int main_ScreenRestart;
 extern GAPDATA full_data_6f25a8[];
 extern GAPDATA full_data_6f25b4[];
-extern GAPDATA full_data_75e1c0[];
+extern GAPDATA main_NetHost[];
 extern char main_AppDir[];
 extern GAPDATA full_data_75e5f0[];
 extern GAPDATA full_data_75e5f4[];
 extern GAPDATA full_data_75e628[];
 extern unsigned char init_PlayerProfile[];
-extern char ls_SavePath[];
+extern struct LSSAVEVIEW ls_SavePath;
 extern unsigned char main_MoneyCheat;
 extern unsigned char sv_FrameDepth;
 extern int sv_PopRequest;
@@ -612,6 +612,13 @@ int d2_SetForm(int view, int n);        /* 0x475f70, d2.h */
 void d2_SetPointerSprite(int a, int pic);  /* 0x476f80, gfx.h */
 int d2_GetObjValue(int obj);            /* 0x475980, d2.h */
 void d2_SetViewEnabled(int view, int on);  /* 0x475590, d2.h */
+#pragma pack(push, 2)
+struct NETHDR { short a, b, size; char name[0x20]; unsigned char players; char pad27; short x; char rest[0x40]; };  /* the 106-byte network game record at ls_SavePath + 0xa0 (reasoned from 0x5328f0's stores: +4 the size 0x6a, +6 the name, +0x26 the player count) */
+#pragma pack(pop)
+int main_ChooseCity(int unused, int host);  /* 0x537230, main.c */
+int d2_ClearSurface(struct D2SURF *surf);  /* 0x4796c0, d2.h */
+void d2_ShowPicture(int pic);           /* 0x46cfd0, d2.h */
+struct LSSAVEVIEW { char pad0[0x84]; short cur; char pad86[0xa0 - 0x86]; struct NETHDR net; char pad10a[0x120 - 0x10a]; char version[0x40]; char rest[0x280 - 0x160]; };  /* the used parts of ls.c's char ls_SavePath[640] (+0x84 a short, +0xa0 the network game record, +0x120 the version text) */
 struct D2SURF { int makeFlags; int w; int h; };  /* the head of d2.h's D2SURF (d2.h cannot be included here: its externs conflict with this unit's data views) */
 void d2_BlitPart(int sx, int sy, int w, int h, struct D2SURF *src, int x, int y, struct D2SURF *dst);  /* 0x479480, d2.h */
 int d2_LockSurface(struct D2SURF *s);   /* 0x479020, d2.h */

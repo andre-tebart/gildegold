@@ -30,7 +30,7 @@ int main_Unk5335b0(void)
             if (ai_Unk5fe710 == b1) {
                 U_I((unsigned)&ai_GameFlags) = 5;
                 d2_SetViewEnabled(f, 0);
-                run = main_Unk5328f0();
+                run = main_HostNetworkGame();
             } else if (ai_Unk5fe710 == b2) {
                 U_I((unsigned)&ai_GameFlags) = 5;
                 d2_SetViewEnabled(f, 0);

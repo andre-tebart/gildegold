@@ -23,7 +23,7 @@ extern char d2_Wins[];
 extern unsigned char ai_OptionsFile;
 extern unsigned char ai_Unk1460ae0;
 extern unsigned char ai_Unk5fe710;
-extern unsigned char ai_Unk9364dc;
+extern unsigned char ai_ModeMask;
 extern unsigned char ai_Unk9364e0;
 extern unsigned char ch_EmptyName;
 extern unsigned char d2_ClickedId;

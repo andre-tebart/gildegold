@@ -40,7 +40,7 @@ extern int ai_Unk936404;
 extern int ai_Unk936408;
 extern unsigned int ai_Unk936420[9];
 extern unsigned char ai_Unk936496;
-extern int ai_Unk9364dc;
+extern int ai_ModeMask;
 extern char ai_Unk9364e0[752];
 extern int ai_Unk9367d0;
 extern int ai_Unk9367d4;
@@ -288,7 +288,7 @@ int ai_Unk936404 = 0;  /* 0x936404 */
 int ai_Unk936408 = 0;  /* 0x936408 */
 unsigned int ai_Unk936420[9] = {0};  /* 0x936420, the count then the eight player states (0x24 bytes) */
 unsigned char ai_Unk936496 = 0;  /* 0x936496 */
-int ai_Unk9364dc = 0;  /* 0x9364dc */
+int ai_ModeMask = 0;  /* 0x9364dc */
 char ai_Unk9364e0[752] = {0};  /* 0x9364e0 */
 int ai_Unk9367d0 = 0;  /* 0x9367d0 */
 int ai_Unk9367d4 = 0;  /* 0x9367d4 */
