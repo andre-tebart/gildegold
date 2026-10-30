@@ -77,3 +77,4 @@
 2026-10-30T10:38:59 0x006f246c data full_data_6f246c -> main_HmtBuild by:main why:reasoned: only read by 0x532160, nonzero runs hmt_CreateBinaryFile once and is cleared
 2026-10-30T10:39:03 0x00532160 func main_Unk532160 -> main_OpenEngine by:main why:the error string main_OpenEngine(): could not open txt-engine! 0x624a8c is in it
 2026-10-30T10:39:17 0x0075e240 data full_data_75e240 -> main_AppDir by:main why:0x53ccf0 copies the program's own path into it and cuts it at the last backslash (strrchr 0x5c); 0x532160 reads <it>\include_sfx.ini
+2026-10-30T10:43:03 0x005324f0 func main_Unk5324f0 -> main_CreateWindow by:main why:registers the 'Die Gilde' window class and creates the game window; main_Window is set here, 0x53ccf0 (WinMain) calls it

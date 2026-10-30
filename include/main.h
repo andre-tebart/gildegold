@@ -2,7 +2,7 @@
 #ifndef MAIN_H
 #define MAIN_H
 
-/* the globals of the program level (the window is created in main_Unk5324f0) */
+/* the globals of the program level (the window is created in main_CreateWindow) */
 extern HWND main_Window;                /* 0x6f2588, the game window ("Die Gilde") */
 extern void *main_Instance;             /* 0x75e140, its instance handle (HINSTANCE) */
 extern char main_ScreenOpen;            /* 0x6f258c, the video mode is open */

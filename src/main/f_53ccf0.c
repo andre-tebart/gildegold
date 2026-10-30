@@ -122,7 +122,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, char *cmd, int show)
     i = main_CreateMutex(c224);
     if (i != 0)
         exit(1);
-    i = main_Unk5324f0(hInst, show, mode);
+    i = main_CreateWindow(hInst, show, mode);
     if (i == 0) {
         main_Exit();
         return 0;
