@@ -11,9 +11,9 @@ void snd_StartMarketAmbience(void)
         o = ai_MarketBuildingV->object;
         if (o != 0) {
             smp = sb_GetSample(0, "Athmo_Marktplatz_Mono_4Bit");
-            snd_AmbientTrack = d3snd_Attach(smp, o, 0x7f, 2200.0f);
+            snd_AmbientTrack = d3snd_AttachI(smp, o, 0x7f, 2200.0f);
             if (snd_AmbientTrack != 0) {
-                d3snd_SetHold(snd_AmbientTrack, 1);
+                d3snd_SetHoldI(snd_AmbientTrack, 1);
                 d3snd_Play(snd_AmbientTrack, 0, 0, 0);
             }
         }

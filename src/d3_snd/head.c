@@ -11,6 +11,7 @@
 #include <windows.h>
 #include <d3d.h>
 #include "d3.h"
+#include "d3_snd.h"
 
 /* Sound library (0x426030..0x427390), file not identified yet. */
 typedef struct SNDENTRY {
@@ -61,9 +62,6 @@ typedef struct D3SOUND {            /* 0x54 bytes, d3snd_Max of them at d3snd_Li
     int hold;                       /* 0x50 */
 } D3SOUND;
 
-void d3snd_UpdatePan(D3SOUND *s);                                       /* 0x4179f0 */
-void d3snd_UpdateVolume(D3SOUND *s);                                    /* 0x417b10 */
-void d3snd_Play(struct D3SOUND *s, int a, int loops, int delay);               /* 0x417cf0 */
 
 static D3SOUND *d3snd_List = 0;          /* 0x631130 */
 int d3snd_Max = 10;  /* 0x5f38a0, initialized to 10; TODO define here once .data is matched */

@@ -22,7 +22,7 @@ void init_SoundObjectHook(char *o)
         if (snd_SfxEnabled != 0) {
             s = sb_GetSample(0, name);
             if (s != 0) {
-                h = d3snd_Attach((int)s, o, 0x7f, (float)((int)((SCENEOBJ *)o)->soundRange + 0x32));
+                h = d3snd_AttachI((int)s, o, 0x7f, (float)((int)((SCENEOBJ *)o)->soundRange + 0x32));
                 if (h != 0)
                     d3snd_Play((struct D3SOUND *)h, 0, loop, delay);
             }

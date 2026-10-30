@@ -164,7 +164,7 @@ void sb_Stop(struct SBSAMPLE *s, int fade);                                     
 void d3_PointToWorld(struct D3OBJECT *obj_, struct D3VECTOR *in, struct D3VECTOR *out);                               /* 0x458a20 */
 int ch_CountAt(int scene, int all, struct D3VECTOR *pos, float eps);                               /* 0x402720 */
 int ch_Count(int scene, int a);                                                  /* 0x4026c0 */
-void d3snd_SetVolume(int s, int vol);                                            /* 0x417e00 */
+void d3snd_SetVolume(struct D3SOUND *s, int volume);                                    /* 0x417e00, d3_snd.c (f3snd.c: d3snd_SetVolumeI) */
 void msx_SetTrackVolume(struct MSXTRACK *t, int vol);                                       /* 0x423930, msx.h: MSXTRACK * */
 struct MSXTRACK * msx_PlayAmbient(char *name, int vol);                                      /* 0x4243f0 */
 void msx_StopAmbient(struct MSXTRACK *t);                                                   /* 0x4244b0 */
@@ -182,11 +182,11 @@ int sb_UnloadSampleBank(struct SBBANK *bank);                                   
 float gm_Liking(int pl, int id, int a);                                       /* 0x50c550, a favour */
 int gm_BuildingGoodsList(char *b, unsigned *out, int kind);                            /* 0x5098a0 */
 int gm_Unk5099e0(char *b, unsigned *out, int kind);                            /* 0x5099e0 */
-int d3snd_Attach(int smp, char *obj, int vol, float r);                         /* 0x417710, d3_snd.c */
-void d3snd_SetHold(int s, int on);                                               /* 0x417dd0 */
+struct D3SOUND *d3snd_Attach(struct SNDHANDLE *snd, struct D3OBJECT *obj, int volume, float range);   /* 0x417710, d3_snd.c (f3snd.c: d3snd_AttachI) */
+void d3snd_SetHold(struct D3SOUND *s, int hold);                                        /* 0x417dd0, d3_snd.c (f3snd.c: d3snd_SetHoldI) */
 void d3snd_Play(struct D3SOUND *s, int a, int loops, int delay);                                     /* 0x417cf0 */
-void d3snd_Stop(int s, int a);                                                   /* 0x417db0 */
-void d3snd_Detach(int s);                                                        /* 0x4177b0 */
+void d3snd_Stop(struct D3SOUND *s, int unk);                                            /* 0x417db0, d3_snd.c (f3snd.c: d3snd_StopI) */
+void d3snd_Detach(struct D3SOUND *s);                                                   /* 0x4177b0, d3_snd.c (f3snd.c: d3snd_DetachI) */
 void * mem_Alloc(int size, char *tag);                                            /* 0x4223c0, mem.c */
 void mem_Free(void *p);                                                          /* 0x422620, mem.c */
 

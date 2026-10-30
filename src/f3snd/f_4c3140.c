@@ -4,9 +4,9 @@
 void snd_StopMarketAmbience(void)
 {
     if (snd_AmbientTrack != 0) {
-        d3snd_SetHold(snd_AmbientTrack, 0);
-        d3snd_Stop(snd_AmbientTrack, 1);
-        d3snd_Detach(snd_AmbientTrack);
+        d3snd_SetHoldI(snd_AmbientTrack, 0);
+        d3snd_StopI(snd_AmbientTrack, 1);
+        d3snd_DetachI(snd_AmbientTrack);
         snd_AmbientTrack = 0;
     }
 }

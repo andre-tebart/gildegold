@@ -128,7 +128,7 @@ void ai_Unk4c0e60(void)
             k = ch_CountAt(0, 0, v, 900.0f) * 0x14;
             if (k > 0x7e)
                 k = 0x7f;
-            d3snd_SetVolume(snd_AmbientTrack, k);
+            d3snd_SetVolumeI(snd_AmbientTrack, k);
         }
     }
     if (ai_PlayerBuildingB != 0 && snd_AmbientOn.on != 0) {

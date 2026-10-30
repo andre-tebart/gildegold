@@ -353,7 +353,7 @@ D3TEXTURE *tex_AliasForFlags(D3TEXTURE *tex, D3TEXFLAGS f, char group);         
 
 extern D3PARTSYS d3_ParEnd;                 /* 0xfb9280, particle system list end marker */
 void par_Delete(D3PARTSYS *ps);                                                         /* 0x455760 */
-void d3snd_Free(void *snd);                                                             /* 0x4179d0, d3_snd.c */
+void d3snd_Free(struct D3SOUND *s);                                                     /* 0x4179d0, d3_snd.c */
 void d3_DisposeObject(D3OBJECT *obj);                                                   /* 0x43c7a0 */
 void d3_UnlinkTop(D3OBJECT *obj);                                                       /* 0x43cab0 */
 
