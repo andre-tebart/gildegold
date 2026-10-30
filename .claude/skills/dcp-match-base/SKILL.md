@@ -66,10 +66,17 @@ code is shape or byte, only readability is missing. `gates=` names the failing r
 - `uv run dcp draft 0xADDR --show` - the analyzer's pseudocode, unchanged: a second reading, not the truth.
 - `uv run dcp why 0xADDR` - everything the ledger knows about an address (names, data, tables).
 - `uv run dcp lint` - clang over the units: prototypes (Q7), cross-unit conflicts (M5), calls without one (M7).
+  An M5 line is one symbol: its definition (file:line, unit, spelling) and every declaration that disagrees
+  or agrees with it; fix every disagreeing one to the definition's spelling (or the definition, when the
+  declarations are right). `does not compile in the all-declarations unit` is a header whose declarations
+  are not compared at all until it compiles (a missing include, a macro of another header in its way).
   `dcp grade` and `dcp next` lint the changed units themselves, so their Q7 is current.
 - `uv run dcp headers conflicts UNIT HEADER..` - before including a header into head.c: what it collides with
-  (supersedes / duplicate / clash / header / call with the original's pushes / prototyped) and the functions to
-  re-grade; `--write` makes the include when only duplicates are in the way.
+  (supersedes / duplicate / clash / header / call with the original's pushes / vc6, what only VC6 rejects /
+  prototyped, per call `safe` or re-grade) and the functions to re-grade; `--write` makes the include when only
+  duplicates are in the way. `warning=declaration-set`: re-grade every function of the unit after the include,
+  byte ones first (VC6 /O2 moves code by the declaration set alone). `warning=q6`: move the dropped duplicate's
+  words into the function's address comment first, or the function falls to draft.
 
 ### 2.2 Code below shape (`section=draft`)
 Explain every `code` hunk from the evidence and fix the C's meaning: a wrong condition, operand or constant, a
@@ -96,7 +103,10 @@ work, however long.
   already written by hand in some places is completed by the rename, not refused). Locals and parameters:
   edit the fragment.
 - Q3 address literals and Q4 raw access (`*(T *)(p + 0x1c)`, macros built on such casts): a typed field, a
-  struct, the symbol (see the hard rule on addresses).
+  struct, the symbol (see the hard rule on addresses). A datum the unit reads as another type is a view macro
+  with the address comment on its line: `#define NAME (*(T *)&datum)  /* 0xADDR */`, or
+  `(*(T *)((char *)&datum + OFF))` for a part of it. `(*(T *)datum)` (no `&`: through the datum's value) is raw
+  access and keeps the function at draft.
 - Q5 markers (ROUGH, TODO, `@rough`): remove them once the function is written.
 - Q6: the address comment says what the function does (`/* 0x4a3000, sends the login reply */`).
 - Q7: every call has a prototype (`dcp lint` evaluates it): the callee's prototype lives in its defining unit's
