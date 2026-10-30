@@ -43,7 +43,7 @@ extern GAPDATA full_data_91f6e0[];
 extern unsigned char he_Events;
 extern unsigned char amt_Table;
 extern GAPDATA full_data_7585f4[];
-extern unsigned char he_QuickList;
+extern char * he_QuickList[10921];
 
 extern int gm_Offers[528];
 extern int gm_PlayerRecords[688];

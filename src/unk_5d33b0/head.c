@@ -89,12 +89,12 @@ typedef union OPTIONBYTES {
 } OPTIONBYTES;
 extern OPTIONBYTES ai_GfxDetail, ai_GfxFloor, ai_GfxSet, ai_GfxFog, ai_GfxResolution, ai_GameSwitches, ai_GamePanel, ai_OptionPanelHelp;
 /* full rebuild: the symbols whose original addresses the code above spells literally */
-extern unsigned char ai_Unk5fe710;
+extern int ai_Unk5fe710;
 
 extern D2OBJVIEW *d2_Objs;              /* 0xf8f080, d2.h: D2OBJ * */
 extern D2WINVIEW *d2_LastWindowPtr;     /* 0x6ed980, d2.h: the window a screen works in (created last) */
 extern int sv_PopRequest;               /* 0x6f22a0, nonzero: MASTER (sv_RunFrame) pops this screen */
-extern unsigned char ai_Unk6333cc;
+extern int ai_Unk6333cc;
 extern D2OBJVIEW *d2_Objs;              /* 0xf8f080, d2.h: D2OBJ * */
 extern D2WINVIEW *d2_LastWindowPtr;     /* 0x6ed980, d2.h: the window a screen works in (created last) */
 extern int sv_PopRequest;               /* 0x6f22a0, nonzero: MASTER (sv_RunFrame) pops this screen */

@@ -18,36 +18,36 @@ extern char cm_SaveAcks[];
 #define GAPDATA __declspec(align(1)) unsigned char
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
-extern unsigned char ai_Unk7d6a40;
+extern int ai_Unk7d6a40;
 extern char ai_Unk7d6a60[];  /* 0x7d6a60, the five 0x2a90-byte stock blocks (f3gm.c's definition) */
 #define ai_Unk7d6a64 (*(int (*)[3])((char *)ai_Unk7d6a60 + 4))  /* 0x7d6a64, block 0's header tail (a view) */
 extern unsigned char ai_Grid;
-extern unsigned char ai_Unk91ac40;
+extern unsigned ai_Unk91ac40[136];
 extern unsigned char ord_Statistics;
 extern unsigned char ord_StatisticsClock;
-extern unsigned char ai_DataPath;
+extern char ai_DataPath[608];
 extern char ai_Unk925520[];
-extern unsigned char ai_Unk92bca0;
+extern int ai_Unk92bca0;
 extern GAPDATA full_data_92bcb3[];
-extern unsigned char ai_Unk60bd88;
-extern unsigned char ai_Unk60bd8c;
-extern unsigned char ai_Unk60bd90;
+extern int ai_Unk60bd88;
+extern int ai_Unk60bd8c;
+extern int ai_Unk60bd90;
 extern unsigned char ai_Unk9367e0;
-extern unsigned char ai_Unka68800;
-extern unsigned char ai_Unka68c04;
+extern unsigned char ai_Unka68800[1024];
+extern unsigned int ai_Unka68c04;
 extern unsigned char ai_Unka69140;
 extern char ai_Unkf31160[];
-extern unsigned char ai_Unkf8121c;
-extern unsigned char ai_Unk760548;
-extern unsigned char ai_Unk760610;
+extern unsigned int ai_Unkf8121c;
+extern int ai_Unk760548;
+extern int ai_Unk760610;
 extern GAPDATA full_data_7604e8[];
 extern void main_Unk537b60(void);
 extern char ls_ClearObjectFlag();
 extern char ls_HookBuildingCB();
-extern unsigned char ai_Unk7d6a40;
+extern int ai_Unk7d6a40;
 extern unsigned char ch_Motions;
-extern unsigned char ai_Unk7e3f38;
-extern unsigned char gm_Offers;
+extern int ai_Unk7e3f38;
+extern int gm_Offers[528];
 extern unsigned char ai_Unkf83654;
 
 int ai_Unk61a658 = 1;  /* 0x61a658 */
@@ -140,7 +140,7 @@ int ahm_ReadRecord(void *f, unsigned char *p);  /* 0x4ed040, ahm.h's prototype (
 struct CHARACTER *ch_AllocAt(int id);               /* 0x402a30, ch.h's prototype (that header needs d3.h, which conflicts with gv.h here) */
 extern char *txt_Ptrs[];           /* 0x143a1c0, the text table */
 extern int hst_TextCurrent, hst_TextFirst, hst_KeyNext, hst_KeyFirst;   /* 0x601060, 0x601058, 0x60106c, 0x601064 .. 0x60106c */
-extern char hst_TextsOn;               /* 0x6f0724 */
+extern unsigned char hst_TextsOn;               /* 0x6f0724 */
 extern char hst_Key[];                 /* 0xf83520, the history key ("G12", 0x20 bytes; the save keeps 0x10) */
 extern int hst_Lists[];                /* 0xf83540, the four history lists (G12ROW[4] in hst.h), int view */
 void init_HookObject(char *o, unsigned short *p, int kind);  /* 0x50d380, names the scene object o and hooks it to its owner p */

@@ -21,7 +21,7 @@ extern char ai_Unk91f700[];
 #define GAPDATA __declspec(align(1)) unsigned char
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
-extern unsigned char ai_Unk6f1b88;
+extern int ai_Unk6f1b88;
 extern GAPDATA full_data_6f1ce4[];
 extern GAPDATA full_data_91f6e3[];
 extern GAPDATA full_data_91f6e4[];

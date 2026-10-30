@@ -32,12 +32,12 @@ extern ALIGN1 char ai_Unk623ba9[277];
 #define GAPDATA __declspec(align(1)) unsigned char
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
-extern unsigned char d2_BackSurf;
-extern unsigned char d2_CutsceneActive;
-extern unsigned char d3_ViewW;
-extern unsigned char d3_ViewX;
-extern unsigned char d3_ViewH;
-extern unsigned char d3_ViewY;
+extern void *d2_BackSurf;
+extern int d2_CutsceneActive;
+extern float d3_ViewW;
+extern float d3_ViewX;
+extern float d3_ViewH;
+extern float d3_ViewY;
 extern GAPDATA full_data_623e84[];
 extern GAPDATA full_data_6f2354[];
 extern void *d2_ScreenSurf;  /* 0x6ed924 */
@@ -45,7 +45,7 @@ extern GAPDATA full_data_76631c[];
 extern void *d2_ScreenSurf;  /* 0x6ed924 */
 extern GAPDATA full_data_75ec98[];
 extern GAPDATA full_data_75ec9c[];
-extern unsigned char ai_Unk623ac0;
+extern char ai_Unk623ac0[];
 extern char d3_AnimHead[];
 extern GAPDATA full_data_6238e8[];
 extern GAPDATA full_data_6238ec[];
@@ -54,18 +54,18 @@ extern GAPDATA full_data_623934[];
 extern GAPDATA full_data_623938[];
 extern GAPDATA full_data_62393c[];
 extern GAPDATA full_data_7604e8[];
-extern const unsigned char ai_AxisPair;
+extern const char ai_AxisPair[];
 extern char ai_PlayerSlots[];
 
 extern unsigned char ai_OptionPanelHelp;
 extern char ai_PlayerSlots[];
 extern unsigned char ai_TimeHour;
-extern unsigned char d2_HitUnderPointer;
-extern unsigned char d2_ShpH;
-extern unsigned char d2_ShpW;
+extern int d2_HitUnderPointer;
+extern short d2_ShpH;
+extern short d2_ShpW;
 
-extern unsigned char d2_TextDrawnH;
-extern unsigned char d2_TextDrawnW;
+extern int d2_TextDrawnH;
+extern int d2_TextDrawnW;
 extern char d2_Wins[];
 extern GAPDATA full_data_623e90[];
 extern GAPDATA full_data_625718[];
@@ -92,11 +92,11 @@ extern GAPDATA full_data_6f23d0[];
 extern GAPDATA full_data_6f23d4[];
 extern GAPDATA full_data_6f23d8[];
 
-extern unsigned char ai_Unk6f22e8;
-extern unsigned char ai_Unk6f22f8;
+extern char * ai_Unk6f22e8;
+extern int ai_Unk6f22f8;
 extern unsigned char ai_Unkf8aae0;
-extern unsigned char d2_HitUnderPointer;
-extern unsigned char d2_PointerSprite;
+extern int d2_HitUnderPointer;
+extern int d2_PointerSprite;
 
 
 
@@ -113,10 +113,10 @@ extern GAPDATA full_data_6f2328[];
 extern GAPDATA full_data_6f232c[];
 extern GAPDATA full_data_6f23dc[];
 extern int ai_CameraStep;  /* 0x623814, the camera move step (100 - camera speed); sv.c converts it with fild at the float uses */
-extern unsigned char ai_ClickedObject;
-extern unsigned char ai_Unk6f22e8;
-extern unsigned char ai_Unk6f22f8;
-extern unsigned char d2_HitUnderPointer;
+extern int ai_ClickedObject;
+extern char * ai_Unk6f22e8;
+extern int ai_Unk6f22f8;
+extern int d2_HitUnderPointer;
 extern GAPDATA full_data_6f22a8[];
 extern GAPDATA full_data_6f22ec[];
 extern GAPDATA full_data_6f22f0[];
@@ -130,39 +130,39 @@ extern GAPDATA full_data_76045c[];
 extern GAPDATA full_data_760460[];
 extern unsigned char ai_TimeHour;
 extern unsigned char ai_Unk7603a0;
-extern unsigned char d3_Unk6333fc;
+extern void * d3_Unk6333fc;
 extern GAPDATA full_data_6237c8[];
 extern GAPDATA full_data_75ec84[];
 extern char gm_PlayerRecords[];
-extern unsigned char hst_KeyNext;
+extern int hst_KeyNext;
 extern unsigned char txt_GroupLevel;
 
-extern unsigned char d2_TextDrawnH;
-extern unsigned char d2_TextDrawnW;
+extern int d2_TextDrawnH;
+extern int d2_TextDrawnW;
 extern void *d2_ScreenSurf;  /* 0x6ed924 */
-extern unsigned char d2_TextDrawnH;
-extern unsigned char d2_TextDrawnW;
-extern void *d2_ScreenSurf;  /* 0x6ed924 */
-
-extern unsigned char d2_TextDrawnH;
-extern unsigned char d2_TextDrawnW;
+extern int d2_TextDrawnH;
+extern int d2_TextDrawnW;
 extern void *d2_ScreenSurf;  /* 0x6ed924 */
 
-extern unsigned char d2_TextDrawnH;
-extern unsigned char d2_TextDrawnW;
+extern int d2_TextDrawnH;
+extern int d2_TextDrawnW;
+extern void *d2_ScreenSurf;  /* 0x6ed924 */
+
+extern int d2_TextDrawnH;
+extern int d2_TextDrawnW;
 
 
 
 extern GAPDATA full_data_623240[];
 extern void *d2_ScreenSurf;  /* 0x6ed924 */
-extern unsigned char d2_HalfScreenH;
-extern unsigned char d2_HalfScreenW;
+extern int d2_HalfScreenH;
+extern int d2_HalfScreenW;
 extern GAPDATA full_data_6f2320[];
 extern void *d2_ScreenSurf;  /* 0x6ed924 */
-extern unsigned char d3t_CamMoving;
+extern int d3t_CamMoving;
 extern GAPDATA full_data_6f22a8[];
 extern GAPDATA full_data_6f22ec[];
-extern unsigned char ai_Unk6f2318;
+extern int ai_Unk6f2318;
 extern GAPDATA full_data_6f22fc[];
 extern GAPDATA full_data_6f2320[];
 extern GAPDATA full_data_6f2338[];
@@ -177,19 +177,19 @@ extern GAPDATA full_data_6faa84[];
 extern unsigned char he_Events;
 extern unsigned char ai_GameSwitches;
 extern unsigned char ai_Unkf8aae0;
-extern unsigned char d2_MouseX;
-extern unsigned char d2_MouseY;
-extern unsigned char d2_TextDrawnH;
-extern unsigned char d2_TextDrawnW;
-extern unsigned char d2_TextLeft;
-extern unsigned char d2_TextTop;
+extern short d2_MouseX;
+extern short d2_MouseY;
+extern int d2_TextDrawnH;
+extern int d2_TextDrawnW;
+extern int d2_TextLeft;
+extern int d2_TextTop;
 extern void *d2_ScreenSurf;  /* 0x6ed924 */
-extern unsigned char ai_Unk5fe708;
-extern unsigned char d2_HalfScreenW;
-extern unsigned char d2_TextDrawnH;
-extern unsigned char d2_TextDrawnW;
+extern float ai_Unk5fe708;
+extern int d2_HalfScreenW;
+extern int d2_TextDrawnH;
+extern int d2_TextDrawnW;
 extern void *d2_ScreenSurf;  /* 0x6ed924 */
-extern unsigned char d3s_QuadUV;
+extern float d3s_QuadUV[6];
 extern GAPDATA full_data_6f1c90[];
 extern GAPDATA full_data_6f23ec[];
 extern unsigned char d2_Pics;
@@ -203,45 +203,45 @@ extern GAPDATA full_data_6f23f0[];
 extern GAPDATA full_data_6f25b4[];
 extern GAPDATA full_data_75ec40[];
 extern unsigned char main_Window;
-extern unsigned char ai_Unk75fba0;
+extern char ai_Unk75fba0[2048];
 
 extern GAPDATA full_data_602568[];
 extern GAPDATA full_data_623ebc[];
-extern unsigned char ai_Unk75fba0;
+extern char ai_Unk75fba0[2048];
 extern unsigned char ai_TimeHour;
-extern unsigned char ai_Unk623ac0;
+extern char ai_Unk623ac0[];
 extern unsigned char d3_Sky;
 extern GAPDATA full_data_6239d8[];
 extern unsigned char d3t_SunRays;
 extern GAPDATA full_data_6f2408[];
 extern GAPDATA full_data_7604e8[];
-extern unsigned char ai_OptionSpeed;
-extern unsigned char ch_Unk5f1290;
+extern int ai_OptionSpeed;
+extern float ch_Unk5f1290;
 extern GAPDATA full_data_6f22ac[];
-extern unsigned char d2_HalfScreenH;
-extern unsigned char d2_HalfScreenW;
+extern int d2_HalfScreenH;
+extern int d2_HalfScreenW;
 extern int ai_GameFlags;
-extern unsigned char ai_GameOver;
-extern unsigned char ai_MissionPartner;
+extern int ai_GameOver;
+extern int ai_MissionPartner;
 
-extern unsigned char ch_CurrentGroup;
-extern unsigned char ai_Unk633738;
-extern unsigned char ai_Unk6f0cd4;
-extern unsigned char ai_Unk6f0da4;
-extern unsigned char ai_Unk6f0dbc;
-extern unsigned char ai_Unk6f22e8;
-extern unsigned char ai_Unk6f2448;
-extern unsigned char ai_Unk75e130;
-extern unsigned char ai_Unka687e4;
-extern unsigned char ai_Unkf31144;
-extern unsigned char cm_RequestedSaveName;
-extern unsigned char cm_RequestedSaveSlot;
-extern unsigned char d2_CutsceneActive;
+extern int ch_CurrentGroup;
+extern int * ai_Unk633738;
+extern int ai_Unk6f0cd4;
+extern unsigned int ai_Unk6f0da4;
+extern int ai_Unk6f0dbc;
+extern char * ai_Unk6f22e8;
+extern int ai_Unk6f2448;
+extern char ai_Unk75e130[4];
+extern int ai_Unka687e4;
+extern int ai_Unkf31144;
+extern char cm_RequestedSaveName[72];
+extern int cm_RequestedSaveSlot;
+extern int d2_CutsceneActive;
 extern unsigned char d2_FocusedInput;
-extern unsigned char d2_HitUnderPointer;
-extern unsigned char d2_MouseX;
-extern unsigned char d2_MouseY;
-extern unsigned char d3_FrameCount;
+extern int d2_HitUnderPointer;
+extern short d2_MouseX;
+extern short d2_MouseY;
+extern int d3_FrameCount;
 
 
 extern GAPDATA full_data_623eac[];
@@ -255,14 +255,14 @@ extern GAPDATA full_data_6f2580[];
 extern int main_Inactive;
 extern GAPDATA full_data_6f25a8[];
 extern GAPDATA full_data_6f262c[];
-extern unsigned char snd_MusicEnabled;
-extern unsigned char snd_SfxEnabled;
+extern int snd_MusicEnabled;
+extern int snd_SfxEnabled;
 extern void *d2_ScreenSurf;  /* 0x6ed924 */
 extern int ai_GameFlags;
-extern unsigned char ai_OptionSpeed;
+extern int ai_OptionSpeed;
 extern unsigned char ai_TimeHour;
-extern unsigned char ai_Unk75e130;
-extern unsigned char ai_Unk75e134;
+extern char ai_Unk75e130[4];
+extern int ai_Unk75e134;
 extern GAPDATA full_data_6248b4[];
 
 extern int ai_Unk75f280[576];

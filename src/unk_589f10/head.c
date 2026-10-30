@@ -20,13 +20,13 @@ extern char d2_Wins[];
 #define GAPDATA __declspec(align(1)) unsigned char
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
-extern unsigned char ai_OptionsFile;
+extern char ai_OptionsFile[288];
 extern unsigned char ai_Unk1460ae0;
-extern unsigned char ai_Unk5fe710;
-extern unsigned char ai_ModeMask;
-extern unsigned char ai_Unk9364e0;
-extern unsigned char ch_EmptyName;
-extern unsigned char d2_ClickedId;
+extern int ai_Unk5fe710;
+extern int ai_ModeMask;
+extern char ai_Unk9364e0[752];
+extern char ch_EmptyName[1];
+extern int d2_ClickedId;
 extern unsigned char d2_FocusedInput;
 extern unsigned char d2_Inputs;
 extern unsigned char d2_Objs;
@@ -69,8 +69,8 @@ extern GAPDATA full_data_6f5ea0[];
 extern GAPDATA full_data_6f5ea4[];
 extern unsigned char init_PlayerProfile;
 extern unsigned char kb_Last;
-extern unsigned char sv_PopRequest;
-extern unsigned char d2_LastWindow;
+extern int sv_PopRequest;
+extern int d2_LastWindow;
 
 
 
@@ -78,7 +78,7 @@ extern GAPDATA full_data_62aa7c[];
 extern GAPDATA full_data_62aa80[];
 extern GAPDATA full_data_62aa84[];
 extern GAPDATA full_data_62aa88[];
-extern unsigned char d2_LastWindow;
+extern int d2_LastWindow;
 extern unsigned char ai_Unk936496;
 extern unsigned char d2_Objs;
 
@@ -91,7 +91,7 @@ extern GAPDATA full_data_936476[];
 
 
 
-extern unsigned char d2_LastWindow;
+extern int d2_LastWindow;
 extern unsigned char d2_Objs;
 
 
@@ -109,7 +109,7 @@ extern GAPDATA full_data_6f5e32[];
 extern GAPDATA full_data_6f5e42[];
 extern GAPDATA full_data_6f5ea0[];
 
-extern unsigned char d2_LastWindow;
+extern int d2_LastWindow;
 extern unsigned char d2_Objs;
 
 
@@ -122,13 +122,13 @@ extern GAPDATA full_data_6f5e78[];
 extern GAPDATA full_data_6f5e80[];
 extern GAPDATA full_data_6f5ea0[];
 
-extern unsigned char ai_Unk5fe710;
-extern unsigned char d2_ClickedId;
-extern unsigned char d2_LastWindow;
+extern int ai_Unk5fe710;
+extern int d2_ClickedId;
+extern int d2_LastWindow;
 extern unsigned char d2_Objs;
 extern GAPDATA full_data_6250b8[];
 extern unsigned char init_PlayerProfile;
-extern unsigned char sv_PopRequest;
+extern int sv_PopRequest;
 
 extern GAPDATA full_data_602568[];
 extern GAPDATA full_data_62aa88[];
@@ -137,8 +137,8 @@ extern GAPDATA full_data_62aad0[];
 extern GAPDATA full_data_6f2680[];
 extern GAPDATA full_data_6f2684[];
 extern GAPDATA full_data_6f5e78[];
-extern unsigned char ai_OptionsFile;
-extern unsigned char d2_LastWindow;
+extern char ai_OptionsFile[288];
+extern int d2_LastWindow;
 extern unsigned char d2_Objs;
 
 

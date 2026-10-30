@@ -76,22 +76,22 @@ extern GAPDATA full_data_624b4c[];
 extern GAPDATA full_data_624b50[];
 extern GAPDATA main_NetGameRecord[];
 extern int ai_ModeMask;
-extern unsigned char ai_Unk9364e0;
-extern unsigned char d3_Unk6333fc;
+extern char ai_Unk9364e0[752];
+extern void * d3_Unk6333fc;
 extern GAPDATA full_data_5f1084[];
 extern GAPDATA full_data_624b48[];
 extern GAPDATA full_data_624b4c[];
 extern GAPDATA full_data_624b50[];
 extern GAPDATA main_NetGameRecord[];
 extern struct LSSAVEVIEW ls_SavePath;
-extern unsigned char ai_OptionsFile;
+extern char ai_OptionsFile[288];
 extern int sv_PopRequest;
 extern char ai_DataPath[];
 
-extern unsigned char ai_OptionsFile;
-extern unsigned char ai_Unk6333cc;
-extern unsigned char ai_Unk9364e0;
-extern unsigned char d3_Unk6333fc;
+extern char ai_OptionsFile[288];
+extern int ai_Unk6333cc;
+extern char ai_Unk9364e0[752];
+extern void * d3_Unk6333fc;
 
 
 
@@ -100,19 +100,19 @@ extern GAPDATA full_data_936460[];
 extern struct LSSAVEVIEW ls_SavePath;
 extern int sv_PopRequest;
 extern unsigned char ai_MissionMode;
-extern unsigned char ai_Unkfb9060;
-extern unsigned char ai_Unkfb9064;
-extern unsigned char ai_Unkfb9068;
-extern unsigned char ai_Unkfb906c;
+extern int ai_Unkfb9060;
+extern int ai_Unkfb9064;
+extern int ai_Unkfb9068;
+extern int ai_Unkfb906c;
 extern char ai_DataPath[];
 
 
 
 
-extern unsigned char ai_Unkfb9060;
-extern unsigned char ai_Unkfb9064;
-extern unsigned char ai_Unkfb9068;
-extern unsigned char ai_Unkfb906c;
+extern int ai_Unkfb9060;
+extern int ai_Unkfb9064;
+extern int ai_Unkfb9068;
+extern int ai_Unkfb906c;
 
 
 
@@ -123,9 +123,9 @@ extern GAPDATA full_data_6f2418[];
 extern GAPDATA full_data_6f245c[];
 extern GAPDATA full_data_6f25b4[];
 extern unsigned char init_PlayerProfile[];
-extern unsigned char sv_FrameBase;
-extern unsigned char sv_FrameDepth;
-extern unsigned char sv_FrameMask;
+extern int sv_FrameBase;
+extern int sv_FrameDepth;
+extern int sv_FrameMask;
 extern int sv_PopRequest;
 
 extern GAPDATA full_data_624ce0[];
@@ -140,23 +140,23 @@ extern unsigned char init_PlayerProfile[];
 extern int sv_PopRequest;
 extern GAPDATA full_data_75e5f5[];
 extern GAPDATA full_data_75e628[];
-extern unsigned char ai_Unk5f8438;
+extern int ai_Unk5f8438;
 extern unsigned char ai_Unk5fb5b0;
-extern unsigned char ai_Unk633738;
-extern unsigned char ai_Unkfc2dec;
+extern int * ai_Unk633738;
+extern char * ai_Unkfc2dec;
 extern unsigned char d3t_CamMove;
-extern unsigned char d3t_CamMoving;
+extern int d3t_CamMoving;
 extern GAPDATA full_data_602568[];
 extern GAPDATA full_data_624938[];
 extern char ai_DataPath[];
-extern unsigned char ai_OptionsFile;
+extern char ai_OptionsFile[288];
 
 
 
 
 extern unsigned char init_PlayerProfile[];
 extern int sv_PopRequest;
-extern unsigned char ai_OptionHistorie;
+extern int ai_OptionHistorie;
 
 extern GAPDATA full_data_624938[];
 extern GAPDATA full_data_75e5ec[];
@@ -165,11 +165,11 @@ extern GAPDATA full_data_75e5f4[];
 extern GAPDATA full_data_75e628[];
 extern unsigned char hst_TextsOn;
 extern unsigned char init_PlayerProfile[];
-extern unsigned char sv_FrameMask;
+extern int sv_FrameMask;
 extern int sv_PopRequest;
 extern unsigned char ai_MissionMode;
 extern unsigned char ai_GamePanel;
-extern unsigned char ai_Opponents;
+extern int ai_Opponents[7];
 
 
 
@@ -178,29 +178,29 @@ extern unsigned char ai_Opponents;
 
 extern int sv_PopRequest;
 extern char ai_DataPath[];
-extern unsigned char ai_Unk60d360;
-extern unsigned char ai_Unk6f22e8;
-extern unsigned char ai_Unkfc2dec;
+extern int ai_Unk60d360;
+extern char * ai_Unk6f22e8;
+extern char * ai_Unkfc2dec;
 
-extern unsigned char d3_Unk6333fc;
+extern void * d3_Unk6333fc;
 
 
 extern GAPDATA full_data_5f1084[];
 extern GAPDATA full_data_602568[];
-extern unsigned char sv_FrameMask;
+extern int sv_FrameMask;
 extern int sv_PopRequest;
-extern unsigned char ai_Unkfb9060;
-extern unsigned char ai_Unkfb9064;
-extern unsigned char ai_Unkfb9068;
-extern unsigned char ai_Unkfb906c;
-extern unsigned char init_StatusForm;
-extern unsigned char cm_RequestedSaveName;
+extern int ai_Unkfb9060;
+extern int ai_Unkfb9064;
+extern int ai_Unkfb9068;
+extern int ai_Unkfb906c;
+extern int init_StatusForm;
+extern char cm_RequestedSaveName[72];
 extern unsigned char ai_Unk1460ae0;
-extern unsigned char ai_MissionSeed;
+extern unsigned int ai_MissionSeed;
 extern GAPDATA full_data_75df20[];
-extern unsigned char ai_Unk75ec60;
-extern unsigned char ch_SndLib;
-extern unsigned char cm_RequestedSaveName;
+extern char * ai_Unk75ec60;
+extern int ch_SndLib;
+extern char cm_RequestedSaveName[72];
 extern GAPDATA full_data_6f2408[];
 extern GAPDATA full_data_6f240c[];
 extern GAPDATA full_data_6f2410[];
@@ -208,34 +208,34 @@ extern GAPDATA full_data_6f2414[];
 extern GAPDATA full_data_6f2598[];
 extern GAPDATA full_data_6f25c0[];
 extern GAPDATA full_data_75e630[];
-extern unsigned char snd_Bank;
-extern unsigned char sv_PanelShown;
+extern int snd_Bank;
+extern unsigned short * sv_PanelShown;
 extern unsigned char ai_Unk1468ae0;
-extern unsigned char ai_Unk6f0d8c;
-extern unsigned char ai_Unk760618;
-extern unsigned char ai_Unk76061c;
+extern int ai_Unk6f0d8c;
+extern int * ai_Unk760618;
+extern int ai_Unk76061c;
 extern unsigned char ai_Unk760620;
 extern unsigned char ch_Motions;
 extern unsigned char d3t_CamMove;
 extern unsigned char d3t_SunRays;
 extern GAPDATA full_data_6f25c4[];
-extern unsigned char sv_FrameMask;
+extern int sv_FrameMask;
 extern unsigned char ai_Unk1460ae0;
 extern unsigned char ai_GamePanel;
 extern unsigned char ai_MissionMode;
-extern unsigned char ai_Unk6f2438;
-extern unsigned char ai_Unkf83650;
-extern unsigned char ai_Unkfb9060;
-extern unsigned char ai_Unkfb9064;
-extern unsigned char ai_Unkfb9068;
-extern unsigned char ai_Unkfb906c;
+extern int ai_Unk6f2438;
+extern int ai_Unkf83650;
+extern int ai_Unkfb9060;
+extern int ai_Unkfb9064;
+extern int ai_Unkfb9068;
+extern int ai_Unkfb906c;
 extern GAPDATA full_data_624560[];
 extern GAPDATA full_data_6253b0[];
 extern GAPDATA full_data_6253b4[];
 extern GAPDATA full_data_6253b8[];
 extern GAPDATA full_data_760454[];
 extern unsigned char he_RunHandlers;
-extern unsigned char sv_PanelForm;
+extern int sv_PanelForm;
 extern int sv_PopRequest;
 extern int sv_ViewRectBottom;
 extern int sv_ViewRectLeft;
@@ -243,22 +243,22 @@ extern int sv_ViewRectRight;
 extern int sv_ViewRectTop;
 
 
-extern unsigned char ai_Unk6f1bb8;
+extern int ai_Unk6f1bb8;
 extern char ai_Unk925520[];
 extern GAPDATA full_data_92bca8[];
 extern unsigned char he_Events;
-extern unsigned char he_QuickList;
-extern unsigned char ai_Unkfb9060;
-extern unsigned char ai_Unkfb9064;
-extern unsigned char ai_Unkfb9068;
-extern unsigned char ai_Unkfb906c;
-extern unsigned char ai_Unkfc2dec;
+extern char * he_QuickList[10921];
+extern int ai_Unkfb9060;
+extern int ai_Unkfb9064;
+extern int ai_Unkfb9068;
+extern int ai_Unkfb906c;
+extern char * ai_Unkfc2dec;
 extern GAPDATA full_data_6024e4[];
 extern GAPDATA full_data_624560[];
 extern GAPDATA full_data_6f25b0[];
 extern GAPDATA full_data_6f25c0[];
-extern unsigned char sv_FrameMask;
-extern unsigned char sv_PanelFlag;
+extern int sv_FrameMask;
+extern int sv_PanelFlag;
 extern int sv_PopRequest;
 extern unsigned char ai_MissionMode;
 
@@ -270,25 +270,25 @@ extern GAPDATA full_data_75e5f5[];
 extern GAPDATA full_data_75e628[];
 extern unsigned char init_PlayerProfile[];
 extern unsigned char ai_Unk1460ae0;
-extern unsigned char ai_Unkfb9060;
-extern unsigned char ai_Unkfb9064;
-extern unsigned char ai_Unkfb9068;
-extern unsigned char ai_Unkfb906c;
+extern int ai_Unkfb9060;
+extern int ai_Unkfb9064;
+extern int ai_Unkfb9068;
+extern int ai_Unkfb906c;
 extern unsigned char cm_NetFlags;
 extern GAPDATA full_data_624560[];
 extern unsigned char init_BuildingUniverse;
 extern unsigned char snd_AmbientOn;
-extern unsigned char sv_FrameMask;
+extern int sv_FrameMask;
 extern int sv_PopRequest;
 extern char ai_DataPath[];
 
-extern unsigned char ai_FrameWait;
+extern int ai_FrameWait;
 extern unsigned char ai_GamePanel;
 extern unsigned char ai_Unk1460ae0;
-extern unsigned char ai_Unk60bd94;
-extern unsigned char ai_Unk60c1ec;
-extern unsigned char ai_Unk6f2440;
-extern unsigned char ai_Unkf31144;
+extern int ai_Unk60bd94;
+extern char * ai_Unk60c1ec;
+extern int ai_Unk6f2440;
+extern int ai_Unkf31144;
 extern unsigned char cm_NetFlags;
 
 
@@ -300,22 +300,22 @@ extern GAPDATA full_data_6f25c4[];
 extern GAPDATA full_data_760454[];
 extern GAPDATA full_data_76f990[];
 extern GAPDATA full_data_76f994[];
-extern unsigned char init_StatusForm;
+extern int init_StatusForm;
 extern struct LSSAVEVIEW ls_SavePath;
-extern unsigned char main_MoneyCheat;
-extern unsigned char sv_FrameMask;
+extern int main_MoneyCheat;
+extern int sv_FrameMask;
 extern int sv_ViewRectBottom;
 extern int sv_ViewRectLeft;
 extern int sv_ViewRectRight;
 extern int sv_ViewRectTop;
 extern GAPDATA full_data_624798[];
 extern GAPDATA full_data_6f241c[];
-extern unsigned char di_Disabled;
+extern int di_Disabled;
 extern GAPDATA full_data_6f2574[];
 extern unsigned char snd_AmbientOn;
 extern char ai_DataPath[];
 extern unsigned char ai_GfxResolution;
-extern unsigned char ai_OptionsFile;
+extern char ai_OptionsFile[288];
 extern int ai_ScreenModeH;
 extern int ai_ScreenModeW;
 extern struct SCREENMODE ai_ScreenModes[];
@@ -349,8 +349,8 @@ extern GAPDATA full_data_75e5f4[];
 extern GAPDATA full_data_75e628[];
 extern unsigned char init_PlayerProfile[];
 extern struct LSSAVEVIEW ls_SavePath;
-extern unsigned char main_MoneyCheat;
-extern unsigned char sv_FrameDepth;
+extern int main_MoneyCheat;
+extern int sv_FrameDepth;
 extern int sv_PopRequest;
 
 #define U_I(a) (*(int *)(a))

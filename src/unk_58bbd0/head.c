@@ -160,12 +160,12 @@ extern GAPDATA full_data_6f5a84[];
 extern GAPDATA full_data_6f4f64[];
 extern GAPDATA full_data_6f58a4[];
 extern GAPDATA full_data_6f5a64[];
-extern unsigned char ai_BTypes;
-extern unsigned char d2_LastWindow;
+extern char * ai_BTypes;
+extern int d2_LastWindow;
 extern unsigned char d2_Objs;
 extern GAPDATA full_data_62b038[];
 extern unsigned char ai_FallbackBuilding;
-extern unsigned char ai_PlayerBuilding;
+extern char * ai_PlayerBuilding;
 extern GAPDATA full_data_6f5320[];
 extern GAPDATA full_data_6f5344[];
 extern GAPDATA full_data_6f5348[];
@@ -175,10 +175,10 @@ extern GAPDATA full_data_6f5358[];
 extern GAPDATA full_data_6f535c[];
 extern GAPDATA full_data_6f536c[];
 extern GAPDATA full_data_6f58d0[];
-extern unsigned char ai_Goods;
+extern char * ai_Goods;
 extern unsigned char ai_TimeHour;
-extern unsigned char ai_Unk617830;
-extern unsigned char ai_Unk617840;
+extern float ai_Unk617830[];
+extern float ai_Unk617840[];
 extern GAPDATA full_data_62b054[];
 extern GAPDATA full_data_62b06c[];
 extern GAPDATA full_data_62b084[];
@@ -186,8 +186,8 @@ extern GAPDATA full_data_6f5324[];
 extern GAPDATA full_data_6f5334[];
 extern GAPDATA full_data_6f534c[];
 extern GAPDATA full_data_6f5a60[];
-extern unsigned char ai_Unk5fe710;
-extern unsigned char cm_FieldObject;
+extern int ai_Unk5fe710;
+extern char * cm_FieldObject;
 extern GAPDATA full_data_6f4f0c[];
 extern GAPDATA full_data_6f4f5c[];
 extern GAPDATA full_data_6f4f60[];
@@ -227,13 +227,13 @@ extern GAPDATA full_data_6f5310[];
 extern unsigned char ai_OwnPlayer;
 
 
-extern unsigned char d2_LastWindow;
+extern int d2_LastWindow;
 extern unsigned char d2_Objs;
 extern char d2_Views[];
 extern char d2_Wins[];
 extern GAPDATA full_data_62b098[];
-extern unsigned char ai_Unk5fe710;
-extern unsigned char cm_FieldObject;
+extern int ai_Unk5fe710;
+extern char * cm_FieldObject;
 extern GAPDATA full_data_6f4f0c[];
 extern GAPDATA full_data_6f4f5c[];
 extern GAPDATA full_data_6f4f60[];
@@ -255,81 +255,81 @@ extern GAPDATA full_data_6f52f0[];
 extern GAPDATA full_data_6f58b0[];
 extern GAPDATA full_data_6f5a70[];
 extern unsigned char ai_Unk5fb5b0;
-extern unsigned char ai_BTypes;
-extern unsigned char ai_Unkfc2dec;
+extern char * ai_BTypes;
+extern char * ai_Unkfc2dec;
 extern GAPDATA full_data_6f26b0[];
 extern unsigned char kb_Last;
 
-extern unsigned char d2_LastWindow;
+extern int d2_LastWindow;
 extern unsigned char d2_Objs;
 extern GAPDATA full_data_62af98[];
-extern unsigned char sv_ResearchClass;
+extern int sv_ResearchClass;
 extern unsigned char ai_FallbackBuilding;
-extern unsigned char ai_PlayerBuilding;
-extern unsigned char ai_Unk5fe710;
-extern unsigned char ai_Unk623838;
-extern unsigned char ai_Unk62383c;
-extern unsigned char ch_EmptyName;
+extern char * ai_PlayerBuilding;
+extern int ai_Unk5fe710;
+extern int ai_Unk623838;
+extern int ai_Unk62383c;
+extern char ch_EmptyName[1];
 extern GAPDATA full_data_6f2338[];
 extern unsigned char kb_Last;
-extern unsigned char ai_BTypes;
-extern unsigned char ai_Goods;
-extern unsigned char ai_Unk6f2334;
+extern char * ai_BTypes;
+extern char * ai_Goods;
+extern int ai_Unk6f2334;
 extern GAPDATA full_data_6f22fc[];
 extern GAPDATA full_data_76045c[];
-extern unsigned char sv_FrameBase;
-extern unsigned char sv_FrameDepth;
-extern unsigned char sv_PanelFlag;
-extern unsigned char sv_PanelObject;
-extern unsigned char sv_PanelRecord;
-extern unsigned char ai_Unk75f280;
-extern unsigned char ai_Unkfc2dec;
+extern int sv_FrameBase;
+extern int sv_FrameDepth;
+extern int sv_PanelFlag;
+extern char * sv_PanelObject;
+extern unsigned short * sv_PanelRecord;
+extern int ai_Unk75f280[576];
+extern char * ai_Unkfc2dec;
 extern char ai_Chars[];
 extern int ai_GameFlags;
 extern unsigned char ai_GameState;
 extern unsigned char ai_MarketBuilding;
 extern unsigned char ai_TimeHour;
-extern unsigned char ai_Unk617830;
-extern unsigned char ai_Unk617840;
-extern unsigned char ai_Unk623884;
-extern unsigned char ai_Unk633738;
-extern unsigned char ai_Unk75ec60;
-extern unsigned char d2_ClickedId;
-extern unsigned char d2_CutsceneActive;
-extern unsigned char d2_MouseX;
-extern unsigned char d2_MouseY;
-extern unsigned char d2_PointerLook;
+extern float ai_Unk617830[];
+extern float ai_Unk617840[];
+extern int ai_Unk623884;
+extern int * ai_Unk633738;
+extern char * ai_Unk75ec60;
+extern int d2_ClickedId;
+extern int d2_CutsceneActive;
+extern short d2_MouseX;
+extern short d2_MouseY;
+extern short d2_PointerLook;
 extern unsigned char d3t_CamMove;
-extern unsigned char di_Absolute;
-extern unsigned char di_MaxX;
-extern unsigned char di_MaxY;
-extern unsigned char di_MinX;
-extern unsigned char di_MinY;
+extern int di_Absolute;
+extern int di_MaxX;
+extern int di_MaxY;
+extern int di_MinX;
+extern int di_MinY;
 extern GAPDATA full_data_5f3418[];
 extern GAPDATA full_data_6f1c2c[];
 extern GAPDATA full_data_6f22f4[];
 extern GAPDATA full_data_6f2598[];
 extern unsigned char snd_AmbientOn;
 extern void sv_UpdateClock(void);
-extern unsigned char sv_PanelShown;
-extern unsigned char ai_Unk7d6a40;
+extern unsigned short * sv_PanelShown;
+extern int ai_Unk7d6a40;
 
-extern unsigned char sv_PopRequest;
-extern unsigned char sv_ResearchClass;
+extern int sv_PopRequest;
+extern int sv_ResearchClass;
 
 
-extern unsigned char ai_Goods;
-extern unsigned char ai_Unk5fe710;
-extern unsigned char ai_Unk75f280;
-extern unsigned char d2_ClickedId;
-extern unsigned char d2_LastWindow;
+extern char * ai_Goods;
+extern int ai_Unk5fe710;
+extern int ai_Unk75f280[576];
+extern int d2_ClickedId;
+extern int d2_LastWindow;
 extern unsigned char d2_Objs;
-extern unsigned char d2_Unkf8aac4;
+extern int d2_Unkf8aac4;
 extern GAPDATA full_data_6f5320[];
 extern GAPDATA full_data_6f5354[];
-extern unsigned char sv_PanelShown;
-extern unsigned char ai_Unk76fdc4;
-extern unsigned char ai_Unk889400;
+extern unsigned short * sv_PanelShown;
+extern unsigned short ai_Unk76fdc4;
+extern unsigned ai_Unk889400[732];
 extern GAPDATA full_data_6f5324[];
 extern GAPDATA full_data_6f534c[];
 extern GAPDATA full_data_6f5a60[];
@@ -339,9 +339,9 @@ extern GAPDATA full_data_6f5a60[];
 
 
 
-extern unsigned char ai_Unk5fe710;
-extern unsigned char ai_Unk623898;
-extern unsigned char d2_ClickedId;
+extern int ai_Unk5fe710;
+extern int ai_Unk623898;
+extern int d2_ClickedId;
 
 
 
@@ -355,21 +355,21 @@ extern unsigned char d2_ClickedId;
 
 extern unsigned char ai_FallbackBuilding;
 extern unsigned char ai_TimeHour;
-extern unsigned char ai_Unk5fe710;
+extern int ai_Unk5fe710;
 extern unsigned char ai_Unk7603a0;
-extern unsigned char ai_Unk760420;
-extern unsigned char d2_ClickedId;
-extern unsigned char sv_PopRequest;
+extern float ai_Unk760420;
+extern int d2_ClickedId;
+extern int sv_PopRequest;
 
-extern unsigned char sv_PanelShown;
-extern unsigned char sv_PopRequest;
+extern unsigned short * sv_PanelShown;
+extern int sv_PopRequest;
 
 
 
 extern unsigned char ai_FallbackBuilding;
-extern unsigned char ai_PlayerBuilding;
-extern unsigned char sv_PopRequest;
-extern unsigned char d2_ClickedId;
+extern char * ai_PlayerBuilding;
+extern int sv_PopRequest;
+extern int d2_ClickedId;
 extern GAPDATA full_data_62b3b8[];
 
 
@@ -385,22 +385,22 @@ extern GAPDATA full_data_62b3b8[];
 
 
 
-extern unsigned char ai_BTypes;
+extern char * ai_BTypes;
 extern unsigned char ai_TimeHour;
 
-extern unsigned char ai_Unk5fe710;
-extern unsigned char d2_ClickedId;
-extern unsigned char d2_LastWindow;
+extern int ai_Unk5fe710;
+extern int d2_ClickedId;
+extern int d2_LastWindow;
 extern unsigned char d2_Objs;
 
-extern unsigned char sv_PopRequest;
+extern int sv_PopRequest;
 extern unsigned char ai_TimeHour;
 
-extern unsigned char ai_Unk5fe710;
-extern unsigned char d2_ClickedId;
-extern unsigned char d2_LastWindow;
+extern int ai_Unk5fe710;
+extern int d2_ClickedId;
+extern int d2_LastWindow;
 extern unsigned char d2_Objs;
-extern unsigned char sv_PopRequest;
+extern int sv_PopRequest;
 
 
 
@@ -409,7 +409,7 @@ extern unsigned char sv_PopRequest;
 
 extern int ai_Unk5b3630();
 extern int ai_Unk5b3f30();
-extern unsigned char ai_Unk6f2448;
+extern int ai_Unk6f2448;
 
 
 
@@ -417,22 +417,22 @@ extern unsigned char kb_Last;
 
 
 
-extern unsigned char ai_Unk5fe710;
-extern unsigned char d2_ClickedId;
-extern unsigned char d2_LastWindow;
+extern int ai_Unk5fe710;
+extern int d2_ClickedId;
+extern int d2_LastWindow;
 
 
-extern unsigned char sv_PopRequest;
-extern unsigned char ai_Unk5fe710;
-extern unsigned char d2_ClickedId;
-extern unsigned char d2_LastWindow;
+extern int sv_PopRequest;
+extern int ai_Unk5fe710;
+extern int d2_ClickedId;
+extern int d2_LastWindow;
 extern GAPDATA full_data_602568[];
 extern unsigned char ai_TimeHour;
 extern unsigned char d2_LastWindowPtr;
 extern int ai_Unk5b3ad0();
 extern char ai_Chars[];
 
-extern unsigned char sv_PopRequest;
+extern int sv_PopRequest;
 
 
 
@@ -441,13 +441,13 @@ extern unsigned char sv_PopRequest;
 
 extern GAPDATA full_data_6f2450[];
 extern unsigned char kb_Last;
-extern unsigned char d2_LastWindow;
-extern unsigned char sv_PopRequest;
-extern unsigned char ai_Unk6333cc;
+extern int d2_LastWindow;
+extern int sv_PopRequest;
+extern int ai_Unk6333cc;
 extern char ai_Chars[];
 extern unsigned char ai_TimeHour;
-extern unsigned char ai_Unk5fe710;
-extern unsigned char d2_ClickedId;
+extern int ai_Unk5fe710;
+extern int d2_ClickedId;
 extern GAPDATA full_data_602568[];
 extern unsigned char d2_LastWindowPtr;
 extern unsigned char d2_Pics;
@@ -457,24 +457,24 @@ extern unsigned char d2_Pics;
 extern GAPDATA full_data_6f2450[];
 extern unsigned char kb_Last;
 
-extern unsigned char d2_LastWindow;
+extern int d2_LastWindow;
 extern unsigned char d2_Objs;
-extern unsigned char ai_CameraStep;
+extern int ai_CameraStep;
 extern char ai_PlayerSlots[];
-extern unsigned char ai_Unk6333cc;
+extern int ai_Unk6333cc;
 extern unsigned char ai_Unk7d6a60;
 extern char d2_Views[];
 extern char d2_Wins[];
-extern unsigned char sv_PopRequest;
-extern unsigned char ai_Unk5ebba4;
-extern unsigned char ai_Unk6f22e8;
+extern int sv_PopRequest;
+extern const float ai_Unk5ebba4[];
+extern char * ai_Unk6f22e8;
 
 extern unsigned char ai_MarketBuilding;
-extern unsigned char ai_Unk6f2304;
-extern unsigned char ai_Unk6f2318;
-extern unsigned char ai_Unk75ec60;
-extern unsigned char sv_PanelForm;
-extern unsigned char sv_PanelShown;
+extern int ai_Unk6f2304;
+extern int ai_Unk6f2318;
+extern char * ai_Unk75ec60;
+extern int sv_PanelForm;
+extern unsigned short * sv_PanelShown;
 
 extern unsigned char ai_OwnPlayer;
 extern char ai_PlayerSlots[];
@@ -489,83 +489,83 @@ extern char ai_PlayerSlots[];
 
 extern char ai_Chars[];
 extern unsigned char ai_OwnPlayer;
-extern unsigned char d2_ClickedId;
-extern unsigned char d2_LastWindow;
-extern unsigned char sv_PanelShown;
-extern unsigned char sv_PopRequest;
+extern int d2_ClickedId;
+extern int d2_LastWindow;
+extern unsigned short * sv_PanelShown;
+extern int sv_PopRequest;
 extern unsigned char ai_TimeHour;
-extern unsigned char ai_Unk5fe710;
+extern int ai_Unk5fe710;
 
-extern unsigned char sv_PopRequest;
+extern int sv_PopRequest;
 extern char ai_Chars[];
 extern unsigned char ai_OwnPlayer;
-extern unsigned char ai_Unk5fe710;
-extern unsigned char d2_ClickedId;
-extern unsigned char d2_LastWindow;
+extern int ai_Unk5fe710;
+extern int d2_ClickedId;
+extern int d2_LastWindow;
 extern unsigned char d2_LastWindowPtr;
 extern unsigned char d2_Pics;
 
 
-extern unsigned char sv_PopRequest;
-extern unsigned char d2_LastWindow;
+extern int sv_PopRequest;
+extern int d2_LastWindow;
 extern unsigned char d2_Pics;
 extern char ai_Chars[];
 extern unsigned char ai_OwnPlayer;
-extern unsigned char d2_ClickedId;
+extern int d2_ClickedId;
 extern GAPDATA full_data_6f22dc[];
-extern unsigned char ai_Unk5fe710;
+extern int ai_Unk5fe710;
 
-extern unsigned char sv_PopRequest;
+extern int sv_PopRequest;
 extern unsigned char ai_OwnPlayer;
 
 extern unsigned char d2_LastWindowPtr;
 extern unsigned char d2_Objs;
 
-extern unsigned char ch_EmptyName;
-extern unsigned char d2_LastWindow;
+extern char ch_EmptyName[1];
+extern int d2_LastWindow;
 extern unsigned char d2_LastWindowPtr;
 extern unsigned char d2_Objs;
 extern char ai_PlayerSlots[];
 
-extern unsigned char ch_EmptyName;
-extern unsigned char d2_LastWindow;
+extern char ch_EmptyName[1];
+extern int d2_LastWindow;
 extern unsigned char d2_LastWindowPtr;
 extern unsigned char d2_Objs;
-extern unsigned char ai_Unk5fe710;
+extern int ai_Unk5fe710;
 extern unsigned char ai_OwnPlayer;
 extern unsigned char ai_Unkf8aae0;
-extern unsigned char d2_ClickedId;
+extern int d2_ClickedId;
 
 
 
-extern unsigned char sv_PopRequest;
-extern unsigned char d2_ClickedId;
+extern int sv_PopRequest;
+extern int d2_ClickedId;
 extern unsigned char ai_OwnPlayer;
 extern char ai_PlayerSlots[];
-extern unsigned char ai_Unk5fe710;
-extern unsigned char ch_EmptyName;
-extern unsigned char d2_LastWindow;
+extern int ai_Unk5fe710;
+extern char ch_EmptyName[1];
+extern int d2_LastWindow;
 extern unsigned char d2_LastWindowPtr;
 extern unsigned char d2_Objs;
 
 
-extern unsigned char gm_Offers;
-extern unsigned char sv_PopRequest;
-extern unsigned char ai_Unk5fe710;
-extern unsigned char d2_ClickedId;
-extern unsigned char d2_LastWindow;
+extern int gm_Offers[528];
+extern int sv_PopRequest;
+extern int ai_Unk5fe710;
+extern int d2_ClickedId;
+extern int d2_LastWindow;
 
 
 
-extern unsigned char ai_PlayerBuilding;
-extern unsigned char ai_Unk6f22cc;
-extern unsigned char ai_Unk6f22d0;
-extern unsigned char ai_Unkfc2dec;
+extern char * ai_PlayerBuilding;
+extern int ai_Unk6f22cc;
+extern int ai_Unk6f22d0;
+extern char * ai_Unkfc2dec;
 extern GAPDATA full_data_6f2410[];
-extern unsigned char sv_FrameBase;
-extern unsigned char sv_FrameDepth;
-extern unsigned char sv_PopRequest;
-extern unsigned char ai_BTypes;
+extern int sv_FrameBase;
+extern int sv_FrameDepth;
+extern int sv_PopRequest;
+extern char * ai_BTypes;
 extern unsigned char ai_TimeHour;
 extern GAPDATA full_data_62afa0[];
 extern GAPDATA full_data_62afa4[];
@@ -573,49 +573,49 @@ extern GAPDATA full_data_62afa5[];
 extern GAPDATA full_data_62afa8[];
 extern int ai_GameFlags;
 
-extern unsigned char sv_PanelFlag;
-extern unsigned char ai_FrameWait;
-extern unsigned char ai_PlayerBuilding;
-extern unsigned char ai_Unk5ebba4;
-extern unsigned char ch_CurrentGroup;
+extern int sv_PanelFlag;
+extern int ai_FrameWait;
+extern char * ai_PlayerBuilding;
+extern const float ai_Unk5ebba4[];
+extern int ch_CurrentGroup;
 extern int evt_NoGroup;
-extern unsigned char ai_Unk5f8438;
+extern int ai_Unk5f8438;
 extern unsigned char ai_Unk5fb5b0;
-extern unsigned char ai_Unk6f22cc;
-extern unsigned char ai_Unk6f22d0;
-extern unsigned char ai_Unk75fb80;
-extern unsigned char ai_Unk75fb84;
-extern unsigned char ai_Unk75fb88;
-extern unsigned char ai_Unk75fb90;
-extern unsigned char ai_Unk75fb94;
-extern unsigned char ai_Unk75fb98;
-extern unsigned char ai_Unk7662c0;
-extern unsigned char ai_Unkfc2dec;
-extern unsigned char ch_CurrentScriptGroup;
-extern unsigned char ch_StepSample;
-extern unsigned char d2_CutsceneActive;
+extern int ai_Unk6f22cc;
+extern int ai_Unk6f22d0;
+extern int ai_Unk75fb80;
+extern int ai_Unk75fb84;
+extern int ai_Unk75fb88;
+extern int ai_Unk75fb90;
+extern int ai_Unk75fb94;
+extern int ai_Unk75fb98;
+extern int ai_Unk7662c0;
+extern char * ai_Unkfc2dec;
+extern int ch_CurrentScriptGroup;
+extern char ch_StepSample[];
+extern int d2_CutsceneActive;
 extern GAPDATA full_data_6237c8[];
 extern GAPDATA full_data_6f2314[];
 extern GAPDATA full_data_6f2410[];
 extern unsigned char init_ObjectUniverse;
-extern unsigned char sv_FrameBase;
-extern unsigned char sv_FrameDepth;
-extern unsigned char sv_PanelShown;
-extern unsigned char sv_PopRequest;
-extern unsigned char ai_BTypes;
+extern int sv_FrameBase;
+extern int sv_FrameDepth;
+extern unsigned short * sv_PanelShown;
+extern int sv_PopRequest;
+extern char * ai_BTypes;
 extern unsigned char ai_FallbackBuilding;
 extern char ai_GfxFloor[];
-extern unsigned char ai_Unk633738;
+extern int * ai_Unk633738;
 extern unsigned char d3_Sky;
 extern unsigned char snd_AmbientOn;
 extern char ai_Chars[];
 extern unsigned char ai_OwnPlayer;
-extern unsigned char ai_Unk5fe710;
-extern unsigned char ch_EmptyName;
-extern unsigned char d2_ClickedId;
-extern unsigned char d2_LastWindow;
+extern int ai_Unk5fe710;
+extern char ch_EmptyName[1];
+extern int d2_ClickedId;
+extern int d2_LastWindow;
 
-extern unsigned char ai_Unk6f2448;
+extern int ai_Unk6f2448;
 
 
 
@@ -623,53 +623,53 @@ extern unsigned char kb_Last;
 extern char ai_Chars[];
 extern unsigned char ai_OwnPlayer;
 extern char ai_PlayerSlots[];
-extern unsigned char d2_ClickedId;
-extern unsigned char sv_PopRequest;
-extern unsigned char ai_Unk5fe710;
-extern unsigned char d2_LastWindow;
+extern int d2_ClickedId;
+extern int sv_PopRequest;
+extern int ai_Unk5fe710;
+extern int d2_LastWindow;
 extern unsigned char d2_LastWindowPtr;
 extern unsigned char d2_Pics;
 
 
 
 extern char gm_PlayerRecords[];
-extern unsigned char sv_PopRequest;
+extern int sv_PopRequest;
 extern char ai_Chars[];
-extern unsigned char ai_Unk5fe710;
-extern unsigned char d2_ClickedId;
-extern unsigned char d2_LastWindow;
+extern int ai_Unk5fe710;
+extern int d2_ClickedId;
+extern int d2_LastWindow;
 
 
 
 
-extern unsigned char sv_PopRequest;
+extern int sv_PopRequest;
 
 
 
 
 
-extern unsigned char ai_BTypes;
+extern char * ai_BTypes;
 extern char ai_Chars[];
 extern unsigned char ai_OwnPlayer;
-extern unsigned char ai_Unk5fe710;
-extern unsigned char d2_ClickedId;
-extern unsigned char sv_PopRequest;
-extern unsigned char d2_LastWindow;
+extern int ai_Unk5fe710;
+extern int d2_ClickedId;
+extern int sv_PopRequest;
+extern int d2_LastWindow;
 
 
 extern char ai_Chars[];
-extern unsigned char ai_Unk5fe710;
-extern unsigned char d2_ClickedId;
-extern unsigned char d2_LastWindow;
+extern int ai_Unk5fe710;
+extern int d2_ClickedId;
+extern int d2_LastWindow;
 extern unsigned char d2_Objs;
 
 
 
 
-extern unsigned char sv_PopRequest;
+extern int sv_PopRequest;
 extern char ai_Chars[];
-extern unsigned char d2_ClickedId;
-extern unsigned char d2_LastWindow;
+extern int d2_ClickedId;
+extern int d2_LastWindow;
 
 
 
@@ -683,31 +683,31 @@ extern char ai_Chars[];
 
 extern char ai_Chars[];
 extern unsigned char ai_OwnPlayer;
-extern unsigned char ai_Unk5fe710;
-extern unsigned char d2_ClickedId;
-extern unsigned char d2_LastWindow;
-extern unsigned char sv_PopRequest;
+extern int ai_Unk5fe710;
+extern int d2_ClickedId;
+extern int d2_LastWindow;
+extern int sv_PopRequest;
 
-extern unsigned char d2_ClickedId;
-extern unsigned char d2_LastWindow;
+extern int d2_ClickedId;
+extern int d2_LastWindow;
 extern unsigned char d2_LastWindowPtr;
 extern unsigned char d2_Pics;
-extern unsigned char sv_PopRequest;
+extern int sv_PopRequest;
 extern char ai_Chars[];
-extern unsigned char ai_Unk5fe710;
+extern int ai_Unk5fe710;
 
-extern unsigned char sv_PopRequest;
+extern int sv_PopRequest;
 
 extern char ai_Chars[];
-extern unsigned char ai_Unk5fe710;
-extern unsigned char d2_ClickedId;
-extern unsigned char d2_LastWindow;
+extern int ai_Unk5fe710;
+extern int d2_ClickedId;
+extern int d2_LastWindow;
 extern unsigned char d2_LastWindowPtr;
 extern unsigned char d2_Pics;
 extern GAPDATA full_data_602568[];
-extern unsigned char sv_PopRequest;
+extern int sv_PopRequest;
 
-extern unsigned char ai_Unk6f2448;
+extern int ai_Unk6f2448;
 
 
 
@@ -715,73 +715,73 @@ extern unsigned char ai_Unk6f2448;
 extern unsigned char kb_Last;
 extern char ai_Chars[];
 extern char gm_PlayerRecords[];
-extern unsigned char sv_PopRequest;
+extern int sv_PopRequest;
 extern unsigned char ai_OwnPlayer;
-extern unsigned char ai_Unk5fe710;
-extern unsigned char d2_ClickedId;
+extern int ai_Unk5fe710;
+extern int d2_ClickedId;
 
-extern unsigned char sv_PopRequest;
+extern int sv_PopRequest;
 
 extern char ai_Chars[];
-extern unsigned char ai_PlayerBuilding;
-extern unsigned char ai_Unk5fe710;
-extern unsigned char d2_ClickedId;
+extern char * ai_PlayerBuilding;
+extern int ai_Unk5fe710;
+extern int d2_ClickedId;
 
 
-extern unsigned char sv_PopRequest;
-extern unsigned char ai_BTypes;
+extern int sv_PopRequest;
+extern char * ai_BTypes;
 extern char ai_Chars[];
 extern unsigned char ai_FallbackBuilding;
-extern unsigned char ai_PlayerBuilding;
-extern unsigned char ai_Unk5fe710;
-extern unsigned char d2_ClickedId;
+extern char * ai_PlayerBuilding;
+extern int ai_Unk5fe710;
+extern int d2_ClickedId;
 
-extern unsigned char sv_PopRequest;
-extern unsigned char ai_BTypes;
-extern unsigned char ai_Unk5fe710;
-extern unsigned char d2_ClickedId;
-extern unsigned char d2_LastWindow;
+extern int sv_PopRequest;
+extern char * ai_BTypes;
+extern int ai_Unk5fe710;
+extern int d2_ClickedId;
+extern int d2_LastWindow;
 extern unsigned char d2_Objs;
 extern GAPDATA full_data_602568[];
-extern unsigned char ai_PlayerBuilding;
+extern char * ai_PlayerBuilding;
 extern unsigned char ai_TimeHour;
 extern unsigned char ai_Unk7603a0;
-extern unsigned char ai_Unk760420;
+extern float ai_Unk760420;
 
-extern unsigned char sv_PopRequest;
+extern int sv_PopRequest;
 
 extern unsigned char ai_TimeHour;
 extern unsigned char ai_Unk7603a0;
-extern unsigned char ai_Unk760420;
-extern unsigned char d2_ClickedId;
+extern float ai_Unk760420;
+extern int d2_ClickedId;
 
-extern unsigned char sv_PopRequest;
-
-
+extern int sv_PopRequest;
 
 
 
 
 
-extern unsigned char sv_PanelShown;
+
+
+extern unsigned short * sv_PanelShown;
 
 
 extern char ai_Chars[];
-extern unsigned char ai_PlayerBuilding;
-extern unsigned char ai_Unk5fe710;
-extern unsigned char d2_ClickedId;
+extern char * ai_PlayerBuilding;
+extern int ai_Unk5fe710;
+extern int d2_ClickedId;
 
-extern unsigned char sv_PopRequest;
-extern const unsigned char ai_Unk5eeab8;
+extern int sv_PopRequest;
+extern const int ai_Unk5eeab8[24];
 
-extern unsigned char ai_Unk5fe710;
-extern unsigned char cm_FieldObject;
-extern unsigned char d2_ClickedId;
+extern int ai_Unk5fe710;
+extern char * cm_FieldObject;
+extern int d2_ClickedId;
 
 
-extern unsigned char sv_PopRequest;
+extern int sv_PopRequest;
 extern char ai_Chars[];
-extern unsigned char cm_FieldObject;
+extern char * cm_FieldObject;
 extern GAPDATA full_data_627978[];
 
 
@@ -793,51 +793,51 @@ extern int ai_Unk5a5fd0();
 
 extern int ai_Unk5a5d70();
 extern int ai_Unk5a6270();
-extern unsigned char ai_PlayerBuilding;
-extern unsigned char ai_Unk5fe710;
-extern unsigned char d2_ClickedId;
+extern char * ai_PlayerBuilding;
+extern int ai_Unk5fe710;
+extern int d2_ClickedId;
 
-extern unsigned char sv_PopRequest;
+extern int sv_PopRequest;
 extern int ai_Unk5a5d70();
 extern int ai_Unk5a5fd0();
-extern unsigned char ai_PlayerBuilding;
-extern unsigned char ai_Unk5fe710;
-extern unsigned char d2_ClickedId;
+extern char * ai_PlayerBuilding;
+extern int ai_Unk5fe710;
+extern int d2_ClickedId;
 
-extern unsigned char sv_PopRequest;
+extern int sv_PopRequest;
 extern int ai_Unk5a5fd0();
 extern int ai_Unk5a6270();
-extern unsigned char ai_PlayerBuilding;
+extern char * ai_PlayerBuilding;
 extern unsigned char ai_TimeHour;
-extern unsigned char ai_Unk5fe710;
+extern int ai_Unk5fe710;
 extern unsigned char ai_Unk7603a0;
-extern unsigned char ai_Unk760420;
-extern unsigned char d2_ClickedId;
+extern float ai_Unk760420;
+extern int d2_ClickedId;
 
-extern unsigned char sv_PanelShown;
-extern unsigned char sv_PopRequest;
+extern unsigned short * sv_PanelShown;
+extern int sv_PopRequest;
 extern int ai_Unk5a6270();
-extern unsigned char ai_PlayerBuilding;
+extern char * ai_PlayerBuilding;
 extern unsigned char ai_TimeHour;
-extern unsigned char ai_Unk5fe710;
+extern int ai_Unk5fe710;
 extern unsigned char ai_Unk7603a0;
-extern unsigned char ai_Unk760420;
-extern unsigned char d2_ClickedId;
+extern float ai_Unk760420;
+extern int d2_ClickedId;
 
 
 
-extern unsigned char sv_PanelShown;
-extern unsigned char sv_PopRequest;
+extern unsigned short * sv_PanelShown;
+extern int sv_PopRequest;
 
 
 
 
 
-extern unsigned char sv_PanelShown;
+extern unsigned short * sv_PanelShown;
 
 
 
-extern unsigned char ai_MapSize;
+extern int ai_MapSize;
 extern GAPDATA full_data_6f4ee4[];
 
 
@@ -845,13 +845,13 @@ extern GAPDATA full_data_6f4ee4[];
 extern unsigned char ai_AmbushSpots;
 extern char ai_Chars[];
 extern unsigned char ai_FallbackBuilding;
-extern unsigned char ai_MapSize;
+extern int ai_MapSize;
 extern unsigned char ai_OwnPlayer;
-extern unsigned char ai_PlayerBuilding;
+extern char * ai_PlayerBuilding;
 extern char ai_PlayerSlots[];
 extern unsigned char ai_Unk625820;
-extern unsigned char ai_Unkfc2dec;
-extern unsigned char d2_LastWindow;
+extern char * ai_Unkfc2dec;
+extern int d2_LastWindow;
 extern unsigned char d2_LastWindowPtr;
 extern unsigned char d2_Objs;
 extern char d2_Wins[];
@@ -859,16 +859,16 @@ extern GAPDATA full_data_6f26b0[];
 extern GAPDATA full_data_6f4ee4[];
 extern GAPDATA full_rdata_5eed8c[];
 extern GAPDATA full_rdata_5eed90[];
-extern unsigned char ai_Unk6f26ac;
+extern char * ai_Unk6f26ac;
 extern unsigned char d2_BackgroundTile;
 extern GAPDATA full_data_62c274[];
-extern unsigned char d2_MouseX;
-extern unsigned char d2_MouseY;
-extern unsigned char di_Absolute;
-extern unsigned char di_MaxX;
-extern unsigned char di_MaxY;
-extern unsigned char di_MinX;
-extern unsigned char di_MinY;
+extern short d2_MouseX;
+extern short d2_MouseY;
+extern int di_Absolute;
+extern int di_MaxX;
+extern int di_MaxY;
+extern int di_MinX;
+extern int di_MinY;
 extern GAPDATA full_data_6f268c[];
 extern GAPDATA full_data_6f2690[];
 extern GAPDATA full_data_6f2698[];
@@ -879,20 +879,20 @@ extern GAPDATA full_data_6f26b4[];
 extern GAPDATA full_data_6f26b8[];
 extern GAPDATA full_data_6f26bc[];
 extern unsigned char ai_Unk1468ae0;
-extern unsigned char ai_Unk5fe710;
-extern unsigned char ai_Unk62a8cc;
-extern unsigned char ai_Unk62c26c;
-extern unsigned char ai_Unk6333cc;
-extern unsigned char d2_Unkf8aac8;
+extern int ai_Unk5fe710;
+extern int ai_Unk62a8cc;
+extern int ai_Unk62c26c;
+extern int ai_Unk6333cc;
+extern int d2_Unkf8aac8;
 extern char d2_Views[];
 extern GAPDATA full_data_6f26c0[];
-extern unsigned char ai_Unk61a348;
+extern char ai_Unk61a348[];
 extern GAPDATA full_rdata_5eed94[];
 extern GAPDATA full_rdata_5eedd3[];
 extern GAPDATA full_data_62c284[];
 extern GAPDATA full_rdata_5ebb40[];
 extern GAPDATA full_data_62c298[];
-extern unsigned char ch_EmptyName;
+extern char ch_EmptyName[1];
 extern GAPDATA full_data_6f26c8[];
 extern GAPDATA full_data_62c2ac[];
 extern GAPDATA full_data_62c2c0[];
@@ -903,8 +903,8 @@ extern GAPDATA full_data_62c2dc[];
 extern GAPDATA full_data_62c2f4[];
 extern GAPDATA full_data_62c310[];
 extern GAPDATA full_data_6f26c8[];
-extern unsigned char ch_EmptyName;
-extern const unsigned char ai_Unk5eeab8;
+extern char ch_EmptyName[1];
+extern const int ai_Unk5eeab8[24];
 extern GAPDATA full_data_62c32c[];
 extern GAPDATA full_data_62c348[];
 extern GAPDATA full_data_62c364[];
@@ -918,25 +918,25 @@ extern GAPDATA full_data_62c420[];
 extern GAPDATA full_data_62cb58[];
 extern char ai_Chars[];
 extern unsigned char ai_OwnPlayer;
-extern unsigned char d2_ClickedId;
+extern int d2_ClickedId;
 
 extern GAPDATA full_data_60ea68[];
 extern unsigned char kb_Last;
-extern unsigned char sv_FrameMask;
-extern unsigned char sv_PopRequest;
+extern int sv_FrameMask;
+extern int sv_PopRequest;
 
-extern unsigned char ch_EmptyName;
-extern unsigned char d2_CurrentView;
-extern unsigned char d2_LastWindow;
+extern char ch_EmptyName[1];
+extern int d2_CurrentView;
+extern int d2_LastWindow;
 extern unsigned char d2_Objs;
-extern unsigned char ai_BTypes;
+extern char * ai_BTypes;
 extern GAPDATA full_data_60d568[];
 
-extern unsigned char ch_EmptyName;
+extern char ch_EmptyName[1];
 extern unsigned char d2_Objs;
 
 extern unsigned char ai_MarketBuilding;
-extern unsigned char d2_LastWindow;
+extern int d2_LastWindow;
 extern unsigned char d2_Objs;
 
 extern GAPDATA full_data_602568[];
@@ -949,10 +949,10 @@ extern GAPDATA full_data_6f40a4[];
 extern GAPDATA full_data_6f40b0[];
 extern GAPDATA full_data_6f40bc[];
 extern unsigned char ai_MarketBuilding;
-extern unsigned char ai_Unk5fe710;
-extern unsigned char ch_EmptyName;
-extern unsigned char d2_ClickedId;
-extern unsigned char d2_LastWindow;
+extern int ai_Unk5fe710;
+extern char ch_EmptyName[1];
+extern int d2_ClickedId;
+extern int d2_LastWindow;
 extern unsigned char d2_Objs;
 
 extern GAPDATA full_data_6f40a0[];
@@ -961,21 +961,21 @@ extern GAPDATA full_data_6f40b0[];
 extern GAPDATA full_data_6f40bc[];
 extern char ai_Chars[];
 extern unsigned char ai_OwnPlayer;
-extern unsigned char d2_ClickedId;
+extern int d2_ClickedId;
 
 extern GAPDATA full_data_60ea68[];
 extern unsigned char kb_Last;
-extern unsigned char sv_FrameMask;
-extern unsigned char sv_PopRequest;
+extern int sv_FrameMask;
+extern int sv_PopRequest;
 extern char ai_Chars[];
 extern unsigned char ai_OwnPlayer;
-extern unsigned char ai_Unk5fe710;
-extern unsigned char d2_ClickedId;
-extern unsigned char d2_LastWindow;
+extern int ai_Unk5fe710;
+extern int d2_ClickedId;
+extern int d2_LastWindow;
 extern GAPDATA full_data_62cc6c[];
 extern unsigned char ai_TimeHour;
 extern GAPDATA full_data_6f2f64[];
-extern unsigned char ai_BTypes;
+extern char * ai_BTypes;
 extern GAPDATA full_data_60c28c[];
 extern GAPDATA full_data_62cc94[];
 extern GAPDATA full_data_6f4f60[];
@@ -984,14 +984,14 @@ extern GAPDATA full_data_6f58a0[];
 extern GAPDATA full_data_6f5a60[];
 extern GAPDATA full_data_6f22dc[];
 extern GAPDATA full_data_6f52e0[];
-extern unsigned char ai_MapSize;
+extern int ai_MapSize;
 extern char ai_PlayerSlots[];
-extern unsigned char ai_Unk6f26ac;
-extern unsigned char ai_Unkf8ef80;
+extern char * ai_Unk6f26ac;
+extern char ai_Unkf8ef80[256];
 extern GAPDATA full_data_62c270[];
 extern GAPDATA full_data_62cce8[];
 extern GAPDATA full_data_6f4ee4[];
-extern unsigned char ch_EmptyName;
+extern char ch_EmptyName[1];
 extern GAPDATA full_data_62ccfc[];
 extern int ai_Unk5b3630();
 extern int ai_Unk5b3ad0();
@@ -999,12 +999,12 @@ extern int ai_Unk5b3f30();
 extern char ai_Unk91f700[];
 extern GAPDATA full_data_62cd7c[];
 extern GAPDATA full_data_62cda8[];
-extern unsigned char ai_Unk6f22e8;
+extern char * ai_Unk6f22e8;
 extern GAPDATA full_data_62c418[];
 extern GAPDATA full_data_62c420[];
 extern GAPDATA full_data_6f3880[];
 extern GAPDATA full_data_6f3884[];
-extern unsigned char cm_FieldObject;
+extern char * cm_FieldObject;
 extern unsigned char d2_Objs;
 extern char d2_Radios[];
 
@@ -1019,13 +1019,13 @@ extern GAPDATA full_data_6f4080[];
 extern GAPDATA full_data_6f40f4[];
 extern GAPDATA full_data_6f4ce0[];
 extern GAPDATA full_data_6f4cf4[];
-extern unsigned char sv_PopRequest;
-extern unsigned char d2_LastWindow;
+extern int sv_PopRequest;
+extern int d2_LastWindow;
 extern unsigned char d2_Objs;
-extern unsigned char d2_TextDrawnH;
-extern unsigned char d2_TextDrawnW;
-extern unsigned char d2_TextLeft;
-extern unsigned char d2_TextTop;
+extern int d2_TextDrawnH;
+extern int d2_TextDrawnW;
+extern int d2_TextLeft;
+extern int d2_TextTop;
 extern char ai_Chars[];
 extern GAPDATA full_data_62a578[];
 extern unsigned char d2_LastWindowPtr;
@@ -1035,70 +1035,70 @@ extern GAPDATA full_data_62d1e8[];
 extern GAPDATA full_data_62d1ec[];
 extern GAPDATA full_data_62d1f4[];
 extern GAPDATA full_data_62d1fc[];
-extern unsigned char ai_Relations;
-extern const unsigned char ai_Unk5eeab8;
+extern signed char ai_Relations[768][768];
+extern const int ai_Unk5eeab8[24];
 extern GAPDATA full_data_62d204[];
 extern char gm_PlayerRecords[];
-extern unsigned char ai_Unk5eb788;
+extern float ai_Unk5eb788;
 extern GAPDATA full_rdata_5ed0fc[];
 extern GAPDATA full_data_602568[];
 extern GAPDATA full_data_62d150[];
 extern GAPDATA full_data_62d1f0[];
 extern GAPDATA full_data_62d214[];
 extern GAPDATA full_data_6f2f8c[];
-extern unsigned char ai_Unk5fe710;
-extern unsigned char d2_ClickedId;
+extern int ai_Unk5fe710;
+extern int d2_ClickedId;
 
 extern GAPDATA full_data_62d224[];
-extern unsigned char sv_PopRequest;
+extern int sv_PopRequest;
 extern GAPDATA full_data_62d204[];
-extern unsigned char d2_ClickedId;
+extern int d2_ClickedId;
 extern GAPDATA full_data_62d234[];
 extern GAPDATA full_data_62d244[];
 
-extern unsigned char ai_Unk5fe710;
-extern unsigned char d2_ClickedId;
-extern unsigned char d2_LastWindow;
+extern int ai_Unk5fe710;
+extern int d2_ClickedId;
+extern int d2_LastWindow;
 extern unsigned char d2_LastWindowPtr;
 extern unsigned char d2_Objs;
 
 extern GAPDATA full_data_62d224[];
-extern unsigned char sv_PopRequest;
+extern int sv_PopRequest;
 
-extern unsigned char ai_Unk5fe710;
-extern unsigned char d2_ClickedId;
+extern int ai_Unk5fe710;
+extern int d2_ClickedId;
 extern GAPDATA full_data_625380[];
 extern GAPDATA full_data_62bdc8[];
 extern GAPDATA full_data_62bde4[];
 extern GAPDATA full_data_62be00[];
 extern GAPDATA full_data_62d284[];
 extern GAPDATA full_data_62d294[];
-extern unsigned char sv_PopRequest;
+extern int sv_PopRequest;
 extern GAPDATA full_data_62d2a4[];
-extern unsigned char ai_BTypes;
+extern char * ai_BTypes;
 extern unsigned char ai_OwnPlayer;
-extern unsigned char d2_LastWindow;
+extern int d2_LastWindow;
 extern GAPDATA full_data_602568[];
 extern GAPDATA full_data_624cf8[];
 extern GAPDATA full_data_62d2bc[];
 extern unsigned char ai_TimeHour;
-extern unsigned char sv_PanelShown;
-extern unsigned char ai_Goods;
+extern unsigned short * sv_PanelShown;
+extern char * ai_Goods;
 extern unsigned char d2_Objs;
-extern unsigned char cm_FieldObject;
+extern char * cm_FieldObject;
 
 
 extern GAPDATA full_data_62d2d4[];
 extern GAPDATA full_data_6f2f90[];
-extern unsigned char sv_PopRequest;
-extern unsigned char ai_BTypes;
+extern int sv_PopRequest;
+extern char * ai_BTypes;
 extern char ai_Chars[];
-extern unsigned char ai_PlayerChar;
-extern unsigned char ai_Relations;
+extern unsigned short * ai_PlayerChar;
+extern signed char ai_Relations[768][768];
 extern unsigned char ai_Unka69140;
-extern unsigned char ai_Unk5fe710;
-extern unsigned char d2_ClickedId;
-extern unsigned char d2_LastWindow;
+extern int ai_Unk5fe710;
+extern int d2_ClickedId;
+extern int d2_LastWindow;
 extern GAPDATA full_data_62a564[];
 extern GAPDATA full_data_62d2ec[];
 extern unsigned char d2_Objs;
@@ -1109,39 +1109,39 @@ extern GAPDATA full_data_62d3b8[];
 extern GAPDATA full_data_62d3c4[];
 extern GAPDATA full_data_62d3d4[];
 extern GAPDATA full_data_62d3e0[];
-extern unsigned char sv_FrameMask;
+extern int sv_FrameMask;
 extern unsigned char ai_OwnPlayer;
 extern GAPDATA full_data_62d3f4[];
 extern GAPDATA full_data_62d3fc[];
 extern unsigned char ai_TimeHour;
 extern GAPDATA full_data_62d40c[];
 extern GAPDATA full_data_62d424[];
-extern unsigned char ai_Unk91ac40;
+extern unsigned ai_Unk91ac40[136];
 extern unsigned char ord_StatisticsHistory;
-extern unsigned char ai_Unk5eb81c;
-extern unsigned char ai_Unk5eb988;
-extern unsigned char d2_PenSize;
+extern float ai_Unk5eb81c;
+extern float ai_Unk5eb988;
+extern unsigned int d2_PenSize;
 extern GAPDATA full_data_5fe7d0[];
 extern GAPDATA full_data_62d43c[];
 extern char ai_PlayerSlots[];
-extern unsigned char ai_RatingBase;
+extern int ai_RatingBase;
 extern GAPDATA full_data_62d440[];
 extern GAPDATA full_data_6f2f88[];
 extern GAPDATA full_rdata_5eb8a8[];
 extern GAPDATA full_data_62d458[];
 extern GAPDATA full_data_62d468[];
 
-extern unsigned char ai_Unk5fe710;
-extern unsigned char ai_Unk60c6c0;
-extern unsigned char ai_Unk6333cc;
-extern unsigned char d2_ClickedId;
-extern unsigned char d2_LastWindow;
+extern int ai_Unk5fe710;
+extern char ai_Unk60c6c0[4];
+extern int ai_Unk6333cc;
+extern int d2_ClickedId;
+extern int d2_LastWindow;
 extern unsigned char d2_Objs;
 extern GAPDATA full_data_602568[];
 extern GAPDATA full_data_625150[];
 extern GAPDATA full_data_625154[];
 extern GAPDATA full_data_62d480[];
-extern unsigned char sv_PopRequest;
+extern int sv_PopRequest;
 extern unsigned char ai_OwnPlayer;
 extern GAPDATA full_data_62d494[];
 extern GAPDATA full_data_62d4ac[];
@@ -1149,17 +1149,17 @@ extern unsigned char ai_TimeHour;
 extern GAPDATA full_data_62d4c4[];
 
 extern unsigned char ai_TimeHour;
-extern unsigned char ai_Unk5fe710;
-extern unsigned char d2_ClickedId;
-extern unsigned char d2_LastWindow;
+extern int ai_Unk5fe710;
+extern int d2_ClickedId;
+extern int d2_LastWindow;
 extern GAPDATA full_data_62cd9c[];
 extern GAPDATA full_data_62d4e0[];
-extern unsigned char sv_PopRequest;
+extern int sv_PopRequest;
 extern char ai_Chars[];
 extern GAPDATA full_data_62cd48[];
 extern GAPDATA full_data_62d4f8[];
 extern GAPDATA full_data_62d518[];
-extern const unsigned char ai_Unk5eeab8;
+extern const int ai_Unk5eeab8[24];
 extern GAPDATA full_data_62d538[];
 extern GAPDATA full_data_62d554[];
 extern GAPDATA full_data_62d56c[];
@@ -1171,54 +1171,54 @@ extern unsigned char ai_OwnPlayer;
 extern GAPDATA full_data_62d634[];
 extern GAPDATA full_data_62d64c[];
 extern GAPDATA full_data_62d660[];
-extern unsigned char ai_BTypes;
+extern char * ai_BTypes;
 extern char ai_Unk91f700[];
 extern GAPDATA full_data_62d694[];
 
-extern unsigned char ai_Unk5fe710;
-extern unsigned char d2_ClickedId;
+extern int ai_Unk5fe710;
+extern int d2_ClickedId;
 extern GAPDATA full_data_62d5c4[];
-extern unsigned char sv_PopRequest;
+extern int sv_PopRequest;
 extern unsigned char ai_TimeHour;
 extern GAPDATA full_data_62d5dc[];
 
 extern unsigned char ai_TimeHour;
-extern unsigned char ai_Unk5fe710;
-extern unsigned char d2_ClickedId;
+extern int ai_Unk5fe710;
+extern int d2_ClickedId;
 extern GAPDATA full_data_62d5c4[];
 extern GAPDATA full_data_62d6a8[];
-extern unsigned char sv_PopRequest;
+extern int sv_PopRequest;
 
-extern unsigned char ai_Unk5fe710;
-extern unsigned char ch_EmptyName;
-extern unsigned char d2_ClickedId;
+extern int ai_Unk5fe710;
+extern char ch_EmptyName[1];
+extern int d2_ClickedId;
 extern GAPDATA full_data_62d5c4[];
-extern unsigned char sv_PopRequest;
+extern int sv_PopRequest;
 
-extern unsigned char ai_Unk5fe710;
-extern unsigned char ch_EmptyName;
-extern unsigned char d2_ClickedId;
+extern int ai_Unk5fe710;
+extern char ch_EmptyName[1];
+extern int d2_ClickedId;
 extern GAPDATA full_data_62d5c4[];
-extern unsigned char sv_PopRequest;
+extern int sv_PopRequest;
 
-extern unsigned char d2_ClickedId;
-extern unsigned char d2_LastWindow;
+extern int d2_ClickedId;
+extern int d2_LastWindow;
 extern unsigned char d2_Objs;
 extern unsigned char d2_Pics;
 extern GAPDATA full_data_62d660[];
-extern unsigned char sv_FrameMask;
-extern unsigned char sv_PopRequest;
+extern int sv_FrameMask;
+extern int sv_PopRequest;
 extern char ai_Chars[];
-extern unsigned char ai_Unk5fe710;
+extern int ai_Unk5fe710;
 extern GAPDATA full_data_60d224[];
 extern GAPDATA full_data_62d6bc[];
 extern GAPDATA full_data_62d010[];
 extern unsigned char ai_OwnPlayer;
 extern unsigned char ai_TimeHour;
-extern unsigned char cm_FieldObject;
-extern unsigned char ai_Unk5eb94c;
-extern const unsigned char ai_Unk5eeab8;
-extern unsigned char ai_Relations;
+extern char * cm_FieldObject;
+extern float ai_Unk5eb94c;
+extern const int ai_Unk5eeab8[24];
+extern signed char ai_Relations[768][768];
 extern unsigned char he_Events;
 int d2_CreateChildWindow(short x, short y, short w, short h, unsigned int flags, int win);
 int d2_WinOpenInputIcon(int x, int y, int icon, unsigned char flags, int win);

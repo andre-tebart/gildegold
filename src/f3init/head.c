@@ -24,8 +24,8 @@ extern char ai_PlayerSlots[][0x2f4];
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 extern char d3_AnimHead[];
 extern char gm_PlayerRecords[];
-extern unsigned char gm_Offers;
-extern unsigned char ai_Unk760420;
+extern int gm_Offers[528];
+extern float ai_Unk760420;
 extern unsigned char ch_Motions;
 
 /* the scene object view of this unit: a CHARACTER (ch.h, 0x244 bytes, the list 0x1468ae0); the unit cannot

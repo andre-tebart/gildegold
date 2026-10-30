@@ -26,7 +26,7 @@
 extern char txt_Keys[];
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
-extern unsigned char ai_Relations;
+extern signed char ai_Relations[768][768];
 
 /* 0x418ce0..0x41bdd0: unk_418ce0.c until layout 2026-10-22 (character to key code table, DirectDraw / Direct3D
    error text); joined: the .data block starts with dd_vesa's -1 at 0x5f3c48, then d3d_Error's texts, then the
