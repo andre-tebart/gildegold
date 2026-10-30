@@ -18,7 +18,7 @@
 #include "data_views.h"
 extern unsigned char d3_MipSkip;
 
-void *tex_Create(char *name, int size, char hicol, D3TEXFLAGS flags, unsigned char f0, unsigned char f6a,
+struct TSTEXTURE; struct TSTEXTURE *tex_Create(char *name, int size, char hicol, D3TEXFLAGS flags, unsigned char f0, unsigned char f6a,
                  int npal, unsigned char *pal, char mips);                              /* 0x461230 */
 
 extern int d3s_EdgeX[4];

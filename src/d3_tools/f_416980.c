@@ -28,7 +28,7 @@ void d3t_CreateSnowMipmaps(void)
     int i, j, k, x, y, size, n, cnt;
 
     flags.all = 0;
-    snow_tex = tex_Load("snow_256_ns", flags, 0, 0);
+    snow_tex = (D3TEXHANDLE *)tex_Load("snow_256_ns", flags, 0, 0);
     lppal = 0;
     if (snow_tex) {
         tex_SetHiColor((D3TEXTURE *)snow_tex, 1);

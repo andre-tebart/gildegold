@@ -69,7 +69,7 @@ char d3_MirDrawObject(D3OBJECT *obj, D3MIRROR *m)
                 && ((t->drawFlags & 4) || ((a->sx - b->sx)) * (a->sy - c->sy) < ((a->sy - b->sy)) * (a->sx - c->sx))) {
                 d3_SortPtr->item = t;
                 if (tt) {
-                    d3_SortPtr->key = (tt - d3_Textures) + 1;
+                    d3_SortPtr->key = (tt - (D3TEXTURE *)d3_Textures) + 1;
                     *(int *)((char *)tt + 0x54) = d3_FrameCount;
                 } else
                     d3_SortPtr->key = 0;

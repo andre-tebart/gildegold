@@ -349,7 +349,7 @@ typedef struct D3TEXMAP {           /* d3_SetObjectAlpha: a texture and its repl
     D3TEXTURE *to;
 } D3TEXMAP;
 struct TSTEXTURE; struct TSTEXTURE *tex_ReleaseAlias(struct TSTEXTURE *tex, char group);                                /* 0x461610, ts_texture.c */
-D3TEXTURE *tex_AliasForFlags(D3TEXTURE *tex, D3TEXFLAGS f, char group);                     /* 0x4616a0, ts_texture.c */
+struct TSTEXTURE; struct TSTEXTURE *tex_AliasForFlags(struct TSTEXTURE *tex, D3TEXFLAGS flags, char group);  /* 0x4616a0, ts_texture.c (TSFLAGS is D3TEXFLAGS) */
 
 extern D3PARTSYS d3_ParEnd;                 /* 0xfb9280, particle system list end marker */
 void par_Delete(D3PARTSYS *ps);                                                         /* 0x455760 */

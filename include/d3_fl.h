@@ -270,7 +270,7 @@ extern char dd_HasMMX;                      /* 0x631220, dd_vesa.c */
 
 void d3fl_Invalidate(D3FLMAP *map);         /* 0x440140 */
 unsigned int util_Hash(unsigned char *buf, unsigned int len);                                            /* 0x401000 */
-D3FLTEX *tex_CreateHi(char *name, int size, D3TEXFLAGS flags, unsigned char f0, unsigned char f6a, char mips); /* 0x4613b0, ts_texture.c */
+struct TSTEXTURE; struct TSTEXTURE *tex_CreateHi(char *name, int size, D3TEXFLAGS flags, unsigned char f0, unsigned char f6a, char mips); /* 0x4613b0, ts_texture.c (TSFLAGS is D3TEXFLAGS) */
 void dd_MakeColorTables(DWORD rmask, DWORD gmask, DWORD bmask, unsigned long *tab);   /* 0x41ea20, dd_vesa.c */
 
 /* d3_fl.c functions used before their definition */

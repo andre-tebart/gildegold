@@ -95,7 +95,7 @@ D3TSNOW *d3t_CreateSnow(int count)
     }
     D3_ZERO(&flags, sizeof(flags));
     flags.b[2] |= 2;
-    snow->Texture = tex_Load("Schneeflocke", flags, 0, 0);
+    snow->Texture = (D3TEXHANDLE *)tex_Load("Schneeflocke", flags, 0, 0);
     if (snow->Texture)
         tex_Reload(snow->Texture, 0);
     return snow;

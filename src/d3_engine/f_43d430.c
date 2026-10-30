@@ -46,7 +46,7 @@ void d3_SetObjectAlpha(D3OBJECT *obj, D3OBJINFO *info, D3TEXFLAGS f)
                             break;
                     if (j == n) {
                         map[j].from = t;
-                        map[j].to = tex_AliasForFlags(t, f, 1);
+                        map[j].to = (D3TEXTURE *)tex_AliasForFlags((struct TSTEXTURE *)t, f, 1);
                         n++;
                     }
                     ((D3PTRI *)s->info.tris)[i].tex = map[j].to;

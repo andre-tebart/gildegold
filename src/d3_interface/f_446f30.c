@@ -34,7 +34,7 @@ char d3if_SelectTextureSet(D3OBJECT *obj, D3SURF *surf, unsigned char set, char 
             name = ops->texnames + (ops->count * set + i) * 0x40;
             if (*name && (old = ((D3FLTEX **)surf->texHandles)[i]) != 0) {
                 tex_GetParams(old, &opts, &fmt);
-                tex = tex_Load(name, old->flags, opts, fmt);
+                tex = (D3TEXHANDLE *)tex_Load(name, old->flags, opts, fmt);
                 if (tex) {
                     D3PTRI *t;
 

@@ -17,7 +17,7 @@ D3TEXHANDLE *d3s_CacheBind(D3SCENT *c, D3SSLOT *slot, char flag, int size, unsig
         memset(&f, 0, sizeof(f));
         f.b[0] = 0x7f;
         f.b[2] |= 2;
-        c->tex = tex_Create("*shadow", size, 1, f, 0, 0, 2, d3s_Palette, flag);
+        c->tex = (D3TEXHANDLE *)tex_Create("*shadow", size, 1, f, 0, 0, 2, d3s_Palette, flag);
     }
     return c->tex;
 }

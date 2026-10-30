@@ -3,10 +3,9 @@
 #ifndef TS_TEXTURE_H
 #define TS_TEXTURE_H
 
-typedef union TSFLAGS {            /* tex_Load flags, passed by value (d3.h: D3TEXFLAGS) */
-    unsigned int all;
-    unsigned char b[4];             /* b[0] 0xff: slot from the front; b[2] 1: from the back, 4: animation frame */
-} TSFLAGS;
+#include "d3_types.h"
+typedef D3TEXFLAGS TSFLAGS;         /* tex_Load flags, passed by value: b[0] 0xff: slot from the front; b[2] 1: from
+                                       the back, 4: animation frame */
 
 /* Hardware surface cache entry: surfaces of released textures are kept for reuse. */
 typedef struct TSCACHE {            /* 0x14 bytes, ts_CacheSize of them at ts_Cache */

@@ -14,7 +14,7 @@ D3PARTSYS *par_Create(int count, char *tex, D3TEXFLAGS flags, float size, void *
     unsigned int j;
 
     if (size > 0.0 && (unsigned)count > 0) {
-        h = tex_Load(tex, flags, 0, 0);
+        h = (D3TEXHANDLE *)tex_Load(tex, flags, 0, 0);
         if (h) {
             tex_Reload(h, 0);
             ps = mem_Alloc(0x31c, "d3_par:ParticleSystem");

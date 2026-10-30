@@ -50,7 +50,7 @@ typedef struct D3MATERIAL {
 } D3MATERIAL;
 
 struct D3OBJECT;
-#include "d3_types.h"                /* D3SCENE */
+#include "d3_types.h"                /* D3SCENE, D3TEXFLAGS */
 
 typedef struct D3OBJECT D3OBJECT;
 struct D3OBJECT {
@@ -165,13 +165,6 @@ typedef struct D3TEXHANDLE {        /* returned by tex_Load */
     unsigned char frames;           /* 0x70, animation frames in the texture */
 } D3TEXHANDLE;
 
-typedef struct D3TEXFLAGS {         /* passed by value to tex_Load */
-    union {
-        unsigned char b[4];
-        unsigned int all;           /* the four flag bytes as one value (cleared at once) */
-    };
-} D3TEXFLAGS;
-
 /* Inline-asm clear used all over the engine (284 copies): byte stores up to dword alignment,
    then dwords, then the remaining bytes. */
 #define D3_ZERO_CAT(a, b) a##b
@@ -276,11 +269,11 @@ void d3_BeginScene(unsigned char fog, DWORD fogcol, unsigned char zbuffer);     
 void d3_SetBlendState(unsigned char balpha, unsigned char glow, unsigned char colorkey);   /* 0x4387b0, d3_d3d.c */
 void d3_EndScene(void);                                                                /* 0x438780 */
 
-extern D3TEXTURE *d3_Textures;              /* 0xfb9074 */
+struct TSTEXTURE; extern struct TSTEXTURE *d3_Textures;  /* 0xfb9074, the texture slots (ts_texture.h's TSTEXTURE; this header's D3TEXTURE / D3TEXHANDLE are views of one) */
 extern unsigned int d3_TexCount;            /* 0xfb9084 */
 extern void *d3_Terrain;                  /* 0x633738 */
 
-D3TEXHANDLE *tex_Load(char *name, D3TEXFLAGS flags, int a, int b);                          /* 0x4605c0, @original: ts_texture.c defines TSTEXTURE * (char *, TSFLAGS, unsigned char, unsigned char); the d3 callers were compiled against this view (D3TEXFLAGS is the same 4-byte union, TSTEXTURE / D3TEXHANDLE the same memory) */                          /* 0x4605c0 */
+struct TSTEXTURE; struct TSTEXTURE *tex_Load(char *name, D3TEXFLAGS flags, unsigned char opts, unsigned char fmt);  /* 0x4605c0, ts_texture.c (TSFLAGS is D3TEXFLAGS); the callers keep their D3TEXHANDLE / D3FLTEX view of the slot */
 void d3_SetObjectAlpha(D3OBJECT *obj, struct D3OBJINFO *info, D3TEXFLAGS f);           /* 0x43d430, f.b[0] = alpha */
 struct TSTEXTURE; void tex_Reload(struct TSTEXTURE *tex, char keep);                                               /* 0x460e50 */  /* @original: ts_texture.c defines (TSTEXTURE *, char); the d3 callers were compiled against this */
 struct TSTEXTURE; void tex_Release(struct TSTEXTURE *tex);                                                          /* 0x45fbc0 */

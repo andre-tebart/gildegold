@@ -16,7 +16,7 @@ void d3iot_DeleteStockObject(D3BGF *m)
         for (i = z; i < m->npolys; i++) {
             t = m->polys[i].tex;
             if (t != -1 && !used[t]) {
-                tex_Release((D3TEXHANDLE *)&d3_Textures[t]);
+                tex_Release((D3TEXHANDLE *)&((D3TEXTURE *)d3_Textures)[t]);
                 used[m->polys[i].tex] = 1;
             }
         }

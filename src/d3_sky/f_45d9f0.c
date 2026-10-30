@@ -3,7 +3,7 @@
 void d3sky_SetLayerTex(D3SKYLAYER *l, char *name)
 {
     tex_Release(l->t);
-    l->t = tex_Load(name, l->flags, 0, 0);
+    l->t = (D3TEXHANDLE *)tex_Load(name, l->flags, 0, 0);
     if (l->t)
         tex_Reload(l->t, 0);
 }

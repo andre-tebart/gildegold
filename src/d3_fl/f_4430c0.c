@@ -111,7 +111,7 @@ void d3fl_DrawWater(D3FLMAP *map, D3FLTILE *t)
                 reg = &map->regions[poly->region];
                 d3_SortPtr->item = poly;
                 if (reg->tex2) {
-                    d3_SortPtr->key = ((D3TEXTURE *)reg->tex2 - d3_Textures) + 1;
+                    d3_SortPtr->key = ((D3TEXTURE *)reg->tex2 - (D3TEXTURE *)d3_Textures) + 1;
                     reg->tex2->stamp = d3_FrameCount;
                 } else
                     d3_SortPtr->key = 0;

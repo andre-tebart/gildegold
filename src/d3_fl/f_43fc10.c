@@ -31,7 +31,7 @@ D3FLTEX *d3fl_GetTexture(unsigned char *map, int mapsize, int x, int y, unsigned
             c->t.texsize = min((0x40 >> d3fl_DetailShift) * size, d3fl_DetailScale << d3fl_DetailSizeShift);
             u.i = 0;
             u.f.b[0] = 0xff;
-            c->tex = tex_CreateHi(names[size], c->t.texsize, u.f, 0, 0, d3fl_Mips);
+            c->tex = (D3FLTEX *)tex_CreateHi(names[size], c->t.texsize, u.f, 0, 0, d3fl_Mips);
             c->tex->unk58 = 0;
         } else
             strcpy(c->tex->name, names[size]);

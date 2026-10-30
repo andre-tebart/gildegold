@@ -10,7 +10,7 @@ void d3fl_UpdateWater(unsigned long time, unsigned int n, D3FLREGION *r)
 
     for (k = 0; k < n; k++, r++) {
         if (r->tex && r->tex->frames > 0 && r->tex->speed > 0)
-            r->tex2 = tex_GetFrameF((D3TEXTURE *)r->tex - d3_Textures,
+            r->tex2 = tex_GetFrameF((D3TEXTURE *)r->tex - (D3TEXTURE *)d3_Textures,
                                    time / d3_AnimDiv[r->tex->speed] % r->tex->frames);
         dt = time - r->time;
         if (dt > 0) {

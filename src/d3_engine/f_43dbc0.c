@@ -56,8 +56,8 @@ void d3_InflateObject(D3OBJECT *obj)
                     if (((D3SRCPOLY *)t->src)->mat >= 0) {
                         m = mat[((D3SRCPOLY *)t->src)->mat];
                         if (m < 0)
-                            mat[((D3SRCPOLY *)t->src)->mat] = m = ((D3TEXTURE **)s->texHandles)[j++] - d3_Textures;
-                        t->tex = tex = &d3_Textures[m];
+                            mat[((D3SRCPOLY *)t->src)->mat] = m = ((D3TEXTURE **)s->texHandles)[j++] - (D3TEXTURE *)d3_Textures;
+                        t->tex = tex = &((D3TEXTURE *)d3_Textures)[m];
                         if (((unsigned char *)tex)[0x6c] < 0xff || (((unsigned char *)tex)[0x6e] & 3)) {
                             col.c.a = ((unsigned char *)tex)[0x6c];
                             if (((unsigned char *)tex)[0x6e] & 1) {

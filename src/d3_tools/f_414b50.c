@@ -15,7 +15,7 @@ void d3t_FreeSnow(D3TSNOW *snow)
             mem_Free(snow->flakes);
             snow->flakes = 0;
         }
-        tex = d3_Textures;
+        tex = (D3TEXTURE *)d3_Textures;
         for (i = 0; i < d3_TexCount; tex++, i++) {
             if (tex->refs > 0 && _strnicmp("DC_", tex->name, 3) == 0 && !(tex->flags & 2)) {
                 if (!tex_SetHiColor(tex, !d3d_UsedTexFormat.fourcc && tex->filebpp > 8 ? 1 : 0))

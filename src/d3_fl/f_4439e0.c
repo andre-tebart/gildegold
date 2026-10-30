@@ -617,7 +617,7 @@ void d3fl_Draw(D3FLMAP *map, char water)
                             }
                             d3_SortPtr->item = poly;
                             if (tex) {
-                                d3_SortPtr->key = ((D3TEXTURE *)tex - d3_Textures) + 1;
+                                d3_SortPtr->key = ((D3TEXTURE *)tex - (D3TEXTURE *)d3_Textures) + 1;
                                 tex->stamp = d3_FrameCount;
                             } else
                                 d3_SortPtr->key = 0;

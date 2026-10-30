@@ -121,7 +121,7 @@ void par_Draw(D3PARTSYS *ps)
                     D3TEXTURE *tt = t->tex;
                     d3_SortPtr->item = t;
                     if (tt) {
-                        d3_SortPtr->key = (tt - d3_Textures) + 0x8000;
+                        d3_SortPtr->key = (tt - (D3TEXTURE *)d3_Textures) + 0x8000;
                         D3PAR_TEXSTAMP(tt) = d3_FrameCount;
                     } else
                         d3_SortPtr->key = 0;

@@ -89,7 +89,7 @@ draw:
             if (t->flags & 0x80) {
                 d3_SortPtr->item = t;
                 if (t->tex) {
-                    d3_SortPtr->key = (t->tex - d3_Textures) + base;
+                    d3_SortPtr->key = (t->tex - (D3TEXTURE *)d3_Textures) + base;
                     *(int *)((char *)t->tex + 0x54) = d3_FrameCount;
                 } else
                     d3_SortPtr->key = 0;

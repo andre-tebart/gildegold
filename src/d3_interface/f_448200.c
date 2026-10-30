@@ -9,7 +9,7 @@ D3TEXHANDLE *d3if_LoadSprite(char *name, char glow)
     f.bits.alpha = 0x7f;
     f.bits.glow = glow;
     if (d3d_Device && (d3d_UsedCard.info.caps & 1)) {
-        t = tex_Load(name, f.raw, 0, 0);
+        t = (D3TEXHANDLE *)tex_Load(name, f.raw, 0, 0);
         if (t)
             tex_Reload(t, 0);
         return t;

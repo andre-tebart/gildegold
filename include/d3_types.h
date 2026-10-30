@@ -1,7 +1,14 @@
-/* The scene record of d3's table d3_Scenes, for the units that declare the table without the rest of d3.h:
-   types only. d3.h includes it. */
+/* d3 records other units need without the rest of d3.h: the scene record of the table d3_Scenes and
+   the texture flags tex_Load takes by value (ts_texture.c's TSFLAGS). Types only; d3.h includes it. */
 #ifndef D3_TYPES_H
 #define D3_TYPES_H
+
+typedef struct D3TEXFLAGS {         /* passed by value to tex_Load (TSFLAGS in ts_texture.h) */
+    union {
+        unsigned char b[4];
+        unsigned int all;           /* the four flag bytes as one value (cleared at once) */
+    };
+} D3TEXFLAGS;
 
 typedef struct D3SCENE {            /* 0x3e0 bytes, 64 of them in d3_Scenes */
     char pad000[0x80];
