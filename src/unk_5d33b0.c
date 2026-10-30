@@ -2430,7 +2430,7 @@ void ai_TailorChatWindow(int request)
     int obj;
     int found;
     int ids[4];                         /* the record ids the query fills (its max is 4) */
-    char buf[0x400];                    /* the two event texts are built at buf and buf + 0x10 */
+    char buf[0x400];                    /* both event texts are built here, one after the other */
     int limit;
     int wnd;
     int pump;
@@ -2461,24 +2461,25 @@ void ai_TailorChatWindow(int request)
     while (pump != 0) {
         if (dm_L.rup != 0 || d2_ClickedId == 1)
             sv_PopRequest = 1;
-        if (d2_ClickedId != -1 && obj == d2_PointerObj) {
+        if (d2_ClickedId != -1 && d2_PointerObj == obj) {
             if (found != 0) {
                 for (i = 0; i < count; i++)
                     cm_SendProofExecuted(ids[i], ((AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c))->netId);
                 cm_SendMoneyDelta(((AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c))->netId, -1);
                 cm_SendMoneyDelta(req->handle, -1);
                 cm_SendSetField(rec->netId, 0x1cc, 4, 0x20000, 0);
-                txt_Format(buf + 0x10, 0x422f, req->id);
-                he_ShowNews(((AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c))->netId, -1, buf + 0x10,
-                            0, 0x5ec, 0);
+                txt_Format(buf, 0x422f, req->id);
+                he_ShowNews(((AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c))->netId, -1, buf, 0, 0x5ec,
+                            0);
                 if (req->kind == 6 || req->kind == 7) {
                     txt_Format(buf, 0x4230, ai_PlayerId, 1);
                     he_ShowNews(req->handle, -1, buf, 0, 0x5ec, "_NACHRICHTEN_NEU_15");
                 }
+                sv_PopRequest = 3;
             } else {
                 cm_SendMoneyDelta(req->handle, -1);
+                sv_PopRequest = 3;
             }
-            sv_PopRequest = 3;
         }
         pump = sv_RunFrame(ai_TailorChatWindow, 0x67fff);
     }
