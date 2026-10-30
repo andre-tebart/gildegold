@@ -346,7 +346,7 @@ int unk_Unk4ed910(void *f, int v)
             return 0;
         if (UNK_FR(e + 0x7c, 4, 1, f) == 0)
             return 0;
-        *(int *)(e + 0x78) = ai_Unk6333cc;
+        *(int *)(e + 0x78) = ai_ClockMs;
         if (UNK_FR(e + 0x80, 16, 1, f) == 0)
             return 0;
         if (UNK_FR(e + 0x90, 16, 1, f) == 0)
@@ -365,7 +365,7 @@ int unk_Unk4ed910(void *f, int v)
             return 0;
         if (UNK_FR(e + 0xe4, 4, 1, f) == 0)
             return 0;
-        *(int *)(e + 0xe0) = ai_Unk6333cc;
+        *(int *)(e + 0xe0) = ai_ClockMs;
         if (UNK_FR(e + 0xe8, 16, 1, f) == 0)
             return 0;
         if (UNK_FR(e + 0xf8, 16, 1, f) == 0)
@@ -384,7 +384,7 @@ int unk_Unk4ed910(void *f, int v)
             return 0;
         if (UNK_FR(e + 0x14c, 4, 1, f) == 0)
             return 0;
-        *(int *)(e + 0x148) = ai_Unk6333cc;
+        *(int *)(e + 0x148) = ai_ClockMs;
         if (UNK_FR(e + 0x150, 12, 1, f) == 0)
             return 0;
         *(char **)(e + 0x16c) = q;
@@ -973,7 +973,7 @@ int unk_Unk4eee00(int *p, int w)
                 for (j = 0x1a; j != 0; j--)
                     *d++ = *s++;
                 *(unsigned *)(e + 4) |= 2;
-                *(int *)(part + 0x78) = ai_Unk6333cc;
+                *(int *)(part + 0x78) = ai_ClockMs;
                 *(int *)(part + 0x74) = 1;
                 *(int *)(part + 0x7c) = 0;
                 if (w != 0)

@@ -1067,7 +1067,7 @@ int main_JoinNetworkGame(void)
 /* 0x532c30, the "Menu\CHOOSENETWORK_IP" dialog: asks for the host address (the INI value [Network] Host, default 127.0.0.1), stores the entered address in 0x75e1c0 and in the INI file 0x75e480; returns 1 when
    confirmed */
 
-int main_Unk532c30(void)
+int main_EnterHostAddress(void)
 {
     char buf[260];
     int r, f, ed, ok, run, i;
@@ -1085,7 +1085,7 @@ int main_Unk532c30(void)
     d2_SetObjValue(ed, buf);
     d2_SetForm(f, 1);
     ok = d2_GetWinObj(f, 1, io_PrintText(0x1cb0));
-    run = sv_RunFrame((int)main_Unk532c30, 0x24087);
+    run = sv_RunFrame((int)main_EnterHostAddress, 0x24087);
     while (run != 0) {
         if (U_I(((unsigned)&dm_L + 0x20)) != 0 || *(char *)(unsigned)&kb_Last == 1)
             U_I((unsigned)&sv_PopRequest) = 1;
@@ -1102,7 +1102,7 @@ int main_Unk532c30(void)
             WritePrivateProfileStringA("Network", "Host", buf, (char *)(unsigned)&ai_OptionsFile);
             U_I((unsigned)&sv_PopRequest) = 1;
         }
-        run = sv_RunFrame((int)main_Unk532c30, 0x24087);
+        run = sv_RunFrame((int)main_EnterHostAddress, 0x24087);
     }
     d2_CloseView(f);
     return r;
@@ -1121,20 +1121,35 @@ int d2_FindPic();
 int sv_OpenMessageBox(int text, unsigned char flags);
 int ls_ReadSaveHeader();
 
-/* 0x532da0 */
-int main_Unk532da0(int host)
+/* 0x532da0, the network game search window "Menu\SEARCH_NETWORK": every 1.5 s (the clock ai_ClockMs) or on the
+   refresh button (btn[1]) it scans the LAN (udp_FindServers, port 12345, 3 s, up to 8 hosts) under the message
+   txt 0x1cb1 and lists each host's game: its city arms ("_STADTWAPPEN_<city>", "_STADTWAPPEN_BERLIN" without
+   one), the host, the name and the players (txt 0x1cbc). saved 0 lists the new games (0x3f), saved 1 the saved
+   ones (0x7f) whose "Gamedata\network\<save>.SAV" holds the same party table; a full new game is disabled. The
+   join button (btn[0], enabled while one is selected) copies the chosen host into main_NetHost (the "Network"
+   "Host" option) and its record into cm_NetGame and, for a saved game, the city, the save name and the joined
+   character cm_JoinChar from the save's header (as main_JoinNetworkGame); btn[2] opens main_EnterHostAddress.
+   Returns 1 when a game was chosen. @deep body read against the original and typed: UDPSERVER recs[8] (info.game is the NETHDR), LSHDR for both headers, one name[0x80] (the original's copy target stays fixed while the record walks), key[0x80], ent[8][3], two path[260], d2_Objs / d2_Radios / d2_Wins fields, txt_Ptrs[0x1cb1 / 0x1cbd..f]; the call sequence and every constant are identical to the original (asmdiff --all, calls and immediates diffed). Left is allocation: the original's frame is 0x990 (ours 0x988), it keeps list in [esp+0x14] (ours in ebp / [esp+0x24]), the ent row pointer in [esp+0x18] and the name copy as src + (name - &recs[i].name) in ebp stepped by -0x80 per host (ours: two pointers), and ok in [esp+0x24]. Tried: recs[i] indexed instead of a record pointer (383 -> 347 ins, kept). */
+int main_SearchNetworkGame(int saved)
 {
-    int ret, redraw, ok, f, btn[3], sel, h, n, i, k, cnt, run, last, list, ent[8][3], ent_i;
+    LSHDR joined;                       /* the header of the chosen saved game */
+    char name[0x80];
+    char key[0x80];
+    LSHDR hdr;                          /* the header of a listed saved game */
+    int ent[8][3];                      /* per host: its picture object, its text window */
+    char path[260];
+    char path2[260];
+    UDPSERVER recs[8];
+    UDPSERVER *r;
+    VFSFILE *fp;
     unsigned ts;
-    char recs[8][0x80], names[8][0x80], path[0x100], key[0x100], hdr[0xfc];
-    char *r, *s;
+    int ret, redraw, ok, f, btn[3], h, n, i, k, cnt, list, obj, sel;
     char c;
-    int *d;
 
     ret = 0;
     redraw = 1;
-    ts = U_I((unsigned)&ai_Unk6333cc);
-    last = -1;
+    ts = ai_ClockMs;
+    list = -1;
     f = d2_OpenForm(0, 0, "Menu\\SEARCH_NETWORK");
     d2_PlaceViewWindows(f, 1);
     d2_PlaceMainWindowF(f, 2);
@@ -1143,171 +1158,162 @@ int main_Unk532da0(int host)
     d2_SetForm(f, 1);
     io_PrintText(0x1ca5);
     d2_SetForm(f, 3);
-    sv_ButtonRow(d2_LastWindow, 0, btn, 3, U_I((unsigned)&full_data_14414b4), U_I((unsigned)&full_data_14414b8), U_I((unsigned)&full_data_14414bc));
+    sv_ButtonRow(d2_LastWindow, 0, btn, 3, txt_Ptrs[0x1cbd], txt_Ptrs[0x1cbe], txt_Ptrs[0x1cbf]);
     d2_SetObjEnabled(btn[0], 0);
-    run = sv_RunFrame((int)main_Unk532da0, 0x24087);
-    if (run != 0) {
+    if (sv_RunFrame((int)main_SearchNetworkGame, 0x24087) != 0) {
         do {
-            if (ts + 0x5dc < U_I((unsigned)&ai_Unk6333cc) || redraw) {
+            if ((unsigned)ai_ClockMs > ts + 0x5dc || redraw) {
                 ok = 1;
-                U_I((unsigned)&d2_CutsceneActive) = 1;
-                h = sv_OpenMessageBox(U_I(((unsigned)&ai_DifficultyTexts + 0x94)), 0);
+                d2_CutsceneActive = 1;
+                h = sv_OpenMessageBox((int)txt_Ptrs[0x1cb1], 0);
                 n = udp_FindServers(0x3039, 0xbb8, recs, 8);
                 d2_CloseView(h);
-                U_I((unsigned)&d2_CutsceneActive) = 0;
+                d2_CutsceneActive = 0;
                 d2_SetForm(f, 2);
                 d2_RemoveWindowObjects(d2_LastWindow, 1);
-                if (last != -1)
-                    d2_RadioClear(last);
+                if (list != -1)
+                    d2_RadioClear(list);
                 list = d2_CreateRadioGroup(0);
                 for (i = 0; i < n; i++) {
-                    r = recs[i];
                     ent[i][0] = -1;
-                    if ((*(int *)(r + 0x7c) == 0x3f && host != 0) || (*(int *)(r + 0x7c) == 0x7f && host == 0))
+                    if ((recs[i].flags == 0x3f && saved != 0) || (recs[i].flags == 0x7f && saved == 0))
                         continue;
-                    if (*(int *)(r + 0x7c) == 0x3f) {
+                    if (recs[i].flags == 0x3f) {
                         k = 0;
                         do {
-                            c = r[0x16 + k];
-                            names[i][k] = c;
+                            c = recs[i].info.game.name[k];
+                            name[k] = c;
                             k++;
                         } while (c != 0);
                     } else {
-                        sprintf(path, "Gamedata\\network\\%s.SAV", r + 0x3a);
-                        h = vfs_Tfopen(path, (char *)(unsigned)"rb", U_I((unsigned)&d3_Unk6333fc));
-                        if (h == 0) {
+                        sprintf(path, "Gamedata\\network\\%s.SAV", recs[i].info.game.save);
+                        fp = vfs_Tfopen(path, "rb", (int)vfs_Root);
+                        if (fp == 0) {
                             ok = 0;
                         } else {
                             ok = 1;
-                            ls_ReadSaveHeader(h, hdr);
-                            cnt = (unsigned char)hdr[0x31];
+                            ls_ReadSaveHeader((int)fp, (int *)&hdr);
+                            cnt = hdr.players;
                             for (k = 0; k < cnt; k++) {
-                                if (*(int *)(r + 0x5a + k * 4) != *(int *)(hdr + 0x78 + k * 4)) {
+                                if (recs[i].info.game.party[k] != hdr.party[k]) {
                                     ok = 0;
                                     break;
                                 }
                             }
-                            vfs_fclose(h);
+                            vfs_fclose(fp);
                         }
                         k = 0;
                         do {
-                            c = r[0x16 + k];
-                            names[i][k] = c;
+                            c = recs[i].info.game.name[k];
+                            name[k] = c;
                             k++;
                         } while (c != 0);
                     }
                     if (ok == 0) {
                         ent[i][0] = -1;
-                    } else {
-                        _strupr(names[i]);
-                        sprintf(key, "_STADTWAPPEN_%s", names[i]);
-                        h = d2_FindPic(key);
-                        if (h == -1)
-                            h = d2_FindPic("_STADTWAPPEN_BERLIN");
-                        d2_SetForm(f, 2);
-                        ent_i = d2_WinOpenPic(8, i << 7, h, d2_LastWindow);
-                        ent[i][0] = ent_i;
-                        *(int *)(U_I((unsigned)&d2_Objs) + ent_i * 0x2ec + 0x4c) = 1;
-                        if (*(int *)(r + 0x7c) == 0x3f && (unsigned char)r[0x37] >= (unsigned char)r[0x36])
-                            d2_SetObjEnabled(ent_i, 0);
-                        *(int *)(U_I((unsigned)&d2_Objs) + ent_i * 0x2ec + 0x1c0) = 3;
-                        d2_RadioAdd(list, ent_i);
-                        ent[i][1] = d2_CreateChildWindow(0x88, (i << 7) + 0xc, 0x190, 0x78, 0x10, d2_LastWindow);
-                        d2_SetObjFont(U_I(((unsigned)&ai_Unkf8f13c + 0x250) + d2_LastWindow * 0x3c4), 0x53);
-                        io_PrintText(0x1cbc, r, r + 0x16, (unsigned char)r[0x36]);
+                        continue;
                     }
+                    _strupr(name);
+                    sprintf(key, "_STADTWAPPEN_%s", name);
+                    h = d2_FindPic(key);
+                    if (h == -1)
+                        h = d2_FindPic("_STADTWAPPEN_BERLIN");
+                    d2_SetForm(f, 2);
+                    obj = d2_WinOpenPic(8, i << 7, h, d2_LastWindow);
+                    ent[i][0] = obj;
+                    d2_Objs[obj].interactive = 1;
+                    if (recs[i].flags == 0x3f && recs[i].info.game.joined >= recs[i].info.game.players)
+                        d2_SetObjEnabled(obj, 0);
+                    d2_Objs[obj].style = 3;
+                    d2_RadioAdd(list, obj);
+                    ent[i][1] = d2_CreateChildWindow(0x88, (i << 7) + 0xc, 0x190, 0x78, 0x10, d2_LastWindow);
+                    d2_SetObjFont(d2_Wins[d2_LastWindow].parent, 0x53);
+                    io_PrintText(0x1cbc, recs[i].ip, recs[i].info.game.name, recs[i].info.game.players);
                 }
                 redraw = 0;
-                ts = U_I((unsigned)&ai_Unk6333cc);
-                last = list;
+                ts = ai_ClockMs;
             }
-            if (U_I(((unsigned)&dm_L + 0x20)) != 0 || *(char *)(unsigned)&kb_Last == 1)
-                U_I((unsigned)&sv_PopRequest) = 1;
-            if (U_I((unsigned)&d2_ClickedId) != -1) {
-                if (ai_Unk5fe710 == btn[0]) {
-                    sel = U_I((unsigned)&d2_RadioSel + list * 0x8c);
+            if (dm_L.rup != 0 || kb_Last == 1)
+                sv_PopRequest = 1;
+            if (d2_ClickedId != -1) {
+                if (d2_PointerObj == btn[0]) {
+                    sel = d2_Radios[list].sel;
                     if (sel != -1) {
-                        r = recs[sel];
+                        r = &recs[sel];
                         k = 0;
                         do {
-                            c = r[k];
+                            c = r->ip[k];
                             main_NetHost[k] = c;
                             k++;
                         } while (c != 0);
-                        WritePrivateProfileStringA("Network", "Host", main_NetHost, (char *)(unsigned)&ai_OptionsFile);
-                        U_I((unsigned)&sv_PopRequest) = 1;
+                        WritePrivateProfileStringA("Network", "Host", main_NetHost, ai_OptionsFile);
+                        sv_PopRequest = 1;
                         ret = 1;
-                        d = (int *)&cm_NetGame;
-                        for (k = 0; k < 0x20; k++)
-                            d[k] = ((int *)r)[k];
-                        if (host != 0 && *(int *)(r + 0x7c) == 0x7f) {
+                        memcpy(&cm_NetGame, r, sizeof(CMNETGAME));
+                        if (saved != 0 && r->flags == 0x7f) {
                             k = 0;
                             do {
-                                c = r[0x16 + k];
-                                *(char *)(((unsigned)&ai_DataPath + 0x220) + k) = c;
+                                c = r->info.game.name[k];
+                                ai_DataPath[0x220 + k] = c;
                                 k++;
                             } while (c != 0);
-                            s = r + 0x3a;
                             k = 0;
                             do {
-                                c = s[k];
+                                c = r->info.game.save[k];
                                 main_NetSaveName[k] = c;
                                 k++;
                             } while (c != 0);
                             k = 0;
                             do {
-                                c = s[k];
-                                *(char *)(((unsigned)&ls_SavePath + 0xca) + k) = c;
+                                c = r->info.game.save[k];
+                                ls_SavePath.net.save[k] = c;
                                 k++;
                             } while (c != 0);
-                            U_I((unsigned)&ai_GameFlags) |= 0x40;
-                            sprintf(path, "Gamedata\\network\\%s.SAV", main_NetSaveName);
-                            memset(hdr, 0, 0xfc);
-                            h = vfs_Tfopen(path, (char *)(unsigned)"rb", U_I((unsigned)&d3_Unk6333fc));
-                            if (h != 0) {
-                                ls_ReadSaveHeader(h, hdr);
-                                vfs_fclose(h);
+                            ai_GameFlags |= 0x40;
+                            sprintf(path2, "Gamedata\\network\\%s.SAV", main_NetSaveName);
+                            memset(&joined, 0, sizeof(LSHDR));
+                            fp = vfs_Tfopen(path2, "rb", (int)vfs_Root);
+                            if (fp != 0) {
+                                ls_ReadSaveHeader((int)fp, (int *)&joined);
+                                vfs_fclose(fp);
                             }
-                            d = (int *)((unsigned)&ai_Unk9364e0 + 0x2c0);
-                            for (k = 0; k < 0xc; k++)
-                                d[k] = 0;
-                            U_I(((unsigned)&ai_Unk9364e0 + 0x2e0)) = *((unsigned *)hdr + 0x60 / 4) & 0xff;
-                            U_I(((unsigned)&ai_Unk9364e0 + 0x2e4)) = *((unsigned *)hdr + 0x6c / 4) & 0xff;
+                            memset(&cm_JoinChar, 0, sizeof(CMJOIN));
+                            cm_JoinChar.char164 = joined.char164;
+                            cm_JoinChar.char09 = joined.char09;
                             k = 0;
                             do {
-                                c = hdr[0x40 + k];
-                                *(char *)(((unsigned)&ai_Unk9364e0 + 0x2c0) + k) = c;
+                                c = joined.charText1[k];
+                                cm_JoinChar.text1[k] = c;
                                 k++;
                             } while (c != 0);
-                            if (0x10053 < *(int *)hdr) {
+                            if (joined.version >= 0x10054) {
                                 k = 0;
                                 do {
-                                    c = hdr[0x50 + k];
-                                    *(char *)(((unsigned)&ai_Unk9364e0 + 0x2d0) + k) = c;
+                                    c = joined.charText2[k];
+                                    cm_JoinChar.text2[k] = c;
                                     k++;
                                 } while (c != 0);
-                                U_I(((unsigned)&ai_Unk9364e0 + 0x2e8)) = *((unsigned *)hdr + 0x60 / 4) >> 0x18;
-                                U_I(((unsigned)&ai_Unk9364e0 + 0x2ec)) = *((int *)hdr + 0x64 / 4);
+                                cm_JoinChar.char0c = joined.char0c;
+                                cm_JoinChar.char54 = joined.char54;
                             }
                         }
                     }
-                } else if (ai_Unk5fe710 == btn[1]) {
+                } else if (d2_PointerObj == btn[1]) {
                     redraw = 1;
-                } else if (ai_Unk5fe710 == btn[2]) {
+                } else if (d2_PointerObj == btn[2]) {
                     d2_SetViewEnabled(f, 0);
-                    if (main_Unk532c30() != 0) {
-                        U_I((unsigned)&sv_PopRequest) = 1;
+                    if (main_EnterHostAddress() != 0) {
+                        sv_PopRequest = 1;
                         ret = 1;
                     }
                     d2_SetViewEnabled(f, 1);
                 }
             }
-            if (U_I((unsigned)&d2_RadioSel + list * 0x8c) != -1)
+            if (d2_Radios[list].sel != -1)
                 d2_SetObjEnabled(btn[0], 1);
             else
                 d2_SetObjEnabled(btn[0], 0);
-            run = sv_RunFrame((int)main_Unk532da0, 0x24087);
-        } while (run != 0);
+        } while (sv_RunFrame((int)main_SearchNetworkGame, 0x24087) != 0);
         if (list != -1)
             d2_RadioClear(list);
     }
@@ -1348,7 +1354,7 @@ int main_Unk533470(void)
                 if (ai_Unk5fe710 != b2)
                     goto lnext;
                 d2_SetViewEnabled(f, 0);
-                run = main_Unk532da0(1);
+                run = main_SearchNetworkGame(1);
             }
             if (run != 0) {
                 r = 1;
@@ -1396,7 +1402,7 @@ int main_Unk5335b0(void)
             } else if (ai_Unk5fe710 == b2) {
                 U_I((unsigned)&ai_GameFlags) = 5;
                 d2_SetViewEnabled(f, 0);
-                run = main_Unk532da0(0);
+                run = main_SearchNetworkGame(0);
             } else {
                 if (ai_Unk5fe710 != b3)
                     goto lnext;

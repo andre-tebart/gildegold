@@ -107,7 +107,7 @@ extern signed char ai_Relations[768][768];
 extern const int ai_Unk5ed100[16];
 extern char ai_Unk91f700[];
 extern const int ai_Unk5eeab8[24];
-extern int ai_Unk6333cc;
+extern int ai_ClockMs;
 extern char ch_EmptyName[1];
 extern unsigned short * ai_PlayerChar;
 extern float ai_Unk5eb780;
@@ -6252,7 +6252,7 @@ int he_Unk550070(int ev)
                 *(unsigned char *)(*(int *)(ev + 0xc8) + 0x212) = *(unsigned char *)(*(int *)(ev + 0xc8) + 0x212) | 0xc;
                 *(unsigned char *)(*(int *)(ev + 0xc8) + 0x213) = *(unsigned char *)(*(int *)(ev + 0xc8) + 0x213) & 0xfb;
                 d3t_PlayAnim(*(int *)(ev + 0xc8), "*sensenmann.baf");
-                *(int *)(ev + 0xec) = U_I((unsigned)&ai_Unk6333cc);
+                *(int *)(ev + 0xec) = U_I((unsigned)&ai_ClockMs);
                 d3if_SelectScene(sc, 1);
                 return 1;
             }
@@ -7786,7 +7786,7 @@ int he_Unk550370(int ev)
     if (a == 0 || *(int *)(a + 0x1cc) == 0 || *(int *)(*(int *)(a + 0x1cc) + 0x10) == 0)
         goto fail;
     if (*(int *)(*(int *)(ev + 0xc8) + 0x1d0) != 0) {
-        *(int *)(ev + 0xec) = U_I((unsigned)&ai_Unk6333cc);
+        *(int *)(ev + 0xec) = U_I((unsigned)&ai_ClockMs);
         d3if_SelectScene(sc, 1);
         return 1;
     }
@@ -7807,9 +7807,9 @@ int he_Unk550370(int ev)
         d3if_SelectScene(sc, 1);
         return rv;
     }
-    dt = (float)((double)U_I((unsigned)&ai_Unk6333cc) - (double)*(unsigned int *)(ev + 0xec));
+    dt = (float)((double)U_I((unsigned)&ai_ClockMs) - (double)*(unsigned int *)(ev + 0xec));
     w = (float)ai_Unk4c3f80() * 0.25f + 0.5f;
-    *(int *)(ev + 0xec) = U_I((unsigned)&ai_Unk6333cc);
+    *(int *)(ev + 0xec) = U_I((unsigned)&ai_ClockMs);
     d3_Normalize(np);
     np[0] = np[0] * w * dt + n[0];
     np[1] = np[1] * w * dt + n[1];

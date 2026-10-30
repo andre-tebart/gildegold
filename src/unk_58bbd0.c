@@ -443,7 +443,7 @@ extern GAPDATA full_data_6f2450[];
 extern unsigned char kb_Last;
 extern int d2_LastWindow;
 extern int sv_PopRequest;
-extern int ai_Unk6333cc;
+extern int ai_ClockMs;
 extern char ai_Chars[768][0x21c];
 extern unsigned char ai_TimeHour;
 extern int ai_Unk5fe710;
@@ -461,7 +461,7 @@ extern int d2_LastWindow;
 extern struct D2OBJ *d2_Objs;
 extern int ai_CameraStep;
 extern char ai_PlayerSlots[4][0x2f4];
-extern int ai_Unk6333cc;
+extern int ai_ClockMs;
 extern char ai_Unk7d6a60[0xd4d0];
 extern D2VIEW d2_Views[];
 extern D2WIN d2_Wins[];
@@ -880,7 +880,7 @@ extern char * ai_Unk1468ae0[0x300];
 extern int ai_Unk5fe710;
 extern int ai_Unk62a8cc;
 extern int ai_Unk62c26c;
-extern int ai_Unk6333cc;
+extern int ai_ClockMs;
 extern int d2_Unkf8aac8;
 extern D2VIEW d2_Views[];
 extern GAPDATA full_data_6f26c0[];
@@ -1133,7 +1133,7 @@ extern GAPDATA full_data_62d468[];
 
 extern int ai_Unk5fe710;
 extern char ai_Unk60c6c0[4];
-extern int ai_Unk6333cc;
+extern int ai_ClockMs;
 extern int d2_ClickedId;
 extern int d2_LastWindow;
 extern struct D2OBJ *d2_Objs;
@@ -6023,50 +6023,50 @@ void ai_Unk597a10(int param_1, int *param_2, int mode, int win, int frame, int w
     if (fast == 0) {
         if (mode == 1) {
             txt_Format(text, 0x1883, *param_2 + 0x30);
-            end = U_I((unsigned)&ai_Unk6333cc) + wait;
-            t0 = U_I((unsigned)&ai_Unk6333cc);
+            end = U_I((unsigned)&ai_ClockMs) + wait;
+            t0 = U_I((unsigned)&ai_ClockMs);
             while (t0 < end) {
                 sv_RunFrame(0, 0x777c7);
                 if (*(char *)(((unsigned)&ai_CharInts + 0x4) + U_W((unsigned)&ai_PlayerId) * 0x21c) == 0)
                     return;
-                if (t0 + step < U_I((unsigned)&ai_Unk6333cc)) {
+                if (t0 + step < U_I((unsigned)&ai_ClockMs)) {
                     d2_SetForm(win, frame);
                     ai_Unk597780(text);
                     step = step + step / 2;
-                    t0 = U_I((unsigned)&ai_Unk6333cc);
+                    t0 = U_I((unsigned)&ai_ClockMs);
                 }
             }
         } else if (mode == 2) {
             txt_Format(text, 0x1884, *param_2 + 0x30, U_I(param_1 + 4));
-            end = U_I((unsigned)&ai_Unk6333cc) + wait;
-            t0 = U_I((unsigned)&ai_Unk6333cc);
+            end = U_I((unsigned)&ai_ClockMs) + wait;
+            t0 = U_I((unsigned)&ai_ClockMs);
             while (t0 < end) {
                 sv_RunFrame(0, 0x777c7);
                 if (*(char *)(((unsigned)&ai_CharInts + 0x4) + U_W((unsigned)&ai_PlayerId) * 0x21c) == 0)
                     return;
-                if (t0 + step < U_I((unsigned)&ai_Unk6333cc)) {
+                if (t0 + step < U_I((unsigned)&ai_ClockMs)) {
                     d2_SetForm(win, frame);
                     ai_Unk597810(text, param_2);
                     step = step + step / 2;
-                    t0 = U_I((unsigned)&ai_Unk6333cc);
+                    t0 = U_I((unsigned)&ai_ClockMs);
                 }
             }
         } else if (mode == 3) {
             txt_Format(text, 0x1885, *param_2 + 0x30, U_I(param_1 + 4));
-            t0 = U_I((unsigned)&ai_Unk6333cc);
+            t0 = U_I((unsigned)&ai_ClockMs);
             d2_SetForm(win, frame);
             ai_Unk597920(text, param_2);
-            while (t0 + wait > U_I((unsigned)&ai_Unk6333cc)) {
+            while (t0 + wait > U_I((unsigned)&ai_ClockMs)) {
                 if (*(char *)(((unsigned)&ai_CharInts + 0x4) + U_W((unsigned)&ai_PlayerId) * 0x21c) == 0)
                     return;
                 sv_RunFrame(0, 0x777c7);
             }
         } else if (mode == 4) {
             txt_Format(text, 0x1886, *param_2 + 0x30, U_I(param_1 + 4));
-            t0 = U_I((unsigned)&ai_Unk6333cc);
+            t0 = U_I((unsigned)&ai_ClockMs);
             d2_SetForm(win, frame);
             ai_Unk597920(text, param_2);
-            while (t0 + wait > U_I((unsigned)&ai_Unk6333cc)) {
+            while (t0 + wait > U_I((unsigned)&ai_ClockMs)) {
                 if (*(char *)(((unsigned)&ai_CharInts + 0x4) + U_W((unsigned)&ai_PlayerId) * 0x21c) == 0)
                     return;
                 sv_RunFrame(0, 0x777c7);
@@ -6082,10 +6082,10 @@ void ai_Unk597a10(int param_1, int *param_2, int mode, int win, int frame, int w
         txt_Format(text, 0x1885, *param_2 + 0x30, U_I(param_1 + 4));
     else if (mode == 4)
         txt_Format(text, 0x1886, *param_2 + 0x30, U_I(param_1 + 4));
-    t0 = U_I((unsigned)&ai_Unk6333cc);
+    t0 = U_I((unsigned)&ai_ClockMs);
     d2_SetForm(win, frame);
     ai_Unk597920(text, param_2);
-    while (U_I((unsigned)&ai_Unk6333cc) < t0 + wait &&
+    while (U_I((unsigned)&ai_ClockMs) < t0 + wait &&
            *(char *)(((unsigned)&ai_CharInts + 0x4) + U_W((unsigned)&ai_PlayerId) * 0x21c) != 0)
         sv_RunFrame(0, 0x777c7);
 }
@@ -6990,7 +6990,7 @@ void ai_Unk599ef0(char *param_1, int param_2)
             ctl = (char *)((unsigned)&d2_Wins + n * 0x3c4);
             sprintf(text, "Wappen128_ns_Stadt_%s", (char *)(unsigned)&ai_PlayerSlots + U_I(param_1 + 0x65) * 0x2f4);
             d2_SetBackgroundTexture(text, U_I(ctl));
-            tick = U_I((unsigned)&ai_Unk6333cc);
+            tick = U_I((unsigned)&ai_ClockMs);
             U_I(((unsigned)&ai_Unkf8f39c + 0x118) + n * 0x3c4) = 0;
             g1 = gm_Query(U_I(param_1 + 0x5d), 2, 0, 0x1db, 6);
             if (g1 == 0)
@@ -7024,7 +7024,7 @@ void ai_Unk599ef0(char *param_1, int param_2)
             }
             first = 1;
         }
-        *(float *)(ctl + 0x394) = (float)(U_I((unsigned)&ai_Unk6333cc) - tick) * 0.0015384615384615385f;
+        *(float *)(ctl + 0x394) = (float)(U_I((unsigned)&ai_ClockMs) - tick) * 0.0015384615384615385f;
         if (*(float *)(ctl + 0x394) >= 0.35f)
             *(float *)(ctl + 0x394) = 0.35f;
     } while (sv_RunFrame(ai_Unk599ef0, 0x677c7) != 0);
@@ -13483,9 +13483,9 @@ void ai_Unk5a7cd0(int *m_)
         m_[0x9e7] = ai_Unk5a79e0((int)rec);
         m_[0x9e7] |= ai_Unk5a7bc0((int)rec);
         if (m_[0x9e7] != 0)
-            m_[0x9e8] = *(int *)((unsigned)&ai_Unk6333cc);
+            m_[0x9e8] = *(int *)((unsigned)&ai_ClockMs);
     }
-    if (*(int *)((unsigned)&d2_Unkf8aac8) != -1 && m_[0x9e8] + 0x4b < *(int *)((unsigned)&ai_Unk6333cc) &&
+    if (*(int *)((unsigned)&d2_Unkf8aac8) != -1 && m_[0x9e8] + 0x4b < *(int *)((unsigned)&ai_ClockMs) &&
         *(int *)(((unsigned)&dm_L + 0x28)) != 0 && *(int *)((unsigned)&ai_Unk62a8cc) == -1 && m_[0x9e9] > 0) {
         i = 0;
         e = (int *)(p + 0xe0);
@@ -19878,14 +19878,14 @@ void ai_Unk5c8640(void)
     for (i = 0; i < 0x3a; i++)
         cur[i] = 1;
     *(int *)(unsigned)&d2_ClickedId = -1;
-    last = *(unsigned int *)(unsigned)&ai_Unk6333cc;
+    last = *(unsigned int *)(unsigned)&ai_ClockMs;
     do {
         int old;
 
         old = open;
         selected = 0;
-        if (last <= *(unsigned int *)(unsigned)&ai_Unk6333cc || changed) {
-            last = *(unsigned int *)(unsigned)&ai_Unk6333cc + 500;
+        if (last <= *(unsigned int *)(unsigned)&ai_ClockMs || changed) {
+            last = *(unsigned int *)(unsigned)&ai_ClockMs + 500;
             if ((*(unsigned int *)(((unsigned)&ai_Selected + 0x40) + *(int *)(unsigned)&ai_PlayerId * 0x21c) & 0x100) != 0 || open != 0) {
                 p = (int *)he_FindEvent(1, 0, 0x45);
                 while (p != 0) {

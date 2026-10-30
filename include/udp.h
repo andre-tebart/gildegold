@@ -35,7 +35,7 @@ typedef struct UDPSERVER {          /* 0x80 bytes */
     union {
         UDPINFO1 v1;
         UDPINFO4 v4;
-        NETHDR game;                /* v4 is the host's network game record (main_Unk532da0 reads its
+        NETHDR game;                /* v4 is the host's network game record (main_SearchNetworkGame reads its
                                        name, players, save name and party table) */
     } info;                         /* 0x10 */
     int flags;                      /* 0x7c, 0x3f (version 1) or 0x7f (version 4) */

@@ -9860,7 +9860,7 @@ int gm_Unk50c340(int form, unsigned char *p, unsigned short *q)
 
     ai_Unk770af0 = d2_OpenForm(0, 0, form);
     d2_CentreViewWindows(ai_Unk770af0);
-    ai_Unk76fdc8 = ai_Unk6333cc;
+    ai_Unk76fdc8 = ai_ClockMs;
     w = *(int *)(ai_Unkfb1030 + ai_Unk770af0 * 0x2ac);
     d2_SetForm(0, 1);
     if (*q == 0xfd)

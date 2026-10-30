@@ -98,7 +98,7 @@ typedef struct ORDEVENT {
     int ownerId;                    /* 0x0ac, the character the event belongs to */
     int targetId;                   /* 0x0b0, the event's other character */
 } ORDEVENT;
-extern int ai_Unk6333cc;                /* 0x6333cc */
+extern int ai_ClockMs;                /* 0x6333cc */
 extern int d3_CurrentScene;                /* 0x633444 */
 
 int util_Random(unsigned short n);      /* 0x42ec00, tr.c; the callers that read a 16-bit result (ch_RandomNear, anm_Update, ai_Unk4d88c0 ..) call util_RandomU, a cast in their head */

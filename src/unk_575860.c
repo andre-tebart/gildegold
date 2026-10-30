@@ -40,7 +40,7 @@ extern GAPDATA full_data_6f262c[];
 extern GAPDATA full_data_6f265c[];
 extern GAPDATA full_data_6f2660[];
 extern int sv_PanelFlag;
-extern int ai_Unk6333cc;
+extern int ai_ClockMs;
 extern int tb_Paused;
 extern char * ai_BTypes;
 extern unsigned short * sv_PanelShown;
@@ -247,7 +247,7 @@ extern unsigned short ai_PlayerId;
 
 
 
-extern int ai_Unk6333cc;
+extern int ai_ClockMs;
 extern int d2_ClickedId;
 extern GAPDATA full_data_62a284[];
 extern GAPDATA full_data_62a2a4[];
@@ -313,7 +313,7 @@ extern GAPDATA full_data_6f9f74[];
 
 extern GAPDATA full_data_602568[];
 extern GAPDATA full_data_62a364[];
-extern int ai_Unk6333cc;
+extern int ai_ClockMs;
 extern int sv_PopRequest;
 extern char ai_Chars[768][0x21c];
 extern unsigned short ai_PlayerId;
@@ -458,7 +458,7 @@ extern const int gv_EntryCounts[];
 extern GAPDATA full_data_60c7b8[];
 extern GAPDATA full_data_623594[];
 extern GAPDATA full_data_62a570[];
-extern int ai_Unk6333cc;
+extern int ai_ClockMs;
 extern int d2_ClickedId;
 extern int d2_LastWindow;
 extern GAPDATA full_data_62a578[];
@@ -546,7 +546,7 @@ extern int d2_LastWindow;
 extern GAPDATA full_data_62a680[];
 extern int sv_PopRequest;
 extern unsigned short ai_PlayerId;
-extern int ai_Unk6333cc;
+extern int ai_ClockMs;
 extern GAPDATA full_data_60c7b8[];
 extern GAPDATA full_data_62a69c[];
 extern GAPDATA full_data_62a6b8[];
@@ -667,7 +667,7 @@ extern GAPDATA full_data_62a88c[];
 extern char * ai_BTypes;
 extern int ai_Unk6f2448;
 extern char *ai_Unk5fb5b0;
-extern int ai_Unk6333cc;
+extern int ai_ClockMs;
 extern GAPDATA full_data_62a538[];
 extern GAPDATA full_data_62a8a8[];
 extern GAPDATA full_data_6f5f60[];
@@ -928,8 +928,8 @@ int ai_Unk575860(void)
         if (ai_Unk577a00() != 1)
             break;
         U_I(S) = U_I(S + 4);
-        U_I(S + 8) = U_I((unsigned)&ai_Unk6333cc);
-        U_I(S + 0xc) = U_I((unsigned)&ai_Unk6333cc);
+        U_I(S + 8) = U_I((unsigned)&ai_ClockMs);
+        U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
         U_I(S + 0x10) = 0;
         he_Unk53dcb0(0);
         break;
@@ -946,16 +946,16 @@ int ai_Unk575860(void)
             ai_Unk576040(0, 0, 0, 0);
             break;
         }
-        if (U_I((unsigned)&ai_Unk6333cc) > U_I(st + 8) + *(int *)(per + 0x2c)) {
-            U_I(st + 8) = U_I((unsigned)&ai_Unk6333cc);
+        if (U_I((unsigned)&ai_ClockMs) > U_I(st + 8) + *(int *)(per + 0x2c)) {
+            U_I(st + 8) = U_I((unsigned)&ai_ClockMs);
             if (U_I(st + 0x28) == 0 && *(int *)(per + 0x14) != 0) {
                 U_I(st + 0x28) = 1;
                 ai_Unk577a90();
             }
-        } else if (U_I((unsigned)&ai_Unk6333cc) > U_I(st + 8) + 0x238) {
+        } else if (U_I((unsigned)&ai_ClockMs) > U_I(st + 8) + 0x238) {
             if (U_I(st + 0x28) != 1)
                 break;
-            U_I(st + 8) = U_I((unsigned)&ai_Unk6333cc);
+            U_I(st + 8) = U_I((unsigned)&ai_ClockMs);
             U_I(st + 0x28) = 0;
             ai_Unk577b60();
         }
@@ -963,7 +963,7 @@ int ai_Unk575860(void)
             d2_RaiseViewWindows(U_I(st + 0x24));
         break;
     case 4:                     /* state 5, 0x575b82: drop the intro window and open the first step */
-        U_I(S + 8) = U_I((unsigned)&ai_Unk6333cc);
+        U_I(S + 8) = U_I((unsigned)&ai_ClockMs);
         U_I(S + 0x28) = 0;
         ai_Unk577b60();
         U_I(S + 0x3c) = 2;
@@ -982,16 +982,16 @@ int ai_Unk575860(void)
     case 5:                     /* state 6, 0x575bdc: one step of the chapter chain */
         st = S;
         per = *(char **)(st + 0x18);
-        U_I((unsigned)&tb_Paused) = U_I((unsigned)&ai_Unk6333cc) >= *(int *)(*(int *)(per + 0x58) + U_I(st + 0x40) * 0x10) + U_I(st + 0xc);
+        U_I((unsigned)&tb_Paused) = U_I((unsigned)&ai_ClockMs) >= *(int *)(*(int *)(per + 0x58) + U_I(st + 0x40) * 0x10) + U_I(st + 0xc);
         d2_SetObjEnabled(U_I(st + 0x4c), U_I((unsigned)&tb_Paused));
         if (ai_Unk5780e0() != 1)
             break;
         U_I(S + 0x40)++;
-        U_I(S + 8) = U_I((unsigned)&ai_Unk6333cc);
+        U_I(S + 8) = U_I((unsigned)&ai_ClockMs);
         st = S;
         per = *(char **)(st + 0x18);
         if (U_I(st + 0x40) < *(int *)(per + 0x50)) {
-            U_I(st + 0xc) = U_I((unsigned)&ai_Unk6333cc);
+            U_I(st + 0xc) = U_I((unsigned)&ai_ClockMs);
             ai_Unk577e50();
             break;
         }
@@ -1000,7 +1000,7 @@ int ai_Unk575860(void)
         break;
     case 6:                     /* state 7, 0x575c74: the chapter is done, pick the next state */
         U_I(S + 0x3c) = 3;
-        U_I(S + 0xc) = U_I((unsigned)&ai_Unk6333cc);
+        U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
         U_I(S + 0x50) = 0;
         ai_Unk577e50();
         U_I((unsigned)&tb_Paused) = 0;
@@ -1019,7 +1019,7 @@ int ai_Unk575860(void)
         break;
     case 8:                     /* state 9, 0x575cec: the second text window and the run update */
         if (U_I(S + 0x28) == 1) {
-            U_I(S + 8) = U_I((unsigned)&ai_Unk6333cc);
+            U_I(S + 8) = U_I((unsigned)&ai_ClockMs);
             U_I(S + 0x28) = 0;
             ai_Unk577b60();
         }
@@ -1036,18 +1036,18 @@ int ai_Unk575860(void)
         break;
     case 9:                     /* state 10, 0x575d57: the chapter's timed tail */
         if (U_I(S + 0x28) == 1) {
-            U_I(S + 8) = U_I((unsigned)&ai_Unk6333cc);
+            U_I(S + 8) = U_I((unsigned)&ai_ClockMs);
             U_I(S + 0x28) = 0;
             ai_Unk577b60();
         }
         st = S;
         per = *(char **)(st + 0x18);
-        if (U_I((unsigned)&ai_Unk6333cc) > U_I(st + 0xc) + *(int *)(per + 0x44)) {
+        if (U_I((unsigned)&ai_ClockMs) > U_I(st + 0xc) + *(int *)(per + 0x44)) {
             sv_CameraFollow();
             U_I((unsigned)&sv_PopRequest) = U_I((unsigned)&sv_FrameDepth) - U_I((unsigned)&sv_FrameBase);
             U_I(S) = 1;
             U_I(S + 4) = 1;
-            U_I(S + 0xc) = U_I((unsigned)&ai_Unk6333cc);
+            U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
         }
         st = S;
         if (U_I(st + 0x2c) != 0)
@@ -1069,18 +1069,18 @@ int ai_Unk575860(void)
         break;
     case 10:                    /* state 11, 0x575e68: the same with the second window's timing */
         if (U_I(S + 0x28) == 1) {
-            U_I(S + 8) = U_I((unsigned)&ai_Unk6333cc);
+            U_I(S + 8) = U_I((unsigned)&ai_ClockMs);
             U_I(S + 0x28) = 0;
             ai_Unk577b60();
         }
         st = S;
         per = *(char **)(st + 0x18);
-        if (U_I((unsigned)&ai_Unk6333cc) > U_I(st + 0xc) + *(int *)(per + 0x30)) {
+        if (U_I((unsigned)&ai_ClockMs) > U_I(st + 0xc) + *(int *)(per + 0x30)) {
             sv_CameraFollow();
             U_I((unsigned)&sv_PopRequest) = U_I((unsigned)&sv_FrameDepth) - U_I((unsigned)&sv_FrameBase);
             U_I(S) = 0xc;
             U_I(S + 4) = 0xc;
-            U_I(S + 0xc) = U_I((unsigned)&ai_Unk6333cc);
+            U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
         }
         st = S;
         if (U_I(st + 0x2c) != 0)
@@ -1102,7 +1102,7 @@ int ai_Unk575860(void)
         break;
     case 11:                    /* state 12, 0x575f80: next chapter record */
         if (U_I(S + 0x28) == 1) {
-            U_I(S + 8) = U_I((unsigned)&ai_Unk6333cc);
+            U_I(S + 8) = U_I((unsigned)&ai_ClockMs);
             U_I(S + 0x28) = 0;
             ai_Unk577b60();
         }
@@ -1167,11 +1167,11 @@ void ai_Unk576040(int a, int b, int c, int d)
         return;
     }
     if (*(int *)(r + 0x40) == 3) {
-        if (U_I((unsigned)&ai_Unk6333cc) > *(int *)(r + 0x44) + U_I(S + 0xc)) {
+        if (U_I((unsigned)&ai_ClockMs) > *(int *)(r + 0x44) + U_I(S + 0xc)) {
             U_I(S) = *(int *)(r + 0x48);
             r = *(char **)(S + 0x18);
             U_I(S + 4) = *(int *)(r + 0x48);
-            U_I(S + 0xc) = U_I((unsigned)&ai_Unk6333cc);
+            U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
             U_I(S + 0x2c) = 1;
         }
         return;
@@ -1200,7 +1200,7 @@ st2:
             if (c != 1 || *(int *)(r + 0x40) != a)
                 goto apply;
             U_I(S + 4) = 4;
-            U_I(S + 0xc) = U_I((unsigned)&ai_Unk6333cc);
+            U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
             U_I(S + 0x30) = 0;
             ai_Unk577c60();
             ai_Unk57b8a0(2);
@@ -1209,7 +1209,7 @@ st2:
         if (*(int *)(r + 0x40) != a)
             goto apply;
         U_I(S + 4) = 5;
-        U_I(S + 0xc) = U_I((unsigned)&ai_Unk6333cc);
+        U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
         if (b)
             U_I(S + 0x50) = b;
         goto apply;
@@ -1220,7 +1220,7 @@ st2:
         if (*(int *)(r + 0x4c) && *(int *)(r + 0x4c) == a) {
             U_I(S) = 0xa;
             U_I(S + 4) = 0xa;
-            U_I(S + 0xc) = U_I((unsigned)&ai_Unk6333cc);
+            U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
             U_I(S + 0x10)++;
             return;
         }
@@ -1228,7 +1228,7 @@ st2:
             goto inc;
         U_I(S) = 4;
         U_I(S + 4) = 4;
-        U_I(S + 0xc) = U_I((unsigned)&ai_Unk6333cc);
+        U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
         U_I(S + 0x30) = 0;
         ai_Unk577c60();
         ai_Unk57b8a0(2);
@@ -1256,7 +1256,7 @@ apply:
     U_I(S + 0x10)++;
     return;
 clocked:
-    U_I(S + 0xc) = U_I((unsigned)&ai_Unk6333cc);
+    U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
     U_I(S + 0x10)++;
     return;
 inc:
@@ -1457,20 +1457,20 @@ int ai_Unk5766d0(int *p)
         if (p[2] == 0 && U_I(S + 4) == 4) {
             U_I(S) = 9;
             U_I(S + 4) = 9;
-            U_I(S + 0xc) = U_I((unsigned)&ai_Unk6333cc);
+            U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
             return 1;
         }
         if (p[2] == 1) {
             if (U_I(S + 4) == 9) {
                 U_I(S) = 4;
                 U_I(S + 4) = 4;
-                U_I(S + 0xc) = U_I((unsigned)&ai_Unk6333cc);
+                U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
                 return 1;
             }
             if (U_I(S + 4) == 0xa) {
                 U_I(S) = 0xb;
                 U_I(S + 4) = 0xb;
-                U_I(S + 0xc) = U_I((unsigned)&ai_Unk6333cc);
+                U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
                 return 1;
             }
         }
@@ -1485,7 +1485,7 @@ int ai_Unk5766d0(int *p)
             return 3;
         U_I(S) = 0xa;
         U_I(S + 4) = 0xa;
-        U_I(S + 0xc) = U_I((unsigned)&ai_Unk6333cc);
+        U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
         return 1;
     }
     return 3;
@@ -1501,7 +1501,7 @@ int ai_Unk5767d0(int *p)
         if (*(unsigned char *)(*(char **)(unsigned)&ai_BTypes + kind * 0x24d) == 0xa) {
             U_I(S) = 0xb;
             U_I(S + 4) = 0xb;
-            U_I(S + 0xc) = U_I((unsigned)&ai_Unk6333cc);
+            U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
             return 1;
         }
     }
@@ -1515,13 +1515,13 @@ int ai_Unk576830(int *p)
     if (p[0] == 0x17) {
         U_I(S) = 0xa;
         U_I(S + 4) = 0xa;
-        U_I(S + 0xc) = U_I((unsigned)&ai_Unk6333cc);
+        U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
         return 1;
     }
     if (p[0] == 0x18) {
         U_I(S) = 0xb;
         U_I(S + 4) = 0xb;
-        U_I(S + 0xc) = U_I((unsigned)&ai_Unk6333cc);
+        U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
         return 1;
     }
     return 3;
@@ -1546,7 +1546,7 @@ int ai_Unk5768d0(int *p)
     if (p[0] == 0x19 && p[1] && *(unsigned short *)p[1] == 0x10e) {
         U_I(S) = 0xb;
         U_I(S + 4) = 0xb;
-        U_I(S + 0xc) = U_I((unsigned)&ai_Unk6333cc);
+        U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
         return 1;
     }
     return 3;
@@ -1558,7 +1558,7 @@ int ai_Unk576920(int *p)
     if (p[0] == 0x19 && p[1] && *(unsigned short *)p[1] == 0x110) {
         U_I(S) = 0xb;
         U_I(S + 4) = 0xb;
-        U_I(S + 0xc) = U_I((unsigned)&ai_Unk6333cc);
+        U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
         return 1;
     }
     return 3;
@@ -1570,7 +1570,7 @@ int ai_Unk576970(int *p)
     if (p[0] == 0x1a && p[1] && *(unsigned short *)p[1] == 0x110) {
         U_I(S) = 0xb;
         U_I(S + 4) = 0xb;
-        U_I(S + 0xc) = U_I((unsigned)&ai_Unk6333cc);
+        U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
         return 1;
     }
     return 3;
@@ -1593,7 +1593,7 @@ int ai_Unk5769c0(int *p)
             goto fail;
         U_I(S) = 0xa;
         U_I(S + 4) = 0xa;
-        U_I(S + 0xc) = U_I((unsigned)&ai_Unk6333cc);
+        U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
         return 1;
     }
 next:
@@ -1605,7 +1605,7 @@ next:
             goto fail;
         U_I(S) = 0xb;
         U_I(S + 4) = 0xb;
-        U_I(S + 0xc) = U_I((unsigned)&ai_Unk6333cc);
+        U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
         return 1;
     }
 fail:
@@ -1634,13 +1634,13 @@ int ai_Unk576ab0(int *p)
             return 3;
         U_I(S) = 0xa;
         U_I(S + 4) = 0xa;
-        U_I(S + 0xc) = U_I((unsigned)&ai_Unk6333cc);
+        U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
         return 1;
     }
     if (p[0] == 0x1a && p[1] && *(unsigned short *)p[1] == 0x13) {
         U_I(S) = 0xb;
         U_I(S + 4) = 0xb;
-        U_I(S + 0xc) = U_I((unsigned)&ai_Unk6333cc);
+        U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
         return 1;
     }
     return 3;
@@ -1652,7 +1652,7 @@ int ai_Unk576b50(int *p)
     if (p[0] == 0x19 && p[1] && *(unsigned short *)p[1] == 0x74) {
         U_I(S) = 0xb;
         U_I(S + 4) = 0xb;
-        U_I(S + 0xc) = U_I((unsigned)&ai_Unk6333cc);
+        U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
         return 1;
     }
     return 3;
@@ -1679,7 +1679,7 @@ int ai_Unk576ba0(int *p)
         U_I(S + 0x38) = 1;
         U_I(S + 4) = 0xa;
         U_I(S) = U_I(S + 4);
-        U_I(S + 0xc) = U_I((unsigned)&ai_Unk6333cc);
+        U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
         return 3;
     }
     if (p[0] != 0x10 || !p[1])
@@ -1698,7 +1698,7 @@ int ai_Unk576ba0(int *p)
             U_I(S + 4) = 4;
     }
     U_I(S) = U_I(S + 4);
-    U_I(S + 0xc) = U_I((unsigned)&ai_Unk6333cc);
+    U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
     return 1;
 }
 /* 0x576cd0, a predicate: 1 for the kinds 0x1a / 0x19 / 0x1c, and for the kind 0x2b on the player's building (byte
@@ -1738,7 +1738,7 @@ int ai_Unk576d40(int *p)
         U_I(S + 0x38) = 1;
         U_I(S + 4) = 0xa;
         U_I(S) = U_I(S + 4);
-        U_I(S + 0xc) = U_I((unsigned)&ai_Unk6333cc);
+        U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
         return 3;
     }
     if (p[0] != 0x11 || !p[1])
@@ -1757,7 +1757,7 @@ int ai_Unk576d40(int *p)
             U_I(S + 4) = 4;
     }
     U_I(S) = U_I(S + 4);
-    U_I(S + 0xc) = U_I((unsigned)&ai_Unk6333cc);
+    U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
     return 1;
 }
 /* 0x576e70, the predicate twin of 0x576cd0: 1 for the player's building (byte 0x12, word +0x27 = 0x6f25b8) with
@@ -1797,7 +1797,7 @@ int ai_Unk576ee0(int *p)
         U_I(S + 0x38) = 1;
         U_I(S + 4) = 0xa;
         U_I(S) = U_I(S + 4);
-        U_I(S + 0xc) = U_I((unsigned)&ai_Unk6333cc);
+        U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
         return 3;
     }
     if (p[0] != 0x10 || !p[1])
@@ -1816,7 +1816,7 @@ int ai_Unk576ee0(int *p)
             U_I(S + 4) = 4;
     }
     U_I(S) = U_I(S + 4);
-    U_I(S + 0xc) = U_I((unsigned)&ai_Unk6333cc);
+    U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
     return 1;
 }
 /* 0x577020, the predicate twin of 0x576ee0: 1 for a building of the table byte 0x2 with the step word
@@ -2417,7 +2417,7 @@ void ai_Unk577d60(void)
     }
 }
 
-#define TDIFF (U_I((unsigned)&ai_Unk6333cc) - *(int *)(st + 0xc))
+#define TDIFF (U_I((unsigned)&ai_ClockMs) - *(int *)(st + 0xc))
 #define MINU(a, b) ((unsigned)(a) < (unsigned)(b) ? (a) : (b))
 
 /* 0x577d90, the tutorial progress slider (179 B, the state 0xa only): the state record, else 0x577d60 (the form
@@ -2619,8 +2619,8 @@ int ai_Unk578180(void)
         goto fail;
     U_I(S) = 1;
     U_I(S + 4) = 1;
-    U_I(S + 8) = U_I((unsigned)&ai_Unk6333cc);
-    U_I(S + 0xc) = U_I((unsigned)&ai_Unk6333cc);
+    U_I(S + 8) = U_I((unsigned)&ai_ClockMs);
+    U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
     U_I(S + 0x10) = 0;
     U_I(S + 0x14) = 0;
     *(char **)(S + 0x18) = *(char **)(unsigned)&full_data_6f2658;
@@ -4352,7 +4352,7 @@ void ai_Unk57b8a0(int arg)
             x = 2;
         } else if (x >= 0 && x < *(int *)(*(char **)(st + 0x18) + 0x5c) && x != U_I(st + 0x54)) {
             U_I(st + 0x58) = 2;
-            U_I(st + 0x5c) = U_I((unsigned)&ai_Unk6333cc);
+            U_I(st + 0x5c) = U_I((unsigned)&ai_ClockMs);
             U_I(st + 0x54) = x;
             st = S;
         }
@@ -4368,7 +4368,7 @@ void ai_Unk57b8a0(int arg)
     e = (char *)(*(int *)(*(char **)(st + 0x18) + 0x64) + U_I(st + 0x54) * 0x2c);
     if (x == 0) {
         U_I(st + 0x64) = U_I((unsigned)&sv_FrameDepth);
-        U_I(st + 0x5c) = U_I((unsigned)&ai_Unk6333cc);
+        U_I(st + 0x5c) = U_I((unsigned)&ai_ClockMs);
         U_I(st + 0x58) = 2;
         if (U_I(S + 0x60) == -1)
             U_I(S + 0x60) = d2_CreatePicObj((int)*(float *)e, (int)*(float *)(e + 4), 0x1d);
@@ -4377,23 +4377,23 @@ void ai_Unk57b8a0(int arg)
     }
     if (x == 1) {
         if (U_I(st + 0x58) == 2) {
-            if (!((float)U_I((unsigned)&ai_Unk6333cc) > (float)U_I(st + 0x5c) + *(float *)(e + 0x20)))
+            if (!((float)U_I((unsigned)&ai_ClockMs) > (float)U_I(st + 0x5c) + *(float *)(e + 0x20)))
                 return;
             U_I(st + 0x58) = 3;
-            U_I(st + 0x5c) = U_I((unsigned)&ai_Unk6333cc);
+            U_I(st + 0x5c) = U_I((unsigned)&ai_ClockMs);
             st = S;
         }
         if (U_I(st + 0x58) == 3) {
             ai_Unk57b810((float *)e, (float *)(e + 8), (float *)(e + 0x10), (float *)(e + 0x18),
-                         ((float)U_I((unsigned)&ai_Unk6333cc) - (float)U_I(st + 0x5c)) / *(float *)(e + 0x24), v);
+                         ((float)U_I((unsigned)&ai_ClockMs) - (float)U_I(st + 0x5c)) / *(float *)(e + 0x24), v);
             d2_MoveObj((int)v[0], (int)v[1], U_I(S + 0x60));
             return;
         }
         if (U_I(st + 0x58) == 4) {
-            if (!((float)U_I((unsigned)&ai_Unk6333cc) > (float)U_I(st + 0x5c) + *(float *)(e + 0x28)))
+            if (!((float)U_I((unsigned)&ai_ClockMs) > (float)U_I(st + 0x5c) + *(float *)(e + 0x28)))
                 return;
             U_I(st + 0x58) = 2;
-            U_I(st + 0x5c) = U_I((unsigned)&ai_Unk6333cc);
+            U_I(st + 0x5c) = U_I((unsigned)&ai_ClockMs);
             d2_MoveObj((int)*(float *)e, (int)*(float *)(e + 4), U_I(S + 0x60));
         }
         return;
@@ -4605,7 +4605,7 @@ int ai_Unk57c690(char *rec)
     r = (char *)ahm_OwnerChar(rec);
     a = U_I(rec + 0x65);
     b = ahm_ResearchState(rec, &l1, &l2, 0);
-    l1 = U_I((unsigned)&ai_Unk6333cc);
+    l1 = U_I((unsigned)&ai_ClockMs);
     U_I((unsigned)&d2_ClickedId) = -1;
     r = (char *)d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62a284);
     d2_SetPointerSprite(0, 0);
@@ -4666,7 +4666,7 @@ int ai_Unk57cf90(char *rec)
     r = (char *)ahm_OwnerChar(rec);
     a = U_I(rec + 0x65);
     b = ahm_ResearchState(rec, &l1, &l2, 0);
-    l1 = U_I((unsigned)&ai_Unk6333cc);
+    l1 = U_I((unsigned)&ai_ClockMs);
     U_I((unsigned)&d2_ClickedId) = -1;
     r = (char *)d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62a2a4);
     d2_SetPointerSprite(0, 0);
@@ -4982,7 +4982,7 @@ void ai_Unk57e270(char *rec)
 
     *(unsigned char *)((unsigned)&kb_Down + 0x2f) = 0;
     memset(sc, 0, 0xe4);
-    last = U_I((unsigned)&ai_Unk6333cc);
+    last = U_I((unsigned)&ai_ClockMs);
     if (!U_I(rec + 0x61))
         return;
     run = (char *)gv_FindEffect(U_I(rec + 1));
@@ -5100,7 +5100,7 @@ void ai_Unk57e270(char *rec)
     U_I((unsigned)&full_data_6f9f60) = -1;
     while (sv_RunFrame(ai_Unk57e270, 0x2656c7) != 0) {
         sv_SetPanelEnabled(0);
-        now = U_I((unsigned)&ai_Unk6333cc);
+        now = U_I((unsigned)&ai_ClockMs);
         dt = (float)(now - last) * 0.013513514f;
         if (U_I(run + 4) == 0 && (U_I(((unsigned)&dm_L + 0x20)) != 0 || (U_I((unsigned)&d2_ClickedId) != -1 && U_I((unsigned)&ai_Unk5fe710) == *(int *)(sc + 0xbc)))) {
             U_I((unsigned)&sv_PopRequest) = 1;
@@ -5437,8 +5437,8 @@ void ai_Unk57f690(char *sc)
     unsigned short w;
 
     n = 0;
-    if ((unsigned int)(*(int *)(sc + 0x70) + 0x15e) <= (unsigned int)U_I((unsigned)&ai_Unk6333cc)) {
-        *(int *)(sc + 0x70) = U_I((unsigned)&ai_Unk6333cc);
+    if ((unsigned int)(*(int *)(sc + 0x70) + 0x15e) <= (unsigned int)U_I((unsigned)&ai_ClockMs)) {
+        *(int *)(sc + 0x70) = U_I((unsigned)&ai_ClockMs);
         d2_SetForm(*(int *)(sc + 0x74), 0);
         for (rec = 0; rec < 3; rec++) {
             i = 0;
@@ -5593,14 +5593,14 @@ void ai_Unk57fdd0(char *rec, float *sc, char *run, float sel, int mask)
     int i;
     int h;
 
-    start = (float)U_I((unsigned)&ai_Unk6333cc);
+    start = (float)U_I((unsigned)&ai_ClockMs);
     if (sel != sc[0x28] && (int)sel <= (int)sc[0x37]) {
         while ((h = sv_RunFrame(ai_Unk57fdd0, mask)) != 0) {
             ai_Unk57f890(rec, (char *)sc, run);
-            if ((float)(unsigned int)(U_I((unsigned)&ai_Unk6333cc) - (int)start) <= 90.0f) {
+            if ((float)(unsigned int)(U_I((unsigned)&ai_ClockMs) - (int)start) <= 90.0f) {
                 v[0] = sc[9];
                 v[2] = sc[0xb];
-                f = (float)(unsigned int)(U_I((unsigned)&ai_Unk6333cc) - (int)start) / 90.0f;
+                f = (float)(unsigned int)(U_I((unsigned)&ai_ClockMs) - (int)start) / 90.0f;
                 v[1] = 0;
                 d3_Normalize((char *)v);
                 w[0] = -70.0f;
@@ -5619,14 +5619,14 @@ void ai_Unk57fdd0(char *rec, float *sc, char *run, float sel, int mask)
             d3if_Show(*(struct D3OBJECT **)&sc[0x23 + i], 0);
         d3if_Show(*(struct D3OBJECT **)&sc[0x23 + (int)sel], 1);
         sc[0x28] = sel;
-        start = (float)U_I((unsigned)&ai_Unk6333cc);
+        start = (float)U_I((unsigned)&ai_ClockMs);
         while ((h = sv_RunFrame(ai_Unk57fdd0, mask)) != 0) {
             ai_Unk57f890(rec, (char *)sc, run);
-            if ((float)(unsigned int)(U_I((unsigned)&ai_Unk6333cc) - (int)start) <= 90.0f) {
+            if ((float)(unsigned int)(U_I((unsigned)&ai_ClockMs) - (int)start) <= 90.0f) {
                 v[0] = sc[9];
                 v[2] = sc[0xb];
                 v[1] = 0;
-                f = 1.0f - (float)(unsigned int)(U_I((unsigned)&ai_Unk6333cc) - (int)start) / 90.0f;
+                f = 1.0f - (float)(unsigned int)(U_I((unsigned)&ai_ClockMs) - (int)start) / 90.0f;
                 d3_Normalize((char *)v);
                 w[0] = -70.0f;
                 w[1] = -50.0f;
@@ -5640,7 +5640,7 @@ void ai_Unk57fdd0(char *rec, float *sc, char *run, float sel, int mask)
                 U_I((unsigned)&sv_PopRequest) = 1;
             }
         }
-        *(int *)((char *)sc + 0x6c) = U_I((unsigned)&ai_Unk6333cc);
+        *(int *)((char *)sc + 0x6c) = U_I((unsigned)&ai_ClockMs);
     }
 }
 
@@ -5818,7 +5818,7 @@ void ai_Unk580a90(char *sc)
     *(int *)(sc + 0x74) = v;
     d2_PlaceMainWindow(v, 3);
     d2_SetViewEnabled(*(int *)(sc + 0x74), 0);
-    *(int *)(sc + 0x70) = U_I((unsigned)&ai_Unk6333cc);
+    *(int *)(sc + 0x70) = U_I((unsigned)&ai_ClockMs);
 }
 
 int he_Unk56f170(); int sv_MessageBox();
@@ -6805,7 +6805,7 @@ void ai_Unk583240(int *out, char *rec, char *title, int flag, void (*cb)())
             d2_CloseView(win);
             return;
         }
-        tick = U_I((unsigned)&ai_Unk6333cc);
+        tick = U_I((unsigned)&ai_ClockMs);
         (void)tick;
         (void)sel;
         (void)entry;
@@ -7980,11 +7980,11 @@ int ai_Unk5859c0(char *unused, char *ev)
         a[0] = 0x47;
         for (i = 1; i < 9; i++)
             a[i] = 0xf8;
-        t = U_I((unsigned)&ai_Unk6333cc);
+        t = U_I((unsigned)&ai_ClockMs);
         i = 0;
         for (;;) {
-            if (t + a[i] < (unsigned int)U_I((unsigned)&ai_Unk6333cc)) {
-                t = U_I((unsigned)&ai_Unk6333cc);
+            if (t + a[i] < (unsigned int)U_I((unsigned)&ai_ClockMs)) {
+                t = U_I((unsigned)&ai_ClockMs);
                 d2_SetForm(win, 0);
                 if (i < 8) {
                     d2_SetForm(win, 0);
@@ -9126,9 +9126,9 @@ void ai_Unk587c90(char *unused)
     int i;
     int s;
 
-    if (U_I((unsigned)&ai_Unk6333cc) < U_I((unsigned)&full_data_62a538) + 0x1194)
+    if (U_I((unsigned)&ai_ClockMs) < U_I((unsigned)&full_data_62a538) + 0x1194)
         return;
-    U_I((unsigned)&full_data_62a538) = U_I((unsigned)&ai_Unk6333cc);
+    U_I((unsigned)&full_data_62a538) = U_I((unsigned)&ai_ClockMs);
     if (U_I((unsigned)&ai_Unk6f2448) == 0 && util_RandomF() < 0.9f)
         return;
     cnt = 0;

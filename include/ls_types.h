@@ -10,7 +10,8 @@ typedef struct NETHDR {             /* 0x6a bytes, the network game record (main
     short a, b, size;               /* 0x00 */
     char name[0x20];                /* 0x06 */
     unsigned char players;          /* 0x26 */
-    char pad27;
+    unsigned char joined;           /* 0x27, the search list disables a new game with joined >= players (a
+                                       reasoned name: the players already in) */
     short x;                        /* 0x28 */
     char save[0x20];                /* 0x2a, the save game's name (main_JoinNetworkGame: main_NetSaveName) */
     int party[8];                   /* 0x4a, the party table of the save header (LSHDR.party) */

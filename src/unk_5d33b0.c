@@ -50,7 +50,7 @@ extern int ai_Unk5fe710;
 extern struct D2OBJ *d2_Objs;              /* 0xf8f080, d2.h: D2OBJ * */
 extern struct D2WIN *d2_LastWindowPtr;     /* 0x6ed980, d2.h: the window a screen works in (created last) */
 extern int sv_PopRequest;               /* 0x6f22a0, nonzero: MASTER (sv_RunFrame) pops this screen */
-extern int ai_Unk6333cc;
+extern int ai_ClockMs;
 extern struct D2OBJ *d2_Objs;              /* 0xf8f080, d2.h: D2OBJ * */
 extern struct D2WIN *d2_LastWindowPtr;     /* 0x6ed980, d2.h: the window a screen works in (created last) */
 extern int sv_PopRequest;               /* 0x6f22a0, nonzero: MASTER (sv_RunFrame) pops this screen */
@@ -271,7 +271,7 @@ int ai_MessageBox(int param_1, int param_2)
     unsigned int start;
     char *name;
 
-    start = (unsigned int)U_I((unsigned)&ai_Unk6333cc);
+    start = (unsigned int)U_I((unsigned)&ai_ClockMs);
     ret = 0;
     if (U_B(((unsigned)&ai_GfxResolution + 0x1)) != 0)
         return 0;
@@ -320,7 +320,7 @@ created:
         }
         if (U_I(((unsigned)&dm_L + 0x20)) != 0)
             U_I((unsigned)&sv_PopRequest) = 1;
-        if ((param_2 & 4) != 0 && start + 500 < (unsigned int)U_I((unsigned)&ai_Unk6333cc))
+        if ((param_2 & 4) != 0 && start + 500 < (unsigned int)U_I((unsigned)&ai_ClockMs))
             U_I((unsigned)&sv_PopRequest) = 1;
     }
     U_B(((unsigned)&ai_GfxResolution + 0x1)) = 0;

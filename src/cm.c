@@ -14679,11 +14679,11 @@ int ai_Unk4e53e0(int dlg, int a, int c)
 
     v = 100;
     if (c != 0) {
-        ai_Unk6f0dc0 = ai_Unk6333cc;
+        ai_Unk6f0dc0 = ai_ClockMs;
         ai_Unk60d374 = a;
         d2_SetObjEnabled(dlg, 0);
     } else {
-        v = (int)((1.0f - (float)(unsigned int)(ai_Unk6333cc - ai_Unk6f0dc0) / ai_Unk60d374) * 100.0f);
+        v = (int)((1.0f - (float)(unsigned int)(ai_ClockMs - ai_Unk6f0dc0) / ai_Unk60d374) * 100.0f);
         v = v > 0 ? v : 0;
     }
     d2_SetObjValue(dlg, 0, 100, v);
@@ -14700,7 +14700,7 @@ int ai_Unk4e5470(int id, int flags)
     int *list;
     char *dlg;
 
-    t0 = ai_Unk6333cc;
+    t0 = ai_ClockMs;
     ret = -1;
     win = 0;
     if (ai_Unk6f0dc4 != 0)
@@ -14763,8 +14763,8 @@ int ai_Unk4e5470(int id, int flags)
             if (dm_L.rup != 0)
                 sv_PopRequest = 1;
             if (timed != 0 && slider != -1)
-                d2_SetObjValue(slider, 0, 0x1f4, ai_Unk6333cc - t0);
-            if (n != 0 && ai_Unk6333cc > t0 + 0x1f4)
+                d2_SetObjValue(slider, 0, 0x1f4, ai_ClockMs - t0);
+            if (n != 0 && ai_ClockMs > t0 + 0x1f4)
                 sv_PopRequest = 1;
         } while (sv_RunFrame(fl, ai_Unk4e5470) != 0);
     }
@@ -15067,7 +15067,7 @@ char ai_Unk625820[115][0x20] = { "HE_NULL", "HE_HISTORIE", "HE_UPGRADE_DUMMY", "
 int ai_Unk631064 = 0;  /* 0x631064 */
 int ai_Unk631084 = 0;  /* 0x631084 */
 char * ai_Unk6332b4 = 0;  /* 0x6332b4 */
-int ai_Unk6333cc = 0;  /* 0x6333cc, a clock */
+int ai_ClockMs = 0;  /* 0x6333cc, a clock */
 unsigned int ai_Unk63349c = 0;  /* 0x63349c */
 int ai_Unk6f0cd0 = 0;  /* 0x6f0cd0, received messages */
 int ai_Unk6f0cd4 = 0;  /* 0x6f0cd4 */

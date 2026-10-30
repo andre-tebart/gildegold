@@ -26,7 +26,7 @@ typedef struct G17STAT {                /* 10 bytes, ai_Unkf31160[]: the state o
 #pragma pack(pop)
 
 #include "ls_types.h"                     /* NETHDR */
-typedef struct CMNETGAME {              /* 0x80 bytes at 0x936460: the network game hosted or joined (main_Unk532da0
+typedef struct CMNETGAME {              /* 0x80 bytes at 0x936460: the network game hosted or joined (main_SearchNetworkGame
                                            copies a game list entry over it as 0x20 dwords) */
     char pad00[0x10];
     NETHDR hdr;                         /* 0x10, the game record (main_HostNetworkGame copies ls_SavePath.net here);

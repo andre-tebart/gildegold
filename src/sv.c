@@ -579,7 +579,7 @@ int sv_MessageBox(int text, unsigned flags)
     d2_CloseView(form);
     return ret;
 }
-/* 0x521410, the green message box ("misc\\MessageBoxGreen" 0x623ed0) with an optional title text a and the text b; like 0x521150, a button returns its number + 1. Not reentrant (sv_MessageBoxGreenOpen, 0x6f2351) @deep behaviour: 73 code hunks, all read: the statement set is complete and matches 0x521150's twin (form, a/b texts, timed/quick/n, do-while frame loop); the residue is allocation - the original keeps the constant 1 in ebx (cmp eax,ebx / mov ds:X,ebx / cmp BYTE PTR ds:X,bl) and hoists bar = -1 into its own frame+0x10 slot with form in ebp, ours uses immediates and puts form in edi (the first attempts at the hoist made the count worse: 73 -> 267, reverted). Readability as far as base evidence goes: sv_FitForm (0x52ea30), d2_OpenForm / d2_SetForm / d2_RadioAdd / d2_RadioSelect / d2_RaiseViewWindows / d2_WinOpenSlider / d2_RadioSel / d2_ClickedId / d2_SetObjValue, kb_Last / ai_Unk6333cc / d2_LastWindowPtr / d2_Objs and sv_MessageBoxGreenOpen named, marker dropped; open: Q4 6 raw accesses need the D2WIN / D2OBJ typed views (d2.h cannot be included in sv.c: vfs_Root / vfs_Tfopen clash with vfs.h); Q7 d2_SetObjValue K&R (2..5 argument callers, no canonical prototype). */
+/* 0x521410, the green message box ("misc\\MessageBoxGreen" 0x623ed0) with an optional title text a and the text b; like 0x521150, a button returns its number + 1. Not reentrant (sv_MessageBoxGreenOpen, 0x6f2351) @deep behaviour: 73 code hunks, all read: the statement set is complete and matches 0x521150's twin (form, a/b texts, timed/quick/n, do-while frame loop); the residue is allocation - the original keeps the constant 1 in ebx (cmp eax,ebx / mov ds:X,ebx / cmp BYTE PTR ds:X,bl) and hoists bar = -1 into its own frame+0x10 slot with form in ebp, ours uses immediates and puts form in edi (the first attempts at the hoist made the count worse: 73 -> 267, reverted). Readability as far as base evidence goes: sv_FitForm (0x52ea30), d2_OpenForm / d2_SetForm / d2_RadioAdd / d2_RadioSelect / d2_RaiseViewWindows / d2_WinOpenSlider / d2_RadioSel / d2_ClickedId / d2_SetObjValue, kb_Last / ai_ClockMs / d2_LastWindowPtr / d2_Objs and sv_MessageBoxGreenOpen named, marker dropped; open: Q4 6 raw accesses need the D2WIN / D2OBJ typed views (d2.h cannot be included in sv.c: vfs_Root / vfs_Tfopen clash with vfs.h); Q7 d2_SetObjValue K&R (2..5 argument callers, no canonical prototype). */
 
 int sv_MessageBoxGreen(int a, int b, unsigned flags)
 {
@@ -4520,10 +4520,10 @@ void sv_Unk52b500(unsigned char *a)
     if (it != 0 && *it != 0xfd)
         cls = ai_Goods + *(unsigned short *)it * 0x41;
     kind = ai_BTypes + *a * 0x24d;
-    if (SV_I((unsigned)&full_data_6237c8) + 500 < SV_I((unsigned)&ai_Unk6333cc)) {
+    if (SV_I((unsigned)&full_data_6237c8) + 500 < SV_I((unsigned)&ai_ClockMs)) {
         if (ai_Unk5fb5b0 != 0 && (k = *(int *)(ai_Unk5fb5b0 + 0x3c8)) != 0 && *(int *)(k + 0x318) != 0)
             ((int (*)())*(int *)(k + 0x318))(ai_Unk5fb5b0, 6, k + 0x31c, 0);
-        SV_I((unsigned)&full_data_6237c8) = SV_I((unsigned)&ai_Unk6333cc);
+        SV_I((unsigned)&full_data_6237c8) = SV_I((unsigned)&ai_ClockMs);
     }
     h = gm_ClockSeason((unsigned)&ai_Time);
     for (i = 0; i < 0x20; i++) {
@@ -4975,7 +4975,7 @@ void sv_Unk52c4e0(int o, int b, char *name)
         j = 0;
         p = (int *)((unsigned)&sv_StatusText + 0x84);
         do {
-            if (*p < SV_I((unsigned)&ai_Unk6333cc))
+            if (*p < SV_I((unsigned)&ai_ClockMs))
                 i = j;
             p += 0x43;
             j++;
@@ -4983,7 +4983,7 @@ void sv_Unk52c4e0(int o, int b, char *name)
         if (i != -1) {
 lfound:
             e = (int *)(i * 0x10c + ((unsigned)&sv_StatusText + 0x80));
-            ((int *)((unsigned)&sv_StatusText + 0x84))[i * 0x43] = SV_I((unsigned)&ai_Unk6333cc);
+            ((int *)((unsigned)&sv_StatusText + 0x84))[i * 0x43] = SV_I((unsigned)&ai_ClockMs);
             ((int *)(unsigned)&sv_BubbleObjects)[i * 0x43] = o;
             *e = b;
             *(int *)(o + 0x228) = (int)sv_ReleaseBubble;
@@ -5233,7 +5233,7 @@ void sv_Unk52cef0(void)
 
     p = (int *)(unsigned)&sv_BubbleObjects;
     do {
-        if (*p != 0 && (unsigned)(p[-1] + 300) < SV_U((unsigned)&ai_Unk6333cc))
+        if (*p != 0 && (unsigned)(p[-1] + 300) < SV_U((unsigned)&ai_ClockMs))
             *p = 0;
         p += 0x43;
     } while ((int)p < ((unsigned)&sv_BubbleObjects + 0x4300));
@@ -5715,7 +5715,7 @@ void sv_Unk52e0c0(void)
         }
         d2_DrawTextBox(x, y, 600, 0x18, d2_ScreenSurf, (char *)(unsigned)&sv_StatusText, 0x28);
         d2_AddDirty(x, y, SV_I((unsigned)&d2_TextDrawnW), SV_I((unsigned)&d2_TextDrawnH));
-        if (SV_U((unsigned)&sv_StatusTime) + 0x15e <= SV_U((unsigned)&ai_Unk6333cc))
+        if (SV_U((unsigned)&sv_StatusTime) + 0x15e <= SV_U((unsigned)&ai_ClockMs))
             SV_B((unsigned)&sv_StatusText) = 0;
     }
 }
@@ -6757,7 +6757,7 @@ int sv_Unk52fe10(void)
 void sv_Unk530100(void)
 {
     if (SV_I((unsigned)&ai_Unk75f280 + 0x500 + SV_I((unsigned)&sv_FrameDepth) * 8) == (int)sv_Unk52fe10
-            || SV_U((unsigned)&ai_Unk623ec4) <= SV_U((unsigned)&ai_Unk6333cc) - 0x23a
+            || SV_U((unsigned)&ai_Unk623ec4) <= SV_U((unsigned)&ai_ClockMs) - 0x23a
             || SV_U((unsigned)&ai_Unk623ec4) == 0xffffffff) {
         if (ai_Unk623ec8 != -1) {
             d2_CloseView(ai_Unk623ec8);
@@ -6902,7 +6902,7 @@ void sv_Unk530670(void)
         d3t_DrawSnow(SV_I((unsigned)&ai_Unk76061c));
     hh = SV_US((unsigned)&ai_TimeHour);
     if (((int *)(unsigned)&full_data_7604e8)[hh] != 0 && ((short)util_RandomU(300) == 0 || (((int *)(unsigned)&full_data_7604e8)[SV_US((unsigned)&ai_TimeHour)] == 3 && (short)util_RandomU(100) == 0))) {
-        SV_I((unsigned)&ai_Unk760548) = SV_I((unsigned)&ai_Unk6333cc);
+        SV_I((unsigned)&ai_Unk760548) = SV_I((unsigned)&ai_ClockMs);
         SV_I((unsigned)&ai_Unk76054c) = (util_RandomU(8) & 0xffff) + 8;
         sb_PlaySample(SV_I((unsigned)&full_data_6f2408), "DonnerMittel_s", 1, 0x3f, (int)0.0f);
     }
@@ -7056,16 +7056,16 @@ l64:
         if ((mask & 0x100) != 0)
             he_Unk53daf0();
         he_Unk53edf0();
-        if (SV_I((unsigned)&ai_Unk1460ae0) == -1 && SV_I((unsigned)&ai_Unka687e4) < SV_I((unsigned)&ai_Unk6333cc) && SV_B((unsigned)&ai_GameState) != 0)
+        if (SV_I((unsigned)&ai_Unk1460ae0) == -1 && SV_I((unsigned)&ai_Unka687e4) < SV_I((unsigned)&ai_ClockMs) && SV_B((unsigned)&ai_GameState) != 0)
             ai_Unk4c4d40((unsigned)&ai_Unk75e130);
         if ((mask & 0x10000) == 0 && SV_B((unsigned)&ai_GameState) != 0 && SV_I((unsigned)&sv_PanelFlag) == 0 && ai_Unk4e4cc0() != 0 && SV_B((unsigned)&full_data_6f22ac) != 0)
             SV_I((unsigned)&sv_PopRequest) = 1;
     }
-    if ((mask & 0x20000) != 0 && SV_I((unsigned)&ai_Unka687e4) < SV_I((unsigned)&ai_Unk6333cc)) {
+    if ((mask & 0x20000) != 0 && SV_I((unsigned)&ai_Unka687e4) < SV_I((unsigned)&ai_ClockMs)) {
         cm_FlushSendQueue();
         cm_ReceiveMessages();
         cm_ExecCommands();
-        SV_I((unsigned)&ai_Unka687e4) = SV_I((unsigned)&ai_Unk6333cc) + 7;
+        SV_I((unsigned)&ai_Unka687e4) = SV_I((unsigned)&ai_ClockMs) + 7;
     }
     if (r == 0 || SV_I((unsigned)&sv_PanelFlag) != 0)
         SV_I((unsigned)&ai_FrameWait)++;
