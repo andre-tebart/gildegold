@@ -3033,7 +3033,7 @@ exe	0x005024f0	gm_IsType10	f3gm	byte	readable
 exe	0x00502520	gm_IsHomeType	f3gm	draft	draft		
 exe	0x00502570	unk_Unk502570	f3gm	draft	draft		
 exe	0x005029f0	gm_Unk5029f0	f3gm	byte	draft		
-exe	0x00502a60	gm_Unk502a60	f3gm	draft	draft		
+exe	0x00502a60	gm_ShowSlotObjects	f3gm	draft	draft		
 exe	0x00502b60	gm_AssignBuilding	f3gm	draft	draft		
 exe	0x00502e30	gm_ShowBuildingObjects	f3gm	byte	draft		
 exe	0x00502eb0	gm_Unk502eb0	f3gm	draft	draft		
@@ -3203,7 +3203,7 @@ exe	0x00510ad0	init_InitTown	f3init	shape	readable
 exe	0x00510e20	init_ShowStatus	f3init	byte	readable		
 exe	0x00510e50	init_StartNetworkGame	f3init	draft	readable	deep	
 exe	0x005112d0	unk_Unk5112d0	f3init	byte	draft		
-exe	0x00511400	init_SetupNewGame	f3init	draft	draft	deep	
+exe	0x00511400	init_SetupNewGame	f3init	draft	readable	deep	
 exe	0x005115b0	unk_Unk5115b0	f3init	byte	draft		
 exe	0x00511600	unk_Unk511600	f3init	byte	draft		
 exe	0x005116b0	unk_Unk5116b0	f3init	byte	draft		
@@ -3398,7 +3398,7 @@ exe	0x0052e600	sv_DisableVisibleWidgets	sv	draft	draft
 exe	0x0052e6d0	sv_Unk52e6d0	sv	draft	draft		
 exe	0x0052e860	sv_CreateFormSlider	sv	draft	draft		
 exe	0x0052ea30	sv_FitForm	sv	byte	draft		
-exe	0x0052eaa0	sv_Unk52eaa0	sv	draft	draft		
+exe	0x0052eaa0	sv_ValueBar	sv	draft	draft		
 exe	0x0052eb50	sv_Unk52eb50	sv	draft	draft		
 exe	0x0052ee50	sv_Unk52ee50	sv	draft	draft		
 exe	0x0052eed0	sv_Unk52eed0	sv	byte	draft		
@@ -3445,17 +3445,17 @@ exe	0x005324f0	main_CreateWindow	main	draft	readable	deep
 exe	0x00532700	main_StartCityGame	main	byte	readable		
 exe	0x005327e0	main_PlayerCountDialog	main	draft	readable	deep	
 exe	0x005328f0	main_HostNetworkGame	main	byte	readable		
-exe	0x00532a70	main_Unk532a70	main	draft	draft		
-exe	0x00532c30	main_Unk532c30	main	byte	draft		
-exe	0x00532da0	main_Unk532da0	main	draft	draft		
-exe	0x00533470	main_Unk533470	main	draft	draft		
-exe	0x005335b0	main_Unk5335b0	main	draft	draft		
-exe	0x00533740	main_Unk533740	main	byte	draft		
-exe	0x005337f0	main_Unk5337f0	main	byte	draft		
-exe	0x00533850	main_Unk533850	main	draft	draft		
-exe	0x00534040	main_Unk534040	main	draft	draft		
+exe	0x00532a70	main_JoinNetworkGame	main	draft	readable	deep	
+exe	0x00532c30	main_EnterHostAddress	main	byte	draft		
+exe	0x00532da0	main_SearchNetworkGame	main	draft	readable	deep	
+exe	0x00533470	main_ChooseNetworkGame	main	byte	readable		
+exe	0x005335b0	main_NetworkMenu	main	byte	readable		
+exe	0x00533740	main_MoneyDialog	main	byte	draft		
+exe	0x005337f0	main_MenuButton	main	byte	draft		
+exe	0x00533850	main_Menue	main	draft	draft	deep	
+exe	0x00534040	main_GiveStartBuildings	main	byte	draft		
 exe	0x005344f0	main_Unk5344f0	main	shape	draft		
-exe	0x00534610	main_Unk534610	main	draft	draft		
+exe	0x00534610	main_ChooseTalents	main	shape	readable		
 exe	0x00534b30	main_Unk534b30	main	draft	draft		
 exe	0x005359f0	main_Unk5359f0	main	draft	draft		
 exe	0x005361d0	main_Unk5361d0	main	draft	draft		
@@ -3464,7 +3464,7 @@ exe	0x00536d80	main_Unk536d80	main	draft	draft
 exe	0x00536e80	main_Unk536e80	main	draft	draft		
 exe	0x00537040	main_Unk537040	main	draft	draft		
 exe	0x00537230	main_ChooseCity	main	draft	draft		
-exe	0x00537930	main_Unk537930	main	byte	draft		
+exe	0x00537930	main_NewSinglePlayerGame	main	byte	draft		
 exe	0x00537980	main_Unk537980	main	draft	draft		
 exe	0x00537af0	main_SetLoadProgress	main	byte	draft		
 exe	0x00537b60	main_Unk537b60	main	byte	draft		
@@ -4012,8 +4012,8 @@ exe	0x0057aeb0	ai_Unk57aeb0	unk_575860	draft	draft
 exe	0x0057b750	ai_Unk57b750	unk_575860	draft	draft		
 exe	0x0057b810	ai_Unk57b810	unk_575860	shape	draft		
 exe	0x0057b8a0	ai_Unk57b8a0	unk_575860	draft	draft		
-exe	0x0057bc30	ai_Unk57bc30	unk_575860	draft	draft		
-exe	0x0057bce0	ai_Unk57bce0	unk_575860	draft	draft		
+exe	0x0057bc30	ai_SetupTutorialPlayer	unk_575860	draft	draft		
+exe	0x0057bce0	ai_TutorialWindow	unk_575860	draft	draft		
 exe	0x0057bf00	ai_Unk57bf00	unk_575860	draft	draft		
 exe	0x0057c560	ai_Unk57c560	unk_575860	draft	draft		
 exe	0x0057c690	ai_Unk57c690	unk_575860	draft	draft		
@@ -4603,7 +4603,7 @@ exe	0x005d3030	ai_Unk5d3030	unk_58bbd0	draft	draft
 exe	0x005d31c0	ai_Unk5d31c0	unk_58bbd0	draft	draft		
 exe	0x005d3270	ai_Unk5d3270	unk_58bbd0	draft	draft		
 exe	0x005d33b0	ai_ListFiles	unk_5d33b0	byte	readable		
-exe	0x005d34b0	ai_Unk5d34b0	unk_5d33b0	draft	draft	deep	
+exe	0x005d34b0	ai_FilePickWindow	unk_5d33b0	draft	draft	deep	
 exe	0x005d3810	ai_MessageBox	unk_5d33b0	draft	draft	deep	
 exe	0x005d3a00	ai_RegisterSaveSlot	unk_5d33b0	draft	draft	deep	
 exe	0x005d3ab0	ai_FillSaveSlots	unk_5d33b0	draft	readable	deep	

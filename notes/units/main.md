@@ -10,6 +10,24 @@ Migrated from the notes/tus.md table on 2026-10-23 (the row's prose, unchanged):
 - Was: tag "main_"
 
 ## Open work
+- **match-base 2026-10-30 (fifth session) left for the deep queue** (bodies read against the original; calls and constants match):
+  0x532a70 main_JoinNetworkGame (36 ins, readable: ours loads ls_SavePath.cur early into ax and stores net.x first, so ai_GameFlags is or-ed
+  in eax (`or al,0x50`) where the original uses ecx; ours hoists the hdr.char164 load above the first rep movsd; char0c / char54 a pure
+  eax->ecx->edx rotation), 0x532da0 main_SearchNetworkGame (347 ins, readable: frame 0x988 vs 0x990; the original keeps list in a slot,
+  the ent row pointer in [esp+0x18], the name copy as src + (name - &recs[i].name) stepped by -0x80, ours in registers / two pointers),
+  0x533850 main_Menue (265 ins: the original keeps 0 in ebx for the whole function and pushes literal 1s, ours keeps 1 in edi, so the three
+  msx_Play cases are not cross-jumped; the original saves edi late (push at 0x53393f) and caches GetPrivateProfileStringA in esi, putting
+  f in [ebp-0x3c]; frame 0x50c vs 0x508).
+- **Q7 open** (header conflicts, not settled): main_Menue's hmt_Reset / ai_TutorialWindow / ai_SetupTutorialPlayer (hmt.h and
+  unk_575860.h pull declarations that make main's calls of cm_SendExSysMessage / cm_SendCreateCharacter / gm_Unk503ee0 assign void
+  results: 8 `other` conflicts in `dcp headers conflicts main hmt.h`); main_GiveStartBuildings' cm_BeginSendGroup / cm_EndSendGroup /
+  cm_SendGroupState (cm.h: sb_PlaySample clash + the same 8). Settling them = correcting those callers' result use first.
+- main_ChooseTalents is shape: two scheduling pairs (the 0xb-dword struct copy before `r = 0` / `mov ebx,1` in ours, after in the
+  original; `again = 1` vs `i = 0` at the arrow loop). Moving `r = 0` after the memset makes it worse (r stored from eax).
+- data: 0x75e5f0 (init_PlayerProfile + 0x50) is read as the view init_PlayerTalents (5 bytes) in main_ChooseTalents and as an int by
+  WinMain: the profile is 0x8c bytes (main_Menue's D3_ZERO_AT) but INIT_PLAYER only types 0x4a; extend it in f3init_types.h.
+- data: 0x9367a0 is CMJOIN (cm_types.h), viewed as cm_JoinChar in main's head; its definition is still inside cm.c's
+  ai_Unk9364e0[752] (8 records of 0x57 = 0x2b8, then 8 bytes, then this 0x30 block).
 - **headers (2026-10-30, typing pass 2)**: head.c includes txt_views.h, main.h, he.h, sfx.h, f3gm.h, mov.h, txt.h, di_input.h, evt.h, d3.h, d3_light.h, d3_engine.h, data_views.h, d2.h, unk_58bbd0.h, ecmd.h, ts_texture.h, unk_5d33b0.h, ai.h, gfx.h, dd_vesa.h, d3_interface.h, d3_int_io.h, err.h, tr.h, vfs.h, tb.h, msx.h, evtc.h, sndc.h, net.h, ls.h, cm_types.h, f3init_types.h, ch_types.h, f3snd_types.h, time_view.h, f3init.h, sv.h, mem.h, d3_d3d.h, io_text.h, d3_snd.h, d3_tools.h, ahm.h, gv.h; keeps 4 cast / view macros with @original byte evidence (the address and the matched caller are in each comment): d2_PlaceMainWindowF, d2_MoveObjS, util_RandomInt, cm_SendExSellObjectI; views / casts without byte evidence of their own (weak definitions or drafts' spellings, notes/headers.md debt item 1): d2_SetObjValue4, ai_GoodsT, ai_BldsT, ai_BTypesT, ai_CharsT, ai_TimeT.
 - **headers (2026-10-30)**: retried with `dcp headers conflicts main ..` (typing pass 2): mem.h, d3_d3d.h, io_text.h, d3_snd.h, d3_tools.h, ahm.h, gv.h are included now, and ls.h, f3init.h, sv.h (new headers). Still unsettled, with what is in the way: ch.h (2 header errors in main's set: D3ANIMSLOT without its struct tag, PATHOUT unknown), chc.h (needs ch.h), hmt.h / amt.h / hst.h (main's drafts use the results of void functions: gm_Unk503ee0 at 0x536980 / 0x53ccf0, cm_SendExSysMessage at 0x5384e0, cm_SendCreateCharacter at 0x53b840 - meaning work for those drafts), cm.h (a clash and 8 such calls), sblib.h (sb_PlaySample: sblib.h and gfx.h disagree), unk_575860.h (ai_ClearTurnTable has no prototype there).
 - **head typing pass (2026-10-30)**: head.c now includes d2.h, d3_engine.h, err.h, tr.h, vfs.h, tb.h, msx.h, evtc.h, sndc.h, net.h, gfx.h, dd_vesa.h, d3_interface.h, d3_int_io.h, ai.h, unk_5d33b0.h, unk_58bbd0.h, ecmd.h, ts_texture.h; the views D2VIEWV / D2WINV / D2SURF / D2FADE / VIDCFG / MAINCLOCK are gone. Left:
@@ -146,3 +164,18 @@ main.c includes <d3d.h>, d3.h and d3_light.h; its ai_Unk453280 call is d3_Religh
   sets was therefore not consumed (`sv_RunFrame` returns 0 without decrementing when the callback is not at the
   current depth) and leaked into the game loop, which exited after its first frame. A real click always comes
   after the registration.
+
+## match-base 2026-10-30 (fifth session: the network menus, the main menu, the start buildings, the talents)
+- Raised: 0x533470 main_ChooseNetworkGame and 0x5335b0 main_NetworkMenu byte + readable (the loop is if (sv_RunFrame) do .. while
+  (sv_RunFrame); each button disables the view, calls, raises pop / r, enables again; VC6 merges the tails), 0x534040
+  main_GiveStartBuildings byte (Q7 open), 0x534610 main_ChooseTalents shape + readable.
+- The network game: 0x532a70 joins the saved game main_NetSaveName from its LSHDR (ls_types.h: the save header, 0xfc bytes, the fields
+  from ls_WriteSaveHeader), NETHDR's tail is the save name + the party table, cm_NetGame.hdr is a struct copy; 0x532da0 lists the LAN
+  hosts (UDPSERVER, its info.game is a NETHDR; byte 0x27 `joined` disables a full new game). The three menus: main_NetworkMenu (host /
+  search / client) -> main_ChooseNetworkGame (saved game / search).
+- main_Menue (the name its error text leaks): the full screen d3_SetViewport after the two scene loads was missing; the profile clear is
+  D3_ZERO_AT (inline asm: the ebp frame); d2_LastWindow is read once for the 9 buttons. main_MenuSong / main_DevMenu / main_QuitProgram
+  are typed in main's bss.
+- The character creation: main_Family (MAINFAMILY, main.h) = the six profession groups (main_Unk5359f0) + the five talents; the parents'
+  groups give +63 to their talent, an arrow moves 21 points, the pool is 0x7e, the bar is sv_ValueBar (value / 21 half tiles: an int,
+  sv.h said float); the tools by the parents' groups go to init_PlayerProfile.tool1 / tool2.
