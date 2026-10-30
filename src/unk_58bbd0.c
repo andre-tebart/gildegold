@@ -14793,8 +14793,8 @@ void ai_Unk5aa1f0(int param_1, int *param_2, int param_3)
         U_W((unsigned)&d2_Objs + 0x14 + param_2[6] * 0x2ec) = 0xa0;
     }
     if (param_3 != 0) {
-        sv_Unk52eaa0(param_2[0], param_2[1] + 100, *(unsigned char *)(param_1 + 0x83), 0x4df);
-        sv_Unk52eaa0(param_2[0], param_2[1] + 0x74, *(unsigned char *)(param_1 + 0x82), 0x4df);
+        sv_ValueBar(param_2[0], param_2[1] + 100, *(unsigned char *)(param_1 + 0x83), 0x4df);
+        sv_ValueBar(param_2[0], param_2[1] + 0x74, *(unsigned char *)(param_1 + 0x82), 0x4df);
     }
     if (param_2[4] != -1) {
         v = gm_Opinion(U_W((unsigned)&ai_PlayerId), *(unsigned short *)param_2[2]);

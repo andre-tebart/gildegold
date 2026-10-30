@@ -3466,9 +3466,9 @@ void sv_Unk5290f0(unsigned short *p)
             d2_WinOpenPic(((w - 0x30) >> 1) - 8, 0x30, *(int *)(p + 0x2a), d2_LastWindow);
         if (kind == 0xb || kind == 0xc || kind == 10) {
             d2_WinOpenPic(0x19, 0x7e, 0x5df, d2_LastWindow);
-            sv_Unk52eaa0(0x29, 0x7e, *((char *)p + 0x82), 0x4f1);
+            sv_ValueBar(0x29, 0x7e, *((char *)p + 0x82), 0x4f1);
             d2_WinOpenPic(0x19, 0x8c, 0x5e0, d2_LastWindow);
-            sv_Unk52eaa0(0x29, 0x8c, *((char *)p + 0x83), 0x4f1);
+            sv_ValueBar(0x29, 0x8c, *((char *)p + 0x83), 0x4f1);
         }
     }
     d2_SetForm(sv_PanelForm, 0);
@@ -6019,16 +6019,17 @@ void sv_FitForm(int f)
         SV_I(((unsigned)&ai_Unkf8f39c + 0x128) + f) = 0xb;
     }
 }
-/* 0x52eaa0, lays n picture tiles (the picture k, width +0x50 + 2) in a row at (x, y) in the form 0x6ed938, n / 2 whole tiles and, when n is odd, a half tile (picture k + 1); n comes from a float
-   argument whose scale is lost in the pseudocode (placeholder: len) */
+/* 0x52eaa0, draws the value as a row of picture tiles at (x, y) in the window d2_LastWindow: n = value / 21 (one
+   talent step; the original multiplies by the float 1/21 at 0x5eeb88), n / 2 whole tiles of the picture k (width
+   +0x50 + 2) and, when n is odd, a half tile (picture k + 1). The value is an int (the original's fild). */
 
-void sv_Unk52eaa0(int x, int y, float len, int k)
+void sv_ValueBar(int x, int y, int value, int k)
 {
     unsigned n, odd;
     int w, i;
 
     w = *(short *)(SV_I((unsigned)&d2_Pics) + 0x50 + k * 0x54) + 2;
-    n = (int)len;
+    n = (int)(value / 21.0f);
     odd = n & 0x80000001;
     if ((int)odd < 0)
         odd = (odd - 1 | 0xfffffffe) + 1;

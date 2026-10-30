@@ -6900,7 +6900,7 @@ void ai_Unk583700(int *w)
             id = d2_CreateWinText(0x28, x, buf1, w[2]);
             *(short *)(U_I((unsigned)&d2_Objs) + 0x14 + id * 0x2ec) = 300;
             d2_SetObjFont(id, 0x54);
-            sv_Unk52eaa0(0xa0, x, *(unsigned char *)(w[0xb + k * 3] + 0x24 + i), 0x4df);
+            sv_ValueBar(0xa0, x, *(unsigned char *)(w[0xb + k * 3] + 0x24 + i), 0x4df);
             x += 0xd;
         }
     }

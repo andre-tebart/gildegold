@@ -47,7 +47,6 @@ int ai_AlwaysTrue(void);                 /* the handler tables at 0x60bd98 / 0x6
 #include "time_view.h"
 #include "f3init.h"
 #include "sv.h"
-#define sv_Unk52eaa0K ((void (*)(int, int, int, int))sv_Unk52eaa0)  /* 0x52eaa0 (sv.c: float len): @original cm passes the length as an int (byte-matched ai_Unk4d4340 0x4d4340 pushes the converted int; with the float prototype it is draft) */
 #define d3sm_PickK ((int (*)())d3sm_Pick)  /* 0x45f2b0 (d3_sm.c): @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
 #define d3sky_CreateLayerK ((int (*)())d3sky_CreateLayer)  /* 0x45d880 (d3_sky.c): @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) (floats as bit patterns, the flags as an int) */
 #define d3sky_CreateK ((int (*)())d3sky_Create)  /* 0x45da30 (d3_sky.c): @original the calls pass the three floats as dword bit patterns without a prototype (ai_Unk4e32f0 0x4e32f0: push 0x44160000 ..) */
@@ -6958,7 +6957,7 @@ void ai_Unk4cec30(int a, char *c)
     d2_WinOpenPic(w - 0x18, 0, 0x7b1, d2_LastWindow);
     hnd = d2_LastWindow;
     *(short *)(ai_Unkf8f39c + hnd * 0x3c4) = 0x54;
-    sv_Unk52eaa0K(4, 4, gm_Unk504e00(c, 3), 0x4df);
+    sv_ValueBar(4, 4, gm_Unk504e00(c, 3), 0x4df);
     hnd = (int)(unk_Unk4fc8e0(c) * 100.0);
     d2_WinOpenSlider(0, 0xe, 0x40, 0, 0x64, 0x75, 0x442, d2_LastWindow);
     d2_SetObjValue(d2_LastWindow, 0, 0x64, hnd);
@@ -7430,7 +7429,7 @@ void ai_Unk4cfc10()
         G19_R(G19_E(e, 0x10), 0x14, short) = 0x80;
         G19_R(G19_E(e, 0x10), 0x5c, int) = 1;
         t = gm_Unk504e00();
-        sv_Unk52eaa0K(0x24, 0x41, (int)(double)t, 0x4df);
+        sv_ValueBar(0x24, 0x41, (int)(double)t, 0x4df);
         x += 0x80;
         e += 0x20;
     }
@@ -9444,7 +9443,7 @@ void ai_Unk4d4340(int *ids, int x, int y)
         d2_WinOpenPic(px - 0x10, py, 0x5da, d2_LastWindow);
         d2_WinOpenPic(px - 4, py, *(int *)(c + 0x18c), d2_LastWindow);
         v = gm_Unk504e00(c, 3);
-        sv_Unk52eaa0K(px, py + 0x3c, (int)(double)(float)v, 0x4eb);
+        sv_ValueBar(px, py + 0x3c, (int)(double)(float)v, 0x4eb);
         t = d2_CreateWinText(px - 0x24, py - 0x11, &ch_EmptyName, d2_LastWindow);
         G19_R(t, 0x14, short) = 0x78;
         G19_R(t, 0x5c, int) = 1;
@@ -9938,7 +9937,7 @@ void ai_Unk4d4d70(char *a)
                 py = row * 100;
                 d2_WinOpenPic(px, py, 0x5db, d2_LastWindow);
                 d2_WinOpenPic(px + 2, py, *(int *)(c + 0x18c), d2_LastWindow);
-                sv_Unk52eaa0K(px, py + 0x3c, (unsigned char)c[0x83], 0x4eb);
+                sv_ValueBar(px, py + 0x3c, (unsigned char)c[0x83], 0x4eb);
                 h = 0;
                 if (c[8] == 0) {
                     v = (int)((unsigned char)c[0x83] * 0.023809524f + 1.0f);

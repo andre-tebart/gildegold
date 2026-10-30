@@ -109,7 +109,7 @@ void sv_DisableVisibleWidgets(int a);                                   /* 0x52e
 void sv_Unk52e6d0(int f, int b, int c);                                 /* 0x52e6d0 */
 int sv_CreateFormSlider(int x, int y, int f, int g, int p5, int *b, int *a, int *c); /* 0x52e860 */
 void sv_FitForm(int f);                                                 /* 0x52ea30 */
-void sv_Unk52eaa0(int x, int y, float len, int k);                      /* 0x52eaa0 */
+void sv_ValueBar(int x, int y, int value, int k);                      /* 0x52eaa0, value / 21 half tiles of the picture k */
 void sv_Unk52eb50(int x, int y, int a, int b, unsigned k);              /* 0x52eb50 */
 void sv_Unk52ee50(void);                                                /* 0x52ee50 */
 void sv_Unk52eed0(void);                                                /* 0x52eed0 */

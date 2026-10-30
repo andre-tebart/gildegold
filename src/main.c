@@ -114,8 +114,6 @@ extern GAPDATA full_data_624ce4[];
 extern GAPDATA full_data_624ce8[];
 extern GAPDATA full_data_624cec[];
 extern GAPDATA full_data_624cf8[];
-extern GAPDATA full_data_75e180[];
-extern GAPDATA full_data_75e198[];
 extern GAPDATA full_data_75e5f0[];
 extern INIT_PLAYER init_PlayerProfile;
 extern int sv_PopRequest;
@@ -1878,8 +1876,8 @@ int main_Unk534610(void)
     int f, sel;
 
     r = 0;
-    memset((char *)(unsigned)&full_data_75e198, 0, 0x18);
-    p = (int *)(unsigned)&full_data_75e180;
+    memset((char *)(unsigned)main_Family.talent, 0, 0x18);
+    p = (int *)(unsigned)&main_Family;
     q = st;
     for (i = 0xb; i != 0; i--)
         *q++ = *p++;
@@ -1890,7 +1888,7 @@ int main_Unk534610(void)
     for (i = 4; i < 6; i++)
         vals[st[i]] = (int)0.0f;
     p = st;
-    q = (int *)(unsigned)&full_data_75e180;
+    q = (int *)(unsigned)&main_Family;
     for (i = 0xb; i != 0; i--)
         *q++ = *p++;
     f = d2_OpenForm(0, 0, "menu\choosecharacter_talent");
@@ -1914,7 +1912,7 @@ int main_Unk534610(void)
             w = 0x1c;
             do {
                 io_PrintText("%s:$N", i + 0x16b7);
-                sv_Unk52eaa0(0xd2, w, (float)vals[i], 0x4d9);
+                sv_ValueBar(0xd2, w, (float)vals[i], 0x4d9);
                 row = i * 0x25 + 0x1c;
                 btn[i * 2] = d2_WinOpenPic(*(short *)(U_I((unsigned)&d2_LastWindowPtr) + 8) - 0x2c, row, 0x519, d2_LastWindow);
                 SV_WI2(btn[i * 2], 0x4c) = 1;
@@ -1926,10 +1924,10 @@ int main_Unk534610(void)
                 i++;
             } while (w < 0xd5);
             io_PrintText(0x1ae3);
-            sv_Unk52eaa0(0xd2, 0xec, (float)pts, 0x4d9);
+            sv_ValueBar(0xd2, 0xec, (float)pts, 0x4d9);
             sel = d2_GetWinObj(f, 1, io_PrintText(0x1ae4));
             for (i = 0; i < 5; i++) {
-                if (U_I((unsigned)&full_data_75e198 + i * 4) < vals[i]) {
+                if (U_I((unsigned)main_Family.talent + i * 4) < vals[i]) {
                     SV_WI2(btn[i * 2], 0x3c) = 0;
                     SV_WI2(btn[i * 2], 0x50) = 0;
                 } else {
@@ -1968,7 +1966,7 @@ int main_Unk534610(void)
                 case 4: *(unsigned char *)((unsigned)&init_PlayerProfile + 0x1) = 0x49; break;
                 }
                 p = st;
-                q = (int *)(unsigned)&full_data_75e180;
+                q = (int *)(unsigned)&main_Family;
                 for (i = 0xb; i != 0; i--)
                     *q++ = *p++;
                 U_I((unsigned)&sv_PopRequest) = 1;
@@ -1982,7 +1980,7 @@ int main_Unk534610(void)
                     if (ai_Unk5fe710 == btn[i]) {
                         row = i / 2;
                         if ((i & 1) == 0) {
-                            if (U_I((unsigned)&full_data_75e198 + row * 4) < vals[row]) {
+                            if (U_I((unsigned)main_Family.talent + row * 4) < vals[row]) {
                                 vals[row] = (int)0.0f;
                                 pts = (int)0.0f;
                             }
@@ -2127,9 +2125,9 @@ int main_Unk5359f0(int unused)
     redraw = 1;
     fade = 0;
     for (k = 0; k < 11; k++)
-        ((int *)(unsigned)&full_data_75e180)[k] = 0;
+        ((int *)(unsigned)&main_Family)[k] = 0;
     for (k = 0; k < 6; k++)
-        ((int *)(unsigned)&full_data_75e180)[k] = -1;
+        ((int *)(unsigned)&main_Family)[k] = -1;
     sv_ClearNamePlates();
     sv_ReleaseNamePlates();
     d3if_SelectScene(1, 0);
@@ -2164,7 +2162,7 @@ int main_Unk5359f0(int unused)
             if (redraw) {
                 k = 4;
                 do {
-                    if (((int *)(unsigned)&full_data_75e180)[k] == -1) {
+                    if (((int *)(unsigned)&main_Family)[k] == -1) {
                         if (k < 6) {
                             d2_SetForm(f, 0);
                             io_PrintText((unsigned)"$C");
@@ -2218,7 +2216,7 @@ int main_Unk5359f0(int unused)
                     } else if (sel == o2 || sel == o7 || sel == o9 || sel == o4) {
                         k = 5;
 lset:
-                        ((int *)(unsigned)&full_data_75e180)[k] = v;
+                        ((int *)(unsigned)&main_Family)[k] = v;
                         *(int *)(sel + 0x23c) = k;
                         h = d3_FindObject(0, 0x100, 0, dn[k]);
                         if (h != 0)
@@ -6149,8 +6147,8 @@ GAPDATA full_data_6faa90[176] = { 0 };  /* 0x6faa90 */
 GAPDATA full_data_7585f4[12] = { 0 };  /* 0x7585f4 */
 GAPDATA full_data_75df20[512] = { 0 };  /* 0x75df20 */
 void * main_Instance = 0;  /* 0x75e140, its instance handle (HINSTANCE) */
-GAPDATA full_data_75e180[24] = { 0 };  /* 0x75e180 */
-GAPDATA full_data_75e198[40] = { 0 };  /* 0x75e198 */
+MAINFAMILY main_Family = { 0 };  /* 0x75e180, the character creation's family and talents */
+GAPDATA full_data_75e1ac[20] = { 0 };  /* 0x75e1ac */
 char main_NetHost[0x80] = { 0 };  /* 0x75e1c0, the network host address ([Network] Host of game.INI, read with size 0x80 at 0x53ccf0; up to main_AppDir 0x75e240) */
 char main_AppDir[288] = { 0 };  /* 0x75e240 */
 char main_NetSaveName[161] = { 0 };  /* 0x75e360, the network game's city / save name (sprintf "%s/%s.net", read for "gamedata/network/%s.SAV"); size: up to the address 0x75e401, which is only 0x53b840's copy-loop base constant, so the name may run to ai_OptionsFile 0x75e480 */

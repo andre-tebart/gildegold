@@ -2,6 +2,13 @@
 #ifndef MAIN_H
 #define MAIN_H
 
+typedef struct MAINFAMILY {             /* 0x2c bytes at 0x75e180, the character creation's choices */
+    int group[6];                       /* 0x00, the profession group 0 .. 4 of each family member (-1: none): the
+                                           paternal / maternal grandparents, [4] the father, [5] the mother
+                                           (main_Unk5359f0) */
+    int talent[5];                      /* 0x18, the five talent values in points, 21 a step (main_Unk534610) */
+} MAINFAMILY;
+
 /* the globals of the program level (the window is created in main_CreateWindow) */
 extern HWND main_Window;                /* 0x6f2588, the game window ("Die Gilde") */
 extern void *main_Instance;             /* 0x75e140, its instance handle (HINSTANCE) */
@@ -10,6 +17,7 @@ extern int main_PlatformNT;             /* 0x75e62c, the OS is NT based (not Win
 extern int main_ScreenSaverOff;         /* 0x6f25bc, the screen saver was switched off and is restored at exit */
 extern struct MSXTRACK *main_MenuSong;  /* 0x6f2418, the main menu's song (msx_Play) */
 extern int main_DevMenu;                /* 0x6f245c, nonzero: the main menu shows the data-tool buttons */
+extern MAINFAMILY main_Family;          /* 0x75e180 */
 extern int main_QuitProgram;            /* 0x6f25b4, set by quit / Escape / WM_QUIT: WinMain exits */
 extern char main_NetHost[0x80];        /* 0x75e1c0, the network host address (game.INI [Network] Host) */
 extern char main_NetSaveName[161];      /* 0x75e360, the network game's name */
