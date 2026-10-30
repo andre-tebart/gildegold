@@ -87,3 +87,4 @@
 2026-10-30T10:52:44 0x00936470 data full_data_936470 -> main_NetGameRecord by:main why:the 106-byte game record copy (26 dwords + a word) of the header at 0x75e6e0; 0x532a70 and 0x5328f0 fill it
 2026-10-30T10:55:17 0x00537230 func main_Unk537230 -> main_ChooseCity by:main why:its comment: the player setup / city choice of a new game (form Menu\CHOOSECITY); host = 1 selects the network (.NET) files
 2026-10-30T10:55:22 0x009364dc data ai_Unk9364dc -> ai_ModeMask by:main why:0x7f in single-player mode (0x532a70 / 0x589f10 / 0x58a940 disable the controls on it), 0x3f set by the network host here and checked by 0x4cd510
+2026-10-30T22:59:17 0x00532a70 func main_Unk532a70 -> main_JoinNetworkGame by:main why:opens gamedata/network/<name>.SAV after ai_JoinGameWindow, fills ls_SavePath.net and cm_NetGame (mode 0x7f) like main_HostNetworkGame (0x3f) does for a new game

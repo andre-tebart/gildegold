@@ -36,4 +36,15 @@ typedef struct CMNETGAME {              /* 0x80 bytes at 0x936460: the network g
 } CMNETGAME;
 typedef char cm_AssertCMNETGAME[sizeof(CMNETGAME) == 0x80 ? 1 : -1];
 
+typedef struct CMJOIN {                 /* 0x30 bytes at 0x9367a0 (inside ai_Unk9364e0's extent, past its 8 records
+                                           of 0x57 bytes): the character of a joined saved game, from its LSHDR
+                                           (main_JoinNetworkGame) */
+    char text1[0x10];                   /* 0x00, LSHDR.charText1 */
+    char text2[0x10];                   /* 0x10, LSHDR.charText2 */
+    int char164;                        /* 0x20 */
+    int char09;                         /* 0x24 */
+    int char0c;                         /* 0x28 */
+    int char54;                         /* 0x2c */
+} CMJOIN;
+
 #endif

@@ -60,6 +60,7 @@ extern char main_GamePath[];
 extern int main_TextureDivider;
 #include "cm_types.h"
 extern CMNETGAME cm_NetGame;  /* 0x936460, cm.c: the network game */
+#define cm_JoinChar (*(CMJOIN *)((char *)&ai_Unk9364e0 + 0x2c0))  /* 0x9367a0, the joined character (CMJOIN) */
 extern G17MSG ai_Unk9367e0[];
 extern GAPDATA full_data_5f320c[];
 extern int main_TextReopen;
@@ -998,72 +999,64 @@ int main_HostNetworkGame(void)
     d2_ShowPicture(0x797);
     return 0;
 }
-/* 0x532a70, joins a saved network game: asks for the game (0x5d42b0), opens "gamedata/network/<name>.SAV" (0x430470, "rb"), reads its header (0x51cee0) and fills the game record 0x75e6e0 / 0x936470 (version >=
-   0x10054: the second name and the extra fields) for the start; returns 1 on success */
+/* 0x532a70, joins a saved network game: asks for the game (ai_JoinGameWindow), opens "gamedata/network/<name>.SAV" (vfs_Tfopen, "rb"), reads its header (ls_ReadSaveHeader) and fills
+   the network game record ls_SavePath.net (its save name and party table) and cm_NetGame from it, the host 127.0.0.1, the network flags 0x50 and the joined character cm_JoinChar
+   (version >= 0x10054: the second text and two more fields); returns 1 on success @deep body read against the original and typed (LSHDR 0xfc + path[260] give the 0x200 frame exactly; NETHDR.save/party, the cm_NetGame.hdr struct copy, the CMJOIN view at 0x9367a0); every call, store and constant matches. Left is scheduling: ours loads ls_SavePath.cur into ax first and stores net.x at once (0x532acc/0x532ade) where the original loads it late into dx and stores it after net.b (0x532b34), so ai_GameFlags is or-ed in eax (or al,0x50) not ecx (or ecx,0x50, 4 bytes longer in all); ours hoists the hdr.char164 load above the first rep movsd (mov edx,[esp+0x6c] at 0x532b6d) where the original loads it after the rep stosd; the char0c/char54 pair is a pure eax->ecx ecx->edx edx->eax rotation. Tried: the original's store order (players before the flag, mode between char164 and char09): byte-neutral. */
 
-int main_Unk532a70(void)
+int main_JoinNetworkGame(void)
 {
-    int f, i;
-    int hdr[0x80];
+    LSHDR hdr;
     char path[260];
+    VFSFILE *f;
+    int i;
     char c;
-    int *src, *dst;
 
     if (ai_JoinGameWindow() != 0) {
         sprintf(path, "gamedata/network/%s.SAV", main_NetSaveName);
-        f = vfs_Tfopen(path, (char *)(unsigned)"rb", U_I((unsigned)&d3_Unk6333fc));
+        f = vfs_Tfopen(path, "rb", (int)vfs_Root);
         if (f != 0) {
-            ls_ReadSaveHeader(f, hdr);
+            ls_ReadSaveHeader((int)f, (int *)&hdr);
             strcpy(main_NetHost, "127.0.0.1");
-            U_I((unsigned)&ai_GameFlags) |= 0x50;
-            *(unsigned char *)(unsigned)&ai_NumPlayers = *((unsigned char *)hdr + 0x31);
-            *(unsigned char *)((unsigned)&ls_SavePath + 0xc6) = *((unsigned char *)hdr + 0x31);
-            *(unsigned char *)((unsigned)&ls_SavePath + 0xa4) = 0x6a;
-            *(unsigned short *)((unsigned)&ls_SavePath + 0xa0) = 1;
-            *(unsigned short *)((unsigned)&ls_SavePath + 0xa2) = 4;
-            *(unsigned short *)((unsigned)&ls_SavePath + 0xc8) = *(unsigned short *)((unsigned)&ls_SavePath + 0x84);
+            ai_NumPlayers = hdr.players;
+            ls_SavePath.net.players = hdr.players;
+            ai_GameFlags |= 0x50;
+            ls_SavePath.net.size = 0x6a;
+            ls_SavePath.net.a = 1;
+            ls_SavePath.net.b = 4;
+            ls_SavePath.net.x = ls_SavePath.cur;
             i = 0;
             do {
-                c = *((char *)hdr + 5 + i);
-                *(char *)(((unsigned)&ls_SavePath + 0xa6) + i) = c;
+                c = hdr.player[i];
+                ls_SavePath.net.name[i] = c;
                 i++;
             } while (c != 0);
             i = 0;
             do {
                 c = main_NetSaveName[i];
-                *(char *)(((unsigned)&ls_SavePath + 0xca) + i) = c;
+                ls_SavePath.net.save[i] = c;
                 i++;
             } while (c != 0);
-            src = (int *)((char *)hdr + 0x78);
-            dst = (int *)((unsigned)&ls_SavePath + 0xea);
-            for (i = 8; i != 0; i--)
-                *dst++ = *src++;
-            src = (int *)((unsigned)&ls_SavePath + 0xa0);
-            dst = (int *)&cm_NetGame.hdr;
-            for (i = 0x1a; i != 0; i--)
-                *dst++ = *src++;
-            *(short *)dst = *(short *)src;
-            dst = (int *)((unsigned)&ai_Unk9364e0 + 0x2c0);
-            for (i = 0xc; i != 0; i--)
-                *dst++ = 0;
-            U_I(((unsigned)&ai_Unk9364e0 + 0x2e0)) = *((unsigned *)hdr + 0x60 / 4) & 0xff;
-            U_I(((unsigned)&ai_Unk9364e0 + 0x2e4)) = *((unsigned *)hdr + 0x6c / 4) & 0xff;
+            memcpy(ls_SavePath.net.party, hdr.party, sizeof(hdr.party));
+            memcpy(&cm_NetGame.hdr, &ls_SavePath.net, sizeof(NETHDR));
+            memset(&cm_JoinChar, 0, sizeof(CMJOIN));
+            cm_JoinChar.char164 = hdr.char164;
             cm_NetGame.mode = 0x7f;
+            cm_JoinChar.char09 = hdr.char09;
             i = 0;
             do {
-                c = *((char *)hdr + 0x40 + i);
-                *(char *)(((unsigned)&ai_Unk9364e0 + 0x2c0) + i) = c;
+                c = hdr.charText1[i];
+                cm_JoinChar.text1[i] = c;
                 i++;
             } while (c != 0);
-            if (0x10053 < hdr[0]) {
+            if (hdr.version >= 0x10054) {
                 i = 0;
                 do {
-                    c = *((char *)hdr + 0x50 + i);
-                    *(char *)(((unsigned)&ai_Unk9364e0 + 0x2d0) + i) = c;
+                    c = hdr.charText2[i];
+                    cm_JoinChar.text2[i] = c;
                     i++;
                 } while (c != 0);
-                U_I(((unsigned)&ai_Unk9364e0 + 0x2e8)) = *((unsigned *)hdr + 0x60 / 4) >> 0x18;
-                U_I(((unsigned)&ai_Unk9364e0 + 0x2ec)) = *((int *)hdr + 0x64 / 4);
+                cm_JoinChar.char0c = hdr.char0c;
+                cm_JoinChar.char54 = hdr.char54;
             }
             vfs_fclose(f);
             return 1;
@@ -1351,7 +1344,7 @@ int main_Unk533470(void)
         if (U_I((unsigned)&d2_ClickedId) != -1) {
             if (ai_Unk5fe710 == b1) {
                 d2_SetViewEnabled(f, 0);
-                run = main_Unk532a70();
+                run = main_JoinNetworkGame();
             } else {
                 if (ai_Unk5fe710 != b2)
                     goto lnext;
