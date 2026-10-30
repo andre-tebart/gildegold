@@ -3,6 +3,8 @@
 #ifndef UNK_401D50_H
 #define UNK_401D50_H
 
+#include "ls_types.h"                     /* NETHDR */
+
 typedef struct UDPINFO1 {           /* 0x2a bytes, server answer version 1 */
     short type;                     /* 1 */
     short version;                  /* 1 */
@@ -33,6 +35,8 @@ typedef struct UDPSERVER {          /* 0x80 bytes */
     union {
         UDPINFO1 v1;
         UDPINFO4 v4;
+        NETHDR game;                /* v4 is the host's network game record (main_Unk532da0 reads its
+                                       name, players, save name and party table) */
     } info;                         /* 0x10 */
     int flags;                      /* 0x7c, 0x3f (version 1) or 0x7f (version 4) */
 } UDPSERVER;

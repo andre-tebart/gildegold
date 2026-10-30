@@ -2,7 +2,6 @@
    mutex, the version string "Europa 1400 - Gold Edition - 2.06", the window creation and the first init (screenshot directory "<path>gamedata\Screenshots"). Split from sv.c (layout 2026-10-23 session 5): the strings
    0x62493c .. 0x6249a8 sit after the last sv string ("MASTER(): .." 0x624534) and the code is the process level start / stop, not the in-game screen. ROUGH drafts.
    unit of rea 8cef7d5b (src/game/main.c); boundaries in decl/text.dcl, notes in notes/units/main.md */
-struct UDPSERVER;
 extern int gm_PlayerRecords[688];
 #include "txt_views.h"
 #include <windows.h>
@@ -45,6 +44,7 @@ extern int gm_PlayerRecords[688];
 #include "sndc.h"
 #include "net.h"
 #include "ls.h"                      /* ls_SavePath (LSSAVE, its NETHDR), the save game functions */
+#include "udp.h"                     /* udp_FindServers, UDPSERVER */
 #define GAPDATA __declspec(align(1)) unsigned char
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
@@ -1118,7 +1118,6 @@ void d2_RadioAdd(int g, int obj);
 int d2_CreateChildWindow(short x, short y, short w, short h, unsigned int flags, int win);
 void d2_SetObjFont();
 int d2_FindPic();
-int udp_FindServers(u_short port, DWORD timeout, struct UDPSERVER *list, int max);
 int sv_OpenMessageBox(int text, unsigned char flags);
 int ls_ReadSaveHeader();
 
