@@ -311,7 +311,8 @@ extern GAPDATA full_data_5f3418[];
 extern GAPDATA full_data_6f1c2c[];
 extern GAPDATA full_data_6f22f4[];
 extern GAPDATA full_data_6f2598[];
-extern unsigned char snd_AmbientOn;
+#include "f3snd_types.h"
+extern G16AMBIENTON snd_AmbientOn;
 extern void sv_UpdateClock(void);
 extern unsigned short * sv_PanelShown;
 extern int ai_Unk7d6a40;
@@ -609,7 +610,7 @@ extern char * ai_FallbackBuilding;
 extern char ai_GfxFloor[];
 extern int * ai_Unk633738;
 extern struct D3SKY *d3_Sky;
-extern unsigned char snd_AmbientOn;
+extern G16AMBIENTON snd_AmbientOn;
 extern char ai_Chars[768][0x21c];
 extern unsigned char ai_OwnPlayer;
 extern int ai_Unk5fe710;
@@ -1097,7 +1098,8 @@ extern char * ai_BTypes;
 extern char ai_Chars[768][0x21c];
 extern unsigned short * ai_PlayerChar;
 extern signed char ai_Relations[768][768];
-extern unsigned char ai_Unka69140;
+#include "cm_types.h"
+extern G17MSG ai_Unka69140[];
 extern int ai_Unk5fe710;
 extern int d2_ClickedId;
 extern int d2_LastWindow;

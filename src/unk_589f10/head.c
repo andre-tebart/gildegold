@@ -17,6 +17,7 @@ extern D2WIN d2_Wins[];
 #include <stdio.h>
 #include <string.h>
 #include "unk_589f10.h"
+#include "di_input.h"
 #include "data_views.h"
 #define GAPDATA __declspec(align(1)) unsigned char
 
@@ -31,7 +32,6 @@ extern int d2_ClickedId;
 extern struct D2INPUT *d2_FocusedInput;
 extern D2INPUT d2_Inputs[];
 extern struct D2OBJ *d2_Objs;
-extern unsigned char dm_L;
 extern GAPDATA full_data_60ea78[];
 extern GAPDATA full_data_6230f8[];
 extern GAPDATA full_data_623108[];

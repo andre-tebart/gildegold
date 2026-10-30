@@ -158,10 +158,7 @@ float d3_YawTo(struct D3OBJECT *obj, float *p);                                 
 /* D3OBJECT.info is the D3ANIMCTL of animated objects */
 #define D3OBJ_ANIM(obj) ((D3ANIMCTL *)(obj)->info)
 
-typedef struct CHMOTION {           /* 0x4c bytes */
-    char pad00[0x25];
-    char name[0x27];                /* 0x25 */
-} CHMOTION;
+#include "ch_types.h"                /* CHMOTION */
 extern CHMOTION ch_Motions[];       /* 0x14696e0 */
 extern char ch_ShadowEnabled;           /* 0x5f122c */
 extern int ch_CurrentGroup;         /* 0x5f1294, the group of the building the player is in (sv.c / f3init.c

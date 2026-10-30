@@ -61,7 +61,8 @@ extern int sv_ViewRectBottom;
 extern int sv_ViewRectLeft;
 extern int sv_ViewRectRight;
 extern int sv_ViewRectTop;
-extern unsigned char ai_Unk9367e0;
+#include "cm_types.h"
+extern G17MSG ai_Unk9367e0[];
 extern GAPDATA full_data_5f320c[];
 extern int main_TextReopen;
 extern int main_HmtMode;
@@ -216,7 +217,8 @@ extern int ai_Unk6f0d8c;
 extern int * ai_Unk760618;
 extern int ai_Unk76061c;
 extern int ai_Unk760620;
-extern unsigned char ch_Motions;
+#include "ch_types.h"
+extern CHMOTION ch_Motions[];
 extern struct D3ANIM *d3t_CamMove;
 extern struct D3OBJECT *d3t_SunRays;
 extern GAPDATA full_data_6f25c4[];
@@ -278,7 +280,8 @@ extern int ai_Unkfb906c;
 extern int cm_NetFlags;
 extern GAPDATA full_data_624560[];
 extern signed char init_BuildingUniverse[0x22];
-extern unsigned char snd_AmbientOn;
+#include "f3snd_types.h"
+extern G16AMBIENTON snd_AmbientOn;
 extern int sv_FrameMask;
 extern int sv_PopRequest;
 extern char ai_DataPath[];
@@ -313,7 +316,7 @@ extern GAPDATA full_data_624798[];
 extern GAPDATA full_data_6f241c[];
 extern int di_Disabled;
 extern GAPDATA full_data_6f2574[];
-extern unsigned char snd_AmbientOn;
+extern G16AMBIENTON snd_AmbientOn;
 extern char ai_DataPath[];
 extern unsigned char ai_GfxResolution;
 extern char ai_OptionsFile[288];

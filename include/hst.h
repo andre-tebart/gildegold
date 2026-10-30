@@ -4,13 +4,7 @@
 
 #include "am.h"
 
-typedef struct G12ROW {                 /* 0x44 bytes, hst_Lists[4] (one list of text entries) */
-    int inUse;                          /* 0x00, 1 while the list holds entries (0x4b1ee0 clears it, a [_SET_ / [_USE_ command needs it) */
-    struct {
-        int id;
-        int v;
-    } e[8];                             /* 0x04 */
-} G12ROW;
+#include "hst_types.h"               /* G12ROW */
 extern G12ROW hst_Lists[4];  /* 0xf83540 */
 typedef struct G12ARG {                 /* 8 bytes, the arguments of a text */
     int unk00;

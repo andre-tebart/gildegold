@@ -27,7 +27,8 @@ extern int ai_Unk6f1b88;
 extern GAPDATA full_data_6f1ce4[];
 extern GAPDATA full_data_91f6e3[];
 extern GAPDATA full_data_91f6e4[];
-extern unsigned char amt_Table;
+#include "amt_types.h"
+extern AMTREC amt_Table[];
 extern int gm_PlayerRecords[688];
 
 extern const float unk_Tab5ee034[];

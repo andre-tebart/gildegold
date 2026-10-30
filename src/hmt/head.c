@@ -16,7 +16,8 @@ extern char ai_PlayerSlots[4][0x2f4];
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define ai_TimeT (*(AITIME *)&ai_Time)  /* 0x770ae0, ai_Time (anm.c: char[14]) as the AITIME it is: this unit reads its fields */
-extern char ai_Unkf31160[];
+#include "cm_types.h"
+extern G17STAT ai_Unkf31160[];
 
 /* the SDK calls of hmt_CreateBinaryFile; windows.h is not included (its min/max and the other SDL macros change the
    emitted code of the unit), the two entry points are declared here as the SDK does, __stdcall */

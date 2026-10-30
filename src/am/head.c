@@ -27,7 +27,8 @@ extern char ai_PlayerSlots[4][0x2f4];
 #include "data_views.h"
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
-extern unsigned char ai_Unka69140;
+#include "cm_types.h"
+extern G17MSG ai_Unka69140[];
 extern unsigned char txt_Keys;  /* @original ai_Unk498c70 (0x498c70, byte) tests flags1c8 & 0x1000000 as &txt_Keys + 0x181c0 of this byte view: the char[0x4800][0x50] spelling, a view macro or the literal flip its add operands at +0x4cc (shape) */
 extern unsigned char he_Events[339968];
 

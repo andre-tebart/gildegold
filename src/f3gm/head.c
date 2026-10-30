@@ -43,7 +43,8 @@ extern D3SCENE d3_Scenes[];               /* 0xfd7ba0: ai_Unk5fb5b0 points at it
 extern char txt_Keys[0x4800][0x50];
 extern GAPDATA full_data_91f6e0[];
 extern unsigned char he_Events[339968];
-extern unsigned char amt_Table;
+#include "amt_types.h"
+extern AMTREC amt_Table[];
 extern GAPDATA full_data_7585f4[];
 extern char * he_QuickList[10921];
 

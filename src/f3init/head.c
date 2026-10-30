@@ -26,7 +26,8 @@ extern struct D3IOANIMDATA d3_AnimHead;
 extern int gm_PlayerRecords[688];
 extern int gm_Offers[528];
 extern float ai_Unk760420;
-extern unsigned char ch_Motions;
+#include "ch_types.h"
+extern CHMOTION ch_Motions[];
 
 /* the scene object view of this unit: a CHARACTER (ch.h, 0x244 bytes, the list 0x1468ae0); the unit cannot
    include ch.h (gv.h's d3sm_GetVertex is a K&R declaration), so the fields this unit reads are declared here

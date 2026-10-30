@@ -70,10 +70,7 @@ typedef struct G16TRACKHANDLES {        /* 0x8 bytes, snd_TrackHandles: the musi
     char *copy;                         /* 0x04, a copy of current, never read */
 } G16TRACKHANDLES;
 
-typedef union G16AMBIENTON {            /* 0x6f0b60: the ambient-sound flag; 0x4c23f0 reads the word */
-    char on;                            /* 0x00, 1: ambient sounds on */
-    unsigned int word;                  /* 0x00, the same bytes read as a word (0x4c23f0) */
-} G16AMBIENTON;
+#include "f3snd_types.h"             /* G16AMBIENTON */
 
 typedef struct G16CHARCLICK {           /* the click-comment view of the start of a character record (0x770b80) */
     unsigned short id;                  /* 0x00, the character id */

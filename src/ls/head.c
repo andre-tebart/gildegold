@@ -33,11 +33,12 @@ extern GAPDATA full_data_92bcb3[];
 extern int ai_Unk60bd88;
 extern int ai_Unk60bd8c;
 extern int ai_Unk60bd90;
-extern unsigned char ai_Unk9367e0;
+#include "cm_types.h"
+extern G17MSG ai_Unk9367e0[];
 extern unsigned char ai_Unka68800[1024];
 extern unsigned int ai_Unka68c04;
-extern unsigned char ai_Unka69140;
-extern char ai_Unkf31160[];
+extern G17MSG ai_Unka69140[];
+extern G17STAT ai_Unkf31160[];
 extern unsigned int ai_Unkf8121c;
 extern int ai_Unk760548;
 extern int ai_Unk760610;
@@ -46,7 +47,8 @@ extern void main_Unk537b60(int kind, int cur, int total);
 extern char ls_ClearObjectFlag();
 extern char ls_HookBuildingCB();
 extern int ai_Unk7d6a40;
-extern unsigned char ch_Motions;
+#include "ch_types.h"
+extern CHMOTION ch_Motions[];
 extern int ai_Unk7e3f38;
 extern int gm_Offers[528];
 extern struct G10GAME *ai_Unkf83654;
@@ -144,7 +146,8 @@ extern char *txt_Ptrs[];           /* 0x143a1c0, the text table */
 extern int hst_TextCurrent, hst_TextFirst, hst_KeyNext, hst_KeyFirst;   /* 0x601060, 0x601058, 0x60106c, 0x601064 .. 0x60106c */
 extern unsigned char hst_TextsOn;               /* 0x6f0724 */
 extern char hst_Key[];                 /* 0xf83520, the history key ("G12", 0x20 bytes; the save keeps 0x10) */
-extern int hst_Lists[];                /* 0xf83540, the four history lists (G12ROW[4] in hst.h), int view */
+#include "hst_types.h"
+extern G12ROW hst_Lists[];             /* 0xf83540, the four history lists */
 void init_HookObject(char *o, unsigned short *p, int kind);  /* 0x50d380, names the scene object o and hooks it to its owner p */
 int ai_LoadWind();                     /* 0x5dc0c0 */
 int unk_Unk4ed910();                     /* 0x4ed910 */

@@ -21,7 +21,7 @@ int ls_WriteHistory(int f)
   }
   /* list walks the lists by their e[0].v word (the word at +8 of each 0x44-byte record): list - 2 is the used
      flag, list - 1 and list are the id and value of each of the eight entries */
-  for (list = &hst_Lists[2]; (int)list < (int)&hst_Lists[0x46]; list = list + 0x11) {
+  for (list = &hst_Lists[0].e[0].v; (int)list < (int)&hst_Lists[4].e[0].v; list = list + 0x11) {
     LS_W(list - 2, 4)
     entry = list;
     for (i = 0; i < 8; i++) {

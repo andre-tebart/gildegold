@@ -191,7 +191,8 @@ extern int gm_PlayerRecords[688];
 extern unsigned short * ai_PlayerChar;
 extern GAPDATA full_data_628a28[];
 extern char * ai_BTypes;
-extern char ai_Unkf31160[];
+#include "cm_types.h"
+extern G17STAT ai_Unkf31160[];
 extern unsigned short ai_Unk76fdc4;
 extern unsigned ai_Unk889400[732];
 extern int d2_ClickedId;
