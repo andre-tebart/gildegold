@@ -338,7 +338,8 @@ extern int ai_Unk6f22c0, ai_Unk6f22c4, ai_Unk6f22c8, ai_FrameWait;  /* 0x6f22c0,
 extern int sv_FrameDepth;
 extern int sv_FrameBase;
 extern char ai_Unk6f0454[1];  /* 0x6f0454 */
-extern int sv_ViewRectLeft, sv_ViewRectTop, sv_ViewRectRight, sv_ViewRectBottom, ai_Unk6ed92c;  /* 0x6248a4, 0x6248a8, 0x6248ac, 0x6248b0, 0x6ed92c */
+extern int sv_ViewRectLeft, sv_ViewRectTop, sv_ViewRectRight, sv_ViewRectBottom;  /* 0x6248a4, 0x6248a8, 0x6248ac, 0x6248b0 */
+extern char *ai_Unk6ed92c;  /* 0x6ed92c */
 extern int ai_Unkfb9060, ai_Unkfb9064, ai_Unkfb9068, ai_Unkfb906c;  /* 0xfb9060, 0xfb9064, 0xfb9068, 0xfb906c */
 extern char ai_GamePanel;  /* 0x6f3668 */
 extern char *ai_PlayerBuilding;  /* 0x6f2308 */

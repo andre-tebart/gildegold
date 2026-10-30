@@ -667,7 +667,7 @@ extern GAPDATA full_data_62a870[];
 extern GAPDATA full_data_62a88c[];
 extern char * ai_BTypes;
 extern int ai_Unk6f2448;
-extern unsigned char ai_Unk5fb5b0;
+extern char *ai_Unk5fb5b0;
 extern int ai_Unk6333cc;
 extern int ai_Unk7603a0[32];
 extern GAPDATA full_data_62a538[];

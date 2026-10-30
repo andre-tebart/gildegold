@@ -23,7 +23,7 @@ extern D2WIN d2_Wins[];
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 extern char ai_OptionsFile[288];
-extern unsigned char ai_Unk1460ae0;
+extern int ai_Unk1460ae0;
 extern int ai_Unk5fe710;
 extern int ai_ModeMask;
 extern char ai_Unk9364e0[752];
