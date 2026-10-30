@@ -49,7 +49,7 @@ int gm_LoadTables(char *root)
     fread(ai_Goods, 0x41, 0x2dc, f);
     fclose(f);
     gm_InitBuildingTables();
-    gm_Unk503e80();
+    gm_ResetCharacters();
     for (i = 0; i < 0xca78; i += 0x24d) {
         cnt = 0;
         w = (unsigned short *)(ai_BTypes + i + 0x23);

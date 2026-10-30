@@ -22,7 +22,7 @@ void main_ShutdownEngine(void);            /* 0x531c20 */
 int main_OpenScreen(int m);
 int main_OpenEngine(void);
 int main_Unk5327e0(void);
-void main_Unk532700(int name, int net);
+void main_StartCityGame(char *name, int net);
 int main_Unk5335b0(void);
 
 #endif

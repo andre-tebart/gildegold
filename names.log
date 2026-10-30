@@ -78,3 +78,5 @@
 2026-10-30T10:39:03 0x00532160 func main_Unk532160 -> main_OpenEngine by:main why:the error string main_OpenEngine(): could not open txt-engine! 0x624a8c is in it
 2026-10-30T10:39:17 0x0075e240 data full_data_75e240 -> main_AppDir by:main why:0x53ccf0 copies the program's own path into it and cuts it at the last backslash (strrchr 0x5c); 0x532160 reads <it>\include_sfx.ini
 2026-10-30T10:43:03 0x005324f0 func main_Unk5324f0 -> main_CreateWindow by:main why:registers the 'Die Gilde' window class and creates the game window; main_Window is set here, 0x53ccf0 (WinMain) calls it
+2026-10-30T10:45:35 0x00503e80 func gm_Unk503e80 -> gm_ResetCharacters by:main why:its comment: resets the character state (0x503c60 for all 0x300 characters, the record table, the counters)
+2026-10-30T10:47:00 0x00532700 func main_Unk532700 -> main_StartCityGame by:main why:loads the city file <name>.CTY / .NET and opens the ChooseCity scene; called by the main menu 0x533850 with (name, 0 / 1)

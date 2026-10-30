@@ -31,6 +31,9 @@ extern char d2_Radios[];
 #define GAPDATA __declspec(align(1)) unsigned char
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
+#pragma pack(push, 2)
+struct MAINCLOCK { int year; unsigned short hour; int min; };  /* the used head of ai.h's AITIME (14 bytes: year, hour, minute, ..) */
+#pragma pack(pop)
 extern void *d2_BackSurf;     /* 0x6ed92c, the back surface (d2.c) */
 extern unsigned char d3_Hardware;
 extern int main_Inactive;       /* 0x6f2584, 1 while the app is deactivated */
@@ -71,9 +74,8 @@ extern char main_AppDir[];
 extern unsigned char init_PlayerProfile[];
 extern GAPDATA full_data_60da10[];
 extern char ls_SavePath[];
-extern unsigned char ai_Time;
+extern struct MAINCLOCK ai_Time;
 extern unsigned char ai_TimeHour;
-extern GAPDATA full_data_624b10[];
 extern unsigned char ai_NumPlayers;
 extern unsigned char d2_ClickedId;
 extern unsigned char sv_PopRequest;
@@ -280,7 +282,7 @@ extern unsigned char ai_GameOver;
 extern unsigned char ai_GameState;
 extern unsigned char ai_LeaveGame;
 extern unsigned char ai_PlayerBuilding;
-extern unsigned char ai_Time;
+extern struct MAINCLOCK ai_Time;
 extern int sv_ScreenDirty;
 extern unsigned char ai_Unk75ec60;
 extern unsigned char ch_SndLib;
@@ -348,7 +350,7 @@ extern unsigned char he_Events;
 extern unsigned char he_QuickList;
 extern char ai_Chars[];
 extern unsigned char ai_PlayerId;
-extern unsigned char ai_Time;
+extern struct MAINCLOCK ai_Time;
 extern unsigned char ai_Unkfb9060;
 extern unsigned char ai_Unkfb9064;
 extern unsigned char ai_Unkfb9068;
@@ -385,7 +387,7 @@ extern unsigned char ai_GameFlags;
 extern unsigned char ai_GameOver;
 extern unsigned char ai_GameState;
 extern unsigned char ai_PlayerId;
-extern unsigned char ai_Time;
+extern struct MAINCLOCK ai_Time;
 extern unsigned char ai_Unk1460ae0;
 extern unsigned char ai_Unkfb9060;
 extern unsigned char ai_Unkfb9064;
@@ -406,7 +408,7 @@ extern unsigned char ai_Blds;
 extern char ai_Chars[];
 extern unsigned char ai_OwnPlayer;
 extern unsigned char ai_PlayerChar;
-extern unsigned char ai_Time;
+extern struct MAINCLOCK ai_Time;
 extern unsigned char ai_TimeHour;
 extern unsigned char cm_FieldObject;
 extern unsigned char ai_CurrentPlayer;
@@ -420,7 +422,7 @@ extern unsigned char ai_GamePanel;
 extern unsigned char ai_LeaveGame;
 extern unsigned char ai_OwnPlayer;
 extern unsigned char ai_PlayerId;
-extern unsigned char ai_Time;
+extern struct MAINCLOCK ai_Time;
 extern unsigned char ai_TimeHour;
 extern unsigned char ai_Unk1460ae0;
 extern unsigned char ai_Unk60bd94;
@@ -595,6 +597,13 @@ void evtc_Register(void);               /* 0x40b8a0 */
 void ocmd_Register(void);               /* 0x40f960 */
 void chc_Register(void);                /* 0x40d270 */
 void sndc_Register(void);               /* 0x410220 */
+void d3if_Reset(void);                  /* 0x4473f0, cm.h */
+int ls_SaveGame(char *path, char *name, unsigned flags);  /* 0x5190b0, ls.c (as unk_5d33b0.h) */
+int ls_GetLanguage(void);               /* 0x5190a0, ai.h */
+int init_InitTown(char *city);          /* 0x510ad0, f3init */
+void gm_ResetCharacters(void);          /* 0x503e80, f3gm */
+void init_FreeScenes(void);             /* 0x50d490, f3init */
+char d3_LoadScene(char *name, void *f, void (*progress)(int a, int i, int n));  /* 0x44be60, cm.h */
 struct D2SURF { int makeFlags; int w; int h; };  /* the head of d2.h's D2SURF (d2.h cannot be included here: its externs conflict with this unit's data views) */
 void d2_BlitPart(int sx, int sy, int w, int h, struct D2SURF *src, int x, int y, struct D2SURF *dst);  /* 0x479480, d2.h */
 int d2_LockSurface(struct D2SURF *s);   /* 0x479020, d2.h */

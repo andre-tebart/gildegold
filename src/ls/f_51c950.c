@@ -19,7 +19,7 @@ int unk_Unk51c950(int name)
     h = vfs_Tfopen(name, "rb", vfs_Root);
     if (h == 0)
         return 0;
-    gm_Unk503e80();
+    gm_ResetCharacters();
     ch_DeleteAll();
     ai_PlayerChar = 0;
     ai_JudgeCatholic = 0;

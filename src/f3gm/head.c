@@ -56,7 +56,7 @@ unsigned short *gm_CreateObject(int id, unsigned proto, int n);
 char *gm_FindCharacterByMaster(int m);
 void gm_FreeObjectExtra(unsigned short *o);
 void gm_ShowBuildingObjects(unsigned char *b);
-void gm_Unk503e80(void);
+void gm_ResetCharacters(void);
 unsigned char gm_Unk5044b0(int i, int p);
 unsigned short gm_Unk50a0b0(unsigned short *o);
 void gm_UpdatePrices(unsigned p, void *t);

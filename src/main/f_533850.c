@@ -171,7 +171,7 @@ lback:
                     if (ai_Unk5d34b0(0x24087, 1, "$Z$[Load INI$]", "gamedata/cities", ".INI", c3) != 0) {
                         sprintf(c1, (char *)(unsigned)"%s%s", "\\project\\gfx\\", c3);
                         GetPrivateProfileStringA("A - ALLGEMEIN", "Stadtname", "Unknown", name1, 0x60, c1);
-                        main_Unk532700((int)name1, 0);
+                        main_StartCityGame((int)name1, 0);
                     }
                     goto lback;
                 }
@@ -180,7 +180,7 @@ lback:
                     if (ai_Unk5d34b0(0x24087, 1, "$Z$[Load INI$]", "gamedata/cities", ".INI", c4) != 0) {
                         sprintf(c2, (char *)(unsigned)"%s%s", "\\project\\gfx\\", c4);
                         GetPrivateProfileStringA("A - ALLGEMEIN", "Stadtname", "Unknown", name2, 0x60, c2);
-                        main_Unk532700((int)name2, 1);
+                        main_StartCityGame((int)name2, 1);
                     }
                     d2_EnableObject(f, 1);
                 } else if (ai_Unk5fe710 == bload) {

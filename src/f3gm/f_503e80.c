@@ -1,7 +1,7 @@
 /* 0x503e80, resets the character state: 0x503c60 (i, 2) for all 0x300 characters, clears the 0x2b-int records from 0x7d5f80 to 0x7d6a40 (first word -1) and the three counters 0x6f1bc0 / 0x6f1bb8 / 0x6f1bbc */
 
 
-void gm_Unk503e80(void)
+void gm_ResetCharacters(void)
 {
     int i;
     int *p, *p2, *q;
