@@ -3,11 +3,6 @@
 
 extern int cm_NetFlags;      /* 0x6f2594, game flags (8: network game) */
 extern int ai_Unkf83650;
-extern struct {                         /* net.h's NETCONN (the fields used here) */
-    int s;                              /* 0x00, the socket */
-    int pad04[3];
-    int closed;                         /* 0x10 */
-} net_Conn;                             /* 0x1460ae0 */
 void cm_SendExSysMessage(unsigned char id, void *msg);                                            /* 0x4c4db0, defined elsewhere */
 void sv_PumpNet(void);                                                         /* 0x52fe00, defined elsewhere */
 __declspec(dllimport) unsigned long __stdcall GetTickCount(void);

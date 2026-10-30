@@ -20,6 +20,7 @@ extern char ai_PlayerSlots[4][0x2f4];
 #include "txt.h"
 #include "evt.h"
 #include "d3_light.h"
+#include "net.h"                     /* net_Conn: s is -1 (an invalid socket) when no network game runs */
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 extern struct D3IOANIMDATA d3_AnimHead;
@@ -399,13 +400,6 @@ extern int cm_NetFlags;  /* 0x6f2594 */
 extern int d2_CutsceneActive;  /* 0x6ed9d4 */
 extern int init_TownSoundCount;  /* 0x6f1c34 */
 unsigned char init_TextureSet = 0;  /* 0x6f1c24 */
-/* net.h's NETCONN (hst.c's view): the fields this unit reads; 0x1460ae0 is the network connection of a
-   running network game, -1 (an invalid socket) when there is none */
-extern struct {
-    int s;                              /* 0x00, the socket */
-    int pad04[3];
-    int closed;                         /* 0x10 */
-} net_Conn;                             /* 0x1460ae0 */
 int d3_QuadTree = 0;  /* 0x6f1c28 */
 int init_TownSoundCount = 0;  /* 0x6f1c34 */
 int ai_FrameWait = 0;  /* 0x6f22bc */
