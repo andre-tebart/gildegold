@@ -1,6 +1,7 @@
 /* inffixed.h -- table for decoding fixed codes
  * Generated automatically by the maketree.c program
  */
+/* @private inftrees: zlib-internal tables (definitions), included only by inftrees.c (src/inftrees/f_465c90.c) */
 
 /* WARNING: this file should *not* be used by applications. It is
    part of the implementation of the compression library and is

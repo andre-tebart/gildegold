@@ -2,6 +2,7 @@
  * Copyright (C) 1995-1998 Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h 
  */
+/* @private infblock,infcodes,inffast,infutil: zlib-internal, the original only included it into these units (struct internal_state differs from zlib.h's opaque one) */
 
 /* WARNING: this file should *not* be used by applications. It is
    part of the implementation of the compression library and is
