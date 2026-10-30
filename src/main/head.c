@@ -78,11 +78,9 @@ extern GAPDATA full_data_624b48[];
 extern GAPDATA full_data_624b4c[];
 extern GAPDATA full_data_624b50[];
 extern char ai_OptionsFile[288];
-extern int sv_PopRequest;
 extern char ai_DataPath[];
 
 extern char ai_OptionsFile[288];
-extern int ai_Unk6333cc;
 extern char ai_Unk9364e0[752];
 extern void * d3_Unk6333fc;
 
@@ -128,8 +126,6 @@ extern GAPDATA full_data_75e628[];
 extern int ai_Unk5f8438;
 extern char *ai_Unk5fb5b0;
 extern int * ai_Unk633738;
-extern struct D3ANIM *d3t_CamMove;
-extern int d3t_CamMoving;
 extern GAPDATA full_data_602568[];
 extern GAPDATA full_data_624938[];
 extern char ai_DataPath[];
@@ -178,7 +174,6 @@ extern int ai_Unkfb9064;
 extern int ai_Unkfb9068;
 extern int ai_Unkfb906c;
 extern char cm_RequestedSaveName[72];
-extern int ai_Unk1460ae0;
 extern unsigned int ai_MissionSeed;
 extern GAPDATA full_data_75df20[];
 extern char * ai_Unk75ec60;
@@ -198,10 +193,8 @@ extern int * ai_Unk760618;
 #include "ch_types.h"
 extern CHMOTION ch_Motions[];
 extern struct D3ANIM *d3t_CamMove;
-extern struct D3OBJECT *d3t_SunRays;
 extern GAPDATA full_data_6f25c4[];
 extern int sv_FrameMask;
-extern int ai_Unk1460ae0;
 extern OPTIONBYTES ai_GamePanel;
 extern char ai_MissionMode;
 extern int ai_Unk6f2438;
@@ -344,18 +337,12 @@ void main_Unk53cb40(void);
 
 extern unsigned int d3anim_CacheMax;   /* 0x5f927c, d3_anim.h */
 void hst_ResetLists(void);              /* 0x4b1f30, hst.c */
-int io_PrintText(char *fmt, ...);       /* 0x515960 */
 void ai_ClearTurnTable(void);           /* 0x587de0, unk_575860.c: not in unk_575860.h (adding it there moves unk_575860's drafts ai_Unk579570 / ai_Unk57aeb0, see open.md) */
 void ai_InitStates(void);               /* 0x4c3480 */
-void unk_ResetEffectSlots(void);        /* 0x4eddf0 */
 int sb_Init(int mem, int count, int a, int b, int c);  /* 0x425bc0 */
-int d3snd_Init(int max);                /* 0x417650 */
-int d3sndw_Init(unsigned short n);      /* 0x417ec0 */
 void sb_SetPath(char *path);            /* 0x426240 */
 int main_PreloadSound(char *f);         /* 0x537c70 */
 int ch_Open(void);                      /* 0x40afb0 */
-void d3t_CreateSnowMipmaps(void);       /* 0x416980 */
-int ahm_LoadPrototypes(int mode);       /* 0x4eb480 */
 int hmt_CreateBinaryFile(void);         /* 0x4ac440 */
 void hmt_Init(void);                    /* 0x4aca90 */
 void ai_BuildFloatTable(void);          /* 0x4d27a0 */
@@ -365,24 +352,23 @@ void chc_Register(void);                /* 0x40d270 */
 #define d2_SetObjValue4 ((void (*)(int, int, int, int))d2_SetObjValue)  /* the 4-argument call (as unk_5d33b0.h) */
 int main_ChooseCity(int unused, int host);  /* 0x537230, main.c */
 struct D3OBJECT;
-void d3t_FreeSnowMipmaps(void);         /* 0x4175c0, d3_tools.h */
 void main_FreeSoundBanks(void);         /* 0x537db0 */
 void sb_Exit(void);                     /* 0x425ce0, sblib.c */
-void d3snd_Exit(void);                  /* 0x4176f0, d3_snd.c */
-void d3sndw_Exit(void);                 /* 0x418030, d3_snd.c */
-void ahm_FreePrototypes(void);          /* 0x4ebf60, ahm.h */
 int hmt_Exit(void);                     /* 0x4acde0, hmt.h */
-void gv_FreeEffectObjects(void);        /* 0x4ede70, gv.h */
 void ch_Close(void);                    /* 0x40b1a0, ch.h */
 void ai_ResetMessages(void);                /* 0x4c3560 */
-void mem_Exit(void);                    /* 0x422910, mem.h */
-void mem_Init(int max);                 /* 0x4226a0, mem.h */
-char d3d_Restore();                    /* 0x4370d0 */
 void amt_CheckOffices(void);            /* 0x4e9260, amt.h */
 
 #include "time_view.h"
 #include "f3init.h"
 #include "sv.h"
+#include "mem.h"
+#include "d3_d3d.h"
+#include "io_text.h"
+#include "d3_snd.h"
+#include "d3_tools.h"
+#include "ahm.h"
+#include "gv.h"
 #define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (f3gm.c: char *) as the AIGOOD records it points to */
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
