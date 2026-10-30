@@ -51,10 +51,10 @@ int ai_Unk499c10(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
                 return r;
             }
             gv_GetTableRecord(0x15, &d);
-            if (!d.cur || util_Random(3) || ai_Partner) {
+            if (!d.cur || util_RandomU(3) || ai_Partner) {
                 if (o1->kind == 0) {
                     flags = ((unsigned)&ai_Unka69140 + 0x4973c0);
-                    t = util_Random(0x20) + 32.0f;
+                    t = util_RandomU(0x20) + 32.0f;
                     if (ai_Unk4a58d0(p, 1, &flags, 0, t, &cid)) {
                         c = (AIPER *)&ai_CharsT[cid];
                         if (c->unk194 >= 2) {

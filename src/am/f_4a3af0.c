@@ -155,8 +155,8 @@ void ai_FillNearRing(AICHAR *c)
         if (*sz < cnt)
             break;
     }
-    ai_Unk60034c = &ai_Unkf83c20[util_Random(cnt)];
-    ai_Unk600350 = ai_Unk5ed180[util_Random(g)];
+    ai_Unk60034c = &ai_Unkf83c20[util_RandomU(cnt)];
+    ai_Unk600350 = ai_Unk5ed180[util_RandomU(g)];
     if (ai_Unk600350 > 1 && ai_Unk6f070c % ai_Unk600350 == 0)
-        ai_Unk600350 += (util_Random(2) != 0 ? 2 : 0) - 1;
+        ai_Unk600350 += (util_RandomU(2) != 0 ? 2 : 0) - 1;
 }

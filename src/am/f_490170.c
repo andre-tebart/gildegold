@@ -6,8 +6,8 @@ int ai_Unk490170(AIPX *p, AIBLD *b, AIARG *o1, AIARG *o2)
     unsigned int n;
     int x;
 
-    u1 = util_Random(3);
-    u2 = util_Random(3);
+    u1 = util_RandomU(3);
+    u2 = util_RandomU(3);
     o1->unk10 = 1;
     o1->unk0c = b->id;
     n = (u2 + 2) * (u1 + 2);
@@ -23,7 +23,7 @@ int ai_Unk490170(AIPX *p, AIBLD *b, AIARG *o1, AIARG *o2)
         if (x != -1)
             goto done;
     }
-    if (!AI_4A63F0_7(p, 6, 0xa07c43b4, 1, 0, util_Random(0x20) + 19.0f, &x))
+    if (!AI_4A63F0_7(p, 6, 0xa07c43b4, 1, 0, util_RandomU(0x20) + 19.0f, &x))
         return 0;
 done:
     o2->unk08 = u2;

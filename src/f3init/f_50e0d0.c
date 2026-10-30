@@ -22,7 +22,7 @@ void init_StartNewGame(void)
     c = (INIT_CHAR *)ai_Chars[0];
     do {
         if (c->id != 0xffff && c->kind < 5) {
-            w1 = gm_PlayerFactor((util_Random(0x122) & 0xffff) + 10, ai_OwnPlayer);
+            w1 = gm_PlayerFactor((util_RandomU(0x122) & 0xffff) + 10, ai_OwnPlayer);
             cm_BeginFieldBlock((char *)c, c->netId);
             cm_AddFieldValues(4, 1, INIT_FIELD_MONEY, &w1);
             cm_SendFieldDeltas();
@@ -62,7 +62,7 @@ void init_StartNewGame(void)
     cm_BeginSendGroup();
     i = 0;
     do {
-        rec[i] = ((int (*)(unsigned char, int, int, unsigned short, int, unsigned char, unsigned char, unsigned char))cm_SendCreateCharacter)(0, -1, -1, util_Random(8) + 0x10, -1, (char)util_Random(3) + 4, 0, 0);
+        rec[i] = ((int (*)(unsigned char, int, int, unsigned short, int, unsigned char, unsigned char, unsigned char))cm_SendCreateCharacter)(0, -1, -1, util_RandomU(8) + 0x10, -1, (char)util_RandomU(3) + 4, 0, 0);
         i++;
     } while (i < 8);
     cm_EndSendGroup();
@@ -74,7 +74,7 @@ void init_StartNewGame(void)
     cm_BeginSendGroup();
     i = 0;
     do {
-        rec[i] = ((int (*)(unsigned char, int, int, unsigned short, int, unsigned char, unsigned char, unsigned char))cm_SendCreateCharacter)(0xb, -1, -1, util_Random(8) + 0x10, -1, 0, 0x13, 0);
+        rec[i] = ((int (*)(unsigned char, int, int, unsigned short, int, unsigned char, unsigned char, unsigned char))cm_SendCreateCharacter)(0xb, -1, -1, util_RandomU(8) + 0x10, -1, 0, 0x13, 0);
         cm_SendExSellObject(-2, -1, 0x154, 1, ai_OwnPlayer, 0);
         i++;
     } while (i < 8);

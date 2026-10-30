@@ -37,10 +37,10 @@ int ai_Unk4a1170(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     price = (int)(gm_GetWorth(p->id) * 0.015f);
     if (gm_Unk509ee0((AIPER *)p, ai_OwnPlayer) < price * 6)
         return 0;
-    q = util_Random(0xf) + 1;
+    q = util_RandomU(0xf) + 1;
     if (((unsigned char *)p)[2] == 5) {
         fin = (unsigned char *)gm_PlayerRecord((AICHAR *)p);
-        r = util_Random(0x10);
+        r = util_RandomU(0x10);
         for (n = 0x10; n != 0; n--) {
             if (r != 0 && fin[r + 0x74] == 0) {
                 q = r;

@@ -16,7 +16,7 @@ int ai_Unk4aa940(AIPER *p, int c, unsigned char *m)
     msg.type = 0x35;
     msg.flags = 2;
     msg.fromId = msg.to;
-    ((unsigned char *)&msg)[0x6d] = (unsigned char)util_Random(0x1d);
+    ((unsigned char *)&msg)[0x6d] = (unsigned char)util_RandomU(0x1d);
     msg.arg[4] = o->netId;
     cm_BeginGroup("aip_ExecPamphlet");
     cm_SendLongMessage(&msg);

@@ -12,9 +12,9 @@ int ai_Unk4b77b0(G14MSG *m)
         return 1;
     if (ai_InventoryHas(c, 0x290))
         return 0x400;
-    k = util_Random(3) + 1.0;
+    k = util_RandomU(3) + 1.0;
     v = (int)(gm_GetWorth(c->id) * k * 0.01);
-    txt_Format(buf, m->type + 0x12e7, util_Random(0xf) + 2, v);
+    txt_Format(buf, m->type + 0x12e7, util_RandomU(0xf) + 2, v);
     cm_SendMoveGoodsUnchecked(-1, m->id, ai_OwnPlayer, v);
     he_ShowNews(c->netId, c->netId, buf, strlen(buf) > 0x100, 0x603, 0);
     return 0;

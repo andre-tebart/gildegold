@@ -14,7 +14,7 @@ int ai_Unk4b7430(G14MSG *m)
         return 0x400;
     if (ai_InventoryHas(c, 0x290))
         return 0x400;
-    k = util_Random(4) + 1.0;
+    k = util_RandomU(4) + 1.0;
     v = (int)(gm_GetWorth(c->id) * k * 0.01);
     txt_Format(buf, m->type + 0x12e7, v);
     cm_SendMoveGoodsUnchecked(-1, m->id, ai_OwnPlayer, v);

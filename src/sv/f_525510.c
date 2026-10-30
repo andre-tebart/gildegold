@@ -20,7 +20,7 @@ void sv_Unk525510(int t, float flag)
     ai_Unk760484 = *(int *)((char *)ai_Unk7e4058 + idx);
     if (flag != 0.0f) {
         if (k == 3) {
-            r = util_Random(100);
+            r = util_RandomU(100);
             ai_Unk760610 = ((int)r < ai_Unk760480 / 2) + 1;
         } else
             ai_Unk760610 = 0;
@@ -28,9 +28,9 @@ void sv_Unk525510(int t, float flag)
             ai_Unk760488[i] = 0;
         p = ai_Unk760488;
         do {
-            r = util_Random(100);
+            r = util_RandomU(100);
             if ((int)r < ai_Unk760480)
-                *p = util_Random(ai_Unk760480 * 10) & 0xffff;
+                *p = util_RandomU(ai_Unk760480 * 10) & 0xffff;
             if ((int)*p < 0x2bd) {
                 if ((int)*p < 0x1f5) {
                     if ((int)*p < 0xfb)
@@ -42,7 +42,7 @@ void sv_Unk525510(int t, float flag)
             } else
                 *p = (*p & 1) + 999;
             if (ai_Unk760610 == 0 && 0x3e6 < (int)*p)
-                p[0x18] = util_Random(3) & 0xffff;
+                p[0x18] = util_RandomU(3) & 0xffff;
             else
                 p[0x18] = 0;
             p++;

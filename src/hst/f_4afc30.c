@@ -25,8 +25,8 @@ int ai_TokenRandomPlayer(int mode, G12ARG *args, int k, char *fmt, char *out)
         steps[2] = 7;
         steps[3] = 11;
         do {
-            step = steps[(unsigned short)util_Random(4)];
-            i = (unsigned short)util_Random(0x300);
+            step = steps[(unsigned short)util_RandomU(4)];
+            i = (unsigned short)util_RandomU(0x300);
             for (n = 0x300; n != 0; n--) {
                 if (ai_IsLivingHuman((unsigned short)i) && ai_NotInLists(ai_CharsT[i].netId)) {
                     pick = &ai_CharsT[i];

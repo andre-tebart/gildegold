@@ -50,12 +50,12 @@ l67e:
     }
     if (b != 0 && ((*cls != 0x16 || *(unsigned short *)SV_I((unsigned)&sv_PanelShown) != 0x120) && *cls != 0x0f))
         return;
-    util_Random(4);
+    util_RandomU(4);
     text[0] = ch_EmptyName[0];
     memset(text + 1, 0, 0x1ff);
     id = -1;
     if (g == 0) {
-        kind = (unsigned short)util_Random(4) + 1;
+        kind = (unsigned short)util_RandomU(4) + 1;
 lcc95:
         if (kind < 5)
             goto lcc9e;
@@ -68,14 +68,14 @@ lcc95:
                 goto l712;
             }
 l77c:
-            kind = (unsigned short)util_Random(4) + 1;
+            kind = (unsigned short)util_RandomU(4) + 1;
         } else {
             v = gm_TitleGroup(*(char *)(g + 0x164));
 l712:
             if (v != 0xb && v != 0xc)
                 goto l77c;
             plain = 0;
-            kind = (unsigned short)util_Random(4) + 1;
+            kind = (unsigned short)util_RandomU(4) + 1;
             if (kind == 3)
                 kind = 4;
         }
@@ -87,13 +87,13 @@ l712:
         case 0x14:
             if (*(char **)(g + 0x16c) != 0) {
                 if (ai_BTypes[**(unsigned char **)(g + 0x16c) * 0x24d] == ' ')
-                    txt_Format(text, (unsigned short)util_Random(3) + 0x1286);
+                    txt_Format(text, (unsigned short)util_RandomU(3) + 0x1286);
                 else
-                    txt_Format(text, (unsigned short)util_Random(3) + 0x1256);
+                    txt_Format(text, (unsigned short)util_RandomU(3) + 0x1256);
             }
             break;
         default:
-            kind = (unsigned short)util_Random(4) + 1;
+            kind = (unsigned short)util_RandomU(4) + 1;
             if (plain || kind != 3)
                 goto lcc95;
             kind = 4;
@@ -114,7 +114,7 @@ l712:
                 txt_Format(text, (unsigned short)((int (*)(int, void *))util_Random)(3, *q) + 0x1277);
             break;
         case 0x28:
-            txt_Format(text, (unsigned short)util_Random(3) + 0x124d);
+            txt_Format(text, (unsigned short)util_RandomU(3) + 0x124d);
             break;
         case 0x3c:
             q = (unsigned short *)gm_FindChar(*(int *)(v + 0xac));
@@ -133,7 +133,7 @@ l712:
                 txt_Format(text, (unsigned short)((int (*)(int, void *, int))util_Random)(3, *(short *)(r + 0x27), r) + 0x1265);
             break;
         case 0x43:
-            txt_Format(text, (unsigned short)util_Random(3) + 0x1268);
+            txt_Format(text, (unsigned short)util_RandomU(3) + 0x1268);
             break;
         case 0x44:
             r = (char *)gm_FindBuildingById(*(int *)(v + 0xac));
@@ -141,7 +141,7 @@ l712:
                 txt_Format(text, (unsigned short)((int (*)(int, void *, int))util_Random)(3, *(unsigned short *)(r + 0x27), r) + 0x1259);
             break;
         case 0x48:
-            txt_Format(text, (unsigned short)util_Random(3) + 0x126e);
+            txt_Format(text, (unsigned short)util_RandomU(3) + 0x126e);
             break;
         case 0x49:
             r = (char *)gm_FindBuildingById(*(int *)(v + 0xac));
@@ -149,10 +149,10 @@ l712:
                 txt_Format(text, (unsigned short)((int (*)(int, void *, int))util_Random)(3, *(unsigned short *)(r + 0x27), r) + 0x124a);
             break;
         case 0x61:
-            txt_Format(text, (unsigned short)util_Random(3) + 0x126b);
+            txt_Format(text, (unsigned short)util_RandomU(3) + 0x126b);
             break;
         case 0x62:
-            txt_Format(text, (unsigned short)util_Random(3) + 0x125f);
+            txt_Format(text, (unsigned short)util_RandomU(3) + 0x125f);
             break;
         case 100:
             r = (char *)gm_FindBuildingById(*(int *)(v + 0xb0));
@@ -160,7 +160,7 @@ l712:
                 txt_Format(text, (unsigned short)((int (*)(int, void *, int))util_Random)(3, *(unsigned short *)(r + 0x27), r) + 0x1271);
             break;
         case 0x65:
-            txt_Format(text, (unsigned short)util_Random(3) + 0x1274);
+            txt_Format(text, (unsigned short)util_RandomU(3) + 0x1274);
             break;
         case 0x89:
             q = (unsigned short *)gm_FindChar(*(int *)(v + 0xb0));
@@ -171,23 +171,23 @@ l712:
             if (*(char **)(g + 0x16c) != 0) {
                 k = ai_BTypes[**(unsigned char **)(g + 0x16c) * 0x24d];
                 if (k == 0x1d)
-                    txt_Format(text, (unsigned short)util_Random(3) + 0x1283);
+                    txt_Format(text, (unsigned short)util_RandomU(3) + 0x1283);
                 else if (k == 0x1f)
-                    txt_Format(text, (unsigned short)util_Random(3) + 0x1289);
+                    txt_Format(text, (unsigned short)util_RandomU(3) + 0x1289);
             }
             break;
         case 0x8e:
-            txt_Format(text, (unsigned short)util_Random(3) + 0x127d);
+            txt_Format(text, (unsigned short)util_RandomU(3) + 0x127d);
             break;
         case 0xa1:
-            txt_Format(text, (unsigned short)util_Random(3) + 0x1280);
+            txt_Format(text, (unsigned short)util_RandomU(3) + 0x1280);
         }
     }
     goto lcca;
 lcc9e:
     id = kind * 0xf + 0x11e9;
 lcca:
-    if ((short)util_Random(2) == 0 && he_FindEvent(1, 0, 0x52) != 0)
+    if ((short)util_RandomU(2) == 0 && he_FindEvent(1, 0, 0x52) != 0)
         kind = 5;
     unk_Unk4f9e00(tmp);
     switch (kind) {
@@ -198,7 +198,7 @@ lcca:
     case 3:
     case 4:
 lftol:
-        id = (int)(0.0) + (unsigned short)util_Random(3);       /* the float operand of the first term is lost in the pseudocode */
+        id = (int)(0.0) + (unsigned short)util_RandomU(3);       /* the float operand of the first term is lost in the pseudocode */
         break;
     case 5:
         if (SV_I((unsigned)&hst_KeyNext) != -1) {
@@ -207,7 +207,7 @@ lftol:
                 if (**(char **)q == 0)
                     break;
             }
-            id = ((unsigned short)util_Random(id - 1) - 5) + SV_I((unsigned)&hst_KeyNext);
+            id = ((unsigned short)util_RandomU(id - 1) - 5) + SV_I((unsigned)&hst_KeyNext);
         }
     default:
         break;

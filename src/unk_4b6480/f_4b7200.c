@@ -12,7 +12,7 @@ int ai_Unk4b7200(G14MSG *m)
         return 1;
     if (ai_InventoryHas(c, 0x290))
         return 0x400;
-    k = util_Random(2) + 1.0;
+    k = util_RandomU(2) + 1.0;
     v = (int)(gm_GetWorth(c->id) * k * 0.01);
     if (v > gm_GetWorth(c->id))
         return 0;

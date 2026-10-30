@@ -48,7 +48,7 @@ int ai_Unk4ab3e0(int a, AIPER *p, int c, unsigned char *m, unsigned char *m2)
     if (best == 0 || bestv == 0)
         return 0;
     flags = ((unsigned)&ai_Unka69140 + 0x4973c0);
-    if (G10_4A58D0(p, 1, (int *)&flags, 0.0f, (float)util_Random(0x20) + 25.0f, &id) == 0)
+    if (G10_4A58D0(p, 1, (int *)&flags, 0.0f, (float)util_RandomU(0x20) + 25.0f, &id) == 0)
         return 0;
     o = &((AIPER *)ai_CharsT)[id];
     s = amt_GetKindLevel(o->unk166) / 3 + 2;

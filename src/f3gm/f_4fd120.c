@@ -19,7 +19,7 @@ void unk_Unk4fd120(void)
     m = n;
     for (i = 0; i < 0x300; i++) {
         c = ai_Chars[i];
-        if (*(short *)c != -1 && c[8] != 0 && c[2] == 3 && ((util_Random(4) & 0xffff) + 0x2c <= *(unsigned short *)(c + 10) || (float)m >= 652.80005f) && c[0x164] == 0 && c[0x166] == 0 && c[0x167] == 0 && unk_Unk4fd090(c) != 0) {
+        if (*(short *)c != -1 && c[8] != 0 && c[2] == 3 && ((util_RandomU(4) & 0xffff) + 0x2c <= *(unsigned short *)(c + 10) || (float)m >= 652.80005f) && c[0x164] == 0 && c[0x166] == 0 && c[0x167] == 0 && unk_Unk4fd090(c) != 0) {
             gm_AddHealth(*(unsigned short *)c, (int)0);
             n--;
             m = n;
@@ -41,7 +41,7 @@ void unk_Unk4fd120(void)
                         if ((unsigned char)c[0xd] < 2)
                             cm_AddFieldValue(1, 1, c + (0xd - cm_FieldObjectI), &loc[1]);
                         cm_SendFieldValues();
-                        v = util_Random(0x800);
+                        v = util_RandomU(0x800);
                         cm_SendMoveGoodsUnchecked(*(int *)(c + 4), -1, ai_OwnPlayer, ((v & 0xffff) + 0x800) * loc[1] * 0x20);
                         events++;
                     }
@@ -66,8 +66,8 @@ void unk_Unk4fd120(void)
             }
         }
     }
-    if (kids < 6 && util_Random(4) == 0) {
-        h = ((int (*)(int, int, int, int))cm_SendCreateCharacter)(0x10, -1, -1, util_Random(4) + 0x10);
+    if (kids < 6 && util_RandomU(4) == 0) {
+        h = ((int (*)(int, int, int, int))cm_SendCreateCharacter)(0x10, -1, -1, util_RandomU(4) + 0x10);
         if (h != -1) {
             while (cm_GetSlotState(h) == 0)
                 sv_PumpNet();
@@ -75,7 +75,7 @@ void unk_Unk4fd120(void)
         if (cm_GetSlotState(h) == 1) {
             events++;
             c = (char *)cm_GetSlotValue(h);
-            r = ((util_Random(0x2000) & 0xffff) + 10000) * 0x40;
+            r = ((util_RandomU(0x2000) & 0xffff) + 10000) * 0x40;
             cm_SendMoveGoodsUnchecked(*(int *)(c + 4), -1, ai_OwnPlayer, r);
         }
     }
@@ -83,21 +83,21 @@ void unk_Unk4fd120(void)
         if (events < 0x1e)
             t = (0x28 - events) / 2;
         else if (events < 0x28)
-            t = (util_Random(2) & 0xffff) + 1;
+            t = (util_RandomU(2) & 0xffff) + 1;
         else
             t = 0;
         while (t > 0) {
-            v = util_Random(2);
-            v = util_Random((v & 0xffff) + 1);
+            v = util_RandomU(2);
+            v = util_RandomU((v & 0xffff) + 1);
             h = ((int (*)(int, int, int, int, int, int))cm_SendCreateCharacter)(3, -1, -1, 0x14, -1, gm_TitleNumber((v & 0xffff) + 1));
             if (h != -1) {
                 while (cm_GetSlotState(h) == 0)
                     sv_PumpNet();
             }
             if (cm_GetSlotState(h) == 1) {
-                loc[0] = (util_Random(0xc) & 0xffff) + 10;
+                loc[0] = (util_RandomU(0xc) & 0xffff) + 10;
                 c = (char *)cm_GetSlotValue(h);
-                cm_SendMoveGoodsUnchecked(*(int *)(c + 4), -1, ai_OwnPlayer, ((util_Random(0x400) & 0xffff) + 0x400) * 0x40);
+                cm_SendMoveGoodsUnchecked(*(int *)(c + 4), -1, ai_OwnPlayer, ((util_RandomU(0x400) & 0xffff) + 0x400) * 0x40);
                 cm_BeginFieldBlock(c, *(int *)(c + 4));
                 cm_AddFieldValue(1, 1, (int)c - cm_FieldObjectI + 0x167, &loc[0]);
                 cm_SendFieldValues();

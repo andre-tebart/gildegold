@@ -25,9 +25,9 @@ void init_CreateOpponents(int n, int m, int *list)
 
     i = 0;
     prm = 0;
-    r = util_Random(m);
+    r = util_RandomU(m);
     idx = r;
-    sw = util_Random(2);
+    sw = util_RandomU(2);
     step = sw != 0 ? 1 : 3;
     tab[0] = 500;
     tab[1] = 0x2ee;
@@ -59,7 +59,7 @@ void init_CreateOpponents(int n, int m, int *list)
             v = gm_PlayerFactor(tab[k], ai_OwnPlayer);
             cm_SendMoveGoods(-2, -1, ai_OwnPlayer, v);
             if (ai_Unk6f2440 != 0) {
-                r = util_Random(5000);
+                r = util_RandomU(5000);
                 v = gm_PlayerFactor((r & 0xffff) + 5000, ai_OwnPlayer);
                 cm_SendMoveGoods(-2, -1, ai_OwnPlayer, v);
             }

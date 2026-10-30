@@ -30,13 +30,13 @@ int ai_Unk4a0410(G5CH *p)
         }
     }
     for (i = 6; i != 0; i--) {
-        a = util_Random(3);
-        b = util_Random(3);
+        a = util_RandomU(3);
+        b = util_RandomU(3);
         t = order[a];
         order[a] = order[b];
         order[b] = t;
-        a = util_Random(3);
-        b = util_Random(3) + 3;
+        a = util_RandomU(3);
+        b = util_RandomU(3) + 3;
         t = order[a + 3];
         order[a + 3] = order[b];
         order[b] = t;

@@ -7,7 +7,7 @@ int ai_Unk497cf0(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
     int i, d, v;
 
     if (o1->kind == 0) {
-        d = util_Random(0x24) + 0x23;
+        d = util_RandomU(0x24) + 0x23;
         best = 0;
         bl = AI_BLDX;
         for (i = 0; i < 0x100; i++, bl++) {

@@ -19,7 +19,7 @@ int ai_Unk48ff50(AIPX *p, AIBLD *b, AIARG *o1, AIARG *o2)
     if (he_FindEvent(2, 0, 0x88, 3, b->id))
         return 0;
     flags = ((unsigned)&ai_Unka69140 + 0x4973c0);
-    if (!ai_Unk4a58d0((AIPER *)p, 1, &flags, 0, util_Random(0x20) + 32.0f, &id))
+    if (!ai_Unk4a58d0((AIPER *)p, 1, &flags, 0, util_RandomU(0x20) + 32.0f, &id))
         return 0;
     q = &AIC[id];
     if (q->bld2)

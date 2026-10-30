@@ -9,7 +9,7 @@ int ai_Unk4ba970(G14MSG *m)
     int id;
     char buf[0x200];
 
-    f = (float)((util_Random(0xd) + 13.0) * 0.01);
+    f = (float)((util_RandomU(0xd) + 13.0) * 0.01);
     c = gm_FindChar(m->id);
     if (c == 0)
         return 1;

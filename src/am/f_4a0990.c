@@ -21,7 +21,7 @@ int ai_Unk4a0990(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2
         bl = gm_BuildQuery(1, 5, 0x1a);
     if (bl == 0)
         return 0;
-    if (bl->level < util_Random(0x10) + 0x32) {
+    if (bl->level < util_RandomU(0x10) + 0x32) {
         G8_4A4AE0(a, b, i, p, f, o1, o2);
         *a *= 3.0f;
         *b *= 3.0f;

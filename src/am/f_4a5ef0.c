@@ -12,7 +12,7 @@ unsigned int ai_Unk4a5ef0(AIPER *p, unsigned int n, unsigned int fl, float lo, f
     char t;
     float r;
 
-    step = ai_Unk5ed100[util_Random(0x10)];
+    step = ai_Unk5ed100[util_RandomU(0x10)];
     memset(q, 0, sizeof(q));
     memset(&q[7], 0xff, 8 * 4);
     win = 0;
@@ -23,7 +23,7 @@ unsigned int ai_Unk4a5ef0(AIPER *p, unsigned int n, unsigned int fl, float lo, f
     rank = gm_Unk505f30(*(unsigned short *)p, 0);
     k = 0x300;
     cnt = 0;
-    i = util_Random(0x300);
+    i = util_RandomU(0x300);
     if (n != 0) {
         do {
             if (k == 0)
@@ -41,7 +41,7 @@ unsigned int ai_Unk4a5ef0(AIPER *p, unsigned int n, unsigned int fl, float lo, f
             i = (int)(i + step) % 0x300;
         } while (cnt < n);
     }
-    i = util_Random(0x300);
+    i = util_RandomU(0x300);
     for (k = 0x300; cnt < n && k != 0; k--) {
         c = (unsigned char *)&ai_CharsT[i];
         t = c[2];

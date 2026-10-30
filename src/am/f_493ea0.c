@@ -20,7 +20,7 @@ AGCH *ai_Unk493ea0(AGCH *p)
         }
     }
     if (m != 0)
-        found = list[util_Random(m)];
+        found = list[util_RandomU(m)];
     if (p->kind == 5) {
         if (found != 0)
             return found;

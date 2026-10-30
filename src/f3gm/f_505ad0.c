@@ -12,7 +12,7 @@ int gm_Unk505ad0(char *c)
     tab[1] = (w & ((unsigned)&he_Events + 0x54c0)) != 0;
     tab[2] = (w & 0x1800000) != 0;
     tab[3] = (w & 0xf00) != 0;
-    f = util_Random(4) & 0xffff;
+    f = util_RandomU(4) & 0xffff;
     i = 4;
     do {
         if (tab[f] == 1) {

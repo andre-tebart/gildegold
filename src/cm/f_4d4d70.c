@@ -296,7 +296,7 @@ void ai_Unk4d4d70(char *a)
         }
     } else if ((a[0x7c] & 2) && side == G20_DEF && G20_DEF[2] != 6 && G20_DEF[2] != 7) {
         gm_Unk5044b0(G20_US(G20_DEF), gm_BuildingJob((unsigned char)*kr));
-        k = (unsigned short)util_Random(3) + 1;
+        k = (unsigned short)util_RandomU(3) + 1;
         if (!gm_Unk5044b0(G20_US(G20_DEF), 0) || *kr == 0xd || *kr == 0xc || *kr == 0xb) {
             if (k == 2) {
                 G20_TAKE();

@@ -14,7 +14,7 @@ int ai_Unk49f850(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     float sum;
 
     found = -1;
-    step = ai_Unk5ed140[util_Random(0x10)];
+    step = ai_Unk5ed140[util_RandomU(0x10)];
     if (*(int *)((unsigned char *)p + 0x1c8) & 0x2000000)
         return 0;
     if (a != 0)
@@ -22,7 +22,7 @@ int ai_Unk49f850(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     if (f != 0)
         return 0;
     n = 0;
-    j = util_Random(0x100);
+    j = util_RandomU(0x100);
     for (i = 0x100; i != 0; ) {
         b = &ai_BldsT[j];
         if (b->type == 0x37 && b->owner != 0xffff && b->owner != p->id) {
@@ -62,7 +62,7 @@ int ai_Unk49f850(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
                 sum = gm_Liking(p->id, *(unsigned short *)c, 1) + sum;
             }
         }
-        if (k == 0 && util_Random(4) == 0) {
+        if (k == 0 && util_RandomU(4) == 0) {
             o1->kind = 4;
             o1->unk04 = bl[found]->id;
             o1->unk08 = 'leav';
@@ -78,7 +78,7 @@ int ai_Unk49f850(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         o1->unk08 = 'leav';
         return 0x35;
     }
-    j = util_Random(n);
+    j = util_RandomU(n);
     for (i = n; i != 0; i--) {
         if (free[j] == 1)
             break;

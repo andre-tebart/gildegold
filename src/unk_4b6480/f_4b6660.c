@@ -38,7 +38,7 @@ int ai_MsgOfficeApplicantPayment(G14MSG *m)
 none:
     return 0x400;
 found:
-    k = util_Random(4) + 2.0;
+    k = util_RandomU(4) + 2.0;
     v = (int)(gm_GetWorth(p->id) * k * 0.01);
     txt_Format(buf, m->type + 0x12e7, p->id, c->id, r[i].kind + 0x253, v);
     cm_SendMoveGoodsUnchecked(m->id, p->netId, ai_OwnPlayer, v);

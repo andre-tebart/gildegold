@@ -31,5 +31,5 @@ int ai_Unk494020(AIPLAN *q)
     d = gm_Liking(c->id, b->id, 1) * 0.01f;
     if (x * 1.1f > d * 0.9f && x < d)
         return 0;
-    return util_Random(2);
+    return util_RandomU(2);
 }

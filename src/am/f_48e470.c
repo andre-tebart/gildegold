@@ -33,7 +33,7 @@ int ai_Unk48e470(int a, AIPX *p, int b, AIARGX *o1, AIARGX *o2)
     }
     if (he_Unk56f170(bld->id))
         return 0;
-    switch (util_Random(4)) {
+    switch (util_RandomU(4)) {
     case 0:
         r = ai_Unk48e620(p, &s1, &s2);
         break;

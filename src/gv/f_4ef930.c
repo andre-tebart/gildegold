@@ -11,7 +11,7 @@ int unk_Unk4ef930(unsigned char *o)
     b = ai_BTypes + o[0] + o[0] * 0x24c;
     if (b[0] == 0x1d && (unsigned char)b[0x247] != 0 && (unsigned char)b[0x247] < 4) {
         n = unk_Unk4ef3c0(o);
-        i = util_Random(n) & 0xffff;
+        i = util_RandomU(n) & 0xffff;
         if (n != 0) {
             k = n;
             do {

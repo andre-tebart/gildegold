@@ -102,7 +102,7 @@ void ai_Unk4d76a0(int *rec)
                     }
                     if ((b != ((char *)p)[0x1d] || *(int *)(G21_CH(c) + 0x128) == 0) && (((char *)p)[0x1d] = b, b != 0)) {
                         if (*(int *)(k + 0x58) != 2) {
-                            r = util_Random(0xff);
+                            r = util_RandomU(0xff);
                             if (0xff - (int)((unsigned char)k[4] * 0.01 * (unsigned char)c[0x83]) < (int)r)
                                 hit = 1;
                             else

@@ -16,5 +16,5 @@ int ai_Unk4941e0(AIPLAN *q)
         return 1;
     if (y - x > 20.0f)
         return 0;
-    return util_Random(2);
+    return util_RandomU(2);
 }

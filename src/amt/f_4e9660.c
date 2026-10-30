@@ -87,7 +87,7 @@ int amt_ExecutePriceMessage(char *c, int *m)
                                 }
                                 cm_SendSetField(AMT_NETID(c), 0x1c8, 4, 0x4000000, 0);
                                 cm_SendMoneyDelta(AMT_NETID(c), -3);
-                                r = util_Random(3) & 0xffff;
+                                r = util_RandomU(3) & 0xffff;
                                 if (m[2] == 1) {
                                     txt_Format(buf, r + 0x1656, m[1] + 0x1648);
                                     t = 0x1655;

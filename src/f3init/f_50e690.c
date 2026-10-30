@@ -43,7 +43,7 @@ int init_CreateStartCharacters(void)
         int *tp = t;
 
         do {
-            *tp += util_Random(3) & 0xffff;
+            *tp += util_RandomU(3) & 0xffff;
             tp++;
         } while (tp < t + 30);
     }
@@ -71,7 +71,7 @@ int init_CreateStartCharacters(void)
     init_PlaceOffices(30 - n, out + n, ids + n);
     for (i = n; i < 30; i++) {
         cm_BeginSendGroup();
-        if (cnt < 3 && i * 4 > 0x30 && util_Random(4) == 0) {
+        if (cnt < 3 && i * 4 > 0x30 && util_RandomU(4) == 0) {
             h = ((int (*)(unsigned char, int, int, unsigned short, int, unsigned char, unsigned char, unsigned char))cm_SendCreateCharacter)(0x10, -1, -1, 0x10, -1, 0, 0, 0);
             cnt++;
         } else {
@@ -96,8 +96,8 @@ int init_CreateStartCharacters(void)
         amt_GetOffice((unsigned char)ids[k], &rec);
         amt_GetKind(rec.kindWord & 0xff, &kind);
         age = (unsigned short)t[k];
-        msg5 = (char)((util_Random(0x2a) & 0xffff) + ((kind.levelWord & 0xff) / 3 + 1) * 21.0f);
-        msg0 = (util_Random(2) & 0xffff) + t[(kind.levelWord & 0xff) + 0x1e];
+        msg5 = (char)((util_RandomU(0x2a) & 0xffff) + ((kind.levelWord & 0xff) / 3 + 1) * 21.0f);
+        msg0 = (util_RandomU(2) & 0xffff) + t[(kind.levelWord & 0xff) + 0x1e];
         w = t[(kind.levelWord & 0xff) + 0x28];
         j = (int)(util_RandomF() * w * -0.5f);
         msg3 = gm_PlayerFactor(w - j, ai_OwnPlayer);
@@ -107,9 +107,9 @@ int init_CreateStartCharacters(void)
         cm_AddFieldDelta(1, 1, 0xd, &msg0);
         if (ch->kind == 3) {
             cm_AddFieldDelta(1, 1, 0x84, &msg5);
-            if (util_Random(2) != 0) {
+            if (util_RandomU(2) != 0) {
                 fl = util_RandomF() + 1.0f;
-                msg4 = (unsigned)(((util_Random(8) & 0xffff) + 1) * fl * (msg3 * 0.01f));
+                msg4 = (unsigned)(((util_RandomU(8) & 0xffff) + 1) * fl * (msg3 * 0.01f));
                 cm_AddFieldDelta(4, 1, 0x1ac, &msg4);
             }
         }
@@ -169,7 +169,7 @@ int init_CreateStartCharacters(void)
         cm_AddFieldDelta(4, 1, 0x5c, &u->netId);
         cm_SendFieldDeltas();
         if (n > 5) {
-            w = gm_TitleNumber(gm_TitleGroup(util_Random(2) == 0 ? v->jobId : u->jobId), 1);
+            w = gm_TitleNumber(gm_TitleGroup(util_RandomU(2) == 0 ? v->jobId : u->jobId), 1);
             msg4 = 2;
             j = ((int (*)(unsigned char, int, int, unsigned short, int, unsigned char, unsigned char, unsigned char))cm_SendCreateCharacter)(8, u->netId, v->netId, n, -1, w, 0, 2);
             if (j != -1) {
@@ -177,13 +177,13 @@ int init_CreateStartCharacters(void)
                     sv_PumpNet();
             }
             ch = (INIT_CHAR *)cm_GetSlotValue(j);
-            cm_SendMoveGoods(ch->netId, -1, ai_OwnPlayer, ((util_Random(0x400) & 0xffff) + 0x200) * 0x20);
+            cm_SendMoveGoods(ch->netId, -1, ai_OwnPlayer, ((util_RandomU(0x400) & 0xffff) + 0x200) * 0x20);
             cm_BeginFieldBlock((char *)ch, ch->netId);
             cm_AddFieldDelta(1, 1, 0xd, &msg4);
             cm_SendFieldDeltas();
         }
-        ((int (*)(int, int, int, int))cm_SendRelations)(u->netId, v->netId, (util_Random(0x20) & 0xffff) + 0x60, 0);
-        j = ((int (*)(int, int, int, int))cm_SendRelations)(v->netId, u->netId, (util_Random(0x20) & 0xffff) + 0x60, 0);
+        ((int (*)(int, int, int, int))cm_SendRelations)(u->netId, v->netId, (util_RandomU(0x20) & 0xffff) + 0x60, 0);
+        j = ((int (*)(int, int, int, int))cm_SendRelations)(v->netId, u->netId, (util_RandomU(0x20) & 0xffff) + 0x60, 0);
         if (j != -1) {
             while (cm_GetSlotState(j) == 0)
                 sv_PumpNet();
@@ -191,29 +191,29 @@ int init_CreateStartCharacters(void)
     }
     for (i = 8; i != 0; i--) {
         msg0 = 2;
-        msg1 = (util_Random(9) & 0xffff) + 1;
-        w = gm_TitleNumber((util_Random(0xc) & 0xffff) + 1, (util_Random(2) & 0xffff) + 1);
-        n = util_Random(4);
+        msg1 = (util_RandomU(9) & 0xffff) + 1;
+        w = gm_TitleNumber((util_RandomU(0xc) & 0xffff) + 1, (util_RandomU(2) & 0xffff) + 1);
+        n = util_RandomU(4);
         h = ((int (*)(unsigned char, int, int, unsigned short, int, unsigned char, unsigned char, unsigned char))cm_SendCreateCharacter)(3, -1, -1, n + 0xf, -1, w, 0, 0);
         if (h != -1) {
             while (cm_GetSlotState(h) == 0)
                 sv_PumpNet();
         }
         ch = (INIT_CHAR *)cm_GetSlotValue(h);
-        cm_SendMoveGoods(ch->netId, -1, ai_OwnPlayer, ((util_Random(0x400) & 0xffff) + 0x200) * 0x20);
+        cm_SendMoveGoods(ch->netId, -1, ai_OwnPlayer, ((util_RandomU(0x400) & 0xffff) + 0x200) * 0x20);
         cm_BeginFieldBlock((char *)ch, ch->netId);
         cm_AddFieldDelta(1, 1, 0xd, &msg0);
         cm_AddFieldDelta(1, 1, 0x167, &msg1);
         cm_SendFieldDeltas();
-        w = gm_TitleNumber((util_Random(0xc) & 0xffff) + 1, (util_Random(2) & 0xffff) + 1);
-        n = util_Random(4);
+        w = gm_TitleNumber((util_RandomU(0xc) & 0xffff) + 1, (util_RandomU(2) & 0xffff) + 1);
+        n = util_RandomU(4);
         h = ((int (*)(unsigned char, int, int, unsigned short, int, unsigned char, unsigned char, unsigned char))cm_SendCreateCharacter)(3, -1, -1, n + 0xe, -1, w, 0, 1);
         if (h != -1) {
             while (cm_GetSlotState(h) == 0)
                 sv_PumpNet();
         }
         ch = (INIT_CHAR *)cm_GetSlotValue(h);
-        cm_SendMoveGoods(ch->netId, -1, ai_OwnPlayer, ((util_Random(0x400) & 0xffff) + 0x200) * 0x20);
+        cm_SendMoveGoods(ch->netId, -1, ai_OwnPlayer, ((util_RandomU(0x400) & 0xffff) + 0x200) * 0x20);
         cm_BeginFieldBlock((char *)ch, ch->netId);
         cm_AddFieldDelta(1, 1, 0xd, &msg0);
         cm_AddFieldDelta(1, 1, 0x167, &msg1);

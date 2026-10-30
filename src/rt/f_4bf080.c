@@ -19,7 +19,7 @@ void rt_Unk4bf080(char *c, char *win)
     d2_SetForm(w, 3);
     ai_Unk52e350x(d2_LastWindow, 0, btns, 3, ai_Unk144ad3c, ai_Unk144ad4c, ai_Unk144ad78[*(unsigned char *)(c + 0x33)]);
     d2_SetCaption(btns[2], ai_Unk144ad78[*(unsigned char *)(c + 0x33)]);
-    d2_SetObjValue(sl, 0, 4, *(unsigned char *)(c + 0x31));
+    d2_SetObjValue4(sl, 0, 4, *(unsigned char *)(c + 0x31));
     d2_SetSliderFlags(sl, 0x82);
     d2_SetList(sl, 5, ai_Unk144ad54, ai_Unk144ad58, ai_Unk144ad5c, ai_Unk144ad60, ai_Unk144ad64);
     while (sv_RunFrame(rt_Unk4bf080, 0x657c7)) {

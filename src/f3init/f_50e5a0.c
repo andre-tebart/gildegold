@@ -32,7 +32,7 @@ unsigned short init_PlaceOffices(int n, int *out, int *ids)
     tab[12] = 0x58;
     tab[13] = 0x51;
     tab[14] = 0x2d;
-    r = util_Random(0xf);
+    r = util_RandomU(0xf);
     s = r;
     if (0 < n) {
         q = out;

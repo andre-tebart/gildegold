@@ -574,7 +574,7 @@ int ai_MeisterTradeFernEinkauf2(AICHAR *ch, AIOBJ *obj);                 /* 0x48
                                                                             (same log strings) */
 
 /* callees outside this unit */
-unsigned short util_Random(int n);                                       /* 0x42ec00, @original: tr.c defines int util_Random(unsigned short n); the byte-matched callers read a 16-bit result (ch_RandomNear / anm_Update / ahm_ShufflePlayers: and eax,0xffff after the call) */
+int util_Random(unsigned short n);                                       /* 0x42ec00, tr.c; the callers that read a 16-bit result (ch_RandomNear, anm_Update, ai_Unk4d88c0 ..) call util_RandomU, a cast in their head */
 float util_RandomF(void);                                                /* 0x42ec20 */
 int ai_LoadActionTable(void);                                            /* 0x494e70, loads the AI action table */
 int ai_ChooseAction(int id);                                                /* 0x4957d0 */

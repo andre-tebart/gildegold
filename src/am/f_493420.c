@@ -23,16 +23,16 @@ void ai_Unk493420(AGDUEL *d, AGCH *c, int k)
     if (lvl >= 4)
         lvl = 4;
     if (k != 0) {
-        h = util_Random(3);
+        h = util_RandomU(3);
         *n = 3;
         if (f > 0.8888f) {
-            sv = util_Random(0x10);
+            sv = util_RandomU(0x10);
             extra = 3 - (sv != 0);
         } else if (f > 0.5555f) {
-            sv = util_Random(0x10);
+            sv = util_RandomU(0x10);
             extra = 2 - (sv != 0);
         } else {
-            sv = util_Random(f > 0.3333f ? 4 : 8);
+            sv = util_RandomU(f > 0.3333f ? 4 : 8);
             extra = sv == 0;
         }
         r = util_RandomF();
@@ -76,7 +76,7 @@ void ai_Unk493420(AGDUEL *d, AGCH *c, int k)
             return;
         }
         if (h != 1) {
-            j = util_Random(3);
+            j = util_RandomU(3);
             w = t[j] + extra;
             if (w > 6)
                 w = 6;
@@ -123,19 +123,19 @@ roll4:
     if (sum < 6)
         best = 1;
     else
-        best = util_Random(3) - 1;
+        best = util_RandomU(3) - 1;
     goto pick;
 roll5:
     if (sum < 5)
         best = 1;
     else
-        best = util_Random(3) - 1;
+        best = util_RandomU(3) - 1;
     goto pick;
 roll6:
     if (sum < 4)
         best = 1;
     else
-        best = util_Random(3) - 1;
+        best = util_RandomU(3) - 1;
 pick:
     for (j = 0; j < 6; j++) {
         if (r <= ag_Chance[lvl][j])

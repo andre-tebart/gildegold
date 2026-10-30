@@ -55,7 +55,7 @@ int gm_CharacterWages(unsigned short id, int flag, unsigned char *out)  /* the c
                 ai_Unk6f1b98++;
             }
             if (c[2] == 3) {
-                unsigned short rr = util_Random((tmp[2] & 0xff) + 2);
+                unsigned short rr = util_RandomU((tmp[2] & 0xff) + 2);
                 cm_SendMoveGoodsUnchecked(*(int *)(c + 4), -1, 0, (rr + (tmp[2] & 0xff)) * 0x1900);
                 cm_SendMoneyDelta(*(int *)(c + 4), r[2] & 0xff);
                 ai_Unk6f1b98 += 2;

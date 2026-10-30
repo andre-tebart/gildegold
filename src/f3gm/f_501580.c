@@ -85,7 +85,7 @@ unsigned char *gm_CreateBuilding(unsigned char k, unsigned short own)
         }
     }
     if (n != 0) {
-        j = util_Random(n) & 0xffff;
+        j = util_RandomU(n) & 0xffff;
         strcpy((char *)b + 5, names[j]);
     }
     w = (unsigned short *)(proto + 0x23);

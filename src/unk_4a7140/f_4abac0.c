@@ -43,7 +43,7 @@ next:
             } else if (k > 9) {
                 k = 10;
             }
-            r = util_Random(k);
+            r = util_RandomU(k);
             if (r < 4)
                 k = 2;
             else

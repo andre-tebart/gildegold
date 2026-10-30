@@ -329,9 +329,9 @@ void init_OpenTown(void)
                 do {
                     bk = ((INIT_CHAR *)p2)->kind;
                     if (bk == 6 || bk == 7 || bk == 5 || bk == 3 || bk == 4 || bk == 2) {
-                        u = util_Random(0x40);
+                        u = util_RandomU(0x40);
                         ((int (*)(void *, void *, int))cm_SendRelations)(((INIT_CHAR *)p)->netId, ((INIT_CHAR *)p2)->netId, (u & 0xffff) - 0x20);
-                        u = util_Random(0x40);
+                        u = util_RandomU(0x40);
                         u = ((int (*)(void *, void *, int))cm_SendRelations)(((INIT_CHAR *)p2)->netId, ((INIT_CHAR *)p)->netId, (u & 0xffff) - 0x20);
                         m += 2;
                         if (u != 0xffffffff) {

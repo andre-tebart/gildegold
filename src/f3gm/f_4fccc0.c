@@ -38,7 +38,7 @@ void unk_Unk4fccc0(char *c)
         memcpy(clk, ai_Time, 14);
         arg = 2;
         gm_AddTime(clk, 8, 0, 0);
-        *(short *)(clk + 1) = util_Random(4) + 8;
+        *(short *)(clk + 1) = util_RandomU(4) + 8;
         bld = *(int *)(c + 0x170);
         *(short *)((char *)clk + 6) = 0;
         *(short *)(clk + 2) = 0;

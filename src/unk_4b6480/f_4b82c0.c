@@ -25,21 +25,21 @@ int ai_Unk4b82c0(G14MSG *m)
     if (n == 0)
         return 0x400;
     k = 0;
-    b = a[util_Random(n)];
+    b = a[util_RandomU(n)];
     for (i = 0; i < 768 && k < 6; i++) {
         if (ai_CharsT[i].kind != 0xffff && ai_CharsT[i].bld == b && ai_CharsT[i].title != 0)
             a[k++] = &ai_CharsT[i];
     }
     if (k != 0)
-        p = a[util_Random(k)];
+        p = a[util_RandomU(k)];
     if (b == 0 || p == 0)
         return 0x400;
-    if (util_Random(2)) {
+    if (util_RandomU(2)) {
         txt_Format(buf, m->type + 0x12e7, b, (((char *)p)[9] ? 0x230 : 0x20d) + (unsigned char)p->title, p->id);
         he_ShowNews(c->netId, c->netId, buf, strlen(buf) > 0x100, 0x603, 0);
         x = (int)(*(float *)((char *)p + 0x1c) * 0.3);
         y = (int)(*(float *)((char *)p + 0x1c) * 0.1);
-        gm_AddHealthS(p->id, -(util_Random(x) + y));
+        gm_AddHealthS(p->id, -(util_RandomU(x) + y));
     }
     return 0;
 }

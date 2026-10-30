@@ -12,7 +12,7 @@ int ai_Unk4a7760(int owner)
                 break;
     } else {
         do
-            i = util_Random(24);
+            i = util_RandomU(24);
         while (ai_Unkf83660[i].owner != 3);
     }
     ai_Unkf83660[i].owner = owner;

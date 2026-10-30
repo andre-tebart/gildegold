@@ -10,7 +10,7 @@ void ai_BuySlots(AIOBJ *b, AICHAR *ch, int n)
     int a, d, ma, mb, x, y;
     int cnt, r;
 
-    if (b && !(c->flags1c8 & 8) && (int)util_Random(100) >= n) {
+    if (b && !(c->flags1c8 & 8) && (int)util_RandomU(100) >= n) {
         a = b->lvl1c;
         d = b->lvl1d;
         for (job = he_FindEvent(2, 0, 0x12, 3, c->bld->id); job; job = he_NextEvent()) {

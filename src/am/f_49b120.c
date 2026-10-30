@@ -19,7 +19,7 @@ int ai_Unk49b120(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     rec.unk0c = 0;
     if (*(int *)((char *)p + 0x2c) != 0)
         rec.item = 0x17e;
-    else if (util_Random(3) != 0)
+    else if (util_RandomU(3) != 0)
         return 0;
     else
         rec.item = 0x175;

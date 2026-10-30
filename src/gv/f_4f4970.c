@@ -68,8 +68,8 @@ void unk_Unk4f4970(unsigned i)
                             m[0x36] = 9;
                             *(short *)(m + 0x30) = 7;
                             if (c[2] == 5) {
-                                k = util_Random(8);
-                                k = util_Random(4);
+                                k = util_RandomU(8);
+                                k = util_RandomU(4);
                                 ((void (*)(void *, int))gm_AddTime)(m + 0x28, k);
                             }
                             *(int *)(m + 0x5c) = *(int *)(c + 4);

@@ -16,7 +16,7 @@ unsigned gm_Unk5056a0(short *c)
     tab[5] = (w & 0xe0000) == 0;
     tab[6] = (w & ((unsigned)&he_Events + 0x54c0)) == 0;
     tab[7] = (w & 0x1800000) == 0;
-    f = util_Random(4) & 0xffff;
+    f = util_RandomU(4) & 0xffff;
     i = 4;
     while (tab[f + 4] != 1) {
         i--;
@@ -27,7 +27,7 @@ unsigned gm_Unk5056a0(short *c)
     f = tab[f];
     if (gm_Unk5051d0(f, rec) == 0)
         return 0;
-    v = util_Random((int)(float)rec[2]) & 0xffff;
+    v = util_RandomU((int)(float)rec[2]) & 0xffff;
     if (v == 0)
         return 0;
     cost = (int)(float)rec[0];

@@ -16,7 +16,7 @@ int ai_Unk4ba840(AICHAR *c, int *id, float f)
     }
     if (n != 0) {
         k = 0;
-        b = a[util_Random(n)];
+        b = a[util_RandomU(n)];
         *id = *(int *)((char *)b + 1);
         o = gm_Query(*(int *)((char *)b + 0x5d), 2, 6, k, 0x2a);
         if (o != 0) {

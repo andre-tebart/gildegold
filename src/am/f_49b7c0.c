@@ -38,7 +38,7 @@ int ai_Unk49b7c0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         return 0;
     if (st[0] < 6) {
         if (st[2] == 0) {
-            i = util_Random(12);
+            i = util_RandomU(12);
             while (recs[i].unk04 != 0)
                 i = (i + 1) % 12;
             s1.unk04 = recs[i].item;
@@ -58,7 +58,7 @@ int ai_Unk49b7c0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     } else if (st[2] == 0) {
         return 0;
     }
-    i = util_Random(12);
+    i = util_RandomU(12);
     while (recs[i].unk04 < 1)
         i = (i + 1) % 12;
     s1.kind = 1;
@@ -84,9 +84,9 @@ int ai_Unk49b7c0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         mask.HighPart = 1;
         v = -1;
         if (!(ai_Partner && (ai_Unk4a63f0((AIPER *)ai_Partner, 4, mask.QuadPart, 0, 100.0f, &v), v != -1))
-            && !ai_Unk4a63f0((AIPER *)p, 6, mask.QuadPart, 0, (float)util_Random(0x40), &v))
+            && !ai_Unk4a63f0((AIPER *)p, 6, mask.QuadPart, 0, (float)util_RandomU(0x40), &v))
             return 0;
-    } else if (G8_4A58D0(p, n, flags, 0.0f, (float)util_Random(0x40), id) == 0) {
+    } else if (G8_4A58D0(p, n, flags, 0.0f, (float)util_RandomU(0x40), id) == 0) {
         return 0;
     }
     switch (rp->item) {

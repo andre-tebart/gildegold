@@ -20,7 +20,7 @@ int ai_Unk4b7550(G14MSG *m)
         return 0x400;
     if (!AI_4FEA50_4(&r, 0, 0, o))
         return 0x400;
-    k = util_Random(3) + 1.0;
+    k = util_RandomU(3) + 1.0;
     v = (int)(gm_GetWorth(c->id) * k * 0.01);
     txt_Format(buf, m->type + 0x12e7, r, v);
     cm_SendMoveGoodsUnchecked(-1, m->id, ai_OwnPlayer, v);

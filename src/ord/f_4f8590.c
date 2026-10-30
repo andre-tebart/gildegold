@@ -16,8 +16,8 @@ void ord_SubGridAmount(int who, int kind)
 
     gv_GetTableRecord(kind & 0xff, rec);
     gm_FindById((int *)&b, 0, 0, who);
-    amount = util_Random(8);
-    y = util_Random(8);
+    amount = util_RandomU(8);
+    y = util_RandomU(8);
     if (b != 0 && b->object != 0) {
         ord_GetGridCell(b->object + 0x4c, &x, &y);
         ORD_CELLS[y + x * 8].b -= amount;

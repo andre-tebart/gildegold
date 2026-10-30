@@ -8,7 +8,7 @@ char *gv_AllocAvatar(void)
     int j;
     float *f;
 
-    i = util_Random(0x20) & 0xffff;
+    i = util_RandomU(0x20) & 0xffff;
     n = 0x20;
     do {
         if (unk_Avatars[i][0xf2] == 0) {

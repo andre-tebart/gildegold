@@ -43,9 +43,9 @@ unsigned int ai_Unk492fd0(unsigned int k)
         }
     }
     if (idx == 1)
-        v = util_Random(3);
+        v = util_RandomU(3);
     else {
-        v = util_Random(2);
+        v = util_RandomU(2);
         if (idx == 0)
             v = v & 0xffff;
         else
@@ -60,11 +60,11 @@ unsigned int ai_Unk492fd0(unsigned int k)
         }
     }
     memset(&ai_Unk6f0478, 0, sizeof(ai_Unk6f0478));
-    ai_Unk6f0478.unk009 = (unsigned char)util_Random(2);
+    ai_Unk6f0478.unk009 = (unsigned char)util_RandomU(2);
     if (ai_Unk6f0478.unk009 == 0)
-        strncpy(ai_Unk6f0478.name, ai_Unk143ac5c[util_Random(0xbf)], 15);
+        strncpy(ai_Unk6f0478.name, ai_Unk143ac5c[util_RandomU(0xbf)], 15);
     else
-        strncpy(ai_Unk6f0478.name, ai_Unk143af70[util_Random(0x70)], 15);
+        strncpy(ai_Unk6f0478.name, ai_Unk143af70[util_RandomU(0x70)], 15);
     switch (k) {
     case 1:
         base = 0x15;
@@ -91,7 +91,7 @@ unsigned int ai_Unk492fd0(unsigned int k)
         mul = k;
     }
     for (i = 0; i < 5; i++) {
-        c = (char)util_Random(mul);
+        c = (char)util_RandomU(mul);
         ai_Unk6f0478.stat[i] = c + (char)base + 1;
     }
     ai_Unk6f0478.kind = 10;

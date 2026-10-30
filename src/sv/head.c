@@ -425,6 +425,7 @@ int sv_MessageBoxYesNo();               /* 0x5216a0 */
 
 #include "time_view.h"
 #include "io_text.h"
+#define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, ai_Unk4d88c0 0x4d88c0 move it as a word / movzx) */
 #define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
 #define ai_Unk60d360U (*(unsigned (*))&ai_Unk60d360)  /* 0x60d360, this unit reads it as `unsigned ai_Unk60d360` */
 #define ai_Unk6f0454V (*(char (*))&ai_Unk6f0454)  /* 0x6f0454, this unit reads it as `char ai_Unk6f0454` */

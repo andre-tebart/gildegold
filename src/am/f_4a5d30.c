@@ -7,7 +7,7 @@ int ai_Unk4a5d30(AIPER *p, unsigned int fl, int n, unsigned short *ids, float lo
     int step, k, found, win;
     float r;
 
-    step = ai_Unk5ed100[util_Random(0x10)];
+    step = ai_Unk5ed100[util_RandomU(0x10)];
     memset(q, 0, sizeof(q));
     win = 0;
     len = n * 2;
@@ -28,7 +28,7 @@ int ai_Unk4a5d30(AIPER *p, unsigned int fl, int n, unsigned short *ids, float lo
         win = 1;
     k = 0x300;
     found = 0;
-    c = util_Random(0x300);
+    c = util_RandomU(0x300);
     while (!found) {
         if (k == 0) {
             if (found)

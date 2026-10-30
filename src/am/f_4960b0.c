@@ -100,7 +100,7 @@ int ai_Unk4960b0(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
     }
     if (!count)
         return 0;
-    k = util_Random(5);
+    k = util_RandomU(5);
     while (!valid[k])
         k = (k + 1) % 5;
     if (p->kind == 3) {

@@ -127,7 +127,7 @@ void ai_Unk4e1a80(char *m)
             cm_SendOwnership(ai_PlayerCharC, 0, 0);
             gm_FirstBuilding(1);
             gm_Query(0x115, 0, 6, 2, 0);
-            cm_SendMoveGoodsUnchecked(util_Random(5) % 5, 0, 0, 0);
+            cm_SendMoveGoodsUnchecked(util_RandomU(5) % 5, 0, 0, 0);
         }
     } else {
         ai_Unk4e32d0(7, "_VERSTEIGERUNG_GEBOTE", 0, 0);

@@ -25,7 +25,7 @@ int ai_Unk49def0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         return 0;
     o = gm_Query(y->objList, 2, 6, 0, 0x115);
     money = gm_Unk509e30(*(int *)((char *)o + 0x14), ai_OwnPlayer);
-    if (!(y->flags5a & 4) && y->level < util_Random(0x40) + 0x25) {
+    if (!(y->flags5a & 4) && y->level < util_RandomU(0x40) + 0x25) {
         s1.kind = 4;
         s1.unk04 = y->id;
         s1.unk08 = 1;
@@ -64,11 +64,11 @@ int ai_Unk49def0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     unk_Unk4f9e00(d);
     if (y->type == 0x24) {
         act = 0x25;
-        if (util_Random(0x200) + d[6] < 1250.0f)
+        if (util_RandomU(0x200) + d[6] < 1250.0f)
             return 0;
     } else if (y->type == 0x25) {
         act = 0x26;
-        if (util_Random(0x400) + d[6] < 5000.0f)
+        if (util_RandomU(0x400) + d[6] < 5000.0f)
             return 0;
     } else
         return 0;

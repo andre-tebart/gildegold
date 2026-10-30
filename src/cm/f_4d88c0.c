@@ -9,7 +9,7 @@ void ai_Unk4d88c0(char *a)
     char *o;
 
     t = tb_Calls - 0x15e;
-    r = util_Random(100);
+    r = util_RandomU(100);
     ai_Unk4d0a30();
     ai_Unk4d6a50(a);
     ai_Unk6f0d4c = 0;

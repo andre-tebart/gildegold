@@ -10,7 +10,7 @@ int ai_Unk49d2d0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 
     if (f != 0)
         return 0;
-    if ((*(int *)((char *)p + 0x1e8) & 0x200) && util_Random(8) != 0)
+    if ((*(int *)((char *)p + 0x1e8) & 0x200) && util_RandomU(8) != 0)
         return 0;
     h = *(unsigned char **)((char *)p + 0x170);
     if (h == 0) {

@@ -59,13 +59,13 @@ void ai_CalcMeisterWache(AICHAR *ch)
         return;
     }
     if (ai_CharsT[ch->bld->owner].kind == 6 || ai_CharsT[ch->bld->owner].kind == 7) {
-        r = util_Random(3);
-        if (r == 0 || ch->target == -1 || util_Random(2) == 0)
+        r = util_RandomU(3);
+        if (r == 0 || ch->target == -1 || util_RandomU(2) == 0)
             goto choose;
         goto city;
     } else {
         if (util_RandomF() <= 0.85 || idle < 3 || ai_TimeT.year < 7 - ai_Difficulty) {
-            r = util_Random(3);
+            r = util_RandomU(3);
 choose:
             if (r == 4)
                 goto guard;
@@ -122,7 +122,7 @@ city:
             msg.flags = 2;
             msg.arg[0] = sel->id;
             msg.arg[1] = ch->bld->id;
-            msg.unk89 = util_Random(4) + 2;
+            msg.unk89 = util_RandomU(4) + 2;
             n = idle;
             if (n > 3)
                 n = 4;
@@ -226,7 +226,7 @@ umland:
     msg.fromId = ch->bld->id;
     msg.time = ai_TimeT;
     msg.flags = 2;
-    r = util_Random(8);
+    r = util_RandomU(8);
     strcpy((char *)&msg.arg[0], ai_AmbushSpots[r]);
     msg.arg[8] = ch->bld->id;
     o = ((void *(*)(unsigned char *))gm_GetGebaeudeHauptraum)(ch->bld);

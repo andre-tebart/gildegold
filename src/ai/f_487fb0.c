@@ -35,7 +35,7 @@ void ai_BuyUpgrade(AICHAR *ch)
         return;
     if (!(flags & 8))
         return;
-    rv = util_Random(0x14);
+    rv = util_RandomU(0x14);
     lim = rv + 0x4b;
     if (gm_BuildingLevel((AIBLD *)bld) < lim) {
         f = (float)gm_EquipmentValue(ch->bld, 100) * 0.005f;

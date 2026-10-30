@@ -25,7 +25,7 @@ int ai_Unk49ae50(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         return 0;
     if (st[0] < 6) {
         if (st[2] == 0) {
-            i = util_Random(4);
+            i = util_RandomU(4);
             while (recs[i].unk04 != 0)
                 i = (i + 1) % 4;
             s1.kind = 2;
@@ -45,7 +45,7 @@ int ai_Unk49ae50(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     } else if (st[2] == 0) {
         return 0;
     }
-    i = util_Random(4);
+    i = util_RandomU(4);
     while (recs[i].unk04 < 1)
         i = (i + 1) % 4;
     s1.kind = 1;

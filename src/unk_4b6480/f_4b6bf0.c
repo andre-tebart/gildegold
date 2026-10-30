@@ -18,8 +18,8 @@ int ai_MsgPayForBuilding(G14MSG *m)
         ids[n++] = b->id;
     if (n == 0)
         return 0x400;
-    gm_BuildQuery(1, 1, ids[util_Random(n)]);
-    k = util_Random(5) + 2.0;
+    gm_BuildQuery(1, 1, ids[util_RandomU(n)]);
+    k = util_RandomU(5) + 2.0;
     v = (int)(gm_GetWorth(c->id) * k * 0.01);
     txt_Format(buf, m->type + 0x12e7, v);
     cm_SendMoveGoodsUnchecked(m->id, -1, ai_OwnPlayer, v);

@@ -158,7 +158,7 @@ int ai_Unk4d4540(char *a)
                     st = 50;
                 else if (sel == b3)
                     st = 90;
-                if ((unsigned short)util_Random(0x5a) + 10 > st) {
+                if ((unsigned short)util_RandomU(0x5a) + 10 > st) {
                     txt_Format(tc, 0x1143);
                     ai_Unk4e5470(tc, 0);
                     sv_PopRequest = 1;
@@ -181,16 +181,16 @@ int ai_Unk4d4540(char *a)
             if (*(int *)(a + 0x80 + i * 4) != -1)
                 n++;
         }
-        if (n == 0 || (unsigned short)util_Random(5) > *(int *)(a + 0x110)) {
+        if (n == 0 || (unsigned short)util_RandomU(5) > *(int *)(a + 0x110)) {
             st = 0;
-            r = (unsigned short)util_Random(4);
+            r = (unsigned short)util_RandomU(4);
             if (r == 0)
                 st = 10;
             else if (r == 1)
                 st = 90;
             else if (r >= 2)
                 st = 50;
-            if ((unsigned short)util_Random(0x5a) + 10 > st) {
+            if ((unsigned short)util_RandomU(0x5a) + 10 > st) {
                 ai_Unk6f0cfc = -1;
                 res = 1;
             } else {

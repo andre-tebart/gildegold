@@ -8,11 +8,11 @@ int ai_Unk49c570(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     G5CH *c;
 
     flags = ((unsigned)&ai_Unka69140 + 0x4973c0);
-    r = util_Random(3);
+    r = util_RandomU(3);
     money = gm_Unk509ee0((AIPER *)p, ai_OwnPlayer);
     if (f != 0)
         return 0;
-    if (ai_Unk4a58d0((AIPER *)p, 1, (int *)&flags, 0, (float)util_Random(0x19) + 10.0, &id) == 0)
+    if (ai_Unk4a58d0((AIPER *)p, 1, (int *)&flags, 0, (float)util_RandomU(0x19) + 10.0, &id) == 0)
         return 0;
     c = &G5_CHARS[id];
     x = (int)(gm_GetWorth(c->id) * 0.005f + gm_GetWorth(p->id) * 0.005f);

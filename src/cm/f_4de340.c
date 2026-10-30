@@ -35,7 +35,7 @@ void ai_Unk4de340(char *r, int *m)
     case 6:
         if (*(int *)(r + 0x10) != m[6])
             return;
-        *(int *)(r + 0x94) = util_Random(2) & 0xffff;
+        *(int *)(r + 0x94) = util_RandomU(2) & 0xffff;
         return;
     case 4:
         id = *(int *)(r + 0x10);

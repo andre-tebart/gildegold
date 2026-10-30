@@ -190,7 +190,7 @@ unsigned short *gm_CreateObject(int id, unsigned proto, int n)
             if (proto == 0x136)
                 name = "pferd_PFERD";
             else {
-                s = util_Random(3);
+                s = util_RandomU(3);
                 if (s == 0)
                     name = "arbeiter_KARREN";
                 else if (s == 1)

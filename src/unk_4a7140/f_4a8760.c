@@ -49,7 +49,7 @@ int ai_Unk4a8760(int a, unsigned char *p, int *ctx, int d, unsigned char *m)
         }
         if (n < 6)
             memset(&who[n], 0, (6 - n) * sizeof(who[0]));
-        r = util_Random(6);
+        r = util_RandomU(6);
         for (j = 6; j != 0; j--) {
             if (who[r] != 0 && id != *(int *)(who[r] + 4)
                 && gm_Liking(*(short *)who[r], *(short *)p, 1) < 33.0f && rec[r].k == 1) {
@@ -64,13 +64,13 @@ int ai_Unk4a8760(int a, unsigned char *p, int *ctx, int d, unsigned char *m)
             r = (int)(r + 1) % 6;
         }
         if (info.lvl != 3 && info.lvl != 6 && info.lvl != 9 && p[0x130] == 7) {
-            r = util_Random(6);
+            r = util_RandomU(6);
             for (j = 6; j != 0; j--) {
                 if (who[r] != 0 && id != *(int *)(who[r] + 4)) {
                     if (amt_GetKind(who[r][0x166], &info2) == 0)
                         return 0;
                     if (info.lvl < info2.lvl && rec[r].k == 1
-                        && gm_Liking(*(short *)who[r], *(short *)p, 1) < (float)util_Random(0x20) + 40.0f) {
+                        && gm_Liking(*(short *)who[r], *(short *)p, 1) < (float)util_RandomU(0x20) + 40.0f) {
                         o = who[r];
                         break;
                     }

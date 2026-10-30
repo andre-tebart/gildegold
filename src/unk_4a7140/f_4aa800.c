@@ -13,7 +13,7 @@ int ai_Unk4aa800(AIPER *p, int c, unsigned char *m)
     if (p->unk194 < 3)
         return 0;
     ids[0] = p->id;
-    if (ai_Unk4a5a30(p, ((unsigned)&ai_Unka69140 + 0x4973c0), 4, ids, 0.0f, (float)util_Random(0x10) + 33.0f, &id) == 0)
+    if (ai_Unk4a5a30(p, ((unsigned)&ai_Unka69140 + 0x4973c0), 4, ids, 0.0f, (float)util_RandomU(0x10) + 33.0f, &id) == 0)
         return 0;
     ids[1] = id;
     if (ai_Unk4a5a30(p, ((unsigned)&ai_Unka69140 + 0x4973c0), 4, ids, 50.0f, 100.0f, &id2) == 0)

@@ -14,12 +14,12 @@ int amt_CreateApplicant(int k)
     if (amt_GetCreateRanges(k, &r) == 0)
         return -1;
     if (amt_Flip == 2)
-        amt_Flip = util_Random(2) & 0xffff;
-    x = util_Random(r.i7 - r.i6 + 1);
+        amt_Flip = util_RandomU(2) & 0xffff;
+    x = util_RandomU(r.i7 - r.i6 + 1);
     v = x + r.i6;
-    x = util_Random(12);
+    x = util_RandomU(12);
     e = gm_TitleNumber(x + 1, v);
-    x = util_Random(((AMTRANGEW *)&r)->word1 - ((AMTRANGEW *)&r)->word0 + 1);
+    x = util_RandomU(((AMTRANGEW *)&r)->word1 - ((AMTRANGEW *)&r)->word0 + 1);
     v = ((int (*)(int, int, int, int, int, int, int, unsigned char))cm_SendCreateCharacter)(0x13, -1, -1, x + ((AMTRANGEW *)&r)->word0, -1, e, 0, amt_Flip);
     amt_Flip = 1 - amt_Flip;
     return v;

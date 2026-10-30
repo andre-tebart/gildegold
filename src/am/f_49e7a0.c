@@ -22,7 +22,7 @@ int ai_Unk49e7a0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         return 0;
     o = (unsigned char *)gm_Query(b->objList, 2, 6, 0, 0x115);
     money = gm_Unk509e30(*(int *)(o + 0x14), ai_OwnPlayer);
-    if (money < (util_Random(3000) + 1000) * 32)
+    if (money < (util_RandomU(3000) + 1000) * 32)
         return 0;
     rec = ai_BldsT;
     for (i = 0; i < 0x100; i++, rec++) {
@@ -30,7 +30,7 @@ int ai_Unk49e7a0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         if (k == 0 || ai_BTypesT[k].kind != 3 || (rec->flags5a & 4))
             continue;
         lvl = rec->level;
-        if (lvl < util_Random(0x40) + 0x25) {
+        if (lvl < util_RandomU(0x40) + 0x25) {
             s1.kind = 4;
             s1.unk04 = rec->id;
             s1.unk08 = 1;
@@ -61,7 +61,7 @@ int ai_Unk49e7a0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
                 recA = rec;
         }
     }
-    if (util_Random(8) != 0)
+    if (util_RandomU(8) != 0)
         return 0;
     if (cntA != 0 && recA != 0) {
         o1->kind = 4;

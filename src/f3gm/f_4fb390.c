@@ -29,7 +29,7 @@ unsigned *unk_Unk4fb390(int id)
             return (unsigned *)((char *)ai_Unk91ac40 + n);
         }
         if (c[2] == 0x11)
-            return ai_Unk617398 + (util_Random(3) & 0xffff) * 0x11;
+            return ai_Unk617398 + (util_RandomU(3) & 0xffff) * 0x11;
         if (k != 0) {
             if (c[9] == 0) {
                 p = ai_Unk612bd8;

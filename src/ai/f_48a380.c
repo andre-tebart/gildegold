@@ -9,7 +9,7 @@ void ai_UnloadCarts(AICHAR *ch)
     if (ai_IsLocalJob(ch) && (ch->flags1b4 & 1)) {
         for (car = gm_Query(ch->bld->objList, 3, 6, 4, 0x1d, 3, ch->bld->owner); car;
              car = gm_QueryNext()) {
-            if (car->fill < util_Random(0x20) + 0x28) {
+            if (car->fill < util_RandomU(0x20) + 0x28) {
                 memset(&msg, 0, sizeof(msg));
                 msg.type = 0x10;
                 msg.to = ai_CharsT[ch->bld->owner].netId;

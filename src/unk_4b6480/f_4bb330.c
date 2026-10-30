@@ -6,7 +6,7 @@ int ai_Unk4bb330(G14MSG *m)
     int v;
     char buf[0x400];
 
-    v = gm_PlayerFactor(util_Random(5) + 1, ai_OwnPlayer);
+    v = gm_PlayerFactor(util_RandomU(5) + 1, ai_OwnPlayer);
     c = gm_FindChar(m->id);
     if (c == 0)
         return 1;

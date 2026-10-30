@@ -9,7 +9,7 @@ int ai_Unk4a9280(int a, AIPER *p, int c, int d, unsigned char *m)
     AIPER *o;
     unsigned char k;
 
-    r = util_Random(8);
+    r = util_RandomU(8);
     if (p->unk166 != 13) {
         n = unk_Unk4f3c50(ids, cnt, p->id);
         if (n > 0) {

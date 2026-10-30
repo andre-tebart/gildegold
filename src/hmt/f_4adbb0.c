@@ -28,7 +28,7 @@ void hmt_Create(int type, int unk, unsigned short v, AICHAR *c)
     HMT_B(c, 0x0c) = 0;
     for (j = 0; j < 768; j++) {
         for (k = 0; k < 768; k++) {
-            ai_Relations[j][k] = (char)util_Random(0x40) - 0x20;
+            ai_Relations[j][k] = (char)util_RandomU(0x40) - 0x20;
             ai_RelationMemory[j][k] = 0;
         }
     }
@@ -44,7 +44,7 @@ void hmt_Create(int type, int unk, unsigned short v, AICHAR *c)
     HMT_F(c, 0x10) = 330.0f;
     HMT_F(c, 0x18) = 1000.0f;
     for (j = 0; j < 5; j++)
-        HMT_B(c, 0x80 + j) = (unsigned char)(util_Random(0x2a) + 210.0f);
+        HMT_B(c, 0x80 + j) = (unsigned char)(util_RandomU(0x2a) + 210.0f);
     HMT_B(c, 0x0d) = 9;
     gm_AddObjekt(c->netId, HMT_PLAYERW(ai_OwnPlayer), &ai_Unkf42400);
     pl = 0xffff;

@@ -60,13 +60,13 @@ void ai_CalcMeisterRaeuber(AICHAR *ch)
         return;
     }
     if (ai_CharsT[ch->bld->owner].kind == 6 || ai_CharsT[ch->bld->owner].kind == 7) {
-        r = util_Random(2);
-        if (r && ch->target != -1 && util_Random(2))
+        r = util_RandomU(2);
+        if (r && ch->target != -1 && util_RandomU(2))
             goto lauer;
     } else {
         if (util_RandomF() > 0.85 && n >= 3 && ai_TimeT.year >= 7 - ai_Difficulty)
             goto attack;
-        r = util_Random(4);
+        r = util_RandomU(4);
     }
     if (r == 3) {
 attack:
@@ -95,7 +95,7 @@ attack:
                             w = 0.0f;
                         else
                             w = 1.0f - (ai_Grid[i][j].a * 0.125f + ai_Grid[i][j].b) / max;
-                        w = util_Random(100) * w * 0.01;
+                        w = util_RandomU(100) * w * 0.01;
                         if (best) {
                             if (!((float)gm_GetGoodsValue(&ai_CharsT[bb->owner]) * w > (float)gm_GetGoodsValue(&ai_CharsT[best->owner]) * bestw))
                                 continue;
@@ -147,7 +147,7 @@ lauer:
     msg.fromId = ch->bld->id;
     msg.time = ai_TimeT;
     msg.flags = 2;
-    src = ai_AmbushSpots[util_Random(8)];
+    src = ai_AmbushSpots[util_RandomU(8)];
     strcpy((char *)msg.arg, src);
     if (n > 7)
         n = 8;

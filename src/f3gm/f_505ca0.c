@@ -23,8 +23,8 @@ void gm_Shuffled(unsigned char n, int *out)
         swaps = 0;
         if (cnt != 0) {
             do {
-                a = util_Random(n);
-                b = util_Random(n) & 0xffff;
+                a = util_RandomU(n);
+                b = util_RandomU(n) & 0xffff;
                 if (a != b) {
                     t = out[a];
                     out[a] = out[b];

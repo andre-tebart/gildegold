@@ -8,15 +8,15 @@ void gm_RandomMarketShake(void)
     float v;
     int i;
 
-    if (util_Random(2) != 0) {
-        n = util_Random(2) & 0xffff;
+    if (util_RandomU(2) != 0) {
+        n = util_RandomU(2) & 0xffff;
         for (; n != 0; n--) {
-            k = util_Random(0x54) & 0xffff;
+            k = util_RandomU(0x54) & 0xffff;
             g = (int *)(init_StockBlocks + ai_OwnPlayer * 0x2a90 + k * 0x80);
             if (*(short *)g != 0 && g[1] != 0) {
                 for (i = 0; i < 0x20; i++)
                     rec[i] = g[i];
-                if (util_Random(1) == 0) {
+                if (util_RandomU(1) == 0) {
                     *(float *)(rec + 9) = *(float *)(rec + 8) * 0.5f;
                     v = (float)(gm_ItemPrice(*(short *)g, 100) * 0.5);
                 } else {

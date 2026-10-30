@@ -54,16 +54,16 @@ int ai_Unk4a9a00(int a, AIPER *p, int c, unsigned char *in, unsigned char *m)
         }
         if (n1 == 0 && n2 == 0)
             return 0;
-        if (n1 == 0 || (n2 != 0 && util_Random(2) != 0)) {
+        if (n1 == 0 || (n2 != 0 && util_RandomU(2) != 0)) {
             ctx[0] = 2;
-            k = l2[util_Random(n2)];
+            k = l2[util_RandomU(n2)];
             kind = 4;
             if ((ord_DispatchOrder(k, p, ctx) & 2) == 0)
                 return 0;
         } else {
             ctx[0] = 1;
             kind = 3;
-            k = l1[util_Random(n1)];
+            k = l1[util_RandomU(n1)];
             if ((ord_DispatchOrder(k, p, ctx) & 2) == 0)
                 return 0;
         }

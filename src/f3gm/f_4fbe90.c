@@ -132,7 +132,7 @@ float unk_Unk4fbe90(unsigned short *c)
         ai_Unk6f1b98++;
     }
     if (p[0x1cc] & 2) {
-        fl = (float)((util_Random(0x10) & 0xffff) + 0x11);
+        fl = (float)((util_RandomU(0x10) & 0xffff) + 0x11);
         t = *(float *)(p + 0x1c) - (float)(int)fl;
         cm_BeginFieldBlock(c, *(int *)(p + 4));
         cm_AddFieldDelta(4, 1, 0x1c, &t);

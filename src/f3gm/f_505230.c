@@ -16,7 +16,7 @@ int gm_Unk505230(short *c, unsigned *kind, float *health)
     free_[5] = (w & ((unsigned)&he_Events + 0x54c0)) == 0;
     free_[6] = (w & 0x1800000) == 0;
     free_[7] = (w & 0x1e000000) == 0;
-    f = util_Random(8) & 0xffff;
+    f = util_RandomU(8) & 0xffff;
     i = 8;
     while (free_[f] != 1) {
         i--;
@@ -30,7 +30,7 @@ int gm_Unk505230(short *c, unsigned *kind, float *health)
     f = f + 2;
     if (gm_Unk5051d0(f, rec) == 0)
         return 0;
-    v = util_Random(rec[2]) & 0xffff;
+    v = util_RandomU(rec[2]) & 0xffff;
     cost = (int)(float)rec[0];
     if (kind != 0)
         *kind = -(v != 0) & f;

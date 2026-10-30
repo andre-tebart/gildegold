@@ -61,7 +61,7 @@ int ai_Unk49b380(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         return 0;
     if (st[0] < 6) {
         if (st[2] == 0) {
-            i = util_Random(n);
+            i = util_RandomU(n);
             while (recs[i].unk04 != 0)
                 i = (i + 1) % n;
             s2.kind = 2;
@@ -77,7 +77,7 @@ int ai_Unk49b380(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     } else if (st[2] == 0) {
         return 0;
     }
-    i = util_Random(n);
+    i = util_RandomU(n);
     while (recs[i].unk04 < 1)
         i = (i + 1) % n;
     s2.kind = 1;

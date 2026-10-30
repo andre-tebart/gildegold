@@ -41,7 +41,7 @@ int ai_Unk48f600(int a, AIPX *p, int b, AIARG *o1, AIARG *o2)
                 goto fail;
             if (p->flags1cc & 0x40000000)
                 goto fail;
-            r = util_Random(15);
+            r = util_RandomU(15);
             while (rec[r].unk04)
                 r = (r + 1) % 15;
             o1->kind = 2;
@@ -54,7 +54,7 @@ int ai_Unk48f600(int a, AIPX *p, int b, AIARG *o1, AIARG *o2)
         }
     } else if (!st[2])
         goto fail;
-    r = util_Random(15);
+    r = util_RandomU(15);
     while (rec[r].unk04 < 1)
         r = (r + 1) % 15;
     o1->kind = 1;
@@ -70,7 +70,7 @@ int ai_Unk48f600(int a, AIPX *p, int b, AIARG *o1, AIARG *o2)
         int flags;
 
         flags = ((unsigned)&ai_Unka69140 + 0x4973c0);
-        if (!ai_Unk4a58d0((AIPER *)p, 1, &flags, 0, util_Random(0x20) + 10.0f, &id))
+        if (!ai_Unk4a58d0((AIPER *)p, 1, &flags, 0, util_RandomU(0x20) + 10.0f, &id))
             goto fail;
         o2->kind = 7;
         o2->unk04 = AIC[id].netId;
@@ -87,7 +87,7 @@ int ai_Unk48f600(int a, AIPX *p, int b, AIARG *o1, AIARG *o2)
             if (out != -1)
                 goto done;
         }
-        if (!AI_4A63F0_7(p, 6, 0xa0744380, 1, 0, util_Random(0x20) + 16.0f, &out))
+        if (!AI_4A63F0_7(p, 6, 0xa0744380, 1, 0, util_RandomU(0x20) + 16.0f, &out))
             goto fail;
     done:
         o2->kind = 4;

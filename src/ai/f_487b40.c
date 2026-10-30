@@ -57,7 +57,7 @@ void ai_UpdateStaff(AICHAR *ch)
                         return;
                     if (ch->budget < v)
                         return;
-                    if (util_Random(0x48) < (0x12 - n) * 2)
+                    if (util_RandomU(0x48) < (0x12 - n) * 2)
                         return;
                 }
                 if (job == 0) {

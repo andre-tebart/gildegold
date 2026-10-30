@@ -6,12 +6,12 @@ char gm_RandomAge(unsigned char n)
     int u;
 
     if (n == 0) {
-        c = (char)util_Random(0x2a);
+        c = (char)util_RandomU(0x2a);
         return c + 0x15;
     }
     u = 0xb;
     if ((float)n < 42.0f)
         u = 6;
-    c = (char)util_Random(u);
+    c = (char)util_RandomU(u);
     return n + c;
 }

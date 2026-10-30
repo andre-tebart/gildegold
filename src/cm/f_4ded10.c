@@ -14,7 +14,7 @@ void ai_Unk4ded10(char *m)
     int i, k, n, r, snd1, snd2, scene, hita, hitb, obj;
     int ids[2];
 
-    r = (unsigned short)util_Random(100) - 5;
+    r = (unsigned short)util_RandomU(100) - 5;
     a = (char *)gm_FindChar(*(int *)(m + 0x34));
     b = (char *)gm_FindChar(*(int *)(m + 0x38));
     if (a == 0 || b == 0) {

@@ -58,7 +58,7 @@ int init_StartNetworkGame(char *name)
     WritePrivateProfileStringA("Network", "Name", init_PlayerProfile.firstName, ini);
     WritePrivateProfileStringA("Network", "Familienname", init_PlayerProfile.familyName, ini);
     d2_ClearSurface((struct D2SURF *)d2_ScreenSurf);
-    s = util_Random(2);
+    s = util_RandomU(2);
     d2_ShowPicture((s != 1 ? 3 : 0) + 0x78e);
     d2_DrawAll();
     if ((cm_NetFlags & 1) != 0) {

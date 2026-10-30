@@ -104,18 +104,18 @@ void rt_Unk4be940(RTPOINT *p, int *win)
         for (i = 0; i < 3; i++) {
             if (ctl1[i][1] == -1 && p->loadSlots[i * 2] != 0) {
                 rt_Unk4be790(bt, (int)s, p->loadSlots[i * 2], i, 0, 0, v2, ctl1[i]);
-                d2_SetObjValue(ctl1[i][1], 1, a, p->loadSlots[i * 2 + 1] < 1 ? 1 : p->loadSlots[i * 2 + 1]);
+                d2_SetObjValue4(ctl1[i][1], 1, a, p->loadSlots[i * 2 + 1] < 1 ? 1 : p->loadSlots[i * 2 + 1]);
             }
             if (ctl1[i][2] != -1)
-                d2_SetObjValue(ctl1[i][2], 0, a, d2_GetObjValue(ctl1[i][1]));
+                d2_SetObjValue4(ctl1[i][2], 0, a, d2_GetObjValue(ctl1[i][1]));
         }
         for (i = 0; i < 3; i++) {
             if (ctl2[i][1] == -1 && p->unloadSlots[i * 2] != 0) {
                 rt_Unk4be790(bt, (int)s, p->unloadSlots[i * 2], i, 0, 0x6e, v2, ctl2[i]);
-                d2_SetObjValue(ctl2[i][1], 1, a, p->unloadSlots[i * 2 + 1] < 1 ? 1 : p->unloadSlots[i * 2 + 1]);
+                d2_SetObjValue4(ctl2[i][1], 1, a, p->unloadSlots[i * 2 + 1] < 1 ? 1 : p->unloadSlots[i * 2 + 1]);
             }
             if (ctl2[i][2] != -1)
-                d2_SetObjValue(ctl2[i][2], 0, a, d2_GetObjValue(ctl2[i][1]));
+                d2_SetObjValue4(ctl2[i][2], 0, a, d2_GetObjValue(ctl2[i][1]));
         }
         if (d2_ClickedId != -1) {
             kind = 0;

@@ -27,12 +27,12 @@ int ai_Unk4a67a0(AIPER *p, AIBLD *b, AIBLD *t)
     if (ai_Unk4a66f0(b, pa, t, pb) != 0)
         return 0;
     unk_Unk4ef170(b, &r2, &r);
-    r = util_Random(r + 1);
+    r = util_RandomU(r + 1);
     unk_Unk4ef000(r, &kind);
     if (*(int *)((unsigned char *)p + 0x194) < kind.level)
         return 0;
     f = unk_Unk4ef330(b);
-    r2 = util_Random(r2 + 1);
+    r2 = util_RandomU(r2 + 1);
     ai_SphereVolume(ai_Unk5eee08, ai_Unk5edfe0[r].c, par);
     ai_PositionShare(ai_Unk5edfe0[r].a, f * ai_Unk5edfe0[r].b, par, v94);
     rng[0] = v94[0];

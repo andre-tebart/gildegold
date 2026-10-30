@@ -8,6 +8,6 @@ unsigned short hmt_RandomTextOffset(unsigned short k)
     ret = 0x1e2b;
     e = hmt_GetRecord(k);
     if (e != 0)
-        return util_Random(10);
+        return util_RandomU(10);
     return ret;
 }

@@ -24,7 +24,7 @@ void ai_CalcMeisterBank(AICHAR *ch)
         cm_SendFieldDeltas();
     } else if (n == 0) {
         if (ch->bld->unk65 > p.unk18 - 2) {
-            v = ch->bld->unk65 - util_Random(3) - 1;
+            v = ch->bld->unk65 - util_RandomU(3) - 1;
             if (p.unk18 - 2 > v)
                 v = p.unk18 - 2;
             if (v < 4)
@@ -34,7 +34,7 @@ void ai_CalcMeisterBank(AICHAR *ch)
             cm_SendFieldDeltas();
         }
     } else if (n > 3 && ch->bld->unk65 < p.unk18) {
-        v = util_Random(3) + 1 + ch->bld->unk65;
+        v = util_RandomU(3) + 1 + ch->bld->unk65;
         if (v >= p.unk18 + 3)
             v = p.unk18 + 3;
         cm_BeginFieldBlock(ch->bld, ch->bld->id);

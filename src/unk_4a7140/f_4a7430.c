@@ -11,7 +11,7 @@ int ai_Unk4a7430(G10GAME *g)
     g->unkb5 = 0;
     g->unka0 = 0;
     g->phase = 0;
-    g->unkb0 = util_Random(3);
+    g->unkb0 = util_RandomU(3);
     g->unkbc = 0;
     for (i = 0; i < 24; i++) {
         ai_Unkf83660[i].owner = 3;
@@ -28,7 +28,7 @@ int ai_Unk4a7430(G10GAME *g)
         s->unk1c = 0;
         s->unk2c = 0;
         s->unk24 = -1;
-        s->unk20 = util_Random(5) == 1;
+        s->unk20 = util_RandomU(5) == 1;
         s->unk2c = 0;
         s->unk28 = -1;
         s++;

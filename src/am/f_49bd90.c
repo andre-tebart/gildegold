@@ -31,7 +31,7 @@ int ai_Unk49bd90(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         return 0;
     if (st[0] < 6) {
         if (st[2] == 0) {
-            i = util_Random(10);
+            i = util_RandomU(10);
             while (recs[i].unk04 != 0)
                 i = (i + 1) % 10;
             s1.unk04 = recs[i].item;
@@ -51,7 +51,7 @@ int ai_Unk49bd90(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     } else if (st[2] == 0) {
         return 0;
     }
-    i = util_Random(10);
+    i = util_RandomU(10);
     while (recs[i].unk04 < 1)
         i = (i + 1) % 10;
     s1.kind = 1;

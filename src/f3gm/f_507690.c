@@ -102,7 +102,7 @@ unsigned short gm_Unk507690(int type, int a2, int a3, int a4, unsigned char *a5,
         av = gv_AllocAvatar();
         c[2] = 3;
         if (av != 0) {
-            r = util_Random(8);
+            r = util_RandomU(8);
             CF(0x54, int) = 0x59a;
             CF(0x1f0, int) = *(int *)av;
             c[0x164] = av[0xd4];
@@ -120,7 +120,7 @@ unsigned short gm_Unk507690(int type, int a2, int a3, int a4, unsigned char *a5,
             CF(0x50, unsigned short) = (unsigned short)ai_Unk6f1bb8++;
             CF(0x20, float) = 12.0f;
             CF(0x14, float) = util_RandomSq() * 7.0f + 30.0f;
-            rr = util_Random((int)CF(0x14, float));
+            rr = util_RandomU((int)CF(0x14, float));
             CF(0x18, float) = CF(0x1c, float);
             CF(0x10, float) = (CF(0x1c, float) * 0.33f + rr) - CF(0x1c, float) * 0.1f;
             if (r < 2)
@@ -154,9 +154,9 @@ unsigned short gm_Unk507690(int type, int a2, int a3, int a4, unsigned char *a5,
     }
     c[0xd] = (c[0x166] != 0) + 1;
     if (type != 6 && type != 7 && type < 10)
-        c[0x1b0] = (char)util_Random(8);
+        c[0x1b0] = (char)util_RandomU(8);
     if (a8 == 2)
-        a8 = util_Random(2);
+        a8 = util_RandomU(2);
     c[9] = (char)a8;
     if (type < 4 || type == 0xb) {
         if (a7 == 0) {
@@ -181,7 +181,7 @@ skip:
         c[0x166] = 0;
         c[0x165] = (char)a7;
         w = gm_TitleGroup(a6 & 0xff);
-        r = util_Random(8);
+        r = util_RandomU(8);
         if (c[2] == 3) {
             if (w == 0xb || w == 0xc) {
                 if (r > 2)
@@ -201,7 +201,7 @@ skip:
         for (i = 0; i < 14; i++) {
             float lo = ai_Unk5ee160[w * 0x1c + i * 2], hi = ai_Unk5ee160[w * 0x1c + i * 2 + 1];
             CF(0x88 + i * 12, float) = (hi - lo) * util_RandomF() + lo;
-            rr = util_Random(10);
+            rr = util_RandomU(10);
             CF(0x90 + i * 12, float) = (float)rr + 900.0f;
             CF(0x8c + i * 12, float) = CF(0x88 + i * 12, float) * 0.001f;
         }
@@ -210,11 +210,11 @@ skip:
         CF(0x128, float) = f * 0.001f;
         for (i = 0; i < 0x300; i++) {
             ai_RelationMemory[i][CF(0, unsigned short)] = 0;
-            ai_Relations[i][CF(0, unsigned short)] = (char)(util_Random(0x40) - 0x20);
-            ai_Relations[CF(0, unsigned short)][i] = (char)(util_Random(0x40) - 0x20);
+            ai_Relations[i][CF(0, unsigned short)] = (char)(util_RandomU(0x40) - 0x20);
+            ai_Relations[CF(0, unsigned short)][i] = (char)(util_RandomU(0x40) - 0x20);
             ai_RelationMemory[CF(0, unsigned short)][i] = 0;
         }
-        c[0xc] = (char)util_Random(2);
+        c[0xc] = (char)util_RandomU(2);
         CF(0x1d0, float) = util_RandomF() * 0.5f + 0.25f;
         for (i = 0; i < 5; i++)
             c[0x80 + i] = (char)gm_RandomAge(ai_Unk61a688[(unsigned char)c[0x164] * 6 + i]);
@@ -236,10 +236,10 @@ skip:
         CF(0x1c, float) = 1000.0f;
         CF(0x20, float) = 12.0f;
         CF(0x14, float) = util_RandomSq() * 7.0f + 30.0f;
-        rr = util_Random((int)CF(0x14, float));
+        rr = util_RandomU((int)CF(0x14, float));
         CF(0x18, float) = CF(0x1c, float);
         CF(0x10, float) = (CF(0x1c, float) * 0.33f + rr) - CF(0x1c, float) * 0.1f;
-        strncpy(c + 0x40, ai_Unk143b178[util_Random(0x95)], 0xf);
+        strncpy(c + 0x40, ai_Unk143b178[util_RandomU(0x95)], 0xf);
     } else {
         c[0xc] = (char)p1[6];
         CF(0x1d0, float) = *(float *)(p1 + 0xe8);
@@ -247,7 +247,7 @@ skip:
         for (i = 0; i < 14; i++) {
             f = util_RandomF();
             CF(0x88 + i * 12, float) = f * *(float *)((char *)p1 + 0x88 + i * 12) + (1.0f - f) * *(float *)((char *)p2 + 0x88 + i * 12);
-            rr = util_Random(10);
+            rr = util_RandomU(10);
             CF(0x90 + i * 12, float) = (float)rr + 900.0f;
             CF(0x8c + i * 12, float) = CF(0x88 + i * 12, float) * 0.001f;
         }
@@ -268,15 +268,15 @@ skip:
         CF(0x1c, float) = 1000.0f;
         CF(0x20, float) = 12.0f;
         CF(0x14, float) = (*(float *)(p2 + 10) + *(float *)(p1 + 10)) * 0.2f + (util_RandomSq() * 7.0f + 30.0f) * 0.6f;
-        rr = util_Random((int)CF(0x14, float));
+        rr = util_RandomU((int)CF(0x14, float));
         CF(0x18, float) = CF(0x1c, float);
         CF(0x10, float) = (CF(0x1c, float) * 0.33f + rr) - CF(0x1c, float) * 0.1f;
         strcpy(c + 0x40, (char *)(p1 + 0x20));
     }
     if (c[9] == 0)
-        strncpy(c + 0x30, ai_Unk143ac5c[util_Random(0xbf)], 0xf);
+        strncpy(c + 0x30, ai_Unk143ac5c[util_RandomU(0xbf)], 0xf);
     else
-        strncpy(c + 0x30, ai_Unk143af70[util_Random(0x70)], 0xf);
+        strncpy(c + 0x30, ai_Unk143af70[util_RandomU(0x70)], 0xf);
     if (CF(0x20, float) < (float)CF(0xa, unsigned short)) {
         n = (int)CF(0x14, float);
         f = CF(0x20, float);
@@ -294,7 +294,7 @@ skip:
     ai_ResetJob(c);
     kind = c[2];
     if (kind == 3 || kind == 4 || kind == 2 || kind == 0x13)
-        c[0x82 + (util_Random(3) & 0xffff)] += 0x2a;
+        c[0x82 + (util_RandomU(3) & 0xffff)] += 0x2a;
     sprintf(buf, "-----> PlayerID = %i, PlayerName = %s", ai_NextObjectId, c + 0x30);
     return (unsigned short)idx;
 }

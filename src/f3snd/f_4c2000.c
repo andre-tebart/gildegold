@@ -86,7 +86,7 @@ void ai_Unk4c2000(void)
             ai_Unk6f0ca8 = b2;
         ai_Unk6f0cac = room;
         prio = snd_LocationTracks[i].prio;
-        if (prio <= util_Random(0x80)) {
+        if (prio <= util_RandomU(0x80)) {
             ai_Unk6f0cb8 = t - 15000;
             return;
         }

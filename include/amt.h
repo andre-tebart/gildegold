@@ -206,7 +206,7 @@ void he_MessageBoxQuickjump(int a1, int a2, char *text, char fl, int a5, int a6,
 extern int amt_Flip;                    /* 0x60f118, 2 at the start */
 extern unsigned char amt_PriceRows[];   /* 0x61a348, the guild-house price table: 37 rows of 0x15 bytes (the building kind, 10 goods ids) */
 #define AMT_CHARS_END (&ai_CharInts[0x300][0])  /* 0x7d5f84, the word past the last character record */
-unsigned short util_Random(int n);      /* 0x42ec00, @original: tr.c defines int util_Random(unsigned short n); the byte-matched callers read a 16-bit result (ch_RandomNear / anm_Update / ahm_ShufflePlayers: and eax,0xffff after the call) */
+int util_Random(unsigned short n);      /* 0x42ec00, tr.c; the callers that read a 16-bit result (ch_RandomNear, anm_Update, ai_Unk4d88c0 ..) call util_RandomU, a cast in their head */
 int gm_TitleNumber(int group, int rank);  /* 0x5043d0, f3gm.c: the title number of the rank in the group */
 void cm_SendCreateCharacter(unsigned char a, int b, int c, unsigned short d, int e, unsigned char f, unsigned char g, unsigned char h);  /* 0x4c4650 */
 void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d);  /* 0x4c4830 */

@@ -68,7 +68,7 @@ void ord_UpdateMessageEvent(void)
                             tbl[i] = 1;
                     }
                 }
-                r[7] = tbl[util_Random(0x10) & 0xffff];
+                r[7] = tbl[util_RandomU(0x10) & 0xffff];
                 r[7]++;
                 if (r[7] == 1) {
                     msg[4] = 0x59;
@@ -76,13 +76,13 @@ void ord_UpdateMessageEvent(void)
                     *(int *)(msg + 0xc) = -1;
                     ord_Stamp(msg + 0x28);
                     msg[0x36] = 2;
-                    *(int *)(msg + 0x58) = (util_Random(3) & 0xffff) * 3;
+                    *(int *)(msg + 0x58) = (util_RandomU(3) & 0xffff) * 3;
                     ord_Stamp(msg + 0x28);
                     *(int *)(msg + 0x2e) = 0;
                     if (ai_TimeHour < 0x17 && ai_TimeHour >= 7)
-                        gm_AddTime(msg + 0x28, util_Random(4), (util_Random(2) & 0xffff) * 0x1e, 0);
+                        gm_AddTime(msg + 0x28, util_RandomU(4), (util_RandomU(2) & 0xffff) * 0x1e, 0);
                     else
-                        gm_AddTime(msg + 0x28, util_Random(4) + 7, (util_Random(2) & 0xffff) * 0x1e, 0);
+                        gm_AddTime(msg + 0x28, util_RandomU(4) + 7, (util_RandomU(2) & 0xffff) * 0x1e, 0);
                     cm_SendLongMessage(msg);
                 } else if (r[7] == 2) {
                     msg[4] = 0x4e;
@@ -94,9 +94,9 @@ void ord_UpdateMessageEvent(void)
                     *(int *)(msg + 0x9c) = 1000;
                     *(int *)(msg + 0x2e) = 0;
                     if (ai_TimeHour < 0x17)
-                        gm_AddTime(msg + 0x28, util_Random(4), (util_Random(2) & 0xffff) * 0x1e, 0);
+                        gm_AddTime(msg + 0x28, util_RandomU(4), (util_RandomU(2) & 0xffff) * 0x1e, 0);
                     else
-                        gm_AddTime(msg + 0x28, util_Random(4) + 7, (util_Random(2) & 0xffff) * 0x1e, 0);
+                        gm_AddTime(msg + 0x28, util_RandomU(4) + 7, (util_RandomU(2) & 0xffff) * 0x1e, 0);
                     cm_SendLongMessage(msg);
                 } else if (r[7] == 3)
                     goto phase3;
@@ -112,9 +112,9 @@ void ord_UpdateMessageEvent(void)
                 *(int *)(msg + 0x58) = -1;
                 *(int *)(msg + 0x9c) = 1000;
                 if (ai_TimeHour < 0x17)
-                    gm_AddTime(msg + 0x28, util_Random(4), (util_Random(2) & 0xffff) * 0x1e, 0);
+                    gm_AddTime(msg + 0x28, util_RandomU(4), (util_RandomU(2) & 0xffff) * 0x1e, 0);
                 else
-                    gm_AddTime(msg + 0x28, util_Random(4) + 7, (util_Random(2) & 0xffff) * 0x1e, 0);
+                    gm_AddTime(msg + 0x28, util_RandomU(4) + 7, (util_RandomU(2) & 0xffff) * 0x1e, 0);
                 cm_SendLongMessage(msg);
             }
             r[8] = r[7];

@@ -12,7 +12,7 @@ int ai_Unk49eec0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     int i, n, h, j, best;
     float m;
 
-    lim[0] = ai_Unk5ed140[util_Random(0x10)];
+    lim[0] = ai_Unk5ed140[util_RandomU(0x10)];
     if (((unsigned char *)p)[2] == 3)
         return 0;
     if (a != 0x33 && a != 0x13 && a != 0x10 && a != 0x11)
@@ -23,7 +23,7 @@ int ai_Unk49eec0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             n++;
         while (he_NextEvent() != 0);
     }
-    if (util_Random(10) < n + 1)
+    if (util_RandomU(10) < n + 1)
         return 0;
     if (a == 0x33) {
         h = ai_TimeT.hour - 8;
@@ -34,7 +34,7 @@ int ai_Unk49eec0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         lim[1] = (int)(m * 6400.0f);
         lim[2] = (int)(m * 12800.0f);
         lim[3] = (int)(m * 25600.0f);
-        j = util_Random(0x100);
+        j = util_RandomU(0x100);
         for (i = 0x100;; ) {
             own = &ai_BldsT[j];
             k = own->type;
@@ -46,7 +46,7 @@ int ai_Unk49eec0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             if (i == 0)
                 return 0;
         }
-        j = util_Random(0x100);
+        j = util_RandomU(0x100);
         for (i = 0x100;; ) {
             b = &ai_BldsT[j];
             k = b->type;
@@ -84,7 +84,7 @@ int ai_Unk49eec0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     }
     if (o1->kind != 0x12)
         return 0;
-    j = util_Random(0x100);
+    j = util_RandomU(0x100);
     for (i = 0x100;; ) {
         b = &ai_BldsT[j];
         k = b->type;

@@ -50,7 +50,7 @@ void snd_EnterBuilding(void)
         }
         for (j = 0; j < 6 && e->names[j][0] != 0; j++)
             ;
-        j = util_Random(j);
+        j = util_RandomU(j);
         if (strlen(e->names[j]) == 0)
             return;
         strcpy(l->track, e->names[j]);

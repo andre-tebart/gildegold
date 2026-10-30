@@ -12,7 +12,7 @@ int ai_MsgPayPct1to4(G14MSG *m)
         return 1;
     if (gm_TitleGroup(c->jobId) == 7)
         return 0x400;
-    k = util_Random(4) + 1.0;
+    k = util_RandomU(4) + 1.0;
     v = (int)(gm_GetWorth(c->id) * k * 0.01);
     txt_Format(buf, m->type + 0x12e7, v);
     cm_SendMoveGoodsUnchecked(m->id, -1, ai_OwnPlayer, v);

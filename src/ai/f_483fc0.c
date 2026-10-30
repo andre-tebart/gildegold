@@ -91,7 +91,7 @@ void ai_Unk483fc0(AICHAR *ch)
         info.perm[i] = i;
     i = 0;
     do {
-        r = util_Random(0x20);
+        r = util_RandomU(0x20);
         t = info.perm[i];
         i++;
         info.perm[i - 1] = info.perm[r];

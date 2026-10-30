@@ -59,9 +59,9 @@ int ai_Unk4908d0(int a, AGCH *p, int b, AGARG *o1, AGARG *o2)
     }
     if (n == 0)
         return 0;
-    if (util_Random(8) + p->unk00a < 0x23)
+    if (util_RandomU(8) + p->unk00a < 0x23)
         return 0;
-    bld = list[util_Random(n)];
+    bld = list[util_RandomU(n)];
     r2 = gv_FindEntry(0, bld, 0, gv_EntryIsFree, 0xff);
     if (r2 == 0)
         return 0;

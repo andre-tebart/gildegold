@@ -53,17 +53,17 @@ void sv_Unk5301a0(void)
         w = (float)(c + 0x96) * (float)sqrt(f1 * f1 + f2 * f2) * 0.125f;
         if (*(char *)(SV_I((unsigned)&ai_Unk760624) + 0x26) == 0) {
             if (c < 0x32) {
-                k = util_Random(4) & 0xffff;
+                k = util_RandomU(4) & 0xffff;
                 if (_strcmpi(*(char **)(SV_I((unsigned)&ai_Unk760624) + 0x1c), (char *)((unsigned)&ai_Unk6238a4 + 0x4) + k * 0x4c) == 0)
                     k++;
                 name = (char *)((unsigned)&ai_Unk6238a4 + 0x4) + k * 0x4c;
             } else if (c < 0x96) {
-                k = util_Random(3) & 0xffff;
+                k = util_RandomU(3) & 0xffff;
                 if (_strcmpi(*(char **)(SV_I((unsigned)&ai_Unk760624) + 0x1c), (char *)(unsigned)&full_data_6239d8 + k * 0x4c) == 0)
                     k++;
                 name = (char *)(unsigned)&full_data_6239d8 + k * 0x4c;
             } else {
-                k = util_Random(2) & 0xffff;
+                k = util_RandomU(2) & 0xffff;
                 if (_strcmpi(*(char **)(SV_I((unsigned)&ai_Unk760624) + 0x1c), (char *)(unsigned)&ai_Unk623ac0 + k * 0x4c) == 0)
                     k++;
                 name = (char *)(unsigned)&ai_Unk623ac0 + k * 0x4c;
@@ -76,17 +76,17 @@ void sv_Unk5301a0(void)
         }
         if (*(char *)(SV_I((unsigned)&ai_Unk760624) + 0x26) == -1) {
             if (c < 0x32) {
-                k = util_Random(4) & 0xffff;
+                k = util_RandomU(4) & 0xffff;
                 if (_strcmpi(*(char **)(SV_I((unsigned)&ai_Unk760620) + 0x1c), (char *)((unsigned)&ai_Unk6238a4 + 0x4) + k * 0x4c) == 0)
                     k++;
                 name = (char *)((unsigned)&ai_Unk6238a4 + 0x4) + k * 0x4c;
             } else if (c < 0x96) {
-                k = util_Random(3) & 0xffff;
+                k = util_RandomU(3) & 0xffff;
                 if (_strcmpi(*(char **)(SV_I((unsigned)&ai_Unk760620) + 0x1c), (char *)(unsigned)&full_data_6239d8 + k * 0x4c) == 0)
                     k++;
                 name = (char *)(unsigned)&full_data_6239d8 + k * 0x4c;
             } else {
-                k = util_Random(2) & 0xffff;
+                k = util_RandomU(2) & 0xffff;
                 if (_strcmpi(*(char **)(SV_I((unsigned)&ai_Unk760620) + 0x1c), (char *)(unsigned)&ai_Unk623ac0 + k * 0x4c) == 0)
                     k++;
                 name = (char *)(unsigned)&ai_Unk623ac0 + k * 0x4c;

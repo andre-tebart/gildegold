@@ -16,5 +16,5 @@ AIPX *ai_Unk48feb0(AIBLD *b)
     }
     if (n < 2)
         return 0;
-    return &AIC[list[util_Random(n)]];
+    return &AIC[list[util_RandomU(n)]];
 }

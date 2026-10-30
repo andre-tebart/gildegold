@@ -21,10 +21,10 @@ int ai_Unk4abd00(int a, AIPER *p, int c, unsigned char *m)
         if (b->type != 0 && b->owner == p->id && ai_BTypesT[b->type].kind == 0x1f
             && gm_Query(b->objList, 2, 6, 0, 0x276) != 0) {
             flags = ((unsigned)&ai_Unka69140 + 0x4973c0);
-            if (G10_4A58D0(p, 1, (int *)&flags, 0.0f, (float)util_Random(0x20) + 25.0f, &id) == 0)
+            if (G10_4A58D0(p, 1, (int *)&flags, 0.0f, (float)util_RandomU(0x20) + 25.0f, &id) == 0)
                 return 0;
             o = &((AIPER *)ai_CharsT)[id];
-            n = util_Random(p->unk194 < 8 ? p->unk194 : 8);
+            n = util_RandomU(p->unk194 < 8 ? p->unk194 : 8);
             if (n <= 2)
                 n = 2;
             *(int *)(m + 0x10) = n;

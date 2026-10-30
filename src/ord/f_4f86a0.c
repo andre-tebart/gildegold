@@ -9,7 +9,7 @@ int unk_Unk4f86a0(int x, int y, int z)
 
     s = unk_Ptrfd7c50;
     n = *(int *)(s + 0x20) / 8;
-    a = util_Random(n) + n * x;
-    b = util_Random(n) + n * y;
+    a = util_RandomU(n) + n * x;
+    b = util_RandomU(n) + n * y;
     return d3sm_GetVertexI(s, a, b, z);
 }

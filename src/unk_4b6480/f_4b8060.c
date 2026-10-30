@@ -18,7 +18,7 @@ int ai_Unk4b8060(G14MSG *m)
     p = &ai_CharsT[id];
     if (p == 0)
         return 0x400;
-    n = util_Random(15) * 2 + 10;
+    n = util_RandomU(15) * 2 + 10;
     cm_SendRelations(c->netId, p->netId, -n, 1);
     txt_Format(buf, m->type + 0x12e7, p->id);
     he_ShowNews(c->netId, c->netId, buf, strlen(buf) > 0x100, 0x603, 0);

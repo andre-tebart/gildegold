@@ -23,7 +23,7 @@ int ai_TokenRandomGuildMaster(int mode, G12ARG *args, int k, char *fmt, char *ou
             return 0;
     } else {
         if (sel == 0) {
-            i = util_Random(0x300);
+            i = util_RandomU(0x300);
             for (n = 0x300; n != 0; n--) {
                 if (ai_IsLivingCharacter((unsigned short)i) && ai_CharsT[i].secondOffice >= 0x1e
                     && ai_CharsT[i].secondOffice <= 0x21)
@@ -34,7 +34,7 @@ int ai_TokenRandomGuildMaster(int mode, G12ARG *args, int k, char *fmt, char *ou
                 return 0;
             pick = &ai_CharsT[i];
         } else if (sel == 1) {
-            i = util_Random(0x300);
+            i = util_RandomU(0x300);
             for (n = 0x300; n != 0; n--) {
                 if (ai_IsLivingNonPlayer((unsigned short)i) && ai_CharsT[i].secondOffice >= 0x1e
                     && ai_CharsT[i].secondOffice <= 0x21)
@@ -46,7 +46,7 @@ int ai_TokenRandomGuildMaster(int mode, G12ARG *args, int k, char *fmt, char *ou
             pick = &ai_CharsT[i];
         } else {
             pick = 0;
-            i = util_Random(0x300);
+            i = util_RandomU(0x300);
             for (n = 0x300; n != 0; n--) {
                 if (pick == 0 && ai_IsLivingNonPlayer((unsigned short)i) && ai_CharsT[i].secondOffice >= 0x1e
                     && ai_CharsT[i].secondOffice <= 0x21) {

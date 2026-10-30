@@ -8,7 +8,7 @@ int ai_Unk4a6570(AIPER *p, int a, __int64 mask, float lo, float hi, unsigned cha
     unsigned int j;
     float r;
 
-    step = ai_Unk5ed140[util_Random(0x10)];
+    step = ai_Unk5ed140[util_RandomU(0x10)];
     cnt = 0;
     q[4] = a;
     q[3] = (unsigned int)(mask >> 32) | 0x80000000;
@@ -18,7 +18,7 @@ int ai_Unk4a6570(AIPER *p, int a, __int64 mask, float lo, float hi, unsigned cha
     if ((lo > 0.0f || hi < 100.0f) && lo < hi)
         win = 1;
     k = 0x100;
-    j = util_Random(0x100);
+    j = util_RandomU(0x100);
     if (n != 0) {
         do {
             if (k == 0)

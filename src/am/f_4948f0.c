@@ -15,7 +15,7 @@ void ai_Unk4948f0(AIC4 *ch, int *out)
         if (f[i] > m)
             m = f[i];
         out[i * 3 + 1] = t[i][0];
-        out[i * 3 + 2] = t[i][util_Random(3) + 1];
+        out[i * 3 + 2] = t[i][util_RandomU(3) + 1];
     }
     for (i = 0; i < 3; i++) {
         f[i] = 1.0f / m * f[i];

@@ -169,7 +169,7 @@ void msx_SetTrackVolume(struct MSXTRACK *t, int vol);                           
 struct MSXTRACK * msx_PlayAmbient(char *name, int vol);                                      /* 0x4243f0 */
 void msx_StopAmbient(struct MSXTRACK *t);                                                   /* 0x4244b0 */
 unsigned char * gm_BuildQuery(int n, ...);                                           /* 0x501190 */
-unsigned short util_Random(int n);                                               /* 0x42ec00, @original: tr.c defines int util_Random(unsigned short n); the byte-matched callers read a 16-bit result (ch_RandomNear / anm_Update / ahm_ShufflePlayers: and eax,0xffff after the call) */
+int util_Random(unsigned short n);                                               /* 0x42ec00, tr.c; the callers that read a 16-bit result (ch_RandomNear, anm_Update, ai_Unk4d88c0 ..) call util_RandomU, a cast in their head */
 struct MSXTRACK * msx_Play(char *name, int once);                                            /* 0x423a90, msx.h: MSXTRACK * */
 float util_RandomF(void);                                                        /* 0x42ec20 */
 void msx_Stop(struct MSXTRACK *t, int fade);                                                /* 0x423df0 */

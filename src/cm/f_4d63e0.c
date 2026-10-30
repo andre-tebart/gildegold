@@ -109,7 +109,7 @@ void ai_Unk4d63e0(char *a)
         id = *(int *)(a + 0x80 + i * 4);
         if (id != -1 && (c = gm_FindChar(id)) != 0 && c[8] != 0 && c[8] != 4) {
             sa = (int)(ai_Unk4cdcf0(c) + sa);
-            r = (unsigned short)util_Random(10);
+            r = (unsigned short)util_RandomU(10);
             gm_AddHealth(G20_US(c), -r * 20);
         }
     }
@@ -117,11 +117,11 @@ void ai_Unk4d63e0(char *a)
         id = *(int *)(a + 0xc0 + i * 4);
         if (id != -1 && (c = gm_FindChar(id)) != 0 && c[8] != 0 && c[8] != 4) {
             sb = (int)(ai_Unk4cdcf0(c) + sb);
-            r = (unsigned short)util_Random(10);
+            r = (unsigned short)util_RandomU(10);
             gm_AddHealth(G20_US(c), -r * 20);
         }
     }
-    if ((unsigned short)util_Random(30) + sb > (unsigned short)util_Random(30) + sa)
+    if ((unsigned short)util_RandomU(30) + sb > (unsigned short)util_RandomU(30) + sa)
         win = G20_DEF;
     else
         win = G20_ATT;

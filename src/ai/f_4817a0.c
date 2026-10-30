@@ -57,7 +57,7 @@ int ai_CalcAngriff(AICHAR *ch, int n)
                     else
                         w = 1.0f - (ai_Grid[i][j].a * 0.125f + ai_Grid[i][j].b) / max;
                     r = gm_BuildingRank(bb);
-                    w = (8.0f - r) * w * 0.5 * util_Random(100) * 0.01;
+                    w = (8.0f - r) * w * 0.5 * util_RandomU(100) * 0.01;
                     if (best) {
                         if (!((float)gm_OwnerWorth(bb, 0) * w > (float)gm_OwnerWorth(best, 0) * bestw))
                             continue;
@@ -74,7 +74,7 @@ int ai_CalcAngriff(AICHAR *ch, int n)
         return 0;
     for (o = gm_Query(ch->bld->objList, 1, 0, 0xca); o; o = gm_QueryNext()) {
         if (o->unk2a == best->id) {
-            if ((unsigned)util_Random(0x32) + 0x32 <= o->unk37) {
+            if ((unsigned)util_RandomU(0x32) + 0x32 <= o->unk37) {
                 if (n < 3)
                     return 0;
                 for (job = he_FindEvent(2, 0, 0x40, 3, ch->bld->id); job; job = he_NextEvent()) {

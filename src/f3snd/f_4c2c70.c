@@ -5,7 +5,7 @@ void snd_PlayWorkerClick(G16CHARCLICK *c)
 {
     int r;
 
-    r = util_Random(2);
+    r = util_RandomU(2);
     if (c->kind == 0x14)
         r = 0;
     if (snd_VoiceBankClick != 0 && r == 0) {

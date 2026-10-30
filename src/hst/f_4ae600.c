@@ -26,7 +26,7 @@ int ai_TokenRandomOfficeHolderFemale(int mode, G12ARG *args, int k, char *fmt, c
             return 0;
     } else {
         if (sel == 0) {
-            i = util_Random(0x300);
+            i = util_RandomU(0x300);
             for (n = 0x300; n != 0; n--) {
                 if (G12_B(i, 9) == 1 && ai_IsLivingCharacter((unsigned short)i) && ai_NotInLists(ai_CharsT[i].netId)
                     && G12_TITLED(i))
@@ -37,7 +37,7 @@ int ai_TokenRandomOfficeHolderFemale(int mode, G12ARG *args, int k, char *fmt, c
                 return 0;
             pick = &ai_CharsT[i];
         } else if (sel == 1) {
-            i = util_Random(0x300);
+            i = util_RandomU(0x300);
             for (n = 0x300; n != 0; n--) {
                 if (G12_B(i, 9) == 1 && ai_IsLivingNonPlayer((unsigned short)i) && ai_NotInLists(ai_CharsT[i].netId)
                     && G12_TITLED(i))
@@ -49,7 +49,7 @@ int ai_TokenRandomOfficeHolderFemale(int mode, G12ARG *args, int k, char *fmt, c
             pick = &ai_CharsT[i];
         } else {
             pick = 0;
-            i = util_Random(0x300);
+            i = util_RandomU(0x300);
             for (n = 0x300; n != 0; n--) {
                 if (G12_B(i, 9) == 1) {
                     if (pick == 0 && ai_IsLivingNonPlayer((unsigned short)i) && G12_TITLED(i)) {

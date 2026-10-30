@@ -11,13 +11,13 @@ int ai_Unk4a8db0(int a, AIPER *p, int c, int d, unsigned char *m)
     if (ai_Partner != 0)
         ai_Unk4a63f0(AI_6F0468, 4, 0x1807d4190, 0, 100.0f, &k);
     if (k == -1) {
-        if (ai_Unk4a63f0(p, 6, 0x1807d4190, 0, (float)util_Random(0x20) + 32.0f, &k) == 0)
+        if (ai_Unk4a63f0(p, 6, 0x1807d4190, 0, (float)util_RandomU(0x20) + 32.0f, &k) == 0)
             return 0;
     }
     b = gm_BuildQuery(1, 1, k);
     if (b == 0)
         return 0;
-    i = util_Random(0x300);
+    i = util_RandomU(0x300);
     n = 0x300;
     while (((AIPER *)ai_CharsT)[i].id == 0xffff
            || *(AIBLD **)((unsigned char *)&((AIPER *)ai_CharsT)[i] + 0x16c) != b

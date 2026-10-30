@@ -2,5 +2,5 @@
 
 int ai_Unk4941d0(void)
 {
-    return util_Random(7);
+    return util_RandomU(7);
 }

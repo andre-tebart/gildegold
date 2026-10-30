@@ -33,13 +33,13 @@ int ai_Unk4a05e0(G5CH *p)
         }
     }
     for (i = 6; i != 0; i--) {
-        x = util_Random(3);
-        y = util_Random(3);
+        x = util_RandomU(3);
+        y = util_RandomU(3);
         t = order[x];
         order[x] = order[y];
         order[y] = t;
-        x = util_Random(3) + 3;
-        y = util_Random(3) + 3;
+        x = util_RandomU(3) + 3;
+        y = util_RandomU(3) + 3;
         t = order[x];
         order[x] = order[y];
         order[y] = t;

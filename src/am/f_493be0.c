@@ -13,7 +13,7 @@ int ai_Unk493be0(AGCH *p, AIOBJ *o)
     unsigned char v;
 
     q = 0;
-    r = util_Random(3);
+    r = util_RandomU(3);
     if (p == 0 || o == 0 || p->sel == 0 || p->unk194 < 2)
         return 0;
     if (p->sel == 7) {
@@ -27,11 +27,11 @@ int ai_Unk493be0(AGCH *p, AIOBJ *o)
             if (nn == 0)
                 return 0;
             cnt = nn;
-            i = util_Random(nn);
+            i = util_RandomU(nn);
             do {
                 if (p->netId != rec[i].id && (w = AG_CH(rec[i].id)) != 0) {
                     d = gm_Liking(p->id, w->id, 1);
-                    x = util_Random(30);
+                    x = util_RandomU(30);
                     if (d < x + 40.0f) {
                         q = w;
                         break;
@@ -46,7 +46,7 @@ int ai_Unk493be0(AGCH *p, AIOBJ *o)
         int x;
 
         flags = 0xc00;
-        x = util_Random(30);
+        x = util_RandomU(30);
         if (ai_Unk4a5b50(p, 1, &flags, 0, x + 40.0f, (unsigned int *)&x) != 0)
             q = (AGCH *)&ai_CharsT[x & 0xffff];
     }
@@ -55,9 +55,9 @@ int ai_Unk493be0(AGCH *p, AIOBJ *o)
         cm_BeginFieldBlock(o, o->objId);
         cm_AddFieldDelta(4, 1, 0x1e, &q->netId);
         cm_AddFieldDelta(1, 1, 0x22, &v);
-        v = (unsigned char)util_Random(8);
+        v = (unsigned char)util_RandomU(8);
         cm_AddFieldDelta(1, 1, 0x1c, &v);
-        v = (unsigned char)util_Random(8);
+        v = (unsigned char)util_RandomU(8);
         cm_AddFieldDelta(1, 1, 0x1d, &v);
         cm_SendFieldDeltas();
         return 1;

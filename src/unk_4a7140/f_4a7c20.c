@@ -16,7 +16,7 @@ void ai_Unk4a7c20(void)
                 switch (st->unk2c) {
                 case 0:
                     if (st->unk20 == 0) {
-                        if (n > 1 || util_Random(4) == 1)
+                        if (n > 1 || util_RandomU(4) == 1)
                             st->unk28 = ai_Unkf83654->phase;
                     } else if (n > 2) {
                         st->unk28 = ai_Unkf83654->phase;
@@ -36,14 +36,14 @@ void ai_Unk4a7c20(void)
                 case 2:
                     if (st->unk20 == 0) {
                         m = ai_Unk4a7650(st->card, 0, 7, &y);
-                        if (ai_Unkf83654->unkb5 < 5 && m == 3 && util_Random(4) == 1)
+                        if (ai_Unkf83654->unkb5 < 5 && m == 3 && util_RandomU(4) == 1)
                             st->unk28 = ai_Unkf83654->phase;
                     }
                     break;
                 case 3:
                     if (st->unk20 == 0) {
                         m = ai_Unk4a7650(st->card, 0, 7, &y);
-                        if (ai_Unkf83654->unkb5 < 5 && m == 3 && util_Random(5) == 1)
+                        if (ai_Unkf83654->unkb5 < 5 && m == 3 && util_RandomU(5) == 1)
                             st->unk28 = ai_Unkf83654->phase;
                     }
                     break;

@@ -14,7 +14,7 @@ void ai_Unk4c2f30(char *a)
     int level;
 
     x = 0;
-    r = util_Random(3);
+    r = util_RandomU(3);
     c = *(short **)(*(char **)(a + 0x34) + 0x200);
     if (c == 0)
         return;

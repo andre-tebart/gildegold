@@ -46,14 +46,14 @@ int ai_Unk499660(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
             return r;
         }
         gv_GetTableRecord(0x18, &d);
-        if (d.cur && !util_Random(4) && !ai_Partner)
+        if (d.cur && !util_RandomU(4) && !ai_Partner)
             return 0;
         if (o1->kind == 0) {
             mask.LowPart = 0x344015;
             mask.HighPart = 1;
             x = -1;
             if ((ai_Partner && (ai_Unk4a63f0((AIPER *)ai_Partner, 4, mask.QuadPart, 0, 100.0f, &x), x != -1))
-                || ai_Unk4a63f0(p, 6, mask.QuadPart, 0, util_Random(0x20) + 19.0f, &x)) {
+                || ai_Unk4a63f0(p, 6, mask.QuadPart, 0, util_RandomU(0x20) + 19.0f, &x)) {
                 gm_FindById((int)&y, 0, 0, x);
                 if (y && y->owner != 0xffff && he_Unk570ea0((AIPER *)&ai_CharsT[y->owner], p)) {
                     memset(buf, 0, sizeof(buf));

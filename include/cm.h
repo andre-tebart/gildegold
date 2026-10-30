@@ -575,7 +575,7 @@ float ai_Unk4ce200(char *c, int x, int y);  /* 0x4ce200 */
 int ai_Unk4ce270(char *a, char *b);  /* 0x4ce270 */
 char *ai_Unk4ce290(char *p);  /* 0x4ce290 */
 void ch_SetHandObject();  /* 0x406c60 */
-unsigned short util_Random(int n);  /* 0x42ec00, @original: tr.c defines int util_Random(unsigned short); the byte-matched ai_Unk4d88c0 (cm.c) moves the 16-bit result (66 8b f0, not 8b f0) */
+int util_Random(unsigned short n);  /* 0x42ec00, tr.c; the callers that read a 16-bit result (ch_RandomNear, anm_Update, ai_Unk4d88c0 ..) call util_RandomU, a cast in their head */
 char d3sm_GetVertex(struct D3SM *h, int x, int z, struct D3VECTOR *out);                              /* 0x45f100, d3_sm.c (this unit's callers read an int: d3sm_GetVertexI) */
 float unk_Unk4fc8e0();  /* 0x4fc8e0 */
 float gm_GetSkill(char *c, int skill);  /* 0x504ec0 */

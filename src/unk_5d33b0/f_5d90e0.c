@@ -27,7 +27,7 @@ void ai_CurseTargetWindow(int building)
     value = 0;
     memcpy(&when, ai_Time, sizeof(GAMECLOCK));
     gm_AddTime((struct GCLOCK *)&when, 0x18, 0, 0);
-    when.hour = util_Random(cls) + 0x15;
+    when.hour = util_RandomU(cls) + 0x15;
     when.min = 0;
     form = d2_OpenForm(0, 0, "Locations\\zigeuner\\blutrache");
     d2_SetPointerSprite(0, 0);
@@ -58,7 +58,7 @@ void ai_CurseTargetWindow(int building)
             } else {
                 memcpy(&when, ai_Time, sizeof(GAMECLOCK));
                 gm_AddTime((struct GCLOCK *)&when, 0x18, 0, 0);
-                when.hour = util_Random(2) + 0x15;
+                when.hour = util_RandomU(2) + 0x15;
                 when.min = 0;
                 d2_SetObjValue4(share, 0, 100, 0);
             }

@@ -21,11 +21,11 @@ int ai_Unk489480(AICHAR *ch)
         if (found)
             break;
     }
-    if (found && util_Random(0x80) < 0x60)
+    if (found && util_RandomU(0x80) < 0x60)
         return 0;
     if (!found) {
         if (((float)ai_CharsT[i].sk81 < 252.0f || (float)ai_CharsT[i].sk82 < 252.0f ||
-             (float)ai_CharsT[i].sk84 < 252.0f) && util_Random(0x80) > 0x20)
+             (float)ai_CharsT[i].sk84 < 252.0f) && util_RandomU(0x80) > 0x20)
             return 0;
     }
     for (i = 0; i < 768; i++) {

@@ -55,7 +55,7 @@ void init_CreateOpeningObjects(void)
                     } else {
                         cm_SendExSellObject(o1->objId, -1, g, 2 - (i != 0), ai_OwnPlayer, 0);
                         if (i == 0) {
-                            cm_SendExSellObject(o2->objId, -1, goods[0], (util_Random(0x14) & 0xffff) + 0x14, ai_OwnPlayer, 0);
+                            cm_SendExSellObject(o2->objId, -1, goods[0], (util_RandomU(0x14) & 0xffff) + 0x14, ai_OwnPlayer, 0);
                         }
                     }
                     switch (g) {

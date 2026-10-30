@@ -32,7 +32,7 @@ int ai_Unk4d7360(char *rec, char *c, char *g)
     }
     if (*(int *)(*(char **)(c + 0x184) + 0x128) != 0)
         return -1;
-    r = util_Random(0xff);
+    r = util_RandomU(0xff);
     x = *(char **)(c + 0x16c);
     if (r > 0xff - (int)((unsigned char)k[4] * 0.01 * (unsigned char)c[0x83])) {
         n = (unsigned char)k[6] - (unsigned char)k[5];

@@ -30,11 +30,11 @@ int ai_Unk4b7bc0(G14MSG *m)
     }
     for (i = 0; i < n; i++) {
         if (ids[i] != -1) {
-            r = util_Random(4) * 2 + 6;
+            r = util_RandomU(4) * 2 + 6;
             cm_SendRelations(c->netId, ids[i], r, 1);
         }
     }
-    k = util_Random(4) + 2.0;
+    k = util_RandomU(4) + 2.0;
     v = (int)(gm_GetWorth(c->id) * k * 0.01);
     txt_Format(buf, m->type + 0x12e7, v);
     he_ShowNews(c->netId, c->netId, buf, strlen(buf) > 0x100, 0x603, 0);

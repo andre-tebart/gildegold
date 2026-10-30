@@ -39,7 +39,7 @@ int ai_Unk4ab7f0(int a, AIPER *p, int c, unsigned char *m)
     if (best == 0 || bestv == 0)
         return 0;
     flags = ((unsigned)&ai_Unka69140 + 0x4973c0);
-    if (G10_4A58D0(p, 1, (int *)&flags, 0.0f, (float)util_Random(0x20) + 25.0f, &id) == 0)
+    if (G10_4A58D0(p, 1, (int *)&flags, 0.0f, (float)util_RandomU(0x20) + 25.0f, &id) == 0)
         return 0;
     o = &((AIPER *)ai_CharsT)[id];
     money = (int)(gm_Unk509e30(*(int *)((unsigned char *)p + 0x178), ai_OwnPlayer) * 0.25f);
@@ -50,7 +50,7 @@ int ai_Unk4ab7f0(int a, AIPER *p, int c, unsigned char *m)
     }
     if (k == 0)
         return 0;
-    r = util_Random(k + 1);
+    r = util_RandomU(k + 1);
     *(int *)(m + 4) = o->netId;
     k = r > 1 ? r : 1;
     *(int *)(m + 0xc) = r;

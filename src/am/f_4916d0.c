@@ -25,14 +25,14 @@ int ai_Unk4916d0(AIPER *p, int a, int *out)
         o = gm_Query(b->objList, 2, 6, 0, 0x115);
         m = gm_Unk509e30(o->unk14, ai_OwnPlayer);
         if (m < (int)(amt_GetOwnedOfficePay() * 0.25f) * 3)
-            n += util_Random(3) + 1;
+            n += util_RandomU(3) + 1;
         if (d.cur - 3 > n) {
-            *out = d.cur - util_Random(3) - 1;
+            *out = d.cur - util_RandomU(3) - 1;
             *out = max(d.min, *out);
             return 1;
         }
         if (d.cur + 3 < n) {
-            *out = util_Random(3) + d.cur + 1;
+            *out = util_RandomU(3) + d.cur + 1;
             *out = min(d.max, *out);
             return 1;
         }

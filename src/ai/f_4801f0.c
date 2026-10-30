@@ -207,7 +207,7 @@ check:
                         idx = j;
                 }
                 for (i = 0; i < ai_NEntries * 4; i++) {
-                    r = util_Random(ai_NEntries);
+                    r = util_RandomU(ai_NEntries);
                     if (ai_GoodsT[ai_Entries[r].item].type == 0x17)
                         break;
                 }

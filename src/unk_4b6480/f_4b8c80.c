@@ -35,7 +35,7 @@ int ai_MsgJobTime(G14MSG *m)
     }
     if (n == 0)
         return 0x400;
-    r = util_Random(n);
+    r = util_RandomU(n);
     o = os[r];
     j = js[r];
     s = (int)G14_5087F0(*(unsigned short *)o, o[0x12]);

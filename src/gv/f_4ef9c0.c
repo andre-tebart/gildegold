@@ -28,17 +28,17 @@ int unk_Unk4ef9c0(unsigned char *o, int n)
             e[0xc] = (char)0xff;
             *(short *)(e + 10) = (short)(*(int *)ai_Time + 5);
             for (k = 0; k < 5; k++) {
-                z[0x24 + k] = (char)(int)((float)util_Random(8) * 21.0f + 42.0f);
+                z[0x24 + k] = (char)(int)((float)util_RandomU(8) * 21.0f + 42.0f);
             }
-            *(int *)(z + 0x2c) = util_Random(9) + 1;
-            *(int *)(z + 0x30) = util_Random(2) + 1;
-            *(int *)(z + 0x34) = util_Random(0x5e) + 1;
-            *(int *)(z + 0x40) = *(int *)ai_Time - util_Random(4) - 1;
-            *(int *)(z + 0x38) = util_Random(2);
-            strncpy(z + 0x14, ai_Unk143b178[util_Random(0x95)], 0xf);
+            *(int *)(z + 0x2c) = util_RandomU(9) + 1;
+            *(int *)(z + 0x30) = util_RandomU(2) + 1;
+            *(int *)(z + 0x34) = util_RandomU(0x5e) + 1;
+            *(int *)(z + 0x40) = *(int *)ai_Time - util_RandomU(4) - 1;
+            *(int *)(z + 0x38) = util_RandomU(2);
+            strncpy(z + 0x14, ai_Unk143b178[util_RandomU(0x95)], 0xf);
             g = (char *)unk_Unk4fb330(*(int *)(z + 0x38), *(int *)(z + 0x34));
             *(int *)(z + 0x3c) = 0xff;
-            r = util_Random(4);
+            r = util_RandomU(4);
             k = 4;
             do {
                 if (*(int *)(g + 0x34 + r * 4) != 0xff) {
@@ -49,9 +49,9 @@ int unk_Unk4ef9c0(unsigned char *o, int n)
                 r = (r + 1) & 3;
             } while (k != 0);
             if (*(int *)(z + 0x38) == 0)
-                strncpy(z + 4, ai_Unk143ac5c[util_Random(0xbf)], 0xf);
+                strncpy(z + 4, ai_Unk143ac5c[util_RandomU(0xbf)], 0xf);
             else
-                strncpy(z + 4, ai_Unk143af70[util_Random(0x70)], 0xf);
+                strncpy(z + 4, ai_Unk143af70[util_RandomU(0x70)], 0xf);
             cnt++;
             i = cnt;
         } while (cnt < n);

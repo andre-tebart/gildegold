@@ -36,7 +36,7 @@ int ai_Unk4b9820(G14MSG *m)
         return 0x400;
     t = ai_TimeT;
     t.year++;
-    n = util_Random(n);
+    n = util_RandomU(n);
     j = js[n];
     o = os[n];
     G8_4FEA50((int *)&w, 0, 0, *(int *)((char *)j + 0xb0));

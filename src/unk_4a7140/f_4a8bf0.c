@@ -2,5 +2,5 @@
 
 int ai_Unk4a8bf0(void)
 {
-    return util_Random(4) == 0;
+    return util_RandomU(4) == 0;
 }

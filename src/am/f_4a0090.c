@@ -18,7 +18,7 @@ int ai_Unk4a0090(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         return 0;
     m.LowPart = 0x807d4190;
     m.HighPart = 1;
-    if (!ai_Unk4a63f0((AIPER *)p, 6, m.QuadPart, 0, (float)(util_Random(0x20) + 0x20), &b))
+    if (!ai_Unk4a63f0((AIPER *)p, 6, m.QuadPart, 0, (float)(util_RandomU(0x20) + 0x20), &b))
         return 0;
     gm_FindById((int)&y, 0, 0, b);
     if (y == 0)

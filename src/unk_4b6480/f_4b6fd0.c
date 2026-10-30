@@ -18,7 +18,7 @@ int ai_Unk4b6fd0(G14MSG *m)
         ai_MsgNoOp(c);
         return 0x400;
     }
-    k = util_Random(3) + 1.0;
+    k = util_RandomU(3) + 1.0;
     v = (int)(gm_GetWorth(c->id) * k * 0.01);
     txt_Format(buf, m->type + 0x12e7, v);
     cm_SendMoveGoodsUnchecked(-1, m->id, ai_OwnPlayer, v);

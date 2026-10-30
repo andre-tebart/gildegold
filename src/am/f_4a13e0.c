@@ -43,7 +43,7 @@ int ai_Unk4a13e0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         vb = max((float)x.v[rec[n].c], 1.0f);
         s[n] = ((unsigned char *)best)[0x80 + rec[n].c] / vb + ((unsigned char *)best)[0x80 + rec[n].b] / va;
     }
-    if (util_Random(2) != 0) {
+    if (util_RandomU(2) != 0) {
         m = s[0] > s[1] ? 0 : 1;
         if (!(s[m] > s[2]))
             m = 2;

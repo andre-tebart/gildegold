@@ -65,7 +65,7 @@ void amt_CalcZuenfte(unsigned int kind)
                 q = ai_BTypes + bld * 0x24d;
                 ai_BuildingName(bld, buf);
                 cnt = ai_FindBauplaetze(buf, list);
-                j = list[util_Random(cnt) & 0xffff];
+                j = list[util_RandomU(cnt) & 0xffff];
                 i = 0;
                 while (j == 0) {
                     if (cnt <= i) {

@@ -11,6 +11,6 @@ void ai_Unk4a86f0(void)
             n = ai_Unkf83654->money - ai_Unkf83654->stake >> 1;
         else
             n = (unsigned short)(ai_Unkf83654->money - ai_Unkf83654->stake);
-        ai_Unkf83654->stake2 = util_Random(n) + ai_Unkf83654->stake;
+        ai_Unkf83654->stake2 = util_RandomU(n) + ai_Unkf83654->stake;
     }
 }

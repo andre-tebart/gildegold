@@ -58,8 +58,8 @@ void hmt_Unk4ad7a0(void)
     k = 0;
     for (i = 0; i < 3; i++) {
         for (n = (int)cnt[i]; n < 2; n++) {
-            id = gm_TitleNumber(ids[k++], util_Random(3) + 4);
-            h = ((int (*)(int, int, int, int, int, int, int, int))cm_SendCreateCharacter)(3, -1, -1, util_Random(8) + 0x19, -1, id, 0, gm_Unk503f30(id));
+            id = gm_TitleNumber(ids[k++], util_RandomU(3) + 4);
+            h = ((int (*)(int, int, int, int, int, int, int, int))cm_SendCreateCharacter)(3, -1, -1, util_RandomU(8) + 0x19, -1, id, 0, gm_Unk503f30(id));
             if (h != -1) {
                 while (!cm_GetSlotState(h))
                     sv_PumpNet();
@@ -77,7 +77,7 @@ void hmt_Unk4ad7a0(void)
             cm_SendFieldDeltas();
             bits = hmt_ElectionGroupBits[i];
             if (i == 2)
-                bits |= hmt_ElectionGroupBits[util_Random(i)];
+                bits |= hmt_ElectionGroupBits[util_RandomU(i)];
             cm_SendSetField(p->netId, 0x1cc, 4, bits, 0);
         }
     }

@@ -12,7 +12,7 @@ void hmt_ApplyRecord(AICHAR *p, int d, unsigned short k)
     e = hmt_GetRecord(k);
     if (e != 0) {
         if (e->kind == 0 && e->id <= 4) {
-            v = util_Random(8) + 8;
+            v = util_RandomU(8) + 8;
             v = (unsigned char)min((float)(char)v, 252.0f - ((unsigned char *)p)[e->id + 0x80]);
             cm_BeginFieldBlock((AIPER *)p, p->netId);
             CM_AddFieldValuesShort(1, 1, e->id + 0x80, &v);
@@ -20,7 +20,7 @@ void hmt_ApplyRecord(AICHAR *p, int d, unsigned short k)
         } else if (e->kind == 1) {
             for (i = 0; i < 768; i++) {
                 if (ai_CharsT[i].netId != p->netId && gm_TitleGroup(ai_CharsT[i].jobId) == e->id)
-                    cm_SendRelations(p->netId, ai_CharsT[i].netId, util_Random(4) + 3, 0);
+                    cm_SendRelations(p->netId, ai_CharsT[i].netId, util_RandomU(4) + 3, 0);
             }
         }
     }

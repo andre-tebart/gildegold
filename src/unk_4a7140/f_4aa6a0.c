@@ -10,7 +10,7 @@ int ai_Unk4aa6a0(AIPER *p, unsigned char *in, unsigned char *m)
     AIPER *o;
 
     if (p->unk194 > 1 && (n = unk_Unk4f3c50(ids, cnt, p->id)) != 0) {
-        i = util_Random(n);
+        i = util_RandomU(n);
         j = n;
         do {
             o = AI_505DF0(ids[i]);
@@ -18,13 +18,13 @@ int ai_Unk4aa6a0(AIPER *p, unsigned char *in, unsigned char *m)
                 return 0;
             if (he_Unk553d10(p, o) == 0)
                 return 0;
-            if (gm_Liking(p->id, o->id, 1) < (double)util_Random(0x3d) + 20.0
-                && cnt[i] < util_Random(4) + 2) {
+            if (gm_Liking(p->id, o->id, 1) < (double)util_RandomU(0x3d) + 20.0
+                && cnt[i] < util_RandomU(4) + 2) {
                 m[0] = 7;
                 *(int *)(m + 4) = o->netId;
                 *(unsigned int *)(m + 0x10) = o->id;
-                *(unsigned int *)(in + 8) = util_Random(cnt[i]) + 1;
-                *(unsigned int *)(in + 0x10) = util_Random(3);
+                *(unsigned int *)(in + 8) = util_RandomU(cnt[i]) + 1;
+                *(unsigned int *)(in + 0x10) = util_RandomU(3);
                 return 1;
             }
             i = (int)(i + 1) % n;

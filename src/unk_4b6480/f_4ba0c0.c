@@ -28,8 +28,8 @@ int ai_Unk4ba0c0(G14MSG *m)
     if (n == 0)
         goto none;
     k = 0;
-    r = util_Random(0x14) + 0x19;
-    b = a[util_Random(n)];
+    r = util_RandomU(0x14) + 0x19;
+    b = a[util_RandomU(n)];
     t = &ai_BTypesT[b->type];
     for (i = 0; i < 768; i++) {
         if (ai_CharsT[i].kind == 0 && ai_CharsT[i].bld == b) {

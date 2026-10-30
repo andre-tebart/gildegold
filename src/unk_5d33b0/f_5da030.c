@@ -102,7 +102,7 @@ int ai_PokerGame(void)
                 d2_SetForm(ai_PokerUi.window, 4);
                 txt_Format(text, 0x4252, ai_PokerState.pot);
                 io_PrintText(text);
-                txt_Format(text, util_Random(3) + 0x4253, 0x4256);
+                txt_Format(text, util_RandomU(3) + 0x4253, 0x4256);
                 io_PrintText(text);
                 if (ai_PokerState.actor != 0) {
                     txt_Format(text, 0x425a, ai_PokerState.bet);
@@ -133,7 +133,7 @@ int ai_PokerGame(void)
                 d2_SetForm(ai_PokerUi.window, 4);
                 txt_Format(text, 0x4252, ai_PokerState.pot);
                 io_PrintText(text);
-                txt_Format(text, util_Random(3) + 0x4253, 0x4257);
+                txt_Format(text, util_RandomU(3) + 0x4253, 0x4257);
                 io_PrintText(text);
                 if (ai_PokerState.actor != 0) {
                     txt_Format(text, 0x425a, ai_PokerState.bet);
@@ -245,7 +245,7 @@ int ai_PokerGame(void)
                 d2_SetForm(ai_PokerUi.window, 4);
                 txt_Format(text, 0x4252, ai_PokerState.pot);
                 io_PrintText(text);
-                txt_Format(text, util_Random(3) + 0x4253, 0x4258);
+                txt_Format(text, util_RandomU(3) + 0x4253, 0x4258);
                 io_PrintText(text);
                 if (ai_PokerState.actor != 0) {
                     txt_Format(text, 0x425a, ai_PokerState.bet);

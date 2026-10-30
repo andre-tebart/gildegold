@@ -57,8 +57,8 @@ int ai_Unk496610(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
     }
     if (he_FindEvent(2, 2, p->id, 0, 0x60))
         return 0;
-    ka = util_Random(5);
-    kb = util_Random(5);
+    ka = util_RandomU(5);
+    kb = util_RandomU(5);
     for (i = 0; i < 5; i++) {
         memset(q, 0, sizeof(q));
         v = r6.v[i];
@@ -121,7 +121,7 @@ int ai_Unk496610(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
         return r;
     }
     if (sum == 2) {
-        if (!util_Random(2))
+        if (!util_RandomU(2))
             ka = kb;
     } else if (!valid[ka])
         ka = kb;

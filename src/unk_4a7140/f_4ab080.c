@@ -31,8 +31,8 @@ int ai_Unk4ab080(AIPER *p, int *a, int *b)
                 bld = gm_BuildNext();
             } while (bld != 0);
             if (n != 0) {
-                r = util_Random(n);
-                k = util_Random(3);
+                r = util_RandomU(n);
+                k = util_RandomU(3);
                 bld = (AIBLD *)list[r * 2];
                 o = (AIOBJ *)list[r * 2 + 1];
                 tries = 3;
@@ -41,7 +41,7 @@ int ai_Unk4ab080(AIPER *p, int *a, int *b)
                     if (unk_Unk4f4d30(item, &((AIPER *)ai_CharsT)[bld->owner], &price, &id2, &x) != 0
                         && (float)price <= money * 0.05f) {
                         amt_GetKind(((AIPER *)ai_CharsT)[(unsigned short)id2].unk166, &info);
-                        if (info.lvl < util_Random(12))
+                        if (info.lvl < util_RandomU(12))
                             return 0;
                         if (util_RandomF() >= 0.5) {
                             *(unsigned char *)a = 0x13;

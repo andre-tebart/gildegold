@@ -26,7 +26,7 @@ int ai_Unk496e40(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
         }
         return r;
     }
-    if ((p->flags1e8 & 0x400) && util_Random(8))
+    if ((p->flags1e8 & 0x400) && util_RandomU(8))
         return 0;
     if (p->kind == 3) {
         if (!(p->flags1e8 & 2))
@@ -75,7 +75,7 @@ int ai_Unk496e40(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
             if (p->flags1cc & 0x1c000)
                 return 0;
             flags = 0x10000500;
-            if (!ai_Unk4a58d0(p, 1, &flags, 0, util_Random(25) + 10.0, &cid))
+            if (!ai_Unk4a58d0(p, 1, &flags, 0, util_RandomU(25) + 10.0, &cid))
                 return 0;
             c = (AIPER *)&ai_CharsT[cid];
         }

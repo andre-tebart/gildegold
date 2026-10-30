@@ -27,11 +27,11 @@ int ai_Unk4a9880(int a, AIPER *p, int *ctx, int d, unsigned char *m)
         who[i] = AI_505DF0(rec[i].id);
     if (n < 6)
         memset(&who[n], 0, (6 - n) * sizeof(who[0]));
-    r = util_Random(6);
+    r = util_RandomU(6);
     i = 6;
     do {
         if (who[r] != 0 && id != who[r]->netId
-            && gm_Liking(who[r]->id, p->id, 1) < (float)util_Random(0x10) + 16.0f) {
+            && gm_Liking(who[r]->id, p->id, 1) < (float)util_RandomU(0x10) + 16.0f) {
             o = who[r];
             if (o == 0)
                 return 0;

@@ -43,7 +43,7 @@ int ai_TrustedOfFour(int k, AIPER *p, int *ids, int *out)
         return -1;
     if (!tie)
         return c[bi]->netId;
-    r = util_Random(4);
+    r = util_RandomU(4);
     for (i = 4; i != 0; i--) {
         if (sc[r] == best && c[r] != 0) {
             if ((int)r >= 0)

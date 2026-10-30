@@ -20,7 +20,7 @@ void ai_Unk4d6ba0(char *f)
         *(int *)(tgt + 0x24) = *(int *)(f + 0x28);
     if (!(k != 0 && (*(int *)k == 0x174 || *(int *)k == 0x176))) {
         if (f[0x1d] != 0 && ((x = *(char **)(*(char **)(c + 0x184) + 0x128)) == 0 || x[9] == 0x2d || x[9] == 0x3a)) {
-            if ((unsigned short)util_Random(10) > 8) {
+            if ((unsigned short)util_RandomU(10) > 8) {
                 if (*(int *)(side + 4) == *(int *)(G20_DEF + 4))
                     snd_QueueVoice(G20_US(c), ai_Unk6f0d2c, "_K_C2C_ANGRIFF", -1, 500);
                 else

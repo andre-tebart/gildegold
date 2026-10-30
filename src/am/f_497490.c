@@ -23,7 +23,7 @@ int ai_Unk497490(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         } else if (ai_TimeHour > 12 && p->unk168 == 0 && unk_Unk4fc7a0(p) - p->unk00a > 2) {
             k = amt_GetOfficeCandidates(p, 2, list);
             if (k == 0) {
-                if (util_Random(4) == 0) {
+                if (util_RandomU(4) == 0) {
                     s2.kind = 0x10;
                     s2.unk04 = 0x12;
                     s2.unk08 = 0;
@@ -34,7 +34,7 @@ int ai_Unk497490(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
                     }
                 }
             } else {
-                r = list[util_Random(k) * 3];
+                r = list[util_RandomU(k) * 3];
                 if (r != 0 && r < 0x1c) {
                     o1->unk04 = r;
                     o1->kind = 10;

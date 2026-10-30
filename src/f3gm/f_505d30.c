@@ -13,8 +13,8 @@ void gm_Shuffle(unsigned n, int *out)
         cnt = (n >> 1) + m;
         if (0 < cnt) {
             do {
-                a = util_Random(n);
-                b = util_Random(n) & 0xffff;
+                a = util_RandomU(n);
+                b = util_RandomU(n) & 0xffff;
                 if (a != b) {
                     t = out[a];
                     out[a] = out[b];

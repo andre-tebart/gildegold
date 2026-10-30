@@ -12,7 +12,7 @@ char ai_Unk4cdb80(char *c)
 
     if (c != 0 && (*(int *)(c + 0x1c8) & 0x20000000) != 0) {
         neg = c[0x1c5];
-        if (util_Random(10) < (unsigned char)neg) {
+        if (util_RandomU(10) < (unsigned char)neg) {
             neg = -neg;
             ai_Unk4cdb20(c);
             cm_BeginFieldBlock(c, *(int *)(c + 4));

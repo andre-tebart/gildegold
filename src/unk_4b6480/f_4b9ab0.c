@@ -31,8 +31,8 @@ int ai_Unk4b9ab0(G14MSG *m)
     }
     if (n == 0)
         return 0x400;
-    s = util_Random(3) + 2;
-    n = util_Random(n);
+    s = util_RandomU(3) + 2;
+    n = util_RandomU(n);
     j = js[n];
     o = os[n];
     G8_4FEA50((int *)&w, 0, 0, *(int *)((char *)j + 0xb0));

@@ -15,7 +15,7 @@ int ai_MsgLoseGood(G14MSG *m)
     c = gm_FindChar(m->id);
     if (c == 0)
         return 1;
-    if (util_Random(0x100) < (unsigned short)c->sk82)
+    if (util_RandomU(0x100) < (unsigned short)c->sk82)
         return 0x400;
     if (ai_InventoryHas(c, 0x290))
         return 0x400;
@@ -25,7 +25,7 @@ int ai_MsgLoseGood(G14MSG *m)
     }
     if (n == 0)
         return 0x400;
-    e = a[util_Random(n)];
+    e = a[util_RandomU(n)];
     cm_SendExSellObjectI(-1, c->netId, e->id, 1, ai_OwnPlayer, 0);
     txt_Format(buf, m->type + 0x12e7, e->id * 2 + 0x9a8);
     he_ShowNews(c->netId, c->netId, buf, strlen(buf) > 0x100, 0x603, 0);

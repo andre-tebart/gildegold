@@ -44,13 +44,13 @@ int unk_Unk4f8700(char *c)
     }
     while (n < 16 && tries != 0) {
         tries--;
-        idx = util_Random(4) * 5 + util_Random(5);
+        idx = util_RandomU(4) * 5 + util_RandomU(5);
         k = 0;
         o = (char *)gm_BuildQuery(1, 5, kinds[idx]);
         while (o != 0 && k < 3) {
             if (n >= 16)
                 goto done;
-            if (util_Random(4) < 3) {
+            if (util_RandomU(4) < 3) {
                 list[n] = *(int *)(o + 1);
                 n++;
                 k++;
@@ -59,5 +59,5 @@ int unk_Unk4f8700(char *c)
         }
     }
 done:
-    return list[util_Random(n)];
+    return list[util_RandomU(n)];
 }

@@ -15,10 +15,10 @@ int amt_InitApplicant(char *c, int k)
         return 0;
     if (amt_GetCreateRanges(k, &r) == 0)
         return 0;
-    x = util_Random(r.i3 - r.i2 + 1);
+    x = util_RandomU(r.i3 - r.i2 + 1);
     a = x + r.i2;
     cm_SendMoveGoodsUnchecked(((AMTCHARVIEW *)c)->netId, -1, ai_OwnPlayer, a);
-    x = util_Random(r.i5 - r.i4 + 1);
+    x = util_RandomU(r.i5 - r.i4 + 1);
     b = x + r.i4;
     cm_BeginFieldBlock(c, ((AMTCHARVIEW *)c)->netId);
     cm_AddFieldDelta(1, 1, 0xd, &b);

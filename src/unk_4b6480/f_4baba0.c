@@ -8,7 +8,7 @@ int ai_Unk4baba0(G14MSG *m)
     int id;
     char buf[0x200];
 
-    f = (float)((util_Random(0x14) + 5.0) * 0.01);
+    f = (float)((util_RandomU(0x14) + 5.0) * 0.01);
     c = gm_FindChar(m->id);
     if (c == 0)
         return 1;

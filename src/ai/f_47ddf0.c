@@ -35,7 +35,7 @@ AICHAR *ai_FindPartner(AICHAR *c)
         } while ((int)&o->kind < (unsigned)&gm_PlayerRecordBytes);
         if (best == -1)
             return 0;
-        if (ai_Relations[best][c->id] / 2 + ai_RelationMemory[best][c->id] < -0x32 - util_Random(0x20)) {
+        if (ai_Relations[best][c->id] / 2 + ai_RelationMemory[best][c->id] < -0x32 - util_RandomU(0x20)) {
             a = 0;
             cm_BeginFieldBlock(c, c->netId);
             cm_AddFieldDelta(1, 1, 0x215, &a);
@@ -77,7 +77,7 @@ AICHAR *ai_FindPartner(AICHAR *c)
             }
             if (c->unk215 > 3)
                 return p;
-            a = util_Random(2) + 1;
+            a = util_RandomU(2) + 1;
             cm_BeginFieldBlock(c, c->netId);
             cm_AddFieldValues(1, 1, 0x215, &a);
             if (c->unk215 + a > 3)

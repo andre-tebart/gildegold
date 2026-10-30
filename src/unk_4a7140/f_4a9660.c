@@ -11,7 +11,7 @@ int ai_Unk4a9660(int a, AIPER *p, int c, int d, unsigned char *m)
     if (p->unk194 < 8)
         return 0;
     flags = ((unsigned)&ai_Unka69140 + 0x497bc0);
-    if (ai_Unk4a58d0(p, 1, &flags, 0, (float)util_Random(0x10) + 18.0f, &id) == 0)
+    if (ai_Unk4a58d0(p, 1, &flags, 0, (float)util_RandomU(0x10) + 18.0f, &id) == 0)
         return 0;
     m[0] = 7;
     *(int *)(m + 4) = ((AIPER *)ai_CharsT)[id].netId;

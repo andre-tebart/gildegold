@@ -65,7 +65,7 @@ void unk_Unk4f4460(unsigned short *c, int a)
         *(int *)(m + 0x118) = -1;
         gm_AddTime(m + 0x114, 0x18, 0, 0);
         m[0x124] = 5;
-        m[0xb0] = (char)util_Random(5);
+        m[0xb0] = (char)util_RandomU(5);
         ai_Unk4c4fa0(m + 0x12c);
         if (amt_FindOffice(c, m + 0x18, ids) == 0)
             return;

@@ -17,7 +17,7 @@ int ai_Unk4a4e70(AIPER *p, int name)
         memset(list, 0, sizeof(list));
         n = ai_FindBauplaetze(buf, list);
         if (n != 0) {
-            if (p->bld2 != 0 && *(int *)((char *)p->bld2 + 0x61) != 0 && util_Random(3) != 0) {
+            if (p->bld2 != 0 && *(int *)((char *)p->bld2 + 0x61) != 0 && util_RandomU(3) != 0) {
                 obj = *(int *)((char *)p->bld2 + 0x61);
                 d3_PointToWorld((void *)obj, (char *)obj + 0x4c, o);
                 r = 0;
@@ -58,7 +58,7 @@ int ai_Unk4a4e70(AIPER *p, int name)
                 d3if_SelectScene(scene, 1);
                 return r;
             }
-            k = util_Random(n);
+            k = util_RandomU(n);
             for (i = n; i != 0; i--) {
                 if (list[k] != 0) {
                     d3if_SelectScene(scene, 1);

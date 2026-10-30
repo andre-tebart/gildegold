@@ -21,7 +21,7 @@ int ai_TokenRandomOfficePerson(int mode, G12ARG *args, int k, char *fmt, char *o
             return 0;
     } else {
         if (sel == 0) {
-            i = util_Random(0x300);
+            i = util_RandomU(0x300);
             for (n = 0x300; n != 0; n--) {
                 if (ai_IsLivingCharacter((unsigned short)i) && G12_TITLED(i) && ai_NotInLists(ai_CharsT[i].netId))
                     break;
@@ -31,7 +31,7 @@ int ai_TokenRandomOfficePerson(int mode, G12ARG *args, int k, char *fmt, char *o
                 return 0;
             pick = &ai_CharsT[i];
         } else if (sel == 1) {
-            i = util_Random(0x300);
+            i = util_RandomU(0x300);
             for (n = 0x300; n != 0; n--) {
                 if (ai_IsLivingNonPlayer((unsigned short)i) && G12_TITLED(i) && ai_NotInLists(ai_CharsT[i].netId))
                     break;
@@ -42,7 +42,7 @@ int ai_TokenRandomOfficePerson(int mode, G12ARG *args, int k, char *fmt, char *o
             pick = &ai_CharsT[i];
         } else {
             pick = 0;
-            i = util_Random(0x300);
+            i = util_RandomU(0x300);
             for (n = 0x300; n != 0; n--) {
                 if (pick == 0 && ai_IsLivingNonPlayer((unsigned short)i) && G12_TITLED(i)) {
                     if (ai_NotInLists(ai_CharsT[i].netId))

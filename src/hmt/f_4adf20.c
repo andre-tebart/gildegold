@@ -2,5 +2,5 @@
 
 int hmt_RandomHeadIcon(void)
 {
-    return util_Random(2) + 0x639;
+    return util_RandomU(2) + 0x639;
 }

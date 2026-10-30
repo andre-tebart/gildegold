@@ -37,7 +37,7 @@ int ai_Unk48f010(int a, AIPX *p, int b, AIARGX *o1, AIARGX *o2)
     }
     m.s.lo = 0xe07c43b4;
     m.s.hi = 1;
-    if (!((int (*)(AIPX *, int, __int64, int, float, int *))ai_Unk4a63f0)(p, 6, m.q, 0, (float)(util_Random(0x20) + 0x20), &v))
+    if (!((int (*)(AIPX *, int, __int64, int, float, int *))ai_Unk4a63f0)(p, 6, m.q, 0, (float)(util_RandomU(0x20) + 0x20), &v))
         return 0;
     gm_FindById((int)&b2, 0, 0, v);
     if (!b2)

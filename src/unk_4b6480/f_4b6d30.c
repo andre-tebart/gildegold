@@ -10,7 +10,7 @@ int ai_MsgPayPct2to4(G14MSG *m)
     c = gm_FindChar(m->id);
     if (c == 0)
         return 1;
-    k = util_Random(3) + 2.0;
+    k = util_RandomU(3) + 2.0;
     v = (int)(gm_GetWorth(c->id) * k * 0.01);
     txt_Format(buf, m->type + 0x12e7, v);
     cm_SendMoveGoodsUnchecked(m->id, -1, ai_OwnPlayer, v);

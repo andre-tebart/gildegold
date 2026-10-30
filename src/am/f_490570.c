@@ -14,5 +14,5 @@ int ai_Unk490570(AIPX *p, AIBLD *b, AIARG *o1, AIARG *o2)
     if (he_FindEvent(2, 0, 0x8a, 3, b->id))
         return 0;
     o2->unk04 = c->netId;
-    return util_Random(3) == 0;
+    return util_RandomU(3) == 0;
 }

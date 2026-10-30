@@ -16,7 +16,7 @@ int gm_Unk505840(char *c)
     tab[5] = (w & ((unsigned)&he_Events + 0x54c0)) != 0;
     tab[6] = (w & 0x1800000) != 0;
     tab[7] = (w & 0x1e000000) != 0;
-    f = util_Random(8) & 0xffff;
+    f = util_RandomU(8) & 0xffff;
     i = 8;
     do {
         if (tab[f] == 1) {

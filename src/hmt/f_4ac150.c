@@ -5,7 +5,7 @@ unsigned short hmt_RandomRecord(short k)
     unsigned short r;
 
     do
-        r = util_Random(0x33);
+        r = util_RandomU(0x33);
     while ((short)r == k);
     return r;
 }

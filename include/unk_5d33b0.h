@@ -151,7 +151,7 @@ void ai_PokerExchange(int k);           /* 0x4a8630, unk_4a7140.c: the player ex
 int gm_PlayerFactor(int a, unsigned char k);   /* 0x5085f0, f3gm.c: a * the factor of the player slot k */
 int gm_GetWorth(unsigned short id);            /* 0x50a640, f3gm.c: the worth of the character id */
 short *gm_PlayerRecord(char *c);               /* 0x506430, f3gm.c: the player record of a character (kinds 5 / 6 / 7), 0 else */
-unsigned short util_Random(int n);             /* 0x42ec00, tr.c (int util_Random(unsigned short n) there: the callers read a 16-bit result) */
+int util_Random(unsigned short n);             /* 0x42ec00, tr.c; the callers that read a 16-bit result (ch_RandomNear, anm_Update, ai_Unk4d88c0 ..) call util_RandomU, a cast in their head */
 float util_RandomF(void);                      /* 0x42ec20, tr.c */
 extern POKERUI ai_PokerUi;          /* 0x62dda0 */
 int ai_OpenPokerWindow(void);       /* 0x5d9de0, opens the poker window (1 = opened, 0 = already open / refused) */
@@ -374,7 +374,7 @@ void d2_SetObjEnabled(int obj, int on);     /* 0x475e40, d2.h: enables / disable
 void d2_SetViewEnabled(int view, int on);   /* 0x475590, d2.c: enables / disables the objects of a view */
 void d2_PlaceViewWindows(int view, unsigned char flags); /* 0x475870, d2.c: places the view's windows
                                        by the flags of 0x4756b0 (1 = centre x, 2 = centre y) */
-void d2_PlaceMainWindow(int view, int flags); /* 0x475850, d2.c: places the view's first window */
+void d2_PlaceMainWindow(int view); /* 0x475850, d2.c: places the view's first window (callers that pass the flags too: d2_PlaceMainWindowF in their head) */
 int d2_CreateRadioGroup(int n, ...);        /* 0x46c490, d2.h: the radio group of n control ids */
 void d2_RadioClear(int g);                  /* 0x46c600, d2.h: frees a radio group */
 void d2_MenuNavigate(int g);                /* 0x46c6c0, d2.h: keyboard / pointer navigation in a group */

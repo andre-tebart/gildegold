@@ -23,7 +23,7 @@ int ai_Unk490690(int a, AIPX *p, int b, AIARG *o1, AIARG *o2)
     r[1] = ai_Unk490170(p, (AIBLD *)v, &s1[1], &s2[1]);
     r[2] = ai_Unk490350(p, (AIBLD *)v, &s1[2], &s2[2]);
     r[3] = ai_Unk490570(p, (AIBLD *)v, &s1[3], &s2[3]);
-    i = util_Random(4);
+    i = util_RandomU(4);
     for (n = 4; n; n--) {
         if (r[i]) {
             *o1 = s1[i];

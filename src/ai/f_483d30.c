@@ -17,7 +17,7 @@ void ai_StartBuildingWork(AICHAR *ch)
     if (!(ch->flags1b4 & 0x800)) {
         ch->flags1b4 |= 0x800;
         if (!he_FindEvent(2, 0, 0x8d, 3, ch->bld->id)) {
-            p = unk_Unk4f22a0(ch->bld, (char)util_Random(0x40) - 0x80);
+            p = unk_Unk4f22a0(ch->bld, (char)util_RandomU(0x40) - 0x80);
             if (p) {
                 f = 0;
                 for (c = 0; !f; c++) {

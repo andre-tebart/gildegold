@@ -110,10 +110,10 @@ void gm_SyncMarket(unsigned p)
                 if (gm_Query(*(int *)(a1 + 0x14), 1, 0, rec[0] & 0xffff) == 0 && gm_Query(*(int *)(o2 + 0x14), 1, 0, rec[0] & 0xffff) == 0) {
                     rec[1] = 0;
                 } else if (c28 == 0) {
-                    c28 = (unsigned char)util_Random(0xff);
+                    c28 = (unsigned char)util_RandomU(0xff);
                     rec[1] = c28 < 0x81;
                 } else {
-                    c28 = c28 + (char)util_Random(8) + 0x18;
+                    c28 = c28 + (char)util_RandomU(8) + 0x18;
                     rec[1] = c28 < 0x81;
                 }
                 *((unsigned char *)rec + 0x28) = c28;

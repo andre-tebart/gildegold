@@ -6,7 +6,7 @@ void ai_BuyCapacity(AIOBJ *b, AICHAR *ch, int n)
     AIMSG msg;
 
     if (b && !(c->flags1c8 & 8)) {
-        if ((int)util_Random(100) >= n) {
+        if ((int)util_RandomU(100) >= n) {
             if (!he_FindEvent(2, 0, 0x13, 3, c->bld->id) && b->count < 3 && c->budget >= 0x9600) {
                 memset(&msg, 0, sizeof(msg));
                 msg.type = 0x13;

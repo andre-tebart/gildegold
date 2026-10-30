@@ -87,7 +87,7 @@ int ai_Unk49d8d0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     if (best == 0)
         return 0;
     lvl = best->level;
-    if (lvl - util_Random(0x20) >= 0x42)
+    if (lvl - util_RandomU(0x20) >= 0x42)
         return 0;
     s1.unk04 = best->id;
     s1.kind = 4;

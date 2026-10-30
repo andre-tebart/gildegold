@@ -29,19 +29,19 @@ int ai_Unk494ac0(AIGRP *g, int send)
     for (i = 0; i < g->n; i++) {
         switch (g->mem[i].d) {
         case -2:
-            v = -0x10 - util_Random(0x10);
+            v = -0x10 - util_RandomU(0x10);
             break;
         case -1:
-            v = -8 - util_Random(8);
+            v = -8 - util_RandomU(8);
             break;
         case 0:
-            v = util_Random(8) + 8;
+            v = util_RandomU(8) + 8;
             break;
         case 1:
-            v = util_Random(0x10) + 0x10;
+            v = util_RandomU(0x10) + 0x10;
             break;
         case 2:
-            v = util_Random(0x10) + 0x18;
+            v = util_RandomU(0x10) + 0x18;
         }
         if (send)
             cm_SendRelations(g->leader->netId, g->mem[i].ch->netId, v, 1);

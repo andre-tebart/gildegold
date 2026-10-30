@@ -31,7 +31,7 @@ int ai_Unk4a0a70(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     o = (unsigned char *)gm_Query(bl->objList, 2, 6, 0, 0x142);
     money = gm_Unk509e30(*(int *)(o + 0x14), ai_OwnPlayer);
     lvl = bl->level;
-    if (lvl < util_Random(0x10) + 0x32 && !(bl->flags5a & 4)) {
+    if (lvl < util_RandomU(0x10) + 0x32 && !(bl->flags5a & 4)) {
         s1.kind = 4;
         s1.unk04 = bl->id;
         s1.unk08 = 1;

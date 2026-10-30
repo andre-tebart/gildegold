@@ -101,7 +101,7 @@ typedef struct ORDEVENT {
 extern int ai_Unk6333cc;                /* 0x6333cc */
 extern int d3_CurrentScene;                /* 0x633444 */
 
-unsigned short util_Random(int n);      /* 0x42ec00, @original: tr.c defines int util_Random(unsigned short n); the byte-matched callers read a 16-bit result (ch_RandomNear / anm_Update / ahm_ShufflePlayers: and eax,0xffff after the call) */
+int util_Random(unsigned short n);      /* 0x42ec00, tr.c; the callers that read a 16-bit result (ch_RandomNear, anm_Update, ai_Unk4d88c0 ..) call util_RandomU, a cast in their head */
 unsigned vfs_fwrite(void *buf, int size, int n, struct VFSFILE *f);                       /* 0x430e30 */
 int ls_Read(void *buf, int size, int count, int f);  /* 0x51c920, ls.c's read (true when the fread returned a positive count); ls.c has no header yet */
 unsigned char * gm_BuildQuery(int n, ...);                     /* 0x501190 */

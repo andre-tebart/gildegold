@@ -31,7 +31,7 @@ int ai_Unk4e0f70(char *m)
         ai_Unk4e32d0(-8, "_GEBURT", n, 0);
         if (ai_Unk4e3490(0x3e8, 0, 0) == 0) {
             for (n = ai_Unk4e52f0(4) + 2; n > 0; n--)
-                ai_Unk4e32d0(-8, "_GEBURT_GESCHREI", ai_Unk4e52f0(5), (unsigned short)util_Random(0x800) + 0x3e8);
+                ai_Unk4e32d0(-8, "_GEBURT_GESCHREI", ai_Unk4e52f0(5), (unsigned short)util_RandomU(0x800) + 0x3e8);
             ai_Unk4e3490(0x1b58, 0, 0);
         }
     }

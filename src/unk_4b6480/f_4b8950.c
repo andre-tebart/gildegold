@@ -9,7 +9,7 @@ int ai_Unk4b8950(G14MSG *m)
     c = gm_FindChar(m->id);
     if (c == 0)
         return 1;
-    s = util_Random(3) + 3;
+    s = util_RandomU(3) + 3;
     txt_Format(buf, m->type + 0x12e7, gm_PlayerFactor(1, ai_OwnPlayer), s);
     he_ShowNews(c->netId, c->netId, buf, strlen(buf) > 0x100, 0x603, 0);
     gm_SendMoneyDelta(c->netId, s);

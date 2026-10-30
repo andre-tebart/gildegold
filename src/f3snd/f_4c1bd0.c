@@ -27,10 +27,10 @@ void snd_PlayOutdoorTrack(void)
         return;
     }
     do {
-        r = util_Random(0x75) % 4;
+        r = util_RandomU(0x75) % 4;
         switch (season) {
         case 0:
-            if (util_Random(0xb) < 4)
+            if (util_RandomU(0xb) < 4)
                 strcpy(t, "CD2\\KraeuterUndPhiolen.mp3");
             else if (r == 0)
                 strcpy(t, "cd1\\Burgfraeulein.mp3");
@@ -41,7 +41,7 @@ void snd_PlayOutdoorTrack(void)
             sprintf(snd_TrackText, "Outdoor-Track for GM_SPRING selected: %s.", t);
             break;
         case 1:
-            if (util_Random(0xb) < 3)
+            if (util_RandomU(0xb) < 3)
                 strcpy(t, "CD3\\Heldenglanz.mp3");
             else if (r == 0)
                 strcpy(t, "cd1\\Burgfraeulein.mp3");
@@ -52,7 +52,7 @@ void snd_PlayOutdoorTrack(void)
             sprintf(snd_TrackText, "Outdoor-Track for GM_SUMMER selected: %s.", t);
             break;
         case 2:
-            if (util_Random(0xb) < 3)
+            if (util_RandomU(0xb) < 3)
                 strcpy(t, "CD3\\DerStolzenTraum.mp3");
             else if (r == 0)
                 strcpy(t, "cd1\\AufDenStrassen.mp3");
@@ -63,7 +63,7 @@ void snd_PlayOutdoorTrack(void)
             sprintf(snd_TrackText, "Outdoor-Track for GM_AUTUMN selected: %s.", t);
             break;
         case 3:
-            if (util_Random(0xb) < 4)
+            if (util_RandomU(0xb) < 4)
                 strcpy(t, "CD3\\SchmerzlichErinnerung.mp3");
             else if (r == 0)
                 strcpy(t, "cd1\\AufDenStrassen.mp3");

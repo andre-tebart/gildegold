@@ -6,7 +6,7 @@ int ai_Unk4b8870(G14MSG *m)
     int s;
     char buf[0x200];
 
-    s = util_Random(3) + 2;
+    s = util_RandomU(3) + 2;
     c = gm_FindChar(m->id);
     if (c == 0)
         return 1;

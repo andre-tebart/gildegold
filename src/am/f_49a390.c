@@ -32,7 +32,7 @@ int ai_Unk49a390(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             sum += c[0x1c5];
         }
     }
-    x = (float)util_Random(4);
+    x = (float)util_RandomU(4);
     if (x + (float)sum / (float)n > 6.0f)
         return 0;
     rec[1] = 0;

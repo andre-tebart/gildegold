@@ -76,7 +76,7 @@ int ai_Unk49fc90(int a, G5CH *p, int f, AIARG *o1)
                 }
             } else {
                 if (d == 0)
-                    d = util_Random(4) - 1;
+                    d = util_RandomU(4) - 1;
                 if (d == -1 || d == 1) {
 set:
                     o1->kind = 0x15;

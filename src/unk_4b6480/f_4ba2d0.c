@@ -20,7 +20,7 @@ int ai_Unk4ba2d0(G14MSG *m)
     }
     if (n == 0)
         return 0x400;
-    b = a[util_Random(n)];
+    b = a[util_RandomU(n)];
     for (i = 0; i < 768; i++) {
         if (ai_CharsT[i].kind == 1 && ai_CharsT[i].bld == b) {
             p = &ai_CharsT[i];
@@ -32,7 +32,7 @@ int ai_Unk4ba2d0(G14MSG *m)
     s = 0xfc - p->sk81;
     if (s <= 0)
         return 0x400;
-    ai_Unk4c6020(p->netId, 1, (char)min(s, util_Random(10) + 5));
+    ai_Unk4c6020(p->netId, 1, (char)min(s, util_RandomU(10) + 5));
     txt_Format(buf, m->type + 0x12e7, 0x16b8, p->id, b);
     he_ShowNews(c->netId, c->netId, buf, strlen(buf) > 0x100, 0x603, 0);
     return 0;

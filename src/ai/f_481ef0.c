@@ -73,13 +73,13 @@ void ai_CalcMeisterDiebe(AICHAR *ch)
         return;
     }
     if (ai_CharsT[ch->bld->owner].kind == 6 || ai_CharsT[ch->bld->owner].kind == 7) {
-        r = util_Random(2);
-        if (r && ch->target != -1 && util_Random(2))
+        r = util_RandomU(2);
+        if (r && ch->target != -1 && util_RandomU(2))
             goto burgle;
     } else {
         if (util_RandomF() > 0.85 && n >= 3 && ai_TimeT.year >= 7 - ai_Difficulty)
             goto other;
-        r = util_Random(3);
+        r = util_RandomU(3);
     }
     if (r == 1) {
         if (!(util_RandomF() < 0.95)) {
@@ -107,7 +107,7 @@ void ai_CalcMeisterDiebe(AICHAR *ch)
                             w = 0.0f;
                         else
                             w = 1.0f - (ai_Grid[i][j].a * 0.125f + ai_Grid[i][j].b) / max;
-                        w = util_Random(100) * w * 0.01;
+                        w = util_RandomU(100) * w * 0.01;
                         if (best) {
                             if (!((float)gm_GetGoodsValue(&ai_CharsT[bb->owner]) * w > (float)gm_GetGoodsValue(&ai_CharsT[best->owner]) * bestw))
                                 continue;
@@ -131,8 +131,8 @@ void ai_CalcMeisterDiebe(AICHAR *ch)
                 msg.arg[0] = ai_CharsT[best->owner].netId;
                 msg.arg[1] = best->id;
                 msg.arg[2] = ch->bld->id;
-                if (n >= util_Random(3) + 1)
-                    n = util_Random(3) + 1;
+                if (n >= util_RandomU(3) + 1)
+                    n = util_RandomU(3) + 1;
                 AI_FILL_IDS(n)
                 if (msg.ids[0] != -1) {
                     cm_SendLongMessage(&msg);
@@ -175,7 +175,7 @@ burgle:
                         w = 1.0f - (ai_Grid[i][j].a * 0.125f + ai_Grid[i][j].b) / max;
                     r = gm_BuildingRank(bb);
                     w = (8.0f - r) * w * 0.5;
-                    w = util_Random(100) * w * 0.01;
+                    w = util_RandomU(100) * w * 0.01;
                     if (best) {
                         if (!((float)gm_OwnerWorth(bb, obj != 0) * w > (float)gm_OwnerWorth(best, obj != 0) * bestw))
                             continue;
@@ -194,7 +194,7 @@ burgle:
             goto pick;
         for (o = gm_Query(ch->bld->objList, 1, 0, 0xca); o; o = gm_QueryNext()) {
             if (o->unk2a == best->id) {
-                if (o->unk37 > 0x5e || (float)o->unk36 + (float)o->unk36 + (float)util_Random(20) <= (float)o->unk37) {
+                if (o->unk37 > 0x5e || (float)o->unk36 + (float)o->unk36 + (float)util_RandomU(20) <= (float)o->unk37) {
                     for (job = he_FindEvent(2, 0, 0x40, 3, ch->bld->id); job; job = he_NextEvent()) {
                         if (job->unkac == best->id) {
                             sprintf(buf, "ai_CalcMeisterDiebe(): Meister %s hat aber noch eine Spionage bei '%s' "

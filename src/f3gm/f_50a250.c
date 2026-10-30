@@ -54,11 +54,11 @@ int gm_Unk50a250(int b, unsigned short *p, unsigned cnt, int *out)
             if ((k & 2) == 0)
                 ord_DispatchOrder(0xb, p, tmp);
             for (k = 0; k < cnt; k++) {
-                util_Random(0x1e);
+                util_RandomU(0x1e);
                 v = (int)(float)0;               /* lost */
                 if (k == 0 || k == 1)
                     v = (int)(float)0;           /* lost */
-                t = util_Random(6);
+                t = util_RandomU(6);
                 r = (int)(float)0;               /* lost */
                 if (ai_Chars[*(unsigned short *)(b + 0x27)][2] != 6
                     && ai_Chars[*(unsigned short *)(b + 0x27)][2] != 7

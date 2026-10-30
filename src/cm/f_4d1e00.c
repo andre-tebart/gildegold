@@ -7,7 +7,7 @@ void ai_Unk4d1e00()
 
     d2_CutsceneActive = 1;
     if (snd_MusicEnabled != 0) {
-        r = util_Random(100) & 0xffff;
+        r = util_RandomU(100) & 0xffff;
         if (r < 0x14)
             snd_PlaySpecialTrack("cd2\\Krieg.mp3");
         else if (r < 0x28)

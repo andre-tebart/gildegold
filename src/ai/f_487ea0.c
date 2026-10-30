@@ -19,7 +19,7 @@ void ai_Unk487ea0(AICHAR *ch)
                         n++;
                 }
                 if (n < ai_BTypesT[bld->type].k231 + ai_BTypesT[bld->type].k232) {
-                    if (n == 0 || (!(ch->flags1c8 & 8) && util_Random(0x48) >= (0x12 - n) * 2))
+                    if (n == 0 || (!(ch->flags1c8 & 8) && util_RandomU(0x48) >= (0x12 - n) * 2))
                         gv_SendGrave(ch->bld);
                 }
             }

@@ -18,7 +18,7 @@ int ai_Unk49f4f0(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2
     if (n < 3)
         return 0;
     if (n < 6) {
-        if (util_Random(n - 1) == 0)
+        if (util_RandomU(n - 1) == 0)
             return 0;
         return ai_Unk4a49a0(a, b, i, (AIPER *)p, 0, o1, o2);
     }

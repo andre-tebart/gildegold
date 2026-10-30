@@ -10,7 +10,7 @@ int ai_Unk4a63f0(AIPER *p, int a, __int64 mask, int c, float f, int *out)
     unsigned int j;
     float r;
 
-    step = ai_Unk5ed140[util_Random(0x10)];
+    step = ai_Unk5ed140[util_RandomU(0x10)];
     q[2] = (unsigned int)mask;
     q[4] = a;
     found = 0;
@@ -21,7 +21,7 @@ int ai_Unk4a63f0(AIPER *p, int a, __int64 mask, int c, float f, int *out)
     if ((*(float *)&c > 0.0f || f < 100.0f) && *(float *)&c < f)
         win = 1;
     n = 0x100;
-    j = util_Random(0x100);
+    j = util_RandomU(0x100);
     while (!found) {
         if (n == 0) {
             if (found)

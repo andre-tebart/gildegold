@@ -57,7 +57,7 @@ int ai_TokenRandomMerchant(int mode, G12ARG *args, int k, char *fmt, char *out)
         }
         if (found == 0)
             return 0;
-        i = (unsigned short)util_Random(5);
+        i = (unsigned short)util_RandomU(5);
         c = &ai_CharsT[ids[i]];
         if (mode == 0)
             args[k].id = ai_CharsT[ids[i]].netId;

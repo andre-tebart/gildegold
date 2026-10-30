@@ -11,11 +11,11 @@ int ai_Unk491cb0(AIPER *p, int a, int *out)
         k = d.max - d.min;
         if (t == 9) {
             if (d.cur < (int)(k * 0.55f + d.min)) {
-                *out = d.max - util_Random(6);
+                *out = d.max - util_RandomU(6);
                 return 1;
             }
         } else if (d.cur > (int)(k * 0.45f + d.min)) {
-            *out = util_Random(6) + d.min;
+            *out = util_RandomU(6) + d.min;
             return 1;
         }
     }

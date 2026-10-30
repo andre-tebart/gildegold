@@ -23,8 +23,8 @@ void gm_ShuffledBytes(unsigned char n, unsigned char *out)
         cnt = (n >> 1) + m;
         if (cnt != 0) {
             do {
-                a = (unsigned char)util_Random(n);
-                b = (unsigned char)util_Random(n);
+                a = (unsigned char)util_RandomU(n);
+                b = (unsigned char)util_RandomU(n);
                 if (a != b) {
                     t = out[a];
                     out[a] = out[b];

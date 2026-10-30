@@ -29,7 +29,7 @@ void unk_Unk4f1de0(char *o)
         if (e == 0) {
             n = unk_Unk4ef440((unsigned char *)o);
             if (n < 4)
-                unk_Unk4f0d70(o, (util_Random(2) & 0xffff) + 1);
+                unk_Unk4f0d70(o, (util_RandomU(2) & 0xffff) + 1);
             if (pl != 0 && (pl[2] == 6 || pl[2] == 7)) {
                 if (paid > 0)
                     ai_Unk5a9780(pl, o, paid, sum);
@@ -80,7 +80,7 @@ void unk_Unk4f1de0(char *o)
                 if (c != pl) {
                     s = *(int *)ai_Time & 3;
                     if (s == (*(unsigned *)(c + 4) & 3) && (float)(unsigned char)e[3] * 0.003921569f < 0.66f) {
-                        h = ((int (*)(void *, void *, int))cm_SendRelations)(*(int *)(pl + 4), *(int *)(c + 4), -5 - (util_Random(0x10) & 0xffff));
+                        h = ((int (*)(void *, void *, int))cm_SendRelations)(*(int *)(pl + 4), *(int *)(c + 4), -5 - (util_RandomU(0x10) & 0xffff));
                         rounds++;
                         nrel++;
                     }

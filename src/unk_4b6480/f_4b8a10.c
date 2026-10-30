@@ -36,12 +36,12 @@ int ai_Unk4b8a10(G14MSG *m)
     }
     if (n == 0)
         return 0x400;
-    r = util_Random(n);
+    r = util_RandomU(n);
     j = js[r];
     o = os[r];
     G8_4FEA50((int *)&w, 0, 0, *(int *)((char *)j + 0xb0));
     G8_4FEA50((int *)&u, 0, 0, *(int *)((char *)j + 0xb4));
-    v = (unsigned char)(((unsigned char *)o)[0x12] * ((util_Random(0x23) + 0x3c) * 0.01f));
+    v = (unsigned char)(((unsigned char *)o)[0x12] * ((util_RandomU(0x23) + 0x3c) * 0.01f));
     cm_BeginFieldBlock(o, *(int *)(o + 2));
     cm_AddFieldDelta(1, 1, 0x12, &v);
     cm_SendFieldDeltas();

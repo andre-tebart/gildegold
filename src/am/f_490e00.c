@@ -24,7 +24,7 @@ int ai_Unk490e00(AIPER *p, int a, int *out)
     gv_GetTableRecord(0, &d);
     if (x > 1.0f) {
         if (w > u && d.cur < 2) {
-            *out = util_Random(2) + d.cur + 1;
+            *out = util_RandomU(2) + d.cur + 1;
             return 1;
         }
         if (x > 1.4f) {
@@ -32,7 +32,7 @@ int ai_Unk490e00(AIPER *p, int a, int *out)
             return 1;
         }
     } else if (u > v && d.cur > 2) {
-        *out = d.cur - util_Random(3) - 1;
+        *out = d.cur - util_RandomU(3) - 1;
         return 1;
     }
     return 0;

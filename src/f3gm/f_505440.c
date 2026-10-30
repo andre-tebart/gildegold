@@ -11,7 +11,7 @@ float gm_Unk505440(short *c)
         return 0.0f;
     if (gm_Unk5051d0(1, rec) == 0)
         return 0.0f;
-    v = util_Random(rec[2]);
+    v = util_RandomU(rec[2]);
     if ((v & 0xffff) == 0)
         return 0.0f;
     nw = ((v & 0xffff) ^ w) & 0xf ^ w;

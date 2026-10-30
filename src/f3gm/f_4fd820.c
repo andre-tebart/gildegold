@@ -56,5 +56,5 @@ char *unk_Unk4fd820(int unused, char *o)
         list[n] = (int)b;
         b = (char *)gm_BuildNext();
     }
-    return (char *)list[util_Random(n) & 0xffff];
+    return (char *)list[util_RandomU(n) & 0xffff];
 }

@@ -31,8 +31,8 @@ int ai_Unk49f5c0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         if (b->type != 0)
             cnt[gm_BuildingJob(ai_BTypesT[b->type].kind) - 1]++;
     }
-    n = util_Random(4) + 1;
-    r = util_Random(0x10);
+    n = util_RandomU(4) + 1;
+    r = util_RandomU(0x10);
     for (c = 0x10; c != 0; c--) {
         if (r != 0 && own[r - 1] == 0 && cnt[r - 1] < n)
             break;

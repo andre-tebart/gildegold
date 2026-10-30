@@ -45,7 +45,7 @@ int init_NameBuildings(void)
                 }
             }
             if (cnt != 0) {
-                r = util_Random(cnt);
+                r = util_RandomU(cnt);
                 u = names[r & 0xffff];
                 if (strlen(u) < 0x20)
                     strcpy((char *)b + 5, u);

@@ -157,7 +157,7 @@ void amt_ElectOffices(int unused, int n, AMTREC *recs)
                         }
                         continue;
                     }
-                    m = util_Random(k) & 0xffff;
+                    m = util_RandomU(k) & 0xffff;
                     left = k;
                     do {
                         sel = m;

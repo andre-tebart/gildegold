@@ -32,7 +32,7 @@ unsigned unk_Unk4fd5c0(int param)
     tab[5] = 0;
     range = 0x300;
     for (tries = 0; tries < 0x10; tries++) {
-        a = util_Random(range);
+        a = util_RandomU(range);
         c = ai_Chars[a];
         r = a * 0xf;
         if (*(short *)c == -1) {
@@ -47,7 +47,7 @@ unsigned unk_Unk4fd5c0(int param)
             for (k = 5; k != 0; k--, q++)
                 if (*q != -1)
                     cnt++;
-            r = (util_Random(0x100) & 0xffff) + 1;
+            r = (util_RandomU(0x100) & 0xffff) + 1;
             if ((int)r < tab[cnt])
                 break;
         }
@@ -55,7 +55,7 @@ unsigned unk_Unk4fd5c0(int param)
     if (a == 0xffff)
         return r & 0xffff0000;
     for (tries = 0; tries < 0x10; tries++) {
-        b = util_Random(range);
+        b = util_RandomU(range);
         c = ai_Chars[b];
         if (*(short *)c == -1)
             range = (range * 3) >> 2;
@@ -67,7 +67,7 @@ unsigned unk_Unk4fd5c0(int param)
             for (k = 5; k != 0; k--, q++)
                 if (*q != -1)
                     cnt++;
-            r = (util_Random(0x100) & 0xffff) + 1;
+            r = (util_RandomU(0x100) & 0xffff) + 1;
             if ((int)r < tab[cnt])
                 break;
         }

@@ -11,7 +11,7 @@ int ai_Unk4aa580(AIPER *p, int c, unsigned char *m)
     if (p->unk194 < 1)
         return 0;
     flags = ((unsigned)&ai_Unka69140 + 0x4973c0);
-    if (ai_Unk4a58d0(p, 1, &flags, 0, (float)util_Random(0x40), &id) == 0)
+    if (ai_Unk4a58d0(p, 1, &flags, 0, (float)util_RandomU(0x40), &id) == 0)
         return 0;
     if (he_Unk553db0(p, &((AIPER *)ai_CharsT)[id], &k) == 0)
         return 0;

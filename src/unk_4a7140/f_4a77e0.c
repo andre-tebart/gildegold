@@ -56,7 +56,7 @@ void ai_Unk4a77e0(void)
         st = &ai_Unkf83654->seat[s];
         switch (st->unk2c) {
         case 0:
-            k = util_Random(3);
+            k = util_RandomU(3);
             break;
         case 1:
             if (pairs == 1) {

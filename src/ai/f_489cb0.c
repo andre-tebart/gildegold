@@ -87,9 +87,9 @@ void ai_MeisterCollectTrans(AICHAR *ch)
                     return;
                 if (n >= bt->cap247)
                     return;
-                if (util_Random(0x2ee) >= 2)
+                if (util_RandomU(0x2ee) >= 2)
                     return;
-                item = 0x136 - (util_Random(8) < 4);
+                item = 0x136 - (util_RandomU(8) < 4);
                 if (ch->budget <= (int)gm_ItemPrice(item, 100) * 2)
                     return;
                 cm_SendMoveGoods(-1, ai_CharsT[ch->bld->owner].netId, ai_OwnPlayer, (int)gm_ItemPrice(item, 100));
@@ -99,7 +99,7 @@ void ai_MeisterCollectTrans(AICHAR *ch)
                     return;
                 if (n >= bt->cap247)
                     return;
-                if (util_Random(0x2ee) >= 2)
+                if (util_RandomU(0x2ee) >= 2)
                     return;
                 item = 0x136;
                 if (ch->budget <= (int)gm_ItemPrice(item, 100) * 2)
@@ -122,7 +122,7 @@ void ai_MeisterCollectTrans(AICHAR *ch)
             return;
         if (n >= bt->cap247)
             return;
-        if (util_Random(0x2ee) >= 2)
+        if (util_RandomU(0x2ee) >= 2)
             return;
         item = 0x135;
         if (ch->budget <= (int)gm_ItemPrice(item, 100) * 2)

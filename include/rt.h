@@ -104,7 +104,7 @@ void d2_EnableViewObjects(int view, int on);                                    
 void sv_ButtonRow(int f, int y, int *out, int n, ...);                         /* 0x52e350, a row of n buttons */
 int d2_CreateWinText(short x, short y, char *text, int win);                         /* 0x473650 */
 void d2_SetObjEnabled(int obj, int on);                                              /* 0x475e40 */
-void d2_SetObjValue(int obj, int a, int b, int c);                                 /* 0x475cb0, @original: d2.c takes a 5th parameter (value2); 139 original call sites push 4 arguments, 18 push 5; rt.c's push 4 */
+void d2_SetObjValue(int obj, int a, int b, int c, int d);                         /* 0x475cb0, d2.c: the 5th parameter (value2) is pushed by 18 of the original call sites; rt.c's push 4 (d2_SetObjValue4 in its head) */
 #define ai_Unk52e350x ((void (*)(int, int, int *, int, int, int, int))sv_ButtonRow) /* 3 button texts */
 void d2_SetCaption(int obj, char *text);                                            /* 0x473540 */
 void d2_SetSliderFlags(int obj, int a);                                               /* 0x46bdd0 */

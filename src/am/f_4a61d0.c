@@ -8,7 +8,7 @@ unsigned int ai_Unk4a61d0(AIPER *p, unsigned int a, unsigned int fl, float lo, f
     int step, n, found, win, home;
     float r;
 
-    step = ai_Unk5ed100[util_Random(0x10)];
+    step = ai_Unk5ed100[util_RandomU(0x10)];
     i = 0;
     memset(q, 0, sizeof(q));
     win = 0;
@@ -33,7 +33,7 @@ unsigned int ai_Unk4a61d0(AIPER *p, unsigned int a, unsigned int fl, float lo, f
             ((unsigned short *)&q[7])[i] = id[i - 1];
         n = 0x300;
         found = 0;
-        c = util_Random(0x300);
+        c = util_RandomU(0x300);
         while (!found) {
             if (n == 0) {
                 if (!found)

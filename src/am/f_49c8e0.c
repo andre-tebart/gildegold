@@ -16,7 +16,7 @@ int ai_Unk49c8e0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         return 0;
     n1 = unk_Unk4f39e0(p->netId);
     n2 = unk_Unk4f39b0(p->netId);
-    if (util_Random(8) + 8 > n1)
+    if (util_RandomU(8) + 8 > n1)
         return 0;
     i = 0;
     for (b = (unsigned char *)gm_BuildQuery(1, 5, 7); b != 0; b = (unsigned char *)gm_BuildNext()) {
@@ -26,7 +26,7 @@ int ai_Unk49c8e0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     }
     if (i == 0)
         return 0;
-    b = list[util_Random(i)];
+    b = list[util_RandomU(i)];
     if (*(int *)((char *)p + 0x194) < 4) {
         money = gm_Unk509ee0((AIPER *)p, ai_OwnPlayer);
         x = gm_GetWorth(p->id) * 0.005f;

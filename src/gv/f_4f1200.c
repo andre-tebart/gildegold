@@ -109,8 +109,8 @@ unsigned unk_Unk4f1200(char *p)
             *(float *)(c + 0x14) = 1000.0f / (r * 4.0f + 8.0f);
             for (i = 0, j = 0; i < 0x90000; i += 0x300, j++) {
                 ai_RelationMemory[0][*(unsigned short *)c + i] = 0;
-                ai_Relations[0][*(unsigned short *)c + i] = (signed char)util_Random(0x40) - 0x20;
-                ai_Relations[0][*(unsigned short *)c * 0x300 + j] = (signed char)util_Random(0x40) - 0x20;
+                ai_Relations[0][*(unsigned short *)c + i] = (signed char)util_RandomU(0x40) - 0x20;
+                ai_Relations[0][*(unsigned short *)c * 0x300 + j] = (signed char)util_RandomU(0x40) - 0x20;
                 ai_RelationMemory[0][*(unsigned short *)c * 0x300 + j] = 0;
             }
             gm_PlaceOnStage(*(int *)(c + 4), *(int *)(o + 1), -1, 0, 0);
