@@ -15,8 +15,8 @@ d3anim_NextFrame to d3_io_t's set moved d3t_CreateSnowMipmaps 129 -> 131 (aceba2
 grade change to verify (all of the unit's functions, byte ones first), and a byte flip means the copy (in
 some spelling) stays.
 
-## State after the M5-per-symbol pass (2026-10-30, commits 3f47652 .. 1838168)
-The stricter M5 (every declaration against the definition) started at 546; it is **35** now, gate FAIL.
+## State after the M5-per-symbol pass (2026-10-30, commits 3f47652 .. 0700500)
+The stricter M5 (every declaration against the definition) started at 546; it is **0** now, gate ok.
 Done: the untyped `extern unsigned char X;` placeholders of src heads (3f47652, 1411928), the five headers
 that did not compile in the all-declarations unit (1beed7b), ~230 function copies as defined with the
 callers' views as `<name>K` / `<name>U` / `<name>S` .. casts in their heads (d6126a3, 99725af, 16ac8c8,
@@ -24,23 +24,33 @@ callers' views as `<name>K` / `<name>U` / `<name>S` .. casts in their heads (d61
 readers through `X<B|C|I|U|S|V>` views at the end of their head.c (cb005da, 1b8f951, 451bf2a).
 Definitions fixed instead: gm_BuildingRank (int), gm_CharacterWages (unsigned short id), d3d_LoadTexture
 (+ bpp), the five espionage handlers (+ int *m), ai_Objects (struct AIOBJ *), d2_ResizeWindow /
-d2_CreateChildWindow (prototype definitions).
-Left of M5 (35), each needs a type the reader does not see or a decision:
-- arrays of records declared `char X[]` / `unsigned char X` in src heads whose unit does not see the
-  record: d3_Scenes, d2_Wins, d2_Views, d2_Radios, d2_Inputs, ch_Motions, amt_Table, ai_Unka69140,
-  ai_Unk9367e0, ai_Unkf31160, ai_Missions, hst_Lists, ai_Grid, ai_Unkf83ec0 (an array of an incomplete
-  type is invalid C, so `struct TAG X[]` does not work): the unit needs the owner's header (or a
-  types-only header; try `dcp headers conflicts`); snd_AmbientOn / dm_L (non-struct typedefs).
-- the texture family by value: tex_Load / tex_Create / tex_CreateHi / tex_AliasForFlags take TSFLAGS (a
-  union) where d3.h / d3_fl.h / d3_engine.h / d3s pass D3TEXFLAGS (a struct); d3_Textures
-  (TSTEXTURE vs D3TEXTURE); d3_ClipMesh (D3CLIP by value). One texture record type (TSTEXTURE, with
-  D3TEXTURE / D3TEXHANDLE / D3FLTEX / D3IOTEX / D3IFSPRITE / D3TEXVIEW as its views) is the real fix.
-- gm_Offers (AISTORE[] in ai.h vs int[528]) and ai_Unk61a348 (G7GRP[] in am.h vs char[]): item 1
-  below; f3gm does not see the record types.
-- net_Conn (local anonymous struct views in f3init / hst / unk_4b39f0), ch_List (f3init's SCENEOBJ),
-  the OPTIONBYTES data of unk_5d33b0 (ai_GfxFloor / Detail / Resolution, ai_GamePanel: signedness and
-  char[] copies), init_PlayerProfile (INIT_PLAYER, item 4), ai_Unk5fb5b0 / ai_Unk1460ae0 / ai_Unk6ed92c
-  (no definition in src/: the copies disagree among themselves), sb_PlayVariation (unk_575860's K&R).
+d2_CreateChildWindow (prototype definitions), ai_Unk61a348 (G7GRP[37], 8ab4fb5), gm_Offers
+(AISTORE[88], 0700500).
+The last 35 (588a9e8 .. 0700500):
+- Types-only headers (`include/<owner>_types.h`, the owner's header includes it where the records stood):
+  d2_types.h (D2TEX, D2SURF, D2WIN, D2INPUT, D2RADIO, D2VIEW), d3_types.h (D3SCENE, D3TEXFLAGS),
+  ch_types.h (CHMOTION), amt_types.h (AMTREC), hst_types.h (G12ROW), cm_types.h (G17MSG, G17STAT),
+  f3snd_types.h (G16AMBIENTON), am_types.h (G7GRP), unk_4b39f0_types.h (G13MIS), unk_5d33b0_types.h
+  (OPTIONBYTES, was a type of unk_5d33b0's head), f3init_types.h (INIT_PLAYER, f3init has no header).
+  The readers include them and declare the tables as defined.
+- ai.h may not include a header: any include from ai.h (an empty file too, any name, any place) flips
+  ai_Unk483a60 (0x483a60, byte) to shape (obj / ok stack slots 0x10 / 0x18 swap); so do AIACT in ai's
+  set and any added typedef in ai's head. ai_types.h (AITIME, AISTORE) is therefore not included by
+  ai.h: ai.h keeps identical copies under the same guards AI_TIME_TYPE / AI_STORE_TYPE (a guard keeps
+  the byte). Change both copies together. ai's ai_Unkf83ec0 stays `char[]` (@original, that evidence).
+- Header includes instead of copies: ls (ai.h), unk_589f10 (di_input.h), f3init / hst / unk_4b39f0
+  (net.h, their local net_Conn struct views gone).
+- The texture family: TSFLAGS is a typedef of D3TEXFLAGS (one type); the headers' tex_Load / Create /
+  CreateHi / AliasForFlags and d3_Textures spell ts_texture.c's `struct TSTEXTURE *`; the d3 callers
+  cast the result to their D3TEXHANDLE / D3FLTEX / D3TEXTURE view at the call and read d3_Textures
+  through `(D3TEXTURE *)d3_Textures`. The records themselves are still separate types (D3TEXTURE.flags
+  at 0x68 is TSTEXTURE's bitfields, TSTEXTURE.flags is the 0x6c TSFLAGS): merging them is open.
+  d3_ClipMesh: d3_fl.h spells the definition, D3FLTILE.clip is also `D3CLIP clipCode` (a union).
+- Kept with @original byte evidence (a byte object read as a byte, VC6 loads a 4-byte union's byte with
+  a dword load): anm's `unsigned char ai_GfxDetail` (anm_Update 0x4bb884), main's `unsigned char
+  ai_GfxResolution` (main_OpenScreen 0x531d43).
+- Copies of names without a definition (ai_Unk5fb5b0, ai_Unk1460ae0, ai_Unk6ed92c) agree with each other;
+  they are address placeholders of d3_DefaultScene / net_Conn.s / a gfx surface pointer, still to name.
 Views added by the pass are `#define X<suffix> (*(OLD (*)..)&X)` / `((T (*)(..))f)` lines in the units'
 heads; most are drafts' old spellings (no byte evidence of their own): drop each when its function is raised.
 
