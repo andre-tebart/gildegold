@@ -25,6 +25,7 @@ tags.
   (61/256); the differences are the prologue / loop shape.
 
 ## Open work
+- **match-base 2026-10-30 (fourth session) left for the deep queue**: 0x5dd100 ai_SolveCannonAim (body complete and read against the original: bisection of the launch speed range[0..1] and elevation range[2..3], 16 steps, a +-2.5 m window around the target; the conditions use the original's `>` / `<` jump forms and the vectors are D3VECTOR4 for the 0x34 frame; 208 ins left, all allocation: the original keeps speed / angle / both steps on the FPU stack from before the loop (fld [ebx+0xc]; fld [ebx]; ..), the sign in ebp and the counter in ecx with g, 2g, 1/g, drop and horiz * 0.0254 in the slots 0x14 / 0x20 / 0x48 / 0x18 / 0x10 (some in the dead argument slots); ours loads speed through an int copy, keeps the sign in ecx and orders the three FPU temporaries differently, and `0.0254f * horiz` compiles `fld mem; fmul const` where the original has `fld const; fmul mem`).
 - **match-base 2026-10-30 left for the deep queue** (bodies written, all readable; asmdiff hunks left):
   0x5d5fd0 ai_OptionsGfxScreen (6 ins: the original stores the obj8 result at once and reads dd_Has1024x768 into al, ours
   keeps eax live; ids[4] fixes the frame), 0x5d6950 ai_OptionsGameScreen is shape (2 bytes: two stack-held control id
