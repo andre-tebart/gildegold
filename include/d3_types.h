@@ -1,6 +1,7 @@
 /* d3 records other units need without the rest of d3.h: the scene record of the table d3_Scenes and
    the texture flags tex_Load takes by value (ts_texture.c's TSFLAGS), the sort entry of d3_engine's
-   d3_SortBuf (d3_sm fills it). Types only; d3.h and d3_engine.h include it. */
+   d3_SortBuf (d3_sm fills it), the particle colour D3COLOR (d3_tools' d3t_CreateSmoke / CreateEarth take it
+   by value). Types only; d3.h and d3_engine.h include it. */
 #ifndef D3_TYPES_H
 #define D3_TYPES_H
 
@@ -37,5 +38,9 @@ typedef struct D3SORTENT {          /* 8 bytes, sorted by key with a radix sort 
     unsigned long key;
     void *item;                     /* a D3PTRI (d3_engine), a D3SMTRI (d3_sm) */
 } D3SORTENT;
+
+typedef struct D3COLOR {            /* a B, G, R, A colour (passed by value) */
+    unsigned char b, g, r, a;
+} D3COLOR;
 
 #endif

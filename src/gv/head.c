@@ -9,10 +9,10 @@ extern char ai_PlayerSlots[4][0x2f4];
 #include <string.h>
 #include <math.h>
 #include "gv.h"
+#include "d3_types.h"                 /* D3COLOR, for d3_tools.h */
+#include "d3_tools.h"
 #include "data_views.h"
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, ai_Unk4d88c0 0x4d88c0 move it as a word / movzx) */
-int d3t_CreateSmoke();  /* 0x416340, d3_tools.h: struct D3PARTSYS *(.., float .., struct D3COLOR); @original gv.c (0x4ee360) calls it without a prototype, its float operands as dword bit patterns (gv.c has no D3COLOR: d3.h is not in this unit) */
-int d3t_CreateEarth();  /* 0x4168e0, d3_tools.h: as d3t_CreateSmoke; @original the same call without a prototype (0x4ee360) */
 #define d3t_CreateExplosionK ((int (*)())d3t_CreateExplosion)  /* 0x416040 (d3_tools.c): @original this unit's calls were compiled without a prototype (float arguments as double, an int result) */
 #define d3t_CreateEarthK ((int (*)())d3t_CreateEarth)  /* 0x4168e0 (d3_tools.c): @original this unit's calls were compiled without a prototype (float arguments as double, an int result) */
 #define d3t_CreateSmokeK ((int (*)())d3t_CreateSmoke)  /* 0x416340 (d3_tools.c): @original this unit's calls were compiled without a prototype (float arguments as double, an int result) */

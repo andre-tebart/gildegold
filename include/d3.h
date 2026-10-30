@@ -283,9 +283,6 @@ void d3fl_Flush(void);                                                          
 struct D3FLMAP;
 void d3fl_ReloadTextures(struct D3FLMAP *map);                                          /* 0x442280 */
 
-typedef struct D3COLOR {
-    unsigned char b, g, r, a;
-} D3COLOR;
 
 /* Particle systems (d3_par, "d3_par:ParticleSystem"). The engine allocates the particles and calls
    the system's callback each frame; the callbacks in d3_tools.c animate them. */
