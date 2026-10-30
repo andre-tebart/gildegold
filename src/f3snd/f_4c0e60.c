@@ -123,16 +123,16 @@ void ai_Unk4c0e60(void)
                 sb_PlaySample(0, "Gackern_s", rand() % ai_Unk602bd8[ai_Unk6f0b9c][2].count + 1, 0x3f,
                     (int)(h * ai_Unk602bd8[ai_Unk6f0b9c][2].vol * 127.0f), 0, 0);
         }
-        if (snd_AmbientTrack != 0 && ai_MarketBuilding != 0) {
-            d3_PointToWorld(ai_MarketBuilding->object, ai_MarketBuilding->object + 0x4c, v);
+        if (snd_AmbientTrack != 0 && ai_MarketBuildingV != 0) {
+            d3_PointToWorld(ai_MarketBuildingV->object, ai_MarketBuildingV->object + 0x4c, v);
             k = ch_CountAt(0, 0, v, 900.0f) * 0x14;
             if (k > 0x7e)
                 k = 0x7f;
             d3snd_SetVolume(snd_AmbientTrack, k);
         }
     }
-    if (ai_PlayerBuilding != 0 && snd_AmbientOn.on != 0) {
-        c = ai_BTypes[*ai_PlayerBuilding * 0x24d];
+    if (ai_PlayerBuildingB != 0 && snd_AmbientOn.on != 0) {
+        c = ai_BTypes[*ai_PlayerBuildingB * 0x24d];
         if (c == 0x16 && sv_PanelShown != 0 && *sv_PanelShown == 0x120) {
             n = ch_Count(d3_CurrentScene, 0) * 9;
             vol = min(n, 64.0f);
@@ -147,12 +147,12 @@ void ai_Unk4c0e60(void)
             n = ch_Count(d3_CurrentScene, 0) * 6;
             vol = min(n, 64.0f);
             if (ai_Unk6f0ba0 == 0) {
-                if (*(int *)(ai_PlayerBuilding + 0x95) == -1)
+                if (*(int *)(ai_PlayerBuildingB + 0x95) == -1)
                     return;
                 ai_Unk6f0ba0 = msx_PlayAmbient("Athmos\\Athmo_Handwerk.mp3", (int)vol);
                 return;
             }
-            if (*(int *)(ai_PlayerBuilding + 0x95) == -1) {
+            if (*(int *)(ai_PlayerBuildingB + 0x95) == -1) {
                 msx_StopAmbient(ai_Unk6f0ba0);
                 ai_Unk6f0ba0 = 0;
                 return;

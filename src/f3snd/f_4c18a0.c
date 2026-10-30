@@ -13,8 +13,8 @@ void snd_EnterBuilding(void)
     G16LOC *l;
     char *msg;
 
-    b = ai_PlayerBuilding;
-    if (b == 0 && (b = ai_FallbackBuilding) == 0)
+    b = ai_PlayerBuildingB;
+    if (b == 0 && (b = ai_FallbackBuildingB) == 0)
         return;
     k = 0;
     kind = (unsigned char)ai_BTypes[*b * 0x24d];

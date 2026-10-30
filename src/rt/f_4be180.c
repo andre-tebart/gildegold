@@ -33,15 +33,15 @@ int rt_Unk4be180(int x, RTPOINT *p)
     for (i = 0; i < n; i++) {
         o = d2_WinOpenPic(i % 4 << 6, i / 4 << 6, goods[i] + 0xdf, d2_LastWindow);
         objs[i] = o;
-        *(int *)(d2_Objs + o * 0x2ec + 0x4c) = 1;
-        *(int *)(d2_Objs + o * 0x2ec + 0x1c0) = 3;
-        *(int *)(d2_Objs + o * 0x2ec + 0x1d4) = 0x525;
+        *(int *)(d2_ObjsC + o * 0x2ec + 0x4c) = 1;
+        *(int *)(d2_ObjsC + o * 0x2ec + 0x1c0) = 3;
+        *(int *)(d2_ObjsC + o * 0x2ec + 0x1d4) = 0x525;
     }
     goods[i] = 0;
     o = d2_WinOpenPic(i % 4 * 0x40 + 7, i / 4 * 0x40 + 7, 0x527, d2_LastWindow);
     objs[i] = o;
-    *(int *)(d2_Objs + o * 0x2ec + 0x4c) = 1;
-    *(int *)(d2_Objs + o * 0x2ec + 0x1c0) = 3;
+    *(int *)(d2_ObjsC + o * 0x2ec + 0x4c) = 1;
+    *(int *)(d2_ObjsC + o * 0x2ec + 0x1c0) = 3;
     while (sv_RunFrame(rt_Unk4be180, 0x657c7)) {
         if (dm_L.rup != 0 || ret != 0 || d2_ClickedId != -1 && d2_PointerObj == ok)
             sv_PopRequest = 1;

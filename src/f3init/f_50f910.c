@@ -143,7 +143,7 @@ void init_OpenTown(void)
             cm_AddFieldDelta(4, 1, 0x69, &n);
             cm_SendFieldDeltas();
             cl = (unsigned char *)ai_BTypes + ((INIT_BLD *)b)->type * 0x24d;
-            cm_SendOwnership(((INIT_BLD *)b)->id, ((INIT_CHAR *)ai_PlayerChar)->netId, ((INIT_CHAR *)ai_PlayerChar)->netId);
+            cm_SendOwnership(((INIT_BLD *)b)->id, ((INIT_CHAR *)ai_PlayerCharC)->netId, ((INIT_CHAR *)ai_PlayerCharC)->netId);
             cm_SendMessage3d(b, 1, cl[0x230], cl[0x223]);
             cm_SendMessage3d(b, 0, cl[0x22f], 0);
             cm_SendMessage3d(b, 0, cl[0x22f], 0);
@@ -256,7 +256,7 @@ void init_OpenTown(void)
             || ((cls[(unsigned char)*cl] != 2 && cls[(unsigned char)*cl] != 1)
                 || (ai_Chars[o][2] != 5 && ai_Chars[o][2] != 4))) {
             if (cls[(unsigned char)*cl] == 0 && o == 0xffff)
-                cm_SendOwnership(((INIT_BLD *)b)->id, ((INIT_CHAR *)ai_PlayerChar)->netId, ((INIT_CHAR *)ai_PlayerChar)->netId);
+                cm_SendOwnership(((INIT_BLD *)b)->id, ((INIT_CHAR *)ai_PlayerCharC)->netId, ((INIT_CHAR *)ai_PlayerCharC)->netId);
         } else if (init_AiTown != 0) {
             if (*cl != 9 && *cl != 5) {
                 if (*cl == 4 || *cl == 0x10 || *cl == 0x13) {
@@ -285,7 +285,7 @@ void init_OpenTown(void)
             INIT_AIMSG m2;
 
             m2.type = 0x1b;
-            m2.to = ((INIT_CHAR *)ai_PlayerChar)->netId;
+            m2.to = ((INIT_CHAR *)ai_PlayerCharC)->netId;
             m2.fromId = -1;
             m2.flags = 2;
             m2.arg[0] = ((INIT_BLD *)b)->id;

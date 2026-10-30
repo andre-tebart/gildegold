@@ -102,7 +102,7 @@ int ai_ApplyGfxOptions(void)
         d3if_SelectScene(scene, 0);
     }
     d3_ApplyGraphicsOptions(ai_GfxFloor.byte[0], 0, 2 - ai_GfxDetail.byte[1], changed, 0);
-    if (ai_PlayerBuilding == 0 && ai_FallbackBuilding == 0)
+    if (ai_PlayerBuildingB == 0 && ai_FallbackBuildingB == 0)
         d3o_FogScale = 1.0 - (double)ai_GfxFog.byte[0] * 0.01;
     for (i = 0; i < 0x300; i++) {
         c = ch_List[i];

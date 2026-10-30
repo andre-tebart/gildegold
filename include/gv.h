@@ -121,7 +121,7 @@ void cm_BeginFieldBlock(char *o, int id);                     /* 0x4c3ba0 */
 int cm_AddFieldValues(unsigned char size, unsigned char n, unsigned short field, void *v);                     /* 0x4c3d00 */
 void cm_SendFieldDeltas(void);                     /* 0x4c49a0 */
 extern char *ai_Blds;                   /* 0x889f74, 256 records of 0xa9 bytes */
-extern char *ai_PlayerChar;              /* 0x6f1bf8 */
+extern unsigned short *ai_PlayerChar;    /* 0x6f1bf8, the player's character (ai.c; this header's units add byte offsets through ai_PlayerCharC) */
 extern const float ai_Unk5ebba4[];          /* 0x5ebba4, d3_Origin (as cm.h) */
 extern const char ai_Unk5ebbb4[];                 /* 0x5ebbb4 */
 extern char ai_Unk6f0e40[], ai_Unk6f0e44[];  /* 0x6f0e40, 0x6f0e44 */

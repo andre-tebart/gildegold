@@ -18,7 +18,7 @@ void ai_Unk47e990(AICHAR *c)
         }
         if (c->bld->owner == c->id)
             c->budget = gm_GetGoodsValue(c);
-        if (c->bld == ai_PlayerBuilding || c->bld == ai_FallbackBuilding) {
+        if (c->bld == ai_PlayerBuildingT || c->bld == ai_FallbackBuildingT) {
             w = &ai_Watch;
             w->bld = c->bld;
             w->ch = c;

@@ -11,8 +11,8 @@ int ls_FixupAfterLoad(void)
     int *owner, *ev70, *ev10, *evb8, *list, *next;
     unsigned char **v24;
 
-    ai_PlayerChar = (char *)gm_FindChar((int)ai_PlayerChar);
-    if (ai_PlayerChar == 0)
+    ai_PlayerCharC = (char *)gm_FindChar((int)ai_PlayerCharC);
+    if (ai_PlayerCharC == 0)
         return 0;
     ai_MarketBuilding = (int)gm_BuildQuery(1, 5, 10);
     if (ls_Version >= 0x10017) {

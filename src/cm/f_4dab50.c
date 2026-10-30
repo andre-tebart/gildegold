@@ -34,7 +34,7 @@ int ai_Unk4dab50(int a, char *b, int *c, int *out)
         btn[i] = d2_GetWinObj(v, 0, io_PrintText("$a%1N3$A", *(unsigned short *)cand[i]));
     for (; i < 4; i++)
         btn[i] = -1;
-    dlg = d2_WinOpenSlider((*(short *)(d2_LastWindowPtr + 8) - 300) / 2 - 8, 8, 300, 0, 100, 0x75, 0x42, d2_LastWindow);
+    dlg = d2_WinOpenSlider((*(short *)(d2_LastWindowPtrC + 8) - 300) / 2 - 8, 8, 300, 0, 100, 0x75, 0x42, d2_LastWindow);
     ai_Unk4e53e0(dlg, 0x5dc, 1);
     d2_ClickedId = -1;
     while (sv_RunFrame(ai_Unk4da9e0, ai_Unk60d360) != 0) {

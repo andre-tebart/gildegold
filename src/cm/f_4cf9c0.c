@@ -14,7 +14,7 @@ void ai_Unk4cf9c0()
     if (d2_ClickedId != -1) {
         for (e = ai_Unk930400; e < ai_Unk930400 + 0xc0; e += 0x20) {
             if (G19_E(e, 8) != -1 && ai_Unk5fe710 == G19_E(e, 0)) {
-                if (*(char **)(d2_Objs + G19_E(e, 0) * 0x2ec + 0x28) != 0)
+                if (*(char **)(d2_ObjsC + G19_E(e, 0) * 0x2ec + 0x28) != 0)
                     *(char *)(*(char **)(e + 0x1c) + 0x188) = 1;
                 else
                     *(char *)(*(char **)(e + 0x1c) + 0x188) = 0;
@@ -45,7 +45,7 @@ void ai_Unk4cf9c0()
         if (o == 0 || *(int *)o == 0)
             continue;
         if (G19_E(e, 0x14) != -1) {
-            if (*(int *)(d2_Objs + G19_E(e, 0x14) * 0x2ec + 8) != *(int *)o + 0xdf) {
+            if (*(int *)(d2_ObjsC + G19_E(e, 0x14) * 0x2ec + 8) != *(int *)o + 0xdf) {
                 if (G19_E(e, 0x14) != -1)
                     d2_RemoveObj(G19_E(e, 0x14));
                 d2_LastWindow = G19_E(e, 8);

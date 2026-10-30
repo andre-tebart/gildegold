@@ -21,13 +21,13 @@ int unk_Unk51c950(int name)
         return 0;
     gm_ResetCharacters();
     ch_DeleteAll();
-    ai_PlayerChar = 0;
+    ai_PlayerCharC = 0;
     ai_JudgeCatholic = 0;
     ai_JudgeProtestant = 0;
     init_FreeScenes();
     if (ls_ReadSaveHeader(h, ai_Unk76f920) == 0 || ai_Unk76f920[0] > 0x1005a || ai_Unk76f920[0] < 0x10026
         || !LS_RD(&ai_NextObjectId, 4) || !LS_RD(&ai_Unk6f2618, 4) || !LS_RD(ai_Time, 0xe)
-        || !LS_RD(&ai_OwnPlayer, 1) || !LS_RD(&ai_PlayerChar, 4) || !LS_RD(&ai_Unk6f1bb8, 4)
+        || !LS_RD(&ai_OwnPlayer, 1) || !LS_RD(&ai_PlayerCharC, 4) || !LS_RD(&ai_Unk6f1bb8, 4)
         || !LS_RD(&ai_Unk6f1bbc, 4) || !LS_RD(&ai_CharCount, 4)) {
         vfs_fclose(h);
         return 0;

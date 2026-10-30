@@ -24,7 +24,7 @@ int rt_Unk4bdb30(char *win, int b, RTPOINT *list, RTPOINT *p)
     ai_Unk5a6b70(pt, x, z);
     o = d2_WinOpenPic((int)pt[0] - 0x20, (int)pt[1] - 0x20, rt_PointIndex(list, p) + 0x7bb, *(int *)(win + 8));
     rt_Marks[rt_MarkCount].obj = o;
-    *(int *)(d2_Objs + o * 0x2ec + 0x48) = 1;
+    *(int *)(d2_ObjsC + o * 0x2ec + 0x48) = 1;
     if (rt_MarkGroup == -1)
         rt_MarkGroup = d2_CreateRadioGroup(1, rt_Marks[rt_MarkCount].obj);
     else

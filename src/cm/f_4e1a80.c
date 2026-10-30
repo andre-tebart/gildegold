@@ -124,7 +124,7 @@ void ai_Unk4e1a80(char *m)
             cm_AddFieldDelta(0, 0x69, 1, 4);
             cm_AddFieldDelta(0, 0x6d, 1, 4);
             cm_SendFieldDeltas();
-            cm_SendOwnership(ai_PlayerChar, 0, 0);
+            cm_SendOwnership(ai_PlayerCharC, 0, 0);
             gm_FirstBuilding(1);
             gm_Query(0x115, 0, 6, 2, 0);
             cm_SendMoveGoodsUnchecked(util_Random(5) % 5, 0, 0, 0);
@@ -134,7 +134,7 @@ void ai_Unk4e1a80(char *m)
         d2_SetForm(0, v);
         io_PrintText(0x1aa5, 0);
         if (ids[0] == ai_CharInts[ai_PlayerId][0])
-            cm_SendOwnership(ai_PlayerChar, 0, 0);
+            cm_SendOwnership(ai_PlayerCharC, 0, 0);
     }
     ai_Unk4e32d0(0x1f4, 8, "_VERSTEIGERUNG_GEBOTE", 0, 0);
     ai_Unk4e2c70(ai_Unk4e2c30("cutscenes\\auktion\\Auktion_Outro.esc", &ch_EmptyName));

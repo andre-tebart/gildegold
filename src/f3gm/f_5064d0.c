@@ -17,7 +17,7 @@ unsigned gm_Unk5064d0(int a, int b)
     for (i = 0; i < 0x100; i++) {
         char *bl = ai_Blds + i * 0xa9;
         if (*bl != 0 && gm_BuildingClass((unsigned char)*bl) == 2 && *(unsigned short *)(bl + 0x27) == *ca)
-            gm_AssignBuilding((int)bl, *(unsigned short *)ai_PlayerChar, *(unsigned short *)ai_PlayerChar);
+            gm_AssignBuilding((int)bl, *(unsigned short *)ai_PlayerCharC, *(unsigned short *)ai_PlayerCharC);
     }
     sa = *ca;
     money = (int)gm_GetWorth(sa);

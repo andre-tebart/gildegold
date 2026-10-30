@@ -14,7 +14,7 @@ void sv_Unk528770(void)
     while (o != 0) {
         if (*(unsigned short *)(o + 0x27) != 0xffff)
             c = ai_Chars[*(unsigned short *)(o + 0x27)];
-        if (c != 0 && c != ai_PlayerChar && ((t = c[2]) == 6 || t == 7 || t == 5) && (o[0x5a] & 1) == 0) {
+        if (c != 0 && c != ai_PlayerCharC && ((t = c[2]) == 6 || t == 7 || t == 5) && (o[0x5a] & 1) == 0) {
             sv_Unk5286a0(o);
             sv_Unk5282f0(o);
         }

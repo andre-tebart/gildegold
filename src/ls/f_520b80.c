@@ -17,12 +17,12 @@ int ls_ReceiveGame(void)
         ai_Unkf31140 = 0;
         return 0;
     }
-    ai_PlayerChar = 0;
+    ai_PlayerCharC = 0;
     ls_ReadSaveHeader(fh, hdr);
     if ((((char *)hdr)[4] & 2) != 0 && hdr[0] <= 0x1005a) {
 #define LS_RF(p, sz) ls_Read((int)(p), (sz), 1, fh)
         if (!LS_RF(&ai_NextObjectId, 4) || !LS_RF(&ai_Unk6f2618, 4) || !LS_RF(ai_Time, 0xe)
-            || !LS_RF(&ai_OwnPlayer, 1) || !LS_RF(&ai_PlayerChar, 4) || !LS_RF(&ai_Unk6f1bb8, 4)
+            || !LS_RF(&ai_OwnPlayer, 1) || !LS_RF(&ai_PlayerCharC, 4) || !LS_RF(&ai_Unk6f1bb8, 4)
             || !LS_RF(&ai_Unk6f1bbc, 4) || !LS_RF(&ai_CharCount, 4)) {
             vfs_fclose(fh);
             goto fail;

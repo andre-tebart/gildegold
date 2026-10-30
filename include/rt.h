@@ -33,7 +33,7 @@ extern unsigned char ai_OwnPlayer;      /* 0x6f1bc5, the player */
 #ifndef DATA_VIEWS_H
 extern char ai_Unkfd7c50[];            /* 0xfd7c50 (as cm.h) */
 #endif
-extern char *d2_Objs;                   /* 0xf8f080, 0x2ec bytes each; @original: d2.h declares D2OBJ *; rt_SetMarkPic (0x4bf360, byte) adds byte offsets to it (d2_Objs + obj * 0x2ec + 8), the D2OBJ fields need d2.h, which rt.c cannot include */
+extern struct D2OBJ *d2_Objs;  /* 0xf8f080, 0x2ec bytes each (d2.c); this header's unit adds byte offsets through d2_ObjsC */
 extern char *ai_BTypes;                 /* 0x7e3f30, ai.h: AIBTYPE * (0x24d bytes each, the kind at 0) */
 extern unsigned int ai_Unk889400[];     /* 0x889400, the goods of the last routing_choose_good list (0 ends) */
 extern unsigned short ai_Unk76fdc4;     /* 0x76fdc4, their number */

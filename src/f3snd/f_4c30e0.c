@@ -8,7 +8,7 @@ void snd_StartMarketAmbience(void)
     int smp;
 
     if (snd_AmbientTrack == 0) {
-        o = ai_MarketBuilding->object;
+        o = ai_MarketBuildingV->object;
         if (o != 0) {
             smp = sb_GetSample(0, "Athmo_Marktplatz_Mono_4Bit");
             snd_AmbientTrack = d3snd_Attach(smp, o, 0x7f, 2200.0f);

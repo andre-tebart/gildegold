@@ -12,7 +12,7 @@ void ai_Unk4e2910(char *o, int id)
 
     if (ai_Unk6f0d8c != 0)
         return;
-    if (((char *)ai_PlayerBuilding == o && *(unsigned short *)(o + 0x29) == id) || ((char *)ai_FallbackBuilding == o && *(unsigned short *)(o + 0x29) == id)) {
+    if (((char *)ai_PlayerBuildingT == o && *(unsigned short *)(o + 0x29) == id) || ((char *)ai_FallbackBuildingT == o && *(unsigned short *)(o + 0x29) == id)) {
         if (((char *)ai_Unk6f0d90)[0x26] & 0x20) {
             d2_ClearSurface(d2_ScreenSurf);
             G27_FRAME(d2_ScreenSurf, ai_Unk6ed92c);

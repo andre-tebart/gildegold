@@ -61,9 +61,9 @@ int init_InitTown(char *city)
     }
     cm_BeginSendGroup();
     ch = (INIT_CHAR *)cm_GetSlotValue(bank);
-    ai_PlayerChar = (char *)ch;
+    ai_PlayerCharC = (char *)ch;
     strcpy(ch->name, "STADT");
-    cm_SendMoveGoods(((INIT_CHAR *)ai_PlayerChar)->netId, -1, ai_OwnPlayer, 200000000);
+    cm_SendMoveGoods(((INIT_CHAR *)ai_PlayerCharC)->netId, -1, ai_OwnPlayer, 200000000);
     i = cm_SendGroupState();
     while (i == 0) {
         cm_FlushSendQueue();
@@ -76,7 +76,7 @@ int init_InitTown(char *city)
     p = init_SlotCurrency;
     do {
         if (*p != 0)
-            cm_SendMoveGoods(((INIT_CHAR *)ai_PlayerChar)->netId, -1, i, 200000000);
+            cm_SendMoveGoods(((INIT_CHAR *)ai_PlayerCharC)->netId, -1, i, 200000000);
         p += 0x17a;
         i++;
     } while ((int)p < (int)INIT_SLOT_CURRENCY_END);
@@ -91,7 +91,7 @@ int init_InitTown(char *city)
     }
     h = gm_BuildQuery(1, 5, 0x1c);
     while (h != 0) {
-        gm_AssignBuilding(h, ((INIT_CHAR *)ai_PlayerChar)->id, ((INIT_CHAR *)ai_PlayerChar)->id);
+        gm_AssignBuilding(h, ((INIT_CHAR *)ai_PlayerCharC)->id, ((INIT_CHAR *)ai_PlayerCharC)->id);
         h = gm_BuildNext();
     }
     gm_UpdatePlayers();

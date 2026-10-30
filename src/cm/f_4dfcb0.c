@@ -10,7 +10,7 @@ void ai_Unk4dfcb0(char *m)
     io_PrintText(0x10de, *(int *)ai_Unk6f0d74);
     m[0x94] = 0;
     m[0x14] = ch_EmptyName;
-    dlg = d2_WinOpenSlider((*(short *)(d2_LastWindowPtr + 8) - 300) / 2 - 8, 8, 300, 0, 100, 0x75, 0x42, d2_LastWindow);
+    dlg = d2_WinOpenSlider((*(short *)(d2_LastWindowPtrC + 8) - 300) / 2 - 8, 8, 300, 0, 100, 0x75, 0x42, d2_LastWindow);
     ai_Unk4e53e0(dlg, ai_Unk60d364 * 0x4b, 1);
     while (sv_RunFrame(ai_Unk4dfcb0, ai_Unk60d360) != 0) {
         if (ai_Unk4e53e0(dlg, 0, 0) == 0)

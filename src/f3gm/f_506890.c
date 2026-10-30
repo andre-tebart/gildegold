@@ -34,11 +34,11 @@ void gm_Unk506890(char *a, char *b)
     flag = 0;
     if (unk_Unk4f2540(a, (unsigned char **)&o, (int *)&e) != 0) {
         unk_Unk4f01d0((int *)a, o, e[0], gv_EntryIndex(*(char **)(o + 0x65), e));
-        if (b != 0 && b != ai_PlayerChar && e[1] == *(int *)(a + 4))
+        if (b != 0 && b != ai_PlayerCharC && e[1] == *(int *)(a + 4))
             unk_Unk4f0900((int *)b, o, e[0], gv_EntryIndex(*(char **)(o + 0x65), e));
     }
     s = (char *)gm_BuildQuery(1, 4, *(unsigned short *)a);
-    pl = ai_PlayerChar;
+    pl = ai_PlayerCharC;
     while (s != 0) {
         k = gm_BuildingClass((unsigned char)s[0]);
         if (k == 2)
@@ -47,7 +47,7 @@ void gm_Unk506890(char *a, char *b)
             cm_SendOwnership(*(int *)(s + 1), *(int *)(b + 4), *(int *)(b + 4));
             flag = 1;
         }
-        pl = ai_PlayerChar;
+        pl = ai_PlayerCharC;
         if (b == pl && k != 2 && (s[0x5a] & 1) == 0) {
             memset(m, 0, 0xf8);
             m[4] = 0x1b;
@@ -73,7 +73,7 @@ void gm_Unk506890(char *a, char *b)
                     cm_SendLongMessage(m);
                 }
             }
-            pl = ai_PlayerChar;
+            pl = ai_PlayerCharC;
         }
         objs[n++] = s;
         s = (char *)gm_BuildNext();
@@ -87,7 +87,7 @@ void gm_Unk506890(char *a, char *b)
         if (flag && (b[2] == 3 || b[2] == 8 || b[2] == 9))
             cm_AddFieldDelta(1, 1, (b - ai_Chars[0]) + 2, &v);
         cm_SendFieldDeltas();
-        pl = ai_PlayerChar;
+        pl = ai_PlayerCharC;
     }
     if (b[2] != 6 && b[2] != 7) {
         if ((a[2] == 6 || a[2] == 7 || a[2] == 5) && b == pl) {

@@ -30,7 +30,7 @@ int io_CharacterNameMarkup(int id, unsigned char c, unsigned char kind, char *ou
     }
     N = rec + 0x30;
     T = rec + 0x40;
-    if (rec == ai_PlayerChar) {
+    if (rec == ai_PlayerCharC) {
         strcpy(out, ai_PlayerSlots[ai_OwnPlayer]);
         if (c == 2)
             strcat(out, "s");

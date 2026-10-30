@@ -172,7 +172,7 @@ extern int cm_NetFlags;                /* 0x6f2594, flags */
 extern unsigned ai_Unka68d28;           /* 0xa68d28, size of the load buffer */
 extern char *ai_Unkf31140;              /* 0xf31140, the load buffer ("cm_LoadBuf") */
 extern unsigned ai_Unkf81220;           /* 0xf81220, bytes in it */
-extern char *ai_PlayerChar;              /* 0x6f1bf8, ai.h: unsigned short * */
+extern unsigned short *ai_PlayerChar;    /* 0x6f1bf8, the player's character (ai.c; this header's units add byte offsets through ai_PlayerCharC) */
 
 int ai_Unk4c3180(G17MSG *m);                                                     /* 0x4c3180 */
 void ai_InitStates(void);                                                         /* 0x4c3480 */
@@ -687,7 +687,7 @@ void d2_AddPointerItem(int id, int amount);  /* 0x476b90 */
 void d2_ClearPointerItems(void);  /* 0x476c70 */
 extern int d2_ClickedId;  /* 0xf8a668 */
 extern char ai_Unk930400[];  /* 0x930400 */
-extern char *d2_Objs;  /* 0xf8f080, 0x2ec bytes each; @original: d2.h declares D2OBJ *; the units add byte offsets to it and cannot include d2.h (vfs_Root / vfs_Tfopen clash with vfs.h) */
+extern struct D2OBJ *d2_Objs;  /* 0xf8f080, 0x2ec bytes each (d2.c); this header's unit adds byte offsets through d2_ObjsC */
 
 void ai_Unk4cfc10();  /* 0x4cfc10 */
 void ai_Unk4cfe70();  /* 0x4cfe70 */
@@ -905,7 +905,7 @@ int gm_StallGoodsList(char *c, unsigned *out);  /* 0x50aa00 */
 extern int ai_Unk6f0cf8;  /* 0x6f0cf8 */
 extern int ai_Unk6f0cfc;  /* 0x6f0cfc */
 extern int sv_PopRequest;  /* 0x6f22a0 */
-extern char *d2_LastWindowPtr;  /* 0x6ed980, window created last; @original: d2.h declares D2WIN *; the units add byte offsets to it and cannot include d2.h (vfs_Root / vfs_Tfopen clash with vfs.h) */
+extern struct D2WIN *d2_LastWindowPtr;  /* 0x6ed980, window created last (d2.c); cm.c adds byte offsets through d2_LastWindowPtrC */
 
 int ai_Unk4d3ea0(char *a, char *b, char *d, int unused, float f);  /* 0x4d3ea0 */
 float gm_GoodsPrice(unsigned id, unsigned char p);  /* 0x5089c0, a price */
@@ -1157,8 +1157,8 @@ struct D2FADE * d2_StartFade(int x, int y, int w, int h, char *name, int dur, un
 void init_LoadObjectScene();  /* 0x50d7f0 */
 int init_LoadBuildingScene();  /* 0x50dc30 */
 char d3_InflateScene(unsigned int flags);  /* 0x43deb0 */
-extern struct AIBLD *ai_PlayerBuilding;  /* 0x6f2308, the building the player is in (as ai.h; cm.c only compares it), @original: f3snd.h declares unsigned char * (f3snd.c adds byte offsets and derefs it into ai_BTypes[*b * 0x24d]); ai_Unk47e990 (0x47e990, byte) compares it with an AICHAR's bld */
-extern struct AIBLD *ai_FallbackBuilding;  /* 0x6f230c (as ai.h; cm.c only compares it), @original: f3snd.h declares unsigned char * (as ai_PlayerBuilding) */
+extern char *ai_PlayerBuilding;          /* 0x6f2308, the building the player is in: an AIBLD (sv.c defines char *; ai_PlayerBuildingT views) */
+extern char *ai_FallbackBuilding;        /* 0x6f230c, the second current building, used when 0x6f2308 is 0 (sv.c defines char *) */
 extern char *ai_Unk6ed92c;  /* 0x6ed92c */
 extern unsigned int ai_Unk63349c;  /* 0x63349c */
 extern unsigned int ai_Unk6f0d98;  /* 0x6f0d98 */

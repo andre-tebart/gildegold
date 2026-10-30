@@ -29,7 +29,7 @@ void sv_Unk528860(unsigned char *o)
     ai_Unk623864 = d2_WinOpenPic((*(short *)(ai_Unkf8f128 + d2_LastWindow * 0x3c4) - 0x30) >> 1, 0x48, *o + 0x427, d2_LastWindow);
     *(int *)(d2_Objs + 0x4c + ai_Unk623864 * 0x2ec) = 1;
     owner = *(unsigned short *)(o + 0x27);
-    if (owner != 0xffff && owner != *(unsigned short *)ai_PlayerChar)
+    if (owner != 0xffff && owner != *(unsigned short *)ai_PlayerCharC)
         *(char **)(d2_Objs + 0x2e8 + ai_Unk623864 * 0x2ec) = ai_Chars[owner];
     kind = *o;
     if (kind == 0x47 || kind == 0x1d || kind == 0x57)

@@ -3,7 +3,7 @@
 /* 0x4dd960, the court's (and torture's) question dialogs of the player for a request m of kinds 0 .. 6 ("cutscenes\\prozess": a yes / no
    box, "cutscenes\\folterwahl": three choices); r +0x10 the asking character, +0x94 the answer, +0x98 a value. The bodies stand in the order
    0, 1, 2, 3, 6, 4, 5 (jump table 0x4de324). ROUGH */
-#define CUT_BOX() d2_WinOpenSlider((*(short *)(d2_LastWindowPtr + 8) - 300) / 2 - 8, 8, 300, 0, 100, 0x75, 0x42, d2_LastWindow)
+#define CUT_BOX() d2_WinOpenSlider((*(short *)(d2_LastWindowPtrC + 8) - 300) / 2 - 8, 8, 300, 0, 100, 0x75, 0x42, d2_LastWindow)
 
 void ai_Unk4dd960(char *r, int *m)
 {

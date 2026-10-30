@@ -13,7 +13,7 @@ unsigned unk_Unk4f1200(char *p)
     if (*(int *)(p + 0x15) != 0x1b && *(int *)(p + 0x15) != 0x1c)
         return (unsigned)-6;
     gm_FindById(&o, 0, 0, *(int *)(p + 8));
-    if (o == 0 || *(unsigned short *)(o + 0x27) == 0xffff || ai_Chars[*(unsigned short *)(o + 0x27)] == ai_PlayerChar)
+    if (o == 0 || *(unsigned short *)(o + 0x27) == 0xffff || ai_Chars[*(unsigned short *)(o + 0x27)] == ai_PlayerCharC)
         return (unsigned)-1;
     if (ai_BTypes[o[0] * 0x24d] != 0x1d)
         return (unsigned)-2;

@@ -6,7 +6,7 @@ int unk_Unk4f0dd0(unsigned char *p)
     int n;
 
     gm_FindById(&o, 0, 0, *(int *)(p + 8));
-    if (o == 0 || *(unsigned short *)(o + 0x27) == 0xffff || ai_Chars[*(unsigned short *)(o + 0x27)] == ai_PlayerChar)
+    if (o == 0 || *(unsigned short *)(o + 0x27) == 0xffff || ai_Chars[*(unsigned short *)(o + 0x27)] == ai_PlayerCharC)
         return -1;
     if (ai_BTypes[o[0] * 0x24d] != 0x1d)
         return -2;

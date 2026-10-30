@@ -22,7 +22,7 @@ void unk_Unk4f1de0(char *o)
     nrel = 0;
     paid = 0;
     sum = 0;
-    if (ow != 0xffff && ow != *(unsigned short *)ai_PlayerChar)
+    if (ow != 0xffff && ow != *(unsigned short *)ai_PlayerCharC)
         pl = ai_Chars[ow];
     e = (int *)gv_FindEntry(0, (unsigned char *)o, 0, gv_EntryIsUsed, 0xff);
     do {

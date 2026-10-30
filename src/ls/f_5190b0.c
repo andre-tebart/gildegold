@@ -19,7 +19,7 @@ int ls_SaveGame(int name, char *path, unsigned flags)
     vfs_fwrite(&ai_Unk6f2618, 4, 1, f);
     vfs_fwrite(ai_Time, 0xe, 1, f);
     vfs_fwrite(&ai_OwnPlayer, 1, 1, f);
-    vfs_fwrite(ai_PlayerChar + 4, 4, 1, f);
+    vfs_fwrite(ai_PlayerCharC + 4, 4, 1, f);
     vfs_fwrite(&ai_Unk6f1bb8, 4, 1, f);
     vfs_fwrite(&ai_Unk6f1bbc, 4, 1, f);
     vfs_fwrite(&ai_CharCount, 4, 1, f);

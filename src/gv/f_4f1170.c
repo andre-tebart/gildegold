@@ -7,7 +7,7 @@ int unk_Unk4f1170(char *o, int v, int b, int x, int y)
     char m[0x19];
 
     ch = *(unsigned short *)(o + 0x27);
-    if (ch != 0xffff && ch != *(unsigned short *)ai_PlayerChar && b != -1) {
+    if (ch != 0xffff && ch != *(unsigned short *)ai_PlayerCharC && b != -1) {
         *(int *)(m + 8) = *(int *)(o + 1);
         m[0x10] = (char)b;
         *(int *)(m + 0x11) = x;

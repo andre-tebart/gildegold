@@ -138,7 +138,7 @@ void unk_Unk4ee360(int w, int sub, char *p, UNKHITS *out)
                 if (h.e[i].state == 1) {
                     msg[4] = 0x4f;
                     if (*(unsigned short *)(obj + 0x27) == 0xffff)
-                        *(int *)(msg + 8) = *(int *)(ai_PlayerChar + 4);
+                        *(int *)(msg + 8) = *(int *)(ai_PlayerCharC + 4);
                     else
                         *(int *)(msg + 8) = *(int *)(ai_Chars[*(unsigned short *)(obj + 0x27)] + 4);
                     *(int *)(msg + 0xc) = *(int *)(obj + 1);

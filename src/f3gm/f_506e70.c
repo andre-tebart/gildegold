@@ -51,10 +51,10 @@ void gm_Unk506e70(unsigned short *c, char *out, int flag)
         next:
             best = b;
             if (second != 0) {
-                cm_SendOwnership(*(int *)(second + 1), *(int *)(ai_PlayerChar + 4), *(int *)(ai_PlayerChar + 4));
+                cm_SendOwnership(*(int *)(second + 1), *(int *)(ai_PlayerCharC + 4), *(int *)(ai_PlayerCharC + 4));
                 memset(msg, 0, sizeof(msg));
                 ((char *)msg)[4] = 0x1b;
-                msg[2] = *(int *)(ai_PlayerChar + 4);
+                msg[2] = *(int *)(ai_PlayerCharC + 4);
                 msg[3] = -1;
                 ((char *)msg)[0x36] = 2;
                 msg[0x58 / 4] = *(int *)(second + 1);
@@ -65,7 +65,7 @@ void gm_Unk506e70(unsigned short *c, char *out, int flag)
                     if (q[0x5a] == (int)second && *q != *(int *)(c + 2)) {
                         memset(msg, 0, sizeof(msg));
                         ((char *)msg)[4] = 0x31;
-                        msg[2] = *(int *)(ai_PlayerChar + 4);
+                        msg[2] = *(int *)(ai_PlayerCharC + 4);
                         msg[3] = *(int *)(second + 1);
                         msg[0x28 / 4] = *(int *)ai_Time;
                         msg[0x30 / 4] = *(int *)(ai_Time + 8);
@@ -82,7 +82,7 @@ void gm_Unk506e70(unsigned short *c, char *out, int flag)
         b = gm_BuildNext();
     }
     money = gm_Unk509eb0(c);
-    cm_SendMoveGoods(*(int *)(ai_PlayerChar + 4), -1, ai_OwnPlayer, money);
+    cm_SendMoveGoods(*(int *)(ai_PlayerCharC + 4), -1, ai_OwnPlayer, money);
     k = (int)gm_Query(*(int *)(c + 0xbc), 1, 5);
     while (k != 0) {
         ai_Unk4c5010(*(int *)(c + 2), -1, *(int *)(k + 2));

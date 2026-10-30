@@ -29,7 +29,7 @@ int ai_Unk4c6870(G17MSG *m)
         k = *(unsigned short *)(b + 0x27);
         if (k != 0xffff) {
             c = ai_Chars[k];
-            if (c != 0 && c != ai_PlayerChar && c[8] != 0 && c[2] != 0xf)
+            if (c != 0 && c != ai_PlayerCharC && c[8] != 0 && c[2] != 0xf)
                 return 1;
         }
         return gm_Query(*(int *)(b + 0x5d), 2, 6, 0, 0x12d) == 0;

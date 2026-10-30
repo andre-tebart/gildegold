@@ -48,16 +48,16 @@ void ai_Unk4c2000(void)
         return;
     }
     room = (int)sv_PanelShown;
-    b2 = ai_FallbackBuilding;
-    b = ai_PlayerBuilding;
+    b2 = ai_FallbackBuildingB;
+    b = ai_PlayerBuildingB;
     trk = snd_TrackHandles.current;
     if (snd_TrackHandles.current == 0) {
         if (ai_Unk60b0d8 != 0 && ai_Unk6f0cb0 + ai_Unk60b0d8 >= t)
             return;
         ai_Unk60b0d8 = 0;
-        ai_Unk6f0ca8 = ai_PlayerBuilding;
-        if (ai_PlayerBuilding == 0)
-            ai_Unk6f0ca8 = ai_FallbackBuilding;
+        ai_Unk6f0ca8 = ai_PlayerBuildingB;
+        if (ai_PlayerBuildingB == 0)
+            ai_Unk6f0ca8 = ai_FallbackBuildingB;
     } else {
         if (snd_TrackHandles.current[0x104] == 0 && snd_TrackHandles.current[0x105] == 0) {
             i = snd_FindActiveTrack();
@@ -76,8 +76,8 @@ void ai_Unk4c2000(void)
             return;
         }
         if (!(t - ai_Unk6f0cb8 > 40000 && snd_TrackHandles.current != snd_SpecialTrack
-              && (ai_PlayerBuilding != 0 && ai_Unk6f0ca8 != ai_PlayerBuilding || ai_FallbackBuilding != 0 && ai_Unk6f0ca8 != ai_FallbackBuilding
-                  || ai_PlayerBuilding == 0 && ai_FallbackBuilding == 0 && ai_Unk6f0ca8 != 0))
+              && (ai_PlayerBuildingB != 0 && ai_Unk6f0ca8 != ai_PlayerBuildingB || ai_FallbackBuildingB != 0 && ai_Unk6f0ca8 != ai_FallbackBuildingB
+                  || ai_PlayerBuildingB == 0 && ai_FallbackBuildingB == 0 && ai_Unk6f0ca8 != 0))
             && !(ai_Unk6f0cac != room && ai_Unk6f0ca8 != 0 && ai_BTypes[*ai_Unk6f0ca8 * 0x24d] == 2))
             return;
         i = snd_FindActiveTrack();

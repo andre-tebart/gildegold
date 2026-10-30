@@ -1,7 +1,7 @@
 /* 0x4cfc10, builds the portrait boxes of ai_Unk930400[6] (see 0x4cf9c0) for the selected characters ai_Unk7603a0[]:
    window objects, the picture of the job, the texts, 0x80 pixels apart. Rough draft. */
 
-#define G19_R(id, o, t) (*(t *)(d2_Objs + (id) * 0x2ec + (o)))
+#define G19_R(id, o, t) (*(t *)(d2_ObjsC + (id) * 0x2ec + (o)))
 
 void ai_Unk4cfc10()
 {

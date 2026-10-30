@@ -13,7 +13,7 @@ int ai_Unk4da9e0(char *a, char *b, char *c, int *out)
     b1 = d2_GetWinObj(v, 0, r);
     d2_GetWinObj(v, 0, r + 1);
     b3 = d2_GetWinObj(v, 0, r + 2);
-    dlg = d2_WinOpenSlider((*(short *)(d2_LastWindowPtr + 8) - 300) / 2 - 8, 8, 300, 0, 100, 0x75, 0x42, d2_LastWindow);
+    dlg = d2_WinOpenSlider((*(short *)(d2_LastWindowPtrC + 8) - 300) / 2 - 8, 8, 300, 0, 100, 0x75, 0x42, d2_LastWindow);
     ai_Unk4e53e0(dlg, 0x5dc, 1);
     r = ai_TrustedOfTwo(a, b, c, tmp);
     d2_ClickedId = -1;

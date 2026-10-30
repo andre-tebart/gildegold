@@ -30,9 +30,9 @@ int rt_Unk4bdcd0(unsigned char *b, int x, int def)
                 if (*(int *)(g + 7) > 1) {
                     o = d2_WinOpenPic((int)n % 4 << 6, (int)n / 4 << 6, *g + 0xdf, d2_LastWindow);
                     objs[n] = o;
-                    *(int *)(d2_Objs + o * 0x2ec + 0x4c) = 1;
-                    *(int *)(d2_Objs + o * 0x2ec + 0x1c0) = 3;
-                    *(int *)(d2_Objs + o * 0x2ec + 0x1d4) = 0x525;
+                    *(int *)(d2_ObjsC + o * 0x2ec + 0x4c) = 1;
+                    *(int *)(d2_ObjsC + o * 0x2ec + 0x1c0) = 3;
+                    *(int *)(d2_ObjsC + o * 0x2ec + 0x1d4) = 0x525;
                     ai_Unk889400[n] = *g;
                     n++;
                 }
@@ -46,9 +46,9 @@ int rt_Unk4bdcd0(unsigned char *b, int x, int def)
                 if (*(int *)(g + 7) > 0) {
                     o = d2_WinOpenPic((int)n % 4 << 6, (int)n / 4 << 6, *g + 0xdf, d2_LastWindow);
                     objs[n] = o;
-                    *(int *)(d2_Objs + o * 0x2ec + 0x4c) = 1;
-                    *(int *)(d2_Objs + o * 0x2ec + 0x1c0) = 3;
-                    *(int *)(d2_Objs + o * 0x2ec + 0x1d4) = 0x525;
+                    *(int *)(d2_ObjsC + o * 0x2ec + 0x4c) = 1;
+                    *(int *)(d2_ObjsC + o * 0x2ec + 0x1c0) = 3;
+                    *(int *)(d2_ObjsC + o * 0x2ec + 0x1d4) = 0x525;
                     ai_Unk889400[n] = *g;
                     n++;
                 }
@@ -63,12 +63,12 @@ int rt_Unk4bdcd0(unsigned char *b, int x, int def)
             if (e != 0 && *(int *)(e + 0xe) > 1) {
                 o = d2_WinOpenPic((int)n % 4 << 6, (int)n / 4 << 6, ai_Unk889400[n] + 0xdf, d2_LastWindow);
                 objs[n] = o;
-                *(int *)(d2_Objs + o * 0x2ec + 0x4c) = 1;
-                *(int *)(d2_Objs + o * 0x2ec + 0x1c0) = 0x23;
-                *(int *)(d2_Objs + o * 0x2ec + 0x1d4) = 0x525;
-                *(int *)(d2_Objs + o * 0x2ec + 0x1cc) = 4;
-                *(int *)(d2_Objs + o * 0x2ec + 0x1d0) = 0xf;
-                sprintf(d2_Objs + o * 0x2ec + 0xbc, "%s", *(char **)(ai_Unk143c860 + ai_Unk889400[n] * 8));
+                *(int *)(d2_ObjsC + o * 0x2ec + 0x4c) = 1;
+                *(int *)(d2_ObjsC + o * 0x2ec + 0x1c0) = 0x23;
+                *(int *)(d2_ObjsC + o * 0x2ec + 0x1d4) = 0x525;
+                *(int *)(d2_ObjsC + o * 0x2ec + 0x1cc) = 4;
+                *(int *)(d2_ObjsC + o * 0x2ec + 0x1d0) = 0xf;
+                sprintf(d2_ObjsC + o * 0x2ec + 0xbc, "%s", *(char **)(ai_Unk143c860 + ai_Unk889400[n] * 8));
                 n++;
             }
         }
@@ -77,8 +77,8 @@ int rt_Unk4bdcd0(unsigned char *b, int x, int def)
     ai_Unk889400[n] = 0;
     o = d2_WinOpenPic((int)n % 4 * 0x40 + 7, (int)n / 4 * 0x40 + 7, 0x527, d2_LastWindow);
     objs[n] = o;
-    *(int *)(d2_Objs + o * 0x2ec + 0x4c) = 1;
-    *(int *)(d2_Objs + o * 0x2ec + 0x1c0) = 3;
+    *(int *)(d2_ObjsC + o * 0x2ec + 0x4c) = 1;
+    *(int *)(d2_ObjsC + o * 0x2ec + 0x1c0) = 3;
     ret = def;
     while (sv_RunFrame(rt_Unk4bdcd0, 0x657c7)) {
         if (dm_L.rup != 0)

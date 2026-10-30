@@ -42,7 +42,7 @@ unsigned int rt_Unk4be3b0(char *b, int x, unsigned int def)
     for (i = 0, y = 4; y < 0xd6; i++, y += 0x1e) {
         o = sv_Unk528800(0, y, ai_Unk143a588[i]);
         tabs[i] = o;
-        *(void **)(d2_Objs + o * 0x2ec + 0x2e8) = gm_Query(*(int *)(b + 0x5d), 2, 6, 0, kinds[i]);
+        *(void **)(d2_ObjsC + o * 0x2ec + 0x2e8) = gm_Query(*(int *)(b + 0x5d), 2, 6, 0, kinds[i]);
         d2_RadioAdd(g, o);
     }
     d2_RadioSelect(g, 0);
@@ -56,7 +56,7 @@ unsigned int rt_Unk4be3b0(char *b, int x, unsigned int def)
             for (i = 0; i < 0x30; i++)
                 objs[i] = -1;
             n = 0;
-            s = *(char **)(d2_Objs + tabs[d2_RadioSel[g * 0x23]] * 0x2ec + 0x2e8);
+            s = *(char **)(d2_ObjsC + tabs[d2_RadioSel[g * 0x23]] * 0x2ec + 0x2e8);
             if (s == 0)
                 s = gm_Query(*(int *)(b + 0x5d), 1, 0, 0xff);
             else
@@ -65,9 +65,9 @@ unsigned int rt_Unk4be3b0(char *b, int x, unsigned int def)
                 for (e = gm_Query(*(int *)(s + 0x14), 1, 5); e != 0; e = gm_QueryNext()) {
                     o = d2_WinOpenPic(n % 4 << 6, n / 4 << 6, *e + 0xdf, d2_LastWindow);
                     objs[n] = o;
-                    *(int *)(d2_Objs + o * 0x2ec + 0x4c) = 1;
-                    *(int *)(d2_Objs + o * 0x2ec + 0x1c0) = 3;
-                    *(int *)(d2_Objs + o * 0x2ec + 0x1d4) = 0x525;
+                    *(int *)(d2_ObjsC + o * 0x2ec + 0x4c) = 1;
+                    *(int *)(d2_ObjsC + o * 0x2ec + 0x1c0) = 3;
+                    *(int *)(d2_ObjsC + o * 0x2ec + 0x1d4) = 0x525;
                     goods[n] = *e;
                     n++;
                 }
@@ -76,8 +76,8 @@ unsigned int rt_Unk4be3b0(char *b, int x, unsigned int def)
             o = d2_WinOpenPic(n % 4 * 0x40 + 7, n / 4 * 0x40 + 7, 0x527, d2_LastWindow);
             objs[n] = o;
             first = 0;
-            *(int *)(d2_Objs + o * 0x2ec + 0x4c) = 1;
-            *(int *)(d2_Objs + o * 0x2ec + 0x1c0) = 3;
+            *(int *)(d2_ObjsC + o * 0x2ec + 0x4c) = 1;
+            *(int *)(d2_ObjsC + o * 0x2ec + 0x1c0) = 3;
             last = d2_RadioSel[g * 0x23];
         }
         if (d2_ClickedId != -1) {

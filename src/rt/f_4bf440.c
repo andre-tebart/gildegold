@@ -12,11 +12,11 @@ void rt_HighlightRoute(RTPOINT *p, char *m)
     for (i = 0, e = (int *)(m + 0xdc); i < *(int *)(m + 0x27a4); i++, e += 6) {
         if (e[1] != 0) {
             if (e[1] == rt_PickedBuilding) {
-                *(unsigned int *)(d2_Objs + e[0] * 0x2ec + 0x1c0) &= ~1;
-                *(int *)(d2_Objs + e[0] * 0x2ec + 0x2c) = 1;
+                *(unsigned int *)(d2_ObjsC + e[0] * 0x2ec + 0x1c0) &= ~1;
+                *(int *)(d2_ObjsC + e[0] * 0x2ec + 0x2c) = 1;
             } else {
-                *(unsigned int *)(d2_Objs + e[0] * 0x2ec + 0x1c0) |= 1;
-                *(int *)(d2_Objs + e[0] * 0x2ec + 0x2c) = 0;
+                *(unsigned int *)(d2_ObjsC + e[0] * 0x2ec + 0x1c0) |= 1;
+                *(int *)(d2_ObjsC + e[0] * 0x2ec + 0x2c) = 0;
             }
         }
     }
@@ -25,8 +25,8 @@ void rt_HighlightRoute(RTPOINT *p, char *m)
         do {
             for (i = 0, e = (int *)(m + 0xe0); i < *(int *)(m + 0x27a4); i++, e += 6) {
                 if (*e != 0 && *(int *)(*e + 1) == p->buildingId) {
-                    *(int *)(d2_Objs + *(int *)(m + 0xdc + i * 0x18) * 0x2ec + 0x2c) = 1;
-                    *(unsigned int *)(d2_Objs + *(int *)(m + i * 0x18 + 0xdc) * 0x2ec + 0x1c0) &= ~1;
+                    *(int *)(d2_ObjsC + *(int *)(m + 0xdc + i * 0x18) * 0x2ec + 0x2c) = 1;
+                    *(unsigned int *)(d2_ObjsC + *(int *)(m + i * 0x18 + 0xdc) * 0x2ec + 0x1c0) &= ~1;
                     *f++ = *(int *)(m + i * 0x18 + 0xe0);
                     break;
                 }

@@ -105,7 +105,6 @@ typedef struct G15BKFIND {              /* context of rd_FindSiteCB */
 } G15BKFIND;
 
 #ifndef DATA_VIEWS_H
-extern G15MAP *ai_MapRefs;            /* 0xfd7c4c, am.h: AIMAPREF[] */
 #endif
 extern G15ROAD rd_Road;            /* 0xf81300 */
 extern int ai_NBauplaetze;                /* 0xf812e0, the number of building sites */

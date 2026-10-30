@@ -32,14 +32,14 @@ int ai_Unk4e5470(int id, int flags)
     d2_CentreViewWindows(fl);
     ai_Unk6f0dc4 = 1;
     radio = d2_CreateRadioGroup(0);
-    dlg = d2_LastWindowPtr;
+    dlg = d2_LastWindowPtrC;
     i = 0;
     if (*(short *)(dlg + 0x1c) > 0) {
         do {
             k = (*(int **)(dlg + 0x18))[i];
-            if (*(int *)(d2_Objs + k * 0x2ec + 0x18) != 0x40)
+            if (*(int *)(d2_ObjsC + k * 0x2ec + 0x18) != 0x40)
                 d2_RadioAdd(radio, k);
-            dlg = d2_LastWindowPtr;
+            dlg = d2_LastWindowPtrC;
             i++;
         } while (i < *(short *)(dlg + 0x1c));
     }
@@ -47,7 +47,7 @@ int ai_Unk4e5470(int id, int flags)
     d2_SetForm(win, 0);
     timed = flags & 0x80;
     if (timed != 0)
-        slider = d2_WinOpenSlider(0x1c, *(short *)(d2_LastWindowPtr + 0xa) - 0x18, *(short *)(d2_LastWindowPtr + 8) - 0x40, 0, 0x1f4, 0x83, 0x42, d2_LastWindow);
+        slider = d2_WinOpenSlider(0x1c, *(short *)(d2_LastWindowPtrC + 0xa) - 0x18, *(short *)(d2_LastWindowPtrC + 8) - 0x40, 0, 0x1f4, 0x83, 0x42, d2_LastWindow);
     else
         slider = -1;
     if (sv_RunFrame(fl, ai_Unk4e5470) != 0) {

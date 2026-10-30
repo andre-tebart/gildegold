@@ -84,9 +84,9 @@ void ai_Unk4e4060(char *m)
         sv_ResetScreenClip();
         ai_Unkf8aae0[0] = 0;
         for (i = 0, shown = 0; i < 0x8c400 / 0x2ec; i++) {
-            if (*(int *)(d2_Objs + i * 0x2ec + 0x18) != 0 && *(int *)(d2_Objs + i * 0x2ec + 0x38) == 0) {
+            if (*(int *)(d2_ObjsC + i * 0x2ec + 0x18) != 0 && *(int *)(d2_ObjsC + i * 0x2ec + 0x38) == 0) {
                 ai_Unk92bee0[shown] = i;
-                *(int *)(d2_Objs + i * 0x2ec + 0x38) = 1;
+                *(int *)(d2_ObjsC + i * 0x2ec + 0x38) = 1;
                 shown++;
             }
         }
@@ -114,7 +114,7 @@ void ai_Unk4e4060(char *m)
         ai_Unk60d364 = 10;
         tb_CloseFunction(ai_Unk4e3210);
         for (i = 0; i < shown; i++)
-            *(int *)(d2_Objs + ai_Unk92bee0[i] * 0x2ec + 0x38) = 0;
+            *(int *)(d2_ObjsC + ai_Unk92bee0[i] * 0x2ec + 0x38) = 0;
         ai_Unk4e36a0(m);
     } else
         ai_Unk4e36a0(m);

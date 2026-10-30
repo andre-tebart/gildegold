@@ -62,7 +62,7 @@ int ai_Unk4cc510(G17MSG *m, G17STAT *s)
         id = *(unsigned short *)(b + 0x27);
         if (id != 0xffff) {
             ch = ai_Chars[id];
-            if (ch != 0 && ch != ai_PlayerChar && ch[8] != 0 && ch[2] != 0xf)
+            if (ch != 0 && ch != ai_PlayerCharC && ch[8] != 0 && ch[2] != 0xf)
                 return 1;
         }
         q = gm_Query(*(int *)(b + 0x5d), 2, 6, 0, 0x12d);

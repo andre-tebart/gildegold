@@ -12,6 +12,7 @@ struct D3TERRAIN;
 #include "he.h"
 #include "txt.h"
 #include "data_views.h"
+#define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
 extern char d3_Scenes[];
 extern char cm_SaveAcks[];
 #define GAPDATA __declspec(align(1)) unsigned char

@@ -9,6 +9,7 @@ extern char d2_Wins[];
 #include "gv.h"
 #include "txt.h"
 #include "data_views.h"
+#define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
 
 struct GCLOCK;
 void gm_ClockToDate(struct GCLOCK *c, unsigned char *out);  /* 0x4fe2c0, f3gm.c: the calendar record of a clock */

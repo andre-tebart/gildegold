@@ -13,7 +13,7 @@ void ai_Unk4d6a50()
     ai_Unk60cb68 = t;
     G19_R(t, 0x5c, int) = 1;
     d2_CenterObj(ai_Unk60cb68);
-    t = d2_WinOpenSlider((*(short *)(d2_LastWindowPtr + 8) - 0x190) / 2, 0x37, 0x190, 0, ai_Unk60d364, 0x83, 0x42, d2_LastWindow);
+    t = d2_WinOpenSlider((*(short *)(d2_LastWindowPtrC + 8) - 0x190) / 2, 0x37, 0x190, 0, ai_Unk60d364, 0x83, 0x42, d2_LastWindow);
     ai_Unk60cb64 = t;
     G19_R(t, 0x74, short) = 0x54;
     G19_R(*(int *)(ai_Unkf8f39c - 0x10 + d2_LastWindow * 0x3c4), 0x4c, int) = 1;

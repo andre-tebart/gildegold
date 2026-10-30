@@ -212,6 +212,7 @@ typedef struct INIT_TERRAIN {
 #define max(a, b) (((a) > (b)) ? (a) : (b))
 #endif
 #include "data_views.h"
+#define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
 
 /* the object list of init_LoadSiteScene (0x510770): the count, the objects by name and the name substring the
    d3_ForEachObject callback init_CollectSiteObject keeps (a D3OBJECT's name is at its +0x00) */

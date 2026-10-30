@@ -39,8 +39,8 @@ void ai_TailorChatWindow(int request)
     rec = (AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c);
     wnd = d2_OpenForm(0, 0, "locations\\schneider\\plausch");
     found = gv_FindAccused((char *)(ai_CharsC + ai_PlayerId * 0x21c), 4, ids, &count);
-    if (ai_PlayerBuilding != 0)
-        limit = gm_BuildingSkill((struct AIBLD *)ai_PlayerBuilding, 0x24, 1);
+    if (ai_PlayerBuildingB != 0)
+        limit = gm_BuildingSkill((struct AIBLD *)ai_PlayerBuildingB, 0x24, 1);
     else
         limit = 1;
     if (count >= limit + 1)

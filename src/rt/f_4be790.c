@@ -25,9 +25,9 @@ int rt_Unk4be790(unsigned short *bt, int a, int good, int k, int x, int y, int w
     out[0] = -1;
     out[1] = o;
     out[2] = s;
-    *(int *)(d2_Objs + o * 0x2ec + 0x1c0) = 0x22;
-    *(int *)(d2_Objs + o * 0x2ec + 0x1cc) = 4;
-    *(int *)(d2_Objs + o * 0x2ec + 0x1d0) = 0xf;
-    sprintf(d2_Objs + o * 0x2ec + 0xbc, "%s", *(char **)(ai_Unk143c860 + good * 8));
+    *(int *)(d2_ObjsC + o * 0x2ec + 0x1c0) = 0x22;
+    *(int *)(d2_ObjsC + o * 0x2ec + 0x1cc) = 4;
+    *(int *)(d2_ObjsC + o * 0x2ec + 0x1d0) = 0xf;
+    sprintf(d2_ObjsC + o * 0x2ec + 0xbc, "%s", *(char **)(ai_Unk143c860 + good * 8));
     return o;
 }

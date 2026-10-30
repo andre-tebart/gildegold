@@ -112,7 +112,7 @@ extern int snd_VoiceBankNoise;          /* 0x6f0cc4, voice bank: click noises */
 extern int snd_VoiceBankGreeting;       /* 0x6f0ccc, voice bank: greeting */
 extern G16LOC snd_LocationTracks[];           /* 0x6094d0 */
 extern G16TRACKS ai_Unk602d70[];        /* 0x602d70 */
-extern unsigned char *ai_FallbackBuilding;     /* 0x6f230c */
+extern char *ai_FallbackBuilding;        /* 0x6f230c, the second current building, used when 0x6f2308 is 0 (sv.c defines char *) */
 extern unsigned short ai_PlayerId;      /* 0x6f25b8, the player (as am.h / cm.h / gv.h declare it) */
 extern G16TRACKHANDLES snd_TrackHandles; /* 0x6f0b6c, the music track and its copy */
 extern char ai_Unk6f0a60[];             /* 0x6f0a60, a debug text */
@@ -124,8 +124,8 @@ extern int ai_Unk6f0b94;                /* 0x6f0b94, hpLocustsPerm */
 extern int ai_Unk6f0b98;                /* 0x6f0b98, hpLocusts */
 extern int ai_Unk6f0b9c;                /* 0x6f0b9c, the season */
 extern int snd_AmbientTrack;                /* 0x6f0b80, the d3snd handle of the ambient track (bird song, market ambience) */
-extern G16BLDVIEW *ai_MarketBuilding;        /* 0x6f1bc8, the market building */
-extern unsigned char *ai_PlayerBuilding;     /* 0x6f2308, the building the player is in */
+extern struct AIBLD *ai_MarketBuilding;        /* 0x6f1bc8, the market building (ai.c; f3snd.c reads it through ai_MarketBuildingV) */
+extern char *ai_PlayerBuilding;          /* 0x6f2308, the building the player is in: an AIBLD (sv.c defines char *; ai_PlayerBuildingT views) */
 extern short *sv_PanelShown;             /* 0x6f2310, its room */
 extern void *ai_Unk6f0ba0;              /* 0x6f0ba0, the atmosphere mp3 (MSXTRACK *) */
 extern char *ai_BTypes;                 /* 0x7e3f30, ai.h: AIBTYPE * (0x24d bytes, the kind at 0) */

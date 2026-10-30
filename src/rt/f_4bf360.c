@@ -5,6 +5,6 @@ void rt_SetMarkPic(RTMARK *m)
     int n;
 
     n = rt_PointIndex(rt_EditRoute, m->p);
-    if (*(int *)(d2_Objs + m->obj * 0x2ec + 8) != n + 0x7bb)
+    if (*(int *)(d2_ObjsC + m->obj * 0x2ec + 8) != n + 0x7bb)
         d2_SetObjPic(m->obj, n + 0x7bb);
 }

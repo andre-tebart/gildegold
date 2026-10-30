@@ -13,7 +13,7 @@ void ai_Unk4d4340(int *ids, int x, int y)
         if (ids[i] != -1)
             n++;
     }
-    w = (*(short *)(d2_LastWindowPtr + 8) - 0x30) / (n + 1);
+    w = (*(short *)(d2_LastWindowPtrC + 8) - 0x30) / (n + 1);
     for (i = 0; i < 16; i++) {
         if (ids[i] == -1)
             continue;

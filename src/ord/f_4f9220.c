@@ -72,7 +72,7 @@ void ord_UpdateMessageEvent(void)
                 r[7]++;
                 if (r[7] == 1) {
                     msg[4] = 0x59;
-                    *(int *)(msg + 8) = *(int *)(ai_PlayerChar + 4);
+                    *(int *)(msg + 8) = *(int *)(ai_PlayerCharC + 4);
                     *(int *)(msg + 0xc) = -1;
                     ord_Stamp(msg + 0x28);
                     msg[0x36] = 2;
@@ -86,7 +86,7 @@ void ord_UpdateMessageEvent(void)
                     cm_SendLongMessage(msg);
                 } else if (r[7] == 2) {
                     msg[4] = 0x4e;
-                    *(int *)(msg + 8) = *(int *)(ai_PlayerChar + 4);
+                    *(int *)(msg + 8) = *(int *)(ai_PlayerCharC + 4);
                     *(int *)(msg + 0xc) = -1;
                     *(int *)(msg + 0x58) = -1;
                     ord_Stamp(msg + 0x28);
@@ -105,7 +105,7 @@ void ord_UpdateMessageEvent(void)
                 r[7] = 3;
               phase3:
                 msg[4] = 0x50;
-                *(int *)(msg + 8) = *(int *)(ai_PlayerChar + 4);
+                *(int *)(msg + 8) = *(int *)(ai_PlayerCharC + 4);
                 ord_Stamp(msg + 0x28);
                 *(int *)(msg + 0xc) = -1;
                 msg[0x36] = 2;

@@ -40,7 +40,7 @@ HRESULT CALLBACK d3d_EnumTextureFormatsCallback(LPDDPIXELFORMAT pf, LPVOID lpctx
                && pf->dwRBitMask + pf->dwGBitMask + pf->dwBBitMask
                   > ctx->pf2.dwRBitMask + ctx->pf2.dwGBitMask + ctx->pf2.dwBBitMask
                && !d3d_UsedTexFormat.exact) {
-            if (r == dd_RBits && g == dd_GBits && b == dd_BBits)
+            if (r == dd_RBitsC && g == dd_GBitsC && b == dd_BBitsC)
                 d3d_UsedTexFormat.exact = 1;
             D3_COPY(&ctx->pf2, pf, sizeof(DDPIXELFORMAT));
         }

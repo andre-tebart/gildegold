@@ -92,7 +92,7 @@ void gm_AssignBuilding(unsigned char *b, unsigned short place, unsigned own)
             w = (unsigned short *)((char *)w + 0x43);
             cnt--;
         } while (cnt != 0);
-        if (ai_Chars[own] != ai_PlayerChar && *(int *)(b + 0x61) != 0 && ((t = ai_Chars[own][2]) == 6 || t == 7 || t == 5)) {
+        if (ai_Chars[own] != ai_PlayerCharC && *(int *)(b + 0x61) != 0 && ((t = ai_Chars[own][2]) == 6 || t == 7 || t == 5)) {
             d3if_SelectScene(0, 1);
             sv_Unk5286a0(b);
             sv_Unk5282f0(b);
