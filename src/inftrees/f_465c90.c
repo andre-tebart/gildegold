@@ -1,12 +1,6 @@
 /* 0x465c90, hands out the static fixed literal/length and distance trees (and their depths) that a fixed
  * huffman block decodes with; returns Z_OK */
 
-  /* done */
-  ZFREE(z, v);
-  return Z_OK;
-}
-
-
 /* build fixed tables only once--keep them here */
 #ifdef BUILDFIXED
 local int fixed_built = 0;

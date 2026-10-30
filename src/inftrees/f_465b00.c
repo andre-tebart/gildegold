@@ -60,3 +60,8 @@ z_streamp z;            /* for messages */
     return r;
 #endif
   }
+
+  /* done */
+  ZFREE(z, v);
+  return Z_OK;
+}

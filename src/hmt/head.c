@@ -21,7 +21,7 @@ extern G17STAT ai_Unkf31160[];
 
 /* the SDK calls of hmt_CreateBinaryFile; windows.h is not included (its min/max and the other SDL macros change the
    emitted code of the unit), the two entry points are declared here as the SDK does, __stdcall */
-__declspec(dllimport) unsigned long __stdcall GetModuleFileNameA(void *hModule, char *file, unsigned long size);
+__declspec(dllimport) unsigned long __stdcall GetModuleFileNameA(void *hModule, char *file, unsigned long size);  /* @vc6 winbase.h is not in this unit; its HMODULE is spelled void * here */
 __declspec(dllimport) unsigned long __stdcall GetPrivateProfileStringA(const char *sec, const char *key,
                                                 const char *def, char *buf, unsigned long size, const char *file);
 

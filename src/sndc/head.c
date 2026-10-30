@@ -8,5 +8,5 @@
 #include "sndc.h"
 
 /* script constants registered by sndc_Register (0x5f3108..0x5f3124) */
-int snd_W2 = -1, snd_W1 = -2, snd_M3 = -3, snd_M2 = -4, snd_M1 = -5, snd_HS = -6, snd_NONE = -7, snd_VAR = -8;  /* 0x5f3108 */
+int snd_W2 = -1, snd_W1 = -2, snd_M3 = -3, snd_M2 = -4, snd_M1 = -5, snd_HS = -6, snd_NONE = -7, snd_VAR = -8;  /* 0x5f3108, 0x5f310c, 0x5f3110, 0x5f3114, 0x5f3118, 0x5f311c, 0x5f3120, 0x5f3124 */
 

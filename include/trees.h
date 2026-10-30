@@ -1,7 +1,7 @@
 /* header created automatically with -DGEN_TREES_H */
 /* @private trees: zlib-internal tables (local / const definitions), included only by trees.c (src/trees/head.c, the STDC branch) */
 
-local const ct_data static_ltree[L_CODES+2] = {
+local const ct_data static_ltree[L_CODES+2] = {  /* 0x5ec500 */
 {{ 12},{  8}}, {{140},{  8}}, {{ 76},{  8}}, {{204},{  8}}, {{ 44},{  8}},
 {{172},{  8}}, {{108},{  8}}, {{236},{  8}}, {{ 28},{  8}}, {{156},{  8}},
 {{ 92},{  8}}, {{220},{  8}}, {{ 60},{  8}}, {{188},{  8}}, {{124},{  8}},
@@ -62,7 +62,7 @@ local const ct_data static_ltree[L_CODES+2] = {
 {{163},{  8}}, {{ 99},{  8}}, {{227},{  8}}
 };
 
-local const ct_data static_dtree[D_CODES] = {
+local const ct_data static_dtree[D_CODES] = {  /* 0x5ec980 */
 {{ 0},{ 5}}, {{16},{ 5}}, {{ 8},{ 5}}, {{24},{ 5}}, {{ 4},{ 5}},
 {{20},{ 5}}, {{12},{ 5}}, {{28},{ 5}}, {{ 2},{ 5}}, {{18},{ 5}},
 {{10},{ 5}}, {{26},{ 5}}, {{ 6},{ 5}}, {{22},{ 5}}, {{14},{ 5}},
@@ -116,12 +116,12 @@ const uch _length_code[MAX_MATCH-MIN_MATCH+1]= {
 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 28
 };
 
-local const int base_length[LENGTH_CODES] = {
+local const int base_length[LENGTH_CODES] = {  /* 0x5eccf8 */
 0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 20, 24, 28, 32, 40, 48, 56,
 64, 80, 96, 112, 128, 160, 192, 224, 0
 };
 
-local const int base_dist[D_CODES] = {
+local const int base_dist[D_CODES] = {  /* 0x5ecd70 */
     0,     1,     2,     3,     4,     6,     8,    12,    16,    24,
    32,    48,    64,    96,   128,   192,   256,   384,   512,   768,
  1024,  1536,  2048,  3072,  4096,  6144,  8192, 12288, 16384, 24576
