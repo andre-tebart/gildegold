@@ -14,7 +14,7 @@ void main_ShutdownScreen(void);         /* 0x531690 */
 void main_ShutdownModules(void);        /* 0x5316d0 */
 void main_Exit(void);                   /* 0x531750, the exit handler */
 LRESULT CALLBACK main_WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-void main_Unk531a00(char *out);
+void main_BuildVersionString(char *out);
 unsigned main_CreateMutex(void **mutex);   /* 0x531b50 */
 void main_SetScreenSaver(unsigned on);     /* 0x531b80 */
 int main_Init(void);                    /* 0x531ba0 */

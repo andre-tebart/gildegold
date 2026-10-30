@@ -60,3 +60,4 @@
 2026-10-30T10:19:34 0x005ebb74 data ai_Unk5ebb74 -> ai_AxisPair by:main why:0x5ebb74 holds (0,0,1) and (0,1,0): the z axis then the y axis (d3_VecAngle2 reference in 0x5dd100 and 0x4cac40's direction transforms)
 2026-10-30T10:20:46 0x006f2584 data full_data_6f2584 -> main_Inactive by:main why:0x6f2584 is the WM_ACTIVATEAPP gate of the window procedure: 1 while the app is deactivated (set before the window goes to the bottom of the z order, cleared on activation)
 2026-10-30T10:21:10 0x00531780 func main_Unk531780 -> main_WindowProc by:main why:the WNDPROC of the 'Die Gilde' window class (messages 2/0x10 quit, 0x1c WM_ACTIVATEAPP, DefWindowProcA fallback)
+2026-10-30T10:24:49 0x00531a00 func main_Unk531a00 -> main_BuildVersionString by:main why:builds the version string 'Europa 1400 - Gold Edition - 2.06' (0x624948) from the build date literal

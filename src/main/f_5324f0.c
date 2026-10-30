@@ -24,7 +24,7 @@ int main_Unk5324f0(HINSTANCE inst, int unused, int mode)
     wc.lpszClassName = "Die Gilde";
     if (RegisterClassA(&wc) == 0)
         return 0;
-    main_Unk531a00((char *)((unsigned)&ls_SavePath + 0x120));
+    main_BuildVersionString((char *)((unsigned)&ls_SavePath + 0x120));
     sprintf(title, (char *)(unsigned)&full_data_60da10, (char *)((unsigned)&ls_SavePath + 0x120));
     SystemParametersInfoA(0x30, 0, &work, 0);
     w = work.right - work.left;
