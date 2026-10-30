@@ -143,7 +143,7 @@ extern char hst_TextsOn;               /* 0x6f0724 */
 extern char hst_Key[];                 /* 0xf83520, the history key ("G12", 0x20 bytes; the save keeps 0x10) */
 extern int hst_Lists[];                /* 0xf83540, the four history lists (G12ROW[4] in hst.h), int view */
 void init_HookObject(char *o, unsigned short *p, int kind);  /* 0x50d380, names the scene object o and hooks it to its owner p */
-int ai_Unk5dc0c0();                     /* 0x5dc0c0 */
+int ai_LoadWind();                     /* 0x5dc0c0 */
 int unk_Unk4ed910();                     /* 0x4ed910 */
 int gm_FindById();                     /* 0x4fea50 */
 

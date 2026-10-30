@@ -235,6 +235,7 @@ struct GCLOCK;
 struct AITIME;
 void gm_AddTime(struct GCLOCK *c, int hours, int mins, int secs);   /* 0x4fe140, f3gm.c: adds hours / minutes / seconds to the clock */
 int gm_MinutesBetween(struct AITIME *a, struct AITIME *b);          /* 0x4fe280, f3gm.c: the minutes from clock a to clock b */
+int ls_Read(void *buf, int size, int count, int f);                 /* 0x51c920, ls.c's read (true when the fread returned a positive count); ls.c has no header yet */
 int ai_FindCurseEvent(struct AIBLD *b);                              /* 0x5741d0, he.c: the pending curse event of the building (as unk_4a7140.h) */
 int gm_CurseObjectCount(struct AIBLD *b);                            /* 0x50cfd0, f3gm.c: 2 + the objects 0x274 / 0x27e / 0x28e / 0x291 of the building (as unk_4a7140.h) */
 int gm_CurseTargetCount(char *b);                                   /* 0x50d0b0, f3gm.c: counts from the objects 0x284 / 0x289 of the building */
