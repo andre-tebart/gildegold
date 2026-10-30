@@ -542,7 +542,7 @@ exe	0x004284e0	evt_FindByName	evt	byte	readable
 exe	0x00428530	evt_LoadScript	evt	byte	readable		
 exe	0x004287b0	evt_Load	evt	byte	readable		
 exe	0x004287e0	evt_While	evt	byte	readable		
-exe	0x004289f0	evt_If	evt	shape	readable		
+exe	0x004289f0	evt_If	evt	byte	readable		
 exe	0x00428bf0	evt_Include	evt	byte	readable		
 exe	0x00428ca0	evt_Return	evt	byte	readable		
 exe	0x00428ce0	evt_Mode1	evt	byte	readable		
@@ -2379,7 +2379,7 @@ exe	0x004cd1e0	ai_Unk4cd1e0	cm	byte	draft
 exe	0x004cd220	ai_Unk4cd220	cm	draft	draft		
 exe	0x004cd2f0	ai_Unk4cd2f0	cm	byte	draft		
 exe	0x004cd350	ai_Unk4cd350	cm	byte	draft		
-exe	0x004cd380	ai_Unk4cd380	cm	shape	draft		
+exe	0x004cd380	ai_Unk4cd380	cm	byte	draft		
 exe	0x004cd3c0	ai_Unk4cd3c0	cm	draft	draft		
 exe	0x004cd480	ai_Unk4cd480	cm	draft	draft		
 exe	0x004cd4c0	ai_Unk4cd4c0	cm	byte	draft		
@@ -2542,7 +2542,7 @@ exe	0x004e0f70	ai_Unk4e0f70	cm	draft	draft
 exe	0x004e1220	ai_Unk4e1220	cm	draft	draft		
 exe	0x004e1250	ai_Unk4e1250	cm	draft	draft		
 exe	0x004e1700	ai_Unk4e1700	cm	draft	draft		
-exe	0x004e19a0	ai_Unk4e19a0	cm	shape	draft		
+exe	0x004e19a0	ai_Unk4e19a0	cm	byte	draft		
 exe	0x004e1a80	ai_Unk4e1a80	cm	draft	draft		
 exe	0x004e24c0	ai_Unk4e24c0	cm	draft	draft		
 exe	0x004e26d0	ai_Unk4e26d0	cm	draft	draft		
@@ -2681,7 +2681,7 @@ exe	0x004ea990	amt_GetOwnedOfficePay	amt	byte	readable
 exe	0x004eaa00	amt_Unk4eaa00	amt	byte	draft		
 exe	0x004eaa50	ahm_OwnerChar	ahm	byte	readable		
 exe	0x004eaa90	ahm_UsedSlots	ahm	byte	readable		
-exe	0x004eaad0	ahm_HasRecord	ahm	shape	readable		
+exe	0x004eaad0	ahm_HasRecord	ahm	byte	readable		
 exe	0x004eab20	ahm_Share	ahm	byte	readable		
 exe	0x004eabd0	ahm_SlotOf	ahm	byte	readable		
 exe	0x004eabe0	ahm_FindSlot	ahm	byte	readable		
@@ -3213,7 +3213,7 @@ exe	0x00511810	ai_Unk511810	f3init	byte	draft
 exe	0x00511840	unk_Unk511840	f3init	byte	draft		
 exe	0x00511890	init_NameBuildings	f3init	draft	readable	deep	
 exe	0x00511ad0	init_LocalData	f3init	draft	readable	deep	
-exe	0x00511bc0	init_FillMarkets	f3init	shape	readable		
+exe	0x00511bc0	init_FillMarkets	f3init	byte	readable		
 exe	0x00511c70	unk_Unk511c70	f3init	shape	draft		
 exe	0x00511dc0	init_ObjectSceneUniverse	f3init	byte	readable		
 exe	0x00511e60	init_BuildingSceneUniverse	f3init	draft	readable	deep	
@@ -4141,7 +4141,7 @@ exe	0x0058f920	ai_VgFilter	unk_58bbd0	byte	readable
 exe	0x0058f980	ai_ShowVgObjects	unk_58bbd0	byte	readable		
 exe	0x0058fa20	ai_CheckBuildable	unk_58bbd0	byte	readable		
 exe	0x0058fb60	ai_CheckBuildSites	unk_58bbd0	byte	readable		
-exe	0x0058fba0	ai_FindBauplatz	unk_58bbd0	shape	readable		
+exe	0x0058fba0	ai_FindBauplatz	unk_58bbd0	byte	readable		
 exe	0x0058fc40	lc_GetGebaeudeBauplatz	unk_58bbd0	draft	readable	deep	
 exe	0x0058fd40	ai_ObjectPosition	unk_58bbd0	byte	readable		
 exe	0x0058fd90	ai_ObjectAngle	unk_58bbd0	byte	readable		
@@ -4538,7 +4538,7 @@ exe	0x005ca860	ai_MisappropriationWindow	unk_58bbd0	draft	draft
 exe	0x005caab0	ai_Unk5caab0	unk_58bbd0	draft	draft		
 exe	0x005cacd0	ai_EmbezzlementContract	unk_58bbd0	draft	draft		
 exe	0x005cae00	ai_CounterEspionage	unk_58bbd0	draft	draft		
-exe	0x005cb1e0	ai_Unk5cb1e0	unk_58bbd0	shape	draft		
+exe	0x005cb1e0	ai_Unk5cb1e0	unk_58bbd0	byte	draft		
 exe	0x005cb250	ai_CounterEspionageWindow	unk_58bbd0	draft	draft		
 exe	0x005cb4f0	ai_EspionageWindow	unk_58bbd0	draft	draft		
 exe	0x005cba90	ai_EspionagePayment	unk_58bbd0	draft	draft		
@@ -4632,7 +4632,7 @@ exe	0x005d7770	ai_OptionsMenu	unk_5d33b0	byte	readable
 exe	0x005d7ba0	ai_CreditsScreen	unk_5d33b0	byte	readable		
 exe	0x005d7e90	ai_PauseGame	unk_5d33b0	byte	readable		
 exe	0x005d7f10	ai_MessageFilterScreen	unk_5d33b0	draft	readable	deep	
-exe	0x005d8080	ai_TailorChatWindow	unk_5d33b0	shape	readable		
+exe	0x005d8080	ai_TailorChatWindow	unk_5d33b0	draft	readable		shape+readable -> draft+readable at 7852960: no source change: decompanion fcdcdc1 checks branch targets, which the shape grade never saw. The original reloads obj (edi, [esp+0x18]) at the end of the found arm, where the proof loop's counter took edi, and jumps past the else arm; ours reloads it at the join, so the found arm's jmp goes to other code. That is register allocation of the counter / obj live ranges (a block-scoped counter or another loop form does not move it): the old shape was no evidence, the function is draft until the deep queue settles it
 exe	0x005d8360	ai_TailorContact	unk_5d33b0	byte	readable		
 exe	0x005d8420	ai_ProductionContact	unk_5d33b0	shape	readable		
 exe	0x005d85e0	ai_BloodRevengeWindow	unk_5d33b0	draft	readable	deep	
