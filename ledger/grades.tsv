@@ -4632,7 +4632,7 @@ exe	0x005d7770	ai_OptionsMenu	unk_5d33b0	byte	readable
 exe	0x005d7ba0	ai_CreditsScreen	unk_5d33b0	byte	readable		
 exe	0x005d7e90	ai_PauseGame	unk_5d33b0	byte	readable		
 exe	0x005d7f10	ai_MessageFilterScreen	unk_5d33b0	draft	readable	deep	
-exe	0x005d8080	ai_TailorChatWindow	unk_5d33b0	draft	readable		shape+readable -> draft+readable at 7852960: no source change: decompanion fcdcdc1 checks branch targets, which the shape grade never saw. The original reloads obj (edi, [esp+0x18]) at the end of the found arm, where the proof loop's counter took edi, and jumps past the else arm; ours reloads it at the join, so the found arm's jmp goes to other code. That is register allocation of the counter / obj live ranges (a block-scoped counter or another loop form does not move it): the old shape was no evidence, the function is draft until the deep queue settles it
+exe	0x005d8080	ai_TailorChatWindow	unk_5d33b0	byte	readable		
 exe	0x005d8360	ai_TailorContact	unk_5d33b0	byte	readable		
 exe	0x005d8420	ai_ProductionContact	unk_5d33b0	shape	readable		
 exe	0x005d85e0	ai_BloodRevengeWindow	unk_5d33b0	draft	readable	deep	

@@ -756,3 +756,8 @@ a type debt.
   (included by head.c); the scene's height map is init_SceneHeightMaps[0]; the shot clock is d3_Time.
 - am.h and unk_575860's f_580160.c prototypes of ai_InitShot / ai_ScatterShot follow the definitions (struct SHOTREC /
   D3VECTOR pointers, float size / density); both callers are still draft.
+
+## match-base 2026-10-30 (fifth session)
+- 0x5d8080 ai_TailorChatWindow byte: both event texts (0x422f, then 0x4230) are formatted into the one buf; the
+  click test is `d2_PointerObj == obj`; the found and not-found branches each set sv_PopRequest 3 (a shared store at
+  the join moves the reload of `found` after the else branch).
