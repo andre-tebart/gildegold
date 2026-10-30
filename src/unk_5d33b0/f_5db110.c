@@ -3,7 +3,6 @@
    / 0x473650 and the texts 0x515960; the pump 0x5309a0 -> 0x4758f0.
    ROUGH SKELETON (layout 2026-10-24). */
 
-int ai_Unk5db110(int param_1)
+void ai_PokerWindow2(void)
 {
-    return 0;
 }

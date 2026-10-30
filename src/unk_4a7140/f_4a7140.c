@@ -1,6 +1,6 @@
 /* 0x4a7140, starts a game of character p in g: the stake from p's money, the deck, two random opponents */
 
-int ai_Unk4a7140(AIPER *p, G10GAME *g)
+int ai_PokerStart(AIPER *p, G10GAME *g)
 {
     double d;
     int i, j, k;

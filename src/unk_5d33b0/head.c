@@ -29,13 +29,16 @@ extern char gm_PlayerRecords[];
 #include "unk_575860.h"
 #include "unk_58bbd0.h"
 #include "data_views.h"
+#include "time_view.h"
 
 typedef struct D2OBJVIEW {                  /* 0x2ec, d2.h's D2OBJ: only the fields this unit reads */
     char pad0[0x10];
     short x;                                /* +0x10, D2OBJ.x */
     short y;                                /* +0x12, D2OBJ.y */
     short w;                                /* +0x14, D2OBJ.w (the frame width) */
-    char pad16[0x1a];
+    char pad16[0x12];
+    int checked;                            /* +0x28, D2OBJ.checked: the checkbox / radio state */
+    char pad2c[4];
     char *win;                              /* +0x30, D2OBJ.win: the window the object belongs to */
     char pad34[0x14];
     int checkable;                          /* +0x48, D2OBJ.checkable: a checkbox / radio */

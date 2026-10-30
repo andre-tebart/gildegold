@@ -42,3 +42,8 @@
 2026-10-30T00:52:54 0x0062dda0 data ai_PokerWindow -> ai_PokerUi by:main why:0x62dda0 is the head of one 0x70 byte block: the window view, the button ids and three panel records (the poker window opener 0x5d9de0 fills them)
 2026-10-30T00:53:55 0x005d9de0 func ai_Unk5d9de0 -> ai_OpenPokerWindow by:main why:0x5d9de0 opens the poker window form and initialises its panels
 2026-10-30T00:58:01 0x005d9f50 func ai_Unk5d9f50 -> ai_PokerBetControl by:main why:0x5d9f50 makes the bet slider of the poker window (d2_WinOpenSlider, range from the bet limits) and enables it
+2026-10-30T01:07:32 0x004a7140 func ai_Unk4a7140 -> ai_PokerStart by:main why:starts a poker game of the player's character: fills the game state and the deck (its caller ai_PokerGame, the two random opponents)
+2026-10-30T01:07:43 0x004a74e0 func ai_Unk4a74e0 -> ai_PokerStep by:main why:one step of the poker game: advances the phase and returns the button mask (ai_PokerGame shows it)
+2026-10-30T01:07:54 0x004a8630 func ai_Unk4a8630 -> ai_PokerExchange by:main why:the player puts card k away and draws a new one (ai_Unk4a79d0 for seat 0)
+2026-10-30T01:08:05 0x005dadf0 func ai_Unk5dadf0 -> ai_PokerSeatPanel by:main why:builds the panel of seat n from its cards (called by ai_PokerGame per seat and phase with the seat's card array)
+2026-10-30T01:08:16 0x005db110 func ai_Unk5db110 -> ai_PokerWindow2 by:main why:the second poker window poker2 that the fifth button of the poker table opens

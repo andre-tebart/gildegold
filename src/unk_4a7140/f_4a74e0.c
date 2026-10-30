@@ -1,6 +1,6 @@
 /* 0x4a74e0, one step of the game: returns the dialog to show (0x10 / 0x21 / 9 / 0x29 / 0x1c) or 0 */
 
-int ai_Unk4a74e0(void)
+int ai_PokerStep(void)
 {
     switch (ai_Unkf83654->phase) {
     case 0:

@@ -14,8 +14,8 @@
 void sv_ButtonRow(int f, int y, int *out, int n, ...); int sv_CheckGoodAmount();
 struct GCLOCK;
 int gm_ConvertMoney(int a, unsigned char k); int gm_PlayerFactor(int a, unsigned char k);
-int ai_Unk4a7140();
-int ai_Unk4a74e0(); int gm_BuildingSkill(); float ai_NormalizeEffectScale(float x);
+int ai_PokerStart();
+int ai_PokerStep(); int gm_BuildingSkill(); float ai_NormalizeEffectScale(float x);
 
 void ai_CurseWindow(int building)
 {

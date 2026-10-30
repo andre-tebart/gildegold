@@ -78,9 +78,9 @@ int gm_ConvertMoney(int a, unsigned char k);                                    
 int gm_PlayerFactor(int a, unsigned char k);                                        /* 0x5085f0 */
 int unk_Unk4fb770(char *name);                                                    /* 0x4fb770 */
 void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d);                         /* 0x4c4830 */
-int ai_Unk4a7140(AIPER *p, G10GAME *g);                                          /* 0x4a7140 */
+int ai_PokerStart(AIPER *p, G10GAME *g);                                          /* 0x4a7140 */
 int ai_Unk4a7430(G10GAME *g);                                                    /* 0x4a7430 */
-int ai_Unk4a74e0(void);                                                          /* 0x4a74e0 */
+int ai_PokerStep(void);                                                          /* 0x4a74e0 */
 int ai_Unk4a7650(int *hand, int shown, int skip, int *out);                         /* 0x4a7650 */
 int ai_Unk4a76d0(int *hand, int high);                                           /* 0x4a76d0 */
 int ai_Unk4a7760(int owner);                                                     /* 0x4a7760 */
@@ -95,7 +95,7 @@ int ai_Unk4a8190(void);                                                         
 void ai_Unk4a8520(void);                                                         /* 0x4a8520 */
 void ai_Unk4a8590(void);                                                         /* 0x4a8590 */
 void ai_Unk4a85e0(void);                                                         /* 0x4a85e0 */
-void ai_Unk4a8630(int k);                                                        /* 0x4a8630 */
+void ai_PokerExchange(int k);                                                        /* 0x4a8630 */
 void ai_Unk4a8650(void);                                                         /* 0x4a8650 */
 void ai_Unk4a8690(void);                                                         /* 0x4a8690 */
 void ai_Unk4a86f0(void);                                                         /* 0x4a86f0 */
