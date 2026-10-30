@@ -204,7 +204,8 @@ extern GAPDATA full_data_627e98[];
 extern GAPDATA full_data_627ea8[];
 extern char ai_MissionMode;
 extern int ai_MissionPartner;
-extern unsigned char ai_Missions;
+#include "unk_4b39f0_types.h"
+extern G13MIS ai_Missions[];
 extern float ai_Unk617830[];
 extern float ai_Unk617840[];
 extern float ai_Unk5eb788;

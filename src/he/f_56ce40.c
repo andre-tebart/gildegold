@@ -5,7 +5,6 @@ void cm_SendExSysMessage(unsigned char id, void *msg);
 
 void he_Unk56ce40(int ev)
 {
-    int *rec;
     int i, h, arg;
 
     if (*(signed char *)(unsigned)&ai_MissionMode < 0) {
@@ -13,8 +12,7 @@ void he_Unk56ce40(int ev)
         return;
     }
     for (i = 0; i < 0x80; i++) {
-        rec = (int *)((unsigned)&ai_Missions + i * 0x24);
-        if (rec[0] != 0 && rec[1] == *(int *)((unsigned)&ai_Chars + *(unsigned short *)(ev + 8) * 0x21c + 4))
+        if (ai_Missions[i].type != 0 && ai_Missions[i].owner == *(int *)((unsigned)&ai_Chars + *(unsigned short *)(ev + 8) * 0x21c + 4))
             break;
     }
     if (i >= 0x80) {
@@ -27,9 +25,9 @@ void he_Unk56ce40(int ev)
         he_Unk53e1f0((int *)ev);
         break;
     case 0:
-        if (*(char *)(((unsigned)&ai_Missions + 0x20) + i * 0x24) == 0 && *(unsigned short *)(unsigned)&ai_TimeHour < 0x16) {
-            if (ai_Unk4b4f00(rec) != 0) {
-                *(char *)(((unsigned)&ai_Missions + 0x20) + i * 0x24) = 1;
+        if (ai_Missions[i].unk20 == 0 && *(unsigned short *)(unsigned)&ai_TimeHour < 0x16) {
+            if (ai_Unk4b4f00(&ai_Missions[i]) != 0) {
+                ai_Missions[i].unk20 = 1;
                 gm_AddTime(ev + 0x52, 0, 1, 0);
                 *(int *)(ev + 0x70) = 1;
                 return;
@@ -39,9 +37,9 @@ void he_Unk56ce40(int ev)
         break;
     case 1:
         gm_AddTime(ev + 0x52, 0, 1, 0);
-        if (*(char *)(((unsigned)&ai_Missions + 0x20) + i * 0x24) == 1 && *(unsigned short *)(unsigned)&ai_TimeHour < 0x16 &&
+        if (ai_Missions[i].unk20 == 1 && *(unsigned short *)(unsigned)&ai_TimeHour < 0x16 &&
             U_I((unsigned)&ai_MissionPartner) == -1) {
-            arg = rec[1];
+            arg = ai_Missions[i].owner;
             *(int *)(ev + 0xac) = ((int (*)(unsigned char, void *))cm_SendExSysMessage)(8, &arg);
             *(int *)(ev + 0x70) = 2;
             return;

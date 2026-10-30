@@ -124,6 +124,8 @@ typedef struct AIBTYPE {                /* 0x24d bytes, ai_BTypes[] */
 } AIBTYPE;
 #pragma pack(pop)
 
+#ifndef AI_TIME_TYPE                    /* ai_types.h has the same AITIME under this guard (see there) */
+#define AI_TIME_TYPE
 #pragma pack(push, 2)
 typedef struct AITIME {                 /* 14 bytes: the game time ai_Time, the AI's last-run time ai_LastUpdateTime */
     int year;                           /* 0x0, the year (0x578 + it is the calendar year) */
@@ -141,6 +143,7 @@ typedef struct AITIME {                 /* 14 bytes: the game time ai_Time, the 
     };
 } AITIME;
 #pragma pack(pop)
+#endif
 
 typedef struct AIJOB {                  /* a job (he_FindEvent / he_NextEvent) */
     char kind;                          /* 0x00 */

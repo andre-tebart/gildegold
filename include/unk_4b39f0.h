@@ -4,17 +4,7 @@
 
 #include "am.h"
 
-typedef struct G13MIS {                 /* 0x24 bytes, ai_Missions[0x80], the running missions */
-    int type;                           /* 0x00, 0: free */
-    int owner;                          /* 0x04, a character id */
-    AITIME time;                        /* 0x08, when it was given */
-    short pad16;
-    int unk18;                          /* 0x18 */
-    int unk1c;                          /* 0x1c */
-    unsigned char unk20;                /* 0x20 */
-    char pad21[3];
-} G13MIS;
-
+#include "unk_4b39f0_types.h"        /* G13MIS */
 typedef struct G13TYPE {                /* 0x1c bytes, ai_MissionTypes[48], the mission types */
     int type;                           /* 0x00 */
     int kind;                           /* 0x04, 0..5 */
