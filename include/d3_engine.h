@@ -263,7 +263,6 @@ void d3fl_Inflate(struct D3FLMAP *map);                                         
 void d3sm_Build(void *h, void *t);                                                    /* 0x45e620, d3_sm.c: void d3sm_Build(D3SM *, D3TERRAIN *) */
 void d3_AttachMesh(D3OBJECT *obj, int unk, char *name);                                  /* 0x44cbb0 */
 struct D3IOOBJ *d3io_LoadObject(char *a, char *b);                                         /* 0x44e080, d3_io_t.c (d3io_LoadObject); this header's tenants cannot include d3_io_t.h */
-void d3anim_Release(void *a, char now);                                                 /* 0x434b70, @original: d3_anim.c defines D3ANIMDATA *; this spelling keeps the /O2 operand order of the byte-matched d3_LoadScene (d3_int_io.c, 0x27f) */
 
 typedef struct D3LIGHTENTRY {       /* 0x38 bytes */
     char pad00[0x30];
@@ -327,7 +326,6 @@ extern char d3_Unk633438;                   /* 0x633438 */
 extern float d3_InvZFar;                    /* 0xfc2dd4, 1 / d3_ZFar */
 extern char d3_LightsChanged;                   /* 0x633b14 */
 char d3s_FreeLightCB(D3OBJECT *obj, void *ctx);                                         /* 0x45cd60, d3s.c, d3_ForEachObject callback */
-void d3anim_MapBones(D3OBJECT *obj);                                                       /* 0x4319e0, @original: d3_anim.c returns char; this spelling keeps the /O2 operand order of the byte-matched d3_LoadScene (d3_int_io.c, 0x27f) */
 void d3anim_PoseBones(D3OBJECT *obj);                                                       /* 0x431ae0 */
 void d3_InitObject(D3OBJECT *obj);                                                      /* 0x43ce60 */
 void d3_FreeMesh(D3OBJECT *obj);                                                        /* 0x43cd80 */

@@ -13,11 +13,9 @@
 #include <d3d.h>
 /* ch.h's block (see ch.c): d3.h declares these two with other types, ch.h has ours */
 #define d3_Unk44e4a0 d3_Unk44e4a0_void
-#define d3anim_StartAnim d3anim_StartAnim_d3h
 #include "d3.h"
 #include "d3_anim.h"
 #undef d3_Unk44e4a0
-#undef d3anim_StartAnim
 #include "d3_sm.h"
 #include "path.h"
 #include "ch.h"

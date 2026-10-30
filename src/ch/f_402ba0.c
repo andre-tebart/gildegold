@@ -71,7 +71,7 @@ void ch_UpdateLowPoly(CHARACTER *ch)
                 f.a = 0;
                 if (!d3_FindAnim(name))
                     d3_LoadAnimStream(path, name, 1);
-                s = (D3ANIMSLOT *)d3anim_StartAnim(ch->lowPolyBody->material->animCtl, name, f);
+                s = (D3ANIMSLOT *)d3anim_StartAnimCh(ch->lowPolyBody->material->animCtl, name, f);
                 if (!s) {
                     sprintf(msg, "ch_Updatelowpoly(): Could not attach ani: %s", path);
                     ch->flags.lowPolyAnimFailed = 1;

@@ -38,7 +38,7 @@ int ocmd_AttachAnimLooped(D3OBJECT **pobj, char **file, int *n)
         f.u.c.b0 = *n;
         f.b = 0;
         f.a = 1;
-        if (!d3anim_StartAnim(obj->info, name, f))
+        if (!d3anim_StartAnimCh(obj->info, name, f))
             evt_Error(evt_Cur, evt_Cur->pc, "AttachAnimLooped(): Could not find animation-file...");
     }
     if (evt_Cur->mode == 1)

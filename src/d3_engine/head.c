@@ -26,6 +26,7 @@
 #include "d3_sky.h"
 #include "d3_vec.h"
 #include "d3_engine.h"
+#include "d3_anim.h"
 /* d3_mir.h types d3_MirDrawObject / d3_MirBeginFrame with D3MIRROR *; d3_engine.h keeps the D3OBJECT * views. */
 #define d3_MirDrawObject d3_Unk4550e0_mirview
 #define d3_MirBeginFrame d3_Unk4554b0_mirview

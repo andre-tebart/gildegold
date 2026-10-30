@@ -29,7 +29,7 @@ void ch_PreloadAnims(CHARACTER *ch, int n, ...)
                 f.u.c.b0 = 0;
                 f.b = 0;
                 f.a = 1;
-                d3anim_StartAnim(ch->obj->material->animCtl, name, f);
+                d3anim_StartAnimCh(ch->obj->material->animCtl, name, f);
                 d3_ReleaseTexture(ch->obj->material->animCtl, name);
             }
         }

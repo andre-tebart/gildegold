@@ -49,7 +49,7 @@ void ch_CheckAniMorph(CHARACTER *ch)
                     f.u.c.b1 = 0x18;
                     f.b = 0;
                     f.a = 0;
-                    ch->morph = (D3ANIMSLOT *)d3anim_StartAnim(obj->material->animCtl, name, f);
+                    ch->morph = (D3ANIMSLOT *)d3anim_StartAnimCh(obj->material->animCtl, name, f);
                     if (ch->morph) {
                         if (!d3t_SceneIndex(ch->scene))
                             ch->morph->timeout = -1;
@@ -83,7 +83,7 @@ void ch_CheckAniMorph(CHARACTER *ch)
                 sprintf(msg, "character/%s/%s.baf", ch->body, ch->next->name, ch->body);
                 d3_LoadAnimStream(msg, ch->next->name, 0);
             }
-            ch->slot = (D3ANIMSLOT *)d3anim_StartAnim(obj->material->animCtl, ch->next->name, f);
+            ch->slot = (D3ANIMSLOT *)d3anim_StartAnimCh(obj->material->animCtl, ch->next->name, f);
             ch->lastActionFrame = -1;
             if (ch->slot) {
                 if (!d3t_SceneIndex(ch->scene))

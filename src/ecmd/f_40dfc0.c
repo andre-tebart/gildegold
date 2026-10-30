@@ -23,7 +23,7 @@ int ocmd_PreloadAnim(D3OBJECT **pobj, char **file)
         f.u.c.b0 = 0;
         f.b = 0;
         f.a = 1;
-        d3anim_StartAnim(obj->info, base, f);
+        d3anim_StartAnimCh(obj->info, base, f);
         d3_ReleaseTexture(obj->info, base);
     }
     return 0;

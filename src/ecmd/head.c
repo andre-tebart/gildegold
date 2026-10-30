@@ -14,14 +14,13 @@ struct D3SURF;
 #include <d3d.h>
 /* d3.h declares these two with other types (void / int flag, D3ANIMFLAGS); ch.h has ours */
 #define d3_Unk44e4a0 d3_Unk44e4a0_void
-#define d3anim_StartAnim d3anim_StartAnim_d3h
 #include "d3.h"
 #include "d3_anim.h"
 #undef d3_Unk44e4a0
-#undef d3anim_StartAnim
 #include "d3_sm.h"
 #include "path.h"
 #include "ch.h"
+#define d3anim_StartAnimCh ((int (*)(void *, char *, CHANIMFLAGS))d3anim_StartAnim)  /* 0x435550 (d3.h: D3ANIMFLAGS f): @original this unit passes its field-wise CHANIMFLAGS, 12 bytes like D3ANIMFLAGS, as the original TU did */
 #include "ecmd.h"
 #include "d3_light.h"
 

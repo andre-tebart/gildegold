@@ -39,7 +39,7 @@ D3IOPATH *d3_LoadObjectAnim(char *file, D3IOOBJ *obj, char reload)
                 n = p->nkeys - 1;
                 p->key = n;
                 p->time = p->keys[n].time - 1;
-                p->next = d3anim_NextFrame(p->flags, n, 0, n, p->nkeys);
+                p->next = d3anim_NextFrameIo(p->flags, n, 0, n, p->nkeys);
             } else {
                 p->next = 1;
                 p->key = 0;

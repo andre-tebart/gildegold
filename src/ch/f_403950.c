@@ -21,7 +21,7 @@ D3ANIMSLOT *ch_AttachMotion(CHARACTER *ch, int motion)
         f.a = 1;
         if (!d3_FindAnim(name))
             d3_LoadAnimStream(path, name, 1);
-        s = (D3ANIMSLOT *)d3anim_StartAnim(ch->obj->material->animCtl, name, f);
+        s = (D3ANIMSLOT *)d3anim_StartAnimCh(ch->obj->material->animCtl, name, f);
         if (!s) {
             sprintf(msg, "ch_AttachMotion(): Could not attach ani: %s", path);
             return 0;

@@ -141,15 +141,14 @@ typedef struct CHANIMFLAGS {
     unsigned int a : 1, b : 1, r : 30;                  /* 0x04 */
     unsigned char a8 : 1, b8 : 1, r8 : 6;               /* 0x08, b8 = D3ANIMSLOT.play */
 } CHANIMFLAGS;
-/* d3.h declares these two with other types; ch.c hides those prototypes */
+/* d3.h declares this one with another type (d3_Unk44e4a0); ch.c hides that prototype */
 struct D3IOANIMDATA *d3_LoadAnimStream(char *name, char *file, char unk);                              /* 0x44e4a0, loads an animation, d3_io_t.c */
-int d3anim_StartAnim(void *list, char *name, CHANIMFLAGS f);                                /* 0x435550, returns a D3ANIMSLOT; @original: ch.c compiles this prototype (it renames d3.h's / d3_anim.h's to d3anim_StartAnim_d3h) and passes its field-wise CHANIMFLAGS, 12 bytes like D3ANIMFLAGS */
 
-/* bits of the D3OBJECT flag bytes 0x210..0x213 */
-typedef struct D3OBJBITS {
+/* bits of the D3OBJECT flag bytes 0x210..0x213 (by offset; d3_engine.h's D3OBJBITS names the bits of 0x210) */
+typedef struct CHOBJBITS {
     unsigned char b0 : 1, b1 : 1, b2 : 1, b3 : 1, b4 : 1, b5 : 1, b6 : 1, b7 : 1;
-} D3OBJBITS;
-#define D3OBJ_BITS(obj, off) ((D3OBJBITS *)((char *)(obj) + (off)))
+} CHOBJBITS;
+#define D3OBJ_BITS(obj, off) ((CHOBJBITS *)((char *)(obj) + (off)))
 char d3_GetHeightAt(struct D3SM *h, struct D3VECTOR *pos, int *px, int *pz, float *py);             /* 0x45f170 */
 float d3_YawTo(struct D3OBJECT *obj, float *p);                                     /* 0x448ac0, angle towards target */
 #define D3OBJ_UNK048(obj) (*(int *)&(obj)->name[0x48])

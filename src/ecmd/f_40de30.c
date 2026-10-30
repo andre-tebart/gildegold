@@ -33,7 +33,7 @@ int ocmd_AttachAnim(D3OBJECT **pobj, char **file, int *once)
         f.u.c.b0 = 0;
         f.b = 0;
         f.a = 1;
-        d3anim_StartAnim(obj->info, name, f);
+        d3anim_StartAnimCh(obj->info, name, f);
     }
     if (evt_Cur->mode == 1)
         evt_Cur->waitfn = ocmd_AttachAnim;
