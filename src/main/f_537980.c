@@ -22,7 +22,7 @@ void main_Unk537980(void)
         f = "Misc\\Loading_net";
     id = d2_OpenForm(0, 0, f);
     U_I((unsigned)&init_StatusForm) = id;
-    d2_MoveObj(0, *(short *)(unsigned)&d2_ScreenH - *(short *)(((unsigned)&ai_Unkf8f128 + 0x2) + U_I(((unsigned)&d2_Views + 0x4) + id * 0x2ac) * 0x3c4) - 0x30, U_I(((unsigned)&ai_Unkf8f13c + 0x250) + U_I(((unsigned)&d2_Views + 0x4) + id * 0x2ac) * 0x3c4));
+    d2_MoveObjS(0, *(short *)(unsigned)&d2_ScreenH - *(short *)(((unsigned)&ai_Unkf8f128 + 0x2) + U_I(((unsigned)&d2_Views + 0x4) + id * 0x2ac) * 0x3c4) - 0x30, U_I(((unsigned)&ai_Unkf8f13c + 0x250) + U_I(((unsigned)&d2_Views + 0x4) + id * 0x2ac) * 0x3c4));
     d2_PlaceWindow(U_I(((unsigned)&d2_Views + 0x4) + U_I((unsigned)&init_StatusForm) * 0x2ac), 1);
     d2_SetForm(U_I((unsigned)&init_StatusForm), 1);
     d2_WinOpenSlider(0, 0, 0x246, 0, 0x246, 0x83, 0x42, d2_LastWindow);

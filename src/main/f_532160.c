@@ -29,7 +29,7 @@ int main_OpenEngine(void)
     d2_ClearScreen();
     f = d2_OpenForm(0, 0, "Misc\Loading_main");
     d2_PlaceWindow(d2_Views[f].wins[0], 3);
-    d2_MoveObj(0, d2_ScreenH - d2_Wins[d2_Views[f].wins[1]].h - 0x30, d2_Wins[d2_Views[f].wins[1]].parent);
+    d2_MoveObjS(0, d2_ScreenH - d2_Wins[d2_Views[f].wins[1]].h - 0x30, d2_Wins[d2_Views[f].wins[1]].parent);
     d2_PlaceWindow(d2_Views[f].wins[1], 1);
     io_PrintText("$ADie Gilde - Gold Edition - Version 2.05$X");
     net_Connect(0, 0);

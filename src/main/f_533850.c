@@ -147,7 +147,7 @@ lskip:
         if (U_I(((unsigned)&dm_L + 0x18)) != 0 && ai_Unk5fe710 != -1) {
             if (ai_Unk5fe710 == bnew) {
                 d2_EnableObject(f, 0);
-                d3io_NoopCallback();
+                ((void (*)(void))d3io_NoopCallback)();  /* called with no argument (no push at the call) */
                 hmt_Reset();
                 if (main_Unk537930() == 0)
                     goto lback;

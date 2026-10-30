@@ -125,7 +125,7 @@ void main_Unk53b2e0(void)
         sv_PumpNet();
         Sleep(100);
         he_Unk540fe0();
-        d3io_NoopCallback();
+        ((void (*)(void))d3io_NoopCallback)();  /* called with no argument (no push at the call) */
         sv_PumpNet();
         Sleep(100);
         unk_Unk4f4d10();

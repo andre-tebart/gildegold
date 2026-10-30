@@ -11,7 +11,7 @@ int main_HostNetworkGame(void)
     char c;
 
     if (main_PlayerCountDialog() != 0) {
-        d3io_NoopCallback();
+        ((void (*)(void))d3io_NoopCallback)();  /* called with no argument (no push at the call) */
         if (main_ChooseCity(1, 1) != 0) {
             sprintf((char *)(unsigned)&main_NetSaveName, "%s/%s.net", "gamedata/cities", ai_DataPath + 0x220);
             strcpy((char *)(unsigned)&main_NetHost, "127.0.0.1");

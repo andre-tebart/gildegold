@@ -13,7 +13,7 @@ void main_Unk537be0(void)
     while ((*fade & 4) == 0)
         sv_RunFrame(0, mask);
     d2_CloseView(U_I((unsigned)&init_StatusForm));
-    d3io_NoopCallback();
+    ((void (*)(void))d3io_NoopCallback)();  /* called with no argument (no push at the call) */
     d2_ClearSurface(d2_ScreenSurf);
     U_I((unsigned)&d2_CutsceneActive) = 0;
     d2_ReleaseFade(fade);

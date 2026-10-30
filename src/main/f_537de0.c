@@ -36,7 +36,7 @@ void main_Unk537de0(void)
     U_I((unsigned)&sv_PanelShown) = 0;
     U_I((unsigned)&ai_PlayerBuilding) = 0;
     U_I((unsigned)&ai_FallbackBuilding) = 0;
-    d3io_NoopCallback();
+    ((void (*)(void))d3io_NoopCallback)();  /* called with no argument (no push at the call) */
     anm_Alloc();
     ch_Reset();
     ai_Unk589410();

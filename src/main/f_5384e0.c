@@ -97,8 +97,7 @@ void main_Unk5384e0(void)
         int win = sv_Unk52fa10();
         d2_SetForm(win, 2);
         io_PrintText(0x7d);
-        w = d2_GetViewWin(win, 1, 0x767);
-        d2_CreateScrollButtons(-1, -1, U_I((unsigned)&d2_LastWindow), w);
+        d2_CreateScrollButtons(-1, -1, U_I((unsigned)&d2_LastWindow), d2_GetViewWin(win, 1), 0x767);
         w = d2_GetViewWin(win, 1);
         U_I(((unsigned)&ai_Unkf8f13c + 0x248) + w * 0x3c4) = 0x18;
         d2_SetForm(win, 1);
@@ -155,7 +154,7 @@ void main_Unk5384e0(void)
         while ((*fade & 4) == 0)
             sv_RunFrame(0, U_I((unsigned)&sv_FrameMask) | 0x80);
         sv_Unk52fa90();
-        d3io_NoopCallback();
+        ((void (*)(void))d3io_NoopCallback)();  /* called with no argument (no push at the call) */
     }
     r = he_Unk53efb0(id);
     cm_SendMoveGoodsUnchecked(-1, U_I((unsigned)&ai_CharInts + id * 0x21c), *(unsigned char *)(unsigned)&ai_OwnPlayer, -r);
