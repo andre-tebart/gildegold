@@ -26,6 +26,14 @@ extern char gm_PlayerRecords[];
 #include "d3_engine.h"
 #include "data_views.h"
 #include "d2.h"
+#include "err.h"
+#include "tr.h"
+#include "vfs.h"
+#include "tb.h"
+#include "msx.h"
+#include "evtc.h"
+#include "sndc.h"
+#include "net.h"
 #define GAPDATA __declspec(align(1)) unsigned char
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
@@ -34,7 +42,6 @@ struct MAINCLOCK { int year; unsigned short hour; int min; };  /* the used head 
 #pragma pack(pop)
 extern unsigned char d3_Hardware;
 extern int main_Inactive;       /* 0x6f2584, 1 while the app is deactivated */
-extern int tb_Paused;           /* 0x6333e0 (tb.h) */
 extern char ai_DataPath[];
 extern unsigned char ai_GfxResolution;
 extern int ai_ScreenModeH;
@@ -386,7 +393,6 @@ extern GAPDATA full_data_6f241c[];
 extern unsigned char ai_SoundOptions;
 extern unsigned char di_Disabled;
 extern GAPDATA full_data_6f2574[];
-extern unsigned char msx_FadeTo;
 extern unsigned char snd_AmbientOn;
 extern char ai_DataPath[];
 extern int ai_GameFlags;
@@ -468,7 +474,6 @@ int txt_LoadIncludes(char *file);       /* 0x42c9c0 */
 int txt_OpenText(char *file, int mode);  /* 0x42cbc0 */
 void hst_ResetLists(void);              /* 0x4b1f30, hst.c */
 int io_PrintText(char *fmt, ...);       /* 0x515960 */
-int net_Connect(char *host, unsigned short port);  /* 0x424990 */
 void ai_InitStates(void);               /* 0x4c3480 */
 void ai_ClearTurnTable(void);           /* 0x587de0, unk_575860.h */
 int gm_LoadTables(char *root);          /* 0x4fe570, f3gm.h */
@@ -480,10 +485,7 @@ int sb_Init(int mem, int count, int a, int b, int c);  /* 0x425bc0 */
 int d3snd_Init(int max);                /* 0x417650 */
 int d3sndw_Init(unsigned short n);      /* 0x417ec0 */
 void sb_SetPath(char *path);            /* 0x426240 */
-int sb_LoadSampleBank(char *name, int flags);  /* 0x426950 */
 int main_PreloadSound(char *f);         /* 0x537c70 */
-int msx_Init(int a, int b, int c);      /* 0x423830 */
-void msx_SetPath(char *path);           /* 0x4243d0 */
 void ai_ApplyVolumes(void);             /* 0x5d5f10, unk_5d33b0.h */
 void sv_InitTick(void);                 /* 0x520ee0 */
 char init_ResetSceneUniverses(void);    /* 0x50d460 */
@@ -494,10 +496,8 @@ int ahm_LoadPrototypes(int mode);       /* 0x4eb480 */
 int hmt_CreateBinaryFile(void);         /* 0x4ac440 */
 void hmt_Init(void);                    /* 0x4aca90 */
 void ai_BuildFloatTable(void);          /* 0x4d27a0 */
-void evtc_Register(void);               /* 0x40b8a0 */
 void ocmd_Register(void);               /* 0x40f960 */
 void chc_Register(void);                /* 0x40d270 */
-void sndc_Register(void);               /* 0x410220 */
 void d3if_Reset(void);                  /* 0x4473f0, cm.h */
 int ls_SaveGame(char *path, char *name, unsigned flags);  /* 0x5190b0, ls.c (as unk_5d33b0.h) */
 int ls_GetLanguage(void);               /* 0x5190a0, ai.h */
@@ -522,7 +522,6 @@ void main_FreeSoundBanks(void);         /* 0x537db0 */
 void sv_UnregisterTick(void);           /* 0x520f10, sv.c */
 void sb_Exit(void);                     /* 0x425ce0, sblib.c */
 void d3snd_Exit(void);                  /* 0x4176f0, d3_snd.c */
-void msx_Exit(void);                    /* 0x4238e0, msx.h */
 void d3sndw_Exit(void);                 /* 0x418030, d3_snd.c */
 void he_SaveMessageFilter(void);        /* 0x575600, he.c */
 void gm_Free(void);                     /* 0x4fe9c0, f3gm.c */
@@ -533,17 +532,9 @@ void gv_FreeEffectObjects(void);        /* 0x4ede70, gv.h */
 void ch_Close(void);                    /* 0x40b1a0, ch.h */
 void ai_ResetMessages(void);                /* 0x4c3560 */
 void txt_Format(char *out, int id0, ...); /* 0x5176d0 */
-void tb_Exit(void);                     /* 0x42e940, tb.h */
-void vfs_Exit(char warn);               /* 0x431510, vfs.h */
-void tr_shutdown(void);                 /* 0x42ebc0, tr.h */
 void mem_Exit(void);                    /* 0x422910, mem.h */
-void err_Exit(void);                    /* 0x422250, err.h */
-void err_Init(int started, void (*crashCB)(HANDLE), HWND hwnd, unsigned int flags);  /* 0x4220b0, err.h */
 void mem_Init(int max);                 /* 0x4226a0, mem.h */
-int tr_startup(unsigned short n);       /* 0x42ea90, tr.h */
 int sprintf(char *buf, const char *fmt, ...);                     /* 0x5de652 */
-char vfs_Init(char *root, char unk);    /* 0x431490, vfs.h */
-int tb_Init(UINT delay, int oneshot);   /* 0x42e8c0, tb.h */
 char dd_Restore();                    /* 0x41bdd0 */
 char d3d_Restore();                    /* 0x4370d0 */
 void amt_CheckOffices(void);            /* 0x4e9260, amt.h */
