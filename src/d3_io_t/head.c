@@ -12,6 +12,7 @@
 #include "d3_io_t.h"
 #include "d3_io_fl.h"
 #include "data_views.h"
+#include "d3_int_io.h"
 extern D3IOANIMDATA d3_AnimHead;
 extern D3IOOBJ d3_StockHead;
 

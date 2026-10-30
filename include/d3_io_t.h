@@ -191,12 +191,6 @@ extern D3IOOBJ d3_StockHead;                                                    
 #ifndef DATA_VIEWS_H
 extern D3IOOBJ *d3_StockList;                                                   /* 0xfc4c40 */
 #endif
-/* 0x5fbf78 as d3_int_io.h declares it (d3io_Lod, initialized to 2): which stock object LODs are loaded */
-typedef struct D3IOLODBITS {
-    unsigned int mode : 7;          /* 1: load all three LODs, 2: only the best one found */
-    unsigned int shadow : 1;        /* load the "_s" variant for lod < 0 */
-} D3IOLODBITS;
-extern D3IOLODBITS d3io_Lod;                                                    /* 0x5fbf78 */
 extern char d3_AnimDir[];                                                       /* 0x5fbf80, "animations/" */
 extern int d3_Unk6333cc;                                                        /* 0x6333cc */
 extern void *d3_Unk6333fc;                                                      /* 0x6333fc */

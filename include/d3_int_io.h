@@ -46,7 +46,7 @@ typedef struct D3IOOBJFLAGS {      /* D3OBJECT::state..stateFlags as the reader 
 #define D3IO_FL(o) ((D3IOOBJFLAGS *)&(o)->state)
 #define D3IO_200(o) (*(int *)((char *)(o) + 0x200))
 
-typedef struct D3IOKEY {            /* D3LIGHTENTRY (0x38 bytes) as the reader fills it */
+typedef struct D3IOLIGHTKEY {       /* D3LIGHTENTRY (0x38 bytes) as the reader fills it (d3_io_t.h's D3IOKEY is the animation key) */
     D3VECTOR v00;
     D3VECTOR v0c;
     D3VECTOR v18;
@@ -55,8 +55,8 @@ typedef struct D3IOKEY {            /* D3LIGHTENTRY (0x38 bytes) as the reader f
     float f2c;
     float f30;
     int f34;
-} D3IOKEY;
-#define D3IO_KEYS(o) ((D3IOKEY *)D3_X(o)->light)
+} D3IOLIGHTKEY;
+#define D3IO_KEYS(o) ((D3IOLIGHTKEY *)D3_X(o)->light)
 
 /* tex_Load with its real argument types (ts_texture.c); d3.h declares the last two as int */
 #define D3IO_TEXLOAD ((D3TEXHANDLE *(*)(char *, D3IOFLAGS, unsigned char, unsigned char))tex_Load)
@@ -72,7 +72,6 @@ int bio_rd_array_quick(struct VFSFILE *f, int size, void **out);                
 
 extern char d3_LodMissing;                  /* 0x6339e4, set when an object LOD is missing */
 
-void tex_Reload(struct TSTEXTURE *tex, char keep);                                                  /* 0x460e50, ts_texture.c */
 void d3_AppendSibling(D3OBJECT *first, D3OBJECT *obj);                                  /* 0x43cb20, d3_engine.c */
 void d3e_LoadEvents(void *f, D3OBJECT *obj);                                            /* 0x43e970, d3_engine.c */
 int d3_SceneVersion(unsigned int version);                                                 /* 0x44a9e0, d3_obj.c */
@@ -111,7 +110,7 @@ typedef union D3IOLOD {             /* 0x5fbf78 (initialized to 2): which stock 
         unsigned int shadow : 1;    /* load the "_s" variant for lod < 0 */
     };
 } D3IOLOD;
-extern D3IOLOD d3io_Lod;                    /* 0x5fbf78, @original: d3_io_t.h declares D3IOLODBITS, the same 8 bits (mode : 7, shadow : 1) under its local name; both units only test .mode / .shadow and d3_io_t.c cannot include this header */
+extern D3IOLOD d3io_Lod;                    /* 0x5fbf78, which stock object LODs are loaded (d3_io_t.c and main.c include this header) */
 char d3io_LodName(char *name, char *name2, int lod, char *out, char *out2);            /* 0x44c9d0 */
 typedef union D3IOCOL {             /* a vertex colour: the b, g, r, a bytes, or the whole dword (-1 = unset) */
     int all;
