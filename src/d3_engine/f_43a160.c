@@ -79,7 +79,7 @@ draw:
         d3_LightKeysVisible += s->info.nkeys;
         d3_RelightObject(obj);
     }
-    d3_MirBeginFrame(obj, (D3OBJECT **)&d3_Mirror);
+    d3_MirBeginFrameE(obj, (D3OBJECT **)&d3_Mirror);
     if (obj == d3s_Object || s->flags.f.b[0] < 0xff || (s->flags.f.b[2] & 1))
         base = 0x4000;
     n = min(s->info.ntris, d3_SortMax - (int)d3_SortCount);

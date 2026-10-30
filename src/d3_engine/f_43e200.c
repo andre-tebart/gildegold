@@ -12,7 +12,7 @@ void d3_Render(unsigned int mask, char flag)
         if (d3_Hardware)
             d3d_Clear(&d3_Viewport);
         else
-            dd_Clear(&d3_Viewport, GetBValue(d3_FogColor), GetGValue(d3_FogColor), GetRValue(d3_FogColor));
+            dd_ClearB(&d3_Viewport, GetBValue(d3_FogColor), GetGValue(d3_FogColor), GetRValue(d3_FogColor));
         d3_LightKeysCulled = 0;
         d3_LightKeysVisible = 0;
         d3_MaxZ = 0.0f;

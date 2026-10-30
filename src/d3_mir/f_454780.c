@@ -13,7 +13,7 @@ char d3_MirBoundaryEdges(unsigned int n, unsigned char *used, D3PVERT **pts, uns
         row = used + i;
             for (j = 0; j < n; j++, row += n) {
                 if (i != j && used[i * n + j] == 0) {
-                    d3_TriNormal((D3VECTOR *)&d3_Origin, pts[i], pts[j], &nrm);
+                    d3_TriNormalM((D3VECTOR *)&d3_Origin, pts[i], pts[j], &nrm);
                     for (k = 0; k < n; k++) {
                         if (k != i && k != j) {
                             p = pts[k];

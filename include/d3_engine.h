@@ -1,5 +1,6 @@
 struct VFSFILE;
 struct D3OBJECT;
+struct D3MIRROR;
 struct D3FLMAP;                     /* the tag (d3_fl.h spells it out; MS compat needs the forward declaration) */
 /* d3_engine.c types (only what the functions from 0x438c30 need so far). */
 #ifndef D3_ENGINE_H
@@ -428,7 +429,7 @@ extern char d3_ClipInfo[64][0x68];          /* 0xfc3020 */
 void d3s_UpdateObject(D3OBJECT *obj);       /* 0x45ca20, d3s.c */
 void d3s_UpdateObjectAt(D3OBJECT *obj);     /* 0x45ca60, d3s.c */
 void d3_TransformVerts(D3OBJECT *obj, D3OBJINFO *info, void *m);                             /* 0x459300 */
-void d3_MirBeginFrame(D3OBJECT *obj, D3OBJECT **p);                                         /* 0x4554b0, @original: d3_mir.h types it D3MIRROR *; this spelling keeps the /O2 operand order of the byte-matched d3_LoadScene (d3_int_io.c, 0x27f) */
+void d3_MirBeginFrame(D3OBJECT *obj, struct D3MIRROR *m);                                   /* 0x4554b0, d3_mir.h (d3_engine.c calls it through its D3OBJECT ** view d3_MirBeginFrameE) */
 void d3_ProjectMesh(D3OBJECT *obj);                                                     /* 0x438f60 */
 
 /* float to int with fistp (current rounding mode) */
@@ -678,12 +679,12 @@ extern unsigned int d3_Fps60;       /* 0x63348c, frames per second (two windows)
 extern unsigned int d3_Fps10;       /* 0x633490 */
 extern unsigned int tb_Delay;           /* 0xfe7a88, tb.c (the script clock factor) */
 void d3d_Clear(D3RECT *r);                                                              /* 0x435fb0, d3_d3d.c */
-void dd_Clear(D3RECT *r, unsigned char red, unsigned char green, unsigned char blue);   /* 0x41e100 dd_Clear, byte arguments */  /* @original: the original's dd_Clear reads byte arguments; d3_engine.c sees D3RECT/unsigned char, dd_vesa.c the RECT/int view, both byte-correct */
+void dd_Clear(RECT *rect, int r, int g, int b);                                         /* 0x41e100, dd_vesa.c (d3_engine.c / d3_interface.c call it through dd_ClearB) */
 float d3fl_FarDist(struct D3FLMAP *p, D3VECTOR *pos, D3MATRIX *m);                      /* 0x446990 */
 void d3fl_Draw(struct D3FLMAP *map, char water);                                      /* 0x4439e0 */
 void d3s_CollectLights(void);                                                           /* 0x45c9f0, d3s.c */
 char d3_DrawObjectCB(D3OBJECT *obj);                                                    /* 0x43a160 */
-char d3_MirDrawObject(D3OBJECT *obj, void *ctx);                                            /* 0x4550e0, @original: d3_mir.h types it D3MIRROR *; see d3_MirBeginFrame */
+char d3_MirDrawObject(D3OBJECT *obj, struct D3MIRROR *m);                                   /* 0x4550e0, d3_mir.h, a d3_ForEachObject callback */
 void par_Draw(D3PARTSYS *ps);                                                       /* 0x455a90 */
 void d3sky_Draw(void *p);                                                             /* 0x45d500 */
 void d3_DrawSorted(void);                                                                /* 0x43b600 */

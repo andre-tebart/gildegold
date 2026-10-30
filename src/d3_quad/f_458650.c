@@ -8,7 +8,7 @@ void d3q_Mark(D3QNODE *n, D3OBJECT *cam, int zone)
 
     if (n) {
         box = d3q_BoxCorners(n, &cam->pos.x, &cam->matrix._11);
-        r = d3_ClipBox(box, 0, 0);
+        r = d3_ClipBoxU(box, 0, 0);
         if (r & 0x40) {
             for (it = n->first; it; it = it->next) {
                 if (it->obj->material)

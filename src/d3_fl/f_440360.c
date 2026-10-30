@@ -148,7 +148,7 @@ void d3fl_PrepareWater(D3FLMAP *map)
                         D3FL_COPY_TO(regs, map->regions, oldn * sizeof(D3FLREGION));
                         first = oldn;
                     }
-                    if (!(tex = tex_Find("EF_WASS_06A_2T_W_AN0"))) {
+                    if (!(tex = tex_FindF("EF_WASS_06A_2T_W_AN0"))) {
                         *(int *)&f = 0;
                         f.b[0] = 0xac;
                         if (tex = (D3FLTEX *)tex_Load("EF_WASS_06A_2T_W_AN0", f, 0, 0))

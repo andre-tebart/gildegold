@@ -199,7 +199,7 @@ __inline void d3fl_FtoI2(float f, int *dst)
     __asm mov edx, dst
     __asm fistp dword ptr [edx]
 }
-D3FLTEX *tex_Find(char *name);                                                          /* 0x45f980, ts_texture.c; @original: ts_texture.c defines TSTEXTURE *; this pointer view keeps the /O2 operand order of the byte-matched d3_LoadScene (d3_int_io.c, 0x27f) */
+struct TSTEXTURE *tex_Find(char *name);                                                 /* 0x45f980, ts_texture.c (d3_fl.c reads it through its D3FLTEX view tex_FindF) */
 void tex_AddRef(D3FLTEX *tex, int n);                                                   /* 0x4601b0, ts_texture.c */
 /* Inline-asm fill in the style of D3_ZERO (d3.h): size and value through temps (declared in this order),
    the destination named directly in the asm (as D3E_FILL in d3_engine.h). */
@@ -328,7 +328,7 @@ typedef struct D3FLDESC {           /* input of d3fl_LoadMap; null pointers / si
 extern struct VFSDIR *vfs_Root;                      /* 0x6333fc, vfs.c */
 char * vfs_DirPath(struct VFSDIR *d, struct VFSDIR *stop, char *out);                                  /* 0x42fbf0, vfs.c */
 D3FLMAP *d3fl_LoadMap(D3FLDESC *desc);                                                  /* 0x442390 */
-D3FLTEX *tex_GetFrame(int index, unsigned char frame);                                           /* 0x460b00, ts_texture.c; @original: ts_texture.c defines TSTEXTURE *; see tex_Find */
+struct TSTEXTURE *tex_GetFrame(int index, unsigned char frame);                         /* 0x460b00, ts_texture.c (d3_fl.c reads it through tex_GetFrameF) */
 #ifndef DATA_VIEWS_H
 extern unsigned int d3_AnimDiv[];           /* 0x5ebc60, ts_texture.c */
 #endif

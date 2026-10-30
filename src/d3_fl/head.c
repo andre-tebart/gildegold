@@ -16,6 +16,8 @@
 #include "d3_light.h"
 #include "d3_d3d.h"
 #include "data_views.h"
+#define tex_GetFrameF ((D3FLTEX *(*)(int, unsigned char))tex_GetFrame)  /* 0x460b00 (TSTEXTURE *): this unit's D3FLTEX view of the texture */
+#define tex_FindF ((D3FLTEX *(*)(char *))tex_Find)  /* 0x45f980 (TSTEXTURE *): this unit's D3FLTEX view of the texture */
 #define d3_DirToWorldD ((void (*)(D3OBJECT *, D3VECTOR *, D3VECTOR *))d3_DirToWorld)  /* 0x458810 (unk_458810.h: XOBJ *, float *, float *): this unit's D3OBJECT / vector view */
 extern const char d3_ScrollPool[];
 

@@ -8,7 +8,7 @@ void d3if_ClearView(void)
             d3d_Clear(&d3_Viewport);
         } else {
             if (!dd_Cleared)
-                dd_Clear(&d3_Viewport, GetBValue(d3_FogColor), GetGValue(d3_FogColor), GetRValue(d3_FogColor));
+                dd_ClearB(&d3_Viewport, GetBValue(d3_FogColor), GetGValue(d3_FogColor), GetRValue(d3_FogColor));
         }
         d3_Frame(0x40, 1, 1);
     }

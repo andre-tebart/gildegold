@@ -62,7 +62,7 @@ void d3_DrawSortedD3D(void)
             }
             if (cur) {
                 wrap = cur->flags & 1;
-                d3_SetBlendState(cur->alpha < 0xff, cur->unk6e & 1, (cur->unk6e >> 1) & 1);
+                d3_SetBlendStateI(cur->alpha < 0xff, cur->unk6e & 1, (cur->unk6e >> 1) & 1);
             }
         }
         if (cur) {

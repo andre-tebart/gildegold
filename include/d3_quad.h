@@ -45,7 +45,7 @@ D3QNODE *d3q_MakeChild(D3QNODE *parent, float *min, float *max);           /* 0x
 char d3q_GetBounds(D3OBJECT *obj, float *min, float *max);                  /* 0x457db0 */
 void d3q_Build(D3QNODE *n, unsigned int minitems, volatile unsigned int depth, volatile unsigned int maxdepth);   /* 0x457f20 */
 extern D3BOXVERT d3_QBox[8];        /* 0x633b30 */
-unsigned int d3_ClipBox(void *box, float *zmin, float *zmax);            /* 0x439650, @original: d3_engine.h types it unsigned char; the byte-matched d3q_Mark (d3_quad.c) reads an unsigned int result (no 25 ff 00 00 00 after the call) */
+unsigned char d3_ClipBox(void *box, float *zmin, float *zmax);                        /* 0x439650, d3_engine.c (d3_quad.c reads it through d3_ClipBoxU) */
 
 D3QNODE *d3q_Create(D3OBJECT *start, unsigned int mask, unsigned int minitems, unsigned int maxdepth);  /* 0x4582d0 */
 D3BOXVERT *d3q_BoxCorners(D3QNODE *n, float *pos, float *m);                /* 0x458360 */

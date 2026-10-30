@@ -67,7 +67,7 @@ D3MIRPLANES *d3_MirCreatePlanes(D3OBJECT *obj, D3TEXTURE *tex)
                 planes->n = ci->n + ne;
                 planes->mirror = 1;
                 for (j = 0; j < ne; j++) {
-                    d3_TriNormal(&d3_Origin, uniq[j * 2], uniq[j * 2 + 1], &planes->p[j]);
+                    d3_TriNormalM(&d3_Origin, uniq[j * 2], uniq[j * 2 + 1], &planes->p[j]);
                     p = uniq[j * 2];
                     planes->p[j].w = -(p->x * (planes->p[j].x) + p->y * planes->p[j].y + (p->z) * planes->p[j].z);
                 }

@@ -131,7 +131,7 @@ typedef struct D3VERTEX {          /* 0x50 bytes, what D3TRI::v points to */
     char pad48[0x8];
 } D3VERTEX;
 
-void d3_UpdateWorldMatrix(D3OBJECT *obj, D3OBJECT *camera, int unk);                           /* 0x439870 */  /* @original: d3_engine.c defines `char force`; the d3 callers were compiled against int */
+void d3_UpdateWorldMatrix(D3OBJECT *obj, D3OBJECT *camera, char force);                         /* 0x439870, d3_engine.c */
 D3BOXVERT *d3_GetBoxVerts(D3OBJECT *obj, struct D3OBJINFO *info, void *unk);           /* 0x459ab0 */
 
 typedef struct D3MESHKEY {          /* 0x50 bytes */
@@ -294,7 +294,7 @@ char d3_SetParent(struct D3OBJECT *obj, struct D3OBJECT *parent);               
 
 void d3d_Error(char *file, int line, char *call);                                      /* 0x418e90 */
 void d3_BeginScene(unsigned char fog, DWORD fogcol, unsigned char zbuffer);                                                 /* 0x4385a0 */
-void d3_SetBlendState(int a, int b, int c);                                                 /* 0x4387b0 */  /* @original: d3_d3d.c defines three unsigned char; the d3 callers were compiled against int */
+void d3_SetBlendState(unsigned char balpha, unsigned char glow, unsigned char colorkey);   /* 0x4387b0, d3_d3d.c */
 void d3_EndScene(void);                                                                /* 0x438780 */
 
 extern D3TEXTURE *d3_Textures;              /* 0xfb9074 */
