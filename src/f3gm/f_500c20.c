@@ -23,7 +23,7 @@ int gm_CollectOffers(int goods)
             e[0] = 0;
             e[2] = 0;
             e[5] = 0;
-            if (b == (char *)ai_MarketBuildingI) {
+            if (b == (char *)ai_MarketBuilding) {
                 mk = gm_FindMarketObject(goods);
                 n = gm_NOffers;
                 if (mk != 0 && (o = (int)gm_Query(*(int *)(mk + 0x14), 1, 0, goods)) != 0) {

@@ -21,8 +21,8 @@ void gm_SyncMarket(unsigned p)
     list[5] = 0x97;
     list[6] = 0x2db;
     list[7] = 0;
-    ai_MarketBuildingI = gm_BuildQuery(1, 5, 10);
-    if (ai_MarketBuildingI == 0)
+    ai_MarketBuilding = (struct AIBLD *)gm_BuildQuery(1, 5, 10);
+    if (ai_MarketBuilding == 0)
         return;
     if (p == ai_OwnPlayer) {
         for (i = 0; i < 0x55; i++)
@@ -52,7 +52,7 @@ void gm_SyncMarket(unsigned p)
         for (i = 0; i < 0x55; i++) {
             g = GM_GOODS(p, i);
             memcpy(rec, GM_GOODS(p, i), 0x80);
-            o = (int)gm_Query(*(int *)(ai_MarketBuildingI + 0x5d), 1, 0, *(unsigned short *)(g + 0x3c));
+            o = (int)gm_Query(*(int *)((char *)ai_MarketBuilding + 0x5d), 1, 0, *(unsigned short *)(g + 0x3c));
             if (o != 0) {
                 o2 = (int)gm_Query(*(int *)(o + 0x14), 1, 0, 0xff);
                 if (o2 == 0) {
@@ -80,7 +80,7 @@ void gm_SyncMarket(unsigned p)
         k = 0x92;
         do {
             cnt = 0;
-            o = (int)gm_Query(*(int *)(ai_MarketBuildingI + 0x5d), 1, 0, k);
+            o = (int)gm_Query(*(int *)((char *)ai_MarketBuilding + 0x5d), 1, 0, k);
             if (o != 0 && (o2 = (int)gm_Query(*(int *)(o + 0x14), 1, 0, 0xff)) != 0) {
                 o2 = (int)gm_Query(*(int *)(o2 + 0x14), 1, 5);
                 while (o2 != 0) {
