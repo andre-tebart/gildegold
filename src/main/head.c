@@ -44,6 +44,7 @@ extern int gm_PlayerRecords[688];
 #include "evtc.h"
 #include "sndc.h"
 #include "net.h"
+#include "ls.h"                      /* ls_SavePath (LSSAVE, its NETHDR), the save game functions */
 #define GAPDATA __declspec(align(1)) unsigned char
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
@@ -71,7 +72,6 @@ extern char main_AppDir[];
 #include "f3init_types.h"
 extern INIT_PLAYER init_PlayerProfile;
 extern GAPDATA full_data_60da10[];
-extern char ls_SavePath[640];
 extern int sv_PopRequest;
 extern int ai_ModeMask;
 extern GAPDATA full_data_624b48[];
@@ -86,7 +86,6 @@ extern GAPDATA full_data_624b48[];
 extern GAPDATA full_data_624b4c[];
 extern GAPDATA full_data_624b50[];
 extern GAPDATA main_NetGameRecord[];
-extern char ls_SavePath[640];
 extern char ai_OptionsFile[288];
 extern int sv_PopRequest;
 extern char ai_DataPath[];
@@ -100,7 +99,6 @@ extern void * d3_Unk6333fc;
 
 extern GAPDATA full_data_5f1084[];
 extern GAPDATA full_data_936460[];
-extern char ls_SavePath[640];
 extern int sv_PopRequest;
 extern char ai_MissionMode;
 extern int ai_Unkfb9060;
@@ -306,7 +304,6 @@ extern GAPDATA full_data_760454[];
 extern GAPDATA full_data_76f990[];
 extern GAPDATA full_data_76f994[];
 extern int init_StatusForm;
-extern char ls_SavePath[640];
 extern int main_MoneyCheat;
 extern int sv_FrameMask;
 extern int sv_ViewRectBottom;
@@ -353,7 +350,6 @@ extern GAPDATA full_data_75e5f0[];
 extern GAPDATA full_data_75e5f4[];
 extern GAPDATA full_data_75e628[];
 extern INIT_PLAYER init_PlayerProfile;
-extern char ls_SavePath[640];
 extern int main_MoneyCheat;
 extern int sv_FrameDepth;
 extern int sv_PopRequest;
@@ -398,11 +394,7 @@ void init_FreeScenes(void);             /* 0x50d490, f3init */
 #define d2_MoveObjS ((void (*)(short, short, int))d2_MoveObj)  /* 0x46cda0 as its definition reads it (d2.c f_46cda0.c: short x, short y): this unit's callers push the short sums untruncated (0x532212 `sub dx, [..]; sub edx, 0x30; push edx`); d2.h keeps int for d2_CreatePicObj (@original) */
 #define util_RandomInt ((int (*)(unsigned short))util_Random)  /* 0x42ec00 as tr.c defines it: @original this unit reads the full int result (0x53b8c9 util_Random(4) + 0x20 pushed without the 16-bit mask ai.h's unsigned short prototype adds) */
 #define d2_SetObjValue4 ((void (*)(int, int, int, int))d2_SetObjValue)  /* the 4-argument call (as unk_5d33b0.h) */
-#pragma pack(push, 2)
-struct NETHDR { short a, b, size; char name[0x20]; unsigned char players; char pad27; short x; char rest[0x40]; };  /* the 106-byte network game record at ls_SavePath + 0xa0 (reasoned from 0x5328f0's stores: +4 the size 0x6a, +6 the name, +0x26 the player count) */
-#pragma pack(pop)
 int main_ChooseCity(int unused, int host);  /* 0x537230, main.c */
-struct LSSAVEVIEW { char pad0[0x84]; short cur; char pad86[0xa0 - 0x86]; struct NETHDR net; char pad10a[0x120 - 0x10a]; char version[0x40]; char rest[0x280 - 0x160]; };  /* the used parts of ls.c's char ls_SavePath[640] (+0x84 a short, +0xa0 the network game record, +0x120 the version text) */
 struct D3OBJECT;
 void d3t_FreeSnowMipmaps(void);         /* 0x4175c0, d3_tools.h */
 void main_FreeSoundBanks(void);         /* 0x537db0 */
@@ -427,4 +419,3 @@ void amt_CheckOffices(void);            /* 0x4e9260, amt.h */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define ai_TimeT (*(AITIME *)&ai_Time)  /* 0x770ae0, ai_Time (anm.c: char[14]) as the AITIME it is: this unit reads its fields */
 #define cm_SendExSellObjectI ((void (*)(int, int, int, int, unsigned char, int))cm_SendExSellObject)  /* 0x4c4880 (cm.h: short c): @original this unit pushes the third argument as an int (byte-matched ai_MeisterBewaffnen / ai_Unk497c80 / ai_Unk49c880) */
-#define ls_SavePathV (*(struct LSSAVEVIEW (*))&ls_SavePath)  /* 0x75e640, this unit reads it as `struct LSSAVEVIEW ls_SavePath` */

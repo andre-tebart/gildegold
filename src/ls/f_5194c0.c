@@ -73,6 +73,6 @@ int ls_WriteSaveHeader(int f, unsigned flags)
     if (shot != 0)
         mem_Free(shot);
     vfs_fwrite(&ai_Difficulty, 4, 1, f);
-    vfs_fwrite(ls_SavePath, 0x60, 1, f);
+    vfs_fwrite(ls_SavePath.path, 0x60, 1, f);
     return 1;
 }

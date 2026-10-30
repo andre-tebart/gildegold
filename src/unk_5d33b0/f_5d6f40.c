@@ -40,7 +40,6 @@ extern int cm_SaveAcks[][2];            /* 0x76fa20, cm.h: 8 slots; [0] = the pl
                                            save name hash, -1 when empty (message 0x10 fills the first free) */
 extern unsigned char ai_NumPlayers;     /* 0x62489c, the player count (ai.c / cm.c / main.c) */
 extern unsigned short ai_PlayerId;      /* 0x6f25b8, the local player (cm.h / am.h / gv.h) */
-extern char ls_SavePath[];              /* 0x75e640, ls.c: the path stored in the save header (0x60 bytes) */
 /* ai_SaveWaitText: view of txt_Ptrs (build/mk_txt_views.py) */
 
 /* ai.h's AICHAR (0x21c bytes, ai_CharsC[0x300] at 0x770b80): the fields this unit reads. f3snd.h declares

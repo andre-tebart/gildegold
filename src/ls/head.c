@@ -13,6 +13,7 @@ struct D3TERRAIN;
 #include "he.h"
 #include "txt.h"
 #include "data_views.h"
+#include "ls.h"
 #define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
 #include "d3_types.h"
 extern D3SCENE d3_Scenes[];
@@ -44,8 +45,6 @@ extern int ai_Unk760548;
 extern int ai_Unk760610;
 extern GAPDATA full_data_7604e8[];
 extern void main_Unk537b60(int kind, int cur, int total);
-extern char ls_ClearObjectFlag();
-extern char ls_HookBuildingCB();
 extern int ai_Unk7d6a40;
 #include "ch_types.h"
 extern CHMOTION ch_Motions[];
@@ -60,7 +59,6 @@ extern int gm_PlayerRecords[688];          /* 0x7d5f80, the 16 player records (0
 /* gm_PlayerRecordBytes: view of gm_PlayerRecords (tools/data_views.py) */
 extern char *ls_ActionQueue;            /* 0x631050, the action queue (ch.h: CHACTION *ch_Queue) */
 extern char ch_EmptyName[];             /* 0x631090 */
-extern char ls_SavePath[640];
 extern int d3_CurrentScene;                /* 0x633444 */
 extern struct AICHAR *ai_JudgeCatholic;  /* 0x6f1bfc */
 extern struct AICHAR *ai_JudgeProtestant;  /* 0x6f1c00 */
@@ -74,7 +72,6 @@ int ai_Unk6f1b88 = 0;  /* 0x6f1b88 .. */
 int ai_Unk6f1bcc = 0;  /* 0x6f1bcc */
 unsigned char ls_SaveSlot = 0;  /* 0x6f1c38, the slot the save header records */
 extern int ai_Difficulty;                /* 0x6f23fc */
-extern unsigned short ai_ScreenImage[19200];
 /* ai_Unk76fa24: view of cm_SaveAcks (tools/data_views.py) */
 extern char ai_PlayerSlots[4][0x2f4];      /* 0x7e3f40, the player slots */
 extern struct AIOBJ *ai_Objects;             /* 0x7e3f34 */
@@ -82,7 +79,7 @@ extern char ai_Time[];             /* 0x770ae0, the clock */
 extern int ai_UpdateStart;             /* 0xf89580 */
 extern int ai_NextObjectId;                /* 0x61a654 */
 int ai_Unk6f2618 = 0;  /* 0x6f2618 */
-extern int ai_Unk6f1bb8, ai_Unk6f1bbc, ai_CharCount, ai_Unk6f1bcc, ai_Unk6f1b88;   /* 0x6f1bb8, 0x6f1bbc, 0x6f1bc0, 0x6f1bcc, 0x6f1b88 .. */
+extern int ai_Unk6f1bb8, ai_Unk6f1bbc, ai_CharCount;   /* 0x6f1bb8, 0x6f1bbc, 0x6f1bc0 */
 /* ls_RefTargets: view of ai_Unkf31160 (tools/data_views.py) */
 int vfs_fclose(struct VFSFILE *f);                    /* 0x430aa0 */
 struct VFSFILE * vfs_Tfopen(char *name, char *mode, int unk);                     /* 0x430470 */
@@ -94,25 +91,8 @@ char * gm_FindBuildingById(int id);                     /* 0x502020 */
 int cm_PartyById(int id);               /* 0x4e50a0, cm.h's prototype (that header redefines gv.h's globals here) */
 int gm_GetWorth(unsigned short id);                     /* 0x50a640 */
 int gm_ConvertMoney(int a, unsigned char k);                     /* 0x5085b0 */
-int ls_WriteSaveHeader();                     /* 0x5194c0 */
-void unk_Unk519a00();                    /* 0x519a00 */
-void unk_Unk519aa0();                    /* 0x519aa0 */
-int unk_Unk519b50();                     /* 0x519b50 */
-int ls_WriteObjects();                     /* 0x519bf0 */
-int unk_Unk519d20();                     /* 0x519d20 */
-int unk_Unk51a1a0();                     /* 0x51a1a0 */
-int unk_Unk51a4b0();                     /* 0x51a4b0 */
-int unk_Unk51b340();                     /* 0x51b340 */
 int amt_SaveAemter();                     /* 0x4ea690 */
 int unk_Unk4f28d0();                     /* 0x4f28d0 */
-int ls_WriteRelations();                     /* 0x51b890 */
-int unk_Unk51b910();                     /* 0x51b910 */
-int unk_Unk51bdc0();                     /* 0x51bdc0 */
-int unk_Unk51c2f0();                     /* 0x51c2f0 */
-int ls_WriteHistory();                     /* 0x51c450 */
-int unk_Unk51c560();                     /* 0x51c560 */
-int unk_Unk51c870();                     /* 0x51c870 */
-int unk_Unk51aff0();                     /* 0x51aff0 */
 int ai_Unk4b62e0();                     /* 0x4b62e0 */
 int ai_Unk589aa0();                     /* 0x589aa0 */
 int ai_Unk5a8940();                     /* 0x5a8940 */
@@ -128,7 +108,6 @@ int unk_Unk4f17f0();                     /* 0x4f17f0 */
 int ahm_WriteRecord();                     /* 0x4ecf10 */
 
 #define LS_R(p, sz) if (ls_Read((int)(p), (sz), 1, f) == 0) return 0;
-extern int ai_Unk76f920[1];
 struct VFSFILE * vfs_Tfopen(char *name, char *mode, int unk);                     /* 0x430470 */
 DWORD dd_RGB(unsigned char r, unsigned char g, unsigned char b);          /* 0x41e670, an RGB triple to a 16 bit pixel */
 
@@ -165,11 +144,9 @@ void (*he_RunHandlers[5544])(unsigned char *) = {0};  /* 0x758600, the event run
 int ai_Unk75e134 = 0;  /* 0x75e134 */
 int ai_Unk75e138 = 0;  /* 0x75e138 .. the clock copy */
 
-extern int ai_Unk6f2620, ai_Unk7585e4;   /* 0x6f2620, 0x7585e4 */
 extern struct G17MSG *ai_Unka68d24;  /* 0xa68d24 */
 extern struct G17MSG *ai_Unka68c00;  /* 0xa68c00 */
 extern struct G17MSG *cm_SendQueue;  /* 0xf81160 */
-extern int ai_Unkf81168;  /* 0xf81168 */
 void he_Unk53d590();                    /* 0x53d590 */
 extern int d3_CurrentScene;             /* 0x633444, the current scene index (d3.h) */
 char d3if_SelectScene(int index, char keep);  /* 0x4478e0, d3_interface.c */
@@ -177,7 +154,6 @@ char d3if_SelectScene(int index, char keep);  /* 0x4478e0, d3_interface.c */
 /* ai_Unk1469700: view of ch_Motions (tools/data_views.py) */
 char *strstr();                   /* 0x5de6b0, strstr-like (the "hozfaeller" misspelling check) */
 
-extern unsigned ai_Unkf81220, ai_Unka68d28;  /* 0xf81220 / 0xa68d28, the received bytes and the expected length (compared unsigned, 0x520ba1 jae) */
 int ai_Unk430fa0(struct VFSFILE *f, long offset, int origin);                    /* 0x430fa0, fseek */
 int ai_Unk431170();                     /* 0x431170, file length */
 void cm_SendLoadSize(int size);         /* 0x4c44d0, cm.h's prototype (that header redefines gv.h's globals in this TU) */

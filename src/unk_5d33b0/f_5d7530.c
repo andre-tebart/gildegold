@@ -39,7 +39,7 @@ void ai_SaveNetworkGame(char *saveName, char *name)
         p += 0x21c;
     } while ((int)p < (int)gm_PlayerRecordBytes);
     ai_NumPlayers = count;
-    strcpy(ls_SavePath, name);
+    strcpy(ls_SavePath.path, name);
     ls_SaveSlot = cm_RequestedSaveSlot;
     ai_LoadScreenImage("Gamedata/cities/standard.scr");
     sprintf(path, "Gamedata/network/%s.SAV", saveName);

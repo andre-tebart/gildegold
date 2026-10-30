@@ -8,7 +8,7 @@ int ls_SaveGame(int name, char *path, unsigned flags)
     f = vfs_Tfopen(name, "wb", vfs_Root);
     if (f == 0)
         return 0;
-    strcpy(ls_SavePath, path);
+    strcpy(ls_SavePath.path, path);
     unk_Unk519a00();
     if (ls_WriteSaveHeader(f, flags) == 0) {
         ((int (*)())vfs_fclose)();

@@ -52,7 +52,7 @@ int ai_LoadGameWindow(void)
                             && d2_Objs[d2_Wins[d2_HitWindow].parent].win == &d2_Wins[slots[i].win]))) {
                     if (ai_GameState == 0 || ai_MessageBox(0x101, ai_LoadGameConfirmText) != 0) {
                         sprintf(path, "Gamedata\\Saves\\%s.SAV", slots[i].name);
-                        strcpy(ls_SavePath, path);
+                        strcpy(ls_SavePath.path, path);
                         ai_GameFlagsWord = 10;
                         sv_PopRequest = 1;
                         ret = 1;

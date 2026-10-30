@@ -47,7 +47,7 @@ int ai_JoinGameWindow(void)
                         || (d2_HitWindow != -1
                             && d2_Objs[d2_Wins[d2_HitWindow].parent].win == &d2_Wins[slots[i].win]))) {
                     if (ai_GameState == 0 || ai_MessageBox(0x101, ai_LoadGameConfirmText) != 0) {
-                        strcpy(ls_SavePath, slots[i].name);
+                        strcpy(ls_SavePath.path, slots[i].name);
                         sv_PopRequest = 1;
                         ret = 1;
                     }

@@ -127,7 +127,6 @@ extern int d2_HitWindow;                    /* 0xf8aad0, the window the pointer 
 /* ai_SaveOverwriteText: view of txt_Ptrs (build/mk_txt_views.py) */
 extern int ai_GameFlagsWord;                /* 0x6f23f8, the dword view of ai_GameFlags: the load window
                                                writes the load mode 10 whole */
-extern char ls_SavePath[];                  /* 0x75e640, ls.c: the path stored in the save header (0x60 B) */
 int sv_CreateFormSlider(int x, int y, int f, int g, int p5, int *b, int *a, int *c); /* 0x52e860, sv.c:
                                            the slider of the form f at (x, y) */
 void d2_EnableObject(int obj, int on);      /* 0x475aa0, d2.h: enables / disables an object and its items */
