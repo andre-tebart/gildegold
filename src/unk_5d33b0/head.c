@@ -25,6 +25,7 @@ extern char gm_PlayerRecords[];
 #include "tb.h"
 #include "d3.h"
 #include "d3_sm.h"
+#include "d3_vec.h"
 #include "surf.h"
 #include "unk_5d33b0.h"
 #include "unk_575860.h"

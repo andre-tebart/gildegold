@@ -167,7 +167,7 @@ extern unsigned char sv_FrameBase;
 extern unsigned char sv_FrameDepth;
 extern unsigned char sv_FrameMask;
 extern unsigned char sv_PopRequest;
-extern const unsigned char ai_Unk5ebb74;
+extern const unsigned char ai_AxisPair;
 
 extern unsigned char ai_OwnPlayer;
 extern unsigned char d2_Objs;

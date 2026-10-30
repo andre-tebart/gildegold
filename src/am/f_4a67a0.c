@@ -39,7 +39,7 @@ int ai_Unk4a67a0(AIPER *p, AIBLD *b, AIBLD *t)
     rng[1] = v94[1];
     rng[2] = -0.2617994f;
     rng[3] = 0.7853982f;
-    if (ai_Unk5dd100(pa, pb, rng, &x5c, &x48, &ang, vb, vc, vd) != 0)
+    if (ai_SolveCannonAim(pa, pb, rng, &x5c, &x48, &ang, vb, vc, vd) != 0)
         return 0;
     k = (int)((ang - rng[0]) * 100.0f / (rng[1] - rng[0]));
     if (unk_Unk4eef50(r, k, r2 + 1) > cn->charge[r2])

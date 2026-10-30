@@ -112,7 +112,7 @@ extern unsigned char ch_EmptyName;
 extern unsigned char ai_PlayerChar;
 extern unsigned char ai_Unk5eb780;
 extern unsigned char ai_Unk625820;
-extern const unsigned char ai_Unk5ebb74;
+extern const unsigned char ai_AxisPair;
 extern GAPDATA full_data_60d0d4[];
 extern GAPDATA full_data_6f2634[];
 extern unsigned char snd_TrackHandles;

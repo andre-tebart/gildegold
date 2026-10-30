@@ -24,7 +24,7 @@ int he_Unk550850(int ev)
     d[0] = t[0] - c[0];
     d[1] = t[1] - c[1];
     d[2] = t[2] - c[2];
-    d3_DirToWorld(*(int *)(ev + 0xc8), (void *)(unsigned)&ai_Unk5ebb74, r);
+    d3_DirToWorld(*(int *)(ev + 0xc8), (void *)(unsigned)&ai_AxisPair, r);
     d3_VecAngle2(r, d);
     obj = *(int *)(ev + 0xc8);
     if (obj == 0)

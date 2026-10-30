@@ -139,7 +139,7 @@ scroll:
             fwd[0] = right[0] * v[0] + right[4] * v[1];
             fwd[2] = right[2] * v[0] + right[6] * v[1];
         } else {
-            a = d3_VecAngle2((char *)(unsigned)&ai_Unk5ebb74, fwd);
+            a = d3_VecAngle2((char *)(unsigned)&ai_AxisPair, fwd);
             sn = (float)sin(-a);
             cs = (float)cos(-a);
             fwd[0] = (float)(v[1] * sn + v[0] * cs);

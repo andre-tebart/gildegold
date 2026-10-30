@@ -54,7 +54,7 @@ extern GAPDATA full_data_623934[];
 extern GAPDATA full_data_623938[];
 extern GAPDATA full_data_62393c[];
 extern GAPDATA full_data_7604e8[];
-extern const unsigned char ai_Unk5ebb74;
+extern const unsigned char ai_AxisPair;
 extern char ai_PlayerSlots[];
 
 extern unsigned char ai_OptionPanelHelp;

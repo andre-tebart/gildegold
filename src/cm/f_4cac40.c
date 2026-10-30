@@ -53,11 +53,11 @@ int ai_Unk4cac40(G17MSG *m, G17STAT *s)
             sprintf(msg, "cm_ExGebUpgrade(): Could not load 3D-Object-Group '%s'...", path);
             err_Message(msg);
         } else {
-            d3_DirToWorld(*(int *)(b + 0x61), ai_Unk5ebb74, u);
+            d3_DirToWorld(*(int *)(b + 0x61), ai_AxisPair, u);
             u[0] = 0;
             u[1] = 0;
             u[2] = 0;
-            u[1] = d3_VecAngle(ai_Unk5ebb74, u);
+            u[1] = d3_VecAngle(ai_AxisPair, u);
             d3_SetObjectPos(o, &w1);
             d3_SetObjectRot(o, &w2);
             ai_Unk58feb0(o, &w3);

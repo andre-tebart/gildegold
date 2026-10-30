@@ -15,8 +15,8 @@ int main_Unk5344f0(int a, int b, int k)
         dir[0] = 0;
         dir[1] = 0.0f;
         dir[2] = 0;
-        d3_DirToWorld(o, (char *)(unsigned)&ai_Unk5ebb74, loc);
-        dir[1] = d3_VecAngle((char *)(unsigned)&ai_Unk5ebb74, loc);
+        d3_DirToWorld(o, (char *)(unsigned)&ai_AxisPair, loc);
+        dir[1] = d3_VecAngle((char *)(unsigned)&ai_AxisPair, loc);
         d3_SetObjectRot(*(int *)(p + 0x34), dir);
         ch_PlaceOnGround(p, 0);
         *(int *)(*(int *)(p + 0x34) + 0x200) = p;

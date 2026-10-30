@@ -37,7 +37,7 @@ void ai_Unk57f0e0(char *sc)
     d3_MatTranspose(*(int *)(sc + 0x98) + 0x18c, (char *)t);
     ang[0] = 0;
     ang[1] = 0;
-    ang[2] = (float)(d3_VecAngle2((char *)(unsigned)&ai_Unk5ebb74, h) - 1.5707964f) - *(float *)(sc + 0x14);
+    ang[2] = (float)(d3_VecAngle2((char *)(unsigned)&ai_AxisPair, h) - 1.5707964f) - *(float *)(sc + 0x14);
     d3_SetObjectRot(*(int *)(sc + 0x9c), (char *)ang);
     if (*(float *)(sc + 0x7c) == 0.0f)
         ai_Unk57f5d0(sc);

@@ -34,8 +34,8 @@ void ai_Unk4d1c20(char *side, int id)
         u[0] = 0;
         u[1] = 0;
         u[2] = 0;
-        d3_DirToWorld(o, (unsigned)&ai_Unk5ebb74, v);
-        d3_VecAngle((unsigned)&ai_Unk5ebb74, v);
+        d3_DirToWorld(o, (unsigned)&ai_AxisPair, v);
+        d3_VecAngle((unsigned)&ai_AxisPair, v);
         d3_SetObjectRot(*(char **)(*(char **)(c + 0x184) + 0x34), u);
     }
 }

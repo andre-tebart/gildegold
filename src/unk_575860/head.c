@@ -301,7 +301,7 @@ extern unsigned char sv_ViewRectBottom;
 extern unsigned char sv_ViewRectLeft;
 extern unsigned char sv_ViewRectRight;
 extern unsigned char sv_ViewRectTop;
-extern const unsigned char ai_Unk5ebb74;
+extern const unsigned char ai_AxisPair;
 extern unsigned char d3_YAxis;
 extern unsigned char ai_PlayerChar;
 extern unsigned char ai_Unk60c6c0;

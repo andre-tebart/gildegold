@@ -450,7 +450,7 @@ char init_TextureSetHook(int o);  /* 0x512e40, f3init.c: the scene object's text
 int sv_Unk5282f0();  /* 0x5282f0 */
 int sv_Unk528490();  /* 0x528490 */
 int ai_Unk58feb0();  /* 0x58feb0 */
-extern const char ai_Unk5ebb74[];  /* 0x5ebb74 */
+extern const char ai_AxisPair[];  /* 0x5ebb74 */
 extern const double ai_Unk5edc28;  /* 0x5edc28 */
 extern float ai_Unk623e94;  /* 0x623e94 */
 extern struct VFSDIR *vfs_Root;  /* 0x6333fc */
