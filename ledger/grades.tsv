@@ -3444,7 +3444,7 @@ exe	0x00532160	main_OpenEngine	main	draft	readable	deep
 exe	0x005324f0	main_CreateWindow	main	draft	readable	deep
 exe	0x00532700	main_StartCityGame	main	byte	readable	
 exe	0x005327e0	main_PlayerCountDialog	main	draft	readable	deep
-exe	0x005328f0	main_HostNetworkGame	main	shape	readable	
+exe	0x005328f0	main_HostNetworkGame	main	byte	readable	
 exe	0x00532a70	main_Unk532a70	main	draft	draft	
 exe	0x00532c30	main_Unk532c30	main	byte	draft	
 exe	0x00532da0	main_Unk532da0	main	draft	draft	
