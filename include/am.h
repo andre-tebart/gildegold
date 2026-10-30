@@ -1104,7 +1104,7 @@ extern const int ai_Unk5ed140[16];                                              
 int ai_Unk5c37a0(AIPER *p, unsigned int *q, AIBLD *b);                           /* 0x5c37a0 */
 /* 0x4a63f0 ai_Unk4a63f0 is declared in am.h */
 int ai_Unk4a6570(AIPER *p, int a, __int64 mask, float lo, float hi, unsigned char n, int *out); /* 0x4a6570 */
-void d3t_GetObjectBounds(void *mn, void *mx, void *obj);                         /* 0x413150, d3_tools.c: D3VECTOR / D3OBJECT */
+void d3t_GetObjectBounds(struct D3VECTOR *mn, struct D3VECTOR *mx, struct D3OBJECT *obj);             /* 0x413150, d3_tools.c */
 int ai_Unk4a66f0(AIBLD *x, float *a, AIBLD *y, float *b);                        /* 0x4a66f0 */
 typedef struct G9SHOT {                 /* 0x74 bytes, the AI's cannon shot at 0x6f0698 (0x4a67a0) */
     int who;                            /* 0x00, the shooter's id */

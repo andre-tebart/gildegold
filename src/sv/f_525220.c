@@ -23,12 +23,12 @@ void sv_UpdatePanel(void);                     /* 0x52a050 */
 int d2_WinOpenPicStyled();                     /* 0x473350 */
 void gm_ClockToDate(struct GCLOCK *c, unsigned char *out);                     /* 0x4fe2c0 */
 int ai_InitWind();                     /* 0x5dbc30 */
-int d3t_FreeSnow();                     /* 0x414b50 */
+void d3t_FreeSnow();                     /* 0x414b50 */
 struct D3TRAIN * d3t_CreateRain();                     /* 0x413b30 */
-int d3t_SetRain();                     /* 0x413d30 */
+struct D3TRAIN; void d3t_SetRain(struct D3TRAIN *rain, int n, ...);                     /* 0x413d30 */
 void d3t_DeleteRain();                     /* 0x413d00 */
-int d3t_CreateSnow();                     /* 0x4148f0 */
-int d3t_SetSnow();                     /* 0x414c60 */
+struct D3TSNOW *d3t_CreateSnow();                     /* 0x4148f0 */
+struct D3TSNOW; void d3t_SetSnow(struct D3TSNOW *snow, int n, ...);                     /* 0x414c60 */
 int d3sky_Create();                     /* 0x45da30 */
 int d3sky_DeleteLayer();                     /* 0x45d800 */
 int d3sky_CreateLayer();                     /* 0x45d880 */

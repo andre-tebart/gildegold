@@ -6,7 +6,7 @@ int ocmd_ZoomOnObject(int *time, char **name)
     D3OBJECT *obj;
 
     if (evt_CurCall && evt_CurCall->fn == ocmd_ZoomOnObject) {
-        if (d3t_CamMoving || d3t_CamMove) {
+        if (d3t_CamMoving || d3t_CamMoveI) {
             evt_Cur->waitfn = ocmd_ZoomOnObject;
             return 0;
         }

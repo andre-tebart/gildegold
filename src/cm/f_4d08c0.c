@@ -11,7 +11,7 @@ void ai_Unk4d08c0()
             char *mdl = *(char **)(*(char **)(r + 0x184) + 0x34);
 
             if ((mdl[0x212] & 2) == 2)
-                d3t_SetColor(mdl, 0, 0, 0);
+                d3t_SetColorK(mdl, 0, 0, 0);
         }
     }
     d2_ClearPointerItems();

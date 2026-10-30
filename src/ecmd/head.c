@@ -23,6 +23,7 @@ struct D3SURF;
 #define d3anim_StartAnimCh ((int (*)(void *, char *, CHANIMFLAGS))d3anim_StartAnim)  /* 0x435550 (d3.h: D3ANIMFLAGS f): @original this unit passes its field-wise CHANIMFLAGS, 12 bytes like D3ANIMFLAGS, as the original TU did */
 #include "ecmd.h"
 #include "d3_light.h"
+#define d3t_CamMoveI (*(int *)&d3t_CamMove)  /* 0x6310e8, d3t_CamMove (d3_tools.c: D3ANIM *) as the int this unit tests and clears */
 
 #define OCMD_DEG 0.017453292f       /* degrees to radians */
 

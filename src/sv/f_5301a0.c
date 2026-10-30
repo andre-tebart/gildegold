@@ -2,15 +2,15 @@
    hours around h, and the sky layers 0x760620 / 0x760624 (fading in and out 0x45d9a0) get a new sky model of the group "Sky_Schoen_01 .. " (0x6238a8, 0x4c bytes per entry) / "Sky_Mittel_01" 0x6239d8 /
    "sky_schwer_01" 0x623ac0 chosen by the strongest of the three counters (< 0x32, < 0x96, more); the float operands of the emitter calls are lost in the pseudocode (placeholders 0); ROUGH */
 
-int d3t_SetSnow();                     /* 0x414c60 */
-int d3t_SetRain();                     /* 0x413d30 */
+struct D3TSNOW; void d3t_SetSnow(struct D3TSNOW *snow, int n, ...);                     /* 0x414c60 */
+struct D3TRAIN; void d3t_SetRain(struct D3TRAIN *rain, int n, ...);                     /* 0x413d30 */
 int d3sky_SetLayerTex();                     /* 0x45d9f0 */
 void d3sky_FadeLayer(struct D3SKY *s, struct D3SKYLAYER *l, unsigned char alpha, float time);   /* 0x45d9a0 */
 void d3sky_SetLayerSpeed(struct D3SKY *s, struct D3SKYLAYER *l, float speed);        /* 0x45d960 */
-int d3t_DrawRain();                     /* 0x414590 */
-int d3t_DrawSnow();                     /* 0x415380 */
-int d3t_CreateSunRays();                     /* 0x417190 */
-int d3t_FadeOutSunRays();                     /* 0x417150 */
+void d3t_DrawRain();                     /* 0x414590 */
+void d3t_DrawSnow();                     /* 0x415380 */
+struct D3OBJECT *d3t_CreateSunRays();                     /* 0x417190 */
+void d3t_FadeOutSunRays();                     /* 0x417150 */
 int ai_Unk5763c0();                     /* 0x5763c0 */
 void ai_Unk576040(int a, int b, int c, int d);                     /* 0x576040 */
 extern unsigned ai_Unk623ecc;

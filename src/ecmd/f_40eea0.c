@@ -3,6 +3,6 @@
 int ocmd_StopCameraFlight(void)
 {
     d3anim_FreePath(d3_Camera);
-    d3t_CamMoving = d3t_CamMove = 0;
+    d3t_CamMoving = d3t_CamMoveI = 0;
     return 0;
 }

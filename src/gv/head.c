@@ -10,6 +10,12 @@ extern char ai_PlayerSlots[];
 #include <math.h>
 #include "gv.h"
 #include "data_views.h"
+int d3t_CreateSmoke();  /* 0x416340, d3_tools.h: struct D3PARTSYS *(.., float .., struct D3COLOR); @original gv.c (0x4ee360) calls it without a prototype, its float operands as dword bit patterns (gv.c has no D3COLOR: d3.h is not in this unit) */
+int d3t_CreateEarth();  /* 0x4168e0, d3_tools.h: as d3t_CreateSmoke; @original the same call without a prototype (0x4ee360) */
+#define d3t_CreateExplosionK ((int (*)())d3t_CreateExplosion)  /* 0x416040 (d3_tools.c): @original this unit's calls were compiled without a prototype (float arguments as double, an int result) */
+#define d3t_CreateEarthK ((int (*)())d3t_CreateEarth)  /* 0x4168e0 (d3_tools.c): @original this unit's calls were compiled without a prototype (float arguments as double, an int result) */
+#define d3t_CreateSmokeK ((int (*)())d3t_CreateSmoke)  /* 0x416340 (d3_tools.c): @original this unit's calls were compiled without a prototype (float arguments as double, an int result) */
+#define d3t_GetMeshBoundsK ((int (*)())d3t_GetMeshBounds)  /* 0x413310 (d3_tools.c): @original this unit's calls were compiled without a prototype (float arguments as double, an int result) */
 #define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
 extern char ai_Unk91f700[];
 #define GAPDATA __declspec(align(1)) unsigned char

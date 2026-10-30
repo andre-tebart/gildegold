@@ -40,7 +40,7 @@ void ai_Unk4de640(char *o)
         return;
     }
     if (hit != 0) {
-        d3t_CreateBlood(*(int *)(*(char **)(tg + 0x184) + 0x34), 0x40, 0x3e800000, 0x3dcccccd, 0x3e0f5c29, 0x425c0000);
+        d3t_CreateBloodK(*(int *)(*(char **)(tg + 0x184) + 0x34), 0x40, 0x3e800000, 0x3dcccccd, 0x3e0f5c29, 0x425c0000);
         if (*(int *)(*(char **)(tg + 0x184) + 0x128) == 0)
             ch_QueueAnim(*(char **)(tg + 0x184), "kampf/taumeln", 1);
         d2_SetForm(ai_Unk60d368, 0);

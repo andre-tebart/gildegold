@@ -1,3 +1,5 @@
+struct D3PARTSYS;
+struct D3COLOR;
 struct D3SM;
 struct D3VECTOR;
 struct SNDHANDLE;
@@ -108,10 +110,8 @@ char d3if_Delete(struct D3OBJECT *obj);  /* 0x447190, d3_interface.h */
 int gm_MinutesBetween();                     /* 0x4fe280 */
 int ai_StepShot();                     /* 0x5dc4a0 */
 int ai_StepShotSlow();                     /* 0x5dc9d0 */
-int d3t_GetMeshBounds();                     /* 0x413310 */
-int d3t_CreateSmoke();                     /* 0x416340 */
-int d3t_CreateEarth();                     /* 0x4168e0 */
-int d3t_CreateExplosion();                     /* 0x416040 */
+void d3t_GetMeshBounds(struct D3VECTOR *mn, struct D3VECTOR *mx, struct D3OBJECT *obj);               /* 0x413310, d3_tools.c */
+struct D3PARTSYS *d3t_CreateExplosion(void *parent, struct D3VECTOR *pos, int count, float radius, float height, float z, float size, unsigned int duration); /* 0x416040, d3_tools.c */
 struct SBSAMPLE; struct SBBANK;
 struct SBSAMPLE * sb_GetSample(struct SBBANK *bank, char *name);   /* 0x426030 */
 int d3snd_PlayAt(struct SNDHANDLE *snd, struct D3OBJECT *obj, int volume, float range);                     /* 0x417e30 */

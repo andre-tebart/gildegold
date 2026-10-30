@@ -1,3 +1,4 @@
+struct D3ANIM;
 struct D3FLMAP;
 struct SBSAMPLE;
 struct SBBANK;
@@ -322,7 +323,7 @@ extern int ch_DirtyZ0;                      /* 0x5f12ac */
 extern int ch_DirtyX1;                      /* 0x63107c */
 extern int ch_DirtyZ1;                      /* 0x631080 */
 extern int d3t_CamMoving;                   /* 0x6310e4 */
-extern int d3t_CamMove;                   /* 0x6310e8 */
+extern struct D3ANIM *d3t_CamMove;       /* 0x6310e8, the running camera animation (d3_tools.c; ch.c / ecmd.c test it through d3t_CamMoveI) */
 
 char d3_GetHeightAt(struct D3SM *h, struct D3VECTOR *pos, int *px, int *pz, float *py);               /* 0x45f170 */
 char d3sm_GetVertex(struct D3SM *h, int x, int z, struct D3VECTOR *out);                              /* 0x45f100 */  /* @original: the original callers read an int result (gv.h declares it int; ord.c's unk_Unk4f86a0 at 0x4f86a0 is byte-matched without the char widening) */

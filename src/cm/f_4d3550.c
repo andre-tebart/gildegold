@@ -75,7 +75,7 @@ void ai_Unk4d3550(char *ev)
         }
         if (ai_Unk4d3390(att) == 0) {
             if (hitv != 0) {
-                d3t_CreateBlood(*(char **)(*(char **)(att + 0x184) + 0x34), 0x40, 0.25f, 0.1f, 0.14f, 55.0f);
+                d3t_CreateBloodK(*(char **)(*(char **)(att + 0x184) + 0x34), 0x40, 0.25f, 0.1f, 0.14f, 55.0f);
                 if (*(char **)(*(char **)(att + 0x184) + 0x128) == 0 || (*(char **)(*(char **)(att + 0x184) + 0x128))[9] == 0x3b) {
                     ch_StopActions(*(char **)(att + 0x184));
                     a = ai_Unk4e52f0(2);

@@ -3,7 +3,7 @@
 int ocmd_CameraFlightEnhanced(int *time, char **a, char **b, char **c, char **d, char **e, char **f)
 {
     if (evt_CurCall && evt_CurCall->fn == ocmd_CameraFlightEnhanced) {
-        if (d3t_CamMoving || d3t_CamMove) {
+        if (d3t_CamMoving || d3t_CamMoveI) {
             evt_Cur->waitfn = ocmd_CameraFlightEnhanced;
             return 0;
         }

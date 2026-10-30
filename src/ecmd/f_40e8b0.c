@@ -8,7 +8,7 @@ int ocmd_ObjectFlight(D3OBJECT **obj, int *time, char **a, char **b, char **c, c
 
     n = 0;
     if (evt_CurCall && evt_CurCall->fn == ocmd_ObjectFlight) {
-        if (d3t_CamMoving || d3t_CamMove) {
+        if (d3t_CamMoving || d3t_CamMoveI) {
             evt_Cur->waitfn = ocmd_ObjectFlight;
             return 0;
         }

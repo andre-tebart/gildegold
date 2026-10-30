@@ -1,3 +1,5 @@
+struct D3PARTSYS;
+struct D3COLOR;
 struct D3TERRAIN;
 struct D3SM;
 struct AMTAPP;
@@ -601,9 +603,7 @@ extern int ai_Unk9367d4;  /* 0x9367d4 */
 
 int ai_Unk4ce300();  /* 0x4ce300 */
 char *ai_Unk4ce5d0(float *p, int x, int y);  /* 0x4ce5d0 */
-int d3t_CreateExplosion();  /* 0x416040 */
-int d3t_CreateSmoke();  /* 0x416340 */
-int d3t_CreateEarth();  /* 0x4168e0 */
+struct D3PARTSYS *d3t_CreateExplosion(void *parent, struct D3VECTOR *pos, int count, float radius, float height, float z, float size, unsigned int duration); /* 0x416040, d3_tools.c */
 int ai_Unk4d3390();  /* 0x4d3390 */
 unsigned int ai_Unk4e52f0();  /* 0x4e52f0 */
 extern int ai_Unk6f0cec;  /* 0x6f0cec */
@@ -721,7 +721,7 @@ char ai_Unk4d0570(char *rec, char *c);  /* 0x4d0570 */
 
 void ai_Unk4d0740(char *rec);  /* 0x4d0740 */
 int snd_PlayVoice(int id, int bank, char *text, int var);  /* 0x4c2760 */
-int d3t_SetGrey();  /* 0x4134a0 */
+void d3t_SetGrey(struct D3OBJECT *obj, int on);                                         /* 0x4134a0, d3_tools.c */
 int d3t_PlayAnim();  /* 0x411960 */
 char d3if_SelectTextureSet(struct D3OBJECT *obj, struct D3SURF *surf, unsigned char set, char reload);  /* 0x446f30 */
 extern int ai_Unk760440;  /* 0x760440 */
@@ -731,7 +731,7 @@ extern int ai_Unk6f0d38;  /* 0x6f0d38 */
 
 void ai_Unk4d08c0();  /* 0x4d08c0 */
 char *ai_Unk4d0920(char *c, int a);  /* 0x4d0920 */
-int d3t_SetColor();  /* 0x413550 */
+void d3t_SetColor(struct D3OBJECT *obj, unsigned char r, unsigned char g, unsigned char b); /* 0x413550, d3_tools.c */
 int unk_Unk4fbb80();  /* 0x4fbb80 */
 extern const double ai_Unk5eb9b8;  /* 0x5eb9b8 */
 
@@ -845,7 +845,7 @@ extern float ai_Unk5eb7dc;  /* 0x5eb7dc */
 extern const double ai_Unk5edc68;  /* 0x5edc68 */
 
 int ai_Unk4d3390(char *c);  /* 0x4d3390 */
-int d3t_CreateBlood();  /* 0x415e90 */
+struct D3PARTSYS *d3t_CreateBlood(void *parent, int n, float a, float b, float c, float d); /* 0x415e90, d3_tools.c */
 struct CHACTION * ch_AddActionCB(struct CHARACTER *ch, int (*func2)(struct CHACTION *), unsigned char frame, unsigned int type, ...); /* 0x40b400, ch.h (CHACTFUNC func2; cm.c calls it through ch_AddActionCBK) */
 void d3_SetWorldPosRot();  /* 0x449920 */
 extern double ai_Unk5edbd0;  /* 0x5edbd0 */
@@ -1121,7 +1121,7 @@ int ai_Unk4e4020();  /* 0x4e4020 */
 extern int ai_Unk6f0d9c;  /* 0x6f0d9c, the scene nesting depth */
 extern int ai_Unk60d36c;  /* 0x60d36c, -1 or the object waited for (0x4284a0) */
 extern int ai_Unk5f8438;  /* 0x5f8438 */
-extern int d3t_CamMove;  /* 0x6310e8 */
+extern struct D3ANIM *d3t_CamMove;  /* 0x6310e8, the running camera animation (d3_tools.c; cm.c tests it through d3t_CamMoveI) */
 extern int ai_Unk6310e4;  /* 0x6310e4 */
 void d3sm_Destroy();  /* 0x45ef60 */
 void d3if_Reset();  /* 0x4473f0 */

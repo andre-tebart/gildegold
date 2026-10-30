@@ -40,7 +40,7 @@ int ai_Unk4e30c0(void)
         *(int *)((char *)ai_Unk5fb5b0 + 0xb0) = 0;
     }
     d3anim_FreePath(ai_Unkfc2dec);
-    d3t_CamMove = 0;
+    d3t_CamMoveI = 0;
     ai_Unk6310e4 = 0;
     d3if_Reset();
     ai_Unk6f0d9c--;

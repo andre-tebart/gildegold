@@ -61,7 +61,7 @@ void unk_Unk4ee360(int w, int sub, char *p, UNKHITS *out)
             }
             w1 = 1.0f / (fd * 0.005f + 1.0f);
             w2 = 1.0f / ((fd * 0.0002f + 0.005f) * fd + 1.0f);
-            d3t_GetMeshBounds(mn, half, *(int *)(o + 0x61));
+            d3t_GetMeshBoundsK(mn, half, *(int *)(o + 0x61));
             half[0] = (half[0] - mn[0]) * 0.5f;
             half[1] = (half[1] - mn[1]) * 0.5f;
             half[2] = (half[2] - mn[2]) * 0.5f;
@@ -117,8 +117,8 @@ void unk_Unk4ee360(int w, int sub, char *p, UNKHITS *out)
     dir[2] = a * *(float *)(p + 0x48);
     dir[1] = 0.0f;
     cy = cy + 10.0f;
-    d3t_CreateSmoke(0, &cx, 200, 0x41c80000, 0x428c0000, unk_fb(m * 0.25f), 0x44610000, 0x42c80000, 0x428c0000, dir, 0x5dc, 7, 0x7fc0c0c0);
-    d3t_CreateEarth(0, &cx, 100, 0x40a00000, 0x40200000, 0x3f800000, 0x40400000, 0xc0400000, 0x40800000, 0x40e00000, 0x41000000, 0x7fc0c0c0);
+    d3t_CreateSmokeK(0, &cx, 200, 0x41c80000, 0x428c0000, unk_fb(m * 0.25f), 0x44610000, 0x42c80000, 0x428c0000, dir, 0x5dc, 7, 0x7fc0c0c0);
+    d3t_CreateEarthK(0, &cx, 100, 0x40a00000, 0x40200000, 0x3f800000, 0x40400000, 0xc0400000, 0x40800000, 0x40e00000, 0x41000000, 0x7fc0c0c0);
     if (cnt == 0.0f) {
         a = m * 0.01f;
         b = m * 0.3f;
@@ -128,7 +128,7 @@ void unk_Unk4ee360(int w, int sub, char *p, UNKHITS *out)
         b = m * 0.6f;
         c = m * 0.2f;
     }
-    d3t_CreateExplosion(0, &cx, 0x96, unk_fb(c), unk_fb(b), unk_fb(a), 0x42a00000, 200);
+    d3t_CreateExplosionK(0, &cx, 0x96, unk_fb(c), unk_fb(b), unk_fb(a), 0x42a00000, 200);
     k = sb_GetSample(0, "Explosion");
     if (k != 0)
         d3snd_PlayAt(k, *(int *)(bo + 0x61), 0x6b, 0x463ea000);

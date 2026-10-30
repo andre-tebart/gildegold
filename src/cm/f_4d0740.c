@@ -36,9 +36,9 @@ void ai_Unk4d0740(char *rec)
                 mdl = *(char **)(m + 0x34);
                 if (c[0x188]) {
                     if (!(mdl[0x212] & 2))
-                        d3t_SetGrey(mdl, 1);
+                        d3t_SetGreyK(mdl, 1);
                 } else if ((mdl[0x212] & 2) == 2)
-                    d3t_SetGrey(mdl, 0);
+                    d3t_SetGreyK(mdl, 0);
             }
         }
     }

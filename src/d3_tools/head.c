@@ -19,6 +19,7 @@ struct D3OBJECT;
 #include "d3_d3d.h"
 #include "d3_io_t.h"
 #include "surf.h"
+#include "d3_tools.h"
 
 /* the pose a camera / zoom target stores in D3OBJECT 0x5c and 0x90 (serialized for object types 2/3;
    objectFlags bit 0 marks a key). For a light the same bytes are D3LOBJ.color and D3LOBJ.range/power/atten;
@@ -31,8 +32,6 @@ typedef struct D3OBJPOSE {
 } D3OBJPOSE;
 #define D3_POSE(o) ((D3OBJPOSE *)(o))
 
-int d3t_PlaceObject(struct D3OBJECT *camera, float px, float py, float pz, float dx, float dy, float dz, int unk, char flags);    /* 0x411680 */
-void d3t_UpdateSunRays(D3OBJECT *obj);                                     /* 0x4172e0 */
 
 int d3t_CamMoving = 0;                   /* 0x6310e4 */
 D3ANIM *d3t_CamMove = 0;                 /* 0x6310e8, running camera animation */

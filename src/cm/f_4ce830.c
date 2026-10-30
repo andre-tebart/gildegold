@@ -41,9 +41,9 @@ int ai_Unk4ce830()
         v[0] = *(float *)(e + 0x4c);
         v[1] = *(float *)(e + 0x50);
         v[2] = *(float *)(e + 0x54);
-        d3t_CreateSmoke(0, v, 0x1e, 15.0f, 50.0f, 100.0f, 150.0f, 140.0f, 35.0f, pos, 0x190, 6, *(int *)col);
-        d3t_CreateEarth(0, col, 0x1e, 5.0f, 2.5f, 1.0f, 3.0f, -3.0f, 4.0f, 7.0f, 8.0f, *(int *)col);
-        d3t_CreateExplosion(0, v, 0x1e, 70.0f, 50.0f, 20.0f, 60.0f, 0x3c);
+        d3t_CreateSmokeK(0, v, 0x1e, 15.0f, 50.0f, 100.0f, 150.0f, 140.0f, 35.0f, pos, 0x190, 6, *(int *)col);
+        d3t_CreateEarthK(0, col, 0x1e, 5.0f, 2.5f, 1.0f, 3.0f, -3.0f, 4.0f, 7.0f, 8.0f, *(int *)col);
+        d3t_CreateExplosionK(0, v, 0x1e, 70.0f, 50.0f, 20.0f, 60.0f, 0x3c);
         map = (int *)ai_Unk633738;
         if (*(char *)(*(char **)(map + 5) + *(int *)(rec + 8) + *(int *)(rec + 0xc) * map[0]) != 0) {
             *(char *)(*(char **)(map + 4) + *(int *)(rec + 8) + *(int *)(rec + 0xc) * map[0]) -= 5;
