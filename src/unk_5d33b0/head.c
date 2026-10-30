@@ -38,7 +38,7 @@ typedef struct D2OBJVIEW {                  /* 0x2ec, d2.h's D2OBJ: only the fie
     short w;                                /* +0x14, D2OBJ.w (the frame width) */
     char pad16[0x12];
     int checked;                            /* +0x28, D2OBJ.checked: the checkbox / radio state */
-    char pad2c[4];
+    int highlighted;                        /* +0x2c, D2OBJ.highlighted: drawn in the highlight colour */
     char *win;                              /* +0x30, D2OBJ.win: the window the object belongs to */
     char pad34[0x14];
     int checkable;                          /* +0x48, D2OBJ.checkable: a checkbox / radio */
