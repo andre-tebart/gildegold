@@ -1320,11 +1320,14 @@ int main_SearchNetworkGame(int saved)
     d2_CloseView(f);
     return ret;
 }
-/* 0x533470, the client side network dialog ("Menu\CHOOSENETWORK", two buttons: join a saved game 0x532a70 / enter an address and join 0x532da0 (1)); returns 1 when a game was chosen */
+/* 0x533470, the client side network dialog "Menu\CHOOSENETWORK": two buttons in a radio group (keyboard
+   navigation), b1 joins the saved game main_NetSaveName (main_JoinNetworkGame), b2 searches the LAN for a saved
+   game (main_SearchNetworkGame (1)); the right mouse button / Escape (kb_Last 1) closes it. Returns 1 when a
+   game was chosen. */
 
-int main_Unk533470(void)
+int main_ChooseNetworkGame(void)
 {
-    int r, f, b1, b2, g, run;
+    int r, f, b1, b2, g;
 
     r = 0;
     f = d2_OpenForm(0, 0, "Menu\\CHOOSENETWORK");
@@ -1334,37 +1337,35 @@ int main_Unk533470(void)
     b1 = d2_GetWinObj(f, 0, io_PrintText(0x1ca9));
     b2 = d2_GetWinObj(f, 0, io_PrintText(0x1caa));
     g = d2_CreateRadioGroup(2, b1, b2);
-    run = sv_RunFrame((int)main_Unk533470, 0x24087);
-    do {
-        if (run == 0) {
-            d2_RadioClear(g);
-            d2_CloseView(f);
-            return r;
-        }
-        d2_MenuNavigate(g);
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0 || *(char *)(unsigned)&kb_Last == 1) {
-            U_I((unsigned)&sv_PopRequest) = 1;
-            r = 0;
-        }
-        if (U_I((unsigned)&d2_ClickedId) != -1) {
-            if (ai_Unk5fe710 == b1) {
-                d2_SetViewEnabled(f, 0);
-                run = main_JoinNetworkGame();
-            } else {
-                if (ai_Unk5fe710 != b2)
-                    goto lnext;
-                d2_SetViewEnabled(f, 0);
-                run = main_SearchNetworkGame(1);
+    if (sv_RunFrame((int)main_ChooseNetworkGame, 0x24087) != 0) {
+        do {
+            d2_MenuNavigate(g);
+            if (dm_L.rup != 0 || kb_Last == 1) {
+                sv_PopRequest = 1;
+                r = 0;
             }
-            if (run != 0) {
-                r = 1;
-                U_I((unsigned)&sv_PopRequest) = 1;
+            if (d2_ClickedId != -1) {
+                if (d2_PointerObj == b1) {
+                    d2_SetViewEnabled(f, 0);
+                    if (main_JoinNetworkGame() != 0) {
+                        sv_PopRequest = 1;
+                        r = 1;
+                    }
+                    d2_SetViewEnabled(f, 1);
+                } else if (d2_PointerObj == b2) {
+                    d2_SetViewEnabled(f, 0);
+                    if (main_SearchNetworkGame(1) != 0) {
+                        sv_PopRequest = 1;
+                        r = 1;
+                    }
+                    d2_SetViewEnabled(f, 1);
+                }
             }
-            d2_SetViewEnabled(f, 1);
-        }
-lnext:
-        run = sv_RunFrame((int)main_Unk533470, 0x24087);
-    } while (1);
+        } while (sv_RunFrame((int)main_ChooseNetworkGame, 0x24087) != 0);
+    }
+    d2_RadioClear(g);
+    d2_CloseView(f);
+    return r;
 }
 /* 0x5335b0, the network main menu ("Menu\CHOOSENETWORK", three buttons: host 0x5328f0 (0x6f23f8 = 5), load a network game 0x532da0 (0) (5), join 0x533470 (4)); returns 1 when a game was started */
 
@@ -1408,7 +1409,7 @@ int main_Unk5335b0(void)
                     goto lnext;
                 U_I((unsigned)&ai_GameFlags) = 4;
                 d2_SetViewEnabled(f, 0);
-                run = main_Unk533470();
+                run = main_ChooseNetworkGame();
             }
             if (run != 0) {
                 U_I((unsigned)&sv_PopRequest) = 1;
