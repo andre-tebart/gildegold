@@ -190,10 +190,7 @@ extern struct D3SKY *d3_Sky;                /* 0x633dd4, d3_sky.c (D3SKY, d3_sky
 extern int d3s_NumUVs;                /* 0xfb925c */
 extern int d3s_NumVerts;                /* 0xfb9220 */
 extern int d3_ClipExtraTris;                    /* 0x63346c */
-typedef struct D3SORTENT {          /* 8 bytes, sorted by key with a radix sort (d3_RadixSort) */
-    unsigned long key;
-    void *item;                     /* a D3PTRI */
-} D3SORTENT;
+#include "d3_types.h"                /* D3SORTENT */
 extern unsigned int d3_SortCount;           /* 0xfc2dcc */
 extern D3SORTENT *d3_SortBuf;               /* 0xfc2de0 */
 extern D3SORTENT *d3_SortPtr;               /* 0xfc2dc8 */

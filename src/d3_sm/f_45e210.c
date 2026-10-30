@@ -43,12 +43,12 @@ char d3sm_ShadowCB(D3OBJECT *obj, D3SM *h)
             if (a->gx >= 0.0f && a->gx < size && a->gz >= 0.0f && a->gz < size
                 && b->gx >= 0.0f && b->gx < size && b->gz >= 0.0f && b->gz < size
                 && c->gx >= 0.0f && c->gx < size && c->gz >= 0.0f && c->gz < size) {
-                d3_SortPtrV->tri = tri;
+                d3_SortPtr->item = tri;
                 d3_SortCount++;
                 hmax = max(a->h, b->h);
                 hmax = max(hmax, c->h);
-                d3_SortPtrV->key = hmax * 0x300;
-                d3_SortPtrV++;
+                d3_SortPtr->key = hmax * 0x300;
+                d3_SortPtr++;
             }
         }
     }

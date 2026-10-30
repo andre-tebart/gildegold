@@ -69,11 +69,6 @@ typedef struct D3SMMESH {           /* D3OBJECT.info */
     int ntris;                      /* 0x0c */
 } D3SMMESH;
 
-typedef struct D3SMSORT {           /* 8 bytes */
-    int key;
-    D3SMTRI *tri;
-} D3SMSORT;
-
 char d3sm_FindGround(D3SM *h, int x, int z, int *ox, int *oz);           /* 0x45efc0, the cell nearest to
                                                                             (x, z) with a real ground type */
 char d3_GetHeightAt(D3SM *h, D3VECTOR *pos, int *px, int *pz, float *py);        /* 0x45f170, the cell of pos and

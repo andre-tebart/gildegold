@@ -1,5 +1,6 @@
 /* d3 records other units need without the rest of d3.h: the scene record of the table d3_Scenes and
-   the texture flags tex_Load takes by value (ts_texture.c's TSFLAGS). Types only; d3.h includes it. */
+   the texture flags tex_Load takes by value (ts_texture.c's TSFLAGS), the sort entry of d3_engine's
+   d3_SortBuf (d3_sm fills it). Types only; d3.h and d3_engine.h include it. */
 #ifndef D3_TYPES_H
 #define D3_TYPES_H
 
@@ -31,5 +32,10 @@ typedef struct D3SCENE {            /* 0x3e0 bytes, 64 of them in d3_Scenes */
                                        reloads it and clears the flag (f3init.c "flagged dirty") */
     char pad3d6[0xa];
 } D3SCENE;
+
+typedef struct D3SORTENT {          /* 8 bytes, sorted by key with a radix sort (d3_RadixSort) */
+    unsigned long key;
+    void *item;                     /* a D3PTRI (d3_engine), a D3SMTRI (d3_sm) */
+} D3SORTENT;
 
 #endif
