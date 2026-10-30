@@ -26,6 +26,7 @@ extern char gm_PlayerRecords[];
 #include "d3_engine.h"
 #include "data_views.h"
 #include "d2.h"
+#include "unk_5d33b0.h"
 #include "ai.h"
 #include "gfx.h"
 #include "dd_vesa.h"
@@ -59,7 +60,6 @@ extern int sv_ViewRectRight;
 extern int sv_ViewRectTop;
 extern unsigned char ai_Unk9367e0;
 extern GAPDATA full_data_5f320c[];
-extern int snd_SystemBank;
 extern int main_TextReopen;
 extern int main_HmtMode;
 extern int main_HmtBuild;
@@ -114,7 +114,6 @@ extern unsigned char ai_Unkfb9064;
 extern unsigned char ai_Unkfb9068;
 extern unsigned char ai_Unkfb906c;
 extern char ai_DataPath[];
-extern unsigned char ai_GameOver;
 
 
 
@@ -131,14 +130,12 @@ extern unsigned char ai_Unkfb906c;
 extern GAPDATA full_data_5f320c[];
 extern GAPDATA full_data_6f2418[];
 extern GAPDATA full_data_6f245c[];
-extern int main_ScreenRestart;
 extern GAPDATA full_data_6f25b4[];
 extern unsigned char init_PlayerProfile[];
 extern unsigned char sv_FrameBase;
 extern unsigned char sv_FrameDepth;
 extern unsigned char sv_FrameMask;
 extern int sv_PopRequest;
-extern const unsigned char ai_AxisPair;
 
 extern GAPDATA full_data_624ce0[];
 extern GAPDATA full_data_624ce4[];
@@ -152,7 +149,6 @@ extern unsigned char init_PlayerProfile[];
 extern int sv_PopRequest;
 extern GAPDATA full_data_75e5f5[];
 extern GAPDATA full_data_75e628[];
-extern unsigned char ai_ClickedObject;
 extern unsigned char ai_Unk5f8438;
 extern unsigned char ai_Unk5fb5b0;
 extern unsigned char ai_Unk633738;
@@ -190,7 +186,6 @@ extern unsigned char ai_Opponents;
 
 
 extern int sv_PopRequest;
-extern unsigned char ai_ClickedObject;
 extern char ai_DataPath[];
 extern unsigned char ai_Unk60d360;
 extern unsigned char ai_Unk6f22e8;
@@ -212,14 +207,9 @@ extern unsigned char cm_RequestedSaveName;
 extern unsigned char ai_Unk1460ae0;
 extern unsigned char ai_MissionSeed;
 extern GAPDATA full_data_75df20[];
-extern unsigned char ai_GameOver;
-extern unsigned char ai_GameState;
-extern unsigned char ai_LeaveGame;
-extern int sv_ScreenDirty;
 extern unsigned char ai_Unk75ec60;
 extern unsigned char ch_SndLib;
 extern unsigned char cm_RequestedSaveName;
-extern unsigned char cm_SpeedLevel;
 extern GAPDATA full_data_6f2408[];
 extern GAPDATA full_data_6f240c[];
 extern GAPDATA full_data_6f2410[];
@@ -291,8 +281,6 @@ extern GAPDATA full_data_75e5f0[];
 extern GAPDATA full_data_75e5f5[];
 extern GAPDATA full_data_75e628[];
 extern unsigned char init_PlayerProfile[];
-extern unsigned char ai_GameOver;
-extern unsigned char ai_GameState;
 extern unsigned char ai_PlayerId;
 extern unsigned char ai_Unk1460ae0;
 extern unsigned char ai_Unkfb9060;
@@ -309,9 +297,7 @@ extern unsigned char ai_TimeHour;
 extern char ai_DataPath[];
 
 extern unsigned char ai_FrameWait;
-extern unsigned char ai_GameOver;
 extern unsigned char ai_GamePanel;
-extern unsigned char ai_LeaveGame;
 extern unsigned char ai_PlayerId;
 extern unsigned char ai_TimeHour;
 extern unsigned char ai_Unk1460ae0;
@@ -334,7 +320,6 @@ extern GAPDATA full_data_76f990[];
 extern GAPDATA full_data_76f994[];
 extern unsigned char init_StatusForm;
 extern struct LSSAVEVIEW ls_SavePath;
-extern unsigned char ls_SaveSlot;
 extern unsigned char main_MoneyCheat;
 extern unsigned char sv_FrameMask;
 extern int sv_ViewRectBottom;
@@ -343,13 +328,11 @@ extern int sv_ViewRectRight;
 extern int sv_ViewRectTop;
 extern GAPDATA full_data_624798[];
 extern GAPDATA full_data_6f241c[];
-extern unsigned char ai_SoundOptions;
 extern unsigned char di_Disabled;
 extern GAPDATA full_data_6f2574[];
 extern unsigned char snd_AmbientOn;
 extern char ai_DataPath[];
 extern unsigned char ai_GfxResolution;
-extern unsigned char ai_LeaveGame;
 extern unsigned char ai_OptionsFile;
 extern int ai_ScreenModeH;
 extern int ai_ScreenModeW;
@@ -366,7 +349,6 @@ extern unsigned char main_GfxPath[];
 extern char main_GamePath[];
 extern GAPDATA full_data_624798[];
 extern GAPDATA full_data_624cf8[];
-extern int snd_SystemBank;
 extern GAPDATA full_data_6f2408[];
 extern GAPDATA full_data_6f240c[];
 extern GAPDATA full_data_6f2410[];
@@ -377,7 +359,6 @@ extern GAPDATA full_data_6f2574[];
 extern GAPDATA full_data_6f2580[];
 extern int main_Inactive;       /* 0x6f2584, 1 while the app is deactivated */
 extern GAPDATA full_data_6f2598[];
-extern int main_ScreenRestart;
 extern GAPDATA full_data_6f25a8[];
 extern GAPDATA full_data_6f25b4[];
 extern GAPDATA main_NetHost[];
@@ -400,7 +381,6 @@ extern HWND main_Window;
 extern int snd_SfxEnabled;              /* 0x6f257c, f3snd.h */
 extern int snd_MusicEnabled;            /* 0x6f2578, f3snd.h */
 
-void main_GameLoop(int ctl);
 void main_Unk537f40(void);
 void main_Unk537be0(void);
 void main_Unk538140(void);
@@ -410,10 +390,6 @@ void main_Unk539870(void);
 void main_Unk53a520(unsigned short pl);
 void main_Unk53cb40(void);
 
-int ai_SaveOptions(void);               /* 0x5d4c70, unk_5d33b0.c */
-int ai_LoadOptions(void);               /* 0x5d5640, unk_5d33b0.h */
-void ai_ApplyOptions(void);             /* 0x5d5e90, cm.h */
-void ai_ApplyGfxOptions(void);          /* 0x5d5c40, unk_5d33b0.h */
 void tex_SetPalette(char *dir);         /* 0x45fb30 */
 extern unsigned int d3anim_CacheMax;   /* 0x5f927c, d3_anim.h */
 int txt_LoadIncludes(char *file);       /* 0x42c9c0 */
@@ -431,7 +407,6 @@ int d3snd_Init(int max);                /* 0x417650 */
 int d3sndw_Init(unsigned short n);      /* 0x417ec0 */
 void sb_SetPath(char *path);            /* 0x426240 */
 int main_PreloadSound(char *f);         /* 0x537c70 */
-void ai_ApplyVolumes(void);             /* 0x5d5f10, unk_5d33b0.h */
 void sv_InitTick(void);                 /* 0x520ee0 */
 char init_ResetSceneUniverses(void);    /* 0x50d460 */
 int ch_Open(void);                      /* 0x40afb0 */
@@ -443,7 +418,6 @@ void ai_BuildFloatTable(void);          /* 0x4d27a0 */
 void ocmd_Register(void);               /* 0x40f960 */
 void chc_Register(void);                /* 0x40d270 */
 void d3if_Reset(void);                  /* 0x4473f0, cm.h */
-int ls_SaveGame(char *path, char *name, unsigned flags);  /* 0x5190b0, ls.c (as unk_5d33b0.h) */
 int init_InitTown(char *city);          /* 0x510ad0, f3init */
 void gm_ResetCharacters(void);          /* 0x503e80, f3gm */
 void init_FreeScenes(void);             /* 0x50d490, f3init */
