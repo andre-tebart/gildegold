@@ -14,7 +14,7 @@ int sv_MessageBox(int text, unsigned flags)
     bar = -1;
     if (sv_MessageBoxOpen != 0)
         return 0;
-    mask = sv_FrameMaskU & 0xffffffc7;
+    mask = sv_FrameMask & 0xffffffc7;
     if (flags & 2)
         form = d2_OpenForm(0, 0, "misc\\Messagebox_Autosize");
     else if (flags & 0x10)

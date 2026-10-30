@@ -1,7 +1,7 @@
 /* 0x52e050, draws the hint text 0xf8aae0 at the mouse position when the hint flag (0x6f3618 +2) is set */
 
 #include <stdarg.h>
-extern int ai_GameState;
+extern unsigned char ai_GameState;
 extern unsigned char d3_MipSkip;
 
 struct D3OBJECT * d3t_FindObject(char *name, char flags);                     /* 0x411900 */

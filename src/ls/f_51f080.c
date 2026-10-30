@@ -108,15 +108,15 @@ int unk_Unk51f080(int f)
         if (ls_Version >= 0x10037 && ls_Read((int)(p + 0x2ec), 8, 1, f) == 0)
             return 0;
         s += 0x2f4;
-        if ((int)s > ((unsigned)((unsigned)ai_PlayerSlotsV + 0xbe0) + 0x37)) {
-            sprintf(buf, "_STADTAUSWAHL_%s_INFO+0", ai_PlayerSlotsV[0]);
+        if ((int)s > ((unsigned)((unsigned)ai_PlayerSlots + 0xbe0) + 0x37)) {
+            sprintf(buf, "_STADTAUSWAHL_%s_INFO+0", ai_PlayerSlots[0]);
             _strupr(buf);
             idx = txt_FindKey(buf);
             if (idx == -1) {
-                strcpy(ai_PlayerSlotsV[0] + 0x20, ai_PlayerSlotsV[0]);
+                strcpy(ai_PlayerSlots[0] + 0x20, ai_PlayerSlots[0]);
                 return 1;
             }
-            strcpy(ai_PlayerSlotsV[0] + 0x20, txt_Ptrs[idx]);
+            strcpy(ai_PlayerSlots[0] + 0x20, txt_Ptrs[idx]);
             return 1;
         }
     }

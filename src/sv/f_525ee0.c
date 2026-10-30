@@ -21,7 +21,7 @@ void sv_Unk525ee0(void)
         pos[0] = *(float *)(ai_Unkfc2dec + 0x4c);
         pos[2] = *(float *)(ai_Unkfc2dec + 0x54);
         pos[1] = *(float *)(ai_Unkfc2dec + 0x50) + step;
-        if (d3t_CamMoveI == 0)
+        if (d3t_CamMove == 0)
             d3_SetObjectPos(ai_Unkfc2dec, pos);
         ai_Unk6f2374 = step;
         return;

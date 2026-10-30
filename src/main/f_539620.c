@@ -56,7 +56,7 @@ void main_Unk539620(unsigned p)
                 } while (*pi != 0);
             }
             e += 0x14c;
-        } while ((int)e < (unsigned)((unsigned)he_EventsB + 0x53000));
+        } while ((int)e < (unsigned)((unsigned)he_Events + 0x53000));
         *(char *)(((unsigned)&ai_CharsT + 0x2) + d) = 5;
         if (*(char *)((unsigned)&ai_Unk770b89 + d) == 0) {
             u = util_RandomInt(0xbf);

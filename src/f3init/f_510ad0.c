@@ -96,7 +96,7 @@ int init_InitTown(char *city)
     }
     gm_UpdatePlayers();
     i = 0;
-    pc = ai_PlayerSlotsV[0];
+    pc = ai_PlayerSlots[0];
     do {
         if (*pc == 0)
             break;

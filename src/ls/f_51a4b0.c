@@ -28,19 +28,19 @@ int unk_Unk51a4b0(int f)
     psVar3 = psVar3 + 0x10e;
   } while ((int)psVar3 < (int)&ai_Chars[768]);
   LS_W(&cnt, 4)
-  if (ai_JudgeCatholicI != 0) {
-    LS_W(ai_JudgeCatholicI + 4, 4)
+  if (ai_JudgeCatholic != 0) {
+    LS_W(ai_JudgeCatholic + 4, 4)
   }
   else {
     LS_W(&local_c, 4)
   }
-  if (ai_JudgeProtestantI != 0) {
-    LS_W(ai_JudgeProtestantI + 4, 4)
+  if (ai_JudgeProtestant != 0) {
+    LS_W(ai_JudgeProtestant + 4, 4)
   }
   else {
     LS_W(&local_c, 4)
   }
-  piVar5 = (int *)ai_KindBCharsV;
+  piVar5 = (int *)ai_KindBChars;
   do {
     local_4 = 0xffffffff;
     if (*piVar5 != 0) {
@@ -51,7 +51,7 @@ int unk_Unk51a4b0(int f)
     }
     LS_W(puVar4, 4)
     piVar5 = piVar5 + 1;
-  } while ((int)piVar5 < (int)&ai_KindBCharsV[8]);
+  } while ((int)piVar5 < (int)&ai_KindBChars[8]);
   c = (char *)ai_Chars;
   do {
     if (*(short *)(c) != -1) {

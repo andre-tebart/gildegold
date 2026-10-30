@@ -23,7 +23,7 @@ int ai_EditText(int x, int y, char *text)
     d2_Inputs[*input].w = 0x80;
     d2_Inputs[*input].maxw = 0x110;
     d2_SetObjMax(id, 0x1f);
-    while (sv_RunFrame((int)ai_EditText, sv_FrameMaskU) != 0) {
+    while (sv_RunFrame((int)ai_EditText, sv_FrameMask) != 0) {
         if (kb_Last == 0x1c) {
             src = (char *)d2_GetObjValue(id);
             dst = text;
@@ -32,7 +32,7 @@ int ai_EditText(int x, int y, char *text)
             sv_PopRequest = 1;
             ret = 1;
         }
-        if (dm_L.rup != 0 || d2_FocusedInputV == 0)
+        if (dm_L.rup != 0 || d2_FocusedInput == 0)
             sv_PopRequest = 1;
     }
     d2_RemoveObj(id);

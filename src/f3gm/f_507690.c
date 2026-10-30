@@ -18,7 +18,7 @@ int gv_GetTableRecord(int i, int *out);                     /* 0x4f2720 */
 float gm_ItemPrice(int item, unsigned char n);
 int gm_Unk509e30(void *list, unsigned char p);
 
-#define PLW54(k) (*(unsigned short *)(ai_PlayerSlotsV[(unsigned char)(k)] + 0x54))
+#define PLW54(k) (*(unsigned short *)(ai_PlayerSlots[(unsigned char)(k)] + 0x54))
 #define PLTAB(i) (((int *)ai_Unk61a8ac)[i])
 #define OPROTO(i) (ai_Goods + (unsigned)(i) * 0x41)
 

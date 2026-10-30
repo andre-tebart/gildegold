@@ -30,7 +30,7 @@ void init_SyncSceneObjects(char *o)
                     d3if_ShowTree(o, 1);
                     *(char **)(o + 0x200) = rec;
                     if (proto[0] == 6 || proto[0] == 2) {
-                        if (ai_FallbackBuildingI != 0) {
+                        if (ai_FallbackBuilding != 0) {
                             unsigned r = unk_Unk503530(ai_PlayerId, *(char **)((char *)ai_SceneBuilding + 0x5d), rec, 0);
 
                             if (r & 0x4000) {
@@ -115,7 +115,7 @@ fx:
         if (rec != 0 && (rec[0x13] & 0xa0) != 0) {
             if (*(int *)(o + 0x1cc) == 0)
                 d3_InflateObject(o);
-            if (*(int *)(o + 0x1ec) != 0 && d3t_GetBoundingSphere(o, ai_Unkfc2decI, (struct D3VECTOR *)(pos + 2), pos) != 0) {
+            if (*(int *)(o + 0x1ec) != 0 && d3t_GetBoundingSphere(o, ai_Unkfc2dec, (struct D3VECTOR *)(pos + 2), pos) != 0) {
                 fx = (int)(pos[0] * 1.5);
                 s = evt_Load("Effekte/upgr");
                 if (s != 0)

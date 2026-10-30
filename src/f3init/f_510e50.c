@@ -43,7 +43,7 @@ int init_StartNetworkGame(char *name)
     init_ShowStatus(init_StatusReceiveGame);
     if (ls_ReceiveGame() == 0)
         return 2;
-    GetModuleFileNameA(main_InstanceV, ini, 0x104);
+    GetModuleFileNameA(main_Instance, ini, 0x104);
     p = strrchr(ini, 0x5c);
     strcpy(p, "\\game.INI");
     saved = d3_CurrentScene;
@@ -79,20 +79,20 @@ int init_StartNetworkGame(char *name)
     }
     ch = (INIT_CHAR *)cm_GetSlotValue(h);
     if ((cm_NetFlags & 1) != 0) {
-        ai_MissionModeC = -1;
+        ai_MissionMode = -1;
         args[0] = 0xffffffff;
         ai_MissionSeed = timeGetTime();
         args[1] = ai_MissionSeed;
         cm_SendExSysMessage(9, args);
     }
-    while (ai_MissionModeC == -2) {
+    while (ai_MissionMode == -2) {
         sv_PumpMessages();
         sv_PumpNet();
     }
-    if (ai_MissionModeC != -1) {
-        if (ai_MissionModeC != 5)
+    if (ai_MissionMode != -1) {
+        if (ai_MissionMode != 5)
             ai_MissionSeed = timeGetTime();
-        ai_NewRandomMission(ch->netId, (int)ai_MissionModeC, 1);
+        ai_NewRandomMission(ch->netId, (int)ai_MissionMode, 1);
     }
     i = gm_PlayerFactor(main_MoneyCheat == 0 ? 2000 : 500000, ai_OwnPlayer);
     cm_SendMoveGoods(ch->netId, -1, ai_OwnPlayer, i);
@@ -111,7 +111,7 @@ int init_StartNetworkGame(char *name)
     if (flags != 0) {
         init_FillMarkets(ai_OwnPlayer);
         i = 0;
-        p = ai_PlayerSlotsV[0];
+        p = ai_PlayerSlots[0];
         do {
             if (*p == 0)
                 break;
@@ -124,7 +124,7 @@ int init_StartNetworkGame(char *name)
     }
     saved = d3_CurrentScene;
     d2_CutsceneActive = 0;
-    if (ai_MissionModeC > -1 && ai_MissionModeC <= 5) {
+    if (ai_MissionMode > -1 && ai_MissionMode <= 5) {
         d3if_SelectScene(d3t_FindFreeScene(), 0);
         d3_LoadScene("scenes/*network.ed3", 0, 0);
         ai_ShowMissions(ch->netId);

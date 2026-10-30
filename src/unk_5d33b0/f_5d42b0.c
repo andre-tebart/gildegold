@@ -20,7 +20,7 @@ int ai_JoinGameWindow(void)
     int i;
 
     ret = 0;
-    mask = sv_FrameMaskU;
+    mask = sv_FrameMask;
     win = d2_OpenForm(0, 0, "menu\\loadgame_new");
     d2_PlaceViewWindows(win, 1);
     d2_PlaceMainWindowF(win, 2);
@@ -46,7 +46,7 @@ int ai_JoinGameWindow(void)
                     && (d2_PointerObj == slots[i].obj || d2_HitWindow == slots[i].win
                         || (d2_HitWindow != -1
                             && d2_ObjsV[d2_Wins[d2_HitWindow].parent].win == &d2_Wins[slots[i].win]))) {
-                    if (ai_GameStateB == 0 || ai_MessageBox(0x101, ai_LoadGameConfirmText) != 0) {
+                    if (ai_GameState == 0 || ai_MessageBox(0x101, ai_LoadGameConfirmText) != 0) {
                         strcpy(ls_SavePath, slots[i].name);
                         sv_PopRequest = 1;
                         ret = 1;

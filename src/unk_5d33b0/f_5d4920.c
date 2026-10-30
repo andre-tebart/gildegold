@@ -24,7 +24,7 @@ int ai_SaveNameWindow(int image)
     char list[0x4200];
 
     (void)image;
-    mask = sv_FrameMaskU;
+    mask = sv_FrameMask;
     win = d2_OpenForm(0, 0, "menu\\loadgame_new");
     d2_PlaceViewWindows(win, 1);
     d2_PlaceMainWindowF(win, 2);

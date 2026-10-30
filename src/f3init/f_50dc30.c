@@ -31,8 +31,8 @@ void init_LoadBuildingScene(int k)
     }
     slot = (char *)init_BuildingUniverse + (unsigned char)ai_BTypes[k * 0x24d];
     if (*slot == -1) {
-        if (ai_GameStateB != 0 && (ai_FrameWait <= 0 || sv_PanelFlag != 0)) {
-            fl = sv_FrameMaskU & 0xfffffff7;
+        if (ai_GameState != 0 && (ai_FrameWait <= 0 || sv_PanelFlag != 0)) {
+            fl = sv_FrameMask & 0xfffffff7;
             bx = (char *)d2_StartFade(0, 0, (int)d2_ScreenW, (int)d2_ScreenH, "BLACK", 0x32, 1);
             n = (unsigned char)*bx;
             while ((n & 4) == 0) {

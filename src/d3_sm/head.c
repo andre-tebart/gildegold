@@ -37,5 +37,4 @@ int d3sm_Ground[8] = {0};                   /* 0x633dd8, ground type per terrain
 D3SM *d3sm_Shadow = 0;                      /* 0x633df8 */
 D3TERRAIN *d3sm_Last = 0;                   /* 0x633dfc, terrain d3sm_Ground was built for */
 #define d3_SortBufV (*(D3SMSORT * (*))&d3_SortBuf)  /* 0xfc2de0, this unit reads it as `D3SMSORT *d3_SortBuf` */
-#define d3_SortCountI (*(int (*))&d3_SortCount)  /* 0xfc2dcc, this unit reads it as `int d3_SortCount` */
 #define d3_SortPtrV (*(D3SMSORT * (*))&d3_SortPtr)  /* 0xfc2dc8, this unit reads it as `D3SMSORT *d3_SortPtr` */

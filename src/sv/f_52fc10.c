@@ -30,7 +30,7 @@ void sv_NetworkSyncWait(unsigned fl)
     memset(msg, 0, sizeof(msg));
     strcpy(msg, "sv_NetworkSync");
     m = ((int (*)(int, int))cm_SendExSysMessage)(0xe, msg);
-    sv_FrameMaskU = fl;
+    sv_FrameMask = fl;
     dlg = sv_OpenMessageBox(ai_Unk143a3a8, 0);
     d2_SetViewEnabled(dlg, 0);
     while (cm_GetSlotState(m) == 0) {

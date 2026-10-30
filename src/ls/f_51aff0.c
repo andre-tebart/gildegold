@@ -23,7 +23,7 @@ int unk_Unk51aff0(int f)
     }
     cnt = 0;
     {
-        unsigned short *q = (unsigned short *)ai_ObjectsV;
+        unsigned short *q = (unsigned short *)ai_Objects;
 
         for (i = 0x5008; i != 0; i--) {
             if (*(char *)(ai_Goods + *q * 0x41) == 0x1d)
@@ -33,7 +33,7 @@ int unk_Unk51aff0(int f)
     }
     LS_W(&cnt, 4)
     for (k = 0; k < 0x14f218; k += 0x43) {
-        char *q = (char *)ai_ObjectsV + k;
+        char *q = (char *)ai_Objects + k;
 
         if (*(char *)(ai_Goods + *(unsigned short *)q * 0x41) == 0x1d
             && unk_Unk51ad80(*(int *)(q + 0x3b), *(int *)(q + 2), f) == 0)
@@ -57,7 +57,7 @@ int unk_Unk51aff0(int f)
 
         n = *(int *)(ls_ActionQueue + k + 0x14);
         if (n > -1 && n < 0x300) {
-            n = ai_Unk1468ae0V[n];
+            n = ai_Unk1468ae0[n];
             if (mem_IsValid(n) == 0)
                 __asm int 3
             if (n != 0 && *(int *)(*(int *)(n + 0x34) + 0x200) != 0) {
@@ -79,7 +79,7 @@ int unk_Unk51aff0(int f)
         int *r = (int *)(ls_ActionQueue + k);
 
         if (ls_ActionQueue[k + 9] != 0) {
-            r[5] = ai_Unk1468ae0V[r[5]];
+            r[5] = ai_Unk1468ae0[r[5]];
             r[9] = ls_ActionAt(r[9]);
             r[10] = ls_ActionAt(r[10]);
         }

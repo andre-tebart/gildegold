@@ -294,7 +294,7 @@ void init_OpenTown(void)
         }
         b = (char *)gm_BuildNext();
     }
-    if (ai_MissionModeC == 5) {
+    if (ai_MissionMode == 5) {
         INIT_AIMSG m2;
         INIT_TIME *clock = (INIT_TIME *)ai_Time;
 

@@ -18,12 +18,12 @@ void init_AllocSceneBuilding(int o)
                 b = (unsigned char *)gm_CreateBuilding(0x47, 0xffff);
                 u = strrchr((char *)o, '_') + 1;
                 strcpy(tail, u);
-                for (i = 1; (int)ai_PlayerSlotsV[i] < INIT_PLAYER_SLOTS_END; i++) {
-                    if (ai_PlayerSlotsV[i][0] == 0)
+                for (i = 1; (int)ai_PlayerSlots[i] < INIT_PLAYER_SLOTS_END; i++) {
+                    if (ai_PlayerSlots[i][0] == 0)
                         break;
-                    if (_stricmp(tail, ai_PlayerSlotsV[i]) == 0) {
+                    if (_stricmp(tail, ai_PlayerSlots[i]) == 0) {
                         *(int *)(b + 0x65) = i;
-                        strcpy((char *)b + 5, ai_PlayerSlotsV[i]);
+                        strcpy((char *)b + 5, ai_PlayerSlots[i]);
                         break;
                     }
                 }

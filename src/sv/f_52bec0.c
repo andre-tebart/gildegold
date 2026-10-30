@@ -107,7 +107,7 @@ lgroup:
                         ai_Unk4c5460(*(int *)(ch + 2), *(int *)(v + 1), *(int *)(SV_I((unsigned)&full_data_6f22fc) + 1));
                 }
                 pp++;
-            } while ((int)pp < (unsigned)((unsigned)ai_Unk7603a0V + 0x80));
+            } while ((int)pp < (unsigned)((unsigned)ai_Unk7603a0 + 0x80));
             sv_ClearSelection();
             SV_I((unsigned)&full_data_6f22fc) = 0;
         }

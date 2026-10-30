@@ -23,10 +23,10 @@ int ls_WriteSaveHeader(int f, unsigned flags)
     if (vfs_fwrite(&id, 4, 1, f) <= 0 || vfs_fwrite(&flags, 1, 1, f) <= 0)
         return 0;
     who = ai_OwnPlayer;
-    strcpy(name, ai_PlayerSlotsV[who]);
-    v[0] = *(int *)(ai_PlayerSlotsV[who] + 0x40);
-    v[1] = *(int *)(ai_PlayerSlotsV[who] + 0x44);
-    c1 = ai_PlayerSlotsV[who][0x48];
+    strcpy(name, ai_PlayerSlots[who]);
+    v[0] = *(int *)(ai_PlayerSlots[who] + 0x40);
+    v[1] = *(int *)(ai_PlayerSlots[who] + 0x44);
+    c1 = ai_PlayerSlots[who][0x48];
     c2 = ai_NumPlayers;
     if (vfs_fwrite(name, 0x20, 1, f) <= 0 || vfs_fwrite(v, 8, 1, f) <= 0 || vfs_fwrite(&c1, 1, 1, f) <= 0
         || vfs_fwrite(&c2, 1, 1, f) <= 0 || vfs_fwrite(ai_Time, 0xe, 1, f) <= 0)
@@ -51,9 +51,9 @@ int ls_WriteSaveHeader(int f, unsigned flags)
     }
     if (vfs_fwrite(&ls_SaveSlot, 1, 1, f) <= 0)
         return 0;
-    ref = ai_PlayerBuildingI ? *(int *)(ai_PlayerBuildingI + 1) : (ai_FallbackBuildingI ? *(int *)(ai_FallbackBuildingI + 1) : -1);
+    ref = ai_PlayerBuilding ? *(int *)(ai_PlayerBuilding + 1) : (ai_FallbackBuilding ? *(int *)(ai_FallbackBuilding + 1) : -1);
     vfs_fwrite(&ref, 4, 1, f);
-    ref = sv_PanelShownI ? *(int *)(sv_PanelShownI + 2) : -1;
+    ref = sv_PanelShown ? *(int *)(sv_PanelShown + 2) : -1;
     vfs_fwrite(&ref, 4, 1, f);
     for (i = 0; i < 8; i++)
         vfs_fwrite(ai_Unk76fa24 + i * 8, 4, 1, f);

@@ -280,7 +280,7 @@ extern char init_SceneName[];             /* 0xfd7ba0, the name of each scene re
 extern char * ai_Unk1468ae0[0x300];             /* 0x1468ae0, the scene objects (0x100) */
 extern int d3_CurrentScene;  /* 0x633444 */
 extern int * ai_Unk633738;  /* 0x633738 */
-extern int ai_GameState;      /* 0x6f25ac */
+extern unsigned char ai_GameState;      /* 0x6f25ac */
 extern int ai_FrameWait;
 extern int sv_FrameMask;           /* 0x760638 */
 extern short d2_ScreenW;  /* 0xfb9072 */
@@ -555,13 +555,4 @@ extern unsigned int d3fl_DetailScale;   /* 0x633748 */
 extern unsigned char d3fl_DetailSizeShift;  /* 0x633751 */
 extern int evt_NoGroup;                /* 0x5f8430 */
 extern float d3o_FogScale;              /* 0x5fbd04 */
-#define ai_FallbackBuildingI (*(int (*))&ai_FallbackBuilding)  /* 0x6f230c, this unit reads it as `int ai_FallbackBuilding` */
-#define ai_GameStateB (*(unsigned char (*))&ai_GameState)  /* 0x6f25ac, this unit reads it as `unsigned char ai_GameState` */
-#define ai_MissionModeC (*(signed char (*))&ai_MissionMode)  /* 0x624580, this unit reads it as `signed char ai_MissionMode` */
-#define ai_PlayerBuildingI (*(int (*))&ai_PlayerBuilding)  /* 0x6f2308, this unit reads it as `int ai_PlayerBuilding` */
-#define ai_PlayerSlotsV (*(char (*)[][0x2f4])&ai_PlayerSlots)  /* 0x7e3f40, this unit reads it as `char ai_PlayerSlots[][0x2f4]` */
-#define ai_Unk633738I (*(int (*))&ai_Unk633738)  /* 0x633738, this unit reads it as `int ai_Unk633738` */
-#define ai_Unkfc2decI (*(int (*))&ai_Unkfc2dec)  /* 0xfc2dec, this unit reads it as `int ai_Unkfc2dec` */
 #define cm_FieldObjectI (*(int (*))&cm_FieldObject)  /* 0xa68d2c, this unit reads it as `int cm_FieldObject` */
-#define main_InstanceV (*(HINSTANCE (*))&main_Instance)  /* 0x75e140, this unit reads it as `HINSTANCE main_Instance` */
-#define sv_FrameMaskU (*(unsigned (*))&sv_FrameMask)  /* 0x760638, this unit reads it as `unsigned sv_FrameMask` */

@@ -19,10 +19,10 @@ int unk_Unk520310(int f)
             p[1] = (unsigned)&ai_Unk9367e0 + p[1] * 0x99;
     }
     LS_R(&n, 4)
-    ai_Unka68d24I = n == -1 ? 0 : (unsigned)&ai_Unk9367e0 + n * 0x99;
+    ai_Unka68d24 = n == -1 ? 0 : (unsigned)&ai_Unk9367e0 + n * 0x99;
     i = 0;
     LS_R(&n, 4)
-    ai_Unka68c00I = n == -1 ? 0 : (unsigned)&ai_Unk9367e0 + n * 0x99;
+    ai_Unka68c00 = n == -1 ? 0 : (unsigned)&ai_Unk9367e0 + n * 0x99;
     n = ((ls_Version < 0x1003c) - 1 & 0x6000) + 0x2000;
     for (p = (int *)((unsigned)&ai_Unkf31160 + 0x2); (int)p < ((unsigned)((unsigned)ai_Unkf31160 + 0x50000) + 0x2); p = (int *)((char *)p + 10)) {
         p[1] = 0;
@@ -46,7 +46,7 @@ int unk_Unk520310(int f)
     i = 0;
     if (ls_Read((int)&n, 4, 1, f) == 0)
         return 0;
-    cm_SendQueueI = n == -1 ? 0 : (unsigned)&ai_Unka69140 + n * 0x99;
+    cm_SendQueue = n == -1 ? 0 : (unsigned)&ai_Unka69140 + n * 0x99;
     LS_R(&ai_Unkf81168, 4)
     n = ((ls_Version < 0x1003c) - 1 & 0x6000) + 0x2000;
     if (n != 0) {

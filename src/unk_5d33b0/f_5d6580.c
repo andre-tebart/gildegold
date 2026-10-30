@@ -19,7 +19,7 @@ void ai_OptionsSfxScreen(void)
 
     apply = 0;
     sample = 0;
-    mask = sv_FrameMaskU & 0xffffdfff;
+    mask = sv_FrameMask & 0xffffdfff;
     form = d2_OpenForm(0, 0, "menu\\options_sfx");
     sv_SetScreenCenter(mask);
     d2_PlaceViewWindows(form, 1);

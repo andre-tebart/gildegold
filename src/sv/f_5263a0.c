@@ -17,7 +17,7 @@ int sv_Unk5263a0(void)
     moved = 0;
     if (d2_PointerLook != 0 && d2_PointerLook < 9)
         d2_PointerLook = 0;
-    if (d3t_CamMoveI != 0 || ai_Unk6310e4 != 0)
+    if (d3t_CamMove != 0 || ai_Unk6310e4 != 0)
         return 0;
     if (ai_Unk6f2394 == 0)
         dt = 1.0;

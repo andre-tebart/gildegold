@@ -5,7 +5,7 @@ extern int ai_Unk623884;  /* 0x623884 */
 extern int ai_Unk623898;  /* 0x623898 */
 extern int ai_Unk623880;  /* 0x623880 */
 extern int ai_Unk6f2334;  /* 0x6f2334 */
-extern int ai_GameState;  /* 0x6f25ac */
+extern unsigned char ai_GameState;  /* 0x6f25ac */
 extern char ai_Unk6f2338;  /* 0x6f2338 */
 extern int ai_Unk5fe710;  /* 0x5fe710 */
 extern char *ai_Unk7662c0p;

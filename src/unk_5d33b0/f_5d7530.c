@@ -23,12 +23,12 @@ void ai_SaveNetworkGame(char *saveName, char *name)
     AICHARVIEW *c;
     int i, n;
 
-    sv_FrameMaskU |= 0x20000;
+    sv_FrameMask |= 0x20000;
     for (i = 0; i < 8; i++)
         cm_SaveAcks[i][0] = -1;
     if ((ai_GameFlags & 4) == 0)
         return;
-    sv_BroadcastText(sv_FrameMaskU, ai_SaveWaitText);
+    sv_BroadcastText(sv_FrameMask, ai_SaveWaitText);
     count = 0;
     ai_NumPlayers = count;
     p = (unsigned char *)ai_CharsC + 2;
@@ -67,7 +67,7 @@ void ai_SaveNetworkGame(char *saveName, char *name)
             sv_PumpNet();
         } while (n < ai_NumPlayers);
     }
-    sv_BroadcastText(sv_FrameMaskU, ai_SaveWaitText);
+    sv_BroadcastText(sv_FrameMask, ai_SaveWaitText);
     sprintf(path, "Gamedata/network/%s.SRV", saveName);
     ls_SaveGame(path, name, 6);
     sprintf(path, "Gamedata/network/%s.SAV", saveName);

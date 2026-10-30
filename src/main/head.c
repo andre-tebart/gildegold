@@ -427,7 +427,4 @@ void amt_CheckOffices(void);            /* 0x4e9260, amt.h */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define ai_TimeT (*(AITIME *)&ai_Time)  /* 0x770ae0, ai_Time (anm.c: char[14]) as the AITIME it is: this unit reads its fields */
 #define cm_SendExSellObjectI ((void (*)(int, int, int, int, unsigned char, int))cm_SendExSellObject)  /* 0x4c4880 (cm.h: short c): @original this unit pushes the third argument as an int (byte-matched ai_MeisterBewaffnen / ai_Unk497c80 / ai_Unk49c880) */
-#define ai_Unk1468ae0V (*(unsigned char (*))&ai_Unk1468ae0)  /* 0x1468ae0, this unit reads it as `unsigned char ai_Unk1468ae0` */
-#define ai_Unk760620V (*(unsigned char (*))&ai_Unk760620)  /* 0x760620, this unit reads it as `unsigned char ai_Unk760620` */
-#define he_EventsB (*(unsigned char (*))&he_Events)  /* 0x6fab40, this unit reads it as `unsigned char he_Events` */
 #define ls_SavePathV (*(struct LSSAVEVIEW (*))&ls_SavePath)  /* 0x75e640, this unit reads it as `struct LSSAVEVIEW ls_SavePath` */

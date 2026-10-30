@@ -19,7 +19,7 @@ void init_StockMarketStalls(void)
         st = (INIT_OBJ *)gm_Query(b->objList, 2, 0, 0x1db, 6);
         if (st != 0) {
             n = 0;
-            w0 = (unsigned short *)(ai_PlayerSlotsV[owner] + 0x2ac);
+            w0 = (unsigned short *)(ai_PlayerSlots[owner] + 0x2ac);
             w = w0;
             for (i = 0x10; i != 0; i--) {
                 if (*w != 0)
@@ -42,7 +42,7 @@ void init_StockMarketStalls(void)
         st = (INIT_OBJ *)gm_Query(b->objList, 2, 0, 0x1dc, 6);
         if (st != 0) {
             n = 0;
-            w0 = (unsigned short *)(ai_PlayerSlotsV[owner] + 0x2cc);
+            w0 = (unsigned short *)(ai_PlayerSlots[owner] + 0x2cc);
             w = w0;
             for (i = 0x10; i != 0; i--) {
                 if (*w != 0)

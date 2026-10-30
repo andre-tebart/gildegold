@@ -29,7 +29,7 @@ void unk_Unk503c60(int c, int mode)
         do {
             if (*q == *(int *)(ai_Chars[c] + 4)) {
                 k = *(int *)((char *)q - 0x16);
-                r = ai_Unk91b6e0V;
+                r = ai_Unk91b6e0;
                 do {
                     if (r[1] == k) {
                         if (peer != 0 && *(int *)(peer + 4) == *r)
@@ -38,7 +38,7 @@ void unk_Unk503c60(int c, int mode)
                         *r = -1;
                     }
                     r += 2;
-                } while ((int)r < ((unsigned)ai_Unk91b6e0V + 0x4000));
+                } while ((int)r < ((unsigned)ai_Unk91b6e0 + 0x4000));
                 q[-1] = -1;
                 *q = -1;
                 *(int *)((char *)q - 0x16) = -1;

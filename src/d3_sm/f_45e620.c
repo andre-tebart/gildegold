@@ -101,11 +101,11 @@ void d3sm_Build(D3SM *h, D3TERRAIN *t)
         d3sm_Sample(t, h);
     else
         D3_ZERO(h->data, h->size * h->size);
-    d3_SortCountI = 0;
+    d3_SortCount = 0;
     d3_SortPtrV = d3_SortBufV;
     d3_ForEachObject(d3_DefaultScene, 0, 0x40, (D3OBJECTCB)d3sm_ShadowCB, h);
-    d3_RadixSort(d3_SortCountI, 0);
-    for (k = 0; k < (unsigned int)d3_SortCountI; k++) {
+    d3_RadixSort(d3_SortCount, 0);
+    for (k = 0; k < (unsigned int)d3_SortCount; k++) {
         tri = d3_SortBufV[k].tri;
         if (tri->solid) {
             hi = -1e10f;
@@ -152,7 +152,7 @@ void d3sm_Build(D3SM *h, D3TERRAIN *t)
         }
         d3s_ShadowTriangle(&uv[0][0], hs, h->data, h->size, tri->v[0]->flags, h->entries, radius);
     }
-    d3_SortCountI = 0;
+    d3_SortCount = 0;
     d3_SortPtrV = d3_SortBufV;
     if (h->entries) {
         d3sm_Replace(h, 0xb, 0xc);

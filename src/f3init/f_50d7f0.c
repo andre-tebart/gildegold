@@ -29,8 +29,8 @@ void init_LoadObjectScene(int n)
     p = ai_Goods + n * 0x41;
     cb = 0;
     changed = 0;
-    if (ai_GameStateB != 0 && !(ai_FrameWait > 0)) {
-        fl = sv_FrameMaskU & 0xfffffff7;
+    if (ai_GameState != 0 && !(ai_FrameWait > 0)) {
+        fl = sv_FrameMask & 0xfffffff7;
         bx = (char *)d2_StartFade(0, 0, (int)d2_ScreenW, (int)d2_ScreenH, "BLACK", 0x32, 1);
         k = (unsigned char)*bx;
         while ((k & 4) == 0) {

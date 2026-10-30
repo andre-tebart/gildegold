@@ -288,7 +288,7 @@ extern int ai_Unk75f280[576];
 extern char * ai_Unkfc2dec;
 extern char ai_Chars[768][0x21c];
 extern int ai_GameFlags;
-extern int ai_GameState;
+extern unsigned char ai_GameState;
 extern struct AIBLD *ai_MarketBuilding;
 extern unsigned char ai_TimeHour;
 extern float ai_Unk617830[];

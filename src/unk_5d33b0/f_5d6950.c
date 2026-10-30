@@ -19,7 +19,7 @@ void ai_OptionsGameScreen(void)
     int speed, mouse, scroll, camera, sw0, sw2, sw3, panel, panel1, help, panel3;
 
     apply = 0;
-    mask = sv_FrameMaskU & 0xffffdfff;
+    mask = sv_FrameMask & 0xffffdfff;
     form = d2_OpenForm(0, 0, "menu\\options_game");
     sv_SetScreenCenter(mask);
     d2_PlaceViewWindows(form, 1);
@@ -112,7 +112,7 @@ void ai_OptionsGameScreen(void)
         if (d2_GetObjValue(panel) != (ai_GamePanel.word & 0xff)) {
             ai_GamePanel.byte[0] = d2_GetObjValue(panel);
             d2_SetViewEnabled(form, 0);
-            if (ai_GameStateB != 0) {
+            if (ai_GameState != 0) {
                 sv_DestroyScreen();
                 sv_BuildScreenLayout(sv_PanelImage());
                 ai_LeaveGameScreen();

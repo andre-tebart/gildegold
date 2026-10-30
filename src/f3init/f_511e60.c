@@ -8,7 +8,7 @@ int init_BuildingSceneUniverse(unsigned char *b)
 
     k = (unsigned char)ai_BTypes[*b * 0x24d];
     if (init_BuildingUniverse[k] == -1) {
-        if (b != (unsigned char *)ai_FallbackBuildingI && *b != 0x1e) {
+        if (b != (unsigned char *)ai_FallbackBuilding && *b != 0x1e) {
             uni = d3t_FindFreeScene();
             if (uni == -1)
                 return -1;

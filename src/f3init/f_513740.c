@@ -13,10 +13,10 @@ void unk_Unk513740(void)
         if (c == 0 || *(int *)(c + 0x88) == -0x40800000) {
             sv_PlaceCamera(0x3ea8f5c3);
         } else {
-            d3_SetObjectPos(ai_Unkfc2decI, c + 0x8c);
+            d3_SetObjectPos(ai_Unkfc2dec, c + 0x8c);
             sv_PlaceCamera(*(int *)(c + 0x88));
-            *(int *)(ai_Unkfc2decI + 0x88) = *(int *)(c + 0xa0);
-            d3_SetObjectRot(ai_Unkfc2decI, ai_Unkfc2decI + 0x84);
+            *(int *)(ai_Unkfc2dec + 0x88) = *(int *)(c + 0xa0);
+            d3_SetObjectRot(ai_Unkfc2dec, ai_Unkfc2dec + 0x84);
         }
         for (p = (int *)((unsigned)&ai_Unk770cec + 0x18); (int)p < (int)((unsigned)&ai_Unk770cec + 0x65418); p += 0x87) {
             if (*p != 0) {
@@ -48,7 +48,7 @@ void unk_Unk513740(void)
                 (*(void (**)())(hook + 0x210))(d3_DefaultScene, 4, hook + 0x214, 0);
         }
         init_SetSeasonTextures();
-        init_SetDetailLevel((int)ai_Unk633738I, 0);
+        init_SetDetailLevel((int)ai_Unk633738, 0);
         d3_FogByDistance = 1;
         evt_NoGroup = 0;
         d3o_FogScale = 1.0f - (float)(ai_GfxFog.word & 0xff) * 0.01f;

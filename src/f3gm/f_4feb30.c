@@ -6,12 +6,12 @@ void gm_UpdatePlayers(void)
     int i;
 
     i = 0;
-    p = ai_PlayerSlotsV[0];
+    p = ai_PlayerSlots[0];
     do {
         if (*p == 0)
             return;
         gm_UpdatePrices(i, ai_Time);
         p += 0x2f4;
         i++;
-    } while ((int)p < (int)((unsigned)ai_PlayerSlotsV + 0xbd0));
+    } while ((int)p < (int)((unsigned)ai_PlayerSlots + 0xbd0));
 }

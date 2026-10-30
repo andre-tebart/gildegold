@@ -491,7 +491,7 @@ void ai_Unk4e5180();  /* 0x4e5180 */
 void amt_ClearOfficesIfAll();  /* 0x4e6e20 */
 int ord_HandleMessageRecord();  /* 0x4f9710 */
 void ai_GameFrame(void);  /* 0x591520 */
-extern int ai_GameState;  /* 0x6f25ac */
+extern unsigned char ai_GameState;  /* 0x6f25ac */
 
 int amt_ExecuteSwapMessage();  /* 0x4e6c50 */
 unsigned short ahm_CreateAlchemist(int *p);  /* 0x4ec500, ahm.c (cm.c reads it through ahm_CreateAlchemistI) */

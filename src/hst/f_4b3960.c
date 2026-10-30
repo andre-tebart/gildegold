@@ -11,7 +11,7 @@ void ai_Unk4b3960(int cmd)
 {
     int msg[0x1f];
 
-    if ((cm_NetFlagsB & 8) || net_Conn.s == -1) {
+    if ((cm_NetFlags & 8) || net_Conn.s == -1) {
         msg[0] = GetTickCount();
         cm_SendExSysMessage(5, msg);
     }

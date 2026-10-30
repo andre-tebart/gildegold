@@ -33,7 +33,7 @@ int ai_SaveOptionWindow(int image)
     char list[0x4200];
     int view;
 
-    mask = sv_FrameMaskU;
+    mask = sv_FrameMask;
     win = d2_OpenForm(0, 0, "menu\\loadgame_new");
     d2_PlaceViewWindows(win, 1);
     d2_PlaceMainWindowF(win, 2);

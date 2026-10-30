@@ -432,10 +432,4 @@ int sv_MessageBoxYesNo();               /* 0x5216a0 */
 #define d3sky_CreateK ((int (*)())d3sky_Create)  /* 0x45da30 (d3_sky.c): @original the calls pass the three floats as dword bit patterns without a prototype (ai_Unk4e32f0 0x4e32f0: push 0x44160000 ..) */
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, ai_Unk4d88c0 0x4d88c0 move it as a word / movzx) */
 #define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
-#define ai_Unk60d360U (*(unsigned (*))&ai_Unk60d360)  /* 0x60d360, this unit reads it as `unsigned ai_Unk60d360` */
 #define ai_Unk6f0454V (*(char (*))&ai_Unk6f0454)  /* 0x6f0454, this unit reads it as `char ai_Unk6f0454` */
-#define ai_Unk75ec60I (*(int (*))&ai_Unk75ec60)  /* 0x75ec60, this unit reads it as `int ai_Unk75ec60` */
-#define ai_Unk7603a0V (*(unsigned char (*))&ai_Unk7603a0)  /* 0x7603a0, this unit reads it as `unsigned char ai_Unk7603a0` */
-#define ai_Unk760618I (*(int (*))&ai_Unk760618)  /* 0x760618, this unit reads it as `int ai_Unk760618` */
-#define d3t_CamMoveI (*(int (*))&d3t_CamMove)  /* 0x6310e8, this unit reads it as `int d3t_CamMove` */
-#define sv_FrameMaskU (*(unsigned (*))&sv_FrameMask)  /* 0x760638, this unit reads it as `unsigned sv_FrameMask` */

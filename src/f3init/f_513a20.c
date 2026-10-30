@@ -10,9 +10,9 @@ int init_LoadCityINI(char *city, int slot)
     char names[8][0x40];
     char sep[4];
 
-    s = ai_PlayerSlotsV[slot];
+    s = ai_PlayerSlots[slot];
     if (slot == 0)
-        memset(ai_PlayerSlotsV[0], 0, 0x2f4 * 4);
+        memset(ai_PlayerSlots[0], 0, 0x2f4 * 4);
     sprintf(ini, "%s%s/%s.ini", "\\project\\gfx\\", "gamedata/cities", city);
     GetPrivateProfileStringA("A - ALLGEMEIN", "Stadtname", "Unknown", val, 0x100, ini);
     strcpy(s, val);

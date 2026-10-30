@@ -24,8 +24,8 @@ int unk_Unk51c950(int name)
     gm_ResetCharacters();
     ch_DeleteAll();
     ai_PlayerCharC = 0;
-    ai_JudgeCatholicI = 0;
-    ai_JudgeProtestantI = 0;
+    ai_JudgeCatholic = 0;
+    ai_JudgeProtestant = 0;
     init_FreeScenes();
     if (ls_ReadSaveHeader(h, ai_Unk76f920) == 0 || ai_Unk76f920[0] > 0x1005a || ai_Unk76f920[0] < 0x10026
         || !LS_RD(&ai_NextObjectId, 4) || !LS_RD(&ai_Unk6f2618, 4) || !LS_RD(ai_Time, 0xe)
@@ -37,7 +37,7 @@ int unk_Unk51c950(int name)
     v = ls_Version;
     if (v > 0x10021)
         LS_RD(&ai_Unk6f1bcc, 4);
-    LS_RD(ai_UpdateStartV, 0x18);
+    LS_RD(ai_UpdateStart, 0x18);
     ai_Unk75e134 = *(int *)(ai_Time + 4);
     ai_Unk75e130I = *(int *)ai_Time;
     ai_Unk75e138 = *(int *)(ai_Time + 8);
@@ -57,8 +57,8 @@ int unk_Unk51c950(int name)
     }
     if ((ai_Unk76f924 & 2) != 0) {
         vfs_fclose(h);
-        ai_JudgeCatholicI = 0;
-        ai_JudgeProtestantI = 0;
+        ai_JudgeCatholic = 0;
+        ai_JudgeProtestant = 0;
         return ls_FixupAfterLoad() != 0;
     }
     if (!((v > 0x10044 || amt_LoadAemter(h, v) != 0) && unk_Unk4f2b30(h) != 0 && (v < 0x10016 || ls_ReadRelations(h) != 0)
@@ -81,8 +81,8 @@ int unk_Unk51c950(int name)
     unk_Unk511840();
     if (unk_Unk51e900(h) == 0)
         goto fail;
-    ai_JudgeCatholicI = gm_FindChar(ai_JudgeCatholicI);
-    ai_JudgeProtestantI = gm_FindChar(ai_JudgeProtestantI);
+    ai_JudgeCatholic = gm_FindChar(ai_JudgeCatholic);
+    ai_JudgeProtestant = gm_FindChar(ai_JudgeProtestant);
     if (ai_Unk4b63b0(h) == 0)
         goto fail;
     if (!(v < 0x10029 || ai_Unk589b30(h) != 0))
@@ -107,7 +107,7 @@ int unk_Unk51c950(int name)
     return 1;
 fail:
     vfs_fclose(h);
-    mem_Free(ai_Unkf31140I);
-    ai_Unkf31140I = 0;
+    mem_Free(ai_Unkf31140);
+    ai_Unkf31140 = 0;
     return 0;
 }

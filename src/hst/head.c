@@ -17,7 +17,6 @@ typedef unsigned int SOCKET;            /* <winsock.h>, for net.h (as ai.c) */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define ai_TimeT (*(AITIME *)&ai_Time)  /* 0x770ae0, ai_Time (anm.c: char[14]) as the AITIME it is: this unit reads its fields */
 #define gm_AddHealthS ((float (*)(unsigned short, int))gm_AddHealth)  /* 0x4fca40 (f3gm.c: unsigned id): @original this unit pushes the id as 16 bits (byte-matched ai_CommandKillPlayer / ai_Unk4b86c0) */
-#define cm_NetFlagsB (*(unsigned char (*))&cm_NetFlags)  /* 0x6f2594, this unit reads it as `unsigned char cm_NetFlags` */
 #define d2_LastWindowPtrV (*(G12WIN * (*))&d2_LastWindowPtr)  /* 0x6ed980, this unit reads it as `G12WIN *d2_LastWindowPtr` */
 #define ai_JudgeCatholicV (*(AIPER * (*))&ai_JudgeCatholic)  /* 0x6f1bfc, this unit reads it as `AIPER *ai_JudgeCatholic` */
 #define ai_JudgeProtestantV (*(AIPER * (*))&ai_JudgeProtestant)  /* 0x6f1c00, this unit reads it as `AIPER *ai_JudgeProtestant` */

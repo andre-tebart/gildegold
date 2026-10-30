@@ -95,7 +95,7 @@ apply:
     ai_Unk75fb98 = dir[2];
     d3anim_FreePath(ai_Unkfc2dec);
     ai_Unk6310e4 = 0;
-    d3t_CamMoveI = 0;
+    d3t_CamMove = 0;
     d3t_PlaceObjectV(ai_Unkfc2dec, pos, dir, ai_CameraStep, 8);
     ai_Unk6f2378 = 1;
 }

@@ -25,7 +25,7 @@ char d3sm_ShadowCB(D3OBJECT *obj, D3SM *h)
         v->flags = (!(h->mask & (obj->stateFlags >> 2 & 3)) | ((obj->stateFlags & 0x20) == 0x20) << 1) << 1 | (obj->stateFlags & 0x10) == 0x10;
     }
     m = (D3SMMESH *)obj->info;
-    n = min(m->ntris, d3_SortMax - d3_SortCountI);
+    n = min(m->ntris, d3_SortMax - d3_SortCount);
     for (tri = m->tris; n > 0; n--, tri++) {
         a = tri->v[0];
         b = tri->v[1];
@@ -44,7 +44,7 @@ char d3sm_ShadowCB(D3OBJECT *obj, D3SM *h)
                 && b->gx >= 0.0f && b->gx < size && b->gz >= 0.0f && b->gz < size
                 && c->gx >= 0.0f && c->gx < size && c->gz >= 0.0f && c->gz < size) {
                 d3_SortPtrV->tri = tri;
-                d3_SortCountI++;
+                d3_SortCount++;
                 hmax = max(a->h, b->h);
                 hmax = max(hmax, c->h);
                 d3_SortPtrV->key = hmax * 0x300;

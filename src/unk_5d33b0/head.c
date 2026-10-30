@@ -131,9 +131,6 @@ extern int sv_PopRequest;               /* 0x6f22a0, nonzero: MASTER (sv_RunFram
 #define U_B(a) (*(unsigned char *)(a))
 
 int sprintf(char *buf, const char *fmt, ...); /* 0x5de652, the CRT's sprintf (no CRT symbol available) */
-#define ai_GameStateB (*(unsigned char (*))&ai_GameState)  /* 0x6f25ac, this unit reads it as `unsigned char ai_GameState` */
-#define d2_FocusedInputV (*(void * (*))&d2_FocusedInput)  /* 0x6ed9dc, this unit reads it as `void *d2_FocusedInput` */
 #define d2_LastWindowPtrV (*(D2WINVIEW * (*))&d2_LastWindowPtr)  /* 0x6ed980, this unit reads it as `D2WINVIEW *d2_LastWindowPtr` */
 #define d2_ObjsV (*(D2OBJVIEW * (*))&d2_Objs)  /* 0xf8f080, this unit reads it as `D2OBJVIEW *d2_Objs` */
 #define d2_PicsV (*(D2PICVIEW * (*))&d2_Pics)  /* 0x6ed918, this unit reads it as `D2PICVIEW *d2_Pics` */
-#define sv_FrameMaskU (*(unsigned (*))&sv_FrameMask)  /* 0x760638, this unit reads it as `unsigned sv_FrameMask` */

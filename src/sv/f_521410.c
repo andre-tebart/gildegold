@@ -11,7 +11,7 @@ int sv_MessageBoxGreen(int a, int b, unsigned flags)
     ret = 0;
     if (sv_MessageBoxGreenOpen != 0)
         return 0;
-    mask = sv_FrameMaskU & 0xffffffc7;
+    mask = sv_FrameMask & 0xffffffc7;
     form = d2_OpenForm(0, 0, "misc\\MessageBoxGreen");
     if ((flags & 8) != 0)
         mask = 0x717c6;

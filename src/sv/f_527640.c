@@ -10,7 +10,7 @@ int sv_Unk527640(void)
         if (ai_Unk760440 == 0 && ai_Unk62a8cc == -1) {
             if (dm_L.rhold == 0)
                 ai_Unk6f22b4 = sv_Unk5263a0();
-            if (-1 < (char)(sv_FrameMaskU >> 8))
+            if (-1 < (char)(sv_FrameMask >> 8))
                 sv_Unk526cf0();
             if (ai_Unk62381c != 0 && kb_Down[0xf] == 0)
                 sv_Unk525ee0();

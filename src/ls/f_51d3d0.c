@@ -9,7 +9,7 @@ int ls_ReadObjects(int f)
     gm_ClearObjects();
     LS_R(&n, 4)
     for (i = 0; i < n; i++) {
-        r = (char *)ai_ObjectsV + i * 0x43;
+        r = (char *)ai_Objects + i * 0x43;
         LS_R(r, 2)
         LS_R(r + 2, 4)
         LS_R(r + 6, 4)

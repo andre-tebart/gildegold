@@ -153,7 +153,7 @@ int unk_Unk4ed910();                     /* 0x4ed910 */
 int gm_FindById();                     /* 0x4fea50 */
 
 extern struct AIBLD *ai_MarketBuilding;                /* 0x6f1bc8 */
-extern int ai_GameState;      /* 0x6f25ac */
+extern unsigned char ai_GameState;      /* 0x6f25ac */
 void sv_CountGroupMembers(char *g);     /* 0x5241d0, sv.c */
 /* ai_Unk6f261c: view of ai_Unk6f2618 (tools/data_views.py) */
 int ai_Unk6f2620 = 0;  /* 0x6f2620 / */
@@ -184,21 +184,4 @@ int cm_SendLoadBlock(void *p);          /* 0x4c4500, the 0x80-byte block of the 
 int sv_PumpMessages(void);              /* 0x52fb80, sv.c: pumps the window messages */
 void sv_PumpNet(void);                  /* 0x52fe00, sv.c: sends the queued messages, receives and runs the waiting ones */
 #define ai_BauplaetzeV (*(char * (*))&ai_Bauplaetze)  /* 0xf812e4, this unit reads it as `char *ai_Bauplaetze` */
-#define ai_FallbackBuildingI (*(int (*))&ai_FallbackBuilding)  /* 0x6f230c, this unit reads it as `int ai_FallbackBuilding` */
-#define ai_GameStateB (*(unsigned char (*))&ai_GameState)  /* 0x6f25ac, this unit reads it as `unsigned char ai_GameState` */
-#define ai_KindBCharsV (*(int * (*)[])&ai_KindBChars)  /* 0x6f1c04, this unit reads it as `int *ai_KindBChars[]` */
-#define ai_MarketBuildingI (*(int (*))&ai_MarketBuilding)  /* 0x6f1bc8, this unit reads it as `int ai_MarketBuilding` */
-#define ai_PlayerBuildingI (*(int (*))&ai_PlayerBuilding)  /* 0x6f2308, this unit reads it as `int ai_PlayerBuilding` */
-#define ai_PlayerSlotsV (*(char (*)[][0x2f4])&ai_PlayerSlots)  /* 0x7e3f40, this unit reads it as `char ai_PlayerSlots[][0x2f4]` */
-#define ai_Unk1468ae0V (*(int (*)[])&ai_Unk1468ae0)  /* 0x1468ae0, this unit reads it as `int ai_Unk1468ae0[]` */
 #define ai_Unk75e130I (*(int (*))&ai_Unk75e130)  /* 0x75e130, this unit reads it as `int ai_Unk75e130` */
-#define ai_Unka68c00I (*(int (*))&ai_Unka68c00)  /* 0xa68c00, this unit reads it as `int ai_Unka68c00` */
-#define ai_Unka68d24I (*(int (*))&ai_Unka68d24)  /* 0xa68d24, this unit reads it as `int ai_Unka68d24` */
-#define ai_Unkf31140I (*(int (*))&ai_Unkf31140)  /* 0xf31140, this unit reads it as `int ai_Unkf31140` */
-#define ai_UpdateStartV (*(char (*)[])&ai_UpdateStart)  /* 0xf89580, this unit reads it as `char ai_UpdateStart[]` */
-#define cm_SendQueueI (*(int (*))&cm_SendQueue)  /* 0xf81160, this unit reads it as `int cm_SendQueue` */
-#define gm_PlayerRecordsV (*(int (*)[])&gm_PlayerRecords)  /* 0x7d5f80, this unit reads it as `int gm_PlayerRecords[]` */
-#define ai_ObjectsV (*(short * (*))&ai_Objects)  /* 0x7e3f34, this unit reads it as `short *ai_Objects` */
-#define ai_JudgeCatholicI (*(int (*))&ai_JudgeCatholic)  /* 0x6f1bfc, this unit reads it as `int ai_JudgeCatholic` */
-#define ai_JudgeProtestantI (*(int (*))&ai_JudgeProtestant)  /* 0x6f1c00, this unit reads it as `int ai_JudgeProtestant` */
-#define sv_PanelShownI (*(int (*))&sv_PanelShown)  /* 0x6f2310, this unit reads it as `int sv_PanelShown` */

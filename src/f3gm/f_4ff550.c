@@ -8,7 +8,7 @@ void gm_UpdatePrices(unsigned p, void *t)
 {
     unsigned char d[10];   /* gm_ClockToDate writes 10 bytes: out[0..5] and the int at +6 */
     int month, n, k, a, x0, x1;
-    int *pl = (int *)ai_PlayerSlotsV[p];
+    int *pl = (int *)ai_PlayerSlots[p];
     int *rec = ai_Unk7d6a60 + p * 0xaa4;
     int i;
     char *g;
