@@ -15,8 +15,39 @@ d3anim_NextFrame to d3_io_t's set moved d3t_CreateSnowMipmaps 129 -> 131 (aceba2
 grade change to verify (all of the unit's functions, byte ones first), and a byte flip means the copy (in
 some spelling) stays.
 
+## State after the M5-per-symbol pass (2026-10-30, commits 3f47652 .. 1838168)
+The stricter M5 (every declaration against the definition) started at 546; it is **35** now, gate FAIL.
+Done: the untyped `extern unsigned char X;` placeholders of src heads (3f47652, 1411928), the five headers
+that did not compile in the all-declarations unit (1beed7b), ~230 function copies as defined with the
+callers' views as `<name>K` / `<name>U` / `<name>S` .. casts in their heads (d6126a3, 99725af, 16ac8c8,
+755d871, 1838168), ~75 data copies as defined, record pointers / objects by struct tag, the by-value
+readers through `X<B|C|I|U|S|V>` views at the end of their head.c (cb005da, 1b8f951, 451bf2a).
+Definitions fixed instead: gm_BuildingRank (int), gm_CharacterWages (unsigned short id), d3d_LoadTexture
+(+ bpp), the five espionage handlers (+ int *m), ai_Objects (struct AIOBJ *), d2_ResizeWindow /
+d2_CreateChildWindow (prototype definitions).
+Left of M5 (35), each needs a type the reader does not see or a decision:
+- arrays of records declared `char X[]` / `unsigned char X` in src heads whose unit does not see the
+  record: d3_Scenes, d2_Wins, d2_Views, d2_Radios, d2_Inputs, ch_Motions, amt_Table, ai_Unka69140,
+  ai_Unk9367e0, ai_Unkf31160, ai_Missions, hst_Lists, ai_Grid, ai_Unkf83ec0 (an array of an incomplete
+  type is invalid C, so `struct TAG X[]` does not work): the unit needs the owner's header (or a
+  types-only header; try `dcp headers conflicts`); snd_AmbientOn / dm_L (non-struct typedefs).
+- the texture family by value: tex_Load / tex_Create / tex_CreateHi / tex_AliasForFlags take TSFLAGS (a
+  union) where d3.h / d3_fl.h / d3_engine.h / d3s pass D3TEXFLAGS (a struct); d3_Textures
+  (TSTEXTURE vs D3TEXTURE); d3_ClipMesh (D3CLIP by value). One texture record type (TSTEXTURE, with
+  D3TEXTURE / D3TEXHANDLE / D3FLTEX / D3IOTEX / D3IFSPRITE / D3TEXVIEW as its views) is the real fix.
+- gm_Offers (AISTORE[] in ai.h vs int[528]) and ai_Unk61a348 (G7GRP[] in am.h vs char[]): item 1
+  below; f3gm does not see the record types.
+- net_Conn (local anonymous struct views in f3init / hst / unk_4b39f0), ch_List (f3init's SCENEOBJ),
+  the OPTIONBYTES data of unk_5d33b0 (ai_GfxFloor / Detail / Resolution, ai_GamePanel: signedness and
+  char[] copies), init_PlayerProfile (INIT_PLAYER, item 4), ai_Unk5fb5b0 / ai_Unk1460ae0 / ai_Unk6ed92c
+  (no definition in src/: the copies disagree among themselves), sb_PlayVariation (unk_575860's K&R).
+Views added by the pass are `#define X<suffix> (*(OLD (*)..)&X)` / `((T (*)(..))f)` lines in the units'
+heads; most are drafts' old spellings (no byte evidence of their own): drop each when its function is raised.
+
 ## Debt
-1. **Weak definition types made canonical.** The definitions are char views of typed records, and every
+1. **Weak definition types made canonical.** (ai_Objects done in 1b8f951; the rest open: the definers
+   ahm / f3gm / anm / sv do not see AICHAR / AIBTYPE / AIBLD / AIGOOD / AITIME, so retyping needs ai.h
+   or a types header in them first.) The definitions are char views of typed records, and every
    typed reader now goes through a view macro:
    - ai_Chars `char[768][0x21c]` (ahm.c) - really `AICHAR[768]` (ai.h:176, asserted 0x21c); view ai_CharsT
      (ai, am, hmt, hst, main, unk_4a7140, unk_4b39f0, unk_4b6480), ai_CharsC (f3snd, unk_5d33b0).
@@ -30,7 +61,7 @@ some spelling) stays.
    Fix: retype the definition to the record type where the defining unit's bytes allow (re-grade the
    defining unit and every reader), then drop the views that become identities. A view stays only with
    @original evidence (a reader whose bytes need the other spelling).
-2. **Parameters spelled weaker than they are.** vfs_Tfopen's third parameter is a VFSDIR * root (the
+2. **Parameters spelled weaker than they are.** (open; the pass fixed the definitions listed above.) vfs_Tfopen's third parameter is a VFSDIR * root (the
    definition casts it), spelled `int unk` in vfs.h and the definition; callers pass `(int)vfs_Root`
    (ahm, bmp, hmt). d3_SetBlendState: true prototype takes unsigned char, d3_engine keeps the int view
    d3_SetBlendStateI; with the true prototype d3_DrawSortedD3D is 2225 bytes against the original's 2211
