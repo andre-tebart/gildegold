@@ -130,17 +130,13 @@ int ai_Unk495520(AIACT *act, int a);                            /* 0x495520, reg
 int ai_Unk4a49a0(float *a, float *b, int i, AIPER *p, int f, void *x, void *y);  /* 0x4a49a0 */
 char * amt_GetOfficeHolder(int k);                            /* 0x4e7510 */
 int amt_GetOwnedOfficePay(void);                                         /* 0x4ea990 */
-int gv_GetTableRecord(int i, int *out);                              /* 0x4f2720, copies decision record i */
 int unk_Unk4f39e0(int c);                                        /* 0x4f39e0 */
 unsigned char ord_GetRatingByte(int k);                              /* 0x4f97a0 */
 float ord_BuildingCapacityRatio(void);                                       /* 0x4f97c0 */
-char * gm_Query(void *list, int n, ...);                      /* 0x4ffe90 */
-unsigned char * gm_BuildQuery(int n, ...);                                   /* 0x501190 */
 int gm_TitleGroup(int k);                                        /* 0x504ad0 */
 float gm_GetSkill(char *c, int skill);                            /* 0x504ec0 */
 int gm_Unk509e30(void *list, unsigned char p);                       /* 0x509e30 */
 unsigned char * gm_FirstBuilding(int n);                                     /* 0x50b010 */
-float gm_Liking(unsigned a, unsigned b, int c);                        /* 0x50c550 */
 
 
 /* 0x495ee0..0x497490 (was unk_495ee0.h) */
@@ -215,12 +211,7 @@ int ai_Unk4973f0(float *a, float *b, int i, AIPER *p, int f, AIARG *o1, AIARG *o
 int ai_Unk495a50(int kind, int id, int c, AIARG *s1, AIARG *s2);                /* 0x495a50 */
 int ai_Unk4a4c10(float *a, float *b, int i, AIPER *p, AIDEC *d);                /* 0x4a4c10 */
 int ai_Unk4a58d0(AIPER *p, int a, int *flags, int b, float f, unsigned short *id); /* 0x4a58d0 */
-void cm_BeginFieldBlock(char *o, int id);                                            /* 0x4c3ba0 */
-int cm_AddFieldDelta(int size, int n, short field, void *v);                         /* 0x4c3c00 */
-void cm_SendMoveGoods(int a, int b, unsigned char c, int d);                        /* 0x4c47e0 */
-void cm_SendFieldDeltas(void);                                                        /* 0x4c49a0 */
 void cm_SendSetField(int a, int b, int c, int d, int e);                   /* 0x4c4a60 */
-void cm_SendRelations(int a, int b, int c, int d);                         /* 0x4c4b00 */
 void cm_SendMoneyDelta(int a, int b);                                               /* 0x4c5f60 */
 int amt_GetOfficeApplicants(int k, int n, char **out);                                   /* 0x4e76b0 */
 int ord_DispatchOrder(int id, char *c, int *m);                                     /* 0x4f81c0 */
@@ -228,7 +219,6 @@ void gm_Unk503ee0(unsigned *out, int n);                                        
 #define AI_505DF0(id) ((AIPER *)gm_FindChar(id))  /* ai.h: returns AICHAR * */
 int gm_Unk509ee0(char *c, char p);                                    /* 0x509ee0 */
 int gm_GetWorth(unsigned short id);                                            /* 0x50a640 */
-void txt_Format(char *buf, int id, ...);                                      /* 0x5176d0 */
 int he_ShowNews(int pid, int fl, char *text, int unused, int ev, char *text2);          /* 0x53dda0 */
 /* ai.h declares he_FindEvent with five arguments; 0x496b10 calls it with three */
 #define AI_53E400_3(a, b, k) ((AIJOBX *(*)(int, int, int, ...))he_FindEvent)(a, b, k)
@@ -338,7 +328,6 @@ int gm_FirstTitleNumber(int k);                                                 
 int gm_BuildingJob(int k);                                                        /* 0x5048e0 */
 int gm_TitlesLeft(int k);                                                        /* 0x504ce0 */
 float gm_Mix(int a, int b, int c);                                  /* 0x504e20 */
-int gm_EquipmentValue(unsigned char *b, int unused);                                           /* 0x509b10 */
 int gm_BuildingKindValue(int k);                                                        /* 0x509d30 */
 int gm_Unk509dc0(int unused, int kind);                                              /* 0x509dc0 */
 int unk_Unk4f8700(char *c);                                                     /* 0x4f8700 */

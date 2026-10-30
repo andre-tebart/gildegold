@@ -10,9 +10,7 @@
 
 /* d3_EnvMapCoords (was unk_458810.c: only 0x459300 calls it) works on the pose views of unk_458810.h; its
    prototypes there are for the other file. */
-#define d3_WorldMatrix d3_WorldMatrix_xv
 #include "unk_458810.h"
-#undef d3_WorldMatrix
 
 #define XENTRY(slot) ((slot)[0] * 0xc0 + *(int *)((slot)[0x1a] + 0x15c))
 

@@ -97,9 +97,6 @@ typedef struct G17T14 {                 /* 14 bytes copied as one (an AITIME) */
 int gm_FindById(int *bld, int *obj, int *chr, int id);                             /* 0x4fea50, out: three object views */
 void sv_PopTo(int v);                                                     /* 0x52fb50 */
 void main_GameLoop(int ctl);                                                              /* 0x53bb20 */
-void * mem_Alloc(int size, char *tag);                                            /* 0x4223c0, mem.c */
-void mem_Free(void *p);                                                          /* 0x422620, mem.c */
-void err_Message(char *text);                                                    /* 0x4222b0, err.c */
 short * gm_FindChar(int id);                                                      /* 0x505df0, ai.h: AICHAR * */
 int gm_CompareTime(char *t, char *now);                                            /* 0x4fe210, AITIME * */
 char *gm_FindBuildingById(int id);                                                      /* 0x502020, ai.h: AIBLD * */
@@ -381,7 +378,6 @@ extern char ai_Unk92cae0[16][0x35c];  /* 0x92cae0 */
 extern int ai_Unkf31144;  /* 0xf31144 */
 extern int ai_Unkf83650;  /* 0xf83650 */
 extern char ai_Unkf895a0[0xb00];  /* 0xf895a0 */
-char d3if_SelectScene(int index, char keep);
 struct D3SM; struct D3TERRAIN; void d3sm_Build(struct D3SM *h, struct D3TERRAIN *t);  /* 0x45e620, d3_sm.c: void d3sm_Build(D3SM *, D3TERRAIN *) */
 void hmt_SetPendingElection(int v);  /* 0x4ad1b0 */
 int tb_IsFunctionOff();
@@ -392,7 +388,6 @@ int ch_StopActions();  /* 0x405610 */
 int ch_StandUp();  /* 0x405ad0 */
 struct CHACTION * ch_WalkToObject();  /* 0x40a900 */
 struct CHACTION * ch_AddAction(struct CHARACTER *ch, unsigned int type, ...);  /* 0x40b2f0, ch.h ch_AddAction */
-char d3if_Delete(struct D3OBJECT *obj);  /* 0x447190, d3_interface.h */
 struct G15TREE * veg_FindType(int type);  /* 0x4bc5a0 */
 struct G15PLANT * veg_FindPlantAt();  /* 0x4bc5f0 */
 int veg_Fits(struct G15PLANT *p, int x, int z, int size);  /* 0x4bc710 */
@@ -418,7 +413,6 @@ extern char ai_Unkfd7c50[];  /* 0xfd7c50 */
 #endif
 
 int ch_QueueAnim();  /* 0x4057a0 */
-char d3t_GetBoundingSphere(struct D3OBJECT *obj, struct D3OBJECT *camera, struct D3VECTOR *center, float *radius);  /* 0x411eb0 */
 char * vfs_GetPath();  /* 0x42fca0 */
 char d3_SetLightKeyCB(struct D3OBJECT *obj, float *time);  /* 0x449da0 */
 struct D3OBJECT * d3_LoadGroup();  /* 0x44c3f0 */
@@ -472,7 +466,6 @@ extern int ai_Unk5f8b10;  /* 0x5f8b10 */
 extern int ai_Unk623ec4;  /* 0x623ec4 */
 extern char ai_Unk75fba0[];  /* 0x75fba0 */
 
-int d3_VecEqual(struct D3VECTOR *a, struct D3VECTOR *b, float eps);  /* 0x453e80 */
 void ai_Unk4cc720(char *c, float *a, float *b, int x);                              /* 0x4cc720 */
 void he_Unk541b40();  /* 0x541b40 */
 void ai_Unk5a8c50(unsigned short *param_1, char *param_2, int param_3, int param_4);  /* 0x5a8c50 */
@@ -585,7 +578,6 @@ extern int ai_Unk9367d4;  /* 0x9367d4 */
 
 int ai_Unk4ce300();  /* 0x4ce300 */
 char *ai_Unk4ce5d0(float *p, int x, int y);  /* 0x4ce5d0 */
-struct D3PARTSYS *d3t_CreateExplosion(void *parent, struct D3VECTOR *pos, int count, float radius, float height, float z, float size, unsigned int duration); /* 0x416040, d3_tools.c */
 int ai_Unk4d3390();  /* 0x4d3390 */
 unsigned int ai_Unk4e52f0();  /* 0x4e52f0 */
 extern int ai_Unk6f0cec;  /* 0x6f0cec */
@@ -703,8 +695,6 @@ char ai_Unk4d0570(char *rec, char *c);  /* 0x4d0570 */
 
 void ai_Unk4d0740(char *rec);  /* 0x4d0740 */
 int snd_PlayVoice(int id, int bank, char *text, int var);  /* 0x4c2760 */
-void d3t_SetGrey(struct D3OBJECT *obj, int on);                                         /* 0x4134a0, d3_tools.c */
-int d3t_PlayAnim();  /* 0x411960 */
 char d3if_SelectTextureSet(struct D3OBJECT *obj, struct D3SURF *surf, unsigned char set, char reload);  /* 0x446f30 */
 extern int ai_Unk760440;  /* 0x760440 */
 extern int di_Absolute;  /* 0x5f3240 */
@@ -713,7 +703,6 @@ extern int ai_Unk6f0d38;  /* 0x6f0d38 */
 
 void ai_Unk4d08c0();  /* 0x4d08c0 */
 char *ai_Unk4d0920(char *c, int a);  /* 0x4d0920 */
-void d3t_SetColor(struct D3OBJECT *obj, unsigned char r, unsigned char g, unsigned char b); /* 0x413550, d3_tools.c */
 int unk_Unk4fbb80();  /* 0x4fbb80 */
 extern const double ai_Unk5eb9b8;  /* 0x5eb9b8 */
 
@@ -827,7 +816,6 @@ extern float ai_Unk5eb7dc;  /* 0x5eb7dc */
 extern const double ai_Unk5edc68;  /* 0x5edc68 */
 
 int ai_Unk4d3390(char *c);  /* 0x4d3390 */
-struct D3PARTSYS *d3t_CreateBlood(void *parent, int n, float a, float b, float c, float d); /* 0x415e90, d3_tools.c */
 struct CHACTION * ch_AddActionCB(struct CHARACTER *ch, int (*func2)(struct CHACTION *), unsigned char frame, unsigned int type, ...); /* 0x40b400, ch.h (CHACTFUNC func2; cm.c calls it through ch_AddActionCBK) */
 void d3_SetWorldPosRot();  /* 0x449920 */
 extern double ai_Unk5edbd0;  /* 0x5edbd0 */
@@ -1005,7 +993,6 @@ char d3_SetFogSet(unsigned int a, unsigned int b, float t);  /* 0x44a170 */
 int ai_Unk4e2bf0();  /* 0x4e2bf0 */
 int ai_Unk4e32b0();  /* 0x4e32b0 */
 int sb_IsPlaying();  /* 0x426f20 */
-void err_Message(char *text);  /* 0x4222b0 */
 int ai_Unk4e2d90();  /* 0x4e2d90 */
 void ai_Unk4ded10(char *m);  /* 0x4ded10 */
 
@@ -1074,13 +1061,11 @@ int ai_Unk4e2bd0();  /* 0x4e2bd0 */
 int ai_Unk4e2dc0();  /* 0x4e2dc0 */
 int ai_Unk4e2e00();  /* 0x4e2e00 */
 void snd_EndSpecialTrack(void);  /* 0x4c2480 */
-struct D3TRAIN * d3t_CreateRain();  /* 0x413b30 */
 extern int ai_Unk6f0dbc;  /* 0x6f0dbc */
 extern int ai_Unk6f0db4;  /* 0x6f0db4 */
 extern int ai_Unk6f0db8;  /* 0x6f0db8 */
 struct D3SKY; struct D3SKYLAYER; void d3sky_DeleteLayer(struct D3SKY *s, struct D3SKYLAYER *l);  /* 0x45d800 */
 void d3sky_Destroy();  /* 0x45daa0 */
-void d3t_DeleteRain();  /* 0x413d00 */
 int ai_Unk4e37a0();  /* 0x4e37a0 */
 int ai_Unk4e3420();  /* 0x4e3420 */
 int ai_Unk4e3750();  /* 0x4e3750 */
@@ -1146,7 +1131,6 @@ extern unsigned int ai_Unk63349c;  /* 0x63349c */
 extern unsigned int ai_Unk6f0d98;  /* 0x6f0d98 */
 extern signed char init_ObjectUniverse[0x2dc];  /* 0x76faa0 */
 
-int d3t_FindFreeScene();  /* 0x411bb0 */
 char d3_LoadScene(char *name, void *f, void (*progress)(int a, int i, int n));  /* 0x44be60 */
 void d3fl_SetDetail();  /* 0x43f8a0 */
 void d3fl_SetShift(struct D3FLMAP *map, unsigned char shift, char light);  /* 0x446dc0, d3_fl.c */

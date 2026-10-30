@@ -24,7 +24,6 @@ typedef struct G14REC {
 } G14REC;
 
 int amt_KindColumn(int k);                                                       /* 0x4e6f10, the office column of the kind k */
-int amt_GetColumnOffices(int col, int max, struct AMTREC *out);                  /* 0x4e6fc0, up to max offices of the column col */
 float gm_AddHealth(unsigned id, int d);                                    /* 0x4fca40, f3gm.c */
 
 unsigned gm_Unk5054f0(short *c);                                                     /* 0x5054f0 */

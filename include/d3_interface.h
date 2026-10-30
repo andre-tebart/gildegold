@@ -80,7 +80,6 @@ void d3_SetFog(float start, float end, unsigned long color);                    
 struct D3SM * d3sm_Create(struct D3TERRAIN *t, int size, int mask);                                /* 0x45eeb0 */
 void d3sm_Destroy(struct D3SM *h);                                                          /* 0x45ef60 */
 struct TSTEXTURE; void tex_GetParams(struct TSTEXTURE *tex, unsigned char *opts, unsigned char *fmt);                                   /* 0x460aa0, ts_texture.c */
-void d3s_ResetShadows(D3OBJECT *obj);                                                   /* 0x45ce00, d3s.c */
 
 char d3if_Delete(D3OBJECT *obj);                                                        /* 0x447190 */
 char d3if_Show(struct D3OBJECT *obj, char show);                                               /* 0x4471b0 */
@@ -96,7 +95,6 @@ typedef char d3if_chk_sceneFlags[(int)&((D3IFSCENE *)0)->sceneFlags == 0x3d8 ? 1
 
 /* --- 0x447e60..0x448910 (worker d3if2) --- */
 char d3_GetBounds(D3OBJECT *obj, D3OBJECT *camera, D3VECTOR *center, float *radius);   /* 0x43d860, d3_engine.c */
-void d3_SetBlendState(unsigned char balpha, unsigned char glow, unsigned char colorkey);   /* 0x4387b0, d3_d3d.c (d3.h: int version) */
 #define D3IF_OBJ068(o) ((float *)(o))[0x68 / 4]     /* size of a type-0 object on screen */
 #define D3IF_RGB_MASK 0xffffff      /* the r/g/b bits of an ARGB colour (sprite vertex colour) */
 

@@ -456,8 +456,6 @@ extern unsigned int d2_PenSize;   /* 0x6ed97c, pen size */
 extern D2DISSOLVE *d2_CurrentDissolve;    /* 0xf8abc8 */
 extern D2FRCT d2_PointerItems[6];   /* 0xf8ab80, the item list drawn next to the pointer */
 extern volatile int tb_Calls;       /* 0x6333d8, timer callbacks */
-void * mem_Alloc(int size, char *tag);               /* 0x4223c0 */
-void mem_Free(void *p);                             /* 0x422620 */
 void d2_SetBlitParams(void *dst, void *src, void *mask, short w, short h, short n); /* 0x47ced0 */
 int d2_PutPixelRGB(int x, int y, unsigned int r, unsigned int g, unsigned int b, D2SURF *surf); /* 0x4799e0 */
 int d2_GetViewWin(int view, int i);                  /* 0x475ff0 */

@@ -106,7 +106,6 @@ extern AHMSEED ai_WalkSeed;             /* 0x6f0ddc */
 extern AHMSTEP ai_WalkSteps[3];         /* 0x6f0de0 */
 extern int ahm_Tab[8];                  /* 0x60f1b0 */
 extern char ai_Time[14];                 /* 0x770ae0, the game clock (anm.c's char[14]; ahm.c reads it through ai_TimeK) */
-short * gm_FindChar(int id);             /* 0x505df0 */
 char * he_FindEvent(int n, ...);                   /* 0x53e400 */
 char * he_NextEvent(void);                   /* 0x53e300 */
 void cm_SendExSetHE(unsigned char k, char *p);                                     /* 0x4c4c60, cm.c */
@@ -142,9 +141,6 @@ AHMSTEP *ahm_WalkStep(int i);          /* 0x4ec2d0 */
 void ahm_ClearStep(AHMSTEP *p);         /* 0x4ec2f0 */
 extern void *main_Instance;              /* 0x75e140, the module handle */
 extern struct VFSDIR *vfs_Root;         /* 0x6333fc, the VFS directory tree (vfs.h) */
-void * mem_Alloc(int size, char *tag);  /* 0x4223c0 */
-void mem_Free(void *p);                 /* 0x422620 */
-int gm_FindById();                     /* 0x4fea50 */
 char * gm_Query(void *list, int n, ...);                   /* 0x4ffe90 */
 int gm_RemoveObject(int *list, unsigned item);                     /* 0x4ffff0 */
 int gm_PlaceOnStage(int id, int a, int b, int *p4, int *p5);                     /* 0x4fbd10 */

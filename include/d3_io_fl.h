@@ -21,8 +21,6 @@ int vfs_fseek(struct VFSFILE *f, long offset, int origin);                      
 int vfs_fread(void *buf, int size, int n, struct VFSFILE *f);                     /* 0x430bd0 */
 unsigned vfs_fwrite(void *buf, int size, int n, struct VFSFILE *f);                    /* 0x430e30 */
 void bio_wr_c(struct VFSFILE *f, char c);                                        /* 0x4011f0 */
-void bio_wr_s(struct VFSFILE *f, char *s);                                        /* 0x401210 */
-void bio_wr_i(struct VFSFILE *f, int i);                                          /* 0x401240 */
 void bio_wr_v3(struct VFSFILE *f, int *v);                                       /* 0x4012d0 */
 
 /* D3_ZERO (d3.h) with destination and size both named directly in the asm */

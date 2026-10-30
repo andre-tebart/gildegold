@@ -295,7 +295,6 @@ extern D3VECTOR4 d3fl_AxisX;                /* 0xfc0d50, world step per map x */
 extern D3VECTOR4 d3fl_AxisY;                /* 0xfbbd00, world step per height unit */
 extern D3VECTOR4 d3fl_AxisZ;                /* 0xfbb8e0, world step per map y */
 extern D3BOXVERT d3fl_Box[8];               /* 0x6334b8, result of d3fl_TileBox */
-unsigned char d3_ClipBox(void *box, float *zmin, float *zmax);                        /* 0x439650, d3_engine.c */
 typedef struct D3FLDESC {           /* input of d3fl_LoadMap; null pointers / size <= 0 mean load from files */
     char name[0x40];                /* height map "boden/<name>.bmp", water map "boden/<name>_w.bmp" */
     unsigned char *height;          /* 0x40 */

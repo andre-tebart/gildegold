@@ -153,8 +153,6 @@ void ai_PokerExchange(int k);           /* 0x4a8630, unk_4a7140.c: the player ex
 int gm_PlayerFactor(int a, unsigned char k);   /* 0x5085f0, f3gm.c: a * the factor of the player slot k */
 int gm_GetWorth(unsigned short id);            /* 0x50a640, f3gm.c: the worth of the character id */
 short *gm_PlayerRecord(char *c);               /* 0x506430, f3gm.c: the player record of a character (kinds 5 / 6 / 7), 0 else */
-int util_Random(unsigned short n);             /* 0x42ec00, tr.c; the callers that read a 16-bit result (ch_RandomNear, anm_Update, ai_Unk4d88c0 ..) call util_RandomU, a cast in their head */
-float util_RandomF(void);                      /* 0x42ec20, tr.c */
 extern POKERUI ai_PokerUi;          /* 0x62dda0 */
 int ai_OpenPokerWindow(void);       /* 0x5d9de0, opens the poker window (1 = opened, 0 = already open / refused) */
 /* Two entries of the run-time text table (the .data slots hold char * into the loaded text file; the

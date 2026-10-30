@@ -150,7 +150,6 @@ typedef struct CHOBJBITS {
     unsigned char b0 : 1, b1 : 1, b2 : 1, b3 : 1, b4 : 1, b5 : 1, b6 : 1, b7 : 1;
 } CHOBJBITS;
 #define D3OBJ_BITS(obj, off) ((CHOBJBITS *)((char *)(obj) + (off)))
-char d3_GetHeightAt(struct D3SM *h, struct D3VECTOR *pos, int *px, int *pz, float *py);             /* 0x45f170 */
 float d3_YawTo(struct D3OBJECT *obj, float *p);                                     /* 0x448ac0, angle towards target */
 #define D3OBJ_UNK048(obj) (*(int *)&(obj)->name[0x48])
 #define D3OBJ_UNK200(obj) (*(int *)&(obj)->pad200[0])
@@ -322,7 +321,6 @@ extern int ch_DirtyZ1;                      /* 0x631080 */
 extern int d3t_CamMoving;                   /* 0x6310e4 */
 extern struct D3ANIM *d3t_CamMove;       /* 0x6310e8, the running camera animation (d3_tools.c; ch.c / ecmd.c test it through d3t_CamMoveI) */
 
-char d3_GetHeightAt(struct D3SM *h, struct D3VECTOR *pos, int *px, int *pz, float *py);               /* 0x45f170 */
 char d3sm_GetVertex(struct D3SM *h, int x, int z, struct D3VECTOR *out);                              /* 0x45f100 */  /* @original: the original callers read an int result (gv.h declares it int; ord.c's unk_Unk4f86a0 at 0x4f86a0 is byte-matched without the char widening) */
 char map_Pick(struct D3FLMAP *map, struct D3VECTOR *pos, char lod, int *x, int *y, float *h);             /* 0x4463b0 */
 void d3anim_ApplyRootMotion(D3OBJECT *obj, D3ANIMSLOT *s, int from, int to, int flags);       /* 0x4315c0 */

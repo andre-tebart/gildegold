@@ -14,10 +14,8 @@
 #include <ctype.h>
 #include <windows.h>
 #include <d3d.h>
-#define d3_SetBlendState d3_SetBlendState_int
 #define d3_SetParent d3_SetParent_void      /* d3.h declares it void; it returns char */
 #include "d3.h"
-#undef d3_SetBlendState
 #undef d3_SetParent
 #include "d3_vec.h"
 #include "d3_engine.h"

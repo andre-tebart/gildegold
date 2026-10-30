@@ -33,7 +33,6 @@ extern float d3if_AmbB;                 /* 0x5fcc80 */
 
 int mem_IsValid(void *p);                                                               /* 0x4225e0 */
 int d3t_PlaceObject(struct D3OBJECT *camera, float px, float py, float pz, float dx, float dy, float dz, int unk, char flags);                /* 0x411680 */
-char d3if_Delete(D3OBJECT *obj);                                                        /* 0x447190 */
 char d3if_Reload(D3OBJECT *obj, char *name);                                            /* 0x447340 */
 char d3_LoadScene(char *name, void *f, void (*progress)(int a, int i, int n));                                      /* 0x44be60 */
 struct D3OBJECT * d3_LoadGroup(char *name, void *f, struct D3OBJECT *parent);                                 /* 0x44c3f0 */

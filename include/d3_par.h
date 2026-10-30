@@ -30,7 +30,6 @@ typedef struct D3PARSTIME {
 } D3PARSTIME;
 #define D3PAR_TIME(ps) ((D3PARSTIME *)(ps))
 
-void d3_InitObject(D3OBJECT *obj);                      /* 0x43ce60 */
 void par_Init(void);                                    /* 0x455630 */
 void par_DeleteAll(void);                               /* 0x4556b0 */
 void par_Unlink(D3PARTSYS *ps);                         /* 0x4556e0 */

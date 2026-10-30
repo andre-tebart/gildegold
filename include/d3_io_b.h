@@ -39,7 +39,6 @@ extern int bgi_Depth;                                                           
 void bio_rd_c(struct VFSFILE *f, char *c);                                                /* 0x401180 */
 void bio_rd_v3(struct VFSFILE *f, int *v);                                                /* 0x401260 */
 int vfs_fread(void *buf, int size, int n, struct VFSFILE *f);                             /* 0x430bd0 */
-void * mem_Alloc(int size, char *tag);                                           /* 0x4223c0 */
 
 void agi_Kind(void *unused, char *out);                                         /* 0x44ee50 */
 int bgi_ReadId(void *f);                                                        /* 0x44eea0 */
@@ -93,9 +92,6 @@ typedef struct D3BASTREAM {         /* 0x16c bytes, "tp_veranimstream" */
     char relative;                  /* 0x169, points relative to the frame position */
 } D3BASTREAM;
 
-void err_Message(char *msg);                                                            /* 0x4222b0 */
-void * mem_Alloc(int size, char *tag);                                                   /* 0x4223c0 */
-void mem_Free(void *p);                                                                 /* 0x422620 */
 
 D3BASTREAM *d3_LoadBinaryAnimStream(char *path, char *name, char relative);             /* 0x44f8c0 */
 char d3_Unk4506f0(char *path);                                                          /* 0x4506f0 */
