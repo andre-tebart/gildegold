@@ -6,7 +6,7 @@ int ahm_SaveDfn(void)
     int magic, i;
 
     magic = 0x61486d52;
-    f = vfs_Tfopen("/gamedata/ai/alchemy.dfn", "wb", vfs_Root);
+    f = vfs_Tfopen("/gamedata/ai/alchemy.dfn", "wb", (int)vfs_Root);
     if (f != 0) {
         if (vfs_fwrite(&magic, 4, 1, f) > 0 && vfs_fwrite(&ai_PlayerPrototypeCount, 4, 1, f) > 0) {
             for (i = 0; i < ai_PlayerPrototypeCount; i++) {

@@ -144,10 +144,6 @@ extern void *main_Instance;              /* 0x75e140, the module handle */
 extern struct VFSDIR *vfs_Root;         /* 0x6333fc, the VFS directory tree (vfs.h) */
 void * mem_Alloc(int size, char *tag);  /* 0x4223c0 */
 void mem_Free(void *p);                 /* 0x422620 */
-unsigned vfs_fwrite(void *buf, int size, int n, struct VFSFILE *f);  /* 0x430e30 */
-struct VFSFILE * vfs_Tfopen(char *name, char *mode, struct VFSDIR *root); /* @original: ahm.c passes vfs_Root (0x6333fc) as a pointer, against vfs.h's int view */
-unsigned vfs_fread(void *buf, int size, int n, struct VFSFILE *f); /* @original: ahm.c compares the result as unsigned and writes <= 0 (0x4ebabd test eax,eax; jbe), against vfs.h's int */
-int vfs_fclose(struct VFSFILE *f);                     /* 0x430aa0 */
 int gm_FindById();                     /* 0x4fea50 */
 char * gm_Query(void *list, int n, ...);                   /* 0x4ffe90 */
 int gm_RemoveObject(int *list, unsigned item);                     /* 0x4ffff0 */
