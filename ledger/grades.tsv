@@ -2267,7 +2267,7 @@ exe	0x004c6260	ai_Unk4c6260	cm	byte	draft
 exe	0x004c62a0	ai_Unk4c62a0	cm	shape	draft		
 exe	0x004c6320	ai_Unk4c6320	cm	byte	draft		
 exe	0x004c6350	ai_Unk4c6350	cm	byte	draft		
-exe	0x004c63e0	ai_Unk4c63e0	cm	draft	draft		
+exe	0x004c63e0	ai_Unk4c63e0	cm	shape	draft		
 exe	0x004c65b0	ai_Unk4c65b0	cm	draft	draft		
 exe	0x004c66c0	ai_Unk4c66c0	cm	shape	draft		
 exe	0x004c6750	ai_Unk4c6750	cm	byte	draft		
@@ -2471,7 +2471,7 @@ exe	0x004d27a0	ai_BuildFloatTable	cm	draft	draft
 exe	0x004d2c00	ai_Unk4d2c00	cm	draft	draft		
 exe	0x004d2e30	ai_Unk4d2e30	cm	draft	draft		
 exe	0x004d2f80	ai_Unk4d2f80	cm	draft	draft		
-exe	0x004d3120	ai_Unk4d3120	cm	draft	draft		
+exe	0x004d3120	ai_Unk4d3120	cm	shape	draft		
 exe	0x004d3300	ai_Unk4d3300	cm	byte	draft		
 exe	0x004d3390	ai_Unk4d3390	cm	draft	draft		
 exe	0x004d3550	ai_Unk4d3550	cm	draft	draft		
@@ -3023,7 +3023,7 @@ exe	0x00501580	gm_CreateBuilding	f3gm	draft	draft
 exe	0x00501b50	gm_BuildingMainObject	f3gm	draft	draft		
 exe	0x00501ce0	gm_GetGebaeudeHauptraum	f3gm	draft	draft		
 exe	0x00501d80	gm_BuildingClass	f3gm	draft	readable		
-exe	0x00501e40	gm_NearestBuilding	f3gm	draft	draft		
+exe	0x00501e40	gm_NearestBuilding	f3gm	shape	draft		
 exe	0x00501f60	gm_NearestFreeBuilding	f3gm	draft	draft		
 exe	0x00502020	gm_FindBuildingById	f3gm	byte	draft		
 exe	0x00502060	gm_FindBuildingKind	f3gm	shape	readable		
@@ -3220,7 +3220,7 @@ exe	0x00511e60	init_BuildingSceneUniverse	f3init	draft	readable	deep
 exe	0x00511f20	init_SyncSceneObjects	f3init	draft	draft	deep	
 exe	0x005124d0	unk_Unk5124d0	f3init	byte	draft		
 exe	0x005124f0	init_LoadShopScript	f3init	draft	draft	deep	
-exe	0x005126a0	init_SoundObjectHook	f3init	draft	readable	deep	
+exe	0x005126a0	init_SoundObjectHook	f3init	shape	readable	deep	
 exe	0x00512780	init_GateObjectHook	f3init	byte	draft		
 exe	0x005127c0	init_SoundObjectFreeHook	f3init	byte	readable		
 exe	0x005127f0	init_PlayTownSound	f3init	byte	readable		
@@ -3433,7 +3433,7 @@ exe	0x00531670	main_DestroyWindow	main	byte	readable
 exe	0x00531690	main_ShutdownScreen	main	byte	readable		
 exe	0x005316d0	main_ShutdownModules	main	byte	readable		
 exe	0x00531750	main_Exit	main	byte	readable		
-exe	0x00531780	main_WindowProc	main	draft	readable	deep	
+exe	0x00531780	main_WindowProc	main	shape	readable	deep	
 exe	0x00531a00	main_BuildVersionString	main	draft	readable	deep	
 exe	0x00531b50	main_CreateMutex	main	byte	readable		
 exe	0x00531b80	main_SetScreenSaver	main	byte	readable		
@@ -3533,7 +3533,7 @@ exe	0x0053f190	he_PostEvent2b	he	draft	draft
 exe	0x0053f270	he_Unk53f270	he	shape	draft		
 exe	0x0053f370	he_Unk53f370	he	draft	draft		
 exe	0x0053f430	he_Unk53f430	he	shape	draft		
-exe	0x0053f500	he_Unk53f500	he	draft	draft		
+exe	0x0053f500	he_Unk53f500	he	shape	draft		
 exe	0x0053f5b0	he_Unk53f5b0	he	draft	draft		
 exe	0x0053f6b0	he_Unk53f6b0	he	draft	draft		
 exe	0x00540c90	he_Unk540c90	he	draft	draft		
@@ -4257,9 +4257,9 @@ exe	0x005a0950	ai_Unk5a0950	unk_58bbd0	draft	draft
 exe	0x005a0ca0	ai_Unk5a0ca0	unk_58bbd0	draft	draft		
 exe	0x005a0f10	ai_Unk5a0f10	unk_58bbd0	draft	draft		
 exe	0x005a1000	ai_Unk5a1000	unk_58bbd0	draft	draft		
-exe	0x005a13f0	ai_Unk5a13f0	unk_58bbd0	draft	draft		
-exe	0x005a1530	ai_Unk5a1530	unk_58bbd0	draft	draft		
-exe	0x005a1670	ai_Unk5a1670	unk_58bbd0	draft	draft		
+exe	0x005a13f0	ai_Unk5a13f0	unk_58bbd0	shape	draft		
+exe	0x005a1530	ai_Unk5a1530	unk_58bbd0	shape	draft		
+exe	0x005a1670	ai_Unk5a1670	unk_58bbd0	shape	draft		
 exe	0x005a17b0	ai_Unk5a17b0	unk_58bbd0	draft	draft		
 exe	0x005a18d0	ai_Unk5a18d0	unk_58bbd0	byte	draft		
 exe	0x005a1960	ai_Unk5a1960	unk_58bbd0	byte	draft		
