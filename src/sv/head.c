@@ -338,7 +338,7 @@ extern int ai_Unk7662e0[15];
 extern int ai_Unk6f22c0, ai_Unk6f22c4, ai_Unk6f22c8, ai_FrameWait;  /* 0x6f22c0, 0x6f22c4, 0x6f22c8, 0x6f22bc */
 extern int sv_FrameDepth;
 extern int sv_FrameBase;
-extern char ai_Unk6f0454[1];  /* 0x6f0454 */
+extern char ai_Unk6f0454[3];  /* 0x6f0454 */
 extern int sv_ViewRectLeft, sv_ViewRectTop, sv_ViewRectRight, sv_ViewRectBottom;  /* 0x6248a4, 0x6248a8, 0x6248ac, 0x6248b0 */
 extern char *ai_Unk6ed92c;  /* 0x6ed92c */
 extern int ai_Unkfb9060, ai_Unkfb9064, ai_Unkfb9068, ai_Unkfb906c;  /* 0xfb9060, 0xfb9064, 0xfb9068, 0xfb906c */
@@ -432,4 +432,3 @@ int sv_MessageBoxYesNo();               /* 0x5216a0 */
 #define d3sky_CreateK ((int (*)())d3sky_Create)  /* 0x45da30 (d3_sky.c): @original the calls pass the three floats as dword bit patterns without a prototype (ai_Unk4e32f0 0x4e32f0: push 0x44160000 ..) */
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, ai_Unk4d88c0 0x4d88c0 move it as a word / movzx) */
 #define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
-#define ai_Unk6f0454V (*(char (*))&ai_Unk6f0454)  /* 0x6f0454, this unit reads it as `char ai_Unk6f0454` */
