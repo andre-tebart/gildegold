@@ -28,8 +28,8 @@ extern D2VIEW d2_Views[];
 #include "tb.h"
 #include "evt.h"
 #include "data_views.h"
+#include "sv.h"
 #define ALIGN1 __declspec(align(1))   /* a 1-aligned container: the original packs the block at an odd address */
-extern ALIGN1 char ai_Unk623ba9[277];
 #define GAPDATA __declspec(align(1)) unsigned char
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
@@ -264,7 +264,6 @@ extern unsigned char ai_TimeHour;
 extern int ai_Unk75e130;
 extern GAPDATA full_data_6248b4[];
 
-extern int ai_Unk75f280[576];
 int d2_CreateWinText(short x, short y, char *text, int win);
 int d2_WinOpenPic(short x, short y, int pic, int win);
 void d2_SetObjWidth(int obj, short w);
@@ -274,40 +273,25 @@ void d2_RemoveObj();
 void d2_SetObjEnabled();
 void d2_SetObjFont();
 void d2_SetObjWidth(int obj, short w);
-void sv_UpdateClock(void);
-void sv_Unk52d010(char *part);
-void sv_Unk52eed0(void);
-void sv_Unk52ee50(void);
-void sv_Unk52eb50(int x, int y, int a, int b, unsigned k);
-void sv_Unk52eaa0(int x, int y, float len, int k);
-void sv_ClearSelection(void);
-void sv_Unk529fb0(void);
-void sv_Unk522f10(unsigned char a, int b);
 
 struct G16CHARCLICK;  /* file-scope tag for the prototypes below */
 struct GCLOCK;        /* f3gm.c typedef; file-scope tag for the gm_AddTime / gm_SetTime prototypes */
 struct D3SURF;        /* d3_engine.h typedef; file-scope tag for the d3if_SelectTextureSet prototype */
 
-extern int sv_TickFrames;
-extern float sv_FramesPerTick;
-extern int sv_SelectionFlags[0xc0];
-extern int cm_Bombs[0x40];
 extern char ch_EmptyName[];             /* 0x631090 */
 extern int di_Absolute, di_MinX, di_MinY, di_MaxX, di_MaxY;  /* 0x5f3240, 0x6310b0, 0x6310b4, 0x5f3238, 0x5f323c (di_input.c) */
 extern short d2_ScreenW;  /* 0xfb9072 (d2.h), the screen size */
 extern short d2_ScreenH;  /* 0xfb9070 */
 extern int sv_FrameMask;           /* 0x760638 */
-extern char sv_MessageBoxOpen, sv_MessageBoxGreenOpen, sv_MessageBoxYesNoOpen;  /* 0x6f2350, 0x6f2351, 0x6f2352 (the yes / no box) */
-extern int d2_LastWindow, sv_PopRequest;  /* 0x6ed938, 0x6f22a0 */
+extern int d2_LastWindow;  /* 0x6ed938 */
 extern char *d2_LastWindowPtr;  /* 0x6ed980, window created last; @original: d2.h declares D2WIN *; the units add byte offsets to it and cannot include d2.h (vfs_Root / vfs_Tfopen clash with vfs.h) */
-extern int d2_ClickedId, d2_HitWindow;  /* 0xf8a668, 0xf8aad0 */
+extern int d2_ClickedId;  /* 0xf8a668 */
 extern unsigned char kb_Last;  /* 0x1468410 */
 /* d2_RadioSel: view of d2_Radios (tools/data_views.py) */
 extern char *d2_Objs;  /* 0xf8f080, 0x2ec bytes each; @original: d2.h declares D2OBJ *; the units add byte offsets to it and cannot include d2.h (vfs_Root / vfs_Tfopen clash with vfs.h) */
 
 void d2_SetPointerSprite(int a, int pic);      /* 0x476f80, gfx.c */
 void d2_ClearPointerItems(void);                     /* 0x476c70 */
-void sv_SetStatusText(char *s);                     /* 0x52e330 */
 void d2_CopyCaption(char *caption);            /* 0x478870, gfx.c */
 char *gm_FindCharacterByMaster(int master);    /* 0x50a810, f3gm.c */
 int gm_SumSlotAmounts(void *list, unsigned char i);                     /* 0x508660 */
@@ -318,36 +302,17 @@ int d2_CreateRadioGroup(int n, ...);                     /* 0x46c490 */
 void d2_RadioAdd(int g, int obj);                     /* 0x46c560 */
 void d2_RadioSelect(int g, int sel);                     /* 0x46c630 */
 int d2_WinOpenSlider(int x, int y, int len, int p4, int p5, int pic, unsigned int flags, int win);                     /* 0x46a960 */
-int sv_RunFrame(int cb, unsigned mask);                     /* 0x5309a0 */
 void d2_MenuNavigate(int g);                     /* 0x46c6c0 */
 void d2_RaiseViewWindows(int view);                     /* 0x4741a0 */
 void d2_SetObjValue();                     /* 0x475cb0 */
 void d2_RadioClear(int g);                     /* 0x46c600 */
 void d2_CloseView(int view);            /* 0x4758f0 */
-void sv_FitForm(int f);                     /* 0x52ea30 */
-extern int ai_Unk623820, ai_Unk623824, ai_Unk623828, ai_Unk62382c, ai_Unk623830, ai_Unk623834, ai_Unk623838, ai_Unk62383c;  /* 0x623820, 0x623824, 0x623828, 0x62382c, 0x623830, 0x623834, 0x623838, 0x62383c */
-extern int ai_Unk623840, ai_Unk623844, ai_Unk623848, ai_Unk62384c, ai_Unk623850, sv_PanelPic, sv_PanelForm, ai_Unk6238a4;  /* 0x623840, 0x623844, 0x623848, 0x62384c, 0x623850, 0x623854, 0x623860, 0x6238a4 */
-extern int ai_Unk6237cc, ai_Unk623e88;  /* 0x6237cc, 0x623e88 */
-extern int sv_PlayerBarForm;
-extern int ai_Unk7662e0[15];
 /* ai_Unk7e4048: view of ai_PlayerSlots (tools/data_views.py) */
 /* ai_Unk7e4058: view of ai_PlayerSlots (tools/data_views.py) */
 extern int ai_Unk6f22c0, ai_Unk6f22c4, ai_Unk6f22c8, ai_FrameWait;  /* 0x6f22c0, 0x6f22c4, 0x6f22c8, 0x6f22bc */
-extern int sv_FrameDepth;
-extern int sv_FrameBase;
 extern char ai_Unk6f0454[3];  /* 0x6f0454 */
-extern int sv_ViewRectLeft, sv_ViewRectTop, sv_ViewRectRight, sv_ViewRectBottom;  /* 0x6248a4, 0x6248a8, 0x6248ac, 0x6248b0 */
 extern char *ai_Unk6ed92c;  /* 0x6ed92c */
-extern int ai_Unkfb9060, ai_Unkfb9064, ai_Unkfb9068, ai_Unkfb906c;  /* 0xfb9060, 0xfb9064, 0xfb9068, 0xfb906c */
 extern OPTIONBYTES ai_GamePanel;  /* 0x6f3668 */
-extern char *ai_PlayerBuilding;  /* 0x6f2308 */
-extern char *ai_FallbackBuilding;  /* 0x6f230c */
-extern unsigned short * sv_PanelShown;
-extern int sv_PanelFlag;
-extern char * sv_PanelObject;
-extern unsigned short * sv_PanelRecord;
-extern char sv_PanelText[76];
-extern short d2_PointerLook;
 /* ai_Unk6f0455: view of ai_Unk6f0454 (tools/data_views.py) */
 extern unsigned short ai_PlayerId;  /* 0x6f25b8 */
 /* the object / character record fields sv.c reads (AIBLD / AICHAR in ai.h; ai.h cannot be included here: its
@@ -386,16 +351,12 @@ typedef struct SVCHARREC {
     unsigned char flag1b1;              /* +0x1b1, nonzero: the info panel stays closed for the character */
 } SVCHARREC;
 #pragma pack(pop)
-extern int sv_BubbleObjects[4286];
 extern SVPLATE sv_NamePlates[0x20];
-extern char sv_StatusText[136];
-extern int sv_StatusTime;
 
 int gm_IsHomeType(unsigned char *b);     /* 0x502520, f3gm.c */
 int gm_IsType10(unsigned char *b);       /* 0x5024f0, f3gm.c */
 int init_ObjectSceneUniverse(unsigned short *p);     /* 0x511dc0, f3init.c */
 void init_LoadObjectScene(int n);        /* 0x50d7f0, f3init.c */
-void sv_PopTo(int v);                     /* 0x52fb50 */
 void ai_GameFrame(void);                     /* 0x591520 */
 int d2_DrawMousePointer(int x, int y);         /* 0x476f00, gfx.c */
 void d2_SetClipRect(int x0, int y0, int x1, int y1);                     /* 0x47cb40 */
@@ -419,9 +380,6 @@ void d2_RemoveObj();                     /* 0x46e710 */
 int d2_FreeSurface(struct D2SURF *s);                     /* 0x478fc0 */
 void d2_RemoveHitRect();                     /* 0x4788f0 */
 int d2_RemoveWindow();                     /* 0x472ce0 */
-int sv_MessageBox(int text, unsigned flags);    /* 0x521150 */
-int sv_MessageBoxGreen();               /* 0x521410 */
-int sv_MessageBoxYesNo();               /* 0x5216a0 */
 
 #include "time_view.h"
 #include "io_text.h"

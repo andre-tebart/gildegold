@@ -1,0 +1,309 @@
+/* Declarations of sv.c, the game screen unit (the frame loop, the screen layout, the name plates, the
+   selection, the clock): its functions and data as the definitions spell them. Names are ours. */
+#ifndef SV_H
+#define SV_H
+
+void sv_UpdateFramesPerTick(void);                                      /* 0x520ec0 */
+void sv_InitTick(void);                                                 /* 0x520ee0 */
+void sv_UnregisterTick(void);                                           /* 0x520f10 */
+void sv_ResetScreenClip(void);                                          /* 0x520f20 */
+int sv_CheckMoney(char *o, int n);                                      /* 0x520f90 */
+int sv_CheckCharacterFlag(int id);                                      /* 0x520fe0 */
+int sv_CheckGoodAmount(char *o, int n, unsigned t);                     /* 0x521040 */
+int sv_CheckStock(short *p, int stock, int n, unsigned t);              /* 0x5210a0 */
+int sv_MessageBox(int text, unsigned flags);                            /* 0x521150 */
+int sv_MessageBoxGreen(int a, int b, unsigned flags);                   /* 0x521410 */
+int sv_MessageBoxYesNo(int text, unsigned flags);                       /* 0x5216a0 */
+int sv_OpenMessageBox(int text, unsigned char flags);                   /* 0x521900 */
+void sv_SelectPanelObject(unsigned char *o, int b, char *c);            /* 0x521960 */
+void sv_DrawPanelPointer(void);                                         /* 0x521ba0 */
+void sv_SceneLoadProgress(int kind, int cur, int total);                /* 0x521c10 */
+void sv_BuildScreenLayout(int s);                                       /* 0x521e70 */
+int sv_PanelImage(void);                                                /* 0x522040 */
+void sv_SetPanelEnabled(int n);                                         /* 0x522100 */
+void sv_Unk522280(void);                                                /* 0x522280 */
+void sv_DestroyScreen(void);                                            /* 0x5223c0 */
+void sv_Unk5224a0(void);                                                /* 0x5224a0 */
+void sv_Unk5229b0(unsigned flags);                                      /* 0x5229b0 */
+void sv_SetResearchClass(unsigned char *o);                             /* 0x522ec0 */
+void sv_Unk522f10(unsigned char a, int b);                              /* 0x522f10 */
+void sv_RedrawScreen(void);                                             /* 0x524010 */
+void sv_Unk524100(int c, char *g);                                      /* 0x524100 */
+void sv_RemoveGroupMember(int c, char *g);                              /* 0x524160 */
+int sv_UsedGroupSlots(char *g);                                         /* 0x5241b0 */
+void sv_CountGroupMembers(char *g);                                     /* 0x5241d0 */
+void sv_MoveToGroup(unsigned char *o, short *it, int c, char *g);       /* 0x524260 */
+int sv_Unk524770(char *g, char *o);                                     /* 0x524770 */
+int sv_Unk524810(char *g, unsigned char *o);                            /* 0x524810 */
+int sv_Unk524900(char *c, int *out);                                    /* 0x524900 */
+void sv_Unk524990(unsigned char *g);                                    /* 0x524990 */
+void sv_OpenPlayerBar(int a, char k);                                   /* 0x525220 */
+void sv_ClosePlayerBar(void);                                           /* 0x525440 */
+int sv_ClockSeason(void *t);                                            /* 0x525480 */
+char sv_Unk525490(char *o);                                             /* 0x525490 */
+void sv_Unk525510(int t, float flag);                                   /* 0x525510 */
+void sv_UpdateSkyColors(void);                                          /* 0x525940 */
+void sv_Unk525a00(int t);                                               /* 0x525a00 */
+char sv_Unk525a80(char *o, int f);                                      /* 0x525a80 */
+void sv_Unk525ad0(char *t);                                             /* 0x525ad0 */
+void sv_PlaceCamera(float f);                                           /* 0x525dd0 */
+void sv_Unk525ee0(void);                                                /* 0x525ee0 */
+void sv_Unk525ff0(void);                                                /* 0x525ff0 */
+int sv_Unk5263a0(void);                                                 /* 0x5263a0 */
+int sv_Unk526cf0(void);                                                 /* 0x526cf0 */
+int sv_Unk527640(void);                                                 /* 0x527640 */
+void sv_Unk527840(int o);                                               /* 0x527840 */
+void sv_Unk527bb0(int o);                                               /* 0x527bb0 */
+void sv_Unk527e90(int m);                                               /* 0x527e90 */
+void sv_Unk528140(void);                                                /* 0x528140 */
+char sv_Unk528180(char *part, char *b);                                 /* 0x528180 */
+char sv_Unk528290(char *o, char *b);                                    /* 0x528290 */
+void sv_Unk5282f0(char *b);                                             /* 0x5282f0 */
+void sv_Unk528390(int c);                                               /* 0x528390 */
+void sv_Unk528490(unsigned char *o);                                    /* 0x528490 */
+char sv_Unk528660(char *o, int *p);                                     /* 0x528660 */
+void sv_Unk5286a0(char *b);                                             /* 0x5286a0 */
+void sv_Unk528770(void);                                                /* 0x528770 */
+int sv_Unk528800(int x, int y, int text);                               /* 0x528800 */
+void sv_Unk528860(unsigned char *o);                                    /* 0x528860 */
+void sv_Unk528b80(unsigned short *p);                                   /* 0x528b80 */
+void sv_Unk528d90(unsigned short *p);                                   /* 0x528d90 */
+void sv_Unk528ee0(void);                                                /* 0x528ee0 */
+void sv_Unk5290f0(unsigned short *p);                                   /* 0x5290f0 */
+void sv_Unk529380(void);                                                /* 0x529380 */
+void sv_Unk529fb0(void);                                                /* 0x529fb0 */
+int sv_ReturnZero(void);                                                /* 0x52a040 */
+void sv_UpdatePanel(void);                                              /* 0x52a050 */
+void sv_Unk52a680(void);                                                /* 0x52a680 */
+void sv_Unk52adb0(void);                                                /* 0x52adb0 */
+void sv_ClearSelection(void);                                           /* 0x52ae40 */
+void sv_Unk52ae70(void);                                                /* 0x52ae70 */
+void sv_CollectGroupCharacters(char *b);                                /* 0x52b2a0 */
+int sv_Unk52b350(int a, char *name, int c, int d, int e);               /* 0x52b350 */
+int sv_Unk52b3c0(char *c, int b, char *out);                            /* 0x52b3c0 */
+int sv_Unk52b490(char *a, int b);                                       /* 0x52b490 */
+void sv_Unk52b500(unsigned char *a);                                    /* 0x52b500 */
+void sv_Unk52bb70(int id);                                              /* 0x52bb70 */
+void sv_Unk52bbc0(void);                                                /* 0x52bbc0 */
+void sv_Unk52bec0(void);                                                /* 0x52bec0 */
+void sv_Unk52c420(void);                                                /* 0x52c420 */
+void sv_ReleaseBubble(int o);                                           /* 0x52c4a0 */
+void sv_Unk52c4e0(int o, int b, char *name);                            /* 0x52c4e0 */
+void sv_Unk52c5c0(void);                                                /* 0x52c5c0 */
+void sv_Unk52cef0(void);                                                /* 0x52cef0 */
+void sv_Unk52d010(char *part);                                          /* 0x52d010 */
+void sv_Unk52d1e0(void);                                                /* 0x52d1e0 */
+void sv_Unk52d2a0(void);                                                /* 0x52d2a0 */
+void sv_Unk52d480(void);                                                /* 0x52d480 */
+void sv_CameraFollow(void);                                             /* 0x52d7a0 */
+void sv_Unk52d940(unsigned fl);                                         /* 0x52d940 */
+void sv_Unk52e050(void);                                                /* 0x52e050 */
+void sv_Unk52e0c0(void);                                                /* 0x52e0c0 */
+void sv_ClearNamePlates(void);                                          /* 0x52e170 */
+void sv_ReleaseNamePlates(void);                                        /* 0x52e190 */
+int sv_RegisterNamePlate(char *name, char *text, int b);                /* 0x52e1c0 */
+void sv_SetStatusText(char *s);                                         /* 0x52e330 */
+void sv_ButtonRow(int f, int y, int *out, int n, ...);                  /* 0x52e350 */
+void sv_Unk52e4b0(int f, int y, int *out, int n, ...);                  /* 0x52e4b0 */
+void sv_DisableVisibleWidgets(int a);                                   /* 0x52e600 */
+void sv_Unk52e6d0(int f, int b, int c);                                 /* 0x52e6d0 */
+int sv_CreateFormSlider(int x, int y, int f, int g, int p5, int *b, int *a, int *c); /* 0x52e860 */
+void sv_FitForm(int f);                                                 /* 0x52ea30 */
+void sv_Unk52eaa0(int x, int y, float len, int k);                      /* 0x52eaa0 */
+void sv_Unk52eb50(int x, int y, int a, int b, unsigned k);              /* 0x52eb50 */
+void sv_Unk52ee50(void);                                                /* 0x52ee50 */
+void sv_Unk52eed0(void);                                                /* 0x52eed0 */
+void sv_Unk52eee0(void);                                                /* 0x52eee0 */
+void sv_Unk52f0d0(void);                                                /* 0x52f0d0 */
+void sv_Unk52f2c0(void);                                                /* 0x52f2c0 */
+void sv_Unk52f340(int *book);                                           /* 0x52f340 */
+int *sv_Unk52f360(int a, int b, char n, ...);                           /* 0x52f360 */
+void sv_Unk52f530(int *bk);                                             /* 0x52f530 */
+void sv_Unk52f600(int bk);                                              /* 0x52f600 */
+int sv_Unk52f710(int *bk, char dir);                                    /* 0x52f710 */
+void sv_Unk52f9f0(int *bk);                                             /* 0x52f9f0 */
+void sv_Unk52fa00(int *bk);                                             /* 0x52fa00 */
+int sv_Unk52fa10(void);                                                 /* 0x52fa10 */
+void sv_Unk52fa90(void);                                                /* 0x52fa90 */
+void sv_Unk52fad0(void);                                                /* 0x52fad0 */
+void sv_PopTo(int v);                                                   /* 0x52fb50 */
+int sv_PumpMessages(void);                                              /* 0x52fb80 */
+void sv_NetworkSyncWait(unsigned fl);                                   /* 0x52fc10 */
+void sv_BroadcastText(unsigned fl, char *t);                            /* 0x52fcf0 */
+void sv_Unk52fd80(char *t);                                             /* 0x52fd80 */
+void sv_PumpNet(void);                                                  /* 0x52fe00 */
+int sv_Unk52fe10(void);                                                 /* 0x52fe10 */
+void sv_Unk530100(void);                                                /* 0x530100 */
+void sv_Unk5301a0(void);                                                /* 0x5301a0 */
+void sv_Unk530670(void);                                                /* 0x530670 */
+void sv_Unk5307f0(void);                                                /* 0x5307f0 */
+void sv_SetScreenCenter(unsigned fl);                                   /* 0x530900 */
+int sv_RunFrame(int cb, unsigned mask);                                 /* 0x5309a0 */
+void sv_UpdateClock(void);                                              /* 0x5315c0 */
+
+extern const int ai_Unk5eeab8[24];                          /* 0x5eeab8 */
+extern int ai_Unk5fcc78;                                    /* 0x5fcc78 */
+extern int ai_Unk5fcc7c;                                    /* 0x5fcc7c */
+extern int ai_Unk5fcc80;                                    /* 0x5fcc80 */
+extern int ai_Unk5fe710;                                    /* 0x5fe710 */
+extern float sv_FramesPerTick;                              /* 0x62378c */
+extern int sv_TickFrames;                                   /* 0x623790 */
+extern char ai_Unk623794[];                                 /* 0x623794 */
+extern int sv_StatusTime;                                   /* 0x6237c4 */
+extern int ai_Unk6237cc;                                    /* 0x6237cc */
+extern float sv_CameraLimits[12];                           /* 0x6237d0 */
+extern float sv_CameraHeightNear;                           /* 0x623800 */
+extern float sv_CameraAngleNear;                            /* 0x623804 */
+extern float sv_CameraHeightFar;                            /* 0x623808 */
+extern float sv_CameraAngleFar;                             /* 0x62380c */
+extern float ai_Unk623818;                                  /* 0x623818 */
+extern char ai_Unk62381c;                                   /* 0x62381c */
+extern int ai_Unk623820;                                    /* 0x623820 */
+extern int ai_Unk623824;                                    /* 0x623824 */
+extern int ai_Unk623828;                                    /* 0x623828 */
+extern int ai_Unk62382c;                                    /* 0x62382c */
+extern int ai_Unk623830;                                    /* 0x623830 */
+extern int ai_Unk623834;                                    /* 0x623834 */
+extern int ai_Unk623838;                                    /* 0x623838 */
+extern int ai_Unk62383c;                                    /* 0x62383c */
+extern int ai_Unk623840;                                    /* 0x623840 */
+extern int ai_Unk623844;                                    /* 0x623844 */
+extern int ai_Unk623848;                                    /* 0x623848 */
+extern int ai_Unk62384c;                                    /* 0x62384c */
+extern int ai_Unk623850;                                    /* 0x623850 */
+extern int sv_PanelPic;                                     /* 0x623854 */
+extern int sv_PlayerBarForm;                                /* 0x62385c */
+extern int sv_PanelForm;                                    /* 0x623860 */
+extern int ai_Unk623864;                                    /* 0x623864 */
+extern int ai_Unk623868;                                    /* 0x623868 */
+extern int ai_Unk62386c;                                    /* 0x62386c */
+extern int ai_Unk62387c;                                    /* 0x62387c */
+extern int ai_Unk623880;                                    /* 0x623880 */
+extern int ai_Unk623884;                                    /* 0x623884 */
+extern int ai_Unk623888;                                    /* 0x623888 */
+extern int ai_Unk62388c;                                    /* 0x62388c */
+extern int ai_Unk623890;                                    /* 0x623890 */
+extern int ai_Unk623894;                                    /* 0x623894 */
+extern int ai_Unk623898;                                    /* 0x623898 */
+extern int ai_Unk6238a4;                                    /* 0x6238a4 */
+extern char sv_Unk623ba8;                                   /* 0x623ba8 */
+extern char ai_Unk623ba9[277];                              /* 0x623ba9 */
+extern int ai_Unk623cc0[];                                  /* 0x623cc0 */
+extern int ai_Unk623e10[];                                  /* 0x623e10 */
+extern int ai_Unk623e80;                                    /* 0x623e80 */
+extern int ai_Unk623e88;                                    /* 0x623e88 */
+extern int ai_Unk623e8c;                                    /* 0x623e8c */
+extern float ai_Unk623e94;                                  /* 0x623e94 */
+extern int ai_Unk623ea0;                                    /* 0x623ea0 */
+extern int ai_Unk623ea4;                                    /* 0x623ea4 */
+extern int ai_Unk623ea8;                                    /* 0x623ea8 */
+extern int ai_Unk623ec4;                                    /* 0x623ec4 */
+extern int ai_Unk623ec8;                                    /* 0x623ec8 */
+extern int sv_ViewRectLeft;                                 /* 0x6248a4 */
+extern int sv_ViewRectTop;                                  /* 0x6248a8 */
+extern unsigned ai_Unk623ecc;                               /* 0x623ecc */
+extern unsigned char ai_Unk623ee8[8];                       /* 0x623ee8 */
+extern int sv_ViewRectRight;                                /* 0x6248ac */
+extern int sv_ViewRectBottom;                               /* 0x6248b0 */
+extern int ai_Unk62a8cc;                                    /* 0x62a8cc */
+extern int ai_Unk631078;                                    /* 0x631078 */
+extern short d2_PointerLook;                                /* 0x6ed9d0 */
+extern int ai_Unk6f1c40;                                    /* 0x6f1c40 */
+extern float ai_Unk6f1c44;                                  /* 0x6f1c44 */
+extern int ai_Unk6f1c48;                                    /* 0x6f1c48 */
+extern int ai_Unk6f1c50;                                    /* 0x6f1c50 */
+extern float ai_Unk6f1c64[3];                               /* 0x6f1c64 */
+extern float ai_Unk6f1c74[3];                               /* 0x6f1c74 */
+extern int ai_Unk6f1c84;                                    /* 0x6f1c84 */
+extern int ai_Unk6f1c88;                                    /* 0x6f1c88 */
+extern int ai_Unk6f1c8c;                                    /* 0x6f1c8c */
+extern int ai_Unk6f2290;                                    /* 0x6f2290 */
+extern int ai_Unk6f2298;                                    /* 0x6f2298 */
+extern int sv_FrameDepth;                                   /* 0x6f229c */
+extern int sv_PopRequest;                                   /* 0x6f22a0 */
+extern int sv_FrameBase;                                    /* 0x6f22a4 */
+extern int ai_Unk6f22b4;                                    /* 0x6f22b4 */
+extern int ai_Unk6f22c0;                                    /* 0x6f22c0 */
+extern int ai_Unk6f22c4;                                    /* 0x6f22c4 */
+extern int ai_Unk6f22c8;                                    /* 0x6f22c8 */
+extern int ai_Unk6f22cc;                                    /* 0x6f22cc */
+extern int ai_Unk6f22d0;                                    /* 0x6f22d0 */
+extern float sv_CameraHeightFactor;                         /* 0x6f22d4 */
+extern float sv_CameraAngleFactor;                          /* 0x6f22d8 */
+extern int ai_Unk6f2304;                                    /* 0x6f2304 */
+extern char * ai_PlayerBuilding;                            /* 0x6f2308 */
+extern char * ai_FallbackBuilding;                          /* 0x6f230c */
+extern unsigned short * sv_PanelShown;                      /* 0x6f2310 */
+extern int ai_Unk6f2334;                                    /* 0x6f2334 */
+extern int sv_ResearchClass;                                /* 0x6f233c */
+extern char ai_Unk6f2340;                                   /* 0x6f2340 */
+extern char sv_MessageBoxOpen;                              /* 0x6f2350 */
+extern char sv_MessageBoxGreenOpen;                         /* 0x6f2351 */
+extern char sv_MessageBoxYesNoOpen;                         /* 0x6f2352 */
+extern int sv_ScreenDirty;                                  /* 0x6f2358 */
+extern int ai_Unk6f235c;                                    /* 0x6f235c */
+extern int ai_Unk6f2360;                                    /* 0x6f2360 */
+extern char ai_Unk6f2368;                                   /* 0x6f2368 */
+extern int ai_Unk6f236c;                                    /* 0x6f236c */
+extern int ai_Unk6f2370;                                    /* 0x6f2370 */
+extern float ai_Unk6f2374;                                  /* 0x6f2374 */
+extern int ai_Unk6f2378;                                    /* 0x6f2378 */
+extern float ai_Unk6f2388;                                  /* 0x6f2388 */
+extern float ai_Unk6f238c;                                  /* 0x6f238c */
+extern float ai_Unk6f2390;                                  /* 0x6f2390 */
+extern int ai_Unk6f2394;                                    /* 0x6f2394 */
+extern int ai_Unk6f2398;                                    /* 0x6f2398 */
+extern int ai_Unk6f239c;                                    /* 0x6f239c */
+extern int ai_Unk6f23a0;                                    /* 0x6f23a0 */
+extern int ai_Unk6f23a4;                                    /* 0x6f23a4 */
+extern float ai_Unk6f23a8;                                  /* 0x6f23a8 */
+extern float ai_Unk6f23ac;                                  /* 0x6f23ac */
+extern float ai_Unk6f23b0;                                  /* 0x6f23b0 */
+extern float ai_Unk6f23b4;                                  /* 0x6f23b4 */
+extern int ai_Unk6f23b8;                                    /* 0x6f23b8 */
+extern unsigned char ai_GameState;                          /* 0x6f25ac */
+extern int ai_OptionScrollSpeed;                            /* 0x6f3614 */
+extern int sv_PanelFlag;                                    /* 0x75e8c0 */
+extern char * sv_PanelObject;                               /* 0x75e8c4 */
+extern unsigned short * sv_PanelRecord;                     /* 0x75e8c8 */
+extern char sv_PanelText[76];                               /* 0x75e8d4 */
+extern int sv_SelectionFlags[0xc0];                         /* 0x75e920 */
+extern int ai_Unk75ec20;                                    /* 0x75ec20 */
+extern unsigned short * ai_Unk75ec5c;                       /* 0x75ec5c */
+extern int ai_Unk75f280[576];                               /* 0x75f280 */
+extern int ai_Unk75fb80;                                    /* 0x75fb80 */
+extern int ai_Unk75fb84;                                    /* 0x75fb84 */
+extern int ai_Unk75fb88;                                    /* 0x75fb88 */
+extern int ai_Unk75fb90;                                    /* 0x75fb90 */
+extern int ai_Unk75fb94;                                    /* 0x75fb94 */
+extern int ai_Unk75fb98;                                    /* 0x75fb98 */
+extern float ai_Unk760420;                                  /* 0x760420 */
+extern int ai_Unk760440;                                    /* 0x760440 */
+extern int ai_Unk760464;                                    /* 0x760464 */
+extern int ai_Unk760480;                                    /* 0x760480 */
+extern int ai_Unk760484;                                    /* 0x760484 */
+extern unsigned ai_Unk760488[0x18];                         /* 0x760488 */
+extern int ai_Unk760548;                                    /* 0x760548 */
+extern int ai_Unk76054c;                                    /* 0x76054c */
+extern float ai_Unk760550[0x18];                            /* 0x760550 */
+extern float ai_Unk7605b0[0x18];                            /* 0x7605b0 */
+extern int ai_Unk760610;                                    /* 0x760610 */
+extern int ai_Unk760614;                                    /* 0x760614 */
+extern int ai_Unk76061c;                                    /* 0x76061c */
+extern int ai_Unk760620;                                    /* 0x760620 */
+extern int ai_Unk760624;                                    /* 0x760624 */
+extern int ai_Unk760628;                                    /* 0x760628 */
+extern char sv_StatusText[136];                             /* 0x761f40 */
+extern int sv_BubbleObjects[4286];                          /* 0x761fc8 */
+extern int ai_Unk7662c0;                                    /* 0x7662c0 */
+extern int ai_Unk7662e0[15];                                /* 0x7662e0 */
+extern int cm_Bombs[0x40];                                  /* 0x935c00 */
+extern int d2_HitWindow;                                    /* 0xf8aad0 */
+extern int ai_Unkfb9060;                                    /* 0xfb9060 */
+extern int ai_Unkfb9064;                                    /* 0xfb9064 */
+extern int ai_Unkfb9068;                                    /* 0xfb9068 */
+extern int ai_Unkfb906c;                                    /* 0xfb906c */
+extern int ai_Unkfba9c0[168];                               /* 0xfba9c0 */
+extern char * ai_Unkfc2dec;                                 /* 0xfc2dec */
+
+#endif
