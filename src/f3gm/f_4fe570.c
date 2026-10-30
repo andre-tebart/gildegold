@@ -38,10 +38,10 @@ int gm_LoadTables(char *root)
     ai_Goods = (char *)mem_Alloc(0xb9dc, ai_Unk61aa00);
     if (ai_Goods == 0)
         return -4;
-    ai_Objects = (char *)mem_Alloc(0x14f218, ai_Unk61a9ec);
-    if (ai_Objects == 0)
+    ai_ObjectsV = (char *)mem_Alloc(0x14f218, ai_Unk61a9ec);
+    if (ai_ObjectsV == 0)
         return -5;
-    memset(ai_Objects, 0, 0x14f218);
+    memset(ai_ObjectsV, 0, 0x14f218);
     sprintf(path, "%s%s", root, "A_Obj.dat");
     f = fopen(path, "rb");
     if (f == 0)

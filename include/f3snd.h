@@ -126,7 +126,7 @@ extern int ai_Unk6f0b9c;                /* 0x6f0b9c, the season */
 extern int snd_AmbientTrack;                /* 0x6f0b80, the d3snd handle of the ambient track (bird song, market ambience) */
 extern struct AIBLD *ai_MarketBuilding;        /* 0x6f1bc8, the market building (ai.c; f3snd.c reads it through ai_MarketBuildingV) */
 extern char *ai_PlayerBuilding;          /* 0x6f2308, the building the player is in: an AIBLD (sv.c defines char *; ai_PlayerBuildingT views) */
-extern short *sv_PanelShown;             /* 0x6f2310, its room */
+extern unsigned short * sv_PanelShown;             /* 0x6f2310, its room */
 extern void *ai_Unk6f0ba0;              /* 0x6f0ba0, the atmosphere mp3 (MSXTRACK *) */
 extern char *ai_BTypes;                 /* 0x7e3f30, ai.h: AIBTYPE * (0x24d bytes, the kind at 0) */
 extern int d3_CurrentScene;             /* 0x633444 */        /* 0x602ba8 */

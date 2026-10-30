@@ -32,3 +32,4 @@
 #define ai_CharsC (*(char (*)[768 * 0x21c])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) read flat, as this unit does */
 #define ai_GameStateB (*(unsigned char (*))&ai_GameState)  /* 0x6f25ac, this unit reads it as `unsigned char ai_GameState` */
 #define ai_Unk7603a0V (*(char * (*)[])&ai_Unk7603a0)  /* 0x7603a0, this unit reads it as `char *ai_Unk7603a0[]` */
+#define sv_PanelShownV (*(short * (*))&sv_PanelShown)  /* 0x6f2310, this unit reads it as `short *sv_PanelShown` */

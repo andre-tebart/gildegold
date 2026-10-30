@@ -64,7 +64,7 @@ char *gm_Query(void *list, int n, ...)
                     ai_Unk7e3f38 = 0;
                     return 0;
                 }
-                ai_Unk6f1bf4 = (unsigned short *)ai_Objects;
+                ai_Unk6f1bf4 = (unsigned short *)ai_ObjectsV;
                 return (char *)gm_QueryNext();
             }
         }

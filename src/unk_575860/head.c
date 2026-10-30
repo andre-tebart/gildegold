@@ -675,7 +675,7 @@ extern GAPDATA full_data_6f5f60[];
 extern char * ai_Blds;
 extern char ai_Chars[768][0x21c];
 extern char * ai_Goods;
-extern char * ai_Objects;
+extern struct AIOBJ *ai_Objects;
 extern int ai_Unk5fe710;
 extern int ai_Unk62a8cc;
 extern char * ai_Unk6f22e8;

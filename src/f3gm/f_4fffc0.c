@@ -6,7 +6,7 @@ short *gm_FindFreeObject(void)
     short *p;
 
     i = 0;
-    p = (short *)ai_Objects;
+    p = (short *)ai_ObjectsV;
     while (i <= 0x5007) {
         if (*p == 0)
             return p;

@@ -23,7 +23,7 @@ int unk_Unk51aff0(int f)
     }
     cnt = 0;
     {
-        unsigned short *q = (unsigned short *)ai_Objects;
+        unsigned short *q = (unsigned short *)ai_ObjectsV;
 
         for (i = 0x5008; i != 0; i--) {
             if (*(char *)(ai_Goods + *q * 0x41) == 0x1d)
@@ -33,7 +33,7 @@ int unk_Unk51aff0(int f)
     }
     LS_W(&cnt, 4)
     for (k = 0; k < 0x14f218; k += 0x43) {
-        char *q = (char *)ai_Objects + k;
+        char *q = (char *)ai_ObjectsV + k;
 
         if (*(char *)(ai_Goods + *(unsigned short *)q * 0x41) == 0x1d
             && unk_Unk51ad80(*(int *)(q + 0x3b), *(int *)(q + 2), f) == 0)

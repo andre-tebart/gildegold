@@ -47,7 +47,7 @@ void ai_Unk4c2000(void)
             sprintf(ai_Unk6f0860, "Track still running after seasonchange is %s", trk);
         return;
     }
-    room = (int)sv_PanelShown;
+    room = (int)sv_PanelShownV;
     b2 = ai_FallbackBuildingB;
     b = ai_PlayerBuildingB;
     trk = snd_TrackHandles.current;

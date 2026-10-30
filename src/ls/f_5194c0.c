@@ -53,7 +53,7 @@ int ls_WriteSaveHeader(int f, unsigned flags)
         return 0;
     ref = ai_PlayerBuildingI ? *(int *)(ai_PlayerBuildingI + 1) : (ai_FallbackBuildingI ? *(int *)(ai_FallbackBuildingI + 1) : -1);
     vfs_fwrite(&ref, 4, 1, f);
-    ref = sv_PanelShown ? *(int *)(sv_PanelShown + 2) : -1;
+    ref = sv_PanelShownI ? *(int *)(sv_PanelShownI + 2) : -1;
     vfs_fwrite(&ref, 4, 1, f);
     for (i = 0; i < 8; i++)
         vfs_fwrite(ai_Unk76fa24 + i * 8, 4, 1, f);

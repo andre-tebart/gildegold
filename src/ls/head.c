@@ -60,12 +60,12 @@ extern char *ls_ActionQueue;            /* 0x631050, the action queue (ch.h: CHA
 extern char ch_EmptyName[];             /* 0x631090 */
 extern char ls_SavePath[640];
 extern int d3_CurrentScene;                /* 0x633444 */
-extern int ai_JudgeCatholic, ai_JudgeProtestant;  /* 0x6f1bfc / 0x6f1c00 */
+extern char * ai_JudgeCatholic; extern char * ai_JudgeProtestant;  /* 0x6f1bfc / 0x6f1c00 */
 extern char * ai_KindBChars[8];             /* 0x6f1c04, the eight slots of the kind 0xb characters (cm.h: char *) */
 int * ai_Unk633738 = 0;  /* 0x633738, the scene (its first word the kind: */
 extern char * ai_PlayerBuilding;                /* 0x6f2308 */
 extern char * ai_FallbackBuilding;                /* 0x6f230c */
-extern int sv_PanelShown;                /* 0x6f2310 */
+extern unsigned short * sv_PanelShown;                /* 0x6f2310 */
 extern unsigned short ai_PlayerId;              /* 0x6f25b8 */
 int ai_Unk6f1b88 = 0;  /* 0x6f1b88 .. */
 int ai_Unk6f1bcc = 0;  /* 0x6f1bcc */
@@ -74,7 +74,7 @@ extern int ai_Difficulty;                /* 0x6f23fc */
 extern unsigned short ai_ScreenImage[19200];
 /* ai_Unk76fa24: view of cm_SaveAcks (tools/data_views.py) */
 extern char ai_PlayerSlots[4][0x2f4];      /* 0x7e3f40, the player slots */
-extern short *ai_Objects;             /* 0x7e3f34 */
+extern struct AIOBJ *ai_Objects;             /* 0x7e3f34 */
 extern char ai_Time[];             /* 0x770ae0, the clock */
 extern int ai_UpdateStart;             /* 0xf89580 */
 extern int ai_NextObjectId;                /* 0x61a654 */
@@ -194,3 +194,7 @@ void sv_PumpNet(void);                  /* 0x52fe00, sv.c: sends the queued mess
 #define ai_UpdateStartV (*(char (*)[])&ai_UpdateStart)  /* 0xf89580, this unit reads it as `char ai_UpdateStart[]` */
 #define cm_SendQueueI (*(int (*))&cm_SendQueue)  /* 0xf81160, this unit reads it as `int cm_SendQueue` */
 #define gm_PlayerRecordsV (*(int (*)[])&gm_PlayerRecords)  /* 0x7d5f80, this unit reads it as `int gm_PlayerRecords[]` */
+#define ai_ObjectsV (*(short * (*))&ai_Objects)  /* 0x7e3f34, this unit reads it as `short *ai_Objects` */
+#define ai_JudgeCatholicI (*(int (*))&ai_JudgeCatholic)  /* 0x6f1bfc, this unit reads it as `int ai_JudgeCatholic` */
+#define ai_JudgeProtestantI (*(int (*))&ai_JudgeProtestant)  /* 0x6f1c00, this unit reads it as `int ai_JudgeProtestant` */
+#define sv_PanelShownI (*(int (*))&sv_PanelShown)  /* 0x6f2310, this unit reads it as `int sv_PanelShown` */

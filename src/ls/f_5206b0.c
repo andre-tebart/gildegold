@@ -40,7 +40,7 @@ int ls_FixupAfterLoad(void)
     for (i = 0; i < f3gm_ObjectCount; i++) {
         int a, b;
 
-        r = (char *)ai_Objects + i * 0x43;
+        r = (char *)ai_ObjectsV + i * 0x43;
         otype = (unsigned short *)r;
         owner = (int *)(r + 6);
         if (ai_Goods[*otype * 0x41] == 0x1d)

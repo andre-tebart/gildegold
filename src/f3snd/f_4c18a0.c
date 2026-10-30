@@ -43,7 +43,7 @@ void snd_EnterBuilding(void)
     if (strlen(l->track) == 0) {
         if (ai_Unk602d70[0].kind == 0)
             return;
-        for (e = ai_Unk602d70; e->kind != kind || e->room != 0 && e->room != (unsigned int)*sv_PanelShown
+        for (e = ai_Unk602d70; e->kind != kind || e->room != 0 && e->room != (unsigned int)*sv_PanelShownV
              || season != e->season && e->season != -1; e++) {
             if (e[1].kind == 0)
                 return;

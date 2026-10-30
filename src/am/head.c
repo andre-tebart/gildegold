@@ -69,4 +69,5 @@ int ai_Unkf86900[73] = {0};  /* 0xf86900, the actions being evaluated */
 #define gm_Unk505e60S ((int (*)(unsigned short, int))gm_Unk505e60)  /* 0x505e60 (f3gm.c: unsigned id): @original this unit pushes the id as 16 bits (byte-matched ai_Unk494a30 / ai_Unk494ac0 / ai_Unk494d40) */
 #define cm_SendExSellObjectI ((void (*)(int, int, int, int, unsigned char, int))cm_SendExSellObject)  /* 0x4c4880 (cm.h: short c): @original this unit pushes the third argument as an int (byte-matched ai_MeisterBewaffnen / ai_Unk497c80 / ai_Unk49c880) */
 #define amt_GetKindB ((int (*)(unsigned char, void *))amt_GetKind)  /* 0x4e6f80 (amt.h: int k): @original ai_Unk4a05e0 passes (unsigned char)k without widening */
-
+#define ai_JudgeCatholicV (*(AIPER * (*))&ai_JudgeCatholic)  /* 0x6f1bfc, this unit reads it as `AIPER *ai_JudgeCatholic` */
+#define ai_JudgeProtestantV (*(AIPER * (*))&ai_JudgeProtestant)  /* 0x6f1c00, this unit reads it as `AIPER *ai_JudgeProtestant` */

@@ -7,7 +7,7 @@ void gm_Unk502a60(int unused, int scene, int c)
     int i, k, n, v;
     char *s;
 
-    if (sv_PanelShown == scene) {
+    if (sv_PanelShownI == scene) {
         k = 0;
         s = ai_Chars[c] + 0x80;
         i = 0;

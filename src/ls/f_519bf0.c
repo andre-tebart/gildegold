@@ -5,7 +5,7 @@ int ls_WriteObjects(int f)
 {
     int n = 0;
     int i, off;
-    short *p = ai_Objects;
+    short *p = ai_ObjectsV;
     short *q;
     char *r;
 
@@ -18,8 +18,8 @@ int ls_WriteObjects(int f)
         return 0;
     off = 0;
     do {
-        r = (char *)(off + (int)ai_Objects);
-        q = (short *)(off + (int)ai_Objects);
+        r = (char *)(off + (int)ai_ObjectsV);
+        q = (short *)(off + (int)ai_ObjectsV);
         if (*q != 0) {
             if (vfs_fwrite(r, 2, 1, f) <= 0)
                 return 0;

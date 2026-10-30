@@ -21,8 +21,8 @@ void gm_Free(void)
         mem_Free(ai_Goods);
         ai_Goods = 0;
     }
-    if (ai_Objects != 0) {
-        mem_Free(ai_Objects);
-        ai_Objects = 0;
+    if (ai_ObjectsV != 0) {
+        mem_Free(ai_ObjectsV);
+        ai_ObjectsV = 0;
     }
 }

@@ -103,3 +103,5 @@ void *ai_Unk5a8560(int param_1);  /* 0x5a8560 */
 #define ai_PlayerSlotsV (*(char (*)[][0x2f4])&ai_PlayerSlots)  /* 0x7e3f40, this unit reads it as `char ai_PlayerSlots[][0x2f4]` */
 #define ai_Unk91b6e0V (*(int (*)[])&ai_Unk91b6e0)  /* 0x91b6e0, this unit reads it as `int ai_Unk91b6e0[]` */
 #define cm_FieldObjectI (*(int (*))&cm_FieldObject)  /* 0xa68d2c, this unit reads it as `int cm_FieldObject` */
+#define ai_ObjectsV (*(char * (*))&ai_Objects)  /* 0x7e3f34, this unit reads it as `char * ai_Objects` */
+#define sv_PanelShownI (*(int (*))&sv_PanelShown)  /* 0x6f2310, this unit reads it as `int sv_PanelShown` */

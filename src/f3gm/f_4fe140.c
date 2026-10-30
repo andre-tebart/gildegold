@@ -13,7 +13,7 @@ extern int ai_Unk875360[32];
 extern int ai_Unk919f80[732];
 extern char * ai_Goods;
 extern unsigned ai_Unk91ac40[136];
-extern char * ai_Objects;
+extern struct AIOBJ *ai_Objects;
 extern int ai_Unk6178c8[];
 extern char ai_Unk61aa38[], ai_Unk61aa20[], ai_Unk61aa00[], ai_Unk61a9ec[];  /* 0x61aa38, 0x61aa20, 0x61aa00, 0x61a9ec */
 void * mem_Alloc(int size, char *tag);                   /* 0x4223c0 */

@@ -1,7 +1,7 @@
 /* 0x502570, the string-table number of the object o (0x60e + n) for the object kinds 2 / 6: a table of (n, object) pairs (0x13 -> 0x54, 2 -> 0x15, 4 -> 0x18 ..) searched for the prototype number of the object; -1 when it is not in it. ROUGH */
 
 int gm_JobBuildingType(int x);
-extern int sv_PanelShown;                /* 0x6f2310 */
+extern unsigned short * sv_PanelShown;                /* 0x6f2310 */
 /* ai_Unk61a688: view of ai_Unk61a686 (tools/data_views.py) */
 extern int ai_CharCount, ai_Unk6f1bb8, ai_Unk6f1bbc;  /* 0x6f1bc0, 0x6f1bb8, 0x6f1bbc */
 char d3if_ShowTree(struct D3OBJECT *obj, char show);                     /* 0x447300 */

@@ -3,7 +3,7 @@
 int gm_PlayerRecords[688] = {0};  /* 0x7d5f80, the 16 player records ( */
 int ai_Unk7d6a40 = 0;  /* 0x7d6a40, the number of family records */
 char ai_Unk7d6a60[0xd4d0] = {0}; /* 0x7d6a60, the five stock blocks (five rows of four header ints plus 0x55 records of 0x80 bytes); a tentative definition, so the COMMON linker reserves the whole span and no other global lands inside it. init_StockBlock is the same object (data.csv alias). */
-char * ai_Objects = 0;  /* 0x7e3f34, the object instances ( */
+struct AIOBJ *ai_Objects = 0;  /* 0x7e3f34, the object instances (AIOBJ, ai.h) */
 int ai_Unk7e3f38 = 0;  /* 0x7e3f38, the depth of the child stack */
 int gm_NOffers = 0;  /* 0x7e3f3c, the number of offers */
 int gm_Offers[528] = {0};  /* 0x7e4b20, the offers (6 ints each: building, market, goods object, supply, price float, flag) */

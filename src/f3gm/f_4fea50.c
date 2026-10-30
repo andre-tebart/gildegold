@@ -36,7 +36,7 @@ int gm_FindById(int *bld, int *obj, int *chr, int id)
                 b += 0xa9;
             } while (i < 0x100);
         }
-        if (obj != 0 && (i = 0, p = (short *)ai_Objects, 0 < f3gm_ObjectCount)) {
+        if (obj != 0 && (i = 0, p = (short *)ai_ObjectsV, 0 < f3gm_ObjectCount)) {
             do {
                 if (*p != 0) {
                     if (*(int *)(p + 1) == id) {

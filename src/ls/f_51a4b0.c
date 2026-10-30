@@ -28,14 +28,14 @@ int unk_Unk51a4b0(int f)
     psVar3 = psVar3 + 0x10e;
   } while ((int)psVar3 < (int)&ai_Chars[768]);
   LS_W(&cnt, 4)
-  if (ai_JudgeCatholic != 0) {
-    LS_W(ai_JudgeCatholic + 4, 4)
+  if (ai_JudgeCatholicI != 0) {
+    LS_W(ai_JudgeCatholicI + 4, 4)
   }
   else {
     LS_W(&local_c, 4)
   }
-  if (ai_JudgeProtestant != 0) {
-    LS_W(ai_JudgeProtestant + 4, 4)
+  if (ai_JudgeProtestantI != 0) {
+    LS_W(ai_JudgeProtestantI + 4, 4)
   }
   else {
     LS_W(&local_c, 4)
