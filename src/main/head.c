@@ -387,7 +387,6 @@ int ahm_LoadPrototypes(int mode);       /* 0x4eb480 */
 int hmt_CreateBinaryFile(void);         /* 0x4ac440 */
 void hmt_Init(void);                    /* 0x4aca90 */
 void ai_BuildFloatTable(void);          /* 0x4d27a0 */
-void ocmd_Register(void);               /* 0x40f960 */
 void chc_Register(void);                /* 0x40d270 */
 int init_InitTown(char *city);          /* 0x510ad0, f3init */
 void init_FreeScenes(void);             /* 0x50d490, f3init */
@@ -406,7 +405,6 @@ void sv_UnregisterTick(void);           /* 0x520f10, sv.c */
 void sb_Exit(void);                     /* 0x425ce0, sblib.c */
 void d3snd_Exit(void);                  /* 0x4176f0, d3_snd.c */
 void d3sndw_Exit(void);                 /* 0x418030, d3_snd.c */
-void ai_FreeSettings(void);             /* 0x5a8920, unk_58bbd0.c */
 void ahm_FreePrototypes(void);          /* 0x4ebf60, ahm.h */
 int hmt_Exit(void);                     /* 0x4acde0, hmt.h */
 void gv_FreeEffectObjects(void);        /* 0x4ede70, gv.h */
