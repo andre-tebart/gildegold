@@ -201,7 +201,7 @@ extern GAPDATA full_data_760450[];
 extern int ai_Unk7603a0[32];
 extern GAPDATA full_data_6f240c[];
 extern GAPDATA full_data_6f23f0[];
-extern GAPDATA full_data_6f25b4[];
+extern int main_QuitProgram;
 extern GAPDATA full_data_75ec40[];
 extern HWND main_Window;
 extern char ai_Unk75fba0[2048];
@@ -6595,7 +6595,7 @@ int sv_PumpMessages(void)
     r = PeekMessageA((MSG *)(unsigned)&full_data_75ec40, (HWND)SV_I((unsigned)&main_Window), 0, 0, 0);
     while (r != 0) {
         if (GetMessageA((MSG *)(unsigned)&full_data_75ec40, (HWND)SV_I((unsigned)&main_Window), 0, 0) == 0)
-            SV_I((unsigned)&full_data_6f25b4) = 1;
+            SV_I((unsigned)&main_QuitProgram) = 1;
         else {
             TranslateMessage((MSG *)(unsigned)&full_data_75ec40);
             DispatchMessageA((MSG *)(unsigned)&full_data_75ec40);

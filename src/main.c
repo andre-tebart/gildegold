@@ -105,9 +105,6 @@ extern int ai_Unkfb906c;
 
 
 extern GAPDATA full_data_5f320c[];
-extern GAPDATA full_data_6f2418[];
-extern GAPDATA full_data_6f245c[];
-extern GAPDATA full_data_6f25b4[];
 extern INIT_PLAYER init_PlayerProfile;
 extern int sv_FrameMask;
 extern int sv_PopRequest;
@@ -311,7 +308,6 @@ extern GAPDATA full_data_6f2580[];
 extern int main_Inactive;       /* 0x6f2584, 1 while the app is deactivated */
 extern GAPDATA full_data_6f2598[];
 extern GAPDATA full_data_6f25a8[];
-extern GAPDATA full_data_6f25b4[];
 extern char main_AppDir[];
 extern GAPDATA full_data_75e5f0[];
 extern GAPDATA full_data_75e5f4[];
@@ -1466,7 +1462,7 @@ int sv_RegisterNamePlate();
 /* 0x533850, "main_Menue": the main menu ("MENU\MAIN_MENU"): opens the city scene and the player selection scene "scenes/*spielerauswahl.ed3", builds the 9 buttons (0x5337f0: new game 0x537930, tutorial, load a ".INI"
    city / network save (debug builds of the data: "Create Save with INI" / "Create Save for Network" / "Check Textfile"), load game 0x5d4080, network 0x5335b0, options 0x5d5fd0 / 0x5d6580 / 0x5d6950, credits
    0x5d7ba0, quit), starts one of three menu songs (0x423a90) and runs the screen loop 0x5309a0 until it ends; ROUGH */
-void main_Unk533850(void)
+void main_Menue(void)
 {
     unsigned char *fade;
     int r, f, i;
@@ -1528,7 +1524,7 @@ void main_Unk533850(void)
     bopt3 = main_Unk5337f0(4, U_I((unsigned)&ai_TextGameOptions), d2_LastWindow);
     bcred = main_Unk5337f0(7, U_I((unsigned)&full_data_1441354), d2_LastWindow);
     bquit = main_Unk5337f0(8, U_I((unsigned)&full_data_1441358), d2_LastWindow);
-    if (U_I((unsigned)&full_data_6f245c) == 0) {
+    if (U_I((unsigned)&main_DevMenu) == 0) {
         bopt1 = main_Unk5337f0(5, U_I((unsigned)&ai_TextGfxOptions), d2_LastWindow);
         bopt2 = main_Unk5337f0(6, U_I((unsigned)&ai_TextSfxOptions), d2_LastWindow);
         grp = d2_CreateRadioGroup(9, bnew, bload, btut, bnet, bopt3, bopt1, bopt2, bcred, bquit);
@@ -1548,7 +1544,7 @@ void main_Unk533850(void)
             song = "cd2\\KraeuterUndPhiolen.mp3";
         else
             goto lskip;
-        U_I((unsigned)&full_data_6f2418) = msx_Play(song, 1);
+        U_I((unsigned)&main_MenuSong) = msx_Play(song, 1);
     }
 lskip:
     d2_ReleaseFade(fade);
@@ -1673,7 +1669,7 @@ lback:
                     d2_EnableObject(f, 1);
                 } else if (ai_Unk5fe710 == bquit) {
                     U_I((unsigned)&ai_GameOver) = 1;
-                    U_I((unsigned)&full_data_6f25b4) = 1;
+                    U_I((unsigned)&main_QuitProgram) = 1;
                     U_I((unsigned)&sv_PopRequest) = 1;
                 } else if (ai_Unk5fe710 == bcheck) {
                     main_Unk533740();
@@ -1687,16 +1683,16 @@ lback:
                     d2_EnableObject(f, 1);
                     if (U_I((unsigned)&snd_MusicEnabled) != 0) {
                         msx_SetFadeTime(1000);
-                        msx_Start(U_I((unsigned)&full_data_6f2418), 1);
+                        msx_Start(U_I((unsigned)&main_MenuSong), 1);
                     }
                 }
             }
         }
         if (*(char *)(unsigned)&kb_Last == 1) {
-            U_I((unsigned)&full_data_6f25b4) = 1;
+            U_I((unsigned)&main_QuitProgram) = 1;
             U_I((unsigned)&sv_PopRequest) = 1;
         }
-        r = sv_RunFrame((int)main_Unk533850, 0x24087);
+        r = sv_RunFrame((int)main_Menue, 0x24087);
         if (r == 0) {
             d2_RadioClear(grp);
             d2_CloseView(f);
@@ -1706,10 +1702,10 @@ lback:
             d3if_SelectScene(1, 0);
             d3if_Reset();
             msx_SetFadeTime(1000);
-            if (U_I((unsigned)&full_data_6f2418) != 0) {
-                msx_Stop(U_I((unsigned)&full_data_6f2418), 1);
+            if (U_I((unsigned)&main_MenuSong) != 0) {
+                msx_Stop(U_I((unsigned)&main_MenuSong), 1);
                 U_I((unsigned)&d2_CutsceneActive) = 1;
-                while (*(char *)(U_I((unsigned)&full_data_6f2418) + 0x104) != 0)
+                while (*(char *)(U_I((unsigned)&main_MenuSong) + 0x104) != 0)
                     sv_RunFrame(0, U_I((unsigned)&sv_FrameMask));
                 Sleep(1000);
             }
@@ -5397,7 +5393,7 @@ L_fail:
     do {
         if (U_I((unsigned)&full_data_6f2434) == 0) {
             if (r == 0) {
-                main_Unk533850();
+                main_Menue();
                 if (main_ScreenRestart != 0) {
                     main_ShutdownScreen();
                     sv_PumpMessages();
@@ -5444,16 +5440,16 @@ L_fail:
             r = net;
         }
         U_I((unsigned)&ai_LeaveGame) = 1;
-        if (U_I((unsigned)&ai_GameFlags) != 0 && U_I((unsigned)&full_data_6f25b4) == 0) {
+        if (U_I((unsigned)&ai_GameFlags) != 0 && U_I((unsigned)&main_QuitProgram) == 0) {
             do {
                 main_GameLoop(0);
             } while (U_I((unsigned)&ai_LeaveGame) != 0);
         }
         if (U_I((unsigned)&full_data_6f2434) != 0 || r != 0)
-            U_I((unsigned)&full_data_6f25b4) = 1;
+            U_I((unsigned)&main_QuitProgram) = 1;
         U_I((unsigned)&sv_PopRequest) = 0;
         U_I((unsigned)&sv_FrameDepth) = 0;
-        if (U_I((unsigned)&full_data_6f25b4) != 0) {
+        if (U_I((unsigned)&main_QuitProgram) != 0) {
             main_Exit();
             if (U_I((unsigned)&main_ScreenSaverOff) != 0)
                 main_SetScreenSaver(1);
@@ -5973,13 +5969,13 @@ GAPDATA full_data_6f2408[4] = { 0 };  /* 0x6f2408 */
 GAPDATA full_data_6f240c[4] = { 0 };  /* 0x6f240c */
 GAPDATA full_data_6f2410[4] = { 0 };  /* 0x6f2410 */
 GAPDATA full_data_6f2414[4] = { 0 };  /* 0x6f2414 */
-GAPDATA full_data_6f2418[4] = { 0 };  /* 0x6f2418 */
+struct MSXTRACK *main_MenuSong = 0;  /* 0x6f2418, the main menu's song (main_Menue) */
 GAPDATA full_data_6f241c[12] = { 0 };  /* 0x6f241c */
 GAPDATA full_data_6f2428[4] = { 0 };  /* 0x6f2428 */
 int main_TextureDivider = 0;  /* 0x6f242c, the Gfx/TextureDivider key of game.INI */
 GAPDATA full_data_6f2434[4] = { 0 };  /* 0x6f2434 */
 GAPDATA full_data_6f2450[12] = { 0 };  /* 0x6f2450 */
-GAPDATA full_data_6f245c[4] = { 0 };  /* 0x6f245c */
+int main_DevMenu = 0;  /* 0x6f245c, nonzero: the main menu shows the data-tool buttons */
 int main_TextReopen = 0;  /* 0x6f2460 */
 int main_HmtMode = 0;  /* 0x6f2468 */
 int main_HmtBuild = 0;  /* 0x6f246c */
@@ -5993,7 +5989,7 @@ GAPDATA full_data_6f2598[4] = { 0 };  /* 0x6f2598 */
 int main_ScreenRestart = 0;  /* 0x6f25a4, nonzero: the screen must be re-initialised (set by the gfx options screen 0x5d5fd0 when the resolution changed) */
 GAPDATA full_data_6f25a8[4] = { 0 };  /* 0x6f25a8 */
 GAPDATA full_data_6f25b0[4] = { 0 };  /* 0x6f25b0 */
-GAPDATA full_data_6f25b4[4] = { 0 };  /* 0x6f25b4 */
+int main_QuitProgram = 0;  /* 0x6f25b4, set by quit / Escape / WM_QUIT: WinMain exits */
 int main_ScreenSaverOff = 0;  /* 0x6f25bc, the screen saver was switched off and is restored at exit */
 GAPDATA full_data_6f25c0[4] = { 0 };  /* 0x6f25c0 */
 GAPDATA full_data_6f25c4[4] = { 0 };  /* 0x6f25c4 */

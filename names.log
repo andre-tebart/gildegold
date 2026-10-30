@@ -93,3 +93,7 @@
 2026-10-30T23:07:13 0x006333cc data ai_Unk6333cc -> ai_ClockMs by:main why:read as a millisecond clock: main_SearchNetworkGame rescans after 0x5dc (1.5 s), sv.c gates on +500, he.c takes time deltas of it
 2026-10-30T23:08:50 0x00533470 func main_Unk533470 -> main_ChooseNetworkGame by:main why:Menu\CHOOSENETWORK: the client's choice between joining the saved game and the LAN search
 2026-10-30T23:10:02 0x005335b0 func main_Unk5335b0 -> main_NetworkMenu by:main why:Menu\CHOOSENETWORK with host / search / join buttons, the entry of the network game
+2026-10-30T23:12:29 0x00533850 func main_Unk533850 -> main_Menue by:main why:its own error text "main_Menue:Could not load 3D-scene..." (0x624c9c)
+2026-10-30T23:13:43 0x006f2418 data full_data_6f2418 -> main_MenuSong by:main why:main_Menue keeps the menu song's MSXTRACK (msx_Play) here, restarts it after the credits and waits for its playing byte (+0x104) at the end
+2026-10-30T23:13:52 0x006f245c data full_data_6f245c -> main_DevMenu by:main why:main_Menue: nonzero shows the data-tool buttons (Create Save with INI / for Network / Check Textfile) instead of the gfx / sfx options
+2026-10-30T23:14:00 0x006f25b4 data full_data_6f25b4 -> main_QuitProgram by:main why:set by the main menu's quit button / Escape and by sv_PumpMessages on WM_QUIT; WinMain exits (main_Exit) when it is set
