@@ -29,7 +29,7 @@ void ai_Unk5c76b0(int p1, int p2, int p3, float v4, int p5, int p6, int p7, int 
                      0xee, 0x10, 0xee);
         p = (float *)((char *)p + 0x14);
         x += scale;
-    } while ((int)p < ((unsigned)((unsigned)ord_StatisticsHistoryB + 0x140) + 0x8));
+    } while ((int)p < ((unsigned)((unsigned)ord_StatisticsHistory + 0x140) + 0x8));
     a = *(float *)((unsigned)&ord_StatisticsHistory + 0x134);
     d2_PlotLine((scale * 3 + 9) * 5, (int)(base - max(0.0, a) * h), scale * 16 + 0x2d,
                  (int)(base - max(0.0, v4) * h), 0xee, 0x10, 0xee);

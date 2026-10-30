@@ -152,7 +152,7 @@ void he_Unk5461c0(int ev)
                 *(int *)(msg + 0x80 + i * 4) = *(int *)(rec + 4);
             }
             ebx = 0;
-            for (p = (unsigned)&ai_Chars; p < (unsigned)((unsigned)ai_CharsV + 0x65400) && ebx < 16 && ebx < 6; p += 0x21c) {
+            for (p = (unsigned)&ai_Chars; p < (unsigned)((unsigned)ai_Chars + 0x65400) && ebx < 16 && ebx < 6; p += 0x21c) {
                 if (*(char *)(p + 8) != 0 && *(int *)(p + 0x16c) == 1) {
                     *(int *)(msg + 0x80 + ebx * 4) = *(int *)(p + 4);
                     ebx++;

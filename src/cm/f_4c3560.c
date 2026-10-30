@@ -21,7 +21,7 @@ void ai_ResetMessages(void)
     ai_Unka68c00 = ai_Unk9367e0;
     ai_Unka68d24 = 0;
     ai_Unkf81180.type = 0;
-    ai_Unkf81168U = 0;
+    ai_Unkf81168 = 0;
     cm_SendQueue = 0;
     for (s = ai_Unkf31160; s < ai_Unkf31160 + 0x8000; s++) {
         s->idx = -1;

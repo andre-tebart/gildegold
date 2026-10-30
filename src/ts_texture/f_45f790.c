@@ -3,7 +3,7 @@
 void ts_CacheRelease(TSTEXTURE *tex)
 {
     TSCACHE *sce, *best = 0;
-    unsigned int i, oldest = d3_FrameCountU;
+    unsigned int i, oldest = d3_FrameCount;
 
     if (ts_CacheUsed == ts_CacheSize) {
         for (i = ts_CacheSize, sce = ts_Cache; i > 0; i--, sce++) {

@@ -36,7 +36,7 @@ TSTEXTURE *tex_Create(char *name, int size, char hicol, TSFLAGS flags, unsigned 
     tex->anim = 0;
     tex->group = -1;
     ts_TexUsed++;
-    if (d3_HardwareC) {
+    if (d3_Hardware) {
         ts_CacheFetch(tex, npal, (int)pal);
         return tex;
     }

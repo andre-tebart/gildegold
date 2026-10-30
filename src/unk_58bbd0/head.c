@@ -1283,8 +1283,3 @@ float util_RandomF();                   /* the float roll (ai.h util_RandomF) */
 #include "time_view.h"
 #define sv_SelectPanelObjectK ((int (*)())sv_SelectPanelObject)  /* 0x52c4c0?: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
 #define gm_Unk50a970K ((int (*)())gm_Unk50a970)  /* 0x50a970: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
-#define ai_AmbushSpotsB (*(unsigned char (*))&ai_AmbushSpots)  /* 0x625720, this unit reads it as `unsigned char ai_AmbushSpots` */
-#define ai_CharsV (*(char (*)[])&ai_Chars)  /* 0x770b80, this unit reads it as `char ai_Chars[]` */
-#define ai_FallbackBuildingB (*(unsigned char (*))&ai_FallbackBuilding)  /* 0x6f230c, this unit reads it as `unsigned char ai_FallbackBuilding` */
-#define ai_Unk7603a0V (*(unsigned char (*))&ai_Unk7603a0)  /* 0x7603a0, this unit reads it as `unsigned char ai_Unk7603a0` */
-#define ord_StatisticsHistoryB (*(unsigned char (*))&ord_StatisticsHistory)  /* 0x91ab00, this unit reads it as `unsigned char ord_StatisticsHistory` */

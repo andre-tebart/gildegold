@@ -103,5 +103,3 @@ unsigned int ts_HiColCount = 0;         /* 0xfb91b0 */
 int ts_Unkfb91b4 = 0;                   /* 0xfb91b4 */
 void *ts_Palette = 0;                   /* 0xfb91b8 */
 int ts_Mips = 8;  /* 0x5fd0b0, initialized to 8; TODO define here once .data is matched */
-#define d3_FrameCountU (*(unsigned int (*))&d3_FrameCount)  /* 0x63343c, this unit reads it as `unsigned int d3_FrameCount` */
-#define d3_HardwareC (*(char (*))&d3_Hardware)  /* 0x633450, this unit reads it as `char d3_Hardware` */

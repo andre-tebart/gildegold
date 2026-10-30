@@ -20,4 +20,3 @@ extern char ch_EmptyName[];             /* 0x631090 */
 extern char ai_PlayerSlots[4][0x2f4];      /* 0x7e3f40, the player slots */
 extern int __mb_cur_max;                /* 0x62e3a0, the CRT multibyte state (MB_CUR_MAX of ctype.h) */
 extern unsigned short *_pctype;         /* 0x62e194, the CRT ctype table (the 0x100 entry values) */
-#define ai_PlayerSlotsV (*(char (*)[][0x2f4])&ai_PlayerSlots)  /* 0x7e3f40, this unit reads it as `char ai_PlayerSlots[][0x2f4]` */

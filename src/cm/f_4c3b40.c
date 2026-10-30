@@ -2,5 +2,5 @@
 
 void cm_EndSendGroup(void)
 {
-    ai_Unka68c04 = ai_Unkf81168U + 1;
+    ai_Unka68c04 = ai_Unkf81168 + 1;
 }

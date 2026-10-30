@@ -28,20 +28,20 @@ void ai_Unk4e2910(char *o, int id)
     }
     if (gm_Query(*(int *)(o + 0x5d), 1, 0, id) != 0) {
         if (gm_IsHomeType(o) == 0) {
-            if (init_ObjectUniverseV[id] != (char)0xfe) {
-                if (init_ObjectUniverseV[id] == (char)0xff || *(char *)(ai_Unkfd7c50 + 0x325 + init_ObjectUniverseV[id] * 0x3e0) != 0)
+            if (init_ObjectUniverse[id] != (char)0xfe) {
+                if (init_ObjectUniverse[id] == (char)0xff || *(char *)(ai_Unkfd7c50 + 0x325 + init_ObjectUniverse[id] * 0x3e0) != 0)
                     init_LoadObjectScene(id);
-                d3if_SelectScene(init_ObjectUniverseV[id], 0);
+                d3if_SelectScene(init_ObjectUniverse[id], 0);
                 init_ShowBuildingScene(o, id);
             }
         } else {
             bld = (char *)ai_BTypes + *(unsigned char *)o * 0x24d;
             k = *(unsigned char *)bld;
-            if (init_BuildingUniverseV[k] != 0) {
-                if (init_BuildingUniverseV[k] == (char)0xff || *(char *)(ai_Unkfd7c50 + 0x325 + init_BuildingUniverseV[k] * 0x3e0) != 0)
+            if (init_BuildingUniverse[k] != 0) {
+                if (init_BuildingUniverse[k] == (char)0xff || *(char *)(ai_Unkfd7c50 + 0x325 + init_BuildingUniverse[k] * 0x3e0) != 0)
                     init_LoadBuildingScene(k);
                 k = *(unsigned char *)((char *)ai_BTypes + *(unsigned char *)o * 0x24d);
-                d3if_SelectScene(init_BuildingUniverseV[k], 0);
+                d3if_SelectScene(init_BuildingUniverse[k], 0);
                 init_ShowBuildingScene(o, 0xfd);
             }
         }

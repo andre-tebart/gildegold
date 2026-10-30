@@ -5,7 +5,7 @@ char d3sky_Draw(D3SKY *s)
     D3SKYLAYER *l, *base;
     int a;
 
-    if (!d3d_Device || !d3_HardwareC || !s)
+    if (!d3d_Device || !d3_Hardware || !s)
         return 0;
     if (s->num_buffer == -1)
         d3sky_Build(s);

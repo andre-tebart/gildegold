@@ -290,7 +290,7 @@ void txt_Format(char *out, int id0, ...)
                type 8). The skeleton read the argument as a char *; sv_Unk522f10's "%I~ %w" (money, player)
                then crashed in txt_Field. */
             int who = *ap++;
-            int city = *(unsigned short *)(ai_PlayerSlotsV[who] + 0x54);
+            int city = *(unsigned short *)(ai_PlayerSlots[who] + 0x54);
 
             s = txt_Field(((char **)ai_Unk143c860)[city * 2], 1, 8);
             strcpy(tmp, s);

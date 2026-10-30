@@ -12,7 +12,7 @@ void tex_Reload(TSTEXTURE *tex, char keep)
     if (tex->alias)
         tex = &d3_Textures[tex->mask];
     skip = d3_MipSkip;
-    if (d3_HardwareC) {
+    if (d3_Hardware) {
         if (tex->surf && !keep)
             goto done;
         if (tex->surf) {

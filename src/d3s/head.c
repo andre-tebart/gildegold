@@ -107,5 +107,3 @@ __inline int d3s_ShlDiv16(int a, int b)
     __asm shl eax, 16
     __asm idiv ebx
 }
-#define d3_FrameCountU (*(unsigned int (*))&d3_FrameCount)  /* 0x63343c, this unit reads it as `unsigned int d3_FrameCount` */
-#define d3_HardwareC (*(char (*))&d3_Hardware)  /* 0x633450, this unit reads it as `char d3_Hardware` */

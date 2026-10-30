@@ -17,7 +17,7 @@ void he_Unk568ae0(int ev)
     *(char *)(ev + 0xc8) = 0;
     *(float *)(ev + 0xc4) = (float)(d * 0.25);
     o = gm_FindBuildingById(*(int *)(ev + 0xb8));
-    for (rec = (unsigned)&ai_Chars; rec < (unsigned)((unsigned)ai_CharsV + 0x65400); rec += 0x21c) {
+    for (rec = (unsigned)&ai_Chars; rec < (unsigned)((unsigned)ai_Chars + 0x65400); rec += 0x21c) {
         if (*(int *)(rec + 0x17c) == ev)
             sv_MoveToGroup(o, *(unsigned short *)rec, 0, ev);
     }

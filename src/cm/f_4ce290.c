@@ -10,13 +10,13 @@ char *ai_Unk4ce290(char *p)
     v[1] = 0;
     v[2] = 0;
     for (i = 0; i < 32; i++) {
-        if (*(int *)(cm_BombsV + i * 8) == 0)
+        if (*(int *)(cm_Bombs + i * 8) == 0)
             break;
     }
     if (i >= 32)
         return 0;
     o = d3_CreateObject(0, p, v, "ob_BOMBE");
-    *(char **)(cm_BombsV + i * 8) = o;
-    *(int *)(cm_BombsV + i * 8 + 4) = d3_Time;
-    return cm_BombsV + i * 8;
+    *(char **)(cm_Bombs + i * 8) = o;
+    *(int *)(cm_Bombs + i * 8 + 4) = d3_Time;
+    return cm_Bombs + i * 8;
 }

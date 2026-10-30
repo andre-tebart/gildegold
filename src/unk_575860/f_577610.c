@@ -13,10 +13,10 @@ void ai_Unk577610(int arg)
     }
     if (arg != 1)
         return;
-    for (p = ((unsigned)&ai_Chars + 0x2), i = 0; p < (unsigned)((unsigned)ai_CharsV + 0x65402); p += 0x21c, i++)
+    for (p = ((unsigned)&ai_Chars + 0x2), i = 0; p < (unsigned)((unsigned)ai_Chars + 0x65402); p += 0x21c, i++)
         if (*(unsigned char *)p == 5)
             break;
-    if (p >= (unsigned)((unsigned)ai_CharsV + 0x65402))
+    if (p >= (unsigned)((unsigned)ai_Chars + 0x65402))
         return;
     rec = (char *)((unsigned)&ai_Chars + i * 0x21c);
     if (amt_GetOfficeCandidates(rec, 1, &v) > 0)

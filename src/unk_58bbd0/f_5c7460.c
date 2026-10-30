@@ -11,7 +11,7 @@ void ai_Unk5c7460(int param_1, int param_2, int param_3, int param_4, int param_
     float *p;
 
     max = -1.0f;
-    for (p = (float *)((unsigned)&ord_StatisticsHistory + 0xc); (int)p < ((unsigned)((unsigned)ord_StatisticsHistoryB + 0x140) + 0xc); p += 5) {
+    for (p = (float *)((unsigned)&ord_StatisticsHistory + 0xc); (int)p < ((unsigned)((unsigned)ord_StatisticsHistory + 0x140) + 0xc); p += 5) {
         if (max < *p)
             max = *p;
     }

@@ -40,7 +40,7 @@ int ai_Unk5a0220(int param_1, unsigned int param_2)
             U_I((unsigned)&sv_PopRequest) = 1;
         } else {
             n = 0;
-            for (p = (int *)(unsigned)&ai_Chars; p < (int *)(unsigned)((unsigned)ai_CharsV + 0x65400) && n < 4; p += 0x10e) {
+            for (p = (int *)(unsigned)&ai_Chars; p < (int *)(unsigned)((unsigned)ai_Chars + 0x65400) && n < 4; p += 0x10e) {
                 if (*p != -1 && *(unsigned char *)(p + 0xb4) == param_2) {
                     chars[n] = (int)p;
                     n++;

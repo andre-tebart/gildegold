@@ -133,7 +133,7 @@ void ai_Unk4c0e60(void)
     }
     if (ai_PlayerBuildingB != 0 && snd_AmbientOn.on != 0) {
         c = ai_BTypes[*ai_PlayerBuildingB * 0x24d];
-        if (c == 0x16 && sv_PanelShownV != 0 && *sv_PanelShownV == 0x120) {
+        if (c == 0x16 && sv_PanelShown != 0 && *sv_PanelShown == 0x120) {
             n = ch_Count(d3_CurrentScene, 0) * 9;
             vol = min(n, 64.0f);
             if (ai_Unk6f0ba0 != 0) {
@@ -160,7 +160,7 @@ void ai_Unk4c0e60(void)
             msx_SetTrackVolume(ai_Unk6f0ba0, (int)vol);
             return;
         }
-        if (c == 7 && sv_PanelShownV != 0 && *sv_PanelShownV == 0xf7) {
+        if (c == 7 && sv_PanelShown != 0 && *sv_PanelShown == 0xf7) {
             n = ch_Count(d3_CurrentScene, 0) * 6;
             vol = min(n, 64.0f);
             if (ai_Unk6f0ba0 == 0) {

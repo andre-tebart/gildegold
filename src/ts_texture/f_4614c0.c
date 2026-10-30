@@ -2,7 +2,7 @@
 
 TSTEXTURE *tex_Prepare(TSTEXTURE *tex)
 {
-    if (d3_HardwareC && tex->hicolor)
+    if (d3_Hardware && tex->hicolor)
         ts_CacheFetch(tex, 0, 0);
     return tex;
 }

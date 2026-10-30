@@ -13,7 +13,7 @@ void ts_CacheStore(TSCACHE *sce, TSTEXTURE *tex)
         }
     }
     sce->hicolor = tex->hicolor;
-    sce->time = d3_FrameCountU;
+    sce->time = d3_FrameCount;
     sce->size = tex->size;
     sce->surf = tex->surf;
     sce->nomip = tex->nomip;

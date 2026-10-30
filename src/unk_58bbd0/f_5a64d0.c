@@ -70,7 +70,7 @@ int ai_Unk5a64d0(int param_1, char *param_2)
                     snd_PlayFavourComment();
                 }
                 n = 0;
-                for (tp = (int *)(unsigned)&ai_Unk7603a0; tp < (int *)(unsigned)((unsigned)ai_Unk7603a0V + 0x80); tp++) {
+                for (tp = (int *)(unsigned)&ai_Unk7603a0; tp < (int *)(unsigned)((unsigned)ai_Unk7603a0 + 0x80); tp++) {
                     e = *tp;
                     if (e != 0 && *(char *)(e + 0x188) != 0)
                         n++;

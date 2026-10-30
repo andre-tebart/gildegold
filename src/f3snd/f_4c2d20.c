@@ -24,7 +24,7 @@ void snd_PlayFavourComment(void)
     if (snd_VoiceBankOrders == 0)
         snd_VoiceBankOrders = snd_LoadVoiceBank("ARBEITER_KOMMENTARE_BEFEHL_HANDWERKER.sbf", 0);
     for (i = 0; i < 0x20; i++) {
-        c = (unsigned short *)ai_Unk7603a0V[i];
+        c = (unsigned short *)ai_Unk7603a0[i];
         if (c != 0 && (char)c[0xc4] != 0) {
             if (*((char *)c + 9) == 0) {
                 men++;

@@ -18,7 +18,7 @@ int ai_Unk4ce300()
     char *e;
 
     r = ai_Unk4cd9d0(0x174);
-    for (rec = cm_BombsV; (int)rec < (int)(cm_BombsV + 0x100); rec += 8) {
+    for (rec = cm_Bombs; (int)rec < (int)(cm_Bombs + 0x100); rec += 8) {
         if (*(int *)rec == 0)
             continue;
         cnt++;

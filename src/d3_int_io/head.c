@@ -22,4 +22,3 @@
    the whole header does not compile byte-identically. */
 void err_Message(char *text);
 void d3_SetFog(unsigned long start, unsigned long end, unsigned long color);  /* 0x43a6f0, d3_engine.c; @original: the reader passes the raw dwords of the two floats (no int -> float conversion; the original pushes them unchanged) */
-#define d3sm_ShadowV (*(void * (*))&d3sm_Shadow)  /* 0x633df8, this unit reads it as `void *d3sm_Shadow` */

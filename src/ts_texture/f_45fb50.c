@@ -2,7 +2,7 @@
 
 void tex_Free(TSTEXTURE *tex)
 {
-    if (d3_HardwareC && tex->name[0] == '*' && tex->surf && tex->d3dtex) {
+    if (d3_Hardware && tex->name[0] == '*' && tex->surf && tex->d3dtex) {
         ts_CacheRelease(tex);
         tex->d3dtex = 0;
         tex->surf = 0;

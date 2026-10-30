@@ -32,4 +32,3 @@ extern unsigned char d3_Hardware;                    /* 0x633450 */
 extern int d3_Busy;                         /* 0x633b04, also counted by d3sm_Build */
 D3SKY *d3_Sky = 0;                          /* 0x633dd4 */
 int d3sky_Colors[6] = {0}; /* 0xfb91c0 */
-#define d3_HardwareC (*(char (*))&d3_Hardware)  /* 0x633450, this unit reads it as `char d3_Hardware` */

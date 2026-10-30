@@ -12,7 +12,7 @@ void he_Unk56a170(int ev)
     switch (*(int *)(ev + 0x70)) {
     case -2:
     case -1:
-        for (rec = (unsigned)&ai_Chars; rec < (unsigned)((unsigned)ai_CharsV + 0x65400); rec += 0x21c) {
+        for (rec = (unsigned)&ai_Chars; rec < (unsigned)((unsigned)ai_Chars + 0x65400); rec += 0x21c) {
             if (*(int *)(rec + 0x17c) == ev)
                 sv_MoveToGroup(0, *(unsigned short *)rec, 0, 0);
         }
@@ -40,7 +40,7 @@ void he_Unk56a170(int ev)
         cm_SendExSellObject(*(int *)(ev + 0xb4), -1, *(unsigned short *)(ev + 0xac), amount, *(unsigned char *)(unsigned)&ai_OwnPlayer, 0);
         txt_Format(text, 0x1bb8, *(unsigned short *)(ev + 0xac) * 2 + 0x9a8, b, amount);
         he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(b + 0x27) * 0x21c), -1, text, 0, 0x5f1, *(int *)(b + 1), -1, 0, "_NACHRICHTEN_HS_08");
-        for (rec = (unsigned)&ai_Chars; rec < (unsigned)((unsigned)ai_CharsV + 0x65400); rec += 0x21c) {
+        for (rec = (unsigned)&ai_Chars; rec < (unsigned)((unsigned)ai_Chars + 0x65400); rec += 0x21c) {
             if (*(int *)(rec + 0x17c) == ev)
                 sv_MoveToGroup(b, *(unsigned short *)rec, 0, 0);
         }

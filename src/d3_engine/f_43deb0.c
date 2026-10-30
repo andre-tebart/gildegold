@@ -13,7 +13,7 @@ char d3_InflateScene(unsigned int flags)
     if (flags & 1)
         d3_ForEachObject2(d3_DefaultScene, 0, 0x1ff, d3_InflateObject);
     d3_SceneFlags = ~flags & 3;
-    if (!d3_SceneFlags && d3sm_ShadowV && !d3_Terrain)
-        d3sm_Build(d3sm_ShadowV, 0);
+    if (!d3_SceneFlags && d3sm_Shadow && !d3_Terrain)
+        d3sm_Build(d3sm_Shadow, 0);
     return 1;
 }

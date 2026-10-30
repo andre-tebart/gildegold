@@ -846,6 +846,3 @@ char *const ai_Unk5eec60 = (char *)full_data_6fa020 + 0x40;  /* 0x5eec60, the po
 
 #include "time_view.h"
 #define sv_SelectPanelObjectK ((int (*)())sv_SelectPanelObject)  /* 0x52c4c0?: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
-#define ai_CharsV (*(char (*)[])&ai_Chars)  /* 0x770b80, this unit reads it as `char ai_Chars[]` */
-#define d2_ScreenWB (*(unsigned char (*))&d2_ScreenW)  /* 0xfb9072, this unit reads it as `unsigned char d2_ScreenW` */
-#define d3t_CamMoveI (*(int (*))&d3t_CamMove)  /* 0x6310e8, this unit reads it as `int d3t_CamMove` */

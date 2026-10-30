@@ -44,4 +44,3 @@ extern char ai_Unk6339db;
 
 struct D3IOOBJ *d3io_LoadObject(char *a, char *b);  /* 0x44e080, d3_io_t.c (d3_io_t.h cannot be included here: d3_fl.h vfs views) */
 void d3fl_FreeMap(D3FLMAP *map);  /* 0x43ff90, d3_fl.c; declared here because a d3_fl.h prototype perturbs d3_tools.c's d3t_UpdateSunRays */
-#define d3sm_ShadowV (*(void * (*))&d3sm_Shadow)  /* 0x633df8, this unit reads it as `void *d3sm_Shadow` */

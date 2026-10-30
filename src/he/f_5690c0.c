@@ -23,7 +23,7 @@ void he_Unk5690c0(int r)
     gm_AddTime(r + 0x52, 0, 0, 1);
     *(int *)(r + 0xc4) = -1;
     *(int *)(r + 0xc8) = 0;
-    for (rec = (unsigned)&ai_Chars; rec < (unsigned)((unsigned)ai_CharsV + 0x65400); rec += 0x21c) {
+    for (rec = (unsigned)&ai_Chars; rec < (unsigned)((unsigned)ai_Chars + 0x65400); rec += 0x21c) {
         if (*(int *)(rec + 0x17c) == r)
             sv_MoveToGroup(b, *(unsigned short *)rec, 0, r);
     }
