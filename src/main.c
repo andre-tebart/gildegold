@@ -60,6 +60,7 @@ extern char main_GamePath[];
 extern int main_TextureDivider;
 #include "cm_types.h"
 extern CMNETGAME cm_NetGame;  /* 0x936460, cm.c: the network game */
+#define init_PlayerTalents (*(unsigned char (*)[5])&full_data_75e5f0)  /* 0x75e5f0, init_PlayerProfile + 0x50: the five talent values (main_ChooseTalents) */
 #define cm_JoinChar (*(CMJOIN *)((char *)&ai_Unk9364e0 + 0x2c0))  /* 0x9367a0, the joined character (CMJOIN) */
 extern G17MSG ai_Unk9367e0[];
 extern GAPDATA full_data_5f320c[];
@@ -1862,139 +1863,133 @@ void main_GiveStartBuildings(int p)
 
 #define SV_WI2(i, o) (*(int *)(U_I((unsigned)&d2_Objs) + (i) * 0x2ec + (o)))
 
-/* 0x534610, the talent choice of the character creation ("menu\choosecharacter_talent"): five talents (0x75e180 = 11 ints: the start values 0x75e198 (6) and the talent points), each row with a label
-   ("%s:$N" of the text 0x16b7 + n), a bar (0x52eaa0, picture 0x4d9) and two arrow buttons (0x519 / 0x51a) that move points between the talent and the pool (local_7c = 0x7e points); the ok button stores the
-   five values (0x75e5f0) and the two start tools of the chosen talents (0x75e5a0 / 0x75e5a1); returns 1 when confirmed; ROUGH (the float conversions of the talent steps are lost: placeholders 0) */
-int main_Unk534610(void)
+/* 0x534610, the talent choice of the character creation ("menu\choosecharacter_talent"): the five talents of
+   main_Family start at 0, the father's and the mother's profession group (group[4] / group[5]) add 63 points
+   to their talent (a grandparent would add 21: the loop starts at the parents); each row shows a label (text
+   0x16b7 + n), the value as a bar (sv_ValueBar, picture 0x4d9) and two arrows (0x519 down / 0x51a up) that move
+   21 points between the talent and the pool of 0x7e (a talent goes no lower than its start, no higher than
+   126). The ok button (enabled with the pool spent) stores the five values as bytes in the profile
+   (init_PlayerTalents), the start tools of the parents' groups (init_PlayerProfile tool1 / tool2) and the
+   family record; returns 1 when confirmed. */
+int main_ChooseTalents(void)
 {
-    int pts, ok, i, r, row, run, w;
-    int *p, *q;
-    int st[11];
-    int *vals;
-    int btn[12];
-    char again;
-    int f, sel;
+    MAINFAMILY fam;
+    int btn[14];                        /* per talent the down and the up arrow (@original 14: the frame is 0x7c) */
+    int pts, sel, f, again, r, i, w, row, id, v;
 
     r = 0;
-    memset((char *)(unsigned)main_Family.talent, 0, 0x18);
-    p = (int *)(unsigned)&main_Family;
-    q = st;
-    for (i = 0xb; i != 0; i--)
-        *q++ = *p++;
+    memset(main_Family.talent, 0, 6 * sizeof(int));  /* @original six ints: one past the five talents */
+    fam = main_Family;
     again = 1;
     pts = 0x7e;
-    ok = -1;
-    vals = st + 6;
-    for (i = 4; i < 6; i++)
-        vals[st[i]] = (int)0.0f;
-    p = st;
-    q = (int *)(unsigned)&main_Family;
-    for (i = 0xb; i != 0; i--)
-        *q++ = *p++;
-    f = d2_OpenForm(0, 0, "menu\choosecharacter_talent");
+    sel = -1;
+    for (i = 4; i < 6; i++) {
+        if (i < 4)
+            fam.talent[fam.group[i]] += 21.0f;
+        else
+            fam.talent[fam.group[i]] += 63.0;
+    }
+    main_Family = fam;
+    f = d2_OpenForm(0, 0, "menu\\choosecharacter_talent");
     d2_CentreViewWindows(f);
     d2_SetForm(f, 0);
     sv_FitForm(d2_LastWindow);
     d2_SetForm(f, 2);
     io_PrintText(0x1ae2);
-    run = sv_RunFrame((int)main_Unk534610, 0x12d6);
-    do {
-        if (run == 0) {
-            d2_CloseView(f);
-            return r;
-        }
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0)
-            U_I((unsigned)&sv_PopRequest) = 1;
-        if (again) {
-            d2_SetForm(f, 1);
-            io_PrintText((char *)(unsigned)&full_data_624cf8);
-            i = 0;
-            w = 0x1c;
-            do {
-                io_PrintText("%s:$N", i + 0x16b7);
-                sv_ValueBar(0xd2, w, (float)vals[i], 0x4d9);
-                row = i * 0x25 + 0x1c;
-                btn[i * 2] = d2_WinOpenPic(*(short *)(U_I((unsigned)&d2_LastWindowPtr) + 8) - 0x2c, row, 0x519, d2_LastWindow);
-                SV_WI2(btn[i * 2], 0x4c) = 1;
-                SV_WI2(btn[i * 2], 0x1c0) = 3;
-                btn[i * 2 + 1] = d2_WinOpenPic(*(short *)(U_I((unsigned)&d2_LastWindowPtr) + 8) - 0x18, row, 0x51a, d2_LastWindow);
-                SV_WI2(btn[i * 2 + 1], 0x4c) = 1;
-                SV_WI2(btn[i * 2 + 1], 0x1c0) = 3;
-                w += 0x25;
-                i++;
-            } while (w < 0xd5);
-            io_PrintText(0x1ae3);
-            sv_ValueBar(0xd2, 0xec, (float)pts, 0x4d9);
-            sel = d2_GetWinObj(f, 1, io_PrintText(0x1ae4));
-            for (i = 0; i < 5; i++) {
-                if (U_I((unsigned)main_Family.talent + i * 4) < vals[i]) {
-                    SV_WI2(btn[i * 2], 0x3c) = 0;
-                    SV_WI2(btn[i * 2], 0x50) = 0;
-                } else {
-                    SV_WI2(btn[i * 2], 0x3c) = 1;
-                    SV_WI2(btn[i * 2], 0x50) = 1;
+    if (sv_RunFrame((int)main_ChooseTalents, 0x12d6) != 0) {
+        do {
+            if (dm_L.rup != 0)
+                sv_PopRequest = 1;
+            if (again) {
+                d2_SetForm(f, 1);
+                io_PrintText("$C$A");
+                i = 0;
+                w = 0x1c;
+                do {
+                    io_PrintText("%s:$N", i + 0x16b7);
+                    sv_ValueBar(0xd2, w, fam.talent[i], 0x4d9);
+                    btn[i * 2] = d2_WinOpenPic(d2_LastWindowPtr->w - 0x2c, i * 0x25 + 0x1c, 0x519, d2_LastWindow);
+                    d2_Objs[btn[i * 2]].interactive = 1;
+                    d2_Objs[btn[i * 2]].style = 3;
+                    btn[i * 2 + 1] = d2_WinOpenPic(d2_LastWindowPtr->w - 0x18, i * 0x25 + 0x1c, 0x51a, d2_LastWindow);
+                    d2_Objs[btn[i * 2 + 1]].interactive = 1;
+                    d2_Objs[btn[i * 2 + 1]].style = 3;
+                    w += 0x25;
+                    i++;
+                } while (w < 0xd5);
+                io_PrintText(0x1ae3);
+                sv_ValueBar(0xd2, 0xec, pts, 0x4d9);
+                sel = d2_GetWinObj(f, 1, io_PrintText(0x1ae4));
+                for (i = 0; i < 5; i++) {
+                    v = fam.talent[i];
+                    if (v > main_Family.talent[i]) {
+                        d2_Objs[btn[i * 2]].clickDisabled = 0;
+                        d2_Objs[btn[i * 2]].greyed = 0;
+                    } else {
+                        d2_Objs[btn[i * 2]].clickDisabled = 1;
+                        d2_Objs[btn[i * 2]].greyed = 1;
+                    }
+                    if (pts > 0 && (float)v < 126.0f) {
+                        d2_Objs[btn[i * 2 + 1]].clickDisabled = 0;
+                        d2_Objs[btn[i * 2 + 1]].greyed = 0;
+                    } else {
+                        d2_Objs[btn[i * 2 + 1]].clickDisabled = 1;
+                        d2_Objs[btn[i * 2 + 1]].greyed = 1;
+                    }
                 }
-                if (pts < 1 || 126.0f <= (float)vals[i]) {
-                    SV_WI2(btn[i * 2 + 1], 0x3c) = 1;
-                    SV_WI2(btn[i * 2 + 1], 0x50) = 1;
-                } else {
-                    SV_WI2(btn[i * 2 + 1], 0x3c) = 0;
-                    SV_WI2(btn[i * 2 + 1], 0x50) = 0;
-                }
+                again = 0;
             }
-            again = 0;
-        }
-        d2_SetObjEnabled(sel, pts == 0);
-        r = U_I((unsigned)&d2_ClickedId);
-        if (U_I((unsigned)&d2_ClickedId) != -1) {
-            if (U_I((unsigned)&d2_ClickedId) == 0 || *(char *)(unsigned)&kb_Last == 0x1c) {
-                r = 1;
-                for (i = 0; i < 5; i++)
-                    *(char *)((unsigned)&full_data_75e5f0 + i) = (char)vals[i];
-                switch (st[4]) {
-                case 0: *(unsigned char *)(unsigned)&init_PlayerProfile = 0x1c; break;
-                case 1: *(unsigned char *)(unsigned)&init_PlayerProfile = 0x31; break;
-                case 2: *(unsigned char *)(unsigned)&init_PlayerProfile = 4; break;
-                case 3: *(unsigned char *)(unsigned)&init_PlayerProfile = 0x37; break;
-                case 4: *(unsigned char *)(unsigned)&init_PlayerProfile = 0x10; break;
+            if (pts != 0)
+                d2_SetObjEnabled(sel, 0);
+            else
+                d2_SetObjEnabled(sel, 1);
+            id = d2_ClickedId;
+            if (id != -1) {
+                if (id == 0 || kb_Last == 0x1c) {
+                    r = 1;
+                    for (i = 0; i < 5; i++)
+                        init_PlayerTalents[i] = (unsigned char)fam.talent[i];
+                    switch (fam.group[4]) {
+                    case 0: init_PlayerProfile.tool1 = 0x1c; break;
+                    case 1: init_PlayerProfile.tool1 = 0x31; break;
+                    case 2: init_PlayerProfile.tool1 = 4; break;
+                    case 3: init_PlayerProfile.tool1 = 0x37; break;
+                    case 4: init_PlayerProfile.tool1 = 0x10; break;
+                    }
+                    switch (fam.group[5]) {
+                    case 0: init_PlayerProfile.tool2 = 0x1c; break;
+                    case 1: init_PlayerProfile.tool2 = 0x25; break;
+                    case 2: init_PlayerProfile.tool2 = 4; break;
+                    case 3: init_PlayerProfile.tool2 = 0; break;
+                    case 4: init_PlayerProfile.tool2 = 0x49; break;
+                    }
+                    main_Family = fam;
+                    sv_PopRequest = 1;
+                } else if (id == 1) {
+                    sv_PopRequest = 1;
                 }
-                switch (st[5]) {
-                case 0: *(unsigned char *)((unsigned)&init_PlayerProfile + 0x1) = 0x1c; break;
-                case 1: *(unsigned char *)((unsigned)&init_PlayerProfile + 0x1) = 0x25; break;
-                case 2: *(unsigned char *)((unsigned)&init_PlayerProfile + 0x1) = 4; break;
-                case 3: *(unsigned char *)((unsigned)&init_PlayerProfile + 0x1) = 0; break;
-                case 4: *(unsigned char *)((unsigned)&init_PlayerProfile + 0x1) = 0x49; break;
-                }
-                p = st;
-                q = (int *)(unsigned)&main_Family;
-                for (i = 0xb; i != 0; i--)
-                    *q++ = *p++;
-                U_I((unsigned)&sv_PopRequest) = 1;
-            } else if (U_I((unsigned)&d2_ClickedId) == 1) {
-                U_I((unsigned)&sv_PopRequest) = 1;
-                goto lnext;
-            }
-            if (U_I((unsigned)&d2_ClickedId) == 0x519 || U_I((unsigned)&d2_ClickedId) == 0x51a) {
-                again = 1;
-                for (i = 0; i < 12; i++) {
-                    if (ai_Unk5fe710 == btn[i]) {
-                        row = i / 2;
-                        if ((i & 1) == 0) {
-                            if (U_I((unsigned)main_Family.talent + row * 4) < vals[row]) {
-                                vals[row] = (int)0.0f;
-                                pts = (int)0.0f;
+                if (id == 0x519 || id == 0x51a) {
+                    again = 1;
+                    for (i = 0; i < 12; i++) {
+                        if (d2_PointerObj == btn[i]) {
+                            row = i / 2;
+                            if (i % 2 != 0) {
+                                if (pts > 0) {
+                                    fam.talent[row] += 21.0f;
+                                    pts -= 21.0f;
+                                }
+                            } else if (fam.talent[row] > main_Family.talent[row]) {
+                                fam.talent[row] -= 21.0f;
+                                pts += 21.0f;
                             }
-                        } else if (0 < pts) {
-                            vals[row] = (int)0.0f;
-                            pts = (int)0.0f;
                         }
                     }
                 }
             }
-        }
-lnext:
-        run = sv_RunFrame((int)main_Unk534610, 0x12d6);
-    } while (1);
+        } while (sv_RunFrame((int)main_ChooseTalents, 0x12d6) != 0);
+    }
+    d2_CloseView(f);
+    return r;
 }
 /* 0x534b30, the character model choice of the character creation: the two tables of the 0x20-byte model names (the men: "patrizier_MANN2", "wirt_DICKER", .. ending with ""; the women: "patrizierin_FRAU", ..
    ending with ""; they are built on the stack by the original), the three buttons (previous 0x1a, next 0x1b, ok 0x51b: the screen positions are float expressions lost in the pseudocode, placeholders 0) and the
@@ -2233,7 +2228,7 @@ lset:
                 U_I((unsigned)&d3t_CamMoving) = 0;
                 U_I((unsigned)&d3t_CamMove) = 0;
                 d3t_PlaceObjectV(U_I((unsigned)&ai_Unkfc2dec), U_I((unsigned)&ai_Unkfc2dec) + 0x114, U_I((unsigned)&ai_Unkfc2dec) + 0x120, 0x50, 8);
-                if (main_Unk534610() == 0) {
+                if (main_ChooseTalents() == 0) {
                     U_I((unsigned)&sv_PopRequest) = 1;
                     ret = 0;
                     d2_SetViewEnabled(f, 1);

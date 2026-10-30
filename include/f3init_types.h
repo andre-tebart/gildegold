@@ -4,7 +4,7 @@
 #define F3INIT_TYPES_H
 
 typedef struct INIT_PLAYER {
-    unsigned char tool1;            /* 0x00, the first start tool (main_Unk534610) */
+    unsigned char tool1;            /* 0x00, the first start tool (main_ChooseTalents) */
     unsigned char tool2;            /* 0x01, the second start tool */
     unsigned char status;           /* 0x02, 0x10 in the default profile, 0x12 when the creation is done */
     unsigned char job;              /* 0x03, the job / title group (model chooser main_Unk534b30's p, gm_TitleGroup's argument) */

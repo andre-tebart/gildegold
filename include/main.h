@@ -6,7 +6,7 @@ typedef struct MAINFAMILY {             /* 0x2c bytes at 0x75e180, the character
     int group[6];                       /* 0x00, the profession group 0 .. 4 of each family member (-1: none): the
                                            paternal / maternal grandparents, [4] the father, [5] the mother
                                            (main_Unk5359f0) */
-    int talent[5];                      /* 0x18, the five talent values in points, 21 a step (main_Unk534610) */
+    int talent[5];                      /* 0x18, the five talent values in points, 21 a step (main_ChooseTalents) */
 } MAINFAMILY;
 
 /* the globals of the program level (the window is created in main_CreateWindow) */
