@@ -5,5 +5,5 @@ short x;
 short y;
 int pic;
 {
-    return d2_OpenPic(x, y, pic);
+    return d2_OpenPicS(x, y, pic);
 }

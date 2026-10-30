@@ -1,9 +1,6 @@
 /* 0x472800, resizes a window (grows in height so that all objects fit) @deep draft, readable (Q1/Q2/Q4 done this session): 438/608 bytes, 29 asm lines, hunks code 40 / order 6 / fill 1 - same instructions, scheduling and operand order only. spell.py: no hunk matched the menu (escalate with the diffclass verdict). Left: 47284c (the delta store moved across the jle), 472877 (the object-loop body loads d2_Objs[].h before wn->h in the original; ours loads wn->h first), 47298a / 472a01 (our o->clipy1 = wn->y + wn->h emits y then h, the original h then y; o->clipx1 similarly), 472a5f alignment fill. Tried: swapping the two clip expressions to wn->h + wn->y / wn->x + wn->w - identical bytes, reverted. Q4 fixed byte-neutrally here: int *p = wn->objs; *p; p++ instead of the int-as-byte-pointer walk win = (int)wn->objs / *(int *)win / win += 4 (438/608 bytes and 29 lines unchanged). Q1/Q2 clean (named d2_ResizeWindow earlier this session, was d2_ResizeWindow): the typed int *p walk replaced the two *(int *)win raw accesses. */
 
-void d2_ResizeWindow(w, h, win)
-short w;
-short h;
-int win;
+void d2_ResizeWindow(short w, short h, int win)
 {
     D2WIN *wn = &d2_Wins[win];
     int delta, dw, n, i, oh, oy;

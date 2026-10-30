@@ -29,6 +29,7 @@
 
 #endif
 #include "data_views.h"
+#define d2_OpenPicS ((int (*)(short, short, int))d2_OpenPic)  /* 0x46cb20 (K&R, int x, y): @original d2_CreatePicObj (0x46cd80, byte) was compiled against the short prototype */
 #define d2_MoveObjI ((void (*)(int, int, int))d2_MoveObj)  /* 0x46cda0 (d2.c: short x, short y): @original this unit passes the coordinates as ints (d2_CreatePicObj) */
 extern int ai_Unkfa5f04;
 

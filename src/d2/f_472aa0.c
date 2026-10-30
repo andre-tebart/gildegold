@@ -1,12 +1,6 @@
 /* 0x472aa0, creates a window inside another one (relative to its scroll position) */
 
-int d2_CreateChildWindow(x, y, pw, h, flags, win)
-short x;
-short y;
-short pw;
-short h;
-unsigned int flags;
-int win;
+int d2_CreateChildWindow(short x, short y, short pw, short h, unsigned int flags, int win)
 {
     D2WIN *w = &d2_Wins[win];
     int n;
