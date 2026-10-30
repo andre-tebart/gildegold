@@ -36,7 +36,7 @@ int ai_Unk4c89b0(G17MSG *m, G17STAT *s)
         *(short *)&ai_Time[4] = G17_S(msg, 5);
         *(int *)&ai_Time[6] = G17_I(msg, 7);
         *(int *)&ai_Time[10] = G17_I(msg, 0xb);
-        *(G17T14 *)ai_Unk75e130 = *(G17T14 *)ai_Time;
+        *(G17T14 *)&ai_Unk75e130 = *(G17T14 *)ai_Time;
         if (p == 0)
             tb_SetFunctionOff(sv_UpdateClock, 0);
         break;

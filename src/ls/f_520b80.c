@@ -27,7 +27,7 @@ int ls_ReceiveGame(void)
             vfs_fclose(fh);
             goto fail;
         }
-        ai_Unk75e130I = *(int *)ai_Time;
+        ai_Unk75e130 = *(int *)ai_Time;
         ai_Unk75e134 = *(int *)(ai_Time + 4);
         ai_Unk75e138 = *(int *)(ai_Time + 8);
         ai_Unk75e13c = *(short *)(ai_Time + 0xc);

@@ -184,4 +184,3 @@ void cm_SendLoadSize(int size);         /* 0x4c44d0, cm.h's prototype (that head
 int cm_SendLoadBlock(void *p);          /* 0x4c4500, the 0x80-byte block of the load buffer; -1: send ring full */
 int sv_PumpMessages(void);              /* 0x52fb80, sv.c: pumps the window messages */
 void sv_PumpNet(void);                  /* 0x52fe00, sv.c: sends the queued messages, receives and runs the waiting ones */
-#define ai_Unk75e130I (*(int (*))&ai_Unk75e130)  /* 0x75e130, this unit reads it as `int ai_Unk75e130` */

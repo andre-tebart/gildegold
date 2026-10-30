@@ -11,7 +11,7 @@ int ai_Unk76f9b8 = 0;  /* 0x76f9b8 */
 char ai_Unk76f9bc[100] = {0};  /* 0x76f9bc */
 extern char * ai_Unkf31140;                /* 0xf31140 */
 extern int ai_Unk75e134;  /* 0x75e134, the clock copy */
-extern char ai_Unk75e130[4];  /* 0x75e130 */
+extern int ai_Unk75e130;  /* 0x75e130 */
 extern int ai_Unk75e138;  /* 0x75e138 */
 #define LS_RD(p, sz) ls_Read((int)(p), (sz), 1, h)
 int unk_Unk51c950(int name)
@@ -39,7 +39,7 @@ int unk_Unk51c950(int name)
         LS_RD(&ai_Unk6f1bcc, 4);
     LS_RD(ai_UpdateStart, 0x18);
     ai_Unk75e134 = *(int *)(ai_Time + 4);
-    ai_Unk75e130I = *(int *)ai_Time;
+    ai_Unk75e130 = *(int *)ai_Time;
     ai_Unk75e138 = *(int *)(ai_Time + 8);
     ai_Unk75e13c = *(short *)(ai_Time + 0xc);
     if ((ai_Unk76f924 & 2) == 0)

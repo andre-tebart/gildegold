@@ -233,7 +233,7 @@ extern unsigned int ai_Unk6f0da4;
 extern int ai_Unk6f0dbc;
 extern char * ai_Unk6f22e8;
 extern int ai_Unk6f2448;
-extern char ai_Unk75e130[4];
+extern int ai_Unk75e130;
 extern int ai_Unka687e4;
 extern int ai_Unkf31144;
 extern char cm_RequestedSaveName[72];
@@ -263,7 +263,7 @@ extern void *d2_ScreenSurf;  /* 0x6ed924 */
 extern int ai_GameFlags;
 extern int ai_OptionSpeed;
 extern unsigned char ai_TimeHour;
-extern char ai_Unk75e130[4];
+extern int ai_Unk75e130;
 extern int ai_Unk75e134;
 extern GAPDATA full_data_6248b4[];
 
