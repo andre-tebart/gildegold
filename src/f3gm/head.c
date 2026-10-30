@@ -35,10 +35,11 @@ extern char ai_Unk7d6a60[];                 /* 0x7d6a60, the five 0x2a90-byte st
 
 extern char ai_Unk61a348[];
 /* full rebuild: the symbols whose original addresses the code above spells literally */
-extern char d3_Scenes[];               /* 0xfd7ba0: ai_Unk5fb5b0 points at it (d3.h types it D3SCENE[]) */
-extern char d3_Scenes[];               /* 0xfd7ba0: ai_Unk5fb5b0 points at it (d3.h types it D3SCENE[]) */
+#include "d3_types.h"
+extern D3SCENE d3_Scenes[];               /* 0xfd7ba0: ai_Unk5fb5b0 points at it */
+extern D3SCENE d3_Scenes[];               /* 0xfd7ba0: ai_Unk5fb5b0 points at it */
 extern unsigned char he_Events[339968];
-extern char d3_Scenes[];               /* 0xfd7ba0: ai_Unk5fb5b0 points at it (d3.h types it D3SCENE[]) */
+extern D3SCENE d3_Scenes[];               /* 0xfd7ba0: ai_Unk5fb5b0 points at it */
 extern char txt_Keys[0x4800][0x50];
 extern GAPDATA full_data_91f6e0[];
 extern unsigned char he_Events[339968];
