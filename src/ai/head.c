@@ -34,7 +34,7 @@ typedef unsigned int SOCKET;
 #define cm_SendExSellObjectI ((void (*)(int, int, int, int, unsigned char, int))cm_SendExSellObject)  /* 0x4c4880 (cm.h: short c): @original this unit pushes the third argument as an int (byte-matched ai_MeisterBewaffnen / ai_Unk497c80 / ai_Unk49c880) */
 #include "d3_types.h"
 extern D3SCENE d3_Scenes[];
-extern char ai_Unkf83ec0[];
+extern char ai_Unkf83ec0[];  /* 0xf83ec0 (am.c: AIACT[36]), read only through data_views.h's ai_ActionFlags: @original ai_Unk483a60 is byte only with no AIACT in this unit (am_types.h, am.h or any added typedef swap its obj / ok stack slots, 0x483ab8 mov [esp+0x10],ebp / 0x483ae2 mov [esp+0x18],ebx) */
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 
