@@ -61,18 +61,21 @@ read the datum as declared); 2 stay with @original (cm's ai_Unk7603a0V / ai_Unk7
 0x4cfeb0 byte). ai_GameState was the weak side: its definition is `unsigned char` now (the byte readers
 of unk_5d33b0 / unk_4b39f0 needed the byte, he reads it bytewise). No byte or shape function moved; the
 drafts that moved are in the two commit messages.
-Left, 19 views whose uses need a type (open, settle with the readers):
-- ai_JudgeCatholic / ai_JudgeProtestant (gv/tail.c `char *`): am, hst read `AIPER *` fields (->netId).
-  Probably retype the definition to `struct AIPER *`.
-- ai_MarketBuilding (AIBLD *, ai) read as int by f3gm; cm_FieldObject (cm `char *`) read as int by f3gm /
-  f3init (offset arithmetic `cm_FieldObject - x` passed to cm_AddFieldValue); ai_Objects (struct AIOBJ *)
-  read as char * by f3gm; ai_Unk75e130 (cm `char[4]`) read as int by ls.
-- d2: d2_ObjsV (G13OBJ, unk_4b39f0 / unk_5d33b0, 103 uses), d2_LastWindowPtrV (G12WIN, hst / unk_5d33b0),
-  d2_PicsV (D2PICVIEW, unk_5d33b0): local record views of D2OBJ / D2WIN / D2PIC; map their fields onto
-  d2_types.h's records.
-- d3_SortBufV / d3_SortPtrV (d3_sm's D3SMSORT): d3_sm does not see d3_engine's D3SORTENT.
-- ls: ai_BauplaetzeV (G15BK, ls does not see it), main: ls_SavePathV (struct LSSAVEVIEW of the char[640]:
-  wants ls.h, item 4), sv: ai_Unk6f0454V (f3gm defines `char[1]` but writes [0..2]: the size is wrong).
+The 19 views left by that pass (2026-10-30, second pass): 18 done, none kept, no byte or shape function moved:
+- ai_JudgeCatholic / ai_JudgeProtestant: the definition (gv) is `struct AICHAR *` now, every copy too; am /
+  hst read ->netId (cc67618).
+- cm_FieldObject: f3gm / f3init form the field offsets as `(char *)p - cm_FieldObject + off` (79b236a).
+- ai_MarketBuilding: f3gm stores `(struct AIBLD *)gm_BuildQuery(..)`, reads `(char *)ai_MarketBuilding + 0x5d`
+  (f3gm does not see AIBLD) (c0773a0). ai_Objects: f3gm uses the struct AIOBJ * (1356a6e).
+- ai_Bauplaetze: G15BK in rd_types.h (f3init's copy gone), ls reads ai_Bauplaetze[i] (42f686a).
+- ai_Unk75e130: cm defines it `int` (the year of a clock copy that is split over cm / ls objects
+  0x75e130..0x75e13e: one AITIME would need the four definitions in one unit, open) (f9be835).
+- ai_Unk6f0454: f3gm defines `char[3]` (its own byte reader writes [0..2]), sv clears [0..2] (8e598cb).
+- d3_SortBuf / d3_SortPtr: D3SORTENT in d3_types.h, d3_sm's D3SMSORT gone (a339698).
+- d2_Objs / d2_LastWindowPtr / d2_Pics: D2PIC / D2CTRL / D2OBJ in d2_types.h (D2OBJ.user at 0x2e8),
+  G12WIN / G13OBJ / D2OBJVIEW / D2WINVIEW / D2PICVIEW gone (30442f6). unk_5d33b0 still has D2SURFVIEW
+  (d2.c defines d2_ScreenSurf as `void *`: a definition to retype) and D2FADEVIEW, AICHARVIEW.
+Left: main's ls_SavePathV (struct LSSAVEVIEW of ls's char[640]): with item 4 (ls.h).
 
 ## Debt
 1. **Weak definition types made canonical.** (ai_Objects done in 1b8f951; the rest open: the definers
