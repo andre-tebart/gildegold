@@ -175,7 +175,7 @@ extern unsigned ai_Unkf81220;           /* 0xf81220, bytes in it */
 extern char *ai_PlayerChar;              /* 0x6f1bf8, ai.h: unsigned short * */
 
 int ai_Unk4c3180(G17MSG *m);                                                     /* 0x4c3180 */
-void ai_Unk4c3480(void);                                                         /* 0x4c3480 */
+void ai_InitStates(void);                                                         /* 0x4c3480 */
 void ai_ResetMessages(void);                                                         /* 0x4c3560 */
 void ai_Unk4c3600(void);                                                         /* 0x4c3600 */
 int ai_Unk4c3630(void);                                                          /* 0x4c3630 */
@@ -823,7 +823,7 @@ extern double ai_Unk5eb990;  /* 0x5eb990 */
 extern double ai_Unk5eb7b0;  /* 0x5eb7b0 */
 extern double ai_Unk5ebbe8;  /* 0x5ebbe8 */
 
-void ai_Unk4d27a0();  /* 0x4d27a0 */
+void ai_BuildFloatTable();  /* 0x4d27a0 */
 extern float ai_Unk9300a0[0xb4];  /* 0x9300a0 */
 extern double ai_Unk5ece60;  /* 0x5ece60 */
 

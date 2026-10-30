@@ -65,3 +65,15 @@
 2026-10-30T10:30:08 0x00624690 data full_data_624690 -> main_GamePath by:main why:WinMain reads the General/GamePath key (default \project\game\) into it; 0x531c50 passes it as the directory of d2_Open
 2026-10-30T10:30:12 0x005f8ad0 data full_data_5f8ad0 -> main_Language by:main why:holds 'german' (the General/Language key default); 0x531c50 formats gilde_add_on_%s.gfx with it
 2026-10-30T10:30:52 0x00531c50 func main_Unk531c50 -> main_OpenScreen by:main why:opens the display mode m: window sizing, video record, d3_Init, input, directories, d2_Open; main_Init / 0x53ccf0 call it
+2026-10-30T10:38:11 0x004b1f30 func ai_Unk4b1f30 -> hst_ResetLists by:main why:its comment: marks all lists of hst_Lists used and empty and frees every text file under historie\
+2026-10-30T10:38:16 0x004c3480 func ai_Unk4c3480 -> ai_InitStates by:main why:its comment: init of the free records, the lists, the states; asks the server for the start
+2026-10-30T10:38:22 0x004d27a0 func ai_Unk4d27a0 -> ai_BuildFloatTable by:main why:its comment: builds the table ai_Unk9300a0[6][5][6] of floats
+2026-10-30T10:38:28 0x00587de0 func ai_Unk587de0 -> ai_ClearTurnTable by:main why:its comment: clears the 0x4000-byte table 0x6f5f60 (the per-turn reset)
+2026-10-30T10:38:33 0x004eddf0 func unk_Unk4eddf0 -> unk_ResetEffectSlots by:main why:its comment: resets the effect slots (0x6f1008, 8 of 0x170 bytes)
+2026-10-30T10:38:39 0x004fde90 func unk_Unk4fde90 -> unk_LoadIconNames by:main why:its comment: loads the icon names from <root>Character_Names.dat (pair of gm_FreeIconNames)
+2026-10-30T10:38:44 0x00537c70 func main_Unk537c70 -> main_PreloadSound by:main why:its comment: main_PreloadSound reads the sound definition file (the string main_PreloadSound(): .. 0x6252ac names it)
+2026-10-30T10:38:49 0x006f2460 data full_data_6f2460 -> main_TextReopen by:main why:reasoned: only read by 0x532160, nonzero opens the text definitions with txt_OpenText instead of txt_LoadIncludes
+2026-10-30T10:38:54 0x006f2468 data full_data_6f2468 -> main_HmtMode by:main why:reasoned: only read by 0x532160, passed to ahm_LoadPrototypes(mode)
+2026-10-30T10:38:59 0x006f246c data full_data_6f246c -> main_HmtBuild by:main why:reasoned: only read by 0x532160, nonzero runs hmt_CreateBinaryFile once and is cleared
+2026-10-30T10:39:03 0x00532160 func main_Unk532160 -> main_OpenEngine by:main why:the error string main_OpenEngine(): could not open txt-engine! 0x624a8c is in it
+2026-10-30T10:39:17 0x0075e240 data full_data_75e240 -> main_AppDir by:main why:0x53ccf0 copies the program's own path into it and cuts it at the last backslash (strrchr 0x5c); 0x532160 reads <it>\include_sfx.ini

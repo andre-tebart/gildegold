@@ -26,10 +26,10 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, char *cmd, int show)
     i = 0;
     do {
         p = (char *)(unsigned)&ai_OptionsFile + i;
-        *((char *)(unsigned)&full_data_75e240 + i) = *p;
+        *((char *)(unsigned)&main_AppDir + i) = *p;
         i++;
     } while (*p != 0);
-    p = strrchr((char *)(unsigned)&full_data_75e240, 0x5c);
+    p = strrchr((char *)(unsigned)&main_AppDir, 0x5c);
     *p = 0;
     p = strrchr((char *)(unsigned)&ai_OptionsFile, 0x5c);
     strcpy(p + 1, "game.INI");
@@ -139,7 +139,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, char *cmd, int show)
         main_Exit();
         return 0;
     }
-    i = main_Unk532160();
+    i = main_OpenEngine();
     if (i == 0) {
 L_fail:
         main_Exit();

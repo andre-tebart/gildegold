@@ -3,7 +3,7 @@
 
 void sv_UpdateClock(void);
 
-int main_Unk537c70(char *f)
+int main_PreloadSound(char *f)
 {
     int *slot;
     int *line;

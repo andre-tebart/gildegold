@@ -1,6 +1,6 @@
 /* 0x4eddf0, resets the effect slots (0x6f1008, 8 of 0x170 bytes): all zero, then id -1 and the floats +8 / +0xc / +0x10 = 1.0; copies the four ints 0x770ae0 .. to 0x6f0e38 ..; clears 8 ints at 0x925100 and sets the first to -1 */
 
-void unk_Unk4eddf0(void)
+void unk_ResetEffectSlots(void)
 {
     int *p;
     int i;

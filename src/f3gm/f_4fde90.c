@@ -1,6 +1,6 @@
 /* 0x4fde90, loads the icon names: counts the 0x80-byte records of "<root>Character_Names.dat" (0x6f1b90 of them), allocates 0x30 bytes per name (0x6f1b94) and copies each name; resets the three flag bytes at 0x6f0454 */
 
-void unk_Unk4fde90(void)
+void unk_LoadIconNames(void)
 {
     char path[260], rec[260];
     char *s, *d;

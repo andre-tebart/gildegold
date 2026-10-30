@@ -106,7 +106,7 @@ void main_GameLoop(int ctl)
         net_Connect((unsigned)&full_data_75e1c0, U_I(((unsigned)&ls_SavePath + 0x84)));
         d2_CloseView(w);
     }
-    ai_Unk4c3480();
+    ai_InitStates();
     if ((U_I((unsigned)&ai_GameFlags) & 0x44) != 0) {
         U_I((unsigned)&d2_CutsceneActive) = 0;
         iv = ai_Unk589f10();

@@ -1,6 +1,6 @@
 /* 0x4b1f30, marks all lists of hst_Lists used and empty and frees every text file under "historie\" */
 
-void ai_Unk4b1f30(void)
+void hst_ResetLists(void)
 {
     int i, j;
 

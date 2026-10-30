@@ -1,6 +1,6 @@
 /* 0x4c3480, init: the free records, the lists, the states; asks the server for the start (0x4c3600 / 0x4c3630) */
 
-void ai_Unk4c3480(void)
+void ai_InitStates(void)
 {
     int i;
     G17STAT *s;

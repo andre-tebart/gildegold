@@ -2,7 +2,7 @@
    then each row of 6 accumulated with the factor 5ece60: v[c] = v[c] * k + v[c - 1], and the repeats of the previous column
    cleared). Rough draft. */
 
-void ai_Unk4d27a0()
+void ai_BuildFloatTable()
 {
     int i, j, k, b, e;
     float t;

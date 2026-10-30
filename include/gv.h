@@ -132,7 +132,7 @@ int gv_ReadAvatars(void *f);             /* 0x4ed270 */
 int unk_Unk4ed3f0(int *p);              /* 0x4ed3f0 */
 int unk_Unk4ed480(void *f);             /* 0x4ed480 */
 int unk_Unk4ed910(void *f, int v);      /* 0x4ed910 */
-void unk_Unk4eddf0(void);               /* 0x4eddf0 */
+void unk_ResetEffectSlots(void);               /* 0x4eddf0 */
 void gv_FreeEffectObjects(void);               /* 0x4ede70 */
 char *gv_FindEffect(int id);            /* 0x4eded0 */
 void unk_Unk4edf10(int id);             /* 0x4edf10 */

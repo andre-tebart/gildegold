@@ -20,7 +20,7 @@ void main_SetScreenSaver(unsigned on);     /* 0x531b80 */
 int main_Init(void);                    /* 0x531ba0 */
 void main_ShutdownEngine(void);            /* 0x531c20 */
 int main_OpenScreen(int m);
-int main_Unk532160(void);
+int main_OpenEngine(void);
 int main_Unk5327e0(void);
 void main_Unk532700(int name, int net);
 int main_Unk5335b0(void);

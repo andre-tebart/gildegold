@@ -4,7 +4,9 @@
    unit of rea 8cef7d5b (src/game/main.c); boundaries in decl/text.dcl, notes in src/main/open.md */
 struct UDPSERVER;
 extern char gm_PlayerRecords[];
-extern char d2_Wins[];
+struct D2VIEWV { int id; int wins[2]; char pad[0x2ac - 12]; };  /* the used fields of d2.h's D2VIEW (0x2ac bytes) */
+struct D2WINV { int id; short x, y, w, h; char pad0c[0x26c - 0xc]; int parent; char pad270[0x3c4 - 0x270]; };  /* the used fields of d2.h's D2WIN (0x3c4 bytes) */
+extern struct D2WINV d2_Wins[];
 extern char d2_Radios[];
 #include "txt_views.h"
 #include <windows.h>
@@ -58,15 +60,15 @@ extern int sv_ViewRectLeft;
 extern int sv_ViewRectRight;
 extern int sv_ViewRectTop;
 extern unsigned char ai_Unk9367e0;
-extern char d2_Views[];
-extern unsigned char d3e_Resolve;
+extern struct D2VIEWV d2_Views[];
+extern void *(*d3e_Resolve)(void);  /* 0x5fb920 */
 extern GAPDATA full_data_5f320c[];
 extern int snd_SystemBank;
-extern GAPDATA full_data_6f2460[];
-extern GAPDATA full_data_6f2468[];
-extern GAPDATA full_data_6f246c[];
-extern GAPDATA full_data_75e240[];
-extern unsigned char init_PlayerProfile;
+extern int main_TextReopen;
+extern int main_HmtMode;
+extern int main_HmtBuild;
+extern char main_AppDir[];
+extern unsigned char init_PlayerProfile[];
 extern GAPDATA full_data_60da10[];
 extern unsigned char ls_SavePath;
 extern unsigned char ai_Time;
@@ -158,7 +160,7 @@ extern GAPDATA full_data_6f2418[];
 extern GAPDATA full_data_6f245c[];
 extern int main_ScreenRestart;
 extern GAPDATA full_data_6f25b4[];
-extern unsigned char init_PlayerProfile;
+extern unsigned char init_PlayerProfile[];
 extern unsigned char kb_Last;
 extern unsigned char sv_FrameBase;
 extern unsigned char sv_FrameDepth;
@@ -178,7 +180,7 @@ extern GAPDATA full_data_624cf8[];
 extern GAPDATA full_data_75e180[];
 extern GAPDATA full_data_75e198[];
 extern GAPDATA full_data_75e5f0[];
-extern unsigned char init_PlayerProfile;
+extern unsigned char init_PlayerProfile[];
 extern unsigned char kb_Last;
 extern unsigned char sv_PopRequest;
 extern GAPDATA full_data_75e5f5[];
@@ -201,7 +203,7 @@ extern unsigned char d2_Unkf8a670;
 
 
 
-extern unsigned char init_PlayerProfile;
+extern unsigned char init_PlayerProfile[];
 extern unsigned char kb_Last;
 extern unsigned char sv_PopRequest;
 extern unsigned char ai_GameFlags;
@@ -214,7 +216,7 @@ extern GAPDATA full_data_75e5f0[];
 extern GAPDATA full_data_75e5f4[];
 extern GAPDATA full_data_75e628[];
 extern unsigned char hst_TextsOn;
-extern unsigned char init_PlayerProfile;
+extern unsigned char init_PlayerProfile[];
 extern unsigned char kb_Last;
 extern unsigned char sv_FrameMask;
 extern unsigned char sv_PopRequest;
@@ -263,7 +265,7 @@ extern unsigned char ai_Unkfb9068;
 extern unsigned char ai_Unkfb906c;
 extern short d2_ScreenH;
 extern short d2_ScreenW;
-extern char d2_Views[];
+extern struct D2VIEWV d2_Views[];
 extern unsigned char d3_ScaleX;
 extern unsigned char d3_ZFar;
 extern unsigned char d3_ZNear;
@@ -376,7 +378,7 @@ extern GAPDATA full_data_75e5ec[];
 extern GAPDATA full_data_75e5f0[];
 extern GAPDATA full_data_75e5f5[];
 extern GAPDATA full_data_75e628[];
-extern unsigned char init_PlayerProfile;
+extern unsigned char init_PlayerProfile[];
 extern unsigned char ai_BTypes;
 extern unsigned char ai_Difficulty;
 extern unsigned char ai_GameFlags;
@@ -498,11 +500,11 @@ extern int main_ScreenRestart;
 extern GAPDATA full_data_6f25a8[];
 extern GAPDATA full_data_6f25b4[];
 extern GAPDATA full_data_75e1c0[];
-extern GAPDATA full_data_75e240[];
+extern char main_AppDir[];
 extern GAPDATA full_data_75e5f0[];
 extern GAPDATA full_data_75e5f4[];
 extern GAPDATA full_data_75e628[];
-extern unsigned char init_PlayerProfile;
+extern unsigned char init_PlayerProfile[];
 extern unsigned char ls_SavePath;
 extern unsigned char main_MoneyCheat;
 extern unsigned char sv_FrameDepth;
@@ -549,6 +551,50 @@ char dd_CheckModes(int mode, int bpp, HWND parent, int c);  /* 0x41d230, dd_vesa
 void d3if_CreateCameras(void);          /* 0x448910, d3_interface.h */
 void d3io_SetStockDir(char *path);      /* 0x44c510, d3_int_io.h */
 void tex_SetPalette(char *dir);         /* 0x45fb30 */
+struct D2FADE { unsigned int flags; };  /* the head of d2.h's D2FADE (flags: 4 = done) */
+extern unsigned int d3anim_CacheMax;   /* 0x5f927c, d3_anim.h */
+int txt_LoadIncludes(char *file);       /* 0x42c9c0 */
+int txt_OpenText(char *file, int mode);  /* 0x42cbc0 */
+void err_Message(char *text);           /* 0x4222b0 */
+void hst_ResetLists(void);              /* 0x4b1f30, hst.c */
+void d2_ClearScreen(void);              /* 0x46e990, d2.h */
+int d2_OpenForm(int a, int b, char *name);  /* 0x4741f0, d2.h */
+void d2_PlaceWindow(int win, unsigned char flags);  /* 0x4756b0, d2.h */
+void d2_MoveObj(short x, short y, int obj);  /* 0x46cda0, d2.h */
+int io_PrintText(char *fmt, ...);       /* 0x515960 */
+int net_Connect(char *host, unsigned short port);  /* 0x424990 */
+void ai_InitStates(void);               /* 0x4c3480 */
+void ai_ClearTurnTable(void);           /* 0x587de0, unk_575860.h */
+int gm_LoadTables(char *root);          /* 0x4fe570, f3gm.h */
+void unk_ResetEffectSlots(void);        /* 0x4eddf0 */
+void unk_LoadIconNames(void);           /* 0x4fde90 */
+float gm_ItemPrice(int item, unsigned char n);  /* 0x5087f0 */
+int sfx_Startup(void);                  /* 0x42b720 */
+int sb_Init(int mem, int count, int a, int b, int c);  /* 0x425bc0 */
+int d3snd_Init(int max);                /* 0x417650 */
+int d3sndw_Init(unsigned short n);      /* 0x417ec0 */
+void sb_SetPath(char *path);            /* 0x426240 */
+int sb_LoadSampleBank(char *name, int flags);  /* 0x426950 */
+int main_PreloadSound(char *f);         /* 0x537c70 */
+int msx_Init(int a, int b, int c);      /* 0x423830 */
+void msx_SetPath(char *path);           /* 0x4243d0 */
+void ai_ApplyVolumes(void);             /* 0x5d5f10, unk_5d33b0.h */
+void sv_InitTick(void);                 /* 0x520ee0 */
+char init_ResetSceneUniverses(void);    /* 0x50d460 */
+int ch_Open(void);                      /* 0x40afb0 */
+void d3t_CreateSnowMipmaps(void);       /* 0x416980 */
+int ai_Init(void);                      /* 0x47d9e0 */
+int ahm_LoadPrototypes(int mode);       /* 0x4eb480 */
+int hmt_CreateBinaryFile(void);         /* 0x4ac440 */
+void hmt_Init(void);                    /* 0x4aca90 */
+void ai_BuildFloatTable(void);          /* 0x4d27a0 */
+void d2_CloseView(int view);            /* 0x4758f0, d2.h */
+struct D2FADE *d2_StartFade(int x, int y, int w, int h, char *name, int dur, unsigned int flags);  /* 0x4767d0, d2.h */
+void d2_ReleaseFade(struct D2FADE *f);  /* 0x476860, d2.h */
+void evtc_Register(void);               /* 0x40b8a0 */
+void ocmd_Register(void);               /* 0x40f960 */
+void chc_Register(void);                /* 0x40d270 */
+void sndc_Register(void);               /* 0x410220 */
 struct D2SURF { int makeFlags; int w; int h; };  /* the head of d2.h's D2SURF (d2.h cannot be included here: its externs conflict with this unit's data views) */
 void d2_BlitPart(int sx, int sy, int w, int h, struct D2SURF *src, int x, int y, struct D2SURF *dst);  /* 0x479480, d2.h */
 int d2_LockSurface(struct D2SURF *s);   /* 0x479020, d2.h */
