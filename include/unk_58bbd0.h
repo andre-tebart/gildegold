@@ -5,8 +5,6 @@
 
 struct AIBLD;
 struct D3SCENE;
-extern struct D3SCENE *d3_DefaultScene;  /* 0x5fb5b0, the default scene (d3.h) */
-extern int d3_CurrentScene;              /* 0x633444, the current scene index (d3.h) */
 
 /* 0x62aae8: the 15 building groups, 0x50 bytes each: the name, then its 12 kind ids (ai_BuildingName) */
 typedef struct AIBUILDNAME {

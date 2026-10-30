@@ -9,7 +9,6 @@
 #include <windows.h>
 #include <ddraw.h>
 
-extern LPDIRECTDRAWSURFACE4 dd_BackBuffer;      /* 0x631208, dd_vesa.h */
 
 /* debug frame dumps (REA_FRAME_DUMP=1 in tools/build.py; read with tools/framedump.py). While a file
    dump.trigger (holding a frame count) exists in the game directory, every d3_EndScene writes the back buffer

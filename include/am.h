@@ -93,7 +93,6 @@ typedef char ai_AssertAIACT[sizeof(AIACT) == 0x94 ? 1 : -1];
     __asm rep stosb                                                 \
 }
 
-extern unsigned char ai_OwnPlayer;      /* 0x6f1bc5 */
 
 int ai_Unk490c10(int a);                                        /* 0x490c10 */
 int ai_Unk490e00(AIPER *p, int a, int *out);                    /* 0x490e00, decision 0 */
@@ -1023,7 +1022,6 @@ void d3_PointToWorld(struct D3OBJECT *obj_, struct D3VECTOR *in, struct D3VECTOR
 #define G7_MASK(p) (((G5CH *)(p))->mask)
 
 int amt_GetKindLevel(int k);                                              /* 0x4e7c40 */
-extern int ai_Difficulty;                /* 0x6f23fc, the difficulty */
 extern const int ai_Unk5ed180[];              /* 0x5ed180, ring steps */
 extern const int ai_Unk5ed1a8;                /* 0x5ed1a8, the last of the ring sizes before it */
 int ai_Unk4a4ae0(float *a, float *b, int i, AIPER *p);                          /* 0x4a4ae0 */

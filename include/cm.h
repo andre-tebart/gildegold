@@ -362,7 +362,6 @@ extern char ai_MissionMode;  /* 0x624580 */
 extern unsigned char ai_NumPlayers;  /* 0x62489c */
 extern int ai_MissionPartner;  /* 0x6248a0, the netId of the other player in a network mission (-1 none; set by message 8, cleared by 10) */
 extern int ai_Unk631084;  /* 0x631084 */
-extern int d3_CurrentScene;  /* 0x633444 */
 extern int * ai_Unk633738;  /* 0x633738 */
 extern int ai_TradeMsgCount;  /* 0x6f046c */
 extern int ai_Unk6f0cd4;  /* 0x6f0cd4 */
@@ -887,7 +886,6 @@ void ch_SetVisible();  /* 0x402480 */
 extern int ai_Unk92bec0;  /* 0x92bec0 */
 void ai_Unk4d76a0(int *rec);  /* 0x4d76a0 */
 
-extern volatile int tb_Calls;  /* 0x6333d8 */
 extern int ai_Unk6f0ce4;  /* 0x6f0ce4, fight paused */
 
 extern int ai_Unk6f0d7c;  /* 0x6f0d7c */
@@ -1088,7 +1086,6 @@ int ai_Unk4e4020();  /* 0x4e4020 */
 extern int ai_Unk6f0d9c;  /* 0x6f0d9c, the scene nesting depth */
 extern int ai_Unk60d36c;  /* 0x60d36c, -1 or the object waited for (0x4284a0) */
 extern int ai_Unk5f8438;  /* 0x5f8438 */
-extern struct D3ANIM *d3t_CamMove;  /* 0x6310e8, the running camera animation (d3_tools.c; cm.c tests it through d3t_CamMoveI) */
 extern int ai_Unk6310e4;  /* 0x6310e4 */
 void d3sm_Destroy();  /* 0x45ef60 */
 void d3if_Reset();  /* 0x4473f0 */
@@ -1139,7 +1136,6 @@ void sv_UpdateSkyColors();  /* 0x525940 */
 #ifndef DATA_VIEWS_H
 extern char ai_Unk6f35ca;  /* 0x6f35ca */
 #endif
-extern int evt_NoGroup;  /* 0x5f8430 */
 
 extern int ai_Unk6f0d78;  /* 0x6f0d78 */
 extern int ai_Unk92c504[];  /* 0x92c504, the scene kind table (5 ints per kind) */

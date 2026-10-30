@@ -85,8 +85,6 @@ int hmt_RandomHeadIcon(void);                                                   
 void amt_SetEventOwner(int id);                                                       /* 0x4e6b40, defined elsewhere */
 void amt_SetPersonOwner(int id);                                                       /* 0x4e6b70, defined elsewhere */
 int gm_AddObjekt(int id, int proto, int n);                            /* 0x500970, defined elsewhere */
-extern signed char ai_Relations[768][768];                                       /* 0x7e5360 */
-extern signed char ai_RelationMemory[768][768];                                       /* 0x889f80 */
 #ifndef DATA_VIEWS_H
 extern char ai_Unkf42400;                                                        /* 0xf42400 */
 #endif
@@ -99,7 +97,6 @@ void cm_SendCreateCharacter(unsigned char a, int b, int c, unsigned short d, int
 int amt_GetFirstOffice(unsigned int k, struct AMTREC *out);                                         /* 0x4e6ec0, defined elsewhere */
 int amt_SendOfficeMessage(unsigned char a, char *b, char *c, unsigned char d, unsigned char e);                /* 0x4e6680, defined elsewhere */
 void cm_SendKillCharacter(int a, int b);                                                /* 0x4c4e00, defined elsewhere */
-extern void *main_Instance;                                                       /* 0x75e140, the module handle */
 extern char ch_EmptyName[];                                                      /* 0x631090, "" */
 int gm_FindRichest(short *id, int *rate);                                          /* 0x4fad60, defined elsewhere: the id and worth of the richest active character */
 #endif

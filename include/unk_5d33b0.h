@@ -169,7 +169,6 @@ typedef struct CMQUICKSAVE {
 extern unsigned char ai_GameState; /* 0x6f25ac, the game state: 0 loading / paused, 1 running, 2 ... (as cm.h / f3snd.h) */
 extern unsigned char ls_SaveSlot;   /* 0x6f1c38, the save slot the next save records: 0 autosave, 1 quicksave,
                                        the network save slot (as ls.c, which writes it into the save header) */
-extern char ch_EmptyName[];         /* 0x631090, the empty status / character name (f3init.c, f3gm.c) */
 extern unsigned short ai_ScreenImage[]; /* 0x766320, the 0x78 x 0xa0 16-bit screen image (as ls.c) */
 
 void ai_ApplyOptions(void);         /* 0x5d5e90, applies the option values to the run time */
@@ -298,11 +297,6 @@ void sv_OpenPlayerBar(int building, char k);  /* 0x525220, sv.c: opens the playe
 void sv_ClosePlayerBar(void);       /* 0x525440, sv.c: closes the player bar again */
 void sv_ClearSelection(void);       /* 0x52ae40, sv.c: clears the group selection (the focus and the selected flag of every character) */
 
-/* The scene / contact values the listeners read. */
-extern int ai_BuildingPerms;        /* 0x6f231c, the permission bits of the player in the building the
-                                       scene focus is on (f3gm.c 0x503530): bit 0x200 / 0x400 offer
-                                       the building's contact plates */
-extern int ai_ClickedObject;        /* 0x6f22e4, the object clicked in the scene this frame (cm.h) */
 /* Text-pointer slots of the contact plates (the text system fills them at run time). */
 
 

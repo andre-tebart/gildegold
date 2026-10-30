@@ -254,7 +254,6 @@ extern unsigned char d3fl_DetailShift;      /* 0x633750, 6 - log2(detail scale):
 extern unsigned char d3fl_DetailSizeShift;  /* 0x633751, detail level >> 7 (at most 2): d3fl_DetailScale << it is the detail size */
 extern char d3fl_Mips;                      /* 0x63373c */
 extern char d3fl_MapShift;                  /* 0x63373d, texture shift copied into D3FLMAP.shift (d3fl_Init argument) */
-extern int d3_FrameCount;                    /* 0x63343c, frame counter */
 extern unsigned long d3fl_W64[64 * 64];     /* 0xfbcd40, blend weights for 64 pixels per tile */
 extern unsigned long d3fl_W32[32 * 32];     /* 0xfbbd40 */
 extern unsigned long d3fl_W16[16 * 16];     /* 0xfbb900 */
