@@ -54,7 +54,9 @@ typedef struct AICHARVIEW {
     unsigned char officeKind;           /* +0x166, the kind of the office held (amt.h AMTCHARVIEW.officeKind) */
     char pad167[0x21];
     char selected;                      /* +0x188, the group selection flag (sv.c ai_Selected, cleared by sv_ClearSelection) */
-    char pad189[0x43];
+    char pad189[3];
+    int pic;                            /* +0x18c, the picture of the character the poker panel shows (reasoned: the picture index) */
+    char pad190[0x3c];
     unsigned int flags1cc;             /* +0x1cc, ai.h's flags1cc (bit 0x20000 = the blood revenge) */
     char pad1d0[0x4c];
 } AICHARVIEW;

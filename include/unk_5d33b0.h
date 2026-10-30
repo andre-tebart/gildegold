@@ -67,7 +67,11 @@ typedef struct POKERUI {                /* 0x70 bytes at 0x62dda0: the poker win
     POKERPANEL panel[3];                /* +0x1c, the panels of the forms 3, 1 and 2, in memory order */
 } POKERUI;
 typedef struct POKERWHO {               /* a seat's character record, the two names the game prints (G10NPC / AICHAR: +0x30 / +0x40) */
-    char pad00[0x30];
+    char pad00[9];
+    unsigned char female;               /* +0x09, G10NPC.female: picks the title text row (+ 10) */
+    char pad0a[3];
+    unsigned char title;                /* +0x0d, G10NPC.unk0d (1 .. 4): the title text (txt_Ptrs[0x114 + 10 * female + title]) */
+    char pad0e[0x22];
     char vname[16];                     /* +0x30, the first name */
     char nname[16];                     /* +0x40, the family name */
 } POKERWHO;
@@ -77,7 +81,8 @@ typedef struct POKERSEAT {              /* 0x34 bytes, unk_4a7140.h's G10SEAT; s
     int card[5];                        /* +0x08, indices into the deck, -1 = none (what ai_PokerSeatPanel shows) */
     int unk1c, unk20;                   /* +0x1c */
     int dropped;                        /* +0x24, the deck index of the card the seat put away in the exchange (ai_Unk4a79d0 sets it), -1 = none */
-    int unk28, unk2c, unk30;            /* +0x28 */
+    int foldPhase;                      /* +0x28, the phase the seat folded in (ai_Unk4a7c20), -1 = still in */
+    int unk2c, unk30;                   /* +0x2c */
 } POKERSEAT;
 typedef struct POKERGAME {              /* 0xc0 bytes at 0x6f3500, unk_4a7140.h's G10GAME (ai_PokerStart fills it, ai_PokerStep steps it) */
     int phase;                          /* +0x00, 1 .. 11: the step ai_PokerGame shows */
@@ -218,6 +223,7 @@ int ai_FindCurseEvent(struct AIBLD *b);                              /* 0x5741d0
 int gm_CurseObjectCount(struct AIBLD *b);                            /* 0x50cfd0, f3gm.c: 2 + the objects 0x274 / 0x27e / 0x28e / 0x291 of the building (as unk_4a7140.h) */
 int gm_CurseTargetCount(char *b);                                   /* 0x50d0b0, f3gm.c: counts from the objects 0x284 / 0x289 of the building */
 /* the filter of the gypsy windows: a const object, the original loads it from .rdata 0x5eed68 (mov eax,[..]; mov ecx,[..+4]) */
+static const volatile int ai_CardBack = 0x18;  /* 0x5ed1bc, .rdata: the picture offset of the card back (the original loads it from memory) */
 static const volatile unsigned __int64 gypsyFilter = 0x1a7fdfbb6;
 int d2_WinOpenSlider(int x, int y, int len, int p4, int p5, int pic, unsigned int flags, int win); /* 0x46a960, d2.c: a slider in a window */
 int sv_CheckGoodAmount(char *o, int n, unsigned char t);   /* 0x521040, sv.c: 1 when the character's stock covers n of the good t; @original: the definition takes unsigned, its callers push the good as a byte (no zero extension) */
