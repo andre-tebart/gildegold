@@ -37,9 +37,9 @@
 /* The two list heads live inside their 0xfc2e00 / 0xfc2580 head sentinels (the original's +0x1fc /
    +0x160 relationship). As separate COMMON pointers the linker would not keep them adjacent, so the
    loader would link the first object into one address while the readers start from another. */
-#define d3_StockListHead (*(D3OPS **)(d3_Unkfc2e00 + 0x1fc))  /* 0xfc2ffc */
-#define d3_AnimListHead (*(void **)(d3_Unkfc2580 + 0x160))    /* 0xfc26e0 */
-#define d3_Unkfc26e4 (*(int *)(d3_Unkfc2580 + 0x164))         /* 0xfc26e4 */
+#define d3_StockListHead (*(D3OPS **)((char *)d3_Unkfc2e00 + 0x1fc))  /* 0xfc2ffc */
+#define d3_AnimListHead (*(void **)((char *)d3_Unkfc2580 + 0x160))    /* 0xfc26e0 */
+#define d3_Unkfc26e4 (*(int *)((char *)d3_Unkfc2580 + 0x164))         /* 0xfc26e4 */
 extern D3INITCFG d3_Cfg;
 extern char d3d_Config[];
 extern char d3_AnimHead[];

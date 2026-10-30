@@ -22,8 +22,8 @@ extern char ai_Unk7d6a60[];                 /* 0x7d6a60, the five 0x2a90-byte st
    0x55 records of 0x80 bytes). The other names are views into it: a separate definition would reserve
    its own memory and the block writer/reader (gm_LoadTables, unk_Unk51f080, unk_Unk51b340) would then
    write over whatever the COMMON linker placed inside the 0xd4d0-byte span. */
-#define init_StockBlocks (ai_Unk7d6a60 + 0x10)  /* 0x7d6a70, the records of block 0 */
-#define ai_Unk7d6a64 (*(int (*)[3])(ai_Unk7d6a60 + 4))  /* 0x7d6a64, the rest of block 0's header */
+#define init_StockBlocks (*(char (*)[0xd4c0])((char *)ai_Unk7d6a60 + 0x10))  /* 0x7d6a70, the records of block 0 */
+#define ai_Unk7d6a64 (*(int (*)[3])((char *)ai_Unk7d6a60 + 4))  /* 0x7d6a64, the rest of block 0's header */
 /* 0x7d6a90 .. 0x7d6aa8 are views into stock block 0 (the record fields the price code reads), not
    separate COMMON symbols: they start inside init_StockBlocks[0] and are indexed with the same
    0x2a90 stride as the blocks. */

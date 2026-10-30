@@ -840,7 +840,7 @@ extern char *txt_Ptrs[]; /* 0x143a1c0 */
    in the original. A load through that pointer (not the fixed address) is what the unit's functions compile to,
    and the full link relocates the initializer, so the record is ours and no neighbour is touched. */
 char *const ai_Unk5eec60 = (char *)full_data_6fa020 + 0x40;  /* 0x5eec60, the pointer to the tutorial state record */
-#define S (*(char **)(unsigned)&ai_Unk5eec60)  /* 0x6fa060, the tutorial state record */
+#define S (*(char **)(unsigned)&ai_Unk5eec60)  /* the tutorial state record (at 0x6fa060): the pointer ai_Unk5eec60 holds */
 
 #include "time_view.h"
 

@@ -41,7 +41,7 @@ void unk_Unk511600(int s);
 #define G17_S(m, o) (*(short *)&(m).data[o])
 /* the block at 0x936420 is 0x24 bytes: the count then the eight player states at +4 (one object, so the
    0x24-byte memset / memcpy in 0x4cd580 and 0x4cdxx cannot run over a neighbour that LINK placed there) */
-#define ai_Unk936424 (*(int (*)[8])(ai_Unk936420 + 1))  /* 0x936424, the eight player states (a view) */
+#define ai_Unk936424 (*(int (*)[8])((char *)ai_Unk936420 + 4))  /* 0x936424, the eight player states (a view) */
 
 #include "time_view.h"
 

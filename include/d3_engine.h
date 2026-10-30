@@ -578,7 +578,7 @@ extern float d3_UOfs, d3_VOfs;              /* 0xfe73ac, 0xfc26ec */
 extern float d3_UOfsTab[32], d3_VOfsTab[32];    /* 0xfb9120, 0xfb90a0 */
 /* 0x63345d is the byte after d3_D3DActive, i.e. the first byte of the unaligned dword d3_NoTextures
    (ecmd.c's flag).  A separate definition cannot live inside the unit's block. */
-#define d3_Unk63345d (*(unsigned char *)((char *)&d3_D3DActive + 1))
+#define d3_Unk63345d (*(unsigned char *)((char *)&d3_D3DActive + 1))  /* 0x63345d */
 int d3d_GetVertexBuffer(void **buf, int *n);                                            /* 0x4364f0, d3_d3d.c */
 void d3d_DrawTriangles(void *unk, void *buf, DWORD num);                                /* 0x436510, d3_d3d.c */
 /* Inline asm: one transformed vertex from a D3PVERT and a texture coordinate pair (u, v at uv). */

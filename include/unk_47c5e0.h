@@ -23,7 +23,7 @@ extern D2ANIM d2_Anims[16];     /* 0xf8a520 */
 /* 0xf8a528: the same 0x110-byte animation pool seen 8 bytes in, as 0x11-byte D2SND records
    (d2_MoveObj 0x46cfac writes x at 0xf8a52d = d2_Anims + 8 + 5).  A separate definition would
    claim the pool and walk over d2_LightTableExternal / d2_BlitW / ... at 0xf8a630. */
-#define d2_AnimView (*(D2SND (*)[66])((char *)d2_Anims + 8))
+#define d2_AnimView (*(D2SND (*)[66])((char *)d2_Anims + 8))  /* 0xf8a528 */
 extern unsigned int d2_LastAnimTick;            /* 0x6f0464, tick of the last animation step */
 extern unsigned int d2_BlitW;   /* 0xf8a634 */
 extern unsigned int d2_Mode5Colour;   /* 0xf8a638, colour twice, 16 bit */

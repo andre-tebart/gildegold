@@ -549,7 +549,7 @@ typedef struct AITIMEX {                /* AITIME as 3 ints and a short (the ori
 #pragma pack(pop)
 
 #define TMX(m) (*(AITIMEX *)&(m).time)
-#define NOWX (*(AITIMEX *)&ai_Time)
+#define NOWX (*(AITIMEX *)&ai_Time)  /* 0x770ae0 */
 
 extern int ai_Unk5ffd1c;                /* 0x5ffd1c, the game day the count below was made on (-1 at start) */
 extern int ai_Unk6f0470;                /* 0x6f0470, number of characters of kind 5, 6, 7 */

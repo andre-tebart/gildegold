@@ -17,7 +17,7 @@ extern G28REC ai_Unk925520[96];
 /* ai_Unk925538: view of ai_Unk925520 (tools/data_views.py) */
 
 /* the random seed of the scenes (0x92c4e0), a linear congruence; the number is the high word modulo 0x7fff */
-#define G28_HI (*(unsigned short *)((char *)&ai_Unk92c4e0 + 2))
+#define G28_HI (*(unsigned short *)((char *)&ai_Unk92c4e0 + 2))  /* 0x92c4e2 */
 
 
 int ai_Unk4e2bd0(int a, int b)

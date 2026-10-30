@@ -16,7 +16,7 @@ extern char d3_Scenes[];
 
 /* the clock's hour as am.h / cm.h / amt.h declare it: a view of gv.h's ai_Time (0x770ae0 + 4), so it is not
    an object of its own in the data area */
-#define ai_TimeHour (*(unsigned short *)((char *)&ai_Time + 0x4))
+#define ai_TimeHour (*(unsigned short *)((char *)&ai_Time + 0x4))  /* 0x770ae4 */
 
 /* the engine's generic unaligned block copy (D3_COPY in d3.h, which needs the DirectX headers): size and
    destination through temps, the source named directly in the asm (0x4f9190 copies the record 0x91b480) */

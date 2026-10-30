@@ -19,7 +19,7 @@ extern char cm_SaveAcks[];
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 extern unsigned char ai_Unk7d6a40;
 extern char ai_Unk7d6a60[];  /* 0x7d6a60, the five 0x2a90-byte stock blocks (f3gm.c's definition) */
-#define ai_Unk7d6a64 (*(int (*)[3])(ai_Unk7d6a60 + 4))  /* 0x7d6a64, block 0's header tail (a view) */
+#define ai_Unk7d6a64 (*(int (*)[3])((char *)ai_Unk7d6a60 + 4))  /* 0x7d6a64, block 0's header tail (a view) */
 extern unsigned char ai_Grid;
 extern unsigned char ai_Unk91ac40;
 extern unsigned char ord_Statistics;
