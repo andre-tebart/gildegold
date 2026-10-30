@@ -39,7 +39,7 @@ int main_Unk532a70(void)
             for (i = 8; i != 0; i--)
                 *dst++ = *src++;
             src = (int *)((unsigned)&ls_SavePath + 0xa0);
-            dst = (int *)(unsigned)&main_NetGameRecord;
+            dst = (int *)&cm_NetGame.hdr;
             for (i = 0x1a; i != 0; i--)
                 *dst++ = *src++;
             *(short *)dst = *(short *)src;
@@ -48,7 +48,7 @@ int main_Unk532a70(void)
                 *dst++ = 0;
             U_I(((unsigned)&ai_Unk9364e0 + 0x2e0)) = *((unsigned *)hdr + 0x60 / 4) & 0xff;
             U_I(((unsigned)&ai_Unk9364e0 + 0x2e4)) = *((unsigned *)hdr + 0x6c / 4) & 0xff;
-            U_I((unsigned)&ai_ModeMask) = 0x7f;
+            cm_NetGame.mode = 0x7f;
             i = 0;
             do {
                 c = *((char *)hdr + 0x40 + i);

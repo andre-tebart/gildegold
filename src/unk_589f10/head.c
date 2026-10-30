@@ -19,13 +19,14 @@ extern D2WIN d2_Wins[];
 #include "unk_589f10.h"
 #include "di_input.h"
 #include "data_views.h"
+#include "cm_types.h"                     /* CMNETGAME */
+extern CMNETGAME cm_NetGame;  /* 0x936460, cm.c: the network game */
 #define GAPDATA __declspec(align(1)) unsigned char
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 extern char ai_OptionsFile[288];
 extern int ai_Unk1460ae0;
 extern int ai_Unk5fe710;
-extern int ai_ModeMask;
 extern char ai_Unk9364e0[752];
 extern char ch_EmptyName[1];
 extern int d2_ClickedId;
@@ -81,7 +82,6 @@ extern GAPDATA full_data_62aa80[];
 extern GAPDATA full_data_62aa84[];
 extern GAPDATA full_data_62aa88[];
 extern int d2_LastWindow;
-extern unsigned char ai_Unk936496;
 extern struct D2OBJ *d2_Objs;
 
 extern GAPDATA full_data_602568[];
@@ -89,7 +89,6 @@ extern GAPDATA full_data_6240cc[];
 extern GAPDATA full_data_6240e0[];
 extern GAPDATA full_data_62aa88[];
 extern GAPDATA full_data_62aaa4[];
-extern GAPDATA full_data_936476[];
 
 
 
@@ -155,7 +154,6 @@ extern GAPDATA full_data_6250ec[];
 extern GAPDATA full_data_6250f8[];
 extern GAPDATA full_data_625100[];
 extern GAPDATA full_data_62510c[];
-extern GAPDATA full_data_936476[];
 extern INIT_PLAYER init_PlayerProfile;
 extern unsigned char kb_Last;
 extern int main_Unk5361d0(int mask, int flag);

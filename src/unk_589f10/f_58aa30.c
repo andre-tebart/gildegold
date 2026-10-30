@@ -16,8 +16,8 @@ void ai_Unk58aa30(void)
 
     d2_SetForm(U_I((unsigned)&full_data_62aa88), 2);
     io_PrintText((char *)(unsigned)"$C");
-    strcpy(a, (char *)(unsigned)&full_data_936476);
-    strcpy(b, (char *)(unsigned)&full_data_936476);
+    strcpy(a, cm_NetGame.hdr.name);
+    strcpy(b, cm_NetGame.hdr.name);
     _strupr(a);
     sprintf(c, (char *)(unsigned)"_STADTWAPPEN_%s", a);
     id = d2_FindPic(c);
@@ -26,6 +26,6 @@ void ai_Unk58aa30(void)
     id = d2_WinOpenPic(5, 5, id, U_I((unsigned)&d2_LastWindow));
     x = *(short *)(U_I((unsigned)&d2_Objs) + 0x14 + id * 0x2ec) + 0xf;
     y = d2_CreateWinText(x, 0x19, b, U_I((unsigned)&d2_LastWindow));
-    sprintf(a, (char *)(unsigned)&full_data_62aaa4, U_I((unsigned)&full_data_144abd4), U_B((unsigned)&ai_Unk936496));
+    sprintf(a, (char *)(unsigned)&full_data_62aaa4, U_I((unsigned)&full_data_144abd4), cm_NetGame.hdr.players);
     d2_CreateWinText(x, *(short *)(U_I((unsigned)&d2_Objs) + 0x16 + y * 0x2ec) + 0x1b, a, U_I((unsigned)&d2_LastWindow));
 }

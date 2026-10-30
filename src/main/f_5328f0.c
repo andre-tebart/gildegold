@@ -27,8 +27,8 @@ int main_HostNetworkGame(void)
                 ls_SavePath.net.name[i] = c;
                 i++;
             } while (c != 0);
-            memcpy(main_NetGameRecord, &ls_SavePath.net, sizeof(struct NETHDR));
-            ai_ModeMask = 0x3f;
+            memcpy(&cm_NetGame.hdr, &ls_SavePath.net, sizeof(NETHDR));
+            cm_NetGame.mode = 0x3f;
             d3_SetViewport((float)(sv_ViewRectRight - sv_ViewRectLeft), (float)(sv_ViewRectBottom - sv_ViewRectTop), (float)sv_ViewRectLeft, (float)sv_ViewRectTop, d3_ZNear, d3_ZFar, d3_ScaleX, d2_ScreenW, d2_ScreenH);
             return 1;
         }

@@ -726,9 +726,6 @@ GAPDATA full_data_92bca8[11] = { 0 };  /* 0x92bca8 */
 GAPDATA full_data_92bcb3[5] = { 0 };  /* 0x92bcb3 */
 GAPDATA full_data_92bcb8[8] = { 0 };  /* 0x92bcb8 */
 GAPDATA full_data_930370[16] = { 0 };  /* 0x930370 */
-GAPDATA full_data_936460[16] = { 0 };  /* 0x936460 */
-GAPDATA main_NetGameRecord[6] = { 0 };  /* 0x936470 */
-GAPDATA full_data_936476[32] = { 0 };  /* 0x936476 */
 /* full_data_143a3c4: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_143a3cc: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_143a3d0: view of txt_Ptrs (build/mk_txt_views.py) */

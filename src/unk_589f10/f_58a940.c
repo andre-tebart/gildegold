@@ -15,6 +15,6 @@ void ai_Unk58a940(void)
     sv_ButtonRow(U_I((unsigned)&d2_LastWindow), 0, (char *)(unsigned)&full_data_62aa7c, 2, U_I((unsigned)&full_data_144abe8), U_I((unsigned)&full_data_144abec));
     d2_SetForm(U_I((unsigned)&full_data_62aa88), 8);
     sv_ButtonRow(U_I((unsigned)&d2_LastWindow), 0, (char *)(unsigned)&full_data_62aa84, 1, U_I((unsigned)&full_data_144abf0));
-    if (U_I((unsigned)&ai_ModeMask) == 0x7f)
+    if (cm_NetGame.mode == 0x7f)
         U_I(U_I((unsigned)&d2_Objs) + 0x3c + U_I((unsigned)&full_data_62aa80) * 0x2ec) = 1;
 }

@@ -59,6 +59,7 @@ extern int di_MaxX;
 extern char main_GamePath[];
 extern int main_TextureDivider;
 #include "cm_types.h"
+extern CMNETGAME cm_NetGame;  /* 0x936460, cm.c: the network game */
 extern G17MSG ai_Unk9367e0[];
 extern GAPDATA full_data_5f320c[];
 extern int main_TextReopen;
@@ -67,19 +68,15 @@ extern int main_HmtBuild;
 extern char main_AppDir[];
 #include "f3init_types.h"
 extern GAPDATA full_data_60da10[];
-extern int ai_ModeMask;
 extern GAPDATA full_data_624b48[];
 extern GAPDATA full_data_624b4c[];
 extern GAPDATA full_data_624b50[];
-extern GAPDATA main_NetGameRecord[];
-extern int ai_ModeMask;
 extern char ai_Unk9364e0[752];
 extern void * d3_Unk6333fc;
 extern GAPDATA full_data_5f1084[];
 extern GAPDATA full_data_624b48[];
 extern GAPDATA full_data_624b4c[];
 extern GAPDATA full_data_624b50[];
-extern GAPDATA main_NetGameRecord[];
 extern char ai_OptionsFile[288];
 extern int sv_PopRequest;
 extern char ai_DataPath[];
@@ -92,7 +89,6 @@ extern void * d3_Unk6333fc;
 
 
 extern GAPDATA full_data_5f1084[];
-extern GAPDATA full_data_936460[];
 extern int sv_PopRequest;
 extern char ai_MissionMode;
 extern char ai_DataPath[];

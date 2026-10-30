@@ -34,7 +34,7 @@ int ai_Unk58af50(int a, int b)
     U_B(((unsigned)&init_PlayerProfile + 0x9)) = (char)GetPrivateProfileIntA((char *)(unsigned)"Network", (char *)(unsigned)"Glauben", 0, (char *)(unsigned)&ai_OptionsFile);
     win = d2_OpenForm(0, 0, (char *)(unsigned)"Menu\\CHOOSEPLAYER");
     d2_CentreViewWindows(win);
-    io_TownDisplayName((char *)(unsigned)&full_data_936476, buf);
+    io_TownDisplayName(cm_NetGame.hdr.name, buf);
     d2_SetForm(win, 1);
     io_PrintText(0x1acf, buf);
     n = d2_GetWinObj(win, 1, io_PrintText(0x1ad0, 0x1ad2));

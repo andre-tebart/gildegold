@@ -7,10 +7,10 @@ int ai_Unk4cd510()
     int *p;
     char *q;
 
-    if (ai_ModeMask == 0x3f)
-        n = ai_Unk936496;
+    if (cm_NetGame.mode == 0x3f)
+        n = cm_NetGame.hdr.players;
     else
-        n = ai_Unk936496;
+        n = cm_NetGame.hdr.players;
     if (ai_Unk936420[0] < n)
         return 0;
     for (p = ai_Unk936424; (int)p < (int)(ai_Unk936424 + 8); p++) {

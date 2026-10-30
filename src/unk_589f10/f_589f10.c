@@ -63,7 +63,7 @@ int ai_Unk589f10(void)
     U_B((unsigned)&full_data_6f5e56) = 0x5a;
     U_B((unsigned)&full_data_6f5e58) = 0x78;
     U_B((unsigned)&full_data_6f5e5a) = 0x5a;
-    if (U_I((unsigned)&ai_ModeMask) == 0x7f) {
+    if (cm_NetGame.mode == 0x7f) {
         U_B((unsigned)&full_data_6f5e2b) = U_B(((unsigned)&ai_Unk9364e0 + 0x2e0));
         U_B((unsigned)&full_data_6f5e30) = U_B(((unsigned)&ai_Unk9364e0 + 0x2e4));
         U_I((unsigned)&full_data_6f5e2c) = U_I(((unsigned)&ai_Unk9364e0 + 0x2ec)) - 0x59a;

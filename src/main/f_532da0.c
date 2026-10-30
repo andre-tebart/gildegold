@@ -129,7 +129,7 @@ int main_Unk532da0(int host)
                         WritePrivateProfileStringA("Network", "Host", main_NetHost, (char *)(unsigned)&ai_OptionsFile);
                         U_I((unsigned)&sv_PopRequest) = 1;
                         ret = 1;
-                        d = (int *)(unsigned)&full_data_936460;
+                        d = (int *)&cm_NetGame;
                         for (k = 0; k < 0x20; k++)
                             d[k] = ((int *)r)[k];
                         if (host != 0 && *(int *)(r + 0x7c) == 0x7f) {

@@ -39,8 +39,7 @@ extern int ai_Unk936400;
 extern int ai_Unk936404;
 extern int ai_Unk936408;
 extern unsigned int ai_Unk936420[9];
-extern unsigned char ai_Unk936496;
-extern int ai_ModeMask;
+extern CMNETGAME cm_NetGame;
 extern char ai_Unk9364e0[752];
 extern int ai_Unk9367d0;
 extern int ai_Unk9367d4;
@@ -287,8 +286,7 @@ int ai_Unk936400 = 0;  /* 0x936400 */
 int ai_Unk936404 = 0;  /* 0x936404 */
 int ai_Unk936408 = 0;  /* 0x936408 */
 unsigned int ai_Unk936420[9] = {0};  /* 0x936420, the count then the eight player states (0x24 bytes) */
-unsigned char ai_Unk936496 = 0;  /* 0x936496 */
-int ai_ModeMask = 0;  /* 0x9364dc */
+CMNETGAME cm_NetGame = {0};  /* 0x936460, the network game (hdr.players 0x936496, mode 0x9364dc) */
 char ai_Unk9364e0[752] = {0};  /* 0x9364e0 */
 int ai_Unk9367d0 = 0;  /* 0x9367d0 */
 int ai_Unk9367d4 = 0;  /* 0x9367d4 */

@@ -1,5 +1,6 @@
-/* The message records of cm's rings ai_Unka69140 / ai_Unk9367e0 (G17MSG) and ai_Unkf31160 (G17STAT), for the
-   units that declare them without the rest of cm.h: types only. cm.h includes it. */
+/* The message records of cm's rings ai_Unka69140 / ai_Unk9367e0 (G17MSG) and ai_Unkf31160 (G17STAT) and the
+   network game record cm_NetGame (CMNETGAME), for the units that declare them without the rest of cm.h:
+   types only. cm.h includes it. */
 #ifndef CM_TYPES_H
 #define CM_TYPES_H
 
@@ -23,5 +24,16 @@ typedef struct G17STAT {                /* 10 bytes, ai_Unkf31160[]: the state o
     int value;                          /* 0x06 */
 } G17STAT;
 #pragma pack(pop)
+
+#include "ls_types.h"                     /* NETHDR */
+typedef struct CMNETGAME {              /* 0x80 bytes at 0x936460: the network game hosted or joined (main_Unk532da0
+                                           copies a game list entry over it as 0x20 dwords) */
+    char pad00[0x10];
+    NETHDR hdr;                         /* 0x10, the game record (main_HostNetworkGame copies ls_SavePath.net here);
+                                           hdr.name at 0x16, hdr.players at 0x36 */
+    char pad7a[2];
+    int mode;                           /* 0x7c, 0x3f a new game, 0x7f a saved one (was ai_ModeMask) */
+} CMNETGAME;
+typedef char cm_AssertCMNETGAME[sizeof(CMNETGAME) == 0x80 ? 1 : -1];
 
 #endif
