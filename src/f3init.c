@@ -2834,8 +2834,6 @@ void init_FillMarkets(int p)
     char *pr;
     INIT_STOCK *g;
     INIT_OBJ *m;
-    int v;
-    float f;
 
     i = 0x55;
     g = &init_StockBlock[p].rec[0];
@@ -2844,11 +2842,9 @@ void init_FillMarkets(int p)
         m = (INIT_OBJ *)gm_FindMarketObject(g->item);
         if (m != 0) {
             if (*pr == 0x17 || *pr == 0x25)
-                f = util_RandomF() + 0.5;
+                cm_SendExSellObject(m->objId, -1, g->item, (int)((util_RandomF() + 0.5) * g->demand), ai_OwnPlayer, 0);
             else
-                f = util_RandomF() + 0.2;
-            v = (int)(f * g->demand);
-            cm_SendExSellObject(m->objId, -1, g->item, v, ai_OwnPlayer, 0);
+                cm_SendExSellObject(m->objId, -1, g->item, (int)((util_RandomF() + 0.2) * g->demand), ai_OwnPlayer, 0);
         }
         g++;
         i--;
