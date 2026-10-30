@@ -13089,7 +13089,10 @@ int ai_Unk4e19a0(char *m)
     if (o == 0)
         return 0;
     txt_Format(buf, 0x3fd9, o, *(int *)(m + 0x80));
-    strcat(buf, (ai_GameFlags & 4) != 0 ? ai_Unk143e8c0 : ai_Unk143e8bc);
+    if ((ai_GameFlags & 4) != 0)
+        strcat(buf, ai_Unk143e8c0);
+    else
+        strcat(buf, ai_Unk143e8bc);
     for (i = 0; i < (unsigned char)m[0x30]; i++) {
         p = (char *)gm_FindChar(*(int *)(m + 0x34 + i * 4));
         if (p != 0 && (p[2] == 6 || p[2] == 7))
