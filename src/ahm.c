@@ -51,8 +51,11 @@ int ahm_HasRecord(char *c)
 {
     AHMCHAR *ch = (AHMCHAR *)c;
 
-    if ((c[0x1cc] & 4) != 0 && ch->obj != 0 && ai_BTypes[ch->obj->kind * 0x24d] == 0x1e)
-        return ch->obj->rec != 0;
+    if ((c[0x1cc] & 4) != 0 && ch->obj != 0) {
+        if (ai_BTypes[ch->obj->kind * 0x24d] == 0x1e)
+            return ch->obj->rec != 0;
+        return 0;
+    }
     return 0;
 }
 /* 0x4eab20, the share (byte / 252) number i (0 .. 3) of the record of the character c's object (+8 .. +0xb); -1.0 when it has none */
