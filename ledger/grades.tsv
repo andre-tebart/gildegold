@@ -1469,7 +1469,7 @@ exe	0x004817a0	ai_CalcAngriff	ai	draft	draft	deep
 exe	0x00481ef0	ai_CalcMeisterDiebe	ai	draft	draft	deep
 exe	0x00482f00	ai_CalcMeisterRaeuber	ai	draft	draft	deep
 exe	0x004836a0	ai_CalcMeisterBank	ai	byte	draft	deep
-exe	0x00483a60	ai_Unk483a60	ai	byte	draft	deep
+exe	0x00483a60	ai_Unk483a60	ai	shape	draft	deep
 exe	0x00483d30	ai_StartBuildingWork	ai	shape	draft	deep
 exe	0x00483ee0	ai_EndWorkerPose	ai	byte	readable	
 exe	0x00483fc0	ai_Unk483fc0	ai	draft	draft	deep
@@ -2435,7 +2435,7 @@ exe	0x004cf670	ai_Unk4cf670	cm	draft	draft
 exe	0x004cf9c0	ai_Unk4cf9c0	cm	draft	draft	
 exe	0x004cfc10	ai_Unk4cfc10	cm	draft	draft	
 exe	0x004cfe70	ai_Unk4cfe70	cm	byte	draft	
-exe	0x004cfeb0	ai_Unk4cfeb0	cm	draft	draft	
+exe	0x004cfeb0	ai_Unk4cfeb0	cm	byte	draft	
 exe	0x004cffd0	ai_Unk4cffd0	cm	draft	draft	
 exe	0x004d0200	ai_Unk4d0200	cm	draft	draft	
 exe	0x004d02d0	ai_Unk4d02d0	cm	byte	draft	

@@ -66,23 +66,7 @@ typedef struct AIDEC {                  /* 0x24 bytes, the decision table at 0x6
     void *fn;                           /* 0x20 */
 } AIDEC;
 
-typedef struct AIACTW {                 /* 8 bytes */
-    unsigned char k;                    /* 0x0, a need index */
-    char pad1[3];
-    float w;                            /* 0x4 */
-} AIACTW;
-
-typedef struct AIACT {                  /* 0x94 bytes, an AI action (table at 0xf83ec0) */
-    unsigned char id;                   /* 0x00 */
-    char name[0x23];                    /* 0x01 */
-    void *eval;                         /* 0x24 */
-    void *decide;                       /* 0x28 */
-    void *exec;                         /* 0x2c */
-    AIACTW w1[4];                       /* 0x30 */
-    char pad50[0x20];
-    AIACTW w2[4];                       /* 0x70 */
-    unsigned int flags;                 /* 0x90 */
-} AIACT;
+#include "am_types.h"                /* G7GRP, AIACTW, AIACT */
 #pragma pack(pop)
 
 typedef char ai_AssertAIPER[sizeof(AIPER) == 0x21c ? 1 : -1];
@@ -1023,7 +1007,6 @@ void ai_Unk5a8c00(unsigned short *param_1, char *param_2, int param_3);         
 
 /* ---- 0x4a3af0..0x4a7140 (was unk_4a3af0.h) ---- */
 #define amt_GetKindLevel ai_Unk4e7c40_g9      /* k is an unsigned char here */
-#include "am_types.h"                /* G7GRP */
 
 typedef struct G7MKT {                  /* 0xb4 bytes, the prices of an item group (0x4a4680) */
     unsigned int key;                   /* 0x00 */

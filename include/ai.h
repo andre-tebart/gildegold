@@ -124,26 +124,7 @@ typedef struct AIBTYPE {                /* 0x24d bytes, ai_BTypes[] */
 } AIBTYPE;
 #pragma pack(pop)
 
-#ifndef AI_TIME_TYPE                    /* ai_types.h has the same AITIME under this guard (see there) */
-#define AI_TIME_TYPE
-#pragma pack(push, 2)
-typedef struct AITIME {                 /* 14 bytes: the game time ai_Time, the AI's last-run time ai_LastUpdateTime */
-    int year;                           /* 0x0, the year (0x578 + it is the calendar year) */
-    unsigned short hour;                /* 0x4, the hour */
-    union {
-        struct {
-            short unk6;                 /* 0x6 */
-            int unk8;                   /* 0x8 */
-            short unkc;                 /* 0xc */
-        };
-        struct {
-            int min;                    /* 0x6, the minute */
-            int xy;                     /* 0xa */
-        };
-    };
-} AITIME;
-#pragma pack(pop)
-#endif
+#include "ai_types.h"                /* AITIME, AISTORE */
 
 typedef struct AIJOB {                  /* a job (he_FindEvent / he_NextEvent) */
     char kind;                          /* 0x00 */
@@ -433,18 +414,6 @@ typedef struct AIRECIPE {               /* 0xb8 bytes, filled by gm_StallGoodsLi
     int amount[16];                     /* 0x68 */
     int pada8[4];
 } AIRECIPE;
-
-#ifndef AI_STORE_TYPE                   /* ai_types.h has the same AISTORE under this guard (see there) */
-#define AI_STORE_TYPE
-typedef struct AISTORE {                /* 24 bytes, a stock list per building, gm_Offers[] */
-    struct AIBLD *bld;                  /* 0x00 */
-    int unk04;                          /* 0x04 */
-    int goodsObj;                       /* 0x08, the goods object of the offer (the f3gm.c note of 0x7e4b20) */
-    int count;                          /* 0x0c */
-    int unk10;                          /* 0x10 */
-    int unk14;                          /* 0x14 */
-} AISTORE;
-#endif
 
 typedef struct AIFIN {                  /* what gm_PlayerRecord finds for a character */
     char pad00[0x40];

@@ -33,11 +33,12 @@ The last 35 (588a9e8 .. 0700500):
   f3snd_types.h (G16AMBIENTON), am_types.h (G7GRP), unk_4b39f0_types.h (G13MIS), unk_5d33b0_types.h
   (OPTIONBYTES, was a type of unk_5d33b0's head), f3init_types.h (INIT_PLAYER, f3init has no header).
   The readers include them and declare the tables as defined.
-- ai.h may not include a header: any include from ai.h (an empty file too, any name, any place) flips
-  ai_Unk483a60 (0x483a60, byte) to shape (obj / ok stack slots 0x10 / 0x18 swap); so do AIACT in ai's
-  set and any added typedef in ai's head. ai_types.h (AITIME, AISTORE) is therefore not included by
-  ai.h: ai.h keeps identical copies under the same guards AI_TIME_TYPE / AI_STORE_TYPE (a guard keeps
-  the byte). Change both copies together. ai's ai_Unkf83ec0 stays `char[]` (@original, that evidence).
+- ai.h includes headers again (user decision, 2026-10-30): any include from ai.h (an empty file too)
+  flips ai_Unk483a60 (0x483a60) byte -> shape (obj / ok stack slots 0x10 / 0x18 swap): a declaration-set
+  tie-break, not evidence of the original's declarations; its drop is accepted (promoted). ai.h includes
+  ai_types.h (AITIME, AISTORE: one copy, the AI_TIME_TYPE / AI_STORE_TYPE guards gone), AIACTW / AIACT
+  moved to am_types.h and ai declares ai_Unkf83ec0 as defined (AIACT[]). The exception covers only that
+  kind of byte match (one any unrelated declaration change flips).
 - Header includes instead of copies: ls (ai.h), unk_589f10 (di_input.h), f3init / hst / unk_4b39f0
   (net.h, their local net_Conn struct views gone).
 - The texture family: TSFLAGS is a typedef of D3TEXFLAGS (one type); the headers' tex_Load / Create /
