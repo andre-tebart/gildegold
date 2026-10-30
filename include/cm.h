@@ -722,7 +722,7 @@ int snd_LoadVoiceBank();  /* 0x4c2830 */
 struct SBBANK * sb_LoadSampleBank();  /* 0x426950 */
 int ai_Unk4d4050();  /* 0x4d4050 */
 void ai_Unk4e2e60();  /* 0x4e2e60 */
-int ai_Unk4e3650();  /* 0x4e3650 */
+void ai_Unk4e3650(void);  /* 0x4e3650 */
 void sv_Unk5301a0(void);  /* 0x5301a0 */
 void d3sky_Init(struct D3SKY *s, char build);  /* 0x45d690 */
 struct D3IOOBJ * d3io_LoadObjectRef();  /* 0x44e190 */
