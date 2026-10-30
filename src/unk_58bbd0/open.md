@@ -30,6 +30,7 @@ The production / trade windows (layout 2026-10-23 session 21). Start 0x58bbd0, n
   0x62c32c .. 0x62c39c) end the stretch; the next frontier is 0x5a9b50.
 
 ## Open work
+- **headers (2026-10-30, typing pass 2)**: head.c includes txt_views.h, unk_58bbd0.h, di_input.h, evt.h, d3.h, d3_light.h, data_views.h, d2_types.h, f3snd_types.h, ai_types.h, unk_5d33b0_types.h, am_types.h, cm_types.h, time_view.h, ls.h, f3init.h; keeps 3 cast / view macros with @original byte evidence (the address and the matched caller are in each comment): unk_Unk5136b0K, sv_SelectPanelObjectK, gm_Unk50a970K.
 - ai_Unk58ff00 (0x58ff00, draft): base-3's meaning fix (the call at 0x59035d is `di_ClearEvents(2)`, the original
   pushes 2) moved it from 643 / 896 to 642 / 901 (differing bytes / differing instructions, decomp 2026-10-25):
   one byte closer, five instructions worse in the diff alignment inside an otherwise very different draft (frame /

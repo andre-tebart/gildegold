@@ -10,6 +10,7 @@ Migrated from the notes/tus.md table on 2026-10-23 (the row's prose, unchanged):
 - Range then: 0x4bd950..0x4c01b0
 
 ## Open work
+- **headers (2026-10-30, typing pass 2)**: head.c includes d2_types.h, txt_views.h, rt.h, di_input.h, data_views.h, d3_types.h; keeps 2 cast / view macros with @original byte evidence (the address and the matched caller are in each comment): d2_SetObjValue4, cm_SendExSellObjectI; views / casts without byte evidence of their own (weak definitions or drafts' spellings, notes/headers.md debt item 1): d2_ObjsC.
 - Near-misses: 0x4bff40 (96 B: save loop), 0x4bfa40 (133 B), 0x4bdb30 (132 B, behaviour: stack slots).
 - Far drafts (Ghidra lost the frames of 0x4be940 and 0x4bf5b0; drafted from the disassembly): 0x4bdcd0, 0x4be180,
   0x4be3b0, 0x4be790, 0x4be940 (original size), 0x4bf080, 0x4bf440, 0x4bf5b0 (map window struct as `int m[0x9ea]`),

@@ -12,6 +12,7 @@ Migrated from the notes/tus.md table on 2026-10-23 (the row's prose, unchanged):
 - Was: unk_44abb0.c (round 12)
 
 ## Open work
+- **headers (2026-10-30, typing pass 2)**: head.c includes d3.h, d3_engine.h, d3_fl.h, d3_interface.h, d3_int_io.h; no @original cast or view.
 - match 2026-10-22 (nothing gained, new tries recorded; the older list is in notes/units/d3_io_b.md):
   - d3io_AttachStock: still `add ecx,edx; mov esi,ecx` instead of `lea esi,[ecx+edx]`. New: int local `ti = tri->src->tex`
     before the test, `ti + (D3IOTEX *)d3_Textures`, a `D3TEXTURE *` local with casts at the uses, `&((D3IOTEX *)d3_Textures)[i]`,

@@ -12,6 +12,7 @@ Migrated from the notes/tus.md table on 2026-10-23 (the row's prose, unchanged):
 - Was: ai.c, unk_47d960.c, unk_47ec20.c, unk_4817a0.c, unk_4854f0.c, unk_48a4d0.c (round 21), unk_483fc0.c, unk_4864b0.c, unk_487fb0.c, unk_489a70.c (round 22)
 
 ## Open work
+- **headers (2026-10-30, typing pass 2)**: head.c includes net.h, ai.h, data_views.h, d3_types.h, am_types.h; keeps 5 cast / view macros with @original byte evidence (the address and the matched caller are in each comment): util_RandomU, he_MessageBoxQuickjumpI, gm_Unk505e60S, cm_SendRemoveGoodsI, cm_SendExSellObjectI; views / casts without byte evidence of their own (weak definitions or drafts' spellings, notes/headers.md debt item 1): ai_FallbackBuildingT, ai_PlayerBuildingT, ai_GoodsT, ai_BldsT, ai_BTypesT, ai_CharsT, ai_TimeT.
 - AI drafts (ai.c, whole TU joined in round 22): near-misses ai_Unk48a380 9 B (register roles), ai_Unk483d30 13,
   ai_Unk489870 56, ai_Unk487180 350 (size exact), ai_Unk487410 730 (block layout) (notes/units/ai.md); far off
   ai_Unk4801f0 2339/3184, ai_CalcMeisterDiebe 3261/4144, ai_Unk47ddf0 1031/1328 (f1), 47edb0 1618 / 47f700 1867 /

@@ -10,6 +10,7 @@ Migrated from the notes/tus.md table on 2026-10-23 (the row's prose, unchanged):
 - Was: tag "f3_gm:"
 
 ## Open work
+- **headers (2026-10-30, typing pass 2)**: head.c includes d2_types.h, txt_views.h, gv.h, di_input.h, data_views.h, am_types.h, d3_types.h, amt_types.h, ai_types.h, time_view.h, io_text.h, ls.h; keeps 2 cast / view macros with @original byte evidence (the address and the matched caller are in each comment): ai_Unk5a8560K, util_RandomU; views / casts without byte evidence of their own (weak definitions or drafts' spellings, notes/headers.md debt item 1): ai_PlayerCharC.
 - 0x4fe570 gm_LoadTables (draft, unworked): the merge 2026-10-25 turned 149 differing bytes / 62 differing
   instructions into 148 / 65 - not a merge resolution, the body is identical in every branch. Cause isolated to
   the 2026-10-25 base-2 worker's typed `ls_Read` prototype in gv.h (was `int ai_Unk51c920();`, a lint X fix

@@ -11,6 +11,7 @@ Migrated from the notes/tus.md table on 2026-10-23 (the row's prose, unchanged):
 - Range then: 0x411680..0x4175c0
 
 ## Open work
+- **headers (2026-10-30, typing pass 2)**: head.c includes d3.h, d3_d3d.h, d3_io_t.h, surf.h, d3_tools.h; no @original cast or view.
 - match 2026-10-23 (4th), no gain: d3t_CreateSmoke (21 B): `now` as unsigned int / DWORD / int and all 6 term orders of the time sum: same bytes. d3t_UpdateSnow (33 B / 8 lines, the int loads of hw / hh sit earlier in the original, between the fmuls of the fall.z statement): hw / hh (either order) moved to every position among the wind.z / gy / fall.x..z statements (42 variants): same or worse.
 - match 2026-10-22 (2nd pass), no gain: d3t_CreateSmoke (21 B; `now` load and `i++` scheduling in the last statement): term orders of `(rand() & 7) + i * delay + now` (5), `p++, i++`, tm temps (4): no change. d3t_EarthCB (15 B): the original's `dead` / `a` stack slots swapped; all 719 declaration orders of the six local declaration lines give the same code (slots follow use weights, not order).
 - see notes/units/d3_engine.md, Open work: "Header cleanup from round 8: d3_engine.h's d3_Unk4538a0(int) takes a char (ocmd's d3_Light ..."

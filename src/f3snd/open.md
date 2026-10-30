@@ -11,6 +11,7 @@ Migrated from the notes/tus.md table on 2026-10-23 (the row's prose, unchanged):
 - Was: unk_4c01b0.c (layout 2026-10-22)
 
 ## Open work
+- **headers (2026-10-30, typing pass 2)**: head.c includes f3snd.h, data_views.h; keeps 2 cast / view macros with @original byte evidence (the address and the matched caller are in each comment): util_RandomU, sb_SetVolumeI; views / casts without byte evidence of their own (weak definitions or drafts' spellings, notes/headers.md debt item 1): sb_PlaySampleI, sb_IsVariationI, sb_GetVariationI, sb_SetRestartC, d3snd_DetachI, d3snd_StopI, d3snd_SetHoldI, d3snd_AttachI, d3snd_SetVolumeI, ai_MarketBuildingV, ai_FallbackBuildingB, ai_PlayerBuildingB, ai_CharsC.
 - Near-miss (layout 2026-10-23): 0x4c2f30 (the favour comment, 417 B original): the original has a 0xbc frame (a 0xb0 byte local that VC6 drops when unused; make it used), keeps the random number as `mov bp,ax` + `and ebp,0xffff`, and re-reads the owner through a second `xor eax,eax` / `mov ax` pair; the returns are duplicated epilogues (no shared tail).
 - Near-misses: 0x4c1fc0 (35 B), 0x4c30e0 (50 B); 0x4c2c70 and 0x4c23f0 now match (session 3 below).
 - 0x4c1bd0 (base-2 2026-10-24): fixed - byte + readable as snd_PlayOutdoorTrack (literals, messages, the signed

@@ -12,6 +12,7 @@ Migrated from the notes/tus.md table on 2026-10-23 (the row's prose, unchanged):
 - Was: unk_45b510.c (round 12)
 
 ## Open work
+- **headers (2026-10-30, typing pass 2)**: head.c includes d3.h, d3_d3d.h, d3_sm.h, d3s.h, data_views.h; no @original cast or view.
 - shfix leftovers after round 19 (notes/units/d3s.md [shfix], notes/units/unk_4591a0.md [shfix2]):
   d3_Unk4591a0 (5, `1.0f - r` operand order), d3_Unk458e70 (9), d3_GetBoxVerts (23), d3s_Unk459fb0 (234),
   d3s_Unk45a880 (389), d3s_Unk45a2e0 (575, not tried in round 19), d3_Unk459300 (1053), d3s_Unk45af50 (1063). TU 458810 + 4591a0 (d3_mesh.c?) unproven. D3STERR / D3STBLOCK views

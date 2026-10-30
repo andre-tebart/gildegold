@@ -11,6 +11,7 @@ Migrated from the notes/tus.md table on 2026-10-23 (the row's prose, unchanged):
 - Was: unk_4adf40.c (layout 2026-10-22, renamed session 6)
 
 ## Open work
+- **headers (2026-10-30, typing pass 2)**: head.c includes hst.h, txt.h, net.h, d2_types.h; keeps 2 cast / view macros with @original byte evidence (the address and the matched caller are in each comment): util_RandomU, gm_AddHealthS; views / casts without byte evidence of their own (weak definitions or drafts' spellings, notes/headers.md debt item 1): ai_GoodsT, ai_BldsT, ai_BTypesT, ai_CharsT, ai_TimeT.
 - Session 6 near-misses: 0x4b1bd0 (only the out-of-line `n = 10` block placement; tried `if (n > 10) .. else if`
   and `if (n <= 10) {..} else`), 0x4b3280 (the else-if chain after `d == 1` sits inline, original out of line; tried
   `r = d` and swapped branches), 0x4b35e0 65 B (same shape as 0x4b3280), 0x4b2530 hst_ParseCommandline_2nd_Pass

@@ -12,6 +12,7 @@ Migrated from the notes/tus.md table on 2026-10-23 (the row's prose, unchanged):
 - Was: unk_43eab0.c (round 12)
 
 ## Open work
+- **headers (2026-10-30, typing pass 2)**: head.c includes d3.h, d3_engine.h, d3_fl.h, d3_light.h, d3_d3d.h, data_views.h; no @original cast or view; views / casts without byte evidence of their own (weak definitions or drafts' spellings, notes/headers.md debt item 1): tex_GetFrameF, tex_FindF, d3_DirToWorldD.
 - d3d_TexRMask/GMask/BMask (0xfe79fc..) are members of d3d_UsedTexFormat reached through second symbols
   (one-name-one-address rule; d3_fl owner). (lfix's two uv run link bugs were fixed after the round-13 close,
   with the user's go: `--nonmatching` has 0 conflicts too.)

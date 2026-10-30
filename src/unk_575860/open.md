@@ -14,6 +14,7 @@ Globals seen so far: 0x5eec60 (the state record pointer: +0 the state 1 .. 0xc, 
 0x6333e0, the gates 0x6f265c / 0x6f2660 / 0x6f262c, the pause pair 0x6310e4 / 0x75e8c0, 0x6f22a0 = 0x6f229c.
 
 ## Open work
+- **headers (2026-10-30, typing pass 2)**: head.c includes d2_types.h, txt_views.h, unk_575860.h, txt.h, di_input.h, evt.h, data_views.h, f3init_types.h, time_view.h, ls.h, f3init.h; keeps 1 cast / view macros with @original byte evidence (the address and the matched caller are in each comment): sv_SelectPanelObjectK; views / casts without byte evidence of their own (weak definitions or drafts' spellings, notes/headers.md debt item 1): S.
 - Session 17 ROUGH skeletons still to fill from the disassembly (all building, all nonmatching): 0x577e50 (chapter
   form), 0x578180 (the tutorial start), 0x5784a0, 0x578570 / 0x578e40 / 0x579570 / 0x57aa80 / 0x57aeb0 (the
   chapter chains, mechanically generated - the field stores are exact, the memset / scheduling is not),

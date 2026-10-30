@@ -10,6 +10,7 @@ Migrated from the notes/tus.md table on 2026-10-23 (the row's prose, unchanged):
 - Range then: 0x4bb810..0x4bc2e0
 
 ## Open work
+- **headers (2026-10-30, typing pass 2)**: head.c includes anm.h; no @original cast or view; views / casts without byte evidence of their own (weak definitions or drafts' spellings, notes/headers.md debt item 1): util_RandomS.
 - All 13 functions match (match 2026-10-22, deep dive). Older attempt records for 0x4bb860 removed.
 - Drafts far off: 0x4bb860 (the animal step; switch case order written as the case bodies' order), 0x4bbb80,
   anm_UpdateCat 0x4bc030 / anm_UpdateSheep 0x4bc1a0 (137 / 143 B: argument order of d3_GetHeightAt, loop shape).

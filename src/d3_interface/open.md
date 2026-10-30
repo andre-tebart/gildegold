@@ -12,6 +12,7 @@ Migrated from the notes/tus.md table on 2026-10-23 (the row's prose, unchanged):
 - Was: d3_obj.c (unk_448ac0.c, round 12) joined layout 2026-10-22
 
 ## Open work
+- **headers (2026-10-30, typing pass 2)**: head.c includes d3.h, d3_vec.h, d3_engine.h, d3_mir.h, d3_d3d.h, d3_fl.h, d3_interface.h, bio.h, d3_light.h, data_views.h, f3init.h; keeps 1 cast / view macros with @original byte evidence (the address and the matched caller are in each comment): dd_ClearB; views / casts without byte evidence of their own (weak definitions or drafts' spellings, notes/headers.md debt item 1): d3_PointToRefD, d3_WorldMatrixD.
 - see notes/units/ch.md, Open work: "Round 7 leftovers: ch_InitWalk (15 bytes, stack-slot order), ch_ActWalk / ch_ActWalkCells ..."
 - see notes/units/d3_engine.md, Open work: "Header cleanup from round 7: d3_engine.h's d3_Unk4439e0 is d3fl_Draw(D3FLMAP *, char) and ..."
 - Round 9 header cleanup: unk_40d680.c's d3_Unk449de0 /

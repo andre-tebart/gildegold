@@ -12,6 +12,7 @@ Migrated from the notes/tus.md table on 2026-10-23 (the row's prose, unchanged):
 - Was: unk_44cd40.c (round 12)
 
 ## Open work
+- **headers (2026-10-30, typing pass 2)**: head.c includes d3.h, d3_engine.h, d3_io_t.h, d3_io_fl.h, data_views.h, d3_int_io.h, d3_anim.h; keeps 1 cast / view macros with @original byte evidence (the address and the matched caller are in each comment): d3anim_NextFrameIo.
 - include/d3_io_t.h declares d3_Unk4598d0 as `void (void)`; it is (D3OBJECT *, D3LINFO *) (unk_4591a0.c, round
   19).
 - see notes/units/d3_io_b.md, Open work: "d3 io leftovers after round 13 (two rounds without gain; only with a new idea; notes/units ..."

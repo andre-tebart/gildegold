@@ -12,6 +12,7 @@ Migrated from the notes/tus.md table on 2026-10-23 (the row's prose, unchanged):
 - Was: unk_490c10.c + unk_495ee0.c (round 21); the eight unk_*.c above (layout 2026-10-22)
 
 ## Open work
+- **headers (2026-10-30, typing pass 2)**: head.c includes txt_views.h, am.h, data_views.h, cm_types.h, time_view.h, ls.h; keeps 5 cast / view macros with @original byte evidence (the address and the matched caller are in each comment): util_RandomU, unk_Unk4f0e80I, gm_Unk505e60S, cm_SendExSellObjectI, amt_GetKindB; views / casts without byte evidence of their own (weak definitions or drafts' spellings, notes/headers.md debt item 1): d3t_GetObjectBoundsV, ai_GoodsT, ai_BldsT, ai_BTypesT, ai_CharsT, ai_TimeT.
 - 0x495a50 is at the end of am.c (out of address order): defined above its callers, its far-off draft (445 B)
   changes 0x496e40 / 0x499660 (matched) and 0x496610 / 0x499c10; move it back between 0x4957d0 and 0x495ce0 once
   it matches (or test then whether the callers still match).

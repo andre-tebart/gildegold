@@ -21,6 +21,7 @@ form "menu\netlobby"; `@named_by -`).
   0x6ed938, the window table 0xf8f080 (0x2ec bytes per window) and the control table 0xfa5aac / 0xfa6030.
 
 ## Open work
+- **headers (2026-10-30, typing pass 2)**: head.c includes d2_types.h, txt_views.h, unk_589f10.h, di_input.h, data_views.h, cm_types.h, f3init_types.h, f3init.h; no @original cast or view.
 - 0x589f10 ROUGH (2595 B): the whole structure (the profile read / write, the sub window builders, the frame
   loop, the click cases on 0x62aa7c / 0x62aa80 / 0x62aa84 and the player list) is written from the Ghidra
   pseudocode; the store order, the local frame (0x250) and the sprintf / text local assignment are not verified.

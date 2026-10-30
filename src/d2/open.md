@@ -12,6 +12,7 @@ Migrated from the notes/tus.md table on 2026-10-23 (the row's prose, unchanged):
 - Was: unk_4687a0.c (round 15)
 
 ## Open work
+- **headers (2026-10-30, typing pass 2)**: head.c includes txt_views.h, d3.h, err.h, di_input.h, txt.h, dd_vesa.h, d2.h, unk_47c5e0.h, rea_dump.h, data_views.h; keeps 2 cast / view macros with @original byte evidence (the address and the matched caller are in each comment): d2_OpenPicS, d2_MoveObjI.
 - d2 nonmatching (notes/units/d2.md [d2j], [d2b], [d2c], [d2d], [d2k], [d2f], [d2l], [d2m], [d2n], [d2o]; notes/units/ai.md [hv1]), all
   in d2.c: d2_DrawSlider (4/4720, was d2_Unk46aa00, @deep since 2026-10-25), d2_DrawPic (10/480, was
   d2_Unk46d040), d2_DrawButton (17/624, was d2_Unk46bf60, @deep since 2026-10-25), unchanged by hv1's 2-3 runs each

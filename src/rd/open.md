@@ -11,6 +11,7 @@ Migrated from the notes/tus.md table on 2026-10-23 (the row's prose, unchanged):
 - Was: unk_4bc2e0.c (layout 2026-10-22)
 
 ## Open work
+- **headers (2026-10-30, typing pass 2)**: head.c includes anm.h, f3gm.h, d3.h, d3_light.h, data_views.h; no @original cast or view; views / casts without byte evidence of their own (weak definitions or drafts' spellings, notes/headers.md debt item 1): util_RandomS.
 - Near-misses: 0x4bc5a0 (53 B: the first load of the table id is a 32-bit `mov eax` in the original, ours `mov ax`;
   tried the index loop only), 0x4bc390 (116 B, not looked at).
 - Far drafts: 0x4bc7c0, 0x4bc940 (FPU position from the height map), 0x4bcc20 (1760 B: road from the site, DDA line

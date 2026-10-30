@@ -10,6 +10,7 @@ Migrated from the notes/tus.md table on 2026-10-23 (the row's prose, unchanged):
 - Range then: 0x4b39f0..0x4b6480
 
 ## Open work
+- **headers (2026-10-30, typing pass 2)**: head.c includes unk_4b39f0.h, di_input.h, net.h, d2_types.h; no @original cast or view; views / casts without byte evidence of their own (weak definitions or drafts' spellings, notes/headers.md debt item 1): ai_GoodsT, ai_BldsT, ai_BTypesT, ai_CharsT, ai_TimeT.
 - Unit complete (0x4b39f0..0x4b6480, layout 2026-10-22 session 7); name a guess (no module tag).
 - Near-misses: 0x4b3b70 (the &t[47] bound in a register),
   0x4b3ca0 21 B, 0x4b4040 (view / first register pair swapped), 0x4b6040 (c / view swapped), 0x4b58b0 (register

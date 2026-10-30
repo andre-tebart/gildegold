@@ -90,6 +90,7 @@ Migrated from the notes/tus.md table on 2026-10-23 (the row's prose, unchanged):
 - Was: unk_425bc0.c (round 12)
 
 ## Open work
+- **headers (2026-10-30, typing pass 2)**: head.c includes d3.h, sfx.h; no @original cast or view.
 - match 2026-10-23 (8th): no new attempt on sb_Play / sb_UnloadSampleBank (re-read only).
 - match 2026-10-23 (7th), no gain: sb_UnloadSampleBank (8 B, slots): `int ret;` without initializer with `ret = 0` at the end of the then-branch / at the top, `} else { ret = -1; }`: same 8 B (32 variants).
 - match 2026-10-23 (5th): sb_Play with every failure as `return -1` (no goto) puts an epilogue before every return (worse: the original has exactly two epilogues, the failure one right after the SetSampleData call with all failures jumping into it, the success one at the end shared with the `ret != 0` exit); sb_UnloadSampleBank without the `path` local (bank->path / b->path at both sprintf calls, 128 variants): same 8 B.

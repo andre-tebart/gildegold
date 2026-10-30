@@ -10,6 +10,7 @@ Migrated from the notes/tus.md table on 2026-10-23 (the row's prose, unchanged):
 - Was: tag "ahm_"
 
 ## Open work
+- **headers (2026-10-30, typing pass 2)**: head.c includes txt_views.h, ahm.h, f3gm.h, net.h, vfs.h; keeps 3 cast / view macros with @original byte evidence (the address and the matched caller are in each comment): ai_TimeK, cm_SendExSetHEI, vfs_freadU.
 - Complete: 0x4eaa50 .. 0x4ed040 all have drafts (the unit ends at 0x4ed170, see tus.md).
 - Rough: 0x4eb4c0 (INI loader, the clamps), 0x4ec320 / 0x4ec3d0 (float chains), 0x4eb180, 0x4ec500 (character creation, 760 / 1072 B off; a copy of the shape of the other creation functions). Near misses: 0x4ec940 / 0x4ecc30 (10 B: the three-way clamp 0 / v / 1.0
   is emitted in the order v, 0, 1.0 by the original; nested `if (v > 0) { if (v < 1) .. }` gives 1.0, v?, 0), 0x4ecd10 (14 B, register allocation p / rec swapped),

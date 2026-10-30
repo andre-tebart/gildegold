@@ -12,6 +12,7 @@ Migrated from the notes/tus.md table on 2026-10-23 (the row's prose, unchanged):
 - Was: unk_455630.c (round 13)
 
 ## Open work
+- **headers (2026-10-30, typing pass 2)**: head.c includes d3.h, d3_vec.h, d3_engine.h, mem.h, ecmd.h, d3_par.h, data_views.h; no @original cast or view; views / casts without byte evidence of their own (weak definitions or drafts' spellings, notes/headers.md debt item 1): d3_WorldMatrixD.
 - All 12 functions of d3_par.c match (match 2026-10-22). Leftovers of round 14 in other units: d3_Unk454890 (92/848),
   d3_Unk4550e0 (19/976, index form).
 - see notes/units/d3_engine.md, Open work: "Header cleanup from round 8: d3_engine.h's d3_Unk4538a0(int) takes a char (ocmd's d3_Light ..."

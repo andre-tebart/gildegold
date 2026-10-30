@@ -11,6 +11,7 @@ Migrated from the notes/tus.md table on 2026-10-23 (the row's prose, unchanged):
 - Was: unk_4ac140.c (layout 2026-10-22)
 
 ## Open work
+- **headers (2026-10-30, typing pass 2)**: head.c includes hmt.h, data_views.h, cm_types.h; keeps 1 cast / view macros with @original byte evidence (the address and the matched caller are in each comment): util_RandomU; views / casts without byte evidence of their own (weak definitions or drafts' spellings, notes/headers.md debt item 1): ai_GoodsT, ai_BldsT, ai_BTypesT, ai_CharsT, ai_TimeT, CM_AddFieldValuesShort.
 - Near-misses: 0x4ac170 33 B (the original loads e->unk08 and tail-jumps util_Random(10)), 0x4ac1a0 75 B (defined
   before its callee 0x4ac1e0 in the original? try the order); hmt_Init 0x4aca90 14 B (the original keeps hmt_File.p /
   .k in ecx / edx, never eax, after the call; `ret` local and `!x` made no difference); hmt_Unk4ad510 6 B (register

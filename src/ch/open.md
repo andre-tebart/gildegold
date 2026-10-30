@@ -12,6 +12,7 @@ Migrated from the notes/tus.md table on 2026-10-23 (the row's prose, unchanged):
 - Was: unk_402140.c (round 12)
 
 ## Open work
+- **headers (2026-10-30, typing pass 2)**: head.c includes d3.h, d3_anim.h, d3_sm.h, path.h, ch.h, data_views.h; keeps 2 cast / view macros with @original byte evidence (the address and the matched caller are in each comment): d3anim_StartAnimCh, util_RandomU; views / casts without byte evidence of their own (weak definitions or drafts' spellings, notes/headers.md debt item 1): d3t_CamMoveI.
 - Round 7 leftovers: ch_InitWalk (15 bytes, stack-slot order), ch_ActWalk / ch_ActWalkCells (VC6 drops a
   redundant slot test; notes/units/ch.md); ch_PathToTarget 0x408490 shares their path patterns (try ch7's
   one-return and CH_FLAGW tricks). d3fl_Draw 0x4439e0 (10 KB draft, frame 0x14c vs 0x150), d3fl_Prerender,

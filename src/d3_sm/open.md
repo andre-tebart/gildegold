@@ -12,6 +12,7 @@ Migrated from the notes/tus.md table on 2026-10-23 (the row's prose, unchanged):
 - Was: unk_45db40.c (round 12)
 
 ## Open work
+- **headers (2026-10-30, typing pass 2)**: head.c includes d3.h, d3_sm.h, data_views.h; no @original cast or view.
 - see notes/units/d3_anim.md, Open work: "Type cleanup: D3MATERIAL+0xf4 is the D3ANIMCTL (slots at +0x110, so `tex[3]` at 0x178 is r ..."
 - Naming leads from the cleared @deep reasons (2026-10-24, user: these byte functions go back to match-base; the 'recorded decision' / 'deliberately not renamed' wording in them was an earlier escalation reason, not a decision, and binds nobody):
   - 0x45e180 d3sm_BoundsCB: Q2 identifiers only (behaviour already byte, B1): D3OBJECT.unk1cc (a D3OBJINFO pointer; the D3OBJX view in d3_engine.h and d3_mir.h already call 0x1cc info, but renaming the shared field touches ~170 references in other units) and D3OBJECT.unk212 (object state bits; the recorded decision in d3_quad.c 0x457db0 says no single meaning, bits 2-3 and 4-6 saved by d3_interface, 7 = transform current, deliberately not renamed) - a local view would have to invent that name, so readable waits for the project-wide state-byte decision
