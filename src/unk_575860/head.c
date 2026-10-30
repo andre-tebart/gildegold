@@ -18,7 +18,8 @@
    unit of rea 8cef7d5b (src/game/unk_575860.c); boundaries in decl/text.dcl, notes in src/unk_575860/open.md */
 struct AHMSTEP;
 struct D3SKY;
-extern char d2_Radios[];
+#include "d2_types.h"
+extern D2RADIO d2_Radios[];
 #include "txt_views.h"
 #include <windows.h>
 #include <stdio.h>
@@ -331,7 +332,7 @@ extern struct D2OBJ *d2_Objs;
 extern struct D2PIC *d2_Pics;
 extern short d2_ScreenH;
 extern short d2_ScreenW;
-extern char d2_Wins[];
+extern D2WIN d2_Wins[];
 
 
 
@@ -684,7 +685,7 @@ extern short d2_MouseX;
 extern short d2_MouseY;
 extern struct D2OBJ *d2_Objs;
 extern int d2_Unkf8aac8;
-extern char d2_Views[];
+extern D2VIEW d2_Views[];
 extern int di_Absolute;
 extern GAPDATA full_data_62a8d0[];
 extern GAPDATA full_data_62a8d4[];

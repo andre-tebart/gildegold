@@ -2,7 +2,8 @@
    "misc/routing_edit_point", "misc\routing_settings"), "rt_load". Start: its .data block 0x602a90 begins with a -1
    global right after rd.c's literals. Names are ours.
    unit of rea 8cef7d5b (src/game/rt.c); boundaries in decl/text.dcl, notes in src/rt/open.md */
-extern char d2_Radios[];
+#include "d2_types.h"
+extern D2RADIO d2_Radios[];
 #include "txt_views.h"
 #include <stdio.h>
 #include <string.h>

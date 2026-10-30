@@ -4,8 +4,9 @@
    f3snd.c's literals (0x302, 2, -1 globals, the handler table 0x60bd98 of 0x4c6a20..). Tag "cm_ExecCommand" (0x4c4190,
    its texts at 0x60c0e8..). Names are ours.
    unit of rea 8cef7d5b (src/game/cm.c); boundaries in decl/text.dcl, notes in src/cm/open.md */
-extern char d2_Wins[];
-extern char d2_Radios[];
+#include "d2_types.h"
+extern D2WIN d2_Wins[];
+extern D2RADIO d2_Radios[];
 #include "txt_views.h"
 #include <stdio.h>
 #include <stdlib.h>

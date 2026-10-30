@@ -9,7 +9,8 @@ struct SBBANK;
 struct SBSAMPLE;
 union AHMGRID;
 struct D3SM;
-extern char d2_Wins[];
+#include "d2_types.h"
+extern D2WIN d2_Wins[];
 #include "txt_views.h"
 #include <windows.h>
 #include <stdio.h>

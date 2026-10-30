@@ -9,8 +9,9 @@ struct D3TRAIN;
 struct SBSAMPLE;
 struct VFSENTRY;
 struct VFSDIR;
-extern char d2_Radios[];
-extern char d2_Views[];
+#include "d2_types.h"
+extern D2RADIO d2_Radios[];
+extern D2VIEW d2_Views[];
 #include "txt_views.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -66,7 +67,7 @@ extern short d2_ShpW;
 
 extern int d2_TextDrawnH;
 extern int d2_TextDrawnW;
-extern char d2_Wins[];
+extern D2WIN d2_Wins[];
 extern GAPDATA full_data_623e90[];
 extern GAPDATA full_data_625718[];
 extern GAPDATA full_data_62571c[];

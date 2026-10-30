@@ -4,8 +4,9 @@ struct CHARACTER;
 struct CHTRANSPORT;
 struct AICHAR;
 extern char ai_PlayerSlots[4][0x2f4];
-extern char d2_Wins[];
-extern char d2_Views[];
+#include "d2_types.h"
+extern D2WIN d2_Wins[];
+extern D2VIEW d2_Views[];
 #include "txt_views.h"
 #include <windows.h>
 #include <stdio.h>

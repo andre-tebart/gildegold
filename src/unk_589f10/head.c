@@ -10,7 +10,8 @@
    window "Handel\Handel_PRODUKTION" 0x62b038 (0x58bd60), so 0x58bbd0 (the table init called by it) is the first
    function of the next unit.
    unit of rea 8cef7d5b (src/game/unk_589f10.c); boundaries in decl/text.dcl, notes in src/unk_589f10/open.md */
-extern char d2_Wins[];
+#include "d2_types.h"
+extern D2WIN d2_Wins[];
 #include "txt_views.h"
 #include <windows.h>
 #include <stdio.h>
@@ -28,7 +29,7 @@ extern char ai_Unk9364e0[752];
 extern char ch_EmptyName[1];
 extern int d2_ClickedId;
 extern struct D2INPUT *d2_FocusedInput;
-extern unsigned char d2_Inputs;
+extern D2INPUT d2_Inputs[];
 extern struct D2OBJ *d2_Objs;
 extern unsigned char dm_L;
 extern GAPDATA full_data_60ea78[];

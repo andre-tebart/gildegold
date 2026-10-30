@@ -119,10 +119,10 @@ int ai_Unk589f10(void)
     i = id * 0x2ec;
     *(short *)(i + 0x14 + U_I((unsigned)&d2_Objs)) = 0x26c;
     n = *(int *)(i + 0x78 + U_I((unsigned)&d2_Objs));
-    U_I(((unsigned)&d2_Inputs + 0x28) + n * 0x160) |= 0x200;
-    U_I(((unsigned)&d2_Inputs + 0x10) + n * 0x160) = 0x26c;
+    d2_Inputs[n].flags |= 0x200;
+    d2_Inputs[n].w = 0x26c;
     U_I((unsigned)&d2_ClickedId) = -1;
-    U_I(((unsigned)&d2_Inputs + 0x15c) + n * 0x160) = 0x26c;
+    d2_Inputs[n].maxw = 0x26c;
     while (1) {
         if (state == 0) {
             if (U_I((unsigned)&d2_FocusedInput) == 0) {
