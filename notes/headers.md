@@ -61,7 +61,7 @@ read the datum as declared); 2 stay with @original (cm's ai_Unk7603a0V / ai_Unk7
 0x4cfeb0 byte). ai_GameState was the weak side: its definition is `unsigned char` now (the byte readers
 of unk_5d33b0 / unk_4b39f0 needed the byte, he reads it bytewise). No byte or shape function moved; the
 drafts that moved are in the two commit messages.
-The 19 views left by that pass (2026-10-30, second pass): 18 done, none kept, no byte or shape function moved:
+The 19 views left by that pass (2026-10-30, second pass): all 19 done, none kept, no byte or shape function lost:
 - ai_JudgeCatholic / ai_JudgeProtestant: the definition (gv) is `struct AICHAR *` now, every copy too; am /
   hst read ->netId (cc67618).
 - cm_FieldObject: f3gm / f3init form the field offsets as `(char *)p - cm_FieldObject + off` (79b236a).
@@ -75,7 +75,7 @@ The 19 views left by that pass (2026-10-30, second pass): 18 done, none kept, no
 - d2_Objs / d2_LastWindowPtr / d2_Pics: D2PIC / D2CTRL / D2OBJ in d2_types.h (D2OBJ.user at 0x2e8),
   G12WIN / G13OBJ / D2OBJVIEW / D2WINVIEW / D2PICVIEW gone (30442f6). unk_5d33b0 still has D2SURFVIEW
   (d2.c defines d2_ScreenSurf as `void *`: a definition to retype) and D2FADEVIEW, AICHARVIEW.
-Left: main's ls_SavePathV (struct LSSAVEVIEW of ls's char[640]): with item 4 (ls.h).
+- ls_SavePath: ls defines it as an LSSAVE record (ls_types.h), main's LSSAVEVIEW / NETHDR copies gone (2021623).
 
 ## Debt
 1. **Weak definition types made canonical.** (ai_Objects done in 1b8f951; the rest open: the definers
@@ -99,21 +99,33 @@ Left: main's ls_SavePathV (struct LSSAVEVIEW of ls's char[640]): with item 4 (ls
    (ahm, bmp, hmt). d3_SetBlendState: true prototype takes unsigned char, d3_engine keeps the int view
    d3_SetBlendStateI; with the true prototype d3_DrawSortedD3D is 2225 bytes against the original's 2211
    (2229 with the int view) - a matching lead, not settled.
-3. **Retyped copies still in other headers.** Copies of other units' functions, now in the owner's
-   spelling, remain in ai.h, am.h, anm.h, cm.h, d2.h, gv.h, hst.h, rt.h, unk_4a7140.h, unk_4b6480.h,
-   ahm.h (4bd009c), d3.h, d3_engine.h, d3_mir.h, d3_quad.h, d3_fl.h, d3_light.h (003e5c2, 8b5e367),
-   f3snd.h, cm.h, gfx.h (sblib / d3_snd copies), cm.h, gv.h, am.h, ch.h (d3_tools copies), and in
-   main/head.c. Each is either removable (the unit includes the owner's header instead, no grade moves)
-   or needed by the declaration set (a byte flip without it): settle per header, record the needed ones.
-4. **Headers not written.** sv.h (311 declarations generated), f3init.h (95), ls.h (74) need the same
-   retype-and-cast pass against their copies. Waiting on ls.h: main's NETHDR / LSSAVEVIEW local views
-   (ls_SavePath) and main_NetGameRecord (cm's 0x80-byte object at 0x936460).
-5. **gv's D3COLOR declarations.** gv's head keeps @original no-prototype declarations of d3t_CreateSmoke /
-   d3t_CreateEarth: they take a D3COLOR by value, which VC6 rejects as an incomplete type (C2079) in gv
-   (no d3.h). Settle by giving gv the complete type (include order) or keep with the evidence.
-6. **Includes now possible in main.** The MPOOLITER, D3OBJBITS and ai_* data clashes are gone, so main
-   can try mem.h, ch.h / chc.h, hmt.h, ahm.h, amt.h, gv.h, cm.h, hst.h (main/open.md's "unsettled" list
-   predates this; re-run `dcp headers conflicts main ...`).
-7. **open.md files not updated** by the pass: the units it touched (ahm, ai, am, anm, ch, cm, d3_*, f3gm,
-   f3init, f3snd, gv, hst, io_text, main, rd, sblib, sv, unk_*) carry no note of their new cast / view
-   macros. The macro comments and the commit messages are the record until then.
+3. **Retyped copies still in other headers.** (second pass: 239fbc6, 71d328c, 01605c8, fda000a) A
+   script over every unit's include closure removed each copy of another unit's symbol from a header
+   when every includer of that header also sees another declaration: 64 function copies, 16 data
+   copies, then cm.h's 60 and unk_5d33b0.h's 5 after the new includes. No byte or shape function moved.
+   Kept with their reason: d3_par.h's d3_ParEnd / d3_ParHead (d3_par does not compile without them).
+   d3_interface's and unk_4591a0's rename-around-include hacks (d3_SetBlendState_int,
+   d3_WorldMatrix_xv) went with them. Left: about 1330 function and 270 data copies that are the only
+   declaration some includer sees (its include set lacks the owner's header); they go as those units
+   include the owners' headers (dcp headers conflicts UNIT OWNER.h, then rerun the redundancy pass).
+4. **Headers written** (2021623, 94b7dc7, e1a4736, 2c3836f, aa3e42f, ee5a142, baa83bb): include/ls.h (48 functions, 28 data;
+   ls_SavePath is an LSSAVE record: path, main's network block, NETHDR at 0xa0, the version text),
+   include/ls_types.h (NETHDR, LSSAVE), include/f3init.h (62, 30), include/sv.h (137, 164). The units
+   that had only duplicates in the way include them (ls: am, f3gm, f3init, gv, he, sv, unk_575860,
+   unk_58bbd0, main, unk_5d33b0; f3init: cm, d3_interface, d3_vec, he, ls, main, unk_575860,
+   unk_589f10, unk_58bbd0; sv: cm, ls, main). cm calls sv_Unk52eaa0 through an int view (@original:
+   ai_Unk4d4340 0x4d4340 byte). main's NETHDR / LSSAVEVIEW are gone; 0x936460 is cm's cm_NetGame
+   (CMNETGAME in cm_types.h), main's gap blocks of it are gone (main_HostNetworkGame shape -> byte).
+   Left: sv.h in f3init (sv_PanelShown: sv defines `unsigned short *`, f3init its INIT_OBJ * view),
+   he / unk_575860 / unk_5d33b0 / unk_58bbd0 (draft calls with fewer arguments than sv's definitions:
+   sv_Unk524770, sv_Unk52eb50, sv_CreateFormSlider, sv_MessageBox), unk_589f10 (its head uses the
+   copies before its last include: move them, then include).
+5. **gv's D3COLOR declarations.** Done (3b44540): D3COLOR in d3_types.h, gv includes d3_tools.h,
+   its two no-prototype copies are gone; its d3t_*K casts stay (@original, 0x4ee360).
+6. **Includes in main.** (d0b6e13) main includes mem.h, d3_d3d.h, io_text.h, d3_snd.h, d3_tools.h, ahm.h, gv.h
+   now (and ls.h, f3init.h, sv.h). Still unsettled (src/main/open.md has the details): ch.h / chc.h,
+   hmt.h, amt.h, hst.h, cm.h (main's drafts use results of void functions), sblib.h (sb_PlaySample:
+   sblib.h and gfx.h disagree), unk_575860.h.
+7. **open.md**: done for 38 units (92a91c2): a "headers (2026-10-30, typing pass 2)" line under Open
+   work, what head.c includes, which casts / views keep @original evidence, which are views of the
+   weak definitions of item 1.
