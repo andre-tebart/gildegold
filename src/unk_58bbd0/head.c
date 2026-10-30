@@ -552,7 +552,8 @@ extern struct D2WIN *d2_LastWindowPtr;
 extern struct D2OBJ *d2_Objs;
 
 
-extern int gm_Offers[528];
+#include "ai_types.h"
+extern AISTORE gm_Offers[];            /* 0x7e4b20 */
 extern int sv_PopRequest;
 extern int ai_Unk5fe710;
 extern int d2_ClickedId;

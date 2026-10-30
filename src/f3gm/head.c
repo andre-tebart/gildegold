@@ -49,7 +49,8 @@ extern AMTREC amt_Table[];
 extern GAPDATA full_data_7585f4[];
 extern char * he_QuickList[10921];
 
-extern int gm_Offers[528];
+#include "ai_types.h"
+extern AISTORE gm_Offers[];            /* 0x7e4b20 */
 extern int gm_PlayerRecords[688];
 extern int ai_Unk7d6a40;
 void ch_PreloadAnims(struct CHARACTER *ch, int n, ...);

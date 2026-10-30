@@ -25,7 +25,8 @@ extern char ai_PlayerSlots[4][0x2f4];
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 extern struct D3IOANIMDATA d3_AnimHead;
 extern int gm_PlayerRecords[688];
-extern int gm_Offers[528];
+#include "ai_types.h"
+extern AISTORE gm_Offers[];            /* 0x7e4b20 */
 extern float ai_Unk760420;
 #include "ch_types.h"
 extern CHMOTION ch_Motions[];

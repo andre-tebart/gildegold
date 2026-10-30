@@ -434,14 +434,17 @@ typedef struct AIRECIPE {               /* 0xb8 bytes, filled by gm_StallGoodsLi
     int pada8[4];
 } AIRECIPE;
 
+#ifndef AI_STORE_TYPE                   /* ai_types.h has the same AISTORE under this guard (see there) */
+#define AI_STORE_TYPE
 typedef struct AISTORE {                /* 24 bytes, a stock list per building, gm_Offers[] */
-    AIBLD *bld;                         /* 0x00 */
+    struct AIBLD *bld;                  /* 0x00 */
     int unk04;                          /* 0x04 */
     int goodsObj;                       /* 0x08, the goods object of the offer (the f3gm.c note of 0x7e4b20) */
     int count;                          /* 0x0c */
     int unk10;                          /* 0x10 */
     int unk14;                          /* 0x14 */
 } AISTORE;
+#endif
 
 typedef struct AIFIN {                  /* what gm_PlayerRecord finds for a character */
     char pad00[0x40];

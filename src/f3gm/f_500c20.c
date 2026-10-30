@@ -19,7 +19,7 @@ int gm_CollectOffers(int goods)
     for (k = 0x58; k != 0; k--, b += 0xa9) {
         if (*b != 0) {
             f = 0;
-            e = gm_Offers + n * 6;
+            e = ((int *)gm_Offers) + n * 6;
             e[0] = 0;
             e[2] = 0;
             e[5] = 0;
@@ -27,7 +27,7 @@ int gm_CollectOffers(int goods)
                 mk = gm_FindMarketObject(goods);
                 n = gm_NOffers;
                 if (mk != 0 && (o = (int)gm_Query(*(int *)(mk + 0x14), 1, 0, goods)) != 0) {
-                    e = gm_Offers + gm_NOffers * 6;
+                    e = ((int *)gm_Offers) + gm_NOffers * 6;
                     e[0] = (int)b;
                     e[1] = mk;
                     e[2] = o;
@@ -39,14 +39,14 @@ int gm_CollectOffers(int goods)
                 n = gm_NOffers;
                 if (s != 0 && (o = (int)gm_Query(*(int *)(s + 0x14), 1, 0, goods)) != 0) {
                     f = 1;
-                    e = gm_Offers + gm_NOffers * 6;
+                    e = ((int *)gm_Offers) + gm_NOffers * 6;
                     e[0] = (int)b;
                     e[5] = 1;
                 }
                 mk = (int)gm_Query(*(int *)(b + 0x5d), 2, 6, 0, 0x2a);
                 n = gm_NOffers;
                 if (mk != 0 && (o = (int)gm_Query(*(int *)(mk + 0x14), 1, 0, goods)) != 0) {
-                    e = gm_Offers + gm_NOffers * 6;
+                    e = ((int *)gm_Offers) + gm_NOffers * 6;
                     e[0] = (int)b;
                     e[1] = mk;
                     e[2] = o;
@@ -56,8 +56,8 @@ int gm_CollectOffers(int goods)
                     q = *(int *)(o + 0x1c);
                     cc = gm_ListAmount(mk, o);
                     v = cc - ((unsigned)(a * q) >> 2);
-                    gm_Offers[gm_NOffers * 6 + 3] = v;
-                    gm_Offers[gm_NOffers * 6 + 3] = v & ((int)v < 0) - 1;
+                    ((int *)gm_Offers)[gm_NOffers * 6 + 3] = v;
+                    ((int *)gm_Offers)[gm_NOffers * 6 + 3] = v & ((int)v < 0) - 1;
                     n = gm_NOffers + 1;
                     gm_NOffers++;
                 } else if (f) {
@@ -69,14 +69,14 @@ int gm_CollectOffers(int goods)
     }
     cnt = n;
     for (i = 0; i < cnt; i++)
-        *(float *)(gm_Offers + i * 6 + 4) = (float)(gm_GoodsPrice(goods, ai_OwnPlayer) * *(float *)(gm_Offers[i * 6] + 0x49));
+        *(float *)(((int *)gm_Offers) + i * 6 + 4) = (float)(gm_GoodsPrice(goods, ai_OwnPlayer) * *(float *)(((int *)gm_Offers)[i * 6] + 0x49));
     cnt = gm_NOffers;
     for (i = 1; i <= cnt; i++) {
         for (j = i; j < cnt; j++) {
-            if (*(float *)(gm_Offers + (i - 1) * 6 + 4) < *(float *)(gm_Offers + j * 6 + 4)) {
-                memcpy(tmp, gm_Offers + (i - 1) * 6, 24);
-                memcpy(gm_Offers + (i - 1) * 6, gm_Offers + j * 6, 24);
-                memcpy(gm_Offers + j * 6, tmp, 24);
+            if (*(float *)(((int *)gm_Offers) + (i - 1) * 6 + 4) < *(float *)(((int *)gm_Offers) + j * 6 + 4)) {
+                memcpy(tmp, ((int *)gm_Offers) + (i - 1) * 6, 24);
+                memcpy(((int *)gm_Offers) + (i - 1) * 6, ((int *)gm_Offers) + j * 6, 24);
+                memcpy(((int *)gm_Offers) + j * 6, tmp, 24);
             }
         }
     }
