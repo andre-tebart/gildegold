@@ -92,7 +92,7 @@ typedef struct SHOTREC {                /* 0x68 bytes: a cannon ball in flight (
     float unk58;                        /* +0x58, not set by ai_InitShot */
     int alive;                          /* +0x5c, 1 */
     int time;                           /* +0x60, d3_Time (ms) at the shot */
-    int dead;                           /* +0x64, 0; ai_Unk5dc3a0 returns 0 once it is set */
+    int dead;                           /* +0x64, 0; ai_ScatterShot returns 0 once it is set */
 } SHOTREC;
 typedef struct POKERPANEL {             /* 0x1c bytes: one panel (form view) of the poker window */
     int win;                            /* +0x00, the window the form view made (d2_LastWindow after d2_SetForm) */
