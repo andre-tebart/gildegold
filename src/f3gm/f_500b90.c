@@ -9,13 +9,13 @@ int gm_BuildKindObjects(char *b)
     if (ai_Goods == 0)
         return 1;
     i = 0;
-    t = ai_Unk61a348;
+    t = (char *)ai_Unk61a348;
     do {
         if (*t == *b) {
             if (i * 0x15 == -(unsigned)&ai_Unk61a348)
                 return 1;
             ai_Unk76fdc4 = 0;
-            w = (unsigned short *)(ai_Unk61a348 + 1 + i * 0x15);
+            w = ai_Unk61a348[i].items;
             for (k = 10; k != 0; k--, w++) {
                 if (*w != 0)
                     ai_Unk889400[ai_Unk76fdc4++] = *w;

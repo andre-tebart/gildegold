@@ -10,7 +10,7 @@ void gm_StockBuildingObjects(char *b)
     int o, o2, k;
     char *t;
 
-    w = (short *)(ai_Unk61a348 + 1);
+    w = (short *)ai_Unk61a348[0].items;
     do {
         if (*b == *((char *)w - 1)) {
             o = (int)gm_Query(*(int *)(b + 0x5d), 2, 6, 0, 0xff);

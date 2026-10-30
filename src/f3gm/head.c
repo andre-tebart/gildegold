@@ -33,7 +33,8 @@ extern char ai_Unk7d6a60[];                 /* 0x7d6a60, the five 0x2a90-byte st
 #define ai_Unk7d6aa0 (*(char (*)[8])((char *)init_StockBlocks + 0x30))      /* 0x7d6aa0 */
 #define ai_Unk7d6aa8 (*(char (*)[54408])((char *)init_StockBlocks + 0x38))  /* 0x7d6aa8 */
 
-extern char ai_Unk61a348[];
+#include "am_types.h"
+extern G7GRP ai_Unk61a348[];           /* 0x61a348 */
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 #include "d3_types.h"
 extern D3SCENE d3_Scenes[];               /* 0xfd7ba0: ai_Unk5fb5b0 points at it */

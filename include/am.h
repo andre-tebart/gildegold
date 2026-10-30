@@ -1023,12 +1023,7 @@ void ai_Unk5a8c00(unsigned short *param_1, char *param_2, int param_3);         
 
 /* ---- 0x4a3af0..0x4a7140 (was unk_4a3af0.h) ---- */
 #define amt_GetKindLevel ai_Unk4e7c40_g9      /* k is an unsigned char here */
-#pragma pack(push, 1)
-typedef struct G7GRP {                  /* 0x15 bytes, the item groups at 0x61a348 */
-    unsigned char key;                  /* 0x00 */
-    unsigned short items[10];           /* 0x01 */
-} G7GRP;
-#pragma pack(pop)
+#include "am_types.h"                /* G7GRP */
 
 typedef struct G7MKT {                  /* 0xb4 bytes, the prices of an item group (0x4a4680) */
     unsigned int key;                   /* 0x00 */

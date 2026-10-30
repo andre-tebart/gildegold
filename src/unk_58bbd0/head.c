@@ -890,7 +890,8 @@ extern int ai_Unk6333cc;
 extern int d2_Unkf8aac8;
 extern D2VIEW d2_Views[];
 extern GAPDATA full_data_6f26c0[];
-extern char ai_Unk61a348[];
+#include "am_types.h"
+extern G7GRP ai_Unk61a348[];           /* 0x61a348 */
 extern GAPDATA full_rdata_5eed94[];
 extern GAPDATA full_rdata_5eedd3[];
 extern GAPDATA full_data_62c284[];
