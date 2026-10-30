@@ -97,3 +97,9 @@
 2026-10-30T23:13:43 0x006f2418 data full_data_6f2418 -> main_MenuSong by:main why:main_Menue keeps the menu song's MSXTRACK (msx_Play) here, restarts it after the credits and waits for its playing byte (+0x104) at the end
 2026-10-30T23:13:52 0x006f245c data full_data_6f245c -> main_DevMenu by:main why:main_Menue: nonzero shows the data-tool buttons (Create Save with INI / for Network / Check Textfile) instead of the gfx / sfx options
 2026-10-30T23:14:00 0x006f25b4 data full_data_6f25b4 -> main_QuitProgram by:main why:set by the main menu's quit button / Escape and by sv_PumpMessages on WM_QUIT; WinMain exits (main_Exit) when it is set
+2026-10-30T23:17:36 0x005337f0 func main_Unk5337f0 -> main_MenuButton by:main why:creates the menu button of row n (0x46bf10 at y n*0x2b+10, width 300); main_Menue builds its 9 buttons with it
+2026-10-30T23:17:45 0x00533740 func main_Unk533740 -> main_MoneyDialog by:main why:the money amount dialog: number input with $3ABetrag:%m, range 0..10000
+2026-10-30T23:17:54 0x00537930 func main_Unk537930 -> main_NewSinglePlayerGame by:main why:starts a new single player game: player count 1 and the player setup 0x537230 (1, 0)
+2026-10-30T23:18:03 0x0057bce0 func ai_Unk57bce0 -> ai_TutorialWindow by:main why:the tutorial start window: five checkable entries written back to 0x62918c, 1 starts the tutorial, 0 is back
+2026-10-30T23:18:13 0x0057bc30 func ai_Unk57bc30 -> ai_SetupTutorialPlayer by:main why:fills the player profile 0x75e5a0 for the tutorial (main_Menue calls it after ai_TutorialWindow)
+2026-10-30T23:18:23 0x005d34b0 func ai_Unk5d34b0 -> ai_FilePickWindow by:main why:the file pick window: lists the files of a directory with an extension (ai_ListFiles) and sprintf's the chosen one into its last argument

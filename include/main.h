@@ -28,6 +28,7 @@ int main_OpenScreen(int m);
 int main_OpenEngine(void);
 int main_PlayerCountDialog(void);
 void main_StartCityGame(char *name, int net);
+int main_NewSinglePlayerGame(void);                /* 0x537930, the new game (main_Menue), 0: cancelled */
 int main_NetworkMenu(void);
 
 #endif

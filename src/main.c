@@ -1425,7 +1425,7 @@ int main_NetworkMenu(void)
 }
 /* 0x533740, the money amount dialog (a number input 0x472390 (0x20, 0x60, 0x26c, 400, 0x15) with the text "$3ABetrag:%m", range 0 .. 10000): runs 0x5309a0 until closed */
 
-void main_Unk533740(void)
+void main_MoneyDialog(void)
 {
     int dlg, ed, run;
 
@@ -1436,17 +1436,17 @@ void main_Unk533740(void)
     dlg = d2_CreateWindow(0x20, 0x60, 0x26c, 400, 0x15);
     ed = d2_GetWinObj(-1, dlg, io_PrintText("$3ABetrag:%m"));
     d2_SetObjValue(ed, 0, 10000, 0);
-    run = sv_RunFrame((int)main_Unk533740, 0x24087);
+    run = sv_RunFrame((int)main_MoneyDialog, 0x24087);
     while (run != 0) {
         if (*(char *)(unsigned)&kb_Last == 1)
             U_I((unsigned)&sv_PopRequest) = 1;
-        run = sv_RunFrame((int)main_Unk533740, 0x24087);
+        run = sv_RunFrame((int)main_MoneyDialog, 0x24087);
     }
     d2_RemoveWindow(dlg);
 }
 /* 0x5337f0, creates a menu button (0x46bf10 (0x20, n * 0x2b + 10, 0xbf, text, form), shown flag +0x5c, width 300) for the row n of a dialog */
 
-int main_Unk5337f0(int n, int text, int form)
+int main_MenuButton(int n, int text, int form)
 {
     int b;
 
@@ -1459,26 +1459,26 @@ int main_Unk5337f0(int n, int text, int form)
 float d3_VecAngle();
 int sv_RegisterNamePlate();
 
-/* 0x533850, "main_Menue": the main menu ("MENU\MAIN_MENU"): opens the city scene and the player selection scene "scenes/*spielerauswahl.ed3", builds the 9 buttons (0x5337f0: new game 0x537930, tutorial, load a ".INI"
-   city / network save (debug builds of the data: "Create Save with INI" / "Create Save for Network" / "Check Textfile"), load game 0x5d4080, network 0x5335b0, options 0x5d5fd0 / 0x5d6580 / 0x5d6950, credits
-   0x5d7ba0, quit), starts one of three menu songs (0x423a90) and runs the screen loop 0x5309a0 until it ends; ROUGH */
+/* 0x533850, "main_Menue": the main menu ("MENU\MAIN_MENU"): fades to black, loads the city scene
+   ("scenes/*ChooseCity.ed3", "..._Europa.ed3" for language 1 and up) and the player selection scene
+   "scenes/*spielerauswahl.ed3", sets the full screen viewport, clears the player profile, builds the 9 buttons
+   (main_MenuButton: new game, load, tutorial, network, game options, gfx / sfx options or with main_DevMenu the data
+   tools "Create Save with INI" / "Create Save for Network" / "Check Textfile", credits, quit), starts one of three
+   menu songs and runs the screen loop until a choice pops it; then it clears both scenes and lets the song fade
+   out. @deep body read against the original and completed: the full screen d3_SetViewport after the scene loads (missing in the draft), the D3_ZERO_AT clear of init_PlayerProfile (0x8c, the inline asm that makes the ebp frame), the two d3_LoadScene calls of an if/else, d2_LastWindow read once into win for the 9 buttons, the plain do..while (sv_RunFrame) loop; calls and constants match the original's sequence (asmdiff --all skeleton). Left is allocation: the original keeps 0 in ebx for the whole function (push ebx for every 0 argument, cmp al,bl) and pushes 1 as an immediate, ours keeps 1 in edi / 0 in esi, so the three msx_Play cases are not cross-jumped (push 1; push str; jmp shared call); the original saves edi late (push edi at 0x53393f, pop at 0x533fd9) and caches GetPrivateProfileStringA in esi, which puts f in the slot [ebp-0x3c] (frame 0x50c, ours 0x508 with f in ebx); the button ids take other slots. Q7 open for hmt_Reset / ai_TutorialWindow / ai_SetupTutorialPlayer (hmt.h / unk_575860.h do not include into main yet: void results assigned in main, notes Open work). */
 void main_Menue(void)
 {
     unsigned char *fade;
-    int r, f, i;
-    char cv;
+    char again;
+    int f, grp, win;
     int bnew, bload, btut, bnet, bopt3, bcred, bquit, bopt1, bopt2, bini, bnetsave, bcheck;
-    int grp;
+    char ini[260], path[260], ini2[260], path2[260];
+    char city[0x60], city2[0x60];
 #ifdef REA_START
     int rea_entry;
     int rea_delay;                         /* frames to let the menu run before the entry is taken */
     char *rea_want;
 #endif
-    char again;
-    char c1[260], c2[260], c3[260], c4[260];
-    char name1[0x60], name2[0x60];
-    char *song;
-    int *p;
 
     bopt1 = -1;
     bopt2 = -1;
@@ -1487,69 +1487,72 @@ void main_Menue(void)
     bcheck = -1;
     sv_PumpMessages();
     di_GetMouse();
-    *(char *)(unsigned)&kb_Last = 0;
+    kb_Last = 0;
     evt_ResetNoGroup();
-    fade = (unsigned char *)d2_StartFade(0, 0, (int)*(short *)(unsigned)&d2_ScreenW, (int)*(short *)(unsigned)&d2_ScreenH, "BLACK", 0, 1);
+    fade = (unsigned char *)d2_StartFade(0, 0, d2_ScreenW, d2_ScreenH, "BLACK", 0, 1);
     while ((*fade & 4) == 0)
         sv_RunFrame(0, 0x24087);
-    U_I((unsigned)&d2_CutsceneActive) = 1;
+    d2_CutsceneActive = 1;
     d3if_SelectScene(0, 0);
     d3if_Reset();
-    song = ls_GetLanguage() == 0 ? "scenes/*ChooseCity.ed3" : "scenes/*ChooseCity_Europa.ed3";
-    d3_LoadScene(song, 0, 0);
+    if (ls_GetLanguage() == 0)
+        d3_LoadScene("scenes/*ChooseCity.ed3", 0, 0);
+    else
+        d3_LoadScene("scenes/*ChooseCity_Europa.ed3", 0, 0);
     sv_PumpMessages();
     d3if_SelectScene(1, 0);
     d3if_Reset();
-    cv = d3_LoadScene("scenes/*spielerauswahl.ed3", 0, 0);
-    if (cv == 0)
+    if (d3_LoadScene("scenes/*spielerauswahl.ed3", 0, 0) == 0)
         err_Message("main_Menue:Could not load 3D-scene...");
-    U_I((unsigned)&sv_FrameBase) = U_I((unsigned)&sv_FrameDepth) + 1;
-    U_I((unsigned)&ai_GameFlags) = 0;
-    memset((char *)(unsigned)&init_PlayerProfile, 0, 0x8c);
-    U_I((unsigned)&ai_Unkfb9060) = *(short *)(unsigned)&d2_ScreenW;
-    U_I((unsigned)&ai_Unkfb906c) = *(short *)(unsigned)&d2_ScreenH;
-    U_I((unsigned)&d2_CutsceneActive) = 0;
-    U_I((unsigned)&ai_Unkfb9068) = 0;
-    U_I((unsigned)&ai_Unkfb9064) = 0;
+    d3_SetViewport((float)d2_ScreenW, (float)d2_ScreenH, 0.0f, 0.0f, d3_ZNear, d3_ZFar, d3_ScaleX, d2_ScreenW, d2_ScreenH);
+    sv_FrameBase = sv_FrameDepth + 1;
+    ai_GameFlags = 0;
+    D3_ZERO_AT(offset init_PlayerProfile, 0x8c);  /* the profile and the bytes after it up to 0x75e62c */
+    d2_DirtyRectLeft = d2_ScreenW;
+    d2_CutsceneActive = 0;
+    d2_DirtyRectRight = 0;
+    d2_DirtyRectTop = 0;
+    d2_DirtyRectBottom = d2_ScreenH;
     d2_ClearScreen();
     d2_ShowPicture(0x797);
     again = 0;
     f = d2_OpenForm(0, 0, "MENU\\MAIN_MENU");
     d2_PlaceMainWindowF(f, 3);
     d2_SetForm(f, 0);
-    bnew = main_Unk5337f0(0, U_I((unsigned)&full_data_144134c), d2_LastWindow);
-    bload = main_Unk5337f0(1, U_I((unsigned)&ai_TextLoadGame), d2_LastWindow);
-    btut = main_Unk5337f0(2, U_I((unsigned)&full_data_1449e24), d2_LastWindow);
-    bnet = main_Unk5337f0(3, U_I((unsigned)&full_data_1441350), d2_LastWindow);
-    bopt3 = main_Unk5337f0(4, U_I((unsigned)&ai_TextGameOptions), d2_LastWindow);
-    bcred = main_Unk5337f0(7, U_I((unsigned)&full_data_1441354), d2_LastWindow);
-    bquit = main_Unk5337f0(8, U_I((unsigned)&full_data_1441358), d2_LastWindow);
-    if (U_I((unsigned)&main_DevMenu) == 0) {
-        bopt1 = main_Unk5337f0(5, U_I((unsigned)&ai_TextGfxOptions), d2_LastWindow);
-        bopt2 = main_Unk5337f0(6, U_I((unsigned)&ai_TextSfxOptions), d2_LastWindow);
+    win = d2_LastWindow;
+    bnew = main_MenuButton(0, (int)txt_Ptrs[0x1c63], win);
+    bload = main_MenuButton(1, (int)ai_TextLoadGame, win);
+    btut = main_MenuButton(2, (int)txt_Ptrs[0x3f19], win);
+    bnet = main_MenuButton(3, (int)txt_Ptrs[0x1c64], win);
+    bopt3 = main_MenuButton(4, (int)ai_TextGameOptions, win);
+    bcred = main_MenuButton(7, (int)txt_Ptrs[0x1c65], win);
+    bquit = main_MenuButton(8, (int)txt_Ptrs[0x1c66], win);
+    if (main_DevMenu == 0) {
+        bopt1 = main_MenuButton(5, (int)ai_TextGfxOptions, win);
+        bopt2 = main_MenuButton(6, (int)ai_TextSfxOptions, win);
         grp = d2_CreateRadioGroup(9, bnew, bload, btut, bnet, bopt3, bopt1, bopt2, bcred, bquit);
     } else {
-        bini = main_Unk5337f0(4, (int)"Create Save with INI", d2_LastWindow);
-        bnetsave = main_Unk5337f0(5, (int)"Create Save for Network", d2_LastWindow);
-        bcheck = main_Unk5337f0(6, (int)"Check Textfile", d2_LastWindow);
+        bini = main_MenuButton(4, (int)"Create Save with INI", win);
+        bnetsave = main_MenuButton(5, (int)"Create Save for Network", win);
+        bcheck = main_MenuButton(6, (int)"Check Textfile", win);
         grp = d2_CreateRadioGroup(9, bnew, bload, btut, bnet, bopt3, bini, bnetsave, bcred, bquit);
     }
-    if (U_I((unsigned)&snd_MusicEnabled) != 0) {
-        r = rand() % 3;
-        if (r == 0)
-            song = "cd1\\Rittersleut.mp3";
-        else if (r == 1)
-            song = "cd1\\MauerUndTor.mp3";
-        else if (r == 2)
-            song = "cd2\\KraeuterUndPhiolen.mp3";
-        else
-            goto lskip;
-        U_I((unsigned)&main_MenuSong) = msx_Play(song, 1);
+    if (snd_MusicEnabled != 0) {
+        switch (rand() % 3) {
+        case 0:
+            main_MenuSong = msx_Play("cd1\\Rittersleut.mp3", 1);
+            break;
+        case 1:
+            main_MenuSong = msx_Play("cd1\\MauerUndTor.mp3", 1);
+            break;
+        case 2:
+            main_MenuSong = msx_Play("cd2\\KraeuterUndPhiolen.mp3", 1);
+            break;
+        }
     }
-lskip:
     d2_ReleaseFade(fade);
-    d2_StartFade(0, 0, (int)*(short *)(unsigned)&d2_ScreenW, (int)*(short *)(unsigned)&d2_ScreenH, "BLACK", 0x5a, 10);
-    *(char *)(unsigned)&kb_Last = 0;
+    d2_StartFade(0, 0, d2_ScreenW, d2_ScreenH, "BLACK", 0x5a, 10);
+    kb_Last = 0;
     msx_SetFadeTime(2000);
 #ifdef REA_START
     /* REA_START=1 (tools/build.py, `uv run play|dbg --start NAME`): take one main-menu entry without a mouse
@@ -1592,7 +1595,7 @@ lskip:
         d2_MenuNavigate(grp);
 #ifdef REA_START
         if (rea_entry != -1 && rea_delay-- <= 0) {
-            ai_Unk5fe710 = rea_entry;      /* what a click on that button leaves behind */
+            d2_PointerObj = rea_entry;     /* what a click on that button leaves behind */
             dm_L.lclick = 1;
             rea_entry = -1;                /* one shot: the options screens return to this loop */
         }
@@ -1601,118 +1604,113 @@ lskip:
             d2_ShowPicture(0x797);
             again = 0;
         }
-        if (U_I(((unsigned)&dm_L + 0x18)) != 0 && ai_Unk5fe710 != -1) {
-            if (ai_Unk5fe710 == bnew) {
+        if (dm_L.lclick != 0 && d2_PointerObj != -1) {
+            if (d2_PointerObj == bnew) {
                 d2_EnableObject(f, 0);
                 ((void (*)(void))d3io_NoopCallback)();  /* called with no argument (no push at the call) */
                 hmt_Reset();
-                if (main_Unk537930() == 0)
-                    goto lback;
-                U_I((unsigned)&ai_GameFlags) |= 1;
-                U_I((unsigned)&sv_PopRequest) = 1;
-            } else if (ai_Unk5fe710 == btut) {
-                d2_EnableObject(f, 0);
-                if (ai_Unk57bce0() == 0) {
-lback:
-                    d2_EnableObject(f, 1);
+                if (main_NewSinglePlayerGame() != 0) {
+                    sv_PopRequest = 1;
+                    ai_GameFlags |= 1;
                 } else {
-                    ai_Unk57bc30();
-                    *(unsigned char *)(unsigned)&ai_NumPlayers = 1;
-                    strcpy((char *)((unsigned)&ai_DataPath + 0x220), "Tutorial");
-                    U_I((unsigned)&ai_GameFlags) = 0x89;
-                    U_I((unsigned)&sv_PopRequest) = 1;
+                    d2_EnableObject(f, 1);
                 }
-            } else {
-                if (ai_Unk5fe710 == bini) {
-                    d2_EnableObject(f, 0);
-                    if (ai_Unk5d34b0(0x24087, 1, "$Z$[Load INI$]", "gamedata/cities", ".INI", c3) != 0) {
-                        sprintf(c1, (char *)(unsigned)"%s%s", "\\project\\gfx\\", c3);
-                        GetPrivateProfileStringA("A - ALLGEMEIN", "Stadtname", "Unknown", name1, 0x60, c1);
-                        main_StartCityGame((int)name1, 0);
-                    }
-                    goto lback;
+            } else if (d2_PointerObj == btut) {
+                d2_EnableObject(f, 0);
+                if (ai_TutorialWindow() != 0) {
+                    ai_SetupTutorialPlayer();
+                    ai_NumPlayers = 1;
+                    strcpy(ai_DataPath + 0x220, "Tutorial");
+                    ai_GameFlags = 0x89;
+                    sv_PopRequest = 1;
+                } else {
+                    d2_EnableObject(f, 1);
                 }
-                if (ai_Unk5fe710 == bnetsave) {
-                    d2_EnableObject(f, 0);
-                    if (ai_Unk5d34b0(0x24087, 1, "$Z$[Load INI$]", "gamedata/cities", ".INI", c4) != 0) {
-                        sprintf(c2, (char *)(unsigned)"%s%s", "\\project\\gfx\\", c4);
-                        GetPrivateProfileStringA("A - ALLGEMEIN", "Stadtname", "Unknown", name2, 0x60, c2);
-                        main_StartCityGame((int)name2, 1);
-                    }
+            } else if (d2_PointerObj == bini) {
+                d2_EnableObject(f, 0);
+                if (ai_FilePickWindow(0x24087, 1, (int)"$Z$[Load INI$]", (int)"gamedata/cities", (int)".INI", (int)ini) != 0) {
+                    sprintf(path, "%s%s", main_GfxPath, ini);
+                    GetPrivateProfileStringA("A - ALLGEMEIN", "Stadtname", "Unknown", city, 0x60, path);
+                    main_StartCityGame(city, 0);
+                }
+                d2_EnableObject(f, 1);
+            } else if (d2_PointerObj == bnetsave) {
+                d2_EnableObject(f, 0);
+                if (ai_FilePickWindow(0x24087, 1, (int)"$Z$[Load INI$]", (int)"gamedata/cities", (int)".INI", (int)ini2) != 0) {
+                    sprintf(path2, "%s%s", main_GfxPath, ini2);
+                    GetPrivateProfileStringA("A - ALLGEMEIN", "Stadtname", "Unknown", city2, 0x60, path2);
+                    main_StartCityGame(city2, 1);
+                }
+                d2_EnableObject(f, 1);
+            } else if (d2_PointerObj == bload) {
+                d2_EnableObject(f, 0);
+                if (ai_LoadGameWindow() != 0)
+                    sv_PopRequest = 1;
+                d2_EnableObject(f, 1);
+            } else if (d2_PointerObj == bnet) {
+                d2_EnableObject(f, 0);
+                if (main_NetworkMenu() != 0) {
+                    sv_PopRequest = 1;
+                } else {
                     d2_EnableObject(f, 1);
-                } else if (ai_Unk5fe710 == bload) {
-                    d2_EnableObject(f, 0);
-                    if (ai_LoadGameWindow() != 0)
-                        U_I((unsigned)&sv_PopRequest) = 1;
-                    d2_EnableObject(f, 1);
-                } else if (ai_Unk5fe710 == bnet) {
-                    d2_EnableObject(f, 0);
-                    if (main_NetworkMenu() == 0) {
-                        d2_EnableObject(f, 1);
-                        U_I((unsigned)&ai_GameFlags) = 0;
-                    } else
-                        U_I((unsigned)&sv_PopRequest) = 1;
-                } else if (ai_Unk5fe710 == bopt1) {
-                    d2_EnableObject(f, 0);
-                    ai_OptionsGfxScreen();
-                    d2_EnableObject(f, 1);
-                    again = 1;
-                    if (main_ScreenRestart != 0)
-                        U_I((unsigned)&sv_PopRequest) = 1;
-                } else if (ai_Unk5fe710 == bopt2) {
-                    d2_EnableObject(f, 0);
-                    ai_OptionsSfxScreen();
-                    d2_EnableObject(f, 1);
-                } else if (ai_Unk5fe710 == bopt3) {
-                    d2_EnableObject(f, 0);
-                    ai_OptionsGameScreen();
-                    d2_EnableObject(f, 1);
-                } else if (ai_Unk5fe710 == bquit) {
-                    U_I((unsigned)&ai_GameOver) = 1;
-                    U_I((unsigned)&main_QuitProgram) = 1;
-                    U_I((unsigned)&sv_PopRequest) = 1;
-                } else if (ai_Unk5fe710 == bcheck) {
-                    main_Unk533740();
-                } else if (ai_Unk5fe710 == bcred) {
-                    d2_EnableObject(f, 0);
-                    if (U_I((unsigned)&snd_MusicEnabled) != 0) {
-                        msx_SetFadeTime(1000);
-                        msx_Play("cd2\\ZumGutenEnd.mp3", 1);
-                    }
-                    ai_CreditsScreen();
-                    d2_EnableObject(f, 1);
-                    if (U_I((unsigned)&snd_MusicEnabled) != 0) {
-                        msx_SetFadeTime(1000);
-                        msx_Start(U_I((unsigned)&main_MenuSong), 1);
-                    }
+                    ai_GameFlags = 0;
+                }
+            } else if (d2_PointerObj == bopt1) {
+                d2_EnableObject(f, 0);
+                ai_OptionsGfxScreen();
+                d2_EnableObject(f, 1);
+                again = 1;
+                if (main_ScreenRestart != 0)
+                    sv_PopRequest = 1;
+            } else if (d2_PointerObj == bopt2) {
+                d2_EnableObject(f, 0);
+                ai_OptionsSfxScreen();
+                d2_EnableObject(f, 1);
+            } else if (d2_PointerObj == bopt3) {
+                d2_EnableObject(f, 0);
+                ai_OptionsGameScreen();
+                d2_EnableObject(f, 1);
+            } else if (d2_PointerObj == bquit) {
+                ai_GameOver = 1;
+                main_QuitProgram = 1;
+                sv_PopRequest = 1;
+            } else if (d2_PointerObj == bcheck) {
+                main_MoneyDialog();
+            } else if (d2_PointerObj == bcred) {
+                d2_EnableObject(f, 0);
+                if (snd_MusicEnabled != 0) {
+                    msx_SetFadeTime(1000);
+                    msx_Play("cd2\\ZumGutenEnd.mp3", 1);
+                }
+                ai_CreditsScreen();
+                d2_EnableObject(f, 1);
+                if (snd_MusicEnabled != 0) {
+                    msx_SetFadeTime(1000);
+                    msx_Start(main_MenuSong, 1);
                 }
             }
         }
-        if (*(char *)(unsigned)&kb_Last == 1) {
-            U_I((unsigned)&main_QuitProgram) = 1;
-            U_I((unsigned)&sv_PopRequest) = 1;
+        if (kb_Last == 1) {
+            main_QuitProgram = 1;
+            sv_PopRequest = 1;
         }
-        r = sv_RunFrame((int)main_Menue, 0x24087);
-        if (r == 0) {
-            d2_RadioClear(grp);
-            d2_CloseView(f);
-            d2_ClearScreen();
-            d3if_SelectScene(0, 0);
-            d3if_Reset();
-            d3if_SelectScene(1, 0);
-            d3if_Reset();
-            msx_SetFadeTime(1000);
-            if (U_I((unsigned)&main_MenuSong) != 0) {
-                msx_Stop(U_I((unsigned)&main_MenuSong), 1);
-                U_I((unsigned)&d2_CutsceneActive) = 1;
-                while (*(char *)(U_I((unsigned)&main_MenuSong) + 0x104) != 0)
-                    sv_RunFrame(0, U_I((unsigned)&sv_FrameMask));
-                Sleep(1000);
-            }
-            msx_SetFadeTime(5000);
-            return;
-        }
-    } while (1);
+    } while (sv_RunFrame((int)main_Menue, 0x24087) != 0);
+    d2_RadioClear(grp);
+    d2_CloseView(f);
+    d2_ClearScreen();
+    d3if_SelectScene(0, 0);
+    d3if_Reset();
+    d3if_SelectScene(1, 0);
+    d3if_Reset();
+    msx_SetFadeTime(1000);
+    if (main_MenuSong != 0) {
+        msx_Stop(main_MenuSong, 1);
+        d2_CutsceneActive = 1;
+        while (main_MenuSong->playing != 0)
+            sv_RunFrame(0, sv_FrameMask);
+        Sleep(1000);
+    }
+    msx_SetFadeTime(5000);
 }
 /* 0x5344f0, puts a person (the template model name n of the list 0x1440d80, index k) at the dummy "n" of the scene object named a: the dummy position (0x458a20), a character object (0x403390 (b, pos)) that
    looks along the dummy's heading (0x458810 / 0x4539f0, 0x43b860), walks ("bewegung/gehen", speed 0.7, 0x1a0), is registered as a status text plate (0x52e1c0); returns the new object or 0 */
@@ -2964,7 +2962,7 @@ lgo:
 }
 /* 0x537930, starts a new single player game: the player count 1 (0x62489c) and the player setup 0x537230 (1, 0); returns 1 when done, else the start screen is rebuilt */
 
-int main_Unk537930(void)
+int main_NewSinglePlayerGame(void)
 {
     int r;
 

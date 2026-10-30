@@ -317,6 +317,9 @@ int ai_PokerGame(void);                  /* 0x5da030, the poker game window */
    also defined below their caller (see the order note in the .c): VC6 drops a call whose result is
    unused to a side-effect-free body it has already seen, so the caller must not see them. */
 int ai_SaveOptionWindow(int image);             /* 0x5d45d0, the save window (the image to restore) */
+int ai_FilePickWindow(int param_1, int param_2, int param_3, int param_4, int param_5, int param_6); /* 0x5d34b0, the file pick window (main_Menue: the city INI) */
+int ai_LoadGameWindow(void);             /* 0x5d4080, the load game window, 1: a game was loaded */
+void ai_CreditsScreen(void);             /* 0x5d7ba0, the credits */
 int ai_JoinGameWindow(void);             /* 0x5d42b0, the saved network game pick (main_JoinNetworkGame), 1: chosen */
 int ai_SaveNameWindow(int image);             /* 0x5d4920, the load window (the image to restore) */
 void ai_OptionsGfxScreen(void);          /* 0x5d5fd0, "menu\options_gfx" */

@@ -4414,7 +4414,7 @@ void gm_Unk503ee0(unsigned *out, int n);
    + 0x639; the strings U_I(0x1449e48) / U_I(0x1449e4c) copied to 0x75e5aa / 0x75e5ca; 0x503ee0 (the local
    buffer, the byte 0x75e5a3) returns a record whose dword +0 goes to 0x75e5f0 and whose word +4 (low byte) to the
    local and 0x75e5f4 */
-void ai_Unk57bc30(void)
+void ai_SetupTutorialPlayer(void)
 {
     char local[0x10];
     char *r;
@@ -4450,7 +4450,7 @@ int sv_RunFrame(int cb, unsigned mask);
    0x6f22a0 = 1, on the start sets 0x6f22a0 = 1, writes the checked state of the five entries back to 0x62918c
    and makes the result 1 when at least one is checked. 0x4758f0 closes the window; 1 starts the tutorial, 0 is
    the back. (The menu that is skipped when this function pops at once is exactly this pump loop.) */
-int ai_Unk57bce0(void)
+int ai_TutorialWindow(void)
 {
     int start;
     int result;
@@ -4475,7 +4475,7 @@ int ai_Unk57bce0(void)
     start = d2_GetWinObj(id, 2, io_PrintText((char *)(unsigned)"%ia[%s]$N", 0x3f20));
     back = d2_GetWinObj(id, 2, io_PrintText((char *)(unsigned)"%ia[%s]$N", 0x3f21));
     d2_SetForm(id, 2);
-    while (sv_RunFrame((unsigned)&ai_Unk57bce0, 0x86) != 0) {
+    while (sv_RunFrame((unsigned)&ai_TutorialWindow, 0x86) != 0) {
 #ifdef REA_START
         /* REA_START=tutorial (`uv run play|dbg --start tutorial`): the chapter menu is the screen between the
            main-menu entry and the loading screen. Accept its default selection (0x62918c starts all 1) the way

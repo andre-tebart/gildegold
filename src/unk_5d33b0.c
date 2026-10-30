@@ -164,7 +164,7 @@ char *_itoa(int, char *, int); void d2_SetObjFont(int obj, int font); int sv_Run
    ROUGH (layout 2026-10-24): the cancel-path sprintf has one more argument in the original than
    Ghidra recovered, and the two control fields +0x5c / +0x14 are unchecked.
    @deep meaning matches the original (head read: win creation 0x4741f0/0x475600/0x476f80/0x475f70, the 6-arg 0x475ff0 control, the 4-arg 0x52e860, ai_ListFiles, the 0x210 record writes; tail read: click branch 0x475cb0/sprintf, cancel branch d2_GetObjValue + sprintf with the 5 effective args); after removing the duplicated __chkstk call (ai_Unk5de9c0 = 0x5de9c0, automatic) and adding the missed x14 = -1 init, 246 code hunks remain from register allocation (win ebp vs ebx), local slot order and VC6 push/cleanup scheduling (the original reuses the pending d2_GetObjValue argument slot as the sprintf 5th arg: add esp,4 + add esp,0x14; ours re-pushes it, add esp,0x1c) */
-int ai_Unk5d34b0(int param_1, int param_2, int param_3, int param_4, int param_5, int param_6)
+int ai_FilePickWindow(int param_1, int param_2, int param_3, int param_4, int param_5, int param_6)
 {
     char list[0x4200];
     char num[0x20];
@@ -217,7 +217,7 @@ int ai_Unk5d34b0(int param_1, int param_2, int param_3, int param_4, int param_5
     _itoa(n, num, 10);
     d2_SetObjText(sel, num);
     d2_SetObjFont(sel, 0x54);
-    while (sv_RunFrame((int)ai_Unk5d34b0, param_1) != 0) {
+    while (sv_RunFrame((int)ai_FilePickWindow, param_1) != 0) {
         if (U_I(((unsigned)&dm_L + 0x20)) != 0)
             U_I((unsigned)&sv_PopRequest) = 1;
         if (U_I(((unsigned)&dm_L + 0x18)) != 0) {
@@ -1283,7 +1283,7 @@ typedef struct AICHARVIEW {
 
 /* 0x5d6f40, creates one menu button of an options dialog (84 B): a control of the dialog (picture
    0xbf, the caption texts text1 / text2) at x 0x20 and the row's y, centred (d2_Objs[id].centred,
-   d2_SetObjWidth re-centres it on the 300 width). The twin of main_Unk5337f0 (row stride 0x2b).
+   d2_SetObjWidth re-centres it on the 300 width). The twin of main_MenuButton (row stride 0x2b).
    Returns the control id. */
 int ai_MenuButton(int row, int text1, int text2)
 {
