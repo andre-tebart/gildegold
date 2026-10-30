@@ -1276,7 +1276,7 @@ exe	0x0046cb20	d2_OpenPic	d2	byte	readable
 exe	0x0046cd80	d2_CreatePicObj	d2	byte	readable	
 exe	0x0046cda0	d2_MoveObj	d2	byte	readable	
 exe	0x0046cfd0	d2_ShowPicture	d2	byte	readable	
-exe	0x0046d040	d2_DrawPic	d2	draft	readable	deep
+exe	0x0046d040	d2_DrawPic	d2	shape	readable	deep
 exe	0x0046d220	d2_DrawObjCaption	d2	draft	readable	deep
 exe	0x0046d3d0	d2_DrawObjects	d2	draft	draft	deep
 exe	0x0046e150	d2_DrawAll	d2	byte	readable	
@@ -3051,7 +3051,7 @@ exe	0x00503f50	gm_Unk503f50	f3gm	draft	draft
 exe	0x00503fa0	gm_BuildingTypeOfJob	f3gm	draft	draft	
 exe	0x00504050	gm_JobBuildingType	f3gm	draft	readable	
 exe	0x00504100	gm_JobSlots	f3gm	draft	readable	
-exe	0x00504290	gm_FirstTitleNumber	f3gm	draft	draft	
+exe	0x00504290	gm_FirstTitleNumber	f3gm	shape	draft	
 exe	0x00504350	gm_Unk504350	f3gm	draft	draft	
 exe	0x005043d0	gm_TitleNumber	f3gm	draft	readable	
 exe	0x005044b0	gm_Unk5044b0	f3gm	draft	draft	
@@ -3149,7 +3149,7 @@ exe	0x0050ab80	gm_FreeCapacity	f3gm	draft	draft
 exe	0x0050acf0	gm_Unk50acf0	f3gm	draft	draft	
 exe	0x0050ad70	gm_Unk50ad70	f3gm	draft	draft	
 exe	0x0050af00	gm_Unk50af00	f3gm	draft	draft	
-exe	0x0050b010	gm_FirstBuilding	f3gm	draft	readable	
+exe	0x0050b010	gm_FirstBuilding	f3gm	shape	readable	
 exe	0x0050b090	gm_ResearchClass	f3gm	draft	readable	
 exe	0x0050b170	gm_Unk50b170	f3gm	draft	draft	
 exe	0x0050b1e0	gm_Unk50b1e0	f3gm	draft	draft	
@@ -4647,7 +4647,7 @@ exe	0x005d9c30	ai_GypsyProductionContact	unk_5d33b0	byte	readable
 exe	0x005d9de0	ai_OpenPokerWindow	unk_5d33b0	draft	readable	deep
 exe	0x005d9f50	ai_PokerBetControl	unk_5d33b0	byte	readable	
 exe	0x005da010	ai_ClosePokerWindow	unk_5d33b0	byte	readable	
-exe	0x005da030	ai_PokerGame	unk_5d33b0	draft	readable	deep
+exe	0x005da030	ai_PokerGame	unk_5d33b0	shape	readable	deep
 exe	0x005dadf0	ai_PokerSeatPanel	unk_5d33b0	draft	readable	deep
 exe	0x005db110	ai_PokerWindow2	unk_5d33b0	byte	readable	
 exe	0x005dbc10	ai_GetDefaultEffect	unk_5d33b0	byte	readable	
