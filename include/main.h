@@ -25,6 +25,6 @@ int main_OpenScreen(int m);
 int main_OpenEngine(void);
 int main_PlayerCountDialog(void);
 void main_StartCityGame(char *name, int net);
-int main_Unk5335b0(void);
+int main_NetworkMenu(void);
 
 #endif

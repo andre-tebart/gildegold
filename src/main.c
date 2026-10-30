@@ -1367,11 +1367,15 @@ int main_ChooseNetworkGame(void)
     d2_CloseView(f);
     return r;
 }
-/* 0x5335b0, the network main menu ("Menu\CHOOSENETWORK", three buttons: host 0x5328f0 (0x6f23f8 = 5), load a network game 0x532da0 (0) (5), join 0x533470 (4)); returns 1 when a game was started */
+/* 0x5335b0, the network main menu "Menu\CHOOSENETWORK": three buttons in a radio group (keyboard navigation),
+   b1 hosts a new game (ai_GameFlags 5, main_HostNetworkGame), b2 searches the LAN for a new game (ai_GameFlags 5,
+   main_SearchNetworkGame (0)), b3 opens the client dialog (ai_GameFlags 4, main_ChooseNetworkGame); the mission
+   mode is set to 0xfe first, the right mouse button / Escape (kb_Last 1) closes it. Returns 1 when a game was
+   started. */
 
-int main_Unk5335b0(void)
+int main_NetworkMenu(void)
 {
-    int r, f, b1, b2, b3, g, run;
+    int r, f, b1, b2, b3, g;
 
     r = 0;
     f = d2_OpenForm(0, 0, "Menu\\CHOOSENETWORK");
@@ -1382,44 +1386,46 @@ int main_Unk5335b0(void)
     b2 = d2_GetWinObj(f, 0, io_PrintText(0x1ca7));
     b3 = d2_GetWinObj(f, 0, io_PrintText(0x1ca8));
     g = d2_CreateRadioGroup(3, b1, b2, b3);
-    *(unsigned char *)(unsigned)&ai_MissionMode = 0xfe;
-    run = sv_RunFrame((int)main_Unk5335b0, 0x24087);
-    do {
-        if (run == 0) {
-            d2_RadioClear(g);
-            d2_CloseView(f);
-            return r;
-        }
-        d2_MenuNavigate(g);
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0 || *(char *)(unsigned)&kb_Last == 1) {
-            U_I((unsigned)&sv_PopRequest) = 1;
-            r = 0;
-        }
-        if (U_I((unsigned)&d2_ClickedId) != -1) {
-            if (ai_Unk5fe710 == b1) {
-                U_I((unsigned)&ai_GameFlags) = 5;
-                d2_SetViewEnabled(f, 0);
-                run = main_HostNetworkGame();
-            } else if (ai_Unk5fe710 == b2) {
-                U_I((unsigned)&ai_GameFlags) = 5;
-                d2_SetViewEnabled(f, 0);
-                run = main_SearchNetworkGame(0);
-            } else {
-                if (ai_Unk5fe710 != b3)
-                    goto lnext;
-                U_I((unsigned)&ai_GameFlags) = 4;
-                d2_SetViewEnabled(f, 0);
-                run = main_ChooseNetworkGame();
+    ai_MissionMode = (char)0xfe;
+    if (sv_RunFrame((int)main_NetworkMenu, 0x24087) != 0) {
+        do {
+            d2_MenuNavigate(g);
+            if (dm_L.rup != 0 || kb_Last == 1) {
+                sv_PopRequest = 1;
+                r = 0;
             }
-            if (run != 0) {
-                U_I((unsigned)&sv_PopRequest) = 1;
-                r = 1;
+            if (d2_ClickedId != -1) {
+                if (d2_PointerObj == b1) {
+                    ai_GameFlags = 5;
+                    d2_SetViewEnabled(f, 0);
+                    if (main_HostNetworkGame() != 0) {
+                        sv_PopRequest = 1;
+                        r = 1;
+                    }
+                    d2_SetViewEnabled(f, 1);
+                } else if (d2_PointerObj == b2) {
+                    ai_GameFlags = 5;
+                    d2_SetViewEnabled(f, 0);
+                    if (main_SearchNetworkGame(0) != 0) {
+                        sv_PopRequest = 1;
+                        r = 1;
+                    }
+                    d2_SetViewEnabled(f, 1);
+                } else if (d2_PointerObj == b3) {
+                    ai_GameFlags = 4;
+                    d2_SetViewEnabled(f, 0);
+                    if (main_ChooseNetworkGame() != 0) {
+                        sv_PopRequest = 1;
+                        r = 1;
+                    }
+                    d2_SetViewEnabled(f, 1);
+                }
             }
-            d2_SetViewEnabled(f, 1);
-        }
-lnext:
-        run = sv_RunFrame((int)main_Unk5335b0, 0x24087);
-    } while (1);
+        } while (sv_RunFrame((int)main_NetworkMenu, 0x24087) != 0);
+    }
+    d2_RadioClear(g);
+    d2_CloseView(f);
+    return r;
 }
 /* 0x533740, the money amount dialog (a number input 0x472390 (0x20, 0x60, 0x26c, 400, 0x15) with the text "$3ABetrag:%m", range 0 .. 10000): runs 0x5309a0 until closed */
 
@@ -1645,7 +1651,7 @@ lback:
                     d2_EnableObject(f, 1);
                 } else if (ai_Unk5fe710 == bnet) {
                     d2_EnableObject(f, 0);
-                    if (main_Unk5335b0() == 0) {
+                    if (main_NetworkMenu() == 0) {
                         d2_EnableObject(f, 1);
                         U_I((unsigned)&ai_GameFlags) = 0;
                     } else
