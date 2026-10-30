@@ -1754,9 +1754,9 @@ exe	0x004a6570	ai_Unk4a6570	am	draft	draft
 exe	0x004a66f0	ai_Unk4a66f0	am	byte	draft	
 exe	0x004a67a0	ai_Unk4a67a0	am	draft	draft	
 exe	0x004a6ae0	ai_Unk4a6ae0	am	draft	draft	
-exe	0x004a7140	ai_Unk4a7140	unk_4a7140	draft	draft	
+exe	0x004a7140	ai_PokerStart	unk_4a7140	draft	draft	
 exe	0x004a7430	ai_Unk4a7430	unk_4a7140	draft	draft	
-exe	0x004a74e0	ai_Unk4a74e0	unk_4a7140	draft	draft	
+exe	0x004a74e0	ai_PokerStep	unk_4a7140	draft	draft	
 exe	0x004a7650	ai_Unk4a7650	unk_4a7140	draft	draft	
 exe	0x004a76d0	ai_Unk4a76d0	unk_4a7140	draft	draft	
 exe	0x004a7760	ai_Unk4a7760	unk_4a7140	draft	draft	
@@ -1771,7 +1771,7 @@ exe	0x004a8190	ai_Unk4a8190	unk_4a7140	draft	draft
 exe	0x004a8520	ai_Unk4a8520	unk_4a7140	byte	draft	
 exe	0x004a8590	ai_Unk4a8590	unk_4a7140	byte	draft	
 exe	0x004a85e0	ai_Unk4a85e0	unk_4a7140	byte	draft	
-exe	0x004a8630	ai_Unk4a8630	unk_4a7140	byte	draft	
+exe	0x004a8630	ai_PokerExchange	unk_4a7140	byte	draft	
 exe	0x004a8650	ai_Unk4a8650	unk_4a7140	byte	draft	
 exe	0x004a8690	ai_Unk4a8690	unk_4a7140	byte	draft	
 exe	0x004a86f0	ai_Unk4a86f0	unk_4a7140	draft	draft	
@@ -3326,7 +3326,7 @@ exe	0x00524770	sv_Unk524770	sv	draft	draft
 exe	0x00524810	sv_Unk524810	sv	draft	draft	
 exe	0x00524900	sv_Unk524900	sv	byte	draft	
 exe	0x00524990	sv_Unk524990	sv	draft	draft	
-exe	0x00525220	sv_Unk525220	sv	draft	draft	
+exe	0x00525220	sv_OpenPlayerBar	sv	draft	draft	
 exe	0x00525440	sv_ClosePlayerBar	sv	byte	readable	
 exe	0x00525480	sv_ClockSeason	sv	byte	readable	
 exe	0x00525490	sv_Unk525490	sv	draft	draft	
@@ -3365,7 +3365,7 @@ exe	0x0052a040	sv_ReturnZero	sv	byte	readable
 exe	0x0052a050	sv_UpdatePanel	sv	draft	draft	
 exe	0x0052a680	sv_Unk52a680	sv	draft	draft	
 exe	0x0052adb0	sv_Unk52adb0	sv	draft	draft	
-exe	0x0052ae40	sv_Unk52ae40	sv	byte	draft	
+exe	0x0052ae40	sv_ClearSelection	sv	byte	draft	
 exe	0x0052ae70	sv_Unk52ae70	sv	draft	draft	
 exe	0x0052b2a0	sv_CollectGroupCharacters	sv	draft	draft	
 exe	0x0052b350	sv_Unk52b350	sv	draft	draft	
@@ -4063,7 +4063,7 @@ exe	0x00584520	ai_Unk584520	unk_575860	draft	draft
 exe	0x005847a0	ai_Unk5847a0	unk_575860	byte	draft	
 exe	0x00584900	ai_Unk584900	unk_575860	draft	draft	
 exe	0x00584b70	ai_Unk584b70	unk_575860	draft	draft	
-exe	0x00584d70	ai_Unk584d70	unk_575860	draft	draft	
+exe	0x00584d70	ai_GypsyHelperWindow	unk_575860	draft	draft	
 exe	0x00585380	ai_Unk585380	unk_575860	draft	draft	
 exe	0x00585750	ai_Unk585750	unk_575860	draft	draft	
 exe	0x005859c0	ai_Unk5859c0	unk_575860	draft	draft	
@@ -4150,7 +4150,7 @@ exe	0x0058feb0	ai_Unk58feb0	unk_58bbd0	byte	draft
 exe	0x0058ff00	ai_Unk58ff00	unk_58bbd0	draft	draft	
 exe	0x005909a0	ai_Unk5909a0	unk_58bbd0	draft	draft	
 exe	0x00591170	ai_Unk591170	unk_58bbd0	draft	draft	
-exe	0x005912c0	ai_Unk5912c0	unk_58bbd0	draft	draft	
+exe	0x005912c0	ai_TradeContactChecks	unk_58bbd0	draft	draft	
 exe	0x00591480	ai_Unk591480	unk_58bbd0	draft	draft	
 exe	0x00591520	ai_GameFrame	unk_58bbd0	draft	draft	
 exe	0x00591ad0	ai_Unk591ad0	unk_58bbd0	draft	draft	
@@ -4639,20 +4639,20 @@ exe	0x005d85e0	ai_BloodRevengeWindow	unk_5d33b0	draft	readable	deep
 exe	0x005d8c90	ai_CurseWindow	unk_5d33b0	shape	readable	deep
 exe	0x005d90e0	ai_CurseTargetWindow	unk_5d33b0	draft	readable	deep
 exe	0x005d95a0	ai_HomageWindow	unk_5d33b0	shape	readable	deep
-exe	0x005d9890	ai_Unk5d9890	unk_5d33b0	draft	draft	
+exe	0x005d9890	ai_GypsyBeggingWindow	unk_5d33b0	byte	readable	
 exe	0x005d9a80	ai_GypsyContact	unk_5d33b0	byte	readable	
 exe	0x005d9b20	ai_CurseContact	unk_5d33b0	byte	readable	
 exe	0x005d9b90	ai_TheatreContact	unk_5d33b0	byte	readable	
-exe	0x005d9c30	ai_Unk5d9c30	unk_5d33b0	draft	draft	
-exe	0x005d9de0	ai_Unk5d9de0	unk_5d33b0	draft	draft	
-exe	0x005d9f50	ai_Unk5d9f50	unk_5d33b0	draft	draft	
+exe	0x005d9c30	ai_GypsyProductionContact	unk_5d33b0	byte	readable	
+exe	0x005d9de0	ai_OpenPokerWindow	unk_5d33b0	draft	readable	deep
+exe	0x005d9f50	ai_PokerBetControl	unk_5d33b0	byte	readable	
 exe	0x005da010	ai_ClosePokerWindow	unk_5d33b0	byte	readable	
-exe	0x005da030	ai_PokerGame	unk_5d33b0	draft	draft	
-exe	0x005dadf0	ai_Unk5dadf0	unk_5d33b0	draft	draft	
-exe	0x005db110	ai_Unk5db110	unk_5d33b0	draft	draft	
+exe	0x005da030	ai_PokerGame	unk_5d33b0	draft	readable	deep
+exe	0x005dadf0	ai_PokerSeatPanel	unk_5d33b0	draft	readable	deep
+exe	0x005db110	ai_PokerWindow2	unk_5d33b0	byte	readable	
 exe	0x005dbc10	ai_GetDefaultEffect	unk_5d33b0	byte	readable	
 exe	0x005dbc20	ai_GetDefaultEffectScale	unk_5d33b0	byte	readable	
-exe	0x005dbc30	ai_Unk5dbc30	unk_5d33b0	draft	draft	
+exe	0x005dbc30	ai_InitWind	unk_5d33b0	byte	readable	
 exe	0x005dbed0	ai_Unk5dbed0	unk_5d33b0	draft	draft	
 exe	0x005dbfc0	ai_Unk5dbfc0	unk_5d33b0	draft	draft	
 exe	0x005dc0c0	ai_Unk5dc0c0	unk_5d33b0	draft	draft	

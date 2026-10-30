@@ -33,14 +33,24 @@ tags.
   gm_MinutesBetween result as an int and does `fild a; fidiv b`, ours converts early and spills a float; plus the 4-byte slot
   shift from the float local), 0x5d95a0 ai_HomageWindow (6 ins: constant loads / the hoisted `push 0` around the two inline
   memsets), 0x5d85e0 ai_BloodRevengeWindow (250 ins: constant hoisting, the original keeps 1 / 0 in ebx / esi and form in edi).
+- **match-base 2026-10-30 (second session) left for the deep queue** (bodies written, all readable):
+  0x5d9de0 ai_OpenPokerWindow (the three panel inits: the original loads -1 once more into eax (`mov eax,edi`) and stores the
+  slots through eax, interleaved slot0, slot1, win, slot2, shown, slot3, slot4; the compare constant sits in edi, ours in esi),
+  0x5da030 ai_PokerGame (25 ins of 991: one sib byte [edx+eax] vs [eax+edx] at 0x5da290, and the jump table of the 11 case switch:
+  our object keeps the 3-byte fill + table inside the function symbol, the original's walker ends the function at 0x5dadbc and
+  files fill + table apart, so asmdiff shows 23 `code` instructions that are no code; B1 compares 1 of 3520 bytes),
+  0x5dadf0 ai_PokerSeatPanel (49 ins: the card-back constant ai_CardBack 0x5ed1bc is read once per picture by the original,
+  twice by ours (const volatile); a local copy makes the compiler merge the two identical back blocks (size 704 vs the
+  original's two copies), so the two original blocks differ in a way not visible; plus the title index scheduling and the
+  loop increment order).
 - Every game-code function of the unit is drafted (0x5d33b0 .. 0x5dd100, 63 functions, contiguous; the
   ledger reports no undrafted byte inside the unit).
 - **The 0x5dd3e0 .. 0x5de450 data tail**: not code (a registration table); the ledger cannot claim it
   (see the session-14 section). It is the only undrafted region of the game code.
 - The older ROUGH drafts of the save / load and options windows are still stubs (0x5d3ab0, 0x5d4080,
   0x5d42b0, 0x5d45d0, 0x5d4920, 0x5d4c70, 0x5d5640, 0x5d5c40, 0x5d5f10, 0x5d5fd0, 0x5d6580, 0x5d6950)
-  and the new big window bodies (0x5d85e0, 0x5d8c90, 0x5d90e0, 0x5d95a0, 0x5d9890, 0x5d9de0,
-  0x5da030, 0x5db110, 0x5dd100) are ROUGH skeleton / stubs with their calls and constants recorded.
+  and the big window bodies 0x5dd100 and the poker / wind stretch were ROUGH stubs (0x5d9890 .. 0x5dbc30 are written since
+  2026-10-30, see the section at the end).
   0x5d6f40 matched first (the d2_Objs pointer form).
 
 ## layout 2026-10-24 (session 13)
@@ -682,3 +692,31 @@ a type debt.
   snd_SystemBank (int), ai_Unk5be1d0 -> ai_AmountRowStatus, ai_Unk5be3b0 -> ai_AmountRow, ai_Unk5a9470 -> ai_GypsyDeliveryText,
   gm_Unk50cf60 -> gm_BathObjectCount, gm_Unk50cfd0 -> gm_CurseObjectCount, gm_Unk50d0b0 -> gm_CurseTargetCount, ai_Unk5741d0 ->
   ai_FindCurseEvent (the gm_CurseObjectCount / gm_CurseTargetCount / ai_FindCurseEvent names rest on the single caller: reasoned).
+
+## match-base 2026-10-30 (second session: the gypsy / poker / wind stretch 0x5d9890 .. 0x5dbc30)
+- **0x5d9890 -> ai_GypsyBeggingWindow, byte + readable**: opened only from contact_BETTELN of the gypsy production listener
+  (0x5d9c30); collects up to four characters of the group selection (AICHARVIEW.selected, +0x188 = ai_Selected, cleared by
+  sv_ClearSelection) and sends the long message 0xa1 (flags 1, the building id, the clock, the net ids). sv_Unk525220 ->
+  sv_OpenPlayerBar, sv_Unk52ae40 -> sv_ClearSelection (prototypes in unk_5d33b0.h).
+- **0x5d9c30 -> ai_GypsyProductionContact, byte + readable**: plates ZUTATEN_SUCHEN_ZIGEUNER (the helpers window
+  ai_GypsyHelperWindow 0x584d70), TRANSPORT, PRODUKTION_ZIGEUNER, LAGER, BETTELN under bit 0x200, PERSONALBUCH / MEISTERBRIEF
+  under bit 0x400; the personnel book is tested after the chain from a fresh read of the click (declare the locals
+  personal / meister / betteln, init them in that order: the slot order). ai_Unk5912c0 -> ai_TradeContactChecks.
+- **The poker block**: the data 0x62dda0 .. 0x62de10 is one POKERUI (window, five button ids, betSlider, three POKERPANELs of
+  seven dwords: win, five slots, shown) and 0x6f3500 .. 0x6f35c0 is the POKERGAME (unk_4a7140.h's G10GAME: phase, three
+  POKERSEATs of 0x34 B, pot +0xa0, minBet +0xa4 (stake), maxBet +0xa8 (money), bet +0xac (stake2), actor +0xb0, winner +0xb8,
+  winRank +0xbc; seat.dropped +0x24 = the deck index of the card put away, seat.foldPhase +0x28). The earlier plan to define
+  0x6f35a4 / 0x6f35a8 as two ints was wrong: they are fields of the game record (fixed in the same session).
+- **0x5d9de0 ai_OpenPokerWindow, 0x5da030 ai_PokerGame, 0x5dadf0 ai_PokerSeatPanel**: escalated (see Open work). ai_PokerGame
+  is an 11 phase state machine over ai_PokerStep's button mask (1 = first button, 8 = second, 0x10 = fourth, 0x20 + 1 =
+  bet slider); phases 3 / 5 / 9 are the same click handler with the seat mode 4 / 4 / 5, phase 6 marks one of the first
+  two cards (D2OBJVIEW.checked +0x28) for ai_PokerExchange. Renames: ai_Unk4a7140 -> ai_PokerStart, ai_Unk4a74e0 ->
+  ai_PokerStep, ai_Unk4a8630 -> ai_PokerExchange, ai_Unk5dadf0 -> ai_PokerSeatPanel, ai_Unk5db110 -> ai_PokerWindow2.
+  Gate lessons: a text id in txt_Ptrs[] is (address - 0x143a1c0) / 4 (M8 caught a miscount); the Esc key is kb_Down[1].
+- **0x5d9f50 -> ai_PokerBetControl, 0x5db110 -> ai_PokerWindow2** (the 8 hand rows of straight-line pictures: highlighted
+  (+0x2c) = the cards that make the hand, greyed = the others), both byte + readable.
+- **0x5dbc30 -> ai_InitWind, byte + readable**: the state EFFECTSTATE at 0x6f3300 (id, kind 6, copies of the caller's two
+  24 entry sin / cos wind rose tables, three random 24 entry arrays base / gust / phase by the day phase, an angle) and the
+  default effect ai_DefaultEffect (EFFECTREC at 0x62de60: vector (sin6, 0, cos6) and the scale |sin(angle) * gust[6]| +
+  base[6]); the 60.0 factor is a .rdata constant the original loads (ai_WindGain, not folded: a const global is not
+  constant-folded by VC6 as a literal is). ai_DefaultEffectScaleBits became ai_DefaultEffect.scaleBits.
