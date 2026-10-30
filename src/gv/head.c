@@ -23,11 +23,11 @@ extern char ai_Unk91f700[];
 #define ai_Unk5a9e40K ((int (*)())ai_Unk5a9e40)  /* 0x5a9e40: @original the call passes more arguments than the draft definition names, compiled without a prototype (as before the definition's spelling reached this unit) */
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
-extern int ai_Unk6f1b88;
 extern GAPDATA full_data_6f1ce4[];
 extern GAPDATA full_data_91f6e3[];
 extern GAPDATA full_data_91f6e4[];
 #include "amt_types.h"
+#include "ls.h"
 extern AMTREC amt_Table[];
 extern int gm_PlayerRecords[688];
 
@@ -35,7 +35,6 @@ extern const float unk_Tab5ee034[];
 int gm_ConvertMoney(int a, unsigned char k);   /* 0x5085b0 */
 int gm_PlayerFactor(int a, unsigned char k);   /* 0x5085f0 */
 int gm_Unk509e30(void *list, unsigned char p);   /* 0x509e30 */
-int ls_GetLanguage();                     /* 0x5190a0 */
 void ai_Unk4c5fa0(int a, int b, int c);                     /* 0x4c5fa0 */
 int amt_FindOffice();                     /* 0x4e6030 */
 int amt_SendOfficeMessage(unsigned char a, char *b, char *c, unsigned char d, unsigned char e);                     /* 0x4e6680 */

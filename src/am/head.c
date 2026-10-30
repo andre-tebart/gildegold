@@ -30,7 +30,6 @@ extern char ai_PlayerSlots[4][0x2f4];
 #include "cm_types.h"
 extern G17MSG ai_Unka69140[];
 extern unsigned char txt_Keys;  /* @original ai_Unk498c70 (0x498c70, byte) tests flags1c8 & 0x1000000 as &txt_Keys + 0x181c0 of this byte view: the char[0x4800][0x50] spelling, a view macro or the literal flip its add operands at +0x4cc (shape) */
-extern unsigned char he_Events[339968];
 
 int gm_Unk5044b0(int i, int p);        /* 0x5044b0, @original: the byte-matched callers (ai_Unk49ed10, ai_Unk498c70) read the result without the unsigned char mask (no `and eax,0xff` after the call) */
 
@@ -59,6 +58,7 @@ float ai_Unkf868b4 = 0;  /* 0xf868b4 */
 int ai_Unkf86900[73] = {0};  /* 0xf86900, the actions being evaluated */
 
 #include "time_view.h"
+#include "ls.h"
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, ai_Unk4d88c0 0x4d88c0 move it as a word / movzx) */
 #define d3t_GetObjectBoundsV ((void (*)(void *, void *, void *))d3t_GetObjectBounds)  /* 0x413150 (d3_tools.c: D3VECTOR *, D3VECTOR *, D3OBJECT *): this unit's untyped view */
 #define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (f3gm.c: char *) as the AIGOOD records it points to */

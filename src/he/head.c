@@ -35,9 +35,7 @@ extern D2WIN d2_Wins[];
 extern void main_GameLoop(int ctl);
 extern int ai_TransportWindow();
 /* full rebuild: the symbols whose original addresses the code above spells literally */
-extern char * he_QuickList[10921];
 extern void (*he_RunHandlers[5544])(unsigned char *);
-extern unsigned char he_Events[339968];
 extern unsigned char ai_TimeHour;
 extern GAPDATA full_data_6faa80[];
 extern int d2_LastWindow;
@@ -53,9 +51,6 @@ extern GAPDATA full_data_62571c[];
 extern GAPDATA full_data_6faa88[];
 extern int ai_GameFlags;
 extern int tb_Paused;
-extern int ai_Unk6f2618;
-extern int ai_Unk6f2620;
-extern int ai_Unk7585e4;
 extern GAPDATA full_data_625708[];
 extern GAPDATA full_data_62570c[];
 extern GAPDATA full_data_625710[];
@@ -321,6 +316,7 @@ void d2_SetObjValue();
 void d2_RaiseViewWindows(int view);
 
 #include "time_view.h"
+#include "ls.h"
 #define gm_NearestBuildingK ((int (*)())gm_NearestBuilding)  /* 0x50xxxx: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
 #define sv_SelectPanelObjectK ((int (*)())sv_SelectPanelObject)  /* 0x52c4c0?: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
 #define gm_Unk50a970K ((int (*)())gm_Unk50a970)  /* 0x50a970: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */

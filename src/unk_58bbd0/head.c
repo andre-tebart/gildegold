@@ -294,7 +294,6 @@ extern unsigned char ai_TimeHour;
 extern float ai_Unk617830[];
 extern float ai_Unk617840[];
 extern int ai_Unk623884;
-extern int * ai_Unk633738;
 extern char * ai_Unk75ec60;
 extern int d2_ClickedId;
 extern int d2_CutsceneActive;
@@ -1226,7 +1225,6 @@ extern char * cm_FieldObject;
 extern float ai_Unk5eb94c;
 extern const int ai_Unk5eeab8[24];
 extern signed char ai_Relations[768][768];
-extern unsigned char he_Events[339968];
 int d2_CreateChildWindow(short x, short y, short w, short h, unsigned int flags, int win);
 int d2_WinOpenInputIcon(int x, int y, int icon, unsigned char flags, int win);
 int d2_WinOpenPic(short x, short y, int pic, int win);
@@ -1281,5 +1279,6 @@ extern HETIME ai_Time;                  /* 0x770ae0 (ai.h AITIME, defined in he.
 float util_RandomF();                   /* the float roll (ai.h util_RandomF) */
 
 #include "time_view.h"
+#include "ls.h"
 #define sv_SelectPanelObjectK ((int (*)())sv_SelectPanelObject)  /* 0x52c4c0?: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
 #define gm_Unk50a970K ((int (*)())gm_Unk50a970)  /* 0x50a970: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */

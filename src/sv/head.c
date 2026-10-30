@@ -176,7 +176,6 @@ extern GAPDATA full_data_6f262c[];
 extern GAPDATA full_data_6f2630[];
 extern GAPDATA full_data_6faa80[];
 extern GAPDATA full_data_6faa84[];
-extern unsigned char he_Events[339968];
 extern OPTIONBYTES ai_GameSwitches;
 extern char ai_Unkf8aae0[0x80];
 extern short d2_MouseX;
@@ -227,7 +226,6 @@ extern int ai_GameOver;
 extern int ai_MissionPartner;
 
 extern int ch_CurrentGroup;
-extern int * ai_Unk633738;
 extern int ai_Unk6f0cd4;
 extern unsigned int ai_Unk6f0da4;
 extern int ai_Unk6f0dbc;
@@ -264,7 +262,6 @@ extern int ai_GameFlags;
 extern int ai_OptionSpeed;
 extern unsigned char ai_TimeHour;
 extern int ai_Unk75e130;
-extern int ai_Unk75e134;
 extern GAPDATA full_data_6248b4[];
 
 extern int ai_Unk75f280[576];
@@ -428,6 +425,7 @@ int sv_MessageBoxYesNo();               /* 0x5216a0 */
 
 #include "time_view.h"
 #include "io_text.h"
+#include "ls.h"
 #define d3sky_CreateLayerK ((int (*)())d3sky_CreateLayer)  /* 0x45d880 (d3_sky.c): @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) (floats as bit patterns, the flags as an int) */
 #define d3sky_CreateK ((int (*)())d3sky_Create)  /* 0x45da30 (d3_sky.c): @original the calls pass the three floats as dword bit patterns without a prototype (ai_Unk4e32f0 0x4e32f0: push 0x44160000 ..) */
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, ai_Unk4d88c0 0x4d88c0 move it as a word / movzx) */

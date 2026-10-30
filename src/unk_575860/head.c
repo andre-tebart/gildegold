@@ -266,7 +266,6 @@ extern GAPDATA full_data_6f9f60[];
 extern const float ai_Unk5ebba4[];
 extern const char ai_Unk5ebbb4[12];
 extern const int ai_Unk5eeab8[24];
-extern int * ai_Unk633738;
 extern char ai_Unk925100[4];
 extern char ai_Unk925108[12];
 extern char ai_Unk925114[4];
@@ -845,4 +844,5 @@ char *const ai_Unk5eec60 = (char *)full_data_6fa020 + 0x40;  /* 0x5eec60, the po
 #define S (*(char **)(unsigned)&ai_Unk5eec60)  /* the tutorial state record (at 0x6fa060): the pointer ai_Unk5eec60 holds */
 
 #include "time_view.h"
+#include "ls.h"
 #define sv_SelectPanelObjectK ((int (*)())sv_SelectPanelObject)  /* 0x52c4c0?: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */

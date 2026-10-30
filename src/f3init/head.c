@@ -279,7 +279,6 @@ extern signed char init_BuildingUniverse[0x22];
 extern char init_SceneName[];             /* 0xfd7ba0, the name of each scene record (0x3e0 bytes apart) */
 extern char * ai_Unk1468ae0[0x300];             /* 0x1468ae0, the scene objects (0x100) */
 extern int d3_CurrentScene;  /* 0x633444 */
-extern int * ai_Unk633738;  /* 0x633738 */
 extern unsigned char ai_GameState;      /* 0x6f25ac */
 extern int ai_FrameWait;
 extern int sv_FrameMask;           /* 0x760638 */
@@ -419,13 +418,10 @@ int gm_FindMarketObject(int id);                     /* 0x500ec0 */
 int gm_ClockSeason(void *t);                     /* 0x4fe350, f3gm.c: the season of the clock (day % 4) */
 void cm_SendOwnership(int a, int b, int c);                     /* 0x4c54a0 */
 int sv_PumpMessages();                     /* 0x52fb80 */
-int ls_SendGame(char *name);               /* 0x520a30, ls.c */
-int unk_Unk51c950();                     /* 0x51c950 */
 void sv_NetworkSyncWait(unsigned fl);           /* 0x52fc10, sv.c */
 struct G13MIS;
 struct G13MIS *ai_NewRandomMission(int owner, int kind, int x);  /* 0x4b3c10, unk_4b39f0.h */
 void ai_ShowMissions(int owner);                /* 0x4b5310, unk_4b39f0.c */
-int ls_ReceiveGame(void);                       /* 0x520b80, ls.c */
 void cm_SetSpeedLevel(unsigned int v);          /* 0x4c3ef0, cm.h */
 int cm_SendMessage0c(int a, int b, short c, unsigned char d, int e, unsigned char f, unsigned char g, const char *s1, const char *s2);  /* 0x4c46d0, cm.h */  /* @original: the callers store the returned slot, cm.c defines void */
 void d2_SetViewEnabled(int view, int on);       /* 0x475590, d2.h */
@@ -487,6 +483,7 @@ INIT_PLAYER init_PlayerProfile = {0};  /* 0x75e5a0 */
 int ai_Unk7603a0[32] = {0};  /* 0x7603a0 .. INIT_WINDOWS_END: the */
 #define INIT_WINDOWS_END (unsigned)&ai_Unk760420       /* one past the scene window table 0x7603a0 (0x20 ints) */
 #include "rd_types.h"                 /* G15BK, the building sites ai_Bauplaetze (rd.h cannot be included here) */
+#include "ls.h"
 signed char init_BuildingUniverse[0x22] = {0};  /* 0x76fa60, the universe of each building class's scene */
 unsigned short * ai_SceneObject = 0;  /* 0x76fa84 */
 signed char init_ObjectUniverse[0x2dc] = {0};  /* 0x76faa0, the universe of each object prototype's scene (-1 = not loaded) */
