@@ -2866,14 +2866,12 @@ void unk_Unk511c70(void)
     int v;
 
     c = ai_Chars[0];
-    i = 0;
-    do {
-        b = (unsigned char *)ai_Blds;
+    for (i = 0; i < 0x300; i++) {
         if (c[2] == 6)
             break;
         c += 0x21c;
-        i++;
-    } while (i < 0x300);
+    }
+    b = (unsigned char *)ai_Blds;
     while (1) {
         if (*b != 0 &&
             ((gm_BuildingClass(*b) == 1 || gm_BuildingClass(*b) == 4 || gm_BuildingClass(*b) == 2 ||
