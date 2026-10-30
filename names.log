@@ -103,3 +103,5 @@
 2026-10-30T23:18:03 0x0057bce0 func ai_Unk57bce0 -> ai_TutorialWindow by:main why:the tutorial start window: five checkable entries written back to 0x62918c, 1 starts the tutorial, 0 is back
 2026-10-30T23:18:13 0x0057bc30 func ai_Unk57bc30 -> ai_SetupTutorialPlayer by:main why:fills the player profile 0x75e5a0 for the tutorial (main_Menue calls it after ai_TutorialWindow)
 2026-10-30T23:18:23 0x005d34b0 func ai_Unk5d34b0 -> ai_FilePickWindow by:main why:the file pick window: lists the files of a directory with an extension (ai_ListFiles) and sprintf's the chosen one into its last argument
+2026-10-30T23:20:32 0x00534040 func main_Unk534040 -> main_GiveStartBuildings by:main why:gives the player p the start buildings (the home 'Home-Sweet-Home' and the kinds 0x20 .. 0x36 through gm_AssignBuilding) with their start goods
+2026-10-30T23:20:41 0x00502a60 func gm_Unk502a60 -> gm_ShowSlotObjects by:main why:switches on the scene objects whose key matches one of the character's five slots (+0x80 .. of its record), the others off (a reasoned name)

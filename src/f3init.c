@@ -408,7 +408,7 @@ void ai_ShowMissions(int owner);                /* 0x4b5310, unk_4b39f0.c */
 void cm_SetSpeedLevel(unsigned int v);          /* 0x4c3ef0, cm.h */
 int cm_SendMessage0c(int a, int b, short c, unsigned char d, int e, unsigned char f, unsigned char g, const char *s1, const char *s2);  /* 0x4c46d0, cm.h */  /* @original: the callers store the returned slot, cm.c defines void */
 void d2_SetViewEnabled(int view, int on);       /* 0x475590, d2.h */
-void main_Unk534040(int p);                     /* 0x534040, main.c range: gm_BuildQuery(1, 0, 6) makes the "Home-Sweet" house and hands it to character c (0x502b60) */
+void main_GiveStartBuildings(int p);                     /* 0x534040, main.c range: gm_BuildQuery(1, 0, 6) makes the "Home-Sweet" house and hands it to character c (0x502b60) */
 struct D3FLMAP;
 char *tex_FindFile(char *name);                                     /* 0x45f9f0, d3_fl.h */
 int d3fl_ReplaceTexture(struct D3FLMAP *map, char *name, int idx);  /* 0x442210, d3_fl.c */
@@ -2529,7 +2529,7 @@ int init_SetupNewGame(int n)
         p = ai_Chars[0] + 2;
         do {
             if (*p == 6) {
-                main_Unk534040(i);
+                main_GiveStartBuildings(i);
                 break;
             }
             p += 0x21c;

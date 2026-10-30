@@ -15,6 +15,9 @@ char *gm_FindBuildingById(int id);              /* 0x502020, the building with t
 void gm_ResetStock(void);                       /* 0x50cc60, the stock of the type 0x1e buildings' stalls to 2 */
 int gm_IsType10(unsigned char *b);              /* 0x5024f0, 1 for the town market */
 int gm_IsHomeType(unsigned char *b);            /* 0x502520, 1 for a home type */
+void gm_ShowSlotObjects(int unused, int scene, int c);  /* 0x502a60, the scene objects of the character's five slots on */
+void gm_AssignBuilding(unsigned char *b, unsigned short place, unsigned own);  /* 0x502b60 */
+
 void gm_ClearBuildings(void);                   /* 0x4fe7f0, clears the 0x100 records of ai_Blds */
 float gm_Mix2(float u, float v);                /* 0x504e80 */
 void gm_ClearObjects(void);                     /* 0x4fe830, returns the instances of live owners and clears the 0x5008-record table */

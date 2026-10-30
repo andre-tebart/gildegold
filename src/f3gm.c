@@ -4952,7 +4952,7 @@ char gm_Unk5029f0(char *o, int *list)
 }
 /* 0x502a60, for the building object o of the player in the building b with the character c at the scene 0x6f2310: the five slots of the character (bytes +0x80 .. of the record 0x770c00 + c * 0x21c) give the numbers 0x17f + (the scaled value) + 6k, 0 for an empty slot; the scene's objects (0x438d40 with the callback 0x5029f0 into a 0x40-entry list) whose key matches one of them are switched on (0x447300 (obj, 1)), the others off. ROUGH */
 
-void gm_Unk502a60(int unused, int scene, int c)
+void gm_ShowSlotObjects(int unused, int scene, int c)
 {
     int want[5];
     int list[0x40 * 2 + 1];
@@ -5106,7 +5106,7 @@ void gm_ShowBuildingObjects(unsigned char *b)
             o = (int)gm_QueryNext();
         }
         for (i = 0; i < n; i++)
-            gm_Unk502a60((int)b, l[i], *(unsigned short *)(b + 0x27));
+            gm_ShowSlotObjects((int)b, l[i], *(unsigned short *)(b + 0x27));
     }
 }
 /* 0x502eb0, sorts the characters that work in the building b into the lists of an output record: out[0] = their number, out[1 ..] (0x18 words, -1 filled) the workers of the first job class (type bytes +0x22f), out[0xd ..] (0xc) of the second (+0x230), out[0x19 ..] (0xc) the others (not the building's own two special jobs +0x223 / +0x224), out[0x25] = the one of the special jobs. ROUGH */
