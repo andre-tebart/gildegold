@@ -166,7 +166,6 @@ typedef struct CMQUICKSAVE {
     int slot;                           /* +0x00 */
     char name[0x78];                    /* +0x04, "QUICKSAVE" */
 } CMQUICKSAVE;
-extern unsigned char ai_GameState; /* 0x6f25ac, the game state: 0 loading / paused, 1 running, 2 ... (as cm.h / f3snd.h) */
 
 void ai_ApplyOptions(void);         /* 0x5d5e90, applies the option values to the run time */
 void ai_SaveOptions(void);          /* 0x5d4c70, writes the options to the INI */
