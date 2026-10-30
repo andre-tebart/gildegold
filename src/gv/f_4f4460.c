@@ -52,8 +52,8 @@ void unk_Unk4f4460(unsigned short *c, int a)
     case 9:
         ai_Unk4c5fa0(*(int *)(c + 2), 0xff, 1);
         tg[0] = *(int *)(c + 2);
-        tg[1] = *(int *)(ai_JudgeCatholic + 4);
-        tg[2] = *(int *)(ai_JudgeProtestant + 4);
+        tg[1] = *(int *)((char *)ai_JudgeCatholic + 4);
+        tg[2] = *(int *)((char *)ai_JudgeProtestant + 4);
         i = 3;
         for (p = ai_Chars[0] + 2; (int)p <= ((unsigned)((unsigned)ai_Chars + 0x65400) + 0x1) && i < 0x10; p += 0x21c) {
             if (tg[0] != *(int *)(p + 2) && (*p == 6 || *p == 7 || *p == 5))

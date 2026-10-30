@@ -40,8 +40,8 @@ void ai_Unk4c5fa0(int a, int b, int c);                     /* 0x4c5fa0 */
 int amt_FindOffice();                     /* 0x4e6030 */
 int amt_SendOfficeMessage(unsigned char a, char *b, char *c, unsigned char d, unsigned char e);                     /* 0x4e6680 */
 void ai_Unk4c4fa0(void *p);                     /* 0x4c4fa0 */
-extern char *ai_JudgeCatholic;  /* 0x6f1bfc */
-extern char *ai_JudgeProtestant;  /* 0x6f1c00 */
+extern struct AICHAR *ai_JudgeCatholic;  /* 0x6f1bfc */
+extern struct AICHAR *ai_JudgeProtestant;  /* 0x6f1c00 */
 
 #define UNK_FW ((unsigned (*)())vfs_fwrite)
 #define UNK_FR ((unsigned (*)())ls_Read)

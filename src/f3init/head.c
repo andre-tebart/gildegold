@@ -329,8 +329,8 @@ void init_SceneObjectDestroyCB(int o);
 void init_AdjustSceneLights(int o);
 int init_SceneNameToPrototype(char *o);
 extern char * cm_FieldObject;                /* 0xa68d2c */
-extern char *ai_JudgeCatholic;  /* 0x6f1bfc, the two judges (0x6f1bfc Katholisch, 0x6f1c00 Evangelisch) */
-extern char *ai_JudgeProtestant;  /* 0x6f1c00 */
+extern struct AICHAR *ai_JudgeCatholic;  /* 0x6f1bfc, the two judges (0x6f1bfc Katholisch, 0x6f1c00 Evangelisch) */
+extern struct AICHAR *ai_JudgeProtestant;  /* 0x6f1c00 */
 extern int ai_Opponents[];              /* 0x75e160, the difficulty level 0 .. 4 of each opponent (the seven globals ai_Opponents .. opponent_g of the options 0x5d4c70 / 0x5d5640 and of the selection menu 0x537040) */
 extern int ai_Unk6f2440;
 void cm_BeginSendGroup(void);                     /* 0x4c3b30 */

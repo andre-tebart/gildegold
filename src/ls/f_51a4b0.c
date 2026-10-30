@@ -29,13 +29,13 @@ int unk_Unk51a4b0(int f)
   } while ((int)psVar3 < (int)&ai_Chars[768]);
   LS_W(&cnt, 4)
   if (ai_JudgeCatholic != 0) {
-    LS_W(ai_JudgeCatholic + 4, 4)
+    LS_W(&ai_JudgeCatholic->netId, 4)
   }
   else {
     LS_W(&local_c, 4)
   }
   if (ai_JudgeProtestant != 0) {
-    LS_W(ai_JudgeProtestant + 4, 4)
+    LS_W(&ai_JudgeProtestant->netId, 4)
   }
   else {
     LS_W(&local_c, 4)

@@ -23,8 +23,8 @@ char ai_Unk6f0e44[2] = {0};  /* 0x6f0e44 */
 char ai_Unk6f0e48[448] = {0};  /* 0x6f0e48 */
 char gv_Effects[2944] = {0};  /* 0x6f1008, 8 slots of */
 int ai_RatingBase = 0;  /* 0x6f1b9c, the rating's old value (stored as bits; ai.h's ai_Rating follows it at */
-char * ai_JudgeCatholic = 0;  /* 0x6f1bfc / */
-char * ai_JudgeProtestant = 0;  /* 0x6f1c00 */
+struct AICHAR *ai_JudgeCatholic = 0;  /* 0x6f1bfc / */
+struct AICHAR *ai_JudgeProtestant = 0;  /* 0x6f1c00 */
 /* ai_Unk7e3f94: view of ai_PlayerSlots (tools/data_views.py) */
 float ord_RatingRate = {0}; /* 0x91aaf4, the change rate of the rating (ord.c */
 char ord_StatisticsHistory[320] = {0}; /* 0x91ab00 */

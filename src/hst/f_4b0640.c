@@ -68,8 +68,8 @@ int ai_CommandExecution(G12ARG *args, int k, char *fmt)
         msg.unk7d = 1;
         msg.unk0c = ai_CharsT[ai_PlayerId].netId;
         list[0] = c->netId;
-        list[2] = ai_JudgeCatholicV->netId;
-        list[3] = ai_JudgeProtestantV->netId;
+        list[2] = ai_JudgeCatholic->netId;
+        list[3] = ai_JudgeProtestant->netId;
         for (i = 0; i < 0x300; i++) {
             id = ai_CharsT[i].netId;
             if (id != c->netId && ai_IsLivingNonPlayer((unsigned short)i)) {

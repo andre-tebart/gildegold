@@ -4,7 +4,7 @@
 void init_LocalData(void)
 {
     char *p;
-    char *j1, *j2;
+    struct AICHAR *j1, *j2;
     int n, i;
     char **q;
     char *c;
@@ -31,11 +31,11 @@ void init_LocalData(void)
             break;
         if (p[-10] == 0xc) {
             if (*p == 0)
-                ai_JudgeCatholic = p - 0xc;
+                ai_JudgeCatholic = (struct AICHAR *)(p - 0xc);
             else {
                 if (*p != 1)
                     goto next;
-                ai_JudgeProtestant = p - 0xc;
+                ai_JudgeProtestant = (struct AICHAR *)(p - 0xc);
             }
             n--;
         }

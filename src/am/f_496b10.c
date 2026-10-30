@@ -20,8 +20,8 @@ int ai_Unk496b10(float *a, float *b, int i, AIPER *p, int f, AIARG *o1, AIARG *o
     if (!p->unk168) {
         if (p->unk166 == 0xd)
             goto fallback;
-        x = ai_JudgeCatholicV ? ai_JudgeCatholicV->netId : -1;
-        y = ai_JudgeProtestantV ? ai_JudgeProtestantV->netId : -1;
+        x = ai_JudgeCatholic ? ai_JudgeCatholic->netId : -1;
+        y = ai_JudgeProtestant ? ai_JudgeProtestant->netId : -1;
         for (job = AI_53E400_3(1, 0, 0x2c); job; job = (AIJOBX *)he_NextEvent())
             if (job->unkb0 == p->netId)
                 break;

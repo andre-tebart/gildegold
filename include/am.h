@@ -204,8 +204,8 @@ typedef char ai_AssertAIXMSG[sizeof(AIXMSG) == 0xf8 ? 1 : -1];
 
 extern AIACT ai_Unkf83ec0[];            /* 0xf83ec0, the registered actions */
 #define AI_6F0468 ((AIPER *)ai_Partner)  /* ai.h declares it AICHAR * */
-extern char * ai_JudgeCatholic;             /* 0x6f1bfc */
-extern char * ai_JudgeProtestant;             /* 0x6f1c00 */
+extern struct AICHAR *ai_JudgeCatholic;             /* 0x6f1bfc */
+extern struct AICHAR *ai_JudgeProtestant;             /* 0x6f1c00 */
 
 void ai_Unk495ee0(void);                                                        /* 0x495ee0 */
 int ai_Unk495fa0(int a, AIPER *p, int b, AIARG *o1, AIARG *o2);                 /* 0x495fa0 */

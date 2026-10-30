@@ -40,16 +40,16 @@ void init_StartNewGame(void)
         cm_ExecCommands();
         i = cm_SendGroupState();
     }
-    ai_JudgeCatholic = (char *)cm_GetSlotValue(w1);
-    ai_JudgeProtestant = (char *)cm_GetSlotValue(w2);
+    ai_JudgeCatholic = (struct AICHAR *)cm_GetSlotValue(w1);
+    ai_JudgeProtestant = (struct AICHAR *)cm_GetSlotValue(w2);
     cm_BeginSendGroup();
     m = 0;
-    cm_BeginFieldBlock(ai_JudgeCatholic, ((INIT_CHAR *)ai_JudgeCatholic)->netId);
-    cm_AddFieldDelta(1, 1, (ai_JudgeCatholic - cm_FieldObject) + INIT_FIELD_RELIGION, &m);
+    cm_BeginFieldBlock((char *)ai_JudgeCatholic, ((INIT_CHAR *)ai_JudgeCatholic)->netId);
+    cm_AddFieldDelta(1, 1, ((char *)ai_JudgeCatholic - cm_FieldObject) + INIT_FIELD_RELIGION, &m);
     cm_SendFieldDeltas();
     m = 1;
-    cm_BeginFieldBlock(ai_JudgeProtestant, ((INIT_CHAR *)ai_JudgeProtestant)->netId);
-    cm_AddFieldDelta(1, 1, (ai_JudgeProtestant - cm_FieldObject) + INIT_FIELD_RELIGION, &m);
+    cm_BeginFieldBlock((char *)ai_JudgeProtestant, ((INIT_CHAR *)ai_JudgeProtestant)->netId);
+    cm_AddFieldDelta(1, 1, ((char *)ai_JudgeProtestant - cm_FieldObject) + INIT_FIELD_RELIGION, &m);
     cm_SendFieldDeltas();
     cm_EndSendGroup();
     i = cm_SendGroupState();
