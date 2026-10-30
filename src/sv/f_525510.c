@@ -57,7 +57,7 @@ void sv_Unk525510(int t, float flag)
             ang = (float)(util_RandomF() * step + ang);
         }
     }
-    ai_Unk5dbc30(k, *(int *)ai_Time, ai_Unk760550, ai_Unk7605b0);
+    ai_InitWind(k, *(int *)ai_Time, ai_Unk760550, ai_Unk7605b0);
     ai_Unk760548 = 0;
     ai_Unk76054c = 0;
     ai_Unk760614 = -1;

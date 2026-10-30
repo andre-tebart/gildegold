@@ -41,10 +41,26 @@ extern float cm_SpeedFactor;        /* 0x5f1290, the game speed factor (cm.h) */
 extern int ai_CameraStep;           /* 0x623814, the camera move step, 100 - camera speed; sv.c converts
                                        it with fild at the float uses (the original loads an int) */
 
-extern char ai_DefaultEffect[];     /* 0x62de60, the default effect record: an empty name, the scale
-                                       1.0, the lifetime 25.0, then the entry's ids / callbacks */
-extern int ai_DefaultEffectScaleBits; /* 0x62de6c, the scale of ai_DefaultEffect (a float 1.0) read as
-                                       its bit pattern: 0x5dbc20 passes it through an int K&R view */
+typedef struct EFFECTREC {              /* 0x10 bytes at 0x62de60: the default effect (the wind): a vector and its scale */
+    float pos[3];                       /* +0x00, 0, 0, 1.0 at the start; ai_InitWind sets (sin, 0, cos) of the wind direction 6 */
+    union {
+        float scale;                    /* +0x0c, 25.0 at the start */
+        int scaleBits;                  /* the same bits as an int: 0x5dbc20 passes them through an int K&R view */
+    };
+} EFFECTREC;
+extern EFFECTREC ai_DefaultEffect;  /* 0x62de60 */
+typedef struct EFFECTSTATE {            /* 0x1f0 bytes at 0x6f3300: the wind state ai_InitWind builds (reasoned: the caller 0x525510 passes the wind rose tables) */
+    int id;                             /* +0x00, the second argument (the game clock's first word) */
+    int kind;                           /* +0x04, 6 */
+    int reserved;                       /* +0x08, set to 0 (nothing reads it here) */
+    float sinTab[24];                   /* +0x0c, a copy of the caller's first table (sin of the 24 directions) */
+    float cosTab[24];                   /* +0x6c, a copy of the second table (cos) */
+    float base[24];                     /* +0xcc, random per direction: 60 * random * k + 1 (k by the day phase) */
+    float gust[24];                     /* +0x12c, random: 60 * random * k + c, or 60 * random * k */
+    float phase[24];                    /* +0x18c, random: (random + n) * pi (or 2 pi) */
+    float angle;                        /* +0x1ec, a random angle 0 .. 2 pi */
+} EFFECTSTATE;
+extern EFFECTSTATE ai_EffectState;  /* 0x6f3300 */
 
 /* The five-float record the sphere volume 0x5dc1a0 fills: radius, size, the two metrics derived from
    the size and the reach volume * radius. am.c passes the same record to 0x5dc210 as int *in. */
@@ -225,6 +241,7 @@ int gm_CurseTargetCount(char *b);                                   /* 0x50d0b0,
 /* the filter of the gypsy windows: a const object, the original loads it from .rdata 0x5eed68 (mov eax,[..]; mov ecx,[..+4]) */
 static const volatile int ai_CardBack = 0x18;  /* 0x5ed1bc, .rdata: the picture offset of the card back (the original loads it from memory) */
 static const volatile unsigned __int64 gypsyFilter = 0x1a7fdfbb6;
+static const float ai_WindGain = 60.0f;  /* 0x5eee14, .rdata: the factor of ai_Unk5dbc30's per-direction random values (the original loads it from memory, it is not folded) */
 int d2_WinOpenSlider(int x, int y, int len, int p4, int p5, int pic, unsigned int flags, int win); /* 0x46a960, d2.c: a slider in a window */
 int sv_CheckGoodAmount(char *o, int n, unsigned char t);   /* 0x521040, sv.c: 1 when the character's stock covers n of the good t; @original: the definition takes unsigned, its callers push the good as a byte (no zero extension) */
 void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d); /* 0x4c4830, cm.c */

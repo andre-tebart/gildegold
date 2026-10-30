@@ -4,5 +4,5 @@
 
 int ai_GetDefaultEffect(void)
 {
-    return (int)ai_DefaultEffect;
+    return (int)&ai_DefaultEffect;
 }

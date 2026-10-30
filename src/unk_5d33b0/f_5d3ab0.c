@@ -143,6 +143,7 @@ int ai_LeaveGame = 0;  /* 0x6f25a0, set with ai_GameOver when the menu leaves th
                                        starts ( */
 OPTIONBYTES ai_GfxResolution = {0};  /* 0x6f2f94: byte 0 cur_res */
 /* ai_ContactTextProductionTailor: view of txt_Ptrs (build/mk_txt_views.py) */
+EFFECTSTATE ai_EffectState = {0};  /* 0x6f3300 .. 0x6f34f0, the wind state ai_InitWind builds */
 POKERGAME ai_PokerState = {0};  /* 0x6f3500 .. 0x6f35c0, the poker game state (unk_4a7140.c steps it) */
 OPTIONBYTES ai_GfxSet = {0};  /* 0x6f35c0: byte 0 gfx_set */
 /* the option globals the writer 0x5d4c70 (and the reader 0x5d5640) use: each dword holds four option
