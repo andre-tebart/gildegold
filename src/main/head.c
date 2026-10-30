@@ -77,8 +77,8 @@ extern char ls_SavePath[];
 extern struct MAINCLOCK ai_Time;
 extern unsigned char ai_TimeHour;
 extern unsigned char ai_NumPlayers;
-extern unsigned char d2_ClickedId;
-extern unsigned char sv_PopRequest;
+extern int d2_ClickedId;
+extern int sv_PopRequest;
 extern unsigned char ai_GameFlags;
 extern unsigned char ai_Unk9364dc;
 extern unsigned char d3_ScaleX;
@@ -109,16 +109,16 @@ extern GAPDATA full_data_75e360[];
 extern GAPDATA full_data_936470[];
 extern char ls_SavePath[];
 extern unsigned char ai_OptionsFile;
-extern unsigned char d2_ClickedId;
+extern int d2_ClickedId;
 extern unsigned char kb_Last;
-extern unsigned char sv_PopRequest;
+extern int sv_PopRequest;
 extern char ai_DataPath[];
 
 extern unsigned char ai_GameFlags;
 extern unsigned char ai_OptionsFile;
 extern unsigned char ai_Unk6333cc;
 extern unsigned char ai_Unk9364e0;
-extern unsigned char d2_ClickedId;
+extern int d2_ClickedId;
 extern unsigned char d2_Objs;
 extern unsigned char d3_Unk6333fc;
 
@@ -130,8 +130,8 @@ extern GAPDATA full_data_75e360[];
 extern GAPDATA full_data_936460[];
 extern unsigned char kb_Last;
 extern char ls_SavePath[];
-extern unsigned char sv_PopRequest;
-extern unsigned char d2_ClickedId;
+extern int sv_PopRequest;
+extern int d2_ClickedId;
 extern unsigned char ai_GameFlags;
 extern unsigned char ai_MissionMode;
 extern unsigned char ai_Unkfb9060;
@@ -167,7 +167,7 @@ extern unsigned char kb_Last;
 extern unsigned char sv_FrameBase;
 extern unsigned char sv_FrameDepth;
 extern unsigned char sv_FrameMask;
-extern unsigned char sv_PopRequest;
+extern int sv_PopRequest;
 extern const unsigned char ai_AxisPair;
 
 extern unsigned char ai_OwnPlayer;
@@ -176,7 +176,7 @@ extern GAPDATA full_data_624ce0[];
 extern GAPDATA full_data_624ce4[];
 extern GAPDATA full_data_624ce8[];
 extern GAPDATA full_data_624cec[];
-extern unsigned char d2_ClickedId;
+extern int d2_ClickedId;
 extern unsigned char d2_LastWindowPtr;
 extern GAPDATA full_data_624cf8[];
 extern GAPDATA full_data_75e180[];
@@ -184,7 +184,7 @@ extern GAPDATA full_data_75e198[];
 extern GAPDATA full_data_75e5f0[];
 extern unsigned char init_PlayerProfile[];
 extern unsigned char kb_Last;
-extern unsigned char sv_PopRequest;
+extern int sv_PopRequest;
 extern GAPDATA full_data_75e5f5[];
 extern GAPDATA full_data_75e628[];
 extern unsigned char ai_ClickedObject;
@@ -207,10 +207,10 @@ extern unsigned char d2_Unkf8a670;
 
 extern unsigned char init_PlayerProfile[];
 extern unsigned char kb_Last;
-extern unsigned char sv_PopRequest;
+extern int sv_PopRequest;
 extern unsigned char ai_GameFlags;
 extern unsigned char ai_OptionHistorie;
-extern unsigned char d2_ClickedId;
+extern int d2_ClickedId;
 
 extern GAPDATA full_data_624938[];
 extern GAPDATA full_data_75e5ec[];
@@ -221,9 +221,9 @@ extern unsigned char hst_TextsOn;
 extern unsigned char init_PlayerProfile[];
 extern unsigned char kb_Last;
 extern unsigned char sv_FrameMask;
-extern unsigned char sv_PopRequest;
+extern int sv_PopRequest;
 extern unsigned char ai_MissionMode;
-extern unsigned char d2_ClickedId;
+extern int d2_ClickedId;
 extern unsigned char ai_Difficulty;
 extern unsigned char ai_GamePanel;
 extern unsigned char ai_Opponents;
@@ -235,14 +235,14 @@ extern unsigned char d2_LastWindowPtr;
 
 
 extern unsigned char kb_Last;
-extern unsigned char sv_PopRequest;
+extern int sv_PopRequest;
 extern unsigned char ai_ClickedObject;
 extern char ai_DataPath[];
 extern unsigned char ai_NumPlayers;
 extern unsigned char ai_Unk60d360;
 extern unsigned char ai_Unk6f22e8;
 extern unsigned char ai_Unkfc2dec;
-extern unsigned char d2_ClickedId;
+extern int d2_ClickedId;
 extern short d2_ScreenH;
 extern short d2_ScreenW;
 
@@ -256,7 +256,7 @@ extern GAPDATA full_data_5f1084[];
 extern GAPDATA full_data_602568[];
 extern unsigned char kb_Last;
 extern unsigned char sv_FrameMask;
-extern unsigned char sv_PopRequest;
+extern int sv_PopRequest;
 extern unsigned char ai_GameFlags;
 extern unsigned char ai_NumPlayers;
 extern void *d2_ScreenSurf;  /* 0x6ed924, the screen surface (d2.c) */  /* 0x5fe710, 0x6ed924, 0x6ed938 */
@@ -325,7 +325,7 @@ extern unsigned char ai_Unkfb9060;
 extern unsigned char ai_Unkfb9064;
 extern unsigned char ai_Unkfb9068;
 extern unsigned char ai_Unkfb906c;
-extern unsigned char d2_ClickedId;
+extern int d2_ClickedId;
 extern short d2_ScreenH;
 extern short d2_ScreenW;
 extern GAPDATA full_data_624560[];
@@ -336,7 +336,7 @@ extern GAPDATA full_data_760454[];
 extern unsigned char he_RunHandlers;
 extern unsigned char kb_Last;
 extern unsigned char sv_PanelForm;
-extern unsigned char sv_PopRequest;
+extern int sv_PopRequest;
 extern int sv_ViewRectBottom;
 extern int sv_ViewRectLeft;
 extern int sv_ViewRectRight;
@@ -356,7 +356,7 @@ extern unsigned char ai_Unkfb9064;
 extern unsigned char ai_Unkfb9068;
 extern unsigned char ai_Unkfb906c;
 extern unsigned char ai_Unkfc2dec;
-extern unsigned char d2_ClickedId;
+extern int d2_ClickedId;
 extern unsigned char d2_LastWindowPtr;
 extern short d2_ScreenH;
 extern short d2_ScreenW;
@@ -367,7 +367,7 @@ extern GAPDATA full_data_6f25c0[];
 extern unsigned char kb_Last;
 extern unsigned char sv_FrameMask;
 extern unsigned char sv_PanelFlag;
-extern unsigned char sv_PopRequest;
+extern int sv_PopRequest;
 extern void *d2_ScreenSurf;  /* 0x6ed924, the screen surface (d2.c) */  /* 0x5fe710, 0x6ed924, 0x6ed938 */
 extern char ai_Chars[];
 extern unsigned char cm_FieldObject;
@@ -394,14 +394,14 @@ extern unsigned char ai_Unkfb9064;
 extern unsigned char ai_Unkfb9068;
 extern unsigned char ai_Unkfb906c;
 extern unsigned char cm_NetFlags;
-extern unsigned char d2_ClickedId;
+extern int d2_ClickedId;
 extern short d2_ScreenH;
 extern short d2_ScreenW;
 extern GAPDATA full_data_624560[];
 extern unsigned char init_BuildingUniverse;
 extern unsigned char snd_AmbientOn;
 extern unsigned char sv_FrameMask;
-extern unsigned char sv_PopRequest;
+extern int sv_PopRequest;
 extern void *d2_ScreenSurf;  /* 0x6ed924, the screen surface (d2.c) */  /* 0x5fe710, 0x6ed924, 0x6ed938 */
 extern unsigned char ai_BTypes;
 extern unsigned char ai_Blds;
@@ -510,7 +510,7 @@ extern unsigned char init_PlayerProfile[];
 extern char ls_SavePath[];
 extern unsigned char main_MoneyCheat;
 extern unsigned char sv_FrameDepth;
-extern unsigned char sv_PopRequest;
+extern int sv_PopRequest;
 
 #define U_I(a) (*(int *)(a))
 
@@ -604,6 +604,14 @@ int init_InitTown(char *city);          /* 0x510ad0, f3init */
 void gm_ResetCharacters(void);          /* 0x503e80, f3gm */
 void init_FreeScenes(void);             /* 0x50d490, f3init */
 char d3_LoadScene(char *name, void *f, void (*progress)(int a, int i, int n));  /* 0x44be60, cm.h */
+void d2_SetObjValue();                  /* 0x475cb0, d2.h (K&R: d2.c takes a 5th parameter, rt.h's callers push 4) */
+#define d2_SetObjValue4 ((void (*)(int, int, int, int))d2_SetObjValue)  /* the 4-argument call (as unk_5d33b0.h) */
+void d2_CentreViewWindows(int view);    /* 0x475600, d2.h */
+int d2_GetWinObj(int view, int idx, int k);  /* 0x475b80, d2.h */
+int d2_SetForm(int view, int n);        /* 0x475f70, d2.h */
+void d2_SetPointerSprite(int a, int pic);  /* 0x476f80, gfx.h */
+int d2_GetObjValue(int obj);            /* 0x475980, d2.h */
+void d2_SetViewEnabled(int view, int on);  /* 0x475590, d2.h */
 struct D2SURF { int makeFlags; int w; int h; };  /* the head of d2.h's D2SURF (d2.h cannot be included here: its externs conflict with this unit's data views) */
 void d2_BlitPart(int sx, int sy, int w, int h, struct D2SURF *src, int x, int y, struct D2SURF *dst);  /* 0x479480, d2.h */
 int d2_LockSurface(struct D2SURF *s);   /* 0x479020, d2.h */

@@ -80,3 +80,4 @@
 2026-10-30T10:43:03 0x005324f0 func main_Unk5324f0 -> main_CreateWindow by:main why:registers the 'Die Gilde' window class and creates the game window; main_Window is set here, 0x53ccf0 (WinMain) calls it
 2026-10-30T10:45:35 0x00503e80 func gm_Unk503e80 -> gm_ResetCharacters by:main why:its comment: resets the character state (0x503c60 for all 0x300 characters, the record table, the counters)
 2026-10-30T10:47:00 0x00532700 func main_Unk532700 -> main_StartCityGame by:main why:loads the city file <name>.CTY / .NET and opens the ChooseCity scene; called by the main menu 0x533850 with (name, 0 / 1)
+2026-10-30T10:48:28 0x005327e0 func main_Unk5327e0 -> main_PlayerCountDialog by:main why:opens the form Menu\CHOOSE_PLAYERCOUNT (a count slider, ok / cancel) and stores the chosen player count in ai_NumPlayers; the network lobby code calls it

@@ -11,7 +11,7 @@ int main_Unk5328f0(void)
     int *src, *dst;
     char c;
 
-    if (main_Unk5327e0() != 0) {
+    if (main_PlayerCountDialog() != 0) {
         d3io_NoopCallback();
         if (main_Unk537230(1, 1) != 0) {
             sprintf((char *)(unsigned)&full_data_75e360, "%s/%s.net", "gamedata/cities", (char *)((unsigned)&ai_DataPath + 0x220));
