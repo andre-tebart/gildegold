@@ -303,10 +303,10 @@ extern void *d3_Terrain;                  /* 0x633738 */
 
 D3TEXHANDLE *tex_Load(char *name, D3TEXFLAGS flags, int a, int b);                          /* 0x4605c0, @original: ts_texture.c defines TSTEXTURE * (char *, TSFLAGS, unsigned char, unsigned char); the d3 callers were compiled against this view (D3TEXFLAGS is the same 4-byte union, TSTEXTURE / D3TEXHANDLE the same memory) */                          /* 0x4605c0 */
 void d3_SetObjectAlpha(D3OBJECT *obj, struct D3OBJINFO *info, D3TEXFLAGS f);           /* 0x43d430, f.b[0] = alpha */
-void tex_Reload(D3TEXHANDLE *tex, int unk);                                               /* 0x460e50 */  /* @original: ts_texture.c defines (TSTEXTURE *, char); the d3 callers were compiled against this */
-void tex_Release(D3TEXHANDLE *tex);                                                          /* 0x45fbc0 */
-char tex_SetHiColor(D3TEXTURE *tex, int unk);                                            /* 0x4611b0 */
-void tex_Unload(D3TEXTURE *tex);                                                     /* 0x461140 */
+struct TSTEXTURE; void tex_Reload(struct TSTEXTURE *tex, char keep);                                               /* 0x460e50 */  /* @original: ts_texture.c defines (TSTEXTURE *, char); the d3 callers were compiled against this */
+struct TSTEXTURE; void tex_Release(struct TSTEXTURE *tex);                                                          /* 0x45fbc0 */
+struct TSTEXTURE; char tex_SetHiColor(struct TSTEXTURE *tex, unsigned char hicolor);                                            /* 0x4611b0 */
+struct TSTEXTURE; char tex_Unload(struct TSTEXTURE *tex);                                                     /* 0x461140 */
 void d3fl_Flush(void);                                                                /* 0x43f990 */
 struct D3FLMAP;
 void d3fl_ReloadTextures(struct D3FLMAP *map);                                          /* 0x442280 */

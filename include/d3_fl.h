@@ -200,7 +200,7 @@ __inline void d3fl_FtoI2(float f, int *dst)
     __asm fistp dword ptr [edx]
 }
 struct TSTEXTURE *tex_Find(char *name);                                                 /* 0x45f980, ts_texture.c (d3_fl.c reads it through its D3FLTEX view tex_FindF) */
-void tex_AddRef(D3FLTEX *tex, int n);                                                   /* 0x4601b0, ts_texture.c */
+struct TSTEXTURE; void tex_AddRef(struct TSTEXTURE *tex, char all);                                                   /* 0x4601b0, ts_texture.c */
 /* Inline-asm fill in the style of D3_ZERO (d3.h): size and value through temps (declared in this order),
    the destination named directly in the asm (as D3E_FILL in d3_engine.h). */
 #define D3FL_FILL(dvar, val, size) {                                \
@@ -344,7 +344,7 @@ void * dd_LockSurfaceFlags(LPDIRECTDRAWSURFACE4 surf, DWORD flags);             
 void dd_UnlockSurface(LPDIRECTDRAWSURFACE4 surf);                                                      /* 0x41e740, dd_vesa.c */
 void d3d_PrecacheTexture(LPDIRECT3DTEXTURE2 t);                                                      /* 0x4360e0, d3_d3d.c */
 void d3d_BuildMipmaps(LPDIRECTDRAWSURFACE4 tex, DDSURFACEDESC2 *ddsd);                                           /* 0x4371d0, d3_d3d.c */
-D3FLTEX *tex_Prepare(D3FLTEX *tex);                                                     /* 0x4614c0, ts_texture.c */
+struct TSTEXTURE; struct TSTEXTURE *tex_Prepare(struct TSTEXTURE *tex);                                                     /* 0x4614c0, ts_texture.c */
 
 /* ---- 0x4439e0 (worker d3fl4) ---- */
 typedef struct D3FLSPLIT {          /* 12 bytes, D3FLTILE.split: a vertex added on a tile edge next to a finer tile */

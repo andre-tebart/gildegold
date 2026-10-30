@@ -79,7 +79,7 @@ void d3if_CreateCameras(void);                                                  
 void d3_SetFog(float start, float end, unsigned long color);                    /* 0x43a6f0 = d3_SetFog, the floats passed as dwords */  /* @original: d3_interface.c passes the D3FOGCOL struct (byte-matched call); the other units pass the dword */
 struct D3SM * d3sm_Create(struct D3TERRAIN *t, int size, int mask);                                /* 0x45eeb0 */
 void d3sm_Destroy(struct D3SM *h);                                                          /* 0x45ef60 */
-void tex_GetParams(void *tex, void *opts, void *fmt);                                   /* 0x460aa0, ts_texture.c */
+struct TSTEXTURE; void tex_GetParams(struct TSTEXTURE *tex, unsigned char *opts, unsigned char *fmt);                                   /* 0x460aa0, ts_texture.c */
 void d3s_ResetShadows(D3OBJECT *obj);                                                   /* 0x45ce00, d3s.c */
 
 char d3if_Delete(D3OBJECT *obj);                                                        /* 0x447190 */

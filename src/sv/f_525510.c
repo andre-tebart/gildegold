@@ -87,7 +87,7 @@ void sv_Unk525510(int t, float flag)
         d3t_SetSnow(ai_Unk76061c, 1, 0, 0);
     }
     if (ai_Unk633dd4 == 0)
-        ai_Unk633dd4 = d3sky_Create(0xbf733333, 0xbe4ccccd, 0x44160000);
+        ai_Unk633dd4 = d3sky_CreateK(0xbf733333, 0xbe4ccccd, 0x44160000);
     for (q = (int *)(unsigned)&ai_Unk760620; (int)q < (unsigned)((unsigned)ai_Unk760620 + 0x18); q++) {
         if (*q != 0) {
             d3sky_DeleteLayer(ai_Unk633dd4, *q);

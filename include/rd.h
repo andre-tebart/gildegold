@@ -126,7 +126,7 @@ void d3_LocalToWorld(struct XOBJ *obj, float *in, float *out);                  
 int ai_BuildingName(int name, char *out);                                           /* 0x58f640, am.h */
 int ai_FindBauplaetze(char *name, int *out);                                          /* 0x58f7a0, am.h */
 unsigned short path_Find(struct PATHOUT *out, struct PMAP *map, int sx, int sy, int ex, int ey, int type); /* 0x424f30, path.h: PATHOUT *, PMAP * */
-void d3fl_MakeDivide(G15MAP *m);                                                 /* 0x441300, d3_fl.c */
+struct D3FLMAP; void d3fl_MakeDivide(struct D3FLMAP *map);                                                 /* 0x441300, d3_fl.c */
 struct D3OBJECT;
 char d3if_Delete(struct D3OBJECT *obj);                                          /* 0x447190, d3_interface.h */
 char d3if_ShowTree(struct D3OBJECT *obj, char show);                                        /* 0x447300, d3_interface.h */

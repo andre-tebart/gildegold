@@ -319,7 +319,7 @@ int d2_ClearSurface(struct D2SURF *surf);                                       
 void gm_RandomMarketShake(int unk);                                             /* 0x4ff450, f3gm.c */  /* @original: the original pushes one argument at both call sites; f3gm.c defines no parameter */
 extern short d2_ScreenW;  /* 0xfb9072, d2.h */
 extern short d2_ScreenH;  /* 0xfb9070 */
-void d3sm_Build(void *h, void *t);                                               /* 0x45e620, d3_engine.h */
+struct D3SM; struct D3TERRAIN; void d3sm_Build(struct D3SM *h, struct D3TERRAIN *t);                                               /* 0x45e620, d3_engine.h */
 void sv_SceneLoadProgress(int kind, int cur, int total);                         /* 0x521c10, sv.c */
 void sv_UpdateClock(void);                                                       /* 0x5315c0, sv.c */
 void init_SceneObjectDestroyCB(int o);

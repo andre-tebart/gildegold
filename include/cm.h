@@ -400,7 +400,7 @@ extern int ai_Unkf31144;  /* 0xf31144 */
 extern int ai_Unkf83650;  /* 0xf83650 */
 extern char ai_Unkf895a0[0xb00];  /* 0xf895a0 */
 char d3if_SelectScene(int index, char keep);
-void d3sm_Build(void *h, void *t);  /* 0x45e620, d3_sm.c: void d3sm_Build(D3SM *, D3TERRAIN *) */
+struct D3SM; struct D3TERRAIN; void d3sm_Build(struct D3SM *h, struct D3TERRAIN *t);  /* 0x45e620, d3_sm.c: void d3sm_Build(D3SM *, D3TERRAIN *) */
 void hmt_SetPendingElection(int v);  /* 0x4ad1b0 */
 int tb_IsFunctionOff();
 int tb_SetFunctionOff();
@@ -620,7 +620,7 @@ void ai_Unk4cec30(int a, char *c);  /* 0x4cec30 */
 void ai_Unk4ced80(int a);  /* 0x4ced80 */
 extern unsigned char kb_Last;  /* 0x1468410 */
 void d3fl_MakeDivide();  /* 0x441300 */
-int d3if_ScreenBox();  /* 0x4486e0 */
+struct D3OBJECT; struct D3RECT; char d3if_ScreenBox(struct D3OBJECT *obj, struct D3RECT *r);  /* 0x4486e0 */
 int d2_WinOpenSlider();  /* 0x46a960 */
 int d2_CreateWindow();  /* 0x472390 */
 int d2_RemoveWindow();  /* 0x472ce0 */
@@ -1096,7 +1096,7 @@ struct D3TRAIN * d3t_CreateRain();  /* 0x413b30 */
 extern int ai_Unk6f0dbc;  /* 0x6f0dbc */
 extern int ai_Unk6f0db4;  /* 0x6f0db4 */
 extern int ai_Unk6f0db8;  /* 0x6f0db8 */
-int d3sky_DeleteLayer();  /* 0x45d800 */
+struct D3SKY; struct D3SKYLAYER; void d3sky_DeleteLayer(struct D3SKY *s, struct D3SKYLAYER *l);  /* 0x45d800 */
 void d3sky_Destroy();  /* 0x45daa0 */
 void d3t_DeleteRain();  /* 0x413d00 */
 int ai_Unk4e37a0();  /* 0x4e37a0 */
@@ -1104,7 +1104,7 @@ int ai_Unk4e3420();  /* 0x4e3420 */
 int ai_Unk4e3750();  /* 0x4e3750 */
 int ai_Unk4e3800();  /* 0x4e3800 */
 int ai_Unk4e37a0();  /* 0x4e37a0 */
-int d3sky_Create();  /* 0x45da30 */
+struct D3SKY; struct D3SKY *d3sky_Create(float horizon, float fogstart, float fogscale);  /* 0x45da30 */
 int d3sky_CreateLayer();  /* 0x45d880 */
 void d3sky_SetLayerSpeed(struct D3SKY *s, struct D3SKYLAYER *l, float speed);  /* 0x45d960 */
 void d3sky_FadeLayer(struct D3SKY *s, struct D3SKYLAYER *l, unsigned char alpha, float time);  /* 0x45d9a0 */

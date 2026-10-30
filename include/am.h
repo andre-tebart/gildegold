@@ -1143,7 +1143,7 @@ void unk_Unk4ef170(char *o, unsigned *a, unsigned *b);                          
 void unk_Unk4ef000(int n, int *out);                                             /* 0x4ef000 */
 float unk_Unk4ef330(char *o);                                                    /* 0x4ef330 */
 int ai_SphereVolume(float radius, float size, float *out);                                   /* 0x5dc1a0 */
-void ai_PositionShare(float a, float b, int *in, float *out);                        /* 0x5dc210 */
+struct SPHEREVOLUME; void ai_PositionShare(float a, float b, struct SPHEREVOLUME *rec, float *out);                        /* 0x5dc210 */
 int ai_SolveCannonAim(float *a, float *b, float *rng, float *x, float *y, float *ang, float *vb, float *vc, float *vd); /* 0x5dd100 */
 float unk_Unk4eef50(int r, int k, int c);                                         /* 0x4eef50 */
 int unk_Unk4ef090(char *o, int a, int b, int d, int *n, int *price);              /* 0x4ef090 */

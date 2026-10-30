@@ -13,7 +13,7 @@ char dd_FillSurface(LPDIRECTDRAWSURFACE4 surf, RECT *rect, DWORD color);        
 void * dd_LockSurfaceFlags(LPDIRECTDRAWSURFACE4 surf, DWORD flags);                               /* 0x41de30 */
 void dd_UnlockSurface(LPDIRECTDRAWSURFACE4 surf);                                       /* 0x41e740 */
 void d3d_BuildMipmaps(LPDIRECTDRAWSURFACE4 tex, DDSURFACEDESC2 *ddsd);                                /* 0x4371d0 */
-void ts_CacheFetch(D3TEXHANDLE *tex, int a, int b);                                     /* 0x45f8d0 */
+struct TSTEXTURE; void ts_CacheFetch(struct TSTEXTURE *tex, int a, int b);                                     /* 0x45f8d0 */
 
 const float d3s_Dist[2] = { 60.0f, 200.0f };  /* 0x5ebbd8 */
 const unsigned char d3s_Palette[] = { 0, 0, 0, 0xff, 0xff, 0xff, 0, 0 };  /* 0x5ebbe0, palette */

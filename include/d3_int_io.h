@@ -66,7 +66,7 @@ void bio_rd_c(struct VFSFILE *f, char *c);                                      
 void bio_rd_s(struct VFSFILE *f, char *s);                                                        /* 0x4011a0 */
 void bio_rd_i(struct VFSFILE *f, int *i);                                                         /* 0x4011d0 */
 void bio_rd_v3(struct VFSFILE *f, int *v);                                                        /* 0x401260 */
-void bio_rd_v4(void *f, int *v);                                                        /* 0x401290 */
+struct VFSFILE; void bio_rd_v4(struct VFSFILE *f, int *v);                                                        /* 0x401290 */
 int bio_rd_array_quick(struct VFSFILE *f, int size, void **out);                                  /* 0x401380 */
 #endif
 

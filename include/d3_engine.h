@@ -261,7 +261,7 @@ void d3_SetFogRange(float start, float end);                                    
 void d3_SetViewport(float w, float h, float x, float y, float zn, float zf, float scale, int a, int b); /* 0x43b950 */
 void d3_FreeObjectData(D3OBJECT *obj);                                                  /* 0x43c670 */
 void d3fl_Inflate(struct D3FLMAP *map);                                                 /* 0x441ea0, d3_fl.c */
-void d3sm_Build(void *h, void *t);                                                    /* 0x45e620, d3_sm.c: void d3sm_Build(D3SM *, D3TERRAIN *) */
+struct D3SM; struct D3TERRAIN; void d3sm_Build(struct D3SM *h, struct D3TERRAIN *t);                                                    /* 0x45e620, d3_sm.c: void d3sm_Build(D3SM *, D3TERRAIN *) */
 void d3_AttachMesh(D3OBJECT *obj, int unk, char *name);                                  /* 0x44cbb0 */
 struct D3IOOBJ *d3io_LoadObject(char *a, char *b);                                         /* 0x44e080, d3_io_t.c (d3io_LoadObject); this header's tenants cannot include d3_io_t.h */
 
@@ -348,7 +348,7 @@ typedef struct D3TEXMAP {           /* d3_SetObjectAlpha: a texture and its repl
     D3TEXTURE *from;
     D3TEXTURE *to;
 } D3TEXMAP;
-D3TEXTURE *tex_ReleaseAlias(D3TEXTURE *tex, char group);                                /* 0x461610, ts_texture.c */
+struct TSTEXTURE; struct TSTEXTURE *tex_ReleaseAlias(struct TSTEXTURE *tex, char group);                                /* 0x461610, ts_texture.c */
 D3TEXTURE *tex_AliasForFlags(D3TEXTURE *tex, D3TEXFLAGS f, char group);                     /* 0x4616a0, ts_texture.c */
 
 extern D3PARTSYS d3_ParEnd;                 /* 0xfb9280, particle system list end marker */
@@ -368,7 +368,7 @@ extern D3SORTENT *d3_SortTmp;               /* 0xfe75c0 */
 extern unsigned int d3_RadixCount[256];     /* 0xfc29c0 */
 extern D3SORTENT *d3_RadixSrc;          /* 0xfe73c0 */
 extern D3SORTENT *d3_RadixDst;          /* 0xfc50c8 */
-void d3sky_Destroy(void *s);                /* 0x45daa0, d3_sky.c */
+struct D3SKY; void d3sky_Destroy(struct D3SKY *s);                /* 0x45daa0, d3_sky.c */
 void d3sky_Free(void);                      /* 0x45db20, d3_sky.c */
 void par_DeleteAll(void);                   /* 0x4556b0, d3_par.c */
 void d3_ExitShadows(void);                    /* 0x45aee0 */
@@ -428,7 +428,7 @@ extern int d3_SortMax;                      /* 0xfe73f8 */
 extern char d3_ClipInfo[64][0x68];          /* 0xfc3020 */
 void d3s_UpdateObject(D3OBJECT *obj);       /* 0x45ca20, d3s.c */
 void d3s_UpdateObjectAt(D3OBJECT *obj);     /* 0x45ca60, d3s.c */
-void d3_TransformVerts(D3OBJECT *obj, D3OBJINFO *info, void *m);                             /* 0x459300 */
+struct D3OBJECT; struct D3LINFO; struct D3MATRIX; void d3_TransformVerts(struct D3OBJECT *obj, struct D3LINFO *info, struct D3MATRIX *m);                             /* 0x459300 */
 void d3_MirBeginFrame(D3OBJECT *obj, struct D3MIRROR *m);                                   /* 0x4554b0, d3_mir.h (d3_engine.c calls it through its D3OBJECT ** view d3_MirBeginFrameE) */
 void d3_ProjectMesh(D3OBJECT *obj);                                                     /* 0x438f60 */
 
@@ -542,7 +542,7 @@ void dd_SetClipRect(int left, int top, int right, int bottom);                  
 char dd_SetMode(int xres, int yres, int bpp, int mode, HWND wnd, int unk6, char triple); /* 0x41d2e0, dd_vesa.c */
 char d3d_Init(int bitplanes, int a, int b);                                             /* 0x435d70, d3_d3d.c */
 char d3d_CreateDevice(DWORD texbpp, DWORD fourcc, DWORD texbpp2, DWORD zbpp);           /* 0x436160, d3_d3d.c */
-void d3d_SetConfig(void *c);                                                            /* 0x436560, d3_d3d.c */
+struct D3DCONFIG; void d3d_SetConfig(struct D3DCONFIG *c);                                                            /* 0x436560, d3_d3d.c */
 void d3d_SetWBuffer(char w);                                                            /* 0x437060, d3_d3d.c */
 void tex_Init(int count, int maxhicol, int mips, unsigned int cache);                   /* 0x45fa80, ts_texture.c */
 void d3sky_InitColors(void);                                                            /* 0x45dae0, d3_sky.c */
@@ -686,7 +686,7 @@ void d3s_CollectLights(void);                                                   
 char d3_DrawObjectCB(D3OBJECT *obj);                                                    /* 0x43a160 */
 char d3_MirDrawObject(D3OBJECT *obj, struct D3MIRROR *m);                                   /* 0x4550e0, d3_mir.h, a d3_ForEachObject callback */
 void par_Draw(D3PARTSYS *ps);                                                       /* 0x455a90 */
-void d3sky_Draw(void *p);                                                             /* 0x45d500 */
+struct D3SKY; char d3sky_Draw(struct D3SKY *s);                                                             /* 0x45d500 */
 void d3_DrawSorted(void);                                                                /* 0x43b600 */
 void ts_UpdateScroll(unsigned long now);                                                   /* 0x460cb0 */
 char d3anim_StepObject(D3OBJECT *obj, void *ctx);                                            /* 0x432750, d3_anim.c */

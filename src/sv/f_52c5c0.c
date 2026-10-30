@@ -1,7 +1,7 @@
 /* 0x52c5c0, picks the speech bubble for the character under the cursor (0x6f22f8) or the object (0x6f22e8) and shows it through 0x52c4e0: a text id (0x11e9 + n * 0xf, or by the role +0x180 of the
    character: 0x1250 ..) or a text built into a buffer; ROUGH (the switch cases are read from the Ghidra output, the 5 kinds of the final switch are mostly lost) */
 
-int d3if_ScreenBox();                     /* 0x4486e0 */
+char d3if_ScreenBox(D3OBJECT *obj, D3RECT *r);                     /* 0x4486e0 */
 /* 0x42ec00 */
 struct CHARACTER * ch_FindByObject();                     /* 0x402ac0 */
 int gm_Unk504c00();                     /* 0x504c00 */

@@ -186,7 +186,7 @@ typedef struct D3IOPATH {           /* 0x44 bytes, the animation of an object (o
 
 int d3io_FindStock(char *name);                                                   /* 0x44c5d0 */
 char d3io_LodName(char *a, char *b, int lod, char *out1, char *out2);           /* 0x44c9d0 */
-void d3_TransformNormals(void *obj, void *info);                                                        /* 0x4598d0, stock object callback */
+struct D3OBJECT; struct D3LINFO; void d3_TransformNormals(struct D3OBJECT *obj, struct D3LINFO *info);                                                        /* 0x4598d0, stock object callback */
 extern D3IOOBJ d3_StockHead;                                                    /* 0xfc4a40, list sentinel */
 #ifndef DATA_VIEWS_H
 extern D3IOOBJ *d3_StockList;                                                   /* 0xfc4c40 */

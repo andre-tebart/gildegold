@@ -46,8 +46,8 @@ struct D3TRAIN; void d3t_SetRain(struct D3TRAIN *rain, int n, ...);             
 void d3t_DeleteRain();                     /* 0x413d00 */
 struct D3TSNOW *d3t_CreateSnow();                     /* 0x4148f0 */
 struct D3TSNOW; void d3t_SetSnow(struct D3TSNOW *snow, int n, ...);                     /* 0x414c60 */
-int d3sky_Create();                     /* 0x45da30 */
-int d3sky_DeleteLayer();                     /* 0x45d800 */
+struct D3SKY; struct D3SKY *d3sky_Create(float horizon, float fogstart, float fogscale);                     /* 0x45da30 */
+struct D3SKY; struct D3SKYLAYER; void d3sky_DeleteLayer(struct D3SKY *s, struct D3SKYLAYER *l);                     /* 0x45d800 */
 int d3sky_CreateLayer();                     /* 0x45d880 */
 void d3sky_SetLayerSpeed(struct D3SKY *s, struct D3SKYLAYER *l, float speed);  /* 0x45d960 */
 char d3_SetFogSet(unsigned int a, unsigned int b, float t);                     /* 0x44a170 */

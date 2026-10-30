@@ -4,7 +4,7 @@
 
 struct D3TSNOW; void d3t_SetSnow(struct D3TSNOW *snow, int n, ...);                     /* 0x414c60 */
 struct D3TRAIN; void d3t_SetRain(struct D3TRAIN *rain, int n, ...);                     /* 0x413d30 */
-int d3sky_SetLayerTex();                     /* 0x45d9f0 */
+struct D3SKYLAYER; void d3sky_SetLayerTex(struct D3SKYLAYER *l, char *name);                     /* 0x45d9f0 */
 void d3sky_FadeLayer(struct D3SKY *s, struct D3SKYLAYER *l, unsigned char alpha, float time);   /* 0x45d9a0 */
 void d3sky_SetLayerSpeed(struct D3SKY *s, struct D3SKYLAYER *l, float speed);        /* 0x45d960 */
 void d3t_DrawRain();                     /* 0x414590 */

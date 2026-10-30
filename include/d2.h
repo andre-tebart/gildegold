@@ -570,7 +570,7 @@ void d2_SetClipRect(int x0, int y0, int x1, int y1);                            
 D2FRAME *d2_GetFrame(void *pic, short i);                                      /* 0x47cb70, frame i of a picture */
 
 void dd_Flip(void);                                                             /* 0x41e390 */
-char d3if_DrawSprite(D2TEX *t, int x, int y, float angle, float sx, float sy, float alpha); /* 0x448270 */
+struct D3IFSPRITE; char d3if_DrawSprite(struct D3IFSPRITE *t, int x, int y, float angle, float sx, float sy, float alpha); /* 0x448270 */
 char d3_ScreenToUV(float sx, float sy, struct D3OBJECT *obj, void *tex, float *outu, float *outv); /* 0x448e60 */
 void d3io_NoopCallback(void *t);                                                            /* 0x44ee40, (x, y, surf, pic) */
 struct TSTEXTURE * tex_Find(char *name);                                                    /* 0x45f980 */
