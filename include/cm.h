@@ -124,8 +124,8 @@ char *gm_FindBuildingById(int id);                                              
 int gm_IsHomeType(unsigned char *bld);                                                     /* 0x502520 */
 void gm_GetGebaeudeHauptraum(unsigned char *bld);                                                   /* 0x501ce0, ai.h: AIOBJ * */
 char * gm_Query(void *list, int n, ...);                                        /* 0x4ffe90, ai.h: AIOBJ * */
-unsigned short *unk_Unk4fda70(char *p, int c, int d);                             /* 0x4fda70 */
-char *unk_Unk4fd820(unsigned short k, char *p);                                   /* 0x4fd820 */
+short *unk_Unk4fda70(char *o, unsigned a, unsigned b);                             /* 0x4fda70 */
+char *unk_Unk4fd820(int unused, char *o);                                   /* 0x4fd820 */
 char * gm_FindGoods(int p, unsigned id);                                            /* 0x4ffc40, ai.h: int * */
 extern int *ai_Unk6f0d90;               /* 0x6f0d90 */
 extern char ai_Chars[][0x21c];      /* 0x770b80, the characters (ai.h AICHAR) */
@@ -146,7 +146,7 @@ extern int ai_NextObjectId;                /* 0x61a654 */
 unsigned char * gm_CreateBuilding(unsigned char kind, unsigned short owner);                    /* 0x501580 */
 unsigned short gm_Unk507690(int type, int a2, int a3, int a4, unsigned char *a5, unsigned a6, int a7, int a8); /* 0x507690 */
 short * gm_PlayerRecord(char *ch);                                                    /* 0x506430, ai.h: AIFIN *(AICHAR *) */
-int gm_Unk5064d0(int a, int b);                                                  /* 0x5064d0 */
+unsigned gm_Unk5064d0(int a, int b);                                                  /* 0x5064d0 */
 int unk_Unk4f2540(void *a, unsigned char **o, int *e);                                    /* 0x4f2540 */
 int gv_EntryIndex(char *r, int *e);                                       /* 0x4ef6b0 */
 int unk_Unk4f01d0(int *g, char *o, int v, int b);                     /* 0x4f01d0 */
@@ -161,7 +161,7 @@ extern unsigned char ai_OwnPlayer;      /* 0x6f1bc5 */
 int gm_ListAmount(short *l, char *o);                                              /* 0x50aaf0 */
 int gm_ListStock(short *l, int item);                                             /* 0x50ab50 */
 int gm_RemoveObject(int *list, unsigned item);                                          /* 0x4ffff0 */
-void gm_RemoveObjectFromBuilding(char *x, int item);                                            /* 0x503480 */
+int gm_RemoveObjectFromBuilding(int b, int id);                                            /* 0x503480 */
 unsigned short * unk_Unk5031b0(unsigned char *b, unsigned n);                                           /* 0x5031b0 */
 /* 0x500190 */
 void txt_Format(char *buf, int id, ...);                                       /* 0x5176d0 */
@@ -361,15 +361,15 @@ int unk_Unk4f37e0();  /* 0x4f37e0 */
 void ord_AddGridAmount();  /* 0x4f8460 */
 int unk_Unk4f86a0();  /* 0x4f86a0 */
 void ord_AdvanceRatingBase(void);  /* 0x4f9c00, ord.c */
-int unk_Unk4fdfd0();  /* 0x4fdfd0 */
-int init_ShowBuildingScene();  /* 0x513050 */
+void unk_Unk4fdfd0(void);  /* 0x4fdfd0 */
+void init_ShowBuildingScene(unsigned char *b, int slot);  /* 0x513050 */
 void sv_MoveToGroup(unsigned char *o, short *it, int c, char *g);  /* 0x524260 */
-int sv_Unk525510();  /* 0x525510 */
-int sv_Unk528390();  /* 0x528390 */
-int sv_Unk52c420();  /* 0x52c420 */
+void sv_Unk525510(int t, float flag);  /* 0x525510 */
+void sv_Unk528390(int c);  /* 0x528390 */
+void sv_Unk52c420(void);  /* 0x52c420 */
 char * he_NextEvent(void);  /* 0x53e300 */
 void he_Unk53ed70();  /* 0x53ed70 */
-int ai_Unk5a9170();  /* 0x5a9170 */
+void ai_Unk5a9170(unsigned short *param_1, int param_2);  /* 0x5a9170 */
 int ai_Unk5ba750();  /* 0x5ba750 */
 void ai_ApplyOptions(void);  /* 0x5d5e90 */
 extern const int ai_Unk5edc10[];  /* 0x5edc10 */
@@ -446,12 +446,12 @@ int unk_Unk4eff50();  /* 0x4eff50 */
 int ord_GetKindRecord();  /* 0x4f8890 */
 int gm_ClockSeason();  /* 0x4fe350 */
 void gm_RefreshGoodsLists(unsigned p);  /* 0x4ff190 */
-int gm_AssignBuilding();  /* 0x502b60 */
+void gm_AssignBuilding(unsigned char *b, unsigned short place, unsigned own);  /* 0x502b60 */
 void init_HookObject(char *o, unsigned short *p, int kind);  /* 0x50d380 */
 char init_TextureSetHook(int o);  /* 0x512e40, f3init.c: the scene object's texture-set callback */
-int sv_Unk5282f0();  /* 0x5282f0 */
-int sv_Unk528490();  /* 0x528490 */
-int ai_Unk58feb0();  /* 0x58feb0 */
+void sv_Unk5282f0(char *b);  /* 0x5282f0 */
+void sv_Unk528490(unsigned char *o);  /* 0x528490 */
+void ai_Unk58feb0(int obj, int target);  /* 0x58feb0 */
 extern const char ai_AxisPair[];  /* 0x5ebb74 */
 extern const double ai_Unk5edc28;  /* 0x5edc28 */
 extern float ai_Unk623e94;  /* 0x623e94 */
@@ -464,13 +464,13 @@ extern char *ai_Unkfc2dec;  /* 0xfc2dec, d3_Camera (as f3snd.h; f3snd.c adds byt
 
 void ai_ResetJob(struct AICHAR *c);  /* 0x47e940 */
 int unk_Unk4f3910();  /* 0x4f3910 */
-int unk_Unk4fda10();  /* 0x4fda10 */
-int unk_Unk4fdc10();  /* 0x4fdc10 */
-int unk_Unk4fddb0();  /* 0x4fddb0 */
+void unk_Unk4fda10(char *c, char *b);  /* 0x4fda10 */
+char *unk_Unk4fdc10(unsigned char *b);  /* 0x4fdc10 */
+short *unk_Unk4fddb0(unsigned char flags, int p2, int p3, unsigned char p4, unsigned char p5, char *p6);  /* 0x4fddb0 */
 unsigned short * gm_QueryNext(void);  /* 0x4ffcc0 */
 int gm_BuildingMainObject(unsigned char *b);  /* 0x501b50 */
-int gm_Unk5034b0();  /* 0x5034b0 */
-int sv_Unk52adb0();  /* 0x52adb0 */
+void gm_Unk5034b0(int o);  /* 0x5034b0 */
+void sv_Unk52adb0(void);  /* 0x52adb0 */
 extern char *ai_Unk75ec60;  /* 0x75ec60 */
 typedef struct G17B16 { char b[16]; } G17B16;
 
@@ -479,7 +479,7 @@ int amt_ExecuteOfficeMessage();  /* 0x4e67a0, amt.h */
 int unk_Unk4f27d0();  /* 0x4f27d0 */
 void ord_LoadStatistics(void *p);  /* 0x4f9020 */
 int gm_ChooseHeadIcon(unsigned short *c);  /* 0x4fb890 */
-int gm_SetJob();  /* 0x504790 */
+void gm_SetJob(int i, unsigned n);  /* 0x504790 */
 extern char ch_EmptyName[];  /* 0x631090, "" (ch.h) */
 
 int rd_BuildRoad();  /* 0x4bcc20 */
@@ -493,7 +493,7 @@ extern char ai_Unk75fba0[];  /* 0x75fba0 */
 int d3_VecEqual(struct D3VECTOR *a, struct D3VECTOR *b, float eps);  /* 0x453e80 */
 void ai_Unk4cc720(char *c, float *a, float *b, int x);                              /* 0x4cc720 */
 void he_Unk541b40();  /* 0x541b40 */
-int ai_Unk5a8c50();  /* 0x5a8c50 */
+void ai_Unk5a8c50(unsigned short *param_1, char *param_2, int param_3, int param_4);  /* 0x5a8c50 */
 
 int ch_Delete();  /* 0x4028a0 */
 void ai_Unk4d6ba0(char *f);  /* 0x4d6ba0 */
@@ -753,12 +753,12 @@ struct SBBANK * sb_LoadSampleBank();  /* 0x426950 */
 int ai_Unk4d4050();  /* 0x4d4050 */
 void ai_Unk4e2e60();  /* 0x4e2e60 */
 int ai_Unk4e3650();  /* 0x4e3650 */
-int sv_Unk5301a0();  /* 0x5301a0 */
+void sv_Unk5301a0(void);  /* 0x5301a0 */
 void d3sky_Init(struct D3SKY *s, char build);  /* 0x45d690 */
 struct D3IOOBJ * d3io_LoadObjectRef();  /* 0x44e190 */
 struct D3SM * d3sm_Create(struct D3TERRAIN *t, int size, int mask);  /* 0x45eeb0, d3_sm.h */
 void sv_PumpNet();  /* 0x52fe00 */
-int gm_ShuffledBytes();  /* 0x505be0 */
+void gm_ShuffledBytes(unsigned char n, unsigned char *out);  /* 0x505be0 */
 int gm_BuildingSkill();  /* 0x5092e0 */
 extern int ai_Unk633dd4;  /* 0x633dd4 */
 extern int ai_Unk6f0ce8;  /* 0x6f0ce8 */
@@ -893,7 +893,7 @@ void ai_Unk4e48b0();  /* 0x4e48b0 */
 
 int gm_TitleGroup();  /* 0x504ad0 */
 int gm_BuildingJob();  /* 0x5048e0 */
-int gm_Unk50cad0();  /* 0x50cad0 */
+void gm_Unk50cad0(unsigned char *b, int d);  /* 0x50cad0 */
 
 int d2_OpenForm();  /* 0x4741f0 */
 void d2_PlaceMainWindow();  /* 0x475850 (int view, unsigned char flags), K&R */
@@ -964,7 +964,7 @@ extern char *ai_Unk6ed918;  /* 0x6ed918 */
 int ai_Unk4e3270();  /* 0x4e3270 */
 int ai_Unk4e3620();  /* 0x4e3620 */
 int amt_GetColumnOffices(int col, int max, struct AMTREC *out);  /* 0x4e6fc0 */
-int sv_Unk52fd80();  /* 0x52fd80 */
+void sv_Unk52fd80(char *t);  /* 0x52fd80 */
 int amt_IsColumnDecided();  /* 0x4e83b0 */
 void amt_ElectOffices();  /* 0x4e7c60 */
 int ai_Unk4e8530();  /* 0x4e8530 */
@@ -1070,8 +1070,8 @@ int ai_Unk4e0f70(char *m);  /* 0x4e0f70 */
 int ai_Unk4e1220(char *m);  /* 0x4e1220 */
 float gm_CharacterHealth();  /* 0x4fc820 */
 int gm_Unk506480();  /* 0x506480 */
-int gm_Unk506e70();  /* 0x506e70 */
-int ai_Unk5c4150();  /* 0x5c4150 */
+void gm_Unk506e70(unsigned short *c, char *out, int flag);  /* 0x506e70 */
+void ai_Unk5c4150(int param_1, unsigned char param_2, int param_3, int param_4);  /* 0x5c4150 */
 int ai_Unk4e1250(char *m);  /* 0x4e1250 */
 /* ai_TimeHour (0x770ae4, the clock's hour) is no object: time_view.h views it in ai_Time + 4 */
 
@@ -1155,7 +1155,7 @@ void d2_BlitPart(int sx, int sy, int w, int h, struct D2SURF *src, int x, int y,
 void d2_ReleaseFade(struct D2FADE *f);  /* 0x476860 */
 struct D2FADE * d2_StartFade(int x, int y, int w, int h, char *name, int dur, unsigned int flags);  /* 0x4767d0 */
 void init_LoadObjectScene();  /* 0x50d7f0 */
-int init_LoadBuildingScene();  /* 0x50dc30 */
+void init_LoadBuildingScene(int k);  /* 0x50dc30 */
 char d3_InflateScene(unsigned int flags);  /* 0x43deb0 */
 extern char *ai_PlayerBuilding;          /* 0x6f2308, the building the player is in: an AIBLD (sv.c defines char *; ai_PlayerBuildingT views) */
 extern char *ai_FallbackBuilding;        /* 0x6f230c, the second current building, used when 0x6f2308 is 0 (sv.c defines char *) */

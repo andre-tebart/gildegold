@@ -50,7 +50,7 @@ void ai_OptionsMenu(void)
     wnd = d2_OpenForm(0, 0, "menu\\options");
     sv_SetScreenCenter(0x24087);
     d2_PlaceViewWindows(wnd, 1);
-    d2_PlaceMainWindow(wnd, 2);
+    d2_PlaceMainWindowF(wnd, 2);
     d2_SetForm(wnd, 0);
     sv_FitForm(d2_LastWindow);
     sv_ResetScreenClip();

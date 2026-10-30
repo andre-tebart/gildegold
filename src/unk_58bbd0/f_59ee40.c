@@ -6,10 +6,10 @@
    0x48 .. 0x4a 0x586840, 0x4e .. 0x50 0x5d9c30, default 0x58f620; the exit clears the record, the sound and
    view state (0x4c2c00 / 0x5136b0 / 0x43db30 / 0x4478e0 / 0x513740) */
 
-int init_BuildingSceneUniverse(); int init_LoadBuildingScene(); void d3fl_SetDetail(unsigned int n); void veg_HidePlants();
-int ai_Unk586840(); int ai_GypsyProductionContact(); int ai_Unk587ad0();
-int ai_Unk5876a0(); int ai_GypsyContact(); int ai_TheatreContact(); int ai_CurseContact();
-int ai_Unk587560();
+int init_BuildingSceneUniverse(); void init_LoadBuildingScene(int k); void d3fl_SetDetail(unsigned int n); void veg_HidePlants();
+void ai_Unk586840(char *rec); void ai_GypsyProductionContact(int building); void ai_Unk587ad0(char *rec);
+void ai_Unk5876a0(char *rec); void ai_GypsyContact(int building); void ai_TheatreContact(int building); void ai_CurseContact(int buildingArg);
+void ai_Unk587560(char *rec);
 
 void ai_Unk59ee40(unsigned char *param_1)
 {
@@ -138,7 +138,7 @@ void ai_Unk59ee40(unsigned char *param_1)
     if (U_I((unsigned)&ai_Unk5f8438) != -1)
         sv_Unk52bb70(U_I((unsigned)&ai_Unk5f8438));
     snd_UnloadBuildingVoices();
-    unk_Unk5136b0(U_I((unsigned)&ai_FallbackBuilding));
+    unk_Unk5136b0K(U_I((unsigned)&ai_FallbackBuilding));
     d3_DeflateScene(3);
     d3if_SelectScene(kind, 0);
     U_I((unsigned)&ai_Unk7662c0) = 0;

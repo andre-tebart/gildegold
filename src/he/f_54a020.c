@@ -129,7 +129,7 @@ void he_Unk54a020(int ev)
                 if ((short)util_Random(0x100) == 0)
                     gm_Unk505440(0);
                 if (any)
-                    ai_Unk5a9240(0, o);
+                    ai_Unk5a9240K(0, o);
                 for (j = 0; j < m; j++)
                     if (strength[j] > 0.0f)
                         he_Unk5417d0(ev, (unsigned short *)((unsigned)&ai_Chars + ids[j] * 0x21c), 0, o, 1, strength[j]);

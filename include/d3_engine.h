@@ -214,7 +214,7 @@ void d3s_FreeShadows(D3OBJECT *obj);        /* 0x45ccd0, d3s.c, d3_ForEachObject
 void d3_WorldMatrix(struct XOBJ *obj, struct XOBJ *ref, char orientOnly, D3MATRIX *out);   /* 0x458da0 */
 void d3fl_SetMips(char a);               /* 0x43f930, d3_fl.c (takes char; the 0x43c4e0 caller pushes an int) */
 void d3fl_SetDetail(unsigned int n); /* 0x43f8a0, d3_fl.c (takes unsigned int; the 0x43c4e0 caller pushes an int) */
-void tex_ReloadAll(int keep, int cb);       /* 0x461090, ts_texture.c: void tex_ReloadAll(char, void (*)(int, int, int)) */
+void tex_ReloadAll(char keep, void (*cb)(int, int, int));       /* 0x461090, ts_texture.c: void tex_ReloadAll(char, void (*)(int, int, int)) */
 void d3fl_FreeTiles(struct D3FLMAP *map);   /* 0x441db0, d3_fl.c */
 
 /* d3_engine.c functions referenced before their definition */
@@ -326,7 +326,7 @@ typedef struct D3OBJX {             /* 0x228 bytes, the whole D3OBJECT as far as
 extern char d3_Unk633438;                   /* 0x633438 */
 extern float d3_InvZFar;                    /* 0xfc2dd4, 1 / d3_ZFar */
 extern char d3_LightsChanged;                   /* 0x633b14 */
-char d3s_FreeLightCB(D3OBJECT *obj, void *ctx);                                         /* 0x45cd60, d3s.c, d3_ForEachObject callback */
+char d3s_FreeLightCB(D3OBJECT *obj, D3OBJECT *light);                                         /* 0x45cd60, d3s.c, d3_ForEachObject callback */
 void d3anim_PoseBones(D3OBJECT *obj);                                                       /* 0x431ae0 */
 void d3_InitObject(D3OBJECT *obj);                                                      /* 0x43ce60 */
 void d3_FreeMesh(D3OBJECT *obj);                                                        /* 0x43cd80 */
@@ -547,7 +547,7 @@ void d3d_SetWBuffer(char w);                                                    
 void tex_Init(int count, int maxhicol, int mips, unsigned int cache);                   /* 0x45fa80, ts_texture.c */
 void d3sky_InitColors(void);                                                            /* 0x45dae0, d3_sky.c */
 void d3fl_Init(unsigned int n, unsigned int detail, char mips, char b);                 /* 0x43fe00, d3_fl.c */
-void d3_InitShadows(int a, int b, int c, int d, int e, int f, int g);                     /* 0x45ad80 */
+void d3_InitShadows(unsigned int size, unsigned int maxsize, int ncache, int age, char mips, int polys, int mapsize);                     /* 0x45ad80 */
 void par_Init(void);                                                                    /* 0x455630, d3_par.c */
 typedef struct D3TEXV {             /* D3PTRI::tex as the draw loop sees it */
     char pad00[0x64];
@@ -577,7 +577,7 @@ extern float d3_UOfsTab[32], d3_VOfsTab[32];    /* 0xfb9120, 0xfb90a0 */
    (ecmd.c's flag).  A separate definition cannot live inside the unit's block. */
 #define d3_Unk63345d (*(unsigned char *)((char *)&d3_D3DActive + 1))  /* 0x63345d */
 int d3d_GetVertexBuffer(void **buf, int *n);                                            /* 0x4364f0, d3_d3d.c */
-void d3d_DrawTriangles(void *unk, void *buf, DWORD num);                                /* 0x436510, d3_d3d.c */
+void d3d_DrawTriangles(void *unk, D3DTLVERTEX *buf, DWORD num);                                /* 0x436510, d3_d3d.c */
 /* Inline asm: one transformed vertex from a D3PVERT and a texture coordinate pair (u, v at uv). */
 #define D3E_TLV(dst, src, uv) {                                     \
     void *_td = (dst); void *_ts = (src); void *_tu = (uv);         \

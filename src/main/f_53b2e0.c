@@ -65,7 +65,7 @@ void main_Unk53b2e0(void)
     he_Unk53ef50();
     if (U_I((unsigned)&full_data_624560) != 0) {
         w = d2_OpenForm(0, 0, "Runden\Spielerrunde_Beginn_NEU");
-        d2_PlaceMainWindow(w, 3);
+        d2_PlaceMainWindowF(w, 3);
         d2_SetForm(w, 1);
         io_PrintText(0x7d);
         gm_ClockToDate((unsigned)&ai_TimeT, s130);

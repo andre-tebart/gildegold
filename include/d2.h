@@ -536,7 +536,7 @@ extern int d2_HalfScreenW;            /* 0xf8f08c, half the screen width */
 
 /* functions of other units */
 DWORD dd_RGB(unsigned char r, unsigned char g, unsigned char b);                  /* 0x41e670 */
-void d3if_FreeSprite(int h);                                                    /* 0x4481e0 */
+void d3if_FreeSprite(D3TEXHANDLE *t);                                                    /* 0x4481e0 */
 int d2_NewObject(void);                                                         /* 0x46c9f0, allocates an object */
 void d2_AddRefcount(int pic);                                                   /* 0x46ca60 */
 void d2_SubRefcount(int pic);                                                   /* 0x46cac0 */
@@ -590,7 +590,7 @@ void d2_StepAnims(void);                                                        
 int d2_StartAnim(short x, short y, void *data, unsigned char z);                          /* 0x47cd20 */
 void d2_DrawAnim(int n, void *surf);                                           /* 0x47cdb0 */
 void d2_FreeAnim(int n);                                                       /* 0x47ce30 */
-int d3if_LoadSprite(char *name, int glow);                                      /* 0x448200 */
+D3TEXHANDLE *d3if_LoadSprite(char *name, char glow);                                      /* 0x448200 */
 void d2_SetObjEnabled(int obj, int on);                                             /* 0x475e40 */
 void d2_ScaleObject(int obj, int a);                                            /* 0x475e80, scales a picture object; a > 1 larger, a < -1 smaller */
 void d2_ReleaseFade(D2FADE *f);                                             /* 0x476860 */

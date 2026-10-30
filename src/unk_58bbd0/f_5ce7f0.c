@@ -5,7 +5,7 @@
    0xff) and 0x90; click 1 closes; the pump 0x5309a0 (0x657c7) and the exit 0x4758f0. The return is
    0x22 when nothing was clicked, 0x20 for another type, 0x40 when the kind has no list. */
 
-int ai_WorkerDismissalWindow(int param_1)  /* @original: the callers push (c, m); the draft body reads its own byte offsets of the parameters */
+int ai_WorkerDismissalWindow(int param_1, int *m)  /* m: the handler's second argument (unused here): the callers push (c, m); the draft body reads its own byte offsets of the parameters */
 {
     int out[6];
     int win;

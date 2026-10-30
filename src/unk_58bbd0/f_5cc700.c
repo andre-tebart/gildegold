@@ -6,7 +6,7 @@
    then the walk over the character records 0x770b80 (the word -2 = 0xffff skips). Type 6: the window at
    0x5cc836. ROUGH SKELETON: the walk body and the window are not written. */
 
-int ai_EspionagePayment2(int param_1)  /* @original: the callers push (c, m); the draft body reads its own byte offsets of the parameters */
+int ai_EspionagePayment2(int param_1, int *m)  /* m: the handler's second argument (unused here): the callers push (c, m); the draft body reads its own byte offsets of the parameters */
 {
     int price;
     int ret;

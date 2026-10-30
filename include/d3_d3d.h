@@ -171,11 +171,11 @@ HKEY reg_OpenKey(char *key, int mode);                                          
 void reg_CloseKey(HKEY key);                                                                  /* 0x410430 */
 HRESULT CALLBACK d3d_EnumDeviceCallback(GUID *guid, LPSTR desc, LPSTR name,
     LPD3DDEVICEDESC hal, LPD3DDEVICEDESC hel, LPVOID ctx);                             /* 0x41c460, Dd_vesa.c */
-void dd_SetSurfaceName(LPDIRECTDRAWSURFACE4 surf, char *name, int unk);                      /* 0x41eb00, Dd_vesa.c */
+char dd_SetSurfaceName(LPDIRECTDRAWSURFACE4 surf, char *data, char unk);                      /* 0x41eb00, Dd_vesa.c */
 void err_Message(char *msg);                                                               /* 0x4222b0 */
 unsigned char bmp_Load(char *path, unsigned char *data, unsigned char *pal, int flags); /* 0x4014d0, bmp.h */
 char dd_StringToGuid(char *s, GUID *guid);                                                 /* 0x41c760, Dd_vesa.c */
-void dd_DeviceDialog(int bitplanes, int b, int a, int unk, LPDIRECT3D3 d3d);              /* 0x41cf60, Dd_vesa.c */
+void dd_DeviceDialog(int bpp, int unused, HWND parent, char flag, LPDIRECT3D3 d3d3);              /* 0x41cf60, Dd_vesa.c */
 
 char d3d_Restore(void);                                                /* 0x4370d0 */
 #endif

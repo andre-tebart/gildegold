@@ -6,7 +6,7 @@ extern int ai_FallbackBuilding;                /* 0x6f230c */
 char d3t_GetBoundingSphere(struct D3OBJECT *obj, struct D3OBJECT *camera, struct D3VECTOR *center, float *radius);  /* 0x411eb0, d3_tools.c: the center and radius of the mesh's 8-corner box */
 int gm_IsBuildingKind(int n);           /* 0x4fe940, f3gm.c: 1 when the object prototype n is a building part */
 int gm_FindObjectProto(char *name);     /* 0x4fe900, f3gm.c: the object prototype of the name */
-int unk_Unk503530(int p, void *b, void *o, int c);  /* 0x503530, f3gm.c: the permission bits of the character p in the building b (or the object o) */
+unsigned unk_Unk503530(unsigned p1, unsigned char *b, unsigned short *o, int c);  /* 0x503530, f3gm.c: the permission bits of the character p in the building b (or the object o) */
 extern unsigned char init_TextureSet;      /* 0x6f1c24 */
 extern int ai_Unkfc2dec;                /* 0xfc2dec */
 void init_SyncSceneObjects(char *o)

@@ -251,7 +251,7 @@ typedef char (*D3OBJECTCB)(D3OBJECT *obj, void *ctx);
 
 char d3_ForEachObject(struct D3SCENE *scene, struct D3OBJECT *obj, unsigned int mask, D3OBJECTCB cb, void *ctx); /* 0x438d40 */
 void d3_ReleaseTexture(void *list, char *name);                                         /* 0x435740 */
-void d3_UpdateObject(D3OBJECT *obj, int unk);                                           /* 0x43b6b0 */
+void d3_UpdateObject(D3OBJECT *obj, unsigned char full);                                           /* 0x43b6b0 */
 void d3_InflateObject(D3OBJECT *obj);                                                       /* 0x43dbc0 */
 void d3_MatFromAngles(D3VECTOR4 *v, D3MATRIX *m);                                           /* 0x4545c0 */
 char d3if_SelectScene(int index, char keep);                                                /* 0x4478e0 */

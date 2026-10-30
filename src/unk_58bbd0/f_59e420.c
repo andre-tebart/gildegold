@@ -150,7 +150,7 @@ void ai_Unk59e420(unsigned char *param_1, int param_2)
             /* ROUGH: 0x4284a0 / 0x429e90 / 0x52bb70 of the device record and 0x5fb5b0 callback +0x294 */
             if (U_I((unsigned)&ai_Unk5f8438) != -1)
                 sv_Unk52bb70(U_I((unsigned)&ai_Unk5f8438));
-            unk_Unk5136b0(param_1);
+            unk_Unk5136b0K(param_1);
             U_I((unsigned)&ai_FrameWait) = 1;
             if (U_I((unsigned)&ai_PlayerBuilding) == 0) {
                 U_I((unsigned)&sv_PopRequest) = 1;

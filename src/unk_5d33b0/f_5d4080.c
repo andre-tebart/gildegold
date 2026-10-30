@@ -26,7 +26,7 @@ int ai_LoadGameWindow(void)
     mask = sv_FrameMask;
     win = d2_OpenForm(0, 0, "menu\\loadgame_new");
     d2_PlaceViewWindows(win, 1);
-    d2_PlaceMainWindow(win, 2);
+    d2_PlaceMainWindowF(win, 2);
     d2_SetForm(win, 0);
     sv_FitForm(d2_LastWindow);
     d2_SetPointerSprite(0, 0);

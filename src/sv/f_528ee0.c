@@ -20,7 +20,7 @@ int ai_AmountMenu();                     /* 0x5c1130 */
 int ai_TransportWindow();                     /* 0x5af1d0 */
 int ai_Unk5b8fc0();                     /* 0x5b8fc0 */
 int ai_Unk5b84f0();                     /* 0x5b84f0 */
-int ai_TechTreeWindow();                     /* 0x591bf0 */
+void ai_TechTreeWindow(int param_1, int param_2);                     /* 0x591bf0 */
 int sv_ReturnZero(void);
 void sv_Unk528ee0(void);
 void sv_Unk5290f0(unsigned short *p);

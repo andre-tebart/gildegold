@@ -19,7 +19,7 @@ typedef struct D3ANIMMATV {
 
 float d3_Hermite(float p0, float p1, float m0, float m1, float t);                      /* 0x453e20 */
 void d3_DirToWorld(struct XOBJ *obj, float *in, float *out);                                /* 0x458810 */
-void tex_Animate(D3OBJECT *obj, unsigned int now);                                     /* 0x460b90 */
+char tex_Animate(D3OBJECT *obj, unsigned int time);                                     /* 0x460b90 */
 void d3_RelightObjectFrame(D3OBJECT *obj, D3ANIMFRAME *f);                                       /* 0x4535b0, d3_light.h's canonical prototype; d3_anim.c keeps this local copy, the include is WORSE for d3anim_CreatePath / d3anim_CreateMorphAnim (notes/units/d3_light.md) */
 struct D3ANIMSLOT * d3anim_GetMainSlot(struct D3ANIMCTL *ctl);                                         /* 0x435900 */
 

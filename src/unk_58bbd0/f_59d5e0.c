@@ -7,17 +7,17 @@
    the selected list record +0x3 / +0x5, the city byte) and refreshes the lists (0x477530) */
 
 int gm_Unk509e30(void *list, unsigned char p); char * he_FindEvent(int n, ...); char * he_NextEvent(void); int ai_AmountMenu();
-int gm_BuildingClass(); int unk_Unk503530(); int sv_MessageBoxGreen(); 
-int sv_Unk52adb0(); void init_LoadObjectScene();
-char d3_DeflateScene(unsigned int flags); char d3_InflateScene(unsigned int flags); int init_SetCharacterAnimations();
-int init_ShowBuildingScene(); int init_FinishBuildingScene(); 
-int d3_VecEqual(struct D3VECTOR *a, struct D3VECTOR *b, float eps); int sv_Unk52bb70();
-int unk_Unk5136b0(); void snd_UnloadBuildingVoices(void); int unk_Unk513740(); 
+int gm_BuildingClass(); unsigned unk_Unk503530(unsigned p1, unsigned char *b, unsigned short *o, int c); int sv_MessageBoxGreen(); 
+void sv_Unk52adb0(void); void init_LoadObjectScene();
+char d3_DeflateScene(unsigned int flags); char d3_InflateScene(unsigned int flags); void init_SetCharacterAnimations(unsigned char *b);
+void init_ShowBuildingScene(unsigned char *b, int slot); void init_FinishBuildingScene(unsigned char *b, unsigned short *o); 
+int d3_VecEqual(struct D3VECTOR *a, struct D3VECTOR *b, float eps); void sv_Unk52bb70(int id);
+void unk_Unk5136b0(void); void snd_UnloadBuildingVoices(void); void unk_Unk513740(void); 
 struct SBSAMPLE * sb_PlaySample(); void ai_ThievesGuildEmptyListener(); void ai_Unk5a4d40(); void ai_Unk5a4f70(); void ai_Unk5a5080();
 void ai_Unk5a5bc0(); void ai_DungeonContact(); void ai_Unk5a3df0(); void ai_DungeonEmptyListener(); void ai_Unk5a3810(); void ai_ChurchContact();
 void ai_Unk5a1a60(); void ai_Unk5a36c0(); void ai_Unk5a07d0(); void ai_Unk5a18d0();
 void ai_Unk5a1960(); void ai_Unk5a6a90(); void ai_Unk5a67a0(); void ai_Unk5a6920();
-int ai_Unk5821d0(); int ai_Unk582560(); int ai_Unk582600(); int ai_ProductionContact();
+void ai_Unk5821d0(char *rec, char *list); void ai_Unk582560(char *rec, char *list); void ai_Unk582600(char *rec, char *list); void ai_ProductionContact(int building, int arg);
 void ai_Unk5a2de0(); void ai_Unk59fd30();
 void ai_Unk59fca0();
 

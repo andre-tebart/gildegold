@@ -610,7 +610,7 @@ int gm_FindById(int *bld, int *obj, int *chr, int id);           /* 0x4fea50 */
 char * gm_FindGoods(int p, unsigned id);                                     /* 0x4ffc40 */
 unsigned short * gm_QueryNext(void);                                               /* 0x4ffcc0, next of gm_Query */
 char * gm_Query(void *list, int n, ...);                               /* 0x4ffe90, n (key, value) pairs */
-void gm_CollectOffers(int item);                                             /* 0x500c20 */
+int gm_CollectOffers(int goods);                                             /* 0x500c20 */
 int gm_FindMarketObject(int id);                                            /* 0x500ec0 */
 unsigned char * gm_BuildNext(void);                                               /* 0x501030, next of gm_BuildQuery */
 unsigned char * gm_BuildQuery(int n, ...);                                         /* 0x501190, n (key, value) filters; key 6 takes no value */
@@ -626,35 +626,35 @@ int gm_SumSlotAmounts(void *list, unsigned char i);                             
 float gm_ObjectValue(int item);                                            /* 0x5086b0 */
 float gm_ItemPrice(int item, unsigned char n);                           /* 0x5087f0 */
 float gm_GoodsPrice(unsigned id, unsigned char p);                           /* 0x5089c0, a price */
-int gm_BuildingLevel(AIBLD *bld);                                            /* 0x508d70 */
-int gm_BuildingRank(AIBLD *bld);                                            /* 0x5090b0 */
-int gm_BuildingSkill(AIBLD *bld, int a, int b);                              /* 0x5092e0 */
+int gm_BuildingLevel(char *c);                                            /* 0x508d70 */
+int gm_BuildingRank(unsigned char *b);                                            /* 0x5090b0 */
+int gm_BuildingSkill(unsigned char *b, unsigned k, int flag);                              /* 0x5092e0 */
 int gm_BuildingGoodsList(char *b, unsigned *out, int kind);                       /* 0x5098a0 */
 int gm_EquipmentValue(unsigned char *b, int unused);                                     /* 0x509b10 */
-int gm_OwnerWorth(AIBLD *bld, int f);                                     /* 0x509c80 */
+int gm_OwnerWorth(char *b, int flag);                                     /* 0x509c80 */
 int gm_GetGoodsValue(char *ch);                                            /* 0x509e60 */
 int gm_StallGoodsList(char *c, unsigned *out);                                 /* 0x50aa00 */
 int gm_ListAmount(short *l, char *o);                                      /* 0x50aaf0 */
-int gm_ListAmountById(void *p, int item);                                     /* 0x50ab20 */
+int gm_ListAmountById(char *l, int id);                                     /* 0x50ab20 */
 int gm_ListStock(short *l, int item);                                     /* 0x50ab50 */
 int gm_FreeCapacity(short *l, int item, int max);                            /* 0x50ab80 */
 int gm_Opinion(int a, int b);                    /* 0x50c520 */
-float gm_Liking(int a, int b, int c);                                 /* 0x50c550 */
-float gm_Unk50cd40(AICHAR *ch, int type, int a, int b);                  /* 0x50cd40 */
-int init_BuildingSceneUniverse(AIBLD *bld);                                            /* 0x511e60 */
+float gm_Liking(unsigned a, unsigned b, int c);                                 /* 0x50c550 */
+float gm_Unk50cd40(char *c, int k, int a, int b);                  /* 0x50cd40 */
+int init_BuildingSceneUniverse(unsigned char *b);                                            /* 0x511e60 */
 void txt_Format(char *buf, int id, ...);                               /* 0x5176d0 */
 int ls_GetLanguage(void);                                                  /* 0x5190a0 */
 void sv_MoveToGroup(unsigned char *o, short *it, int c, char *g);                /* 0x524260, every caller zero-extends the id */
 void he_MessageBoxQuickjump(int a1, int a2, char *text, char fl, int a5, int a6, int a7, char *jump, char *text2);                     /* 0x53dee0, he.c */
 char * he_NextEvent(void);                                             /* 0x53e300, next of he_FindEvent */
 char * he_FindEvent(int n, ...);                                         /* 0x53e400, n (key, value) pairs */
-int he_Unk553cc0(AIBLD *bld);                                            /* 0x553cc0 */
+int he_Unk553cc0(int p);                                            /* 0x553cc0 */
 void ai_EndCharExtra(char *ch, int f);                                    /* 0x587c40 */
-int ai_DrawSettingGood(AIBLD *bld);                                            /* 0x5a8870 */
-float ai_SettingFactor(AIBLD *bld);                                          /* 0x5a88e0 */
-void ai_Unk5a8ee0(AICHAR *a, AICHAR *b);                                 /* 0x5a8ee0 */
-void ai_Unk5a8f90(AICHAR *a, AICHAR *b);                                 /* 0x5a8f90 */
-void ai_Unk5a9050(AICHAR *a, AICHAR *b);                                 /* 0x5a9050 */
-int ai_Unk5bb2d0(AICHAR *ch, int item);                                  /* 0x5bb2d0 */
+int ai_DrawSettingGood(int param_1);                                            /* 0x5a8870 */
+float ai_SettingFactor(int param_1);                                          /* 0x5a88e0 */
+void ai_Unk5a8ee0(unsigned short *param_1, unsigned short *param_2);                                 /* 0x5a8ee0 */
+void ai_Unk5a8f90(unsigned short *param_1, unsigned short *param_2);                                 /* 0x5a8f90 */
+void ai_Unk5a9050(unsigned short *param_1, unsigned short *param_2);                                 /* 0x5a9050 */
+int ai_Unk5bb2d0(int param_1, int param_2);                                  /* 0x5bb2d0 */
 
 #endif

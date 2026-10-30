@@ -6,7 +6,7 @@
    0x5bd1f0, and the value text 0x196e with 0x5bd1f0 at y + 0x19; the pump 0x5309a0 (this, 0x677c7), the exit
    0x52d7a0 / 0x4758f0. ROUGH: the row records (the 0xe-int stride of the frame) are written as arrays */
 
-int gm_Unk50b1e0(); int ai_AmountRowStatus(); int ai_Unk5be720(); void ai_Unk5bd1f0();
+void gm_Unk50b1e0(unsigned *ids, int *sc); int ai_AmountRowStatus(); int ai_Unk5be720(); void ai_Unk5bd1f0();
 int d2_RemoveWindowObjects();
 
 void ai_Top5Window(void)

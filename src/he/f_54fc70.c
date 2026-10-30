@@ -11,5 +11,5 @@ int he_Unk54fc70(int o)
     v[0] = 0;
     v[1] = 0x42480000;
     v[2] = 0;
-    return d3t_CreateEmitter(*(int *)(o + 0x61), "punkte_nm_2", 1, *(int *)col, v, 0x12c, 1, 0x42480000, 0x3f800000, 0x40000000, 0x3f000000, 0x3f000000);
+    return d3t_CreateEmitterK(*(int *)(o + 0x61), "punkte_nm_2", 1, *(int *)col, v, 0x12c, 1, 0x42480000, 0x3f800000, 0x40000000, 0x3f000000, 0x3f000000);
 }

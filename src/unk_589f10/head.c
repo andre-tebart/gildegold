@@ -156,7 +156,7 @@ extern GAPDATA full_data_62510c[];
 extern GAPDATA full_data_936476[];
 extern unsigned char init_PlayerProfile;
 extern unsigned char kb_Last;
-extern void main_Unk5361d0(void);
+extern int main_Unk5361d0(int mask, int flag);
 
 #define U_I(a) (*(int *)(a))
 #define U_B(a) (*(unsigned char *)(a))

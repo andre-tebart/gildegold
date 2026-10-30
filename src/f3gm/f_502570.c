@@ -16,8 +16,8 @@ int d3t_SceneIndex();                     /* 0x411be0 */
 int ch_Delete();                     /* 0x4028a0 */
 int gm_Unk50a0f0(int y);                     /* 0x50a0f0 */
 void sv_MoveToGroup(unsigned char *o, short *it, int c, char *g);                     /* 0x524260 */
-int he_Unk5538b0();                     /* 0x5538b0 */
-int he_Unk568aa0();                     /* 0x568aa0 */
+void he_Unk5538b0(unsigned short *p);                     /* 0x5538b0 */
+void he_Unk568aa0(int ev);                     /* 0x568aa0 */
 void d3io_NoopCallback();                     /* 0x44ee40 */
 int amt_ClearOffices();                     /* 0x4e6d80 */
 void unk_Unk503c60(int c, int mode);                     /* 0x503c60 */

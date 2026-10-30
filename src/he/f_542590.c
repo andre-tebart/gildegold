@@ -2,7 +2,7 @@
 
 int ai_Unk493be0();
 int unk_Unk4fae50();
-int ai_Unk5a8e10();
+void ai_Unk5a8e10(char *param_1, char *param_2, int param_3);
 
 void he_Unk542590(int ev)
 {

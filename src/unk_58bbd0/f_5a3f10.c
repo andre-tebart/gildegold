@@ -9,7 +9,7 @@
    the frame slots of the message and the two gates are from the disassembly */
 
 int he_Unk553cc0(); int gm_Unk509120(); void snd_PlayFavourComment(void); 
-int sv_OpenPlayerBar(); int ai_Unk5b2180(); int sv_ClosePlayerBar();
+void sv_OpenPlayerBar(int a, char k); int ai_Unk5b2180(); void sv_ClosePlayerBar(void);
 
 int ai_Unk5a3f10(int param_1)
 {

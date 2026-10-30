@@ -20,7 +20,7 @@ int io_PrintText(char *fmt, ...); int sv_CreateFormSlider(); int d2_GetWinObj(in
    declaration for now: 0x5d34b0 pushes six arguments to the two-parameter d2.c function, see @original
    at its call; the prototype below covers 0x5d8080. */
 int d2_GetViewWin();                        /* 0x475ff0, d2.c: window i of a view, -1 if out of range */
-int gm_BuildingSkill(struct AIBLD *bld, int a, int b); /* 0x5092e0, f3gm.c: the building skill (ai.h's
+int gm_BuildingSkill(unsigned char *b, unsigned k, int flag); /* 0x5092e0, f3gm.c: the building skill (ai.h's
                                                prototype; f3snd.h's building view is unsigned char *) */
 char *gv_FindAccused(char *c, int max, int *ids, int *cnt);  /* 0x4f41b0, gv.c: the character with the
                                                most records of its table not yet paired with c */

@@ -9,7 +9,7 @@ typedef struct TSTEXSIZE {          /* the parts of a texture slot (ts_texture.h
 
 void d3_DirToWorld(struct XOBJ *obj, float *in, float *out);                          /* 0x458810 */
 unsigned char d3_ClipBox(void *box, float *zmin, float *zmax);                                           /* 0x439650 */
-void dd_FillSurface(struct IDirectDrawSurface4 *s, int a, int b);                         /* 0x41e0a0 */
+char dd_FillSurface(LPDIRECTDRAWSURFACE4 surf, RECT *rect, DWORD color);                         /* 0x41e0a0 */
 void * dd_LockSurfaceFlags(LPDIRECTDRAWSURFACE4 surf, DWORD flags);                               /* 0x41de30 */
 void dd_UnlockSurface(LPDIRECTDRAWSURFACE4 surf);                                       /* 0x41e740 */
 void d3d_BuildMipmaps(LPDIRECTDRAWSURFACE4 tex, DDSURFACEDESC2 *ddsd);                                /* 0x4371d0 */

@@ -5,7 +5,7 @@
    0x515960 (0x1df6, 4); click 0 (0x520f90 (4)) closes 0x4c5f60 (-4) and runs 0x5ccc10 (0x42ec00 (6) &
    0xffff), return 1; click 1 sets 0x6f22a0; the pump 0x5309a0 (this, 0x657c7) and the end 0x4758f0. */
 
-int ai_EspionageOverviewHandler(int param_1)  /* @original: the callers push (c, m); the draft body reads its own byte offsets of the parameters */
+int ai_EspionageOverviewHandler(int param_1, int *m)  /* m: the handler's second argument (unused here): the callers push (c, m); the draft body reads its own byte offsets of the parameters */
 {
     int win;
     int ret;

@@ -135,7 +135,7 @@ int ai_Unk4a9fa0(struct AIPER *p, unsigned char *in, unsigned char *out);       
 extern int ai_Unk600e5c[3];                                                      /* 0x600e5c */
 int ai_Unk4aa120(int a, struct AIPER *p, int c, unsigned char *in, unsigned char *m);  /* 0x4aa120 */
 int ai_Unk4aa430(struct AIPER *p, unsigned char *in, unsigned char *out);              /* 0x4aa430 */
-int he_Unk553db0(AIPER *p, AIPER *c, int *k);                                    /* 0x553db0 */
+int he_Unk553db0(unsigned short *a, int b, int *count);                                    /* 0x553db0 */
 int ai_Unk4aa580(struct AIPER *p, int c, unsigned char *m);                             /* 0x4aa580 */
 int ai_Unk4aa6a0(struct AIPER *p, unsigned char *in, unsigned char *m);                 /* 0x4aa6a0 */
 int ai_Unk4a5a30(AIPER *p, unsigned int fl, int n, unsigned short *ids, float lo, float hi, unsigned short *id); /* 0x4a5a30, also in unk_4a3af0.h */
@@ -156,16 +156,16 @@ int ai_Unk4ab080(struct AIPER *p, int *a, int *b);                              
 void ai_Unk4c5d40(void *p);                                                     /* 0x4c5d40 */
 void cm_SendProofExecuted(int a, int b);                                             /* 0x4c4ed0 */
 int ai_Unk4ab2c0(struct AIPER *p, int *a, int *b);                                      /* 0x4ab2c0 */
-int gm_BathObjectCount(AIBLD *b);                                                      /* 0x50cf60 */
+int gm_BathObjectCount(char *b);                                                      /* 0x50cf60 */
 int amt_GetKindLevel(int k);                                                         /* 0x4e7c40 */
 unsigned int ai_Unk4a61d0(AIPER *p, unsigned int a, unsigned int fl, float lo, float hi, int d, unsigned short *id); /* 0x4a61d0, also in unk_4a3af0.h */
 int ai_Unk4ab3e0(int a, AIPER *p, int c, unsigned char *m, unsigned char *m2);  /* 0x4ab3e0 */
-void ai_GypsyDeliveryText(AIPER *o, int n, AIPER **who);                                 /* 0x5a9470 */
+void ai_GypsyDeliveryText(unsigned short *param_1, int param_2, int *param_3);                                 /* 0x5a9470 */
 int ai_Unk4ab6b0(AIPER *p, unsigned char *m, unsigned char *m2);                 /* 0x4ab6b0 */
-int gm_CurseObjectCount(AIBLD *b);                                                      /* 0x50cfd0 */
+int gm_CurseObjectCount(char *b);                                                      /* 0x50cfd0 */
 int ai_Unk4ab7f0(int a, AIPER *p, int c, unsigned char *m);                     /* 0x4ab7f0 */
 int ai_Unk4ab9f0(AIPER *p, unsigned char *m);                                    /* 0x4ab9f0 */
-int ai_FindCurseEvent(AIBLD *b);                                                      /* 0x5741d0 */
+char *ai_FindCurseEvent(char *a);                                                      /* 0x5741d0 */
 int ai_Unk4abac0(int a, AIPER *p, int c, unsigned char *m);                     /* 0x4abac0 */
 int ai_Unk4abc60(AIPER *p, unsigned char *m);                                    /* 0x4abc60 */
 int ai_Unk4abd00(int a, AIPER *p, int c, unsigned char *m);                     /* 0x4abd00 */

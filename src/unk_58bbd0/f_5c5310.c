@@ -11,7 +11,7 @@
    0x6f22a0 = 2; the exit 0x4758f0. ROUGH: the page / row coordinates and the condition ladder of the
    bottom buttons are comments */
 
-int gm_BirthDate(); int gm_BirthDate2(); float gm_CharAge(); int gm_GetGoodsValue();
+void gm_BirthDate(char *c, unsigned *out); int gm_BirthDate2(); float gm_CharAge(); int gm_GetGoodsValue();
 void ai_ShowMissions(int owner); int ai_Unk5cf260(); int ai_Unk5cf4f0(); int ai_Unk5c6050();
 
 void ai_Unk5c5310(short *param_1, int param_2)

@@ -68,9 +68,9 @@ const char d3_ScrollPool[64] = {
 /* d3_ScrollSpeed: view of d3_ScrollPool (tools/data_views.py) */
 /* d3_AnimDiv: view of d3_ScrollPool (tools/data_views.py) */
 
-void d3d_CreateTexture(unsigned int size, DDPIXELFORMAT *fmt, IDirectDrawSurface4 **surf,
-                         IDirect3DTexture2 **tex, int a, int b, unsigned char mips);           /* 0x4383d0 */
-void d3d_SetSurfacePalette(int unk, IDirectDrawSurface4 *surf, int a, int b);                        /* 0x438180 */
+
+void d3d_CreateTexture(DWORD size, DDPIXELFORMAT *pf, LPDIRECTDRAWSURFACE4 *surf, LPDIRECT3DTEXTURE2 *surftext, DWORD n, BYTE *pal, unsigned char mips);           /* 0x4383d0 */
+void d3d_SetSurfacePalette(DDSURFACEDESC2 *desc, LPDIRECTDRAWSURFACE4 surf, DWORD n, BYTE *pal);                        /* 0x438180 */
 struct VFSDIR * vfs_FindDir(char *path, struct VFSDIR *d);                                                      /* 0x42f7e0 */
 char * vfs_GetPath(char *name, struct VFSDIR *d, struct VFSDIR *stop, char *out);                                   /* 0x42fca0 */
 DWORD dd_RGB(unsigned char r, unsigned char g, unsigned char b);                                              /* 0x41e670 */
@@ -78,8 +78,8 @@ char file_Exists(char *path);                                                   
 unsigned char bmp_GetInfo(char *path, int *w, int *h, int *bpp);                                     /* 0x401410 */
 unsigned char bmp_Load(char *path, unsigned char *data, unsigned char *pal, int flags);       /* 0x4014d0 */
 unsigned int util_Hash(unsigned char *buf, unsigned int len);                                                /* 0x401000 */
-void d3d_LoadTexture(char *path, DDPIXELFORMAT *fmt, IDirectDrawSurface4 **surf, IDirect3DTexture2 **tex,
-                       int mips, unsigned int w, unsigned int h, int bpp);                  /* 0x437390 */
+
+void d3d_LoadTexture(char *name, DDPIXELFORMAT *pf, LPDIRECTDRAWSURFACE4 *surf, LPDIRECT3DTEXTURE2 *surftext, unsigned char mips, DWORD w, DWORD h, int bpp);                  /* 0x437390 */
 void ts_SyncAliases(TSTEXTURE *tex);                                                        /* 0x460de0 */
 void tex_Reload(TSTEXTURE *tex, char keep);                                                 /* 0x460e50 */
 TSTEXTURE *tex_CreateAlias(TSTEXTURE *src, TSFLAGS flags, char group);                      /* 0x4614f0 */

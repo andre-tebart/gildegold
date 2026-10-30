@@ -1,6 +1,6 @@
 /* 0x544840, a Ghidra miss (disassembled; 3584 B): the run handler of the duel event (see 0x544630): a = +0xac, b = +0xb0 are the duellists (of different parties); the state (+0x70) 0 = the preparation (0x5c6530 decides: -0x405 / -0x406 = one of them gives up (news 0x42f6 / 0x42f7), -0x403 = the followers are told (news 0x1ceb ..), 0 = the same for the other kind, else another round: +0xb8 counts up to +0xb9 rounds, a round of a kind 6 figure says 0x1cf3 / 0x1cf4 and draws new slots 0x544550), 1 = the duel is over: both link each other (+0x5c, +0x50), 4 = clock only, 5 = the result: when they are each other's opponent the relation changes by 0x7f - table[a][b] (0x7e5360, 0x300 per row) and a message record of 0x114 bytes (type 6) is posted (0x4c4fa0), else the news 0x1ceb ..; a free (the state -1 / -2) clears the flag 0x40000 of the figure without a partner (ROUGH) */
 
-int ai_Unk5c6530();
+unsigned int ai_Unk5c6530(int param_1, int param_2);
 int unk_Unk4f25d0();
 int gv_EntryIndex(char *r, int *e);
 int unk_Unk4f0900();

@@ -41,7 +41,7 @@ extern unsigned int ai_Unkf8121c;
 extern int ai_Unk760548;
 extern int ai_Unk760610;
 extern GAPDATA full_data_7604e8[];
-extern void main_Unk537b60(void);
+extern void main_Unk537b60(int kind, int cur, int total);
 extern char ls_ClearObjectFlag();
 extern char ls_HookBuildingCB();
 extern int ai_Unk7d6a40;
@@ -133,7 +133,7 @@ extern int f3gm_ObjectCount;                /* 0x6f1bdc */
 extern char *ai_Unk5fb5b0;              /* 0x5fb5b0, the current scene */
 struct D3SM * d3sm_Create(struct D3TERRAIN *t, int size, int mask);  /* 0x45eeb0, d3_sm.h */
 char d3_LoadScene(char *name, void *f, void (*progress)(int a, int i, int n));                     /* 0x44be60 */
-void d3if_ClearScene();                    /* 0x447e60 */
+char d3if_ClearScene(int index);                    /* 0x447e60 */
 void d3fl_SetDetail(unsigned int n);                    /* 0x43f8a0 */
 int ahm_ReadRecord(void *f, unsigned char *p);  /* 0x4ed040, ahm.h's prototype (that header's `const char *tag` for mem_Alloc conflicts with gv.h) */
 

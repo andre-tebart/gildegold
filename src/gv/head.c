@@ -19,6 +19,7 @@ int d3t_CreateEarth();  /* 0x4168e0, d3_tools.h: as d3t_CreateSmoke; @original t
 #define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
 extern char ai_Unk91f700[];
 #define GAPDATA __declspec(align(1)) unsigned char
+#define ai_Unk5a9e40K ((int (*)())ai_Unk5a9e40)  /* 0x5a9e40: @original the call passes more arguments than the draft definition names, compiled without a prototype (as before the definition's spelling reached this unit) */
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 extern int ai_Unk6f1b88;

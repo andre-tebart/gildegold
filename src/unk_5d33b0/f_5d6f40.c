@@ -31,7 +31,7 @@ void sv_PumpNet(void);                                             /* 0x52fe00, 
 void sv_BroadcastText(unsigned fl, char *t);  /* 0x52fcf0, sv.c: sends t as the network message 0xe and
                                                  shows it until the answer, then clears the status line */
 int ls_WriteSaveHeader(int f, unsigned flags); /* 0x5194c0, ls.c: writes the save header (the flag word) */
-int ls_ReadSaveHeader(int f, void *h);         /* 0x51cee0, ls.c: reads the save header into h */
+int ls_ReadSaveHeader(int f, int *h);         /* 0x51cee0, ls.c: reads the save header into h */
 
 /* cm.h's save-request state (the 0x0f the network message carries) and the acknowledgement slots. */
 extern int cm_RequestedSaveSlot;        /* 0x6f25c8, cm.h: the save slot the request asked for */

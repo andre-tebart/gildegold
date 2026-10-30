@@ -6,7 +6,7 @@ void he_Unk55e3a0(int ev);
 void he_Unk55eba0(int p);
 void he_Unk56fbc0(int rec, unsigned short num);
 
-int d3t_SetColor();
+void d3t_SetColor(D3OBJECT *obj, unsigned char r, unsigned char g, unsigned char b);
 struct D3OBJECT;
 char d3if_Delete(struct D3OBJECT *obj);  /* 0x447190, d3_interface.h */
 char d3if_Show(struct D3OBJECT *obj, char show);

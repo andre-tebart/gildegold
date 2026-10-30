@@ -2,7 +2,7 @@
 
 float ahm_ShareProgress();
 float ahm_Share();
-int ai_Unk5a9b50();
+void ai_Unk5a9b50(int param_1, int param_2, int param_3, int param_4);
 int ahm_SendSetShare();  /* @original: he.c's call at 14930 passes 2 arguments to ahm.h's 3-parameter prototype, so this TU was compiled against the non-prototype declaration */
 
 void he_Unk56d990(int ev)

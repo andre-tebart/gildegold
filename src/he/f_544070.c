@@ -3,9 +3,9 @@
 float gm_GetSkill(char *c, int skill);
 void gm_SendMoneyDelta(int a, int b);
 int unk_Unk4f2e30();
-int ai_Unk5a8d00();
-int ai_Unk5a8d40();
-int ai_Unk5a8d80();
+void ai_Unk5a8d00(int param_1);
+void ai_Unk5a8d40(int param_1);
+void ai_Unk5a8d80(int param_1, int param_2);
 
 void he_Unk544070(int ev)
 {

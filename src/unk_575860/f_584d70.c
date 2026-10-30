@@ -19,7 +19,7 @@
    0x521150 (U_I (0x144a40c), 4) and 0x52ae40 (); the escape 0x14673a0 -> 0x6f22a0 = 1; the pump 0 ->
    0x52ae40 (), 0x525440 (), 0x4758f0 (window), 0x52d7a0 () */
 
-int sv_CheckCharacterFlag(); char * he_FindEvent(int n, ...); char * he_NextEvent(void); int sv_Unk52e6d0(); void d2_SetCaption();
+int sv_CheckCharacterFlag(); char * he_FindEvent(int n, ...); char * he_NextEvent(void); void sv_Unk52e6d0(int f, int b, int c); void d2_SetCaption();
 void ai_Unk58bbd0(void); int ai_Unk58d720(); void ai_Unk58dd00(int param_1, int param_2, int param_3, int param_4);
 
 void ai_GypsyHelperWindow(char *b)

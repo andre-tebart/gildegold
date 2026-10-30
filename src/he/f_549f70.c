@@ -2,7 +2,7 @@
 
 int sv_Unk524770();
 void cm_SendKillCharacter(int a, int b);
-int ai_Unk5a9240();
+void ai_Unk5a9240(int param_1);
 float gm_Unk505440();
 float util_RandomF2();
 

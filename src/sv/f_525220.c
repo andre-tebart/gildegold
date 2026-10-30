@@ -22,7 +22,7 @@ void d2_ClearPointerItems(void);                     /* 0x476c70 */
 void sv_UpdatePanel(void);                     /* 0x52a050 */
 int d2_WinOpenPicStyled();                     /* 0x473350 */
 void gm_ClockToDate(struct GCLOCK *c, unsigned char *out);                     /* 0x4fe2c0 */
-int ai_InitWind();                     /* 0x5dbc30 */
+void ai_InitWind(int type, int id, float *from, float *to);                     /* 0x5dbc30 */
 void d3t_FreeSnow();                     /* 0x414b50 */
 struct D3TRAIN * d3t_CreateRain();                     /* 0x413b30 */
 struct D3TRAIN; void d3t_SetRain(struct D3TRAIN *rain, int n, ...);                     /* 0x413d30 */

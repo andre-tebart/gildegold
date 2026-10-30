@@ -19,8 +19,8 @@ extern const char d3_ScrollPool[];
 void d3_RadixSort(unsigned int n, unsigned char twobytes);                                                      /* 0x43b300, sorts d3_SortBuf */
 void d3_TransformMeshes(void);                                                                /* 0x43d840 */
 struct D3VECTOR4; void d3_TriNormal(struct D3VECTOR4 *a, struct D3VECTOR4 *b, struct D3VECTOR4 *c, struct D3VECTOR4 *n);               /* 0x454700 */
-void d3s_ShadowTriangle(float *uv, unsigned char *h, unsigned char *data, int size, unsigned char flags,
-                  D3SMENTRY *entries, int radius);                                       /* 0x45a2e0 */
+
+void d3s_ShadowTriangle(float *p, unsigned char *c, unsigned char *dst, int pitch, unsigned int flags, char *base, int radius);                                       /* 0x45a2e0 */
 void d3_MatTranspose(D3MATRIX *src, D3MATRIX *dst);                                        /* 0x454040 */
 extern int d3_Busy;                         /* 0x633b04 */
 const int d3_TriEdge[3][2] = { { 1, 2 }, { 2, 0 }, { 0, 1 } };  /* 0x5eba80, {1, 2}, {2, 0}, {0, 1} */

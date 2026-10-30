@@ -1,9 +1,9 @@
 /* 0x437390, loads an image file into a texture surface of format pf (scaled to the card's limits),
    with mip levels; palettized formats get the image's palette, others a color key from color 0.
-   @deep behaviour: every code hunk is shape - the loadddsd/pal/adw stack-slot assignment (loadddsd at [ebp-0xb8] vs [ebp-0x9c], its field stores at +0x48/+0x68 move with it) and the dead-parameter slot reuse (stretcht/tempt in the w/h slots, [+0x1c] vs [+0x20], flipping between the level loop and the i loop), operand order [esi+eax]/[eax+esi] in the name copy, moved stores, tail nops; control flow and the w != ddsd.dwHeight quirk follow the original; readability met */
+   bpp (the file's bits per pixel, which ts_texture passes) is not read. @deep behaviour: every code hunk is shape - the loadddsd/pal/adw stack-slot assignment (loadddsd at [ebp-0xb8] vs [ebp-0x9c], its field stores at +0x48/+0x68 move with it) and the dead-parameter slot reuse (stretcht/tempt in the w/h slots, [+0x1c] vs [+0x20], flipping between the level loop and the i loop), operand order [esi+eax]/[eax+esi] in the name copy, moved stores, tail nops; control flow and the w != ddsd.dwHeight quirk follow the original; readability met */
 
 void d3d_LoadTexture(char *name, DDPIXELFORMAT *pf, LPDIRECTDRAWSURFACE4 *surf, LPDIRECT3DTEXTURE2 *surftext,
-                     unsigned char mips, DWORD w, DWORD h)
+                     unsigned char mips, DWORD w, DWORD h, int bpp)
 {
     char msg[512];
     char namebuf[512];

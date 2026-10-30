@@ -4,9 +4,9 @@
 struct SBSAMPLE * sb_PlaySample();                     /* 0x426fa0 */
 int ai_Unk576340();                     /* 0x576340 */
 int ai_Unk575860();                     /* 0x575860 */
-int ai_Unk591170();                     /* 0x591170 */
-int anm_Update();                     /* 0x4bb860 */
-int ai_Unk59e0a0();                     /* 0x59e0a0 */
+void ai_Unk591170(void);                     /* 0x591170 */
+void anm_Update(void);                     /* 0x4bb860 */
+void ai_Unk59e0a0(int param_1, unsigned short param_2);                     /* 0x59e0a0 */
 void sv_ReleaseNamePlates(void);                /* 0x52e190 */
 void gm_GetGebaeudeHauptraum(unsigned char *b);                     /* 0x501ce0 */
 

@@ -2,7 +2,7 @@
 
 int gm_ClockSeason();
 int ahm_HasRecord();
-int ai_Unk5a9c30();
+void ai_Unk5a9c30(int param_1, int param_2, int param_3);
 int ahm_SendAddPlace();
 int gm_MinutesBetween();
 int he_Unk56ddc0();
@@ -31,7 +31,7 @@ void he_Unk56d3d0(int ev)
         v = gm_Query(*(int *)(*(int *)(c + 0x16c) + 0x5d), 2, 6, 0);
         h = gm_FindChar(*(int *)(ev + 0xc));
         if (h != 0)
-            ai_Unk5a9c30(h, c, v, *(int *)(ev + 0xb0));
+            ai_Unk5a9c30K(h, c, v, *(int *)(ev + 0xb0));
         ahm_SendAddPlace(c, *(int *)(ev + 0xb0));
         sv_MoveToGroup(0, 0, *(unsigned short *)c, 0);
         he_Unk53e1f0((int *)ev);

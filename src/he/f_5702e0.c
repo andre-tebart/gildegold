@@ -1,9 +1,9 @@
 /* 0x5702e0, the run of the event 0x89 (the state machine of the work at the building +0xac by the character +0xb4, the second character +0xb0): -1 / -2 release the character and free; states 0 .. 4 as in the code (0x524260, 0x4c52e0 with the text 0x628ea4, the progress 0x4fe140, 0x504e20 / 0x5a9990 / 0x5a99e0, 0x5a9a30 / 0x5a9af0); ROUGH */
 
-int ai_Unk5a9990();                 /* 0x5a9990 */
-int ai_Unk5a99e0();                 /* 0x5a99e0 */
-int ai_Unk5a9a30();                 /* 0x5a9a30 */
-int ai_Unk5a9af0();                 /* 0x5a9af0 */
+void ai_Unk5a9990(int param_1);                 /* 0x5a9990 */
+void ai_Unk5a99e0(int param_1);                 /* 0x5a99e0 */
+void ai_Unk5a9a30(int param_1, unsigned short *param_2, unsigned short *param_3, int param_4);                 /* 0x5a9a30 */
+void ai_Unk5a9af0(int param_1, unsigned short *param_2, unsigned short *param_3);                 /* 0x5a9af0 */
 
 void he_Unk5702e0(int ev)
 {

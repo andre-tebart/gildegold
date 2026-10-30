@@ -6,7 +6,7 @@
    the record 0x4f2720 +0x18 by the byte +1: 0 / +0x13dd / +0x13e6 / +0x13ec); the pump 0x5309a0 (this,
    0x677c7) and 0x52f530 / 0x52d7a0 at the end */
 
-int sv_Unk52f360(); int sv_Unk52f600(); int sv_Unk52f530(); int gv_TableRecordText();
+int *sv_Unk52f360(int a, int b, char n, ...); void sv_Unk52f600(int bk); void sv_Unk52f530(int *bk); int gv_TableRecordText();
 void ai_Unk5c2410();
 
 int ai_Unk5c2160(int param_1)

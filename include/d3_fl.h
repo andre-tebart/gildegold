@@ -342,7 +342,7 @@ int map_PickScreen(D3FLMAP *map, int x, int y, float r, D3VECTOR *out);         
 int map_Region(D3FLMAP *map, int x, int y);                                             /* 0x446910 */
 void * dd_LockSurfaceFlags(LPDIRECTDRAWSURFACE4 surf, DWORD flags);                                     /* 0x41de30, dd_vesa.c */
 void dd_UnlockSurface(LPDIRECTDRAWSURFACE4 surf);                                                      /* 0x41e740, dd_vesa.c */
-void d3d_PrecacheTexture(void *t);                                                      /* 0x4360e0, d3_d3d.c */
+void d3d_PrecacheTexture(LPDIRECT3DTEXTURE2 t);                                                      /* 0x4360e0, d3_d3d.c */
 void d3d_BuildMipmaps(LPDIRECTDRAWSURFACE4 tex, DDSURFACEDESC2 *ddsd);                                           /* 0x4371d0, d3_d3d.c */
 D3FLTEX *tex_Prepare(D3FLTEX *tex);                                                     /* 0x4614c0, ts_texture.c */
 

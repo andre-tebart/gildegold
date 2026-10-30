@@ -72,7 +72,7 @@ void ai_CurseWindow(int building)
             sv_PopRequest = 1;
         } else if (d2_ClickedId != -1) {
             if (d2_PointerObj == ids[0]) {
-                if (sv_CheckGoodAmount(ai_CharsC + ai_PlayerId * 0x21c, v, ai_OwnPlayer) != 0) {
+                if (sv_CheckGoodAmountB(ai_CharsC + ai_PlayerId * 0x21c, v, ai_OwnPlayer) != 0) {
                     cm_SendSetField(((AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c))->netId, 0x1cc, 4, 0x10, 0);
                     if (ai_PlayerId != ((CURSEBLD *)building)->owner)
                         cm_SendMoveGoodsUnchecked(-1, ((AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c))->netId, ai_OwnPlayer,

@@ -30,6 +30,7 @@ extern char gm_PlayerRecords[];
 #include "ecmd.h"
 #include "ts_texture.h"
 #include "unk_5d33b0.h"
+#define d2_PlaceMainWindowF ((void (*)(int, int))d2_PlaceMainWindow)  /* 0x475850 (d2.c: int view): @original the callers pass the placement flags too, which the original's tail jump leaves on the stack for d2_PlaceWindowScaled */
 #include "ai.h"
 #include "gfx.h"
 #include "dd_vesa.h"
@@ -234,7 +235,7 @@ extern GAPDATA full_data_6253b0[];
 extern GAPDATA full_data_6253b4[];
 extern GAPDATA full_data_6253b8[];
 extern GAPDATA full_data_760454[];
-extern unsigned char he_RunHandlers;
+extern void (*he_RunHandlers[5544])(unsigned char *);
 extern int sv_PanelForm;
 extern int sv_PopRequest;
 extern int sv_ViewRectBottom;

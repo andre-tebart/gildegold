@@ -1,6 +1,6 @@
 /* 0x4fa700, the wage figures of the character id for the report: out[0] = the byte +0x166, out[1] = +0x169, out[2] = the kind 0x23 .. 0x27 by the highest of the flag bits 0x200 .. 0x2000 of the int +0x1cc, out[4] / [8] / [0xc] = the three amounts (0x4e6f80 of the kinds, 0 when the character is no active person); flag != 0 sends the amounts to the player (and for kind 3 a random extra, 0x4c5f60). Returns 1 when amounts were computed. ROUGH */
 
-int gm_CharacterWages(unsigned id, int flag, unsigned char *out)  /* @original: the callers pass a 16-bit id and the original call site loads it without an extension (0x4f5a80: mov cx,[esi]), so the prototype takes unsigned short; the draft body masks with and id,0xffff */
+int gm_CharacterWages(unsigned short id, int flag, unsigned char *out)  /* the callers pass a 16-bit id and the original call site loads it without an extension (0x4f5a80: mov cx,[esi]) */
 {
     char *c;
     unsigned f;
@@ -9,7 +9,6 @@ int gm_CharacterWages(unsigned id, int flag, unsigned char *out)  /* @original: 
     int r[9];
     unsigned char b;
 
-    id &= 0xffff;
     res = 0;
     c = ai_Chars[id];
     out[0] = c[0x166];

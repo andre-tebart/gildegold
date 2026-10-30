@@ -11,7 +11,7 @@ int d2_CreateChildWindow(short x, short y, short w, short h, unsigned int flags,
 void d2_SetObjFont();
 int d2_FindPic();
 int udp_FindServers(u_short port, DWORD timeout, struct UDPSERVER *list, int max);
-int sv_OpenMessageBox();
+int sv_OpenMessageBox(int text, unsigned char flags);
 int ls_ReadSaveHeader();
 
 int main_Unk532da0(int host)
@@ -29,7 +29,7 @@ int main_Unk532da0(int host)
     last = -1;
     f = d2_OpenForm(0, 0, "Menu\\SEARCH_NETWORK");
     d2_PlaceViewWindows(f, 1);
-    d2_PlaceMainWindow(f, 2);
+    d2_PlaceMainWindowF(f, 2);
     d2_SetForm(f, 0);
     sv_FitForm(d2_LastWindow);
     d2_SetForm(f, 1);

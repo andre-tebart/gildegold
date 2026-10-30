@@ -7,7 +7,7 @@
    caption 0xda of the control 0x473540 with the quantity; the pump 0x5309a0 (0x677c7) */
 
 
-void d2_CenterObj(); int gm_Unk5034b0(); int gm_Unk50a970();
+void d2_CenterObj(); void gm_Unk5034b0(int o); int gm_Unk50a970();
 
 void ai_Unk5ae240(int param_1)
 {

@@ -3,7 +3,7 @@
    +1 field of the record at +0x16c of param_2, the +2 field of param_3 and the key "_NACHRICHTEN_DOMIZIL_03"
    0x62c3b8 */
 
-int d2_WinOpenPic(short x, short y, int pic, int win); int io_CharacterName(); 
+int d2_WinOpenPic(short x, short y, int pic, int win); int io_CharacterName(int id, unsigned char c, unsigned char kind, char *out); 
 /* the ai.h view of 0x50c520 (the opinion of two characters, word arguments as the original pushes them) */
 int gm_Opinion(int a, int b);
 

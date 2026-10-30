@@ -1,11 +1,11 @@
 /* 0x548230, the run handler of a one-shot event: state 0 (flag 2 of +0x78) posts it again with the clock now, a freed state ends it (ROUGH) */
 
 int gm_GetWorth(unsigned short id);
-int gm_Unk50ca10();
+void gm_Unk50ca10(unsigned short a, int b);
 void ai_Unk4c6020(int a, int b, int c);
 void ai_Unk4c5870(int a);
 void ai_Unk4c59f0(unsigned char a, int b, int c, unsigned char d, unsigned char e, unsigned char f, const char *s);
-int ai_Unk5a91c0();
+void ai_Unk5a91c0(void);
 void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d);
 int ai_Unk4a63f0(struct AIPER *p, int a, __int64 mask, int c, float f, int *out);
 void amt_ChangeDistrictOpinion();
@@ -15,7 +15,7 @@ unsigned char * gm_BuildNext(void);
 int gm_ListAmount();
 unsigned short *gm_QueryNext(void);
 void cm_SendExSellObject(int a, int b, short c, int d, unsigned char e, int f);
-int gm_Unk50cad0();
+void gm_Unk50cad0(unsigned char *b, int d);
 float gm_GoodsPrice(unsigned id, unsigned char p);
 
 int gm_TitleGroup();

@@ -2,7 +2,7 @@
    0x502020 (id): 0 -> 0x589400 (the slot); else the +4 value through 0x4fe980: 0 while +4 is not -1 ->
    0x589400, else 0x503530 (the player word, id, that, 0) without bit 0 -> 0x589400 */
 
-char * gm_FindBuildingById(int id); int gm_FindObjectInst(int id); int unk_Unk503530();
+char * gm_FindBuildingById(int id); int gm_FindObjectInst(int id); unsigned unk_Unk503530(unsigned p1, unsigned char *b, unsigned short *o, int c);
 
 void ai_Unk589450(void)
 {

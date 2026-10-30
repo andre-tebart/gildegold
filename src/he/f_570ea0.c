@@ -17,7 +17,7 @@ char *gm_FindBuildingById(int id); /* 0x502020 */
 int unk_Unk4ef570(char *r, int i, unsigned char n);                 /* 0x4ef570 */
 int unk_Unk4f0c20();                 /* 0x4f0c20 */
 int gm_Unk509ee0(char *c, char p);                 /* 0x509ee0 */
-int ai_Unk5a9910();                 /* 0x5a9910 */
+void ai_Unk5a9910(unsigned short *param_1, int param_2, unsigned int param_3);                 /* 0x5a9910 */
 
 int he_Unk570ea0(int a, int b)
 {

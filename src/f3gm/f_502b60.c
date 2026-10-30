@@ -10,11 +10,11 @@ extern unsigned short ai_TimeHour;     /* 0x770ae4, the clock's hour (unaligned 
 extern char ai_Unk770ce4[];             /* 0x770ce4: the field +0x164 of the character records (stride 0x21c) */
 int ai_Unk5a86c0();                     /* 0x5a86c0 */
 int ai_Unk5a8560();                     /* 0x5a8560 */
-int sv_Unk5286a0();                     /* 0x5286a0 */
-int sv_Unk5282f0();                     /* 0x5282f0 */
+void sv_Unk5286a0(char *b);                     /* 0x5286a0 */
+void sv_Unk5282f0(char *b);                     /* 0x5282f0 */
 void ch_Unk402540();                     /* 0x402540 */
 int ch_Delete();                     /* 0x4028a0 */
-int ai_Unk5a9430();                     /* 0x5a9430 */
+void ai_Unk5a9430(int param_1, unsigned short *param_2);                     /* 0x5a9430 */
 int gm_FreeList();                     /* 0x500140 */
 int gm_TitlesLeft();                     /* 0x504ce0 */
 float gm_GetSkill(char *c, int skill);                     /* 0x504ec0 */

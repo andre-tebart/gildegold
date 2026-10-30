@@ -10,7 +10,7 @@
 
 unsigned char * gm_BuildQuery(int n, ...); unsigned char * gm_BuildNext(void); char unk_Unk5020e0(int k, int c);
 int sv_MessageBox(); char *_strupr(char *); int sprintf(char *buf, const char *fmt, ...); char * vfs_GetPath();
-struct D3OBJECT * d3_LoadGroup(); int d3t_InflateObjectTree(); int d3t_DropObject();
+struct D3OBJECT * d3_LoadGroup(); void d3t_InflateObjectTree(D3OBJECT *obj); int d3t_DropObject();
 int ai_Unk527e90();
 struct D3OBJECT;
 char d3if_Delete(struct D3OBJECT *obj);  /* 0x447190, d3_interface.h */

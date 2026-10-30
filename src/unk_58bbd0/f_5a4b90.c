@@ -7,7 +7,7 @@
    0x4c4b70 / 0x4c2d20 / 0x52ae40, or shows the text 0x144094c with none; a right click only sets 0x6f22a0;
    the exit 0x4758f0 / 0x525440 / 0x52d7a0 */
 
-int sv_Unk524990();
+void sv_Unk524990(unsigned char *g);
 
 void ai_Unk5a4b90(int param_1)
 {

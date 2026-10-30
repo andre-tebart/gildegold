@@ -3,7 +3,7 @@
    0x5ebbe8), raises per +0xac for each of the count; then, with the random check 0x5eb780 / 0x5eb9f0, the first free word
    +0xc8 .. of the event gets the id 0x5a9e90 (index, ev +0xc8) */
 
-int ai_Unk5a9e90();                 /* 0x5a9e90 */
+unsigned short ai_Unk5a9e90(int param_1, unsigned short *param_2);                 /* 0x5a9e90 */
 
 void ai_Unk575030(int ev)
 {

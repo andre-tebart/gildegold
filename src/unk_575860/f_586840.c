@@ -11,7 +11,7 @@
    0x587340, VERSICHERUNG -> 0x587370, LIEGEPLAN -> 0x5871c0, TRANSPORT -> 0x5af1a0; with the byte 0x6f231c
    negative and GRAB_MIETEN clicked -> 0x5871e0 (rec); 0x5912c0 () each frame */
 
-void sv_ReleaseNamePlates(void); void ai_Unk587c90(); int sv_RegisterNamePlate(); int ai_TradeContactChecks();
+void sv_ReleaseNamePlates(void); void ai_Unk587c90(); int sv_RegisterNamePlate(); void ai_TradeContactChecks(void);
 void ai_Unk586e40(); void ai_Unk587370(); void ai_Unk586ab0(); void ai_Unk587300();
 void ai_Unk5871e0(); void ai_Unk587340(); void ai_Unk5871c0();
 

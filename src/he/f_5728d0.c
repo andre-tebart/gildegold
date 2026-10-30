@@ -1,7 +1,7 @@
 /* 0x5728d0, the exam result: the building 0x501190 (1, 1, +0xac) of the kind 0x1d (0x7e3f30) and the character +0xc: 0x4f0700 (character, building, +0xb0, +0xb4, +0xbc, +0xb8); when the character is not the building's owner record and its kind is 6 / 7: 0x5a97e0 (the owner record, character, building, +0xb0, +0xb8, (int)(+0xb8 * 0x5ee034[+0xb0])) */
 
-int ai_Unk5a97e0();                 /* 0x5a97e0 */
-int ai_Unk5a9880();                 /* 0x5a9880 */
+void ai_Unk5a97e0(int param_1, unsigned short *param_2, int param_3, int param_4, int param_5, int param_6);                 /* 0x5a97e0 */
+void ai_Unk5a9880(int param_1, unsigned short *param_2, int param_3, int param_4);                 /* 0x5a9880 */
 int unk_Unk4f0700(int *g, char *o, int v, int b, short s, int x);                 /* 0x4f0700 */
 int unk_Unk4f0900();                 /* 0x4f0900 */
 void he_Unk5728d0(int ev);          /* 0x5728d0 */

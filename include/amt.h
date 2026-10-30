@@ -296,7 +296,7 @@ int amt_SaveAemter(void *f);            /* 0x4ea690 */
 int amt_LoadAemter(void *f, int version);  /* 0x4ea7a0 */
 void amt_Unk4ea8e0(char *c);            /* 0x4ea8e0 */
 void amt_Unk4eaa00(unsigned int k);     /* 0x4eaa00 */
-float gm_Liking(int a, int b, int c);   /* 0x50c550 */
+float gm_Liking(unsigned a, unsigned b, int c);   /* 0x50c550 */
 int ls_Read(void *buf, int size, int count, int f);  /* 0x51c920, ls.c's read (true when the fread returned a positive count); ls.c has no header yet */
 unsigned vfs_fwrite(void *buf, int size, int n, struct VFSFILE *f);  /* 0x430e30 */
 

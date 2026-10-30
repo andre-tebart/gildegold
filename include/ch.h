@@ -329,8 +329,8 @@ char d3_GetHeightAt(struct D3SM *h, struct D3VECTOR *pos, int *px, int *pz, floa
 char d3sm_GetVertex(struct D3SM *h, int x, int z, struct D3VECTOR *out);                              /* 0x45f100 */  /* @original: the original callers read an int result (gv.h declares it int; ord.c's unk_Unk4f86a0 at 0x4f86a0 is byte-matched without the char widening) */
 char map_Pick(struct D3FLMAP *map, struct D3VECTOR *pos, char lod, int *x, int *y, float *h);             /* 0x4463b0 */
 void d3anim_ApplyRootMotion(D3OBJECT *obj, D3ANIMSLOT *s, int from, int to, int flags);       /* 0x4315c0 */
-void d3anim_PauseAnim(void *list, char *name);                                          /* 0x435810 */
-void d3anim_PlayAnim(void *list, char *name, char on);                                 /* 0x435870 */
+void d3anim_PauseAnim(D3ANIMCTL *ctl, char *name);                                          /* 0x435810 */
+void d3anim_PlayAnim(D3ANIMCTL *ctl, char *name, char on);                                 /* 0x435870 */
 int d3t_PlaceObjectV(struct D3OBJECT *camera, struct D3VECTOR *pos, struct D3VECTOR *dir, int unk, char flags); /* 0x411860 */
 void vfs_ToSlashes(char *path);                                                         /* 0x42ed10 */
 #define d3_LoadAnimFile ((int (*)(char *, char *, int))d3_LoadAnimStream)                    /* 0x44e4a0, returns int */

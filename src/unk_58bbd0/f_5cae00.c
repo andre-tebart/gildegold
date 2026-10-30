@@ -10,7 +10,7 @@
    0x521150 and sets 0x6f22a0; the second click sets 0x6f22a0; the pump 0x5309a0 (this, 0x657c7) and the
    end 0x4758f0, return 2. ROUGH: the record and the text buffer by offset. */
 
-int ai_CounterEspionage(int param_1)  /* @original: the callers push (c, m) (0x4f67c0); the draft body reads byte offsets of the one int param */
+int ai_CounterEspionage(int param_1, int *m)  /* m: the handler's second argument (unused here): the callers push (c, m) (0x4f67c0); the draft body reads byte offsets of the one int param */
 {
     int rec[0x3e];
     char text[0x200];

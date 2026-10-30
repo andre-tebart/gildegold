@@ -24,7 +24,7 @@ int unk_Unk4ed3f0(int *p)
                             m = 1;
                     }
                     if (ai_Chars[c][2] == 6)
-                        ai_Unk5a9e40(ai_Chars[c], o, m);
+                        ai_Unk5a9e40K(ai_Chars[c], o, m);
                 }
             }
         }

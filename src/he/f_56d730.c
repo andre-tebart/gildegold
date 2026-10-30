@@ -1,7 +1,7 @@
 /* 0x56d730, the run handler of the research event 0x96: like 0x56d3d0 but the record is 0x4eabe0 (the +0xb0 kind) and the clock is +0xc0; state 1 hands the result over (0x5a9bc0, 0x4ecc30 with +0xb4 + the record's +4), releases the building group and frees; state 0 takes the elapsed time off +0xb8 and retries after 5 until it is used up */
 
 struct AHMSLOT * ahm_FindSlot();
-int ai_Unk5a9bc0();
+void ai_Unk5a9bc0(int param_1, int param_2, int param_3, int param_4);
 int ahm_SendSetPlaceValue(char *c, int id, float v);
 
 void he_Unk56d730(int ev)

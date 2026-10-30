@@ -7,7 +7,7 @@
    buttons of param_1 + 1 at +0x5c and of param_2 + 2 at +0x60; the key 0x17 calls 0x599aa0 */
 
 void sv_ReleaseNamePlates(void); int d3t_PlaceAtObject(); void d2_SetBackgroundTexture(); 
-int sv_ClearNamePlates(); struct D3OBJECT * d3if_Pick(float x, float y, int flags, int mask); int gm_GetGoodsValue(); int gm_Unk509e30(void *list, unsigned char p);
+void sv_ClearNamePlates(void); struct D3OBJECT * d3if_Pick(float x, float y, int flags, int mask); int gm_GetGoodsValue(); int gm_Unk509e30(void *list, unsigned char p);
 int gm_PlayerFactor(int a, unsigned char k); int gm_Unk50a250(); int gm_Unk50a150(); void d2_EnableViewObjects();
 void he_MessageBoxQuickjump(int a1, int a2, char *text, char fl, int a5, int a6, int a7, char *jump, char *text2); void he_Unk53e1f0(); void d2_RadioClear(int g); int d2_CreateRadioGroup(int n, ...);
 int ai_PersonnelBook(); int ai_StorageWindow(); void ai_MasterLetterWindow(); int ai_OpenTransport();

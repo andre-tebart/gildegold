@@ -260,7 +260,7 @@ char d3t_GetBoundingSphere(struct D3OBJECT *obj, struct D3OBJECT *camera, struct
 int gm_IsBuildingKind(int n);           /* 0x4fe940, f3gm.c: 1 when the object prototype n is a building part */
 int gm_FindObjectProto(char *name);     /* 0x4fe900, f3gm.c: the object prototype of the name */
 int gm_FindBuildingKind(char *name);    /* 0x502060, f3gm.c: the building kind of the name */
-int unk_Unk503530(int p, void *b, void *o, int c);  /* 0x503530, f3gm.c: the permission bits of the character p in the building b (or the object o) */
+unsigned unk_Unk503530(unsigned p1, unsigned char *b, unsigned short *o, int c);  /* 0x503530, f3gm.c: the permission bits of the character p in the building b (or the object o) */
 void init_LocalData(void);
 unsigned char * gm_CreateBuilding(unsigned char kind, unsigned short owner);                     /* 0x501580 */
 
@@ -407,7 +407,7 @@ extern float init_SoundVolume;
 extern char ai_Unk7e3f40_[];
 
 
-int sv_Unk528490();                     /* 0x528490 */
+void sv_Unk528490(unsigned char *o);                     /* 0x528490 */
 void ai_CheckBuildSites(void);                     /* 0x58fb60 */
 void gm_UpdatePlayers(void);                 /* 0x4feb30, f3gm.c */
 void gm_InitPlayerRecord(int p);                 /* 0x4feb60, f3gm.c */
@@ -428,7 +428,7 @@ int cm_SendMessage0c(int a, int b, short c, unsigned char d, int e, unsigned cha
 void d2_SetViewEnabled(int view, int on);       /* 0x475590, d2.h */
 int init_SetupNewGame(int n);                   /* 0x511400 */
 void init_FillMarkets(int p);                   /* 0x511bc0 */
-int main_Unk534040();                     /* 0x534040, main.c range: gm_BuildQuery(1, 0, 6) makes the "Home-Sweet" house and hands it to character c (0x502b60) */
+void main_Unk534040(int p);                     /* 0x534040, main.c range: gm_BuildQuery(1, 0, 6) makes the "Home-Sweet" house and hands it to character c (0x502b60) */
 struct D3FLMAP;
 char *tex_FindFile(char *name);                                     /* 0x45f9f0, d3_fl.h */
 int d3fl_ReplaceTexture(struct D3FLMAP *map, char *name, int idx);  /* 0x442210, d3_fl.c */
@@ -462,7 +462,7 @@ void d3if_Prerender(char map);                     /* 0x447860, d3_interface.c *
 void sv_UpdateSkyColors();                     /* 0x525940 */
 void d3fl_SetDetail(unsigned int n);                     /* 0x43f8a0 */
 void d3fl_SetShift(struct D3FLMAP *map, unsigned char shift, char light);   /* 0x446dc0, d3_fl.c */
-int sv_Unk52bb70();                     /* 0x52bb70 */
+void sv_Unk52bb70(int id);                     /* 0x52bb70 */
 void ch_ClearSceneCallbacks();                     /* 0x40b4d0 */
 extern int __mb_cur_max;                /* 0x62e3a0, the CRT locale state */
 extern unsigned short *_pctype;         /* 0x62e194, the CRT ctype table */
@@ -537,7 +537,7 @@ int ai_Unk45f9f0();                     /* 0x45f9f0 */
 int ai_Unk442210();                     /* 0x442210 */
 void init_AllocSceneBuilding(int o);    /* 0x50d550 (a scene callback, a start Ghidra missed) */
 void init_InheritOwner(char *o);        /* 0x50d6a0 (a scene callback, a start Ghidra missed) */
-int ai_Unk4c2f30();
+void ai_Unk4c2f30(char *a);
 void init_LoadSiteScene(char *name);
 char init_CollectSiteObject(D3OBJECT *o, void *ctx);
 D3OBJECT *d3_SpawnObject(int type, char *name);                     /* 0x43c570, d3_engine.h */

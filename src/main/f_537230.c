@@ -86,13 +86,13 @@ int main_ChooseCity(int unused, int host)
     U_I((unsigned)&ai_Unk60d360) = 0x12d6;
     ai_Unk4e2c70(ai_Unk4e2bf0("Startmenu/A_Stadtwahl.esc"));
     f1 = d2_OpenForm(0, 0, "Menu\\CHOOSECITY_HEADER");
-    d2_PlaceMainWindow(f1, 3);
+    d2_PlaceMainWindowF(f1, 3);
     d2_PlaceViewWindows(f1, 1);
     d2_SetForm(f1, 0);
     io_PrintText(0x1abb);
     d3_SetViewport((float)(int)*(short *)(unsigned)&d2_ScreenW, (float)(int)*(short *)(unsigned)&d2_ScreenH, 0.0f, 0.0f, *(float *)&U_I((unsigned)&d3_ZNear), *(float *)&U_I((unsigned)&d3_ZFar), *(float *)&U_I((unsigned)&d3_ScaleX), (int)*(short *)(unsigned)&d2_ScreenW, (int)*(short *)(unsigned)&d2_ScreenH);
     f2 = d2_OpenForm(0, 0, "Menu\\CHOOSECITY");
-    d2_PlaceMainWindow(f2, 3);
+    d2_PlaceMainWindowF(f2, 3);
     d2_PlaceViewWindows(f2, 1);
     d2_SetForm(f2, 2);
     sv_ButtonRow(d2_LastWindow, 0, out, 2, U_I((unsigned)&full_data_144acf0), U_I((unsigned)&full_data_144acf4));

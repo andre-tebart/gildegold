@@ -23,7 +23,7 @@ void ai_OptionsGameScreen(void)
     form = d2_OpenForm(0, 0, "menu\\options_game");
     sv_SetScreenCenter(mask);
     d2_PlaceViewWindows(form, 1);
-    d2_PlaceMainWindow(form, 2);
+    d2_PlaceMainWindowF(form, 2);
     d2_SetForm(form, 0);
     sv_FitForm(d2_LastWindow);
     d2_SetPointerSprite(0, 0);

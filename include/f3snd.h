@@ -179,7 +179,7 @@ struct SBSAMPLE *sb_GetVariation(struct SBBANK *bank, char *name, int idx);     
 struct SBSAMPLE * sb_GetSample(struct SBBANK *bank, char *name);                                          /* 0x426030 */
 struct SBBANK * sb_LoadSampleBank(char *name, int preload);                                        /* 0x426950 */
 int sb_UnloadSampleBank(struct SBBANK *bank);                                                 /* 0x426ba0 */
-float gm_Liking(int pl, int id, int a);                                       /* 0x50c550, a favour */
+float gm_Liking(unsigned a, unsigned b, int c);                                       /* 0x50c550, a favour */
 int gm_BuildingGoodsList(char *b, unsigned *out, int kind);                            /* 0x5098a0 */
 int gm_Unk5099e0(char *b, unsigned *out, int kind);                            /* 0x5099e0 */
 struct D3SOUND *d3snd_Attach(struct SNDHANDLE *snd, struct D3OBJECT *obj, int volume, float range);   /* 0x417710, d3_snd.c (f3snd.c: d3snd_AttachI) */

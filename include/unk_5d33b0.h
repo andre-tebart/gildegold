@@ -186,8 +186,8 @@ float gm_Mix(int a, int b, int c);                   /* 0x504e20, f3gm.c: the mi
 int sv_MessageBoxGreen(int a, int b, unsigned flags); /* 0x521410, sv.c: the green message box with the title text a and the text b */
 struct AIBLD;
 struct AIPER;
-int gm_BathObjectCount(struct AIBLD *b);             /* 0x50cf60, f3gm.c: 1 + the kitchen / bath objects of the building (as unk_4a7140.h) */
-void ai_GypsyDeliveryText(struct AIPER *o, int n, struct AIPER **who); /* 0x5a9470, unk_58bbd0.c: the delivery text for n chosen records (as unk_4a7140.h) */
+int gm_BathObjectCount(char *b);             /* 0x50cf60, f3gm.c: 1 + the kitchen / bath objects of the building (as unk_4a7140.h) */
+void ai_GypsyDeliveryText(unsigned short *param_1, int param_2, int *param_3); /* 0x5a9470, unk_58bbd0.c: the delivery text for n chosen records (as unk_4a7140.h) */
 int ai_AmountRowStatus(int *row);                    /* 0x5be1d0, unk_58bbd0.c: the status fields of a list row */
 int ai_AmountRow(int x, int y, int win, int pic, int *row, int mode); /* 0x5be3b0, unk_58bbd0.c: draws a list row at (x, y) */
 void gm_SendMoneyDelta(int a, int b);                /* 0x50cc50, f3gm.c: forwards to cm_SendMoneyDelta */
@@ -260,8 +260,8 @@ struct AITIME;
 void gm_AddTime(struct GCLOCK *c, int hours, int mins, int secs);   /* 0x4fe140, f3gm.c: adds hours / minutes / seconds to the clock */
 int gm_MinutesBetween(struct AITIME *a, struct AITIME *b);          /* 0x4fe280, f3gm.c: the minutes from clock a to clock b */
 int ls_Read(void *buf, int size, int count, int f);                 /* 0x51c920, ls.c's read (true when the fread returned a positive count); ls.c has no header yet */
-int ai_FindCurseEvent(struct AIBLD *b);                              /* 0x5741d0, he.c: the pending curse event of the building (as unk_4a7140.h) */
-int gm_CurseObjectCount(struct AIBLD *b);                            /* 0x50cfd0, f3gm.c: 2 + the objects 0x274 / 0x27e / 0x28e / 0x291 of the building (as unk_4a7140.h) */
+char *ai_FindCurseEvent(char *a);                              /* 0x5741d0, he.c: the pending curse event of the building (as unk_4a7140.h) */
+int gm_CurseObjectCount(char *b);                            /* 0x50cfd0, f3gm.c: 2 + the objects 0x274 / 0x27e / 0x28e / 0x291 of the building (as unk_4a7140.h) */
 int gm_CurseTargetCount(char *b);                                   /* 0x50d0b0, f3gm.c: counts from the objects 0x284 / 0x289 of the building */
 /* the filter of the gypsy windows: a const object, the original loads it from .rdata 0x5eed68 (mov eax,[..]; mov ecx,[..+4]) */
 static const volatile int ai_CardBack = 0x18;  /* 0x5ed1bc, .rdata: the picture offset of the card back (the original loads it from memory) */
@@ -275,7 +275,7 @@ static const float ai_AirDensity = 1.2f;          /* 0x5eee0c, .rdata: kg/m^3 */
 static const float ai_WindGain = 60.0f;  /* 0x5eee14, .rdata: the factor of ai_Unk5dbc30's per-direction random values (the original loads it from memory, it is not folded) */
 int ai_ShotHitsGround(struct D3SM *map, D3VECTOR *from, D3VECTOR *to, int px, int pz, int *npx, int *npz);  /* 0x5dcf00, 1 when the move from -> to of a flight step hits the ground (to is moved to the hit) */
 int d2_WinOpenSlider(int x, int y, int len, int p4, int p5, int pic, unsigned int flags, int win); /* 0x46a960, d2.c: a slider in a window */
-int sv_CheckGoodAmount(char *o, int n, unsigned char t);   /* 0x521040, sv.c: 1 when the character's stock covers n of the good t; @original: the definition takes unsigned, its callers push the good as a byte (no zero extension) */
+int sv_CheckGoodAmount(char *o, int n, unsigned t);   /* 0x521040, sv.c: 1 when the character's stock covers n of the good t (callers that push the good as a byte: sv_CheckGoodAmountB in their head) */
 void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d); /* 0x4c4830, cm.c */
 int cm_SendLongMessage(char *msg);                         /* 0x4c4b70, cm.c: sends a long (0xf8 bytes) message */
 extern unsigned char ai_OwnPlayer;                         /* 0x6f1bc5, the player's own goods slot */
@@ -285,7 +285,7 @@ void ai_ApplyVolumes(void);         /* 0x5d5f10, applies the sound option volume
 void ai_LoadScreenImage(char *path); /* 0x5d7320, the loading screen reader */
 
 /* Callees whose units have no header yet (type debt: the prototype should live there). */
-int ls_SaveGame(char *path, char *name, unsigned flags); /* 0x5190b0, ls.c: the save writer; the
+int ls_SaveGame(int name, char *path, unsigned flags); /* 0x5190b0, ls.c: the save writer; the
                                        definition names the two char * arguments name / path (swapped) */
 int cm_GetSlotState(int h);         /* 0x4c3ae0, cm.c (as include/cm.h): the state of message slot h */
 void sv_ReleaseNamePlates(void);    /* 0x52e190, sv.c: drops the contact plates (the objects lose their
@@ -374,7 +374,7 @@ void d2_SetObjEnabled(int obj, int on);     /* 0x475e40, d2.h: enables / disable
 void d2_SetViewEnabled(int view, int on);   /* 0x475590, d2.c: enables / disables the objects of a view */
 void d2_PlaceViewWindows(int view, unsigned char flags); /* 0x475870, d2.c: places the view's windows
                                        by the flags of 0x4756b0 (1 = centre x, 2 = centre y) */
-void d2_PlaceMainWindow(int view, int fl); /* 0x475850, d2.c: places the view's first window */
+void d2_PlaceMainWindow(int view, int flags); /* 0x475850, d2.c: places the view's first window */
 int d2_CreateRadioGroup(int n, ...);        /* 0x46c490, d2.h: the radio group of n control ids */
 void d2_RadioClear(int g);                  /* 0x46c600, d2.h: frees a radio group */
 void d2_MenuNavigate(int g);                /* 0x46c6c0, d2.h: keyboard / pointer navigation in a group */

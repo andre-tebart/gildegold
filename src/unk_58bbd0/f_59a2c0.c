@@ -5,7 +5,7 @@
    "sonstiges\STADTPUNKT_ANM_K.baf" (0x411960, flag 1). Returns the object (0 when the dummy is missing) */
 
 int d3t_PlayAnim(); void d2_SetBackgroundTexture();
-char d3if_ShowTree(struct D3OBJECT *obj, char show); int ls_GetLanguage(); int sv_ClearNamePlates(); struct D3OBJECT * d3if_Pick(float x, float y, int flags, int mask);
+char d3if_ShowTree(struct D3OBJECT *obj, char show); int ls_GetLanguage(); void sv_ClearNamePlates(void); struct D3OBJECT * d3if_Pick(float x, float y, int flags, int mask);
 unsigned char * gm_BuildNext(void); int ai_StorageWindow(); void ai_MasterLetterWindow(); int ai_OpenTransport();
 int ai_TransportWindow(); 
 

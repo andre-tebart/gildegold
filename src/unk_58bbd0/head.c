@@ -1,6 +1,7 @@
 /* unk_58bbd0
    unit of rea 8cef7d5b (src/game/unk_58bbd0.c); boundaries in decl/text.dcl, notes in src/unk_58bbd0/open.md */
 #define GAPDATA __declspec(align(1)) unsigned char
+#define unk_Unk5136b0K ((int (*)())unk_Unk5136b0)  /* 0x5136b0 (f3init.c, void): @original the call passes more arguments than the draft definition names, compiled without a prototype (as before the definition's spelling reached this unit) */
 /* unk_58bbd0.c -- the production / trade windows and the tavern / location / money lender / Rathaus windows
    (0x58bbd0 .. 0x5bcc70): the
    "Handel\Handel_PRODUKTION" screen of a building (0x58bd60) and its helpers (the table init 0x58bbd0, the

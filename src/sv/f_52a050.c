@@ -6,11 +6,11 @@ int ai_Unk5763c0();                     /* 0x5763c0 */
 void ai_Unk576040(int a, int b, int c, int d);                     /* 0x576040 */
 int ai_AmountMenu();                     /* 0x5c1130 */
 int gm_BuildingClass(int kind);                /* 0x501d80, f3gm.c, the class of a building kind */
-int unk_Unk503530();                     /* 0x503530 */
+unsigned unk_Unk503530(unsigned p1, unsigned char *b, unsigned short *o, int c);                     /* 0x503530 */
 int ai_TransportWindow();                     /* 0x5af1d0 */
 int ai_Unk5b8fc0();                     /* 0x5b8fc0 */
 int ai_Unk5b84f0();                     /* 0x5b84f0 */
-int ai_TechTreeWindow();                     /* 0x591bf0 */
+void ai_TechTreeWindow(int param_1, int param_2);                     /* 0x591bf0 */
 void d2_FreeAnim(int n);                     /* 0x47ce30 */
 int d3t_PlaceAtObject();                     /* 0x4118a0 */
 void snd_PlayWorkerClick(struct G16CHARCLICK *c);                     /* 0x4c2c70 */

@@ -13,7 +13,7 @@ int ai_Unk4caaa0(G17MSG *m, G17STAT *s)
     c2 = gm_FindChar(G17_I(*m, 4));
     if (c2 == 0 && G17_I(*m, 4) != -1)
         return 2;
-    gm_AssignBuilding(b, *(unsigned short *)c2, *(unsigned short *)c1);
+    gm_AssignBuildingK(b, *(unsigned short *)c2, *(unsigned short *)c1);
     if (s != 0) {
         s->state = 2;
         s->unk01 = 0;

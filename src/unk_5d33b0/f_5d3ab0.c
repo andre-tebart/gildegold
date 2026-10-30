@@ -116,7 +116,7 @@ typedef struct SAVEHEADERVIEW {             /* 0xfc */
 #pragma pack(pop)
 
 extern int ls_Version;                      /* 0x623650, ls.c: the version of the save read last */
-int ls_ReadSaveHeader(int f, void *h);      /* 0x51cee0, ls.c: reads a save header into h (no header there) */
+int ls_ReadSaveHeader(int f, int *h);      /* 0x51cee0, ls.c: reads a save header into h (no header there) */
 int d2_CreateChildWindow(short x, short y, short w, short h, unsigned int flags, int win); /* 0x472aa0, d2.h */
 int d2_WinOpenRaw(int x, int y, int w, int h, void *src, int win);  /* 0x46c390, d2.h */
 int d2_WinOpenPic(int x, int y, int pic, int win); /* 0x4731d0, d2.h: creates a picture object; @original the original call at 0x5d7f52 pushes the int arguments (push eax / ebx / edx / 8) against the short-parameter definition */
@@ -133,7 +133,7 @@ extern char ls_SavePath[];                  /* 0x75e640, ls.c: the path stored i
 int sv_CreateFormSlider(int x, int y, int f, int g, int p5, int *b, int *a, int *c); /* 0x52e860, sv.c:
                                            the slider of the form f at (x, y) */
 void d2_EnableObject(int obj, int on);      /* 0x475aa0, d2.h: enables / disables an object and its items */
-int sv_OpenMessageBox(char *text, int flags); /* 0x521900, sv.c: opens the waiting box with text */
+int sv_OpenMessageBox(int text, unsigned char flags); /* 0x521900, sv.c: opens the waiting box with text */
 int d2_GetViewWin(int view, int i);         /* 0x475ff0, d2.h: window i of a view, -1 if out of range;
                                                the six-argument calls below go through a cast, tagged
                                                @original (the original pushes four stray arguments) */

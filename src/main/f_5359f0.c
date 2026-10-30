@@ -38,7 +38,7 @@ int main_Unk5359f0(int unused)
     o8 = main_Unk5344f0((int)"dummy_RHETORIK_MANN", (int)"priester_KUTTE", 2);
     o9 = main_Unk5344f0((int)"dummy_RHETORIK_FRAU", (int)"buergerin_FRAU", 6);
     f = d2_OpenForm(0, 0, "Menu\\CHOOSECITY_HEADER");
-    d2_PlaceMainWindow(f, 1);
+    d2_PlaceMainWindowF(f, 1);
     k = 4;
     ai_Unk4e32f0("Sky_Mittel_02");
     d3_SetLightSet(4, 0.0f, 1.0f, 1);

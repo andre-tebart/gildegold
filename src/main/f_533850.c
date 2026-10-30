@@ -58,7 +58,7 @@ void main_Unk533850(void)
     d2_ShowPicture(0x797);
     again = 0;
     f = d2_OpenForm(0, 0, "MENU\\MAIN_MENU");
-    d2_PlaceMainWindow(f, 3);
+    d2_PlaceMainWindowF(f, 3);
     d2_SetForm(f, 0);
     bnew = main_Unk5337f0(0, U_I((unsigned)&full_data_144134c), d2_LastWindow);
     bload = main_Unk5337f0(1, U_I((unsigned)&ai_TextLoadGame), d2_LastWindow);

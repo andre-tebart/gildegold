@@ -9,7 +9,7 @@
 
 int gm_SumSlotAmounts(void *list, unsigned char i); int gm_GetGoodsValue(); int gm_ConvertMoney(int a, unsigned char k); int gm_PlayerFactor(int a, unsigned char k);
 int d2_GetObjValue(); void d2_SetObjEnabled(); void d2_EnableViewObjects(); void d2_EnableObject();
-int gm_Unk50a1c0(); int gm_Unk50a880(); int d2_RemoveWindow(); void d2_RemoveObj();
+int gm_Unk50a1c0(); void gm_Unk50a880(int n, int *ids, int flag); int d2_RemoveWindow(); void d2_RemoveObj();
 void d2_SetObjText(); void d2_MoveObj(short x, short y, int obj); int d2_WinOpenInputIcon(int x, int y, int icon, unsigned char flags, int win); void d2_SetObjFont();
 
 void ai_Unk59bad0(int param_1)

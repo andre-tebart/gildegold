@@ -3,10 +3,10 @@
 void cm_BeginFieldBlock(char *o, int id);
 int cm_AddFieldDelta(int size, int n, short field, void *v);
 void cm_SendFieldDeltas(void);
-int ai_Unk5a9d60();
-int ai_Unk5a9ca0();
-int ai_Unk5a9d00();
-int ai_Unk5a9dd0();
+void ai_Unk5a9d60(int param_1, int param_2, int param_3, unsigned short *param_4);
+void ai_Unk5a9ca0(int param_1, int param_2, int param_3);
+void ai_Unk5a9d00(int param_1, int param_2, int param_3);
+void ai_Unk5a9dd0(int param_1, int param_2, int param_3, int param_4);
 int cm_AddFieldValues(unsigned char size, unsigned char n, unsigned short field, void *v);
 
 void he_Unk56e070(char *c, int ev, unsigned char *b, int task)

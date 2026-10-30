@@ -5,7 +5,7 @@
    picture 0x6ed918 + 0x1d978); the record 0x143a97c and the branch 0x130 / 0x18f by the message byte
    +9. ROUGH SKELETON: the controls, the rows and the pump 0x5309a0 are not written. */
 
-int ai_EspionageResult(int param_1)  /* @original: the callers push (c, m); the draft body reads its own byte offsets of the parameters */
+int ai_EspionageResult(int param_1, int *m)  /* m: the handler's second argument (unused here): the callers push (c, m); the draft body reads its own byte offsets of the parameters */
 {
     int win;
     char text[0x100];

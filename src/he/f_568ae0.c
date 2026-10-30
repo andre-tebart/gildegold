@@ -1,7 +1,7 @@
 /* 0x568ae0, the allocation handler of a building event (a Ghidra miss; ROUGH): +0xb0 = the value at 0x91aaf0 [+0xac * 0x41 + 0x22] (+0xb4 as a float), the clocks +0x52 / +0x60 are the start clock (+0x44), 0x50c980 (player id, 8, +0x8c) - 0.5 times 0.25 is the float +0xc4,
    +0xc8 = 0; every player record whose +0x17c is this event is locked (0x524260 (object of +0xb8, id, 0, ev)); the first run is one unit ahead */
 
-double gm_Unk50c980();
+float gm_Unk50c980(int c, int n, int *ids);
 
 void he_Unk568ae0(int ev)
 {

@@ -12,7 +12,7 @@
    and 1; the second entry -> 0x6f22a0 = 1; the pump 0 -> 0x4758f0 (window), 0x525440 (), 0x52ae40 (), the
    result */
 
-int sv_MessageBoxGreen(); int sv_OpenPlayerBar(); int sv_ClosePlayerBar();
+int sv_MessageBoxGreen(); void sv_OpenPlayerBar(int a, char k); void sv_ClosePlayerBar(void);
 
 int ai_Unk584900(char *rec, char *ev)
 {

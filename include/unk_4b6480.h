@@ -27,12 +27,12 @@ int amt_KindColumn(int k);                                                      
 int amt_GetColumnOffices(int col, int max, struct AMTREC *out);                  /* 0x4e6fc0, up to max offices of the column col */
 float gm_AddHealth(unsigned id, int d);                                    /* 0x4fca40, f3gm.c */
 
-int gm_Unk5054f0(AICHAR *c);                                                     /* 0x5054f0 */
-int gm_Unk5056a0(AICHAR *c);                                                     /* 0x5056a0 */
-int gm_Unk5059d0(AICHAR *c);                                                     /* 0x5059d0 */
-int gm_Unk505ad0(AICHAR *c);                                                     /* 0x505ad0 */
+unsigned gm_Unk5054f0(short *c);                                                     /* 0x5054f0 */
+unsigned gm_Unk5056a0(short *c);                                                     /* 0x5056a0 */
+int gm_Unk5059d0(char *c);                                                     /* 0x5059d0 */
+int gm_Unk505ad0(char *c);                                                     /* 0x505ad0 */
 void gm_ClockToDate(struct GCLOCK *c, unsigned char *out);                                            /* 0x4fe2c0 */
-int gm_Season(unsigned char *d);                                             /* 0x4fe330, the season of a calendar record (f3gm.c's gm_Season) */
+int gm_Season(char *d);                                             /* 0x4fe330, the season of a calendar record (f3gm.c's gm_Season) */
 void ai_Unk4c6020(int a, int b, int c);                                /* 0x4c6020 */
 void ai_Unk4c5010(int a, int b, int c);                                         /* 0x4c5010 */
 void cm_SendExSetHE(unsigned char k, char *p);                                     /* 0x4c4c60, cm.c */

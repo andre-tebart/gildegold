@@ -1,6 +1,6 @@
 /* 0x56fda0, the run of the event 0x88 (a work at the building +0xb0 for the character +0xb4): -1 / -2 release the worker (0x524260) and free; paused or with the handle +0x84 still active nothing. State 0: the owner -1 (0x4c3ae0), the worker registered, the building of +0xac (0x501190) -> its +1 to 0x4c52e0 (state 2), else the state -1. State 2: +0xbc = -1; the job +0x128 of the character or the building missing -> wait 4 hours and state 2; else 0x4fe140 (+0x18) and 0x5a9910 (the record of the player +8, the worker, the due clock), state 3. State 3: the boss +0x16c -> 0x4c52e0 (state 4), else state -1. State 4: no boss -> state -1; work in progress -> wait 4 hours; else 0x524260, state 5 and the due clock += (max (+0xb8 / 2, 1) + 1). State 5: state -1 (0x4c4c60). ROUGH */
 
-int ai_Unk5a9910();                 /* 0x5a9910 */
+void ai_Unk5a9910(unsigned short *param_1, int param_2, unsigned int param_3);                 /* 0x5a9910 */
 
 void he_Unk56fda0(int ev)
 {

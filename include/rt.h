@@ -74,7 +74,7 @@ void mem_Free(void *p);                                                         
 char *gm_FindBuildingById(int id);                                                      /* 0x502020, ai.h: AIBLD * */
 void d3_PointToWorld(struct D3OBJECT *obj_, struct D3VECTOR *in, struct D3VECTOR *out);                               /* 0x458a20, d3.h: D3 types */
 char d3_GetHeightAt(struct D3SM *h, struct D3VECTOR *pos, int *px, int *pz, float *py);           /* 0x45f170, ch.h: D3SM *, D3VECTOR * */
-void ai_Unk5a6b70(float *out, int x, int z);                                     /* 0x5a6b70 */
+void ai_Unk5a6b70(int param_1, int param_2, int param_3);                                     /* 0x5a6b70 */
 int d2_CreateRadioGroup(int n, ...);                                             /* 0x46c490 */
 void d2_RadioAdd(int g, int obj);                                                /* 0x46c560 */
 int d2_GetObjValue(int obj);                                                       /* 0x475980 */
@@ -120,7 +120,7 @@ void ai_Unk5a82f0(int *m);                                                      
 struct D2SURF * d2_CopySurface(struct D2SURF *surf);                                                    /* 0x479780 */
 void d2_BlitPart(int sx, int sy, int w, int h, struct D2SURF *src, int x, int y, struct D2SURF *dst);  /* 0x479480 */
 int d2_FreeSurface(struct D2SURF *s);                                                        /* 0x478fc0 */
-void sv_Unk52e4b0(int win, int a, int *out, int n, int t1, int t2, int t3);      /* 0x52e4b0 */
+void sv_Unk52e4b0(int f, int y, int *out, int n, ...);      /* 0x52e4b0 */
 void ai_Unk4c6320(char *c);                                                      /* 0x4c6320 */
 void ai_Unk4c62a0(char *o, char *pts);                                          /* 0x4c62a0 */
 int gm_BuildingGoodsList(char *b, unsigned *out, int kind);                                   /* 0x5098a0 */
