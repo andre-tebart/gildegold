@@ -92,13 +92,13 @@ int ai_Unk49b7c0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     switch (rp->item) {
     case 0x169:
     case 0x16d:
-        s2.unk04 = ai_Chars[id[0]].netId;
-        s2.unk08 = ai_Chars[id[1]].netId;
+        s2.unk04 = ai_CharsT[id[0]].netId;
+        s2.unk08 = ai_CharsT[id[1]].netId;
         s2.kind = 7;
         break;
     case 0x177:
         s2.kind = 4;
-        s2.unk04 = *(int *)((char *)ai_Chars[id[0]].bld2 + 1);
+        s2.unk04 = *(int *)((char *)ai_CharsT[id[0]].bld2 + 1);
         s2.unk08 = -1;
         break;
     case 0x178:
@@ -115,7 +115,7 @@ int ai_Unk49b7c0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     case 0x29a:
     case 0x29c:
         s2.unk08 = -1;
-        s2.unk04 = ai_Chars[id[0]].netId;
+        s2.unk04 = ai_CharsT[id[0]].netId;
         s2.kind = 7;
         break;
     default:

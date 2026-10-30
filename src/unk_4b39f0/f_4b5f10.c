@@ -11,7 +11,7 @@ void ai_MissionResultDialog(int id)
     int r, view, flags;
 
     r = 0;
-    c = &ai_Chars[ai_PlayerId];
+    c = &ai_CharsT[ai_PlayerId];
     t = ai_GetMissionType(ai_Missions[0].type);
     view = d2_OpenForm(0, 0, "special\\mission");
     d2_CentreViewWindows(view);

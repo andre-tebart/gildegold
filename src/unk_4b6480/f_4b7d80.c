@@ -14,8 +14,8 @@ int ai_Unk4b7d80(G14MSG *m)
     if (c->secondOffice >= 0x1e && c->secondOffice <= 0x21 && (g = gm_TitleGroup(c->jobId)) != 0
         && !ai_InventoryHas(c, 0x290)) {
         for (i = 0; i < 768; i++) {
-            if (ai_Chars[i].kind != 6 && ai_Chars[i].kind != 7 && g == gm_TitleGroup(ai_Chars[i].jobId))
-                cm_SendRelations(c->netId, ai_Chars[i].netId, util_Random(8) + 1, 1);
+            if (ai_CharsT[i].kind != 6 && ai_CharsT[i].kind != 7 && g == gm_TitleGroup(ai_CharsT[i].jobId))
+                cm_SendRelations(c->netId, ai_CharsT[i].netId, util_Random(8) + 1, 1);
         }
         k = util_Random(4) + 1.0;
         v = (int)(gm_GetWorth(c->id) * k * 0.01);

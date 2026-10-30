@@ -24,33 +24,33 @@ int ai_TokenRandomChurchProfession(int mode, G12ARG *args, int k, char *fmt, cha
         if (sel == 0) {
             i = util_Random(0x300);
             for (n = 0x300; n != 0; n--) {
-                if (ai_IsLivingCharacter((unsigned short)i) && G12_AGED(i) && ai_NotInLists(ai_Chars[i].netId))
+                if (ai_IsLivingCharacter((unsigned short)i) && G12_AGED(i) && ai_NotInLists(ai_CharsT[i].netId))
                     break;
                 i = (i + 1) % 0x300;
             }
             if (n == 0)
                 return 0;
-            pick = &ai_Chars[i];
+            pick = &ai_CharsT[i];
         } else if (sel == 1) {
             i = util_Random(0x300);
             for (n = 0x300; n != 0; n--) {
-                if (ai_IsLivingNonPlayer((unsigned short)i) && G12_AGED(i) && ai_NotInLists(ai_Chars[i].netId))
+                if (ai_IsLivingNonPlayer((unsigned short)i) && G12_AGED(i) && ai_NotInLists(ai_CharsT[i].netId))
                     break;
                 i = (i + 1) % 0x300;
             }
             if (n == 0)
                 return 0;
-            pick = &ai_Chars[i];
+            pick = &ai_CharsT[i];
         } else {
             pick = 0;
             i = util_Random(0x300);
             for (n = 0x300; n != 0; n--) {
                 if (pick == 0 && ai_IsLivingNonPlayer((unsigned short)i) && G12_AGED(i)) {
-                    if (ai_NotInLists(ai_Chars[i].netId))
-                        pick = &ai_Chars[i];
+                    if (ai_NotInLists(ai_CharsT[i].netId))
+                        pick = &ai_CharsT[i];
                 } else if (ai_IsLivingHuman((unsigned short)i) && G12_AGED(i)
-                           && ai_NotInLists(ai_Chars[i].netId)) {
-                    pick = &ai_Chars[i];
+                           && ai_NotInLists(ai_CharsT[i].netId)) {
+                    pick = &ai_CharsT[i];
                     break;
                 }
                 i = (i + 1) % 0x300;

@@ -14,7 +14,7 @@ void ai_Unk47e990(AICHAR *c)
                     ai_LoggedMaster->bld->name);
             sprintf(buf, "Aktuelles Budget: %li", ai_LoggedMaster->budget);
             sprintf(buf, "Tats\xe4" "chlich verf\xfc" "gbares Budget: %li",
-                    gm_GetGoodsValue(&ai_Chars[c->bld->owner]));
+                    gm_GetGoodsValue(&ai_CharsT[c->bld->owner]));
         }
         if (c->bld->owner == c->id)
             c->budget = gm_GetGoodsValue(c);
@@ -22,7 +22,7 @@ void ai_Unk47e990(AICHAR *c)
             w = &ai_Watch;
             w->bld = c->bld;
             w->ch = c;
-            w->owner = &ai_Chars[c->bld->owner];
+            w->owner = &ai_CharsT[c->bld->owner];
             w->budget = c->budget;
         }
         if (gm_BuildingClass(c->bld->type) != 1 && gm_BuildingClass(c->bld->type) != 4) {
@@ -30,7 +30,7 @@ void ai_Unk47e990(AICHAR *c)
                 ai_EvaluateProductionCategory2(c);
                 return;
             }
-            k = ai_BTypes[c->bld->type].kind;
+            k = ai_BTypesT[c->bld->type].kind;
             if (k == 0x13) {
                 ai_CalcMeisterWache(c);
                 return;
@@ -52,7 +52,7 @@ void ai_Unk47e990(AICHAR *c)
             ai_Unk483a60(c);
             return;
         }
-        k = ai_BTypes[c->bld->type].kind;
+        k = ai_BTypesT[c->bld->type].kind;
         if (k != 0xe && k != 8 && k != 0x20) {
             if (k == 0x1d)
                 ai_Unk483fc0(c);

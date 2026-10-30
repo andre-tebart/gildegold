@@ -50,13 +50,13 @@ void ai_CalcMeisterBank(AICHAR *ch)
             sum += d;
             cm_BeginGroup("Bankmeister");
             cm_SendMoveGoods(ch->bld->id, -1, i, d);
-            cm_SendMoveGoods(-1, ai_Chars[ch->bld->owner].netId, ai_OwnPlayer, (int)(d * 1.03));
+            cm_SendMoveGoods(-1, ai_CharsT[ch->bld->owner].netId, ai_OwnPlayer, (int)(d * 1.03));
             cm_EndGroup("Bankmeister");
         } else if (v > m * 6 / 20) {
             d = v - m * 4 / 20;
             sum -= d;
             cm_BeginGroup("Bankmeister");
-            cm_SendMoveGoods(ai_Chars[ch->bld->owner].netId, -1, ai_OwnPlayer, d);
+            cm_SendMoveGoods(ai_CharsT[ch->bld->owner].netId, -1, ai_OwnPlayer, d);
             cm_SendMoveGoods(-1, ch->bld->id, i, (int)(d * 1.03));
             cm_EndGroup("Bankmeister");
         }
@@ -65,11 +65,11 @@ void ai_CalcMeisterBank(AICHAR *ch)
     m = ch->budget;
     if (!(v < m * 1.5) || m - sum <= 0) {
         b = ch->bld;
-        if (ai_Chars[b->owner].kind != 6 && ai_Chars[b->owner].kind != 7 && v > m * 2)
-            cm_SendMoveGoods(ai_Chars[b->owner].netId, b->id, ai_OwnPlayer, (int)(v - m * 2.25));
+        if (ai_CharsT[b->owner].kind != 6 && ai_CharsT[b->owner].kind != 7 && v > m * 2)
+            cm_SendMoveGoods(ai_CharsT[b->owner].netId, b->id, ai_OwnPlayer, (int)(v - m * 2.25));
     } else {
         b = ch->bld;
-        cm_SendMoveGoods(b->id, ai_Chars[b->owner].netId, ai_OwnPlayer, (int)((m - sum) * 0.8));
+        cm_SendMoveGoods(b->id, ai_CharsT[b->owner].netId, ai_OwnPlayer, (int)((m - sum) * 0.8));
     }
     ch->flags1c8 |= 8;
 }

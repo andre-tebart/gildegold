@@ -26,8 +26,8 @@ void ai_FreeJobCharacters(AICHAR *ch, int n)
         }
         if (found) {
             for (i = 0; i < 768; i++) {
-                if (ai_Chars[i].id != 0xffff && ai_Chars[i].job == job)
-                    sv_MoveToGroup(c->bld, 0, ai_Chars[i].id, 0);
+                if (ai_CharsT[i].id != 0xffff && ai_CharsT[i].job == job)
+                    sv_MoveToGroup(c->bld, 0, ai_CharsT[i].id, 0);
             }
         }
     }

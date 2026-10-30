@@ -7,7 +7,7 @@ int ai_Unk4aaef0(AIPER *p, unsigned char *a, unsigned char *b)
     AIOBJ *o, *o2;
 
     for (bld = gm_BuildQuery(2, 4, p->id, 5, 0x16); bld != 0; bld = gm_BuildNext()) {
-        if (ai_BTypes[bld->type].cap247 > 1 && (o = gm_Query(bld->objList, 1, 0, 0x120)) != 0
+        if (ai_BTypesT[bld->type].cap247 > 1 && (o = gm_Query(bld->objList, 1, 0, 0x120)) != 0
             && (o2 = gm_Query(o->list, 1, 0, 300)) != 0 && he_FindEvent(2, 0, 0x74, 3, bld->id) == 0) {
             a[0] = 4;
             *(int *)(a + 4) = bld->id;

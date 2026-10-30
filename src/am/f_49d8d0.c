@@ -26,10 +26,10 @@ int ai_Unk49d8d0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     o = gm_Query(b->objList, 2, 6, 0, 0x115);
     money = gm_Unk509e30(*(int *)((char *)o + 0x14), ai_OwnPlayer);
     unk_Unk4f9e00(d);
-    rec = ai_Blds;
+    rec = ai_BldsT;
     for (n = 0x100; n != 0; n--, rec++) {
         k = rec->type;
-        if (k == 0 || ai_BTypes[k].kind != 1)
+        if (k == 0 || ai_BTypesT[k].kind != 1)
             continue;
         fl = *(unsigned short *)&rec->flags5a;
         if (fl & 0x45)

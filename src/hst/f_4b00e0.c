@@ -34,7 +34,7 @@ int ai_CommandCityTreasury(int a, int b, char *fmt)
             if (o == 0)
                 return 0;
             for (g = gm_Query(o->unk14, 1, 5); g != 0; g = gm_QueryNext()) {
-                if (ai_Goods[g->id].type == 9)
+                if (ai_GoodsT[g->id].type == 9)
                     break;
             }
             if (g == 0)

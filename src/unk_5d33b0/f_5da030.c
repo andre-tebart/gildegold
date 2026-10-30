@@ -33,7 +33,7 @@ int ai_PokerGame(void)
     int d;
 
     lastPhase = -1;
-    rec = (PLAYERRECVIEW *)gm_PlayerRecord(ai_Chars + ai_PlayerId * 0x21c);
+    rec = (PLAYERRECVIEW *)gm_PlayerRecord(ai_CharsC + ai_PlayerId * 0x21c);
     if (rec == 0)
         return 0;
     worth = gm_ConvertMoney(gm_GetWorth(ai_PlayerId), ai_OwnPlayer);
@@ -42,7 +42,7 @@ int ai_PokerGame(void)
         kb_Down[0x1e] = 0;
         if (ai_OpenPokerWindow() == 0)
             return 0;
-        if (ai_PokerStart((struct AIPER *)(ai_Chars + ai_PlayerId * 0x21c), (struct G10GAME *)&ai_PokerState) == 0) {
+        if (ai_PokerStart((struct AIPER *)(ai_CharsC + ai_PlayerId * 0x21c), (struct G10GAME *)&ai_PokerState) == 0) {
             ai_ClosePokerWindow();
             return 0;
         }

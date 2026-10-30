@@ -25,7 +25,7 @@ int ai_Unk4a0090(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         return 0;
     n = 0;
     for (i = 0; i < 768; i++) {
-        if (ai_Chars[i].bld == (AIBLD *)y)
+        if (ai_CharsT[i].bld == (AIBLD *)y)
             n++;
     }
     if (n == 0)

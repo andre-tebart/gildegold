@@ -1,12 +1,12 @@
 /* 0x53a250, per-player effect update of figure `i` (by the kind byte at +2; ROUGH) */
 
-#define PL(i) ((unsigned)&ai_Chars + (i) * 0x21c)
+#define PL(i) ((unsigned)&ai_CharsT + (i) * 0x21c)
 float gm_Unk504510(int n, int *out);
 
 void main_Unk53a250(int i)
 {
     int base = i * 0x21c;
-    unsigned char kind = *(unsigned char *)(((unsigned)&ai_Chars + 0x2) + base);
+    unsigned char kind = *(unsigned char *)(((unsigned)&ai_CharsT + 0x2) + base);
     int one;
     int pr, iv;
     float f;
@@ -26,7 +26,7 @@ void main_Unk53a250(int i)
             }
             if (*(char *)(((unsigned)&ai_CharInts + 0x160) + base) != 0) {
                 pr = gm_TitlesLeft(*(char *)(((unsigned)&ai_CharInts + 0x160) + base));
-                iv = he_FindEvent(2, 2, U_I((unsigned)&ai_Chars + base), 0, 0x24);
+                iv = he_FindEvent(2, 2, U_I((unsigned)&ai_CharsT + base), 0, 0x24);
                 U_I(((unsigned)&ai_Unk770cec + 0x8) + base) += 1;
                 f = gm_Unk504510(i, ev);
                 U_I(((unsigned)&ai_Unk770cec + 0x8) + base) -= 1;

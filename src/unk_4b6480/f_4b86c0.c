@@ -25,7 +25,7 @@ int ai_Unk4b86c0(G14MSG *m)
     w = -1;
     b = a[util_Random(n)];
     for (i = 0; i < 768; i++) {
-        if (ai_Chars[i].kind != 0xffff && ai_Chars[i].bld == b && ai_Chars[i].title != 0)
+        if (ai_CharsT[i].kind != 0xffff && ai_CharsT[i].bld == b && ai_CharsT[i].title != 0)
             w = i;
     }
     if (w == -1 || b == 0)

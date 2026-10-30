@@ -21,7 +21,7 @@ int ai_Unk4ab080(AIPER *p, int *a, int *b)
         bld = gm_BuildQuery(1, 5, 0x16);
         if (bld != 0) {
             do {
-                if (bld->owner != 0xffff && bld->owner != p->id && ai_BTypes[bld->type].cap247 > 1
+                if (bld->owner != 0xffff && bld->owner != p->id && ai_BTypesT[bld->type].cap247 > 1
                     && (o = gm_Query(bld->objList, 1, 0, 0x120)) != 0
                     && (o = gm_Query(o->list, 1, 0, 300)) != 0) {
                     list[n * 2] = (int)bld;
@@ -38,9 +38,9 @@ int ai_Unk4ab080(AIPER *p, int *a, int *b)
                 tries = 3;
                 do {
                     item = *(int *)((unsigned char *)o + 0x1c + k * 4);
-                    if (unk_Unk4f4d30(item, &((AIPER *)ai_Chars)[bld->owner], &price, &id2, &x) != 0
+                    if (unk_Unk4f4d30(item, &((AIPER *)ai_CharsT)[bld->owner], &price, &id2, &x) != 0
                         && (float)price <= money * 0.05f) {
-                        amt_GetKind(((AIPER *)ai_Chars)[(unsigned short)id2].unk166, &info);
+                        amt_GetKind(((AIPER *)ai_CharsT)[(unsigned short)id2].unk166, &info);
                         if (info.lvl < util_Random(12))
                             return 0;
                         if (util_RandomF() >= 0.5) {

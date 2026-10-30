@@ -97,7 +97,7 @@ credit:
         *o2 = s2;
         return n;
     }
-    t = &ai_BTypes[bl->type];
+    t = &ai_BTypesT[bl->type];
     if (bl->flags5a & 0x45)
         return 0;
     if (t->cap247 >= ((unsigned char *)t)[0x248])

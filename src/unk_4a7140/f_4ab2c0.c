@@ -35,7 +35,7 @@ int ai_Unk4ab2c0(AIPER *p, int *a, int *b)
     cm_BeginGroup("buy dunkle ecke");
     ai_Unk4c5d40(rec);
     cm_SendProofExecuted(a[1], p->netId);
-    cm_SendMoveGoodsUnchecked(((AIPER *)ai_Chars)[bld->owner].netId, p->netId, 0, a[4]);
+    cm_SendMoveGoodsUnchecked(((AIPER *)ai_CharsT)[bld->owner].netId, p->netId, 0, a[4]);
     cm_EndGroup("buy dunkle ecke");
     return 1;
 }

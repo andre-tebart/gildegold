@@ -32,6 +32,7 @@ extern char gm_PlayerRecords[];
 #include "unk_58bbd0.h"
 #include "data_views.h"
 #include "time_view.h"
+#define ai_CharsC (*(char (*)[768 * 0x21c])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) read flat, as this unit does */
 
 typedef struct D2OBJVIEW {                  /* 0x2ec, d2.h's D2OBJ: only the fields this unit reads */
     char pad0[0x10];

@@ -26,8 +26,8 @@ int ai_MsgOfficeApplicantPayment(G14MSG *m)
             goto found;
         if (r[i].state == 3 && r[i].cnt != 0) {
             for (j = 0; j < 768; j++) {
-                if (ai_Chars[j].appliedOffice == r[i].kind && (ai_Chars[j].kind == 3 || ai_Chars[j].kind == 4)) {
-                    p = &ai_Chars[j];
+                if (ai_CharsT[j].appliedOffice == r[i].kind && (ai_CharsT[j].kind == 3 || ai_CharsT[j].kind == 4)) {
+                    p = &ai_CharsT[j];
                     break;
                 }
             }

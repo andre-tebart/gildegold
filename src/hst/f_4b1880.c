@@ -14,8 +14,8 @@ int ai_Unk4b1880(void)
         if (ai_IsLivingHuman((unsigned short)i)) {
             memset(&msg, 0, sizeof(msg));
             msg.type = 0x54;
-            msg.to = ai_Chars[i].netId;
-            msg.fromId = ai_Chars[i].netId;
+            msg.to = ai_CharsT[i].netId;
+            msg.fromId = ai_CharsT[i].netId;
             msg.flags = 9;
             TMX(msg) = *(AITIMEX *)&t;
             cm_SendLongMessage(&msg);

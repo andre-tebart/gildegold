@@ -119,7 +119,7 @@ void ai_BuildTradeOffers(AICHAR *ch, AIOBJ *store, int f)
         }
     }
     off = 0;
-    bld = ai_Blds;
+    bld = ai_BldsT;
     do {
         if (AI_KIND(bld->type) == 2) {
             o = gm_Query(bld->objList, 2, 0, 0x2a, 6);
@@ -169,7 +169,7 @@ void ai_BuildTradeOffers(AICHAR *ch, AIOBJ *store, int f)
             }
         }
         off += 0xa9;
-        bld = (AIBLD *)((char *)ai_Blds + off);
+        bld = (AIBLD *)((char *)ai_BldsT + off);
     } while (off < 0xa900);
     for (i = 0; i < ai_NSlots; i++) {
         for (j = 0; j < ai_NEntries; j++) {

@@ -13,8 +13,8 @@ int ai_CheckFreeThieves(AICHAR *ch)
     while (1) {
         if (i >= 768)
             break;
-        if (ai_Chars[i].id != 0xffff && ai_Chars[i].bld == c->bld && ai_Chars[i].title && ai_Chars[i].job == 0 && !(ai_Chars[i].flags1c8 & 4) &&
-            ((float)ai_Chars[i].sk83 < 168.0f || (float)ai_Chars[i].sk82 < 168.0f))
+        if (ai_CharsT[i].id != 0xffff && ai_CharsT[i].bld == c->bld && ai_CharsT[i].title && ai_CharsT[i].job == 0 && !(ai_CharsT[i].flags1c8 & 4) &&
+            ((float)ai_CharsT[i].sk83 < 168.0f || (float)ai_CharsT[i].sk82 < 168.0f))
             found = 1;
         i++;
         if (found)
@@ -23,12 +23,12 @@ int ai_CheckFreeThieves(AICHAR *ch)
     if (found && util_Random(0x80) < 0x20)
         return 0;
     if (!found) {
-        if (((float)ai_Chars[i].sk83 < 252.0f || (float)ai_Chars[i].sk82 < 252.0f) && util_Random(0x80) > 0x60)
+        if (((float)ai_CharsT[i].sk83 < 252.0f || (float)ai_CharsT[i].sk82 < 252.0f) && util_Random(0x80) > 0x60)
             return 0;
     }
     for (i = 0; i < 768; i++) {
-        if (ai_Chars[i].id != 0xffff && ai_Chars[i].bld == c->bld && ai_Chars[i].title && ai_Chars[i].job == 0 && !(ai_Chars[i].flags1c8 & 4))
-            ai_Chars[i].flags1b4 |= 0x10;
+        if (ai_CharsT[i].id != 0xffff && ai_CharsT[i].bld == c->bld && ai_CharsT[i].title && ai_CharsT[i].job == 0 && !(ai_CharsT[i].flags1c8 & 4))
+            ai_CharsT[i].flags1b4 |= 0x10;
     }
     return 1;
 }

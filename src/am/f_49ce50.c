@@ -44,7 +44,7 @@ find:
     memset(&s2, 0, sizeof(s2));
     if (ai_Unk4aa6a0(p, &s1, &s2) == 0)
         return 0;
-    g = gm_Mix((AIPER *)p, (AIPER *)&ai_Chars[s2.unk10], 4);
+    g = gm_Mix((AIPER *)p, (AIPER *)&ai_CharsT[s2.unk10], 4);
     if (util_RandomF() + g < 1.0f) {
         s1.kind = 4;
         s1.unk04 = 3;

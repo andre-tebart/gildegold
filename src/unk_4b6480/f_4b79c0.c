@@ -13,7 +13,7 @@ int ai_Unk4b79c0(G14MSG *m)
     fl = (unsigned)&full_data_600c00;
     if (!ai_Unk4a5b50((AIPER *)c, 1, &fl, 33.0f, 100.0f, &id))
         return 0x400;
-    p = &ai_Chars[id];
+    p = &ai_CharsT[id];
     n = util_Random(5) * 2 + 6;
     cm_SendRelations(c->netId, p->netId, n, 1);
     txt_Format(buf, m->type + 0x12e7, p->id, p->id);

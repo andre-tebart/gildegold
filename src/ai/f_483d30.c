@@ -26,14 +26,14 @@ void ai_StartBuildingWork(AICHAR *ch)
                             return;
                         break;
                     }
-                    if (ai_Chars[c].id != 0xffff && ai_Chars[c].bld == ch->bld && ai_Chars[c].title
-                        && (!ai_Chars[c].job || ai_Chars[c].job->kind == 4 || ai_Chars[c].job->kind == (char)0x8c)
-                        && ai_Chars[c].model && ai_Chars[c].model->bldId == ai_Chars[c].bld->id)
-                        f = &ai_Chars[c];
+                    if (ai_CharsT[c].id != 0xffff && ai_CharsT[c].bld == ch->bld && ai_CharsT[c].title
+                        && (!ai_CharsT[c].job || ai_CharsT[c].job->kind == 4 || ai_CharsT[c].job->kind == (char)0x8c)
+                        && ai_CharsT[c].model && ai_CharsT[c].model->bldId == ai_CharsT[c].bld->id)
+                        f = &ai_CharsT[c];
                 }
                 memset(&msg, 0, sizeof(msg));
                 msg.type = 0x8d;
-                msg.to = ai_Chars[ch->bld->owner].netId;
+                msg.to = ai_CharsT[ch->bld->owner].netId;
                 msg.fromId = ch->bld->id;
                 msg.time = ai_TimeT;
                 msg.flags = 1;

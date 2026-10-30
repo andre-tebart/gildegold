@@ -13,9 +13,9 @@ int ai_Unk4afe80(void)
     msg.time.min = 0;
     msg.flags = 1;
     for (i = 0; i < 0x300; i++) {
-        if (ai_Chars[i].kind == 6 || ai_Chars[i].kind == 7) {
-            msg.to = ai_Chars[i].netId;
-            msg.car = ai_Chars[i].netId;
+        if (ai_CharsT[i].kind == 6 || ai_CharsT[i].kind == 7) {
+            msg.to = ai_CharsT[i].netId;
+            msg.car = ai_CharsT[i].netId;
             cm_SendLongMessage(&msg);
         }
     }

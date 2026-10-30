@@ -10,7 +10,7 @@ void ai_Unk495ee0(void)
 
     f = 1;
     for (i = 0; i < 768; i++) {
-        c = (AIPER *)&ai_Chars[i];
+        c = (AIPER *)&ai_CharsT[i];
         if (c->kind == 3) {
             f |= util_Random(2) ? 2 : 0;
             f |= util_Random(3) ? 4 : 0;

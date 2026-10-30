@@ -28,7 +28,7 @@ int ai_Unk4a63f0(AIPER *p, int a, __int64 mask, int c, float f, int *out)
                 return 1;
             return 0;
         }
-        b = &ai_Blds[j];
+        b = &ai_BldsT[j];
         if (b->type != 0 && ai_Unk5c37a0(p, q, b) != 0
             && (!win || (r = gm_Liking(b->owner, *(unsigned short *)p, 1), *(float *)&c <= r && r <= f))) {
             found = 1;

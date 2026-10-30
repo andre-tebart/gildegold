@@ -66,7 +66,7 @@ int ai_CommandFaithChange(int a, int b, char *fmt)
         return 0;
     cnt = 0;
     for (i = 0; i < 0x300; i++) {
-        if (ai_Chars[i].id != 0xffff && ai_Chars[i].kind <= 4 && G12_B(i, 0x0c) == rel)
+        if (ai_CharsT[i].id != 0xffff && ai_CharsT[i].kind <= 4 && G12_B(i, 0x0c) == rel)
             cnt++;
     }
     n = (int)((float)cnt * p * 0.01f);

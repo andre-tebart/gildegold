@@ -78,13 +78,13 @@ void main_Unk53b2e0(void)
             i = init_BuildingSceneUniverse(pb);
             t = U_I((unsigned)&d3_CurrentScene);
             if (i != -1) {
-                d3if_SelectScene((int)*(char *)((unsigned)&init_BuildingUniverse + *(unsigned char *)(U_I((unsigned)&ai_BTypes) + *pb * 0x24d)), 1);
+                d3if_SelectScene((int)*(char *)((unsigned)&init_BuildingUniverse + *(unsigned char *)(U_I((unsigned)&ai_BTypesT) + *pb * 0x24d)), 1);
                 d3_InflateScene(3);
                 veg_GrowPlants(*(int *)(pb + 0x71));
                 d3_DeflateScene(3);
                 d3if_SelectScene(t, 1);
             }
-        } else if (*(char *)(U_I((unsigned)&ai_BTypes) + *pb * 0x24d) == 7) {
+        } else if (*(char *)(U_I((unsigned)&ai_BTypesT) + *pb * 0x24d) == 7) {
             pb[0x69] = 0;
             pb[0x6a] = 0;
             pb[0x6b] = 0;

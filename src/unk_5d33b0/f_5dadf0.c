@@ -30,7 +30,7 @@ void ai_PokerSeatPanel(int seat, int n, int *cards)
         pic = ai_PokerState.seat[seat].model;
         d2_WinOpenPic(x - 0x37, h / 2 - d2_Pics[pic].h / 2, pic, ai_PokerUi.panel[seat].win);
     } else {
-        pic = ((AICHARVIEW *)(ai_Chars + ai_PlayerId * 0x21c))->pic;
+        pic = ((AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c))->pic;
         d2_WinOpenPic(x - 0x37, h / 2 - d2_Pics[pic].h / 2, pic, ai_PokerUi.panel[0].win);
     }
     for (i = 0; i < n; i++) {

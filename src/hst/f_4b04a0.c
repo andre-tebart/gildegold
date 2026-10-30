@@ -22,7 +22,7 @@ int ai_CommandOfficeStanding(G12ARG *args, int k, char *fmt)
                 n = atoi(fmt + 1) * sign[i] * 2;
                 for (i = 0; i < 0x300; i++) {
                     if (ai_IsLivingCharacter((unsigned short)i) && (G12_B(i, 0x166) != 0 || G12_B(i, 0x169) != 0))
-                        cm_SendRelations(c->netId, ai_Chars[i].netId, n, 1);
+                        cm_SendRelations(c->netId, ai_CharsT[i].netId, n, 1);
                 }
                 return 1;
             }

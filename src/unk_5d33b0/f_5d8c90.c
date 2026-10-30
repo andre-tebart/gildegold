@@ -28,7 +28,7 @@ void ai_CurseWindow(int building)
     AICHARVIEW *target;
     int limit, v;
 
-    if (((AICHARVIEW *)(ai_Chars + ai_PlayerId * 0x21c))->flags1cc & 0x10) {
+    if (((AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c))->flags1cc & 0x10) {
         snd_PlayVoice(-7, 0, "RAUSWURF", -1);
         sv_MessageBoxGreen((int)txt_Ptrs[0x41c1], (int)txt_Ptrs[0x41c2], 0);
         return;
@@ -72,17 +72,17 @@ void ai_CurseWindow(int building)
             sv_PopRequest = 1;
         } else if (d2_ClickedId != -1) {
             if (d2_PointerObj == ids[0]) {
-                if (sv_CheckGoodAmount(ai_Chars + ai_PlayerId * 0x21c, v, ai_OwnPlayer) != 0) {
-                    cm_SendSetField(((AICHARVIEW *)(ai_Chars + ai_PlayerId * 0x21c))->netId, 0x1cc, 4, 0x10, 0);
+                if (sv_CheckGoodAmount(ai_CharsC + ai_PlayerId * 0x21c, v, ai_OwnPlayer) != 0) {
+                    cm_SendSetField(((AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c))->netId, 0x1cc, 4, 0x10, 0);
                     if (ai_PlayerId != ((CURSEBLD *)building)->owner)
-                        cm_SendMoveGoodsUnchecked(-1, ((AICHARVIEW *)(ai_Chars + ai_PlayerId * 0x21c))->netId, ai_OwnPlayer,
+                        cm_SendMoveGoodsUnchecked(-1, ((AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c))->netId, ai_OwnPlayer,
                                                   (v > 1 ? v : 1) * 32000);
                     memset(&msg, 0, sizeof(msg));
                     msg.type = 0x9d;
                     msg.fromId = -1;
                     msg.flags = 2;
                     msg.arg[0] = v;
-                    msg.to = ((AICHARVIEW *)(ai_Chars + ai_PlayerId * 0x21c))->netId;
+                    msg.to = ((AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c))->netId;
                     memcpy(&msg.time, ai_Time, sizeof(GAMECLOCK));
                     msg.arg[2] = target->netId;
                     cm_SendLongMessage((char *)&msg);

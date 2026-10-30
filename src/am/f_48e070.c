@@ -7,7 +7,7 @@ int ai_Unk48e070(AIPX *p, int *out)
     if (ai_Unk5ffd1c < ai_TimeT.year) {
         ai_Unk6f0470 = 0;
         for (i = 0; i < 768; i++) {
-            AIPX *c = &((AIPX *)ai_Chars)[i];
+            AIPX *c = &((AIPX *)ai_CharsT)[i];
 
             if (c->kind == 6 || c->kind == 7 || c->kind == 5)
                 ai_Unk6f0470++;

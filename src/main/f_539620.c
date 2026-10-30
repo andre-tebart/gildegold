@@ -28,7 +28,7 @@ void main_Unk539620(unsigned p)
         return;
     }
     d = p * 0x21c;
-    if (*(char *)(((unsigned)&ai_Chars + 0x2) + d) == 6 && *(char *)(((unsigned)&ai_CharInts + 0x4) + d) == 0) {
+    if (*(char *)(((unsigned)&ai_CharsT + 0x2) + d) == 6 && *(char *)(((unsigned)&ai_CharInts + 0x4) + d) == 0) {
         e = (unsigned char *)(unsigned)&he_Events;
         do {
             if (*e != 0 && *(unsigned short *)(e + 8) == p) {
@@ -57,7 +57,7 @@ void main_Unk539620(unsigned p)
             }
             e += 0x14c;
         } while ((int)e < (unsigned)((unsigned)he_Events + 0x53000));
-        *(char *)(((unsigned)&ai_Chars + 0x2) + d) = 5;
+        *(char *)(((unsigned)&ai_CharsT + 0x2) + d) = 5;
         if (*(char *)((unsigned)&ai_Unk770b89 + d) == 0) {
             u = util_RandomInt(0xbf);
             s = *(char **)((unsigned)&ai_Unk143ac5c + (u & 0xffff) * 4);
@@ -65,7 +65,7 @@ void main_Unk539620(unsigned p)
             u = util_RandomInt(0x70);
             s = *(char **)((unsigned)&ai_Unk143af70 + (u & 0xffff) * 4);
         }
-        strcpy((char *)((unsigned)&ai_Chars + d + 0x30), s);
+        strcpy((char *)((unsigned)&ai_CharsT + d + 0x30), s);
         *(short *)(((unsigned)&ai_Unk770b89 + 0x47) + p * 0x21c) = (short)U_I((unsigned)&ai_Unk6f1bb8);
         U_I((unsigned)&ai_Unk6f1bb8) = U_I((unsigned)&ai_Unk6f1bb8) + 1;
         pi = (int *)(((unsigned)&ai_Unk770b89 + 0x53) + p * 0x21c);

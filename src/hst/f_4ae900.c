@@ -22,35 +22,35 @@ int ai_TokenRandomOfficeHolder(int mode, G12ARG *args, int k, char *fmt, char *o
             i = util_Random(0x300);
             for (n = 0x300; n != 0; n--) {
                 if (G12_B(i, 9) == 0 && ai_IsLivingCharacter((unsigned short)i) && G12_TITLED(i)
-                    && ai_NotInLists(ai_Chars[i].netId))
+                    && ai_NotInLists(ai_CharsT[i].netId))
                     break;
                 i = (i + 1) % 0x300;
             }
             if (n == 0)
                 return 0;
-            pick = &ai_Chars[i];
+            pick = &ai_CharsT[i];
         } else if (sel == 1) {
             i = util_Random(0x300);
             for (n = 0x300; n != 0; n--) {
                 if (G12_B(i, 9) == 0 && ai_IsLivingNonPlayer((unsigned short)i) && G12_TITLED(i)
-                    && ai_NotInLists(ai_Chars[i].netId))
+                    && ai_NotInLists(ai_CharsT[i].netId))
                     break;
                 i = (i + 1) % 0x300;
             }
             if (n == 0)
                 return 0;
-            pick = &ai_Chars[i];
+            pick = &ai_CharsT[i];
         } else {
             pick = 0;
             i = util_Random(0x300);
             for (n = 0x300; n != 0; n--) {
                 if (G12_B(i, 9) == 0) {
                     if (pick == 0 && ai_IsLivingNonPlayer((unsigned short)i) && G12_TITLED(i)) {
-                        if (ai_NotInLists(ai_Chars[i].netId))
-                            pick = &ai_Chars[i];
-                    } else if (ai_IsLivingHuman((unsigned short)i) && ai_NotInLists(ai_Chars[i].netId)
+                        if (ai_NotInLists(ai_CharsT[i].netId))
+                            pick = &ai_CharsT[i];
+                    } else if (ai_IsLivingHuman((unsigned short)i) && ai_NotInLists(ai_CharsT[i].netId)
                                && G12_TITLED(i)) {
-                        pick = &ai_Chars[i];
+                        pick = &ai_CharsT[i];
                         break;
                     }
                 }

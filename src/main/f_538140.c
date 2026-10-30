@@ -15,7 +15,7 @@ void main_Unk538140(void)
     net_PrintStats();
     net_ClearStats();
     sprintf(hdr, "main_RundenBeginn(): init round no %i", U_I((unsigned)&full_data_6f2598));
-    c = (unsigned char *)((unsigned)&ai_Chars + 0x2);
+    c = (unsigned char *)((unsigned)&ai_CharsT + 0x2);
     do {
         if (*(short *)(c - 2) != -1 && *c != 0 && *c < 9 && (U_I((unsigned)&ai_Unk1460ae0) == -1 || (ai_CanAct(c - 2) != 0 && (U_I((unsigned)&ai_Unk1460ae0) == -1 || *c != 7)))) {
             if (*c == 6 || *c == 5) {
@@ -86,5 +86,5 @@ void main_Unk538140(void)
             cm_SendMoneyDelta(*(int *)(c + 2), *(int *)(line + 0x31) + 4 + he_Unk53ef80(*(unsigned short *)(c - 2)));
         }
         c += 0x21c;
-    } while ((int)c < (unsigned)((unsigned)ai_Chars + 0x65402));
+    } while ((int)c < (unsigned)((unsigned)ai_CharsT + 0x65402));
 }

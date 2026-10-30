@@ -39,10 +39,10 @@ void ai_CalcMeisterWache(AICHAR *ch)
     idle = 0;
     ch->flags1b4 |= 0x20;
     for (i = 0; i < 768; i++) {
-        if (ai_Chars[i].health > 0 && ai_Chars[i].id != 0xffff && ai_Chars[i].kind != 10 && ai_Chars[i].bld == ch->bld
-            && ai_Chars[i].title && ai_Chars[i].model && ai_Chars[i].model->bldId == ai_Chars[i].bld->id) {
+        if (ai_CharsT[i].health > 0 && ai_CharsT[i].id != 0xffff && ai_CharsT[i].kind != 10 && ai_CharsT[i].bld == ch->bld
+            && ai_CharsT[i].title && ai_CharsT[i].model && ai_CharsT[i].model->bldId == ai_CharsT[i].bld->id) {
             total++;
-            if (!ai_Chars[i].job)
+            if (!ai_CharsT[i].job)
                 idle++;
         }
     }
@@ -58,7 +58,7 @@ void ai_CalcMeisterWache(AICHAR *ch)
         sprintf(buf, "ai_CalcMeisterWache(): Meister %s hat gerade keine Leute...", ch->name);
         return;
     }
-    if (ai_Chars[ch->bld->owner].kind == 6 || ai_Chars[ch->bld->owner].kind == 7) {
+    if (ai_CharsT[ch->bld->owner].kind == 6 || ai_CharsT[ch->bld->owner].kind == 7) {
         r = util_Random(3);
         if (r == 0 || ch->target == -1 || util_Random(2) == 0)
             goto choose;
@@ -116,7 +116,7 @@ city:
             sprintf(buf, "ai_CalcMeisterWache(): Meister %s patroulliert bei '%s'", ch->name, sel->name);
             memset(&msg, 0, sizeof(msg));
             msg.type = 0x43;
-            msg.to = ai_Chars[ch->bld->owner].netId;
+            msg.to = ai_CharsT[ch->bld->owner].netId;
             msg.fromId = ch->bld->id;
             msg.time = ai_TimeT;
             msg.flags = 2;
@@ -131,9 +131,9 @@ city:
                 for (c = 0; k < n; c++) {
                     if (c >= 768)
                         break;
-                    if (ai_Chars[c].id != 0xffff && ai_Chars[c].bld == ch->bld && ai_Chars[c].title
-                        && !ai_Chars[c].job && ai_Chars[c].model && ai_Chars[c].model->bldId == ai_Chars[c].bld->id)
-                        msg.arg[6 + k++] = ai_Chars[c].netId;
+                    if (ai_CharsT[c].id != 0xffff && ai_CharsT[c].bld == ch->bld && ai_CharsT[c].title
+                        && !ai_CharsT[c].job && ai_CharsT[c].model && ai_CharsT[c].model->bldId == ai_CharsT[c].bld->id)
+                        msg.arg[6 + k++] = ai_CharsT[c].netId;
                 }
                 if (k > 3)
                     goto send;
@@ -183,7 +183,7 @@ check:
             sprintf(buf, "ai_CalcMeisterWache(): Meister %s \xfc" "berpr\xfc" "ft '%s'", name, sel->name);
             memset(&msg, 0, sizeof(msg));
             msg.type = 100;
-            msg.to = ai_Chars[ch->bld->owner].netId;
+            msg.to = ai_CharsT[ch->bld->owner].netId;
             msg.fromId = ch->bld->id;
             msg.time = ai_TimeT;
             msg.flags = 1;
@@ -201,9 +201,9 @@ check:
             for (c = 0; k == 0; c++) {
                 if (c >= 768)
                     break;
-                if (ai_Chars[c].id != 0xffff && ai_Chars[c].bld == ch->bld && ai_Chars[c].title
-                    && !ai_Chars[c].job && ai_Chars[c].model && ai_Chars[c].model->bldId == ai_Chars[c].bld->id) {
-                    msg.arg[6] = ai_Chars[c].netId;
+                if (ai_CharsT[c].id != 0xffff && ai_CharsT[c].bld == ch->bld && ai_CharsT[c].title
+                    && !ai_CharsT[c].job && ai_CharsT[c].model && ai_CharsT[c].model->bldId == ai_CharsT[c].bld->id) {
+                    msg.arg[6] = ai_CharsT[c].netId;
                     k++;
                     msg.arg[0] = msg.arg[6];
                 }
@@ -222,7 +222,7 @@ umland:
     sprintf(buf, "ai_CalcMeisterWache(): Meister %s patroulliert im Umland", ch->name);
     memset(&msg, 0, sizeof(msg));
     msg.type = 0x65;
-    msg.to = ai_Chars[ch->bld->owner].netId;
+    msg.to = ai_CharsT[ch->bld->owner].netId;
     msg.fromId = ch->bld->id;
     msg.time = ai_TimeT;
     msg.flags = 2;
@@ -245,9 +245,9 @@ failed:
         for (c = 0; cnt < n; c++) {
             if (c >= 768)
                 break;
-            if (ai_Chars[c].id != 0xffff && ai_Chars[c].bld == ch->bld && ai_Chars[c].title && !ai_Chars[c].job
-                && ai_Chars[c].model && ai_Chars[c].model->bldId == ai_Chars[c].bld->id) {
-                msg.ids[k++] = ai_Chars[c].netId;
+            if (ai_CharsT[c].id != 0xffff && ai_CharsT[c].bld == ch->bld && ai_CharsT[c].title && !ai_CharsT[c].job
+                && ai_CharsT[c].model && ai_CharsT[c].model->bldId == ai_CharsT[c].bld->id) {
+                msg.ids[k++] = ai_CharsT[c].netId;
                 cnt++;
             }
         }

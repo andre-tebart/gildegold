@@ -16,7 +16,7 @@ int ai_Unk49f370(G5CH *p, AIARG *s1, AIARG *s2)
     G8_4FEA50((int *)&b, 0, 0, s1->unk08);
     memset(&m, 0, sizeof(m));
     m.type = 0x23;
-    m.to = ai_Chars[a->owner].netId;
+    m.to = ai_CharsT[a->owner].netId;
     m.unk0c = a->id;
     m.time = ai_TimeT;
     m.unk36 = 0x12;

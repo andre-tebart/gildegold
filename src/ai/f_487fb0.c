@@ -31,7 +31,7 @@ void ai_BuyUpgrade(AICHAR *ch)
     bld = ch->bld;
     flags |= 0x400;
     ch->flags1b4 = flags;
-    if (ai_Chars[bld->owner].kind != 6 && ai_Chars[bld->owner].kind != 7)
+    if (ai_CharsT[bld->owner].kind != 6 && ai_CharsT[bld->owner].kind != 7)
         return;
     if (!(flags & 8))
         return;
@@ -47,27 +47,27 @@ void ai_BuyUpgrade(AICHAR *ch)
             msg.type = 0x1c;
             msg.fromId = -1;
             msg.flags = 1;
-            msg.to = ai_Chars[ch->bld->owner].netId;
+            msg.to = ai_CharsT[ch->bld->owner].netId;
             msg.arg[0] = ch->bld->id;
             msg.arg[1] = 100 - ch->bld->level;
             cm_BeginGroup("renovieren");
-            cm_SendMoveGoods(-1, ai_Chars[ch->bld->owner].netId, ai_OwnPlayer, (int)f);
+            cm_SendMoveGoods(-1, ai_CharsT[ch->bld->owner].netId, ai_OwnPlayer, (int)f);
             cm_SendLongMessage(&msg);
             cm_EndGroup("renovieren");
-            fin = gm_PlayerRecord(&ai_Chars[ch->bld->owner]);
+            fin = gm_PlayerRecord(&ai_CharsT[ch->bld->owner]);
             if (fin)
                 fin->renovationSpent = (int)(fin->renovationSpent + f);
             ch->budget = (int)(ch->budget - f);
         }
     }
-    bt = &ai_BTypes[ch->bld->type];
+    bt = &ai_BTypesT[ch->bld->type];
     if (bt->nslots > 0) {
         for (i = 0; i < bt->nslots; i++) {
             if (ret)
                 goto found;
             if ((bt->slot[i] & 0x7fff) != 0) {
                 n = bt->slot[i] & 0x7fff;
-                if (ai_Goods[n].type == 2 || ai_Goods[n].type == 6)
+                if (ai_GoodsT[n].type == 2 || ai_GoodsT[n].type == 6)
                     first = n;
                 else if (first != 0xfd && !gm_Query(ch->bld->objList, 2, 6, 0, n))
                     ret = bt->slot[i] & 0x7fff;
@@ -85,7 +85,7 @@ void ai_BuyUpgrade(AICHAR *ch)
             goto found;
         if ((bt->slot[i] & 0x7fff) != 0) {
             n = bt->slot[i] & 0x7fff;
-            if (ai_Goods[n].type == 2 || ai_Goods[n].type == 6)
+            if (ai_GoodsT[n].type == 2 || ai_GoodsT[n].type == 6)
                 first = n;
             else if (first == 0xfd && !gm_Query(ch->bld->objList, 2, 6, 0, n))
                 ret = bt->slot[i] & 0x7fff;
@@ -100,18 +100,18 @@ found:
         if (ch->budget > cost * 3) {
             memset(&msg2, 0, sizeof(msg2));
             msg2.type = 2;
-            msg2.to = ai_Chars[ch->bld->masterId].netId;
+            msg2.to = ai_CharsT[ch->bld->masterId].netId;
             msg2.fromId = ch->bld->id;
             msg2.time = ai_TimeT;
             msg2.flags = 1;
             msg2.itemId = ret;
             msg2.arg[1] = o->objId;
             msg2.arg[3] = 1;
-            fin = gm_PlayerRecord(&ai_Chars[ch->bld->masterId]);
+            fin = gm_PlayerRecord(&ai_CharsT[ch->bld->masterId]);
             if (fin)
                 fin->upgradeSpent += cost;
             cm_BeginGroup("upgrade_meister_ai");
-            cm_SendMoveGoods(-1, ai_Chars[ch->bld->masterId].netId, ai_OwnPlayer, cost);
+            cm_SendMoveGoods(-1, ai_CharsT[ch->bld->masterId].netId, ai_OwnPlayer, cost);
             cm_SendLongMessage(&msg2);
             cm_EndGroup("upgrade_meister_ai");
             ch->budget -= cost;

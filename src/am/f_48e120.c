@@ -9,7 +9,7 @@ int ai_Unk48e120(int a, AIPX *p, int b, AIARGX *o1, AIARGX *o2)
     if (ai_Unk48e070(p, (int *)&bld) && !b && (a == 0x40 || a == 0) && !he_FindEvent(2, 0, 0xd, 2, p->id)) {
         if (bld) {
             t = bld->type;
-            if ((unsigned char)ai_BTypes[t].unk247 >= 3)
+            if ((unsigned char)ai_BTypesT[t].unk247 >= 3)
                 return 0;
             if (bld->flags5a & 0x41)
                 return 0;

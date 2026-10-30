@@ -40,7 +40,7 @@ void hmt_Unk4ad7a0(void)
     titles[1] = 0x15;
     titles[2] = 0x1b;
     for (j = 0; j < 768; j++) {
-        p = &ai_Chars[j];
+        p = &ai_CharsT[j];
         if (HMT_B(p, 0x0d) >= 7
             && (p->kind == 6 || p->kind == 7 || p->kind == 5 || p->kind == 4 || p->kind == 3 || p->kind == 2)) {
             for (i = 2; i >= 0; i--) {

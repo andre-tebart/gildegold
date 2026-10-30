@@ -15,7 +15,7 @@ int ai_Unk4a5320(AIPER *p, AIARG *s1, AIARG *s2)
         return 0;
     plot = s2->unk04;
     strcpy(name, "gb_");
-    strcat(name, ai_BTypes[s1->unk04].pad001);
+    strcat(name, ai_BTypesT[s1->unk04].pad001);
     _strupr(name + 2);
     alt = 0;
     for (;;) {
@@ -26,7 +26,7 @@ int ai_Unk4a5320(AIPER *p, AIARG *s1, AIARG *s2)
         if (vfs_GetPath(path, vfs_Root, vfs_Root, found) != 0)
             break;
         if (alt) {
-            sprintf(name, "amt_ExecGebaeudeBauen(): Keine Group f\xfcr %s gefunden", ai_BTypes[s1->unk04].pad001);
+            sprintf(name, "amt_ExecGebaeudeBauen(): Keine Group f\xfcr %s gefunden", ai_BTypesT[s1->unk04].pad001);
             return 0;
         }
         alt = 1;

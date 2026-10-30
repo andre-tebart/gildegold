@@ -15,7 +15,7 @@ void ai_CalcMeisterDiebe(AICHAR *ch)
     obj = 0;
     o = gm_Query(ch->bld->objList, 2, 6, 0, 0x116);
     for (; !obj && o; o = gm_QueryNext()) {
-        if (gm_FindById(0, &item, 0, o->unk06) && ai_Goods[*item].type == 2)
+        if (gm_FindById(0, &item, 0, o->unk06) && ai_GoodsT[*item].type == 2)
             obj = o;
     }
     if (obj) {
@@ -52,11 +52,11 @@ void ai_CalcMeisterDiebe(AICHAR *ch)
     all = 0;
     n = 0;
     for (c = 0; c < 768; c++) {
-        if (ai_Chars[c].health > 0 && ai_Chars[c].id != 0xffff && ai_Chars[c].kind != 10
-            && ai_Chars[c].bld == ch->bld && ai_Chars[c].title && ai_Chars[c].model
-            && ai_Chars[c].model->bldId == ai_Chars[c].bld->id) {
+        if (ai_CharsT[c].health > 0 && ai_CharsT[c].id != 0xffff && ai_CharsT[c].kind != 10
+            && ai_CharsT[c].bld == ch->bld && ai_CharsT[c].title && ai_CharsT[c].model
+            && ai_CharsT[c].model->bldId == ai_CharsT[c].bld->id) {
             all++;
-            if (!ai_Chars[c].job)
+            if (!ai_CharsT[c].job)
                 n++;
         }
     }
@@ -72,7 +72,7 @@ void ai_CalcMeisterDiebe(AICHAR *ch)
         sprintf(buf, "ai_CalcMeisterDiebe(): Meister %s hat gerade keine Leute...", ch->name);
         return;
     }
-    if (ai_Chars[ch->bld->owner].kind == 6 || ai_Chars[ch->bld->owner].kind == 7) {
+    if (ai_CharsT[ch->bld->owner].kind == 6 || ai_CharsT[ch->bld->owner].kind == 7) {
         r = util_Random(2);
         if (r && ch->target != -1 && util_Random(2))
             goto burgle;
@@ -95,21 +95,21 @@ void ai_CalcMeisterDiebe(AICHAR *ch)
             if (max == 0.0f)
                 max = 1.0f;
             best = 0;
-            bb = ai_Blds;
+            bb = ai_BldsT;
             for (t = 0; t < 256; t++, bb++) {
                 if (bb->type) {
                     r = gm_BuildingClass(bb->type);
                     if (bb->owner != ch->bld->owner && bb->owner != 0xffff && !(bb->flags5a & 1) && r != 3 && r != 5
                         && r != 0
-                        && (!ai_Chars[bb->owner].bld || ai_Chars[bb->owner].bld->owner != ch->bld->owner)
-                        && ai_Chars[bb->owner].kind < 8) {
+                        && (!ai_CharsT[bb->owner].bld || ai_CharsT[bb->owner].bld->owner != ch->bld->owner)
+                        && ai_CharsT[bb->owner].kind < 8) {
                         if (!bb->object || !ord_GetGridCell(bb->object + 0x4c, &i, &j))
                             w = 0.0f;
                         else
                             w = 1.0f - (ai_Grid[i][j].a * 0.125f + ai_Grid[i][j].b) / max;
                         w = util_Random(100) * w * 0.01;
                         if (best) {
-                            if (!((float)gm_GetGoodsValue(&ai_Chars[bb->owner]) * w > (float)gm_GetGoodsValue(&ai_Chars[best->owner]) * bestw))
+                            if (!((float)gm_GetGoodsValue(&ai_CharsT[bb->owner]) * w > (float)gm_GetGoodsValue(&ai_CharsT[best->owner]) * bestw))
                                 continue;
                         }
                         bestw = w;
@@ -121,14 +121,14 @@ void ai_CalcMeisterDiebe(AICHAR *ch)
                 if (he_FindEvent(2, 0, 0x3c, 3, ch->bld->id))
                     return;
                 sprintf(buf, "ai_CalcMeisterDiebe(): Meister %s entf\xfc" "hrt %s aus '%s'", ch->name,
-                        ai_Chars[best->owner].name, best->name);
+                        ai_CharsT[best->owner].name, best->name);
                 memset(&msg, 0, sizeof(msg));
                 msg.type = 0x3c;
-                msg.to = ai_Chars[ch->bld->owner].netId;
+                msg.to = ai_CharsT[ch->bld->owner].netId;
                 msg.fromId = ch->bld->id;
                 msg.time = ai_TimeT;
                 msg.flags = 1;
-                msg.arg[0] = ai_Chars[best->owner].netId;
+                msg.arg[0] = ai_CharsT[best->owner].netId;
                 msg.arg[1] = best->id;
                 msg.arg[2] = ch->bld->id;
                 if (n >= util_Random(3) + 1)
@@ -164,10 +164,10 @@ burgle:
             if (max == 0.0f)
                 max = 1.0f;
             best = 0;
-            bb = ai_Blds;
+            bb = ai_BldsT;
             for (t = 0; t < 256; t++, bb++) {
                 if (bb->type && bb->owner != ch->bld->owner && bb->owner != 0xffff && !(bb->flags5a & 1)
-                    && bb->owner != *ai_PlayerChar && !gm_IsHomeType(bb) && ai_BTypes[bb->type].kind != '!'
+                    && bb->owner != *ai_PlayerChar && !gm_IsHomeType(bb) && ai_BTypesT[bb->type].kind != '!'
                     && he_Unk553cc0(bb)) {
                     if (!bb->object || !ord_GetGridCell(bb->object + 0x4c, &i, &j))
                         w = 0.0f;
@@ -212,7 +212,7 @@ burgle:
                     sprintf(buf, "ai_CalcMeisterDiebe(): Meister %s bricht bei '%s' ein", name, best->name);
                     memset(&msg, 0, sizeof(msg));
                     msg.type = 0x3f;
-                    msg.to = ai_Chars[ch->bld->owner].netId;
+                    msg.to = ai_CharsT[ch->bld->owner].netId;
                     msg.fromId = ch->bld->id;
                     msg.time = ai_TimeT;
                     msg.flags = 1;
@@ -247,7 +247,7 @@ burgle:
         sprintf(buf, "ai_CalcMeisterDiebe(): Meister %s spioniert bei '%s'", name, best->name);
         memset(&msg, 0, sizeof(msg));
         msg.type = 0x40;
-        msg.to = ai_Chars[ch->bld->owner].netId;
+        msg.to = ai_CharsT[ch->bld->owner].netId;
         msg.fromId = ch->bld->id;
         msg.time = ai_TimeT;
         msg.flags = 1;
@@ -267,11 +267,11 @@ pick:
     sprintf(buf, "ai_CalcMeisterDiebe(): Meister %s m\xf6" "chte Taschen dieben", ch->name);
     memset(&msg, 0, sizeof(msg));
     msg.type = 0x61;
-    msg.to = ai_Chars[ch->bld->owner].netId;
+    msg.to = ai_CharsT[ch->bld->owner].netId;
     msg.fromId = ch->bld->id;
     msg.time = ai_TimeT;
     msg.flags = 1;
-    msg.arg[10] = ai_Chars[ch->bld->owner].netId;
+    msg.arg[10] = ai_CharsT[ch->bld->owner].netId;
     if (n > 7)
         n = 8;
     AI_FILL_IDS(n)

@@ -20,10 +20,10 @@ void main_Unk53a520(unsigned short pl)
     char buf[0x40];
     unsigned u;
 
-    c = (unsigned char *)U_I((unsigned)&ai_Blds);
+    c = (unsigned char *)U_I((unsigned)&ai_BldsT);
     do {
         if (*c != 0 && *(unsigned short *)(c + 0x27) == pl) {
-            k = (char *)(U_I((unsigned)&ai_BTypes) + *c * 0x24d);
+            k = (char *)(U_I((unsigned)&ai_BTypesT) + *c * 0x24d);
             c[0x51] = 0; c[0x52] = 0; c[0x53] = 0; c[0x54] = 0;
             c[0x55] = 0; c[0x56] = 0; c[0x57] = 0; c[0x58] = 0;
             c[0x4d] = 0; c[0x4e] = 0; c[0x4f] = 0; c[0x50] = 0;
@@ -64,7 +64,7 @@ void main_Unk53a520(unsigned short pl)
                 cm_SendFieldValues();
                 ik = cnt + 1;
                 u = pl;
-                if (*(char *)(((unsigned)&ai_Chars + 0x2) + u * 0x21c) != 6 && *(char *)(((unsigned)&ai_Chars + 0x2) + u * 0x21c) != 7
+                if (*(char *)(((unsigned)&ai_CharsT + 0x2) + u * 0x21c) != 6 && *(char *)(((unsigned)&ai_CharsT + 0x2) + u * 0x21c) != 7
                     && gm_GetGoodsValue(PL(u)) < 160000) {
                     cm_SendMoveGoods(U_I((unsigned)&ai_CharInts + u * 0x21c), -1, U_I((unsigned)&ai_OwnPlayer), (unsigned char)k[0x247] * 16000);
                     ik = cnt + 2;
@@ -73,7 +73,7 @@ void main_Unk53a520(unsigned short pl)
                 if (*(short *)(c + 0x27) == **(short **)(unsigned)&ai_PlayerChar) {
                     r = gm_FindCharacterByMaster(c);
                     if (r == 0) {
-                        cm_SendMessage3d(c, 1, 0, *(char *)(U_I((unsigned)&ai_BTypes) + *c * 0x24d + 0x223));
+                        cm_SendMessage3d(c, 1, 0, *(char *)(U_I((unsigned)&ai_BTypesT) + *c * 0x24d + 0x223));
                         ik = cnt + 1;
                     } else if ((*(unsigned char *)(r + 0x1b4) & 1) == 0) {
                         ev[1] = *(int *)(r + 0x1b8);
@@ -102,7 +102,7 @@ void main_Unk53a520(unsigned short pl)
                     cm_SendLongMessage(ev);
                 }
             }
-            if (*(char *)(((unsigned)&ai_Chars + 0x2) + pl * 0x21c) == 0xd || *(char *)(((unsigned)&ai_Chars + 0x2) + pl * 0x21c) == 0
+            if (*(char *)(((unsigned)&ai_CharsT + 0x2) + pl * 0x21c) == 0xd || *(char *)(((unsigned)&ai_CharsT + 0x2) + pl * 0x21c) == 0
                 || (cnt = ik, U_I((unsigned)&ai_CharInts + pl * 0x21c) == -1)) {
                 cm_SendOwnership(*(int *)(c + 1), *(int *)(*(int *)(unsigned)&ai_PlayerChar + 2), *(int *)(*(int *)(unsigned)&ai_PlayerChar + 2));
                 cnt = ik + 1;
@@ -189,7 +189,7 @@ void main_Unk53a520(unsigned short pl)
         }
         if (*(unsigned short *)(p + 0x27) == pl) {
             ps = PL(*(unsigned short *)(p + 0x27));
-            if (*(char *)(U_I((unsigned)&ai_BTypes) + *p * 0x24d) == 0x1e) {
+            if (*(char *)(U_I((unsigned)&ai_BTypesT) + *p * 0x24d) == 0x1e) {
                 r = ahm_OwnerChar(p);
                 if (r != 0) {
                     v = ahm_ObjectValue(p);
@@ -228,7 +228,7 @@ void main_Unk53a520(unsigned short pl)
                                 } else {
                                     *(unsigned char *)(U_I(((unsigned)&ai_Unk770cec + 0x18) + qb) + 0x8c) &= 0xfb;
                                 }
-                                if (*(char *)(((unsigned)&ai_Chars + 0x2) + qb) != 0x14)
+                                if (*(char *)(((unsigned)&ai_CharsT + 0x2) + qb) != 0x14)
                                     cm_SendMoveGoodsUnchecked(U_I((unsigned)&ai_CharInts + qb), U_I((unsigned)&ai_CharInts + pe), U_I((unsigned)&ai_OwnPlayer), ft);
                                 if (*(int *)(p + 0x3d) < 100 && gm_Opinion(pl, *(int *)pq) > -0x78) {
                                     v = (100 - *(int *)(p + 0x3d)) / 3;

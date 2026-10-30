@@ -13,7 +13,7 @@ int ai_Unk48f2b0(int a, AIPX *p, int b, AIARG *o1, AIARG *o2)
     if (he_FindEvent(2, 0, 0xd, 2, p->id))
         return 0;
     if (bl) {
-        if ((unsigned char)ai_BTypes[bl->type].unk247 >= 3 || (bl->flags5a & 0x41))
+        if ((unsigned char)ai_BTypesT[bl->type].unk247 >= 3 || (bl->flags5a & 0x41))
             return 0;
         t = bl->type + 1;
         L.s2.unk04 = t;

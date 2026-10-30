@@ -22,8 +22,8 @@ int ai_CommandWealthTax(int a, int b, char *fmt)
     f = b * 0.01f;
     for (i = 0; i < 0x300; i++) {
         if (ai_IsLivingCharacter((unsigned short)i)) {
-            b = gm_GetWorth(ai_Chars[i].id);
-            cm_SendMoveGoodsUnchecked(o->objId, ai_Chars[i].netId, 0, (int)(b * f));
+            b = gm_GetWorth(ai_CharsT[i].id);
+            cm_SendMoveGoodsUnchecked(o->objId, ai_CharsT[i].netId, 0, (int)(b * f));
         }
     }
     return 1;

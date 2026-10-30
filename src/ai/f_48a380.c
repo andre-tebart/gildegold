@@ -12,7 +12,7 @@ void ai_UnloadCarts(AICHAR *ch)
             if (car->fill < util_Random(0x20) + 0x28) {
                 memset(&msg, 0, sizeof(msg));
                 msg.type = 0x10;
-                msg.to = ai_Chars[ch->bld->owner].netId;
+                msg.to = ai_CharsT[ch->bld->owner].netId;
                 msg.fromId = ch->bld->id;
                 msg.flags = 1;
                 msg.time = ai_TimeT;

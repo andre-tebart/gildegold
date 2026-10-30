@@ -23,13 +23,13 @@ void ai_CalcEntryCost(AIENTRY *e0)
                     else
                         s->price = gm_GoodsPrice(s->item, ai_OwnPlayer);
                 }
-                e->materialCost = ai_Goods[e->item].need[k] * s->price + e->materialCost;
+                e->materialCost = ai_GoodsT[e->item].need[k] * s->price + e->materialCost;
             }
         }
-        e->materialCost = e->materialCost / ai_Goods[e->item].batch;
+        e->materialCost = e->materialCost / ai_GoodsT[e->item].batch;
         e->objectValue = gm_ObjectValue(e->item);
         e->cost = e->objectValue + e->materialCost;
         e->price = gm_GoodsPrice(e->item, ai_OwnPlayer);
-        e->margin = (e->price - e->cost) / ai_Goods[e->item].unk22;
+        e->margin = (e->price - e->cost) / ai_GoodsT[e->item].unk22;
     }
 }

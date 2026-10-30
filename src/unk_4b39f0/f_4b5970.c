@@ -17,7 +17,7 @@ void ai_MissionCompleteDialog(int id)
     G13MIS *nm;
     int again, quit, o1, o2, o3, view, flags, h;
 
-    c = &ai_Chars[ai_PlayerId];
+    c = &ai_CharsT[ai_PlayerId];
     nm = 0;
     again = 0;
     quit = 0;

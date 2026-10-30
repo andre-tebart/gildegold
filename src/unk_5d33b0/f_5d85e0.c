@@ -50,7 +50,7 @@ void ai_BloodRevengeWindow(int building)
     refresh = 1;
     total = 0;
     tick = 0;
-    if (((AICHARVIEW *)(ai_Chars + ai_PlayerId * 0x21c))->flags1cc & 8) {
+    if (((AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c))->flags1cc & 8) {
         sv_MessageBoxGreen((int)txt_Ptrs[0x41b2], (int)txt_Ptrs[0x41b3], 0);
         return;
     }
@@ -124,19 +124,19 @@ void ai_BloodRevengeWindow(int building)
                 refresh = 1;
             }
         } else if (d2_PointerObj == ids[0]) {
-            if (sv_CheckMoney(ai_Chars + ai_PlayerId * 0x21c, total) == 1) {
+            if (sv_CheckMoney(ai_CharsC + ai_PlayerId * 0x21c, total) == 1) {
                 txt_Format(msg, 0x41bf, rows[0].rec->id);
                 k = 0;
                 for (i = 1; i < 5; i++) {
                     if (rows[i].rec != 0) {
-                        r = 0x32 - (int)(gm_Mix((int)(ai_Chars + ai_PlayerId * 0x21c), (int)rows[i].rec, 4) * -50.0f);
+                        r = 0x32 - (int)(gm_Mix((int)(ai_CharsC + ai_PlayerId * 0x21c), (int)rows[i].rec, 4) * -50.0f);
                         cm_SendRelations(rows[0].rec->id, rows[i].rec->id, -r, 1);
                         sel[5 + k] = (int)rows[i].rec;
                         k++;
                     }
                 }
-                gm_SendMoneyDelta(((AICHARVIEW *)(ai_Chars + ai_PlayerId * 0x21c))->netId, -total);
-                cm_SendSetField(((AICHARVIEW *)(ai_Chars + ai_PlayerId * 0x21c))->netId, 0x1cc, 4, 8, 0);
+                gm_SendMoneyDelta(((AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c))->netId, -total);
+                cm_SendSetField(((AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c))->netId, 0x1cc, 4, 8, 0);
                 ai_GypsyDeliveryText((struct AIPER *)rows[0].rec, k, (struct AIPER **)&sel[5]);
                 txt_Format(msg, 0x41b9, 0x41b2);
                 sv_MessageBox((int)msg, 0);

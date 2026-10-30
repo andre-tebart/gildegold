@@ -16,9 +16,9 @@ int ai_CondCharShare(AICHAR *c, G13TYPE *t)
     n = 0;
     same = 0;
     for (i = 0; i < 0x300; i++) {
-        if (ai_Chars[i].kind < 10) {
+        if (ai_CharsT[i].kind < 10) {
             n++;
-            if (G13_B(&ai_Chars[i], 0x0c) == G13_B(c, 0x0c))
+            if (G13_B(&ai_CharsT[i], 0x0c) == G13_B(c, 0x0c))
                 same++;
         }
     }

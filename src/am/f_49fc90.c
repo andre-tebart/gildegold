@@ -20,9 +20,9 @@ int ai_Unk49fc90(int a, G5CH *p, int f, AIARG *o1)
         memset(all, 0, sizeof(all));
         memset(best, 0, sizeof(best));
         for (off = 0; off < 0xa900; off += 0xa9) {
-            b = (unsigned char *)ai_Blds + off;
+            b = (unsigned char *)ai_BldsT + off;
             if (b[0] != 0 && *(short *)(b + 0x27) != -1) {
-                bt = (unsigned char *)ai_BTypes + b[0] * 0x24d;
+                bt = (unsigned char *)ai_BTypesT + b[0] * 0x24d;
                 lo32 = 0;
                 hi32 = 0;
                 if (bt[0] < 0x20)
@@ -36,7 +36,7 @@ int ai_Unk49fc90(int a, G5CH *p, int f, AIARG *o1)
                     all[g] += bt[0x247];
                     if (best[g] == 0)
                         best[g] = b[0];
-                    else if (((unsigned char *)ai_BTypes)[best[g] * 0x24d + 0x247] < bt[0x247])
+                    else if (((unsigned char *)ai_BTypesT)[best[g] * 0x24d + 0x247] < bt[0x247])
                         best[g] = b[0];
                 }
             }

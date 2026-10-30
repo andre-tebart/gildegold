@@ -24,10 +24,10 @@ int ai_Unk49e7a0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     money = gm_Unk509e30(*(int *)(o + 0x14), ai_OwnPlayer);
     if (money < (util_Random(3000) + 1000) * 32)
         return 0;
-    rec = ai_Blds;
+    rec = ai_BldsT;
     for (i = 0; i < 0x100; i++, rec++) {
         k = rec->type;
-        if (k == 0 || ai_BTypes[k].kind != 3 || (rec->flags5a & 4))
+        if (k == 0 || ai_BTypesT[k].kind != 3 || (rec->flags5a & 4))
             continue;
         lvl = rec->level;
         if (lvl < util_Random(0x40) + 0x25) {

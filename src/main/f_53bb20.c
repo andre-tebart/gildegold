@@ -202,14 +202,14 @@ L_fail:
                 iv = (5 - U_I((unsigned)&ai_Difficulty)) * 0xfa;
             else
                 iv = 750000;
-            pc = (char *)((unsigned)&ai_Chars + 0x2);
+            pc = (char *)((unsigned)&ai_CharsT + 0x2);
             do {
                 if (pc[6] != 0 && (*pc == 6 || *pc == 7)) {
                     w = gm_PlayerFactor(iv, *(unsigned char *)(unsigned)&ai_OwnPlayer);
                     cm_SendMoveGoods(*(int *)(pc + 2), -1, *(unsigned char *)(unsigned)&ai_OwnPlayer, w);
                 }
                 pc += 0x21c;
-            } while ((int)pc < (unsigned)((unsigned)ai_Chars + 0x65402));
+            } while ((int)pc < (unsigned)((unsigned)ai_CharsT + 0x65402));
         }
         if ((U_I((unsigned)&ai_GameFlags) & 1) != 0)
             ai_Unk4b1d20();
@@ -244,7 +244,7 @@ L_fail:
         sv_SelectPanelObject(p3, w, (unsigned)&ch_EmptyName);
     }
     us = *(unsigned short *)(unsigned)&ai_PlayerId;
-    while (us < 0x300 && U_I((unsigned)&ai_GameOver) == 0 && *(char *)(((unsigned)&ai_Chars + 0x2) + (U_I((unsigned)&ai_PlayerId) & 0xffff) * 0x21c) != 6) {
+    while (us < 0x300 && U_I((unsigned)&ai_GameOver) == 0 && *(char *)(((unsigned)&ai_CharsT + 0x2) + (U_I((unsigned)&ai_PlayerId) & 0xffff) * 0x21c) != 6) {
         us++;
         *(unsigned short *)(unsigned)&ai_PlayerId = us;
     }
@@ -268,7 +268,7 @@ L_fail:
         } else {
             u = U_I((unsigned)&ai_PlayerId) & 0xffff;
             if (u != 0) {
-                pc = (char *)((unsigned)&ai_Chars + 0x2);
+                pc = (char *)((unsigned)&ai_CharsT + 0x2);
                 do {
                     if (*pc == 6)
                         iv++;
@@ -279,11 +279,11 @@ L_fail:
             }
         }
         us = *(unsigned short *)(unsigned)&ai_PlayerId;
-        while (us < 0x300 && U_I((unsigned)&ai_GameOver) == 0 && *(char *)(((unsigned)&ai_Chars + 0x2) + (U_I((unsigned)&ai_PlayerId) & 0xffff) * 0x21c) != 6) {
+        while (us < 0x300 && U_I((unsigned)&ai_GameOver) == 0 && *(char *)(((unsigned)&ai_CharsT + 0x2) + (U_I((unsigned)&ai_PlayerId) & 0xffff) * 0x21c) != 6) {
             us++;
             *(unsigned short *)(unsigned)&ai_PlayerId = us;
         }
-        if (*(char *)(((unsigned)&ai_Chars + 0x2) + (U_I((unsigned)&ai_PlayerId) & 0xffff) * 0x21c) == 6) {
+        if (*(char *)(((unsigned)&ai_CharsT + 0x2) + (U_I((unsigned)&ai_PlayerId) & 0xffff) * 0x21c) == 6) {
             if ((U_I((unsigned)&ai_GameFlags) & 0x46) == 0) {
                 clk[1] = U_I((unsigned)&ai_TimeHour);
                 clk[0] = U_I((unsigned)&ai_TimeT);

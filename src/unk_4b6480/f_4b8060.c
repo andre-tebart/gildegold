@@ -15,7 +15,7 @@ int ai_Unk4b8060(G14MSG *m)
     fl = (unsigned)&full_data_600c00;
     if (!ai_Unk4a5b50((AIPER *)c, 1, &fl, 0.0f, 100.0f, &id))
         return 0x400;
-    p = &ai_Chars[id];
+    p = &ai_CharsT[id];
     if (p == 0)
         return 0x400;
     n = util_Random(15) * 2 + 10;

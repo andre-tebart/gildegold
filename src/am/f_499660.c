@@ -55,11 +55,11 @@ int ai_Unk499660(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
             if ((ai_Partner && (ai_Unk4a63f0((AIPER *)ai_Partner, 4, mask.QuadPart, 0, 100.0f, &x), x != -1))
                 || ai_Unk4a63f0(p, 6, mask.QuadPart, 0, util_Random(0x20) + 19.0f, &x)) {
                 gm_FindById((int)&y, 0, 0, x);
-                if (y && y->owner != 0xffff && he_Unk570ea0((AIPER *)&ai_Chars[y->owner], p)) {
+                if (y && y->owner != 0xffff && he_Unk570ea0((AIPER *)&ai_CharsT[y->owner], p)) {
                     memset(buf, 0, sizeof(buf));
                     buf[0] = 1;
                     v = (int)(gm_EquipmentValue(y, 100) * 0.05f + gm_GetWorth(p->id) * 0.02f);
-                    ch = (AIPER *)&ai_Chars[y->owner];
+                    ch = (AIPER *)&ai_CharsT[y->owner];
                     if (ord_DispatchOrder(0x1b, p, buf) & 2)
                         v /= 2;
                     if (!(m * 0.44f < v)) {
@@ -79,9 +79,9 @@ int ai_Unk499660(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
                             }
                             return r;
                         }
-                        if (he_Unk553d60((AIPER *)&ai_Chars[y->owner], p)
-                            && he_Unk553d10((AIPER *)&ai_Chars[y->owner], p) && he_Unk553cc0((AIBLD *)y)
-                            && he_Unk570ea0((AIPER *)&ai_Chars[y->owner], p)) {
+                        if (he_Unk553d60((AIPER *)&ai_CharsT[y->owner], p)
+                            && he_Unk553d10((AIPER *)&ai_CharsT[y->owner], p) && he_Unk553cc0((AIBLD *)y)
+                            && he_Unk570ea0((AIPER *)&ai_CharsT[y->owner], p)) {
                             o1->kind = 4;
                             o1->unk04 = y->id;
                             o1->unk08 = 1;

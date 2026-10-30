@@ -13,10 +13,10 @@ int ai_Unk4abac0(int a, AIPER *p, int c, unsigned char *m)
     k = 0;
     if ((a == 0x46 || a == 0) && c == 0 && v != 0 && p->kind != 3 && p->unk194 > 1) {
         best = 0;
-        b = ai_Blds;
+        b = ai_BldsT;
         for (i = 0x100; i != 0; i--) {
             if (b->type != 0 && b->owner == p->id) {
-                bt = &ai_BTypes[b->type];
+                bt = &ai_BTypesT[b->type];
                 if (bt->kind == 0x1f && gm_Query(b->objList, 2, 6, 0, 0x27f) != 0 && ai_FindCurseEvent(b) == 0) {
                     if (best == 0) {
                         n = bt->cap247 != 2 ? 4 : 7;

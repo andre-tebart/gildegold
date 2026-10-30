@@ -28,8 +28,8 @@ int ai_TokenRandomPlayer(int mode, G12ARG *args, int k, char *fmt, char *out)
             step = steps[(unsigned short)util_Random(4)];
             i = (unsigned short)util_Random(0x300);
             for (n = 0x300; n != 0; n--) {
-                if (ai_IsLivingHuman((unsigned short)i) && ai_NotInLists(ai_Chars[i].netId)) {
-                    pick = &ai_Chars[i];
+                if (ai_IsLivingHuman((unsigned short)i) && ai_NotInLists(ai_CharsT[i].netId)) {
+                    pick = &ai_CharsT[i];
                     break;
                 }
                 i = (step + i) % 0x300;

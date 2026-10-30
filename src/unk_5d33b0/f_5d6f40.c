@@ -43,8 +43,8 @@ extern unsigned short ai_PlayerId;      /* 0x6f25b8, the local player (cm.h / am
 extern char ls_SavePath[];              /* 0x75e640, ls.c: the path stored in the save header (0x60 bytes) */
 /* ai_SaveWaitText: view of txt_Ptrs (build/mk_txt_views.py) */
 
-/* ai.h's AICHAR (0x21c bytes, ai_Chars[0x300] at 0x770b80): the fields this unit reads. f3snd.h declares
-   ai_Chars as char[], so ai.h cannot be included here; the type debt is the same as D2OBJVIEW's. */
+/* ai.h's AICHAR (0x21c bytes, ai_CharsC[0x300] at 0x770b80): the fields this unit reads. f3snd.h declares
+   ai_CharsC as char[], so ai.h cannot be included here; the type debt is the same as D2OBJVIEW's. */
 typedef struct AICHARVIEW {
     unsigned short id;                  /* +0x000, 0xffff when free */
     unsigned char kind;                 /* +0x002, 6 / 7 = a player */

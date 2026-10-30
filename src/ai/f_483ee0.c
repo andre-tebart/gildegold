@@ -23,10 +23,10 @@ void ai_EndWorkerPose(AICHAR *ch)
                     return;
                 break;
             }
-            if (ai_Chars[c].id != 0xffff && ai_Chars[c].bld == ch->bld && ai_Chars[c].title == 0x1c
-                && ai_Chars[c].kind == 0x14 && (ai_Chars[c].flags1b4 & 1) && ai_Chars[c].model
-                && ai_Chars[c].model->bldId == ai_Chars[c].bld->id)
-                f = &ai_Chars[c];
+            if (ai_CharsT[c].id != 0xffff && ai_CharsT[c].bld == ch->bld && ai_CharsT[c].title == 0x1c
+                && ai_CharsT[c].kind == 0x14 && (ai_CharsT[c].flags1b4 & 1) && ai_CharsT[c].model
+                && ai_CharsT[c].model->bldId == ai_CharsT[c].bld->id)
+                f = &ai_CharsT[c];
         }
         if (util_RandomF() > 0.75f)
             ai_EndCharExtra(f, 0);

@@ -24,7 +24,7 @@ int ai_Unk497af0(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
         return 0;
     if (bld->owner == 0xffff)
         return 0;
-    c = (AIPER *)&ai_Chars[bld->owner];
+    c = (AIPER *)&ai_CharsT[bld->owner];
     v = gm_Unk509ee0(c, ai_OwnPlayer);
     if (o1->unk14 > 0.0f && o1->unk14 < 1.0f)
         v = (int)(v * o1->unk14);

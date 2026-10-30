@@ -26,7 +26,7 @@ int ai_Unk49a390(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         return 0;
     n = 0;
     sum = 0;
-    for (c = (unsigned char *)ai_Chars; c < (unsigned char *)(ai_Chars + 768); c += 0x21c) {
+    for (c = (unsigned char *)ai_CharsT; c < (unsigned char *)(ai_CharsT + 768); c += 0x21c) {
         if (*(int *)(c + 0x16c) == o) {
             n++;
             sum += c[0x1c5];

@@ -87,12 +87,12 @@ void ai_CurseTargetWindow(int building)
             sv_PopRequest = 1;
         } else if (d2_ClickedId != -1) {
             if (d2_PointerObj == ids[0]) {
-                if (sv_CheckMoney(ai_Chars + ai_PlayerId * 0x21c, cls) == 1) {
-                    gm_SendMoneyDelta(((AICHARVIEW *)(ai_Chars + ai_PlayerId * 0x21c))->netId, -cls);
+                if (sv_CheckMoney(ai_CharsC + ai_PlayerId * 0x21c, cls) == 1) {
+                    gm_SendMoneyDelta(((AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c))->netId, -cls);
                     memset(&msg, 0, sizeof(msg));
                     msg.type = 0xa0;
                     msg.flags = 2;
-                    msg.to = ((AICHARVIEW *)(ai_Chars + ai_PlayerId * 0x21c))->netId;
+                    msg.to = ((AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c))->netId;
                     msg.fromId = ((CURSEBLD *)building)->id;
                     memcpy(&msg.time, ai_Time, sizeof(GAMECLOCK));
                     msg.arg[0] = value;

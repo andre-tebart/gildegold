@@ -30,7 +30,7 @@ void hmt_Election(void)
                 n = 0;
                 memset(best, 0, sizeof(best));
                 for (i = 0; i < 768; i++) {
-                    c = &ai_Chars[i];
+                    c = &ai_CharsT[i];
                     if ((excl & c->flags1cc) == 0 && (mask & c->flags1cc) != 0 && HMT_B(c, 0x0d) >= 7
                         && (c->kind == 6 || c->kind == 7 || c->kind == 5 || c->kind == 4 || c->kind == 3
                             || c->kind == 2)) {

@@ -19,24 +19,24 @@ void ai_UpdateStaff(AICHAR *ch)
     if (!(fl & 0x40)) {
         fl |= 0x40;
         ch->flags1b4 = fl;
-        if ((ai_Chars[ch->bld->owner].kind != 6 && ai_Chars[ch->bld->owner].kind != 7) || (fl & 2)) {
-            bt = &ai_BTypes[ch->bld->type];
+        if ((ai_CharsT[ch->bld->owner].kind != 6 && ai_CharsT[ch->bld->owner].kind != 7) || (fl & 2)) {
+            bt = &ai_BTypesT[ch->bld->type];
             for (i = 0; i < 768; i++) {
-                if (ai_Chars[i].id != 0xffff && ai_Chars[i].bld == ch->bld && ai_Chars[i].title != 0 &&
-                    ai_Chars[i].title == (char)bt->k230 && *(int *)((char *)&ai_Chars[i] + 0x174) >= 4) {
+                if (ai_CharsT[i].id != 0xffff && ai_CharsT[i].bld == ch->bld && ai_CharsT[i].title != 0 &&
+                    ai_CharsT[i].title == (char)bt->k230 && *(int *)((char *)&ai_CharsT[i] + 0x174) >= 4) {
                     memset(&msg, 0, sizeof(msg));
                     msg.type = 0x32;
-                    msg.to = ai_Chars[ch->bld->owner].netId;
+                    msg.to = ai_CharsT[ch->bld->owner].netId;
                     msg.fromId = ch->bld->id;
                     msg.flags = 2;
                     msg.time = ai_TimeT;
-                    msg.arg[0] = ai_Chars[i].netId;
+                    msg.arg[0] = ai_CharsT[i].netId;
                     cm_SendLongMessage(&msg);
                 }
             }
             n = 0;
             for (i = 0; i < 768; i++) {
-                if (ai_Chars[i].id != 0xffff && ai_Chars[i].bld == ch->bld && ai_Chars[i].title != 0)
+                if (ai_CharsT[i].id != 0xffff && ai_CharsT[i].bld == ch->bld && ai_CharsT[i].title != 0)
                     n++;
             }
             job = he_FindEvent(2, 0, 6, 3, ch->bld->id);
@@ -49,8 +49,8 @@ void ai_UpdateStaff(AICHAR *ch)
                 }
             }
             t = ch->bld->type;
-            if (n < ai_BTypes[t].k231 + ai_BTypes[t].k232) {
-                oc = &ai_Chars[ch->bld->owner];
+            if (n < ai_BTypesT[t].k231 + ai_BTypesT[t].k232) {
+                oc = &ai_CharsT[ch->bld->owner];
                 v = (int)gm_Unk50cd40(oc, t, -1, 1);
                 if (n != 0) {
                     if (ch->flags1c8 & 8)
@@ -63,7 +63,7 @@ void ai_UpdateStaff(AICHAR *ch)
                 if (job == 0) {
                     memset(&msg, 0, sizeof(msg));
                     msg.type = 6;
-                    msg.to = ai_Chars[ch->bld->owner].netId;
+                    msg.to = ai_CharsT[ch->bld->owner].netId;
                     msg.fromId = ch->bld->id;
                     msg.flags = 1;
                     msg.time = ai_TimeT;
@@ -71,7 +71,7 @@ void ai_UpdateStaff(AICHAR *ch)
                     gm_IsHomeType(ch->bld);
                     *(int *)((char *)&msg + 0x8c) = -1;
                     ((unsigned char *)&msg.arg[0])[1] = 1;
-                    ((unsigned char *)&msg.arg[0])[0] = ai_BTypes[ch->bld->type].k230;
+                    ((unsigned char *)&msg.arg[0])[0] = ai_BTypesT[ch->bld->type].k230;
                     cm_SendLongMessage(&msg);
                     ch->budget -= v;
                 }

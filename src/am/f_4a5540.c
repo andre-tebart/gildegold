@@ -12,7 +12,7 @@ int ai_Unk4a5540(int *item, int *obj, AIBLD *b, int f)
     char k;
 
     list = b->objList;
-    t = &ai_BTypes[b->type];
+    t = &ai_BTypesT[b->type];
     cart = 0;
     i = 0;
     if (t->nslots == 0)
@@ -20,7 +20,7 @@ int ai_Unk4a5540(int *item, int *obj, AIBLD *b, int f)
     in = (short *)&t->slot[0x41];
     s = t->slot;
     do {
-        k = ai_Goods[*s & 0x7fff].type;
+        k = ai_GoodsT[*s & 0x7fff].type;
         if (k != '!') {
             if (k == 2 || k == 6) {
                 n = 0;

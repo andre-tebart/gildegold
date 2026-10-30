@@ -24,7 +24,7 @@ int ai_Unk49f850(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     n = 0;
     j = util_Random(0x100);
     for (i = 0x100; i != 0; ) {
-        b = &ai_Blds[j];
+        b = &ai_BldsT[j];
         if (b->type == 0x37 && b->owner != 0xffff && b->owner != p->id) {
             o = (unsigned char *)gm_Query(b->objList, 2, 6, 0, 0x12d);
             if (o != 0) {
@@ -92,7 +92,7 @@ int ai_Unk49f850(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     o1->unk04 = bl[j]->id;
     o1->unk08 = 'join';
     o2->kind = 0x12;
-    o2->unk04 = ai_Chars[bl[j]->owner].netId;
+    o2->unk04 = ai_CharsT[bl[j]->owner].netId;
     o2->unk08 = 0;
     return 0x35;
 noop:

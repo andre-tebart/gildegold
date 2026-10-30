@@ -51,7 +51,7 @@ void hmt_Create(int type, int unk, unsigned short v, AICHAR *c)
     for (i = 0; i < 768; i++) {
         if (pl != 0xffff)
             break;
-        if (ai_Chars[i].kind == 6)
+        if (ai_CharsT[i].kind == 6)
             pl = i;
     }
     r = hmt_Find(type == 0x15 ? hmt_Event : hmt_Person, &kind);
@@ -60,14 +60,14 @@ void hmt_Create(int type, int unk, unsigned short v, AICHAR *c)
     if (type == 0x15) {
         if (ai_TimeT.year > 0 && pl != 0xffff) {
             txt_Format(text, 0x42b3, c->id);
-            he_ShowNews(ai_Chars[pl].netId, -1, text, 0, 0x602, "_NACHRICHTEN_NEU_01");
+            he_ShowNews(ai_CharsT[pl].netId, -1, text, 0, 0x602, "_NACHRICHTEN_NEU_01");
         }
         HMT_I(c, 0x18c) = hmt_RandomHeadIcon();
         hmt_NextEvent();
     } else {
         if (ai_TimeT.year > 0 && pl != 0xffff) {
             txt_Format(text, 0x42b5, c->id);
-            he_ShowNews(ai_Chars[pl].netId, -1, text, 0, 0x602, "_NACHRICHTEN_NEU_03");
+            he_ShowNews(ai_CharsT[pl].netId, -1, text, 0, 0x602, "_NACHRICHTEN_NEU_03");
         }
         HMT_I(c, 0x18c) = hmt_RandomHeadIcon();
         hmt_NextPerson();

@@ -38,8 +38,8 @@ int ai_Unk4ba630(G14MSG *m)
         d = -1;
     }
     for (i = lo; i < hi; i += d) {
-        if (ai_Chars[i].kind != 6 && ai_Chars[i].kind != 7 && ai_Chars[i].kind < 10 && ai_Chars[i].id != 0xffff) {
-            a[k++] = &ai_Chars[i];
+        if (ai_CharsT[i].kind != 6 && ai_CharsT[i].kind != 7 && ai_CharsT[i].kind < 10 && ai_CharsT[i].id != 0xffff) {
+            a[k++] = &ai_CharsT[i];
             if (k == 16)
                 break;
         }

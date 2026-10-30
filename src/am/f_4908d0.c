@@ -25,10 +25,10 @@ int ai_Unk4908d0(int a, AGCH *p, int b, AGARG *o1, AGARG *o2)
         }
     }
     memset(list, 0, sizeof(list));
-    bld = ai_Blds;
+    bld = ai_BldsT;
     n = 0;
     for (i = 0; i < 256; i++, bld = (AIBLD *)((char *)bld + 0xa9)) {
-        if (bld->type != 0 && (bld->flags5a & 1) == 0 && ai_BTypes[bld->type].kind == 0x1d) {
+        if (bld->type != 0 && (bld->flags5a & 1) == 0 && ai_BTypesT[bld->type].kind == 0x1d) {
             if (n < 8)
                 list[n++] = bld;
             r = gv_FindEntry(p, bld, 0, unk_Unk4ef710, 0xff);

@@ -19,10 +19,10 @@ int ai_Unk4aa800(AIPER *p, int c, unsigned char *m)
     if (ai_Unk4a5a30(p, ((unsigned)&ai_Unka69140 + 0x4973c0), 4, ids, 50.0f, 100.0f, &id2) == 0)
         return 0;
     m[0] = 7;
-    *(int *)(m + 4) = ((AIPER *)ai_Chars)[id].netId;
-    f = gm_Mix(p, &((AIPER *)ai_Chars)[id], 4);
+    *(int *)(m + 4) = ((AIPER *)ai_CharsT)[id].netId;
+    f = gm_Mix(p, &((AIPER *)ai_CharsT)[id], 4);
     if (util_RandomF() + f < 1.0f)
         return 0;
-    *(int *)(m + 8) = ((AIPER *)ai_Chars)[id2].netId;
+    *(int *)(m + 8) = ((AIPER *)ai_CharsT)[id2].netId;
     return 1;
 }

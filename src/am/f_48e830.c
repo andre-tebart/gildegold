@@ -10,7 +10,7 @@ int ai_Unk48e830(AIPX *p, AIARGX *s1, AIARGX *s2)
     flags = ((unsigned)&ai_Unka69140 + 0x4973c0);
     if (!ai_Unk4a58d0(p, 1, &flags, 0, util_Random(0x20) + 32.0f, &cid))
         return 0;
-    c = &((AIPX *)ai_Chars)[cid];
+    c = &((AIPX *)ai_CharsT)[cid];
     f = (float)(amt_GetKindLevel(((unsigned char *)c)[0x166]) / 3 + 2);
     a[0] = (int)f;
     a[1] = (int)(f * 1.5f);

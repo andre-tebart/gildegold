@@ -11,9 +11,9 @@ int ai_Unk4a9420(int a, AIPER *p, int c, int d, unsigned char *m)
     flags = ((unsigned)&ai_Unka69140 + 0x4973c0);
     if (ai_Unk4a58d0(p, 1, &flags, 0, (float)util_Random(0x20) + 40.0f, &id) == 0)
         return 0;
-    if (he_Unk553d60(p, &((AIPER *)ai_Chars)[id]) == 0)
+    if (he_Unk553d60(p, &((AIPER *)ai_CharsT)[id]) == 0)
         return 0;
     m[0] = 7;
-    *(int *)(m + 4) = ((AIPER *)ai_Chars)[id].netId;
+    *(int *)(m + 4) = ((AIPER *)ai_CharsT)[id].netId;
     return 1;
 }

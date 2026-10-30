@@ -39,10 +39,10 @@ int ai_TokenRandomMerchant(int mode, G12ARG *args, int k, char *fmt, char *out)
             g = G12_B(i, 0x164);
             if (g > 18 && g < 70 && (g < 31 || g > 33) && (g < 40 || g > 45) && (g < 52 || g > 57)
                 && ai_IsLivingCharacter((unsigned short)i) && (v = gm_GetWorth((unsigned short)i)) > score[4]
-                && ai_NotInLists(ai_Chars[i].netId)) {
+                && ai_NotInLists(ai_CharsT[i].netId)) {
                 score[4] = v;
                 found |= 1;
-                ids[4] = ai_Chars[i].id;
+                ids[4] = ai_CharsT[i].id;
                 for (j = 3; j >= 0; j--) {
                     t = score[j];
                     if (t < score[j + 1]) {
@@ -58,9 +58,9 @@ int ai_TokenRandomMerchant(int mode, G12ARG *args, int k, char *fmt, char *out)
         if (found == 0)
             return 0;
         i = (unsigned short)util_Random(5);
-        c = &ai_Chars[ids[i]];
+        c = &ai_CharsT[ids[i]];
         if (mode == 0)
-            args[k].id = ai_Chars[ids[i]].netId;
+            args[k].id = ai_CharsT[ids[i]].netId;
     }
     txt_FormatString(out, buf, c->id);
     return 1;

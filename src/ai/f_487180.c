@@ -17,7 +17,7 @@ int ai_HasMaterials(AICHAR *ch, AIENTRY *e, int f)
     for (k = 0; k < 4; k++) {
         if (e->slot[k] >= 0) {
             s = &ai_Slots[e->slot[k]];
-            if (s->amount < ai_Goods[e->item].need[k]) {
+            if (s->amount < ai_GoodsT[e->item].need[k]) {
                 if (f != 0 || s->capacity == 0)
                     return 0;
                 if (s->pending == 0 && s->item != 0x1c7 && s->item != 0x1c4 && s->item != 0x1c5 && s->item != 0x1c6 &&
@@ -34,17 +34,17 @@ int ai_HasMaterials(AICHAR *ch, AIENTRY *e, int f)
                             row = &gm_Offers[j];
                             if (row->bld != ch->bld && AI_KIND(row->bld->type) != 2 && row->goodsObj != 0) {
                                 cnt = row->count;
-                                if (cnt >= ai_Goods[e->item].need[k]) {
+                                if (cnt >= ai_GoodsT[e->item].need[k]) {
                                     if (row->bld->owner != ch->bld->owner) {
                                         m = e->capacity >> 1;
                                         if (m < 1)
                                             m = 1;
-                                        v = ai_Goods[e->item].need[j] * m - s->amount - s->pending;
+                                        v = ai_GoodsT[e->item].need[j] * m - s->amount - s->pending;
                                         v = max(v, (s->capacity >> 1) - s->pending);
                                         v = min(s->capacity - s->pending - 1, v);
                                         v = (int)min((float)ch->budget / s->price, (float)v);
                                         v = min(cnt, v);
-                                        if (v >= ai_Goods[e->item].need[j])
+                                        if (v >= ai_GoodsT[e->item].need[j])
                                             found = 1;
                                     } else {
                                         found = 1;

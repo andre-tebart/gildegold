@@ -19,8 +19,8 @@ void hmt_ApplyRecord(AICHAR *p, int d, unsigned short k)
             cm_SendFieldDeltas();
         } else if (e->kind == 1) {
             for (i = 0; i < 768; i++) {
-                if (ai_Chars[i].netId != p->netId && gm_TitleGroup(ai_Chars[i].jobId) == e->id)
-                    cm_SendRelations(p->netId, ai_Chars[i].netId, util_Random(4) + 3, 0);
+                if (ai_CharsT[i].netId != p->netId && gm_TitleGroup(ai_CharsT[i].jobId) == e->id)
+                    cm_SendRelations(p->netId, ai_CharsT[i].netId, util_Random(4) + 3, 0);
             }
         }
     }

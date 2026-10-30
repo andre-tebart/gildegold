@@ -13,7 +13,7 @@ void ai_MeisterBewaffnen(AICHAR *ch, AIOBJ *b)
 
     i = 0;
     do {
-        c = &ai_Chars[i];
+        c = &ai_CharsT[i];
         if (c->id != 0xffff && c->bld == ch->bld && c->title && c->model && c->model->bldId == c->bld->id) {
             sel = NULL;
             p = (unsigned short *)gm_Query(c->inventory, 1, 4, 12);
@@ -65,7 +65,7 @@ void ai_MeisterBewaffnen(AICHAR *ch, AIOBJ *b)
                 }
             }
             if (sel && sel->amount && ai_Unk4cd9d0(sel->item) && ai_Unk5bb2d0(ch, sel->item)) {
-                sprintf(buf, "Meister %s bewaffnet %s mit %s", ch->name, c->name, ai_Goods[sel->item].name);
+                sprintf(buf, "Meister %s bewaffnet %s mit %s", ch->name, c->name, ai_GoodsT[sel->item].name);
                 sprintf(buf, SELL_FMT, c->netId, b->objId, sel->item, 1, ai_OwnPlayer, 0);
                 cm_SendExSellObjectI(c->netId, b->objId, sel->item, 1, ai_OwnPlayer, 0);
                 sel->amount--;

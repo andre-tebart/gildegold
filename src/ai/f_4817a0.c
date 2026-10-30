@@ -6,9 +6,9 @@
     for (c = 0; k < (n); c++) {                                                                             \
         if (c >= 768)                                                                                       \
             break;                                                                                          \
-        if (ai_Chars[c].id != 0xffff && ai_Chars[c].bld == ch->bld && ai_Chars[c].title                    \
-            && !ai_Chars[c].job && ai_Chars[c].model && ai_Chars[c].model->bldId == ai_Chars[c].bld->id)  \
-            msg.ids[k++] = ai_Chars[c].netId;                                                              \
+        if (ai_CharsT[c].id != 0xffff && ai_CharsT[c].bld == ch->bld && ai_CharsT[c].title                    \
+            && !ai_CharsT[c].job && ai_CharsT[c].model && ai_CharsT[c].model->bldId == ai_CharsT[c].bld->id)  \
+            msg.ids[k++] = ai_CharsT[c].netId;                                                              \
     }                                                                                                       \
     for (; k < 8; k++)                                                                                      \
         msg.ids[k] = -1;
@@ -44,10 +44,10 @@ int ai_CalcAngriff(AICHAR *ch, int n)
         if (max == 0.0f)
             max = 1.0f;
         best = 0;
-        bb = ai_Blds;
+        bb = ai_BldsT;
         for (t = 0; t < 256; t++, bb++) {
             if (bb->type) {
-                bt = &ai_BTypes[bb->type];
+                bt = &ai_BTypesT[bb->type];
                 if (bb->owner != ch->bld->owner && bb->owner != 0xffff && !(bb->flags5a & 1)
                     && bb->owner != *ai_PlayerChar
                     && (bt->kind == 0x13 || bt->kind == 4 || bt->kind == 0x10)
@@ -69,8 +69,8 @@ int ai_CalcAngriff(AICHAR *ch, int n)
         }
         ch->target = best->id;
     }
-    if (!best || (ai_BTypes[best->type].kind != 0x13 && ai_BTypes[best->type].kind != 4
-                  && ai_BTypes[best->type].kind != 0x10))
+    if (!best || (ai_BTypesT[best->type].kind != 0x13 && ai_BTypesT[best->type].kind != 4
+                  && ai_BTypesT[best->type].kind != 0x10))
         return 0;
     for (o = gm_Query(ch->bld->objList, 1, 0, 0xca); o; o = gm_QueryNext()) {
         if (o->unk2a == best->id) {
@@ -101,7 +101,7 @@ int ai_CalcAngriff(AICHAR *ch, int n)
                 sprintf(buf, "ai_CalcAngriff(): Meister %s greift an '%s' ", ch->name, best->name);
                 memset(&msg, 0, sizeof(msg));
                 msg.type = 0x49;
-                msg.to = ai_Chars[ch->bld->owner].netId;
+                msg.to = ai_CharsT[ch->bld->owner].netId;
                 msg.fromId = ch->bld->id;
                 msg.time = ai_TimeT;
                 msg.flags = 1;
@@ -143,7 +143,7 @@ int ai_CalcAngriff(AICHAR *ch, int n)
     sprintf(buf, "ai_CalcAngriff(): Meister %s spioniert bei '%s'", ch->name, best->name);
     memset(&msg, 0, sizeof(msg));
     msg.type = 0x40;
-    msg.to = ai_Chars[ch->bld->owner].netId;
+    msg.to = ai_CharsT[ch->bld->owner].netId;
     msg.fromId = ch->bld->id;
     msg.time = ai_TimeT;
     msg.flags = 1;

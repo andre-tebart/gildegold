@@ -20,7 +20,7 @@ void ai_Unk4a5760(G5CH *p, int n, G9REC *rec, int *st)
     st[2] = 0;
     st[0] = 0;
     for (e = *(unsigned short **)((unsigned char *)p + 0x178); e != 0; e = *(unsigned short **)((unsigned char *)e + 0x3f)) {
-        if (ai_Goods[*e].type == 9)
+        if (ai_GoodsT[*e].type == 9)
             continue;
         st[0]++;
         for (i = 0, r = rec; i < n; i++, r++) {

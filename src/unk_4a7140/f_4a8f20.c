@@ -13,7 +13,7 @@ int ai_Unk4a8f20(int a, AIPER *p, int c, int d, unsigned char *m)
     if (gm_Liking(id[0], id[1], 1) > 60.0f && gm_Liking(id[1], id[0], 1) > 60.0f)
         return 0;
     m[0] = 7;
-    *(int *)(m + 4) = ((AIPER *)ai_Chars)[id[0]].netId;
-    *(int *)(m + 8) = ((AIPER *)ai_Chars)[id[1]].netId;
+    *(int *)(m + 4) = ((AIPER *)ai_CharsT)[id[0]].netId;
+    *(int *)(m + 8) = ((AIPER *)ai_CharsT)[id[1]].netId;
     return 1;
 }

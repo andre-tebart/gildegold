@@ -56,7 +56,7 @@ int ai_Unk499c10(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
                     flags = ((unsigned)&ai_Unka69140 + 0x4973c0);
                     t = util_Random(0x20) + 32.0f;
                     if (ai_Unk4a58d0(p, 1, &flags, 0, t, &cid)) {
-                        c = (AIPER *)&ai_Chars[cid];
+                        c = (AIPER *)&ai_CharsT[cid];
                         if (c->unk194 >= 2) {
                             g = gm_Mix(p, c, 3);
                             if (!(util_RandomF() + g >= 1.0f)) {

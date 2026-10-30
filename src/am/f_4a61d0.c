@@ -42,7 +42,7 @@ unsigned int ai_Unk4a61d0(AIPER *p, unsigned int a, unsigned int fl, float lo, f
             }
             if (ai_Unk5c33c0(*(unsigned short *)p, (unsigned short)c, q, 0) != 0
                 && (!win || (r = gm_Liking(c, *(unsigned short *)p, 1), lo <= r && r <= hi))
-                && abs(home - amt_GetKindLevel(((unsigned char *)&ai_Chars[c])[0x166])) <= d) {
+                && abs(home - amt_GetKindLevel(((unsigned char *)&ai_CharsT[c])[0x166])) <= d) {
                 found = 1;
                 id[i] = (unsigned short)c;
             }

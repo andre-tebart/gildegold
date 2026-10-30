@@ -12,7 +12,7 @@ int ai_Unk4a8ad0(int a, AIPER *p, int c, int d, unsigned char *m)
     if (ai_Unk4a58d0(p, 1, &flags, 0, (float)util_Random(0x40), &id) == 0)
         return 0;
     m[0] = 7;
-    *(int *)(m + 4) = ((AIPER *)ai_Chars)[id].netId;
+    *(int *)(m + 4) = ((AIPER *)ai_CharsT)[id].netId;
     if (util_Random(p->unk194 / 2) > 1 && util_Random(p->unk194 / 2) > 4) {
         *(int *)(m + 8) = 5;
         return 1;

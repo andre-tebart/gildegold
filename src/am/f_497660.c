@@ -65,7 +65,7 @@ rate:
             else if (bld) {
                 if (bld->owner == 0xffff)
                     return 0;
-                c = (AIPER *)&ai_Chars[bld->owner];
+                c = (AIPER *)&ai_CharsT[bld->owner];
             } else if (!c)
                 return 0;
             if (!c)

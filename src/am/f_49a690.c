@@ -76,14 +76,14 @@ int ai_Unk49a690(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         if (G8_4A58D0(p, 1, &flags, 10.0f, (float)util_Random(0x20) + 40.0f, &id) == 0)
             return 0;
         s1.kind = 7;
-        s1.unk04 = ai_Chars[id].netId;
+        s1.unk04 = ai_CharsT[id].netId;
         s1.unk08 = -1;
     } else if (i == 10) {
         flags = (((unsigned char *)p)[9] != 1 ? 1 : 2) | ((unsigned)&ai_Unka69140 + 0x4973c0);
         if (G8_4A58D0(p, 1, &flags, 10.0f, (float)util_Random(0x20) + 40.0f, &id) == 0)
             return 0;
         s1.kind = 7;
-        s1.unk04 = ai_Chars[id].netId;
+        s1.unk04 = ai_CharsT[id].netId;
         s1.unk08 = -1;
     } else if (i == 8) {
         r = ai_Unk495a50(k, p->id, 3, &s2, &s1);

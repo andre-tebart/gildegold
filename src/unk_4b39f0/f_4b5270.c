@@ -15,7 +15,7 @@ void ai_PlayerShare(int k, G13STAT *s)
     n = 0;
     for (; b != 0; b = gm_BuildNext(), n++) {
         w = *(unsigned short *)((char *)b + 0x27);
-        if (w != 0xffff && (ai_Chars[w].kind == 6 || ai_Chars[w].kind == 7))
+        if (w != 0xffff && (ai_CharsT[w].kind == 6 || ai_CharsT[w].kind == 7))
             same++;
     }
     s->same = same;

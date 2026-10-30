@@ -18,7 +18,7 @@ int ai_Unk4b7bc0(G14MSG *m)
         return 0x400;
     for (b = gm_BuildQuery(1, 5, 7); b != 0 && n < 16; b = gm_BuildNext()) {
         if (*(unsigned short *)((char *)b + 0x27) != 0xffff)
-            ids[n++] = ai_Chars[*(unsigned short *)((char *)b + 0x27)].netId;
+            ids[n++] = ai_CharsT[*(unsigned short *)((char *)b + 0x27)].netId;
     }
     if (n == 0)
         return 0x400;

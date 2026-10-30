@@ -17,7 +17,7 @@ AICHAR *ai_FindPartner(AICHAR *c)
         if (!(c->officeKind || c->secondOffice || c->kind == 5))
             return 0;
         i = 0;
-        o = ai_Chars;
+        o = ai_CharsT;
         do {
             id = c->id;
             if (i != id && o->kind == 6 || o->kind == 7 || ai_WorksForMaster(o) && (o->jobId || o->prevOffice)) {
@@ -45,11 +45,11 @@ AICHAR *ai_FindPartner(AICHAR *c)
             k2 = ai_Difficulty * 2 + 0xf;
             a = max(min(a, k), k2);
             cm_AddFieldDelta(1, 1, 0x216, &a);
-            cm_AddFieldDelta(4, 1, 0x210, &ai_Chars[best].netId);
+            cm_AddFieldDelta(4, 1, 0x210, &ai_CharsT[best].netId);
             cm_AddFieldDelta(1, 1, 0x214, &ai_RelationMemory[best][c->id]);
             cm_SendFieldDeltas();
-            cm_SendRelations(ai_Chars[best].netId, c->netId, 0, 2);
-            ai_Unk5a8f90(c, &ai_Chars[best]);
+            cm_SendRelations(ai_CharsT[best].netId, c->netId, 0, 2);
+            ai_Unk5a8f90(c, &ai_CharsT[best]);
         }
         return 0;
     }

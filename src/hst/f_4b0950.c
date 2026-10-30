@@ -21,7 +21,7 @@ int ai_CommandOfficeInventoryPlus(int a, int b, char *fmt)
         return 0;
     for (i = 0; i < 0x300; i++) {
         if (ai_IsLivingCharacter((unsigned short)i) && (G12_B(i, 0x166) != 0 || G12_B(i, 0x169) != 0))
-            cm_SendExSellObject(ai_Chars[i].netId, -1, v, 1, ai_OwnPlayer, 0);
+            cm_SendExSellObject(ai_CharsT[i].netId, -1, v, 1, ai_OwnPlayer, 0);
     }
     return 1;
 }

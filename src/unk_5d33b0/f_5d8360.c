@@ -21,11 +21,11 @@ void ai_TailorContact(int building, int arg)
 {
     CONTACTREQ req;
 
-    if ((((AICHARVIEW *)(ai_Chars + ai_PlayerId * 0x21c))->flags1cc & 0x20000) != 0) {
+    if ((((AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c))->flags1cc & 0x20000) != 0) {
         sv_MessageBox((int)ai_TailorBlockedText, 4);
         return;
     }
-    if (sv_CheckMoney((char *)(ai_Chars + ai_PlayerId * 0x21c), 1) != 0) {
+    if (sv_CheckMoney((char *)(ai_CharsC + ai_PlayerId * 0x21c), 1) != 0) {
         D3_ZERO(&req, sizeof(req));
         req.type = 1;
         req.a = 0x400;

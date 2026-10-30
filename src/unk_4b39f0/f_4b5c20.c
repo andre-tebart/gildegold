@@ -15,7 +15,7 @@ void ai_MissionNextDialog(int id)
     again = 0;
     quit = 0;
     t = 0;
-    c = &ai_Chars[ai_PlayerId];
+    c = &ai_CharsT[ai_PlayerId];
     for (i = 0; i < 0x80; i++) {
         if (ai_Missions[i].type != 0 && ai_Missions[i].owner == c->netId) {
             t = ai_GetMissionType(ai_Missions[i].type);

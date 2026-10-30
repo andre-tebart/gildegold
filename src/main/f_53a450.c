@@ -3,7 +3,7 @@
 void main_Unk53a450(void)
 {
     int i = 0;
-    char *p = (char *)((unsigned)&ai_Chars + 0x2);
+    char *p = (char *)((unsigned)&ai_CharsT + 0x2);
     int k;
     int fl;
 

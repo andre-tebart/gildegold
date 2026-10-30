@@ -10,7 +10,7 @@ int ai_Unk4a8c80(int a, AIPER *p, int c, int d, unsigned char *m)
     if (ai_Unk4a58d0(p, 2, flags, 0, (float)util_Random(0x40), id) == 0)
         return 0;
     m[0] = 7;
-    *(int *)(m + 4) = ((AIPER *)ai_Chars)[id[0]].netId;
-    *(int *)(m + 8) = ((AIPER *)ai_Chars)[id[1]].netId;
+    *(int *)(m + 4) = ((AIPER *)ai_CharsT)[id[0]].netId;
+    *(int *)(m + 8) = ((AIPER *)ai_CharsT)[id[1]].netId;
     return 1;
 }

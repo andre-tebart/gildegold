@@ -15,7 +15,7 @@ int ai_Unk492b80(AIPER *p, int a, int *out)
     w = (p->mood[11][0] - 2.0) * p->mood[11][2];
     found = 0;
     own = 0;
-    b = ai_Blds;
+    b = ai_BldsT;
     for (i = 0; i < 256; i++, b++) {
         if (b->type == 0x4b || b->type == 0x4c || b->type == 0x4d) {
             found++;

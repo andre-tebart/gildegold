@@ -6,7 +6,7 @@
 /* message record (0xf8 bytes) of 0x4c4b70 / 0x4e4060: kind byte +4, owner id +8, target +0xc, time stamp (the 0x770ae0 clock, 14 bytes) +0x28 .. +0x36, flag +0x36 = 1 */
 #define MSG_B(m, o) (*(unsigned char *)((m) + (o)))
 #define MSG_I(m, o) (*(int *)((m) + (o)))
-#define MSG_CLOCK(m) do { MSG_I(m, 0x28) = U_I((unsigned)&ai_Time); MSG_I(m, 0x2c) = U_I((unsigned)&ai_TimeHour); MSG_I(m, 0x30) = U_I(((unsigned)&ai_Time + 0x8)); *(short *)((m) + 0x34) = *(short *)((unsigned)&ai_Time + 0xc); } while (0)
+#define MSG_CLOCK(m) do { MSG_I(m, 0x28) = U_I((unsigned)&ai_TimeT); MSG_I(m, 0x2c) = U_I((unsigned)&ai_TimeHour); MSG_I(m, 0x30) = U_I(((unsigned)&ai_TimeT + 0x8)); *(short *)((m) + 0x34) = *(short *)((unsigned)&ai_TimeT + 0xc); } while (0)
 #define MAIN_MSG(m, kind) do { memset(m, 0, 0xf8); MSG_B(m, 4) = (kind); MSG_I(m, 0xc) = -1; MSG_B(m, 0x36) = 1; MSG_CLOCK(m); MSG_I(m, 8) = U_I((unsigned)&ai_CharInts + (U_I((unsigned)&ai_PlayerId) & 0xffff) * 0x21c); } while (0)
 
 void main_Unk5384e0(void)
@@ -25,7 +25,7 @@ void main_Unk5384e0(void)
 
     id = U_I((unsigned)&ai_PlayerId) & 0xffff;
     fade = 0;
-    bld = gm_PlayerRecord((unsigned)&ai_Chars + id * 0x21c);
+    bld = gm_PlayerRecord((unsigned)&ai_CharsT + id * 0x21c);
     gm_ClockSeason((unsigned)&ai_TimeT);
     memcpy(clk, (char *)(unsigned)&ai_TimeT, 14);
     if ((U_I((unsigned)&ai_GameFlags) & 4) != 0 && 1 < U_I((unsigned)&full_data_6f2598))
@@ -189,7 +189,7 @@ void main_Unk5384e0(void)
         while (o != 0) {
             u2 = *(int *)(o + 0x3b);
             o = (unsigned char *)gm_BuildQuery(1, 1, *(int *)(o + 0x1c));
-            if (o == 0 || ai_CanAct((unsigned)&ai_Chars + (unsigned)*(unsigned short *)(o + 0x27) * 0x21c) == 0)
+            if (o == 0 || ai_CanAct((unsigned)&ai_CharsT + (unsigned)*(unsigned short *)(o + 0x27) * 0x21c) == 0)
                 i = 0;
             else
                 i = 1;
@@ -199,15 +199,15 @@ void main_Unk5384e0(void)
     }
     k = 0;
     do {
-        c = (char *)((unsigned)&ai_Chars + k * 0x21c);
+        c = (char *)((unsigned)&ai_CharsT + k * 0x21c);
         if (*(short *)c != -1 && c[2] != 6 && c[2] != 7) {
             uu = gm_GetGoodsValue(c) * 0x4b;
             uv = 0;
             o = (unsigned char *)gm_BuildQuery(1, 4, k);
             while (o != 0) {
-                char kd = *(char *)(U_I((unsigned)&ai_BTypes) + (unsigned)*o * 0x24d);
+                char kd = *(char *)(U_I((unsigned)&ai_BTypesT) + (unsigned)*o * 0x24d);
                 if (gm_BuildingClass(*o) == 1 || gm_BuildingClass(*o) == 4 || gm_BuildingClass(*o) == 2 || kd == 0x13 || kd == 4 || kd == 0x10 || kd == 5 || kd == 9) {
-                    kd = *(char *)(U_I((unsigned)&ai_BTypes) + (unsigned)*o * 0x24d + 0x247);
+                    kd = *(char *)(U_I((unsigned)&ai_BTypesT) + (unsigned)*o * 0x24d + 0x247);
                     if (kd == 1)
                         uv += 2;
                     else if (kd == 2)
@@ -246,17 +246,17 @@ void main_Unk5384e0(void)
             }
             o = (unsigned char *)gm_BuildQuery(1, 4, k);
             while (o != 0) {
-                char kd = *(char *)(U_I((unsigned)&ai_BTypes) + (unsigned)*o * 0x24d);
+                char kd = *(char *)(U_I((unsigned)&ai_BTypesT) + (unsigned)*o * 0x24d);
                 if (gm_BuildingClass(*o) == 1 || gm_BuildingClass(*o) == 4 || gm_BuildingClass(*o) == 2 || kd == 0x13 || kd == 4 || kd == 0x10 || kd == 5 || kd == 9) {
                     unsigned v;
                     int p = (unsigned)*o * 0x24d;
-                    kd = *(char *)(p + 0x247 + U_I((unsigned)&ai_BTypes));
+                    kd = *(char *)(p + 0x247 + U_I((unsigned)&ai_BTypesT));
                     if (kd == 1) {
                         v = (uu * 2) / uv;
                         *(unsigned *)(o + 0x39) = v;
                         v = v & (((int)v < 0) - 1);
                         *(unsigned *)(o + 0x39) = v;
-                        if (*(char *)(p + U_I((unsigned)&ai_BTypes)) == 5) {
+                        if (*(char *)(p + U_I((unsigned)&ai_BTypesT)) == 5) {
                             if (0x2edff < (int)v)
                                 v = 0x2ee00;
                         } else if (63999 < (int)v)
@@ -267,7 +267,7 @@ void main_Unk5384e0(void)
                         *(unsigned *)(o + 0x39) = v;
                         v = v & (((int)v < 0) - 1);
                         *(unsigned *)(o + 0x39) = v;
-                        if (*(char *)(p + U_I((unsigned)&ai_BTypes)) == 5) {
+                        if (*(char *)(p + U_I((unsigned)&ai_BTypesT)) == 5) {
                             if (319999 < (int)v)
                                 v = 320000;
                         } else if (0x1f3ff < (int)v)
@@ -278,7 +278,7 @@ void main_Unk5384e0(void)
                         *(unsigned *)(o + 0x39) = v;
                         v = v & (((int)v < 0) - 1);
                         *(unsigned *)(o + 0x39) = v;
-                        if (*(char *)(p + U_I((unsigned)&ai_BTypes)) == 5) {
+                        if (*(char *)(p + U_I((unsigned)&ai_BTypesT)) == 5) {
                             if (639999 < (int)v)
                                 v = 640000;
                         } else if (0x3e7ff < (int)v)
@@ -292,7 +292,7 @@ void main_Unk5384e0(void)
         k++;
     } while (k < 0x300);
     for (k = 0; k < 0x300; k++) {
-        c = (char *)((unsigned)&ai_Chars + k * 0x21c);
+        c = (char *)((unsigned)&ai_CharsT + k * 0x21c);
         if (*(short *)c != -1) {
             U_I(((unsigned)&ai_Selected + 0x40) + k * 0x21c) &= 0xffffe7ff;
             if (ai_IsLocalJob(c) != 0)
@@ -302,7 +302,7 @@ void main_Unk5384e0(void)
     for (k = 0; k < 0x300; k++) {
         float px = -1.0f, py = -1.0f;
         int pz;
-        c = (char *)((unsigned)&ai_Chars + k * 0x21c);
+        c = (char *)((unsigned)&ai_CharsT + k * 0x21c);
         if (U_I(((unsigned)&ai_Unk770cec + 0x18) + k * 0x21c) != 0 && he_Unk55eba0(c, &px, &py, &pz) != 0) {
             int fg = U_I(((unsigned)&ai_Unk770cec + 0x18) + k * 0x21c);
             if (px != *(float *)(fg + 0x2c) || py != *(float *)(fg + 0x30)) {
@@ -318,10 +318,10 @@ void main_Unk5384e0(void)
                 }
             }
         }
-        if ((U_I((unsigned)&ai_GameFlags) & 8) != 0 && U_I(((unsigned)&ai_Unk770cec + 0x18) + k * 0x21c) != 0 && *(char *)(((unsigned)&ai_Chars + 0x2) + k * 0x21c) == 0xd && U_I(((unsigned)&ai_Unk770cec + 0x10) + k * 0x21c) == 0)
+        if ((U_I((unsigned)&ai_GameFlags) & 8) != 0 && U_I(((unsigned)&ai_Unk770cec + 0x18) + k * 0x21c) != 0 && *(char *)(((unsigned)&ai_CharsT + 0x2) + k * 0x21c) == 0xd && U_I(((unsigned)&ai_Unk770cec + 0x10) + k * 0x21c) == 0)
             cm_SendKillCharacter(U_I((unsigned)&ai_CharInts + k * 0x21c), 1);
     }
     U_I((unsigned)&ai_Unkf83650) = 1;
-    amt_Unk4ea8e0((unsigned)&ai_Chars + (U_I((unsigned)&ai_PlayerId) & 0xffff) * 0x21c);
+    amt_Unk4ea8e0((unsigned)&ai_CharsT + (U_I((unsigned)&ai_PlayerId) & 0xffff) * 0x21c);
     snd_FadeMusic(0x3f800000, 2000);
 }

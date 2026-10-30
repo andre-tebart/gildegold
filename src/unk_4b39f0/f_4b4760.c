@@ -15,7 +15,7 @@ int ai_HasThreeStockedBuildings(AICHAR *c, G13TYPE *t)
     n = 0;
     for (b = gm_BuildQuery(2, 4, c->id, 5, k); n < 3 && b != 0; b = gm_BuildNext()) {
         ok = 1;
-        w = ai_BTypes[b->type].slot;
+        w = ai_BTypesT[b->type].slot;
         for (j = 0; j < 0x40 && *w != 0; j++, w++) {
             if (!gm_Query(b->objList, 2, 6, 0, *w & 0x7fff)) {
                 ok = 0;

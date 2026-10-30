@@ -24,8 +24,8 @@ void hmt_Unk4ad580(void)
             for (i = 0; i < 768; i++) {
                 if (n > 3)
                     break;
-                if (ai_Chars[i].flags1cc & bit) {
-                    cand[n].c = &ai_Chars[i];
+                if (ai_CharsT[i].flags1cc & bit) {
+                    cand[n].c = &ai_CharsT[i];
                     n++;
                 }
             }
@@ -60,9 +60,9 @@ void hmt_Unk4ad580(void)
                         msg.arg[5] = type;
                         cm_SendLongMessage(&msg);
                         for (i = 0; i < 768; i++) {
-                            if (ai_Chars[i].id != 0xffff && &ai_Chars[i] != win
-                                && (ai_Chars[i].kind == 6 || ai_Chars[i].kind == 7)) {
-                                msg.to = ai_Chars[i].netId;
+                            if (ai_CharsT[i].id != 0xffff && &ai_CharsT[i] != win
+                                && (ai_CharsT[i].kind == 6 || ai_CharsT[i].kind == 7)) {
+                                msg.to = ai_CharsT[i].netId;
                                 cm_SendLongMessage(&msg);
                             }
                         }

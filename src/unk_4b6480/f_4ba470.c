@@ -23,8 +23,8 @@ int ai_Unk4ba470(G14MSG *m)
         return 0x400;
     b = a[util_Random(n)];
     for (i = 0; i < 768; i++) {
-        if (ai_Chars[i].kind == 1 && ai_Chars[i].bld == b) {
-            p = &ai_Chars[i];
+        if (ai_CharsT[i].kind == 1 && ai_CharsT[i].bld == b) {
+            p = &ai_CharsT[i];
             break;
         }
     }

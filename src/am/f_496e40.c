@@ -77,7 +77,7 @@ int ai_Unk496e40(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
             flags = 0x10000500;
             if (!ai_Unk4a58d0(p, 1, &flags, 0, util_Random(25) + 10.0, &cid))
                 return 0;
-            c = (AIPER *)&ai_Chars[cid];
+            c = (AIPER *)&ai_CharsT[cid];
         }
         if (!c)
             return 0;

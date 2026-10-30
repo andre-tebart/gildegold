@@ -29,7 +29,7 @@ int ai_MeisterTrade(AICHAR *ch, AIOBJ *b)
         if (!(ai_Slots[i].flags & 6) && (ai_Slots[i].flags & 8)) {
             v = ai_Slots[i].amount;
             if (v > gm_ListStock(b, ai_Slots[i].item) / 3) {
-                if (ai_BTypes[ch->bld->type].kind == 22)
+                if (ai_BTypesT[ch->bld->type].kind == 22)
                     ai_Slots[i].sellAmount = v / 2;
                 else
                     ai_Slots[i].sellAmount = v;
@@ -40,14 +40,14 @@ int ai_MeisterTrade(AICHAR *ch, AIOBJ *b)
         if (!(ch->flags1b4 & 0x200)) {
             for (i = 0; i < ai_NEntries; i++) {
                 if (!(ai_Entries[i].flags & 6) && (!(ai_Entries[i].flags & 8) || ai_Entries[i].amount > 3)) {
-                    if (ai_Chars[ch->bld->owner].kind == 6) {
+                    if (ai_CharsT[ch->bld->owner].kind == 6) {
                         f = ai_SettingFactor(ch->bld);
                         g = gm_GoodsPrice(ai_Entries[i].item, ai_OwnPlayer);
                         if (f <= g / gm_ItemPrice(ai_Entries[i].item, 100)) {
                             ai_Entries[i].sellAmount = ai_Entries[i].amount;
                             if (ch == ai_LoggedMaster)
                                 sprintf(buf, "Verkauf von %li Einheiten %s, weil der Preis f\xfcr den Boss ok ist",
-                                        ai_Entries[i].amount, ai_Goods[ai_Entries[i].item].name);
+                                        ai_Entries[i].amount, ai_GoodsT[ai_Entries[i].item].name);
                         }
                     } else {
                         g = gm_ItemPrice(ai_Entries[i].item, 100);
@@ -56,13 +56,13 @@ int ai_MeisterTrade(AICHAR *ch, AIOBJ *b)
                             ai_Entries[i].sellAmount = ai_Entries[i].amount;
                             if (ch == ai_LoggedMaster)
                                 sprintf(buf, "Verkauf wegen guter Gewinnspanne von %li Einheiten %s",
-                                        ai_Entries[i].sellAmount, ai_Goods[ai_Entries[i].item].name);
+                                        ai_Entries[i].sellAmount, ai_GoodsT[ai_Entries[i].item].name);
                         }
                     }
                 }
             }
-            if (ch->budget < 3200 || gm_GetGoodsValue(&ai_Chars[ch->bld->owner]) < 8000) {
-                v = min(ch->budget, gm_GetGoodsValue(&ai_Chars[ch->bld->owner]));
+            if (ch->budget < 3200 || gm_GetGoodsValue(&ai_CharsT[ch->bld->owner]) < 8000) {
+                v = min(ch->budget, gm_GetGoodsValue(&ai_CharsT[ch->bld->owner]));
                 for (i = 0; v < 32000 && i < ai_NEntries; i++) {
                     if (!(ai_Entries[i].flags & 6)) {
                         k = (int)gm_GoodsPrice(ai_Entries[i].item, ai_OwnPlayer);
@@ -73,7 +73,7 @@ int ai_MeisterTrade(AICHAR *ch, AIOBJ *b)
                         v += n * k;
                         if (ch == ai_LoggedMaster)
                             sprintf(buf, "Notverkauf von %li Einheiten %s", ai_Entries[i].sellAmount,
-                                    ai_Goods[ai_Entries[i].item].name);
+                                    ai_GoodsT[ai_Entries[i].item].name);
                     }
                 }
             }
@@ -84,7 +84,7 @@ int ai_MeisterTrade(AICHAR *ch, AIOBJ *b)
                         ai_Entries[i].sellAmount = min(ai_Entries[i].sellAmount, ai_Entries[i].amount);
                         if (ch == ai_LoggedMaster)
                             sprintf(buf, "Notverkauf von %li Einheiten %s wegen \xfc" "berf\xfc" "lltem Lager",
-                                    ai_Entries[i].sellAmount, ai_Goods[ai_Entries[i].item].name);
+                                    ai_Entries[i].sellAmount, ai_GoodsT[ai_Entries[i].item].name);
                     }
                 }
             }
@@ -105,7 +105,7 @@ int ai_MeisterTrade(AICHAR *ch, AIOBJ *b)
             }
         }
     }
-    k = ai_BTypes[ch->bld->type].kind;
+    k = ai_BTypesT[ch->bld->type].kind;
     if (k == 13 || k == 11 || k == 12) {
         for (i = 0; i < ai_NEntries; i++) {
             if (!(ai_Entries[i].flags & 6) && (o = gm_Query(b->list, 1, 0, ai_Entries[i].item)) != NULL
@@ -123,7 +123,7 @@ int ai_MeisterTrade(AICHAR *ch, AIOBJ *b)
             if (car->fill < 0x21) {
                 memset(&msg, 0, sizeof(msg));
                 msg.type = 0x10;
-                msg.to = ai_Chars[ch->bld->owner].netId;
+                msg.to = ai_CharsT[ch->bld->owner].netId;
                 msg.fromId = ch->bld->id;
                 msg.flags = 1;
                 msg.time = ai_TimeT;
@@ -160,7 +160,7 @@ int ai_MeisterTrade(AICHAR *ch, AIOBJ *b)
                     if (!rec.item[i])
                         continue;
                     sprintf(buf, "ai_MeisterTrade(): Von Auto in \"%s\" %li Einheiten %s entladen", ch->bld->name,
-                            rec.amount[i], ai_Goods[rec.item[i]].name);
+                            rec.amount[i], ai_GoodsT[rec.item[i]].name);
                     s = NULL;
                     for (m = 0; !s && m < 128; m++) {
                         if (ai_Slots[m].item == rec.item[i])
@@ -171,7 +171,7 @@ int ai_MeisterTrade(AICHAR *ch, AIOBJ *b)
                         for (j = 0; !found && j < stA.n; j++) {
                             if (stA.item[j] == rec.item[i]) {
                                 sprintf(buf, "ai_MeisterTrade(): %s ist in \"%s\" schon vorhanden",
-                                        ai_Goods[rec.item[i]].name, ch->bld->name);
+                                        ai_GoodsT[rec.item[i]].name, ch->bld->name);
                                 n = min(rec.amount[i], stA.max[j] - stA.amount[j]);
                                 if (n) {
                                     sprintf(buf, SELL_FMT, b->objId, market->objId, rec.item[i], n, ai_OwnPlayer, 0);
@@ -187,7 +187,7 @@ int ai_MeisterTrade(AICHAR *ch, AIOBJ *b)
                         for (j = 0; !found && j < stA.n; j++) {
                             if (!stA.item[j]) {
                                 sprintf(buf, "ai_MeisterTrade(): \"%s\" hat leeren Slot f\xfcr %s", ch->bld->name,
-                                        ai_Goods[rec.item[i]].name);
+                                        ai_GoodsT[rec.item[i]].name);
                                 n = gm_ListStock(b, rec.item[i]);
                                 if (rec.amount[i] < n)
                                     n = rec.amount[i];
@@ -208,7 +208,7 @@ int ai_MeisterTrade(AICHAR *ch, AIOBJ *b)
                                 if (ai_Slots[m].item == stA.item[j]
                                     && (!(ai_Slots[m].flags & 2) || ai_Slots[m].rank > s->rank)) {
                                     sprintf(buf, "ai_MeisterTrade(): Fake-Verkauf aus Lager in \"%s\" von %li Einheiten %s",
-                                            ch->bld->name, stA.amount[j], ai_Goods[stA.item[j]].name);
+                                            ch->bld->name, stA.amount[j], ai_GoodsT[stA.item[j]].name);
                                     sprintf(buf, SELL_FMT, -1, b->objId, stA.item[j], stA.amount[j], ai_OwnPlayer,
                                             (double)(int)gm_GoodsPrice(stA.item[j], ai_OwnPlayer));
                                     cm_SendExSellObjectI(-1, b->objId, stA.item[j], stA.amount[j], ai_OwnPlayer,
@@ -233,7 +233,7 @@ int ai_MeisterTrade(AICHAR *ch, AIOBJ *b)
                     }
                     if (rec.amount[i]) {
                         sprintf(buf, "ai_MeisterTrade(): Fake-Verkauf aus Auto in \"%s\" von %li Einheiten %s",
-                                ch->bld->name, rec.amount[i], ai_Goods[rec.item[i]].name);
+                                ch->bld->name, rec.amount[i], ai_GoodsT[rec.item[i]].name);
                         sprintf(buf, SELL_FMT, -1, market->objId, rec.item[i], rec.amount[i], ai_OwnPlayer,
                                 (double)(int)gm_GoodsPrice(rec.item[i], ai_OwnPlayer));
                         cm_SendExSellObjectI(-1, market->objId, rec.item[i], rec.amount[i], ai_OwnPlayer,
@@ -340,7 +340,7 @@ int ai_MeisterTrade(AICHAR *ch, AIOBJ *b)
                         continue;
                     if (!gm_FindMarketObject(ai_Slots[i].item)) {
                         sprintf(buf, "ai_MeisterTrade(): Fake-Verkauf in \"%s\" von %li Einheiten %s, weil kein Marktlager",
-                                ch->bld->name, ai_Slots[i].sellAmount, ai_Goods[ai_Slots[i].item].name);
+                                ch->bld->name, ai_Slots[i].sellAmount, ai_GoodsT[ai_Slots[i].item].name);
                         sprintf(buf, SELL_FMT, -1, b->objId, ai_Slots[i].item, ai_Slots[i].sellAmount, ai_OwnPlayer,
                                 (int)gm_GoodsPrice(ai_Slots[i].item, ai_OwnPlayer));
                         cm_SendExSellObjectI(-1, b->objId, ai_Slots[i].item, ai_Slots[i].sellAmount, ai_OwnPlayer,
@@ -382,19 +382,19 @@ int ai_MeisterTrade(AICHAR *ch, AIOBJ *b)
                     if (ch == ai_LoggedMaster) {
                         for (k = 0; k < 3; k++) {
                             if (msg.u.item[k])
-                                sprintf(buf, "Verkauf von %s", ai_Goods[msg.u.item[k]].name);
+                                sprintf(buf, "Verkauf von %s", ai_GoodsT[msg.u.item[k]].name);
                         }
                         for (k = 0; k < 3; k++) {
                             if (msg.u.item[k + 3])
                                 sprintf(buf, "Einkauf von %li Einheiten %s", msg.amount[k],
-                                        ai_Goods[msg.u.item[k + 3]].name);
+                                        ai_GoodsT[msg.u.item[k + 3]].name);
                         }
                     }
                     n = msg.dst[0];
                     if (n == -1)
                         n = msg.dst[3];
                     msg.type = 11;
-                    msg.to = ai_Chars[ch->bld->owner].netId;
+                    msg.to = ai_CharsT[ch->bld->owner].netId;
                     msg.fromId = ch->bld->id;
                     msg.time = ai_TimeT;
                     msg.flags = 1;

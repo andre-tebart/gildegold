@@ -27,9 +27,9 @@ int ai_Unk49f5c0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     l = q + 0x75;
     for (k = 0; k < 15; k++, l++)
         own[k] = gm_TitlesLeft(*l);
-    for (b = ai_Blds, k = 0; k < 0x100; k++, b++) {
+    for (b = ai_BldsT, k = 0; k < 0x100; k++, b++) {
         if (b->type != 0)
-            cnt[gm_BuildingJob(ai_BTypes[b->type].kind) - 1]++;
+            cnt[gm_BuildingJob(ai_BTypesT[b->type].kind) - 1]++;
     }
     n = util_Random(4) + 1;
     r = util_Random(0x10);

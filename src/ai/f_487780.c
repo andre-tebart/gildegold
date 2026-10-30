@@ -12,8 +12,8 @@ void ai_AddEquipmentNeeds(AICHAR *ch, AIOBJ *obj, int limit)
 
     n = ai_NSlots;
     for (i = 0; i < 768; i++) {
-        if (ai_Chars[i].id != 0xffff && ai_Chars[i].bld == ch->bld && ai_Chars[i].title != 0) {
-            it = (unsigned short *)gm_Query(ai_Chars[i].inventory, 1, 4, 0xc);
+        if (ai_CharsT[i].id != 0xffff && ai_CharsT[i].bld == ch->bld && ai_CharsT[i].title != 0) {
+            it = (unsigned short *)gm_Query(ai_CharsT[i].inventory, 1, 4, 0xc);
             n = ai_NSlots;
             if (it == 0) {
                 for (j = 0; j < n; j++) {

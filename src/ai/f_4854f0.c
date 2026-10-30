@@ -32,9 +32,9 @@ void ai_UpdateProduction(AICHAR *ch, AIOBJ *a, AIOBJ *b)
     ai_NSlots = 0;
     for (i = 0; i < ai_NEntries; i++) {
         for (k = 0; k < 4; k++) {
-            if (ai_Goods[ai_Entries[i].item].in[k]) {
+            if (ai_GoodsT[ai_Entries[i].item].in[k]) {
                 for (j = 0; j < ai_NSlots; j++) {
-                    if (ai_Slots[j].item == ai_Goods[ai_Entries[i].item].in[k]) {
+                    if (ai_Slots[j].item == ai_GoodsT[ai_Entries[i].item].in[k]) {
                         ai_Entries[i].slot[k] = j;
                         break;
                     }
@@ -42,7 +42,7 @@ void ai_UpdateProduction(AICHAR *ch, AIOBJ *a, AIOBJ *b)
                 if (ai_Entries[i].slot[k] == -1) {
                     if (ai_NSlots >= 128)
                         return;
-                    ai_Slots[ai_NSlots].item = ai_Goods[ai_Entries[i].item].in[k];
+                    ai_Slots[ai_NSlots].item = ai_GoodsT[ai_Entries[i].item].in[k];
                     ai_Slots[ai_NSlots].entry = -1;
                     ai_Slots[ai_NSlots].bld = 0;
                     ai_Slots[ai_NSlots].unk10 = 0;
@@ -59,7 +59,7 @@ void ai_UpdateProduction(AICHAR *ch, AIOBJ *a, AIOBJ *b)
             }
         }
     }
-    kind = ai_BTypes[ch->bld->type].kind;
+    kind = ai_BTypesT[ch->bld->type].kind;
     if (kind == 14 || kind == 8 || kind == 32) {
         for (j = 0; j < ai_NSlots; j++) {
             if (ai_Slots[j].item == 0x1c7 || ai_Slots[j].item == 0x1c4 || ai_Slots[j].item == 0x1c5 || ai_Slots[j].item == 0x1c6 || ai_Slots[j].item == 0x2af || ai_Slots[j].item == 0x2b0) {
@@ -111,7 +111,7 @@ void ai_UpdateProduction(AICHAR *ch, AIOBJ *a, AIOBJ *b)
             }
         }
     }
-    kind = ai_BTypes[ch->bld->type].kind;
+    kind = ai_BTypesT[ch->bld->type].kind;
     if (kind == 29 || kind == 31) {
         for (j = 0; j < ai_NSlots; j++) {
             if (ai_Slots[j].item == 0x225 || ai_Slots[j].item == 0x226 || ai_Slots[j].item == 0x227 || ai_Slots[j].item == 0x293
@@ -205,7 +205,7 @@ void ai_UpdateProduction(AICHAR *ch, AIOBJ *a, AIOBJ *b)
             }
         }
     }
-    kind = ai_BTypes[ch->bld->type].kind;
+    kind = ai_BTypesT[ch->bld->type].kind;
     if (kind == 8 || kind == 14) {
         for (job = he_FindEvent(2, 0, 0x14, 3, ch->bld->id); job; job = he_NextEvent()) {
             for (j = 0; j < ai_NSlots; j++) {
@@ -214,7 +214,7 @@ void ai_UpdateProduction(AICHAR *ch, AIOBJ *a, AIOBJ *b)
             }
         }
     }
-    if (ai_BTypes[ch->bld->type].kind == 8) {
+    if (ai_BTypesT[ch->bld->type].kind == 8) {
         for (job = he_FindEvent(2, 0, 0x15, 3, ch->bld->id); job; job = he_NextEvent()) {
             for (j = 0; j < ai_NSlots; j++) {
                 if (ai_Slots[j].item == job->u.w.hi)
@@ -222,7 +222,7 @@ void ai_UpdateProduction(AICHAR *ch, AIOBJ *a, AIOBJ *b)
             }
         }
     }
-    kind = ai_BTypes[ch->bld->type].kind;
+    kind = ai_BTypesT[ch->bld->type].kind;
     if (kind == 29 || kind == 31) {
         for (job = he_FindEvent(2, 0, 0x8c, 3, ch->bld->id); job; job = he_NextEvent()) {
             for (j = 0; j < ai_NSlots; j++) {

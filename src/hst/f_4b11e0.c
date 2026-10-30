@@ -3,7 +3,7 @@
    @deep meaning read equal against the disassembly (all 14 hunks), only allocation / scheduling left plus a Q2 block. This session: the stock block stride (0x7d6a70 + player * 0x2a90, f3gm.c's GM_GOODS / f3init.c's INIT_STOCKBLOCK; was G12STOCK[][0x55], stride 0x2a80, wrong records for every ai_OwnPlayer > 0) and &e instead of e.unk08 to 0x4c56d0 (that callee memcpy's 0x80 bytes; the original's lea [esp+0x54] with 8 pushed bytes is e+0) are fixed: 332 -> 275 differing instructions, frame 0xbc now equal, every slot equal (sign 0x14, name 0x1c, kind 0x28, e 0x4c). What is left: the register permutation fmt/i/cursor = edx/ebx/ebp here vs ebp/edx/ebx in the original (the original keeps fmt in ebp as ai_CommandLaw does - ours loads it into edx before sub esp and spills i to [esp+0x10] inside the name loop, one extra store), the FPU kept-alive pattern in the three loop tails (original fst g; fmul e.demand, ours fstp g; fld e.demand; fmul g) and the 167-instruction prologue store order (the string copies are verified against .rdata: name MINUS/PLUS at 0x601bc4/0x601bbc, kind WAFFEN/BUECHER/ENDPRODUKTE at 0x601c40/0x601c38/0x601c2c, sign -1/1). Tried and reverted: a per-loop G12STOCK *s pointer local (336 asm, code 48 bytes smaller) - allocation, not meaning. Q2 block: ai_Unk4c56d0 (0x4c56d0 = message 0x3f, k and 0x80 bytes of p, cm.c; cm_SendGoodsRecord is the evidenced name) and ai_Unk4cd9d0 (0x4cd9d0, the record of ten with id, cm.c) - both need their own units' evidence before the rename. */
 
 typedef struct G12STOCK {               /* 0x80 bytes, a player's goods record (f3init.c's INIT_STOCK, f3gm.c's GM_GOODS) */
-    unsigned short item;                /* 0x00, the goods prototype (an ai_Goods index) */
+    unsigned short item;                /* 0x00, the goods prototype (an ai_GoodsT index) */
     char pad02[2];
     int amount;                         /* 0x04, the amount the player holds */
     char pad08[0x18];                   /* 0x08 .. 0x1f */
@@ -85,7 +85,7 @@ int ai_CommandDemand(int a, int b, char *fmt)
     case 1:
         for (i = 0; i < 0x55; i++) {
             if (init_StockBlocks[ai_OwnPlayer].rec[i].item != 0 && init_StockBlocks[ai_OwnPlayer].rec[i].amount != 0
-                && ai_Goods[init_StockBlocks[ai_OwnPlayer].rec[i].item].type == 8) {
+                && ai_GoodsT[init_StockBlocks[ai_OwnPlayer].rec[i].item].type == 8) {
                 g = f + 1.0f;
                 e = init_StockBlocks[ai_OwnPlayer].rec[i];
                 e.mean = g * e.demand;
@@ -97,7 +97,7 @@ int ai_CommandDemand(int a, int b, char *fmt)
     case 2:
         for (i = 0; i < 0x55; i++) {
             if (init_StockBlocks[ai_OwnPlayer].rec[i].item != 0 && init_StockBlocks[ai_OwnPlayer].rec[i].amount != 0
-                && ai_Goods[init_StockBlocks[ai_OwnPlayer].rec[i].item].type == 0x20) {
+                && ai_GoodsT[init_StockBlocks[ai_OwnPlayer].rec[i].item].type == 0x20) {
                 g = f + 1.0f;
                 e = init_StockBlocks[ai_OwnPlayer].rec[i];
                 e.mean = g * e.demand;

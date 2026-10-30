@@ -36,8 +36,8 @@ int ai_TokenRichestInhabitant(int mode, G12ARG *args, int k, char *fmt, char *ou
                 } else {
                     for (i = 0; i < 0x300; i++) {
                         if (ai_IsLivingCharacter((unsigned short)i) && (filt == 0 || G12_B(i, 9) == sex)
-                            && (v = gm_GetWorth((unsigned short)i)) > best && ai_NotInLists(ai_Chars[i].netId)) {
-                            c = &ai_Chars[i];
+                            && (v = gm_GetWorth((unsigned short)i)) > best && ai_NotInLists(ai_CharsT[i].netId)) {
+                            c = &ai_CharsT[i];
                             best = v;
                         }
                     }

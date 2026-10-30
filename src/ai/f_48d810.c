@@ -28,7 +28,7 @@ int ai_MeisterTradeFernEinkauf2(AICHAR *ch, AIOBJ *b)
         if (car->fill < 0x21) {
             memset(&msg, 0, sizeof(msg));
             msg.type = 0x10;
-            msg.to = ai_Chars[ch->bld->owner].netId;
+            msg.to = ai_CharsT[ch->bld->owner].netId;
             msg.fromId = ch->bld->id;
             msg.flags = 1;
             msg.time = ai_TimeT;
@@ -53,7 +53,7 @@ int ai_MeisterTradeFernEinkauf2(AICHAR *ch, AIOBJ *b)
             for (i = 0; i < rec.n; i++) {
                 if (rec.item[i]) {
                     sprintf(buf, "ai_MeisterTradeFernEinkauf(): Von Auto in \"%s\" %li Einheiten %s entladen",
-                            ch->bld->name, rec.amount[i], ai_Goods[rec.item[i]].name);
+                            ch->bld->name, rec.amount[i], ai_GoodsT[rec.item[i]].name);
                     hit = NULL;
                     sp = ai_Slots;
                     while (!hit) {
@@ -65,7 +65,7 @@ int ai_MeisterTradeFernEinkauf2(AICHAR *ch, AIOBJ *b)
                     }
                     if (rec.amount[i]) {
                         sprintf(buf, "ai_MeisterTradeFernEinkauf(): Fake-Verkauf aus Auto in \"%s\" von %li Einheiten %s",
-                                ch->bld->name, rec.amount[i], ai_Goods[rec.item[i]].name);
+                                ch->bld->name, rec.amount[i], ai_GoodsT[rec.item[i]].name);
                         sprintf(buf, SELL_FMT, -1, market->objId, rec.item[i], rec.amount[i], ai_OwnPlayer,
                                 (double)(int)gm_GoodsPrice(rec.item[i], ai_OwnPlayer));
                         cm_SendExSellObjectI(-1, market->objId, rec.item[i], rec.amount[i], ai_OwnPlayer,
@@ -144,18 +144,18 @@ int ai_MeisterTradeFernEinkauf2(AICHAR *ch, AIOBJ *b)
                 } while (nB < 3);
             }
             for (i = 1; i < 4; i++) {
-                v = gm_SumSlotAmounts(ai_Chars[ch->bld->owner].inventory, i);
+                v = gm_SumSlotAmounts(ai_CharsT[ch->bld->owner].inventory, i);
                 if (v < exp[i]) {
                     d = exp[i] * 9 / 8;
                     cm_BeginGroup("Fernh\xe4ndler");
-                    cm_SendMoveGoods(ai_Chars[ch->bld->owner].netId, -1, i, d);
-                    cm_SendMoveGoods(-1, ai_Chars[ch->bld->owner].netId, ai_OwnPlayer, (int)(d * 1.03));
+                    cm_SendMoveGoods(ai_CharsT[ch->bld->owner].netId, -1, i, d);
+                    cm_SendMoveGoods(-1, ai_CharsT[ch->bld->owner].netId, ai_OwnPlayer, (int)(d * 1.03));
                     cm_EndGroup("Fernh\xe4ndler");
                 } else if (v > exp[i] * 2) {
                     d = v - exp[i] * 9 / 8;
                     cm_BeginGroup("Fernh\xe4ndler");
-                    cm_SendMoveGoods(ai_Chars[ch->bld->owner].netId, -1, ai_OwnPlayer, d);
-                    cm_SendMoveGoods(-1, ai_Chars[ch->bld->owner].netId, i, (int)(d * 1.03));
+                    cm_SendMoveGoods(ai_CharsT[ch->bld->owner].netId, -1, ai_OwnPlayer, d);
+                    cm_SendMoveGoods(-1, ai_CharsT[ch->bld->owner].netId, i, (int)(d * 1.03));
                     cm_EndGroup("Fernh\xe4ndler");
                 }
             }
@@ -163,7 +163,7 @@ int ai_MeisterTradeFernEinkauf2(AICHAR *ch, AIOBJ *b)
             if (n == -1)
                 n = msg.dst[3];
             msg.type = 0xb;
-            msg.to = ai_Chars[ch->bld->owner].netId;
+            msg.to = ai_CharsT[ch->bld->owner].netId;
             msg.fromId = ch->bld->id;
             msg.time = ai_TimeT;
             msg.flags = 1;

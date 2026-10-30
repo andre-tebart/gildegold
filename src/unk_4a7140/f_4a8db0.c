@@ -19,17 +19,17 @@ int ai_Unk4a8db0(int a, AIPER *p, int c, int d, unsigned char *m)
         return 0;
     i = util_Random(0x300);
     n = 0x300;
-    while (((AIPER *)ai_Chars)[i].id == 0xffff
-           || *(AIBLD **)((unsigned char *)&((AIPER *)ai_Chars)[i] + 0x16c) != b
-           || ((AIPER *)ai_Chars)[i].kind != 0) {
+    while (((AIPER *)ai_CharsT)[i].id == 0xffff
+           || *(AIBLD **)((unsigned char *)&((AIPER *)ai_CharsT)[i] + 0x16c) != b
+           || ((AIPER *)ai_CharsT)[i].kind != 0) {
         if (--n == 0)
             return 0;
         i = (int)(i + 1) % 0x300;
     }
-    if (&((AIPER *)ai_Chars)[i] == 0)
+    if (&((AIPER *)ai_CharsT)[i] == 0)
         return 0;
     m[0] = 7;
-    *(int *)(m + 4) = ((AIPER *)ai_Chars)[i].netId;
+    *(int *)(m + 4) = ((AIPER *)ai_CharsT)[i].netId;
     *(int *)(m + 8) = b->id;
     return 1;
 }

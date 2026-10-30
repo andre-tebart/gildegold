@@ -10,7 +10,7 @@ int ai_HasQuicksavePlayer(void)
 
     if (ai_GameState == 0)
         return 0;
-    p = (unsigned char *)ai_Chars + 2;
+    p = (unsigned char *)ai_CharsC + 2;
     do {
         if (p[6] > 0 && (p[0] == 6 || p[0] == 7) && U_I(p + 0x20a) != -1)
             return 0;

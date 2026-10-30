@@ -17,7 +17,7 @@ int ai_TokenCityTreasury(int mode, G12ARG *args, int k, char *fmt, char *out)
     if (o == 0)
         return 0;
     for (o = gm_Query(o->unk14, 1, 5); o != 0; o = gm_QueryNext()) {
-        if (ai_Goods[o->id].type == 9) {
+        if (ai_GoodsT[o->id].type == 9) {
             v = o->unk0e;
             break;
         }

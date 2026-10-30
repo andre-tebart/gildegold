@@ -31,11 +31,11 @@ int ai_StartProduction(AICHAR *ch, AIENTRY *e)
                     ai_Entries[s->entry].rank = ai_Entries[s->entry].rank < e->rank ? ai_Entries[s->entry].rank : e->rank;
                     ai_Entries[s->entry].flags |= 2;
                     if ((ai_Entries[s->entry].pending + ai_Entries[s->entry].amount) * 4 < ai_Entries[s->entry].capacity) {
-                        if (ai_Entries[s->entry].capacity > ai_Goods[ai_Entries[s->entry].item].batch)
+                        if (ai_Entries[s->entry].capacity > ai_GoodsT[ai_Entries[s->entry].item].batch)
                             ai_Entries[s->entry].flags |= 8;
                         ai_StartProduction(ch, &ai_Entries[s->entry]);
                     }
-                } else if (s->pending + s->amount < ai_Goods[e->item].need[k] * 4) {
+                } else if (s->pending + s->amount < ai_GoodsT[e->item].need[k] * 4) {
                     gm_CollectOffers(s->item);
                     j = 0;
                     while (1) {
@@ -44,7 +44,7 @@ int ai_StartProduction(AICHAR *ch, AIENTRY *e)
                         row = &gm_Offers[j];
                         if (row->bld != ch->bld && AI_KIND(row->bld->type) != 2 && row->goodsObj != 0) {
                             cnt = row->count;
-                            if (cnt >= ai_Goods[e->item].need[k]) {
+                            if (cnt >= ai_GoodsT[e->item].need[k]) {
                                 s->bld = row->bld;
                                 if (row->bld->owner == ch->bld->owner) {
                                     s->make = s->capacity;
@@ -54,12 +54,12 @@ int ai_StartProduction(AICHAR *ch, AIENTRY *e)
                                 m = e->capacity >> 1;
                                 if (m < 1)
                                     m = 1;
-                                v = ai_Goods[e->item].need[k] * m - s->pending - s->amount;
+                                v = ai_GoodsT[e->item].need[k] * m - s->pending - s->amount;
                                 v = max(v, (s->capacity >> 1) - s->pending);
                                 v = min(s->capacity - s->pending - 1, v);
                                 v = (int)min((float)ch->budget / s->price, (float)v);
                                 v = min(cnt, v);
-                                if (v >= ai_Goods[e->item].need[k])
+                                if (v >= ai_GoodsT[e->item].need[k])
                                     s->make = max(s->make, v);
                             }
                         }
@@ -68,7 +68,7 @@ int ai_StartProduction(AICHAR *ch, AIENTRY *e)
                 }
             } else {
                 if ((ai_Entries[s->entry].pending + ai_Entries[s->entry].amount) * 4 < ai_Entries[s->entry].capacity &&
-                    s->amount + s->pending < ai_Goods[e->item].need[k] * 4)
+                    s->amount + s->pending < ai_GoodsT[e->item].need[k] * 4)
                     s->flags |= 0x10;
             }
         }

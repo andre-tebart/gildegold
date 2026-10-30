@@ -23,8 +23,8 @@ int ai_Unk4b9f30(G14MSG *m)
     k = 0;
     b = a[util_Random(n)];
     for (i = 0; i < 768 && k < 6; i++) {
-        if (ai_Chars[i].kind == 0 && ai_Chars[i].bld == b && ai_Chars[i].title != 0)
-            a[k++] = &ai_Chars[i];
+        if (ai_CharsT[i].kind == 0 && ai_CharsT[i].bld == b && ai_CharsT[i].title != 0)
+            a[k++] = &ai_CharsT[i];
     }
     if (k > 1)
         p = a[util_Random(k)];

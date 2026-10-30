@@ -25,35 +25,35 @@ int ai_TokenRandomGuildMaster(int mode, G12ARG *args, int k, char *fmt, char *ou
         if (sel == 0) {
             i = util_Random(0x300);
             for (n = 0x300; n != 0; n--) {
-                if (ai_IsLivingCharacter((unsigned short)i) && ai_Chars[i].secondOffice >= 0x1e
-                    && ai_Chars[i].secondOffice <= 0x21)
+                if (ai_IsLivingCharacter((unsigned short)i) && ai_CharsT[i].secondOffice >= 0x1e
+                    && ai_CharsT[i].secondOffice <= 0x21)
                     break;
                 i = (i + 1) % 0x300;
             }
             if (n == 0)
                 return 0;
-            pick = &ai_Chars[i];
+            pick = &ai_CharsT[i];
         } else if (sel == 1) {
             i = util_Random(0x300);
             for (n = 0x300; n != 0; n--) {
-                if (ai_IsLivingNonPlayer((unsigned short)i) && ai_Chars[i].secondOffice >= 0x1e
-                    && ai_Chars[i].secondOffice <= 0x21)
+                if (ai_IsLivingNonPlayer((unsigned short)i) && ai_CharsT[i].secondOffice >= 0x1e
+                    && ai_CharsT[i].secondOffice <= 0x21)
                     break;
                 i = (i + 1) % 0x300;
             }
             if (n == 0)
                 return 0;
-            pick = &ai_Chars[i];
+            pick = &ai_CharsT[i];
         } else {
             pick = 0;
             i = util_Random(0x300);
             for (n = 0x300; n != 0; n--) {
-                if (pick == 0 && ai_IsLivingNonPlayer((unsigned short)i) && ai_Chars[i].secondOffice >= 0x1e
-                    && ai_Chars[i].secondOffice <= 0x21) {
-                    pick = &ai_Chars[i];
-                } else if (ai_IsLivingHuman((unsigned short)i) && ai_Chars[i].secondOffice >= 0x1e
-                           && ai_Chars[i].secondOffice <= 0x21) {
-                    pick = &ai_Chars[i];
+                if (pick == 0 && ai_IsLivingNonPlayer((unsigned short)i) && ai_CharsT[i].secondOffice >= 0x1e
+                    && ai_CharsT[i].secondOffice <= 0x21) {
+                    pick = &ai_CharsT[i];
+                } else if (ai_IsLivingHuman((unsigned short)i) && ai_CharsT[i].secondOffice >= 0x1e
+                           && ai_CharsT[i].secondOffice <= 0x21) {
+                    pick = &ai_CharsT[i];
                     break;
                 }
                 i = (i + 1) % 0x300;

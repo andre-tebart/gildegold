@@ -19,9 +19,9 @@ int ai_Unk4ab7f0(int a, AIPER *p, int c, unsigned char *m)
         return 0;
     if ((a != 0x45 && a != 0) || c != 0 || v == 0 || p->kind == 3)
         return 0;
-    b = ai_Blds;
+    b = ai_BldsT;
     for (i = 0x100; i != 0; i--) {
-        if (b->type != 0 && b->owner == p->id && ai_BTypes[b->type].kind == 0x1f
+        if (b->type != 0 && b->owner == p->id && ai_BTypesT[b->type].kind == 0x1f
             && gm_Query(b->objList, 2, 6, 0, 0x28a) != 0) {
             if (best == 0) {
                 best = b;
@@ -41,7 +41,7 @@ int ai_Unk4ab7f0(int a, AIPER *p, int c, unsigned char *m)
     flags = ((unsigned)&ai_Unka69140 + 0x4973c0);
     if (G10_4A58D0(p, 1, (int *)&flags, 0.0f, (float)util_Random(0x20) + 25.0f, &id) == 0)
         return 0;
-    o = &((AIPER *)ai_Chars)[id];
+    o = &((AIPER *)ai_CharsT)[id];
     money = (int)(gm_Unk509e30(*(int *)((unsigned char *)p + 0x178), ai_OwnPlayer) * 0.25f);
     gm_GetWorth(p->id);
     for (k = bestv - 1; k > 0; k--) {

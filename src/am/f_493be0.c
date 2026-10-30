@@ -48,7 +48,7 @@ int ai_Unk493be0(AGCH *p, AIOBJ *o)
         flags = 0xc00;
         x = util_Random(30);
         if (ai_Unk4a5b50(p, 1, &flags, 0, x + 40.0f, (unsigned int *)&x) != 0)
-            q = (AGCH *)&ai_Chars[x & 0xffff];
+            q = (AGCH *)&ai_CharsT[x & 0xffff];
     }
     if (q != 0) {
         v = 1;

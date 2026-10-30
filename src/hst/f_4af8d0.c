@@ -29,8 +29,8 @@ int ai_TokenRandomNpcInhabitant(int mode, G12ARG *args, int k, char *fmt, char *
                 }
             } else {
                 for (i = 0; i < 0x300; i++) {
-                    if (ai_NotInLists(ai_Chars[i].netId)) {
-                        c = &ai_Chars[i];
+                    if (ai_NotInLists(ai_CharsT[i].netId)) {
+                        c = &ai_CharsT[i];
                         if (filt == 0 || G12_B(i, 9) == sex) {
                             if (ai_IsLivingInhabitant((unsigned short)i))
                                 break;

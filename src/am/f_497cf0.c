@@ -12,7 +12,7 @@ int ai_Unk497cf0(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
         bl = AI_BLDX;
         for (i = 0; i < 0x100; i++, bl++) {
             if (bl->type && bl->masterId == p->id && !(bl->flags5a & 0x45)
-                && ((1 << ai_BTypes[bl->type].kind) & ((unsigned)&ai_Unk770d8c + 0x53628)) && bl->level < d) {
+                && ((1 << ai_BTypesT[bl->type].kind) & ((unsigned)&ai_Unk770d8c + 0x53628)) && bl->level < d) {
                 d = bl->level;
                 best = bl;
             }

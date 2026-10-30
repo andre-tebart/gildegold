@@ -22,7 +22,7 @@ void ai_HomageWindow(int building)
         sv_CameraFollow();
         return;
     }
-    if (((AICHARVIEW *)(ai_Chars + ai_PlayerId * 0x21c))->flags1cc & 0x20) {
+    if (((AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c))->flags1cc & 0x20) {
         sv_MessageBoxGreen((int)txt_Ptrs[0x4207], (int)txt_Ptrs[0x4208], 0);
         return;
     }
@@ -56,10 +56,10 @@ void ai_HomageWindow(int building)
             sv_PopRequest = 1;
         } else if (d2_ClickedId != -1) {
             if (d2_PointerObj == ids[0]) {
-                if (sv_CheckMoney(ai_Chars + ai_PlayerId * 0x21c, value) == 1) {
-                    cm_SendSetField(((AICHARVIEW *)(ai_Chars + ai_PlayerId * 0x21c))->netId, 0x1cc, 4, 0x20, 0);
-                    gm_SendMoneyDelta(((AICHARVIEW *)(ai_Chars + ai_PlayerId * 0x21c))->netId, -value);
-                    cm_SendRelations(((AICHARVIEW *)(ai_Chars + ai_PlayerId * 0x21c))->netId, target->netId, value * 5, 1);
+                if (sv_CheckMoney(ai_CharsC + ai_PlayerId * 0x21c, value) == 1) {
+                    cm_SendSetField(((AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c))->netId, 0x1cc, 4, 0x20, 0);
+                    gm_SendMoneyDelta(((AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c))->netId, -value);
+                    cm_SendRelations(((AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c))->netId, target->netId, value * 5, 1);
                     if (target->kind == 6 || target->kind == 7) {
                         txt_Format(text, 0x420e, ai_PlayerId);
                         he_ShowNews(target->netId, -1, text, 0, 0x5f0, "_NACHRICHTEN_ZIGEUNER_04");

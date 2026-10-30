@@ -464,10 +464,10 @@ typedef struct AIMAPENT {               /* 24 bytes, the AI's view of the vegeta
 #define AI_KIND(t) (((int (*)(int))gm_BuildingClass)(t))   /* the call zero-extends the byte (xor ecx,ecx; mov cl) */
 
 extern char ai_Time[14];                 /* 0x770ae0, the game clock: an AITIME (14 bytes), defined by anm.c as char[14]; the units that read its fields use their ai_TimeT view */
-extern AICHAR ai_Chars[768];            /* 0x770b80, @original: am.h / ahm.h / cm.h / gv.h declare char ai_Chars[][0x21c] (the same bytes); ai_Init (0x47d9e0, byte) walks it as AICHAR records */
-extern AIBTYPE *ai_BTypes;              /* 0x7e3f30, @original: ahm.h / amt.h / cm.h / f3snd.h / gv.h / rt.h declare char *ai_BTypes; ai_Unk47e990 (0x47e990, byte) indexes it as AIBTYPE records (.kind) */
-extern AIBLD *ai_Blds;                  /* 0x889f74, @original: gv.h declares char *ai_Blds (the same pointer; its units add byte offsets to it); ai_MasterUpdate (0x47e360, byte) steps AIBLD records (b++) */
-extern AIGOOD *ai_Goods;                /* 0x91aaf0, @original: cm.h declares char *ai_Goods (the same pointer; cm.c adds o * 0x41 byte offsets); ai_CalcEntryCost (0x487040, byte) reads AIGOOD fields (ai_Goods[item].need[k]) */
+extern char ai_Chars[768][0x21c];        /* 0x770b80, the characters: AICHAR records, defined by ahm.c as char[768][0x21c]; the units that read their fields use their ai_CharsT view */
+extern char *ai_BTypes;                 /* 0x7e3f30, the building types: AIBTYPE records (ahm.c defines char *; ai_BTypesT views) */
+extern char *ai_Blds;                   /* 0x889f74, the buildings: AIBLD records (f3gm.c defines char *; ai_BldsT views) */
+extern char *ai_Goods;                  /* 0x91aaf0, the goods: AIGOOD records, 0x41 bytes each (f3gm.c defines char *; ai_GoodsT views) */
 extern int ai_NSlots;                   /* 0xf86a28 */
 extern int ai_NEntries;                 /* 0xf86a2c */
 extern AISLOT ai_Slots[128];            /* 0xf86a40 */

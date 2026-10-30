@@ -30,7 +30,7 @@ void ai_MeisterCollectTrans(AICHAR *ch)
         t = (AIOBJ *)ai_Objects;
         i = 0x5008;
         do {
-            if (t->type && ai_Goods[t->type].type == 0x1d && t->unk1c == ch->bld->id) {
+            if (t->type && ai_GoodsT[t->type].type == 0x1d && t->unk1c == ch->bld->id) {
                 n++;
                 if (t->type == 0x136)
                     n136++;
@@ -59,7 +59,7 @@ void ai_MeisterCollectTrans(AICHAR *ch)
                     memset(&msg, 0, sizeof(msg));
                     msg.type = 0xf;
                     msg.flags = 2;
-                    msg.to = ai_Chars[ch->bld->owner].netId;
+                    msg.to = ai_CharsT[ch->bld->owner].netId;
                     msg.time = ai_TimeT;
                     msg.car = t->objId;
                     msg.fromId = -1;
@@ -74,10 +74,10 @@ void ai_MeisterCollectTrans(AICHAR *ch)
         next:
             t++;
         } while (--i);
-        bt = &ai_BTypes[ch->bld->type];
+        bt = &ai_BTypesT[ch->bld->type];
         if (bt->kind == 9) {
             if (n == n136) {
-                cm_SendMoveGoods(-1, ai_Chars[ch->bld->owner].netId, ai_OwnPlayer, (int)gm_ItemPrice(0x134, 100));
+                cm_SendMoveGoods(-1, ai_CharsT[ch->bld->owner].netId, ai_OwnPlayer, (int)gm_ItemPrice(0x134, 100));
                 cm_SendExSellObjectI(ch->bld->id, -1, 0x134, 1, ai_OwnPlayer, 0);
                 sprintf(buf, "ai_MeisterCollectTrans(): Transporter f\xfcr %s gekauft", ch->bld->name);
                 return;
@@ -92,7 +92,7 @@ void ai_MeisterCollectTrans(AICHAR *ch)
                 item = 0x136 - (util_Random(8) < 4);
                 if (ch->budget <= (int)gm_ItemPrice(item, 100) * 2)
                     return;
-                cm_SendMoveGoods(-1, ai_Chars[ch->bld->owner].netId, ai_OwnPlayer, (int)gm_ItemPrice(item, 100));
+                cm_SendMoveGoods(-1, ai_CharsT[ch->bld->owner].netId, ai_OwnPlayer, (int)gm_ItemPrice(item, 100));
                 cm_SendExSellObjectI(ch->bld->id, -1, item, 1, ai_OwnPlayer, 0);
             } else {
                 if (ch->flags1c8 & 8)
@@ -104,19 +104,19 @@ void ai_MeisterCollectTrans(AICHAR *ch)
                 item = 0x136;
                 if (ch->budget <= (int)gm_ItemPrice(item, 100) * 2)
                     return;
-                cm_SendMoveGoods(-1, ai_Chars[ch->bld->owner].netId, ai_OwnPlayer, (int)gm_ItemPrice(item, 100));
+                cm_SendMoveGoods(-1, ai_CharsT[ch->bld->owner].netId, ai_OwnPlayer, (int)gm_ItemPrice(item, 100));
                 cm_SendExSellObjectI(ch->bld->id, -1, item, 1, ai_OwnPlayer, 0);
             }
     } else {
         if (n == 0) {
-            if ((ai_Chars[ch->bld->owner].kind == 6 || ai_Chars[ch->bld->owner].kind == 7) && !(ch->flags1b4 & 4))
+            if ((ai_CharsT[ch->bld->owner].kind == 6 || ai_CharsT[ch->bld->owner].kind == 7) && !(ch->flags1b4 & 4))
                 return;
-            cm_SendMoveGoods(-1, ai_Chars[ch->bld->owner].netId, ai_OwnPlayer, (int)gm_ItemPrice(0x134, 100));
+            cm_SendMoveGoods(-1, ai_CharsT[ch->bld->owner].netId, ai_OwnPlayer, (int)gm_ItemPrice(0x134, 100));
             cm_SendExSellObjectI(ch->bld->id, -1, 0x134, 1, ai_OwnPlayer, 0);
             sprintf(buf, "ai_MeisterCollectTrans(): Transporter f\xfcr %s gekauft", ch->bld->name);
             return;
         }
-        if ((ai_Chars[ch->bld->owner].kind == 6 || ai_Chars[ch->bld->owner].kind == 7) && !(ch->flags1b4 & 4))
+        if ((ai_CharsT[ch->bld->owner].kind == 6 || ai_CharsT[ch->bld->owner].kind == 7) && !(ch->flags1b4 & 4))
             return;
         if (ch->flags1c8 & 8)
             return;
@@ -127,7 +127,7 @@ void ai_MeisterCollectTrans(AICHAR *ch)
         item = 0x135;
         if (ch->budget <= (int)gm_ItemPrice(item, 100) * 2)
             return;
-        cm_SendMoveGoods(-1, ai_Chars[ch->bld->owner].netId, ai_OwnPlayer, (int)gm_ItemPrice(item, 100));
+        cm_SendMoveGoods(-1, ai_CharsT[ch->bld->owner].netId, ai_OwnPlayer, (int)gm_ItemPrice(item, 100));
         cm_SendExSellObjectI(ch->bld->id, -1, item, 1, ai_OwnPlayer, 0);
     }
     sprintf(buf, "ai_MeisterCollectTrans(): Um %li:%li Uhr zus\xe4tzlichen Transporter f\xfcr %s gekauft",

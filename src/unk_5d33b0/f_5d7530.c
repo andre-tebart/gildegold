@@ -31,7 +31,7 @@ void ai_SaveNetworkGame(char *saveName, char *name)
     sv_BroadcastText(sv_FrameMask, ai_SaveWaitText);
     count = 0;
     ai_NumPlayers = count;
-    p = (unsigned char *)ai_Chars + 2;
+    p = (unsigned char *)ai_CharsC + 2;
     do {
         c = (AICHARVIEW *)(p - 2);
         if (c->id != 0xffff && (c->kind == 6 || c->kind == 7))
@@ -55,7 +55,7 @@ void ai_SaveNetworkGame(char *saveName, char *name)
         vfs_fclose(h);
     }
     memset(rec, 0, sizeof(rec));
-    rec[0] = ((AICHARVIEW *)ai_Chars)[ai_PlayerId].netId;
+    rec[0] = ((AICHARVIEW *)ai_CharsC)[ai_PlayerId].netId;
     rec[1] = hash;
     cm_SendExSysMessage(0x10, rec);
     if (ai_NumPlayers > 0) {

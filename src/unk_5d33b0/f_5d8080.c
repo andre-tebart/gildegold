@@ -36,9 +36,9 @@ void ai_TailorChatWindow(int request)
     int i;
 
     req = (AIREQ *)request;
-    rec = (AICHARVIEW *)(ai_Chars + ai_PlayerId * 0x21c);
+    rec = (AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c);
     wnd = d2_OpenForm(0, 0, "locations\\schneider\\plausch");
-    found = gv_FindAccused((char *)(ai_Chars + ai_PlayerId * 0x21c), 4, ids, &count);
+    found = gv_FindAccused((char *)(ai_CharsC + ai_PlayerId * 0x21c), 4, ids, &count);
     if (ai_PlayerBuilding != 0)
         limit = gm_BuildingSkill((struct AIBLD *)ai_PlayerBuilding, 0x24, 1);
     else
@@ -63,12 +63,12 @@ void ai_TailorChatWindow(int request)
         if (d2_ClickedId != -1 && obj == d2_PointerObj) {
             if (found != 0) {
                 for (i = 0; i < count; i++)
-                    cm_SendProofExecuted(ids[i], ((AICHARVIEW *)(ai_Chars + ai_PlayerId * 0x21c))->netId);
-                cm_SendMoneyDelta(((AICHARVIEW *)(ai_Chars + ai_PlayerId * 0x21c))->netId, -1);
+                    cm_SendProofExecuted(ids[i], ((AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c))->netId);
+                cm_SendMoneyDelta(((AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c))->netId, -1);
                 cm_SendMoneyDelta(req->handle, -1);
                 cm_SendSetField(rec->netId, 0x1cc, 4, 0x20000, 0);
                 txt_Format(buf + 0x10, 0x422f, req->id);
-                he_ShowNews(((AICHARVIEW *)(ai_Chars + ai_PlayerId * 0x21c))->netId, -1, buf + 0x10,
+                he_ShowNews(((AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c))->netId, -1, buf + 0x10,
                             0, 0x5ec, 0);
                 if (req->kind == 6 || req->kind == 7) {
                     txt_Format(buf, 0x4230, ai_PlayerId, 1);

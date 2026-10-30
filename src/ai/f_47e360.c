@@ -13,18 +13,18 @@ void ai_MasterUpdate(AICHAR *c)
     unsigned int sel;
 
     if (ai_IsLocalMaster(c) && (c->flags1cc & 0x3000) == 0) {
-        for (n = 0x100, b = ai_Blds; n; n--, b++) {
+        for (n = 0x100, b = ai_BldsT; n; n--, b++) {
             if (b->type) {
                 lo = 0;
                 hi = 0;
-                bt = &ai_BTypes[b->type];
+                bt = &ai_BTypesT[b->type];
                 if ((unsigned char)bt->kind > 0x1f)
                     hi = 1 << ((unsigned char)bt->kind - 0x20);
                 else
                     lo = 1 << (unsigned char)bt->kind;
                 if (b->owner == c->id && !(b->flags5a & 1) && ((lo & ai_BuildingTypeMasks[2]) || (hi & ai_BuildingTypeMasks[3]))) {
                     found = 0;
-                    p = ai_Chars;
+                    p = ai_CharsT;
                     while (1) {
                         if ((int)&p->kind >= (unsigned)&gm_PlayerRecordBytes)
                             break;
@@ -36,7 +36,7 @@ void ai_MasterUpdate(AICHAR *c)
                     }
                     if (gm_BuildingClass(b->type) != 6 && !found) {
                         v = b->type;
-                        cm_SendMessage3d(b, 1, ai_BTypes[v].unk230, ai_BTypes[v].unk223);
+                        cm_SendMessage3d(b, 1, ai_BTypesT[v].unk230, ai_BTypesT[v].unk223);
                         sprintf(buf, "%li:%02li - %s stellt Meister f\xfc" "r '%s' ein", ai_TimeT.hour,
                                 ai_TimeT.min, c->name, b->name);
                     }

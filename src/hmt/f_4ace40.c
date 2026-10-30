@@ -23,8 +23,8 @@ void hmt_Update(void)
                 if (ce != 0) {
                     txt_Format(text, 0x42b2, ce->id);
                     for (i = 0; i < 768; i++) {
-                        if (ai_Chars[i].kind == 6 || ai_Chars[i].kind == 7)
-                            he_ShowNews(ai_Chars[i].netId, -1, text, 0, 0x602, "_NACHRICHTEN_NEU_00");
+                        if (ai_CharsT[i].kind == 6 || ai_CharsT[i].kind == 7)
+                            he_ShowNews(ai_CharsT[i].netId, -1, text, 0, 0x602, "_NACHRICHTEN_NEU_00");
                     }
                 }
             }
@@ -37,8 +37,8 @@ void hmt_Update(void)
                 if (cp != 0) {
                     txt_Format(text, 0x42b4, cp->id);
                     for (i = 0; i < 768; i++) {
-                        if (ai_Chars[i].kind == 6 || ai_Chars[i].kind == 7)
-                            he_ShowNews(ai_Chars[i].netId, -1, text, 0, 0x602, "_NACHRICHTEN_NEU_02");
+                        if (ai_CharsT[i].kind == 6 || ai_CharsT[i].kind == 7)
+                            he_ShowNews(ai_CharsT[i].netId, -1, text, 0, 0x602, "_NACHRICHTEN_NEU_02");
                     }
                 }
             }

@@ -26,7 +26,7 @@ int ai_Unk49a0a0(G5CH *p)
     gm_AddTime(&t, util_Random(4) + 1, util_Random(8) * 7, 0);
     if (((unsigned char *)p)[2] == 5) {
         n = 0;
-        for (c = (unsigned char *)ai_Chars + 2; c < (unsigned char *)(ai_Chars + 768) + 2; c += 0x21c) {
+        for (c = (unsigned char *)ai_CharsT + 2; c < (unsigned char *)(ai_CharsT + 768) + 2; c += 0x21c) {
             if (n >= (int)ai_NumPlayers)
                 return 0x19;
             if (c[0] == 6 || c[0] == 7) {

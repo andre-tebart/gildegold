@@ -20,7 +20,7 @@ int ai_MsgLoseGood(G14MSG *m)
     if (ai_InventoryHas(c, 0x290))
         return 0x400;
     for (e = gm_Query(c->inventory, 1, 5); e != 0 && n < 6; e = gm_QueryNext()) {
-        if (ai_Goods[e->id].type != 9)
+        if (ai_GoodsT[e->id].type != 9)
             a[n++] = e;
     }
     if (n == 0)

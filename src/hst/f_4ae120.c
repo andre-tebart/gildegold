@@ -2,7 +2,7 @@
 
 int ai_IsLivingInhabitant(unsigned short id)
 {
-    if (ai_Chars[id].id != 0xffff && ai_Chars[id].health > 0 && ai_Chars[id].kind == 0)
+    if (ai_CharsT[id].id != 0xffff && ai_CharsT[id].health > 0 && ai_CharsT[id].kind == 0)
         return 1;
     return 0;
 }

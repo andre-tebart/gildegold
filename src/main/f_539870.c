@@ -27,7 +27,7 @@ void main_Unk539870(void)
             sv_RunFrame(0, U_I((unsigned)&sv_FrameMask));
     }
     id = U_I((unsigned)&ai_PlayerId) & 0xffff;
-    bk = gm_PlayerRecord((unsigned)&ai_Chars + id * 0x21c);
+    bk = gm_PlayerRecord((unsigned)&ai_CharsT + id * 0x21c);
     *(int *)(bk + 0x3c) = *(int *)(bk + 0x3c) + U_I(((unsigned)&ai_Selected + 0x1c) + id * 0x21c) + U_I(((unsigned)&ai_Selected + 0x18) + id * 0x21c);
     d3_SetObjectPos(U_I((unsigned)&ai_Unkfc2dec), bk + 0x8c);
     d3_SetObjectRot(U_I((unsigned)&ai_Unkfc2dec), bk + 0x9c);
@@ -192,7 +192,7 @@ void main_Unk539870(void)
             io_PrintText(0x204d, w1fc);
         else if (w1fc < 0)
             io_PrintText(0x204e, w1fc);
-        t = gm_GetGoodsValue((unsigned)&ai_Chars + (U_I((unsigned)&ai_PlayerId) & 0xffff) * 0x21c);
+        t = gm_GetGoodsValue((unsigned)&ai_CharsT + (U_I((unsigned)&ai_PlayerId) & 0xffff) * 0x21c);
         io_PrintText(0x2029, ((t - w1e8) - w1ec) - iv);
         he_Unk53d9f0(0xffff);
         d2_ClearSurface(U_I((unsigned)&d2_ScreenSurf));
@@ -236,7 +236,7 @@ void main_Unk539870(void)
     *(int *)(bk + 0x54) = 0;
     if (fade != 0)
         d2_ReleaseFade(fade);
-    if (gm_Unk50a6c0((unsigned)&ai_Chars + (U_I((unsigned)&ai_PlayerId) & 0xffff) * 0x21c, -(w1e8 + w1ec + iv)) != 0) {
+    if (gm_Unk50a6c0((unsigned)&ai_CharsT + (U_I((unsigned)&ai_PlayerId) & 0xffff) * 0x21c, -(w1e8 + w1ec + iv)) != 0) {
         memset(msg, 0, 0x114);
         MSG_I(msg, 0xc) = U_I((unsigned)&ai_CharInts + (U_I((unsigned)&ai_PlayerId) & 0xffff) * 0x21c);
         MSG_B(msg, 0x30) = 1;

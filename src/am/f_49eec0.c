@@ -36,10 +36,10 @@ int ai_Unk49eec0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         lim[3] = (int)(m * 25600.0f);
         j = util_Random(0x100);
         for (i = 0x100;; ) {
-            own = &ai_Blds[j];
+            own = &ai_BldsT[j];
             k = own->type;
-            if (k != 0 && own->owner == p->id && ((1 << ai_BTypes[k].kind) & ((unsigned)&ai_Unk770d8c + 0x63604))
-                && own->unk39 < lim[ai_BTypes[k].cap247])
+            if (k != 0 && own->owner == p->id && ((1 << ai_BTypesT[k].kind) & ((unsigned)&ai_Unk770d8c + 0x63604))
+                && own->unk39 < lim[ai_BTypesT[k].cap247])
                 break;
             i--;
             j = (j + lim[0]) % 0x100;
@@ -48,9 +48,9 @@ int ai_Unk49eec0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         }
         j = util_Random(0x100);
         for (i = 0x100;; ) {
-            b = &ai_Blds[j];
+            b = &ai_BldsT[j];
             k = b->type;
-            if (k != 0 && b->owner != p->id && ai_BTypes[k].kind == 5)
+            if (k != 0 && b->owner != p->id && ai_BTypesT[k].kind == 5)
                 break;
             i--;
             j = (j + lim[0]) % 0x100;
@@ -86,9 +86,9 @@ int ai_Unk49eec0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         return 0;
     j = util_Random(0x100);
     for (i = 0x100;; ) {
-        b = &ai_Blds[j];
+        b = &ai_BldsT[j];
         k = b->type;
-        if (k != 0 && b->owner != p->id && ai_BTypes[k].kind == 5)
+        if (k != 0 && b->owner != p->id && ai_BTypesT[k].kind == 5)
             break;
         i--;
         j = (j + lim[0]) % 0x100;

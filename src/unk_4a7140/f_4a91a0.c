@@ -17,7 +17,7 @@ int ai_Unk4a91a0(int a, AIPER *p, int c, int d, unsigned char *m)
         n = ai_Unk4a5ef0(p, 12, ((unsigned)&ai_Unka69140 + 0x1982ca) - (((unsigned char *)p)[9] != 0), 30.0f, 100.0f, ids);
         if (n != 0) {
             m[0] = 7;
-            *(int *)(m + 4) = ((AIPER *)ai_Chars)[ids[util_Random(n)]].netId;
+            *(int *)(m + 4) = ((AIPER *)ai_CharsT)[ids[util_Random(n)]].netId;
             return 1;
         }
     }

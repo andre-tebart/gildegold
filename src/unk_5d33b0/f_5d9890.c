@@ -33,7 +33,7 @@ void ai_GypsyBeggingWindow(int building)
             if (d2_PointerObj == ids[0]) {
                 count = 0;
                 for (i = 0; i < 768 && count < 4; i++) {
-                    if (((AICHARVIEW *)(ai_Chars + i * 0x21c))->selected != 0) {
+                    if (((AICHARVIEW *)(ai_CharsC + i * 0x21c))->selected != 0) {
                         chosen[count] = i;
                         count++;
                     }
@@ -42,11 +42,11 @@ void ai_GypsyBeggingWindow(int building)
                     memset(&msg, 0, sizeof(msg));
                     msg.type = 0xa1;
                     msg.flags = 1;
-                    msg.to = ((AICHARVIEW *)(ai_Chars + ai_PlayerId * 0x21c))->netId;
+                    msg.to = ((AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c))->netId;
                     msg.fromId = ((CURSEBLD *)building)->id;
                     memcpy(&msg.time, ai_Time, sizeof(GAMECLOCK));
                     for (i = 0; i < count; i++)
-                        msg.ids[i] = ((AICHARVIEW *)(ai_Chars + chosen[i] * 0x21c))->netId;
+                        msg.ids[i] = ((AICHARVIEW *)(ai_CharsC + chosen[i] * 0x21c))->netId;
                     cm_SendLongMessage((char *)&msg);
                     sv_PopRequest = 1;
                 } else {

@@ -15,4 +15,5 @@
 #define min(a, b) (((a) < (b)) ? (a) : (b))
 #endif
 #include "data_views.h"
+#define ai_CharsC (*(char (*)[768 * 0x21c])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) read flat, as this unit does */
 

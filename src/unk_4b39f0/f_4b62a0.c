@@ -8,7 +8,7 @@ extern struct {                         /* net.h's NETCONN (the field used here)
 void ai_MissionCompleteSequence(int id)
 {
     if (net_Conn.s != -1) {
-        if (ai_Chars[ai_PlayerId].netId == ai_MissionPartner)
+        if (ai_CharsT[ai_PlayerId].netId == ai_MissionPartner)
             ai_MissionCompleteByMode(id);
         else
             ai_MissionResultByMode(id);

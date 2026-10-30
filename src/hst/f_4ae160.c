@@ -18,11 +18,11 @@ int ai_TokenMayor(int mode, G12ARG *args, int k, char *fmt, char *out)
             return 0;
     } else {
         i = 0;
-        while (!(ai_IsLivingCharacter((unsigned short)i) && ai_Chars[i].officeKind == 0x0f)) {
+        while (!(ai_IsLivingCharacter((unsigned short)i) && ai_CharsT[i].officeKind == 0x0f)) {
             if (++i >= 768)
                 return 0;
         }
-        c = &ai_Chars[i];
+        c = &ai_CharsT[i];
         if (mode == 0)
             args[k].id = c->netId;
         if (c == 0)

@@ -20,9 +20,9 @@ int ai_Unk49cb60(G5CH *p, AIARG *s1, AIARG *s2)
         cm_AddFieldValues(4, 1, 0x1ac, &s1->unk10);
         cm_SendFieldDeltas();
         G8_4C4830(-1, p->netId, ai_OwnPlayer, s1->unk10);
-        G8_4C4830(ai_Chars[*(unsigned short *)(b + 0x27)].netId, -1, ai_OwnPlayer, d);
+        G8_4C4830(ai_CharsT[*(unsigned short *)(b + 0x27)].netId, -1, ai_OwnPlayer, d);
         unk_Unk4f3a30(p->netId, (int)s1->unk14);
-        ai_Unk5a8b80(p, &ai_Chars[*(unsigned short *)(b + 0x27)], b, d, s1->unk10);
+        ai_Unk5a8b80(p, &ai_CharsT[*(unsigned short *)(b + 0x27)], b, d, s1->unk10);
         G5_ACTS[0x26].w3[0].w = G5_ACTS[0x26].w1[0].w * s1->unk14;
         G5_ACTS[0x26].w3[1].w = G5_ACTS[0x26].w1[1].w * s1->unk14;
         G5_ACTS[0x26].w3[2].w = G5_ACTS[0x26].w1[2].w * s1->unk14;
@@ -31,8 +31,8 @@ int ai_Unk49cb60(G5CH *p, AIARG *s1, AIARG *s2)
     if (s2->kind == 0xf && o != 0) {
         unk_Unk4f3a30(p->netId, (int)s1->unk14);
         gm_SendMoneyDelta(p->netId, -s1->unk10);
-        gm_SendMoneyDelta(ai_Chars[*(unsigned short *)(b + 0x27)].netId, 1);
-        ai_Unk5a8c00(p, &ai_Chars[*(unsigned short *)(b + 0x27)], b);
+        gm_SendMoneyDelta(ai_CharsT[*(unsigned short *)(b + 0x27)].netId, 1);
+        ai_Unk5a8c00(p, &ai_CharsT[*(unsigned short *)(b + 0x27)], b);
         return 0x26;
     }
     return 0;

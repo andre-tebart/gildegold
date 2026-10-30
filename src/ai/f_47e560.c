@@ -36,8 +36,8 @@ void ai_UpdateCharacters(void)
         sprintf(buf, "Player count: %i, Starting with: %i Count: %i Deltatime: %i", count, ai_UpdateStart, count, n);
         idx = ai_UpdateStart;
         for (; count != 0; count--) {
-            if (ai_Chars[idx].id != 0xffff) {
-                c = &ai_Chars[idx];
+            if (ai_CharsT[idx].id != 0xffff) {
+                c = &ai_CharsT[idx];
                 ai_UnloadCarts(c);
                 if (ai_TimeT.hour > 6 && ai_TimeT.hour < 0x16 && !(ai_GameFlags & 0x80) &&
                     (c->kind == 5 || (((unsigned char)c->id ^ (unsigned char)ai_TimeT.hour) & 1) == 0))

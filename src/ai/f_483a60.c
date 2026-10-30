@@ -22,7 +22,7 @@ void ai_Unk483a60(AICHAR *ch)
             ok = 1;
             it = ai_Objects;
             for (i = 0; ok && i < 0x5008; it++, i++) {
-                if (it->id && ai_Goods[it->id].type == 0x1d && it->unk1c == ch->bld->id && it->id == 0x136)
+                if (it->id && ai_GoodsT[it->id].type == 0x1d && it->unk1c == ch->bld->id && it->id == 0x136)
                     ok = 0;
             }
             ai_NumCarts = 0;
@@ -42,11 +42,11 @@ void ai_Unk483a60(AICHAR *ch)
             }
             ch->flags1b4 |= 0x20;
             ai_BuildTradeOffers(ch, obj, ok);
-            if (ai_BTypes[ch->bld->type].unk247 == 1)
+            if (ai_BTypesT[ch->bld->type].unk247 == 1)
                 f = ch->bld->unk39 * 1.5625e-05f;
-            else if (ai_BTypes[ch->bld->type].unk247 == 2)
+            else if (ai_BTypesT[ch->bld->type].unk247 == 2)
                 f = ch->bld->unk39 * 7.8125e-06f;
-            else if (ai_BTypes[ch->bld->type].unk247 == 3)
+            else if (ai_BTypesT[ch->bld->type].unk247 == 3)
                 f = ch->bld->unk39 * 3.90625e-06f;
             f = f * 0.5f + 0.25f;
             if (ai_NSlots != 0) {

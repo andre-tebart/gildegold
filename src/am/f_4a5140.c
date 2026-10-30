@@ -13,9 +13,9 @@ int ai_Unk4a5140(int a, AIPER *p, int b, AIARG *s1, AIARG *s2, int f)
     if (s1->kind != 5)
         return 0;
     k = s1->unk04;
-    if (ai_BTypes[k].kind == 2) {
+    if (ai_BTypesT[k].kind == 2) {
         h = *(unsigned char **)((unsigned char *)p + 0x170);
-        if (h != 0 && ai_BTypes[k].cap247 <= ai_BTypes[*h].cap247 && ai_BTypes[*h].kind == 2)
+        if (h != 0 && ai_BTypesT[k].cap247 <= ai_BTypesT[*h].cap247 && ai_BTypesT[*h].kind == 2)
             return 0;
         if (k == 4) {
             r = ord_DispatchOrder(1, p, q);

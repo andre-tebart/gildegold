@@ -43,12 +43,12 @@ void ai_EvaluateProductionCategory2(AICHAR *ch)
     ai_BuyCapacity(b, ch, 0x19);
     ai_BuyUpgrade(ch);
     o = a;
-    if (!(ch->flags1c8 & 0x10) && ai_BTypes[ch->bld->type].kind != 11) {
+    if (!(ch->flags1c8 & 0x10) && ai_BTypesT[ch->bld->type].kind != 11) {
         for (o = gm_Query(a->list, 1, 4, 0x17); o; o = gm_QueryNext()) {
             if (o->count == 1) {
                 memset(&msg, 0, sizeof(msg));
                 msg.type = 9;
-                msg.to = ai_Chars[ch->bld->owner].netId;
+                msg.to = ai_CharsT[ch->bld->owner].netId;
                 msg.fromId = ch->bld->id;
                 msg.nIds = 0;
                 msg.unk14 = 0;
@@ -70,25 +70,25 @@ void ai_EvaluateProductionCategory2(AICHAR *ch)
             sv_MoveToGroup(ch->bld, 0, ch->id, job);
         found = 1;
     }
-    if (ai_Chars[ch->bld->owner].kind == 6) {
+    if (ai_CharsT[ch->bld->owner].kind == 6) {
         id = ai_DrawSettingGood(ch->bld);
         if (o) {
             for (i = 0; i < 32; i++) {
                 if (ai_Entries[i].item == id) {
                     if (b->lvl1c < ai_Entries[i].need1c || b->lvl1d < ai_Entries[i].need20)
                         break;
-                    if (ai_Entries[i].capacity < ai_Goods[ai_Entries[i].item].batch)
+                    if (ai_Entries[i].capacity < ai_GoodsT[ai_Entries[i].item].batch)
                         break;
                     x = gm_FindMarketObject(ai_Entries[i].item);
                     if (!x)
                         break;
                     r = gm_FreeCapacity(x, ai_Entries[i].item, 1000000);
-                    g = &ai_Goods[ai_Entries[i].item];
+                    g = &ai_GoodsT[ai_Entries[i].item];
                     if (r < g->batch + ai_Entries[i].amount)
                         break;
                     if (g->type == 0x17) {
                         o2 = gm_Query(c->list, 1, 0, ai_Entries[i].item);
-                        if (!o2 || o2->count < ai_Goods[ai_Entries[i].item].batch)
+                        if (!o2 || o2->count < ai_GoodsT[ai_Entries[i].item].batch)
                             break;
                     } else if (!ai_HasMaterials(ch, &ai_Entries[i], 1)) {
                         if (ai_HasMaterials(ch, &ai_Entries[i], 0)) {
@@ -106,14 +106,14 @@ void ai_EvaluateProductionCategory2(AICHAR *ch)
     }
     for (i = 0; i < ai_NEntries; i++) {
         if (!(ai_Entries[i].flags & 4) && b->lvl1c >= ai_Entries[i].need1c && b->lvl1d >= ai_Entries[i].need20
-            && ai_Entries[i].capacity >= ai_Goods[ai_Entries[i].item].batch
+            && ai_Entries[i].capacity >= ai_GoodsT[ai_Entries[i].item].batch
             && (x = gm_FindMarketObject(ai_Entries[i].item)) != 0) {
             r = gm_FreeCapacity(x, ai_Entries[i].item, 1000000);
-            g = &ai_Goods[ai_Entries[i].item];
+            g = &ai_GoodsT[ai_Entries[i].item];
             if (r >= g->batch + ai_Entries[i].amount) {
                 if (g->type == 0x17) {
                     o2 = gm_Query(c->list, 1, 0, ai_Entries[i].item);
-                    if (!o2 || o2->count < ai_Goods[ai_Entries[i].item].batch)
+                    if (!o2 || o2->count < ai_GoodsT[ai_Entries[i].item].batch)
                         continue;
                 } else if (!ai_HasMaterials(ch, &ai_Entries[i], 1)) {
                     continue;
@@ -128,10 +128,10 @@ void ai_EvaluateProductionCategory2(AICHAR *ch)
         if (ai_Entries[i].flags & 8)
             break;
         if (!(ai_Entries[i].flags & 4) && b->lvl1c >= ai_Entries[i].need1c && b->lvl1d >= ai_Entries[i].need20
-            && ai_Entries[i].capacity >= ai_Goods[ai_Entries[i].item].batch
+            && ai_Entries[i].capacity >= ai_GoodsT[ai_Entries[i].item].batch
             && (x = gm_FindMarketObject(ai_Entries[i].item)) != 0) {
             r = gm_FreeCapacity(x, ai_Entries[i].item, 1000000);
-            g = &ai_Goods[ai_Entries[i].item];
+            g = &ai_GoodsT[ai_Entries[i].item];
             if (r >= g->batch + ai_Entries[i].amount) {
                 if (g->type == 0x17) {
                     ai_Entries[i].flags |= 0x10;
@@ -147,13 +147,13 @@ void ai_EvaluateProductionCategory2(AICHAR *ch)
 check:
     for (i = 0; i < ai_NEntries; i++) {
         if (ai_Entries[i].flags & 8) {
-            g = &ai_Goods[ai_Entries[i].item];
+            g = &ai_GoodsT[ai_Entries[i].item];
             if (g->type == 0x17) {
-                if (ai_BTypes[ch->bld->type].kind == 11) {
+                if (ai_BTypesT[ch->bld->type].kind == 11) {
                     ai_Entries[i].flags |= 0x10;
                 } else {
                     o2 = gm_Query(c->list, 1, 0, ai_Entries[i].item);
-                    if (!o2 || o2->count < ai_Goods[ai_Entries[i].item].batch)
+                    if (!o2 || o2->count < ai_GoodsT[ai_Entries[i].item].batch)
                         ai_Entries[i].flags = ai_Entries[i].flags & ~8 | 0x10;
                 }
             } else {
@@ -169,11 +169,11 @@ check:
     ai_FreeJobCharacters(ch, 3);
     info.n2 = 0;
     for (j = 0; j < 768; j++) {
-        if (ai_Chars[j].health > 0 && ai_Chars[j].id != 0xffff && ai_Chars[j].kind != 10
-            && ai_Chars[j].bld == ch->bld && ai_Chars[j].title && ai_Chars[j].model
-            && ai_Chars[j].model->bldId == ai_Chars[j].bld->id && (!ai_Chars[j].job || ai_Chars[j].job->kind != '(')
-            && (!found || ch != &ai_Chars[j])) {
-            sv_MoveToGroup(ch->bld, 0, ai_Chars[j].id, 0);
+        if (ai_CharsT[j].health > 0 && ai_CharsT[j].id != 0xffff && ai_CharsT[j].kind != 10
+            && ai_CharsT[j].bld == ch->bld && ai_CharsT[j].title && ai_CharsT[j].model
+            && ai_CharsT[j].model->bldId == ai_CharsT[j].bld->id && (!ai_CharsT[j].job || ai_CharsT[j].job->kind != '(')
+            && (!found || ch != &ai_CharsT[j])) {
+            sv_MoveToGroup(ch->bld, 0, ai_CharsT[j].id, 0);
             info.n2++;
         }
     }
@@ -183,7 +183,7 @@ check:
     for (i = 0; i < ai_NEntries; i++) {
         if (ai_Entries[i].flags & 8)
             info.n1++;
-        if ((ai_Entries[i].flags & 0x10) && ai_BTypes[ch->bld->type].kind != 11)
+        if ((ai_Entries[i].flags & 0x10) && ai_BTypesT[ch->bld->type].kind != 11)
             info.n1++;
     }
     if (info.n1 >= info.n2)
@@ -194,7 +194,7 @@ check:
         info.ch = ch;
         info.z2 = 0;
         info.z1 = 0;
-        if (ai_BTypes[ch->bld->type].kind == 11) {
+        if (ai_BTypesT[ch->bld->type].kind == 11) {
             if (ai_TimeT.hour % 2 == 0) {
                 ch->flags1b4 &= ~0x20;
             } else if (!(ch->flags1b4 & 0x20)) {
@@ -208,10 +208,10 @@ check:
                 }
                 for (i = 0; i < ai_NEntries * 4; i++) {
                     r = util_Random(ai_NEntries);
-                    if (ai_Goods[ai_Entries[r].item].type == 0x17)
+                    if (ai_GoodsT[ai_Entries[r].item].type == 0x17)
                         break;
                 }
-                if (ai_Goods[ai_Entries[r].item].type == 0x17) {
+                if (ai_GoodsT[ai_Entries[r].item].type == 0x17) {
                     plant = veg_FindType(ai_Entries[r].item);
                     n = 0;
                     for (y = 0; n < 4; y++) {
@@ -229,14 +229,14 @@ check:
             }
         }
         for (i = 0; i < ai_NEntries; i++) {
-            if ((ai_Entries[i].flags & 0x10) && ai_BTypes[ch->bld->type].kind != 11) {
+            if ((ai_Entries[i].flags & 0x10) && ai_BTypesT[ch->bld->type].kind != 11) {
                 info.type = 8;
                 info.e = &ai_Entries[i];
                 ai_SendJobOrders(&info);
             }
             if (ai_Entries[i].flags & 8) {
-                if (ai_Goods[ai_Entries[i].item].type == 0x17) {
-                    if (ai_BTypes[ch->bld->type].kind != 11) {
+                if (ai_GoodsT[ai_Entries[i].item].type == 0x17) {
+                    if (ai_BTypesT[ch->bld->type].kind != 11) {
                         info.type = 3;
                         info.e = &ai_Entries[i];
                         ai_SendJobOrders(&info);

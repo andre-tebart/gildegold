@@ -14,8 +14,8 @@ int ai_Unk4b1600(void)
             memset(&msg, 0, sizeof(msg));
             t.hour = i % 4 + 10;
             msg.type = 0x57;
-            msg.to = ai_Chars[i].netId;
-            msg.fromId = ai_Chars[i].netId;
+            msg.to = ai_CharsT[i].netId;
+            msg.fromId = ai_CharsT[i].netId;
             msg.flags = 1;
             TMX(msg) = *(AITIMEX *)&t;
             cm_SendLongMessage(&msg);

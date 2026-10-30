@@ -10,7 +10,7 @@ int ai_IsLocalWorker(AICHAR *c)
         return 0;
     o = c;
     if (c->bld != 0 && (id = c->bld->owner) != 0xffff)
-        o = &ai_Chars[id];
+        o = &ai_CharsT[id];
     if (net_Conn.s != -1 && o->netId % ai_NumPlayers != ai_NetPlayer)
         return 0;
     return 1;

@@ -25,10 +25,10 @@ int ai_Unk4984d0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     }
     if (he_FindEvent(2, 0, 0xd, 2, (int)(short)p->id) != 0)
         return 0;
-    b = (unsigned char *)ai_Blds;
+    b = (unsigned char *)ai_BldsT;
     for (up[0] = 0; ; ) {
         if (b[0] != 0) {
-            t = ((unsigned char *)ai_BTypes)[b[0] * 0x24d];
+            t = ((unsigned char *)ai_BTypesT)[b[0] * 0x24d];
             lo32 = 0;
             hi32 = 0;
             if (t < 0x20)
@@ -42,8 +42,8 @@ int ai_Unk4984d0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
                 s2.unk08 = 0;
                 if (o1->kind == 0) {
                     h = *(unsigned char **)((char *)p + 0x170);
-                    if (h != 0 && ((unsigned char *)ai_BTypes)[h[0] * 0x24d] == 2 && (h[0x5a] & 0x41) == 0) {
-                        t = ((unsigned char *)ai_BTypes)[h[0] * 0x24d + 0x247];
+                    if (h != 0 && ((unsigned char *)ai_BTypesT)[h[0] * 0x24d] == 2 && (h[0x5a] & 0x41) == 0) {
+                        t = ((unsigned char *)ai_BTypesT)[h[0] * 0x24d + 0x247];
                         if (t < 2 || t == 3) {
                             s1.kind = 5;
                             j = 0;
@@ -103,7 +103,7 @@ int ai_Unk4984d0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
                     h = *(unsigned char **)((char *)p + 0x170);
                     s1 = *o1;
                     if (h == 0) {
-                        if (((unsigned char *)ai_BTypes)[o1->unk04 * 0x24d] != 2)
+                        if (((unsigned char *)ai_BTypesT)[o1->unk04 * 0x24d] != 2)
                             return 0;
                         if (ai_Unk4a5140(a, p, f, &s1, &s2, 1) == 0)
                             return 0;
@@ -119,7 +119,7 @@ int ai_Unk4984d0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
                         }
                     } else {
                         t = h[0];
-                        if (((unsigned char *)ai_BTypes)[t * 0x24d] != 2)
+                        if (((unsigned char *)ai_BTypesT)[t * 0x24d] != 2)
                             return 0;
                         s1.unk04 = o1->unk04;
                         if (s1.unk04 - t != 1)

@@ -38,8 +38,8 @@ void ai_SendJobOrders(AIINFO *info)
             do {
                 if (i >= 768)
                     break;
-                if (ai_Chars[i].id != 0xffff && ai_Chars[i].bld == info->ch->bld && ai_Chars[i].title && ai_Chars[i].job == 0 && ai_Chars[i].model &&
-                    ai_Chars[i].model->bldId == ai_Chars[i].bld->id) {
+                if (ai_CharsT[i].id != 0xffff && ai_CharsT[i].bld == info->ch->bld && ai_CharsT[i].title && ai_CharsT[i].job == 0 && ai_CharsT[i].model &&
+                    ai_CharsT[i].model->bldId == ai_CharsT[i].bld->id) {
                     found = 0;
                     me = (AIMAPENT *)map;
                     k = 0;
@@ -57,7 +57,7 @@ void ai_SendJobOrders(AIINFO *info)
                     k = found->id;
                     memset(&msg, 0, sizeof(msg));
                     msg.type = info->type;
-                    msg.to = ai_Chars[info->ch->bld->owner].netId;
+                    msg.to = ai_CharsT[info->ch->bld->owner].netId;
                     msg.fromId = info->ch->bld->id;
                     msg.time = ai_TimeT;
                     msg.nIds = 1;
@@ -65,7 +65,7 @@ void ai_SendJobOrders(AIINFO *info)
                     msg.flags = 1;
                     msg.arg[3] = k;
                     msg.arg[0] = info->ch->bld->id;
-                    msg.arg[1] = ai_Chars[i].netId;
+                    msg.arg[1] = ai_CharsT[i].netId;
                     cm_SendLongMessage(&msg);
                     info->z2++;
                 }
@@ -80,7 +80,7 @@ void ai_SendJobOrders(AIINFO *info)
             total = info->z2 + info->n2 / n + info->n2 % n;
         memset(&msg, 0, sizeof(msg));
         msg.type = info->type;
-        msg.to = ai_Chars[info->ch->bld->owner].netId;
+        msg.to = ai_CharsT[info->ch->bld->owner].netId;
         msg.fromId = info->ch->bld->id;
         msg.time = ai_TimeT;
         msg.nIds = 0;
@@ -94,9 +94,9 @@ void ai_SendJobOrders(AIINFO *info)
             do {
                 if (i >= 768)
                     break;
-                if (ai_Chars[i].id != 0xffff && ai_Chars[i].bld == info->ch->bld && ai_Chars[i].title && ai_Chars[i].job == 0 &&
-                    ai_Chars[i].model && ai_Chars[i].model->bldId == ai_Chars[i].bld->id) {
-                    msg.ids[msg.nIds] = ai_Chars[i].netId;
+                if (ai_CharsT[i].id != 0xffff && ai_CharsT[i].bld == info->ch->bld && ai_CharsT[i].title && ai_CharsT[i].job == 0 &&
+                    ai_CharsT[i].model && ai_CharsT[i].model->bldId == ai_CharsT[i].bld->id) {
+                    msg.ids[msg.nIds] = ai_CharsT[i].netId;
                     msg.nIds++;
                     info->z2++;
                 }
@@ -121,7 +121,7 @@ void ai_SendJobOrders(AIINFO *info)
         o = gm_Query(info->ch->bld->objList, 2, 6, 0, 0xdd);
         memset(&msg, 0, sizeof(msg));
         msg.type = info->type;
-        msg.to = ai_Chars[info->ch->bld->owner].netId;
+        msg.to = ai_CharsT[info->ch->bld->owner].netId;
         msg.fromId = info->ch->bld->id;
         msg.nIds = 0;
         msg.time = ai_TimeT;
@@ -142,9 +142,9 @@ void ai_SendJobOrders(AIINFO *info)
             do {
                 if (i >= 768)
                     break;
-                if (ai_Chars[i].id != 0xffff && ai_Chars[i].bld == info->ch->bld && ai_Chars[i].title && ai_Chars[i].job == 0 &&
-                    ai_Chars[i].model && ai_Chars[i].model->bldId == ai_Chars[i].bld->id) {
-                    msg.ids[msg.nIds] = ai_Chars[i].netId;
+                if (ai_CharsT[i].id != 0xffff && ai_CharsT[i].bld == info->ch->bld && ai_CharsT[i].title && ai_CharsT[i].job == 0 &&
+                    ai_CharsT[i].model && ai_CharsT[i].model->bldId == ai_CharsT[i].bld->id) {
+                    msg.ids[msg.nIds] = ai_CharsT[i].netId;
                     msg.nIds++;
                     info->z2++;
                 }
@@ -169,7 +169,7 @@ void ai_SendJobOrders(AIINFO *info)
         }
         memset(&msg, 0, sizeof(msg));
         msg.type = info->type;
-        msg.to = ai_Chars[info->ch->bld->owner].netId;
+        msg.to = ai_CharsT[info->ch->bld->owner].netId;
         msg.fromId = info->ch->bld->id;
         msg.time = ai_TimeT;
         msg.nIds = 0;
@@ -181,9 +181,9 @@ void ai_SendJobOrders(AIINFO *info)
             do {
                 if (i >= 768)
                     break;
-                if (ai_Chars[i].id != 0xffff && ai_Chars[i].bld == info->ch->bld && ai_Chars[i].title && ai_Chars[i].job == 0 &&
-                    ai_Chars[i].model && ai_Chars[i].model->bldId == ai_Chars[i].bld->id) {
-                    msg.ids[msg.nIds] = ai_Chars[i].netId;
+                if (ai_CharsT[i].id != 0xffff && ai_CharsT[i].bld == info->ch->bld && ai_CharsT[i].title && ai_CharsT[i].job == 0 &&
+                    ai_CharsT[i].model && ai_CharsT[i].model->bldId == ai_CharsT[i].bld->id) {
+                    msg.ids[msg.nIds] = ai_CharsT[i].netId;
                     msg.nIds++;
                     info->z2++;
                 }
@@ -218,8 +218,8 @@ void ai_SendJobOrders(AIINFO *info)
                 while (1) {
                     if (i >= 768)
                         break;
-                    if (ai_Chars[i].id != 0xffff && ai_Chars[i].bld == info->ch->bld && ai_Chars[i].title && ai_Chars[i].job == 0) {
-                        sv_MoveToGroup(info->ch->bld, v, ai_Chars[i].id, job);
+                    if (ai_CharsT[i].id != 0xffff && ai_CharsT[i].bld == info->ch->bld && ai_CharsT[i].title && ai_CharsT[i].job == 0) {
+                        sv_MoveToGroup(info->ch->bld, v, ai_CharsT[i].id, job);
                         info->z2++;
                     }
                     i++;
@@ -231,7 +231,7 @@ void ai_SendJobOrders(AIINFO *info)
         }
         memset(&msg, 0, sizeof(msg));
         msg.type = info->type;
-        msg.to = ai_Chars[info->ch->bld->owner].netId;
+        msg.to = ai_CharsT[info->ch->bld->owner].netId;
         msg.fromId = info->ch->bld->id;
         type = info->type;
         msg.nIds = 0;

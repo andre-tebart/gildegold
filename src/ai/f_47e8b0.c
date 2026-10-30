@@ -14,9 +14,9 @@ int ai_IsLocalJob(AICHAR *c)
     id = c->bld->owner;
     if (id == 0xffff)
         return 0;
-    if (ai_Chars[id].kind == 7)
+    if (ai_CharsT[id].kind == 7)
         return 0;
-    if (net_Conn.s != -1 && ai_Chars[id].kind != 6 && ai_Chars[id].netId % ai_NumPlayers != ai_NetPlayer)
+    if (net_Conn.s != -1 && ai_CharsT[id].kind != 6 && ai_CharsT[id].netId % ai_NumPlayers != ai_NetPlayer)
         return 0;
     return 1;
 }

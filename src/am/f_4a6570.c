@@ -23,7 +23,7 @@ int ai_Unk4a6570(AIPER *p, int a, __int64 mask, float lo, float hi, unsigned cha
         do {
             if (k == 0)
                 return cnt;
-            b = &ai_Blds[j];
+            b = &ai_BldsT[j];
             if (b->type != 0 && ai_Unk5c37a0(p, q, b) != 0
                 && (!win || (r = gm_Liking(b->owner, *(unsigned short *)p, 1), lo <= r && r <= hi))) {
                 out[cnt] = b->id;

@@ -8,7 +8,7 @@ void snd_PlaySelectedClick(void)
 
     for (i = 0, p = ai_Selected; (int)p < (int)(ai_Selected + 0x300 * 0x21c); p += 0x21c, i++) {
         if (*p != 0) {
-            snd_PlayWorkerClick((G16CHARCLICK *)(ai_Chars + i * 0x21c));
+            snd_PlayWorkerClick((G16CHARCLICK *)(ai_CharsC + i * 0x21c));
             return;
         }
     }

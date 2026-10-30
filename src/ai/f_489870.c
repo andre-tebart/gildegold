@@ -13,13 +13,13 @@ void ai_SendFreeSpies(AICHAR *ch)
 
     n = 1;
     for (i = 0; i < 768; i++) {
-        if (ai_Chars[i].id != 0xffff && ai_Chars[i].bld == ch->bld && ai_Chars[i].title && ai_Chars[i].job && ai_Chars[i].job->kind == -0x71)
+        if (ai_CharsT[i].id != 0xffff && ai_CharsT[i].bld == ch->bld && ai_CharsT[i].title && ai_CharsT[i].job && ai_CharsT[i].job->kind == -0x71)
             n--;
     }
-    if (0 < n && ai_BTypes[ch->bld->type].kind == 0x1d && (o = gm_Query(ch->bld->objList, 2, 6, 0, 0x211)) != 0) {
+    if (0 < n && ai_BTypesT[ch->bld->type].kind == 0x1d && (o = gm_Query(ch->bld->objList, 2, 6, 0, 0x211)) != 0) {
         memset(&msg, 0, sizeof(msg));
         msg.type = 0x8f;
-        msg.to = ai_Chars[ch->bld->owner].netId;
+        msg.to = ai_CharsT[ch->bld->owner].netId;
         msg.fromId = ch->bld->id;
         msg.time = ai_TimeT;
         msg.flags = 1;
@@ -28,26 +28,26 @@ void ai_SendFreeSpies(AICHAR *ch)
         while (1) {
             if (i >= 768)
                 break;
-            if (ai_Chars[i].id != 0xffff && ai_Chars[i].bld == ch->bld && ai_Chars[i].title && (ai_Chars[i].flags1b4 & 0x10)) {
-                if (ai_Chars[i].job) {
-                    if (ai_Chars[i].job->kind == -0x71)
-                        ai_Chars[i].flags1b4 &= ~0x10;
+            if (ai_CharsT[i].id != 0xffff && ai_CharsT[i].bld == ch->bld && ai_CharsT[i].title && (ai_CharsT[i].flags1b4 & 0x10)) {
+                if (ai_CharsT[i].job) {
+                    if (ai_CharsT[i].job->kind == -0x71)
+                        ai_CharsT[i].flags1b4 &= ~0x10;
                 } else {
-                    if (ai_Chars[i].model && ai_Chars[i].model->bldId == ai_Chars[i].bld->id) {
-                        ai_Chars[i].flags1b4 &= ~0x10;
-                        if (ai_Chars[i].sk81 < ai_Chars[i].sk82) {
-                            msg.arg[0] = ai_Chars[i].netId;
+                    if (ai_CharsT[i].model && ai_CharsT[i].model->bldId == ai_CharsT[i].bld->id) {
+                        ai_CharsT[i].flags1b4 &= ~0x10;
+                        if (ai_CharsT[i].sk81 < ai_CharsT[i].sk82) {
+                            msg.arg[0] = ai_CharsT[i].netId;
                             msg.arg[1] = 1;
                             cm_SendLongMessage(&msg);
                         } else {
                             msg.arg[1] = 2;
-                            msg.arg[0] = ai_Chars[i].netId;
-                            if (ai_Chars[i].sk82 >= ai_Chars[i].sk84)
+                            msg.arg[0] = ai_CharsT[i].netId;
+                            if (ai_CharsT[i].sk82 >= ai_CharsT[i].sk84)
                                 msg.arg[1] = 4;
                             cm_SendLongMessage(&msg);
                         }
                         n--;
-                        ai_Chars[i].flags1c8 |= 4;
+                        ai_CharsT[i].flags1c8 |= 4;
                     }
                 }
             }

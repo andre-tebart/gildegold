@@ -28,7 +28,7 @@ unsigned int ai_Unk4a5ef0(AIPER *p, unsigned int n, unsigned int fl, float lo, f
         do {
             if (k == 0)
                 break;
-            c = (unsigned char *)&ai_Chars[i];
+            c = (unsigned char *)&ai_CharsT[i];
             t = c[2];
             if (t != 8 && t != 7 && t != 5 && t != 9 && t != 0x14 && c[0x164] != 0 && c[0x164] != 'R'
                 && ai_Unk5c33c0(*(unsigned short *)p, (unsigned short)i, q, 0) != 0
@@ -43,7 +43,7 @@ unsigned int ai_Unk4a5ef0(AIPER *p, unsigned int n, unsigned int fl, float lo, f
     }
     i = util_Random(0x300);
     for (k = 0x300; cnt < n && k != 0; k--) {
-        c = (unsigned char *)&ai_Chars[i];
+        c = (unsigned char *)&ai_CharsT[i];
         t = c[2];
         if (t != 8 && t != 7 && t != 5 && t != 9 && t != 0x14 && c[0x164] == 0
             && ai_Unk5c33c0(*(unsigned short *)p, (unsigned short)i, q, 0) != 0

@@ -104,7 +104,7 @@ extern int snd_AmbientSaved;            /* 0x6f0b78, 1 while the ambient flag is
 extern unsigned int snd_AmbientOnSaved; /* 0x6f0b64, the saved snd_AmbientOn.on */
 extern char ai_Unk6f0860[];             /* 0x6f0860, a debug text */
 extern char ch_EmptyName[];             /* 0x631090, "" */
-extern char ai_Chars[];             /* 0x770b80, the characters (0x21c bytes each); @original: the other headers declare char ai_Chars[][0x21c]; snd_PlaySelectedClick (0x4c2ce0, byte) uses ai_Chars + i * 0x21c as a char pointer */
+extern char ai_Chars[768][0x21c];        /* 0x770b80, the characters (ahm.c); f3snd.c reads them flat (ai_CharsC) */
 extern char *ai_Unk7603a0[];            /* 0x7603a0, the selected workers (their id is the first word; as cm.h) */
 extern int snd_VoiceBankOrders;         /* 0x6f0cbc, voice bank: orders (snd_LoadBuildingVoices) */
 extern int snd_VoiceBankClick;          /* 0x6f0cc0, voice bank: click comments */

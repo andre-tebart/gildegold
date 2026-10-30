@@ -30,9 +30,9 @@ int ai_Unk4ba0c0(G14MSG *m)
     k = 0;
     r = util_Random(0x14) + 0x19;
     b = a[util_Random(n)];
-    t = &ai_BTypes[b->type];
+    t = &ai_BTypesT[b->type];
     for (i = 0; i < 768; i++) {
-        if (ai_Chars[i].kind == 0 && ai_Chars[i].bld == b) {
+        if (ai_CharsT[i].kind == 0 && ai_CharsT[i].bld == b) {
             if (gm_Liking(c->id, i, 1) < r)
                 goto none;
             if (++k >= t->k231 + t->k232)
@@ -46,7 +46,7 @@ int ai_Unk4ba0c0(G14MSG *m)
         msg.fromId = b->id;
         msg.flags = 1;
         msg.n = msg.fromId;
-        msg.to = ai_Chars[ai_PlayerId].netId;
+        msg.to = ai_CharsT[ai_PlayerId].netId;
         msg.time = ai_TimeT;
         /* the text id at 0x64 is the only 16-bit store of AIMSG (a word over dst[0]); a textId union arm in
            ai.h regresses ai_Unk483a60's slots (ai.c's note), so the shared-header view is match-deep's */
