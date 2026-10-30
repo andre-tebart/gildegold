@@ -236,7 +236,6 @@ extern GAPDATA full_data_75e5f0[];
 extern GAPDATA full_data_75e5f4[];
 extern GAPDATA full_data_75e628[];
 #include "f3init_types.h"
-extern INIT_PLAYER init_PlayerProfile;
 extern struct D2OBJ *d2_Objs;
 extern GAPDATA full_data_6024f8[];
 extern GAPDATA full_data_624204[];
@@ -669,7 +668,6 @@ extern char * ai_BTypes;
 extern int ai_Unk6f2448;
 extern char *ai_Unk5fb5b0;
 extern int ai_Unk6333cc;
-extern int ai_Unk7603a0[32];
 extern GAPDATA full_data_62a538[];
 extern GAPDATA full_data_62a8a8[];
 extern GAPDATA full_data_6f5f60[];
@@ -680,7 +678,6 @@ extern struct AIOBJ *ai_Objects;
 extern int ai_Unk5fe710;
 extern int ai_Unk62a8cc;
 extern char * ai_Unk6f22e8;
-extern int d2_CutsceneActive;
 extern short d2_MouseX;
 extern short d2_MouseY;
 extern struct D2OBJ *d2_Objs;
@@ -845,4 +842,5 @@ char *const ai_Unk5eec60 = (char *)full_data_6fa020 + 0x40;  /* 0x5eec60, the po
 
 #include "time_view.h"
 #include "ls.h"
+#include "f3init.h"
 #define sv_SelectPanelObjectK ((int (*)())sv_SelectPanelObject)  /* 0x52c4c0?: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */

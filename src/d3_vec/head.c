@@ -6,10 +6,10 @@
 #include <d3d.h>
 #include "d3.h"
 #include "d3_vec.h"
+#include "f3init.h"
 
 extern unsigned int d3_LightKeysCulled;     /* 0x633b08 */
 extern unsigned int d3_LightKeysVisible;    /* 0x633b0c */
 extern unsigned int d3_LightGeneration;     /* 0x633b10 */
 extern unsigned int d3_LightKeyBudgetCulled;  /* 0x5fcc6c */
-extern unsigned int d3_LightKeyBudgetVisible; /* 0x5fcc70 */
 

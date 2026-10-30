@@ -69,7 +69,7 @@ extern GAPDATA full_data_6f5e80[];
 extern GAPDATA full_data_6f5ea0[];
 extern GAPDATA full_data_6f5ea4[];
 #include "f3init_types.h"
-extern INIT_PLAYER init_PlayerProfile;
+#include "f3init.h"
 extern unsigned char kb_Last;
 extern int sv_PopRequest;
 extern int d2_LastWindow;

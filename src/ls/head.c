@@ -62,7 +62,6 @@ extern char ch_EmptyName[];             /* 0x631090 */
 extern int d3_CurrentScene;                /* 0x633444 */
 extern struct AICHAR *ai_JudgeCatholic;  /* 0x6f1bfc */
 extern struct AICHAR *ai_JudgeProtestant;  /* 0x6f1c00 */
-extern char * ai_KindBChars[8];             /* 0x6f1c04, the eight slots of the kind 0xb characters (cm.h: char *) */
 int * ai_Unk633738 = 0;  /* 0x633738, the scene (its first word the kind: */
 extern char * ai_PlayerBuilding;                /* 0x6f2308 */
 extern char * ai_FallbackBuilding;                /* 0x6f230c */
@@ -101,9 +100,7 @@ int hmt_Save();                     /* 0x4adb20 */
 int rt_SaveRoutes();                     /* 0x4bff40 */
 
 #define LS_W(p, sz) if (vfs_fwrite((p), (sz), 1, f) <= 0) return 0;
-extern int ai_NBauplaetze;                /* 0xf812e0 */
 #include "rd_types.h"                 /* G15BK */
-extern G15BK *ai_Bauplaetze;              /* 0xf812e4 */
 int unk_Unk4f17f0();                     /* 0x4f17f0 */
 int ahm_WriteRecord();                     /* 0x4ecf10 */
 
@@ -111,7 +108,6 @@ int ahm_WriteRecord();                     /* 0x4ecf10 */
 struct VFSFILE * vfs_Tfopen(char *name, char *mode, int unk);                     /* 0x430470 */
 DWORD dd_RGB(unsigned char r, unsigned char g, unsigned char b);          /* 0x41e670, an RGB triple to a 16 bit pixel */
 
-extern unsigned char init_Detail;      /* 0x61adf8, the detail level */
 extern int f3gm_ObjectCount;                /* 0x6f1bdc */
 extern char *ai_Unk5fb5b0;              /* 0x5fb5b0, the current scene */
 struct D3SM * d3sm_Create(struct D3TERRAIN *t, int size, int mask);  /* 0x45eeb0, d3_sm.h */
@@ -126,8 +122,8 @@ extern int hst_TextCurrent, hst_TextFirst, hst_KeyNext, hst_KeyFirst;   /* 0x601
 extern unsigned char hst_TextsOn;               /* 0x6f0724 */
 extern char hst_Key[];                 /* 0xf83520, the history key ("G12", 0x20 bytes; the save keeps 0x10) */
 #include "hst_types.h"
+#include "f3init.h"
 extern G12ROW hst_Lists[];             /* 0xf83540, the four history lists */
-void init_HookObject(char *o, unsigned short *p, int kind);  /* 0x50d380, names the scene object o and hooks it to its owner p */
 int ai_LoadWind();                     /* 0x5dc0c0 */
 int unk_Unk4ed910();                     /* 0x4ed910 */
 int gm_FindById();                     /* 0x4fea50 */

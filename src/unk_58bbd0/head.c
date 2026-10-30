@@ -296,7 +296,6 @@ extern float ai_Unk617840[];
 extern int ai_Unk623884;
 extern char * ai_Unk75ec60;
 extern int d2_ClickedId;
-extern int d2_CutsceneActive;
 extern short d2_MouseX;
 extern short d2_MouseY;
 extern short d2_PointerLook;
@@ -358,7 +357,6 @@ extern int d2_ClickedId;
 extern char * ai_FallbackBuilding;
 extern unsigned char ai_TimeHour;
 extern int ai_Unk5fe710;
-extern int ai_Unk7603a0[32];
 extern float ai_Unk760420;
 extern int d2_ClickedId;
 extern int sv_PopRequest;
@@ -577,11 +575,9 @@ extern GAPDATA full_data_62afa8[];
 extern int ai_GameFlags;
 
 extern int sv_PanelFlag;
-extern int ai_FrameWait;
 extern char * ai_PlayerBuilding;
 extern const float ai_Unk5ebba4[];
 extern int ch_CurrentGroup;
-extern int evt_NoGroup;
 extern int ai_Unk5f8438;
 extern char *ai_Unk5fb5b0;
 extern int ai_Unk6f22cc;
@@ -600,7 +596,6 @@ extern int d2_CutsceneActive;
 extern GAPDATA full_data_6237c8[];
 extern GAPDATA full_data_6f2314[];
 extern GAPDATA full_data_6f2410[];
-extern signed char init_ObjectUniverse[0x2dc];
 extern int sv_FrameBase;
 extern int sv_FrameDepth;
 extern unsigned short * sv_PanelShown;
@@ -841,7 +836,6 @@ extern unsigned short * sv_PanelShown;
 
 
 
-extern int ai_MapSize;
 extern GAPDATA full_data_6f4ee4[];
 
 
@@ -1280,5 +1274,6 @@ float util_RandomF();                   /* the float roll (ai.h util_RandomF) */
 
 #include "time_view.h"
 #include "ls.h"
+#include "f3init.h"
 #define sv_SelectPanelObjectK ((int (*)())sv_SelectPanelObject)  /* 0x52c4c0?: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
 #define gm_Unk50a970K ((int (*)())gm_Unk50a970)  /* 0x50a970: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */

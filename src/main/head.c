@@ -70,7 +70,6 @@ extern int main_HmtMode;
 extern int main_HmtBuild;
 extern char main_AppDir[];
 #include "f3init_types.h"
-extern INIT_PLAYER init_PlayerProfile;
 extern GAPDATA full_data_60da10[];
 extern int sv_PopRequest;
 extern int ai_ModeMask;
@@ -194,7 +193,6 @@ extern int ai_Unkfb9060;
 extern int ai_Unkfb9064;
 extern int ai_Unkfb9068;
 extern int ai_Unkfb906c;
-extern int init_StatusForm;
 extern char cm_RequestedSaveName[72];
 extern int ai_Unk1460ae0;
 extern unsigned int ai_MissionSeed;
@@ -278,19 +276,16 @@ extern int ai_Unkfb9068;
 extern int ai_Unkfb906c;
 extern int cm_NetFlags;
 extern GAPDATA full_data_624560[];
-extern signed char init_BuildingUniverse[0x22];
 #include "f3snd_types.h"
 extern G16AMBIENTON snd_AmbientOn;
 extern int sv_FrameMask;
 extern int sv_PopRequest;
 extern char ai_DataPath[];
 
-extern int ai_FrameWait;
 extern OPTIONBYTES ai_GamePanel;
 extern int ai_Unk1460ae0;
 extern int ai_Unk60bd94;
 extern char * ai_Unk60c1ec;
-extern int ai_Unk6f2440;
 extern int ai_Unkf31144;
 extern int cm_NetFlags;
 
@@ -304,7 +299,6 @@ extern GAPDATA full_data_760454[];
 extern GAPDATA full_data_76f990[];
 extern GAPDATA full_data_76f994[];
 extern int init_StatusForm;
-extern int main_MoneyCheat;
 extern int sv_FrameMask;
 extern int sv_ViewRectBottom;
 extern int sv_ViewRectLeft;
@@ -381,7 +375,6 @@ int d3sndw_Init(unsigned short n);      /* 0x417ec0 */
 void sb_SetPath(char *path);            /* 0x426240 */
 int main_PreloadSound(char *f);         /* 0x537c70 */
 void sv_InitTick(void);                 /* 0x520ee0 */
-char init_ResetSceneUniverses(void);    /* 0x50d460 */
 int ch_Open(void);                      /* 0x40afb0 */
 void d3t_CreateSnowMipmaps(void);       /* 0x416980 */
 int ahm_LoadPrototypes(int mode);       /* 0x4eb480 */
@@ -389,8 +382,6 @@ int hmt_CreateBinaryFile(void);         /* 0x4ac440 */
 void hmt_Init(void);                    /* 0x4aca90 */
 void ai_BuildFloatTable(void);          /* 0x4d27a0 */
 void chc_Register(void);                /* 0x40d270 */
-int init_InitTown(char *city);          /* 0x510ad0, f3init */
-void init_FreeScenes(void);             /* 0x50d490, f3init */
 #define d2_MoveObjS ((void (*)(short, short, int))d2_MoveObj)  /* 0x46cda0 as its definition reads it (d2.c f_46cda0.c: short x, short y): this unit's callers push the short sums untruncated (0x532212 `sub dx, [..]; sub edx, 0x30; push edx`); d2.h keeps int for d2_CreatePicObj (@original) */
 #define util_RandomInt ((int (*)(unsigned short))util_Random)  /* 0x42ec00 as tr.c defines it: @original this unit reads the full int result (0x53b8c9 util_Random(4) + 0x20 pushed without the 16-bit mask ai.h's unsigned short prototype adds) */
 #define d2_SetObjValue4 ((void (*)(int, int, int, int))d2_SetObjValue)  /* the 4-argument call (as unk_5d33b0.h) */
@@ -413,6 +404,7 @@ char d3d_Restore();                    /* 0x4370d0 */
 void amt_CheckOffices(void);            /* 0x4e9260, amt.h */
 
 #include "time_view.h"
+#include "f3init.h"
 #define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (f3gm.c: char *) as the AIGOOD records it points to */
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */

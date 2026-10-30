@@ -194,7 +194,6 @@ extern unsigned ai_Unk889400[732];
 extern int d2_ClickedId;
 extern int d2_Unkf8aac4;
 extern char *ai_Unk5fb5b0;
-extern int d3_QuadTree;
 extern GAPDATA full_data_627e98[];
 extern GAPDATA full_data_627ea8[];
 extern char ai_MissionMode;
@@ -317,6 +316,7 @@ void d2_RaiseViewWindows(int view);
 
 #include "time_view.h"
 #include "ls.h"
+#include "f3init.h"
 #define gm_NearestBuildingK ((int (*)())gm_NearestBuilding)  /* 0x50xxxx: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
 #define sv_SelectPanelObjectK ((int (*)())sv_SelectPanelObject)  /* 0x52c4c0?: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
 #define gm_Unk50a970K ((int (*)())gm_Unk50a970)  /* 0x50a970: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
