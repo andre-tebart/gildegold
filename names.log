@@ -61,3 +61,7 @@
 2026-10-30T10:20:46 0x006f2584 data full_data_6f2584 -> main_Inactive by:main why:0x6f2584 is the WM_ACTIVATEAPP gate of the window procedure: 1 while the app is deactivated (set before the window goes to the bottom of the z order, cleared on activation)
 2026-10-30T10:21:10 0x00531780 func main_Unk531780 -> main_WindowProc by:main why:the WNDPROC of the 'Die Gilde' window class (messages 2/0x10 quit, 0x1c WM_ACTIVATEAPP, DefWindowProcA fallback)
 2026-10-30T10:24:49 0x00531a00 func main_Unk531a00 -> main_BuildVersionString by:main why:builds the version string 'Europa 1400 - Gold Edition - 2.06' (0x624948) from the build date literal
+2026-10-30T10:30:03 0x006f242c data full_data_6f242c -> main_TextureDivider by:main why:WinMain stores GetPrivateProfileIntA("Gfx", "TextureDivider") here; 0x531c50 copies it into the video record
+2026-10-30T10:30:08 0x00624690 data full_data_624690 -> main_GamePath by:main why:WinMain reads the General/GamePath key (default \project\game\) into it; 0x531c50 passes it as the directory of d2_Open
+2026-10-30T10:30:12 0x005f8ad0 data full_data_5f8ad0 -> main_Language by:main why:holds 'german' (the General/Language key default); 0x531c50 formats gilde_add_on_%s.gfx with it
+2026-10-30T10:30:52 0x00531c50 func main_Unk531c50 -> main_OpenScreen by:main why:opens the display mode m: window sizing, video record, d3_Init, input, directories, d2_Open; main_Init / 0x53ccf0 call it

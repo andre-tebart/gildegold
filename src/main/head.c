@@ -34,32 +34,29 @@ extern unsigned char d3_Hardware;
 extern int main_Inactive;       /* 0x6f2584, 1 while the app is deactivated */
 extern int tb_Paused;           /* 0x6333e0 (tb.h) */
 extern void *d2_ScreenSurf;  /* 0x6ed924, the screen surface (d2.c) */  /* 0x5fe710, 0x6ed924, 0x6ed938 */
-extern unsigned char ai_DataPath;
+extern char ai_DataPath[];
 extern unsigned char ai_GfxResolution;
-extern unsigned char ai_ScreenModeH;
-extern unsigned char ai_ScreenModeW;
-extern unsigned char ai_ScreenModes;
-extern unsigned char d2_FormsDir;
-extern unsigned char d2_MainWindow;
-extern unsigned char d2_ScreenH;
-extern unsigned char d2_ScreenW;
-extern unsigned char d3_AnimDir;
-extern unsigned char d3_DefaultD3DConfig;
-extern unsigned char d3io_Lod;
+extern int ai_ScreenModeH;
+extern int ai_ScreenModeW;
+extern struct SCREENMODE { int w, h; } ai_ScreenModes[];
+extern char d2_FormsDir[];
+extern int d2_MainWindow;
+extern short d2_ScreenH;
+extern short d2_ScreenW;
+extern char d3_AnimDir[];
+extern unsigned char d3_DefaultD3DConfig[];
+extern int d3io_Lod;
 extern unsigned char dd_Has1024x768;
 extern unsigned char dd_Has1152x864;
 extern unsigned char dd_Has800x600;
-extern unsigned char di_MaxX;
-extern unsigned char di_MaxY;
-extern GAPDATA full_data_5f8ad0[];
-extern GAPDATA full_data_624690[];
-extern GAPDATA full_data_6249e8[];
-extern GAPDATA full_data_6249ec[];
-extern GAPDATA full_data_6f242c[];
-extern unsigned char sv_ViewRectBottom;
-extern unsigned char sv_ViewRectLeft;
-extern unsigned char sv_ViewRectRight;
-extern unsigned char sv_ViewRectTop;
+extern int di_MaxX;
+extern int di_MaxY;
+extern char main_GamePath[];
+extern int main_TextureDivider;
+extern int sv_ViewRectBottom;
+extern int sv_ViewRectLeft;
+extern int sv_ViewRectRight;
+extern int sv_ViewRectTop;
 extern unsigned char ai_Unk9367e0;
 extern char d2_Views[];
 extern unsigned char d3e_Resolve;
@@ -111,7 +108,7 @@ extern unsigned char ai_OptionsFile;
 extern unsigned char d2_ClickedId;
 extern unsigned char kb_Last;
 extern unsigned char sv_PopRequest;
-extern unsigned char ai_DataPath;
+extern char ai_DataPath[];
 
 extern unsigned char ai_GameFlags;
 extern unsigned char ai_OptionsFile;
@@ -138,7 +135,7 @@ extern unsigned char ai_Unkfb9064;
 extern unsigned char ai_Unkfb9068;
 extern unsigned char ai_Unkfb906c;
 extern unsigned char d2_Objs;
-extern unsigned char ai_DataPath;
+extern char ai_DataPath[];
 extern unsigned char ai_GameOver;
 extern unsigned char ai_NumPlayers;
 
@@ -149,8 +146,8 @@ extern unsigned char ai_Unkfb9060;
 extern unsigned char ai_Unkfb9064;
 extern unsigned char ai_Unkfb9068;
 extern unsigned char ai_Unkfb906c;
-extern unsigned char d2_ScreenH;
-extern unsigned char d2_ScreenW;
+extern short d2_ScreenH;
+extern short d2_ScreenW;
 
 
 
@@ -191,13 +188,13 @@ extern unsigned char ai_Unk5f8438;
 extern unsigned char ai_Unk5fb5b0;
 extern unsigned char ai_Unk633738;
 extern unsigned char ai_Unkfc2dec;
-extern unsigned char d2_ScreenH;
-extern unsigned char d2_ScreenW;
+extern short d2_ScreenH;
+extern short d2_ScreenW;
 extern unsigned char d3t_CamMove;
 extern unsigned char d3t_CamMoving;
 extern GAPDATA full_data_602568[];
 extern GAPDATA full_data_624938[];
-extern unsigned char ai_DataPath;
+extern char ai_DataPath[];
 extern unsigned char ai_OptionsFile;
 extern unsigned char d2_Unkf8a670;
 
@@ -236,14 +233,14 @@ extern unsigned char d2_LastWindowPtr;
 extern unsigned char kb_Last;
 extern unsigned char sv_PopRequest;
 extern unsigned char ai_ClickedObject;
-extern unsigned char ai_DataPath;
+extern char ai_DataPath[];
 extern unsigned char ai_NumPlayers;
 extern unsigned char ai_Unk60d360;
 extern unsigned char ai_Unk6f22e8;
 extern unsigned char ai_Unkfc2dec;
 extern unsigned char d2_ClickedId;
-extern unsigned char d2_ScreenH;
-extern unsigned char d2_ScreenW;
+extern short d2_ScreenH;
+extern short d2_ScreenW;
 
 extern unsigned char d3_ScaleX;
 extern unsigned char d3_Unk6333fc;
@@ -264,8 +261,8 @@ extern unsigned char ai_Unkfb9060;
 extern unsigned char ai_Unkfb9064;
 extern unsigned char ai_Unkfb9068;
 extern unsigned char ai_Unkfb906c;
-extern unsigned char d2_ScreenH;
-extern unsigned char d2_ScreenW;
+extern short d2_ScreenH;
+extern short d2_ScreenW;
 extern char d2_Views[];
 extern unsigned char d3_ScaleX;
 extern unsigned char d3_ZFar;
@@ -325,8 +322,8 @@ extern unsigned char ai_Unkfb9064;
 extern unsigned char ai_Unkfb9068;
 extern unsigned char ai_Unkfb906c;
 extern unsigned char d2_ClickedId;
-extern unsigned char d2_ScreenH;
-extern unsigned char d2_ScreenW;
+extern short d2_ScreenH;
+extern short d2_ScreenW;
 extern GAPDATA full_data_624560[];
 extern GAPDATA full_data_6253b0[];
 extern GAPDATA full_data_6253b4[];
@@ -336,10 +333,10 @@ extern unsigned char he_RunHandlers;
 extern unsigned char kb_Last;
 extern unsigned char sv_PanelForm;
 extern unsigned char sv_PopRequest;
-extern unsigned char sv_ViewRectBottom;
-extern unsigned char sv_ViewRectLeft;
-extern unsigned char sv_ViewRectRight;
-extern unsigned char sv_ViewRectTop;
+extern int sv_ViewRectBottom;
+extern int sv_ViewRectLeft;
+extern int sv_ViewRectRight;
+extern int sv_ViewRectTop;
 
 
 extern unsigned char ai_Unk6f1bb8;
@@ -357,8 +354,8 @@ extern unsigned char ai_Unkfb906c;
 extern unsigned char ai_Unkfc2dec;
 extern unsigned char d2_ClickedId;
 extern unsigned char d2_LastWindowPtr;
-extern unsigned char d2_ScreenH;
-extern unsigned char d2_ScreenW;
+extern short d2_ScreenH;
+extern short d2_ScreenW;
 extern GAPDATA full_data_6024e4[];
 extern GAPDATA full_data_624560[];
 extern GAPDATA full_data_6f25b0[];
@@ -394,8 +391,8 @@ extern unsigned char ai_Unkfb9068;
 extern unsigned char ai_Unkfb906c;
 extern unsigned char cm_NetFlags;
 extern unsigned char d2_ClickedId;
-extern unsigned char d2_ScreenH;
-extern unsigned char d2_ScreenW;
+extern short d2_ScreenH;
+extern short d2_ScreenW;
 extern GAPDATA full_data_624560[];
 extern unsigned char init_BuildingUniverse;
 extern unsigned char snd_AmbientOn;
@@ -411,7 +408,7 @@ extern unsigned char ai_Time;
 extern unsigned char ai_TimeHour;
 extern unsigned char cm_FieldObject;
 extern unsigned char ai_CurrentPlayer;
-extern unsigned char ai_DataPath;
+extern char ai_DataPath[];
 extern unsigned char ai_Difficulty;
 
 extern unsigned char ai_FrameWait;
@@ -430,8 +427,8 @@ extern unsigned char ai_Unk6f2440;
 extern unsigned char ai_Unkf31144;
 extern unsigned char ch_EmptyName;
 extern unsigned char cm_NetFlags;
-extern unsigned char d2_ScreenH;
-extern unsigned char d2_ScreenW;
+extern short d2_ScreenH;
+extern short d2_ScreenW;
 
 extern unsigned char d3_ScaleX;
 extern unsigned char d3_ZFar;
@@ -452,46 +449,45 @@ extern unsigned char ls_SavePath;
 extern unsigned char ls_SaveSlot;
 extern unsigned char main_MoneyCheat;
 extern unsigned char sv_FrameMask;
-extern unsigned char sv_ViewRectBottom;
-extern unsigned char sv_ViewRectLeft;
-extern unsigned char sv_ViewRectRight;
-extern unsigned char sv_ViewRectTop;
+extern int sv_ViewRectBottom;
+extern int sv_ViewRectLeft;
+extern int sv_ViewRectRight;
+extern int sv_ViewRectTop;
 extern GAPDATA full_data_624798[];
 extern GAPDATA full_data_6f241c[];
 extern unsigned char ai_SoundOptions;
-extern unsigned char d2_ScreenH;
-extern unsigned char d2_ScreenW;
+extern short d2_ScreenH;
+extern short d2_ScreenW;
 extern unsigned char di_Disabled;
 extern GAPDATA full_data_6f2574[];
 extern unsigned char kb_Last;
 extern unsigned char msx_FadeTo;
 extern unsigned char snd_AmbientOn;
-extern unsigned char ai_DataPath;
+extern char ai_DataPath[];
 extern unsigned char ai_GameFlags;
 extern unsigned char ai_GfxResolution;
 extern unsigned char ai_LeaveGame;
 extern unsigned char ai_OptionsFile;
-extern unsigned char ai_ScreenModeH;
-extern unsigned char ai_ScreenModeW;
-extern unsigned char ai_ScreenModes;
+extern int ai_ScreenModeH;
+extern int ai_ScreenModeW;
+extern struct SCREENMODE ai_ScreenModes[];
 
 
 
 
 
 extern GAPDATA full_data_5f320c[];
-extern GAPDATA full_data_5f8ad0[];
 extern GAPDATA full_data_602568[];
 extern GAPDATA full_data_624584[];
 extern unsigned char main_GfxPath[];
-extern GAPDATA full_data_624690[];
+extern char main_GamePath[];
 extern GAPDATA full_data_624798[];
 extern GAPDATA full_data_624cf8[];
 extern int snd_SystemBank;
 extern GAPDATA full_data_6f2408[];
 extern GAPDATA full_data_6f240c[];
 extern GAPDATA full_data_6f2410[];
-extern GAPDATA full_data_6f242c[];
+extern int main_TextureDivider;
 extern GAPDATA full_data_6f2434[];
 extern GAPDATA full_data_6f2470[];
 extern GAPDATA full_data_6f2574[];
@@ -535,6 +531,24 @@ void main_Unk53cb40(void);
 void d2_FreeItemListSurfaces(void);                /* 0x477420 */ void d3_SetViewport(float w, float h, float x, float y, float zn, float zf, float scale, int a, int b);
 int ai_SaveOptions(void);               /* 0x5d4c70, unk_5d33b0.c */
 void d2_Exit(void);                     /* 0x468a90, d2.h */
+typedef struct VIDCFG {          /* the video record d3_Init reads: d3_engine.h's D3INITCFG (that header cannot be included here: its externs conflict with this unit's data views) */
+    unsigned int w, h;
+    int bpp, mode, d3d;
+    int triple;                  /* d3_engine.h has an unsigned char + pad here; the original stores a dword */
+    int maxpolys, texcount, maxhicol, texParam, zbpp, texbpp;   /* texParam: tex_Init's 3rd argument */
+    int flFlag, flShift, flArg, texShift, shadowSize;           /* d3fl_Init (0x400, 0x40 >> flShift, flArg, flFlag), d3d_TexShift, d3_InitShadows' first argument (names from their use in d3_Init) */
+    float viewW, viewH, viewX, viewY, zn, zf, scale;
+} VIDCFG;
+char d3_Init(VIDCFG *cfg, HWND hwnd, void *hinst);   /* 0x43bc20, d3_engine.h */
+int ai_LoadOptions(void);               /* 0x5d5640, unk_5d33b0.h */
+void ai_ApplyOptions(void);             /* 0x5d5e90, cm.h */
+void ai_ApplyGfxOptions(void);          /* 0x5d5c40, unk_5d33b0.h */
+int d2_Open(int unk, int w, int h, char *dir, char *file);  /* 0x473c10, d2.h */
+void d2_CreateItemListSurfaces(void);   /* 0x477320, gfx.h */
+char dd_CheckModes(int mode, int bpp, HWND parent, int c);  /* 0x41d230, dd_vesa.h */
+void d3if_CreateCameras(void);          /* 0x448910, d3_interface.h */
+void d3io_SetStockDir(char *path);      /* 0x44c510, d3_int_io.h */
+void tex_SetPalette(char *dir);         /* 0x45fb30 */
 struct D2SURF { int makeFlags; int w; int h; };  /* the head of d2.h's D2SURF (d2.h cannot be included here: its externs conflict with this unit's data views) */
 void d2_BlitPart(int sx, int sy, int w, int h, struct D2SURF *src, int x, int y, struct D2SURF *dst);  /* 0x479480, d2.h */
 int d2_LockSurface(struct D2SURF *s);   /* 0x479020, d2.h */

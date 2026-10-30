@@ -10,11 +10,11 @@ int main_Unk532160(void)
 
     U_I((unsigned)&d2_CutsceneActive) = 1;
     if (U_I((unsigned)&full_data_6f2460) == 0) {
-        sprintf(tmp, (char *)(unsigned)"%s%s", (char *)(unsigned)&full_data_624690, "die_gilde_add_on_text.def");
+        sprintf(tmp, (char *)(unsigned)"%s%s", (char *)(unsigned)&main_GamePath, "die_gilde_add_on_text.def");
         if (txt_LoadIncludes(tmp) == 0)
             err_Message("main_OpenEngine(): could not open txt-engine!");
     } else {
-        sprintf(tmp, (char *)(unsigned)"%s%s", (char *)(unsigned)&full_data_624690, "die_gilde_add_on_text.def");
+        sprintf(tmp, (char *)(unsigned)"%s%s", (char *)(unsigned)&main_GamePath, "die_gilde_add_on_text.def");
         txt_OpenText(tmp, 0);
     }
     ai_Unk4b1f30();
@@ -28,7 +28,7 @@ int main_Unk532160(void)
     net_Connect(0, 0);
     ai_Unk4c3480();
     ai_Unk587de0();
-    sprintf(tmp, "%sdata\\", (char *)(unsigned)&full_data_624690);
+    sprintf(tmp, "%sdata\\", (char *)(unsigned)&main_GamePath);
     gm_LoadTables(tmp);
     unk_Unk4eddf0();
     unk_Unk4fde90();
@@ -48,7 +48,7 @@ int main_Unk532160(void)
         }
         d3snd_Init(0x40);
         d3sndw_Init(0x30);
-        sprintf(tmp, "%ssfx\\", (char *)(unsigned)&full_data_624690);
+        sprintf(tmp, "%ssfx\\", (char *)(unsigned)&main_GamePath);
         sb_SetPath(tmp);
         U_I((unsigned)&snd_SystemBank) = sb_LoadSampleBank("system.sbf", 0);
         sprintf(tmp2, "%s\\include_sfx.ini", (char *)(unsigned)&full_data_75e240);
@@ -56,7 +56,7 @@ int main_Unk532160(void)
     }
     if (U_I((unsigned)&snd_MusicEnabled) != 0) {
         msx_Init(2, 0x10, 0xac44);
-        sprintf(tmp, "%smsx\\", (char *)(unsigned)&full_data_624690);
+        sprintf(tmp, "%smsx\\", (char *)(unsigned)&main_GamePath);
         msx_SetPath(tmp);
     }
     ai_ApplyVolumes();

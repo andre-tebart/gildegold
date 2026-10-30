@@ -44,7 +44,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, char *cmd, int show)
     p = strrchr((char *)((unsigned)&ls_SavePath + 0x160), 0x5c);
     *p = 0;
     _strupr(cmd);
-    U_I((unsigned)&full_data_6f242c) = GetPrivateProfileIntA("Gfx", "TextureDivider", 0, (char *)(unsigned)&ai_OptionsFile);
+    U_I((unsigned)&main_TextureDivider) = GetPrivateProfileIntA("Gfx", "TextureDivider", 0, (char *)(unsigned)&ai_OptionsFile);
     U_I((unsigned)&snd_MusicEnabled) = GetPrivateProfileIntA("Sound", "msx", 0, (char *)(unsigned)&ai_OptionsFile);
     U_I((unsigned)&full_data_624584) = GetPrivateProfileIntA("Sound", "ambient", 0, (char *)(unsigned)&ai_OptionsFile);
     snd_SfxEnabled = GetPrivateProfileIntA("Sound", "sfx", 0, (char *)(unsigned)&ai_OptionsFile);
@@ -57,7 +57,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, char *cmd, int show)
     if (strstr(cmd, "FULLSCREEN") != 0)
         mode = 3;
     GetPrivateProfileStringA("General", "GfxPath", "\\project\\gfx\\", (char *)(unsigned)&main_GfxPath, 0x104, (char *)(unsigned)&ai_OptionsFile);
-    GetPrivateProfileStringA("General", "GamePath", "\\project\\game\\", (char *)(unsigned)&full_data_624690, 0x104, (char *)(unsigned)&ai_OptionsFile);
+    GetPrivateProfileStringA("General", "GamePath", "\\project\\game\\", (char *)(unsigned)&main_GamePath, 0x104, (char *)(unsigned)&ai_OptionsFile);
     GetPrivateProfileStringA("General", "MoviePath", "\\project\\movie\\", (char *)(unsigned)&full_data_624798, 0x104, (char *)(unsigned)&ai_OptionsFile);
     GetPrivateProfileStringA("General", "Language", "german", (char *)(unsigned)"german", 0x40, (char *)(unsigned)&ai_OptionsFile);
     ls_LanguageOf((char *)(unsigned)"german");
@@ -134,7 +134,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, char *cmd, int show)
     }
     if (U_I((unsigned)&full_data_6f2574) != 0)
         main_Unk53c9b0();
-    i = main_Unk531c50(mode);
+    i = main_OpenScreen(mode);
     if (i == 0) {
         main_Exit();
         return 0;
@@ -152,7 +152,7 @@ L_fail:
                 if (main_ScreenRestart != 0) {
                     main_ShutdownScreen();
                     sv_PumpMessages();
-                    i = main_Unk531c50(mode);
+                    i = main_OpenScreen(mode);
                     if (i == 0)
                         goto L_fail;
                     main_ScreenRestart = r;
