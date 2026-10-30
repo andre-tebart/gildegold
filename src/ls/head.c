@@ -8,6 +8,7 @@ struct D3TERRAIN;
 #include <windows.h>
 #include "f3gm.h"
 #include "gv.h"
+#include "ai.h"
 #include "vfs.h"
 #include "he.h"
 #include "txt.h"
@@ -22,7 +23,6 @@ extern int cm_SaveAcks[8][2];
 extern int ai_Unk7d6a40;
 extern char ai_Unk7d6a60[];  /* 0x7d6a60, the five 0x2a90-byte stock blocks (f3gm.c's definition) */
 #define ai_Unk7d6a64 (*(int (*)[3])((char *)ai_Unk7d6a60 + 4))  /* 0x7d6a64, block 0's header tail (a view) */
-extern unsigned char ai_Grid;
 extern unsigned ai_Unk91ac40[136];
 extern unsigned char ord_Statistics;
 extern unsigned char ord_StatisticsClock;
@@ -50,7 +50,6 @@ extern int ai_Unk7d6a40;
 #include "ch_types.h"
 extern CHMOTION ch_Motions[];
 extern int ai_Unk7e3f38;
-extern int gm_Offers[528];
 extern struct G10GAME *ai_Unkf83654;
 
 int ai_Unk61a658 = 1;  /* 0x61a658 */
