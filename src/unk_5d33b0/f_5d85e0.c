@@ -22,11 +22,6 @@ typedef struct GYPSYROW {               /* 0x38 bytes: one row of the special-am
     int pad18[8];
 } GYPSYROW;
 
-typedef struct D2PICVIEW {              /* 0x54 bytes, d2.h's D2PIC: only the size */
-    char pad00[0x50];
-    short w;                            /* +0x50 */
-    short h;                            /* +0x52 */
-} D2PICVIEW;
 extern struct D2PIC *d2_Pics;              /* 0x6ed918, d2.h: D2PIC * */
 
 void ai_BloodRevengeWindow(int building)
@@ -61,15 +56,15 @@ void ai_BloodRevengeWindow(int building)
     sv_FitForm(d2_LastWindow);
     d2_SetForm(form, 1);
     rows[0].y = 0x1e;
-    rows[0].x = (d2_Wins[d2_LastWindow].w - d2_PicsV[0x5da].w) / 2;
+    rows[0].x = (d2_Wins[d2_LastWindow].w - d2_Pics[0x5da].w) / 2;
     rows[1].y = 0x7d;
-    rows[1].x = (d2_Wins[d2_LastWindow].w - d2_PicsV[0x5da].w) / 3 - 10;
+    rows[1].x = (d2_Wins[d2_LastWindow].w - d2_Pics[0x5da].w) / 3 - 10;
     rows[2].y = 0x7d;
-    rows[2].x = (d2_Wins[d2_LastWindow].w - d2_PicsV[0x5da].w) * 2 / 3 + 10;
+    rows[2].x = (d2_Wins[d2_LastWindow].w - d2_Pics[0x5da].w) * 2 / 3 + 10;
     rows[3].y = 0xdc;
-    rows[3].x = (d2_Wins[d2_LastWindow].w - d2_PicsV[0x5da].w) / 3 - 100;
+    rows[3].x = (d2_Wins[d2_LastWindow].w - d2_Pics[0x5da].w) / 3 - 100;
     rows[4].y = 0xdc;
-    rows[4].x = (d2_Wins[d2_LastWindow].w - d2_PicsV[0x5da].w) * 2 / 3 + 100;
+    rows[4].x = (d2_Wins[d2_LastWindow].w - d2_Pics[0x5da].w) * 2 / 3 + 100;
     d2_SetForm(form, 3);
     sv_ButtonRow(d2_LastWindow, 0, ids, 2, txt_Ptrs[0x41b7], txt_Ptrs[0x41b8]);
     do {
@@ -91,12 +86,12 @@ void ai_BloodRevengeWindow(int building)
                 ai_AmountRow(row->x, row->y, d2_LastWindow, 0x54, (int *)row, 1);
                 if (i < n) {
                     d2_SetObjEnabled(row->ctl, 1);
-                    d2_ObjsV[row->ctl].interactive = 1;
-                    d2_ObjsV[row->ctl].style = 3;
-                    d2_ObjsV[row->ctl].owner = (int)row->rec;
-                    d2_ObjsV[row->ctl].greyed = 0;
+                    d2_Objs[row->ctl].interactive = 1;
+                    d2_Objs[row->ctl].style = 3;
+                    d2_Objs[row->ctl].user = row->rec;
+                    d2_Objs[row->ctl].greyed = 0;
                 } else {
-                    d2_ObjsV[row->ctl].greyed = 1;
+                    d2_Objs[row->ctl].greyed = 1;
                 }
                 if (row->rec == 0 || i == 0) {
                     r = 0;

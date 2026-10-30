@@ -1,16 +1,7 @@
 /* 0x4b3350, the history dialog: shows the events of last year (0x4b3280) one after the other */
 
-typedef struct G12WIN {                 /* 0x3c4 bytes, d2.h's D2WIN (d2.h conflicts with am.h's vfs views) */
-    char pad000[0x248];
-    int scrollY;                        /* 0x248, scroll offset y */
-    char pad24c[0x14];
-    unsigned char unk260;               /* 0x260, scroll speed */
-    char pad261[3];
-    int visible;                        /* 0x264 */
-    char pad268[0x15c];
-} G12WIN;
 
-extern G12WIN d2_Wins[0x60];            /* 0xf8f120 */
+extern D2WIN d2_Wins[];            /* 0xf8f120 */
 extern int d2_LastWindow;                /* 0x6ed938 */
 extern struct D2WIN *d2_LastWindowPtr;            /* 0x6ed980 */
 extern int d2_ClickedId;                /* 0xf8a668 */
@@ -63,8 +54,8 @@ void ai_Unk4b3350(void)
                 *vis = 0x18;
                 d2_SetForm(view, 1);
                 io_PrintText("$C%s", text);
-                d2_LastWindowPtrV->scrollY = 0;
-                d2_LastWindowPtrV->unk260 = 2;
+                d2_LastWindowPtr->scrollY = 0;
+                d2_LastWindowPtr->scrollStep = 2;
                 d2_SetForm(view, 3);
                 io_PrintText("$C$Z$[%s$]", name);
             }

@@ -10,6 +10,7 @@
 #include "txt.h"
 typedef unsigned int SOCKET;            /* <winsock.h>, for net.h (as ai.c) */
 #include "net.h"
+#include "d2_types.h"                 /* D2WIN, d2_LastWindowPtr's record */
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, ai_Unk4d88c0 0x4d88c0 move it as a word / movzx) */
 #define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (f3gm.c: char *) as the AIGOOD records it points to */
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
@@ -17,4 +18,3 @@ typedef unsigned int SOCKET;            /* <winsock.h>, for net.h (as ai.c) */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define ai_TimeT (*(AITIME *)&ai_Time)  /* 0x770ae0, ai_Time (anm.c: char[14]) as the AITIME it is: this unit reads its fields */
 #define gm_AddHealthS ((float (*)(unsigned short, int))gm_AddHealth)  /* 0x4fca40 (f3gm.c: unsigned id): @original this unit pushes the id as 16 bits (byte-matched ai_CommandKillPlayer / ai_Unk4b86c0) */
-#define d2_LastWindowPtrV (*(G12WIN * (*))&d2_LastWindowPtr)  /* 0x6ed980, this unit reads it as `G12WIN *d2_LastWindowPtr` */

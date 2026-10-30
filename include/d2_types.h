@@ -1,4 +1,5 @@
-/* The record types of d2.c's tables d2_Wins, d2_Inputs, d2_Radios, d2_Views (and D2TEX / D2SURF they use), for the
+/* The record types of d2.c's tables d2_Wins, d2_Inputs, d2_Radios, d2_Views, d2_Pics, d2_Objs (and D2TEX / D2SURF /
+   D2CTRL they use), for the
    units that declare the tables without the rest of d2.h: types only. d2.h includes it. */
 #ifndef D2_TYPES_H
 #define D2_TYPES_H
@@ -156,5 +157,119 @@ typedef struct D2VIEW {             /* 0x2ac bytes, a 3D view whose textures sho
     char tex2[0x40];                /* 0x1ec */
     char pad22c[0x80];
 } D2VIEW;
+
+typedef struct D2PIC {              /* 0x54 bytes, one picture of the archive; d2_Pics has 0x800 */
+    char name[0x30];
+    int offset;                     /* 0x30, file offset of the data */
+    void *data;                     /* 0x34, NULL = not loaded */
+    int size;                       /* 0x38 */
+    int type;                       /* 0x3c, 5 and 8 = frame of another picture */
+    int refs;                       /* 0x40, reference count (0 = may be dropped) */
+    unsigned int flags;             /* 0x44, 1 = locked, 2 = relative to d2_PicBase */
+    unsigned int lastuse;           /* 0x48 */
+    int base;                       /* 0x4c, picture holding the data of a frame */
+    short w;                        /* 0x50 */
+    short h;                        /* 0x52 */
+} D2PIC;
+
+typedef struct D2CTRL {             /* what D2OBJ::buf points to (a D2BUF) */
+    char pad000[0x198];
+    int loaded;                     /* 0x198, nonzero: its two surfaces exist (D2VIEW.loaded), so the
+                                       pointer position is d2_PointerX / 0c, not the mouse */
+} D2CTRL;
+
+typedef struct D2OBJ {              /* 0x2ec bytes, d2_Objs has 0x2ff: pictures, inputs, sliders, buttons */
+    int id;                         /* 0x00, own index */
+    int used;                       /* 0x04 */
+    int pic;                        /* 0x08, index into d2_Pics */
+    void *data;                     /* 0x0c, picture data / sprite set / input */
+    short x, y, w, h;               /* 0x10 */
+    int type;                       /* 0x18 */
+    short drawFrames;               /* 0x1c, frames left to draw: 2 right after creation (the first draw
+                                       also goes to the back buffer), 1 normal, 0 stops */
+    short clipx0, clipx1;           /* 0x1e */
+    short clipy0, clipy1;           /* 0x22 */
+    short pad26;
+    int checked;                    /* 0x28, the checkbox / radio state (d2_SetObjValue / d2_GetObjValue), a click toggles it */
+    int highlighted;                /* 0x2c, 1: drawn in the highlight colour */
+    D2WIN *win;                     /* 0x30 */
+    int unk34;
+    int disabled;                   /* 0x38, 1: the object does not take the mouse */
+    int clickDisabled;              /* 0x3c, 1: not clickable right now (set with greyed by d2_SetObjEnabled /
+                                       d2_EnableViewObjects: the view or scroll button is inactive) */
+    D2CTRL *buf;                    /* 0x40, the object's drawing buffer (D2BUF); 0: none */
+    int textShadow;                 /* 0x44, 1: the object's text is drawn with a shadow (d2_DrawTextBox flag 4) */
+    int checkable;                  /* 0x48, nonzero: a checkbox / radio button, its state is in checked and a
+                                       click toggles it (d2_SetObjValue); not 'interactive' */
+    int interactive;                /* 0x4c, nonzero: takes mouse clicks and highlighting (sliders,
+                                       type 9 dialogs, text 'b' buttons, type 8 pictures) */
+    int greyed;                     /* 0x50, 1: drawn in the inactive colour 9 / flags 9 (set with
+                                       clickDisabled) */
+    int hitTestable;                /* 0x54, nonzero: takes part in the hit test even when not
+                                       interactive / checkable (only reader known, writer in the original) */
+    int unk58;                      /* 0x58 */
+    int centred;                    /* 0x5c, centred (d2_CenterObj) */
+    int rightAligned;               /* 0x60, 1: the object's text is right aligned (d2_DrawTextBox flag 0x10) */
+    int dirty;                      /* 0x64 */
+    int hidden;                     /* 0x68, nonzero: skipped by the window's text layout and not
+                                       drawn by the text-case (an input / link object in the text draws itself) */
+    unsigned char shadowX, shadowY; /* 0x6c, shadow offset x / y (drawn at x + shadowX) */
+    char unk6e;                     /* 0x6e */
+    char pad6f;
+    int picScale;                   /* 0x70, picture scale: 0 / 1 / -1 draw unscaled, > 1 larger, < -1 smaller (d2_ScaleObject) */
+    short font;                     /* 0x74 */
+    short pad76;
+    int input;                      /* 0x78, input index / picture shift */
+    union {
+        char text[0x20];            /* 0x7c, button caption */
+        unsigned short *raw;        /* 0x7c, 16-bit pixels of a raw object (d2_OpenRaw) */
+        struct {
+            int value;              /* 0x7c */
+            int min;                /* 0x80 */
+            int max;                /* 0x84 */
+            int flags;              /* 0x88 */
+            int len;                /* 0x8c, track length in pixels */
+            int value2;             /* 0x90 */
+            int firstPic;           /* 0x94, first picture of the slider (its end cap) */
+            void *img;              /* 0x98, track image (surface) */
+        } s;
+    } u;
+    union {
+        struct {
+            char label[0x40];       /* 0x9c; label[0x20] (0xbc) is the caption below */
+            char list[0xe4];        /* 0xdc, "a|b|c|" */
+        };
+        struct {
+            char pad9c[0x20];
+            char caption[0x100];    /* 0xbc, caption of a picture / button object */
+            int capfont;            /* 0x1bc, its font (0: default) */
+        };
+        struct {
+            char pad9c2[0x24];
+            int insertedLen;        /* 0xc0, length of the text this input object last inserted into the
+                                       window text (d2_ReplaceInputText removes it again before the next) */
+        };
+    };
+    int style;                      /* 0x1c0 */
+    int picW;                       /* 0x1c4, whole picture width (o->w / h are the frame's) */
+    int picH;                       /* 0x1c8, whole picture height */
+    int captionX;                   /* 0x1cc, caption / text x offset, -1: default */
+    int captionY;                   /* 0x1d0, caption / text y offset, -1: default */
+    int icon;                       /* 0x1d4, -1: none */
+    int iconx;                      /* 0x1d8 */
+    int icony;                      /* 0x1dc */
+    int winIndex;                   /* 0x1e0, index of the window that owns the object */
+    float fillFraction;             /* 0x1e4, 0: not a fill object; else the fill factor of the picture: the
+                                       part below (1 - fillFraction) * h is clipped away (so 1.0 leaves only the
+                                       top edge) and the value drawn under the picture is fillFraction * 100
+                                       percent */
+    char pad1e8[0xf8];
+    char hilo;                      /* 0x2e0 */
+    char hihi;                      /* 0x2e1 */
+    short pad2e2;
+    int scale;                      /* 0x2e4 */
+    void *user;                     /* 0x2e8, unused by d2: a dialog keeps its own record of the object here
+                                       (unk_4b39f0's mission type, unk_5d33b0's gypsy row) */
+} D2OBJ;
 
 #endif

@@ -5,8 +5,8 @@
 
 #define U_W(a) (*(unsigned short *)(a))
 
-/* d2.h's D2SURF (the 0x40-byte screen surface): the two fields the screen shot reads. Type debt, as
-   for D2OBJVIEW above: d2.h cannot be included here. */
+/* d2.h's D2SURF (the 0x40-byte screen surface): the two fields the screen shot reads. Type debt: d2.c
+   defines d2_ScreenSurf as void * (D2SURF itself is in d2_types.h). */
 typedef struct D2SURFVIEW {
     char pad0[0x10];
     int pitch;                          /* +0x10, in pixels */
@@ -44,7 +44,7 @@ extern char ls_SavePath[];              /* 0x75e640, ls.c: the path stored in th
 /* ai_SaveWaitText: view of txt_Ptrs (build/mk_txt_views.py) */
 
 /* ai.h's AICHAR (0x21c bytes, ai_CharsC[0x300] at 0x770b80): the fields this unit reads. f3snd.h declares
-   ai_CharsC as char[], so ai.h cannot be included here; the type debt is the same as D2OBJVIEW's. */
+   ai_CharsC as char[], so ai.h cannot be included here; type debt. */
 typedef struct AICHARVIEW {
     unsigned short id;                  /* +0x000, 0xffff when free */
     unsigned char kind;                 /* +0x002, 6 / 7 = a player */
@@ -66,7 +66,7 @@ int ai_MenuButton(int row, int text1, int text2)
     int id;
 
     id = d2_WinCreateSlider(0x20, row * 0x2e + 10, 0xbf, text1, text2);
-    d2_ObjsV[id].centred = 1;
+    d2_Objs[id].centred = 1;
     d2_SetObjWidth(id, 300);
     return id;
 }

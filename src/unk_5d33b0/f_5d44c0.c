@@ -19,7 +19,7 @@ int ai_EditText(int x, int y, char *text)
     d2_SetObjFont(id, 0x53);
     d2_SetObjValue(id, text);  /* @original: this call site pushes 2 arguments (0x5d4500) against the 5-parameter definition */
     d2_FocusInput(id);
-    input = &d2_ObjsV[id].input;
+    input = &d2_Objs[id].input;
     d2_Inputs[*input].w = 0x80;
     d2_Inputs[*input].maxw = 0x110;
     d2_SetObjMax(id, 0x1f);

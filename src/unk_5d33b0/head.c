@@ -33,6 +33,7 @@ extern int gm_PlayerRecords[688];
 #include "unk_58bbd0.h"
 #include "data_views.h"
 #include "time_view.h"
+#include "d2_types.h"                 /* D2OBJ, D2WIN, D2PIC: the records of d2_Objs, d2_LastWindowPtr, d2_Pics */
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, ai_Unk4d88c0 0x4d88c0 move it as a word / movzx) */
 #define sb_PlaySampleI ((struct SBSAMPLE *(*)(int, char *, int, int, int, int, int))sb_PlaySample)  /* 0x426fa0 (sblib.c: SBBANK *bank): this unit passes the bank as an int */
 #define sv_CheckGoodAmountB ((int (*)(char *, int, unsigned char))sv_CheckGoodAmount)  /* 0x521040 (sv.c: unsigned t): @original ai_CurseWindow (0x5d8c90) passes the good as a byte (mov cl, [ai_OwnPlayer], no zero extension) */
@@ -40,51 +41,6 @@ extern int gm_PlayerRecords[688];
 #define ai_FallbackBuildingB (*(unsigned char **)&ai_FallbackBuilding)  /* 0x6f230c, ai_FallbackBuilding (sv.c: char *) read bytewise, as this unit does */
 #define ai_PlayerBuildingB (*(unsigned char **)&ai_PlayerBuilding)  /* 0x6f2308, ai_PlayerBuilding (sv.c: char *) read bytewise, as this unit does */
 #define ai_CharsC (*(char (*)[768 * 0x21c])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) read flat, as this unit does */
-
-typedef struct D2OBJVIEW {                  /* 0x2ec, d2.h's D2OBJ: only the fields this unit reads */
-    char pad0[0x10];
-    short x;                                /* +0x10, D2OBJ.x */
-    short y;                                /* +0x12, D2OBJ.y */
-    short w;                                /* +0x14, D2OBJ.w (the frame width) */
-    char pad16[0x12];
-    int checked;                            /* +0x28, D2OBJ.checked: the checkbox / radio state */
-    int highlighted;                        /* +0x2c, D2OBJ.highlighted: drawn in the highlight colour */
-    char *win;                              /* +0x30, D2OBJ.win: the window the object belongs to */
-    char pad34[0x14];
-    int checkable;                          /* +0x48, D2OBJ.checkable: a checkbox / radio */
-    int interactive;                        /* +0x4c, D2OBJ.interactive */
-    int greyed;                             /* +0x50, D2OBJ.greyed: drawn in the inactive colour */
-    char pad54[8];
-    int centred;                           /* +0x5c, D2OBJ.centred */
-    char pad60[0x18];
-    int input;                              /* +0x78, D2OBJ.input */
-    char pad7c[0x144];
-    int style;                              /* +0x1c0, D2OBJ.style */
-    int picW;                               /* +0x1c4, D2OBJ.picW */
-    char pad1c8[4];
-    int captionX;                           /* +0x1cc, D2OBJ.captionX */
-    int captionY;                           /* +0x1d0, D2OBJ.captionY */
-    char pad1d4[0x114];
-    int owner;                              /* +0x2e8, D2OBJ.pad2e8: unused by d2; the gypsy windows keep the row's record here */
-} D2OBJVIEW;
-
-typedef struct D2WINVIEW {
-    char pad00[0x08];
-    short w;                            /* +0x08, the window width */
-    short h;                            /* +0x0a, the window height */
-    char pad0c[0x08];
-    short mt;                           /* +0x14, the top text margin */
-    char pad16[0x22e];
-    int contentHeight;                  /* +0x244, height of the content */
-    int scrollY;                        /* +0x248, scroll offset y */
-    char pad24c[4];
-    int scrollRemY;                     /* +0x250, scroll y still to go */
-    char pad254[0x18];
-    int parent;                         /* +0x26c, the object of the window */
-    char pad270[0xc];
-    short font;                         /* +0x27c, the window font */
-    char pad27e[0x146];
-} D2WINVIEW;
 
 extern OPTIONBYTES ai_GfxDetail, ai_GfxFloor, ai_GfxSet, ai_GfxFog, ai_GfxResolution, ai_GameSwitches, ai_GamePanel, ai_OptionPanelHelp;
 /* full rebuild: the symbols whose original addresses the code above spells literally */
@@ -131,6 +87,3 @@ extern int sv_PopRequest;               /* 0x6f22a0, nonzero: MASTER (sv_RunFram
 #define U_B(a) (*(unsigned char *)(a))
 
 int sprintf(char *buf, const char *fmt, ...); /* 0x5de652, the CRT's sprintf (no CRT symbol available) */
-#define d2_LastWindowPtrV (*(D2WINVIEW * (*))&d2_LastWindowPtr)  /* 0x6ed980, this unit reads it as `D2WINVIEW *d2_LastWindowPtr` */
-#define d2_ObjsV (*(D2OBJVIEW * (*))&d2_Objs)  /* 0xf8f080, this unit reads it as `D2OBJVIEW *d2_Objs` */
-#define d2_PicsV (*(D2PICVIEW * (*))&d2_Pics)  /* 0x6ed918, this unit reads it as `D2PICVIEW *d2_Pics` */

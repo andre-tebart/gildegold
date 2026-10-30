@@ -30,10 +30,8 @@ void d2_SetObjMax(int obj, int v);                                   /* 0x475f40
 /* d2.h's D2FADE (the fade record of 0x4767d0): only the flags byte is read here (bit 2 = done, the
    original tests the byte, not the dword); the type debt is in notes/units/unk_5d33b0.md */
 typedef struct D2FADEVIEW { unsigned char flags; char pad1[0x63]; } D2FADEVIEW;
-/* d2.h's D2WIN (0x3c4 bytes, the window records d2_Wins[0x61]): only the fields this unit reads.
-   The struct keeps the full size, or d2_Wins[bar] would scale by the short size and read another
-   record (the type debt is the same as D2OBJVIEW's). */
-extern D2WINVIEW d2_Wins[];             /* 0xf8f120, d2.h: D2WIN d2_Wins[0x61] */
+/* d2's window records, as d2.c defines them (D2WIN, d2_types.h) */
+extern D2WIN d2_Wins[];             /* 0xf8f120, d2.h: D2WIN d2_Wins[0x61] */
 extern float sv_FramesPerTick;          /* 0x62378c, sv.c: the frames drawn since the last timer tick
                                            (the frame loop counts them in 0x623790, the tick callback
                                            0x520ec0 copies the count as a float and clears it) */
@@ -215,7 +213,7 @@ void ai_FillSaveSlots(int view, int form, SAVESLOTVIEW *slots, char *files, char
         if (slot == -1)
             continue;
         d2_SetForm(view, form);
-        slots[slot].win = d2_CreateChildWindow(0, slot * 0x82, d2_LastWindowPtrV->w - 0x10, 0x82, 0x10,
+        slots[slot].win = d2_CreateChildWindow(0, slot * 0x82, d2_LastWindowPtr->w - 0x10, 0x82, 0x10,
                                              d2_LastWindow);
         d2_Wins[slots[slot].win].font = 0x54;
         slots[slot].obj = d2_CreateWinText(0xa8, -2, hdr.title, d2_LastWindow);
@@ -239,10 +237,10 @@ void ai_FillSaveSlots(int view, int form, SAVESLOTVIEW *slots, char *files, char
             }
             d2_WinOpenRaw(0, 0, 0xa0, 0x78, ai_ScreenImage, d2_LastWindow);
         }
-        d2_ObjsV[slots[slot].obj].interactive = 1;
-        d2_ObjsV[slots[slot].obj].w = d2_LastWindowPtrV->w - 0xa0;
-        d2_ObjsV[slots[slot].obj].style = 3;
-        d2_CreateChildWindow(0xa4, 0x12, d2_LastWindowPtrV->w - 0xb0, 0x6e, 0x10, d2_LastWindow);
+        d2_Objs[slots[slot].obj].interactive = 1;
+        d2_Objs[slots[slot].obj].w = d2_LastWindowPtr->w - 0xa0;
+        d2_Objs[slots[slot].obj].style = 3;
+        d2_CreateChildWindow(0xa4, 0x12, d2_LastWindowPtr->w - 0xb0, 0x6e, 0x10, d2_LastWindow);
         d2_Wins[d2_LastWindow].font = 0x54;
         d2_Wins[d2_LastWindow].mt = 0;
         sprintf(timebuf, "%i%c", hdr.money, 0x11);
@@ -266,17 +264,17 @@ void ai_FillSaveSlots(int view, int form, SAVESLOTVIEW *slots, char *files, char
             continue;
         d2_SetForm(view, form);
         slots[slot].used = 0;
-        slots[slot].win = d2_CreateChildWindow(0, slot * 0x82, d2_LastWindowPtrV->w - 0x10, 0x78, 0x10,
+        slots[slot].win = d2_CreateChildWindow(0, slot * 0x82, d2_LastWindowPtr->w - 0x10, 0x78, 0x10,
                                               d2_LastWindow);
         d2_Wins[slots[slot].win].font = 0x54;
         slots[slot].obj = d2_CreateWinText(0xa8, 0, slots[slot].name, d2_LastWindow);
         d2_SetObjFont(slots[slot].obj, 0x53);
         d2_WinOpenRaw(0, 0, 0xa0, 0x78, ai_ScreenImage, d2_LastWindow);
         d2_WinOpenPic(0x3c, 0x20, 0x4fb, d2_LastWindow);
-        d2_ObjsV[slots[slot].obj].interactive = 1;
-        d2_ObjsV[slots[slot].obj].w = d2_LastWindowPtrV->w - 0xa0;
-        d2_ObjsV[slots[slot].obj].style = 3;
-        d2_CreateChildWindow(0xa4, 0x18, d2_LastWindowPtrV->w - 0xb0, 0x60, 0x10, d2_LastWindow);
+        d2_Objs[slots[slot].obj].interactive = 1;
+        d2_Objs[slots[slot].obj].w = d2_LastWindowPtr->w - 0xa0;
+        d2_Objs[slots[slot].obj].style = 3;
+        d2_CreateChildWindow(0xa4, 0x18, d2_LastWindowPtr->w - 0xb0, 0x60, 0x10, d2_LastWindow);
         d2_Wins[d2_LastWindow].font = 0x54;
         io_PrintText(0x1cc7);
     }

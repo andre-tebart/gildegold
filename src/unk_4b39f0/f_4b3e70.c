@@ -1,10 +1,6 @@
 /* 0x4b3e70, the dialog "special\CHOOSE_MISSION": lists the mission types of kind, offers the one picked
    (0x4b3d50); returns its type (0xff: none) */
 
-typedef struct G13OBJ {                 /* 0x2ec bytes, d2.h's D2OBJ (d2.h conflicts with am.h's vfs views) */
-    char pad000[0x2e8];
-    void *user;                         /* 0x2e8 (D2OBJ: pad2e8) */
-} G13OBJ;
 
 typedef struct G13RADIO {               /* 0x8c bytes, d2.h's D2RADIO */
     int unk00;
@@ -44,7 +40,7 @@ int ai_ChooseMissionType(int kind)
     g = d2_CreateRadioGroup(0);
     for (t = ai_FindMissionType(kind, 0); t != 0; t = ai_FindMissionType(kind, t)) {
         o = d2_GetWinObj(view, 2, io_PrintText("%ia[%s]$N", t->text));
-        d2_ObjsV[o].user = t;
+        d2_Objs[o].user = t;
         d2_RadioAdd(g, o);
     }
     while (sv_RunFrame((void (*)(void))ai_ChooseMissionType, 0x1c6)) {
@@ -53,7 +49,7 @@ int ai_ChooseMissionType(int kind)
             sv_PopRequest = 1;
         if (d2_ClickedId != -1 && d2_Radios[g].sel != -1
             && d2_PointerObj == d2_Radios[g].objs[d2_Radios[g].sel]) {
-            t = (G13TYPE *)d2_ObjsV[d2_Radios[g].objs[d2_Radios[g].sel]].user;
+            t = (G13TYPE *)d2_Objs[d2_Radios[g].objs[d2_Radios[g].sel]].user;
             if (ai_Unk4b3d50(t->type, sv_FrameMask)) {
                 chosen = t->type;
                 sv_PopRequest = 1;

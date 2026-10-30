@@ -168,34 +168,34 @@ int ai_PokerGame(void)
                 txt_Format(text, 0x4252, ai_PokerState.pot);
                 io_PrintText(text);
                 io_PrintText(txt_Ptrs[0x425b]);
-                d2_ObjsV[ai_PokerUi.panel[0].slot[0]].greyed = 0;
-                d2_ObjsV[ai_PokerUi.panel[0].slot[1]].greyed = 0;
-                d2_ObjsV[ai_PokerUi.panel[0].slot[2]].greyed = 1;
-                d2_ObjsV[ai_PokerUi.panel[0].slot[3]].greyed = 1;
-                d2_ObjsV[ai_PokerUi.panel[0].slot[0]].interactive = 1;
-                d2_ObjsV[ai_PokerUi.panel[0].slot[0]].style = 3;
-                d2_ObjsV[ai_PokerUi.panel[0].slot[1]].interactive = 1;
-                d2_ObjsV[ai_PokerUi.panel[0].slot[1]].style = 3;
+                d2_Objs[ai_PokerUi.panel[0].slot[0]].greyed = 0;
+                d2_Objs[ai_PokerUi.panel[0].slot[1]].greyed = 0;
+                d2_Objs[ai_PokerUi.panel[0].slot[2]].greyed = 1;
+                d2_Objs[ai_PokerUi.panel[0].slot[3]].greyed = 1;
+                d2_Objs[ai_PokerUi.panel[0].slot[0]].interactive = 1;
+                d2_Objs[ai_PokerUi.panel[0].slot[0]].style = 3;
+                d2_Objs[ai_PokerUi.panel[0].slot[1]].interactive = 1;
+                d2_Objs[ai_PokerUi.panel[0].slot[1]].style = 3;
                 if (d2_ClickedId != -1) {
                     if (ai_PokerUi.panel[0].slot[0] == d2_PointerObj) {
-                        d2_ObjsV[ai_PokerUi.panel[0].slot[0]].checked = d2_ObjsV[ai_PokerUi.panel[0].slot[0]].checked == 0;
-                        d2_ObjsV[ai_PokerUi.panel[0].slot[1]].checked = 0;
-                        if (d2_ObjsV[ai_PokerUi.panel[0].slot[0]].checked != 0)
+                        d2_Objs[ai_PokerUi.panel[0].slot[0]].checked = d2_Objs[ai_PokerUi.panel[0].slot[0]].checked == 0;
+                        d2_Objs[ai_PokerUi.panel[0].slot[1]].checked = 0;
+                        if (d2_Objs[ai_PokerUi.panel[0].slot[0]].checked != 0)
                             d2_SetObjEnabled(ai_PokerUi.buttons[2], 1);
                         else
                             d2_SetObjEnabled(ai_PokerUi.buttons[2], 0);
                     } else if (ai_PokerUi.panel[0].slot[1] == d2_PointerObj) {
-                        d2_ObjsV[ai_PokerUi.panel[0].slot[1]].checked = d2_ObjsV[ai_PokerUi.panel[0].slot[1]].checked == 0;
-                        d2_ObjsV[ai_PokerUi.panel[0].slot[0]].checked = 0;
-                        if (d2_ObjsV[ai_PokerUi.panel[0].slot[1]].checked != 0)
+                        d2_Objs[ai_PokerUi.panel[0].slot[1]].checked = d2_Objs[ai_PokerUi.panel[0].slot[1]].checked == 0;
+                        d2_Objs[ai_PokerUi.panel[0].slot[0]].checked = 0;
+                        if (d2_Objs[ai_PokerUi.panel[0].slot[1]].checked != 0)
                             d2_SetObjEnabled(ai_PokerUi.buttons[2], 1);
                         else
                             d2_SetObjEnabled(ai_PokerUi.buttons[2], 0);
                     } else if (ai_PokerUi.buttons[2] == d2_PointerObj) {
                         d2_SetObjEnabled(ai_PokerUi.buttons[2], 0);
-                        if (d2_ObjsV[ai_PokerUi.panel[0].slot[0]].checked != 0)
+                        if (d2_Objs[ai_PokerUi.panel[0].slot[0]].checked != 0)
                             ai_PokerExchange(0);
-                        else if (d2_ObjsV[ai_PokerUi.panel[0].slot[1]].checked != 0)
+                        else if (d2_Objs[ai_PokerUi.panel[0].slot[1]].checked != 0)
                             ai_PokerExchange(1);
                         mask = ai_PokerStep();
                         ai_PokerSeatPanel(0, 4, ai_PokerState.seat[0].card);
@@ -213,14 +213,14 @@ int ai_PokerGame(void)
                 }
                 break;
             case 7:
-                d2_ObjsV[ai_PokerUi.panel[0].slot[0]].greyed = 1;
-                d2_ObjsV[ai_PokerUi.panel[0].slot[1]].greyed = 1;
-                d2_ObjsV[ai_PokerUi.panel[0].slot[2]].greyed = 0;
-                d2_ObjsV[ai_PokerUi.panel[0].slot[3]].greyed = 0;
-                d2_ObjsV[ai_PokerUi.panel[0].slot[0]].interactive = 0;
-                d2_ObjsV[ai_PokerUi.panel[0].slot[0]].style = 0;
-                d2_ObjsV[ai_PokerUi.panel[0].slot[1]].interactive = 0;
-                d2_ObjsV[ai_PokerUi.panel[0].slot[1]].style = 0;
+                d2_Objs[ai_PokerUi.panel[0].slot[0]].greyed = 1;
+                d2_Objs[ai_PokerUi.panel[0].slot[1]].greyed = 1;
+                d2_Objs[ai_PokerUi.panel[0].slot[2]].greyed = 0;
+                d2_Objs[ai_PokerUi.panel[0].slot[3]].greyed = 0;
+                d2_Objs[ai_PokerUi.panel[0].slot[0]].interactive = 0;
+                d2_Objs[ai_PokerUi.panel[0].slot[0]].style = 0;
+                d2_Objs[ai_PokerUi.panel[0].slot[1]].interactive = 0;
+                d2_Objs[ai_PokerUi.panel[0].slot[1]].style = 0;
                 d2_SetForm(ai_PokerUi.window, 4);
                 txt_Format(text, 0x4252, ai_PokerState.pot);
                 io_PrintText(text);

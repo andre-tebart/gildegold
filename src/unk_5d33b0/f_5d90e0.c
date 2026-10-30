@@ -35,7 +35,7 @@ void ai_CurseTargetWindow(int building)
     d2_SetForm(form, 0);
     sv_FitForm(d2_LastWindow);
     d2_SetForm(form, 2);
-    share = d2_WinOpenSlider((d2_LastWindowPtrV->w - 300) / 2, 10, 300, 0, 100, 0x75, 0x42, d2_LastWindow);
+    share = d2_WinOpenSlider((d2_LastWindowPtr->w - 300) / 2, 10, 300, 0, 100, 0x75, 0x42, d2_LastWindow);
     d2_SetObjValue4(share, 0, 100, 0);
     d2_SetForm(form, 2);
     victim = d2_WinOpenSlider(0x57, 7, 200, 0, 100, 0x7b, 2, d2_LastWindow);

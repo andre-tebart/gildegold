@@ -39,8 +39,8 @@ void ai_Unk4b36d0(int cmd)
                 *vis = 0x18;
                 d2_SetForm(view, 1);
                 io_PrintText("$C%s", text);
-                d2_LastWindowPtrV->scrollY = 0;
-                d2_LastWindowPtrV->unk260 = 2;
+                d2_LastWindowPtr->scrollY = 0;
+                d2_LastWindowPtr->scrollStep = 2;
                 d2_SetForm(view, 3);
                 io_PrintText("$C$Z$[%s$]", name);
             }
