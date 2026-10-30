@@ -50,6 +50,7 @@ typedef struct EFFECTREC {              /* 0x10 bytes at 0x62de60: the default e
 } EFFECTREC;
 extern EFFECTREC ai_DefaultEffect;  /* 0x62de60 */
 extern float ai_ShotDrag;          /* 0x62de58, .data: the drag coefficient of a cannon ball, 1.5 */
+extern float ai_ShotHitHeight;     /* 0x62de5c, .data: 98.4 = 2.5 m in inches, the height above the ground that counts as a hit */
 typedef struct EFFECTSTATE {            /* 0x1f0 bytes at 0x6f3300: the wind state ai_InitWind builds (reasoned: the caller 0x525510 passes the wind rose tables) */
     int year;                           /* +0x00, the clock of the last update (a GAMECLOCK spread to ints): ai_InitWind's second argument (the clock's year) */
     int hour;                           /* +0x04, 6 after ai_InitWind; ai_UpdateWind stores the clock's hour */
