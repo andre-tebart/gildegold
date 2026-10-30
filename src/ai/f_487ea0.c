@@ -6,7 +6,7 @@ void ai_Unk487ea0(AICHAR *ch)
     unsigned int fl;
     int i, n;
 
-    if (ai_Time.hour == 7 || ai_Time.hour == 0xc || ai_Time.hour == 0x12) {
+    if (ai_TimeT.hour == 7 || ai_TimeT.hour == 0xc || ai_TimeT.hour == 0x12) {
         fl = ch->flags1b4;
         if (!(fl & 0x40)) {
             bld = ch->bld;

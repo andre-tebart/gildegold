@@ -45,7 +45,7 @@ void main_Unk539870(void)
         d2_StartFade(0, 0, (int)*(short *)(unsigned)&d2_ScreenW, (int)*(short *)(unsigned)&d2_ScreenH, "BLACK", 0x1e, 10);
         d2_SetForm(win, 2);
         io_PrintText(0x7d);
-        gm_ClockToDate((unsigned)&ai_Time, lines);
+        gm_ClockToDate((unsigned)&ai_TimeT, lines);
         d2_SetForm(win, 1);
         io_PrintText(0x2007);
         iv = U_I(((unsigned)&ai_Selected + 0x14) + id * 0x21c);

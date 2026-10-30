@@ -10,7 +10,7 @@ int ai_Unk491860(AIPER *p, int a, int *out)
 
     t = gm_TitleGroup(p->jobId);
     k = 0;
-    if (ai_Time.year >= 10) {
+    if (ai_TimeT.year >= 10) {
         if (gm_BuildQuery(1, 5, 0x17))
             k = 1;
         if (gm_BuildQuery(1, 5, 0x18))

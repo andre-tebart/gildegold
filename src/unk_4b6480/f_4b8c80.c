@@ -41,7 +41,7 @@ int ai_MsgJobTime(G14MSG *m)
     s = (int)G14_5087F0(*(unsigned short *)o, o[0x12]);
     for (e = gm_Query(*(int *)(o + 0x14), 2, 5, 6); e != 0; e = gm_QueryNext())
         s = (int)(G14_5087F0(*(unsigned short *)e, o[0x12]) * *(int *)((char *)e + 0xe) + s);
-    *(AITIME *)((char *)j + 0x52) = ai_Time;
+    *(AITIME *)((char *)j + 0x52) = ai_TimeT;
     ai_Unk4c5010(-1, -1, *(int *)(o + 2));
     cm_SendExSetHEI(-1, j);
     G8_4FEA50((int *)&w, 0, 0, *(int *)((char *)j + 0xb0));

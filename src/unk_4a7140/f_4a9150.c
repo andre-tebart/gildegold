@@ -2,7 +2,7 @@
 
 int ai_Unk4a9150(int a, AIPER *p)
 {
-    if (p->unk194 >= 8 && ai_Time.year % 4 == (p->netId & 3) && util_Random(4) == 0)
+    if (p->unk194 >= 8 && ai_TimeT.year % 4 == (p->netId & 3) && util_Random(4) == 0)
         return 1;
     return 0;
 }

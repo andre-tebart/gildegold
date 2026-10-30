@@ -9,7 +9,7 @@ int ai_Unk4aafb0(AIPER *p, AIPER *o, unsigned char *m)
     msg.flags = 2;
     msg.to = p->netId;
     msg.fromId = o->netId;
-    msg.time = ai_Time;
+    msg.time = ai_TimeT;
     msg.arg[1] = *(int *)(m + 4);
     msg.arg[0] = msg.fromId;
     cm_SendLongMessage(&msg);

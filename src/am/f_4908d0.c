@@ -11,9 +11,9 @@ int ai_Unk4908d0(int a, AGCH *p, int b, AGARG *o1, AGARG *o2)
     r = 0;
     if (b != 0 || a != 0 || p->unk050 == 0x7fff)
         return 0;
-    if (ai_Time.hour % 6 != p->netId % 6)
+    if (ai_TimeT.hour % 6 != p->netId % 6)
         return 0;
-    if (ai_Time.year % 3 != p->netId % 3)
+    if (ai_TimeT.year % 3 != p->netId % 3)
         return 0;
     if (p->kind != 5) {
         q = AG_CH(p->unk05c);

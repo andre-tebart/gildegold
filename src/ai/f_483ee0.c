@@ -11,7 +11,7 @@ void ai_EndWorkerPose(AICHAR *ch)
     int c;
 
     f = 0;
-    if ((short)ai_Time.hour != 7 && (short)ai_Time.hour != 0xc && (short)ai_Time.hour != 0x12) {
+    if ((short)ai_TimeT.hour != 7 && (short)ai_TimeT.hour != 0xc && (short)ai_TimeT.hour != 0x12) {
         ch->flags1b4 &= ~0x1000;
         return;
     }

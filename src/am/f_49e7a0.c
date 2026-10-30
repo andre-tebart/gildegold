@@ -15,7 +15,7 @@ int ai_Unk49e7a0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     recB = 0;
     cntA = 0;
     cntB = 0;
-    if (ai_Time.year < 4 || f != 0 || ((unsigned char *)p)[0x166] != 0xa || a != 0)
+    if (ai_TimeT.year < 4 || f != 0 || ((unsigned char *)p)[0x166] != 0xa || a != 0)
         return 0;
     b = gm_FirstBuilding(1);
     if (b == 0)

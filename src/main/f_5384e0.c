@@ -26,10 +26,10 @@ void main_Unk5384e0(void)
     id = U_I((unsigned)&ai_PlayerId) & 0xffff;
     fade = 0;
     bld = gm_PlayerRecord((unsigned)&ai_Chars + id * 0x21c);
-    gm_ClockSeason((unsigned)&ai_Time);
-    memcpy(clk, (char *)(unsigned)&ai_Time, 14);
+    gm_ClockSeason((unsigned)&ai_TimeT);
+    memcpy(clk, (char *)(unsigned)&ai_TimeT, 14);
     if ((U_I((unsigned)&ai_GameFlags) & 4) != 0 && 1 < U_I((unsigned)&full_data_6f2598))
-        *(int *)clk = U_I((unsigned)&ai_Time) + 1;
+        *(int *)clk = U_I((unsigned)&ai_TimeT) + 1;
     gm_ClockSeason(clk);
     ahm_FillSteps();
     *(float *)(bld + 0x58) = 0.5f;

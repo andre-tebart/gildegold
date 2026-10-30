@@ -9,7 +9,7 @@ int ai_Unk490600(AIPX *p, AIBLD *b, int unused, AIARG *o)
     msg.flags = 1;
     msg.to = p->netId;
     msg.fromId = b->id;
-    msg.time = ai_Time;
+    msg.time = ai_TimeT;
     msg.arg[0] = o->unk04;
     msg.ids[0] = o->unk04;
     cm_SendLongMessage(&msg);

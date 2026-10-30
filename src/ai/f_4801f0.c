@@ -52,7 +52,7 @@ void ai_EvaluateProductionCategory2(AICHAR *ch)
                 msg.fromId = ch->bld->id;
                 msg.nIds = 0;
                 msg.unk14 = 0;
-                msg.time = ai_Time;
+                msg.time = ai_TimeT;
                 msg.flags = 1;
                 msg.arg[0] = ch->bld->id;
                 msg.arg[1] = a->objId;
@@ -195,7 +195,7 @@ check:
         info.z2 = 0;
         info.z1 = 0;
         if (ai_BTypes[ch->bld->type].kind == 11) {
-            if (ai_Time.hour % 2 == 0) {
+            if (ai_TimeT.hour % 2 == 0) {
                 ch->flags1b4 &= ~0x20;
             } else if (!(ch->flags1b4 & 0x20)) {
                 map = ((AIMAPREF *)&ai_MapRefs)[init_BuildingSceneUniverse(ch->bld)].map;

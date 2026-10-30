@@ -463,7 +463,7 @@ typedef struct AIMAPENT {               /* 24 bytes, the AI's view of the vegeta
 
 #define AI_KIND(t) (((int (*)(int))gm_BuildingClass)(t))   /* the call zero-extends the byte (xor ecx,ecx; mov cl) */
 
-extern AITIME ai_Time;                  /* 0x770ae0, @original: anm.h / cm.h / f3snd.h declare char ai_Time[] (the same bytes); ai_MasterUpdate (0x47e360, byte) reads its fields (.hour / .min), f3snd.c passes it as a pointer (memcpy(snd_TimeCopy, ai_Time, 14)) */
+extern char ai_Time[14];                 /* 0x770ae0, the game clock: an AITIME (14 bytes), defined by anm.c as char[14]; the units that read its fields use their ai_TimeT view */
 extern AICHAR ai_Chars[768];            /* 0x770b80, @original: am.h / ahm.h / cm.h / gv.h declare char ai_Chars[][0x21c] (the same bytes); ai_Init (0x47d9e0, byte) walks it as AICHAR records */
 extern AIBTYPE *ai_BTypes;              /* 0x7e3f30, @original: ahm.h / amt.h / cm.h / f3snd.h / gv.h / rt.h declare char *ai_BTypes; ai_Unk47e990 (0x47e990, byte) indexes it as AIBTYPE records (.kind) */
 extern AIBLD *ai_Blds;                  /* 0x889f74, @original: gv.h declares char *ai_Blds (the same pointer; its units add byte offsets to it); ai_MasterUpdate (0x47e360, byte) steps AIBLD records (b++) */

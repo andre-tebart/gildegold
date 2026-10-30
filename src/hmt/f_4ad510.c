@@ -5,8 +5,8 @@ void hmt_ClearOffices(void)
     int m;
     HMTOBJ o;
 
-    if (ai_Time.year >= 4) {
-        m = ai_Time.year % 4;
+    if (ai_TimeT.year >= 4) {
+        m = ai_TimeT.year % 4;
         if (m != 0) {
             if (amt_GetFirstOffice(hmt_ElectionObjTypes[m - 1], &o) && gm_FindChar(o.id) != 0)
                 amt_SendOfficeMessage(o.obj, 0, 0, 1, 0xff);

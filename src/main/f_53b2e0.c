@@ -68,7 +68,7 @@ void main_Unk53b2e0(void)
         d2_PlaceMainWindow(w, 3);
         d2_SetForm(w, 1);
         io_PrintText(0x7d);
-        gm_ClockToDate((unsigned)&ai_Time, s130);
+        gm_ClockToDate((unsigned)&ai_TimeT, s130);
         d2_SetForm(w, 0);
         d2_CloseView(w);
     }

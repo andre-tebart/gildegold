@@ -147,8 +147,8 @@ void main_GameLoop(int ctl)
                     main_Unk537be0();
                     return;
                 }
-                sv_Unk525a00((unsigned)&ai_Time);
-                U_I((unsigned)&full_data_760454) = gm_ClockSeason((unsigned)&ai_Time);
+                sv_Unk525a00((unsigned)&ai_TimeT);
+                U_I((unsigned)&full_data_760454) = gm_ClockSeason((unsigned)&ai_TimeT);
             }
         } else {
             U_I((unsigned)&ai_Difficulty) = 2;
@@ -230,7 +230,7 @@ L_fail:
     ai_ApplyOptions();
     d3_SetViewport((float)(U_I((unsigned)&sv_ViewRectRight) - U_I((unsigned)&sv_ViewRectLeft)), (float)(U_I((unsigned)&sv_ViewRectBottom) - U_I((unsigned)&sv_ViewRectTop)), (float)U_I((unsigned)&sv_ViewRectLeft), (float)U_I((unsigned)&sv_ViewRectTop),
                  *(float *)&U_I((unsigned)&d3_ZNear), *(float *)&U_I((unsigned)&d3_ZFar), *(float *)&U_I((unsigned)&d3_ScaleX), (int)*(short *)(unsigned)&d2_ScreenW, (int)*(short *)(unsigned)&d2_ScreenH);
-    if ((U_I((unsigned)&ai_GameFlags) & 2) != 0 && (sv_Unk525510((unsigned)&ai_Time, 0), U_I((unsigned)&full_data_76f990) != -1)) {
+    if ((U_I((unsigned)&ai_GameFlags) & 2) != 0 && (sv_Unk525510((unsigned)&ai_TimeT, 0), U_I((unsigned)&full_data_76f990) != -1)) {
         p3 = (unsigned char *)gm_FindBuildingById(U_I((unsigned)&full_data_76f990));
         p4 = (unsigned short *)gm_FindObjectInst(U_I((unsigned)&full_data_76f994));
         U_I((unsigned)&ai_FrameWait) = 2;
@@ -286,9 +286,9 @@ L_fail:
         if (*(char *)(((unsigned)&ai_Chars + 0x2) + (U_I((unsigned)&ai_PlayerId) & 0xffff) * 0x21c) == 6) {
             if ((U_I((unsigned)&ai_GameFlags) & 0x46) == 0) {
                 clk[1] = U_I((unsigned)&ai_TimeHour);
-                clk[0] = U_I((unsigned)&ai_Time);
-                clk[2] = U_I(((unsigned)&ai_Time + 0x8));
-                *(short *)(clk + 3) = *(short *)((unsigned)&ai_Time + 0xc);
+                clk[0] = U_I((unsigned)&ai_TimeT);
+                clk[2] = U_I(((unsigned)&ai_TimeT + 0x8));
+                *(short *)(clk + 3) = *(short *)((unsigned)&ai_TimeT + 0xc);
                 gm_SetTime(clk, 6, 0, 0);
                 w = cm_SendExSysMessage(3, clk);
                 iv = cm_GetSlotState(w);
@@ -369,10 +369,10 @@ L_fail:
             if (U_I((unsigned)&ai_GameOver) == 0) {
                 tb_SetFunctionOff((unsigned)&sv_UpdateClock, 1);
                 if ((U_I((unsigned)&ai_GameFlags) & 8) == 0) {
-                    ck[0] = U_I((unsigned)&ai_Time);
+                    ck[0] = U_I((unsigned)&ai_TimeT);
                     ck[1] = U_I((unsigned)&ai_TimeHour);
-                    ck[2] = U_I(((unsigned)&ai_Time + 0x8));
-                    *(short *)(ck + 3) = *(short *)((unsigned)&ai_Time + 0xc);
+                    ck[2] = U_I(((unsigned)&ai_TimeT + 0x8));
+                    *(short *)(ck + 3) = *(short *)((unsigned)&ai_TimeT + 0xc);
                     us = (unsigned short)U_I((unsigned)&ai_TimeHour);
                     while (us < 0x17) {
                         gm_AddTime(ck, 0, 0x1e, 0);
@@ -398,10 +398,10 @@ L_next:
         if (U_I((unsigned)&ai_GameOver) == 0) {
             if (U_I((unsigned)&ai_Unk1460ae0) == -1) {
                 tb_SetFunctionOff((unsigned)&sv_UpdateClock, 1);
-                ck[0] = U_I((unsigned)&ai_Time);
+                ck[0] = U_I((unsigned)&ai_TimeT);
                 ck[1] = U_I((unsigned)&ai_TimeHour);
-                ck[2] = U_I(((unsigned)&ai_Time + 0x8));
-                *(short *)(ck + 3) = *(short *)((unsigned)&ai_Time + 0xc);
+                ck[2] = U_I(((unsigned)&ai_TimeT + 0x8));
+                *(short *)(ck + 3) = *(short *)((unsigned)&ai_TimeT + 0xc);
                 us = (unsigned short)U_I((unsigned)&ai_TimeHour);
                 while (us < 0x17) {
                     gm_AddTime(ck, 0, 0x1e, 0);
@@ -440,13 +440,13 @@ L_next:
                     } while ((int)pp < ((unsigned)((unsigned)ai_CharInts + 0x653fe) + 0x2));
                     *((char *)pl + 0x30) = (char)idx;
                     pl[7] = U_I((unsigned)&ai_TimeHour);
-                    pl[6] = U_I((unsigned)&ai_Time);
+                    pl[6] = U_I((unsigned)&ai_TimeT);
                     U_I((unsigned)&sv_FrameMask) = 0x24087;
                     *((char *)pl + 8) = 1;
                     *((char *)pl + 0x26) = 0x61;
                     pl[5] = -1;
-                    pl[8] = U_I(((unsigned)&ai_Time + 0x8));
-                    *(short *)(pl + 9) = *(short *)((unsigned)&ai_Time + 0xc);
+                    pl[8] = U_I(((unsigned)&ai_TimeT + 0x8));
+                    *(short *)(pl + 9) = *(short *)((unsigned)&ai_TimeT + 0xc);
                     w = ai_Unk4c4fa0(pl);
                     iv = cm_GetSlotState(w);
                     while (iv == 0) {

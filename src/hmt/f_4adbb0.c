@@ -58,14 +58,14 @@ void hmt_Create(int type, int unk, unsigned short v, AICHAR *c)
     strcpy(c->name, r->vname);
     strcpy(c->name + 0x10, r->nname);
     if (type == 0x15) {
-        if (ai_Time.year > 0 && pl != 0xffff) {
+        if (ai_TimeT.year > 0 && pl != 0xffff) {
             txt_Format(text, 0x42b3, c->id);
             he_ShowNews(ai_Chars[pl].netId, -1, text, 0, 0x602, "_NACHRICHTEN_NEU_01");
         }
         HMT_I(c, 0x18c) = hmt_RandomHeadIcon();
         hmt_NextEvent();
     } else {
-        if (ai_Time.year > 0 && pl != 0xffff) {
+        if (ai_TimeT.year > 0 && pl != 0xffff) {
             txt_Format(text, 0x42b5, c->id);
             he_ShowNews(ai_Chars[pl].netId, -1, text, 0, 0x602, "_NACHRICHTEN_NEU_03");
         }

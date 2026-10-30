@@ -59,7 +59,7 @@ void ai_SendJobOrders(AIINFO *info)
                     msg.type = info->type;
                     msg.to = ai_Chars[info->ch->bld->owner].netId;
                     msg.fromId = info->ch->bld->id;
-                    msg.time = ai_Time;
+                    msg.time = ai_TimeT;
                     msg.nIds = 1;
                     msg.unk14 = 0;
                     msg.flags = 1;
@@ -82,7 +82,7 @@ void ai_SendJobOrders(AIINFO *info)
         msg.type = info->type;
         msg.to = ai_Chars[info->ch->bld->owner].netId;
         msg.fromId = info->ch->bld->id;
-        msg.time = ai_Time;
+        msg.time = ai_TimeT;
         msg.nIds = 0;
         msg.unk14 = 0;
         msg.flags = 1;
@@ -124,7 +124,7 @@ void ai_SendJobOrders(AIINFO *info)
         msg.to = ai_Chars[info->ch->bld->owner].netId;
         msg.fromId = info->ch->bld->id;
         msg.nIds = 0;
-        msg.time = ai_Time;
+        msg.time = ai_TimeT;
         msg.unk14 = 0;
         msg.flags = 1;
         *((unsigned short *)&msg.arg[0] + 1) = *(unsigned short *)info->e;
@@ -171,7 +171,7 @@ void ai_SendJobOrders(AIINFO *info)
         msg.type = info->type;
         msg.to = ai_Chars[info->ch->bld->owner].netId;
         msg.fromId = info->ch->bld->id;
-        msg.time = ai_Time;
+        msg.time = ai_TimeT;
         msg.nIds = 0;
         msg.unk14 = 0;
         msg.flags = 1;
@@ -248,7 +248,7 @@ void ai_SendJobOrders(AIINFO *info)
             msg.arg[1] = info->ch->bld->id;
             msg.arg[2] = info->c->objId;
         }
-        msg.time = ai_Time;
+        msg.time = ai_TimeT;
         if (type == 3) {
             msg.itemId = info->e->item;
             msg.arg[3] = info->ch->bld->id;

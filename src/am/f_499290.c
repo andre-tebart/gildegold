@@ -18,7 +18,7 @@ int ai_Unk499290(AIPER *p, AIARG *s1, AIARG *s2)
         msg.to = p->netId;
         msg.fromId = s2->unk04;
         msg.flags = 1;
-        msg.time = ai_Time;
+        msg.time = ai_TimeT;
         msg.arg[0] = s2->unk04;
         cm_BeginGroup("building_upgrade");
         cm_SendMoveGoods(-1, p->netId, ai_OwnPlayer, (int)(gm_BuildingKindValue(s1->unk04) * 0.3f));

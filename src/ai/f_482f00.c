@@ -29,7 +29,7 @@ void ai_CalcMeisterRaeuber(AICHAR *ch)
     ai_BuyUpgrade(ch);
     ai_CheckFreeThieves(ch);
     ai_SendFreeThieves(ch);
-    if (ai_Time.hour <= 6 || (ch->netId + ai_Time.hour) % 3 != 0) {
+    if (ai_TimeT.hour <= 6 || (ch->netId + ai_TimeT.hour) % 3 != 0) {
         ch->flags1b4 &= ~0x20;
         return;
     }
@@ -64,7 +64,7 @@ void ai_CalcMeisterRaeuber(AICHAR *ch)
         if (r && ch->target != -1 && util_Random(2))
             goto lauer;
     } else {
-        if (util_RandomF() > 0.85 && n >= 3 && ai_Time.year >= 7 - ai_Difficulty)
+        if (util_RandomF() > 0.85 && n >= 3 && ai_TimeT.year >= 7 - ai_Difficulty)
             goto attack;
         r = util_Random(4);
     }
@@ -111,7 +111,7 @@ attack:
             msg.type = 0x62;
             msg.to = ai_Chars[ch->bld->owner].netId;
             msg.fromId = ch->bld->id;
-            msg.time = ai_Time;
+            msg.time = ai_TimeT;
             msg.flags = 2;
             msg.arg[0] = -1;
             msg.arg[1] = best->id;
@@ -145,7 +145,7 @@ lauer:
     msg.type = 0x48;
     msg.to = ai_Chars[ch->bld->owner].netId;
     msg.fromId = ch->bld->id;
-    msg.time = ai_Time;
+    msg.time = ai_TimeT;
     msg.flags = 2;
     src = ai_AmbushSpots[util_Random(8)];
     strcpy((char *)msg.arg, src);

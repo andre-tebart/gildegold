@@ -5,7 +5,7 @@ int ai_Unk4bb6c0(G14MSG *m)
 {
     AICHAR *c;
 
-    if (ai_Time.year < 8)
+    if (ai_TimeT.year < 8)
         return 0;
     if (m == 0)
         return -1;

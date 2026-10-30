@@ -26,7 +26,7 @@ int ai_Unk49eec0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     if (util_Random(10) < n + 1)
         return 0;
     if (a == 0x33) {
-        h = ai_Time.hour - 8;
+        h = ai_TimeT.hour - 8;
         if (h <= 0 || h >= 10)
             h = h > 0 ? 10 : 0;
         m = (10 - h) * 0.1f;

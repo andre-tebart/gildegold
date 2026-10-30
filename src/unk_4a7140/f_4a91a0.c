@@ -7,7 +7,7 @@ int ai_Unk4a91a0(int a, AIPER *p, int c, int d, unsigned char *m)
     AIJOB *r;
     unsigned int n;
 
-    if (ai_Time.year % 4 == (p->netId & 3) && gm_FindChar(*(int *)((unsigned char *)p + 0x5c)) == 0) {
+    if (ai_TimeT.year % 4 == (p->netId & 3) && gm_FindChar(*(int *)((unsigned char *)p + 0x5c)) == 0) {
         for (r = he_FindEvent(1, 0, 0x41); r != 0; r = he_NextEvent()) {
             if (r->unkb0 == p->netId)
                 return 0;

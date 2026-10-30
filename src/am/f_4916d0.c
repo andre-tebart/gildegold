@@ -9,7 +9,7 @@ int ai_Unk4916d0(AIPER *p, int a, int *out)
     int t, n, m, k;
 
     t = gm_TitleGroup(p->jobId);
-    if (ai_Time.year >= 4) {
+    if (ai_TimeT.year >= 4) {
         gv_GetTableRecord(9, &d);
         f = ord_BuildingCapacityRatio();
         k = d.max - d.min;

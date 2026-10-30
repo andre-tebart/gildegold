@@ -54,7 +54,7 @@ int ai_Unk4b1a20(void)
             cm_SendLongMessage(&msg);
             return 1;
         }
-        if (day[0] > ai_Time.year)
+        if (day[0] > ai_TimeT.year)
             break;
         pos += 6;
         if (!hst_ParseDate(pos, 4, day, name))

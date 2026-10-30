@@ -7,7 +7,7 @@ int ai_Unk498a80(G5CH *p, AIARG *s1, AIARG *s2)
     if (s2->kind == 4) {
         memset(&m, 0, sizeof(m));
         m.unk08 = p->netId;
-        m.time = ai_Time;
+        m.time = ai_TimeT;
         m.type = 0x1e;
         m.unk0c = s2->unk04;
         m.unk36 = 1;

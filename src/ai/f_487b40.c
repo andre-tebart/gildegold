@@ -11,7 +11,7 @@ void ai_UpdateStaff(AICHAR *ch)
     int i, n, k, v;
     unsigned int t;
 
-    if (ai_Time.hour != 7 && ai_Time.hour != 0xc && ai_Time.hour != 0x12) {
+    if (ai_TimeT.hour != 7 && ai_TimeT.hour != 0xc && ai_TimeT.hour != 0x12) {
         ch->flags1b4 &= ~0x40;
         return;
     }
@@ -29,7 +29,7 @@ void ai_UpdateStaff(AICHAR *ch)
                     msg.to = ai_Chars[ch->bld->owner].netId;
                     msg.fromId = ch->bld->id;
                     msg.flags = 2;
-                    msg.time = ai_Time;
+                    msg.time = ai_TimeT;
                     msg.arg[0] = ai_Chars[i].netId;
                     cm_SendLongMessage(&msg);
                 }
@@ -66,7 +66,7 @@ void ai_UpdateStaff(AICHAR *ch)
                     msg.to = ai_Chars[ch->bld->owner].netId;
                     msg.fromId = ch->bld->id;
                     msg.flags = 1;
-                    msg.time = ai_Time;
+                    msg.time = ai_TimeT;
                     msg.arg[1] = 1;
                     gm_IsHomeType(ch->bld);
                     *(int *)((char *)&msg + 0x8c) = -1;

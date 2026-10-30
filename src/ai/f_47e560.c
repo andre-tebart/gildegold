@@ -10,13 +10,13 @@ void ai_UpdateCharacters(void)
     float f;
     char buf[1024];
 
-    now = ai_Time;
+    now = ai_TimeT;
     n = gm_MinutesBetween(&ai_LastUpdateTime, &now);
     f = n * 12.8f;
     whole = (int)f;
     ai_DifficultyValue = (float)ai_Difficulty;
     ai_DifficultyScale = ai_DifficultyValue * 0.0625f + 0.5f;
-    if (n > 0 && ai_Time.hour <= 0x16 && ai_Time.hour >= 6) {
+    if (n > 0 && ai_TimeT.hour <= 0x16 && ai_TimeT.hour >= 6) {
         if (ai_LastUpdateTime.year < now.year) {
             ai_LastUpdateTime = now;
             return;
@@ -39,8 +39,8 @@ void ai_UpdateCharacters(void)
             if (ai_Chars[idx].id != 0xffff) {
                 c = &ai_Chars[idx];
                 ai_UnloadCarts(c);
-                if (ai_Time.hour > 6 && ai_Time.hour < 0x16 && !(ai_GameFlags & 0x80) &&
-                    (c->kind == 5 || (((unsigned char)c->id ^ (unsigned char)ai_Time.hour) & 1) == 0))
+                if (ai_TimeT.hour > 6 && ai_TimeT.hour < 0x16 && !(ai_GameFlags & 0x80) &&
+                    (c->kind == 5 || (((unsigned char)c->id ^ (unsigned char)ai_TimeT.hour) & 1) == 0))
                     ai_MasterUpdate(c);
                 if ((ai_CanAct(c) && c->unk024 != 0) || (c->flags1cc & 0x3000) != 0) {
                     whole = c->unk024;

@@ -7,7 +7,7 @@ void ai_Unk47e990(AICHAR *c)
     int t;
     char k;
 
-    if (ai_Time.hour >= 6 && (ai_Time.hour != 6 || ai_Time.min >= 0x1e) &&
+    if (ai_TimeT.hour >= 6 && (ai_TimeT.hour != 6 || ai_TimeT.min >= 0x1e) &&
         ai_IsLocalJob(c) && (c->flags1b4 & 1)) {
         if (c == ai_LoggedMaster) {
             sprintf(buf, "Evaluation von Meister %s in %s beginnt...", ai_LoggedMaster->name,

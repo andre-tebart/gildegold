@@ -17,8 +17,8 @@ void hmt_Election(void)
     AICHAR *c;
     float s;
 
-    if (ai_Time.year >= 4) {
-        m = ai_Time.year % 4;
+    if (ai_TimeT.year >= 4) {
+        m = ai_TimeT.year % 4;
         if (m != 0) {
             mask = hmt_ElectionGroupBits[m - 1];
             type = hmt_ElectionObjTypes[m - 1];

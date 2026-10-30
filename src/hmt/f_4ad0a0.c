@@ -8,7 +8,7 @@ void hmt_Begin(void)
     HMTREC *r;
     int kind;
 
-    year = ai_Time.year + 0x578;
+    year = ai_TimeT.year + 0x578;
     if (amt_GetFirstOffice(0x26, &ev) && amt_GetFirstOffice(0x27, &ps)) {
         if (ev.id == -1 && hmt_Event != -1) {
             r = hmt_Find(hmt_Event, &kind);

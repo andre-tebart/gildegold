@@ -16,7 +16,7 @@ int ai_Unk4b4dc0(AICHAR *c, int x, G13TYPE *t)
 {
     G13ECON e;
 
-    if (ai_Time.year < 10)
+    if (ai_TimeT.year < 10)
         return 0;
     unk_Unk4f9e00(&e);
     if (t->goal < e.unk18)

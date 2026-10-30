@@ -34,7 +34,7 @@ void ai_EvaluateProduction(AICHAR *ch)
     ai_BuyCapacity(b, ch, 0x19);
     ai_BuyUpgrade(ch);
     found = 0;
-    if (ai_Time.hour == 8 || ai_Time.hour == 0xd) {
+    if (ai_TimeT.hour == 8 || ai_TimeT.hour == 0xd) {
         if (!(ch->flags1b4 & 0x100)) {
             ch->prod = 0;
             ch->flags1b4 |= 0x100;

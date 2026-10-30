@@ -27,7 +27,7 @@ void ai_SendFreeThieves(AICHAR *ch)
         msg.type = 0x16;
         msg.to = ai_Chars[c->bld->owner].netId;
         msg.fromId = c->bld->id;
-        msg.time = ai_Time;
+        msg.time = ai_TimeT;
         msg.flags = 1;
         if (o)
             msg.arg[2] = o->objId;

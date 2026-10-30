@@ -16,7 +16,7 @@ int ai_Unk49ea90(G5CH *p, AIARG *s1, AIARG *s2)
         m.to = p->netId;
         m.unk0c = s2->unk04;
         m.unk36 = 1;
-        m.time = ai_Time;
+        m.time = ai_TimeT;
         *(int *)&m.unk58 = s2->unk04;
         cm_BeginGroup("upgr_brunnen");
         cm_SendMoveGoods(-1, *(int *)(c + 2), ai_OwnPlayer, (int)(gm_BuildingKindValue(s1->unk04) * 0.3f));

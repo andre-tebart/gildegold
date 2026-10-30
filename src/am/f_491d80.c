@@ -7,7 +7,7 @@ int ai_Unk491d80(AIPER *p, int a, int *out)
     AIOBJ *o;
     int m, k, n;
 
-    if (ai_Time.year < 4)
+    if (ai_TimeT.year < 4)
         return 0;
     gv_GetTableRecord(15, &d);
     ord_BuildingCapacityRatio();

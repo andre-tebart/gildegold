@@ -27,7 +27,7 @@ int ai_Unk4a0e60(G5CH *p, AIARG *s1, AIARG *s2)
     m.unk0c = s1->unk0c;
     m.to = p->netId;
     m.unk36 = 1;
-    m.time = ai_Time;
+    m.time = ai_TimeT;
     *(int *)&m.unk58 = s1->unk0c;
     cm_BeginGroup("upgr_ai_zunfthaus");
     cm_SendMoveGoods(-1, *(int *)(o + 2), ai_OwnPlayer, (int)(gm_BuildingKindValue(s1->unk04) * 0.3f));

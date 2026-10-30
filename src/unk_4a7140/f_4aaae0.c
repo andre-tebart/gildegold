@@ -8,7 +8,7 @@ int ai_Unk4aaae0(AIPER *p, int c, unsigned char *m)
     msg.to = *(int *)(m + 8);
     msg.arg[0] = *(int *)(m + 4);
     msg.arg[1] = p->netId;
-    msg.time = ai_Time;
+    msg.time = ai_TimeT;
     msg.type = 0x2f;
     msg.fromId = -1;
     msg.flags = 1;

@@ -52,7 +52,7 @@ void hmt_Unk4ad580(void)
                     amt_SendOfficeMessage(o.obj, (int)win, 0, 1, 0xff);
                     if (win->kind == 6 || win->kind == 7 || win->kind == 5) {
                         msg.to = win->netId;
-                        msg.time = ai_Time;
+                        msg.time = ai_TimeT;
                         msg.type = 0xa5;
                         msg.fromId = -1;
                         msg.flags = 1;

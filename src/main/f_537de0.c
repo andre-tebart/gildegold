@@ -7,7 +7,7 @@ void main_Unk537de0(void)
     he_Unk53d4b0();
     U_I((unsigned)&sv_ScreenDirty) = 1;
     U_I((unsigned)&full_data_6f2598) = 1;
-    U_I((unsigned)&ai_Time) = 2;
+    U_I((unsigned)&ai_TimeT) = 2;
     U_I((unsigned)&ai_GameOver) = 0;
     U_I((unsigned)&ai_LeaveGame) = 0;
     *(char *)((unsigned)&ai_GameState + 0x1) = 0;

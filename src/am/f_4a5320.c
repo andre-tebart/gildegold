@@ -32,7 +32,7 @@ int ai_Unk4a5320(AIPER *p, AIARG *s1, AIARG *s2)
         alt = 1;
     }
     sprintf((char *)&m + 0x9c, "%s", path);
-    m.time = ai_Time;
+    m.time = ai_TimeT;
     m.to = *(int *)((unsigned char *)p + 4);
     m.arg[1] = s1->unk04;
     m.type = 0xd;

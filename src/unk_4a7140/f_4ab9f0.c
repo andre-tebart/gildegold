@@ -9,7 +9,7 @@ int ai_Unk4ab9f0(AIPER *p, unsigned char *m)
     cm_SendMoveGoodsUnchecked(-1, p->netId, ai_OwnPlayer, -*(int *)(m + 0x10));
     memset(&msg, 0, sizeof(msg));
     msg.to = p->netId;
-    msg.time = ai_Time;
+    msg.time = ai_TimeT;
     msg.type = 0x9d;
     msg.fromId = -1;
     msg.flags = 2;

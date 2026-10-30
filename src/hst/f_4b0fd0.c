@@ -9,7 +9,7 @@ int ai_CommandRiot(void)
     memset(&msg, 0, sizeof(msg));
     msg.type = 0x7d;
     msg.to = ((AICHAR *)ai_PlayerChar)->netId;
-    msg.time = ai_Time;
+    msg.time = ai_TimeT;
     msg.fromId = -1;
     msg.flags = 1;
     msg.car = 0;

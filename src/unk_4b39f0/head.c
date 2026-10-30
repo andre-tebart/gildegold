@@ -7,4 +7,5 @@
 #include <string.h>
 #include "unk_4b39f0.h"
 #include "di_input.h"
+#define ai_TimeT (*(AITIME *)&ai_Time)  /* 0x770ae0, ai_Time (anm.c: char[14]) as the AITIME it is: this unit reads its fields */
 

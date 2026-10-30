@@ -10,7 +10,7 @@ void ai_StartBuildingWork(AICHAR *ch)
     int *p;
     int c;
 
-    if ((short)ai_Time.hour != 7 && (short)ai_Time.hour != 0xc && (short)ai_Time.hour != 0x12) {
+    if ((short)ai_TimeT.hour != 7 && (short)ai_TimeT.hour != 0xc && (short)ai_TimeT.hour != 0x12) {
         ch->flags1b4 &= ~0x800;
         return;
     }
@@ -35,7 +35,7 @@ void ai_StartBuildingWork(AICHAR *ch)
                 msg.type = 0x8d;
                 msg.to = ai_Chars[ch->bld->owner].netId;
                 msg.fromId = ch->bld->id;
-                msg.time = ai_Time;
+                msg.time = ai_TimeT;
                 msg.flags = 1;
                 msg.arg[1] = *p;
                 *(char *)&msg.arg[2] = gv_EntryIndex(ch->bld->unk65, p);

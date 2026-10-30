@@ -53,7 +53,7 @@ int ai_MsgWorkerStop(G14MSG *m)
         memset(&msg, 0, sizeof(msg));
         msg.fromId = b->id;
         msg.to = c->netId;
-        msg.time = ai_Time;
+        msg.time = ai_TimeT;
         msg.type = 0x31;
         msg.flags = 1;
         msg.arg[0] = p->netId;

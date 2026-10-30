@@ -34,7 +34,7 @@ int ai_Unk4b9820(G14MSG *m)
     }
     if (n == 0)
         return 0x400;
-    t = ai_Time;
+    t = ai_TimeT;
     t.year++;
     n = util_Random(n);
     j = js[n];

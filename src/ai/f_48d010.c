@@ -29,7 +29,7 @@ int ai_MeisterTradeFernEinkauf(AICHAR *ch, AIOBJ *b)
             msg.to = ai_Chars[ch->bld->owner].netId;
             msg.fromId = ch->bld->id;
             msg.flags = 1;
-            msg.time = ai_Time;
+            msg.time = ai_TimeT;
             gm_AddTime(&msg.time, 0, 0, 10);
             msg.car = car->objId;
             msg.dst[0] = 5;
@@ -159,7 +159,7 @@ int ai_MeisterTradeFernEinkauf(AICHAR *ch, AIOBJ *b)
             msg.type = 0xb;
             msg.to = ai_Chars[ch->bld->owner].netId;
             msg.fromId = ch->bld->id;
-            msg.time = ai_Time;
+            msg.time = ai_TimeT;
             msg.flags = 1;
             msg.car = car->objId;
             msg.n = n;

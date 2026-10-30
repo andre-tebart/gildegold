@@ -13,9 +13,9 @@ void main_StartCityGame(char *name, int net)
         sprintf(path, "%s/%s.NET", "gamedata/cities", name);
     else
         sprintf(path, "%s/%s.CTY", "gamedata/cities", name);
-    ai_Time.year = 0;
-    ai_Time.hour = 6;
-    ai_Time.min = 0;
+    ai_TimeT.year = 0;
+    ai_TimeT.hour = 6;
+    ai_TimeT.min = 0;
     ls_SaveGame(path, "city", 2);
     gm_ResetCharacters();
     gm_ClearBuildings();

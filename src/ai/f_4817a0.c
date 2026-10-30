@@ -103,7 +103,7 @@ int ai_CalcAngriff(AICHAR *ch, int n)
                 msg.type = 0x49;
                 msg.to = ai_Chars[ch->bld->owner].netId;
                 msg.fromId = ch->bld->id;
-                msg.time = ai_Time;
+                msg.time = ai_TimeT;
                 msg.flags = 1;
                 msg.arg[0] = best->id;
                 msg.arg[1] = ch->bld->id;
@@ -145,7 +145,7 @@ int ai_CalcAngriff(AICHAR *ch, int n)
     msg.type = 0x40;
     msg.to = ai_Chars[ch->bld->owner].netId;
     msg.fromId = ch->bld->id;
-    msg.time = ai_Time;
+    msg.time = ai_TimeT;
     msg.flags = 1;
     msg.arg[0] = best->id;
     msg.arg[1] = ch->bld->id;

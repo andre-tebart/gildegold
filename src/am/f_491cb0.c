@@ -6,7 +6,7 @@ int ai_Unk491cb0(AIPER *p, int a, int *out)
     int t, k;
 
     t = gm_TitleGroup(p->jobId);
-    if (ai_Time.year >= 4) {
+    if (ai_TimeT.year >= 4) {
         gv_GetTableRecord(14, &d);
         k = d.max - d.min;
         if (t == 9) {

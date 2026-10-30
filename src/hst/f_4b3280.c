@@ -13,7 +13,7 @@ int hst_NextEvent(char *name, char *out)
             hst_TextsOn = 0;
             return 4;
         }
-        d = ai_Time.year - year[0];
+        d = ai_TimeT.year - year[0];
         if (d == 1) {
             r = d;
             hst_ParseText_Real(out, hst_TextCurrent + 1);

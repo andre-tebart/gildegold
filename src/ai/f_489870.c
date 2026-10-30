@@ -21,7 +21,7 @@ void ai_SendFreeSpies(AICHAR *ch)
         msg.type = 0x8f;
         msg.to = ai_Chars[ch->bld->owner].netId;
         msg.fromId = ch->bld->id;
-        msg.time = ai_Time;
+        msg.time = ai_TimeT;
         msg.flags = 1;
         msg.arg[2] = o->objId;
         i = 0;

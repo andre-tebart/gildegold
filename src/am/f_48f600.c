@@ -33,11 +33,11 @@ int ai_Unk48f600(int a, AIPX *p, int b, AIARG *o1, AIARG *o2)
         goto fail;
     if (st[0] < 6) {
         if (!st[2]) {
-            if (ai_Time.year < 0x14)
+            if (ai_TimeT.year < 0x14)
                 goto fail;
             if (p->unk00d <= 4)
                 goto fail;
-            if (ai_Time.year % 8 != (p->netId & 7))
+            if (ai_TimeT.year % 8 != (p->netId & 7))
                 goto fail;
             if (p->flags1cc & 0x40000000)
                 goto fail;

@@ -28,7 +28,7 @@ void ai_BuySlots(AIOBJ *b, AICHAR *ch, int n)
             msg.to = ai_Chars[bld->owner].netId;
             msg.fromId = bld->id;
             msg.flags = 1;
-            msg.time = ai_Time;
+            msg.time = ai_TimeT;
             msg.arg[0] = b->objId;
             msg.arg[1] = x != 0;
             msg.arg[2] = y != 0;

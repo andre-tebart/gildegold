@@ -13,8 +13,8 @@ int ai_Unk4ab080(AIPER *p, int *a, int *b)
     AIOBJ *o;
     int i;
 
-    if ((p->flags1cc & 0x2000000) == 0 && ai_Time.hour > 0x14
-        && ai_Time.hour % 3 == (unsigned int)p->netId % 3) {
+    if ((p->flags1cc & 0x2000000) == 0 && ai_TimeT.hour > 0x14
+        && ai_TimeT.hour % 3 == (unsigned int)p->netId % 3) {
         money = gm_GetGoodsValue((AICHAR *)p);
         memset(list, 0, sizeof(list));
         n = 0;

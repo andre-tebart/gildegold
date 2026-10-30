@@ -24,7 +24,7 @@ void ai_Unk483fc0(AICHAR *ch)
     ai_Unk489480(ch);
     ai_SendFreeSpies(ch);
     ai_EndWorkerPose(ch);
-    if (ai_Time.hour == 8 || ai_Time.hour == 0xd) {
+    if (ai_TimeT.hour == 8 || ai_TimeT.hour == 0xd) {
         if (!(ch->flags1b4 & 0x100)) {
             ch->prod = 0;
             ch->flags1b4 |= 0x100;

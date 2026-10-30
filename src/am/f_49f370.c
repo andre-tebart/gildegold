@@ -18,7 +18,7 @@ int ai_Unk49f370(G5CH *p, AIARG *s1, AIARG *s2)
     m.type = 0x23;
     m.to = ai_Chars[a->owner].netId;
     m.unk0c = a->id;
-    m.time = ai_Time;
+    m.time = ai_TimeT;
     m.unk36 = 0x12;
     *(int *)&m.unk58 = a->id;
     m.from = p->netId;

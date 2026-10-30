@@ -36,7 +36,7 @@ int ai_MeisterTrade(AICHAR *ch, AIOBJ *b)
             }
         }
     }
-    if (ai_Time.hour % 2) {
+    if (ai_TimeT.hour % 2) {
         if (!(ch->flags1b4 & 0x200)) {
             for (i = 0; i < ai_NEntries; i++) {
                 if (!(ai_Entries[i].flags & 6) && (!(ai_Entries[i].flags & 8) || ai_Entries[i].amount > 3)) {
@@ -126,7 +126,7 @@ int ai_MeisterTrade(AICHAR *ch, AIOBJ *b)
                 msg.to = ai_Chars[ch->bld->owner].netId;
                 msg.fromId = ch->bld->id;
                 msg.flags = 1;
-                msg.time = ai_Time;
+                msg.time = ai_TimeT;
                 gm_AddTime(&msg.time, 0, 0, 10);
                 msg.car = car->objId;
                 msg.dst[0] = 5;
@@ -396,7 +396,7 @@ int ai_MeisterTrade(AICHAR *ch, AIOBJ *b)
                     msg.type = 11;
                     msg.to = ai_Chars[ch->bld->owner].netId;
                     msg.fromId = ch->bld->id;
-                    msg.time = ai_Time;
+                    msg.time = ai_TimeT;
                     msg.flags = 1;
                     msg.car = car->objId;
                     msg.n = n;

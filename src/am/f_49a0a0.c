@@ -22,7 +22,7 @@ int ai_Unk49a0a0(G5CH *p)
     cm_AddFieldDelta(1, 1, 0xd, &v);
     cm_SendFieldDeltas();
     cm_SendSetField(p->netId, 0x1c8, 4, 0, 0x4000);
-    t = ai_Time;
+    t = ai_TimeT;
     gm_AddTime(&t, util_Random(4) + 1, util_Random(8) * 7, 0);
     if (((unsigned char *)p)[2] == 5) {
         n = 0;

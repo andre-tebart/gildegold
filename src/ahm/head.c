@@ -11,6 +11,7 @@ table of 8 ints, then the strings "RCPID" .. "alchemy_data.ini"). Starts at 0x4e
 #include "f3gm.h"
 #include "net.h"
 #include "vfs.h"
+#define ai_TimeK (*(AHMCLOCK *)&ai_Time)  /* 0x770ae0, ai_Time (anm.c: char[14]) as ahm.c copies it: @original 3 ints and a short (0x4eb43a lea edx,[eax+0x52]; stores 4/4/4/2) */
 #define cm_SendExSetHEI ((void (*)(int, char *))cm_SendExSetHE)  /* 0x4c4c60 (cm.h: unsigned char k): @original ahm.c pushes the key as an int (0x4eb43e push 0xfffffffe) */
 
 #define vfs_freadU ((unsigned (*)(void *, int, int, VFSFILE *))vfs_fread)  /* 0x430bd0, vfs.h int: @original this unit compares the count as unsigned (ahm_LoadDfn 0x4ebabd test eax,eax; jbe for `<= 0`) */

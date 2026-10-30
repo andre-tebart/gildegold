@@ -4,7 +4,7 @@ int ai_Unk48e070(AIPX *p, int *out)
 {
     int i, n, bld;
 
-    if (ai_Unk5ffd1c < ai_Time.year) {
+    if (ai_Unk5ffd1c < ai_TimeT.year) {
         ai_Unk6f0470 = 0;
         for (i = 0; i < 768; i++) {
             AIPX *c = &((AIPX *)ai_Chars)[i];
@@ -12,7 +12,7 @@ int ai_Unk48e070(AIPX *p, int *out)
             if (c->kind == 6 || c->kind == 7 || c->kind == 5)
                 ai_Unk6f0470++;
         }
-        ai_Unk5ffd1c = ai_Time.year;
+        ai_Unk5ffd1c = ai_TimeT.year;
     }
     if (p->kind != 3) {
         bld = (int)gm_BuildQuery(2, 5, 0x1e, 4, p->id);

@@ -10,6 +10,7 @@ extern char ai_PlayerSlots[];
 #include <string.h>
 #include "hmt.h"
 #include "data_views.h"
+#define ai_TimeT (*(AITIME *)&ai_Time)  /* 0x770ae0, ai_Time (anm.c: char[14]) as the AITIME it is: this unit reads its fields */
 extern char ai_Unkf31160[];
 
 /* the SDK calls of hmt_CreateBinaryFile; windows.h is not included (its min/max and the other SDL macros change the

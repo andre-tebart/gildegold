@@ -29,7 +29,7 @@ void ai_CalcMeisterWache(AICHAR *ch)
     ai_BuyUpgrade(ch);
     ai_CheckFreeThieves(ch);
     ai_SendFreeThieves(ch);
-    if (ai_Time.hour <= 6 || (ch->netId + ai_Time.hour) % 3 != 0) {
+    if (ai_TimeT.hour <= 6 || (ch->netId + ai_TimeT.hour) % 3 != 0) {
         ch->flags1b4 &= ~0x20;
         return;
     }
@@ -64,7 +64,7 @@ void ai_CalcMeisterWache(AICHAR *ch)
             goto choose;
         goto city;
     } else {
-        if (util_RandomF() <= 0.85 || idle < 3 || ai_Time.year < 7 - ai_Difficulty) {
+        if (util_RandomF() <= 0.85 || idle < 3 || ai_TimeT.year < 7 - ai_Difficulty) {
             r = util_Random(3);
 choose:
             if (r == 4)
@@ -118,7 +118,7 @@ city:
             msg.type = 0x43;
             msg.to = ai_Chars[ch->bld->owner].netId;
             msg.fromId = ch->bld->id;
-            msg.time = ai_Time;
+            msg.time = ai_TimeT;
             msg.flags = 2;
             msg.arg[0] = sel->id;
             msg.arg[1] = ch->bld->id;
@@ -185,7 +185,7 @@ check:
             msg.type = 100;
             msg.to = ai_Chars[ch->bld->owner].netId;
             msg.fromId = ch->bld->id;
-            msg.time = ai_Time;
+            msg.time = ai_TimeT;
             msg.flags = 1;
             msg.arg[1] = sel->id;
             msg.arg[2] = ch->bld->id;
@@ -224,7 +224,7 @@ umland:
     msg.type = 0x65;
     msg.to = ai_Chars[ch->bld->owner].netId;
     msg.fromId = ch->bld->id;
-    msg.time = ai_Time;
+    msg.time = ai_TimeT;
     msg.flags = 2;
     r = util_Random(8);
     strcpy((char *)&msg.arg[0], ai_AmbushSpots[r]);

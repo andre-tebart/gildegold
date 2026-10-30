@@ -12,7 +12,7 @@ void ai_Unk483a60(AICHAR *ch)
     float f;
     int i, ok, c;
 
-    if ((ch->netId + ai_Time.hour) % 3 == 0) {
+    if ((ch->netId + ai_TimeT.hour) % 3 == 0) {
         if (!(ch->flags1b4 & 0x20)) {
             obj = gm_Query(ch->bld->objList, 2, 6, 0, 0x116);
             if (!obj)

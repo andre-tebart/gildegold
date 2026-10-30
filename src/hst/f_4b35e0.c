@@ -12,7 +12,7 @@ int hst_NextEventCmd(char *name, char *out, int cmd)
             hst_TextsOn = 0;
             return 4;
         }
-        d = ai_Time.year - year[0];
+        d = ai_TimeT.year - year[0];
         if (d == 1) {
             r = d;
             if (!hst_ParseEventText(out, hst_TextCurrent, cmd))

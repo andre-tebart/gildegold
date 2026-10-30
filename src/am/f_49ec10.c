@@ -22,7 +22,7 @@ int ai_Unk49ec10(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2
         *b *= 2.0f;
         return 1;
     }
-    if (ai_Time.hour < 0x14)
+    if (ai_TimeT.hour < 0x14)
         return 0;
     return ai_Unk4a49a0(a, b, i, (AIPER *)p, 0, o1, o2);
 }

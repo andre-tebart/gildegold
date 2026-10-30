@@ -14,7 +14,7 @@ int ai_Unk4bb250(G14MSG *m)
         return 1;
     if (*(int *)((char *)c + 0x2c) == 0)
         return 0x400;
-    t = ai_Time;
+    t = ai_TimeT;
     gm_ClockToDate(&t, d);
     txt_Format(buf, m->type + 0x12e7, gm_Season(d) + 0x4c);
     he_ShowNews(c->netId, c->netId, buf, strlen(buf) > 0x100, 0x603, 0);

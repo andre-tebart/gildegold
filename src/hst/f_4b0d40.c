@@ -77,7 +77,7 @@ int ai_CommandFaithChange(int a, int b, char *fmt)
     msg.type = 0x81;
     msg.to = ((AICHAR *)ai_PlayerChar)->netId;
     msg.ch = rel;
-    msg.time = ai_Time;
+    msg.time = ai_TimeT;
     msg.fromId = -1;
     msg.flags = 2;
     msg.car = n;

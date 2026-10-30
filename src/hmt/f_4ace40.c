@@ -11,7 +11,7 @@ void hmt_Update(void)
     char text[256];
     int i;
 
-    year = ai_Time.year + 0x578;
+    year = ai_TimeT.year + 0x578;
     if (amt_GetFirstOffice(0x26, &ev) && amt_GetFirstOffice(0x27, &ps)) {
         ce = gm_FindChar(ev.id);
         cp = gm_FindChar(ps.id);

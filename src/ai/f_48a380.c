@@ -15,7 +15,7 @@ void ai_UnloadCarts(AICHAR *ch)
                 msg.to = ai_Chars[ch->bld->owner].netId;
                 msg.fromId = ch->bld->id;
                 msg.flags = 1;
-                msg.time = ai_Time;
+                msg.time = ai_TimeT;
                 gm_AddTime(&msg.time, 0, 0, 10);
                 id = car->objId;
                 fill = car->fill;

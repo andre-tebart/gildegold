@@ -94,7 +94,7 @@ int ai_Unk498c70(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
     if (ones > 0 && !sel) {
         if (ones > maxn)
             return 0;
-        if (ai_Time.year % 8 != (unsigned int)p->netId % 8)
+        if (ai_TimeT.year % 8 != (unsigned int)p->netId % 8)
             return 0;
     }
     if (!sel) {

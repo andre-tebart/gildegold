@@ -11,7 +11,7 @@ int ai_Unk4aa940(AIPER *p, int c, unsigned char *m)
     if (o == 0)
         return 0;
     gm_BuildQuery(1, 5, 10);
-    *(AITIME *)&msg.arg[0] = ai_Time;
+    *(AITIME *)&msg.arg[0] = ai_TimeT;
     msg.to = p->netId;
     msg.type = 0x35;
     msg.flags = 2;

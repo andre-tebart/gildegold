@@ -105,7 +105,7 @@ extern int ai_WalkX, ai_WalkDX, ai_WalkY, ai_WalkDY, ai_WalkIndex;  /* 0x6f0dc8,
 extern AHMSEED ai_WalkSeed;             /* 0x6f0ddc */
 extern AHMSTEP ai_WalkSteps[3];         /* 0x6f0de0 */
 extern int ahm_Tab[8];                  /* 0x60f1b0 */
-extern AHMCLOCK ai_Time; /* 0x770ae0, the game clock (ai.h's AITIME), @original: ahm.c copies it as 3 ints and a short (0x4eb43a lea edx,[eax+0x52]; stores 4/4/4/2), against anm.h / cm.h / f3snd.h's char[14] view */
+extern char ai_Time[14];                 /* 0x770ae0, the game clock (anm.c's char[14]; ahm.c reads it through ai_TimeK) */
 short * gm_FindChar(int id);             /* 0x505df0 */
 char * he_FindEvent(int n, ...);                   /* 0x53e400 */
 char * he_NextEvent(void);                   /* 0x53e300 */

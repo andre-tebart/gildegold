@@ -20,11 +20,11 @@ void ai_MeisterCollectTrans(AICHAR *ch)
     char buf[1024];
     int i, n, n136, v, item;
 
-    if (ai_Time.hour % 2) {
+    if (ai_TimeT.hour % 2) {
         if (ch->flags1b4 & 0x80)
             return;
         ch->flags1b4 |= 0x80;
-        sprintf(buf, "ai_MeisterCollectTrans(): Check um %li:%li Uhr", ai_Time.hour, ai_Time.min);
+        sprintf(buf, "ai_MeisterCollectTrans(): Check um %li:%li Uhr", ai_TimeT.hour, ai_TimeT.min);
         n = 0;
         n136 = 0;
         t = (AIOBJ *)ai_Objects;
@@ -60,7 +60,7 @@ void ai_MeisterCollectTrans(AICHAR *ch)
                     msg.type = 0xf;
                     msg.flags = 2;
                     msg.to = ai_Chars[ch->bld->owner].netId;
-                    msg.time = ai_Time;
+                    msg.time = ai_TimeT;
                     msg.car = t->objId;
                     msg.fromId = -1;
                     msg.n = own->id;
@@ -131,7 +131,7 @@ void ai_MeisterCollectTrans(AICHAR *ch)
         cm_SendExSellObjectI(ch->bld->id, -1, item, 1, ai_OwnPlayer, 0);
     }
     sprintf(buf, "ai_MeisterCollectTrans(): Um %li:%li Uhr zus\xe4tzlichen Transporter f\xfcr %s gekauft",
-            ai_Time.hour, ai_Time.min, ch->bld->name);
+            ai_TimeT.hour, ai_TimeT.min, ch->bld->name);
     ch->flags1c8 |= 8;
     } else {
         ch->flags1b4 &= ~0x80;

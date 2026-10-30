@@ -21,7 +21,7 @@ void ai_BuyUpgrade(AICHAR *ch)
     first = 0xfd;
     if (ch->flags1c8 & 8)
         return;
-    if (ai_Time.hour != 7 && ai_Time.hour != 0xc && ai_Time.hour != 0x12) {
+    if (ai_TimeT.hour != 7 && ai_TimeT.hour != 0xc && ai_TimeT.hour != 0x12) {
         ch->flags1b4 &= ~0x400;
         return;
     }
@@ -102,7 +102,7 @@ found:
             msg2.type = 2;
             msg2.to = ai_Chars[ch->bld->masterId].netId;
             msg2.fromId = ch->bld->id;
-            msg2.time = ai_Time;
+            msg2.time = ai_TimeT;
             msg2.flags = 1;
             msg2.itemId = ret;
             msg2.arg[1] = o->objId;

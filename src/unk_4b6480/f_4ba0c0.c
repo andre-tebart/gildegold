@@ -47,7 +47,7 @@ int ai_Unk4ba0c0(G14MSG *m)
         msg.flags = 1;
         msg.n = msg.fromId;
         msg.to = ai_Chars[ai_PlayerId].netId;
-        msg.time = ai_Time;
+        msg.time = ai_TimeT;
         /* the text id at 0x64 is the only 16-bit store of AIMSG (a word over dst[0]); a textId union arm in
            ai.h regresses ai_Unk483a60's slots (ai.c's note), so the shared-header view is match-deep's */
         *(unsigned short *)&msg.dst[0] = m->type + 0x12e7;

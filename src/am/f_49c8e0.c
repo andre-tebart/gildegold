@@ -10,9 +10,9 @@ int ai_Unk49c8e0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 
     if (f != 0)
         return 0;
-    if ((p->netId & 3) != ai_Time.year % 4)
+    if ((p->netId & 3) != ai_TimeT.year % 4)
         return 0;
-    if ((p->netId & 7) != (int)ai_Time.hour % 8)
+    if ((p->netId & 7) != (int)ai_TimeT.hour % 8)
         return 0;
     n1 = unk_Unk4f39e0(p->netId);
     n2 = unk_Unk4f39b0(p->netId);

@@ -40,7 +40,7 @@ int ai_Unk4bb720(int n, int id)
     msg.type = 0x42;
     msg.to = id;
     msg.fromId = -1;
-    msg.time = ai_Time;
+    msg.time = ai_TimeT;
     msg.flags = 1;
     for (i = k; i > 0; i--) {
         *(unsigned short *)&msg.n = ai_Unk4bb7d0(0x45);

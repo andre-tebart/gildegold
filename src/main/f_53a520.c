@@ -124,12 +124,12 @@ void main_Unk53a520(unsigned short pl)
                             ((char *)ev)[0] = 0x31;
                             ev[1] = *(int *)(*(int *)(unsigned)&ai_PlayerChar + 2);
                             ev[2] = *(int *)(c + 1);
-                            ev[0x0a] = U_I(((unsigned)&ai_Time + 0x8));
-                            ev[0x08] = U_I((unsigned)&ai_Time);
+                            ev[0x0a] = U_I(((unsigned)&ai_TimeT + 0x8));
+                            ev[0x08] = U_I((unsigned)&ai_TimeT);
                             ev[0x09] = U_I((unsigned)&ai_TimeHour);
                             ev[0x1c] = *pp;
                             ((char *)ev)[0x16] = 1;
-                            *(short *)((char *)ev + 0x14) = *(short *)((unsigned)&ai_Time + 0xc);
+                            *(short *)((char *)ev + 0x14) = *(short *)((unsigned)&ai_TimeT + 0xc);
                             cm_SendLongMessage(ev);
                             cnt++;
                         }
@@ -274,10 +274,10 @@ void main_Unk53a520(unsigned short pl)
                                         MSG_B(ev, 4) = ((unsigned short)u < 0x33) ? 0x34 : 0x33;
                                         MSG_I(ev, 8) = U_I((unsigned)&ai_CharInts + pe);
                                         MSG_I(ev, 0xc) = *(int *)(p + 1);
-                                        MSG_I(ev, 0x28) = U_I((unsigned)&ai_Time);
+                                        MSG_I(ev, 0x28) = U_I((unsigned)&ai_TimeT);
                                         MSG_I(ev, 0x2c) = U_I((unsigned)&ai_TimeHour);
-                                        MSG_I(ev, 0x30) = U_I(((unsigned)&ai_Time + 0x8));
-                                        *(short *)((char *)ev + 0x34) = *(short *)((unsigned)&ai_Time + 0xc);
+                                        MSG_I(ev, 0x30) = U_I(((unsigned)&ai_TimeT + 0x8));
+                                        *(short *)((char *)ev + 0x34) = *(short *)((unsigned)&ai_TimeT + 0xc);
                                         MSG_B(ev, 0x36) = 1;
                                         MSG_I(ev, 0x58) = U_I((unsigned)&ai_CharInts + qb);
                                         gm_AddTime((struct GCLOCK *)((char *)ev + 0x28), (util_RandomInt(6) & 0xffff) + 4, 0, 0);  /* the 0, 0 are pushed first (0x53ae4e) */
