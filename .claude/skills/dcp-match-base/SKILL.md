@@ -59,8 +59,13 @@ code is shape or byte, only readability is missing. `gates=` names the failing r
 - `uv run dcp grade NAME` - the failing rules with their evidence (B1..B3 code, Q1..Q7 readability) and `dist`.
 - `uv run dcp asmdiff NAME` - our instructions against the original's, aligned; `--regs eax=ecx,esi=edi` renames
   registers on our side. Run it first on every big `code` hunk: a pure register rotation reads as `code`.
-- `uv run dcp diffclass NAME` - the hunks and their classes: `fill`, `order`, `regs`, `slots`, `sib`, `fpu`
-  (all explained: shape) and `code` (the rest: a meaning difference until shown otherwise).
+- `uv run dcp diffclass NAME` - the hunks and their classes: `fill`, `order`, `regs`, `slots`, `sib`, `fpu`,
+  `frame` (all explained: shape) and `code` (the rest: a meaning difference until shown otherwise). `frame`:
+  the two frames differ in size (`frame: ours 0xcc, the original's 0xc8`) and these lines differ only by the
+  shifted stack offsets; the `code` hunks left beside them are the real cause (often a variable in a register
+  on one side, in a slot on the other). A switch's jump and index tables are data, not code: `tables=equal`
+  (or `differ` with the entries that point elsewhere: a case body or the case order differs). grade, asmdiff
+  and diffclass read the same extent, so `hunks=0` with equal tables is shape.
 - `uv run dcp disasm 0xADDR` - the original code; `uv run dcp dump 0xADDR [LEN]` - its constants and strings.
 - `uv run dcp refs NAME|0xADDR` - every use and declaration: the callers say what a parameter means.
 - `uv run dcp draft 0xADDR --show` - the analyzer's pseudocode, unchanged: a second reading, not the truth.
@@ -82,7 +87,7 @@ code is shape or byte, only readability is missing. `gates=` names the failing r
 Explain every `code` hunk from the evidence and fix the C's meaning: a wrong condition, operand or constant, a
 missing or extra statement, a wrong type (signed / unsigned compare, `char` vs `int` load, a struct field at the
 wrong offset), a call with the wrong arguments, a loop of another form. Stop when only `fill` / `order` / `regs`
-/ `slots` / `sib` / `fpu` hunks remain: that is shape (B2). Reconstructing missing statements is always base
+/ `slots` / `sib` / `fpu` / `frame` hunks remain: that is shape (B2). Reconstructing missing statements is always base
 work, however long.
 - Note `dist` before an edit; after `uv run dcp build`, `uv run dcp grade NAME`: when the distance grew and the
   edit corrected no meaning, revert it (Edit back, or `git checkout -- <file>`). A meaning fix that costs
@@ -99,9 +104,12 @@ work, however long.
 ### 2.3 Readability (`gates=Q...`)
 - Q1 / Q2 placeholder names (`ai_Unk4a13e0`, `param_1`, `iVar2`, `DAT_...`): name what you understood.
   Functions and data: `uv run dcp rename OLD NEW --why "the evidence"` (project-wide, whole words, names.log;
-  `dcp refs` first). Rename first, then edit: the rename writes the new name everywhere and logs it (a name
-  already written by hand in some places is completed by the rename, not refused). Locals and parameters:
-  edit the fragment.
+  `dcp refs` first; OLD may be `0xADDR` / `exe:0xADDR` for the ledger's name). Rename first, then edit: the
+  rename writes the new name everywhere and logs it (a name already written by hand in some places is
+  completed by the rename, not refused). It prints every changed file with its replacements; a refusal is an
+  `error=` record with exit 1 and nothing written: read it, never assume the rename happened. A view
+  (`ai_Unk7603a0B`) keeps its name when its datum is renamed (the note lists it): rename it on its own.
+  Locals and parameters: edit the fragment.
 - Q3 address literals and Q4 raw access (`*(T *)(p + 0x1c)`, macros built on such casts): a typed field, a
   struct, the symbol (see the hard rule on addresses). A datum the unit reads as another type is a view macro
   with the address comment on its line: `#define NAME (*(T *)&datum)  /* 0xADDR */`, or
