@@ -60,7 +60,8 @@ extern char *ls_ActionQueue;            /* 0x631050, the action queue (ch.h: CHA
 extern char ch_EmptyName[];             /* 0x631090 */
 extern char ls_SavePath[640];
 extern int d3_CurrentScene;                /* 0x633444 */
-extern char * ai_JudgeCatholic; extern char * ai_JudgeProtestant;  /* 0x6f1bfc / 0x6f1c00 */
+extern char * ai_JudgeCatholic;  /* 0x6f1bfc */
+extern char * ai_JudgeProtestant;  /* 0x6f1c00 */
 extern char * ai_KindBChars[8];             /* 0x6f1c04, the eight slots of the kind 0xb characters (cm.h: char *) */
 int * ai_Unk633738 = 0;  /* 0x633738, the scene (its first word the kind: */
 extern char * ai_PlayerBuilding;                /* 0x6f2308 */
