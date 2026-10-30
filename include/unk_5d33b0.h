@@ -71,6 +71,29 @@ typedef struct SPHEREVOLUME {
     float volume;       /* +0x0c, 4/3 pi size^3 */
     float reach;        /* +0x10, volume * radius */
 } SPHEREVOLUME;
+typedef struct SHOTPOS {                /* 0x0c bytes: a position or a direction (copied as one record) */
+    float p[3];
+} SHOTPOS;
+typedef struct SHOTVEL {                /* 0x10 bytes: a velocity as direction * speed and the speed */
+    SHOTPOS v;
+    float speed;
+} SHOTVEL;
+typedef struct SHOTREC {                /* 0x68 bytes: a cannon ball in flight (am.c 0x4a6ae0 builds one per ball with ai_InitShot
+                                           from the barrel direction, the charge, the ball size and 7874 = the density of iron) */
+    SHOTVEL vel;                        /* +0x00, the barrel direction * speed, speed = charge / mass * 0.1 */
+    SHOTVEL vel0;                       /* +0x10, the start velocity (a copy) */
+    SHOTPOS pos;                        /* +0x20, the current position, the start position at first */
+    float pad2c;
+    SHOTPOS pos0;                       /* +0x30, the start position */
+    float pad3c;
+    EFFECTREC wind;                     /* +0x40, the wind (ai_DefaultEffect) with its scale clamped to 0 .. 60 and the vector scaled by it */
+    float area;                         /* +0x50, the ball's SPHEREVOLUME surface (2 pi size^2) */
+    float mass;                         /* +0x54, volume * density */
+    float unk58;                        /* +0x58, not set by ai_InitShot */
+    int alive;                          /* +0x5c, 1 */
+    int time;                           /* +0x60, d3_Time (ms) at the shot */
+    int dead;                           /* +0x64, 0; ai_Unk5dc3a0 returns 0 once it is set */
+} SHOTREC;
 typedef struct POKERPANEL {             /* 0x1c bytes: one panel (form view) of the poker window */
     int win;                            /* +0x00, the window the form view made (d2_LastWindow after d2_SetForm) */
     int slot[5];                        /* +0x04, the panel's controls / seats, -1 = none yet */

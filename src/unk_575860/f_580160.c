@@ -8,7 +8,7 @@
    DOMIZIL_KANONE1_esc" 0x62a36c) and 0x429ab0 (4, the counts, the offsets, the wimpel hand sc + 0x23 / 0x24 /
    0x25) for each record and the effect 0x427050 (0, "Explosion" 0x5f36e0, the record count, 1, 0x3f, 0x7f, 0) */
 
-void unk_Unk4ef260(char *o, float *a, float *b); float unk_Unk4ef330(); void ai_Unk580a50(); int ai_Unk5dc240(float *param_1, float *param_2, float *param_3, float param_4, int param_5, int param_6);
+void unk_Unk4ef260(char *o, float *a, float *b); float unk_Unk4ef330(); void ai_Unk580a50(); int ai_InitShot(struct SHOTREC *shot, struct SHOTPOS *pos, struct SHOTPOS *dir, float charge, float size, float density);
 int ai_Unk5dc3a0(float *param_1, float param_2, float *param_3, float param_4, float *param_5, float param_6); int unk_Unk4eeb70(char *o, int *c, int *a, int *b, int *d, float v, int n, int x); int sb_PlayVariation(); void ai_Unk580a90();
 
 void ai_Unk580160(char *sc, char *rec)
