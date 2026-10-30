@@ -27,7 +27,7 @@ int ai_Unk499290(AIPER *p, AIARG *s1, AIARG *s2)
         return 0x13;
     }
     if (ai_Unk4a5320(p, s1, s2)) {
-        cm_SendSetField(p->netId, 0x1c8, 4, ((unsigned)&txt_Keys + 0x181c0), 0);
+        cm_SendSetField(p->netId, 0x1c8, 4, 0x1000000, 0);
         return 0x13;
     }
     return 0;

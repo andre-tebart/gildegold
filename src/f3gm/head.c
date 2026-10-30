@@ -38,7 +38,7 @@ extern char d3_Scenes[];               /* 0xfd7ba0: ai_Unk5fb5b0 points at it (d
 extern char d3_Scenes[];               /* 0xfd7ba0: ai_Unk5fb5b0 points at it (d3.h types it D3SCENE[]) */
 extern unsigned char he_Events;
 extern char d3_Scenes[];               /* 0xfd7ba0: ai_Unk5fb5b0 points at it (d3.h types it D3SCENE[]) */
-extern unsigned char txt_Keys;
+extern char txt_Keys[0x4800][0x50];
 extern GAPDATA full_data_91f6e0[];
 extern unsigned char he_Events;
 extern unsigned char amt_Table;

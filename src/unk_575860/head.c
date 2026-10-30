@@ -270,7 +270,7 @@ extern char ai_Unk925108[12];
 extern char ai_Unk925114[4];
 extern char ai_Unk925118[4];
 extern char ai_Unk92511c[4];
-extern unsigned char ai_Unkf8aae0;
+extern char ai_Unkf8aae0[0x80];
 extern int ai_Unkfb9060;
 extern int ai_Unkfb9064;
 extern int ai_Unkfb9068;

@@ -17,5 +17,5 @@
 #define d3_WorldMatrixD ((void (*)(D3OBJECT *, D3OBJECT *, int, void *))d3_WorldMatrix)  /* 0x458da0 (unk_458810.h: XOBJ *, XOBJ *, char, D3MATRIX *): this unit's D3OBJECT view of the object */
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
-extern unsigned char txt_Keys;
+extern char txt_Keys[0x4800][0x50];
 

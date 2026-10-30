@@ -276,7 +276,7 @@ extern int ai_Unkfb9068;
 extern int ai_Unkfb906c;
 extern unsigned char cm_NetFlags;
 extern GAPDATA full_data_624560[];
-extern unsigned char init_BuildingUniverse;
+extern signed char init_BuildingUniverse[0x22];
 extern unsigned char snd_AmbientOn;
 extern int sv_FrameMask;
 extern int sv_PopRequest;

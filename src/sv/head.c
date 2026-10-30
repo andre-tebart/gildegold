@@ -80,7 +80,7 @@ extern unsigned char ai_Unk7603a0;
 extern GAPDATA full_data_75ec80[];
 extern GAPDATA full_data_75ec84[];
 extern unsigned char ai_TimeHour;
-extern unsigned char txt_Keys;
+extern char txt_Keys[0x4800][0x50];
 extern GAPDATA full_data_6f2294[];
 extern GAPDATA full_data_6f2320[];
 extern GAPDATA full_data_6f23bc[];
@@ -94,7 +94,7 @@ extern GAPDATA full_data_6f23d8[];
 
 extern char * ai_Unk6f22e8;
 extern int ai_Unk6f22f8;
-extern unsigned char ai_Unkf8aae0;
+extern char ai_Unkf8aae0[0x80];
 extern int d2_HitUnderPointer;
 extern int d2_PointerSprite;
 
@@ -135,7 +135,7 @@ extern GAPDATA full_data_6237c8[];
 extern GAPDATA full_data_75ec84[];
 extern char gm_PlayerRecords[];
 extern int hst_KeyNext;
-extern unsigned char txt_GroupLevel;
+extern unsigned char txt_GroupLevel[0x4800];
 
 extern int d2_TextDrawnH;
 extern int d2_TextDrawnW;
@@ -176,7 +176,7 @@ extern GAPDATA full_data_6faa80[];
 extern GAPDATA full_data_6faa84[];
 extern unsigned char he_Events;
 extern unsigned char ai_GameSwitches;
-extern unsigned char ai_Unkf8aae0;
+extern char ai_Unkf8aae0[0x80];
 extern short d2_MouseX;
 extern short d2_MouseY;
 extern int d2_TextDrawnH;

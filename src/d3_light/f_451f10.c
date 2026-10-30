@@ -1,6 +1,6 @@
 /* 0x451f10, callback: flickering light, adds its contribution to the vertices it touches */
 
-#define D3L_RGB_MASK ((unsigned)&txt_Keys + 0x181bf)   /* the r/g/b bits of D3COLOR (white = all three set) */
+#define D3L_RGB_MASK 0xffffffu   /* the r/g/b bits of D3COLOR (white = all three set) */
 
 void d3_LightFlicker(D3OBJECT *obj)
 {

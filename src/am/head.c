@@ -28,7 +28,7 @@ extern char ai_PlayerSlots[];
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 extern unsigned char ai_Unka69140;
-extern unsigned char txt_Keys;
+extern unsigned char txt_Keys;  /* @original ai_Unk498c70 (0x498c70, byte) tests flags1c8 & 0x1000000 as &txt_Keys + 0x181c0 of this byte view: the char[0x4800][0x50] spelling, a view macro or the literal flip its add operands at +0x4cc (shape) */
 extern unsigned char he_Events;
 
 int gm_Unk5044b0(int i, int p);        /* 0x5044b0, @original: the byte-matched callers (ai_Unk49ed10, ai_Unk498c70) read the result without the unsigned char mask (no `and eax,0xff` after the call) */
