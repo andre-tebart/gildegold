@@ -201,7 +201,6 @@ extern D3IOANIMDATA d3_AnimHead;                                                
 
 void err_Message(char *msg);                                                    /* 0x4222b0 */
 int bio_rd_array_quick(struct VFSFILE *f, int size, void **out);                          /* 0x401380 */
-int d3anim_NextFrame(D3ANIMFLAGS f, int frame, int a, int b, int c);                  /* 0x4324e0, d3_anim.c (d3_io_t.c passes its D3IOANIMFLAGS through d3anim_NextFrameIo) */
 struct D3BASTREAM *d3_LoadBinaryAnimStream(char *path, char *name, char relative);   /* 0x44f8c0, d3_io_b.c */
 
 D3IOOBJ *d3io_LoadObjectFile(char *name, char *file);                           /* 0x44df40 */
