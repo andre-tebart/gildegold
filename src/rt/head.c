@@ -9,6 +9,7 @@ extern char d2_Radios[];
 #include "rt.h"
 #include "di_input.h"
 #include "data_views.h"
+#define cm_SendExSellObjectI ((void (*)(int, int, int, int, int, int))cm_SendExSellObject)  /* 0x4c4880 (cm.h: short c, unsigned char e): @original rt.c pushes the third argument as an int (byte-matched rt_UnloadAtPoint) */
 extern char d3_Scenes[];
 
 int rt_MarkGroup = -1;                  /* 0x602a90 */

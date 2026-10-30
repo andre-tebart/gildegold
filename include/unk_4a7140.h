@@ -145,7 +145,7 @@ int ai_Unk4aaa10(struct AIPER *p, int c, unsigned char *m);                     
 int ai_Unk4aaae0(struct AIPER *p, int c, unsigned char *m);                             /* 0x4aaae0 */
 int ai_InventoryHas(void *ch, int id);                                            /* 0x5ba6b0, unk_4a3af0.h: G5CH view */
 int ai_TrustedOfTwo(AIPER *p, AIPER *b, AIPER *c, int *k);                          /* 0x4aab90 */
-int amt_GetOffice(int k, struct AMTREC *out);                                              /* 0x4e6f30, int k: 0x4aad30 pushes it raw (amt.h says unsigned char i, @original there) */
+int amt_GetOffice(unsigned char i, struct AMTREC *out);  /* 0x4e6f30, amt.c (this unit calls it through amt_GetOfficeI) */
 int amt_GetOfficeRate(char *c, int x, float *out);                           /* 0x4e60b0 */
 void gm_SendMoneyDelta(int a, int b);                                                /* 0x50cc50 */
 int ai_TrustedOfFour(int k, AIPER *p, int *ids, int *out);                           /* 0x4aad30 */

@@ -542,7 +542,7 @@ void d2_AddRefcount(int pic);                                                   
 void d2_SubRefcount(int pic);                                                   /* 0x46cac0 */
 #define d2_Unk46ca60 d2_AddRefcount /* old names (round 16), until the round 17 d2 files use the new ones */
 #define d2_Unk46cac0 d2_SubRefcount
-void d2_MoveObj(int x, int y, int obj);                                       /* 0x46cda0, moves an object; @original: the definition (d2.c) reads shorts, d2_CreatePicObj passes ints */
+void d2_MoveObj(short x, short y, int obj);                                       /* 0x46cda0, moves an object (d2.c); d2_CreatePicObj passes ints (d2_MoveObjI) */
 void d2_RemoveObj(int obj);                                                      /* 0x46e710, removes the object */
 int d2_TextWidth(char *text, int font);                                         /* 0x46ea10, text width */
 void d2_DrawText(int x, int y, void *surf, char *text, unsigned char flags);              /* 0x46f000, draws a text */

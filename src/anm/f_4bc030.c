@@ -15,18 +15,18 @@ void anm_UpdateCat(ANMREC *a)
 
     if (*(int *)((char *)a->obj + 0x128) != 0)
         return;
-    if (util_Random(100) > 0x1e) {
+    if (util_RandomS(100) > 0x1e) {
         if (a->kind == 0) {
-            if (util_Random(100) > 0x32)
-                ch_QueueAnim(a->obj, "bewegung/stehen", util_Random(3) + 1);
+            if (util_RandomS(100) > 0x32)
+                ch_QueueAnim(a->obj, "bewegung/stehen", util_RandomS(3) + 1);
             else
-                ch_QueueAnim(a->obj, "bewegung/bellen", util_Random(3) + 1);
+                ch_QueueAnim(a->obj, "bewegung/bellen", util_RandomS(3) + 1);
         } else
-            ch_QueueAnim(a->obj, "bewegung/stehen", util_Random(3) + 1);
+            ch_QueueAnim(a->obj, "bewegung/stehen", util_RandomS(3) + 1);
         return;
     }
     h = *(char **)((char *)d3_DefaultScene + 0xb0);
-    n = util_Random(3) + 1;
+    n = util_RandomS(3) + 1;
     n = rd_PointsNear(a->pos, n, pts);
     if (n > 0) {
         for (p = pts; n != 0; n--, p++) {

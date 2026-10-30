@@ -510,7 +510,7 @@ void ai_GameFrame(void);  /* 0x591520 */
 extern unsigned char ai_GameState;  /* 0x6f25ac */
 
 int amt_ExecuteSwapMessage();  /* 0x4e6c50 */
-int ahm_CreateAlchemist(int *p);  /* 0x4ec500, @original: the original caller 0x4ccf90 reads the id as an int (no `and eax,0xffff`), the callee returns it in ax as unsigned short */
+unsigned short ahm_CreateAlchemist(int *p);  /* 0x4ec500, ahm.c (cm.c reads it through ahm_CreateAlchemistI) */
 int unk_Unk4f0240();  /* 0x4f0240 */
 int unk_Unk4f0490();  /* 0x4f0490 */
 int unk_Unk4f0770();  /* 0x4f0770 */
@@ -574,7 +574,7 @@ int ai_Unk4ce270(char *a, char *b);  /* 0x4ce270 */
 char *ai_Unk4ce290(char *p);  /* 0x4ce290 */
 void ch_SetHandObject();  /* 0x406c60 */
 unsigned short util_Random(int n);  /* 0x42ec00, @original: tr.c defines int util_Random(unsigned short); the byte-matched ai_Unk4d88c0 (cm.c) moves the 16-bit result (66 8b f0, not 8b f0) */
-int d3sm_GetVertex();  /* 0x45f100 */  /* @original: the original callers read an int result (gv.h declares it int; ord.c's unk_Unk4f86a0 is byte-matched without the char widening) */
+char d3sm_GetVertex(struct D3SM *h, int x, int z, struct D3VECTOR *out);                              /* 0x45f100, d3_sm.c (this unit's callers read an int: d3sm_GetVertexI) */
 float unk_Unk4fc8e0();  /* 0x4fc8e0 */
 float gm_GetSkill(char *c, int skill);  /* 0x504ec0 */
 int he_ShowNews(int pid, int fl, char *text, int unused, int ev, char *text2);  /* 0x53dda0 */
@@ -792,7 +792,7 @@ int sb_UnloadSampleBank();  /* 0x426ba0 */
 void d3io_ReleaseObject();  /* 0x44e2c0 */
 int ai_Unk4e30c0();  /* 0x4e30c0 */
 void d2_CopyCaption(char *caption);  /* 0x478870 */
-int ch_FindFreeCell();  /* 0x4072a0 */  /* @original: cm.c's call at 8227 passes 8 arguments to ch.h's 9-parameter prototype */
+char ch_FindFreeCell(struct D3SM *h, struct D3VECTOR *from, struct D3VECTOR *to, int x, int z, int *px, int *pz, int max, int flags); /* 0x4072a0, ch.h (cm.c calls it through ch_FindFreeCellK) */
 
 void ai_Unk4d1e00();  /* 0x4d1e00 */
 void ai_Unk4d1eb0();  /* 0x4d1eb0 */
@@ -846,7 +846,7 @@ extern const double ai_Unk5edc68;  /* 0x5edc68 */
 
 int ai_Unk4d3390(char *c);  /* 0x4d3390 */
 int d3t_CreateBlood();  /* 0x415e90 */
-struct CHACTION * ch_AddActionCB();  /* 0x40b400 */  /* @original: CHACTFUNC is not visible in this header and ch.h's prototype takes a char frame, which a non-prototype declaration cannot carry */
+struct CHACTION * ch_AddActionCB(struct CHARACTER *ch, int (*func2)(struct CHACTION *), unsigned char frame, unsigned int type, ...); /* 0x40b400, ch.h (CHACTFUNC func2; cm.c calls it through ch_AddActionCBK) */
 void d3_SetWorldPosRot();  /* 0x449920 */
 extern double ai_Unk5edbd0;  /* 0x5edbd0 */
 extern double ai_Unk5eb8e0;  /* 0x5eb8e0 */
@@ -991,7 +991,7 @@ int d2_GetWinObj();  /* 0x475b80 */
 int ai_Unk4e53e0();  /* 0x4e53e0 */
 int ai_TrustedOfTwo();  /* 0x4aab90 */
 int ai_TrustedOfFour();  /* 0x4aad30 */
-int amt_GetOffice(int k, struct AMTREC *out);  /* 0x4e6f30, int k: 0x4dab50 pushes it raw (amt.h says unsigned char i, @original there) */
+int amt_GetOffice(unsigned char i, struct AMTREC *out);  /* 0x4e6f30, amt.c (this unit calls it through amt_GetOfficeI) */
 int amt_GetKind(int k, struct AMTKIND *out);  /* 0x4e6f80 */
 int amt_GetOfficeApplicants();  /* 0x4e76b0 */
 

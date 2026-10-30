@@ -42,7 +42,7 @@ int ai_Unk4b84b0(G14MSG *m)
         txt_Format(buf, m->type + 0x12e7, b, (((char *)p)[9] ? 0x230 : 0x20d) + (unsigned char)p->title,
                      p->id, p->id);
         he_ShowNews(c->netId, c->netId, buf, strlen(buf) > 0x100, 0x603, 0);
-        gm_AddHealth(p->id, (int)-(*(float *)((char *)p + 0x1c) + 1.0f));
+        gm_AddHealthS(p->id, (int)-(*(float *)((char *)p + 0x1c) + 1.0f));
     }
     return 0;
 }

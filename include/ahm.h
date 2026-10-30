@@ -109,7 +109,7 @@ extern AHMCLOCK ai_Time; /* 0x770ae0, the game clock (ai.h's AITIME), @original:
 short * gm_FindChar(int id);             /* 0x505df0 */
 char * he_FindEvent(int n, ...);                   /* 0x53e400 */
 char * he_NextEvent(void);                   /* 0x53e300 */
-void cm_SendExSetHE(int k, char *p); /* @original: ahm.c pushes the key as an int (0x4eb43e push 0xfffffffe), against cm.h's unsigned char view */
+void cm_SendExSetHE(unsigned char k, char *p);                                     /* 0x4c4c60, cm.c */
 
 char *ahm_OwnerChar(unsigned char *p);  /* 0x4eaa50, the character the alchemist object p belongs to */
 int ahm_UsedSlots(char *c);             /* 0x4eaa90, the number of the places in use in the record of c's object */

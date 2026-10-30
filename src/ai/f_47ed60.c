@@ -8,6 +8,6 @@ void ai_SendRemoveEmptyGoods(AIOBJ *stall)
 
     for (i = 0; i < ai_NEntries; i++) {
         if (ai_Entries[i].amount == 0 && !(ai_Entries[i].flags & 8))
-            cm_SendRemoveGoods(stall->objId, ai_Entries[i].item);
+            cm_SendRemoveGoodsI(stall->objId, ai_Entries[i].item);
     }
 }

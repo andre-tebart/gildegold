@@ -464,7 +464,7 @@ int ai_Unk4904c0(AGCH *p, void *q, AGARG *s1, AGARG *s2);       /* 0x4904c0 */
 int ai_Unk490600(AGCH *p, void *q, AGARG *s1, AGARG *s2);       /* 0x490600 */
 void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d);                 /* 0x4c4830 */
 int unk_Unk4f0430(int *g, char *o, int v, short s, int x);       /* 0x4f0430 */
-void unk_Unk4f0e80(AGCH *p, int a, void *q, int b, int c, int d); /* 0x4f0e80, @original: gv.c defines `char b` (fifth); the byte-matched ai_Unk490b90 (am.c) loads s2->kind as a dword (8b 51 10, not 8a) */
+void unk_Unk4f0e80(int *g, int x, char *o, int v, char b, int y);  /* 0x4f0e80, gv.c */
 unsigned gv_FindEntry(void *a, unsigned char *o, unsigned after, int (*cb)(), int l);  /* 0x4ef7c0 */
 int unk_Unk4ef710();                                             /* 0x4ef710, a callback */
 int gv_EntryIsFree();                                             /* 0x4ef760, a callback */
@@ -837,7 +837,7 @@ int amt_GetColumnOfficesOwned(int col, int max, struct AMTREC *out);            
 
 int ai_Unk4aafb0(struct AIPER *p, struct AIPER *o, unsigned char *m);                                /* 0x4aafb0 */
 int ai_Unk4ab2c0(struct AIPER *p, int *a, int *b);                                /* 0x4ab2c0 */
-int amt_GetKind(unsigned char k, void *out);                                   /* 0x4e6f80 */  /* @original: amt_GetKind (amt.c) takes int k; ai_Unk4a05e0 passes (unsigned char)k without widening */
+int amt_GetKind(int k, struct AMTKIND *out);                             /* 0x4e6f80 */
 int amt_FindOffice(char *c, struct AMTKIND *kind, struct AMTREC *office);                                    /* 0x4e6030 */
 
 /* ---- 0x49a0a0..0x4a16f0 (was unk_49a0a0.h) ---- */

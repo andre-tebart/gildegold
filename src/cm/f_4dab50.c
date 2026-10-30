@@ -8,7 +8,7 @@ int ai_Unk4dab50(int a, char *b, int *c, int *out)
     int tmp[1];
 
     *out = 0;
-    if (amt_GetOffice(a, hdr) == 0)
+    if (amt_GetOfficeI(a, hdr) == 0)
         return -1;
     f = (unsigned char)hdr[2];
     if (amt_GetKind(f, rec) == 0)

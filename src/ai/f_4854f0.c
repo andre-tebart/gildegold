@@ -163,7 +163,7 @@ void ai_UpdateProduction(AICHAR *ch, AIOBJ *a, AIOBJ *b)
         } else {
             ai_Slots[j].amount = gm_ListAmount(b, o);
             if (!ai_Slots[j].amount)
-                cm_SendRemoveGoods(b->objId, ai_Slots[j].item);
+                cm_SendRemoveGoodsI(b->objId, ai_Slots[j].item);
         }
         ai_Slots[j].capacity = gm_FreeCapacity(b, ai_Slots[j].item, 1000000);
     }

@@ -18,7 +18,7 @@ float ai_Unk4d2010(char *c, int a, int b, float limit)
         own = rec + 0x80;
         oth = rec + 0xc0;
     }
-    d3sm_GetVertex(sc, a, b, v);
+    d3sm_GetVertexI(sc, a, b, v);
     for (i = 0; i < 16; i++) {
         if (*(int *)(oth + i * 4) != -1) {
             o = ai_Unk4ce130(*(int *)(oth + i * 4));

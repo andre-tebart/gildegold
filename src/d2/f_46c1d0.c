@@ -10,6 +10,6 @@ void d2_CenterObj(int obj)
             x = o->win->w / 2 - o->w / 2 + o->win->x;
         else
             x = d2_ScreenW / 2 - o->w / 2;
-        d2_MoveObj(x, o->y, obj);
+        d2_MoveObjI(x, o->y, obj);
     }
 }

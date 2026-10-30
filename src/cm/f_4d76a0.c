@@ -49,7 +49,7 @@ void ai_Unk4d76a0(int *rec)
                             goto done;
                         }
                     } else {
-                        d3sm_GetVertex(h, p[4], p[5], q);
+                        d3sm_GetVertexI(h, p[4], p[5], q);
                         if (d3_VecEqual(q, (float *)G21_POS(c), 30.0f) != 0) {
                             m[0] = *(int *)(c + 4);
                             m[1] = 0;
@@ -85,7 +85,7 @@ void ai_Unk4d76a0(int *rec)
                             }
                             ((char *)p)[0xc] = 1;
                         } else if (*(int *)(G21_CH(c) + 0x128) == 0 && (char)p[3] != 0) {
-                            d3sm_GetVertex(h, p[5], p[6], q);
+                            d3sm_GetVertexI(h, p[5], p[6], q);
                             b = d3_VecEqual(q, (float *)G21_POS(c), 120.0f) != 0;
                         }
                     } else {
@@ -211,7 +211,7 @@ attack:
                         p[2] = G21_DC0(c, 6, m);
                         p[2] = G21_BC0(buf, ix, iz, 0);
                     }
-                    d3sm_GetVertex(h, p[4], p[5], q);
+                    d3sm_GetVertexI(h, p[4], p[5], q);
                     if (d3_VecEqual(q, (float *)G21_POS(c), 50.0f) != 0) {
                         ai_Unk4c5dc0(c, 1, m);
                         m[0] = *(int *)(c + 4);
@@ -299,7 +299,7 @@ stop:
                                 goto done;
                             }
                         } else {
-                            d3sm_GetVertex(h, (char)p[8], ((char *)p)[0x21], q);
+                            d3sm_GetVertexI(h, (char)p[8], ((char *)p)[0x21], q);
                             if (d3_VecEqual(q, (float *)G21_POS(c), 50.0f) != 0) {
                                 ai_Unk4c5dc0(c, 4, m);
                                 ((char *)m)[0x2a] = 1;
@@ -324,7 +324,7 @@ stop:
                         }
                         break;
                     case 2:
-                        d3sm_GetVertex(h, (char)p[8], ((char *)p)[0x21], q);
+                        d3sm_GetVertexI(h, (char)p[8], ((char *)p)[0x21], q);
                         if (d3_VecEqual(q, (float *)G21_POS(c), 50.0f) != 0) {
                             ai_Unk4c5dc0(c, 5, m);
                             m[0] = *(int *)(c + 4);
@@ -348,7 +348,7 @@ stop:
                             goto done;
                         }
                     } else {
-                        d3sm_GetVertex(h, p[4], p[5], q);
+                        d3sm_GetVertexI(h, p[4], p[5], q);
                         if (d3_VecEqual(q, (float *)G21_POS(c), 30.0f) != 0) {
                             m[0] = *(int *)(c + 4);
                             m[1] = 0;

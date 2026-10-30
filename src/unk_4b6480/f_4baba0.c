@@ -14,7 +14,7 @@ int ai_Unk4baba0(G14MSG *m)
         return 1;
     if (!ai_InventoryHas(c, 0x290) && ai_Unk4ba840(c, &id, f) && (b = gm_BuildQuery(1, 1, id)) != 0) {
         txt_Format(buf, m->type + 0x12e7, (int)(f * 100.0f), b);
-        he_MessageBoxQuickjump(c->netId, c->netId, buf, strlen(buf) > 0x100, 0x603, *(int *)((char *)b + 1), -1, 0, 0);
+        he_MessageBoxQuickjumpI(c->netId, c->netId, buf, strlen(buf) > 0x100, 0x603, *(int *)((char *)b + 1), -1, 0, 0);
         return 0;
     }
     return 0x400;

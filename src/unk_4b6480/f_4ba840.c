@@ -30,7 +30,7 @@ int ai_Unk4ba840(AICHAR *c, int *id, float f)
                         v = (int)(v * f);
                         if (v < 1)
                             v = 1;
-                        cm_SendExSellObject(-1, *(int *)((char *)o + 2), *(unsigned short *)e, v, ai_OwnPlayer, 0);
+                        cm_SendExSellObjectI(-1, *(int *)((char *)o + 2), *(unsigned short *)e, v, ai_OwnPlayer, 0);
                     }
                 }
                 return 1;

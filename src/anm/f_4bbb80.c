@@ -21,7 +21,7 @@ void anm_UpdateBird(ANMREC *a)
         if (!gm_IsHomeType(b) && !gm_IsType10(b) && *(int *)(b + 0x61) != 0)
             bs[n++] = b;
     }
-    f = bs[util_Random(n)];
+    f = bs[util_RandomS(n)];
     e = *(char **)(f + 0x61);
     d3_PointToWorld(e, e + 0x4c, q);
     k = 0;

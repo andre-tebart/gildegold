@@ -21,7 +21,7 @@ int ai_Unk4a05e0(G5CH *p)
     else if (((unsigned char *)p)[0x167] != 0)
         k = ((unsigned char *)p)[0x167];
     if (k != 0) {
-        if (amt_GetKind((unsigned char)k, info) == 0)
+        if (amt_GetKindB((unsigned char)k, info) == 0)
             return 0;
         t = (info[8] - 1) / 3;
         if (t == 1) {

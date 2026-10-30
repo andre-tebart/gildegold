@@ -13,7 +13,7 @@ int rd_DoorPos(float *pos)
             bs[(unsigned short)n++] = b;
         b = (G15BLD *)gm_BuildNext();
     }
-    b = bs[util_Random(n)];
+    b = bs[util_RandomS(n)];
     o = d3_FindObject(b->object, 0x300, 0, "dummy_TUER");
     if (o != 0)
         d3_PointToWorld(o, o + 0x4c, pos);

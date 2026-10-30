@@ -9,7 +9,7 @@ int ai_Unk48f990(AIPX *p, AIARG *s1, AIARG *s2)
 
     if (s1->kind == 2) {
         if (s1->unk10 == 1) {
-            cm_SendExSellObject(p->netId, -1, s1->unk04, 1, ai_OwnPlayer, 0);
+            cm_SendExSellObjectI(p->netId, -1, s1->unk04, 1, ai_OwnPlayer, 0);
             cm_SendSetField(p->netId, 0x1cc, 4, 0x40000000, 0);
             return 0x48;
         }
@@ -20,7 +20,7 @@ int ai_Unk48f990(AIPX *p, AIARG *s1, AIARG *s2)
                 if (o) {
                     q = gm_Query(o->unk14, 2, 6, 0, s1->unk04);
                     if (q && q->unk0e > 1) {
-                        cm_SendExSellObject(p->netId, o->objId, s1->unk04, 1, ai_OwnPlayer, 0);
+                        cm_SendExSellObjectI(p->netId, o->objId, s1->unk04, 1, ai_OwnPlayer, 0);
                         return 0x48;
                     }
                 }

@@ -131,7 +131,7 @@ int gm_ListAmount(short *l, char *o);                                   /* 0x50a
 int gm_FreeCapacity(short *st, int good, int n);                                     /* 0x50ab80 */
 float gm_GoodsPrice(unsigned id, unsigned char p);                                   /* 0x5089c0, a price */
 int gm_Unk509ee0(char *c, char p);                                      /* 0x509ee0, ai.h: AIPER * */
-void cm_SendExSellObject(int dst, int src, int good, int n, int pl, int price);            /* 0x4c4880, @original: rt.c pushes the third argument as an int (byte-matched rt_UnloadAtPoint), against cm.h's short view */         /* 0x4c4880 */
+void cm_SendExSellObject(int a, int b, short c, int d, unsigned char e, int f);         /* 0x4c4880, cm.c */
 int io_TownDisplayName(char *name, char *out);                                    /* 0x5142e0 */
 void txt_Format(char *buf, int id, ...);                                       /* 0x5176d0 */
 int he_ShowNews(int pid, int fl, char *text, int unused, int ev, char *text2);           /* 0x53dda0 */

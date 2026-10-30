@@ -39,7 +39,7 @@ int ai_Unk4b82c0(G14MSG *m)
         he_ShowNews(c->netId, c->netId, buf, strlen(buf) > 0x100, 0x603, 0);
         x = (int)(*(float *)((char *)p + 0x1c) * 0.3);
         y = (int)(*(float *)((char *)p + 0x1c) * 0.1);
-        gm_AddHealth(p->id, -(util_Random(x) + y));
+        gm_AddHealthS(p->id, -(util_Random(x) + y));
     }
     return 0;
 }

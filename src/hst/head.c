@@ -8,4 +8,5 @@
 #include <ctype.h>
 #include "hst.h"
 #include "txt.h"
+#define gm_AddHealthS ((float (*)(unsigned short, int))gm_AddHealth)  /* 0x4fca40 (f3gm.c: unsigned id): @original this unit pushes the id as 16 bits (byte-matched ai_CommandKillPlayer / ai_Unk4b86c0) */
 

@@ -416,4 +416,5 @@ char d3d_Restore();                    /* 0x4370d0 */
 void amt_CheckOffices(void);            /* 0x4e9260, amt.h */
 
 #include "time_view.h"
+#define cm_SendExSellObjectI ((void (*)(int, int, int, int, unsigned char, int))cm_SendExSellObject)  /* 0x4c4880 (cm.h: short c): @original this unit pushes the third argument as an int (byte-matched ai_MeisterBewaffnen / ai_Unk497c80 / ai_Unk49c880) */
 

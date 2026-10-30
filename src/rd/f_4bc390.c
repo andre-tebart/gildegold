@@ -11,8 +11,8 @@ int rd_PointsNear(float *pos, int n, float (*pts)[4])
     h = ((G15SCENE *)d3_DefaultScene)->hmap;
     d3_GetHeightAt(h, pos, &px, &pz, &py);
     for (i = n; i > 0; i--) {
-        x = util_Random(10) - 4 + px;
-        z = util_Random(10) - 4 + pz;
+        x = util_RandomS(10) - 4 + px;
+        z = util_RandomS(10) - 4 + pz;
         if (h->size - 2 < x)
             x = h->size - 2;
         if (x < 2)

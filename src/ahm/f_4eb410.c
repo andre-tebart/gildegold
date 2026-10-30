@@ -9,7 +9,7 @@ void ahm_RescheduleResearch(char *o)
     while (ev != 0) {
         if (0x95 <= ev->kind && ev->kind <= 0x97) {
             ev->due = ai_Time;
-            cm_SendExSetHE(-2, (char *)ev);
+            cm_SendExSetHEI(-2, (char *)ev);
         }
         ev = (AHMRESEARCH *)he_NextEvent();
     }

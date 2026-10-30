@@ -26,7 +26,7 @@ char *ai_Unk4ce5d0(float *p, int x, int y)
     obj = d3_CreateObject(0, pos, o, "ob_BOMBE");
     *(char **)(ai_Unk935a00 + i * 0x10) = obj;
     obj[0x211] |= 4;
-    d3sm_GetVertex(g, x, y, d);
+    d3sm_GetVertexI(g, x, y, d);
     d[0] = d[0] - p[0];
     d[1] = d[1] - p[1];
     d[2] = d[2] - p[2];

@@ -59,7 +59,7 @@ int ai_Unk4ce830()
             gg = *(char **)(c + 0x184);
             if (c[8] == 0)
                 continue;
-            d3sm_GetVertex(g, *(int *)(rec + 8), *(int *)(rec + 0xc), v);
+            d3sm_GetVertexI(g, *(int *)(rec + 8), *(int *)(rec + 0xc), v);
             dx = v[0] - *(float *)(*(char **)(gg + 0x34) + 0x4c);
             dy = v[1] - *(float *)(*(char **)(gg + 0x34) + 0x50);
             dz = v[2] - *(float *)(*(char **)(gg + 0x34) + 0x54);

@@ -466,7 +466,7 @@ int gm_FindById(int *bld, int *obj, int *chr, int id);  /* 0x4fea50, fills *bld 
 int gm_EquipmentValue(unsigned char *b, int unused);                     /* 0x509b10 */
 void ord_CountGridObjects(void);               /* 0x4f8360 */
 
-int d3sm_GetVertex();                   /* 0x45f100, @original: d3_sm.c defines char d3sm_GetVertex(D3SM *, int, int, D3VECTOR *); the byte-matched unk_Unk4f86a0 (ord.c) reads an int result (no 0f be c0 after the call) */
+char d3sm_GetVertex(struct D3SM *h, int x, int z, struct D3VECTOR *out);                              /* 0x45f100, d3_sm.c (this unit's callers read an int: d3sm_GetVertexI) */
 extern char ord_KindTable[];            /* 0x617468, 0x58 pairs of ints */
 int unk_Unk4f86a0(int x, int y, int z);  /* 0x4f86a0 */
 int ord_GetKindRecord(int i, int *out);     /* 0x4f8890 */

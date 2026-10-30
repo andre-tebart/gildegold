@@ -19,8 +19,8 @@ void anm_Update(void)
     if (d3_Time > anm_LastSpawn + 0x15e) {
         ANMREC *a;
 
-        if ((int)(util_Random(m * 2) - m) > anm_NAnimals && s != 3 && (a = anm_NewAnimal()) != 0) {
-            switch (util_Random(100) > 0x1e ? util_Random(5) + 3 : util_Random(2)) {
+        if ((int)(util_RandomS(m * 2) - m) > anm_NAnimals && s != 3 && (a = anm_NewAnimal()) != 0) {
+            switch (util_RandomS(100) > 0x1e ? util_RandomS(5) + 3 : util_RandomS(2)) {
             case 1:
                 anm_CreateCat(a);
                 break;

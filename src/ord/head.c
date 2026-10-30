@@ -8,6 +8,7 @@
 #include "gv.h"
 #include "di_input.h"
 #include "data_views.h"
+#define d3sm_GetVertexI ((int (*)())d3sm_GetVertex)  /* 0x45f100 (d3_sm.c: char, D3SM *, int, int, D3VECTOR *): @original this unit's callers read an int result (byte-matched unk_Unk4f86a0 (ord.c): no 0f be c0 after the call) */
 extern char d3_Scenes[];
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */

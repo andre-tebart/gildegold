@@ -18,12 +18,12 @@ int ai_Unk494ac0(AIGRP *g, int send)
         return -5;
     r = 5 - g->unk28;
     p = 5 - g->unk24;
-    lv = gm_Unk505e60(g->leader->id, 0);
+    lv = gm_Unk505e60S(g->leader->id, 0);
     base = lv - lv / 3 - lv / 4 + p + r;
     for (i = 0; i < g->n; i++) {
         if (!g->mem[i].ch)
             return -6;
-        d = gm_Unk505e60(g->mem[i].ch->id, 0);
+        d = gm_Unk505e60S(g->mem[i].ch->id, 0);
         g->mem[i].d = max(min(base - d, 2), -2);
     }
     for (i = 0; i < g->n; i++) {

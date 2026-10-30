@@ -18,7 +18,7 @@ void ai_Unk4cf670()
         ai_Unk6f22e8 = d3if_Pick((float)dm_L.x, (float)dm_L.y, 0x40, 1);
         if (ai_Unk6f22e8 == 0 && ai_Unk6f0d08 != 0) {
             if ((d3sm_Pick(sc, dm_L.x + 0x1a, dm_L.y + 0x1a, &py, &px) & 0xff) != -1) {
-                d3sm_GetVertex(sc, py, px, v);
+                d3sm_GetVertexI(sc, py, px, v);
                 h = v[1] + ai_Unk5ebb68;
                 d2_PointerLook = 0;
             }

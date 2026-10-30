@@ -50,8 +50,8 @@ int ai_Unk4ba630(G14MSG *m)
         p = c;
     if (b == 0 || p == 0)
         return 0x400;
-    cm_SendExSellObject(b->id, -1, util_Random(2) + 0x134, 1, ai_OwnPlayer, 0);
+    cm_SendExSellObjectI(b->id, -1, util_Random(2) + 0x134, 1, ai_OwnPlayer, 0);
     txt_Format(buf, m->type + 0x12e7, p->id);
-    he_MessageBoxQuickjump(c->netId, c->netId, buf, strlen(buf) > 0x100, 0x603, b->id, -1, 0, 0);
+    he_MessageBoxQuickjumpI(c->netId, c->netId, buf, strlen(buf) > 0x100, 0x603, b->id, -1, 0, 0);
     return 0;
 }

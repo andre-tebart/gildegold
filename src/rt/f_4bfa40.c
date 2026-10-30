@@ -54,7 +54,7 @@ void rt_UnloadAtPoint(char *c, int pl)
                             price = (int)(gm_GoodsPrice(*g, ai_OwnPlayer) * *(float *)(b + 0x49));
                     }
                     if (gm_Unk509ee0(o, pl) >= price * n)
-                        cm_SendExSellObject(*(int *)(st + 2), *(int *)(ci.stock + 2), s[0], n, pl, price);
+                        cm_SendExSellObjectI(*(int *)(st + 2), *(int *)(ci.stock + 2), s[0], n, pl, price);
                 }
             }
         }

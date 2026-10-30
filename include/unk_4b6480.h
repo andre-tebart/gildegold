@@ -25,7 +25,7 @@ typedef struct G14REC {
 
 int amt_KindColumn(int k);                                                       /* 0x4e6f10, the office column of the kind k */
 int amt_GetColumnOffices(int col, int max, struct AMTREC *out);                  /* 0x4e6fc0, up to max offices of the column col */
-float gm_AddHealth(unsigned short id, int d);                                  /* 0x4fca40, @original: f3gm.c defines `unsigned id, int d`; the byte-matched ai_Unk4b86c0 (unk_4b6480.c) pushes p->id as 16 bits */
+float gm_AddHealth(unsigned id, int d);                                    /* 0x4fca40, f3gm.c */
 
 int gm_Unk5054f0(AICHAR *c);                                                     /* 0x5054f0 */
 int gm_Unk5056a0(AICHAR *c);                                                     /* 0x5056a0 */
@@ -35,7 +35,7 @@ void gm_ClockToDate(struct GCLOCK *c, unsigned char *out);                      
 int gm_Season(unsigned char *d);                                             /* 0x4fe330, the season of a calendar record (f3gm.c's gm_Season) */
 void ai_Unk4c6020(int a, int b, int c);                                /* 0x4c6020 */
 void ai_Unk4c5010(int a, int b, int c);                                         /* 0x4c5010 */
-void cm_SendExSetHE(int a, void *j);                                              /* 0x4c4c60, @original: the callers push the key as an int (byte-matched ai_Unk4b8c80), against cm.h's unsigned char view */                                               /* 0x4c4c60 */
+void cm_SendExSetHE(unsigned char k, char *p);                                     /* 0x4c4c60, cm.c */
 #define G14_4FEA50(a, o, b, k) ((int (*)(int, void *, int, int))gm_FindById)(a, o, b, k)  /* object out 2nd */
 #define G14_5087F0(a, b) ((float (*)(int, unsigned char))gm_ItemPrice)(a, b)  /* ai.h: int n */
 

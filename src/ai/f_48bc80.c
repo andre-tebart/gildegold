@@ -130,7 +130,7 @@ int ai_MeisterTradeAllgemein(AICHAR *ch, AIOBJ *b)
                                 n = min(rec.amount[i], stA.max[j] - stA.amount[j]);
                                 if (n) {
                                     sprintf(buf, SELL_FMT, b->objId, market->objId, rec.item[i], n, ai_OwnPlayer, 0);
-                                    cm_SendExSellObject(b->objId, market->objId, rec.item[i], n, ai_OwnPlayer, 0);
+                                    cm_SendExSellObjectI(b->objId, market->objId, rec.item[i], n, ai_OwnPlayer, 0);
                                 }
                                 rec.amount[i] -= n;
                                 if (!rec.amount[i])
@@ -147,7 +147,7 @@ int ai_MeisterTradeAllgemein(AICHAR *ch, AIOBJ *b)
                                 if (rec.amount[i] < n)
                                     n = rec.amount[i];
                                 sprintf(buf, SELL_FMT, b->objId, market->objId, rec.item[i], n, ai_OwnPlayer, 0);
-                                cm_SendExSellObject(b->objId, market->objId, rec.item[i], n, ai_OwnPlayer, 0);
+                                cm_SendExSellObjectI(b->objId, market->objId, rec.item[i], n, ai_OwnPlayer, 0);
                                 rec.amount[i] -= n;
                                 if (!rec.amount[i])
                                     rec.item[i] = 0;
@@ -166,7 +166,7 @@ int ai_MeisterTradeAllgemein(AICHAR *ch, AIOBJ *b)
                                             ch->bld->name, stA.amount[j], ai_Goods[stA.item[j]].name);
                                     sprintf(buf, SELL_FMT, -1, b->objId, stA.item[j], stA.amount[j], ai_OwnPlayer,
                                             (double)(int)gm_GoodsPrice(stA.item[j], ai_OwnPlayer));
-                                    cm_SendExSellObject(-1, b->objId, stA.item[j], stA.amount[j], ai_OwnPlayer,
+                                    cm_SendExSellObjectI(-1, b->objId, stA.item[j], stA.amount[j], ai_OwnPlayer,
                                                  (int)gm_GoodsPrice(stA.item[j], ai_OwnPlayer));
                                     ch->budget += gm_GoodsPrice(stA.item[j], ai_OwnPlayer);
                                     stA.item[j] = 0;
@@ -175,7 +175,7 @@ int ai_MeisterTradeAllgemein(AICHAR *ch, AIOBJ *b)
                                     if (rec.amount[i] < n)
                                         n = rec.amount[i];
                                     sprintf(buf, SELL_FMT, b->objId, market->objId, rec.item[i], n, ai_OwnPlayer, 0);
-                                    cm_SendExSellObject(b->objId, market->objId, rec.item[i], n, ai_OwnPlayer, 0);
+                                    cm_SendExSellObjectI(b->objId, market->objId, rec.item[i], n, ai_OwnPlayer, 0);
                                     rec.amount[i] -= n;
                                     if (!rec.amount[i])
                                         rec.item[i] = 0;
@@ -191,7 +191,7 @@ int ai_MeisterTradeAllgemein(AICHAR *ch, AIOBJ *b)
                                 ch->bld->name, rec.amount[i], ai_Goods[rec.item[i]].name);
                         sprintf(buf, SELL_FMT, -1, market->objId, rec.item[i], rec.amount[i], ai_OwnPlayer,
                                 (double)(int)gm_GoodsPrice(rec.item[i], ai_OwnPlayer));
-                        cm_SendExSellObject(-1, market->objId, rec.item[i], rec.amount[i], ai_OwnPlayer,
+                        cm_SendExSellObjectI(-1, market->objId, rec.item[i], rec.amount[i], ai_OwnPlayer,
                                      (int)gm_GoodsPrice(rec.item[i], ai_OwnPlayer));
                         ch->budget += gm_GoodsPrice(rec.item[i], ai_OwnPlayer);
                         rec.item[i] = 0;
@@ -219,7 +219,7 @@ int ai_MeisterTradeAllgemein(AICHAR *ch, AIOBJ *b)
                                 if (lim < n)
                                     n = lim;
                                 sprintf(buf, SELL_FMT, market->objId, b->objId, stA.item[i], n, ai_OwnPlayer, 0);
-                                cm_SendExSellObject(market->objId, b->objId, stA.item[i], n, ai_OwnPlayer, 0);
+                                cm_SendExSellObjectI(market->objId, b->objId, stA.item[i], n, ai_OwnPlayer, 0);
                                 msg.u.item[nsell] = stA.item[i];
                                 msg.dst[nsell] = ai_MarketBuilding->id;
                                 nsell++;
@@ -229,7 +229,7 @@ int ai_MeisterTradeAllgemein(AICHAR *ch, AIOBJ *b)
                             }
                         }
                         if (!stA.amount[i]) {
-                            cm_SendRemoveGoods(b->objId, stA.item[i]);
+                            cm_SendRemoveGoodsI(b->objId, stA.item[i]);
                             stA.item[i] = 0;
                         }
                     }
@@ -244,7 +244,7 @@ int ai_MeisterTradeAllgemein(AICHAR *ch, AIOBJ *b)
                             if (lim < n)
                                 n = lim;
                             sprintf(buf, SELL_FMT, market->objId, b->objId, ai_Entries[i].item, n, ai_OwnPlayer, 0);
-                            cm_SendExSellObject(market->objId, b->objId, ai_Entries[i].item, n, ai_OwnPlayer, 0);
+                            cm_SendExSellObjectI(market->objId, b->objId, ai_Entries[i].item, n, ai_OwnPlayer, 0);
                             msg.u.item[nsell] = ai_Entries[i].item;
                             msg.dst[nsell] = ai_MarketBuilding->id;
                             nsell++;
@@ -262,7 +262,7 @@ int ai_MeisterTradeAllgemein(AICHAR *ch, AIOBJ *b)
                                 ch->bld->name, ai_Slots[i].sellAmount, ai_Goods[ai_Slots[i].item].name);
                         sprintf(buf, SELL_FMT, -1, b->objId, ai_Slots[i].item, ai_Slots[i].sellAmount, ai_OwnPlayer,
                                 (int)gm_GoodsPrice(ai_Slots[i].item, ai_OwnPlayer));
-                        cm_SendExSellObject(-1, b->objId, ai_Slots[i].item, ai_Slots[i].sellAmount, ai_OwnPlayer,
+                        cm_SendExSellObjectI(-1, b->objId, ai_Slots[i].item, ai_Slots[i].sellAmount, ai_OwnPlayer,
                                      (int)gm_GoodsPrice(ai_Slots[i].item, ai_OwnPlayer));
                         ai_Slots[i].sellAmount = 0;
                     } else {
@@ -273,7 +273,7 @@ int ai_MeisterTradeAllgemein(AICHAR *ch, AIOBJ *b)
                                 if (lim < n)
                                     n = lim;
                                 sprintf(buf, SELL_FMT, market->objId, b->objId, ai_Slots[i].item, n, ai_OwnPlayer, 0);
-                                cm_SendExSellObject(market->objId, b->objId, ai_Slots[i].item, n, ai_OwnPlayer, 0);
+                                cm_SendExSellObjectI(market->objId, b->objId, ai_Slots[i].item, n, ai_OwnPlayer, 0);
                                 msg.u.item[nsell] = ai_Slots[i].item;
                                 msg.dst[nsell] = ai_MarketBuilding->id;
                                 nsell++;

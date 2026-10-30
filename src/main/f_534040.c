@@ -15,10 +15,10 @@ void main_Unk534040(int p)
         l = gm_Query(*(int *)(o + 0x5d), 1, 0, 0x13);
         if (l != 0)
             gm_Unk502a60(o, l, p);
-        cm_SendExSellObject(*(int *)(o + 1), -1, 0x15, 1, *(unsigned char *)(unsigned)&ai_OwnPlayer, 0);
-        cm_SendExSellObject(*(int *)(o + 1), -1, 0x17, 1, *(unsigned char *)(unsigned)&ai_OwnPlayer, 0);
-        cm_SendExSellObject(*(int *)(o + 1), -1, 0x18, 1, *(unsigned char *)(unsigned)&ai_OwnPlayer, 0);
-        cm_SendExSellObject(*(int *)(o + 1), -1, 0x14, 1, *(unsigned char *)(unsigned)&ai_OwnPlayer, 0);
+        cm_SendExSellObjectI(*(int *)(o + 1), -1, 0x15, 1, *(unsigned char *)(unsigned)&ai_OwnPlayer, 0);
+        cm_SendExSellObjectI(*(int *)(o + 1), -1, 0x17, 1, *(unsigned char *)(unsigned)&ai_OwnPlayer, 0);
+        cm_SendExSellObjectI(*(int *)(o + 1), -1, 0x18, 1, *(unsigned char *)(unsigned)&ai_OwnPlayer, 0);
+        cm_SendExSellObjectI(*(int *)(o + 1), -1, 0x14, 1, *(unsigned char *)(unsigned)&ai_OwnPlayer, 0);
     }
     o = gm_BuildQuery(1, 0, 0x20);
     if (o != 0) {
@@ -32,7 +32,7 @@ void main_Unk534040(int p)
         o = gm_Query(*(int *)(o + 0x5d), 2, 6, 0, 0x2a);
         if (o != 0) {
             cm_BeginSendGroup();
-            cm_SendExSellObject(*(int *)(o + 2), -1, 0x1d0, 0x19, *(unsigned char *)(unsigned)&ai_OwnPlayer, 0);
+            cm_SendExSellObjectI(*(int *)(o + 2), -1, 0x1d0, 0x19, *(unsigned char *)(unsigned)&ai_OwnPlayer, 0);
             cm_EndSendGroup();
             while (cm_SendGroupState() == 0)
                 sv_PumpNet();
@@ -44,10 +44,10 @@ void main_Unk534040(int p)
         o = gm_Query(*(int *)(o + 0x5d), 2, 6, 0, 0x2a);
         if (o != 0) {
             cm_BeginSendGroup();
-            cm_SendExSellObject(*(int *)(o + 2), -1, 0x1d0, 0x14, *(unsigned char *)(unsigned)&ai_OwnPlayer, 0);
-            cm_SendExSellObject(*(int *)(o + 2), -1, 0x1d7, 0xf, *(unsigned char *)(unsigned)&ai_OwnPlayer, 0);
-            cm_SendExSellObject(*(int *)(o + 2), -1, 0x1d6, 0xf, *(unsigned char *)(unsigned)&ai_OwnPlayer, 0);
-            cm_SendExSellObject(*(int *)(o + 2), -1, 0x158, 10, *(unsigned char *)(unsigned)&ai_OwnPlayer, 0);
+            cm_SendExSellObjectI(*(int *)(o + 2), -1, 0x1d0, 0x14, *(unsigned char *)(unsigned)&ai_OwnPlayer, 0);
+            cm_SendExSellObjectI(*(int *)(o + 2), -1, 0x1d7, 0xf, *(unsigned char *)(unsigned)&ai_OwnPlayer, 0);
+            cm_SendExSellObjectI(*(int *)(o + 2), -1, 0x1d6, 0xf, *(unsigned char *)(unsigned)&ai_OwnPlayer, 0);
+            cm_SendExSellObjectI(*(int *)(o + 2), -1, 0x158, 10, *(unsigned char *)(unsigned)&ai_OwnPlayer, 0);
             cm_EndSendGroup();
             while (cm_SendGroupState() == 0)
                 sv_PumpNet();
@@ -65,7 +65,7 @@ void main_Unk534040(int p)
     o = gm_BuildQuery(1, 0, 0x14);
     if (o != 0) {
         gm_AssignBuilding(o, p, p);
-        cm_SendExSellObject(*(int *)(o + 1), -1, 0xf7, 1, *(unsigned char *)(unsigned)&ai_OwnPlayer, 0);
+        cm_SendExSellObjectI(*(int *)(o + 1), -1, 0xf7, 1, *(unsigned char *)(unsigned)&ai_OwnPlayer, 0);
     }
     o = gm_BuildQuery(1, 0, 0x32);
     if (o != 0) {
@@ -73,9 +73,9 @@ void main_Unk534040(int p)
         o = gm_Query(*(int *)(o + 0x5d), 2, 6, 0, 0x2a);
         if (o != 0) {
             cm_BeginSendGroup();
-            cm_SendExSellObject(*(int *)(o + 2), -1, 0x1cb, 10, *(unsigned char *)(unsigned)&ai_OwnPlayer, 0);
-            cm_SendExSellObject(*(int *)(o + 2), -1, 0x1cc, 10, *(unsigned char *)(unsigned)&ai_OwnPlayer, 0);
-            cm_SendExSellObject(*(int *)(o + 2), -1, 0x1d0, 10, *(unsigned char *)(unsigned)&ai_OwnPlayer, 0);
+            cm_SendExSellObjectI(*(int *)(o + 2), -1, 0x1cb, 10, *(unsigned char *)(unsigned)&ai_OwnPlayer, 0);
+            cm_SendExSellObjectI(*(int *)(o + 2), -1, 0x1cc, 10, *(unsigned char *)(unsigned)&ai_OwnPlayer, 0);
+            cm_SendExSellObjectI(*(int *)(o + 2), -1, 0x1d0, 10, *(unsigned char *)(unsigned)&ai_OwnPlayer, 0);
             cm_EndSendGroup();
             while (cm_SendGroupState() == 0)
                 sv_PumpNet();
@@ -97,9 +97,9 @@ void main_Unk534040(int p)
         o = gm_Query(*(int *)(o + 0x5d), 2, 6, 0, 0x2a);
         if (o != 0) {
             cm_BeginSendGroup();
-            cm_SendExSellObject(*(int *)(o + 2), -1, 0x1cb, 10, *(unsigned char *)(unsigned)&ai_OwnPlayer, 0);
-            cm_SendExSellObject(*(int *)(o + 2), -1, 0x1cc, 10, *(unsigned char *)(unsigned)&ai_OwnPlayer, 0);
-            cm_SendExSellObject(*(int *)(o + 2), -1, 0x1d0, 10, *(unsigned char *)(unsigned)&ai_OwnPlayer, 0);
+            cm_SendExSellObjectI(*(int *)(o + 2), -1, 0x1cb, 10, *(unsigned char *)(unsigned)&ai_OwnPlayer, 0);
+            cm_SendExSellObjectI(*(int *)(o + 2), -1, 0x1cc, 10, *(unsigned char *)(unsigned)&ai_OwnPlayer, 0);
+            cm_SendExSellObjectI(*(int *)(o + 2), -1, 0x1d0, 10, *(unsigned char *)(unsigned)&ai_OwnPlayer, 0);
             cm_EndSendGroup();
             while (cm_SendGroupState() == 0)
                 sv_PumpNet();

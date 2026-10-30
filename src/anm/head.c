@@ -6,4 +6,5 @@
 #include <stdio.h>
 #include <string.h>
 #include "anm.h"
+#define util_RandomS ((unsigned short (*)(unsigned short))util_Random)  /* 0x42ec00 (as ai.h: unsigned short (int)): this unit's callers were compiled against the 16-bit parameter (as ahm.c's) */
 

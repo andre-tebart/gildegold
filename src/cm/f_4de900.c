@@ -68,7 +68,7 @@ void ai_Unk4de900(char *a, char *b)
         snd_PlayVoice(*(unsigned short *)a, 0, "_DUELL_INTRO_C2_AUSWAHL_SCHIESSEN", n);
         ai_Unk4e3420(2);
         io_PrintText("$N");
-        n = ch_AddActionCB(*(char **)(a + 0x184), ai_Unk4de640, 6, 0x2e, 1);
+        n = ch_AddActionCBK(*(char **)(a + 0x184), ai_Unk4de640, 6, 0x2e, 1);
         *(char **)(n + 0x17c) = b;
         *(char **)(n + 0x180) = a;
         strcpy((char *)n + 0xf0, "kampf/schiessen_pistole");

@@ -9,5 +9,5 @@ char *rd_RandomNamedObject(char *name)
     d3_ForEachObject(d3_DefaultScene, 0, 0x380, rd_CollectNamed, &f);
     if (f.n == 0)
         return 0;
-    return f.objs[util_Random(f.n)];
+    return f.objs[util_RandomS(f.n)];
 }

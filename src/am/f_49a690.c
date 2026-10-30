@@ -36,7 +36,7 @@ int ai_Unk49a690(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         return 0;
     if (st[0] < 6) {
         if (st[2] == 0) {
-            if (amt_GetKind(((unsigned char *)p)[0x166], info) == 0)
+            if (amt_GetKindB(((unsigned char *)p)[0x166], info) == 0)
                 i = 7;
             else if ((unsigned char)info[2] < 4)
                 i = 0;

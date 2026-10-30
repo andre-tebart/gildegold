@@ -589,8 +589,8 @@ int cm_AddFieldValues(unsigned char size, unsigned char n, unsigned short field,
 void cm_BeginGroup(const char *s);                                        /* 0x4c4540 */
 void cm_EndGroup(const char *s);                                        /* 0x4c4580 */
 void cm_SendMoveGoods(int a, int b, unsigned char c, int d);                 /* 0x4c47e0 */
-void cm_SendExSellObject(int from, int to, int item, int n, unsigned char k, int price); /* 0x4c4880, @original: ai.c / am.c / rt.c push the third argument as an int (byte-matched ai_MeisterBewaffnen / ai_Unk497c80 / ai_Unk49c880 / rt_UnloadAtPoint: plain mov, no movsx ax), against cm.h's short view */ /* 0x4c4880 */
-void cm_SendRemoveGoods(int a, int item);                                      /* 0x4c4960, @original: ai.c pushes the second argument as an int (byte-matched ai_SendRemoveEmptyGoods), against cm.h's short view */                                      /* 0x4c4960 */
+void cm_SendExSellObject(int a, int b, short c, int d, unsigned char e, int f);         /* 0x4c4880, cm.c */
+void cm_SendRemoveGoods(int a, short b);                                               /* 0x4c4960, cm.c */
 void cm_SendFieldDeltas(void);                                                 /* 0x4c49a0, sends the message */
 void cm_SendRelations(int a, int b, int c, int d);                  /* 0x4c4b00 */
 int cm_SendLongMessage(char *msg);                                           /* 0x4c4b70 */
@@ -620,7 +620,7 @@ int gm_BuildingClass(int type);    /* 0x501d80, the class 0 .. 9 of ai_BTypes[ty
 char * gm_FindBuildingById(int id);                                             /* 0x502020 */
 int gm_IsHomeType(unsigned char *bld);                                            /* 0x502520 */
 short * gm_FindChar(int id);                                            /* 0x505df0 */
-int gm_Unk505e60(unsigned short id, int x);                              /* 0x505e60, @original: f3gm.c defines `unsigned id, int again`; the byte-matched am.c callers (ai_Unk494a30 / ai_Unk494ac0 / ai_Unk494d40) push the id as 16 bits (mov cx,[esi], no xor ecx) */
+int gm_Unk505e60(unsigned id, int again);                              /* 0x505e60, f3gm.c */
 short * gm_PlayerRecord(char *ch);                                         /* 0x506430 */
 int gm_SumSlotAmounts(void *list, unsigned char i);                             /* 0x508660 */
 float gm_ObjectValue(int item);                                            /* 0x5086b0 */
@@ -645,7 +645,7 @@ int init_BuildingSceneUniverse(AIBLD *bld);                                     
 void txt_Format(char *buf, int id, ...);                               /* 0x5176d0 */
 int ls_GetLanguage(void);                                                  /* 0x5190a0 */
 void sv_MoveToGroup(unsigned char *o, short *it, int c, char *g);                /* 0x524260, every caller zero-extends the id */
-void he_MessageBoxQuickjump(int a, int b, char *buf, int c, int d, int e, int f, int g, int h); /* 0x53dee0, @original: he.c defines `char fl` (fourth); the byte-matched ai_Unk4baa80 / ai_Unk4baba0 (unk_4b6480.c) build the strlen() > 0x100 flag as an int (mov eax,0x100 / sbb / neg, not seta cl) */
+void he_MessageBoxQuickjump(int a1, int a2, char *text, char fl, int a5, int a6, int a7, char *jump, char *text2);                     /* 0x53dee0, he.c */
 char * he_NextEvent(void);                                             /* 0x53e300, next of he_FindEvent */
 char * he_FindEvent(int n, ...);                                         /* 0x53e400, n (key, value) pairs */
 int he_Unk553cc0(AIBLD *bld);                                            /* 0x553cc0 */

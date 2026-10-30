@@ -6,7 +6,7 @@ void ai_Unk4d6f90(char *f)
 
     if (*(int *)(f + 4) != 0 && *(int *)f != -1) {
         c = ai_Unk4ce130(*(int *)f);
-        ev = (char *)ch_AddActionCB(*(char **)(c + 0x184), (unsigned)&ai_Unk4d3ac0, 5, 0x2e, 1);
+        ev = (char *)ch_AddActionCBK(*(char **)(c + 0x184), (unsigned)&ai_Unk4d3ac0, 5, 0x2e, 1);
         *(char **)(ev + 0x17c) = c;
         strcpy(ev + 0xf0, "gestik/jubeln");
     }

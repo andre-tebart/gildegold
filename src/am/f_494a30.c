@@ -7,8 +7,8 @@ int ai_Unk494a30(AIC4 *a, AIC4 *b)
 
     if (a->netId == (unsigned int)b->partner)
         return 0;
-    x = gm_Unk505e60(a->id, 0);
-    y = gm_Unk505e60(b->id, 0);
+    x = gm_Unk505e60S(a->id, 0);
+    y = gm_Unk505e60S(b->id, 0);
     t = (float)(y - x) * 2.5f;
     s = gm_Liking(a->id, b->id, 1) + t;
     if (s < util_RandomF() * 75.0f)

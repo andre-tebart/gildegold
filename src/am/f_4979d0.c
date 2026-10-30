@@ -32,9 +32,9 @@ int ai_Unk4979d0(AIPER *p, AIARG *s1, AIARG *s2)
         if (!it)
             return 0;
         cm_SendMoveGoods(-1, it->objId, ai_OwnPlayer, price);
-        cm_SendExSellObject(id, -1, s1->unk04, s1->unk08, ai_OwnPlayer, 0);
+        cm_SendExSellObjectI(id, -1, s1->unk04, s1->unk08, ai_OwnPlayer, 0);
         return 0x39;
     }
-    cm_SendExSellObject(id, -1, s1->unk04, s1->unk08, ai_OwnPlayer, (int)gm_GoodsPrice(s1->unk04, ai_OwnPlayer));
+    cm_SendExSellObjectI(id, -1, s1->unk04, s1->unk08, ai_OwnPlayer, (int)gm_GoodsPrice(s1->unk04, ai_OwnPlayer));
     return 11;
 }

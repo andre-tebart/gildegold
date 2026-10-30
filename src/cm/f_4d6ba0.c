@@ -37,7 +37,7 @@ void ai_Unk4d6ba0(char *f)
                     mode = kill != 0 ? 8 : 2;
                 else
                     mode = kill != 0 ? 6 : 2;
-                ev = (char *)ch_AddActionCB(*(char **)(c + 0x184), (unsigned)&ai_Unk4d3550, mode, 0x2e, 1);
+                ev = (char *)ch_AddActionCBK(*(char **)(c + 0x184), (unsigned)&ai_Unk4d3550, mode, 0x2e, 1);
                 *(float *)(ev + 0x178) = 1.4f;
                 *(char **)(ev + 0x17c) = tgt;
                 *(char **)(ev + 0x180) = c;
@@ -54,7 +54,7 @@ void ai_Unk4d6ba0(char *f)
         }
     }
     if (*(int *)k == 0x174 && *(int *)(f + 0x20) != 0) {
-        ev = (char *)ch_AddActionCB(*(char **)(c + 0x184), (unsigned)&ai_Unk4d3980, 6, 0x2e, 1);
+        ev = (char *)ch_AddActionCBK(*(char **)(c + 0x184), (unsigned)&ai_Unk4d3980, 6, 0x2e, 1);
         *(char **)(ev + 0x17c) = tgt;
         *(char **)(ev + 0x180) = c;
         *(int *)(ev + 0x184) = *(int *)(f + 0x14);
@@ -70,7 +70,7 @@ void ai_Unk4d6ba0(char *f)
         }
     }
     if (*(int *)k == 0x176 && f[0x1d] != 0) {
-        ev = (char *)ch_AddActionCB(*(char **)(c + 0x184), (unsigned)&ai_Unk4d3a30, 5, 0x2e, 1);
+        ev = (char *)ch_AddActionCBK(*(char **)(c + 0x184), (unsigned)&ai_Unk4d3a30, 5, 0x2e, 1);
         *(char **)(ev + 0x17c) = c;
         *(int *)(ev + 0x180) = *(int *)(f + 0x14);
         *(int *)(ev + 0x184) = *(int *)(f + 0x18);

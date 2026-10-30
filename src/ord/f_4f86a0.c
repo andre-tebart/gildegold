@@ -11,5 +11,5 @@ int unk_Unk4f86a0(int x, int y, int z)
     n = *(int *)(s + 0x20) / 8;
     a = util_Random(n) + n * x;
     b = util_Random(n) + n * y;
-    return d3sm_GetVertex(s, a, b, z);
+    return d3sm_GetVertexI(s, a, b, z);
 }

@@ -15,7 +15,7 @@ G5CH *ai_Unk4a0240(G5CH *p)
     int flags;
 
     if (((unsigned char *)p)[0x166] == 0) {
-        amt_GetKind(((unsigned char *)p)[0x167], key);
+        amt_GetKindB(((unsigned char *)p)[0x167], key);
         for (o = G5_CHARS; o < G5_CHARS + 768; o++) {
             if (((unsigned char *)o)[0x166] != 0 && amt_FindOffice(o, key, out) != 0 && info[0] < 2) {
                 if (best == 0) {

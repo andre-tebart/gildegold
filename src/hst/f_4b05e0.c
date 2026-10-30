@@ -6,7 +6,7 @@ int ai_CommandKillPlayer(G12ARG *args, int k)
     AICHAR *c;
 
     if (args != 0 && k < 8 && (c = gm_FindChar(args[k].id)) != 0) {
-        gm_AddHealth(c->id, (int)-(gm_CharacterHealth((short *)c) + 1.0f));
+        gm_AddHealthS(c->id, (int)-(gm_CharacterHealth((short *)c) + 1.0f));
         return 1;
     }
     return 0;

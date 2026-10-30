@@ -21,8 +21,8 @@ AICHAR *ai_FindPartner(AICHAR *c)
         do {
             id = c->id;
             if (i != id && o->kind == 6 || o->kind == 7 || ai_WorksForMaster(o) && (o->jobId || o->prevOffice)) {
-                d = gm_Unk505e60(i, 0);
-                d = d - gm_Unk505e60(id, 0);
+                d = gm_Unk505e60S(i, 0);
+                d = d - gm_Unk505e60S(id, 0);
                 d = abs(d);
                 f = (10.0f - (float)d * 0.5f) * 0.1f;
                 if (ai_RelationMemory[i][c->id] * f < bestf && gm_Liking(i, c->id, 1) < 34.0f) {

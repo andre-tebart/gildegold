@@ -21,7 +21,7 @@ int ai_Unk493be0(AGCH *p, AIOBJ *o)
             float d;
             int x;
 
-            if (amt_GetKind(p->unk166, info) == 0)
+            if (amt_GetKindB(p->unk166, info) == 0)
                 return 0;
             nn = amt_GetColumnOffices(info[1], 6, rec);
             if (nn == 0)

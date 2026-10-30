@@ -77,7 +77,7 @@ void d2_InputKey(void)
             if (d2_TextCursorSprite == -1)
                 d2_TextCursorSprite = d2_CreatePicObj(d2_TextCursorX, d2_TextCursorY - 7, d2_ExtraSymbolsPic + 8);
             else
-                d2_MoveObj(d2_TextCursorX, d2_TextCursorY - 7, d2_TextCursorSprite);
+                d2_MoveObjI(d2_TextCursorX, d2_TextCursorY - 7, d2_TextCursorSprite);
         }
         kb_Last = 0;
         break;
@@ -107,6 +107,6 @@ void d2_InputKey(void)
             D2CUR->value = atoi(D2CUR->text);
         d2_TextCursorX = d2_TextWidth(D2CUR->text, D2CUR->font) + D2CUR->x;
         if (d2_TextCursorSprite != -1)
-            d2_MoveObj(d2_TextCursorX, d2_TextCursorY - 7, d2_TextCursorSprite);
+            d2_MoveObjI(d2_TextCursorX, d2_TextCursorY - 7, d2_TextCursorSprite);
     }
 }

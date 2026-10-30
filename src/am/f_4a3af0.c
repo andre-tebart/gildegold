@@ -47,7 +47,7 @@ void ai_FillNearRing(AICHAR *c)
         dist[1] = 0;
         dist[2] = 0;
         g = amt_GetKindLevel(((unsigned char *)p)[0x166]);
-        amt_GetKind(((unsigned char *)p)[0x166], kind);
+        amt_GetKindB(((unsigned char *)p)[0x166], kind);
         if (kind[1] >= 1 && kind[1] <= 3) {
             k2 = 3;
             if (kind[1] == 1) {

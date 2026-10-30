@@ -14,7 +14,7 @@ int ai_Unk4d3390(char *c)
         return 0;
     d3t_CreateBlood(*(char **)(c + 0x184) + 0, 0x40, 0.25f, 0.1f, 0.14f, 55.0f);
     ch_StopActions(*(char **)(c + 0x184));
-    b = (char *)ch_AddActionCB(*(char **)(c + 0x184), ai_Unk4d3300, 0x14, 0x36, 1);
+    b = (char *)ch_AddActionCBK(*(char **)(c + 0x184), ai_Unk4d3300, 0x14, 0x36, 1);
     strcpy(b + 0xf0, "kampf/todumfallen");
     c[8] = 0;
     m = *(char **)(*(char **)(c + 0x184) + 0x34);

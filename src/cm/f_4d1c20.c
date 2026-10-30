@@ -28,8 +28,8 @@ void ai_Unk4d1c20(char *side, int id)
         d3_PointToWorld(o, o + 0x4c, v);
         if ((char)d3_GetHeightAt(sc, v, &a, &b, &h) == 0)
             return;
-        ch_FindFreeCell(sc, *(char **)(*(char **)(c + 0x184) + 0x34) + 0x4c, *(char **)(*(char **)(c + 0x184) + 0x34) + 0x4c, a, b, w, 2, 0);
-        d3sm_GetVertex(sc, a, b, w);
+        ch_FindFreeCellK(sc, *(char **)(*(char **)(c + 0x184) + 0x34) + 0x4c, *(char **)(*(char **)(c + 0x184) + 0x34) + 0x4c, a, b, w, 2, 0);
+        d3sm_GetVertexI(sc, a, b, w);
         ch_SetPos(*(char **)(c + 0x184), u, 1);
         u[0] = 0;
         u[1] = 0;

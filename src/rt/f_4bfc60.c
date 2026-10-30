@@ -61,7 +61,7 @@ void rt_Unk4bfc60(char *c, char pl)
                         txt_Format(buf, 0x42f0, name, 0xc14, name, pl);
                         he_ShowNews(*(int *)(o + 2), -1, buf, 0, 0x5ef, ch_EmptyName);
                     }
-                    cm_SendExSellObject(*(int *)(ci.stock + 2), *(int *)(st + 2), s[0], n, pl, price);
+                    cm_SendExSellObjectI(*(int *)(ci.stock + 2), *(int *)(st + 2), s[0], n, pl, price);
                 }
             }
         }

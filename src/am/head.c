@@ -58,4 +58,8 @@ float ai_Unkf868b4 = 0;  /* 0xf868b4 */
 int ai_Unkf86900[73] = {0};  /* 0xf86900, the actions being evaluated */
 
 #include "time_view.h"
+#define unk_Unk4f0e80I ((void (*)(AGCH *, int, void *, int, int, int))unk_Unk4f0e80)  /* 0x4f0e80 (gv.c: char b): @original the byte-matched ai_Unk490b90 loads s2->kind as a dword (8b 51 10, not 8a) */
+#define gm_Unk505e60S ((int (*)(unsigned short, int))gm_Unk505e60)  /* 0x505e60 (f3gm.c: unsigned id): @original this unit pushes the id as 16 bits (byte-matched ai_Unk494a30 / ai_Unk494ac0 / ai_Unk494d40) */
+#define cm_SendExSellObjectI ((void (*)(int, int, int, int, unsigned char, int))cm_SendExSellObject)  /* 0x4c4880 (cm.h: short c): @original this unit pushes the third argument as an int (byte-matched ai_MeisterBewaffnen / ai_Unk497c80 / ai_Unk49c880) */
+#define amt_GetKindB ((int (*)(unsigned char, void *))amt_GetKind)  /* 0x4e6f80 (amt.h: int k): @original ai_Unk4a05e0 passes (unsigned char)k without widening */
 

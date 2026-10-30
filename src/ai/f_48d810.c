@@ -68,7 +68,7 @@ int ai_MeisterTradeFernEinkauf2(AICHAR *ch, AIOBJ *b)
                                 ch->bld->name, rec.amount[i], ai_Goods[rec.item[i]].name);
                         sprintf(buf, SELL_FMT, -1, market->objId, rec.item[i], rec.amount[i], ai_OwnPlayer,
                                 (double)(int)gm_GoodsPrice(rec.item[i], ai_OwnPlayer));
-                        cm_SendExSellObject(-1, market->objId, rec.item[i], rec.amount[i], ai_OwnPlayer,
+                        cm_SendExSellObjectI(-1, market->objId, rec.item[i], rec.amount[i], ai_OwnPlayer,
                                      (int)gm_GoodsPrice(rec.item[i], ai_OwnPlayer));
                         ch->budget += gm_GoodsPrice(rec.item[i], ai_OwnPlayer);
                         rec.item[i] = 0;
@@ -83,7 +83,7 @@ int ai_MeisterTradeFernEinkauf2(AICHAR *ch, AIOBJ *b)
             sprintf(buf, SELL_FMT, market->objId, b->objId, ai_Entries[0].item, n, ai_OwnPlayer, 0);
             if (amt >= ai_Entries[0].buyAmount)
                 amt = ai_Entries[0].buyAmount;
-            cm_SendExSellObject(market->objId, b->objId, ai_Entries[0].item, amt, ai_OwnPlayer, 0);
+            cm_SendExSellObjectI(market->objId, b->objId, ai_Entries[0].item, amt, ai_OwnPlayer, 0);
             msg.u.item[nA] = ai_Entries[0].item;
             msg.dst[nA] = ai_Entries[0].bld->id;
             nA++;
@@ -104,7 +104,7 @@ int ai_MeisterTradeFernEinkauf2(AICHAR *ch, AIOBJ *b)
                                 n = ai_Entries[i].buyAmount;
                                 if (amt < n)
                                     n = amt;
-                                cm_SendExSellObject(market->objId, b->objId, ai_Entries[i].item, n, ai_OwnPlayer, 0);
+                                cm_SendExSellObjectI(market->objId, b->objId, ai_Entries[i].item, n, ai_OwnPlayer, 0);
                                 msg.u.item[nA] = ai_Entries[i].item;
                                 msg.dst[nA] = ai_Entries[i].bld->id;
                                 nA++;

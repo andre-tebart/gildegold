@@ -11,7 +11,7 @@ int ai_TrustedOfFour(int k, AIPER *p, int *ids, int *out)
     unsigned int r;
 
     *out = 0;
-    if (amt_GetOffice(k, &info) == 0)
+    if (amt_GetOfficeI(k, &info) == 0)
         return -1;
     for (i = 0; i < 4; i++) {
         c[i] = AI_505DF0(ids[i]);

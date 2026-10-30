@@ -51,7 +51,7 @@ void ai_BuySlots(AIOBJ *b, AICHAR *ch, int n)
                     txt_Format(buf, 0x1bbd, c->id, c->bld, cnt);
                 break;
             }
-            he_MessageBoxQuickjump(ai_Chars[c->bld->owner].netId, ai_Chars[c->bld->owner].netId, buf, 0, 0x60b,
+            he_MessageBoxQuickjumpI(ai_Chars[c->bld->owner].netId, ai_Chars[c->bld->owner].netId, buf, 0, 0x60b,
                          c->bld->id, -1, 0, 0);
             c->budget += cnt * -8000;
             cm_EndGroup("AI-Slots");

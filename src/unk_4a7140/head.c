@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "unk_4a7140.h"
+#define amt_GetOfficeI ((int (*)(int, struct AMTREC *))amt_GetOffice)  /* 0x4e6f30 (amt.h: unsigned char i): @original this unit pushes its int index raw (0x4dab50 / 0x4aad30: push ebp / push edx, no zero-extension) */
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 extern unsigned char ai_Unka69140;

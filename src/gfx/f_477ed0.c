@@ -61,7 +61,7 @@ focus:
                     if (d2_TextCursorSprite == -1) {
                         d2_TextCursorSprite = d2_CreatePicObj(d2_TextCursorX, d2_TextCursorY - d2_TextCursorOffset, d2_TextCursorPic);
                     } else {
-                        d2_MoveObj(d2_TextCursorX, d2_TextCursorY - d2_TextCursorOffset, d2_TextCursorSprite);
+                        d2_MoveObjI(d2_TextCursorX, d2_TextCursorY - d2_TextCursorOffset, d2_TextCursorSprite);
                     }
                 } else {
                     if (d2_TextCursorSprite != -1) {

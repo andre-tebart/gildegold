@@ -42,7 +42,7 @@ int gm_IsType10(unsigned char *b);                                              
 int ch_QueueAnim(struct CHARACTER *ch, char *name, int n);                                   /* 0x4057a0, ch.c */
 char d3_GetHeightAt(struct D3SM *h, struct D3VECTOR *pos, int *px, int *pz, float *py);           /* 0x45f170, ch.h: D3SM *, D3VECTOR * */
 extern struct D3SCENE *d3_DefaultScene; /* 0x5fb5b0 (as d3.h / unk_58bbd0.h) */
-unsigned short util_Random(unsigned short n);                                               /* 0x42ec00, @original: tr.c defines int util_Random(unsigned short n); the byte-matched callers read a 16-bit result (ch_RandomNear / anm_Update / ahm_ShufflePlayers: and eax,0xffff after the call) */
+unsigned short util_Random(int n);                                               /* 0x42ec00, tr.c defines int util_Random(unsigned short n); the byte-matched callers read a 16-bit result */
 float util_RandomF(void);                                                        /* 0x42ec20 */
 
 void * mem_Alloc(int size, char *tag);                                            /* 0x4223c0, mem.c */

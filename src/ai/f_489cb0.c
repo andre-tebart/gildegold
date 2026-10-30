@@ -78,7 +78,7 @@ void ai_MeisterCollectTrans(AICHAR *ch)
         if (bt->kind == 9) {
             if (n == n136) {
                 cm_SendMoveGoods(-1, ai_Chars[ch->bld->owner].netId, ai_OwnPlayer, (int)gm_ItemPrice(0x134, 100));
-                cm_SendExSellObject(ch->bld->id, -1, 0x134, 1, ai_OwnPlayer, 0);
+                cm_SendExSellObjectI(ch->bld->id, -1, 0x134, 1, ai_OwnPlayer, 0);
                 sprintf(buf, "ai_MeisterCollectTrans(): Transporter f\xfcr %s gekauft", ch->bld->name);
                 return;
             }
@@ -93,7 +93,7 @@ void ai_MeisterCollectTrans(AICHAR *ch)
                 if (ch->budget <= (int)gm_ItemPrice(item, 100) * 2)
                     return;
                 cm_SendMoveGoods(-1, ai_Chars[ch->bld->owner].netId, ai_OwnPlayer, (int)gm_ItemPrice(item, 100));
-                cm_SendExSellObject(ch->bld->id, -1, item, 1, ai_OwnPlayer, 0);
+                cm_SendExSellObjectI(ch->bld->id, -1, item, 1, ai_OwnPlayer, 0);
             } else {
                 if (ch->flags1c8 & 8)
                     return;
@@ -105,14 +105,14 @@ void ai_MeisterCollectTrans(AICHAR *ch)
                 if (ch->budget <= (int)gm_ItemPrice(item, 100) * 2)
                     return;
                 cm_SendMoveGoods(-1, ai_Chars[ch->bld->owner].netId, ai_OwnPlayer, (int)gm_ItemPrice(item, 100));
-                cm_SendExSellObject(ch->bld->id, -1, item, 1, ai_OwnPlayer, 0);
+                cm_SendExSellObjectI(ch->bld->id, -1, item, 1, ai_OwnPlayer, 0);
             }
     } else {
         if (n == 0) {
             if ((ai_Chars[ch->bld->owner].kind == 6 || ai_Chars[ch->bld->owner].kind == 7) && !(ch->flags1b4 & 4))
                 return;
             cm_SendMoveGoods(-1, ai_Chars[ch->bld->owner].netId, ai_OwnPlayer, (int)gm_ItemPrice(0x134, 100));
-            cm_SendExSellObject(ch->bld->id, -1, 0x134, 1, ai_OwnPlayer, 0);
+            cm_SendExSellObjectI(ch->bld->id, -1, 0x134, 1, ai_OwnPlayer, 0);
             sprintf(buf, "ai_MeisterCollectTrans(): Transporter f\xfcr %s gekauft", ch->bld->name);
             return;
         }
@@ -128,7 +128,7 @@ void ai_MeisterCollectTrans(AICHAR *ch)
         if (ch->budget <= (int)gm_ItemPrice(item, 100) * 2)
             return;
         cm_SendMoveGoods(-1, ai_Chars[ch->bld->owner].netId, ai_OwnPlayer, (int)gm_ItemPrice(item, 100));
-        cm_SendExSellObject(ch->bld->id, -1, item, 1, ai_OwnPlayer, 0);
+        cm_SendExSellObjectI(ch->bld->id, -1, item, 1, ai_OwnPlayer, 0);
     }
     sprintf(buf, "ai_MeisterCollectTrans(): Um %li:%li Uhr zus\xe4tzlichen Transporter f\xfcr %s gekauft",
             ai_Time.hour, ai_Time.min, ch->bld->name);

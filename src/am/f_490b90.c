@@ -11,7 +11,7 @@ int ai_Unk490b90(AGCH *p, AGARG *s1, AGARG *s2)
             return 0x3e;
         }
         if (a->kind == 5) {
-            unk_Unk4f0e80(p, a->unk04, s1, s2->unk04, s2->kind, a->unk08);
+            unk_Unk4f0e80I(p, a->unk04, s1, s2->unk04, s2->kind, a->unk08);
             return 0x3e;
         }
     }
