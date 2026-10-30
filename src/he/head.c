@@ -118,7 +118,7 @@ extern char ai_Unk625820[115][0x20];
 extern const char ai_AxisPair[];
 extern GAPDATA full_data_60d0d4[];
 extern GAPDATA full_data_6f2634[];
-extern unsigned char snd_TrackHandles;
+extern struct G16TRACKHANDLES snd_TrackHandles;
 extern int * ai_Unk760618;
 extern int ai_Unk76061c;
 extern int ai_GameOver;

@@ -46,7 +46,7 @@ extern void *d2_ScreenSurf;  /* 0x6ed924 */
 extern GAPDATA full_data_75ec98[];
 extern GAPDATA full_data_75ec9c[];
 extern char ai_Unk623ac0[];
-extern char d3_AnimHead[];
+extern struct D3IOANIMDATA d3_AnimHead;
 extern GAPDATA full_data_6238e8[];
 extern GAPDATA full_data_6238ec[];
 extern GAPDATA full_data_6238f0[];
@@ -202,7 +202,7 @@ extern GAPDATA full_data_6f240c[];
 extern GAPDATA full_data_6f23f0[];
 extern GAPDATA full_data_6f25b4[];
 extern GAPDATA full_data_75ec40[];
-extern unsigned char main_Window;
+extern HWND main_Window;
 extern char ai_Unk75fba0[2048];
 
 extern GAPDATA full_data_602568[];

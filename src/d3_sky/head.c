@@ -24,7 +24,7 @@ void d3_Lerp3(float *a, float *b, float t, float *out);                     /* 0
 float d3_VecAngle(D3VECTOR *a, D3VECTOR *b);                                            /* 0x4539f0 */
 void d3_MatTranspose(D3MATRIX *src, D3MATRIX *dst);                                        /* 0x454040 */
 extern D3VECTOR d3_ZAxis;                   /* 0x5ebb74, (0, 0, 1) */
-extern D3VECTOR4 d3_Frustum[4];             /* 0xfc2960, corner directions of the view */
+extern D3VECTOR4 d3_Frustum[5];             /* 0xfc2960, corner directions of the view */
 extern char d3_FogOn;                       /* 0x6334a4, d3_engine.h */
 extern unsigned long d3_FogColor;           /* 0x6334a0, d3_engine.h */
 extern unsigned char d3_Hardware;                    /* 0x633450 */

@@ -12,7 +12,7 @@
 #include "d3.h"
 #include "d3_sm.h"
 #include "data_views.h"
-extern char d3_Cfg[];
+extern struct D3INITCFG d3_Cfg;
 extern const char d3_ScrollPool[];
 
 

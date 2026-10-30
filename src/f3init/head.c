@@ -22,7 +22,7 @@ extern char ai_PlayerSlots[4][0x2f4];
 #include "d3_light.h"
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
-extern char d3_AnimHead[];
+extern struct D3IOANIMDATA d3_AnimHead;
 extern int gm_PlayerRecords[688];
 extern int gm_Offers[528];
 extern float ai_Unk760420;

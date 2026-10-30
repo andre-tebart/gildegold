@@ -33,7 +33,7 @@
 extern int ai_Unkfa5f04;
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
-extern unsigned char d3s_Lights;
+extern struct D3OBJECT *d3s_Lights[4];
 
 char d2_FormsDir[] = "forms\\";  /* 0x5fe608, "forms\\", prefix of a form file name */
 unsigned int d2_PicLimit = 8000000;          /* 0x5fe70c, bytes of pictures kept in memory */

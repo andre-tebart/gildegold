@@ -47,11 +47,11 @@
 #define d3_AnimListHead (*(void **)((char *)d3_Unkfc2580 + 0x160))    /* 0xfc26e0 */
 #define d3_Unkfc26e4 (*(int *)((char *)d3_Unkfc2580 + 0x164))         /* 0xfc26e4 */
 extern D3INITCFG d3_Cfg;
-extern char d3d_Config[];
-extern char d3_AnimHead[];
-extern char d3_StockHead[];
+extern struct D3DCONFIG d3d_Config;
+extern struct D3IOANIMDATA d3_AnimHead;
+extern struct D3IOOBJ d3_StockHead;
 extern D3PARTSYS d3_ParEnd;
-extern char d3d_UsedCard[];
+extern struct D3DCARD d3d_UsedCard;
 void d3fl_FreeMap(struct D3FLMAP *map);     /* 0x43ff90, d3_fl.c (d3.h types d3_Terrain as void *) */
 #define d3s_CountU (*(unsigned int (*))&d3s_Count)  /* 0x633dc0, this unit reads it as `unsigned int d3s_Count` */
 #define d3sm_ShadowV (*(void * (*))&d3sm_Shadow)  /* 0x633df8, this unit reads it as `void *d3sm_Shadow` */

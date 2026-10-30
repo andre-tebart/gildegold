@@ -302,7 +302,7 @@ extern int sv_ViewRectLeft;
 extern int sv_ViewRectRight;
 extern int sv_ViewRectTop;
 extern const char ai_AxisPair[];
-extern unsigned char d3_YAxis;
+extern const struct D3VECTOR d3_YAxis;
 extern unsigned short * ai_PlayerChar;
 extern char ai_Unk60c6c0[4];
 extern GAPDATA full_data_602568[];
