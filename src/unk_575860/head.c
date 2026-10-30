@@ -235,7 +235,8 @@ extern GAPDATA full_data_624ee0[];
 extern GAPDATA full_data_75e5f0[];
 extern GAPDATA full_data_75e5f4[];
 extern GAPDATA full_data_75e628[];
-extern unsigned char init_PlayerProfile;
+#include "f3init_types.h"
+extern INIT_PLAYER init_PlayerProfile;
 extern struct D2OBJ *d2_Objs;
 extern GAPDATA full_data_6024f8[];
 extern GAPDATA full_data_624204[];

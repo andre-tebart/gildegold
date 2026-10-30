@@ -83,7 +83,7 @@ int main_OpenEngine(void)
     while ((fade->flags & 4) == 0)
         sv_RunFrame(0, 0x24087);
     d2_ReleaseFade(fade);
-    memset(init_PlayerProfile, 0, 0x8c);
+    memset(&init_PlayerProfile, 0, 0x8c);
     main_ScreenOpen = 1;
     evt_Init();
     evtc_Register();

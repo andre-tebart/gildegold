@@ -68,7 +68,8 @@ extern GAPDATA full_data_6f5e78[];
 extern GAPDATA full_data_6f5e80[];
 extern GAPDATA full_data_6f5ea0[];
 extern GAPDATA full_data_6f5ea4[];
-extern unsigned char init_PlayerProfile;
+#include "f3init_types.h"
+extern INIT_PLAYER init_PlayerProfile;
 extern unsigned char kb_Last;
 extern int sv_PopRequest;
 extern int d2_LastWindow;
@@ -128,7 +129,7 @@ extern int d2_ClickedId;
 extern int d2_LastWindow;
 extern struct D2OBJ *d2_Objs;
 extern GAPDATA full_data_6250b8[];
-extern unsigned char init_PlayerProfile;
+extern INIT_PLAYER init_PlayerProfile;
 extern int sv_PopRequest;
 
 extern GAPDATA full_data_602568[];
@@ -155,7 +156,7 @@ extern GAPDATA full_data_6250f8[];
 extern GAPDATA full_data_625100[];
 extern GAPDATA full_data_62510c[];
 extern GAPDATA full_data_936476[];
-extern unsigned char init_PlayerProfile;
+extern INIT_PLAYER init_PlayerProfile;
 extern unsigned char kb_Last;
 extern int main_Unk5361d0(int mask, int flag);
 
