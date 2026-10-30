@@ -91,7 +91,7 @@ void gm_SyncMarket(unsigned p)
                 if (o != 0 && (int)(unsigned char)*(char *)(o + 0x1c) < cnt) {
                     cnt -= (unsigned char)*(char *)(o + 0x1c);
                     cm_BeginFieldBlock(o, *(int *)(o + 2));
-                    cm_AddFieldValues(1, 1, (o - cm_FieldObjectI) + 0x1c, &cnt);
+                    cm_AddFieldValues(1, 1, ((char *)o - cm_FieldObject) + 0x1c, &cnt);
                     cm_SendFieldDeltas();
                 }
             }

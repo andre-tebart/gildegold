@@ -53,7 +53,7 @@ float unk_Unk4fbe90(unsigned short *c)
         if (unk_Unk4f1660(c) == 1) {
             b = 0;
             cm_BeginFieldBlock(c, *(int *)(p + 4));
-            cm_AddFieldValue(1, 1, (int)p + (8 - cm_FieldObjectI), &b);
+            cm_AddFieldValue(1, 1, (char *)p - cm_FieldObject + 8, &b);
             cm_SendFieldValues();
             G_MSG72(m, p);
             mst = *(char **)(p + 0x16c);
@@ -141,7 +141,7 @@ float unk_Unk4fbe90(unsigned short *c)
         if (t <= 0.0f) {
             b = 0;
             cm_BeginFieldBlock(c, *(int *)(p + 4));
-            cm_AddFieldValue(1, 1, (int)p + (8 - cm_FieldObjectI), &b);
+            cm_AddFieldValue(1, 1, (char *)p - cm_FieldObject + 8, &b);
             cm_SendFieldValues();
             ai_Unk6f1b98++;
             G_MSG72(m, p);
@@ -187,7 +187,7 @@ float unk_Unk4fbe90(unsigned short *c)
             return t;
         }
         cm_BeginFieldBlock(c, *(int *)(p + 4));
-        cm_AddFieldValue(1, 1, (int)p + (8 - cm_FieldObjectI), &b);
+        cm_AddFieldValue(1, 1, (char *)p - cm_FieldObject + 8, &b);
         cm_SendFieldValues();
         ai_Unk6f1b98++;
         G_MSG72(m, p);

@@ -27,9 +27,9 @@ void init_StockMarketStalls(void)
                 w++;
             }
             cm_BeginFieldBlock((char *)st, st->objId);
-            cm_AddFieldDelta(1, 1, (int)st - cm_FieldObjectI + 0x1c, &n);
+            cm_AddFieldDelta(1, 1, (char *)st - cm_FieldObject + 0x1c, &n);
             n = 4;
-            cm_AddFieldDelta(4, 1, (int)st - cm_FieldObjectI + 0xe, &n);
+            cm_AddFieldDelta(4, 1, (char *)st - cm_FieldObject + 0xe, &n);
             cm_SendFieldDeltas();
             for (i = 0x10; i != 0; i--) {
                 if (*w0 != 0) {
@@ -50,9 +50,9 @@ void init_StockMarketStalls(void)
                 w++;
             }
             cm_BeginFieldBlock((char *)st, st->objId);
-            cm_AddFieldDelta(1, 1, (int)st - cm_FieldObjectI + 0x1c, &n);
+            cm_AddFieldDelta(1, 1, (char *)st - cm_FieldObject + 0x1c, &n);
             n = 4;
-            cm_AddFieldDelta(4, 1, (int)st - cm_FieldObjectI + 0xe, &n);
+            cm_AddFieldDelta(4, 1, (char *)st - cm_FieldObject + 0xe, &n);
             cm_SendFieldDeltas();
             for (i = 0x10; i != 0; i--) {
                 if (*w0 != 0) {

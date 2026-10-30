@@ -555,4 +555,3 @@ extern unsigned int d3fl_DetailScale;   /* 0x633748 */
 extern unsigned char d3fl_DetailSizeShift;  /* 0x633751 */
 extern int evt_NoGroup;                /* 0x5f8430 */
 extern float d3o_FogScale;              /* 0x5fbd04 */
-#define cm_FieldObjectI (*(int (*))&cm_FieldObject)  /* 0xa68d2c, this unit reads it as `int cm_FieldObject` */

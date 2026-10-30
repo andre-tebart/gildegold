@@ -83,7 +83,7 @@ void init_CreateOpponents(int n, int m, int *list)
                 v = pc->skillBytes[j] + tab[ai_Opponents[i] + 5];
                 v = (int)(252.0f < v ? 252.0f : v);
                 b = v < 0 ? 0 : v;
-                cm_AddFieldValue(1, 1, (j - cm_FieldObjectI) + 0x80 + (int)pc, &b);
+                cm_AddFieldValue(1, 1, (char *)pc + j - cm_FieldObject + 0x80, &b);
             }
             cm_SendFieldValues();
         }
