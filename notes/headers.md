@@ -54,6 +54,25 @@ The last 35 (588a9e8 .. 0700500):
 Views added by the pass are `#define X<suffix> (*(OLD (*)..)&X)` / `((T (*)(..))f)` lines in the units'
 heads; most are drafts' old spellings (no byte evidence of their own): drop each when its function is raised.
 
+## The evidence-less views (2026-10-30, user decision: drop them, accept draft regressions)
+The 96 `this unit reads it as` views had no byte evidence. 8d8d2d5 and af79fa9 drop 75 of them (the uses
+read the datum as declared); 2 stay with @original (cm's ai_Unk7603a0V / ai_Unk760420V: ai_Unk4cfeb0
+0x4cfeb0 byte). ai_GameState was the weak side: its definition is `unsigned char` now (the byte readers
+of unk_5d33b0 / unk_4b39f0 needed the byte, he reads it bytewise). No byte or shape function moved; the
+drafts that moved are in the two commit messages.
+Left, 19 views whose uses need a type (open, settle with the readers):
+- ai_JudgeCatholic / ai_JudgeProtestant (gv/tail.c `char *`): am, hst read `AIPER *` fields (->netId).
+  Probably retype the definition to `struct AIPER *`.
+- ai_MarketBuilding (AIBLD *, ai) read as int by f3gm; cm_FieldObject (cm `char *`) read as int by f3gm /
+  f3init (offset arithmetic `cm_FieldObject - x` passed to cm_AddFieldValue); ai_Objects (struct AIOBJ *)
+  read as char * by f3gm; ai_Unk75e130 (cm `char[4]`) read as int by ls.
+- d2: d2_ObjsV (G13OBJ, unk_4b39f0 / unk_5d33b0, 103 uses), d2_LastWindowPtrV (G12WIN, hst / unk_5d33b0),
+  d2_PicsV (D2PICVIEW, unk_5d33b0): local record views of D2OBJ / D2WIN / D2PIC; map their fields onto
+  d2_types.h's records.
+- d3_SortBufV / d3_SortPtrV (d3_sm's D3SMSORT): d3_sm does not see d3_engine's D3SORTENT.
+- ls: ai_BauplaetzeV (G15BK, ls does not see it), main: ls_SavePathV (struct LSSAVEVIEW of the char[640]:
+  wants ls.h, item 4), sv: ai_Unk6f0454V (f3gm defines `char[1]` but writes [0..2]: the size is wrong).
+
 ## Debt
 1. **Weak definition types made canonical.** (ai_Objects done in 1b8f951; the rest open: the definers
    ahm / f3gm / anm / sv do not see AICHAR / AIBTYPE / AIBLD / AIGOOD / AITIME, so retyping needs ai.h
