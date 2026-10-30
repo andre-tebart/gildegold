@@ -65,11 +65,6 @@ struct VFSDIR {                     /* 0x11c bytes (vfs_IGetSubDir) */
     char sorted;                    /* 0x118, files moved to entries */
 };
 
-typedef struct MPOOLITER {          /* 12 bytes */
-    void *pool;
-    int index;
-    int left;
-} MPOOLITER;
 
 /* Inline-asm copy of the memory files (as D3_COPY in d3.h); all three operands are named variables. */
 #define VFS_COPY_CAT(a, b) a##b
@@ -104,8 +99,6 @@ void * mem_Alloc(int size, char *tag);                                          
 void mem_Free(void *p);                                                                 /* 0x422620 */
 void *pool_Alloc(struct MPOOL **pool, unsigned int size, int count);                     /* 0x422a20, zeroed (mem.h) */
 void pool_Free(struct MPOOL **pool, void *ptr);                                                  /* 0x422b30 */
-void *pool_Next(MPOOLITER *it);                                                        /* 0x422ba0 */
-void * pool_First(struct MPOOL *pool, struct MPOOLITER *it);                                           /* 0x422c30 */
 void pool_Destroy(struct MPOOL **pool);                                                          /* 0x422c60 */
 
 int vfs_strcmp(char *a, char *b);                                                       /* 0x42eca0, stricmp if vfs_IgnoreCase */
