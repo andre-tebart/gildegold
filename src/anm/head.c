@@ -6,5 +6,6 @@
 #include <stdio.h>
 #include <string.h>
 #include "anm.h"
+extern unsigned char ai_GfxDetail;  /* 0x6f35c4 (unk_5d33b0.c: OPTIONBYTES): @original anm_Update reads it as a byte object (0x4bb884 mov al, byte ptr [0x6f35c4]); through the 4-byte union, .byte[0] or a char view of it, VC6 loads the dword (mov eax, dword ptr) */
 #define util_RandomS ((unsigned short (*)(unsigned short))util_Random)  /* 0x42ec00 (as ai.h: unsigned short (int)): this unit's callers were compiled against the 16-bit parameter (as ahm.c's) */
 

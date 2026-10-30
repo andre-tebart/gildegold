@@ -58,7 +58,8 @@ extern GAPDATA full_data_7604e8[];
 extern const char ai_AxisPair[];
 extern char ai_PlayerSlots[4][0x2f4];
 
-extern unsigned char ai_OptionPanelHelp;
+#include "unk_5d33b0_types.h"
+extern OPTIONBYTES ai_OptionPanelHelp;
 extern char ai_PlayerSlots[4][0x2f4];
 extern unsigned char ai_TimeHour;
 extern int d2_HitUnderPointer;
@@ -176,7 +177,7 @@ extern GAPDATA full_data_6f2630[];
 extern GAPDATA full_data_6faa80[];
 extern GAPDATA full_data_6faa84[];
 extern unsigned char he_Events[339968];
-extern unsigned char ai_GameSwitches;
+extern OPTIONBYTES ai_GameSwitches;
 extern char ai_Unkf8aae0[0x80];
 extern short d2_MouseX;
 extern short d2_MouseY;
@@ -341,7 +342,7 @@ extern char ai_Unk6f0454[1];  /* 0x6f0454 */
 extern int sv_ViewRectLeft, sv_ViewRectTop, sv_ViewRectRight, sv_ViewRectBottom;  /* 0x6248a4, 0x6248a8, 0x6248ac, 0x6248b0 */
 extern char *ai_Unk6ed92c;  /* 0x6ed92c */
 extern int ai_Unkfb9060, ai_Unkfb9064, ai_Unkfb9068, ai_Unkfb906c;  /* 0xfb9060, 0xfb9064, 0xfb9068, 0xfb906c */
-extern char ai_GamePanel;  /* 0x6f3668 */
+extern OPTIONBYTES ai_GamePanel;  /* 0x6f3668 */
 extern char *ai_PlayerBuilding;  /* 0x6f2308 */
 extern char *ai_FallbackBuilding;  /* 0x6f230c */
 extern unsigned short * sv_PanelShown;

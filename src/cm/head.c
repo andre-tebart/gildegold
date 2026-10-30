@@ -23,7 +23,8 @@ struct D3SKYLAYER; struct D3SKY; struct D3SKYLAYER *d3sky_CreateLayer(struct D3S
 #include "di_input.h"
 #include "evt.h"
 #include "data_views.h"
-extern char ai_GfxFloor[];
+#include "unk_5d33b0_types.h"
+extern OPTIONBYTES ai_GfxFloor;
 extern char ai_Unk92cae0[16][0x35c];
 #define GAPDATA __declspec(align(1)) unsigned char
 

@@ -6,7 +6,7 @@ int sv_PanelImage(void)
     char *p;
     int is9;
 
-    if (ai_GamePanel == 0) {
+    if (ai_GamePanel.byte[0] == 0) {
         i = 0;
         for (p = ai_Chars[0] + 2; (int)p < (unsigned)((unsigned)ai_Chars + 0x65402); p += 0x21c) {
             if (*p == 6 || *p == 7)
@@ -28,13 +28,13 @@ int sv_PanelImage(void)
             return 0x540;
         is9 = k == 9;
     } else {
-        if (ai_GamePanel == 1)
+        if (ai_GamePanel.byte[0] == 1)
             return 0x534;
-        if (ai_GamePanel == 2)
+        if (ai_GamePanel.byte[0] == 2)
             return 0x538;
-        if (ai_GamePanel == 3)
+        if (ai_GamePanel.byte[0] == 3)
             return 0x53c;
-        is9 = ai_GamePanel == 4;
+        is9 = ai_GamePanel.byte[0] == 4;
     }
     if (is9)
         return 0x540;

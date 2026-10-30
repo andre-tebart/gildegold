@@ -607,7 +607,8 @@ extern unsigned short * sv_PanelShown;
 extern int sv_PopRequest;
 extern char * ai_BTypes;
 extern char * ai_FallbackBuilding;
-extern char ai_GfxFloor[];
+#include "unk_5d33b0_types.h"
+extern OPTIONBYTES ai_GfxFloor;
 extern int * ai_Unk633738;
 extern struct D3SKY *d3_Sky;
 extern G16AMBIENTON snd_AmbientOn;

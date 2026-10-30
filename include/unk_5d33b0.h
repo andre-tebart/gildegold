@@ -3,6 +3,8 @@
 #ifndef UNK_5D33B0_H
 #define UNK_5D33B0_H
 
+#include "unk_5d33b0_types.h"        /* OPTIONBYTES */
+
 /* The option values the profile keeps (the reader 0x5d5640 and the writer 0x5d4c70, the "Game" /
    "Gfx" / "Sound" sections of 0x75e480). The reader stores the camera / mouse speed as single bytes;
    the run time reads them as integers here. */

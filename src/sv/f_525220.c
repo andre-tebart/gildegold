@@ -1,7 +1,7 @@
 /* 0x525220, opens the player bar ("Misc\\PlayerBar" / "Misc\\PlayerBar_1" by 0x6f2f94) of the kind k (0x6f2368), the form 0x62385c at the screen bottom, its two sliders +0x1c0 = 3, hides the panel 0x623860, clears the 0x20
    member rows of 0x75f280 and creates the button 0x51d; the characters' flags (0x770d08) are cleared for the rows' owners. ROUGH */
 
-extern char ai_GfxResolution;               /* 0x6f2f94, the player bar variant */
+extern OPTIONBYTES ai_GfxResolution;        /* 0x6f2f94, the player bar variant */
 extern int ai_Unk760610;  /* 0x760610 */
 extern int ai_Unk760480;  /* 0x760480 */
 extern int ai_Unk760484;  /* 0x760484 */
@@ -64,7 +64,7 @@ void sv_OpenPlayerBar(int a, char k)
     if (sv_PlayerBarForm != -1)
         return;
     ai_Unk6f2368 = k;
-    sv_PlayerBarForm = d2_OpenForm(d2_ScreenW - 0x68, 0x106, ai_GfxResolution == 0 ? "Misc\\PlayerBar" : "Misc\\PlayerBar_1");
+    sv_PlayerBarForm = d2_OpenForm(d2_ScreenW - 0x68, 0x106, ai_GfxResolution.byte[0] == 0 ? "Misc\\PlayerBar" : "Misc\\PlayerBar_1");
     d2_SetForm(sv_PlayerBarForm, 1);
     s = d2_LastWindow;
     d2_SetForm(sv_PlayerBarForm, 2);

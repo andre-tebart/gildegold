@@ -37,7 +37,7 @@ void init_ShowBuildingScene(unsigned char *b, int slot)
     if (d3_CurrentScene == uni && (ai_PlayerBuildingI == 0 || ai_PlayerBuildingI == (int)b) && (ai_FallbackBuildingI == 0 || ai_FallbackBuildingI == (int)b)) {
         d = d3_FindObject(0, 0x180, 0, "ordner_DETAILS");
         if (d != 0)
-            d3if_ShowTree(d, ai_GfxDetail != 0);
+            d3if_ShowTree(d, ai_GfxDetail.byte[0] != 0);
         ch_CurrentGroup = bd->id;
         if (sv_PanelShown == 0)
             evt_NoGroup = bd->id;

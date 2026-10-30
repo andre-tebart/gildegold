@@ -474,7 +474,8 @@ void sv_Unk52bb70(int id);                     /* 0x52bb70 */
 void ch_ClearSceneCallbacks();                     /* 0x40b4d0 */
 extern int __mb_cur_max;                /* 0x62e3a0, the CRT locale state */
 extern unsigned short *_pctype;         /* 0x62e194, the CRT ctype table */
-extern int ai_GfxFloor;                /* 0x6f35c8 */
+#include "unk_5d33b0_types.h"
+extern OPTIONBYTES ai_GfxFloor;        /* 0x6f35c8 */
 void init_SoundObjectHook(char *o);
 char init_BuildingTextureSetHook(int unused, unsigned char *b, int o);
 extern int snd_SfxEnabled;              /* 0x6f257c, sound on */
@@ -516,7 +517,7 @@ int init_TownSounds[16] = {0};  /* 0x76fd80, the handles of the town's sounds (1
 unsigned char * ai_SceneBuilding = 0;  /* 0x76fdc0 */
 int ai_NBauplaetze = 0;  /* 0xf812e0, the number of building sites */
 G15BK * ai_Bauplaetze = 0;  /* 0xf812e4, the building sites */
-extern char ai_GfxDetail;               /* 0x6f35c4 */
+extern OPTIONBYTES ai_GfxDetail;       /* 0x6f35c4 */
 int evt_NoGroup = -1;  /* 0x5f8430 */
 float d3o_FogScale = 1.0f;  /* 0x5fbd04 */
 /* init_SlotCurrency: view of ai_PlayerSlots (tools/data_views.py) */
@@ -562,7 +563,7 @@ void d3_MatIdentity(D3MATRIX *m);                                   /* 0x454510,
 
 /* ---- the town scene loading 0x5124f0 .. 0x5128d0, 0x510770, 0x510ad0, 0x513050 (ROUGH drafts) ---- */
 
-extern int ai_GfxFog;                /* 0x6f35cc, the detail byte */
+extern OPTIONBYTES ai_GfxFog;        /* 0x6f35cc, the detail byte */
 extern unsigned char d3_FogByDistance;               /* 0x6334a5 */
 extern unsigned char ai_Unk633751;      /* 0x633751 */
 extern unsigned int d3fl_DetailScale;   /* 0x633748 */

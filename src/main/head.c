@@ -49,7 +49,7 @@ extern int gm_PlayerRecords[688];
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 extern int main_Inactive;       /* 0x6f2584, 1 while the app is deactivated */
 extern char ai_DataPath[];
-extern unsigned char ai_GfxResolution;
+extern unsigned char ai_GfxResolution;  /* 0x6f2f94 (unk_5d33b0.c: OPTIONBYTES): @original main_OpenScreen reads it as a byte object (0x531d43 mov al, byte ptr [0x6f2f94]); through the 4-byte union VC6 loads the dword and masks it (and eax, 0xff: 264 instead of 226 differing instructions) */
 extern int ai_ScreenModeH;
 extern int ai_ScreenModeW;
 extern struct SCREENMODE { int w, h; } ai_ScreenModes[];
@@ -170,7 +170,7 @@ extern unsigned char init_PlayerProfile[];
 extern int sv_FrameMask;
 extern int sv_PopRequest;
 extern char ai_MissionMode;
-extern unsigned char ai_GamePanel;
+extern OPTIONBYTES ai_GamePanel;
 extern int ai_Opponents[7];
 
 
@@ -224,7 +224,7 @@ extern struct D3OBJECT *d3t_SunRays;
 extern GAPDATA full_data_6f25c4[];
 extern int sv_FrameMask;
 extern int ai_Unk1460ae0;
-extern unsigned char ai_GamePanel;
+extern OPTIONBYTES ai_GamePanel;
 extern char ai_MissionMode;
 extern int ai_Unk6f2438;
 extern int ai_Unkf83650;
@@ -287,7 +287,7 @@ extern int sv_PopRequest;
 extern char ai_DataPath[];
 
 extern int ai_FrameWait;
-extern unsigned char ai_GamePanel;
+extern OPTIONBYTES ai_GamePanel;
 extern int ai_Unk1460ae0;
 extern int ai_Unk60bd94;
 extern char * ai_Unk60c1ec;
@@ -318,7 +318,7 @@ extern int di_Disabled;
 extern GAPDATA full_data_6f2574[];
 extern G16AMBIENTON snd_AmbientOn;
 extern char ai_DataPath[];
-extern unsigned char ai_GfxResolution;
+extern unsigned char ai_GfxResolution;  /* 0x6f2f94 (unk_5d33b0.c: OPTIONBYTES): @original main_OpenScreen reads it as a byte object (0x531d43 mov al, byte ptr [0x6f2f94]); through the 4-byte union VC6 loads the dword and masks it (and eax, 0xff: 264 instead of 226 differing instructions) */
 extern char ai_OptionsFile[288];
 extern int ai_ScreenModeH;
 extern int ai_ScreenModeW;

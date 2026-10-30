@@ -86,10 +86,6 @@ typedef struct D2WINVIEW {
     char pad27e[0x146];
 } D2WINVIEW;
 
-typedef union OPTIONBYTES {
-    int word;                               /* the whole dword */
-    unsigned char byte[4];                  /* the four option bytes */
-} OPTIONBYTES;
 extern OPTIONBYTES ai_GfxDetail, ai_GfxFloor, ai_GfxSet, ai_GfxFog, ai_GfxResolution, ai_GameSwitches, ai_GamePanel, ai_OptionPanelHelp;
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 extern int ai_Unk5fe710;

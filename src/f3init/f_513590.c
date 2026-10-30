@@ -15,7 +15,7 @@ void init_SetDetailLevel(int *s, char f)
     fl = (unsigned char *)(s + 0x71c);
     old = *fl;
     oldlvl = (old >> 2) & 7;
-    set = ((unsigned char *)&ai_GfxFloor)[2];
+    set = ai_GfxFloor.byte[2];
     size = d3fl_DetailScale << d3fl_DetailSizeShift;
     if (d3_CurrentScene == 0) {
         if (*s != 0x40 && ai_MapSize < 0x780) {

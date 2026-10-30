@@ -22,7 +22,6 @@ extern int anm_NAnimals;                /* 0x6f0734, the number of animals */
 extern ANMREC *anm_Animals;             /* 0x6f0738, the animal list (32 records, "anm:animals") */
 extern int anm_NextAnimal;                /* 0x6f073c, the animal updated next */
 extern unsigned int anm_LastSpawn;       /* 0x6f0740, d3_Time of the last spawn try */
-extern unsigned char ai_GfxDetail;      /* 0x6f35c4 */
 
 /* views of other units (d3.h / ai.h do not compile here together) */
 extern int d3_CurrentScene;             /* 0x633444 */

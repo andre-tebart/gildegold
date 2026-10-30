@@ -63,7 +63,8 @@ extern GAPDATA full_data_625714[];
 extern GAPDATA full_data_6f2624[];
 extern GAPDATA full_data_6f2628[];
 extern const float ai_Unk5ebba4[];
-extern unsigned char ai_GameSwitches;
+#include "unk_5d33b0_types.h"
+extern OPTIONBYTES ai_GameSwitches;
 extern unsigned short ai_PlayerId;
 extern char ai_Chars[768][0x21c];
 extern char ai_DataPath[608];
@@ -157,7 +158,7 @@ extern char ai_Unk61aa38[24];
 extern GAPDATA full_data_627b20[];
 extern char ch_EmptyName[1];
 extern float ai_Unk617830[];
-extern unsigned char ai_GameSwitches;
+extern OPTIONBYTES ai_GameSwitches;
 extern float ai_Unk617840[];
 extern GAPDATA full_data_6279f0[];
 extern GAPDATA full_data_627a10[];
@@ -166,14 +167,14 @@ extern GAPDATA full_data_6fa260[];
 extern GAPDATA full_data_6faa60[];
 extern GAPDATA full_data_6fa264[];
 extern GAPDATA full_data_6fa268[];
-extern unsigned char ai_GamePanel;
+extern OPTIONBYTES ai_GamePanel;
 
 extern GAPDATA full_data_6fa260[];
 extern GAPDATA full_data_6fa264[];
 extern GAPDATA full_data_6fa268[];
 extern GAPDATA full_data_6fa26c[];
 extern GAPDATA full_data_6fa1e0[];
-extern unsigned char ai_GamePanel;
+extern OPTIONBYTES ai_GamePanel;
 extern unsigned short ai_PlayerId;
 
 extern GAPDATA full_data_6fa1e0[];

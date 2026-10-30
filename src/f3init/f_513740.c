@@ -51,7 +51,7 @@ void unk_Unk513740(void)
         init_SetDetailLevel((int)ai_Unk633738I, 0);
         d3_FogByDistance = 1;
         evt_NoGroup = 0;
-        d3o_FogScale = 1.0f - (float)(ai_GfxFog & 0xff) * 0.01f;
+        d3o_FogScale = 1.0f - (float)(ai_GfxFog.word & 0xff) * 0.01f;
         sv_Unk525ad0(ai_Time);
         if (ai_Unk6339db != 0) {
             d3if_Prerender(0);
