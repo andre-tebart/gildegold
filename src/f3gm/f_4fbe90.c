@@ -1,6 +1,6 @@
 /* 0x4fbe90, one daily step of the character c (the value is the new health, -1 for no step): free slots (id -1) -1; the kind 0xf (0x5075c0 true: message 0x4c4e00 (id, 1)); kind 0x14 (0x4f1660 == 1: removed through the message 0x72, the message 0x414a to the master player); then the flags word +0x2c is compacted (each field of 1 .. 4 bits is halved: 1 -> 0, n -> n | n >> 1 of the field's upper bits) and sent (0x4c4a60 (id, 0x2c, 4, flags, -1)); a character with flag 2 (+0x1cc) loses 0x11 + random 0x10 of its float +0x1c and dies (message 0x72) below 0; otherwise the health float +0x1c moves toward +0x10 (a share of +0x20 by the age (+10) / the 0x5092e0 skill of the master's building, +0x14 as the target) and when it plus the int +0x24 falls below 0 the character dies (a master gets the message 0x1c51 / 0x4080 with "NACHRICHTEN\DOMIZIL_05"; with flag 1 and kinds other than 6 / 7 it is reset to 100 and the 0x1cc flags = 2); else 0x4fccc0 and the age (+10) + 1 is stored. ROUGH, the float code is guessed */
 
-extern int cm_FieldObject;                /* 0xa68d2c */
+extern char * cm_FieldObject;                /* 0xa68d2c */
 extern char ch_EmptyName[];             /* 0x631090 */
 int gm_Unk5075c0();                     /* 0x5075c0 */
 void cm_SendKillCharacter(int a, int b);                     /* 0x4c4e00 */
@@ -53,7 +53,7 @@ float unk_Unk4fbe90(unsigned short *c)
         if (unk_Unk4f1660(c) == 1) {
             b = 0;
             cm_BeginFieldBlock(c, *(int *)(p + 4));
-            cm_AddFieldValue(1, 1, (int)p + (8 - cm_FieldObject), &b);
+            cm_AddFieldValue(1, 1, (int)p + (8 - cm_FieldObjectI), &b);
             cm_SendFieldValues();
             G_MSG72(m, p);
             mst = *(char **)(p + 0x16c);
@@ -141,7 +141,7 @@ float unk_Unk4fbe90(unsigned short *c)
         if (t <= 0.0f) {
             b = 0;
             cm_BeginFieldBlock(c, *(int *)(p + 4));
-            cm_AddFieldValue(1, 1, (int)p + (8 - cm_FieldObject), &b);
+            cm_AddFieldValue(1, 1, (int)p + (8 - cm_FieldObjectI), &b);
             cm_SendFieldValues();
             ai_Unk6f1b98++;
             G_MSG72(m, p);
@@ -187,7 +187,7 @@ float unk_Unk4fbe90(unsigned short *c)
             return t;
         }
         cm_BeginFieldBlock(c, *(int *)(p + 4));
-        cm_AddFieldValue(1, 1, (int)p + (8 - cm_FieldObject), &b);
+        cm_AddFieldValue(1, 1, (int)p + (8 - cm_FieldObjectI), &b);
         cm_SendFieldValues();
         ai_Unk6f1b98++;
         G_MSG72(m, p);

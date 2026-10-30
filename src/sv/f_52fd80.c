@@ -10,6 +10,6 @@ void sv_Unk52fd80(char *t)
     m = ((int (*)(int, int))cm_SendExSysMessage)(0xe, msg);
     while (cm_GetSlotState(m) == 0) {
         sv_SetStatusText(t);
-        sv_RunFrame(0, ai_Unk60d360 | 0x210000);
+        sv_RunFrame(0, ai_Unk60d360U | 0x210000);
     }
 }

@@ -15,7 +15,7 @@ void he_Unk551d70(int ev)
 
     if (st == 0xc) {
         txt_Format(text, *(int *)(ev + 0xac) == 0 ? 0x10bc : 0x10be, (char *)((unsigned)&ai_PlayerSlots + 0x20) + *(unsigned char *)(unsigned)&ai_OwnPlayer * 0x2f4);
-        for (c = (unsigned)&ai_Chars; c < (unsigned)((unsigned)ai_Chars + 0x65400); c += 0x21c) {
+        for (c = (unsigned)&ai_Chars; c < (unsigned)((unsigned)ai_CharsV + 0x65400); c += 0x21c) {
             if (*(unsigned char *)(c + 2) == 6 || *(unsigned char *)(c + 2) == 7)
                 he_ShowNews(*(int *)(c + 4), -1, text, 0x20, 0x600, (unsigned)&ch_EmptyName);
         }

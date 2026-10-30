@@ -36,7 +36,7 @@ int init_SetupNewGame(int n)
             i++;
         } while ((int)p < INIT_CHARACTERS_END + 2);
     }
-    if (0 < (int)ai_PlayerSlots[n][0x48] - (unsigned)ai_NumPlayers) {
+    if (0 < (int)ai_PlayerSlotsV[n][0x48] - (unsigned)ai_NumPlayers) {
         tab[0] = 0x18;
         tab[1] = 0x27;
         tab[2] = 0x33;
@@ -65,7 +65,7 @@ int init_SetupNewGame(int n)
                 p += 0x21c;
             } while ((int)p < INIT_CHARACTERS_END + 2);
         }
-        init_CreateOpponents((int)ai_PlayerSlots[n][0x48] - ai_NumPlayers, 8, tab);
+        init_CreateOpponents((int)ai_PlayerSlotsV[n][0x48] - ai_NumPlayers, 8, tab);
     }
     init_OpenTown();
     b = (INIT_BLD *)gm_FirstBuilding(1);

@@ -120,13 +120,13 @@ char d3_LoadScene(char *name, void *f, D3IOPROGRESS progress)
                     }
             }
             if (!d3_Terrain) {
-                if (d3sm_Shadow)
-                    d3sm_Build(d3sm_Shadow, 0);
+                if (d3sm_ShadowV)
+                    d3sm_Build(d3sm_ShadowV, 0);
                 else
-                    d3sm_Shadow = d3sm_Create(0, -d3if_Unk633dcc, 1);
-            } else if (d3sm_Shadow) {
-                d3sm_Destroy(d3sm_Shadow);
-                d3sm_Shadow = 0;
+                    d3sm_ShadowV = d3sm_Create(0, -d3if_Unk633dcc, 1);
+            } else if (d3sm_ShadowV) {
+                d3sm_Destroy(d3sm_ShadowV);
+                d3sm_ShadowV = 0;
             }
             if (!D3IO_SCENEB4(d3_DefaultScene))
                 D3IO_SCENEB4(d3_DefaultScene) = d3_Terrain ? 0x80 : 0x40;

@@ -24,7 +24,7 @@ int ls_SaveGame(int name, char *path, unsigned flags)
     vfs_fwrite(&ai_Unk6f1bbc, 4, 1, f);
     vfs_fwrite(&ai_CharCount, 4, 1, f);
     vfs_fwrite(&ai_Unk6f1bcc, 4, 1, f);
-    vfs_fwrite(ai_UpdateStart, 0x18, 1, f);
+    vfs_fwrite(ai_UpdateStartV, 0x18, 1, f);
     vfs_fwrite(&ai_Unk61a658, 4, 1, f);
     vfs_fwrite(&ai_Unk6f1b88, 4, 1, f);
 #define LS_STEP(fn) if (fn(f) == 0) { ((void (*)())vfs_fclose)(); unk_Unk519aa0(); return 0; }

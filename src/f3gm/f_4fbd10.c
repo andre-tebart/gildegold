@@ -58,7 +58,7 @@ go:
         return 0;
     *(int *)(*(int *)(c + 0x184) + 0x2c) = a;
     *(int *)(*(int *)(c + 0x184) + 0x30) = b;
-    if ((ai_PlayerBuilding != 0 && ai_PlayerBuilding != o) || (ai_FallbackBuilding != 0 && ai_FallbackBuilding != o))
+    if ((ai_PlayerBuildingI != 0 && ai_PlayerBuildingI != o) || (ai_FallbackBuildingI != 0 && ai_FallbackBuildingI != o))
         ch_SetVisible(*(int *)(c + 0x184), 0);
     return *(int *)(c + 0x184);
 }

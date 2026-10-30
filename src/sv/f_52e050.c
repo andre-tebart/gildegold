@@ -2,7 +2,7 @@
 
 #include <stdarg.h>
 extern int ai_GameState;
-extern char d3_MipSkip[];
+extern unsigned char d3_MipSkip;
 
 struct D3OBJECT * d3t_FindObject(char *name, char flags);                     /* 0x411900 */
 int d2_TextWidth();                     /* 0x46ea10 */

@@ -15,7 +15,7 @@ typedef struct D2INPUTVIEW { char pad0[0x10]; int w; char pad1[0x148]; int maxw;
 
 extern D2INPUTVIEW d2_Inputs[];         /* 0xfa6020, d2.h: D2INPUT [0x80] */
 extern int d2_FontHeight;               /* 0xf8f084, d2.h */
-extern void *d2_FocusedInput;           /* 0x6ed9dc, d2.h: D2INPUT * */
+extern struct D2INPUT *d2_FocusedInput;           /* 0x6ed9dc, d2.h: D2INPUT * */
 extern unsigned char kb_Last;           /* 0x1468410, d2.h */
 int d2_WinCreateSlider(int x, int y, int pic, int unk, int win);     /* 0x46bf10, d2.h: D2OBJ *d2_Objs */
 void d2_CloseView(int view);                                         /* 0x4758f0, d2.h */
@@ -215,7 +215,7 @@ void ai_FillSaveSlots(int view, int form, SAVESLOTVIEW *slots, char *files, char
         if (slot == -1)
             continue;
         d2_SetForm(view, form);
-        slots[slot].win = d2_CreateChildWindow(0, slot * 0x82, d2_LastWindowPtr->w - 0x10, 0x82, 0x10,
+        slots[slot].win = d2_CreateChildWindow(0, slot * 0x82, d2_LastWindowPtrV->w - 0x10, 0x82, 0x10,
                                              d2_LastWindow);
         d2_Wins[slots[slot].win].font = 0x54;
         slots[slot].obj = d2_CreateWinText(0xa8, -2, hdr.title, d2_LastWindow);
@@ -239,10 +239,10 @@ void ai_FillSaveSlots(int view, int form, SAVESLOTVIEW *slots, char *files, char
             }
             d2_WinOpenRaw(0, 0, 0xa0, 0x78, ai_ScreenImage, d2_LastWindow);
         }
-        d2_Objs[slots[slot].obj].interactive = 1;
-        d2_Objs[slots[slot].obj].w = d2_LastWindowPtr->w - 0xa0;
-        d2_Objs[slots[slot].obj].style = 3;
-        d2_CreateChildWindow(0xa4, 0x12, d2_LastWindowPtr->w - 0xb0, 0x6e, 0x10, d2_LastWindow);
+        d2_ObjsV[slots[slot].obj].interactive = 1;
+        d2_ObjsV[slots[slot].obj].w = d2_LastWindowPtrV->w - 0xa0;
+        d2_ObjsV[slots[slot].obj].style = 3;
+        d2_CreateChildWindow(0xa4, 0x12, d2_LastWindowPtrV->w - 0xb0, 0x6e, 0x10, d2_LastWindow);
         d2_Wins[d2_LastWindow].font = 0x54;
         d2_Wins[d2_LastWindow].mt = 0;
         sprintf(timebuf, "%i%c", hdr.money, 0x11);
@@ -266,17 +266,17 @@ void ai_FillSaveSlots(int view, int form, SAVESLOTVIEW *slots, char *files, char
             continue;
         d2_SetForm(view, form);
         slots[slot].used = 0;
-        slots[slot].win = d2_CreateChildWindow(0, slot * 0x82, d2_LastWindowPtr->w - 0x10, 0x78, 0x10,
+        slots[slot].win = d2_CreateChildWindow(0, slot * 0x82, d2_LastWindowPtrV->w - 0x10, 0x78, 0x10,
                                               d2_LastWindow);
         d2_Wins[slots[slot].win].font = 0x54;
         slots[slot].obj = d2_CreateWinText(0xa8, 0, slots[slot].name, d2_LastWindow);
         d2_SetObjFont(slots[slot].obj, 0x53);
         d2_WinOpenRaw(0, 0, 0xa0, 0x78, ai_ScreenImage, d2_LastWindow);
         d2_WinOpenPic(0x3c, 0x20, 0x4fb, d2_LastWindow);
-        d2_Objs[slots[slot].obj].interactive = 1;
-        d2_Objs[slots[slot].obj].w = d2_LastWindowPtr->w - 0xa0;
-        d2_Objs[slots[slot].obj].style = 3;
-        d2_CreateChildWindow(0xa4, 0x18, d2_LastWindowPtr->w - 0xb0, 0x60, 0x10, d2_LastWindow);
+        d2_ObjsV[slots[slot].obj].interactive = 1;
+        d2_ObjsV[slots[slot].obj].w = d2_LastWindowPtrV->w - 0xa0;
+        d2_ObjsV[slots[slot].obj].style = 3;
+        d2_CreateChildWindow(0xa4, 0x18, d2_LastWindowPtrV->w - 0xb0, 0x60, 0x10, d2_LastWindow);
         d2_Wins[d2_LastWindow].font = 0x54;
         io_PrintText(0x1cc7);
     }

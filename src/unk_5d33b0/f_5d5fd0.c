@@ -21,7 +21,7 @@ void ai_OptionsGfxScreen(void)
     int dflt;
 
     apply = 0;
-    mask = sv_FrameMask & 0xffffdfff;
+    mask = sv_FrameMaskU & 0xffffdfff;
     form = d2_OpenForm(0, 0, "menu\\options_gfx");
     sv_SetScreenCenter(mask);
     d2_PlaceViewWindows(form, 1);
@@ -81,7 +81,7 @@ void ai_OptionsGfxScreen(void)
     d2_SetSliderFlags(obj8, 0x82);
     d2_SetLabel(obj8, txt_Ptrs[0x1c6f]);
     d2_SetList(obj8, 3, txt_Ptrs[0x1c70], txt_Ptrs[0x1c71], txt_Ptrs[0x1c72]);
-    if (ai_GameState != 0)
+    if (ai_GameStateB != 0)
         d2_EnableObject(res, 0);
     d2_SetForm(form, 3);
     sv_ButtonRow(d2_LastWindow, 0, ids, 2, txt_Ptrs[0x1ca2], txt_Ptrs[0x1ca3]);

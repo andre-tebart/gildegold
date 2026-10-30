@@ -35,7 +35,7 @@ void ai_GameFrame(void)
     *(char *)(unsigned)&snd_AmbientOn = 1;
     U_I((unsigned)&ai_GameState) = 1;
     if (U_I((unsigned)&ai_GameFlags) & 4) {
-        for (p = (char *)((unsigned)&ai_Chars + 0x2); p < (char *)(unsigned)((unsigned)ai_Chars + 0x65402); p += 0x21c) {
+        for (p = (char *)((unsigned)&ai_Chars + 0x2); p < (char *)(unsigned)((unsigned)ai_CharsV + 0x65402); p += 0x21c) {
             if (*(unsigned short *)(p - 2) != 0xffff &&
                 *(int *)(p + 0x52) == U_I(((unsigned)&ai_Unk770b89 + 0x4b) + U_W((unsigned)&ai_PlayerId) * 0x87) &&
                 *(unsigned short *)(p - 2) != U_W((unsigned)&ai_PlayerId) &&

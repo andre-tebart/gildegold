@@ -97,12 +97,12 @@ void gm_Unk506e70(unsigned short *c, char *out, int flag)
         age = 0x10;
         st = 3;
         cm_BeginFieldBlock(c, *(int *)(c + 2));
-        cm_AddFieldDelta(1, 1, (int)c + (8 - cm_FieldObject), &z2);
-        cm_AddFieldDelta(2, 1, (int)c + (10 - cm_FieldObject), &age);
-        cm_AddFieldDelta(4, 1, (int)c + (0x194 - cm_FieldObject), &st);
+        cm_AddFieldDelta(1, 1, (int)c + (8 - cm_FieldObjectI), &z2);
+        cm_AddFieldDelta(2, 1, (int)c + (10 - cm_FieldObjectI), &age);
+        cm_AddFieldDelta(4, 1, (int)c + (0x194 - cm_FieldObjectI), &st);
         z3 = 0;
-        cm_AddFieldDelta(1, 1, (int)c + (0x1b0 - cm_FieldObject), &z3);
-        cm_AddFieldDelta(1, 1, (int)c + (0x1b1 - cm_FieldObject), &z3);
+        cm_AddFieldDelta(1, 1, (int)c + (0x1b0 - cm_FieldObjectI), &z3);
+        cm_AddFieldDelta(1, 1, (int)c + (0x1b1 - cm_FieldObjectI), &z3);
         cm_SendSetField(*(int *)(c + 2), 0x1c8, 4, ((unsigned)&ai_Relations + 0x1aca0), 0);
         cm_SendFieldDeltas();
         ai_Unk4c4ac0(*(int *)(c + 2), 0x7c, -*(float *)(c + 0x3e));
@@ -113,7 +113,7 @@ void gm_Unk506e70(unsigned short *c, char *out, int flag)
         cm_BeginFieldBlock(c, *(int *)(c + 2));
         for (i = 0; i < 5; i++) {
             z3 = 0;
-            cm_AddFieldValue(1, 1, (i - cm_FieldObject) + 0x80 + (int)c, &z3);
+            cm_AddFieldValue(1, 1, (i - cm_FieldObjectI) + 0x80 + (int)c, &z3);
         }
         cm_SendFieldValues();
     }

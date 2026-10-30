@@ -14,9 +14,9 @@ int ls_FixupAfterLoad(void)
     ai_PlayerCharC = (char *)gm_FindChar((int)ai_PlayerCharC);
     if (ai_PlayerCharC == 0)
         return 0;
-    ai_MarketBuilding = (int)gm_BuildQuery(1, 5, 10);
+    ai_MarketBuildingI = (int)gm_BuildQuery(1, 5, 10);
     if (ls_Version >= 0x10017) {
-        for (q = (int *)ai_KindBChars; (int)q < (int)(ai_KindBChars + 8); q++)
+        for (q = (int *)ai_KindBCharsV; (int)q < (int)(ai_KindBCharsV + 8); q++)
             *q = (int)gm_FindChar(*q);
     }
     for (p = (int *)((char *)ai_Chars + 0x16c); (int)p < (int)(ai_Chars + 768) + 0x16c; p = (int *)((char *)p + 0x21c)) {
@@ -89,11 +89,11 @@ int ls_FixupAfterLoad(void)
                  || kind == 10 || kind == 0x26 || (pb[0x78] & 8) != 0)
                 && (v = *(ev70 = (int *)(pb + 0x70))) != 0) {
                 *ev70 = 0;
-                ai_GameState = 2;
+                ai_GameStateB = 2;
                 if (kind == 0x11)
                     pb[0xf0] &= 0xef;
                 he_RunHandlers[kind](pb);
-                ai_GameState = 0;
+                ai_GameStateB = 0;
                 *ev70 = v;
             }
             kind = *pb;

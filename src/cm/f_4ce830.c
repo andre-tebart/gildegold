@@ -44,15 +44,15 @@ int ai_Unk4ce830()
         d3t_CreateSmokeK(0, v, 0x1e, 15.0f, 50.0f, 100.0f, 150.0f, 140.0f, 35.0f, pos, 0x190, 6, *(int *)col);
         d3t_CreateEarthK(0, col, 0x1e, 5.0f, 2.5f, 1.0f, 3.0f, -3.0f, 4.0f, 7.0f, 8.0f, *(int *)col);
         d3t_CreateExplosionK(0, v, 0x1e, 70.0f, 50.0f, 20.0f, 60.0f, 0x3c);
-        map = (int *)ai_Unk633738;
+        map = (int *)ai_Unk633738I;
         if (*(char *)(*(char **)(map + 5) + *(int *)(rec + 8) + *(int *)(rec + 0xc) * map[0]) != 0) {
             *(char *)(*(char **)(map + 4) + *(int *)(rec + 8) + *(int *)(rec + 0xc) * map[0]) -= 5;
-            *(char *)(*(char **)(((int *)ai_Unk633738) + 5) + *(int *)(rec + 8) + *(int *)(rec + 0xc) * *(int *)ai_Unk633738) = 0;
-            d3fl_MakeDivide(ai_Unk633738);
-            d3fl_MakeLight(ai_Unk633738);
+            *(char *)(*(char **)(((int *)ai_Unk633738I) + 5) + *(int *)(rec + 8) + *(int *)(rec + 0xc) * *(int *)ai_Unk633738I) = 0;
+            d3fl_MakeDivide(ai_Unk633738I);
+            d3fl_MakeLight(ai_Unk633738I);
         }
         sb_PlaySampleI(ai_Unk6f0d14, "Explosion_s", 1, 0x3f, 0x7f, 0, 0);
-        for (pp = (char **)ai_Unk7603a0; (int)pp < (int)ai_Unk760420; pp++) {
+        for (pp = (char **)ai_Unk7603a0V; (int)pp < (int)ai_Unk760420V; pp++) {
             c = *pp;
             if (c == 0)
                 continue;

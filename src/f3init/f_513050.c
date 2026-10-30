@@ -34,7 +34,7 @@ void init_ShowBuildingScene(unsigned char *b, int slot)
         uni = init_ObjectUniverse[proto];
         ((int (*)())ai_MsgNoOp)();
     }
-    if (d3_CurrentScene == uni && (ai_PlayerBuilding == 0 || ai_PlayerBuilding == (int)b) && (ai_FallbackBuilding == 0 || ai_FallbackBuilding == (int)b)) {
+    if (d3_CurrentScene == uni && (ai_PlayerBuildingI == 0 || ai_PlayerBuildingI == (int)b) && (ai_FallbackBuildingI == 0 || ai_FallbackBuildingI == (int)b)) {
         d = d3_FindObject(0, 0x180, 0, "ordner_DETAILS");
         if (d != 0)
             d3if_ShowTree(d, ai_GfxDetail != 0);

@@ -31,7 +31,7 @@ void he_Unk54da80(int ev)
         if ((*(unsigned char *)(ev + 0x78) & 4) != 0)
             return;
         txt_Format(text, 0x1e29);
-        for (rec = (unsigned)&ai_Chars; rec < (unsigned)((unsigned)ai_Chars + 0x65400); rec += 0x21c) {
+        for (rec = (unsigned)&ai_Chars; rec < (unsigned)((unsigned)ai_CharsV + 0x65400); rec += 0x21c) {
             if (*(unsigned short *)rec != 0xffff && (*(char *)(rec + 2) == 6 || *(char *)(rec + 2) == 7))
                 he_ShowNews(*(int *)(rec + 4), *(int *)(ev + 4), text, 0, 0x601, "");
         }
@@ -72,7 +72,7 @@ void he_Unk54da80(int ev)
         return;
     case 3:
         if ((*(unsigned char *)(ev + 0x78) & 2) != 0) {
-            for (rec = (unsigned)&ai_Chars; rec < (unsigned)((unsigned)ai_Chars + 0x65400); rec += 0x21c) {
+            for (rec = (unsigned)&ai_Chars; rec < (unsigned)((unsigned)ai_CharsV + 0x65400); rec += 0x21c) {
                 if (*(unsigned short *)rec != 0xffff && (U_I(rec + 0x1c8) & 0x20000) != 0)
                     cm_SendSetField(*(int *)(rec + 4), 0x1c8, 4, 0, 0x20000);
             }

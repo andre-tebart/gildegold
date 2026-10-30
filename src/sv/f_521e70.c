@@ -19,7 +19,7 @@ void sv_BuildScreenLayout(int s)
     if (d2_LockSurface(ai_Unk6ed92c) != 0) {
         d2_ClearSurface(ai_Unk6ed92c);
         d2_DrawShape(0, 0, ai_Unk6ed92c, t, 0);
-        ai_Unk6f0454 = 0;
+        ai_Unk6f0454V = 0;
         ai_Unk6f0455[0] = 0;
         ai_Unk6f0455[1] = 0;
         ai_Unk6f22c0 = d2_GrabShape(sv_ViewRectLeft, sv_ViewRectTop, (sv_ViewRectRight - sv_ViewRectLeft) + 1, sv_ViewRectBottom - sv_ViewRectTop, ai_Unk6ed92c, 0, 1);

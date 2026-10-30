@@ -246,7 +246,7 @@ extern unsigned long d3_FogColor;           /* 0x6334a0 */
 #ifndef DATA_VIEWS_H
 extern unsigned char d3d_Caps98d;           /* 0xfe798d, bit 5 = fog supported */
 #endif
-extern void *d3sm_Shadow;                  /* 0x633df8 */
+extern struct D3SM *d3sm_Shadow;                  /* 0x633df8 */
 
 typedef struct D3RELOADCTX {        /* context of d3_ReloadMeshCB */
     void (*progress)(int a, int i, int n);
@@ -421,7 +421,7 @@ extern unsigned int d3_LightKeysVisible;    /* 0x633b0c, light keys this frame s
 extern unsigned int d3_LightGeneration;     /* 0x633b10, lightmap generation, D3MESH::lightGeneration holds the one drawn */
 extern unsigned int d3_LightKeyBudgetCulled;  /* 0x5fcc6c, per-frame key budget for culled lights */
 extern unsigned int d3_LightKeyBudgetVisible; /* 0x5fcc70, per-frame key budget for visible lights */
-extern unsigned int d3s_Count;              /* 0x633dc0, d3s.c */
+extern int d3s_Count;              /* 0x633dc0, d3s.c */
 #ifndef DATA_VIEWS_H
 extern int d3_SortMax;                      /* 0xfe73f8 */
 #endif

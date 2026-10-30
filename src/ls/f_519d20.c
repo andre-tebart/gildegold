@@ -64,12 +64,12 @@ int unk_Unk519d20(int f)
         off += 0xa9;
     } while (off < 0xa900);
     LS_W(&ai_NBauplaetze, 4)
-    ai_Bauplaetze = realloc(ai_Bauplaetze, ai_NBauplaetze * 0x60);
+    ai_BauplaetzeV = realloc(ai_BauplaetzeV, ai_NBauplaetze * 0x60);
     cnt = 0;
     for (i = 0; i < ai_NBauplaetze; i++) {
-        LS_W(ai_Bauplaetze + cnt, 0x40)
-        LS_W(ai_Bauplaetze + cnt + 0x40, 0x10)
-        LS_W(ai_Bauplaetze + cnt + 0x50, 0x10)
+        LS_W(ai_BauplaetzeV + cnt, 0x40)
+        LS_W(ai_BauplaetzeV + cnt + 0x40, 0x10)
+        LS_W(ai_BauplaetzeV + cnt + 0x50, 0x10)
         cnt += 0x60;
     }
     return 1;

@@ -16,7 +16,7 @@ void ai_Unk4c2000(void)
     int k;
 
     t = F3SND_TIME;
-    if (ai_GameState == 0 || !(snd_MusicVolume > 0.0f))
+    if (ai_GameStateB == 0 || !(snd_MusicVolume > 0.0f))
         return;
     i = gm_ClockSeason(ai_Time);
     if (ai_Unk6f0cb4 != i) {

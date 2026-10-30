@@ -102,11 +102,11 @@ tail:
         off += 0xa9;
     }
     LS_R(&ai_NBauplaetze, 4)
-    ai_Bauplaetze = realloc(ai_Bauplaetze, ai_NBauplaetze * 0x60);
+    ai_BauplaetzeV = realloc(ai_BauplaetzeV, ai_NBauplaetze * 0x60);
     for (i = 0, j = 0; i < ai_NBauplaetze; i++) {
-        LS_R(ai_Bauplaetze + j, 0x40)
-        LS_R(ai_Bauplaetze + j + 0x40, 0x10)
-        LS_R(ai_Bauplaetze + j + 0x50, 0x10)
+        LS_R(ai_BauplaetzeV + j, 0x40)
+        LS_R(ai_BauplaetzeV + j + 0x40, 0x10)
+        LS_R(ai_BauplaetzeV + j + 0x50, 0x10)
         j += 0x60;
     }
     return 1;

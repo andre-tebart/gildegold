@@ -8,7 +8,7 @@ int ai_HasQuicksavePlayer(void)
 {
     unsigned char *p;
 
-    if (ai_GameState == 0)
+    if (ai_GameStateB == 0)
         return 0;
     p = (unsigned char *)ai_CharsC + 2;
     do {

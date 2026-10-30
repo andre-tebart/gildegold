@@ -25,7 +25,7 @@ void unk_Unk511c70(void)
             ai_BTypes[*b * 0x24d] != 0xb) {
             v = 64000;
             cm_BeginFieldBlock(b, *(int *)(b + 1));
-            cm_AddFieldDelta(4, 1, (int)b + (0x39 - cm_FieldObject), &v);
+            cm_AddFieldDelta(4, 1, (int)b + (0x39 - cm_FieldObjectI), &v);
             cm_SendFieldDeltas();
             cm_SendOwnership(*(int *)(b + 1), *(int *)(c + 4), *(int *)(c + 4));
             cm_SendMessage3d(b, 1, 0, (unsigned char)ai_BTypes[*b * 0x24d + 0x223]);

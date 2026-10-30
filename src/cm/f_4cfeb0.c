@@ -7,7 +7,7 @@ void ai_Unk4cfeb0()
     char *c, *sel, *o, **pp;
 
     ai_ClickedObject = 0;
-    for (pp = ai_Unk7603a0; (int)pp < (int)ai_Unk760420; pp++) {
+    for (pp = ai_Unk7603a0V; (int)pp < (int)ai_Unk760420V; pp++) {
         c = *pp;
         if (c != 0 && c[0x188] != 0 && (ai_Unk4ce170(*(unsigned short *)t, c) & 0x800) && *(int *)(c + 0x184) != 0 &&
             c[8] != 0)

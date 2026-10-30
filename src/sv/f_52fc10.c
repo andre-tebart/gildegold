@@ -2,7 +2,7 @@
    (0x5dc ms) it shows the waiting dialog (0x521900 (0x143a3a8 = the text)); fl is the key mask kept in 0x760638 */
 
 extern int ai_Unk623ec4, ai_Unk623ec8;  /* 0x623ec4, 0x623ec8 */
-extern unsigned ai_Unk60d360;  /* 0x60d360 */
+extern int ai_Unk60d360;  /* 0x60d360 */
 void cm_SendExSysMessage(unsigned char id, void *msg);                     /* 0x4c4db0 */
 int cm_GetSlotState();                     /* 0x4c3ae0 */
 void d2_SetViewEnabled(int view, int on);  /* 0x475590 */
@@ -30,7 +30,7 @@ void sv_NetworkSyncWait(unsigned fl)
     memset(msg, 0, sizeof(msg));
     strcpy(msg, "sv_NetworkSync");
     m = ((int (*)(int, int))cm_SendExSysMessage)(0xe, msg);
-    sv_FrameMask = fl;
+    sv_FrameMaskU = fl;
     dlg = sv_OpenMessageBox(ai_Unk143a3a8, 0);
     d2_SetViewEnabled(dlg, 0);
     while (cm_GetSlotState(m) == 0) {

@@ -28,19 +28,19 @@ void ai_CreditsScreen(void)
     bar = d2_CreateWindow(100, 0, 600, d2_ScreenH, 0x10);
     d2_PlaceWindowScaled(bar, 1);
     io_PrintText(0x2004);
-    d2_LastWindowPtr->scrollY = -d2_ScreenH;
+    d2_LastWindowPtrV->scrollY = -d2_ScreenH;
     frames = 0;
     d2_CutsceneActive = 1;
     pump = sv_RunFrame(ai_CreditsScreen, 0x24087);
     while (pump != 0) {
         if (dm_L.rup != 0 || kb_Last != 0)
             sv_PopRequest = 1;
-        d2_LastWindowPtr = &d2_Wins[bar];
+        d2_LastWindowPtrV = &d2_Wins[bar];
         if (frames % step == 0)
-            d2_LastWindowPtr->scrollY = d2_LastWindowPtr->scrollY + 1;
+            d2_LastWindowPtrV->scrollY = d2_LastWindowPtrV->scrollY + 1;
         frames++;
-        if ((double)d2_LastWindowPtr->h * 1.5 + (double)d2_LastWindowPtr->scrollY >
-            (double)d2_LastWindowPtr->contentHeight)
+        if ((double)d2_LastWindowPtrV->h * 1.5 + (double)d2_LastWindowPtrV->scrollY >
+            (double)d2_LastWindowPtrV->contentHeight)
             sv_PopRequest = 1;
         if (sv_FramesPerTick >= 80.0f)
             step = 4;
@@ -53,9 +53,9 @@ void ai_CreditsScreen(void)
     fade = d2_StartFade(0, 0, d2_ScreenW, d2_ScreenH, "BLACK", 0x3c, 1);
     while ((fade->flags & 4) == 0) {
         sv_RunFrame(0, 0x24087);
-        d2_LastWindowPtr = &d2_Wins[bar];
+        d2_LastWindowPtrV = &d2_Wins[bar];
         if (frames % step == 0)
-            d2_LastWindowPtr->scrollY++;
+            d2_LastWindowPtrV->scrollY++;
         if (sv_FramesPerTick >= 80.0f)
             step = 4;
         else if (sv_FramesPerTick >= 30.0f)

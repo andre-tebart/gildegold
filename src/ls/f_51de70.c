@@ -18,11 +18,11 @@ int ls_ReadCharacters(int f)
   LS_R(&ai_JudgeCatholic, 4)
   LS_R(&ai_JudgeProtestant, 4)
   if (0x10016 < ls_Version) {
-    slots = ai_KindBChars;
+    slots = ai_KindBCharsV;
     do {
       LS_R(slots, 4)
       slots = slots + 1;
-    } while (slots < ai_KindBChars + 8);
+    } while (slots < ai_KindBCharsV + 8);
   }
   k = 0;
   if (0 < cnt) {

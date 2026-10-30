@@ -49,6 +49,6 @@ int ls_ReadPlayerRecords(int f)
         if (ls_Version >= 0x10018)
             LS_R(p + 0x6e, 4)
         p += 0xac;
-    } while ((int)p < (int)((char *)gm_PlayerRecords + 0xac2));  /* one past the 16th record (gm_PlayerRecordBytes + 0xac0; a byte offset, the array is int[]); the original's literal 0x7d6a42 is an absolute address that does not hold in the linked image, where it made the loop read ~70 records and the .cty load fail */
+    } while ((int)p < (int)((char *)gm_PlayerRecordsV + 0xac2));  /* one past the 16th record (gm_PlayerRecordBytes + 0xac0; a byte offset, the array is int[]); the original's literal 0x7d6a42 is an absolute address that does not hold in the linked image, where it made the loop read ~70 records and the .cty load fail */
     return 1;
 }

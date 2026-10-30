@@ -16,18 +16,18 @@ int main_HostNetworkGame(void)
             sprintf(main_NetSaveName, "%s/%s.net", "gamedata/cities", ai_DataPath + 0x220);
             strcpy(main_NetHost, "127.0.0.1");
             ai_GameFlags |= 0x10;
-            ls_SavePath.net.players = ai_NumPlayers;
-            ls_SavePath.net.size = 0x6a;
-            ls_SavePath.net.a = 1;
-            ls_SavePath.net.b = 1;
-            ls_SavePath.net.x = ls_SavePath.cur;
+            ls_SavePathV.net.players = ai_NumPlayers;
+            ls_SavePathV.net.size = 0x6a;
+            ls_SavePathV.net.a = 1;
+            ls_SavePathV.net.b = 1;
+            ls_SavePathV.net.x = ls_SavePathV.cur;
             i = 0;
             do {
                 c = ai_DataPath[0x220 + i];
-                ls_SavePath.net.name[i] = c;
+                ls_SavePathV.net.name[i] = c;
                 i++;
             } while (c != 0);
-            memcpy(main_NetGameRecord, &ls_SavePath.net, sizeof(struct NETHDR));
+            memcpy(main_NetGameRecord, &ls_SavePathV.net, sizeof(struct NETHDR));
             ai_ModeMask = 0x3f;
             d3_SetViewport((float)(sv_ViewRectRight - sv_ViewRectLeft), (float)(sv_ViewRectBottom - sv_ViewRectTop), (float)sv_ViewRectLeft, (float)sv_ViewRectTop, d3_ZNear, d3_ZFar, d3_ScaleX, d2_ScreenW, d2_ScreenH);
             return 1;

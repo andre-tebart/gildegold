@@ -113,7 +113,7 @@ int ai_Unk57aeb0(void)
     U_I(r + 0x64) = (unsigned)mem_Alloc(0x58, (char *)(unsigned)&full_data_62a134);
     if (!U_I(r + 0x64))
         goto fail;
-    if (d2_ScreenW == 0x320) {
+    if (d2_ScreenWB == 0x320) {
         CHANIM(0x0) = 0x430c0000;
         CHANIM(0x4) = 0x432a0000;
         CHANIM(0x8) = 0x437a0000;
@@ -122,7 +122,7 @@ int ai_Unk57aeb0(void)
         CHANIM(0x14) = 0x43910000;
         CHANIM(0x18) = 0x44160000;
         CHANIM(0x1c) = 0x43988000;
-    } else if (d2_ScreenW == 0x400) {
+    } else if (d2_ScreenWB == 0x400) {
         CHANIM(0x0) = 0x437a0000;
         CHANIM(0x4) = 0x437f0000;
         CHANIM(0x8) = 0x43c80000;
@@ -144,7 +144,7 @@ int ai_Unk57aeb0(void)
     CHANIM(0x20) = 0x420c0000;
     CHANIM(0x24) = 0x43310000;
     CHANIM(0x28) = 0x42d40000;
-    if (d2_ScreenW == 0x320) {
+    if (d2_ScreenWB == 0x320) {
         CHANIM(0x2c) = 0x442f0000;
         CHANIM(0x30) = 0x439b0000;
         CHANIM(0x34) = 0x442f0000;
@@ -153,7 +153,7 @@ int ai_Unk57aeb0(void)
         CHANIM(0x40) = 0x439b0000;
         CHANIM(0x44) = 0x442f0000;
         CHANIM(0x48) = 0x439b0000;
-    } else if (d2_ScreenW == 0x400) {
+    } else if (d2_ScreenWB == 0x400) {
         CHANIM(0x2c) = 0x44670000;
         CHANIM(0x30) = 0x439b0000;
         CHANIM(0x34) = 0x44670000;

@@ -55,10 +55,10 @@ extern GAPDATA full_data_623938[];
 extern GAPDATA full_data_62393c[];
 extern GAPDATA full_data_7604e8[];
 extern const char ai_AxisPair[];
-extern char ai_PlayerSlots[];
+extern char ai_PlayerSlots[4][0x2f4];
 
 extern unsigned char ai_OptionPanelHelp;
-extern char ai_PlayerSlots[];
+extern char ai_PlayerSlots[4][0x2f4];
 extern unsigned char ai_TimeHour;
 extern int d2_HitUnderPointer;
 extern short d2_ShpH;
@@ -76,7 +76,7 @@ extern GAPDATA full_data_6faa60[];
 extern void *d2_ScreenSurf;  /* 0x6ed924 */
 extern GAPDATA full_data_6f2338[];
 extern GAPDATA full_data_76631c[];
-extern unsigned char ai_Unk7603a0;
+extern int ai_Unk7603a0[32];
 extern GAPDATA full_data_75ec80[];
 extern GAPDATA full_data_75ec84[];
 extern unsigned char ai_TimeHour;
@@ -129,11 +129,11 @@ extern GAPDATA full_data_760458[];
 extern GAPDATA full_data_76045c[];
 extern GAPDATA full_data_760460[];
 extern unsigned char ai_TimeHour;
-extern unsigned char ai_Unk7603a0;
+extern int ai_Unk7603a0[32];
 extern void * d3_Unk6333fc;
 extern GAPDATA full_data_6237c8[];
 extern GAPDATA full_data_75ec84[];
-extern char gm_PlayerRecords[];
+extern int gm_PlayerRecords[688];
 extern int hst_KeyNext;
 extern unsigned char txt_GroupLevel[0x4800];
 
@@ -174,7 +174,7 @@ extern GAPDATA full_data_6f262c[];
 extern GAPDATA full_data_6f2630[];
 extern GAPDATA full_data_6faa80[];
 extern GAPDATA full_data_6faa84[];
-extern unsigned char he_Events;
+extern unsigned char he_Events[339968];
 extern unsigned char ai_GameSwitches;
 extern char ai_Unkf8aae0[0x80];
 extern short d2_MouseX;
@@ -192,12 +192,12 @@ extern void *d2_ScreenSurf;  /* 0x6ed924 */
 extern float d3s_QuadUV[6];
 extern GAPDATA full_data_6f1c90[];
 extern GAPDATA full_data_6f23ec[];
-extern unsigned char d2_Pics;
+extern struct D2PIC *d2_Pics;
 extern GAPDATA full_data_760444[];
 extern GAPDATA full_data_760448[];
 extern GAPDATA full_data_76044c[];
 extern GAPDATA full_data_760450[];
-extern unsigned char ai_Unk7603a0;
+extern int ai_Unk7603a0[32];
 extern GAPDATA full_data_6f240c[];
 extern GAPDATA full_data_6f23f0[];
 extern GAPDATA full_data_6f25b4[];
@@ -210,9 +210,9 @@ extern GAPDATA full_data_623ebc[];
 extern char ai_Unk75fba0[2048];
 extern unsigned char ai_TimeHour;
 extern char ai_Unk623ac0[];
-extern unsigned char d3_Sky;
+extern struct D3SKY *d3_Sky;
 extern GAPDATA full_data_6239d8[];
-extern unsigned char d3t_SunRays;
+extern struct D3OBJECT *d3t_SunRays;
 extern GAPDATA full_data_6f2408[];
 extern GAPDATA full_data_7604e8[];
 extern int ai_OptionSpeed;
@@ -237,7 +237,7 @@ extern int ai_Unkf31144;
 extern char cm_RequestedSaveName[72];
 extern int cm_RequestedSaveSlot;
 extern int d2_CutsceneActive;
-extern unsigned char d2_FocusedInput;
+extern struct D2INPUT *d2_FocusedInput;
 extern int d2_HitUnderPointer;
 extern short d2_MouseX;
 extern short d2_MouseY;
@@ -295,8 +295,9 @@ extern int sv_SelectionFlags[0xc0];
 extern int cm_Bombs[0x40];
 extern char ch_EmptyName[];             /* 0x631090 */
 extern int di_Absolute, di_MinX, di_MinY, di_MaxX, di_MaxY;  /* 0x5f3240, 0x6310b0, 0x6310b4, 0x5f3238, 0x5f323c (di_input.c) */
-extern short d2_ScreenW, d2_ScreenH;    /* 0xfb9072, 0xfb9070 (d2.h), the screen size */
-extern unsigned sv_FrameMask;           /* 0x760638 */
+extern short d2_ScreenW;  /* 0xfb9072 (d2.h), the screen size */
+extern short d2_ScreenH;  /* 0xfb9070 */
+extern int sv_FrameMask;           /* 0x760638 */
 extern char sv_MessageBoxOpen, sv_MessageBoxGreenOpen, sv_MessageBoxYesNoOpen;  /* 0x6f2350, 0x6f2351, 0x6f2352 (the yes / no box) */
 extern int d2_LastWindow, sv_PopRequest;  /* 0x6ed938, 0x6f22a0 */
 extern char *d2_LastWindowPtr;  /* 0x6ed980, window created last; @original: d2.h declares D2WIN *; the units add byte offsets to it and cannot include d2.h (vfs_Root / vfs_Tfopen clash with vfs.h) */
@@ -335,11 +336,12 @@ extern int ai_Unk7662e0[15];
 extern int ai_Unk6f22c0, ai_Unk6f22c4, ai_Unk6f22c8, ai_FrameWait;  /* 0x6f22c0, 0x6f22c4, 0x6f22c8, 0x6f22bc */
 extern int sv_FrameDepth;
 extern int sv_FrameBase;
-extern char ai_Unk6f0454;  /* 0x6f0454 */
+extern char ai_Unk6f0454[1];  /* 0x6f0454 */
 extern int sv_ViewRectLeft, sv_ViewRectTop, sv_ViewRectRight, sv_ViewRectBottom, ai_Unk6ed92c;  /* 0x6248a4, 0x6248a8, 0x6248ac, 0x6248b0, 0x6ed92c */
 extern int ai_Unkfb9060, ai_Unkfb9064, ai_Unkfb9068, ai_Unkfb906c;  /* 0xfb9060, 0xfb9064, 0xfb9068, 0xfb906c */
 extern char ai_GamePanel;  /* 0x6f3668 */
-extern char *ai_PlayerBuilding, *ai_FallbackBuilding;  /* 0x6f2308, 0x6f230c */
+extern char *ai_PlayerBuilding;  /* 0x6f2308 */
+extern char *ai_FallbackBuilding;  /* 0x6f230c */
 extern unsigned short * sv_PanelShown;
 extern int sv_PanelFlag;
 extern char * sv_PanelObject;
@@ -424,4 +426,10 @@ int sv_MessageBoxYesNo();               /* 0x5216a0 */
 #include "time_view.h"
 #include "io_text.h"
 #define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
-
+#define ai_Unk60d360U (*(unsigned (*))&ai_Unk60d360)  /* 0x60d360, this unit reads it as `unsigned ai_Unk60d360` */
+#define ai_Unk6f0454V (*(char (*))&ai_Unk6f0454)  /* 0x6f0454, this unit reads it as `char ai_Unk6f0454` */
+#define ai_Unk75ec60I (*(int (*))&ai_Unk75ec60)  /* 0x75ec60, this unit reads it as `int ai_Unk75ec60` */
+#define ai_Unk7603a0V (*(unsigned char (*))&ai_Unk7603a0)  /* 0x7603a0, this unit reads it as `unsigned char ai_Unk7603a0` */
+#define ai_Unk760618I (*(int (*))&ai_Unk760618)  /* 0x760618, this unit reads it as `int ai_Unk760618` */
+#define d3t_CamMoveI (*(int (*))&d3t_CamMove)  /* 0x6310e8, this unit reads it as `int d3t_CamMove` */
+#define sv_FrameMaskU (*(unsigned (*))&sv_FrameMask)  /* 0x760638, this unit reads it as `unsigned sv_FrameMask` */

@@ -40,7 +40,7 @@ int ls_SendGame(char *name)
             sv_PumpNet();
         } while (sent < size);
     }
-    while (cm_SendQueue != 0) {
+    while (cm_SendQueueI != 0) {
         sv_PumpMessages();
         sv_PumpNet();
     }

@@ -26,7 +26,7 @@ void sv_Unk527e90(int m)
     dir[1] = *(float *)(ai_Unkfc2dec + 0x88);
     dir[2] = *(float *)(ai_Unkfc2dec + 0x8c);
     d3anim_FreePath(ai_Unkfc2dec);
-    d3t_CamMove = 0;
+    d3t_CamMoveI = 0;
     ai_Unk6310e4 = 0;
     t = d3t_GetMeanHeight(pos);
     pos[1] = (float)((sv_CameraHeightFar - sv_CameraHeightNear) * sv_CameraHeightFactor + sv_CameraHeightNear + t);

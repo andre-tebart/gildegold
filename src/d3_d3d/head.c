@@ -30,5 +30,5 @@ extern D3DTEXFMTCTX d3d_UsedTexFormat;
 #define dd_BBitsC (*(char *)&dd_BBits)  /* 0x1464fbd, dd_BBits (dd_vesa.c: unsigned char) read signed: @original the byte-matched d3d_EnumTextureFormatsCallback sign-extends it */
 #define dd_GBitsC (*(char *)&dd_GBits)  /* 0x1463580, dd_GBits (dd_vesa.c: unsigned char) read signed: @original the byte-matched d3d_EnumTextureFormatsCallback sign-extends it */
 #define dd_RBitsC (*(char *)&dd_RBits)  /* 0x1463570, dd_RBits (dd_vesa.c: unsigned char) read signed: @original the byte-matched d3d_EnumTextureFormatsCallback sign-extends it */
-extern char d3_MipSkip[];
+extern unsigned char d3_MipSkip;
 

@@ -30,7 +30,7 @@ void he_Unk572bf0(int ev)
             n = gm_BuildingSkill(bld, 0x15, 1);
             f = (float)n * (0.00249999994f);
             cnt = 0;
-            for (ch = (char *)(unsigned)&ai_Chars; (int)ch < (unsigned)((unsigned)ai_Chars + 0x65400); ch += 0x21c) {
+            for (ch = (char *)(unsigned)&ai_Chars; (int)ch < (unsigned)((unsigned)ai_CharsV + 0x65400); ch += 0x21c) {
                 if (*(unsigned short *)ch != 0xffff && HM_I(ch, 0x16c) == (int)bld)
                     chars[cnt++] = ch;
             }
@@ -75,7 +75,7 @@ tail:
             goto tail;
         per = (char *)gm_FindCharacterByMaster(bld);
         cnt = 0;
-        for (ch = (char *)(unsigned)&ai_Chars; (int)ch < (unsigned)((unsigned)ai_Chars + 0x65400); ch += 0x21c) {
+        for (ch = (char *)(unsigned)&ai_Chars; (int)ch < (unsigned)((unsigned)ai_CharsV + 0x65400); ch += 0x21c) {
             if (*(unsigned short *)ch != 0xffff && HM_I(ch, 0x16c) == (int)bld)
                 chars[cnt++] = ch;
         }

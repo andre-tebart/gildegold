@@ -15,7 +15,7 @@ void he_Unk568be0(int ev)
     gm_FindById(buf, 0, 0, *(int *)(ev + 0xb8));
     obj = buf[4];
     if (obj == 0) {
-        for (rec = (unsigned)&ai_Chars; rec < (unsigned)((unsigned)ai_Chars + 0x65400); rec += 0x21c) {
+        for (rec = (unsigned)&ai_Chars; rec < (unsigned)((unsigned)ai_CharsV + 0x65400); rec += 0x21c) {
             if (*(int *)(rec + 0x17c) == ev)
                 sv_MoveToGroup(0, 0, *(unsigned short *)rec, 0);
         }
@@ -72,7 +72,7 @@ void he_Unk568be0(int ev)
                 if (g == 0) {
                     txt_Format(text, 0x1bb7, *(unsigned short *)(ev + 0xac) * 2 + 0x9a8, b2[4]);
                     he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, text, 0, 0x5f1, *(int *)(b2[4] + 1), -1, 0, (unsigned)&full_data_628a28);
-                    for (rec = (unsigned)&ai_Chars; rec < (unsigned)((unsigned)ai_Chars + 0x65400); rec += 0x21c) {
+                    for (rec = (unsigned)&ai_Chars; rec < (unsigned)((unsigned)ai_CharsV + 0x65400); rec += 0x21c) {
                         if (*(int *)(rec + 0x17c) == ev)
                             sv_MoveToGroup(b2[4], *(unsigned short *)rec, 0, 0);
                     }
@@ -93,7 +93,7 @@ void he_Unk568be0(int ev)
             *(int *)(ev + 0x70) = -1;
             return;
         }
-        for (rec = (unsigned)&ai_Chars; rec < (unsigned)((unsigned)ai_Chars + 0x65400); rec += 0x21c) {
+        for (rec = (unsigned)&ai_Chars; rec < (unsigned)((unsigned)ai_CharsV + 0x65400); rec += 0x21c) {
             if (*(int *)(rec + 0x17c) == ev)
                 sv_MoveToGroup(obj, *(unsigned short *)rec, 0, 0);
         }
@@ -101,7 +101,7 @@ void he_Unk568be0(int ev)
         return;
     case -2:
     case -1:
-        for (rec = (unsigned)&ai_Chars; rec < (unsigned)((unsigned)ai_Chars + 0x65400); rec += 0x21c) {
+        for (rec = (unsigned)&ai_Chars; rec < (unsigned)((unsigned)ai_CharsV + 0x65400); rec += 0x21c) {
             if (*(int *)(rec + 0x17c) == ev)
                 sv_MoveToGroup(0, 0, *(unsigned short *)rec, 0);
         }

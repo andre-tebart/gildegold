@@ -19,7 +19,7 @@ void ai_Unk589e50(void)
             break;
         b += 0x21c;
         i++;
-    } while ((int)b < (unsigned)((unsigned)ai_Chars + 0x65402));
+    } while ((int)b < (unsigned)((unsigned)ai_CharsV + 0x65402));
     n = 1;
     ai_Unk589e00(0, (char *)U_I((unsigned)&ai_MarketBuilding));
     b = (unsigned char *)gm_BuildQuery(1, 5, 0xf);

@@ -3,7 +3,7 @@
    0x62493c .. 0x6249a8 sit after the last sv string ("MASTER(): .." 0x624534) and the code is the process level start / stop, not the in-game screen. ROUGH drafts.
    unit of rea 8cef7d5b (src/game/main.c); boundaries in decl/text.dcl, notes in src/main/open.md */
 struct UDPSERVER;
-extern char gm_PlayerRecords[];
+extern int gm_PlayerRecords[688];
 #include "txt_views.h"
 #include <windows.h>
 #include <stdio.h>
@@ -69,7 +69,7 @@ extern int main_HmtBuild;
 extern char main_AppDir[];
 extern unsigned char init_PlayerProfile[];
 extern GAPDATA full_data_60da10[];
-extern struct LSSAVEVIEW ls_SavePath;
+extern char ls_SavePath[640];
 extern int sv_PopRequest;
 extern int ai_ModeMask;
 extern GAPDATA full_data_624b48[];
@@ -84,7 +84,7 @@ extern GAPDATA full_data_624b48[];
 extern GAPDATA full_data_624b4c[];
 extern GAPDATA full_data_624b50[];
 extern GAPDATA main_NetGameRecord[];
-extern struct LSSAVEVIEW ls_SavePath;
+extern char ls_SavePath[640];
 extern char ai_OptionsFile[288];
 extern int sv_PopRequest;
 extern char ai_DataPath[];
@@ -98,9 +98,9 @@ extern void * d3_Unk6333fc;
 
 extern GAPDATA full_data_5f1084[];
 extern GAPDATA full_data_936460[];
-extern struct LSSAVEVIEW ls_SavePath;
+extern char ls_SavePath[640];
 extern int sv_PopRequest;
-extern unsigned char ai_MissionMode;
+extern char ai_MissionMode;
 extern int ai_Unkfb9060;
 extern int ai_Unkfb9064;
 extern int ai_Unkfb9068;
@@ -145,7 +145,7 @@ extern int ai_Unk5f8438;
 extern unsigned char ai_Unk5fb5b0;
 extern int * ai_Unk633738;
 extern char * ai_Unkfc2dec;
-extern unsigned char d3t_CamMove;
+extern struct D3ANIM *d3t_CamMove;
 extern int d3t_CamMoving;
 extern GAPDATA full_data_602568[];
 extern GAPDATA full_data_624938[];
@@ -168,7 +168,7 @@ extern unsigned char hst_TextsOn;
 extern unsigned char init_PlayerProfile[];
 extern int sv_FrameMask;
 extern int sv_PopRequest;
-extern unsigned char ai_MissionMode;
+extern char ai_MissionMode;
 extern unsigned char ai_GamePanel;
 extern int ai_Opponents[7];
 
@@ -211,19 +211,19 @@ extern GAPDATA full_data_6f25c0[];
 extern GAPDATA full_data_75e630[];
 extern int snd_Bank;
 extern unsigned short * sv_PanelShown;
-extern unsigned char ai_Unk1468ae0;
+extern char * ai_Unk1468ae0[0x300];
 extern int ai_Unk6f0d8c;
 extern int * ai_Unk760618;
 extern int ai_Unk76061c;
-extern unsigned char ai_Unk760620;
+extern int ai_Unk760620;
 extern unsigned char ch_Motions;
-extern unsigned char d3t_CamMove;
-extern unsigned char d3t_SunRays;
+extern struct D3ANIM *d3t_CamMove;
+extern struct D3OBJECT *d3t_SunRays;
 extern GAPDATA full_data_6f25c4[];
 extern int sv_FrameMask;
 extern unsigned char ai_Unk1460ae0;
 extern unsigned char ai_GamePanel;
-extern unsigned char ai_MissionMode;
+extern char ai_MissionMode;
 extern int ai_Unk6f2438;
 extern int ai_Unkf83650;
 extern int ai_Unkfb9060;
@@ -247,7 +247,7 @@ extern int sv_ViewRectTop;
 extern int ai_Unk6f1bb8;
 extern char ai_Unk925520[];
 extern GAPDATA full_data_92bca8[];
-extern unsigned char he_Events;
+extern unsigned char he_Events[339968];
 extern char * he_QuickList[10921];
 extern int ai_Unkfb9060;
 extern int ai_Unkfb9064;
@@ -261,7 +261,7 @@ extern GAPDATA full_data_6f25c0[];
 extern int sv_FrameMask;
 extern int sv_PanelFlag;
 extern int sv_PopRequest;
-extern unsigned char ai_MissionMode;
+extern char ai_MissionMode;
 
 
 extern GAPDATA full_data_75e401[];
@@ -275,7 +275,7 @@ extern int ai_Unkfb9060;
 extern int ai_Unkfb9064;
 extern int ai_Unkfb9068;
 extern int ai_Unkfb906c;
-extern unsigned char cm_NetFlags;
+extern int cm_NetFlags;
 extern GAPDATA full_data_624560[];
 extern signed char init_BuildingUniverse[0x22];
 extern unsigned char snd_AmbientOn;
@@ -290,7 +290,7 @@ extern int ai_Unk60bd94;
 extern char * ai_Unk60c1ec;
 extern int ai_Unk6f2440;
 extern int ai_Unkf31144;
-extern unsigned char cm_NetFlags;
+extern int cm_NetFlags;
 
 
 extern GAPDATA full_data_62456c[];
@@ -302,7 +302,7 @@ extern GAPDATA full_data_760454[];
 extern GAPDATA full_data_76f990[];
 extern GAPDATA full_data_76f994[];
 extern int init_StatusForm;
-extern struct LSSAVEVIEW ls_SavePath;
+extern char ls_SavePath[640];
 extern int main_MoneyCheat;
 extern int sv_FrameMask;
 extern int sv_ViewRectBottom;
@@ -349,7 +349,7 @@ extern GAPDATA full_data_75e5f0[];
 extern GAPDATA full_data_75e5f4[];
 extern GAPDATA full_data_75e628[];
 extern unsigned char init_PlayerProfile[];
-extern struct LSSAVEVIEW ls_SavePath;
+extern char ls_SavePath[640];
 extern int main_MoneyCheat;
 extern int sv_FrameDepth;
 extern int sv_PopRequest;
@@ -423,4 +423,7 @@ void amt_CheckOffices(void);            /* 0x4e9260, amt.h */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define ai_TimeT (*(AITIME *)&ai_Time)  /* 0x770ae0, ai_Time (anm.c: char[14]) as the AITIME it is: this unit reads its fields */
 #define cm_SendExSellObjectI ((void (*)(int, int, int, int, unsigned char, int))cm_SendExSellObject)  /* 0x4c4880 (cm.h: short c): @original this unit pushes the third argument as an int (byte-matched ai_MeisterBewaffnen / ai_Unk497c80 / ai_Unk49c880) */
-
+#define ai_Unk1468ae0V (*(unsigned char (*))&ai_Unk1468ae0)  /* 0x1468ae0, this unit reads it as `unsigned char ai_Unk1468ae0` */
+#define ai_Unk760620V (*(unsigned char (*))&ai_Unk760620)  /* 0x760620, this unit reads it as `unsigned char ai_Unk760620` */
+#define he_EventsB (*(unsigned char (*))&he_Events)  /* 0x6fab40, this unit reads it as `unsigned char he_Events` */
+#define ls_SavePathV (*(struct LSSAVEVIEW (*))&ls_SavePath)  /* 0x75e640, this unit reads it as `struct LSSAVEVIEW ls_SavePath` */

@@ -7,14 +7,14 @@ int ls_ReceiveGame(void)
     int hdr[0x40];
     char *p;
 
-    while (ai_Unkf31140 == 0 || ai_Unkf81220 < ai_Unka68d28) {
+    while (ai_Unkf31140I == 0 || ai_Unkf81220 < ai_Unka68d28) {
         sv_PumpMessages();
         sv_PumpNet();
     }
-    fh = vfs_MemOpen(ai_Unkf31140, ai_Unka68d28, "rb");
+    fh = vfs_MemOpen(ai_Unkf31140I, ai_Unka68d28, "rb");
     if (fh == 0) {
-        mem_Free(ai_Unkf31140);
-        ai_Unkf31140 = 0;
+        mem_Free(ai_Unkf31140I);
+        ai_Unkf31140I = 0;
         return 0;
     }
     ai_PlayerCharC = 0;
@@ -27,12 +27,12 @@ int ls_ReceiveGame(void)
             vfs_fclose(fh);
             goto fail;
         }
-        ai_Unk75e130 = *(int *)ai_Time;
+        ai_Unk75e130I = *(int *)ai_Time;
         ai_Unk75e134 = *(int *)(ai_Time + 4);
         ai_Unk75e138 = *(int *)(ai_Time + 8);
         ai_Unk75e13c = *(short *)(ai_Time + 0xc);
         LS_RF(&ai_Unk6f1bcc, 4);
-        LS_RF(ai_UpdateStart, 0x18);
+        LS_RF(ai_UpdateStartV, 0x18);
         if (ls_Version >= 0x10030)
             LS_RF(&ai_Unk61a658, 4);
         if (ls_Version < 0x1003d)
@@ -69,8 +69,8 @@ int ls_ReceiveGame(void)
                 }
                 if (ls_FixupAfterLoad() != 0) {
                     vfs_fclose(fh);
-                    mem_Free(ai_Unkf31140);
-                    ai_Unkf31140 = 0;
+                    mem_Free(ai_Unkf31140I);
+                    ai_Unkf31140I = 0;
                     return 1;
                 }
             }
@@ -78,7 +78,7 @@ int ls_ReceiveGame(void)
     }
     vfs_fclose(fh);
 fail:
-    mem_Free(ai_Unkf31140);
-    ai_Unkf31140 = 0;
+    mem_Free(ai_Unkf31140I);
+    ai_Unkf31140I = 0;
     return 0;
 }

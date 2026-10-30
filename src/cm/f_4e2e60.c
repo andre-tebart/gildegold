@@ -16,16 +16,16 @@ void ai_Unk4e2e60(char *name)
     d3_LoadScene(path, 0, 0);
     d3if_SelectScene(0, 1);
     d3if_SelectScene(idx, 0);
-    if (ai_Unk633738 != 0) {
+    if (ai_Unk633738I != 0) {
         if (ai_Unk6f35ca == 0) {
-            *(unsigned char *)((char *)ai_Unk633738 + 0x1c70) = (*(unsigned char *)((char *)ai_Unk633738 + 0x1c70) & 0xeb) | 0x8;
+            *(unsigned char *)((char *)ai_Unk633738I + 0x1c70) = (*(unsigned char *)((char *)ai_Unk633738I + 0x1c70) & 0xeb) | 0x8;
             sh = 2;
         } else {
-            *(unsigned char *)((char *)ai_Unk633738 + 0x1c70) = (*(unsigned char *)((char *)ai_Unk633738 + 0x1c70) & 0xe7) | 0x4;
+            *(unsigned char *)((char *)ai_Unk633738I + 0x1c70) = (*(unsigned char *)((char *)ai_Unk633738I + 0x1c70) & 0xe7) | 0x4;
             sh = 1;
         }
         d3fl_SetDetail(0x40);
-        d3fl_SetShift((struct D3FLMAP *)ai_Unk633738, sh >> 1, 1);
+        d3fl_SetShift((struct D3FLMAP *)ai_Unk633738I, sh >> 1, 1);
     }
     if (((char *)ai_Unk6f0d90)[0x26] & 0x20) {
         d2_ClearSurface(d2_ScreenSurf);

@@ -30,13 +30,13 @@ void ai_MessageFilterScreen(void)
     do {
         id = d2_WinOpenPic(8, i * 0x1c + 10, i + 0x605, d2_LastWindow);
         rows[i] = id;
-        d2_Objs[id].checkable = 1;
-        d2_Objs[id].interactive = 1;
+        d2_ObjsV[id].checkable = 1;
+        d2_ObjsV[id].interactive = 1;
         d2_SetObjFont(id, 0x55);
         d2_SetCaption(id, ai_MessageFilterTexts[i]);
-        d2_Objs[id].picW = 0x78;
-        d2_Objs[id].captionX = 0x1e;
-        d2_Objs[id].captionY = 3;
+        d2_ObjsV[id].picW = 0x78;
+        d2_ObjsV[id].captionX = 0x1e;
+        d2_ObjsV[id].captionY = 3;
         d2_SetObjValue(id, he_IsMessageKindFiltered(i + 0x605) == 0); /* @original: this call site
             pushes 2 arguments against the 5-parameter K&R definition (0x5d7fe5) */
         i++;

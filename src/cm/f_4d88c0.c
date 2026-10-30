@@ -22,7 +22,7 @@ void ai_Unk4d88c0(char *a)
         if ((ai_GameFlags & 4) == 0 && kb_Last == 0x39) {
             ai_Unk6f0ce4 = ai_Unk6f0ce4 == 0;
             for (i = 0; i < 32; i++) {
-                o = ai_Unk7603a0[i];
+                o = ai_Unk7603a0V[i];
                 if (o != 0 && *(char **)(*(char **)(o + 0x184) + 0x88) == ai_Unk5fb5b0)
                     ch_PauseAnim(*(char **)(o + 0x184), ai_Unk6f0ce4);
             }

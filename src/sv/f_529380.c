@@ -17,7 +17,7 @@ void sv_Unk529380(void)
     prog = 0.0f;
     if (sv_PanelForm == -1)
         return;
-    b = (char *)ai_Unk75ec60;
+    b = (char *)ai_Unk75ec60I;
     if (b == 0 || ai_Unk623868 == -1 || ai_Unk623864 == -1) {
         if (ai_Unk7662c0 == 0) {
             q = &ai_Unk62386c;
@@ -31,7 +31,7 @@ void sv_Unk529380(void)
             tr = ai_Unk75ec5c;
             if (ai_Goods[*tr * 0x41] != 0x1d)
                 return;
-            if (ai_Unk623890 != -1 && d2_ClickedId != -1 && ai_Unk5fe710 == ai_Unk623890 && (sv_FrameMask & 0x2000) != 0) {
+            if (ai_Unk623890 != -1 && d2_ClickedId != -1 && ai_Unk5fe710 == ai_Unk623890 && (sv_FrameMaskU & 0x2000) != 0) {
                 rt_Unk4bf5b0(tr);
                 tr = ai_Unk75ec5c;
             }

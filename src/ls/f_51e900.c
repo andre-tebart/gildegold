@@ -23,7 +23,7 @@ int unk_Unk51e900(int f)
         rec = (char *)ls_ReadCharacter(f);
         *(int *)(rec + 300) = gm_Query(0, 2, 7, 1, *(int *)(rec + 300));
     }
-    for (o = ai_Unk1468ae0; (int)o < (unsigned)((unsigned)ai_Unk1468ae0 + 0xc00); o++) {
+    for (o = ai_Unk1468ae0V; (int)o < (unsigned)((unsigned)ai_Unk1468ae0V + 0xc00); o++) {
         obj = (char *)*o;
         if (obj != 0) {
             char *bld = 0, *part = 0;
@@ -152,7 +152,7 @@ int unk_Unk51e900(int f)
     for (k = 0; k < 0xc5440; k += 0x194) {
         t = (int *)(ls_ActionQueue + k);
         if (*((unsigned char *)t + 9) != 0) {
-            int obj2 = ai_Unk1468ae0[t[5]];
+            int obj2 = ai_Unk1468ae0V[t[5]];
 
             t[5] = obj2;
             if (obj2 != 0) {

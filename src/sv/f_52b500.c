@@ -87,7 +87,7 @@ l7f0:
             if (*(int *)(g + 0x28) == -1) {
                 for (n = 0; n < 8; n++)
                     used[n] = 1;
-                for (p = (int *)(unsigned)&ai_Unk7603a0; (int)p < (unsigned)((unsigned)ai_Unk7603a0 + 0x80); p++) {
+                for (p = (int *)(unsigned)&ai_Unk7603a0; (int)p < (unsigned)((unsigned)ai_Unk7603a0V + 0x80); p++) {
                     if (*p != 0 && (w = *(char **)(*p + 0x184)) != 0 && (v = *(int *)(w + 0x28)) != -1
                         && (o4 = (char *)evt_FindById(v)) != 0 && (r = (char *)strstr(o4, name)) != 0) {
                         len = strlen(name);

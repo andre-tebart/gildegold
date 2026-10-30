@@ -12,7 +12,7 @@ void ai_LeaveGameScreen(void)
     int flags;
     short w, h;
 
-    flags = (sv_FrameMask & ~0x2000) | 0x100000;
+    flags = (sv_FrameMaskU & ~0x2000) | 0x100000;
     fade = d2_StartFade(0, 0, d2_ScreenW, d2_ScreenH, "BLACK", 0x1e, 1);
     while ((fade->flags & 4) == 0) {
         sv_RunFrame(0, flags);
@@ -23,7 +23,7 @@ void ai_LeaveGameScreen(void)
     d2_DirtyRectTop = 0;
     h = d2_ScreenH;
     d2_DirtyRectBottom = h;
-    sv_FrameMask = 0x24087;
+    sv_FrameMaskU = 0x24087;
     sv_DisableVisibleWidgets(1);
     d2_ClearScreen();
     d2_ShowPicture(0x794);

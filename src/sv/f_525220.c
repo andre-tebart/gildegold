@@ -2,10 +2,27 @@
    member rows of 0x75f280 and creates the button 0x51d; the characters' flags (0x770d08) are cleared for the rows' owners. ROUGH */
 
 extern char ai_GfxResolution;               /* 0x6f2f94, the player bar variant */
-extern int ai_Unk760610, ai_Unk760480, ai_Unk760484, ai_Unk760548, ai_Unk76054c, ai_Unk760614, ai_Unk760618, ai_Unk76061c, ai_Unk760464, ai_Unk6f2370;  /* 0x760610, 0x760480, 0x760484, 0x760548, 0x76054c, 0x760614, 0x760618, 0x76061c, 0x760464, 0x6f2370 */
-extern int ai_Unk760628, ai_Unk760620, ai_Unk760624, ai_Unk633dd4, ai_Unk75ec20, d3t_CamMove, ai_Unk623e80, ai_Unk6f236c;  /* 0x760628, 0x760620, 0x760624, 0x633dd4, 0x75ec20, 0x6310e8, 0x623e80, 0x6f236c */
+extern int ai_Unk760610;  /* 0x760610 */
+extern int ai_Unk760480;  /* 0x760480 */
+extern int ai_Unk760484;  /* 0x760484 */
+extern int ai_Unk760548;  /* 0x760548 */
+extern int ai_Unk76054c;  /* 0x76054c */
+extern int ai_Unk760614;  /* 0x760614 */
+extern int * ai_Unk760618;  /* 0x760618 */
+extern int ai_Unk76061c;  /* 0x76061c */
+extern int ai_Unk760464;  /* 0x760464 */
+extern int ai_Unk6f2370;  /* 0x6f2370 */
+extern int ai_Unk760628;  /* 0x760628 */
+extern int ai_Unk760620;  /* 0x760620 */
+extern int ai_Unk760624;  /* 0x760624 */
+extern int ai_Unk633dd4;  /* 0x633dd4 */
+extern int ai_Unk75ec20;  /* 0x75ec20 */
+extern struct D3ANIM *d3t_CamMove;  /* 0x6310e8 */
+extern int ai_Unk623e80;  /* 0x623e80 */
+extern int ai_Unk6f236c;  /* 0x6f236c */
 extern char ai_Unk6f2340;
-extern float ai_Unk760420, ai_Unk623e94;  /* 0x760420, 0x623e94 */
+extern float ai_Unk760420;  /* 0x760420 */
+extern float ai_Unk623e94;  /* 0x623e94 */
 extern unsigned ai_Unk760488[0x18];
 extern unsigned ai_Unk7604a0[0x18];     /* 0x7604a0 */
 extern float ai_Unk760550[0x18], ai_Unk7605b0[0x18];  /* 0x760550, 0x7605b0 */

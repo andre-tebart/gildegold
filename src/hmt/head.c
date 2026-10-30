@@ -4,7 +4,7 @@
    at 0x600f60 right after unk_4a7140.c's ("Blutrache" 0x600f54). Starts after the registration 0x4abed0 that ends
    unk_4a7140.c. Names are ours.
    unit of rea 8cef7d5b (src/game/hmt.c); boundaries in decl/text.dcl, notes in src/hmt/open.md */
-extern char ai_PlayerSlots[];
+extern char ai_PlayerSlots[4][0x2f4];
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

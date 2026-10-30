@@ -78,7 +78,7 @@ extern G17MSG ai_Unka69140[0x8000];     /* 0xa69140, the send ring */
 extern G17STAT ai_Unkf31160[0x8000];    /* 0xf31160 */
 extern G17MSG *cm_SendQueue;            /* 0xf81160, the messages to send */
 extern unsigned int ai_Unkf81164;       /* 0xf81164, length of ai_Unka68d40 */
-extern unsigned int ai_Unkf81168;       /* 0xf81168, the last sequence number */
+extern int ai_Unkf81168;       /* 0xf81168, the last sequence number */
 extern G17MSG ai_Unkf81180;             /* 0xf81180, the message being received */
 extern unsigned int ai_Unkf8121c;       /* 0xf8121c */
 extern unsigned int cm_SpeedLevel;               /* 0x60bd84, = 2 (0..4) */
@@ -379,12 +379,12 @@ extern int ai_Unk61a658;  /* 0x61a658 */
 extern int ai_Unk624570;  /* 0x624570 */
 extern int ai_Unk624574;  /* 0x624574 */
 extern int ai_Unk624578;  /* 0x624578 */
-extern unsigned char ai_MissionMode;  /* 0x624580 */
+extern char ai_MissionMode;  /* 0x624580 */
 extern unsigned char ai_NumPlayers;  /* 0x62489c */
 extern int ai_MissionPartner;  /* 0x6248a0, the netId of the other player in a network mission (-1 none; set by message 8, cleared by 10) */
 extern int ai_Unk631084;  /* 0x631084 */
 extern int d3_CurrentScene;  /* 0x633444 */
-extern int ai_Unk633738;  /* 0x633738 */
+extern int * ai_Unk633738;  /* 0x633738 */
 extern int ai_TradeMsgCount;  /* 0x6f046c */
 extern int ai_Unk6f0cd4;  /* 0x6f0cd4 */
 extern int ai_GameFlags;  /* 0x6f23f8 */
@@ -424,7 +424,7 @@ int init_ObjectSceneUniverse();  /* 0x511dc0 */
 int init_BuildingSceneUniverse();  /* 0x511e60 */
 extern char ai_Unk60c4a0[20];  /* 0x60c4a0 */
 extern int veg_NextId;  /* 0x6f0748 */
-extern char init_BuildingUniverse[];  /* 0x76fa60 */
+extern signed char init_BuildingUniverse[0x22];  /* 0x76fa60 */
 extern char *ai_BTypes;  /* 0x7e3f30 */
 #ifndef DATA_VIEWS_H
 extern char init_SceneDirty[];  /* 0xfd7f75 */
@@ -509,7 +509,7 @@ void ai_Unk4e5180();  /* 0x4e5180 */
 void amt_ClearOfficesIfAll();  /* 0x4e6e20 */
 int ord_HandleMessageRecord();  /* 0x4f9710 */
 void ai_GameFrame(void);  /* 0x591520 */
-extern unsigned char ai_GameState;  /* 0x6f25ac */
+extern int ai_GameState;  /* 0x6f25ac */
 
 int amt_ExecuteSwapMessage();  /* 0x4e6c50 */
 unsigned short ahm_CreateAlchemist(int *p);  /* 0x4ec500, ahm.c (cm.c reads it through ahm_CreateAlchemistI) */
@@ -587,7 +587,7 @@ extern int ai_Unk6f0cdc;  /* 0x6f0cdc */
 extern char *ai_Unk6f0d04;  /* 0x6f0d04 */
 extern int ai_Unk6f2448;  /* 0x6f2448 */
 extern char ai_Unk930600[];  /* 0x930600 */
-extern char cm_Bombs[];  /* 0x935c00 */
+extern int cm_Bombs[0x40];  /* 0x935c00 */
 extern G18LOG ai_Unk935da0[15];  /* 0x935da0 */
 extern int ai_Unk9363f4;  /* 0x9363f4 */
 extern int ai_Unk936400;  /* 0x936400 */
@@ -608,8 +608,8 @@ int ai_Unk4d3390();  /* 0x4d3390 */
 unsigned int ai_Unk4e52f0();  /* 0x4e52f0 */
 extern int ai_Unk6f0cec;  /* 0x6f0cec */
 extern int ai_Unk6f0d14;  /* 0x6f0d14 */
-extern char *ai_Unk7603a0[];  /* 0x7603a0 */
-extern char *ai_Unk760420[];  /* 0x760420 */
+extern int ai_Unk7603a0[32];  /* 0x7603a0 */
+extern float ai_Unk760420;  /* 0x760420 */
 extern char ai_Unk935a00[];  /* 0x935a00 */
 
 int ai_Unk4ce830();  /* 0x4ce830 */
@@ -1162,7 +1162,7 @@ extern char *ai_FallbackBuilding;        /* 0x6f230c, the second current buildin
 extern char *ai_Unk6ed92c;  /* 0x6ed92c */
 extern unsigned int ai_Unk63349c;  /* 0x63349c */
 extern unsigned int ai_Unk6f0d98;  /* 0x6f0d98 */
-extern char init_ObjectUniverse[];  /* 0x76faa0 */
+extern signed char init_ObjectUniverse[0x2dc];  /* 0x76faa0 */
 
 int d3t_FindFreeScene();  /* 0x411bb0 */
 char d3_LoadScene(char *name, void *f, void (*progress)(int a, int i, int n));  /* 0x44be60 */

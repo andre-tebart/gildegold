@@ -237,7 +237,7 @@ void ai_Unk5a6cb0(int *m_)
         for (i = 0; i < 0x10; i++)
             *(int *)(p + 0x26dc + i * 4) = -1;
         i = 0;
-        for (name = (char *)(unsigned)&ai_AmbushSpots; name < (char *)(unsigned)((unsigned)ai_AmbushSpots + 0x100); name += 0x20) {
+        for (name = (char *)(unsigned)&ai_AmbushSpots; name < (char *)(unsigned)((unsigned)ai_AmbushSpotsB + 0x100); name += 0x20) {
             obj = (char *)d3_FindObject(0, 0x100, 0, name);
             if (obj != 0) {
                 d3_PointToWorld((int)obj, (int)(obj + 0x4c), pos);

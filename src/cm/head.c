@@ -27,7 +27,7 @@ extern char ai_Unk92cae0[16][0x35c];
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 extern GAPDATA full_data_930370[];
-extern char gm_PlayerRecords[];
+extern int gm_PlayerRecords[688];
 extern GAPDATA full_data_602568[];
 extern GAPDATA full_data_60d5a4[];
 extern GAPDATA full_data_60d5b4[];
@@ -64,4 +64,12 @@ void unk_Unk511600(int s);
 #define ch_AddActionCBK ((struct CHACTION *(*)())ch_AddActionCB)  /* 0x40b400 (ch.h): @original cm.c's calls were compiled without a prototype (default promotions) */
 #define amt_GetOfficeI ((int (*)(int, struct AMTREC *))amt_GetOffice)  /* 0x4e6f30 (amt.h: unsigned char i): @original this unit pushes its int index raw (0x4dab50 / 0x4aad30: push ebp / push edx, no zero-extension) */
 #define ahm_CreateAlchemistI ((int (*)(int *))ahm_CreateAlchemist)  /* 0x4ec500 (ahm.h: unsigned short): @original the caller 0x4ccf90 reads the id as an int (no and eax,0xffff) */
-
+#define ai_GameStateB (*(unsigned char (*))&ai_GameState)  /* 0x6f25ac, this unit reads it as `unsigned char ai_GameState` */
+#define ai_MissionModeB (*(unsigned char (*))&ai_MissionMode)  /* 0x624580, this unit reads it as `unsigned char ai_MissionMode` */
+#define ai_Unk633738I (*(int (*))&ai_Unk633738)  /* 0x633738, this unit reads it as `int ai_Unk633738` */
+#define ai_Unk7603a0V (*(char * (*)[])&ai_Unk7603a0)  /* 0x7603a0, this unit reads it as `char *ai_Unk7603a0[]` */
+#define ai_Unk760420V (*(char * (*)[])&ai_Unk760420)  /* 0x760420, this unit reads it as `char *ai_Unk760420[]` */
+#define ai_Unkf81168U (*(unsigned int (*))&ai_Unkf81168)  /* 0xf81168, this unit reads it as `unsigned int ai_Unkf81168` */
+#define cm_BombsV (*(char (*)[])&cm_Bombs)  /* 0x935c00, this unit reads it as `char cm_Bombs[]` */
+#define init_BuildingUniverseV (*(char (*)[])&init_BuildingUniverse)  /* 0x76fa60, this unit reads it as `char init_BuildingUniverse[]` */
+#define init_ObjectUniverseV (*(char (*)[])&init_ObjectUniverse)  /* 0x76faa0, this unit reads it as `char init_ObjectUniverse[]` */

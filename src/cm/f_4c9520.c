@@ -26,7 +26,7 @@ int ai_Unk4c9520(G17MSG *m, G17STAT *s)
         } else if (G17_I(*m, 0xd) != -1) {
             o = veg_FindPlantAt(*(int *)(b + 0x71), m->data[8], m->data[9]);
             if (o != 0 && *(int *)(o + 0x10) == G17_I(*m, 0xd)) {
-                d3if_SelectScene((char)init_BuildingUniverse[*(unsigned char *)(ai_BTypes + (unsigned char)b[0] * 0x24d)], 1);
+                d3if_SelectScene((char)init_BuildingUniverseV[*(unsigned char *)(ai_BTypes + (unsigned char)b[0] * 0x24d)], 1);
                 d3if_Delete((struct D3OBJECT *)*(int *)(o + 0x14));
                 *(int *)(o + 0x14) = 0;
                 veg_LoadModel(o, 0);
@@ -41,7 +41,7 @@ int ai_Unk4c9520(G17MSG *m, G17STAT *s)
             return 0;
         }
         if (flag != 0) {
-            d3if_SelectScene((char)init_BuildingUniverse[*(unsigned char *)(ai_BTypes + (unsigned char)b[0] * 0x24d)], 1);
+            d3if_SelectScene((char)init_BuildingUniverseV[*(unsigned char *)(ai_BTypes + (unsigned char)b[0] * 0x24d)], 1);
             o = veg_SetPlant(*(int *)(b + 0x71), m->data[8], m->data[9], G17_S(*m, 0xa), m->data[0xc]);
             d3if_SelectScene(save, 1);
         }

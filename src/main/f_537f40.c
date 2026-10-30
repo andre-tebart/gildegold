@@ -47,7 +47,7 @@ void main_Unk537f40(void)
         if (*p != 0)
             ch_Delete(*p);
         p++;
-    } while ((int)p < (unsigned)((unsigned)ai_Unk1468ae0 + 0xc00));
+    } while ((int)p < (unsigned)((unsigned)ai_Unk1468ae0V + 0xc00));
     if (U_I((unsigned)&ai_Unk76061c) != 0) {
         d3t_FreeSnow(U_I((unsigned)&ai_Unk76061c));
         U_I((unsigned)&ai_Unk76061c) = 0;
@@ -66,7 +66,7 @@ void main_Unk537f40(void)
                 *p = 0;
             }
             p++;
-        } while ((int)p < (unsigned)((unsigned)ai_Unk760620 + 0x18));
+        } while ((int)p < (unsigned)((unsigned)ai_Unk760620V + 0x18));
         d3sky_Destroy(sc);
         U_I((unsigned)&d3_Sky) = 0;
     }

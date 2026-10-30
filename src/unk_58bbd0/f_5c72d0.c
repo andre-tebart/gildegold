@@ -27,7 +27,7 @@ int ai_Unk5c72d0(int param_1, int param_2, int param_3, int param_4, int param_5
     limits[8] = 50000;
     scale = (param_11 - 0x69) / 16;
     max = -1;
-    for (p = (int *)((unsigned)&ord_StatisticsHistory + 0x10); p < (int *)((unsigned)((unsigned)ord_StatisticsHistory + 0x140) + 0x10); p += 5) {
+    for (p = (int *)((unsigned)&ord_StatisticsHistory + 0x10); p < (int *)((unsigned)((unsigned)ord_StatisticsHistoryB + 0x140) + 0x10); p += 5) {
         if (max < *p)
             max = *p;
     }

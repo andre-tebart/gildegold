@@ -31,7 +31,7 @@ char d3_DrawObjectCB(D3OBJECT *obj)
     clip = m->flags;
     if (clip & 0x40) {
         if ((obj->flags >> 1 | dirty) & obj->objectFlags >> 2 & d3_ShadowMode.mode & d3_Hardware & 1) {
-            d3s_Count = 0;
+            d3s_CountU = 0;
             if (dirty)
                 d3s_UpdateObjectAt(obj);
             else
@@ -61,9 +61,9 @@ char d3_DrawObjectCB(D3OBJECT *obj)
             d3_MaxZ = m->zMax;
     }
     if (obj->objectFlags >> 2 & d3_ShadowMode.mode & d3_Hardware & 1) {
-        d3s_Count = 0;
+        d3s_CountU = 0;
         d3s_UpdateObject(obj);
-        if (d3s_Count > 0)
+        if (d3s_CountU > 0)
             goto draw;
     }
     if (dirty || s->unk194) {

@@ -48,7 +48,7 @@ int ai_Unk575860(void)
     st = S;
     switch (U_I(st) - 1) {
     case 0:                     /* state 1, 0x57595a: show the main-intro text and start the step chain */
-        if (d3t_CamMove != 0)
+        if (d3t_CamMoveI != 0)
             break;
         if (ai_Unk5778b0() != 0)
             return -4;

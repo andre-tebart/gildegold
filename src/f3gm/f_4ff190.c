@@ -1,7 +1,7 @@
 /* 0x4ff190, refreshes the goods lists of the player 0x6f1bc5 (only for the own player): clears the flag (+4) of the 0x55 goods records, marks the goods the buildings of the town (group (1, 6), not kind 10) hold in their stock (the object 0xff of each: 0x4ffe90 query) and the goods their prototypes need (the four words at +0x2e of the prototype), puts the goods that are marked on the market (+0x3c) but not yet in its stock there (0x500190), and counts the market objects 0x92 .. 0x97 / 0x2db: the byte +0x1c of the one of kind 0x11 gets the count. ROUGH */
 
-extern int ai_MarketBuilding;                /* 0x6f1bc8, the market building (group 1, 5, 10) */
-extern int cm_FieldObject;                /* 0xa68d2c */
+extern struct AIBLD *ai_MarketBuilding;                /* 0x6f1bc8, the market building (group 1, 5, 10) */
+extern char * cm_FieldObject;                /* 0xa68d2c */
 int cm_AddFieldValues(unsigned char size, unsigned char n, unsigned short field, void *v);                     /* 0x4c3d00 */
 extern char ai_Unk7d6a60[0xd4d0];
 unsigned ai_Unk6118a8[] = { 0, 1735292266, 1430937445, 4540238, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 0 };  /* 0x6118a8 */
@@ -80,8 +80,8 @@ void gm_RefreshGoodsLists(unsigned p)
     list[5] = 0x97;
     list[6] = 0x2db;
     list[7] = 0;
-    ai_MarketBuilding = gm_BuildQuery(1, 5, 10);
-    if (ai_MarketBuilding != 0 && p == ai_OwnPlayer) {
+    ai_MarketBuildingI = gm_BuildQuery(1, 5, 10);
+    if (ai_MarketBuildingI != 0 && p == ai_OwnPlayer) {
         for (i = 0; i < 0x55; i++)
             *(int *)(GM_GOODS(p, i) + 4) = 0;
         b = (unsigned char *)gm_BuildQuery(1, 6);
@@ -112,7 +112,7 @@ void gm_RefreshGoodsLists(unsigned p)
         }
         for (i = 0; i < 0x55; i++) {
             g = GM_GOODS(p, i);
-            o = (int)gm_Query(*(int *)(ai_MarketBuilding + 0x5d), 1, 0, *(unsigned short *)(g + 0x3c));
+            o = (int)gm_Query(*(int *)(ai_MarketBuildingI + 0x5d), 1, 0, *(unsigned short *)(g + 0x3c));
             if (o != 0) {
                 o = (int)gm_Query(*(int *)(o + 0x14), 1, 0, 0xff);
                 if (*(int *)(g + 4) != 0 && gm_Query(*(int *)(o + 0x14), 1, 0, *(unsigned short *)g) == 0)
@@ -123,7 +123,7 @@ void gm_RefreshGoodsLists(unsigned p)
         k = 0x92;
         do {
             cnt = 0;
-            o = (int)gm_Query(*(int *)(ai_MarketBuilding + 0x5d), 1, 0, k);
+            o = (int)gm_Query(*(int *)(ai_MarketBuildingI + 0x5d), 1, 0, k);
             if (o != 0 && (o2 = (int)gm_Query(*(int *)(o + 0x14), 1, 0, 0xff)) != 0) {
                 o2 = (int)gm_Query(*(int *)(o2 + 0x14), 1, 5);
                 while (o2 != 0) {

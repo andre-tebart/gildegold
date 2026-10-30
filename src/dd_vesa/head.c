@@ -23,7 +23,7 @@
 
 #endif
 #include "data_views.h"
-extern char txt_Keys[];
+extern char txt_Keys[0x4800][0x50];
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 extern signed char ai_Relations[768][768];

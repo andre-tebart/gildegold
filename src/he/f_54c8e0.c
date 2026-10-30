@@ -22,7 +22,7 @@ void he_Unk54c8e0(int ev)
             return;
         }
         txt_Format(text, 0x11be, t, *(int *)(ev + 0xb0));
-        for (rec = (unsigned)&ai_Chars; rec < (unsigned)((unsigned)ai_Chars + 0x65400); rec += 0x21c) {
+        for (rec = (unsigned)&ai_Chars; rec < (unsigned)((unsigned)ai_CharsV + 0x65400); rec += 0x21c) {
             if ((*(char *)(rec + 2) == 6 || *(char *)(rec + 2) == 7) && *(unsigned char *)(rec + 8) > 0)
                 he_ShowNews(*(int *)(rec + 4), *(int *)(rec + 4), text, 0, 0x601, (char *)0);
         }
@@ -39,14 +39,14 @@ void he_Unk54c8e0(int ev)
         val[i] = 0;
     }
     memset(msg, 0, sizeof(msg));
-    for (rec = (unsigned)&ai_Chars; rec < (unsigned)((unsigned)ai_Chars + 0x65400) && n < 8; rec += 0x21c) {
+    for (rec = (unsigned)&ai_Chars; rec < (unsigned)((unsigned)ai_CharsV + 0x65400) && n < 8; rec += 0x21c) {
         if ((*(char *)(rec + 2) == 6 || *(char *)(rec + 2) == 7) && *(unsigned char *)(rec + 8) > 0 && *(char *)(rec + 0x1b1) == 0
             && gm_GetGoodsValue(rec) >= *(int *)(ev + 0xb0)) {
             top[n] = *(int *)(rec + 4);
             n++;
         }
     }
-    for (rec = (unsigned)&ai_Chars; rec < (unsigned)((unsigned)ai_Chars + 0x65400); rec += 0x21c) {
+    for (rec = (unsigned)&ai_Chars; rec < (unsigned)((unsigned)ai_CharsV + 0x65400); rec += 0x21c) {
         if (*(unsigned char *)(rec + 8) > 0 && *(char *)(rec + 0x1b1) == 0
             && (*(char *)(rec + 2) == 5 || *(char *)(rec + 2) == 3 || *(char *)(rec + 2) == 4)) {
             v = gm_GetGoodsValue(rec);

@@ -53,4 +53,5 @@ extern char d3_StockHead[];
 extern D3PARTSYS d3_ParEnd;
 extern char d3d_UsedCard[];
 void d3fl_FreeMap(struct D3FLMAP *map);     /* 0x43ff90, d3_fl.c (d3.h types d3_Terrain as void *) */
-
+#define d3s_CountU (*(unsigned int (*))&d3s_Count)  /* 0x633dc0, this unit reads it as `unsigned int d3s_Count` */
+#define d3sm_ShadowV (*(void * (*))&d3sm_Shadow)  /* 0x633df8, this unit reads it as `void *d3sm_Shadow` */

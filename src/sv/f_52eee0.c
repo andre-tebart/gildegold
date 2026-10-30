@@ -47,6 +47,6 @@ void sv_Unk52eee0(void)
                 }
             }
             p++;
-        } while ((int)p < (unsigned)((unsigned)ai_Unk7603a0 + 0x80));
+        } while ((int)p < (unsigned)((unsigned)ai_Unk7603a0V + 0x80));
     }
 }

@@ -23,7 +23,7 @@ int ai_LoadGameWindow(void)
     int i;
 
     ret = 0;
-    mask = sv_FrameMask;
+    mask = sv_FrameMaskU;
     win = d2_OpenForm(0, 0, "menu\\loadgame_new");
     d2_PlaceViewWindows(win, 1);
     d2_PlaceMainWindowF(win, 2);
@@ -49,8 +49,8 @@ int ai_LoadGameWindow(void)
                 if (slots[i].used != 0 && slots[i].win != -1
                     && (d2_PointerObj == slots[i].obj || d2_HitWindow == slots[i].win
                         || (d2_HitWindow != -1
-                            && d2_Objs[d2_Wins[d2_HitWindow].parent].win == &d2_Wins[slots[i].win]))) {
-                    if (ai_GameState == 0 || ai_MessageBox(0x101, ai_LoadGameConfirmText) != 0) {
+                            && d2_ObjsV[d2_Wins[d2_HitWindow].parent].win == &d2_Wins[slots[i].win]))) {
+                    if (ai_GameStateB == 0 || ai_MessageBox(0x101, ai_LoadGameConfirmText) != 0) {
                         sprintf(path, "Gamedata\\Saves\\%s.SAV", slots[i].name);
                         strcpy(ls_SavePath, path);
                         ai_GameFlagsWord = 10;

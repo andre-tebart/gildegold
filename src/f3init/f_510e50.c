@@ -8,9 +8,9 @@
 
 /* 0x510e50, the start of a network game for the joining or hosting player (strings "%s/AUGSBURG.NET", "scenes/*network.ed3", "\\game.INI", section "Network"): waits for the flags in 0x6f2594 (1 = host, 4 = ready), loads the city file `name` (default "gamedata/cities/AUGSBURG.NET"), writes the player names to game.INI, registers the player profile (0x4c46d0), sets up the network scene, gives each player slot its start objects (0x4fec10 / 0x4ff450). Returns 1 when the city could not be loaded, 2 when 0x520b80 fails, else 0.
    The remaining difference is the frame (0x310 against the original's 0x384): 0x74 bytes of locals are missing, every local below ini is shifted. @deep frame job */
-extern HINSTANCE main_Instance;          /* 0x75e140 */
+extern void * main_Instance;          /* 0x75e140 */
 extern unsigned ai_MissionSeed;           /* 0x75e120 */
-extern signed char ai_MissionMode;        /* 0x624580 */
+extern char ai_MissionMode;        /* 0x624580 */
 extern void *d2_ScreenSurf;                /* 0x6ed924 */
 
 int init_StartNetworkGame(char *name)
@@ -43,7 +43,7 @@ int init_StartNetworkGame(char *name)
     init_ShowStatus(init_StatusReceiveGame);
     if (ls_ReceiveGame() == 0)
         return 2;
-    GetModuleFileNameA(main_Instance, ini, 0x104);
+    GetModuleFileNameA(main_InstanceV, ini, 0x104);
     p = strrchr(ini, 0x5c);
     strcpy(p, "\\game.INI");
     saved = d3_CurrentScene;
@@ -79,20 +79,20 @@ int init_StartNetworkGame(char *name)
     }
     ch = (INIT_CHAR *)cm_GetSlotValue(h);
     if ((cm_NetFlags & 1) != 0) {
-        ai_MissionMode = -1;
+        ai_MissionModeC = -1;
         args[0] = 0xffffffff;
         ai_MissionSeed = timeGetTime();
         args[1] = ai_MissionSeed;
         cm_SendExSysMessage(9, args);
     }
-    while (ai_MissionMode == -2) {
+    while (ai_MissionModeC == -2) {
         sv_PumpMessages();
         sv_PumpNet();
     }
-    if (ai_MissionMode != -1) {
-        if (ai_MissionMode != 5)
+    if (ai_MissionModeC != -1) {
+        if (ai_MissionModeC != 5)
             ai_MissionSeed = timeGetTime();
-        ai_NewRandomMission(ch->netId, (int)ai_MissionMode, 1);
+        ai_NewRandomMission(ch->netId, (int)ai_MissionModeC, 1);
     }
     i = gm_PlayerFactor(main_MoneyCheat == 0 ? 2000 : 500000, ai_OwnPlayer);
     cm_SendMoveGoods(ch->netId, -1, ai_OwnPlayer, i);
@@ -111,7 +111,7 @@ int init_StartNetworkGame(char *name)
     if (flags != 0) {
         init_FillMarkets(ai_OwnPlayer);
         i = 0;
-        p = ai_PlayerSlots[0];
+        p = ai_PlayerSlotsV[0];
         do {
             if (*p == 0)
                 break;
@@ -124,7 +124,7 @@ int init_StartNetworkGame(char *name)
     }
     saved = d3_CurrentScene;
     d2_CutsceneActive = 0;
-    if (ai_MissionMode > -1 && ai_MissionMode <= 5) {
+    if (ai_MissionModeC > -1 && ai_MissionModeC <= 5) {
         d3if_SelectScene(d3t_FindFreeScene(), 0);
         d3_LoadScene("scenes/*network.ed3", 0, 0);
         ai_ShowMissions(ch->netId);

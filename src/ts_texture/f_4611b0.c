@@ -2,7 +2,7 @@
 
 char tex_SetHiColor(TSTEXTURE *tex, unsigned char hicolor)
 {
-    if (tex && d3_Hardware) {
+    if (tex && d3_HardwareC) {
         if (tex->alias)
             tex = &d3_Textures[tex->mask];
         if (d3_TexFormat8.dwRBitMask != d3_TexFormat16.dwRBitMask || d3_TexFormat8.dwGBitMask != d3_TexFormat16.dwGBitMask

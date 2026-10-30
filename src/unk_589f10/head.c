@@ -27,9 +27,9 @@ extern int ai_ModeMask;
 extern char ai_Unk9364e0[752];
 extern char ch_EmptyName[1];
 extern int d2_ClickedId;
-extern unsigned char d2_FocusedInput;
+extern struct D2INPUT *d2_FocusedInput;
 extern unsigned char d2_Inputs;
-extern unsigned char d2_Objs;
+extern struct D2OBJ *d2_Objs;
 extern unsigned char dm_L;
 extern GAPDATA full_data_60ea78[];
 extern GAPDATA full_data_6230f8[];
@@ -80,7 +80,7 @@ extern GAPDATA full_data_62aa84[];
 extern GAPDATA full_data_62aa88[];
 extern int d2_LastWindow;
 extern unsigned char ai_Unk936496;
-extern unsigned char d2_Objs;
+extern struct D2OBJ *d2_Objs;
 
 extern GAPDATA full_data_602568[];
 extern GAPDATA full_data_6240cc[];
@@ -92,7 +92,7 @@ extern GAPDATA full_data_936476[];
 
 
 extern int d2_LastWindow;
-extern unsigned char d2_Objs;
+extern struct D2OBJ *d2_Objs;
 
 
 
@@ -110,7 +110,7 @@ extern GAPDATA full_data_6f5e42[];
 extern GAPDATA full_data_6f5ea0[];
 
 extern int d2_LastWindow;
-extern unsigned char d2_Objs;
+extern struct D2OBJ *d2_Objs;
 
 
 extern GAPDATA full_data_602568[];
@@ -125,7 +125,7 @@ extern GAPDATA full_data_6f5ea0[];
 extern int ai_Unk5fe710;
 extern int d2_ClickedId;
 extern int d2_LastWindow;
-extern unsigned char d2_Objs;
+extern struct D2OBJ *d2_Objs;
 extern GAPDATA full_data_6250b8[];
 extern unsigned char init_PlayerProfile;
 extern int sv_PopRequest;
@@ -139,7 +139,7 @@ extern GAPDATA full_data_6f2684[];
 extern GAPDATA full_data_6f5e78[];
 extern char ai_OptionsFile[288];
 extern int d2_LastWindow;
-extern unsigned char d2_Objs;
+extern struct D2OBJ *d2_Objs;
 
 
 

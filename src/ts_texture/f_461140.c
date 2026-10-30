@@ -2,7 +2,7 @@
 
 char tex_Unload(TSTEXTURE *tex)
 {
-    if (tex && d3_Hardware && !tex->alias) {
+    if (tex && d3_HardwareC && !tex->alias) {
         if (tex->surf) {
             d3_ddhr = tex->surf->lpVtbl->Release(tex->surf);
             tex->surf = 0;

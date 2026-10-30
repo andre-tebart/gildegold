@@ -23,25 +23,25 @@ void ai_PokerSeatPanel(int seat, int n, int *cards)
     who = ai_PokerState.seat[seat].who;
     sprintf(text, "%s %s %s", txt_Ptrs[0x114 + (who->female != 0 ? 10 : 0) + who->title], who->vname, who->nname);
     o = d2_CreateWinText(0, 5, text, ai_PokerUi.panel[seat].win);
-    d2_Objs[o].w = w;
-    d2_Objs[o].centred = 1;
+    d2_ObjsV[o].w = w;
+    d2_ObjsV[o].centred = 1;
     d2_SetObjFont(o, 0x54);
     if (seat != 0) {
         pic = ai_PokerState.seat[seat].model;
-        d2_WinOpenPic(x - 0x37, h / 2 - d2_Pics[pic].h / 2, pic, ai_PokerUi.panel[seat].win);
+        d2_WinOpenPic(x - 0x37, h / 2 - d2_PicsV[pic].h / 2, pic, ai_PokerUi.panel[seat].win);
     } else {
         pic = ((AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c))->pic;
-        d2_WinOpenPic(x - 0x37, h / 2 - d2_Pics[pic].h / 2, pic, ai_PokerUi.panel[0].win);
+        d2_WinOpenPic(x - 0x37, h / 2 - d2_PicsV[pic].h / 2, pic, ai_PokerUi.panel[0].win);
     }
     for (i = 0; i < n; i++) {
         if (ai_PokerState.seat[seat].foldPhase >= 0) {
-            ai_PokerUi.panel[seat].slot[i] = d2_WinOpenPic(x, h / 2 - d2_Pics[ai_CardBack + 0x775].h / 2, ai_CardBack + 0x775, ai_PokerUi.panel[seat].win);
+            ai_PokerUi.panel[seat].slot[i] = d2_WinOpenPic(x, h / 2 - d2_PicsV[ai_CardBack + 0x775].h / 2, ai_CardBack + 0x775, ai_PokerUi.panel[seat].win);
         } else if (seat != 0 && i < 2 && ai_PokerState.winner == 4) {
-            ai_PokerUi.panel[seat].slot[i] = d2_WinOpenPic(x, h / 2 - d2_Pics[ai_CardBack + 0x775].h / 2, ai_CardBack + 0x775, ai_PokerUi.panel[seat].win);
+            ai_PokerUi.panel[seat].slot[i] = d2_WinOpenPic(x, h / 2 - d2_PicsV[ai_CardBack + 0x775].h / 2, ai_CardBack + 0x775, ai_PokerUi.panel[seat].win);
         } else {
-            ai_PokerUi.panel[seat].slot[i] = d2_WinOpenPic(x, h / 2 - d2_Pics[cards[i] + 0x775].h / 2, cards[i] + 0x775, ai_PokerUi.panel[seat].win);
+            ai_PokerUi.panel[seat].slot[i] = d2_WinOpenPic(x, h / 2 - d2_PicsV[cards[i] + 0x775].h / 2, cards[i] + 0x775, ai_PokerUi.panel[seat].win);
             if (seat == 0 && i < 2)
-                d2_Objs[ai_PokerUi.panel[0].slot[i]].greyed = 1;
+                d2_ObjsV[ai_PokerUi.panel[0].slot[i]].greyed = 1;
         }
         x += 0x20;
     }

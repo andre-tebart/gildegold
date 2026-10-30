@@ -1,7 +1,7 @@
 /* 0x4b4f00, 1 if mission m is fulfilled (the condition of its type; 11 / 19 / 23 / 28 / 40: events counted by
    0x4b44e0) */
 
-extern unsigned char ai_GameState;      /* 0x6f25ac, missions on */
+extern int ai_GameState;      /* 0x6f25ac, missions on */
 int ai_Unk6f0728 = 0;  /* 0x6f0728 */
 
 int ai_Unk4b4f00(G13MIS *m)
@@ -10,7 +10,7 @@ int ai_Unk4b4f00(G13MIS *m)
     AICHAR *c;
 
     t = ai_GetMissionType(m->type);
-    if (!ai_GameState || t == 0)
+    if (!ai_GameStateB || t == 0)
         return 0;
     if (ai_Unk6f0728 == 1 && ai_MissionMode >= 0 && ai_MissionMode <= 5) {
         ai_Unk6f0728 = 0;

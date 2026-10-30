@@ -1,7 +1,11 @@
 /* 0x528ee0, opens the default info panel when no panel is open (0x623860): without a selection the "standard" panel with the buttons 0x8c / 0xa6; for an own building (0x6f230c with the owner +0x27 = the player) the
    building panel with the name, the image, the health bar and the buttons 0x8c, 0xa6 (0x623898 for kind 0x1e) */
 
-extern int ai_Unk623884, ai_Unk623898, ai_Unk623880, ai_Unk6f2334, ai_GameState;  /* 0x623884, 0x623898, 0x623880, 0x6f2334, 0x6f25ac */
+extern int ai_Unk623884;  /* 0x623884 */
+extern int ai_Unk623898;  /* 0x623898 */
+extern int ai_Unk623880;  /* 0x623880 */
+extern int ai_Unk6f2334;  /* 0x6f2334 */
+extern int ai_GameState;  /* 0x6f25ac */
 extern char ai_Unk6f2338;  /* 0x6f2338 */
 extern int ai_Unk5fe710;  /* 0x5fe710 */
 extern char *ai_Unk7662c0p;

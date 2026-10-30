@@ -30,7 +30,7 @@ void sv_Unk527bb0(int o)
     dir[1] = *(float *)(ai_Unkfc2dec + 0x88);
     dir[2] = *(float *)(ai_Unkfc2dec + 0x8c);
     d3anim_FreePath(ai_Unkfc2dec);
-    d3t_CamMove = 0;
+    d3t_CamMoveI = 0;
     ai_Unk6310e4 = 0;
     t = d3t_GetMeanHeight(pos);
     ai_Unk75fb90 = *(int *)&dir[0];
@@ -52,6 +52,6 @@ void sv_Unk527bb0(int o)
         *(int *)(rec + 0xa0) = *(int *)&dir[1];
         *(int *)(rec + 0xa4) = *(int *)&dir[2];
     }
-    ai_Unk75ec60 = o;
+    ai_Unk75ec60I = o;
     ai_Unk6f2304 = *(int *)(o + 0x61);
 }

@@ -146,7 +146,7 @@ void d3s_Project(D3OBJECT *obj, D3OBJINFO *info, D3OBJINFO *mesh, D3TERRAIN *t, 
             ((float *)v)[4] = (v->x - x0) * ((float)size / (x1 - x0));
             ((float *)v)[5] = (v->z - z0) * ((float)size / (z1 - z0));
         }
-        if (!tex->surf && d3_Hardware)
+        if (!tex->surf && d3_HardwareC)
             ts_CacheFetch(tex, 2, (int)d3s_Palette);
         if (tex->surf) {
             dd_FillSurface(tex->surf, 0, 0);

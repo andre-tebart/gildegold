@@ -54,7 +54,7 @@ int ai_CounterEspionageWindow(int *param_1, int param_2)  /* @original: the call
         return 0x60;
     }
     n = 2;
-    for (chr = (unsigned)&ai_Chars; chr < (unsigned)((unsigned)ai_Chars + 0x65400) && n != 0; chr += 0x21c) {
+    for (chr = (unsigned)&ai_Chars; chr < (unsigned)((unsigned)ai_CharsV + 0x65400) && n != 0; chr += 0x21c) {
         if (*(unsigned char *)(chr + 0x166) == k1) {
             first = chr;
             n--;

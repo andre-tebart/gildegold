@@ -70,17 +70,17 @@ void sv_Unk525510(int t, float flag)
             d3t_FreeSnow(ai_Unk76061c);
             ai_Unk76061c = 0;
         }
-        if (ai_Unk760618 == 0)
-            ai_Unk760618 = d3t_CreateRain(mx);
-        d3t_SetRain(ai_Unk760618, 1, 0, 0);
+        if (ai_Unk760618I == 0)
+            ai_Unk760618I = d3t_CreateRain(mx);
+        d3t_SetRain(ai_Unk760618I, 1, 0, 0);
     } else {
         if (ai_Unk760610 == 1) {
-            if (ai_Unk760618 != 0) {
-                d3t_DeleteRain(ai_Unk760618);
-                ai_Unk760618 = 0;
+            if (ai_Unk760618I != 0) {
+                d3t_DeleteRain(ai_Unk760618I);
+                ai_Unk760618I = 0;
             }
-        } else if (ai_Unk760618 == 0)
-            ai_Unk760618 = d3t_CreateRain(mx);
+        } else if (ai_Unk760618I == 0)
+            ai_Unk760618I = d3t_CreateRain(mx);
         if (ai_Unk76061c == 0)
             ai_Unk76061c = d3t_CreateSnow(mx);
         d3t_SetSnow(ai_Unk76061c, 2, 0, 0, 3, 0xff);

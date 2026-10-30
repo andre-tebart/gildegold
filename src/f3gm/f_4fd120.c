@@ -37,9 +37,9 @@ void unk_Unk4fd120(void)
                         loc[0] = 3;
                         loc[1] = 2;
                         cm_BeginFieldBlock(c, *(int *)(c + 4));
-                        cm_AddFieldValue(1, 1, c + (2 - cm_FieldObject), &loc[0]);
+                        cm_AddFieldValue(1, 1, c + (2 - cm_FieldObjectI), &loc[0]);
                         if ((unsigned char)c[0xd] < 2)
-                            cm_AddFieldValue(1, 1, c + (0xd - cm_FieldObject), &loc[1]);
+                            cm_AddFieldValue(1, 1, c + (0xd - cm_FieldObjectI), &loc[1]);
                         cm_SendFieldValues();
                         v = util_Random(0x800);
                         cm_SendMoveGoodsUnchecked(*(int *)(c + 4), -1, ai_OwnPlayer, ((v & 0xffff) + 0x800) * loc[1] * 0x20);
@@ -99,7 +99,7 @@ void unk_Unk4fd120(void)
                 c = (char *)cm_GetSlotValue(h);
                 cm_SendMoveGoodsUnchecked(*(int *)(c + 4), -1, ai_OwnPlayer, ((util_Random(0x400) & 0xffff) + 0x400) * 0x40);
                 cm_BeginFieldBlock(c, *(int *)(c + 4));
-                cm_AddFieldValue(1, 1, (int)c - cm_FieldObject + 0x167, &loc[0]);
+                cm_AddFieldValue(1, 1, (int)c - cm_FieldObjectI + 0x167, &loc[0]);
                 cm_SendFieldValues();
             }
             t--;

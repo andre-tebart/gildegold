@@ -13,7 +13,7 @@
    fill to 0x5dd3e0); dinput.lib's c_dfDIKeyboard / c_dfDIMouse object tables follow, library data,
    see config/symbols/game_range.toml)
    unit of rea 8cef7d5b (src/game/unk_5d33b0.c); boundaries in decl/text.dcl, notes in src/unk_5d33b0/open.md */
-extern char gm_PlayerRecords[];
+extern int gm_PlayerRecords[688];
 #include "txt_views.h"
 #include <windows.h>
 #include <ddraw.h>
@@ -93,40 +93,40 @@ extern OPTIONBYTES ai_GfxDetail, ai_GfxFloor, ai_GfxSet, ai_GfxFog, ai_GfxResolu
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 extern int ai_Unk5fe710;
 
-extern D2OBJVIEW *d2_Objs;              /* 0xf8f080, d2.h: D2OBJ * */
-extern D2WINVIEW *d2_LastWindowPtr;     /* 0x6ed980, d2.h: the window a screen works in (created last) */
+extern struct D2OBJ *d2_Objs;              /* 0xf8f080, d2.h: D2OBJ * */
+extern struct D2WIN *d2_LastWindowPtr;     /* 0x6ed980, d2.h: the window a screen works in (created last) */
 extern int sv_PopRequest;               /* 0x6f22a0, nonzero: MASTER (sv_RunFrame) pops this screen */
 extern int ai_Unk6333cc;
-extern D2OBJVIEW *d2_Objs;              /* 0xf8f080, d2.h: D2OBJ * */
-extern D2WINVIEW *d2_LastWindowPtr;     /* 0x6ed980, d2.h: the window a screen works in (created last) */
+extern struct D2OBJ *d2_Objs;              /* 0xf8f080, d2.h: D2OBJ * */
+extern struct D2WIN *d2_LastWindowPtr;     /* 0x6ed980, d2.h: the window a screen works in (created last) */
 extern int sv_PopRequest;               /* 0x6f22a0, nonzero: MASTER (sv_RunFrame) pops this screen */
-extern unsigned sv_FrameMask;           /* 0x760638, the pump mask of the current frame (sv_RunFrame) */
+extern int sv_FrameMask;           /* 0x760638, the pump mask of the current frame (sv_RunFrame) */
 extern int sv_PopRequest;               /* 0x6f22a0, nonzero: MASTER (sv_RunFrame) pops this screen */
-extern D2OBJVIEW *d2_Objs;              /* 0xf8f080, d2.h: D2OBJ * */
-extern D2WINVIEW *d2_LastWindowPtr;     /* 0x6ed980, d2.h: the window a screen works in (created last) */
-extern D2OBJVIEW *d2_Objs;              /* 0xf8f080, d2.h: D2OBJ * */
+extern struct D2OBJ *d2_Objs;              /* 0xf8f080, d2.h: D2OBJ * */
+extern struct D2WIN *d2_LastWindowPtr;     /* 0x6ed980, d2.h: the window a screen works in (created last) */
+extern struct D2OBJ *d2_Objs;              /* 0xf8f080, d2.h: D2OBJ * */
 extern int sv_PopRequest;               /* 0x6f22a0, nonzero: MASTER (sv_RunFrame) pops this screen */
-extern unsigned sv_FrameMask;           /* 0x760638, the pump mask of the current frame (sv_RunFrame) */
-extern D2OBJVIEW *d2_Objs;              /* 0xf8f080, d2.h: D2OBJ * */
+extern int sv_FrameMask;           /* 0x760638, the pump mask of the current frame (sv_RunFrame) */
+extern struct D2OBJ *d2_Objs;              /* 0xf8f080, d2.h: D2OBJ * */
 extern int sv_PopRequest;               /* 0x6f22a0, nonzero: MASTER (sv_RunFrame) pops this screen */
-extern unsigned sv_FrameMask;           /* 0x760638, the pump mask of the current frame (sv_RunFrame) */
-extern D2OBJVIEW *d2_Objs;              /* 0xf8f080, d2.h: D2OBJ * */
+extern int sv_FrameMask;           /* 0x760638, the pump mask of the current frame (sv_RunFrame) */
+extern struct D2OBJ *d2_Objs;              /* 0xf8f080, d2.h: D2OBJ * */
 extern int sv_PopRequest;               /* 0x6f22a0, nonzero: MASTER (sv_RunFrame) pops this screen */
-extern unsigned sv_FrameMask;           /* 0x760638, the pump mask of the current frame (sv_RunFrame) */
-extern D2OBJVIEW *d2_Objs;              /* 0xf8f080, d2.h: D2OBJ * */
-extern unsigned sv_FrameMask;           /* 0x760638, the pump mask of the current frame (sv_RunFrame) */
-extern unsigned sv_FrameMask;           /* 0x760638, the pump mask of the current frame (sv_RunFrame) */
+extern int sv_FrameMask;           /* 0x760638, the pump mask of the current frame (sv_RunFrame) */
+extern struct D2OBJ *d2_Objs;              /* 0xf8f080, d2.h: D2OBJ * */
+extern int sv_FrameMask;           /* 0x760638, the pump mask of the current frame (sv_RunFrame) */
+extern int sv_FrameMask;           /* 0x760638, the pump mask of the current frame (sv_RunFrame) */
 extern int sv_PopRequest;               /* 0x6f22a0, nonzero: MASTER (sv_RunFrame) pops this screen */
-extern D2OBJVIEW *d2_Objs;              /* 0xf8f080, d2.h: D2OBJ * */
+extern struct D2OBJ *d2_Objs;              /* 0xf8f080, d2.h: D2OBJ * */
 extern int sv_PopRequest;               /* 0x6f22a0, nonzero: MASTER (sv_RunFrame) pops this screen */
-extern unsigned sv_FrameMask;           /* 0x760638, the pump mask of the current frame (sv_RunFrame) */
-extern D2OBJVIEW *d2_Objs;              /* 0xf8f080, d2.h: D2OBJ * */
+extern int sv_FrameMask;           /* 0x760638, the pump mask of the current frame (sv_RunFrame) */
+extern struct D2OBJ *d2_Objs;              /* 0xf8f080, d2.h: D2OBJ * */
 extern int sv_PopRequest;               /* 0x6f22a0, nonzero: MASTER (sv_RunFrame) pops this screen */
-extern unsigned sv_FrameMask;           /* 0x760638, the pump mask of the current frame (sv_RunFrame) */
-extern D2WINVIEW *d2_LastWindowPtr;     /* 0x6ed980, d2.h: the window a screen works in (created last) */
+extern int sv_FrameMask;           /* 0x760638, the pump mask of the current frame (sv_RunFrame) */
+extern struct D2WIN *d2_LastWindowPtr;     /* 0x6ed980, d2.h: the window a screen works in (created last) */
 extern int sv_PopRequest;               /* 0x6f22a0, nonzero: MASTER (sv_RunFrame) pops this screen */
-extern unsigned sv_FrameMask;           /* 0x760638, the pump mask of the current frame (sv_RunFrame) */
-extern D2OBJVIEW *d2_Objs;              /* 0xf8f080, d2.h: D2OBJ * */
+extern int sv_FrameMask;           /* 0x760638, the pump mask of the current frame (sv_RunFrame) */
+extern struct D2OBJ *d2_Objs;              /* 0xf8f080, d2.h: D2OBJ * */
 extern int sv_PopRequest;               /* 0x6f22a0, nonzero: MASTER (sv_RunFrame) pops this screen */
 extern int sv_PopRequest;               /* 0x6f22a0, nonzero: MASTER (sv_RunFrame) pops this screen */
 
@@ -134,4 +134,9 @@ extern int sv_PopRequest;               /* 0x6f22a0, nonzero: MASTER (sv_RunFram
 #define U_B(a) (*(unsigned char *)(a))
 
 int sprintf(char *buf, const char *fmt, ...); /* 0x5de652, the CRT's sprintf (no CRT symbol available) */
-
+#define ai_GameStateB (*(unsigned char (*))&ai_GameState)  /* 0x6f25ac, this unit reads it as `unsigned char ai_GameState` */
+#define d2_FocusedInputV (*(void * (*))&d2_FocusedInput)  /* 0x6ed9dc, this unit reads it as `void *d2_FocusedInput` */
+#define d2_LastWindowPtrV (*(D2WINVIEW * (*))&d2_LastWindowPtr)  /* 0x6ed980, this unit reads it as `D2WINVIEW *d2_LastWindowPtr` */
+#define d2_ObjsV (*(D2OBJVIEW * (*))&d2_Objs)  /* 0xf8f080, this unit reads it as `D2OBJVIEW *d2_Objs` */
+#define d2_PicsV (*(D2PICVIEW * (*))&d2_Pics)  /* 0x6ed918, this unit reads it as `D2PICVIEW *d2_Pics` */
+#define sv_FrameMaskU (*(unsigned (*))&sv_FrameMask)  /* 0x760638, this unit reads it as `unsigned sv_FrameMask` */

@@ -16,7 +16,7 @@
 #include "d3_sm.h"
 #include "d3s.h"
 #include "data_views.h"
-extern char d3_MipSkip[];
+extern unsigned char d3_MipSkip;
 
 void *tex_Create(char *name, int size, char hicol, D3TEXFLAGS flags, unsigned char f0, unsigned char f6a,
                  int npal, unsigned char *pal, char mips);                              /* 0x461230 */
@@ -107,4 +107,5 @@ __inline int d3s_ShlDiv16(int a, int b)
     __asm shl eax, 16
     __asm idiv ebx
 }
-
+#define d3_FrameCountU (*(unsigned int (*))&d3_FrameCount)  /* 0x63343c, this unit reads it as `unsigned int d3_FrameCount` */
+#define d3_HardwareC (*(char (*))&d3_Hardware)  /* 0x633450, this unit reads it as `char d3_Hardware` */

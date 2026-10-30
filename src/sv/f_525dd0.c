@@ -4,7 +4,12 @@
 extern char * ai_Unkfc2dec;
 extern float sv_CameraHeightFactor, sv_CameraAngleFactor, ai_Unk6f2374, ai_Unk6f2388, ai_Unk6f2390, ai_Unk6f238c, ai_Unk6f1c44;  /* 0x6f22d4, 0x6f22d8, 0x6f2374, 0x6f2388, 0x6f2390, 0x6f238c, 0x6f1c44 */
 extern float sv_CameraHeightNear, sv_CameraAngleNear, sv_CameraHeightFar, sv_CameraAngleFar, ai_Unk623818;  /* 0x623800, 0x623804, 0x623808, 0x62380c, 0x623818 */
-extern int ai_Unk6f2378, ai_Unk6f22cc, ai_Unk6f22d0, ai_Unk6310e4, d3t_CamMove, ai_Unk6f2394;  /* 0x6f2378, 0x6f22cc, 0x6f22d0, 0x6310e4, 0x6310e8, 0x6f2394 */
+extern int ai_Unk6f2378;  /* 0x6f2378 */
+extern int ai_Unk6f22cc;  /* 0x6f22cc */
+extern int ai_Unk6f22d0;  /* 0x6f22d0 */
+extern int ai_Unk6310e4;  /* 0x6310e4 */
+extern struct D3ANIM *d3t_CamMove;  /* 0x6310e8 */
+extern int ai_Unk6f2394;  /* 0x6f2394 */
 extern int ai_Unk75fb80, ai_Unk75fb84, ai_Unk75fb88, ai_Unk75fb90, ai_Unk75fb94, ai_Unk75fb98;  /* 0x75fb80, 0x75fb84, 0x75fb88, 0x75fb90, 0x75fb94, 0x75fb98 */
 extern float ai_Unk6f1c74[3];
 float d3t_GetMeanHeight();                   /* 0x412550 */

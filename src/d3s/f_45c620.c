@@ -44,7 +44,7 @@ char d3s_Update(D3OBJECT *obj, D3OBJECT *light, D3TERRAIN *t)
                     size *= 2;
                 size = min(size, d3s_MaxTexSize);
             }
-            slot->tex = d3s_CacheTexture(slot, d3s_ShadowMips, size, d3_FrameCount, &slot->cache);
+            slot->tex = d3s_CacheTexture(slot, d3s_ShadowMips, size, d3_FrameCountU, &slot->cache);
         } else {
             slot->tex = ((D3TEXHANDLE *(*)(char *, int, int, int))tex_Load)("Schatten", 0x2007f, 0, 0);
             if (slot->tex && !slot->tex->surf)
@@ -54,7 +54,7 @@ char d3s_Update(D3OBJECT *obj, D3OBJECT *light, D3TERRAIN *t)
     if (!slot || !slot->tex)
         return 0;
     if (slot->cache)
-        slot->cache->time = d3_FrameCount;
+        slot->cache->time = d3_FrameCountU;
     info = obj->info;
     mesh = info;
     if (*(int *)((char *)obj->material + 0x5c8) > 0 && *(int *)((char *)obj->material + 0x5c4) > 0)

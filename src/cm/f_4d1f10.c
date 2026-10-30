@@ -9,7 +9,7 @@ char *ai_Unk4d1f10(char *c)
     char **pp;
 
     if (*(int *)(ai_Unk4cda50(c) + 0x58) == 2) {
-        for (pp = ai_Unk7603a0; (int)pp < (int)ai_Unk760420; pp++) {
+        for (pp = ai_Unk7603a0V; (int)pp < (int)ai_Unk760420V; pp++) {
             if (*pp != 0 && ai_Unk4ce270(c, *pp) != 0 && (*pp)[8] != 0) {
                 w = ai_Unk4ce1b0(c, *(char **)(*(char **)(*pp + 0x184) + 0x34));
                 w = unk_Unk4fc8e0(*pp) * w;
@@ -21,7 +21,7 @@ char *ai_Unk4d1f10(char *c)
         }
         return res;
     }
-    for (pp = ai_Unk7603a0; (int)pp < (int)ai_Unk760420; pp++) {
+    for (pp = ai_Unk7603a0V; (int)pp < (int)ai_Unk760420V; pp++) {
         if (*pp != 0 && ai_Unk4ce270(c, *pp) != 0 && (*pp)[8] != 0) {
             w = ai_Unk4ce1b0(c, *(char **)(*(char **)(*pp + 0x184) + 0x34));
             w = unk_Unk4fc8e0(*pp) * w;

@@ -49,7 +49,7 @@ L_next:
                 cnt = 0;
             }
             pb += 0x21c;
-        } while ((int)pb < (unsigned)((unsigned)ai_Chars + 0x65402));
+        } while ((int)pb < (unsigned)((unsigned)ai_CharsV + 0x65402));
     }
     return u;
 }

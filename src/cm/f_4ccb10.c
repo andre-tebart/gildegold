@@ -20,7 +20,7 @@ int ai_Unk4ccb10(G17MSG *m, G17STAT *s)
     c[0x1b1] = v;
     v = (unsigned char)c[0x1b1] != 0 ? (unsigned char)c[0x1b1] : 0;
     c[0x1b1] = v;
-    if (*(unsigned short *)c == ai_PlayerId && ai_GameState != 0 && (unsigned char)v != 0)
+    if (*(unsigned short *)c == ai_PlayerId && ai_GameStateB != 0 && (unsigned char)v != 0)
         sv_PopTo(ai_GameFrame);
     amt_ClearOfficesIfAll(c, G17_I(*m, 8));
     if (s != 0)

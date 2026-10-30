@@ -94,7 +94,7 @@ work:
         goto fetch;
     chk = gm_FindCharacterByMaster(b);
     found = 0;
-    for (rec = (unsigned)&ai_Chars; rec < (unsigned)((unsigned)ai_Chars + 0x65400); rec += 0x21c) {
+    for (rec = (unsigned)&ai_Chars; rec < (unsigned)((unsigned)ai_CharsV + 0x65400); rec += 0x21c) {
         if (*(int *)(rec + 0x17c) == ev)
             found = rec;
     }
@@ -309,7 +309,7 @@ state2:
         *(int *)(ev + 0x70) = -1;
         return;
     }
-    for (rec = (unsigned)&ai_Chars; rec < (unsigned)((unsigned)ai_Chars + 0x65400); rec += 0x21c) {
+    for (rec = (unsigned)&ai_Chars; rec < (unsigned)((unsigned)ai_CharsV + 0x65400); rec += 0x21c) {
         if (*(int *)(rec + 0x17c) == ev)
             sv_MoveToGroup(b, *(unsigned short *)rec, 0, 0);
     }
@@ -322,7 +322,7 @@ state_free:
     gm_FindById(bo, 0, 0, *(int *)(ev + 0xbc));
     if (bo[0] != 0)
         ai_Unk4c5840(*(int *)(bo[0] + 1));
-    for (rec = (unsigned)&ai_Chars; rec < (unsigned)((unsigned)ai_Chars + 0x65400); rec += 0x21c) {
+    for (rec = (unsigned)&ai_Chars; rec < (unsigned)((unsigned)ai_CharsV + 0x65400); rec += 0x21c) {
         if (*(int *)(rec + 0x17c) == ev)
             sv_MoveToGroup(0, *(unsigned short *)rec, 0, 0);
     }

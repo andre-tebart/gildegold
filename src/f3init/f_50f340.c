@@ -19,7 +19,7 @@ void init_StockMarketStalls(void)
         st = (INIT_OBJ *)gm_Query(b->objList, 2, 0, 0x1db, 6);
         if (st != 0) {
             n = 0;
-            w0 = (unsigned short *)(ai_PlayerSlots[owner] + 0x2ac);
+            w0 = (unsigned short *)(ai_PlayerSlotsV[owner] + 0x2ac);
             w = w0;
             for (i = 0x10; i != 0; i--) {
                 if (*w != 0)
@@ -27,9 +27,9 @@ void init_StockMarketStalls(void)
                 w++;
             }
             cm_BeginFieldBlock((char *)st, st->objId);
-            cm_AddFieldDelta(1, 1, (int)st - cm_FieldObject + 0x1c, &n);
+            cm_AddFieldDelta(1, 1, (int)st - cm_FieldObjectI + 0x1c, &n);
             n = 4;
-            cm_AddFieldDelta(4, 1, (int)st - cm_FieldObject + 0xe, &n);
+            cm_AddFieldDelta(4, 1, (int)st - cm_FieldObjectI + 0xe, &n);
             cm_SendFieldDeltas();
             for (i = 0x10; i != 0; i--) {
                 if (*w0 != 0) {
@@ -42,7 +42,7 @@ void init_StockMarketStalls(void)
         st = (INIT_OBJ *)gm_Query(b->objList, 2, 0, 0x1dc, 6);
         if (st != 0) {
             n = 0;
-            w0 = (unsigned short *)(ai_PlayerSlots[owner] + 0x2cc);
+            w0 = (unsigned short *)(ai_PlayerSlotsV[owner] + 0x2cc);
             w = w0;
             for (i = 0x10; i != 0; i--) {
                 if (*w != 0)
@@ -50,9 +50,9 @@ void init_StockMarketStalls(void)
                 w++;
             }
             cm_BeginFieldBlock((char *)st, st->objId);
-            cm_AddFieldDelta(1, 1, (int)st - cm_FieldObject + 0x1c, &n);
+            cm_AddFieldDelta(1, 1, (int)st - cm_FieldObjectI + 0x1c, &n);
             n = 4;
-            cm_AddFieldDelta(4, 1, (int)st - cm_FieldObject + 0xe, &n);
+            cm_AddFieldDelta(4, 1, (int)st - cm_FieldObjectI + 0xe, &n);
             cm_SendFieldDeltas();
             for (i = 0x10; i != 0; i--) {
                 if (*w0 != 0) {

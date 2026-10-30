@@ -8,15 +8,15 @@ void ai_PauseGame(void)
     int flags;
     int r;
 
-    flags = sv_FrameMask & ~0x2000 | 0x100000;
+    flags = sv_FrameMaskU & ~0x2000 | 0x100000;
     tb_Paused = 1;
     sv_SetStatusText("Pause");
-    ai_GameState = 0;
+    ai_GameStateB = 0;
     r = sv_RunFrame(0, flags);
     while (r != 0 && kb_Last != '9')
         r = sv_RunFrame(0, flags);
     sv_SetStatusText(ch_EmptyName);
     tb_Paused = 0;
-    ai_GameState = 1;
+    ai_GameStateB = 1;
     return 0;
 }

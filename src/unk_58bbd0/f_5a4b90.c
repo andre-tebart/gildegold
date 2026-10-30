@@ -37,7 +37,7 @@ void ai_Unk5a4b90(int param_1)
         if (U_I((unsigned)&d2_ClickedId) != -1) {
             if (U_I((unsigned)&d2_ClickedId) == 0) {
                 n = 0;
-                for (tp = (int *)(unsigned)&ai_Unk7603a0; tp < (int *)(unsigned)((unsigned)ai_Unk7603a0 + 0x80) && n < 6; tp++) {
+                for (tp = (int *)(unsigned)&ai_Unk7603a0; tp < (int *)(unsigned)((unsigned)ai_Unk7603a0V + 0x80) && n < 6; tp++) {
                     e = *tp;
                     if (e != 0 && *(char *)(e + 0x188) != 0) {
                         list[n] = U_I(e + 4);

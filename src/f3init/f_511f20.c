@@ -2,13 +2,13 @@
 
 
 /* 0x511f20 (a function start Ghidra missed, 1450 bytes up to 0x5124c9; registered with 0x438e60 (0x1e0) by 0x513050), a scene callback of the object o: its prototype (kind byte o + 0x4b = 1: the object prototypes 0x91aaf0, else a building) is looked up in the scene record (0x4ffe90 / 0x4ffcc0 iterate the records), the owner record o + 0x200 is set / cleared (0x447300 = show / hide), the matching records of the neighbouring prototypes are walked (0x4fe940), and an object that is flagged 0xa0 (+0x13 of the record) is given its effect (0x411eb0 position, 0x4287b0 / 0x429ab0 the effect of "dummy_"-less names); the objects named "no_*" (looked up by the name after the prefix, 0x4fe900) are shown / hidden by their record, "pfl_*" / "vg_*" get their placement (0x446f30). ROUGH: the record walks are summarised. */
-extern int ai_FallbackBuilding;                /* 0x6f230c */
+extern char * ai_FallbackBuilding;                /* 0x6f230c */
 char d3t_GetBoundingSphere(struct D3OBJECT *obj, struct D3OBJECT *camera, struct D3VECTOR *center, float *radius);  /* 0x411eb0, d3_tools.c: the center and radius of the mesh's 8-corner box */
 int gm_IsBuildingKind(int n);           /* 0x4fe940, f3gm.c: 1 when the object prototype n is a building part */
 int gm_FindObjectProto(char *name);     /* 0x4fe900, f3gm.c: the object prototype of the name */
 unsigned unk_Unk503530(unsigned p1, unsigned char *b, unsigned short *o, int c);  /* 0x503530, f3gm.c: the permission bits of the character p in the building b (or the object o) */
 extern unsigned char init_TextureSet;      /* 0x6f1c24 */
-extern int ai_Unkfc2dec;                /* 0xfc2dec */
+extern char * ai_Unkfc2dec;                /* 0xfc2dec */
 void init_SyncSceneObjects(char *o)
 {
     char *base, *proto, *s, *rec, *e, *parent;
@@ -30,7 +30,7 @@ void init_SyncSceneObjects(char *o)
                     d3if_ShowTree(o, 1);
                     *(char **)(o + 0x200) = rec;
                     if (proto[0] == 6 || proto[0] == 2) {
-                        if (ai_FallbackBuilding != 0) {
+                        if (ai_FallbackBuildingI != 0) {
                             unsigned r = unk_Unk503530(ai_PlayerId, *(char **)((char *)ai_SceneBuilding + 0x5d), rec, 0);
 
                             if (r & 0x4000) {
@@ -115,7 +115,7 @@ fx:
         if (rec != 0 && (rec[0x13] & 0xa0) != 0) {
             if (*(int *)(o + 0x1cc) == 0)
                 d3_InflateObject(o);
-            if (*(int *)(o + 0x1ec) != 0 && d3t_GetBoundingSphere(o, ai_Unkfc2dec, (struct D3VECTOR *)(pos + 2), pos) != 0) {
+            if (*(int *)(o + 0x1ec) != 0 && d3t_GetBoundingSphere(o, ai_Unkfc2decI, (struct D3VECTOR *)(pos + 2), pos) != 0) {
                 fx = (int)(pos[0] * 1.5);
                 s = evt_Load("Effekte/upgr");
                 if (s != 0)

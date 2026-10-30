@@ -33,7 +33,7 @@ int ai_SaveOptionWindow(int image)
     char list[0x4200];
     int view;
 
-    mask = sv_FrameMask;
+    mask = sv_FrameMaskU;
     win = d2_OpenForm(0, 0, "menu\\loadgame_new");
     d2_PlaceViewWindows(win, 1);
     d2_PlaceMainWindowF(win, 2);
@@ -60,13 +60,13 @@ int ai_SaveOptionWindow(int image)
             for (i = 2; i < 0x10; i++) {
                 if (d2_PointerObj == slots[i].obj || d2_HitWindow == slots[i].win
                     || (d2_HitWindow != -1
-                        && d2_Objs[d2_Wins[d2_HitWindow].parent].win == &d2_Wins[slots[i].win])) {
+                        && d2_ObjsV[d2_Wins[d2_HitWindow].parent].win == &d2_Wins[slots[i].win])) {
                     exists = 0;
                     sprintf(path, "Gamedata\\Saves\\%s.SAV", slots[i].name);
                     if (vfs_FindFile(path, vfs_Root, &found) != 0)
                         exists = 1;
                     d2_EnableObject(slots[i].obj, 0);
-                    if (ai_EditText(d2_Objs[slots[i].obj].x, d2_Objs[slots[i].obj].y,
+                    if (ai_EditText(d2_ObjsV[slots[i].obj].x, d2_ObjsV[slots[i].obj].y,
                                     slots[i].title) == 0) {
                         d2_EnableObject(slots[i].obj, 1);
                         break;

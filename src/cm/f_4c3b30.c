@@ -2,5 +2,5 @@
 
 void cm_BeginSendGroup(void)
 {
-    ai_Unkf8121c = ai_Unkf81168 + 1;
+    ai_Unkf8121c = ai_Unkf81168U + 1;
 }

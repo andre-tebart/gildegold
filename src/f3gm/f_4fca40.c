@@ -17,7 +17,7 @@ float gm_AddHealth(unsigned id, int d)
         if (fc <= 0.0f) {
             b = 0;
             cm_BeginFieldBlock(c, *(int *)(c + 4));
-            cm_AddFieldValue(1, 1, (int)c + (8 - cm_FieldObject), &b);
+            cm_AddFieldValue(1, 1, (int)c + (8 - cm_FieldObjectI), &b);
             cm_SendFieldValues();
             G_MSG72(m, c);
             return 0.0f;
@@ -38,7 +38,7 @@ float gm_AddHealth(unsigned id, int d)
     if (f <= 0.0f) {
         b = 0;
         cm_BeginFieldBlock(c, *(int *)(c + 4));
-        cm_AddFieldValue(1, 1, (int)c + (8 - cm_FieldObject), &b);
+        cm_AddFieldValue(1, 1, (int)c + (8 - cm_FieldObjectI), &b);
         cm_SendFieldValues();
         G_MSG72(m, c);
         return 0.0f;

@@ -1,7 +1,7 @@
 /* 0x4b3960, the yearly history: tells the others (message 5 with the tick count) in a network game, waits
    while ai_Unkf83650, then shows the history dialog of hst_TextsOn (1: texts, 2: texts and commands) */
 
-extern unsigned char cm_NetFlags;      /* 0x6f2594, game flags (8: network game) */
+extern int cm_NetFlags;      /* 0x6f2594, game flags (8: network game) */
 extern int ai_Unkf83650;
 extern struct {                         /* net.h's NETCONN (the fields used here) */
     int s;                              /* 0x00, the socket */
@@ -16,7 +16,7 @@ void ai_Unk4b3960(int cmd)
 {
     int msg[0x1f];
 
-    if ((cm_NetFlags & 8) || net_Conn.s == -1) {
+    if ((cm_NetFlagsB & 8) || net_Conn.s == -1) {
         msg[0] = GetTickCount();
         cm_SendExSysMessage(5, msg);
     }

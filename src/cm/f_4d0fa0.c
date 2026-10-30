@@ -76,7 +76,7 @@ void ai_Unk4d0fa0(char *rec)
     }
     sc = *(char **)(ai_Unk5fb5b0 + 0xb0);
     ai_Unk4e3650();
-    if (ai_Unk633738 != 0) {
+    if (ai_Unk633738I != 0) {
         *(int *)(ai_Unkfd7c50 + d3_CurrentScene * 0x3e0 + 8) = *(int *)(ai_Unkfd7c50 + 8);
         ai_Unk633dd4 = *(int *)(ai_Unkfd7c50 + 8);
         sv_Unk5301a0();
@@ -89,7 +89,7 @@ void ai_Unk4d0fa0(char *rec)
         *(int *)(p + 8) = 0;
     }
     memset((char *)((unsigned)&ai_Unk930600 + 0x4380), 0, 0x1000);
-    memset(cm_Bombs, 0, 0x100);
+    memset(cm_BombsV, 0, 0x100);
     memset(ai_Unk935a00, 0, 0x200);
     memset(ai_Unk930600, 0, 0x4380);
     for (p = ai_Unk930600; (int)p < ((unsigned)&ai_Unk930600 + 0x4380); p += 0x21c)
@@ -130,7 +130,7 @@ void ai_Unk4d0fa0(char *rec)
     }
     ai_Unk6f0d5c = d3io_LoadObjectRef("ub_STIEFEL", "ub_STIEFEL");
     if (sc == 0) {
-        *(char **)(ai_Unk5fb5b0 + 0xb0) = (char *)d3sm_Create(ai_Unk633738, *(int *)(ai_Unk5fb5b0 + 0xb4), 2);
+        *(char **)(ai_Unk5fb5b0 + 0xb0) = (char *)d3sm_Create(ai_Unk633738I, *(int *)(ai_Unk5fb5b0 + 0xb4), 2);
         sc = *(char **)(ai_Unk5fb5b0 + 0xb0);
     }
     ai_Unk935d00 = *(float *)(sc + 0x10) * ai_Unk5edc58;
@@ -175,8 +175,8 @@ void ai_Unk4d0fa0(char *rec)
         }
     }
     d3_ForEachObject2(ai_Unk5fb5b0, 0, 0xc0, ai_Unk4d0f80);
-    memset(ai_Unk7603a0, 0, 0x80);
-    pp = ai_Unk7603a0;
+    memset(ai_Unk7603a0V, 0, 0x80);
+    pp = ai_Unk7603a0V;
     for (p = ai_Unk930600; (int)p < ((unsigned)&ai_Unk930600 + 0x4380); p += 0x21c) {
         if (*(unsigned short *)p != 0xffff && *(char **)(p + 0x184) != 0 &&
             *(char **)(*(char **)(p + 0x184) + 0x88) == ai_Unk5fb5b0)
@@ -239,7 +239,7 @@ void ai_Unk4d0fa0(char *rec)
             }
         }
     }
-    d3sm_Build(*(char **)(ai_Unk5fb5b0 + 0xb0), ai_Unk633738);
+    d3sm_Build(*(char **)(ai_Unk5fb5b0 + 0xb0), ai_Unk633738I);
     for (i = 0; i < nmax; i++) {
         wd = *(int *)(sc + 0x20);
         cell = *(int **)(sc + 0x24);

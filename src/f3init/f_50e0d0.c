@@ -45,11 +45,11 @@ void init_StartNewGame(void)
     cm_BeginSendGroup();
     m = 0;
     cm_BeginFieldBlock(ai_JudgeCatholic, ((INIT_CHAR *)ai_JudgeCatholic)->netId);
-    cm_AddFieldDelta(1, 1, (ai_JudgeCatholic - cm_FieldObject) + INIT_FIELD_RELIGION, &m);
+    cm_AddFieldDelta(1, 1, (ai_JudgeCatholic - cm_FieldObjectI) + INIT_FIELD_RELIGION, &m);
     cm_SendFieldDeltas();
     m = 1;
     cm_BeginFieldBlock(ai_JudgeProtestant, ((INIT_CHAR *)ai_JudgeProtestant)->netId);
-    cm_AddFieldDelta(1, 1, (ai_JudgeProtestant - cm_FieldObject) + INIT_FIELD_RELIGION, &m);
+    cm_AddFieldDelta(1, 1, (ai_JudgeProtestant - cm_FieldObjectI) + INIT_FIELD_RELIGION, &m);
     cm_SendFieldDeltas();
     cm_EndSendGroup();
     i = cm_SendGroupState();

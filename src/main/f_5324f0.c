@@ -24,8 +24,8 @@ int main_CreateWindow(HINSTANCE inst, int unused, int mode)
     wc.lpszClassName = "Die Gilde";
     if (RegisterClassA(&wc) == 0)
         return 0;
-    main_BuildVersionString(ls_SavePath.version);
-    sprintf(title, " %s", ls_SavePath.version);
+    main_BuildVersionString(ls_SavePathV.version);
+    sprintf(title, " %s", ls_SavePathV.version);
     SystemParametersInfoA(SPI_GETWORKAREA, 0, &work, 0);
     w = work.right - work.left;
     h = work.bottom - work.top;

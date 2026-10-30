@@ -12,7 +12,7 @@
    round 22 from unk_483fc0.c, unk_4864b0.c, unk_487fb0.c and unk_489a70.c. Names are ours except the ones taken
    from the strings.
    unit of rea 8cef7d5b (src/game/ai.c); boundaries in decl/text.dcl, notes in src/ai/open.md */
-extern char gm_PlayerRecords[];
+extern int gm_PlayerRecords[688];
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

@@ -23,7 +23,7 @@ extern unsigned int d3s_TexSize;         /* 0xfb9260, d3s.c */
 extern unsigned int d3s_MaxTexSize;      /* 0xfb91dc, d3s.c */
 extern float d3o_FogScale;               /* 0x5fbd04, d3_interface.h */
 extern float sv_CameraAngleFactor;               /* 0x6f22d8, sv.c */
-extern unsigned char ai_GameState;       /* 0x6f25ac */
+extern int ai_GameState;       /* 0x6f25ac */
 extern int d3_CurrentScene;              /* 0x633444 */
 extern D3SCENE *d3_DefaultScene;         /* 0x5fb5b0 */
 extern D3SCENE d3_Scenes[];              /* 0xfd7ba0 */
@@ -116,7 +116,7 @@ int ai_ApplyGfxOptions(void)
     sv_CameraAngleNear = lim[i * 2 + 1];
     sv_CameraHeightFar = lim[i * 2 + 6];
     sv_CameraAngleFar = lim[i * 2 + 7];
-    if (ai_GameState != 0)
+    if (ai_GameStateB != 0)
         sv_PlaceCamera(sv_CameraAngleFactor);
     if (d3fl_Mips != ai_GfxFloor.byte[0])
         d3fl_SetMips(ai_GfxFloor.byte[0]);

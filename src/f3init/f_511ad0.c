@@ -13,7 +13,7 @@ void init_LocalData(void)
     if ((ai_GameFlags & 0x40) == 0) {
         gm_UpdatePlayers();
         i = 0;
-        p = ai_PlayerSlots[0];
+        p = ai_PlayerSlotsV[0];
         do {
             if (*p == 0)
                 break;

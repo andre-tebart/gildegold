@@ -17,7 +17,7 @@ void ai_Unk4cfc10()
         G19_E(e, 0x14) = -1;
     }
     e = ai_Unk930400;
-    for (pp = ai_Unk7603a0; e < ai_Unk930400 + 0xc0 && (int)pp < ((unsigned)&ai_Unk7603a0 + 0x7c); pp++) {
+    for (pp = ai_Unk7603a0V; e < ai_Unk930400 + 0xc0 && (int)pp < ((unsigned)&ai_Unk7603a0 + 0x7c); pp++) {
         if (*pp == 0)
             continue;
         if (!(ai_Unk4ce170(*(unsigned short *)ai_Unk6f0d74, *pp) & 0x800))

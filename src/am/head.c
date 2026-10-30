@@ -16,7 +16,7 @@
    rates it. 0x495ee0 sends every kind-3 character a random flag set for field 0x1e8. The registration code
    (0x4a1700..) stores these into AIACT records. Names are ours.
    unit of rea 8cef7d5b (src/game/am.c); boundaries in decl/text.dcl, notes in src/am/open.md */
-extern char ai_PlayerSlots[];
+extern char ai_PlayerSlots[4][0x2f4];
 #include "txt_views.h"
 #include <stdio.h>
 #include <string.h>
@@ -29,7 +29,7 @@ extern char ai_PlayerSlots[];
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 extern unsigned char ai_Unka69140;
 extern unsigned char txt_Keys;  /* @original ai_Unk498c70 (0x498c70, byte) tests flags1c8 & 0x1000000 as &txt_Keys + 0x181c0 of this byte view: the char[0x4800][0x50] spelling, a view macro or the literal flip its add operands at +0x4cc (shape) */
-extern unsigned char he_Events;
+extern unsigned char he_Events[339968];
 
 int gm_Unk5044b0(int i, int p);        /* 0x5044b0, @original: the byte-matched callers (ai_Unk49ed10, ai_Unk498c70) read the result without the unsigned char mask (no `and eax,0xff` after the call) */
 

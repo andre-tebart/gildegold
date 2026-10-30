@@ -17,5 +17,5 @@ void unk_Unk511790(void)
     d3_ForEachObject(d3_DefaultScene, 0, 0x40, init_TownBuildingHook, 0);
     unk_Unk5116b0();
     ai_CheckBuildSites();
-    d3sm_Build(*(int *)((char *)d3_DefaultScene + 0xb0), ai_Unk633738);
+    d3sm_Build(*(int *)((char *)d3_DefaultScene + 0xb0), ai_Unk633738I);
 }

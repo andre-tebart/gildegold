@@ -71,7 +71,7 @@ int ai_Unk4c89b0(G17MSG *m, G17STAT *s)
         ret = 2;
         break;
     case 9:
-        ai_MissionMode = msg.data[1];
+        ai_MissionModeB = msg.data[1];
         ai_MissionSeed = G17_I(msg, 5);
         break;
     case 10:
@@ -79,7 +79,7 @@ int ai_Unk4c89b0(G17MSG *m, G17STAT *s)
             ai_MissionPartner = -1;
             if (G17_I(msg, 0x11) == 1)
                 ai_GameOver = 1;
-            if (ai_MissionMode == 5)
+            if (ai_MissionModeB == 5)
                 ai_Unk4b3bd0(ai_CharInts[ai_PlayerId][0], G17_I(msg, 0x21));
         } else
             ret = 2;
@@ -87,7 +87,7 @@ int ai_Unk4c89b0(G17MSG *m, G17STAT *s)
     case 12:
         save = d3_CurrentScene;
         d3if_SelectScene(0, 1);
-        d3sm_Build(*(int *)(ai_Unk5fb5b0 + 0xb0), ai_Unk633738);
+        d3sm_Build(*(int *)(ai_Unk5fb5b0 + 0xb0), ai_Unk633738I);
         d3if_SelectScene(save, 1);
         ai_Unk631084 = 0;
         break;

@@ -10,7 +10,7 @@ void he_Unk5483f0(int ev)
         return;
     }
     txt_Format(text, 0x10c2, ((unsigned)&ai_PlayerSlots + 0x20) + U_I((unsigned)&ai_OwnPlayer) * 0x1fc, (unsigned short)util_Random(3) + 0x10c4);
-    for (rec = (unsigned)&ai_Chars; rec < (unsigned)((unsigned)ai_Chars + 0x65400); rec += 0x21c) {
+    for (rec = (unsigned)&ai_Chars; rec < (unsigned)((unsigned)ai_CharsV + 0x65400); rec += 0x21c) {
         if (*(unsigned short *)rec != 0xffff && *(unsigned char *)(rec + 8) >= 2
             && (*(char *)(rec + 2) == 6 || *(char *)(rec + 2) == 7 || *(char *)(rec + 2) == 5)) {
             float lim;

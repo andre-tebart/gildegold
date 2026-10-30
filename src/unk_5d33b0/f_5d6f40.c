@@ -66,7 +66,7 @@ int ai_MenuButton(int row, int text1, int text2)
     int id;
 
     id = d2_WinCreateSlider(0x20, row * 0x2e + 10, 0xbf, text1, text2);
-    d2_Objs[id].centred = 1;
+    d2_ObjsV[id].centred = 1;
     d2_SetObjWidth(id, 300);
     return id;
 }

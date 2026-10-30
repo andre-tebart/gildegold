@@ -13,7 +13,7 @@ typedef struct G13RADIO {               /* 0x8c bytes, d2.h's D2RADIO */
     int objs[0x20];                     /* 0x0c */
 } G13RADIO;
 
-extern G13OBJ *d2_Objs;                 /* 0xf8f080 */
+extern struct D2OBJ *d2_Objs;                 /* 0xf8f080 */
 extern G13RADIO d2_Radios[8];           /* 0xfa5aa0 */
 extern int d2_PointerObj;                /* 0x5fe710, focused object */
 extern int d2_LastWindow;                /* 0x6ed938 */
@@ -44,7 +44,7 @@ int ai_ChooseMissionType(int kind)
     g = d2_CreateRadioGroup(0);
     for (t = ai_FindMissionType(kind, 0); t != 0; t = ai_FindMissionType(kind, t)) {
         o = d2_GetWinObj(view, 2, io_PrintText("%ia[%s]$N", t->text));
-        d2_Objs[o].user = t;
+        d2_ObjsV[o].user = t;
         d2_RadioAdd(g, o);
     }
     while (sv_RunFrame((void (*)(void))ai_ChooseMissionType, 0x1c6)) {
@@ -53,7 +53,7 @@ int ai_ChooseMissionType(int kind)
             sv_PopRequest = 1;
         if (d2_ClickedId != -1 && d2_Radios[g].sel != -1
             && d2_PointerObj == d2_Radios[g].objs[d2_Radios[g].sel]) {
-            t = (G13TYPE *)d2_Objs[d2_Radios[g].objs[d2_Radios[g].sel]].user;
+            t = (G13TYPE *)d2_ObjsV[d2_Radios[g].objs[d2_Radios[g].sel]].user;
             if (ai_Unk4b3d50(t->type, sv_FrameMask)) {
                 chosen = t->type;
                 sv_PopRequest = 1;

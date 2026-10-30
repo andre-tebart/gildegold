@@ -34,7 +34,7 @@ int io_CharacterName(int id, unsigned char c, unsigned char kind, char *out)
     N = rec + 0x30;
     T = rec + 0x40;
     if (rec == ai_PlayerCharC) {
-        strcpy(out, ai_PlayerSlots[ai_OwnPlayer]);
+        strcpy(out, ai_PlayerSlotsV[ai_OwnPlayer]);
         if (c == 2)
             strcat(out, "'s");
         return 1;

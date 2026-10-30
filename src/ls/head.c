@@ -14,7 +14,7 @@ struct D3TERRAIN;
 #include "data_views.h"
 #define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
 extern char d3_Scenes[];
-extern char cm_SaveAcks[];
+extern int cm_SaveAcks[8][2];
 #define GAPDATA __declspec(align(1)) unsigned char
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
@@ -48,23 +48,23 @@ extern int ai_Unk7d6a40;
 extern unsigned char ch_Motions;
 extern int ai_Unk7e3f38;
 extern int gm_Offers[528];
-extern unsigned char ai_Unkf83654;
+extern struct G10GAME *ai_Unkf83654;
 
 int ai_Unk61a658 = 1;  /* 0x61a658 */
 int ls_Language = 65535;  /* 0x62364c, the language number ( */
 int ls_Version = 65626;  /* 0x623650 */
 const char ls_LanguageNames[][0x40] = { "GERMAN", "ENGLISH", "FRENCH", "ITALIAN", "SPANISH" };  /* 0x5ee978, the language names (5 of */
-extern int gm_PlayerRecords[];          /* 0x7d5f80, the 16 player records (0xac bytes each; gm_PlayerRecord, f3gm.c) */
+extern int gm_PlayerRecords[688];          /* 0x7d5f80, the 16 player records (0xac bytes each; gm_PlayerRecord, f3gm.c) */
 /* gm_PlayerRecordBytes: view of gm_PlayerRecords (tools/data_views.py) */
 extern char *ls_ActionQueue;            /* 0x631050, the action queue (ch.h: CHACTION *ch_Queue) */
 extern char ch_EmptyName[];             /* 0x631090 */
 extern char ls_SavePath[640];
 extern int d3_CurrentScene;                /* 0x633444 */
 extern int ai_JudgeCatholic, ai_JudgeProtestant;  /* 0x6f1bfc / 0x6f1c00 */
-extern int *ai_KindBChars[];             /* 0x6f1c04, the eight slots of the kind 0xb characters (cm.h: char *) */
+extern char * ai_KindBChars[8];             /* 0x6f1c04, the eight slots of the kind 0xb characters (cm.h: char *) */
 int * ai_Unk633738 = 0;  /* 0x633738, the scene (its first word the kind: */
-extern int ai_PlayerBuilding;                /* 0x6f2308 */
-extern int ai_FallbackBuilding;                /* 0x6f230c */
+extern char * ai_PlayerBuilding;                /* 0x6f2308 */
+extern char * ai_FallbackBuilding;                /* 0x6f230c */
 extern int sv_PanelShown;                /* 0x6f2310 */
 extern unsigned short ai_PlayerId;              /* 0x6f25b8 */
 int ai_Unk6f1b88 = 0;  /* 0x6f1b88 .. */
@@ -73,10 +73,10 @@ unsigned char ls_SaveSlot = 0;  /* 0x6f1c38, the slot the save header records */
 extern int ai_Difficulty;                /* 0x6f23fc */
 extern unsigned short ai_ScreenImage[19200];
 /* ai_Unk76fa24: view of cm_SaveAcks (tools/data_views.py) */
-extern char ai_PlayerSlots[][0x2f4];      /* 0x7e3f40, the player slots */
+extern char ai_PlayerSlots[4][0x2f4];      /* 0x7e3f40, the player slots */
 extern short *ai_Objects;             /* 0x7e3f34 */
 extern char ai_Time[];             /* 0x770ae0, the clock */
-extern char ai_UpdateStart[];             /* 0xf89580 */
+extern int ai_UpdateStart;             /* 0xf89580 */
 extern int ai_NextObjectId;                /* 0x61a654 */
 int ai_Unk6f2618 = 0;  /* 0x6f2618 */
 extern int ai_Unk6f1bb8, ai_Unk6f1bbc, ai_CharCount, ai_Unk6f1bcc, ai_Unk6f1b88;   /* 0x6f1bb8, 0x6f1bbc, 0x6f1bc0, 0x6f1bcc, 0x6f1b88 .. */
@@ -119,7 +119,7 @@ int rt_SaveRoutes();                     /* 0x4bff40 */
 
 #define LS_W(p, sz) if (vfs_fwrite((p), (sz), 1, f) <= 0) return 0;
 extern int ai_NBauplaetze;                /* 0xf812e0 */
-extern char *ai_Bauplaetze;              /* 0xf812e4 */
+extern struct G15BK *ai_Bauplaetze;              /* 0xf812e4 */
 int unk_Unk4f17f0();                     /* 0x4f17f0 */
 int ahm_WriteRecord();                     /* 0x4ecf10 */
 
@@ -148,8 +148,8 @@ int ai_LoadWind();                     /* 0x5dc0c0 */
 int unk_Unk4ed910();                     /* 0x4ed910 */
 int gm_FindById();                     /* 0x4fea50 */
 
-extern int ai_MarketBuilding;                /* 0x6f1bc8 */
-extern unsigned char ai_GameState;      /* 0x6f25ac */
+extern struct AIBLD *ai_MarketBuilding;                /* 0x6f1bc8 */
+extern int ai_GameState;      /* 0x6f25ac */
 void sv_CountGroupMembers(char *g);     /* 0x5241d0, sv.c */
 /* ai_Unk6f261c: view of ai_Unk6f2618 (tools/data_views.py) */
 int ai_Unk6f2620 = 0;  /* 0x6f2620 / */
@@ -161,7 +161,10 @@ int ai_Unk75e134 = 0;  /* 0x75e134 */
 int ai_Unk75e138 = 0;  /* 0x75e138 .. the clock copy */
 
 extern int ai_Unk6f2620, ai_Unk7585e4;   /* 0x6f2620, 0x7585e4 */
-extern int ai_Unka68d24, ai_Unka68c00, cm_SendQueue, ai_Unkf81168;   /* 0xa68d24, 0xa68c00, 0xf81160, 0xf81168 .. */
+extern struct G17MSG *ai_Unka68d24;  /* 0xa68d24 */
+extern struct G17MSG *ai_Unka68c00;  /* 0xa68c00 */
+extern struct G17MSG *cm_SendQueue;  /* 0xf81160 */
+extern int ai_Unkf81168;  /* 0xf81168 */
 void he_Unk53d590();                    /* 0x53d590 */
 extern int d3_CurrentScene;             /* 0x633444, the current scene index (d3.h) */
 char d3if_SelectScene(int index, char keep);  /* 0x4478e0, d3_interface.c */
@@ -176,5 +179,18 @@ void cm_SendLoadSize(int size);         /* 0x4c44d0, cm.h's prototype (that head
 int cm_SendLoadBlock(void *p);          /* 0x4c4500, the 0x80-byte block of the load buffer; -1: send ring full */
 int sv_PumpMessages(void);              /* 0x52fb80, sv.c: pumps the window messages */
 void sv_PumpNet(void);                  /* 0x52fe00, sv.c: sends the queued messages, receives and runs the waiting ones */
-
-
+#define ai_BauplaetzeV (*(char * (*))&ai_Bauplaetze)  /* 0xf812e4, this unit reads it as `char *ai_Bauplaetze` */
+#define ai_FallbackBuildingI (*(int (*))&ai_FallbackBuilding)  /* 0x6f230c, this unit reads it as `int ai_FallbackBuilding` */
+#define ai_GameStateB (*(unsigned char (*))&ai_GameState)  /* 0x6f25ac, this unit reads it as `unsigned char ai_GameState` */
+#define ai_KindBCharsV (*(int * (*)[])&ai_KindBChars)  /* 0x6f1c04, this unit reads it as `int *ai_KindBChars[]` */
+#define ai_MarketBuildingI (*(int (*))&ai_MarketBuilding)  /* 0x6f1bc8, this unit reads it as `int ai_MarketBuilding` */
+#define ai_PlayerBuildingI (*(int (*))&ai_PlayerBuilding)  /* 0x6f2308, this unit reads it as `int ai_PlayerBuilding` */
+#define ai_PlayerSlotsV (*(char (*)[][0x2f4])&ai_PlayerSlots)  /* 0x7e3f40, this unit reads it as `char ai_PlayerSlots[][0x2f4]` */
+#define ai_Unk1468ae0V (*(int (*)[])&ai_Unk1468ae0)  /* 0x1468ae0, this unit reads it as `int ai_Unk1468ae0[]` */
+#define ai_Unk75e130I (*(int (*))&ai_Unk75e130)  /* 0x75e130, this unit reads it as `int ai_Unk75e130` */
+#define ai_Unka68c00I (*(int (*))&ai_Unka68c00)  /* 0xa68c00, this unit reads it as `int ai_Unka68c00` */
+#define ai_Unka68d24I (*(int (*))&ai_Unka68d24)  /* 0xa68d24, this unit reads it as `int ai_Unka68d24` */
+#define ai_Unkf31140I (*(int (*))&ai_Unkf31140)  /* 0xf31140, this unit reads it as `int ai_Unkf31140` */
+#define ai_UpdateStartV (*(char (*)[])&ai_UpdateStart)  /* 0xf89580, this unit reads it as `char ai_UpdateStart[]` */
+#define cm_SendQueueI (*(int (*))&cm_SendQueue)  /* 0xf81160, this unit reads it as `int cm_SendQueue` */
+#define gm_PlayerRecordsV (*(int (*)[])&gm_PlayerRecords)  /* 0x7d5f80, this unit reads it as `int gm_PlayerRecords[]` */

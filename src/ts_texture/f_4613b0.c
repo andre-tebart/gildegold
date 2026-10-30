@@ -7,7 +7,7 @@ TSTEXTURE *tex_CreateHi(char *name, int size, TSFLAGS flags, unsigned char f0, u
     int index;
 
     tex = ts_AllocSlot(flags, &index);
-    if (tex && d3_Hardware) {
+    if (tex && d3_HardwareC) {
         D3_ZERO_AT(tex, sizeof(tex));
         strncpy(tex->name, name, 0x3f);
         tex->size = size;

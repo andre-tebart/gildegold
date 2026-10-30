@@ -20,7 +20,7 @@ void ai_DungeonPlanWindow(int param_1)
     d2_SetForm(win, 1);
     io_PrintText(0x19ad);
     d2_SetForm(win, 1);
-    for (p = (char *)(unsigned)&ai_Chars; (int)p < (unsigned)((unsigned)ai_Chars + 0x65400); p += 0x21c) {
+    for (p = (char *)(unsigned)&ai_Chars; (int)p < (unsigned)((unsigned)ai_CharsV + 0x65400); p += 0x21c) {
         if (gm_Unk50ccd0(p) != 0)
             io_PrintText(0x19ae, ++n, U_W(p));
     }

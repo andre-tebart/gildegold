@@ -40,7 +40,7 @@ int unk_Unk51a4b0(int f)
   else {
     LS_W(&local_c, 4)
   }
-  piVar5 = (int *)ai_KindBChars;
+  piVar5 = (int *)ai_KindBCharsV;
   do {
     local_4 = 0xffffffff;
     if (*piVar5 != 0) {
@@ -51,7 +51,7 @@ int unk_Unk51a4b0(int f)
     }
     LS_W(puVar4, 4)
     piVar5 = piVar5 + 1;
-  } while ((int)piVar5 < (int)&ai_KindBChars[8]);
+  } while ((int)piVar5 < (int)&ai_KindBCharsV[8]);
   c = (char *)ai_Chars;
   do {
     if (*(short *)(c) != -1) {

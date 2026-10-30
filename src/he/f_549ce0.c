@@ -23,7 +23,7 @@ void he_Unk549ce0(int ev)
             msg[4] = 0x78;
             msg[0x36 - 0x28] = 9;
             *(HETIME *)(msg + 0x28) = ai_Time;
-            for (rec = (unsigned)&ai_Chars; rec < (unsigned)((unsigned)ai_Chars + 0x65400); rec += 0x21c) {
+            for (rec = (unsigned)&ai_Chars; rec < (unsigned)((unsigned)ai_CharsV + 0x65400); rec += 0x21c) {
                 if (*(char *)(rec + 2) == 6 || *(char *)(rec + 2) == 7) {
                     *(int *)(msg + 8) = *(int *)(rec + 4);
                     cm_SendLongMessage(msg);

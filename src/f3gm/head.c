@@ -3,7 +3,7 @@
 struct CHARACTER;
 struct CHTRANSPORT;
 struct AICHAR;
-extern char ai_PlayerSlots[][0x2f4];
+extern char ai_PlayerSlots[4][0x2f4];
 extern char d2_Wins[];
 extern char d2_Views[];
 #include "txt_views.h"
@@ -36,11 +36,11 @@ extern char ai_Unk61a348[];
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 extern char d3_Scenes[];               /* 0xfd7ba0: ai_Unk5fb5b0 points at it (d3.h types it D3SCENE[]) */
 extern char d3_Scenes[];               /* 0xfd7ba0: ai_Unk5fb5b0 points at it (d3.h types it D3SCENE[]) */
-extern unsigned char he_Events;
+extern unsigned char he_Events[339968];
 extern char d3_Scenes[];               /* 0xfd7ba0: ai_Unk5fb5b0 points at it (d3.h types it D3SCENE[]) */
 extern char txt_Keys[0x4800][0x50];
 extern GAPDATA full_data_91f6e0[];
-extern unsigned char he_Events;
+extern unsigned char he_Events[339968];
 extern unsigned char amt_Table;
 extern GAPDATA full_data_7585f4[];
 extern char * he_QuickList[10921];
@@ -94,4 +94,9 @@ int unk_Unk4fd7e0();                    /* 0x4fd7e0 */
 #include "time_view.h"
 #include "io_text.h"
 #define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
-
+#define ai_FallbackBuildingI (*(int (*))&ai_FallbackBuilding)  /* 0x6f230c, this unit reads it as `int ai_FallbackBuilding` */
+#define ai_MarketBuildingI (*(int (*))&ai_MarketBuilding)  /* 0x6f1bc8, this unit reads it as `int ai_MarketBuilding` */
+#define ai_PlayerBuildingI (*(int (*))&ai_PlayerBuilding)  /* 0x6f2308, this unit reads it as `int ai_PlayerBuilding` */
+#define ai_PlayerSlotsV (*(char (*)[][0x2f4])&ai_PlayerSlots)  /* 0x7e3f40, this unit reads it as `char ai_PlayerSlots[][0x2f4]` */
+#define ai_Unk91b6e0V (*(int (*)[])&ai_Unk91b6e0)  /* 0x91b6e0, this unit reads it as `int ai_Unk91b6e0[]` */
+#define cm_FieldObjectI (*(int (*))&cm_FieldObject)  /* 0xa68d2c, this unit reads it as `int cm_FieldObject` */

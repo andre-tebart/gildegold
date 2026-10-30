@@ -36,7 +36,7 @@ void sv_Unk525ad0(char *t)
         ai_Unk6f2370 = 0;
     }
     sc = d3_CurrentScene;
-    if (((fabs(ai_Unk760420 - 1.0) < 0.1 && abs(ai_Unk760464 - k) < 10) && ai_Unk75ec20 == d3_CurrentScene) || d3t_CamMove != 0) {
+    if (((fabs(ai_Unk760420 - 1.0) < 0.1 && abs(ai_Unk760464 - k) < 10) && ai_Unk75ec20 == d3_CurrentScene) || d3t_CamMoveI != 0) {
         d3_SetFogSet(0, 1, a);
         return;
     }

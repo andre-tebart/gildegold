@@ -1,7 +1,7 @@
 /* gv.c -- the avatar table 0x60f310 (32 records of 0xf4 bytes, first name "neVmMaven") and the effect slots 0x6f1008 (8 of 0x170 bytes, "kugel" 0x611204). Starts at 0x4ed170 (the
    first user of the table 0x60f310, which begins the .data block after ahm.c's "ahm_AllocAhmInfo" 0x60f2f8); the end is unknown. Names are ours.
    unit of rea 8cef7d5b (src/game/gv.c); boundaries in decl/text.dcl, notes in src/gv/open.md */
-extern char ai_PlayerSlots[];
+extern char ai_PlayerSlots[4][0x2f4];
 #include "txt_views.h"
 #include <windows.h>
 #include <stdio.h>
@@ -27,7 +27,7 @@ extern GAPDATA full_data_6f1ce4[];
 extern GAPDATA full_data_91f6e3[];
 extern GAPDATA full_data_91f6e4[];
 extern unsigned char amt_Table;
-extern char gm_PlayerRecords[];
+extern int gm_PlayerRecords[688];
 
 extern const float unk_Tab5ee034[];
 int gm_ConvertMoney(int a, unsigned char k);   /* 0x5085b0 */

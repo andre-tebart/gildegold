@@ -17,7 +17,7 @@ unsigned int ai_Unk5bf0d0(short *param_1, unsigned int param_2, int *param_3, in
     n = 0;
     ids = (int *)((char *)param_1 + 0x5c);
     if (param_2 == 0) {
-        for (p = (char *)(unsigned)&ai_Chars; p < (char *)(unsigned)((unsigned)ai_Chars + 0x65400); p += 0x21c) {
+        for (p = (char *)(unsigned)&ai_Chars; p < (char *)(unsigned)((unsigned)ai_CharsV + 0x65400); p += 0x21c) {
             if (p == (char *)param_1 || *(short *)p == -1 || *(unsigned char *)(p + 2) >= 10)
                 continue;
             for (j = 0; j < 8; j++)
@@ -38,7 +38,7 @@ unsigned int ai_Unk5bf0d0(short *param_1, unsigned int param_2, int *param_3, in
     for (i = 0; i < (int)(param_2 * 0x38 / 4); i++)
         param_3[i] = 0;
     rec = param_3;
-    for (p = (char *)(unsigned)&ai_Chars; p < (char *)(unsigned)((unsigned)ai_Chars + 0x65400); p += 0x21c) {
+    for (p = (char *)(unsigned)&ai_Chars; p < (char *)(unsigned)((unsigned)ai_CharsV + 0x65400); p += 0x21c) {
         if (n >= param_2)
             break;
         if (p == (char *)param_1 || *(short *)p == -1 || *(unsigned char *)(p + 2) >= 10)

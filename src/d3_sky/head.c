@@ -27,9 +27,9 @@ extern D3VECTOR d3_ZAxis;                   /* 0x5ebb74, (0, 0, 1) */
 extern D3VECTOR4 d3_Frustum[4];             /* 0xfc2960, corner directions of the view */
 extern char d3_FogOn;                       /* 0x6334a4, d3_engine.h */
 extern unsigned long d3_FogColor;           /* 0x6334a0, d3_engine.h */
-extern char d3_Hardware;                    /* 0x633450 */
+extern unsigned char d3_Hardware;                    /* 0x633450 */
 
 extern int d3_Busy;                         /* 0x633b04, also counted by d3sm_Build */
 D3SKY *d3_Sky = 0;                          /* 0x633dd4 */
 int d3sky_Colors[6] = {0}; /* 0xfb91c0 */
-
+#define d3_HardwareC (*(char (*))&d3_Hardware)  /* 0x633450, this unit reads it as `char d3_Hardware` */

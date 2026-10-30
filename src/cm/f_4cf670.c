@@ -31,7 +31,7 @@ void ai_Unk4cf670()
         ai_Unk6f22f8 = 0;
         return;
     }
-    for (pp = ai_Unk7603a0; (int)pp < ((unsigned)&ai_Unk7603a0 + 0x7c); pp++) {
+    for (pp = ai_Unk7603a0V; (int)pp < ((unsigned)&ai_Unk7603a0 + 0x7c); pp++) {
         c = *pp;
         if (c != 0 && c[0x188] != 0) {
             if (ai_Unk4ce170(*(unsigned short *)ai_Unk6f0d74, c) & 0x800) {

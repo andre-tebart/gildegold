@@ -166,7 +166,7 @@ typedef struct CMQUICKSAVE {
     int slot;                           /* +0x00 */
     char name[0x78];                    /* +0x04, "QUICKSAVE" */
 } CMQUICKSAVE;
-extern unsigned char ai_GameState; /* 0x6f25ac, the game state: 0 loading / paused, 1 running, 2 ... (as cm.h / f3snd.h) */
+extern int ai_GameState; /* 0x6f25ac, the game state: 0 loading / paused, 1 running, 2 ... (as cm.h / f3snd.h) */
 extern unsigned char ls_SaveSlot;   /* 0x6f1c38, the save slot the next save records: 0 autosave, 1 quicksave,
                                        the network save slot (as ls.c, which writes it into the save header) */
 extern char ch_EmptyName[];         /* 0x631090, the empty status / character name (f3init.c, f3gm.c) */

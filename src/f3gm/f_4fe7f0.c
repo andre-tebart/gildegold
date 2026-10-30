@@ -2,7 +2,7 @@
 
 extern int f3gm_ObjectCount;
 extern int ai_Unk6178f8[];
-extern char ai_PlayerSlots[][0x2f4];      /* 0x7e3f40, the player slots */
+extern char ai_PlayerSlots[4][0x2f4];      /* 0x7e3f40, the player slots */
 int gm_FreeBuilding();                     /* 0x5012e0 */
 int gm_RemoveObject();                     /* 0x4ffff0 */
 int gm_FindById(int *bld, int *obj, int *chr, int id);

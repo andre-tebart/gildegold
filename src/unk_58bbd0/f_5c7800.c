@@ -17,7 +17,7 @@ void ai_Unk5c7800(int p1, int p2, int p3, float v4, int p5, int p6, int p7, int 
     float b;
 
     maxv = -1.0f;
-    for (p = (float *)((unsigned)&ord_StatisticsHistory + 0xc); (int)p < ((unsigned)((unsigned)ord_StatisticsHistory + 0x140) + 0xc); p += 5) {
+    for (p = (float *)((unsigned)&ord_StatisticsHistory + 0xc); (int)p < ((unsigned)((unsigned)ord_StatisticsHistoryB + 0x140) + 0xc); p += 5) {
         if (maxv < *p)
             maxv = *p;
     }
@@ -33,7 +33,7 @@ void ai_Unk5c7800(int p1, int p2, int p3, float v4, int p5, int p6, int p7, int 
                      0xee, 0x10, 0x10);
         p = (float *)((char *)p + 0x14);
         x += scale;
-    } while ((int)p < ((unsigned)((unsigned)ord_StatisticsHistory + 0x140) + 0x4));
+    } while ((int)p < ((unsigned)((unsigned)ord_StatisticsHistoryB + 0x140) + 0x4));
     a = *(float *)((unsigned)&ord_StatisticsHistory + 0x130);
     d2_PlotLine((scale * 3 + 9) * 5, (int)(base - max(0.0, a) * h), scale * 16 + 0x2d,
                  (int)(base - max(0.0, v4) * h), 0xee, 0x10, 0x10);

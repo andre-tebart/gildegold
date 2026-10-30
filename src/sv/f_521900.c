@@ -13,6 +13,6 @@ int sv_OpenMessageBox(int text, unsigned char flags)
         form = d2_OpenForm(0, 0, "misc\\Messagebox");
     d2_CentreViewWindows(form);
     io_PrintText(text);
-    sv_RunFrame(0, sv_FrameMask);
+    sv_RunFrame(0, sv_FrameMaskU);
     return form;
 }

@@ -87,15 +87,15 @@ char d3if_SelectScene(int index, char keep)  /* @original: the definition return
         }
         if (!keep) {
             if (!d3_Terrain) {
-                if (d3sm_Shadow)
-                    d3sm_Build(d3sm_Shadow, 0);
+                if (d3sm_ShadowV)
+                    d3sm_Build(d3sm_ShadowV, 0);
                 else {
-                    d3sm_Shadow = d3sm_Create(0, -d3if_Unk633dcc, 1);
+                    d3sm_ShadowV = d3sm_Create(0, -d3if_Unk633dcc, 1);
                     d3_ForEachObject2(d3_DefaultScene, 0, 0xc0, d3s_ResetShadows);
                 }
-            } else if (d3sm_Shadow) {
-                d3sm_Destroy(d3sm_Shadow);
-                d3sm_Shadow = 0;
+            } else if (d3sm_ShadowV) {
+                d3sm_Destroy(d3sm_ShadowV);
+                d3sm_ShadowV = 0;
             }
             d3_SortPtr = d3_SortBuf;
             d3_SortCount = 0;

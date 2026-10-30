@@ -14,7 +14,7 @@ void ai_Unk4cf000()
     unsigned char b;
 
     if (*(int *)(ai_Unk6f0d74 + 4) == ai_Unk60cb5c && d3_Time % 0x15e == 0) {
-        for (pp = (char **)ai_Unk7603a0; (int)pp < (int)ai_Unk760420; pp++) {
+        for (pp = (char **)ai_Unk7603a0V; (int)pp < (int)ai_Unk760420V; pp++) {
             c = *pp;
             if (c == 0)
                 continue;
@@ -33,7 +33,7 @@ void ai_Unk4cf000()
             ai_Unk4c5d00(*(int *)(c + 4), v, (unsigned char)c[8]);
         }
     }
-    for (pp = (char **)ai_Unk7603a0; (int)pp < (int)ai_Unk760420; pp++) {
+    for (pp = (char **)ai_Unk7603a0V; (int)pp < (int)ai_Unk760420V; pp++) {
         c = *pp;
         if (c == 0)
             continue;
@@ -53,7 +53,7 @@ void ai_Unk4cf000()
             } else {
                 best = 999999.0f;
                 found = 0;
-                for (qq = (char **)ai_Unk7603a0; (int)qq < (int)ai_Unk760420; qq++) {
+                for (qq = (char **)ai_Unk7603a0V; (int)qq < (int)ai_Unk760420V; qq++) {
                     d = *qq;
                     if (d != 0 && ai_Unk4ce270(c, d) != 0 && d[8] != 0) {
                         dist = ai_Unk4ce1b0(c, *(char **)(*(char **)(d + 0x184) + 0x34));

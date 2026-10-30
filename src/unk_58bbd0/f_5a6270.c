@@ -57,7 +57,7 @@ int ai_Unk5a6270(int param_1, char *param_2)
                 for (i = 0; i < 6; i++)
                     U_I(msg + 0x38 + i * 4) = -1;
                 n = 0;
-                for (tp = (int *)(unsigned)&ai_Unk7603a0; tp < (int *)(unsigned)((unsigned)ai_Unk7603a0 + 0x80) && n < 6; tp++) {
+                for (tp = (int *)(unsigned)&ai_Unk7603a0; tp < (int *)(unsigned)((unsigned)ai_Unk7603a0V + 0x80) && n < 6; tp++) {
                     e = *tp;
                     if (e != 0 && *(char *)(e + 0x188) != 0) {
                         U_I(msg + 0x38 + n * 4) = U_I(e + 4);

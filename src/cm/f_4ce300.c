@@ -18,7 +18,7 @@ int ai_Unk4ce300()
     char *e;
 
     r = ai_Unk4cd9d0(0x174);
-    for (rec = cm_Bombs; (int)rec < (int)(cm_Bombs + 0x100); rec += 8) {
+    for (rec = cm_BombsV; (int)rec < (int)(cm_BombsV + 0x100); rec += 8) {
         if (*(int *)rec == 0)
             continue;
         cnt++;
@@ -44,7 +44,7 @@ int ai_Unk4ce300()
         d3t_CreateSmokeK(0, v, 0x1e, 15.0f, 50.0f, 100.0f, 150.0f, 140.0f, 35.0f, pos, 0x190, 6, *(int *)col);
         d3t_CreateEarthK(0, col, 0x1e, 5.0f, 2.5f, 1.0f, 3.0f, -3.0f, 4.0f, 7.0f, 8.0f, *(int *)col);
         d3t_CreateExplosionK(0, v, 0x1e, v, 120.0f, 80.0f, 20.0f, 60.0f, 0x3c);
-        for (pp = (char **)ai_Unk7603a0; (int)pp < (int)ai_Unk760420; pp++) {
+        for (pp = (char **)ai_Unk7603a0V; (int)pp < (int)ai_Unk760420V; pp++) {
             c = *pp;
             if (c == 0)
                 continue;

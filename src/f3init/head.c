@@ -6,7 +6,7 @@ struct D3SURF;
 struct VFSDIR;
 struct D3SM;
 struct D3TERRAIN;
-extern char ai_PlayerSlots[][0x2f4];
+extern char ai_PlayerSlots[4][0x2f4];
 #include "txt_views.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -23,7 +23,7 @@ extern char ai_PlayerSlots[][0x2f4];
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 extern char d3_AnimHead[];
-extern char gm_PlayerRecords[];
+extern int gm_PlayerRecords[688];
 extern int gm_Offers[528];
 extern float ai_Unk760420;
 extern unsigned char ch_Motions;
@@ -249,13 +249,13 @@ int gm_ListStock(short *l, int id);               /* 0x50ab50, f3gm.c */
 unsigned char *gm_FirstBuilding(int n);
 float gm_Unk508740();
 int gm_IsHomeType(unsigned char *b);
-extern char ai_PlayerSlots[][0x2f4];      /* 0x7e3f40, the player slots */
+extern char ai_PlayerSlots[4][0x2f4];      /* 0x7e3f40, the player slots */
 extern INIT_STOCKBLOCK init_StockBlock[];  /* 0x7d6a60, one 0x2a90-byte stock block per player (the records start at +0x10) */
 extern char ch_EmptyName[];             /* 0x631090 */
 extern int d3_CurrentScene;                /* 0x633444 */
 extern int ai_NextObjectId;                /* 0x61a654, the next object id */
-extern int ai_PlayerBuilding;                /* 0x6f2308 */
-extern int ai_FallbackBuilding;                /* 0x6f230c */
+extern char * ai_PlayerBuilding;                /* 0x6f2308 */
+extern char * ai_FallbackBuilding;                /* 0x6f230c */
 char d3t_GetBoundingSphere(struct D3OBJECT *obj, struct D3OBJECT *camera, struct D3VECTOR *center, float *radius);  /* 0x411eb0, d3_tools.c: the center and radius of the mesh's 8-corner box */
 int gm_IsBuildingKind(int n);           /* 0x4fe940, f3gm.c: 1 when the object prototype n is a building part */
 int gm_FindObjectProto(char *name);     /* 0x4fe900, f3gm.c: the object prototype of the name */
@@ -273,12 +273,14 @@ extern signed char init_ObjectUniverse[0x2dc];
 extern signed char init_BuildingUniverse[0x22];
 /* init_SceneDirty: view of d3_Scenes (tools/data_views.py) */
 extern char init_SceneName[];             /* 0xfd7ba0, the name of each scene record (0x3e0 bytes apart) */
-extern int ai_Unk1468ae0[];             /* 0x1468ae0, the scene objects (0x100) */
-extern int d3_CurrentScene, ai_Unk633738;  /* 0x633444, 0x633738 */
-extern unsigned char ai_GameState;      /* 0x6f25ac */
+extern char * ai_Unk1468ae0[0x300];             /* 0x1468ae0, the scene objects (0x100) */
+extern int d3_CurrentScene;  /* 0x633444 */
+extern int * ai_Unk633738;  /* 0x633738 */
+extern int ai_GameState;      /* 0x6f25ac */
 extern int ai_FrameWait;
-extern unsigned sv_FrameMask;           /* 0x760638 */
-extern short d2_ScreenW, d2_ScreenH;/* 0xfb9072 / 0xfb9070 */
+extern int sv_FrameMask;           /* 0x760638 */
+extern short d2_ScreenW;  /* 0xfb9072 */
+extern short d2_ScreenH;  /* 0xfb9070 */
 extern int ai_GameFlags;      /* 0x6f23f8 */
 void he_RemoveGfxInfos(int obj);            /* 0x53ebe0, he.h */
 char d3if_ShowTree(struct D3OBJECT *obj, char show);                     /* 0x447300 */
@@ -314,14 +316,15 @@ void d2_ClearScreen(void);                                                      
 void d2_ShowPicture(int pic);                                                    /* 0x46cfd0, d2.c */
 int d2_ClearSurface(struct D2SURF *surf);                                        /* 0x4796c0, gfx.c */
 void gm_RandomMarketShake(int unk);                                             /* 0x4ff450, f3gm.c */  /* @original: the original pushes one argument at both call sites; f3gm.c defines no parameter */
-extern short d2_ScreenW, d2_ScreenH;                                             /* 0xfb9072 / 0xfb9070, d2.h */
+extern short d2_ScreenW;  /* 0xfb9072, d2.h */
+extern short d2_ScreenH;  /* 0xfb9070 */
 void d3sm_Build(void *h, void *t);                                               /* 0x45e620, d3_engine.h */
 void sv_SceneLoadProgress(int kind, int cur, int total);                         /* 0x521c10, sv.c */
 void sv_UpdateClock(void);                                                       /* 0x5315c0, sv.c */
 void init_SceneObjectDestroyCB(int o);
 void init_AdjustSceneLights(int o);
 int init_SceneNameToPrototype(char *o);
-extern int cm_FieldObject;                /* 0xa68d2c */
+extern char * cm_FieldObject;                /* 0xa68d2c */
 extern char *ai_JudgeCatholic, *ai_JudgeProtestant;  /* 0x6f1bfc, 0x6f1c00, the two judges (0x6f1bfc Katholisch, 0x6f1c00 Evangelisch) */
 extern int ai_Opponents[];              /* 0x75e160, the difficulty level 0 .. 4 of each opponent (the seven globals ai_Opponents .. opponent_g of the options 0x5d4c70 / 0x5d5640 and of the selection menu 0x537040) */
 extern int ai_Unk6f2440;
@@ -387,9 +390,11 @@ char ai_Unk6339db = 0;  /* 0x6339db */
 /* init_StatusFormat: view of txt_Ptrs (build/mk_txt_views.py) */
 int d2_CutsceneActive = 0;  /* 0x6ed9d4 */
 char * ai_KindBChars[8] = {0};  /* 0x6f1c04, the characters of the kind */
-extern char ai_PlayerSlots[][0x2f4];      /* 0x7e3f40, the player slots */
+extern char ai_PlayerSlots[4][0x2f4];      /* 0x7e3f40, the player slots */
 extern INIT_STOCKBLOCK init_StockBlock[];  /* 0x7d6a60, one 0x2a90-byte stock block per player (the records start at +0x10) */
-extern int cm_NetFlags, d2_CutsceneActive, init_TownSoundCount;  /* 0x6f2594, 0x6ed9d4, 0x6f1c34 */
+extern int cm_NetFlags;  /* 0x6f2594 */
+extern int d2_CutsceneActive;  /* 0x6ed9d4 */
+extern int init_TownSoundCount;  /* 0x6f1c34 */
 unsigned char init_TextureSet = 0;  /* 0x6f1c24 */
 /* net.h's NETCONN (hst.c's view): the fields this unit reads; 0x1460ae0 is the network connection of a
    running network game, -1 (an invalid socket) when there is none */
@@ -561,5 +566,13 @@ extern unsigned int d3fl_DetailScale;   /* 0x633748 */
 extern unsigned char d3fl_DetailSizeShift;  /* 0x633751 */
 extern int evt_NoGroup;                /* 0x5f8430 */
 extern float d3o_FogScale;              /* 0x5fbd04 */
-
-
+#define ai_FallbackBuildingI (*(int (*))&ai_FallbackBuilding)  /* 0x6f230c, this unit reads it as `int ai_FallbackBuilding` */
+#define ai_GameStateB (*(unsigned char (*))&ai_GameState)  /* 0x6f25ac, this unit reads it as `unsigned char ai_GameState` */
+#define ai_MissionModeC (*(signed char (*))&ai_MissionMode)  /* 0x624580, this unit reads it as `signed char ai_MissionMode` */
+#define ai_PlayerBuildingI (*(int (*))&ai_PlayerBuilding)  /* 0x6f2308, this unit reads it as `int ai_PlayerBuilding` */
+#define ai_PlayerSlotsV (*(char (*)[][0x2f4])&ai_PlayerSlots)  /* 0x7e3f40, this unit reads it as `char ai_PlayerSlots[][0x2f4]` */
+#define ai_Unk633738I (*(int (*))&ai_Unk633738)  /* 0x633738, this unit reads it as `int ai_Unk633738` */
+#define ai_Unkfc2decI (*(int (*))&ai_Unkfc2dec)  /* 0xfc2dec, this unit reads it as `int ai_Unkfc2dec` */
+#define cm_FieldObjectI (*(int (*))&cm_FieldObject)  /* 0xa68d2c, this unit reads it as `int cm_FieldObject` */
+#define main_InstanceV (*(HINSTANCE (*))&main_Instance)  /* 0x75e140, this unit reads it as `HINSTANCE main_Instance` */
+#define sv_FrameMaskU (*(unsigned (*))&sv_FrameMask)  /* 0x760638, this unit reads it as `unsigned sv_FrameMask` */

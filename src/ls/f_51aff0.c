@@ -2,7 +2,7 @@
 
 
 /* 0x51aff0, the characters' scene records and the table 0x631050 (0x194-byte records, 0x800 of them with the used flag at +9): the count and the records of the characters (0x770d04, 0x21c each) through 0x51ad80, the same for the objects of the kind 0x1d in the list 0x7e3f34, then the table's pointers are turned into indices (+0x14 the first word of the pointed record, +0x24 / +0x28 through 0x51ad30), each used record whose scene object (the list 0x1468ae0) exists is written in pieces (the flag byte, the vectors, the names, a 0xa0-byte block and a byte), and the pointers are restored (0x51ad60). Returns 1. ROUGH: the pieces of the record copy (local_188 .. local_4) are the fields of the 0x65-word copy */
-extern int ai_Unk1468ae0[];             /* 0x1468ae0, the scene objects (0x300) */
+extern char * ai_Unk1468ae0[0x300];             /* 0x1468ae0, the scene objects (0x300) */
 extern char *ai_Goods;              /* 0x91aaf0, the object prototypes (0x41 bytes) */
 int mem_IsValid();                     /* 0x4225e0 */
 int unk_Unk51aff0(int f)
@@ -57,7 +57,7 @@ int unk_Unk51aff0(int f)
 
         n = *(int *)(ls_ActionQueue + k + 0x14);
         if (n > -1 && n < 0x300) {
-            n = ai_Unk1468ae0[n];
+            n = ai_Unk1468ae0V[n];
             if (mem_IsValid(n) == 0)
                 __asm int 3
             if (n != 0 && *(int *)(*(int *)(n + 0x34) + 0x200) != 0) {
@@ -79,7 +79,7 @@ int unk_Unk51aff0(int f)
         int *r = (int *)(ls_ActionQueue + k);
 
         if (ls_ActionQueue[k + 9] != 0) {
-            r[5] = ai_Unk1468ae0[r[5]];
+            r[5] = ai_Unk1468ae0V[r[5]];
             r[9] = ls_ActionAt(r[9]);
             r[10] = ls_ActionAt(r[10]);
         }

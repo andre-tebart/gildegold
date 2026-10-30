@@ -44,7 +44,7 @@ int ai_Unk5a48d0(int param_1)
                 carrier = (char *)he_NextEvent();
             if (carrier != 0) {
                 U_I((unsigned)&sv_PopRequest) = 2;
-                for (tp = (int *)(unsigned)&ai_Unk7603a0; tp < (int *)(unsigned)((unsigned)ai_Unk7603a0 + 0x80); tp++) {
+                for (tp = (int *)(unsigned)&ai_Unk7603a0; tp < (int *)(unsigned)((unsigned)ai_Unk7603a0V + 0x80); tp++) {
                     e = (char *)*tp;
                     if (e != 0 && *(unsigned char *)(e + 0x188) != 0)
                         sv_MoveToGroup(0, 0, U_W(e), carrier);
@@ -64,7 +64,7 @@ int ai_Unk5a48d0(int param_1)
                 for (i = 0; i < 8; i++)
                     U_I(msg + 0x38 + i * 4) = -1;
                 n = 0;
-                for (tp = (int *)(unsigned)&ai_Unk7603a0; tp < (int *)(unsigned)((unsigned)ai_Unk7603a0 + 0x80); tp++) {
+                for (tp = (int *)(unsigned)&ai_Unk7603a0; tp < (int *)(unsigned)((unsigned)ai_Unk7603a0V + 0x80); tp++) {
                     e = (char *)*tp;
                     if (e != 0 && *(unsigned char *)(e + 0x188) != 0) {
                         U_I(msg + 0x38 + n * 4) = U_I(e + 4);

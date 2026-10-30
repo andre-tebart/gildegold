@@ -2,7 +2,7 @@
 
 /* ---- the character and building life cycle 0x502b60 .. 0x504510 (ROUGH drafts, written out of address order at the end of the file) ---- */
 /* ai_Unk91f716: view of ai_Unk91f700 (tools/data_views.py) */
-extern int ai_Unk91b6e0[];              /* 0x91b6e0 .. 0x91f6e0: pairs of ints */
+extern int ai_Unk91b6e0[0x800][2];              /* 0x91b6e0 .. 0x91f6e0: pairs of ints */
 extern int ai_Unk770ae0_day;            /* the clock's day (0x770ae0) */
 #ifndef TIME_VIEW_H
 extern unsigned short ai_TimeHour;     /* 0x770ae4, the clock's hour (unaligned view) */

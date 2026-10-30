@@ -9,7 +9,7 @@
 #include "data_views.h"
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
-extern char gm_PlayerRecords[];
+extern int gm_PlayerRecords[688];
 
 #define AMT_TABA_END ((int)&amt_TabA[15 * 10])  /* 0x5edee8, the end of the 15 rows of amt_TabA */
 #define AMT_MONEY_UNIT 64  /* money in the character messages counts in multiples of this: the amounts of the 0x4c4830 sites are built as n * 0x40 */

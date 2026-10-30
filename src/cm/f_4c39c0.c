@@ -7,19 +7,19 @@ int ai_Unk4c39c0(G17MSG *src)
 
     if (net_Conn.closed != 0)
         return -1;
-    i = (ai_Unkf81168 + 1) & 0x7fff;
+    i = (ai_Unkf81168U + 1) & 0x7fff;
     m = &ai_Unka69140[i];
     if (net_Conn.s != INVALID_SOCKET && (G17MSG *)net_Conn.tx == m)
         return -1;
     for (p = cm_SendQueue; p != 0; p = p->next)
         if (p == m)
             return -1;
-    ai_Unkf81168++;
+    ai_Unkf81168U++;
     *m = *src;
     m->size = ai_Unk4c3180(m);
     m->unk03 = 0;
     m->idx = i;
-    m->seq = ai_Unkf81168;
+    m->seq = ai_Unkf81168U;
     m->next7 = 0;
     if (src->type == 0x20 && src->data[0] == 0x0e)
         cm_LastSyncCount = m->seq;

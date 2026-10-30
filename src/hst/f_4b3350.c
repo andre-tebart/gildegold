@@ -12,7 +12,7 @@ typedef struct G12WIN {                 /* 0x3c4 bytes, d2.h's D2WIN (d2.h confl
 
 extern G12WIN d2_Wins[0x60];            /* 0xf8f120 */
 extern int d2_LastWindow;                /* 0x6ed938 */
-extern G12WIN *d2_LastWindowPtr;            /* 0x6ed980 */
+extern struct D2WIN *d2_LastWindowPtr;            /* 0x6ed980 */
 extern int d2_ClickedId;                /* 0xf8a668 */
 void d2_SetPointerSprite(int a, int pic);                                               /* 0x476f80 */
 int d2_SetForm(int view, int n);                                                 /* 0x475f70 */
@@ -63,8 +63,8 @@ void ai_Unk4b3350(void)
                 *vis = 0x18;
                 d2_SetForm(view, 1);
                 io_PrintText("$C%s", text);
-                d2_LastWindowPtr->scrollY = 0;
-                d2_LastWindowPtr->unk260 = 2;
+                d2_LastWindowPtrV->scrollY = 0;
+                d2_LastWindowPtrV->unk260 = 2;
                 d2_SetForm(view, 3);
                 io_PrintText("$C$Z$[%s$]", name);
             }

@@ -1,6 +1,7 @@
 /* 0x4fb890, chooses the head icon number of the character c (+0x18c = icon index + 0x639; id at +0, number at +4). Without a model (+0x184) or icon names: the head numbers of the name record (0x4fb390, filled as 0x4fb620 does, "zigeunermeister" without the suffix), the character takes number (its id % count of the valid ones); returns id / count. With a model: the first model part name (0x40 bytes each, the count at +0x1e0 of its class) containing "kopf" / "KOPF" / "HEAD" / "head" whose icon "%s_ICON.bmp" exists. Otherwise +0x18c = 0x639. ROUGH */
 
-extern int ai_PlayerBuilding, ai_FallbackBuilding;  /* 0x6f2308 / 0x6f230c */
+extern char * ai_PlayerBuilding;  /* 0x6f2308 */
+extern char * ai_FallbackBuilding;  /* 0x6f230c */
 struct CHARACTER * ch_Create();                     /* 0x403390 */
 int gm_IsHomeType();                     /* 0x502520 */
 int init_ObjectSceneUniverse();                     /* 0x511dc0 */
