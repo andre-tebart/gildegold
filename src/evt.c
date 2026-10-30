@@ -618,7 +618,10 @@ int evt_If(void)
                     return 0;
                 evt_Cur->pc = pos;
                 evt_SkipBlock(1);
-            } else if (!evt_SkipStatement()) {
+                evt_Cur->pc--;
+                return 0;
+            }
+            if (!evt_SkipStatement()) {
                 evt_Error(evt_Cur, evt_Cur->pc, "Syntax error: ';' missing!");
                 return 0;
             }
