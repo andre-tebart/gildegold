@@ -58,10 +58,6 @@ extern char d3_AnimDir[];
 extern int di_MaxX;
 extern char main_GamePath[];
 extern int main_TextureDivider;
-extern int sv_ViewRectBottom;
-extern int sv_ViewRectLeft;
-extern int sv_ViewRectRight;
-extern int sv_ViewRectTop;
 #include "cm_types.h"
 extern G17MSG ai_Unk9367e0[];
 extern GAPDATA full_data_5f320c[];
@@ -71,7 +67,6 @@ extern int main_HmtBuild;
 extern char main_AppDir[];
 #include "f3init_types.h"
 extern GAPDATA full_data_60da10[];
-extern int sv_PopRequest;
 extern int ai_ModeMask;
 extern GAPDATA full_data_624b48[];
 extern GAPDATA full_data_624b4c[];
@@ -100,10 +95,6 @@ extern GAPDATA full_data_5f1084[];
 extern GAPDATA full_data_936460[];
 extern int sv_PopRequest;
 extern char ai_MissionMode;
-extern int ai_Unkfb9060;
-extern int ai_Unkfb9064;
-extern int ai_Unkfb9068;
-extern int ai_Unkfb906c;
 extern char ai_DataPath[];
 
 
@@ -123,8 +114,6 @@ extern GAPDATA full_data_6f2418[];
 extern GAPDATA full_data_6f245c[];
 extern GAPDATA full_data_6f25b4[];
 extern INIT_PLAYER init_PlayerProfile;
-extern int sv_FrameBase;
-extern int sv_FrameDepth;
 extern int sv_FrameMask;
 extern int sv_PopRequest;
 
@@ -143,7 +132,6 @@ extern GAPDATA full_data_75e628[];
 extern int ai_Unk5f8438;
 extern char *ai_Unk5fb5b0;
 extern int * ai_Unk633738;
-extern char * ai_Unkfc2dec;
 extern struct D3ANIM *d3t_CamMove;
 extern int d3t_CamMoving;
 extern GAPDATA full_data_602568[];
@@ -208,12 +196,9 @@ extern GAPDATA full_data_6f2598[];
 extern GAPDATA full_data_6f25c0[];
 extern GAPDATA full_data_75e630[];
 extern int snd_Bank;
-extern unsigned short * sv_PanelShown;
 extern char * ai_Unk1468ae0[0x300];
 extern int ai_Unk6f0d8c;
 extern int * ai_Unk760618;
-extern int ai_Unk76061c;
-extern int ai_Unk760620;
 #include "ch_types.h"
 extern CHMOTION ch_Motions[];
 extern struct D3ANIM *d3t_CamMove;
@@ -235,7 +220,6 @@ extern GAPDATA full_data_6253b4[];
 extern GAPDATA full_data_6253b8[];
 extern GAPDATA full_data_760454[];
 extern void (*he_RunHandlers[5544])(unsigned char *);
-extern int sv_PanelForm;
 extern int sv_PopRequest;
 extern int sv_ViewRectBottom;
 extern int sv_ViewRectLeft;
@@ -258,7 +242,6 @@ extern GAPDATA full_data_624560[];
 extern GAPDATA full_data_6f25b0[];
 extern GAPDATA full_data_6f25c0[];
 extern int sv_FrameMask;
-extern int sv_PanelFlag;
 extern int sv_PopRequest;
 extern char ai_MissionMode;
 
@@ -374,7 +357,6 @@ int d3snd_Init(int max);                /* 0x417650 */
 int d3sndw_Init(unsigned short n);      /* 0x417ec0 */
 void sb_SetPath(char *path);            /* 0x426240 */
 int main_PreloadSound(char *f);         /* 0x537c70 */
-void sv_InitTick(void);                 /* 0x520ee0 */
 int ch_Open(void);                      /* 0x40afb0 */
 void d3t_CreateSnowMipmaps(void);       /* 0x416980 */
 int ahm_LoadPrototypes(int mode);       /* 0x4eb480 */
@@ -389,7 +371,6 @@ int main_ChooseCity(int unused, int host);  /* 0x537230, main.c */
 struct D3OBJECT;
 void d3t_FreeSnowMipmaps(void);         /* 0x4175c0, d3_tools.h */
 void main_FreeSoundBanks(void);         /* 0x537db0 */
-void sv_UnregisterTick(void);           /* 0x520f10, sv.c */
 void sb_Exit(void);                     /* 0x425ce0, sblib.c */
 void d3snd_Exit(void);                  /* 0x4176f0, d3_snd.c */
 void d3sndw_Exit(void);                 /* 0x418030, d3_snd.c */
@@ -405,6 +386,7 @@ void amt_CheckOffices(void);            /* 0x4e9260, amt.h */
 
 #include "time_view.h"
 #include "f3init.h"
+#include "sv.h"
 #define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (f3gm.c: char *) as the AIGOOD records it points to */
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */

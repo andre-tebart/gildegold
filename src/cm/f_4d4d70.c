@@ -264,7 +264,7 @@ void ai_Unk4d4d70(char *a)
                 py = row * 100;
                 d2_WinOpenPic(px, py, 0x5db, d2_LastWindow);
                 d2_WinOpenPic(px + 2, py, *(int *)(c + 0x18c), d2_LastWindow);
-                sv_Unk52eaa0(px, py + 0x3c, (unsigned char)c[0x83], 0x4eb);
+                sv_Unk52eaa0K(px, py + 0x3c, (unsigned char)c[0x83], 0x4eb);
                 h = 0;
                 if (c[8] == 0) {
                     v = (int)((unsigned char)c[0x83] * 0.023809524f + 1.0f);

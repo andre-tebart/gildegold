@@ -25,7 +25,7 @@ void ai_Unk4cec30(int a, char *c)
     d2_WinOpenPic(w - 0x18, 0, 0x7b1, d2_LastWindow);
     hnd = d2_LastWindow;
     *(short *)(ai_Unkf8f39c + hnd * 0x3c4) = 0x54;
-    sv_Unk52eaa0(4, 4, gm_Unk504e00(c, 3), 0x4df);
+    sv_Unk52eaa0K(4, 4, gm_Unk504e00(c, 3), 0x4df);
     hnd = (int)(unk_Unk4fc8e0(c) * 100.0);
     d2_WinOpenSlider(0, 0xe, 0x40, 0, 0x64, 0x75, 0x442, d2_LastWindow);
     d2_SetObjValue(d2_LastWindow, 0, 0x64, hnd);

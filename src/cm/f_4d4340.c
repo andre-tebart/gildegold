@@ -23,7 +23,7 @@ void ai_Unk4d4340(int *ids, int x, int y)
         d2_WinOpenPic(px - 0x10, py, 0x5da, d2_LastWindow);
         d2_WinOpenPic(px - 4, py, *(int *)(c + 0x18c), d2_LastWindow);
         v = gm_Unk504e00(c, 3);
-        sv_Unk52eaa0(px, py + 0x3c, (int)(double)(float)v, 0x4eb);
+        sv_Unk52eaa0K(px, py + 0x3c, (int)(double)(float)v, 0x4eb);
         t = d2_CreateWinText(px - 0x24, py - 0x11, &ch_EmptyName, d2_LastWindow);
         G19_R(t, 0x14, short) = 0x78;
         G19_R(t, 0x5c, int) = 1;

@@ -41,8 +41,6 @@ extern unsigned int ai_Unka68c04;
 extern G17MSG ai_Unka69140[];
 extern G17STAT ai_Unkf31160[];
 extern unsigned int ai_Unkf8121c;
-extern int ai_Unk760548;
-extern int ai_Unk760610;
 extern GAPDATA full_data_7604e8[];
 extern void main_Unk537b60(int kind, int cur, int total);
 extern int ai_Unk7d6a40;
@@ -63,9 +61,6 @@ extern int d3_CurrentScene;                /* 0x633444 */
 extern struct AICHAR *ai_JudgeCatholic;  /* 0x6f1bfc */
 extern struct AICHAR *ai_JudgeProtestant;  /* 0x6f1c00 */
 int * ai_Unk633738 = 0;  /* 0x633738, the scene (its first word the kind: */
-extern char * ai_PlayerBuilding;                /* 0x6f2308 */
-extern char * ai_FallbackBuilding;                /* 0x6f230c */
-extern unsigned short * sv_PanelShown;                /* 0x6f2310 */
 extern unsigned short ai_PlayerId;              /* 0x6f25b8 */
 int ai_Unk6f1b88 = 0;  /* 0x6f1b88 .. */
 int ai_Unk6f1bcc = 0;  /* 0x6f1bcc */
@@ -123,14 +118,13 @@ extern unsigned char hst_TextsOn;               /* 0x6f0724 */
 extern char hst_Key[];                 /* 0xf83520, the history key ("G12", 0x20 bytes; the save keeps 0x10) */
 #include "hst_types.h"
 #include "f3init.h"
+#include "sv.h"
 extern G12ROW hst_Lists[];             /* 0xf83540, the four history lists */
 int ai_LoadWind();                     /* 0x5dc0c0 */
 int unk_Unk4ed910();                     /* 0x4ed910 */
 int gm_FindById();                     /* 0x4fea50 */
 
 extern struct AIBLD *ai_MarketBuilding;                /* 0x6f1bc8 */
-extern unsigned char ai_GameState;      /* 0x6f25ac */
-void sv_CountGroupMembers(char *g);     /* 0x5241d0, sv.c */
 /* ai_Unk6f261c: view of ai_Unk6f2618 (tools/data_views.py) */
 int ai_Unk6f2620 = 0;  /* 0x6f2620 / */
 unsigned char he_Events[339968] = {0};  /* 0x6fab40, the */
@@ -154,5 +148,3 @@ int ai_Unk430fa0(struct VFSFILE *f, long offset, int origin);                   
 int ai_Unk431170();                     /* 0x431170, file length */
 void cm_SendLoadSize(int size);         /* 0x4c44d0, cm.h's prototype (that header redefines gv.h's globals in this TU) */
 int cm_SendLoadBlock(void *p);          /* 0x4c4500, the 0x80-byte block of the load buffer; -1: send ring full */
-int sv_PumpMessages(void);              /* 0x52fb80, sv.c: pumps the window messages */
-void sv_PumpNet(void);                  /* 0x52fe00, sv.c: sends the queued messages, receives and runs the waiting ones */

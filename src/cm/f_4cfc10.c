@@ -43,7 +43,7 @@ void ai_Unk4cfc10()
         G19_R(G19_E(e, 0x10), 0x14, short) = 0x80;
         G19_R(G19_E(e, 0x10), 0x5c, int) = 1;
         t = gm_Unk504e00();
-        sv_Unk52eaa0(0x24, 0x41, (int)(double)t, 0x4df);
+        sv_Unk52eaa0K(0x24, 0x41, (int)(double)t, 0x4df);
         x += 0x80;
         e += 0x20;
     }

@@ -37,8 +37,6 @@ extern GAPDATA full_data_60d5b4[];
 extern GAPDATA full_data_92bcb8[];
 
 int ai_AlwaysTrue(void);                 /* the handler tables at 0x60bd98 / 0x60bf40 */
-int sv_ReturnZero(void);
-void sv_UpdateClock(void);
 
 #define G17_I(m, o) (*(int *)&(m).data[o])
 #define G17_S(m, o) (*(short *)&(m).data[o])
@@ -48,6 +46,8 @@ void sv_UpdateClock(void);
 
 #include "time_view.h"
 #include "f3init.h"
+#include "sv.h"
+#define sv_Unk52eaa0K ((void (*)(int, int, int, int))sv_Unk52eaa0)  /* 0x52eaa0 (sv.c: float len): @original cm passes the length as an int (byte-matched ai_Unk4d4340 0x4d4340 pushes the converted int; with the float prototype it is draft) */
 #define d3sm_PickK ((int (*)())d3sm_Pick)  /* 0x45f2b0 (d3_sm.c): @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
 #define d3sky_CreateLayerK ((int (*)())d3sky_CreateLayer)  /* 0x45d880 (d3_sky.c): @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) (floats as bit patterns, the flags as an int) */
 #define d3sky_CreateK ((int (*)())d3sky_Create)  /* 0x45da30 (d3_sky.c): @original the calls pass the three floats as dword bit patterns without a prototype (ai_Unk4e32f0 0x4e32f0: push 0x44160000 ..) */
