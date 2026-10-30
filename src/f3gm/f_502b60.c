@@ -68,7 +68,7 @@ void gm_AssignBuilding(unsigned char *b, unsigned short place, unsigned own)
             }
         }
         cnt = 0x5008;
-        w = (unsigned short *)ai_ObjectsV;
+        w = (unsigned short *)ai_Objects;
         do {
             if (*w != 0 && ai_Goods[*w * 0x41] == 0x1d && *(int *)(w + 0xe) == *(int *)(b + 1)) {
                 *(int *)(w + 5) = *(int *)(ai_Chars[own] + 4);

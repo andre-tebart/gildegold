@@ -7,8 +7,8 @@ void gm_ClearObjects(void)
 
     i = 0;
     do {
-        if (*(short *)(ai_ObjectsV + i) != 0) {
-            gm_FindById(&b, &o, &c, *(int *)(ai_ObjectsV + i + 6));
+        if (*(short *)((char *)ai_Objects + i) != 0) {
+            gm_FindById(&b, &o, &c, *(int *)((char *)ai_Objects + i + 6));
             if (b == 0) {
                 if (o != 0) {
                     t = o + 0x14;
@@ -22,18 +22,18 @@ void gm_ClearObjects(void)
                 t = b + 0x5d;
             have:
                 if (t != 0) {
-                    gm_RemoveObject(t, *(short *)(ai_ObjectsV + i));
+                    gm_RemoveObject(t, *(short *)((char *)ai_Objects + i));
                     goto next;
                 }
             }
-            gm_FreeObjectExtra(ai_ObjectsV + i);
-            *(short *)(ai_ObjectsV + i) = 0;
+            gm_FreeObjectExtra((char *)ai_Objects + i);
+            *(short *)((char *)ai_Objects + i) = 0;
             f3gm_ObjectCount--;
         }
     next:
         i += 0x43;
         if (i > 0x14f217) {
-            memset(ai_ObjectsV, 0, 0x14f218);
+            memset(ai_Objects, 0, 0x14f218);
             return;
         }
     } while (1);
