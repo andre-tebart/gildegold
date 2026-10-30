@@ -48,3 +48,4 @@
 2026-10-30T01:08:05 0x005dadf0 func ai_Unk5dadf0 -> ai_PokerSeatPanel by:main why:builds the panel of seat n from its cards (called by ai_PokerGame per seat and phase with the seat's card array)
 2026-10-30T01:08:16 0x005db110 func ai_Unk5db110 -> ai_PokerWindow2 by:main why:the second poker window poker2 that the fifth button of the poker table opens
 2026-10-30T01:23:41 0x005dbc30 func ai_Unk5dbc30 -> ai_InitWind by:main why:the caller sv_Unk525510 passes the day phase and the sin / cos wind rose tables; the state holds per-direction base / gust / phase values
+2026-10-30T08:17:53 0x005dbed0 func ai_Unk5dbed0 -> ai_UpdateWind by:main why:advances ai_EffectState (built by ai_InitWind): angle += elapsed hours * phase[hour], the default effect (wind) vector / scale from the hour's sin / cos / base / gust; called once per frame by sv_RunFrame

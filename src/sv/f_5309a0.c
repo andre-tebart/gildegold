@@ -110,7 +110,7 @@ l64:
         SV_I((unsigned)&ch_CurrentGroup) = *(int *)(c + 1);
     }
     if (SV_B((unsigned)&ai_GameState) != 0) {
-        ai_Unk5dbed0();
+        ai_UpdateWind();
         unk_Unk4edf80();
     }
     if (SV_I((unsigned)&full_data_623eac) != 0) {

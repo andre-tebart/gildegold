@@ -50,9 +50,9 @@ typedef struct EFFECTREC {              /* 0x10 bytes at 0x62de60: the default e
 } EFFECTREC;
 extern EFFECTREC ai_DefaultEffect;  /* 0x62de60 */
 typedef struct EFFECTSTATE {            /* 0x1f0 bytes at 0x6f3300: the wind state ai_InitWind builds (reasoned: the caller 0x525510 passes the wind rose tables) */
-    int id;                             /* +0x00, the second argument (the game clock's first word) */
-    int kind;                           /* +0x04, 6 */
-    int reserved;                       /* +0x08, set to 0 (nothing reads it here) */
+    int year;                           /* +0x00, the clock of the last update (a GAMECLOCK spread to ints): ai_InitWind's second argument (the clock's year) */
+    int hour;                           /* +0x04, 6 after ai_InitWind; ai_UpdateWind stores the clock's hour */
+    int min;                            /* +0x08, 0 after ai_InitWind; ai_UpdateWind stores the clock's minute */
     float sinTab[24];                   /* +0x0c, a copy of the caller's first table (sin of the 24 directions) */
     float cosTab[24];                   /* +0x6c, a copy of the second table (cos) */
     float base[24];                     /* +0xcc, random per direction: 60 * random * k + 1 (k by the day phase) */
