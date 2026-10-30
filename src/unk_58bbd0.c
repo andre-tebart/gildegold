@@ -21238,13 +21238,15 @@ int ai_Unk5cb1e0(int param_1, int param_2, int param_3)
     int h;
 
     h = amt_SendOfficeSwap(param_1, param_2, param_3);
-    if (h == -1)
-        return 0;
-    if (*(char *)(param_1 + 2) != 6)
+    if (h != -1) {
+        if (*(char *)(param_1 + 2) == 6) {
+            while (cm_GetSlotState(h) == 0)
+                sv_PumpNet();
+            return cm_GetSlotState(h) != 2;
+        }
         return 1;
-    while (cm_GetSlotState(h) == 0)
-        sv_PumpNet();
-    return cm_GetSlotState(h) != 2;
+    }
+    return 0;
 }
 /* 0x5cb250, the counter-espionage window "privillegien\gegenspionage2" 0x62d588 (672 B, ROUGH: no Ghidra
    function; from the disassembly): param_1 is the request record (dword +0: 3 (the message) or 4 (with
