@@ -4653,16 +4653,16 @@ exe	0x005db110	ai_PokerWindow2	unk_5d33b0	byte	readable
 exe	0x005dbc10	ai_GetDefaultEffect	unk_5d33b0	byte	readable	
 exe	0x005dbc20	ai_GetDefaultEffectScale	unk_5d33b0	byte	readable	
 exe	0x005dbc30	ai_InitWind	unk_5d33b0	byte	readable	
-exe	0x005dbed0	ai_Unk5dbed0	unk_5d33b0	draft	draft	
-exe	0x005dbfc0	ai_Unk5dbfc0	unk_5d33b0	draft	draft	
-exe	0x005dc0c0	ai_Unk5dc0c0	unk_5d33b0	draft	draft	
+exe	0x005dbed0	ai_UpdateWind	unk_5d33b0	byte	readable	
+exe	0x005dbfc0	ai_SaveWind	unk_5d33b0	byte	readable	
+exe	0x005dc0c0	ai_LoadWind	unk_5d33b0	byte	readable	
 exe	0x005dc1a0	ai_SphereVolume	unk_5d33b0	byte	readable	
 exe	0x005dc210	ai_PositionShare	unk_5d33b0	byte	readable	
-exe	0x005dc240	ai_Unk5dc240	unk_5d33b0	draft	draft	
-exe	0x005dc3a0	ai_Unk5dc3a0	unk_5d33b0	draft	draft	
-exe	0x005dc4a0	ai_Unk5dc4a0	unk_5d33b0	draft	draft	
-exe	0x005dc9d0	ai_Unk5dc9d0	unk_5d33b0	draft	draft	
-exe	0x005dcf00	ai_Unk5dcf00	unk_5d33b0	draft	draft	
+exe	0x005dc240	ai_InitShot	unk_5d33b0	draft	readable	deep
+exe	0x005dc3a0	ai_ScatterShot	unk_5d33b0	draft	readable	deep
+exe	0x005dc4a0	ai_StepShot	unk_5d33b0	draft	readable	deep
+exe	0x005dc9d0	ai_StepShotSlow	unk_5d33b0	draft	readable	deep
+exe	0x005dcf00	ai_ShotHitsGround	unk_5d33b0	draft	readable	deep
 exe	0x005dd090	ai_NormalizeEffectScale	unk_5d33b0	draft	readable	deep
 exe	0x005dd100	ai_Unk5dd100	unk_5d33b0	draft	draft	
 exe	0x005de460	MSS_auto_cleanup	mss32lib	byte	readable	

@@ -43,6 +43,14 @@ tags.
   twice by ours (const volatile); a local copy makes the compiler merge the two identical back blocks (size 704 vs the
   original's two copies), so the two original blocks differ in a way not visible; plus the title index scheduling and the
   loop increment order).
+- **match-base 2026-10-30 (third session) left for the deep queue** (the cannon ball stretch, bodies complete, readable):
+  0x5dc240 ai_InitShot (90 ins: our VC6 sinks the call ai_GetDefaultEffect to the wind copy, the original calls it first and
+  keeps the pointer in edx across ai_SphereVolume; the original reloads the speed after each velocity store, ours keeps it on
+  the FPU), 0x5dc3a0 ai_ScatterShot (18 ins: fmul operand order speed / spread, the vel.speed copy's register, the y / z
+  sum order), 0x5dc4a0 ai_StepShot and its twin 0x5dc9d0 ai_StepShotSlow (311 of 354 ins each: the drag product order -
+  the original multiplies the area second, ours after v * v for every grouping tried -, the 0x98 vs 0x50 frame, the ebp /
+  ebx loop registers, the second-stage FPU interleave; fix one, copy to the other), 0x5dcf00 ai_ShotHitsGround (44 ins,
+  size equal: commutative fadd operand order in the walk, the from->z copy's place, register rotations, two slots).
 - Every game-code function of the unit is drafted (0x5d33b0 .. 0x5dd100, 63 functions, contiguous; the
   ledger reports no undrafted byte inside the unit).
 - **The 0x5dd3e0 .. 0x5de450 data tail**: not code (a registration table); the ledger cannot claim it
@@ -720,3 +728,29 @@ a type debt.
   default effect ai_DefaultEffect (EFFECTREC at 0x62de60: vector (sin6, 0, cos6) and the scale |sin(angle) * gust[6]| +
   base[6]); the 60.0 factor is a .rdata constant the original loads (ai_WindGain, not folded: a const global is not
   constant-folded by VC6 as a literal is). ai_DefaultEffectScaleBits became ai_DefaultEffect.scaleBits.
+
+## match-base 2026-10-30 (third session: the wind save / load and the cannon ball 0x5dbed0 .. 0x5dcf00)
+- **EFFECTSTATE's first three ints are a clock** (year / hour / min, a GAMECLOCK spread to ints): ai_UpdateWind (0x5dbed0,
+  byte) rebuilds a GAMECLOCK from them, takes gm_MinutesBetween to ai_Time / 60 as hours, and when not negative advances
+  the angle by hours * phase[hour], sets ai_DefaultEffect to the hour's (sin, 0, cos) and the scale (sin(angle) + 1) *
+  gust[hour] / 2 + base[hour], and stores ai_Time's year / hour / minute. ai_InitWind's id / 6 / 0 are year / hour 6 / min 0.
+  The compare is `!(hours < 0.0f)` (test ah,5 / jnp), the float math single precision ((float)sin + 1.0f).
+- **ai_SaveWind 0x5dbfc0 / ai_LoadWind 0x5dc0c0** (byte): the nine fields of ai_EffectState with vfs_fwrite (`<= 0` -> 0,
+  the last `> 0`: ls.c's LS_W form) / ls_Read (`!` -> 0, the last `!= 0`), called by ls.c's save writer 0x51c870 / reader
+  0x5205f0 (version >= 0x10050). ls_Read's prototype is repeated in unk_5d33b0.h (ls.c has no header).
+- **SHOTREC** (0x68 bytes, unk_5d33b0.h): the cannon ball am.c 0x4a6ae0 fires and gv.c 0x4edf80 moves. velStart +0x00 /
+  vel +0x10 (SHOTVEL: D3VECTOR v + speed), posStart +0x20 / pos +0x30 (D3VECTOR + pad), wind +0x40 (EFFECTREC), area +0x50,
+  mass +0x54, energy +0x58, state +0x5c (1 flying, 2 landed, 3 off the map), time +0x60 (d3_Time ms of the last step),
+  steps +0x64. ai_InitShot: mass = ai_SphereVolume(density 7874 = iron, size).reach, speed = charge / mass * 0.1, wind =
+  ai_DefaultEffect with the scale clamped MAX(MIN(s, 60), 0). ai_ScatterShot randomises the start velocity before the
+  first step (steps == 0). ai_StepShot: one 1/74 s step per elapsed ms, drag 0.5 * 1.2 * Cd (ai_ShotDrag 1.5, .data
+  0x62de58) * area * v^2 signed with v plus the wind's, gravity 9.81, Heun's average, the position in inches (39.37 / m);
+  after 50 steps ai_ShotHitsGround's hit lands it (energy 0.5 m v^2). ai_StepShotSlow is the same with 1/148 s.
+  ai_ShotHitsGround: hit = less than ai_ShotHitHeight (98.425 = 2.5 m in inches, .data 0x62de5c) above d3_GetHeightAt's
+  ground; a step longer than one cell is walked in 1 / cell-distance steps (D3VECTOR4 locals give the original's frame).
+- The physics constants are `static const float` in unk_5d33b0.h in address order (D4 checks the order): ai_InchPerMeter
+  0x5eedf4, ai_Gravity 0x5eedfc, ai_ShotStep 0x5eee00, ai_ShotHalfStep 0x5eee04, ai_AirDensity 0x5eee0c, ai_WindGain
+  0x5eee14; the original loads them from memory (dt * g is not folded). d3_GetHeightAt's prototype now lives in d3_sm.h
+  (included by head.c); the scene's height map is init_SceneHeightMaps[0]; the shot clock is d3_Time.
+- am.h and unk_575860's f_580160.c prototypes of ai_InitShot / ai_ScatterShot follow the definitions (struct SHOTREC /
+  D3VECTOR pointers, float size / density); both callers are still draft.
