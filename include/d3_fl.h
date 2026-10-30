@@ -112,7 +112,10 @@ typedef struct D3FLTILE {           /* 0x64 bytes, 8 x 8 of them in D3FLMAP */
     char lod;                       /* 0x5f, level the current mesh was built at */
     char water;                     /* 0x60 */
     char nextLod;                   /* 0x61, level to switch to once lodDelay runs out */
-    unsigned char clip;             /* 0x62, clip flags of the box (0x40: invisible) */
+    union {
+        unsigned char clip;         /* 0x62, clip flags of the box (0x40: invisible) */
+        D3CLIP clipCode;            /* 0x62, the same byte as the D3CLIP code d3_ClipMesh takes (d3_engine.h) */
+    };
     char pad63;
 } D3FLTILE;
 
@@ -335,7 +338,7 @@ extern unsigned int d3_AnimDiv[];           /* 0x5ebc60, ts_texture.c */
 extern D3VECTOR4 d3fl_LightCol;             /* 0xfbb860, color per light-map unit */
 extern D3VECTOR4 d3fl_Ambient;              /* 0xfbbd20 */
 extern D3VECTOR4 d3fl_SunCol;               /* 0xfbb880, added where the light map has bit 7 */
-void d3_ClipMesh(unsigned char mask, D3FLPOINT *v, int nverts, D3FLPOLY *t, int ntris); /* 0x439a60, d3_engine.c */
+void d3_ClipMesh(D3CLIP mask, D3PVERT *v, int nverts, D3PTRI *t, int ntris);          /* 0x439a60, d3_engine.c (d3_engine.h's types: the d3_fl callers pass their D3FLPOINT / D3FLPOLY views) */
 
 /* ---- 0x4439e0..0x446990 (worker d3fl3) ---- */
 int map_PickScreen(D3FLMAP *map, int x, int y, float r, D3VECTOR *out);                 /* 0x446750 */

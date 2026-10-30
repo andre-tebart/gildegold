@@ -549,7 +549,7 @@ void d3fl_Draw(D3FLMAP *map, char water)
                     if (t->lodLevel) {
                         npts = t->npoints;
                         npolys = t->npolys;
-                        d3_ClipMesh(t->clip, t->points, npts, t->polys, npolys);
+                        d3_ClipMesh(t->clipCode, (D3PVERT *)t->points, npts, (D3PTRI *)t->polys, npolys);
                         if (d3_FogOn) {
                             for (i = 0, v = (D3PVERT *)t->points; i < npts; i++, v++)
                                 if (v->flags < 0) {

@@ -80,7 +80,7 @@ void d3fl_DrawWater(D3FLMAP *map, D3FLTILE *t)
                 p.z = d3fl_AxisX.z + p.z;
             }
         }
-        d3_ClipMesh(t->clip, t->wpoints, npoints, t->wpolys, npolys);
+        d3_ClipMesh(t->clipCode, (D3PVERT *)t->wpoints, npoints, (D3PTRI *)t->wpolys, npolys);
         clip = (D3CLIPINFO *)d3_ClipInfo[t->clip & 0x3f];
         if (d3_FogOn) {
             for (i = npoints, v = (D3PVERT *)t->wpoints; i > 0; i--, v++)
