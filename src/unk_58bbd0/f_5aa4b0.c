@@ -2,7 +2,7 @@
    (+0xa .. +0xf and +0x10 .. +0x15), each set to -1 */
 
 void d2_RemoveObj(); int gm_Unk509060(); int unk_Unk4fb770(); int gm_Unk50a0f0(int y);
-void d2_SetObjFont(); void d2_SetCaption(); int sv_SelectPanelObject();
+void d2_SetObjFont(); void d2_SetCaption(); void sv_SelectPanelObject(unsigned char *o, int b, char *c);
 
 void ai_Unk5aa4b0(int param_1)
 {

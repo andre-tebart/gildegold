@@ -21,5 +21,5 @@ void ai_Unk577540(int arg)
     q = (char *)gm_Query(*(int *)(r + 0x5d), 1, 0, 0x13);
     if (!q)
         return;
-    sv_SelectPanelObject(r, *(int *)(q + 2), (char *)(unsigned)&ch_EmptyName);
+    sv_SelectPanelObjectK(r, *(int *)(q + 2), (char *)(unsigned)&ch_EmptyName);
 }

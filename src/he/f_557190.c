@@ -4,7 +4,7 @@ int cm_PartyById();
 int ai_Unk4e5210();
 void ai_Unk4c4fd0(int a, int b);
 void sb_Stop();
-int sv_SelectPanelObject();
+void sv_SelectPanelObject(unsigned char *o, int b, char *c);
 int snd_QueueVoice(int id, int bank, char *text, int var, unsigned int delay);
 
 void he_Unk557190(int ev)
@@ -86,7 +86,7 @@ void he_Unk557190(int ev)
             if ((fl & 2) != 0 && *(int *)(ev + 0xb0) != -1) {
                 w = gm_BuildQuery(1, 1, *(int *)(ev + 0xb0));
                 if (w != 0)
-                    sv_SelectPanelObject(w);
+                    sv_SelectPanelObjectK(w);
                 ai_Unk4e5210();
                 ((void (*)())ai_Unk4c4fd0)();
             }

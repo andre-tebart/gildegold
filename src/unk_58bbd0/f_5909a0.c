@@ -9,7 +9,7 @@ int ai_Unk5763c0(); int d2_OpenForm();
 int d2_SetForm(int view, int n); int d2_GetViewWin(); int sv_CreateFormSlider(); int io_PrintText(char *fmt, ...);
 int d2_WinOpenPic(short x, short y, int pic, int win); int d2_CreateWinText(); void d2_SetObjFont(); void d2_SetObjText();  /* @original: the calls at 18534 (2), 18620 (3) and 6884 (3) pass fewer arguments than d2.h's 4-parameter prototype */
 void d2_SetViewEnabled(); void d2_CloseView(int view); int cm_SendLongMessage(char *msg);
-int sv_CheckGoodAmount(); int sv_CheckStock(); void txt_Format(char *out, int id0, ...); int sv_MessageBox(); int d3sm_Pick();
+int sv_CheckGoodAmount(); int sv_CheckStock(); void txt_Format(char *out, int id0, ...); int sv_MessageBox();
 int d3sm_GetVertex();  /* @original: the original callers read an int result (gv.h declares it int) */
 int sv_Unk527640(); int gm_Unk509ee0(char *c, char p); int gm_BuildingClass(); char unk_Unk5020e0(int k, int c);
 

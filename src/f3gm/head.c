@@ -93,6 +93,8 @@ int unk_Unk4fd7e0();                    /* 0x4fd7e0 */
 
 #include "time_view.h"
 #include "io_text.h"
+void *ai_Unk5a8560(int param_1);  /* 0x5a8560 */
+#define ai_Unk5a8560K ((int (*)())ai_Unk5a8560)  /* 0x5a8560: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, ai_Unk4d88c0 0x4d88c0 move it as a word / movzx) */
 #define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
 #define ai_FallbackBuildingI (*(int (*))&ai_FallbackBuilding)  /* 0x6f230c, this unit reads it as `int ai_FallbackBuilding` */

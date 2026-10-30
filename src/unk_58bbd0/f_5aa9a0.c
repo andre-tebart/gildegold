@@ -43,7 +43,7 @@ void ai_Unk5aa9a0(int param_1, char *param_2)
         for (i = 0; i < 3; i++) {
             ctrl = U_I((unsigned)&full_data_6f40b0 + i * 4);
             if (ctrl != -1 && U_I((unsigned)&ai_Unk5fe710) == ctrl)
-                sv_SelectPanelObject(U_I((unsigned)&d2_Objs + 0x2e8 + ctrl * 0x2ec), -1, (char *)(unsigned)&ch_EmptyName);
+                sv_SelectPanelObjectK(U_I((unsigned)&d2_Objs + 0x2e8 + ctrl * 0x2ec), -1, (char *)(unsigned)&ch_EmptyName);
         }
     }
 }

@@ -34,11 +34,11 @@ void he_Unk567d60(int ev)
             if (r == 0)
                 r = ((void *(*)(unsigned char *))gm_GetGebaeudeHauptraum)(pick);
             if (r != 0)
-                sv_SelectPanelObject(pick, *(int *)(r + 2), (unsigned)&ch_EmptyName);
+                sv_SelectPanelObjectK(pick, *(int *)(r + 2), (unsigned)&ch_EmptyName);
             else
-                sv_SelectPanelObject(pick, -1, (unsigned)&ch_EmptyName);
+                sv_SelectPanelObjectK(pick, -1, (unsigned)&ch_EmptyName);
         } else {
-            sv_SelectPanelObject(pick, -1, (unsigned)&ch_EmptyName);
+            sv_SelectPanelObjectK(pick, -1, (unsigned)&ch_EmptyName);
         }
         *(HETIME *)(ev + 0x52) = ai_Time;
         *(unsigned short *)(ev + 0x56) += (unsigned short)util_Random(2);

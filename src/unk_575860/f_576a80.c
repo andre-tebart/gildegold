@@ -9,5 +9,5 @@ void ai_Unk576a80(int arg)
         return;
     r = (char *)gm_BuildQuery(1, 5, 0xa);
     if (r)
-        sv_SelectPanelObject(r, -1, (char *)(unsigned)&ch_EmptyName);
+        sv_SelectPanelObjectK(r, -1, (char *)(unsigned)&ch_EmptyName);
 }

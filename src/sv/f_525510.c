@@ -94,11 +94,11 @@ void sv_Unk525510(int t, float flag)
             *q = 0;
         }
     }
-    ai_Unk760620 = d3sky_CreateLayer(ai_Unk633dd4, 0, "Sky_Schoen_01", 0xff, *(int *)(unsigned)&full_data_6238e8, 0, *(int *)(unsigned)&full_data_6238ec, *(int *)(unsigned)&full_data_6238f0);
+    ai_Unk760620 = d3sky_CreateLayerK(ai_Unk633dd4, 0, "Sky_Schoen_01", 0xff, *(int *)(unsigned)&full_data_6238e8, 0, *(int *)(unsigned)&full_data_6238ec, *(int *)(unsigned)&full_data_6238f0);
     d3sky_SetLayerSpeed(ai_Unk633dd4, ai_Unk760620, 0);
-    ai_Unk760624 = d3sky_CreateLayer(ai_Unk633dd4, 0, "Sky_Schoen_02", 0, *(int *)(unsigned)&full_data_623934, 0, *(int *)(unsigned)&full_data_623938, *(int *)(unsigned)&full_data_62393c);
+    ai_Unk760624 = d3sky_CreateLayerK(ai_Unk633dd4, 0, "Sky_Schoen_02", 0, *(int *)(unsigned)&full_data_623934, 0, *(int *)(unsigned)&full_data_623938, *(int *)(unsigned)&full_data_62393c);
     d3sky_SetLayerSpeed(ai_Unk633dd4, ai_Unk760624, 0);
-    ai_Unk760628 = d3sky_CreateLayer(ai_Unk633dd4, 0, "sky_dunkel_01", 0, *(int *)((unsigned)&ai_Unk623ac0 + 0xd8), 0, *(int *)((unsigned)&ai_Unk623ac0 + 0xdc), *(int *)((unsigned)&ai_Unk623ac0 + 0xe0));
+    ai_Unk760628 = d3sky_CreateLayerK(ai_Unk633dd4, 0, "sky_dunkel_01", 0, *(int *)((unsigned)&ai_Unk623ac0 + 0xd8), 0, *(int *)((unsigned)&ai_Unk623ac0 + 0xdc), *(int *)((unsigned)&ai_Unk623ac0 + 0xe0));
     d3sky_SetLayerSpeed(ai_Unk633dd4, ai_Unk760628, 0);
     scene = d3_CurrentScene;
     i = 0;

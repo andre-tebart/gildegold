@@ -1,6 +1,6 @@
 /* 0x561190, the run handler of the ransom event (a thief gang, "L\366segeld" 0x627978; ROUGH skeleton, 736 bytes): states -2 / -1 free; the victim figure +0xac (0x505df0) and the building (0x501190, +0x65 the owner link) are looked up, the news 0x19da (0x5fb) / 0x19c2 (0x5f0) tells the victim and the owner (0x53dda0, 0x53eec0 (-2)), the victim walks to the hideout (0x4c52e0 "L\366segeld", 0x55eba0 scene, 0x4c3ba0 / 0x4c3c00 / 0x4c49a0 mark it, the job byte +0x1b1 1 .. 4 selects the text) and the record is freed */
 
-int gm_NearestBuilding();
+unsigned char *gm_NearestBuilding(unsigned char *b, unsigned kind);
 int d3_VecEqual(struct D3VECTOR *a, struct D3VECTOR *b, float eps);
 
 void he_Unk561190(int ev)

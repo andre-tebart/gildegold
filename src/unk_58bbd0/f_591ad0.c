@@ -20,7 +20,7 @@ void ai_Unk591ad0(void)
         if (it != 0) {
             r = gm_Query(*(int *)(it + 0x5d), 1, 0, 0xba);
             if (r != 0 && U_I((unsigned)&sv_PanelShown) != r)
-                sv_SelectPanelObject(it, U_I(r + 2), (void *)(unsigned)&ch_EmptyName);
+                sv_SelectPanelObjectK(it, U_I(r + 2), (void *)(unsigned)&ch_EmptyName);
             return;
         }
         err_Message("lc_PlayerInJail(): Could not find the jail building");
@@ -39,5 +39,5 @@ void ai_Unk591ad0(void)
     r = gm_Query(*(int *)(it + 0x5d), 1, 0, 0x65);
     if (r == 0 || U_I((unsigned)&sv_PanelShown) == r)
         return;
-    sv_SelectPanelObject(it, U_I(r + 2), (void *)(unsigned)&ch_EmptyName);
+    sv_SelectPanelObjectK(it, U_I(r + 2), (void *)(unsigned)&ch_EmptyName);
 }

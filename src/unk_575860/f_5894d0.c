@@ -2,7 +2,7 @@
    slots 0x6f5ec4 .. 0x6f5f48 whose byte +0 is that key (0x589450 first): the first valid one (+0 not -1):
    0x502020 (its +0) and 0x4fe980 (its +4) -> 0x521960 (the first, the second's +2 or -1, 0x631090) */
 
-int sv_SelectPanelObject();
+void sv_SelectPanelObject(unsigned char *o, int b, char *c);
 
 void ai_Unk5894d0(void)
 {
@@ -28,7 +28,7 @@ void ai_Unk5894d0(void)
     id = gm_FindBuildingById(*(int *)p);
     e = (char *)gm_FindObjectInst(*(int *)(p + 4));
     if (e != 0)
-        sv_SelectPanelObject(id, *(int *)(e + 2), (char *)(unsigned)&ch_EmptyName);
+        sv_SelectPanelObjectK(id, *(int *)(e + 2), (char *)(unsigned)&ch_EmptyName);
     else
-        sv_SelectPanelObject(id, -1, (char *)(unsigned)&ch_EmptyName);
+        sv_SelectPanelObjectK(id, -1, (char *)(unsigned)&ch_EmptyName);
 }

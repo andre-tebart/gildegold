@@ -364,12 +364,7 @@ int he_Unk570ea0(int a, int b);                                           /* 0x5
 unsigned short *gm_Unk509ff0(unsigned short *o);                                                  /* 0x509ff0 */
 
 /* ---- 0x48e070..0x490b90 (was unk_48e070.h) ---- */
-/* unk_490830.h (the AGCH / AGARG views of 0x490830..0x490b90); its declarations of this file's callees differ */
-#define ai_Unk4900c0 ai_Unk4900c0_ag
-#define ai_Unk4902b0 ai_Unk4902b0_ag
-#define ai_Unk4904c0 ai_Unk4904c0_ag
-#define ai_Unk490600 ai_Unk490600_ag
-#define cm_SendMoveGoodsUnchecked ai_Unk4c4830_ag
+/* unk_490830.h (the AGCH / AGARG views of 0x490830..0x490b90); it calls ai_Unk4900c0 .. ai_Unk490600 and cm_SendMoveGoodsUnchecked through the prototypes below (AIPX / AIBLD, the definitions') */
 /* ---- was unk_490830.h ---- */
 #pragma pack(push, 1)
 typedef struct AGCH {                   /* a character, 0x21c bytes */
@@ -457,12 +452,6 @@ void ai_Unk493a40(AGDUEL *d);                                   /* 0x493a40 */
 int ai_Unk493be0(AGCH *p, AIOBJ *o);                            /* 0x493be0 */
 AGCH *ai_Unk493ea0(AGCH *p);                                    /* 0x493ea0 */
 
-/* callees outside this file */
-int ai_Unk4900c0(AGCH *p, void *q, AGARG *s1, AGARG *s2);       /* 0x4900c0 */
-int ai_Unk4902b0(AGCH *p, void *q, AGARG *s1, AGARG *s2);       /* 0x4902b0 */
-int ai_Unk4904c0(AGCH *p, void *q, AGARG *s1, AGARG *s2);       /* 0x4904c0 */
-int ai_Unk490600(AGCH *p, void *q, AGARG *s1, AGARG *s2);       /* 0x490600 */
-void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d);                 /* 0x4c4830 */
 int unk_Unk4f0430(int *g, char *o, int v, short s, int x);       /* 0x4f0430 */
 void unk_Unk4f0e80(int *g, int x, char *o, int v, char b, int y);  /* 0x4f0e80, gv.c */
 unsigned gv_FindEntry(void *a, unsigned char *o, unsigned after, int (*cb)(), int l);  /* 0x4ef7c0 */
@@ -480,11 +469,6 @@ int amt_GetColumnOffices(int col, int max, struct AMTREC *out);             /* 0
 /* ai.h declares these with other types */
 #define AG_CH(id) ((AGCH *)gm_FindChar(id))
 #define AG_4EF6B0(a, p) ((int (*)(int, int *))gv_EntryIndex)(a, p)
-#undef ai_Unk4900c0
-#undef ai_Unk4902b0
-#undef ai_Unk4904c0
-#undef ai_Unk490600
-#undef cm_SendMoveGoodsUnchecked
 
 #pragma pack(push, 1)
 typedef struct AIPX {                   /* a character, 0x21c bytes (ai_Chars[768]) */

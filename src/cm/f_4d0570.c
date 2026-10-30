@@ -30,7 +30,7 @@ char ai_Unk4d0570(char *rec, char *c)
                 G19_4D0380(rec, c, (char *)ai_ClickedObject);
                 ret = 1;
             }
-        } else if ((char)d3sm_Pick(*(char **)(ai_Unk5fb5b0 + 0xb0), dm_L.x + 0x1a, dm_L.y + 0x1a, &x, &z)) {
+        } else if ((char)d3sm_PickK(*(char **)(ai_Unk5fb5b0 + 0xb0), dm_L.x + 0x1a, dm_L.y + 0x1a, &x, &z)) {
             q = (char *)ai_Unk4cdf00(rec, c);
             q[0xc] = 0;
             memcpy(L, q, 0x2c);

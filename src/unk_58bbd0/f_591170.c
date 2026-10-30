@@ -4,7 +4,7 @@
    else 0x502520 and the 'G' kind get 0x521960 (0xfd), the other kinds 0x527840 (the plain open) or 0x521960
    (the record's +0x29 text) */
 
-int ai_Unk5b2180(); int gm_IsHomeType(); int sv_SelectPanelObject(); void sv_Unk527840(int o); void sv_Unk527bb0();
+int ai_Unk5b2180(); int gm_IsHomeType(); void sv_SelectPanelObject(unsigned char *o, int b, char *c); void sv_Unk527840(int o); void sv_Unk527bb0();
 unsigned unk_Unk503530(unsigned p1, unsigned char *b, unsigned short *o, int c); void ai_Unk59f410(); void init_ShowBuildingScene(unsigned char *b, int slot); void init_FinishBuildingScene(unsigned char *b, unsigned short *o);
 int d3t_PlaceObjectV(struct D3OBJECT *camera, struct D3VECTOR *pos, struct D3VECTOR *dir, int unk, char flags); int gm_ClockSeason(); void unk_Unk513740(void); void d3fl_MakeDivide();
 int ai_Unk5bc110(); void snd_StartMarketAmbience(void); int tb_SetFunctionOff(); void snd_StopMarketAmbience(void);
@@ -40,10 +40,10 @@ void ai_Unk591170(void)
             if (U_I((unsigned)&ai_FallbackBuilding) != 0) {
                 r = gm_IsHomeType(p);
                 if (r != 0 && *p == 'G') {
-                    sv_SelectPanelObject(p, 0xfd, (void *)(unsigned)&ch_EmptyName);
+                    sv_SelectPanelObjectK(p, 0xfd, (void *)(unsigned)&ch_EmptyName);
                     return;
                 }
-                sv_SelectPanelObject(p, -1, (void *)(unsigned)&ch_EmptyName);
+                sv_SelectPanelObjectK(p, -1, (void *)(unsigned)&ch_EmptyName);
                 return;
             }
             r = gm_IsHomeType(p);
@@ -52,11 +52,11 @@ void ai_Unk591170(void)
                     sv_Unk527840(p);
                     return;
                 }
-                sv_SelectPanelObject(p, *(unsigned short *)(p + 0x29), (void *)(unsigned)&ch_EmptyName);
+                sv_SelectPanelObjectK(p, *(unsigned short *)(p + 0x29), (void *)(unsigned)&ch_EmptyName);
             } else {
                 u = unk_Unk503530(U_W((unsigned)&ai_PlayerId), p, 0, 0);
                 if (u & 1) {
-                    sv_SelectPanelObject(p, 0xfd, (void *)(unsigned)&ch_EmptyName);
+                    sv_SelectPanelObjectK(p, 0xfd, (void *)(unsigned)&ch_EmptyName);
                     return;
                 }
             }

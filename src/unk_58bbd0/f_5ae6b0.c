@@ -42,7 +42,7 @@ int ai_Unk5ae6b0(unsigned int param_1, int param_2, int param_3, int param_4)
     v = 0;
     if (*(char *)(param_2 + 0x28) != 0) {
         gm_StallGoodsList((void *)param_2, (void *)rec);
-        v = gm_Unk50a970(U_I(rec + 0xb0), *(char *)(param_2 + 0x28));
+        v = gm_Unk50a970K(U_I(rec + 0xb0), *(char *)(param_2 + 0x28));
         cm_SendMoveGoodsUnchecked(-1, U_I((unsigned)&ai_CharInts + param_1 * 0x21c), *(unsigned char *)(unsigned)&ai_OwnPlayer, v);
     }
     if (param_1 == U_W((unsigned)&ai_PlayerId))

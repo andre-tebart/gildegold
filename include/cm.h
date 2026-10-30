@@ -667,7 +667,7 @@ extern short d2_ScreenH;  /* 0xfb9070 */
 extern short d2_ScreenW;  /* 0xfb9072 */
 
 struct D3OBJECT * d3if_Pick(float x, float y, int mask, int one);  /* 0x448630 */
-int d3sm_Pick();  /* 0x45f2b0 */
+struct D3SM; char d3sm_Pick(struct D3SM *h, int sx, int sy, int *px, int *pz);  /* 0x45f2b0 */
 char d3if_Show(struct D3OBJECT *obj, char show);  /* 0x4471b0 */
 void ai_Unk4cf670();  /* 0x4cf670 */
 extern char *ai_Unk5fb5b0;  /* 0x5fb5b0 */
@@ -1105,7 +1105,7 @@ int ai_Unk4e3750();  /* 0x4e3750 */
 int ai_Unk4e3800();  /* 0x4e3800 */
 int ai_Unk4e37a0();  /* 0x4e37a0 */
 struct D3SKY; struct D3SKY *d3sky_Create(float horizon, float fogstart, float fogscale);  /* 0x45da30 */
-int d3sky_CreateLayer();  /* 0x45d880 */
+/* d3sky_CreateLayer (0x45d880): declared in cm's head after d3.h (its D3TEXFLAGS parameter is passed by value) */
 void d3sky_SetLayerSpeed(struct D3SKY *s, struct D3SKYLAYER *l, float speed);  /* 0x45d960 */
 void d3sky_FadeLayer(struct D3SKY *s, struct D3SKYLAYER *l, unsigned char alpha, float time);  /* 0x45d9a0 */
 int ai_Unk4e32f0();  /* 0x4e32f0 */

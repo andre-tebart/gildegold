@@ -4,7 +4,7 @@ int gm_IsHomeType();
 char *gm_FindBuildingById(int id);
 int gm_BuildingSkill();
 int gm_StallGoodsList(char *c, unsigned *out);
-int gm_Unk50a970();
+void gm_Unk50a970(int a, int kind);
 
 void he_Unk554cb0(int ev)
 {
@@ -87,7 +87,7 @@ void he_Unk554cb0(int ev)
         gm_StallGoodsList(o, tmp);
         sprintf(tmp, "%s", "");
         *(unsigned char *)(o + 0x28) = *(unsigned char *)(ev + 0xcc);
-        gm_Unk50a970(*(int *)(ev + 0xcc), *(char *)(o + 0x28));
+        gm_Unk50a970K(*(int *)(ev + 0xcc), *(char *)(o + 0x28));
     }
     *(int *)(ev + 0x84) = -1;
     *(int *)(ev + 0xec) = -1;

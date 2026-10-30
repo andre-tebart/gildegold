@@ -12,7 +12,7 @@ void he_Unk564860(int ev)
         he_Unk53e1f0((int *)ev);
         return;
     }
-    gm_NearestBuilding(b);
+    gm_NearestBuildingK(b);
     *(int *)(ev + 0x84) = -1;
     *(int *)(ev + 0xb0) = (int)((float)*(int *)(ev + 0xb0) * 1.0f);
 }

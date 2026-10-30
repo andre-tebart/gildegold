@@ -797,7 +797,7 @@ int sb_IsPlaying();
 void sb_Stop();
 int snd_PlayVoice(int id, int bank, char *text, int var);
 unsigned char * gm_BuildQuery(int n, ...);
-int sv_SelectPanelObject();
+void sv_SelectPanelObject(unsigned char *o, int b, char *c);
 int he_Unk55ea60();
 void cm_RequestChrMoveToUniverse(int a, int b, int c, const char *s);
 void ai_Unk4c5150(int a, int b, int c, const char *s);
@@ -843,6 +843,7 @@ char *const ai_Unk5eec60 = (char *)full_data_6fa020 + 0x40;  /* 0x5eec60, the po
 #define S (*(char **)(unsigned)&ai_Unk5eec60)  /* the tutorial state record (at 0x6fa060): the pointer ai_Unk5eec60 holds */
 
 #include "time_view.h"
+#define sv_SelectPanelObjectK ((int (*)())sv_SelectPanelObject)  /* 0x52c4c0?: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
 #define ai_CharsV (*(char (*)[])&ai_Chars)  /* 0x770b80, this unit reads it as `char ai_Chars[]` */
 #define d2_ScreenWB (*(unsigned char (*))&d2_ScreenW)  /* 0xfb9072, this unit reads it as `unsigned char d2_ScreenW` */
 #define d3t_CamMoveI (*(int (*))&d3t_CamMove)  /* 0x6310e8, this unit reads it as `int d3t_CamMove` */

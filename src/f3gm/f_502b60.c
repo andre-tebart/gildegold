@@ -9,7 +9,6 @@ extern unsigned short ai_TimeHour;     /* 0x770ae4, the clock's hour (unaligned 
 #endif
 extern char ai_Unk770ce4[];             /* 0x770ce4: the field +0x164 of the character records (stride 0x21c) */
 int ai_Unk5a86c0();                     /* 0x5a86c0 */
-int ai_Unk5a8560();                     /* 0x5a8560 */
 void sv_Unk5286a0(char *b);                     /* 0x5286a0 */
 void sv_Unk5282f0(char *b);                     /* 0x5282f0 */
 void ch_Unk402540();                     /* 0x402540 */
@@ -44,7 +43,7 @@ void gm_AssignBuilding(unsigned char *b, unsigned short place, unsigned own)
             if (o != 0xffff && ai_Chars[o][2] == 6)
                 ai_Unk5a86c0(*(int *)(b + 1));
             if (ai_Chars[own][2] == 6)
-                ai_Unk5a8560(b);
+                ai_Unk5a8560K(b);
         }
         o = *(unsigned short *)(b + 0x27);
         if (o != 0xffff && *(unsigned char **)(ai_Chars[o] + 0x170) == b)

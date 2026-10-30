@@ -77,7 +77,7 @@ void ai_Unk59f9a0(void)
                 if (U_I((unsigned)&ai_Unk5fe710) == ctl && *(unsigned short *)(rec + 0x27) != U_W((unsigned)&ai_PlayerId)) {
                     if (sv_CheckGoodAmount((char *)(unsigned)&ai_Chars + U_W((unsigned)&ai_PlayerId) * 0x21c, U_I(carrier + 0xb0),
                                      U_I((unsigned)&ai_OwnPlayer)) != 0)
-                        sv_SelectPanelObject(rec, -1, (char *)(unsigned)&ch_EmptyName);
+                        sv_SelectPanelObjectK(rec, -1, (char *)(unsigned)&ch_EmptyName);
                 }
             }
         }

@@ -53,7 +53,7 @@ unsigned char *gm_CreateBuilding(unsigned char k, unsigned short own)
     b[0x5c] = 100;
     *(int *)(b + 0x95) = -1;
     if (own != 0xffff && ai_Chars[own][2] == 6)
-        ai_Unk5a8560(b);
+        ai_Unk5a8560K(b);
     *(unsigned *)(b + 0x99) = 0;
     for (i = 0x9d; i <= 0xa8; i++)
         b[i] = 0;
