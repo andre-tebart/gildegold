@@ -8,8 +8,8 @@
    DOMIZIL_KANONE1_esc" 0x62a36c) and 0x429ab0 (4, the counts, the offsets, the wimpel hand sc + 0x23 / 0x24 /
    0x25) for each record and the effect 0x427050 (0, "Explosion" 0x5f36e0, the record count, 1, 0x3f, 0x7f, 0) */
 
-void unk_Unk4ef260(char *o, float *a, float *b); float unk_Unk4ef330(); void ai_Unk580a50(); int ai_InitShot(struct SHOTREC *shot, struct SHOTPOS *pos, struct SHOTPOS *dir, float charge, float size, float density);
-int ai_ScatterShot(struct SHOTREC *shot, float sideSpread, struct SHOTPOS *side, float otherSpread, struct SHOTPOS *other, float speedSpread); int unk_Unk4eeb70(char *o, int *c, int *a, int *b, int *d, float v, int n, int x); int sb_PlayVariation(); void ai_Unk580a90();
+void unk_Unk4ef260(char *o, float *a, float *b); float unk_Unk4ef330(); void ai_Unk580a50(); int ai_InitShot(struct SHOTREC *shot, struct D3VECTOR *pos, struct D3VECTOR *dir, float charge, float size, float density);
+int ai_ScatterShot(struct SHOTREC *shot, float sideSpread, struct D3VECTOR *side, float otherSpread, struct D3VECTOR *other, float speedSpread); int unk_Unk4eeb70(char *o, int *c, int *a, int *b, int *d, float v, int n, int x); int sb_PlayVariation(); void ai_Unk580a90();
 
 void ai_Unk580160(char *sc, char *rec)
 {

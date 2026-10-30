@@ -76,5 +76,7 @@ typedef struct D3SMSORT {           /* 8 bytes */
 
 char d3sm_FindGround(D3SM *h, int x, int z, int *ox, int *oz);           /* 0x45efc0, the cell nearest to
                                                                             (x, z) with a real ground type */
+char d3_GetHeightAt(D3SM *h, D3VECTOR *pos, int *px, int *pz, float *py);        /* 0x45f170, the cell of pos and
+                                                                            (h != 0) the interpolated height there */
 
 #endif

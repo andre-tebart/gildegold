@@ -106,7 +106,7 @@ unsigned char * gm_BuildQuery(int n, ...);                     /* 0x501190 */
 int ai_Unk5a9e40();                     /* 0x5a9e40 */
 char d3if_Delete(struct D3OBJECT *obj);  /* 0x447190, d3_interface.h */
 int gm_MinutesBetween();                     /* 0x4fe280 */
-int ai_Unk5dc4a0();                     /* 0x5dc4a0 */
+int ai_StepShot();                     /* 0x5dc4a0 */
 int ai_Unk5dc9d0();                     /* 0x5dc9d0 */
 int d3t_GetMeshBounds();                     /* 0x413310 */
 int d3t_CreateSmoke();                     /* 0x416340 */

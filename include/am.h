@@ -1149,8 +1149,8 @@ float unk_Unk4eef50(int r, int k, int c);                                       
 int unk_Unk4ef090(char *o, int a, int b, int d, int *n, int *price);              /* 0x4ef090 */
 int ai_Unk4a67a0(struct AIPER *p, struct AIBLD *b, struct AIBLD *t);                                  /* 0x4a67a0 */
 void unk_Unk4ef260(char *o, float *a, float *b);                                 /* 0x4ef260 */
-int ai_InitShot(struct SHOTREC *shot, struct SHOTPOS *pos, struct SHOTPOS *dir, float charge, float size, float density); /* 0x5dc240 */
-int ai_ScatterShot(struct SHOTREC *shot, float sideSpread, struct SHOTPOS *side, float otherSpread, struct SHOTPOS *other, float speedSpread);    /* 0x5dc3a0 */
+int ai_InitShot(struct SHOTREC *shot, struct D3VECTOR *pos, struct D3VECTOR *dir, float charge, float size, float density); /* 0x5dc240 */
+int ai_ScatterShot(struct SHOTREC *shot, float sideSpread, struct D3VECTOR *side, float otherSpread, struct D3VECTOR *other, float speedSpread);    /* 0x5dc3a0 */
 int unk_Unk4eeb70(char *o, int *c, int *a, int *b, int *d, float v, int n, int x); /* 0x4eeb70 */
 int ai_Unk4a6ae0(struct AIPER *p, struct AIBLD *b);                                            /* 0x4a6ae0 */
 #undef amt_GetKindLevel

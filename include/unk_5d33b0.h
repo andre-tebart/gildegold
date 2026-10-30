@@ -49,6 +49,7 @@ typedef struct EFFECTREC {              /* 0x10 bytes at 0x62de60: the default e
     };
 } EFFECTREC;
 extern EFFECTREC ai_DefaultEffect;  /* 0x62de60 */
+extern float ai_ShotDrag;          /* 0x62de58, .data: the drag coefficient of a cannon ball, 1.5 */
 typedef struct EFFECTSTATE {            /* 0x1f0 bytes at 0x6f3300: the wind state ai_InitWind builds (reasoned: the caller 0x525510 passes the wind rose tables) */
     int year;                           /* +0x00, the clock of the last update (a GAMECLOCK spread to ints): ai_InitWind's second argument (the clock's year) */
     int hour;                           /* +0x04, 6 after ai_InitWind; ai_UpdateWind stores the clock's hour */
@@ -71,28 +72,27 @@ typedef struct SPHEREVOLUME {
     float volume;       /* +0x0c, 4/3 pi size^3 */
     float reach;        /* +0x10, volume * radius */
 } SPHEREVOLUME;
-typedef struct SHOTPOS {                /* 0x0c bytes: a position or a direction (copied as one record) */
-    float p[3];
-} SHOTPOS;
 typedef struct SHOTVEL {                /* 0x10 bytes: a velocity as direction * speed and the speed */
-    SHOTPOS v;
+    D3VECTOR v;
     float speed;
 } SHOTVEL;
 typedef struct SHOTREC {                /* 0x68 bytes: a cannon ball in flight (am.c 0x4a6ae0 builds one per ball with ai_InitShot
-                                           from the barrel direction, the charge, the ball size and 7874 = the density of iron) */
-    SHOTVEL vel;                        /* +0x00, the barrel direction * speed, speed = charge / mass * 0.1 */
-    SHOTVEL vel0;                       /* +0x10, the start velocity (a copy) */
-    SHOTPOS pos;                        /* +0x20, the current position, the start position at first */
+                                           from the barrel direction, the charge, the ball size and 7874 = the density of iron;
+                                           gv.c 0x4edf80 moves it with ai_StepShot); the units are meters and seconds, the
+                                           positions are in the world's units (inches: 39.37 per meter) */
+    SHOTVEL velStart;                   /* +0x00, the start velocity: barrel direction * speed, speed = charge / mass * 0.1 */
+    SHOTVEL vel;                        /* +0x10, the current velocity (m/s), the start velocity at first */
+    D3VECTOR posStart;                  /* +0x20, the start position */
     float pad2c;
-    SHOTPOS pos0;                       /* +0x30, the start position */
+    D3VECTOR pos;                       /* +0x30, the current position, the start position at first */
     float pad3c;
     EFFECTREC wind;                     /* +0x40, the wind (ai_DefaultEffect) with its scale clamped to 0 .. 60 and the vector scaled by it */
-    float area;                         /* +0x50, the ball's SPHEREVOLUME surface (2 pi size^2) */
+    float area;                         /* +0x50, the ball's SPHEREVOLUME surface (2 pi size^2), the drag area */
     float mass;                         /* +0x54, volume * density */
-    float unk58;                        /* +0x58, not set by ai_InitShot */
-    int alive;                          /* +0x5c, 1 */
-    int time;                           /* +0x60, d3_Time (ms) at the shot */
-    int dead;                           /* +0x64, 0; ai_ScatterShot returns 0 once it is set */
+    float energy;                       /* +0x58, set by ai_StepShot when the ball lands: 0.5 * mass * v^2 (0 when it left the map) */
+    int state;                          /* +0x5c, 1 in flight, 2 landed, 3 left the height map */
+    int time;                           /* +0x60, d3_Time (ms) of the last flight step (one step per ms) */
+    unsigned steps;                     /* +0x64, the flight steps made; ai_ScatterShot works only before the first */
 } SHOTREC;
 typedef struct POKERPANEL {             /* 0x1c bytes: one panel (form view) of the poker window */
     int win;                            /* +0x00, the window the form view made (d2_LastWindow after d2_SetForm) */
@@ -265,7 +265,12 @@ int gm_CurseTargetCount(char *b);                                   /* 0x50d0b0,
 /* the filter of the gypsy windows: a const object, the original loads it from .rdata 0x5eed68 (mov eax,[..]; mov ecx,[..+4]) */
 static const volatile int ai_CardBack = 0x18;  /* 0x5ed1bc, .rdata: the picture offset of the card back (the original loads it from memory) */
 static const volatile unsigned __int64 gypsyFilter = 0x1a7fdfbb6;
+static const float ai_InchPerMeter = 39.37008f;  /* 0x5eedf4, .rdata: world units (inches) per meter */
+static const float ai_Gravity = 9.81f;            /* 0x5eedfc, .rdata: m/s^2 */
+static const float ai_ShotStep = 0.013513514f;    /* 0x5eee00, .rdata: 1/74, the time (s) of one flight step of ai_StepShot */
+static const float ai_AirDensity = 1.2f;          /* 0x5eee0c, .rdata: kg/m^3 */
 static const float ai_WindGain = 60.0f;  /* 0x5eee14, .rdata: the factor of ai_Unk5dbc30's per-direction random values (the original loads it from memory, it is not folded) */
+int ai_ShotHitsGround(struct D3SM *map, D3VECTOR *from, D3VECTOR *to, int px, int pz, int *npx, int *npz);  /* 0x5dcf00, 1 when the move from -> to of a flight step hits the ground (to is moved to the hit) */
 int d2_WinOpenSlider(int x, int y, int len, int p4, int p5, int pic, unsigned int flags, int win); /* 0x46a960, d2.c: a slider in a window */
 int sv_CheckGoodAmount(char *o, int n, unsigned char t);   /* 0x521040, sv.c: 1 when the character's stock covers n of the good t; @original: the definition takes unsigned, its callers push the good as a byte (no zero extension) */
 void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d); /* 0x4c4830, cm.c */

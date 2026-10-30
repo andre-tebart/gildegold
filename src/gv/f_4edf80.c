@@ -66,7 +66,7 @@ void unk_Unk4edf80(void)
                         }
                     } else if (*st == 1) {
                         if (*(int *)(e + 0x14) == 0)
-                            k = ai_Unk5dc4a0();
+                            k = ai_StepShot();
                         else
                             k = ai_Unk5dc9d0(st - 0x17);
                         if (k != 0) {
