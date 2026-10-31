@@ -876,112 +876,122 @@ char d3s_MeshFromMap(int *rect, int stride, unsigned char *map, float *origin, f
     }
     return 1;
 }
-/* 0x45b8d0, adds the shadow of slot to the shadow object */
+/* 0x45b8d0, adds the shadow of slot to the shadow object @deep match-base 2026-10-31: read the whole function against the original and rebuilt it (296 -> 327 vs 327 instructions): one if (d3s_Enabled && map && size && !simple) / else quad, range check on the slot fields first and the stores after, v0 = 0.0f first (kept on the FPU), du / dv / u0 / v0 divided by (float)(x1 - x0) / (z1 - z0) (no reciprocal CSE), nested size ifs falling into the final return ok (ok is a memory char), uv[4] / rect[4] copies, grid->bs signed division, both mesh calls store ok, the quad walks p++ / v++ / pos += 6 with pos computed before the poly stores, light colour / power through D3LOBJ. Left: register rotation ecx/edi and ebx/edi over the whole mesh part (regs / slots hunks; the h*2*w product starts from the other register), the size-fail return ok block (fstp st(0)) is placed at the end instead of after the call epilogues, ok = 1 is scheduled early, and the quad copies the slot floats with mov where the original uses fld/fstp (no free integer register in the original, see notes/units/d3_int_io.md). Tried + 0.0f / * 1.0f / (float) on the copies (folded, no change), early return ok instead of nested ifs (ok folds to xor al,al, worse), fw/fh float locals (reciprocal CSE, worse). */
 
-char d3s_AddShadow(D3SSLOT *slot, void *grid)
+char d3s_AddShadow(D3SSLOT *slot, D3STERR *grid)
 {
     D3SBUF *buf;
     D3SPOLY *p;
     D3SVERT *v;
     float *pos;
-    float u0, v0, du, dv;
+    float u0, v0, du, dv, fw, fh;
+    float uv[4];
     int rect[4];
     int x0, x1, z0, z1, w, h, n;
     union { unsigned long d; D3COLOR c; } col;
-    unsigned long color;
     char ok = 0;
     D3TEXHANDLE *tex;
 
     buf = (D3SBUF *)((char *)d3s_Object->material + 0xf4);
     tex = slot->tex;
-    col.c.r = (unsigned char)slot->light->unk05c.x;
-    col.c.g = (unsigned char)slot->light->unk05c.y;
-    col.c.b = (unsigned char)slot->light->unk05c.z;
-    col.c.a = (unsigned char)(slot->light->unk090.y * 0.5f);
-    color = col.d;
-    if (d3s_Enabled && slot->map) {
-        if (slot->size && !slot->simple) {
-            x0 = slot->ix0;
-            if (x0 >= slot->size || (x1 = slot->ix1) < 0 || (z0 = slot->iz0) >= slot->size
-                || (z1 = slot->iz1) < 0 || x1 - x0 <= 0 || z1 - z0 <= 0)
-                return 0;
-            w = x1 - x0;
-            h = z1 - z0;
-            du = 1.0f / w;
-            u0 = 0.0f;
-            dv = 1.0f / h;
-            if (x0 < 0) {
-                u0 = -x0 / (float)w;
-                x0 = 0;
-            }
-            v0 = 0.0f;
-            if (x1 >= slot->size)
-                x1 = slot->size - 1;
-            if (z0 < 0) {
-                v0 = -z0 / (float)h;
-                z0 = 0;
-            }
-            if (z1 >= slot->size)
-                z1 = slot->size - 1;
-            h = z1 - z0;
-            w = x1 - x0;
-            if ((unsigned int)(h * 2 * w + buf->npolys) >= d3s_MaxPolys * 2)
-                return 0;
-            n = (h + 1) * (w + 1);
-            if ((unsigned int)(buf->nverts + n) >= (d3s_MaxPolys >> 4) * 25)
-                return 0;
-            rect[0] = x0;
-            rect[1] = x1;
-            rect[2] = z0;
-            rect[3] = z1;
-            if (!grid)
-                return d3s_MeshFromMap(rect, slot->size, slot->map, &slot->origin.x, &slot->cell.x, &u0, buf, tex, color);
-            if ((unsigned int)((h / ((int *)grid)[1] + 1) * w + buf->nverts + (w / ((int *)grid)[1] + 1) * h + n) < (d3s_MaxPolys >> 4) * 25)
-                return d3s_TerrainShadowMesh(grid, rect, &u0, buf, tex, color);
+    col.c.r = (unsigned char)D3_L(slot->light)->color.x;
+    col.c.g = (unsigned char)D3_L(slot->light)->color.y;
+    col.c.b = (unsigned char)D3_L(slot->light)->color.z;
+    col.c.a = (unsigned char)(D3_L(slot->light)->power * 0.5f);
+    if (d3s_Enabled && slot->map && slot->size && !slot->simple) {
+        if (slot->ix0 >= slot->size || slot->ix1 < 0 || slot->iz0 >= slot->size || slot->iz1 < 0
+            || slot->ix1 - slot->ix0 <= 0 || slot->iz1 - slot->iz0 <= 0)
             return 0;
+        x0 = slot->ix0;
+        x1 = slot->ix1;
+        z0 = slot->iz0;
+        z1 = slot->iz1;
+        v0 = 0.0f;
+        du = 1.0f / (x1 - x0);
+        u0 = 0.0f;
+        dv = 1.0f / (z1 - z0);
+        if (x0 < 0) {
+            u0 = -x0 / (float)(x1 - x0);
+            x0 = 0;
         }
-    }
-    if ((unsigned int)buf->npolys < d3s_MaxPolys * 2 - 2) {
+        if (x1 >= slot->size)
+            x1 = slot->size - 1;
+        if (z0 < 0) {
+            v0 = -z0 / (float)(z1 - z0);
+            z0 = 0;
+        }
+        if (z1 >= slot->size)
+            z1 = slot->size - 1;
+        h = z1 - z0;
+        w = x1 - x0;
+        if (h * 2 * w + buf->npolys < d3s_MaxPolys * 2) {
+            n = (h + 1) * (w + 1);
+            if (buf->nverts + n < (d3s_MaxPolys >> 4) * 25) {
+                uv[0] = u0;
+                uv[1] = du;
+                uv[2] = v0;
+                uv[3] = dv;
+                rect[0] = x0;
+                rect[1] = x1;
+                rect[2] = z0;
+                rect[3] = z1;
+                if (grid) {
+                    if (buf->nverts + (w / (int)grid->bs + 1) * h + (h / (int)grid->bs + 1) * w + n
+                        < (d3s_MaxPolys >> 4) * 25)
+                        ok = d3s_TerrainShadowMesh(grid, rect, uv, buf, tex, col.d);
+                } else
+                    ok = d3s_MeshFromMap(rect, slot->size, slot->map, &slot->origin.x, &slot->cell.x, uv, buf,
+                                         tex, col.d);
+            }
+        }
+    } else if (buf->npolys < d3s_MaxPolys * 2 - 2) {
         p = &buf->polys[buf->npolys];
         v = &buf->verts[buf->nverts];
-        p[0].v[0] = v;
-        p[0].uv = d3s_QuadUV;
-        p[0].v[2] = v + 2;
-        p[0].v[1] = v + 1;
-        p[0].tex = tex;
-        p[1].v[1] = v + 3;
-        p[1].v[2] = v + 2;
-        p[1].v[0] = v + 1;
-        p[1].uv = d3s_QuadUV2;
-        p[1].tex = tex;
-        buf->npolys += 2;
         pos = &d3s_Verts[d3s_NumVerts * 6];
-        v[0].pos = pos;
+        p->v[0] = v;
+        p->uv = d3s_QuadUV;
+        p->v[2] = v + 2;
+        p->v[1] = v + 1;
+        p->tex = tex;
+        p++;
+        p->v[1] = v + 3;
+        p->v[2] = v + 2;
+        p->v[0] = v + 1;
+        p->uv = d3s_QuadUV2;
+        p->tex = tex;
+        buf->npolys += 2;
+        v->pos = pos;
         pos[0] = slot->x0;
         pos[1] = slot->y;
         pos[2] = slot->z1;
-        v[0].c0 = color;
-        v[0].c1 = color;
-        v[1].pos = pos + 6;
-        pos[6] = slot->x1;
-        pos[7] = slot->y;
-        pos[8] = slot->z1;
-        v[1].c0 = color;
-        v[1].c1 = color;
-        v[2].pos = pos + 12;
-        pos[12] = slot->x0;
-        pos[13] = slot->y;
-        pos[14] = slot->z0;
-        v[2].c0 = color;
-        v[2].c1 = color;
-        v[3].pos = pos + 18;
-        pos[18] = slot->x1;
-        pos[19] = slot->y;
-        pos[20] = slot->z0;
-        v[3].c0 = color;
-        v[3].c1 = color;
-        ok = 1;
+        v->c0 = col.d;
+        v->c1 = col.d;
+        v++;
+        pos += 6;
+        v->pos = pos;
+        pos[0] = slot->x1;
+        pos[1] = slot->y;
+        pos[2] = slot->z1;
+        v->c0 = col.d;
+        v->c1 = col.d;
+        v++;
+        pos += 6;
+        v->pos = pos;
+        pos[0] = slot->x0;
+        pos[1] = slot->y;
+        pos[2] = slot->z0;
+        v->c0 = col.d;
+        v->c1 = col.d;
+        v++;
+        pos += 6;
+        v->pos = pos;
+        pos[0] = slot->x1;
+        pos[1] = slot->y;
+        pos[2] = slot->z0;
+        v->c0 = col.d;
+        v->c1 = col.d;
         buf->nverts += 4;
+        ok = 1;
         d3s_NumVerts += 4;
     }
     return ok;
