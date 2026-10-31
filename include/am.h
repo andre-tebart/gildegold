@@ -93,6 +93,25 @@ typedef char ai_AssertAIACT[sizeof(AIACT) == 0x94 ? 1 : -1];
     __asm rep stosb                                                 \
 }
 
+/* the same with the destination named in the asm (a local or `offset name`): no pointer temporary */
+#define AI_ZERO_AT(var, size) {                                     \
+    int _zn = (size);                                               \
+    __asm mov edi, var                                              \
+    __asm mov ebx, _zn                                              \
+    __asm xor eax, eax                                              \
+    __asm lea ecx, [edi+edi*2]                                      \
+    __asm and ecx, 3                                                \
+    __asm sub ebx, ecx                                              \
+    __asm jle AI_ZERO_LABEL(__LINE__)                               \
+    __asm rep stosb                                                 \
+    __asm mov ecx, ebx                                              \
+    __asm and ebx, 3                                                \
+    __asm shr ecx, 2                                                \
+    __asm rep stosd                                                 \
+    __asm AI_ZERO_LABEL(__LINE__): add ecx, ebx                     \
+    __asm rep stosb                                                 \
+}
+
 
 int ai_Unk490c10(int a);                                        /* 0x490c10 */
 int ai_Unk490e00(AIPER *p, int a, int *out);                    /* 0x490e00, decision 0 */
