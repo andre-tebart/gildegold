@@ -11,8 +11,8 @@ Migrated from the notes/tus.md table on 2026-10-23 (the row's prose, unchanged):
 - Range then: 0x4315c0..0x435950
 
 ## Open work
-- d3anim_RootPosAt 0x432190 (was d3anim_Unk432190; match-base 2026-10-31, deep, size-explained 210 vs 251): D3_OBJOFFSET replaced by D3OBJECT.posOffset. The original keeps the two matrix-transform blocks (relative / else branch) apart where ours tail-merges them; inlining the else branch's sum drops the merge (781 vs 836 bytes) but gives x-first operand order where the original is z-first.
-- d3anim_StepObject 0x432750 (match-base 2026-10-31, deep, size-explained 1521 vs 1578): the original has no pointer locals s / c / keys / k0 / k1 / nk (every access repeats mat->ctl[i].slots[j].x / P->keys[P->key].x; data stays a local), the path stepping converts (int)acc in both arms; that moved the size from 4478 to 5161 bytes (original 5056) and the instruction count from 1397 to 1521. Remaining: float spill pairs (+21 fstp, +14 fld, frame 0xbc vs 0x70), register allocation; readability Q2 (P->unk10), Q4 (OBJ_LAST / SLOT_F / SLOT_TURN / D3_OBJPATH and 3 casts) still open.
+- d3anim_RootPosAt 0x432190 (match-base 2026-10-31 opus3, deep, 251 vs 251 instructions, 836 vs 836 bytes): left only register choice (prologue loads s / out before sub esp, zero register ebx vs ecx; eax/edx/esi rotation in the else branch).
+- d3anim_StepObject 0x432750 (match-base 2026-10-31 opus3, deep, 1577 vs 1578): left the frame (0x68 vs 0xbc: the original keeps more FPU / conversion temps on the stack - qword temps of the unsigned conversions, the attach bone z spilled into the ctx parameter slot, the lerp result at 0x8c) and the register roles in the slot loop (limit in ebp, data->relative in bl). Readability open: Q2 P->unk10, Q4 OBJ_LAST / SLOT_F / SLOT_TURN / D3_OBJPATH and the ((D3ANIMMATV *)obj->material) casts (D3MATERIAL animCtl typing debt).
 - Nonmatching functions (177 after round 17): `uv run ledger check --verbose | grep FAIL`; per-function attempts in
   notes/vc6-matching.md and notes/units/<unit>.md (worker sections d3_d3d, dd_vesa, net, script, sblib, d3_engine, d3_anim, evt,
   d3_left, d3_engine2, start401, sfx, d3fl, ch, ch2, ch3, ch4, map, ch7, d3fl4, d3if, d3if2; round 6 left none). Only worth a worker when grouped by TU; d3_anim.c has 5 close ones (1-16 bytes
@@ -190,3 +190,17 @@ Migrated from the notes/tus.md table on 2026-10-23 (the row's prose, unchanged):
 ## match-base 2026-10-26 (base-3 worker, shard 3/6)
 
 d3_anim.c keeps its local d3_RelightObjectFrame prototype: including d3_light.h perturbs d3anim_CreatePath and d3anim_CreateMorphAnim (+2 instrs, +4 B each; tried after d3.h and after d3_anim.h). See notes/units/d3_light.md.
+
+## match-base 2026-10-31 (opus3)
+- d3anim_RootPosAt: the relative branch reuses d for the transformed vector (d = M * sum, out = d + pos); the
+  else branch copies f0->move into d, puts the difference in sum and transforms into sum (d = sum * t + d,
+  sum = M * d). Different variables per branch is what keeps VC6 from tail-merging the two matrix blocks.
+  t is computed in both arms of `if (key == frame)` (sub -= sub0 in one).
+- d3anim_StepObject meaning fixes (path part): the backward wrap at key 0 without bounce keeps playing backward
+  and continues at key nkeys - 1 (time += keys[nkeys - 1].time; only the bounce arm clears bit 2 and sets key
+  0); d3path_Tangents gets &keys[nkeys - 1]; the linear path is u * keys[key] + t * keys[next] (was reversed)
+  and tests d3_VecEqual(&v, &d3_Origin, 0.0f) (was &v, &v); hermite / lerp results are stored first and
+  P->pos / P->rot added after. Slot part: D3ANIMSLOT.frameTime is a float (include/d3_anim.h; fadd, the only
+  other writer stores 0); dt and the fade time are unsigned (fild qword); s = &material->ctl[i].slots[j] per
+  iteration with material re-read (no mat local); (int)acc in each arm; the fade end and nextFrame <= last
+  tests in the original branch order; nframes = P->nkeys for the path NextFrame calls.

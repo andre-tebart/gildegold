@@ -11,6 +11,7 @@ Migrated from the notes/tus.md table on 2026-10-23 (the row's prose, unchanged):
 - Was: unk_4bc2e0.c (layout 2026-10-22)
 
 ## Open work
+- veg_LoadModel 0x4bc940 (match-base 2026-10-31 opus3, deep, 182 vs 180): left the byte-register choice in the height part (ours spills o from ebx around heights[z * size + x]).
 - **headers (2026-10-30, typing pass 2)**: head.c includes anm.h, f3gm.h, d3.h, d3_light.h, data_views.h; no @original cast or view; views / casts without byte evidence of their own (weak definitions or drafts' spellings, notes/headers.md debt item 1): util_RandomS.
 - Near-misses: 0x4bc5a0 (53 B: the first load of the table id is a 32-bit `mov eax` in the original, ours `mov ax`;
   tried the index loop only), 0x4bc390 (116 B, not looked at).
@@ -65,3 +66,8 @@ types and ai.h's foreign declarations) or to adopt the gm_* names project-wide. 
 ## match-base 2026-10-26 (base-3 worker, shard 3/6)
 
 rd.c includes <windows.h>, <d3d.h>, d3.h and d3_light.h (d3_light.h is not self-contained); rd.h lost its d3_RelightObjects declaration. No byte change.
+
+## match-base 2026-10-31 (opus3)
+- head includes d3_sm.h (typing commit, all 23 functions unchanged): D3TERRAIN for d3_Terrain.
+- veg_LoadModel: pos = origin, then += x * axisx, += z * axisz, += height * axisy per component (each height
+  re-read); one sprintf per branch with the literal format. The address comment had a cut-off @deep tail; cleaned.

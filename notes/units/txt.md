@@ -5,7 +5,7 @@ leftovers) comes first; below it the reports of the old worker rounds about this
 section per worker, in address order of their scopes, original text. Old "round k" marks mean nothing now.
 
 ## Open work
-- txt_OpenText 0x42cbc0 (match-base 2026-10-31, deep, size-explained 1729 vs 1774): the call sequence equals the original's (106 calls). The original keeps a zero constant in ebp and the file name in ebx (ours the reverse), keeps i in a stack slot with its final value stored after the loops (mov [i],0x80 / 0x4800), keeps a dead memset of txt_Random and the empty if (txt_Count == 0x71b) as cmp/jne +0, and has one more separately tailed return block (txt_Buffer = NULL stored as an immediate in the 'Could not open TextFile' block). Looks like the optimiser state of a big function (no final-value / dead-store removal); none of the tried bodies / goto / memset spellings reproduces the retained dead code.
+- txt_OpenText 0x42cbc0 (match-base 2026-10-31 opus3, deep, size-explained 1729 vs 1774): i is memory-homed in the original (no lea of its slot anywhere, yet it is stored at every definition, reloaded after the byte store txt_Ptrs[i][k] = 0, and the init loops store their final values 0x80 / 0x4800). Forcing i into memory (experiment: (int)&i used once at the end, not committed) gives 1773 vs 1774, equal switch tables and the same 12 epilogues: the extra "Could not open TextFile" tail is the zero register (ours push ebx / mov [txt_Buffer],ebx cross-jumps into the HeaderFile tail). Still unexplained: what made i aliased in the original source (q = (char *)&i, *&i, an __inline helper taking &i fold away; an out-of-line helper adds a call; memset(&i,0,0) emits xor ecx/eax); the dead memset(txt_Random,0) survives only when the memset and the 0xff loop name different symbols (ai_Unk114fe60 vs txt_Random: one object, two names - rejected); the empty if (txt_Count == 0x71b) cmp/jne +0 (i = i, end = i, col = col, txt_GroupFirst[ngroups] = txt_Count tried; the last keeps a second store).
 
 ## Worker "sfx" (round 4): 0x42c050..0x42e2a0 [sfx]
 
@@ -179,3 +179,8 @@ the three not in the tried list; it gives 52 B / 24 lines, WORSE (25 B / 18 line
 @deep reason records it. txt_OpenText unchanged (1463 asm lines, the i / lineno live-range finding above);
 its dead `cmp eax,0x71b` got three more shapes (one-case switch, goto to the next label, while-break), all
 identical to the empty `if` (see the 0x71b attempts above); txt.c stays 11/13 byte, readability readable.
+
+## match-base 2026-10-31 (opus3)
+- txt_OpenText: escalated again with the evidence above. Two names for 0x114fe60 exist (io_text.c defines
+  `int ai_Unk114fe60[18440]`, txt.h declares `int txt_Random[0x4800]` with no definition): typing debt, one object
+  should get one definition (owner io_text by the data layout).

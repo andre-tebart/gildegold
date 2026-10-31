@@ -12,6 +12,7 @@ Migrated from the notes/tus.md table on 2026-10-23 (the row's prose, unchanged):
 - Was: unk_45b510.c (round 12)
 
 ## Open work
+- d3s_AddShadow 0x45b8d0 (match-base 2026-10-31 opus3, deep, 327 vs 327, readable): rebuilt (was 296); left: ecx/edi and ebx/edi rotation over the mesh part, the size-fail `return ok` block (with fstp st(0) for v0) placed at the end instead of after the call epilogues, ok = 1 scheduled early, and the quad copies the slot floats with mov where the original uses fld/fstp (+ 0.0f / * 1.0f / (float) fold away).
 - d3s_MeshFromMap 0x45b510 (match-base 2026-10-31, deep, 289 vs 297): the second loop reads the heights through the vertex's pos pointer (row[...].pos[1], the .y field is never set), loop invariants xs = x0 * cell[0] + origin[0] and ys = add + origin[1] hoisted, steep an int. Remaining: allocation (polygon pointer in esi / uv pointer in ecx in the original, ours the reverse) and the slots of x0 / z0 / nx / nz.
 - **headers (2026-10-30, typing pass 2)**: head.c includes d3.h, d3_d3d.h, d3_sm.h, d3s.h, data_views.h; no @original cast or view.
 - shfix leftovers after round 19 (notes/units/d3s.md [shfix], notes/units/unk_4591a0.md [shfix2]):
@@ -241,3 +242,13 @@ d3_Unk459980 / d3_GetBoxVerts come out byte for byte as before: no evidence eith
   groundOffsetRaw, and the float read through the unit's own view d3s.h D3SMESH { pad000[0x954];
   float groundOffset; } (D3S_MESH). The anonymous-union view in D3MESH - the standard fix - flips d3_Unk4550e0
   (d3_mir.c) by 8 bytes; so does a field added to D3MATERIAL (d3.h). Lesson in notes/vc6-matching.md.
+
+## match-base 2026-10-31 (opus3)
+- head includes d3_light.h (typing commit; all 28 functions unchanged): the light colour / power of
+  d3s_AddShadow read through D3LOBJ (color 0x5c, power 0x94) instead of D3OBJECT.unk05c / unk090.
+- d3s_AddShadow: one `if (d3s_Enabled && map && size && !simple)` / else quad; the range check reads the slot
+  fields, the stores to x0..z1 come after; v0 = 0.0f first (kept on the FPU), du / dv / u0 / v0 divide by
+  `(float)(x1 - x0)` / `(float)(z1 - z0)` (float fw / fh locals make VC6 multiply by the reciprocal instead);
+  the size checks nest and fall into the final `return ok` (ok is a memory char; early `return ok` folds to
+  xor al,al); uv[4] / rect[4] are copies; grid is a D3STERR (signed division by (int)grid->bs); the quad walks
+  p++ / v++ / pos += 6 with pos computed before the polygon stores.

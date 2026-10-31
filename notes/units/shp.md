@@ -14,6 +14,8 @@ Migrated from the notes/tus.md table on 2026-10-23 (the row's prose, unchanged):
 - Was: unk_47ab30.c (0x479d00.. moved from unk_479610.c) + unk_47c5e0.c (round 20)
 
 ## Open work
+- d2_GrabShape8Runs 0x47ad40 (match-base 2026-10-31 opus3, deep, 346 vs 353): left w / h in edi / esi swapped, the box variables in other slots, frame 0xda0 vs 0xd9c (the original keeps the masked pitch in a stack temp and recomputes j * pitch for the skip-run row where ours reuses t).
+- d2_ShpBlit16Scaled 0x47b350 (match-base 2026-10-31 opus3, deep, 270 vs 270): only the clipped branch's row caching (ours ebp, the original reloads [esp+0x2c]) is left. Its twin d2_ShpBlit16ScaledLit 0x47b640 likely wants the same treatment: n is an unsigned char there too (and edi,0xff), the run / pixel loops as for loops, the unclipped branch first.
 - resolved 2026-10-23: d2_Unk47d210 matches with `#pragma optimize("", off)` around it (no alignment pad in the original section, the linker's 0xcc follows); its dead variant blocks (je +0 dispatch) are inside the matched section.
 - see notes/units/gfx.md, Open work: "d2 tail after round 20 (d2t done: TU layout, joins, D2SURF / D2SHP, d2.h prototypes; notes ..."
 
@@ -280,3 +282,14 @@ the d2_ShpBlit rename.
   them), which clears that function's Q4.
 - Escalated to match-deep (reasons in the @deep tags): d2_ShpConvert8To16, d2_ShpConvert24To16,
   d2_BankConvertTo16, d2_StartAnim, d2_DrawShapeScaled.
+
+## match-base 2026-10-31 (opus3)
+- d2_ShpBlit16Scaled: the setup (cp / line / run, the four clip early-outs and h clipped to ClipBottom) was
+  missing from our source since the migration (the REA_FRAME_DUMP block sat where it was); reconstructed from
+  the original. Prototype in shp.h: `int y`, `unsigned char n`.
+- d2_GrabShape8Runs: the bounding-box scan re-reads the pixel in each of the four tests; the marker scan reads
+  an unsigned char c and stores the box before clearing p[j]; the run loop uses i (int) / j = y + i, an unsigned
+  run pointer recomputed after every size change, the literal-run test on src directly, and adds run[1] in
+  both arms of `if (run[1] > 0)`.
+- The address comments of both functions had a cut-off @deep reason left in them (the clear in 15d3c28 removed
+  the tag only up to the first parenthesis); cleaned.

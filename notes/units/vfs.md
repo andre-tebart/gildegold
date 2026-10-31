@@ -12,7 +12,7 @@ Migrated from the notes/tus.md table on 2026-10-23 (the row's prose, unchanged):
 - Was: unk_430130.c (round 12)
 
 ## Open work
-- vfs_Tfopen 0x430470 (match-base 2026-10-31, deep, size-explained 472 vs 490): the zip loop and the pos > 0 branch now share the unzOpenCurrentFile / pool_Alloc block (goto found) as in the original, notfound sits after unzClose, early check returns f. Remaining: f is memory-resident in the original (name in edi, e in ebp), ours keeps f in edi as the zero constant; the two return-0 sites keep separate epilogues in the original (xor eax,eax before the pops after err_Message, after three pops after MakeDirs); the notfound block is moved to the end by ours.
+- vfs_Tfopen 0x430470 (match-base 2026-10-31 opus3, deep, 486 vs 490): the early argument check, the read success tail and the write !fp all reach one shared `return f` epilogue at the end (mov eax,ebp) in the original - written as `if (name && *name && mode && unk) { ... } return f;` with `if (fp) { ... }` for the write success. Left: f has a stack home in the original (frame 0x368 vs 0x364; [esp+0x24] stored at entry and after the zip pool_Alloc, reloaded in notfound) and is cached in ebp, so VC6 does not fold it to 0: notfound / Could-write return f where ours returns xor eax,eax and the notfound block follows unzClose in the original (ours moves it behind the fopen test); name/e in edi/ebp vs ebp/edi. Tried: &f (508, worse), the loop with its own open/alloc copy instead of goto found (492, worse).
 - vfs (unk_430130.c), after round 10: vfs_AddFile (one register), vfs_Unk42fa10 (ebx/ebp swap), vfs_FindDir
   (esi vs ebx), vfs_MemOpen (notes/units/vfs.md).
 
