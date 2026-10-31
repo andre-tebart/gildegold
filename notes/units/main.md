@@ -10,6 +10,20 @@ Migrated from the notes/tus.md table on 2026-10-23 (the row's prose, unchanged):
 - Was: tag "main_"
 
 ## Open work
+- **match-base 2026-10-31 (2nd session, 0x537980 .. 0x53a520)**:
+  byte: main_LoadingScreen (byte + readable), main_EndGame 0x537f40, main_RundenBeginn 0x538140, main_UpdateFigures 0x53a450 (Q7 / Q2 left, below).
+  Q7 left on those: main_EndGame calls snd_ClearQueue (f3snd.h clashes sb_PlaySample with gfx.h), hst_ResetPlayerTexts / ai_ClearMissions (hst.h /
+  unk_4b39f0.h clash on gm_Unk503ee0, am.h too), d3sky_DeleteLayer (adding it to d3_sky.h drops d3_CloneObject byte -> shape: declaration-set
+  tie-break); main_RundenBeginn calls gm_TitleJob (a prototype with its unsigned char result changes the bytes: the original called it without one);
+  main_UpdateFigures: AICHAR.unk1b1 has no evidenced name (ai.c note), the float at +0x1c (0x1c in AICHAR.pad009) is a raw access until named.
+  Escalated (deep): 0x5384e0 main_Unk5384e0 (4.1 KB round / day change: top half read, the season in ebx vs a spill and -1 CSE shift the frame by 4;
+  the rest after +0x5c7 not yet reconciled), 0x539620 main_ReplaceFigure (VC6 cross-jumps the two identical 'ai_GameOver = 1; return' blocks the
+  original keeps apart), 0x539870 main_RoundReport (row loops rebuilt, slot order of the five running sums / row list at +0x8c), 0x53a250
+  main_UpdateFigure (kind 7 is retested at 0x53a3fc in the original: jump threading; i on the stack, base in edi, &ai_Chars[i] in esi).
+  Findings: the clock copy in main is AHMCLOCK (3 ints + a short: 'the original copies it so'), the player id is recomputed as (ai_PlayerId & 0xffff)
+  at each use (MAIN_PID), 0x6f2598 is main_Round, 0x6f25c4 main_UdpOpen, 0x6f2408 .. 0x6f2414 the sample banks of thunder / books / rooms / transport
+  (snd_ThunderBank etc., main.h), d3_SkyLayers are 6 slots up to sv_FrameMask 0x760638 (sv.h view macro), he_AddApEvent / he_SumApEvents the AP event
+  list at 0x758ca0 (0x50 bytes each); gm_AddHealth takes the id as a word at main_UpdateFigures (cast macro main_AddHealthS).
 - **match-base 2026-10-31 left for the deep queue** (the character creation dialogs, bodies read against the original; calls,
   arguments and constants match):
   0x534b30 main_ChooseModel (715 ins, most of it the 34-string table init in another schedule, verified identical by simulating both
