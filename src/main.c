@@ -161,6 +161,7 @@ extern int ai_Unkfb9064;
 extern int ai_Unkfb9068;
 extern int ai_Unkfb906c;
 extern char cm_RequestedSaveName[72];
+extern float ai_Unk617830[], ai_Unk617840[];  /* 0x617830 / 0x617840 (f3gm.c) */
 #pragma pack(push, 1)
 typedef struct MAINCARRY {          /* 0x21d bytes (+0x219 the entry count), what gm_CollectCarried collects for a character (f3gm.c: +0x31 the free capacity) */
     int units;                      /* 0x00, counts the 0xe-byte units */
@@ -179,6 +180,7 @@ extern GAPDATA full_data_75df20[];
 extern char * sv_SelectedObject;
 extern int ch_SndLib;
 extern char cm_RequestedSaveName[72];
+extern float ai_Unk617830[], ai_Unk617840[];  /* 0x617830 / 0x617840 (f3gm.c) */
 extern GAPDATA full_data_6f25c0[];
 extern GAPDATA full_data_75e630[];
 extern int snd_Bank;
@@ -3258,6 +3260,8 @@ void main_RundenBeginn(void)
 }
 
 /* message record (0xf8 bytes) of 0x4c4b70 / 0x4e4060: kind byte +4, owner id +8, target +0xc, time stamp (the 0x770ae0 clock, 14 bytes) +0x28 .. +0x36, flag +0x36 = 1 */
+#define MAIN_PID ((int)(U_I((unsigned)&ai_PlayerId) & 0xffff))  /* the player character */
+#define main_Now (*(AHMCLOCK *)&ai_Time)  /* 0x770ae0, the game clock copied as 3 ints and a short (ahm.h) */
 #define MSG_B(m, o) (*(unsigned char *)((m) + (o)))
 #define MSG_I(m, o) (*(int *)((m) + (o)))
 #define MSG_CLOCK(m) do { MSG_I(m, 0x28) = U_I((unsigned)&ai_TimeT); MSG_I(m, 0x2c) = U_I((unsigned)&ai_TimeHour); MSG_I(m, 0x30) = U_I(((unsigned)&ai_TimeT + 0x8)); *(short *)((m) + 0x34) = *(short *)((unsigned)&ai_TimeT + 0xc); } while (0)
@@ -3266,29 +3270,33 @@ void main_RundenBeginn(void)
 /* 0x5384e0, the round / day change of the player (0x6f25b8): fade out (BLACK), the clock 0x770ae0 (+1 when 0x6f23f8 bit 2 and 0x6f2598 > 1), the announcement messages of the kinds 0x66 / 0x70 / 0x68 / 0x85 / 0x7c / 0x93 / 0x84 /
    0x4c queued when the character has none (0x53e400), the summary page of the balance of the player (0x515960 texts 0x1ef9 .. 0x1eff, the table 0x758ca4 of 0x100 records of 0x50 B), the renovation check of the
    buildings (kind 0x1c message "renovieren") and the distribution of the work load (+0x39 of the buildings), the figure of the character (0x770d04) at the end; ROUGH (the float expressions
-   of the renovation, the __ftol arguments, are guesses) */
+   of the renovation, the __ftol arguments, are guesses) @deep Read the top 1500 bytes (to 0x538aa7) against the original and fixed their meaning: the clock copy is a 14-byte AHMCLOCK struct copy (3 ints + short), sv_ClockSeason (not gm_ClockSeason) gives the season index kept for the day-length tables io_PrintText(0x2051, clk, ai_Unk617830[s], ai_Unk617840[s] % 12), the sys message is a 0x7c struct at +0x12c (clock0, timeGetTime) and ln sits at +0x1a8, the player id is recomputed (ai_PlayerId & 0xffff) at each use, the renovation floats are float (0.005f / 32.0f / 0.75f, uu = (int)(fb - fa), bld+0x44 = (int)((float)old + fa)) and the last loop's px / py are ints (this removed our ebp frame). What is left in that span is allocation: the original keeps the season in ebx for the whole top half and never shares -1 or 0 constants, ours spills the season to [esp+0x18], hoists -1 into ebx (or ebx,-1; jl instead of js for the (char)ai_GameFlags >= 0 test) and so the frame is 0x3bc vs 0x3b8 and every slot shifts by 4 (first line 0x5384e0, asmdiff 'sub esp, 0x3bc / 0x3b8'; 'mov [esp+0x18], eax / mov ebx, eax' after sv_ClockSeason). Tried: a separate season local, register hint, id as local vs expression, declaration orders. The part after +0x5c7 (summary page, renovation, work load) is not yet reconciled and is hard to judge until the shifted frame is fixed. */
 void main_Unk5384e0(void)
 {
+    char ln[0x21d];   /* what gm_CollectCarried (0x50af00) collects: it memsets 0x21c bytes into it (the original's buffer sits at +0x1a8 of a 0x3b8 frame) */
+    struct {
+        int clock0;
+        int tick;
+        char pad[0x74];
+    } sysmsg;
     char msg[0xf8];
-    char clk[14];
-    char ln[0x21c];   /* a whole character record: gm_CollectCarried (0x50af00) memsets 0x21c bytes into it, so
-                         0x100 zeroed the saved ebp / return address of this frame (the crash after the
-                         round-change page); the original's frame is 0x3b8 and its buffer sits at +0x1a8 */
-    char *c;
+    short rid;
+    AHMCLOCK clk;
     unsigned char *bp;
     unsigned char *fade;
     unsigned char *o;
-    int bld, r, w, uu, uv, i, k, n, id, q, u2;
+    char *c;
+    int season;
+    int bld, r, w, uu, uv, i, k, n, q, u2;
     float fa, fb;
 
-    id = U_I((unsigned)&ai_PlayerId) & 0xffff;
     fade = 0;
-    bld = gm_PlayerRecord((unsigned)&ai_CharsT + id * 0x21c);
+    bld = gm_PlayerRecord((unsigned)&ai_CharsT + MAIN_PID * 0x21c);
     gm_ClockSeason((unsigned)&ai_TimeT);
-    memcpy(clk, (char *)(unsigned)&ai_TimeT, 14);
+    clk = main_Now;
     if ((U_I((unsigned)&ai_GameFlags) & 4) != 0 && 1 < main_Round)
-        *(int *)clk = U_I((unsigned)&ai_TimeT) + 1;
-    gm_ClockSeason(clk);
+        clk.a++;
+    season = sv_ClockSeason(&clk);
     ahm_FillSteps();
     *(float *)(bld + 0x58) = 0.5f;
     *(float *)(bld + 0x5c) = 1.0f;
@@ -3309,12 +3317,14 @@ void main_Unk5384e0(void)
     }
     if ((U_I((unsigned)&ai_GameFlags) & 4) != 0)
         sv_NetworkSyncWait(0x24087);
-    gm_CollectCarried(id, ln);
-    sv_Unk525a00(clk);
-    U_I((unsigned)&full_data_760454) = gm_ClockSeason(clk);
-    gm_FindRichest(ln + 0x2a, &k);
+    gm_CollectCarried(MAIN_PID, ln);
+    sv_Unk525a00(&clk);
+    U_I((unsigned)&full_data_760454) = sv_ClockSeason(&clk);
+    gm_FindRichest(&rid, &k);
     k = 0;
-    q = cm_SendExSysMessage(0, clk);
+    sysmsg.clock0 = clk.a;
+    sysmsg.tick = timeGetTime();
+    q = cm_SendExSysMessage(0, &sysmsg);
     while (cm_GetSlotState(q) == 0)
         sv_PumpNet();
     tb_SetFunctionOff((int)sv_UpdateClock, 1);
@@ -3359,15 +3369,14 @@ void main_Unk5384e0(void)
         w = d2_GetViewWin(win, 1);
         U_I(((unsigned)&ai_Unkf8f13c + 0x248) + w * 0x3c4) = 0x18;
         d2_SetForm(win, 1);
-        w = (int)(0.0f);
-        io_PrintText(0x2051, clk, w % 0xc);
+        io_PrintText(0x2051, &clk, (int)ai_Unk617830[season], (int)ai_Unk617840[season] % 0xc);
         io_PrintText(0x1ef9);
-        io_PrintText(0x1eff, U_I(((unsigned)&ai_Selected + 0x8) + id * 0x21c));
+        io_PrintText(0x1eff, U_I(((unsigned)&ai_Selected + 0x8) + MAIN_PID * 0x21c));
         k = 0;
         do {
             bp = (unsigned char *)(((unsigned)&he_RunHandlers + 0x6a4) + k * 0x50);
             n = *(int *)(bp + 4);
-            if ((n != 0 || *(int *)(bp + 8) != 0 || bp[0xc] != 0) && *(int *)bp == id) {
+            if ((n != 0 || *(int *)(bp + 8) != 0 || bp[0xc] != 0) && *(int *)bp == MAIN_PID) {
                 if (n == 0) {
                     n = *(int *)(bp + 8);
                     if (n < 1) {
@@ -3390,7 +3399,7 @@ void main_Unk5384e0(void)
             k++;
             ln[0x2e] = ln[0x2e + k * 5];
         }
-        io_PrintText(0x1efa, U_I(((unsigned)&ai_Selected + 0xc) + id * 0x21c));
+        io_PrintText(0x1efa, U_I(((unsigned)&ai_Selected + 0xc) + MAIN_PID * 0x21c));
         r = sv_RunFrame((int)main_Unk5384e0, 0x24087);
         while (r != 0) {
 #ifdef REA_START
@@ -3414,9 +3423,9 @@ void main_Unk5384e0(void)
         sv_Unk52fa90();
         ((void (*)(void))d3io_NoopCallback)();  /* called with no argument (no push at the call) */
     }
-    r = he_Unk53efb0(id);
-    cm_SendMoveGoodsUnchecked(-1, U_I((unsigned)&ai_CharInts + id * 0x21c), *(unsigned char *)(unsigned)&ai_OwnPlayer, -r);
-    ai_Unk4bb720(3, U_I((unsigned)&ai_CharInts + id * 0x21c));
+    r = he_Unk53efb0(MAIN_PID);
+    cm_SendMoveGoodsUnchecked(-1, U_I((unsigned)&ai_CharInts + MAIN_PID * 0x21c), *(unsigned char *)(unsigned)&ai_OwnPlayer, -r);
+    ai_Unk4bb720(3, U_I((unsigned)&ai_CharInts + MAIN_PID * 0x21c));
     cm_SendExSysMessage(1, 0);
     if ((U_I((unsigned)&ai_GameFlags) & 4) != 0)
         sv_NetworkSyncWait(0x24087);
@@ -3434,7 +3443,7 @@ void main_Unk5384e0(void)
     }
     if (U_I((unsigned)&sv_PanelForm) != -1)
         d2_SetViewEnabled(U_I((unsigned)&sv_PanelForm), 1);
-    if (*(char *)(unsigned)&ai_MissionMode != 5 && *(char *)(unsigned)&ai_MissionMode >= 0 && he_FindEvent(2, 0, 0x4c, 2, id) == 0) {
+    if (*(char *)(unsigned)&ai_MissionMode != 5 && *(char *)(unsigned)&ai_MissionMode >= 0 && he_FindEvent(2, 0, 0x4c, 2, MAIN_PID) == 0) {
         MAIN_MSG(msg, 0x4c);
         MSG_I(msg, 0x10) = 0;
         MSG_I(msg, 0x14) = 0;
@@ -3476,11 +3485,11 @@ void main_Unk5384e0(void)
                 if (ai_IsLocalMaster(c) != 0 || c[2] == 1) {
                     unsigned short lim = (unsigned short)util_RandomInt(0x5a);
                     if (gm_BuildingLevel(o) < (int)lim) {
-                        fa = (float)gm_EquipmentValue(o, 100) * 0.005;
+                        fa = (float)gm_EquipmentValue(o, 100) * 0.005f;
                         if (fa < 32.0f)
                             fa = 32.0f;
                         fb = (float)uu;
-                        if (fa < fb * 0.75) {
+                        if (fa < fb * 0.75f) {
                             memset(msg, 0, 0xf8);
                             MSG_B(msg, 4) = 0x1c;
                             MSG_I(msg, 0xc) = -1;
@@ -3489,14 +3498,13 @@ void main_Unk5384e0(void)
                             MSG_I(msg, 0x5c) = 10;
                             MSG_I(msg, 8) = U_I((unsigned)&ai_CharInts + k * 0x21c);
                             cm_BeginGroup("renovieren");
-                            w = (int)fa;
-                            cm_SendMoveGoods(-1, U_I((unsigned)&ai_CharInts + k * 0x21c), *(unsigned char *)(unsigned)&ai_OwnPlayer, w);
+                            cm_SendMoveGoods(-1, U_I((unsigned)&ai_CharInts + k * 0x21c), *(unsigned char *)(unsigned)&ai_OwnPlayer, (int)fa);
                             cm_SendLongMessage(msg);
                             cm_EndGroup("renovieren");
                             bld = gm_PlayerRecord(c);
                             if (bld != 0)
-                                *(int *)(bld + 0x44) = (int)fa;
-                            uu = (int)fb;
+                                *(int *)(bld + 0x44) = (int)((float)*(int *)(bld + 0x44) + fa);
+                            uu = (int)(fb - fa);
                         }
                     }
                 }
@@ -3558,18 +3566,18 @@ void main_Unk5384e0(void)
         }
     }
     for (k = 0; k < 0x300; k++) {
-        float px = -1.0f, py = -1.0f;
+        int px = -1, py = -1;
         int pz;
         c = (char *)((unsigned)&ai_CharsT + k * 0x21c);
         if (U_I(((unsigned)&ai_Unk770cec + 0x18) + k * 0x21c) != 0 && he_Unk55eba0(c, &px, &py, &pz) != 0) {
             int fg = U_I(((unsigned)&ai_Unk770cec + 0x18) + k * 0x21c);
-            if (px != *(float *)(fg + 0x2c) || py != *(float *)(fg + 0x30)) {
+            if (px != *(int *)(fg + 0x2c) || py != *(int *)(fg + 0x30)) {
                 if (*(int *)(fg + 0x28) != -1) {
                     int h = (int)evt_FindById(*(int *)(fg + 0x28));
                     evt_Stop((EVTSCRIPT *)h);
                 }
                 ch_StopActions(U_I(((unsigned)&ai_Unk770cec + 0x18) + k * 0x21c));
-                if (py != -1.0f && (w = ch_AddAction(U_I(((unsigned)&ai_Unk770cec + 0x18) + k * 0x21c), 0x33, pz, px, py)) != 0) {
+                if (py != -1 && (w = ch_AddAction(U_I(((unsigned)&ai_Unk770cec + 0x18) + k * 0x21c), 0x33, pz, px, py)) != 0) {
                     *(int *)(w + 0x70) = U_I((unsigned)&full_data_6253b0);
                     *(int *)(w + 0x74) = U_I((unsigned)&full_data_6253b4);
                     *(int *)(w + 0x78) = U_I((unsigned)&full_data_6253b8);
