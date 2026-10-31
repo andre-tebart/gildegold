@@ -1958,7 +1958,7 @@ void ai_Unk4b1d20(void)
 /* 0x4b1e40, marks the lists hst_Lists used and empty, frees the player's history texts, resets the text
    positions */
 
-void ai_Unk4b1e40(void)
+void hst_ResetPlayerTexts(void)
 {
     char path[0x40];
     int i, j;

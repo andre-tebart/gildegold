@@ -367,7 +367,7 @@ int he_Unk53d4b0(void)
 }
 /* 0x53d590, frees every used record (0x14c bytes each from 0x6fab40) up to 0x6f261c */
 
-void he_Unk53d590(void)
+void he_FreeEvents(void)
 {
     char *p;
     int i = 0;
@@ -386,9 +386,9 @@ void he_Unk53d590(void)
 }
 /* 0x53d5d0, frees the records, then asks 0x52a040 three times */
 
-int he_Unk53d5d0(void)
+int he_ReleaseEvents(void)
 {
-    he_Unk53d590();
+    he_FreeEvents();
     if (sv_ReturnZero() != 0)
         return 1;
     if (sv_ReturnZero() != 0)
@@ -580,7 +580,7 @@ void he_Unk53d930(void)
 }
 /* 0x53d9b0, closes every used slot and the event bar panel */
 
-void he_Unk53d9b0(void)
+void he_CloseEventSlots(void)
 {
     int *p = (int *)(unsigned)&full_data_6faa80;
 

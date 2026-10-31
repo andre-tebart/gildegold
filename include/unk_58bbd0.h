@@ -75,4 +75,5 @@ typedef struct G8INVOBJ {
 #pragma pack(pop)
 
 void ai_FreeSettings(void);                                        /* 0x5a8920 */
+void ai_FreePicture(void);                                         /* 0x5bc0f0 */
 #endif

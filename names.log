@@ -127,3 +127,10 @@
 2026-10-31T19:09:08 0x006f240c data full_data_6f240c -> snd_BookBank by:main why:sample bank handle: objekte\buecher.sbf, played as Aufklappen_s / Zuklappen_s / Umblaettern_s
 2026-10-31T19:09:11 0x006f2410 data full_data_6f2410 -> snd_RoomBank by:main why:sample bank handle: objekte\TuerenUndRaeume.sbf, played as RaumWechseln_s / GebaeudeVerlassen_s
 2026-10-31T19:09:18 0x006f2414 data full_data_6f2414 -> snd_TransportBank by:main why:sample bank handle: objekte\Transporter.sbf (loaded / freed in main only)
+2026-10-31T19:11:23 0x004b1e40 func ai_Unk4b1e40 -> hst_ResetPlayerTexts by:main why:marks the hst_Lists empty, frees historie/text_H_<player> via txt_FreeFile and resets the text positions (body)
+2026-10-31T19:11:25 0x005bc0f0 func ai_Unk5bc0f0 -> ai_FreePicture by:main why:d2_FreeSurface of the picture surface held in 0x6f26ac, then clears it (body)
+2026-10-31T19:11:33 0x0053d590 func he_Unk53d590 -> he_FreeEvents by:main why:frees every used he_Events record (he_Unk53e1f0 each) up to the count 0x6f261c (body)
+2026-10-31T19:11:38 0x0053d9b0 func he_Unk53d9b0 -> he_CloseEventSlots by:main why:he_Unk53d800 on every used slot of the 0x6faa80 table, then d2_CloseView of the event bar (body)
+2026-10-31T19:11:43 0x0053d5d0 func he_Unk53d5d0 -> he_ReleaseEvents by:main why:he_FreeEvents then three sv_ReturnZero queries; returns 1 if any (body)
+2026-10-31T19:11:48 0x006f25c4 data full_data_6f25c4 -> main_UdpOpen by:main why:set to 1 after udp_Init(0x3039) in the network game start, cleared by the game end after udp_Exit / net_Close
+2026-10-31T19:11:59 0x00537f40 func main_Unk537f40 -> main_EndGame by:main why:the reverse of main_Unk537de0 (game start): frees the sound banks, characters, weather, sky, modules and network (body)

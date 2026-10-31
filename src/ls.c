@@ -137,7 +137,7 @@ int ai_Unk75e138 = 0;  /* 0x75e138 .. the clock copy */
 extern struct G17MSG *ai_Unka68d24;  /* 0xa68d24 */
 extern struct G17MSG *ai_Unka68c00;  /* 0xa68c00 */
 extern struct G17MSG *cm_SendQueue;  /* 0xf81160 */
-void he_Unk53d590();                    /* 0x53d590 */
+void he_FreeEvents();                    /* 0x53d590 */
 extern int d3_CurrentScene;             /* 0x633444, the current scene index (d3.h) */
 char d3if_SelectScene(int index, char keep);  /* 0x4478e0, d3_interface.c */
 
@@ -2495,7 +2495,7 @@ int ls_ReadAvatars(void *f)
 {
     return gv_ReadAvatars(f);
 }
-/* 0x51fb90, reads the 0x14c-byte records of 0x6fab40 (the counterpart of 0x51bdc0): the counts, then each record in pieces (the 8 words +0x8c from 0x1002f), the text buffer of +0x7c (size +0x80, "messagebox", 0x400 bytes) and the type specific block of +0xac (the kind 0xc gets a 0x58-byte "f3_alwin_t:d" record at +0xbc, the kind 0xd -1 and, for the type 6, +0xd0 = 0), the records flagged 8 are listed in 0x74db40; then the 0x29-word table 0x74e1e0 (0x2c-byte entries) and the 0x14-word table 0x758ca0. Returns 1. ROUGH @deep diff read against the source (97 lines, 70 code / 6 regs / 4 order): meaning verified - the three 4-byte counts, the record loop (rec = 0x6fab40 + idx*0x14c, the 11 pieces incl. the version-gated 8 words +0x8c, the text buffer +0x7c / +0x80 via mem_Alloc and the direct read, the kind 0xc / 0xd block of +0xac and the +0xbc pointer / -1 / +0xd0 clear), the flagged records into 0x74db40, then the 0x29-int table 0x74e1e0 and the 0x14-int table 0x758ca4. Left is codegen: a store-order pair (the +0x7c store before/after the following load) and the induction-variable base - the original keeps the middle-loop pointer 8 bytes above ours (its edi with 0/+4/+8/... vs our edi-8 with -8/-4/0/...; both reach the same 0x74e1e8 start), the next recorded attempt here ('pointer one induction step ahead', notes/units/ls.md Open work). Readability: Q3 on every table literal (0x6fab40, 0x74db40, 0x74e1e0, 0x758ca4), Q2 on he_Unk53d590 / ai_Unk7585e4 / ai_Unk6f261c / ai_Unk6f2620, Q1/Q5. */
+/* 0x51fb90, reads the 0x14c-byte records of 0x6fab40 (the counterpart of 0x51bdc0): the counts, then each record in pieces (the 8 words +0x8c from 0x1002f), the text buffer of +0x7c (size +0x80, "messagebox", 0x400 bytes) and the type specific block of +0xac (the kind 0xc gets a 0x58-byte "f3_alwin_t:d" record at +0xbc, the kind 0xd -1 and, for the type 6, +0xd0 = 0), the records flagged 8 are listed in 0x74db40; then the 0x29-word table 0x74e1e0 (0x2c-byte entries) and the 0x14-word table 0x758ca0. Returns 1. ROUGH @deep diff read against the source (97 lines, 70 code / 6 regs / 4 order): meaning verified - the three 4-byte counts, the record loop (rec = 0x6fab40 + idx*0x14c, the 11 pieces incl. the version-gated 8 words +0x8c, the text buffer +0x7c / +0x80 via mem_Alloc and the direct read, the kind 0xc / 0xd block of +0xac and the +0xbc pointer / -1 / +0xd0 clear), the flagged records into 0x74db40, then the 0x29-int table 0x74e1e0 and the 0x14-int table 0x758ca4. Left is codegen: a store-order pair (the +0x7c store before/after the following load) and the induction-variable base - the original keeps the middle-loop pointer 8 bytes above ours (its edi with 0/+4/+8/... vs our edi-8 with -8/-4/0/...; both reach the same 0x74e1e8 start), the next recorded attempt here ('pointer one induction step ahead', notes/units/ls.md Open work). Readability: Q3 on every table literal (0x6fab40, 0x74db40, 0x74e1e0, 0x758ca4), Q2 on he_FreeEvents / ai_Unk7585e4 / ai_Unk6f261c / ai_Unk6f2620, Q1/Q5. */
 
 int unk_Unk51fb90(int f)
 {
@@ -2504,7 +2504,7 @@ int unk_Unk51fb90(int f)
     int *pi;
     char *tb;
 
-    he_Unk53d590();
+    he_FreeEvents();
     LS_R(&n, 4)
     LS_R(&size2, 4)
     ai_Unk6f261c = 0;

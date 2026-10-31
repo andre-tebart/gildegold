@@ -161,6 +161,7 @@ extern int ai_Unkfb9064;
 extern int ai_Unkfb9068;
 extern int ai_Unkfb906c;
 extern char cm_RequestedSaveName[72];
+#define main_BookObject (*(int *)((char *)&cm_RequestedSaveName + 0x44))  /* 0x6f2614, the book object "Buch" loaded at the game start (reasoned: a pointer-sized field after the 64-byte name and the int at +0x40) */
 extern unsigned int ai_MissionSeed;
 extern GAPDATA full_data_75df20[];
 extern char * sv_SelectedObject;
@@ -170,13 +171,12 @@ extern GAPDATA full_data_6f2598[];
 extern GAPDATA full_data_6f25c0[];
 extern GAPDATA full_data_75e630[];
 extern int snd_Bank;
-extern char * ai_Unk1468ae0[0x300];
 extern int cm_SkipEvents;
 extern int * d3t_Rain;
 #include "ch_types.h"
+extern struct CHARACTER *ch_List[0x300];  /* 0x1468ae0 (ch.h) */
 extern CHMOTION ch_Motions[];
 extern struct D3ANIM *d3t_CamMove;
-extern GAPDATA full_data_6f25c4[];
 extern int sv_FrameMask;
 extern OPTIONBYTES ai_GamePanel;
 extern char ai_MissionMode;
@@ -245,7 +245,6 @@ extern GAPDATA full_data_62456c[];
 extern GAPDATA full_data_6f2428[];
 extern GAPDATA full_data_6f2598[];
 extern GAPDATA full_data_6f25a8[];
-extern GAPDATA full_data_6f25c4[];
 extern GAPDATA full_data_760454[];
 extern GAPDATA full_data_76f990[];
 extern GAPDATA full_data_76f994[];
@@ -298,7 +297,7 @@ extern HWND main_Window;
 extern int snd_SfxEnabled;              /* 0x6f257c, f3snd.h */
 extern int snd_MusicEnabled;            /* 0x6f2578, f3snd.h */
 
-void main_Unk537f40(void);
+void main_EndGame(void);
 void main_Unk537be0(void);
 void main_Unk538140(void);
 void main_Unk5384e0(void);
@@ -338,6 +337,9 @@ void amt_CheckOffices(void);            /* 0x4e9260, amt.h */
 #include "d3_d3d.h"
 #include "io_text.h"
 #include "d3_snd.h"
+#include "d3_sky.h"
+#include "d3_io_t.h"
+#include "anm.h"
 #include "d3_tools.h"
 #include "ahm.h"
 #include "gv.h"
@@ -3043,7 +3045,7 @@ void main_Unk537de0(void)
     he_Unk53eea0();
     gv_ClearGraveyard();
     ord_ResetStatistics();
-    U_I(((unsigned)&cm_RequestedSaveName + 0x44)) = d3io_LoadObjectRef("Buch", "Buch");
+    main_BookObject = d3io_LoadObjectRef("Buch", "Buch");
     if (snd_SfxEnabled != 0) {
         U_I((unsigned)&snd_Bank) = sb_LoadSampleBank("natur\\regen.sbf", 0);
         U_I((unsigned)&full_data_75e630) = sb_LoadSampleBank("natur\\wind.sbf", 0);
@@ -3070,28 +3072,28 @@ void main_Unk537de0(void)
     ai_Unk4e5770();
 }
 /* 0x537f40, "end of a game": the reverse of 0x537de0: plates / hints cleared, the tick callback removed, the sound banks and the weather emitters (0x76061c / 0x760618 / the sky layers 0x760620 ..) freed, the
-   modules shut down (0x4b1e40, 0x4b39f0, 0x53d590 / 0x53d9b0 / 0x53d5d0, sv's 0x5223c0, 0x503e80, 0x4fe7f0 / 0x4fe830, the objects 0x1468ae0 ..), and the selection state cleared; ROUGH */
+   modules shut down (0x4b1e40, 0x4b39f0, 0x53d590 / 0x53d9b0 / 0x53d5d0, sv's 0x5223c0, 0x503e80, 0x4fe7f0 / 0x4fe830, the objects 0x1468ae0 ..), and the selection state cleared */
 
-void main_Unk537f40(void)
+void main_EndGame(void)
 {
+    int i;
     int *p;
-    int sc;
 
     sv_ClearNamePlates();
-    d2_CopyCaption((char *)(unsigned)&ch_EmptyName);
-    sv_SetStatusText((char *)(unsigned)&ch_EmptyName);
-    U_I((unsigned)&d2_CutsceneActive) = 1;
+    d2_CopyCaption(ch_EmptyName);
+    sv_SetStatusText(ch_EmptyName);
+    d2_CutsceneActive = 1;
     tb_CloseFunction(sv_UpdateClock);
-    U_I((unsigned)&cm_SkipEvents) = 0;
+    cm_SkipEvents = 0;
     evt_UnloadAll();
-    if (U_I(((unsigned)&cm_RequestedSaveName + 0x44)) != 0)
-        d3io_ReleaseObject(U_I(((unsigned)&cm_RequestedSaveName + 0x44)));
+    if (main_BookObject != 0)
+        d3io_ReleaseObject(main_BookObject);
     if (snd_SfxEnabled != 0) {
         snd_ClearQueue();
         d3snd_DetachAll();
-        if (U_I((unsigned)&snd_Bank) != 0) {
-            sb_UnloadSampleBank(U_I((unsigned)&snd_Bank));
-            U_I((unsigned)&snd_Bank) = 0;
+        if (snd_Bank != 0) {
+            sb_UnloadSampleBank(snd_Bank);
+            snd_Bank = 0;
             sb_UnloadSampleBank(snd_ThunderBank);
             snd_ThunderBank = 0;
             sb_UnloadSampleBank(snd_BookBank);
@@ -3100,65 +3102,59 @@ void main_Unk537f40(void)
             snd_RoomBank = 0;
             sb_UnloadSampleBank(snd_TransportBank);
             snd_TransportBank = 0;
-            sb_UnloadSampleBank(U_I((unsigned)&ch_SndLib));
-            U_I((unsigned)&ch_SndLib) = 0;
+            sb_UnloadSampleBank(ch_SndLib);
+            ch_SndLib = 0;
         }
     }
-    ai_Unk4b1e40();
+    hst_ResetPlayerTexts();
     ai_ClearMissions();
-    he_Unk53d590();
-    he_Unk53d9b0();
-    he_Unk53d5d0();
+    he_FreeEvents();
+    he_CloseEventSlots();
+    he_ReleaseEvents();
     sv_DestroyScreen();
     gm_ResetCharacters();
     gm_ClearBuildings();
     gm_ClearObjects();
-    p = (int *)(unsigned)&ai_Unk1468ae0;
-    do {
-        if (*p != 0)
-            ch_Delete(*p);
-        p++;
-    } while ((int)p < (unsigned)((unsigned)ai_Unk1468ae0 + 0xc00));
-    if (U_I((unsigned)&d3t_Snow) != 0) {
-        d3t_FreeSnow(U_I((unsigned)&d3t_Snow));
-        U_I((unsigned)&d3t_Snow) = 0;
+    for (i = 0; i < 0x300; i++) {
+        if (ch_List[i] != 0)
+            ch_Delete(ch_List[i]);
     }
-    if (U_I((unsigned)&d3t_Rain) != 0) {
-        d3t_DeleteRain(U_I((unsigned)&d3t_Rain));
-        U_I((unsigned)&d3t_Rain) = 0;
+    if (d3t_Snow != 0) {
+        d3t_FreeSnow(d3t_Snow);
+        d3t_Snow = 0;
     }
-    if (U_I((unsigned)&d3_Sky) != 0) {
-        p = (int *)(unsigned)&d3_SkyLayer0;
-        sc = U_I((unsigned)&d3_Sky);
-        do {
+    if (d3t_Rain != 0) {
+        d3t_DeleteRain(d3t_Rain);
+        d3t_Rain = 0;
+    }
+    if (d3_Sky != 0) {
+        for (p = d3_SkyLayers; (int)p < (int)(d3_SkyLayers + 6); p++) {
             if (*p != 0) {
-                d3sky_DeleteLayer(sc, *p);
-                sc = U_I((unsigned)&d3_Sky);
+                d3sky_DeleteLayer(d3_Sky, *p);
                 *p = 0;
             }
-            p++;
-        } while ((int)p < (unsigned)((unsigned)d3_SkyLayer0 + 0x18));
-        d3sky_Destroy(sc);
-        U_I((unsigned)&d3_Sky) = 0;
+        }
+        d3sky_Destroy(d3_Sky);
+        d3_Sky = 0;
     }
-    *(char *)(unsigned)&d3_FogByDistance = 0;
-    if (U_I((unsigned)&d3t_SunRays) != 0) {
-        d3t_RemoveSunRays(U_I((unsigned)&d3t_SunRays));
-        U_I((unsigned)&d3t_SunRays) = 0;
+    d3_FogByDistance = 0;
+    if (d3t_SunRays != 0) {
+        d3t_RemoveSunRays(d3t_SunRays);
+        d3t_SunRays = 0;
     }
-    U_I((unsigned)&d3t_CamMove) = 0;
+    d3t_CamMove = 0;
     init_FreeScenes();
-    ai_Unk5bc0f0();
+    ai_FreePicture();
     anm_Free();
     ai_ResetMessages();
     udp_Exit();
     net_Close();
-    U_I((unsigned)&full_data_6f25c4) = 0;
+    main_UdpOpen = 0;
     d2_SetPointerSprite(0, 0);
-    U_I((unsigned)&sv_SelectedObject) = 0;
-    U_I((unsigned)&sv_PanelShown) = 0;
-    U_I((unsigned)&ai_PlayerBuilding) = 0;
-    U_I((unsigned)&ai_FallbackBuilding) = 0;
+    sv_SelectedObject = 0;
+    sv_PanelShown = 0;
+    ai_PlayerBuilding = 0;
+    ai_FallbackBuilding = 0;
 }
 /* 0x538140, "main_RundenBeginn": the start of a game round (0x6f2598 = the round number): for every active character (0x770b80 stride 0x21c, kind 1 .. 8) the one-shot message texts (0x5176d0 formats 0x15c5 /
    0x2052 / 0x2054 / 0x2053 / 0x3fd7 written into the lists of 0x53eec0, which decrements the counter byte of an existing entry) are queued: the outstanding bills of the buildings of the kinds 6 / 5 (0x506430),
@@ -4702,7 +4698,7 @@ void main_GameLoop(int ctl)
             }
             Sleep(0x9c4);
             udp_Init(0x3039);
-            U_I((unsigned)&full_data_6f25c4) = 1;
+            main_UdpOpen = 1;
         }
         net_Connect(main_NetHost, U_I(((unsigned)&ls_SavePath + 0x84)));
         d2_CloseView(w);
@@ -4744,7 +4740,7 @@ void main_GameLoop(int ctl)
                     U_I((unsigned)&sv_FrameMask) = 0x46086;
                     sv_MessageBox(U_I((unsigned)&full_data_14414d0), 0);
                     U_I((unsigned)&ai_GameOver) = 1;
-                    main_Unk537f40();
+                    main_EndGame();
                     main_Unk537be0();
                     return;
                 }
@@ -4776,7 +4772,7 @@ void main_GameLoop(int ctl)
         if (U_I((unsigned)&ai_Unk1460ae0) == -1) {
 L_fail:
             sv_MessageBox(U_I(((unsigned)&ai_DifficultyTexts + 0x80)), 0);
-            main_Unk537f40();
+            main_EndGame();
             main_Unk537be0();
             return;
         }
@@ -5075,7 +5071,7 @@ L_next:
 L_end:
     if ((char)U_I((unsigned)&ai_GameFlags) < 0)
         ai_Unk578370();
-    main_Unk537f40();
+    main_EndGame();
 }
 /* 0x53c9b0, plays the logo movies jowood / 4head / intro / intro_addon (<movie path>*.mpg, window 10,10,0xdc,0xdc; handle 0x6f241c) */
 
@@ -5896,7 +5892,7 @@ GAPDATA full_data_6f25b0[4] = { 0 };  /* 0x6f25b0 */
 int main_QuitProgram = 0;  /* 0x6f25b4, set by quit / Escape / WM_QUIT: WinMain exits */
 int main_ScreenSaverOff = 0;  /* 0x6f25bc, the screen saver was switched off and is restored at exit */
 GAPDATA full_data_6f25c0[4] = { 0 };  /* 0x6f25c0 */
-GAPDATA full_data_6f25c4[4] = { 0 };  /* 0x6f25c4 */
+int main_UdpOpen = 0;  /* 0x6f25c4, the udp socket of the network game is open (udp_Init .. udp_Exit) */
 GAPDATA full_data_6f2624[4] = { 0 };  /* 0x6f2624 */
 GAPDATA full_data_6f2628[4] = { 0 };  /* 0x6f2628 */
 GAPDATA full_data_6f262c[4] = { 0 };  /* 0x6f262c */

@@ -5,14 +5,14 @@
 void he_Unk53d430(unsigned char *ev);
 void he_Unk53d470(unsigned char *ev);
 int he_Unk53d4b0(void);
-void he_Unk53d590(void);
-int he_Unk53d5d0(void);
+void he_FreeEvents(void);
+int he_ReleaseEvents(void);
 int he_Unk53d600(int type, void *alloc, void *run);
 int he_Unk53d630(void);
 int he_Unk53d6f0(int ev, int b, int c, int d, int e);
 void he_Unk53d800(int ev);
 void he_Unk53d930(void);
-void he_Unk53d9b0(void);
+void he_CloseEventSlots(void);
 void he_Unk53d9f0(int pl);
 void he_Unk53dad0(int state);
 void he_Unk53daf0(void);
