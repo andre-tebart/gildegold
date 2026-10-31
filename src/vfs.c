@@ -657,13 +657,13 @@ char vfs_MakeDirs(char *name, int unk)
     return 1;
 }
 /* 0x430470, opens a file of the directory tree. mode: R read (default), W write, B binary (default), T text,
-   Z gzip (default), N plain. Files inside zip archives can only be read, and only in binary mode. */
+   Z gzip (default), N plain. Files inside zip archives can only be read, and only in binary mode. @deep whole function read against the original: the call sequence is the same (38 calls; the zip loop and the pos>0 branch share the unzOpenCurrentFile / pool_Alloc block through a goto found, notfound sits after unzClose, flags are written the same), the mode switch, both open paths and the early returns are the same C. Remaining: allocation of f (memory in the original, register in ours) which moves name/e between edi and ebp, the epilogue merge of the two return-0 sites ('xor eax,eax' before the pops in the original's err_Message return, after three pops in the MakeDirs return; ours has them in one), and the block position of notfound (ours moves the sprintf+return block to the end). Tried: single-return style variants, f declared after modes[] (slot order), (void)&f, return f vs return 0 at the early check (size: 472 vs 490 instructions, explained: ours 472 vs original 490: one more epilogue in the original (+7: it keeps the 'notfound' return as a reload of f from its slot, mov ebp,[f]; mov eax,ebp, where ours knows f==0 and returns xor eax,eax) and 11 register copies / slot reloads because the original keeps f in memory with name in edi and e in ebp (ours: f in edi as the zero constant, name in ebp, reloaded after e takes it), so every 'cmp reg, zero-reg' is 'test reg,reg' plus copies) */
 
 VFSFILE *vfs_Tfopen(char *name, char *mode, int unk)
 {
-    VFSFILE *f = 0;
     VFSDIR *r;
     char *modes[2];
+    VFSFILE *f = 0;
     char tmp[0x100];
     unz_file_info info;
     char path[0x100];
@@ -676,7 +676,7 @@ VFSFILE *vfs_Tfopen(char *name, char *mode, int unk)
     int err;
 
     if (!name || !*name || !mode || !unk)
-        return 0;
+        return f;
     read = 1;
     binary = 1;
     z = 1;
@@ -724,8 +724,10 @@ VFSFILE *vfs_Tfopen(char *name, char *mode, int unk)
                 if (unzGetCurrentFileInfo(zip, &info, tmp, 0x100, 0, 0, 0, 0) == 0) {
                     _strupr(tmp);
                     vfs_ToSlashes(tmp);
-                    if (info.uncompressed_size > 0 && !strcmp(buf, tmp))
+                    if (info.uncompressed_size > 0 && !strcmp(buf, tmp)) {
+found:
                         err = unzOpenCurrentFile(zip);
+                    }
                     if (!err) {
                         f = pool_Alloc(&vfs_FilePool, sizeof(VFSFILE), 16);
                         f->zip = zip;
@@ -739,22 +741,15 @@ VFSFILE *vfs_Tfopen(char *name, char *mode, int unk)
                     if (unzGetCurrentFileInfo(zip, &info, tmp, 0x100, 0, 0, 0, 0) == 0) {
                         _strupr(tmp);
                         vfs_ToSlashes(tmp);
-                        if (info.uncompressed_size > 0 && !strcmp(buf, tmp)) {
-                            err = unzOpenCurrentFile(zip);
-                            if (!err) {
-                                f = pool_Alloc(&vfs_FilePool, sizeof(VFSFILE), 16);
-                                f->zip = zip;
-                                f->flags.checkgz = 1;
-                                f->flags.inzip = 1;
-                                goto opened;
-                            }
-                            break;
-                        }
+                        if (info.uncompressed_size > 0 && !strcmp(buf, tmp))
+                            goto found;
                     }
                 } while (unzGoToNextFile(zip) == 0);
             }
             unzClose(zip);
-            goto notfound;
+notfound:
+            sprintf(buf, "vfs_Tfopen: Could not find \"%s\"!!", name);
+            return f;
         }
         modes[0] = "rt";
         modes[1] = "rb";
@@ -776,9 +771,6 @@ opened:
         f->flags.binary = binary;
         f->flags.compressed = z;
         vfs_OpenCount++;
-        return f;
-notfound:
-        sprintf(buf, "vfs_Tfopen: Could not find \"%s\"!!", name);
         return f;
     }
     for (p = name; *p && (*p == '\\' || *p == '/'); p++)
