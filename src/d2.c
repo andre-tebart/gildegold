@@ -5456,7 +5456,7 @@ void d2_Plot(int x, int y, int r, int g, int b)
     }
     d2_UnlockSurface(w->paint);
 }
-/* 0x4764f0, line on the paintbox (Bresenham)*2 - dx, the d2_Plot pushes b,g,r,y,x) all match; the original keeps sx/sy and the two precomputed steps ((dy-dx)*2, dy*2) in stack slots and re-reads the parameters from their slots each iteration, ours keeps them in registers with a common step tail. Tried the menu dup-tail form (write the e update in both if/else arms, 'step' removed): 321 -> 323 code hunks, 12781 -> 12800 differing bytes, reverted. Remaining: whole-function frame / register allocation and the spill of the parameters -> deep (listing/slotmap) */
+/* 0x4764f0, line on the paintbox (Bresenham) */
 
 void d2_PlotLine(int x0, int y0, int x1, int y1, int r, int g, int b)
 {

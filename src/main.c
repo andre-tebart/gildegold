@@ -347,7 +347,12 @@ void chc_Register(void);                /* 0x40d270 */
 #define d2_MoveObjS ((void (*)(short, short, int))d2_MoveObj)  /* 0x46cda0 as its definition reads it (d2.c f_46cda0.c: short x, short y): this unit's callers push the short sums untruncated (0x532212 `sub dx, [..]; sub edx, 0x30; push edx`); d2.h keeps int for d2_CreatePicObj (@original) */
 #define util_RandomInt ((int (*)(unsigned short))util_Random)  /* 0x42ec00 as tr.c defines it: @original this unit reads the full int result (0x53b8c9 util_Random(4) + 0x20 pushed without the 16-bit mask ai.h's unsigned short prototype adds) */
 #define d2_SetObjValue4 ((void (*)(int, int, int, int))d2_SetObjValue)  /* the 4-argument call (as unk_5d33b0.h) */
-int main_ChooseCity(int unused, int host);  /* 0x537230, main.c */
+int main_ChooseCity(int unused, int host);  /* 0x537230, the player setup / city choice of a new game ("Menu\CHOOSECITY", the start menu page "Startmenu/A_Stadtwahl.esc"; host = 1 for a network host (the list of ".NET" files, else ".CTY"): lists the city files
+   "gamedata/cities/*" (0x5d33b0: up to 64 records of 0x210 bytes, the path at +0x109), reads each header (0x51cee0: +5 the name, +9 the object name, +0x34 the player limit; diff[i] = limit - players (0x62489c)),
+   creates the name object of the city (0x59a2c0 "stadt_<name>", the text plate 0x52e1c0 from the table 0x143a1c0 by the key "_STADTAUSWAHL_<NAME>_INFO+0" (0x42e770)), puts the city tower "sp_STADTTURM" (0x446e10,
+   "sonstiges\wimpel_STADTTURM.baf") over the picked city (the pick object 0x448630 with a name starting with "stadt_" selects: sel; the default is the object of the 5th city) and shows its description
+   ("_STADTAUSWAHL_<NAME>_BESCHR+0"); the buttons: ok (or enter / 0x1c) goes on to main_ChooseDifficulty and main_ChooseHistory (host: ends at once), the second button opens the opponent
+   selection main_ChooseOpponents (diff of the picked city); returns 1 when a game was set up (the second parameter is the host flag, the first unused) */
 struct D3OBJECT;
 void main_FreeSoundBanks(void);         /* 0x537db0 */
 void sb_Exit(void);                     /* 0x425ce0, sblib.c */
@@ -745,7 +750,7 @@ int sv_RunFrame(int cb, unsigned mask);
    "Misc\Loading_main" (window 1 above the bottom edge, window 0 at the top of the screen) while the history lists, the net states, the data tables, the effect slots, the icon names and the item
    prices are initialised, starts the sound (sound bank, 3D sound, "system.sbf", the "include_sfx.ini" of the program directory) and the music, then the game modules (sv's tick callback,
    scene universes, characters, snow mipmaps, the AI, the hmt tables), waits for the black fade ("BLACK") by running the frame loop 0x5309a0, clears the player profile and registers the
-   event commands; returns 1. Reasoned: the item prices are called only for their (discarded) results' side effects, the order follows the original*2]; and ecx,3; sub ebx,ecx; jle; rep stosb; ...; rep stosd; add ecx,ebx; rep stosb), which also pins xor ebx,ebx as the zero register (push ebx instead of push 0, mov [x],ebx); ours compiles the same call to a plain rep stosd with an esp frame (235 vs 251 ins). Tried: memset(&p,0,0x8c), memset(p,0,0x8c) with extern unsigned char init_PlayerProfile[] and a local int n = 0x8c as count - all give the plain form. Needs the variant that makes C2 emit the alignment-fixup expansion (deep) */
+   event commands; returns 1. Reasoned: the item prices are called only for their (discarded) results' side effects, the order follows the original */
 int main_OpenEngine(void)
 {
     char tmp[260], tmp2[260];
@@ -1107,10 +1112,15 @@ int main_EnterHostAddress(void)
     return r;
 }
 
-/* 0x532da0, the network game list ("Menu\SEARCH_NETWORK"; host: 0 = saved games (code 0x7f records), 1 = new games (0x3f)): asks the LAN (0x401ea0: port 12345, 3 s, up to 8 records of 0x80 bytes, the code at +0x7c), lists
-   the usable ones as rows (0x4731d0 / 0x472aa0 / 0x515960 0x1cbc), refreshes after 1.5 s or on the second button, the first button (join) writes the host address to game.INI ([Network] Host = 0x75e1c0) and
-   copies the record to 0x936460; a saved game (0x7f) is only usable when its file "Gamedata\network\<name>.SAV" exists and its player ids match; the third button asks for an address (0x532c30); returns 1 when a game
-   was chosen (ROUGH: from the disassembly, Ghidra lost all call arguments) */
+/* 0x532da0, the network game search window "Menu\SEARCH_NETWORK": every 1.5 s (the clock ai_ClockMs) or on the
+   refresh button (btn[1]) it scans the LAN (udp_FindServers, port 12345, 3 s, up to 8 hosts) under the message
+   txt 0x1cb1 and lists each host's game: its city arms ("_STADTWAPPEN_<city>", "_STADTWAPPEN_BERLIN" without
+   one), the host, the name and the players (txt 0x1cbc). saved 0 lists the new games (0x3f), saved 1 the saved
+   ones (0x7f) whose "Gamedata\network\<save>.SAV" holds the same party table; a full new game is disabled. The
+   join button (btn[0], enabled while one is selected) copies the chosen host into main_NetHost (the "Network"
+   "Host" option) and its record into cm_NetGame and, for a saved game, the city, the save name and the joined
+   character cm_JoinChar from the save's header (as main_JoinNetworkGame); btn[2] opens main_EnterHostAddress.
+   Returns 1 when a game was chosen. */
 void sv_ButtonRow(int f, int y, int *out, int n, ...);
 int d2_RemoveWindowObjects();
 void d2_RadioAdd(int g, int obj);

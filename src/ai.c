@@ -186,8 +186,7 @@ int ai_IsLocalMaster(AICHAR *c)
     return 1;
 }
 /* 0x47ddf0, looks for a partner (a character that suits this one) and sends the messages about it; returns
-   the partner when the two have met enough, else 0
-*0x300 (frame 0x14), ours holds best in edi, f at [esp+0x20] (frame 0x1c), and the original's return-0 tails are out of line (47de32, 47df5b, 47e2b0, 47e307) where ours are inline. spell.py: 47ddf0 / 47e175 / 47e263 dup-tail - tried the polarity spelling 'if (!c->officeKind && !c->secondOffice && c->kind != 5)' (byte-identical, reverted), the other prescriptions need the whole tail's block layout; 47e111 reload - the netId load did not move. Left: allocation / scheduling of best / bestf and the return-tail placement = match-deep. readability: Q6 done, Q2 renames done (ai_Unk505df0 -> gm_FindChar 602 refs, ai_Unk4c3c00 -> cm_AddFieldDelta 174 refs); Q1 no evidenced name (the only strings are the three pair-message texts 0x132f / 0x1339 / 0x1343); Q2 AICHAR 0x214..0x218 have no evidenced role anywhere (0x218 has no reader), the pair-message callees 0x5a8ee0 / 0x5a8f90 / 0x5a9050 differ only by text id; Q3 0x7d5f82 loop bound = ai_Chars + 768 * 0x21c + 2. */
+   the partner when the two have met enough, else 0 */
 
 AICHAR *ai_FindPartner(AICHAR *c)
 {
@@ -787,20 +786,7 @@ done:
     ai_MeisterCollectTrans(ch);
     ai_MeisterTrade(ch, b);
 }
-/* 0x47f700, evaluates the production of a master's workshop, the variant with the 0x20 / 0x200 entry flags
-
-   fill 3 hunks). Read region by region against Ghidra 47f700: the hourly chains, the 0x20 / 0x200 entry-flag
-   tests and loops, the human-player block, the flags-8 cleanup and slot loop, the ai_Watch copy blocks, the
-   job loop (kind != 0x14 / 0x15), the n1 / n2 clamp and the three AIINFO job-order branches (flags 0x10 / 8
-   -> type 4, 0x20 / 0x200 -> 0x15, else 0x14) - calls, arguments, constants and conditions equal. The done
-   label verified in the disassembly (0x47fddc: [esp+0x14] = b is pushed to both 0x47ed60 and 0x47ec20); the
-   Ghidra iVar3 there is scratch reuse, not a wrong argument. spell.py leads: the human-player if/else-if
-   rewrite (the 47edb0 fix) is 1867 -> 1877 = WORSE, reverted; reload 47f7d2 / 47f9fb (locals across
-   calls), dup-tail 47f8fa / 47faf2 / 47fd25 / 47fe4c (long tails with no shared source tail) and cmp-test
-   47ff45 (je vs jbe) name no concrete source form. What is left is register allocation / scheduling (820
-   instructions, regs only 16 hunks) - match-deep's slotmap / listing / c2prio. Readability done: Q1 named
-   ai_EvaluateProductionFlags, Q2 / Q6 clean (all callees and fields named in the sibling session, the
-   comment states the variant). */
+/* 0x47f700, evaluates the production of a master's workshop, the variant with the 0x20 / 0x200 entry flags */
 
 void ai_EvaluateProductionFlags(AICHAR *ch)
 {
@@ -1590,7 +1576,7 @@ send3:
     for (; k < 8; k++)                                                                                      \
         msg.ids[k] = -1;
 
-/* 0x4817a0, ai_CalcAngriff: spy on a building, then attack it@named_by guess, so no prefix can be chosen here), he_Unk553cc0 (role read in he.c: 1 unless an event 0x62 with +0xb0 = the id and +0xb8 == 1 runs; no name), AIOBJ.unk2a / unk37 (an object's building id and a roll threshold; no source names them), AIJOB.unkac (a union id: the building id in the espionage jobs, a netId in the am.c jobs - no single role name, and the union already aliases it as id). */
+/* 0x4817a0, ai_CalcAngriff: spy on a building, then attack it */
 int ai_CalcAngriff(AICHAR *ch, int n)
 {
     AIOBJ *o;
@@ -3682,8 +3668,7 @@ int ai_StartProduction(AICHAR *ch, AIENTRY *e)
 }
 /* 0x487780, adds the equipment the building's characters need (their object list at 0x178, queried for the
    prototype kind 0xc, matched against ai_WeaponList / ai_WeaponList2) to the slot table with the mark
-   `make` and the flag 2, then reduces the marks until make * price fits the building's limit (0x39)
-* price + (float)sum > (float)limit)) break;' in both weapon loops - FIXED, 147 -> 143 differing instructions, code 176 -> 168; (2) the two stores of the original (make = u at 0x487949 then make = u & mask at 0x487951) - the read-back spelling 'ai_Slots[i].make = ai_Slots[i].make & (((int)ai_Slots[i].make < 0) - 1)' after 'ai_Slots[i].make = u' byte-identical (VC6 folds the first store, keeps one), and its add-then-sub association (add ecx,ebp / sub eax,ecx) stays sub, sub in ours; (3) 'int u' instead of 'unsigned int u', byte-identical; (4) the char-loop base: the original strength-reduces to &ai_Chars[i].bld and keeps that pointer in the FRAME ([esp+0x10], reloaded at each use, ours keeps it in esi and spills once) and re-tests found (test edx,edx) before each slot search - pointer form / allocation, not a missing statement (every statement, constant, callee and field offset read). Readability done: Q4 raw access *(int *)((char *)&ai_Chars[i] + 0x178) replaced by the typed AICHAR.inventory (renamed project-wide from unk178: the character's goods inventory list, next at +0x3f; am.h AIPX mirror, am.c 8 refs, unk_4b6480.c 1), Q2/Q6 clean. Left: register allocation of the char pointer, the store scheduling (order 52) and the slot choice = match-deep vargen / slotmap */
+   `make` and the flag 2, then reduces the marks until make * price fits the building's limit (0x39) */
 
 void ai_AddEquipmentNeeds(AICHAR *ch, AIOBJ *obj, int limit)
 {

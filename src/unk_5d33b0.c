@@ -4117,7 +4117,7 @@ int ai_ScatterShot(SHOTREC *shot, float sideSpread, D3VECTOR *side, float otherS
    gravity pulls y; the velocity takes Heun's average of the change at the old and the predicted velocity,
    the position moves by velocity * step in inches. When ai_ShotHitsGround finds the move from the old to the
    new position hits the ground and the ball made more than 50 steps, it lands there: state 2, the energy
-   0.5 * mass * v^2, returns 0. Returns 1 while it flies.* g and perMass = step / mass before the state check, init_SceneHeightMaps[0], ticks = d3_Time - time, d3_GetHeightAt fail -> state 3 / energy 0, the three wind drags, the per-ms loop (v copy, drag x stored / y z on the FPU, a = (d + wind) * perMass (- fall on y), predicted v, second drags, next = pos, time++ / steps++, b, vel += (b + a) * 0.5, next += vel * 39.37 * step, ai_ShotHitsGround with the cells px / pz -> npx / npz, steps > 50 -> pos = next, state 2, energy 0.5 m v^2, return 0), return 1. dist 311 / 354 (fpu 150, code 285). Left: (1) the drag product order: the original emits sign, area, Cd, rho, v, v, 0.5 (wind x / z: area, w, w, sign, Cd, rho, 0.5), our VC6 moves the area factor ([esi+0x50]) after v*v for every grouping tried (plain chain, (area*Cd), (sign*area), (v*v)); (2) the frame: original sub esp,0x98, ours 0x50 - the original keeps more stage temps in memory (a / b / pos delta), which shifts every esp slot and shows as code; (3) loop regs ebp = ticks / ebx = i, ours swapped; (4) the second-stage sums are interleaved differently on the FPU. Tried: D3VECTOR v / next locals (struct copies through a pointer temp, worse: the original copies field by field), per-field next copy (kept) */
+   0.5 * mass * v^2, returns 0. Returns 1 while it flies. */
 int ai_StepShot(SHOTREC *shot)
 {
     float fall = ai_ShotStep * ai_Gravity;
@@ -4189,7 +4189,7 @@ int ai_StepShot(SHOTREC *shot)
 
 /* 0x5dc9d0, moves a cannon ball in slow motion (1318 B; gv.c 0x4edf80 calls it instead of ai_StepShot when the
    effect's +0x14 flag is set): ai_StepShot instruction for instruction with the step ai_ShotHalfStep (1/148 s)
-   for ai_ShotStep, in the gravity, the per-mass factor and the position move.*v in ours), the 0x98 vs 0x50 frame, the ebp / ebx loop registers and the second-stage FPU interleave - see ai_StepShot's */
+   for ai_ShotStep, in the gravity, the per-mass factor and the position move. */
 int ai_StepShotSlow(SHOTREC *shot)
 {
     float fall = ai_ShotHalfStep * ai_Gravity;

@@ -750,8 +750,7 @@ void d3fl_Ramp(unsigned char *p, int a, int b, unsigned char v0, unsigned char v
     }
 }
 /* 0x440360, finds the water tile type ("WASSER"), builds the water height map, its regions and the water
-   strips, points and polygons of the tiles
-*(T *) accesses */
+   strips, points and polygons of the tiles */
 
 void d3fl_PrepareWater(D3FLMAP *map)
 {
@@ -1918,8 +1917,7 @@ void d3fl_DrawWater(D3FLMAP *map, D3FLTILE *t)
 /* 0x4439e0, draws the floor: transforms the map into camera space; if the map is dirty, rebuilds the tile meshes
    (vertices, lit from the light map, and triangles; extra vertices on edges next to finer tiles), projects them and
    culls the triangles; then animates the water (water != 0) and queues the visible triangles of all tiles,
-   rendering their cache textures on first use
-*(T *) - deep work. Needs vargen/try.py */
+   rendering their cache textures on first use */
 void d3fl_Draw(D3FLMAP *map, char water)
 {
     D3OBJECT *cam;

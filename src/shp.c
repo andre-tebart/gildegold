@@ -1375,7 +1375,7 @@ void *d2_BankConvertTo16(void *pic, int a, int b)
 
 /* d2.h has other types for these three */
 int d2_DrawShapeHalfDark(int x, int y, void *surf, void *pic, char i);              /* 0x47c770, d2.h has void */
-int d2_StartAnim(short x, short y, void *data, unsigned char z);             /* 0x47cd20, d2.h has int z */
+int d2_StartAnim(short x, short y, void *data, unsigned char z);             /* 0x47cd20, starts an animation of a bank at (x, y); its number or -1 */
 int d2_DrawShapeMode2(int x, int y, void *surf, void *pic, unsigned char i);     /* 0x47c970, d2.h has void */
 
 /* 0x47c5e0, stores a palette into a bank */

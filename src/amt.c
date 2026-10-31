@@ -948,8 +948,7 @@ int amt_GetColumn7Offices(int all, int max, AMTREC *out)
 /* 0x4e7150, the offices the character c may apply for, best first: the open ones (state 3, fewer than 4 applicants) among the first 30 table records (the offices of the
    guild columns) whose kind has a rate for c (amt_GetOfficeRate); one entry per kind, sorted by level and, at the same level, by rate (an empty place is -100.0 / kind 0 /
    level 0). Writes up to n entries to out (n * 4 bytes of it are cleared first), returns their number capped at n; the callers are the application list 0x4ea8e0 and the
-   AI decision 0x497490 (am.c), which applies for a random candidate
-*4), the backwards init loop (rate -100.0f, kind 0, level 0), the pointer walk over the first 30 records, state 3 / cnt < 4, amt_GetOfficeRate, the duplicate-kind search, the insertion search (continue form: level < kind level, or same level and rate <= rate), if (i == -1) i = 0, cnt++, the backwards shift, the insert from the kind record, min(cnt, n). Menu/leads tried one build each: n < 1 -> n <= 0 (gain 368 -> 353 bytes); rate > rate -> !(rate <= rate) as continue guards (the original's test ah,0x41 / jp; gain 353 -> 352, 127 lines); the found-flag search form (for i >= 0 && !found) gave 184 code + 12 regs but grew the function to 432 bytes vs the original's 400 - reverted; table index walk -> pointer walk (p = amt_Table .. amt_Table + 30, the original's [ebp-8], 400 bytes, 207 -> 205 hunks). Left: frame slot order (ours rate [ebp-0xc] / cnt [ebp-4], original rate [ebp-4] / cnt [ebp-0xc] / found [ebp-0x10]), the search-1 found flag in a register vs our memory slot, the insert/shift block allocation, and the original's redundant out[0] re-test at i == -1 (semantically equal to our i = 0) - allocation/scheduling, c2prio/slotmap. Q1-Q7 pass, renamed amt_GetOfficeCandidates from the application-list callers (0x4ea8e0, 0x497490 in am.c, the town hall window in unk_58bbd0.c). */
+   AI decision 0x497490 (am.c), which applies for a random candidate */
 
 int amt_GetOfficeCandidates(char *c, int n, AMTCAND *out)
 {
@@ -1003,8 +1002,7 @@ int amt_GetOfficeCandidates(char *c, int n, AMTCAND *out)
 }
 /* 0x4e7320, the same candidate list as amt_GetOfficeCandidates, with the full offices counted: a rated office with 4 applicants is skipped for the list and sets
    *full to 1 (when full is not 0). Returns the number of candidates, capped at n; the town hall window 0x5a0590 uses *full to tell "all offices full" from "no
-   office open"
-*full = f at the end when full != 0). Menu/leads tried one build each: n < 1 -> n <= 0 (gain 384 -> 359 bytes, 165 -> 137 asm lines); the insertion rate test as the continue-guard form (the original's test ah,0x41 / jp; 137 -> 135 lines, 228 -> 212 hunks); the pointer table walk (WORSE here: 135 -> 139 lines, reverted - unlike 0x4e7150 the original uses different roles). Left: the frame slot order (ours cnt [ebp-4] / rate [ebp-8]; original cnt [ebp-0xc] / rate [ebp-4] / record pointer [ebp-4]?) and the original's search-2 found flag in esi (mov esi,1 before the insert, ours has none) with its i == -1 out[0] re-test - allocation/scheduling (c2prio/slotmap). spell.py menu: reload at 0x4e732a ([ebp-0xc] kept in ebx across the call) and 0x4e7466 ([ebp+0x10] reloaded into edi), dup-tail at 0x4e736f. Q1-Q7 pass, renamed amt_GetOfficeCandidatesFull from the town hall window caller 0x5a0590 (0x14409d8 'all full' vs 0x14409c8 'none'). */
+   office open" */
 
 int amt_GetOfficeCandidatesFull(char *c, int n, AMTCAND *out, int *full)
 {
@@ -2310,8 +2308,7 @@ int amt_CanUseMayorPower3(char *c)
    ids), gm_Shuffled picks one or two of those goods and their price records (gm_FindGoods) get the factor gm_GetSkill(c, 2) times a random
    1.2 .. 2.0 (raise) or 0.5 .. 1.0 (lower); the goods go back through cm_SendGoodsDelta, m[3] / m[4] return them, c uses its power flag
    0x4000000 and pays 3 money (cm_SendMoneyDelta), every player character except c is told the news text (0x1655 / 0x1659 + the goods
-   names) and c gets it as a message box when it is a player character (kind 6). Always 0.
-*0x24d+0x247], the amt_PriceRows row scan (37 rows of 0x15, bound &amt_PriceRows[0x25*0x15]) and the 10 goods ids, gm_Shuffled picking one or two, the gm_GetSkill(c,2) factor with 1.2 + 0.4*s and 1.0 - (0.2 + 0.3*s) (the lower arm's 0.2 / 1.0 are doubles, kept), the two goods records copied/updated through AMTGOODS and cm_SendGoodsDelta, the power flag + cm_SendMoneyDelta(-3), the two txt_Format messages (texts 0x1655..0x165a, goods names id*2+0x9a8) and the player-character news loop over ai_CharInts up to 0x7d5f84). Meaning fixes applied: best int -> the signed lvl compare, the district guard as two unsigned compares, the typed AMTGOODS / AMTBLDVIEW / AMTCHARVIEW views (Q4 clean), amt_PriceRows / AMT_CHARS_END externs (Q3), 709 -> 581 differing bytes. Left: the frame (ours 0xab8 vs the original 0xad8 = 32 bytes of extra locals) and the register roles from instruction 0: the original keeps c in ebp (reloaded once, spell reload) and the zero constant in ebx, ours has the zero in edi/esi and c in a slot; the news loop tail is placed differently (spell dup-tail at 0x4e99cd: for / do-while / swapped polarity same bytes) and 4e96f0 width is unchanged by the unsigned char cast. Allocation / slotmap / c2prio work is all that is left; Q1-Q7 pass. */
+   names) and c gets it as a message box when it is a player character (kind 6). Always 0. */
 
 int amt_ExecutePriceMessage(char *c, int *m)
 {
@@ -2510,8 +2507,7 @@ static __inline void amt_Tell(int a, int b, char *msg, int chan)
    loses the damage roll of c's skill, the opinion of both ways; 0x20: the same one-sided (only the office owners' opinion of c).
    Every power takes 8 money of c (cm_SendMoneyDelta), sets the power bit 0x10000000 of +0x1c8 and tells the news (texts
    0x166e .. 0x1685, the channels 0x5fb / 0x5fd / 0x5fe) to the other characters and, when the kind of c is 6, to c itself.
-   Returns -1 when the damage roll is <= 0.3 and 1 otherwise, 0 when the message does not fit the office kind.
-* gm_GetSkill(c, 4) * 15.0f then (int)((f + 5.0) * 2.55f) (ours was (int)(skill * random); the fp sequence now matches), the character id is an unsigned short (AMTCHARVIEW.id zero-extends where *(short *)t signed), cid dropped for AMT_NETID(c) per use (the original reloads [esi+4]; 678 -> 517 lines), the district guard as (unsigned int)m[1] >= 1 && <= 6 (the original's cmp 1/jb + cmp 6/ja), AMT_CHARS_END, the AMTCHARVIEW field views (Q4) and the rf-arm polarity if (rf > 0.3f) (the original's fall-through else blocks; 581 -> 517). Left: allocation only. (1) Prologue: ours emits call util_RandomF before push ebx/ebp/esi/edi (VC6 shrink-wraps), the original pushes the four registers first. (2) Register roles: original c=esi, t=ebx, ret=ebp; ours c=ebp, t=esi, ret spilled to [esp+0x18] (spell 4e9ce6 / 4ea2c1 reload hints). (3) Slots: spell 4e9ffb slots reports our AMTKIND k at [esp+0x44] and the AMTREC list[6] at [esp+0x5c] where the original has them swapped (its o, list, k are contiguous in declaration order); the declaration order and the scope of k were tried both ways with no code change, so only slotmap/c2prio can move them. (4) spell dup-tails at 4e9e26 (13), 4e9e94 (7), 4ea041, 4ea117, 4ea305, 4ea4a3: the both-arms / pull-after-branch / polarity spellings were tried (the kept polarity flip is the gain above); fill at 4ea4dd. Q1-Q7 pass and the frame now matches (0x8dc), no statement is missing. */
+   Returns -1 when the damage roll is <= 0.3 and 1 otherwise, 0 when the message does not fit the office kind. */
 int amt_ExecuteMayorPowerMessage(char *c, int *m)
 {
     float rf, f;

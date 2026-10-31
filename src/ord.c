@@ -1971,8 +1971,7 @@ void cm_SendMessage41(void *p);                         /* 0x4c5800 */
 
 /* 0x4f8ae0, the statistics of the characters and buildings into out[10] (floats): counts the characters of type 0 / 1 (+2) with an id (+0) and their two objects (+0x16c / +0x170) and adds 1.0 to the grid cell
    (+0x14 of the 8 x 8 grid 0x91ae60) of each building object; sums the 0x100 building records (kind below 0x44, +0x27 != -1) with the kind table 0x617468 (four shorts per kind) and the building kind bytes +0x247 / +0x248;
-   then normalises the grid cells and rates the result (0x4f9d40, 0x4f9ce0, 0x4f9ec0). out[4] the number of characters, out[5] .. out[9] derived ratings. ROUGH
-* 2 floor; out[7] / out[4] / out[8] / out[5] with the float products; *out = gm_IncomeRating(); out[3] / out[1]; the 64-cell normalisation loop with the max m, the >= 1.0f clamp w, the 1/(cnt+cnt) * buildingCount and the sum; then ord_WeightedRecordSum / ord_StatisticsRating / out[2] and the out[9] tail) was not verified hunk by hunk against the disassembly, so the ROUGH marker stays (Q5) and the float / double spellings of out[5] / out[9] are unchecked - that is the first lead for the next session. Q4 left: 14 raw accesses (the character id / kind / object pointers, the object's +0x61, the ai_BTypes kind byte, the AIBLD type / owner, the grid +0xc / +0x10 / +0x14 through the char* ORD_GRID macro); the typed rewrite is blocked by the same missing reading (a wrong field role would change the meaning) and gv.h cannot include ai.h (ai_Time / ai_Chars / ai_BTypes conflict), so AIBLD / AIBTYPE would need the ORDBLD-style local views first - base work for the next session. Done here: Q1 ord_ComputeStatistics, Q2 clean (gm_IncomeRating folded with f3gm.c's name, ord_WeightedRecordSum, ai_Blds folded with ai.h's name for 0x889f74). */
+   then normalises the grid cells and rates the result (0x4f9d40, 0x4f9ce0, 0x4f9ec0). out[4] the number of characters, out[5] .. out[9] derived ratings. ROUGH */
 void ord_ComputeStatistics(float *out)
 {
     int n1, n0, cnt, x, y, i, j, k;
@@ -2215,13 +2214,7 @@ static __inline void ord_Stamp(char *d)
    picks the next phase from a 16-entry table chosen by the stage (stage 0 goes straight to phase 3, stage 4 resets
    the stage), sends the long message 0x59 / 0x4e / 0x50 to the player (character ai_PlayerChar, gm_AddTime 0x4fe140
    later) and finally the whole record (message 0x4c5e80, tag 'set '); running, it returns while he_FindEvent (1, 0,
-   the phase's object) exists, else clears the phase and the accumulator.
-*0x1e minutes, 0; the original pushes secs/mins/hours and cleans 0x10), the stage 2/3 table loops are constant loops (the ?: folded to sete arithmetic), r[8]=r[7] after a phase message, and the tail is the generic block copy ORD_COPY3 (forces the ebp frame). Also named ord_UpdateMessageEvent, util_RandomF, ai_TimeHour. Remaining hunks 4f923a/4f941d/4f9457/4f9619/4f964b are the phase-3 block order, the merged branch tails and the register/slot allocation (constant 0 in edi vs esi, r at ebp-0x24 vs ebp-0x64); no statement left. Q4 still needs the 0xf8 long-message view, the ORDMSGREC r (partly done) and the ai_PlayerChar+4 view. Note: best.csv held the earlier 2-argument gm_AddTime spelling (364 vs 433), which is semantically wrong; `uv run ledger grade accept` reset the reference to this correct source.
-   outside 7 .. 0x16, Random(2) * 0x1e minutes, 0), not the draft's 2-argument t (the original pushes secs 0, mins,
-   hours and cleans 0x10); the stage 2 / 3 table loops are two constant loops (the draft's ?: folded to sete
-   arithmetic); the tail is the generic block copy ORD_COPY3 (ebp frame). Left (diffclass): code hunks 4f923a /
-   4f941d / 4f9457 / 4f9619 / 4f964b - the phase 3 block order and the merged branch tails, register allocation (the
-   constant 0 in edi vs the original's esi) and the record / message views for Q4 (r / out / msg are still raw). */
+   the phase's object) exists, else clears the phase and the accumulator. */
 void ord_UpdateMessageEvent(void)
 {
     int r[9];

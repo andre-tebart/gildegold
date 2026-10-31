@@ -291,10 +291,7 @@ float ahm_PlaceFactor(char *c, int id)
    flag: *a = 0, *f = 0.0), 1 (the share of the research done in *f, 0 .. 1), 2 / 3 (the same, with the recipe / share id (+0xb0) in *a); 0 when there is none.
    Only the clamp value v differs: the original keeps it in a stack temp ([esp+8] in case 0x95, [esp+4] in 0x96 / 0x97: `fdiv st,st(1); fstp temp; fstp st(0);
    fld temp`) and compares/reloads it from there, ours keeps it on the FPU and compares st(0)/st(1) directly (143 code hunks). Every statement, constant,
-   offset, the case order and the three compare forms (1.0f < / v <= 0.0f / 1.0f >) match.
-
-   kept), the constant-left comparisons (1.0f >= v: 191 -> 144, kept), the negated `!(1.0f < v)` (test ah,0x5 form: 144 -> 143, kept), the early-return clamp
-   form (143 -> 181, WORSE, reverted), `volatile float v` (185, reverted), block-scoped v per case (same 143). Q1..Q7 pass. Left: FPU vs stack-temp allocation. */
+   offset, the case order and the three compare forms (1.0f < / v <= 0.0f / 1.0f >) match. */
 
 int ahm_ResearchState(char *o, int *a, float *f, int flag)
 {
