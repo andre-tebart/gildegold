@@ -267,9 +267,9 @@ void d3anim_PoseBones(D3OBJECT *obj)
         }
     }
 }
-/* 0x432190, the object's position at frame/sub of the slot's animation (root motion, without moving it). */
+/* 0x432190, the object's position at frame/sub of the slot's animation (root motion, without moving it). @deep whole function read against the original and reconciled: the relative branch (early return when sub == lastSub && key == frame, the partial first step 1 - sub0/n0, the whole-frame loop, the last step sub/n1, root-motion matrix transform) and the else branch (f0/f1 interpolation, transform) and the common offset tail all agree statement by statement; calls: none; renamed d3anim_Unk432190 -> d3anim_RootPosAt, D3_OBJOFFSET macro replaced by the typed D3OBJECT.posOffset (Q4). Remaining: FPU spill / merge scheduling of the two transform blocks (inlining the else branch's sum drops the tail merge, 781 vs 836 bytes, but gives x-first operand order where the original is z-first, so it was not kept); tried separate d2/sum2/v2/t2 locals (no effect, VC6 keeps no slots for them), f0/f1 pointer locals in the relative branch (worse) (size: 210 vs 251 instructions, explained: ours 210 vs original 251 instructions: the original keeps two transform blocks (the matrix multiply of sum by obj->matrix with out->x/y/z = v + pos, about 22 instructions each, op histogram +9 fmul, +8 fld, +6 faddp, +4 fstp) where ours tail-merges them into one because both branches leave sum in the same slots; the original's else branch holds sum.x in [esp+0x14] and its relative branch in [esp+0x24] with the rest on the FPU stack (spill pattern of the FPU depth), the remainder is the spill/reload moves of d.z / f0->move.z / t [0x1c] [0x3c] that ours keeps in registers) */
 
-void d3anim_Unk432190(D3OBJECT *obj, D3ANIMSLOT *s, int frame, int sub, D3VECTOR *out)
+void d3anim_RootPosAt(D3OBJECT *obj, D3ANIMSLOT *s, int frame, int sub, D3VECTOR *out)
 {
     D3ANIMDATA *data = s->data;
     D3ANIMFRAME *f0, *f1;
@@ -286,9 +286,9 @@ void d3anim_Unk432190(D3OBJECT *obj, D3ANIMSLOT *s, int frame, int sub, D3VECTOR
         sub0 = s->lastSub;
         n0 = data->frames[key].count;
         if (sub == sub0 && key == frame) {
-            out->x = D3_OBJOFFSET(obj).x + obj->pos.x;
-            out->y = D3_OBJOFFSET(obj).y + obj->pos.y;
-            out->z = D3_OBJOFFSET(obj).z + obj->pos.z;
+            out->x = obj->posOffset.x + obj->pos.x;
+            out->y = obj->posOffset.y + obj->pos.y;
+            out->z = obj->posOffset.z + obj->pos.z;
             return;
         }
         if (key < frame) {
@@ -343,9 +343,9 @@ void d3anim_Unk432190(D3OBJECT *obj, D3ANIMSLOT *s, int frame, int sub, D3VECTOR
         out->y = v.y + obj->pos.y;
         out->z = v.z + obj->pos.z;
     }
-    out->x = D3_OBJOFFSET(obj).x + out->x;
-    out->y = D3_OBJOFFSET(obj).y + out->y;
-    out->z = D3_OBJOFFSET(obj).z + out->z;
+    out->x = obj->posOffset.x + out->x;
+    out->y = obj->posOffset.y + out->y;
+    out->z = obj->posOffset.z + out->z;
 }
 /* 0x4324e0, the next frame after frame (reverse, loop and ping-pong flags in f.b[1]). */
 
@@ -594,7 +594,7 @@ normalize:
                     half = n / 2;
                     if (s->subFrame >= 0 && s->subFrame < n)
                         half = s->subFrame;
-                    d3anim_Unk432190(obj, s, s->frame, half, &out);
+                    d3anim_RootPosAt(obj, s, s->frame, half, &out);
                     if (fabs(out.x - SLOT_F(s, 0x4c)) < SLOT_F(s, 0x5c) && fabs(out.z - SLOT_F(s, 0x54)) < SLOT_F(s, 0x5c)) {
                         s->subFrame = half;
                         s->flags.b[8] |= 8;

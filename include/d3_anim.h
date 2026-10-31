@@ -159,7 +159,6 @@ typedef struct D3PATH {             /* 0x44 bytes, at D3OBJECT + 0x1d0 */
 } D3PATH;
 
 #define D3_OBJPATH(obj) (*(D3PATH **)((char *)(obj) + 0x1d0))
-#define D3_OBJOFFSET(obj) (*(D3VECTOR *)((char *)(obj) + 0x78))   /* added to the root-motion position */
 
 /* Skeleton animations of a mesh: D3MATERIAL.tex[3] (0x178, 0x7c bytes each) hold them, the child objects
    are the bones, matched by name. */
