@@ -184,7 +184,7 @@ int ai_Unk58af50(); int ai_Unk58b880();
    0x75e5ca keeps the last choice. The paths where the record 0x6f5ea4 / 0x6f5e78 is missing open the message
    box 0x60ea78 instead. ROUGH: the text of the sub blocks is transcribed from the disassembly / pseudocode,
    the exact store order and the local frame are not verified
-   @deep Q1: unit unnamed (@named_by -), no evidence for the function name; B: code 1020 + regs 12, mine 2448 B vs 2595 B with the original's ebp frame 0x250 (FPO difference), ROUGH draft, the store order and the 0x5a/0x7f paths unverified (unit note Open work); Q2 40 callees, Q3 63 addresses, Q4 U_I/U_B/U_W + 2 casts, Q5 ROUGH; structural byte work, not a meaning fix */
+@named_by -), no evidence for the function name; B: code 1020 + regs 12, mine 2448 B vs 2595 B with the original's ebp frame 0x250 (FPO difference), ROUGH draft, the store order and the 0x5a/0x7f paths unverified (unit note Open work); Q2 40 callees, Q3 63 addresses, Q4 U_I/U_B/U_W + 2 casts, Q5 ROUGH; structural byte work, not a meaning fix */
 
 int ai_Unk589f10(void)
 {
@@ -466,7 +466,7 @@ void ai_Unk58a9d0(void)
    "..\..\Grafik\STADTWAPPEN\BERLIN" 0x6240cc); the control 0x4731d0 (5, 5, the image, screen) and the text
    0x473650 (the control's x + 0xf, 0x19, the city name) and below it the population "%s: %d" 0x62aaa4 with
    U_I (0x144abd4) and the byte 0x936496
-   @deep Q1 (unit unnamed, @named_by -); B: code 137 + fill 10 (the two identical city-name branches 0x9364dc == 0x3f are written once, note Open work) + Q2 (7 callees, incl. the text helpers 0x4731d0/0x473650 and 0x5de652), Q3 (10 addresses), Q4 U_I/U_B + 2 casts; needs the control/text prototypes and typed globals */
+@named_by -); B: code 137 + fill 10 (the two identical city-name branches 0x9364dc == 0x3f are written once, note Open work) + Q2 (7 callees, incl. the text helpers 0x4731d0/0x473650 and 0x5de652), Q3 (10 addresses), Q4 U_I/U_B + 2 casts; needs the control/text prototypes and typed globals */
 
 void ai_Unk58aa30(void)
 {
@@ -726,7 +726,7 @@ void ai_Unk58ba70(void)
    eight emblems; the frame loop 0x5309a0 (0x5361d0, mask) with the profile write back and the return 1 when a
    player was chosen. ROUGH: the state machine and the profile write back are condensed to the calls; see the
    disassembly 0x58af50 .. 0x58b8xx
-   @deep Q1 (unit unnamed, @named_by -); B: code 745 + order 10 + fill 10 + slots 2, ROUGH/SKELETON draft of a 2352 B window; Q2 (17 callees), Q3 (25 addresses), Q4 U_I/U_B + cast; needs the choose-player window rebuilt against the original */
+@named_by -); B: code 745 + order 10 + fill 10 + slots 2, ROUGH/SKELETON draft of a 2352 B window; Q2 (17 callees), Q3 (25 addresses), Q4 U_I/U_B + cast; needs the choose-player window rebuilt against the original */
 
 int ai_Unk58af50(int a, int b)
 {

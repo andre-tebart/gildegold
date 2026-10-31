@@ -657,8 +657,7 @@ char vfs_MakeDirs(char *name, int unk)
     return 1;
 }
 /* 0x430470, opens a file of the directory tree. mode: R read (default), W write, B binary (default), T text,
-   Z gzip (default), N plain. Files inside zip archives can only be read, and only in binary mode.
-   @deep behaviour: 483 code hunk lines and 36 slot lines are the frame size (ours 0x364, original 0x368 - one 4-byte local/temp the original keeps crossing the calls) and the resulting shift of every stack reference (+4) plus the block order of the three pool_Alloc / unzGetCurrentFileInfo sites; the mode-parsing switch, all compares and every non-stack immediate (0x14, 0xef, 0xdf, 0xde, 8, 3, 0x140, 0x10) appear with equal counts on both sides, the differing register spellings (eax/edi, al/cl) are the same operations - no statement, constant or callee differs (full asmdiff mnemonic histogram; hunks at instructions 0/50/69/148/185/200 read). Frame/slot allocation - deep */
+   Z gzip (default), N plain. Files inside zip archives can only be read, and only in binary mode. */
 
 VFSFILE *vfs_Tfopen(char *name, char *mode, int unk)
 {

@@ -742,8 +742,7 @@ int ai_TokenRandomRich(int mode, G12ARG *args, int k, char *fmt, char *out)
     return 1;
 }
 /* 0x4af8d0, text token for the first character in the lists of 0x4adfb0 who passes 0x4ae120; fmt "...-n" as in
-   0x4aef10 (sex filter)
-   @deep behaviour: far draft, 180 code hunks, 22 slot hunks (the RND_NPC_EINWOHNER token, callback 0x601b10[12] = 0x4af8d0, name 0x601730[12]): Q2 fixed this session - ai_IsLivingInhabitant is ai_IsLivingInhabitant now (its only caller is this token, so kind 0 is the plain inhabitant kind); left: the frame/slot layout, the loop form and the folded return tails as in ai_TokenRandomGuildMaster's @deep reason */
+   0x4aef10 (sex filter) */
 
 int ai_TokenRandomNpcInhabitant(int mode, G12ARG *args, int k, char *fmt, char *out)
 {

@@ -59,7 +59,7 @@ int io_TrailingDigits(char *s, int n, char *out)
 /* ai_Unk143a618: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_Unk1440ac8: view of txt_Ptrs (build/mk_txt_views.py) */
 #define G30_ENDS_S(p) ((p)[strlen(p) - 1] == 's' || (p)[strlen(p) - 1] == 'z' || (p)[strlen(p) - 1] == (char)0xdf || (p)[strlen(p) - 1] == 'x')
-/* 0x5143d0 @deep behaviour: no meaning error found; the code hunks are compiler shape (the original is 2752 B, ours 2144: G30_ENDS_S expands 29 inline strlens against our 23, buffers initialised in the order A, C, B, N/T recomputed per case, ebx/ebp pushed only after the early return while ours pushes ebp at entry and shifts every stack slot by 4); readability Q4/Q5 and Q2: rec is read through the raw offsets 0x9/0xd/0x164..0x166/0x1cc of the 0x21c character record and the globals are the shared tables declared under placeholder names in ai.h/ahm.h/am.h (0x770b80 = ai_Chars, 0x7e3f40 the player slots, 0x6f1bc5/0x6f1bf8 the current player, 0x631090 = ch_EmptyName), the same typed view 0x514e90 needs */
+/* 0x5143d0 */
 int io_CharacterName(int id, unsigned char c, unsigned char kind, char *out)
 {
     char A[0x100], B[0x100], C[0x100];
@@ -221,7 +221,7 @@ int io_CharacterName(int id, unsigned char c, unsigned char kind, char *out)
 
 /* 0x514e90, the same text builder as 0x5143d0 for the ids 0 .. 0x2ff (anything else: the empty text 0x143b3f4, returns 0), but with the markup "$A" between rank word and name ("%s$A%s", "%s$A%ss", "%s$A%s'") in the kinds 2, 4, 7 and 8; kinds 3 and 9 keep the plain space. ROUGH like 0x5143d0 (the original appends the genitive twice for a kind 4 name without words: sprintf with "%s'" / "%ss", then the append again). */
 /* ai_Unk143b3f4: view of txt_Ptrs (build/mk_txt_views.py) */
-/* 0x514e90 @deep behaviour: no meaning error found, the same compiler shape as io_CharacterName (the original 2752 B against our 2336: G30_ENDS_S expands 29 inline strlens against our 23, buffers initialised in the order A, C, B, N/T recomputed per case, ebx/ebp pushed after the early return while ours pushes ebp at entry and shifts every stack slot by 4); the id range 0 .. 0x2ff, the player path with "s" and the double genitive of a kind 4 name without words are reproduced; readability Q4/Q5 and Q2: rec is read through the raw offsets 0x9/0xd/0x164..0x166/0x1cc of the 0x21c character record and the globals are the shared tables declared under placeholder names in ai.h/ahm.h/am.h */
+/* 0x514e90 */
 int io_CharacterNameMarkup(int id, unsigned char c, unsigned char kind, char *out)
 {
     char A[0x100], B[0x100], C[0x100];
@@ -418,7 +418,7 @@ static __inline void txt_Subst(char *buf, int at, int toklen, const char *sub)
 
 /* 0x515960, the text engine: prints the text fmt (a literal or an id of the text table 0x143a1c0 below 0x4800) with the arguments of its tokens ("%" "$" "{" + optional digit + a letter, e.g. "%s" a text id, "%G" the name of a good, "%N" a character name (0x5143d0), "%T" a time (0x508a80), "%i" a number with the dots of the thousands, "%f" a float, "%W" / "$C" window commands, "%a" a plain string, "%l" / "%t" / "%m" arguments kept in the window's table for the later redraw, "%u" / "%U" / "%e" / "%E" / "%b" / "%B" the case of the next word (the grammar of 0x42c3b0: 1 .. 6), "%X" a blank, "%w" a word of the text table, "%r" a random text of the group, "%v" a skipped argument) into the buffer of the current text window (0xf8f13c + 0x3c4 * 0x6ed938) and redraws it (0x46e150 / 0x471a90 / 0x474e80). Returns the window's object count (nobjs, the index
    the object that this text's "%ia" adds will get; the redraw above has created it before the caller's 0x475b80),
-   -1 for a missing window or an overlong text. ROUGH: only the structure of the token loop and the simple tokens; the grammar cases of "%s" / "%S" and the "%i" dot grouping are summarised, the rest of the repeated string moves is txt_Subst. @deep behaviour: the draft is a skeleton, 2912 of 7536 bytes (only the token loop and the simple tokens); missing: the grammar cases of %s/%S (the txt_Field word forms of 0x42c3b0 by case 1 .. 6), the %r random text of a group, the %i dot grouping, the case flags (the original's param_2 .. param_10) and the detail of the window record 0xf8f13c + 0x3c4 * window (+0x10 text buffer, +0x24c / +0x250 flags, +0x264 / +0x268 the 0x41-entry table with count +0x368); readability Q1/Q2: the skeleton identifiers and the unnamed window / argument globals */
+   -1 for a missing window or an overlong text. ROUGH: only the structure of the token loop and the simple tokens; the grammar cases of "%s" / "%S" and the "%i" dot grouping are summarised, the rest of the repeated string moves is txt_Subst.* window (+0x10 text buffer, +0x24c / +0x250 flags, +0x264 / +0x268 the 0x41-entry table with count +0x368); readability Q1/Q2: the skeleton identifiers and the unnamed window / argument globals */
 int io_PrintText(char *fmt, ...)
 {
     char buf[0x17d0 + 0x20];
@@ -756,7 +756,7 @@ int io_PrintText(char *fmt, ...)
     d2_DrawAll();
     return ret;
 }
-/* 0x5176d0, the same token engine as 0x515960 into the buffer out instead of the text window: the text id (or literal) id0 and its arguments; the window's argument table is used by the tokens "%l" / "%t" / "%m" / "%i" as in the original but nothing is redrawn. ROUGH skeleton like 0x515960 (the original is a second copy of its 7.5 KB). @deep behaviour: the draft is a skeleton generated from the 0x515960 one, 2656 of 6464 bytes (the same token loop and simple tokens), but this copy takes the output buffer as first argument and has no window record; missing the same %s/%S grammar (the word forms of 0x42c3b0 by case 1 .. 6), the %r random text of a group, the %i dot grouping and the case flags of the original's param_3 .. param_11; readability Q1/Q2: the skeleton identifiers and the unnamed argument / state globals */
+/* 0x5176d0, the same token engine as 0x515960 into the buffer out instead of the text window: the text id (or literal) id0 and its arguments; the window's argument table is used by the tokens "%l" / "%t" / "%m" / "%i" as in the original but nothing is redrawn. ROUGH skeleton like 0x515960 (the original is a second copy of its 7.5 KB). */
 
 
 void txt_Format(char *out, int id0, ...)

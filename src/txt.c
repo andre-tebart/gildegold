@@ -260,8 +260,7 @@ int txt_LoadIncludes(char *file)
     return 1;
 }
 /* 0x42cbc0, compiles the text files named in a definition file into <outputpath>\<name>.res files
-   and optionally writes a C header with one #define per group.
-   @deep behaviour only - grade.py code 1909, regs 90, slots 68, fill 8; unitdiff 4299 B / 1463 asm lines (2026-10-26): all blocks, calls and the switch are in the original order, but the original keeps the char position i in memory ([esp+0x10], cached in edx), lineno in ebx and 0 in ebp where ours enregisters i per loop and keeps lineno in memory (the same line/column live-range finding is in notes/units/txt.md); readable met */
+   and optionally writes a C header with one #define per group. */
 
 int txt_OpenText(char *file, int header)
 {

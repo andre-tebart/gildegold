@@ -292,7 +292,7 @@ float ahm_PlaceFactor(char *c, int id)
    Only the clamp value v differs: the original keeps it in a stack temp ([esp+8] in case 0x95, [esp+4] in 0x96 / 0x97: `fdiv st,st(1); fstp temp; fstp st(0);
    fld temp`) and compares/reloads it from there, ours keeps it on the FPU and compares st(0)/st(1) directly (143 code hunks). Every statement, constant,
    offset, the case order and the three compare forms (1.0f < / v <= 0.0f / 1.0f >) match.
-   @deep B3 draft: the value v in memory instead of the FPU is the allocation choice: leads tried are the case order (default body first, case 4 last - gained,
+
    kept), the constant-left comparisons (1.0f >= v: 191 -> 144, kept), the negated `!(1.0f < v)` (test ah,0x5 form: 144 -> 143, kept), the early-return clamp
    form (143 -> 181, WORSE, reverted), `volatile float v` (185, reverted), block-scoped v per case (same 143). Q1..Q7 pass. Left: FPU vs stack-temp allocation. */
 
@@ -1167,7 +1167,7 @@ int ahm_DeleteAlchemist(int unused, int *rec, unsigned char *o)
     }
     return 0;
 }
-/* 0x4ecf10, writes the record of the object o (+0x65; a blank one with id -1 when it has none) to the file f: id (4), float (4), 4 shares (1 each), 6 places (2 x 4); 1 when all was written @deep B3 draft, 133 differing instructions: the record layout (id, float, 4 shares, 6 place pairs) is proven and the body is complete; the hunks are the prologue (the original pushes ebp and keeps the record pointer in ebx, ours in esi without ebp), the 0x3c local's frame slot, and the position of the shared return-0 tail (the original inlines pop edi/pop esi/pop ebp/xor eax/pop ebx/ret after every failed fwrite, ours jumps to one shared tail with jbe against the original's ja over it). Meaning lead applied this session: the four flat fwrite checks are the unsigned <= 0 form (the unit's vfs_fwrite is declared unsigned; 135 -> 133 differing instructions), the nested +0x11 / loop checks are > 0. Reverted: the same change on the nested checks and the while (191 instructions - the inverted nested block regroups the whole body). spell.py: no menu rule for the remaining hunks (prologue / frame slot / tail placement). */
+/* 0x4ecf10, writes the record of the object o (+0x65; a blank one with id -1 when it has none) to the file f: id (4), float (4), 4 shares (1 each), 6 places (2 x 4); 1 when all was written */
 
 
 int ahm_WriteRecord(void *f, unsigned char *o)

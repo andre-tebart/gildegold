@@ -162,8 +162,7 @@ char *_itoa(int, char *, int); void d2_SetObjFont(int obj, int font); int sv_Run
    (0x475cb0) or sprintf's "%s\\%s%s" 0x62d7e0 into param_6, the cancel control (the text 0x1ccc)
    does the same with the empty name.
    ROUGH (layout 2026-10-24): the cancel-path sprintf has one more argument in the original than
-   Ghidra recovered, and the two control fields +0x5c / +0x14 are unchecked.
-   @deep meaning matches the original (head read: win creation 0x4741f0/0x475600/0x476f80/0x475f70, the 6-arg 0x475ff0 control, the 4-arg 0x52e860, ai_ListFiles, the 0x210 record writes; tail read: click branch 0x475cb0/sprintf, cancel branch d2_GetObjValue + sprintf with the 5 effective args); after removing the duplicated __chkstk call (ai_Unk5de9c0 = 0x5de9c0, automatic) and adding the missed x14 = -1 init, 246 code hunks remain from register allocation (win ebp vs ebx), local slot order and VC6 push/cleanup scheduling (the original reuses the pending d2_GetObjValue argument slot as the sprintf 5th arg: add esp,4 + add esp,0x14; ours re-pushes it, add esp,0x1c) */
+   Ghidra recovered, and the two control fields +0x5c / +0x14 are unchecked. */
 int ai_FilePickWindow(int param_1, int param_2, int param_3, int param_4, int param_5, int param_6)
 {
     char list[0x4200];
@@ -4118,7 +4117,7 @@ int ai_ScatterShot(SHOTREC *shot, float sideSpread, D3VECTOR *side, float otherS
    gravity pulls y; the velocity takes Heun's average of the change at the old and the predicted velocity,
    the position moves by velocity * step in inches. When ai_ShotHitsGround finds the move from the old to the
    new position hits the ground and the ball made more than 50 steps, it lands there: state 2, the energy
-   0.5 * mass * v^2, returns 0. Returns 1 while it flies. @deep body reconstructed from the whole of 0x5dc4a0..0x5dc9c5 (354 ins): fall = step * g and perMass = step / mass before the state check, init_SceneHeightMaps[0], ticks = d3_Time - time, d3_GetHeightAt fail -> state 3 / energy 0, the three wind drags, the per-ms loop (v copy, drag x stored / y z on the FPU, a = (d + wind) * perMass (- fall on y), predicted v, second drags, next = pos, time++ / steps++, b, vel += (b + a) * 0.5, next += vel * 39.37 * step, ai_ShotHitsGround with the cells px / pz -> npx / npz, steps > 50 -> pos = next, state 2, energy 0.5 m v^2, return 0), return 1. dist 311 / 354 (fpu 150, code 285). Left: (1) the drag product order: the original emits sign, area, Cd, rho, v, v, 0.5 (wind x / z: area, w, w, sign, Cd, rho, 0.5), our VC6 moves the area factor ([esi+0x50]) after v*v for every grouping tried (plain chain, (area*Cd), (sign*area), (v*v)); (2) the frame: original sub esp,0x98, ours 0x50 - the original keeps more stage temps in memory (a / b / pos delta), which shifts every esp slot and shows as code; (3) loop regs ebp = ticks / ebx = i, ours swapped; (4) the second-stage sums are interleaved differently on the FPU. Tried: D3VECTOR v / next locals (struct copies through a pointer temp, worse: the original copies field by field), per-field next copy (kept) */
+   0.5 * mass * v^2, returns 0. Returns 1 while it flies.* g and perMass = step / mass before the state check, init_SceneHeightMaps[0], ticks = d3_Time - time, d3_GetHeightAt fail -> state 3 / energy 0, the three wind drags, the per-ms loop (v copy, drag x stored / y z on the FPU, a = (d + wind) * perMass (- fall on y), predicted v, second drags, next = pos, time++ / steps++, b, vel += (b + a) * 0.5, next += vel * 39.37 * step, ai_ShotHitsGround with the cells px / pz -> npx / npz, steps > 50 -> pos = next, state 2, energy 0.5 m v^2, return 0), return 1. dist 311 / 354 (fpu 150, code 285). Left: (1) the drag product order: the original emits sign, area, Cd, rho, v, v, 0.5 (wind x / z: area, w, w, sign, Cd, rho, 0.5), our VC6 moves the area factor ([esi+0x50]) after v*v for every grouping tried (plain chain, (area*Cd), (sign*area), (v*v)); (2) the frame: original sub esp,0x98, ours 0x50 - the original keeps more stage temps in memory (a / b / pos delta), which shifts every esp slot and shows as code; (3) loop regs ebp = ticks / ebx = i, ours swapped; (4) the second-stage sums are interleaved differently on the FPU. Tried: D3VECTOR v / next locals (struct copies through a pointer temp, worse: the original copies field by field), per-field next copy (kept) */
 int ai_StepShot(SHOTREC *shot)
 {
     float fall = ai_ShotStep * ai_Gravity;
@@ -4190,7 +4189,7 @@ int ai_StepShot(SHOTREC *shot)
 
 /* 0x5dc9d0, moves a cannon ball in slow motion (1318 B; gv.c 0x4edf80 calls it instead of ai_StepShot when the
    effect's +0x14 flag is set): ai_StepShot instruction for instruction with the step ai_ShotHalfStep (1/148 s)
-   for ai_ShotStep, in the gravity, the per-mass factor and the position move. @deep the original is instruction for instruction 0x5dc4a0 ai_StepShot with 0x5eee04 (1/148) for 0x5eee00 (normalised disasm diff shows only those three operands); the body is ai_StepShot's with ai_ShotHalfStep and has the same 311-ins distance: the drag product order (area after v*v in ours), the 0x98 vs 0x50 frame, the ebp / ebx loop registers and the second-stage FPU interleave - see ai_StepShot's @deep note; whatever fixes one fixes both */
+   for ai_ShotStep, in the gravity, the per-mass factor and the position move.*v in ours), the 0x98 vs 0x50 frame, the ebp / ebx loop registers and the second-stage FPU interleave - see ai_StepShot's */
 int ai_StepShotSlow(SHOTREC *shot)
 {
     float fall = ai_ShotHalfStep * ai_Gravity;

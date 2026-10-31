@@ -26,7 +26,7 @@ extern const char d3_ScrollPool[];
 #define d3d_TexGMask (d3d_UsedTexFormat.pf2.dwGBitMask)
 #define d3d_TexBMask (d3d_UsedTexFormat.pf2.dwBBitMask)
 
-/* 0x43eab0, blends n x n pixels of the four corner textures src[0..3] with the weights w into dst @deep B: read all 5 hunks (asmdiff: frame sub esp 0x24 vs 0x30, slots 43ead8/43eb3e, code 43eb51 + 43ed22 = the two loops): the operations, constants, loop structure and the four source pointers match (208/214 instructions equal); the differences are the register roles of s0..s3 / the weight bytes (esi/ebx/edi/ebp swapped) and the stack slots of d, ww and the loop counters, plus 12 bytes more locals in ours (the a,b,c,e weight locals are materialized in ours) - the same operation in another register/slot spelling, no missing statement or wrong constant/field; readable already */
+/* 0x43eab0, blends n x n pixels of the four corner textures src[0..3] with the weights w into dst */
 void d3fl_BlendC(unsigned short *dst, unsigned long *w, unsigned char **src, unsigned int n)
 {
     unsigned int i, j;
@@ -311,8 +311,7 @@ void d3fl_FreeCache(void)
     d3fl_Blend = d3fl_BlendC;
 }
 /* 0x43f300, 256 texture triangles: 4 fixed ones covering the inner square (f..1-f), then 63 x 4 randomly
-   placed, scaled (0.9..1.23) and rotated copies of the same four triangles
-   @deep B: read the whole fixed part and loop against the original disassembly 0x43f300..0x43f88c: the values match (f = 1/d3fl_DetailScale, g = 1-f-f, the 12 fixed u/v entries, then 63 iterations of 4 groups x (2 rand offsets, scale rand/3+0.9, z angle 2pi, d3_MatFromAngles and the six m._11/_12/_21/_22 terms) - the loop stride is 0x60 in both (the original's esi points to data+0x20 and the stores are esi-0x20.., not a wider block); the difference is that the original keeps f, g and the intermediate u/v in stack slots (frame 0x84 vs 0x60) and spills/reloads them around each call while ours keeps them in FPU registers (fsts/fld st(n)), plus the FPU scheduling; no missing write, wrong constant or wrong term */
+   placed, scaled (0.9..1.23) and rotated copies of the same four triangles */
 
 void d3fl_MakeJitter(float *out)
 {
@@ -752,7 +751,7 @@ void d3fl_Ramp(unsigned char *p, int a, int b, unsigned char v0, unsigned char v
 }
 /* 0x440360, finds the water tile type ("WASSER"), builds the water height map, its regions and the water
    strips, points and polygons of the tiles
-   @deep B: code 1285 / slots 200 / regs 6 (asmdiff 957 differing) - the function was read in round 4 (notes/units/d3_fl.md: complete draft, the same 36 calls in the same order, ours 16 bytes longer; the open code hunks are the ramp loop's v == 0xff retest threaded differently and the divide switch code built in a byte register in the original vs ebx in ours; everything else is local slot assignment, the diff tail is the misaligned disassembly after the length difference) - the same operations in another slot/register spelling, no missing statement or wrong constant; needs vargen/try.py. Readability: D3FLREGION/D3FLPOLY unk fields (header comments give wavePhase, the mod-1 texture offsets, bit 7 of unk24) and 2 raw *(T *) accesses */
+*(T *) accesses */
 
 void d3fl_PrepareWater(D3FLMAP *map)
 {
@@ -1756,7 +1755,7 @@ void d3fl_UpdateWater(unsigned long time, unsigned int n, D3FLREGION *r)
         }
     }
 }
-/* 0x4430c0, transforms, lights and projects the water points of a tile and queues its water polygons @deep B: read the whole 506-line asmdiff against the original 0x4430c0..0x4437f0 and diffclass: 518 of 580 hunk instructions are the same operations in a different register / stack-slot allocation (slots 34, regs 14, fpu 14; the tile lives in ebx in ours and esi in the original, the row list walked with different pointer and slot sets, the projection loops' local layouts all differ), plus two equivalent branch spellings (test cl,cl then jge vs jns). One meaning item found and fixed: the npolys min compared unsigned (jb) where the original is signed, now min(npolys, (int)(d3_SortMax - d3_SortCount)) -> jl at 0x4436ed. No missing statement/callee/constant remains; the rest needs vargen/try.py */
+/* 0x4430c0, transforms, lights and projects the water points of a tile and queues its water polygons */
 
 void d3fl_DrawWater(D3FLMAP *map, D3FLTILE *t)
 {
@@ -1920,7 +1919,7 @@ void d3fl_DrawWater(D3FLMAP *map, D3FLTILE *t)
    (vertices, lit from the light map, and triangles; extra vertices on edges next to finer tiles), projects them and
    culls the triangles; then animates the water (water != 0) and queues the visible triangles of all tiles,
    rendering their cache textures on first use
-   @deep B: full draft, a vargen 'ren' case: read the source and the 3800-line asmdiff (503 hunks, 2872 differing instructions of 4358, code 3987 / slots 340 / regs 22 / fill 9 per diffclass): the whole function differs by one register role - map is in esi in ours and edi in the original, so every [esi+off] shows as [edi+off] and the locals move to other frame slots (frame 0x14c ours vs 0x150) - plus fpu scheduling; the calls and their positions are equal, the loop structure and every struct offset match, no missing statement/constant/callee. Readability: Q2 d3_Unk633b1c (role: the scene sun/light colour, aliases d3if_Dir/d3o_Dir), D3FLTILE.unk38/unk40 (split point/poly counts) and D3FLTEX.unk58 (no evidence), Q4 2 raw *(T *) - deep work. Needs vargen/try.py */
+*(T *) - deep work. Needs vargen/try.py */
 void d3fl_Draw(D3FLMAP *map, char water)
 {
     D3OBJECT *cam;

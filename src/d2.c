@@ -1811,7 +1811,7 @@ void *surf;
     d2_AddDirty((short)x, (short)y, d2_Pics[pic].w, d2_Pics[pic].h);
     d2_UnlockSurface(surf);
 }
-/* 0x46d220, draws the caption of an object (style bit 4: below it, bit 0x20: with a sprite behind) @deep draft (71 differing instructions of 131 vs 140; 155/400 bytes). spell.py dup-tail: statements in both arms (the form before this session: 116 differing, 150 instructions - reverted), pull after the branch (this form: 71, best; x/y are set in the style&4 arm and one d2_DrawTextBox follows), swap polarity has no non-empty source form here (the arms differ only in x/y). What is left reads as scheduling: the original hoists the shared argument pushes (caption/picW+0x60/h/surf) above the style&4 test and duplicates the 4-instruction epilogue in both arms (add esp,0x1c / pop edi / pop esi / pop ebp), and its register map is ebp/esi/edi where ours is ebx/esi/edi (the 46d223 prologue: ours pushes ebx, esi and takes o from [esp+0x14], the original ebp, esi, edi and o from [esp+0x18]). The reload entry at 46d223 names no source form: o is the parameter and every use already re-reads it through o; no local holds it. Readability passes Q1..Q7 (renamed this session from d2_Unk46d220). Left: the argument-push hoisting and the epilogue duplication - scheduling/register allocation (listing/c2prio/siblings). */
+/* 0x46d220, draws the caption of an object (style bit 4: below it, bit 0x20: with a sprite behind) */
 
 void d2_DrawObjCaption(o)
 D2OBJ *o;
@@ -4520,8 +4520,7 @@ void d2_RaiseViewWindows(int v)
 
 /* 0x4741f0, loads the form file x (forms\x.form) as a view: one window per record, the items (pictures, texts,
    inputs, sliders) become objects; the view is moved to (x, y) unless one of them is 0 and kept inside the screen;
-   returns the number of the view, or -1
-   @deep B3 far: 988 code hunks (735 differing of 712 instructions) and the whole shape is still wrong: our frame is 0x244, the original's 0x248 (Ghidra's lowest local is local_248), so every stack slot shifts by 4 (slots hunks at 474276/4742b2) and all parameter/local offsets differ by 4 - one 4-byte local is missing, but neither Ghidra's pseudocode nor the source shows which (Ghidra has local_230..local_248 that do not map one-to-one). Readability is done (Q1..Q7 clean): named from the data and the ~300 callers d2_OpenForm, d2_FullFormPath, d2_FormsDir, D2VIEW.firstObj/enabled, D2FORM0.bgpic, and the D2FORM2.alphaBits union view; the original's hardcoded view-scan guard 0xfb91e4 is D2_VIEW_END_GUARD (confirmed at 0x474376). Meaning checked against 0x4741f0..0x474b10: the form-file header/version branches, the free-view scan, the window loop and item loop follow Ghidra; no wrong constant/type/offset found beyond the frame size. spell.py leads tried/read: reload at 4741f0 (the original re-reads [esp+0x264] = name; ours keeps it in ebx - same parameter, only the frame offset differs, no local copy to drop), reloads at 4742ce/474329 same class; code hunks at 47423e/474368 have no menu rule; the slots hunks are the frame shift. Needs the deep toolbox (vargen/listing to find the missing local and the allocator cascade). */
+   returns the number of the view, or -1 */
 int d2_OpenForm(int x, int y, char *name)
 {
     char buf[0x100] = "";
@@ -5457,7 +5456,7 @@ void d2_Plot(int x, int y, int r, int g, int b)
     }
     d2_UnlockSurface(w->paint);
 }
-/* 0x4764f0, line on the paintbox (Bresenham) @deep B3 far draft, readable (Q1 fixed this session: d2_PlotLine -> d2_PlotLine; Q2 clean). 496 bytes, 321 code hunks. Every branch read against the original: the y0==y1 pair, the x0==x1 pair (count = difference, do/while --count) and the two Bresenham arms (sx/sy/dx/dy, e = dy*2 - dx, the d2_Plot pushes b,g,r,y,x) all match; the original keeps sx/sy and the two precomputed steps ((dy-dx)*2, dy*2) in stack slots and re-reads the parameters from their slots each iteration, ours keeps them in registers with a common step tail. Tried the menu dup-tail form (write the e update in both if/else arms, 'step' removed): 321 -> 323 code hunks, 12781 -> 12800 differing bytes, reverted. Remaining: whole-function frame / register allocation and the spill of the parameters -> deep (listing/slotmap) */
+/* 0x4764f0, line on the paintbox (Bresenham)*2 - dx, the d2_Plot pushes b,g,r,y,x) all match; the original keeps sx/sy and the two precomputed steps ((dy-dx)*2, dy*2) in stack slots and re-reads the parameters from their slots each iteration, ours keeps them in registers with a common step tail. Tried the menu dup-tail form (write the e update in both if/else arms, 'step' removed): 321 -> 323 code hunks, 12781 -> 12800 differing bytes, reverted. Remaining: whole-function frame / register allocation and the spill of the parameters -> deep (listing/slotmap) */
 
 void d2_PlotLine(int x0, int y0, int x1, int y1, int r, int g, int b)
 {

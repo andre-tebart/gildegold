@@ -267,7 +267,7 @@ void d3anim_PoseBones(D3OBJECT *obj)
         }
     }
 }
-/* 0x432190, the object's position at frame/sub of the slot's animation (root motion, without moving it). @deep B draft: 407 code hunks + 22 fpu; the recorded attempts in notes/units/d3_anim.md (frames[key] / frames[frame] stack-slot placement, the deliberately uninitialized sum on the unreachable path, pointer locals f0/f1) all failed - a deep matching job, not a base meaning fix. Readability also needs Q1, Q2 (d3_Lerp3, nextFrame/subFrame/relative) and Q4 (D3_OBJOFFSET macro). */
+/* 0x432190, the object's position at frame/sub of the slot's animation (root motion, without moving it). */
 
 void d3anim_Unk432190(D3OBJECT *obj, D3ANIMSLOT *s, int frame, int sub, D3VECTOR *out)
 {
@@ -456,8 +456,7 @@ struct D3ANIMSLOT * d3anim_GetMainSlot(struct D3ANIMCTL *ctl);                  
 
 /* 0x432750, the per-object animation step (d3_ForEachObject callback, ctx = d3_Time, | 0x80000000 in the
    second pass): steps the three vertex animation slots of every active control of the mesh material, then
-   the object's path animation (hermite through the keys). ROUGH draft from the disassembly.
-   @deep B draft, 4141/4480 bytes, 2599 code hunks and a ROUGH marker: the per-object animation step is a laid-out draft (notes/units/d3_anim.md Open work: struct fields for the vertex slots, key types of the jump-free path loop still open) - a deep reconstruction, not a base meaning fix. Readability also needs Q1/Q2 (16 unnamed identifiers) and Q4 (D3_OBJPATH, OBJ_LAST, SLOT_F, SLOT_TURN). */
+   the object's path animation (hermite through the keys). ROUGH draft from the disassembly. */
 char d3anim_StepObject(D3OBJECT *obj, void *ctx)
 {
     unsigned int now = (unsigned int)ctx & 0x7fffffff;

@@ -174,7 +174,7 @@ void surf_Up8(DDSURFACEDESC2 *dst, DDSURFACEDESC2 *src)
             d[dst->dwWidth * x / src->dwWidth] = s[x];
     }
 }
-/* 0x41f2b0 @deep behaviour: no meaning difference against the Ghidra reading (same trailing-zero shift counts, the same y0/y1 and x0/x1 bounds, p00/p01/p10/p11 with the same down row and right column guards, the same row accumulators al/ag/ab/ar2/ag2/ab2 and the same output OR of hb/dx + lb << bs etc.); the 740 code hunks are frame and register/scheduling shape (ours 0x8c and four saved registers against the original's 0xb4 frame, different loop block layout and hoisting); readability met */
+/* 0x41f2b0 */
 
 void surf_Up16(DDSURFACEDESC2 *dst, DDSURFACEDESC2 *src)
 {
@@ -255,7 +255,7 @@ void surf_Up16(DDSURFACEDESC2 *dst, DDSURFACEDESC2 *src)
         y0 = y1;
     }
 }
-/* 0x41f800 @deep behaviour: the transcription follows the Ghidra reading (same shift-free 24-bit sampling, y0/y1 and x0/x1 bounds, p00/p01/p10/p11 with the down row and right column guards, the same accumulators and output bytes; the original's lPitch >> 1 for the down row is kept as the binary has it); the 576 code hunks are the frame (ours 0x90 against the original's 0xa8) and register/scheduling shape; readability met */
+/* 0x41f800 */
 
 void surf_Up24(DDSURFACEDESC2 *dst, DDSURFACEDESC2 *src)
 {
@@ -326,7 +326,7 @@ void surf_Up24(DDSURFACEDESC2 *dst, DDSURFACEDESC2 *src)
         y0 = y1;
     }
 }
-/* 0x41fc00 @deep behaviour: the transcription follows the Ghidra reading of 0x41fc00 (same channel shift counts, y0/y1 and x0/x1 bounds, p00/p01/p10/p11 with the down row and right column guards, the same accumulators and the OR of hb/dx + lb << bs etc.; the original's lPitch >> 1 down row is kept as the binary has it, as in the other scalers); the 703 code hunks are the frame (ours 0x8c against 0xb4) and register/scheduling shape; readability met */
+/* 0x41fc00 */
 
 void surf_Up32(DDSURFACEDESC2 *dst, DDSURFACEDESC2 *src)
 {

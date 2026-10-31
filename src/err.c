@@ -100,7 +100,7 @@ write:
         WriteConsole(err_Console, "\n", 1, &n, NULL);
     }
 }
-/* 0x4215c0, unhandled exception filter: writes <exe>.dbg-symbolized crash info to _crashdump.log (ROUGH) @deep behaviour: ROUGH draft, 764 code hunks; the original function ends at 0x421c34 (ret 4) and the bytes after are its switch jump table, which asmdiff reads as code (the inc/sbb/xchg noise at 421c34+); our object is 0x3a bytes shorter, mainly because the original inlines the extension scan (forward to the NUL, back to '.', then 'd','b','g',0 at 421600-421647) where our source calls strrchr (push 0x2e/push path/call); the exception-name switch bodies are laid out in another order (the WriteFile length pushes pair up across cases), the rest is frame 0x28c vs 0x280 and the 0x10 slot shift / register allocation; readability: Q2 err_CrashCB (the global crash hook at 0x63236c, set by err_Init, called with the log handle on a crash and -1 otherwise), Q4 one raw '*(unsigned int *)map' (the map key), Q5 ROUGH; needs a source rewrite and the byte toolbox */
+/* 0x4215c0, unhandled exception filter: writes <exe>.dbg-symbolized crash info to _crashdump.log (ROUGH)*(unsigned int *)map' (the map key), Q5 ROUGH; needs a source rewrite and the byte toolbox */
 
 LONG WINAPI err_ExceptionFilter(EXCEPTION_POINTERS *ep)
 {

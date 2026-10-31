@@ -992,8 +992,7 @@ char d3_CornerCB(D3OBJECT *obj, D3CORNERCTX *c)
 /* 0x448e60, the texture coordinates at a screen point: of the polygons of `obj` textured with `tex` it takes the
    four vertices nearest to the screen corners (d3_CornerCB), picks three of them by their (normalized) uv and
    intersects the view ray through (sx, sy) with the plane of the triangle, once for each of the two triangles
-   of the quad; returns 1 and the uv when the ray hits one
-   @deep B: fixed the real meaning error on the way (float vs double literal types: the original's constants 0x5eb780 = 1.0f, 0x5eb788 = 0.0f, 0x5eb948 = 0.33333334f, while 0x5eb8a8 stays a double 1.0 for r+s<=1.0 and the outv fsubr; 15 QWORD constant uses removed, unitdiff 1472->1451 bytes). Remaining 10 diffclass hunks: the frame 0xc4 vs 0x108 (every esp-relative operand shifted by 0x44; the original keeps every float temp in its own stack slot, ours reuses px/bx/best_c slots for s/r/ic) plus FPU scheduling (fxch order, faddp pairing); read all hunks, no missing statement/constant/field/condition left */
+   of the quad; returns 1 and the uv when the ray hits one */
 
 char d3_ScreenToUV(float sx, float sy, D3OBJECT *obj, void *tex, float *outu, float *outv)
 {

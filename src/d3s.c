@@ -787,7 +787,7 @@ unsigned short * d3s_Dst16 = 0;  /* 0xfe73b0 */
 int d3s_Area = 0;  /* 0xfe73b8 */
 int d3s_Fill = 0;  /* 0xfe75ac */
 
-/* 0x45b510, a shadow mesh over the map cells in rect @deep B code hunks 546 with slots 4: every hunk read is the same load / store / FP operation on another stack slot ([esp+0x10..0x50] vs [esp+0x10..0x38], frame 0x24 vs 0x14) with the same struct offsets and literals on both sides (multiset comparison) and no call in the function; the vertices / polygons are computed in other temporaries - no missing statement or wrong constant found */
+/* 0x45b510, a shadow mesh over the map cells in rect */
 char d3s_MeshFromMap(int *rect, int stride, unsigned char *map, float *origin, float *cell, float *uv,
                      D3SBUF *buf, D3TEXHANDLE *tex, unsigned long color)
 {
@@ -873,7 +873,7 @@ char d3s_MeshFromMap(int *rect, int stride, unsigned char *map, float *origin, f
     }
     return 1;
 }
-/* 0x45b8d0, adds the shadow of slot to the shadow object @deep B code hunks 572 (510 asm lines): frame 0x54 vs 0x3c (the original keeps 24 more bytes of locals - colour components / rect / uv floats in memory), esi/ebp/edi hold material, buf and slot->tex in other roles; the six calls (4x _ftol 0x5de518 for the four colour casts, d3s_TerrainShadowMesh, d3s_MeshFromMap) agree and the sampled hunks are frame / register differences. Q2 unk05c/unk090: the same fields are named color 0x05c and range/power/atten 0x090 in d3_light.h's D3LOBJ view (a d3.h field rename is project-wide and not done here) */
+/* 0x45b8d0, adds the shadow of slot to the shadow object */
 
 char d3s_AddShadow(D3SSLOT *slot, void *grid)
 {

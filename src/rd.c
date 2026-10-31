@@ -253,7 +253,7 @@ void veg_GrowPlants(G15PLANT *p)
 }
 /* 0x4bc940, loads plant q's model ("%svegetation/*pfl_<type>_0<n>[_FALL].ogr"), names it "_ID<id>" and places it
    on the height map
-   @deep behaviour: far draft, 230 code hunks - the height-map block has another structure: the original keeps the three running sums in stack slots, accumulates x*m[0x28..0x2a]+m[0x24..0x26] then z*m[0x2c..0x2e], computes the cell pointer after that and adds the *hm*m[0x30..0x32] term last (rewriting our expression into that order compiles to the same code, so VC6 reassociates); frame/register allocation and the sprintf/strcat argument setup differ too; Q2/Q4 fixed (G15OBJ.mask, D3OBJECT.unk224 -> mask), readable */
+*m[0x28..0x2a]+m[0x24..0x26] then z*m[0x2c..0x2e], computes the cell pointer after that and adds the *hm*m[0x30..0x32] term last (rewriting our expression into that order compiles to the same code, so VC6 reassociates); frame/register allocation and the sprintf/strcat argument setup differ too; Q2/Q4 fixed (G15OBJ.mask, D3OBJECT.unk224 -> mask), readable */
 
 void veg_LoadModel(G15PLANT *q, int fall)
 {
@@ -336,8 +336,7 @@ void veg_HidePlants(G15PLANT *p)
     }
 }
 /* 0x4bcc20, lays a road from the building site of object obj (name: 0x58f640) to the next road (marks its cells
-   as ground type "EINFACHER_WEG" on the town map, around each cell before 0x780)
-   @deep behaviour: far draft (the layout note's DDA / loop shapes are guesses), 466 code hunks - frame 0xc0 vs 0xc8, 36 slot hunks, the marking loops, the path merge and the dummy/height steps differ in shape throughout; Q2 also blocked by ai_Unkfd7f78, a flag byte inside AIMAPREF[0]+0x32c only tested as bit 1 before d3fl_MakeDivide, no other reader and no evidenced role */
+   as ground type "EINFACHER_WEG" on the town map, around each cell before 0x780) */
 
 int rd_BuildRoad(char *obj, int name)
 {
