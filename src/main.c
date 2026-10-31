@@ -60,7 +60,6 @@ extern char main_GamePath[];
 extern int main_TextureDivider;
 #include "cm_types.h"
 extern CMNETGAME cm_NetGame;  /* 0x936460, cm.c: the network game */
-#define init_PlayerTalents (*(unsigned char (*)[5])&full_data_75e5f0)  /* 0x75e5f0, init_PlayerProfile + 0x50: the five talent values (main_ChooseTalents) */
 #define cm_JoinChar (*(CMJOIN *)((char *)&ai_Unk9364e0 + 0x2c0))  /* 0x9367a0, the joined character (CMJOIN) */
 extern G17MSG ai_Unk9367e0[];
 extern GAPDATA full_data_5f320c[];
@@ -115,11 +114,8 @@ extern GAPDATA full_data_624ce4[];
 extern GAPDATA full_data_624ce8[];
 extern GAPDATA full_data_624cec[];
 extern GAPDATA full_data_624cf8[];
-extern GAPDATA full_data_75e5f0[];
 extern INIT_PLAYER init_PlayerProfile;
 extern int sv_PopRequest;
-extern GAPDATA full_data_75e5f5[];
-extern GAPDATA full_data_75e628[];
 extern int ai_Unk5f8438;
 extern char *ai_Unk5fb5b0;
 extern int * ai_Unk633738;
@@ -136,10 +132,6 @@ extern int sv_PopRequest;
 extern int ai_OptionHistorie;
 
 extern GAPDATA full_data_624938[];
-extern GAPDATA full_data_75e5ec[];
-extern GAPDATA full_data_75e5f0[];
-extern GAPDATA full_data_75e5f4[];
-extern GAPDATA full_data_75e628[];
 extern unsigned char hst_TextsOn;
 extern INIT_PLAYER init_PlayerProfile;
 extern int sv_FrameMask;
@@ -233,10 +225,6 @@ extern char ai_MissionMode;
 
 
 extern GAPDATA full_data_75e401[];
-extern GAPDATA full_data_75e5ec[];
-extern GAPDATA full_data_75e5f0[];
-extern GAPDATA full_data_75e5f5[];
-extern GAPDATA full_data_75e628[];
 extern INIT_PLAYER init_PlayerProfile;
 extern int ai_Unk1460ae0;
 extern int ai_Unkfb9060;
@@ -308,9 +296,6 @@ extern int main_Inactive;       /* 0x6f2584, 1 while the app is deactivated */
 extern GAPDATA full_data_6f2598[];
 extern GAPDATA full_data_6f25a8[];
 extern char main_AppDir[];
-extern GAPDATA full_data_75e5f0[];
-extern GAPDATA full_data_75e5f4[];
-extern GAPDATA full_data_75e628[];
 extern INIT_PLAYER init_PlayerProfile;
 extern int main_MoneyCheat;
 extern int sv_FrameDepth;
@@ -1869,7 +1854,7 @@ void main_GiveStartBuildings(int p)
    0x16b7 + n), the value as a bar (sv_ValueBar, picture 0x4d9) and two arrows (0x519 down / 0x51a up) that move
    21 points between the talent and the pool of 0x7e (a talent goes no lower than its start, no higher than
    126). The ok button (enabled with the pool spent) stores the five values as bytes in the profile
-   (init_PlayerTalents), the start tools of the parents' groups (init_PlayerProfile tool1 / tool2) and the
+   (init_PlayerProfile.talents), the start tools of the parents' groups (init_PlayerProfile tool1 / tool2) and the
    family record; returns 1 when confirmed. */
 int main_ChooseTalents(void)
 {
@@ -1948,7 +1933,7 @@ int main_ChooseTalents(void)
                 if (id == 0 || kb_Last == 0x1c) {
                     r = 1;
                     for (i = 0; i < 5; i++)
-                        init_PlayerTalents[i] = (unsigned char)fam.talent[i];
+                        init_PlayerProfile.talents[i] = (unsigned char)fam.talent[i];
                     switch (fam.group[4]) {
                     case 0: init_PlayerProfile.tool1 = 0x1c; break;
                     case 1: init_PlayerProfile.tool1 = 0x31; break;
@@ -2082,8 +2067,8 @@ int main_Unk534b30(int p)
                         m = nwomen - 1;
                     strcpy(cur, women[m]);
                 }
-                strcpy((char *)(unsigned)&full_data_75e5f5, cur);
-                U_I((unsigned)&full_data_75e628) = unk_Unk4fb770(cur) + 0x639;
+                strcpy(init_PlayerProfile.model, cur);
+                init_PlayerProfile.modelId = unk_Unk4fb770(cur) + 0x639;
                 obj = ch_Create(cur, pos);
                 ch_PlaceAtObject(obj, dummy);
                 ch_SetVisible(obj, 0);
@@ -2563,7 +2548,7 @@ lback:
             d2_SetViewEnabled(f, 0);
             again = 0;
             if (hist != 0xff || back) {
-                U_I((unsigned)&full_data_75e5ec) = hist;
+                init_PlayerProfile.mission = hist;
                 if (!back) {
                     U_I((unsigned)&sv_FrameMask) = 0x12d6;
                     v = ai_Unk4e2bf0("Startmenu/B_Persoenliches.esc");
@@ -2594,10 +2579,10 @@ lok:
                         ret = ai_Unk58b880(0xc6);
                         if (ret != 0) {
                             p = (int *)gm_Unk503ee0(loc, *(unsigned char *)((unsigned)&init_PlayerProfile + 0x3));
-                            U_I((unsigned)&full_data_75e5f0) = *p;
-                            *(unsigned char *)(unsigned)&full_data_75e5f4 = (unsigned char)*(unsigned short *)(p + 1);
+                            *(int *)init_PlayerProfile.talents = *p;
+                            init_PlayerProfile.talents[4] = (unsigned char)*(unsigned short *)(p + 1);
                             h = unk_Unk4fb770("patrizier_MANN2");
-                            U_I((unsigned)&full_data_75e628) = h + 0x639;
+                            init_PlayerProfile.modelId = h + 0x639;
                             goto lok;
                         }
                         d3if_SelectScene(0, 0);
@@ -4149,10 +4134,10 @@ void main_Unk53b840(void)
         *(int *)(a + 0x60) = *(int *)(p7 + 2);
         *(int *)(a + 100) = *(int *)(p6 + 2);
         *(int *)(p6 + 0x34) = *(int *)(a + 4);
-        t = (char *)(unsigned)&full_data_75e5f5;
+        t = init_PlayerProfile.model;
         *(int *)(p7 + 0x34) = *(int *)(a + 4);
         do { t[a - (unsigned)&full_data_75e401] = *t; } while (*t++ != 0);
-        *(int *)(a + 0x18c) = U_I((unsigned)&full_data_75e628);
+        *(int *)(a + 0x18c) = init_PlayerProfile.modelId;
         cm_SendRelations(*(int *)(a + 4), *(int *)(p7 + 2), 0x7f, 0);
         cm_SendRelations(*(int *)(p7 + 2), *(int *)(a + 4), 0x7f, 0);
         cm_SendRelations(*(int *)(a + 4), *(int *)(p6 + 2), 0x7f, 0);
@@ -4165,10 +4150,10 @@ void main_Unk53b840(void)
         k = ((u & 0xffff) + 500) * 0x20;
         cm_SendMoveGoods(*(int *)(p6 + 2), -1, *(unsigned char *)(unsigned)&ai_OwnPlayer, k);
         if (U_I((unsigned)&ai_MissionMode) >= 0)
-            ai_NewMission(*(int *)(a + 4), U_I((unsigned)&full_data_75e5ec), 0);
+            ai_NewMission(*(int *)(a + 4), init_PlayerProfile.mission, 0);
         k = 0;
         do {
-            *(char *)(a + 0x80 + k) = *(char *)((unsigned)&full_data_75e5f0 + k);
+            *(char *)(a + 0x80 + k) = init_PlayerProfile.talents[k];
             k++;
         } while (k < 5);
     }
@@ -5422,14 +5407,14 @@ L_fail:
             *(char *)((unsigned)&init_PlayerProfile + 0x8) = 0;
             *(char *)((unsigned)&init_PlayerProfile + 0x9) = 1;
             i = unk_Unk4fb770("patrizier_MANN2");
-            U_I((unsigned)&full_data_75e628) = i + 0x639;
+            init_PlayerProfile.modelId = i + 0x639;
             strcpy((char *)((unsigned)&init_PlayerProfile + 0xa), "Tobias");
             strcpy((char *)((unsigned)&init_PlayerProfile + 0x2a), "Severin");
             q = (char *)gm_Unk503ee0(c21c, *(char *)((unsigned)&init_PlayerProfile + 0x3));
             s220 = *(short *)(q + 4);
-            *(char *)(unsigned)&full_data_75e5f4 = (char)s220;
-            *(int *)(unsigned)&full_data_75e5f0 = (*(int *)q & ((unsigned)&txt_Keys + 0x181bf)) | 0xa8000000;
-            *(int *)(unsigned)&full_data_75e5f0 &= 0xffff0000;
+            init_PlayerProfile.talents[4] = (char)s220;
+            *(int *)init_PlayerProfile.talents = (*(int *)q & ((unsigned)&txt_Keys + 0x181bf)) | 0xa8000000;
+            *(int *)init_PlayerProfile.talents &= 0xffff0000;
             ai_Unk4b1f90(1);
             r = net;
         }
@@ -6148,11 +6133,6 @@ char main_NetHost[0x80] = { 0 };  /* 0x75e1c0, the network host address ([Networ
 char main_AppDir[288] = { 0 };  /* 0x75e240 */
 char main_NetSaveName[161] = { 0 };  /* 0x75e360, the network game's city / save name (sprintf "%s/%s.net", read for "gamedata/network/%s.SAV"); size: up to the address 0x75e401, which is only 0x53b840's copy-loop base constant, so the name may run to ai_OptionsFile 0x75e480 */
 GAPDATA full_data_75e401[127] = { 0 };  /* 0x75e401 */
-GAPDATA full_data_75e5ec[4] = { 0 };  /* 0x75e5ec */
-GAPDATA full_data_75e5f0[4] = { 0 };  /* 0x75e5f0 */
-GAPDATA full_data_75e5f4[1] = { 0 };  /* 0x75e5f4 */
-GAPDATA full_data_75e5f5[51] = { 0 };  /* 0x75e5f5 */
-GAPDATA full_data_75e628[4] = { 0 };  /* 0x75e628 */
 int main_PlatformNT = 0;  /* 0x75e62c, the OS is NT based (dwPlatformId != VER_PLATFORM_WIN32_WINDOWS) */
 GAPDATA full_data_75e630[16] = { 0 };  /* 0x75e630 */
 GAPDATA full_data_75ec40[28] = { 0 };  /* 0x75ec40 */

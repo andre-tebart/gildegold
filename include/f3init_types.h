@@ -13,6 +13,11 @@ typedef struct INIT_PLAYER {
     unsigned char faith;            /* 0x09, 0 / 1 (Glauben) */
     char firstName[0x20];           /* 0x0a, the first name (Name) */
     char familyName[0x20];          /* 0x2a, the family name (Familienname) */
-} INIT_PLAYER;
+    char pad4a[2];                  /* 0x4a, no user seen */
+    int mission;                    /* 0x4c, the chosen mission (ai_ChooseMission's result, main_Unk536980; ai_NewMission's argument) */
+    unsigned char talents[5];       /* 0x50, the five talent values (main_ChooseTalents; copied as an int and a byte) */
+    char model[0x33];               /* 0x55, the character model name ("patrizier_MANN2", the model chooser main_Unk534b30) */
+    int modelId;                    /* 0x88, the model's id: unk_Unk4fb770(model) + 0x639 */
+} INIT_PLAYER;                      /* 0x8c bytes (main_Menue clears 0x8c) */
 
 #endif

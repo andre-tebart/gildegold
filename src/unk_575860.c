@@ -232,9 +232,6 @@ extern int sv_FrameDepth;
 
 
 extern GAPDATA full_data_624ee0[];
-extern GAPDATA full_data_75e5f0[];
-extern GAPDATA full_data_75e5f4[];
-extern GAPDATA full_data_75e628[];
 #include "f3init_types.h"
 extern struct D2OBJ *d2_Objs;
 extern GAPDATA full_data_6024f8[];
@@ -4426,14 +4423,14 @@ void ai_SetupTutorialPlayer(void)
     U_I(((unsigned)&init_PlayerProfile + 0x4)) = 0x59a;
     *(unsigned char *)((unsigned)&init_PlayerProfile + 0x8) = 0;
     *(unsigned char *)((unsigned)&init_PlayerProfile + 0x9) = 0;
-    U_I((unsigned)&full_data_75e628) = unk_Unk4fb770((char *)(unsigned)&full_data_624ee0) + 0x639;
+    init_PlayerProfile.modelId = unk_Unk4fb770((char *)(unsigned)&full_data_624ee0) + 0x639;
     strcpy((char *)((unsigned)&init_PlayerProfile + 0xa), *(char **)(unsigned)&full_data_1449e48);
     strcpy((char *)((unsigned)&init_PlayerProfile + 0x2a), *(char **)(unsigned)&full_data_1449e4c);
     gm_Unk503ee0((unsigned *)local, *(unsigned char *)((unsigned)&init_PlayerProfile + 0x3));
     r = local;
-    U_I((unsigned)&full_data_75e5f0) = *(int *)r;
+    *(int *)init_PlayerProfile.talents = *(int *)r;
     *(unsigned short *)(local + 0xc) = *(unsigned short *)(r + 4);
-    *(unsigned char *)(unsigned)&full_data_75e5f4 = *(unsigned char *)(r + 4);
+    init_PlayerProfile.talents[4] = *(unsigned char *)(r + 4);
 }
 
 int sv_RunFrame(int cb, unsigned mask);
