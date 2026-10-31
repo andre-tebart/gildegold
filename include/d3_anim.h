@@ -92,7 +92,7 @@ typedef struct D3ANIMSLOT {         /* 0x7c bytes */
     float fadeTo;                   /* 0x48, weight at fadeEnd */
     char pad4c[0x14];
     float speed;                    /* 0x60, animation speed, frames per ms */
-    int frameTime;                  /* 0x64, sub-frame time accumulator (a float, d3_AnimBlendWeights) */
+    float frameTime;                /* 0x64, sub-frame time accumulator (d3_AnimBlendWeights) */
     D3ANIMDATA *data;               /* 0x68 */
     union {
         D3ANIMFLAGS flags;          /* 0x6c, as passed to d3anim_StartAnim */
