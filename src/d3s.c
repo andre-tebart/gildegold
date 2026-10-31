@@ -16,6 +16,7 @@
 #include "d3_sm.h"
 #include "d3s.h"
 #include "data_views.h"
+#include "d3_light.h"
 extern unsigned char d3_MipSkip;
 
 struct TSTEXTURE; struct TSTEXTURE *tex_Create(char *name, int size, char hicol, D3TEXFLAGS flags, unsigned char f0, unsigned char f6a,
