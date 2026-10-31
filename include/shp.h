@@ -64,7 +64,7 @@ int d2_BankAppendShape(D2SHP *s, D2BANK *bank);                                 
 D2SHP *d2_GrabShape16NoRuns(int x, int y, int w, int h, unsigned short *src, unsigned char mode, unsigned short pitch);
 D2SHP *d2_GrabShape8Runs(int x, int y, int w, int h, unsigned char *src, unsigned char mode, unsigned short pitch);
 struct D2SHP * d2_GrabShape(int x, int y, int w, int h, struct D2SURF *surf, unsigned char mode, char grab8);
-int d2_ShpBlit16Scaled(int x, unsigned int y, struct D2SURF *surf, struct D2SHP *s, unsigned int n);
+int d2_ShpBlit16Scaled(int x, int y, struct D2SURF *surf, struct D2SHP *s, unsigned char n);
 int d2_ShpBlit16ScaledLit(int x, unsigned int y, struct D2SURF *surf, struct D2SHP *s, unsigned int n);
 void d2_ShpBlit16HalfDark(unsigned int x, unsigned int y, D2SURF *surf, D2SHP *s);
 void d2_ShpBlit16Rows(int x, int y, D2SURF *surf, D2SHP *s);
