@@ -156,7 +156,7 @@ extern GAPDATA full_data_625100[];
 extern GAPDATA full_data_62510c[];
 extern INIT_PLAYER init_PlayerProfile;
 extern unsigned char kb_Last;
-extern int main_Unk5361d0(int mask, int flag);
+extern int main_ChoosePlayer(int mask, int flag);
 
 #define U_I(a) (*(int *)(a))
 #define U_B(a) (*(unsigned char *)(a))
@@ -800,7 +800,7 @@ int ai_Unk58af50(int a, int b)
        (WritePrivateProfileStringA x5, 0x5e56c4) are not written yet; the frame pump 0x5309a0 (0x5361d0, b) */
     while (1) {
         d2_MenuNavigate(obj);
-        if (sv_RunFrame((unsigned)&main_Unk5361d0, b) == 0) {
+        if (sv_RunFrame((unsigned)&main_ChoosePlayer, b) == 0) {
             d2_RadioClear(g2);
             d2_RadioClear(g1);
             d2_RadioClear(obj);
