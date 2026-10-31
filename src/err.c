@@ -100,7 +100,7 @@ write:
         WriteConsole(err_Console, "\n", 1, &n, NULL);
     }
 }
-/* 0x4215c0, unhandled exception filter: writes <exe>.dbg-symbolized crash info to _crashdump.log (ROUGH)*(unsigned int *)map' (the map key), Q5 ROUGH; needs a source rewrite and the byte toolbox */
+/* 0x4215c0, unhandled exception filter: writes <exe>.dbg-symbolized crash info to _crashdump.log @deep read whole against the original: inline extension scan (fwd to NUL, back to '.', 'dbg'), locals crlf/sp/sep declared after proc = GetCurrentProcess() in the log block (copied from .data), size reused as the xor-loop counter with got as bound, switch case order (jump tables equal), shared WriteFile tail, walk loop. Remaining: register allocation (original keeps ep in edi, Esp in ebx, WriteFile in esi; ours keeps a zero constant in edi and stack in memory, so every push 0 and the slot pairs differ: asmdiff 0x42166b..0x421ba9 are regs/slots permutations) and one 3-instruction spot at the err_CheckCall result (original: test al,al; seta al; and al,1; test al,al; je, ours: test al,al; je/jle), tried !, <= 0, == 0, > 0 with unsigned char and an int ok, none makes VC6 emit the seta */
 
 LONG WINAPI err_ExceptionFilter(EXCEPTION_POINTERS *ep)
 {
@@ -108,27 +108,27 @@ LONG WINAPI err_ExceptionFilter(EXCEPTION_POINTERS *ep)
     CONTEXT *ctx = ep->ContextRecord;
     char path[256];
     char text[256];
-    char crlf[] = "\r\n";
-    char sp[] = " ";
-    char sep[] = "------------------------\r\n";
-    char win[7];
     MEMORY_BASIC_INFORMATION mbi;
     ERRWALK w;
-    HANDLE mapfile, log, proc;
-    char *map;
-    unsigned int size, got, key, *p, i, *stack;
+    HANDLE mapfile, log;
+    ERRMAP *map;
+    unsigned int got, size, key, *p, *stack;
     int remaining, len;
     DWORD n;
     char *dot;
 
     SetUnhandledExceptionFilter(NULL);
     if (GetModuleFileName(NULL, path, sizeof(path))) {
-        dot = strrchr(path, '.');
-        if (dot) {
-            dot[1] = 'd';
-            dot[2] = 'b';
-            dot[3] = 'g';
-            dot[4] = 0;
+        dot = path;
+        while (*dot)
+            dot++;
+        while (dot >= path && *dot != '.')
+            dot--;
+        if (*dot == '.') {
+            *++dot = 'd';
+            *++dot = 'b';
+            *++dot = 'g';
+            dot[1] = 0;
         }
         mapfile = CreateFile(path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
         if (mapfile != INVALID_HANDLE_VALUE) {
@@ -139,14 +139,18 @@ LONG WINAPI err_ExceptionFilter(EXCEPTION_POINTERS *ep)
                     ReadFile(mapfile, map, size, &got, NULL);
                     if (size == got) {
                         log = CreateFile("_crashdump.log", GENERIC_WRITE, 0, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-                        key = *(unsigned int *)map;
-                        p = (unsigned int *)(map + 0x10);
-                        for (i = 0; i < (size >> 2) - 4; i++) {
+                        key = map->unk0;
+                        p = (unsigned int *)(map + 1);
+                        for (size = 0; size < (got >> 2) - 4; size++) {
                             key = (key << 15) | (key >> 17);
                             *p++ ^= key;
                         }
                         if (log != INVALID_HANDLE_VALUE) {
-                            proc = GetCurrentProcess();
+                            HANDLE proc = GetCurrentProcess();
+                            char crlf[] = "\r\n";
+                            char sp = ' ';
+                            char sep[] = "------------------------\r\n";
+                            char win[7];
                             remaining = 0x800;
                             stack = (unsigned int *)ctx->Esp;
                             SetFilePointer(log, -1, NULL, FILE_END);
@@ -154,7 +158,7 @@ LONG WINAPI err_ExceptionFilter(EXCEPTION_POINTERS *ep)
                             len = GetDateFormat(0x400, 2, NULL, NULL, text, 0x100);
                             if (len) {
                                 WriteFile(log, text, len - 1, &n, NULL);
-                                WriteFile(log, sp, 1, &n, NULL);
+                                WriteFile(log, &sp, 1, &n, NULL);
                             }
                             len = GetTimeFormat(0x400, 8, NULL, NULL, text, 0x100);
                             if (len) {
@@ -176,10 +180,10 @@ LONG WINAPI err_ExceptionFilter(EXCEPTION_POINTERS *ep)
                                 break;
                             ERR_EXC(EXCEPTION_IN_PAGE_ERROR, "IN_PAGE_ERROR");
                             ERR_EXC(EXCEPTION_ILLEGAL_INSTRUCTION, "ILLEGAL_INSTRUCTION");
-                            ERR_EXC(EXCEPTION_NONCONTINUABLE_EXCEPTION, "NONCONTINUABLE_EXCEPTION");
-                            ERR_EXC(EXCEPTION_INVALID_DISPOSITION, "INVALID_DISPOSITION");
                             ERR_EXC(EXCEPTION_ARRAY_BOUNDS_EXCEEDED, "ARRAY_BOUNDS_EXCEEDED");
                             ERR_EXC(EXCEPTION_FLT_DENORMAL_OPERAND, "FLT_DENORMAL_OPERAND");
+                            ERR_EXC(EXCEPTION_INVALID_DISPOSITION, "INVALID_DISPOSITION");
+                            ERR_EXC(EXCEPTION_NONCONTINUABLE_EXCEPTION, "NONCONTINUABLE_EXCEPTION");
                             ERR_EXC(EXCEPTION_FLT_DIVIDE_BY_ZERO, "FLT_DIVIDE_BY_ZERO");
                             ERR_EXC(EXCEPTION_FLT_INEXACT_RESULT, "FLT_INEXACT_RESULT");
                             ERR_EXC(EXCEPTION_FLT_INVALID_OPERATION, "FLT_INVALID_OPERATION");
@@ -196,7 +200,7 @@ LONG WINAPI err_ExceptionFilter(EXCEPTION_POINTERS *ep)
                             }
                             WriteFile(log, crlf, 2, &n, NULL);
 nocode:
-                            w.map = (ERRMAP *)map;
+                            w.map = map;
                             w.file = log;
                             w.addr = ctx->Eip;
                             w.prev = 0;
@@ -211,7 +215,7 @@ nocode:
                                         for (len = 7; len > 0; len--)
                                             if (ReadProcessMemory(proc, (void *)(w.addr - len), win + 7 - len, len, NULL))
                                                 break;
-                                        if (!err_CheckCall(win + 7, len, w.addr, (int *)&w.prev))
+                                        if (err_CheckCall(win + 7, len, w.addr, (int *)&w.prev) <= 0)
                                             goto next;
                                     }
                                     if (err_WriteSymbol(&w))
