@@ -12,9 +12,9 @@ original); (2) draft C for every function of each unit in address order, no gaps
 Hard rules
 - Every tool is `uv run dcp ...` from the project root (`--target NAME` for a target other than the first).
   First check `uv run dcp serve --status`; when no daemon runs, start one with `uv run dcp serve` (it
-  detaches and returns) and leave it running: every `uv run dcp` of the project then runs in it (about 0.2 s a
-  call instead of 1 .. 3 s, same output). Without it every command still works, only slower. A worktree needs
-  its own (`dcp serve` there).
+  detaches and returns) and leave it running: every `uv run dcp` of the project runs in it, and without it
+  every command fails ("no daemon runs ... start it with `dcp serve`"). A worktree needs its own (`dcp serve`
+  there).
   If `uv run` fails with "failed to remove file ...dcp.exe" (access denied), an old daemon holds the exe: run
   `uv run --no-sync dcp serve --stop`, then retry.
   `dcp <command> -h` explains each one; output is one record per line, `key=value`, addresses `0x%08x`.
@@ -92,7 +92,7 @@ Always work the first open function; never skip one, never stop early, never end
 
 ### 2.1 Making a Ghidra draft compile (VC6, C89)
 
-Ghidra-specific advice: the analyzer is Ghidra (`analyzer=ghidra`, or `rea`, whose files are Ghidra output).
+Ghidra-specific advice: the analyzer is Ghidra (`analyzer=ghidra`).
 What `dcp build` typically says about a fresh draft and what to do:
 - `'sockaddr' : undeclared identifier` and the like: Ghidra writes struct types without `struct`; write
   `struct sockaddr`. Windows types are the common case: Ghidra spells the struct tag (`_EXCEPTION_POINTERS`,
@@ -174,7 +174,8 @@ A helper the original inlined everywhere (so no address) stands in its unit's fi
   boundary lines, placeholders `OLD_<addr>`, names.log). Commit `<old> -> <new> (layout, <by>)`.
 - **Function and data names**: `uv run dcp rename OLD NEW --why "..."` (whole words in src/ and include/,
   refuses a collision with an `error=` record and exit 1, lists every changed file, names.log). Rename a placeholder as soon as the meaning is clear; `uv run dcp refs NAME`
-  first shows every use.
+  first shows every use. Several names: `uv run dcp rename OLD1 NEW1 OLD2 NEW2 ... --why "..."` (or `--from FILE`)
+  rebuilds once for all of them.
 
 ## Headers
 

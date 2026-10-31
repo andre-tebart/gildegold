@@ -14,9 +14,9 @@ deep queue, `dcp next --deep`), not this session's.
 Hard rules
 - Every tool is `uv run dcp ...` from the project root (`--target NAME` for a target other than the first).
   First check `uv run dcp serve --status`; when no daemon runs, start one with `uv run dcp serve` (it
-  detaches and returns) and leave it running: every `uv run dcp` of the project then runs in it (about 0.2 s a
-  call instead of 1 .. 3 s, same output). Without it every command still works, only slower. A worktree needs
-  its own (`dcp serve` there).
+  detaches and returns) and leave it running: every `uv run dcp` of the project runs in it, and without it
+  every command fails ("no daemon runs ... start it with `dcp serve`"). A worktree needs its own (`dcp serve`
+  there).
   If `uv run` fails with "failed to remove file ...dcp.exe" (access denied), an old daemon holds the exe: run
   `uv run --no-sync dcp serve --stop`, then retry.
   `dcp <command> -h` explains each one; output is one record per line, `key=value`, addresses `0x%08x`.
@@ -63,6 +63,10 @@ code is shape or byte, only readability is missing. `gates=` names the failing r
 - `uv run dcp grade NAME` - the failing rules with their evidence (B1..B3 code, Q1..Q7 readability) and `dist`.
 - `uv run dcp asmdiff NAME` - our instructions against the original's, aligned; `--regs eax=ecx,esi=edi` renames
   registers on our side. Run it first on every big `code` hunk: a pure register rotation reads as `code`.
+  `--symbols` prints the call targets, data and string literals by name instead of `X`; `!` marks an equal
+  instruction that names another symbol or literal than the original's (a wrong callee, datum or string).
+  Frames of other sizes are aligned as diffclass aligns them (`frame=0x3bc/0x3b8`): a line that differs only
+  by the shift is equal (`~`), so only the real differences show; `--plain` diffs the texts as they are.
 - `uv run dcp diffclass NAME` - the hunks and their classes: `fill`, `order`, `regs`, `slots`, `sib`, `fpu`,
   `frame` (all explained: shape) and `code` (the rest: a meaning difference until shown otherwise). `frame`:
   the two frames differ in size (`frame: ours 0xcc, the original's 0xc8`) and these lines differ only by the
@@ -84,7 +88,8 @@ code is shape or byte, only readability is missing. `gates=` names the failing r
   (supersedes / duplicate / clash / header / call with the original's pushes / vc6, what only VC6 rejects /
   prototyped, per call `safe` or re-grade) and the functions to re-grade; `--write` makes the include when only
   duplicates are in the way (`--at LINE` places the include when the default line fails the trial). `warning=declaration-set`: re-grade every function of the unit after the include,
-  byte ones first (VC6 /O2 moves code by the declaration set alone). `warning=q6`: move the dropped duplicate's
+  byte ones first (VC6 /O2 moves code by the declaration set alone): `--trial` compiles the unit with the include
+  (nothing written) and lists the functions whose grade would fall (`fall=ADDR ... code=byte trial=shape`). `warning=q6`: move the dropped duplicate's
   words into the function's address comment first, or the function falls to draft.
 
 ### 2.2 Code below shape (`section=draft`)
@@ -108,8 +113,12 @@ work, however long.
 ### 2.3 Readability (`gates=Q...`)
 - Q1 / Q2 placeholder names (`ai_Unk4a13e0`, `param_1`, `iVar2`, `DAT_...`): name what you understood.
   Functions and data: `uv run dcp rename OLD NEW --why "the evidence"` (project-wide, whole words, names.log;
-  `dcp refs` first; OLD may be `0xADDR` / `exe:0xADDR` for the ledger's name). Rename first, then edit: the
-  rename writes the new name everywhere and logs it (a name already written by hand in some places is
+  `dcp refs` first; OLD may be `0xADDR` / `exe:0xADDR` for the ledger's name). Several names at once:
+  `uv run dcp rename OLD1 NEW1 OLD2 NEW2 ... --why "..."` or `--from FILE` (one `OLD NEW [why]` per line): one
+  rebuild for all of them, and nothing is written unless every pair passes; collect the names of a function
+  and rename them in one call. names.log keeps the why as dcp received it; Git Bash passes `\\` in an argument
+  as `\` (and `\"` inside double quotes as `"`): a why with backslashes (`Menu\CHOOSEPLAYER`) goes in single
+  quotes with single backslashes, or in a `--from FILE` line. Rename first, then edit: the rename writes the new name everywhere and logs it (a name already written by hand in some places is
   completed by the rename, not refused). It prints every changed file with its replacements; a refusal is an
   `error=` record with exit 1 and nothing written: read it, never assume the rename happened. A view
   (`ai_Unk7603a0B`) keeps its name when its datum is renamed (the note lists it): rename it on its own.
@@ -117,8 +126,9 @@ work, however long.
 - Q3 address literals and Q4 raw access (`*(T *)(p + 0x1c)`, macros built on such casts): a typed field, a
   struct, the symbol (see the hard rule on addresses). A datum the unit reads as another type is a view macro
   with the address comment on its line: `#define NAME (*(T *)&datum)  /* 0xADDR */`, or
-  `(*(T *)((char *)&datum + OFF))` for a part of it. `(*(T *)datum)` (no `&`: through the datum's value) is raw
-  access and keeps the function at draft.
+  `(*(T *)((char *)&datum + OFF))` for a part of it (`(*(T *)(array + N))` too when `array` is declared as an
+  array in the macro's file: its name is its address, N counts elements). `(*(T *)datum)` / `(*(T *)(ptr + N))`
+  (no `&`, no array: through the datum's value) is raw access and keeps the function at draft.
 - Q5 markers (ROUGH, TODO, `@rough`): remove them once the function is written.
 - Q6: the address comment says what the function does (`/* 0x4a3000, sends the login reply */`).
 - Q7: every call has a prototype (`dcp lint` evaluates it): the callee's prototype lives in its defining unit's
@@ -198,7 +208,13 @@ When only allocation or scheduling is left (`regs`, `slots`, `order` hunks the c
 the code is shape and only byte identity is missing), or a generated variant round would be needed:
 `uv run dcp escalate NAME "why"`, build, commit `<unit>: <name> -> deep (match-base)`. The reason lists what was
 read and tried and the exact remaining hunk (`asmdiff` lines). `dcp escalate` refuses a reason that only names
-missing statements: reconstruction is base work. A function you raise to shape + readable that still carries a
+missing statements, and one that admits a part not read against the original yet (not reconciled / checked /
+compared / verified, hard to judge): reconstruction and reading the whole function are base work. It also
+refuses while our instruction count differs from the original's by more than max(12, 1/100 of the original's)
+(the `asmdiff` head: `ours=` / `original=`): allocation, slots and frames move a few instructions (no shape
+function on gildegold differs by more than 7), a larger difference is missing or wrong statements. When
+allocation really causes it (extra saved registers, spills you have read in the asmdiff), say how:
+`--size-explained "why"` (kept in the reason). A function you raise to shape + readable that still carries a
 stale `@deep` / `@stuck` tag: `uv run dcp escalate NAME --clear`, build again.
 
 ## 4. When to stop
