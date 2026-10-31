@@ -13,6 +13,7 @@
 #include "d3.h"
 #include "d3_light.h"
 #include "data_views.h"
+#include "d3_sm.h"
 #define util_RandomS ((unsigned short (*)(unsigned short))util_Random)  /* 0x42ec00 (as ai.h: unsigned short (int)): this unit's callers were compiled against the 16-bit parameter (as ahm.c's) */
 
 /* 0x4bc2e0, pos = the "dummy_TUER" (or the object) of a random building of the gm_BuildQuery(1, 6) list */
