@@ -10,6 +10,24 @@ Migrated from the notes/tus.md table on 2026-10-23 (the row's prose, unchanged):
 - Was: tag "main_"
 
 ## Open work
+- **match-base 2026-10-31 left for the deep queue** (the character creation dialogs, bodies read against the original; calls,
+  arguments and constants match):
+  0x534b30 main_ChooseModel (715 ins, most of it the 34-string table init in another schedule, verified identical by simulating both
+  sides' stores): VC6 factors `d2_ScreenScale * 150.0f + d2_ScreenScale * 330.0f` into one multiply, the original keeps two products
+  (tried literals of every type, reversed operands, casts, static const x0 / y0; only a second symbol for the scale or `+ 0.0f` keeps
+  them, neither has evidence); allocation and one frame slot (0x4a0 vs 0x49c).
+  0x5359f0 main_ChooseFamily (124): allocation only (ebp saved in the prologue holding f, one more slot: frame 0x16c vs 0x168).
+  0x5361d0 main_ChoosePlayer (184): allocation (-1 in ebp, 1 in ecx) and a dead load of flag in stage 5 (`mov eax,[flag]` when
+  ai_MissionMode != -1, then ret = 1) that VC6 removes for every spelling tried.
+  0x536980 main_ChooseHistory (112): gm_Unk503ee0 returns its 6-byte record by value in the original (hidden pointer; the caller
+  copies it to a temp, then 5 bytes into init_PlayerProfile.talents): needs f3gm's definition, am.h and unk_575860's prototype
+  changed together; the rest allocation (again in ebx, ret in ebp).
+  0x537040 main_ChooseOpponents (24): allocation of n / y around the first loop.
+  0x537230 main_ChooseCity (32, size equal): cityobj / buf4 slots swapped (declaration order has no effect), the tower position stores
+  scheduled around the d3_CreateObject pushes.
+- **Q7 open** for the creation dialogs: ch_* (ch.h does not include into main), gm_TitleGroup has no prototype in f3gm.h, d2.h's
+  d2_SetObjValue() has no parameter list, ai_ListFiles / ai_Unk59a2c0 / ai_Unk4e2bf0 / ai_Unk4e2c70 / ai_Unk4b1f90 / ai_ChooseMission
+  / ai_Unk58b880 undeclared in main.
 - **match-base 2026-10-30 (fifth session) left for the deep queue** (bodies read against the original; calls and constants match):
   0x532a70 main_JoinNetworkGame (36 ins, readable: ours loads ls_SavePath.cur early into ax and stores net.x first, so ai_GameFlags is or-ed
   in eax (`or al,0x50`) where the original uses ecx; ours hoists the hdr.char164 load above the first rep movsd; char0c / char54 a pure
@@ -24,8 +42,6 @@ Migrated from the notes/tus.md table on 2026-10-23 (the row's prose, unchanged):
   cm_SendGroupState (cm.h: sb_PlaySample clash + the same 8). Settling them = correcting those callers' result use first.
 - main_ChooseTalents is shape: two scheduling pairs (the 0xb-dword struct copy before `r = 0` / `mov ebx,1` in ours, after in the
   original; `again = 1` vs `i = 0` at the arrow loop). Moving `r = 0` after the memset makes it worse (r stored from eax).
-- data: 0x75e5f0 (init_PlayerProfile + 0x50) is read as the view init_PlayerTalents (5 bytes) in main_ChooseTalents and as an int by
-  WinMain: the profile is 0x8c bytes (main_Menue's D3_ZERO_AT) but INIT_PLAYER only types 0x4a; extend it in f3init_types.h.
 - data: 0x9367a0 is CMJOIN (cm_types.h), viewed as cm_JoinChar in main's head; its definition is still inside cm.c's
   ai_Unk9364e0[752] (8 records of 0x57 = 0x2b8, then 8 bytes, then this 0x30 block).
 - **headers (2026-10-30, typing pass 2)**: head.c includes txt_views.h, main.h, he.h, sfx.h, f3gm.h, mov.h, txt.h, di_input.h, evt.h, d3.h, d3_light.h, d3_engine.h, data_views.h, d2.h, unk_58bbd0.h, ecmd.h, ts_texture.h, unk_5d33b0.h, ai.h, gfx.h, dd_vesa.h, d3_interface.h, d3_int_io.h, err.h, tr.h, vfs.h, tb.h, msx.h, evtc.h, sndc.h, net.h, ls.h, cm_types.h, f3init_types.h, ch_types.h, f3snd_types.h, time_view.h, f3init.h, sv.h, mem.h, d3_d3d.h, io_text.h, d3_snd.h, d3_tools.h, ahm.h, gv.h; keeps 4 cast / view macros with @original byte evidence (the address and the matched caller are in each comment): d2_PlaceMainWindowF, d2_MoveObjS, util_RandomInt, cm_SendExSellObjectI; views / casts without byte evidence of their own (weak definitions or drafts' spellings, notes/headers.md debt item 1): d2_SetObjValue4, ai_GoodsT, ai_BldsT, ai_BTypesT, ai_CharsT, ai_TimeT.
@@ -179,3 +195,15 @@ main.c includes <d3d.h>, d3.h and d3_light.h; its ai_Unk453280 call is d3_Religh
 - The character creation: main_Family (MAINFAMILY, main.h) = the six profession groups (main_Unk5359f0) + the five talents; the parents'
   groups give +63 to their talent, an arrow moves 21 points, the pool is 0x7e, the bar is sv_ValueBar (value / 21 half tiles: an int,
   sv.h said float); the tools by the parents' groups go to init_PlayerProfile.tool1 / tool2.
+
+## match-base 2026-10-31
+- INIT_PLAYER is 0x8c bytes now: mission 0x4c (ai_ChooseMission's result), talents[5] 0x50 (copied as an int and a byte), model[0x33]
+  0x55 (the model name the chooser writes), modelId 0x88 (unk_Unk4fb770(model) + 0x639); the gap blocks 0x75e5ec .. 0x75e628 are gone.
+- main_MessageBox 0x624938 (int, -1): the message box the history choice opens over the creation and main_ChooseFamily closes.
+- The creation dialogs share one shape the drafts missed: `if (sv_RunFrame(cb, mask)) do { .. } while (sv_RunFrame(cb, mask));` with the
+  clean-up after the loop, and button tests the original writes as plain ifs that VC6 jump-threads (a goto in the draft is usually such a
+  threaded `redraw = 1` / `if (ret == 0)`). main_CharacterIntro (0x536d80, takes an unused int) and main_ChooseDifficulty (0x536e80)
+  are byte.
+- main_ChooseModel: the button positions are 800-wide screen units times d2_ScreenScale (next 150 + 330 / 370, previous 330 / 370, ok
+  70 + 330 / 45 + 370); the effect script gets (x, y + 0x14, z, 0x28, 0x5a, ""); the draft lost `shown = idx`.
+- main_ChooseOpponents: the row height is 10.0f / n * 24.0f.

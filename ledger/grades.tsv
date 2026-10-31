@@ -3456,14 +3456,14 @@ exe	0x00533850	main_Menue	main	draft	draft	deep
 exe	0x00534040	main_GiveStartBuildings	main	byte	draft		
 exe	0x005344f0	main_Unk5344f0	main	shape	draft		
 exe	0x00534610	main_ChooseTalents	main	shape	readable		
-exe	0x00534b30	main_Unk534b30	main	draft	draft		
-exe	0x005359f0	main_Unk5359f0	main	draft	draft		
-exe	0x005361d0	main_Unk5361d0	main	draft	draft		
-exe	0x00536980	main_Unk536980	main	draft	draft		
-exe	0x00536d80	main_Unk536d80	main	draft	draft		
-exe	0x00536e80	main_Unk536e80	main	draft	draft		
-exe	0x00537040	main_Unk537040	main	draft	draft		
-exe	0x00537230	main_ChooseCity	main	draft	draft		
+exe	0x00534b30	main_ChooseModel	main	draft	draft	deep	
+exe	0x005359f0	main_ChooseFamily	main	draft	draft	deep	
+exe	0x005361d0	main_ChoosePlayer	main	draft	draft	deep	
+exe	0x00536980	main_ChooseHistory	main	draft	draft	deep	
+exe	0x00536d80	main_CharacterIntro	main	byte	readable		
+exe	0x00536e80	main_ChooseDifficulty	main	byte	readable		
+exe	0x00537040	main_ChooseOpponents	main	draft	draft	deep	
+exe	0x00537230	main_ChooseCity	main	draft	draft	deep	
 exe	0x00537930	main_NewSinglePlayerGame	main	byte	draft		
 exe	0x00537980	main_Unk537980	main	draft	draft		
 exe	0x00537af0	main_SetLoadProgress	main	byte	draft		
