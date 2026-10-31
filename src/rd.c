@@ -253,18 +253,15 @@ void veg_GrowPlants(G15PLANT *p)
     veg_ShowPlants(p);
 }
 /* 0x4bc940, loads plant q's model ("%svegetation/*pfl_<type>_0<n>[_FALL].ogr"), names it "_ID<id>" and places it
-   on the height map
-*m[0x28..0x2a]+m[0x24..0x26] then z*m[0x2c..0x2e], computes the cell pointer after that and adds the *hm*m[0x30..0x32] term last (rewriting our expression into that order compiles to the same code, so VC6 reassociates); frame/register allocation and the sprintf/strcat argument setup differ too; Q2/Q4 fixed (G15OBJ.mask, D3OBJECT.unk224 -> mask), readable */
+   on the height map (origin + x * axisx + z * axisz + height * axisy). @deep match-base 2026-10-31: read against the original; 182 vs 180 instructions (was 158), differing 40 (was 162). The placement is pos = origin, then += x * axisx, += z * axisz, += height * axisy component by component through the typed D3TERRAIN (d3_sm.h; origin copied by integer moves, each height re-read per component), and each branch has its own sprintf with the literal format (tail-merged, as the original). Left: register choice in the height part - ours needs a byte register for heights[z * size + x] and spills o (ebx) to [esp+0x20] around it where the original uses ecx with the row base in edx (hunks 0x4bca81, 0x4bcb02, 0x4bcb21, 0x4bcb46); the index spellings heights[size * z + x] / *(heights + z * size + x) / x first compile the same. */
 
 void veg_LoadModel(G15PLANT *q, int fall)
 {
     G15TREE *t;
     int n;
-    char *fmt;
     char *o;
     int x, z;
-    float *m;
-    unsigned char *hm;
+    D3TERRAIN *tr;
     float pos[3];
     char path[0x100];
     char buf[0x100];
@@ -274,14 +271,13 @@ void veg_LoadModel(G15PLANT *q, int fall)
         n = q->state / t->states;
         if (n < 1)
             n = 1;
-        fmt = "%svegetation/*pfl_%s_0%i.ogr";
+        sprintf(path, "%svegetation/*pfl_%s_0%i.ogr", ai_DataPath, t->name, n);
     } else {
         n = q->state / t->states;
         if (n < 1)
             n = 1;
-        fmt = "%svegetation/*pfl_%s_0%i_FALL.ogr";
+        sprintf(path, "%svegetation/*pfl_%s_0%i_FALL.ogr", ai_DataPath, t->name, n);
     }
-    sprintf(path, fmt, ai_DataPath, t->name, n);
     o = d3_LoadGroup(path, 0, 0);
     if (o == 0) {
         sprintf(buf, "init_SetPflanzenMap(): Could not load 3D-Objekt-roup '%s'...", path);
@@ -292,14 +288,22 @@ void veg_LoadModel(G15PLANT *q, int fall)
     sprintf(buf, "_ID%i", q->id);
     strcat(o, buf);
     ((G15OBJ *)o)->mask = 1;
-    if (d3_Terrain != 0) {
-        m = (float *)d3_Terrain;
+    tr = d3_Terrain;
+    if (tr != 0) {
+        pos[0] = tr->origin.x;
+        pos[1] = tr->origin.y;
+        pos[2] = tr->origin.z;
         x = q->x;
         z = q->z;
-        hm = (unsigned char *)(((int *)d3_Terrain)[0] * z + ((int *)d3_Terrain)[4] + x);
-        pos[0] = x * m[0x28] + m[0x24] + z * m[0x2c] + *hm * m[0x30];
-        pos[1] = x * m[0x29] + m[0x25] + z * m[0x2d] + *hm * m[0x31];
-        pos[2] = x * m[0x2a] + m[0x26] + z * m[0x2e] + *hm * m[0x32];
+        pos[0] += x * tr->axisx.x;
+        pos[1] += x * tr->axisx.y;
+        pos[2] += x * tr->axisx.z;
+        pos[0] += z * tr->axisz.x;
+        pos[1] += z * tr->axisz.y;
+        pos[2] += z * tr->axisz.z;
+        pos[0] += tr->heights[z * tr->size + x] * tr->axisy.x;
+        pos[1] += tr->heights[z * tr->size + x] * tr->axisy.y;
+        pos[2] += tr->heights[z * tr->size + x] * tr->axisy.z;
         d3_SetObjectPos(o, pos);
     }
     d3_RelightObjects(o);
