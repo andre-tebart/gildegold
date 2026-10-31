@@ -787,16 +787,16 @@ unsigned short * d3s_Dst16 = 0;  /* 0xfe73b0 */
 int d3s_Area = 0;  /* 0xfe73b8 */
 int d3s_Fill = 0;  /* 0xfe75ac */
 
-/* 0x45b510, a shadow mesh over the map cells in rect */
+/* 0x45b510, a shadow mesh over the map cells in rect @deep whole function compared against the original and reconciled: corrected here were the height reads of the second loop (row[i + nx + 1].pos[1], through the vertex's pos pointer, instead of the never-set .y field: 4 reads), the hoisted loop invariants xs = x0 * cell[0] + origin[0] and ys = add + origin[1] (stored to [esp+0x24] / [esp+0x28] in the original, reloaded per row), and steep as an int (xor eax,eax / mov eax,1 instead of the byte forms); instruction count 289 vs 297. Remaining: allocation only - the original keeps the polygon pointer in esi and the uv pointer in ecx (ours the reverse), x0 / z0 / nx / nz in slots [0x10] [0x18] [0x1c] [0x20] against ours [0x14] [0x1c] [0x18] [0x10] (slots hunks 0x45b519..0x45b86e), and a few reloads of rect / cell / origin through the stack (the 66 / 61 / 169 / 87 / 48 'code' hunks are the same statements with these registers) */
 char d3s_MeshFromMap(int *rect, int stride, unsigned char *map, float *origin, float *cell, float *uv,
                      D3SBUF *buf, D3TEXHANDLE *tex, unsigned long color)
 {
     D3SVERT *v, *row;
     D3SPOLY *p;
     float *pos, *t;
-    float add, x, z, u, w, a, b, c;
+    float add, xs, ys, x, z, u, w, a, b, c;
     int nx, nz, i, k, n, x0, z0;
-    char steep;
+    int steep;
 
     x0 = rect[0];
     nx = rect[1] - x0;
@@ -806,12 +806,14 @@ char d3s_MeshFromMap(int *rect, int stride, unsigned char *map, float *origin, f
     pos = &d3s_Verts[d3s_NumVerts * 6];
     t = &d3s_UVs[d3s_NumUVs * 6];
     add = d3d_ZEnabled ? 2.0f : 1.0f;
+    xs = x0 * cell[0] + origin[0];
+    ys = add + origin[1];
     z = z0 * cell[2] + origin[2];
     v = row;
     for (k = z0, map += z0 * stride; k <= rect[3]; k++, map += stride) {
-        x = x0 * cell[0] + origin[0];
+        x = xs;
         for (i = rect[0]; i <= rect[1]; i++, v++) {
-            pos[1] = (map[i] + add) * cell[1] + add + origin[1];
+            pos[1] = (map[i] + add) * cell[1] + ys;
             pos[0] = x;
             pos[2] = z;
             v->c1 = color;
@@ -829,11 +831,11 @@ char d3s_MeshFromMap(int *rect, int stride, unsigned char *map, float *origin, f
         u = uv[0];
         for (i = 0; i < nx; i++) {
             p->v[0] = &row[i];
-            a = row[i + nx + 1].y;
+            a = row[i + nx + 1].pos[1];
             p->v[1] = &row[i + 1];
-            b = row[i + 1].y;
+            b = row[i + 1].pos[1];
             p->v[2] = &row[i + nx + 1];
-            c = row[i + nx + 1].y;
+            c = row[i + nx + 1].pos[1];
             p->uv = t;
             p->tex = tex;
             p->z = -1.0f;
@@ -854,7 +856,7 @@ char d3s_MeshFromMap(int *rect, int stride, unsigned char *map, float *origin, f
             p->uv = t + 6;
             p->tex = tex;
             p->z = -1.0f;
-            a = row[i + nx + 2].y;
+            a = row[i + nx + 2].pos[1];
             steep = fabs(a - b) > 25.0f || fabs(a - c) > 25.0f ? 1 : 0;
             p->flags = (steep << 1 ^ p->flags) & 2 ^ p->flags;
             t[6] = u + uv[1];
