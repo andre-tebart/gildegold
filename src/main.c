@@ -2703,12 +2703,12 @@ void main_ChooseOpponents(int n)
    "gamedata/cities/*" (0x5d33b0: up to 64 records of 0x210 bytes, the path at +0x109), reads each header (0x51cee0: +5 the name, +9 the object name, +0x34 the player limit; diff[i] = limit - players (0x62489c)),
    creates the name object of the city (0x59a2c0 "stadt_<name>", the text plate 0x52e1c0 from the table 0x143a1c0 by the key "_STADTAUSWAHL_<NAME>_INFO+0" (0x42e770)), puts the city tower "sp_STADTTURM" (0x446e10,
    "sonstiges\wimpel_STADTTURM.baf") over the picked city (the pick object 0x448630 with a name starting with "stadt_" selects: sel; the default is the object of the 5th city) and shows its description
-   ("_STADTAUSWAHL_<NAME>_BESCHR+0"); the buttons: ok (or enter / 0x1c) goes on to the difficulty choice 0x536e80 and the history choice 0x536980 (host: ends at once), the second button opens the opponent
-   selection 0x537040 (diff of the picked city); returns 1 when a game was set up (ROUGH: from the disassembly; the arrays sit at fixed offsets of the 0x8984 frame, the second parameter is the host flag, the first unused) */
+   ("_STADTAUSWAHL_<NAME>_BESCHR+0"); the buttons: ok (or enter / 0x1c) goes on to main_ChooseDifficulty and main_ChooseHistory (host: ends at once), the second button opens the opponent
+   selection main_ChooseOpponents (diff of the picked city); returns 1 when a game was set up (the second parameter is the host flag, the first unused) @deep read against the original and rebuilt (193 -> 32 ins, size equal): the ListFiles call as if / else per extension, strcpy for the three inline copies (the name from d2_Strings or the header, "stadt_<name>" into the object, the city name into ai_DataPath + 0x220), the screen size through two locals (H loaded first) for d3_SetViewport, if / do .. while frame loop, the two button tests as plain ifs (the original's jump threading), d3if_Pick prototyped in d3_interface.h (floats, not doubles), the texts txt_Ptrs[0x42cc / 0x42cd]. Left: (1) slots: the original has cityobj at esp+0x294 and buf4 at 0x394 (ours swapped) and hdr 4 bytes lower; declaration order has no effect; (2) scheduling: the tower position loads (ecx/edx/eax from sel+0x4c..0x54) before the d3_CreateObject pushes, pos[2] stored after the zeros; a D3VECTOR struct copy makes it worse (123 ins) */
 
 int main_ChooseCity(int unused, int host)
 {
-    int ret, tower, last, cap, n, i, k, f, sel, f1, f2, run, h, ok, opp, out[2];
+    int ret, tower, last, cap, n, i, k, f, sel, f1, f2, h, ok, opp, out[2], w, ht;
     int cityobj[64], diff[64];
     char recs[64][0x210], hdr[0xfc], key[0x100], name[0x40], buf4[0x100];
     float pos[4], rot[3];
@@ -2725,7 +2725,10 @@ int main_ChooseCity(int unused, int host)
     d3_SetObjectPos(U_I((unsigned)&ai_Unkfc2dec), U_I((unsigned)&ai_Unkfc2dec) + 0x5c);
     d3_SetObjectRot(U_I((unsigned)&ai_Unkfc2dec), U_I((unsigned)&ai_Unkfc2dec) + 0x90);
     d3_SetLightSet(0, 0.0f, 1.0f, 0);
-    n = ai_ListFiles("gamedata/cities", host == 0 ? ".CTY" : ".NET", (char *)recs);
+    if (host == 0)
+        n = ai_ListFiles("gamedata/cities", ".CTY", (char *)recs);
+    else
+        n = ai_ListFiles("gamedata/cities", ".NET", (char *)recs);
     for (i = 0; i < n; i++) {
         f = vfs_Tfopen(recs[i] + 0x109, (char *)(unsigned)"rb", U_I((unsigned)&d3_Unk6333fc));
         if (f == 0)
@@ -2742,28 +2745,12 @@ int main_ChooseCity(int unused, int host)
             sprintf(key, "_STADTAUSWAHL_%s_INFO+0", hdr + 5);
             _strupr(key);
             k = txt_FindKey(key);
-            if (k == -1) {
-                k = 0;
-                do {
-                    c = hdr[5 + k];
-                    name[k] = c;
-                    k++;
-                } while (c != 0);
-            } else {
-                s = (char *)U_I((unsigned)&d2_Strings + k * 4);
-                d = name;
-                do {
-                    c = *s++;
-                    *d++ = c;
-                } while (c != 0);
-            }
+            if (k != -1)
+                strcpy(name, d2_Strings[k]);
+            else
+                strcpy(name, hdr + 5);
             sprintf(buf4, "stadt_%s", hdr + 5);
-            s = buf4;
-            d = (char *)h;
-            do {
-                c = *s++;
-                *d++ = c;
-            } while (c != 0);
+            strcpy((char *)h, buf4);
             sv_RegisterNamePlate(buf4, name, 0);
         }
     }
@@ -2791,84 +2778,72 @@ int main_ChooseCity(int unused, int host)
     d2_PlaceViewWindows(f1, 1);
     d2_SetForm(f1, 0);
     io_PrintText(0x1abb);
-    d3_SetViewport((float)(int)*(short *)(unsigned)&d2_ScreenW, (float)(int)*(short *)(unsigned)&d2_ScreenH, 0.0f, 0.0f, *(float *)&U_I((unsigned)&d3_ZNear), *(float *)&U_I((unsigned)&d3_ZFar), *(float *)&U_I((unsigned)&d3_ScaleX), (int)*(short *)(unsigned)&d2_ScreenW, (int)*(short *)(unsigned)&d2_ScreenH);
+    ht = d2_ScreenH;
+    w = d2_ScreenW;
+    d3_SetViewport((float)w, (float)ht, 0.0f, 0.0f, d3_ZNear, d3_ZFar, d3_ScaleX, w, ht);
     f2 = d2_OpenForm(0, 0, "Menu\\CHOOSECITY");
     d2_PlaceMainWindowF(f2, 3);
     d2_PlaceViewWindows(f2, 1);
     d2_SetForm(f2, 2);
-    sv_ButtonRow(d2_LastWindow, 0, out, 2, U_I((unsigned)&full_data_144acf0), U_I((unsigned)&full_data_144acf4));
+    sv_ButtonRow(d2_LastWindow, 0, out, 2, txt_Ptrs[0x42cc], txt_Ptrs[0x42cd]);
     ok = out[0];
     opp = out[1];
-    run = sv_RunFrame((int)main_ChooseCity, 0x10d6);
-    while (run != 0) {
-        U_I((unsigned)&ai_ClickedObject) = 0;
-        h = d3if_Pick((float)(int)*(short *)(unsigned)&dm_L, (float)(int)*(short *)((unsigned)&dm_L + 0x2), 0x60, 1);
-        U_I((unsigned)&ai_Unk6f22e8) = h;
-        if (U_I(((unsigned)&dm_L + 0xc)) != 0) {
-            U_I((unsigned)&ai_ClickedObject) = h;
-        } else if (U_I(((unsigned)&dm_L + 0x20)) != 0 || *(char *)(unsigned)&kb_Last == 1) {
-            sv_PopRequest = 1;
-        }
-        if (U_I((unsigned)&ai_ClickedObject) != 0 && strncmp((char *)U_I((unsigned)&ai_ClickedObject), "stadt_", 6) == 0)
-            sel = U_I((unsigned)&ai_ClickedObject);
-        if (sel != last) {
-            pos[0] = 0;
-            pos[1] = 0;
-            pos[2] = 0;
-            pos[3] = 0;
-            rot[0] = 0;
-            rot[1] = 0;
-            rot[2] = 0;
-            d2_SetForm(f2, 1);
-            io_PrintText((unsigned)"$C");
-            pos[0] = pos[0] + *(float *)(sel + 0x4c);
-            pos[1] = pos[1] + *(float *)(sel + 0x50);
-            pos[2] = pos[2] + *(float *)(sel + 0x54);
-            d3t_PlaceObjectV(tower, pos, rot, 0x28, 0x20);
-            for (i = 0; i < n; i++) {
-                if (sel == cityobj[i]) {
-                    if (cityobj[i] != 0) {
-                        s = (char *)sel + 6;
-                        d = (char *)((unsigned)&ai_DataPath + 0x220);
-                        do {
-                            c = *s++;
-                            *d++ = c;
-                        } while (c != 0);
-                        sprintf(key, "_STADTAUSWAHL_%s_BESCHR+0", (char *)((unsigned)&ai_DataPath + 0x220));
-                        _strupr(key);
-                        k = txt_FindKey(key);
-                        if (k != -1) {
-                            d2_SetForm(f2, 1);
-                            io_PrintText(k);
-                            io_PrintText("$A");
-                            io_PrintText(k + 1);
-                        }
-                        d3if_Show(sel, 0);
-                        cap = diff[i];
-                    }
-                } else if (cityobj[i] != 0) {
-                    d3if_Show(cityobj[i], 1);
-                }
+    if (sv_RunFrame((int)main_ChooseCity, 0x10d6) != 0) {
+        do {
+            ai_ClickedObject = 0;
+            h = (int)d3if_Pick((float)dm_L.x, (float)dm_L.y, 0x60, 1);
+            ai_Unk6f22e8 = (char *)h;
+            if (dm_L.lup != 0) {
+                ai_ClickedObject = h;
+            } else if (dm_L.rup != 0 || kb_Last == 1) {
+                sv_PopRequest = 1;
             }
-            last = sel;
-        }
-        if (U_I((unsigned)&d2_ClickedId) == 0) {
-            if (ai_Unk5fe710 == opp) {
+            if (ai_ClickedObject != 0 && strncmp((char *)ai_ClickedObject, "stadt_", 6) == 0)
+                sel = ai_ClickedObject;
+            if (sel != last) {
+                pos[0] = 0;
+                pos[1] = 0;
+                pos[2] = 0;
+                pos[3] = 0;
+                rot[0] = 0;
+                rot[1] = 0;
+                rot[2] = 0;
+                d2_SetForm(f2, 1);
+                io_PrintText((unsigned)"$C");
+                pos[0] = pos[0] + *(float *)(sel + 0x4c);
+                pos[1] = pos[1] + *(float *)(sel + 0x50);
+                pos[2] = pos[2] + *(float *)(sel + 0x54);
+                d3t_PlaceObjectV(tower, pos, rot, 0x28, 0x20);
+                for (i = 0; i < n; i++) {
+                    if (sel == cityobj[i]) {
+                        if (cityobj[i] != 0) {
+                            strcpy((char *)((unsigned)&ai_DataPath + 0x220), (char *)sel + 6);
+                            sprintf(key, "_STADTAUSWAHL_%s_BESCHR+0", (char *)((unsigned)&ai_DataPath + 0x220));
+                            _strupr(key);
+                            k = txt_FindKey(key);
+                            if (k != -1) {
+                                d2_SetForm(f2, 1);
+                                io_PrintText(k);
+                                io_PrintText("$A");
+                                io_PrintText(k + 1);
+                            }
+                            d3if_Show(sel, 0);
+                            cap = diff[i];
+                        }
+                    } else if (cityobj[i] != 0) {
+                        d3if_Show(cityobj[i], 1);
+                    }
+                }
+                last = sel;
+            }
+            if (d2_ClickedId == 0 && d2_PointerObj == opp) {
                 d2_SetViewEnabled(f2, 0);
                 d2_SetViewEnabled(f1, 0);
                 main_ChooseOpponents(cap);
                 d2_SetViewEnabled(f2, 1);
                 d2_SetViewEnabled(f1, 1);
-                if (U_I((unsigned)&d2_ClickedId) != 0)
-                    goto lkey;
             }
-            if (ai_Unk5fe710 != ok)
-                goto lkey;
-            goto lgo;
-        } else {
-lkey:
-            if (*(char *)(unsigned)&kb_Last == 0x1c) {
-lgo:
+            if ((d2_ClickedId == 0 && d2_PointerObj == ok) || kb_Last == 0x1c) {
                 d2_SetViewEnabled(f2, 0);
                 d2_SetViewEnabled(f1, 0);
                 if (host != 0) {
@@ -2884,8 +2859,7 @@ lgo:
                     d2_SetViewEnabled(f1, 1);
                 }
             }
-        }
-        run = sv_RunFrame((int)main_ChooseCity, 0x10d6);
+        } while (sv_RunFrame((int)main_ChooseCity, 0x10d6) != 0);
     }
     if (f2 != -1)
         d2_CloseView(f2);
