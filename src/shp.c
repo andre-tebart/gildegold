@@ -538,8 +538,7 @@ D2SHP *d2_GrabShape16NoRuns(int x, int y, int w, int h, unsigned short *src, uns
    palette pixels of the transparent colour and of the start / end marker colours (the markers move the box),
    then stores every row as skip runs of zero pixels alternating with literal runs, builds the table of row
    offsets, and returns an exactly sized copy of the shape (allocated with mem_Alloc; the scratch shape is
-   freed).
-*pitch+x+col, literal run bounded by run[1]+col<w, memcpy(run+2,row+col,run[1]), the col-- / col+=run[1]+1, npix/size/cnt/runs), the line table, mode/nruns and the alloc-copy-free tail. What differs is codegen: our tail keeps row/col as pointers where the original recomputes src[maxy*pitch+x+col] in the skip loop and keeps the row base in a slot, and the scan variables all have other register/slot homes (1184 vs 1248 bytes). No source meaning fix found */
+   freed). @deep match-base 2026-10-31: read against the original (346 vs 353 instructions, was 336; differing 177, was 333). The bounding-box scan re-reads src[(y + i) * pitch + x + j] != 0 in each of the four tests (the original re-tests dl after every store; a char local let VC6 thread them away); the marker scan reads the pixel into c (unsigned char) and stores minx / miny (maxx / maxy) before clearing p[j]; the run loop counts rows with i (int, lines[i] unmasked) and the row coordinate j = y + i, keeps run as unsigned int * computed after every size change, the literal run tests src[run[1] + t + col + x] directly, adds run[1] in both arms of if (run[1] > 0) (the - 1 in one), and the tests are s->h > 0 / s->w > 0 (jbe). Left: w / h in edi / esi swapped against ours and the box variables in other slots (frame 0xda0 vs 0xd9c: the original keeps the masked pitch in a stack temp [esp+0x2c] and recomputes j * pitch for the skip-run row where ours reuses t), scheduling of the stores around mem_Alloc. */
 
 D2SHP *d2_GrabShape8Runs(int x, int y, int w, int h, unsigned char *src, unsigned char mode, unsigned short pitch)
 {
@@ -547,26 +546,26 @@ D2SHP *d2_GrabShape8Runs(int x, int y, int w, int h, unsigned char *src, unsigne
     unsigned short minx, miny, maxx, maxy;
     int lines[864];
     unsigned char *p, *row;
-    char c;
+    unsigned char c;
     D2SHP *s, *r;
-    int *line, *run;
+    int *line;
+    unsigned int *run;
 
+    minx = w;
     maxx = 0;
     maxy = 0;
     cnt = 0;
     miny = h;
     s = mem_Alloc((w * 8 + 4) * h + 0x32, "d2:shp:_GrabBit8:ShapeHeader");
-    minx = w;
     for (i = 0; i < h; i++) {
         for (j = 0; j < w; j++) {
-            c = src[(y + i) * pitch + x + j];
-            if (c != 0 && j > maxx)
+            if (src[(y + i) * pitch + x + j] != 0 && j > maxx)
                 maxx = j;
-            if (c != 0 && j < minx)
+            if (src[(y + i) * pitch + x + j] != 0 && j < minx)
                 minx = j;
-            if (c != 0 && i > maxy)
+            if (src[(y + i) * pitch + x + j] != 0 && i > maxy)
                 maxy = i;
-            if (c != 0 && i < miny)
+            if (src[(y + i) * pitch + x + j] != 0 && i < miny)
                 miny = i;
         }
     }
@@ -595,18 +594,19 @@ D2SHP *d2_GrabShape8Runs(int x, int y, int w, int h, unsigned char *src, unsigne
     for (i = 0; i < h; i++) {
         for (j = 0; j < w; j++) {
             p = src + (i + y) * pitch + x;
-            t = p[j] * 4;
+            c = p[j];
+            t = c * 4;
             if (d2_Palette[0][t] == d2_StartMarkerColour.r && d2_Palette[0][t + 1] == (unsigned char)d2_StartMarkerColour.gb
                 && d2_Palette[0][t + 2] == (unsigned char)(d2_StartMarkerColour.gb >> 8)) {
-                p[j] = 0;
                 minx = j;
                 miny = i;
+                p[j] = 0;
             }
             if (d2_Palette[0][t] == d2_EndMarkerColour.r && d2_Palette[0][t + 1] == (unsigned char)d2_EndMarkerColour.gb
                 && d2_Palette[0][t + 2] == (unsigned char)(d2_EndMarkerColour.gb >> 8)) {
-                p[j] = 0;
-                maxy = i;
                 maxx = j;
+                maxy = i;
+                p[j] = 0;
             }
         }
     }
@@ -615,50 +615,50 @@ D2SHP *d2_GrabShape8Runs(int x, int y, int w, int h, unsigned char *src, unsigne
     s->by0 = (unsigned short)miny;
     s->by1 = (unsigned short)maxy;
     s->size = 0x32;
-    miny = 0;
-    if (s->h != 0) {
-        maxy = y;
+    i = 0;
+    if (s->h > 0) {
+        j = y;
         do {
             runs = 0;
             line = (int *)((char *)s + s->size);
             s->size += 4;
-            lines[miny] = (char *)line - (char *)s;
+            run = (unsigned int *)((char *)s + s->size);
+            lines[i] = (char *)line - (char *)s;
             col = 0;
-            if (s->w != 0) {
-                t = maxy * pitch;
+            if (s->w > 0) {
+                t = j * pitch;
                 row = src + x + t;
                 do {
-                    run = (int *)((char *)s + s->size);
                     run[0] = 0;
                     run[1] = 0;
                     if (row[col] == 0) {
-                        row = src + maxy * pitch + x;
+                        row = src + j * pitch + x;
                         do {
-                            if (s->w <= col)
+                            if (col >= s->w)
                                 break;
                             col++;
                             run[0]++;
                         } while (row[col] == 0);
                     }
-                    c = src[t + col + x];
-                    while (c != 0 && (unsigned int)(run[1] + col) < s->w) {
+                    while (src[run[1] + t + col + x] != 0 && run[1] + col < s->w)
                         run[1]++;
-                        c = src[run[1] + t + col + x];
-                    }
                     memcpy(run + 2, row + col, run[1]);
-                    if (run[1] != 0)
-                        col--;
+                    if (run[1] > 0)
+                        col += run[1] - 1;
+                    else
+                        col += run[1];
                     s->npix += run[1];
-                    s->size = s->size + run[1] + 8;
+                    s->size += run[1] + 8;
+                    run = (unsigned int *)((char *)s + s->size);
                     cnt++;
                     runs++;
-                    col += run[1] + 1;
+                    col++;
                 } while (col < s->w);
             }
             *line = runs;
-            miny++;
-            maxy++;
-        } while (miny < s->h);
+            i++;
+            j++;
+        } while (i < s->h);
     }
     s->lineoff = s->size;
     s->size += s->h * 4;
