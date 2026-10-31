@@ -2613,55 +2613,53 @@ int main_CharacterIntro(int unused)
     d2_CloseView(f);
     return r;
 }
-/* 0x536e80, the difficulty choice (same form, five buttons from the text 0x1abf: the chosen level 0 .. 4 goes to 0x6f366a through 0x6f23fc); returns 1 when confirmed */
+/* 0x536e80, the difficulty choice (the same form, five buttons from the text 0x1abf and a sixth one: the chosen level 0 .. 4 goes to
+   ai_Difficulty and back to the option byte ai_GamePanel.byte[2]); returns 1 when confirmed */
 
-int main_Unk536e80(void)
+int main_ChooseDifficulty(void)
 {
-    int r, f, t, b[5], b6, g, run;
+    int r, f, t, b0, b1, b2, b3, b4, g;
 
     r = 0;
     f = d2_OpenForm(0, 0, "menu\\choosecharacter_intro");
     d2_CentreViewWindows(f);
-    U_I((unsigned)&ai_Difficulty) = *(unsigned char *)((unsigned)&ai_GamePanel + 0x2);
+    ai_Difficulty = ai_GamePanel.byte[2];
     t = io_PrintText(0x1abf);
-    b[0] = d2_GetWinObj(f, 0, t);
-    b[1] = d2_GetWinObj(f, 0, t + 1);
-    b[2] = d2_GetWinObj(f, 0, t + 2);
-    b[3] = d2_GetWinObj(f, 0, t + 3);
-    b[4] = d2_GetWinObj(f, 0, t + 4);
-    b6 = d2_GetWinObj(f, 0, t + 5);
-    g = d2_CreateRadioGroup(6, b[0], b[1], b[2], b[3], b[4], b6);
-    d2_RadioSelect(g, U_I((unsigned)&ai_Difficulty));
-    run = sv_RunFrame((int)main_Unk536e80, 0xc6);
-    do {
-        if (run == 0) {
-            *(unsigned char *)((unsigned)&ai_GamePanel + 0x2) = (unsigned char)U_I((unsigned)&ai_Difficulty);
-            d2_RadioClear(g);
-            d2_CloseView(f);
-            return r;
-        }
-        d2_MenuNavigate(g);
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0 || *(char *)(unsigned)&kb_Last == 1) {
-            r = 0;
-            sv_PopRequest = 1;
-        }
-        if (U_I((unsigned)&d2_ClickedId) == 0 || *(char *)(unsigned)&kb_Last == 0x1c) {
-            if (ai_Unk5fe710 == b[0])
-                U_I((unsigned)&ai_Difficulty) = 0;
-            else if (ai_Unk5fe710 == b[1])
-                U_I((unsigned)&ai_Difficulty) = 1;
-            else if (ai_Unk5fe710 == b[2])
-                U_I((unsigned)&ai_Difficulty) = 2;
-            else if (ai_Unk5fe710 == b[3])
-                U_I((unsigned)&ai_Difficulty) = 3;
-            else if (ai_Unk5fe710 == b[4])
-                U_I((unsigned)&ai_Difficulty) = 4;
-            r = 1;
-            sv_PopRequest = 1;
-        } else if (U_I((unsigned)&d2_ClickedId) == 1)
-            sv_PopRequest = 1;
-        run = sv_RunFrame((int)main_Unk536e80, 0xc6);
-    } while (1);
+    b0 = d2_GetWinObj(f, 0, t);
+    b1 = d2_GetWinObj(f, 0, t + 1);
+    b2 = d2_GetWinObj(f, 0, t + 2);
+    b3 = d2_GetWinObj(f, 0, t + 3);
+    b4 = d2_GetWinObj(f, 0, t + 4);
+    g = d2_CreateRadioGroup(6, b0, b1, b2, b3, b4, d2_GetWinObj(f, 0, t + 5));
+    d2_RadioSelect(g, ai_Difficulty);
+    if (sv_RunFrame((int)main_ChooseDifficulty, 0xc6) != 0) {
+        do {
+            d2_MenuNavigate(g);
+            if (dm_L.rup != 0 || kb_Last == 1) {
+                r = 0;
+                sv_PopRequest = 1;
+            }
+            if (d2_ClickedId == 0 || kb_Last == 0x1c) {
+                if (d2_PointerObj == b0)
+                    ai_Difficulty = 0;
+                else if (d2_PointerObj == b1)
+                    ai_Difficulty = 1;
+                else if (d2_PointerObj == b2)
+                    ai_Difficulty = 2;
+                else if (d2_PointerObj == b3)
+                    ai_Difficulty = 3;
+                else if (d2_PointerObj == b4)
+                    ai_Difficulty = 4;
+                r = 1;
+                sv_PopRequest = 1;
+            } else if (d2_ClickedId == 1)
+                sv_PopRequest = 1;
+        } while (sv_RunFrame((int)main_ChooseDifficulty, 0xc6) != 0);
+    }
+    ai_GamePanel.byte[2] = (unsigned char)ai_Difficulty;
+    d2_RadioClear(g);
+    d2_CloseView(f);
+    return r;
 }
 /* 0x537040, the opponent selection ("menu\choose_opponents"): n rows (0x46a960 list boxes "<name> <letter>") with the entries of 0x75e160, the ok button (text 0x7d); the chosen entries are stored back
    in 0x75e160; ROUGH (the row height is a lost float) */
@@ -2887,7 +2885,7 @@ lgo:
                     sv_PopRequest = 1;
                     ret = 1;
                 } else {
-                    if (main_Unk536e80() != 0 && main_ChooseHistory() != 0) {
+                    if (main_ChooseDifficulty() != 0 && main_ChooseHistory() != 0) {
                         sv_PopRequest = 1;
                         ret = 1;
                         d2_SetViewEnabled(f2, 1);
