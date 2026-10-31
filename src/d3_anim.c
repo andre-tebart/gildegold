@@ -267,13 +267,13 @@ void d3anim_PoseBones(D3OBJECT *obj)
         }
     }
 }
-/* 0x432190, the object's position at frame/sub of the slot's animation (root motion, without moving it). */
+/* 0x432190, the object's position at frame/sub of the slot's animation (root motion, without moving it). @deep match-base 2026-10-31: read against the original; now 251 vs 251 instructions, 836 vs 836 bytes (was 210 / 688). The relative branch reuses d for the transformed vector (d = M * sum, out = d + pos) and the else branch copies f0->move into d, puts the difference in sum and transforms into sum (d = sum * t + d, sum = M * d, out = sum + pos): the two transform blocks name other variables, so VC6 no longer tail-merges them (the frame slot layout matches too). t is computed in both arms of if (key == frame) (the original duplicates the fild after sub -= sub0). Left: register choice only: the prologue loads s / out before sub esp in the original (eax / ecx, zero register ebx) where ours loads out into edx after it (zero register ecx), and the else branch rotates eax/edx/esi (asmdiff --regs: hunks 0x432190 code 68, 0x4323b8 code 54, the rest regs 94). */
 
 void d3anim_RootPosAt(D3OBJECT *obj, D3ANIMSLOT *s, int frame, int sub, D3VECTOR *out)
 {
     D3ANIMDATA *data = s->data;
     D3ANIMFRAME *f0, *f1;
-    D3VECTOR4 d, sum, v;
+    D3VECTOR4 d, sum;
     float t;
     int key, sub0, n0, n1, i;
 
@@ -308,9 +308,11 @@ void d3anim_RootPosAt(D3OBJECT *obj, D3ANIMSLOT *s, int frame, int sub, D3VECTOR
             sum.y += d.y;
             sum.z += d.z;
         }
-        if (key == frame)
+        if (key == frame) {
             sub -= sub0;
-        t = (float)sub / n1;
+            t = (float)sub / n1;
+        } else
+            t = (float)sub / n1;
         d.x = data->frames[frame + 1].move.x - data->frames[frame].move.x;
         d.y = data->frames[frame + 1].move.y - data->frames[frame].move.y;
         d.z = data->frames[frame + 1].move.z - data->frames[frame].move.z;
@@ -320,28 +322,31 @@ void d3anim_RootPosAt(D3OBJECT *obj, D3ANIMSLOT *s, int frame, int sub, D3VECTOR
         sum.x += d.x;
         sum.y += d.y;
         sum.z += d.z;
-        v.x = sum.x * obj->matrix._11 + sum.y * obj->matrix._21 + sum.z * obj->matrix._31;
-        v.y = sum.x * obj->matrix._12 + sum.y * obj->matrix._22 + sum.z * obj->matrix._32;
-        v.z = sum.x * obj->matrix._13 + sum.y * obj->matrix._23 + sum.z * obj->matrix._33;
-        out->x = v.x + obj->pos.x;
-        out->y = v.y + obj->pos.y;
-        out->z = v.z + obj->pos.z;
+        d.x = sum.x * obj->matrix._11 + sum.y * obj->matrix._21 + sum.z * obj->matrix._31;
+        d.y = sum.x * obj->matrix._12 + sum.y * obj->matrix._22 + sum.z * obj->matrix._32;
+        d.z = sum.x * obj->matrix._13 + sum.y * obj->matrix._23 + sum.z * obj->matrix._33;
+        out->x = d.x + obj->pos.x;
+        out->y = d.y + obj->pos.y;
+        out->z = d.z + obj->pos.z;
     } else {
         f0 = &data->frames[s->frame];
         f1 = &data->frames[s->nextFrame];
-        d.x = f1->move.x - f0->move.x;
-        d.y = f1->move.y - f0->move.y;
-        d.z = f1->move.z - f0->move.z;
+        d.x = f0->move.x;
+        d.y = f0->move.y;
+        d.z = f0->move.z;
+        sum.x = f1->move.x - d.x;
+        sum.y = f1->move.y - d.y;
+        sum.z = f1->move.z - d.z;
         t = (float)s->subFrame / f0->count;
-        sum.x = d.x * t + f0->move.x;
-        sum.y = d.y * t + f0->move.y;
-        sum.z = d.z * t + f0->move.z;
-        v.x = sum.x * obj->matrix._11 + sum.y * obj->matrix._21 + sum.z * obj->matrix._31;
-        v.y = sum.x * obj->matrix._12 + sum.y * obj->matrix._22 + sum.z * obj->matrix._32;
-        v.z = sum.x * obj->matrix._13 + sum.y * obj->matrix._23 + sum.z * obj->matrix._33;
-        out->x = v.x + obj->pos.x;
-        out->y = v.y + obj->pos.y;
-        out->z = v.z + obj->pos.z;
+        d.x = sum.x * t + d.x;
+        d.y = sum.y * t + d.y;
+        d.z = sum.z * t + d.z;
+        sum.x = d.x * obj->matrix._11 + d.y * obj->matrix._21 + d.z * obj->matrix._31;
+        sum.y = d.x * obj->matrix._12 + d.y * obj->matrix._22 + d.z * obj->matrix._32;
+        sum.z = d.x * obj->matrix._13 + d.y * obj->matrix._23 + d.z * obj->matrix._33;
+        out->x = sum.x + obj->pos.x;
+        out->y = sum.y + obj->pos.y;
+        out->z = sum.z + obj->pos.z;
     }
     out->x = obj->posOffset.x + out->x;
     out->y = obj->posOffset.y + out->y;
