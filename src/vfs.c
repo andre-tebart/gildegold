@@ -657,7 +657,7 @@ char vfs_MakeDirs(char *name, int unk)
     return 1;
 }
 /* 0x430470, opens a file of the directory tree. mode: R read (default), W write, B binary (default), T text,
-   Z gzip (default), N plain. Files inside zip archives can only be read, and only in binary mode. */
+   Z gzip (default), N plain. Files inside zip archives can only be read, and only in binary mode. @deep match-base 2026-10-31: read against the original. The early argument check, the read-success tail and the write path !fp all reach one shared return f epilogue at the end (mov eax,ebp) in the original: rewritten as if (name && *name && mode && unk) { ... } return f; with the write success as if (fp) { ... } (486 vs 490 now, was 472). The two return 0 sites (zip text mode, MakeDirs) keep their own xor eax,eax epilogues on both sides. Left: f has a stack home in the original (frame 0x368 vs ours 0x364: mov [esp+0x24],ebp at entry, mov [esp+0x24],eax after the zip pool_Alloc, mov ebp,[esp+0x30] in notfound) and is cached in ebp, so VC6 does not fold f to 0: notfound and Could-write return f (mov eax,ebp / the reload) where ours returns xor eax,eax, and the notfound block stays after unzClose where ours moves it behind the fopen test; name is in edi / e in ebp in the original vs ebp / edi in ours (regs hunks 0x430527, 0x4309e8). Tried: f forced into memory (&f, experiment) 508 ins, worse; the zip loop with its own unzOpenCurrentFile / pool_Alloc copy instead of goto found 492, worse; early return 0 / MakeDirs return f: no change. */
 
 VFSFILE *vfs_Tfopen(char *name, char *mode, int unk)
 {
@@ -675,145 +675,145 @@ VFSFILE *vfs_Tfopen(char *name, char *mode, int unk)
     char *p;
     int err;
 
-    if (!name || !*name || !mode || !unk)
-        return f;
-    read = 1;
-    binary = 1;
-    z = 1;
-    for (p = mode; *p; p++) {
-        switch (toupper(*p)) {
-        case 'B':
-            binary = 1;
-            break;
-        case 'N':
-            z = 0;
-            break;
-        case 'R':
-            read = 1;
-            break;
-        case 'T':
-            binary = 0;
-            break;
-        case 'W':
-            read = 0;
-            break;
-        case 'Z':
-            z = 1;
-            break;
-        }
-    }
-    if (read) {
-        e = vfs_FindFile(name, (VFSDIR *)unk, &r);
-        if (!e)
-            goto notfound;
-        if (e->zip) {
-            if (!binary) {
-                err_Message("Unsupported Read-Mode in vfs:Open (textfile inside zip)");
-                return 0;
+    if (name && *name && mode && unk) {
+        read = 1;
+        binary = 1;
+        z = 1;
+        for (p = mode; *p; p++) {
+            switch (toupper(*p)) {
+            case 'B':
+                binary = 1;
+                break;
+            case 'N':
+                z = 0;
+                break;
+            case 'R':
+                read = 1;
+                break;
+            case 'T':
+                binary = 0;
+                break;
+            case 'W':
+                read = 0;
+                break;
+            case 'Z':
+                z = 1;
+                break;
             }
-            vfs_EntryPath(0, e->zip, 0, path);
-            strcat(path, vfs_Ext[e->ext]);
-            vfs_ToBackslashes(path);
-            zip = unzOpen(path);
-            if (!zip)
+        }
+        if (read) {
+            e = vfs_FindFile(name, (VFSDIR *)unk, &r);
+            if (!e)
                 goto notfound;
-            vfs_EntryPath(e, r, e->zip, buf);
-            _strupr(buf);
-            if (e->pos > 0) {
-                err = unzGoToFilePos(zip, e->pos, e->num);
-                if (unzGetCurrentFileInfo(zip, &info, tmp, 0x100, 0, 0, 0, 0) == 0) {
-                    _strupr(tmp);
-                    vfs_ToSlashes(tmp);
-                    if (info.uncompressed_size > 0 && !strcmp(buf, tmp)) {
-found:
-                        err = unzOpenCurrentFile(zip);
-                    }
-                    if (!err) {
-                        f = pool_Alloc(&vfs_FilePool, sizeof(VFSFILE), 16);
-                        f->zip = zip;
-                        f->flags.checkgz = 1;
-                        f->flags.inzip = 1;
-                        goto opened;
-                    }
+            if (e->zip) {
+                if (!binary) {
+                    err_Message("Unsupported Read-Mode in vfs:Open (textfile inside zip)");
+                    return 0;
                 }
-            } else {
-                do {
+                vfs_EntryPath(0, e->zip, 0, path);
+                strcat(path, vfs_Ext[e->ext]);
+                vfs_ToBackslashes(path);
+                zip = unzOpen(path);
+                if (!zip)
+                    goto notfound;
+                vfs_EntryPath(e, r, e->zip, buf);
+                _strupr(buf);
+                if (e->pos > 0) {
+                    err = unzGoToFilePos(zip, e->pos, e->num);
                     if (unzGetCurrentFileInfo(zip, &info, tmp, 0x100, 0, 0, 0, 0) == 0) {
                         _strupr(tmp);
                         vfs_ToSlashes(tmp);
-                        if (info.uncompressed_size > 0 && !strcmp(buf, tmp))
-                            goto found;
+                        if (info.uncompressed_size > 0 && !strcmp(buf, tmp)) {
+found:
+                            err = unzOpenCurrentFile(zip);
+                        }
+                        if (!err) {
+                            f = pool_Alloc(&vfs_FilePool, sizeof(VFSFILE), 16);
+                            f->zip = zip;
+                            f->flags.checkgz = 1;
+                            f->flags.inzip = 1;
+                            goto opened;
+                        }
                     }
-                } while (unzGoToNextFile(zip) == 0);
-            }
-            unzClose(zip);
+                } else {
+                    do {
+                        if (unzGetCurrentFileInfo(zip, &info, tmp, 0x100, 0, 0, 0, 0) == 0) {
+                            _strupr(tmp);
+                            vfs_ToSlashes(tmp);
+                            if (info.uncompressed_size > 0 && !strcmp(buf, tmp))
+                                goto found;
+                        }
+                    } while (unzGoToNextFile(zip) == 0);
+                }
+                unzClose(zip);
 notfound:
-            sprintf(buf, "vfs_Tfopen: Could not find \"%s\"!!", name);
-            return f;
-        }
-        modes[0] = "rt";
-        modes[1] = "rb";
-        vfs_EntryPath(e, r, 0, path);
-        vfs_ToBackslashes(path);
-        if (z)
-            fp = gzopen(path, modes[binary]);
-        else
-            fp = fopen(path, modes[binary]);
-        if (!fp)
-            goto notfound;
-        f = pool_Alloc(&vfs_FilePool, sizeof(VFSFILE), 16);
-        f->fp = fp;
-        f->flags.inzip = 0;
+                sprintf(buf, "vfs_Tfopen: Could not find \"%s\"!!", name);
+                return f;
+            }
+            modes[0] = "rt";
+            modes[1] = "rb";
+            vfs_EntryPath(e, r, 0, path);
+            vfs_ToBackslashes(path);
+            if (z)
+                fp = gzopen(path, modes[binary]);
+            else
+                fp = fopen(path, modes[binary]);
+            if (!fp)
+                goto notfound;
+            f = pool_Alloc(&vfs_FilePool, sizeof(VFSFILE), 16);
+            f->fp = fp;
+            f->flags.inzip = 0;
 opened:
-        strcpy(f->name, name);
-        f->flags.memory = 0;
-        f->flags.read = 1;
-        f->flags.binary = binary;
-        f->flags.compressed = z;
-        vfs_OpenCount++;
-        return f;
-    }
-    for (p = name; *p && (*p == '\\' || *p == '/'); p++)
-        ;
-    strcpy(tmp, p);
-    vfs_ToSlashes(tmp);
-    strcpy(buf, tmp);
-    vfs_UpperCase(tmp);
-    e = vfs_FindFile(tmp, (VFSDIR *)unk, &r);
-    if (!e || e->zip) {
-        if (!vfs_MakeDirs(buf, unk))
-            return 0;
-        if (!e) {
-            vfs_AddFilePath(tmp, (VFSDIR *)unk, 0, 0, 0, 0, -1);
+            strcpy(f->name, name);
+            f->flags.memory = 0;
+            f->flags.read = 1;
+            f->flags.binary = binary;
+            f->flags.compressed = z;
+            vfs_OpenCount++;
+        } else {
+            for (p = name; *p && (*p == '\\' || *p == '/'); p++)
+                ;
+            strcpy(tmp, p);
+            vfs_ToSlashes(tmp);
+            strcpy(buf, tmp);
+            vfs_UpperCase(tmp);
             e = vfs_FindFile(tmp, (VFSDIR *)unk, &r);
+            if (!e || e->zip) {
+                if (!vfs_MakeDirs(buf, unk))
+                    return 0;
+                if (!e) {
+                    vfs_AddFilePath(tmp, (VFSDIR *)unk, 0, 0, 0, 0, -1);
+                    e = vfs_FindFile(tmp, (VFSDIR *)unk, &r);
+                }
+            }
+            if (!e) {
+                sprintf(buf, "vfs_Tfopen: Could write to \"%s\"!!", name);
+                err_Message(buf);
+                return f;
+            }
+            modes[0] = "wt";
+            modes[1] = "wb";
+            e->date = -1;
+            e->zip = 0;
+            e->pos = 0;
+            vfs_EntryPath(e, r, 0, path);
+            vfs_ToBackslashes(path);
+            if (z)
+                fp = gzopen(path, modes[binary]);
+            else
+                fp = fopen(path, modes[binary]);
+            if (fp) {
+                f = pool_Alloc(&vfs_FilePool, sizeof(VFSFILE), 16);
+                f->fp = fp;
+                strcpy(f->name, name);
+                f->flags.memory = 0;
+                f->flags.read = 0;
+                f->flags.binary = binary;
+                f->flags.compressed = z;
+                vfs_OpenCount++;
+            }
         }
     }
-    if (!e) {
-        sprintf(buf, "vfs_Tfopen: Could write to \"%s\"!!", name);
-        err_Message(buf);
-        return f;
-    }
-    modes[0] = "wt";
-    modes[1] = "wb";
-    e->date = -1;
-    e->zip = 0;
-    e->pos = 0;
-    vfs_EntryPath(e, r, 0, path);
-    vfs_ToBackslashes(path);
-    if (z)
-        fp = gzopen(path, modes[binary]);
-    else
-        fp = fopen(path, modes[binary]);
-    if (!fp)
-        return f;
-    f = pool_Alloc(&vfs_FilePool, sizeof(VFSFILE), 16);
-    f->fp = fp;
-    strcpy(f->name, name);
-    f->flags.memory = 0;
-    f->flags.read = 0;
-    f->flags.binary = binary;
-    f->flags.compressed = z;
-    vfs_OpenCount++;
     return f;
 }
 /* 0x430aa0, returns the size of a written memory file. */
