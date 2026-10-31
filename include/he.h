@@ -41,7 +41,8 @@ void he_Unk53ee40(void);
 void he_Unk53eea0(void);
 
 void he_Unk53ef50(void);
-int he_Unk53ef80(int key);
+int he_SumApEvents(int key);
+int *he_AddApEvent(int a, char *name, int c, int d);  /* 0x53eec0, registers an AP event, returns its counter byte (0 when full) */
 int he_Unk53efb0(int key);
 void he_PostEvent6d(void);
 void he_PostEvent6b(void);

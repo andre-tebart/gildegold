@@ -308,7 +308,7 @@ extern int di_MinY;
 extern GAPDATA full_data_5f3418[];
 extern GAPDATA full_data_6f1c2c[];
 extern GAPDATA full_data_6f22f4[];
-extern GAPDATA full_data_6f2598[];
+extern int main_Round;
 #include "f3snd_types.h"
 extern G16AMBIENTON snd_AmbientOn;
 extern void sv_UpdateClock(void);
@@ -3318,7 +3318,7 @@ void ai_GameFrame(void)
             }
         }
     }
-    if ((U_I((unsigned)&ai_GameFlags) & 1) && U_I((unsigned)&full_data_6f2598) == 1) {
+    if ((U_I((unsigned)&ai_GameFlags) & 1) && main_Round == 1) {
         for (it = gm_BuildQuery(1, 4, U_W((unsigned)&ai_PlayerId)); it != 0; it = gm_BuildNext()) {
             if (it != U_I(((unsigned)&ai_Unk770cec + 0x4) + U_W((unsigned)&ai_PlayerId) * 0x87)) {
                 sv_Unk527bb0(it);
@@ -18280,7 +18280,7 @@ void ai_MasterLetterWindow(unsigned char *param_1)
     } else if (ch == 0) {
         mode = 0x20;
         v = gm_TitleGroup(*(unsigned char *)(kind + 0x223));
-        n = gm_Unk5044b0(U_W((unsigned)&ai_PlayerId), v);
+        n = gm_TitleJob(U_W((unsigned)&ai_PlayerId), v);
         if (n != 0) {
             for (i = 0; i < 6; i++) {   /* ROUGH: the loop index local */
                 if (n == *(unsigned char *)(kind + 0x223 + i)) {

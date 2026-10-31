@@ -161,13 +161,24 @@ extern int ai_Unkfb9064;
 extern int ai_Unkfb9068;
 extern int ai_Unkfb906c;
 extern char cm_RequestedSaveName[72];
+#pragma pack(push, 1)
+typedef struct MAINCARRY {          /* 0x21d bytes (+0x219 the entry count), what gm_CollectCarried collects for a character (f3gm.c: +0x31 the free capacity) */
+    int units;                      /* 0x00, counts the 0xe-byte units */
+    char pad04[0x2d];
+    int capacity;                   /* 0x31, the free capacity (unaligned) */
+    char rest[0x1e8];
+} MAINCARRY;
+#pragma pack(pop)
+typedef struct MAINPLREC {          /* gm_PlayerRecord's record, the part gm_TitleJob and the round start read */
+    char pad00[0x74];
+    unsigned char job[0x11];        /* 0x74, the job byte of each title group */
+} MAINPLREC;
 #define main_BookObject (*(int *)((char *)&cm_RequestedSaveName + 0x44))  /* 0x6f2614, the book object "Buch" loaded at the game start (reasoned: a pointer-sized field after the 64-byte name and the int at +0x40) */
 extern unsigned int ai_MissionSeed;
 extern GAPDATA full_data_75df20[];
 extern char * sv_SelectedObject;
 extern int ch_SndLib;
 extern char cm_RequestedSaveName[72];
-extern GAPDATA full_data_6f2598[];
 extern GAPDATA full_data_6f25c0[];
 extern GAPDATA full_data_75e630[];
 extern int snd_Bank;
@@ -243,7 +254,6 @@ extern int cm_NetFlags;
 
 extern GAPDATA full_data_62456c[];
 extern GAPDATA full_data_6f2428[];
-extern GAPDATA full_data_6f2598[];
 extern GAPDATA full_data_6f25a8[];
 extern GAPDATA full_data_760454[];
 extern GAPDATA full_data_76f990[];
@@ -283,7 +293,6 @@ extern GAPDATA full_data_6f2470[];
 extern GAPDATA full_data_6f2574[];
 extern GAPDATA full_data_6f2580[];
 extern int main_Inactive;       /* 0x6f2584, 1 while the app is deactivated */
-extern GAPDATA full_data_6f2598[];
 extern GAPDATA full_data_6f25a8[];
 extern char main_AppDir[];
 extern INIT_PLAYER init_PlayerProfile;
@@ -299,7 +308,7 @@ extern int snd_MusicEnabled;            /* 0x6f2578, f3snd.h */
 
 void main_EndGame(void);
 void main_Unk537be0(void);
-void main_Unk538140(void);
+void main_RundenBeginn(void);
 void main_Unk5384e0(void);
 void main_Unk539870(void);
 
@@ -3034,7 +3043,7 @@ void main_Unk537de0(void)
 {
     he_Unk53d4b0();
     U_I((unsigned)&sv_ScreenDirty) = 1;
-    U_I((unsigned)&full_data_6f2598) = 1;
+    main_Round = 1;
     U_I((unsigned)&ai_TimeT) = 2;
     U_I((unsigned)&ai_GameOver) = 0;
     U_I((unsigned)&ai_LeaveGame) = 0;
@@ -3156,95 +3165,96 @@ void main_EndGame(void)
     ai_PlayerBuilding = 0;
     ai_FallbackBuilding = 0;
 }
-/* 0x538140, "main_RundenBeginn": the start of a game round (0x6f2598 = the round number): for every active character (0x770b80 stride 0x21c, kind 1 .. 8) the one-shot message texts (0x5176d0 formats 0x15c5 /
-   0x2052 / 0x2054 / 0x2053 / 0x3fd7 written into the lists of 0x53eec0, which decrements the counter byte of an existing entry) are queued: the outstanding bills of the buildings of the kinds 6 / 5 (0x506430),
-   the items 0x2c1 / 0x15b / 0x2c4 (0x5ba6b0), the flags 0x100000 / 0x200000, the guild house (+0x16e) and the building list (0x501190 (2, 4, c, 5, 5)); finally 0x4c5f60 (id, the list length 0x53ef80 + 4);
-   ROUGH */
+/* 0x538140, "main_RundenBeginn": the start of a game round (main_Round): for every active character (kind 1 .. 8; in a network game only those ai_CanAct allows, not kind 7) the one-shot message texts are queued as AP events (he_AddApEvent decrements the counter byte of an existing entry): the outstanding bills of the title groups of the kinds 6 / 5, the items 0x2c1 / 0x15b / 0x2c4, the flags 0x100000 / 0x200000 of flags1cc (sent back cleared), the guild house (bld2) and the buildings of the character; finally the money delta (the free capacity of what it carries + 4 + the sum of the AP events of the character) */
 
-void main_Unk538140(void)
+void main_RundenBeginn(void)
 {
-    unsigned char *c;
-    char b0[0x100], b1[0x100], b2[0x100], b3[0x100], b4[0x200], b5[0x200], b6[0x200], hdr[0xd20], line[0x35];
-    char *r;
-    int o, i, k, m, t;
+    MAINCARRY carry;
+    char b5[0x200], b6[0x200], b4[0x200];
+    char b1[0x100], b2[0x100], b3[0x100], b0[0x100];
+    char hdr[0x100] = "";
+    AICHAR *ch;
+    MAINPLREC *rec;
+    unsigned char *r;
+    char *e;
+    int i, k, m, t;
 
-    hdr[0] = *(char *)(unsigned)&ch_EmptyName;
-    memset(hdr + 1, 0, 0x3ff);
     net_PrintStats();
     net_ClearStats();
-    sprintf(hdr, "main_RundenBeginn(): init round no %i", U_I((unsigned)&full_data_6f2598));
-    c = (unsigned char *)((unsigned)&ai_CharsT + 0x2);
-    do {
-        if (*(short *)(c - 2) != -1 && *c != 0 && *c < 9 && (U_I((unsigned)&ai_Unk1460ae0) == -1 || (ai_CanAct(c - 2) != 0 && (U_I((unsigned)&ai_Unk1460ae0) == -1 || *c != 7)))) {
-            if (*c == 6 || *c == 5) {
-                o = gm_PlayerRecord(c - 2);
-                i = 0;
+    sprintf(hdr, "main_RundenBeginn(): init round no %i", main_Round);
+    for (i = 0; i < 768; i++) {
+        ch = &ai_CharsT[i];
+        if (ch->id != 0xffff && ch->kind >= 1 && ch->kind <= 8 && (net_Conn.s == -1 || (ai_CanAct(ch) != 0 && (net_Conn.s == -1 || ch->kind != 7)))) {
+            if (ch->kind == 6 || ch->kind == 5) {
+                rec = (MAINPLREC *)gm_PlayerRecord((char *)ch);
+                k = 0;
                 do {
-                    t = gm_Unk5044b0(*(unsigned short *)(c - 2), i);
+                    t = gm_TitleJob(ch->id, k);
                     if (gm_TitlesLeft(t) == 6) {
-                        txt_Format(b4, 0x15c5, *(unsigned char *)(i + 0x74 + o) + 0x130);
-                        r = (char *)he_Unk53eec0(*(unsigned short *)(c - 2), b4, 1, 0);
-                        if (r != 0)
-                            *r = *r - 1;
+                        txt_Format(b4, 0x15c5, rec->job[k] + 0x130);
+                        e = (char *)he_AddApEvent(ch->id, b4, 1, 0);
+                        if (e != 0)
+                            *e = *e - 1;
                     }
-                    i++;
-                } while (i < 0x11);
+                    k++;
+                } while (k < 0x11);
             }
-            k = ai_InventoryHas(c - 2, 0x2c1);
-            if (k != 0) {
+            m = ai_InventoryHas(ch, 0x2c1);
+            if (m != 0) {
                 txt_Format(b1, 0x2052, 0xf2a);
-                r = (char *)he_Unk53eec0(*(unsigned short *)(c - 2), b1, 6, 0);
-                if (r != 0)
-                    *r = *r - 1;
+                e = (char *)he_AddApEvent(ch->id, b1, 6, 0);
+                if (e != 0)
+                    *e = *e - 1;
             }
-            k = ai_InventoryHas(c - 2, 0x15b);
-            if (k != 0) {
+            m = ai_InventoryHas(ch, 0x15b);
+            if (m != 0) {
                 txt_Format(b2, 0x2052, 0xc5e);
-                r = (char *)he_Unk53eec0(*(unsigned short *)(c - 2), b2, 1, 0);
-                if (r != 0)
-                    *r = *r - 1;
+                e = (char *)he_AddApEvent(ch->id, b2, 1, 0);
+                if (e != 0)
+                    *e = *e - 1;
             }
-            k = ai_InventoryHas(c - 2, 0x2c4);
-            if ((*(unsigned *)(c + 0x1ca) & 0x100000) != 0) {
-                if (k == 0) {
+            m = ai_InventoryHas(ch, 0x2c4) != 0;
+            if ((ch->flags1cc & 0x100000) != 0) {
+                if (m == 0) {
                     txt_Format(b3, 0x2054, 0xf18);
-                    r = (char *)he_Unk53eec0(*(unsigned short *)(c - 2), b3, -3, 0);
-                    if (r != 0)
-                        *r = *r - 1;
+                    e = (char *)he_AddApEvent(ch->id, b3, -3, 0);
+                    if (e != 0)
+                        *e = *e - 1;
                 }
-                cm_SendSetField(*(int *)(c + 2), 0x1cc, 4, 0, 0x100000);
+                cm_SendSetField(ch->netId, 0x1cc, 4, 0, 0x100000);
             }
-            if ((*(unsigned *)(c + 0x1ca) & 0x200000) != 0) {
-                if (k == 0) {
+            if ((ch->flags1cc & 0x200000) != 0) {
+                if (m == 0) {
                     txt_Format(b0, 0x2054, 0xf2c);
-                    r = (char *)he_Unk53eec0(*(unsigned short *)(c - 2), b0, -8, 0);
-                    if (r != 0)
-                        *r = *r - 1;
+                    e = (char *)he_AddApEvent(ch->id, b0, -8, 0);
+                    if (e != 0)
+                        *e = *e - 1;
                 }
-                cm_SendSetField(*(int *)(c + 2), 0x1cc, 4, 0, 0x200000);
+                cm_SendSetField(ch->netId, 0x1cc, 4, 0, 0x200000);
             }
-            gm_Unk50af00(*(unsigned short *)(c - 2), line);
-            if (*(int *)(c + 0x16e) != 0 && (m = gm_BuildingSkill(*(int *)(c + 0x16e), 3, 1)) != 0) {
-                txt_Format(b5, 0x2053, *(int *)(c + 0x16e));
-                r = (char *)he_Unk53eec0(*(unsigned short *)(c - 2), b5, m, 0);
-                if (r != 0)
-                    *r = *r - 1;
+            gm_CollectCarried(ch->id, (int *)&carry);
+            if (ch->bld2 != 0 && (k = gm_BuildingSkill((unsigned char *)ch->bld2, 3, 1)) != 0) {
+                txt_Format(b5, 0x2053, (int)ch->bld2);
+                e = (char *)he_AddApEvent(ch->id, b5, k, 0);
+                if (e != 0)
+                    *e = *e - 1;
             }
-            o = gm_BuildQuery(2, 4, *(unsigned short *)(c - 2), 5, 5);
-            while (o != 0) {
-                m = gm_BuildingSkill(o, 3, 1);
-                if (m != 0) {
-                    txt_Format(b6, 0x3fd7, o);
-                    r = (char *)he_Unk53eec0(*(unsigned short *)(c - 2), b6, m, 0);
-                    if (r != 0)
-                        *r = *r - 1;
+            r = gm_BuildQuery(2, 4, ch->id, 5, 5);
+            while (r != 0) {
+                k = gm_BuildingSkill(r, 3, 1);
+                if (k != 0) {
+                    txt_Format(b6, 0x3fd7, (int)r);
+                    e = (char *)he_AddApEvent(ch->id, b6, k, 0);
+                    if (e != 0)
+                        *e = *e - 1;
                 }
-                o = gm_BuildNext();
+                r = gm_BuildNext();
             }
-            cm_SendMoneyDelta(*(int *)(c + 2), *(int *)(line + 0x31) + 4 + he_Unk53ef80(*(unsigned short *)(c - 2)));
+            t = carry.capacity + 4;
+            t += he_SumApEvents(ch->id);
+            cm_SendMoneyDelta(ch->netId, t);
         }
-        c += 0x21c;
-    } while ((int)c < (unsigned)((unsigned)ai_CharsT + 0x65402));
+    }
 }
 
 /* message record (0xf8 bytes) of 0x4c4b70 / 0x4e4060: kind byte +4, owner id +8, target +0xc, time stamp (the 0x770ae0 clock, 14 bytes) +0x28 .. +0x36, flag +0x36 = 1 */
@@ -3261,7 +3271,7 @@ void main_Unk5384e0(void)
 {
     char msg[0xf8];
     char clk[14];
-    char ln[0x21c];   /* a whole character record: gm_Unk50af00 (0x50af00) memsets 0x21c bytes into it, so
+    char ln[0x21c];   /* a whole character record: gm_CollectCarried (0x50af00) memsets 0x21c bytes into it, so
                          0x100 zeroed the saved ebp / return address of this frame (the crash after the
                          round-change page); the original's frame is 0x3b8 and its buffer sits at +0x1a8 */
     char *c;
@@ -3276,7 +3286,7 @@ void main_Unk5384e0(void)
     bld = gm_PlayerRecord((unsigned)&ai_CharsT + id * 0x21c);
     gm_ClockSeason((unsigned)&ai_TimeT);
     memcpy(clk, (char *)(unsigned)&ai_TimeT, 14);
-    if ((U_I((unsigned)&ai_GameFlags) & 4) != 0 && 1 < U_I((unsigned)&full_data_6f2598))
+    if ((U_I((unsigned)&ai_GameFlags) & 4) != 0 && 1 < main_Round)
         *(int *)clk = U_I((unsigned)&ai_TimeT) + 1;
     gm_ClockSeason(clk);
     ahm_FillSteps();
@@ -3299,7 +3309,7 @@ void main_Unk5384e0(void)
     }
     if ((U_I((unsigned)&ai_GameFlags) & 4) != 0)
         sv_NetworkSyncWait(0x24087);
-    gm_Unk50af00(id, ln);
+    gm_CollectCarried(id, ln);
     sv_Unk525a00(clk);
     U_I((unsigned)&full_data_760454) = gm_ClockSeason(clk);
     gm_FindRichest(ln + 0x2a, &k);
@@ -4855,13 +4865,13 @@ L_fail:
         MSG_I((char *)cl, 8) = U_I((unsigned)&ai_CharInts + (U_I((unsigned)&ai_PlayerId) & 0xffff) * 0x21c);
         cm_SendLongMessage(cl);
     }
-    while (U_I((unsigned)&ai_GameOver) == 0 && (iv = sv_RunFrame((int)main_GameLoop, 0x20007)) != 0 && U_I((unsigned)&full_data_6f2598) < 800) {
+    while (U_I((unsigned)&ai_GameOver) == 0 && (iv = sv_RunFrame((int)main_GameLoop, 0x20007)) != 0 && main_Round < 800) {
         iv = 0;
         U_I((unsigned)&ai_CurrentPlayer) = 0;
         if ((U_I((unsigned)&ai_GameFlags) & 0x42) == 0) {
             *(unsigned short *)(unsigned)&ai_PlayerId = 0;
             U_I((unsigned)&ai_CurrentPlayer) = 0;
-            main_Unk538140();
+            main_RundenBeginn();
         } else {
             u = U_I((unsigned)&ai_PlayerId) & 0xffff;
             if (u != 0) {
@@ -5056,7 +5066,7 @@ L_next:
                 sv_NetworkSyncWait(0x24087);
             main_Unk53b2e0();
         }
-        U_I((unsigned)&full_data_6f2598)++;
+        main_Round++;
     }
     if ((U_I((unsigned)&ai_GameFlags) & 4) != 0) {
         if (U_I((unsigned)&ai_Unk60bd94) == -1) {
@@ -5885,7 +5895,7 @@ GAPDATA full_data_6f2580[4] = { 0 };  /* 0x6f2580 */
 int main_Inactive = 0;  /* 0x6f2584, 1 while the app is deactivated (WM_ACTIVATEAPP) */
 HWND main_Window = 0;  /* 0x6f2588, the game window ("Die Gilde") */
 char main_ScreenOpen = 0;  /* 0x6f258c, the video mode is open ( */
-GAPDATA full_data_6f2598[4] = { 0 };  /* 0x6f2598 */
+int main_Round = 0;  /* 0x6f2598, the round number (1 at the game start) */
 int main_ScreenRestart = 0;  /* 0x6f25a4, nonzero: the screen must be re-initialised (set by the gfx options screen 0x5d5fd0 when the resolution changed) */
 GAPDATA full_data_6f25a8[4] = { 0 };  /* 0x6f25a8 */
 GAPDATA full_data_6f25b0[4] = { 0 };  /* 0x6f25b0 */

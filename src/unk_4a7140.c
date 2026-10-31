@@ -2219,7 +2219,7 @@ int ai_Unk4ab3e0(int a, AIPER *p, int c, unsigned char *m, unsigned char *m2)
     AIBLD *b, *best;
     AIPER *o;
 
-    v = gm_Unk5044b0(p->id, 0xe);
+    v = gm_TitleJob(p->id, 0xe);
     ids[0] = 0xffff;
     ids[1] = 0xffff;
     ids[2] = 0xffff;
@@ -2330,7 +2330,7 @@ int ai_Unk4ab7f0(int a, AIPER *p, int c, unsigned char *m)
     AIBLD *b, *best;
     AIPER *o;
 
-    v = gm_Unk5044b0(p->id, 0xe);
+    v = gm_TitleJob(p->id, 0xe);
     bestv = 0;
     best = 0;
     flags = (unsigned int)best;
@@ -2408,7 +2408,7 @@ int ai_Unk4abac0(int a, AIPER *p, int c, unsigned char *m)
     AIBLD *b, *best;
     AIBTYPE *bt;
 
-    v = gm_Unk5044b0(p->id, 0xe);
+    v = gm_TitleJob(p->id, 0xe);
     k = 0;
     if ((a == 0x46 || a == 0) && c == 0 && v != 0 && p->kind != 3 && p->unk194 > 1) {
         best = 0;
@@ -2486,7 +2486,7 @@ int ai_Unk4abd00(int a, AIPER *p, int c, unsigned char *m)
     AIBLD *b;
     AIPER *o;
 
-    v = gm_Unk5044b0(p->id, 0xe);
+    v = gm_TitleJob(p->id, 0xe);
     flags = 0;
     if ((p->flags1cc & 0x20) != 0 || p->unk194 < 2)
         return 0;

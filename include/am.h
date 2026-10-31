@@ -562,7 +562,7 @@ int ai_Unk4a5320(struct AIPER *p, struct AIARG *s1, struct AIARG *s2);          
 void ai_Unk4a5760(struct G5CH *p, int n, struct G9REC *rec, int *st);                         /* 0x4a5760 */
 /* am.h declares 0x4a63f0 with an __int64 mask; 0x48ff50..0x490350 pass it as two ints */
 /* am.h: id is an int; 0x490690 passes an unsigned short */
-#define AI_5044B0_US(id, a) ((int (*)(unsigned short, int))gm_Unk5044b0)(id, a)
+#define AI_5044B0_US(id, a) ((int (*)(unsigned short, int))gm_TitleJob)(id, a)
 #define AI_4A63F0_7(p, a, fl, b, c, f, o) ((int (*)(void *, int, unsigned int, int, int, float, int *))ai_Unk4a63f0)(p, a, fl, b, c, f, o)
 int ai_Unk49eec0(int a, struct G5CH *p, int f, struct AIARG *o1, struct AIARG *o2);                  /* 0x49eec0 */
 int gm_BuildingKindValue(int a);                                                        /* 0x509d30 */

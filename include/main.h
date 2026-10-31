@@ -21,6 +21,7 @@ extern int snd_BookBank;        /* 0x6f240c, sample bank handle (objekte/buecher
 extern int snd_RoomBank;        /* 0x6f2410, sample bank handle (objekte/TuerenUndRaeume.sbf) */
 extern int snd_TransportBank;   /* 0x6f2414, sample bank handle (objekte/Transporter.sbf) */
 extern int main_UdpOpen;               /* 0x6f25c4, the udp socket of the network game is open */
+extern int main_Round;                   /* 0x6f2598, the round number (1 at the game start) */
 extern struct MSXTRACK *main_MenuSong;  /* 0x6f2418, the main menu's song (msx_Play) */
 extern int main_DevMenu;                /* 0x6f245c, nonzero: the main menu shows the data-tool buttons */
 extern MAINFAMILY main_Family;          /* 0x75e180 */

@@ -60,7 +60,7 @@ char *gm_FindCharacterByMaster(int m);
 void gm_FreeObjectExtra(unsigned short *o);
 void gm_ShowBuildingObjects(unsigned char *b);
 void gm_ResetCharacters(void);
-unsigned char gm_Unk5044b0(int i, int p);
+unsigned char gm_TitleJob(int i, int p);
 unsigned short gm_Unk50a0b0(unsigned short *o);
 void gm_UpdatePrices(unsigned p, void *t);
 
@@ -4779,7 +4779,7 @@ char unk_Unk5020e0(int k, int c)
     cls = gm_BuildingClass(k);
     p = ai_BTypes + k + k * 0x24c;
     job = gm_BuildingJob(*p);
-    v = gm_Unk5044b0(c, job);
+    v = gm_TitleJob(c, job);
     if (c == 0xffff)
         return 0;
     ch = ai_Chars[c];
@@ -5361,7 +5361,7 @@ unsigned unk_Unk503530(unsigned p1, unsigned char *b, unsigned short *o, int c)
     }
     p = ai_BTypes + (unsigned)*b * 0x24d;
     jb = gm_BuildingJob(*p);
-    jn = gm_Unk5044b0(p1, jb);
+    jn = gm_TitleJob(p1, jb);
     t = *p;
     if (t == 0x1d)
         return ai_Unk587b70(ai_Chars[p1], b, o);
@@ -5970,7 +5970,7 @@ int gm_TitleNumber(int a, int r)
 /* 0x5044b0, the job byte (+0x164) of the character i when its group (0x504ad0) is p, else the byte of the job record of the character (0x506430, +0x74 + p) or 0 */
 
 
-unsigned char gm_Unk5044b0(int i, int p)
+unsigned char gm_TitleJob(int i, int p)
 {
     int k, r;
 
@@ -9317,7 +9317,7 @@ int gm_Unk50b3a0();
 int gm_Unk50b9f0();
 
 /* 0x50af00, collects what the person `id` carries into the record out (0x218 bytes: the first word counts the 0xe-byte units, +0x31 the free capacity, +0x41 .. the entries of 0x1e bytes built from the goods list 0x74e1f4 (0x29 words each, owner at -2 words) that belong to the person, the entry count +0x219 and the sum +0x215). The person's own character record is searched with 0x501190 / 0x501030 (0x502eb0 gives its fields; one with the id equal adds 0xe to the first word and to +0x31). Returns 0. ROUGH */
-int gm_Unk50af00(int id, int *out)
+int gm_CollectCarried(int id, int *out)
 {
     int *p, *e;
     int rec;

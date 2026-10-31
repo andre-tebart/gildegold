@@ -1448,7 +1448,7 @@ void he_Unk53eea0(void)
 }
 /* 0x53eec0, registers an AP event in the first free of the 0x100 entries at 0x758ca0 (0x50 bytes: counter byte 2, values +4 / +8 / +0xc, name +0x10, 0x3f characters); 0 when full */
 
-int *he_Unk53eec0(int a, char *name, int c, int d)
+int *he_AddApEvent(int a, char *name, int c, int d)
 {
     int *p;
     int i = 0;
@@ -1493,7 +1493,7 @@ void he_Unk53ef50(void)
 }
 /* 0x53ef80, the sum of the values (+8) of the AP events with key (+4) `key` */
 
-int he_Unk53ef80(int key)
+int he_SumApEvents(int key)
 {
     int sum = 0;
     int *p = (int *)((unsigned)&he_RunHandlers + 0x6a8);
@@ -3685,7 +3685,7 @@ void he_Unk549080(int ev)
         if (st >= 0) {
             if (st != 0)
                 return;
-            he_Unk53eec0(*(unsigned short *)(ev + 8), U_I((unsigned)&full_data_1442500), -*(int *)(ev + 0xac), 0);
+            he_AddApEvent(*(unsigned short *)(ev + 8), U_I((unsigned)&full_data_1442500), -*(int *)(ev + 0xac), 0);
             *(int *)(ev + 0xb0) = *(int *)(ev + 0xb0) - 1;
             if (*(int *)(ev + 0xb0) != 0) {
                 *(HETIME *)(ev + 0x52) = ai_Time;
@@ -3822,7 +3822,7 @@ void he_Unk549430(int ev)
         *(unsigned short *)(ev + 0x56) = *(unsigned short *)(ev + 0x56) + 0x18;
         cnt = *(unsigned char *)(ev + 0xb8);
         cm_SendExSetHE(cnt >= 3, ev);
-        he_Unk53eec0(*(unsigned short *)o, text, 0, -*(int *)(ev + 0xb4));
+        he_AddApEvent(*(unsigned short *)o, text, 0, -*(int *)(ev + 0xb4));
         return;
     }
     if (st != 1)
@@ -3912,7 +3912,7 @@ void he_Unk549770(int ev)
     cnt = *(unsigned char *)(ev + 0xba);
     *(unsigned short *)(ev + 0x56) = *(unsigned short *)(ev + 0x56) + 0x18;
     *(int *)(ev + 0x70) = cnt < 5;
-    he_Unk53eec0(*(unsigned short *)o, text, 0, -*(int *)(ev + 0xb4));
+    he_AddApEvent(*(unsigned short *)o, text, 0, -*(int *)(ev + 0xb4));
 }
 /* 0x549970, a Ghidra miss (disassembled): the init of the training event: the ability +0xae of the player must be at least 0x5eceb4 (else the event is freed), a running event of the type 0x60 of the player is not doubled (0x53e400 (2, 2, player, 0, 0x60)); +0xac = 0x15, +0xad = 2 * (2 + the ability * 0.0xx + 1), state 0, the clock now, posted 5 (or 1 when 0x6f2448) units ahead, +0x44 = now */
 
@@ -5714,7 +5714,7 @@ void he_Unk54e890(int ev)
             txt_Format(text, 0xb4, *(unsigned short *)edi);
         else
             txt_Format(text, 0xb5, *(unsigned short *)edi);
-        he_Unk53eec0(*(unsigned short *)(ev + 8), text, -*(int *)(ev + 0xb8), 0);
+        he_AddApEvent(*(unsigned short *)(ev + 8), text, -*(int *)(ev + 0xb8), 0);
         *(int *)(ev + 0xb4) = *(int *)(ev + 0xb4) + 1;
         gm_AddTime(ev + 0x52, 0, 0x18, 0);
         *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);

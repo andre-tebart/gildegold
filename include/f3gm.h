@@ -27,4 +27,6 @@ void unk_LoadIconNames(void);                                         /* 0x4fde9
 void gm_ResetCharacters(void);                                        /* 0x503e80 */
 void gm_FreeIconNames(void);                                          /* 0x4fdfb0 */
 void gm_Free(void);                                                   /* 0x4fe9c0 */
+int gm_TitlesLeft(int n);                                             /* 0x504ce0 */
+int gm_CollectCarried(int id, int *out);                                   /* 0x50af00 */
 #endif

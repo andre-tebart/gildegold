@@ -134,3 +134,9 @@
 2026-10-31T19:11:43 0x0053d5d0 func he_Unk53d5d0 -> he_ReleaseEvents by:main why:he_FreeEvents then three sv_ReturnZero queries; returns 1 if any (body)
 2026-10-31T19:11:48 0x006f25c4 data full_data_6f25c4 -> main_UdpOpen by:main why:set to 1 after udp_Init(0x3039) in the network game start, cleared by the game end after udp_Exit / net_Close
 2026-10-31T19:11:59 0x00537f40 func main_Unk537f40 -> main_EndGame by:main why:the reverse of main_Unk537de0 (game start): frees the sound banks, characters, weather, sky, modules and network (body)
+2026-10-31T19:16:37 0x006f2598 data full_data_6f2598 -> main_Round by:main why:the round number: set to 1 at the game start, incremented by the game loop, shown in main_RundenBeginn(): init round no %i
+2026-10-31T19:18:11 0x00538140 func main_Unk538140 -> main_RundenBeginn by:main why:the tag string "main_RundenBeginn(): init round no %i" it prints; starts a game round
+2026-10-31T19:18:13 0x005044b0 func gm_Unk5044b0 -> gm_TitleJob by:main why:the job byte of character i when its title group is p, else the player record's byte +0x74+p (body)
+2026-10-31T19:18:23 0x0050af00 func gm_Unk50af00 -> gm_CollectCarried by:main why:collects what the person carries into a 0x21c record (free capacity at +0x31) (body)
+2026-10-31T19:18:25 0x0053eec0 func he_Unk53eec0 -> he_AddApEvent by:main why:registers an AP event in the first free of 0x100 entries, returns its counter byte pointer (body)
+2026-10-31T19:18:30 0x0053ef80 func he_Unk53ef80 -> he_SumApEvents by:main why:the sum of the values of the AP events with key (body)

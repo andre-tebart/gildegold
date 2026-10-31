@@ -9061,7 +9061,7 @@ int ai_Unk587b70(char *ch, char *b, char *x)
 
     kind = *(unsigned char *)b;
     bldg = (char *)U_I((unsigned)&ai_BTypes) + kind * 0x24d;
-    v = gm_Unk5044b0(*(unsigned short *)ch, gm_BuildingJob(*(unsigned char *)bldg));
+    v = gm_TitleJob(*(unsigned short *)ch, gm_BuildingJob(*(unsigned char *)bldg));
     f = 0x81;
     if (*(unsigned short *)(b + 0x25) == *(unsigned short *)ch)
         f = 0x10bd;

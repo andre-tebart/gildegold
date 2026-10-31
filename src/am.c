@@ -31,7 +31,7 @@ extern char ai_PlayerSlots[4][0x2f4];
 extern G17MSG ai_Unka69140[];
 extern unsigned char txt_Keys;  /* @original ai_Unk498c70 (0x498c70, byte) tests flags1c8 & 0x1000000 as &txt_Keys + 0x181c0 of this byte view: the char[0x4800][0x50] spelling, a view macro or the literal flip its add operands at +0x4cc (shape) */
 
-int gm_Unk5044b0(int i, int p);        /* 0x5044b0, @original: the byte-matched callers (ai_Unk49ed10, ai_Unk498c70) read the result without the unsigned char mask (no `and eax,0xff` after the call) */
+int gm_TitleJob(int i, int p);        /* 0x5044b0, @original: the byte-matched callers (ai_Unk49ed10, ai_Unk498c70) read the result without the unsigned char mask (no `and eax,0xff` after the call) */
 
 int ai_Unk5ffd1c = -1;                  /* 0x5ffd1c */
 G6RING * ai_Unk60034c = ai_Unkf83c20;  /* 0x60034c, the next entry */
@@ -4963,7 +4963,7 @@ int ai_Unk498c70(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
             bt = &AI_BTX[bl->type];
             if (bt->unk247 < bt->unk248) {
                 k = gm_BuildingJob(bt->kind);
-                r = gm_Unk5044b0(p->id, k);
+                r = gm_TitleJob(p->id, k);
                 if (r) {
                     n = gm_TitlesLeft(r);
                     n = n / 2 + n % 2;
@@ -7797,7 +7797,7 @@ int ai_Unk49ec10(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2
     *b = -1e30f;
     if (f != 0)
         return 0;
-    q = gm_Unk5044b0(p->id, 4);
+    q = gm_TitleJob(p->id, 4);
     if (q != 0 && gm_TitlesLeft(q) > 2) {
         if (ai_Unk4aaef0(p, &s1, &s2) == 0)
             return 0;
@@ -7821,7 +7821,7 @@ int ai_Unk49ed10(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     AIARG s2;
     int q;
 
-    q = gm_Unk5044b0(p->id, 4);
+    q = gm_TitleJob(p->id, 4);
     if (a != 0x32 && a != 0x25 && a != 0)
         return 0;
     if (f != 0)
