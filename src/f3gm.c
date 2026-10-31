@@ -8999,7 +8999,7 @@ int gm_GetWorth(unsigned short id)
 }
 /* 0x50a6c0, true when the character p (a person of the kinds 6 / 7 or another) is too far from its goal after n more: the pseudocode lost the float operands (0x509e60, 0x50a640, the two __ftol); the person of the kinds 6 / 7 is reported to its owner through 0x5b92e0 / 0x53dda0 (text 0x42c3 = ...) when the ratio is above 0.07 (above 0.2 for the others). ROUGH */
 
-int gm_Unk50a6c0(unsigned short *p, int n)
+int gm_IsBankrupt(unsigned short *p, int n)
 {
     int a, b;
     char msg[2048];

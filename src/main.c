@@ -161,6 +161,8 @@ extern int ai_Unkfb9064;
 extern int ai_Unkfb9068;
 extern int ai_Unkfb906c;
 extern char cm_RequestedSaveName[72];
+extern float gm_AddHealth();  /* 0x4fca40, f3gm.c: (unsigned id, int d) */
+#define main_AddHealthS ((float (*)(unsigned short, int))gm_AddHealth)  /* @original this caller passes the id as a word ("mov ax,[id]; push eax") and pops the float result */
 extern float ai_Unk617830[], ai_Unk617840[];  /* 0x617830 / 0x617840 (f3gm.c) */
 #pragma pack(push, 1)
 typedef struct MAINCARRY {          /* 0x21d bytes (+0x219 the entry count), what gm_CollectCarried collects for a character (f3gm.c: +0x31 the free capacity) */
@@ -3907,7 +3909,7 @@ void main_RoundReport(void)
     *(int *)(bk + 0x54) = 0;
     if (fade != 0)
         d2_ReleaseFade(fade);
-    if (gm_Unk50a6c0((unsigned)&ai_CharsT + (U_I((unsigned)&ai_PlayerId) & 0xffff) * 0x21c, -(w1e8 + w1ec + iv)) != 0) {
+    if (gm_IsBankrupt((unsigned)&ai_CharsT + (U_I((unsigned)&ai_PlayerId) & 0xffff) * 0x21c, -(w1e8 + w1ec + iv)) != 0) {
         memset(msg, 0, 0x114);
         MSG_I(msg, 0xc) = U_I((unsigned)&ai_CharInts + (U_I((unsigned)&ai_PlayerId) & 0xffff) * 0x21c);
         MSG_B(msg, 0x30) = 1;
@@ -3977,35 +3979,33 @@ L404:
     cm_AddFieldValues(4, 1, 0x174, &one);
     cm_SendFieldDeltas();
 }
-/* 0x53a450, per-frame update of every player slot (0x770b80 .. 0x7d5f82, 0x21c each; ROUGH) */
+/* 0x53a450, per-frame update of every character (768, ai_Chars): a figure with a job or a title goes through main_UpdateFigure; a bankrupt kind 2 / 4 / 5 loses health (the float at +0x1c plus 5); a set +0x1b1 byte is sent as a field delta (0xff) */
 
-void main_Unk53a450(void)
+void main_UpdateFigures(void)
 {
-    int i = 0;
-    char *p = (char *)((unsigned)&ai_CharsT + 0x2);
-    int k;
-    int fl;
+    AICHAR *ch;
+    unsigned char on;
+    int i, k;
 
-    do {
-        if (*(short *)(p - 2) != -1) {
-            if (p[0x162] != 0 || p[0x163] != 0)
+    for (i = 0; i < 768; i++) {
+        ch = &ai_CharsT[i];
+        if (ch->id != 0xffff) {
+            if (ch->jobId != 0 || ch->title != 0)
                 main_UpdateFigure(i);
-            if (*p == 2 || *p == 5 || *p == 4) {
-                if (gm_Unk50a6c0(p - 2, 0) != 0) {
-                    k = (int)-(*(float *)(p + 0x1a) + 5.0f);
-                    gm_AddHealth(*(short *)(p - 2), k);
+            if (ch->kind == 2 || ch->kind == 5 || ch->kind == 4) {
+                if (gm_IsBankrupt((unsigned short *)ch, 0) != 0) {
+                    k = (int)-(*(float *)((char *)ch + 0x1c) + 5.0f);
+                    main_AddHealthS(ch->id, k);
                 }
             }
-            if (p[0x1af] != 0) {
-                fl = 0xff000000;
-                cm_BeginFieldBlock(p - 2, *(int *)(p + 2));
-                cm_AddFieldValues(1, 1, (int)(p + 0x1af - U_I((unsigned)&cm_FieldObject)), (char *)&fl + 3);
+            if (ch->unk1b1 > 0) {
+                on = 0xff;
+                cm_BeginFieldBlock((char *)ch, ch->netId);
+                cm_AddFieldValues(1, 1, (int)((char *)&ch->unk1b1 - cm_FieldObject), &on);
                 cm_SendFieldDeltas();
             }
         }
-        p += 0x21c;
-        i++;
-    } while ((int)p < (unsigned)&gm_PlayerRecordBytes);
+    }
 }
 /* 0x53b830, returns 1 */
 
@@ -4277,7 +4277,7 @@ void main_Unk53b2e0(void)
         }
     }
     if ((U_I((unsigned)&cm_NetFlags) & 8) != 0 || U_I((unsigned)&ai_Unk1460ae0) == -1)
-        main_Unk53a450();
+        main_UpdateFigures();
     *(char *)(unsigned)&snd_AmbientOn = sv;
 }
 
