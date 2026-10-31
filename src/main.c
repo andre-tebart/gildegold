@@ -325,7 +325,7 @@ void main_EndGame(void);
 void main_Unk537be0(void);
 void main_RundenBeginn(void);
 void main_Unk5384e0(void);
-void main_Unk539870(void);
+void main_RoundReport(void);
 
 void main_Unk53a520(unsigned short pl);
 void main_Unk53cb40(void);
@@ -3670,19 +3670,19 @@ void main_ReplaceFigure(unsigned p)
 }
 /* 0x539870, the end of the round report of the player (0x6f25b8): the bookkeeping of the character record (0x506430: income / expense fields +0x14 .. +0x54, texts 0x2005 .. 0x204e of 0x515960)
    shown on a page (BLACK fade, the window 0x52fa10, the loop 0x5309a0 until a key), then the fields are rolled over (+0x14 .. +0x24 added to +0x2c .. +0x38 and cleared); when the balance goes
-   negative (0x50a6c0) a message of kind 0x60 / 9 is sent and a replacement figure is created (0x539620) if 0x6f25b0 is set; ROUGH (many float sums, the __ftol arguments, are guesses) */
+   negative (0x50a6c0) a message of kind 0x60 / 9 is sent and a replacement figure is created (0x539620) if 0x6f25b0 is set; the two row sums are float sums (price 0xc0 * 0.01 * count 0xb4, truncated per step) @deep Reconstructed the two stubbed row loops from the original (r = lines[j]; sum = (int)(sum +/- (double)r[0xc0] * 0.01 * r[0xb4]) for three running sums, 0.01 = double 0x5ece60), the player id as an expression (ai_PlayerId & 0xffff) at each use instead of a local, the (a + b) grouping of the 0x3c roll-up, and the frame (lines[0x2b] gives sub esp,0x200 like the original; dist 676 -> 378 ins). What remains is allocation / slot order: the original keeps the running sums in [esp+0x10] / [esp+0x14] / [esp+0x18] / [esp+0x1c] / [esp+0x20] with a different pairing (ours swaps 0x18 <-> 0x1c <-> 0x20: 'mov [esp+0x18], ebx' vs '[esp+0x1c]' at 0x539892, 'mov [esp+0x20], edi' vs '[esp+0x1c]' at 0x5399a8), puts the row list at [esp+0x78] where the original has it at [esp+0x8c] (the declaration order of lines / a / sum / cnt / kind vs the frame), and uses ebx / ebp where ours reloads ecx from the slots (0x539a1b ..). The code hunks that remain cascade from those slot / register differences; no statement difference is known after 0x539a1b but the cascade hides it. */
 
-void main_Unk539870(void)
+void main_RoundReport(void)
 {
     char msg[0x114];
-    char lines[0x40];
+    int lines[0x2b];
     int a[3];
     int sum[6], cnt[6];
     unsigned char kind[8];
     unsigned char *fade;
     unsigned char *b;
     unsigned char *o;
-    int bk, id, iv, v, t, tot, win, nrow, i, j, k;
+    int bk, iv, v, t, tot, win, nrow, i, j, k;
     int w200, w1fc, w1f8, w1ec, w1e8;
 
     iv = 0;
@@ -3696,9 +3696,8 @@ void main_Unk539870(void)
         while ((*fade & 4) == 0)
             sv_RunFrame(0, U_I((unsigned)&sv_FrameMask));
     }
-    id = U_I((unsigned)&ai_PlayerId) & 0xffff;
-    bk = gm_PlayerRecord((unsigned)&ai_CharsT + id * 0x21c);
-    *(int *)(bk + 0x3c) = *(int *)(bk + 0x3c) + U_I(((unsigned)&ai_Selected + 0x1c) + id * 0x21c) + U_I(((unsigned)&ai_Selected + 0x18) + id * 0x21c);
+    bk = gm_PlayerRecord((unsigned)&ai_CharsT + MAIN_PID * 0x21c);
+    *(int *)(bk + 0x3c) = *(int *)(bk + 0x3c) + (U_I(((unsigned)&ai_Selected + 0x1c) + MAIN_PID * 0x21c) + U_I(((unsigned)&ai_Selected + 0x18) + MAIN_PID * 0x21c));
     d3_SetObjectPos(U_I((unsigned)&ai_Unkfc2dec), bk + 0x8c);
     d3_SetObjectRot(U_I((unsigned)&ai_Unkfc2dec), bk + 0x9c);
     if (U_I((unsigned)&full_data_624560) != 0) {
@@ -3715,15 +3714,15 @@ void main_Unk539870(void)
         d2_StartFade(0, 0, (int)*(short *)(unsigned)&d2_ScreenW, (int)*(short *)(unsigned)&d2_ScreenH, "BLACK", 0x1e, 10);
         d2_SetForm(win, 2);
         io_PrintText(0x7d);
-        gm_ClockToDate((unsigned)&ai_TimeT, lines);
+        gm_ClockToDate((unsigned)&ai_TimeT, (char *)lines);
         d2_SetForm(win, 1);
         io_PrintText(0x2007);
-        iv = U_I(((unsigned)&ai_Selected + 0x14) + id * 0x21c);
-        w1fc = iv - U_I(((unsigned)&ai_Selected + 0x10) + id * 0x21c);
+        iv = U_I(((unsigned)&ai_Selected + 0x14) + MAIN_PID * 0x21c);
+        w1fc = iv - U_I(((unsigned)&ai_Selected + 0x10) + MAIN_PID * 0x21c);
         if (iv != 0)
             io_PrintText(0x2008, iv);
-        if (U_I(((unsigned)&ai_Selected + 0x10) + id * 0x21c) != 0)
-            io_PrintText(0x2009, U_I(((unsigned)&ai_Selected + 0x10) + id * 0x21c));
+        if (U_I(((unsigned)&ai_Selected + 0x10) + MAIN_PID * 0x21c) != 0)
+            io_PrintText(0x2009, U_I(((unsigned)&ai_Selected + 0x10) + MAIN_PID * 0x21c));
         iv = w1fc;
         if (*(int *)(bk + 0x40) != 0) {
             io_PrintText(0x2014, *(int *)(bk + 0x40));
@@ -3808,15 +3807,16 @@ void main_Unk539870(void)
         v = 0;
         if (nrow > 0) {
             do {
-                w1fc = 0;
-                v = 0;
-                w1f8 = 0;
+                o = (unsigned char *)lines[j];
+                w1fc = (int)((double)w1fc + (double)*(int *)(o + 0xc0) * 0.01 * *(int *)(o + 0xb4));
+                v = (int)((double)v + (double)*(int *)(o + 0xc0) * 0.01 * *(int *)(o + 0xb4));
+                w1f8 = (int)((double)w1f8 + (double)*(int *)(o + 0xc0) * 0.01 * *(int *)(o + 0xb4));
                 j++;
             } while (j < nrow);
             if (v != 0)
                 io_PrintText(0x2048, v);
         }
-        k = id * 0x21c;
+        k = MAIN_PID * 0x21c;
         if (*(char *)(((unsigned)&ai_CharInts + 0x162) + k) != 0 || *(char *)(((unsigned)&ai_CharInts + 0x165) + k) != 0) {
             gm_CharacterWages(U_I((unsigned)&ai_PlayerId), 0, (unsigned char *)a);
             k = (U_I((unsigned)&ai_PlayerId) & 0xffff) * 0x21c;
@@ -3848,9 +3848,10 @@ void main_Unk539870(void)
         k = 0;
         if (0 < j) {
             do {
-                w200 = 0;
-                iv = 0;
-                w1f8 = 0;
+                o = (unsigned char *)lines[k];
+                w200 = (int)((double)w200 + (double)*(int *)(o + 0xc0) * 0.01 * *(int *)(o + 0xb4));
+                iv = (int)((double)iv + (double)*(int *)(o + 0xc0) * 0.01 * *(int *)(o + 0xb4));
+                w1f8 = (int)((double)w1f8 - (double)*(int *)(o + 0xc0) * 0.01 * *(int *)(o + 0xb4));
                 k++;
             } while (k < j);
         }
@@ -3879,12 +3880,12 @@ void main_Unk539870(void)
         d2_CreateScrollButtons(-1, -1, U_I((unsigned)&d2_LastWindow), t, 0x767);
         U_I(((unsigned)&ai_Unkf8f13c + 0x248) + t * 0x3c4) = 0x18;
         sb_PlaySample(0, "RollenKurz_s_01", 1, 0x3f, 0x7f, 0, 0);
-        t = sv_RunFrame((int)main_Unk539870, 0x24087);
+        t = sv_RunFrame((int)main_RoundReport, 0x24087);
         while (t != 0) {
             sv_Unk52fad0();
             if (U_I((unsigned)&d2_ClickedId) == 0 || *(char *)(unsigned)&kb_Last == 0x1c)
                 sv_PopRequest = 1;
-            t = sv_RunFrame((int)main_Unk539870, 0x24087);
+            t = sv_RunFrame((int)main_RoundReport, 0x24087);
         }
         sv_Unk52fa90();
     }
@@ -4994,7 +4995,7 @@ L_fail:
                         us = (unsigned short)ck[1];
                     }
                 }
-                main_Unk539870();
+                main_RoundReport();
                 if (U_I((unsigned)&ai_GameOver) == 0 && U_I((unsigned)&ai_LeaveGame) == 0) {
                     U_I((unsigned)&ai_GameFlags) &= 0xffffffbd;
                     U_I((unsigned)&ai_CurrentPlayer)++;

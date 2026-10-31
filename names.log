@@ -141,3 +141,4 @@
 2026-10-31T19:18:25 0x0053eec0 func he_Unk53eec0 -> he_AddApEvent by:main why:registers an AP event in the first free of 0x100 entries, returns its counter byte pointer (body)
 2026-10-31T19:18:30 0x0053ef80 func he_Unk53ef80 -> he_SumApEvents by:main why:the sum of the values of the AP events with key (body)
 2026-10-31T19:29:25 0x00539620 func main_Unk539620 -> main_ReplaceFigure by:main why:replaces a kind-6 (prisoner/dead) character by a new figure: new name, running number, events closed (body)
+2026-10-31T19:31:02 0x00539870 func main_Unk539870 -> main_RoundReport by:main why:the end-of-round report page of the player: income / expense lines (io_PrintText 0x2005 .. 0x204e), then the balance fields are rolled over and a bankrupt player is replaced (body)
