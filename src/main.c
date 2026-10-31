@@ -3103,7 +3103,6 @@ void main_Unk537de0(void)
 void main_EndGame(void)
 {
     int i;
-    int *p;
 
     sv_ClearNamePlates();
     d2_CopyCaption(ch_EmptyName);
@@ -3154,10 +3153,10 @@ void main_EndGame(void)
         d3t_Rain = 0;
     }
     if (d3_Sky != 0) {
-        for (p = d3_SkyLayers; (int)p < (int)(d3_SkyLayers + 6); p++) {
-            if (*p != 0) {
-                d3sky_DeleteLayer(d3_Sky, *p);
-                *p = 0;
+        for (i = 0; i < 6; i++) {
+            if (d3_SkyLayers[i] != 0) {
+                d3sky_DeleteLayer(d3_Sky, d3_SkyLayers[i]);
+                d3_SkyLayers[i] = 0;
             }
         }
         d3sky_Destroy(d3_Sky);

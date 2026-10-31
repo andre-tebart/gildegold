@@ -1859,9 +1859,7 @@ extern int * d3t_Rain;  /* 0x760618 */
 extern int d3t_Snow;  /* 0x76061c */
 extern int ai_Unk760464;  /* 0x760464 */
 extern int ai_Unk6f2370;  /* 0x6f2370 */
-extern int d3_SkyLayer2;  /* 0x760628 */
-extern int d3_SkyLayer0;  /* 0x760620 */
-extern int d3_SkyLayer1;  /* 0x760624 */
+extern int d3_SkyLayers[6];  /* 0x760620 */
 extern int ai_Unk633dd4;  /* 0x633dd4 */
 extern int ai_Unk75ec20;  /* 0x75ec20 */
 extern struct D3ANIM *d3t_CamMove;  /* 0x6310e8 */
@@ -2078,18 +2076,18 @@ void sv_Unk525510(int t, float flag)
     }
     if (ai_Unk633dd4 == 0)
         ai_Unk633dd4 = d3sky_CreateK(0xbf733333, 0xbe4ccccd, 0x44160000);
-    for (q = (int *)(unsigned)&d3_SkyLayer0; (int)q < (unsigned)((unsigned)d3_SkyLayer0 + 0x18); q++) {
-        if (*q != 0) {
-            d3sky_DeleteLayer(ai_Unk633dd4, *q);
-            *q = 0;
+    for (k = 0; k < 6; k++) {
+        if (d3_SkyLayers[k] != 0) {
+            d3sky_DeleteLayer(ai_Unk633dd4, d3_SkyLayers[k]);
+            d3_SkyLayers[k] = 0;
         }
     }
-    d3_SkyLayer0 = d3sky_CreateLayerK(ai_Unk633dd4, 0, "Sky_Schoen_01", 0xff, *(int *)(unsigned)&full_data_6238e8, 0, *(int *)(unsigned)&full_data_6238ec, *(int *)(unsigned)&full_data_6238f0);
-    d3sky_SetLayerSpeed(ai_Unk633dd4, d3_SkyLayer0, 0);
-    d3_SkyLayer1 = d3sky_CreateLayerK(ai_Unk633dd4, 0, "Sky_Schoen_02", 0, *(int *)(unsigned)&full_data_623934, 0, *(int *)(unsigned)&full_data_623938, *(int *)(unsigned)&full_data_62393c);
-    d3sky_SetLayerSpeed(ai_Unk633dd4, d3_SkyLayer1, 0);
-    d3_SkyLayer2 = d3sky_CreateLayerK(ai_Unk633dd4, 0, "sky_dunkel_01", 0, *(int *)((unsigned)&ai_Unk623ac0 + 0xd8), 0, *(int *)((unsigned)&ai_Unk623ac0 + 0xdc), *(int *)((unsigned)&ai_Unk623ac0 + 0xe0));
-    d3sky_SetLayerSpeed(ai_Unk633dd4, d3_SkyLayer2, 0);
+    d3_SkyLayers[0] = d3sky_CreateLayerK(ai_Unk633dd4, 0, "Sky_Schoen_01", 0xff, *(int *)(unsigned)&full_data_6238e8, 0, *(int *)(unsigned)&full_data_6238ec, *(int *)(unsigned)&full_data_6238f0);
+    d3sky_SetLayerSpeed(ai_Unk633dd4, d3_SkyLayers[0], 0);
+    d3_SkyLayers[1] = d3sky_CreateLayerK(ai_Unk633dd4, 0, "Sky_Schoen_02", 0, *(int *)(unsigned)&full_data_623934, 0, *(int *)(unsigned)&full_data_623938, *(int *)(unsigned)&full_data_62393c);
+    d3sky_SetLayerSpeed(ai_Unk633dd4, d3_SkyLayers[1], 0);
+    d3_SkyLayers[2] = d3sky_CreateLayerK(ai_Unk633dd4, 0, "sky_dunkel_01", 0, *(int *)((unsigned)&ai_Unk623ac0 + 0xd8), 0, *(int *)((unsigned)&ai_Unk623ac0 + 0xdc), *(int *)((unsigned)&ai_Unk623ac0 + 0xe0));
+    d3sky_SetLayerSpeed(ai_Unk633dd4, d3_SkyLayers[2], 0);
     scene = d3_CurrentScene;
     i = 0;
     for (q = (int *)&ai_MapRefs; (int)q < ((unsigned)((unsigned)&ai_MapRefs + 0xf7f4) + 0xc); q += 0xf8, i++) {
@@ -2195,8 +2193,8 @@ void sv_Unk525ad0(char *t)
         k = ((s - *(int *)((char *)ai_Unk623baa + 40)) * 100) / (*(int *)((char *)ai_Unk623baa + 50) - *(int *)((char *)ai_Unk623baa + 40)) + 500;
     else
         k = 600;
-    if (d3_SkyLayer2 != 0)
-        a = *(unsigned char *)(d3_SkyLayer2 + 0x26) * 0.003921569f;
+    if (d3_SkyLayers[2] != 0)
+        a = *(unsigned char *)(d3_SkyLayers[2] + 0x26) * 0.003921569f;
     if (((int *)&ai_MapRefs)[d3_CurrentScene * 0xf8] != 0 && (unsigned)d3_Time < (unsigned)(ai_Unk76054c + ai_Unk760548)) {
         d3_SetFogSet(0, 2, 1.0f);
         ai_Unk6f2370 = 1;
@@ -6830,54 +6828,54 @@ void sv_Unk5301a0(void)
         d3t_SetRain(SV_I((unsigned)&d3t_Rain), 1, 2, (int)(int)0.0f);
     if (SV_I((unsigned)&d3_Sky) != 0) {
         w = (float)(c + 0x96) * (float)sqrt(f1 * f1 + f2 * f2) * 0.125f;
-        if (*(char *)(SV_I((unsigned)&d3_SkyLayer1) + 0x26) == 0) {
+        if (*(char *)(d3_SkyLayers[1] + 0x26) == 0) {
             if (c < 0x32) {
                 k = util_RandomU(4) & 0xffff;
-                if (_strcmpi(*(char **)(SV_I((unsigned)&d3_SkyLayer1) + 0x1c), (char *)((unsigned)&ai_Unk6238a4 + 0x4) + k * 0x4c) == 0)
+                if (_strcmpi(*(char **)(d3_SkyLayers[1] + 0x1c), (char *)((unsigned)&ai_Unk6238a4 + 0x4) + k * 0x4c) == 0)
                     k++;
                 name = (char *)((unsigned)&ai_Unk6238a4 + 0x4) + k * 0x4c;
             } else if (c < 0x96) {
                 k = util_RandomU(3) & 0xffff;
-                if (_strcmpi(*(char **)(SV_I((unsigned)&d3_SkyLayer1) + 0x1c), (char *)(unsigned)&full_data_6239d8 + k * 0x4c) == 0)
+                if (_strcmpi(*(char **)(d3_SkyLayers[1] + 0x1c), (char *)(unsigned)&full_data_6239d8 + k * 0x4c) == 0)
                     k++;
                 name = (char *)(unsigned)&full_data_6239d8 + k * 0x4c;
             } else {
                 k = util_RandomU(2) & 0xffff;
-                if (_strcmpi(*(char **)(SV_I((unsigned)&d3_SkyLayer1) + 0x1c), (char *)(unsigned)&ai_Unk623ac0 + k * 0x4c) == 0)
+                if (_strcmpi(*(char **)(d3_SkyLayers[1] + 0x1c), (char *)(unsigned)&ai_Unk623ac0 + k * 0x4c) == 0)
                     k++;
                 name = (char *)(unsigned)&ai_Unk623ac0 + k * 0x4c;
             }
-            d3sky_SetLayerTex(SV_I((unsigned)&d3_SkyLayer1), name);
-            *(int *)SV_I((unsigned)&d3_SkyLayer1) = *(int *)(name + 0x40);
-            *(int *)(SV_I((unsigned)&d3_SkyLayer1) + 0x18) = *(int *)(name + 0x44);
-            *(int *)(SV_I((unsigned)&d3_SkyLayer1) + 0x14) = *(int *)(name + 0x48);
-            d3sky_FadeLayer(SV_I((unsigned)&d3_Sky), SV_I((unsigned)&d3_SkyLayer1), 0xff, 1500.0f);
+            d3sky_SetLayerTex(d3_SkyLayers[1], name);
+            *(int *)d3_SkyLayers[1] = *(int *)(name + 0x40);
+            *(int *)(d3_SkyLayers[1] + 0x18) = *(int *)(name + 0x44);
+            *(int *)(d3_SkyLayers[1] + 0x14) = *(int *)(name + 0x48);
+            d3sky_FadeLayer(SV_I((unsigned)&d3_Sky), d3_SkyLayers[1], 0xff, 1500.0f);
         }
-        if (*(char *)(SV_I((unsigned)&d3_SkyLayer1) + 0x26) == -1) {
+        if (*(char *)(d3_SkyLayers[1] + 0x26) == -1) {
             if (c < 0x32) {
                 k = util_RandomU(4) & 0xffff;
-                if (_strcmpi(*(char **)(SV_I((unsigned)&d3_SkyLayer0) + 0x1c), (char *)((unsigned)&ai_Unk6238a4 + 0x4) + k * 0x4c) == 0)
+                if (_strcmpi(*(char **)(d3_SkyLayers[0] + 0x1c), (char *)((unsigned)&ai_Unk6238a4 + 0x4) + k * 0x4c) == 0)
                     k++;
                 name = (char *)((unsigned)&ai_Unk6238a4 + 0x4) + k * 0x4c;
             } else if (c < 0x96) {
                 k = util_RandomU(3) & 0xffff;
-                if (_strcmpi(*(char **)(SV_I((unsigned)&d3_SkyLayer0) + 0x1c), (char *)(unsigned)&full_data_6239d8 + k * 0x4c) == 0)
+                if (_strcmpi(*(char **)(d3_SkyLayers[0] + 0x1c), (char *)(unsigned)&full_data_6239d8 + k * 0x4c) == 0)
                     k++;
                 name = (char *)(unsigned)&full_data_6239d8 + k * 0x4c;
             } else {
                 k = util_RandomU(2) & 0xffff;
-                if (_strcmpi(*(char **)(SV_I((unsigned)&d3_SkyLayer0) + 0x1c), (char *)(unsigned)&ai_Unk623ac0 + k * 0x4c) == 0)
+                if (_strcmpi(*(char **)(d3_SkyLayers[0] + 0x1c), (char *)(unsigned)&ai_Unk623ac0 + k * 0x4c) == 0)
                     k++;
                 name = (char *)(unsigned)&ai_Unk623ac0 + k * 0x4c;
             }
-            d3sky_SetLayerTex(SV_I((unsigned)&d3_SkyLayer0), name);
-            *(int *)SV_I((unsigned)&d3_SkyLayer0) = *(int *)(name + 0x40);
-            *(int *)(SV_I((unsigned)&d3_SkyLayer0) + 0x18) = *(int *)(name + 0x44);
-            *(int *)(SV_I((unsigned)&d3_SkyLayer0) + 0x14) = *(int *)(name + 0x48);
-            d3sky_FadeLayer(SV_I((unsigned)&d3_Sky), SV_I((unsigned)&d3_SkyLayer1), 0, 1500.0f);
+            d3sky_SetLayerTex(d3_SkyLayers[0], name);
+            *(int *)d3_SkyLayers[0] = *(int *)(name + 0x40);
+            *(int *)(d3_SkyLayers[0] + 0x18) = *(int *)(name + 0x44);
+            *(int *)(d3_SkyLayers[0] + 0x14) = *(int *)(name + 0x48);
+            d3sky_FadeLayer(SV_I((unsigned)&d3_Sky), d3_SkyLayers[1], 0, 1500.0f);
         }
-        d3sky_SetLayerSpeed(SV_I((unsigned)&d3_Sky), SV_I((unsigned)&d3_SkyLayer0), w * 0.75f);
-        d3sky_SetLayerSpeed(SV_I((unsigned)&d3_Sky), SV_I((unsigned)&d3_SkyLayer1), w);
+        d3sky_SetLayerSpeed(SV_I((unsigned)&d3_Sky), d3_SkyLayers[0], w * 0.75f);
+        d3sky_SetLayerSpeed(SV_I((unsigned)&d3_Sky), d3_SkyLayers[1], w);
         if (c == 0) {
             u = 0;
             w = 2500.0f;
@@ -6885,8 +6883,8 @@ void sv_Unk5301a0(void)
             u = ((c << 6) / 1000) & 0xff | 0x60;
             w = 1000.0f;
         }
-        d3sky_FadeLayer(SV_I((unsigned)&d3_Sky), SV_I((unsigned)&d3_SkyLayer2), u, w);
-        d3sky_SetLayerSpeed(SV_I((unsigned)&d3_Sky), SV_I((unsigned)&d3_SkyLayer2), w * 1.5f);
+        d3sky_FadeLayer(SV_I((unsigned)&d3_Sky), d3_SkyLayers[2], u, w);
+        d3sky_SetLayerSpeed(SV_I((unsigned)&d3_Sky), d3_SkyLayers[2], w * 1.5f);
     }
 }
 /* 0x530670, the thunder / sun glow update of an hour: stops the emitters (0x414590 / 0x415380), a random thunder (sound "DonnerMittel_s", 0x760548 time, 0x76054c length) when the hour's flag 0x7604e8 is set, and
@@ -7329,9 +7327,7 @@ extern float ai_Unk7605b0[0x18];
 extern int ai_Unk760610;
 extern int ai_Unk760614;
 extern int d3t_Snow;
-extern int d3_SkyLayer0;
-extern int d3_SkyLayer1;
-extern int d3_SkyLayer2;
+extern int d3_SkyLayers[6];
 extern int d2_HitWindow;
 extern int ai_Unkfb9060;
 extern int ai_Unkfb9064;
@@ -7510,9 +7506,7 @@ float ai_Unk7605b0[0x18] = {0};  /* 0x7605b0 */
 int ai_Unk760610 = 0;  /* 0x760610 */
 int ai_Unk760614 = 0;  /* 0x760614 */
 int d3t_Snow = 0;  /* 0x76061c */
-int d3_SkyLayer0 = 0;  /* 0x760620 */
-int d3_SkyLayer1 = 0;  /* 0x760624 */
-int d3_SkyLayer2 = 0;  /* 0x760628 */
+int d3_SkyLayers[6] = {0};  /* 0x760620, the sky layer handles: sv creates 0 .. 2, sv and main_EndGame delete all six */
 SVPLATE sv_NamePlates[0x20] = {0};  /* 0x760640, the name plate records (200 bytes each) */
 char sv_StatusText[136] = {0};  /* 0x761f40, the status line text */
 int sv_BubbleObjects[4286] = {0};  /* 0x761fc8, the object of each speech bubble ( */

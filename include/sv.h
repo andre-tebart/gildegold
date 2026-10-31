@@ -290,10 +290,7 @@ extern float ai_Unk7605b0[0x18];                            /* 0x7605b0 */
 extern int ai_Unk760610;                                    /* 0x760610 */
 extern int ai_Unk760614;                                    /* 0x760614 */
 extern int d3t_Snow;                                    /* 0x76061c */
-extern int d3_SkyLayer0;                                    /* 0x760620 */
-extern int d3_SkyLayer1;                                    /* 0x760624 */
-extern int d3_SkyLayer2;                                    /* 0x760628 */
-#define d3_SkyLayers ((int *)&d3_SkyLayer0)  /* 0x760620, the sky layer slots: 6 up to sv_FrameMask 0x760638 (main frees them), sv.c fills the first three */
+extern int d3_SkyLayers[6];                                 /* 0x760620, the sky layer handles (sv creates 0 .. 2) */
 extern char sv_StatusText[136];                             /* 0x761f40 */
 extern int sv_BubbleObjects[4286];                          /* 0x761fc8 */
 extern int ai_Unk7662c0;                                    /* 0x7662c0 */
