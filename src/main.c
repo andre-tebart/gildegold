@@ -2451,7 +2451,7 @@ int main_ChoosePlayer(int mask, int flag)
     return ret;
 }
 
-int main_Unk536d80(void);
+int main_CharacterIntro(int unused);
 
 /* 0x536980, the history choice of the new game ("Menu\CHOOSEHISTORY": the texts 0x1ac0 ..; three or four buttons by 0x5190a0: the level 0x4b1f90 (1 / 2 / 0), the group value 0x6f365c from 0x6f0724 shown by 0x46c630), then the
    start menu pages: 0x4b4040 (the history choice, hist), 0x5361d0 (the player setup, cb mask 0xc6), the character creation 0x536d80 / 0x5359f0 (1 = continue with the family choice, 0 = quick start with the model
@@ -2536,7 +2536,7 @@ lback:
                     ai_Unk4e2c70(ai_Unk4e2bf0("Startmenu/A_Stadtwahl.esc"));
                     again = 1;
                 } else {
-                    r = ((int (*)(int))main_Unk536d80)(0);
+                    r = main_CharacterIntro(0);
                     if (r == 1) {
                         d2_CutsceneActive = r;
                         main_MessageBox = sv_OpenMessageBox((int)txt_Ptrs[0x1af9], 0);
@@ -2578,41 +2578,40 @@ lback2:
     ai_GameFlags = 0;
     return ret;
 }
-/* 0x536d80, the "menu\choosecharacter_intro" dialog with two buttons (texts 0x1adf .. 0x1ae1): returns 1 for the first button, -1 when cancelled, else 0 */
+/* 0x536d80, the "menu\choosecharacter_intro" dialog with two buttons (texts 0x1adf .. 0x1ae1, 0x1ae0 only in a mission): returns 1 for the first button
+   (create a character), -1 when cancelled, else 0 (quick start); unused: main_ChooseHistory passes 0 */
 
-int main_Unk536d80(void)
+int main_CharacterIntro(int unused)
 {
-    int r, f, t, b1, b2, g, run;
+    int r, f, t, b1, b2, g;
 
     r = 0;
     f = d2_OpenForm(0, 0, "menu\\choosecharacter_intro");
     d2_CentreViewWindows(f);
     io_PrintText(0x1adf);
-    if (*(unsigned char *)(unsigned)&ai_MissionMode != 0xffffffff)
+    if (ai_MissionMode != -1)
         io_PrintText(0x1ae0);
     t = io_PrintText(0x1ae1);
     b1 = d2_GetWinObj(f, 0, t);
     b2 = d2_GetWinObj(f, 0, t + 1);
     g = d2_CreateRadioGroup(2, b1, b2);
-    run = sv_RunFrame((int)main_Unk536d80, 0xc6);
-    do {
-        if (run == 0) {
-            d2_RadioClear(g);
-            d2_CloseView(f);
-            return r;
-        }
-        d2_MenuNavigate(g);
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0 || *(char *)(unsigned)&kb_Last == 1) {
-            r = -1;
-            sv_PopRequest = 1;
-        }
-        if (U_I((unsigned)&d2_ClickedId) == 0 || *(char *)(unsigned)&kb_Last == 0x1c) {
-            r = 1;
-            sv_PopRequest = 1;
-        } else if (U_I((unsigned)&d2_ClickedId) == 1)
-            sv_PopRequest = 1;
-        run = sv_RunFrame((int)main_Unk536d80, 0xc6);
-    } while (1);
+    if (sv_RunFrame((int)main_CharacterIntro, 0xc6) != 0) {
+        do {
+            d2_MenuNavigate(g);
+            if (dm_L.rup != 0 || kb_Last == 1) {
+                r = -1;
+                sv_PopRequest = 1;
+            }
+            if (d2_ClickedId == 0 || kb_Last == 0x1c) {
+                r = 1;
+                sv_PopRequest = 1;
+            } else if (d2_ClickedId == 1)
+                sv_PopRequest = 1;
+        } while (sv_RunFrame((int)main_CharacterIntro, 0xc6) != 0);
+    }
+    d2_RadioClear(g);
+    d2_CloseView(f);
+    return r;
 }
 /* 0x536e80, the difficulty choice (same form, five buttons from the text 0x1abf: the chosen level 0 .. 4 goes to 0x6f366a through 0x6f23fc); returns 1 when confirmed */
 
