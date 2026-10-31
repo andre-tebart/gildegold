@@ -140,3 +140,4 @@
 2026-10-31T19:18:23 0x0050af00 func gm_Unk50af00 -> gm_CollectCarried by:main why:collects what the person carries into a 0x21c record (free capacity at +0x31) (body)
 2026-10-31T19:18:25 0x0053eec0 func he_Unk53eec0 -> he_AddApEvent by:main why:registers an AP event in the first free of 0x100 entries, returns its counter byte pointer (body)
 2026-10-31T19:18:30 0x0053ef80 func he_Unk53ef80 -> he_SumApEvents by:main why:the sum of the values of the AP events with key (body)
+2026-10-31T19:29:25 0x00539620 func main_Unk539620 -> main_ReplaceFigure by:main why:replaces a kind-6 (prisoner/dead) character by a new figure: new name, running number, events closed (body)

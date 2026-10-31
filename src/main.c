@@ -174,6 +174,19 @@ typedef struct MAINPLREC {          /* gm_PlayerRecord's record, the part gm_Tit
     char pad00[0x74];
     unsigned char job[0x11];        /* 0x74, the job byte of each title group */
 } MAINPLREC;
+typedef struct MAINCHARNEW {        /* the AICHAR fields the character replacement writes (ai.h AICHAR: name is shorter than its 0x58 union) */
+    unsigned short id;              /* 0x00 */
+    unsigned char kind;             /* 0x02 */
+    char pad03;
+    unsigned int netId;             /* 0x04 */
+    unsigned char health;           /* 0x08 */
+    unsigned char flag9;            /* 0x09, 1: the female name table is used */
+    char pad0a[0x26];
+    char name[0x20];                /* 0x30 */
+    short seq;                      /* 0x50, a running number (ai_Unk6f1bb8) */
+    char pad52[10];
+    int clear[8];                   /* 0x5c, set to -1 */
+} MAINCHARNEW;
 #define main_BookObject (*(int *)((char *)&cm_RequestedSaveName + 0x44))  /* 0x6f2614, the book object "Buch" loaded at the game start (reasoned: a pointer-sized field after the 64-byte name and the int at +0x40) */
 extern unsigned int ai_MissionSeed;
 extern GAPDATA full_data_75df20[];
@@ -3591,27 +3604,23 @@ void main_Unk5384e0(void)
     amt_Unk4ea8e0((unsigned)&ai_CharsT + (U_I((unsigned)&ai_PlayerId) & 0xffff) * 0x21c);
     snd_FadeMusic(0x3f800000, 2000);
 }
-/* 0x539620, a player (the character slot p, kind 6 = prisoner / dead, flag +6 clear) is replaced by a new figure: every record of the table 0x6fab40 (0x14c bytes) of that character whose kind is in the first list is
-   closed (0x53e1e0), in the second list its +0x70 is set to -1; the kind byte becomes 5, a name is copied from the name table 0x143ac5c (random 0xbf) or 0x143af70 (0x70, flag +7 of the slot) and the
-   record counters are reset. Sets 0x6f259c when no slot of kind 6 is left; ROUGH */
+/* 0x539620, a player (the character slot p, kind 6 = prisoner / dead, health 0) is replaced by a new figure: first it checks that some slot of kind 6 with health is left (else ai_GameOver); every he_Events record (0x14c bytes) of that character whose kind is in the first list is closed (he_Unk53e1f0), in the second its +0x70 is set to -1; the kind byte becomes 5, a name is copied from the name table 0x143ac5c (flag9 clear, random 0xbf) or 0x143af70 (random 0x70), the running number and the eight ids are reset, and the events of the table 0x925520 that concern the character in the states 3 .. 9 are dropped @deep All statements read against the original and fixed: two separate lists (la 15 entries from 0x5d, lb {0x45, 0x47, 0} walked as for (j = 0; lb[j]; j++) la[j] == kind), the character scan as an index loop (kind 6 and health != 0), typed MAINCHARNEW fields, two inline strcpy of ai_Unk143ac5c / af70 pointer tables, signed pointer compares; only 'order' hunks and one code hunk are left: after the index scan the original keeps two identical blocks ('mov [ai_GameOver],1; pop edi; add esp,0x48; ret' at 0x5396cb and 0x5396e2, 'cmp ecx,0xffff; jne 0x5396f1' between them) where VC6 cross-jumps the second into the first (ours: 'je 0x5396cb', 17 bytes shorter, size 558 vs 581). Tried: if/else around the rest, return inside the while vs after it. A tail-merge layout question, not a statement. */
 
-void main_Unk539620(unsigned p)
+void main_ReplaceFigure(unsigned p)
 {
-    int kinds[17];
+    int la[15] = { 0x5d, 0x11, 0x30, 0x35, 0x42, 0x60, 0x4b, 0x5b, 0x5c, 0x5a, 0x46, 0x2e, 0x2d, 0x41, 0 };
+    int lb[3] = { 0x45, 0x47, 0 };
+    MAINCHARNEW *ch;
     char *s;
     unsigned char *e;
-    unsigned u;
-    int i, j, d;
     int *pi;
+    unsigned u;
+    int i, j;
 
-    kinds[0] = 0x47; kinds[1] = 0; kinds[2] = 0x5d; kinds[3] = 0x11; kinds[4] = 0x30; kinds[5] = 0x35; kinds[6] = 0x42; kinds[7] = 0x60; kinds[8] = 0x4b;
-    kinds[9] = 0x5b; kinds[10] = 0x5c; kinds[11] = 0x5a; kinds[12] = 0x46; kinds[13] = 0x2e; kinds[14] = 0x2d; kinds[15] = 0x41; kinds[16] = 0;
     i = 0;
-    s = (char *)((unsigned)&ai_CharInts + 0x4);
-    while (s[-6] != 6 || *s == 0) {
-        s += 0x21c;
+    while (ai_CharsT[i].kind != 6 || ai_CharsT[i].health == 0) {
         i++;
-        if ((int)s > ((unsigned)((unsigned)ai_CharInts + 0x653fe) + 0x5)) {
+        if (i >= 768) {
             U_I((unsigned)&ai_GameOver) = 1;
             return;
         }
@@ -3619,59 +3628,44 @@ void main_Unk539620(unsigned p)
     if (i == 0xffff) {
         U_I((unsigned)&ai_GameOver) = 1;
         return;
-    }
-    d = p * 0x21c;
-    if (*(char *)(((unsigned)&ai_CharsT + 0x2) + d) == 6 && *(char *)(((unsigned)&ai_CharInts + 0x4) + d) == 0) {
+    } else if (ai_CharsT[p].kind == 6 && ai_CharsT[p].health == 0) {
+        ch = (MAINCHARNEW *)&ai_CharsT[p];
         e = (unsigned char *)(unsigned)&he_Events;
         do {
             if (*e != 0 && *(unsigned short *)(e + 8) == p) {
-                u = 0x5d;
-                pi = kinds + 2;
-                do {
-                    if (u == *e) {
+                for (pi = la; *pi != 0; pi++) {
+                    if (*pi == *e) {
                         he_Unk53e1f0(e);
                         break;
                     }
-                    u = pi[1];
-                    pi++;
-                } while (u != 0);
-                j = 0;
-                do {
-                    if ((unsigned)*(int *)((char *)kinds + j + 8) == *e) {
-                        e[0x70] = 0xff;
-                        e[0x71] = 0xff;
-                        e[0x72] = 0xff;
-                        e[0x73] = 0xff;
+                }
+                for (j = 0; lb[j] != 0; j++) {
+                    if (la[j] == *e) {
+                        *(int *)(e + 0x70) = -1;
                         break;
                     }
-                    pi = (int *)((char *)kinds + j);
-                    j += 4;
-                } while (*pi != 0);
+                }
             }
             e += 0x14c;
-        } while ((int)e < (unsigned)((unsigned)he_Events + 0x53000));
-        *(char *)(((unsigned)&ai_CharsT + 0x2) + d) = 5;
-        if (*(char *)((unsigned)&ai_Unk770b89 + d) == 0) {
-            u = util_RandomInt(0xbf);
-            s = *(char **)((unsigned)&ai_Unk143ac5c + (u & 0xffff) * 4);
+        } while ((int)e < (int)((unsigned)he_Events + 0x53000));
+        ch->kind = 5;
+        if (ch->flag9 == 0) {
+            strcpy(ch->name, ai_Unk143ac5c[(unsigned short)util_RandomInt(0xbf)]);
         } else {
-            u = util_RandomInt(0x70);
-            s = *(char **)((unsigned)&ai_Unk143af70 + (u & 0xffff) * 4);
+            strcpy(ch->name, ai_Unk143af70[(unsigned short)util_RandomInt(0x70)]);
         }
-        strcpy((char *)((unsigned)&ai_CharsT + d + 0x30), s);
-        *(short *)(((unsigned)&ai_Unk770b89 + 0x47) + p * 0x21c) = (short)U_I((unsigned)&ai_Unk6f1bb8);
+        ch->seq = (short)U_I((unsigned)&ai_Unk6f1bb8);
+        for (i = 0; i < 8; i++)
+            ch->clear[i] = -1;
         U_I((unsigned)&ai_Unk6f1bb8) = U_I((unsigned)&ai_Unk6f1bb8) + 1;
-        pi = (int *)(((unsigned)&ai_Unk770b89 + 0x53) + p * 0x21c);
-        for (i = 8; i != 0; i--)
-            *pi++ = -1;
         s = (char *)((unsigned)&ai_Unk925520 + 0x8);
         do {
             if (s[0x28] != 0) {
-                if (ai_Unk4e4870(U_I((unsigned)&ai_CharInts + p * 0x21c), s - 8) != 0 && (*s == 3 || *s == 5 || *s == 4 || *s == 6 || *s == 9 || *s == 7))
+                if (ai_Unk4e4870(ch->netId, s - 8) != 0 && (*s == 3 || *s == 5 || *s == 4 || *s == 6 || *s == 9 || *s == 7))
                     ai_Unk4e5180(*(int *)(s - 8));
             }
             s += 0x114;
-        } while ((int)s < (unsigned)((unsigned)ai_Unk925520 + 0x6788));
+        } while ((int)s < (int)((unsigned)ai_Unk925520 + 0x6788));
     }
 }
 /* 0x539870, the end of the round report of the player (0x6f25b8): the bookkeeping of the character record (0x506430: income / expense fields +0x14 .. +0x54, texts 0x2005 .. 0x204e of 0x515960)
@@ -3922,7 +3916,7 @@ void main_Unk539870(void)
         MSG_I(msg, 0x34) = MSG_I(msg, 0xc);
         ai_Unk4e4060(msg);
         if (U_I((unsigned)&full_data_6f25b0) != 0)
-            main_Unk539620(U_I((unsigned)&ai_PlayerId) & 0xffff);
+            main_ReplaceFigure(U_I((unsigned)&ai_PlayerId) & 0xffff);
         U_I((unsigned)&full_data_6f25b0) = 0;
     }
 }
