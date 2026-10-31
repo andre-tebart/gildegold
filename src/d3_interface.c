@@ -992,14 +992,14 @@ char d3_CornerCB(D3OBJECT *obj, D3CORNERCTX *c)
 /* 0x448e60, the texture coordinates at a screen point: of the polygons of `obj` textured with `tex` it takes the
    four vertices nearest to the screen corners (d3_CornerCB), picks three of them by their (normalized) uv and
    intersects the view ray through (sx, sy) with the plane of the triangle, once for each of the two triangles
-   of the quad; returns 1 and the uv when the ray hits one */
+   of the quad; returns 1 and the uv when the ray hits one @deep whole function read against the original and reconciled: corrected here were the ray direction locals (dx = sx - d3_CenterX, dy = -(sy - d3_CenterY), dz = d3_ScaleX instead of overwriting sx), the plane/triangle split (the original falls into the second triangle when r + s > 1.0, so the condition is r + s > 1.0 with the second triangle first), the in-triangle test (r >= 0 && r <= 1 && s >= 0 && s <= 1, inclusive upper bounds) and hz as a local; all calls, loops and conditions now agree. Remaining: FPU stack scheduling of the plane intersection (original spills t, the three t*d products and hx/hy, ours keeps them in registers), fld/fld/fcompp vs fcom [mem] compares in the min/best loops, and the min loop assigning with fld/fstp where ours copies through edx; tried: ternary form of the min, nx/ny/nz inlined (worse), p variables dropped (worse), hz variable (identical code) (size: 507 vs 535 instructions, explained: ours 507 vs original 535 instructions, frame 0xcc vs 0x108: op histogram of the difference is +17 fld [mem], +13 fstp [mem] (FPU temporaries the original spills to stack slots: t at [0x14], the t*dx/t*dy/t*dz products at [0x80]/[0x88], hx/hy at [0x3c]/[0x40], py at [0x74], where ours keeps them on the FPU stack), +4 fcompp (compare of two stack values instead of fcom mem), +6 and/jne instead of test/jp pairs; no call, branch or statement differs) */
 
 char d3_ScreenToUV(float sx, float sy, D3OBJECT *obj, void *tex, float *outu, float *outv)
 {
     D3CORNERCTX c;
     float mn[2];
     float best_a, best_b, best_c, f;
-    float px, py, pz, ax, ay, az, bx, by, bz, nx, ny, nz, rx, ry, den, t, hx, hy, s, m, r;
+    float px, py, pz, ax, ay, az, bx, by, bz, nx, ny, nz, dx, dy, dz, hz, den, t, hx, hy, s, m, r;
     int i, j, ia, ib, ic, id;
 
     if (tex) {
@@ -1065,23 +1065,22 @@ char d3_ScreenToUV(float sx, float sy, D3OBJECT *obj, void *tex, float *outu, fl
                 nx = bz * ay - by * az;
                 ny = bx * az - bz * ax;
                 nz = by * ax - bx * ay;
-                sx = sx - d3_CenterX;
-                ry = -(sy - d3_CenterY);
-                den = sx * nx + ry * ny + d3_ScaleX * nz;
+                dx = sx - d3_CenterX;
+                dy = -(sy - d3_CenterY);
+                dz = d3_ScaleX;
+                den = dx * nx + dy * ny + dz * nz;
                 if (1e-07 < fabs(den)) {
                     t = ((nz + ny + nx) * 0.0f + nx * px + ny * py + nz * pz) / den;
-                    hx = px - t * sx;
-                    hy = py - t * ry;
+                    hx = px - t * dx;
+                    hy = py - t * dy;
+                    hz = pz - t * dz;
                     s = (hx * ay - hy * ax) / (bx * ay - by * ax);
                     m = -s;
-                    r = ((bx * m + hx) / ax + (by * m + hy) / ay + (m * bz + (pz - t * d3_ScaleX)) / az) * 0.33333334f;
-                    if (r + s <= 1.0) {
-                        if (0.0f <= r && r < 1.0f && 0.0f <= s && s < 1.0f) {
-                            *outu = ((float)fabs(c.uv[ib][0]) - (float)fabs(c.uv[ia][0])) * r + (float)fabs(c.uv[ia][0]);
-                            *outv = 1.0 - (((float)fabs(c.uv[ic][1]) - (float)fabs(c.uv[ia][1])) * s + (float)fabs(c.uv[ia][1]));
-                            return 1;
-                        }
-                    } else {
+                    hx = bx * m + hx;
+                    hy = by * m + hy;
+                    hz = m * bz + hz;
+                    r = (hx / ax + hy / ay + hz / az) * 0.33333334f;
+                    if (r + s > 1.0) {
                         px = c.v[id].x;
                         py = c.v[id].y;
                         pz = c.v[id].z;
@@ -1094,19 +1093,29 @@ char d3_ScreenToUV(float sx, float sy, D3OBJECT *obj, void *tex, float *outu, fl
                         nx = az * by - ay * bz;
                         ny = ax * bz - az * bx;
                         nz = ay * bx - ax * by;
-                        den = sx * nx + ry * ny + d3_ScaleX * nz;
+                        den = dx * nx + dy * ny + dz * nz;
                         if (1e-07 < fabs(den)) {
                             t = ((nz + ny + nx) * 0.0f + nx * px + ny * py + nz * pz) / den;
-                            hx = px - t * sx;
-                            hy = py - t * ry;
+                            hx = px - t * dx;
+                            hy = py - t * dy;
+                            hz = pz - t * dz;
                             s = (hx * by - hy * bx) / (ax * by - ay * bx);
                             m = -s;
-                            r = ((ax * m + hx) / bx + (ay * m + hy) / by + (m * az + (pz - t * d3_ScaleX)) / bz) * 0.33333334f;
-                            if (0.0f <= r && r < 1.0f && 0.0f <= s && s < 1.0f) {
+                            hx = ax * m + hx;
+                            hy = ay * m + hy;
+                            hz = m * az + hz;
+                            r = (hx / bx + hy / by + hz / bz) * 0.33333334f;
+                            if (r >= 0.0f && r <= 1.0f && s >= 0.0f && s <= 1.0f) {
                                 *outu = (1.0f - r) * ((float)fabs(c.uv[ib][0]) - (float)fabs(c.uv[ia][0])) + (float)fabs(c.uv[ia][0]);
                                 *outv = 1.0 - ((1.0f - s) * ((float)fabs(c.uv[ic][1]) - (float)fabs(c.uv[ia][1])) + (float)fabs(c.uv[ia][1]));
                                 return 1;
                             }
+                        }
+                    } else {
+                        if (r >= 0.0f && r <= 1.0f && s >= 0.0f && s <= 1.0f) {
+                            *outu = ((float)fabs(c.uv[ib][0]) - (float)fabs(c.uv[ia][0])) * r + (float)fabs(c.uv[ia][0]);
+                            *outv = 1.0 - (((float)fabs(c.uv[ic][1]) - (float)fabs(c.uv[ia][1])) * s + (float)fabs(c.uv[ia][1]));
+                            return 1;
                         }
                     }
                 }
