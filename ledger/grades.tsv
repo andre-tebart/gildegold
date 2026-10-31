@@ -408,9 +408,9 @@ exe	0x0041ec50	surf_Shrink16	surf	byte	readable
 exe	0x0041ee70	surf_Shrink24	surf	byte	readable		
 exe	0x0041f000	surf_Down32	surf	draft	readable	deep	
 exe	0x0041f220	surf_Up8	surf	byte	readable		
-exe	0x0041f2b0	surf_Up16	surf	draft	readable	deep	
-exe	0x0041f800	surf_Up24	surf	draft	readable	deep	
-exe	0x0041fc00	surf_Up32	surf	draft	readable	deep	
+exe	0x0041f2b0	surf_Up16	surf	draft	readable		
+exe	0x0041f800	surf_Up24	surf	draft	readable		
+exe	0x0041fc00	surf_Up32	surf	draft	readable		
 exe	0x00420140	surf_ScaleBlit	surf	shape	readable		
 exe	0x004202d0	surf_Pal8To16	surf	byte	readable		
 exe	0x00420450	surf_24To16	surf	byte	readable		
@@ -684,7 +684,7 @@ exe	0x004315c0	d3anim_ApplyRootMotion	d3_anim	byte	readable
 exe	0x00431750	d3anim_ApplyMotionTo	d3_anim	shape	readable		
 exe	0x004319e0	d3anim_MapBones	d3_anim	shape	readable		
 exe	0x00431ae0	d3anim_PoseBones	d3_anim	draft	readable	deep	
-exe	0x00432190	d3anim_Unk432190	d3_anim	draft	draft	deep	
+exe	0x00432190	d3anim_RootPosAt	d3_anim	draft	readable	deep	
 exe	0x004324e0	d3anim_NextFrame	d3_anim	byte	readable		
 exe	0x00432530	d3path_Tangents	d3_anim	byte	readable		
 exe	0x00432750	d3anim_StepObject	d3_anim	draft	draft	deep	
@@ -800,13 +800,13 @@ exe	0x0043e820	d3e_RegisterSceneEvent	d3_engine	byte	readable
 exe	0x0043e900	d3e_SaveEvents	d3_engine	byte	readable		
 exe	0x0043e970	d3e_LoadEvents	d3_engine	byte	readable		
 exe	0x0043ea10	d3e_LoadSceneEvents	d3_engine	byte	readable		
-exe	0x0043eab0	d3fl_BlendC	d3_fl	draft	readable	deep	
+exe	0x0043eab0	d3fl_BlendC	d3_fl	draft	readable		
 exe	0x0043ed70	d3fl_BlendMMX	d3_fl	byte	readable		
 exe	0x0043eef0	d3fl_Render	d3_fl	byte	readable		
 exe	0x0043f080	d3fl_MakeWeights	d3_fl	byte	readable		
 exe	0x0043f180	d3fl_InitCache	d3_fl	byte	readable		
 exe	0x0043f270	d3fl_FreeCache	d3_fl	byte	readable		
-exe	0x0043f300	d3fl_MakeJitter	d3_fl	draft	readable	deep	
+exe	0x0043f300	d3fl_MakeJitter	d3_fl	draft	readable		
 exe	0x0043f8a0	d3fl_SetDetail	d3_fl	draft	readable	deep	
 exe	0x0043f910	d3fl_ReloadMap	d3_fl	byte	readable		
 exe	0x0043f930	d3fl_SetMips	d3_fl	byte	readable		
@@ -822,7 +822,7 @@ exe	0x00440140	d3fl_Invalidate	d3_fl	byte	readable
 exe	0x00440170	d3fl_Fill	d3_fl	byte	readable		
 exe	0x00440280	d3fl_WaterPoint	d3_fl	byte	readable		
 exe	0x004402f0	d3fl_Ramp	d3_fl	byte	readable		
-exe	0x00440360	d3fl_PrepareWater	d3_fl	draft	draft	deep	
+exe	0x00440360	d3fl_PrepareWater	d3_fl	draft	draft		
 exe	0x00441270	d3fl_SameType	d3_fl	byte	readable		
 exe	0x00441300	d3fl_MakeDivide	d3_fl	draft	readable	deep	
 exe	0x00441660	d3fl_LightCB	d3_fl	byte	readable		
@@ -837,9 +837,9 @@ exe	0x00442280	d3fl_ReloadTextures	d3_fl	byte	readable
 exe	0x00442390	d3fl_LoadMap	d3_fl	draft	readable	deep	
 exe	0x00442ac0	d3fl_TileBox	d3_fl	shape	readable		
 exe	0x00442ed0	d3fl_UpdateWater	d3_fl	shape	readable		
-exe	0x004430c0	d3fl_DrawWater	d3_fl	draft	readable	deep	
+exe	0x004430c0	d3fl_DrawWater	d3_fl	draft	readable		
 exe	0x004437f0	d3fl_UpdateTiles	d3_fl	draft	readable	deep	
-exe	0x004439e0	d3fl_Draw	d3_fl	draft	draft	deep	
+exe	0x004439e0	d3fl_Draw	d3_fl	draft	draft		
 exe	0x00446180	d3fl_Prerender	d3_fl	draft	draft	deep	
 exe	0x004463b0	map_Pick	d3_fl	draft	readable	deep	
 exe	0x00446750	map_PickScreen	d3_fl	draft	readable	deep	
@@ -1069,7 +1069,7 @@ exe	0x0045ad80	d3_InitShadows	d3s	byte	readable
 exe	0x0045aee0	d3_ExitShadows	d3s	byte	readable		
 exe	0x0045af50	d3s_TerrainShadowMesh	d3s	draft	readable	deep	
 exe	0x0045b510	d3s_MeshFromMap	d3s	draft	readable	deep	
-exe	0x0045b8d0	d3s_AddShadow	d3s	draft	draft	deep	
+exe	0x0045b8d0	d3s_AddShadow	d3s	draft	draft		
 exe	0x0045bcd0	d3s_GetGround	d3s	byte	readable		
 exe	0x0045be10	d3s_Project	d3s	draft	draft	deep	
 exe	0x0045c620	d3s_Update	d3s	draft	draft	deep	
@@ -1277,7 +1277,7 @@ exe	0x0046cd80	d2_CreatePicObj	d2	byte	readable
 exe	0x0046cda0	d2_MoveObj	d2	byte	readable		
 exe	0x0046cfd0	d2_ShowPicture	d2	byte	readable		
 exe	0x0046d040	d2_DrawPic	d2	shape	readable	deep	
-exe	0x0046d220	d2_DrawObjCaption	d2	draft	readable	deep	
+exe	0x0046d220	d2_DrawObjCaption	d2	draft	readable		
 exe	0x0046d3d0	d2_DrawObjects	d2	draft	draft	deep	
 exe	0x0046e150	d2_DrawAll	d2	byte	readable		
 exe	0x0046e190	d2_FindWindowAt	d2	byte	readable		
@@ -1319,7 +1319,7 @@ exe	0x00473980	d2_CreateWinCaption	d2	byte	readable
 exe	0x00473b30	d2_ReplaceInputText	d2	byte	readable		
 exe	0x00473c10	d2_Open	d2	byte	readable		
 exe	0x004741a0	d2_RaiseViewWindows	d2	byte	readable		
-exe	0x004741f0	d2_OpenForm	d2	draft	readable	deep	
+exe	0x004741f0	d2_OpenForm	d2	draft	readable		
 exe	0x00474b30	d2_LoadView	d2	byte	readable		
 exe	0x00474ca0	d2_SetViewTextures	d2	byte	readable		
 exe	0x00474d10	d2_ClearViewTextures	d2	byte	readable		
@@ -1348,7 +1348,7 @@ exe	0x00476030	d2_SetFont	d2	byte	readable
 exe	0x004760b0	d2_SetObjFont	d2	byte	readable		
 exe	0x00476110	d2_DissolveStep	d2	byte	readable		
 exe	0x00476220	d2_Plot	d2	byte	readable		
-exe	0x004764f0	d2_PlotLine	d2	draft	readable	deep	
+exe	0x004764f0	d2_PlotLine	d2	draft	readable		
 exe	0x00476710	d2_ClearPaintbox	d2	byte	readable		
 exe	0x00476760	d2_FillPaintbox	d2	byte	readable		
 exe	0x004767d0	d2_StartFade	d2	draft	readable	deep	
@@ -1411,9 +1411,9 @@ exe	0x00479f40	d2_GrabShape24Runs	shp	draft	readable	deep
 exe	0x0047a460	d2_GrabShape24NoRuns	shp	draft	readable	deep	
 exe	0x0047a7d0	d2_GrabShape16Runs	shp	draft	readable	deep	
 exe	0x0047ab30	d2_GrabShape16NoRuns	shp	draft	readable	deep	
-exe	0x0047ad40	d2_GrabShape8Runs	shp	draft	readable	deep	
+exe	0x0047ad40	d2_GrabShape8Runs	shp	draft	readable		
 exe	0x0047b220	d2_GrabShape	shp	byte	readable		
-exe	0x0047b350	d2_ShpBlit16Scaled	shp	draft	readable	deep	
+exe	0x0047b350	d2_ShpBlit16Scaled	shp	draft	readable		
 exe	0x0047b640	d2_ShpBlit16ScaledLit	shp	draft	readable	deep	
 exe	0x0047b900	d2_ShpBlit16HalfDark	shp	draft	readable	deep	
 exe	0x0047ba60	d2_ShpBlit16Rows	shp	draft	readable	deep	
@@ -1451,7 +1451,7 @@ exe	0x0047dd00	ai_WorkLimit	ai	byte	readable
 exe	0x0047dd30	ai_WorkLoad	ai	byte	readable		
 exe	0x0047dd70	ai_WorksForMaster	ai	byte	readable		
 exe	0x0047dd90	ai_IsLocalMaster	ai	byte	readable		
-exe	0x0047ddf0	ai_FindPartner	ai	draft	draft	deep	
+exe	0x0047ddf0	ai_FindPartner	ai	draft	draft		
 exe	0x0047e360	ai_MasterUpdate	ai	draft	draft	deep	
 exe	0x0047e560	ai_UpdateCharacters	ai	byte	draft	deep	
 exe	0x0047e7f0	ai_CanAct	ai	byte	readable		
@@ -1462,11 +1462,11 @@ exe	0x0047e990	ai_Unk47e990	ai	byte	draft	deep
 exe	0x0047ec20	ai_PlanSlots	ai	byte	readable		
 exe	0x0047ed60	ai_SendRemoveEmptyGoods	ai	byte	readable		
 exe	0x0047edb0	ai_EvaluateProduction	ai	draft	readable	deep	
-exe	0x0047f700	ai_EvaluateProductionFlags	ai	draft	readable	deep	
+exe	0x0047f700	ai_EvaluateProductionFlags	ai	draft	readable		
 exe	0x004801f0	ai_EvaluateProductionCategory2	ai	draft	draft	deep	
 exe	0x00480e70	ai_CalcMeisterWache	ai	draft	draft	deep	
-exe	0x004817a0	ai_CalcAngriff	ai	draft	draft	deep	
-exe	0x00481ef0	ai_CalcMeisterDiebe	ai	draft	draft	deep	
+exe	0x004817a0	ai_CalcAngriff	ai	draft	draft		
+exe	0x00481ef0	ai_CalcMeisterDiebe	ai	draft	draft		
 exe	0x00482f00	ai_CalcMeisterRaeuber	ai	draft	draft	deep	
 exe	0x004836a0	ai_CalcMeisterBank	ai	byte	draft	deep	
 exe	0x00483a60	ai_Unk483a60	ai	shape	draft	deep	
@@ -1480,7 +1480,7 @@ exe	0x004864b0	ai_BuildTradeOffers	ai	draft	draft	deep
 exe	0x00487040	ai_CalcEntryCost	ai	byte	draft	deep	
 exe	0x00487180	ai_HasMaterials	ai	draft	readable	deep	
 exe	0x00487410	ai_StartProduction	ai	draft	readable	deep	
-exe	0x00487780	ai_AddEquipmentNeeds	ai	draft	readable	deep	
+exe	0x00487780	ai_AddEquipmentNeeds	ai	draft	readable		
 exe	0x00487b40	ai_UpdateStaff	ai	byte	draft		
 exe	0x00487ea0	ai_Unk487ea0	ai	byte	draft		
 exe	0x00487fb0	ai_BuyUpgrade	ai	draft	readable	deep	
@@ -1872,7 +1872,7 @@ exe	0x004af1b0	ai_TokenMoney	hst	draft	readable	deep
 exe	0x004af2c0	ai_TokenCityTreasury	hst	draft	draft	deep	
 exe	0x004af3f0	ai_TokenRandomChurchProfession	hst	draft	readable	deep	
 exe	0x004af6c0	ai_TokenRandomRich	hst	draft	readable	deep	
-exe	0x004af8d0	ai_TokenRandomNpcInhabitant	hst	draft	readable	deep	
+exe	0x004af8d0	ai_TokenRandomNpcInhabitant	hst	shape	readable		
 exe	0x004afa20	ai_TokenRandomMerchant	hst	draft	readable	deep	
 exe	0x004afc30	ai_TokenRandomPlayer	hst	draft	readable	deep	
 exe	0x004afdd0	ai_CommandFest	hst	draft	draft	deep	
@@ -2070,10 +2070,10 @@ exe	0x004bc6a0	veg_FindPlantArea	rd	byte	readable
 exe	0x004bc710	veg_Fits	rd	byte	readable		
 exe	0x004bc7c0	veg_SetPlant	rd	draft	draft	deep	
 exe	0x004bc8d0	veg_GrowPlants	rd	byte	readable		
-exe	0x004bc940	veg_LoadModel	rd	draft	readable	deep	
+exe	0x004bc940	veg_LoadModel	rd	draft	readable		
 exe	0x004bcb90	veg_ShowPlants	rd	byte	readable		
 exe	0x004bcbe0	veg_HidePlants	rd	byte	readable		
-exe	0x004bcc20	rd_BuildRoad	rd	draft	draft	deep	
+exe	0x004bcc20	rd_BuildRoad	rd	draft	draft		
 exe	0x004bd340	rd_PathToRoad	rd	draft	readable	deep	
 exe	0x004bd4a0	rd_AddBauplaetze	rd	byte	readable		
 exe	0x004bd500	rd_AllBauplatzToSupermap	rd	draft	readable	deep	
@@ -2113,11 +2113,11 @@ exe	0x004bff40	rt_SaveRoutes	rt	draft	draft	deep
 exe	0x004c0040	rt_LoadRoutes	rt	draft	draft	deep	
 exe	0x004c01b0	snd_ClearQueue	f3snd	byte	readable		
 exe	0x004c0210	snd_QueueTail	f3snd	byte	readable		
-exe	0x004c0230	snd_AddToQueue	f3snd	draft	readable	deep	
+exe	0x004c0230	snd_AddToQueue	f3snd	draft	readable		
 exe	0x004c02e0	snd_UpdateQueue	f3snd	draft	readable	deep	
-exe	0x004c0470	snd_UpdateRain	f3snd	draft	draft	deep	
+exe	0x004c0470	snd_UpdateRain	f3snd	draft	draft		
 exe	0x004c0e60	ai_Unk4c0e60	f3snd	draft	draft	deep	
-exe	0x004c18a0	snd_EnterBuilding	f3snd	draft	draft	deep	
+exe	0x004c18a0	snd_EnterBuilding	f3snd	draft	draft		
 exe	0x004c1bd0	snd_PlayOutdoorTrack	f3snd	byte	readable		
 exe	0x004c1f90	snd_FindActiveTrack	f3snd	byte	readable		
 exe	0x004c1fc0	snd_FindTrackKind	f3snd	draft	readable	deep	
@@ -2616,7 +2616,7 @@ exe	0x004e5af0	ai_Unk4e5af0	cm	byte	draft
 exe	0x004e5b50	ai_Unk4e5b50	cm	byte	draft		
 exe	0x004e5bf0	ai_Unk4e5bf0	cm	byte	draft		
 exe	0x004e5cd0	amt_InitTable	amt	byte	readable		
-exe	0x004e5e50	amt_Rating	amt	draft	readable	deep	
+exe	0x004e5e50	amt_Rating	amt	draft	readable		
 exe	0x004e6030	amt_FindOffice	amt	draft	readable	deep	
 exe	0x004e60b0	amt_GetOfficeRate	amt	byte	readable		
 exe	0x004e6180	amt_ApplyForOffice	amt	draft	readable	deep	
@@ -2641,11 +2641,11 @@ exe	0x004e6f80	amt_GetKind	amt	byte	readable
 exe	0x004e6fc0	amt_GetColumnOffices	amt	draft	readable	deep	
 exe	0x004e7040	amt_GetColumnOfficesOwned	amt	draft	readable	deep	
 exe	0x004e70f0	amt_GetColumn7Offices	amt	byte	readable		
-exe	0x004e7150	amt_GetOfficeCandidates	amt	draft	readable	deep	
-exe	0x004e7320	amt_GetOfficeCandidatesFull	amt	draft	readable	deep	
+exe	0x004e7150	amt_GetOfficeCandidates	amt	draft	readable		
+exe	0x004e7320	amt_GetOfficeCandidatesFull	amt	draft	readable		
 exe	0x004e7510	amt_GetOfficeHolder	amt	byte	readable		
 exe	0x004e7550	amt_GetSuperiorOfficeHolder	amt	byte	readable		
-exe	0x004e75c0	amt_CanTakeOffice	amt	draft	readable	deep	
+exe	0x004e75c0	amt_CanTakeOffice	amt	draft	readable		
 exe	0x004e76b0	amt_GetOfficeApplicants	amt	byte	readable		
 exe	0x004e7770	amt_GetEligibleOffices	amt	byte	readable		
 exe	0x004e78a0	amt_GetOpenOffice	amt	byte	readable		
@@ -2669,9 +2669,9 @@ exe	0x004e9400	amt_HasTownObject	amt	byte	readable
 exe	0x004e94a0	amt_Unk4e94a0	amt	byte	draft		
 exe	0x004e94e0	amt_CanUseMayorPower2	amt	byte	readable		
 exe	0x004e95a0	amt_CanUseMayorPower3	amt	byte	readable		
-exe	0x004e9660	amt_ExecutePriceMessage	amt	draft	readable	deep	
+exe	0x004e9660	amt_ExecutePriceMessage	amt	draft	readable		
 exe	0x004e9a00	amt_ExecuteShareMessage	amt	byte	readable		
-exe	0x004e9ce0	amt_ExecuteMayorPowerMessage	amt	draft	readable	deep	
+exe	0x004e9ce0	amt_ExecuteMayorPowerMessage	amt	draft	readable		
 exe	0x004ea550	amt_ChangeDistrictOpinion	amt	byte	readable		
 exe	0x004ea5c0	amt_GetDistrictLiking	amt	byte	readable		
 exe	0x004ea690	amt_SaveAemter	amt	draft	readable	deep	
@@ -2696,7 +2696,7 @@ exe	0x004eafa0	ahm_ResearchMinutes	ahm	byte	readable
 exe	0x004eafd0	ahm_ResearchProgress	ahm	shape	readable		
 exe	0x004eb0b0	ahm_ShareProgress	ahm	byte	readable		
 exe	0x004eb130	ahm_PlaceFactor	ahm	byte	readable		
-exe	0x004eb180	ahm_ResearchState	ahm	draft	readable	deep	
+exe	0x004eb180	ahm_ResearchState	ahm	draft	readable		
 exe	0x004eb410	ahm_RescheduleResearch	ahm	byte	readable		
 exe	0x004eb480	ahm_LoadPrototypes	ahm	byte	readable		
 exe	0x004eb4c0	ahm_LoadIni	ahm	draft	readable	deep	
@@ -2723,7 +2723,7 @@ exe	0x004ecd50	ahm_SendAddValue	ahm	byte	readable
 exe	0x004ecdb0	ahm_AddValue	ahm	draft	readable	deep	
 exe	0x004ece10	ahm_SendDelete	ahm	byte	readable		
 exe	0x004ece60	ahm_DeleteAlchemist	ahm	byte	draft		
-exe	0x004ecf10	ahm_WriteRecord	ahm	draft	readable	deep	
+exe	0x004ecf10	ahm_WriteRecord	ahm	draft	readable		
 exe	0x004ed040	ahm_ReadRecord	ahm	draft	readable	deep	
 exe	0x004ed170	gv_AllocAvatar	gv	shape	readable		
 exe	0x004ed1e0	gv_WriteAvatars	gv	byte	readable		
@@ -2909,16 +2909,16 @@ exe	0x004f8700	unk_Unk4f8700	ord	shape	draft
 exe	0x004f8890	ord_GetKindRecord	ord	byte	readable		
 exe	0x004f88c0	unk_Unk4f88c0	ord	byte	draft		
 exe	0x004f8920	ord_RebuildGridSums	ord	draft	draft	deep	
-exe	0x004f8ae0	ord_ComputeStatistics	ord	draft	draft	deep	
+exe	0x004f8ae0	ord_ComputeStatistics	ord	draft	draft		
 exe	0x004f8ed0	ord_UpdateStatistics	ord	draft	draft	deep	
 exe	0x004f9020	ord_LoadStatistics	ord	draft	readable	deep	
 exe	0x004f9170	ord_GetMessageRecord	ord	byte	readable		
 exe	0x004f9190	ord_InitMessageRecord	ord	byte	readable		
-exe	0x004f9220	ord_UpdateMessageEvent	ord	draft	draft	deep	
+exe	0x004f9220	ord_UpdateMessageEvent	ord	draft	draft		
 exe	0x004f9710	ord_HandleMessageRecord	ord	byte	readable		
 exe	0x004f97a0	ord_GetRatingByte	ord	byte	readable		
 exe	0x004f97c0	ord_BuildingCapacityRatio	ord	byte	readable		
-exe	0x004f9850	ord_ReportStatistics	ord	draft	readable	deep	
+exe	0x004f9850	ord_ReportStatistics	ord	draft	readable		
 exe	0x004f9c00	ord_AdvanceRatingBase	ord	byte	readable		
 exe	0x004f9ce0	ord_StatisticsRating	ord	byte	readable		
 exe	0x004f9d40	ord_WeightedRecordSum	ord	draft	readable	deep	
@@ -3191,19 +3191,19 @@ exe	0x0050dc30	init_LoadBuildingScene	f3init	draft	readable	deep
 exe	0x0050e0d0	init_StartNewGame	f3init	draft	readable	deep	
 exe	0x0050e330	init_CreateOpponents	f3init	draft	draft	deep	
 exe	0x0050e5a0	init_PlaceOffices	f3init	shape	readable	deep	
-exe	0x0050e690	init_CreateStartCharacters	f3init	draft	readable	deep	
+exe	0x0050e690	init_CreateStartCharacters	f3init	draft	readable		
 exe	0x0050f0b0	init_CreateOpeningObjects	f3init	byte	readable		
 exe	0x0050f340	init_StockMarketStalls	f3init	draft	readable	deep	
 exe	0x0050f570	init_Betrieb	f3init	draft	readable	deep	
 exe	0x0050f750	init_OpenBuilding	f3init	draft	readable	deep	
-exe	0x0050f910	init_OpenTown	f3init	draft	readable	deep	
+exe	0x0050f910	init_OpenTown	f3init	draft	readable		
 exe	0x00510730	init_CollectSiteObject	f3init	byte	readable		
 exe	0x00510770	init_LoadSiteScene	f3init	shape	readable		
 exe	0x00510ad0	init_InitTown	f3init	shape	readable		
 exe	0x00510e20	init_ShowStatus	f3init	byte	readable		
 exe	0x00510e50	init_StartNetworkGame	f3init	draft	readable	deep	
 exe	0x005112d0	unk_Unk5112d0	f3init	byte	draft		
-exe	0x00511400	init_SetupNewGame	f3init	draft	readable	deep	
+exe	0x00511400	init_SetupNewGame	f3init	draft	readable		
 exe	0x005115b0	unk_Unk5115b0	f3init	byte	draft		
 exe	0x00511600	unk_Unk511600	f3init	byte	draft		
 exe	0x005116b0	unk_Unk5116b0	f3init	byte	draft		
@@ -3217,16 +3217,16 @@ exe	0x00511bc0	init_FillMarkets	f3init	byte	readable
 exe	0x00511c70	unk_Unk511c70	f3init	shape	draft		
 exe	0x00511dc0	init_ObjectSceneUniverse	f3init	byte	readable		
 exe	0x00511e60	init_BuildingSceneUniverse	f3init	draft	readable	deep	
-exe	0x00511f20	init_SyncSceneObjects	f3init	draft	draft	deep	
+exe	0x00511f20	init_SyncSceneObjects	f3init	draft	draft		
 exe	0x005124d0	unk_Unk5124d0	f3init	byte	draft		
-exe	0x005124f0	init_LoadShopScript	f3init	draft	draft	deep	
+exe	0x005124f0	init_LoadShopScript	f3init	draft	draft		
 exe	0x005126a0	init_SoundObjectHook	f3init	shape	readable	deep	
 exe	0x00512780	init_GateObjectHook	f3init	byte	draft		
 exe	0x005127c0	init_SoundObjectFreeHook	f3init	byte	readable		
 exe	0x005127f0	init_PlayTownSound	f3init	byte	readable		
 exe	0x00512840	init_PlayGraveyardSound	f3init	byte	draft		
 exe	0x00512890	unk_Unk512890	f3init	byte	draft		
-exe	0x005128d0	init_SetSeasonTextures	f3init	draft	readable	deep	
+exe	0x005128d0	init_SetSeasonTextures	f3init	draft	readable		
 exe	0x00512de0	init_PlantTextureSetHook	f3init	byte	draft		
 exe	0x00512e40	init_TextureSetHook	f3init	draft	readable	deep	
 exe	0x00512e80	init_BuildingTextureSetHook	f3init	shape	draft		
@@ -3240,14 +3240,14 @@ exe	0x00513970	init_ParseNumberList	f3init	byte	readable
 exe	0x00513a20	init_LoadCityINI	f3init	draft	draft	deep	
 exe	0x005142e0	io_TownDisplayName	io_text	byte	readable		
 exe	0x00514360	io_TrailingDigits	io_text	byte	readable		
-exe	0x005143d0	io_CharacterName	io_text	draft	draft	deep	
-exe	0x00514e90	io_CharacterNameMarkup	io_text	draft	draft	deep	
-exe	0x00515960	io_PrintText	io_text	draft	draft	deep	
-exe	0x005176d0	txt_Format	io_text	draft	draft	deep	
+exe	0x005143d0	io_CharacterName	io_text	draft	draft		
+exe	0x00514e90	io_CharacterNameMarkup	io_text	draft	draft		
+exe	0x00515960	io_PrintText	io_text	draft	draft		
+exe	0x005176d0	txt_Format	io_text	draft	draft		
 exe	0x00519010	ls_LanguageOf	ls	byte	readable		
 exe	0x005190a0	ls_GetLanguage	ls	byte	readable		
-exe	0x005190b0	ls_SaveGame	ls	draft	draft	deep	
-exe	0x005194c0	ls_WriteSaveHeader	ls	draft	draft	deep	
+exe	0x005190b0	ls_SaveGame	ls	draft	draft		
+exe	0x005194c0	ls_WriteSaveHeader	ls	draft	draft		
 exe	0x00519a00	unk_Unk519a00	ls	draft	draft	deep	
 exe	0x00519aa0	unk_Unk519aa0	ls	byte	draft	deep	
 exe	0x00519b50	unk_Unk519b50	ls	shape	draft	deep	
@@ -3259,18 +3259,18 @@ exe	0x0051ad30	ls_ActionIndex	ls	byte	readable
 exe	0x0051ad60	ls_ActionAt	ls	byte	readable		
 exe	0x0051ad80	unk_Unk51ad80	ls	draft	draft	deep	
 exe	0x0051aff0	unk_Unk51aff0	ls	draft	draft	deep	
-exe	0x0051b340	unk_Unk51b340	ls	draft	draft	deep	
+exe	0x0051b340	unk_Unk51b340	ls	draft	draft		
 exe	0x0051b890	ls_WriteRelations	ls	shape	readable		
 exe	0x0051b910	unk_Unk51b910	ls	draft	draft	deep	
 exe	0x0051bdb0	ls_WriteAvatars	ls	byte	readable		
 exe	0x0051bdc0	unk_Unk51bdc0	ls	draft	draft	deep	
 exe	0x0051c2f0	unk_Unk51c2f0	ls	draft	draft	deep	
 exe	0x0051c450	ls_WriteHistory	ls	shape	readable		
-exe	0x0051c560	unk_Unk51c560	ls	draft	draft	deep	
+exe	0x0051c560	unk_Unk51c560	ls	draft	draft		
 exe	0x0051c870	unk_Unk51c870	ls	draft	draft	deep	
 exe	0x0051c920	ls_Read	ls	byte	readable		
-exe	0x0051c950	unk_Unk51c950	ls	draft	draft	deep	
-exe	0x0051cee0	ls_ReadSaveHeader	ls	draft	draft	deep	
+exe	0x0051c950	unk_Unk51c950	ls	draft	draft		
+exe	0x0051cee0	ls_ReadSaveHeader	ls	draft	draft		
 exe	0x0051d2d0	unk_Unk51d2d0	ls	draft	draft	deep	
 exe	0x0051d3d0	ls_ReadObjects	ls	byte	readable		
 exe	0x0051d4f0	ls_HookBuildingCB	ls	byte	draft	deep	
@@ -3279,10 +3279,10 @@ exe	0x0051d550	ls_ReadBuildings	ls	draft	draft	deep
 exe	0x0051db00	ls_ReadPlayerRecords	ls	draft	draft	deep	
 exe	0x0051de70	ls_ReadCharacters	ls	draft	draft	deep	
 exe	0x0051e750	ls_ReadCharacter	ls	shape	readable		
-exe	0x0051e900	unk_Unk51e900	ls	draft	draft	deep	
-exe	0x0051f080	unk_Unk51f080	ls	draft	draft	deep	
+exe	0x0051e900	unk_Unk51e900	ls	draft	draft		
+exe	0x0051f080	unk_Unk51f080	ls	draft	draft		
 exe	0x0051f650	ls_ReadRelations	ls	shape	readable		
-exe	0x0051f720	unk_Unk51f720	ls	draft	draft	deep	
+exe	0x0051f720	unk_Unk51f720	ls	draft	draft		
 exe	0x0051fb80	ls_ReadAvatars	ls	byte	readable		
 exe	0x0051fb90	unk_Unk51fb90	ls	draft	draft	deep	
 exe	0x00520000	unk_Unk520000	ls	draft	draft	deep	
@@ -3291,7 +3291,7 @@ exe	0x00520310	unk_Unk520310	ls	draft	draft	deep
 exe	0x005205f0	unk_Unk5205f0	ls	draft	draft	deep	
 exe	0x005206b0	ls_FixupAfterLoad	ls	draft	draft	deep	
 exe	0x00520a30	ls_SendGame	ls	shape	readable		
-exe	0x00520b80	ls_ReceiveGame	ls	draft	draft	deep	
+exe	0x00520b80	ls_ReceiveGame	ls	draft	draft		
 exe	0x00520ec0	sv_UpdateFramesPerTick	sv	byte	readable		
 exe	0x00520ee0	sv_InitTick	sv	byte	readable		
 exe	0x00520f10	sv_UnregisterTick	sv	byte	readable		
@@ -3440,7 +3440,7 @@ exe	0x00531b80	main_SetScreenSaver	main	byte	readable
 exe	0x00531ba0	main_Init	main	byte	readable		
 exe	0x00531c20	main_ShutdownEngine	main	byte	readable		
 exe	0x00531c50	main_OpenScreen	main	draft	readable	deep	
-exe	0x00532160	main_OpenEngine	main	draft	readable	deep	
+exe	0x00532160	main_OpenEngine	main	draft	readable		
 exe	0x005324f0	main_CreateWindow	main	draft	readable	deep	
 exe	0x00532700	main_StartCityGame	main	byte	readable		
 exe	0x005327e0	main_PlayerCountDialog	main	draft	readable	deep	
@@ -3474,7 +3474,7 @@ exe	0x00537db0	main_FreeSoundBanks	main	byte	draft
 exe	0x00537de0	main_Unk537de0	main	byte	draft		
 exe	0x00537f40	main_EndGame	main	byte	draft		
 exe	0x00538140	main_RundenBeginn	main	byte	draft		
-exe	0x005384e0	main_Unk5384e0	main	draft	draft	deep	
+exe	0x005384e0	main_Unk5384e0	main	draft	draft		
 exe	0x00539620	main_ReplaceFigure	main	draft	draft	deep	
 exe	0x00539870	main_RoundReport	main	draft	draft	deep	
 exe	0x0053a250	main_UpdateFigure	main	draft	draft	deep	
@@ -4111,14 +4111,14 @@ exe	0x00589c90	ai_Unk589c90	unk_575860	draft	draft
 exe	0x00589cf0	ai_Unk589cf0	unk_575860	byte	draft		
 exe	0x00589e00	ai_Unk589e00	unk_575860	byte	draft		
 exe	0x00589e50	ai_Unk589e50	unk_575860	draft	draft		
-exe	0x00589f10	ai_Unk589f10	unk_589f10	draft	draft	deep	
+exe	0x00589f10	ai_Unk589f10	unk_589f10	draft	draft		
 exe	0x0058a940	ai_Unk58a940	unk_589f10	byte	draft	deep	
 exe	0x0058a9d0	ai_Unk58a9d0	unk_589f10	byte	draft	deep	
-exe	0x0058aa30	ai_Unk58aa30	unk_589f10	draft	draft	deep	
+exe	0x0058aa30	ai_Unk58aa30	unk_589f10	draft	draft		
 exe	0x0058aba0	ai_Unk58aba0	unk_589f10	draft	draft	deep	
 exe	0x0058ad20	ai_Unk58ad20	unk_589f10	shape	draft	deep	
 exe	0x0058ada0	ai_Unk58ada0	unk_589f10	draft	draft	deep	
-exe	0x0058af50	ai_Unk58af50	unk_589f10	draft	draft	deep	
+exe	0x0058af50	ai_Unk58af50	unk_589f10	draft	draft		
 exe	0x0058b880	ai_Unk58b880	unk_589f10	draft	draft	deep	
 exe	0x0058ba70	ai_Unk58ba70	unk_589f10	draft	draft	deep	
 exe	0x0058bbd0	ai_Unk58bbd0	unk_58bbd0	draft	draft	deep	
@@ -4603,7 +4603,7 @@ exe	0x005d3030	ai_Unk5d3030	unk_58bbd0	draft	draft
 exe	0x005d31c0	ai_Unk5d31c0	unk_58bbd0	draft	draft		
 exe	0x005d3270	ai_Unk5d3270	unk_58bbd0	draft	draft		
 exe	0x005d33b0	ai_ListFiles	unk_5d33b0	byte	readable		
-exe	0x005d34b0	ai_FilePickWindow	unk_5d33b0	draft	draft	deep	
+exe	0x005d34b0	ai_FilePickWindow	unk_5d33b0	draft	draft		
 exe	0x005d3810	ai_MessageBox	unk_5d33b0	draft	draft	deep	
 exe	0x005d3a00	ai_RegisterSaveSlot	unk_5d33b0	draft	draft	deep	
 exe	0x005d3ab0	ai_FillSaveSlots	unk_5d33b0	draft	readable	deep	
@@ -4660,8 +4660,8 @@ exe	0x005dc1a0	ai_SphereVolume	unk_5d33b0	byte	readable
 exe	0x005dc210	ai_PositionShare	unk_5d33b0	byte	readable		
 exe	0x005dc240	ai_InitShot	unk_5d33b0	draft	readable	deep	
 exe	0x005dc3a0	ai_ScatterShot	unk_5d33b0	draft	readable	deep	
-exe	0x005dc4a0	ai_StepShot	unk_5d33b0	draft	readable	deep	
-exe	0x005dc9d0	ai_StepShotSlow	unk_5d33b0	draft	readable	deep	
+exe	0x005dc4a0	ai_StepShot	unk_5d33b0	draft	readable		
+exe	0x005dc9d0	ai_StepShotSlow	unk_5d33b0	draft	readable		
 exe	0x005dcf00	ai_ShotHitsGround	unk_5d33b0	draft	readable	deep	
 exe	0x005dd090	ai_NormalizeEffectScale	unk_5d33b0	draft	readable	deep	
 exe	0x005dd100	ai_SolveCannonAim	unk_5d33b0	draft	readable	deep	

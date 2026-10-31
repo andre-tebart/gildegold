@@ -12,6 +12,7 @@ Migrated from the notes/tus.md table on 2026-10-23 (the row's prose, unchanged):
 - Was: d3_obj.c (unk_448ac0.c, round 12) joined layout 2026-10-22
 
 ## Open work
+- d3_ScreenToUV 0x448e60 (match-base 2026-10-31, deep, size-explained 507 vs 535): reconstructed the ray direction locals (dx = sx - d3_CenterX, dy = -(sy - d3_CenterY), dz = d3_ScaleX), the plane split (r + s > 1.0 falls into the second triangle first) and the inclusive in-triangle test (r >= 0 && r <= 1 && s >= 0 && s <= 1), hz as a local. Remaining: FPU spill scheduling of the plane intersection (t, the three t*d products, hx / hy spilled in the original), fld/fld/fcompp vs fcom [mem] in the min / best loops, the min loop assigning with fld/fstp where ours copies through edx.
 - **headers (2026-10-30, typing pass 2)**: head.c includes d3.h, d3_vec.h, d3_engine.h, d3_mir.h, d3_d3d.h, d3_fl.h, d3_interface.h, bio.h, d3_light.h, data_views.h, f3init.h; keeps 1 cast / view macros with @original byte evidence (the address and the matched caller are in each comment): dd_ClearB; views / casts without byte evidence of their own (weak definitions or drafts' spellings, notes/headers.md debt item 1): d3_PointToRefD, d3_WorldMatrixD.
 - see notes/units/ch.md, Open work: "Round 7 leftovers: ch_InitWalk (15 bytes, stack-slot order), ch_ActWalk / ch_ActWalkCells ..."
 - see notes/units/d3_engine.md, Open work: "Header cleanup from round 7: d3_engine.h's d3_Unk4439e0 is d3fl_Draw(D3FLMAP *, char) and ..."

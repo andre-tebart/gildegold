@@ -12,8 +12,9 @@ Migrated from the notes/tus.md table on 2026-10-23 (the row's prose, unchanged):
 - Was: unk_430130.c (round 12)
 
 ## Open work
+- vfs_Tfopen 0x430470 (match-base 2026-10-31, deep, size-explained 472 vs 490): the zip loop and the pos > 0 branch now share the unzOpenCurrentFile / pool_Alloc block (goto found) as in the original, notfound sits after unzClose, early check returns f. Remaining: f is memory-resident in the original (name in edi, e in ebp), ours keeps f in edi as the zero constant; the two return-0 sites keep separate epilogues in the original (xor eax,eax before the pops after err_Message, after three pops after MakeDirs); the notfound block is moved to the end by ours.
 - vfs (unk_430130.c), after round 10: vfs_AddFile (one register), vfs_Unk42fa10 (ebx/ebp swap), vfs_FindDir
-  (esi vs ebx), vfs_MemOpen, vfs_Tfopen (only 2 tries; try the single-return style) (notes/units/vfs.md).
+  (esi vs ebx), vfs_MemOpen (notes/units/vfs.md).
 
 ## vfs3 (unk_430130.c nonmatching functions) [vfs3]
 

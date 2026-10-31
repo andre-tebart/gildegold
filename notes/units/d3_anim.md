@@ -11,6 +11,8 @@ Migrated from the notes/tus.md table on 2026-10-23 (the row's prose, unchanged):
 - Range then: 0x4315c0..0x435950
 
 ## Open work
+- d3anim_RootPosAt 0x432190 (was d3anim_Unk432190; match-base 2026-10-31, deep, size-explained 210 vs 251): D3_OBJOFFSET replaced by D3OBJECT.posOffset. The original keeps the two matrix-transform blocks (relative / else branch) apart where ours tail-merges them; inlining the else branch's sum drops the merge (781 vs 836 bytes) but gives x-first operand order where the original is z-first.
+- d3anim_StepObject 0x432750 (match-base 2026-10-31, deep, size-explained 1521 vs 1578): the original has no pointer locals s / c / keys / k0 / k1 / nk (every access repeats mat->ctl[i].slots[j].x / P->keys[P->key].x; data stays a local), the path stepping converts (int)acc in both arms; that moved the size from 4478 to 5161 bytes (original 5056) and the instruction count from 1397 to 1521. Remaining: float spill pairs (+21 fstp, +14 fld, frame 0xbc vs 0x70), register allocation; readability Q2 (P->unk10), Q4 (OBJ_LAST / SLOT_F / SLOT_TURN / D3_OBJPATH and 3 casts) still open.
 - Nonmatching functions (177 after round 17): `uv run ledger check --verbose | grep FAIL`; per-function attempts in
   notes/vc6-matching.md and notes/units/<unit>.md (worker sections d3_d3d, dd_vesa, net, script, sblib, d3_engine, d3_anim, evt,
   d3_left, d3_engine2, start401, sfx, d3fl, ch, ch2, ch3, ch4, map, ch7, d3fl4, d3if, d3if2; round 6 left none). Only worth a worker when grouped by TU; d3_anim.c has 5 close ones (1-16 bytes

@@ -4,6 +4,9 @@ Unit notes: range and status are computed (`uv run ledger units`), the typed fac
 leftovers) comes first; below it the reports of the old worker rounds about this unit (merged 2026-10-22), one
 section per worker, in address order of their scopes, original text. Old "round k" marks mean nothing now.
 
+## Open work
+- txt_OpenText 0x42cbc0 (match-base 2026-10-31, deep, size-explained 1729 vs 1774): the call sequence equals the original's (106 calls). The original keeps a zero constant in ebp and the file name in ebx (ours the reverse), keeps i in a stack slot with its final value stored after the loops (mov [i],0x80 / 0x4800), keeps a dead memset of txt_Random and the empty if (txt_Count == 0x71b) as cmp/jne +0, and has one more separately tailed return block (txt_Buffer = NULL stored as an immediate in the 'Could not open TextFile' block). Looks like the optimiser state of a big function (no final-value / dead-store removal); none of the tried bodies / goto / memset spellings reproduces the retained dead code.
+
 ## Worker "sfx" (round 4): 0x42c050..0x42e2a0 [sfx]
 
 ### Report

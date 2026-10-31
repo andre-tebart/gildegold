@@ -12,6 +12,7 @@ Migrated from the notes/tus.md table on 2026-10-23 (the row's prose, unchanged):
 - Was: unk_45b510.c (round 12)
 
 ## Open work
+- d3s_MeshFromMap 0x45b510 (match-base 2026-10-31, deep, 289 vs 297): the second loop reads the heights through the vertex's pos pointer (row[...].pos[1], the .y field is never set), loop invariants xs = x0 * cell[0] + origin[0] and ys = add + origin[1] hoisted, steep an int. Remaining: allocation (polygon pointer in esi / uv pointer in ecx in the original, ours the reverse) and the slots of x0 / z0 / nx / nz.
 - **headers (2026-10-30, typing pass 2)**: head.c includes d3.h, d3_d3d.h, d3_sm.h, d3s.h, data_views.h; no @original cast or view.
 - shfix leftovers after round 19 (notes/units/d3s.md [shfix], notes/units/unk_4591a0.md [shfix2]):
   d3_Unk4591a0 (5, `1.0f - r` operand order), d3_Unk458e70 (9), d3_GetBoxVerts (23), d3s_Unk459fb0 (234),
