@@ -1068,7 +1068,7 @@ int main_EnterHostAddress(void)
     run = sv_RunFrame((int)main_EnterHostAddress, 0x24087);
     while (run != 0) {
         if (U_I(((unsigned)&dm_L + 0x20)) != 0 || *(char *)(unsigned)&kb_Last == 1)
-            U_I((unsigned)&sv_PopRequest) = 1;
+            sv_PopRequest = 1;
         if ((U_I((unsigned)&d2_ClickedId) != -1 || *(char *)(unsigned)&kb_Last == 0x1c) && (ai_Unk5fe710 == ok || *(char *)(unsigned)&kb_Last == 0x1c)) {
             r = 1;
             s = (char *)d2_GetObjValue(ed);
@@ -1080,7 +1080,7 @@ int main_EnterHostAddress(void)
                 i++;
             } while (c != 0);
             WritePrivateProfileStringA("Network", "Host", buf, (char *)(unsigned)&ai_OptionsFile);
-            U_I((unsigned)&sv_PopRequest) = 1;
+            sv_PopRequest = 1;
         }
         run = sv_RunFrame((int)main_EnterHostAddress, 0x24087);
     }
@@ -1423,7 +1423,7 @@ void main_MoneyDialog(void)
     run = sv_RunFrame((int)main_MoneyDialog, 0x24087);
     while (run != 0) {
         if (*(char *)(unsigned)&kb_Last == 1)
-            U_I((unsigned)&sv_PopRequest) = 1;
+            sv_PopRequest = 1;
         run = sv_RunFrame((int)main_MoneyDialog, 0x24087);
     }
     d2_RemoveWindow(dlg);
@@ -2086,10 +2086,10 @@ int main_ChooseModel(int job)
 }
 /* 0x5359f0, the family choice of the character creation ("Menu\CHOOSECITY_HEADER" over the sky "Sky_Mittel_02"): nine template persons (0x5344f0: thief / gypsy 0 / 8, craftsmen 1 / 7, fighter 4, traders 3 / 5, priest 2 / 6) stand
    in the scene; the player clicks one for each of the four slots 0x75e180 [4] (father) and [5] (mother) (the clicked person 0x6f22e4 + 0x200 gets the slot in +0x23c and the dummy name "dummy_VATER" / "dummy_MUTTER" ..), the
-   value stored in the slot is the profession group 0 .. 4; with both slots set the talent choice 0x534610 and the model choice 0x534b30 follow; returns 1 when the character was created (ROUGH: the dummy name table
-   dn[6] of 0x30 bytes, entries 4 / 5 are the only ones used) */
+   value stored in the slot is the profession group 0 .. 4; with both slots set the talent choice main_ChooseTalents and the model choice main_ChooseModel follow; returns 1 when the character was created (the dummy name table
+   dn[6] of 0x30 bytes, entries 4 / 5 are the only ones used) @deep read against the original and corrected: the odd slot (mother, k=5) is tested first in both the camera target choice (+0xfc.. before +0xe4..) and the click handling, both branches share the slot store; k >= 6; talents ok -> (ai_Unk58b880(0xc6) && main_ChooseModel(job)) else pop with ret 0, then if (ret == 0) d2_SetViewEnabled (the original's jump threading). Left is allocation only: the original pushes ebp in the prologue and keeps f in ebp (ours esi), zeroes ret / fade via ebp before the dn table copies (ours esi after them), and has one more stack slot (frame 0x16c vs 0x168: dn at esp+0x5c vs 0x58). Q7 / Q4 open: ch_* (ch.h does not include into main), the ai_Unk5fb5b0 / ai_Unkfc2dec records are untyped */
 
-int main_Unk5359f0(int unused)
+int main_ChooseFamily(int unused)
 {
     char dn[6][0x30] = { "dummy_GROSSVATER_VAETERLICH", "dummy_GROSSMUTTER_VAETERLICH", "dummy_GROSSVATER_MUETTERLICH", "dummy_GROSSMUTTER_MUETTERLICH", "dummy_VATER", "dummy_MUTTER" };
     int o1, o2, o3, o4, o5, o6, o7, o8, o9, f, run, k, sel, v, h, ret, scene, redraw;
@@ -2133,7 +2133,7 @@ int main_Unk5359f0(int unused)
         U_I((unsigned)&full_data_624938) = -1;
     }
     U_I((unsigned)&d2_CutsceneActive) = 0;
-    run = sv_RunFrame((int)main_Unk5359f0, 0x12d6);
+    run = sv_RunFrame((int)main_ChooseFamily, 0x12d6);
     if (run != 0) {
         do {
             if (redraw) {
@@ -2144,20 +2144,20 @@ int main_Unk5359f0(int unused)
                             d2_SetForm(f, 0);
                             io_PrintText((unsigned)"$C");
                             io_PrintText(0x1ae6, k + 0x1aea);
-                            if (k % 2 == 0) {
-                                r1[0] = *(int *)(U_I((unsigned)&ai_Unkfc2dec) + 0xe4);
-                                r1[1] = *(int *)(U_I((unsigned)&ai_Unkfc2dec) + 0xe8);
-                                r1[2] = *(int *)(U_I((unsigned)&ai_Unkfc2dec) + 0xec);
-                                r2[0] = *(int *)(U_I((unsigned)&ai_Unkfc2dec) + 0xf0);
-                                r2[1] = *(int *)(U_I((unsigned)&ai_Unkfc2dec) + 0xf4);
-                                r2[2] = *(int *)(U_I((unsigned)&ai_Unkfc2dec) + 0xf8);
-                            } else {
+                            if (k % 2 != 0) {
                                 r1[0] = *(int *)(U_I((unsigned)&ai_Unkfc2dec) + 0xfc);
                                 r1[1] = *(int *)(U_I((unsigned)&ai_Unkfc2dec) + 0x100);
                                 r1[2] = *(int *)(U_I((unsigned)&ai_Unkfc2dec) + 0x104);
                                 r2[0] = *(int *)(U_I((unsigned)&ai_Unkfc2dec) + 0x108);
                                 r2[1] = *(int *)(U_I((unsigned)&ai_Unkfc2dec) + 0x10c);
                                 r2[2] = *(int *)(U_I((unsigned)&ai_Unkfc2dec) + 0x110);
+                            } else {
+                                r1[0] = *(int *)(U_I((unsigned)&ai_Unkfc2dec) + 0xe4);
+                                r1[1] = *(int *)(U_I((unsigned)&ai_Unkfc2dec) + 0xe8);
+                                r1[2] = *(int *)(U_I((unsigned)&ai_Unkfc2dec) + 0xec);
+                                r2[0] = *(int *)(U_I((unsigned)&ai_Unkfc2dec) + 0xf0);
+                                r2[1] = *(int *)(U_I((unsigned)&ai_Unkfc2dec) + 0xf4);
+                                r2[2] = *(int *)(U_I((unsigned)&ai_Unkfc2dec) + 0xf8);
                             }
                             d3anim_FreePath(U_I((unsigned)&ai_Unkfc2dec));
                             U_I((unsigned)&d3t_CamMoving) = 0;
@@ -2171,7 +2171,7 @@ int main_Unk5359f0(int unused)
                 redraw = 0;
             }
             if (U_I(((unsigned)&dm_L + 0x20)) != 0)
-                U_I((unsigned)&sv_PopRequest) = 1;
+                sv_PopRequest = 1;
             if (U_I((unsigned)&ai_ClickedObject) != 0 && (sel = *(int *)(U_I((unsigned)&ai_ClickedObject) + 0x200)) != 0) {
                 if (*(int *)(sel + 0x23c) == -1) {
                     v = 0;
@@ -2185,24 +2185,25 @@ int main_Unk5359f0(int unused)
                         v = 4;
                     else if (sel == o3 || sel == o4)
                         v = 1;
-                    if (k % 2 == 0) {
-                        if (sel == o1 || sel == o6 || sel == o8 || sel == o3 || sel == o5) {
-                            k = 4;
-                            goto lset;
-                        }
-                    } else if (sel == o2 || sel == o7 || sel == o9 || sel == o4) {
+                    if (k % 2 != 0) {
+                        if (sel != o2 && sel != o7 && sel != o9 && sel != o4)
+                            goto lskip;
                         k = 5;
-lset:
-                        ((int *)(unsigned)&main_Family)[k] = v;
-                        *(int *)(sel + 0x23c) = k;
-                        h = d3_FindObject(0, 0x100, 0, dn[k]);
-                        if (h != 0)
-                            ch_WalkToObjectTurn(sel, h);
+                    } else {
+                        if (sel != o1 && sel != o6 && sel != o8 && sel != o3 && sel != o5)
+                            goto lskip;
+                        k = 4;
                     }
+                    ((int *)(unsigned)&main_Family)[k] = v;
+                    *(int *)(sel + 0x23c) = k;
+                    h = d3_FindObject(0, 0x100, 0, dn[k]);
+                    if (h != 0)
+                        ch_WalkToObjectTurn(sel, h);
                 }
+lskip:
                 redraw = 1;
             }
-            if (5 < k) {
+            if (k >= 6) {
                 d2_SetForm(f, 0);
                 io_PrintText((unsigned)"$C");
                 d2_SetViewEnabled(f, 0);
@@ -2210,22 +2211,19 @@ lset:
                 U_I((unsigned)&d3t_CamMoving) = 0;
                 U_I((unsigned)&d3t_CamMove) = 0;
                 d3t_PlaceObjectV(U_I((unsigned)&ai_Unkfc2dec), U_I((unsigned)&ai_Unkfc2dec) + 0x114, U_I((unsigned)&ai_Unkfc2dec) + 0x120, 0x50, 8);
-                if (main_ChooseTalents() == 0) {
-                    U_I((unsigned)&sv_PopRequest) = 1;
-                    ret = 0;
-                    d2_SetViewEnabled(f, 1);
-                } else {
-                    h = ai_Unk58b880(0xc6);
-                    if (h == 0 || main_ChooseModel(*(unsigned char *)((unsigned)&init_PlayerProfile + 0x3)) == 0) {
-                        if (ret == 0)
-                            d2_SetViewEnabled(f, 1);
-                    } else {
-                        U_I((unsigned)&sv_PopRequest) = 1;
+                if (main_ChooseTalents() != 0) {
+                    if (ai_Unk58b880(0xc6) != 0 && main_ChooseModel(init_PlayerProfile.job) != 0) {
+                        sv_PopRequest = 1;
                         ret = 1;
                     }
+                } else {
+                    sv_PopRequest = 1;
+                    ret = 0;
                 }
+                if (ret == 0)
+                    d2_SetViewEnabled(f, 1);
             }
-            run = sv_RunFrame((int)main_Unk5359f0, 0x12d6);
+            run = sv_RunFrame((int)main_ChooseFamily, 0x12d6);
         } while (run != 0);
         if (ret == 1) {
             fade = (unsigned char *)d2_StartFade(0, 0, (int)*(short *)(unsigned)&d2_ScreenW, (int)*(short *)(unsigned)&d2_ScreenH, "BLACK", 0x5a, 1);
@@ -2356,7 +2354,7 @@ int main_Unk5361d0(int mask, int flag)
                 goto lredraw;
         } else {
             if (stage == 0 && flag == 0) {
-                U_I((unsigned)&sv_PopRequest) = 1;
+                sv_PopRequest = 1;
                 if (redraw)
                     goto lredraw;
             } else {
@@ -2448,7 +2446,7 @@ lredraw:
             *(unsigned char *)((unsigned)&init_PlayerProfile + 0x2) = 0x12;
             U_I(((unsigned)&init_PlayerProfile + 0x4)) = *(int *)(U_I((unsigned)&d2_Objs) + 8 + U_I(((unsigned)&d2_RadioSel + 0x4) + (list * 0x23 + U_I((unsigned)&d2_RadioSel + list * 0x8c)) * 4) * 0x2ec);
             ret = 1;
-            U_I((unsigned)&sv_PopRequest) = 1;
+            sv_PopRequest = 1;
         }
         run = sv_RunFrame((int)main_Unk5361d0, mask);
         if (run == 0) {
@@ -2521,7 +2519,7 @@ int main_Unk536980(void)
         }
         d2_MenuNavigate(grp);
         if (U_I(((unsigned)&dm_L + 0x20)) != 0 || *(char *)(unsigned)&kb_Last == 1)
-            U_I((unsigned)&sv_PopRequest) = 1;
+            sv_PopRequest = 1;
         if (U_I((unsigned)&d2_ClickedId) == 0 || *(char *)(unsigned)&kb_Last == 0x1c || again) {
             if (back)
                 goto lback;
@@ -2563,14 +2561,14 @@ lback:
                     if (r == 1) {
                         U_I((unsigned)&d2_CutsceneActive) = r;
                         U_I((unsigned)&full_data_624938) = sv_OpenMessageBox(U_I((unsigned)&full_data_1440da4), 0);
-                        if (main_Unk5359f0(0) == 0) {
+                        if (main_ChooseFamily(0) == 0) {
                             d3if_SelectScene(0, 0);
 lback2:
                             back = 1;
                         } else {
 lok:
                             ret = 1;
-                            U_I((unsigned)&sv_PopRequest) = 1;
+                            sv_PopRequest = 1;
                         }
                     } else if (r == 0) {
                         ret = ai_Unk58b880(0xc6);
@@ -2628,13 +2626,13 @@ int main_Unk536d80(void)
         d2_MenuNavigate(g);
         if (U_I(((unsigned)&dm_L + 0x20)) != 0 || *(char *)(unsigned)&kb_Last == 1) {
             r = -1;
-            U_I((unsigned)&sv_PopRequest) = 1;
+            sv_PopRequest = 1;
         }
         if (U_I((unsigned)&d2_ClickedId) == 0 || *(char *)(unsigned)&kb_Last == 0x1c) {
             r = 1;
-            U_I((unsigned)&sv_PopRequest) = 1;
+            sv_PopRequest = 1;
         } else if (U_I((unsigned)&d2_ClickedId) == 1)
-            U_I((unsigned)&sv_PopRequest) = 1;
+            sv_PopRequest = 1;
         run = sv_RunFrame((int)main_Unk536d80, 0xc6);
     } while (1);
 }
@@ -2668,7 +2666,7 @@ int main_Unk536e80(void)
         d2_MenuNavigate(g);
         if (U_I(((unsigned)&dm_L + 0x20)) != 0 || *(char *)(unsigned)&kb_Last == 1) {
             r = 0;
-            U_I((unsigned)&sv_PopRequest) = 1;
+            sv_PopRequest = 1;
         }
         if (U_I((unsigned)&d2_ClickedId) == 0 || *(char *)(unsigned)&kb_Last == 0x1c) {
             if (ai_Unk5fe710 == b[0])
@@ -2682,9 +2680,9 @@ int main_Unk536e80(void)
             else if (ai_Unk5fe710 == b[4])
                 U_I((unsigned)&ai_Difficulty) = 4;
             r = 1;
-            U_I((unsigned)&sv_PopRequest) = 1;
+            sv_PopRequest = 1;
         } else if (U_I((unsigned)&d2_ClickedId) == 1)
-            U_I((unsigned)&sv_PopRequest) = 1;
+            sv_PopRequest = 1;
         run = sv_RunFrame((int)main_Unk536e80, 0xc6);
     } while (1);
 }
@@ -2724,7 +2722,7 @@ void main_Unk537040(int n)
     run = sv_RunFrame((int)main_Unk537040, 0xc6);
     while (run != 0) {
         if (U_I(((unsigned)&dm_L + 0x20)) != 0 || *(char *)(unsigned)&kb_Last == 1 || (U_I((unsigned)&d2_ClickedId) == 0 && ai_Unk5fe710 == ok))
-            U_I((unsigned)&sv_PopRequest) = 1;
+            sv_PopRequest = 1;
         run = sv_RunFrame((int)main_Unk537040, 0xc6);
     }
     i = 0;
@@ -2844,7 +2842,7 @@ int main_ChooseCity(int unused, int host)
         if (U_I(((unsigned)&dm_L + 0xc)) != 0) {
             U_I((unsigned)&ai_ClickedObject) = h;
         } else if (U_I(((unsigned)&dm_L + 0x20)) != 0 || *(char *)(unsigned)&kb_Last == 1) {
-            U_I((unsigned)&sv_PopRequest) = 1;
+            sv_PopRequest = 1;
         }
         if (U_I((unsigned)&ai_ClickedObject) != 0 && strncmp((char *)U_I((unsigned)&ai_ClickedObject), "stadt_", 6) == 0)
             sel = U_I((unsigned)&ai_ClickedObject);
@@ -2909,11 +2907,11 @@ lgo:
                 d2_SetViewEnabled(f2, 0);
                 d2_SetViewEnabled(f1, 0);
                 if (host != 0) {
-                    U_I((unsigned)&sv_PopRequest) = 1;
+                    sv_PopRequest = 1;
                     ret = 1;
                 } else {
                     if (main_Unk536e80() != 0 && main_Unk536980() != 0) {
-                        U_I((unsigned)&sv_PopRequest) = 1;
+                        sv_PopRequest = 1;
                         ret = 1;
                         d2_SetViewEnabled(f2, 1);
                     }
@@ -3467,11 +3465,11 @@ void main_Unk5384e0(void)
             {
                 char *rea = getenv("REA_START");
                 if (rea != 0 && strcmp(rea, "tutorial") == 0)
-                    U_I((unsigned)&sv_PopRequest) = 1;
+                    sv_PopRequest = 1;
             }
 #endif
             if (U_I((unsigned)&d2_ClickedId) == 0 || *(char *)(unsigned)&kb_Last == 0x1c)
-                U_I((unsigned)&sv_PopRequest) = 1;
+                sv_PopRequest = 1;
             r = sv_RunFrame((int)main_Unk5384e0, 0x24087);
         }
         fade = (unsigned char *)d2_StartFade(0, 0, (int)*(short *)(unsigned)&d2_ScreenW, (int)*(short *)(unsigned)&d2_ScreenH, "BLACK", 0x1e, 1);
@@ -3947,7 +3945,7 @@ void main_Unk539870(void)
         while (t != 0) {
             sv_Unk52fad0();
             if (U_I((unsigned)&d2_ClickedId) == 0 || *(char *)(unsigned)&kb_Last == 0x1c)
-                U_I((unsigned)&sv_PopRequest) = 1;
+                sv_PopRequest = 1;
             t = sv_RunFrame((int)main_Unk539870, 0x24087);
         }
         sv_Unk52fa90();
@@ -4324,7 +4322,7 @@ void main_Unk53b2e0(void)
             i = sv_RunFrame((int)main_Unk53b2e0, 0x66087);
             while (i != 0) {
                 if (U_I((unsigned)&d2_ClickedId) == 0)
-                    U_I((unsigned)&sv_PopRequest) = 1;
+                    sv_PopRequest = 1;
                 i = sv_RunFrame((int)main_Unk53b2e0, 0x66087);
             }
             d2_CloseView(w);
