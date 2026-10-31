@@ -294,7 +294,7 @@ extern unsigned char ai_TimeHour;
 extern float ai_Unk617830[];
 extern float ai_Unk617840[];
 extern int ai_Unk623884;
-extern char * ai_Unk75ec60;
+extern char * sv_SelectedObject;
 extern int d2_ClickedId;
 extern short d2_MouseX;
 extern short d2_MouseY;
@@ -472,7 +472,7 @@ extern char * ai_Unk6f22e8;
 extern struct AIBLD *ai_MarketBuilding;
 extern int ai_Unk6f2304;
 extern int ai_Unk6f2318;
-extern char * ai_Unk75ec60;
+extern char * sv_SelectedObject;
 extern int sv_PanelForm;
 extern unsigned short * sv_PanelShown;
 
@@ -562,7 +562,7 @@ extern char * ai_PlayerBuilding;
 extern int ai_Unk6f22cc;
 extern int ai_Unk6f22d0;
 extern char * ai_Unkfc2dec;
-extern GAPDATA full_data_6f2410[];
+extern int snd_RoomBank;
 extern int sv_FrameBase;
 extern int sv_FrameDepth;
 extern int sv_PopRequest;
@@ -595,7 +595,7 @@ extern char ch_StepSample[];
 extern int d2_CutsceneActive;
 extern GAPDATA full_data_6237c8[];
 extern GAPDATA full_data_6f2314[];
-extern GAPDATA full_data_6f2410[];
+extern int snd_RoomBank;
 extern int sv_FrameBase;
 extern int sv_FrameDepth;
 extern unsigned short * sv_PanelShown;
@@ -3375,20 +3375,20 @@ void ai_GameFrame(void)
             sv_Unk527840(U_I((unsigned)&full_data_6f22f4));
         if (U_I((unsigned)&d2_ClickedId) != -1 && U_I((unsigned)&ai_Unk5fe710) == U_I((unsigned)&ai_Unk623884))
             ai_Unk5909a0();
-        if (U_I((unsigned)&ai_Unk75ec60) != 0 &&
-            (u = unk_Unk503530(U_W((unsigned)&ai_PlayerId), U_I((unsigned)&ai_Unk75ec60), 0, 0), U_I((unsigned)&ai_Unk75ec60) != 0) &&
-            U_I((unsigned)&full_data_6f22f4) == U_I((unsigned)&ai_Unk75ec60) &&
+        if (U_I((unsigned)&sv_SelectedObject) != 0 &&
+            (u = unk_Unk503530(U_W((unsigned)&ai_PlayerId), U_I((unsigned)&sv_SelectedObject), 0, 0), U_I((unsigned)&sv_SelectedObject) != 0) &&
+            U_I((unsigned)&full_data_6f22f4) == U_I((unsigned)&sv_SelectedObject) &&
             ((U_I(((unsigned)&dm_L + 0x1c)) != 0 || (U_I(((unsigned)&dm_L + 0xc)) != 0 && U_I((unsigned)&d2_PointerLook) == 0xb))) &&
-            (u & 1) != 0 && (*(unsigned char *)(U_I((unsigned)&ai_Unk75ec60) + 0x5a) & 1) == 0) {
-            v = gm_IsHomeType(U_I((unsigned)&ai_Unk75ec60));
-            if (v == 0 || (v = ai_Unk576340(0x1b, U_I((unsigned)&ai_Unk75ec60), 0, 0), v != 1)) {
-                v = gm_IsType10(U_I((unsigned)&ai_Unk75ec60));
+            (u & 1) != 0 && (*(unsigned char *)(U_I((unsigned)&sv_SelectedObject) + 0x5a) & 1) == 0) {
+            v = gm_IsHomeType(U_I((unsigned)&sv_SelectedObject));
+            if (v == 0 || (v = ai_Unk576340(0x1b, U_I((unsigned)&sv_SelectedObject), 0, 0), v != 1)) {
+                v = gm_IsType10(U_I((unsigned)&sv_SelectedObject));
                 if (v == 0 &&
-                    (v = ai_Unk576340(0x19, U_I((unsigned)&ai_Unk75ec60), 0,
-                                      *(unsigned short *)(U_I((unsigned)&ai_Unk75ec60) + 0x29)), v == 1))
-                    ai_Unk59e420(U_I((unsigned)&ai_Unk75ec60), *(unsigned short *)(U_I((unsigned)&ai_Unk75ec60) + 0x29));
+                    (v = ai_Unk576340(0x19, U_I((unsigned)&sv_SelectedObject), 0,
+                                      *(unsigned short *)(U_I((unsigned)&sv_SelectedObject) + 0x29)), v == 1))
+                    ai_Unk59e420(U_I((unsigned)&sv_SelectedObject), *(unsigned short *)(U_I((unsigned)&sv_SelectedObject) + 0x29));
             } else {
-                ai_Unk59ee40(U_I((unsigned)&ai_Unk75ec60));
+                ai_Unk59ee40(U_I((unsigned)&sv_SelectedObject));
             }
         }
         if (U_I((unsigned)&ai_MarketBuilding) != 0)
@@ -7188,7 +7188,7 @@ void ai_Unk59a560(int param_1, int room)
 
 void ai_Unk59a710(int param_1, int param_2)
 {
-    U_I((unsigned)&ai_Unk75ec60) = 0;
+    U_I((unsigned)&sv_SelectedObject) = 0;
     U_I((unsigned)&ai_Unk6f2304) = 0;
     sv_Unk529fb0();
     sv_ClearSelection();
@@ -8792,7 +8792,7 @@ void ai_Unk59e0a0(int param_1, unsigned short param_2)
     d3_SetObjectRot((void *)U_I((unsigned)&ai_Unkfc2dec), (void *)(U_I((unsigned)&ai_Unkfc2dec) + 0x20));
     U_I((unsigned)&ai_Unk6f22cc) = 0;
     U_I((unsigned)&ai_Unk6f22d0) = 0;
-    sb_PlaySample(U_I((unsigned)&full_data_6f2410), "RaumWechseln_s", 1, 0x3f, 0x7f, 0, 0);
+    sb_PlaySample(snd_RoomBank, "RaumWechseln_s", 1, 0x3f, 0x7f, 0, 0);
 }
 /* 0x59e170, the opening hours of a building kind (112 B): the table 0x62afa0 (kind dword, the open byte +4,
    the close byte +5, terminated by 0) is looked up by the kind byte of the building record 0x7e3f30 + *param_1
@@ -8929,9 +8929,9 @@ void ai_Unk59e420(unsigned char *param_1, int param_2)
     if (param_2 == 0)
         U_I((unsigned)&ai_PlayerBuilding) = 0;
     if (*(unsigned short *)(param_1 + 0x27) == U_W((unsigned)&ai_PlayerId))
-        sb_PlaySample(U_I((unsigned)&full_data_6f2410), "EigenesGebaeudeBetreten_s", 1, 0x3f, 0x7f, 0, 0);
+        sb_PlaySample(snd_RoomBank, "EigenesGebaeudeBetreten_s", 1, 0x3f, 0x7f, 0, 0);
     else
-        sb_PlaySample(U_I((unsigned)&full_data_6f2410), "FremdesGeschaeftBetreten_s", 1, 0x3f, 0x7f, 0, 0);
+        sb_PlaySample(snd_RoomBank, "FremdesGeschaeftBetreten_s", 1, 0x3f, 0x7f, 0, 0);
     strcpy((char *)(unsigned)&ch_StepSample, "normal_s");
     gm_Query(U_I(param_1 + 0x5d), 1, 0, *(unsigned short *)(param_1 + 0x29));
     snd_LoadBuildingVoices(param_1);
@@ -9061,7 +9061,7 @@ void ai_Unk59e420(unsigned char *param_1, int param_2)
             U_I((unsigned)&ai_Unk75fb90) = saved4;
             U_I((unsigned)&ai_Unk75fb94) = saved5;
             U_I((unsigned)&ai_Unk75fb98) = saved6;
-            sb_PlaySample(U_I((unsigned)&full_data_6f2410), "GebaeudeVerlassen_s", 1, 0x3f, 0x7f, 0, 0);
+            sb_PlaySample(snd_RoomBank, "GebaeudeVerlassen_s", 1, 0x3f, 0x7f, 0, 0);
             return;
         }
     }

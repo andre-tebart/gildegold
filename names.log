@@ -116,3 +116,14 @@
 2026-10-31T17:38:26 0x00536e80 func main_Unk536e80 -> main_ChooseDifficulty by:main why:the difficulty choice before a new game: five level buttons, ai_Difficulty 0 .. 4 (0x536e80)
 2026-10-31T17:39:45 0x00537040 func main_Unk537040 -> main_ChooseOpponents by:main why:the opponent selection "menu\choose_opponents": n slider rows over ai_Opponents (0x537040)
 2026-10-31T19:05:18 0x00537980 func main_Unk537980 -> main_LoadingScreen by:main why:shows the Loading_game / Loading_net form with a progress slider before a game starts (strings, caller game start)
+2026-10-31T19:08:04 0x00760618 data ai_Unk760618 -> d3t_Rain by:main why:the rain system, created by d3t_CreateRain (sv.c) and freed by d3t_DeleteRain here; *it is the rain level (f3snd)
+2026-10-31T19:08:09 0x0076061c data ai_Unk76061c -> d3t_Snow by:main why:the snow system: d3t_FreeSnow(ai_Unk76061c) here, d3t_CreateSnow in sv
+2026-10-31T19:08:15 0x00760620 data ai_Unk760620 -> d3_SkyLayer0 by:main why:first sky layer, d3sky_CreateLayerK("Sky_Schoen_01") in sv.c; main frees the layers 0x760620..0x760638
+2026-10-31T19:08:20 0x00760624 data ai_Unk760624 -> d3_SkyLayer1 by:main why:second sky layer, d3sky_CreateLayerK("Sky_Schoen_02") in sv.c
+2026-10-31T19:08:24 0x00760628 data ai_Unk760628 -> d3_SkyLayer2 by:main why:third sky layer, d3sky_CreateLayerK("sky_dunkel_01") in sv.c
+2026-10-31T19:08:29 0x006f0d8c data ai_Unk6f0d8c -> cm_SkipEvents by:main why:set to 1 when the event is replayed (replay flag / network), cleared at event start; every event script / dialog function returns early on it (cm.c)
+2026-10-31T19:08:39 0x0075ec60 data ai_Unk75ec60 -> sv_SelectedObject by:main why:set to the clicked object o in sv.c (with ai_Unk6f2304 = o+0x61), tested as b by the panel progress update, cleared at game end/start
+2026-10-31T19:09:06 0x006f2408 data full_data_6f2408 -> snd_ThunderBank by:main why:sample bank handle: natur\blitzunddonner.sbf (thunder), played as DonnerMittel_s (sv.c)
+2026-10-31T19:09:08 0x006f240c data full_data_6f240c -> snd_BookBank by:main why:sample bank handle: objekte\buecher.sbf, played as Aufklappen_s / Zuklappen_s / Umblaettern_s
+2026-10-31T19:09:11 0x006f2410 data full_data_6f2410 -> snd_RoomBank by:main why:sample bank handle: objekte\TuerenUndRaeume.sbf, played as RaumWechseln_s / GebaeudeVerlassen_s
+2026-10-31T19:09:18 0x006f2414 data full_data_6f2414 -> snd_TransportBank by:main why:sample bank handle: objekte\Transporter.sbf (loaded / freed in main only)

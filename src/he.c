@@ -116,8 +116,8 @@ extern const char ai_AxisPair[];
 extern GAPDATA full_data_60d0d4[];
 extern GAPDATA full_data_6f2634[];
 extern struct G16TRACKHANDLES snd_TrackHandles;
-extern int * ai_Unk760618;
-extern int ai_Unk76061c;
+extern int * d3t_Rain;
+extern int d3t_Snow;
 extern int ai_GameOver;
 extern char * ai_Goods;
 extern GAPDATA full_data_5f1890[];
@@ -8221,7 +8221,7 @@ int he_Unk551440(unsigned char *slot, int n, int m)
     int out = -1;
     float x;
     int ch, tgt, o = 0, bld, r;
-    int lim = n + (U_I((unsigned)&ai_Unk76061c) != 0) + (U_I((unsigned)&ai_Unk760618) != 0 ? 4 : 0);
+    int lim = n + (U_I((unsigned)&d3t_Snow) != 0) + (U_I((unsigned)&d3t_Rain) != 0 ? 4 : 0);
 
     pair[0] = 0x20a0;
     pair[1] = 0x402c20;
@@ -8320,7 +8320,7 @@ void he_Unk551780(unsigned char *s)
     v18 = 0;
     if (o == 0)
         goto cleanup;
-    v10 = (U_I((unsigned)&ai_Unk76061c) != 0) + (U_I((unsigned)&ai_Unk760618) != 0 ? 2 : 0) + (unsigned short)util_Random(6) + 2;
+    v10 = (U_I((unsigned)&d3t_Snow) != 0) + (U_I((unsigned)&d3t_Rain) != 0 ? 2 : 0) + (unsigned short)util_Random(6) + 2;
     if (sv_Unk524770(a, v18) == 0)
         return;
     obj = *(int *)(a + 0x184);
@@ -9849,9 +9849,9 @@ void he_Unk5552c0(int ev, int p)
 {
     int rec = *(int *)(p + 0x3b);
 
-    if (U_I((unsigned)&ai_Unk76061c) != 0 && *(int *)U_I((unsigned)&ai_Unk76061c) > 0x64)
+    if (U_I((unsigned)&d3t_Snow) != 0 && *(int *)U_I((unsigned)&d3t_Snow) > 0x64)
         *(float *)(rec + 0x1a0) = (float)(*(float *)(ev + 0xc0) * 0.7);
-    else if (U_I((unsigned)&ai_Unk760618) != 0 && *(int *)U_I((unsigned)&ai_Unk760618) > 0xc8)
+    else if (U_I((unsigned)&d3t_Rain) != 0 && *(int *)U_I((unsigned)&d3t_Rain) > 0xc8)
         *(float *)(rec + 0x1a0) = (float)(*(float *)(ev + 0xc0) * 0.8);
     else
         *(int *)(rec + 0x1a0) = *(int *)(ev + 0xc0);

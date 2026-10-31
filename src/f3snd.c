@@ -137,10 +137,10 @@ void snd_UpdateQueue(void)
 #define SND_SET(s, n, v, a, b) if ((s) == 0) (s) = sb_PlaySampleI(snd_Bank, (n), 0, 0x3f, (v), (a), (b)); \
     else sb_SetVolumeI((s), (v))
 
-/* 0x4c0470, the rain sounds by the rain level *ai_Unk760618 (near / far loops louder the lower / higher the camera
+/* 0x4c0470, the rain sounds by the rain level *d3t_Rain (near / far loops louder the lower / higher the camera
    is above the ground, drops "Tropfen_s"), then now and then a gust ("Boehe_*", chance and interval by season from
    the table 0x602ba8); everything stops without a scene, with sound off or when the season changed
-   @deep B draft, 571 code hunks, one meaning error fixed (the gust volume: the original loads snd_Gusts[season].vol and multiplies by 127.0f, our source invented rand()*3.0518509e-05f*100.0f; G16SEASON.unk04 is a float vol, now typed). Read the rest of the original against the source: the four rain-level branches (n >= 999 / 499 / 149 / else), every volume formula and its operand order, the Tropfen_s delays 1000 / 0xa28 / 3000 / 4000 and the +0x18 repeat-delay stores, the stop lists of each branch, the gust chance test and the k = rand()%3 / %2 selection all correspond. What is left is scheduling / register allocation: the original keeps w = n*8 in ebp and f / n in [esp+0x10] / [esp+0x18] inside a 0xc frame; ours builds a 0x10 frame without ebp and allocates different webs over the whole body. Readability debt: Q2 ai_Unk760618 (the rain level, declared int in cm.h/sv.c and int * here - a cross-header conflict in lint_baseline) and ai_Unkfc2dec (0xfc2dec is d3_Camera in d3.h, 127 references in 6 files, conflicting char *; making it d3_Camera needs the d3.h type in this TU); Q4 the camera position (0x4c/0x50) and the SBSAMPLE.delay (+0x18) raw accesses need typed views for the same reason. */
+   @deep B draft, 571 code hunks, one meaning error fixed (the gust volume: the original loads snd_Gusts[season].vol and multiplies by 127.0f, our source invented rand()*3.0518509e-05f*100.0f; G16SEASON.unk04 is a float vol, now typed). Read the rest of the original against the source: the four rain-level branches (n >= 999 / 499 / 149 / else), every volume formula and its operand order, the Tropfen_s delays 1000 / 0xa28 / 3000 / 4000 and the +0x18 repeat-delay stores, the stop lists of each branch, the gust chance test and the k = rand()%3 / %2 selection all correspond. What is left is scheduling / register allocation: the original keeps w = n*8 in ebp and f / n in [esp+0x10] / [esp+0x18] inside a 0xc frame; ours builds a 0x10 frame without ebp and allocates different webs over the whole body. Readability debt: Q2 d3t_Rain (the rain level, declared int in cm.h/sv.c and int * here - a cross-header conflict in lint_baseline) and ai_Unkfc2dec (0xfc2dec is d3_Camera in d3.h, 127 references in 6 files, conflicting char *; making it d3_Camera needs the d3.h type in this TU); Q4 the camera position (0x4c/0x50) and the SBSAMPLE.delay (+0x18) raw accesses need typed views for the same reason. */
 void snd_UpdateRain(void)
 {
     float f;
@@ -164,7 +164,7 @@ void snd_UpdateRain(void)
     w = 0;
     f = *(float *)(ai_Unkfc2dec + 0x50) - d3t_GetMeanHeight(ai_Unkfc2dec + 0x4c);
     memcpy(snd_TimeCopy, ai_Time, 14);
-    if (ai_Unk760618 == 0 || (n = *ai_Unk760618) == 0) {
+    if (d3t_Rain == 0 || (n = *d3t_Rain) == 0) {
         SND_STOP(snd_RainHeavyFar);
         SND_STOP(snd_RainHeavyNear);
         SND_STOP(snd_RainMediumFar);
@@ -298,8 +298,8 @@ void ai_Unk4c0e60(void)
             }
         }
         h = (2000.0f - *(float *)(ai_Unkfc2dec + 0x50) - d3t_GetMeanHeight(ai_Unkfc2dec + 0x4c)) * 0.0005f;
-        if (ai_Unk760618 != 0)
-            n = *ai_Unk760618;
+        if (d3t_Rain != 0)
+            n = *d3t_Rain;
         a = ai_Unk602bd8[ai_Unk6f0b9c];
         if ((unsigned int)(rand() % 2000 + a[0].interval) < t - a[0].last && n < 0x15e) {
             a[0].last = t;
@@ -1156,7 +1156,7 @@ void snd_StopMarketAmbience(void)
     }
 }
 
-extern int * ai_Unk760618;
+extern int * d3t_Rain;
 extern char snd_TimeCopy[14];
 extern int snd_RainDrops;
 extern int snd_RainLightNear;
@@ -1206,7 +1206,7 @@ int snd_VoiceBankGreeting = 0;  /* 0x6f0ccc, voice bank: greeting */
 int snd_Bank = 0;  /* 0x6f2404, the sample bank */
 int snd_MusicEnabled = 0;  /* 0x6f2578, the "msx" setting of game.INI [Sound]: music enabled */
 int snd_SfxEnabled = 0;  /* 0x6f257c, the "sfx" setting of game.INI [Sound]: effects and voices on */
-int * ai_Unk760618 = 0;  /* 0x760618, the rain level */
+int * d3t_Rain = 0;  /* 0x760618, the rain level */
 /* ai_Selected: view of ai_Chars (tools/data_views.py) */
 char snd_TimeCopy[14] = {0};  /* 0xf81240, a copy of ai_Time */
 int snd_RainDrops = 0;  /* 0xf81254, the "Tropfen_s" loop */

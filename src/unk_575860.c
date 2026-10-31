@@ -707,7 +707,7 @@ extern char * ai_FallbackBuilding;
 extern unsigned char ai_OwnPlayer;
 extern char * ai_PlayerBuilding;
 extern const float ai_Unk5ee160[476];
-extern char * ai_Unk75ec60;
+extern char * sv_SelectedObject;
 extern GAPDATA full_data_602568[];
 extern GAPDATA full_data_62a91c[];
 extern GAPDATA full_data_62a940[];
@@ -9417,7 +9417,7 @@ int ai_Unk588310(int idx)
     if (n == 0)
         n = U_I((unsigned)&ai_FallbackBuilding);
     if (n == 0)
-        n = U_I((unsigned)&ai_Unk75ec60);
+        n = U_I((unsigned)&sv_SelectedObject);
     d2_SetForm(0, 4);
     if (n == 0) {
         io_PrintText(0x20, *(int *)(o + 0x22));
@@ -9482,7 +9482,7 @@ int ai_Unk588950(int idx)
     if (v == 0)
         v = U_I((unsigned)&ai_FallbackBuilding);
     if (v == 0)
-        v = U_I((unsigned)&ai_Unk75ec60);
+        v = U_I((unsigned)&sv_SelectedObject);
     if (v == 0)
         return win;
     if (*(unsigned char *)item == 2 || *(unsigned char *)item == 6)
@@ -9731,7 +9731,7 @@ void ai_Unk589570(int idx)
             if (b == 0)
                 gm_Query(a + 0x5d, 2, 6, 0, 0xfd);
         } else {
-            a = *(char **)(unsigned)&ai_Unk75ec60;
+            a = *(char **)(unsigned)&sv_SelectedObject;
             if (a == 0)
                 a = *(char **)(unsigned)&ai_MarketBuilding;
         }

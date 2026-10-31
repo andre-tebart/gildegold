@@ -163,20 +163,16 @@ extern int ai_Unkfb906c;
 extern char cm_RequestedSaveName[72];
 extern unsigned int ai_MissionSeed;
 extern GAPDATA full_data_75df20[];
-extern char * ai_Unk75ec60;
+extern char * sv_SelectedObject;
 extern int ch_SndLib;
 extern char cm_RequestedSaveName[72];
-extern GAPDATA full_data_6f2408[];
-extern GAPDATA full_data_6f240c[];
-extern GAPDATA full_data_6f2410[];
-extern GAPDATA full_data_6f2414[];
 extern GAPDATA full_data_6f2598[];
 extern GAPDATA full_data_6f25c0[];
 extern GAPDATA full_data_75e630[];
 extern int snd_Bank;
 extern char * ai_Unk1468ae0[0x300];
-extern int ai_Unk6f0d8c;
-extern int * ai_Unk760618;
+extern int cm_SkipEvents;
+extern int * d3t_Rain;
 #include "ch_types.h"
 extern CHMOTION ch_Motions[];
 extern struct D3ANIM *d3t_CamMove;
@@ -282,9 +278,6 @@ extern unsigned char main_GfxPath[];
 extern char main_GamePath[];
 extern GAPDATA full_data_624798[];
 extern GAPDATA full_data_624cf8[];
-extern GAPDATA full_data_6f2408[];
-extern GAPDATA full_data_6f240c[];
-extern GAPDATA full_data_6f2410[];
 extern int main_TextureDivider;
 extern GAPDATA full_data_6f2434[];
 extern GAPDATA full_data_6f2470[];
@@ -3054,10 +3047,10 @@ void main_Unk537de0(void)
     if (snd_SfxEnabled != 0) {
         U_I((unsigned)&snd_Bank) = sb_LoadSampleBank("natur\\regen.sbf", 0);
         U_I((unsigned)&full_data_75e630) = sb_LoadSampleBank("natur\\wind.sbf", 0);
-        U_I((unsigned)&full_data_6f2408) = sb_LoadSampleBank("natur\\blitzunddonner.sbf", 0);
-        U_I((unsigned)&full_data_6f240c) = sb_LoadSampleBank("objekte\\buecher.sbf", 0);
-        U_I((unsigned)&full_data_6f2410) = sb_LoadSampleBank("objekte\\TuerenUndRaeume.sbf", 0);
-        U_I((unsigned)&full_data_6f2414) = sb_LoadSampleBank("objekte\\Transporter.sbf", 0);
+        snd_ThunderBank = sb_LoadSampleBank("natur\\blitzunddonner.sbf", 0);
+        snd_BookBank = sb_LoadSampleBank("objekte\\buecher.sbf", 0);
+        snd_RoomBank = sb_LoadSampleBank("objekte\\TuerenUndRaeume.sbf", 0);
+        snd_TransportBank = sb_LoadSampleBank("objekte\\Transporter.sbf", 0);
         U_I((unsigned)&ch_SndLib) = sb_LoadSampleBank("Lebewesen\\schritte.sbf", 1);
     }
     msx_SetFadeTime(3000);
@@ -3065,7 +3058,7 @@ void main_Unk537de0(void)
     sv_ClearNamePlates();
     sv_ReleaseNamePlates();
     U_I((unsigned)&full_data_6f25c0) = 0;
-    U_I((unsigned)&ai_Unk75ec60) = 0;
+    U_I((unsigned)&sv_SelectedObject) = 0;
     U_I((unsigned)&sv_PanelShown) = 0;
     U_I((unsigned)&ai_PlayerBuilding) = 0;
     U_I((unsigned)&ai_FallbackBuilding) = 0;
@@ -3089,7 +3082,7 @@ void main_Unk537f40(void)
     sv_SetStatusText((char *)(unsigned)&ch_EmptyName);
     U_I((unsigned)&d2_CutsceneActive) = 1;
     tb_CloseFunction(sv_UpdateClock);
-    U_I((unsigned)&ai_Unk6f0d8c) = 0;
+    U_I((unsigned)&cm_SkipEvents) = 0;
     evt_UnloadAll();
     if (U_I(((unsigned)&cm_RequestedSaveName + 0x44)) != 0)
         d3io_ReleaseObject(U_I(((unsigned)&cm_RequestedSaveName + 0x44)));
@@ -3099,14 +3092,14 @@ void main_Unk537f40(void)
         if (U_I((unsigned)&snd_Bank) != 0) {
             sb_UnloadSampleBank(U_I((unsigned)&snd_Bank));
             U_I((unsigned)&snd_Bank) = 0;
-            sb_UnloadSampleBank(U_I((unsigned)&full_data_6f2408));
-            U_I((unsigned)&full_data_6f2408) = 0;
-            sb_UnloadSampleBank(U_I((unsigned)&full_data_6f240c));
-            U_I((unsigned)&full_data_6f240c) = 0;
-            sb_UnloadSampleBank(U_I((unsigned)&full_data_6f2410));
-            U_I((unsigned)&full_data_6f2410) = 0;
-            sb_UnloadSampleBank(U_I((unsigned)&full_data_6f2414));
-            U_I((unsigned)&full_data_6f2414) = 0;
+            sb_UnloadSampleBank(snd_ThunderBank);
+            snd_ThunderBank = 0;
+            sb_UnloadSampleBank(snd_BookBank);
+            snd_BookBank = 0;
+            sb_UnloadSampleBank(snd_RoomBank);
+            snd_RoomBank = 0;
+            sb_UnloadSampleBank(snd_TransportBank);
+            snd_TransportBank = 0;
             sb_UnloadSampleBank(U_I((unsigned)&ch_SndLib));
             U_I((unsigned)&ch_SndLib) = 0;
         }
@@ -3126,16 +3119,16 @@ void main_Unk537f40(void)
             ch_Delete(*p);
         p++;
     } while ((int)p < (unsigned)((unsigned)ai_Unk1468ae0 + 0xc00));
-    if (U_I((unsigned)&ai_Unk76061c) != 0) {
-        d3t_FreeSnow(U_I((unsigned)&ai_Unk76061c));
-        U_I((unsigned)&ai_Unk76061c) = 0;
+    if (U_I((unsigned)&d3t_Snow) != 0) {
+        d3t_FreeSnow(U_I((unsigned)&d3t_Snow));
+        U_I((unsigned)&d3t_Snow) = 0;
     }
-    if (U_I((unsigned)&ai_Unk760618) != 0) {
-        d3t_DeleteRain(U_I((unsigned)&ai_Unk760618));
-        U_I((unsigned)&ai_Unk760618) = 0;
+    if (U_I((unsigned)&d3t_Rain) != 0) {
+        d3t_DeleteRain(U_I((unsigned)&d3t_Rain));
+        U_I((unsigned)&d3t_Rain) = 0;
     }
     if (U_I((unsigned)&d3_Sky) != 0) {
-        p = (int *)(unsigned)&ai_Unk760620;
+        p = (int *)(unsigned)&d3_SkyLayer0;
         sc = U_I((unsigned)&d3_Sky);
         do {
             if (*p != 0) {
@@ -3144,7 +3137,7 @@ void main_Unk537f40(void)
                 *p = 0;
             }
             p++;
-        } while ((int)p < (unsigned)((unsigned)ai_Unk760620 + 0x18));
+        } while ((int)p < (unsigned)((unsigned)d3_SkyLayer0 + 0x18));
         d3sky_Destroy(sc);
         U_I((unsigned)&d3_Sky) = 0;
     }
@@ -3162,7 +3155,7 @@ void main_Unk537f40(void)
     net_Close();
     U_I((unsigned)&full_data_6f25c4) = 0;
     d2_SetPointerSprite(0, 0);
-    U_I((unsigned)&ai_Unk75ec60) = 0;
+    U_I((unsigned)&sv_SelectedObject) = 0;
     U_I((unsigned)&sv_PanelShown) = 0;
     U_I((unsigned)&ai_PlayerBuilding) = 0;
     U_I((unsigned)&ai_FallbackBuilding) = 0;
@@ -5876,10 +5869,10 @@ GAPDATA full_data_6f23ec[4] = { 0 };  /* 0x6f23ec */
 GAPDATA full_data_6f23f0[1] = { 0 };  /* 0x6f23f0 */
 GAPDATA full_data_6f23f1[7] = { 0 };  /* 0x6f23f1 */
 int snd_SystemBank = 0;  /* 0x6f2400, the handle of the system sample bank system.sbf (main_ 0x532160 loads it) */
-GAPDATA full_data_6f2408[4] = { 0 };  /* 0x6f2408 */
-GAPDATA full_data_6f240c[4] = { 0 };  /* 0x6f240c */
-GAPDATA full_data_6f2410[4] = { 0 };  /* 0x6f2410 */
-GAPDATA full_data_6f2414[4] = { 0 };  /* 0x6f2414 */
+int snd_ThunderBank = 0;  /* 0x6f2408 */
+int snd_BookBank = 0;  /* 0x6f240c */
+int snd_RoomBank = 0;  /* 0x6f2410 */
+int snd_TransportBank = 0;  /* 0x6f2414 */
 struct MSXTRACK *main_MenuSong = 0;  /* 0x6f2418, the main menu's song (main_Menue) */
 GAPDATA full_data_6f241c[12] = { 0 };  /* 0x6f241c */
 GAPDATA full_data_6f2428[4] = { 0 };  /* 0x6f2428 */

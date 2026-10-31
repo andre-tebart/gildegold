@@ -4631,7 +4631,7 @@ int ai_Unk4cb100(G17MSG *m, G17STAT *s)
     b = gm_BuildQuery(1, 1, G17_I(*m, 0));
     if (b == 0)
         return 1;
-    if (b == ai_Unk75ec60)
+    if (b == sv_SelectedObject)
         sv_Unk52adb0();
     for (o = gm_Query(0, 2, 7, 4, 0x1d); o != 0; o = gm_QueryNext()) {
         if (*(int *)(o + 0x1c) == *(int *)(b + 1))
@@ -6902,7 +6902,7 @@ void ai_Unk4ceb80(int id)
 {
     char *e;
 
-    if (ai_Unk6f0d8c != 0)
+    if (cm_SkipEvents != 0)
         return;
     if (sv_RunFrame(0, 0x7d6c6) != 0) {
         while (dm_L.rup == 0 && kb_Last == 0) {
@@ -10094,7 +10094,7 @@ void ai_Unk4d63e0(char *a)
     }
     if (gm_BuildQuery(1, 1, *(int *)(a + 0x10c)) == 0 || bad == 2 || nb == 0)
         return;
-    if (ai_Unk6f0d8c == 0) {
+    if (cm_SkipEvents == 0) {
         ai_Unk60d364 = 200;
         ai_Unk60cb5c = *(int *)(a + 0xc);
         ai_Unk4d0fa0(a);
@@ -11490,7 +11490,7 @@ void ai_Unk4db700(char *m)
     ch[5] = (char *)gm_FindChar(ids[5]);
     if (ch[5] == 0 && (unsigned char)m[0x30] > 2 && *(int *)(m + 0x48) != -1)
         goto done;
-    if (ai_Unk6f0d8c == 0)
+    if (cm_SkipEvents == 0)
         msx_PlayAmbient(0x40, "Athmos\\Athmo_sitzung.mp3");
     scene = ai_Unk4e52f0(2);
     ai_Unk4e3620("cd2\\ImKerker.mp3");
@@ -11619,7 +11619,7 @@ void ai_Unk4db700(char *m)
         io_PrintText(0x1510);
         ai_Unk4e3420(4);
         ai_Unk4e2c30("cutscenes\\prozess\\folterexit.esc", &ch_EmptyName);
-        if (ai_Unk6f0d8c == 0)
+        if (cm_SkipEvents == 0)
             d3if_SelectScene(scene, 0);
         ai_Unk4e3270(0, "PROZESS_6_FOLTERERGEBNIS.sbf");
         ai_Unk4e2c30("cutscenes\\prozess\\prozess-richter-reden.esc", &ch_EmptyName);
@@ -11710,7 +11710,7 @@ void ai_Unk4db700(char *m)
     ai_Unk4e2c70(ai_Unk4e2c30("cutscenes\\prozess\\prozess-ende.esc", &ch_EmptyName));
     ai_Unk4e2c70(ai_Unk4e2c30("cutscenes\\prozess\\prozess-exit.esc", &ch_EmptyName));
 done:
-    if (ai_Unk6f0d8c == 0)
+    if (cm_SkipEvents == 0)
         msx_StopAmbient(0);
     ai_Unk4e3640();
     snd_ClearQueue();
@@ -12238,7 +12238,7 @@ void ai_Unk4ded10(char *m)
         err_Message("cut_MainDuell(): Could not create character");
         return;
     }
-    if (ai_Unk6f0d8c != 0) {
+    if (cm_SkipEvents != 0) {
         ai_Unk4debe0(m);
         return;
     }
@@ -13188,7 +13188,7 @@ void ai_Unk4e1a80(char *m)
     sprintf(buf, "_VERSTEIGERUNG_INTRO_%s", who);
     ai_Unk4e32d0(0x1f4, ai_Unk4e52f0(3), buf, 0, 0);
     v = d2_OpenForm("cutscenes\\pacht_main", 0, 0);
-    if (ai_Unk6f0d8c == 0)
+    if (cm_SkipEvents == 0)
         d2_SetViewEnabled(v, 0);
     ((void (*)(int, int))d2_PlaceMainWindow)(3, v);
     d2_SetForm(0, v);
@@ -13391,7 +13391,7 @@ void ai_Unk4e2910(char *o, int id)
     char *bld;
     int k;
 
-    if (ai_Unk6f0d8c != 0)
+    if (cm_SkipEvents != 0)
         return;
     if (((char *)ai_PlayerBuildingT == o && *(unsigned short *)(o + 0x29) == id) || ((char *)ai_FallbackBuildingT == o && *(unsigned short *)(o + 0x29) == id)) {
         if (((char *)ai_Unk6f0d90)[0x26] & 0x20) {
@@ -13468,7 +13468,7 @@ extern G28REC ai_Unk925520[96];
 /* 0x4e2bd0, the window call 0x475590 of the scene helpers; in the replay mode (0x6f0d8c) the second argument is 0 */
 int ai_Unk4e2bd0(int a, int b)
 {
-    if (ai_Unk6f0d8c != 0)
+    if (cm_SkipEvents != 0)
         b = 0;
     return ((int (*)(int, int))d2_SetViewEnabled)(a, b);
 }
@@ -13478,7 +13478,7 @@ int ai_Unk4e2bf0(char *name)
 {
     char *p;
 
-    if (ai_Unk6f0d8c == 0) {
+    if (cm_SkipEvents == 0) {
         p = (char *)evt_Load(name);
         if (p != 0) {
             evt_RunScript((EVTSCRIPT *)p);
@@ -13493,7 +13493,7 @@ int ai_Unk4e2c30(char *name, int arg)
 {
     char *p;
 
-    if (ai_Unk6f0d8c == 0) {
+    if (cm_SkipEvents == 0) {
         p = (char *)evt_Load(name);
         if (p != 0) {
             evt_RunCommand((EVTSCRIPT *)p, arg);
@@ -13506,7 +13506,7 @@ int ai_Unk4e2c30(char *name, int arg)
 
 int ai_Unk4e2c70(int a)
 {
-    if (ai_Unk6f0d8c == 0) {
+    if (cm_SkipEvents == 0) {
         if (sv_RunFrame(0, ai_Unk60d360 | 0x8000) != 0) {
             do {
                 if (evt_FindById(a) == 0)
@@ -13519,7 +13519,7 @@ int ai_Unk4e2c70(int a)
 
 int ai_Unk4e2cc0(int a, int (*cb)(int), int arg)
 {
-    if (ai_Unk6f0d8c != 0)
+    if (cm_SkipEvents != 0)
         return 0;
     while (sv_RunFrame(0, ai_Unk60d360 | 0x8000) != 0) {
         if (evt_FindById(a) == 0)
@@ -13536,7 +13536,7 @@ int ai_Unk4e2cc0(int a, int (*cb)(int), int arg)
 
 int ai_Unk4e2d40(int a)
 {
-    if (ai_Unk6f0d8c == 0) {
+    if (cm_SkipEvents == 0) {
         if (sv_RunFrame(0, 0x79706) != 0) {
             do {
                 if (evt_FindById(a) == 0)
@@ -13551,7 +13551,7 @@ int ai_Unk4e2d90(int a)
 {
     int r;
 
-    if (ai_Unk6f0d8c == 0) {
+    if (cm_SkipEvents == 0) {
         r = (char *)evt_FindById(a);
         if (r != 0)
             return evt_Stop((EVTSCRIPT *)r);
@@ -13601,7 +13601,7 @@ void ai_Unk4e2e60(char *name)
     int idx, sh, t, k;
     int (*cb)();
 
-    if (ai_Unk6f0d8c != 0)
+    if (cm_SkipEvents != 0)
         return;
     idx = d3t_FindFreeScene();
     d3if_SelectScene(idx, 0);
@@ -13651,7 +13651,7 @@ void ai_Unk4e2e60(char *name)
 
 int ai_Unk4e3060(void)
 {
-    if (ai_Unk6f0d8c == 0) {
+    if (cm_SkipEvents == 0) {
         ai_Unk6f0da0 = (char *)d2_StartFade(0, 0, d2_ScreenW, d2_ScreenH, "BLACK", 0x5a, 1);
         if (!(*ai_Unk6f0da0 & 4)) {
             do {
@@ -13668,8 +13668,8 @@ int ai_Unk4e30c0(void)
     char *t, *o;
     int id;
 
-    if (ai_Unk6f0d8c != 0 || ai_Unk6f0d9c <= 0)
-        return ai_Unk6f0d8c;
+    if (cm_SkipEvents != 0 || ai_Unk6f0d9c <= 0)
+        return cm_SkipEvents;
     if (ai_Unk60d36c != -1) {
         o = (char *)evt_FindById(ai_Unk60d36c);
         if (o != 0)
@@ -13718,7 +13718,7 @@ int ai_Unk4e3210(void)
 
 int ai_Unk4e3230(void)
 {
-    if (ai_Unk6f0d8c != 0)
+    if (cm_SkipEvents != 0)
         return 0;
     return ch_Create();
 }
@@ -13726,7 +13726,7 @@ int ai_Unk4e3230(void)
 
 int ai_Unk4e3250(int a)
 {
-    if (ai_Unk6f0d8c != 0)
+    if (cm_SkipEvents != 0)
         return 1;
     return ch_Delete(a);
 }
@@ -13734,7 +13734,7 @@ int ai_Unk4e3250(int a)
 
 int ai_Unk4e3270(int a, int b)
 {
-    if (ai_Unk6f0d8c != 0)
+    if (cm_SkipEvents != 0)
         return 0;
     return snd_LoadVoiceBank(a, b);
 }
@@ -13742,7 +13742,7 @@ int ai_Unk4e3270(int a, int b)
 
 int ai_Unk4e3290(int a)
 {
-    if (ai_Unk6f0d8c != 0)
+    if (cm_SkipEvents != 0)
         return 0;
     return sb_UnloadSampleBank(a);
 }
@@ -13750,7 +13750,7 @@ int ai_Unk4e3290(int a)
 
 int ai_Unk4e32b0(int a, int b, int c, int d)
 {
-    if (ai_Unk6f0d8c != 0)
+    if (cm_SkipEvents != 0)
         return 0;
     return snd_PlayVoice(a, b, c, d);
 }
@@ -13758,7 +13758,7 @@ int ai_Unk4e32b0(int a, int b, int c, int d)
 
 int ai_Unk4e32d0(int a, int b, int c, int d, int e)
 {
-    if (ai_Unk6f0d8c != 0)
+    if (cm_SkipEvents != 0)
         return 0;
     return snd_QueueVoice(a, b, c, d, e);
 }
@@ -13769,7 +13769,7 @@ int ai_Unk4e32f0(int a)
 {
     int v, id;
 
-    if (ai_Unk6f0d8c == 0) {
+    if (cm_SkipEvents == 0) {
         id = d3sky_CreateK(0xc0100000, 0xbe4ccccd, 0x44160000);
         v = 0;
         ai_Unk6f0db8 = ai_Unk633dd4 = id;
@@ -13782,7 +13782,7 @@ int ai_Unk4e32f0(int a)
 
 int ai_Unk4e3390(void)
 {
-    if (ai_Unk6f0d8c == 0) {
+    if (cm_SkipEvents == 0) {
         if (ai_Unk6f0db4 != 0)
             d3sky_DeleteLayer(ai_Unk6f0db8, ai_Unk6f0db4);
         d3sky_Destroy(ai_Unk6f0db8);
@@ -13793,14 +13793,14 @@ int ai_Unk4e3390(void)
 
 int ai_Unk4e33d0(int a)
 {
-    if (ai_Unk6f0d8c == 0)
+    if (cm_SkipEvents == 0)
         ai_Unk6f0dbc = d3t_CreateRain(a);
 }
 /* 0x4e33f0, frees the thing 0x4e33d0 remembered */
 
 int ai_Unk4e33f0(void)
 {
-    if (ai_Unk6f0d8c == 0) {
+    if (cm_SkipEvents == 0) {
         d3t_DeleteRain(ai_Unk6f0dbc);
         ai_Unk6f0dbc = 0;
     }
@@ -13812,7 +13812,7 @@ int ai_Unk4e3420(int a)
     int end;
 
     end = ai_Unk6f0d80;
-    if (ai_Unk6f0d8c == 0) {
+    if (cm_SkipEvents == 0) {
         if (sv_RunFrame(ai_Unk4e3420, ai_Unk60d360 | 0x8000) != 0) {
             end += a;
             do {
@@ -13833,7 +13833,7 @@ int ai_Unk4e3490(int a, int (*cb)(int))
 
     start = d3_Time;
     res = 0;
-    if (ai_Unk6f0d8c != 0)
+    if (cm_SkipEvents != 0)
         return 0;
     if (sv_RunFrame(ai_Unk4e3570, ai_Unk60d360 | 0x8000) != 0) {
         do {
@@ -13862,7 +13862,7 @@ int ai_Unk4e3570(int a)
     double lim;
 
     start = d3_Time;
-    if (ai_Unk6f0d8c == 0) {
+    if (cm_SkipEvents == 0) {
         if (sv_RunFrame(ai_Unk4e3570, ai_Unk60d360 | 0x8000) != 0) {
             lim = (double)a * (1.0 / 14) + start;
             do {
@@ -13878,7 +13878,7 @@ int ai_Unk4e3570(int a)
 
 int ai_Unk4e3620(int a)
 {
-    if (ai_Unk6f0d8c == 0) {
+    if (cm_SkipEvents == 0) {
         snd_ClearQueue();
         return ((int (*)(char *))snd_PlaySpecialTrack)(a);
     }
@@ -13887,7 +13887,7 @@ int ai_Unk4e3620(int a)
 
 int ai_Unk4e3640(void)
 {
-    if (ai_Unk6f0d8c == 0)
+    if (cm_SkipEvents == 0)
         return ((int (*)())snd_EndSpecialTrack)();
 }
 /* 0x4e3650, sets the object tables 0x5fb5b0 up with the two 0xc0 byte callbacks 0x512de0 / 0x512e40 (0x438e60) after 0x4fe350, then 0x5128d0 */
@@ -13998,13 +13998,13 @@ void ai_Unk4e3830(char *m, int ctx)
     saved = ai_Unk4e52c0();
     ai_Unk4e36a0(m);
     if (ai_GameFlags & 4) {
-        if (*(int *)(m + 0xc) == ai_CharInts[ai_PlayerId][0] && ai_Unk6f0d8c == 0) {
+        if (*(int *)(m + 0xc) == ai_CharInts[ai_PlayerId][0] && cm_SkipEvents == 0) {
             memset(msg, 0, sizeof(msg));
             *(int *)msg = *(int *)m;
             sprintf(msg + 4, "cut_type:%i", (unsigned char)m[8]);
             cm_SendExSysMessage(0x11, msg);
         }
-        if (ai_Unk6f0d8c == 0)
+        if (cm_SkipEvents == 0)
             sv_Unk52fd80(ai_Unk1441488);
     }
     sv_SetStatusText(&ch_EmptyName);
@@ -14145,7 +14145,7 @@ void ai_Unk4e4060(char *m)
     ai_Unk6f0d7c = 0;
     ai_Unk4cef80();
     AI_ZERO_AT(offset ai_Unk92c600, 0x480);  /* @vc6 clang's MS asm cannot take the offset of an incomplete array */
-    ai_Unk6f0d8c = 0;
+    cm_SkipEvents = 0;
     m[0x26] |= 4;
     if (sv_FrameMask & 0x200000)
         m[0x26] |= 0x40;
@@ -14177,8 +14177,8 @@ void ai_Unk4e4060(char *m)
             replay = 1;
     }
     if (replay != 0)
-        ai_Unk6f0d8c = 1;
-    if (ai_Unk6f0d8c == 0) {
+        cm_SkipEvents = 1;
+    if (cm_SkipEvents == 0) {
         fl = (sv_FrameMask & ~8) | 0x10080;
         ai_Unk6f0da0 = (char *)d2_StartFade(0, 0, (short)d2_ScreenW, (short)d2_ScreenH, "BLACK", 0x5a, 1);
         while ((*ai_Unk6f0da0 & 4) == 0)
@@ -14217,7 +14217,7 @@ void ai_Unk4e4060(char *m)
     *(int *)(m + 0x2c) = d2_OpenForm(m[8] == 2 ? "cutscenes\\prozess_main" : (m[0x26] & 0x20) ? "cutscenes\\announcement_cinemascope" : "cutscenes\\announcement", 0, 0);
     ai_Unk60d368 = *(int *)(m + 0x2c);
     ((void (*)(int, int))d2_PlaceMainWindow)(ai_Unk60d368, 3);
-    if (ai_Unk6f0d8c != 0)
+    if (cm_SkipEvents != 0)
         d2_SetViewEnabled(ai_Unk60d368, 0);
     ai_Unk4e52a0(*(int *)(m + 0x78));
     sprintf(buf, "Exec Cutscene(Mainfunc) <Type = %i>", (unsigned char)m[8]);
@@ -14225,7 +14225,7 @@ void ai_Unk4e4060(char *m)
     ((void (*)())ai_Unk92c500[(unsigned char)m[8] * 5])(m);
     d2_CloseView(*(int *)(m + 0x2c));
     ai_Unk60d368 = win_old;
-    if (ai_Unk6f0d8c == 0) {
+    if (cm_SkipEvents == 0) {
         ai_Unk4d8c40();
         ai_Unk631064 = sv_time;
         if (ai_GameFlags & 8)
@@ -14893,7 +14893,7 @@ void ai_Unk4e5bf0(char *c)
 
 extern unsigned int ai_MissionSeed;
 extern int ai_Unk75e130;
-extern char * ai_Unk75ec60;
+extern char * sv_SelectedObject;
 extern char ai_Unk75fba0[2048];
 extern int cm_SaveAcks[8][2];
 /* ai_Unk770b89: view of ai_Chars (tools/data_views.py) */
@@ -15114,7 +15114,7 @@ int ai_Unk6f0d7c = 0;  /* 0x6f0d7c */
 int ai_Unk6f0d80 = 0;  /* 0x6f0d80 */
 int ai_Unk6f0d84 = 0;  /* 0x6f0d84 */
 int ai_Unk6f0d88 = 0;  /* 0x6f0d88 */
-int ai_Unk6f0d8c = 0;  /* 0x6f0d8c */
+int cm_SkipEvents = 0;  /* 0x6f0d8c */
 int * ai_Unk6f0d90 = 0;  /* 0x6f0d90 */
 int ai_Unk6f0d94 = 0;  /* 0x6f0d94 */
 unsigned int ai_Unk6f0d98 = 0;  /* 0x6f0d98 */
@@ -15139,7 +15139,7 @@ char cm_RequestedSaveName[72] = {0};  /* 0x6f25d0 */
 /* ai_Unk6f35ca: view of ai_GfxFloor (tools/data_views.py) */
 unsigned int ai_MissionSeed = 0;  /* 0x75e120, the random seed of the missions (as unk_4b39f0.h) */
 int ai_Unk75e130 = 0;  /* 0x75e130, the year of the clock copy 0x75e130..0x75e13e (an AITIME; its other fields are ls.c's ai_Unk75e134 / 75e138 / 75e13c) */
-char * ai_Unk75ec60 = 0;  /* 0x75ec60 */
+char * sv_SelectedObject = 0;  /* 0x75ec60 */
 char ai_Unk75fba0[2048] = {0};  /* 0x75fba0 */
 int cm_SaveAcks[8][2] = {0};  /* 0x76fa20 */
 /* ai_Unk770d8c: view of ai_Chars (tools/data_views.py) */

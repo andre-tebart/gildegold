@@ -426,7 +426,7 @@ short *unk_Unk4fddb0(unsigned char flags, int p2, int p3, unsigned char p4, unsi
 unsigned short * gm_QueryNext(void);  /* 0x4ffcc0 */
 int gm_BuildingMainObject(unsigned char *b);  /* 0x501b50 */
 void gm_Unk5034b0(int o);  /* 0x5034b0 */
-extern char *ai_Unk75ec60;  /* 0x75ec60 */
+extern char *sv_SelectedObject;  /* 0x75ec60 */
 typedef struct G17B16 { char b[16]; } G17B16;
 
 int amt_AcceptApplication();  /* 0x4e6430 */
@@ -575,7 +575,7 @@ int d2_WinOpenPic(short x, short y, int pic, int win);  /* 0x4731d0 */
 void d2_SetObjValue();  /* 0x475cb0 */
 int gm_Unk504e00();  /* 0x504e00 */
 extern int d2_LastWindow;  /* 0x6ed938 */
-extern int ai_Unk6f0d8c;  /* 0x6f0d8c */
+extern int cm_SkipEvents;  /* 0x6f0d8c */
 extern int ai_Unk935d20[];  /* 0x935d20 */
 
 void ai_Unk4cedc0(char *c, int v, int kind);  /* 0x4cedc0 */

@@ -171,7 +171,7 @@ extern GAPDATA full_data_6f2338[];
 extern GAPDATA full_data_6f23e4[];
 extern GAPDATA full_data_6f23e8[];
 extern int snd_SystemBank;
-extern GAPDATA full_data_6f2410[];
+extern int snd_RoomBank;
 extern GAPDATA full_data_6f262c[];
 extern GAPDATA full_data_6f2630[];
 extern GAPDATA full_data_6faa80[];
@@ -199,7 +199,7 @@ extern GAPDATA full_data_760448[];
 extern GAPDATA full_data_76044c[];
 extern GAPDATA full_data_760450[];
 extern int ai_Unk7603a0[32];
-extern GAPDATA full_data_6f240c[];
+extern int snd_BookBank;
 extern GAPDATA full_data_6f23f0[];
 extern int main_QuitProgram;
 extern GAPDATA full_data_75ec40[];
@@ -214,7 +214,7 @@ extern char ai_Unk623ac0[];
 extern struct D3SKY *d3_Sky;
 extern GAPDATA full_data_6239d8[];
 extern struct D3OBJECT *d3t_SunRays;
-extern GAPDATA full_data_6f2408[];
+extern int snd_ThunderBank;
 extern GAPDATA full_data_7604e8[];
 extern int ai_OptionSpeed;
 extern float ch_Unk5f1290;
@@ -1855,13 +1855,13 @@ extern int ai_Unk760484;  /* 0x760484 */
 extern int ai_Unk760548;  /* 0x760548 */
 extern int ai_Unk76054c;  /* 0x76054c */
 extern int ai_Unk760614;  /* 0x760614 */
-extern int * ai_Unk760618;  /* 0x760618 */
-extern int ai_Unk76061c;  /* 0x76061c */
+extern int * d3t_Rain;  /* 0x760618 */
+extern int d3t_Snow;  /* 0x76061c */
 extern int ai_Unk760464;  /* 0x760464 */
 extern int ai_Unk6f2370;  /* 0x6f2370 */
-extern int ai_Unk760628;  /* 0x760628 */
-extern int ai_Unk760620;  /* 0x760620 */
-extern int ai_Unk760624;  /* 0x760624 */
+extern int d3_SkyLayer2;  /* 0x760628 */
+extern int d3_SkyLayer0;  /* 0x760620 */
+extern int d3_SkyLayer1;  /* 0x760624 */
 extern int ai_Unk633dd4;  /* 0x633dd4 */
 extern int ai_Unk75ec20;  /* 0x75ec20 */
 extern struct D3ANIM *d3t_CamMove;  /* 0x6310e8 */
@@ -2056,40 +2056,40 @@ void sv_Unk525510(int t, float flag)
         if (mx <= *q)
             mx = *q;
     if (ai_Unk760610 == 0) {
-        if (ai_Unk76061c != 0) {
-            d3t_FreeSnow(ai_Unk76061c);
-            ai_Unk76061c = 0;
+        if (d3t_Snow != 0) {
+            d3t_FreeSnow(d3t_Snow);
+            d3t_Snow = 0;
         }
-        if (ai_Unk760618 == 0)
-            ai_Unk760618 = d3t_CreateRain(mx);
-        d3t_SetRain(ai_Unk760618, 1, 0, 0);
+        if (d3t_Rain == 0)
+            d3t_Rain = d3t_CreateRain(mx);
+        d3t_SetRain(d3t_Rain, 1, 0, 0);
     } else {
         if (ai_Unk760610 == 1) {
-            if (ai_Unk760618 != 0) {
-                d3t_DeleteRain(ai_Unk760618);
-                ai_Unk760618 = 0;
+            if (d3t_Rain != 0) {
+                d3t_DeleteRain(d3t_Rain);
+                d3t_Rain = 0;
             }
-        } else if (ai_Unk760618 == 0)
-            ai_Unk760618 = d3t_CreateRain(mx);
-        if (ai_Unk76061c == 0)
-            ai_Unk76061c = d3t_CreateSnow(mx);
-        d3t_SetSnow(ai_Unk76061c, 2, 0, 0, 3, 0xff);
-        d3t_SetSnow(ai_Unk76061c, 1, 0, 0);
+        } else if (d3t_Rain == 0)
+            d3t_Rain = d3t_CreateRain(mx);
+        if (d3t_Snow == 0)
+            d3t_Snow = d3t_CreateSnow(mx);
+        d3t_SetSnow(d3t_Snow, 2, 0, 0, 3, 0xff);
+        d3t_SetSnow(d3t_Snow, 1, 0, 0);
     }
     if (ai_Unk633dd4 == 0)
         ai_Unk633dd4 = d3sky_CreateK(0xbf733333, 0xbe4ccccd, 0x44160000);
-    for (q = (int *)(unsigned)&ai_Unk760620; (int)q < (unsigned)((unsigned)ai_Unk760620 + 0x18); q++) {
+    for (q = (int *)(unsigned)&d3_SkyLayer0; (int)q < (unsigned)((unsigned)d3_SkyLayer0 + 0x18); q++) {
         if (*q != 0) {
             d3sky_DeleteLayer(ai_Unk633dd4, *q);
             *q = 0;
         }
     }
-    ai_Unk760620 = d3sky_CreateLayerK(ai_Unk633dd4, 0, "Sky_Schoen_01", 0xff, *(int *)(unsigned)&full_data_6238e8, 0, *(int *)(unsigned)&full_data_6238ec, *(int *)(unsigned)&full_data_6238f0);
-    d3sky_SetLayerSpeed(ai_Unk633dd4, ai_Unk760620, 0);
-    ai_Unk760624 = d3sky_CreateLayerK(ai_Unk633dd4, 0, "Sky_Schoen_02", 0, *(int *)(unsigned)&full_data_623934, 0, *(int *)(unsigned)&full_data_623938, *(int *)(unsigned)&full_data_62393c);
-    d3sky_SetLayerSpeed(ai_Unk633dd4, ai_Unk760624, 0);
-    ai_Unk760628 = d3sky_CreateLayerK(ai_Unk633dd4, 0, "sky_dunkel_01", 0, *(int *)((unsigned)&ai_Unk623ac0 + 0xd8), 0, *(int *)((unsigned)&ai_Unk623ac0 + 0xdc), *(int *)((unsigned)&ai_Unk623ac0 + 0xe0));
-    d3sky_SetLayerSpeed(ai_Unk633dd4, ai_Unk760628, 0);
+    d3_SkyLayer0 = d3sky_CreateLayerK(ai_Unk633dd4, 0, "Sky_Schoen_01", 0xff, *(int *)(unsigned)&full_data_6238e8, 0, *(int *)(unsigned)&full_data_6238ec, *(int *)(unsigned)&full_data_6238f0);
+    d3sky_SetLayerSpeed(ai_Unk633dd4, d3_SkyLayer0, 0);
+    d3_SkyLayer1 = d3sky_CreateLayerK(ai_Unk633dd4, 0, "Sky_Schoen_02", 0, *(int *)(unsigned)&full_data_623934, 0, *(int *)(unsigned)&full_data_623938, *(int *)(unsigned)&full_data_62393c);
+    d3sky_SetLayerSpeed(ai_Unk633dd4, d3_SkyLayer1, 0);
+    d3_SkyLayer2 = d3sky_CreateLayerK(ai_Unk633dd4, 0, "sky_dunkel_01", 0, *(int *)((unsigned)&ai_Unk623ac0 + 0xd8), 0, *(int *)((unsigned)&ai_Unk623ac0 + 0xdc), *(int *)((unsigned)&ai_Unk623ac0 + 0xe0));
+    d3sky_SetLayerSpeed(ai_Unk633dd4, d3_SkyLayer2, 0);
     scene = d3_CurrentScene;
     i = 0;
     for (q = (int *)&ai_MapRefs; (int)q < ((unsigned)((unsigned)&ai_MapRefs + 0xf7f4) + 0xc); q += 0xf8, i++) {
@@ -2195,8 +2195,8 @@ void sv_Unk525ad0(char *t)
         k = ((s - *(int *)((char *)ai_Unk623baa + 40)) * 100) / (*(int *)((char *)ai_Unk623baa + 50) - *(int *)((char *)ai_Unk623baa + 40)) + 500;
     else
         k = 600;
-    if (ai_Unk760628 != 0)
-        a = *(unsigned char *)(ai_Unk760628 + 0x26) * 0.003921569f;
+    if (d3_SkyLayer2 != 0)
+        a = *(unsigned char *)(d3_SkyLayer2 + 0x26) * 0.003921569f;
     if (((int *)&ai_MapRefs)[d3_CurrentScene * 0xf8] != 0 && (unsigned)d3_Time < (unsigned)(ai_Unk76054c + ai_Unk760548)) {
         d3_SetFogSet(0, 2, 1.0f);
         ai_Unk6f2370 = 1;
@@ -2601,7 +2601,7 @@ extern int ai_Unk62a8cc;  /* 0x62a8cc */
 extern int ai_Unk6f22b4;  /* 0x6f22b4 */
 extern int sv_FrameDepth;  /* 0x6f229c */
 extern int sv_FrameBase;  /* 0x6f22a4 */
-extern char * ai_Unk75ec60;  /* 0x75ec60 */
+extern char * sv_SelectedObject;  /* 0x75ec60 */
 extern int ai_Unk6f2304;  /* 0x6f2304 */
 extern char ai_Unk62381c;
 int d3t_GetHeightRange();                     /* 0x411c70 */
@@ -2888,7 +2888,7 @@ void sv_Unk527840(int o)
         *(int *)(rec + 0xa0) = *(int *)&dir[1];
         *(int *)(rec + 0xa4) = *(int *)&dir[2];
     }
-    ai_Unk75ec60 = o;
+    sv_SelectedObject = o;
     ai_Unk6f2304 = *(int *)(o + 0x61);
 }
 
@@ -2986,7 +2986,7 @@ void sv_Unk527bb0(int o)
         *(int *)(rec + 0xa0) = *(int *)&dir[1];
         *(int *)(rec + 0xa4) = *(int *)&dir[2];
     }
-    ai_Unk75ec60 = o;
+    sv_SelectedObject = o;
     ai_Unk6f2304 = *(int *)(o + 0x61);
 }
 /* 0x527e90, like 0x527840 for the model m directly (no object): moves the camera animated (0x411860 with 0x68 steps) 600 units back from the model */
@@ -3500,7 +3500,7 @@ void sv_Unk529380(void)
     prog = 0.0f;
     if (sv_PanelForm == -1)
         return;
-    b = (char *)ai_Unk75ec60;
+    b = (char *)sv_SelectedObject;
     if (b == 0 || ai_Unk623868 == -1 || ai_Unk623864 == -1) {
         if (ai_Unk7662c0 == 0) {
             q = &ai_Unk62386c;
@@ -3874,7 +3874,7 @@ void sv_Unk52adb0(void)
     unsigned short *p;
 
     SV_I((unsigned)&ai_Unk75ec5c) = 0;
-    SV_I((unsigned)&ai_Unk75ec60) = 0;
+    SV_I((unsigned)&sv_SelectedObject) = 0;
     SV_I((unsigned)&full_data_76631c) = 0;
     SV_I((unsigned)&ai_Unk6f2304) = 0;
     o = SV_I((unsigned)&ai_FallbackBuilding);
@@ -3887,7 +3887,7 @@ void sv_Unk52adb0(void)
     } else if (o == 0) {
         SV_I((unsigned)&ai_Unk6f2304) = 0;
         SV_I((unsigned)&ai_Unk75ec5c) = 0;
-        SV_I((unsigned)&ai_Unk75ec60) = 0;
+        SV_I((unsigned)&sv_SelectedObject) = 0;
         SV_I((unsigned)&full_data_76631c) = 0;
         return;
     }
@@ -4047,7 +4047,7 @@ void sv_UpdatePanel(void)
         return;
     if (SV_B((unsigned)&ai_GameState) == 0)
         return;
-    o = (unsigned char *)SV_I((unsigned)&ai_Unk75ec60);
+    o = (unsigned char *)SV_I((unsigned)&sv_SelectedObject);
     if (o == 0 || gm_Query(*(int *)(o + 0x5d), 2, 6, 0, 0x2a) != 0 || gm_Query(*(int *)(o + 0x5d), 2, 6, 0, 0x116) != 0)
         f = 1;
     else
@@ -4069,14 +4069,14 @@ l260:
                     ai_AmountMenu(st, ch_EmptyName, ch_EmptyName, sv_ReturnZero);
                     ai_Unk576040(0xf, 0, 1, 0);
                 }
-            } else if (SV_I((unsigned)&ai_Unk75ec60) != 0 && *(unsigned char *)SV_I((unsigned)&ai_Unk75ec60) != 0x47) {
-                c = gm_BuildingClass(*(unsigned char *)SV_I((unsigned)&ai_Unk75ec60));
+            } else if (SV_I((unsigned)&sv_SelectedObject) != 0 && *(unsigned char *)SV_I((unsigned)&sv_SelectedObject) != 0x47) {
+                c = gm_BuildingClass(*(unsigned char *)SV_I((unsigned)&sv_SelectedObject));
                 if ((c == 1 || c == 2 || c == 4 || c == 7 || c == 8 || (k = ai_BTypes[*p * 0x24d]) == 0x10 || k == 0x1e) && ai_Unk5763c0(0x400) == 1) {
                     SV_I((unsigned)&ai_BuildingPerms) = unk_Unk503530(ai_PlayerId, p, 0, 0);
                     ai_Unk576040(0x12, p, 0, 0);
                     ai_TransportWindow(p, 1);
                     ai_Unk576040(0x12, p, 1, 0);
-                    SV_I((unsigned)&ai_Unk75ec60) = (int)p;
+                    SV_I((unsigned)&sv_SelectedObject) = (int)p;
                     sv_ResetScreenClip();
                 }
             }
@@ -4087,7 +4087,7 @@ l260:
         p = (unsigned char *)SV_I((unsigned)&ai_PlayerBuilding);
         if (p == 0) {
             if (SV_I((unsigned)&ai_FallbackBuilding) == 0) {
-                p = (unsigned char *)SV_I((unsigned)&ai_Unk75ec60);
+                p = (unsigned char *)SV_I((unsigned)&sv_SelectedObject);
                 if (p == 0)
                     goto l3b8;
                 goto l188;
@@ -4104,13 +4104,13 @@ l188:
         if (SV_I((unsigned)&ai_PlayerBuilding) == 0 || (SV_I((unsigned)&full_data_6f2320) & 0x10) == 0) {
             if (SV_I((unsigned)&ai_FallbackBuilding) == 0) {
 l1f2:
-                if (SV_I((unsigned)&ai_Unk75ec60) != 0) {
-                    c = gm_BuildingClass(*(unsigned char *)SV_I((unsigned)&ai_Unk75ec60));
-                    SV_I((unsigned)&full_data_6f2320) = unk_Unk503530(ai_PlayerId, SV_I((unsigned)&ai_Unk75ec60), 0, 0);
+                if (SV_I((unsigned)&sv_SelectedObject) != 0) {
+                    c = gm_BuildingClass(*(unsigned char *)SV_I((unsigned)&sv_SelectedObject));
+                    SV_I((unsigned)&full_data_6f2320) = unk_Unk503530(ai_PlayerId, SV_I((unsigned)&sv_SelectedObject), 0, 0);
                     if ((c == 3 || c == 5) && (SV_I((unsigned)&full_data_6f2320) & 0x10) != 0)
-                        ai_Unk5b8fc0(SV_I((unsigned)&ai_Unk75ec60));
+                        ai_Unk5b8fc0(SV_I((unsigned)&sv_SelectedObject));
                     else
-                        ai_Unk5b84f0(SV_I((unsigned)&ai_Unk75ec60));
+                        ai_Unk5b84f0(SV_I((unsigned)&sv_SelectedObject));
                 }
             } else if (SV_I((unsigned)&sv_PanelShown) == 0) {
                 ai_Unk5b84f0(SV_I((unsigned)&ai_FallbackBuilding));
@@ -4125,7 +4125,7 @@ l1f2:
     }
 l3b8:
     sv_Unk529380();
-    if (SV_I((unsigned)&ai_Unk75ec60) == SV_I((unsigned)&full_data_6f23c4) && SV_I((unsigned)&ai_FallbackBuilding) == SV_I((unsigned)&full_data_6f23c0) && SV_I((unsigned)&ai_PlayerBuilding) == SV_I((unsigned)&full_data_6f23bc)
+    if (SV_I((unsigned)&sv_SelectedObject) == SV_I((unsigned)&full_data_6f23c4) && SV_I((unsigned)&ai_FallbackBuilding) == SV_I((unsigned)&full_data_6f23c0) && SV_I((unsigned)&ai_PlayerBuilding) == SV_I((unsigned)&full_data_6f23bc)
         && SV_I((unsigned)&sv_PanelShown) == SV_I((unsigned)&full_data_6f23c8) && SV_I((unsigned)&ai_Unk75ec5c) == SV_I((unsigned)&full_data_6f23cc) && SV_I((unsigned)&ai_Unk7662c0) == SV_I((unsigned)&full_data_6f23d0)
         && SV_B((unsigned)&full_data_6f2338) == SV_I((unsigned)&full_data_6f23d4) && SV_I((unsigned)&ai_Unk6f2334) == SV_I((unsigned)&full_data_6f23d8) && SV_I((unsigned)&ai_Unk6237cc) == 0)
         return;
@@ -4163,16 +4163,16 @@ l510:
         SV_I((unsigned)&full_data_6f23c8) = SV_I((unsigned)&sv_PanelShown);
         SV_I((unsigned)&full_data_6f23d0) = SV_I((unsigned)&ai_Unk7662c0);
         SV_I((unsigned)&full_data_6f23cc) = SV_I((unsigned)&ai_Unk75ec5c);
-        SV_I((unsigned)&full_data_6f23c4) = SV_I((unsigned)&ai_Unk75ec60);
+        SV_I((unsigned)&full_data_6f23c4) = SV_I((unsigned)&sv_SelectedObject);
         if ((SV_I((unsigned)&ai_Unk75ec5c) == 0 && SV_I((unsigned)&sv_PanelShown) == 0) || SV_I((unsigned)&sv_PanelForm) != -1) {
-            if (SV_I((unsigned)&ai_Unk75ec60) == 0 && SV_I((unsigned)&ai_FallbackBuilding) == 0) {
+            if (SV_I((unsigned)&sv_SelectedObject) == 0 && SV_I((unsigned)&ai_FallbackBuilding) == 0) {
                 SV_I((unsigned)&full_data_6f2294) = 0;
                 return;
             }
             SV_I((unsigned)&full_data_6f23c0) = SV_I((unsigned)&ai_FallbackBuilding);
             SV_I((unsigned)&full_data_6f23bc) = SV_I((unsigned)&ai_PlayerBuilding);
             SV_I((unsigned)&full_data_6f2294) = SV_I((unsigned)&ai_Unk6f2304);
-            p = (unsigned char *)SV_I((unsigned)&ai_Unk75ec60);
+            p = (unsigned char *)SV_I((unsigned)&sv_SelectedObject);
             if (p == 0 && (p = (unsigned char *)SV_I((unsigned)&ai_FallbackBuilding)) == 0)
                 p = 0;
             sv_Unk528860(p);
@@ -4192,7 +4192,7 @@ l510:
             return;
         }
     }
-    SV_I((unsigned)&full_data_6f23c4) = SV_I((unsigned)&ai_Unk75ec60);
+    SV_I((unsigned)&full_data_6f23c4) = SV_I((unsigned)&sv_SelectedObject);
     SV_I((unsigned)&full_data_6f23c8) = SV_I((unsigned)&sv_PanelShown);
     SV_I((unsigned)&full_data_6f23cc) = SV_I((unsigned)&ai_Unk75ec5c);
     SV_I((unsigned)&full_data_6f23d0) = SV_I((unsigned)&ai_Unk7662c0);
@@ -4308,7 +4308,7 @@ void sv_Unk52a680(void)
         b = 0;
     }
 la9a:
-    if (SV_I((unsigned)&ai_Unk75ec60) != 0 && (int)b == SV_I((unsigned)&ai_Unk75ec60) && (SV_I((unsigned)&full_data_6f2324) & 1) != 0 && (b[0x5a] & 1) == 0)
+    if (SV_I((unsigned)&sv_SelectedObject) != 0 && (int)b == SV_I((unsigned)&sv_SelectedObject) && (SV_I((unsigned)&full_data_6f2324) & 1) != 0 && (b[0x5a] & 1) == 0)
         SV_US((unsigned)&d2_PointerLook) = 0xb;
     b = (unsigned char *)SV_I((unsigned)&ai_FallbackBuilding);
     if ((b != 0 || (b = (unsigned char *)SV_I((unsigned)&ai_PlayerBuilding)) != 0) && SV_C((unsigned)&ai_Unk6f22e8) != 0 && strncmp(SV_C((unsigned)&ai_Unk6f22e8), "contact_gate_", 0xd) == 0) {
@@ -4487,7 +4487,7 @@ lfe4:
             }
             if (SV_I((unsigned)&ai_Unk6f2334) == 0 && SV_B((unsigned)&full_data_6f2338) == 0 && SV_I((unsigned)&full_data_6f22f4) != 0 && SV_I((unsigned)&ai_Unk75ec5c) == 0)
                 SV_I((unsigned)&ai_Unk6f2304) = SV_I((unsigned)&ai_Unk6f22e8);
-            SV_I((unsigned)&ai_Unk75ec60) = SV_I((unsigned)&full_data_6f22f4);
+            SV_I((unsigned)&sv_SelectedObject) = SV_I((unsigned)&full_data_6f22f4);
             if (SV_I((unsigned)&full_data_6f22f4) != 0)
                 SV_I((unsigned)&ai_Unk6f2304) = SV_I((unsigned)&ai_Unk6f22e8);
             SV_I((unsigned)&ai_Unk75ec5c) = SV_I((unsigned)&full_data_6f22f0);
@@ -5504,7 +5504,7 @@ void sv_Unk52d940(unsigned fl)
     int ok, i, *p, v, who;
     short *it;
 
-    if (SV_I(((unsigned)&dm_L + 0x20)) != 0 && (SV_I(((unsigned)&ai_Unk75f280 + 0x500) + SV_I((unsigned)&sv_FrameDepth) * 8) != (int)ai_GameFrame || SV_I((unsigned)&ai_Unk6f2334) != 0 || SV_I((unsigned)&ai_Unk75ec5c) != 0 || SV_I((unsigned)&ai_Unk7662c0) != 0 || SV_I((unsigned)&ai_Unk75ec60) != 0))
+    if (SV_I(((unsigned)&dm_L + 0x20)) != 0 && (SV_I(((unsigned)&ai_Unk75f280 + 0x500) + SV_I((unsigned)&sv_FrameDepth) * 8) != (int)ai_GameFrame || SV_I((unsigned)&ai_Unk6f2334) != 0 || SV_I((unsigned)&ai_Unk75ec5c) != 0 || SV_I((unsigned)&ai_Unk7662c0) != 0 || SV_I((unsigned)&sv_SelectedObject) != 0))
         sb_PlaySample(SV_I((unsigned)&snd_SystemBank), "MausclickRechts_s_01", 1, 0x3f, 0x7f, 0, 0);
     if (SV_I((unsigned)&full_data_6f262c) != 0) {
         if (SV_I(((unsigned)&dm_L + 0x20)) == 0 && *(char *)(unsigned)&kb_Last != 0x1c)
@@ -5546,7 +5546,7 @@ l9f2:
         goto l72;
     ai_Unk591170();
     anm_Update();
-    if (SV_I(((unsigned)&dm_L + 0x20)) != 0 && SV_I((unsigned)&ai_Unk75ec60) != 0 && SV_I(((unsigned)&ai_Unk75f280 + 0x500) + SV_I((unsigned)&sv_FrameDepth) * 8) == (int)ai_GameFrame) {
+    if (SV_I(((unsigned)&dm_L + 0x20)) != 0 && SV_I((unsigned)&sv_SelectedObject) != 0 && SV_I(((unsigned)&ai_Unk75f280 + 0x500) + SV_I((unsigned)&sv_FrameDepth) * 8) == (int)ai_GameFrame) {
         sv_Unk52adb0();
         goto l72;
     }
@@ -5558,7 +5558,7 @@ l9f2:
             goto lbb6;
         }
     } else if (SV_I((unsigned)&full_data_6f22fc) != 0 && SV_I((unsigned)&ai_Unk6f2334) == 0 && SV_B((unsigned)&full_data_6f2338) == 0) {
-        sb_PlaySample(SV_I((unsigned)&full_data_6f2410), "RaumWechseln_s", 1, 0x3f, 0x7f, 0, 0);
+        sb_PlaySample(snd_RoomBank, "RaumWechseln_s", 1, 0x3f, 0x7f, 0, 0);
         *(short *)(SV_I((unsigned)&ai_PlayerBuilding) + 0x29) = *(short *)SV_I((unsigned)&full_data_6f22fc);
         SV_I((unsigned)&sv_PopRequest) = SV_I((unsigned)&sv_FrameDepth) - SV_I((unsigned)&sv_FrameBase) + 1;
         d3_SetObjectPos(ai_Unkfc2dec, (unsigned)&ai_Unk75fb80);
@@ -6369,7 +6369,7 @@ lfail:
         *((char *)bk + 0x272) = SV_B((unsigned)&d3d_ZEnabled);
         d3d_SetWBuffer(0);
     }
-    sb_PlaySample(SV_I((unsigned)&full_data_6f240c), "Aufklappen_s", 1, 0x3f, 0x7f, 0, 0);
+    sb_PlaySample(snd_BookBank, "Aufklappen_s", 1, 0x3f, 0x7f, 0, 0);
     return bk;
 }
 /* 0x52f530, closes a book: frees the model (0x411b70, back to the parent 0x447190 when it had one), the page widgets (0x474d10 / 0x4758f0), the two buttons, restores 0x437060 and plays "Zuklappen_s" */
@@ -6402,7 +6402,7 @@ void sv_Unk52f530(int *bk)
         if (*((char *)bk + 0x272) != 0)
             d3d_SetWBuffer(1);
         mem_Free(bk);
-        sb_PlaySample(SV_I((unsigned)&full_data_6f240c), "Zuklappen_s", 1, 0x3f, 0x7f, 0, 0);
+        sb_PlaySample(snd_BookBank, "Zuklappen_s", 1, 0x3f, 0x7f, 0, 0);
     }
 }
 /* 0x52f600, per frame update of an open book: hides the page widgets outside the shown pair (+0x270 .. +0x270 + 1), turns the page when a page button (+0x268 / +0x26c) is the focus, and shows the shown
@@ -6514,7 +6514,7 @@ int sv_Unk52f710(int *bk, char dir)
         d3t_PlayAnim(bk[0], "buch\\Buch_vorblaettern.baf", 0x12);
     *(char *)(bk + 0x9c) = (char)bk[0x9c] + dir;
     sv_Unk52f340(bk);
-    sb_PlaySample(SV_I((unsigned)&full_data_6f240c), "Umblaettern_s", 1, 0x3f, 0x7f, 0, 0);
+    sb_PlaySample(snd_BookBank, "Umblaettern_s", 1, 0x3f, 0x7f, 0, 0);
     return 1;
 }
 /* 0x52f9f0 / 0x52fa00, turn the book forward / backward by two pages */
@@ -6805,17 +6805,17 @@ void sv_Unk5301a0(void)
     cnt = (int *)(unsigned)&ai_Unk760488;
     SV_I((unsigned)&ai_Unk760614) = SV_US((unsigned)&ai_TimeHour);
     h = SV_I((unsigned)&ai_Unk760614);
-    if (SV_I((unsigned)&ai_Unk76061c) != 0)
-        d3t_SetSnow(SV_I((unsigned)&ai_Unk76061c), 1, 1, cnt[h], 1000);
-    if (SV_I((unsigned)&ai_Unk760618) != 0) {
+    if (SV_I((unsigned)&d3t_Snow) != 0)
+        d3t_SetSnow(SV_I((unsigned)&d3t_Snow), 1, 1, cnt[h], 1000);
+    if (SV_I((unsigned)&d3t_Rain) != 0) {
         u = cnt[h];
-        if (SV_I((unsigned)&ai_Unk76061c) != 0) {
+        if (SV_I((unsigned)&d3t_Snow) != 0) {
             if ((u & 1) == 0)
                 u = 0;
             else
                 u = (int)u / 5;
         }
-        d3t_SetRain(SV_I((unsigned)&ai_Unk760618), 1, 1, u, 1000);
+        d3t_SetRain(SV_I((unsigned)&d3t_Rain), 1, 1, u, 1000);
     }
     f1 = (float)((int *)(unsigned)&ai_Unk760550)[h];
     f2 = (float)((int *)(unsigned)&ai_Unk7605b0)[h];
@@ -6824,60 +6824,60 @@ void sv_Unk5301a0(void)
         c = cnt[h];
     if (c <= cnt[(h + 1) % 0x18])
         c = cnt[(h + 1) % 0x18];
-    if (SV_I((unsigned)&ai_Unk76061c) != 0)
-        d3t_SetSnow(SV_I((unsigned)&ai_Unk76061c), 1, 2, (int)(int)0.0f);
-    if (SV_I((unsigned)&ai_Unk760618) != 0)
-        d3t_SetRain(SV_I((unsigned)&ai_Unk760618), 1, 2, (int)(int)0.0f);
+    if (SV_I((unsigned)&d3t_Snow) != 0)
+        d3t_SetSnow(SV_I((unsigned)&d3t_Snow), 1, 2, (int)(int)0.0f);
+    if (SV_I((unsigned)&d3t_Rain) != 0)
+        d3t_SetRain(SV_I((unsigned)&d3t_Rain), 1, 2, (int)(int)0.0f);
     if (SV_I((unsigned)&d3_Sky) != 0) {
         w = (float)(c + 0x96) * (float)sqrt(f1 * f1 + f2 * f2) * 0.125f;
-        if (*(char *)(SV_I((unsigned)&ai_Unk760624) + 0x26) == 0) {
+        if (*(char *)(SV_I((unsigned)&d3_SkyLayer1) + 0x26) == 0) {
             if (c < 0x32) {
                 k = util_RandomU(4) & 0xffff;
-                if (_strcmpi(*(char **)(SV_I((unsigned)&ai_Unk760624) + 0x1c), (char *)((unsigned)&ai_Unk6238a4 + 0x4) + k * 0x4c) == 0)
+                if (_strcmpi(*(char **)(SV_I((unsigned)&d3_SkyLayer1) + 0x1c), (char *)((unsigned)&ai_Unk6238a4 + 0x4) + k * 0x4c) == 0)
                     k++;
                 name = (char *)((unsigned)&ai_Unk6238a4 + 0x4) + k * 0x4c;
             } else if (c < 0x96) {
                 k = util_RandomU(3) & 0xffff;
-                if (_strcmpi(*(char **)(SV_I((unsigned)&ai_Unk760624) + 0x1c), (char *)(unsigned)&full_data_6239d8 + k * 0x4c) == 0)
+                if (_strcmpi(*(char **)(SV_I((unsigned)&d3_SkyLayer1) + 0x1c), (char *)(unsigned)&full_data_6239d8 + k * 0x4c) == 0)
                     k++;
                 name = (char *)(unsigned)&full_data_6239d8 + k * 0x4c;
             } else {
                 k = util_RandomU(2) & 0xffff;
-                if (_strcmpi(*(char **)(SV_I((unsigned)&ai_Unk760624) + 0x1c), (char *)(unsigned)&ai_Unk623ac0 + k * 0x4c) == 0)
+                if (_strcmpi(*(char **)(SV_I((unsigned)&d3_SkyLayer1) + 0x1c), (char *)(unsigned)&ai_Unk623ac0 + k * 0x4c) == 0)
                     k++;
                 name = (char *)(unsigned)&ai_Unk623ac0 + k * 0x4c;
             }
-            d3sky_SetLayerTex(SV_I((unsigned)&ai_Unk760624), name);
-            *(int *)SV_I((unsigned)&ai_Unk760624) = *(int *)(name + 0x40);
-            *(int *)(SV_I((unsigned)&ai_Unk760624) + 0x18) = *(int *)(name + 0x44);
-            *(int *)(SV_I((unsigned)&ai_Unk760624) + 0x14) = *(int *)(name + 0x48);
-            d3sky_FadeLayer(SV_I((unsigned)&d3_Sky), SV_I((unsigned)&ai_Unk760624), 0xff, 1500.0f);
+            d3sky_SetLayerTex(SV_I((unsigned)&d3_SkyLayer1), name);
+            *(int *)SV_I((unsigned)&d3_SkyLayer1) = *(int *)(name + 0x40);
+            *(int *)(SV_I((unsigned)&d3_SkyLayer1) + 0x18) = *(int *)(name + 0x44);
+            *(int *)(SV_I((unsigned)&d3_SkyLayer1) + 0x14) = *(int *)(name + 0x48);
+            d3sky_FadeLayer(SV_I((unsigned)&d3_Sky), SV_I((unsigned)&d3_SkyLayer1), 0xff, 1500.0f);
         }
-        if (*(char *)(SV_I((unsigned)&ai_Unk760624) + 0x26) == -1) {
+        if (*(char *)(SV_I((unsigned)&d3_SkyLayer1) + 0x26) == -1) {
             if (c < 0x32) {
                 k = util_RandomU(4) & 0xffff;
-                if (_strcmpi(*(char **)(SV_I((unsigned)&ai_Unk760620) + 0x1c), (char *)((unsigned)&ai_Unk6238a4 + 0x4) + k * 0x4c) == 0)
+                if (_strcmpi(*(char **)(SV_I((unsigned)&d3_SkyLayer0) + 0x1c), (char *)((unsigned)&ai_Unk6238a4 + 0x4) + k * 0x4c) == 0)
                     k++;
                 name = (char *)((unsigned)&ai_Unk6238a4 + 0x4) + k * 0x4c;
             } else if (c < 0x96) {
                 k = util_RandomU(3) & 0xffff;
-                if (_strcmpi(*(char **)(SV_I((unsigned)&ai_Unk760620) + 0x1c), (char *)(unsigned)&full_data_6239d8 + k * 0x4c) == 0)
+                if (_strcmpi(*(char **)(SV_I((unsigned)&d3_SkyLayer0) + 0x1c), (char *)(unsigned)&full_data_6239d8 + k * 0x4c) == 0)
                     k++;
                 name = (char *)(unsigned)&full_data_6239d8 + k * 0x4c;
             } else {
                 k = util_RandomU(2) & 0xffff;
-                if (_strcmpi(*(char **)(SV_I((unsigned)&ai_Unk760620) + 0x1c), (char *)(unsigned)&ai_Unk623ac0 + k * 0x4c) == 0)
+                if (_strcmpi(*(char **)(SV_I((unsigned)&d3_SkyLayer0) + 0x1c), (char *)(unsigned)&ai_Unk623ac0 + k * 0x4c) == 0)
                     k++;
                 name = (char *)(unsigned)&ai_Unk623ac0 + k * 0x4c;
             }
-            d3sky_SetLayerTex(SV_I((unsigned)&ai_Unk760620), name);
-            *(int *)SV_I((unsigned)&ai_Unk760620) = *(int *)(name + 0x40);
-            *(int *)(SV_I((unsigned)&ai_Unk760620) + 0x18) = *(int *)(name + 0x44);
-            *(int *)(SV_I((unsigned)&ai_Unk760620) + 0x14) = *(int *)(name + 0x48);
-            d3sky_FadeLayer(SV_I((unsigned)&d3_Sky), SV_I((unsigned)&ai_Unk760624), 0, 1500.0f);
+            d3sky_SetLayerTex(SV_I((unsigned)&d3_SkyLayer0), name);
+            *(int *)SV_I((unsigned)&d3_SkyLayer0) = *(int *)(name + 0x40);
+            *(int *)(SV_I((unsigned)&d3_SkyLayer0) + 0x18) = *(int *)(name + 0x44);
+            *(int *)(SV_I((unsigned)&d3_SkyLayer0) + 0x14) = *(int *)(name + 0x48);
+            d3sky_FadeLayer(SV_I((unsigned)&d3_Sky), SV_I((unsigned)&d3_SkyLayer1), 0, 1500.0f);
         }
-        d3sky_SetLayerSpeed(SV_I((unsigned)&d3_Sky), SV_I((unsigned)&ai_Unk760620), w * 0.75f);
-        d3sky_SetLayerSpeed(SV_I((unsigned)&d3_Sky), SV_I((unsigned)&ai_Unk760624), w);
+        d3sky_SetLayerSpeed(SV_I((unsigned)&d3_Sky), SV_I((unsigned)&d3_SkyLayer0), w * 0.75f);
+        d3sky_SetLayerSpeed(SV_I((unsigned)&d3_Sky), SV_I((unsigned)&d3_SkyLayer1), w);
         if (c == 0) {
             u = 0;
             w = 2500.0f;
@@ -6885,8 +6885,8 @@ void sv_Unk5301a0(void)
             u = ((c << 6) / 1000) & 0xff | 0x60;
             w = 1000.0f;
         }
-        d3sky_FadeLayer(SV_I((unsigned)&d3_Sky), SV_I((unsigned)&ai_Unk760628), u, w);
-        d3sky_SetLayerSpeed(SV_I((unsigned)&d3_Sky), SV_I((unsigned)&ai_Unk760628), w * 1.5f);
+        d3sky_FadeLayer(SV_I((unsigned)&d3_Sky), SV_I((unsigned)&d3_SkyLayer2), u, w);
+        d3sky_SetLayerSpeed(SV_I((unsigned)&d3_Sky), SV_I((unsigned)&d3_SkyLayer2), w * 1.5f);
     }
 }
 /* 0x530670, the thunder / sun glow update of an hour: stops the emitters (0x414590 / 0x415380), a random thunder (sound "DonnerMittel_s", 0x760548 time, 0x76054c length) when the hour's flag 0x7604e8 is set, and
@@ -6897,15 +6897,15 @@ void sv_Unk530670(void)
     unsigned short hh;
     int v;
 
-    if (SV_I((unsigned)&ai_Unk760618) != 0)
-        d3t_DrawRain(SV_I((unsigned)&ai_Unk760618));
-    if (SV_I((unsigned)&ai_Unk76061c) != 0)
-        d3t_DrawSnow(SV_I((unsigned)&ai_Unk76061c));
+    if (SV_I((unsigned)&d3t_Rain) != 0)
+        d3t_DrawRain(SV_I((unsigned)&d3t_Rain));
+    if (SV_I((unsigned)&d3t_Snow) != 0)
+        d3t_DrawSnow(SV_I((unsigned)&d3t_Snow));
     hh = SV_US((unsigned)&ai_TimeHour);
     if (((int *)(unsigned)&full_data_7604e8)[hh] != 0 && ((short)util_RandomU(300) == 0 || (((int *)(unsigned)&full_data_7604e8)[SV_US((unsigned)&ai_TimeHour)] == 3 && (short)util_RandomU(100) == 0))) {
         SV_I((unsigned)&ai_Unk760548) = SV_I((unsigned)&ai_ClockMs);
         SV_I((unsigned)&ai_Unk76054c) = (util_RandomU(8) & 0xffff) + 8;
-        sb_PlaySample(SV_I((unsigned)&full_data_6f2408), "DonnerMittel_s", 1, 0x3f, (int)0.0f);
+        sb_PlaySample(snd_ThunderBank, "DonnerMittel_s", 1, 0x3f, (int)0.0f);
     }
     if (SV_I((unsigned)&d3_CurrentScene) == 0) {
         if (10 < SV_US((unsigned)&ai_TimeHour) && SV_US((unsigned)&ai_TimeHour) < 0x12 && *(int *)((unsigned)&ai_Unk760484 + SV_US((unsigned)&ai_TimeHour) * 4) != 0
@@ -7328,10 +7328,10 @@ extern float ai_Unk760550[0x18];
 extern float ai_Unk7605b0[0x18];
 extern int ai_Unk760610;
 extern int ai_Unk760614;
-extern int ai_Unk76061c;
-extern int ai_Unk760620;
-extern int ai_Unk760624;
-extern int ai_Unk760628;
+extern int d3t_Snow;
+extern int d3_SkyLayer0;
+extern int d3_SkyLayer1;
+extern int d3_SkyLayer2;
 extern int d2_HitWindow;
 extern int ai_Unkfb9060;
 extern int ai_Unkfb9064;
@@ -7509,10 +7509,10 @@ float ai_Unk760550[0x18] = {0};  /* 0x760550 */
 float ai_Unk7605b0[0x18] = {0};  /* 0x7605b0 */
 int ai_Unk760610 = 0;  /* 0x760610 */
 int ai_Unk760614 = 0;  /* 0x760614 */
-int ai_Unk76061c = 0;  /* 0x76061c */
-int ai_Unk760620 = 0;  /* 0x760620 */
-int ai_Unk760624 = 0;  /* 0x760624 */
-int ai_Unk760628 = 0;  /* 0x760628 */
+int d3t_Snow = 0;  /* 0x76061c */
+int d3_SkyLayer0 = 0;  /* 0x760620 */
+int d3_SkyLayer1 = 0;  /* 0x760624 */
+int d3_SkyLayer2 = 0;  /* 0x760628 */
 SVPLATE sv_NamePlates[0x20] = {0};  /* 0x760640, the name plate records (200 bytes each) */
 char sv_StatusText[136] = {0};  /* 0x761f40, the status line text */
 int sv_BubbleObjects[4286] = {0};  /* 0x761fc8, the object of each speech bubble ( */
