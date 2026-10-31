@@ -114,3 +114,4 @@
 2026-10-31T17:36:11 0x00536980 func main_Unk536980 -> main_ChooseHistory by:main why:the new game's history choice "Menu\CHOOSEHISTORY" (texts on / off, ai_ChooseMission), then the player setup and the character creation (0x536980)
 2026-10-31T17:36:54 0x00536d80 func main_Unk536d80 -> main_CharacterIntro by:main why:the "menu\choosecharacter_intro" dialog: create a character (1) or quick start (0) (0x536d80)
 2026-10-31T17:38:26 0x00536e80 func main_Unk536e80 -> main_ChooseDifficulty by:main why:the difficulty choice before a new game: five level buttons, ai_Difficulty 0 .. 4 (0x536e80)
+2026-10-31T17:39:45 0x00537040 func main_Unk537040 -> main_ChooseOpponents by:main why:the opponent selection "menu\choose_opponents": n slider rows over ai_Opponents (0x537040)
