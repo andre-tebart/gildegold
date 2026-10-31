@@ -456,7 +456,7 @@ struct D3ANIMSLOT * d3anim_GetMainSlot(struct D3ANIMCTL *ctl);                  
 
 /* 0x432750, the per-object animation step (d3_ForEachObject callback, ctx = d3_Time, | 0x80000000 in the
    second pass): steps the three vertex animation slots of every active control of the mesh material, then
-   the object's path animation (hermite through the keys). ROUGH draft from the disassembly. */
+   the object's path animation (hermite through the keys). @deep whole function compared against the original: the call sequence is equal (45 calls, same callees and order; the original duplicates the (int)acc conversion in both arms of 'if (flags & 2) time -= (int)acc; else time += (int)acc' and so does ours now). The big find of this session: the original has no pointer locals for the slot (s), the control (c) and the path keys / k0 / k1 / nk: every access repeats mat->ctl[i].slots[j].x and P->keys[P->key].x, which gave +67 lea / +68 loads and moved the size from 4478 to 5161 bytes (original 5056, instructions 1397 -> 1521 of 1578); data stays a local (1513 vs 1538 hunks). Remaining: FPU spill pairs / slots and register allocation, no statement is missing; Q2 (P->unk10), Q4 (OBJ_LAST / SLOT_F / SLOT_TURN raw macros and 3 casts) are still open readability work, ROUGH removed. Tried: per-part variants of the expression forms (c kept, s kept, keys / nk / k0 k1 each alone: all worse in size or hunks) (size: 1521 vs 1578 instructions, explained: ours 1521 vs original 1578 (was 1397 before this session's reconstruction): the remaining +57 are float spill pairs, op histogram +21 fstp [mem], +14 fld [mem], +7 fadd [mem], +18 mov reg,[mem], +9 mov [mem],reg, and the frame 0xbc vs 0x70 = 0x4c bytes = 19 more 4-byte slots in the original; they are FPU temporaries (the d3_Hermite arguments, tin/tout, the per-key interpolation terms) that the original stores to stack slots and reloads where ours keeps them on the FPU stack) */
 char d3anim_StepObject(D3OBJECT *obj, void *ctx)
 {
     unsigned int now = (unsigned int)ctx & 0x7fffffff;
@@ -483,231 +483,225 @@ char d3anim_StepObject(D3OBJECT *obj, void *ctx)
         if (!second && obj->info && !(mat->flags & 0x40) && obj->type == 4)
             tex_Animate(obj, now);
         for (i = 0; i < mat->nctl; i++) {
-            c = &mat->ctl[i];
-            if (!c->active)
+            if (!mat->ctl[i].active)
                 continue;
             for (j = 0; j < 3; j++) {
-                s = &c->slots[j];
-                data = s->data;
-                if (!data || !(s->flags.b[8] & 2))
+                data = mat->ctl[i].slots[j].data;
+                if (!data || !(mat->ctl[i].slots[j].flags.b[8] & 2))
                     continue;
-                if (now - OBJ_LAST(obj) > (unsigned int)s->timeout)
+                if (now - OBJ_LAST(obj) > (unsigned int)mat->ctl[i].slots[j].timeout)
                     over = 1;
                 last = data->first;
                 nframes = data->nframes;
-                if (s->flags.b[1] & 0x10) {
+                if (mat->ctl[i].slots[j].flags.b[1] & 0x10) {
                     limit = nframes - 1;
                     if (!data->relative)
-                        s->lastFrame = 0;
+                        mat->ctl[i].slots[j].lastFrame = 0;
                 } else
                     limit = data->last;
-                s->flags.b[1] &= ~0x20;
+                mat->ctl[i].slots[j].flags.b[1] &= ~0x20;
                 data->lastuse = d3anim_Clock;
                 d3_UpdateObject(obj, 1);
                 done = 0;
-                if (s->fadeStart != s->fadeEnd) {
-                    if ((unsigned int)s->fadeEnd > now)
-                        s->weight = (float)(int)(now - s->fadeStart) / (s->fadeEnd - s->fadeStart) * (s->fadeTo - s->fadeFrom) + s->fadeFrom;
+                if (mat->ctl[i].slots[j].fadeStart != mat->ctl[i].slots[j].fadeEnd) {
+                    if ((unsigned int)mat->ctl[i].slots[j].fadeEnd > now)
+                        mat->ctl[i].slots[j].weight = (float)(int)(now - mat->ctl[i].slots[j].fadeStart) / (mat->ctl[i].slots[j].fadeEnd - mat->ctl[i].slots[j].fadeStart) * (mat->ctl[i].slots[j].fadeTo - mat->ctl[i].slots[j].fadeFrom) + mat->ctl[i].slots[j].fadeFrom;
                     else {
-                        s->fadeEnd = 0;
-                        s->fadeStart = 0;
-                        s->weight = s->fadeTo;
-                        if (s->weight == 0.0)
+                        mat->ctl[i].slots[j].fadeEnd = 0;
+                        mat->ctl[i].slots[j].fadeStart = 0;
+                        mat->ctl[i].slots[j].weight = mat->ctl[i].slots[j].fadeTo;
+                        if (mat->ctl[i].slots[j].weight == 0.0)
                             done = 1;
                     }
                 }
-                acc = ((s->flags.b[8] >> 1) & 1) * s->speed * dt + s->frameTime;
-                s->frameTime = acc;
+                acc = ((mat->ctl[i].slots[j].flags.b[8] >> 1) & 1) * mat->ctl[i].slots[j].speed * dt + mat->ctl[i].slots[j].frameTime;
+                mat->ctl[i].slots[j].frameTime = acc;
                 n = (int)acc;
-                if (s->flags.b[1] & 2)
-                    s->subFrame -= n;
+                if (mat->ctl[i].slots[j].flags.b[1] & 2)
+                    mat->ctl[i].slots[j].subFrame -= n;
                 else
-                    s->subFrame += n;
-                s->frameTime = acc - n;
+                    mat->ctl[i].slots[j].subFrame += n;
+                mat->ctl[i].slots[j].frameTime = acc - n;
 normalize:
-                if (s->flags.b[1] & 2) {
-                    n = s->subFrame;
+                if (mat->ctl[i].slots[j].flags.b[1] & 2) {
+                    n = mat->ctl[i].slots[j].subFrame;
                     if (n < 0) {
-                        if (s->nextFrame > last) {
-                            s->frame--;
-                            s->nextFrame = d3anim_NextFrame(s->flags, s->frame, last, limit, nframes);
-                            s->subFrame = FRAME_AT(data, s->nextFrame)->count + n;
+                        if (mat->ctl[i].slots[j].nextFrame > last) {
+                            mat->ctl[i].slots[j].frame--;
+                            mat->ctl[i].slots[j].nextFrame = d3anim_NextFrame(mat->ctl[i].slots[j].flags, mat->ctl[i].slots[j].frame, last, limit, nframes);
+                            mat->ctl[i].slots[j].subFrame = FRAME_AT(data, mat->ctl[i].slots[j].nextFrame)->count + n;
                         } else {
-                            s->flags.b[8] &= ~0x10;
-                            if (s->flags.b[1] & 1) {
-                                s->subFrame = -n;
-                                s->frame = last;
-                                s->flags.b[1] &= ~2;
-                                s->nextFrame = d3anim_NextFrame(s->flags, last, last, limit, nframes);
-                                if (s->flags.b[0] > 0) {
-                                    s->flags.b[0]--;
-                                    if (s->flags.b[0] == 1)
-                                        s->flags.b[1] |= 0x10;
+                            mat->ctl[i].slots[j].flags.b[8] &= ~0x10;
+                            if (mat->ctl[i].slots[j].flags.b[1] & 1) {
+                                mat->ctl[i].slots[j].subFrame = -n;
+                                mat->ctl[i].slots[j].frame = last;
+                                mat->ctl[i].slots[j].flags.b[1] &= ~2;
+                                mat->ctl[i].slots[j].nextFrame = d3anim_NextFrame(mat->ctl[i].slots[j].flags, last, last, limit, nframes);
+                                if (mat->ctl[i].slots[j].flags.b[0] > 0) {
+                                    mat->ctl[i].slots[j].flags.b[0]--;
+                                    if (mat->ctl[i].slots[j].flags.b[0] == 1)
+                                        mat->ctl[i].slots[j].flags.b[1] |= 0x10;
                                 }
                             } else {
-                                if (s->flags.b[0] > 0) {
-                                    s->flags.b[0]--;
-                                    if (s->flags.b[0] == 1)
-                                        s->flags.b[1] |= 0x10;
+                                if (mat->ctl[i].slots[j].flags.b[0] > 0) {
+                                    mat->ctl[i].slots[j].flags.b[0]--;
+                                    if (mat->ctl[i].slots[j].flags.b[0] == 1)
+                                        mat->ctl[i].slots[j].flags.b[1] |= 0x10;
                                 }
-                                s->frame = limit;
-                                s->subFrame = FRAME_AT(data, limit)->count + n;
-                                s->nextFrame = d3anim_NextFrame(s->flags, limit, last, limit, nframes);
+                                mat->ctl[i].slots[j].frame = limit;
+                                mat->ctl[i].slots[j].subFrame = FRAME_AT(data, limit)->count + n;
+                                mat->ctl[i].slots[j].nextFrame = d3anim_NextFrame(mat->ctl[i].slots[j].flags, limit, last, limit, nframes);
                             }
                         }
                     }
                 } else {
-                    n = FRAME_AT(data, s->frame)->count;
-                    if (s->subFrame >= n) {
-                        if (s->frame + 1 < limit) {
-                            s->frame++;
-                            s->subFrame -= n;
-                        } else if (s->flags.b[1] & 0x10) {
+                    n = FRAME_AT(data, mat->ctl[i].slots[j].frame)->count;
+                    if (mat->ctl[i].slots[j].subFrame >= n) {
+                        if (mat->ctl[i].slots[j].frame + 1 < limit) {
+                            mat->ctl[i].slots[j].frame++;
+                            mat->ctl[i].slots[j].subFrame -= n;
+                        } else if (mat->ctl[i].slots[j].flags.b[1] & 0x10) {
                             done = 1;
-                            s->subFrame = n - 1;
-                        } else if (s->flags.b[1] & 1) {
-                            s->flags.b[1] |= 2;
-                            s->frame = s->nextFrame;
-                            s->subFrame = n - ((s->flags.b[8] >> 1) & 1) - 1;
-                            if (s->flags.b[0] > 0) {
-                                s->flags.b[0]--;
-                                if (s->flags.b[0] == 1)
-                                    s->flags.b[1] |= 0x10;
+                            mat->ctl[i].slots[j].subFrame = n - 1;
+                        } else if (mat->ctl[i].slots[j].flags.b[1] & 1) {
+                            mat->ctl[i].slots[j].flags.b[1] |= 2;
+                            mat->ctl[i].slots[j].frame = mat->ctl[i].slots[j].nextFrame;
+                            mat->ctl[i].slots[j].subFrame = n - ((mat->ctl[i].slots[j].flags.b[8] >> 1) & 1) - 1;
+                            if (mat->ctl[i].slots[j].flags.b[0] > 0) {
+                                mat->ctl[i].slots[j].flags.b[0]--;
+                                if (mat->ctl[i].slots[j].flags.b[0] == 1)
+                                    mat->ctl[i].slots[j].flags.b[1] |= 0x10;
                             }
                         } else {
-                            s->flags.b[8] &= ~0x10;
-                            if (s->flags.b[0] > 0) {
-                                s->flags.b[0]--;
-                                if (s->flags.b[0] == 1)
-                                    s->flags.b[1] |= 0x10;
+                            mat->ctl[i].slots[j].flags.b[8] &= ~0x10;
+                            if (mat->ctl[i].slots[j].flags.b[0] > 0) {
+                                mat->ctl[i].slots[j].flags.b[0]--;
+                                if (mat->ctl[i].slots[j].flags.b[0] == 1)
+                                    mat->ctl[i].slots[j].flags.b[1] |= 0x10;
                             }
-                            s->subFrame -= n;
-                            s->frame = last;
+                            mat->ctl[i].slots[j].subFrame -= n;
+                            mat->ctl[i].slots[j].frame = last;
                             if (!data->relative)
-                                d3anim_ApplyRootMotion(obj, s, s->lastFrame, limit, SLOT_TURN(s));
+                                d3anim_ApplyRootMotion(obj, &mat->ctl[i].slots[j], mat->ctl[i].slots[j].lastFrame, limit, SLOT_TURN(&mat->ctl[i].slots[j]));
                         }
-                        s->nextFrame = d3anim_NextFrame(s->flags, s->frame, last, limit, nframes);
+                        mat->ctl[i].slots[j].nextFrame = d3anim_NextFrame(mat->ctl[i].slots[j].flags, mat->ctl[i].slots[j].frame, last, limit, nframes);
                     }
                 }
-                if (s->flags.b[8] & 4) {
-                    n = FRAME_AT(data, s->frame)->count;
+                if (mat->ctl[i].slots[j].flags.b[8] & 4) {
+                    n = FRAME_AT(data, mat->ctl[i].slots[j].frame)->count;
                     half = n / 2;
-                    if (s->subFrame >= 0 && s->subFrame < n)
-                        half = s->subFrame;
-                    d3anim_RootPosAt(obj, s, s->frame, half, &out);
-                    if (fabs(out.x - SLOT_F(s, 0x4c)) < SLOT_F(s, 0x5c) && fabs(out.z - SLOT_F(s, 0x54)) < SLOT_F(s, 0x5c)) {
-                        s->subFrame = half;
-                        s->flags.b[8] |= 8;
+                    if (mat->ctl[i].slots[j].subFrame >= 0 && mat->ctl[i].slots[j].subFrame < n)
+                        half = mat->ctl[i].slots[j].subFrame;
+                    d3anim_RootPosAt(obj, &mat->ctl[i].slots[j], mat->ctl[i].slots[j].frame, half, &out);
+                    if (fabs(out.x - SLOT_F(&mat->ctl[i].slots[j], 0x4c)) < SLOT_F(&mat->ctl[i].slots[j], 0x5c) && fabs(out.z - SLOT_F(&mat->ctl[i].slots[j], 0x54)) < SLOT_F(&mat->ctl[i].slots[j], 0x5c)) {
+                        mat->ctl[i].slots[j].subFrame = half;
+                        mat->ctl[i].slots[j].flags.b[8] |= 8;
                         done = 1;
                     }
                 }
                 if (!done) {
-                    if (s->subFrame < 0)
+                    if (mat->ctl[i].slots[j].subFrame < 0)
                         goto normalize;
-                    if (s->subFrame >= FRAME_AT(data, s->frame)->count && !(s->flags.b[1] & 2))
+                    if (mat->ctl[i].slots[j].subFrame >= FRAME_AT(data, mat->ctl[i].slots[j].frame)->count && !(mat->ctl[i].slots[j].flags.b[1] & 2))
                         goto normalize;
-                    if (s->subFrame >= FRAME_AT(data, s->nextFrame)->count && (s->flags.b[1] & 2))
+                    if (mat->ctl[i].slots[j].subFrame >= FRAME_AT(data, mat->ctl[i].slots[j].nextFrame)->count && (mat->ctl[i].slots[j].flags.b[1] & 2))
                         goto normalize;
                 }
                 if (data->relative)
-                    d3anim_ApplyMotionTo(obj, s, s->subFrame, s->frame, SLOT_TURN(s));
-                if (s->attachFirst != -1 && s->attachLast != -1 && s->attachBone != -1 && s->attached) {
-                    if (s->frame >= s->attachFirst) {
-                        if (s->frame >= s->attachLast) {
-                            if (s->flags.b[8] & 0x40) {
-                                s->flags.b[8] &= ~0x40;
-                                s->attached = 0;
-                                s->attachFirst = s->attachLast = s->attachBone = -1;
+                    d3anim_ApplyMotionTo(obj, &mat->ctl[i].slots[j], mat->ctl[i].slots[j].subFrame, mat->ctl[i].slots[j].frame, SLOT_TURN(&mat->ctl[i].slots[j]));
+                if (mat->ctl[i].slots[j].attachFirst != -1 && mat->ctl[i].slots[j].attachLast != -1 && mat->ctl[i].slots[j].attachBone != -1 && mat->ctl[i].slots[j].attached) {
+                    if (mat->ctl[i].slots[j].frame >= mat->ctl[i].slots[j].attachFirst) {
+                        if (mat->ctl[i].slots[j].frame >= mat->ctl[i].slots[j].attachLast) {
+                            if (mat->ctl[i].slots[j].flags.b[8] & 0x40) {
+                                mat->ctl[i].slots[j].flags.b[8] &= ~0x40;
+                                mat->ctl[i].slots[j].attached = 0;
+                                mat->ctl[i].slots[j].attachFirst = mat->ctl[i].slots[j].attachLast = mat->ctl[i].slots[j].attachBone = -1;
                             }
                         } else {
-                            D3OBJECT *att = (D3OBJECT *)s->attached;
+                            D3OBJECT *att = (D3OBJECT *)mat->ctl[i].slots[j].attached;
 
-                            if (!(s->flags.b[8] & 0x40)) {
-                                s->flags.b[8] |= 0x40;
-                                SLOT_F(s, 0x20) = att->pos.x;
-                                SLOT_F(s, 0x24) = att->pos.y;
-                                SLOT_F(s, 0x28) = att->pos.z;
+                            if (!(mat->ctl[i].slots[j].flags.b[8] & 0x40)) {
+                                mat->ctl[i].slots[j].flags.b[8] |= 0x40;
+                                SLOT_F(&mat->ctl[i].slots[j], 0x20) = att->pos.x;
+                                SLOT_F(&mat->ctl[i].slots[j], 0x24) = att->pos.y;
+                                SLOT_F(&mat->ctl[i].slots[j], 0x28) = att->pos.z;
                             }
-                            t = (float)s->subFrame / FRAME_AT(data, s->frame)->count;
-                            d3_Lerp3((D3VECTOR4 *)&FRAME_AT(data, s->frame)->bone[s->attachBone].pos,
-                                         (D3VECTOR4 *)&FRAME_AT(data, s->nextFrame)->bone[s->attachBone].pos, t, (D3VECTOR4 *)&v);
-                            w.x = FRAME_AT(data, s->attachFirst)->bone[s->attachBone].pos.x - v.x;
-                            w.y = FRAME_AT(data, s->attachFirst)->bone[s->attachBone].pos.y - v.y;
-                            w.z = FRAME_AT(data, s->attachFirst)->bone[s->attachBone].pos.z - v.z;
+                            t = (float)mat->ctl[i].slots[j].subFrame / FRAME_AT(data, mat->ctl[i].slots[j].frame)->count;
+                            d3_Lerp3((D3VECTOR4 *)&FRAME_AT(data, mat->ctl[i].slots[j].frame)->bone[mat->ctl[i].slots[j].attachBone].pos,
+                                         (D3VECTOR4 *)&FRAME_AT(data, mat->ctl[i].slots[j].nextFrame)->bone[mat->ctl[i].slots[j].attachBone].pos, t, (D3VECTOR4 *)&v);
+                            w.x = FRAME_AT(data, mat->ctl[i].slots[j].attachFirst)->bone[mat->ctl[i].slots[j].attachBone].pos.x - v.x;
+                            w.y = FRAME_AT(data, mat->ctl[i].slots[j].attachFirst)->bone[mat->ctl[i].slots[j].attachBone].pos.y - v.y;
+                            w.z = FRAME_AT(data, mat->ctl[i].slots[j].attachFirst)->bone[mat->ctl[i].slots[j].attachBone].pos.z - v.z;
                             d3_DirToWorld(obj, (float *)&w, (float *)&v);
                             out.x = v.z * att->matrix._31 + v.y * att->matrix._21 + v.x * att->matrix._11;
                             out.y = v.z * att->matrix._32 + v.y * att->matrix._22 + v.x * att->matrix._12;
                             out.z = v.z * att->matrix._33 + v.y * att->matrix._23 + v.x * att->matrix._13;
-                            out.x += SLOT_F(s, 0x20);
-                            out.y += SLOT_F(s, 0x24);
-                            out.z += SLOT_F(s, 0x28);
+                            out.x += SLOT_F(&mat->ctl[i].slots[j], 0x20);
+                            out.y += SLOT_F(&mat->ctl[i].slots[j], 0x24);
+                            out.z += SLOT_F(&mat->ctl[i].slots[j], 0x28);
                             d3_SetObjectPos(att, &out);
                         }
                     }
                 }
                 released = 0;
                 if (done) {
-                    s->flags.b[8] &= ~2;
-                    if (!(s->flags.b[1] & 8)) {
+                    mat->ctl[i].slots[j].flags.b[8] &= ~2;
+                    if (!(mat->ctl[i].slots[j].flags.b[1] & 8)) {
                         released = 1;
                         if (!data->relative)
-                            d3anim_ApplyRootMotion(obj, s, s->lastFrame, limit, SLOT_TURN(s));
-                        d3_ReleaseTexture(c, (char *)data);
+                            d3anim_ApplyRootMotion(obj, &mat->ctl[i].slots[j], mat->ctl[i].slots[j].lastFrame, limit, SLOT_TURN(&mat->ctl[i].slots[j]));
+                        d3_ReleaseTexture(&mat->ctl[i], (char *)data);
                     } else
-                        s->flags.b[1] |= 0x20;
+                        mat->ctl[i].slots[j].flags.b[1] |= 0x20;
                 }
                 if (over && !released)
-                    shown = FRAME_AT(s->data, s->frame);
+                    shown = FRAME_AT(mat->ctl[i].slots[j].data, mat->ctl[i].slots[j].frame);
             }
         }
     }
     d3anim_PoseBones(obj);
     P = D3_OBJPATH(obj);
     if (P && (P->flags.b[8] & 2)) {
-        nk = P->nkeys;
-        keys = P->keys;
         P->flags.b[1] &= ~0x20;
         if (P->flags.b[1] & 2) {
-            u = (float)P->time / keys[P->next].time;
+            u = (float)P->time / P->keys[P->next].time;
             t = 1.0f - u;
         } else {
-            t = (float)P->time / keys[P->key].time;
+            t = (float)P->time / P->keys[P->key].time;
             u = 1.0f - t;
         }
-        k0 = &keys[P->key];
-        k1 = &keys[P->next];
         if (P->flags.b[1] & 4) {
             if (P->flags.b[1] & 2) {
-                tin.x = -k1->posin.x; tin.y = -k1->posin.y; tin.z = -k1->posin.z;
-                tout.x = -k1->posout.x; tout.y = -k1->posout.y; tout.z = -k1->posout.z;
-                v.x = d3_Hermite(k0->pos.x, k1->pos.x, tout.x, tin.x, t) + P->pos.x;
-                v.y = d3_Hermite(k0->pos.y, k1->pos.y, tout.y, tin.y, t) + P->pos.y;
-                v.z = d3_Hermite(k0->pos.z, k1->pos.z, tout.z, tin.z, t) + P->pos.z;
+                tin.x = -P->keys[P->next].posin.x; tin.y = -P->keys[P->next].posin.y; tin.z = -P->keys[P->next].posin.z;
+                tout.x = -P->keys[P->next].posout.x; tout.y = -P->keys[P->next].posout.y; tout.z = -P->keys[P->next].posout.z;
+                v.x = d3_Hermite(P->keys[P->key].pos.x, P->keys[P->next].pos.x, tout.x, tin.x, t) + P->pos.x;
+                v.y = d3_Hermite(P->keys[P->key].pos.y, P->keys[P->next].pos.y, tout.y, tin.y, t) + P->pos.y;
+                v.z = d3_Hermite(P->keys[P->key].pos.z, P->keys[P->next].pos.z, tout.z, tin.z, t) + P->pos.z;
                 d3_SetObjectPos(obj, &v);
                 if (obj->type < 5) {
-                    tin.x = -k1->rotin.x; tin.y = -k1->rotin.y; tin.z = -k1->rotin.z;
-                    tout.x = -k1->rotout.x; tout.y = -k1->rotout.y; tout.z = -k1->rotout.z;
-                    w.x = d3_Hermite(k0->rot.x, k1->rot.x, tout.x, tin.x, t) + P->rot.x;
-                    w.y = d3_Hermite(k0->rot.y, k1->rot.y, tout.y, tin.y, t) + P->rot.y;
-                    w.z = d3_Hermite(k0->rot.z, k1->rot.z, tout.z, tin.z, t) + P->rot.z;
+                    tin.x = -P->keys[P->next].rotin.x; tin.y = -P->keys[P->next].rotin.y; tin.z = -P->keys[P->next].rotin.z;
+                    tout.x = -P->keys[P->next].rotout.x; tout.y = -P->keys[P->next].rotout.y; tout.z = -P->keys[P->next].rotout.z;
+                    w.x = d3_Hermite(P->keys[P->key].rot.x, P->keys[P->next].rot.x, tout.x, tin.x, t) + P->rot.x;
+                    w.y = d3_Hermite(P->keys[P->key].rot.y, P->keys[P->next].rot.y, tout.y, tin.y, t) + P->rot.y;
+                    w.z = d3_Hermite(P->keys[P->key].rot.z, P->keys[P->next].rot.z, tout.z, tin.z, t) + P->rot.z;
                     d3_SetObjectRot(obj, &w);
                 }
             } else {
-                v.x = d3_Hermite(k0->pos.x, k1->pos.x, k0->posin.x, k0->posout.x, t) + P->pos.x;
-                v.y = d3_Hermite(k0->pos.y, k1->pos.y, k0->posin.y, k0->posout.y, t) + P->pos.y;
-                v.z = d3_Hermite(k0->pos.z, k1->pos.z, k0->posin.z, k0->posout.z, t) + P->pos.z;
+                v.x = d3_Hermite(P->keys[P->key].pos.x, P->keys[P->next].pos.x, P->keys[P->key].posin.x, P->keys[P->key].posout.x, t) + P->pos.x;
+                v.y = d3_Hermite(P->keys[P->key].pos.y, P->keys[P->next].pos.y, P->keys[P->key].posin.y, P->keys[P->key].posout.y, t) + P->pos.y;
+                v.z = d3_Hermite(P->keys[P->key].pos.z, P->keys[P->next].pos.z, P->keys[P->key].posin.z, P->keys[P->key].posout.z, t) + P->pos.z;
                 d3_SetObjectPos(obj, &v);
                 if (obj->type < 5) {
-                    w.x = d3_Hermite(k0->rot.x, k1->rot.x, k0->rotin.x, k0->rotout.x, t) + P->rot.x;
-                    w.y = d3_Hermite(k0->rot.y, k1->rot.y, k0->rotin.y, k0->rotout.y, t) + P->rot.y;
-                    w.z = d3_Hermite(k0->rot.z, k1->rot.z, k0->rotin.z, k0->rotout.z, t) + P->rot.z;
+                    w.x = d3_Hermite(P->keys[P->key].rot.x, P->keys[P->next].rot.x, P->keys[P->key].rotin.x, P->keys[P->key].rotout.x, t) + P->rot.x;
+                    w.y = d3_Hermite(P->keys[P->key].rot.y, P->keys[P->next].rot.y, P->keys[P->key].rotin.y, P->keys[P->key].rotout.y, t) + P->rot.y;
+                    w.z = d3_Hermite(P->keys[P->key].rot.z, P->keys[P->next].rot.z, P->keys[P->key].rotin.z, P->keys[P->key].rotout.z, t) + P->rot.z;
                     d3_SetObjectRot(obj, &w);
                 }
             }
         } else {
-            v.x = t * k0->pos.x + u * k1->pos.x;
-            v.y = t * k0->pos.y + u * k1->pos.y;
-            v.z = t * k0->pos.z + u * k1->pos.z;
+            v.x = t * P->keys[P->key].pos.x + u * P->keys[P->next].pos.x;
+            v.y = t * P->keys[P->key].pos.y + u * P->keys[P->next].pos.y;
+            v.z = t * P->keys[P->key].pos.z + u * P->keys[P->next].pos.z;
             if (!d3_VecEqual(&v, &v, 0.0f)) {
                 v.x += P->pos.x;
                 v.y += P->pos.y;
@@ -715,9 +709,9 @@ normalize:
                 d3_SetObjectPos(obj, &v);
             }
             if (obj->type < 5) {
-                w.x = u * k1->rot.x + t * k0->rot.x + P->rot.x;
-                w.y = u * k1->rot.y + t * k0->rot.y + P->rot.y;
-                w.z = u * k1->rot.z + t * k0->rot.z + P->rot.z;
+                w.x = u * P->keys[P->next].rot.x + t * P->keys[P->key].rot.x + P->rot.x;
+                w.y = u * P->keys[P->next].rot.y + t * P->keys[P->key].rot.y + P->rot.y;
+                w.z = u * P->keys[P->next].rot.z + t * P->keys[P->key].rot.z + P->rot.z;
                 d3_SetObjectRot(obj, &w);
             }
         }
@@ -725,21 +719,20 @@ normalize:
         done = 0;
         if ((f1 & 4) && (f1 & 0x10) && !(f1 & 1) && !(P->flags.b[8] & 0x20) && P->next < P->key - 1) {
             P->flags.b[8] |= 0x20;
-            keys[P->key - 1].posin.x = keys[P->key - 1].posin.y = keys[P->key - 1].posin.z = 0;
-            keys[P->key - 2].posout.x = keys[P->key - 2].posout.y = keys[P->key - 2].posout.z = 0;
-            keys[P->key - 1].rotin.x = keys[P->key - 1].rotin.y = keys[P->key - 1].rotin.z = 0;
-            keys[P->key - 2].rotout.x = keys[P->key - 2].rotout.y = keys[P->key - 2].rotout.z = 0;
+            P->keys[P->key - 1].posin.x = P->keys[P->key - 1].posin.y = P->keys[P->key - 1].posin.z = 0;
+            P->keys[P->key - 2].posout.x = P->keys[P->key - 2].posout.y = P->keys[P->key - 2].posout.z = 0;
+            P->keys[P->key - 1].rotin.x = P->keys[P->key - 1].rotin.y = P->keys[P->key - 1].rotin.z = 0;
+            P->keys[P->key - 2].rotout.x = P->keys[P->key - 2].rotout.y = P->keys[P->key - 2].rotout.z = 0;
         }
         if (now - OBJ_LAST(obj) > (unsigned int)P->unk10)
             over2 = 1;
         acc = ((P->flags.b[8] >> 1) & 1) * P->fadeEnd * dt + *(float *)&P->timeout;
         *(float *)&P->timeout = acc;
-        n = (int)acc;
         if (P->flags.b[1] & 2)
-            P->time -= n;
+            P->time -= (int)acc;
         else
-            P->time += n;
-        *(float *)&P->timeout = acc - n;
+            P->time += (int)acc;
+        *(float *)&P->timeout = acc - (int)acc;
         for (;;) {
             f1 = P->flags.b[1];
             if (f1 & 2) {
@@ -753,7 +746,7 @@ normalize:
                             if (f1 & 1)
                                 P->time = -P->time;
                             else
-                                P->time = keys[nk - 1].time + P->time;
+                                P->time = P->keys[P->nkeys - 1].time + P->time;
                             P->flags.b[8] &= ~0x10;
                             P->flags.b[1] &= ~2;
                             P->key = 0;
@@ -769,33 +762,33 @@ normalize:
                         P->time = 0;
                     } else {
                         P->flags.b[8] &= ~0x10;
-                        P->time += keys[P->next].time;
+                        P->time += P->keys[P->next].time;
                         P->key = P->key - 1;
                     }
-                    P->next = d3anim_NextFrame(P->flags, P->key, 0, nk - 1, nk);
+                    P->next = d3anim_NextFrame(P->flags, P->key, 0, P->nkeys - 1, P->nkeys);
                     goto stepped;
                 }
-            } else if (P->time >= keys[P->key].time) {
-                int kt = keys[P->key].time;
+            } else if (P->time >= P->keys[P->key].time) {
+                int kt = P->keys[P->key].time;
 
-                if (P->key + 1 >= nk - 1 && (f1 & 1)) {
+                if (P->key + 1 >= P->nkeys - 1 && (f1 & 1)) {
 bounce:
                     P->flags.b[1] |= 2;
                     P->key = P->next;
                     P->time = kt - ((P->flags.b[8] >> 1) & 1) - 1;
-                } else if (P->key < nk - 1 && !(P->key + 1 >= nk - 1 && (f1 & 0x10) && !(f1 & 1))) {
+                } else if (P->key < P->nkeys - 1 && !(P->key + 1 >= P->nkeys - 1 && (f1 & 0x10) && !(f1 & 1))) {
                     if ((P->flags.b[8] & 0x10) && !(f1 & 0x11) && (f1 & 4)) {
-                        d3path_Tangents(&keys[P->key - 1], keys, &keys[1]);
+                        d3path_Tangents(&P->keys[P->key - 1], P->keys, &P->keys[1]);
                         P->flags.b[8] &= ~0x10;
                     }
-                    P->time -= keys[P->key].time;
+                    P->time -= P->keys[P->key].time;
                     P->key++;
                 } else if (f1 & 0x10) {
                     if (f1 & 1)
                         goto bounce;
                     done = 1;
-                    P->key = nk - 1;
-                    P->time = keys[P->key].time - 1;
+                    P->key = P->nkeys - 1;
+                    P->time = P->keys[P->key].time - 1;
                 } else if (f1 & 1)
                     goto bounce;
                 else {
@@ -807,16 +800,16 @@ bounce:
                             P->flags.b[1] |= 0x10;
                     }
                 }
-                P->next = d3anim_NextFrame(P->flags, P->key, 0, nk - 1, nk);
+                P->next = d3anim_NextFrame(P->flags, P->key, 0, P->nkeys - 1, P->nkeys);
 stepped:
                 if (done) {
-                    v.x = keys[P->next].pos.x + P->pos.x;
-                    v.y = keys[P->next].pos.y + P->pos.y;
-                    v.z = keys[P->next].pos.z + P->pos.z;
+                    v.x = P->keys[P->next].pos.x + P->pos.x;
+                    v.y = P->keys[P->next].pos.y + P->pos.y;
+                    v.z = P->keys[P->next].pos.z + P->pos.z;
                     d3_SetObjectPos(obj, &v);
-                    w.x = keys[P->next].rot.x + P->rot.x;
-                    w.y = keys[P->next].rot.y + P->rot.y;
-                    w.z = keys[P->next].rot.z + P->rot.z;
+                    w.x = P->keys[P->next].rot.x + P->rot.x;
+                    w.y = P->keys[P->next].rot.y + P->rot.y;
+                    w.z = P->keys[P->next].rot.z + P->rot.z;
                     d3_SetObjectRot(obj, &w);
                     if (!(P->flags.b[1] & 8))
                         d3anim_FreePath(obj);
@@ -827,8 +820,8 @@ stepped:
                     break;
                 }
             }
-            if (P->time >= 0 && !(!(P->flags.b[1] & 2) && P->time >= keys[P->key].time)
-                && !((P->flags.b[1] & 2) && P->time >= keys[P->next].time))
+            if (P->time >= 0 && !(!(P->flags.b[1] & 2) && P->time >= P->keys[P->key].time)
+                && !((P->flags.b[1] & 2) && P->time >= P->keys[P->next].time))
                 break;
         }
     }
