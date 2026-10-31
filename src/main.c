@@ -1976,37 +1976,42 @@ int main_ChooseTalents(void)
     d2_CloseView(f);
     return r;
 }
-/* 0x534b30, the character model choice of the character creation: the two tables of the 0x20-byte model names (the men: "patrizier_MANN2", "wirt_DICKER", .. ending with ""; the women: "patrizierin_FRAU", ..
-   ending with ""; they are built on the stack by the original), the three buttons (previous 0x1a, next 0x1b, ok 0x51b: the screen positions are float expressions lost in the pseudocode, placeholders 0) and the
-   preview model of the current entry put at the dummy "dummy_SPIELER" with the effect "Effekte/choose_character.esc"; the chosen name goes to 0x75e5f5, its id to 0x75e628; p is the start index
-   (0x504ad0); returns 1 when ok was pressed; ROUGH (note: the original counts both tables through the men table) */
+/* 0x534b30, the character model choice of the character creation: the two tables of the 0x20-byte model names (the men:
+   "patrizier_MANN2", "wirt_DICKER", .. ending with ""; the women: "patrizierin_FRAU", .. ending with ""), the three buttons
+   (next 0x1a, previous 0x1b, ok 0x51b, placed in 800-wide screen units scaled by d2_ScreenScale) and the preview model of the
+   current entry, put at the dummy "dummy_SPIELER" with the effect "Effekte/choose_character.esc"; the chosen name goes to
+   init_PlayerProfile.model, its id to modelId; job is the profile's job, its title group is the start index; returns 1 when ok
+   was pressed (Enter), 0 when cancelled (the original counts both tables through the men table) @deep body reconstructed against the original (calls, arguments, constants, loop forms match; the 34 table strings verified identical by simulating both sides' stores; cur is 0x30). Left: (1) fpu: the original keeps two products for the button x/y sums (fld s; fmul 150.0f; fld s; fmul 330.0f; faddp at +0xaf7 and +0xbb0/+0xbcf), ours is factored by VC6 into fld s; fadd/fmul (s*(150+330)); tried float/int/double literals, reversed operands, casts, static const x0/y0 (fadd [x0] then fmul): all factored; only a second symbol for the scale (extern ai_Unk5fe708) or a '+ 0.0f' keeps two products, neither has evidence. (2) allocation: the original keeps idx in edi, obj in ebp, shown in esi, bnext in ebx and a slot (frame 0x4a0 vs our 0x49c), ours idx in ebp / obj in esi / shown in ebx; the init block is the same stores in another schedule. Q7 open: ch.h does not include into main (D3ANIMSLOT tag, PATHOUT), gm_TitleGroup has no header prototype */
 
-int main_Unk534b30(int p)
+int main_ChooseModel(int job)
 {
     char men[17][0x20] = {"patrizier_MANN2", "wirt_DICKER", "arbeiter_MANN", "wirt3_MANN", "wirt2_DICKER", "buerger_MANN", "buerger2_MANN", "domherr_KUTTE", "buerger3_DICKER",
                           "patrizier_MANN2", "offizier_SOLDAT", "DIEB2_KUTTE", "raeubermeister_SOLDAT", "Nekromant_MEISTER", "zigeunermeister_MANN3", "schneider3_DICKER", ""};
     char women[17][0x20] = {"patrizierin_FRAU", "handwerkerin3_FRAU", "handwerkerin2_FRAU", "handwerkerin_FRAU", "magd_FRAU", "buergerin3_FRAU", "Bauerin_FRAU", "minerin2_FRAU", "buergerin2_FRAU",
                             "buergerin2_FRAU", "buergerin_FRAU", "arbeiterin_FRAU", "minerin_FRAU", "feldarbeiterin_FRAU", "zigeunerin_FRAU", "schneiderin3_FRAU", ""};
     char cur[0x30];
-    float pos[4];
-    int result, dummy, bnext, bprev, bok, idx, last, obj, nmen, nwomen, run, fx, k, m;
+    D3VECTOR4 pos;                  /* d3_PointToWorld writes the point and an angle after it */
+    D3OBJECT *dummy;
+    EVTSCRIPT *fx;
+    int result, bnext, bprev, bok, idx, shown, obj, nmen, nwomen;
     char *s;
 
     result = 0;
     obj = 0;
-    idx = gm_TitleGroup(p);
+    shown = -1;
+    idx = gm_TitleGroup(job);
     dummy = d3_FindObject(0, 0x100, 0, "dummy_SPIELER");
     if (dummy != 0)
-        d3_PointToWorld(dummy, dummy + 0x4c, pos);
-    bnext = d2_CreatePicObj((int)0.0f, (int)0.0f, 0x1a);
-    SV_WI2(bnext, 0x4c) = 1;
-    SV_WI2(bnext, 0x1c0) = 3;
-    bprev = d2_CreatePicObj((int)0.0f, (int)0.0f, 0x1b);
-    SV_WI2(bprev, 0x4c) = 1;
-    SV_WI2(bprev, 0x1c0) = 3;
-    bok = d2_CreatePicObj((int)0.0f, (int)0.0f, 0x51b);
-    SV_WI2(bok, 0x4c) = 1;
-    SV_WI2(bok, 0x1c0) = 3;
+        d3_PointToWorld(dummy, &dummy->pos, (D3VECTOR *)&pos);
+    bnext = d2_CreatePicObj((int)(d2_ScreenScale * 150.0f + d2_ScreenScale * 330.0f), (int)(d2_ScreenScale * 370.0f), 0x1a);
+    d2_Objs[bnext].interactive = 1;
+    d2_Objs[bnext].style = 3;
+    bprev = d2_CreatePicObj((int)(d2_ScreenScale * 330.0f), (int)(d2_ScreenScale * 370.0f), 0x1b);
+    d2_Objs[bprev].interactive = 1;
+    d2_Objs[bprev].style = 3;
+    bok = d2_CreatePicObj((int)(d2_ScreenScale * 70.0f + d2_ScreenScale * 330.0f), (int)(d2_ScreenScale * 45.0f + d2_ScreenScale * 370.0f), 0x51b);
+    d2_Objs[bok].interactive = 1;
+    d2_Objs[bok].style = 3;
     nmen = 0;
     if (men[0][0] != 0) {
         s = men[0];
@@ -2023,62 +2028,54 @@ int main_Unk534b30(int p)
             nwomen++;
         } while (*s != 0);
     }
-    last = -1;
-    run = sv_RunFrame((int)main_Unk534b30, 0x12d6);
-    if (run != 0) {
+    if (sv_RunFrame((int)main_ChooseModel, 0x12d6) != 0) {
         do {
-            if (U_I(((unsigned)&dm_L + 0x20)) != 0) {
-                U_I((unsigned)&sv_PopRequest) = 1;
+            if (dm_L.rup != 0) {
+                sv_PopRequest = 1;
                 result = 0;
             }
-            if (*(char *)(unsigned)&kb_Last == 'N' || (U_I((unsigned)&d2_ClickedId) != -1 && ai_Unk5fe710 == bnext))
+            if (kb_Last == 'N' || (d2_ClickedId != -1 && d2_PointerObj == bnext))
                 idx++;
-            else if (*(char *)(unsigned)&kb_Last == 'J' || (U_I((unsigned)&d2_ClickedId) != -1 && ai_Unk5fe710 == bprev))
+            else if (kb_Last == 'J' || (d2_ClickedId != -1 && d2_PointerObj == bprev))
                 idx--;
-            else if (*(char *)(unsigned)&kb_Last == 0x1c || (U_I((unsigned)&d2_ClickedId) != -1 && ai_Unk5fe710 == bok)) {
-                U_I((unsigned)&sv_PopRequest) = 1;
+            else if (kb_Last == 0x1c || (d2_ClickedId != -1 && d2_PointerObj == bok)) {
+                sv_PopRequest = 1;
                 result = 1;
             }
             if (obj != 0)
                 *(unsigned char *)(obj + 0x8c) |= 8;
-            if (last != idx) {
-                last = (int)evt_Load("Effekte/choose_character.esc");
-                if (last != 0) {
-                    fx = (int)0.0f;
-                    evt_RunScriptArgs((EVTSCRIPT *)last, 6, (int)0.0f);
-                }
+            if (shown != idx) {
+                fx = evt_Load("Effekte/choose_character.esc");
+                if (fx != 0)
+                    evt_RunScriptArgs(fx, 6, (int)pos.x, (int)pos.y + 0x14, (int)pos.z, 0x28, 0x5a, ch_EmptyName);
                 if (obj != 0) {
                     ch_AddAction(obj, 0x38, 0);
-                    do {
-                        run = sv_RunFrame(0, 0x12d6);
-                        if (run == 0)
-                            break;
-                    } while (*(int *)(obj + 0x128) != 0);
+                    while (sv_RunFrame(0, 0x12d6) != 0 && *(int *)(obj + 0x128) != 0)
+                        ;
                     ch_Delete(obj);
                 }
-                if (*(char *)((unsigned)&init_PlayerProfile + 0x8) == 0) {
-                    m = idx % nmen;
-                    if (m < 0)
-                        m = nmen - 1;
-                    strcpy(cur, men[m]);
+                if (init_PlayerProfile.sex == 0) {
+                    idx %= nmen;
+                    if (idx < 0)
+                        idx = nmen - 1;
+                    strcpy(cur, men[idx]);
                 } else {
-                    m = idx % nwomen;
-                    if (m < 0)
-                        m = nwomen - 1;
-                    strcpy(cur, women[m]);
+                    idx %= nwomen;
+                    if (idx < 0)
+                        idx = nwomen - 1;
+                    strcpy(cur, women[idx]);
                 }
                 strcpy(init_PlayerProfile.model, cur);
                 init_PlayerProfile.modelId = unk_Unk4fb770(cur) + 0x639;
-                obj = ch_Create(cur, pos);
+                obj = ch_Create(cur, &pos);
                 ch_PlaceAtObject(obj, dummy);
                 ch_SetVisible(obj, 0);
-                *(unsigned char *)(*(int *)(obj + 0x34) + 0x211) &= 0xfb;
+                (*(D3OBJECT **)(obj + 0x34))->objectFlags &= ~4;
                 *(unsigned char *)(obj + 0x8c) |= 8;
                 ch_AddAction(obj, 0x38, 1);
-                idx = m;
+                shown = idx;
             }
-            run = sv_RunFrame((int)main_Unk534b30, 0x12d6);
-        } while (run != 0);
+        } while (sv_RunFrame((int)main_ChooseModel, 0x12d6) != 0);
         if (obj != 0)
             ch_Delete(obj);
     }
@@ -2219,7 +2216,7 @@ lset:
                     d2_SetViewEnabled(f, 1);
                 } else {
                     h = ai_Unk58b880(0xc6);
-                    if (h == 0 || main_Unk534b30(*(unsigned char *)((unsigned)&init_PlayerProfile + 0x3)) == 0) {
+                    if (h == 0 || main_ChooseModel(*(unsigned char *)((unsigned)&init_PlayerProfile + 0x3)) == 0) {
                         if (ret == 0)
                             d2_SetViewEnabled(f, 1);
                     } else {
