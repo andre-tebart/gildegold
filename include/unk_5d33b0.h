@@ -35,8 +35,6 @@ typedef struct SNDOPTIONBYTES {
 } SNDOPTIONBYTES;
 extern SNDOPTIONBYTES ai_SoundOptions;  /* 0x6f3600 */
 
-extern float snd_VoiceVolume;       /* 0x602b08, the voice volume fraction (f3snd.h) */
-extern float snd_MusicVolume;       /* 0x602d68, the music volume 0..1 (f3snd.h) */
 void sb_SetMasterVolume(int volume);/* 0x427370, sblib.c (that unit has no header yet) */
 /* msx.h / f3snd.h redefine msx_Play with different types, so the unit cannot include both; the two
    setters are repeated from msx.h here. */
@@ -383,8 +381,6 @@ void sv_PopTo(int v);                       /* 0x52fb50, sv.c: pops the screen s
                                        first word is v (sets sv_PopRequest to its distance) */
 int cm_SendPlayerId(void);                  /* 0x4c3f90, cm.c: sends message 0x13 with the local player's
                                        id, returns the message slot handle (-1: none) */
-void unk_ClearEndGameGate(void);            /* 0x576020, unk_575860.c: clears the end-of-game gate */
-void unk_SetEndGameGate(void);              /* 0x576030, unk_575860.c: sets the end-of-game gate */
 void main_GameLoop(int ctl);                /* 0x53bb20, main.c: the main game loop / dialog callback */
 void txt_Format(char *out, int id0, ...);   /* 0x5176d0, io_text.c: formats a text id into out */
 
