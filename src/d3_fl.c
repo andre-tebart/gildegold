@@ -28,13 +28,17 @@ extern const char d3_ScrollPool[];
 #define d3d_TexGMask (d3d_UsedTexFormat.pf2.dwGBitMask)
 #define d3d_TexBMask (d3d_UsedTexFormat.pf2.dwBBitMask)
 
-/* 0x43eab0, blends n x n pixels of the four corner textures src[0..3] with the weights w into dst */
+/* 0x43eab0, blends n x n pixels of the four corner textures src[0..3] with the weights w into dst @deep read the whole function against the original 0x43eab0..0x43ed68 (the uniform-texture loop is equal; the blend loop compared statement by statement): the weight word goes through a byte union (the original stores it to [esp+0x38] and loads the bytes [esp+0x39..0x3b] with and 0xff), the channel indices are (unsigned char)(sum >> 8) (the original's sar 8 / and 0xff, not mov dl,ah). ours 214 vs 214 instructions, same statements and order of the channels (2, 1, 0). Left: allocation and scheduling in the blend loop: the original keeps a in [esp+0x10], b esi, c ecx/[esp+0x1c], e eax, ww in ecx/[esp+0x30], the dst pointer in [esp+0x20], ours a in [esp+0x10] but b/c/e in esi/ecx/eax differently and ww in ebx ('- mov eax,[ebx] / - add ebx,edx' vs '+ mov edx,[ecx] / + add ecx,eax'); the channel-0 products are summed in another order (the original s0*a, s3*e, s2*c, s1*b by its register choice; '- imul ebx,esi / - imul esi,ecx' vs '+ imul ebx,eax / + imul eax,ecx'), and the original spills the zeroed edx through [esp+0x34] around s3. */
 void d3fl_BlendC(unsigned short *dst, unsigned long *w, unsigned char **src, unsigned int n)
 {
     unsigned int i, j;
     unsigned short *d;
     unsigned char *s, *s0, *s1, *s2, *s3;
-    unsigned long *ww, wv;
+    unsigned long *ww;
+    union {
+        unsigned long l;
+        unsigned char b[4];             /* the weights of the four corners */
+    } wv;
     int a, b, c, e;
 
     if (src[0] == src[1] && src[1] == src[2] && src[2] == src[3]) {
@@ -57,15 +61,15 @@ void d3fl_BlendC(unsigned short *dst, unsigned long *w, unsigned char **src, uns
             d = dst;
             ww = w;
             for (i = 0; i < n; i++) {
-                wv = *ww;
-                a = wv & 0xff;
-                b = wv >> 8 & 0xff;
-                c = wv >> 16 & 0xff;
-                e = wv >> 24;
+                wv.l = *ww;
+                a = wv.b[0];
+                b = wv.b[1];
+                c = wv.b[2];
+                e = wv.b[3];
                 ww = (unsigned long *)((char *)ww + d3fl_SrcStep);
-                *d++ = (unsigned short)d3fl_ColorTab[2][(s0[2] * a + s1[2] * b + s2[2] * c + s3[2] * e) >> 8 & 0xff]
-                     + (unsigned short)d3fl_ColorTab[1][(s0[1] * a + s1[1] * b + s2[1] * c + s3[1] * e) >> 8 & 0xff]
-                     + (unsigned short)d3fl_ColorTab[0][(s0[0] * a + s1[0] * b + s2[0] * c + s3[0] * e) >> 8 & 0xff];
+                *d++ = (unsigned short)d3fl_ColorTab[2][(unsigned char)((s0[2] * a + s1[2] * b + s2[2] * c + s3[2] * e) >> 8)]
+                     + (unsigned short)d3fl_ColorTab[1][(unsigned char)((s0[1] * a + s1[1] * b + s2[1] * c + s3[1] * e) >> 8)]
+                     + (unsigned short)d3fl_ColorTab[0][(unsigned char)((s0[0] * a + s1[0] * b + s2[0] * c + s3[0] * e) >> 8)];
                 s0 += d3fl_SrcStep;
                 s1 += d3fl_SrcStep;
                 s2 += d3fl_SrcStep;
