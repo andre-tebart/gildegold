@@ -3,7 +3,6 @@
    global right after rd.c's literals. Names are ours.
    unit of rea 8cef7d5b (src/game/rt.c); boundaries in decl/text.dcl */
 #include "d2_types.h"
-extern D2RADIO d2_Radios[];
 #include "txt_views.h"
 #include <stdio.h>
 #include <string.h>
@@ -25,7 +24,11 @@ extern D2RADIO d2_Radios[];
 #include "sv.h"
 #include "unk_58bbd0.h"
 #include "vfs.h"
-extern D3SCENE d3_Scenes[];
+#include "ch.h"
+#include "d2.h"
+#include "d3_sm.h"
+#include "gfx.h"
+#include "unk_458810.h"
 
 int rt_MarkGroup = -1;                  /* 0x602a90 */
 int ai_Unk62c26c = 1;  /* 0x62c26c */
