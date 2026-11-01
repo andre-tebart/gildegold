@@ -46,39 +46,13 @@ extern GAPDATA full_data_625100[];
 extern GAPDATA full_data_62510c[];
 extern GAPDATA full_data_60ea78[];
 extern GAPDATA full_data_629188[];
-extern GAPDATA full_data_62aa7c[];
-extern GAPDATA full_data_62aa80[];
-extern GAPDATA full_data_62aa84[];
-extern GAPDATA full_data_62aa88[];
-extern GAPDATA full_data_62aa8c[];
-extern GAPDATA full_data_62aa9c[];
 extern GAPDATA full_data_62aaa4[];
 extern GAPDATA full_data_62aaac[];
 extern GAPDATA full_data_62aab4[];
 extern GAPDATA full_data_62aac0[];
 extern GAPDATA full_data_62aad0[];
-extern GAPDATA full_data_6f267c[];
 extern GAPDATA full_data_6f2680[];
 extern GAPDATA full_data_6f2684[];
-extern GAPDATA full_data_6f5e00[];
-extern GAPDATA full_data_6f5e20[];
-extern GAPDATA full_data_6f5e2a[];
-extern GAPDATA full_data_6f5e2b[];
-extern GAPDATA full_data_6f5e2c[];
-extern GAPDATA full_data_6f5e30[];
-extern GAPDATA full_data_6f5e31[];
-extern GAPDATA full_data_6f5e32[];
-extern GAPDATA full_data_6f5e42[];
-extern GAPDATA full_data_6f5e52[];
-extern GAPDATA full_data_6f5e56[];
-extern GAPDATA full_data_6f5e57[];
-extern GAPDATA full_data_6f5e58[];
-extern GAPDATA full_data_6f5e59[];
-extern GAPDATA full_data_6f5e5a[];
-extern GAPDATA full_data_6f5e78[];
-extern GAPDATA full_data_6f5e80[];
-extern GAPDATA full_data_6f5ea0[];
-extern GAPDATA full_data_6f5ea4[];
 #include "f3init_types.h"
 #include "f3init.h"
 extern unsigned char kb_Last;
@@ -93,6 +67,17 @@ extern int main_ChoosePlayer(int mask, int flag);
 
 void d2_FocusInput(); int sprintf(char *buf, const char *fmt, ...);
 int ai_Unk58af50(); int ai_Unk58b880();
+
+int lobby_Buttons[2] = { -1 };  /* 0x62aa7c, the controls of the lobby form's button row 4 (sv_ButtonRow): [0] ready, [1] the character (the player and profession pickers) */
+int lobby_LeaveButton = -1;  /* 0x62aa84, the control of the button row 8: leave the lobby */
+int lobby_Form = -1;  /* 0x62aa88, the lobby form "menu\netlobby" (d2_OpenForm), -1: not open */
+unsigned int *lobby_List = 0;  /* 0x6f267c, cm's player list (ai_Unk4cd5d0): the count, then the eight player ids */
+int lobby_ChatTo = 0;  /* 0x6f5e00, the id of the player the chat lines go to (the selected list line), -1: everybody */
+CMLOBBYPLAYER lobby_Player = {0};  /* 0x6f5e20, this player's record as sent to the lobby (join / change) */
+CMLOBBYPLAYER *lobby_Me = 0;  /* 0x6f5e78, this player's record in cm's table (ai_Unk4cd5f0) */
+int lobby_Rows[8] = {0};  /* 0x6f5e80, the text control of each line of the player list */
+int lobby_MyRow = 0;  /* 0x6f5ea0, the player list line of this player */
+int *lobby_State = 0;  /* 0x6f5ea4, cm's lobby state (ai_Unk4cd600): [1] a lobby message came in */
 
 /* 0x589f10, the network lobby screen (2595 B, ROUGH): clears the player record 0x6f5e20 (0x57 B), reads the
    "Network" profile (name / family name / emblem / gender / religion / profession) into it, opens the lobby
@@ -122,11 +107,11 @@ int ai_Unk589f10(void)
 
     ret = 0;
     ai_Unk4cd500();
-    memset((char *)(unsigned)&full_data_6f5e20, 0, 0x57);
-    U_I((unsigned)&full_data_6f267c) = 0;
-    U_I((unsigned)&full_data_6f5e00) = -1;
-    U_I((unsigned)&full_data_6f5ea4) = ai_Unk4cd600();
-    if (U_I((unsigned)&full_data_6f5ea4) == 0) {
+    memset(&lobby_Player, 0, 0x57);
+    lobby_List = 0;
+    lobby_ChatTo = -1;
+    lobby_State = ai_Unk4cd600();
+    if (lobby_State == 0) {
         win = d2_OpenForm(0, 0, (char *)(unsigned)"misc\\Messagebox_NONE_PERGA");
         d2_CentreViewWindows(win);
         io_PrintText(0x87);
@@ -141,32 +126,32 @@ int ai_Unk589f10(void)
         d2_CloseView(win);
         return 0;
     }
-    GetPrivateProfileStringA((char *)(unsigned)"Network", (char *)(unsigned)"Name", (char *)(unsigned)"Vorname", (char *)(unsigned)&full_data_6f5e32, 0x20,
+    GetPrivateProfileStringA((char *)(unsigned)"Network", (char *)(unsigned)"Name", (char *)(unsigned)"Vorname", lobby_Player.firstName, 0x20,
                              (char *)(unsigned)&ai_OptionsFile);
-    GetPrivateProfileStringA((char *)(unsigned)"Network", (char *)(unsigned)"Familienname", (char *)(unsigned)"Nachname", (char *)(unsigned)&full_data_6f5e42, 0x20,
+    GetPrivateProfileStringA((char *)(unsigned)"Network", (char *)(unsigned)"Familienname", (char *)(unsigned)"Nachname", lobby_Player.familyName, 0x20,
                              (char *)(unsigned)&ai_OptionsFile);
-    U_I((unsigned)&full_data_6f5e2c) = GetPrivateProfileIntA((char *)(unsigned)"Network", (char *)(unsigned)"Wappen", 0, (char *)(unsigned)&ai_OptionsFile);
-    U_B((unsigned)&full_data_6f5e30) = (char)GetPrivateProfileIntA((char *)(unsigned)"Network", (char *)(unsigned)"Geschlecht", 0, (char *)(unsigned)&ai_OptionsFile);
-    U_B((unsigned)&full_data_6f5e31) = (char)GetPrivateProfileIntA((char *)(unsigned)"Network", (char *)(unsigned)"Glauben", 0, (char *)(unsigned)&ai_OptionsFile);
-    U_B((unsigned)&full_data_6f5e2b) = (char)GetPrivateProfileIntA((char *)(unsigned)"Network", (char *)(unsigned)&full_data_62aa9c, 0, (char *)(unsigned)&ai_OptionsFile);
-    U_B((unsigned)&full_data_6f5e2b) = gm_TitleNumber(gm_TitleGroup(U_B((unsigned)&full_data_6f5e2b)), 1);
+    lobby_Player.coat = GetPrivateProfileIntA((char *)(unsigned)"Network", (char *)(unsigned)"Wappen", 0, (char *)(unsigned)&ai_OptionsFile);
+    lobby_Player.sex = (char)GetPrivateProfileIntA((char *)(unsigned)"Network", (char *)(unsigned)"Geschlecht", 0, (char *)(unsigned)&ai_OptionsFile);
+    lobby_Player.faith = (char)GetPrivateProfileIntA((char *)(unsigned)"Network", (char *)(unsigned)"Glauben", 0, (char *)(unsigned)&ai_OptionsFile);
+    lobby_Player.job = (char)GetPrivateProfileIntA((char *)(unsigned)"Network", "Beruf", 0, (char *)(unsigned)&ai_OptionsFile);
+    lobby_Player.job = gm_TitleNumber(gm_TitleGroup(lobby_Player.job), 1);
     U_B(((unsigned)&init_PlayerProfile + 0x2)) = 0x10;
-    U_B((unsigned)&full_data_6f5e2a) = 0x10;
-    U_B((unsigned)&full_data_6f5e57) = 0x46;
-    U_B((unsigned)&full_data_6f5e59) = 0x46;
-    U_I((unsigned)&full_data_6f5e52) = -1;
-    U_B((unsigned)&full_data_6f5e56) = 0x5a;
-    U_B((unsigned)&full_data_6f5e58) = 0x78;
-    U_B((unsigned)&full_data_6f5e5a) = 0x5a;
+    lobby_Player.status = 0x10;
+    lobby_Player.talents[1] = 0x46;
+    lobby_Player.talents[3] = 0x46;
+    lobby_Player.unk32 = -1;
+    lobby_Player.talents[0] = 0x5a;
+    lobby_Player.talents[2] = 0x78;
+    lobby_Player.talents[4] = 0x5a;
     if (cm_NetGame.mode == 0x7f) {
-        U_B((unsigned)&full_data_6f5e2b) = U_B(((unsigned)&ai_Unk9364e0 + 0x2e0));
-        U_B((unsigned)&full_data_6f5e30) = U_B(((unsigned)&ai_Unk9364e0 + 0x2e4));
-        U_I((unsigned)&full_data_6f5e2c) = U_I(((unsigned)&ai_Unk9364e0 + 0x2ec)) - 0x59a;
-        U_B((unsigned)&full_data_6f5e31) = U_B(((unsigned)&ai_Unk9364e0 + 0x2e8));
-        strcpy((char *)(unsigned)&full_data_6f5e32, (char *)((unsigned)&ai_Unk9364e0 + 0x2c0));
-        strcpy((char *)(unsigned)&full_data_6f5e42, (char *)((unsigned)&ai_Unk9364e0 + 0x2d0));
+        lobby_Player.job = U_B(((unsigned)&ai_Unk9364e0 + 0x2e0));
+        lobby_Player.sex = U_B(((unsigned)&ai_Unk9364e0 + 0x2e4));
+        lobby_Player.coat = U_I(((unsigned)&ai_Unk9364e0 + 0x2ec)) - 0x59a;
+        lobby_Player.faith = U_B(((unsigned)&ai_Unk9364e0 + 0x2e8));
+        strcpy(lobby_Player.firstName, (char *)((unsigned)&ai_Unk9364e0 + 0x2c0));
+        strcpy(lobby_Player.familyName, (char *)((unsigned)&ai_Unk9364e0 + 0x2d0));
     }
-    id = ((int (*)(void *))ai_Unk4cd760)((char *)(unsigned)&full_data_6f5e20);
+    id = ai_Unk4cd760(&lobby_Player);
     if (id == -1)
         return -1;
     while (cm_GetSlotState(id) == 0)
@@ -182,8 +167,8 @@ int ai_Unk589f10(void)
     while (cm_GetSlotState(id) == 0)
         sv_PumpNet();
     d2_ShowPicture(0x7d6);
-    U_I((unsigned)&full_data_6f5e78) = ai_Unk4cd5f0();
-    if (U_I((unsigned)&full_data_6f5e78) == 0) {
+    lobby_Me = ai_Unk4cd5f0();
+    if (lobby_Me == 0) {
         win = d2_OpenForm(0, 0, (char *)(unsigned)"misc\\Messagebox_NONE_PERGA");
         d2_CentreViewWindows(win);
         io_PrintText(0x87);
@@ -198,16 +183,16 @@ int ai_Unk589f10(void)
         d2_CloseView(win);
         return 0;
     }
-    U_I((unsigned)&full_data_62aa88) = d2_OpenForm(0x3c, 0, (char *)(unsigned)&full_data_62aa8c);
-    d2_CentreViewWindows(U_I((unsigned)&full_data_62aa88));
+    lobby_Form = d2_OpenForm(0x3c, 0, "menu\netlobby");
+    d2_CentreViewWindows(lobby_Form);
     ai_Unk58a9d0();
     ai_Unk58a940();
     ai_Unk58aa30();
     ai_Unk58ad20();
     ai_Unk58aba0();
     ai_Unk58ada0();
-    d2_SetForm(U_I((unsigned)&full_data_62aa88), 1);
-    id = d2_GetWinObj(U_I((unsigned)&full_data_62aa88), 0, (char *)0);
+    d2_SetForm(lobby_Form, 1);
+    id = d2_GetWinObj(lobby_Form, 0, (char *)0);
     d2_SetObjMax(id, 0x40);
     state = 0;
     d2_SetObjValue(id, (char *)(unsigned)&ch_EmptyName);
@@ -234,45 +219,45 @@ int ai_Unk589f10(void)
             strcpy(name, p);
             d2_SetObjValue(id, (char *)(unsigned)&ch_EmptyName);
             if (strlen(name) != 0)
-                ai_Unk4cd6e0(U_I((unsigned)&full_data_6f5e00) == -1 ? 0 : U_I((unsigned)&full_data_6f5e00), name);
+                ai_Unk4cd6e0(lobby_ChatTo == -1 ? 0 : lobby_ChatTo, name);
         }
         if (U_I((unsigned)&ai_Unk1460ae0) == -1) {
             ret = -1;
             U_I((unsigned)&sv_PopRequest) = 1;
         } else if (ai_Unk4cd510() == 0) {
             if (U_I((unsigned)&d2_ClickedId) != -1) {
-                if (U_I((unsigned)&ai_Unk5fe710) == U_I((unsigned)&full_data_62aa84)) {
+                if (U_I((unsigned)&ai_Unk5fe710) == lobby_LeaveButton) {
                     n = ((int (*)())ai_Unk4cd6a0)();
                     while (cm_GetSlotState(n) == 0)
                         sv_PumpNet();
                     U_I((unsigned)&sv_PopRequest) = 1;
                     ret = -1;
-                } else if (U_I((unsigned)&ai_Unk5fe710) == U_I((unsigned)&full_data_62aa7c)) {
-                    n = ((int (*)(int))ai_Unk4cd650)(U_I((unsigned)&full_data_6f5e78 + 4) == 0);
+                } else if (U_I((unsigned)&ai_Unk5fe710) == lobby_Buttons[0]) {
+                    n = ((int (*)(int))ai_Unk4cd650)(lobby_Me->ready == 0);
                     while (cm_GetSlotState(n) == 0)
                         sv_PumpNet();
-                    U_I((unsigned)&d2_Objs + 0x28 + U_I((unsigned)&full_data_62aa7c) * 0x2ec) = U_I((unsigned)&full_data_6f5e78 + 4);
+                    U_I((unsigned)&d2_Objs + 0x28 + lobby_Buttons[0] * 0x2ec) = lobby_Me->ready;
                     if (ai_Unk4cd510() != 0)
                         U_I((unsigned)&sv_PopRequest) = 1;
-                } else if (U_I((unsigned)&ai_Unk5fe710) == U_I((unsigned)&full_data_62aa80)) {
-                    if (U_I((unsigned)&full_data_6f5e78 + 4) != 0) {
+                } else if (U_I((unsigned)&ai_Unk5fe710) == lobby_Buttons[1]) {
+                    if (lobby_Me->ready != 0) {
                         n = ((int (*)(int))ai_Unk4cd650)(0);
                         while (cm_GetSlotState(n) == 0)
                             sv_PumpNet();
-                        U_I((unsigned)&d2_Objs + 0x28 + U_I((unsigned)&full_data_62aa7c) * 0x2ec) = U_I((unsigned)&full_data_6f5e78 + 4);
+                        U_I((unsigned)&d2_Objs + 0x28 + lobby_Buttons[0] * 0x2ec) = lobby_Me->ready;
                     }
-                    if (U_I((unsigned)&full_data_6f5e78 + 4) == 0 && ai_Unk58af50(0x24087, 1) != 0) {
-                        strcpy((char *)(unsigned)&full_data_6f5e32, (char *)((unsigned)&init_PlayerProfile + 0xa));
-                        strcpy((char *)(unsigned)&full_data_6f5e42, (char *)((unsigned)&init_PlayerProfile + 0x2a));
-                        U_I((unsigned)&full_data_6f5e2c) = U_I(((unsigned)&init_PlayerProfile + 0x4)) - 0x59a;
-                        U_B((unsigned)&full_data_6f5e30) = U_B(((unsigned)&init_PlayerProfile + 0x8));
-                        U_B((unsigned)&full_data_6f5e31) = U_B(((unsigned)&init_PlayerProfile + 0x9));
-                        n = ((int (*)(void *))ai_Unk4cd7c0)((char *)(unsigned)&full_data_6f5e20);
+                    if (lobby_Me->ready == 0 && ai_Unk58af50(0x24087, 1) != 0) {
+                        strcpy(lobby_Player.firstName, (char *)((unsigned)&init_PlayerProfile + 0xa));
+                        strcpy(lobby_Player.familyName, (char *)((unsigned)&init_PlayerProfile + 0x2a));
+                        lobby_Player.coat = U_I(((unsigned)&init_PlayerProfile + 0x4)) - 0x59a;
+                        lobby_Player.sex = U_B(((unsigned)&init_PlayerProfile + 0x8));
+                        lobby_Player.faith = U_B(((unsigned)&init_PlayerProfile + 0x9));
+                        n = ai_Unk4cd7c0(&lobby_Player);
                         while (cm_GetSlotState(n) == 0)
                             sv_PumpNet();
                         if (ai_Unk58b880(0x24087) != 0) {
-                            U_B((unsigned)&full_data_6f5e2b) = U_B(((unsigned)&init_PlayerProfile + 0x3));
-                            n = ((int (*)(void *))ai_Unk4cd7c0)((char *)(unsigned)&full_data_6f5e20);
+                            lobby_Player.job = U_B(((unsigned)&init_PlayerProfile + 0x3));
+                            n = ai_Unk4cd7c0(&lobby_Player);
                             while (cm_GetSlotState(n) == 0)
                                 sv_PumpNet();
                         }
@@ -280,19 +265,19 @@ int ai_Unk589f10(void)
                 } else {
                     /* the player list: the clicked entry 0x6f5e80[i] is the only one selected, the id
                        0x6f267c[i + 1] goes to 0x6f5e00 */
-                    for (i = 0; i < U_I((unsigned)&full_data_6f267c); i++) {
-                        if (i != U_I((unsigned)&full_data_6f5ea0) && U_I((unsigned)&ai_Unk5fe710) == U_I((unsigned)&full_data_6f5e80 + i * 4)) {
-                            n = U_I((unsigned)&d2_Objs + 0x28 + U_I((unsigned)&full_data_6f5e80 + i * 4) * 0x2ec) == 0;
-                            U_I((unsigned)&d2_Objs + 0x28 + U_I((unsigned)&full_data_6f5e80 + i * 4) * 0x2ec) = n;
+                    for (i = 0; i < lobby_List[0]; i++) {
+                        if (i != lobby_MyRow && U_I((unsigned)&ai_Unk5fe710) == lobby_Rows[i]) {
+                            n = U_I((unsigned)&d2_Objs + 0x28 + lobby_Rows[i] * 0x2ec) == 0;
+                            U_I((unsigned)&d2_Objs + 0x28 + lobby_Rows[i] * 0x2ec) = n;
                             if (n == 0) {
-                                U_I((unsigned)&full_data_6f5e00) = -1;
+                                lobby_ChatTo = -1;
                             } else {
-                                U_I((unsigned)&full_data_6f5e00) = U_I((unsigned)&full_data_6f267c + (i + 1) * 4);
+                                lobby_ChatTo = lobby_List[i + 1];
                             }
                             if (-1 < i) {
-                                for (n = 0; n < U_I((unsigned)&full_data_6f267c); n++)
+                                for (n = 0; n < lobby_List[0]; n++)
                                     if (i != n)
-                                        U_I((unsigned)&d2_Objs + 0x28 + U_I((unsigned)&full_data_6f5e80 + n * 4) * 0x2ec) = 0;
+                                        U_I((unsigned)&d2_Objs + 0x28 + lobby_Rows[n] * 0x2ec) = 0;
                             }
                             break;
                         }
@@ -303,23 +288,23 @@ int ai_Unk589f10(void)
             U_I((unsigned)&sv_PopRequest) = 1;
         }
         U_I((unsigned)&d2_ClickedId) = -1;
-        if (U_I((unsigned)&full_data_6f5ea4 + 4) != 0) {
+        if (lobby_State[1] != 0) {
             if (ai_Unk4cd510() == 0) {
                 n = ((int (*)())ai_Unk4cd610)();
                 while (cm_GetSlotState(n) == 0)
                     sv_PumpNet();
-                U_I((unsigned)&full_data_6f267c) = ai_Unk4cd5d0();
+                lobby_List = ai_Unk4cd5d0();
                 ai_Unk58aba0();
                 ai_Unk58ada0();
                 ai_Unk58ba70();
-                U_I((unsigned)&full_data_6f5ea4 + 4) = 0;
+                lobby_State[1] = 0;
             } else {
                 U_I((unsigned)&sv_PopRequest) = 1;
             }
         }
         if (sv_RunFrame((int)ai_Unk589f10, 0x24087) == 0) {
-            d2_CloseView(U_I((unsigned)&full_data_62aa88));
-            r = (char *)U_I((unsigned)&full_data_6f5e78);
+            d2_CloseView(lobby_Form);
+            r = (char *)lobby_Me;
             U_B(((unsigned)&init_PlayerProfile + 0x2)) = 0x12;
             U_B(((unsigned)&init_PlayerProfile + 0x3)) = U_B(r + 0xb);
             U_W(((unsigned)&init_PlayerProfile + 0x8)) = U_W(r + 0x10);
@@ -337,7 +322,7 @@ int ai_Unk589f10(void)
             sprintf(text, (char *)(unsigned)"%d", U_B(((unsigned)&init_PlayerProfile + 0x9)));
             WritePrivateProfileStringA((char *)(unsigned)"Network", (char *)(unsigned)"Glauben", text, (char *)(unsigned)&ai_OptionsFile);
             sprintf(text, (char *)(unsigned)"%d", U_B(((unsigned)&init_PlayerProfile + 0x3)));
-            WritePrivateProfileStringA((char *)(unsigned)"Network", (char *)(unsigned)&full_data_62aa9c, text, (char *)(unsigned)&ai_OptionsFile);
+            WritePrivateProfileStringA((char *)(unsigned)"Network", "Beruf", text, (char *)(unsigned)&ai_OptionsFile);
             ((void (*)(void))d3io_NoopCallback)();
             return ret;
         }
@@ -353,12 +338,12 @@ char *_itoa(int, char *, int); char *_strupr(char *);
    @deep byte but not readable: Q1 (unit unnamed, @named_by -), Q2 (d2_SetForm control API, sv_ButtonRow), Q3 (10 lobby globals), Q4 U_I; the whole lobby/control API has to be named and the globals typed first; no Q6 fix exists */
 void ai_Unk58a940(void)
 {
-    d2_SetForm(U_I((unsigned)&full_data_62aa88), 4);
-    sv_ButtonRow(U_I((unsigned)&d2_LastWindow), 0, (char *)(unsigned)&full_data_62aa7c, 2, U_I((unsigned)&full_data_144abe8), U_I((unsigned)&full_data_144abec));
-    d2_SetForm(U_I((unsigned)&full_data_62aa88), 8);
-    sv_ButtonRow(U_I((unsigned)&d2_LastWindow), 0, (char *)(unsigned)&full_data_62aa84, 1, U_I((unsigned)&full_data_144abf0));
+    d2_SetForm(lobby_Form, 4);
+    sv_ButtonRow(U_I((unsigned)&d2_LastWindow), 0, lobby_Buttons, 2, U_I((unsigned)&full_data_144abe8), U_I((unsigned)&full_data_144abec));
+    d2_SetForm(lobby_Form, 8);
+    sv_ButtonRow(U_I((unsigned)&d2_LastWindow), 0, &lobby_LeaveButton, 1, U_I((unsigned)&full_data_144abf0));
     if (cm_NetGame.mode == 0x7f)
-        U_I(U_I((unsigned)&d2_Objs) + 0x3c + U_I((unsigned)&full_data_62aa80) * 0x2ec) = 1;
+        U_I(U_I((unsigned)&d2_Objs) + 0x3c + lobby_Buttons[1] * 0x2ec) = 1;
 }
 /* 0x58a9d0, the lobby's control 5 / 6 hook (96 B): control 5 of 0x62aa88, the server query 0x52e860 (0, 0, the
    screen 0x6ed938, U_I (0x6ed938), 0x35, three out ints) with control 6
@@ -371,10 +356,10 @@ void ai_Unk58a9d0(void)
     int c;
     int s;
 
-    if (U_I((unsigned)&full_data_62aa88) != -1) {
-        d2_SetForm(U_I((unsigned)&full_data_62aa88), 5);
+    if (lobby_Form != -1) {
+        d2_SetForm(lobby_Form, 5);
         s = U_I((unsigned)&d2_LastWindow);
-        d2_SetForm(U_I((unsigned)&full_data_62aa88), 6);
+        d2_SetForm(lobby_Form, 6);
         sv_CreateFormSlider(0, 0, U_I((unsigned)&d2_LastWindow), s, 0x35, &a, &b, &c);
     }
 }
@@ -393,7 +378,7 @@ void ai_Unk58aa30(void)
     int x;
     int y;
 
-    d2_SetForm(U_I((unsigned)&full_data_62aa88), 2);
+    d2_SetForm(lobby_Form, 2);
     io_PrintText((char *)(unsigned)"$C");
     strcpy(a, cm_NetGame.hdr.name);
     strcpy(b, cm_NetGame.hdr.name);
@@ -425,26 +410,26 @@ void ai_Unk58aba0(void)
     int x;
     int y;
 
-    p = ai_Unk4cd380(U_I((unsigned)&full_data_6f267c + 4 + U_I((unsigned)&full_data_6f5ea0) * 4));
+    p = ai_Unk4cd380(lobby_List[lobby_MyRow + 1]);
     if (p != 0)
-        U_I((unsigned)&full_data_6f5e2c) = U_I(p + 0xc);
-    d2_SetForm(U_I((unsigned)&full_data_62aa88), 3);
+        lobby_Player.coat = U_I(p + 0xc);
+    d2_SetForm(lobby_Form, 3);
     io_PrintText((char *)(unsigned)"$C");
-    id = d2_WinOpenPic(5, 10, U_I((unsigned)&full_data_6f5e2c) + 0x59a, U_I((unsigned)&d2_LastWindow));
+    id = d2_WinOpenPic(5, 10, lobby_Player.coat + 0x59a, U_I((unsigned)&d2_LastWindow));
     x = *(short *)(U_I((unsigned)&d2_Objs) + 0x14 + id * 0x2ec) + 0xf;
     u = (char *)U_I(((unsigned)&ai_Unk143a610 + 0x4));
-    if (U_B((unsigned)&full_data_6f5e30) != 0)
+    if (lobby_Player.sex != 0)
         u = (char *)U_I((unsigned)&full_data_143a63c);
-    sprintf(text, (char *)(unsigned)"%s %s %s", u, (char *)(unsigned)&full_data_6f5e32, (char *)(unsigned)&full_data_6f5e42);
+    sprintf(text, (char *)(unsigned)"%s %s %s", u, lobby_Player.firstName, lobby_Player.familyName);
     id = d2_CreateWinText(x, 10, text, U_I((unsigned)&d2_LastWindow));
     y = *(short *)(U_I((unsigned)&d2_Objs) + 0x16 + id * 0x2ec);
-    if (U_B((unsigned)&full_data_6f5e30) == 1)
-        u = (char *)U_I(((unsigned)&ai_Unk143a680 + 0x17c) + U_B((unsigned)&full_data_6f5e2b) * 4);
+    if (lobby_Player.sex == 1)
+        u = (char *)U_I(((unsigned)&ai_Unk143a680 + 0x17c) + lobby_Player.job * 4);
     else
-        u = (char *)U_I((unsigned)&ai_Unk143a680 + U_B((unsigned)&full_data_6f5e2b) * 4);
+        u = (char *)U_I((unsigned)&ai_Unk143a680 + lobby_Player.job * 4);
     sprintf(text, (char *)(unsigned)&full_data_62aaac, U_I((unsigned)&full_data_144abe0), u);
     d2_CreateWinText(x, y + 0xc, text, U_I((unsigned)&d2_LastWindow));
-    sprintf(text, (char *)(unsigned)&full_data_62aaac, U_I((unsigned)&full_data_144abe4), U_I((unsigned)&ai_Unk143b3d8 + U_B((unsigned)&full_data_6f5e31) * 4));
+    sprintf(text, (char *)(unsigned)&full_data_62aaac, U_I((unsigned)&full_data_144abe4), U_I((unsigned)&ai_Unk143b3d8 + lobby_Player.faith * 4));
     d2_CreateWinText(x, y + 2 + y + 0xc, text, U_I((unsigned)&d2_LastWindow));
 }
 /* 0x58ad20, waits for the player list (128 B): 0x4cd610 and its answer 0x4c3ae0; the list 0x4cd5d0 -> 0x6f267c;
@@ -460,11 +445,11 @@ void ai_Unk58ad20(void)
     h = ((int (*)())ai_Unk4cd610)();
     while (cm_GetSlotState(h) == 0)
         sv_PumpNet();
-    U_I((unsigned)&full_data_6f267c) = ai_Unk4cd5d0();
+    lobby_List = ai_Unk4cd5d0();
     r = -1;
     for (i = 4; i < 0x24; i += 4)
-        if (U_I(U_I((unsigned)&full_data_6f267c) + i) != 0)
-            r = ((int (*)(int))ai_Unk4cd820)(U_I(U_I((unsigned)&full_data_6f267c) + i));
+        if (U_I((char *)lobby_List + i) != 0)
+            r = ((int (*)(int))ai_Unk4cd820)(U_I((char *)lobby_List + i));
     if (r != -1)
         while (cm_GetSlotState(r) == 0)
             sv_PumpNet();
@@ -488,10 +473,10 @@ void ai_Unk58ada0(void)
     int n;
 
     y = 10;
-    d2_SetForm(U_I((unsigned)&full_data_62aa88), 1);
+    d2_SetForm(lobby_Form, 1);
     io_PrintText((char *)(unsigned)"$C");
     for (i = 0; i < 8; i++) {
-        p = (int *)ai_Unk4cd380(U_I((unsigned)&full_data_6f267c + 4 + i * 4));
+        p = (int *)ai_Unk4cd380(lobby_List[i + 1]);
         if (p == 0)
             continue;
         id = d2_WinOpenPic(5, y, p[3] + 0x59a, U_I((unsigned)&d2_LastWindow));
@@ -504,14 +489,14 @@ void ai_Unk58ada0(void)
         n = id * 0x2ec;
         d2_CreateWinText(*(short *)(n + 0x14 + U_I((unsigned)&d2_Objs)) + 10, y, text, U_I((unsigned)&d2_LastWindow));
         y = y + 5 + *(short *)(n + 0x16 + U_I((unsigned)&d2_Objs));
-        U_I((unsigned)&full_data_6f5e80 + i * 4) = id;
-        if (p == (int *)U_I((unsigned)&full_data_6f5e78)) {
-            U_I((unsigned)&full_data_6f5ea0) = i;
+        lobby_Rows[i] = id;
+        if (p == (int *)lobby_Me) {
+            lobby_MyRow = i;
         } else {
             U_I(n + 0x4c + U_I((unsigned)&d2_Objs)) = 1;
             U_I(n + 0x1c0 + U_I((unsigned)&d2_Objs)) = 3;
         }
-        if (U_I((unsigned)&full_data_6f5e00) == *p)
+        if (lobby_ChatTo == *p)
             U_I(n + 0x28 + U_I((unsigned)&d2_Objs)) = 1;
     }
 }
@@ -602,7 +587,7 @@ void ai_Unk58ba70(void)
 
     id = -1;
     p = ai_Unk4cd480();
-    d2_SetForm(U_I((unsigned)&full_data_62aa88), 5);
+    d2_SetForm(lobby_Form, 5);
     q = U_I(((unsigned)&ai_Unkf8f13c + 0x228) + U_I((unsigned)&d2_LastWindow) * 0x3c4);
     io_PrintText((char *)(unsigned)"$C");
     U_I((unsigned)&full_data_6f2684) = 0;
@@ -615,8 +600,8 @@ void ai_Unk58ba70(void)
             id = U_I(n + 0xc);
         if (U_I(p + 100) == 0) {
             sprintf(text, (char *)(unsigned)&full_data_62aac0, id, (char *)(p + 0x40), (char *)p);
-        } else if ((U_I((unsigned)&full_data_6f5e78) != 0 && U_I(p + 100) == U_I((unsigned)&full_data_6f5e78)) ||
-                   U_I(p + 0x68) == U_I((unsigned)&full_data_6f5e78)) {
+        } else if (((int)lobby_Me != 0 && U_I(p + 100) == (int)lobby_Me) ||
+                   U_I(p + 0x68) == (int)lobby_Me) {
             sprintf(text, (char *)(unsigned)&full_data_62aad0, id, (char *)(p + 0x40), U_I((unsigned)&full_data_144abf8), (char *)p);
         }
         id = io_PrintText(text);
