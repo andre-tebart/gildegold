@@ -1667,10 +1667,10 @@ int unk_Unk4fd090(char *c)
 
 extern float ai_Unk617734[6];
 void gm_AddTime(struct GCLOCK *c, int hours, int mins, int secs);                     /* 0x4fe140 */
-void cm_SendCreateCharacter(unsigned char a, int b, int c, unsigned short d, int e, unsigned char f, unsigned char g, unsigned char h);                     /* 0x4c4650 */
+int cm_SendCreateCharacter(unsigned char a, int b, int c, unsigned short d, int e, unsigned char f, unsigned char g, unsigned char h);                     /* 0x4c4650 */
 int cm_GetSlotState();                     /* 0x4c3ae0 */
 int cm_GetSlotValue(int h);                     /* 0x4c3b10 */
-void ai_Unk4c4fa0(void *p);                     /* 0x4c4fa0 */
+int ai_Unk4c4fa0(void *p);                     /* 0x4c4fa0 */
 int gm_TitleNumber();                     /* 0x5043d0 */
 int ai_WorksForMaster(struct AICHAR *c);                     /* 0x47dd70 */
 

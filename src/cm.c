@@ -1009,7 +1009,7 @@ int cm_SendMessage10(unsigned char n, int b, void *p, short d)
 }
 /* 0x4c4650, message 0xb */
 
-void cm_SendCreateCharacter(unsigned char a, int b, int c, unsigned short d, int e, unsigned char f, unsigned char g, unsigned char h)
+int cm_SendCreateCharacter(unsigned char a, int b, int c, unsigned short d, int e, unsigned char f, unsigned char g, unsigned char h)
 {
     G17MSG m;
 
@@ -1022,11 +1022,11 @@ void cm_SendCreateCharacter(unsigned char a, int b, int c, unsigned short d, int
     m.data[0x13] = f;
     m.data[0x14] = g;
     m.data[0x15] = h;
-    ai_Unk4c39c0(&m);
+    return ai_Unk4c39c0(&m);
 }
 /* 0x4c46d0, message 0xc (two names of 0x10 bytes) */
 
-void cm_SendMessage0c(int a, int b, short c, unsigned char d, int e, unsigned char f, unsigned char g, const char *s1, const char *s2)
+int cm_SendMessage0c(int a, int b, short c, unsigned char d, int e, unsigned char f, unsigned char g, const char *s1, const char *s2)
 {
     G17MSG m;
 
@@ -1040,7 +1040,7 @@ void cm_SendMessage0c(int a, int b, short c, unsigned char d, int e, unsigned ch
     m.data[0x14] = g;
     strncpy((char *)&m.data[0x15], s1, 0x10);
     strncpy((char *)&m.data[0x25], s2, 0x10);
-    ai_Unk4c39c0(&m);
+    return ai_Unk4c39c0(&m);
 }
 /* 0x4c4770, message 0xd */
 
@@ -1271,7 +1271,7 @@ int ai_Unk4c4d40(char *t)
 }
 /* 0x4c4db0, sends message 0x20 (the extended system message, handled by cm_ExSysMessage): sub type id and 0x7c bytes of msg */
 
-void cm_SendExSysMessage(unsigned char id, void *msg)
+int cm_SendExSysMessage(unsigned char id, void *msg)
 {
     G17MSG m;
 
@@ -1279,7 +1279,7 @@ void cm_SendExSysMessage(unsigned char id, void *msg)
     m.data[0] = id;
     if (msg != 0)
         memcpy(&m.data[1], msg, 0x7c);
-    ai_Unk4c39c0(&m);
+    return ai_Unk4c39c0(&m);
 }
 /* 0x4c4e00, message 0x21 */
 
@@ -1354,13 +1354,13 @@ void ai_Unk4c4f50(int id, int b)
 }
 /* 0x4c4fa0, message 0x27: p (0x114 bytes) as the long message */
 
-void ai_Unk4c4fa0(void *p)
+int ai_Unk4c4fa0(void *p)
 {
     G17MSG m;
 
     m.type = 0x27;
     ai_Unk4c4480(0x114, p);
-    ai_Unk4c39c0(&m);
+    return ai_Unk4c39c0(&m);
 }
 /* 0x4c4fd0, message 0x2a */
 

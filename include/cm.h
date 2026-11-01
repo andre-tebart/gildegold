@@ -28,6 +28,8 @@ struct D3SURF;
    0x60bd80 (0x302, 2, -1 globals, the handler table 0x60bd98). Names are ours. */
 #ifndef CM_H
 #define CM_H
+struct AICHAR;
+struct D3FLMAP;
 typedef struct G18POP { float t; int v; int h; char *c; int kind; } G18POP;      /* 0x14 bytes, a floating number */
 typedef struct G18LOG { char text[0x40]; char name[0x24]; int x; int id; } G18LOG;      /* 0x6c bytes, a chat line */
 
@@ -192,8 +194,8 @@ int cm_SendLoadBlock(void *p);                                                  
 void cm_BeginGroup(const char *s);                                                /* 0x4c4540 */
 void cm_EndGroup(const char *s);                                                /* 0x4c4580 */
 int cm_SendMessage10(unsigned char n, int b, void *p, short d);                      /* 0x4c45c0 */
-void cm_SendCreateCharacter(unsigned char a, int b, int c, unsigned short d, int e, unsigned char f, unsigned char g, unsigned char h); /* 0x4c4650 */
-void cm_SendMessage0c(int a, int b, short c, unsigned char d, int e, unsigned char f, unsigned char g, const char *s1, const char *s2); /* 0x4c46d0 */
+int cm_SendCreateCharacter(unsigned char a, int b, int c, unsigned short d, int e, unsigned char f, unsigned char g, unsigned char h); /* 0x4c4650 */
+int cm_SendMessage0c(int a, int b, short c, unsigned char d, int e, unsigned char f, unsigned char g, const char *s1, const char *s2); /* 0x4c46d0 */
 void ai_Unk4c4770(int a, int b);                                                 /* 0x4c4770 */
 void ai_Unk4c47b0(short a);                                                      /* 0x4c47b0 */
 void cm_SendMoveGoods(int a, int b, unsigned char c, int d);                         /* 0x4c47e0 */
@@ -212,14 +214,14 @@ int cm_SendLongMessage(char *msg);                                              
 int ai_Unk4c4bc0(char *msg, unsigned int len, void *extra);                      /* 0x4c4bc0 */
 void cm_SendExSetHE(unsigned char k, char *p);                                     /* 0x4c4c60 */
 int ai_Unk4c4d40(char *t);                                                       /* 0x4c4d40 */
-void cm_SendExSysMessage(unsigned char id, void *msg);                               /* 0x4c4db0 */
+int cm_SendExSysMessage(unsigned char id, void *msg);                               /* 0x4c4db0 */
 void cm_SendKillCharacter(int a, int b);                                                 /* 0x4c4e00 */
 void ai_Unk4c4e40(void *p);                                                      /* 0x4c4e40 */
 void ai_Unk4c4e90(int a, int b);                                                 /* 0x4c4e90 */
 void cm_SendProofExecuted(int a, int b);                                                 /* 0x4c4ed0 */
 void ai_Unk4c4f10(int a, int b, int c);                                          /* 0x4c4f10 */
 void ai_Unk4c4f50(int id, int b);                                                /* 0x4c4f50, "cm_RequestSendCutInfo" */
-void ai_Unk4c4fa0(void *p);                                                      /* 0x4c4fa0 */
+int ai_Unk4c4fa0(void *p);                                                      /* 0x4c4fa0 */
 void ai_Unk4c4fd0(int a, int b);                                                 /* 0x4c4fd0 */
 void ai_Unk4c5010(int a, int b, int c);                                          /* 0x4c5010 */
 void cm_SetPlant(int a, unsigned char b, unsigned char c, short d, unsigned char e, int f); /* 0x4c5050 */

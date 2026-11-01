@@ -2,6 +2,8 @@
    mirrored copy of the objects behind it. Original file name unknown (d3_mir.c?). Names are ours. */
 #ifndef UNK_454890_H
 #define UNK_454890_H
+struct XOBJ;
+struct D3VECTOR4;
 
 typedef struct D3MIRPLANES {        /* mem_Alloc'd: n planes of the mirror outline plus the view clip planes */
     unsigned int n;                 /* 0x00 */

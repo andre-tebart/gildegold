@@ -1757,7 +1757,7 @@ L_next:
 
 int gm_TitleNumber();
 int gm_BuildingKindValue();
-void cm_SendCreateCharacter(unsigned char a, int b, int c, unsigned short d, int e, unsigned char f, unsigned char g, unsigned char h);
+int cm_SendCreateCharacter(unsigned char a, int b, int c, unsigned short d, int e, unsigned char f, unsigned char g, unsigned char h);
 int cm_GetSlotValue(int h);
 float util_RandomF();
 
@@ -2670,7 +2670,7 @@ unsigned int ai_Unk5c6530(int param_1, int param_2);
 int unk_Unk4f25d0();
 int gv_EntryIndex(char *r, int *e);
 int unk_Unk4f0900();
-void ai_Unk4c4fa0(void *p);
+int ai_Unk4c4fa0(void *p);
 void cm_SendRelations(int a, int b, int c, int d);
 void ai_Unk4c4ac0(int a, int b, int c);
 
@@ -3259,7 +3259,7 @@ int gm_TitleGroup();
 int gm_JobSlots();
 int cm_AddFieldValues(unsigned char size, unsigned char n, unsigned short field, void *v);
 void ai_Unk4c59b0(int a, unsigned char b);
-void cm_SendCreateCharacter(unsigned char a, int b, int c, unsigned short d, int e, unsigned char f, unsigned char g, unsigned char h);
+int cm_SendCreateCharacter(unsigned char a, int b, int c, unsigned short d, int e, unsigned char f, unsigned char g, unsigned char h);
 short *gm_PlayerRecord(char *c);
 int ai_Unk5d08c0();
 
@@ -6832,7 +6832,7 @@ void he_Unk542960(int ev)
     }
 }
 
-void ai_Unk4c4fa0(void *p);
+int ai_Unk4c4fa0(void *p);
 
 /* 0x542b60, a Ghidra miss (disassembled): the run handler of the offer event (see 0x542960): state 0 waits for the offer (+0xd4) to be answered (0x4c3ae0, result 1 = accepted, 2 = refused): accepted tells every member (news 0x1bc0 / 0x1bbf / 0x1bc1 / 0x1bc2, messages 0x5f5, "_NACHRICHTEN_HS_16 / 15 / 11 / 12") and re-posts the event in state 1, which sends the 0x4c4fa0 message 0xa2 (kind 5 / 6 by +0xc0) with all the members and the clocks, state 2 (refused) tells the sender (news 0x1bbe) and counts the retry (+0x58 += 2). The message layout and the sprintf arguments are only approximated (ROUGH) */
 void he_Unk542b60(int ev)
@@ -9403,7 +9403,7 @@ char *gm_Query(void *list, int n, ...);
 void cm_SendExSellObject(int a, int b, short c, int d, unsigned char e, int f);
 int unk_Unk4f0a90();
 int cm_SendLongMessage(char *msg);
-void cm_SendExSysMessage(unsigned char id, void *msg);
+int cm_SendExSysMessage(unsigned char id, void *msg);
 void he_MessageBoxQuickjump(int a1, int a2, char *text, char fl, int a5, int a6, int a7, char *jump, char *text2);
 
 /* 0x553e90, the run handler of a building event (a Ghidra function with a frame; ROUGH): state 0 -> 1; state 1 waits for the due time, takes the building of the kind +0x10 (0x501190 (1, 1, +0x10); none: the record is freed), asks its owner record (0x4ffe90) and starts the order 0x4c4880 (+0xb0, -1, +0xac, 1, player, 0), whose handle goes to +0xb4, state 2; state 2 waits for the order (0x4c3ae0 / 0x4c3b10 give the person), then by the type of the person (0x1f9 / 0x1fd / 0x201: 0x4f0a90 (the owner character, building, 1 / 2 / 3), 0x12d: a message record type 0x2a through 0x4c4b70) tells the owner (a player character gets the news 0x606 / 0x60b with "ob_%s" of the table name 0x91aaf0, texts 0x1c2b / 0x1c2d and "_NACHRICHTEN_HS_53" / "_54") and the town (0x4c4db0 (4, ..)), marks the person (+0x13 |= 0xa0) and frees the record */
@@ -14749,7 +14749,7 @@ void cm_SendMoveGoods(int a, int b, unsigned char c, int d);
 short *gm_PlayerRecord(char *c);
 int ai_Unk50c4e0();
 void ai_Unk4c5510(int a);
-void cm_SendExSysMessage(unsigned char id, void *msg);
+int cm_SendExSysMessage(unsigned char id, void *msg);
 
 /* 0x56be30, the run handler of the building construction event (the type 0xd; ROUGH SKELETON: the states 0x70 = -2 .. 7 from the jump table 0x56cda8, the calls in order from the disassembly; the conditions and most call arguments are not recovered yet; the states -1 / -2 hand the building back, rebuild its scene object and free the record) */
 void he_Unk56be30(int ev)
@@ -14819,7 +14819,7 @@ void he_Unk56cdd0(int ev)
 }
 
 int ai_Unk4b4f00();
-void cm_SendExSysMessage(unsigned char id, void *msg);
+int cm_SendExSysMessage(unsigned char id, void *msg);
 
 /* 0x56ce40, the run handler of the type 0x4c (a character action of the player below 22 h): the player byte 0x624580 (negative = no player: free the record), the record of the player *(unsigned short *)(ev + 8) in the 0x80-entry table 0xf82320 (0x24 bytes: +4 the character's +4, +0x20 the handled flag), the states (-2 / -1 free) 0 = wait for the flag, 1 = start the action 0x4c4db0 (8, &the record's +4) and wait for its handle +0xac, 2 = the handle result (1 = done, state 0 and wait 24; else state 1 and wait 30) */
 void he_Unk56ce40(int ev)

@@ -4,6 +4,7 @@ struct VFSFILE;
    Names are ours. */
 #ifndef D2_H
 #define D2_H
+struct D3OBJECT;
 
 struct IDirectDrawSurface4;          /* <ddraw.h>, for the surface prototypes below */
 struct _DDSURFACEDESC2;

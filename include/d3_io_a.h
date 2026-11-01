@@ -3,6 +3,7 @@
    0x44e570 and continues past 0x44ee50 (worker scopes end there). Names are ours. */
 #ifndef UNK_44E570_H
 #define UNK_44E570_H
+struct VFSFILE;
 
 typedef struct AGIMAT {             /* 0xe0 bytes */
     char name[3][0x40];             /* 0x00, 0x40, 0x80: bitmap names (extension stripped) */

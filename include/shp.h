@@ -5,6 +5,7 @@ struct D2SURF;
    d2.h lacks these. Names are ours. */
 #ifndef UNK_47AB30_H
 #define UNK_47AB30_H
+struct D2RGB;
 
 #pragma pack(push, 1)
 typedef struct D2SHP {              /* a shape: this 0x32 byte header, then the lines */

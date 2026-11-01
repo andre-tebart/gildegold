@@ -6610,7 +6610,7 @@ int sv_PumpMessages(void)
 
 extern int ai_Unk623ec4, ai_Unk623ec8;  /* 0x623ec4, 0x623ec8 */
 extern int ai_Unk60d360;  /* 0x60d360 */
-void cm_SendExSysMessage(unsigned char id, void *msg);                     /* 0x4c4db0 */
+int cm_SendExSysMessage(unsigned char id, void *msg);                     /* 0x4c4db0 */
 int cm_GetSlotState();                     /* 0x4c3ae0 */
 void d2_SetViewEnabled(int view, int on);  /* 0x475590 */
 int cm_FlushSendQueue();                     /* 0x4c3680 */

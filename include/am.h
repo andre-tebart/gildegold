@@ -4,6 +4,7 @@
    Names are ours. */
 #ifndef AM_H
 #define AM_H
+struct SHOTREC;
 
 struct AMTREC;
 struct D3OBJECT;

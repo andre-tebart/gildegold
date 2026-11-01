@@ -92,8 +92,8 @@ int hmt_Load(void *f);                                                          
 int hmt_Save(VFSFILE *f);                                                        /* 0x4adb20 */
 int ls_Read(void *buf, int size, int n, int f);                             /* 0x51c920, ls.c: true when the fread returned a positive count */
 char * amt_GetSuperiorOfficeHolder(int type);                                                    /* 0x4e7550, defined elsewhere */
-void cm_SendExSysMessage(unsigned char id, void *msg);                                            /* 0x4c4db0, defined elsewhere */
-void cm_SendCreateCharacter(unsigned char a, int b, int c, unsigned short d, int e, unsigned char f, unsigned char g, unsigned char h);  /* 0x4c4650, defined elsewhere */
+int cm_SendExSysMessage(unsigned char id, void *msg);                                            /* 0x4c4db0, defined elsewhere */
+int cm_SendCreateCharacter(unsigned char a, int b, int c, unsigned short d, int e, unsigned char f, unsigned char g, unsigned char h);  /* 0x4c4650, defined elsewhere */
 int amt_GetFirstOffice(unsigned int k, struct AMTREC *out);                                         /* 0x4e6ec0, defined elsewhere */
 int amt_SendOfficeMessage(unsigned char a, char *b, char *c, unsigned char d, unsigned char e);                /* 0x4e6680, defined elsewhere */
 void cm_SendKillCharacter(int a, int b);                                                /* 0x4c4e00, defined elsewhere */

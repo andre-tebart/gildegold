@@ -328,7 +328,7 @@ extern int ai_Opponents[];              /* 0x75e160, the difficulty level 0 .. 4
 void cm_BeginSendGroup(void);                     /* 0x4c3b30 */
 void cm_EndSendGroup(void);                     /* 0x4c3b40 */
 int cm_SendGroupState();                     /* 0x4c3b50 */
-void cm_SendCreateCharacter(unsigned char a, int b, int c, unsigned short d, int e, unsigned char f, unsigned char g, unsigned char h);                     /* 0x4c4650 */
+int cm_SendCreateCharacter(unsigned char a, int b, int c, unsigned short d, int e, unsigned char f, unsigned char g, unsigned char h);                     /* 0x4c4650 */
 int cm_FlushSendQueue();                     /* 0x4c3680 */
 int cm_ReceiveMessages();                     /* 0x4c3fd0 */
 int cm_ExecCommands();                     /* 0x4c4190 */
@@ -415,7 +415,7 @@ struct D3FLMAP;
 char *tex_FindFile(char *name);                                     /* 0x45f9f0, d3_fl.h */
 int d3fl_ReplaceTexture(struct D3FLMAP *map, char *name, int idx);  /* 0x442210, d3_fl.c */
 char d3if_SelectTextureSet(struct D3OBJECT *obj, struct D3SURF *surf, unsigned char set, char reload);   /* 0x446f30, ecmd.c */
-void cm_SendExSysMessage(unsigned char id, void *msg);                     /* 0x4c4db0 */
+int cm_SendExSysMessage(unsigned char id, void *msg);                     /* 0x4c4db0 */
 void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d);  /* 0x4c4830, cm.h */
 extern INIT_OBJ *sv_PanelShown;          /* 0x6f2310, the room object the info panel shows (sv.c's unsigned short * view) */
 extern char ai_Time[];  /* 0x770ae0 */

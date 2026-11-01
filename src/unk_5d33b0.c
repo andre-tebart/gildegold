@@ -1224,7 +1224,7 @@ extern unsigned int dd_BMask;           /* 0x146359c, dd_vesa.h */
 
 int ls_Read(void *buf, int size, int count, int f);   /* 0x51c920, ls.c: vfs_fread items */
 void sv_SetStatusText(char *s);   /* 0x52e330, sv.c */
-void cm_SendExSysMessage(unsigned char id, void *msg);   /* 0x4c4db0, as in cm.h */
+int cm_SendExSysMessage(unsigned char id, void *msg);   /* 0x4c4db0, as in cm.h */
 DWORD dd_RGB(unsigned char r, unsigned char g, unsigned char b);   /* 0x41e670, as in dd_vesa.h */
 unsigned int util_Hash(unsigned char *buf, unsigned int len);      /* 0x401000, as in bio.h */
 void sv_PumpNet(void);                                             /* 0x52fe00, sv.c */

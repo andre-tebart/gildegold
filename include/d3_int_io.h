@@ -4,6 +4,7 @@ struct TSTEXTURE;
    except rd_object. */
 #ifndef UNK_44ABB0_H
 #define UNK_44ABB0_H
+struct VFSFILE;
 
 typedef union D3IOFLAGS {           /* tex_Load flags as the floor reader builds them */
     unsigned int all;

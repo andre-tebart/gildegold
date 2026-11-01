@@ -198,7 +198,7 @@ extern unsigned char amt_PriceRows[];   /* 0x61a348, the guild-house price table
 #define AMT_CHARS_END (&ai_CharInts[0x300][0])  /* 0x7d5f84, the word past the last character record */
 int util_Random(unsigned short n);      /* 0x42ec00, tr.c; the callers that read a 16-bit result (ch_RandomNear, anm_Update, ai_Unk4d88c0 ..) call util_RandomU, a cast in their head */
 int gm_TitleNumber(int group, int rank);  /* 0x5043d0, f3gm.c: the title number of the rank in the group */
-void cm_SendCreateCharacter(unsigned char a, int b, int c, unsigned short d, int e, unsigned char f, unsigned char g, unsigned char h);  /* 0x4c4650 */
+int cm_SendCreateCharacter(unsigned char a, int b, int c, unsigned short d, int e, unsigned char f, unsigned char g, unsigned char h);  /* 0x4c4650 */
 void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d);  /* 0x4c4830 */
 extern unsigned char ai_OwnPlayer;      /* 0x6f1bc5 */
 void cm_BeginFieldBlock(char *o, int id);     /* 0x4c3ba0 */

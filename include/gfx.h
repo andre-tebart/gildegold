@@ -3,6 +3,7 @@
    loading, surfaces). Names are ours. */
 #ifndef UNK_476C00_H
 #define UNK_476C00_H
+struct SBBANK;
 
 struct SBSAMPLE;
 #include "d2.h"

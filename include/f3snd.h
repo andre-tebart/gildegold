@@ -6,6 +6,9 @@ struct D3VECTOR;
    "_Stark_s" in its .data). Names are ours. */
 #ifndef F3SND_H
 #define F3SND_H
+struct D3SOUND;
+struct MSXTRACK;
+struct SNDHANDLE;
 
 typedef struct G16SMPENTRY {            /* SBENTRY in sblib.c: the file entry of a sample */
     int offset;                         /* 0x00, file offset of the data */

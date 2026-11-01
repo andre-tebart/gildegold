@@ -1110,7 +1110,7 @@ void ai_QuitGame(int x)
     sv_PopTo(main_GameLoop);
 }
 
-void cm_SendExSysMessage(unsigned char id, void *msg);                                             /* 0x4c4db0, defined elsewhere (hmt.h: void) */
+int cm_SendExSysMessage(unsigned char id, void *msg);                                             /* 0x4c4db0, defined elsewhere (hmt.h: void) */
 int cm_GetSlotState(int h);                                                         /* 0x4c3ae0, defined elsewhere */
 void sv_PumpNet(void);                                                         /* 0x52fe00, defined elsewhere */
 int sb_UnloadSampleBank(struct SBBANK *bank);                                             /* 0x426ba0 */

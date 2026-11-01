@@ -8,6 +8,7 @@ struct XOBJ;
    vegetation map, roads. Names are ours. */
 #ifndef RD_H
 #define RD_H
+struct D3VECTOR;
 
 typedef struct G15FIND {                /* 0xa4 bytes, context of rd_CollectNamed */
     char name[0x20];                    /* 0x00 */

@@ -12,6 +12,7 @@ struct D3SURF;
    byte offsets whose meaning is not known yet. Names are ours. */
 #ifndef UNK_402140_H
 #define UNK_402140_H
+struct D3OBJECT;
 
 #define CH_MAX 768
 

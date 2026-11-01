@@ -1209,7 +1209,7 @@ typedef struct G12XMSG {                /* 0x100 bytes, given to 0x4c4fa0 (a vot
 } G12XMSG;
 #pragma pack(pop)
 
-void ai_Unk4c4fa0(void *p);                                                   /* 0x4c4fa0 */
+int ai_Unk4c4fa0(void *p);                                                   /* 0x4c4fa0 */
 
 /* 0x4b0640, the STRAFE_HINRICHTUNG text command (callback 0x601b50[10], name 0x601070[10])
    "-KANONE" / "-GALGEN" / "-KOEPFEN" / "-SHAUFEN": starts the execution (kind 3, 0, 2, 4) of the character args[k]
@@ -2755,7 +2755,7 @@ void ai_Unk4b36d0(int cmd)
 
 extern int cm_NetFlags;      /* 0x6f2594, game flags (8: network game) */
 extern int ai_Unkf83650;
-void cm_SendExSysMessage(unsigned char id, void *msg);                                            /* 0x4c4db0, defined elsewhere */
+int cm_SendExSysMessage(unsigned char id, void *msg);                                            /* 0x4c4db0, defined elsewhere */
 void sv_PumpNet(void);                                                         /* 0x52fe00, defined elsewhere */
 __declspec(dllimport) unsigned long __stdcall GetTickCount(void);
 

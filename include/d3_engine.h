@@ -5,6 +5,8 @@ struct D3FLMAP;                     /* the tag (d3_fl.h spells it out; MS compat
 /* d3_engine.c types (only what the functions from 0x438c30 need so far). */
 #ifndef D3_ENGINE_H
 #define D3_ENGINE_H
+struct XOBJ;
+struct D3SOUND;
 
 typedef struct D3SCENELISTS {       /* view of the D3SCENE fields used by the object walks */
     char pad000[0x80];

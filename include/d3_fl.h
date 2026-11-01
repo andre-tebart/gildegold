@@ -2,6 +2,7 @@
    no path string). Names are ours. */
 #ifndef UNK_43EAB0_H
 #define UNK_43EAB0_H
+struct XOBJ;
 
 typedef struct D3FLTEX {            /* view of the texture slot (TSTEXTURE in ts_texture.h) */
     char name[0x40];                /* "*fltx1/2/4" for cache textures */

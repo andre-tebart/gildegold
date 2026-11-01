@@ -799,7 +799,7 @@ void amt_Unk4eaa00();
 int amt_GetOfficeCandidates();
 int amt_ApplyForOffice();
 int amt_CheckOfficeColumns();
-void ai_Unk4c4fa0(void *p);
+int ai_Unk4c4fa0(void *p);
 int he_Unk53d6f0();
 void d2_PlaceMainWindow();
 void d2_SetViewEnabled(int view, int on);
