@@ -110,7 +110,6 @@ extern unsigned int snd_AmbientOnSaved; /* 0x6f0b64, the saved snd_AmbientOn.on 
 extern char ai_Unk6f0860[];             /* 0x6f0860, a debug text */
 extern char ch_EmptyName[];             /* 0x631090, "" */
 extern char ai_Chars[768][0x21c];        /* 0x770b80, the characters (ahm.c); f3snd.c reads them flat (ai_CharsC) */
-extern int ai_Unk7603a0[32];            /* 0x7603a0, the selected workers (their id is the first word; as cm.h) */
 extern int snd_VoiceBankOrders;         /* 0x6f0cbc, voice bank: orders (snd_LoadBuildingVoices) */
 extern int snd_VoiceBankClick;          /* 0x6f0cc0, voice bank: click comments */
 extern int snd_VoiceBankNoise;          /* 0x6f0cc4, voice bank: click noises */
@@ -133,7 +132,6 @@ extern struct AIBLD *ai_MarketBuilding;        /* 0x6f1bc8, the market building 
 extern char *ai_PlayerBuilding;          /* 0x6f2308, the building the player is in: an AIBLD (sv.c defines char *; ai_PlayerBuildingT views) */
 extern unsigned short * sv_PanelShown;             /* 0x6f2310, its room */
 extern void *ai_Unk6f0ba0;              /* 0x6f0ba0, the atmosphere mp3 (MSXTRACK *) */
-extern char *ai_BTypes;                 /* 0x7e3f30, ai.h: AIBTYPE * (0x24d bytes, the kind at 0) */
 extern int d3_CurrentScene;             /* 0x633444 */        /* 0x602ba8 */
 extern char snd_GustNames[3][0x32];     /* 0x602b10, "Boehe_Leicht_s", "Boehe_Mittel_s", "Boehe_Stark_s" */
 extern void *d3_Terrain;                /* 0x633738 */
@@ -157,40 +155,23 @@ extern int snd_QueuePaused;             /* 0x6f0b68, nonzero: the queue does not
 extern int snd_QueueTime;               /* 0x6f0b88, time of the last queue change */
 extern volatile unsigned long d3_Time;  /* 0x6333cc */
 
-void sb_SetRestart(struct SBSAMPLE *s, int on);                                  /* 0x426170, sblib.c (this header's units: sb_SetRestartC) */
-int sb_IsPlaying(struct SBSAMPLE *s);                                                     /* 0x426f20 */
-int sb_Play(struct SBSAMPLE *s, int fade, int delay);                                     /* 0x427110 */
 int gm_ClockSeason(void *t);                                                       /* 0x4fe350, the season */
-float d3t_GetMeanHeight(struct D3VECTOR *pos);                                              /* 0x412550, d3_tools.c */
 struct SBSAMPLE *sb_PlaySample(struct SBBANK *bank, char *name, int loops, int pan, int volume, int fade, int delay); /* 0x426fa0, sblib.c (this header's units: sb_PlaySampleI) */
-void sb_SetVolume(struct SBSAMPLE *s, int volume);                               /* 0x427330, sblib.c (f3snd.c: sb_SetVolumeI) */
-void sb_Stop(struct SBSAMPLE *s, int fade);                                                      /* 0x427290 */
 void d3_PointToWorld(struct D3OBJECT *obj_, struct D3VECTOR *in, struct D3VECTOR *out);                               /* 0x458a20 */
 int ch_CountAt(int scene, int all, struct D3VECTOR *pos, float eps);                               /* 0x402720 */
 int ch_Count(int scene, int a);                                                  /* 0x4026c0 */
-void d3snd_SetVolume(struct D3SOUND *s, int volume);                                    /* 0x417e00, d3_snd.c (f3snd.c: d3snd_SetVolumeI) */
 void msx_SetTrackVolume(struct MSXTRACK *t, int vol);                                       /* 0x423930, msx.h: MSXTRACK * */
 struct MSXTRACK * msx_PlayAmbient(char *name, int vol);                                      /* 0x4243f0 */
-void msx_StopAmbient(struct MSXTRACK *t);                                                   /* 0x4244b0 */
-unsigned char * gm_BuildQuery(int n, ...);                                           /* 0x501190 */
 int util_Random(unsigned short n);                                               /* 0x42ec00, tr.c; the callers that read a 16-bit result (ch_RandomNear, anm_Update, ai_Unk4d88c0 ..) call util_RandomU, a cast in their head */
 struct MSXTRACK * msx_Play(char *name, int once);                                            /* 0x423a90, msx.h: MSXTRACK * */
 float util_RandomF(void);                                                        /* 0x42ec20 */
-void msx_Stop(struct MSXTRACK *t, int fade);                                                /* 0x423df0 */
-void msx_FadeMaster(float vol, int ms);                                          /* 0x4241a0 */
-int sb_IsVariation(struct SBBANK *bank, char *name);                            /* 0x426f60, sblib.c (f3snd.c: sb_IsVariationI) */
 struct SBSAMPLE *sb_GetVariation(struct SBBANK *bank, char *name, int idx);       /* 0x426190, sblib.c (f3snd.c: sb_GetVariationI) */
 struct SBSAMPLE * sb_GetSample(struct SBBANK *bank, char *name);                                          /* 0x426030 */
 struct SBBANK * sb_LoadSampleBank(char *name, int preload);                                        /* 0x426950 */
-int sb_UnloadSampleBank(struct SBBANK *bank);                                                 /* 0x426ba0 */
 float gm_Liking(unsigned a, unsigned b, int c);                                       /* 0x50c550, a favour */
 int gm_BuildingGoodsList(char *b, unsigned *out, int kind);                            /* 0x5098a0 */
 int gm_Unk5099e0(char *b, unsigned *out, int kind);                            /* 0x5099e0 */
 struct D3SOUND *d3snd_Attach(struct SNDHANDLE *snd, struct D3OBJECT *obj, int volume, float range);   /* 0x417710, d3_snd.c (f3snd.c: d3snd_AttachI) */
-void d3snd_SetHold(struct D3SOUND *s, int hold);                                        /* 0x417dd0, d3_snd.c (f3snd.c: d3snd_SetHoldI) */
-void d3snd_Play(struct D3SOUND *s, int a, int loops, int delay);                                     /* 0x417cf0 */
-void d3snd_Stop(struct D3SOUND *s, int unk);                                            /* 0x417db0, d3_snd.c (f3snd.c: d3snd_StopI) */
-void d3snd_Detach(struct D3SOUND *s);                                                   /* 0x4177b0, d3_snd.c (f3snd.c: d3snd_DetachI) */
 void * mem_Alloc(int size, char *tag);                                            /* 0x4223c0, mem.c */
 void mem_Free(void *p);                                                          /* 0x422620, mem.c */
 
