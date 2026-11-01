@@ -10,6 +10,7 @@
 #include "bio.h"
 #include "bmp.h"
 #include "mem.h"
+#include "ts_texture.h"
 
 #define AGI_TOK(sep) strtok(0, sep)
 #define AGI_M(c) ((c)->mats[(c)->cur])
