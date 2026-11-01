@@ -4665,7 +4665,7 @@ int ai_Unk4cb100(G17MSG *m, G17STAT *s)
     if (b == 0)
         return 1;
     if (b == sv_SelectedObject)
-        sv_Unk52adb0();
+        sv_ResetSelection();
     for (o = gm_Query(0, 2, 7, 4, 0x1d); o != 0; o = gm_QueryNext()) {
         if (*(int *)(o + 0x1c) == *(int *)(b + 1))
             gm_Unk5034b0(o);

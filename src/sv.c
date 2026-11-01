@@ -4287,36 +4287,40 @@ unsigned char * gm_BuildQuery(int n, ...);                     /* 0x501190 */
 unsigned short * gm_QueryNext(void);                   /* 0x4ffcc0 */
 void ch_SetVisible();                     /* 0x402480 */
 
-/* 0x52adb0, resets the selection (0x75ec5c / 0x75ec60, 0x6f2304) and clears the "selected" bit 2 of the group members (class 0x1d records) of the object under the cursor */
-void sv_Unk52adb0(void)
+/* 0x52adb0, resets the selection (item, object, model, sv_SelectedExtra) and clears the bit 2 of the carts (kind 0x1d) of the current building: the player's building, else the fallback one, else the first gm_BuildQuery(1, 0, 0x44) finds
+   @deep read the whole function against the original: stores, the building choice (player's building ->
+   fallback, else gm_BuildQuery(1,0,0x44)), the gm_Query(objList,1,5) cart loop with AIOBJ.flags20 &= ~2
+   all match. Left: the original tests b twice on the ai_PlayerBuilding != 0 path (+0x3c cmp eax,ebx; je
+   ret, then +0x40 cmp eax,ebx; je ret, reached by jmp from the gm_BuildQuery call), ours merges them (one
+   cmp/je, no jmp): 3 ins. Tried: one common test after if/else, return inside each branch, '&&' condition
+   form, b loaded before/after the stores; the flow is equal, only VC6's tail merge of the redundant test
+   differs */
+void sv_ResetSelection(void)
 {
-    int o;
-    unsigned short *p;
+    AIBLD *b;
+    AIOBJ *o;
 
-    SV_I((unsigned)&sv_SelectedItem) = 0;
-    SV_I((unsigned)&sv_SelectedObject) = 0;
-    SV_I((unsigned)&sv_SelectedExtra) = 0;
-    SV_I((unsigned)&sv_SelectedModel) = 0;
-    o = SV_I((unsigned)&ai_FallbackBuilding);
-    if (SV_I((unsigned)&ai_PlayerBuilding) == 0) {
-        if (o == 0) {
-            o = gm_BuildQuery(1, 0, 0x44);
-            if (o == 0)
-                return;
-        }
-    } else if (o == 0) {
-        SV_I((unsigned)&sv_SelectedModel) = 0;
-        SV_I((unsigned)&sv_SelectedItem) = 0;
-        SV_I((unsigned)&sv_SelectedObject) = 0;
-        SV_I((unsigned)&sv_SelectedExtra) = 0;
-        return;
+    sv_SelectedItem = 0;
+    sv_SelectedObject = 0;
+    sv_SelectedExtra = 0;
+    sv_SelectedModel = 0;
+    if (ai_PlayerBuilding != 0) {
+        b = (AIBLD *)ai_FallbackBuilding;
+        if (b == 0)
+            return;
+    } else {
+        b = (AIBLD *)ai_FallbackBuilding;
+        if (b == 0)
+            b = (AIBLD *)gm_BuildQuery(1, 0, 0x44);
     }
+    if (b == 0)
+        return;
     sv_OtherSelected = 0;
-    p = (unsigned short *)((char *(*)())gm_Query)(*(int *)(o + 0x5d), 1, 5);
-    while (p != 0) {
-        if (ai_Goods[*p * 0x41] == 0x1d)
-            *(unsigned *)(p + 0x10) &= 0xfffffffd;
-        p = (unsigned short *)gm_QueryNext();
+    o = (AIOBJ *)gm_Query((void *)b->objList, 1, 5);
+    while (o != 0) {
+        if (ai_GoodsT[o->id].type == 0x1d)
+            o->flags20 &= ~2u;
+        o = (AIOBJ *)gm_QueryNext();
     }
 }
 /* 0x52ae40, clears the group selection: the focus 0x7662c0, 0x6f2304, the selected flag (+0x21c stride: +0x188 of the character records at 0x770d08) and 0x6f2334 */
@@ -4836,7 +4840,7 @@ lfe4:
         || found) {
         if (SV_C((unsigned)&ai_PickedObject) == 0) {
             if (sv_OtherSelected == 0) {
-                sv_Unk52adb0();
+                sv_ResetSelection();
                 return;
             }
         } else {
@@ -5872,11 +5876,11 @@ void sv_CameraFollow(void)
         }
         if (SV_I((unsigned)&sv_SelectedItem) == 0)
             return;
-        sv_Unk52adb0();
+        sv_ResetSelection();
     }
     if (SV_I((unsigned)&sv_SelectedItem) == 0)
         return;
-    sv_Unk52adb0();
+    sv_ResetSelection();
 }
 /* 0x52d940, the mouse click handler of the game screen (fl: 0x800 right button, 0x100 left button, 8 = key flag): plays "MausclickRechts_s_01" for a right click that changes something, closes a
    dialog (0x6f262c: the kinds 0x11 / 0x26 / 0x69 set 0x6f2630, 0x89 goes to 0x575860, the others to 0x53dcb0), routes a click on a shown widget (0x6faa84 table of 3 ints: widget, +0x70 of the object),
@@ -5932,7 +5936,7 @@ l9f2:
     ai_Unk591170();
     anm_Update();
     if (SV_I(((unsigned)&dm_L + 0x20)) != 0 && SV_I((unsigned)&sv_SelectedObject) != 0 && SV_I(((unsigned)&ai_Unk75f280 + 0x500) + SV_I((unsigned)&sv_FrameDepth) * 8) == (int)ai_GameFrame) {
-        sv_Unk52adb0();
+        sv_ResetSelection();
         goto l72;
     }
     if (SV_I((unsigned)&ai_PlayerBuilding) == 0) {
@@ -5953,7 +5957,7 @@ lbb6:
         SV_I((unsigned)&sv_BorderViewY) = 0;
     }
     if (SV_I(((unsigned)&dm_L + 0x20)) != 0 && (sv_OtherSelected != 0 || (SV_I((unsigned)&sv_SelectedItem) != 0 && ai_Goods[*(unsigned short *)SV_I((unsigned)&sv_SelectedItem) * 0x41] == 0x1d))) {
-        sv_Unk52adb0();
+        sv_ResetSelection();
         di_ClearEvents(0x10);
     }
     if ((SV_I((unsigned)&ai_PlayerBuilding) != 0 && ai_ScriptQuery(0x1a, SV_I((unsigned)&ai_PlayerBuilding), 0, *(unsigned short *)SV_I((unsigned)&sv_PanelShown)) == 0)
@@ -5982,7 +5986,7 @@ lbb6:
         if (d3_VecEqual(sv_CameraObj + 0x84, (char *)(unsigned)&sv_ViewRotX, 0.1f) != 0 || d3_VecEqual(sv_CameraObj + 0x4c, (char *)(unsigned)&sv_ViewPosX, 0.1f) != 0 || ok) {
             if (SV_I((unsigned)&ai_PlayerBuilding) == 0 && SV_I((unsigned)&ai_FallbackBuilding) == 0 && SV_I((unsigned)&sv_PanelShown) == 0) {
                 if (SV_I((unsigned)&sv_FrameDepth) == SV_I((unsigned)&sv_FrameBase) && SV_I((unsigned)&sv_SelectedItem) != 0)
-                    sv_Unk52adb0();
+                    sv_ResetSelection();
                 goto l72;
             }
             it = 0;
@@ -6041,7 +6045,7 @@ l1a:
             ((int (*)())*(int *)(v + 0x18c))(SV_I((unsigned)&full_data_6f22ec), 3, v + 400, 0);
         SV_I((unsigned)&full_data_6f22ec) = 0;
     }
-    sv_Unk52adb0();
+    sv_ResetSelection();
 l72:
     if ((fl & 0x100) != 0)
         sv_UpdatePanel();

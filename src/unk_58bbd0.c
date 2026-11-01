@@ -3051,7 +3051,7 @@ int ai_Unk5b2180(); int gm_IsHomeType(); void sv_SelectPanelObject(unsigned char
 unsigned gm_PermissionBits(unsigned p1, unsigned char *b, unsigned short *o, int c); void ai_Unk59f410(); void init_ShowBuildingScene(unsigned char *b, int slot); void init_FinishBuildingScene(unsigned char *b, unsigned short *o);
 int d3t_PlaceObjectV(struct D3OBJECT *camera, struct D3VECTOR *pos, struct D3VECTOR *dir, int unk, char flags); int gm_ClockSeason(); void init_AfterTownLoad(void); void d3fl_MakeDivide();
 int ai_Unk5bc110(); void snd_StartMarketAmbience(void); int tb_SetFunctionOff(); void snd_StopMarketAmbience(void);
-void d2_CopyCaption(char *caption); void sv_SetStatusText(char *s); void sv_Unk52adb0(void);
+void d2_CopyCaption(char *caption); void sv_SetStatusText(char *s); void sv_ResetSelection(void);
 struct AIBLD; void sv_UpdateChimneySmoke(struct AIBLD *b); int ai_ScriptQuery();
 int gm_IsType10(unsigned char *b); void ai_Unk59e420(); void ai_Unk59ee40(); void ai_Unk59a800();
 int gm_Unk50c340(); int d2_GetWinObj(); void sv_SetResearchClass(unsigned char *o); int ai_Unk5b7dd0();
@@ -3333,7 +3333,7 @@ void ai_GameFrame(void)
     snd_StopMarketAmbience();
     d2_CopyCaption((void *)(unsigned)&ch_EmptyName);
     sv_SetStatusText((void *)(unsigned)&ch_EmptyName);
-    sv_Unk52adb0();
+    sv_ResetSelection();
     U_I((unsigned)&d2_PointerLook) = 0;
     U_I((unsigned)&d2_CutsceneActive) = 0;
     U_I((unsigned)&di_Absolute) = 1;
@@ -8328,7 +8328,7 @@ int ai_Unk59d410(int param_1, int param_2, int param_3, unsigned char param_4)
 
 int gm_SumListAmounts(void *list, unsigned char p); char * he_FindEvent(int n, ...); char * he_NextEvent(void); int ai_AmountMenu();
 int gm_BuildingClass(); unsigned gm_PermissionBits(unsigned p1, unsigned char *b, unsigned short *o, int c); int sv_MessageBoxGreen(); 
-void sv_Unk52adb0(void); void init_LoadObjectScene();
+void sv_ResetSelection(void); void init_LoadObjectScene();
 char d3_DeflateScene(unsigned int flags); char d3_InflateScene(unsigned int flags); void init_SetCharacterAnimations(unsigned char *b);
 void init_ShowBuildingScene(unsigned char *b, int slot); void init_FinishBuildingScene(unsigned char *b, unsigned short *o); 
 int d3_VecEqual(struct D3VECTOR *a, struct D3VECTOR *b, float eps); void sv_Unk52bb70(int id);
@@ -8820,7 +8820,7 @@ void ai_Unk59e420(unsigned char *param_1, int param_2)
     sv_ResetScreenClip();
     sv_RunFrame(ai_Unk59e420, 0x20007);
     U_I((unsigned)&full_data_6237c8) = 0;
-    sv_Unk52adb0();
+    sv_ResetSelection();
     sv_ClearSelection();
     kind = U_I((unsigned)&d3_CurrentScene);
     U_I((unsigned)&full_data_6f2314) = 0;
@@ -8949,7 +8949,7 @@ void ai_Unk59e420(unsigned char *param_1, int param_2)
             }
         }
         if (sv_RunFrame(ai_Unk59e420, 0x67fff) == 0) {
-            sv_Unk52adb0();
+            sv_ResetSelection();
             sv_ClearSelection();
             U_I((unsigned)&sv_SelectedChar) = 0;
             snd_UnloadBuildingVoices();
@@ -8997,7 +8997,7 @@ void ai_Unk59ee40(unsigned char *param_1)
     }
     U_I((unsigned)&sv_FrameBase) = U_I((unsigned)&sv_FrameDepth) + 1;
     U_I((unsigned)&full_data_6237c8) = 0;
-    sv_Unk52adb0();
+    sv_ResetSelection();
     sv_ClearSelection();
     saved1 = U_I((unsigned)&sv_ViewPosX);
     saved2 = U_I((unsigned)&sv_ViewPosY);
@@ -9103,7 +9103,7 @@ void ai_Unk59ee40(unsigned char *param_1)
         U_I(((unsigned)&ai_Unkfd7c50 + 0x8) + idx * 0xf8) = 0;
         U_I((unsigned)&d3_Sky) = 0;
     }
-    sv_Unk52adb0();
+    sv_ResetSelection();
     sv_ClearSelection();
     U_I((unsigned)&sv_BorderViewX) = 0;
     U_I((unsigned)&sv_BorderViewY) = 0;
@@ -9154,7 +9154,7 @@ void ai_Unk59f410(unsigned short *param_1)
     U_I((unsigned)&ch_CurrentScriptGroup) = U_I(param_1 + 1);
     U_I((unsigned)&sv_FrameBase) = U_I((unsigned)&sv_FrameDepth) + 1;
     U_I((unsigned)&full_data_6237c8) = 0;
-    sv_Unk52adb0();
+    sv_ResetSelection();
     sv_ClearSelection();
     idx = -1;
     room = param_1;
@@ -9200,7 +9200,7 @@ void ai_Unk59f410(unsigned short *param_1)
     default: ai_PumpFrames(param_1); break;
     }
     U_I((unsigned)&snd_AmbientOn) |= 1;
-    sv_Unk52adb0();
+    sv_ResetSelection();
     sv_ClearSelection();
     sv_ReleaseNamePlates();
     U_I((unsigned)&sv_SelectedChar) = 0;

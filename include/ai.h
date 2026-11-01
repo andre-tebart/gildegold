@@ -89,6 +89,10 @@ typedef struct AIOBJ {                  /* 0x43 bytes, an object (table behind a
             unsigned char lvl1d;        /* 0x1d */
         };
         struct {
+            int pad1c20;
+            unsigned int flags20;       /* 0x20, of a cart (kind 0x1d): bit 1 (2) is cleared for the carts of the current building when the selection resets (sv_ResetSelection) */
+        };
+        struct {
             int pad1c24[2];
             struct AIJOB *job24;        /* 0x24, of a cart: a job whose cartBld names a building (sv_RefreshPanel prints that building's kind; reasoned: the job the cart runs) */
         };

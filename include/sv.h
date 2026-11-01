@@ -92,7 +92,7 @@ void sv_ClosePanel(void);                                                /* 0x52
 int sv_ReturnZero(void);                                                /* 0x52a040 */
 void sv_UpdatePanel(void);                                              /* 0x52a050 */
 void sv_HoverPick(void);                                                /* 0x52a680 */
-void sv_Unk52adb0(void);                                                /* 0x52adb0 */
+void sv_ResetSelection(void);                                                /* 0x52adb0 */
 void sv_ClearSelection(void);                                           /* 0x52ae40 */
 void sv_Unk52ae70(void);                                                /* 0x52ae70 */
 void sv_CollectGroupCharacters(char *b);                                /* 0x52b2a0 */
