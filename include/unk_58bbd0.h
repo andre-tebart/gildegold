@@ -76,4 +76,73 @@ typedef struct G8INVOBJ {
 
 void ai_FreeSettings(void);                                        /* 0x5a8920 */
 void ai_FreePicture(void);                                         /* 0x5bc0f0 */
+
+/* declared in other units' headers before (moved to the owner) */
+int ai_DismissalHandler(unsigned short *param_1, int param_2);  /* 0x5ce950 */
+char ai_EmbezzlementContract(int param_1, int param_2);  /* 0x5cacd0 */
+int ai_EmbezzlementPrivilege(unsigned short *param_1, int *param_2);  /* 0x5ca560 */
+int ai_EspionageAmountWindow(int param_1, int *param_2);  /* 0x5cca40 */
+int ai_EspionageOrderHandler(int param_1, int *param_2);  /* 0x5cbe00 */
+int ai_EspionageOverviewHandler(int param_1, int *m);  /* 0x5cd2e0 */
+int ai_EspionagePayment(int param_1, int param_2);  /* 0x5cba90 */
+int ai_EspionagePayment2(int param_1, int *m);  /* 0x5cc700 */
+int ai_EspionageRelation(int param_1, int *param_2);  /* 0x5cc2b0 */
+int ai_EspionageResult(int param_1, int *m);  /* 0x5cd400 */
+int ai_EspionageWindow(int param_1, int param_2);  /* 0x5cb4f0 */
+int ai_InterrogationWindow(int param_1, int param_2);  /* 0x5ce610 */
+int ai_InterrogationWindow1(int param_1, int param_2);  /* 0x5cede0 */
+int ai_InterrogationWindow2(int param_1, int param_2);  /* 0x5cf020 */
+int ai_LawPrivilegeWindow(int param_1, int *param_2);  /* 0x5ca150 */
+int ai_MisappropriationWindow(unsigned short *param_1, int *param_2);  /* 0x5ca860 */
+int ai_OfficeApplication(short *param_1, int param_2);  /* 0x5c6d00 */
+int ai_SpyTargetFlagHandler(int param_1, int *param_2);  /* 0x5ce1a0 */
+int ai_SpyTargetHandler(int param_1, int *param_2);  /* 0x5cde90 */
+void ai_Unk5a9110(unsigned short *param_1, int param_2);  /* 0x5a9110 */
+void ai_Unk5a9430(int param_1, unsigned short *param_2);  /* 0x5a9430 */
+void ai_Unk5a9690(int param_1, int param_2);  /* 0x5a9690 */
+void ai_Unk5a96e0(int param_1, unsigned short *param_2, int param_3, int param_4, int param_5, int param_6);  /* 0x5a96e0 */
+void ai_Unk5a9780(int param_1, int param_2, int param_3, int param_4);  /* 0x5a9780 */
+void ai_Unk5a9e40(int param_1, int param_2);  /* 0x5a9e40 */
+int ai_Unk5c8bc0(unsigned short *param_1);  /* 0x5c8bc0 */
+int ai_Unk5c8ef0(unsigned short *param_1);  /* 0x5c8ef0 */
+int ai_WorkerDismissalWindow(int param_1, int *m);  /* 0x5ce7f0 */
+void ai_Unk5a6b70(int param_1, int param_2, int param_3);  /* 0x5a6b70 */
+void ai_Unk5a6cb0(int *m_);  /* 0x5a6cb0 */
+void ai_Unk5a78a0(int *m_);  /* 0x5a78a0 */
+void ai_Unk5a7cd0(int *m_);  /* 0x5a7cd0 */
+void ai_Unk5a82f0(int *m_);  /* 0x5a82f0 */
+void ai_GypsyDeliveryText(unsigned short *param_1, int param_2, int *param_3);  /* 0x5a9470 */
+int ai_BlackmailBuildingListener(unsigned short *param_1, int param_2);  /* 0x5c9550 */
+int ai_BlackmailContact(int param_1, int param_2);  /* 0x5c9c50 */
+unsigned char ai_BlackmailContactVariant(int param_1, int param_2);  /* 0x5c9ff0 */
+int ai_CounterEspionage(int param_1, int *m);  /* 0x5cae00 */
+int ai_CounterEspionageWindow(int *param_1, int param_2);  /* 0x5cb250 */
+int ai_Unk5bd060(int param_1, int param_2, int param_3, int *param_4);  /* 0x5bd060 */
+void ai_Unk5c4150(int param_1, unsigned char param_2, int param_3, int param_4);  /* 0x5c4150 */
+void ai_Unk5a8cb0(unsigned short *param_1, char *param_2);  /* 0x5a8cb0 */
+int ai_AmountRow(int param_1, int param_2, int param_3, int param_4, int *param_5, int param_6);  /* 0x5be3b0 */
+int ai_AmountRowStatus(int *param_1);  /* 0x5be1d0 */
+void ai_GameFrame(void);  /* 0x591520 */
+void ai_Unk58feb0(int obj, int target);  /* 0x58feb0 */
+void ai_Unk5a8c50(unsigned short *param_1, char *param_2, int param_3, int param_4);  /* 0x5a8c50 */
+void ai_Unk5a9170(unsigned short *param_1, int param_2);  /* 0x5a9170 */
+int ai_Unk5ba750(void);  /* 0x5ba750 */
+int ai_DrawSettingGood(int param_1);  /* 0x5a8870 */
+float ai_SettingFactor(int param_1);  /* 0x5a88e0 */
+void ai_Unk5a8ee0(unsigned short *param_1, unsigned short *param_2);  /* 0x5a8ee0 */
+void ai_Unk5a8f90(unsigned short *param_1, unsigned short *param_2);  /* 0x5a8f90 */
+void ai_Unk5a9050(unsigned short *param_1, unsigned short *param_2);  /* 0x5a9050 */
+int ai_Unk5bb2d0(int param_1, int param_2);  /* 0x5bb2d0 */
+int ai_FindBauplaetze(char *prefix, int *list);  /* 0x58f7a0 */
+int ai_InventoryHas(void *ch, int id);  /* 0x5ba6b0 */
+void ai_ObjectAngle(void *out_, int plot);  /* 0x58fd90 */
+void ai_ObjectPosition(void *out, int plot);  /* 0x58fd40 */
+void ai_Unk5a8b80(unsigned short *param_1, char *param_2, int param_3, int param_4, int param_5);  /* 0x5a8b80 */
+void ai_Unk5a8c00(unsigned short *param_1, char *param_2, int param_3);  /* 0x5a8c00 */
+int ai_Unk5ba620(int param_1);  /* 0x5ba620 */
+int ai_Unk5c33c0(unsigned short param_1, unsigned short param_2, unsigned int *param_3, int param_4);  /* 0x5c33c0 */
+int ai_Unk5c37a0(short *param_1, char *param_2, unsigned char *param_3);  /* 0x5c37a0 */
+int ai_Unk5cf8a0(int param_1, int *param_2);  /* 0x5cf8a0 */
+void ai_SendSwapText(unsigned short *param_1, unsigned short *param_2, unsigned short *param_3);  /* 0x5a9330 */
+
 #endif
