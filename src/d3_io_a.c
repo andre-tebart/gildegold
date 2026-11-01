@@ -7,6 +7,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include "d3_io_a.h"
+#include "bio.h"
+#include "bmp.h"
+#include "mem.h"
 
 #define AGI_TOK(sep) strtok(0, sep)
 #define AGI_M(c) ((c)->mats[(c)->cur])
