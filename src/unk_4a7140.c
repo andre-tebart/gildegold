@@ -270,20 +270,20 @@ int ai_PokerHighCard(int *hand, int high)
 }
 /* 0x4a7760, deals a card from the deck to owner (the first one when 10 or fewer are left, else a random one) */
 
-int ai_Unk4a7760(int owner)
+int ai_PokerDrawCard(int owner)
 {
-    unsigned int i;
+    int i;
 
     if (ai_PokerTable->left == 0)
         return -1;
-    if (ai_PokerTable->left < 11) {
-        for (i = 0; i < 24; i++)
-            if (ai_PokerDeck[i].owner == 3)
-                break;
-    } else {
+    if (ai_PokerTable->left > 10) {
         do
             i = util_RandomU(24);
         while (ai_PokerDeck[i].owner != 3);
+    } else {
+        for (i = 0; i < 24; i++)
+            if (ai_PokerDeck[i].owner == 3)
+                break;
     }
     ai_PokerDeck[i].owner = owner;
     ai_PokerTable->left--;
@@ -391,7 +391,7 @@ void ai_Unk4a79d0(G10SEAT *s, int k)
         o = ai_PokerDeck[s->card[k]].owner;
         ai_PokerDeck[s->card[k]].owner = 4;
         s->swapped = s->card[k];
-        n = ai_Unk4a7760(o);
+        n = ai_PokerDrawCard(o);
         s->card[k] = n;
         ai_PokerDeck[n].shown = 0;
     }
@@ -856,7 +856,7 @@ void ai_PokerDealThree(void)
 
     for (k = 0; k < 3; k++) {
         for (i = 0; i < 3; i++) {
-            ai_PokerTable->seat[i].card[k] = ai_Unk4a7760(i);
+            ai_PokerTable->seat[i].card[k] = ai_PokerDrawCard(i);
             if (k > 1)
                 ai_PokerDeck[ai_PokerTable->seat[i].card[k]].shown = 1;
             else
@@ -872,7 +872,7 @@ void ai_PokerDealFourth(void)
     int i;
 
     for (i = 0; i < 3; i++) {
-        ai_PokerTable->seat[i].card[3] = ai_Unk4a7760(i);
+        ai_PokerTable->seat[i].card[3] = ai_PokerDrawCard(i);
         ai_PokerDeck[ai_PokerTable->seat[i].card[3]].shown = 1;
     }
     ai_PokerTable->dealt++;
@@ -884,7 +884,7 @@ void ai_PokerDealFifth(void)
     int i;
 
     for (i = 0; i < 3; i++) {
-        ai_PokerTable->seat[i].card[4] = ai_Unk4a7760(i);
+        ai_PokerTable->seat[i].card[4] = ai_PokerDrawCard(i);
         ai_PokerDeck[ai_PokerTable->seat[i].card[4]].shown = 1;
     }
     ai_PokerTable->dealt++;
