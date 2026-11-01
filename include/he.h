@@ -106,4 +106,16 @@ void he_Unk542b60(int ev);
 void he_Unk542100(int ev);
 
 void he_SaveMessageFilter(void);                                       /* 0x575600 */
+
+/* declared in other units' headers before (moved to the owner) */
+int he_Unk553cc0(int p);  /* 0x553cc0 */
+int he_Unk553d10(int a, int b);  /* 0x553d10 */
+int he_Unk553d60(int a, int b);  /* 0x553d60 */
+int he_Unk56f170(int owner);  /* 0x56f170 */
+int he_Unk570ea0(int a, int b);  /* 0x570ea0 */
+int he_IsMessageKindFiltered(int id);  /* 0x575640 */
+int he_Unk555210(char *obj, int unused1, int unused2, int n);  /* 0x555210 */
+char *ai_FindCurseEvent(char *a);  /* 0x5741d0 */
+int he_Unk553db0(unsigned short *a, int b, int *count);  /* 0x553db0 */
+
 #endif
