@@ -43,7 +43,7 @@ int sv_ClockSeason(void *t);                                            /* 0x525
 char sv_Unk525490(char *o);                                             /* 0x525490 */
 void sv_Unk525510(int t, float flag);                                   /* 0x525510 */
 void sv_UpdateSkyColors(void);                                          /* 0x525940 */
-void sv_Unk525a00(int t);                                               /* 0x525a00 */
+void sv_FillDayPhases(int t);                                               /* 0x525a00 */
 char sv_Unk525a80(char *o, int f);                                      /* 0x525a80 */
 void sv_Unk525ad0(char *t);                                             /* 0x525ad0 */
 void sv_PlaceCamera(float f);                                           /* 0x525dd0 */
@@ -123,8 +123,8 @@ void sv_Unk52f600(int bk);                                              /* 0x52f
 int sv_Unk52f710(int *bk, char dir);                                    /* 0x52f710 */
 void sv_Unk52f9f0(int *bk);                                             /* 0x52f9f0 */
 void sv_Unk52fa00(int *bk);                                             /* 0x52fa00 */
-int sv_Unk52fa10(void);                                                 /* 0x52fa10 */
-void sv_Unk52fa90(void);                                                /* 0x52fa90 */
+int sv_CreateScrollForm(void);                                                 /* 0x52fa10 */
+void sv_DestroyScrollForm(void);                                                /* 0x52fa90 */
 void sv_Unk52fad0(void);                                                /* 0x52fad0 */
 void sv_PopTo(int v);                                                   /* 0x52fb50 */
 int sv_PumpMessages(void);                                              /* 0x52fb80 */

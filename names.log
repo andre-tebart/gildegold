@@ -285,3 +285,16 @@
 2026-11-01T18:22:29 0x00f81220 data ai_Unkf81220 -> cm_LoadReceived by:main why:0xf81220: the bytes of cm_LoadBuf received so far (0, then += 0x80 per message); ls_ReceiveGame waits until it reaches cm_LoadSize
 2026-11-01T18:22:29 0x0075e130 data ai_Unk75e130 -> ai_TimeCopy by:main why:0x75e130: a 14-byte copy of the game clock ai_Time (cm.c copies it whole, ls_LoadGame / ls_ReceiveGame after reading the clock)
 2026-11-01T18:22:29 0x0051d2d0 func unk_Unk51d2d0 -> ls_LoadScene by:main why:0x51d2d0: after a load, builds the scene from the save file (d3_LoadScene(0, f, ...)) and its scene tree and callbacks
+2026-11-01T19:27:08 0x005384e0 func main_Unk5384e0 -> main_EndRound by:main why:the round end of the player (after main_RundenBeginn 0x537de0, before main_RoundReport): fade, the round announcements, the balance page, the renovations and building budgets, the figures beamed home
+2026-11-01T19:27:08 0x004bb720 func ai_Unk4bb720 -> ai_PostRandomMessages by:main why:its comment: posts 0..n random messages (AIMSG 0x42) for the character id
+2026-11-01T19:27:08 0x0053efb0 func he_Unk53efb0 -> he_SumApEventCosts by:main why:sums the +0xc values of the AP events of a key; main_EndRound takes that sum from the player's money
+2026-11-01T19:27:08 0x004ea8e0 func amt_Unk4ea8e0 -> amt_TellOpenOffices by:main why:tells the character the offices it could apply for (text 0x13ac, office names 0x253 + kind)
+2026-11-01T19:27:08 0x0053d9f0 func he_Unk53d9f0 -> he_ShowEventBar by:main why:shows / hides the event bar for the player slot (0xffff hides)
+2026-11-01T19:27:08 0x0052fa10 func sv_Unk52fa10 -> sv_CreateScrollForm by:main why:creates the scroll parchment form misc/scroll_perga with its two end pieces, returns the form
+2026-11-01T19:27:08 0x0052fa90 func sv_Unk52fa90 -> sv_DestroyScrollForm by:main why:destroys the scroll form sv_CreateScrollForm made
+2026-11-01T19:27:08 0x00525a00 func sv_Unk525a00 -> sv_FillDayPhases by:main why:fills the day phase table 0x623ba9 from the season's phase minutes
+2026-11-01T19:27:08 0x00513740 func unk_Unk513740 -> init_AfterTownLoad by:main why:its comment: after loading a town, sets the clock now, the player's camera, hides the homeless characters, the scene callbacks and limits
+2026-11-01T19:27:08 0x00617830 data ai_Unk617830 -> gm_DayStartHours by:main why:float[4] {8,7,8,9} by season: the hour the day starts (sv.c compares the clock hour >= it, main_EndRound prints it with text 0x2051)
+2026-11-01T19:27:08 0x00617840 data ai_Unk617840 -> gm_DayEndHours by:main why:float[4] {20,21,20,19} by season: the hour the day ends (sv.c compares the clock hour < it)
+2026-11-01T19:27:08 0x00f83650 data ai_Unkf83650 -> hst_SeedPending by:main why:set by main_EndRound, cleared by the system message 5 that seeds util_Seed (cm.c); the yearly history waits while it is set
+2026-11-01T19:27:08 0x0055eba0 func he_Unk55eba0 -> he_FindFigurePlace by:main why:returns 1 with the building id, an object id and the scene where the character's figure belongs (0 for kinds 0xd / 0xe or busy jobs); main_EndRound beams the figures there

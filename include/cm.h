@@ -370,7 +370,7 @@ extern int ai_Unk91b6e0[0x800][2];  /* 0x91b6e0 */
 extern char ai_Unk91f700[];  /* 0x91f700 */
 extern char ai_Unk92cae0[16][0x35c];  /* 0x92cae0 */
 extern int ai_Unkf31144;  /* 0xf31144 */
-extern int ai_Unkf83650;  /* 0xf83650 */
+extern int hst_SeedPending;  /* 0xf83650 */
 extern char ai_Unkf895a0[0xb00];  /* 0xf895a0 */
 struct D3SM; struct D3TERRAIN; void d3sm_Build(struct D3SM *h, struct D3TERRAIN *t);  /* 0x45e620, d3_sm.c: void d3sm_Build(D3SM *, D3TERRAIN *) */
 void hmt_SetPendingElection(int v);  /* 0x4ad1b0 */

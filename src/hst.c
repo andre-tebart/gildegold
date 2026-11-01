@@ -2624,9 +2624,9 @@ extern int d2_ClickedId;                /* 0xf8a668 */
 void d2_SetPointerSprite(int a, int pic);                                               /* 0x476f80 */
 int d2_SetForm(int view, int n);                                                 /* 0x475f70 */
 void d2_CreateScrollButtons(int x, int y, int win, int obj, int pic);                      /* 0x472270 */
-int sv_Unk52fa10(void);                                                          /* 0x52fa10, defined elsewhere */
+int sv_CreateScrollForm(void);                                                          /* 0x52fa10, defined elsewhere */
 void sv_Unk52fad0(void);                                                         /* 0x52fad0, defined elsewhere */
-void sv_Unk52fa90(void);                                                         /* 0x52fa90, defined elsewhere */
+void sv_DestroyScrollForm(void);                                                         /* 0x52fa90, defined elsewhere */
 int io_PrintText(char *fmt, ...);                                               /* 0x515960, defined elsewhere */
 int sv_RunFrame(int cb, unsigned mask);                                      /* 0x5309a0, defined elsewhere */
 extern int sv_PopRequest;                /* 0x6f22a0 */
@@ -2643,7 +2643,7 @@ void ai_Unk4b3350(void)
     AI_ZERO(text, 0x1fb8);
     if (hst_NextEvent(name, text) != 1)
         return;
-    view = sv_Unk52fa10();
+    view = sv_CreateScrollForm();
     d2_SetPointerSprite(0, 0);
     d2_SetForm(view, 1);
     win = d2_LastWindow;
@@ -2678,7 +2678,7 @@ void ai_Unk4b3350(void)
             }
         }
     } while (sv_RunFrame(ai_Unk4b3350, 0x66087));
-    sv_Unk52fa90();
+    sv_DestroyScrollForm();
 }
 /* 0x4b35e0, 0x4b3280 with both passes (0x4b2c90, commands if cmd): 5 when they fail */
 
@@ -2726,7 +2726,7 @@ void ai_Unk4b36d0(int cmd)
     AI_ZERO(text, 0x1fb8);
     if (hst_NextEventCmd(name, text, cmd) != 1)
         return;
-    view = sv_Unk52fa10();
+    view = sv_CreateScrollForm();
     d2_SetPointerSprite(0, 0);
     d2_SetForm(view, 1);
     win = d2_LastWindow;
@@ -2761,17 +2761,17 @@ void ai_Unk4b36d0(int cmd)
             }
         }
     } while (sv_RunFrame((void (*)(void))ai_Unk4b36d0, 0x66087));
-    sv_Unk52fa90();
+    sv_DestroyScrollForm();
 }
 
 extern int cm_NetFlags;      /* 0x6f2594, game flags (8: network game) */
-extern int ai_Unkf83650;
+extern int hst_SeedPending;
 int cm_SendExSysMessage(unsigned char id, void *msg);                                            /* 0x4c4db0, defined elsewhere */
 void sv_PumpNet(void);                                                         /* 0x52fe00, defined elsewhere */
 __declspec(dllimport) unsigned long __stdcall GetTickCount(void);
 
 /* 0x4b3960, the yearly history: tells the others (message 5 with the tick count) in a network game, waits
-   while ai_Unkf83650, then shows the history dialog of hst_TextsOn (1: texts, 2: texts and commands) */
+   while hst_SeedPending, then shows the history dialog of hst_TextsOn (1: texts, 2: texts and commands) */
 void ai_Unk4b3960(int cmd)
 {
     int msg[0x1f];
@@ -2780,7 +2780,7 @@ void ai_Unk4b3960(int cmd)
         msg[0] = GetTickCount();
         cm_SendExSysMessage(5, msg);
     }
-    while (ai_Unkf83650 != 0) {
+    while (hst_SeedPending != 0) {
         if (net_Conn.closed != 0)
             return;
         sv_PumpNet();
@@ -2796,4 +2796,4 @@ void ai_Unk4b3960(int cmd)
 char ai_PlayerSlots[4][0x2f4] = {0};  /* 0x7e3f40, per player: starts with the name of its history file */
 char hst_Key[0x20] = {0};  /* 0xf83520, the key to look for */
 G12ROW hst_Lists[4] = {0};  /* 0xf83540 */
-int ai_Unkf83650 = 0;  /* 0xf83650 */
+int hst_SeedPending = 0;  /* 0xf83650 */

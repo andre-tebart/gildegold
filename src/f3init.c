@@ -3671,7 +3671,7 @@ void unk_Unk5136b0(void)
 /* 0x513740, after loading a town: the "now" of the game clock (0x4fe350 of the clock 0x770ae0, kept as the season / day part 0..3 in 0x6f1c24), the camera of the player's character (0x506430, 0x43b790 / 0x525dd0 / 0x43b860, the default 0.33 when it has none), the characters without a house (0x2c = -1) that are not in the shown scene are hidden (0x402540 / 0x402480 / 0x4fb5a0), the scene callbacks 0x512de0 (0xe0) / 0x512e40 (0xc0), the scene's own hook (+0x210 of its parent), the frame limits (0x5128d0 / 0x513590) and the light factor 0x5fbd04 = 1 - 0.01 * the detail byte 0x6f35cc; then 0x525ad0 and the scene switch 0x447860 (0 when 0x6339db is set, else 1). ROUGH */
 
 
-void unk_Unk513740(void)
+void init_AfterTownLoad(void)
 {
     int phase, c;
     int *p;

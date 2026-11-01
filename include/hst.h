@@ -55,6 +55,6 @@ void hst_ResetLists(void);                                                /* 0x4
 
 /* declared in other units' headers before (moved to the owner) */
 extern char ai_PlayerSlots[4][0x2f4];  /* 0x7e3f40 */
-extern int ai_Unkf83650;  /* 0xf83650 */
+extern int hst_SeedPending;  /* 0xf83650 */
 
 #endif

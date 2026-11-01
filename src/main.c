@@ -3,6 +3,7 @@
    network and character creation dialogs, the round loop. Its strings (0x62493c ..) follow sv.c's last one
    ("MASTER(): .." 0x624534); he.c starts at 0x53d430.
    Open: 0x534040, 0x53a520 and 0x53b2e0 are out of address order.
+   Open: head: include/he.h, he_FindFigurePlace unsettled (its he.c definition is a one-argument draft; the original takes (c, &bldId, &objId, &scene) and returns 1 / 0, and he.c drafts still call it with one argument).
    unit of rea 8cef7d5b (src/game/main.c); boundaries in decl/text.dcl */
 extern int gm_PlayerRecords[688];
 #include "txt_views.h"
@@ -146,11 +147,14 @@ extern int ai_Unkfb9064;
 extern int ai_Unkfb9068;
 extern int ai_Unkfb906c;
 #define main_AddHealthS ((float (*)(unsigned short, int))gm_AddHealth)  /* @original this caller passes the id as a word ("mov ax,[id]; push eax") and pops the float result */
-extern float ai_Unk617830[], ai_Unk617840[];  /* 0x617830 / 0x617840 (f3gm.c) */
+extern float gm_DayStartHours[], gm_DayEndHours[];  /* 0x617830 / 0x617840 (f3gm.c) */
 #pragma pack(push, 1)
 typedef struct MAINCARRY {          /* 0x21d bytes (+0x219 the entry count), what gm_CollectCarried collects for a character (f3gm.c: +0x31 the free capacity) */
     int units;                      /* 0x00, counts the 0xe-byte units */
-    char pad04[0x2d];
+    struct {
+        unsigned char good;         /* a good (its name is the text 0x253 + good), 0 ends the list */
+        int amount;
+    } goods[9];                     /* 0x04, what the round change lists on the balance page (main.c 0x5384e0) */
     int capacity;                   /* 0x31, the free capacity (unaligned) */
     char rest[0x1e8];
 } MAINCARRY;
@@ -175,7 +179,7 @@ typedef struct MAINCHARNEW {        /* the AICHAR fields the character replaceme
 #define main_BookObject (*(int *)((char *)&cm_RequestedSaveName + 0x44))  /* 0x6f2614, the book object "Buch" loaded at the game start (reasoned: a pointer-sized field after the 64-byte name and the int at +0x40) */
 extern GAPDATA full_data_75df20[];
 extern char cm_RequestedSaveName[72];
-extern float ai_Unk617830[], ai_Unk617840[];  /* 0x617830 / 0x617840 (f3gm.c) */
+extern float gm_DayStartHours[], gm_DayEndHours[];  /* 0x617830 / 0x617840 (f3gm.c) */
 extern GAPDATA full_data_6f25c0[];
 extern GAPDATA full_data_75e630[];
 #include "ch_types.h"
@@ -287,7 +291,7 @@ extern HWND main_Window;
 void main_EndGame(void);
 void main_Unk537be0(void);
 void main_RundenBeginn(void);
-void main_Unk5384e0(void);
+void main_EndRound(void);
 void main_RoundReport(void);
 
 void main_Unk53a520(unsigned short pl);
@@ -3253,62 +3257,85 @@ void main_RundenBeginn(void)
 #define main_Now (*(AHMCLOCK *)&ai_Time)  /* 0x770ae0, the game clock copied as 3 ints and a short (ahm.h) */
 #define MSG_B(m, o) (*(unsigned char *)((m) + (o)))
 #define MSG_I(m, o) (*(int *)((m) + (o)))
-#define MSG_CLOCK(m) do { MSG_I(m, 0x28) = U_I((unsigned)&ai_TimeT); MSG_I(m, 0x2c) = U_I((unsigned)&ai_TimeHour); MSG_I(m, 0x30) = U_I(((unsigned)&ai_TimeT + 0x8)); *(short *)((m) + 0x34) = *(short *)((unsigned)&ai_TimeT + 0xc); } while (0)
-#define MAIN_MSG(m, kind) do { memset(m, 0, 0xf8); MSG_B(m, 4) = (kind); MSG_I(m, 0xc) = -1; MSG_B(m, 0x36) = 1; MSG_CLOCK(m); MSG_I(m, 8) = U_I((unsigned)&ai_CharInts + (U_I((unsigned)&ai_PlayerId) & 0xffff) * 0x21c); } while (0)
+#define main_PlayerIdInt (*(int *)&ai_PlayerId)  /* 0x6f25b8, ai_PlayerId (unsigned short) as the int the round change reads and masks */
+#define MAIN_PLAYER (main_PlayerIdInt & 0xffff)  /* the player character's index */
+#define main_ApEvents (*(HEAPEVENT (*)[0x100])((char *)&he_RunHandlers + 0x6a0))  /* 0x758ca0, the AP events (he.h; ls.c's he_RunHandlers block holds them) */
+#define main_GfxOn (*(int *)&full_data_624560)  /* 0x624560, nonzero when the round change shows its pages and fades (main_RoundReport tests it too) */
+#define main_NoRoundFade (*(int *)&full_data_6f25c0)  /* 0x6f25c0, 1 skips the black fade before the round page (set by main_RoundReport, cleared by the round start) */
+#define main_Season (*(int *)&full_data_760454)  /* 0x760454, the season of the game clock (sv_ClockSeason / gm_ClockSeason) */
+/* the announcement message of the kind `kind` to the player's own character (fromId -1), stamped with the game clock */
+#define MAIN_NOTE(m, kind) do { memset(&(m), 0, sizeof(m)); (m).type = (kind); (m).fromId = -1; (m).flags = 1; (m).to = ai_CharsT[MAIN_PLAYER].netId; (m).time = ai_TimeT; } while (0)
 
-/* 0x5384e0, the round / day change of the player (0x6f25b8): fade out (BLACK), the clock 0x770ae0 (+1 when 0x6f23f8 bit 2 and 0x6f2598 > 1), the announcement messages of the kinds 0x66 / 0x70 / 0x68 / 0x85 / 0x7c / 0x93 / 0x84 /
-   0x4c queued when the character has none (0x53e400), the summary page of the balance of the player (0x515960 texts 0x1ef9 .. 0x1eff, the table 0x758ca4 of 0x100 records of 0x50 B), the renovation check of the
-   buildings (kind 0x1c message "renovieren") and the distribution of the work load (+0x39 of the buildings), the figure of the character (0x770d04) at the end; ROUGH (the float expressions
-   of the renovation, the __ftol arguments, are guesses) */
-void main_Unk5384e0(void)
+/* 0x5384e0, the round / day change of the player: fades out (BLACK), advances the clock copy (+1 when networked (ai_GameFlags bit 2) after the first round), queues the announcement messages of the kinds 0x66 / 0x70 / 0x68 / 0x85 / 0x7c / 0x93 / 0x84 /
+   0x4c when none is pending (he_FindEvent), shows the balance page of the player (texts 0x1ef9 .. 0x1eff, 0x2051: the AP events of the player with their incomes / costs and the goods of gm_CollectCarried), takes the AP event costs, renovates the run-down
+   buildings of the masters this machine runs (kind 0x1c message "renovieren") and spreads each character's goods value over its buildings as their work load (AIBLD.budget), then beams the figures of the characters home ("Beamed home")
+   @deep Read the whole function against dcp disasm / asmdiff and reconstructed it: the AP event balance
+   lines (HEAPEVENT table 0x758ca0, the income / cost branch structure), the carried goods list at
+   MAINCARRY+4 (was misread at +0x2e), the time-stamped AIMSG notes (to before time), the 0x4c note, the
+   cart visibility pair of calls, the renovation (32.0 > cost, budget * 0.75 > cost), the building budget
+   split with >= caps through one store, unsigned short id compares, the Beamed home strcpy,
+   snd_FadeMusic(1.0f); block-scoped value/cost/budget and x/y/place give the original's 0x3b8 frame. Same
+   instruction count (1226 / 1226), 74 differing. Left is allocation / scheduling only: 0x538ed0 the 0x4c
+   note's time copy stores scheduled around the push of &msg (ours stores hour / unk8 / unkc before the
+   push, the original hour / year before and unk8 after it); 0x538f4c gm_Query argument and the cart bldId
+   in ecx / edx where the original reuses eax / ecx; 0x538f85 the &ai_Chars[owner] address in eax vs edx;
+   0x539101 the util_Random(0x5a) limit in edi (mov edi, eax; and edi, 0xffff) where the original keeps it
+   in bx (mov bx, ax; and ebx, 0xffff) because its weight sum sits in ebp and ours in ebx; plus 56 regs / 8
+   order hunks of the same ebx / ebp / edi rotation in the building loops. Tried: five MAIN_NOTE store
+   orders, four 0x4c orders (time first gives 4402 bytes but rotates every register of the building loops),
+   the query inline, three renovation store orders. */
+void main_EndRound(void)
 {
-    char ln[0x21d];   /* what gm_CollectCarried (0x50af00) collects: it memsets 0x21c bytes into it (the original's buffer sits at +0x1a8 of a 0x3b8 frame) */
+    MAINCARRY carry;   /* what gm_CollectCarried collects (the original's buffer sits at +0x1a8 of a 0x3b8 frame) */
     struct {
         int clock0;
         int tick;
         char pad[0x74];
     } sysmsg;
-    char msg[0xf8];
+    AIMSG msg;
     short rid;
     AHMCLOCK clk;
-    unsigned char *bp;
-    unsigned char *fade;
-    unsigned char *o;
-    char *c;
+    D2FADE *fade;
+    AIFIN *fin;
+    AIBLD *b;
+    AIOBJ *obj;
+    CHARACTER *fig;
+    CHACTION *act;
     int season;
-    int bld, r, w, uu, uv, i, k, n, q, u2;
-    float fa, fb;
+    int win, r, k, q;
+    CHARACTER *scene;
+    int weight;
 
+    fin = (AIFIN *)gm_PlayerRecord(ai_Chars[MAIN_PLAYER]);
     fade = 0;
-    bld = gm_PlayerRecord((unsigned)&ai_CharsT + MAIN_PID * 0x21c);
     gm_ClockSeason((unsigned)&ai_TimeT);
     clk = main_Now;
-    if ((U_I((unsigned)&ai_GameFlags) & 4) != 0 && 1 < main_Round)
+    if ((ai_GameFlags & 4) != 0 && 1 < main_Round)
         clk.a++;
     season = sv_ClockSeason(&clk);
     ahm_FillSteps();
-    *(float *)(bld + 0x58) = 0.5f;
-    *(float *)(bld + 0x5c) = 1.0f;
-    *(float *)(bld + 0x60) = 1.0f;
-    if (U_I((unsigned)&full_data_624560) != 0) {
-        U_I((unsigned)&ai_Unkfb9060) = (int)*(short *)(unsigned)&d2_ScreenW;
-        U_I((unsigned)&ai_Unkfb906c) = (int)*(short *)(unsigned)&d2_ScreenH;
-        U_I((unsigned)&ai_Unkfb9068) = 0;
-        U_I((unsigned)&ai_Unkfb9064) = 0;
-        if (U_I((unsigned)&full_data_6f25c0) == 0) {
-            fade = (unsigned char *)d2_StartFade(0, 0, U_I((unsigned)&ai_Unkfb9060), U_I((unsigned)&ai_Unkfb906c), "BLACK", 0, 1);
-            while ((*fade & 4) == 0)
+    fin->roundFactors[0] = 0.5f;
+    fin->roundFactors[1] = 1.0f;
+    fin->roundFactors[2] = 1.0f;
+    if (main_GfxOn != 0) {
+        d2_DirtyRectRight = 0;
+        d2_DirtyRectLeft = d2_ScreenW;
+        d2_DirtyRectTop = 0;
+        d2_DirtyRectBottom = d2_ScreenH;
+        if (main_NoRoundFade == 0) {
+            fade = d2_StartFade(0, 0, d2_DirtyRectLeft, d2_DirtyRectBottom, "BLACK", 0, 1);
+            while ((fade->flags & 4) == 0)
                 sv_RunFrame(0, 0x24087);
             d2_ShowPicture(0x79d);
             d2_ReleaseFade(fade);
-            d2_StartFade(0, 0, (int)*(short *)(unsigned)&d2_ScreenW, (int)*(short *)(unsigned)&d2_ScreenH, "BLACK", 0x32, 10);
+            d2_StartFade(0, 0, d2_ScreenW, d2_ScreenH, "BLACK", 0x32, 10);
         }
     }
-    if ((U_I((unsigned)&ai_GameFlags) & 4) != 0)
+    if ((ai_GameFlags & 4) != 0)
         sv_NetworkSyncWait(0x24087);
-    gm_CollectCarried(MAIN_PID, ln);
-    sv_Unk525a00(&clk);
-    U_I((unsigned)&full_data_760454) = sv_ClockSeason(&clk);
+    gm_CollectCarried(MAIN_PLAYER, (int *)&carry);
+    sv_FillDayPhases((int)&clk);
+    main_Season = sv_ClockSeason(&clk);
     gm_FindRichest(&rid, &k);
     k = 0;
     sysmsg.clock0 = clk.a;
@@ -3317,79 +3344,73 @@ void main_Unk5384e0(void)
     while (cm_GetSlotState(q) == 0)
         sv_PumpNet();
     tb_SetFunctionOff((int)sv_UpdateClock, 1);
-    if ((char)U_I((unsigned)&ai_GameFlags) >= 0) {
+    if ((ai_GameFlags & 0x80) == 0) {
         if (he_FindEvent(1, 0, 0x66) == 0) {
-            MAIN_MSG(msg, 0x66);
-            cm_SendLongMessage(msg);
+            MAIN_NOTE(msg, 0x66);
+            cm_SendLongMessage((char *)&msg);
         }
         if (he_FindEvent(1, 0, 0x70) == 0) {
-            MAIN_MSG(msg, 0x70);
-            cm_SendLongMessage(msg);
+            MAIN_NOTE(msg, 0x70);
+            cm_SendLongMessage((char *)&msg);
         }
         if (he_FindEvent(1, 0, 0x68) == 0) {
-            MAIN_MSG(msg, 0x68);
-            cm_SendLongMessage(msg);
+            MAIN_NOTE(msg, 0x68);
+            cm_SendLongMessage((char *)&msg);
         }
     }
-    if (U_I((unsigned)&ai_Unk6f2438) != 0 && he_FindEvent(1, 0, 0x85) == 0) {
-        MAIN_MSG(msg, 0x85);
-        cm_SendLongMessage(msg);
+    if (ai_Unk6f2438 != 0 && he_FindEvent(1, 0, 0x85) == 0) {
+        MAIN_NOTE(msg, 0x85);
+        cm_SendLongMessage((char *)&msg);
     }
     if (he_FindEvent(1, 0, 0x7c) == 0) {
-        MAIN_MSG(msg, 0x7c);
-        cm_SendLongMessage(msg);
+        MAIN_NOTE(msg, 0x7c);
+        cm_SendLongMessage((char *)&msg);
     }
     if (he_FindEvent(1, 0, 0x93) == 0) {
-        MAIN_MSG(msg, 0x93);
-        cm_SendLongMessage(msg);
+        MAIN_NOTE(msg, 0x93);
+        cm_SendLongMessage((char *)&msg);
     }
-    if (he_FindEvent(1, 0, 0x84) == 0 && *(char *)((unsigned)&ai_GamePanel + 0x3) != 0) {
-        MAIN_MSG(msg, 0x84);
-        cm_SendLongMessage(msg);
+    if (he_FindEvent(1, 0, 0x84) == 0 && ai_GamePanel.byte[3] != 0) {
+        MAIN_NOTE(msg, 0x84);
+        cm_SendLongMessage((char *)&msg);
     }
-    if (U_I((unsigned)&sv_PanelForm) != -1)
-        d2_SetViewEnabled(U_I((unsigned)&sv_PanelForm), 0);
-    he_Unk53d9f0(0xffff);
-    if (U_I((unsigned)&full_data_624560) != 0) {
-        int win = sv_Unk52fa10();
+    if (sv_PanelForm != -1)
+        d2_SetViewEnabled(sv_PanelForm, 0);
+    he_ShowEventBar(0xffff);
+    if (main_GfxOn != 0) {
+        win = sv_CreateScrollForm();
         d2_SetForm(win, 2);
         io_PrintText(0x7d);
-        d2_CreateScrollButtons(-1, -1, U_I((unsigned)&d2_LastWindow), d2_GetViewWin(win, 1), 0x767);
-        w = d2_GetViewWin(win, 1);
-        U_I(((unsigned)&ai_Unkf8f13c + 0x248) + w * 0x3c4) = 0x18;
+        d2_CreateScrollButtons(-1, -1, d2_LastWindow, d2_GetViewWin(win, 1), 0x767);
+        d2_Wins[d2_GetViewWin(win, 1)].visible = 0x18;
         d2_SetForm(win, 1);
-        io_PrintText(0x2051, &clk, (int)ai_Unk617830[season], (int)ai_Unk617840[season] % 0xc);
+        io_PrintText(0x2051, &clk, (int)gm_DayStartHours[season], (int)gm_DayEndHours[season] % 0xc);
         io_PrintText(0x1ef9);
-        io_PrintText(0x1eff, U_I(((unsigned)&ai_Selected + 0x8) + MAIN_PID * 0x21c));
+        io_PrintText(0x1eff, ai_CharsT[MAIN_PLAYER].unk190);
         k = 0;
         do {
-            bp = (unsigned char *)(((unsigned)&he_RunHandlers + 0x6a4) + k * 0x50);
-            n = *(int *)(bp + 4);
-            if ((n != 0 || *(int *)(bp + 8) != 0 || bp[0xc] != 0) && *(int *)bp == MAIN_PID) {
-                if (n == 0) {
-                    n = *(int *)(bp + 8);
-                    if (n < 1) {
-                        if (n < 0)
-                            io_PrintText(0x1efd, bp + 0xc, n);
-                        else
-                            io_PrintText(0x1efb, bp + 0xc);
-                    } else
-                        io_PrintText(0x1efe, bp + 0xc, n);
-                } else if (n < 0)
-                    io_PrintText(0x1efb, bp + 0xc, n);
+            if ((main_ApEvents[k].income != 0 || main_ApEvents[k].cost != 0 || main_ApEvents[k].name[0] != 0) && main_ApEvents[k].key == MAIN_PLAYER) {
+                if (main_ApEvents[k].income != 0) {
+                    if (main_ApEvents[k].income >= 0)
+                        io_PrintText(0x1efc, main_ApEvents[k].name, main_ApEvents[k].income);
+                    else
+                        io_PrintText(0x1efb, main_ApEvents[k].name, main_ApEvents[k].income);
+                } else if (main_ApEvents[k].cost > 0)
+                    io_PrintText(0x1efe, main_ApEvents[k].name, main_ApEvents[k].cost);
+                else if (main_ApEvents[k].cost < 0)
+                    io_PrintText(0x1efd, main_ApEvents[k].name, main_ApEvents[k].cost);
                 else
-                    io_PrintText(0x1efc, bp + 0xc, n);
+                    io_PrintText(0x1efb, main_ApEvents[k].name);
             }
             k++;
         } while (k < 0x100);
         k = 0;
-        while (ln[0x2e] != 0 && k < 9) {
-            io_PrintText(0x1efd, (unsigned char)ln[0x2e + k * 5] + 0x253, *(int *)(ln + 0x2f + k * 5));
+        while (carry.goods[k].good != 0 && k < 9) {
+            io_PrintText(0x1efd, carry.goods[k].good + 0x253, carry.goods[k].amount);
             k++;
-            ln[0x2e] = ln[0x2e + k * 5];
         }
-        io_PrintText(0x1efa, U_I(((unsigned)&ai_Selected + 0xc) + MAIN_PID * 0x21c));
-        r = sv_RunFrame((int)main_Unk5384e0, 0x24087);
+        io_PrintText(0x1efa, ai_CharsT[MAIN_PLAYER].money);
+        r = sv_RunFrame((int)main_EndRound, 0x24087);
         while (r != 0) {
 #ifdef REA_START
             /* REA_START=tutorial (`uv run play|dbg --start tutorial`): the first screen the started tutorial
@@ -3402,183 +3423,160 @@ void main_Unk5384e0(void)
                     sv_PopRequest = 1;
             }
 #endif
-            if (U_I((unsigned)&d2_ClickedId) == 0 || *(char *)(unsigned)&kb_Last == 0x1c)
+            if (d2_ClickedId == 0 || kb_Last == 0x1c)
                 sv_PopRequest = 1;
-            r = sv_RunFrame((int)main_Unk5384e0, 0x24087);
+            r = sv_RunFrame((int)main_EndRound, 0x24087);
         }
-        fade = (unsigned char *)d2_StartFade(0, 0, (int)*(short *)(unsigned)&d2_ScreenW, (int)*(short *)(unsigned)&d2_ScreenH, "BLACK", 0x1e, 1);
-        while ((*fade & 4) == 0)
-            sv_RunFrame(0, U_I((unsigned)&sv_FrameMask) | 0x80);
-        sv_Unk52fa90();
+        fade = d2_StartFade(0, 0, d2_ScreenW, d2_ScreenH, "BLACK", 0x1e, 1);
+        while ((fade->flags & 4) == 0)
+            sv_RunFrame(0, sv_FrameMask | 0x80);
+        sv_DestroyScrollForm();
         ((void (*)(void))d3io_NoopCallback)();  /* called with no argument (no push at the call) */
     }
-    r = he_Unk53efb0(MAIN_PID);
-    cm_SendMoveGoodsUnchecked(-1, U_I((unsigned)&ai_CharInts + MAIN_PID * 0x21c), *(unsigned char *)(unsigned)&ai_OwnPlayer, -r);
-    ai_Unk4bb720(3, U_I((unsigned)&ai_CharInts + MAIN_PID * 0x21c));
+    cm_SendMoveGoodsUnchecked(-1, ai_CharsT[MAIN_PLAYER].netId, ai_OwnPlayer, -he_SumApEventCosts(MAIN_PLAYER));
+    ai_PostRandomMessages(3, ai_CharsT[MAIN_PLAYER].netId);
     cm_SendExSysMessage(1, 0);
-    if ((U_I((unsigned)&ai_GameFlags) & 4) != 0)
+    if ((ai_GameFlags & 4) != 0)
         sv_NetworkSyncWait(0x24087);
-    U_I((unsigned)&ai_Unkfb9068) = U_I((unsigned)&sv_ViewRectRight);
-    U_I((unsigned)&ai_Unkfb9060) = U_I((unsigned)&sv_ViewRectLeft);
-    U_I((unsigned)&ai_Unkfb9064) = U_I((unsigned)&sv_ViewRectTop);
-    U_I((unsigned)&ai_Unkfb906c) = U_I((unsigned)&sv_ViewRectBottom);
-    unk_Unk513740();
+    d2_DirtyRectRight = sv_ViewRectRight;
+    d2_DirtyRectLeft = sv_ViewRectLeft;
+    d2_DirtyRectTop = sv_ViewRectTop;
+    d2_DirtyRectBottom = sv_ViewRectBottom;
+    init_AfterTownLoad();
     sv_SetPanelEnabled(1);
     sv_RedrawScreen();
-    if (U_I((unsigned)&full_data_624560) != 0) {
+    if (main_GfxOn != 0) {
         if (fade != 0)
             d2_ReleaseFade(fade);
-        d2_StartFade(0, 0, (int)*(short *)(unsigned)&d2_ScreenW, (int)*(short *)(unsigned)&d2_ScreenH, "BLACK", 0x32, 10);
+        d2_StartFade(0, 0, d2_ScreenW, d2_ScreenH, "BLACK", 0x32, 10);
     }
-    if (U_I((unsigned)&sv_PanelForm) != -1)
-        d2_SetViewEnabled(U_I((unsigned)&sv_PanelForm), 1);
-    if (*(char *)(unsigned)&ai_MissionMode != 5 && *(char *)(unsigned)&ai_MissionMode >= 0 && he_FindEvent(2, 0, 0x4c, 2, MAIN_PID) == 0) {
-        MAIN_MSG(msg, 0x4c);
-        MSG_I(msg, 0x10) = 0;
-        MSG_I(msg, 0x14) = 0;
-        MSG_I(msg, 0xc) = MSG_I(msg, 8);
-        cm_SendLongMessage(msg);
+    if (sv_PanelForm != -1)
+        d2_SetViewEnabled(sv_PanelForm, 1);
+    if (ai_MissionMode != 5 && ai_MissionMode > -1 && he_FindEvent(2, 0, 0x4c, 2, MAIN_PLAYER) == 0) {
+        MAIN_NOTE(msg, 0x4c);
+        msg.fromId = msg.to;
+        msg.nIds = 0;
+        msg.unk14 = 0;
+        cm_SendLongMessage((char *)&msg);
     }
-    if ((U_I((unsigned)&ai_GameFlags) & 8) != 0) {
-        o = (unsigned char *)gm_BuildQuery(1, 0, 0x44);
-        o = (unsigned char *)gm_Query(*(int *)(o + 0x5d), 1, 4, 0x1d);
-        while (o != 0) {
-            u2 = *(int *)(o + 0x3b);
-            o = (unsigned char *)gm_BuildQuery(1, 1, *(int *)(o + 0x1c));
-            if (o == 0 || ai_CanAct((unsigned)&ai_CharsT + (unsigned)*(unsigned short *)(o + 0x27) * 0x21c) == 0)
-                i = 0;
+    if ((ai_GameFlags & 8) != 0) {
+        b = (AIBLD *)gm_BuildQuery(1, 0, 0x44);
+        obj = (AIOBJ *)gm_Query((void *)b->objList, 1, 4, 0x1d);
+        while (obj != 0) {
+            scene = (CHARACTER *)obj->sceneObj;
+            b = (AIBLD *)gm_BuildQuery(1, 1, obj->bldId);
+            if (b != 0 && &ai_CharsT[b->owner] != 0 && ai_CanAct(&ai_CharsT[b->owner]) != 0)
+                ch_SetVisible(scene, 1);
             else
-                i = 1;
-            ch_SetVisible(u2, i);
-            o = (unsigned char *)gm_QueryNext();
+                ch_SetVisible(scene, 0);
+            obj = (AIOBJ *)gm_QueryNext();
         }
     }
     k = 0;
     do {
-        c = (char *)((unsigned)&ai_CharsT + k * 0x21c);
-        if (*(short *)c != -1 && c[2] != 6 && c[2] != 7) {
-            uu = gm_GetGoodsValue(c) * 0x4b;
-            uv = 0;
-            o = (unsigned char *)gm_BuildQuery(1, 4, k);
-            while (o != 0) {
-                char kd = *(char *)(U_I((unsigned)&ai_BTypesT) + (unsigned)*o * 0x24d);
-                if (gm_BuildingClass(*o) == 1 || gm_BuildingClass(*o) == 4 || gm_BuildingClass(*o) == 2 || kd == 0x13 || kd == 4 || kd == 0x10 || kd == 5 || kd == 9) {
-                    kd = *(char *)(U_I((unsigned)&ai_BTypesT) + (unsigned)*o * 0x24d + 0x247);
-                    if (kd == 1)
-                        uv += 2;
-                    else if (kd == 2)
-                        uv += 4;
-                    else if (kd == 3)
-                        uv += 8;
+        if (ai_CharsT[k].id != 0xffff && ai_CharsT[k].kind != 6 && ai_CharsT[k].kind != 7) {
+            int value;
+            float cost, budget;
+
+            value = gm_GetGoodsValue(ai_Chars[k]) * 0x4b;
+            weight = 0;
+            b = (AIBLD *)gm_BuildQuery(1, 4, k);
+            while (b != 0) {
+                if (AI_KIND(b->type) == 1 || AI_KIND(b->type) == 4 || AI_KIND(b->type) == 2 || ai_BTypesT[b->type].kind == 0x13 || ai_BTypesT[b->type].kind == 4 || ai_BTypesT[b->type].kind == 0x10 || ai_BTypesT[b->type].kind == 5 || ai_BTypesT[b->type].kind == 9) {
+                    if (ai_BTypesT[b->type].level == 1)
+                        weight += 2;
+                    else if (ai_BTypesT[b->type].level == 2)
+                        weight += 4;
+                    else if (ai_BTypesT[b->type].level == 3)
+                        weight += 8;
                 }
-                if (ai_IsLocalMaster(c) != 0 || c[2] == 1) {
-                    unsigned short lim = (unsigned short)util_RandomInt(0x5a);
-                    if (gm_BuildingLevel(o) < (int)lim) {
-                        fa = (float)gm_EquipmentValue(o, 100) * 0.005f;
-                        if (fa < 32.0f)
-                            fa = 32.0f;
-                        fb = (float)uu;
-                        if (fa < fb * 0.75f) {
-                            memset(msg, 0, 0xf8);
-                            MSG_B(msg, 4) = 0x1c;
-                            MSG_I(msg, 0xc) = -1;
-                            MSG_B(msg, 0x36) = 1;
-                            MSG_I(msg, 0x58) = *(int *)(o + 1);
-                            MSG_I(msg, 0x5c) = 10;
-                            MSG_I(msg, 8) = U_I((unsigned)&ai_CharInts + k * 0x21c);
+                if (ai_IsLocalMaster(&ai_CharsT[k]) != 0 || ai_CharsT[k].kind == 1) {
+                    unsigned short lim = (unsigned short)util_Random(0x5a);
+                    if (gm_BuildingLevel((char *)b) < lim) {
+                        cost = (float)gm_EquipmentValue((unsigned char *)b, 100) * 0.005f;
+                        if (32.0f > cost)
+                            cost = 32.0f;
+                        budget = (float)value;
+                        if (budget * 0.75f > cost) {
+                            memset(&msg, 0, sizeof(msg));
+                            msg.type = 0x1c;
+                            msg.fromId = -1;
+                            msg.flags = 1;
+                            msg.arg[1] = 10;
+                            msg.to = ai_CharsT[k].netId;
+                            msg.arg[0] = b->id;
                             cm_BeginGroup("renovieren");
-                            cm_SendMoveGoods(-1, U_I((unsigned)&ai_CharInts + k * 0x21c), *(unsigned char *)(unsigned)&ai_OwnPlayer, (int)fa);
-                            cm_SendLongMessage(msg);
+                            cm_SendMoveGoods(-1, ai_CharsT[k].netId, ai_OwnPlayer, (int)cost);
+                            cm_SendLongMessage((char *)&msg);
                             cm_EndGroup("renovieren");
-                            bld = gm_PlayerRecord(c);
-                            if (bld != 0)
-                                *(int *)(bld + 0x44) = (int)((float)*(int *)(bld + 0x44) + fa);
-                            uu = (int)(fb - fa);
+                            fin = (AIFIN *)gm_PlayerRecord(ai_Chars[k]);
+                            if (fin != 0)
+                                fin->renovationSpent = (int)(fin->renovationSpent + cost);
+                            value = (int)(budget - cost);
                         }
                     }
                 }
-                o = (unsigned char *)gm_BuildNext();
+                b = (AIBLD *)gm_BuildNext();
             }
-            o = (unsigned char *)gm_BuildQuery(1, 4, k);
-            while (o != 0) {
-                char kd = *(char *)(U_I((unsigned)&ai_BTypesT) + (unsigned)*o * 0x24d);
-                if (gm_BuildingClass(*o) == 1 || gm_BuildingClass(*o) == 4 || gm_BuildingClass(*o) == 2 || kd == 0x13 || kd == 4 || kd == 0x10 || kd == 5 || kd == 9) {
-                    unsigned v;
-                    int p = (unsigned)*o * 0x24d;
-                    kd = *(char *)(p + 0x247 + U_I((unsigned)&ai_BTypesT));
-                    if (kd == 1) {
-                        v = (uu * 2) / uv;
-                        *(unsigned *)(o + 0x39) = v;
-                        v = v & (((int)v < 0) - 1);
-                        *(unsigned *)(o + 0x39) = v;
-                        if (*(char *)(p + U_I((unsigned)&ai_BTypesT)) == 5) {
-                            if (0x2edff < (int)v)
-                                v = 0x2ee00;
-                        } else if (63999 < (int)v)
-                            v = 64000;
-                        *(unsigned *)(o + 0x39) = v;
-                    } else if (kd == 2) {
-                        v = (uu * 4) / uv;
-                        *(unsigned *)(o + 0x39) = v;
-                        v = v & (((int)v < 0) - 1);
-                        *(unsigned *)(o + 0x39) = v;
-                        if (*(char *)(p + U_I((unsigned)&ai_BTypesT)) == 5) {
-                            if (319999 < (int)v)
-                                v = 320000;
-                        } else if (0x1f3ff < (int)v)
-                            v = 0x1f400;
-                        *(unsigned *)(o + 0x39) = v;
-                    } else if (kd == 3) {
-                        v = (uu * 8) / uv;
-                        *(unsigned *)(o + 0x39) = v;
-                        v = v & (((int)v < 0) - 1);
-                        *(unsigned *)(o + 0x39) = v;
-                        if (*(char *)(p + U_I((unsigned)&ai_BTypesT)) == 5) {
-                            if (639999 < (int)v)
-                                v = 640000;
-                        } else if (0x3e7ff < (int)v)
-                            v = 0x3e800;
-                        *(unsigned *)(o + 0x39) = v;
+            b = (AIBLD *)gm_BuildQuery(1, 4, k);
+            while (b != 0) {
+                if (AI_KIND(b->type) == 1 || AI_KIND(b->type) == 4 || AI_KIND(b->type) == 2 || ai_BTypesT[b->type].kind == 0x13 || ai_BTypesT[b->type].kind == 4 || ai_BTypesT[b->type].kind == 0x10 || ai_BTypesT[b->type].kind == 5 || ai_BTypesT[b->type].kind == 9) {
+                    if (ai_BTypesT[b->type].level == 1) {
+                        b->budget = value * 2 / weight;
+                        b->budget = b->budget < 0 ? 0 : b->budget;
+                        if (ai_BTypesT[b->type].kind == 5)
+                            b->budget = b->budget < 192000 ? b->budget : 192000;
+                        else
+                            b->budget = b->budget < 64000 ? b->budget : 64000;
+                    } else if (ai_BTypesT[b->type].level == 2) {
+                        b->budget = value * 4 / weight;
+                        b->budget = b->budget < 0 ? 0 : b->budget;
+                        if (ai_BTypesT[b->type].kind == 5)
+                            b->budget = b->budget < 320000 ? b->budget : 320000;
+                        else
+                            b->budget = b->budget < 128000 ? b->budget : 128000;
+                    } else if (ai_BTypesT[b->type].level == 3) {
+                        b->budget = value * 8 / weight;
+                        b->budget = b->budget < 0 ? 0 : b->budget;
+                        if (ai_BTypesT[b->type].kind == 5)
+                            b->budget = b->budget < 640000 ? b->budget : 640000;
+                        else
+                            b->budget = b->budget < 256000 ? b->budget : 256000;
                     }
                 }
-                o = (unsigned char *)gm_BuildNext();
+                b = (AIBLD *)gm_BuildNext();
             }
         }
         k++;
     } while (k < 0x300);
     for (k = 0; k < 0x300; k++) {
-        c = (char *)((unsigned)&ai_CharsT + k * 0x21c);
-        if (*(short *)c != -1) {
-            U_I(((unsigned)&ai_Selected + 0x40) + k * 0x21c) &= 0xffffe7ff;
-            if (ai_IsLocalJob(c) != 0)
-                U_I(((unsigned)&ai_Selected + 0x30) + k * 0x21c) = *(int *)(U_I((unsigned)&ai_Unk770cec + k * 0x21c) + 0x39);
+        if (ai_CharsT[k].id != 0xffff) {
+            ai_CharsT[k].flags1c8 &= 0xffffe7ff;
+            if (ai_IsLocalJob(&ai_CharsT[k]) != 0)
+                ai_CharsT[k].budget = ai_CharsT[k].bld->budget;
         }
     }
     for (k = 0; k < 0x300; k++) {
-        int px = -1, py = -1;
-        int pz;
-        c = (char *)((unsigned)&ai_CharsT + k * 0x21c);
-        if (U_I(((unsigned)&ai_Unk770cec + 0x18) + k * 0x21c) != 0 && he_Unk55eba0(c, &px, &py, &pz) != 0) {
-            int fg = U_I(((unsigned)&ai_Unk770cec + 0x18) + k * 0x21c);
-            if (px != *(int *)(fg + 0x2c) || py != *(int *)(fg + 0x30)) {
-                if (*(int *)(fg + 0x28) != -1) {
-                    int h = (int)evt_FindById(*(int *)(fg + 0x28));
-                    evt_Stop((EVTSCRIPT *)h);
-                }
-                ch_StopActions(U_I(((unsigned)&ai_Unk770cec + 0x18) + k * 0x21c));
-                if (py != -1 && (w = ch_AddAction(U_I(((unsigned)&ai_Unk770cec + 0x18) + k * 0x21c), 0x33, pz, px, py)) != 0) {
-                    *(int *)(w + 0x70) = U_I((unsigned)&full_data_6253b0);
-                    *(int *)(w + 0x74) = U_I((unsigned)&full_data_6253b4);
-                    *(int *)(w + 0x78) = U_I((unsigned)&full_data_6253b8);
-                }
+        int x, y, place;
+
+        x = -1;
+        y = -1;
+        if (ai_CharsT[k].model != 0 && he_FindFigurePlace(ai_Chars[k], &x, &y, &place) != 0) {
+            fig = (CHARACTER *)ai_CharsT[k].model;
+            if (x != fig->group || y != fig->scriptGroup) {
+                if (fig->scriptId != -1)
+                    evt_Stop(evt_FindById(fig->scriptId));
+                ch_StopActions((CHARACTER *)ai_CharsT[k].model);
+                if (y != -1 && (act = ch_AddAction((CHARACTER *)ai_CharsT[k].model, 0x33, place, x, y)) != 0)
+                    strcpy(CHACT_NAME70(act), "Beamed home");
             }
         }
-        if ((U_I((unsigned)&ai_GameFlags) & 8) != 0 && U_I(((unsigned)&ai_Unk770cec + 0x18) + k * 0x21c) != 0 && *(char *)(((unsigned)&ai_CharsT + 0x2) + k * 0x21c) == 0xd && U_I(((unsigned)&ai_Unk770cec + 0x10) + k * 0x21c) == 0)
-            cm_SendKillCharacter(U_I((unsigned)&ai_CharInts + k * 0x21c), 1);
+        if ((ai_GameFlags & 8) != 0 && ai_CharsT[k].model != 0 && ai_CharsT[k].kind == 0xd && ai_CharsT[k].job == 0)
+            cm_SendKillCharacter(ai_CharsT[k].netId, 1);
     }
-    U_I((unsigned)&ai_Unkf83650) = 1;
-    amt_Unk4ea8e0((unsigned)&ai_CharsT + (U_I((unsigned)&ai_PlayerId) & 0xffff) * 0x21c);
-    snd_FadeMusic(0x3f800000, 2000);
+    hst_SeedPending = 1;
+    amt_TellOpenOffices(ai_Chars[MAIN_PLAYER]);
+    snd_FadeMusic(1.0f, 2000);
 }
 /* 0x539620, a player (the character slot p, kind 6 = prisoner / dead, health 0) is replaced by a new figure: first it checks that some slot of kind 6 with health is left (else ai_GameOver); every he_Events record (0x14c bytes) of that character whose kind is in the first list is closed (he_Unk53e1f0), in the second its +0x70 is set to -1; the kind byte becomes 5, a name is copied from the name table 0x143ac5c (flag9 clear, random 0xbf) or 0x143af70 (random 0x70), the running number and the eight ids are reset, and the events of the table 0x925520 that concern the character in the states 3 .. 9 are dropped @deep All statements read against the original and fixed: two separate lists (la 15 entries from 0x5d, lb {0x45, 0x47, 0} walked as for (j = 0; lb[j]; j++) la[j] == kind), the character scan as an index loop (kind 6 and health != 0), typed MAINCHARNEW fields, two inline strcpy of ai_Unk143ac5c / af70 pointer tables, signed pointer compares; only 'order' hunks and one code hunk are left: after the index scan the original keeps two identical blocks ('mov [ai_GameOver],1; pop edi; add esp,0x48; ret' at 0x5396cb and 0x5396e2, 'cmp ecx,0xffff; jne 0x5396f1' between them) where VC6 cross-jumps the second into the first (ours: 'je 0x5396cb', 17 bytes shorter, size 558 vs 581). Tried: if/else around the rest, return inside the while vs after it. A tail-merge layout question, not a statement. */
 
@@ -3681,7 +3679,7 @@ void main_RoundReport(void)
         d2_SetPointerSprite(0, 0);
         sv_Unk522280();
         sv_SetScreenCenter(0x24087);
-        win = sv_Unk52fa10();
+        win = sv_CreateScrollForm();
         d2_CentreViewWindows(win);
         if (fade != 0) {
             d2_ReleaseFade(fade);
@@ -3841,7 +3839,7 @@ void main_RoundReport(void)
             io_PrintText(0x204e, w1fc);
         t = gm_GetGoodsValue((unsigned)&ai_CharsT + (U_I((unsigned)&ai_PlayerId) & 0xffff) * 0x21c);
         io_PrintText(0x2029, ((t - w1e8) - w1ec) - iv);
-        he_Unk53d9f0(0xffff);
+        he_ShowEventBar(0xffff);
         d2_ClearSurface(U_I((unsigned)&d2_ScreenSurf));
         d2_ShowPicture(0x79d);
         U_I((unsigned)&ai_Unkfb9060) = (int)*(short *)(unsigned)&d2_ScreenW;
@@ -3863,7 +3861,7 @@ void main_RoundReport(void)
                 sv_PopRequest = 1;
             t = sv_RunFrame((int)main_RoundReport, 0x24087);
         }
-        sv_Unk52fa90();
+        sv_DestroyScrollForm();
     }
     *(int *)(bk + 0x2c) = *(int *)(bk + 0x2c) + *(int *)(bk + 0x18) + *(int *)(bk + 0x14);
     *(int *)(bk + 0x14) = 0;
@@ -4226,7 +4224,7 @@ void main_Unk53b2e0(void)
     } while ((int)pi < ((unsigned)((unsigned)ai_Selected + 0x6527a) + 0x1ea));
     if (U_I((unsigned)&full_data_624560) != 0) {
         if (*(char *)((unsigned)&ai_GameState + 0x1) != 0 && (U_I((unsigned)&ai_GameFlags) & 4) == 0) {
-            w = sv_Unk52fa10();
+            w = sv_CreateScrollForm();
             d2_SetForm(w, 2);
             io_PrintText(0x7d);
             d2_SetForm(w, 1);
@@ -4731,7 +4729,7 @@ void main_GameLoop(int ctl)
                     main_Unk537be0();
                     return;
                 }
-                sv_Unk525a00((unsigned)&ai_TimeT);
+                sv_FillDayPhases((unsigned)&ai_TimeT);
                 U_I((unsigned)&full_data_760454) = gm_ClockSeason((unsigned)&ai_TimeT);
             }
         } else {
@@ -4882,9 +4880,9 @@ L_fail:
                 }
             }
             if ((U_I((unsigned)&ai_GameFlags) & 0x42) == 0) {
-                main_Unk5384e0();
+                main_EndRound();
             } else {
-                unk_Unk513740();
+                init_AfterTownLoad();
                 sv_RedrawScreen();
                 if ((U_I((unsigned)&ai_GameFlags) & 4) != 0) {
                     cm_SendExSysMessage(1, 0);
@@ -4946,7 +4944,7 @@ L_fail:
                     }
                 }
             }
-            he_Unk53d9f0(U_I((unsigned)&ai_PlayerId) & 0xffff);
+            he_ShowEventBar(U_I((unsigned)&ai_PlayerId) & 0xffff);
             U_I((unsigned)&ai_Unkf31144) = 0;
             U_I((unsigned)&full_data_6f25a8) = 0;
             ai_GameFrame();

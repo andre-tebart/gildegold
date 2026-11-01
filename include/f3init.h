@@ -68,7 +68,7 @@ void init_ShowBuildingScene(unsigned char *b, int slot);                /* 0x513
 void init_FinishBuildingScene(unsigned char *b, unsigned short *o);     /* 0x513400 */
 void init_SetDetailLevel(int *s, char f);                               /* 0x513590 */
 void unk_Unk5136b0(void);                                               /* 0x5136b0 */
-void unk_Unk513740(void);                                               /* 0x513740 */
+void init_AfterTownLoad(void);                                               /* 0x513740 */
 int init_ParseNumberList(char *s, int *out, int n);                     /* 0x513970 */
 int init_LoadCityINI(char *city, int slot);                             /* 0x513a20 */
 

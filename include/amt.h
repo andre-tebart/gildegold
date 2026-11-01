@@ -247,7 +247,7 @@ void amt_ChangeDistrictOpinion(char *c, int d, int v);  /* 0x4ea550 */
 float amt_GetDistrictLiking(short *c, int d);  /* 0x4ea5c0 */
 int amt_SaveAemter(void *f);            /* 0x4ea690 */
 int amt_LoadAemter(void *f, int version);  /* 0x4ea7a0 */
-void amt_Unk4ea8e0(char *c);            /* 0x4ea8e0 */
+void amt_TellOpenOffices(char *c);            /* 0x4ea8e0 */
 void amt_Unk4eaa00(unsigned int k);     /* 0x4eaa00 */
 
 int amt_GetOwnedOfficePay(void);        /* 0x4ea990 */

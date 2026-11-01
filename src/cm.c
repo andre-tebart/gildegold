@@ -3508,7 +3508,7 @@ int ai_Unk4c89b0(G17MSG *m, G17STAT *s)
         break;
     case 5:
         util_Seed(G17_I(msg, 1));
-        ai_Unkf83650 = 0;
+        hst_SeedPending = 0;
         break;
     case 6:
         ai_NumPlayers = msg.data[1];

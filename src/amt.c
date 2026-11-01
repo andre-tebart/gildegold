@@ -2832,7 +2832,7 @@ int amt_LoadAemter(void *f, int version)
 }
 /* 0x4ea8e0, tells the character c (+0xd > 1, +4 the id) the offices it could apply for (0x4e7150, 6 of them): the text 0x13ac and the names 0x253 + kind (0x5ec channel) */
 
-void amt_Unk4ea8e0(char *c)
+void amt_TellOpenOffices(char *c)
 {
     AMTCAND cand[6];
     char buf[2048];

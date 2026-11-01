@@ -121,7 +121,7 @@ int ai_Unk48e120(int a, AIPX *p, int b, AIARGX *o1, AIARGX *o2)
     if (ai_Unk48e070(p, (int *)&bld) && !b && (a == 0x40 || a == 0) && !he_FindEvent(2, 0, 0xd, 2, p->id)) {
         if (bld) {
             t = bld->type;
-            if ((unsigned char)ai_BTypesT[t].unk247 >= 3)
+            if ((unsigned char)ai_BTypesT[t].level >= 3)
                 return 0;
             if (bld->flags5a & 0x41)
                 return 0;
@@ -648,7 +648,7 @@ int ai_Unk48f2b0(int a, AIPX *p, int b, AIARG *o1, AIARG *o2)
     if (he_FindEvent(2, 0, 0xd, 2, p->id))
         return 0;
     if (bl) {
-        if ((unsigned char)ai_BTypesT[bl->type].unk247 >= 3 || (bl->flags5a & 0x41))
+        if ((unsigned char)ai_BTypesT[bl->type].level >= 3 || (bl->flags5a & 0x41))
             return 0;
         t = bl->type + 1;
         L.s2.unk04 = t;
@@ -7915,7 +7915,7 @@ int ai_Unk49eec0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             own = &ai_BldsT[j];
             k = own->type;
             if (k != 0 && own->owner == p->id && ((1 << ai_BTypesT[k].kind) & ((unsigned)&ai_Unk770d8c + 0x63604))
-                && own->unk39 < lim[ai_BTypesT[k].cap247])
+                && own->budget < lim[ai_BTypesT[k].cap247])
                 break;
             i--;
             j = (j + lim[0]) % 0x100;

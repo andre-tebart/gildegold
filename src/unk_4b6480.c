@@ -1960,7 +1960,7 @@ __declspec(dllimport) unsigned long __stdcall timeGetTime(void);
 
 /* 0x4bb720, posts 0..n random messages for character id (AIMSG type 0x42 with the message type in n); returns the
    number; reseeds ai_Unk6f0730 with timeGetTime() */
-int ai_Unk4bb720(int n, int id)
+int ai_PostRandomMessages(int n, int id)
 {
     int k, i;
     AIMSG msg;

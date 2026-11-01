@@ -30,7 +30,7 @@ typedef struct AIBLD {                  /* 0xa9 bytes, ai_Blds[256] */
     };
     unsigned short owner;               /* 0x27, index into ai_Chars */
     char pad29[0x10];
-    int unk39;                          /* 0x39 */
+    int budget;                         /* 0x39, the money the building may spend this round: main_EndRound spreads its owner's goods value (x 75) over the buildings by AIBTYPE.level (2 / 4 / 8 shares, capped) and copies it to the AICHAR.budget of the local jobs; ai.c buys up to it */
     char pad3d[0x1d];
     unsigned char flags5a;              /* 0x5a */
     char pad5b;
@@ -69,6 +69,7 @@ typedef struct AIOBJ {                  /* 0x43 bytes, an object (table behind a
     char pad18[4];
     union {
         int unk1c;                      /* 0x1c, a building id / a state / a count */
+        int bldId;                      /* 0x1c, of a cart (gm_Query kind 0x1d): the id of its building (main_EndRound looks it up with gm_BuildQuery(1, 1, id)) */
         int cnt;                        /* 0x1c */
         struct {
             unsigned char lvl1c;        /* 0x1c, a workshop's levels, compared with AIENTRY need1c / need20 */
@@ -119,7 +120,7 @@ typedef struct AIBTYPE {                /* 0x24d bytes, ai_BTypes[] */
     unsigned char min1;                 /* 0x241 */
     char pad242[5];
     union {
-        char unk247;                    /* 0x247 */
+        char level;                     /* 0x247, the type's level 1 .. 3 (am.h AIBTYPEX: a count (level)); main_EndRound weighs a building's budget share 2 / 4 / 8 by it */
         unsigned char cap247;           /* 0x247, read as unsigned (0x489cb0) */
     };
     char pad248[5];
@@ -208,7 +209,8 @@ typedef struct AICHAR {                 /* 0x21c bytes, ai_Chars[768] */
     char pad181[3];
     AITASK *model;                      /* 0x184, the character's model record; its +0x2c is the building the
                                            character was sent to (f3gm.c 0x4fbd10) */
-    char pad188[0xc];
+    char pad188[8];
+    int unk190;                         /* 0x190, a sum the round change prints on the player's balance page (text 0x1eff, main.c 0x5384e0) */
     int money;                          /* 0x194, the character's money (amt.c) */
     char pad198[0x19];
     unsigned char unk1b1;               /* 0x1b1 */
@@ -430,7 +432,9 @@ typedef struct AIFIN {                  /* what gm_PlayerRecord finds for a char
     char pad00[0x40];
     int upgradeSpent;                   /* 0x40, the money the record has paid for workshop upgrades (ai_BuyUpgrade) */
     int renovationSpent;                /* 0x44, the money it has paid for renovations (ai_BuyUpgrade, am.c 0x497ee0) */
-    char pad48[0x40];
+    char pad48[0x10];
+    float roundFactors[3];              /* 0x58, set to 0.5, 1, 1 at every round change (main.c 0x5384e0); their reader is not known yet */
+    char pad64[0x24];
     float camAngle;                     /* 0x88, the player's camera angle factor (sv_CameraAngleFactor; sv.c) */
     float camPos[3];                    /* 0x8c, the player's camera position, restored with the view (sv.c) */
     char pad98[4];

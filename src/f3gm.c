@@ -3137,8 +3137,8 @@ unsigned ai_Unk617398[] = { 0, 1869181043, 1162698606, 1297434948, 0, 0, 0, 0, 0
 int ai_Unk61772c = -1;  /* 0x61772c */
 int ai_Unk617730 = -1000000;  /* 0x617730 */
 float ai_Unk617734[6] = { 0.240015402f, 0.222200006f, 0.125f, 0.0555500016f, 0.0138499998f, 0.0f };  /* 0x617734, a float per number of children / relatives */
-float ai_Unk617830[] = { 8.0f, 7.0f, 8.0f, 9.0f };  /* 0x617830 / */
-float ai_Unk617840[] = { 20.0f, 21.0f, 20.0f, 19.0f };  /* 0x617840 */
+float gm_DayStartHours[] = { 8.0f, 7.0f, 8.0f, 9.0f };  /* 0x617830 / */
+float gm_DayEndHours[] = { 20.0f, 21.0f, 20.0f, 19.0f };  /* 0x617840 */
 int ai_Unk617850[] = { 0, 0, 1, 1, 1109393408, 16, 2, 1097859072, 16, 3, 1101004800, 16, 4, 1092616192, 4, 5, 0, 8, 6, 1090519040, 8, 7, 1084227584, 8, 8, 1077936128, 4, 9, 1094713344, 16 };  /* 0x617850, records of 3 ints ( */
 /* ai_Unk7e3ff8: view of ai_PlayerSlots (tools/data_views.py) */
 int ai_Unk6178c8[] = { 468, 0, 1084227584, 0, 0, 0, 0, 0, 0, 0, 0, 0 };  /* 0x6178c8 */
@@ -7622,7 +7622,7 @@ int gm_Unk5075c0(char *c)
 extern int ai_Difficulty;
 /* ai_Unk143c860: view of txt_Ptrs (build/mk_txt_views.py) */
 int ai_GameFlags = 0;  /* 0x6f23f8 */
-extern float ai_Unk617830[], ai_Unk617840[];  /* 0x617830 / 0x617840 */
+extern float gm_DayStartHours[], gm_DayEndHours[];  /* 0x617830 / 0x617840 */
 char * ahm_OwnerChar();                     /* 0x4eaa50 */
 int ahm_ObjectValue();                     /* 0x4ec3d0 */
 int gm_ListAmount();                     /* 0x50aaf0 */
@@ -8442,8 +8442,8 @@ int gm_Unk509400(GCLOCK *a, GCLOCK *b, unsigned char *bld)
     GCLOCK t;
 
     s = gm_ClockSeason(a);
-    lo = ai_Unk617830[s];
-    hi = ai_Unk617840[s];
+    lo = gm_DayStartHours[s];
+    hi = gm_DayEndHours[s];
     if ((char)ai_GameFlags < 0)
         return gm_MinutesBetween(a, b);
     if (bld != 0 && ai_BTypes[*bld * 0x24d] == 0x1d)

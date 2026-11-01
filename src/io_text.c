@@ -878,7 +878,7 @@ int io_PrintText(char *fmt, ...)
                 }
                 break;
             case 'a':
-                /* a number (the call sites pass an int: main_Unk5384e0's "$LRunden APs:$R+%a$A") */
+                /* a number (the call sites pass an int: main_EndRound's "$LRunden APs:$R+%a$A") */
                 if (buf[pos - 1] == '%') {
                     sprintf(tmp, "%i%c", va_arg(ap, int), 0x14);
                     memmove(&buf[pos - 1 + strlen(tmp)], &buf[pos + 1], strlen(buf) + 1 - pos);

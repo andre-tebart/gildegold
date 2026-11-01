@@ -1314,7 +1314,7 @@ check:
     ai_MeisterCollectTrans(ch);
     ai_MeisterTrade(ch, b);
 }
-/* 0x480e70, the guard master: patrols the town, checks a workshop or patrols the surroundings @deep B3 far draft (frame 0x508 vs the original 0x50c; diffclass 886 code / 32 regs / 20 order / 14 slots): the body was read against build/ghidra/480e70.c and tools/asmdiff - same statements, constants, callees and field offsets; the diff is register allocation (ours ch=ebp, original ch=edi), the slot rotation and the schedule it causes, plus one 4-byte frame difference with no missing / extra source statement found in the read (the original's larger frame comes out of its allocation, not out of a statement ours lacks). spell.py on this function: no meaning-class lead (wrong type / signedness / offset / width) in the reload / dup-tail entries; they describe that same allocation. Readability advanced: ai_Unk486190 -> ai_FillSlotTable, ai_Unk487780 -> ai_AddEquipmentNeeds, ai_Unk489300 -> ai_CheckFreeThieves, ai_Unk489660 -> ai_SendFreeThieves, ai_Unk501190 -> gm_BuildQuery, ai_Unk501030 -> gm_BuildNext, ai_Unk502020 -> gm_FindBuildingById, ai_Unk50c520 -> gm_Opinion, ai_Unk501ce0 -> gm_GetGebaeudeHauptraum, ai_Unk625720 -> ai_AmbushSpots. Q2 evidence gaps left: ord_GetGridCell is ord.c's ord_GetGridCell (the role - the grid cell of a scene object - is read, but the unit has no name, @named_by guess, so no prefix can be chosen here), AIMSG.unk89 (written util_Random(4) + 2 only; no reader names it), AIBLD.unk39 (a building amount used as the purchase limit and scaled by 1/64000 in ai.c, compared against the capacity limits in am.c; no source names it). */
+/* 0x480e70, the guard master: patrols the town, checks a workshop or patrols the surroundings @deep B3 far draft (frame 0x508 vs the original 0x50c; diffclass 886 code / 32 regs / 20 order / 14 slots): the body was read against build/ghidra/480e70.c and tools/asmdiff - same statements, constants, callees and field offsets; the diff is register allocation (ours ch=ebp, original ch=edi), the slot rotation and the schedule it causes, plus one 4-byte frame difference with no missing / extra source statement found in the read (the original's larger frame comes out of its allocation, not out of a statement ours lacks). spell.py on this function: no meaning-class lead (wrong type / signedness / offset / width) in the reload / dup-tail entries; they describe that same allocation. Readability advanced: ai_Unk486190 -> ai_FillSlotTable, ai_Unk487780 -> ai_AddEquipmentNeeds, ai_Unk489300 -> ai_CheckFreeThieves, ai_Unk489660 -> ai_SendFreeThieves, ai_Unk501190 -> gm_BuildQuery, ai_Unk501030 -> gm_BuildNext, ai_Unk502020 -> gm_FindBuildingById, ai_Unk50c520 -> gm_Opinion, ai_Unk501ce0 -> gm_GetGebaeudeHauptraum, ai_Unk625720 -> ai_AmbushSpots. Q2 evidence gaps left: ord_GetGridCell is ord.c's ord_GetGridCell (the role - the grid cell of a scene object - is read, but the unit has no name, @named_by guess, so no prefix can be chosen here), AIMSG.unk89 (written util_Random(4) + 2 only; no reader names it), AIBLD.budget (a building amount used as the purchase limit and scaled by 1/64000 in ai.c, compared against the capacity limits in am.c; no source names it). */
 
 void ai_CalcMeisterWache(AICHAR *ch)
 {
@@ -1334,7 +1334,7 @@ void ai_CalcMeisterWache(AICHAR *ch)
         ai_NEntries = 0;
         ai_NSlots = 0;
         ai_FillSlotTable(ch, b);
-        ai_AddEquipmentNeeds(ch, b, ch->bld->unk39);
+        ai_AddEquipmentNeeds(ch, b, ch->bld->budget);
         ai_MeisterBewaffnen(ch, b);
         ai_MeisterCollectTrans(ch);
         ai_MeisterTrade(ch, b);
@@ -1744,7 +1744,7 @@ void ai_CalcMeisterDiebe(AICHAR *ch)
         ai_NEntries = 0;
         ai_NSlots = 0;
         ai_FillSlotTable(ch, obj);
-        ai_AddEquipmentNeeds(ch, obj, ch->bld->unk39);
+        ai_AddEquipmentNeeds(ch, obj, ch->bld->budget);
         ai_MeisterBewaffnen(ch, obj);
         if (ai_Watch.bld == ch->bld) {
             for (c = 0; ai_Watch.nslots < 4; c++) {
@@ -1997,7 +1997,7 @@ pick:
     if (msg.ids[0] != -1)
         cm_SendLongMessage(&msg);
 }
-/* 0x482f00, ai_CalcMeisterRaeuber: the robber master (the Wache message names the guard master's room) @deep B3 draft, 207 code / 12 slots hunks after the strcpy fix (was 321 / 26): every hunk of tools/asmdiff was read against build/ghidra/482f00.c - statements, constants, callees and field offsets match. Last-bytes pass: the manual copy loop `src[i] / ((char *)msg.arg)[i]` was the meaning-class lead - the original's asm is VC6's inlined strcpy (sub ecx,eax / mov dl,[eax] / mov [ecx+eax],dl / inc eax / test dl,dl); replacing it by strcpy((char *)msg.arg, src) dropped the function from 321 code / 26 slots to 207 / 12 and its asm diff from 211 to 139 lines. The same idiom was applied to ai_CalcMeisterWache (byte-neutral there, its pointer-loop form already compiles as the inline copy). What is left is allocation / block order (the ebp/esi roles, [esp+0x1c..0x44] rotation, the best/rank block emitted before vs after the compare) = match-deep. Q2 gaps: ord_GetGridCell (ord.c's ord_GetGridCell; unit unnamed, @named_by guess), AIBLD.unk39 (a building amount used as the purchase limit, scaled by 1/64000 in ai.c - no source names it). */
+/* 0x482f00, ai_CalcMeisterRaeuber: the robber master (the Wache message names the guard master's room) @deep B3 draft, 207 code / 12 slots hunks after the strcpy fix (was 321 / 26): every hunk of tools/asmdiff was read against build/ghidra/482f00.c - statements, constants, callees and field offsets match. Last-bytes pass: the manual copy loop `src[i] / ((char *)msg.arg)[i]` was the meaning-class lead - the original's asm is VC6's inlined strcpy (sub ecx,eax / mov dl,[eax] / mov [ecx+eax],dl / inc eax / test dl,dl); replacing it by strcpy((char *)msg.arg, src) dropped the function from 321 code / 26 slots to 207 / 12 and its asm diff from 211 to 139 lines. The same idiom was applied to ai_CalcMeisterWache (byte-neutral there, its pointer-loop form already compiles as the inline copy). What is left is allocation / block order (the ebp/esi roles, [esp+0x1c..0x44] rotation, the best/rank block emitted before vs after the compare) = match-deep. Q2 gaps: ord_GetGridCell (ord.c's ord_GetGridCell; unit unnamed, @named_by guess), AIBLD.budget (a building amount used as the purchase limit, scaled by 1/64000 in ai.c - no source names it). */
 
 void ai_CalcMeisterRaeuber(AICHAR *ch)
 {
@@ -2017,7 +2017,7 @@ void ai_CalcMeisterRaeuber(AICHAR *ch)
         ai_NEntries = 0;
         ai_NSlots = 0;
         ai_FillSlotTable(ch, obj);
-        ai_AddEquipmentNeeds(ch, obj, ch->bld->unk39);
+        ai_AddEquipmentNeeds(ch, obj, ch->bld->budget);
         ai_MeisterBewaffnen(ch, obj);
         ai_MeisterCollectTrans(ch);
         ai_MeisterTrade(ch, obj);
@@ -2245,7 +2245,7 @@ void ai_CalcMeisterBank(AICHAR *ch)
    third hour it buys slots / capacity, collects the building's kind 0x1d objects without a running job into
    ai_Carts, lets ai_BuildTradeOffers decide the trade and runs ai_MeisterTradeFernEinkauf or ...2 by the ratio
    of the first slot and entry; a watched building gets its slots copied
-   @deep byte, Q-only handover: Q6 description added this session (kind-9 trade step: buys slots / capacity, collects the free kind 0x1d objects into ai_Carts, ai_BuildTradeOffers decides the trade, then ai_MeisterTradeFernEinkauf or ...2 by the slot/entry ratio). Q1 no evidenced name: 0x47e990 dispatches here on ai_BTypes[type].kind == 9 only, the body has no string / text id, and no caller names the profession. Q2 evidence gaps: ai_BuildTradeOffers (the trade decision builder, no comment or named reader), ai_Carts / ai_NumCarts (the object list and its count this function fills; the reader is ai_BuildTradeOffers only), AIOBJ.unk1c (a building id here, but the rename across units is undecided against the other unk1c fields), AIOBJ.unk20 / AISLOT.unk34 / AIENTRY.unk4c / AIBTYPE.unk247 (the slot and entry amounts, cap247 is only an unsigned alias), AIJOB.unkac (union id). */
+   @deep byte, Q-only handover: Q6 description added this session (kind-9 trade step: buys slots / capacity, collects the free kind 0x1d objects into ai_Carts, ai_BuildTradeOffers decides the trade, then ai_MeisterTradeFernEinkauf or ...2 by the slot/entry ratio). Q1 no evidenced name: 0x47e990 dispatches here on ai_BTypes[type].kind == 9 only, the body has no string / text id, and no caller names the profession. Q2 evidence gaps: ai_BuildTradeOffers (the trade decision builder, no comment or named reader), ai_Carts / ai_NumCarts (the object list and its count this function fills; the reader is ai_BuildTradeOffers only), AIOBJ.unk1c (a building id here, but the rename across units is undecided against the other unk1c fields), AIOBJ.unk20 / AISLOT.unk34 / AIENTRY.unk4c / AIBTYPE.level (the slot and entry amounts, cap247 is only an unsigned alias), AIJOB.unkac (union id). */
 
 void ai_Unk483a60(AICHAR *ch)
 {
@@ -2285,12 +2285,12 @@ void ai_Unk483a60(AICHAR *ch)
             }
             ch->flags1b4 |= 0x20;
             ai_BuildTradeOffers(ch, obj, ok);
-            if (ai_BTypesT[ch->bld->type].unk247 == 1)
-                f = ch->bld->unk39 * 1.5625e-05f;
-            else if (ai_BTypesT[ch->bld->type].unk247 == 2)
-                f = ch->bld->unk39 * 7.8125e-06f;
-            else if (ai_BTypesT[ch->bld->type].unk247 == 3)
-                f = ch->bld->unk39 * 3.90625e-06f;
+            if (ai_BTypesT[ch->bld->type].level == 1)
+                f = ch->bld->budget * 1.5625e-05f;
+            else if (ai_BTypesT[ch->bld->type].level == 2)
+                f = ch->bld->budget * 7.8125e-06f;
+            else if (ai_BTypesT[ch->bld->type].level == 3)
+                f = ch->bld->budget * 3.90625e-06f;
             f = f * 0.5f + 0.25f;
             if (ai_NSlots != 0) {
                 if (ai_NEntries != 0) {

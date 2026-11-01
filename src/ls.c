@@ -1461,7 +1461,7 @@ int ls_LoadGame(int name, int kind)
     vfs_fclose(h);
     sv_Unk528770();
     unk_Unk511790();
-    unk_Unk513740();
+    init_AfterTownLoad();
     init_SetDetailLevel((int)ai_Unk633738, 1);
     strcpy(ls_SavePath.path, ai_Unk76f9bc);
     return 1;

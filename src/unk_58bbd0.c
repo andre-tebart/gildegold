@@ -74,8 +74,8 @@ extern GAPDATA full_data_6f536c[];
 extern GAPDATA full_data_6f58d0[];
 extern char * ai_Goods;
 extern unsigned char ai_TimeHour;
-extern float ai_Unk617830[];
-extern float ai_Unk617840[];
+extern float gm_DayStartHours[];
+extern float gm_DayEndHours[];
 extern GAPDATA full_data_62b054[];
 extern GAPDATA full_data_62b06c[];
 extern GAPDATA full_data_62b084[];
@@ -187,8 +187,8 @@ extern int ai_GameFlags;
 extern unsigned char ai_GameState;
 extern struct AIBLD *ai_MarketBuilding;
 extern unsigned char ai_TimeHour;
-extern float ai_Unk617830[];
-extern float ai_Unk617840[];
+extern float gm_DayStartHours[];
+extern float gm_DayEndHours[];
 extern int ai_Unk623884;
 extern char * sv_SelectedObject;
 extern int d2_ClickedId;
@@ -1607,8 +1607,8 @@ void ai_Unk58cc10(int param_1, int param_2, int param_3, int param_4, int param_
             n = gm_ClockSeason((char *)(unsigned)&ai_Time);
             id = 0;
             t0 = 0;
-            if ((float)U_W((unsigned)&ai_TimeHour) < *(float *)((unsigned)&ai_Unk617830 + n * 4) ||
-                *(float *)((unsigned)&ai_Unk617840 + n * 4) <= (float)U_W((unsigned)&ai_TimeHour)) {
+            if ((float)U_W((unsigned)&ai_TimeHour) < *(float *)((unsigned)&gm_DayStartHours + n * 4) ||
+                *(float *)((unsigned)&gm_DayEndHours + n * 4) <= (float)U_W((unsigned)&ai_TimeHour)) {
                 if (*p == 4)
                     id = 0x50b;
                 else if (*p == 3)
@@ -3049,7 +3049,7 @@ void ai_Unk5909a0(void)
 
 int ai_Unk5b2180(); int gm_IsHomeType(); void sv_SelectPanelObject(unsigned char *o, int b, char *c); void sv_FlyCameraToObject(int o); void sv_CameraToObject();
 unsigned gm_PermissionBits(unsigned p1, unsigned char *b, unsigned short *o, int c); void ai_Unk59f410(); void init_ShowBuildingScene(unsigned char *b, int slot); void init_FinishBuildingScene(unsigned char *b, unsigned short *o);
-int d3t_PlaceObjectV(struct D3OBJECT *camera, struct D3VECTOR *pos, struct D3VECTOR *dir, int unk, char flags); int gm_ClockSeason(); void unk_Unk513740(void); void d3fl_MakeDivide();
+int d3t_PlaceObjectV(struct D3OBJECT *camera, struct D3VECTOR *pos, struct D3VECTOR *dir, int unk, char flags); int gm_ClockSeason(); void init_AfterTownLoad(void); void d3fl_MakeDivide();
 int ai_Unk5bc110(); void snd_StartMarketAmbience(void); int tb_SetFunctionOff(); void snd_StopMarketAmbience(void);
 void d2_CopyCaption(char *caption); void sv_SetStatusText(char *s); void sv_Unk52adb0(void);
 void sv_Unk528490(unsigned char *o); int ai_Unk576340();
@@ -3200,7 +3200,7 @@ void ai_GameFrame(void)
 
     n = gm_ClockSeason((void *)(unsigned)&ai_Time);
     U_I((unsigned)&full_data_5f3418) = -1;
-    unk_Unk513740();
+    init_AfterTownLoad();
     if (U_I((unsigned)&full_data_6f1c2c) != 0) {
         d3fl_MakeDivide(U_I((unsigned)&ai_Unk633738));
         U_I((unsigned)&full_data_6f1c2c) = 0;
@@ -3241,8 +3241,8 @@ void ai_GameFrame(void)
             ai_Unk591ad0();
         sv_Unk527640();
         if (mode == 0) {
-            if ((float)U_W((unsigned)&ai_TimeHour) < *(float *)((unsigned)&ai_Unk617830 + n * 4) ||
-                *(float *)((unsigned)&ai_Unk617840 + n * 4) <= (float)U_W((unsigned)&ai_TimeHour)) {
+            if ((float)U_W((unsigned)&ai_TimeHour) < *(float *)((unsigned)&gm_DayStartHours + n * 4) ||
+                *(float *)((unsigned)&gm_DayEndHours + n * 4) <= (float)U_W((unsigned)&ai_TimeHour)) {
                 for (it = gm_BuildQuery(1, 6); it != 0; it = gm_BuildNext()) {
                     if (*(int *)(it + 0x95) != -1) {
                         v = (int)evt_FindById(*(int *)(it + 0x95));
@@ -3254,16 +3254,16 @@ void ai_GameFrame(void)
                 mode = 1;
             }
         } else if (mode == 1) {
-            if (*(float *)((unsigned)&ai_Unk617830 + n * 4) <= (float)U_W((unsigned)&ai_TimeHour) &&
-                (float)U_W((unsigned)&ai_TimeHour) < *(float *)((unsigned)&ai_Unk617840 + n * 4)) {
+            if (*(float *)((unsigned)&gm_DayStartHours + n * 4) <= (float)U_W((unsigned)&ai_TimeHour) &&
+                (float)U_W((unsigned)&ai_TimeHour) < *(float *)((unsigned)&gm_DayEndHours + n * 4)) {
                 for (it = gm_BuildQuery(1, 6); it != 0; it = gm_BuildNext())
                     if (*(int *)(it + 0x95) == -1)
                         sv_Unk528490(it);
                 mode = 2;
             }
         } else if (mode == 2 &&
-                   ((float)U_W((unsigned)&ai_TimeHour) < *(float *)((unsigned)&ai_Unk617830 + n * 4) ||
-                    *(float *)((unsigned)&ai_Unk617840 + n * 4) <= (float)U_W((unsigned)&ai_TimeHour))) {
+                   ((float)U_W((unsigned)&ai_TimeHour) < *(float *)((unsigned)&gm_DayStartHours + n * 4) ||
+                    *(float *)((unsigned)&gm_DayEndHours + n * 4) <= (float)U_W((unsigned)&ai_TimeHour))) {
             for (it = gm_BuildQuery(1, 6); it != 0; it = gm_BuildNext()) {
                 if (*(int *)(it + 0x95) != -1) {
                     v = (int)evt_FindById(*(int *)(it + 0x95));
@@ -8332,7 +8332,7 @@ void sv_Unk52adb0(void); void init_LoadObjectScene();
 char d3_DeflateScene(unsigned int flags); char d3_InflateScene(unsigned int flags); void init_SetCharacterAnimations(unsigned char *b);
 void init_ShowBuildingScene(unsigned char *b, int slot); void init_FinishBuildingScene(unsigned char *b, unsigned short *o); 
 int d3_VecEqual(struct D3VECTOR *a, struct D3VECTOR *b, float eps); void sv_Unk52bb70(int id);
-void unk_Unk5136b0(void); void snd_UnloadBuildingVoices(void); void unk_Unk513740(void); 
+void unk_Unk5136b0(void); void snd_UnloadBuildingVoices(void); void init_AfterTownLoad(void); 
 struct SBSAMPLE * sb_PlaySample(); void ai_ThievesGuildEmptyListener(); void ai_Unk5a4d40(); void ai_Unk5a4f70(); void ai_Unk5a5080();
 void ai_Unk5a5bc0(); void ai_DungeonContact(); void ai_Unk5a3df0(); void ai_DungeonEmptyListener(); void ai_Unk5a3810(); void ai_ChurchContact();
 void ai_Unk5a1a60(); void ai_Unk5a36c0(); void ai_Unk5a07d0(); void ai_Unk5a18d0();
@@ -8959,7 +8959,7 @@ void ai_Unk59e420(unsigned char *param_1, int param_2)
             U_I((unsigned)&ch_CurrentScriptGroup) = 0xffffffff;
             U_I((unsigned)&ai_PlayerBuilding) = 0;
             U_I((unsigned)&sv_PanelShown) = 0;
-            unk_Unk513740();
+            init_AfterTownLoad();
             U_I((unsigned)&sv_ViewPosX) = saved1;
             U_I((unsigned)&sv_ViewPosY) = saved2;
             U_I((unsigned)&sv_ViewPosZ) = saved3;
@@ -9119,7 +9119,7 @@ void ai_Unk59ee40(unsigned char *param_1)
     U_I((unsigned)&evt_NoGroup) = 0;
     U_I((unsigned)&ch_CurrentGroup) = 0xffffffff;
     U_I((unsigned)&ch_CurrentScriptGroup) = 0xffffffff;
-    unk_Unk513740();
+    init_AfterTownLoad();
     U_I((unsigned)&sv_ViewPosX) = saved1;
     U_I((unsigned)&sv_ViewPosY) = saved2;
     U_I((unsigned)&sv_ViewPosZ) = saved3;
@@ -12222,7 +12222,7 @@ void ai_Unk5a5910(int param_1)
             cm_SendFieldDeltas();
             ai_Unk4c5fa0(U_I(ch + 4), -(unsigned char)*(ch + 0x1b1), 0);
             if (U_I(((unsigned)&ai_Unk770cec + 0x18) + U_W((unsigned)&ai_PlayerId) * 0x21c) != 0 &&
-                he_Unk55eba0(ch, &a, &b, 0) != 0)
+                he_FindFigurePlace(ch, &a, &b, 0) != 0)
                 ai_Unk4c52e0(U_I(ch + 4), a, b, 0, 0, (char *)U_I((unsigned)"L\366segeld"));
             rec = he_FindEvent(1, 0, 0x3d);
             while (rec != 0) {

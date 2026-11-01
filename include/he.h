@@ -13,7 +13,7 @@ int he_Unk53d6f0(int ev, int b, int c, int d, int e);
 void he_Unk53d800(int ev);
 void he_Unk53d930(void);
 void he_CloseEventSlots(void);
-void he_Unk53d9f0(int pl);
+void he_ShowEventBar(int pl);
 void he_Unk53dad0(int state);
 void he_Unk53daf0(void);
 void he_Unk53dcb0(int *sl);
@@ -41,9 +41,19 @@ void he_Unk53ee40(void);
 void he_Unk53eea0(void);
 
 void he_Unk53ef50(void);
+#pragma pack(push, 1)
+typedef struct HEAPEVENT {              /* 0x50 bytes, an AP event (0x100 of them at 0x758ca0, he_AddApEvent) */
+    char counter;                       /* 0x00, rounds left (he_Unk53ef50 counts it down, 2 at the start) */
+    char pad01[3];
+    int key;                            /* 0x04, the character it belongs to */
+    int income;                         /* 0x08, summed by he_SumApEvents into the round's money (main.c 0x537de0) */
+    int cost;                           /* 0x0c, summed by he_SumApEventCosts and taken from the player at the round change */
+    char name[0x40];                    /* 0x10, 0x3f characters */
+} HEAPEVENT;
+#pragma pack(pop)
 int he_SumApEvents(int key);
 int *he_AddApEvent(int a, char *name, int c, int d);  /* 0x53eec0, registers an AP event, returns its counter byte (0 when full) */
-int he_Unk53efb0(int key);
+int he_SumApEventCosts(int key);
 void he_PostEvent6d(void);
 void he_PostEvent6b(void);
 void he_PostEvent7a(void);

@@ -1468,7 +1468,7 @@ void sv_CountGroupMembers(char *g)
     } while (i != 0);
 }
 
-extern float ai_Unk617830[], ai_Unk617840[];   /* 0x617830 / 0x617840 */
+extern float gm_DayStartHours[], gm_DayEndHours[];   /* 0x617830 / 0x617840 */
 int init_BuildingSceneUniverse();                     /* 0x511e60 */
 int init_ObjectSceneUniverse();                     /* 0x511dc0 */
 int gm_ClockSeason(void *t);           /* 0x4fe350, f3gm.c */                     /* 0x4fe350 */
@@ -1505,7 +1505,7 @@ void sv_MoveToGroup(unsigned char *o, short *it, int c, char *g)
         else
             w = init_ObjectSceneUniverse(it);
         k = gm_ClockSeason(ai_Time);
-        if ((((float)*(unsigned short *)(ai_Time + 4) < ai_Unk617840[k] && ai_Unk617830[k] <= (float)*(unsigned short *)(ai_Time + 4)) || b[0] == 4 || b[0] == 0x13 || b[0] == 0x1d)
+        if ((((float)*(unsigned short *)(ai_Time + 4) < gm_DayEndHours[k] && gm_DayStartHours[k] <= (float)*(unsigned short *)(ai_Time + 4)) || b[0] == 4 || b[0] == 0x13 || b[0] == 0x1d)
             && w > -1 && *(int *)(ch + 0x184) != 0 && (char *)(unsigned)&d3_Scenes + w * 0x3e0 != *(char **)(*(int *)(ch + 0x184) + 0x88)) {
             msg = ch_AddAction(*(int *)(ch + 0x184), 0x33, w, *(int *)(o + 1), *(int *)(it + 2));
             strcpy(msg + 0x70, "sv_ChangePlayerHE");
@@ -2140,7 +2140,7 @@ void sv_UpdateSkyColors(void)
 }
 /* 0x525a00, fills the day phase table 0x623ba9 (6 rows of 10 bytes: +0 hours, +1 minutes, +2 the seconds of day) from the minutes of the phase table 0x5eeab8 of the season k (0x4fe350) */
 
-void sv_Unk525a00(int t)
+void sv_FillDayPhases(int t)
 {
     int k;
     char *p;
@@ -3176,9 +3176,9 @@ void sv_Unk528490(unsigned char *o)
                 if (*(int *)(c + 0x17c) == 0 || *(int *)(*(int *)(c + 0x17c) + 200) == 0) {
                     if (*(int *)(o + 0x95) != -1)
                         return;
-                    if ((float)(*(unsigned short *)(ai_Time + 4)) < ai_Unk617830[k])
+                    if ((float)(*(unsigned short *)(ai_Time + 4)) < gm_DayStartHours[k])
                         return;
-                    if (ai_Unk617840[k] <= (float)(*(unsigned short *)(ai_Time + 4)))
+                    if (gm_DayEndHours[k] <= (float)(*(unsigned short *)(ai_Time + 4)))
                         return;
                     d3if_SelectScene(0, 1);
                     d = d3_FindObject(*(int *)(o + 0x61), 0x100, 0, "dummy_RAUCH_0");
@@ -4056,7 +4056,7 @@ int sv_Unk52b3c0(char *c, int b, char *out)
         }
         if ((*(unsigned *)(c + 0x1cc) & ((unsigned)&txt_Keys + 0x181c0)) == 0 && *(int *)(c + 0x16c) == b
             && (((int *)(unsigned)&full_data_75ec80)[i * 8 + 5] == 0
-                || ((float)SV_US((unsigned)&ai_TimeHour) < *(float *)((unsigned)&ai_Unk617840 + h * 4) && *(float *)((unsigned)&ai_Unk617830 + h * 4) <= (float)SV_US((unsigned)&ai_TimeHour)))) {
+                || ((float)SV_US((unsigned)&ai_TimeHour) < *(float *)((unsigned)&gm_DayEndHours + h * 4) && *(float *)((unsigned)&gm_DayStartHours + h * 4) <= (float)SV_US((unsigned)&ai_TimeHour)))) {
             strcpy(out, (char *)((unsigned)&full_data_75ec84 + i * 0x20));
             return 1;
         }
@@ -4689,7 +4689,7 @@ l7f0:
 lsecond:
         ok = 0;
         if (*(unsigned char **)(c + 0x16c) == a && g != 0 && (v = *(int *)(g + 0x28)) != -1) {
-            if (*(char *)(c + 0x180) == 0 || *(float *)((unsigned)&ai_Unk617840 + h * 4) < (float)SV_US((unsigned)&ai_TimeHour))
+            if (*(char *)(c + 0x180) == 0 || *(float *)((unsigned)&gm_DayEndHours + h * 4) < (float)SV_US((unsigned)&ai_TimeHour))
                 ok = 1;
             w = *(char **)(c + 0x17c);
             if ((w != 0 && *w == 4 && *(int *)(w + 200) != 0) || ok) {
@@ -6593,7 +6593,7 @@ void sv_Unk52fa00(int *bk)
 
 extern int ai_Unk623ea0, ai_Unk623ea4, ai_Unk623ea8;  /* 0x623ea0, 0x623ea4, 0x623ea8 */
 /* 0x52fa10, creates the scroll parchment form "misc\scroll_perga" (0x623ea0) with its two end pieces (0x623ea4 / 0x623ea8, picture 0x6e0) in the current form; returns the form or -1 */
-int sv_Unk52fa10(void)
+int sv_CreateScrollForm(void)
 {
     if (ai_Unk623ea0 != -1)
         return -1;
@@ -6608,7 +6608,7 @@ int sv_Unk52fa10(void)
 }
 /* 0x52fa90, destroys the scroll form */
 
-void sv_Unk52fa90(void)
+void sv_DestroyScrollForm(void)
 {
     if (ai_Unk623ea0 != -1) {
         d2_CloseView(ai_Unk623ea0);

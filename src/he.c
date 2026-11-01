@@ -141,9 +141,9 @@ extern GAPDATA full_data_627b0c[];
 extern char ai_Unk61aa38[24];
 extern GAPDATA full_data_627b20[];
 extern char ch_EmptyName[1];
-extern float ai_Unk617830[];
+extern float gm_DayStartHours[];
 extern OPTIONBYTES ai_GameSwitches;
-extern float ai_Unk617840[];
+extern float gm_DayEndHours[];
 extern GAPDATA full_data_6279f0[];
 extern GAPDATA full_data_627a10[];
 extern GAPDATA full_data_627d74[];
@@ -189,8 +189,8 @@ extern char ai_MissionMode;
 extern int ai_MissionPartner;
 #include "unk_4b39f0_types.h"
 extern G13MIS ai_Missions[];
-extern float ai_Unk617830[];
-extern float ai_Unk617840[];
+extern float gm_DayStartHours[];
+extern float gm_DayEndHours[];
 extern float ai_Unk5eb788;
 extern float ai_Unk5eb780;
 extern GAPDATA full_data_628dc8[];
@@ -220,8 +220,8 @@ extern int d2_Unkf8aac4;
 extern GAPDATA full_data_602568[];
 extern GAPDATA full_data_628ecc[];
 extern const int ai_Unk5eeab8[24];
-extern float ai_Unk617830[];
-extern float ai_Unk617840[];
+extern float gm_DayStartHours[];
+extern float gm_DayEndHours[];
 extern double ai_Unk5ece60;
 extern const float ai_Unk5ee160[476];
 extern char ch_EmptyName[1];
@@ -591,7 +591,7 @@ void he_CloseEventSlots(void)
 }
 /* 0x53d9f0, shows / hides the event bar for the player slot `pl` (0xffff = hide, 0x62571c = the panel or -1) */
 
-void he_Unk53d9f0(int pl)
+void he_ShowEventBar(int pl)
 {
     int *p;
 
@@ -788,7 +788,7 @@ void he_MessageBoxQuickjump(int a1, int a2, char *text, char fl, int a5, int a6,
 #include <stdarg.h>
 #include <math.h>
 void he_Unk55e3a0(int ev);
-void he_Unk55eba0(int p);
+void he_FindFigurePlace(int p);
 void he_Unk56fbc0(int rec, unsigned short num);
 
 void d3t_SetColor(D3OBJECT *obj, unsigned char r, unsigned char g, unsigned char b);
@@ -1505,7 +1505,7 @@ int he_SumApEvents(int key)
 }
 /* 0x53efb0, the sum of the values (+0xc) of the AP events with key (+4) `key` */
 
-int he_Unk53efb0(int key)
+int he_SumApEventCosts(int key)
 {
     int sum = 0;
     int *p = (int *)((unsigned)&he_RunHandlers + 0x6ac);
@@ -2336,7 +2336,7 @@ void he_Unk5414a0(int p1, unsigned short *p2, int p3, int p4, float p5, int p6)
     char *t;
 
     if (p5 > 0.0f) {
-        if ((float)p5 < unk_Unk4fc890(p2) * 0.5 && ((int (*)(int, int *, int *, int))he_Unk55eba0)(p2, &l900, &l8fc, 0) != 0 && *(int *)(p2 + 0xc2) != 0) {
+        if ((float)p5 < unk_Unk4fc890(p2) * 0.5 && ((int (*)(int, int *, int *, int))he_FindFigurePlace)(p2, &l900, &l8fc, 0) != 0 && *(int *)(p2 + 0xc2) != 0) {
             sv_MoveToGroup(0, 0, *p2, 0);
             if (*(int *)(*(int *)(p2 + 0xc2) + 0x28) != -1) {
                 u1 = (int)evt_FindById(*(int *)(*(int *)(p2 + 0xc2) + 0x28));
@@ -2425,7 +2425,7 @@ void he_Unk5417d0(int p1, unsigned short *p2, int p3, int p4, int p5, float p6)
         cm_SendLongMessage(ev);
         return;
     }
-    if (p6 >= unk_Unk4fc890(p2) * 0.5 || ((int (*)(int, int *, int *, int))he_Unk55eba0)(p2, &l900, &l8fc, 0) == 0 || *(int *)(p2 + 0xc2) == 0) {
+    if (p6 >= unk_Unk4fc890(p2) * 0.5 || ((int (*)(int, int *, int *, int))he_FindFigurePlace)(p2, &l900, &l8fc, 0) == 0 || *(int *)(p2 + 0xc2) == 0) {
         if (*(char *)(p3 + 2) != 6 && *(char *)(p3 + 2) != 7)
             return;
         news = 0x1630;
@@ -11740,7 +11740,7 @@ int he_Unk55ea60(int p)
 }
 /* 0x55eba0, selects the scene of the figure `p` when it should be seen (ROUGH): nothing for no figure, the kinds 0xd / 0xe or a busy job code (as 0x55ea60: 4, 0x10, 0x13, 0x1d, 0x1e and the same list), the owner contact of its building (+0x16c; 0x4ffe90 types 0x2c / 0x109) or its target (+0x170) is looked up (0x4fdcb0, 0x4fe980) and the scene shown (0x511e60, or 0x511dc0 for the free-standing case) */
 
-void he_Unk55eba0(int p)
+void he_FindFigurePlace(int p)
 {
     int b, code, o;
 
@@ -11820,7 +11820,7 @@ void he_Unk55efc0(int ev)
     ai_Unk4c5b90(*(int *)(p + 4));
     ai_Unk4c52e0(*(int *)(p + 4), c, -1, 0, 0, "Go to work");
     cm_RequestChrMoveToUniverse(*(int *)(p + 4), -1, c, "dummy_EINGANG");
-    he_Unk55eba0(p);
+    he_FindFigurePlace(p);
     he_Unk55ee40(p);
     *(HETIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0, 0x1e, 0);
@@ -11930,7 +11930,7 @@ void he_Unk561190(int ev)
     }
     txt_Format(text, 0x19da, b);
     he_ShowNews(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, text, 0, 0x5fb, 0);
-    he_Unk55eba0(*(int *)(p + 0x184));
+    he_FindFigurePlace(*(int *)(p + 0x184));
     ai_Unk4c52e0(*(int *)(p + 4), -1, -1, 0, 0, "L\366segeld");
     cm_BeginFieldBlock(p, *(int *)(p + 4));
     cm_AddFieldDelta(1, 1, 0, text);
@@ -12706,7 +12706,7 @@ void he_Unk5662d0(int ev)
     *(HETIME *)(ev + 0x52) = ai_Time;
     *(HETIME *)(ev + 0x44) = ai_Time;
     *(int *)(ev + 0xac) = (unsigned short)util_Random(5) - 5;
-    *(short *)(ev + 0x56) = (short)(int)((float *)(unsigned)&ai_Unk617830)[gm_ClockSeason((unsigned)&ai_Time)];
+    *(short *)(ev + 0x56) = (short)(int)((float *)(unsigned)&gm_DayStartHours)[gm_ClockSeason((unsigned)&ai_Time)];
     *(int *)(ev + 0x58) = 0;
 }
 /* 0x566370, the run handler of the night watchman (a Ghidra miss, 1216 bytes with the jump table 0x566814): freed when the day changed (+0x44 != the day 0x770ae0); the season 0x4fe350 indexes the float tables 0x617830 (morning
@@ -12729,7 +12729,7 @@ void he_Unk566370(int ev)
     switch (*(int *)(ev + 0x70)) {
     case 0:
         h = (float)(int)(U_I((unsigned)&ai_TimeHour) & 0xffff);
-        m = ((float *)(unsigned)&ai_Unk617830)[season];
+        m = ((float *)(unsigned)&gm_DayStartHours)[season];
         if (h < m || !(h < m + 1.0f)) {
             *(HETIME *)(ev + 0x52) = ai_Time;
             goto lagain;
@@ -12752,13 +12752,13 @@ void he_Unk566370(int ev)
                 snd_QueueVoice(id, 0, "_NACHTWAECHTER_MORGENS_SPRUECHE", -1, 0x3e8);
         }
         *(HETIME *)(ev + 0x52) = ai_Time;
-        *(short *)(ev + 0x56) = (short)(int)((float *)(unsigned)&ai_Unk617840)[season];
+        *(short *)(ev + 0x56) = (short)(int)((float *)(unsigned)&gm_DayEndHours)[season];
         *(int *)(ev + 0x58) = 0;
         *(int *)(ev + 0x70) = *(int *)(ev + 0x70) + 1;
         return;
     case 1:
         h = (float)(int)(U_I((unsigned)&ai_TimeHour) & 0xffff);
-        m = ((float *)(unsigned)&ai_Unk617840)[season];
+        m = ((float *)(unsigned)&gm_DayEndHours)[season];
         if (h < m || !(h < m + 1.0f)) {
             *(HETIME *)(ev + 0x52) = ai_Time;
             goto lagain;
@@ -14992,8 +14992,8 @@ void he_Unk56d3d0(int ev)
         he_Unk53e1f0((int *)ev);
         return;
     }
-    if (*(float *)((unsigned)&ai_Unk617840 + d * 4) <= (float)*(unsigned short *)(unsigned)&ai_TimeHour ||
-        (float)*(unsigned short *)(unsigned)&ai_TimeHour < *(float *)((unsigned)&ai_Unk617830 + d * 4)) {
+    if (*(float *)((unsigned)&gm_DayEndHours + d * 4) <= (float)*(unsigned short *)(unsigned)&ai_TimeHour ||
+        (float)*(unsigned short *)(unsigned)&ai_TimeHour < *(float *)((unsigned)&gm_DayStartHours + d * 4)) {
         *(HETIME *)(ev + 0xbc) = ai_Time;
         gm_AddTime(ev + 0x52, 1, 0, 0);
         return;
@@ -15075,8 +15075,8 @@ void he_Unk56d730(int ev)
         he_Unk53e1f0((int *)ev);
         return;
     }
-    if (*(float *)((unsigned)&ai_Unk617840 + d * 4) <= (float)*(unsigned short *)(unsigned)&ai_TimeHour ||
-        (float)*(unsigned short *)(unsigned)&ai_TimeHour < *(float *)((unsigned)&ai_Unk617830 + d * 4)) {
+    if (*(float *)((unsigned)&gm_DayEndHours + d * 4) <= (float)*(unsigned short *)(unsigned)&ai_TimeHour ||
+        (float)*(unsigned short *)(unsigned)&ai_TimeHour < *(float *)((unsigned)&gm_DayStartHours + d * 4)) {
         *(HETIME *)(ev + 0xc0) = ai_Time;
         gm_AddTime(ev + 0x52, 1, 0, 0);
         return;
@@ -15152,8 +15152,8 @@ void he_Unk56daa0(int ev)
         he_Unk53e1f0((int *)ev);
         return;
     }
-    if (*(float *)((unsigned)&ai_Unk617840 + d * 4) <= (float)*(unsigned short *)(unsigned)&ai_TimeHour ||
-        (float)*(unsigned short *)(unsigned)&ai_TimeHour < *(float *)((unsigned)&ai_Unk617830 + d * 4)) {
+    if (*(float *)((unsigned)&gm_DayEndHours + d * 4) <= (float)*(unsigned short *)(unsigned)&ai_TimeHour ||
+        (float)*(unsigned short *)(unsigned)&ai_TimeHour < *(float *)((unsigned)&gm_DayStartHours + d * 4)) {
         gm_AddTime(ev + 0x52, 1, 0, 0);
         return;
     }
@@ -15247,8 +15247,8 @@ void he_Unk56de10(int ev)
     }
     *(HETIME *)(ev + 0x52) = ai_Time;
     *(int *)(ev + 0x52) += 1;
-    *(unsigned short *)(ev + 0x56) = util_Random((int)(*(float *)((unsigned)&ai_Unk617840 + h * 4) - *(float *)((unsigned)&ai_Unk617830 + h * 4))) +
-                                     (int)*(float *)((unsigned)&ai_Unk617830 + h * 4);
+    *(unsigned short *)(ev + 0x56) = util_Random((int)(*(float *)((unsigned)&gm_DayEndHours + h * 4) - *(float *)((unsigned)&gm_DayStartHours + h * 4))) +
+                                     (int)*(float *)((unsigned)&gm_DayStartHours + h * 4);
     *(int *)(ev + 0x58) = util_Random(4) * 15;
     if (*(int *)(ev + 0xac) != 0) {
         f = (util_RandomF() + *(float *)(unsigned)&ai_Unk5eb780) * 0.25f;
@@ -16574,7 +16574,7 @@ void he_Unk571000(int ev)
 
     hour = gm_ClockSeason(&ai_Time);
     minute = *(unsigned short *)((char *)&ai_Time + 4);
-    if ((float)minute < *(float *)((unsigned)&ai_Unk617840 + hour * 4) || (float)minute < *(float *)((unsigned)&ai_Unk617830 + hour * 4)) {
+    if ((float)minute < *(float *)((unsigned)&gm_DayEndHours + hour * 4) || (float)minute < *(float *)((unsigned)&gm_DayStartHours + hour * 4)) {
         if (HM_I(ev, 0x70) != -1 && HM_I(ev, 0x70) != -2) {
             gm_AddTime(ev + 0x52, 0, 5, 0);
             return;
@@ -16691,7 +16691,7 @@ void he_Unk571640(int ev)
 
     hour = gm_ClockSeason(&ai_Time);
     minute = *(unsigned short *)((char *)&ai_Time + 4);
-    if ((float)minute < *(float *)((unsigned)&ai_Unk617840 + hour * 4) || (float)minute < *(float *)((unsigned)&ai_Unk617830 + hour * 4)) {
+    if ((float)minute < *(float *)((unsigned)&gm_DayEndHours + hour * 4) || (float)minute < *(float *)((unsigned)&gm_DayStartHours + hour * 4)) {
         if (HM_I(ev, 0x70) != -1 && HM_I(ev, 0x70) != -2) {
             *(HETIME *)(ev + 0xbc) = ai_Time;
             gm_AddTime(ev + 0x52, 0, 5, 0);
