@@ -98,4 +98,19 @@ typedef struct D3SMESH {            /* the parts of a mesh (d3_engine.h: D3MESH)
 } D3SMESH;
 #define D3S_MESH(m) ((D3SMESH *)(m))
 
+/* declared in other units' headers before (moved to the owner) */
+void d3_ExitShadows(void);  /* 0x45aee0 */
+void d3_InitShadows(unsigned int size, unsigned int maxsize, int ncache, int age, char mips, int polys, int mapsize);  /* 0x45ad80 */
+void d3s_CollectLights(void);  /* 0x45c9f0 */
+extern int d3s_Count;  /* 0x633dc0 */
+char d3s_FreeLightCB(D3OBJECT *obj, D3OBJECT *light);  /* 0x45cd60 */
+void d3s_FreeShadows(D3OBJECT *obj);  /* 0x45ccd0 */
+extern unsigned int d3s_MaxPolys;  /* 0x633dc4 */
+extern int d3s_NumUVs;  /* 0xfb925c */
+extern int d3s_NumVerts;  /* 0xfb9220 */
+extern D3OBJECT * d3s_Object;  /* 0x633448 */
+void d3s_ResetShadows(D3OBJECT *obj);  /* 0x45ce00 */
+void d3s_UpdateObject(D3OBJECT *obj);  /* 0x45ca20 */
+void d3s_UpdateObjectAt(D3OBJECT *obj);  /* 0x45ca60 */
+
 #endif
