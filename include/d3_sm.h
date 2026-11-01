@@ -78,5 +78,6 @@ char d3_GetHeightAt(D3SM *h, D3VECTOR *pos, int *px, int *pz, float *py);       
 /* declared in other units' headers before (moved to the owner) */
 void d3sm_Destroy(D3SM *h);  /* 0x45ef60 */
 extern D3SM *d3sm_Shadow;  /* 0x633df8 */
+char d3sm_Pick(D3SM *h, int sx, int sy, int *px, int *pz);              /* 0x45f2b0, the cell (px, pz) under the screen point (sx, sy); 0 = none */
 
 #endif

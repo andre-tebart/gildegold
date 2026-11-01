@@ -772,7 +772,7 @@ exe	0x0043ce10	d3_InitSurf	d3_engine	byte	readable
 exe	0x0043ce60	d3_InitObject	d3_engine	shape	draft	deep	
 exe	0x0043cfb0	d3_AddObjectDrawData	d3_engine	byte	readable		
 exe	0x0043d0e0	d3_Unlink	d3_engine	byte	readable		
-exe	0x0043d180	d3_CloneObject	d3_engine	byte	draft	deep	
+exe	0x0043d180	d3_CloneObject	d3_engine	shape	draft	deep	byte+draft -> shape+draft at d494b4a: d3_sm.h now declares its d3sm_Pick (char, the owner's prototype; sv_HandleSelectionMouse tests its al result and had no prototype); d3_engine.c includes d3_sm.h but never calls d3sm_Pick, and d3_CloneObject falls by 4 swapped instructions (order) wherever in d3_sm.h the prototype stands: a VC6 declaration-set tie-break, no evidence of the original's source [waits for: d3_engine.c's declaration set (its head and includes) settling, then a re-grade]
 exe	0x0043d430	d3_SetObjectAlpha	d3_engine	shape	readable	deep	
 exe	0x0043d630	d3_SetAlphaCB	d3_engine	byte	readable		
 exe	0x0043d690	d3_SetAlpha	d3_engine	byte	readable		
