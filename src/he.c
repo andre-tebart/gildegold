@@ -12316,7 +12316,7 @@ void he_Unk565500(int ev)
 /* 0x565620, a Ghidra miss: the run handler of the healing event ("Heilen", type 0x6c): state 0 heals the player 0x505df0 (+0xac) step by step: the elapsed time since +0x60 (0x4fe280) * 0.1 * 5 is the step, the stat 0x4fc8e0 times 100.0
    plus the step must stay below 100.0 (0x4fca40 (id, ftol (step)), the rest +0xb0 -= step, the next run 10 units ahead), else the next state; +0x60 = now; state 1 releases the lock 0x524260 (obj +0x10, 0, id) and sends the
    news 0x1a18 ("_NACHRICHTEN_HS_80") then frees; -1 / -2 release the lock and free (ROUGH) */
-float unk_Unk4fc8e0(short *c);
+float gm_HealthRatio(short *c);
 
 /* 0x565620 */
 void he_Unk565620(int ev)
@@ -12335,7 +12335,7 @@ void he_Unk565620(int ev)
         }
         d = gm_MinutesBetween(ev + 0x60, (unsigned)&ai_Time);
         step = (float)d * 0.1f * 5.0f;
-        v = unk_Unk4fc8e0(p) * 100.0;
+        v = gm_HealthRatio(p) * 100.0;
         if (*(unsigned *)(ev + 0xb0) > 0 && step + v < 100.0) {
             gm_AddHealth(*(unsigned short *)p, (int)step);
             *(int *)(ev + 0xb0) = (int)((double)*(unsigned *)(ev + 0xb0) - step);
@@ -13859,7 +13859,7 @@ fetch:
             o = gm_FindChar(w);
             if (o == 0)
                 continue;
-            fv = unk_Unk4fc8e0(o);
+            fv = gm_HealthRatio(o);
             if (*(unsigned char *)(o + 0x165) == 0x1b || *(unsigned char *)(o + 0x165) == 0x1c) {
                 fv = (gm_GetSkill(o, 1) + 0.5) * fv;
                 if (*(unsigned char *)(o + 0x1b4) & 1)

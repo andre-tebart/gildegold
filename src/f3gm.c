@@ -1537,7 +1537,7 @@ float unk_Unk4fc890(short *c)
 }
 /* 0x4fc8e0, health now / health of the character c without the extra (0 for a free slot or an inactive one) */
 
-float unk_Unk4fc8e0(short *c)
+float gm_HealthRatio(short *c)
 {
     if (*c == -1)
         return 0.0f;
@@ -6330,7 +6330,7 @@ int gm_TitleGroup(int n)
 /* 0x504c00, the job group of a job-pair number n (two numbers per group: 1 .. 2 -> 0xb, 3 .. 4 -> 7, ..) */
 
 
-int gm_Unk504c00(int n)
+int gm_TitleJobGroup(int n)
 {
     switch (n) {
     case 1:
@@ -10268,7 +10268,7 @@ float gm_Unk50cdc0(unsigned char *b, int n, int *ids)
         do {
             id = ids[i];
             if (id != -1 && (c = gm_FindChar(id)) != 0) {
-                s = (float)(unk_Unk4fc8e0((short *)c) + s);
+                s = (float)(gm_HealthRatio((short *)c) + s);
                 if (p[0x22f] == c[0x165])
                     m = m + 0.3;
                 cnt++;

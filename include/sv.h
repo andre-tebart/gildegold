@@ -35,8 +35,8 @@ void sv_CountGroupMembers(char *g);                                     /* 0x524
 void sv_MoveToGroup(unsigned char *o, short *it, int c, char *g);       /* 0x524260 */
 int sv_IsAtDoor(char *g, char *o);                                     /* 0x524770 */
 int sv_IsCartAtDoor(char *g, unsigned char *o);                            /* 0x524810 */
-int sv_Unk524900(char *c, int *out);                                    /* 0x524900 */
-void sv_Unk524990(unsigned char *g);                                    /* 0x524990 */
+int sv_CharStateIcons(char *c, int *out);                                    /* 0x524900 */
+void sv_UpdateMemberList(unsigned char *g);                                    /* 0x524990 */
 void sv_OpenPlayerBar(int a, char k);                                   /* 0x525220 */
 void sv_ClosePlayerBar(void);                                           /* 0x525440 */
 int sv_ClockSeason(void *t);                                            /* 0x525480 */
@@ -110,7 +110,7 @@ void sv_Unk52e6d0(int f, int b, int c);                                 /* 0x52e
 int sv_CreateFormSlider(int x, int y, int f, int g, int p5, int *b, int *a, int *c); /* 0x52e860 */
 void sv_FitForm(int f);                                                 /* 0x52ea30 */
 void sv_ValueBar(int x, int y, int value, int k);                      /* 0x52eaa0, value / 21 half tiles of the picture k */
-void sv_Unk52eb50(int x, int y, int a, int b, unsigned k);              /* 0x52eb50 */
+void sv_DrawBalanceBar(int x, int y, int a, int b, unsigned k);              /* 0x52eb50 */
 void sv_Unk52ee50(void);                                                /* 0x52ee50 */
 void sv_Unk52eed0(void);                                                /* 0x52eed0 */
 void sv_Unk52eee0(void);                                                /* 0x52eee0 */
@@ -242,7 +242,7 @@ extern char sv_MessageBoxYesNoOpen;                         /* 0x6f2352 */
 extern int sv_ScreenDirty;                                  /* 0x6f2358 */
 extern int sv_GroundplanBuilding;                                    /* 0x6f235c */
 extern int sv_GroundplanRoom;                                    /* 0x6f2360 */
-extern char ai_Unk6f2368;                                   /* 0x6f2368 */
+extern char sv_PlayerBarKind;                                   /* 0x6f2368 */
 extern int ai_Unk6f236c;                                    /* 0x6f236c */
 extern int ai_Unk6f2370;                                    /* 0x6f2370 */
 extern float ai_Unk6f2374;                                  /* 0x6f2374 */
@@ -291,7 +291,7 @@ extern int sv_Bubbles[0x40][0x43];                          /* 0x761fc0, the 64 
 #ifndef DATA_VIEWS_H
 extern int sv_BubbleObjects[4286];                          /* 0x761fc8, the object field (+8) of each bubble record */
 #endif
-extern int ai_Unk7662c0;                                    /* 0x7662c0 */
+extern int sv_SelectedChar;                                    /* 0x7662c0 */
 extern int sv_GroundplanButtons[15];                                /* 0x7662e0 */
 extern int cm_Bombs[0x40];                                  /* 0x935c00 */
 extern int d2_HitWindow;                                    /* 0xf8aad0 */

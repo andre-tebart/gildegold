@@ -344,7 +344,13 @@ typedef struct SVCHARREC {
     unsigned short id;                  /* +0x00 */
     char pad02[2];
     unsigned int netId;                 /* +0x04, the id the order events carry (AICHAR.netId) */
-    char pad08[0x164];
+    unsigned char health;               /* +0x08, > 0 = alive (AICHAR.health) */
+    char pad09[0x27];
+    char name[0x58];                    /* +0x30, AICHAR.name */
+    char pad88[0xdc];
+    unsigned char jobId;                /* +0x164, AICHAR.jobId */
+    char title;                         /* +0x165, the title rank (AICHAR.title) */
+    char pad166[6];
     unsigned char *bld;                 /* +0x16c, the building the character is in (AICHAR.bld) */
     char pad170[8];
     int inventory;                      /* +0x178, the character's goods inventory (AICHAR.inventory) */
@@ -352,11 +358,27 @@ typedef struct SVCHARREC {
     unsigned char groupKind;            /* +0x180, its kind (AICHAR.jobKind) */
     char pad181[3];
     SVMODEL *model;                     /* +0x184, the character's model (a ch.h CHARACTER) */
-    char pad188[0xc];
+    unsigned char selected;             /* +0x188, selected in the member list */
+    char pad189[3];
+    int picture;                        /* +0x18c, the portrait picture of the member list */
+    char pad190[4];
     int money;                          /* +0x194, the character's money (AICHAR.money) */
     char pad198[0x19];
     unsigned char flag1b1;              /* +0x1b1, nonzero: the info panel stays closed for the character */
+    char pad1b2[0x16];
+    unsigned int flags;                 /* +0x1c8, AICHAR.flags1c8 (0x800: not available for the member list) */
 } SVCHARREC;
+typedef struct SVMEMBERROW {            /* 0x28 bytes, a row of the member list (32 rows at 0x75f280) */
+    int check;                          /* +0x00, the selection button (the character's portrait) */
+    int frame;                          /* +0x04, the frame picture 0x5dc */
+    int icon[2];                        /* +0x08, the two state pictures (sv_CharStateIcons), -1 = none */
+    int chr;                            /* +0x10, the character index, 0xffff = a free row */
+    int text;                           /* +0x14, the name / health text */
+    int window;                         /* +0x18, the child window with the two bars, -1 = none */
+    int cleared1c;                      /* +0x1c, cleared when the row is made (its use is open) */
+    int selected;                       /* +0x20, the character's selection at the last update */
+    int pad24;
+} SVMEMBERROW;
 #pragma pack(pop)
 extern SVPLATE sv_NamePlates[0x20];
 
@@ -1789,7 +1811,7 @@ int sv_IsCartAtDoor(char *g, unsigned char *o)
 /* 0x524900, collects the image numbers for the character c into out[]: from the table 0x75ec98 (records of 8 words: [-6] the kind, [0] the first image, [1] the index of a short in the character's +0x17c record + 0xdf)
    and the image of 0x4cda50 (+ 0xdf); returns the count */
 
-int sv_Unk524900(char *c, int *out)
+int sv_CharStateIcons(char *c, int *out)
 {
     unsigned char *r;
     int n, i, *p;
@@ -1817,180 +1839,210 @@ int sv_Unk524900(char *c, int *out)
 }
 
 extern int d2_PointerObj;  /* 0x5fe710 */
-extern int ai_Unk7662c0;
-extern char ai_Unk6f2368;
+extern int sv_SelectedChar;
+extern char sv_PlayerBarKind;
+#define sv_MemberRows (*(SVMEMBERROW (*)[0x20])&ai_Unk75f280)  /* 0x75f280, the member list rows (he.c and sv.c declare int[576]) */
 int d2_CreateChildWindow(short x, short y, short w, short h, unsigned int flags, int win);                     /* 0x472aa0 */
 int d2_WinOpenPicStyled();                     /* 0x473350 */
+#define d2_WinOpenPicStyledS ((int (*)(short, short, int, int, int))d2_WinOpenPicStyled)  /* @original: sv_UpdateMemberList computes the y of each call afresh (a short y, as d2_WinOpenPic's) */
 int d2_CreateWinText(short x, short y, char *text, int win);                     /* 0x473650 */
 void d2_SetObjText();                     /* 0x4734d0 */
-int gm_Unk504c00();                     /* 0x504c00 */
+int gm_TitleJobGroup();                     /* 0x504c00 */
 void snd_PlayWorkerClick(struct G16CHARCLICK *c);                     /* 0x4c2c70 */
 void d2_SetObjEnabled();                     /* 0x475e40 */
 void d2_AddPointerItem(int id, int amount);                     /* 0x476b90 */
-float unk_Unk4fc8e0();                     /* 0x4fc8e0 */
+float gm_HealthRatio();                     /* 0x4fc8e0 */
 int d2_WinOpenPic(short x, short y, int pic, int win);                     /* 0x4731d0 */
 
-/* 0x524990, rebuilds the member list panel of the group record g: the rows (0x20 of 10 words from 0x75f280: icon, name, frame, character index +0xc, ...) of characters that are gone or have no group are freed, the
-   characters whose +0x17c group is g (types by 0x6f2368 / 0x504c00) get a row (portrait 0x5dc, name 0x5143d0, a frame 0x472aa0 / button 0x473650, and for kinds 0x10 / 0x13 / 4 two small buttons 0x5df / 0x5e0 with
-   0x52eb50), the rows are enabled / checked by the character flags (+0x188 .. 0x770d08), the bars / texts per row (0x4fc8e0, "%s (%i)") and the images (0x524900 gives up to 2: 0x4731d0 / 0x473350 at x 0x38);
-   with the button state 0x51d the checked rows are moved (0x524260 (g, 0, id, 0)) and 0x52ae40 runs. ROUGH */
-void sv_Unk524990(unsigned char *g)
+/* 0x524990, rebuilds the member list of the player bar for the building g: rows of characters that are gone
+   (no model, dead) are freed; every living character in g (by sv_PlayerBarKind: 0 those of the building type's two
+   titles without a job, 1 those of the job groups 10 .. 12, else all) gets a row (portrait button, frame, text,
+   and for building kinds 0x10 / 0x13 / 4 a child window with two bars sv_DrawBalanceBar); a click on a row's button
+   toggles the character's selection, a row is enabled while its character's model is sent to g, is not busy
+   (flag 0x800) and has no job of kind 0x14; each row shows "name health%" and up to two state pictures
+   (sv_CharStateIcons, styled for the pictures 0xdf .. 0x3bb); with the button 0x51d the selected characters leave
+   their job (sv_MoveToGroup) */
+void sv_UpdateMemberList(unsigned char *g)
 {
-    int i, n, id, k, row, cnt;
-    int *p;
-    char *c, *b, *gr;
-    char buf[0x100];
+    char *bt;
+    SVMEMBERROW *r;
+    int i, n, cnt, y;
+    int im[8];
+    int im0, im1;
     char text[0x80];
-    int im[2];
-    int y;
+    char name[0x100];
 
     if (sv_PlayerBarForm == -1)
         return;
-    b = ai_BTypes + *g * 0x24d;
+    bt = ai_BTypes + *g * sizeof(AIBTYPE);
     d2_SetForm(sv_PlayerBarForm, 1);
     d2_ClearPointerItems();
-    for (p = &ai_Unk75f280[3 + 1]; (int)p < ((unsigned)&ai_Unk75f280 + 0x50c); p += 10) {
-        id = p[1];
-        if (id != 0xffff && (*(int *)(ai_Chars[id] + 0x184) == 0 || ai_Chars[id][8] == 0)) {
-            if (p[-1] != -1) {
-                d2_RemoveObj(p[-1]);
-                p[-1] = -1;
+    for (n = 0; n < 0x20; n++) {
+        r = &sv_MemberRows[n];
+        if (r->chr != 0xffff && (((SVCHARREC *)ai_Chars[r->chr])->model == 0 || ((SVCHARREC *)ai_Chars[r->chr])->health == 0)) {
+            if (r->icon[0] != -1) {
+                d2_RemoveObj(r->icon[0]);
+                r->icon[0] = -1;
             }
-            if (*p != -1) {
-                d2_RemoveObj(*p);
-                *p = -1;
+            if (r->icon[1] != -1) {
+                d2_RemoveObj(r->icon[1]);
+                r->icon[1] = -1;
             }
-            d2_RemoveObj(p[-3]);
-            p[-3] = -1;
-            d2_RemoveObj(p[2]);
-            p[2] = -1;
-            d2_RemoveObj(p[-2]);
-            p[-2] = -1;
-            if (p[3] != -1)
-                d2_RemoveWindow(p[3]);
-            p[3] = -1;
-            p[1] = 0xffff;
+            d2_RemoveObj(r->check);
+            r->check = -1;
+            d2_RemoveObj(r->text);
+            r->text = -1;
+            d2_RemoveObj(r->frame);
+            r->frame = -1;
+            if (r->window != -1)
+                d2_RemoveWindow(r->window);
+            r->window = -1;
+            r->chr = 0xffff;
         }
     }
     for (i = 0; i < 0x300; i++) {
-        c = ai_Chars[i];
-        if (*(unsigned char **)(c + 0x17c) != g || *(int *)(c + 0x184) == 0 || c[8] == 0)
+        if (((SVCHARREC *)ai_Chars[i])->bld != g || ((SVCHARREC *)ai_Chars[i])->model == 0 || ((SVCHARREC *)ai_Chars[i])->health == 0)
             continue;
-        if (ai_Unk6f2368 == 0) {
-            if (!((c[0x165] == b[0x22f] || c[0x165] == b[0x230]) && c[0x164] == 0))
+        if (sv_PlayerBarKind == 0) {
+            if (!((((SVCHARREC *)ai_Chars[i])->title == bt[0x22f] || ((SVCHARREC *)ai_Chars[i])->title == bt[0x230]) && ((SVCHARREC *)ai_Chars[i])->jobId == 0))
                 continue;
-        } else if (ai_Unk6f2368 == 1) {
-            k = gm_Unk504c00((unsigned char)c[0x165]);
-            if (!(c[0x164] == 0 && (k == 10 || k == 0xb || k == 0xc)))
+        } else if (sv_PlayerBarKind == 1) {
+            n = gm_TitleJobGroup((unsigned char)((SVCHARREC *)ai_Chars[i])->title);
+            if (((SVCHARREC *)ai_Chars[i])->jobId != 0)
+                continue;
+            if (n != 10 && n != 0xb && n != 0xc)
                 continue;
         }
         for (n = 0; n < 0x20; n++)
-            if (ai_Unk75f280[n * 10 + 4] == i)
+            if (sv_MemberRows[n].chr == i)
                 break;
         if (n < 0x20)
             continue;
         for (n = 0; n < 0x20; n++)
-            if (ai_Unk75f280[n * 10 + 4] == 0xffff)
+            if (sv_MemberRows[n].chr == 0xffff)
                 break;
         if (n > 0x20)
             break;
-        io_CharacterName(i, 1, 1, buf);
+        io_CharacterName(i, 1, 1, name);
         d2_SetForm(sv_PlayerBarForm, 1);
         y = n * 0x4e;
-        ai_Unk75f280[n * 10 + 1] = d2_WinOpenPic(6, y, 0x5dc, d2_LastWindow);
-        ai_Unk75f280[n * 10] = d2_WinOpenPic(8, y + 0x11, *(int *)(c + 0x18c), d2_LastWindow);
-        row = d2_CreateWinText(0, y + 4, ch_EmptyName, d2_LastWindow);
-        ai_Unk75f280[n * 10 + 6] = row;
-        *(int *)(d2_Objs + 0x5c + row * 0x2ec) = 1;
-        *(short *)(d2_Objs + 0x14 + row * 0x2ec) = 0x5f;
-        *(int *)(d2_Objs + 0x48 + ai_Unk75f280[n * 10] * 0x2ec) = 1;
-        *(char **)(d2_Objs + 0x2e8 + ai_Unk75f280[n * 10] * 0x2ec) = c;
-        if (ai_Unk75f280[n * 10 + 7] != -1) {
-            d2_RemoveWindow(ai_Unk75f280[n * 10 + 7]);
-            ai_Unk75f280[n * 10 + 7] = -1;
+        sv_MemberRows[n].frame = d2_WinOpenPic(6, y, 0x5dc, d2_LastWindow);
+        sv_MemberRows[n].check = d2_WinOpenPic(8, y + 0x11, ((SVCHARREC *)ai_Chars[i])->picture, d2_LastWindow);
+        sv_MemberRows[n].text = d2_CreateWinText(0, y + 4, ch_EmptyName, d2_LastWindow);
+        *(int *)(d2_Objs + 0x5c + sv_MemberRows[n].text * 0x2ec) = 1;
+        *(short *)(d2_Objs + 0x14 + sv_MemberRows[n].text * 0x2ec) = 0x5f;
+        *(int *)(d2_Objs + 0x48 + sv_MemberRows[n].check * 0x2ec) = 1;
+        *(SVCHARREC **)(d2_Objs + 0x2e8 + sv_MemberRows[n].check * 0x2ec) = (SVCHARREC *)ai_Chars[i];
+        if (sv_MemberRows[n].window != -1) {
+            d2_RemoveWindow(sv_MemberRows[n].window);
+            sv_MemberRows[n].window = -1;
         }
-        ai_Unk75f280[n * 10 + 5] = i;
-        ai_Unk75f280[n * 10 + 8] = 0;
-        if (b[0] == 0x10 || b[0] == 0x13 || b[0] == 4) {
+        sv_MemberRows[n].chr = i;
+        sv_MemberRows[n].cleared1c = 0;
+        if (bt[0] == 0x10 || bt[0] == 0x13 || bt[0] == 4) {
             d2_SetForm(sv_PlayerBarForm, 1);
-            ai_Unk75f280[n * 10 + 7] = d2_CreateChildWindow(6, y + 0x3f, 0x50, 0xf, 0, d2_LastWindow);
+            sv_MemberRows[n].window = d2_CreateChildWindow(6, y + 0x3f, 0x50, 0xf, 0, d2_LastWindow);
             d2_WinOpenPic(4, 1, 0x5df, d2_LastWindow);
-            sv_Unk52eb50(0x10, 4, ai_Chars[ai_Unk75f280[n * 10 + 5]], 2, 0x4f1);
+            sv_DrawBalanceBar(0x10, 4, ai_Chars[sv_MemberRows[n].chr], 2, 0x4f1);
             d2_WinOpenPic(0x28, 1, 0x5e0, d2_LastWindow);
-            sv_Unk52eb50(0x34, 4, ai_Chars[ai_Unk75f280[n * 10 + 5]], 3, 0x4f1);
+            sv_DrawBalanceBar(0x34, 4, ai_Chars[sv_MemberRows[n].chr], 3, 0x4f1);
         }
-        d2_SetObjValue(ai_Unk75f280[n * 10], c[0x188] != 0);
-    }
-    for (p = &ai_Unk75f280[4 + 1]; (int)p < ((unsigned)&ai_Unk75f280 + 0x510); p += 10) {
-        id = *p;
-        if (d2_ClickedId != -1 && id != 0xffff && d2_PointerObj == p[-4]) {
-            if (*(int *)(d2_Objs + 0x28 + p[-4] * 0x2ec) == 0)
-                ai_Chars[id][0x188] = 0;
-            else {
-                ai_Chars[id][0x188] = 1;
-                snd_PlayWorkerClick(ai_Chars[id]);
-            }
-        }
-        if (id != 0xffff && *(int *)(*(int *)(ai_Chars[id] + 0x184) + 0x2c) == *(int *)(g + 1)
-            && (*(unsigned *)(ai_Chars[id] + 0x1c8) & 0x800) == 0 && ai_Chars[id][0x180] != 0x14)
-            d2_SetObjEnabled(p[-4], 1);
+        if (((SVCHARREC *)ai_Chars[i])->selected != 0)
+            d2_SetObjValue(sv_MemberRows[n].check, 1);
         else
-            d2_SetObjEnabled(p[-4], 0);
+            d2_SetObjValue(sv_MemberRows[n].check, 0);
     }
-    for (p = &ai_Unk75f280[2 + 1]; (int)p < ((unsigned)&ai_Unk75f280 + 0x508); p += 10) {
-        id = p[2];
-        if (id == 0xffff)
+    for (n = 0; n < 0x20; n++) {
+        r = &sv_MemberRows[n];
+        if (d2_ClickedId != -1 && r->chr != 0xffff && d2_PointerObj == r->check) {
+            if (*(int *)(d2_Objs + 0x28 + r->check * 0x2ec) != 0) {
+                ((SVCHARREC *)ai_Chars[r->chr])->selected = 1;
+                snd_PlayWorkerClick((struct G16CHARCLICK *)ai_Chars[r->chr]);
+            } else
+                ((SVCHARREC *)ai_Chars[r->chr])->selected = 0;
+        }
+        if (r->chr != 0xffff && ((SVCHARREC *)ai_Chars[r->chr])->model->group == ((AIBLD *)g)->id
+            && (((SVCHARREC *)ai_Chars[r->chr])->flags & 0x800) == 0 && ((SVCHARREC *)ai_Chars[r->chr])->groupKind != 0x14)
+            d2_SetObjEnabled(r->check, 1);
+        else
+            d2_SetObjEnabled(r->check, 0);
+    }
+    for (n = 0; n < 0x20; n++) {
+        if (sv_MemberRows[n].chr == 0xffff)
             continue;
-        if (ai_Chars[id][0x188] == 0)
-            d2_SetObjValue(p[-2], 0);
-        else {
-            d2_AddPointerItem(*(int *)(d2_Objs + 8 + p[-2] * 0x2ec), 1);
-            d2_SetObjValue(p[-2], 1);
+        if (((SVCHARREC *)ai_Chars[sv_MemberRows[n].chr])->selected != 0) {
+            d2_AddPointerItem(*(int *)(d2_Objs + 8 + sv_MemberRows[n].check * 0x2ec), 1);
+            d2_SetObjValue(sv_MemberRows[n].check, 1);
+        } else
+            d2_SetObjValue(sv_MemberRows[n].check, 0);
+        im1 = -1;
+        if (sv_MemberRows[n].icon[0] != -1) {
+            d2_RemoveObj(sv_MemberRows[n].icon[0]);
+            sv_MemberRows[n].icon[0] = -1;
         }
-        if (*p != -1) {
-            d2_RemoveObj(*p);
-            *p = -1;
-        }
-        if (p[1] != -1) {
-            d2_RemoveObj(p[1]);
-            p[1] = -1;
+        if (sv_MemberRows[n].icon[1] != -1) {
+            d2_RemoveObj(sv_MemberRows[n].icon[1]);
+            sv_MemberRows[n].icon[1] = -1;
         }
         d2_SetForm(sv_PlayerBarForm, 1);
-        if (p[3] != -1) {
-            unk_Unk4fc8e0(ai_Chars[id]);
-            sprintf(text, "%s (%i)", ai_Chars[id] + 0x30, (int)0);
-            d2_SetObjText(p[3], text);
-            *(short *)(d2_Objs + 0x14 + p[3] * 0x2ec) = 0x5f;
+        if (sv_MemberRows[n].text != -1) {
+            sprintf(text, "%s %i%%", ((SVCHARREC *)ai_Chars[sv_MemberRows[n].chr])->name, (int)(gm_HealthRatio(ai_Chars[sv_MemberRows[n].chr]) * 100.0));
+            d2_SetObjText(sv_MemberRows[n].text, text);
+            *(short *)(d2_Objs + 0x14 + sv_MemberRows[n].text * 0x2ec) = 0x5f;
         }
-        cnt = sv_Unk524900(ai_Chars[id], im);
-        if (cnt != 0) {
-            int im2 = cnt > 1 ? im[1] : -1;
-            if (im[0] != -1) {
-                if (*p == -1)
-                    *p = d2_WinOpenPic(0x38, (p[2] * 0 + 0) + 0x10, im[0], d2_LastWindow);
+        cnt = sv_CharStateIcons(ai_Chars[sv_MemberRows[n].chr], im);
+        if (cnt == 0)
+            continue;
+        if (cnt > 1)
+            im1 = im[1];
+        im0 = im[0];
+        if (im0 != -1) {
+            if (sv_MemberRows[n].icon[0] == -1) {
+                if (im0 >= 0xdf && im0 <= 0x3bb)
+                    sv_MemberRows[n].icon[0] = d2_WinOpenPicStyledS(0x38, n * 0x4e + 0x10, im0, d2_LastWindow, -2);
+                else
+                    sv_MemberRows[n].icon[0] = d2_WinOpenPic(0x38, n * 0x4e + 0x10, im0, d2_LastWindow);
+            } else if (im0 != *(int *)(d2_Objs + 8 + sv_MemberRows[n].icon[0] * 0x2ec)) {
+                d2_RemoveObj(sv_MemberRows[n].icon[0]);
+                sv_MemberRows[n].icon[0] = -1;
+                if (im0 >= 0xdf && im0 <= 0x3bb)
+                    sv_MemberRows[n].icon[0] = d2_WinOpenPicStyledS(0x38, n * 0x4e + 0x10, im0, d2_LastWindow, -2);
+                else
+                    sv_MemberRows[n].icon[0] = d2_WinOpenPic(0x38, n * 0x4e + 0x10, im0, d2_LastWindow);
             }
-            if (im2 != -1) {
-                if (p[1] == -1)
-                    p[1] = d2_WinOpenPic(0x38, 0x28, im2, d2_LastWindow);
+        }
+        if (im1 != -1) {
+            if (sv_MemberRows[n].icon[1] == -1) {
+                if (im1 >= 0xdf && im1 <= 0x3bb)
+                    sv_MemberRows[n].icon[1] = d2_WinOpenPicStyledS(0x38, n * 0x4e + 0x28, im1, d2_LastWindow, -2);
+                else
+                    sv_MemberRows[n].icon[1] = d2_WinOpenPic(0x38, n * 0x4e + 0x28, im1, d2_LastWindow);
+            } else if (im1 != *(int *)(d2_Objs + 8 + sv_MemberRows[n].icon[1] * 0x2ec)) {
+                d2_RemoveObj(sv_MemberRows[n].icon[1]);
+                sv_MemberRows[n].icon[1] = -1;
+                if (im1 != 0)                   /* the original tests im1 != 0 here, not the range */
+                    sv_MemberRows[n].icon[1] = d2_WinOpenPicStyledS(0x38, n * 0x4e + 0x28, im1, d2_LastWindow, -2);
+                else
+                    sv_MemberRows[n].icon[1] = d2_WinOpenPic(0x38, n * 0x4e + 0x28, im1, d2_LastWindow);
             }
         }
     }
-    for (p = &ai_Unk75f280[4]; (int)p < ((unsigned)&ai_Unk75f280 + 0x510); p += 10) {
-        if (*p != 0xffff) {
-            int on = ai_Chars[*p][0x188] != 0;
-            p[4] = on;
-            *(int *)(d2_Objs + 0x28 + p[-4] * 0x2ec) = on;
-            *(int *)(d2_Objs + 0x2c + p[-4] * 0x2ec) = on;
+    for (n = 0; n < 0x20; n++) {
+        if (sv_MemberRows[n].chr != 0xffff) {
+            i = ((SVCHARREC *)ai_Chars[sv_MemberRows[n].chr])->selected != 0;
+            sv_MemberRows[n].selected = i;
+            *(int *)(d2_Objs + 0x28 + sv_MemberRows[n].check * 0x2ec) = i;
+            *(int *)(d2_Objs + 0x2c + sv_MemberRows[n].check * 0x2ec) = i;
         }
     }
     if (d2_ClickedId == 0x51d) {
-        for (p = &ai_Unk75f280[4]; (int)p < ((unsigned)&ai_Unk75f280 + 0x510); p += 10)
-            if (p[4] != 0)
-                sv_MoveToGroup(g, 0, *p, 0);
+        for (n = 0; n < 0x20; n++)
+            if (sv_MemberRows[n].selected != 0)
+                sv_MoveToGroup(g, 0, sv_MemberRows[n].chr, 0);
         sv_ClearSelection();
     }
-    if (ai_Unk7662c0 != 0 && *(char *)(ai_Unk7662c0 + 0x188) == 0)
-        ai_Unk7662c0 = 0;
+    if (sv_SelectedChar != 0 && ((SVCHARREC *)sv_SelectedChar)->selected == 0)
+        sv_SelectedChar = 0;
 }
 
 extern OPTIONBYTES ai_GfxResolution;        /* 0x6f2f94, the player bar variant */
@@ -2055,7 +2107,7 @@ void sv_OpenPlayerBar(int a, char k)
 
     if (sv_PlayerBarForm != -1)
         return;
-    ai_Unk6f2368 = k;
+    sv_PlayerBarKind = k;
     sv_PlayerBarForm = d2_OpenForm(d2_ScreenW - 0x68, 0x106, ai_GfxResolution.byte[0] == 0 ? "Misc\\PlayerBar" : "Misc\\PlayerBar_1");
     d2_SetForm(sv_PlayerBarForm, 1);
     s = d2_LastWindow;
@@ -3650,8 +3702,8 @@ void sv_Unk5290f0(unsigned short *p)
         hp = gm_Opinion(ai_PlayerId, *p);
         kind = 0;
         if (*((char *)p + 0x165) != 0)
-            kind = gm_Unk504c00(*((char *)p + 0x165));
-        unk_Unk4fc8e0(p);
+            kind = gm_TitleJobGroup(*((char *)p + 0x165));
+        gm_HealthRatio(p);
         age = (int)0;
         io_CharacterNameMarkup(*p, 1, 4, text);
         io_PrintText("%s (%i)", text, age);
@@ -3700,7 +3752,7 @@ void sv_Unk529380(void)
         return;
     b = (char *)sv_SelectedObject;
     if (b == 0 || ai_Unk623868 == -1 || ai_Unk623864 == -1) {
-        if (ai_Unk7662c0 == 0) {
+        if (sv_SelectedChar == 0) {
             q = ai_Unk62386c;
             for (i = 0; i < 4; i++, q++)
                 if (*q != -1) {
@@ -3722,10 +3774,10 @@ void sv_Unk529380(void)
             d2_RemoveWindowObjects(d2_LastWindow, 1);
             return;
         }
-        if (ai_Unk6f2334 < 2 && ai_Unk7662c0 != 0) {
+        if (ai_Unk6f2334 < 2 && sv_SelectedChar != 0) {
             d2_SetForm(sv_PanelForm, 1);
-            unk_Unk4fc8e0(ai_Unk7662c0);
-            io_CharacterNameMarkup(*(unsigned short *)ai_Unk7662c0, 1, 4, text);
+            gm_HealthRatio(sv_SelectedChar);
+            io_CharacterNameMarkup(*(unsigned short *)sv_SelectedChar, 1, 4, text);
             io_PrintText("$C%s (%i)", text, 0);
         }
         return;
@@ -4123,7 +4175,7 @@ void sv_ClearSelection(void)
     char *q;
 
     q = (char *)(unsigned)&ai_Selected;
-    SV_I((unsigned)&ai_Unk7662c0) = 0;
+    SV_I((unsigned)&sv_SelectedChar) = 0;
     SV_I((unsigned)&sv_SelectedModel) = 0;
     do {
         *q = 0;
@@ -4342,24 +4394,24 @@ l1f2:
 l3b8:
     sv_Unk529380();
     if (SV_I((unsigned)&sv_SelectedObject) == SV_I((unsigned)&full_data_6f23c4) && SV_I((unsigned)&ai_FallbackBuilding) == SV_I((unsigned)&full_data_6f23c0) && SV_I((unsigned)&ai_PlayerBuilding) == SV_I((unsigned)&full_data_6f23bc)
-        && SV_I((unsigned)&sv_PanelShown) == SV_I((unsigned)&full_data_6f23c8) && SV_I((unsigned)&ai_Unk75ec5c) == SV_I((unsigned)&full_data_6f23cc) && SV_I((unsigned)&ai_Unk7662c0) == SV_I((unsigned)&full_data_6f23d0)
+        && SV_I((unsigned)&sv_PanelShown) == SV_I((unsigned)&full_data_6f23c8) && SV_I((unsigned)&ai_Unk75ec5c) == SV_I((unsigned)&full_data_6f23cc) && SV_I((unsigned)&sv_SelectedChar) == SV_I((unsigned)&full_data_6f23d0)
         && SV_B((unsigned)&full_data_6f2338) == SV_I((unsigned)&full_data_6f23d4) && SV_I((unsigned)&ai_Unk6f2334) == SV_I((unsigned)&full_data_6f23d8) && SV_I((unsigned)&ai_Unk6237cc) == 0)
         return;
     SV_I((unsigned)&ai_Unk6237cc) = 0;
     sv_Unk529fb0();
-    if (SV_I((unsigned)&ai_Unk75ec5c) == 0 || ai_Goods[*(unsigned short *)SV_I((unsigned)&ai_Unk75ec5c) * 0x41] != 0x1d || SV_I((unsigned)&ai_Unk6f2334) != 0 || SV_I((unsigned)&ai_Unk7662c0) != 0) {
+    if (SV_I((unsigned)&ai_Unk75ec5c) == 0 || ai_Goods[*(unsigned short *)SV_I((unsigned)&ai_Unk75ec5c) * 0x41] != 0x1d || SV_I((unsigned)&ai_Unk6f2334) != 0 || SV_I((unsigned)&sv_SelectedChar) != 0) {
         if (SV_I((unsigned)&sv_SelectedModel) == 0 && SV_B((unsigned)&full_data_6f2338) == 0) {
             if (SV_I((unsigned)&ai_Unk6f2334) == 0) {
-                if (SV_I((unsigned)&sv_PanelShown) == 0 && SV_I((unsigned)&ai_Unk7662c0) == 0)
+                if (SV_I((unsigned)&sv_PanelShown) == 0 && SV_I((unsigned)&sv_SelectedChar) == 0)
                     sv_Unk528ee0();
                 goto l510;
             }
         } else if (SV_I((unsigned)&ai_Unk6f2334) == 0)
             goto l510;
-        if (SV_I((unsigned)&ai_Unk7662c0) != SV_I((unsigned)&full_data_6f23d0) || SV_I((unsigned)&full_data_6f23d8) != SV_I((unsigned)&ai_Unk6f2334)) {
+        if (SV_I((unsigned)&sv_SelectedChar) != SV_I((unsigned)&full_data_6f23d0) || SV_I((unsigned)&full_data_6f23d8) != SV_I((unsigned)&ai_Unk6f2334)) {
             if (SV_I((unsigned)&ai_Unk6f2334) < 2) {
-                sv_Unk5290f0(SV_I((unsigned)&ai_Unk7662c0));
-                SV_I((unsigned)&full_data_6f23d0) = SV_I((unsigned)&ai_Unk7662c0);
+                sv_Unk5290f0(SV_I((unsigned)&sv_SelectedChar));
+                SV_I((unsigned)&full_data_6f23d0) = SV_I((unsigned)&sv_SelectedChar);
                 sv_Unk529380();
             } else
                 sv_Unk5290f0(0);
@@ -4377,7 +4429,7 @@ l510:
         SV_I((unsigned)&full_data_6f2294) = 0;
     } else {
         SV_I((unsigned)&full_data_6f23c8) = SV_I((unsigned)&sv_PanelShown);
-        SV_I((unsigned)&full_data_6f23d0) = SV_I((unsigned)&ai_Unk7662c0);
+        SV_I((unsigned)&full_data_6f23d0) = SV_I((unsigned)&sv_SelectedChar);
         SV_I((unsigned)&full_data_6f23cc) = SV_I((unsigned)&ai_Unk75ec5c);
         SV_I((unsigned)&full_data_6f23c4) = SV_I((unsigned)&sv_SelectedObject);
         if ((SV_I((unsigned)&ai_Unk75ec5c) == 0 && SV_I((unsigned)&sv_PanelShown) == 0) || SV_I((unsigned)&sv_PanelForm) != -1) {
@@ -4411,7 +4463,7 @@ l510:
     SV_I((unsigned)&full_data_6f23c4) = SV_I((unsigned)&sv_SelectedObject);
     SV_I((unsigned)&full_data_6f23c8) = SV_I((unsigned)&sv_PanelShown);
     SV_I((unsigned)&full_data_6f23cc) = SV_I((unsigned)&ai_Unk75ec5c);
-    SV_I((unsigned)&full_data_6f23d0) = SV_I((unsigned)&ai_Unk7662c0);
+    SV_I((unsigned)&full_data_6f23d0) = SV_I((unsigned)&sv_SelectedChar);
     SV_I((unsigned)&full_data_6f23d8) = SV_I((unsigned)&ai_Unk6f2334);
 }
 
@@ -4622,8 +4674,8 @@ void sv_Unk52ae70(void)
     SV_I((unsigned)&ai_ClickedObject) = 0;
     SV_I((unsigned)&full_data_760460) = 0;
     SV_I((unsigned)&full_data_6f22fc) = 0;
-    if (SV_I((unsigned)&ai_Unk7662c0) != 0 && *(char *)(SV_I((unsigned)&ai_Unk7662c0) + 0x188) == 0)
-        SV_I((unsigned)&ai_Unk7662c0) = 0;
+    if (SV_I((unsigned)&sv_SelectedChar) != 0 && *(char *)(SV_I((unsigned)&sv_SelectedChar) + 0x188) == 0)
+        SV_I((unsigned)&sv_SelectedChar) = 0;
     if (SV_I((unsigned)&sv_PanelFlag) != 0) {
         subj = SV_I((unsigned)&ai_PlayerBuilding);
         if (subj == 0)
@@ -4693,7 +4745,7 @@ lfe4:
                 n = gm_PermissionBits(ai_PlayerId, 0, 0, g);
                 sv_ClearSelection();
                 if ((n & 0x800) != 0 && (*(char *)((char *)g + 0x165) != 0x1c || (g[0xda] & 1) == 0)) {
-                    SV_I((unsigned)&ai_Unk7662c0) = (int)g;
+                    SV_I((unsigned)&sv_SelectedChar) = (int)g;
                     SV_B((unsigned)&ai_Selected + *g * 0x21c) = 1;
                     SV_I((unsigned)&ai_Unk6f2334) = 1;
                     SV_I((unsigned)&ai_Unk631078) = SV_I(((unsigned)&ai_Unk770cec + 0x18) + *g * 0x21c);
@@ -5110,7 +5162,7 @@ lend:
                 d3t_SetGrey(*(int *)(cell + 0x34), (char)p[1] != 0);
             if ((char)p[1] != 0) {
                 if (SV_I((unsigned)&ai_Unk6f2334) == 0)
-                    SV_I((unsigned)&ai_Unk7662c0) = (int)(p - 0x61);
+                    SV_I((unsigned)&sv_SelectedChar) = (int)(p - 0x61);
                 SV_I((unsigned)&ai_Unk6f2334) = SV_I((unsigned)&ai_Unk6f2334) + 1;
                 if (p[-6] != 0 && *(int *)(p[-6] + 1) == *(int *)(*p + 0x2c) && (SV_I((unsigned)&ai_FallbackBuilding) != 0 || (SV_I((unsigned)&sv_PanelShown) != 0 && **(short **)(unsigned)&sv_PanelShown != 0x120)))
                     d2_AddPointerItem(p[2], 1);
@@ -5215,7 +5267,7 @@ lfound:
 char d3if_ScreenBox(D3OBJECT *obj, D3RECT *r);                     /* 0x4486e0 */
 /* 0x42ec00 */
 struct CHARACTER * ch_FindByObject();                     /* 0x402ac0 */
-int gm_Unk504c00();                     /* 0x504c00 */
+int gm_TitleJobGroup();                     /* 0x504c00 */
 int gm_TitleGroup();                     /* 0x504ad0 */
 char * gm_FindBuildingById(int id);                     /* 0x502020 */
 float unk_Unk4f9e00(int *o);                     /* 0x4f9e00 */
@@ -5277,7 +5329,7 @@ lcc95:
 
         if (*(char *)(g + 0x164) == 0) {
             if (*(char *)(g + 0x165) != 0) {
-                v = gm_Unk504c00(*(char *)(g + 0x165));
+                v = gm_TitleJobGroup(*(char *)(g + 0x165));
                 goto l712;
             }
 l77c:
@@ -5719,7 +5771,7 @@ void sv_Unk52d940(unsigned fl)
     int ok, i, *p, v, who;
     short *it;
 
-    if (SV_I(((unsigned)&dm_L + 0x20)) != 0 && (SV_I(((unsigned)&ai_Unk75f280 + 0x500) + SV_I((unsigned)&sv_FrameDepth) * 8) != (int)ai_GameFrame || SV_I((unsigned)&ai_Unk6f2334) != 0 || SV_I((unsigned)&ai_Unk75ec5c) != 0 || SV_I((unsigned)&ai_Unk7662c0) != 0 || SV_I((unsigned)&sv_SelectedObject) != 0))
+    if (SV_I(((unsigned)&dm_L + 0x20)) != 0 && (SV_I(((unsigned)&ai_Unk75f280 + 0x500) + SV_I((unsigned)&sv_FrameDepth) * 8) != (int)ai_GameFrame || SV_I((unsigned)&ai_Unk6f2334) != 0 || SV_I((unsigned)&ai_Unk75ec5c) != 0 || SV_I((unsigned)&sv_SelectedChar) != 0 || SV_I((unsigned)&sv_SelectedObject) != 0))
         sb_PlaySample(SV_I((unsigned)&snd_SystemBank), "MausclickRechts_s_01", 1, 0x3f, 0x7f, 0, 0);
     if (SV_I((unsigned)&full_data_6f262c) != 0) {
         if (SV_I(((unsigned)&dm_L + 0x20)) == 0 && *(char *)(unsigned)&kb_Last != 0x1c)
@@ -6261,7 +6313,7 @@ void sv_ValueBar(int x, int y, int value, int k)
 /* 0x52eb50, draws the two-sided bar (current value 0x504e00 (a, b) against the byte at b + 0x80 + a): equal (within 1 %) a single bar, the picture k (+1 for an odd tile), smaller / larger the base bar
    in k and the difference in k + 2 / k + 3 or k + 4 / k + 5 (the float operands deciding the tile counts are lost in the pseudocode: n = placeholders); ROUGH */
 
-void sv_Unk52eb50(int x, int y, int a, int b, unsigned k)
+void sv_DrawBalanceBar(int x, int y, int a, int b, unsigned k)
 {
     unsigned u1, u2, n, odd;
     int pic, w, i;
@@ -7305,7 +7357,7 @@ l64:
         SV_I((unsigned)&ch_CurrentGroup) = -1;
     } else {
         sv_Unk52b500((unsigned char *)c);
-        sv_Unk524990(c);
+        sv_UpdateMemberList(c);
         SV_I((unsigned)&ch_CurrentGroup) = *(int *)(c + 1);
     }
     if (SV_B((unsigned)&ai_GameState) != 0) {
@@ -7669,7 +7721,7 @@ char sv_MessageBoxYesNoOpen = 0;  /* 0x6f2352 (the yes / no box) */
 int sv_ScreenDirty = 0;  /* 0x6f2358 */
 int sv_GroundplanBuilding = 0;  /* 0x6f235c */
 int sv_GroundplanRoom = 0;  /* 0x6f2360 */
-char ai_Unk6f2368 = 0;  /* 0x6f2368 */
+char sv_PlayerBarKind = 0;  /* 0x6f2368 */
 int ai_Unk6f236c = 0;  /* 0x6f236c */
 int ai_Unk6f2370 = 0;  /* 0x6f2370 */
 float ai_Unk6f2374 = 0;  /* 0x6f2374 */
@@ -7718,7 +7770,7 @@ char sv_StatusText[128] = {0};  /* 0x761f40, the status line text */
 int sv_Bubbles[0x40][0x43] = {0};  /* 0x761fc0, the 64 speech bubble records (0x10c bytes): +0 the bubble, +4 its time
                                       stamp (ai_ClockMs), +8 its object (sv_BubbleObjects), +0xc the name */
 /* sv_BubbleObjects: view of sv_Bubbles (+0x8) */
-int ai_Unk7662c0 = 0;  /* 0x7662c0 */
+int sv_SelectedChar = 0;  /* 0x7662c0 */
 int sv_GroundplanButtons[15] = {0};  /* 0x7662e0, 15 widget ids */
 int cm_Bombs[0x40] = {0};  /* 0x935c00, cm's 32 bomb records (object, time), cm.h */
 int d2_HitWindow = 0;  /* 0xf8aad0 */

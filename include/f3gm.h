@@ -67,7 +67,7 @@ float gm_JobWage(char *c, int k, int a, int b);  /* 0x508740, the wage of a job 
 int gm_BuildingBalance(unsigned char *b, unsigned id, int *out);  /* 0x508d80, the income / cost summary of the building b for the owner id */
 unsigned *gm_CharNameRecord(int id);  /* 0x4fb390 */
 int unk_Unk4fbb80(unsigned short *c, int scene, int *p, int *ori, int obj, char *dummy);  /* 0x4fbb80 */
-float unk_Unk4fc8e0(short *c);  /* 0x4fc8e0 */
+float gm_HealthRatio(short *c);  /* 0x4fc8e0 */
 char *unk_Unk4fd820(int unused, char *o);  /* 0x4fd820 */
 void unk_Unk4fda10(char *c, char *b);  /* 0x4fda10 */
 short *unk_Unk4fda70(char *o, unsigned a, unsigned b);  /* 0x4fda70 */

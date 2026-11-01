@@ -6505,24 +6505,24 @@ float ai_Unk4cdcf0(char *c)
     if (p != 0) {
         switch (*p) {
         case 0x154:
-            return unk_Unk4fc8e0(c) * g * 0.5f;
+            return gm_HealthRatio(c) * g * 0.5f;
         case 0x156:
         case 0x16e:
         case 0x172:
-            return unk_Unk4fc8e0(c) * g * 0.8f;
+            return gm_HealthRatio(c) * g * 0.8f;
         case 0x158:
-            return unk_Unk4fc8e0(c) * g * 1.0f;
+            return gm_HealthRatio(c) * g * 1.0f;
         case 0x15e:
         case 0x160:
-            return unk_Unk4fc8e0(c) * g * 0.7f;
+            return gm_HealthRatio(c) * g * 0.7f;
         case 0x174:
         case 0x176:
-            return unk_Unk4fc8e0(c) * g * 0.9f;
+            return gm_HealthRatio(c) * g * 0.9f;
         default:
             f = 0.3f;
         }
     }
-    return unk_Unk4fc8e0(c) * g * f;
+    return gm_HealthRatio(c) * g * f;
 }
 /* 0x4cde20, the model name "ob_<NAME>" of the record kind (+0x64 of the record +0x184) of the character */
 
@@ -6992,7 +6992,7 @@ void ai_Unk4cec30(int a, char *c)
     hnd = d2_LastWindow;
     *(short *)(ai_Unkf8f39c + hnd * 0x3c4) = 0x54;
     sv_ValueBar(4, 4, gm_Unk504e00(c, 3), 0x4df);
-    hnd = (int)(unk_Unk4fc8e0(c) * 100.0);
+    hnd = (int)(gm_HealthRatio(c) * 100.0);
     d2_WinOpenSlider(0, 0xe, 0x40, 0, 0x64, 0x75, 0x442, d2_LastWindow);
     d2_SetObjValue(d2_LastWindow, 0, 0x64, hnd);
 }
@@ -7385,7 +7385,7 @@ void ai_Unk4cf9c0()
             ai_Unk6f0d08++;
         } else
             d2_SetObjValue(G19_E(e, 0), 0);
-        t = (int)(unk_Unk4fc8e0(c) * 100.0);
+        t = (int)(gm_HealthRatio(c) * 100.0);
         G19_5176D0(buf, "%1N1 %i%", *(unsigned short *)c, t);
         d2_SetObjText(G19_E(e, 0x10), buf);
         o = ai_Unk4cda00(c);
@@ -8382,7 +8382,7 @@ char *ai_Unk4d1f10(char *c)
         for (pp = ai_Unk7603a0V; (int)pp < (int)ai_Unk760420V; pp++) {
             if (*pp != 0 && ai_Unk4ce270(c, *pp) != 0 && (*pp)[8] != 0) {
                 w = ai_Unk4ce1b0(c, *(char **)(*(char **)(*pp + 0x184) + 0x34));
-                w = unk_Unk4fc8e0(*pp) * w;
+                w = gm_HealthRatio(*pp) * w;
                 if (w < best) {
                     res = *pp;
                     best = w;
@@ -8394,7 +8394,7 @@ char *ai_Unk4d1f10(char *c)
     for (pp = ai_Unk7603a0V; (int)pp < (int)ai_Unk760420V; pp++) {
         if (*pp != 0 && ai_Unk4ce270(c, *pp) != 0 && (*pp)[8] != 0) {
             w = ai_Unk4ce1b0(c, *(char **)(*(char **)(*pp + 0x184) + 0x34));
-            w = unk_Unk4fc8e0(*pp) * w;
+            w = gm_HealthRatio(*pp) * w;
             if (w < best) {
                 res = *pp;
                 best = w;
@@ -8920,7 +8920,7 @@ float ai_Unk4d2e30(char *c, int type)
     case 5:
         if (c[0x1c4] == 2)
             return 0.2f;
-        return ai_Unk5eb780 / unk_Unk4fc8e0(c);
+        return ai_Unk5eb780 / gm_HealthRatio(c);
     }
     return ai_Unk5eb788;
 }
@@ -9078,7 +9078,7 @@ int ai_Unk4d3390(char *c)
     int o;
 
     ai_Unk4cda50(c);
-    if (!(unk_Unk4fc8e0(c) < ai_Unk5edbd0))
+    if (!(gm_HealthRatio(c) < ai_Unk5edbd0))
         return 0;
     d3t_CreateBloodK(*(char **)(c + 0x184) + 0, 0x40, 0.25f, 0.1f, 0.14f, 55.0f);
     ch_StopActions(*(char **)(c + 0x184));
@@ -9482,7 +9482,7 @@ void ai_Unk4d4340(int *ids, int x, int y)
         G19_R(t, 0x14, short) = 0x78;
         G19_R(t, 0x5c, int) = 1;
         G19_R(t, 0x74, short) = 0x56;
-        G19_5176D0(buf, "%1N1 %i%", *(unsigned short *)c, (int)(unk_Unk4fc8e0(c) * 100.0));
+        G19_5176D0(buf, "%1N1 %i%", *(unsigned short *)c, (int)(gm_HealthRatio(c) * 100.0));
         d2_SetObjText(t, buf);
         o = ai_Unk4cda50(c);
         if (o != 0 && *(int *)o != 0) {
@@ -12042,7 +12042,7 @@ int ai_Unk4de530(char *c, int dmg)
 {
     char *o;
 
-    if (unk_Unk4fc8e0(c) < 0.2) {
+    if (gm_HealthRatio(c) < 0.2) {
         d3t_CreateBloodK(*(int *)(*(char **)(c + 0x184) + 0x34), 0x40, 0x3e800000, 0x3dcccccd, 0x3e0f5c29, 0x425c0000);
         ch_StopActions(*(char **)(c + 0x184));
         o = (char *)ch_AddActionCBK(*(char **)(c + 0x184), ai_Unk4de4b0, 0x12, 0x36, 1);
@@ -12367,7 +12367,7 @@ void ai_Unk4ded10(char *m)
     }
     /* result: who is down (the lower life 0x4fc8e0), the texts 0x111c / 0x111d, the damage 0x6f0da8 / 0x6f0da9 off the life */
     if (ai_Unk6f0d94 != 0)
-        w = unk_Unk4fc8e0(cb) < unk_Unk4fc8e0(ca) ? cb : ca;
+        w = gm_HealthRatio(cb) < gm_HealthRatio(ca) ? cb : ca;
     else
         w = 0;
     if (w != 0 && w[0x166] != 0 && amt_FindOffice(w, buf, ids) != 0 && *(int *)(m + 0xc) == ai_CharInts[ai_PlayerId][0]) {
@@ -12411,13 +12411,13 @@ int ai_Unk4dfa20(char *m)
     if (a == 0 || b == 0)
         return 0;
     if (b[0x1b1] == 0 && a[0x1b1] == 0) {
-        if (unk_Unk4fc8e0(a) <= 0.0f) {
+        if (gm_HealthRatio(a) <= 0.0f) {
             if (b[2] != 6 && b[2] != 7)
                 return 0;
             he_ShowNews(ai_CharInts[*(unsigned short *)b][0], -1, ai_Unk143e8f8, 0, 0x5ec, 0);
             return 0;
         }
-        if (unk_Unk4fc8e0(b) <= 0.0f) {
+        if (gm_HealthRatio(b) <= 0.0f) {
             if (a[2] != 6 && a[2] != 7)
                 return 0;
             he_ShowNews(ai_CharInts[*(unsigned short *)a][0], -1, ai_Unk143e8f8, 0, 0x5ec, 0);

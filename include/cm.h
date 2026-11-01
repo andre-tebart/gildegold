@@ -531,7 +531,7 @@ char *ai_Unk4ce290(char *p);  /* 0x4ce290 */
 void ch_SetHandObject();  /* 0x406c60 */
 int util_Random(unsigned short n);  /* 0x42ec00, tr.c; the callers that read a 16-bit result (ch_RandomNear, anm_Update, ai_Unk4d88c0 ..) call util_RandomU, a cast in their head */
 char d3sm_GetVertex(struct D3SM *h, int x, int z, struct D3VECTOR *out);                              /* 0x45f100, d3_sm.c (this unit's callers read an int: d3sm_GetVertexI) */
-float unk_Unk4fc8e0();  /* 0x4fc8e0 */
+float gm_HealthRatio();  /* 0x4fc8e0 */
 float gm_GetSkill(char *c, int skill);  /* 0x504ec0 */
 int he_ShowNews(int pid, int fl, char *text, int unused, int ev, char *text2);  /* 0x53dda0 */
 extern int ai_Unk60c7b0[2];  /* 0x60c7b0 */

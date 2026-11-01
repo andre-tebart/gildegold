@@ -9,7 +9,7 @@
    records are accessed by byte offset; ai.h's AIMSG and a record type would clear most of the drafts' offsets.
    Open: not included yet (dcp headers conflicts unk_575860 HEADER): d2.h gfx.h sv.h unk_5d33b0.h; held by own
    declarations that differ from the owner's: d2_CreateWinText, SHOTREC; calls whose argument count differs from
-   the definition (read the original's pushes): d2_GetObjValue, d2_PlaceMainWindow, sv_Unk52eb50.
+   the definition (read the original's pushes): d2_GetObjValue, d2_PlaceMainWindow, sv_DrawBalanceBar.
    unit of rea 8cef7d5b (src/game/unk_575860.c); boundaries in decl/text.dcl */
 struct AHMSTEP;
 struct D3SKY;
@@ -9447,7 +9447,7 @@ int ai_Unk588c60(char *ch)
     }
     txt_Format(line, (char *)(unsigned)&full_data_62a56c, 0);
     d2_CreateWinText(0, 0, line, U_I((unsigned)&d2_LastWindow));
-    sv_Unk52eb50(0x64, 0x4df);
+    sv_DrawBalanceBar(0x64, 0x4df);
     ai_Unk576040(7, ch, 0, 0);
     d2_SetForm(0, 3);
     (void)w;
@@ -9503,7 +9503,7 @@ int ai_Unk5890c0(char *ch)
     for (i = 0, k = 2; k < 0x4d; i++, k += 0xf) {
         txt_Format(line, (char *)(unsigned)&full_data_62a56c, (char *)(i + 0x16b7));
         d2_CreateWinText(0, i * 0xf, line, U_I((unsigned)&d2_LastWindow));
-        sv_Unk52eb50(0x64, i * 0xf, ch, i, 0x4df);
+        sv_DrawBalanceBar(0x64, i * 0xf, ch, i, 0x4df);
     }
     while (sv_RunFrame(ai_Unk5890c0, 0x677c7) != 0) {
         if (U_I(((unsigned)&dm_L + 0x20)) != 0)

@@ -478,7 +478,7 @@ extern int ai_Unk6f22cc;
 extern int ai_Unk6f22d0;
 extern float sv_ViewPos[4];  /* 0x75fb80, sv.c: the stored camera position */
 extern float sv_ViewRot[4];  /* 0x75fb90, its rotation */
-extern int ai_Unk7662c0;
+extern int sv_SelectedChar;
 extern char * sv_CameraObj;
 extern int ch_CurrentScriptGroup;
 extern char ch_StepSample[];
@@ -8951,7 +8951,7 @@ void ai_Unk59e420(unsigned char *param_1, int param_2)
         if (sv_RunFrame(ai_Unk59e420, 0x67fff) == 0) {
             sv_Unk52adb0();
             sv_ClearSelection();
-            U_I((unsigned)&ai_Unk7662c0) = 0;
+            U_I((unsigned)&sv_SelectedChar) = 0;
             snd_UnloadBuildingVoices();
             d3if_SelectScene(kind, 0);
             U_I((unsigned)&evt_NoGroup) = 0;
@@ -9114,7 +9114,7 @@ void ai_Unk59ee40(unsigned char *param_1)
     unk_Unk5136b0K(U_I((unsigned)&ai_FallbackBuilding));
     d3_DeflateScene(3);
     d3if_SelectScene(kind, 0);
-    U_I((unsigned)&ai_Unk7662c0) = 0;
+    U_I((unsigned)&sv_SelectedChar) = 0;
     U_I((unsigned)&ai_FallbackBuilding) = 0;
     U_I((unsigned)&evt_NoGroup) = 0;
     U_I((unsigned)&ch_CurrentGroup) = 0xffffffff;
@@ -9203,7 +9203,7 @@ void ai_Unk59f410(unsigned short *param_1)
     sv_Unk52adb0();
     sv_ClearSelection();
     sv_ReleaseNamePlates();
-    U_I((unsigned)&ai_Unk7662c0) = 0;
+    U_I((unsigned)&sv_SelectedChar) = 0;
     /* ROUGH: the device callbacks as in 0x59ee40, then the room 0xfd restored (0x4ffe90, 0x5f1298) */
     if (U_I((unsigned)&ai_Unk5f8438) != -1)
         sv_Unk52bb70(U_I((unsigned)&ai_Unk5f8438));
@@ -11699,7 +11699,7 @@ void ai_Unk5a4b30(int param_1)
     sv_ClearSelection();
 }
 
-void sv_Unk524990(unsigned char *g);
+void sv_UpdateMemberList(unsigned char *g);
 
 /* 0x5a4b90, the pickpocket victim window "locations\diebesgilde\taschendiebstahl" (421 B, ROUGH): the
    building gate 0x520fe0 and 0x525220 (param_1, 0); the window 0x4741f0 / 0x476f80 / 0x475600 / 0x475f70 (1)
@@ -11731,7 +11731,7 @@ void ai_Unk5a4b90(int param_1)
         list[i] = -1;
     U_I((unsigned)&d2_ClickedId) = -1;
     for (;;) {
-        sv_Unk524990(param_1);
+        sv_UpdateMemberList(param_1);
         if (U_I(((unsigned)&dm_L + 0x20)) != 0)
             U_I((unsigned)&sv_PopRequest) = 1;
         if (U_I((unsigned)&d2_ClickedId) != -1) {
@@ -16309,7 +16309,7 @@ void ai_Unk5bd250(int *param_1)
             d2_SetForm(*param_1, param_1[2]);
             io_PrintText((char *)(unsigned)&full_data_62a578, param_1[4] + 0x16b7);
             d2_SetForm(*param_1, param_1[3]);
-            sv_Unk52eb50(0, 6, (char *)((unsigned)&ai_Chars + U_W((unsigned)&ai_PlayerId) * 0x21c), param_1[4], 0x4df);
+            sv_DrawBalanceBar(0, 6, (char *)((unsigned)&ai_Chars + U_W((unsigned)&ai_PlayerId) * 0x21c), param_1[4], 0x4df);
         }
     }
 }
@@ -18823,7 +18823,7 @@ void ai_Unk5c5310(short *param_1, int param_2)
     for (i = 0; i < 5; i++) {
         txt_Format(text, (char *)(0x16b7 + i));
         d2_CreateWinText(10, (i + 1) * 0x18 + 1, text, U_I((unsigned)&d2_LastWindow));
-        sv_Unk52eb50(0xaf, 2 + i * 0x18, param_1, i, 0x4e5);
+        sv_DrawBalanceBar(0xaf, 2 + i * 0x18, param_1, i, 0x4e5);
     }
     txt_Format(text, (char *)0x1f63);
     d2_CreateWinText(0, (i + 2) * 0x18 + 10, text, U_I((unsigned)&d2_LastWindow));
