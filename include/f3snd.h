@@ -15,6 +15,11 @@ typedef struct G16SMPENTRY {            /* SBENTRY in sblib.c: the file entry of
 typedef struct G16SMP {                 /* SBSAMPLE in sblib.c; the fields the sound queue reads */
     int handle;                         /* 0x00 */
     G16SMPENTRY *info;                  /* 0x04, NULL = unused */
+    int start;                          /* 0x08 */
+    int loops;                          /* 0x0c */
+    unsigned int fadestart;             /* 0x10 */
+    unsigned int flags;                 /* 0x14 */
+    int delay;                          /* 0x18, repeat delay */
 } G16SMP;
 
 typedef struct G16SND {                 /* 0x10 bytes ("f3snd: snd_AddToQueue"), a queued sound */

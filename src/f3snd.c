@@ -166,16 +166,22 @@ void snd_UpdateQueue(void)
 #define SND_SET(s, n, v, a, b) if ((s) == 0) (s) = sb_PlaySampleI(snd_Bank, (n), 0, 0x3f, (v), (a), (b)); \
     else sb_SetVolumeI((s), (v))
 
+/* the volume of a rain loop: x scaled to 0..88.9 (0.7 of the full 127) by the divisor d; the float cast keeps
+   the two factors apart, as the original multiplies by 88.9 and by 1 / d separately (a reasoned guess at the
+   spelling: without it VC6 folds both constants into one) */
+#define SND_RAINVOL(x, d) ((int)((float)((x) * 88.9f) / (d)))
+
 /* 0x4c0470, the rain sounds by the rain level *d3t_Rain (near / far loops louder the lower / higher the camera
    is above the ground, drops "Tropfen_s"), then now and then a gust ("Boehe_*", chance and interval by season from
-   the table 0x602ba8); everything stops without a scene, with sound off or when the season changed */
+   the table 0x602ba8); everything stops without a scene, with sound off or when the season changed @deep Read all of it against the original: the 499 / 0x95 branches keep a float fraction t = n - base (then t = 500 / 350 - t, was 499 - k / 350 - k) and depth = 2600 - f, the 0x95 drops start at depth's full volume, volumes multiply by 88.9 and 1/d separately (SND_RAINVOL), the gust compares written as the original's (>= interval, w > 0x28a); 748 = 748 instructions. Left: f and t swap slots ([esp+0x10]/[esp+0x14]) and the four near loops: the original loads the handle into edi/esi before the volume's ftol and keeps it for sb_SetVolume (mov edi, [snd_RainHeavyNear] ... cmp edi, ebx), ours reloads it into eax after (mov esi, eax; mov eax, [X]; cmp eax, ebx), 1 byte each (2538 vs 2542). */
 void snd_UpdateRain(void)
 {
     float f;
+    float t;
+    float depth;                        /* 2600 - the camera height above the ground */
     int n;
     int w;
     int v;
-    int v2;
     int k;
 
     if (d3_Terrain == 0 || snd_AmbientOn.on == 0 || snd_Season != gm_ClockSeason(ai_Time)) {
@@ -203,9 +209,10 @@ void snd_UpdateRain(void)
     } else {
         w = n * 8;
         if (n >= 999) {
-            v = (int)((2600.0f - f) * 88.9f * 0.000384615385f);
+            /* heavy only */
+            v = SND_RAINVOL(2600.0f - f, 2600.0f);
             SND_SET(snd_RainHeavyNear, "StarkNah_l_01", v, 0, 0);
-            SND_SET(snd_RainHeavyFar, "StarkFern_l_01", (int)(f * 88.9f * 0.000384615385f), 0, 0);
+            SND_SET(snd_RainHeavyFar, "StarkFern_l_01", SND_RAINVOL(f, 2600.0f), 0, 0);
             if (snd_RainDrops == 0)
                 snd_RainDrops = sb_PlaySampleI(snd_Bank, "Tropfen_s", 0, 0x3f, v, 0, 1000);
             else
@@ -215,45 +222,51 @@ void snd_UpdateRain(void)
             SND_STOP(snd_RainMediumFar);
             SND_STOP(snd_RainLightFar);
         } else if (n >= 499) {
-            k = n - 499;
-            v = (int)((2600.0f - f) * k * 88.9f * 7.6923078e-07f);
+            /* heavy fading in over medium: t of 500 */
+            t = (float)(n - 499);
+            depth = 2600.0f - f;
+            v = SND_RAINVOL(depth * t, 1300000.0f);
             SND_SET(snd_RainHeavyNear, "StarkNah_l_01", v, 0, 0);
-            SND_SET(snd_RainHeavyFar, "StarkFern_l_01", (int)(k * f * 88.9f * 7.6923078e-07f), 0, 0);
-            v2 = (int)((2600.0f - f) * (499 - k) * 88.9f * 7.6923078e-07f);
-            SND_SET(snd_RainMediumNear, "MittelNah_l_01", v2, 0, 0);
-            SND_SET(snd_RainMediumFar, "MittelFern_l_01", (int)((499 - k) * f * 88.9f * 7.6923078e-07f), 0, 0);
+            SND_SET(snd_RainHeavyFar, "StarkFern_l_01", SND_RAINVOL(t * f, 1300000.0f), 0, 0);
+            t = 500.0f - t;
+            SND_SET(snd_RainMediumNear, "MittelNah_l_01", SND_RAINVOL(depth * t, 1300000.0f), 0, 0);
+            SND_SET(snd_RainMediumFar, "MittelFern_l_01", SND_RAINVOL(t * f, 1300000.0f), 0, 0);
             if (snd_RainDrops == 0)
                 snd_RainDrops = sb_PlaySampleI(snd_Bank, "Tropfen_s", 0, 0x3f, v, 0, 0xa28);
             else {
-                *(int *)(snd_RainDrops + 0x18) = 2000;
+                ((G16SMP *)snd_RainDrops)->delay = 2000;
                 sb_SetVolumeI(snd_RainDrops, v);
             }
             SND_STOP(snd_RainLightFar);
             SND_STOP(snd_RainLightNear);
         } else if (n >= 0x95) {
-            k = n - 0x95;
-            v = (int)((2600.0f - f) * k * 88.9f * 1.0989011e-06f);
+            /* medium fading in over light: t of 350 */
+            t = (float)(n - 0x95);
+            depth = 2600.0f - f;
+            v = SND_RAINVOL(depth * t, 910000.0f);
             SND_SET(snd_RainMediumNear, "MittelNah_l_01", v, 0, 0);
-            SND_SET(snd_RainMediumFar, "MittelFern_l_01", (int)(k * f * 88.9f * 1.0989011e-06f), 0, 0);
-            v2 = (int)((2600.0f - f) * (350 - k) * 88.9f * 1.0989011e-06f);
-            SND_SET(snd_RainLightNear, "LeichtNah_l_01", v2, 0, 0);
-            SND_SET(snd_RainLightFar, "LeichtFern_l_01", (int)((350 - k) * f * 88.9f * 1.0989011e-06f), 0, 0);
+            SND_SET(snd_RainMediumFar, "MittelFern_l_01", SND_RAINVOL(t * f, 910000.0f), 0, 0);
+            t = 350.0f - t;
+            SND_SET(snd_RainLightNear, "LeichtNah_l_01", SND_RAINVOL(depth * t, 910000.0f), 0, 0);
+            SND_SET(snd_RainLightFar, "LeichtFern_l_01", SND_RAINVOL(t * f, 910000.0f), 0, 0);
             if (snd_RainDrops == 0)
-                snd_RainDrops = sb_PlaySampleI(snd_Bank, "Tropfen_s", 1, 0x3f, v, 0, 3000);
+                snd_RainDrops = sb_PlaySampleI(snd_Bank, "Tropfen_s", 1, 0x3f, SND_RAINVOL(depth, 2600.0f), 0, 3000);
             else {
-                *(int *)(snd_RainDrops + 0x18) = 3000;
+                ((G16SMP *)snd_RainDrops)->delay = 3000;
                 sb_SetVolumeI(snd_RainDrops, v);
             }
             SND_STOP(snd_RainHeavyFar);
             SND_STOP(snd_RainHeavyNear);
         } else {
-            v = (int)((2600.0f - f) * n * 88.9f * 2.5813113e-06f);
+            /* light only: t of 149 */
+            t = (float)n;
+            v = SND_RAINVOL((2600.0f - f) * t, 387400.0f);
             SND_SET(snd_RainLightNear, "LeichtNah_l_01", v, 0, 0);
-            SND_SET(snd_RainLightFar, "LeichtFern_l_01", (int)(n * f * 88.9f * 2.5813113e-06f), 0, 0);
+            SND_SET(snd_RainLightFar, "LeichtFern_l_01", SND_RAINVOL(t * f, 387400.0f), 0, 0);
             if (snd_RainDrops == 0)
                 snd_RainDrops = sb_PlaySampleI(snd_Bank, "Tropfen_s", 0, 0x3f, v, 0, 4000);
             else {
-                *(int *)(snd_RainDrops + 0x18) = 4000;
+                ((G16SMP *)snd_RainDrops)->delay = 4000;
                 sb_SetVolumeI(snd_RainDrops, v);
             }
             SND_STOP(snd_RainHeavyFar);
@@ -263,11 +276,11 @@ void snd_UpdateRain(void)
         }
     }
     if (d3_Terrain != 0 && snd_AmbientOn.on != 0
-        && snd_Gusts[snd_Season].interval <= (unsigned int)(w + (F3SND_TIME - snd_LastGust))) {
+        && (unsigned int)(w + (F3SND_TIME - snd_LastGust)) >= snd_Gusts[snd_Season].interval) {
         snd_LastGust = F3SND_TIME;
         if (rand() * 3.0518509e-05f + snd_Gusts[snd_Season].chance > 1.0f) {
             k = 0;
-            if (w >= 0x28b)
+            if (w > 0x28a)
                 k = rand() % 3;
             else if (w > 0xfa)
                 k = rand() % 2;
