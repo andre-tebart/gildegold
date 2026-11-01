@@ -7,6 +7,9 @@
    c_dfDIKeyboard / c_dfDIMouse object tables follow, library data (config/symbols/game_range.toml).
    Open: d2.h cannot be included (its vfs_Root / vfs_Tfopen declarations clash with vfs.h), so the unit reads
    the d2 records through local views (D2INPUTVIEW, D2FADEVIEW, D2SURFVIEW ...).
+   Open: ai_SaveOptionWindow / ai_SaveNameWindow / ai_LoadGameWindow / ai_JoinGameWindow still cast
+   d2_GetViewWin to six arguments; as in ai_FilePickWindow the original likely nests d2_GetViewWin (win, 1)
+   in the 8-argument sv_CreateFormSlider call (their @deep "cleanup split" notes).
    unit of rea 8cef7d5b (src/game/unk_5d33b0.c); boundaries in decl/text.dcl */
 extern int gm_PlayerRecords[688];
 #include "txt_views.h"

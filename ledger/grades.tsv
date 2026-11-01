@@ -2387,7 +2387,7 @@ exe	0x004cd500	cm_LobbyClearChat	cm	byte	draft
 exe	0x004cd510	cm_LobbyAllReady	cm	draft	draft		
 exe	0x004cd580	ai_Unk4cd580	cm	byte	draft		
 exe	0x004cd5d0	cm_LobbyPlayerList	cm	byte	draft		
-exe	0x004cd5e0	ai_Unk4cd5e0	cm	byte	draft		
+exe	0x004cd5e0	cm_LobbyFindPlayer	cm	byte	draft		
 exe	0x004cd5f0	cm_LobbyMyPlayer	cm	byte	draft		
 exe	0x004cd600	cm_LobbyState	cm	byte	draft		
 exe	0x004cd610	cm_LobbyRequestList	cm	byte	draft		
@@ -3105,7 +3105,7 @@ exe	0x00508740	gm_Unk508740	f3gm	draft	draft
 exe	0x005087f0	gm_ItemPrice	f3gm	draft	draft		
 exe	0x005089c0	gm_GoodsPrice	f3gm	byte	draft		
 exe	0x00508a20	gm_HealthFactor	f3gm	byte	readable		
-exe	0x00508a80	gm_Unk508a80	f3gm	draft	draft		
+exe	0x00508a80	gm_FormatAmount	f3gm	draft	draft		
 exe	0x00508cc0	gm_Unk508cc0	f3gm	draft	draft		
 exe	0x00508d70	gm_BuildingLevel	f3gm	byte	draft		
 exe	0x00508d80	gm_Unk508d80	f3gm	draft	draft		
@@ -3240,9 +3240,9 @@ exe	0x00513970	init_ParseNumberList	f3init	byte	readable
 exe	0x00513a20	init_LoadCityINI	f3init	draft	draft	deep	
 exe	0x005142e0	io_TownDisplayName	io_text	byte	readable		
 exe	0x00514360	io_TrailingDigits	io_text	byte	readable		
-exe	0x005143d0	io_CharacterName	io_text	draft	draft		
-exe	0x00514e90	io_CharacterNameMarkup	io_text	draft	draft		
-exe	0x00515960	io_PrintText	io_text	draft	draft		
+exe	0x005143d0	io_CharacterName	io_text	shape	readable		
+exe	0x00514e90	io_CharacterNameMarkup	io_text	shape	readable		
+exe	0x00515960	io_PrintText	io_text	draft	readable	deep	
 exe	0x005176d0	txt_Format	io_text	draft	draft		
 exe	0x00519010	ls_LanguageOf	ls	byte	readable		
 exe	0x005190a0	ls_GetLanguage	ls	byte	readable		
@@ -4114,11 +4114,11 @@ exe	0x00589e50	ai_Unk589e50	unk_575860	draft	draft
 exe	0x00589f10	lobby_Screen	unk_589f10	draft	readable	deep	
 exe	0x0058a940	lobby_AddButtons	unk_589f10	byte	draft	deep	
 exe	0x0058a9d0	lobby_AddChatScroll	unk_589f10	byte	draft	deep	
-exe	0x0058aa30	lobby_ShowCity	unk_589f10	draft	draft		
+exe	0x0058aa30	lobby_ShowCity	unk_589f10	draft	readable	deep	
 exe	0x0058aba0	lobby_ShowMyPlayer	unk_589f10	draft	draft	deep	
 exe	0x0058ad20	lobby_FetchPlayers	unk_589f10	shape	draft	deep	
 exe	0x0058ada0	lobby_ShowPlayers	unk_589f10	draft	draft	deep	
-exe	0x0058af50	lobby_ChoosePlayer	unk_589f10	draft	draft		
+exe	0x0058af50	lobby_ChoosePlayer	unk_589f10	draft	readable	deep	
 exe	0x0058b880	lobby_ChooseProfession	unk_589f10	draft	draft	deep	
 exe	0x0058ba70	lobby_ShowChat	unk_589f10	draft	draft	deep	
 exe	0x0058bbd0	ai_Unk58bbd0	unk_58bbd0	draft	draft	deep	
@@ -4603,7 +4603,7 @@ exe	0x005d3030	ai_Unk5d3030	unk_58bbd0	draft	draft
 exe	0x005d31c0	ai_Unk5d31c0	unk_58bbd0	draft	draft		
 exe	0x005d3270	ai_Unk5d3270	unk_58bbd0	draft	draft		
 exe	0x005d33b0	ai_ListFiles	unk_5d33b0	byte	readable		
-exe	0x005d34b0	ai_FilePickWindow	unk_5d33b0	draft	draft		
+exe	0x005d34b0	ai_FilePickWindow	unk_5d33b0	shape	readable		
 exe	0x005d3810	ai_MessageBox	unk_5d33b0	draft	draft	deep	
 exe	0x005d3a00	ai_RegisterSaveSlot	unk_5d33b0	draft	draft	deep	
 exe	0x005d3ab0	ai_FillSaveSlots	unk_5d33b0	draft	readable	deep	
@@ -4660,8 +4660,8 @@ exe	0x005dc1a0	ai_SphereVolume	unk_5d33b0	byte	readable
 exe	0x005dc210	ai_PositionShare	unk_5d33b0	byte	readable		
 exe	0x005dc240	ai_InitShot	unk_5d33b0	draft	readable	deep	
 exe	0x005dc3a0	ai_ScatterShot	unk_5d33b0	draft	readable	deep	
-exe	0x005dc4a0	ai_StepShot	unk_5d33b0	draft	readable		
-exe	0x005dc9d0	ai_StepShotSlow	unk_5d33b0	draft	readable		
+exe	0x005dc4a0	ai_StepShot	unk_5d33b0	draft	readable	deep	
+exe	0x005dc9d0	ai_StepShotSlow	unk_5d33b0	draft	readable	deep	
 exe	0x005dcf00	ai_ShotHitsGround	unk_5d33b0	draft	readable	deep	
 exe	0x005dd090	ai_NormalizeEffectScale	unk_5d33b0	draft	readable	deep	
 exe	0x005dd100	ai_SolveCannonAim	unk_5d33b0	draft	readable	deep	

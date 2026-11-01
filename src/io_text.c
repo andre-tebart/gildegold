@@ -4,7 +4,10 @@
    (0x623564) and ends before the language getter 0x519010 (its global 0x62364c opens the "ls" unit).
    Open: txt_Format (0x5176d0) is still the rough skeleton; its "%D" prints the year only (the season names are
    txt_Ptrs[0x4c + gm_Season(date)], as io_PrintText reads them).
-   Open: the 0x21c character record is untyped; the name builders read it at raw offsets (0x9, 0xd, 0x164.., 0x1cc).
+   Open: txt_Format is a second copy of io_PrintText's engine and can be rebuilt from it (it still uses
+   txt_Subst and the ai_Unkf8f13c / ai_Unk143c860 views).
+   Open: the 0x21c character record is untyped; the name builders read it as unsigned char at raw offsets
+   (0x9, 0xd, 0x164.., 0x166; 0x1cc through gv.h's ORDCHAR).
    unit of rea 8cef7d5b (src/game/io_text.c); boundaries in decl/text.dcl */
 #include "d2_types.h"
 extern D2WIN d2_Wins[];
