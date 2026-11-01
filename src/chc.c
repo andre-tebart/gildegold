@@ -19,6 +19,16 @@
 #include "path.h"
 #include "ch.h"
 #include "chc.h"
+#include "d3_engine.h"
+#include "d3_interface.h"
+#include "d3_snd.h"
+#include "d3_vec.h"
+#include "err.h"
+#include "f3init.h"
+#include "mem.h"
+#include "sblib.h"
+#include "sv.h"
+#include "unk_458810.h"
 
 /* 0x40ba10, CreateCharacter(name, x, y, z): creates the character at that position and gives it the
    group of the running script (it is shown only while that group is the current room); returns it, or 0
