@@ -1085,4 +1085,9 @@ int ai_ScatterShot(struct SHOTREC *shot, float sideSpread, struct D3VECTOR *side
 int ai_Unk4a6ae0(struct AIPER *p, struct AIBLD *b);                                            /* 0x4a6ae0 */
 #undef amt_GetKindLevel
 
+/* declared in other units' headers before (moved to the owner) */
+int ai_ChooseAction(int i);  /* 0x4957d0 */
+int ai_ExecuteAction(int i);  /* 0x495ce0 */
+void ai_FillNearRing(AICHAR *c);  /* 0x4a3af0 */
+
 #endif
