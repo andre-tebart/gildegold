@@ -4324,38 +4324,32 @@ void sv_ClearSelection(void)
     } while ((int)q < (int)((unsigned)&ai_Selected + 0x65400));
     SV_I((unsigned)&ai_SelectedCount) = 0;
 }
-/* 0x52b2a0, collects the (up to 0x20) characters 0x770d04 + n * 0x21c that belong to the group b (b == 0: the ones with no group, +0x2c == -1) into the table 0x7603a0 */
-
+/* 0x52b2a0, collects into ai_SceneChars the characters whose scene character (AICHAR.model, its +0x2c) belongs to the
+   building b (b == 0: the ones in no building, -1), at most 31; past the eighth one of a building the scene character
+   is hidden */
 void sv_CollectGroupCharacters(char *b)
 {
-    int i, *p, *q;
+    int n, i;
 
-    p = (int *)(unsigned)&ai_SceneChars;
-    for (i = 0x20; i != 0; i--)
-        *p++ = 0;
-    if (b == 0) {
-        p = (int *)(unsigned)&ai_SceneChars;
-        q = (int *)((unsigned)&ai_Unk770cec + 0x18);
-        do {
-            if ((int)p > ((unsigned)&ai_SceneChars + 0x7b))
+    memset(ai_SceneChars, 0, sizeof(ai_SceneChars));
+    if (b != 0) {
+        n = 0;
+        for (i = 0; i < 768; i++) {
+            if (n >= 31)
                 return;
-            if (*q != 0 && *(int *)(*q + 0x2c) == -1)
-                *p++ = (int)(q - 0x61);
-            q += 0x87;
-        } while ((int)q < ((unsigned)((unsigned)ai_Unk770cec + 0x65296) + 0x182));
-    } else {
-        p = (int *)(unsigned)&ai_SceneChars;
-        q = (int *)((unsigned)&ai_Unk770cec + 0x18);
-        while ((int)p < ((unsigned)&ai_SceneChars + 0x7c)) {
-            i = *q;
-            if (i != 0 && *(int *)(i + 0x2c) == *(int *)(b + 1)) {
-                *p++ = (int)(q - 0x61);
-                if ((int)p > ((unsigned)&ai_SceneChars + 0x20))
-                    ch_SetVisible(i, 0);
+            if (ai_CharsT[i].model != 0 && ai_CharsT[i].model->bldId == ((AIBLD *)b)->id) {
+                ai_SceneChars[n++] = (int)&ai_CharsT[i];
+                if (n > 8)
+                    ch_SetVisible((CHARACTER *)ai_CharsT[i].model, 0);
             }
-            q += 0x87;
-            if ((int)q > ((unsigned)((unsigned)ai_Unk770cec + 0x65296) + 0x181))
+        }
+    } else {
+        n = 0;
+        for (i = 0; i < 768; i++) {
+            if (n >= 31)
                 return;
+            if (ai_CharsT[i].model != 0 && ai_CharsT[i].model->bldId == -1)
+                ai_SceneChars[n++] = (int)&ai_CharsT[i];
         }
     }
 }
