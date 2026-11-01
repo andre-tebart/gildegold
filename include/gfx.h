@@ -48,8 +48,6 @@ extern void *d2_ItemListSurf64;          /* 0xf8aadc */
 extern int d2_InputDragValue;            /* 0xf8ab60 */
 extern int d2_Unkf8ab64;            /* 0xf8ab64 */
 extern int d2_InputDragReleased;            /* 0xf8ab68 */
-extern int di_MaxY;                 /* 0x5f323c (di_input.c) */
-extern int di_MinY;                 /* 0x6310b4 (di_input.c) */
 
 /* functions of other units, or declared differently by d2.h */
 void d2_CopyCaption(char *caption);                   /* 0x478870 */
@@ -96,7 +94,6 @@ extern char d2_CaptionCopy[];         /* 0xf8aae0 */
 extern int d2_HitClicked;            /* 0x5febd0 */
 extern int d2_HitUnderPointer;            /* 0x5febd4 */
 extern int d2_Unk6ed990;            /* 0x6ed990 */
-extern int di_GuiClick;            /* 0x6310bc */
 
 struct SBSAMPLE *sb_PlaySample(struct SBBANK *bank, char *name, int loops, int pan, int volume, int fade, int delay); /* 0x426fa0, sblib.c (this header's units: sb_PlaySampleI) */
 
