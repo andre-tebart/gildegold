@@ -26,13 +26,11 @@ extern D2RADIO d2_Radios[];
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 extern const int ai_Unk5eeab8[24];
-extern int d3t_CamMoving;
 extern GAPDATA full_data_6f262c[];
 extern GAPDATA full_data_6f265c[];
 extern GAPDATA full_data_6f2660[];
 extern int sv_PanelFlag;
 extern GAPDATA full_data_5f1890[];
-extern int d2_LastWindow;
 extern GAPDATA full_data_624204[];
 extern GAPDATA full_data_629304[];
 extern GAPDATA full_data_602568[];
@@ -213,7 +211,6 @@ extern int sv_FrameDepth;
 
 extern GAPDATA full_data_624ee0[];
 #include "f3init_types.h"
-extern struct D2OBJ *d2_Objs;
 extern GAPDATA full_data_6024f8[];
 extern GAPDATA full_data_624204[];
 extern GAPDATA full_data_62918c[];
@@ -221,8 +218,6 @@ extern GAPDATA full_data_62a248[];
 
 
 
-extern int ai_ClockMs;
-extern int d2_ClickedId;
 extern GAPDATA full_data_62a284[];
 extern GAPDATA full_data_62a2a4[];
 extern unsigned char ai_TimeHour;
@@ -232,20 +227,12 @@ extern GAPDATA full_data_62a2c4[];
 extern GAPDATA full_data_6f2664[];
 extern GAPDATA full_data_6f9f60[];
 extern const int ai_Unk5eeab8[24];
-extern char ai_Unkf8aae0[0x80];
 extern int ai_Unkfb9060;
 extern int ai_Unkfb9064;
 extern int ai_Unkfb9068;
 extern int ai_Unkfb906c;
 extern char * ai_Unkfc2dec;
 extern struct D2OBJ *d2_Objs;
-extern short d2_ScreenH;
-extern void *d2_ScreenSurf;
-extern short d2_ScreenW;
-extern float d3_ScaleX;
-extern struct D3SKY *d3_Sky;
-extern float d3_ZFar;
-extern float d3_ZNear;
 extern float d3s_QuadUV[6];
 extern GAPDATA full_data_5fea38[];
 extern GAPDATA full_data_62a2dc[];
@@ -262,9 +249,6 @@ extern int sv_ViewRectBottom;
 extern int sv_ViewRectLeft;
 extern int sv_ViewRectRight;
 extern int sv_ViewRectTop;
-extern const char ai_AxisPair[];
-extern const struct D3VECTOR d3_YAxis;
-extern char ai_Unk60c6c0[4];
 extern GAPDATA full_data_602568[];
 extern GAPDATA full_data_6f9f68[];
 extern GAPDATA full_data_6f9f70[];
@@ -331,7 +315,6 @@ extern GAPDATA full_data_602568[];
 extern GAPDATA full_data_62a3ec[];
 extern GAPDATA full_data_62a3f8[];
 extern int sv_PopRequest;
-extern unsigned short ai_PlayerId;
 extern unsigned char ai_TimeHour;
 extern int d2_PointerObj;
 extern int d2_ClickedId;
@@ -346,7 +329,6 @@ extern GAPDATA full_data_602568[];
 extern GAPDATA full_data_62a3ec[];
 extern GAPDATA full_data_62a3f8[];
 extern int sv_PopRequest;
-extern char ai_Chars[768][0x21c];
 extern unsigned short ai_PlayerId;
 extern unsigned char ai_TimeHour;
 extern int d2_PointerObj;
@@ -379,7 +361,6 @@ extern int d2_LastWindow;
 extern GAPDATA full_data_602568[];
 extern GAPDATA full_data_62a418[];
 extern int ai_BuildingPerms;
-extern int ai_ClickedObject;
 
 extern GAPDATA full_data_62a4bc[];
 extern int sv_PopRequest;
@@ -416,8 +397,6 @@ extern GAPDATA full_data_62a56c[];
 extern GAPDATA full_data_62a59c[];
 extern int d2_PointerObj;
 extern GAPDATA full_data_62a5bc[];
-extern unsigned char ai_OwnPlayer;
-extern int sv_FrameMask;
 extern GAPDATA full_data_625150[];
 extern GAPDATA full_data_62a5d8[];
 
@@ -457,7 +436,6 @@ extern int sv_FrameMask;
 extern int sv_PopRequest;
 extern char ai_Chars[768][0x21c];
 extern unsigned short ai_PlayerId;
-extern char ai_Time[14];
 extern unsigned char ai_TimeHour;
 extern int d2_PointerObj;
 extern int d2_ClickedId;
@@ -492,7 +470,6 @@ extern GAPDATA full_data_62a6b8[];
 extern GAPDATA full_data_62a6dc[];
 extern char ai_Chars[768][0x21c];
 extern unsigned char ai_OwnPlayer;
-extern float ai_Unk5eb780;
 extern int d2_ClickedId;
 extern int d2_LastWindow;
 extern GAPDATA full_data_62a5bc[];
@@ -505,12 +482,10 @@ extern const int ai_Unk5eeab8[24];
 
 
 extern unsigned short ai_PlayerId;
-extern int ai_Unk6f22f8;
 extern GAPDATA full_data_62a718[];
 extern int ai_BuildingPerms;
 extern int ai_ClickedObject;
 
-extern int ai_Unk6f2448;
 
 
 
@@ -603,7 +578,6 @@ extern int ai_ClickedObject;
 extern GAPDATA full_data_62a870[];
 extern GAPDATA full_data_62a88c[];
 extern int ai_Unk6f2448;
-extern char *ai_Unk5fb5b0;
 extern int ai_ClockMs;
 extern GAPDATA full_data_62a538[];
 extern GAPDATA full_data_62a8a8[];
@@ -611,7 +585,6 @@ extern GAPDATA full_data_6f5f60[];
 extern char ai_Chars[768][0x21c];
 extern int d2_PointerObj;
 extern int ai_Unk62a8cc;
-extern char * ai_Unk6f22e8;
 extern short d2_MouseX;
 extern short d2_MouseY;
 extern struct D2OBJ *d2_Objs;
@@ -625,7 +598,6 @@ extern GAPDATA full_data_6f266c[];
 extern GAPDATA full_data_6f2670[];
 extern int gm_PlayerRecords[688];
 extern unsigned short ai_PlayerId;
-extern char ch_EmptyName[1];
 extern int d2_LastWindow;
 extern GAPDATA full_data_62a8d8[];
 extern GAPDATA full_data_62a8f4[];
@@ -642,7 +614,6 @@ extern GAPDATA full_data_62a9b4[];
 extern GAPDATA full_data_62a9cc[];
 extern unsigned char ai_OwnPlayer;
 extern const float ai_Unk5ee160[476];
-extern char * sv_SelectedObject;
 extern GAPDATA full_data_602568[];
 extern GAPDATA full_data_62a91c[];
 extern GAPDATA full_data_62a940[];
@@ -672,7 +643,6 @@ extern GAPDATA full_data_62aa38[];
 extern GAPDATA full_data_6f5ec0[];
 extern GAPDATA full_data_6f5ec4[];
 extern int sv_PopRequest;
-extern char ch_EmptyName[1];
 extern short d2_ScreenH;
 extern short d2_ScreenW;
 extern void *dd_Surface;
@@ -686,7 +656,6 @@ extern GAPDATA full_data_6f5f44[];
 extern unsigned char kb_Last;
 extern int sv_PanelFlag;
 extern int ai_OptionSpeed;
-extern struct D2INPUT *d2_FocusedInput;
 
 extern unsigned char kb_Last;
 extern int sv_FrameMask;
@@ -699,8 +668,6 @@ extern char ai_Chars[768][0x21c];
 
 #define U_I(a) (*(int *)(a))
 
-void d2_RemoveObj();
-void d2_SetObjEnabled();
 void sv_CameraFollow();
 
 void ai_Unk577c60();
@@ -708,7 +675,6 @@ void ai_Unk57b8a0();
 void ai_Unk577d90();
 int ai_Unk5778b0();
 int ai_Unk577a00();
-void d2_RaiseViewWindows(int view);
 int ai_Unk577e50();
 void d2_SetObjEnabled();
 int ai_Unk5780e0();
@@ -717,22 +683,12 @@ void sv_CameraFollow();
 void sv_SetStatusText(char *s);
 void sv_SelectPanelObject(unsigned char *o, int b, char *c);
 int he_Unk55ea60();
-void cm_RequestChrMoveToUniverse(int a, int b, int c, const char *s);
-void ai_Unk4c5150(int a, int b, int c, const char *s);
 void sv_Unk52f9f0();
 void sv_Unk52fa00();
-int ai_Unk4c4fa0(void *p);
-void d2_PlaceMainWindow();
-void d2_SetViewEnabled(int view, int on);
-int d2_WinOpenSlider();
-void d2_SetObjValue();
 void sv_FitForm(int f);
-int d2_GetWinObj();
-int snd_PlayVoice(int id, int bank, char *text, int var);
 void ai_Unk577a90();
 void ai_Unk577b60();
 struct SBSAMPLE;
-extern struct D3ANIM *d3t_CamMove;  /* 0x6310e8 */
 extern int sv_FrameBase; /* 0x6f22a4 */
 extern char *txt_Ptrs[]; /* 0x143a1c0 */
 
@@ -764,6 +720,15 @@ char *const ai_Unk5eec60 = (char *)full_data_6fa020 + 0x40;  /* 0x5eec60, the po
 #include "unk_4b39f0.h"
 #include "unk_58bbd0.h"
 #include "vfs.h"
+#include "ch.h"
+#include "cm.h"
+#include "d3_engine.h"
+#include "d3_interface.h"
+#include "d3_sky.h"
+#include "d3_tools.h"
+#include "d3_vec.h"
+#include "d3s.h"
+#include "unk_458810.h"
 #define sv_SelectPanelObjectK ((int (*)())sv_SelectPanelObject)  /* 0x52c4c0?: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
 /* 0x575860, the end-of-game tick (1984 B, ROUGH SKELETON): validates the end-of-game gates and the state record,
    then runs the state machine on *(int *)0x5eec60 - 1 (12 states, jump table 0x575fe8, the states 1 .. 0xc). The
