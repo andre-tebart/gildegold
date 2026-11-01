@@ -4513,13 +4513,10 @@ void d2_RaiseViewWindows(int v)
 
 /* 0x474b30 in the order of the file: 0x4741f0 first (loads the view), below */
 
-/* the original's hardcoded end guard of the free-view scan in d2_OpenForm (0x474376: cmp ecx,0xfb91e4);
-   it does not line up with d2_Views + 0x30 (0xfb6060) - the scan normally stops at the first free view */
-#define D2_VIEW_END_GUARD ((unsigned)&d3s_Lights + 0x4)
 
 /* 0x4741f0, loads the form file x (forms\x.form) as a view: one window per record, the items (pictures, texts,
    inputs, sliders) become objects; the view is moved to (x, y) unless one of them is 0 and kept inside the screen;
-   returns the number of the view, or -1 */
+   returns the number of the view, or -1 @deep read whole against the original: fixed the view-scan bound (the signed jge against &d2_Views[0x30].nwins = 0xfb91e4, the array end, not a d3s_Lights address), r = &d2_Forms2[i].h first and &d2_Forms0[i].h for version 0 (the original's default for other versions), the child-window branches first (parent != 0), the alpha test as (flags & 1) && alpha == 0.0f -> 0x3f266666; the k loop (pictures, 0x43 texts, 0x41 inputs, 0x45 sliders), the key text, the version-0 margins / font / picture, the view flags and the move to (x, y) were compared and match. Left: allocation and placement - our VC6 caches the constant 1 in edi ('- push edi' against '+ push 1' at every vfs_fread), the original strength-reduces the records to stepped slots (d2_Forms0 entry [esp+0x34], d2_Forms2 entry + 0xed0 [esp+0x28], wins pointer [esp+0x10]) where ours steps d2_Forms0 + 6 in ebp; the original does not thread its second 'parent' test in version 0 (pw / pww computed, then 'test eax, eax; je' before the two calls at 0x474579), ours does; the two -1 returns of the view scan share one epilogue in the original; frame 0x244 vs 0x248 */
 int d2_OpenForm(int x, int y, char *name)
 {
     char buf[0x100] = "";
@@ -4560,7 +4557,7 @@ int d2_OpenForm(int x, int y, char *name)
     if (d2_Views[1].nwins != 0) {
         pn = &d2_Views[1].nwins;
         do {
-            if ((int)pn >= D2_VIEW_END_GUARD)
+            if ((int)pn >= (int)&d2_Views[0x30].nwins)  /* 0xfb91e4: the end of the 0x30 views, a signed compare (jge) */
                 return -1;
             pn += 0xab;
             view++;
@@ -4570,6 +4567,7 @@ int d2_OpenForm(int x, int y, char *name)
     }
     d2_Views[view].firstObj = d2_HighestObj - 1;
     for (i = 0; i < n; i++) {
+        r = &d2_Forms2[i].h;
         if (ver == 0) {
             r = &d2_Forms0[i].h;
             parent = d2_Forms0[i].parent;
@@ -4577,27 +4575,25 @@ int d2_OpenForm(int x, int y, char *name)
                 pw = ((int *)&d2_Views[view])[parent];
                 pww = (D2WINF *)&d2_Wins[pw];
             }
-            if (parent == 0)
-                win = d2_CreateWindow(r->x, r->y, r->w, r->h, r->flags);
-            else
+            if (parent != 0)
                 win = d2_CreateChildWindow(r->x - pww->x, r->y - pww->y, r->w, r->h, r->flags, pw);
+            else
+                win = d2_CreateWindow(r->x, r->y, r->w, r->h, r->flags);
             d2_Views[view].wins[i] = win;
         } else if (ver == 2) {
-            r = &d2_Forms2[i].h;
-            if (d2_Forms2[i].parent == 0)
-                win = d2_CreateWindow(r->x, r->y, r->w, r->h, r->flags);
-            else {
+            if (d2_Forms2[i].parent != 0) {
                 pw = ((int *)&d2_Views[view])[d2_Forms2[i].parent];
                 pww = (D2WINF *)&d2_Wins[pw];
                 win = d2_CreateChildWindow(r->x - pww->x, r->y - pww->y, r->w, r->h, r->flags, pw);
-            }
+            } else
+                win = d2_CreateWindow(r->x, r->y, r->w, r->h, r->flags);
             d2_Views[view].wins[i] = win;
             if (d2_Forms2[i].bg[0] != 0)
                 d2_SetBackgroundTexture(d2_Forms2[i].bg, d2_LastWindow);
-            if ((d2_Wins[d2_LastWindow].flags & 1) == 0 || d2_Forms2[i].alpha != 0.0f)
-                ((D2WINF *)&d2_Wins[d2_LastWindow])->alpha = d2_Forms2[i].alphaBits;
-            else
+            if ((d2_Wins[d2_LastWindow].flags & 1) && d2_Forms2[i].alpha == 0.0f)
                 ((D2WINF *)&d2_Wins[d2_LastWindow])->alpha = 0x3f266666;
+            else
+                ((D2WINF *)&d2_Wins[d2_LastWindow])->alpha = d2_Forms2[i].alphaBits;
         }
         ww = (D2WINF *)&d2_Wins[d2_Views[view].wins[i]];
         if (ver == 2) {
@@ -4625,7 +4621,6 @@ int d2_OpenForm(int x, int y, char *name)
         d2_Objs[ww->parent].buf = (D2CTRL *)&d2_Views[view];
         win = d2_Views[view].wins[i];
         d2_Views[view].nwins++;
-        r = ver == 2 ? &d2_Forms2[i].h : &d2_Forms0[i].h;
         for (k = 0; k < r->n; k++) {
             if (r->type[k] < 0x40 && (pic = d2_FindPic(r->name[k])) != -1) {
                 o = d2_WinOpenPic(r->ix[k], r->iy[k], pic, win);
