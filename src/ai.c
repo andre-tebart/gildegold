@@ -3666,7 +3666,7 @@ int ai_StartProduction(AICHAR *ch, AIENTRY *e)
 }
 /* 0x487780, adds the equipment the building's characters need (their object list at 0x178, queried for the
    prototype kind 0xc, matched against ai_WeaponList / ai_WeaponList2) to the slot table with the mark
-   `make` and the flag 2, then reduces the marks until make * price fits the building's limit (0x39) */
+   `make` and the flag 2, then reduces the marks until make * price fits the building's limit (0x39) @deep Read whole against the original and fixed: the inner slot searches as for (j = 0; !found && j < n; j++) (cmp j,n / jge, the found pre-test), the need reduction as make -= pending + amount then a clamp at 0 (the original's two stores of make), the offer filter count >= 1 (cmp 1 / jl); the !found tests after the weapon-list loops moved out of the break branch. Left are optimizer decisions no source variant changed (do-while with the test inside or after the loop, for(;;) with a top break, for with the bound: all compile to the same object): ours folds the found tests VC6 kept in the original (+0x487855 test edx,edx / jne, +0x48788b test edx,edx / jne, +0x487965 test eax,eax / jne: found is provably 0 there), rebases the walk pointer (ours [edi] / [edi+4] from ai_WeaponList, the original [edi-4] / [edi] from &ai_WeaponList[1]), turns the offer loop into a countdown (ours test ecx / jle .. dec ecx / jne, the original xor ecx / cmp ecx,edx / jge .. inc ecx / jmp), and allocates the final list loops' id / count in ebp / edi where the original has edi / ebp. */
 
 void ai_AddEquipmentNeeds(AICHAR *ch, AIOBJ *obj, int limit)
 {
@@ -3692,49 +3692,40 @@ void ai_AddEquipmentNeeds(AICHAR *ch, AIOBJ *obj, int limit)
                 found = 0;
                 p = &ai_WeaponList[1];
                 do {
-                    if (p[-1] == 0 || (id = *p) == 0) {
-                        if (!found) {
-                            p = &ai_WeaponList2[1];
-                            do {
-                                if (p[-1] == 0 || (id = *p) == 0)
-                                    break;
-                                u = *it;
-                                p[-1] = u;
-                                if (u != 0 && !found) {
-                                    j = 0;
-                                    do {
-                                        if (n <= j)
-                                            break;
-                                        if (ai_Slots[j].item == id) {
-                                            ai_Slots[j].make++;
-                                            ai_Slots[j].flags |= 2;
-                                            found = 1;
-                                        }
-                                        j++;
-                                    } while (!found);
-                                }
-                                p++;
-                            } while (!found);
-                        }
+                    if (p[-1] == 0 || (id = *p) == 0)
                         break;
-                    }
                     u = *it;
                     p[-1] = u;
-                    if (u != 0 && !found) {
-                        j = 0;
-                        do {
-                            if (n <= j)
-                                break;
+                    if (u != 0) {
+                        for (j = 0; !found && j < n; j++) {
                             if (ai_Slots[j].item == id) {
                                 ai_Slots[j].make++;
                                 ai_Slots[j].flags |= 2;
                                 found = 1;
                             }
-                            j++;
-                        } while (!found);
+                        }
                     }
                     p++;
                 } while (!found);
+                if (!found) {
+                    p = &ai_WeaponList2[1];
+                    do {
+                        if (p[-1] == 0 || (id = *p) == 0)
+                            break;
+                        u = *it;
+                        p[-1] = u;
+                        if (u != 0) {
+                            for (j = 0; !found && j < n; j++) {
+                                if (ai_Slots[j].item == id) {
+                                    ai_Slots[j].make++;
+                                    ai_Slots[j].flags |= 2;
+                                    found = 1;
+                                }
+                            }
+                        }
+                        p++;
+                    } while (!found);
+                }
             }
         }
     }
@@ -3743,35 +3734,34 @@ void ai_AddEquipmentNeeds(AICHAR *ch, AIOBJ *obj, int limit)
             found = 0;
             p = ai_WeaponList;
             do {
-                if (*p == 0) {
-                    if (!found) {
-                        p = ai_WeaponList2;
-                        do {
-                            if (*p == 0)
-                                break;
-                            if (ai_Slots[i].item == *p) {
-                                u = ai_Slots[i].make - (ai_Slots[i].pending + ai_Slots[i].amount);
-                                ai_Slots[i].make = u;
-                                ai_Slots[i].make = u & (((int)u < 0) - 1);
-                                found = 1;
-                            }
-                            p++;
-                        } while (!found);
-                    }
+                if (*p == 0)
                     break;
-                }
                 if (ai_Slots[i].item == *p) {
-                    u = ai_Slots[i].make - (ai_Slots[i].pending + ai_Slots[i].amount);
-                    ai_Slots[i].make = u;
-                    ai_Slots[i].make = u & (((int)u < 0) - 1);
+                    ai_Slots[i].make -= ai_Slots[i].pending + ai_Slots[i].amount;
+                    ai_Slots[i].make = ai_Slots[i].make < 0 ? 0 : ai_Slots[i].make;
                     found = 1;
                 }
                 p++;
             } while (!found);
+            if (!found) {
+                p = ai_WeaponList2;
+                do {
+                    if (*p == 0)
+                        break;
+                    if (ai_Slots[i].item == *p) {
+                        ai_Slots[i].make -= ai_Slots[i].pending + ai_Slots[i].amount;
+                        ai_Slots[i].make = ai_Slots[i].make < 0 ? 0 : ai_Slots[i].make;
+                        found = 1;
+                    }
+                    p++;
+                } while (!found);
+            }
             if (ai_Slots[i].make != 0) {
                 gm_CollectOffers(ai_Slots[i].item);
-                for (k = 0; k < gm_NOffers; k++) {
-                    if (gm_Offers[k].goodsObj != 0 && gm_Offers[k].count > 0)
+                for (k = 0;; k++) {
+                    if (k >= gm_NOffers)
+                        break;
+                    if (gm_Offers[k].goodsObj != 0 && gm_Offers[k].count >= 1)
                         ai_Slots[i].bld = gm_Offers[k].bld;
                 }
                 n = ai_NSlots;
