@@ -785,7 +785,7 @@ done:
     ai_MeisterCollectTrans(ch);
     ai_MeisterTrade(ch, b);
 }
-/* 0x47f700, evaluates the production of a master's workshop, the variant with the 0x20 / 0x200 entry flags */
+/* 0x47f700, evaluates the production of a master's workshop, the variant with the 0x20 / 0x200 entry flags @deep read the whole function against the original 0x47f700..0x4801f4 (the production setup calls, the 8 / 13 o'clock and other-hour entry search, the drawn-setting block, the permutation, both random-pick loops, the flag clean-up, the watch copy, the job characters, the counts and the job orders); fixed: the entry fields read through ai_Entries[i] / ai_Entries[k] (capacity, amount, need1c, need20, flags) where the original indexes the array ([esi + ai_Entries+0x40] etc.) and only the item and the call arguments through e, the job-order loop tests 0x10 first (if (flags & 0x10) {0x20: type 0x14, else 0x200: type 0x15} else if (flags & 8): type 4, the original's test al,0x10 / je). 542 -> 337 differing, ours 791 vs 808 instructions. Left: cross-jumping and layout: ours merges the three ai_SendJobOrders calls of the job-order loop into one tail (type stored, then a shared push / call / watch check, 0x48006b..0x4800f0) where the original keeps three call sites and joins only at the watch copy (0x480162 / 0x48017b); the success block of the second random loop goes out of line after the function body in ours ('- jne 0x480075' vs '+ je 0x47fdc5'); tried info.type before info.e: identical. The loops keep i in a slot / ebp and ch reloaded from [esp+0x1c0] in the original (ebx reused as a temporary). (size: 791 vs 808 instructions, explained: the 17 missing instructions are the two extra ai_SendJobOrders call sites of the original (lea / push / mov / call / reload of ai_Watch.bld and ch->bld / compare: about 8 each) that VC6 cross-jumped into one in ours) */
 
 void ai_EvaluateProductionFlags(AICHAR *ch)
 {
@@ -815,11 +815,11 @@ void ai_EvaluateProductionFlags(AICHAR *ch)
         } else if (ch->prod != 0) {
             for (i = 0; i < ai_NEntries; i++) {
                 if (ai_Entries[i].item == ch->prod) {
-                    e = &ai_Entries[i];
-                    if (e->capacity >= ai_GoodsT[e->item].batch && ai_HasMaterials(ch, e, 1)) {
+                    if (ai_Entries[i].capacity >= ai_GoodsT[ai_Entries[i].item].batch
+                        && ai_HasMaterials(ch, &ai_Entries[i], 1)) {
                         ai_Entries[i].flags |= 8;
-                        ai_StartProduction(ch, e);
-                        ch->prod = (unsigned short)e->item;
+                        ai_StartProduction(ch, &ai_Entries[i]);
+                        ch->prod = (unsigned short)ai_Entries[i].item;
                         goto done;
                     }
                     break;
@@ -829,11 +829,11 @@ void ai_EvaluateProductionFlags(AICHAR *ch)
     } else {
         for (i = 0; i < ai_NEntries; i++) {
             if (ai_Entries[i].item == ch->prod) {
-                e = &ai_Entries[i];
-                if (e->capacity >= ai_GoodsT[e->item].batch && ai_HasMaterials(ch, e, 1)) {
+                if (ai_Entries[i].capacity >= ai_GoodsT[ai_Entries[i].item].batch
+                    && ai_HasMaterials(ch, &ai_Entries[i], 1)) {
                     ai_Entries[i].flags |= 8;
-                    ai_StartProduction(ch, e);
-                    ch->prod = (unsigned short)e->item;
+                    ai_StartProduction(ch, &ai_Entries[i]);
+                    ch->prod = (unsigned short)ai_Entries[i].item;
                     found = 1;
                 }
                 break;
@@ -848,8 +848,8 @@ void ai_EvaluateProductionFlags(AICHAR *ch)
             if (ai_Entries[i].item == id) {
                 if (b->lvl1c >= ai_Entries[i].need1c && b->lvl1d >= ai_Entries[i].need20) {
                     e = &ai_Entries[i];
-                    if (e->capacity >= ai_GoodsT[e->item].batch && (x = gm_FindMarketObject(e->item)) != 0
-                        && gm_FreeCapacity(x, e->item, 1000000) >= ai_GoodsT[e->item].batch + e->amount) {
+                    if (ai_Entries[i].capacity >= ai_GoodsT[e->item].batch && (x = gm_FindMarketObject(e->item)) != 0
+                        && gm_FreeCapacity(x, e->item, 1000000) >= ai_GoodsT[e->item].batch + ai_Entries[i].amount) {
                         if (!ai_HasMaterials(ch, e, 1)) {
                             if (ai_HasMaterials(ch, e, 0)) {
                                 ai_StartProduction(ch, e);
@@ -886,9 +886,10 @@ void ai_EvaluateProductionFlags(AICHAR *ch)
         if (!(ai_Entries[k].flags & 0x20) && !(ai_Entries[k].flags & 0x200)) {
             e = &ai_Entries[k];
             g = &ai_GoodsT[e->item];
-            if (((g->type != 0x17 && g->type != '%') || e->amount < 5) && b->lvl1c >= e->need1c
-                && b->lvl1d >= e->need20 && e->capacity >= g->batch && (x = gm_FindMarketObject(e->item)) != 0
-                && gm_FreeCapacity(x, e->item, 1000000) >= ai_GoodsT[e->item].batch + e->amount
+            if (((g->type != 0x17 && g->type != '%') || ai_Entries[k].amount < 5)
+                && b->lvl1c >= ai_Entries[k].need1c && b->lvl1d >= ai_Entries[k].need20
+                && ai_Entries[k].capacity >= g->batch && (x = gm_FindMarketObject(e->item)) != 0
+                && gm_FreeCapacity(x, e->item, 1000000) >= ai_GoodsT[e->item].batch + ai_Entries[k].amount
                 && ai_HasMaterials(ch, e, 1)) {
                 k = info.perm[i];
                 ai_Entries[k].flags |= 8;
@@ -905,9 +906,10 @@ void ai_EvaluateProductionFlags(AICHAR *ch)
         if (!(ai_Entries[k].flags & 0x20) && !(ai_Entries[k].flags & 0x200)) {
             e = &ai_Entries[k];
             g = &ai_GoodsT[e->item];
-            if (((g->type != 0x17 && g->type != '%') || e->amount < 5) && b->lvl1c >= e->need1c
-                && b->lvl1d >= e->need20 && e->capacity >= g->batch && (x = gm_FindMarketObject(e->item)) != 0
-                && gm_FreeCapacity(x, e->item, 1000000) >= ai_GoodsT[e->item].batch + e->amount
+            if (((g->type != 0x17 && g->type != '%') || ai_Entries[k].amount < 5)
+                && b->lvl1c >= ai_Entries[k].need1c && b->lvl1d >= ai_Entries[k].need20
+                && ai_Entries[k].capacity >= g->batch && (x = gm_FindMarketObject(e->item)) != 0
+                && gm_FreeCapacity(x, e->item, 1000000) >= ai_GoodsT[e->item].batch + ai_Entries[k].amount
                 && ai_HasMaterials(ch, e, 0)) {
                 e = &ai_Entries[info.perm[i]];
                 ai_StartProduction(ch, e);
@@ -992,18 +994,16 @@ done:
     info.b = b;
     for (j = 0; j < ai_NEntries; j++) {
         e = &ai_Entries[j];
-        if (!(e->flags & 0x10)) {
-            if (e->flags & 8) {
+        if (e->flags & 0x10) {
+            if (e->flags & 0x20) {
                 info.e = e;
-                info.type = 4;
+                info.type = 0x14;
                 ai_SendJobOrders((AIINFO *)&info);
                 if (ai_Watch.bld == ch->bld && ai_Watch.nentries < 4) {
                     ai_Watch.entries[ai_Watch.nentries] = *info.e;
                     ai_Watch.nentries++;
                 }
-            }
-        } else if (!(e->flags & 0x20)) {
-            if (e->flags & 0x200) {
+            } else if (e->flags & 0x200) {
                 info.e = e;
                 info.type = 0x15;
                 ai_SendJobOrders((AIINFO *)&info);
@@ -1012,9 +1012,9 @@ done:
                     ai_Watch.nentries++;
                 }
             }
-        } else {
+        } else if (e->flags & 8) {
             info.e = e;
-            info.type = 0x14;
+            info.type = 4;
             ai_SendJobOrders((AIINFO *)&info);
             if (ai_Watch.bld == ch->bld && ai_Watch.nentries < 4) {
                 ai_Watch.entries[ai_Watch.nentries] = *info.e;
