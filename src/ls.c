@@ -16,7 +16,6 @@ struct D3TERRAIN;
 #include "ls.h"
 #define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
 #include "d3_types.h"
-extern D3SCENE d3_Scenes[];
 #define GAPDATA __declspec(align(1)) unsigned char
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
@@ -33,7 +32,6 @@ extern GAPDATA full_data_7604e8[];
 extern void main_Unk537b60(int kind, int cur, int total);
 extern int ai_Unk7d6a40;
 #include "ch_types.h"
-extern CHMOTION ch_Motions[];
 extern int ai_Unk7e3f38;
 
 #include "cm.h"
@@ -53,7 +51,6 @@ int ai_Unk6f2618 = 0;  /* 0x6f2618 */
 extern int ai_Unk6f1bb8, ai_Unk6f1bbc;   /* 0x6f1bb8, 0x6f1bbc, 0x6f1bc0 */
 /* ls_RefTargets: view of ai_Unkf31160 (tools/data_views.py) */
 void dd_SplitRGB();                    /* 0x41e6d0 */
-void d3_SaveScene(char *name, struct VFSFILE *f);                     /* 0x44aa10 */
 int unk_Unk4f28d0();                     /* 0x4f28d0 */
 int ai_Unk4b62e0();                     /* 0x4b62e0 */
 int ai_Unk589aa0();                     /* 0x589aa0 */
@@ -70,8 +67,6 @@ DWORD dd_RGB(unsigned char r, unsigned char g, unsigned char b);          /* 0x4
 extern int f3gm_ObjectCount;                /* 0x6f1bdc */
 char d3if_ClearScene(int index);                    /* 0x447e60 */
 
-struct CHARACTER *ch_AllocAt(int id);               /* 0x402a30, ch.h's prototype (that header needs d3.h, which conflicts with gv.h here) */
-extern char *txt_Ptrs[];           /* 0x143a1c0, the text table */
 extern int hst_TextCurrent, hst_TextFirst, hst_KeyNext, hst_KeyFirst;   /* 0x601060, 0x601058, 0x60106c, 0x601064 .. 0x60106c */
 extern unsigned char hst_TextsOn;               /* 0x6f0724 */
 extern char hst_Key[];                 /* 0xf83520, the history key ("G12", 0x20 bytes; the save keeps 0x10) */
@@ -90,6 +85,14 @@ extern char hst_Key[];                 /* 0xf83520, the history key ("G12", 0x20
 #include "unk_4b39f0.h"
 #include "unk_575860.h"
 #include "unk_58bbd0.h"
+#include "ch.h"
+#include "d2.h"
+#include "d3_engine.h"
+#include "d3_fl.h"
+#include "d3_int_io.h"
+#include "d3_interface.h"
+#include "d3_sm.h"
+#include "unk_5d33b0.h"
 int ai_LoadWind();                     /* 0x5dc0c0 */
 int unk_Unk4ed910();                     /* 0x4ed910 */
 
