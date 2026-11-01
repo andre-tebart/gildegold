@@ -161,23 +161,14 @@ typedef struct AMTRANGEW {               /* an AMTRANGE's first pair read as the
 } AMTRANGEW;
 #pragma pack(pop)
 extern char ch_EmptyName[];             /* 0x631090 */
-int gm_GetWorth(unsigned short id);    /* 0x50a640 */
 extern int d3_CurrentScene;                /* 0x633444 */
 extern char ai_DataPath[];             /* 0x75dca0 */
 extern char ai_Time[];             /* 0x770ae0 */
-int ai_FindBauplaetze(char *name, int *out); /* 0x58f7a0, am.h */
-void ai_ObjectAngle(void *out, int plot);  /* 0x58fd90 (unk_58bbd0.c) */
 void err_Message(char *text);                     /* 0x4222b0 */
 int cm_SendLongMessage(char *msg);                     /* 0x4c4b70 */
 char * he_FindEvent(int n, ...);                     /* 0x53e400 */
-float gm_GetSkill(char *c, int skill);                   /* 0x504ec0 */
-float gm_GoodsValue(int p, unsigned id); /* 0x4ffbf0 */
-int gm_JobBuildingType(int x);          /* 0x504050 */
-void gm_Shuffled(unsigned char n, int *out); /* 0x505ca0 */
-char * gm_FindGoods(int p, unsigned id);                     /* 0x4ffc40 */
 void cm_SendSetField(int a, int b, int c, int d, int e);                     /* 0x4c4a60 */
 void cm_SendMoneyDelta(int a, int b);                     /* 0x4c5f60 */
-void gm_SendMoneyDelta(int a, int b);                          /* 0x50cc50, f3gm.c: forwards to cm_SendMoneyDelta (the original calls this thunk) */
 int sv_MessageBox(int text, unsigned flags); /* 0x521150, sv.c */
 extern int amt_Flip;                    /* 0x60f118, 2 at the start */
 extern unsigned char amt_PriceRows[];   /* 0x61a348, the guild-house price table: 37 rows of 0x15 bytes (the building kind, 10 goods ids) */
@@ -191,9 +182,6 @@ void cm_SendFieldDeltas(void);                /* 0x4c49a0 */
 void cm_SendRelations(int a, int b, int c, int d);                     /* 0x4c4b00 */
 int cm_GetSlotState(int h);                     /* 0x4c3ae0 */
 /* ai_TimeHour (0x770ae4, the clock's hour) is no object: time_view.h views it in ai_Time + 4 */
-extern unsigned short ai_PlayerId;     /* 0x6f25b8 (as am.h / cm.h / gv.h) */
-void ai_Unk5a8cb0(unsigned short *x, char *c);   /* 0x5a8cb0, unk_58bbd0.c: sends the office text 0x20bb to c for x */
-void ai_SendSwapText(unsigned short *c, unsigned short *o1, unsigned short *o2);  /* 0x5a9330, unk_58bbd0.c: the swap text */
 int amt_ApplyForOffice(char *c, unsigned int kind);  /* 0x4e6180 */
 int amt_CheckApplication(struct AMTAPP *m);           /* 0x4e6360 */
 int amt_AcceptApplication(AMTAPP *m);           /* 0x4e6430 */
@@ -261,7 +249,6 @@ int amt_SaveAemter(void *f);            /* 0x4ea690 */
 int amt_LoadAemter(void *f, int version);  /* 0x4ea7a0 */
 void amt_Unk4ea8e0(char *c);            /* 0x4ea8e0 */
 void amt_Unk4eaa00(unsigned int k);     /* 0x4eaa00 */
-float gm_Liking(unsigned a, unsigned b, int c);   /* 0x50c550 */
 
 int amt_GetOwnedOfficePay(void);        /* 0x4ea990 */
 
