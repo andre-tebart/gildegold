@@ -11,6 +11,16 @@
 #include "di_input.h"
 #include "net.h"
 #include "d2_types.h"                 /* D2OBJ, d2_Objs' record */
+#include "ahm.h"
+#include "anm.h"
+#include "cm.h"
+#include "f3gm.h"
+#include "f3snd.h"
+#include "io_text.h"
+#include "ls.h"
+#include "main.h"
+#include "sblib.h"
+#include "sv.h"
 #define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (f3gm.c: char *) as the AIGOOD records it points to */
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
