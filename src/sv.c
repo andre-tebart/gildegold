@@ -1132,8 +1132,8 @@ void sv_DestroyScreen(void)
         d2_RemoveWindow(ai_Unk623840);
         ai_Unk623840 = -1;
     }
-    sv_Unk529fb0();
-    ai_Unk6237cc = 1;
+    sv_ClosePanel();
+    sv_PanelRebuild = 1;
 }
 
 extern char *ai_Goods;              /* 0x91aaf0 */
@@ -3632,12 +3632,8 @@ void gm_AddTime(struct GCLOCK *c, int hours, int mins, int secs);               
 void rt_EditCartRoute();                     /* 0x4bf5b0 */
 int d2_RemoveWindowObjects();                     /* 0x472d20 */
 int gm_ListAmount();                     /* 0x50aaf0 */
-int ai_Unk5763c0();                     /* 0x5763c0 */
-void ai_Unk576040(int a, int b, int c, int d);                     /* 0x576040 */
-int ai_AmountMenu();                     /* 0x5c1130 */
-int ai_TransportWindow();                     /* 0x5af1d0 */
-int ai_Unk5b8fc0();                     /* 0x5b8fc0 */
-int ai_Unk5b84f0();                     /* 0x5b84f0 */
+int ai_RunAllows();                     /* 0x5763c0 */
+void ai_CampaignStep(int a, int b, int c, int d);                     /* 0x576040 */
 void ai_TechTreeWindow(int param_1, int param_2);                     /* 0x591bf0 */
 int sv_ReturnZero(void);
 void sv_OpenDefaultPanel(void);
@@ -4002,7 +3998,7 @@ void sv_RefreshPanel(void)
 }
 /* 0x529fb0, closes the info panel (0x623860): frees the widgets 0x62386c .. (4 ids), destroys the form and clears all the panel's widget ids (0x623864 .. 0x623898) */
 
-void sv_Unk529fb0(void)
+void sv_ClosePanel(void)
 {
     int *q;
 
@@ -4457,182 +4453,167 @@ int sv_Unk52b490(char *a, int b)
 }
 
 void d2_SetObjEnabled();                     /* 0x475e40 */
-int ai_Unk5763c0();                     /* 0x5763c0 */
-void ai_Unk576040(int a, int b, int c, int d);                     /* 0x576040 */
-int ai_AmountMenu();                     /* 0x5c1130 */
+int ai_RunAllows();                     /* 0x5763c0 */
+void ai_CampaignStep(int a, int b, int c, int d);                     /* 0x576040 */
 int gm_BuildingClass(int kind);                /* 0x501d80, f3gm.c, the class of a building kind */
-int ai_TransportWindow();                     /* 0x5af1d0 */
-int ai_Unk5b8fc0();                     /* 0x5b8fc0 */
-int ai_Unk5b84f0();                     /* 0x5b84f0 */
 void ai_TechTreeWindow(int param_1, int param_2);                     /* 0x591bf0 */
 void d2_FreeAnim(int n);                     /* 0x47ce30 */
 int d3t_PlaceAtObject();                     /* 0x4118a0 */
 void snd_PlayWorkerClick(struct G16CHARCLICK *c);                     /* 0x4c2c70 */
 
-/* 0x52a050, the per-frame refresh of the info panel: the right mouse button / the 0x2000 key flag act on the object under the cursor (selection, jump to a contact), then the panel
-   is rebuilt when the shown object / group / item changed (0x6f23bc .. 0x6f23d8 hold the last shown state); ROUGH */
+/* 0x52a050, the per-frame update of the info panel (not while the player bar is open or before the game runs):
+   enables the transport button unless the selected building holds the objects 0x2a / 0x116; with the 0x2000 frame
+   flag a click on the action button opens the tech tree of the player's (or the fallback building's shown room)
+   building when the player holds the permission 0x10, else the building window (the managed building window for
+   the classes 3 / 5); a click on the transport button opens ai_TransportWindow for a goods building, one on the
+   item button the amount menu. Then sv_RefreshPanel; when the selection differs from what the panel was built for
+   (sv_Shown*) or sv_PanelRebuild is set, the panel is closed and opened anew for the cart, the persons, the item /
+   room or the building, and the sv_Shown* state is stored */
 void sv_UpdatePanel(void)
 {
-    unsigned char *o, *p;
-    unsigned fl;
-    int c, k, f, v;
+    AIBLD *b, *sel;
+    AIBTYPE *bt;
+    int cls, i, perms, room;
     int st[0x14];
-    int *q;
 
-    if (SV_I((unsigned)&sv_PlayerBarForm) != -1)
+    b = 0;
+    if (sv_PlayerBarForm != -1)
         return;
-    if (SV_B((unsigned)&ai_GameState) == 0)
+    if (ai_GameState == 0)
         return;
-    o = (unsigned char *)SV_I((unsigned)&sv_SelectedObject);
-    if (o == 0 || gm_Query(*(int *)(o + 0x5d), 2, 6, 0, 0x2a) != 0 || gm_Query(*(int *)(o + 0x5d), 2, 6, 0, 0x116) != 0)
-        f = 1;
+    if (sv_SelectedObject != 0 && gm_Query(SV_SELBLD->objList, 2, 6, 0, 0x2a) == 0 && gm_Query(SV_SELBLD->objList, 2, 6, 0, 0x116) == 0)
+        d2_SetObjEnabled(sv_PanelTransportBtn, 0);
     else
-        f = 0;
-    d2_SetObjEnabled(SV_I((unsigned)&sv_PanelTransportBtn), f);
-    p = o;
-    fl = SV_U((unsigned)&sv_FrameMask) & 0x2000;
-    if (fl == 0) {
-l260:
-        if (d2_ClickedId != -1) {
-            if (SV_I((unsigned)&sv_PanelTransportBtn) == -1 || d2_PointerObj != SV_I((unsigned)&sv_PanelTransportBtn) || fl == 0) {
-                if (SV_I((unsigned)&sv_PanelItemBtn) != -1 && d2_PointerObj == SV_I((unsigned)&sv_PanelItemBtn) && fl != 0 && ai_Unk5763c0(0x80) == 1) {
-                    q = st;
-                    for (c = 0x14; c != 0; c--)
-                        *q++ = 0;
-                    st[1] = 0;
-                    st[5] = 4;
-                    ai_Unk576040(0xf, 0, 0, 0);
-                    ai_AmountMenu(st, ch_EmptyName, ch_EmptyName, sv_ReturnZero);
-                    ai_Unk576040(0xf, 0, 1, 0);
-                }
-            } else if (SV_I((unsigned)&sv_SelectedObject) != 0 && *(unsigned char *)SV_I((unsigned)&sv_SelectedObject) != 0x47) {
-                c = gm_BuildingClass(*(unsigned char *)SV_I((unsigned)&sv_SelectedObject));
-                if ((c == 1 || c == 2 || c == 4 || c == 7 || c == 8 || (k = ai_BTypes[*p * 0x24d]) == 0x10 || k == 0x1e) && ai_Unk5763c0(0x400) == 1) {
-                    SV_I((unsigned)&ai_BuildingPerms) = gm_PermissionBits(ai_PlayerId, p, 0, 0);
-                    ai_Unk576040(0x12, p, 0, 0);
-                    ai_TransportWindow(p, 1);
-                    ai_Unk576040(0x12, p, 1, 0);
-                    SV_I((unsigned)&sv_SelectedObject) = (int)p;
+        d2_SetObjEnabled(sv_PanelTransportBtn, 1);
+    if ((sv_FrameMask & 0x2000) != 0 && d2_ClickedId != -1 && sv_PanelActionBtn != -1 && d2_PointerObj == sv_PanelActionBtn) {
+        if (ai_PlayerBuilding != 0)
+            perms = gm_PermissionBits(ai_PlayerId, (unsigned char *)ai_PlayerBuilding, 0, 0);
+        else if (ai_FallbackBuilding != 0) {
+            if (sv_PanelShown == 0)
+                perms = gm_PermissionBits(ai_PlayerId, (unsigned char *)ai_FallbackBuilding, 0, 0);
+            else {
+                room = (int)gm_Query(((AIBLD *)ai_FallbackBuilding)->objList, 1, 0, ((AIBLD *)ai_FallbackBuilding)->mainRoom);
+                perms = gm_PermissionBits(ai_PlayerId, 0, room, 0);
+            }
+        } else {
+            if (sv_SelectedObject == 0)
+                goto refresh;
+            perms = gm_PermissionBits(ai_PlayerId, (unsigned char *)sv_SelectedObject, 0, 0);
+        }
+        sv_PanelPerms = perms;
+        if (ai_PlayerBuilding != 0 && (sv_PanelPerms & 0x10) != 0)
+            ai_TechTreeWindow((int)ai_PlayerBuilding, ((AIBLD *)ai_PlayerBuilding)->mainRoom);
+        else if (ai_FallbackBuilding != 0 && sv_PanelShown == 0)
+            ai_BuildingWindow((int)ai_FallbackBuilding);
+        else if (ai_FallbackBuilding != 0 && (sv_PanelPerms & 0x10) != 0)
+            ai_TechTreeWindow((int)ai_FallbackBuilding, *sv_PanelShown);
+        else if (sv_SelectedObject != 0) {
+            cls = gm_BuildingClass(SV_SELBLD->type);
+            sv_PanelPerms = gm_PermissionBits(ai_PlayerId, (unsigned char *)sv_SelectedObject, 0, 0);
+            if ((cls == 3 || cls == 5) && (sv_PanelPerms & 0x10) != 0)
+                ai_ManagedBuildingWindow((int)sv_SelectedObject);
+            else
+                ai_BuildingWindow((int)sv_SelectedObject);
+        }
+    } else if (d2_ClickedId != -1) {
+        if (sv_PanelTransportBtn != -1 && d2_PointerObj == sv_PanelTransportBtn && (sv_FrameMask & 0x2000) != 0) {
+            sel = SV_SELBLD;
+            if (sel != 0 && sel->type != 0x47) {
+                cls = gm_BuildingClass(sel->type);
+                bt = &ai_BTypesT[sel->type];
+                if ((cls == 1 || cls == 2 || cls == 4 || cls == 7 || cls == 8 || bt->kind == 0x10 || bt->kind == 0x1e) && ai_RunAllows(0x400) == 1) {
+                    ai_BuildingPerms = gm_PermissionBits(ai_PlayerId, (unsigned char *)sel, 0, 0);
+                    ai_CampaignStep(0x12, (int)sel, 0, 0);
+                    ai_TransportWindow((int)sel, 1);
+                    ai_CampaignStep(0x12, (int)sel, 1, 0);
+                    sv_SelectedObject = (char *)sel;
                     sv_ResetScreenClip();
                 }
             }
-        }
-    } else if (d2_ClickedId != -1) {
-        if (SV_I((unsigned)&sv_PanelActionBtn) == -1 || d2_PointerObj != SV_I((unsigned)&sv_PanelActionBtn))
-            goto l260;
-        p = (unsigned char *)SV_I((unsigned)&ai_PlayerBuilding);
-        if (p == 0) {
-            if (SV_I((unsigned)&ai_FallbackBuilding) == 0) {
-                p = (unsigned char *)SV_I((unsigned)&sv_SelectedObject);
-                if (p == 0)
-                    goto l3b8;
-                goto l188;
-            }
-            p = (unsigned char *)SV_I((unsigned)&ai_FallbackBuilding);
-            if (SV_I((unsigned)&sv_PanelShown) == 0)
-                goto l188;
-            v = gm_Query(*(int *)(SV_I((unsigned)&ai_FallbackBuilding) + 0x5d), 1, 0, *(unsigned short *)(SV_I((unsigned)&ai_FallbackBuilding) + 0x29));
-            sv_PanelPerms = gm_PermissionBits(ai_PlayerId, 0, v, 0);
-        } else {
-l188:
-            sv_PanelPerms = gm_PermissionBits(ai_PlayerId, p, 0, 0);
-        }
-        if (SV_I((unsigned)&ai_PlayerBuilding) == 0 || (sv_PanelPerms & 0x10) == 0) {
-            if (SV_I((unsigned)&ai_FallbackBuilding) == 0) {
-l1f2:
-                if (SV_I((unsigned)&sv_SelectedObject) != 0) {
-                    c = gm_BuildingClass(*(unsigned char *)SV_I((unsigned)&sv_SelectedObject));
-                    sv_PanelPerms = gm_PermissionBits(ai_PlayerId, SV_I((unsigned)&sv_SelectedObject), 0, 0);
-                    if ((c == 3 || c == 5) && (sv_PanelPerms & 0x10) != 0)
-                        ai_Unk5b8fc0(SV_I((unsigned)&sv_SelectedObject));
-                    else
-                        ai_Unk5b84f0(SV_I((unsigned)&sv_SelectedObject));
-                }
-            } else if (SV_I((unsigned)&sv_PanelShown) == 0) {
-                ai_Unk5b84f0(SV_I((unsigned)&ai_FallbackBuilding));
-            } else {
-                if ((sv_PanelPerms & 0x10) == 0)
-                    goto l1f2;
-                ai_TechTreeWindow(SV_I((unsigned)&ai_FallbackBuilding), *(unsigned short *)SV_I((unsigned)&sv_PanelShown));
-            }
-        } else {
-            ai_TechTreeWindow(SV_I((unsigned)&ai_PlayerBuilding), *(unsigned short *)(SV_I((unsigned)&ai_PlayerBuilding) + 0x29));
+        } else if (sv_PanelItemBtn != -1 && d2_PointerObj == sv_PanelItemBtn && (sv_FrameMask & 0x2000) != 0 && ai_RunAllows(0x80) == 1) {
+            for (i = 0; i < 0x14; i++)
+                st[i] = 0;
+            st[1] = 0;
+            st[5] = 4;
+            ai_CampaignStep(0xf, 0, 0, 0);
+            ai_AmountMenu((int)st, (int)ch_EmptyName, (int)ch_EmptyName, (int)sv_ReturnZero);
+            ai_CampaignStep(0xf, 0, 1, 0);
         }
     }
-l3b8:
+refresh:
     sv_RefreshPanel();
-    if (SV_I((unsigned)&sv_SelectedObject) == sv_ShownObject && SV_I((unsigned)&ai_FallbackBuilding) == sv_ShownFallback && SV_I((unsigned)&ai_PlayerBuilding) == sv_ShownBuilding
-        && SV_I((unsigned)&sv_PanelShown) == sv_ShownRoom && SV_I((unsigned)&sv_SelectedItem) == sv_ShownItem && SV_I((unsigned)&sv_SelectedChar) == sv_ShownChar
-        && sv_OtherSelected == sv_ShownOther && SV_I((unsigned)&ai_SelectedCount) == sv_ShownCount && SV_I((unsigned)&ai_Unk6237cc) == 0)
+    if ((int)sv_SelectedObject == sv_ShownObject && (int)ai_FallbackBuilding == sv_ShownFallback && (int)ai_PlayerBuilding == sv_ShownBuilding
+        && (int)sv_PanelShown == sv_ShownRoom && (int)sv_SelectedItem == sv_ShownItem && sv_SelectedChar == sv_ShownChar
+        && sv_OtherSelected == sv_ShownOther && ai_SelectedCount == sv_ShownCount && sv_PanelRebuild == 0)
         return;
-    SV_I((unsigned)&ai_Unk6237cc) = 0;
-    sv_Unk529fb0();
-    if (SV_I((unsigned)&sv_SelectedItem) == 0 || ai_Goods[*(unsigned short *)SV_I((unsigned)&sv_SelectedItem) * 0x41] != 0x1d || SV_I((unsigned)&ai_SelectedCount) != 0 || SV_I((unsigned)&sv_SelectedChar) != 0) {
-        if (SV_I((unsigned)&sv_SelectedModel) == 0 && sv_OtherSelected == 0) {
-            if (SV_I((unsigned)&ai_SelectedCount) == 0) {
-                if (SV_I((unsigned)&sv_PanelShown) == 0 && SV_I((unsigned)&sv_SelectedChar) == 0)
-                    sv_OpenDefaultPanel();
-                goto l510;
-            }
-        } else if (SV_I((unsigned)&ai_SelectedCount) == 0)
-            goto l510;
-        if (SV_I((unsigned)&sv_SelectedChar) != sv_ShownChar || sv_ShownCount != SV_I((unsigned)&ai_SelectedCount)) {
-            if (SV_I((unsigned)&ai_SelectedCount) < 2) {
-                sv_OpenPersonPanel((AICHAR *)SV_I((unsigned)&sv_SelectedChar));
-                sv_ShownChar = SV_I((unsigned)&sv_SelectedChar);
-                sv_RefreshPanel();
-            } else
+    sv_PanelRebuild = 0;
+    sv_ClosePanel();
+    if (sv_SelectedItem != 0 && ai_Goods[*sv_SelectedItem * 0x41] == 0x1d && ai_SelectedCount == 0 && sv_SelectedChar == 0)
+        sv_OpenCartPanel((AIOBJ *)sv_SelectedItem);
+    else if (sv_SelectedModel == 0 && sv_OtherSelected == 0 && ai_SelectedCount == 0) {
+        if (sv_PanelShown == 0 && sv_SelectedChar == 0)
+            sv_OpenDefaultPanel();
+    } else if (ai_SelectedCount != 0) {
+        if (sv_SelectedChar != sv_ShownChar || sv_ShownCount != ai_SelectedCount) {
+            if (ai_SelectedCount > 1)
                 sv_OpenPersonPanel(0);
+            else {
+                sv_OpenPersonPanel((AICHAR *)sv_SelectedChar);
+                sv_ShownChar = sv_SelectedChar;
+                sv_RefreshPanel();
+            }
         }
-    } else
-        sv_OpenCartPanel(SV_I((unsigned)&sv_SelectedItem));
-l510:
+    }
     sv_ShownOther = sv_OtherSelected;
-    sv_ShownFallback = SV_I((unsigned)&ai_FallbackBuilding);
-    sv_ShownBuilding = SV_I((unsigned)&ai_PlayerBuilding);
-    sv_ShownCount = SV_I((unsigned)&ai_SelectedCount);
-    if (SV_I((unsigned)&sv_SelectedModel) == 0 && SV_I((unsigned)&ai_FallbackBuilding) == 0 && SV_I((unsigned)&ai_PlayerBuilding) == 0) {
+    sv_ShownCount = ai_SelectedCount;
+    if (sv_SelectedModel == 0 && ai_FallbackBuilding == 0 && ai_PlayerBuilding == 0) {
+        sv_ShownItem = (int)sv_SelectedItem;
         sv_ShownFallback = 0;
         sv_ShownBuilding = 0;
         sv_ShownModel = 0;
-    } else {
-        sv_ShownRoom = SV_I((unsigned)&sv_PanelShown);
-        sv_ShownChar = SV_I((unsigned)&sv_SelectedChar);
-        sv_ShownItem = SV_I((unsigned)&sv_SelectedItem);
-        sv_ShownObject = SV_I((unsigned)&sv_SelectedObject);
-        if ((SV_I((unsigned)&sv_SelectedItem) == 0 && SV_I((unsigned)&sv_PanelShown) == 0) || SV_I((unsigned)&sv_PanelForm) != -1) {
-            if (SV_I((unsigned)&sv_SelectedObject) == 0 && SV_I((unsigned)&ai_FallbackBuilding) == 0) {
-                sv_ShownModel = 0;
-                return;
-            }
-            sv_ShownFallback = SV_I((unsigned)&ai_FallbackBuilding);
-            sv_ShownBuilding = SV_I((unsigned)&ai_PlayerBuilding);
-            sv_ShownModel = SV_I((unsigned)&sv_SelectedModel);
-            p = (unsigned char *)SV_I((unsigned)&sv_SelectedObject);
-            if (p == 0 && (p = (unsigned char *)SV_I((unsigned)&ai_FallbackBuilding)) == 0)
-                p = 0;
-            sv_OpenBuildingPanel(p);
-            sv_RefreshPanel();
-            return;
-        }
-        sv_ShownModel = SV_I((unsigned)&sv_SelectedModel);
-        if (SV_I((unsigned)&sv_SelectedItem) != 0) {
-            sv_ShownModel = SV_I((unsigned)&sv_SelectedModel);
-            sv_OpenItemPanel(SV_I((unsigned)&sv_SelectedItem));
-            sv_RefreshPanel();
-            return;
-        }
-        if (SV_I((unsigned)&sv_PanelShown) != 0) {
-            sv_OpenItemPanel(SV_I((unsigned)&sv_PanelShown));
-            sv_RefreshPanel();
-            return;
-        }
+        sv_ShownRoom = (int)sv_PanelShown;
+        sv_ShownChar = sv_SelectedChar;
+        sv_ShownObject = (int)sv_SelectedObject;
+        return;
     }
-    sv_ShownObject = SV_I((unsigned)&sv_SelectedObject);
-    sv_ShownRoom = SV_I((unsigned)&sv_PanelShown);
-    sv_ShownItem = SV_I((unsigned)&sv_SelectedItem);
-    sv_ShownChar = SV_I((unsigned)&sv_SelectedChar);
-    sv_ShownCount = SV_I((unsigned)&ai_SelectedCount);
+    sv_ShownFallback = (int)ai_FallbackBuilding;
+    sv_ShownBuilding = (int)ai_PlayerBuilding;
+    sv_ShownRoom = (int)sv_PanelShown;
+    sv_ShownChar = sv_SelectedChar;
+    sv_ShownItem = (int)sv_SelectedItem;
+    sv_ShownObject = (int)sv_SelectedObject;
+    if ((sv_SelectedItem != 0 || sv_PanelShown != 0) && sv_PanelForm == -1) {
+        sv_ShownFallback = (int)ai_FallbackBuilding;
+        sv_ShownBuilding = (int)ai_PlayerBuilding;
+        sv_ShownModel = sv_SelectedModel;
+        sv_ShownRoom = (int)sv_PanelShown;
+        if (sv_SelectedItem != 0) {
+            sv_ShownModel = sv_SelectedModel;
+            sv_ShownItem = (int)sv_SelectedItem;
+            sv_OpenItemPanel(sv_SelectedItem);
+            sv_RefreshPanel();
+        } else if (sv_PanelShown != 0) {
+            sv_ShownRoom = (int)sv_PanelShown;
+            sv_OpenItemPanel(sv_PanelShown);
+            sv_RefreshPanel();
+        }
+        return;
+    }
+    if (sv_SelectedObject == 0 && ai_FallbackBuilding == 0) {
+        sv_ShownModel = 0;
+        return;
+    }
+    sv_ShownRoom = (int)sv_PanelShown;
+    sv_ShownFallback = (int)ai_FallbackBuilding;
+    sv_ShownBuilding = (int)ai_PlayerBuilding;
+    sv_ShownModel = sv_SelectedModel;
+    sv_ShownObject = (int)sv_SelectedObject;
+    if (sv_SelectedObject != 0)
+        b = SV_SELBLD;
+    else if (ai_FallbackBuilding != 0)
+        b = (AIBLD *)ai_FallbackBuilding;
+    sv_OpenBuildingPanel(b);
+    sv_RefreshPanel();
 }
 
 struct D3OBJECT * d3if_Pick(float x, float y, int flags, int mask);   /* 0x448630 */
@@ -7221,8 +7202,8 @@ void d3t_DrawRain();                     /* 0x414590 */
 void d3t_DrawSnow();                     /* 0x415380 */
 struct D3OBJECT *d3t_CreateSunRays();                     /* 0x417190 */
 void d3t_FadeOutSunRays();                     /* 0x417150 */
-int ai_Unk5763c0();                     /* 0x5763c0 */
-void ai_Unk576040(int a, int b, int c, int d);                     /* 0x576040 */
+int ai_RunAllows();                     /* 0x5763c0 */
+void ai_CampaignStep(int a, int b, int c, int d);                     /* 0x576040 */
 extern unsigned ai_Unk623ecc;
 
 /* 0x5301a0, the weather of the current hour h (the clock 0x770ae4): the rain / snow emitters (0x76061c, 0x760618) get the cloud counter of the hour (0x760488, 24 counters), the wind strength follows the three
@@ -7366,8 +7347,8 @@ void sv_Unk5307f0(void)
 
     mask = SV_U((unsigned)&sv_FrameMask);
     sp = SV_I((unsigned)&ai_OptionSpeed);
-    if (ai_Unk5763c0(8) != 0) {
-        ai_Unk576040(0xb, 0, 0, 0);
+    if (ai_RunAllows(8) != 0) {
+        ai_CampaignStep(0xb, 0, 0, 0);
         mask = mask & 0xffffc3e7 | 0xc0;
         SV_I((unsigned)&full_data_6f22ac) = 1;
         SV_I((unsigned)&ai_OptionSpeed) = 0x2ee;
@@ -7385,7 +7366,7 @@ void sv_Unk5307f0(void)
         *(float *)(unsigned)&ch_Unk5f1290 = (float)sp * 0.00625f + 0.25f;
         SV_I((unsigned)&ai_OptionSpeed) = sp;
         d2_CloseView(f);
-        ai_Unk576040(0xb, 0, 1, 0);
+        ai_CampaignStep(0xb, 0, 1, 0);
     }
 }
 /* 0x530900, sets the screen centre 0xf8f08c / 0xf8f088: with mask bit 0x40 the centre of the 3D viewport
@@ -7776,7 +7757,7 @@ float sv_FramesPerTick = 30.0f;  /* 0x62378c */
 int sv_TickFrames = 30;  /* 0x623790, the frames drawn since the last timer tick (counted by the frame loop) */
 char sv_GroundplanColours[] = "\377\376\005\005%\377\377/\021\005\377\030\3746\343\377\231\005\005\377\366z\005\005\266W\377<\005P\031H\005\013\304^\305\005g\357\234\231\005\010r";  /* 0x623794, the table of */
 int sv_StatusTime = -1;  /* 0x6237c4, when the status line was set (d3_Time) */
-int ai_Unk6237cc = 1;  /* 0x6237cc */
+int sv_PanelRebuild = 1;  /* 0x6237cc */
 /* 0x6237d0, the camera limits: three settings of (height, angle), first the near view pair and then (+3 pairs)
    the far one. ai_ApplyGfxOptions (0x5d5c40) copies the pair of the camera_limits option (ai_GfxFloor.byte[1])
    into sv_CameraHeightNear .. sv_CameraAngleFar; setting 0 has the same near and far pair (no zoom) */

@@ -11271,7 +11271,7 @@ next:
         msx_StopAmbient(sound);
     ai_Unk4e3640();
     memcpy(a, copy, 0x114);
-    ai_Unk576040(0x30, 0, 0, 0);
+    ai_CampaignStep(0x30, 0, 0, 0);
 }
 /* 0x4da9e0, the vote dialog "cutscenes\\sitzungen" (buttons from the text 0x12c6): the answer of the player's choice; *out the click */
 

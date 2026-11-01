@@ -19,7 +19,11 @@ int ai_BuildingName(int id, char *out); /* 0x58f640, the building name of a kind
 /* 0x61168c: the "%1G" format of the map's city names (ai_FormatCityName). */
 void ai_TradeContactChecks(void);       /* 0x5912c0, the pending trade / master checks every contact listener runs once per frame */
 /* The windows the building contacts open (defined far below their callers in the .c). */
+int ai_TransportWindow(int building, int mode);          /* 0x5af1d0, the transport window of a building (sv_UpdatePanel: mode 1) */
 int ai_StorageWindow(int building, int list);           /* 0x5b26b0, the store window */
+int ai_BuildingWindow(int building);                     /* 0x5b84f0, the window the building panel's action button opens (reasoned) */
+int ai_ManagedBuildingWindow(int building);              /* 0x5b8fc0, its variant for the classes 3 / 5 with the permission 0x10 (reasoned) */
+int ai_AmountMenu(int cfg, int title, int text, int check);  /* 0x5c1130, the special-amount menu (cfg: an AMOUNTCFG, unk_5d33b0.h) */
 int ai_PersonnelBook(int building, char *text);         /* 0x5aab80, the personnel book */
 void ai_MasterLetterWindow(unsigned char *building);    /* 0x5c3200, the master letter window */
 

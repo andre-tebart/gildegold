@@ -88,7 +88,7 @@ struct AIOBJ; void sv_OpenCartPanel(struct AIOBJ *c);                           
 void sv_OpenDefaultPanel(void);                                                /* 0x528ee0 */
 struct AICHAR; void sv_OpenPersonPanel(struct AICHAR *c);                                 /* 0x5290f0 */
 void sv_RefreshPanel(void);                                                /* 0x529380 */
-void sv_Unk529fb0(void);                                                /* 0x529fb0 */
+void sv_ClosePanel(void);                                                /* 0x529fb0 */
 int sv_ReturnZero(void);                                                /* 0x52a040 */
 void sv_UpdatePanel(void);                                              /* 0x52a050 */
 void sv_Unk52a680(void);                                                /* 0x52a680 */
@@ -167,7 +167,7 @@ extern float sv_FramesPerTick;                              /* 0x62378c */
 extern int sv_TickFrames;                                   /* 0x623790 */
 extern char sv_GroundplanColours[];                                 /* 0x623794 */
 extern int sv_StatusTime;                                   /* 0x6237c4 */
-extern int ai_Unk6237cc;                                    /* 0x6237cc */
+extern int sv_PanelRebuild;                                    /* 0x6237cc */
 extern float sv_CameraLimits[12];                           /* 0x6237d0 */
 extern float sv_CameraHeightNear;                           /* 0x623800 */
 extern float sv_CameraAngleNear;                            /* 0x623804 */

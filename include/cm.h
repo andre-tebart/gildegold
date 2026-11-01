@@ -910,7 +910,7 @@ int ai_Unk4e3290();  /* 0x4e3290 */
 int ai_Unk4e2d40();  /* 0x4e2d40 */
 int ai_Unk4e3640();  /* 0x4e3640 */
 void amt_UpdateOffices();  /* 0x4e85d0 */
-void ai_Unk576040(int a, int b, int c, int d);  /* 0x576040 */
+void ai_CampaignStep(int a, int b, int c, int d);  /* 0x576040 */
 void ai_Unk4d8e20(char *a);  /* 0x4d8e20 */
 extern int ai_Unk60d360;  /* 0x60d360, the frame wait of the dialogs (0x5309a0) */
 extern int d2_ClickedId;  /* 0xf8a668 */

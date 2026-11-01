@@ -803,7 +803,7 @@ int ai_Unk575860(void)
         if (*(int *)(per + 8) == 2)
             U_I(S + 0x3c) = 1;
         if (*(int *)(per + 0x38))
-            ai_Unk576040(2, 0, 0, 0);
+            ai_CampaignStep(2, 0, 0, 0);
         U_I(S + 0x50) = 0;
         U_I(S + 0x58) = *(int *)(per + 0x64) != 0;
         U_I(S + 0x54) = 0;
@@ -833,7 +833,7 @@ int ai_Unk575860(void)
         st = S;
         per = *(char **)(st + 0x18);
         if (*(int *)(per + 0x40) == 3) {
-            ai_Unk576040(0, 0, 0, 0);
+            ai_CampaignStep(0, 0, 0, 0);
             break;
         }
         if (U_I((unsigned)&ai_ClockMs) > U_I(st + 8) + *(int *)(per + 0x2c)) {
@@ -1030,7 +1030,7 @@ void unk_SetEndGameGate(void)
    +0x44 / +0x48 the transition times, +0x4c an index, +0x50 a stored value. Every path ends with the step
    counter +0x10 incremented; the failed gates at the top return without it. */
 
-void ai_Unk576040(int a, int b, int c, int d)
+void ai_CampaignStep(int a, int b, int c, int d)
 {
     int p[4];
     int (*cb)(int *);
@@ -1178,7 +1178,7 @@ int ai_ScriptQuery(int a, int b, int c, int d)
 /* 0x5763c0, 1 when the run record's word +0x68 has a bit of `mask` (the run mask), else 0; 1 while 0x6f265c is 0
    and when there is no run record, 0 in the mode 2 / state 5 and while a transition 0x6333e0 is pending */
 
-int ai_Unk5763c0(int mask)
+int ai_RunAllows(int mask)
 {
     char *st;
 
@@ -9448,7 +9448,7 @@ int ai_Unk588c60(char *ch)
     txt_Format(line, (char *)(unsigned)&full_data_62a56c, 0);
     d2_CreateWinText(0, 0, line, U_I((unsigned)&d2_LastWindow));
     sv_DrawBalanceBar(0x64, 0x4df);
-    ai_Unk576040(7, ch, 0, 0);
+    ai_CampaignStep(7, ch, 0, 0);
     d2_SetForm(0, 3);
     (void)w;
     (void)v;

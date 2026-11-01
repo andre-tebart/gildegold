@@ -1303,7 +1303,7 @@ int ai_ProductionWindow(unsigned char *param_1)
     first = 1;
     if (sv_CheckCharacterFlag(param_1) != 0)
         return 0;
-    ai_Unk576040(0x1f, 0, 0, 0);
+    ai_CampaignStep(0x1f, 0, 0, 0);
     win = d2_OpenForm(0, 0, (char *)(unsigned)"Handel\\Handel_PRODUKTION");
     d2_CentreViewWindows(win);
     kind = *(char *)(U_I((unsigned)&ai_BTypes) + *param_1 * 0x24d);
@@ -1360,7 +1360,7 @@ int ai_ProductionWindow(unsigned char *param_1)
                                     U_I(((unsigned)&ai_Unkf8f13c + 0x248) + U_I((unsigned)&d2_LastWindow) * 0x3c4));
     d2_CloseView(win);
     sv_ClosePlayerBar();
-    ai_Unk576040(0x1f, 0, 1, 0);
+    ai_CampaignStep(0x1f, 0, 1, 0);
     return 0;
 }
 
@@ -2951,7 +2951,7 @@ int ai_Unk58ff00(int kind, char *out)
     return sel;
 }
 
-int ai_Unk5763c0(); int d2_OpenForm();
+int ai_RunAllows(); int d2_OpenForm();
 int d2_SetForm(int view, int n); int d2_GetViewWin(); int sv_CreateFormSlider(); int io_PrintText(char *fmt, ...);
 int d2_WinOpenPic(short x, short y, int pic, int win); int d2_CreateWinText(); void d2_SetObjFont(); void d2_SetObjText();  /* @original: the calls at 18534 (2), 18620 (3) and 6884 (3) pass fewer arguments than d2.h's 4-parameter prototype */
 void d2_SetViewEnabled(); void d2_CloseView(int view); int cm_SendLongMessage(char *msg);
@@ -2988,10 +2988,10 @@ void ai_Unk5909a0(void)
     last = -1;
     sel = -1;
     chosen = 0;
-    t = ai_Unk5763c0(0x40);
+    t = ai_RunAllows(0x40);
     if (t == 0)
         return;
-    ai_Unk576040(0xe, 0, 0, 0);
+    ai_CampaignStep(0xe, 0, 0, 0);
     k = d2_OpenForm(0, 0, "BAUEN_GEB_BAUEN");
     d2_CentreViewWindows(k);
     d2_SetForm(k, 0);
@@ -3044,7 +3044,7 @@ void ai_Unk5909a0(void)
     if (t != -1)
         d2_CloseView(t);
     U_I((unsigned)&sv_ResearchClass) = 0;
-    ai_Unk576040(0xe, 0, 1, 0);
+    ai_CampaignStep(0xe, 0, 1, 0);
 }
 
 int ai_Unk5b2180(); int gm_IsHomeType(); void sv_SelectPanelObject(unsigned char *o, int b, char *c); void sv_FlyCameraToObject(int o); void sv_CameraToObject();
@@ -3167,7 +3167,7 @@ void ai_Unk591480(void)
 
     if (U_I((unsigned)&kb_Last) == '1' && U_I((unsigned)&sv_CameraObj) != 0 &&
         *(int *)(((unsigned)&ai_Unk75f280 + 0x500) + U_I((unsigned)&sv_FrameDepth) * 8) == (int)ai_GameFrame) {
-        ai_Unk576040(0x16, 0, 0, 0);
+        ai_CampaignStep(0x16, 0, 0, 0);
         v[0] = *(float *)(U_I((unsigned)&sv_CameraObj) + 0x84);
         v[1] = 0;
         v[2] = *(float *)(U_I((unsigned)&sv_CameraObj) + 0x8c);
@@ -3410,10 +3410,10 @@ void ai_TechTreeWindow(int param_1, int param_2)
     int amount;
 
     if (param_1 == U_I((unsigned)&ai_PlayerBuilding)) {
-        win = ai_Unk5763c0(0x200);
+        win = ai_RunAllows(0x200);
         if (win == 0)
             return;
-        ai_Unk576040(0x11, param_1, 0, param_2);
+        ai_CampaignStep(0x11, param_1, 0, param_2);
     } else {
         win = 0;
     }
@@ -3451,7 +3451,7 @@ void ai_TechTreeWindow(int param_1, int param_2)
         gm_Unk50c4d0();
         U_I((unsigned)&sv_ResearchClass) = 0;
         if (param_1 == U_I((unsigned)&ai_PlayerBuilding))
-            ai_Unk576040(0x11, param_1, 1, param_2);
+            ai_CampaignStep(0x11, param_1, 1, param_2);
     }
 }
 /* 0x592230, the upgrade listener (89 B): the pump 0x5309a0 (this, 0x67fff) until 0; when the pending contact
@@ -4033,7 +4033,7 @@ void ai_Unk593960(int param_1)
     gelage = 0;
     stroh = 0;
     ziel = 0;
-    ai_Unk576040(0x1b, param_1, 0, 0);
+    ai_CampaignStep(0x1b, param_1, 0, 0);
     sv_ReleaseNamePlates();
     r = sv_RunFrame(ai_Unk593960, 0x67fff);
     while (r != 0) {
@@ -4062,7 +4062,7 @@ void ai_Unk593960(int param_1)
         }
         r = sv_RunFrame(ai_Unk593960, 0x67fff);
     }
-    ai_Unk576040(0x1c, param_1, 0, 0);
+    ai_CampaignStep(0x1c, param_1, 0, 0);
 }
 /* 0x593b00, the wood-kontor contact listener (416 B): 0x52e190; the context *(param_1 + 0x71); the pump
    0x5309a0 (this, 0x67fff); while the flag 0x6f231c has 0x200: LAGER (0x1441f90, 0xe), PRODUKTION_HOLZ
@@ -7095,21 +7095,21 @@ void ai_Unk59a710(int param_1, int param_2)
 {
     U_I((unsigned)&sv_SelectedObject) = 0;
     U_I((unsigned)&sv_SelectedModel) = 0;
-    sv_Unk529fb0();
+    sv_ClosePanel();
     sv_ClearSelection();
     U_I((unsigned)&ai_Unk6f2318) = 1;
     if (U_I((unsigned)&sv_PanelForm) != -1)
         d2_SetViewEnabled(U_I((unsigned)&sv_PanelForm), 0);
     U_I((unsigned)&sv_PanelShown) = gm_Query(U_I(U_I((unsigned)&ai_MarketBuilding) + 0x5d), 1, 0, param_2);
     if (U_I((unsigned)&sv_PanelShown) != 0) {
-        ai_Unk576040(0x17, U_I((unsigned)&sv_PanelShown), 0, param_2);
+        ai_CampaignStep(0x17, U_I((unsigned)&sv_PanelShown), 0, param_2);
         while (U_I((unsigned)&sv_PanelShown) != 0) {
             U_I((unsigned)&ai_Unk6f2318) = 1;
             ai_TransportWindow(param_1, 9);
         }
     }
-    ai_Unk576040(0x18, U_I((unsigned)&sv_PanelShown), 0, param_2);
-    ai_Unk576040(0x17, U_I((unsigned)&sv_PanelShown), 1, param_2);
+    ai_CampaignStep(0x18, U_I((unsigned)&sv_PanelShown), 0, param_2);
+    ai_CampaignStep(0x17, U_I((unsigned)&sv_PanelShown), 1, param_2);
     U_I((unsigned)&sv_PanelShown) = 0;
     if (U_I((unsigned)&sv_PanelForm) != -1)
         d2_SetViewEnabled();
@@ -8888,7 +8888,7 @@ void ai_Unk59e420(unsigned char *param_1, int param_2)
                 U_I((unsigned)&sv_BorderViewX) = 0;
                 U_I((unsigned)&sv_BorderViewY) = 0;
             }
-            ai_Unk576040(0x19, room, 0, 0);
+            ai_CampaignStep(0x19, room, 0, 0);
             vid = *room;
             switch (vid) {
             case 0x13: ai_Unk597500(U_I((unsigned)&ai_PlayerBuilding), room); break;
@@ -8936,7 +8936,7 @@ void ai_Unk59e420(unsigned char *param_1, int param_2)
             case 0x29e: ai_ProductionContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
             default: ai_PumpFrames(room); break;
             }
-            ai_Unk576040(0x1a, room, 0, 0);
+            ai_CampaignStep(0x1a, room, 0, 0);
             U_I((unsigned)&full_data_6f2314) = (int)room;
             /* ROUGH: 0x4284a0 / 0x429e90 / 0x52bb70 of the device record and 0x5fb5b0 callback +0x294 */
             if (U_I((unsigned)&ai_Unk5f8438) != -1)
@@ -9441,7 +9441,7 @@ void ai_Unk59fe40(int param_1)
                 cm_SendMoveGoodsUnchecked(U_I(room + 2), U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x87), 0, 16000);
                 cm_SendSetField(U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x87), 0x1c8, 4, 0, 0x4000);
                 txt_Format(date, 0x19ff);
-                ai_Unk576040(0x2e, 0, 0, 0);
+                ai_CampaignStep(0x2e, 0, 0, 0);
                 done = 1;
                 sv_MessageBox(date, 0);
             }
@@ -9453,7 +9453,7 @@ void ai_Unk59fe40(int param_1)
     d2_CloseView(win);
     sv_CameraFollow();
     if (done)
-        ai_Unk576040(0x2e, 0, 1, 0);
+        ai_CampaignStep(0x2e, 0, 1, 0);
 }
 
 int amt_GetFirstOffice(unsigned int k, struct AMTREC *out); int amt_ApplyForOffice(); int amt_KindColumn(); void sv_PumpNet();
@@ -9550,7 +9550,7 @@ int ai_Unk5a0220(int param_1, unsigned int param_2)
                             sv_PumpNet();
                     if (cm_GetSlotState(handle) == 1)
                         ok = 1;
-                    ai_Unk576040(0x2f, 0, 0, param_2);
+                    ai_CampaignStep(0x2f, 0, 0, param_2);
                 } else if (U_I((unsigned)&d2_PointerObj) == ctl2) {
                     r = amt_KindColumn(param_2);
                     ai_Unk5bea50(r, 0, 0, 0, (void *)(unsigned)&sv_ReturnZero);
@@ -9566,7 +9566,7 @@ int ai_Unk5a0220(int param_1, unsigned int param_2)
                 d2_CloseView(win);
             if (ok != 0) {
                 U_I((unsigned)&sv_PopRequest) = 1;
-                ai_Unk576040(0x2f, 0, 1, param_2);
+                ai_CampaignStep(0x2f, 0, 1, param_2);
             }
             return ok;
         }
@@ -15134,7 +15134,7 @@ int ai_Unk5ae6b0(unsigned int param_1, int param_2, int param_3, int param_4)
         cm_SendMoveGoodsUnchecked(-1, U_I((unsigned)&ai_CharInts + param_1 * 0x21c), *(unsigned char *)(unsigned)&ai_OwnPlayer, v);
     }
     if (param_1 == U_W((unsigned)&ai_PlayerId))
-        ai_Unk576040(0x24, param_4, 0, 0);
+        ai_CampaignStep(0x24, param_4, 0, 0);
     return v;
 }
 /* 0x5ae870, the transport order of one entry (100 B): walks the carriers (0x53e400 (1, 0, 0xf)); the carrier
@@ -15275,20 +15275,20 @@ int ai_Unk5ae9a0(int param_1, int param_2, unsigned char *param_3, int param_4, 
                 d2_SetObjValue(row[4], 0, row[0xc], m - n);
             } else if (param_5 == 0) {
                 if (ai_ScriptQuery(0x25, param_3, 0, row[0]) != 0) {
-                    ai_Unk576040(0x25, param_3, 0, row[0]);
+                    ai_CampaignStep(0x25, param_3, 0, row[0]);
                     goto order;
                 }
             } else if (ai_ScriptQuery(0x2a, param_3, 0, row[0]) != 0) {
-                ai_Unk576040(0x2a, param_3, 0, row[0]);
+                ai_CampaignStep(0x2a, param_3, 0, row[0]);
                 goto order;
             }
         } else if (param_5 == 0) {
             if (ai_ScriptQuery(0x27, param_3, 0, row[0]) != 0) {
-                ai_Unk576040(0x27, param_3, 0, row[0]);
+                ai_CampaignStep(0x27, param_3, 0, row[0]);
                 goto order;
             }
         } else if (ai_ScriptQuery(0x29, param_3, 0, row[0]) != 0) {
-            ai_Unk576040(0x29, param_3, 0, row[0]);
+            ai_CampaignStep(0x29, param_3, 0, row[0]);
 order:
             cm_SendExSellObject(param_1, *(int *)(param_2 + 2), row[0], n, param_7, (int)v);
             if (v != 0.0f && param_6 != 1.0f) {
@@ -15856,7 +15856,7 @@ int ai_Unk5b82a0(int param_1)
 }
 /* 0x5b84f0, a window (2752 B, ROUGH SKELETON): param_1, a 0x9d0-byte frame; the body is a comment */
 
-int ai_Unk5b84f0(int param_1)
+int ai_BuildingWindow(int param_1)
 {
     /* ROUGH SKELETON: the 0x9d0-byte frame */
     (void)param_1;
@@ -15864,7 +15864,7 @@ int ai_Unk5b84f0(int param_1)
 }
 /* 0x5b8fc0, a window (800 B, ROUGH SKELETON): param_1, a 0x18-byte frame; the body is a comment */
 
-int ai_Unk5b8fc0(int param_1)
+int ai_ManagedBuildingWindow(int param_1)
 {
     /* ROUGH SKELETON: the 0x18-byte frame */
     (void)param_1;
@@ -16138,9 +16138,9 @@ int ai_Unk5bcc70(void)
     int *p;
     int k;
 
-    if (ai_Unk5763c0(0x800) == 0)
+    if (ai_RunAllows(0x800) == 0)
         return 0;
-    ai_Unk576040(0x13, 0, 0, 0);
+    ai_CampaignStep(0x13, 0, 0, 0);
     win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62d134);
     d2_CentreViewWindows(win);
     d2_SetForm(win, 0);
@@ -16227,7 +16227,7 @@ int ai_Unk5bcc70(void)
         d2_CloseView(ctrlB);
     if (ctrlC != -1)
         d2_CloseView(ctrlC);
-    ai_Unk576040(0x13, 0, 1, 0);
+    ai_CampaignStep(0x13, 0, 1, 0);
     return 0;
 }
 /* 0x5bd060, the clamp of a combined id (88 B): with param_1 and param_3 positive,
@@ -18695,9 +18695,9 @@ void ai_Unk5c4150(int param_1, unsigned char param_2, int param_3, int param_4)
     int x;
     int y;
 
-    if (ai_Unk5763c0(1) == 0)
+    if (ai_RunAllows(1) == 0)
         return;
-    ai_Unk576040(6, 0, 0, 0);
+    ai_CampaignStep(6, 0, 0, 0);
     ch = (char *)gm_FindChar(param_1);
     if (ch == 0)
         return;
@@ -18759,7 +18759,7 @@ void ai_Unk5c4150(int param_1, unsigned char param_2, int param_3, int param_4)
             break;
     }
     d2_CloseView(win);
-    ai_Unk576040(6, 0, 1, 0);
+    ai_CampaignStep(6, 0, 1, 0);
 }
 
 void gm_BirthDate(char *c, unsigned *out); int gm_BirthDate2(); float gm_CharAge(); int gm_GetGoodsValue();
@@ -19604,9 +19604,9 @@ void ai_Unk5c7f00(void)
     colors[13] = 0xee;
     if (*(unsigned short *)(unsigned)&full_data_6f2f88 == 0)
         *(unsigned short *)(unsigned)&full_data_6f2f88 = 1;
-    if (!ai_Unk5763c0(0x10))
+    if (!ai_RunAllows(0x10))
         return;
-    ai_Unk576040(0xc, 0, 0, 0);
+    ai_CampaignStep(0xc, 0, 0, 0);
     win = d2_OpenForm((char *)(unsigned)&full_data_62d440, 0, 0);
     d2_SetPointerSprite(0, 0);
     d2_CentreViewWindows(win);
@@ -19653,7 +19653,7 @@ void ai_Unk5c7f00(void)
             *(int *)(unsigned)&sv_PopRequest = 1;
     } while (sv_RunFrame(ai_Unk5c7f00, 0x657c7) != 0);
     d2_CloseView(win);
-    ai_Unk576040(0xc, 0, 1, 0);
+    ai_CampaignStep(0xc, 0, 1, 0);
 }
 
 void gm_Unk506180(int *count, unsigned short *out);   /* 0x506180 (defined in f3gm.c) */
@@ -19691,9 +19691,9 @@ void ai_Unk5c82f0(void)
     pos[6] = 0xb3;
     pos[7] = 0xb9;
     gm_Unk506180(&count, list);
-    if (count == 0 || ai_Unk5763c0(4) == 0)
+    if (count == 0 || ai_RunAllows(4) == 0)
         return;
-    ai_Unk576040(10, 0, 0, 0);
+    ai_CampaignStep(10, 0, 0, 0);
     if (count < 7)
         win = d2_OpenForm((char *)(unsigned)&full_data_62d468, 0, 0);
     else
@@ -19727,7 +19727,7 @@ void ai_Unk5c82f0(void)
             *(int *)(unsigned)&sv_PopRequest = 1;
     } while (sv_RunFrame(ai_Unk5c82f0, 0x657c7) != 0);
     d2_CloseView(win);
-    ai_Unk576040(10, 0, 1, 0);
+    ai_CampaignStep(10, 0, 1, 0);
 }
 
 int ord_PrivilegeDialog();
@@ -19770,9 +19770,9 @@ void ai_Unk5c8640(void)
         ord_PrivilegeDialog(*(int *)((unsigned)&ai_MessageFilterTexts + 0x3c), 0, 0x657c7);
         return;
     }
-    if (!ai_Unk5763c0(2))
+    if (!ai_RunAllows(2))
         return;
-    ai_Unk576040(8, 0, 0, 0);
+    ai_CampaignStep(8, 0, 0, 0);
     for (p = arr, i = 0; i < 0x88; i++)
         *p++ = 0;
     arr[0] = 1;
@@ -19907,7 +19907,7 @@ found:
             *(int *)(unsigned)&sv_PopRequest = 1;
     } while (sv_RunFrame(ai_Unk5c8640, 0x657c7) != 0);
     d2_CloseView(win);
-    ai_Unk576040(8, 0, 1, 0);
+    ai_CampaignStep(8, 0, 1, 0);
 }
 
 int gm_Unk505840(char *c);   /* 0x505840 (defined in f3gm.c) */
@@ -21637,7 +21637,7 @@ int ai_EspionageResult(int param_1, int *m)  /* m: the handler's second argument
 
     if (*(char *)(param_1 + 2) != 6)
         return 0;   /* ROUGH: the other path at 0x5cd8b1 is not written */
-    ai_Unk576040(9, 0, 0, 0);
+    ai_CampaignStep(9, 0, 0, 0);
     win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62d660);
     d2_CentreViewWindows(win);
     d2_SetForm(win, 0);
@@ -22440,7 +22440,7 @@ int ai_Unk5cf8a0(int param_1, int *param_2)
         if (ret == 0)
             return 0;
     }
-    ai_Unk576040(0x2d, 0, 0, *(unsigned short *)*param_2);
+    ai_CampaignStep(0x2d, 0, 0, *(unsigned short *)*param_2);
     if (*(int *)(rec + 0x10) != 0)
         cm_SendSetField(*(int *)(param_1 + 4), 0x1ec, 4, *(int *)(rec + 0x10), 0);
     if (*(int *)(rec + 4) != 0) {
