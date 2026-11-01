@@ -79,21 +79,11 @@ extern GAPDATA full_data_6f22dc[];
 extern GAPDATA full_data_6f2364[];
 extern GAPDATA full_data_6faa60[];
 extern void *d2_ScreenSurf;  /* 0x6ed924 */
-extern GAPDATA full_data_6f2338[];
 extern GAPDATA full_data_76631c[];
 extern GAPDATA full_data_75ec80[];
 extern GAPDATA full_data_75ec84[];
 extern unsigned char ai_TimeHour;
-extern GAPDATA full_data_6f2294[];
 extern GAPDATA full_data_6f2320[];
-extern GAPDATA full_data_6f23bc[];
-extern GAPDATA full_data_6f23c0[];
-extern GAPDATA full_data_6f23c4[];
-extern GAPDATA full_data_6f23c8[];
-extern GAPDATA full_data_6f23cc[];
-extern GAPDATA full_data_6f23d0[];
-extern GAPDATA full_data_6f23d4[];
-extern GAPDATA full_data_6f23d8[];
 
 extern char * ai_Unk6f22e8;
 extern int ai_Unk6f22f8;
@@ -125,7 +115,6 @@ extern GAPDATA full_data_6f22f0[];
 extern GAPDATA full_data_6f22f4[];
 extern GAPDATA full_data_6f22fc[];
 extern GAPDATA full_data_6f2300[];
-extern GAPDATA full_data_6f2338[];
 extern GAPDATA full_data_6f23e0[];
 extern GAPDATA full_data_760458[];
 extern GAPDATA full_data_76045c[];
@@ -164,7 +153,6 @@ extern GAPDATA full_data_6f22ec[];
 extern int ai_Unk6f2318;
 extern GAPDATA full_data_6f22fc[];
 extern GAPDATA full_data_6f2320[];
-extern GAPDATA full_data_6f2338[];
 extern GAPDATA full_data_6f23e4[];
 extern GAPDATA full_data_6f23e8[];
 extern GAPDATA full_data_6f262c[];
@@ -3638,11 +3626,10 @@ extern int sv_PanelKind1eBtn;  /* 0x623898 */
 extern int sv_PanelPortrait;  /* 0x623880 */
 extern int ai_SelectedCount;  /* 0x6f2334 */
 extern unsigned char ai_GameState;  /* 0x6f25ac */
-extern char ai_Unk6f2338;  /* 0x6f2338 */
 extern int d2_PointerObj;  /* 0x5fe710 */
 extern char *ai_Unk7662c0p;
 extern unsigned short * sv_SelectedItem;
-extern int ai_Unk6f23bc, ai_Unk6f23c0, ai_Unk6f23c4, ai_Unk6f23c8, ai_Unk6f23cc, ai_Unk6f23d0, ai_Unk6f23d4, ai_Unk6f23d8, ai_Unk6f2294, ai_BuildingPerms, ai_Unk6f2320;  /* 0x6f23bc, 0x6f23c0, 0x6f23c4, 0x6f23c8, 0x6f23cc, 0x6f23d0, 0x6f23d4, 0x6f23d8, 0x6f2294, 0x6f231c, 0x6f2320 */
+extern int ai_BuildingPerms;  /* 0x6f231c */
 int gm_Opinion(int a, int b);                     /* 0x50c520 */
 int gm_MinutesBetween();                     /* 0x4fe280 */
 void gm_AddTime(struct GCLOCK *c, int hours, int mins, int secs);                     /* 0x4fe140 */
@@ -4345,7 +4332,7 @@ void sv_Unk52adb0(void)
         SV_I((unsigned)&full_data_76631c) = 0;
         return;
     }
-    SV_B((unsigned)&full_data_6f2338) = 0;
+    sv_OtherSelected = 0;
     p = (unsigned short *)((char *(*)())gm_Query)(*(int *)(o + 0x5d), 1, 5);
     while (p != 0) {
         if (ai_Goods[*p * 0x41] == 0x1d)
@@ -4578,14 +4565,14 @@ l1f2:
     }
 l3b8:
     sv_RefreshPanel();
-    if (SV_I((unsigned)&sv_SelectedObject) == SV_I((unsigned)&full_data_6f23c4) && SV_I((unsigned)&ai_FallbackBuilding) == SV_I((unsigned)&full_data_6f23c0) && SV_I((unsigned)&ai_PlayerBuilding) == SV_I((unsigned)&full_data_6f23bc)
-        && SV_I((unsigned)&sv_PanelShown) == SV_I((unsigned)&full_data_6f23c8) && SV_I((unsigned)&sv_SelectedItem) == SV_I((unsigned)&full_data_6f23cc) && SV_I((unsigned)&sv_SelectedChar) == SV_I((unsigned)&full_data_6f23d0)
-        && SV_B((unsigned)&full_data_6f2338) == SV_I((unsigned)&full_data_6f23d4) && SV_I((unsigned)&ai_SelectedCount) == SV_I((unsigned)&full_data_6f23d8) && SV_I((unsigned)&ai_Unk6237cc) == 0)
+    if (SV_I((unsigned)&sv_SelectedObject) == sv_ShownObject && SV_I((unsigned)&ai_FallbackBuilding) == sv_ShownFallback && SV_I((unsigned)&ai_PlayerBuilding) == sv_ShownBuilding
+        && SV_I((unsigned)&sv_PanelShown) == sv_ShownRoom && SV_I((unsigned)&sv_SelectedItem) == sv_ShownItem && SV_I((unsigned)&sv_SelectedChar) == sv_ShownChar
+        && sv_OtherSelected == sv_ShownOther && SV_I((unsigned)&ai_SelectedCount) == sv_ShownCount && SV_I((unsigned)&ai_Unk6237cc) == 0)
         return;
     SV_I((unsigned)&ai_Unk6237cc) = 0;
     sv_Unk529fb0();
     if (SV_I((unsigned)&sv_SelectedItem) == 0 || ai_Goods[*(unsigned short *)SV_I((unsigned)&sv_SelectedItem) * 0x41] != 0x1d || SV_I((unsigned)&ai_SelectedCount) != 0 || SV_I((unsigned)&sv_SelectedChar) != 0) {
-        if (SV_I((unsigned)&sv_SelectedModel) == 0 && SV_B((unsigned)&full_data_6f2338) == 0) {
+        if (SV_I((unsigned)&sv_SelectedModel) == 0 && sv_OtherSelected == 0) {
             if (SV_I((unsigned)&ai_SelectedCount) == 0) {
                 if (SV_I((unsigned)&sv_PanelShown) == 0 && SV_I((unsigned)&sv_SelectedChar) == 0)
                     sv_OpenDefaultPanel();
@@ -4593,10 +4580,10 @@ l3b8:
             }
         } else if (SV_I((unsigned)&ai_SelectedCount) == 0)
             goto l510;
-        if (SV_I((unsigned)&sv_SelectedChar) != SV_I((unsigned)&full_data_6f23d0) || SV_I((unsigned)&full_data_6f23d8) != SV_I((unsigned)&ai_SelectedCount)) {
+        if (SV_I((unsigned)&sv_SelectedChar) != sv_ShownChar || sv_ShownCount != SV_I((unsigned)&ai_SelectedCount)) {
             if (SV_I((unsigned)&ai_SelectedCount) < 2) {
                 sv_OpenPersonPanel((AICHAR *)SV_I((unsigned)&sv_SelectedChar));
-                SV_I((unsigned)&full_data_6f23d0) = SV_I((unsigned)&sv_SelectedChar);
+                sv_ShownChar = SV_I((unsigned)&sv_SelectedChar);
                 sv_RefreshPanel();
             } else
                 sv_OpenPersonPanel(0);
@@ -4604,27 +4591,27 @@ l3b8:
     } else
         sv_OpenCartPanel(SV_I((unsigned)&sv_SelectedItem));
 l510:
-    SV_I((unsigned)&full_data_6f23d4) = SV_B((unsigned)&full_data_6f2338);
-    SV_I((unsigned)&full_data_6f23c0) = SV_I((unsigned)&ai_FallbackBuilding);
-    SV_I((unsigned)&full_data_6f23bc) = SV_I((unsigned)&ai_PlayerBuilding);
-    SV_I((unsigned)&full_data_6f23d8) = SV_I((unsigned)&ai_SelectedCount);
+    sv_ShownOther = sv_OtherSelected;
+    sv_ShownFallback = SV_I((unsigned)&ai_FallbackBuilding);
+    sv_ShownBuilding = SV_I((unsigned)&ai_PlayerBuilding);
+    sv_ShownCount = SV_I((unsigned)&ai_SelectedCount);
     if (SV_I((unsigned)&sv_SelectedModel) == 0 && SV_I((unsigned)&ai_FallbackBuilding) == 0 && SV_I((unsigned)&ai_PlayerBuilding) == 0) {
-        SV_I((unsigned)&full_data_6f23c0) = 0;
-        SV_I((unsigned)&full_data_6f23bc) = 0;
-        SV_I((unsigned)&full_data_6f2294) = 0;
+        sv_ShownFallback = 0;
+        sv_ShownBuilding = 0;
+        sv_ShownModel = 0;
     } else {
-        SV_I((unsigned)&full_data_6f23c8) = SV_I((unsigned)&sv_PanelShown);
-        SV_I((unsigned)&full_data_6f23d0) = SV_I((unsigned)&sv_SelectedChar);
-        SV_I((unsigned)&full_data_6f23cc) = SV_I((unsigned)&sv_SelectedItem);
-        SV_I((unsigned)&full_data_6f23c4) = SV_I((unsigned)&sv_SelectedObject);
+        sv_ShownRoom = SV_I((unsigned)&sv_PanelShown);
+        sv_ShownChar = SV_I((unsigned)&sv_SelectedChar);
+        sv_ShownItem = SV_I((unsigned)&sv_SelectedItem);
+        sv_ShownObject = SV_I((unsigned)&sv_SelectedObject);
         if ((SV_I((unsigned)&sv_SelectedItem) == 0 && SV_I((unsigned)&sv_PanelShown) == 0) || SV_I((unsigned)&sv_PanelForm) != -1) {
             if (SV_I((unsigned)&sv_SelectedObject) == 0 && SV_I((unsigned)&ai_FallbackBuilding) == 0) {
-                SV_I((unsigned)&full_data_6f2294) = 0;
+                sv_ShownModel = 0;
                 return;
             }
-            SV_I((unsigned)&full_data_6f23c0) = SV_I((unsigned)&ai_FallbackBuilding);
-            SV_I((unsigned)&full_data_6f23bc) = SV_I((unsigned)&ai_PlayerBuilding);
-            SV_I((unsigned)&full_data_6f2294) = SV_I((unsigned)&sv_SelectedModel);
+            sv_ShownFallback = SV_I((unsigned)&ai_FallbackBuilding);
+            sv_ShownBuilding = SV_I((unsigned)&ai_PlayerBuilding);
+            sv_ShownModel = SV_I((unsigned)&sv_SelectedModel);
             p = (unsigned char *)SV_I((unsigned)&sv_SelectedObject);
             if (p == 0 && (p = (unsigned char *)SV_I((unsigned)&ai_FallbackBuilding)) == 0)
                 p = 0;
@@ -4632,9 +4619,9 @@ l510:
             sv_RefreshPanel();
             return;
         }
-        SV_I((unsigned)&full_data_6f2294) = SV_I((unsigned)&sv_SelectedModel);
+        sv_ShownModel = SV_I((unsigned)&sv_SelectedModel);
         if (SV_I((unsigned)&sv_SelectedItem) != 0) {
-            SV_I((unsigned)&full_data_6f2294) = SV_I((unsigned)&sv_SelectedModel);
+            sv_ShownModel = SV_I((unsigned)&sv_SelectedModel);
             sv_OpenItemPanel(SV_I((unsigned)&sv_SelectedItem));
             sv_RefreshPanel();
             return;
@@ -4645,11 +4632,11 @@ l510:
             return;
         }
     }
-    SV_I((unsigned)&full_data_6f23c4) = SV_I((unsigned)&sv_SelectedObject);
-    SV_I((unsigned)&full_data_6f23c8) = SV_I((unsigned)&sv_PanelShown);
-    SV_I((unsigned)&full_data_6f23cc) = SV_I((unsigned)&sv_SelectedItem);
-    SV_I((unsigned)&full_data_6f23d0) = SV_I((unsigned)&sv_SelectedChar);
-    SV_I((unsigned)&full_data_6f23d8) = SV_I((unsigned)&ai_SelectedCount);
+    sv_ShownObject = SV_I((unsigned)&sv_SelectedObject);
+    sv_ShownRoom = SV_I((unsigned)&sv_PanelShown);
+    sv_ShownItem = SV_I((unsigned)&sv_SelectedItem);
+    sv_ShownChar = SV_I((unsigned)&sv_SelectedChar);
+    sv_ShownCount = SV_I((unsigned)&ai_SelectedCount);
 }
 
 struct D3OBJECT * d3if_Pick(float x, float y, int flags, int mask);   /* 0x448630 */
@@ -4901,7 +4888,7 @@ lfe4:
          && SV_I((unsigned)&sv_ViewRectTop) < SV_S(((unsigned)&dm_L + 0x2)) && SV_S(((unsigned)&dm_L + 0x2)) < SV_I((unsigned)&sv_ViewRectBottom) && d2_HitWindow == -1 && SV_I((unsigned)&d2_HitUnderPointer) == -1)
         || found) {
         if (SV_C((unsigned)&ai_Unk6f22e8) == 0) {
-            if (SV_B((unsigned)&full_data_6f2338) == 0) {
+            if (sv_OtherSelected == 0) {
                 sv_Unk52adb0();
                 return;
             }
@@ -4938,7 +4925,7 @@ lfe4:
                 }
                 SV_I((unsigned)&sv_PanelCartChar) = SV_I(((unsigned)&ai_Unk770cec + 0x18) + *(unsigned short *)SV_I((unsigned)&ai_Unk6f22f8) * 0x21c);
             }
-            if (SV_I((unsigned)&ai_SelectedCount) == 0 && SV_B((unsigned)&full_data_6f2338) == 0 && SV_I((unsigned)&full_data_6f22f4) != 0 && SV_I((unsigned)&sv_SelectedItem) == 0)
+            if (SV_I((unsigned)&ai_SelectedCount) == 0 && sv_OtherSelected == 0 && SV_I((unsigned)&full_data_6f22f4) != 0 && SV_I((unsigned)&sv_SelectedItem) == 0)
                 SV_I((unsigned)&sv_SelectedModel) = SV_I((unsigned)&ai_Unk6f22e8);
             SV_I((unsigned)&sv_SelectedObject) = SV_I((unsigned)&full_data_6f22f4);
             if (SV_I((unsigned)&full_data_6f22f4) != 0)
@@ -6002,13 +5989,13 @@ l9f2:
         goto l72;
     }
     if (SV_I((unsigned)&ai_PlayerBuilding) == 0) {
-        if (SV_I((unsigned)&ai_FallbackBuilding) != 0 && SV_I((unsigned)&sv_PanelShown) != 0 && SV_I((unsigned)&full_data_6f22fc) != 0 && SV_I((unsigned)&ai_SelectedCount) == 0 && SV_B((unsigned)&full_data_6f2338) == 0) {
+        if (SV_I((unsigned)&ai_FallbackBuilding) != 0 && SV_I((unsigned)&sv_PanelShown) != 0 && SV_I((unsigned)&full_data_6f22fc) != 0 && SV_I((unsigned)&ai_SelectedCount) == 0 && sv_OtherSelected == 0) {
             SV_I((unsigned)&sv_PopRequest) = SV_I((unsigned)&sv_FrameDepth) - SV_I((unsigned)&sv_FrameBase) + 1;
             d3_SetObjectPos(sv_CameraObj, (unsigned)&sv_ViewPosX);
             d3_SetObjectRot(sv_CameraObj, (unsigned)&sv_ViewRotX);
             goto lbb6;
         }
-    } else if (SV_I((unsigned)&full_data_6f22fc) != 0 && SV_I((unsigned)&ai_SelectedCount) == 0 && SV_B((unsigned)&full_data_6f2338) == 0) {
+    } else if (SV_I((unsigned)&full_data_6f22fc) != 0 && SV_I((unsigned)&ai_SelectedCount) == 0 && sv_OtherSelected == 0) {
         sb_PlaySample(snd_RoomBank, "RaumWechseln_s", 1, 0x3f, 0x7f, 0, 0);
         *(short *)(SV_I((unsigned)&ai_PlayerBuilding) + 0x29) = *(short *)SV_I((unsigned)&full_data_6f22fc);
         SV_I((unsigned)&sv_PopRequest) = SV_I((unsigned)&sv_FrameDepth) - SV_I((unsigned)&sv_FrameBase) + 1;
@@ -6018,14 +6005,14 @@ lbb6:
         SV_I((unsigned)&sv_BorderViewX) = 0;
         SV_I((unsigned)&sv_BorderViewY) = 0;
     }
-    if (SV_I(((unsigned)&dm_L + 0x20)) != 0 && (SV_B((unsigned)&full_data_6f2338) != 0 || (SV_I((unsigned)&sv_SelectedItem) != 0 && ai_Goods[*(unsigned short *)SV_I((unsigned)&sv_SelectedItem) * 0x41] == 0x1d))) {
+    if (SV_I(((unsigned)&dm_L + 0x20)) != 0 && (sv_OtherSelected != 0 || (SV_I((unsigned)&sv_SelectedItem) != 0 && ai_Goods[*(unsigned short *)SV_I((unsigned)&sv_SelectedItem) * 0x41] == 0x1d))) {
         sv_Unk52adb0();
         di_ClearEvents(0x10);
     }
     if ((SV_I((unsigned)&ai_PlayerBuilding) != 0 && ai_ScriptQuery(0x1a, SV_I((unsigned)&ai_PlayerBuilding), 0, *(unsigned short *)SV_I((unsigned)&sv_PanelShown)) == 0)
         || (SV_I((unsigned)&ai_FallbackBuilding) != 0 && ai_ScriptQuery(0x1c, SV_I((unsigned)&ai_FallbackBuilding), 0, 0) == 0))
         di_ClearAxes();
-    if (SV_I((unsigned)&ai_SelectedCount) != 0 || SV_B((unsigned)&full_data_6f2338) != 0 || SV_I(((unsigned)&dm_L + 0x20)) == 0)
+    if (SV_I((unsigned)&ai_SelectedCount) != 0 || sv_OtherSelected != 0 || SV_I(((unsigned)&dm_L + 0x20)) == 0)
         goto l72;
     ok = 0;
     if (SV_I((unsigned)&d3t_CamMove) != 0) {
@@ -7885,6 +7872,7 @@ int sv_SavedMinX = 0;  /* 0x6f1c84 */
 int sv_DragLastX = 0;  /* 0x6f1c88 */
 int sv_ZoomStartY = 0;  /* 0x6f1c8c */
 int sv_ZoomStartX = 0;  /* 0x6f2290 */
+int sv_ShownModel = 0;  /* 0x6f2294, sv_SelectedModel when sv_UpdatePanel last built the panel */
 int sv_SavedMinY = 0;  /* 0x6f2298 */
 int sv_FrameDepth = 0;  /* 0x6f229c, the depth of the frame callback stack */
 int sv_PopRequest = 0;  /* 0x6f22a0 */
@@ -7902,6 +7890,7 @@ char * ai_PlayerBuilding = 0;  /* 0x6f2308 */
 char * ai_FallbackBuilding = 0;  /* 0x6f230c */
 unsigned short * sv_PanelShown = 0;  /* 0x6f2310, the scene record (room) the info panel shows now */
 int ai_SelectedCount = 0;  /* 0x6f2334 */
+unsigned char sv_OtherSelected = 0;  /* 0x6f2338, nonzero: a selection of another kind is held (reasoned: like sv_SelectedModel it keeps sv_UpdatePanel from the default panel, and it blocks the object pick 0x52adb0) */
 int sv_ResearchClass = 0;  /* 0x6f233c */
 char sv_LampSwitches = 0;  /* 0x6f2340 */
 char sv_MessageBoxOpen = 0;  /* 0x6f2350 */
@@ -7928,6 +7917,14 @@ float sv_ZoomStartAngle = 0;  /* 0x6f23ac */
 float sv_ZoomStartTurn = 0;  /* 0x6f23b0 */
 float sv_ZoomBaseY = 0;  /* 0x6f23b4 */
 int sv_MouseDragOn = 0;  /* 0x6f23b8 */
+int sv_ShownBuilding = 0;  /* 0x6f23bc, ai_PlayerBuilding when sv_UpdatePanel last built the panel */
+int sv_ShownFallback = 0;  /* 0x6f23c0, ai_FallbackBuilding when sv_UpdatePanel last built the panel */
+int sv_ShownObject = 0;  /* 0x6f23c4, sv_SelectedObject when sv_UpdatePanel last built the panel */
+int sv_ShownRoom = 0;  /* 0x6f23c8, sv_PanelShown when sv_UpdatePanel last built the panel */
+int sv_ShownItem = 0;  /* 0x6f23cc, sv_SelectedItem when sv_UpdatePanel last built the panel */
+int sv_ShownChar = 0;  /* 0x6f23d0, sv_SelectedChar when sv_UpdatePanel last built the panel */
+int sv_ShownOther = 0;  /* 0x6f23d4, sv_OtherSelected when sv_UpdatePanel last built the panel */
+int sv_ShownCount = 0;  /* 0x6f23d8, ai_SelectedCount when sv_UpdatePanel last built the panel */
 unsigned char ai_GameState = 0;  /* 0x6f25ac */
 int ai_OptionScrollSpeed = 0;  /* 0x6f3614 */
 int sv_PanelFlag = 0;  /* 0x75e8c0, 1 when the panel is up (an int; cm.h / f3init.c) */

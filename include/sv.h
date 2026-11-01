@@ -278,6 +278,16 @@ extern float sv_ZoomStartAngle;                                  /* 0x6f23ac */
 extern float sv_ZoomStartTurn;                                  /* 0x6f23b0 */
 extern float sv_ZoomBaseY;                                  /* 0x6f23b4 */
 extern int sv_MouseDragOn;                                    /* 0x6f23b8 */
+extern int sv_ShownModel;  /* 0x6f2294 */
+extern unsigned char sv_OtherSelected;  /* 0x6f2338 */
+extern int sv_ShownBuilding;  /* 0x6f23bc */
+extern int sv_ShownFallback;  /* 0x6f23c0 */
+extern int sv_ShownObject;  /* 0x6f23c4 */
+extern int sv_ShownRoom;  /* 0x6f23c8 */
+extern int sv_ShownItem;  /* 0x6f23cc */
+extern int sv_ShownChar;  /* 0x6f23d0 */
+extern int sv_ShownOther;  /* 0x6f23d4 */
+extern int sv_ShownCount;  /* 0x6f23d8 */
 extern unsigned char ai_GameState;                          /* 0x6f25ac */
 extern int ai_OptionScrollSpeed;                            /* 0x6f3614 */
 extern int sv_PanelFlag;                                    /* 0x75e8c0 */

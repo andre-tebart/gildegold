@@ -168,7 +168,7 @@ extern int d2_PointerObj;
 extern int ai_Unk623838;
 extern int ai_Unk62383c;
 extern char ch_EmptyName[1];
-extern GAPDATA full_data_6f2338[];
+extern unsigned char sv_OtherSelected;  /* 0x6f2338 (sv.c) */
 extern unsigned char kb_Last;
 extern char * ai_BTypes;
 extern char * ai_Goods;
@@ -3084,7 +3084,7 @@ void ai_Unk591170(void)
         msg[2] = 0;
         msg[0x13] = 0x71f;
         p = (char *)ai_Unk5b2180(1, msg, 0, 0, 0);
-        if (p != 0 && *(char *)(unsigned)&full_data_6f2338 == 0) {
+        if (p != 0 && sv_OtherSelected == 0) {
             if (U_I((unsigned)&ai_FallbackBuilding) != 0) {
                 r = gm_IsHomeType(p);
                 if (r != 0 && *p == 'G') {
