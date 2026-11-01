@@ -17,6 +17,12 @@ extern D2WIN d2_Wins[];
 #include "txt.h"
 #include "data_views.h"
 #include "io_text.h"
+#include "ahm.h"
+#include "ai.h"
+#include "f3gm.h"
+#include "hst.h"
+#include "ls.h"
+#include "tr.h"
 #define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
 
 struct GCLOCK;
