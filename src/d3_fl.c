@@ -317,7 +317,7 @@ void d3fl_FreeCache(void)
     d3fl_Blend = d3fl_BlendC;
 }
 /* 0x43f300, 256 texture triangles: 4 fixed ones covering the inner square (f..1-f), then 63 x 4 randomly
-   placed, scaled (0.9..1.23) and rotated copies of the same four triangles */
+   placed, scaled (0.9..1.23) and rotated copies of the same four triangles @deep read the whole function against the original 0x43f300..0x43f895: the loop now turns each corner (local vectors c01 / c10 / c11) by m into r and writes r * s + o (the original's x87 order: both components summed, then both scaled; the zero terms m * 0.0 kept, not factored as literal 0.0f made VC6 do), rot.z before rot.x / rot.y (the original stores the zeros after the 4th rand). The four loop blocks now match the original's sequence instruction for instruction but for registers and slots. Left: (1) the head (t[0..11]): the original keeps g = 1 - f - f in four stack slots ([esp+0x14], [esp+0x80], [esp+0x30], [esp+0x2c] via mov) and adds f to a different copy per corner (A+f for P1.x, B+f for P3.y, C+f / D+f for P2), storing t[1] before t[0]; ours computes g + f once and keeps it on the x87 stack (52 vs 70 instructions: '- fld st(1) / - fstp [eax] / - fadd st(1)' vs '+ fst [esp+0x14] / + fst [esp+0x80] / + fstp [esp+0x30] / + mov ecx,[esp+0x14]'); tried g + f / f + g, the corner form needs four variables that nothing in the bytes names; (2) the loop pointer: the original biases esi = out + 0x80 (t + 16 entries, '[esi-0x20]'), ours out + 0x60; (3) slots: ox/oy/s at [esp+0x10]/[0xc]/[8] vs ours, frame 0x84 vs 0x78. (size: 336 vs 359 instructions, explained: the 23 missing instructions are the head's: the original spills g to four stack copies and reloads each (fst/fld/mov pairs, 18 of them) where ours keeps g + f on the x87 stack; the loop blocks differ by 1..2 each (the esi bias and slot reloads)) */
 
 void d3fl_MakeJitter(float *out)
 {
@@ -325,6 +325,8 @@ void d3fl_MakeJitter(float *out)
     float f, g, ox, oy, s;
     D3VECTOR4 rot;
     D3MATRIX m;
+    D3VECTOR r;                         /* a corner turned by m */
+    D3VECTOR c01 = {0.0f, 1.0f, 0.0f}, c10 = {1.0f, 0.0f, 0.0f}, c11 = {1.0f, 1.0f, 0.0f};
     int i;
 
     f = 1.0f / d3fl_DetailScale;
@@ -357,58 +359,76 @@ void d3fl_MakeJitter(float *out)
         ox = (float)rand() / RAND_MAX;
         oy = (float)rand() / RAND_MAX;
         s = (float)rand() / RAND_MAX / 3.0f + 0.9f;
+        rot.z = rand() * D3FL_2PI / RAND_MAX;
         rot.x = 0.0f;
         rot.y = 0.0f;
-        rot.z = rand() * D3FL_2PI / RAND_MAX;
         d3_MatFromAngles(&rot, &m);
-        t[0].u = (0.0f * m._11 + 1.0f * m._21 + 0.0f * m._31) * s + ox;
-        t[0].v = (0.0f * m._12 + 1.0f * m._22 + 0.0f * m._32) * s + oy;
+        r.x = c01.x * m._11 + c01.y * m._21 + c01.z * m._31;
+        r.y = c01.x * m._12 + c01.y * m._22 + c01.z * m._32;
+        t[0].u = r.x * s + ox;
+        t[0].v = r.y * s + oy;
         t[1].u = ox;
         t[1].v = oy;
-        t[2].u = (1.0f * m._11 + 0.0f * m._21 + 0.0f * m._31) * s + ox;
-        t[2].v = (1.0f * m._12 + 0.0f * m._22 + 0.0f * m._32) * s + oy;
+        r.x = c10.x * m._11 + c10.y * m._21 + c10.z * m._31;
+        r.y = c10.x * m._12 + c10.y * m._22 + c10.z * m._32;
+        t[2].u = r.x * s + ox;
+        t[2].v = r.y * s + oy;
 
         ox = (float)rand() / RAND_MAX;
         oy = (float)rand() / RAND_MAX;
         s = (float)rand() / RAND_MAX / 3.0f + 0.9f;
+        rot.z = rand() * D3FL_2PI / RAND_MAX;
         rot.x = 0.0f;
         rot.y = 0.0f;
-        rot.z = rand() * D3FL_2PI / RAND_MAX;
         d3_MatFromAngles(&rot, &m);
-        t[3].u = (1.0f * m._11 + 0.0f * m._21 + 0.0f * m._31) * s + ox;
-        t[3].v = (1.0f * m._12 + 0.0f * m._22 + 0.0f * m._32) * s + oy;
-        t[4].u = (1.0f * m._11 + 1.0f * m._21 + 0.0f * m._31) * s + ox;
-        t[4].v = (1.0f * m._12 + 1.0f * m._22 + 0.0f * m._32) * s + oy;
-        t[5].u = (0.0f * m._11 + 1.0f * m._21 + 0.0f * m._31) * s + ox;
-        t[5].v = (0.0f * m._12 + 1.0f * m._22 + 0.0f * m._32) * s + oy;
+        r.x = c10.x * m._11 + c10.y * m._21 + c10.z * m._31;
+        r.y = c10.x * m._12 + c10.y * m._22 + c10.z * m._32;
+        t[3].u = r.x * s + ox;
+        t[3].v = r.y * s + oy;
+        r.x = c11.x * m._11 + c11.y * m._21 + c11.z * m._31;
+        r.y = c11.x * m._12 + c11.y * m._22 + c11.z * m._32;
+        t[4].u = r.x * s + ox;
+        t[4].v = r.y * s + oy;
+        r.x = c01.x * m._11 + c01.y * m._21 + c01.z * m._31;
+        r.y = c01.x * m._12 + c01.y * m._22 + c01.z * m._32;
+        t[5].u = r.x * s + ox;
+        t[5].v = r.y * s + oy;
 
         ox = (float)rand() / RAND_MAX;
         oy = (float)rand() / RAND_MAX;
         s = (float)rand() / RAND_MAX / 3.0f + 0.9f;
+        rot.z = rand() * D3FL_2PI / RAND_MAX;
         rot.x = 0.0f;
         rot.y = 0.0f;
-        rot.z = rand() * D3FL_2PI / RAND_MAX;
         d3_MatFromAngles(&rot, &m);
         t[6].u = ox;
         t[6].v = oy;
-        t[7].u = (1.0f * m._11 + 1.0f * m._21 + 0.0f * m._31) * s + ox;
-        t[7].v = (1.0f * m._12 + 1.0f * m._22 + 0.0f * m._32) * s + oy;
-        t[8].u = (0.0f * m._11 + 1.0f * m._21 + 0.0f * m._31) * s + ox;
-        t[8].v = (0.0f * m._12 + 1.0f * m._22 + 0.0f * m._32) * s + oy;
+        r.x = c11.x * m._11 + c11.y * m._21 + c11.z * m._31;
+        r.y = c11.x * m._12 + c11.y * m._22 + c11.z * m._32;
+        t[7].u = r.x * s + ox;
+        t[7].v = r.y * s + oy;
+        r.x = c01.x * m._11 + c01.y * m._21 + c01.z * m._31;
+        r.y = c01.x * m._12 + c01.y * m._22 + c01.z * m._32;
+        t[8].u = r.x * s + ox;
+        t[8].v = r.y * s + oy;
 
         ox = (float)rand() / RAND_MAX;
         oy = (float)rand() / RAND_MAX;
         s = (float)rand() / RAND_MAX / 3.0f + 0.9f;
+        rot.z = rand() * D3FL_2PI / RAND_MAX;
         rot.x = 0.0f;
         rot.y = 0.0f;
-        rot.z = rand() * D3FL_2PI / RAND_MAX;
         d3_MatFromAngles(&rot, &m);
         t[9].u = ox;
         t[9].v = oy;
-        t[10].u = (1.0f * m._11 + 0.0f * m._21 + 0.0f * m._31) * s + ox;
-        t[10].v = (1.0f * m._12 + 0.0f * m._22 + 0.0f * m._32) * s + oy;
-        t[11].u = (1.0f * m._11 + 1.0f * m._21 + 0.0f * m._31) * s + ox;
-        t[11].v = (1.0f * m._12 + 1.0f * m._22 + 0.0f * m._32) * s + oy;
+        r.x = c10.x * m._11 + c10.y * m._21 + c10.z * m._31;
+        r.y = c10.x * m._12 + c10.y * m._22 + c10.z * m._32;
+        t[10].u = r.x * s + ox;
+        t[10].v = r.y * s + oy;
+        r.x = c11.x * m._11 + c11.y * m._21 + c11.z * m._31;
+        r.y = c11.x * m._12 + c11.y * m._22 + c11.z * m._32;
+        t[11].u = r.x * s + ox;
+        t[11].v = r.y * s + oy;
     }
 }
 /* 0x43f8a0 @deep B: code hunk 0 (51 instructions) - the complete 40-instruction original at 0x43f8a0..0x43f907 was read against ours (42 instructions): every operation, constant, call and store is present; the original keeps n in eax (compared, shifted at the end) and the clamped min(n,0x40) in edx, ours allocates the clamp to eax and n to edx, so ours has one extra mov eax,edx before the n>>7 shift and the same block is scheduled around it. Tried the ternary, if/else on m, m=n+if, both store orders of DetailShift/DetailSizeShift and an early-return guard: the clamp value always gets eax (c2prio: m priority 38-40, n 11-15; C2 hands the scratch registers out by priority). Same operation, other register spelling - needs c2prio/vargen */
