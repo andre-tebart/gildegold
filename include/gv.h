@@ -108,7 +108,6 @@ extern int d3_CurrentScene;                /* 0x633444 */
 
 int util_Random(unsigned short n);      /* 0x42ec00, tr.c; the callers that read a 16-bit result (ch_RandomNear, anm_Update, ai_Unk4d88c0 ..) call util_RandomU, a cast in their head */
 unsigned char * gm_BuildQuery(int n, ...);                     /* 0x501190 */
-void ai_Unk5a9e40(int param_1, int param_2);                     /* 0x5a9e40 */
 char d3if_Delete(struct D3OBJECT *obj);  /* 0x447190, d3_interface.h */
 int gm_MinutesBetween();                     /* 0x4fe280 */
 int ai_StepShot();                     /* 0x5dc4a0 */
@@ -194,7 +193,6 @@ int unk_Unk4f0970(unsigned char *p);    /* 0x4f0970 */
 int unk_Unk4f0a90(int *g, char *o, int v);  /* 0x4f0a90 */
 int gm_AddNegative();                     /* 0x500ae0 */
 int gm_AddObjekt(int id, int proto, int n);                     /* 0x500970 */
-void ai_Unk5a96e0(int param_1, unsigned short *param_2, int param_3, int param_4, int param_5, int param_6);                     /* 0x5a96e0 */
 int unk_Unk4f0af0(char *p);             /* 0x4f0af0 */
 int unk_Unk4f0c20(char *o, int v, int b, int x);  /* 0x4f0c20 */
 int unk_Unk4f0c80(unsigned char *p);    /* 0x4f0c80 */
@@ -265,7 +263,6 @@ void unk_Unk4f4390(int n, char *r);     /* 0x4f4390 */
 char * he_FindEvent(int n, ...);         /* 0x53e400, as he.h */
 int cm_GetSlotState();                     /* 0x4c3ae0 */
 void sv_PumpNet();                    /* 0x52fe00 */
-void ai_Unk5a9430(int param_1, unsigned short *param_2);                     /* 0x5a9430 */
 extern unsigned short ai_PlayerId;     /* 0x6f25b8 */
 
 int unk_Unk4f3a30(int p, int n);        /* 0x4f3a30 */
@@ -299,26 +296,20 @@ void unk_Unk4f4460(unsigned short *c, int a);  /* 0x4f4460 */
 void unk_Unk4f48f0(unsigned short *c, int a, char *out);  /* 0x4f48f0 */
 
 unsigned ord_ApplyForOffice(ORDCHAR *c, int *m);  /* 0x4f4e20 */
-int ai_OfficeApplication(short *c, int m);      /* 0x5c6d00, the office application window (kind 3 of the order) */
 char * he_NextEvent(void);                   /* 0x53e300 */
 
 int ord_LevelOrder(char *c, int *m);     /* 0x4f4f20 */
 int ord_EspionageResultOrder(char *c, int *m);     /* 0x4f4ff0 */
 int ord_PrivilegeDialog(char *text, int mode, int arg);  /* 0x4f8200, the privilege dialog */
-int ai_EspionageResult(int param_1, int *m);  /* 0x5cd400, the espionage result window of the ask kind */
 
 int gv_SetTableRecord(short *c, int i, int v);  /* 0x4f2750 */
 int unk_Unk4f27d0(int *p);              /* 0x4f27d0 */
-void ai_Unk5a9110(unsigned short *param_1, int param_2);                     /* 0x5a9110 */
 
 int unk_Unk4f2e30(int i, int v, int a, int b, int obj);  /* 0x4f2e30 */
 float util_RandomF(void);               /* 0x42ec20 */
-int ai_InventoryHas(void *ch, int id);                     /* 0x5ba6b0 */
 
 void unk_Unk4f1de0(char *o);            /* 0x4f1de0 */
 int unk_Unk4f2330(unsigned short *c, int a, int kind, int flag, int *out);  /* 0x4f2330 */
-void ai_Unk5a9780(int param_1, int param_2, int param_3, int param_4);                     /* 0x5a9780 */
-void ai_Unk5a9690(int param_1, int param_2);                     /* 0x5a9690 */
 int cm_FlushSendQueue();                     /* 0x4c3680 */
 int cm_ReceiveMessages();                     /* 0x4c3fd0 */
 int cm_ExecCommands();                     /* 0x4c4190 */
@@ -326,10 +317,8 @@ void cm_SendRelations(int a, int b, int c, int d);                     /* 0x4c4b
 int gm_Unk509ee0(char *c, char p);                   /* 0x509ee0 */
 
 int unk_Unk4f5070(char *c, int *m);     /* 0x4f5070 */
-int ai_Unk5c8bc0();                     /* 0x5c8bc0 */
 
 int ord_SpyTargetOrder(char *c, int *m);     /* 0x4f50f0 */
-int ai_SpyTargetHandler(int param_1, int *param_2);      /* 0x5cde90, the spy target handler of the ask kind */
 
 int ord_BlackmailBuildingOrder(char *c, int *m);     /* 0x4f5190 */
 int ord_BlackmailContactVariantOrder(char *c, int *m);     /* 0x4f52e0 */
@@ -345,11 +334,6 @@ int ord_Level5UpOrder(char *c, int *m);     /* 0x4f5660 */
 int ord_Level5UpOrder2(char *c, int *m);     /* 0x4f5730 */
 int ord_Level6UpOrder(char *c, int *m);     /* 0x4f58e0 */
 int ord_Level6UpOrder2(char *c, int *m);     /* 0x4f59b0 */
-int ai_BlackmailBuildingListener(unsigned short *param_1, int param_2);  /* 0x5c9550, the blackmail building listener of the ask kind */
-unsigned char ai_BlackmailContactVariant(int param_1, int param_2);  /* 0x5c9ff0, the blackmail contact variant of the ask kind */
-int ai_BlackmailContact(int param_1, int param_2);      /* 0x5c9c50, the blackmail contact of the ask kind */
-int ai_EmbezzlementPrivilege(unsigned short *param_1, int *param_2);  /* 0x5ca560, the embezzlement privilege handler of the ask kind */
-int ai_LawPrivilegeWindow(int param_1, int *param_2);  /* 0x5ca150, the law / privilege window (privillegien_gesetz) of the ask kind */
 
 int ord_Job11Order(char *c, int *m);     /* 0x4f60b0 */
 int ord_JobMultiOrder(char *c, int *m);     /* 0x4f6180 */
@@ -360,7 +344,6 @@ int ord_JobRangeOrder(char *c, int *m);     /* 0x4f64e0 */
 int ord_JobMultiOrder2(char *c, int *m);     /* 0x4f65c0 */
 
 int ord_EmbezzlementContractOrder(char *c, int *m);     /* 0x4f66b0 */
-char ai_EmbezzlementContract(int param_1, int param_2); /* 0x5cacd0, the embezzlement contract handler of the ask kind */
 
 int ord_Job17Order(char *c, int *m);     /* 0x4f68d0 */
 int ord_Job17Order2(char *c, int *m);     /* 0x4f69a0 */
@@ -369,8 +352,6 @@ int ord_Job10Order(char *c, int *m);     /* 0x4f6c60 */
 int ord_Job15Order(char *c, int *m);     /* 0x4f6d30 */
 int ord_CounterEspionageOrder(char *c, int *m);     /* 0x4f67c0 */
 int ord_MisappropriationOrder(char *c, int *m);     /* 0x4f6b40 */
-int ai_CounterEspionage(int param_1, int *m);      /* 0x5cae00, the counter-espionage handler of the ask kind */
-int ai_MisappropriationWindow(unsigned short *param_1, int *param_2);  /* 0x5ca860, the misappropriation (privillegien unterschlagung) window of the ask kind */
 
 int ord_CounterEspionageWindowOrder(char *c, int *m);     /* 0x4f6e00 */
 int ord_EspionageWindowOrder(char *c, int *m);     /* 0x4f6f10 */
@@ -381,14 +362,6 @@ int ord_EspionageRelationOrder(char *c, int *m);     /* 0x4f7400 */
 int ord_EspionageAmountOrder(char *c, int *m);     /* 0x4f74f0 */
 int ord_SpyTargetFlagOrder(char *c, int *m);     /* 0x4f75e0 */
 int ord_JobMultiOrder3(char *c, int *m);     /* 0x4f7000 */
-int ai_CounterEspionageWindow(int *param_1, int param_2);  /* 0x5cb250, the counter-espionage window of the ask kind */
-int ai_EspionageWindow(int param_1, int param_2);  /* 0x5cb4f0, the espionage window of the ask kind */
-int ai_EspionagePayment(int param_1, int param_2);  /* 0x5cba90, the espionage payment handler of the ask kind */
-int ai_EspionageOrderHandler(int param_1, int *param_2);  /* 0x5cbe00, the espionage order handler of the ask kind */
-int ai_EspionagePayment2(int param_1, int *m);  /* 0x5cc700, the second espionage payment handler of the ask kind */
-int ai_EspionageRelation(int param_1, int *param_2);  /* 0x5cc2b0, the espionage relation handler of the ask kind */
-int ai_EspionageAmountWindow(int param_1, int *param_2);  /* 0x5cca40, the espionage amount window of the ask kind */
-int ai_SpyTargetFlagHandler(int param_1, int *param_2);  /* 0x5ce1a0, the spy target handler with the flag set */
 
 int ord_EspionageOverviewOrder(char *c, int *m);     /* 0x4f76e0 */
 int ord_Level7Order(char *c, int *m);     /* 0x4f77d0 */
@@ -403,12 +376,6 @@ int ord_DismissalOrder(char *c, int *m);     /* 0x4f7b80 */
 int ord_InterrogationOrder2(char *c, int *m);     /* 0x4f7e40 */
 int ord_InterrogationOrder3(char *c, int *m);     /* 0x4f7fc0 */
 int ord_DismissWorkerOrder(char *c, int *m);     /* 0x4f8140 */
-int ai_EspionageOverviewHandler(int param_1, int *m);  /* 0x5cd2e0, the espionage overview handler of the ask kind */
-int ai_InterrogationWindow(int param_1, int param_2);  /* 0x5ce610, the interrogation window of the ask kind */
-int ai_DismissalHandler(unsigned short *param_1, int param_2);  /* 0x5ce950, the dismissal handler of the ask kind */
-int ai_InterrogationWindow1(int param_1, int param_2);  /* 0x5cede0, the first interrogation window variant of the ask kind */
-int ai_InterrogationWindow2(int param_1, int param_2);  /* 0x5cf020, the second interrogation window variant of the ask kind */
-int ai_WorkerDismissalWindow(int param_1, int *m);  /* 0x5ce7f0, the worker dismissal window (privillegien_arbeiter_ausweisen) of the ask kind */
 
 extern int (*ord_OrderHandlers[0x3a])(char *c, int *m);    /* 0x611768, the order handler of each order number */
 int d2_OpenForm(int x, int y, char *name);  /* 0x4741f0, d2.h: loads the view, returns its number */
@@ -423,7 +390,6 @@ int ord_DispatchOrder(int id, char *c, int *m);  /* 0x4f81c0 */
 
 int unk_Unk4f5800(char *c, int *m);     /* 0x4f5800 */
 int ord_WageReportOrder(char *c, int *m);     /* 0x4f5a80 */
-int ai_Unk5c8ef0();                     /* 0x5c8ef0 */
 int gm_CharacterWages(unsigned short id, int flag, unsigned char *out);  /* 0x4fa700, the wage record (ORDWAGES) of the character id for the report */
 
 /* the tables 0x4f82a0 clears */
