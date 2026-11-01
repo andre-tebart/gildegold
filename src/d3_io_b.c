@@ -15,6 +15,10 @@
 #include "d3_io_t.h"
 #include "d3_io_a.h"
 #include "d3_io_b.h"
+#include "bio.h"
+#include "err.h"
+#include "mem.h"
+#include "vfs.h"
 
 #define BGI_M(c) ((c)->mats[(c)->cur])
 #define BGI_P(c) ((c)->polys[(c)->polyidx])
