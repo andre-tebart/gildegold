@@ -60,7 +60,7 @@ int sv_ClockSeason(void *t);                                            /* 0x525
 char sv_SetSkyLightColors(struct D3OBJECT *o, void *ctx);                                           /* 0x525490 */
 struct GCLOCK; void sv_SetupWeather(struct GCLOCK *t, int reroll);/* 0x525510 */
 void sv_UpdateSkyColors(void);                                          /* 0x525940 */
-void sv_FillDayPhases(int t);                                               /* 0x525a00 */
+struct GCLOCK; void sv_FillDayPhases(struct GCLOCK *t);                                             /* 0x525a00 */
 char sv_Unk525a80(char *o, int f);                                      /* 0x525a80 */
 void sv_UpdateSkyPhase(char *t);                                             /* 0x525ad0 */
 void sv_PlaceCamera(float f);                                           /* 0x525dd0 */
@@ -158,7 +158,7 @@ void sv_SetScreenCenter(unsigned fl);                                   /* 0x530
 int sv_RunFrame(int cb, unsigned mask);                                 /* 0x5309a0 */
 void sv_UpdateClock(void);                                              /* 0x5315c0 */
 
-extern const int ai_Unk5eeab8[24];                          /* 0x5eeab8 */
+extern const int sv_PhaseMinutes[24];                          /* 0x5eeab8 */
 extern int ai_Unk5fcc78;                                    /* 0x5fcc78 */
 extern int ai_Unk5fcc7c;                                    /* 0x5fcc7c */
 extern int ai_Unk5fcc80;                                    /* 0x5fcc80 */

@@ -28,7 +28,7 @@ extern D2RADIO d2_Radios[];
 #define GAPDATA __declspec(align(1)) unsigned char
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
-extern const int ai_Unk5eeab8[24];
+extern const int sv_PhaseMinutes[24];
 extern GAPDATA full_data_6f262c[];
 extern GAPDATA full_data_6f265c[];
 extern GAPDATA full_data_6f2660[];
@@ -229,7 +229,7 @@ extern int d2_LastWindow;
 extern GAPDATA full_data_62a2c4[];
 extern GAPDATA full_data_6f2664[];
 extern GAPDATA full_data_6f9f60[];
-extern const int ai_Unk5eeab8[24];
+extern const int sv_PhaseMinutes[24];
 extern int ai_Unkfb9060;
 extern int ai_Unkfb9064;
 extern int ai_Unkfb9068;
@@ -378,7 +378,7 @@ extern GAPDATA full_data_62a4e8[];
 extern GAPDATA full_data_62a508[];
 extern GAPDATA full_data_62a524[];
 extern int sv_PopRequest;
-extern const int ai_Unk5eeab8[24];
+extern const int sv_PhaseMinutes[24];
 extern struct D2OBJ *d2_Objs;
 extern GAPDATA full_data_602568[];
 extern GAPDATA full_data_60c7b8[];
@@ -408,7 +408,7 @@ extern int sv_PopRequest;
 extern char ai_Chars[768][0x21c];
 extern unsigned char ai_OwnPlayer;
 extern unsigned short ai_PlayerId;
-extern const int ai_Unk5eeab8[24];
+extern const int sv_PhaseMinutes[24];
 extern int d2_PointerObj;
 extern int d2_ClickedId;
 extern int d2_LastWindow;
@@ -481,7 +481,7 @@ extern GAPDATA full_data_62a70c[];
 extern char ai_Time[14];
 extern unsigned char ai_TimeHour;
 extern int d2_PointerObj;
-extern const int ai_Unk5eeab8[24];
+extern const int sv_PhaseMinutes[24];
 
 
 extern unsigned short ai_PlayerId;
@@ -536,7 +536,7 @@ extern int sv_PopRequest;
 extern char ai_Chars[768][0x21c];
 extern unsigned short ai_PlayerId;
 
-extern const int ai_Unk5eeab8[24];
+extern const int sv_PhaseMinutes[24];
 
 
 extern char ai_Chars[768][0x21c];
@@ -4964,7 +4964,7 @@ void ai_Unk57e270(char *rec)
     *(int *)(sc + 0x20) = 0;
     d3_SetObjectPos(obj[3], (float *)sc);
     d3_SetObjectRot(obj[3], sc + 0x10);
-    item = d3_CreateObject(obj[3], (char *)((unsigned)&ai_Unk5eeab8 + 0x1c8), (char *)(unsigned)&ai_Unk5ebbb4, (char *)(unsigned)&full_data_62a2fc);
+    item = d3_CreateObject(obj[3], (char *)((unsigned)&sv_PhaseMinutes + 0x1c8), (char *)(unsigned)&ai_Unk5ebbb4, (char *)(unsigned)&full_data_62a2fc);
     d3t_PlayAnim(item, (char *)(unsigned)&full_data_62a2dc, 1);
     *(unsigned char *)(item + 0x212) = (*(unsigned char *)(item + 0x212) & 0xf7) | 4;
     *(unsigned char *)(item + 0x212) |= 0x40;
@@ -5270,7 +5270,7 @@ void ai_Unk57f0e0(char *sc)
         } else {
             *(float *)(sc + 0x7c) = 0;
             *(float *)(sc + 0x78) = 0;
-            d3_SetObjectPos(*(int *)(sc + 0x9c), (char *)((unsigned)&ai_Unk5eeab8 + 0x1c8));
+            d3_SetObjectPos(*(int *)(sc + 0x9c), (char *)((unsigned)&sv_PhaseMinutes + 0x1c8));
         }
     }
     d3_SetObjectPos(*(int *)(sc + 0x98), sc);
@@ -6416,11 +6416,11 @@ void ai_Unk582730(char *rec, int *w)
     d2_SetForm(w[0], 6);
     io_PrintText((char *)(unsigned)"$C");
     for (i = 0; i < 4; i++) {
-        id = d2_WinOpenPic(i * 0x6c + 6, 0, (char *)U_I(((unsigned)&ai_Unk5eeab8 + 0x1f8) + i * 4), w[4]);
+        id = d2_WinOpenPic(i * 0x6c + 6, 0, (char *)U_I(((unsigned)&sv_PhaseMinutes + 0x1f8) + i * 4), w[4]);
         w[8 + i] = id;
         *(int *)(U_I((unsigned)&d2_Objs) + 0x4c + id * 0x2ec) = 1;
         *(int *)(U_I((unsigned)&d2_Objs) + 0x1c0 + id * 0x2ec) = 3;
-        *(int *)(U_I((unsigned)&d2_Objs) + 0x2e8 + id * 0x2ec) = U_I((unsigned)&ai_Goods) + U_I(((unsigned)&ai_Unk5eeab8 + 0x228) + i * 4) * 0x41;
+        *(int *)(U_I((unsigned)&d2_Objs) + 0x2e8 + id * 0x2ec) = U_I((unsigned)&ai_Goods) + U_I(((unsigned)&sv_PhaseMinutes + 0x228) + i * 4) * 0x41;
     }
     d2_SetObjEnabled(w[9], *(unsigned char *)(r + 0x19));
     d2_SetObjEnabled(w[10], *(unsigned char *)(r + 0x1a));
@@ -6483,9 +6483,9 @@ void ai_Unk5828c0(char *rec, int *w, int sel)
             p[2] = *e;
             *(char *)(p + 3) = gv_EntryIndex(U_I(rec + 0x65), e);
             if (e[1] == -1)
-                id = d2_WinOpenPic(1, n * 0x35 + 2, (char *)U_I(((unsigned)&ai_Unk5eeab8 + 0x1f8) + w[0xc] * 4), w[2]);
+                id = d2_WinOpenPic(1, n * 0x35 + 2, (char *)U_I(((unsigned)&sv_PhaseMinutes + 0x1f8) + w[0xc] * 4), w[2]);
             else
-                id = d2_WinOpenPic(1, n * 0x35 + 2, (char *)U_I(((unsigned)&ai_Unk5eeab8 + 0x208) + w[0xc] * 4), w[2]);
+                id = d2_WinOpenPic(1, n * 0x35 + 2, (char *)U_I(((unsigned)&sv_PhaseMinutes + 0x208) + w[0xc] * 4), w[2]);
             *p = id;
             if (he_Unk573200(rec, *e, (char)p[3]) != 0)
                 d2_WinOpenPic(0xf, n * 0x35 + 9, 0x7de, w[2]);
@@ -6855,11 +6855,11 @@ void ai_Unk583c50(char *rec, int win, int section, int *btns, int *selp)
     d2_SetForm(win, section);
     io_PrintText((char *)(unsigned)"$C");
     for (i = 0; i < 4; i++) {
-        id = d2_WinOpenPic(i * 0x6c + 6, 0, (char *)U_I(((unsigned)&ai_Unk5eeab8 + 0x1f8) + i * 4), U_I((unsigned)&d2_LastWindow));
+        id = d2_WinOpenPic(i * 0x6c + 6, 0, (char *)U_I(((unsigned)&sv_PhaseMinutes + 0x1f8) + i * 4), U_I((unsigned)&d2_LastWindow));
         btns[i] = id;
         *(int *)(U_I((unsigned)&d2_Objs) + 0x4c + id * 0x2ec) = 1;
         *(int *)(U_I((unsigned)&d2_Objs) + 0x1c0 + btns[i] * 0x2ec) = 3;
-        *(int *)(U_I((unsigned)&d2_Objs) + 0x2e8 + btns[i] * 0x2ec) = U_I((unsigned)&ai_Goods) + U_I(((unsigned)&ai_Unk5eeab8 + 0x228) + i * 4) * 0x41;
+        *(int *)(U_I((unsigned)&d2_Objs) + 0x2e8 + btns[i] * 0x2ec) = U_I((unsigned)&ai_Goods) + U_I(((unsigned)&sv_PhaseMinutes + 0x228) + i * 4) * 0x41;
     }
     d2_SetObjEnabled(btns[1], *(unsigned char *)(r + 0x19));
     d2_SetObjEnabled(btns[2], *(unsigned char *)(r + 0x1a));
@@ -6997,9 +6997,9 @@ int ai_Unk584010(char *rec, int a, unsigned char b, int idx)
     sv_FitForm(U_I((unsigned)&d2_LastWindow));
     d2_SetForm(win, 1);
     if (*(unsigned short *)(rec + 0x27) == *(unsigned short *)(unsigned)&ai_PlayerId) {
-        io_PrintText(0x4115, 0x4112, (int)rec, U_I(((unsigned)&ai_Unk5eeab8 + 0x218) + idx * 4));
+        io_PrintText(0x4115, 0x4112, (int)rec, U_I(((unsigned)&sv_PhaseMinutes + 0x218) + idx * 4));
     } else {
-        io_PrintText(0x4114, 0x4112, U_I(((unsigned)&ai_Unk5eeab8 + 0x218) + idx * 4), cost);
+        io_PrintText(0x4114, 0x4112, U_I(((unsigned)&sv_PhaseMinutes + 0x218) + idx * 4), cost);
     }
     d2_SetForm(win, 2);
     v = io_PrintText(0x4116);
@@ -7022,7 +7022,7 @@ int ai_Unk584010(char *rec, int a, unsigned char b, int idx)
                 }
                 U_I((unsigned)&sv_FrameMask) = 0x677c7;
                 if (cm_GetSlotState(h) == 2) {
-                    txt_Format(buf, (char *)0x411b, 0x4112, U_I(((unsigned)&ai_Unk5eeab8 + 0x218) + idx * 4));
+                    txt_Format(buf, (char *)0x411b, 0x4112, U_I(((unsigned)&sv_PhaseMinutes + 0x218) + idx * 4));
                     sv_MessageBox(buf, 0x100);
                 } else {
                     U_I((unsigned)&sv_PopRequest) = 1;
@@ -7172,9 +7172,9 @@ int ai_Unk584520(char *rec, int idx)
     sv_FitForm(U_I((unsigned)&d2_LastWindow));
     d2_SetForm(win, 1);
     if (*(unsigned short *)(rec + 0x27) == *(unsigned short *)(unsigned)&ai_PlayerId) {
-        io_PrintText(0x410c, 0x4109, (int)rec, U_I(((unsigned)&ai_Unk5eeab8 + 0x218) + idx * 4));
+        io_PrintText(0x410c, 0x4109, (int)rec, U_I(((unsigned)&sv_PhaseMinutes + 0x218) + idx * 4));
     } else {
-        io_PrintText(0x410b, 0x4108, U_I(((unsigned)&ai_Unk5eeab8 + 0x218) + idx * 4), cost);
+        io_PrintText(0x410b, 0x4108, U_I(((unsigned)&sv_PhaseMinutes + 0x218) + idx * 4), cost);
     }
     d2_SetForm(win, 2);
     v = io_PrintText(0x410d);
@@ -7197,7 +7197,7 @@ int ai_Unk584520(char *rec, int idx)
                 }
                 U_I((unsigned)&sv_FrameMask) = 0x677c7;
                 if (cm_GetSlotState(h) == 2) {
-                    txt_Format(buf, (char *)0x411b, (*(unsigned short *)(rec + 0x27) == *(unsigned short *)(unsigned)&ai_PlayerId) + 0x4108, U_I(((unsigned)&ai_Unk5eeab8 + 0x218) + idx * 4));
+                    txt_Format(buf, (char *)0x411b, (*(unsigned short *)(rec + 0x27) == *(unsigned short *)(unsigned)&ai_PlayerId) + 0x4108, U_I(((unsigned)&sv_PhaseMinutes + 0x218) + idx * 4));
                     sv_MessageBox(buf, 0x100);
                 } else {
                     U_I((unsigned)&sv_PopRequest) = 1;
@@ -8222,7 +8222,7 @@ void ai_Unk586610(char *rec)
     w[7] = (int)p;
     w[8] = *p;
     *(unsigned char *)((char *)w + 0x24) = gv_EntryIndex(U_I(rec + 0x65), p);
-    txt_Format(line, (char *)0x4107, U_I(((unsigned)&ai_Unk5eeab8 + 0x218) + *p * 4));
+    txt_Format(line, (char *)0x4107, U_I(((unsigned)&sv_PhaseMinutes + 0x218) + *p * 4));
     if (ai_Unk583b70(w, (char *)U_I((unsigned)&full_data_144a4f0)) == 0) {
         sv_CameraFollow();
         return;
@@ -8628,7 +8628,7 @@ void ai_Unk5871e0(char *rec)
     w[7] = (int)p;
     w[8] = *p;
     *(unsigned char *)((char *)w + 0x24) = gv_EntryIndex(U_I(rec + 0x65), p);
-    txt_Format(line, (char *)0x4107, U_I(((unsigned)&ai_Unk5eeab8 + 0x218) + *p * 4));
+    txt_Format(line, (char *)0x4107, U_I(((unsigned)&sv_PhaseMinutes + 0x218) + *p * 4));
     if (ai_Unk583b70(w, line) == 0)
         return;
     ai_Unk584410(rec, w);

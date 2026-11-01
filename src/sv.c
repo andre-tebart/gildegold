@@ -2057,7 +2057,7 @@ extern char sv_LampSwitches;
 extern float ai_Unk760420;  /* 0x760420 */
 extern float ai_Unk623e94;  /* 0x623e94 */
 /* ai_MapRefs: view of d3_Scenes (tools/data_views.py) */
-const int ai_Unk5eeab8[24] = { 390, 510, 630, 1050, 1170, 1290, 300, 420, 540, 1140, 1260, 1380, 420, 540, 660, 1020, 1140, 1260, 480, 600, 690, 960, 1020, 1140 };  /* 0x5eeab8 */
+const int sv_PhaseMinutes[24] = { 390, 510, 630, 1050, 1170, 1290, 300, 420, 540, 1140, 1260, 1380, 420, 540, 660, 1020, 1140, 1260, 480, 600, 690, 960, 1020, 1140 };  /* 0x5eeab8 */
 
 extern char *ai_Unk5fb5b0;              /* 0x5fb5b0 */
 extern int ai_Unk623cc0[], ai_Unk623e10[];  /* 0x623cc0, 0x623e10 */
@@ -2320,27 +2320,31 @@ void sv_UpdateSkyColors(void)
         d3if_Levels[i].amb.z = p[i].amb.z;
     }
 }
-/* 0x525a00, fills the day phase table 0x623ba9 (6 rows of 10 bytes: +0 hours, +1 minutes, +2 the seconds of day) from the minutes of the phase table 0x5eeab8 of the season k (0x4fe350) */
+/* 0x525a00, fills the day phases sv_DayPhases (hour, minute, second of the day) from the start minutes of the season of the
+   clock t (sv_PhaseMinutes)
+   @deep Read against the original 0x525a00..0x525a6f: the statement set matches (gm_ClockSeason, the
+   6-phase index loop over sv_DayPhases with hour = minutes / 60, min = (char)minutes - hour * 60, sec =
+   (min + hour * 60) * 60; the jl index loop and the stride-10 pointer at the min field are the
+   original's). Only allocation is left: the original saves ebx and keeps the walk pointer in ecx, the
+   season row pointer in esi, the minute value in edi and the 0x3c multiplier / minute byte in bl; ours
+   keeps the walk pointer in esi, the row in edi, the value in ecx and the byte ops in cl, so it saves no
+   ebx (asmdiff --regs esi=ecx,edi=esi,ecx=edi,cl=bl leaves only push ebx / pop ebx and the value register
+   edi vs ebx: '+ push ebx', '+ mov edi, dword ptr [esi]', '+ imul edi'). Tried: a walking const int *q,
+   swapped declaration orders of h / m and season / i, h * 60 + m: all the same 40 vs 42 instructions. */
 
-void sv_FillDayPhases(int t)
+void sv_FillDayPhases(struct GCLOCK *t)
 {
-    int k;
-    char *p;
-    int *q;
+    int season, i;
     char h, m;
 
-    k = gm_ClockSeason(t);
-    p = sv_DayTables + 1;
-    q = ai_Unk5eeab8 + k * 6;
-    do {
-        h = (char)(*q / 0x3c);
-        p[-1] = h;
-        m = (char)*q + h * -0x3c;
-        *p = m;
-        *(int *)(p + 1) = (m + h * 0x3c) * 0x3c;
-        p += 10;
-        q++;
-    } while ((int)p < ((unsigned)sv_DayTables + 0x3c));
+    season = gm_ClockSeason(t);
+    for (i = 0; i < 6; i++) {
+        h = (char)(sv_PhaseMinutes[season * 6 + i] / 60);
+        sv_DayPhases[i].hour = h;
+        m = (char)sv_PhaseMinutes[season * 6 + i] - h * 60;
+        sv_DayPhases[i].min = m;
+        sv_DayPhases[i].sec = (m + h * 60) * 60;
+    }
 }
 /* 0x525a80, a callback (the object o, a flag f): sets the float +0x1a4 of the record +0x1e8 of o to a random 0.3 .. 0.9 (f = 0) or -0.3 + 0.6 * ... (f != 0); returns 1 */
 
