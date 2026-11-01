@@ -495,3 +495,4 @@
 2026-11-01T23:56:13 0x0052a680 func sv_Unk52a680 -> sv_HoverPick by:main why:0x52a680 picks the scene object under the pointer each frame and writes its hover caption / pointer look
 2026-11-02T00:08:19 0x0052adb0 func sv_Unk52adb0 -> sv_ResetSelection by:main why:clears sv_SelectedItem / sv_SelectedObject / sv_SelectedModel and the selected bit of the current building's carts
 2026-11-02T00:13:54 0x0052ae70 func sv_Unk52ae70 -> sv_HandleObjects by:main why:its own error text "sv_HandleObjects(): Could not find QuickJump.ContactName"
+2026-11-02T00:19:28 0x0052b350 func sv_Unk52b350 -> sv_RegisterActivity by:main why:fills the first free SVACTIVITY of sv_Activities (kind, name, dayOnly, icon, valueOff); he.c registers one per job kind

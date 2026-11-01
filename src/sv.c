@@ -4348,28 +4348,23 @@ void sv_CollectGroupCharacters(char *b)
         }
     }
 }
-/* 0x52b350, adds a record (a, name[0x10], c, d, e) to the 0x20-byte table 0x75ec80 (0x20 entries; a == 0 marks a free entry); returns 1 or 0 when full */
-
-int sv_Unk52b350(int a, char *name, int c, int d, int e)
+/* 0x52b350, registers the activity of the character job kind (name, dayOnly, icon, valueOff: SVACTIVITY) in the
+   first free entry of sv_Activities; returns 1, or 0 when the table is full */
+int sv_RegisterActivity(int kind, char *name, int dayOnly, int icon, int valueOff)
 {
     int i;
-    int *p;
 
-    i = 0;
-    p = (int *)(unsigned)&sv_Activities;
-    do {
-        if (*p == 0) {
+    for (i = 0; i < 0x30; i++) {
+        if (sv_Activities[i].kind == 0) {
             if (name != 0)
-                strcpy((char *)((unsigned)&sv_Activities[0].name + i * 0x20), name);
-            ((int *)(unsigned)&sv_Activities)[i * 8] = a;
-            ((int *)(unsigned)&sv_Activities)[i * 8 + 5] = c;
-            ((int *)(unsigned)&sv_Activities)[i * 8 + 6] = d;
-            ((int *)(unsigned)&sv_Activities)[i * 8 + 7] = e;
+                strcpy(sv_Activities[i].name, name);
+            sv_Activities[i].kind = kind;
+            sv_Activities[i].dayOnly = dayOnly;
+            sv_Activities[i].icon = icon;
+            sv_Activities[i].valueOff = valueOff;
             return 1;
         }
-        p += 8;
-        i++;
-    } while ((int)p < (unsigned)((unsigned)sv_Activities + 0x600));
+    }
     return 0;
 }
 /* 0x52b3c0, finds the 0x75ec80 record of the character kind +0x180 of c (when c is not flagged 0x1000000, +0x16c == b, and the record is not time-limited or the day time (0x770ae4)

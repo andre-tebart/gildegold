@@ -106,7 +106,7 @@ void sv_ResetSelection(void);                                                /* 
 void sv_ClearSelection(void);                                           /* 0x52ae40 */
 void sv_HandleObjects(void);                                                /* 0x52ae70 */
 void sv_CollectGroupCharacters(char *b);                                /* 0x52b2a0 */
-int sv_Unk52b350(int a, char *name, int c, int d, int e);               /* 0x52b350 */
+int sv_RegisterActivity(int a, char *name, int c, int d, int e);               /* 0x52b350 */
 int sv_Unk52b3c0(char *c, int b, char *out);                            /* 0x52b3c0 */
 int sv_Unk52b490(char *a, int b);                                       /* 0x52b490 */
 void sv_Unk52b500(unsigned char *a);                                    /* 0x52b500 */
