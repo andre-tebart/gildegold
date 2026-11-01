@@ -1840,7 +1840,6 @@ int d2_WinOpenPicStyled();                     /* 0x473350 */
 #define d2_WinOpenPicStyledS ((int (*)(short, short, int, int, int))d2_WinOpenPicStyled)  /* @original: sv_UpdateMemberList computes the y of each call afresh (a short y, as d2_WinOpenPic's) */
 int d2_CreateWinText(short x, short y, char *text, int win);                     /* 0x473650 */
 void d2_SetObjText();                     /* 0x4734d0 */
-int gm_TitleJobGroup();                     /* 0x504c00 */
 void snd_PlayWorkerClick(struct G16CHARCLICK *c);                     /* 0x4c2c70 */
 void d2_SetObjEnabled();                     /* 0x475e40 */
 void d2_AddPointerItem(int id, int amount);                     /* 0x476b90 */
@@ -3636,8 +3635,8 @@ void sv_OpenCartPanel(AIOBJ *c)
 
 extern int sv_PanelBuildBtn;  /* 0x623884 */
 extern int sv_PanelKind1eBtn;  /* 0x623898 */
-extern int ai_Unk623880;  /* 0x623880 */
-extern int ai_Unk6f2334;  /* 0x6f2334 */
+extern int sv_PanelPortrait;  /* 0x623880 */
+extern int ai_SelectedCount;  /* 0x6f2334 */
 extern unsigned char ai_GameState;  /* 0x6f25ac */
 extern char ai_Unk6f2338;  /* 0x6f2338 */
 extern int d2_PointerObj;  /* 0x5fe710 */
@@ -3660,7 +3659,7 @@ int ai_Unk5b84f0();                     /* 0x5b84f0 */
 void ai_TechTreeWindow(int param_1, int param_2);                     /* 0x591bf0 */
 int sv_ReturnZero(void);
 void sv_OpenDefaultPanel(void);
-void sv_Unk5290f0(unsigned short *p);
+void sv_OpenPersonPanel(AICHAR *c);
 void sv_Unk529380(void);
 void sv_OpenItemPanel(unsigned short *p);
 
@@ -3703,53 +3702,54 @@ void sv_OpenDefaultPanel(void)
         sv_PanelItemBtn = sv_AddPanelButton(0, 0xa6, txt_PanelBtnItem);
     }
 }
-/* 0x5290f0, opens the person info panel ("panel\\infopanel_personen") for the character p (0 for none or several selected: the text "%i %s" with the count 0x6f2334 and 0x144adb0): the name and age
-   (0x514e90, "%s (%i)"), the health bar 0x623868 (0x50c520 of the character, -127 .. 127), the standing image for types 5 / 6 / 7 (+0x54), the two small buttons 0x5df / 0x5e0 (0x52eaa0) for kinds 10 .. 12, and the portrait
-   (+0x18c, or 0x521 for none) with the character noted in its widget */
-
-void sv_Unk5290f0(unsigned short *p)
+/* 0x5290f0, opens the person info panel ("panel\\infopanel_personen") unless a panel is open: for no character or
+   several selected the text "%i %s" (ai_SelectedCount, txt_PanelPersons); for the character c its name markup and
+   health in percent ("%s %i%%"), the opinion bar (sv_PanelHealthBar: gm_Opinion of the player for c, -127 .. 127),
+   the standing picture c->ref54 for the kinds 5 / 6 / 7, for the title job groups 10 .. 12 the pictures 0x5df / 0x5e0
+   with the value bars of the skills sk82 / sk83; then the portrait (sv_PanelPortrait: c->picture, interactive, its
+   user record c; the picture 0x521 for none) */
+void sv_OpenPersonPanel(AICHAR *c)
 {
     char text[512];
-    int hp, kind, age, x;
-    short w;
-    char t;
+    int opinion, group, health, x, skill;
+    unsigned char kind;
 
     if (sv_PanelForm != -1)
         return;
-    sv_PanelForm = d2_OpenForm(d2_ScreenW - 0x68, 0x106, "panel\\infopanel_personen");
+    sv_PanelForm = d2_OpenFormS(d2_ScreenW - 0x68, 0x106, "panel\\infopanel_personen");
     d2_SetForm(sv_PanelForm, 1);
-    if (p == 0 || 1 < ai_Unk6f2334) {
-        sprintf(text, "%i %s", ai_Unk6f2334, ai_Unk144adb0);
+    if (c == 0 || ai_SelectedCount >= 2) {
+        sprintf(text, "%i %s", ai_SelectedCount, txt_PanelPersons);
         io_PrintText(text);
     } else {
-        hp = gm_Opinion(ai_PlayerId, *p);
-        kind = 0;
-        if (*((char *)p + 0x165) != 0)
-            kind = gm_TitleJobGroup(*((char *)p + 0x165));
-        gm_HealthRatio(p);
-        age = (int)0;
-        io_CharacterNameMarkup(*p, 1, 4, text);
-        io_PrintText("%s (%i)", text, age);
+        opinion = gm_Opinion(ai_PlayerId, c->id);
+        group = 0;
+        if (c->title != 0)
+            group = gm_TitleJobGroup((unsigned char)c->title);
+        health = (int)(gm_HealthRatio(c) * 100.0);
+        io_CharacterNameMarkup(c->id, 1, 4, text);
+        io_PrintText("%s %i%%", text, health);
         d2_SetForm(sv_PanelForm, 0);
-        w = *(short *)(ai_Unkf8f128 + d2_LastWindow * 0x3c4);
+        x = (d2_Wins[d2_LastWindow].w - 0x30) >> 1;
         sv_PanelHealthBar = d2_WinOpenSlider(0x18, 0x6c, 0x30, 0, 100, 0x75, 0x442, d2_LastWindow);
-        d2_SetObjValue(sv_PanelHealthBar, -127, 0x7f, hp);
-        t = *((char *)p + 2);
-        if (t == 5 || t == 6 || t == 7)
-            d2_WinOpenPic(((w - 0x30) >> 1) - 8, 0x30, *(int *)(p + 0x2a), d2_LastWindow);
-        if (kind == 0xb || kind == 0xc || kind == 10) {
+        d2_SetObjValue4(sv_PanelHealthBar, -127, 0x7f, opinion);
+        kind = c->kind;
+        if (kind == 5 || kind == 6 || kind == 7)
+            d2_WinOpenPic(x - 8, 0x30, c->ref54, d2_LastWindow);
+        if (group == 0xb || group == 0xc || group == 10) {
+            skill = c->sk82;
             d2_WinOpenPic(0x19, 0x7e, 0x5df, d2_LastWindow);
-            sv_ValueBar(0x29, 0x7e, *((char *)p + 0x82), 0x4f1);
+            sv_ValueBar(0x29, 0x7e, skill, 0x4f1);
             d2_WinOpenPic(0x19, 0x8c, 0x5e0, d2_LastWindow);
-            sv_ValueBar(0x29, 0x8c, *((char *)p + 0x83), 0x4f1);
+            sv_ValueBar(0x29, 0x8c, c->sk83, 0x4f1);
         }
     }
     d2_SetForm(sv_PanelForm, 0);
-    x = (*(short *)(ai_Unkf8f128 + d2_LastWindow * 0x3c4) - 0x30) >> 1;
-    if (p != 0) {
-        ai_Unk623880 = d2_WinOpenPic(x, 0x38, *(int *)(p + 0xc6), d2_LastWindow);
-        *(unsigned short **)(d2_Objs + 0x2e8 + ai_Unk623880 * 0x2ec) = p;
-        *(int *)(d2_Objs + 0x4c + ai_Unk623880 * 0x2ec) = 1;
+    x = (d2_Wins[d2_LastWindow].w - 0x30) >> 1;
+    if (c != 0) {
+        sv_PanelPortrait = d2_WinOpenPic(x, 0x38, c->picture, d2_LastWindow);
+        ((D2OBJ *)d2_Objs)[sv_PanelPortrait].user = c;
+        ((D2OBJ *)d2_Objs)[sv_PanelPortrait].interactive = 1;
         return;
     }
     d2_WinOpenPic(x, 0x38, 0x521, d2_LastWindow);
@@ -3797,7 +3797,7 @@ void sv_Unk529380(void)
             d2_RemoveWindowObjects(d2_LastWindow, 1);
             return;
         }
-        if (ai_Unk6f2334 < 2 && sv_SelectedChar != 0) {
+        if (ai_SelectedCount < 2 && sv_SelectedChar != 0) {
             d2_SetForm(sv_PanelForm, 1);
             gm_HealthRatio(sv_SelectedChar);
             io_CharacterNameMarkup(*(unsigned short *)sv_SelectedChar, 1, 4, text);
@@ -3880,7 +3880,7 @@ void sv_Unk529fb0(void)
         sv_PanelCartBtn = -1;
         sv_PanelBuildBtn = -1;
         sv_PanelItemBtn = -1;
-        ai_Unk623880 = -1;
+        sv_PanelPortrait = -1;
         sv_PanelCartWin = -1;
     }
 }
@@ -4204,7 +4204,7 @@ void sv_ClearSelection(void)
         *q = 0;
         q += 0x21c;
     } while ((int)q < (int)((unsigned)&ai_Selected + 0x65400));
-    SV_I((unsigned)&ai_Unk6f2334) = 0;
+    SV_I((unsigned)&ai_SelectedCount) = 0;
 }
 /* 0x52b2a0, collects the (up to 0x20) characters 0x770d04 + n * 0x21c that belong to the group b (b == 0: the ones with no group, +0x2c == -1) into the table 0x7603a0 */
 
@@ -4418,26 +4418,26 @@ l3b8:
     sv_Unk529380();
     if (SV_I((unsigned)&sv_SelectedObject) == SV_I((unsigned)&full_data_6f23c4) && SV_I((unsigned)&ai_FallbackBuilding) == SV_I((unsigned)&full_data_6f23c0) && SV_I((unsigned)&ai_PlayerBuilding) == SV_I((unsigned)&full_data_6f23bc)
         && SV_I((unsigned)&sv_PanelShown) == SV_I((unsigned)&full_data_6f23c8) && SV_I((unsigned)&ai_Unk75ec5c) == SV_I((unsigned)&full_data_6f23cc) && SV_I((unsigned)&sv_SelectedChar) == SV_I((unsigned)&full_data_6f23d0)
-        && SV_B((unsigned)&full_data_6f2338) == SV_I((unsigned)&full_data_6f23d4) && SV_I((unsigned)&ai_Unk6f2334) == SV_I((unsigned)&full_data_6f23d8) && SV_I((unsigned)&ai_Unk6237cc) == 0)
+        && SV_B((unsigned)&full_data_6f2338) == SV_I((unsigned)&full_data_6f23d4) && SV_I((unsigned)&ai_SelectedCount) == SV_I((unsigned)&full_data_6f23d8) && SV_I((unsigned)&ai_Unk6237cc) == 0)
         return;
     SV_I((unsigned)&ai_Unk6237cc) = 0;
     sv_Unk529fb0();
-    if (SV_I((unsigned)&ai_Unk75ec5c) == 0 || ai_Goods[*(unsigned short *)SV_I((unsigned)&ai_Unk75ec5c) * 0x41] != 0x1d || SV_I((unsigned)&ai_Unk6f2334) != 0 || SV_I((unsigned)&sv_SelectedChar) != 0) {
+    if (SV_I((unsigned)&ai_Unk75ec5c) == 0 || ai_Goods[*(unsigned short *)SV_I((unsigned)&ai_Unk75ec5c) * 0x41] != 0x1d || SV_I((unsigned)&ai_SelectedCount) != 0 || SV_I((unsigned)&sv_SelectedChar) != 0) {
         if (SV_I((unsigned)&sv_SelectedModel) == 0 && SV_B((unsigned)&full_data_6f2338) == 0) {
-            if (SV_I((unsigned)&ai_Unk6f2334) == 0) {
+            if (SV_I((unsigned)&ai_SelectedCount) == 0) {
                 if (SV_I((unsigned)&sv_PanelShown) == 0 && SV_I((unsigned)&sv_SelectedChar) == 0)
                     sv_OpenDefaultPanel();
                 goto l510;
             }
-        } else if (SV_I((unsigned)&ai_Unk6f2334) == 0)
+        } else if (SV_I((unsigned)&ai_SelectedCount) == 0)
             goto l510;
-        if (SV_I((unsigned)&sv_SelectedChar) != SV_I((unsigned)&full_data_6f23d0) || SV_I((unsigned)&full_data_6f23d8) != SV_I((unsigned)&ai_Unk6f2334)) {
-            if (SV_I((unsigned)&ai_Unk6f2334) < 2) {
-                sv_Unk5290f0(SV_I((unsigned)&sv_SelectedChar));
+        if (SV_I((unsigned)&sv_SelectedChar) != SV_I((unsigned)&full_data_6f23d0) || SV_I((unsigned)&full_data_6f23d8) != SV_I((unsigned)&ai_SelectedCount)) {
+            if (SV_I((unsigned)&ai_SelectedCount) < 2) {
+                sv_OpenPersonPanel((AICHAR *)SV_I((unsigned)&sv_SelectedChar));
                 SV_I((unsigned)&full_data_6f23d0) = SV_I((unsigned)&sv_SelectedChar);
                 sv_Unk529380();
             } else
-                sv_Unk5290f0(0);
+                sv_OpenPersonPanel(0);
         }
     } else
         sv_OpenCartPanel(SV_I((unsigned)&ai_Unk75ec5c));
@@ -4445,7 +4445,7 @@ l510:
     SV_I((unsigned)&full_data_6f23d4) = SV_B((unsigned)&full_data_6f2338);
     SV_I((unsigned)&full_data_6f23c0) = SV_I((unsigned)&ai_FallbackBuilding);
     SV_I((unsigned)&full_data_6f23bc) = SV_I((unsigned)&ai_PlayerBuilding);
-    SV_I((unsigned)&full_data_6f23d8) = SV_I((unsigned)&ai_Unk6f2334);
+    SV_I((unsigned)&full_data_6f23d8) = SV_I((unsigned)&ai_SelectedCount);
     if (SV_I((unsigned)&sv_SelectedModel) == 0 && SV_I((unsigned)&ai_FallbackBuilding) == 0 && SV_I((unsigned)&ai_PlayerBuilding) == 0) {
         SV_I((unsigned)&full_data_6f23c0) = 0;
         SV_I((unsigned)&full_data_6f23bc) = 0;
@@ -4487,7 +4487,7 @@ l510:
     SV_I((unsigned)&full_data_6f23c8) = SV_I((unsigned)&sv_PanelShown);
     SV_I((unsigned)&full_data_6f23cc) = SV_I((unsigned)&ai_Unk75ec5c);
     SV_I((unsigned)&full_data_6f23d0) = SV_I((unsigned)&sv_SelectedChar);
-    SV_I((unsigned)&full_data_6f23d8) = SV_I((unsigned)&ai_Unk6f2334);
+    SV_I((unsigned)&full_data_6f23d8) = SV_I((unsigned)&ai_SelectedCount);
 }
 
 struct D3OBJECT * d3if_Pick(float x, float y, int flags, int mask);   /* 0x448630 */
@@ -4770,13 +4770,13 @@ lfe4:
                 if ((n & 0x800) != 0 && (*(char *)((char *)g + 0x165) != 0x1c || (g[0xda] & 1) == 0)) {
                     SV_I((unsigned)&sv_SelectedChar) = (int)g;
                     SV_B((unsigned)&ai_Selected + *g * 0x21c) = 1;
-                    SV_I((unsigned)&ai_Unk6f2334) = 1;
+                    SV_I((unsigned)&ai_SelectedCount) = 1;
                     SV_I((unsigned)&sv_PanelCartChar) = SV_I(((unsigned)&ai_Unk770cec + 0x18) + *g * 0x21c);
                     snd_PlayWorkerClick(g);
                 }
                 SV_I((unsigned)&sv_PanelCartChar) = SV_I(((unsigned)&ai_Unk770cec + 0x18) + *(unsigned short *)SV_I((unsigned)&ai_Unk6f22f8) * 0x21c);
             }
-            if (SV_I((unsigned)&ai_Unk6f2334) == 0 && SV_B((unsigned)&full_data_6f2338) == 0 && SV_I((unsigned)&full_data_6f22f4) != 0 && SV_I((unsigned)&ai_Unk75ec5c) == 0)
+            if (SV_I((unsigned)&ai_SelectedCount) == 0 && SV_B((unsigned)&full_data_6f2338) == 0 && SV_I((unsigned)&full_data_6f22f4) != 0 && SV_I((unsigned)&ai_Unk75ec5c) == 0)
                 SV_I((unsigned)&sv_SelectedModel) = SV_I((unsigned)&ai_Unk6f22e8);
             SV_I((unsigned)&sv_SelectedObject) = SV_I((unsigned)&full_data_6f22f4);
             if (SV_I((unsigned)&full_data_6f22f4) != 0)
@@ -5091,7 +5091,7 @@ lrel:
             sv_Unk52ee50();
         goto lend;
     }
-    if (SV_I((unsigned)&ai_Unk6f2334) == 0)
+    if (SV_I((unsigned)&ai_SelectedCount) == 0)
         goto lend;
     if (SV_I((unsigned)&full_data_6f22fc) == 0) {
         if (SV_I((unsigned)&ai_ClickedObject) != 0 || SV_I((unsigned)&full_data_76045c) != 0)
@@ -5173,7 +5173,7 @@ lafter:
     }
     sv_Unk52bbc0();
 lend:
-    SV_I((unsigned)&ai_Unk6f2334) = 0;
+    SV_I((unsigned)&ai_SelectedCount) = 0;
     d2_ClearPointerItems();
     i = 0;
     p = (int *)((unsigned)&ai_Unk770cec + 0x18);
@@ -5184,9 +5184,9 @@ lend:
             if ((char)p[1] != *(char *)((unsigned)&sv_SelectionFlags + i) && (*(unsigned char *)(cell + 0x8c) & 0x40) == 0)
                 d3t_SetGrey(*(int *)(cell + 0x34), (char)p[1] != 0);
             if ((char)p[1] != 0) {
-                if (SV_I((unsigned)&ai_Unk6f2334) == 0)
+                if (SV_I((unsigned)&ai_SelectedCount) == 0)
                     SV_I((unsigned)&sv_SelectedChar) = (int)(p - 0x61);
-                SV_I((unsigned)&ai_Unk6f2334) = SV_I((unsigned)&ai_Unk6f2334) + 1;
+                SV_I((unsigned)&ai_SelectedCount) = SV_I((unsigned)&ai_SelectedCount) + 1;
                 if (p[-6] != 0 && *(int *)(p[-6] + 1) == *(int *)(*p + 0x2c) && (SV_I((unsigned)&ai_FallbackBuilding) != 0 || (SV_I((unsigned)&sv_PanelShown) != 0 && **(short **)(unsigned)&sv_PanelShown != 0x120)))
                     d2_AddPointerItem(p[2], 1);
             }
@@ -5196,7 +5196,7 @@ lend:
         *(char *)((unsigned)&sv_SelectionFlags + i) = (char)t;
         i++;
     } while ((int)p < ((unsigned)((unsigned)ai_Unk770cec + 0x65296) + 0x182));
-    if (SV_I(((unsigned)&dm_L + 0x20)) != 0 && SV_I((unsigned)&ai_Unk6f2334) != 0)
+    if (SV_I(((unsigned)&dm_L + 0x20)) != 0 && SV_I((unsigned)&ai_SelectedCount) != 0)
         sv_ClearSelection();
 }
 /* 0x52c420, for every group record (0x4ffe90 (0, 2, 7, 4, 0x1d)) sets bit 1 of +0x20 when some character (0x770cec stride 0x21c: kind 1, owner +0x1c matching, flag +0x48 & 1) belongs to it */
@@ -5290,7 +5290,6 @@ lfound:
 char d3if_ScreenBox(D3OBJECT *obj, D3RECT *r);                     /* 0x4486e0 */
 /* 0x42ec00 */
 struct CHARACTER * ch_FindByObject();                     /* 0x402ac0 */
-int gm_TitleJobGroup();                     /* 0x504c00 */
 int gm_TitleGroup();                     /* 0x504ad0 */
 char * gm_FindBuildingById(int id);                     /* 0x502020 */
 float unk_Unk4f9e00(int *o);                     /* 0x4f9e00 */
@@ -5794,7 +5793,7 @@ void sv_Unk52d940(unsigned fl)
     int ok, i, *p, v, who;
     short *it;
 
-    if (SV_I(((unsigned)&dm_L + 0x20)) != 0 && (SV_I(((unsigned)&ai_Unk75f280 + 0x500) + SV_I((unsigned)&sv_FrameDepth) * 8) != (int)ai_GameFrame || SV_I((unsigned)&ai_Unk6f2334) != 0 || SV_I((unsigned)&ai_Unk75ec5c) != 0 || SV_I((unsigned)&sv_SelectedChar) != 0 || SV_I((unsigned)&sv_SelectedObject) != 0))
+    if (SV_I(((unsigned)&dm_L + 0x20)) != 0 && (SV_I(((unsigned)&ai_Unk75f280 + 0x500) + SV_I((unsigned)&sv_FrameDepth) * 8) != (int)ai_GameFrame || SV_I((unsigned)&ai_SelectedCount) != 0 || SV_I((unsigned)&ai_Unk75ec5c) != 0 || SV_I((unsigned)&sv_SelectedChar) != 0 || SV_I((unsigned)&sv_SelectedObject) != 0))
         sb_PlaySample(SV_I((unsigned)&snd_SystemBank), "MausclickRechts_s_01", 1, 0x3f, 0x7f, 0, 0);
     if (SV_I((unsigned)&full_data_6f262c) != 0) {
         if (SV_I(((unsigned)&dm_L + 0x20)) == 0 && *(char *)(unsigned)&kb_Last != 0x1c)
@@ -5841,13 +5840,13 @@ l9f2:
         goto l72;
     }
     if (SV_I((unsigned)&ai_PlayerBuilding) == 0) {
-        if (SV_I((unsigned)&ai_FallbackBuilding) != 0 && SV_I((unsigned)&sv_PanelShown) != 0 && SV_I((unsigned)&full_data_6f22fc) != 0 && SV_I((unsigned)&ai_Unk6f2334) == 0 && SV_B((unsigned)&full_data_6f2338) == 0) {
+        if (SV_I((unsigned)&ai_FallbackBuilding) != 0 && SV_I((unsigned)&sv_PanelShown) != 0 && SV_I((unsigned)&full_data_6f22fc) != 0 && SV_I((unsigned)&ai_SelectedCount) == 0 && SV_B((unsigned)&full_data_6f2338) == 0) {
             SV_I((unsigned)&sv_PopRequest) = SV_I((unsigned)&sv_FrameDepth) - SV_I((unsigned)&sv_FrameBase) + 1;
             d3_SetObjectPos(sv_CameraObj, (unsigned)&sv_ViewPosX);
             d3_SetObjectRot(sv_CameraObj, (unsigned)&sv_ViewRotX);
             goto lbb6;
         }
-    } else if (SV_I((unsigned)&full_data_6f22fc) != 0 && SV_I((unsigned)&ai_Unk6f2334) == 0 && SV_B((unsigned)&full_data_6f2338) == 0) {
+    } else if (SV_I((unsigned)&full_data_6f22fc) != 0 && SV_I((unsigned)&ai_SelectedCount) == 0 && SV_B((unsigned)&full_data_6f2338) == 0) {
         sb_PlaySample(snd_RoomBank, "RaumWechseln_s", 1, 0x3f, 0x7f, 0, 0);
         *(short *)(SV_I((unsigned)&ai_PlayerBuilding) + 0x29) = *(short *)SV_I((unsigned)&full_data_6f22fc);
         SV_I((unsigned)&sv_PopRequest) = SV_I((unsigned)&sv_FrameDepth) - SV_I((unsigned)&sv_FrameBase) + 1;
@@ -5864,7 +5863,7 @@ lbb6:
     if ((SV_I((unsigned)&ai_PlayerBuilding) != 0 && ai_ScriptQuery(0x1a, SV_I((unsigned)&ai_PlayerBuilding), 0, *(unsigned short *)SV_I((unsigned)&sv_PanelShown)) == 0)
         || (SV_I((unsigned)&ai_FallbackBuilding) != 0 && ai_ScriptQuery(0x1c, SV_I((unsigned)&ai_FallbackBuilding), 0, 0) == 0))
         di_ClearAxes();
-    if (SV_I((unsigned)&ai_Unk6f2334) != 0 || SV_B((unsigned)&full_data_6f2338) != 0 || SV_I(((unsigned)&dm_L + 0x20)) == 0)
+    if (SV_I((unsigned)&ai_SelectedCount) != 0 || SV_B((unsigned)&full_data_6f2338) != 0 || SV_I(((unsigned)&dm_L + 0x20)) == 0)
         goto l72;
     ok = 0;
     if (SV_I((unsigned)&d3t_CamMove) != 0) {
@@ -7623,7 +7622,7 @@ extern int ai_Unkfba9c0[168];
 /* txt_PanelBtnForeign: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_PanelBtnItemOwn: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_PanelBtnItem: view of txt_Ptrs (build/mk_txt_views.py) */
-/* ai_Unk144adb0: view of txt_Ptrs (build/mk_txt_views.py) */
+/* txt_PanelPersons: view of txt_Ptrs (build/mk_txt_views.py) */
 int ai_Unk5fcc78 = 1128792064;  /* 0x5fcc78 */
 int ai_Unk5fcc7c = 1128792064;  /* 0x5fcc7c */
 int ai_Unk5fcc80 = 1128792064;  /* 0x5fcc80 */
@@ -7670,7 +7669,7 @@ int sv_PanelBldPic = -1;  /* 0x623864 */
 int sv_PanelHealthBar = -1;  /* 0x623868 */
 int sv_PanelWidgets[4] = {-1, -1, -1, -1};  /* 0x62386c, the info panel's 4 widget ids (freed by one loop: 0x62386c .. 0x62387c) */
 int sv_PanelCartWin = -1;  /* 0x62387c */
-int ai_Unk623880 = -1;  /* 0x623880 */
+int sv_PanelPortrait = -1;  /* 0x623880 */
 int sv_PanelBuildBtn = -1;  /* 0x623884 */
 int sv_PanelItemBtn = -1;  /* 0x623888 */
 int sv_PanelTransportBtn = -1;  /* 0x62388c */
@@ -7740,7 +7739,7 @@ int sv_SelectedModel = 0;  /* 0x6f2304 */
 char * ai_PlayerBuilding = 0;  /* 0x6f2308 */
 char * ai_FallbackBuilding = 0;  /* 0x6f230c */
 unsigned short * sv_PanelShown = 0;  /* 0x6f2310, the scene record (room) the info panel shows now */
-int ai_Unk6f2334 = 0;  /* 0x6f2334 */
+int ai_SelectedCount = 0;  /* 0x6f2334 */
 int sv_ResearchClass = 0;  /* 0x6f233c */
 char sv_LampSwitches = 0;  /* 0x6f2340 */
 char sv_MessageBoxOpen = 0;  /* 0x6f2350 */

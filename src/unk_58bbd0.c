@@ -172,7 +172,7 @@ extern GAPDATA full_data_6f2338[];
 extern unsigned char kb_Last;
 extern char * ai_BTypes;
 extern char * ai_Goods;
-extern int ai_Unk6f2334;
+extern int ai_SelectedCount;
 extern GAPDATA full_data_6f22fc[];
 extern GAPDATA full_data_76045c[];
 extern int sv_FrameBase;
@@ -3145,7 +3145,7 @@ void ai_TradeContactChecks(void)
             init_FinishBuildingScene(U_I((unsigned)&ai_FallbackBuilding), r);
         }
     }
-    if (U_I((unsigned)&full_data_6f22fc) != 0 && U_I((unsigned)&ai_Unk6f2334) == 0) {
+    if (U_I((unsigned)&full_data_6f22fc) != 0 && U_I((unsigned)&ai_SelectedCount) == 0) {
         r = gm_Query(*(int *)(U_I((unsigned)&ai_FallbackBuilding) + 0x5d), 2, 6, 0, 0xfd);
         ai_Unk59f410(U_I((unsigned)&full_data_6f22fc));
         init_ShowBuildingScene(U_I((unsigned)&ai_FallbackBuilding), 0xfd);

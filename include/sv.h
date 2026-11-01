@@ -86,7 +86,7 @@ struct AIBLD; void sv_OpenBuildingPanel(struct AIBLD *b);                       
 void sv_OpenItemPanel(unsigned short *p);                                   /* 0x528b80 */
 struct AIOBJ; void sv_OpenCartPanel(struct AIOBJ *c);                                /* 0x528d90 */
 void sv_OpenDefaultPanel(void);                                                /* 0x528ee0 */
-void sv_Unk5290f0(unsigned short *p);                                   /* 0x5290f0 */
+struct AICHAR; void sv_OpenPersonPanel(struct AICHAR *c);                                 /* 0x5290f0 */
 void sv_Unk529380(void);                                                /* 0x529380 */
 void sv_Unk529fb0(void);                                                /* 0x529fb0 */
 int sv_ReturnZero(void);                                                /* 0x52a040 */
@@ -195,7 +195,7 @@ extern int sv_PanelBldPic;                                    /* 0x623864 */
 extern int sv_PanelHealthBar;                                    /* 0x623868 */
 extern int sv_PanelWidgets[4];                                 /* 0x62386c, the info panel's 4 widget ids */
 extern int sv_PanelCartWin;                                    /* 0x62387c */
-extern int ai_Unk623880;                                    /* 0x623880 */
+extern int sv_PanelPortrait;                                    /* 0x623880 */
 extern int sv_PanelBuildBtn;                                    /* 0x623884 */
 extern int sv_PanelItemBtn;                                    /* 0x623888 */
 extern int sv_PanelTransportBtn;                                    /* 0x62388c */
@@ -251,7 +251,7 @@ extern int sv_SelectedModel;                                    /* 0x6f2304 */
 extern char * ai_PlayerBuilding;                            /* 0x6f2308 */
 extern char * ai_FallbackBuilding;                          /* 0x6f230c */
 extern unsigned short * sv_PanelShown;                      /* 0x6f2310 */
-extern int ai_Unk6f2334;                                    /* 0x6f2334 */
+extern int ai_SelectedCount;                                    /* 0x6f2334 */
 extern int sv_ResearchClass;                                /* 0x6f233c */
 extern char sv_LampSwitches;                                   /* 0x6f2340 */
 extern char sv_MessageBoxOpen;                              /* 0x6f2350 */

@@ -15,6 +15,7 @@ char *gm_FindBuildingById(int id);              /* 0x502020, the building with t
 void gm_ResetStock(void);                       /* 0x50cc60, the stock of the type 0x1e buildings' stalls to 2 */
 int gm_TitleNumber(int group, int rank);        /* 0x5043d0, the title number of the rank in the group */
 int gm_TitleGroup(int n);                       /* 0x504ad0, the title group of the title n */
+int gm_TitleJobGroup(int n);                    /* 0x504c00, the job group of a job-pair number n */
 unsigned char gm_TitleJob(int i, int p);       /* 0x5044b0, the job byte of the character i in the title group p, 0 when none */
 int gm_IsType10(unsigned char *b);              /* 0x5024f0, 1 for the town market */
 int gm_IsHomeType(unsigned char *b);            /* 0x502520, 1 for a home type */

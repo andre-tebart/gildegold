@@ -383,7 +383,7 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define ai_Unk144ad60                            (*(int *)((char *)txt_Ptrs + 0x10ba0))  /* 0x144ad60 */
 #define ai_Unk144ad64                            (*(int *)((char *)txt_Ptrs + 0x10ba4))  /* 0x144ad64 */
 #define ai_Unk144ad78                            (*(int (*)[14])((char *)txt_Ptrs + 0x10bb8))  /* 0x144ad78 */
-#define ai_Unk144adb0                            (*(int *)((char *)txt_Ptrs + 0x10bf0))  /* 0x144adb0 */
+#define txt_PanelPersons                            (*(int *)((char *)txt_Ptrs + 0x10bf0))  /* 0x144adb0 */
 #define full_data_144adb4                        (*(unsigned char (*)[5132])((char *)txt_Ptrs + 0x10bf4))  /* 0x144adb4 */
 
 #endif
