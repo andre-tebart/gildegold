@@ -80,4 +80,34 @@ struct D2SURF * d2_CopySurface(struct D2SURF *surf);                         /* 
 void d2_GetPixelColour(int x, int y, D2SURF *surf, unsigned char *rgb);  /* 0x4798f0, pixel colour into rgb */
 int d2_MakeLightTable(char add);                                 /* 0x479d00 */
 
+/* declared in other units' headers before (moved to the owner) */
+extern unsigned char d2_BlitN;  /* 0xf8a648 */
+extern unsigned int d2_HighBitMask32;  /* 0xf8a640 */
+extern unsigned int d2_LastAnimTick;  /* 0x6f0464 */
+extern unsigned int d2_Mode5Colour;  /* 0xf8a638 */
+extern int d2_ShpRowGap;  /* 0xf8a114 */
+extern int d2_ShpRowX;  /* 0xf8a110 */
+extern int d2_ShpX;  /* 0xf8a108 */
+extern int d2_ShpY;  /* 0xf8a10c */
+int d2_BankSetPalette(D2BANK *bank, void *pal);  /* 0x47c5e0 */
+extern unsigned int d2_BlitH;  /* 0xf8a63c */
+void d2_StepAnims(void);  /* 0x47cb90 */
+int d2_SetColourFormat(int external, int paletteDepth);  /* 0x479df0 */
+void d2_SetMode5Colour(unsigned char r, unsigned char g, unsigned char b);  /* 0x47ca10 */
+int d2_StartAnim(short x, short y, void *data, unsigned char z);  /* 0x47cd20 */
+int d2_DrawShape(int x, int y, void *surf, void *pic, unsigned char i);  /* 0x47c6f0 */
+void d2_SetClipRect(int x0, int y0, int x1, int y1);  /* 0x47cb40 */
+void *d2_BankConvertTo16(void *pic, int a, int b);  /* 0x47c410 */
+void d2_DrawAnim(int n, void *surf);  /* 0x47cdb0 */
+int d2_DrawShapeHalfDark(int x, int y, void *surf, void *pic, char i);  /* 0x47c770 */
+int d2_DrawShapeMode2(int x, int y, void *surf, void *pic, unsigned char i);  /* 0x47c970 */
+int d2_DrawShapeMode3(int x, int y, void *surf, void *pic, char i);  /* 0x47cae0 */
+int d2_DrawShapeMode5(int x, int y, void *surf, void *pic, unsigned char i);  /* 0x47ca40 */
+int d2_DrawShapeScaled(int x, int y, void *surf, void *pic, char i, char mode, int on);  /* 0x47c830 */
+void d2_FillRect(int x, int y, int w, int h, void *surf);  /* 0x47ce60 */
+void d2_FreeAnim(int n);  /* 0x47ce30 */
+void d2_FreeLightTable(void);  /* 0x479ee0 */
+D2FRAME *d2_GetFrame(void *pic, short i);  /* 0x47cb70 */
+void d2_SetBlitParams(void *dst, void *src, void *mask, short w, short h, short n);  /* 0x47ced0 */
+
 #endif
