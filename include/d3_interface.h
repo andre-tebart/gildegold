@@ -59,7 +59,6 @@ extern int d3if_CamSeite;              /* 0x6338c0 */
 #ifndef DATA_VIEWS_H
 extern int d3if_Unk5fb5c0;              /* 0x5fb5c0 */
 #endif
-extern int d3if_Unk5fb5c4;              /* 0x5fb5c4 */
 
 extern int d3if_Unk633dcc;          /* 0x633dcc */
 extern unsigned char d3if_Unk6339db;    /* 0x6339db */
@@ -71,9 +70,6 @@ extern int d3if_Unkfba944;          /* 0xfba944 */
 #endif
 
 void d3_AddChild(D3OBJECT *parent, D3OBJECT *obj);                                      /* 0x43cb80, d3_engine.c */
-D3OBJECT *d3_NextGroup(D3OBJECT *obj);                                                  /* 0x438c30, d3_engine.c */
-void d3_Unlink(D3OBJECT *obj);                                                          /* 0x43d0e0, d3_engine.c */
-char d3_ForEachObject2(D3SCENE *scene, D3OBJECT *obj, unsigned int mask, void (*cb)(D3OBJECT *obj)); /* 0x438e60 */
 int d3io_FindStock(char *name);                                                           /* 0x44c5d0 */
 void d3if_CreateCameras(void);                                                                /* 0x448910 */
 void d3_SetFog(float start, float end, unsigned long color);                    /* 0x43a6f0 = d3_SetFog, the floats passed as dwords */  /* @original: d3_interface.c passes the D3FOGCOL struct (byte-matched call); the other units pass the dword */
@@ -95,7 +91,6 @@ typedef char d3if_chk_levels[(int)&((D3IFSCENE *)0)->levels == 0x128 ? 1 : -1];
 typedef char d3if_chk_sceneFlags[(int)&((D3IFSCENE *)0)->sceneFlags == 0x3d8 ? 1 : -1];
 
 /* --- 0x447e60..0x448910 (worker d3if2) --- */
-char d3_GetBounds(D3OBJECT *obj, D3OBJECT *camera, D3VECTOR *center, float *radius);   /* 0x43d860, d3_engine.c */
 #define D3IF_OBJ068(o) ((float *)(o))[0x68 / 4]     /* size of a type-0 object on screen */
 #define D3IF_RGB_MASK 0xffffff      /* the r/g/b bits of an ARGB colour (sprite vertex colour) */
 
