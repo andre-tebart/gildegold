@@ -201,38 +201,36 @@ unsigned short ai_PokerStep(void)
     }
     return 0;
 }
-/* 0x4a7650, the first group (of 4 cards) other than skip of which seat 2 holds two or more cards (only shown ones
-   if shown): its index into out, the count as the result, 0 if none */
+/* 0x4a7650, finds a pair: the first suit (the deck's cards 4 by 4, suit 0..5) other than skip of which seat 2 holds
+   two or more cards (only open ones if shown): the suit into out, the count as the result, 0 if none. The seat loop
+   runs 1..2 and keeps only seat 2's counts; hand is not read */
 
-int ai_Unk4a7650(int *hand, int shown, int skip, int *out)
+int ai_PokerFindPair(int *hand, int shown, int skip, int *out)
 {
     int cnt[6];
-    int s, g, i, n, best;
-    G10CARD *c;
-    int *q;
+    int s, g, i, k, n, best;
 
     for (s = 1; s < 3; s++) {
         best = 0;
-        q = cnt;
-        c = ai_PokerDeck;
-        do {
+        g = 0;
+        for (k = 0; k < 24; k += 4) {
             n = 0;
-            for (i = 4; i != 0; i--) {
-                if (c->owner == s && (shown == 0 || c->shown != 0))
+            for (i = 0; i < 4; i++) {
+                if (ai_PokerDeck[k + i].owner == s && (shown == 0 || ai_PokerDeck[k + i].shown != 0))
                     n++;
-                c++;
             }
-            if (best < n)
+            if (n > best)
                 best = n;
-            *q++ = n;
-        } while (c < &ai_PokerDeck[24]);
+            cnt[g++] = n;
+        }
     }
-    for (g = 0; g == skip || cnt[g] < 2;) {
-        if (++g > 5)
-            return 0;
+    for (g = 0; g < 6; g++) {
+        if (g != skip && cnt[g] > 1) {
+            *out = g;
+            return cnt[g];
+        }
     }
-    *out = g;
-    return cnt[g];
+    return 0;
 }
 /* 0x4a76d0, the highest card of a hand (group, then rank): of cards 0..4, or 2..4 if high */
 
@@ -505,25 +503,25 @@ void ai_PokerNpcFold(void)
                     break;
                 case 1:
                     if (st->bold == 0) {
-                        m = ai_Unk4a7650(st->card, 0, 7, &k);
+                        m = ai_PokerFindPair(st->card, 0, 7, &k);
                         if (ai_PokerTable->phase > 5 && m <= n && (m < n || k < r))
                             st->foldedAt = ai_PokerTable->phase;
                     } else {
-                        m = ai_Unk4a7650(st->card, 0, 7, &y);
+                        m = ai_PokerFindPair(st->card, 0, 7, &y);
                         if (m < n && ai_PokerTable->phase > 5 && ai_PokerTable->dealt > 4)
                             st->foldedAt = ai_PokerTable->phase;
                     }
                     break;
                 case 2:
                     if (st->bold == 0) {
-                        m = ai_Unk4a7650(st->card, 0, 7, &y);
+                        m = ai_PokerFindPair(st->card, 0, 7, &y);
                         if (ai_PokerTable->dealt < 5 && m == 3 && util_RandomU(4) == 1)
                             st->foldedAt = ai_PokerTable->phase;
                     }
                     break;
                 case 3:
                     if (st->bold == 0) {
-                        m = ai_Unk4a7650(st->card, 0, 7, &y);
+                        m = ai_PokerFindPair(st->card, 0, 7, &y);
                         if (ai_PokerTable->dealt < 5 && m == 3 && util_RandomU(5) == 1)
                             st->foldedAt = ai_PokerTable->phase;
                     }
