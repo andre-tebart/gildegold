@@ -3927,7 +3927,7 @@ extern int gm_NOffers;
 int gm_ListStock();                     /* 0x50ab50 */
 int gm_ListAmount();                     /* 0x50aaf0 */
 float gm_GoodsPrice(unsigned id, unsigned char p);                   /* 0x5089c0 */
-unsigned short * gm_Unk50a050(unsigned short *p);                     /* 0x50a050 */
+unsigned short * gm_ObjectBuildingOwner(unsigned short *p);                     /* 0x50a050 */
 void init_HookObject(char *o, unsigned short *p, int kind);                     /* 0x50d380 */
 struct CHTRANSPORT * ch_AttachTransport();                     /* 0x4034e0 */
 char d3if_SelectTextureSet(struct D3OBJECT *obj, struct D3SURF *surf, unsigned char set, char reload);                     /* 0x446f30 */
@@ -4067,7 +4067,7 @@ unsigned short *gm_CreateObject(int id, unsigned proto, int n)
                     if (c != 0)
                         *(int *)(r + 5) = *(int *)(c + 4);
                 } else {
-                    it = gm_Unk50a050(o);
+                    it = gm_ObjectBuildingOwner(o);
                     *(int *)(r + 5) = *(int *)(it + 4);
                 }
             } else
@@ -8139,7 +8139,7 @@ void gm_FormatAmount(int v, unsigned char k, char *out)
 }
 /* 0x508cc0, the objects a building b (kind b[0]) lists after the object word *proto in its object words (+0x23): counts them up to the first kind 2 / 6 object (kind 0x21 not counted), stores their ids at out + 4 * n */
 
-int gm_Unk508cc0(unsigned char *b, unsigned short *proto, int *out)
+int gm_ListObjectsAfter(unsigned char *b, unsigned short *proto, int *out)
 {
     char *bp;
     int n, i, cnt;
@@ -8829,7 +8829,7 @@ unsigned short *gm_ObjectOwnerChar(unsigned short *o)
 }
 /* 0x50a050, the same with the owner word (+0x27) */
 
-unsigned short *gm_Unk50a050(unsigned short *o)
+unsigned short *gm_ObjectBuildingOwner(unsigned short *o)
 {
     int b;
 

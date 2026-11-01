@@ -13444,7 +13444,7 @@ void ai_Unk5a7cd0(int *m_)
                                     }
                                 }
                             }
-                        } else if (owner != 0 && (owner = (char *)gm_Unk50a050((int)owner)) != 0 &&
+                        } else if (owner != 0 && (owner = (char *)gm_ObjectBuildingOwner((int)owner)) != 0 &&
                                    (owner[2] == 6 || owner[2] == 7 || owner[2] == 5)) {
                             id = *(int *)(owner + 0x54);
                             found = 1;

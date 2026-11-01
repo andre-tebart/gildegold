@@ -13276,7 +13276,7 @@ void he_Unk567f50(int ev, unsigned short *c)
 
     if (*(int *)(c + 0x12) != 0)
         return;
-    o = gm_Unk50a050(c);
+    o = gm_ObjectBuildingOwner(c);
     if (*(unsigned char *)(c + 9) < (unsigned)((unsigned short)util_Random(0x20) + 0x28)) {
         memset(m, 0, sizeof(m));
         *(int *)(m + 8) = *(int *)(o + 4);

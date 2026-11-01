@@ -2240,7 +2240,7 @@ int ai_Unk4c63e0(G17MSG *m)
                 if (gm_FreeCapacity(y, *(unsigned short *)&m->data[8], *(int *)&m->data[0xf]) < *(int *)&m->data[0xf])
                     return 1;
             }
-            r = gm_Unk50a050(y);
+            r = gm_ObjectBuildingOwner(y);
         } else {
             if (gm_Unk50ad70(z, *(unsigned short *)&m->data[8], *(int *)&m->data[0xf]) < *(int *)&m->data[0xf])
                 return 1;
@@ -2702,7 +2702,7 @@ int ai_Unk4c70b0(G17MSG *m, G17STAT *s)
             if (*(short *)y == 0x2a || *(short *)y == 0x1db || *(short *)y == 0x1dc || *(short *)y == 0x116 || *(short *)y == 0x1dd)
                 ys = y;
             p = (int *)(y + 0x14);
-            r1 = gm_Unk50a050(y);
+            r1 = gm_ObjectBuildingOwner(y);
             if (r1 == 0)
                 return 1;
         } else {
@@ -2745,7 +2745,7 @@ int ai_Unk4c70b0(G17MSG *m, G17STAT *s)
                     return 1;
             }
             q = (int *)(y + 0x14);
-            r2 = gm_Unk50a050(y);
+            r2 = gm_ObjectBuildingOwner(y);
         } else {
             q = (int *)(z + 0x178);
             r2 = z;
@@ -2762,7 +2762,7 @@ int ai_Unk4c70b0(G17MSG *m, G17STAT *s)
     if (ys != 0) {
         if (r2 == 0)
             goto money;
-        if (gm_Unk50a050(o) != r2 && *(int *)(o + 0x1c) != 0) {
+        if (gm_ObjectBuildingOwner(o) != r2 && *(int *)(o + 0x1c) != 0) {
             t = (unsigned int)(gm_ListStock(ys, *(unsigned short *)o) * *(int *)(o + 0x1c)) >> 2;
             if ((unsigned int)(gm_ListAmount(ys, o) - t) < (unsigned int)*(int *)&m->data[0xf])
                 return 1;
@@ -2873,7 +2873,7 @@ int ai_Unk4c78c0(G17MSG *m, G17STAT *s)
         return 1;
     if (*(short *)y != 0x2a && *(short *)y != 0x116)
         return 1;
-    r = gm_Unk50a050(y);
+    r = gm_ObjectBuildingOwner(y);
     if (r == 0)
         return 1;
     g = ai_Goods + *(unsigned short *)&m->data[4] * 0x41;
@@ -9370,7 +9370,7 @@ int ai_Unk4d3ea0(char *a, char *b, char *d, int unused, float f)
                 p = gm_Query(0, 2, 7, 1, *(int *)(a + 0x100 + i * 4));
                 p = gm_Query(*(int *)(p + 0x14), 1, 0, 0x1dd);
                 for (q = gm_Query(*(int *)(p + 0x14), 1, 5); q != 0; q = (char *)gm_QueryNext()) {
-                    gm_Unk50a050(q);
+                    gm_ObjectBuildingOwner(q);
                     x = (float)*(int *)(q + 0xe) * f;
                     if (1.0f > x)
                         x = 1.0f;
@@ -9915,7 +9915,7 @@ void ai_Unk4d4d70(char *a)
                     *(int *)(q + 0xa) = G20_US(G20_DEF);
                 if (*(int *)(q + 0xa) == G20_US(G20_DEF)) {
                     if (obj != 0 && ai_Unk60cb5c == G20_ME) {
-                        gm_Unk50a050(q);
+                        gm_ObjectBuildingOwner(q);
                         G19_4C4880U(*(int *)(obj + 2), *(int *)(q + 6), G20_US(q), *(int *)(q + 0xe), ai_OwnPlayer, 0);
                     }
                     gm_GoodsPrice(G20_US(q), ai_OwnPlayer);

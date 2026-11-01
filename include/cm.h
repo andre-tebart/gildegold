@@ -111,7 +111,7 @@ extern int *ai_Unk6f0d90;               /* 0x6f0d90 */
 extern char ai_Chars[][0x21c];      /* 0x770b80, the characters (ai.h AICHAR) */
 int gm_SumSlotAmounts(void *list, unsigned char i);                                     /* 0x508660 */
 int gm_FreeCapacity(short *l, int item, int max);                                    /* 0x50ab80 */
-unsigned short * gm_Unk50a050(unsigned short *p);                                                     /* 0x50a050 */
+unsigned short * gm_ObjectBuildingOwner(unsigned short *p);                                                     /* 0x50a050 */
 int gm_Unk50ad70(char *p, int item, int max);                                    /* 0x50ad70 */
 unsigned char * gm_BuildQuery(int n, ...);                                                  /* 0x501190, ai.h: AIBLD * */
 int amt_CheckApplication(struct AMTAPP *m);                                                       /* 0x4e6360 */

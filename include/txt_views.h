@@ -207,8 +207,8 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define txt_PanelBtnOwn                            (*(int *)((char *)txt_Ptrs + 0x07dac))  /* 0x1441f6c */
 #define ai_Unk1441f70                            (*(int *)((char *)txt_Ptrs + 0x07db0))  /* 0x1441f70 */
 #define txt_PanelBtnForeign                            (*(int *)((char *)txt_Ptrs + 0x07db4))  /* 0x1441f74 */
-#define ai_Unk1441f78                            (*(int *)((char *)txt_Ptrs + 0x07db8))  /* 0x1441f78 */
-#define ai_Unk1441f7c                            (*(int *)((char *)txt_Ptrs + 0x07dbc))  /* 0x1441f7c */
+#define txt_PanelBtnItemOwn                            (*(int *)((char *)txt_Ptrs + 0x07db8))  /* 0x1441f78 */
+#define txt_PanelBtnItem                            (*(int *)((char *)txt_Ptrs + 0x07dbc))  /* 0x1441f7c */
 #define ai_TextEinkauf                           (*(int *)((char *)txt_Ptrs + 0x07dc0))  /* 0x1441f80 */
 #define full_data_1441f88                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x07dc8))  /* 0x1441f88 */
 #define ai_ContactTextStorage                    (*(char * *)((char *)txt_Ptrs + 0x07dd0))  /* 0x1441f90 */
