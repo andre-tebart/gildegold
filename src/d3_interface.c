@@ -37,11 +37,24 @@
 #include "d3_light.h"
 #include "data_views.h"
 #include "f3init.h"
+#include "ch.h"
+#include "d3_int_io.h"
+#include "d3_io_t.h"
+#include "d3_par.h"
+#include "d3_sky.h"
+#include "d3_sm.h"
+#include "d3_tools.h"
+#include "d3s.h"
+#include "dd_vesa.h"
+#include "err.h"
+#include "f3gm.h"
+#include "mem.h"
+#include "ts_texture.h"
+#include "unk_458810.h"
 #define dd_ClearB ((void (*)(D3RECT *, unsigned char, unsigned char, unsigned char))dd_Clear)  /* 0x41e100 (dd_vesa.h: RECT *, int x3): @original this unit passes the fog colour as bytes, its D3RECT viewport */
 #define d3_PointToRefD ((void (*)(D3OBJECT *, D3OBJECT *, D3VECTOR *, D3VECTOR4 *))d3_PointToRef)  /* 0x458b20 (unk_458810.h: XOBJ *, XOBJ *, float *, float *): this unit's D3OBJECT / vector view */
 #define d3_WorldMatrixD ((void (*)(D3OBJECT *, D3OBJECT *, int, void *))d3_WorldMatrix)  /* 0x458da0 (unk_458810.h: XOBJ *, XOBJ *, char, D3MATRIX *): this unit's D3OBJECT view of the object */
 
-struct D3IOOBJ *d3io_LoadObject(char *a, char *b);  /* 0x44e080, d3_io_t.c (d3_io_t.h cannot be included here: d3_fl.h vfs views) */
 void d3fl_FreeMap(D3FLMAP *map);  /* 0x43ff90, d3_fl.c; declared here because a d3_fl.h prototype perturbs d3_tools.c's d3t_UpdateSunRays */
 /* 0x446e10, creates a mesh object named `name` (loading its mesh data), optionally as a child of `a`,
    at pos / rot; returns the object or 0 when the mesh could not be loaded */
