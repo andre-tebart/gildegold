@@ -22,7 +22,15 @@
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 #include "cm_types.h"
-extern G17MSG ai_Unka69140[];
+#include "ahm.h"
+#include "amt.h"
+#include "anm.h"
+#include "cm.h"
+#include "f3gm.h"
+#include "gv.h"
+#include "he.h"
+#include "tr.h"
+#include "unk_58bbd0.h"
 
 
 /* 0x4a7140, starts a game of character p in g: the stake from p's money, the deck, two random opponents */
