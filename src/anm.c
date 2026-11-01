@@ -12,6 +12,13 @@
 #include "f3gm.h"
 #include "mem.h"
 #include "tr.h"
+#include "ch.h"
+#include "d3_engine.h"
+#include "d3_interface.h"
+#include "d3_sm.h"
+#include "d3_vec.h"
+#include "unk_458810.h"
+#include "unk_5d33b0.h"
 extern unsigned char ai_GfxDetail;  /* 0x6f35c4 (unk_5d33b0.c: OPTIONBYTES): @original anm_Update reads it as a byte object (0x4bb884 mov al, byte ptr [0x6f35c4]); through the 4-byte union, .byte[0] or a char view of it, VC6 loads the dword (mov eax, dword ptr) */
 #define util_RandomS ((unsigned short (*)(unsigned short))util_Random)  /* 0x42ec00 (as ai.h: unsigned short (int)): this unit's callers were compiled against the 16-bit parameter (as ahm.c's) */
 
