@@ -2437,7 +2437,7 @@ int unk_Unk5112d0(int n)
         sv_PumpMessages();
         sv_PumpNet();
     }
-    unk_Unk51c950(a, 5);
+    ls_LoadGame(a, 5);
     sv_NetworkSyncWait(0x24087);
     init_ShowStatus(init_StatusLocalData);
     init_LocalData();

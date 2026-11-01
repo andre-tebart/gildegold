@@ -4722,7 +4722,7 @@ void main_GameLoop(int ctl)
         if ((U_I((unsigned)&ai_GameFlags) & 0x40) == 0) {
             if ((U_I((unsigned)&ai_GameFlags) & 2) != 0) {
                 U_I((unsigned)&ai_Difficulty) = *(unsigned char *)((unsigned)&ai_GamePanel + 0x2);
-                iv = unk_Unk51c950(main_NetSaveName, 1);
+                iv = ls_LoadGame(main_NetSaveName, 1);
                 if (iv == 0) {
                     U_I((unsigned)&sv_FrameMask) = 0x46086;
                     sv_MessageBox(U_I((unsigned)&full_data_14414d0), 0);
@@ -4742,7 +4742,7 @@ void main_GameLoop(int ctl)
         }
     } else if ((U_I((unsigned)&ai_GameFlags) & 4) == 0) {
         sprintf(ap, "%s/%s.cty", "gamedata/cities", (char *)((unsigned)&ai_DataPath + 0x220));
-        iv = unk_Unk51c950(ap, 2);
+        iv = ls_LoadGame(ap, 2);
         if (iv == 0) {
             main_Exit();
             return;

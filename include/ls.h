@@ -31,7 +31,7 @@ int ls_WriteHistory(int f);                                             /* 0x51c
 int unk_Unk51c560(int f);                                               /* 0x51c560 */
 int unk_Unk51c870(int f);                                               /* 0x51c870 */
 int ls_Read(void *buf, int size, int count, int f);                     /* 0x51c920 */
-int unk_Unk51c950(int name, int kind);                                  /* 0x51c950, kind is not read (main passes 1 / 2, f3init 5) */
+int ls_LoadGame(int name, int kind);                                  /* 0x51c950, kind is not read (main passes 1 / 2, f3init 5) */
 typedef struct LSHEADER {               /* 0x100 bytes, the header of a save game (ls_ReadSaveHeader; ai_Unk76f920) */
     int version;                        /* 0x00, kept in ls_Version */
     unsigned char flags;                /* 0x04, bit 1: a map-only save */

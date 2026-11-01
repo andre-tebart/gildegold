@@ -1395,10 +1395,11 @@ int ai_Unk76f920[0x40] = {0};  /* 0x76f920, the 0x100-byte header of the loaded 
 extern char * ai_Unkf31140;                /* 0xf31140 */
 extern int ai_Unk75e130[4];  /* 0x75e130, the clock copy */
 #define LS_RD(p, sz) ls_Read((int)(p), (sz), 1, h)
-/* 0x51c950 */
-int unk_Unk51c950(int name, int kind)
+#define LS_LOADFAIL { vfs_fclose(h); mem_Free(ai_Unkf31140); ai_Unkf31140 = 0; return 0; }   /* a late reader failed: the file closed, the load buffer freed */
+/* 0x51c950 @deep read whole against 0x51c950..0x51cee0 (420 vs 420 instructions, 1421 vs 1421 bytes): every reader, each version gate on ls_Version with the read first, the map-only early end (a failed fix-up goes through the close again, as the original does), the inline LS_LOADFAIL blocks of the late readers, ls_ReadAvatars (the forwarder the original calls), the inline strcpy of the path. Left: scheduling only - the original hoists the next call's push esi above the failure branch of the || chains and jumps to the shared close one byte later (0x51ced0, after its push esi) where ours pushes after the branch and jumps to 0x51cecf (order 58, branch 7) */
+int ls_LoadGame(int name, int kind)
 {
-    int h, v, i;
+    int h;
 
     h = vfs_Tfopen(name, "rb", vfs_Root);
     if (h == 0)
@@ -1412,12 +1413,9 @@ int unk_Unk51c950(int name, int kind)
     if (ls_ReadSaveHeader(h, ai_Unk76f920) == 0 || ai_Unk76f920[0] > 0x1005a || ai_Unk76f920[0] < 0x10026
         || !LS_RD(&ai_NextObjectId, 4) || !LS_RD(&ai_Unk6f2618, 4) || !LS_RD(ai_Time, 0xe)
         || !LS_RD(&ai_OwnPlayer, 1) || !LS_RD(&ai_PlayerCharC, 4) || !LS_RD(&ai_Unk6f1bb8, 4)
-        || !LS_RD(&ai_Unk6f1bbc, 4) || !LS_RD(&ai_CharCount, 4)) {
-        vfs_fclose(h);
-        return 0;
-    }
-    v = ls_Version;
-    if (v > 0x10021)
+        || !LS_RD(&ai_Unk6f1bbc, 4) || !LS_RD(&ai_CharCount, 4))
+        goto close;
+    if (ls_Version >= 0x10022)
         LS_RD(&ai_Unk6f1bcc, 4);
     LS_RD(&ai_UpdateStart, 0x18);   /* the 0x18-byte block ai_UpdateStart .. ai_CountCarry (0xf89580) */
     ai_Unk75e134 = *(int *)(ai_Time + 4);
@@ -1426,71 +1424,63 @@ int unk_Unk51c950(int name, int kind)
     ai_Unk75e13c = *(short *)(ai_Time + 0xc);
     if ((ai_Unk76f924 & 2) == 0)
         ai_Difficulty = ai_Unk76f9b8;
-    if (v > 0x1002f)
+    if (ls_Version >= 0x10030)
         LS_RD(&ai_Unk61a658, 4);
-    if (v < 0x1003d)
-        ai_Unk6f1b88 = 1000000;
-    else
+    if (ls_Version >= 0x1003d)
         LS_RD(&ai_Unk6f1b88, 4);
+    else
+        ai_Unk6f1b88 = 1000000;
     if (ls_ReadObjects(h) == 0 || ls_ReadBuildings(h) == 0 || ls_ReadPlayerRecords(h) == 0 || ls_ReadCharacters(h) == 0
-        || unk_Unk51f080(h) == 0 || (v >= 0x10045 && amt_LoadAemter(h, v) == 0) || unk_Unk51d2d0(h) == 0) {
-        vfs_fclose(h);
-        return 0;
-    }
-    if ((ai_Unk76f924 & 2) != 0) {
+        || unk_Unk51f080(h) == 0 || (ls_Version >= 0x10045 && amt_LoadAemter(h, ls_Version) == 0) || unk_Unk51d2d0(h) == 0)
+        goto close;
+    if ((ai_Unk76f924 & 2) != 0) {          /* a map-only save ends here */
         vfs_fclose(h);
         ai_JudgeCatholic = 0;
         ai_JudgeProtestant = 0;
-        return ls_FixupAfterLoad() != 0;
+        if (ls_FixupAfterLoad() == 0)
+            goto close;                     /* the original closes the file a second time on this path */
+        return 1;
     }
-    if (!((v > 0x10044 || amt_LoadAemter(h, v) != 0) && unk_Unk4f2b30(h) != 0 && (v < 0x10016 || ls_ReadRelations(h) != 0)
-          && unk_Unk51f720(h) != 0 && (v < 0x1002a || gv_ReadAvatars((void *)h) != 0) && unk_Unk51fb90(h) != 0
-          && unk_Unk520000(h) != 0 && unk_Unk520200(h) != 0)) {
-        vfs_fclose(h);
-        return 0;
-    }
+    if ((ls_Version < 0x10045 && amt_LoadAemter(h, ls_Version) == 0) || unk_Unk4f2b30(h) == 0
+        || (ls_Version >= 0x10016 && ls_ReadRelations(h) == 0) || unk_Unk51f720(h) == 0
+        || (ls_Version >= 0x1002a && ls_ReadAvatars((void *)h) == 0) || unk_Unk51fb90(h) == 0
+        || unk_Unk520000(h) == 0 || unk_Unk520200(h) == 0)
+        goto close;
     if (unk_Unk520310(h) == 0) {
         vfs_fclose(h);
         ls_FixupAfterLoad();
         return 0;
     }
-    if (!((v < 0x1002e || unk_Unk5205f0(h) != 0) && ls_FixupAfterLoad() != 0)) {
-        vfs_fclose(h);
-        return 0;
-    }
+    if ((ls_Version >= 0x1002e && unk_Unk5205f0(h) == 0) || ls_FixupAfterLoad() == 0)
+        goto close;
     d3if_SelectScene(0, 1);
     unk_Unk511790();
     unk_Unk511840();
     if (unk_Unk51e900(h) == 0)
-        goto fail;
+        LS_LOADFAIL
     ai_JudgeCatholic = gm_FindChar(ai_JudgeCatholic);
     ai_JudgeProtestant = gm_FindChar(ai_JudgeProtestant);
     if (ai_Unk4b63b0(h) == 0)
-        goto fail;
-    if (!(v < 0x10029 || ai_Unk589b30(h) != 0))
-        goto fail;
-    if (v > 0x10046 && ai_Unk5a8a20(h) == 0)
-        goto fail;
-    if (v > 0x10048 && ahm_LoadWalk(h) == 0)
-        goto fail;
-    if (!(v < 0x10052 || hmt_Load(h, v) != 0))
-        goto fail;
-    if (v > 0x10052 && rt_LoadRoutes(h) == 0)
-        goto fail;
+        LS_LOADFAIL
+    if (ls_Version >= 0x10029 && ai_Unk589b30(h) == 0)
+        LS_LOADFAIL
+    if (ls_Version >= 0x10047 && ai_Unk5a8a20(h) == 0)
+        LS_LOADFAIL
+    if (ls_Version >= 0x10049 && ahm_LoadWalk(h) == 0)
+        LS_LOADFAIL
+    if (ls_Version >= 0x10052 && hmt_Load(h, ls_Version) == 0)
+        LS_LOADFAIL
+    if (ls_Version >= 0x10053 && rt_LoadRoutes(h) == 0)
+        LS_LOADFAIL
     vfs_fclose(h);
     sv_Unk528770();
     unk_Unk511790();
     unk_Unk513740();
     init_SetDetailLevel((int)ai_Unk633738, 1);
-    i = 0;
-    do {
-        ls_SavePath.path[i] = ai_Unk76f9bc[i];
-    } while (ai_Unk76f9bc[i++] != 0);
+    strcpy(ls_SavePath.path, ai_Unk76f9bc);
     return 1;
-fail:
+close:
     vfs_fclose(h);
-    mem_Free(ai_Unkf31140);
-    ai_Unkf31140 = 0;
     return 0;
 }
 /* 0x51cee0, reads the header of a save game into h (an LSHEADER), each field from the version it came in
