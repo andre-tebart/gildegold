@@ -1156,26 +1156,21 @@ int ahm_WriteRecord(void *f, unsigned char *o)
         return 0;
     if (vfs_fwrite(r + 1, 4, 1, f) <= 0)
         return 0;
-    if (vfs_fwrite(r + 2, 1, 1, f) != 0) {
-        if (vfs_fwrite((char *)r + 9, 1, 1, f) <= 0)
-            return 0;
-        if (vfs_fwrite((char *)r + 10, 1, 1, f) <= 0)
-            return 0;
-        if (vfs_fwrite((char *)r + 11, 1, 1, f) != 0) {
-            i = 0;
-            r += 4;
-            while (vfs_fwrite(r - 1, 4, 1, f) != 0) {
-                if (vfs_fwrite(r, 4, 1, f) <= 0)
-                    return 0;
-                i++;
-                r += 2;
-                if (i > 5)
-                    return 1;
-            }
-        }
+    if (vfs_fwrite(r + 2, 1, 1, f) <= 0)
         return 0;
+    if (vfs_fwrite((char *)r + 9, 1, 1, f) <= 0)
+        return 0;
+    if (vfs_fwrite((char *)r + 10, 1, 1, f) <= 0)
+        return 0;
+    if (vfs_fwrite((char *)r + 11, 1, 1, f) <= 0)
+        return 0;
+    for (i = 0; i < 6; i++) {
+        if (vfs_fwrite(r + 3 + i * 2, 4, 1, f) <= 0)
+            return 0;
+        if (vfs_fwrite(r + 4 + i * 2, 4, 1, f) <= 0)
+            return 0;
     }
-    return 0;
+    return 1;
 }
 /* 0x4ed040, reads the record of 0x4ecf10 from the file f into the object o (+0x65, allocated when missing); 1 when all was read @deep B3 draft, 136 differing instructions: the body was read against the original and is complete (the id, float, 4 share bytes, 6 place pairs and the record copy into the allocated +0x65 block; ls_Read is ls.c's 0x51c920). The hunks are the prologue (the original keeps the file in edi, ours in esi), the frame slots, and the return-0 block placement: the original inlines pop edi/pop esi/pop ebx/add esp,0x3c/ret after every failed read and skips it with jne, ours routes every return 0 to one shared out-of-line tail with je. Lead tried this session: the !ls_Read(...) form (compiles to the same 136 differing instructions - the source comparison is not the cause); the same family lesson from ahm_WriteRecord (0x4ecf10, escalated): the shared-tail / prologue difference is compiler block placement. */
 
