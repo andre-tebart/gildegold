@@ -41,9 +41,9 @@ typedef struct UDPSERVER {          /* 0x80 bytes */
     int flags;                      /* 0x7c, 0x3f (version 1) or 0x7f (version 4) */
 } UDPSERVER;
 
-void udp_Init(u_short port);                                                            /* 0x401d50 */
+void udp_Init(unsigned short port);                                                            /* 0x401d50 */
 void udp_Exit(void);                                                                    /* 0x401e50 */
 void udp_Send(char *buf, int len);                                                      /* 0x401e70 */
-int udp_FindServers(u_short port, DWORD timeout, struct UDPSERVER *list, int max);             /* 0x401ea0 */
+int udp_FindServers(unsigned short port, unsigned long timeout, struct UDPSERVER *list, int max);             /* 0x401ea0 */
 
 #endif

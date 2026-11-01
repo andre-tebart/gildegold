@@ -4,6 +4,8 @@
    here. Needs <ddraw.h>. Names are ours. */
 #ifndef UNK_41EBC0_H
 #define UNK_41EBC0_H
+#include <windows.h>                  /* Win32 types */
+#include <ddraw.h>                    /* DDSURFACEDESC2 */
 
 /* Inline-asm copy in the style of D3_ZERO: byte moves up to dword alignment of dst, dwords, bytes.
    n must be a plain variable. */

@@ -4,6 +4,8 @@
    Needs <windows.h>, <ddraw.h> and <d3d.h> first. */
 #ifndef DD_VESA_H
 #define DD_VESA_H
+#include <windows.h>                  /* Win32 types */
+#include <d3d.h>                      /* Direct3D / DirectDraw types */
 
 /* dd_Mode: how the frame gets to the screen */
 #define DD_GDI          0           /* DIB section blitted with BitBlt */

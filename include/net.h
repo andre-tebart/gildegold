@@ -16,7 +16,7 @@ typedef struct NETPKT {             /* packet header; len is unaligned */
 #pragma pack(pop)
 
 typedef struct NETCONN {            /* 0x1460ae0 */
-    SOCKET s;
+    unsigned int s;                 /* SOCKET (winsock: u_int); INVALID_SOCKET (~0) when closed */
     NETPKT *rx;                     /* 0x04, packet being received */
     NETPKT *tx;                     /* 0x08, packet being sent */
     unsigned short rxlen;           /* 0x0c, bytes received so far */
@@ -43,7 +43,7 @@ void net_Error(int err);                                                        
 void net_ClearStats(void);                                                              /* 0x4247e0 */
 void net_Count(NETPKT *pkt, unsigned int size, char recv);                              /* 0x424810 */
 void net_PrintStats(void);                                                              /* 0x424860 */
-SOCKET net_Connect(char *host, unsigned short port);                                    /* 0x424990 */
+unsigned int net_Connect(char *host, unsigned short port);                              /* 0x424990, the SOCKET */
 void net_Close(void);                                                                   /* 0x424c30 */
 int net_Recv(void);                                                                     /* 0x424c80, 1 = connection lost */
 int net_Send(void);                                                                     /* 0x424e70, 1 = connection lost */

@@ -3,6 +3,7 @@
    filter at 0x4215c0 (not a Ghidra function). Names are ours. */
 #ifndef UNK_4214A0_H
 #define UNK_4214A0_H
+#include <windows.h>                  /* Win32 types */
 
 #define ERR_LOG      0x01           /* err_Flags: write the log files */
 #define ERR_MSGBOX   0x02           /* show messages in a message box */

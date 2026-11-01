@@ -3,6 +3,10 @@
    Ghidra function). Needs <windows.h>, <strmif.h> and <control.h> first. Names are ours. */
 #ifndef UNK_422C90_H
 #define UNK_422C90_H
+#include <objbase.h>                  /* COM */
+#include <strmif.h>                   /* IGraphBuilder */
+#include <control.h>                  /* IMediaControl / IMediaEvent */
+#include <windows.h>                  /* Win32 types */
 
 #define MOV_CENTER   0x01           /* mov_Open flags: center in the window */
 #define MOV_FILL     0x02           /* use the whole client area */

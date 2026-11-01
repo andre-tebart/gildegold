@@ -3,6 +3,10 @@
    Field names unkXXX are byte offsets whose meaning is not known yet. */
 #ifndef D3_D3D_H
 #define D3_D3D_H
+#include "d3.h"                       /* D3RECT and the D3 records */
+#include "d3_types.h"                 /* D3COLOR */
+#include <windows.h>                  /* Win32 types */
+#include <d3d.h>                      /* Direct3D / DirectDraw types */
 
 /* D3_COPY (src named directly in the asm) and D3_COPY_LABEL are in d3.h; these are its other operand shapes. */
 

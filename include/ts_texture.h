@@ -2,6 +2,8 @@
    Types and globals of the TU. Names are ours. */
 #ifndef TS_TEXTURE_H
 #define TS_TEXTURE_H
+#include <windows.h>                  /* Win32 types */
+#include <d3d.h>                      /* Direct3D / DirectDraw types */
 
 #include "d3_types.h"
 typedef D3TEXFLAGS TSFLAGS;         /* tex_Load flags, passed by value: b[0] 0xff: slot from the front; b[2] 1: from

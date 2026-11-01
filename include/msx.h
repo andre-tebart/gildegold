@@ -3,6 +3,7 @@
    Names are ours. */
 #ifndef MSX_H
 #define MSX_H
+#include <windows.h>                  /* Win32 types */
 
 typedef struct MSXTRACK {           /* 0x128 bytes, MSX_TRACKS of them at msx_Tracks */
     char name[0x100];               /* file name relative to msx_Path; "" = free slot */

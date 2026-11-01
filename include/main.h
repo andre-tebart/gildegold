@@ -1,6 +1,7 @@
 /* main.h -- the startup / shutdown code of the game window (0x531670 ..), see src/game/main.c */
 #ifndef MAIN_H
 #define MAIN_H
+#include <windows.h>                  /* Win32 types */
 
 typedef struct MAINFAMILY {             /* 0x2c bytes at 0x75e180, the character creation's choices */
     int group[6];                       /* 0x00, the profession group 0 .. 4 of each family member (-1: none): the
