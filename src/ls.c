@@ -17,7 +17,6 @@ struct D3TERRAIN;
 #define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
 #include "d3_types.h"
 extern D3SCENE d3_Scenes[];
-extern int cm_SaveAcks[8][2];
 #define GAPDATA __declspec(align(1)) unsigned char
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
@@ -27,28 +26,17 @@ extern char ai_Unk7d6a60[];  /* 0x7d6a60, the five 0x2a90-byte stock blocks (f3g
 extern unsigned ai_Unk91ac40[136];
 extern unsigned char ord_Statistics;
 extern unsigned char ord_StatisticsClock;
-extern char ai_DataPath[608];
 extern char ai_Unk925520[];
-extern int ai_Unk92bca0;
 extern GAPDATA full_data_92bcb3[];
-extern int ai_Unk60bd88;
-extern int ai_Unk60bd8c;
-extern int ai_Unk60bd90;
 #include "cm_types.h"
-extern G17MSG ai_Unk9367e0[];
-extern unsigned char ai_Unka68800[1024];
-extern unsigned int ai_Unka68c04;
-extern G17MSG ai_Unka69140[];
-extern G17STAT ai_Unkf31160[];
-extern unsigned int ai_Unkf8121c;
 extern GAPDATA full_data_7604e8[];
 extern void main_Unk537b60(int kind, int cur, int total);
 extern int ai_Unk7d6a40;
 #include "ch_types.h"
 extern CHMOTION ch_Motions[];
 extern int ai_Unk7e3f38;
-extern struct G10GAME *ai_Unkf83654;
 
+#include "cm.h"
 int ai_Unk61a658 = 1;  /* 0x61a658 */
 int ls_Language = 65535;  /* 0x62364c, the language number ( */
 int ls_Version = 65626;  /* 0x623650 */
@@ -56,60 +44,31 @@ const char ls_LanguageNames[][0x40] = { "GERMAN", "ENGLISH", "FRENCH", "ITALIAN"
 extern int gm_PlayerRecords[688];          /* 0x7d5f80, the 16 player records (0xac bytes each; gm_PlayerRecord, f3gm.c) */
 /* gm_PlayerRecordBytes: view of gm_PlayerRecords (tools/data_views.py) */
 extern char *ls_ActionQueue;            /* 0x631050, the action queue (ch.h: CHACTION *ch_Queue) */
-extern char ch_EmptyName[];             /* 0x631090 */
-extern int d3_CurrentScene;                /* 0x633444 */
-extern struct AICHAR *ai_JudgeCatholic;  /* 0x6f1bfc */
-extern struct AICHAR *ai_JudgeProtestant;  /* 0x6f1c00 */
 int * ai_Unk633738 = 0;  /* 0x633738, the scene (its first word the kind: */
-extern unsigned short ai_PlayerId;              /* 0x6f25b8 */
 int ai_Unk6f1b88 = 0;  /* 0x6f1b88 .. */
 int ai_Unk6f1bcc = 0;  /* 0x6f1bcc */
 unsigned char ls_SaveSlot = 0;  /* 0x6f1c38, the slot the save header records */
-extern int ai_Difficulty;                /* 0x6f23fc */
 /* ai_Unk76fa24: view of cm_SaveAcks (tools/data_views.py) */
-extern char ai_PlayerSlots[4][0x2f4];      /* 0x7e3f40, the player slots */
-extern struct AIOBJ *ai_Objects;             /* 0x7e3f34 */
-extern char ai_Time[];             /* 0x770ae0, the clock */
-extern int ai_UpdateStart;             /* 0xf89580 */
-extern int ai_NextObjectId;                /* 0x61a654 */
 int ai_Unk6f2618 = 0;  /* 0x6f2618 */
-extern int ai_Unk6f1bb8, ai_Unk6f1bbc, ai_CharCount;   /* 0x6f1bb8, 0x6f1bbc, 0x6f1bc0 */
+extern int ai_Unk6f1bb8, ai_Unk6f1bbc;   /* 0x6f1bb8, 0x6f1bbc, 0x6f1bc0 */
 /* ls_RefTargets: view of ai_Unkf31160 (tools/data_views.py) */
-int vfs_fclose(struct VFSFILE *f);                    /* 0x430aa0 */
-struct VFSFILE * vfs_Tfopen(char *name, char *mode, int unk);                     /* 0x430470 */
-void mem_Free(void *p);                    /* 0x422620 */
 void dd_SplitRGB();                    /* 0x41e6d0 */
 void d3_SaveScene(char *name, struct VFSFILE *f);                     /* 0x44aa10 */
-int gm_FindObjectInst(int id);                     /* 0x4fe980 */
-char * gm_FindBuildingById(int id);                     /* 0x502020 */
-int cm_PartyById(int id);               /* 0x4e50a0, cm.h's prototype (that header redefines gv.h's globals here) */
-int gm_GetWorth(unsigned short id);                     /* 0x50a640 */
-int gm_ConvertMoney(int a, unsigned char k);                     /* 0x5085b0 */
-int amt_SaveAemter();                     /* 0x4ea690 */
 int unk_Unk4f28d0();                     /* 0x4f28d0 */
 int ai_Unk4b62e0();                     /* 0x4b62e0 */
 int ai_Unk589aa0();                     /* 0x589aa0 */
 int ai_Unk5a8940();                     /* 0x5a8940 */
-int ahm_SaveWalk();                     /* 0x4ebfb0 */
 int hmt_Save();                     /* 0x4adb20 */
-int rt_SaveRoutes();                     /* 0x4bff40 */
 
 #define LS_W(p, sz) if (vfs_fwrite((p), (sz), 1, f) <= 0) return 0;
 #include "rd_types.h"                 /* G15BK */
 int unk_Unk4f17f0();                     /* 0x4f17f0 */
-int ahm_WriteRecord();                     /* 0x4ecf10 */
 
 #define LS_R(p, sz) if (ls_Read((int)(p), (sz), 1, f) == 0) return 0;
-struct VFSFILE * vfs_Tfopen(char *name, char *mode, int unk);                     /* 0x430470 */
 DWORD dd_RGB(unsigned char r, unsigned char g, unsigned char b);          /* 0x41e670, an RGB triple to a 16 bit pixel */
 
 extern int f3gm_ObjectCount;                /* 0x6f1bdc */
-extern char *ai_Unk5fb5b0;              /* 0x5fb5b0, the current scene */
-struct D3SM * d3sm_Create(struct D3TERRAIN *t, int size, int mask);  /* 0x45eeb0, d3_sm.h */
-char d3_LoadScene(char *name, void *f, void (*progress)(int a, int i, int n));                     /* 0x44be60 */
 char d3if_ClearScene(int index);                    /* 0x447e60 */
-void d3fl_SetDetail(unsigned int n);                    /* 0x43f8a0 */
-int ahm_ReadRecord(void *f, unsigned char *p);  /* 0x4ed040, ahm.h's prototype (that header's `const char *tag` for mem_Alloc conflicts with gv.h) */
 
 struct CHARACTER *ch_AllocAt(int id);               /* 0x402a30, ch.h's prototype (that header needs d3.h, which conflicts with gv.h here) */
 extern char *txt_Ptrs[];           /* 0x143a1c0, the text table */
@@ -119,12 +78,21 @@ extern char hst_Key[];                 /* 0xf83520, the history key ("G12", 0x20
 #include "hst_types.h"
 #include "f3init.h"
 #include "sv.h"
-extern G12ROW hst_Lists[];             /* 0xf83540, the four history lists */
+#include "ahm.h"
+#include "am.h"
+#include "amt.h"
+#include "anm.h"
+#include "hst.h"
+#include "main.h"
+#include "mem.h"
+#include "rt.h"
+#include "unk_4a7140.h"
+#include "unk_4b39f0.h"
+#include "unk_575860.h"
+#include "unk_58bbd0.h"
 int ai_LoadWind();                     /* 0x5dc0c0 */
 int unk_Unk4ed910();                     /* 0x4ed910 */
-int gm_FindById();                     /* 0x4fea50 */
 
-extern struct AIBLD *ai_MarketBuilding;                /* 0x6f1bc8 */
 /* ai_Unk6f261c: view of ai_Unk6f2618 (tools/data_views.py) */
 int ai_Unk6f2620 = 0;  /* 0x6f2620 / */
 unsigned char he_Events[339968] = {0};  /* 0x6fab40, the */
@@ -134,20 +102,13 @@ void (*he_RunHandlers[5544])(unsigned char *) = {0};  /* 0x758600, the event run
 int ai_Unk75e134 = 0;  /* 0x75e134 */
 int ai_Unk75e138 = 0;  /* 0x75e138 .. the clock copy */
 
-extern struct G17MSG *ai_Unka68d24;  /* 0xa68d24 */
-extern struct G17MSG *ai_Unka68c00;  /* 0xa68c00 */
-extern struct G17MSG *cm_SendQueue;  /* 0xf81160 */
 void he_FreeEvents();                    /* 0x53d590 */
-extern int d3_CurrentScene;             /* 0x633444, the current scene index (d3.h) */
-char d3if_SelectScene(int index, char keep);  /* 0x4478e0, d3_interface.c */
 
 /* ai_Unk1469700: view of ch_Motions (tools/data_views.py) */
 char *strstr();                   /* 0x5de6b0, strstr-like (the "hozfaeller" misspelling check) */
 
 int ai_Unk430fa0(struct VFSFILE *f, long offset, int origin);                    /* 0x430fa0, fseek */
 int ai_Unk431170();                     /* 0x431170, file length */
-void cm_SendLoadSize(int size);         /* 0x4c44d0, cm.h's prototype (that header redefines gv.h's globals in this TU) */
-int cm_SendLoadBlock(void *p);          /* 0x4c4500, the 0x80-byte block of the load buffer; -1: send ring full */
 /* 0x519010, the language number of the name s (case-insensitive, one of the five of the table 0x5ee978), 0xffff when unknown; kept in 0x62364c */
 
 int ls_LanguageOf(char *s)
