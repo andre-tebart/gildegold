@@ -16,13 +16,6 @@ struct SBSAMPLE;
 struct SBSAMPLE * sb_GetSample(struct SBBANK *bank, char *name);                         /* 0x426030 */
 struct SBBANK *sb_FindBank(char *name);                                                 /* 0x426290 */
 struct SBBANK * sb_LoadSampleBank(char *name, int preload);                              /* 0x426950 */
-int sb_UnloadSampleBank(struct SBBANK *bank);                                           /* 0x426ba0 */
-int sb_IsPlaying(struct SBSAMPLE *s);                                                   /* 0x426f20 */
-int sb_Play(struct SBSAMPLE *s, int fade, int delay);                                   /* 0x427110 */
-void sb_Stop(struct SBSAMPLE *s, int fade);                                             /* 0x427290 */
-void sb_SetLoops(struct SBSAMPLE *s, int loops);                                        /* 0x427390 */
-int d3snd_PlayAt(struct SNDHANDLE *snd, struct D3OBJECT *obj, int volume, float range);             /* 0x417e30 */
-int snd_QueueVoice(int id, int bank, char *text, int var, unsigned int delay);                              /* 0x4c27d0, speech */
 
 /* script globals SND_W2 ... SND_VAR registered by sndc_Register */
 extern int snd_W2;                      /* 0x5f3108 (see .c) */
