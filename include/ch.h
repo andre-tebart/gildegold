@@ -133,7 +133,6 @@ int sv_ReturnZero(void);                                                       /
 extern int ch_LowPoly;              /* 0x631064, 2 - the ch_SetLowPoly mode */
 struct D3OBJECT; struct D3IFSCENE; char d3if_MoveObject(struct D3OBJECT *obj, struct D3IFSCENE *from, struct D3IFSCENE *to);                           /* 0x447fd0, moves obj to another scene */
 void vfs_ToSlashes(char *path);                                                         /* 0x42ed10 */
-void d3anim_ApplyRootMotion(D3OBJECT *obj, D3ANIMSLOT *s, int from, int to, int flags);       /* 0x4315c0 */
 /* D3ANIMFLAGS as built for d3anim_StartAnim here: field-wise, so VC6 keeps the dword at 4 in a register */
 typedef struct CHANIMFLAGS {
     union {
@@ -324,9 +323,6 @@ extern struct D3ANIM *d3t_CamMove;       /* 0x6310e8, the running camera animati
 
 char d3sm_GetVertex(struct D3SM *h, int x, int z, struct D3VECTOR *out);                              /* 0x45f100 */  /* @original: the original callers read an int result (gv.h declares it int; ord.c's unk_Unk4f86a0 at 0x4f86a0 is byte-matched without the char widening) */
 char map_Pick(struct D3FLMAP *map, struct D3VECTOR *pos, char lod, int *x, int *y, float *h);             /* 0x4463b0 */
-void d3anim_ApplyRootMotion(D3OBJECT *obj, D3ANIMSLOT *s, int from, int to, int flags);       /* 0x4315c0 */
-void d3anim_PauseAnim(D3ANIMCTL *ctl, char *name);                                          /* 0x435810 */
-void d3anim_PlayAnim(D3ANIMCTL *ctl, char *name, char on);                                 /* 0x435870 */
 int d3t_PlaceObjectV(struct D3OBJECT *camera, struct D3VECTOR *pos, struct D3VECTOR *dir, int unk, char flags); /* 0x411860 */
 void vfs_ToSlashes(char *path);                                                         /* 0x42ed10 */
 #define d3_LoadAnimFile ((int (*)(char *, char *, int))d3_LoadAnimStream)                    /* 0x44e4a0, returns int */
@@ -383,7 +379,6 @@ typedef struct CHACTOBJ {
 #define CHACT_UNK18C(a) (*(unsigned char *)((char *)(a) + 0x18c))
 #define D3MATERIAL_NAME104(m) (*(char **)((char *)(m) + 0x104))
 
-void d3anim_SetFrame(D3OBJECT *obj, D3ANIMSLOT *s, int frame);                          /* 0x435950 */
 
 CHACTION *ch_QueueAnimSpeed(CHARACTER *ch, char *name, int n, float speed);                  /* 0x405810 */
 void ch_ActSitDown(CHACTION *a);                                                        /* 0x405870 */
