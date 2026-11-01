@@ -41,11 +41,11 @@ Hard rules
 
 ## 1. Start
 
-1. `dcp session start`. It is the gate (no open toolchain or libs obligation, a clean working tree, every
-   unit compiles, no error conflict, the link ok). On `gate: FAIL` fix what it lists (or revert), commit, start
-   again; an `obligation=toolchain.*` / `obligation=libs.archives` line is a human decision: stop and hand it to
-   the user. The session clock it mentions bounds layout sessions; a match-base session is counted in functions
-   (section 4), not minutes.
+1. `dcp session start --kind match-base`. It is the gate (no open toolchain or libs obligation, a clean
+   working tree, every unit compiles, no error conflict, the link ok). On `gate: FAIL` fix what it lists (or
+   revert), commit, start again; an `obligation=toolchain.*` / `obligation=libs.archives` line is a human
+   decision: stop and hand it to the user. A match-base session is counted in functions (section 4), not
+   minutes.
 2. `dcp next` - the base queue, first item first. Read the lead comment of its unit's `src/<unit>.c` (its
    `Open:` lines).
 
@@ -63,7 +63,11 @@ code is shape or byte, only readability is missing. `gates=` names the failing r
 - `dcp asmdiff NAME` - our instructions against the original's, aligned; `--regs eax=ecx,esi=edi` renames
   registers on our side. Run it first on every big `code` hunk: a pure register rotation reads as `code`.
   `--symbols` prints the call targets, data and string literals by name instead of `X`; `!` marks an equal
-  instruction that names another symbol or literal than the original's (a wrong callee, datum or string).
+  instruction that names another symbol or literal than the original's (a wrong callee, datum or string); `=`
+  one that names the same address or literal by another name (an alias, `sym+off` for a bare address: no
+  error; two source names of one datum are a `C.name.alias` warning of `dcp check --strict`). A compare against
+  an address (`cmp ecx, 0xfb91e4 (or d2_Views+0x81c4)`) also names the array below it the function uses: a
+  loop's end pointer lies past the array's end, inside the next object.
   Frames of other sizes are aligned as diffclass aligns them (`frame=0x3bc/0x3b8`): a line that differs only
   by the shift is equal (`~`), so only the real differences show; `--plain` diffs the texts as they are.
 - `dcp diffclass NAME` - the hunks and their classes: `fill`, `order`, `regs`, `slots`, `sib`, `fpu`,
@@ -85,11 +89,13 @@ code is shape or byte, only readability is missing. `gates=` names the failing r
   `dcp grade` and `dcp next` lint the changed units themselves, so their Q7 is current.
 - `dcp headers conflicts UNIT HEADER..` - before including a header into a unit's head: what it collides with
   (supersedes / duplicate / clash / header / call with the original's pushes / vc6, what only VC6 rejects /
-  prototyped, per call `safe` or re-grade) and the functions to re-grade; `--write` makes the include when only
+  prototyped, per call `safe` or re-grade) and the functions to re-grade; a call / other finding on a line marked
+  `@original` / `@vc6` shows `exempt=<marker>` and blocks nothing (a redeclaration with another type never: VC6
+  rejects it whatever the marker), an error the unit already had is no finding; `--write` makes the include when only
   duplicates are in the way (`--at LINE` places the include when the default line fails the trial). `warning=declaration-set`: re-grade every function of the unit after the include,
   byte ones first (VC6 /O2 moves code by the declaration set alone): `--trial` compiles the unit with the include
-  (nothing written) and lists the functions whose grade would fall (`fall=ADDR ... code=byte trial=shape`). `warning=q6`: move the dropped duplicate's
-  words into the function's address comment first, or the function falls to draft.
+  (nothing written) and lists the functions whose grade would fall (`fall=ADDR ... code=byte trial=shape`). A dropped duplicate's
+  comment never describes its function (Q6 reads the function's own documentation only), so no words are lost to Q6.
 
 ### 2.2 Code below shape (`section=draft`)
 Explain every `code` hunk from the evidence and fix the C's meaning: a wrong condition, operand or constant, a
@@ -129,7 +135,10 @@ work, however long.
   array in the macro's file: its name is its address, N counts elements). `(*(T *)datum)` / `(*(T *)(ptr + N))`
   (no `&`, no array: through the datum's value) is raw access and keeps the function at draft.
 - Q5 markers (ROUGH, TODO, `@rough`): remove them once the function is written.
-- Q6: the address comment says what the function does (`/* 0x4a3000, sends the login reply */`).
+- Q6: the address comment says what the function does (`/* 0x4a3000, sends the login reply */`). Only the
+  function's own documentation counts: the address comment above its definition, or its declaration's comment in
+  its owner header `include/<unit>.h`. A copy's comment in another unit's head or header does not, nor a text that
+  only names a file (`/* 0x4025c0, ch.h */`, `as in dd_vesa.h`, `defined elsewhere`).
 - Q7: every call has a prototype (`dcp lint` evaluates it): the callee's prototype lives in its defining unit's
   header `include/<unit>.h`; include that header, never write a second prototype (`dcp refs NAME` shows them).
   When that include does not compile because the unit's head redeclares the header's symbols (its own
@@ -163,8 +172,12 @@ One function, one commit: `<unit>: <name> shape + readable (match-base)` (`byte 
   recompiles only its includers, and no function anywhere may get worse (`dcp check`: no M1) except by
   an accepted fall (2.6).
 - Never rename struct fields or types other units' matched code uses without checking them (`dcp refs`).
-- Data errors (D1, D4, D5) are not base work, except the ones your own change causes; `dcp data map UNIT`
-  shows a unit's data when a function needs it.
+- Data errors (D1, D4, D5, D7, D8) are not base work, except the ones your own change causes; `dcp data map UNIT`
+  shows a unit's data when a function needs it. D7 (a view past its container's end) and D8 (the original's code
+  uses more bytes as one object than the declaration holds: a field access, a loop bound, a block copy, a reader
+  call) are run-time corruption the gate cannot see otherwise: declare the object at the size D8 names, with the
+  names inside it as views or fields of its type. A reader or copier of the game (`vfs_fread(buf, size, n, f)`)
+  tells S.extent its size through `dcp decl add "0xADDR writes ptr=a0 size=a1*a2 -- why"`.
 - Gap data: the `full_data_<addr>` / `full_rdata_<addr>` blocks (defined in the gap block at the end of `src/main.c`,
   `extern GAPDATA` elsewhere) are bytes no symbol covers yet: name, type, extent and owner are all unknown, and
   their place in main says nothing about ownership. When the function you raise shows what one is, settle all
@@ -178,7 +191,8 @@ One function, one commit: `<unit>: <name> shape + readable (match-base)` (`byte 
     functions (`dcp layout literals`, `dcp refs`). Move the definition into that unit's file among its data in
     address order (`dcp data map UNIT` shows where), with its address comment, and its one declaration into `include/<unit>.h`; drop every
     `extern GAPDATA` of it and use the typed name at each site.
-  - `dcp check`: no D1 (overlap), no D4 (address order), no M1 (no function got worse); a matched user
+  - `dcp check`: no D1 (overlap), no D4 (address order), no D8 (smaller than the original's object), no M1
+    (no function got worse); a matched user
     still matching confirms the address (`M.data.site`). A move that breaks one of these was the wrong owner or
     the wrong size: undo it, do not answer it with alignment or padding tricks.
   - An address between two units' blocks with users in both is a boundary question for layout: name and type
