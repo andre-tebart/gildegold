@@ -7090,7 +7090,7 @@ done:
 
 int ai_Unk49d460(G5CH *p, AIARG *s1, AIARG *s2)
 {
-    if (ai_Unk4aaae0(p, s1, s2) != 0) {
+    if (aip_ExecAnschwaerzen(p, s1, s2) != 0) {
         cm_SendSetField(p->netId, 0x1e8, 4, 0x200, 0);
         return 0x2a;
     }

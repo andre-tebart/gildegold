@@ -131,7 +131,7 @@ int ai_DecideLittleKnownChar(struct AICHAR *p, struct AIARG *in, struct AIARG *m
 int ai_DecideCharPair(struct AIPER *p, int c, struct AIARG *m);                             /* 0x4aa800 */
 int aip_ExecPamphlet(struct AIPER *p, int c, struct AIARG *m);                             /* 0x4aa940 */
 int ai_Unk4aaa10(struct AIPER *p, int c, unsigned char *m);                             /* 0x4aaa10 */
-int ai_Unk4aaae0(struct AIPER *p, int c, unsigned char *m);                             /* 0x4aaae0 */
+int aip_ExecAnschwaerzen(struct AIPER *p, int c, struct AIARG *m);                             /* 0x4aaae0 */
 int ai_TrustedOfTwo(AIPER *p, AIPER *b, AIPER *c, int *k);                          /* 0x4aab90 */
 int ai_TrustedOfFour(int k, AIPER *p, int *ids, int *out);                           /* 0x4aad30 */
 int ai_Unk4aaef0(struct AIPER *p, unsigned char *a, unsigned char *b);                  /* 0x4aaef0 */
