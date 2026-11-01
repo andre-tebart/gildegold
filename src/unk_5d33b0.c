@@ -34,6 +34,26 @@ extern int gm_PlayerRecords[688];
 #include "time_view.h"
 #include "d2_types.h"                 /* D2OBJ, D2WIN, D2PIC: the records of d2_Objs, d2_LastWindowPtr, d2_Pics */
 #include "ls.h"                      /* ls_SavePath */
+#include "ahm.h"
+#include "ai.h"
+#include "amt.h"
+#include "anm.h"
+#include "bio.h"
+#include "d3_interface.h"
+#include "d3s.h"
+#include "f3gm.h"
+#include "f3init.h"
+#include "gv.h"
+#include "he.h"
+#include "io_text.h"
+#include "main.h"
+#include "mem.h"
+#include "msx.h"
+#include "sblib.h"
+#include "sv.h"
+#include "tr.h"
+#include "unk_4a7140.h"
+#include "unk_4b39f0.h"
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, ai_Unk4d88c0 0x4d88c0 move it as a word / movzx) */
 #define sb_PlaySampleI ((struct SBSAMPLE *(*)(int, char *, int, int, int, int, int))sb_PlaySample)  /* 0x426fa0 (sblib.c: SBBANK *bank): this unit passes the bank as an int */
 #define sv_CheckGoodAmountB ((int (*)(char *, int, unsigned char))sv_CheckGoodAmount)  /* 0x521040 (sv.c: unsigned t): @original ai_CurseWindow (0x5d8c90) passes the good as a byte (mov cl, [ai_OwnPlayer], no zero extension) */
@@ -44,16 +64,11 @@ extern int gm_PlayerRecords[688];
 
 extern OPTIONBYTES ai_GfxDetail, ai_GfxFloor, ai_GfxSet, ai_GfxFog, ai_GfxResolution, ai_GameSwitches, ai_GamePanel, ai_OptionPanelHelp;
 /* full rebuild: the symbols whose original addresses the code above spells literally */
-extern int d2_PointerObj;
 
 extern struct D2OBJ *d2_Objs;              /* 0xf8f080, d2.h: D2OBJ * */
 extern struct D2WIN *d2_LastWindowPtr;     /* 0x6ed980, d2.h: the window a screen works in (created last) */
-extern int sv_PopRequest;               /* 0x6f22a0, nonzero: MASTER (sv_RunFrame) pops this screen */
-extern int ai_ClockMs;
 extern struct D2OBJ *d2_Objs;              /* 0xf8f080, d2.h: D2OBJ * */
 extern struct D2WIN *d2_LastWindowPtr;     /* 0x6ed980, d2.h: the window a screen works in (created last) */
-extern int sv_PopRequest;               /* 0x6f22a0, nonzero: MASTER (sv_RunFrame) pops this screen */
-extern int sv_FrameMask;           /* 0x760638, the pump mask of the current frame (sv_RunFrame) */
 extern int sv_PopRequest;               /* 0x6f22a0, nonzero: MASTER (sv_RunFrame) pops this screen */
 extern struct D2OBJ *d2_Objs;              /* 0xf8f080, d2.h: D2OBJ * */
 extern struct D2WIN *d2_LastWindowPtr;     /* 0x6ed980, d2.h: the window a screen works in (created last) */
