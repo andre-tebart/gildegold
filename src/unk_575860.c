@@ -645,7 +645,6 @@ extern GAPDATA full_data_6f5ec4[];
 extern int sv_PopRequest;
 extern short d2_ScreenH;
 extern short d2_ScreenW;
-extern void *dd_Surface;
 
 extern GAPDATA full_data_62aa4c[];
 extern GAPDATA full_data_62aa58[];
@@ -729,6 +728,7 @@ char *const ai_Unk5eec60 = (char *)full_data_6fa020 + 0x40;  /* 0x5eec60, the po
 #include "d3_vec.h"
 #include "d3s.h"
 #include "unk_458810.h"
+#include "dd_vesa.h"
 #define sv_SelectPanelObjectK ((int (*)())sv_SelectPanelObject)  /* 0x52c4c0?: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
 /* 0x575860, the end-of-game tick (1984 B, ROUGH SKELETON): validates the end-of-game gates and the state record,
    then runs the state machine on *(int *)0x5eec60 - 1 (12 states, jump table 0x575fe8, the states 1 .. 0xc). The
