@@ -532,13 +532,24 @@ void ai_PokerNpcFold(void)
         }
     }
 }
-/* 0x4a7e70, the open cards (2 .. dealt-1) of seat s: the most common group (count, group) and rank (count, rank) */
+/* 0x4a7e70, counts the open cards (2 .. dealt-1) of seat s per suit and rank: the most common suit (count n, suit g)
+   and rank (count m, rank r)
+   @deep Read whole against the original: zeroes the 10 counters (ranks 0..3, suits 4..9) in the original's
+   store order, dealt as an int (zero-extended byte, signed cmp eax,2 / jle), counts cards 2..dealt-1 (the
+   loop is instruction-equal: lea esi,[eax-2], deck[k].rank / deck[k].suit+4), then the two max scans with
+   the original's compare direction (cmp ecx,ebx / jle, now equal). Remaining is the zero constant's
+   allocation only: ours keeps one 0 in edi for the whole function (push edi / xor edi,edi, the 10 stores
+   and both *g = 0 / *r = 0 from edi, pop edi), the original zeroes with eax (xor eax,eax that also
+   zero-extends dealt) and ecx before the pushes, stores cnt[0] and *g / *r as immediates (asmdiff: -xor
+   edi,edi / -mov [esp+..],edi vs +xor eax,eax / +xor ecx,ecx / +mov [esp+..],eax|ecx / +mov dword ptr
+   [esp+8],0; -mov [esi],edi vs +mov dword ptr [esi],0), which shifts every frame offset by the extra push.
+   Tried: chained zero assignments, int cnt[10] = {0} (rep stosd), two arrays rank[4] / suit[6] (zeroing
+   loops: rep stosd), for vs do/while card loop. */
 
 void ai_PokerOpenCounts(G10SEAT *s, int *n, int *g, int *m, int *r)
 {
-    int cnt[10];
-    int i, k;
-    int *p;
+    int cnt[10];                        /* cnt[0..3] per rank, cnt[4..9] per suit */
+    int i, k, dealt;
 
     cnt[1] = 0;
     cnt[5] = 0;
@@ -546,23 +557,20 @@ void ai_PokerOpenCounts(G10SEAT *s, int *n, int *g, int *m, int *r)
     cnt[6] = 0;
     cnt[3] = 0;
     cnt[4] = 0;
+    dealt = ai_PokerTable->dealt;
     cnt[7] = 0;
     cnt[8] = 0;
     cnt[0] = 0;
     cnt[9] = 0;
-    if (ai_PokerTable->dealt > 2) {
-        i = ai_PokerTable->dealt - 2;
-        p = &s->card[2];
-        do {
-            k = *p++;
-            cnt[ai_PokerDeck[k].rank]++;
-            cnt[ai_PokerDeck[k].suit + 4]++;
-        } while (--i);
+    for (i = 2; i < dealt; i++) {
+        k = s->card[i];
+        cnt[ai_PokerDeck[k].rank]++;
+        cnt[ai_PokerDeck[k].suit + 4]++;
     }
     *n = cnt[4];
     *g = 0;
     for (i = 1; i < 6; i++) {
-        if (*n < cnt[i + 4]) {
+        if (cnt[i + 4] > *n) {
             *n = cnt[i + 4];
             *g = i;
         }
@@ -570,7 +578,7 @@ void ai_PokerOpenCounts(G10SEAT *s, int *n, int *g, int *m, int *r)
     *m = cnt[0];
     *r = 0;
     for (i = 1; i < 4; i++) {
-        if (*m < cnt[i]) {
+        if (cnt[i] > *m) {
             *m = cnt[i];
             *r = i;
         }
