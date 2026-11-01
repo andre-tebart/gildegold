@@ -119,7 +119,7 @@ int ai_Unk4a94e0(int a, AIPER *p, int c, int d, unsigned char *m);              
 int ai_Unk4a95d0(int a, AIPER *p, int c, int d, unsigned char *m);              /* 0x4a95d0 */
 int ai_Unk4a9660(int a, AIPER *p, int c, int d, unsigned char *m);              /* 0x4a9660 */
 int ai_DecideColumn4Officer(int a, AICHAR *p, int *ctx, int d, AIARG *m);  /* 0x4a9700 */
-int ai_Unk4a9880(int a, AIPER *p, int *ctx, int d, unsigned char *m);           /* 0x4a9880 */
+int ai_DecideColumn5Officer(int a, AICHAR *p, int *ctx, int d, AIARG *m);  /* 0x4a9880 */
 extern int ai_Unk600e10[19];                                                     /* 0x600e10, the leisure actions */
 int ai_Unk4a9a00(int a, struct AIPER *p, int c, unsigned char *in, unsigned char *m);  /* 0x4a9a00 */
 int ai_Unk4a9fa0(struct AIPER *p, unsigned char *in, unsigned char *out);              /* 0x4a9fa0 */

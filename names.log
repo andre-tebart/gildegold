@@ -356,3 +356,4 @@
 2026-11-01T20:49:29 0x004a9280 func ai_Unk4a9280 -> ai_DecideCloseAcquaintance by:main why:0x4a9280 decide callback: as ai_DecideAcquaintance (0x4a9080) with a higher count threshold (5..12)
 2026-11-01T20:49:59 0x004a9350 func ai_Unk4a9350 -> ai_DecideOfficeAcquaintance by:main why:0x4a9350 decide callback: an owner counted at least 4 times (gv_RankRecordOwners) not flagged 0x200 whose office kind has level >= 4 (amt_GetKind), into m kind 7
 2026-11-01T20:50:40 0x004a9700 func ai_Unk4a9700 -> ai_DecideColumn4Officer by:main why:0x4a9700 decide callback: picks one of the up to 6 holders of the offices of column 4 (amt_GetColumnOffices(4, 6)) p likes less than 16..31, not p's spouse, into m kind 7
+2026-11-01T20:52:36 0x004a9880 func ai_Unk4a9880 -> ai_DecideColumn5Officer by:main why:0x4a9880 decide callback: as ai_DecideColumn4Officer (0x4a9700) for the offices of column 5
