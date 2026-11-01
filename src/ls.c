@@ -50,7 +50,6 @@ unsigned char ls_SaveSlot = 0;  /* 0x6f1c38, the slot the save header records */
 int ai_Unk6f2618 = 0;  /* 0x6f2618 */
 extern int ai_Unk6f1bb8, ai_Unk6f1bbc;   /* 0x6f1bb8, 0x6f1bbc, 0x6f1bc0 */
 /* ls_RefTargets: view of ai_Unkf31160 (tools/data_views.py) */
-void dd_SplitRGB();                    /* 0x41e6d0 */
 int unk_Unk4f28d0();                     /* 0x4f28d0 */
 int ai_Unk4b62e0();                     /* 0x4b62e0 */
 int ai_Unk589aa0();                     /* 0x589aa0 */
@@ -62,7 +61,6 @@ int hmt_Save();                     /* 0x4adb20 */
 int unk_Unk4f17f0();                     /* 0x4f17f0 */
 
 #define LS_R(p, sz) if (ls_Read((int)(p), (sz), 1, f) == 0) return 0;
-DWORD dd_RGB(unsigned char r, unsigned char g, unsigned char b);          /* 0x41e670, an RGB triple to a 16 bit pixel */
 
 extern int f3gm_ObjectCount;                /* 0x6f1bdc */
 char d3if_ClearScene(int index);                    /* 0x447e60 */
@@ -93,6 +91,7 @@ extern char hst_Key[];                 /* 0xf83520, the history key ("G12", 0x20
 #include "d3_interface.h"
 #include "d3_sm.h"
 #include "unk_5d33b0.h"
+#include "dd_vesa.h"
 int ai_LoadWind();                     /* 0x5dc0c0 */
 int unk_Unk4ed910();                     /* 0x4ed910 */
 
