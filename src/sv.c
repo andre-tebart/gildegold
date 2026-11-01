@@ -161,7 +161,6 @@ extern char ai_Unk75fba0[2048];
 extern unsigned char ai_TimeHour;
 extern char sv_SkyHeavy[];
 extern int ai_OptionSpeed;
-extern float ch_Unk5f1290;
 extern GAPDATA full_data_6f22ac[];
 extern int d2_HalfScreenH;
 extern int d2_HalfScreenW;
@@ -215,7 +214,6 @@ struct G16CHARCLICK;  /* file-scope tag for the prototypes below */
 struct GCLOCK;        /* f3gm.c typedef; file-scope tag for the gm_AddTime / gm_SetTime prototypes */
 struct D3SURF;        /* d3_engine.h typedef; file-scope tag for the d3if_SelectTextureSet prototype */
 
-extern char ch_EmptyName[];             /* 0x631090 */
 extern int di_Absolute, di_MinX, di_MinY, di_MaxX, di_MaxY;  /* 0x5f3240, 0x6310b0, 0x6310b4, 0x5f3238, 0x5f323c (di_input.c) */
 extern short d2_ScreenW;  /* 0xfb9072 (d2.h), the screen size */
 extern short d2_ScreenH;  /* 0xfb9070 */
@@ -420,8 +418,8 @@ void sv_UnregisterTick(void)
 {
     tb_CloseFunction(sv_UpdateFramesPerTick);
 }
+#include "ch.h"
 /* 0x520f20, resets the screen clip and the scene state 0x631090 and the window metrics 0x5f3238 / 0x5f323c (screen height - 8, width) */
-
 void sv_ResetScreenClip(void)
 {
     d2_SetPointerSprite(0, 0);
@@ -1571,7 +1569,6 @@ extern float gm_DayStartHours[], gm_DayEndHours[];   /* 0x617830 / 0x617840 */
 int init_BuildingSceneUniverse();                     /* 0x511e60 */
 int init_ObjectSceneUniverse();                     /* 0x511dc0 */
 int gm_ClockSeason(void *t);           /* 0x4fe350, f3gm.c */                     /* 0x4fe350 */
-struct CHACTION * ch_AddAction(struct CHARACTER *ch, unsigned int type, ...);                   /* 0x40b2f0 */
 char *strstr();                   /* 0x5de6b0, strstr (LIBC; as ls.c) */
 void cm_SendExSetHE(unsigned char k, char *p);                     /* 0x4c4c60 */
 #define cm_SendExSetHEI ((void (*)(int, char *))cm_SendExSetHE)  /* @original: sv_MoveToGroup pushes -1, not 0xff (an int / signed parameter at its calls) */
@@ -4275,7 +4272,6 @@ void sv_UpdateCityPanel(unsigned char a, int b)
 
 unsigned char * gm_BuildQuery(int n, ...);                     /* 0x501190 */
 unsigned short * gm_QueryNext(void);                   /* 0x4ffcc0 */
-void ch_SetVisible();                     /* 0x402480 */
 
 /* 0x52adb0, resets the selection (item, object, model, sv_SelectedExtra) and clears the bit 2 of the carts (kind 0x1d) of the current building: the player's building, else the fallback one, else the first gm_BuildQuery(1, 0, 0x44) finds
    @deep read the whole function against the original: stores, the building choice (player's building ->
@@ -5378,7 +5374,6 @@ lfound:
 
 char d3if_ScreenBox(D3OBJECT *obj, D3RECT *r);                     /* 0x4486e0 */
 /* 0x42ec00 */
-struct CHARACTER * ch_FindByObject();                     /* 0x402ac0 */
 int gm_TitleGroup();                     /* 0x504ad0 */
 char * gm_FindBuildingById(int id);                     /* 0x502020 */
 float unk_Unk4f9e00(int *o);                     /* 0x4f9e00 */
@@ -5590,7 +5585,7 @@ lftol:
     }
     if (g == 0) {
         if (o != 0)
-            sv_Unk52c4e0(ch_FindByObject(o, id, 0), 0, 0);
+            sv_Unk52c4e0(ch_FindByObject(o), id, 0);
     } else {
         if (id != -1) {
             sv_Unk52c4e0(*(int *)(g + 0x184), id, 0);
