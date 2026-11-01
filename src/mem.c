@@ -232,7 +232,8 @@ void mem_Exit(void)
     free(mem_Table);
     mem_Table = NULL;
 }
-/* 0x422a20 */
+/* 0x422a20, a zeroed slot of size bytes from the pool *pool: the first block with a free slot of that (dword
+   rounded, +4 for the owner) size, else a new block of count slots at the head of the list; NULL for bad arguments */
 
 void *pool_Alloc(MPOOL **pool, unsigned int size, int count)
 {
@@ -278,7 +279,8 @@ found:
     }
     return NULL;
 }
-/* 0x422b30 */
+/* 0x422b30, returns ptr to its pool block (the block pointer in the dword before it): clears the slot, and frees
+   the block and unlinks it from *pool when its last slot goes; a pointer outside the block is ignored */
 
 void pool_Free(MPOOL **pool, void *ptr)
 {

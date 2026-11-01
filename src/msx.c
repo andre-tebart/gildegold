@@ -79,7 +79,7 @@ void msx_Exit(void)
         msx_AmbDriver = 0;
     }
 }
-/* 0x423930 */
+/* 0x423930, sets the volume of track t; a playing track that is not fading takes it at once (its stream too) */
 
 void msx_SetTrackVolume(MSXTRACK *t, int vol)
 {

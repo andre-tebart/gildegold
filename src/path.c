@@ -7,7 +7,9 @@
 #include <stdlib.h>
 #include "path.h"
 
-/* 0x424f30 */
+/* 0x424f30, finds a path on map from (sx, sy) to (ex, ey) for the mover type, with the search path_Mode selects;
+   writes at most out->max cells (x, y) from the node the search returns back along the parents and returns that node, 0xffff
+   when the target is off the map or not reached */
 unsigned short path_Find(PATHOUT *out, PMAP *map, int sx, int sy, int ex, int ey, int type)
 {
     unsigned short start, n;

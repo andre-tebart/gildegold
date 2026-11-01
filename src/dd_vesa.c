@@ -1674,7 +1674,8 @@ void *dd_LockSurface(LPDIRECTDRAWSURFACE4 surf)
             return NULL;
     }
 }
-/* 0x41de30 */
+/* 0x41de30, locks surf with the extra lock flags (NOSYSLOCK | WAIT always): sets the lock's bits / pitch / bytes
+   globals and returns the surface memory; a lost surface is restored and locked again, any other error gives NULL */
 
 void *dd_LockSurfaceFlags(LPDIRECTDRAWSURFACE4 surf, DWORD flags)
 {
