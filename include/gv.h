@@ -35,7 +35,10 @@ typedef struct ORDCHAR {
     unsigned char job;              /* 0x166, the profession id the job orders test (text 0x253 + job) */
     char pad167[2];
     unsigned char job2;             /* 0x169, the second profession field, tested by the same orders */
-    char pad16a[0x5e];
+    char pad16a[2];
+    struct ORDBLD *bld;             /* 0x16c, the character's building (ai.h AICHAR.bld) */
+    struct ORDBLD *bld2;            /* 0x170, the character's own building (its home), 0 when none */
+    char pad174[0x54];
     int flags1c8;                   /* 0x1c8, order flags: 0x100 answer, 0x200 / 0x80000 / 0x100000 / 0x200000 / 0x400000 */
     int flags1cc;                   /* 0x1cc, privilege flags: 0xe00 */
     char pad1d0[0x21c - 0x1d0];
@@ -84,7 +87,9 @@ typedef struct ORDCELL {
    ai_Time / ai_Chars / ai_BTypes); the object list of gm_BuildQuery's records */
 typedef struct ORDBLD {
     unsigned char type;             /* 0x00, index into ai_BTypes */
-    char pad01[0x5b];
+    char pad01[0x26];
+    unsigned short owner;           /* 0x27, index into ai_Chars, 0xffff = none */
+    char pad29[0x33];
     char level;                     /* 0x5c, the building's level 0 .. 100 */
     int objList;                    /* 0x5d */
     char *object;                   /* 0x61, its object in the scene */
