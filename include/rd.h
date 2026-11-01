@@ -105,7 +105,7 @@ extern int ai_NBauplaetze;                /* 0xf812e0, the number of building si
 extern G15BK *ai_Bauplaetze;             /* 0xf812e4 */
 extern int ai_MapSize;                /* 0x6f4ee8 */
 #ifndef DATA_VIEWS_H
-extern unsigned char ai_Unkfd7f78;      /* 0xfd7f78 */
+extern unsigned char d3_Scene0Flags;      /* 0xfd7f78 */
 #endif
 
 extern G15TREE veg_Types[];          /* 0x602860 */

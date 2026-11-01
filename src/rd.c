@@ -341,7 +341,7 @@ void veg_HidePlants(G15PLANT *p)
     }
 }
 /* 0x4bcc20, lays a road from the building site of object obj (name: 0x58f640) to the next road (marks its cells
-   as ground type "EINFACHER_WEG" on the town map, around each cell before 0x780) */
+   as ground type "EINFACHER_WEG" on the town map, around each cell before 0x780) @deep read whole against the original: fixed the DDA (|dx| > |dz| branch first, the compare on the double fabs results, dz / fabs(dx)), the map fill (>= 0x780 single cells first, then the 3x3 loops with k before the cell x), the fail block placed before the success part; renamed ai_Unkfd7f78 -> d3_Scene0Flags. Left: our VC6 cross-jumps the three inline 'd3sm_Destroy(rd_Road.grid); return 0;' blocks (ai_BuildingName fail, bk == 0, the first rd_PathToRoad) into the shared fail tail (ours 'push edx; jmp X' at +0x10f/+0x195/+0x24d, the original's own 'call d3sm_Destroy; add esp,4; xor eax,eax; pop x4; add esp,0xc8; ret' each), tried all-inline returns without gotos (worse: 197 ins); the rest is frame 0xc4 vs 0xc8 (one slot), v[1] = bk->y0 copied with mov (ours) vs fld/fstp, the fstp scheduled after vs before 'push eax' at the WorldToCell calls, px/pz loaded in the other order (edx/eax) before the third rd_PathToRoad (size: 495 vs 522 instructions, explained: the 27 missing instructions are exactly the three duplicated 9-instruction fail epilogues the original keeps and our compile merges) */
 
 int rd_BuildRoad(char *obj, int name)
 {
@@ -349,7 +349,7 @@ int rd_BuildRoad(char *obj, int name)
     G15BK *bk;
     float v[3];
     float ax, az, bx, bz;
-    float dx, dz, ex, ez;
+    float dx, dz;
     float x, z, step;
     int i, j, k;
     char *o;
@@ -419,23 +419,8 @@ int rd_BuildRoad(char *obj, int name)
     }
     dx = bx - ax;
     dz = bz - az;
-    ex = (float)fabs(dx);
-    ez = (float)fabs(dz);
-    if (ex <= ez) {
-        dx = dx / ez;
-        step = dz > 0.0f ? 1.0f : -1.0f;
-        x = ax;
-        z = az;
-        while ((int)z != (int)bz) {
-            rd_Road.path2[rd_Road.n2][0] = (unsigned char)(int)x;
-            rd_Road.path2[rd_Road.n2][1] = (unsigned char)(int)z;
-            rd_Road.n2++;
-            rd_Road.grid->cells[(rd_Road.map->w * (int)z + (int)x) * 7] = 6;
-            x += dx;
-            z += step;
-        }
-    } else {
-        dz = dz / ex;
+    if (fabs(dx) > fabs(dz)) {
+        dz = dz / fabs(dx);
         step = dx > 0.0f ? 1.0f : -1.0f;
         x = ax;
         z = az;
@@ -447,44 +432,57 @@ int rd_BuildRoad(char *obj, int name)
             x += step;
             z += dz;
         }
+    } else {
+        dx = dx / fabs(dz);
+        step = dz > 0.0f ? 1.0f : -1.0f;
+        x = ax;
+        z = az;
+        while ((int)z != (int)bz) {
+            rd_Road.path2[rd_Road.n2][0] = (unsigned char)(int)x;
+            rd_Road.path2[rd_Road.n2][1] = (unsigned char)(int)z;
+            rd_Road.n2++;
+            rd_Road.grid->cells[(rd_Road.map->w * (int)z + (int)x) * 7] = 6;
+            x += dx;
+            z += step;
+        }
     }
     o = d3_FindObject(obj, 0x100, 0, "dummy_TUER");
     if (o == 0)
         o = obj;
     d3_PointToWorld(o, o + 0x4c, v);
-    if (d3_GetHeightAt((char *)rd_Road.grid, v, &px, &pz, 0)
-        && rd_PathToRoad(&rd_Road, px, pz, -1, -1)) {
-        d3sm_Destroy(rd_Road.grid);
-        if (ai_MapSize < 0x780) {
-            for (i = 0; i < rd_Road.n2; i++) {
-                for (j = -1; j < 2; j++) {
-                    for (k = -1; k < 2; k++)
-                        rd_Road.map->cells[(rd_Road.path2[i][1] + j) * rd_Road.map->w
-                            + rd_Road.path2[i][0] + k] = (unsigned char)rd_Road.simple;
-                }
-            }
-            for (i = 0; i < rd_Road.n; i++) {
-                for (j = -1; j < 2; j++) {
-                    for (k = -1; k < 2; k++)
-                        rd_Road.map->cells[(rd_Road.path[i][1] + j) * rd_Road.map->w
-                            + rd_Road.path[i][0] + k] = (unsigned char)rd_Road.simple;
-                }
-            }
-        } else {
-            for (i = 0; i < rd_Road.n2; i++)
-                rd_Road.map->cells[rd_Road.path2[i][1] * rd_Road.map->w + rd_Road.path2[i][0]]
-                    = (unsigned char)rd_Road.simple;
-            for (i = 0; i < rd_Road.n; i++)
-                rd_Road.map->cells[rd_Road.path[i][1] * rd_Road.map->w + rd_Road.path[i][0]]
-                    = (unsigned char)rd_Road.simple;
-        }
-        if ((ai_Unkfd7f78 & 2) == 0)
-            d3fl_MakeDivide(rd_Road.map);
-        return 1;
-    }
+    if (!d3_GetHeightAt((char *)rd_Road.grid, v, &px, &pz, 0)
+        || !rd_PathToRoad(&rd_Road, px, pz, -1, -1)) {
 fail:
+        d3sm_Destroy(rd_Road.grid);
+        return 0;
+    }
     d3sm_Destroy(rd_Road.grid);
-    return 0;
+    if (ai_MapSize >= 0x780) {
+        for (i = 0; i < rd_Road.n2; i++)
+            rd_Road.map->cells[rd_Road.path2[i][1] * rd_Road.map->w + rd_Road.path2[i][0]]
+                = (unsigned char)rd_Road.simple;
+        for (i = 0; i < rd_Road.n; i++)
+            rd_Road.map->cells[rd_Road.path[i][1] * rd_Road.map->w + rd_Road.path[i][0]]
+                = (unsigned char)rd_Road.simple;
+    } else {
+        for (i = 0; i < rd_Road.n2; i++) {
+            for (j = -1; j < 2; j++) {
+                for (k = -1; k < 2; k++)
+                    rd_Road.map->cells[(rd_Road.path2[i][1] + j) * rd_Road.map->w
+                        + k + rd_Road.path2[i][0]] = (unsigned char)rd_Road.simple;
+            }
+        }
+        for (i = 0; i < rd_Road.n; i++) {
+            for (j = -1; j < 2; j++) {
+                for (k = -1; k < 2; k++)
+                    rd_Road.map->cells[(rd_Road.path[i][1] + j) * rd_Road.map->w
+                        + k + rd_Road.path[i][0]] = (unsigned char)rd_Road.simple;
+            }
+        }
+    }
+    if ((d3_Scene0Flags & 2) == 0)
+        d3fl_MakeDivide(rd_Road.map);
+    return 1;
 }
 /* 0x4bd340, path_Find from cell x / z to tx / tz (both < 0: the nearest road cell, type 6 / 0xb); 1 if found @deep behaviour: far draft, 234 code hunks - the same operations in another allocation (ebx vs edi for the zero, the parameters read at different frame slots, 0x18 vs 0xc locals) and reordered compares; the nearest-road cell scan and the path_Find call were read and match in meaning */
 
@@ -671,7 +669,7 @@ void rd_FillQuad(G15ROAD *r, float *c, char v, int t)
 }
 
 extern G15ROAD rd_Road;
-/* ai_Unkfd7f78: view of d3_Scenes (tools/data_views.py) */
+/* d3_Scene0Flags: view of d3_Scenes (tools/data_views.py) */
 G15TREE veg_Types[] = { { 439, "TANNE", 3, 1, 4, 0 }, { 440, "BUCHE", 5, 1, 4, 0 }, { 441, "EICHE", 5, 2, 8, 0 }, { 0, "", 0, 1, 0, 0 } };  /* 0x602860 */
 int veg_NextId = 0;  /* 0x6f0748, the next plant id */
 G15ROAD rd_Road = {0};  /* 0xf81300 */

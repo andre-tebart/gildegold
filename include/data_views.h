@@ -98,7 +98,7 @@
 #define ai_MapRefs               (*(void **)((char *)&d3_Scenes + 0xac))  /* 0xfd7c4c */
 #define ai_Unkfd7c50             (*(char (*)[805])((char *)&d3_Scenes + 0xb0))  /* 0xfd7c50 */
 #define init_SceneDirty          (*(char (*)[3])((char *)&d3_Scenes + 0x3d5))  /* 0xfd7f75 */
-#define ai_Unkfd7f78             (*(unsigned char *)((char *)&d3_Scenes + 0x3d8))  /* 0xfd7f78 */
+#define d3_Scene0Flags             (*(unsigned char *)((char *)&d3_Scenes + 0x3d8))  /* 0xfd7f78 */
 #define unk_Ptrfd7c50            (*(char **)((char *)&d3_Scenes + 0xb0))  /* 0xfd7c50 */
 #define init_SceneHeightMaps     (*(int (*)[202])((char *)&d3_Scenes + 0xb0))  /* 0xfd7c50 */
 
