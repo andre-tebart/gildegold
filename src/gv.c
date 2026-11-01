@@ -6,7 +6,6 @@
    out of address order. Names are ours.
    Open: the avatars, the effect slots and the graveyard may be several modules sharing one .data block.
    unit of rea 8cef7d5b (src/game/gv.c); boundaries in decl/text.dcl */
-extern char ai_PlayerSlots[4][0x2f4];
 #include "txt_views.h"
 #include <windows.h>
 #include <stdio.h>
@@ -23,7 +22,6 @@ extern char ai_PlayerSlots[4][0x2f4];
 #define d3t_CreateSmokeK ((int (*)())d3t_CreateSmoke)  /* 0x416340 (d3_tools.c): @original this unit's calls were compiled without a prototype (float arguments as double, an int result) */
 #define d3t_GetMeshBoundsK ((int (*)())d3t_GetMeshBounds)  /* 0x413310 (d3_tools.c): @original this unit's calls were compiled without a prototype (float arguments as double, an int result) */
 #define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
-extern char ai_Unk91f700[];
 #define GAPDATA __declspec(align(1)) unsigned char
 #define ai_Unk5a9e40K ((int (*)())ai_Unk5a9e40)  /* 0x5a9e40: @original the call passes more arguments than the draft definition names, compiled without a prototype (as before the definition's spelling reached this unit) */
 
@@ -33,19 +31,27 @@ extern GAPDATA full_data_91f6e3[];
 extern GAPDATA full_data_91f6e4[];
 #include "amt_types.h"
 #include "ls.h"
-extern AMTREC amt_Table[];
+#include "ahm.h"
+#include "ai.h"
+#include "amt.h"
+#include "anm.h"
+#include "cm.h"
+#include "d3_snd.h"
+#include "f3gm.h"
+#include "he.h"
+#include "hst.h"
+#include "io_text.h"
+#include "main.h"
+#include "mem.h"
+#include "sblib.h"
+#include "sv.h"
+#include "tr.h"
+#include "unk_4b39f0.h"
+#include "unk_58bbd0.h"
+#include "vfs.h"
 extern int gm_PlayerRecords[688];
 
 extern const float unk_Tab5ee034[];
-int gm_ConvertMoney(int a, unsigned char k);   /* 0x5085b0 */
-int gm_PlayerFactor(int a, unsigned char k);   /* 0x5085f0 */
-int gm_Unk509e30(void *list, unsigned char p);   /* 0x509e30 */
-void ai_Unk4c5fa0(int a, int b, int c);                     /* 0x4c5fa0 */
-int amt_FindOffice();                     /* 0x4e6030 */
-int amt_SendOfficeMessage(unsigned char a, char *b, char *c, unsigned char d, unsigned char e);                     /* 0x4e6680 */
-int ai_Unk4c4fa0(void *p);                     /* 0x4c4fa0 */
-extern struct AICHAR *ai_JudgeCatholic;  /* 0x6f1bfc */
-extern struct AICHAR *ai_JudgeProtestant;  /* 0x6f1c00 */
 
 #define UNK_FW ((unsigned (*)())vfs_fwrite)
 #define UNK_FR ((unsigned (*)())ls_Read)
