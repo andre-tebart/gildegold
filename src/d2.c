@@ -5449,11 +5449,11 @@ void d2_Plot(int x, int y, int r, int g, int b)
     }
     d2_UnlockSurface(w->paint);
 }
-/* 0x4764f0, line on the paintbox (Bresenham) */
+/* 0x4764f0, line on the paintbox (Bresenham) @deep Read whole function against original: axis-parallel cases, sign/delta setup, and both Bresenham loops now mirror it (increments straight/diagonal precomputed before the loop, if (e >= 0) step+diagonal else straight; instruction count 226 = 226). Remaining hunks are allocation: the second vertical loop keeps its counter in the y1 parameter slot (ours: dec eax; mov [esp+0x28], eax) where the original copies it to edi; the original keeps straight/diagonal in eax/ecx at loop top and stores them at [esp+0x20]/[esp+0x1c] (ours [esp+0x1c]/[esp+0x10], loading one inside the branch); x0/dx in ebx/ebp swapped. y0+=sy before/after e+= flips VC6 into tail-merging the add (code 192 -> 156 with e first). */
 
 void d2_PlotLine(int x0, int y0, int x1, int y1, int r, int g, int b)
 {
-    int e, step, sx, sy, dx, dy;
+    int e, straight, diagonal, sx, sy, dx, dy;
 
     if (y0 == y1) {
         if (x1 < x0) {
@@ -5507,29 +5507,33 @@ void d2_PlotLine(int x0, int y0, int x1, int y1, int r, int g, int b)
             dy = y0 - y1;
         }
         d2_Plot(x0, y0, r, g, b);
-        if (dy < dx) {
-            e = dy * 2 - dx;
+        if (dx > dy) {
+            straight = dy * 2;
+            diagonal = (dy - dx) * 2;
+            e = straight - dx;
             do {
-                x0 = x0 + sx;
-                step = dy * 2;
-                if (-1 < e) {
-                    y0 = y0 + sy;
-                    step = (dy - dx) * 2;
+                x0 += sx;
+                if (e >= 0) {
+                    e += diagonal;
+                    y0 += sy;
+                } else {
+                    e += straight;
                 }
-                e = e + step;
                 d2_Plot(x0, y0, r, g, b);
             } while (x0 != x1);
             return;
         }
-        e = dx * 2 - dy;
+        straight = dx * 2;
+        diagonal = (dx - dy) * 2;
+        e = straight - dy;
         do {
-            y0 = y0 + sy;
-            step = dx * 2;
-            if (-1 < e) {
-                x0 = x0 + sx;
-                step = (dx - dy) * 2;
+            y0 += sy;
+            if (e >= 0) {
+                e += diagonal;
+                x0 += sx;
+            } else {
+                e += straight;
             }
-            e = e + step;
             d2_Plot(x0, y0, r, g, b);
         } while (y0 != y1);
     }
