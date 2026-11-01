@@ -113,9 +113,6 @@ extern void *d3_Terrain;              /* 0x633738, a height map with a transform
 
 /* views of other units */
 struct D3SM * d3sm_Create(struct D3TERRAIN *t, int size, int mask);                         /* 0x45eeb0, d3_sm.h: D3HMAP * */
-void d3sm_Destroy(struct D3SM *h);                                                   /* 0x45ef60 */
-int ai_FindBauplaetze(char *name, int *out);                                          /* 0x58f7a0, am.h */
-unsigned short path_Find(struct PATHOUT *out, struct PMAP *map, int sx, int sy, int ex, int ey, int type); /* 0x424f30, path.h: PATHOUT *, PMAP * */
 struct D3FLMAP; void d3fl_MakeDivide(struct D3FLMAP *map);                                                 /* 0x441300, d3_fl.c */
 struct D3OBJECT;
 char d3if_Delete(struct D3OBJECT *obj);                                          /* 0x447190, d3_interface.h */
