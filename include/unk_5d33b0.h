@@ -1,5 +1,4 @@
-/* unk_5d33b0.h -- the screen / front-end module (unnamed), see src/game/unk_5d33b0.c and
-   notes/units/unk_5d33b0.md */
+/* unk_5d33b0.h -- the screen / front-end module (unnamed), see src/game/unk_5d33b0.c */
 #ifndef UNK_5D33B0_H
 #define UNK_5D33B0_H
 

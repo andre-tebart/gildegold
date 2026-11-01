@@ -4,7 +4,10 @@
    the object shadows. The start at 0x459d80 follows the mesh code of unk_4591a0.c (d3_GetBoxVerts ends at
    0x459d80); the end is proven by d3_sky.c, whose first D3DCHECK is at line 38 of that file.
    Functions are kept in their original order. Names are ours.
-   unit of rea 8cef7d5b (src/game/d3s.c); boundaries in decl/text.dcl, notes in notes/units/d3s.md */
+   Open: d3s.h's D3STERR / D3STBLOCK / D3SMESH are local views of D3TERRAIN / D3SMBLOCK (d3_sm.h) and D3MESH
+   (d3_engine.h), which lack bs / mip and the float at 0x954; a union in D3MESH moves d3_Unk4550e0 by 8 bytes.
+   Open: d3_sm.c declares d3s_ShadowTriangle itself instead of including d3s.h.
+   unit of rea 8cef7d5b (src/game/d3s.c); boundaries in decl/text.dcl */
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -171,7 +174,7 @@ __inline void d3s_Span(unsigned int u, int n, unsigned char *dst, int step)
    right x with slopes d3s_SlopeL / d3s_SlopeR). Fills the byte buffer with the interpolated value (flags & 2) and
    marks the span (flags & 5: value 0xb for the border when flags & 1 is clear), widening it by d3s_ShadowRadius rows
    and pixels around.
-   @deep B code hunks 91: the same operations in other registers / stack slots (span pointer in ebx vs memory, the hoisted neg of w from j * w, the [ebp-0x14..-0x24] homes swapped); no missing statement, constant or call - the 24 parameter orders and 16 loop-step orders were tried (notes/units/d3s.md [shfix]) */
+   @deep B code hunks 91: the same operations in other registers / stack slots (span pointer in ebx vs memory, the hoisted neg of w from j * w, the [ebp-0x14..-0x24] homes swapped); no missing statement, constant or call - the 24 parameter orders and 16 loop-step orders were tried */
 void d3s_DrawSpans(int rows, int w, unsigned char flags, char top, int y0)
 {
     int x0, row, i, j, e, t, lim, span, yy, k;
@@ -245,7 +248,7 @@ void d3s_DrawSpans(int rows, int w, unsigned char flags, char top, int y0)
         }
     }
 }
-/* 0x45a2e0, a shadow triangle: edges from the three points p (x, y pairs), colours c, radius pixels / rows around @deep B code hunks 215: the edge selection and the two span calls are the same operations with b/c/d/l and y in other registers / homes (original b in ebx, d in memory, y in ebp; ours d in esi, b in memory, y in esi) and the same stores in another order; no missing statement, constant or call - 72 selection/entry statement orders were tried (notes/units/d3s.md [shfix]). Q4: 2 raw byte views of flags remain */
+/* 0x45a2e0, a shadow triangle: edges from the three points p (x, y pairs), colours c, radius pixels / rows around @deep B code hunks 215: the edge selection and the two span calls are the same operations with b/c/d/l and y in other registers / homes (original b in ebx, d in memory, y in ebp; ours d in esi, b in memory, y in esi) and the same stores in another order; no missing statement, constant or call - 72 selection/entry statement orders were tried. Q4: 2 raw byte views of flags remain */
 
 void d3s_ShadowTriangle(float *p, unsigned char *c, unsigned char *dst, int pitch, unsigned int flags, char *base, int radius)
 {
@@ -383,7 +386,7 @@ void d3s_FillRows(int n)
         }
     }
 }
-/* 0x45a880, draws one polygon of the shadow mesh into the shadow texture (bpp bits per pixel) @deep B code hunks 248: the edge selection, the bpp checks and the two span fills are the same operations in other registers / homes (original top in ebx loaded from the bpp slot per branch, minY in the size slot cached in ebp; ours minY in ebx, top in memory); 360 entry/selection statement orders, volatile minY and the <= 8 / < 9 forms were tried (notes/units/d3s.md [shfix]). Q4: 2 raw dword views of the byte bpp remain */
+/* 0x45a880, draws one polygon of the shadow mesh into the shadow texture (bpp bits per pixel) @deep B code hunks 248: the edge selection, the bpp checks and the two span fills are the same operations in other registers / homes (original top in ebx loaded from the bpp slot per branch, minY in the size slot cached in ebp; ours minY in ebx, top in memory); 360 entry/selection statement orders, volatile minY and the <= 8 / < 9 forms were tried. Q4: 2 raw dword views of the byte bpp remain */
 
 void d3s_ShadowPoly(D3SPOLY *poly, unsigned char bpp, int size)
 {
@@ -594,7 +597,7 @@ void d3_ExitShadows(void)
         d3sm_Shadow = 0;
     }
 }
-/* 0x45af50, the shadow mesh over the part rect of a terrain with 8x8 blocks, each block sampled at its own lod @deep B code hunks 738 with the frame 0xa4 here vs 0xa0: the prologue and loops read out as the same loads / FP maths on other stack slots (every local of the 0xa0 note slot map in another home, the hoisted fstep*uv / fstep*cx / fstep*cz products and fx0 / oy+1.0 in other slots); no missing statement or call found in the hunks read; the note's slot map is what a deep round needs (notes/units/d3s.md [q3] Attempts) */
+/* 0x45af50, the shadow mesh over the part rect of a terrain with 8x8 blocks, each block sampled at its own lod @deep B code hunks 738 with the frame 0xa4 here vs 0xa0: the prologue and loops read out as the same loads / FP maths on other stack slots (every local of the original's 0xa0 slot map in another home, the hoisted fstep*uv / fstep*cx / fstep*cz products and fx0 / oy+1.0 in other slots); no missing statement or call found in the hunks read; the original's slot map (rect in ebp, buf in ebx, uv reloaded from memory, the hoisted products in float slots) is what a deep round needs */
 
 char d3s_TerrainShadowMesh(D3STERR *g, int *rect, float *uv, D3SBUF *buf, D3TEXHANDLE *tex, unsigned long color)
 {
@@ -876,7 +879,7 @@ char d3s_MeshFromMap(int *rect, int stride, unsigned char *map, float *origin, f
     }
     return 1;
 }
-/* 0x45b8d0, adds the shadow of slot to the shadow object @deep match-base 2026-10-31: read the whole function against the original and rebuilt it (296 -> 327 vs 327 instructions): one if (d3s_Enabled && map && size && !simple) / else quad, range check on the slot fields first and the stores after, v0 = 0.0f first (kept on the FPU), du / dv / u0 / v0 divided by (float)(x1 - x0) / (z1 - z0) (no reciprocal CSE), nested size ifs falling into the final return ok (ok is a memory char), uv[4] / rect[4] copies, grid->bs signed division, both mesh calls store ok, the quad walks p++ / v++ / pos += 6 with pos computed before the poly stores, light colour / power through D3LOBJ. Left: register rotation ecx/edi and ebx/edi over the whole mesh part (regs / slots hunks; the h*2*w product starts from the other register), the size-fail return ok block (fstp st(0)) is placed at the end instead of after the call epilogues, ok = 1 is scheduled early, and the quad copies the slot floats with mov where the original uses fld/fstp (no free integer register in the original, see notes/units/d3_int_io.md). Tried + 0.0f / * 1.0f / (float) on the copies (folded, no change), early return ok instead of nested ifs (ok folds to xor al,al, worse), fw/fh float locals (reciprocal CSE, worse). */
+/* 0x45b8d0, adds the shadow of slot to the shadow object @deep match-base 2026-10-31: read the whole function against the original and rebuilt it (296 -> 327 vs 327 instructions): one if (d3s_Enabled && map && size && !simple) / else quad, range check on the slot fields first and the stores after, v0 = 0.0f first (kept on the FPU), du / dv / u0 / v0 divided by (float)(x1 - x0) / (z1 - z0) (no reciprocal CSE), nested size ifs falling into the final return ok (ok is a memory char), uv[4] / rect[4] copies, grid->bs signed division, both mesh calls store ok, the quad walks p++ / v++ / pos += 6 with pos computed before the poly stores, light colour / power through D3LOBJ. Left: register rotation ecx/edi and ebx/edi over the whole mesh part (regs / slots hunks; the h*2*w product starts from the other register), the size-fail return ok block (fstp st(0)) is placed at the end instead of after the call epilogues, ok = 1 is scheduled early, and the quad copies the slot floats with mov where the original uses fld/fstp (no free integer register in the original). Tried + 0.0f / * 1.0f / (float) on the copies (folded, no change), early return ok instead of nested ifs (ok folds to xor al,al, worse), fw/fh float locals (reciprocal CSE, worse). */
 
 char d3s_AddShadow(D3SSLOT *slot, D3STERR *grid)
 {

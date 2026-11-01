@@ -1,7 +1,11 @@
 /* hst.c -- the history texts (0x4adf40..0x4b39f0, after hmt.c): character predicates, the text tokens and text
    commands of a history text, its parser (the hst_* names are leaked by its error texts), the date labels and the
    yearly history dialogs. Its .data block starts at 0x601058. Names are ours except the hst_* ones.
-   unit of rea 8cef7d5b (src/game/hst.c); boundaries in decl/text.dcl, notes in notes/units/hst.md */
+   Open: the ai_Token* siblings still take AI_ZERO with its own _zp slot (frame 0x20c vs 0x208); AI_ZERO_AT plus
+   the ai_CharInts pointer walk fixed this in ai_TokenRandomNpcInhabitant and is untried in the others.
+   Open: G12OBJ repeats hmt.h's HMTOBJ (0x4e6ec0 / 0x4e6680 declared in both files); G12_B reads AICHAR bytes.
+   Open: gm_FirstBuilding (0x50b010) returns unsigned char * (am.h, f3gm.c) while the callers here use AIBLD *.
+   unit of rea 8cef7d5b (src/game/hst.c); boundaries in decl/text.dcl */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

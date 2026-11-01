@@ -1,6 +1,10 @@
 /* sv.c -- the screen / message box unit (0x520ec0 ..): the tag "sv_" ("sv_ChangePlayerHE" 0x624120, "sv_HandleObjects" 0x6242c4, "f3_sv:OpenBook" 0x624428, "sv_NetworkSync"), the message boxes ("misc\\Messagebox" 0x60ea68,
-   "misc\\MessageBoxGreen" 0x623ed0), the groundplan bitmaps, the city / time panels, the pause / player bar, the book. Starts at 0x520ec0 (a tick callback, registered by 0x520ee0). Names are ours. ROUGH drafts.
-   unit of rea 8cef7d5b (src/game/sv.c); boundaries in decl/text.dcl, notes in notes/units/sv.md */
+   "misc\\MessageBoxGreen" 0x623ed0), the groundplan bitmaps, the city / time panels, the pause / player bar, the book. Starts at 0x520ec0 (a tick callback, registered by 0x520ee0); ends before
+   0x531670, main.c's program level code. Names are ours.
+   Open: the start and the end rest on the .data order only.
+   Open: sv.c cannot include ai.h (its ai_Time / ai_Chars / ai_BTypes / ai_Blds clash with gv.h's char views) nor d2.h
+   (vfs_Root / vfs_Tfopen clash with vfs.h): records go through the SV* views and the SV_I / SV_W address macros.
+   unit of rea 8cef7d5b (src/game/sv.c); boundaries in decl/text.dcl */
 struct CHARACTER;
 struct D2SHP;
 struct D2SURF;

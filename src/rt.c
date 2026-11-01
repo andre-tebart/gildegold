@@ -1,7 +1,7 @@
 /* rt.c -- routing: route point lists ("rt_point"), the routing dialogs ("misc\routing_choose_good_enhanced",
    "misc/routing_edit_point", "misc\routing_settings"), "rt_load". Start: its .data block 0x602a90 begins with a -1
    global right after rd.c's literals. Names are ours.
-   unit of rea 8cef7d5b (src/game/rt.c); boundaries in decl/text.dcl, notes in notes/units/rt.md */
+   unit of rea 8cef7d5b (src/game/rt.c); boundaries in decl/text.dcl */
 #include "d2_types.h"
 extern D2RADIO d2_Radios[];
 #include "txt_views.h"
@@ -534,7 +534,7 @@ void rt_InitControls(int *out)
 /* 0x4be940, the dialog "misc/routing_edit_point" for route point p of the list rt_EditRoute: the goods to load
    (loadSlots) and to unload (unloadSlots), up to three each (by the cart type), with their amounts; a button deletes the
    point and rebuilds the marks on window win
-   @deep behaviour: frame 0xb4 vs the original 0xd0 (7 ints of locals are missing: the original spills two more dword locals around +0x58/+0xdc and keeps a copy at +0x18) and the stores are scheduled differently; the draft was made from the disassembly (Ghidra lost the frame, notes/units/rt.md) - the locals have to be reread from the original's frame, then the register/order pass. Q2/Q4 stay open */
+   @deep behaviour: frame 0xb4 vs the original 0xd0 (7 ints of locals are missing: the original spills two more dword locals around +0x58/+0xdc and keeps a copy at +0x18) and the stores are scheduled differently; the draft was made from the disassembly (Ghidra lost the frame) - the locals have to be reread from the original's frame, then the register/order pass. Q2/Q4 stay open */
 
 void rt_Unk4be940(RTPOINT *p, int *win)
 {
@@ -723,7 +723,7 @@ void rt_Unk4be940(RTPOINT *p, int *win)
 }
 /* 0x4bf080, the dialog "misc\routing_settings" for cart c: a 5-step slider (c->unk31), a button that starts a new
    route at c's building (marks on window win), a button that toggles c->unk33; changes go out as AI updates
-   @deep behaviour: frame 0x10 vs the original 0x34 (9 dwords of locals missing, the original spills several around +0x14..+0x18 and +0x68) and the argument setup differs (the original reloads the 4 args at +0x74..+0x7c into locals before the call); far draft from the disassembly (Ghidra lost the frame, notes/units/rt.md). Locals must be reread from the frame first, then registers/order. Q2/Q4 stay open */
+   @deep behaviour: frame 0x10 vs the original 0x34 (9 dwords of locals missing, the original spills several around +0x14..+0x18 and +0x68) and the argument setup differs (the original reloads the 4 args at +0x74..+0x7c into locals before the call); far draft from the disassembly (Ghidra lost the frame). Locals must be reread from the frame first, then registers/order. Q2/Q4 stay open */
 
 void rt_Unk4bf080(char *c, char *win)
 {
@@ -869,7 +869,7 @@ void rt_HighlightRoute(RTPOINT *p, char *m)
    route (one point at c's building if it has none), a mark per point, buttons to edit the selected point, to add
    the building picked on the map and for the settings (0x4bf080); at the end the route goes to c (0x4c62a0), or
    with fewer than two points c's route mode is reset
-   @deep behaviour + Q4: the local map window view is short - the original memsets 0x27dc where our int m[0x9ea] view gives 0x27b8 (the +0x24 shifts every later local) and reads m+0x27a4/+0xdc/+0xe0 through it; the typed map window struct (rt.h type debt) is the fix, then the 306 code hunks can be reread. Far draft from the disassembly (Ghidra lost the frame, notes/units/rt.md) */
+   @deep behaviour + Q4: the local map window view is short - the original memsets 0x27dc where our int m[0x9ea] view gives 0x27b8 (the +0x24 shifts every later local) and reads m+0x27a4/+0xdc/+0xe0 through it; the typed map window struct (rt.h type debt) is the fix, then the 306 code hunks can be reread. Far draft from the disassembly (Ghidra lost the frame) */
 
 void rt_Unk4bf5b0(char *c)
 {

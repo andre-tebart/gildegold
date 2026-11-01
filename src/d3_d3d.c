@@ -1,5 +1,5 @@
 /* d3_d3d
-   unit of rea 8cef7d5b (src/game/d3_d3d.c); boundaries in decl/text.dcl, notes in notes/units/d3_d3d.md */
+   unit of rea 8cef7d5b (src/game/d3_d3d.c); boundaries in decl/text.dcl */
 #line 1 "D:\\develop\\Units\\d3\\d3_d3d.c"
 /* d3_d3d.c -- original path D:\develop\Units\d3\d3_d3d.c
    Direct3D 6 device setup, render states, texture surfaces. Extent in GildeGold.exe (inferred, not

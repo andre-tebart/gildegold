@@ -3,7 +3,7 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  *
  * Compile this file with -DNO_DEFLATE to avoid the compression code.
-   unit of rea 8cef7d5b (src/zlib/gzio.c); boundaries in decl/text.dcl, notes in notes/units/gzio.md */
+   unit of rea 8cef7d5b (src/zlib/gzio.c); boundaries in decl/text.dcl */
 
 /* @(#) $Id$ */
 

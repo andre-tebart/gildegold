@@ -2,7 +2,8 @@
    (0x5de460..0x5de480, after the DINPUT stubs): MSS_auto_cleanup and its exit callback. No installation has
    mss32.lib; `dcp link` builds the import members from the exe's import directory and adds this unit's object
    to that archive (decl/text.dcl `libunit`), so LINK places it among the library contributions.
-   unit of no rea source (rea kept them in sfx.c); notes in notes/units/mss32lib.md */
+   The real names of the member's object and of the exit callback are unknown (mss_AutoCleanupExit is ours).
+   unit of no rea source (rea kept them in sfx.c) */
 
 #include <stdlib.h>
 

@@ -2,7 +2,9 @@
    d3_io_a.c ("d3_io_a:"), probably the same TU (0x44e570..). A chunk parser (bgi_Parse) walks tables of
    {id, handler, count}; the handlers fill a BGIRD (the same context layout as the text reader's AGICTX).
    Names are ours.
-   unit of rea 8cef7d5b (src/game/d3_io_b.c); boundaries in decl/text.dcl, notes in notes/units/d3_io_b.md */
+   Open: whether the last two functions (0x4506f0, 0x4507a0; the latter's only caller is d3_io_fl.c's
+   0x450860) open d3_io_fl.c instead; not tested.
+   unit of rea 8cef7d5b (src/game/d3_io_b.c); boundaries in decl/text.dcl */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

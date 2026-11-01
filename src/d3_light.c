@@ -1,8 +1,11 @@
 /* d3_light.c -- dynamic lighting of mesh objects ("d3_light:cache", "d3_light:rlight_object"), original file
-   name unknown: 0x451e80..0x4538a0. 0x451e80..0x452938 (light callbacks, d3_LightApply) by worker mesh,
-   0x452940.. (was unk_452940.c) by worker d3x (round 11); one object view (D3OBJECT + D3_L, d3_light.h)
-   since round 12. Names are ours.
-   unit of rea 8cef7d5b (src/game/d3_light.c); boundaries in decl/text.dcl, notes in notes/units/d3_light.md */
+   name unknown: 0x451e80..0x453920 (the end next to d3_vec.c is not proven). One object view (D3OBJECT +
+   D3_L, d3_light.h). Names are ours.
+   Open: the bits d3_SetVertexColors / d3_RelightObject read (D3PTRI 0x26, D3TEXTURE 0x68 / 0x6c) go through
+   d3_light.h's cast views; the typed fields flip d3_CloneObject / d3_MirDrawObject.
+   Open: d3.h keeps its own char d3_RelightObject declaration; dropping it (or including d3_light.h there)
+   flips d3_MirDrawObject, which needs re-matching first.
+   unit of rea 8cef7d5b (src/game/d3_light.c); boundaries in decl/text.dcl */
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>

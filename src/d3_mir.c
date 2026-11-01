@@ -1,7 +1,8 @@
 /* d3_mir.c -- mirrors ("d3_mir:" allocation tags), original file name unknown: 0x454780..0x455630.
    The outline of the mirror polygon becomes a set of clipping planes; the objects whose mirrored bounding box
    is inside them are drawn a second time, mirrored at the mirror plane. Names are ours.
-   unit of rea 8cef7d5b (src/game/d3_mir.c); boundaries in decl/text.dcl, notes in notes/units/d3_mir.md */
+   Open: d3_engine.h declares d3_MirBeginFrame / d3_MirDrawObject with other parameter types than d3_mir.h.
+   unit of rea 8cef7d5b (src/game/d3_mir.c); boundaries in decl/text.dcl */
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>

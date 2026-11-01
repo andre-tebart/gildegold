@@ -1,5 +1,5 @@
 /* unk_58bbd0.h -- the production / trade windows (unnamed): the table init and the "Handel\Handel_PRODUKTION"
-   screen, see src/game/unk_58bbd0.c and notes/units/unk_58bbd0.md */
+   screen, see src/game/unk_58bbd0.c */
 #ifndef UNK_58BBD0_H
 #define UNK_58BBD0_H
 

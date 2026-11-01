@@ -1,9 +1,11 @@
-/* unk_58bbd0
-   unit of rea 8cef7d5b (src/game/unk_58bbd0.c); boundaries in decl/text.dcl, notes in notes/units/unk_58bbd0.md */
+/* unk_58bbd0 -- the production / trade windows and the location, privilege and statistics windows of the game
+   screen (0x58bbd0 .. 0x5d33b0, about 480 functions); name unknown, subject and boundary evidence below.
+   Open: the AIMSG message records are built by raw offsets throughout (ai.h's AIMSG view is not used yet).
+   unit of rea 8cef7d5b (src/game/unk_58bbd0.c); boundaries in decl/text.dcl */
 #define GAPDATA __declspec(align(1)) unsigned char
 #define unk_Unk5136b0K ((int (*)())unk_Unk5136b0)  /* 0x5136b0 (f3init.c, void): @original the call passes more arguments than the draft definition names, compiled without a prototype (as before the definition's spelling reached this unit) */
 /* unk_58bbd0.c -- the production / trade windows and the tavern / location / money lender / Rathaus windows
-   (0x58bbd0 .. 0x5bcc70): the
+   (0x58bbd0 .. 0x5d33b0): the
    "Handel\Handel_PRODUKTION" screen of a building (0x58bd60) and its helpers (the table init 0x58bbd0, the
    goods columns 0x58c680 ..), then the building purchase / construction screens (0x58f510 .. 0x593960: the
    "contact_EINKAUF" / "BAUEN_GEB_BAUEN" strings), the trade search windows (0x595480 / 0x595a00), the
@@ -16,126 +18,14 @@
    that 0x58bd60 / 0x58c680 use. The first literal of the unit is "Handel\Handel_PRODUKTION" 0x62b038 (0x58bd60),
    a +0x568 jump past the previous unit's last literal 0x62aad0 (data order D8); no literal belongs to 0x58bbd0
    itself, so the boundary rests on the subject and the call coupling.
-   Session 2026-10-24 (layout): drafted 0x58f510 .. 0x599aa0 in address order (see notes/units/unk_58bbd0.md,
-   layout 2026-10-24); the unit is the last one (open, no neighbour after it yet).
-   Session 2026-10-24 (layout, second): drafted 0x599af0 .. 0x5a1a60 (the tavern / locations contacts, the money
-   lender windows, the Rathaus enter check, the building drivers 0x59e420 / 0x59ee40 / 0x59f410 and the guild /
-   office windows); the unit is now contiguous 0x58bbd0 .. 0x5a1af0 and is still the last one (open, no
-   neighbour after it yet).
-   Session 2026-10-24 (layout, third): drafted 0x5a1af0 .. 0x5a4b90 (the church rooms: Spenden 0x5a1af0,
-   Ablass2 0x5a1f70, Taufe 0x5a23a0, Top5 0x5a28f0, Beichte 0x5a2b60 with its listener 0x5a2de0, Predigt
-   0x5a2e60; the building listeners 0x5a36c0 / 0x5a3810 / 0x5a39b0; the dungeon 0x5a3a40 / 0x5a3b20 / 0x5a3b90 /
-   0x5a3df0 / 0x5a3ef0 and the thieves' guild: burglary 0x5a3f10 / 0x5a4130, espionage 0x5a41d0 / 0x5a44e0,
-   spy ring 0x5a45c0, pickpocket 0x5a48d0 / 0x5a4b30 / 0x5a4b90); the unit is contiguous 0x58bbd0 .. 0x5a4d40
-   and is still the last one (open). No literal breaks the data order: the strings "Locations\Kirche\Spenden"
-   0x62beb8 .. "locations\diebesgilde\diebesgilde_spionage" 0x62c078 climb in function order (one .data block,
-   D8).
-   Session 2026-10-24 (layout, fourth): drafted 0x5a4d40 .. 0x5a6c40 (the thieves' guild kidnapping: the listener
-   0x5a4d40, the empty 0x5a4f50, the contact listeners 0x5a4f70 / 0x5a5080, the kidnapping window 0x5a5120 and
-   its start 0x5a53e0, the ransom 0x5a5530 and the attempt 0x5a5910 with the listener 0x5a5bc0; then the city
-   watch "LOCATIONS\STADTWACHE\STANDARD": the request starts 0x5a5f60 / 0x5a61f0 / 0x5a6480 / 0x5a6720, the
-   windows 0x5a5d70 / 0x5a5fd0 / 0x5a6270 / 0x5a64d0, the listeners 0x5a67a0 / 0x5a6920 / 0x5a6a90, the text
-   helper 0x5a6b50 and the map helpers 0x5a6b70 / 0x5a6c40). The unit is contiguous 0x58bbd0 .. 0x5a6c40 and is
-   still the last one (open). The literals keep climbing 0x62c0d4 .. 0x62c270 in function order (one .data
-   block, D8): the city watch is the same unit, no boundary.
-   Session 2026-10-24 (layout, fifth): drafted 0x5a6cb0 .. 0x5a9af0 (43 functions; the unit now runs
-   0x58bbd0 .. 0x5a9b50, 239 functions, 59 byte): the town map window 0x5a6cb0 (the per-frame draw, ROUGH)
-   with its open 0x5a78a0 ("Misc\Landkarte2" 0x62c274), drag scroll 0x5a79e0, key scroll 0x5a7bc0, the
-   per-frame 0x5a7cd0 (ROUGH SKELETON) and close 0x5a82f0, and the production settings module of the map
-   (the linked list 0x6f26c0 of 0x4c-byte records, the "hp_AddProdSetting" 0x62c284 / "hp_LoadProdSetting"
-   0x62c298 strings, 0x5a8340 .. 0x5a8cb0) with its production messages 0x5a8b80 .. 0x5a8d80, and then the
-   plague / gypsy catastrophe messages 0x5a8e10 .. 0x5a9470 ("KATASTROPHE_PEST" 0x62c2c0, the
-   "NACHRICHTEN_ZIGEUNER" keys 0x62c2f4 / 0x62c310), then the graveyard texts 0x5a9690 .. 0x5a9af0 (the
-   FRIEDHOF keys 0x62c32c .. 0x62c39c, the table 0x5eecd0 and the 0x5190a0 order). The literals climb
-   0x62c270 .. 0x62c39c in function order (one .data block, D8), so no boundary is inside the stretch.
-   Session 2026-10-24 (layout, sixth): drafted 0x5a9b50 .. 0x5ae6b0 (24 functions; the unit now runs
-   0x58bbd0 .. 0x5ae870, 263 functions, 65 byte): the Domizil message family (0x5a9b50 .. 0x5a9e40, the
-   "NACHRICHTEN_DOMIZIL" keys 0x62c3b8 .. 0x62c400), the Domizil table pickers 0x5a9e90 / 0x5a9f10 (the 0x42
-   entries of 0x1c bytes at 0x62c420, the count 0x62cb58), the two percent message boxes 0x5a9f80 / 0x5ad000,
-   the Domizil window family (0x5aa0d0, 0x5aa1f0, 0x5aa4b0 the control destructor, 0x5aa520 the selected entry,
-   0x5aa700 / 0x5aa9a0 the worker list) and the Personnel / mercenary book / transport windows 0x5aab80 /
-   0x5ac110 / 0x5ad150 (ROUGH stubs) with the transport purchase 0x5ae240, the confirmation 0x5ae570 and the
-   order message 0x5ae6b0.
-   Session 2026-10-24 (layout, seventh): drafted 0x5ae870 .. 0x5b2530 (11 functions; the unit now runs
-   0x58bbd0 .. 0x5b26b0, 274 functions, 65 byte, contiguous): the transport order 0x5ae870 (matched: the
-   HETIME struct assignment of the clock), the transport check 0x5ae8e0, the warehouse transport 0x5ae9a0
-   (ROUGH), the total 0x5af010, the forwarders 0x5af1a0 / 0x5af1b0 / 0x5af1c0 of the transport window
-   0x5af1d0 (matched; 0x5af1d0 is a 11968 B STUB), the player's screen image 0x5b2090, the map run callback
-   0x5b2180 (ROUGH) and the two-choice window 0x5b2530. The literals climb 0x62cc6c .. 0x62cd1c in function
-   order (one .data block, D8), so no boundary at 0x5af1d0 / 0x5b2090.
-   Session 2026-10-24 (layout, seventh, continued): drafted 0x5b26b0 .. 0x5bc9c0 (the windows and the Domizil
-   table lookups; 99 functions this session, the unit now runs 0x58bbd0 .. 0x5bcc70, 327 functions, 73 byte);
-   six more Ghidra-missed starts (0x5b3630, 0x5b3ad0, 0x5b3f30, 0x5b4820, 0x5b4c60, 0x5b5310) and the two
-   functions.csv starts 0x5b5690 / 0x5b5a20 that Ghidra's 0x5b5610 record swallows are drafted; matched
-   0x5ba600, 0x5ba620, 0x5ba660 and 0x5bc0f0. The next frontier is 0x5bcc70.
-   Session 2026-10-24 (layout, eighth): drafted 0x5bcc70 .. 0x5c1df0 (28 functions; the unit now runs
-   0x58bbd0 .. 0x5c1df0): the player stats panel 0x5bcc70 ("Panel_player_stats" 0x62d134), the control
-   helpers 0x5bd060 / 0x5bd0c0 / 0x5bd190 / 0x5bd1f0, the special-amount list family "special_amt1" 0x62d224
-   / "special_amt2" 0x62d204 / "special_amt3" 0x62d214 / "special_amtinfo" 0x62d244: the record block
-   0x5bd250, the row builders 0x5bd5e0 / 0x5bdb60 / 0x5be3b0 / 0x5be720, the record status 0x5be1d0, the
-   filter / sort fills 0x5bf0d0 / 0x5bf300 / 0x5bf4f0 / 0x5bf6f0, the page switch 0x5bfed0, the tab tables
-   0x5c08b0 / 0x5c08d0 / 0x5c0970, the menus 0x5c1130 / 0x5c1b20 / 0x5c1b40 / 0x5c1df0 and the info box
-   0x5c1a80. The Ghidra-missed starts 0x5bea00 / 0x5bf4f0 / 0x5bf6f0 are drafted from the disassembly, and
-   the ones only reachable through the fill / callback tables as ROUGH stubs: 0x5bf7c0 / 0x5bfa90 / 0x5bfc40 /
-   0x5bfd90 (the page fills 0x62d154) and 0x5bffb0 / 0x5c00b0 / 0x5c01c0 / 0x5c02d0 / 0x5c03e0 / 0x5c0550 /
-   0x5c0650 / 0x5c0790 (the tab fills), 0x5bff80 (the record release) and 0x5c1500 (the 0x5c1b20 callback);
-   0x5c1e10 (846 B, the 0x5c1df0 callback) is a ROUGH stub too. The session went on with the law book module:
-   0x5c2160 (the listener of the pages 0x111 / 0x112 / 0x113), 0x5c2410 (**matched**, the info
-   "Gesetze\Gesetzbuch_Info" 0x62d2a4), 0x5c2490 (the law entry controls) and 0x5c26a0 (**matched**, the
-   master letter "berufe\meisterbrief_1" 0x62d2bc), so the unit runs to 0x5c2730. The literals climb
-   0x62d134 .. 0x62d2bc in function order (one .data block, D8), no boundary.
-   Session 2026-10-24 (layout, ninth): drafted 0x5c2730 .. 0x5c7560 (22 functions; the unit now runs
-   0x58bbd0 .. 0x5c76b0, 396 functions): the master letter module (0x5c2730 **matched**, 0x5c27b0, 0x5c2a10,
-   0x5c2b90 "berufe\meisterbrief_2" ROUGH, the contact dispatcher 0x5c3200), the law / office selection
-   (0x5c33c0, 0x5c37a0 / 0x5c39a0, 0x5c3bb0 "Gesetze\Auswahl2" ROUGH, 0x5c4100), the big player windows
-   (0x5c4150 "Special_Stammbaum" ROUGH, 0x5c5310 "panel_info_spieler" ROUGH, 0x5c6050 "misc\geschenck") and the
-   advertising family (0x5c64c0, 0x5c6530, 0x5c6620, 0x5c6910 / 0x5c6aa0 "privillegien_werbung2 / 1",
-   0x5c6d00 ROUGH, the bar charts 0x5c72d0 / 0x5c7460 / 0x5c7560 ROUGH). The literals climb 0x62d2bc ..
-   0x62d424 in function order (one .data block, D8), no boundary.
-   Session 2026-10-24 (layout, tenth): drafted 0x5c76b0 .. 0x5ca150 (15 functions; the unit now runs
-   0x58bbd0 .. 0x5ca560, 411 functions, 76 byte): the statistics panel family - the five bar charts
-   0x5c72d0 / 0x5c7460 / 0x5c7560 / 0x5c76b0 / 0x5c7800 (they take TWELVE parameters: ten values copied by
-   the caller and the two screen words h - 1 / w; the rectangles 0x4764f0 are a SEVEN argument fill
-   (x1, y1, x2, y2, r, g, b) - the old 6- and 2-parameter drafts were wrong), the chart window 0x5c7970, the
-   statistics panel 0x5c7f00 "panel_statistik_stadt" 0x62d440, the player comparison 0x5c82f0
-   "panel_pcompare4plus6" 0x62d468 / "panel_pcompare8" 0x62d458, the privileges panel 0x5c8640
-   "panel_privilegien" 0x62d480, the medicus handler 0x5c8bc0 "privillegien_medicus" 0x62d494, the divorce
-   handler 0x5c8ef0 "privillegien_scheidung" 0x62d4ac, the blackmail handler 0x5c9290
-   "privillegien_erpressung2" 0x62d4c4 and the building / payment windows 0x5c9550 0x62d4e0, 0x5c9990,
-   0x5c9c50 and 0x5c9df0 0x62d4f8 (the last three are Ghidra-missed starts, drafted from the disassembly),
-   the blackmail contact variant 0x5c9ff0 (0x1d61) and the law / privilege window 0x5ca150
-   "privillegien_gesetz" 0x62d518 (ROUGH: the law info 0x4f2720 and the setter 0x4f2750 of the hst.c view).
-   The literals climb 0x62cd48 .. 0x62d518 in function order (one .data block, D8), no boundary.
-   Session 2026-10-24 (layout, eleventh): drafted 0x5ca560 .. 0x5cb250 (7 functions; the unit now runs
-   0x58bbd0 .. 0x5cb4f0): the privilege handlers 0x5ca560 (embezzlement: "absetzen" 0x62d52c, the kind
-   check 0x4e6f80 / 0x4e6030 and the window 0x5bea50), 0x5ca860 ("privillegien\unterschlagung" 0x62d538,
-   the price over 0x4fa700 / 0x42ec00 / 0x5eceb0), the Ghidra-missed 0x5caab0 (the bewitch window
-   "privillegien\becircen" 0x62d554, reached only as the menu callback of 0x5cacd0) and 0x5cacd0 (the
-   contract handler with the 0x5c1130 menu), then 0x5cae00 (the counter-espionage
-   "privillegien\gegenspionage" 0x62d56c with the carrier walk 0x53e400 / 0x53e300 and the clock copies
-   +0x52 / +0xc8 as HETIME assignments), the wrapper 0x5cb1e0 (0x4e6ba0; behaviour grade, 49/112) and
-   0x5cb250 (the "privillegien\gegenspionage2" 0x62d588 window, ROUGH: the 0x300-record kind walk). The
-   literals climb 0x62d52c .. 0x62d588 in function order (one .data block, D8), no boundary. Then the
-   espionage family 0x5cb4f0 / 0x5cba90 / 0x5cbe00 and the order handlers 0x5cc2b0 / 0x5cc700 (ROUGH
-   SKELETONs from tools/disasm.py: the price over 0x50a640 / 0x509e60, the relations 0x50c520, the
-   0x5c1130 menus, the 0x53dda0 messages and the building 0x501190) extend the unit to 0x5ccc10, with
-   0x5cca40 (the value window 0x62d634) and the spy family 0x5ccc10 .. 0x5ce4b0 complete the stretch;
-   the next frontier is 0x5ce610.
-   Session 2026-10-24 (layout, twelfth): drafted 0x5ce610 .. 0x5d0e60 (25 functions; the unit now runs
-   0x58bbd0 .. 0x5d0f20, 457 functions, 78 byte): the interrogation / trial-step message module (the
-   "privillegien_verhoer" 0x62d5c4 / _arbeiter_ausweisen 0x62d5dc / CHOOSEPROFESSION2 0x62d660 /
-   "special_uni" 0x62d6bc windows, the object callback 0x5cf8a0, the trial step 0x5d08c0 and its wrappers
-   0x5d09d0 / 0x5d0a40 / 0x5d0ab0, the amount transfers 0x5d0b20 / 0x5d0c70 and the shuffled pick
-   0x5d0e60). Matched 0x5cfb60 and 0x5d06e0; the thirteen Ghidra-missed starts are drafted. 0x5d08c0 reads
-   the earlier he.c pooled strings (backward), so no new .data run: the unit continues (open).
-   Session 2026-10-24 (layout, thirteenth): drafted 0x5d0f20 .. 0x5d3270 (23 functions; the unit now runs
-   0x58bbd0 .. 0x5d33b0, 480 functions): the trial / action callbacks of the record table 0x62c420 (records
-   5 / 17 / 19 / 21 / 22 / 32 / 34 / 36 .. 44 / 49 / 50 / 53 .. 55 / 57 / 59 .. 61; the function pointer
-   sits at record +0x14, the text ids 0x15c .. 0x2c3). They are reached only through that table (no direct
-   call) and use the 0x5c1130 menu / 0x505df0 / 0x5ba6b0 / 0x5ba660 character lookups and the text /
-   message API (0x5176d0 / 0x53dda0 / 0x4c4b00 / 0x5cf820); 0x5d0f20's two random picks are drafted, the
-   rest are ROUGH stubs from tools/disasm.py (see notes/units/unk_58bbd0.md). No literal of the unit
-   belongs to them, so the .data order is unchanged; the next unit starts at 0x5d33b0.
+   The rest of the unit, in address order: the church rooms, the dungeon and the thieves' guild (burglary,
+   espionage, pickpocket, kidnapping), the city watch, the town map window and its production settings
+   ("hp_" list 0x6f26c0), the plague / gypsy / graveyard / Domizil messages, the Domizil table 0x62c420 and its
+   windows, the personnel / transport / storage windows, the player stats and special-amount panels, the law
+   book and master letter, the statistics and privilege panels, the privilege / espionage / interrogation
+   handlers and the trial / action callbacks reached only through the 0x62c420 records (+0x14). The literals
+   climb in function order from 0x62b038 to 0x62d6bc as one .data block (D8), so no split was found inside;
+   the next unit starts at 0x5d33b0.
    @named_by -
    @boundary plausible */
 struct SBSAMPLE;

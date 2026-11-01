@@ -1,5 +1,5 @@
-/* msx
-   unit of rea 8cef7d5b (src/game/msx.c); boundaries in decl/text.dcl, notes in notes/units/msx.md */
+/* msx -- name leaked (the #line below); the start next to mov.c is plausible, not proven.
+   unit of rea 8cef7d5b (src/game/msx.c); boundaries in decl/text.dcl */
 #line 1 "D:\\develop\\units\\Msx\\msx.c"
 /* msx.c -- D:\develop\units\Msx\msx.c (leaked assert path).
    Streamed music and ambient tracks: a worker thread updates the track fades every 50 ms, music
@@ -247,7 +247,7 @@ void msx_SetFadeTime(int ms)
 /* 0x423e80, body of the update thread (called with msx_Lock held about every 50 ms): for every playing
    track it follows the stream position, retires a finished stream and starts the queued track, ramps the
    fade-in / fade-out volume, then advances the master fade; no return value
-   @deep B draft, 428/800 bytes: every code hunk is the loop IV base offset (ours &t->fadepos, original &t->volume, all field offsets +8), the same operations spelled differently. The Open work attempts (582 operand-order variants, pointer/for/do-while loop forms, dead volume loads at 6 positions, volume read first in both fade blocks) all left the base unchanged; this is a VC6 base-selection choice, not a meaning error. Q6 added. */
+   @deep B draft, 428/800 bytes: every code hunk is the loop IV base offset (ours &t->fadepos, original &t->volume, all field offsets +8), the same operations spelled differently. The attempts (582 operand-order variants, pointer/for/do-while loop forms, dead volume loads at 6 positions, volume read first in both fade blocks) all left the base unchanged; this is a VC6 base-selection choice, not a meaning error. Q6 added. */
 
 void msx_Update(void)
 {

@@ -2,7 +2,9 @@
    to kill"). Extent in GildeGold.exe (inferred): starts at 0x40d680 right after the character commands
    (chc.c, whose registration ends at 0x40d678) and ends with the command registration at 0x40f960.
    Functions are kept in their original order. Names are ours (ocmd_ + the script name).
-   unit of rea 8cef7d5b (src/game/ecmd.c); boundaries in decl/text.dcl, notes in notes/units/ecmd.md */
+   Open: ocmd_Register (0x40f960) still declares the handlers as K&R `int ocmd_X();` placeholders, not ecmd.h's prototypes.
+   Open: ecmd.h names par_CreateEmitter's parameters (count, pos, parent, ..); the order is (parent, pos, count, ..).
+   unit of rea 8cef7d5b (src/game/ecmd.c); boundaries in decl/text.dcl */
 struct D3OBJECT;
 struct D3SURF;
 #include <stdio.h>
@@ -718,7 +720,7 @@ int ocmd_KillParticle(D3PARTSYS **ps)
 }
 /* 0x40ee10, puts the camera at the position and angles of the camera dummy *name (d3t_FindObject flag 2); a
    script error when there is no such dummy; 0
-   @deep Q2 only left, byte 0x40ee10: the body reads dummy->unk05c as the camera position and dummy->unk090 as its angles (d3_SetObjectPos / d3_SetObjectRot of d3_Camera), while the same D3OBJECT slots are read as D3LOBJ.color / D3IFLIGHT.color (0x5c) and D3LOBJ.range/power/atten (0x90) by the light code (d3s.c 0x45b8d0, d3_engine.c d3_CloneObject, d3_interface.c scene serialization). A d3.h field rename is project-wide and the typed union view of D3OBJECT is the recorded codegen hazard of d3_CloneObject (notes/units/d3_engine.c), so the name needs the shared-header decision -> match-deep. Q6 description added; callers/callees read (d3t_FindObject flag 2, d3_SetObjectPos/Rot), no other evidence for a per-object role name. */
+   @deep Q2 only left, byte 0x40ee10: the body reads dummy->unk05c as the camera position and dummy->unk090 as its angles (d3_SetObjectPos / d3_SetObjectRot of d3_Camera), while the same D3OBJECT slots are read as D3LOBJ.color / D3IFLIGHT.color (0x5c) and D3LOBJ.range/power/atten (0x90) by the light code (d3s.c 0x45b8d0, d3_engine.c d3_CloneObject, d3_interface.c scene serialization). A d3.h field rename is project-wide and the typed union view of D3OBJECT is the recorded codegen hazard of d3_CloneObject (d3_engine.c), so the name needs the shared-header decision -> match-deep. Q6 description added; callers/callees read (d3t_FindObject flag 2, d3_SetObjectPos/Rot), no other evidence for a per-object role name. */
 
 int ocmd_SetCameraToDummy(char **name)
 {

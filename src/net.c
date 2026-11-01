@@ -1,5 +1,5 @@
 /* net
-   unit of rea 8cef7d5b (src/game/net.c); boundaries in decl/text.dcl, notes in notes/units/net.md */
+   unit of rea 8cef7d5b (src/game/net.c); boundaries in decl/text.dcl */
 #line 1 "D:\\develop\\units\\net\\net.c"
 /* net.c -- D:\develop\units\net\net.c (leaked assert path).
    TCP connection to the game server over WinSock: non-blocking connect, packet receive/send state

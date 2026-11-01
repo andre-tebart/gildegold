@@ -1,7 +1,11 @@
-/* main.c -- the program level code (0x531670 ..): the tag "main_" ("main_OpenEngine(): could not open ..." 0x624a8c): the window class "Die Gilde" (0x62493c), the engine start / stop in order, the single instance
-   mutex, the version string "Europa 1400 - Gold Edition - 2.06", the window creation and the first init (screenshot directory "<path>gamedata\Screenshots"). Split from sv.c (layout 2026-10-23 session 5): the strings
-   0x62493c .. 0x6249a8 sit after the last sv string ("MASTER(): .." 0x624534) and the code is the process level start / stop, not the in-game screen. ROUGH drafts.
-   unit of rea 8cef7d5b (src/game/main.c); boundaries in decl/text.dcl, notes in notes/units/main.md */
+/* main.c -- the program level code (0x531670 .. 0x53d430), tag "main_" (0x624a8c ..): the window class
+   "Die Gilde", the single instance mutex, the version string, engine start / stop, the main menu, the
+   network and character creation dialogs, the round loop. Its strings (0x62493c ..) follow sv.c's last one
+   ("MASTER(): .." 0x624534); he.c starts at 0x53d430.
+   Open: ch.h, chc.h, hmt.h, amt.h, hst.h, cm.h, sblib.h, unk_575860.h are not included (header conflicts;
+   their prototypes disagree with main's calls, e.g. the result of gm_Unk503ee0); the callees are declared locally.
+   Open: 0x534040, 0x53a520 and 0x53b2e0 are out of address order.
+   unit of rea 8cef7d5b (src/game/main.c); boundaries in decl/text.dcl */
 extern int gm_PlayerRecords[688];
 #include "txt_views.h"
 #include <windows.h>
@@ -334,7 +338,7 @@ void main_Unk53cb40(void);
 
 extern unsigned int d3anim_CacheMax;   /* 0x5f927c, d3_anim.h */
 void hst_ResetLists(void);              /* 0x4b1f30, hst.c */
-void ai_ClearTurnTable(void);           /* 0x587de0, unk_575860.c: not in unk_575860.h (adding it there moves unk_575860's drafts ai_Unk579570 / ai_Unk57aeb0, see open.md) */
+void ai_ClearTurnTable(void);           /* 0x587de0, unk_575860.c: not in unk_575860.h (adding it there moves unk_575860's drafts ai_Unk579570 / ai_Unk57aeb0) */
 void ai_InitStates(void);               /* 0x4c3480 */
 int sb_Init(int mem, int count, int a, int b, int c);  /* 0x425bc0 */
 void sb_SetPath(char *path);            /* 0x426240 */

@@ -1,7 +1,9 @@
 /* unk_4b39f0.c -- missions ("_AUFTRAEGE_VERGABE_HS_%.2d", "special\mission"): the running missions
    ai_Missions, the mission types ai_MissionTypes (.data right after hst.c's literals), an own random generator.
-   Unit start and name are guesses (open boundary). Names are ours.
-   unit of rea 8cef7d5b (src/game/unk_4b39f0.c); boundaries in decl/text.dcl, notes in notes/units/unk_4b39f0.md */
+   Unit start and name are guesses (open boundary); it ends with save / load 0x4b62e0 / 0x4b63b0. Names are ours.
+   Open: G13TYPE.unk0c / unk18 and G13MIS.unk18 / unk1c / unk20 have no name evidence yet (several Q2s wait on them).
+   Open: the mission conditions read AICHAR / AIBLD bytes through the G13_B / G13_501190 views (type debt).
+   unit of rea 8cef7d5b (src/game/unk_4b39f0.c); boundaries in decl/text.dcl */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

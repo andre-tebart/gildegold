@@ -1,8 +1,11 @@
-/* he.c -- the event bar ("Panel\Event_Leiste", the tag "he_": "he_AllocNone(): Invalid HE-Type : %i, von Spieler %s" 0x626680): the "HE" (history event?) windows, 16 slots of 12 bytes at 0x6faa80
-   (owner record, window id, panel handle), the module init table (0x53d4b0), the event messages with quick jump. Starts at 0x53d430, right after the program entry of main.c (0x53ccf0 .. 0x53d426); the globals
-   0x625718 / 0x62571c head its .data block (layout 2026-10-23, session 5). ROUGH drafts.
+/* he.c -- the event ("Handlung" / HE) system, tag "he_" (0x626680 ..), panel "Panel\Event_Leiste": the 16 slot
+   event bar (0x6faa80), the event records (0x400 of 0x14c bytes at 0x6fab40), the alloc / run handler tables
+   (0x74df40 / 0x758600, registered by 0x553060 / 0x568310) and the handlers of the single event types.
+   0x53d430 .. 0x575860: starts right after main.c's program entry (its globals 0x625718 / 0x62571c follow
+   main.c's INI strings); the tutorial / campaign block (.data 0x62918c) follows.
    (no @bytes: the block after he_Unk555b60's ret at 0x556055 is its int 3 error path, reached by the je at 0x555dd7)
-   unit of rea 8cef7d5b (src/game/he.c); boundaries in decl/text.dcl, notes in notes/units/he.md */
+   Open: the event record (0x14c B, also ai.h AIJOB) and the message record (0xf8 B) are untyped; handlers use raw offsets.
+   unit of rea 8cef7d5b (src/game/he.c); boundaries in decl/text.dcl */
 struct AHMSLOT;
 struct D3HMAP;
 struct SBBANK;

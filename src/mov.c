@@ -2,7 +2,7 @@
    Movie playback through DirectShow: a filter graph renders the file into an own or a given window.
    Extent in GildeGold.exe (inferred, not proven): 0x422c90..0x423770.
    Functions are kept in their original order. Names are ours.
-   unit of rea 8cef7d5b (src/game/mov.c); boundaries in decl/text.dcl, notes in notes/units/mov.md */
+   unit of rea 8cef7d5b (src/game/mov.c); boundaries in decl/text.dcl */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

@@ -1,9 +1,12 @@
 /* d3_engine.c -- original path D:\develop\Units\d3\d3_engine.c (assert ref 0x43a939)
-   Only the start of the file is here: its .data starts at 0x5fb5b0 (d3_DefaultScene) right after
-   d3_d3d.c's strings and holds the d3_engine.c path, and the first functions (0x438c30..) use
-   d3_DefaultScene. Extent in GildeGold.exe: 0x438c30..(beyond 0x439000, not established).
-   Functions are kept in their original order. Names are ours.
-   unit of rea 8cef7d5b (src/game/d3_engine.c); boundaries in decl/text.dcl, notes in notes/units/d3_engine.md */
+   0x438c30..0x43eab0: its .data starts at 0x5fb5b0 (d3_DefaultScene) right after d3_d3d.c's strings and
+   holds the d3_engine.c path, and the first functions (0x438c30..) use d3_DefaultScene. Functions are kept
+   in their original order. Names are ours.
+   Open: d3_engine functions are still declared in other units' headers (d3.h, rd.h, ch.h, cm.h,
+   d3_interface.h, d3_int_io.h; K&R aliases in f3init.c); their callers must include d3_engine.h first.
+   Open: d3_CloneObject (and d3_mir.c's d3_MirDrawObject) flip with TU-global changes - definitions added
+   above them, declarations added to or removed from d3_engine.h / d3.h - so header moves need both rechecked.
+   unit of rea 8cef7d5b (src/game/d3_engine.c); boundaries in decl/text.dcl */
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -245,7 +248,7 @@ void d3_ProjectMesh(D3OBJECT *obj)
 }
 /* 0x4391d0, sets up the view frustum planes (d3_Planes), the corner directions (d3_Frustum) and the
    plane lists of the 64 clip codes (d3_ClipInfo).
-   @deep behaviour draft: the 152 code hunks are the same instructions scheduled differently - the original keeps the atan2 results a/b on the FPU stack through sin/cos (fld st(0)/fsin/fld st(1)/fcos at 0x439242..0x4392b8) where VC6 reloads from the local; the je/jbe in the popcount loop (0x4394fd) is the same test (cmp edi,esi with esi=0) and the info->plane store order (+8/+0xc, +0x10/+0x14) is swapped only; recorded attempts: chained/parenthesized assignments, s/c locals, double CSE of sin/cos, 15 statement orders (notes/units/d3_engine.md) */
+   @deep behaviour draft: the 152 code hunks are the same instructions scheduled differently - the original keeps the atan2 results a/b on the FPU stack through sin/cos (fld st(0)/fsin/fld st(1)/fcos at 0x439242..0x4392b8) where VC6 reloads from the local; the je/jbe in the popcount loop (0x4394fd) is the same test (cmp edi,esi with esi=0) and the info->plane store order (+8/+0xc, +0x10/+0x14) is swapped only; recorded attempts: chained/parenthesized assignments, s/c locals, double CSE of sin/cos, 15 statement orders */
 
 void d3_SetupFrustum(void)
 {
@@ -621,7 +624,7 @@ D3OBJINFO *d3_SelectSurf(D3OBJECT *obj)
 }
 /* 0x43a160, d3_ForEachObject callback: transforms, clips and projects a visible mesh and adds its
    triangles to the sort buffer (by texture with Direct3D, by depth in software).
-   @deep behaviour draft: 408 code hunks - the register allocation differs from the first hunk (orig keeps the object in esi, the surf in edi, the mesh in ebp and the state byte in bl at 0x43a172..0x43a1d6; ours uses ebx/ecx) and whole blocks sit at other addresses (orig 0x43a256 state/info stores, 0x43a2be the z range and 0x43a3e8 the sort entry); reading also shows meaning differences in the draft (ours clears obj->state bit 2 with D3_OBJBITS(obj).dirty = 0 at 0x43a1cc -> and cl,0xfb, while the original only clears bit 3 -> and cl,0xf3 and keeps bit 2). The function is the round-3 first draft (notes/units/d3_engine.md: 'first draft, structure right, not iterated'); re-deriving it is match-deep work, not a reading fix */
+   @deep behaviour draft: 408 code hunks - the register allocation differs from the first hunk (orig keeps the object in esi, the surf in edi, the mesh in ebp and the state byte in bl at 0x43a172..0x43a1d6; ours uses ebx/ecx) and whole blocks sit at other addresses (orig 0x43a256 state/info stores, 0x43a2be the z range and 0x43a3e8 the sort entry); reading also shows meaning differences in the draft (ours clears obj->state bit 2 with D3_OBJBITS(obj).dirty = 0 at 0x43a1cc -> and cl,0xfb, while the original only clears bit 3 -> and cl,0xf3 and keeps bit 2). The function is a first draft (structure right, not iterated); re-deriving it is match-deep work, not a reading fix */
 
 char d3_DrawObjectCB(D3OBJECT *obj)
 {
@@ -784,7 +787,7 @@ void d3_SetFog(float start, float end, unsigned long color)
 }
 /* 0x43a7d0, Direct3D rendering: draws the sorted triangles in texture order through the vertex buffer,
    clipping the ones that cross a frustum plane into fans.
-   @deep behaviour draft: 779 code hunks / 36 slots; the frame differs at once (orig sub esp,0x80, ours 0x78 - two dwords of locals missing) and so does the register allocation (orig zeroes edi and keeps the texture in edi/[ebp-0x18], ours uses esi); the source is the round-3 first draft (notes/units/d3_engine.md: 'First draft only: register allocation differs from the start'), so the local set has to be re-derived, which is match-deep work */
+   @deep behaviour draft: 779 code hunks / 36 slots; the frame differs at once (orig sub esp,0x80, ours 0x78 - two dwords of locals missing) and so does the register allocation (orig zeroes edi and keeps the texture in edi/[ebp-0x18], ours uses esi); the source is a first draft (register allocation differs from the start), so the local set has to be re-derived, which is match-deep work */
 
 void d3_DrawSortedD3D(void)
 {
@@ -1249,7 +1252,7 @@ void d3_SetHardwareMode(int on)
 }
 /* 0x43bc20, starts the engine: copies the configuration, sets the display mode (and Direct3D), allocates
    the sort buffers and the shadow object, sets the viewport and fills the noise table.
-   @deep Q2: d3io_NoopCallback has no evidence (d3_io_a.c 0x44ee40: the empty no-op triangle filler assigned to d3_TriFuncs[0..5], called with different signatures, recorded @deep there); the list heads / sentinels d3_StockListHead = &d3_StockListEnd, d3_AnimListHead = d3_AnimListEnd, d3_Unkfc4c40 = d3_Unkfc2e00, d3_Unkfe75a4 = d3_Unkfc2580 and the flags d3_Unkfc26e4 / d3_Unkfc4c3c / d3_Unkfc3000 / d3_Unkfe75a0 / d3_Unkfe7400 / d3_Unkfc5064 / d3_Unkfc5065 / d3_Unkfe7600 / d3_Unkfe75bc are only stored here (write-only, header comments state the list role but not a reader; the d3_io_t.h names d3_StockHead / d3_AnimHead / d3_AnimList are different struct views at the same addresses and cannot replace the D3OPS / void* view); d3s_Object = d3s_Object would need its extern moved to d3s.h, which flipped d3_CloneObject and d3_MirDrawObject when tried (notes/units/d3_engine.md); d3_Unk1463570 / 1463580 / 1464fbd are dd_RBits / dd_GBits / dd_BBits (dd_vesa.c) but d3_d3d.h declares them char where dd_vesa.c defines unsigned char and d3_d3d.c 0x436xxx reads them (the byte-matched use needs the unsigned char view). Renamed this session: d3_Camera / d3_Scenes / d3_AnimPath / d3_ShadeInit / d3fl_Init / par_Init. Q4: the D3_ZERO_AT-style macro raw dereference. */
+   @deep Q2: d3io_NoopCallback has no evidence (d3_io_a.c 0x44ee40: the empty no-op triangle filler assigned to d3_TriFuncs[0..5], called with different signatures, recorded @deep there); the list heads / sentinels d3_StockListHead = &d3_StockListEnd, d3_AnimListHead = d3_AnimListEnd, d3_Unkfc4c40 = d3_Unkfc2e00, d3_Unkfe75a4 = d3_Unkfc2580 and the flags d3_Unkfc26e4 / d3_Unkfc4c3c / d3_Unkfc3000 / d3_Unkfe75a0 / d3_Unkfe7400 / d3_Unkfc5064 / d3_Unkfc5065 / d3_Unkfe7600 / d3_Unkfe75bc are only stored here (write-only, header comments state the list role but not a reader; the d3_io_t.h names d3_StockHead / d3_AnimHead / d3_AnimList are different struct views at the same addresses and cannot replace the D3OPS / void* view); d3s_Object = d3s_Object would need its extern moved to d3s.h, which flipped d3_CloneObject and d3_MirDrawObject when tried; d3_Unk1463570 / 1463580 / 1464fbd are dd_RBits / dd_GBits / dd_BBits (dd_vesa.c) but d3_d3d.h declares them char where dd_vesa.c defines unsigned char and d3_d3d.c 0x436xxx reads them (the byte-matched use needs the unsigned char view). Renamed this session: d3_Camera / d3_Scenes / d3_AnimPath / d3_ShadeInit / d3fl_Init / par_Init. Q4: the D3_ZERO_AT-style macro raw dereference. */
 
 char d3_Init(D3INITCFG *cfg, HWND wnd, int unk)
 {
@@ -1951,7 +1954,7 @@ D3OBJECT *d3_CloneObject(D3OBJECT *src)
     }
     return obj;
 }
-/* 0x43d430, sets the alpha of a surface: textures are swapped for alpha aliases (or back). @deep B3 draft: after the reading fixes (the three raw *(int*)((char*)s->info.mesh+0x1e0) are now D3_OPS(&s->info)->count, the function is readable) only the address encoding of the two tris[i].tex accesses per loop remains, 4 hunks / 4 of 512 B: ours [edx+ecx+0x14] and [eax+ecx+0x14], original [ecx+edx+0x14] and [ecx+eax+0x14] - the same instructions with base and index swapped. Tried in this state: the store through the local tris[i].tex (469/528 B, reverted); earlier attempts per notes/units/d3_engine.md: tris[i] directly, (tris + i)->, i[tris], 0x28 byte offsets, integer arithmetic i*0x28+(int)tris, unsigned i, a pointer IV. */
+/* 0x43d430, sets the alpha of a surface: textures are swapped for alpha aliases (or back). @deep B3 draft: after the reading fixes (the three raw *(int*)((char*)s->info.mesh+0x1e0) are now D3_OPS(&s->info)->count, the function is readable) only the address encoding of the two tris[i].tex accesses per loop remains, 4 hunks / 4 of 512 B: ours [edx+ecx+0x14] and [eax+ecx+0x14], original [ecx+edx+0x14] and [ecx+eax+0x14] - the same instructions with base and index swapped. Tried in this state: the store through the local tris[i].tex (469/528 B, reverted); earlier attempts: tris[i] directly, (tris + i)->, i[tris], 0x28 byte offsets, integer arithmetic i*0x28+(int)tris, unsigned i, a pointer IV. */
 
 void d3_SetObjectAlpha(D3OBJECT *obj, D3OBJINFO *info, D3TEXFLAGS f)
 {
@@ -2119,7 +2122,7 @@ void d3_DeflateObject(D3OBJECT *obj)
             d3_ForEachObject(d3_DefaultScene, 0, 0x86, (D3OBJECTCB)d3_LightRemoveRecords, obj);
     }
 }
-/* 0x43d860, bounding sphere of an object relative to camera. @deep B3 draft: 37 code hunks, all from the return flag's register. The original holds ok in bl (xor bl,bl at entry, every failure return becomes mov al,bl, the success path mov al,0x1); because ebx is taken by ok it reloads the radius pointer from [esp+0x30] and center stays in ebp. Ours constant-propagates the failures (xor al,al) and keeps radius in ebx from the entry, which shifts the allocation of the whole body (first hunk at instruction 1: xor al,al vs xor bl,bl + push edi order). Same behaviour. Tried now and per notes/units/d3_engine.md round 2: char/int ok, late ok = 0, return 0 / return 1 at the failure points, goto a shared return, ok = 1 before vs after the out-parameter stores; VC6 always folds the known-zero return. */
+/* 0x43d860, bounding sphere of an object relative to camera. @deep B3 draft: 37 code hunks, all from the return flag's register. The original holds ok in bl (xor bl,bl at entry, every failure return becomes mov al,bl, the success path mov al,0x1); because ebx is taken by ok it reloads the radius pointer from [esp+0x30] and center stays in ebp. Ours constant-propagates the failures (xor al,al) and keeps radius in ebx from the entry, which shifts the allocation of the whole body (first hunk at instruction 1: xor al,al vs xor bl,bl + push edi order). Same behaviour. Tried: char/int ok, late ok = 0, return 0 / return 1 at the failure points, goto a shared return, ok = 1 before vs after the out-parameter stores; VC6 always folds the known-zero return. */
 
 char d3_GetBounds(D3OBJECT *obj, D3OBJECT *camera, D3VECTOR *center, float *radius)
 {

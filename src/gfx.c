@@ -1,11 +1,13 @@
-/* unk_476c00.c -- 0x476c00..0x479610 of the "d2" 2D layer, probably D:\develop\Units\d2.v1\GFX.C (its own TU,
+/* gfx.c -- 0x476b90..0x479d00 of the "d2" 2D layer, probably D:\develop\Units\d2.v1\GFX.C (its own TU,
    not d2.c's): the item list shown next to the pointer (id / amount pairs, drawn with the pointer picture), pointer
    picture, hover and scroll wheel handling of windows, the surfaces of the item list, editing of input fields
    (keys, mouse drag, slider objects), input focus, mouse handling and hit rectangles, 24 bit bmp loading, and the
-   GFX.C surfaces (create, free, lock, unlock, blits). One TU: d2_FocusInput matches only with d2_CountPointerItems defined
-   above it; the GFX.C __LINE__ 0x43f inside d2_MakeSurface fits a file that starts about at 0x476c00 (round 20).
-   Names are ours.
-   unit of rea 8cef7d5b (src/game/gfx.c); boundaries in decl/text.dcl, notes in notes/units/gfx.md */
+   GFX.C surfaces (create, free, lock, unlock, blits, pixels, clip). One TU: d2_FocusInput matches only with
+   d2_CountPointerItems defined above it; the GFX.C __LINE__ 0x43f inside d2_MakeSurface fits a file that starts
+   about at 0x476c00. Ends where shp.c's .data starts (0x5fed74). Names are ours.
+   Open: the start (the d2.c seam near 0x476b90) is unproven; .bss is COMMON, no lead.
+   Open: gfx.h is not canonical - most gfx.c functions are declared in d2.h, with copies in cm.h / rt.h.
+   unit of rea 8cef7d5b (src/game/gfx.c); boundaries in decl/text.dcl */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -1039,7 +1041,7 @@ D2SURF *d2_LoadBmpSurface(char *name)
     d2_ReadBmpPixels(name, (unsigned char *)s->bits);
     return s;
 }
-/* 0x478bd0, rgb bytes (w x h) to the 16 bit pixels of surface s @deep B3 8 code hunks / 9 differing instructions, all one fold: the original keeps the row pointer at src+1 (lea esi,[edx+0x1] at 0x478bed, store [esp+0x28]) and reads the first pixel as p[-1],p[0],p[1] (0x478bff mov al,[esi+1]; 0x478c02 mov cl,[esi]; 0x478c04 mov dl,[esi-1]); ours rebases p to src (mov esi,edx; loads [esi+2],[esi+1],[esi]) - same addresses, same dd_RGB call, 35 equal instructions. Meaning read against 0x478bd0..0x478c4f: stride=w*3, rp=src+1, p=rp, y< h / x<w unsigned loops, store s->bits[s->pitch*y+x], rp += stride - all correspond. diffclass verdict: 3 hunks, code 9, 'compare the meaning with the original disassembly first' - done, no meaning error. spell.py: no hunk matched the menu. Tried (one edit/build): rp = src; rp++; -> identical fold, no change, reverted. notes/units/gfx.md (d2q) records the same fold as unsolved and says everything else is equal. The +1 induction-variable rebase is VC6's optimizer with no source lever -> deep. Readability done: Q1 fixed (converts rgb bytes to 16 bit pixels, sibling 0x478c50 is the reverse). */
+/* 0x478bd0, rgb bytes (w x h) to the 16 bit pixels of surface s @deep B3 8 code hunks / 9 differing instructions, all one fold: the original keeps the row pointer at src+1 (lea esi,[edx+0x1] at 0x478bed, store [esp+0x28]) and reads the first pixel as p[-1],p[0],p[1] (0x478bff mov al,[esi+1]; 0x478c02 mov cl,[esi]; 0x478c04 mov dl,[esi-1]); ours rebases p to src (mov esi,edx; loads [esi+2],[esi+1],[esi]) - same addresses, same dd_RGB call, 35 equal instructions. Meaning read against 0x478bd0..0x478c4f: stride=w*3, rp=src+1, p=rp, y< h / x<w unsigned loops, store s->bits[s->pitch*y+x], rp += stride - all correspond. diffclass verdict: 3 hunks, code 9, 'compare the meaning with the original disassembly first' - done, no meaning error. spell.py: no hunk matched the menu. Tried (one edit/build): rp = src; rp++; -> identical fold, no change, reverted. An earlier session recorded the same fold as unsolved, everything else equal. The +1 induction-variable rebase is VC6's optimizer with no source lever -> deep. Readability done: Q1 fixed (converts rgb bytes to 16 bit pixels, sibling 0x478c50 is the reverse). */
 
 void d2_ConvertRgbTo16(int a, int b, unsigned int w, unsigned int h, unsigned char *src, int c, int d, D2SURF *s)
 {
@@ -1365,7 +1367,7 @@ void d2_BlitPart(int sx, int sy, int w, int h, D2SURF *src, int x, int y, D2SURF
 {
     d2_BlitPartMode(sx, sy, w, h, src, x, y, dst, 0);
 }
-/* 0x4794c0, blits the part (sx, sy, w, h) of the surface src to (x, y) of the DirectDraw surface dst @deep B3 20 code + 6 slots hunks (136/336 bytes), one hunk area: the RECT stores before the Blt. Original stores rs.left/rs.top (and rd.left/rd.top) early - mov [esp+0x10],esi; mov [esp+0x14],ebp - so sx/sy are dead when rs.right = sx+w / rs.bottom = sy+h are computed, and it adds them in place (add esi,edi); ours stores in the current order and recomputes with lea (lea edx,[esi+edi*1]); the 6 slot hunks are the RECT local homes ([esp+0x30]/0x34 vs 0x40). notes/units/gfx.md (d2q) records this exact case: the old session brute-forced all 70 orders of the 8 rect stores, all identical, so store order is not the lever. Meaning read against 0x4794c0..0x47960e: the four negative-offset clips, the src bottom/right clamps, src->locked save + restore around the Blt, the DDSurface/manualBlit guard, rs/rd fill, Blt(dst, &rd, src->DDSurface, &rs, DDBLT_WAIT, 0) and the 0/1 returns - no meaning error. Readability done: Q1 named (blits a clipped part of a D2SURF onto a raw DirectDraw surface, the d2.c texture uploads call it), Q3 0x1000000 -> DDBLT_WAIT. */
+/* 0x4794c0, blits the part (sx, sy, w, h) of the surface src to (x, y) of the DirectDraw surface dst @deep B3 20 code + 6 slots hunks (136/336 bytes), one hunk area: the RECT stores before the Blt. Original stores rs.left/rs.top (and rd.left/rd.top) early - mov [esp+0x10],esi; mov [esp+0x14],ebp - so sx/sy are dead when rs.right = sx+w / rs.bottom = sy+h are computed, and it adds them in place (add esi,edi); ours stores in the current order and recomputes with lea (lea edx,[esi+edi*1]); the 6 slot hunks are the RECT local homes ([esp+0x30]/0x34 vs 0x40). An earlier session brute-forced all 70 orders of the 8 rect stores, all identical, so store order is not the lever. Meaning read against 0x4794c0..0x47960e: the four negative-offset clips, the src bottom/right clamps, src->locked save + restore around the Blt, the DDSurface/manualBlit guard, rs/rd fill, Blt(dst, &rd, src->DDSurface, &rs, DDBLT_WAIT, 0) and the 0/1 returns - no meaning error. Readability done: Q1 named (blits a clipped part of a D2SURF onto a raw DirectDraw surface, the d2.c texture uploads call it), Q3 0x1000000 -> DDBLT_WAIT. */
 
 int d2_BlitPartToDD(int sx, int sy, int w, int h, D2SURF *src, int x, int y, LPDIRECTDRAWSURFACE4 dst)
 {

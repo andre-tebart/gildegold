@@ -3,7 +3,7 @@
    sample and stream handles. Extent in GildeGold.exe (inferred): starts at 0x42b720 after the event script
    interpreter and ends with sfx_TimerHighestDelay at 0x42c3a0 (a tail call of the import
    AIL_get_timer_highest_delay, compiled in this unit). Functions are kept in their original order. Names are ours.
-   unit of rea 8cef7d5b (src/game/sfx.c); boundaries in decl/text.dcl, notes in notes/units/sfx.md */
+   unit of rea 8cef7d5b (src/game/sfx.c); boundaries in decl/text.dcl */
 #include <windows.h>
 #include "sfx.h"
 

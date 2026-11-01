@@ -2,7 +2,7 @@
    servers that answer it. Extent in GildeGold.exe (inferred): 0x401d50..0x402140; its .data
    (the socket at 0x5f10f8, "WSAStartup failed ...") follows the "!bmp:" strings of the bmp loader.
    Functions are kept in their original order. Names are ours.
-   unit of rea 8cef7d5b (src/game/udp.c); boundaries in decl/text.dcl, notes in notes/units/udp.md */
+   unit of rea 8cef7d5b (src/game/udp.c); boundaries in decl/text.dcl */
 #include <stdio.h>
 #include <string.h>
 #include <winsock2.h>

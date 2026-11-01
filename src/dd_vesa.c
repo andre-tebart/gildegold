@@ -1,5 +1,5 @@
 /* dd_vesa
-   unit of rea 8cef7d5b (src/game/dd_vesa.c); boundaries in decl/text.dcl, notes in notes/units/dd_vesa.md */
+   unit of rea 8cef7d5b (src/game/dd_vesa.c); boundaries in decl/text.dcl */
 #line 1 "D:\\develop\\Units\\dd_vesa\\Dd_vesa.c"
 /* dd_vesa.c -- D:\develop\Units\dd_vesa\Dd_vesa.c (leaked assert path), the DirectDraw display layer:
    driver and device enumeration (with a selection dialog from d3_resource.dll), mode setup in a window,
@@ -1017,7 +1017,7 @@ DWORD dd_BppToDDBD(int bpp)
         return DDBD_24;
     return bpp == 32 ? DDBD_32 : 0;
 }
-/* 0x41c460, "d3d_EnumDeviceCallback": collects up to 8 Direct3D devices that can render at ctx bits @deep B2/B3: the remaining code hunks are the same instructions with exchanged scratch registers and stack slots (instr 110 test DWORD PTR [ecx+0x9c],eax vs [eax+0x9c],ecx; instr 140 the lea *3/*2/*8 chain with eax/ecx/edx exchanged); the slot-20/24/28 allocation and every recorded attempt (notes/units/dd_vesa.md: scope experiments, declaration order, D3_COPY mixes, c2prio) leave it at 279 B - VC6 allocation, not a meaning error */
+/* 0x41c460, "d3d_EnumDeviceCallback": collects up to 8 Direct3D devices that can render at ctx bits @deep B2/B3: the remaining code hunks are the same instructions with exchanged scratch registers and stack slots (instr 110 test DWORD PTR [ecx+0x9c],eax vs [eax+0x9c],ecx; instr 140 the lea *3/*2/*8 chain with eax/ecx/edx exchanged); the slot-20/24/28 allocation and every attempt (scope experiments, declaration order, D3_COPY mixes, c2prio) leave it at 279 B - VC6 allocation, not a meaning error */
 
 HRESULT WINAPI d3d_EnumDeviceCallback(GUID *guid, LPSTR desc, LPSTR name,
                                       LPD3DDEVICEDESC hw, LPD3DDEVICEDESC hel, LPVOID ctx)
@@ -1372,7 +1372,7 @@ __inline char dd_CpuHasMMX(void)
     }
 }
 
-/* 0x41d2e0, sets up the display: mode DD_GDI..DD_FULLMEM, xres x yres at bpp bits @deep B3: 84 code hunks left, all from the constant-8 / constant-0 scratch web (instr 328: original cmp [ebp+0x10],0x9 / jl vs ours mov eax,8 / cmp / jle - the `>= 9` spelling chosen after the recorded `> 8` experiment matches 327 instrs byte for byte but swaps eax/ecx from `if (biHeight > 0)` on); the fix is IR order / temp count, not a meaning error - see notes/units/dd_vesa.md */
+/* 0x41d2e0, sets up the display: mode DD_GDI..DD_FULLMEM, xres x yres at bpp bits @deep B3: 84 code hunks left, all from the constant-8 / constant-0 scratch web (instr 328: original cmp [ebp+0x10],0x9 / jl vs ours mov eax,8 / cmp / jle - the `>= 9` spelling chosen after the recorded `> 8` experiment matches 327 instrs byte for byte but swaps eax/ecx from `if (biHeight > 0)` on); the fix is IR order / temp count, not a meaning error */
 char dd_SetMode(int xres, int yres, int bpp, int mode, HWND wnd, int unk6, char triple)
 {
     DDSURFACEDESC2 ddsd;

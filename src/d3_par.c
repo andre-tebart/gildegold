@@ -1,7 +1,9 @@
 /* d3_par.c -- particle systems ("d3_par:" allocation tags, 0x455630..0x457c30), original file name
    unknown: the list handling, the particle draw function, the three emitter callbacks and
    par_CreateEmitter. Names are ours.
-   unit of rea 8cef7d5b (src/game/d3_par.c); boundaries in decl/text.dcl, notes in notes/units/d3_par.md */
+   Open: ecmd.h's par_CreateEmitter prototype has the names of the first and third parameters swapped
+   (count / parent; the real order is parent, pos, count).
+   unit of rea 8cef7d5b (src/game/d3_par.c); boundaries in decl/text.dcl */
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>

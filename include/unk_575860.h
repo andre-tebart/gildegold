@@ -1,5 +1,5 @@
-/* unk_575860.h -- the unit after he.c (unnamed): the end-of-game tick and the campaign state machine,
-   see src/game/unk_575860.c and notes/units/unk_575860.md */
+/* unk_575860.h -- the unit after he.c (unnamed): the tutorial module and its state machine,
+   see the lead comment of src/unk_575860.c */
 #ifndef UNK_575860_H
 #define UNK_575860_H
 

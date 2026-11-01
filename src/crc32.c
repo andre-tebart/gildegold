@@ -1,7 +1,7 @@
 /* crc32.c -- compute the CRC-32 of a data stream
  * Copyright (C) 1995-1998 Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h
-   unit of rea 8cef7d5b (src/zlib/crc32.c); boundaries in decl/text.dcl, notes in notes/units/crc32.md */
+   unit of rea 8cef7d5b (src/zlib/crc32.c); boundaries in decl/text.dcl */
 
 /* @(#) $Id$ */
 

@@ -1,5 +1,5 @@
-/* ts_texture
-   unit of rea 8cef7d5b (src/game/ts_texture.c); boundaries in decl/text.dcl, notes in notes/units/ts_texture.md */
+/* ts_texture -- name leaked (the #line below); bounded by the d3_sm.c and d2.c tags.
+   unit of rea 8cef7d5b (src/game/ts_texture.c); boundaries in decl/text.dcl */
 #line 1 "D:\\develop\\Units\\d3\\ts_texture.c"
 /* ts_texture.c -- original path D:\develop\Units\d3\ts_texture.c
    Texture manager: the texture slot table, the hardware surface cache and the 16-bit colour tables
@@ -496,7 +496,7 @@ void tex_AddRef(TSTEXTURE *tex, char all)
             tex->refs++;
     }
 }
-/* 0x460220, loads the 8-bit pixels for the software renderer @deep B3: single code hunk at 0x46033c, 14 hunks / 8 asm lines, 11/352 bytes: write-address reassociation only - orig lea edx,[eax+ecx]; add eax,ecx (destructive row+x, store [eax+data]); ours lea edx,[ecx+eax]; add edx,ecx (data+x+row). spell.py: no menu rule on the hunk, verdict 'escalate with the diffclass verdict'. Read: full disasm of the inner loop (row from imul, size reloaded at the bottom in both), listing var map, notes/units/ts_texture.md. Tried by earlier match sessions (all canonicalise to these 11 B): ~900 spellings - index operand orders, pointer types/casts (360), byte temp, IV forms, i=y*size reuse (already in), x++ in index, declaration orders, n=i+x, while form. Base means exhausted; readability already readable. Remaining is VC6 register allocation of the two sums. */
+/* 0x460220, loads the 8-bit pixels for the software renderer @deep B3: single code hunk at 0x46033c, 14 hunks / 8 asm lines, 11/352 bytes: write-address reassociation only - orig lea edx,[eax+ecx]; add eax,ecx (destructive row+x, store [eax+data]); ours lea edx,[ecx+eax]; add edx,ecx (data+x+row). spell.py: no menu rule on the hunk, verdict 'escalate with the diffclass verdict'. Read: full disasm of the inner loop (row from imul, size reloaded at the bottom in both), listing var map. Tried by earlier match sessions (all canonicalise to these 11 B): ~900 spellings - index operand orders, pointer types/casts (360), byte temp, IV forms, i=y*size reuse (already in), x++ in index, declaration orders, n=i+x, while form. Base means exhausted; readability already readable. Remaining is VC6 register allocation of the two sums. */
 
 void ts_LoadSoft(char *file, TSTEXTURE *tex)
 {

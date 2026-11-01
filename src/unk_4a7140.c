@@ -1,7 +1,11 @@
 /* unk_4a7140.c -- the card poker game of the tavern against two NPCs (0x4a7140..): the game record 0xf83654,
    the deck 0xf83660 and the two opponents 0xf837e0. The am unit ends before it (its last .data string is
    "%sgebaeude/*%s_%c.ogr" 0x600478; this unit's block starts with the hand names 0x600490). Names are ours.
-   unit of rea 8cef7d5b (src/game/unk_4a7140.c); boundaries in decl/text.dcl, notes in notes/units/unk_4a7140.md */
+   Then the leisure actions (0x4a8760..0x4aa430), the "aip_Exec*" private AI actions and actions 0x44..0x47
+   (registration 0x4abed0, the last function); one .data block 0x600490..0x600f60 in function order.
+   Open: possible second unit from 0x4aa580 (3-parameter callbacks, "aip_Exec*"); codegen is neutral, only the
+   single .data block keeps it one file.
+   unit of rea 8cef7d5b (src/game/unk_4a7140.c); boundaries in decl/text.dcl */
 #include "txt_views.h"
 #include <math.h>
 #include <stdio.h>

@@ -2,7 +2,8 @@
    by name), then the vegetation map and the roads. Start: the first user of "dummy_TUER" (.data 0x602854, right
    after anm.c's literals); the road code 0x4bcc20 uses the same literal (no cross-obj pooling in this exe, so one
    obj). The .bss gap 0x6f0744 after anm's globals hints at a new obj here. Names are ours.
-   unit of rea 8cef7d5b (src/game/rd.c); boundaries in decl/text.dcl, notes in notes/units/rd.md */
+   Open: the start is not proven beyond that .bss gap (rd.c could still be one unit with anm.c).
+   unit of rea 8cef7d5b (src/game/rd.c); boundaries in decl/text.dcl */
 #include <stdio.h>
 #include <string.h>
 #include <math.h>

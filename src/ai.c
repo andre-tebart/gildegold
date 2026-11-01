@@ -6,12 +6,13 @@
    the purchases and the order dispatcher (0x487fb0 .. 0x489870), ai_MeisterBewaffnen (0x489a70),
    ai_MeisterCollectTrans (0x489cb0), ai_MeisterTrade / ai_MeisterTradeAllgemein (0x48a4d0, 0x48bc80) and
    ai_MeisterTradeFernEinkauf (0x48d010, 0x48d810). Module tag "ai_" (messages "ai_Calc...(): ...").
-   TU evidence (round 21): the unit's .data starts at 0x5fef04 (0x5fef00 belongs to the blit code before it) and
-   its string literals 0x5fef0c..0x5ffd18 follow the function order without a new data block; 0x5ffd1c starts the
-   next obj. Joined in round 21 from unk_47d960.c, unk_47ec20.c, unk_4817a0.c, unk_4854f0.c and unk_48a4d0.c, in
-   round 22 from unk_483fc0.c, unk_4864b0.c, unk_487fb0.c and unk_489a70.c. Names are ours except the ones taken
-   from the strings.
-   unit of rea 8cef7d5b (src/game/ai.c); boundaries in decl/text.dcl, notes in notes/units/ai.md */
+   TU evidence: the unit's .data starts at 0x5fef04 (0x5fef00 belongs to the blit code before it) and its string
+   literals 0x5fef0c..0x5ffd18 follow the function order without a new data block; 0x5ffd1c starts the next obj.
+   Names are ours except the ones taken from the strings.
+   Open: any new member in ai.h's AIMSG.arg union (a text id, an order count / item) or an AIBLD.unk65 union (player
+   slot 0..4 for shops / banks, a work record for kind 0x1d) flips ai_Unk483a60 to 5 differing bytes (slot tie-break).
+   Open: AIOBJ.unk1c (a building id in the trade code, a count / level elsewhere) - its rename across units is undecided.
+   unit of rea 8cef7d5b (src/game/ai.c); boundaries in decl/text.dcl */
 extern int gm_PlayerRecords[688];
 #include <stdio.h>
 #include <stdlib.h>
@@ -2168,7 +2169,7 @@ lauer:
     if (msg.ids[0] != -1 && k > 1)
         cm_SendLongMessage(&msg);
 }
-/* 0x4836a0, the bank master's money balance: moves money between the four banks / the town @deep byte, Q-only handover: Q2 only, after this session's readability work (Q1 named by role - the bank master of 0x47e990's kind-5 dispatch, its comment already described it; ai_Unk508660 -> gm_SumSlotAmounts with the f3gm.c definition). Q2 evidence gaps left, all three read in the callers, callees and data: cm_FieldObject (the object the cm_AddFieldDelta addresses are formed against - 'the object' in notes/units/cm.md, a char * in ai.md, an int in ai.h; no source names it), AIPOS.unk18 (the table record 0xe field the building's 0x65 value is steered towards within +-2, clamped to >= 4; no reader names it), AIBLD.unk65 (the value moved by +-1 per event and written as field delta 0x65; no source names it). */
+/* 0x4836a0, the bank master's money balance: moves money between the four banks / the town @deep byte, Q-only handover: Q2 only, after this session's readability work (Q1 named by role - the bank master of 0x47e990's kind-5 dispatch, its comment already described it; ai_Unk508660 -> gm_SumSlotAmounts with the f3gm.c definition). Q2 evidence gaps left, all three read in the callers, callees and data: cm_FieldObject (the object the cm_AddFieldDelta addresses are formed against; no source names it), AIPOS.unk18 (the table record 0xe field the building's 0x65 value is steered towards within +-2, clamped to >= 4; no reader names it), AIBLD.unk65 (the value moved by +-1 per event and written as field delta 0x65; no source names it). */
 
 void ai_CalcMeisterBank(AICHAR *ch)
 {
@@ -2247,7 +2248,7 @@ void ai_CalcMeisterBank(AICHAR *ch)
    third hour it buys slots / capacity, collects the building's kind 0x1d objects without a running job into
    ai_Carts, lets ai_BuildTradeOffers decide the trade and runs ai_MeisterTradeFernEinkauf or ...2 by the ratio
    of the first slot and entry; a watched building gets its slots copied
-   @deep byte, Q-only handover: Q6 description added this session (kind-9 trade step: buys slots / capacity, collects the free kind 0x1d objects into ai_Carts, ai_BuildTradeOffers decides the trade, then ai_MeisterTradeFernEinkauf or ...2 by the slot/entry ratio). Q1 no evidenced name: 0x47e990 dispatches here on ai_BTypes[type].kind == 9 only, the body has no string / text id, and no caller names the profession. Q2 evidence gaps: ai_BuildTradeOffers (the trade decision builder, no comment or named reader), ai_Carts / ai_NumCarts (the object list and its count this function fills; the reader is ai_BuildTradeOffers only), AIOBJ.unk1c (documented as bld in notes/units/ai.md round 22 but the rename across units is undecided against the other unk1c fields), AIOBJ.unk20 / AISLOT.unk34 / AIENTRY.unk4c / AIBTYPE.unk247 (the slot and entry amounts, cap247 is only an unsigned alias), AIJOB.unkac (union id). */
+   @deep byte, Q-only handover: Q6 description added this session (kind-9 trade step: buys slots / capacity, collects the free kind 0x1d objects into ai_Carts, ai_BuildTradeOffers decides the trade, then ai_MeisterTradeFernEinkauf or ...2 by the slot/entry ratio). Q1 no evidenced name: 0x47e990 dispatches here on ai_BTypes[type].kind == 9 only, the body has no string / text id, and no caller names the profession. Q2 evidence gaps: ai_BuildTradeOffers (the trade decision builder, no comment or named reader), ai_Carts / ai_NumCarts (the object list and its count this function fills; the reader is ai_BuildTradeOffers only), AIOBJ.unk1c (a building id here, but the rename across units is undecided against the other unk1c fields), AIOBJ.unk20 / AISLOT.unk34 / AIENTRY.unk4c / AIBTYPE.unk247 (the slot and entry amounts, cap247 is only an unsigned alias), AIJOB.unkac (union id). */
 
 void ai_Unk483a60(AICHAR *ch)
 {

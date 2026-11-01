@@ -1,6 +1,6 @@
-/* d3_vec.c -- light budget counters, angle / vector / matrix helpers: 0x453920..0x454890 (worker vec;
-   0x454040.. by worker vec2, was unk_454040.c; round 12). Original file name unknown. Names are ours.
-   unit of rea 8cef7d5b (src/game/d3_vec.c); boundaries in decl/text.dcl, notes in notes/units/d3_vec.md */
+/* d3_vec.c -- light budget counters, angle / vector / matrix helpers: 0x453920..0x454780 (0x454780 is d3_mir.c's
+   by codegen). Original file name unknown; the name is a guess. Names are ours.
+   unit of rea 8cef7d5b (src/game/d3_vec.c); boundaries in decl/text.dcl */
 #include <math.h>
 #include <windows.h>
 #include <d3d.h>

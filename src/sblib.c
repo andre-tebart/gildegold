@@ -3,7 +3,7 @@
    header and 0x40-byte entries) loaded on demand into a memory budget, and a fixed set of playing
    sample slots. Extent in GildeGold.exe (inferred): 0x425bc0..0x4273d0 (0x4273d0 starts the script
    interpreter). Functions are kept in their original order. Names are ours.
-   unit of rea 8cef7d5b (src/game/sblib.c); boundaries in decl/text.dcl, notes in notes/units/sblib.md */
+   unit of rea 8cef7d5b (src/game/sblib.c); boundaries in decl/text.dcl */
 struct SBSAMPLE;
 struct SBBANK;
 #include <stdio.h>
@@ -823,7 +823,7 @@ SBSAMPLE *sb_PlayVariation(SBBANK *bank, char *name, int idx, int loops, int pan
    to ".wav" and 2 to ".mp3", hands data / len to sfx_SetSampleFile and sets volume / pan / loops / delay and
    the restart bookkeeping before sfx_StartSample; return 0, -1 when the bank, the load, the entry type or
    format or the driver handover fails
-   @deep behaviour: 20 code hunk lines are one block-layout difference - the original keeps the failure epilogue inline after the sfx_SetSampleFile test (jne + or ebp,-1; pop; mov eax,ebp; ret at 0x4271b5, the four failure sites jump into it) with the success epilogue at the end, ours puts the single end: return ret block at the function end (mov eax,ebp; pop...; ret; or ebp,-1); every source shape (return -1 per site, ret = -1; goto end, end: return ret, if/else, 162 variants in notes/units/sblib.md) gives the shared end block, so the statements and operands agree and only VC6's block layout / ret register role differs (asmdiff, listing) */
+   @deep behaviour: 20 code hunk lines are one block-layout difference - the original keeps the failure epilogue inline after the sfx_SetSampleFile test (jne + or ebp,-1; pop; mov eax,ebp; ret at 0x4271b5, the four failure sites jump into it) with the success epilogue at the end, ours puts the single end: return ret block at the function end (mov eax,ebp; pop...; ret; or ebp,-1); every source shape (return -1 per site, ret = -1; goto end, end: return ret, if/else, 162 variants tried) gives the shared end block, so the statements and operands agree and only VC6's block layout / ret register role differs (asmdiff, listing) */
 
 int sb_Play(SBSAMPLE *s, int fade, int delay)
 {

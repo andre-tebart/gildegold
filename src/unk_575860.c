@@ -1,21 +1,13 @@
-/* unk_575860.c -- the unit after he.c (0x575860 ..): the end-of-game tick and the campaign state machine. Its
-   state record is the pointer 0x5eec60: +0 the state (1 .. 0xc, the jump table 0x575fe8), +0x18 the running
-   record, +0x1c the player, +0x74 the player's progress word, +0x2c / +0x30 / +0x38 / +0x3c flags; the clock is
-   0x6333cc (and 0x6333e0), the end-of-game gates 0x6f265c / 0x6f262c, the pause 0x6310e4 / 0x75e8c0.
-   The tail of the unit (layout 2026-10-23 session 18, 0x57dc50 .. 0x583700) is the tutorial's location and
-   contact windows: the "Locations_Domizil_skill" / "_kabinett" / "_kabinett_spy" forms and the cannon / spy /
-   contract / graveyard contact dispatchers (0x5821d0 .. 0x583240, all one window-list type), their literals
-   climbing 0x62a2a4 .. 0x62a580 in function order (one .data block, no new boundary).
-   Session 19 (0x584410 .. 0x586ab0) added the graveyard family: the grave action / confirmation / rent windows,
-   the "Gehilfen erschaffen" and "Fog" windows, the seance selection / ritual / outcomes and the contact
-   dispatcher 0x586840; literals climb 0x62a5bc .. 0x62a718 in function order (one .data block, no new boundary).
-   Unit start (layout 2026-10-23 session 16): he.c's last function 0x575710 ends at 0x57582f, its jump table
-   0x575830 .. 0x575853 and nop fill to 0x575860; the code here reaches neither he's literal block (last "Game"
-   0x62916c) nor the next .data block at 0x62918c (the "FT" state names), whose first literals come with 0x577740.
-   The name is unknown (open boundary; the "FT" tutorial tag may cover this stretch too).
-   0x5770e0..0x577110 is not nop fill: it is the 0x30-byte function ai_Unk5770e0 (a ret + nop start the scan
-   missed)
-   unit of rea 8cef7d5b (src/game/unk_575860.c); boundaries in decl/text.dcl, notes in notes/units/unk_575860.md */
+/* unk_575860.c -- the tutorial module ("FT*" record names, tutorial\* forms, TUTORIAL_* texts), 0x575860..0x589f10:
+   the tutorial state machine (state record S = the pointer 0x5eec60, states 1 .. 0xc, the jump table 0x575fe8;
+   0x578180 initializes it, the tick 0x575860 runs it), the chapter record chains and their step / animation
+   tables, and the tutorial's location / contact / tooltip windows. Start: he.c's last function 0x575710, its
+   jump table and nop fill end at 0x575860; the unit's one .data block starts at 0x62918c (the "FT" state names)
+   and its literals climb in function order to 0x62aa58; the network lobby (0x589f10) is a unit of its own.
+   The original file name is unknown (no leaked tag). Names are ours.
+   Open: type debt - the state record S, the 0x74-byte chapter records and the message (AIMSG) / contact-list
+   records are accessed by byte offset; ai.h's AIMSG and a record type would clear most of the drafts' offsets.
+   unit of rea 8cef7d5b (src/game/unk_575860.c); boundaries in decl/text.dcl */
 struct AHMSTEP;
 struct D3SKY;
 #include "d2_types.h"

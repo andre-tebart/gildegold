@@ -4,7 +4,7 @@
    palette and maps the image, optionally with error diffusion.
    Extent in GildeGold.exe (inferred, not proven): 0x4206d0..0x4214a0.
    Functions are kept in their original order. Names are ours.
-   unit of rea 8cef7d5b (src/game/qnt.c); boundaries in decl/text.dcl, notes in notes/units/qnt.md */
+   unit of rea 8cef7d5b (src/game/qnt.c); boundaries in decl/text.dcl */
 #include <stdlib.h>
 #include <string.h>
 #include "qnt.h"
@@ -51,7 +51,7 @@ void qnt_GetPalette(unsigned char *pal)
 }
 /* 0x4207c0, qnt_R / G / B: the 8 bits of a channel spread to their bit positions in the octree node
    index (the three tables are or-ed into the finest-level index)
-   @deep behaviour: register/width spellings only - grade.py code 72, fill 1; unitdiff 92 B / 35 asm lines (2026-10-26) (the original narrows the 0x20 / 0x40 terms to mov dl,al / mov cl,al and keeps a in esi, ours mov edx,eax / and edx,0x20; same instruction multiset, no meaning error); readable met; 125 casts + 1024 u variants tried (notes/units/qnt.md) */
+   @deep behaviour: register/width spellings only - grade.py code 72, fill 1; unitdiff 92 B / 35 asm lines (2026-10-26) (the original narrows the 0x20 / 0x40 terms to mov dl,al / mov cl,al and keeps a in esi, ours mov edx,eax / and edx,0x20; same instruction multiset, no meaning error); readable met; 125 casts + 1024 u variants tried */
 
 void qnt_InitTables(void)
 {
@@ -111,7 +111,7 @@ void qnt_Free(void)
 }
 /* 0x420990, counts the n pixels into the finest level, sums their colors up to the root and puts every
    leaf into the min-heap on its pixel total
-   @deep behaviour: spellings only - grade.py sib 8, code 6; unitdiff 7 B / 10 asm lines (2026-10-26) - base/index swapped in the qnt_Level[lvl][idx] addressing ([eax+ecx+0x10] vs [ecx+eax+0x10]), mov esi,eax before vs after pop ebp, test esi,esi vs test eax,eax; no meaning error; 800 access spellings tried, and a for / while+dec / do shape, a fresh block variable k and idx / lvl declared inside the if block all compile identically (2026-10-26), so the entry test register and the pop ebp position are allocator-level (notes/units/qnt.md) */
+   @deep behaviour: spellings only - grade.py sib 8, code 6; unitdiff 7 B / 10 asm lines (2026-10-26) - base/index swapped in the qnt_Level[lvl][idx] addressing ([eax+ecx+0x10] vs [ecx+eax+0x10]), mov esi,eax before vs after pop ebp, test esi,esi vs test eax,eax; no meaning error; 800 access spellings tried, and a for / while+dec / do shape, a fresh block variable k and idx / lvl declared inside the if block all compile identically (2026-10-26), so the entry test register and the pop ebp position are allocator-level */
 
 int qnt_Build(unsigned char *rgb, unsigned int n)
 {
@@ -227,7 +227,7 @@ void qnt_MakePalette(int idx, int lvl)
 }
 /* 0x420e70, maps the image to palette indices: without dither through a lookup table over the 5-bit
    colors (qnt_Nearest per entry), with dither by error diffusion (err0 / err1 rows, cache)
-   @deep behaviour: register / addressing / reload spellings only - grade.py code 147, regs 14; unitdiff 318 B / 87 asm lines (2026-10-26) (the clamp loop's three stores run on ebp/esi/edi with the 0x200 folded into one base instead of three, [eax+ecx+0xc] vs [ecx+eax+0xc], the ecx/edi/eax assignments of the palette loops and the cur / prev / lim slot reloads); same stores, same values, no meaning error; the clamp / palette spelling space (216+ variants) is in notes/units/qnt.md */
+   @deep behaviour: register / addressing / reload spellings only - grade.py code 147, regs 14; unitdiff 318 B / 87 asm lines (2026-10-26) (the clamp loop's three stores run on ebp/esi/edi with the 0x200 folded into one base instead of three, [eax+ecx+0xc] vs [ecx+eax+0xc], the ecx/edi/eax assignments of the palette loops and the cur / prev / lim slot reloads); same stores, same values, no meaning error; 216+ clamp / palette spellings tried (the 6 clamp store orders, (lim + 256)[x] forms, the cur / prev flip order) */
 
 int qnt_Map(unsigned char *rgb, unsigned char *out, int w, int h, int dither)
 {
@@ -372,7 +372,7 @@ int qnt_Map(unsigned char *rgb, unsigned char *out, int w, int h, int dither)
     }
     return 0;
 }
-/* 0x421410, palette index with the smallest squared RGB distance to the 5-bit color (r, g, b) @deep byte work only (behaviour + readable met): 2 B / 4 asm lines, the g / b registers swapped in the two sub ebx of the SqPtr terms (the original subtracts in the PalR, PalB, PalG load order); grade.py diffclass verdict order 12; all 6 term orders, 24 statement perms, per-term temps and parenthesizations tried (notes/units/qnt.md) */
+/* 0x421410, palette index with the smallest squared RGB distance to the 5-bit color (r, g, b) @deep byte work only (behaviour + readable met): 2 B / 4 asm lines, the g / b registers swapped in the two sub ebx of the SqPtr terms (the original subtracts in the PalR, PalB, PalG load order); grade.py diffclass verdict order 12; all 6 term orders, 24 statement perms, per-term temps and parenthesizations tried */
 
 int qnt_Nearest(unsigned int r, unsigned int g, unsigned int b)
 {

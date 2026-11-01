@@ -1,5 +1,10 @@
-/* io_text.c -- the text builders and the text engine (0x5142e0 .. 0x519010): the tag "io_Text():" ("io_Text(): Missing Random-Text (e.g. {r1})...", "io_Text(): too many icons before redraw!", 0x6235d8 / 0x623618); the names of the characters with the "$A" markup (0x5143d0 / 0x514e90), the town display name (0x5142e0, "_STADTAUSWAHL_%s_INFO+0" 0x623564). The block starts where f3init.c's string block ends (0x623564, after 0x513970's strings) and ends before the language getter 0x519010 (its global 0x62364c starts the "ls" unit: "ls:tmp" 0x623654). Drafts of layout 2026-10-23.
-   unit of rea 8cef7d5b (src/game/io_text.c); boundaries in decl/text.dcl, notes in notes/units/io_text.md */
+/* io_text.c -- the text builders and the text engine (0x5142e0 .. 0x519010), tag "io_Text():" (0x6235d8 /
+   0x623618): the town display name, the character names with the "$A" markup, and the token engine
+   (io_PrintText into a window, txt_Format into a buffer). The string block starts where f3init.c's ends
+   (0x623564) and ends before the language getter 0x519010 (its global 0x62364c opens the "ls" unit).
+   Open: the season name table 0x143a2f0 (for "%D") is declared and filled by no unit; "%D" prints the year only.
+   Open: the 0x21c character record is untyped; the name builders read it at raw offsets (0x9, 0xd, 0x164.., 0x1cc).
+   unit of rea 8cef7d5b (src/game/io_text.c); boundaries in decl/text.dcl */
 #include "d2_types.h"
 extern D2WIN d2_Wins[];
 #include "txt_views.h"

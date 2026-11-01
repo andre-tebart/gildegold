@@ -1,14 +1,14 @@
-/* d2.c -- 0x4687a0..0x473c10.., probably D:\develop\Units\d2.v1\D2.C (memory tag "d2:d2_LoadObj", messages
-   "d2_Show", "d2_OpenInputIcon()", "d2_OpenSlider"; GFX.C of the same directory follows at 0x478ee1): the 2D
-   GUI layer. The picture cache (pictures are read on demand from the archive and dropped again, oldest first,
-   when the memory limit is reached), the object list and the dirty rectangle lists; input fields (number /
-   text) and sliders; slider and button drawing; radio groups and their keyboard navigation, picture objects and
-   reference counts, drawing of all objects, hit tests, object removal, text width and text drawing. Joined in
-   round 16 from unk_4687a0.c, unk_4694c0.c and unk_46aa00.c, in round 17 from unk_46c6c0.c, unk_46d3d0.c and
-   unk_46e710.c, in round 18 from unk_46fba0.c (text layout of a window, window background), unk_471a90.c
-   (window drawing, creation, resizing, scrolling) and unk_472e00.c (window destruction, draw order list,
-   objects on windows). Names are ours.
-   unit of rea 8cef7d5b (src/game/d2.c); boundaries in decl/text.dcl, notes in notes/units/d2.md */
+/* d2.c -- 0x4687a0..0x476b90, probably D:\develop\Units\d2.v1\D2.C (memory tag "d2:d2_LoadObj", messages
+   "d2_Show", "d2_OpenInputIcon()", "d2_OpenSlider"; GFX.C of the same directory follows): the 2D GUI layer.
+   The picture cache, the object list and the dirty rectangle lists; input fields and sliders; slider and
+   button drawing; radio groups, picture objects, drawing of all objects, hit tests, text width and drawing;
+   windows (text layout, drawing, creation, scrolling, destruction, draw order) and views / forms.
+   End: d2.c's .data runs to "d2:fadeinfo"; 0x4768a0 .. 0x476b40 use d2's globals and lists. Names are ours.
+   Open: 0x476b70 (d2_ClearInput) may belong to gfx.c instead; the evidence does not decide, codegen neutral.
+   Open: d2.h is not yet the only declaration of d2's functions (K&R copies in sv.c, unk_58bbd0.c,
+   unk_5d33b0.c, unk_575860.c, cm.h, rt.h and others), and it declares vfs_ / err_ functions itself.
+   Open: d2.h views D2WINF / D2PAINTWIN (of D2WIN) and D2TEXX (of D2TEX) are still to be folded into their types.
+   unit of rea 8cef7d5b (src/game/d2.c); boundaries in decl/text.dcl */
 #include "txt_views.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -212,7 +212,7 @@ int d2_LoadPic(int idx, char *path)
     fclose(d2_File);
     return 1;
 }
-/* 0x468a90, frees everything of the layer @deep Q4 blocks the byte match: the four raw *(int *) accesses of the D2PIC free loop rewritten as D2PIC *p = (D2PIC *)(i + base) with p->data / p->size flip the address operand order to [ecx+ebx*1+0x34] where the original has [ebx+ecx*1+0x34] (i+base and base+i both, all four accesses, build check REGRESSED d2_Exit) - the IV-offset-as-base class of notes/units/d2.md; Q2 needs 9 names (d2_RemoveWindow, d2_FreeFades, d2_FrontSurf/92c/930/948/960/964/99c, roles only partly evidenced in d2.h); Q3 0xfa5d20 is the window walk's pointer-compare constant: w starts at &d2_Wins[0].active (0xf8f120 + 0x280 = 0xf8f3a0) and the end is &d2_Wins[0x60].active (0xfa5d20), 0x60 windows; the typed spelling `while (w < &d2_Wins[0x60].active)` clears Q3 but loses the byte match (check 2609, the original compares against the immediate), so the literal stays */
+/* 0x468a90, frees everything of the layer @deep Q4 blocks the byte match: the four raw *(int *) accesses of the D2PIC free loop rewritten as D2PIC *p = (D2PIC *)(i + base) with p->data / p->size flip the address operand order to [ecx+ebx*1+0x34] where the original has [ebx+ecx*1+0x34] (i+base and base+i both, all four accesses, build check REGRESSED d2_Exit) - the original uses the loop offset as the base register; Q2 needs 9 names (d2_RemoveWindow, d2_FreeFades, d2_FrontSurf/92c/930/948/960/964/99c, roles only partly evidenced in d2.h); Q3 0xfa5d20 is the window walk's pointer-compare constant: w starts at &d2_Wins[0].active (0xf8f120 + 0x280 = 0xf8f3a0) and the end is &d2_Wins[0x60].active (0xfa5d20), 0x60 windows; the typed spelling `while (w < &d2_Wins[0x60].active)` clears Q3 but loses the byte match (check 2609, the original compares against the immediate), so the literal stays */
 
 void d2_Exit(void)
 {
@@ -968,7 +968,7 @@ int d2_WinOpenSlider(int x, int y, int len, int p4, int p5, int pic, unsigned in
     }
     return -1;
 }
-/* 0x46aa00, draws a slider (flags 2: horizontal, 1: vertical): track, filled part, thumb, arrows, value @deep B draft, 8 differing instructions (6 code + order at 0x46b5d5 / 0x46b60c): the member load order and ecx/edx split of w->x + w->w + 4 in the two max-label calls (original: x->ecx, w->edx; ours: w->ecx, x->edx; lea [ecx+edx*1+0x4] symmetric, only the loads differ). spell.py: no menu rule matched either hunk ('escalate with the diffclass verdict'); reading found no meaning error (same values, same order of the y/x/w loads otherwise). Leads tried: 13 source forms in rounds 15-19 (both operand orders, parentheses, casts, temp, dead refs, nested struct, d2_Objs[id]. form) and the ~60-variant member-load-order campaign of d2_DrawInput / d2_DrawButton; notes/units/d2.md [z3]/[d2j]. Readability done (d2_DrawSlider, d2_DrawText, d2_ListCopyItem, d2_PutPixel/Clipped, d2_TextDrawnW/H, D2CTRL.loaded). */
+/* 0x46aa00, draws a slider (flags 2: horizontal, 1: vertical): track, filled part, thumb, arrows, value @deep B draft, 8 differing instructions (6 code + order at 0x46b5d5 / 0x46b60c): the member load order and ecx/edx split of w->x + w->w + 4 in the two max-label calls (original: x->ecx, w->edx; ours: w->ecx, x->edx; lea [ecx+edx*1+0x4] symmetric, only the loads differ). spell.py: no menu rule matched either hunk ('escalate with the diffclass verdict'); reading found no meaning error (same values, same order of the y/x/w loads otherwise). Leads tried: 13 source forms in rounds 15-19 (both operand orders, parentheses, casts, temp, dead refs, nested struct, d2_Objs[id]. form) and the ~60-variant member-load-order campaign of d2_DrawInput / d2_DrawButton. Readability done (d2_DrawSlider, d2_DrawText, d2_ListCopyItem, d2_PutPixel/Clipped, d2_TextDrawnW/H, D2CTRL.loaded). */
 
 void d2_DrawSlider(int id, D2SURF *surf)
 {
@@ -1280,7 +1280,7 @@ int d2_WinCreateSlider(int x, int y, int kind, int unk, int dlg)
     d2_AddToWin(id, dlg);
     return id;
 }
-/* 0x46bf60, draws a button: left cap, right cap, the middle tiled, then the caption @deep B draft: 222 instructions, 16 differ (26 code hunks) - register allocation / member load order, no meaning error. (1) 0x46c039..0x46c059 len = w->w - r->w - l->w: original subtracts l->w first (ecx = [esp+0x40] = l, ebx = r), ours r first; source form w->w - l->w - r->w compiles to identical bytes (VC6 reassociates). (2) 0x46c091 / 0x46c0a3 w->w - r->w + w->x: original loads w->w (ecx) then w->x (edx), ours w->x then w->w; the commuted spelling w->x + w->w - r->w compiles to identical bytes. spell.py: one 'reload' prescription at 0x46c091 (drop the local) - the reload is already equal on both sides (asmdiff shows the same mov eax,[esp+0x48]), so it does not touch the differing loads. Recorded attempts (notes/units/d2.md [d2j] Member load order, [z3]): ~21 variants on this function (dead stores, dead member loads into reused locals, d2_Objs[id]. form, frame pointer array, casts via 0x47c6f0, renaming l/r, declaration order) and ~60 on the siblings, plus this session's two source orders - all no change. Readability done (d2_DrawButton; D2OBJ.checked/clickDisabled/greyed/textShadow/rightAligned; callees named). */
+/* 0x46bf60, draws a button: left cap, right cap, the middle tiled, then the caption @deep B draft: 222 instructions, 16 differ (26 code hunks) - register allocation / member load order, no meaning error. (1) 0x46c039..0x46c059 len = w->w - r->w - l->w: original subtracts l->w first (ecx = [esp+0x40] = l, ebx = r), ours r first; source form w->w - l->w - r->w compiles to identical bytes (VC6 reassociates). (2) 0x46c091 / 0x46c0a3 w->w - r->w + w->x: original loads w->w (ecx) then w->x (edx), ours w->x then w->w; the commuted spelling w->x + w->w - r->w compiles to identical bytes. spell.py: one 'reload' prescription at 0x46c091 (drop the local) - the reload is already equal on both sides (asmdiff shows the same mov eax,[esp+0x48]), so it does not touch the differing loads. Recorded attempts: ~21 variants on this function (dead stores, dead member loads into reused locals, d2_Objs[id]. form, frame pointer array, casts via 0x47c6f0, renaming l/r, declaration order) and ~60 on the siblings, plus this session's two source orders - all no change. Readability done (d2_DrawButton; D2OBJ.checked/clickDisabled/greyed/textShadow/rightAligned; callees named). */
 
 void d2_DrawButton(int id, D2SURF *surf)
 {
@@ -5071,8 +5071,7 @@ void d2_PlaceViewWindows(int view, unsigned char flags)
     }
 }
 /* 0x4758f0, closes a view. The view is reached through D2VOP(view * 0x2ac), the original's byte-offset
-   form: the typed index access d2_Views[view] loses the byte match (the offset stays in a register, lessons
-   in notes/units/d2.md). */
+   form: the typed index access d2_Views[view] loses the byte match (the offset stays in a register). */
 
 void d2_CloseView(int view)
 {

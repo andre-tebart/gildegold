@@ -1,7 +1,7 @@
 /* adler32.c -- compute the Adler-32 checksum of a data stream
  * Copyright (C) 1995-1998 Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h
-   unit of rea 8cef7d5b (src/zlib/adler32.c); boundaries in decl/text.dcl, notes in notes/units/adler32.md */
+   unit of rea 8cef7d5b (src/zlib/adler32.c); boundaries in decl/text.dcl */
 
 /* @(#) $Id$ */
 

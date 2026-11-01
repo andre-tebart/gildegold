@@ -1,7 +1,7 @@
 /* bmp.c -- original file name unknown: Windows bitmap loader and writer ("!bmp:" strings at
    0x5f1084..0x5f10f8). Extent in GildeGold.exe (inferred): 0x401410..0x401d50.
    Functions are kept in their original order. Names are ours.
-   unit of rea 8cef7d5b (src/game/bmp.c); boundaries in decl/text.dcl, notes in notes/units/bmp.md */
+   unit of rea 8cef7d5b (src/game/bmp.c); boundaries in decl/text.dcl */
 #include <stdlib.h>
 #include <windows.h>
 #include "bmp.h"

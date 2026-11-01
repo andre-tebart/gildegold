@@ -1,5 +1,7 @@
-/* f3init.c -- the game initialisation of the town (0x50d100 ..): tag "f3_init:" ("f3_init:Gebaeude des Typs %s allokiert", 0x622ecc) and "init_" in the error strings ("init_LoadObjektScene:", "init_LoadGebaeudeScene:", "init_LocalData()"). The scene object names ("ob_NAME" / "gb_NAME" with the variant suffixes "_A" .. "_H") are mapped to the object / building prototypes, the object and building scenes "scenes/*ob_%s.ed3" / "scenes/*gb_%s.ed3" are loaded into universes of their own (tables 0x76faa0 per object prototype, 0x76fa60 per building class), the start objects are placed. The .data of this unit starts at 0x61adf8 (right after f3gm's last string 0x61ade0): its initialised globals (0x61adf8 / 0x61ae00 and the table of 19 records of 0x6c4 bytes at 0x61ae08) come first, then its strings from "KONTOR" (0x622e94) on. Drafts of layout 2026-10-23, names are ours; the unit end is open.
-   unit of rea 8cef7d5b (src/game/f3init.c); boundaries in decl/text.dcl, notes in notes/units/f3init.md */
+/* f3init.c -- the game initialisation of the town (0x50d100 ..): tag "f3_init:" ("f3_init:Gebaeude des Typs %s allokiert", 0x622ecc) and "init_" in the error strings ("init_LoadObjektScene:", "init_LoadGebaeudeScene:", "init_LocalData()"). The scene object names ("ob_NAME" / "gb_NAME" with the variant suffixes "_A" .. "_H") are mapped to the object / building prototypes, the object and building scenes "scenes/*ob_%s.ed3" / "scenes/*gb_%s.ed3" are loaded into universes of their own (tables 0x76faa0 per object prototype, 0x76fa60 per building class), the start objects are placed. The .data of this unit starts at 0x61adf8 (right after f3gm's last string 0x61ade0): its initialised globals (0x61adf8 / 0x61ae00 and the table of 19 records of 0x6c4 bytes at 0x61ae08) come first, then its strings from "KONTOR" (0x622e94) on. The unit ends at 0x5142e0, where io_text.c's text builders start. Names are ours.
+   Open: type debt - the local views SCENEOBJ / INIT_* and the local canonical prototypes stand in for the types and
+   prototypes of ch.h, ai.h, amt.h, d3_sm.h and rd.h, whose headers did not compile into this unit (gv.h conflicts).
+   unit of rea 8cef7d5b (src/game/f3init.c); boundaries in decl/text.dcl */
 struct VFSENTRY;
 struct D3OBJECT;
 struct D3SURF;
@@ -33,7 +35,7 @@ extern CHMOTION ch_Motions[];
 
 /* the scene object view of this unit: a CHARACTER (ch.h, 0x244 bytes, the list 0x1468ae0); the unit cannot
    include ch.h (gv.h's d3sm_GetVertex is a K&R declaration), so the fields this unit reads are declared here
-   (type debt, see notes/units/f3init.md) */
+   (type debt, see the lead comment) */
 typedef struct SCENEOBJ {
     char pad000[0x2c];              /* 0x00 .. 0x2b */
     int group;                      /* 0x2c, ch.h CHARACTER.group: the group id the character belongs to (compared with
@@ -73,7 +75,7 @@ typedef struct INIT_PANELCHAR {
 #pragma pack(pop)
 
 /* the office record (amt.h's AMTREC, 0x18 bytes) as this unit reads it; amt.h cannot be included here, so only
-   the field in use is declared (type debt, see notes/units/f3init.md) */
+   the field in use is declared (type debt, see the lead comment) */
 typedef struct INIT_OFFICE {
     unsigned idWord;                /* 0x00, AMTREC.idx in the low byte (the original loads the whole dword) */
     char pad04[0x4];                /* 0x04 .. 0x07 */
@@ -173,7 +175,7 @@ typedef struct INIT_KIND {
 } INIT_KIND;
 
 /* the character record prefix the start of the game reads (ai.h's AICHAR, 0x21c bytes); ai.h cannot be included
-   here, so only the fields in use are declared (type debt, see notes/units/f3init.md) */
+   here, so only the fields in use are declared (type debt, see the lead comment) */
 typedef struct INIT_CHAR {
     unsigned short id;              /* 0x000, 0xffff = the slot is free */
     unsigned char kind;             /* 0x002 */
@@ -202,7 +204,7 @@ typedef struct INIT_CHAR {
 } INIT_CHAR;
 
 /* d3_sm.h's D3TERRAIN as far as this unit reads it (the unit cannot include d3_sm.h: gv.h's
-   d3sm_GetVertex is a K&R declaration); type debt, see notes/units/f3init.md */
+   d3sm_GetVertex is a K&R declaration); type debt, see the lead comment */
 typedef struct INIT_TERRAIN {
     unsigned int size;              /* 0x000, the cells per side (0x40 / 0x80 select the shadow map size) */
 } INIT_TERRAIN;
@@ -299,7 +301,7 @@ int ch_PlaceOnGround();                     /* 0x404a80 */
 
 /* the canonical declarations of the engine / other-unit functions the scene loaders call (their headers drag the
    gv.h conflicts in; the types match the canonical prototypes, the CHARACTER arguments are cast through the
-   SCENEOBJ view - type debt, see notes/units/f3init.md) */
+   SCENEOBJ view - type debt, see the lead comment) */
 struct CHARACTER;
 extern struct CHARACTER *ch_List[INIT_CHARACTER_COUNT];  /* 0x1468ae0, as ch.h (CH_MAX); this unit reads the characters as their SCENEOBJ */
 struct D3HMAP *ch_GetSceneHMap(struct D3SCENE *scene);                           /* 0x402220, ch.h */

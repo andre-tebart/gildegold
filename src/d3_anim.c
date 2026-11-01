@@ -1,11 +1,11 @@
 /* d3_anim.c -- original file name unknown; the allocation tags are "d3_anim:CalculateAnimNormals...".
    Vertex animations: a cache of loaded animations (LRU list, purged above d3anim_CacheMax bytes) and
-   up to three animation slots per animated object. Only the part from 0x434a80 is here; the file
-   starts at or before 0x4324e0: d3anim_SetFrame only matches with d3anim_NextFrame defined earlier in the
-   same file (VC6 then knows that the call leaves edx alone). Extent in GildeGold.exe: ..0x4359f0, where
-   d3_d3d.c starts.
+   up to three animation slots per animated object, root motion, bone posing and object path animations.
+   Extent in GildeGold.exe: 0x4315c0 (after vfs_Exit) .. 0x4359f0, where d3_d3d.c starts.
    Functions are kept in their original order. Names are ours.
-   unit of rea 8cef7d5b (src/game/d3_anim.c); boundaries in decl/text.dcl, notes in notes/units/d3_anim.md */
+   Open: D3MATERIAL+0xf4 is the animation control block (read here through the local D3ANIMMATV view) and
+   D3OBJECT+0x1d0 the path (D3_OBJPATH); typing either in d3.h moves d3_Unk4550e0 by 8 bytes.
+   unit of rea 8cef7d5b (src/game/d3_anim.c); boundaries in decl/text.dcl */
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -456,7 +456,7 @@ typedef struct D3ANIMMATV {
 float d3_Hermite(float p0, float p1, float m0, float m1, float t);                      /* 0x453e20 */
 void d3_DirToWorld(struct XOBJ *obj, float *in, float *out);                                /* 0x458810 */
 char tex_Animate(D3OBJECT *obj, unsigned int time);                                     /* 0x460b90 */
-void d3_RelightObjectFrame(D3OBJECT *obj, D3ANIMFRAME *f);                                       /* 0x4535b0, d3_light.h's canonical prototype; d3_anim.c keeps this local copy, the include is WORSE for d3anim_CreatePath / d3anim_CreateMorphAnim (notes/units/d3_light.md) */
+void d3_RelightObjectFrame(D3OBJECT *obj, D3ANIMFRAME *f);                                       /* 0x4535b0, d3_light.h's canonical prototype; d3_anim.c keeps this local copy, the include is WORSE for d3anim_CreatePath / d3anim_CreateMorphAnim (+2 instructions each) */
 struct D3ANIMSLOT * d3anim_GetMainSlot(struct D3ANIMCTL *ctl);                                         /* 0x435900 */
 
 /* 0x432750, the per-object animation step (d3_ForEachObject callback, ctx = d3_Time, | 0x80000000 in the
@@ -881,7 +881,7 @@ void d3anim_FreePath(D3OBJECT *obj)
         D3_OBJPATH(obj) = 0;
     }
 }
-/* 0x433b50, spline tangents of all keys (flags.b[1] & 4: smooth); b[8] & 1 wraps the angles first. @deep B draft: 46 code hunks, dominated by the strength-reduced key offset in the first loop ([edi+ecx+0x20] ours vs [ecx+edi+0x20] original); the recorded attempts (notes/units/d3_anim.md: (p->keys + i)->, i[p->keys], 0.0f vs 0) failed - deep matching. Q2: the callee 0x453d60 is d3_UnwrapAngles in d3_vec.c, but d3.h declares the D3VECTOR* view as d3_UnwrapAngles, so naming it needs a shared-header decision. */
+/* 0x433b50, spline tangents of all keys (flags.b[1] & 4: smooth); b[8] & 1 wraps the angles first. @deep B draft: 46 code hunks, dominated by the strength-reduced key offset in the first loop ([edi+ecx+0x20] ours vs [ecx+edi+0x20] original); the attempts ((p->keys + i)->, i[p->keys], 0.0f vs 0) failed - deep matching. Q2: the callee 0x453d60 is d3_UnwrapAngles in d3_vec.c, but d3.h declares the D3VECTOR* view as d3_UnwrapAngles, so naming it needs a shared-header decision. */
 
 void d3path_Init(D3PATH *p)
 {

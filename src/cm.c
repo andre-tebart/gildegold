@@ -2,8 +2,11 @@
    ring ai_Unka69140 (0x8000 slots) and its states, the receive list ai_Unka68d24 (0x2000 records), long messages split
    into parts of type 7, the field blocks of an object (delta / plain values). Its .data block starts at 0x60bd80 after
    f3snd.c's literals (0x302, 2, -1 globals, the handler table 0x60bd98 of 0x4c6a20..). Tag "cm_ExecCommand" (0x4c4190,
-   its texts at 0x60c0e8..). Names are ours.
-   unit of rea 8cef7d5b (src/game/cm.c); boundaries in decl/text.dcl, notes in notes/units/cm.md */
+   its texts at 0x60c0e8..). The ~0x6a message handlers and their helpers follow, then the fight code (0x4cf670..)
+   and the cutscenes (cut_, 0x4d8c70..: trial, duel, execution, wedding, auction, ...; joined: the strings run
+   monotonic 0x60cb58..0x60ec88 and the ints 0x60d360.. serve both halves). Ends at 0x4e5bf0 (amt.c follows).
+   Names are ours.
+   unit of rea 8cef7d5b (src/game/cm.c); boundaries in decl/text.dcl */
 #include "d2_types.h"
 extern D2WIN d2_Wins[];
 extern D2RADIO d2_Radios[];

@@ -3,7 +3,7 @@
    starts at 0x42eca0. Its .data: tr_Key1/tr_Key2 at 0x5f8fd0 with their strings, then "tr_startup".
    The random helpers may be a TU of their own (no data to tell). Functions are kept in their original
    order. Names are ours except tr_startup.
-   unit of rea 8cef7d5b (src/game/tr.c); boundaries in decl/text.dcl, notes in notes/units/tr.md */
+   unit of rea 8cef7d5b (src/game/tr.c); boundaries in decl/text.dcl */
 #include <windows.h>
 #include <mmsystem.h>
 #include <stdlib.h>

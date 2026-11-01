@@ -1,6 +1,6 @@
 /* sndc.c -- original file name unknown: sound script commands (see include/sndc.h). Starts at
    0x40ffc0 and ends with the registration 0x410220. Names are ours.
-   unit of rea 8cef7d5b (src/game/sndc.c); boundaries in decl/text.dcl, notes in notes/units/sndc.md */
+   unit of rea 8cef7d5b (src/game/sndc.c); boundaries in decl/text.dcl */
 #include <stdio.h>
 #include <windows.h>
 #include <d3d.h>

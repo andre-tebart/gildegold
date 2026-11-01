@@ -1,21 +1,13 @@
-/* am.c -- the AI "methods" unit, 0x48e070..: its parts in address order.
-   0x48e070..0x490b90 (was unk_48e070.c / unk_48f250.c / the head of unk_490830.c): AI action kinds 0x40 / 0x41 / 0x42 of the masters' upgrade decision
-   ("building_upgrade"): decide callbacks (int, character, flag, out1, out2) fill two AIARG records and return the
-   action kind (or 0), execute callbacks (character, arg1, arg2) carry it out. Starts the object after the AI
-   unit (its first global, ai_Unk5ffd1c = -1 at 0x5ffd1c, precedes the string "building_upgrade").
-   Names are ours.
-   0x490c10..0x492fd0: the registration of the graveyard actions ("Graveyard Owner",
-   "Handle Grave", "Use Seance", 0x490c10) and the decision callbacks of the AI decision table at 0x611258
-   (29 records of 0x24 bytes: min, max, current value, callback at +0x20). A callback looks at a character
-   (needs, money, game day) and, when the decision should change, stores the new value and returns 1.
-   The TU starts before 0x490c10 (0x490690 / 0x490830 / 0x4908d0 / 0x490b90 are its callbacks). Names are
-   ours.
-   0x495ee0..0x497490 (was unk_495ee0.c): AI action callbacks. A decide callback (int, character, flag, out1, out2)
-   fills two AIARG records and returns the action kind (or 0); an execute callback (character, arg1, arg2)
-   carries the action out; an evaluate callback (score a, score b, action index, character, flag, arg1, arg2)
-   rates it. 0x495ee0 sends every kind-3 character a random flag set for field 0x1e8. The registration code
-   (0x4a1700..) stores these into AIACT records. Names are ours.
-   unit of rea 8cef7d5b (src/game/am.c); boundaries in decl/text.dcl, notes in notes/units/am.md */
+/* am.c -- the AI "methods" unit (tag "am_RegisterMethod(): Methode '%s' ..." 0x5ffde8), 0x48e070..0x4a7140:
+   the action table loader, am_RegisterMethod, the registration of actions 0x01..0x3b (0x4a16f0) and their
+   decide (int, character, flag, out1, out2 -> action kind or 0), execute (character, arg1, arg2) and evaluate
+   callbacks, the decision callbacks of the AI decision table 0x611258 (29 records of 0x24 bytes, callback at
+   +0x20), the partner / building finders and the AI cannon shot. Starts with its first global ai_Unk5ffd1c
+   (-1 at 0x5ffd1c) right after the AI unit's strings; its one .data string block (in function order) ends with
+   "%sgebaeude/*%s_%c.ogr" 0x600478, the next block is unk_4a7140.c's. Names are ours.
+   Open: am.h keeps the joined parts' character views (AIPX / AGCH / AIC4 / G5CH / AIPER) and duplicate callee
+   prototypes / cast macros; they need unifying with ai.h's types.
+   unit of rea 8cef7d5b (src/game/am.c); boundaries in decl/text.dcl */
 extern char ai_PlayerSlots[4][0x2f4];
 #include "txt_views.h"
 #include <stdio.h>

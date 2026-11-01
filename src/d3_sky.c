@@ -1,7 +1,7 @@
 /* d3_sky.c -- original path D:\develop\Units\d3\d3_sky.c
    Extent in GildeGold.exe: 0x45ce60..0x45db40 (start: first D3DCHECK at line 38 of the original file;
    .data from 0x5fce40). Functions are kept in their original order. Names are ours.
-   unit of rea 8cef7d5b (src/game/d3_sky.c); boundaries in decl/text.dcl, notes in notes/units/d3_sky.md */
+   unit of rea 8cef7d5b (src/game/d3_sky.c); boundaries in decl/text.dcl */
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>

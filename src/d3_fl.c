@@ -1,9 +1,11 @@
 /* d3_fl.c -- terrain ("floor") texture cache: builds 16-bit textures for groups of map tiles by
    blending the four corner tile textures with per-pixel weights. Allocation tag "d3_fl:TextureCache", so
-   probably d3_fl.c (no path string). Extent in GildeGold.exe: 0x43eab0..(beyond 0x43fed0); d3_engine.c's
-   .data (d3e event names and tags) ends before 0x5fb970, which holds d3fl_Blend = 0x43eab0, followed by
-   this file's strings. Functions are kept in their original order. Names are ours.
-   unit of rea 8cef7d5b (src/game/d3_fl.c); boundaries in decl/text.dcl, notes in notes/units/d3_fl.md */
+   probably d3_fl.c (no path string). Extent in GildeGold.exe: 0x43eab0 .. map_Region 0x446910, between the
+   leaked d3_engine.c and d3_interface.c; d3_engine.c's .data ends before 0x5fb970, which holds d3fl_Blend =
+   0x43eab0, followed by this file's strings up to "D:\develop\Units\d3\d3_interface.c". Functions are kept in
+   their original order. Names are ours.
+   Open: d3fl_* are still declared outside d3_fl.h (d3.h, d3_engine.h, cm.h, f3init.c, ls.c, unk_58bbd0.c).
+   unit of rea 8cef7d5b (src/game/d3_fl.c); boundaries in decl/text.dcl */
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -1218,7 +1220,7 @@ char d3fl_LightCB(D3OBJECT *obj, void *ctx)
 }
 /* 0x441860, the light map: bit 7 = lit by a point light (d3fl_LightCB), bits 0..6 = sun shade by the
    terrain normal; then bit 7 of the divide maps follows the light edges
-   @deep B: code 357 / fpu 26 / slots 20 - the function was read in round 4 (notes/units/d3_fl.md: same size, frame 0x60 vs 0x68, the light part only differs in slot offsets / FPU operand order (the original loads map->negScale * hscale in the other order), the inlined d3fl_FtoI scheduling, and the divide-edge decision, where 288 + 144 group/order permutations were tried and none was closer than the kept five-group form (set {0111,1000}, clear {1101,1011,0100,0010,1001}, set {0001,1110,0110}, merged tails); no missing statement, wrong constant or field - needs vargen / listing */
+   @deep B: code 357 / fpu 26 / slots 20 - the function was read (same size,frame 0x60 vs 0x68, the light part only differs in slot offsets / FPU operand order (the original loads map->negScale * hscale in the other order), the inlined d3fl_FtoI scheduling, and the divide-edge decision, where 288 + 144 group/order permutations were tried and none was closer than the kept five-group form (set {0111,1000}, clear {1101,1011,0100,0010,1001}, set {0001,1110,0110}, merged tails); no missing statement, wrong constant or field - needs vargen / listing */
 
 void d3fl_MakeLight(D3FLMAP *map)
 {

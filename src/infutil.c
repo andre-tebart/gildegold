@@ -1,7 +1,7 @@
 /* inflate_util.c -- data and routines common to blocks and codes
  * Copyright (C) 1995-1998 Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h
-   unit of rea 8cef7d5b (src/zlib/infutil.c); boundaries in decl/text.dcl, notes in notes/units/infutil.md */
+   unit of rea 8cef7d5b (src/zlib/infutil.c); boundaries in decl/text.dcl */
 
 #include "zutil.h"
 #include "infblock.h"

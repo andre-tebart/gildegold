@@ -3,7 +3,7 @@
    Extent in GildeGold.exe (inferred): 0x401000..0x401410; the bmp loader starts at 0x401410
    ("!bmp:" strings follow the "bio:" ones in .data). Functions are kept in their original order.
    Names are ours.
-   unit of rea 8cef7d5b (src/game/bio.c); boundaries in decl/text.dcl, notes in notes/units/bio.md */
+   unit of rea 8cef7d5b (src/game/bio.c); boundaries in decl/text.dcl */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

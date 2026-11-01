@@ -1,6 +1,6 @@
 /* d3_io_t.c -- BGF mesh loader and object / animation file loading of the d3 scene I/O ("d3_io_t:" / "d3_io:"
    allocation tags), 0x44cd40..0x44e570; tag "d3_int_io:" (d3_int_io.c) is a separate TU. Names are ours.
-   unit of rea 8cef7d5b (src/game/d3_io_t.c); boundaries in decl/text.dcl, notes in notes/units/d3_io_t.md */
+   unit of rea 8cef7d5b (src/game/d3_io_t.c); boundaries in decl/text.dcl */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

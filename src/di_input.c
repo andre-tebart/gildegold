@@ -1,5 +1,5 @@
 /* di_input.c -- original file name unknown: see include/di_input.h. Names are ours.
-   unit of rea 8cef7d5b (src/game/di_input.c); boundaries in decl/text.dcl, notes in notes/units/di_input.md */
+   unit of rea 8cef7d5b (src/game/di_input.c); boundaries in decl/text.dcl */
 #include <stdio.h>
 #include <stdarg.h>
 #include <windows.h>

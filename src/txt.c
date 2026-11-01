@@ -3,7 +3,9 @@
    key/text fields and copied into one text pool. Extent in GildeGold.exe (inferred): starts at 0x42c3b0
    after the mss32 import thunk that ends sfx.c. Functions are kept in their original order.
    Names are ours except the two leaked ones.
-   unit of rea 8cef7d5b (src/game/txt.c); boundaries in decl/text.dcl, notes in notes/units/txt.md */
+   Open: 0x114fe60 has two names - txt.h's txt_Random (no definition) and io_text.c's ai_Unk114fe60 (the
+   definition); one object, one owner to settle (io_text by the data layout).
+   unit of rea 8cef7d5b (src/game/txt.c); boundaries in decl/text.dcl */
 #include <windows.h>
 #include <stdio.h>
 #include <stdlib.h>

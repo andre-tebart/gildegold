@@ -1,5 +1,7 @@
-/* d3_tools
-   unit of rea 8cef7d5b (src/game/d3_tools.c); boundaries in decl/text.dcl, notes in notes/units/d3_tools.md */
+/* d3_tools -- the 3D engine's helper tools: camera / object placement and paths, rain, snow, particle emitters,
+   sun rays (path leaked; start right after di_input.c, plausible).
+   Open: ecmd.h still declares d3t_FindObject .. d3t_DeleteRain itself instead of including d3_tools.h.
+   unit of rea 8cef7d5b (src/game/d3_tools.c); boundaries in decl/text.dcl */
 #line 1 "D:\\develop\\Units\\d3_tools\\d3_tools.c"
 /* d3_tools.c -- original path D:\develop\Units\d3_tools\d3_tools.c
    Extent in GildeGold.exe (inferred from data/bss/call-graph, not proven): 0x411680..0x417650.

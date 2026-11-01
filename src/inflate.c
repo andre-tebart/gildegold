@@ -1,7 +1,7 @@
 /* inflate.c -- zlib interface to inflate modules
  * Copyright (C) 1995-1998 Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h
-   unit of rea 8cef7d5b (src/zlib/inflate.c); boundaries in decl/text.dcl, notes in notes/units/inflate.md */
+   unit of rea 8cef7d5b (src/zlib/inflate.c); boundaries in decl/text.dcl */
 
 #include "zutil.h"
 #include "infblock.h"

@@ -1,13 +1,11 @@
-/* unk_47ab30.c -- 0x479d00..0x47c5e0, the shape ("shp") TU of the d2 layer (memory tags "d2:shp:...",
-   "shp_t:..."): light table and colour masks, grabbing a rectangle of a surface into a run-length coded shape
-   (8, 16 or 24 bit), clipped drawing, conversion between 8 / 16 / 24 bit shapes and of whole banks. Its own TU:
-   its .data starts at 0x5fed74 (colour keys, 640 / 480 / 800) after the GFX.C strings, the strings of
-   0x479d00.. follow it; d2_ShpConvert24To16 gets closer (595 -> 303 bytes) once d2_SetLineTable is defined above it
-   (round 20). The TU runs on to 0x47d210 (the 0xcc after it is the linker's fill after that function's unpadded
-   section, see its pragma; not an object end): 0x47c5e0.. adds shapes to a bank, draws shapes of a
-   bank, animated shapes, two 16 bit drawing loops in inline assembly (joined from unk_47c5e0.c, round 20). Names
-   are ours.
-   unit of rea 8cef7d5b (src/game/shp.c); boundaries in decl/text.dcl, notes in notes/units/shp.md */
+/* shp.c -- 0x479d00..0x47d600, the shape ("shp") TU of the d2 layer (memory tags "d2:shp:...", "shp_t:..."):
+   light table and colour masks, grabbing a rectangle of a surface into a run-length coded shape (8, 16 or
+   24 bit), clipped drawing, conversion between 8 / 16 / 24 bit shapes and of whole banks, shape banks,
+   animated shapes, two 16 bit drawing loops in inline assembly. Its own TU: its .data starts at 0x5fed74
+   (colour keys, 640 / 480 / 800) after the GFX.C strings. The 0xcc after 0x47d210 is the linker's fill after
+   that function's unpadded section (see its pragma), not an object end. Names are ours.
+   Open: the end boundary to unk_47d600.c rests on the subject only.
+   unit of rea 8cef7d5b (src/game/shp.c); boundaries in decl/text.dcl */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

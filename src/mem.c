@@ -3,7 +3,10 @@
    up to ':'. Pools hand out fixed-size zeroed slots from linked blocks.
    Extent in GildeGold.exe (inferred, not proven): 0x4223c0..0x422c90.
    Functions are kept in their original order. Names are ours.
-   unit of rea 8cef7d5b (src/game/mem.c); boundaries in decl/text.dcl, notes in notes/units/mem.md */
+   Open: mem_Alloc / mem_Free are still declared in ~10 other headers; removing those copies so the callers
+   include mem.h is blocked: adding mem.h to d3_engine.c flips d3_CloneObject (0x43d180) - its content moves
+   VC6's register choice, so that function needs re-matching first.
+   unit of rea 8cef7d5b (src/game/mem.c); boundaries in decl/text.dcl */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -301,7 +304,7 @@ void pool_Free(MPOOL **pool, void *ptr)
 
 /* returns the next used slot (the record after its in-use flag) of the pool chain walked by it, 0 at the end.
    The scan is `while (1) { if (*slot) break; ... }`: a plain while would be rotated by VC6. */
-/* 0x422ba0 @deep byte work only (behaviour + readable met): 2 B / 4 asm lines, the imul operand order (ours mov esi,edx; imul esi,edi; the original mov esi,edi; imul esi,edx); grade.py diffclass verdict regs 6, spell.py finds no menu hunk; size*i, parentheses, casts, unsigned, an off temp, declaration orders and moving i = it->index all give the same code (notes/units/mem.md) */
+/* 0x422ba0 @deep byte work only (behaviour + readable met): 2 B / 4 asm lines, the imul operand order (ours mov esi,edx; imul esi,edi; the original mov esi,edi; imul esi,edx); grade.py diffclass verdict regs 6, spell.py finds no menu hunk; size*i, parentheses, casts, unsigned, an off temp, declaration orders and moving i = it->index all give the same code */
 void *pool_Next(MPOOLITER *it)
 {
     int i, size;

@@ -3,7 +3,7 @@
    gz_magic at 0x5f9004, right after "tr_startup", and "vfs:IGetSubDir" of 0x42ed70 follows) and ends at
    0x4315c0, where d3_anim.c starts. Functions are kept in their original order. Names are ours except
    vfs_IGetSubDir.
-   unit of rea 8cef7d5b (src/game/vfs.c); boundaries in decl/text.dcl, notes in notes/units/vfs.md */
+   unit of rea 8cef7d5b (src/game/vfs.c); boundaries in decl/text.dcl */
 #include <windows.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -130,7 +130,7 @@ VFSENTRY *vfs_FindEntry(char *name, VFSDIR *d, VFSDIR **found, char recurse)
 }
 /* 0x42ef10, adds a file to a directory: to the node list while it is being filled, else into the sorted
    entries. Of two files with the same name the newer one (or the one with the lower extension index) wins.
-   @deep behaviour: 41 code hunk lines are register roles (the new entry pointer e and the name copy in eax vs ecx, add eax,ecx vs add ecx,eax, the shared tail's store base eax vs ecx) plus 2 nop fill bytes at the end; every store, load and constant pair agrees, no statement is missing or extra (asmdiff; notes/units/vfs.md round 10 recorded the same one-register difference for e). Register allocation - deep */
+   @deep behaviour: 41 code hunk lines are register roles (the new entry pointer e and the name copy in eax vs ecx, add eax,ecx vs add ecx,eax, the shared tail's store base eax vs ecx) plus 2 nop fill bytes at the end; every store, load and constant pair agrees, no statement is missing or extra (asmdiff; an earlier round found the same one-register difference for e). Register allocation - deep */
 
 void vfs_AddFile(char *name, VFSDIR *d, VFSDIR *zip, uLong pos, uLong num, unsigned int ext, uLong date)
 {

@@ -1,5 +1,5 @@
 /* unk_589f10.h -- the network lobby (unnamed): the "menu\netlobby" screen and the player / city / profession
-   pickers, see src/game/unk_589f10.c and notes/units/unk_589f10.md */
+   pickers, see src/game/unk_589f10.c */
 #ifndef UNK_589F10_H
 #define UNK_589F10_H
 

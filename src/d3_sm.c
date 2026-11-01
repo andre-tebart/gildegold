@@ -2,7 +2,7 @@
    Terrain height map with ground types and object shadows, sampled from a terrain.
    Extent in GildeGold.exe (inferred from .data and the call graph): 0x45db40..0x45f610.
    Functions are kept in their original order. Names are ours.
-   unit of rea 8cef7d5b (src/game/d3_sm.c); boundaries in decl/text.dcl, notes in notes/units/d3_sm.md */
+   unit of rea 8cef7d5b (src/game/d3_sm.c); boundaries in decl/text.dcl */
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>

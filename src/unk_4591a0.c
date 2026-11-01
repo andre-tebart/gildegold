@@ -1,5 +1,8 @@
 /* unk_4591a0.c -- 0x458e70..0x459d80, original file name unknown. Names are ours.
-   unit of rea 8cef7d5b (src/game/unk_4591a0.c); boundaries in decl/text.dcl, notes in notes/units/unk_4591a0.md */
+   Mesh vertex animation: key-frame blend weights, vertex and normal transforms into camera space,
+   env-map coordinates, bounding box corners.
+   Open: the file name, and whether it is one TU with unk_458810.c (the join compiles unchanged).
+   unit of rea 8cef7d5b (src/game/unk_4591a0.c); boundaries in decl/text.dcl */
 #include <math.h>
 #include <windows.h>
 #include <d3d.h>

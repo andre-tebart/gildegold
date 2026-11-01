@@ -2,7 +2,7 @@
    Version 0.15 beta, Mar 19th, 1998,
 
    Read unzip.h for more info
-   unit of rea 8cef7d5b (src/minizip/unzip.c); boundaries in decl/text.dcl, notes in notes/units/unzip.md */
+   unit of rea 8cef7d5b (src/minizip/unzip.c); boundaries in decl/text.dcl */
 
 
 #include <stdio.h>

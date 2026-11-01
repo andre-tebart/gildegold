@@ -1,6 +1,11 @@
-/* gv.c -- the avatar table 0x60f310 (32 records of 0xf4 bytes, first name "neVmMaven") and the effect slots 0x6f1008 (8 of 0x170 bytes, "kugel" 0x611204). Starts at 0x4ed170 (the
-   first user of the table 0x60f310, which begins the .data block after ahm.c's "ahm_AllocAhmInfo" 0x60f2f8); the end is unknown. Names are ours.
-   unit of rea 8cef7d5b (src/game/gv.c); boundaries in decl/text.dcl, notes in notes/units/gv.md */
+/* gv.c -- the graveyard module (tags "gv_AllocGraveyardField" / "gv_Alloc:_all_graves" 0x61120c..0x611240) with
+   the avatar table 0x60f310 (32 records of 0xf4 bytes, first name "neVmMaven") and the effect slots 0x6f1008
+   (8 of 0x170 bytes, "kugel" 0x611204). 0x4ed170..0x4f4e20: starts at the first user of the table 0x60f310,
+   which begins the .data block after ahm.c's "ahm_AllocAhmInfo" 0x60f2f8; ends where ord.c's order handlers
+   begin (their table 0x611768 follows gv's strings). The last functions of the file (0x4f2750 .. 0x4f1de0) are
+   out of address order. Names are ours.
+   Open: the avatars, the effect slots and the graveyard may be several modules sharing one .data block.
+   unit of rea 8cef7d5b (src/game/gv.c); boundaries in decl/text.dcl */
 extern char ai_PlayerSlots[4][0x2f4];
 #include "txt_views.h"
 #include <windows.h>

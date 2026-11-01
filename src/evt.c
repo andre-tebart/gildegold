@@ -1,9 +1,9 @@
 /* evt.c -- original file name unknown ("evt_LoadScript", "evt_RunScript", "evt_EnterFunction").
    Interpreter for the C-like event scripts in x:\engine\gfx\scripts\: tokenizer, declarations,
    function calls, while/if, expression evaluation and calls into engine functions (EVTBUILTIN).
-   Extent in GildeGold.exe (inferred): starts at 0x4273d0 after the sample library and continues past
-   0x42abc0. Functions are kept in their original order. Names are ours.
-   unit of rea 8cef7d5b (src/game/evt.c); boundaries in decl/text.dcl, notes in notes/units/evt.md */
+   Extent in GildeGold.exe: 0x4273d0 (after the sample library) .. 0x42b71a (sfx.c follows); own string
+   block from 0x5f8484. Functions are kept in their original order. Names are ours.
+   unit of rea 8cef7d5b (src/game/evt.c); boundaries in decl/text.dcl */
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -120,7 +120,7 @@ EVTVAR *evt_AddLocal(EVTSCRIPT *sc, int type, int count, char *name)
         evt_Error(sc, sc->pc - 1, "Too many locals!");
     return v;
 }
-/* 0x4277c0 @deep B: hunks code 93, fill 8, slots 4. Read every hunk in asmdiff: original keeps count=1 in ebx and the error return 0 in edi (mov ebx,1; xor edi,edi; mov eax,edi), ours uses edi for count and xor eax,eax; original merges both error exits into one shared evt_Error/evt_Stop tail (add esp,0xc before the pushes). Every constant (2, 0x1b) and every statement is present - only allocation and block layout differ. Nested-if / goto-tail / message-variable variants recorded in notes/units/evt.md did not change the layout (best 206 B). Same operations spelled differently. */
+/* 0x4277c0 @deep B: hunks code 93, fill 8, slots 4. Read every hunk in asmdiff: original keeps count=1 in ebx and the error return 0 in edi (mov ebx,1; xor edi,edi; mov eax,edi), ours uses edi for count and xor eax,eax; original merges both error exits into one shared evt_Error/evt_Stop tail (add esp,0xc before the pushes). Every constant (2, 0x1b) and every statement is present - only allocation and block layout differ. Nested-if / goto-tail / message-variable variants did not change the layout (best 206 B). Same operations spelled differently. */
 
 int evt_DeclareLocal(EVTSCRIPT *sc, int type)
 {
@@ -279,7 +279,7 @@ int evt_Match(char *s, char *word)
             return 0;
     return n;
 }
-/* 0x427e00 @deep B: hunks regs 12, code 4. asmdiff shows a pure esi/edi swap of n and end (xor esi,esi vs xor edi,edi; mov edi,[esp+0x14] vs mov esi; lea eax,[esi+edx] vs [edi+edx]); every instruction pair is identical after renaming esi/edi, only the xor sits between the two pushes. No meaning error; declaration order / p forms / &s[n] / ++n tried (notes/units/evt.md). */
+/* 0x427e00 @deep B: hunks regs 12, code 4. asmdiff shows a pure esi/edi swap of n and end (xor esi,esi vs xor edi,edi; mov edi,[esp+0x14] vs mov esi; lea eax,[esi+edx] vs [edi+edx]); every instruction pair is identical after renaming esi/edi, only the xor sits between the two pushes. No meaning error; declaration order / p forms / &s[n] / ++n tried. */
 
 char *evt_FindLogic(char *s, char *op, char *end)
 {
@@ -1159,7 +1159,7 @@ int evt_Stop(EVTSCRIPT *sc)
     evt_Unload(sc);
     return 1;
 }
-/* 0x429f30 @deep B: hunks regs 180, code 162. Read asmdiff: evt_Cur and val hold the opposite callee-saved registers (ours edi/esi, original esi/edi) throughout; the string element copy is an inline two-pointer loop in the original vs relative-addressing strcpy in ours; one jump-table index is in ecx vs edx. No missing statement, no wrong constant. The val split / declaration orders / strcpy forms are recorded in notes/units/evt.md; c2prio puts val above the first evt_Cur web. */
+/* 0x429f30 @deep B: hunks regs 180, code 162. Read asmdiff: evt_Cur and val hold the opposite callee-saved registers (ours edi/esi, original esi/edi) throughout; the string element copy is an inline two-pointer loop in the original vs relative-addressing strcpy in ours; one jump-table index is in ecx vs edx. No missing statement, no wrong constant. The val split / declaration orders / strcpy forms were tried; c2prio puts val above the first evt_Cur web. */
 
 int evt_Eval(char *end)
 {
@@ -1589,7 +1589,7 @@ int evt_ResumeCall(EVTSCRIPT *sc)
     evt_CurCall = 0;
     return r;
 }
-/* 0x42ada0 @deep B: hunks code 8, order 14, fill 2. Read asmdiff: the original keeps -1 in edi (or edi,-1; mov [evt_LastId],edi; cmp eax,edi; ours uses immediates) and caches evt_Depth in edx, reloading it after every call; the pop tail is duplicated with a cross-jump. Using the -1 through the scene variable changed nothing (reverted). goto-pop / chained-assignment variants are recorded in notes/units/evt.md. */
+/* 0x42ada0 @deep B: hunks code 8, order 14, fill 2. Read asmdiff: the original keeps -1 in edi (or edi,-1; mov [evt_LastId],edi; cmp eax,edi; ours uses immediates) and caches evt_Depth in edx, reloading it after every call; the pop tail is duplicated with a cross-jump. Using the -1 through the scene variable changed nothing (reverted). goto-pop / chained-assignment variants tried too. */
 
 void evt_Step(EVTSCRIPT *sc)
 {

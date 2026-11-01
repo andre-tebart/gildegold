@@ -2,7 +2,7 @@
    Error handler and log channels, with an unhandled-exception filter that writes a crash dump with a
    symbolized stack walk. Extent in GildeGold.exe (inferred): 0x4214a0..0x4223c0.
    Functions are kept in their original order. Names are ours.
-   unit of rea 8cef7d5b (src/game/err.c); boundaries in decl/text.dcl, notes in notes/units/err.md */
+   unit of rea 8cef7d5b (src/game/err.c); boundaries in decl/text.dcl */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

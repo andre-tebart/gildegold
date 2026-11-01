@@ -1,9 +1,11 @@
-/* hmt.c -- historical events ("hmt_CreateBinaryFile", historical.ini / historical.dfn), 0x4ac140..; name from
-   the "hmt_" tag. The table of 51 records at 0x5ed1e8 (0x4ac140..0x4ac2f0: size, random picks, text ids 0x1e2b /
-   0x1e35 + n, prices, applying a record) has no .data; it is put here because the .data block of 0x4ac440.. starts
-   at 0x600f60 right after unk_4a7140.c's ("Blutrache" 0x600f54). Starts after the registration 0x4abed0 that ends
-   unk_4a7140.c. Names are ours.
-   unit of rea 8cef7d5b (src/game/hmt.c); boundaries in decl/text.dcl, notes in notes/units/hmt.md */
+/* hmt.c -- historical events and persons and the council elections ("hmt_CreateBinaryFile", historical.ini /
+   historical.dfn), 0x4ac140..0x4adf40; name from the "hmt_" tag. The table of 51 records at 0x5ed1e8
+   (0x4ac140..0x4ac2f0: size, random picks, text ids 0x1e2b / 0x1e35 + n, prices, applying a record) has no .data;
+   it is put here because its .rdata lies between unk_4a7140.c's last float and hmt's first, and the .data block of
+   0x4ac440.. starts at 0x600f60 right after unk_4a7140.c's ("Blutrache" 0x600f54). Starts after the registration
+   0x4abed0 that ends unk_4a7140.c; ends with "_NACHRICHTEN_NEU_01" 0x601044 (the next block is hst.c's callback
+   table). Names are ours.
+   unit of rea 8cef7d5b (src/game/hmt.c); boundaries in decl/text.dcl */
 extern char ai_PlayerSlots[4][0x2f4];
 #include <stdio.h>
 #include <stdlib.h>

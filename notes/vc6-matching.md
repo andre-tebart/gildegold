@@ -260,7 +260,7 @@ Observed while matching; each item was confirmed by compiling variants (`uv run 
   orders around the init, scene-check structure, dir.y computed then cleared, operand orders.
   A D3VECTOR4 `rel` (not scalar dx/dy/dz) for the probe offset fixed the rotation's FPU schedule.
 
-## From worker d3_d3d (d3_anim.c tail, d3_d3d.c, d3_engine.c head; details in notes/units/d3_d3d.md)
+## From worker d3_d3d (d3_anim.c tail, d3_d3d.c, d3_engine.c head)
 - VC6 knows which registers a function *defined earlier in the same file* leaves untouched and keeps
   caller-saved values (e.g. edx) live across calls to it. A callee defined in the TU vs only declared
   changes the caller's code (d3anim_SetFrame needs d3_Unk4324e0 above it); usable as TU-boundary evidence.
@@ -275,7 +275,7 @@ Observed while matching; each item was confirmed by compiling variants (`uv run 
 - Inline-asm copy macro temps: declare size, src, dst in that order; VC6 does not substitute a plain
   variable into the asm, and loop-invariant temps are hoisted.
 
-## From worker dd_vesa (dd_vesa.c, unk_41ebc0.c; details in notes/units/dd_vesa.md)
+## From worker dd_vesa (dd_vesa.c, unk_41ebc0.c)
 - `while (1)` and `for (;;)` differ: `for (;;)` is rotated (loop head duplicated).
 - Same-TU register knowledge again: edx stayed live across a call to dd_BppToDDBD; the match loads
   `hw->dcmColorModel` into a local before the call.
@@ -291,7 +291,7 @@ Observed while matching; each item was confirmed by compiling variants (`uv run 
 - Loop rotation: `x0 = x1; x1 = ...` at the top of the body (not the bottom) gives the loop-entry `jmp`
   (surf_Shrink16). The init order of a group of globals decides which one is enregistered in a later loop.
 
-## From worker net (msx.c, net.c and unnamed TUs 0x41f000..0x426000; details in notes/units/net.md)
+## From worker net (msx.c, net.c and unnamed TUs 0x41f000..0x426000)
 - Locals land in dead parameter slots: mov_WndProc matched only with GetEvent's two out-parameters as real
   `long` locals instead of `&wp`/`&lp`.
 - An if/else whose branches share a tail (LeaveCriticalSection) gets the tail duplicated into both
@@ -307,7 +307,7 @@ Observed while matching; each item was confirmed by compiling variants (`uv run 
 - Volatile time product: assign then subtract (`el = TIME; el -= start;`), as in d3_snd.c.
 - Unsolved: a constant 0 kept in a register and returned via `mov eax,ecx` (mov_Find).
 
-## From round 2 (workers d3_anim, d3_engine, sblib, script; details in the [worker] sections of notes/units/<unit>.md)
+## From round 2 (workers d3_anim, d3_engine, sblib, script)
 Control flow and block layout
 - One `return` at the end of the function: VC6 then moves the callee-saved pushes after an early
   `if (!x) return y;` and still copies the epilogue to several `ret`s. Several `ret`s in the original do not
@@ -354,7 +354,7 @@ Caveat
 - Round 3 again: d3_CloneObject regressed after the d3_left merge and matched again after d3_engine2's merge;
   adding 1-7 unused `__inline` functions above it changed nothing, so the trigger is not the definition count.
 
-## From round 3 (workers evt, d3_left, d3_engine2, start401; details in the [worker] sections of notes/units/<unit>.md)
+## From round 3 (workers evt, d3_left, d3_engine2, start401)
 Control flow and return shape
 - `int ret = 0; if (...) {...} else ret = -1; return ret;` with every nested failure an `else ret = -1` is
   the shape of all 25 MSS wrappers; the zero in the ret register is reused for zero arguments and stores.
@@ -397,7 +397,7 @@ Stack frames and asm
 - `__inline` functions containing asm were not inlined; asm copies that address plain variables need
   explicit pointer variables in the source.
 
-## From round 4 (workers sfx, d3fl, ch, ch2; details in the [worker] sections of notes/units/<unit>.md)
+## From round 4 (workers sfx, d3fl, ch, ch2)
 Operand order and compares
 - `max(0, y - n)` is `sub; sets; dec; and`, `max(y - n, 0)` is `test; setle`; `max(1, v)` jae vs `max(v, 1)`
   jbe; same for min and for clamp ifs (jg/jge, which operand is loaded first). Try both orders per statement.
@@ -433,7 +433,7 @@ Types, arguments, stores
 - Order of independent loads and of struct field stores follows the source; parenthesizing a cast
   expression can change the store schedule. `near` is a windows.h macro (cannot name a local).
 
-## From round 5 (workers ch3, ch4, txt, map; details in the [worker] sections of notes/units/<unit>.md)
+## From round 5 (workers ch3, ch4, txt, map)
 Toolchain / workflow
 - An undeclared function compiles silently (implicit int, C4013) and changes the caller's code: one missing
   prototype was 64 of d3fl_UpdateTiles' differing bytes. Grep build logs for C4013.
@@ -472,7 +472,7 @@ Floating point
 - `(float)(d * 0.01f) * 0.5f` keeps two `fmul DWORD`; `d * 0.01f * 0.5f` folds into one QWORD multiply.
 - Two square roots of sums stay separate when both reuse the same dx/dy/dz locals.
 
-## From round 7 (workers ch7, evtc, d3fl4, d3if; details in the [worker] sections of notes/units/<unit>.md)
+## From round 7 (workers ch7, evtc, d3fl4, d3if)
 Control flow and returns
 - One `return a;` at the end (not an early return in the if) lets a variable live in two registers
   (returned on one path, call result on the other). `if (!p) error(); else p->x = y; return p;` returns p
@@ -525,7 +525,7 @@ Tools
 - d3if wrote statement-move beam search helpers (copied to build/helpers/ in the main checkout, uncommitted): one
   hill climb took d3if_SelectScene from 101 to 50 differing bytes.
 
-## From round 8 (workers ocmd, ocmd2, sndreg, d3if2; details in the [worker] sections of notes/units/<unit>.md)
+## From round 8 (workers ocmd, ocmd2, sndreg, d3if2)
 Control flow and returns
 - Shrink-wrapped pushes: `if (guard) return 0; s = f(); if (s) {...} else g(); return s;` pushes the
   callee-saved registers after the guard; a `return s;` inside the success branch pushes them at entry.
@@ -542,7 +542,7 @@ Bytes, flags and stores
 - `if (!mem_IsValid(*h))` matched only with a named local `em = *h`.
 Floating point
 - int-to-float member stores: convert into float locals first, then store, for the "convert all, then store"
-  shape (compute order matters; see notes/units/ecmd.md).
+  shape (compute order matters).
 - `(float)sqrt(d) < r` gives `fcomp mem; test ah,5`; without the cast `fcompp; and eax,0x4100`.
 - Named float locals on the FPU stack pop at block end; merged temps/parameters pop at last use (`fmulp`).
   A parameter scaled once and used once is folded into its use; writing `size * sx` out at every use (or an
@@ -553,7 +553,7 @@ Pointers and arrays
   walking `b++` bases it at the last.
 - An uninitialized local flags struct may sit in a dead parameter slot.
 
-## From round 9 (workers dinput, d3if3, d3o, d3o2; details in the [worker] sections of notes/units/<unit>.md)
+## From round 9 (workers dinput, d3if3, d3o, d3o2)
 Control flow
 - `while (1)` is not rotated, `for (;;)` is.
 - `if (d & 0x80) {..} if ((d & 0x80) == 0) {..}` without local or else keeps `and edi,0x80` and separate
@@ -598,7 +598,7 @@ TU boundaries
   two address operands once d3_SceneVersion (which it calls) was defined above it. A regression on joining
   files is evidence of a TU boundary between them.
 
-## From round 10 (workers d3io, d3io2, d3io3, vfs3; details in the [worker] sections of notes/units/<unit>.md)
+## From round 10 (workers d3io, d3io2, d3io3, vfs3)
 Return shape
 - Single exit is the vfs author's style: memory stores to `ret` before each epilogue, `mov eax,edi` on paths
   that look like constant returns, `or eax,-1` at entry. Write `ret = x;` in every branch, one `return ret;`.
@@ -625,7 +625,7 @@ Small patterns
 - `p->keys[n]` and `(*keys)[n]` schedule the pointer load differently.
 - A float temp copy is an integer mov when a register is free, fld/fstp in a register-starved loop.
 
-## From round 11 (workers agi2, anim, mesh, d3x; details in the [worker] sections of notes/units/<unit>.md)
+## From round 11 (workers agi2, anim, mesh, d3x)
 Stack slots and registers
 - One memory loop counter used by two unrelated loops: split it into two variables (moved one slot into place
   and fixed seven others).
@@ -660,7 +660,7 @@ Small patterns
 - `D3TEXFLAGS f = {0}; f.b[0] = 0xff;` gives a dword zero store plus a byte store to the same slot.
 - `(char *)t - (char *)base >> 7` gives `sub; sar`.
 
-## From round 12 (workers vec, vec2, geo, link; details in the [worker] sections of notes/units/<unit>.md, link conventions in notes/link.md)
+## From round 12 (workers vec, vec2, geo, link; link conventions in notes/link.md)
 FPU operand order
 - `m[k]` memory-operand order does not react to textual swaps or global flips (rank-based). For a dot product's
   load order, brute-force every subset of the six operands in parentheses; term orders alone change nothing.
@@ -690,7 +690,7 @@ Link (round 12 probe; `uv run build` masks all of these, uv run link catches the
 - String literals and float constants must have the original text and bits (D3DCHECK text, `__FILE__` via
   `#line N "D:\develop\..."`); statics / globals in a TU's .bss keep declaration order only with `= 0`.
 
-## From round 13 (workers par, par2, d3io4, lfix; details in the [worker] sections of notes/units/<unit>.md, link in notes/link.md)
+## From round 13 (workers par, par2, d3io4, lfix; link in notes/link.md)
 FPU and expressions
 - min()/max() from windows.h reproduce mixed fcomp / fcompp forms that hand-written ternaries do not
   (d3q_GetBounds); an inline `max(0.0f, min(255.0f, expr))` clamp stays on the FPU and lets branches tail-merge.
@@ -714,7 +714,7 @@ Link
 - "Matched" names can still sit on swapped struct fields (D3DCARDINFO, DIMOUSEST): the link gate finds them.
 - Ghidra misses callbacks reached only through function pointers; an 8 KB "function" was four (par).
 
-## From round 14 (workers q1, q2, q3, pfix; details in the [worker] sections of notes/units/<unit>.md)
+## From round 14 (workers q1, q2, q3, pfix)
 Registers, stack and stores
 - `[base+index+disp]`: an index VC6 turns into its own induction variable (`a[i]`, `i * sizeof`) is emitted
   as the base; an explicit byte-offset variable (`(char *)p + j`, `j += 0x54`) is the index. Zeroing the
@@ -762,7 +762,7 @@ Inline asm
   global is addressed directly). Span fills are `rep stosb` / `rep stosw` in `__asm` fed from a `char *` local.
 - A reverse walk over x / y pairs as `p[4 - i*2]` / `p[5 - i*2]` keeps two pointer temps that `q -= 2` merges.
 
-## From round 15 (workers z1, z2, z3, shfix; details in the [worker] sections of notes/units/<unit>.md)
+## From round 15 (workers z1, z2, z3, shfix)
 Loads, operands and globals
 - A global array indexed again in every statement (`d2_Pics[idx].x = ..`) is reloaded after each store / call in
   the original; a local `p = &d2_Pics[idx]` keeps it in a register. Write the index out per use (z1, z2).
@@ -798,7 +798,7 @@ Workflow
   differences; everything else was stack slots.
 - Brute-force the init-store order with a generator script (fixed d2_OpenInputIcon).
 
-## From round 16 (workers d2j, d2b, d2c, d2d; details in the [worker] sections of notes/units/<unit>.md)
+## From round 16 (workers d2j, d2b, d2c, d2d)
 Registers and ranks
 - A dead constant store at the function top (`base = 0;`) is a rank tie-break that flipped `[ecx+ebx]` to the
   original `[ebx+ecx]` (d2_Exit); dead loads, and dead stores to other locals, did nothing in d2_Unk46bf60.
@@ -832,7 +832,7 @@ Control flow and loops
   i = 0; found:` (d2_Unk46c9f0). `int *r = &x->refs; if (*r > 0) (*r)--; else err(msg);` gives a tail jmp.
 - Switch case order in the source = jump-table block order; duplicated calls in if/else get their tails merged.
 
-## From round 17 (workers d2k, d2e, d2f, d2g; details in the [worker] sections of notes/units/<unit>.md)
+## From round 17 (workers d2k, d2e, d2f, d2g)
 Registers and order
 - `movsx r,BYTE [m]; and r,imm; shr r,n` comes from `if ((char)x & imm) v = 1; else v = 0;` (or `return 1;
   return 0;`): VC6 turns the if/else into and/shr after the sign extension. Casts, shifts, ternaries, bitfields,
@@ -876,7 +876,7 @@ Unsolved
   slots swapped (120 orders); d2_Unk472760: `add [mem],ecx` needs a pointer local, which breaks the layout;
   d2_Unk46d040: x / y between esi / edi; d2_CenterObj: obj kept in ebx, pushed late (K&R short: 116 -> 111).
 
-## From round 18 (workers d2l, d2m, d2n, d2o; details in the [worker] sections of notes/units/<unit>.md)
+## From round 18 (workers d2l, d2m, d2n, d2o)
 - A zero register held through a whole function can come from a run of `g = 0` stores to adjacent globals: the
   original is one `memset(&g0, 0, 16)` (stores from the memset's eax). Cutting chunks out of a standalone copy with
   `uv run try` finds such causes fast (d2_Open).
@@ -898,7 +898,7 @@ Unsolved
 - A function defined with 5 parameters and called with 2 elsewhere in the TU: declare it unprototyped (`void f();`)
   before both (d2_Unk475cb0); same trick as d2_Unk472390.
 
-## From round 19 (workers d2p, d2q, d2r, d2s, hv1, shfix2; details in the [worker] sections of notes/units/<unit>.md)
+## From round 19 (workers d2p, d2q, d2r, d2s, hv1, shfix2)
 - TU probe: VC6 keeps a global in a register across a call to a function already compiled in the same file that
   writes no global (d2_Unk477a70 / 477ed0 cache d2_Unk6ed9dc across d2_Unk475bf0 once 475bf0 is defined above
   them; the original reloads it, so 475bf0 is in another TU). Defining a pure callee above a caller is a cheap
@@ -942,7 +942,7 @@ Unsolved
 - Counters reloaded after a `rep movs` record copy: counter and array are members of one global struct.
 
 
-## From round 20 (workers d2t, d2u, f1, f2, f3, hv2; details in the [worker] sections of notes/units/<unit>.md)
+## From round 20 (workers d2t, d2u, f1, f2, f3, hv2)
 - TU evidence from .data (d2t): each obj has one plain .data block of its initialised globals, then its string
   literals as COMDATs in function order; /O2 implies /GF, so identical strings are pooled across TUs. A new
   non-string block marks a new obj; a string sitting in an earlier obj than its only user means a removed
@@ -983,7 +983,7 @@ Unsolved
   difference compared with 1 matches only with the previous-tick variable unsigned (d2u). `util_Random` result
   kept in an `int`; `(uint + ushort) % 3` is `xor edx,edx; div` (f2).
 
-## From round 21 (workers ai, f4, f5, f6, f7, hv3; details in the [worker] sections of notes/units/<unit>.md)
+## From round 21 (workers ai, f4, f5, f6, f7, hv3)
 - Tie-breaks in nonmatching functions also depend on what the headers declare (e.g. `<windows.h>` moved
   0x483a60 by 5 B), not only on the functions above. A join can move near-misses by a few bytes with no TU
   meaning; if bisecting by deleting functions gives non-monotonic results, it is noise (ai).
@@ -1030,7 +1030,7 @@ Unsolved
 - Ghidra misses callback-only functions: hv3's two "heavy" ranges (9152 / 5552 B) were 30 and 20 functions
   (decision-table and action callbacks). Check heavy-queue entries with disasm before sizing them.
 
-## From round 22 (workers ai2, g1, g2, g3, g4, hv4; details in the [worker] sections of notes/units/<unit>.md)
+## From round 22 (workers ai2, g1, g2, g3, g4, hv4)
 - Shared `return 0` epilogue: decide callbacks get the single `xor eax,eax` epilogue from nested ifs (or
   `if (a && b && ...) {...}`) plus one final `return 0;`; early-return guards copy the epilogue per site. Matched
   0x499660 / 0x49a020, 0x499c10 718 -> 35 B (hv4); a trailing `goto ok; ... ok: return 0x40;` merges success tails (g1).
@@ -1527,7 +1527,7 @@ double `0.0` in d3s_Update (`fcomp QWORD`).
 
 - An anonymous union of three D3VECTOR views at D3OBJECT / D3OBJX 0x90 (`lightParams` / `angles` / `vec`)
   changed no layout but flipped d3_CloneObject (0x43d180) from byte to nonmatching - the same effect as the
-  D3PTRI 0x26 / D3TEXTURE 0x68 unions recorded in notes/units/d3_light.md. The field stays a plain D3VECTOR
+  D3PTRI 0x26 / D3TEXTURE 0x68 unions. The field stays a plain D3VECTOR
   and the light code reads it through `D3_L()`; a shared-header field whose TUs include byte functions must
   not become a union without re-checking those functions.
 - The original's inline failure epilogues (`ja 0x…; pop edi; pop esi; pop ebp; xor eax,eax; pop ebx; ret`

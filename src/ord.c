@@ -1,5 +1,10 @@
-/* Order handlers of the characters (the table 0x611768: one handler per order, 0x4f4e20 .. 0x4f8140), the dispatcher 0x4f81c0, the privilege dialog 0x4f8200 and the grid statistics that follow (0x4f82a0 ..). Split from gv.c (layout 2026-10-22): 0x4f5d50 matches only when 0x4f2870 is not defined above it in the same file.
-   unit of rea 8cef7d5b (src/game/ord.c); boundaries in decl/text.dcl, notes in notes/units/ord.md */
+/* ord.c -- original file name unknown (ord is a guess). Order handlers of the characters (the table 0x611768:
+   one handler per order, 0x4f4e20 .. 0x4f8140), the dispatcher 0x4f81c0, the privilege dialog 0x4f8200 and the
+   grid statistics that follow (0x4f82a0 ..). Split from gv.c: the table sits right after gv's strings, and
+   0x4f5d50 matches only when 0x4f2870 is not defined above it in the same file.
+   Open: no ord.h yet; the unit's declarations and views live in gv.h, shared with gv.c.
+   Open: gv.h's ORDCELL / ORDBLD duplicate ai.h's AIGRID / AIBLD (extending AIGRID regressed other units).
+   unit of rea 8cef7d5b (src/game/ord.c); boundaries in decl/text.dcl */
 #include <windows.h>
 #include <stdio.h>
 #include <stdlib.h>

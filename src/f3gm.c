@@ -1,5 +1,14 @@
-/* The game data unit (0x4f9e30 .. 0x5085b0 and on): tag "f3_gm:lpGebaeudePROT" / "f3_gm:lpObjekteINST" (the allocation tags of the building and object tables loaded from A_Geb.dat / A_Obj.dat, 0x4fe570). One .data string block runs through it in function order (0x61774c "misc\statistics_taxes" .. the head icons "%s_HEAD%i_ICON.bmp" .. "Character_Names.dat" 0x617818 .. the tag strings 0x61a9e0 .. 0x61aa38 .. "buy building" 0x61ab78 .. "%1G %A" 0x61ac98), so the character income / statistics code (0x4f9e30 .. 0x4fe140), the game clock (0x4fe140 ..), the building and object tables, the job / title tables and the character helpers are one unit (joined layout 2026-10-23 from unk_4f9e30.c and f3gm.c). Drafts of layout 2026-10-23.
-   unit of rea 8cef7d5b (src/game/f3gm.c); boundaries in decl/text.dcl, notes in notes/units/f3gm.md */
+/* The game data unit (0x4f9e30 .. 0x50d0b0; 0x50d100 starts f3init.c, tag "f3_init:"): name from the allocation
+   tags "f3_gm:lpGebaeudePROT" / "f3_gm:lpObjekteINST" of the building and object tables (0x4fe570). One .data
+   string block runs through it in function order (0x61774c "misc\statistics_taxes" .. "%1G %A" 0x61ac98 ..
+   "_NACHRICHTEN_HS_67" 0x61ade0), so the character income / statistics code, the game clock, the building and
+   object tables, the job / title tables, the character helpers, prices and worth and the standing / family
+   helpers are one unit.
+   Open: many callees are still declared K&R in this file (amt_HasTownObject must stay K&R: the typed prototype
+   costs gm_Unk4fa4b0 a byte).
+   Open: gm_GetWorth is a float in gv.h, the unit reads it as an int (I50A640).
+   Open: gm_GetGebaeudeHauptraum (0x501ce0) is drafted void, but its callers use the result as a pointer.
+   unit of rea 8cef7d5b (src/game/f3gm.c); boundaries in decl/text.dcl */
 struct CHARACTER;
 struct CHTRANSPORT;
 struct AICHAR;

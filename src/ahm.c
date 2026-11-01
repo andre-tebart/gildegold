@@ -1,7 +1,9 @@
 /* ahm.c -- the alchemist building and the recipes (name from the tags "ahm_AllocRecipePrototypes" / "ahm_AllocPlayerPrototypes": the data block 0x60f1b0 with the
-table of 8 ints, then the strings "RCPID" .. "alchemy_data.ini"). Starts at 0x4eaa50 (the first function of the building kind 0x1e); the end is unknown.
-   Names are ours.
-   unit of rea 8cef7d5b (src/game/ahm.c); boundaries in decl/text.dcl, notes in notes/units/ahm.md */
+table of 8 ints, then the strings "RCPID" .. "alchemy_data.ini"). Starts at 0x4eaa50 (the first function of the building kind 0x1e); the end 0x4ed170
+   rests on the .data order only (the next block, the avatar table 0x60f310, is gv.c's). Names are ours.
+   Open: ahm.h is not canonical - its mem_Alloc `const char *tag` conflicts with gv.h's `char *tag`, so he.c / ls.c / cm.h
+   and others still declare ahm.c's functions locally (some K&R).
+   unit of rea 8cef7d5b (src/game/ahm.c); boundaries in decl/text.dcl */
 #include "txt_views.h"
 #include <windows.h>
 #include <stdio.h>

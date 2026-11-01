@@ -3,7 +3,7 @@
    direction. Extent in GildeGold.exe (inferred, not proven): 0x417650..0x418ce0; 0x417ec0.. is the
    water ambience ("d3sndw") and may be a file of its own.
    Functions are kept in their original order. Names are ours.
-   unit of rea 8cef7d5b (src/game/d3_snd.c); boundaries in decl/text.dcl, notes in notes/units/d3_snd.md */
+   unit of rea 8cef7d5b (src/game/d3_snd.c); boundaries in decl/text.dcl */
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -521,7 +521,7 @@ typedef struct D3SNDWHIT {
    under the camera (region water kind 1..3) and probes ahead along the view direction for more water regions
    to pick volume and pan of the sounds; both sounds are stopped (label off) when the scene changed or the
    camera / map / sound system is not ready
-   @deep B: 143 code / 52 order / 36 regs / 14 fpu hunks, no meaning error: the sampled code hunks are the same instructions with a different callee-saved register assignment (original keeps the zero in ebx, ground in edi, three zero webs ebx/esi/ebp; ours ebp/esi) and the FPU hunks at 0x418515 and the cmp reg,0 vs test forms follow from it; the earlier 4 rounds read the whole 152-line diff (notes/units/d3_snd.md Open work) and tried declaration orders and zero-store orders without change. Register allocation / c2prio work is match-deep's */
+   @deep B: 143 code / 52 order / 36 regs / 14 fpu hunks, no meaning error: the sampled code hunks are the same instructions with a different callee-saved register assignment (original keeps the zero in ebx, ground in edi, three zero webs ebx/esi/ebp; ours ebp/esi) and the FPU hunks at 0x418515 and the cmp reg,0 vs test forms follow from it; the earlier 4 rounds read the whole 152-line diff and tried declaration orders and zero-store orders without change. Register allocation / c2prio work is match-deep's */
 void d3sndw_Update(void)
 {
     D3SCENE *sc;

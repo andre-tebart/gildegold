@@ -1,18 +1,13 @@
-/* unk_5d33b0.c -- the screen / front-end module (0x5d33b0 .. 0x5dd3e0, the end of the game code; the
-   0x5dd3e0 .. 0x5de450 tail is data): the
-   screen file list 0x5d33b0 (the file extension pick over vfs_FindDir (0x42f7e0, vfs_Root 0x6333fc), the
-   entries "%s_%s" 0x62d7d8), the screen windows 0x5d34b0 .., the graphics options writer 0x5d4c70 (the
-   INI keys texture_scale .. brightness of the profile 0x75e480), the loading screen 0x5d7320 and the
-   game start / frame callbacks 0x5d7530 ..
-   Unit start (layout 2026-10-24 session 13): 0x5d33b0 is the first function of the screen-file family;
-   its first literal "%s/%s" 0x62d7d8 follows the previous unit's last literal "special_uni" 0x62d6bc
-   (+0x11c, data order D8; no literal belongs to the trial / action callbacks 0x5d0f20 .. 0x5d3270), and
-   the subject changes from the action records of the table 0x62c420 to the screen definitions.
-   (start: the literal order 0x62d7d8 after the previous unit's "special_uni" 0x62d6bc and the subject
-   change; end: 0x5dd3e0, the end of the game code: the last function is 0x5dd100 (ret at 0x5dd3d6, nop
-   fill to 0x5dd3e0); dinput.lib's c_dfDIKeyboard / c_dfDIMouse object tables follow, library data,
-   see config/symbols/game_range.toml)
-   unit of rea 8cef7d5b (src/game/unk_5d33b0.c); boundaries in decl/text.dcl, notes in notes/units/unk_5d33b0.md */
+/* unk_5d33b0.c -- the screen / front-end module (0x5d33b0 .. 0x5dd3e0; no leaked name): the file selector,
+   the save / load windows, the options reader / writer and screens, the options menu, credits, pause and
+   message filter, the gypsy / tailor contact windows, the poker windows, the wind and the cannon ball.
+   Start (plausible): its first literal "%s_%s" 0x62d7d8 follows the previous unit's last literal "special_uni"
+   0x62d6bc and the subject changes from the action records of the table 0x62c420 to the screens. End: the
+   end of the game code (the last function 0x5dd100 returns at 0x5dd3d6, nop fill to 0x5dd3e0); dinput.lib's
+   c_dfDIKeyboard / c_dfDIMouse object tables follow, library data (config/symbols/game_range.toml).
+   Open: d2.h cannot be included (its vfs_Root / vfs_Tfopen declarations clash with vfs.h), so the unit reads
+   the d2 records through local views (D2INPUTVIEW, D2FADEVIEW, D2SURFVIEW ...).
+   unit of rea 8cef7d5b (src/game/unk_5d33b0.c); boundaries in decl/text.dcl */
 extern int gm_PlayerRecords[688];
 #include "txt_views.h"
 #include <windows.h>
@@ -372,7 +367,7 @@ write:
 }
 
 /* views of d2.h's D2OBJ / D2INPUT (d2.h cannot be included here: its vfs_Root / vfs_Tfopen
-   declarations clash with vfs.h; the type debt is in notes/units/unk_5d33b0.md) */
+   declarations clash with vfs.h) */
 typedef struct D2INPUTVIEW { char pad0[0x10]; int w; char pad1[0x148]; int maxw; } D2INPUTVIEW;
 
 extern D2INPUTVIEW d2_Inputs[];         /* 0xfa6020, d2.h: D2INPUT [0x80] */
@@ -390,7 +385,7 @@ void d2_SetObjValue();                                               /* 0x475cb0
 void d2_SetObjMax(int obj, int v);                                   /* 0x475f40 */
 
 /* d2.h's D2FADE (the fade record of 0x4767d0): only the flags byte is read here (bit 2 = done, the
-   original tests the byte, not the dword); the type debt is in notes/units/unk_5d33b0.md */
+   original tests the byte, not the dword); d2.h cannot be included, see the lead comment */
 typedef struct D2FADEVIEW { unsigned char flags; char pad1[0x63]; } D2FADEVIEW;
 /* d2's window records, as d2.c defines them (D2WIN, d2_types.h) */
 extern D2WIN d2_Wins[];             /* 0xf8f120, d2.h: D2WIN d2_Wins[0x61] */

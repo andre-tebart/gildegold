@@ -1,8 +1,8 @@
 /* chc.c -- original file name unknown: character script commands ("CreateCharacter(): Could not load
    character"). Extent in GildeGold.exe (inferred): starts at 0x40ba10 right after the script builtins
-   (evtc.c) and ends with the command registration at 0x40d270 (not here yet); the object commands
+   (evtc.c) and ends with the command registration at 0x40d270; the object commands
    follow at 0x40d680. Functions are kept in their original order. Names are ours.
-   unit of rea 8cef7d5b (src/game/chc.c); boundaries in decl/text.dcl, notes in notes/units/chc.md */
+   unit of rea 8cef7d5b (src/game/chc.c); boundaries in decl/text.dcl */
 #include <stdio.h>
 #include <stdarg.h>
 #include <math.h>

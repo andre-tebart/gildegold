@@ -1,9 +1,10 @@
-/* d3_interface
-   unit of rea 8cef7d5b (src/game/d3_interface.c); boundaries in decl/text.dcl, notes in notes/units/d3_interface.md */
+/* d3_interface -- 0x446e10..0x44aa10, the old d3_obj.c joined (its .data, d3o_LightSet / d3o_FogSet 0x5fbcfc, heads
+   the block of the d3_interface literals); ends before d3_int_io.c (codegen).
+   unit of rea 8cef7d5b (src/game/d3_interface.c); boundaries in decl/text.dcl */
 #line 1 "D:\\develop\\Units\\d3\\d3_interface.c"
 /* d3_interface.c -- "D:\develop\Units\d3\d3_interface.c" (string at 0x5fbd94): the engine's object API
    (creating, deleting, showing objects) and the scene switch. Starts at 0x446e10 (after the d3_fl TU,
-   whose last function is d3fl_SetShift at 0x446dc0); the extent beyond 0x447e60 is not known here.
+   whose last function is d3fl_SetShift at 0x446dc0) and ends at 0x44aa10.
    Functions are kept in their original order. Names are ours.
    @named_by leaked
    @boundary plausible */
