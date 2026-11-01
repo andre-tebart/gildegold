@@ -203,4 +203,8 @@ struct VFSFILE * vfs_Tfopen(char *name, char *mode, int unk);                   
 int vfs_fclose(struct VFSFILE *f);                                                                /* 0x430aa0, vfs.c */
 D3OBJECT *d3_LoadGroup(char *name, void *f, D3OBJECT *parent);                    /* 0x44c3f0 */
 
+/* declared in other units' headers before (moved to the owner) */
+void d3_AttachMesh(D3OBJECT *obj, int unk, char *name);  /* 0x44cbb0 */
+int d3io_FindStock(char *name);  /* 0x44c5d0 */
+
 #endif
