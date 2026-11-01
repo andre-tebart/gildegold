@@ -262,7 +262,6 @@ void d3_SetObjectPos(struct D3OBJECT *obj, struct D3VECTOR *pos);               
 void d3_SetObjectRot(D3OBJECT *obj, D3VECTOR *rot);                                     /* 0x43b860 */
 void d3_SetObjectPosXYZ(D3OBJECT *obj, float x, float y, float z);                      /* 0x43b7f0 */
 void d3_SetObjectRotXYZ(D3OBJECT *obj, float x, float y, float z);                      /* 0x43b920 */
-char d3_SetParent(struct D3OBJECT *obj, struct D3OBJECT *parent);                                     /* 0x449960 */
 
 void d3d_Error(char *file, int line, char *call);                                      /* 0x418e90 */
 void d3_BeginScene(unsigned char fog, DWORD fogcol, unsigned char zbuffer);                                                 /* 0x4385a0 */
@@ -281,7 +280,6 @@ struct TSTEXTURE; char tex_SetHiColor(struct TSTEXTURE *tex, unsigned char hicol
 struct TSTEXTURE; char tex_Unload(struct TSTEXTURE *tex);                                                     /* 0x461140 */
 void d3fl_Flush(void);                                                                /* 0x43f990 */
 struct D3FLMAP;
-void d3fl_ReloadTextures(struct D3FLMAP *map);                                          /* 0x442280 */
 
 
 /* Particle systems (d3_par, "d3_par:ParticleSystem"). The engine allocates the particles and calls
