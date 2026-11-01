@@ -91,7 +91,7 @@ void sv_RefreshPanel(void);                                                /* 0x
 void sv_ClosePanel(void);                                                /* 0x529fb0 */
 int sv_ReturnZero(void);                                                /* 0x52a040 */
 void sv_UpdatePanel(void);                                              /* 0x52a050 */
-void sv_Unk52a680(void);                                                /* 0x52a680 */
+void sv_HoverPick(void);                                                /* 0x52a680 */
 void sv_Unk52adb0(void);                                                /* 0x52adb0 */
 void sv_ClearSelection(void);                                           /* 0x52ae40 */
 void sv_Unk52ae70(void);                                                /* 0x52ae70 */
