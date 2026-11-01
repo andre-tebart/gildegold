@@ -274,3 +274,7 @@
 2026-11-01T18:08:57 0x0060bd88 data ai_Unk60bd88 -> cm_LastCharId by:main why:0x60bd88: ai_Unk4c4450 resolves the id -2 to it; set from a character's netId (ai_Chars +4)
 2026-11-01T18:08:57 0x0060bd8c data ai_Unk60bd8c -> cm_LastBuildingId by:main why:0x60bd8c: ai_Unk4c4450 resolves the id -3 to it; set from a building's id (AIBLD +1)
 2026-11-01T18:08:57 0x0060bd90 data ai_Unk60bd90 -> cm_LastObjectId by:main why:0x60bd90: ai_Unk4c4450 resolves the id -4 to it; set from an object's objId (+2)
+2026-11-01T18:15:12 0x0051e900 func unk_Unk51e900 -> ls_ReadSceneRecords by:main why:0x51e900: the reader of what ls_WriteSceneRecords 0x51aff0 writes (the scene characters through ls_ReadCharacter, then the ch_Queue action records)
+2026-11-01T18:15:12 0x00509ff0 func gm_Unk509ff0 -> gm_ObjectOwnerChar by:main why:0x509ff0: returns the character living in the building the object is in (the building's +0x25), else the object's own character
+2026-11-01T18:15:12 0x004fb390 func unk_Unk4fb390 -> gm_CharNameRecord by:main why:0x4fb390: the name record (head table entry) of the character id (default / own name +0x1f4 / job / title records)
+2026-11-01T18:15:12 0x004cde20 func ai_Unk4cde20 -> cm_UpdateHandObject by:main why:0x4cde20: sets the right-hand model "ob_<NAME>" of the good the character carries on its scene character (+0x184), ch_SetHandObject hand 2, or clears it

@@ -4028,7 +4028,7 @@ void main_Unk53b840(void)
         d = (char *)(p6 + 0x18);
         s = *(char **)((unsigned)&ai_Unk143af70 + (u & 0xffff) * 4);
         do { *d++ = *s; } while (*s++ != 0);
-        unk_Unk4fb390(*p6);
+        gm_CharNameRecord(*p6);
         p7[0x28] = *(unsigned short *)(a + 0x50);
         *(int *)(p7 + 0x2a) = *(int *)(a + 0x54);
         *(int *)(p7 + 0x34) = *(int *)(a + 4);
@@ -4036,7 +4036,7 @@ void main_Unk53b840(void)
         d = (char *)(p7 + 0x18);
         s = *(char **)((unsigned)&ai_Unk143ac5c + (u & 0xffff) * 4);
         do { *d++ = *s; } while (*s++ != 0);
-        unk_Unk4fb390(*p7);
+        gm_CharNameRecord(*p7);
         *(int *)(p6 + 0x2e) = *(int *)(p7 + 2);
         *(int *)(p7 + 0x2e) = *(int *)(p6 + 2);
         *(int *)(a + 0x60) = *(int *)(p7 + 2);

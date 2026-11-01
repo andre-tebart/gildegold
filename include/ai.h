@@ -80,7 +80,9 @@ typedef struct AIOBJ {                  /* 0x43 bytes, an object (table behind a
     char pad2e[8];
     unsigned char unk36;                /* 0x36 */
     unsigned char unk37;                /* 0x37 */
-    char pad38[0xb];
+    char pad38[3];
+    void *sceneObj;                     /* 0x3b, the scene character (ch.h CHARACTER) that shows a cart */
+    char pad3f[4];
 } AIOBJ;
 
 typedef struct AIGOOD {                 /* 0x41 bytes, ai_Goods[] */
@@ -175,6 +177,12 @@ typedef struct AICHAR {                 /* 0x21c bytes, ai_Chars[768] */
             unsigned char sk83;         /* 0x083 */
             unsigned char sk84;         /* 0x084 */
         };
+        struct {
+            char padname54[0x24];
+            int ref54;                  /* 0x054, a reference word (the save adds the base 0x59a back,
+                                           ls_ReadCharacters); its low byte picks a cart's texture set
+                                           ('g' + it, ls_ReadSceneRecords) */
+        };
     };
     float mood[14][3];                  /* 0x088, 13 triples (a, b, value), the current one at 0x124 */
     unsigned char sel;                  /* 0x130 */
@@ -196,7 +204,8 @@ typedef struct AICHAR {                 /* 0x21c bytes, ai_Chars[768] */
                                            next at +0x3f): gm_Query finds a prototype kind in it, gm_SumSlotAmounts
                                            sums a need slot over it (am.c 0x4a5760) */
     AIJOB *job;                       /* 0x17c */
-    char pad180[4];
+    unsigned char jobKind;              /* 0x180, the kind (first byte) of job, refreshed on load */
+    char pad181[3];
     AITASK *model;                      /* 0x184, the character's model record; its +0x2c is the building the
                                            character was sent to (f3gm.c 0x4fbd10) */
     char pad188[0xc];
@@ -219,7 +228,9 @@ typedef struct AICHAR {                 /* 0x21c bytes, ai_Chars[768] */
     unsigned int flags1cc;              /* 0x1cc */
     char pad1d0[0x14];
     float mood3Rate;                    /* 0x1e4, scales the base growth of mood need 3; message 0x1a keeps it in sync */
-    char pad1e8[0x28];
+    char pad1e8[0xc];
+    char ownName[0x1c];                 /* 0x1f4, the character's own name, empty: the job's name record
+                                           (gm_CharNameRecord) */
     int partner;                        /* 0x210 */
     signed char unk214;                 /* 0x214 */
     unsigned char unk215;               /* 0x215 */

@@ -346,7 +346,7 @@ float gm_Mix(int a, int b, int c);                                  /* 0x504e20 
 int gm_BuildingKindValue(int k);                                                        /* 0x509d30 */
 int gm_Unk509dc0(int unused, int kind);                                              /* 0x509dc0 */
 int unk_Unk4f8700(char *c);                                                     /* 0x4f8700 */
-unsigned short *gm_Unk509ff0(unsigned short *o);                                                  /* 0x509ff0 */
+unsigned short *gm_ObjectOwnerChar(unsigned short *o);                                                  /* 0x509ff0 */
 
 /* ---- 0x48e070..0x490b90 (was unk_48e070.h) ---- */
 /* unk_490830.h (the AGCH / AGARG views of 0x490830..0x490b90); it calls ai_Unk4900c0 .. ai_Unk490600 and cm_SendMoveGoodsUnchecked through the prototypes below (AIPX / AIBLD, the definitions') */

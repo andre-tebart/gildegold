@@ -4357,7 +4357,7 @@ int ai_Unk497660(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
 rate:
         if (a != 0x39) {
             if (obj)
-                c = gm_Unk509ff0(obj);
+                c = gm_ObjectOwnerChar(obj);
             else if (bld) {
                 if (bld->owner == 0xffff)
                     return 0;

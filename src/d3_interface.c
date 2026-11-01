@@ -1452,7 +1452,7 @@ void d3_WriteObject(VFSFILE *f, D3OBJECT *obj)
             bio_wr_s(f, obj->name + 1);
         else
             bio_wr_s(f, obj->name);
-        bio_wr_i(f, *(int *)obj->pad200);
+        bio_wr_i(f, *(int *)&obj->owner);
         bio_wr_i(f, obj->kind);
         bio_wr_i(f, type);
         bio_wr_c(f, D3_X(obj)->type == 1);

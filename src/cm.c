@@ -4764,13 +4764,13 @@ int ai_Unk4cb250(G17MSG *m, G17STAT *s)
         r = (int *)ai_Unk4cda50(c);
         if (*r != 0) {
             gm_TakeObjekt(*(int *)(c + 4), *r, 1);
-            ai_Unk4cde20(c);
+            cm_UpdateHandObject(c);
         }
     } else {
         r = (int *)ai_Unk4cda50(c);
         if (*r == 0) {
             gm_CreateObject(*(int *)(c + 4), 0x154, 1);
-            ai_Unk4cde20(c);
+            cm_UpdateHandObject(c);
         }
     }
     *(char **)(c + 0x16c) = b;
@@ -5045,7 +5045,7 @@ int ai_Unk4cba10(G17MSG *m, G17STAT *s)
     ai_Chars[id][2] = 0xd;
     if (m->data[0x11] != 0) {
         gm_CreateObject(ai_CharInts[id][0], m->data[0x11], 1);
-        ai_Unk4cde20(ai_Chars[id]);
+        cm_UpdateHandObject(ai_Chars[id]);
     }
     cm_LastCharId = ai_CharInts[id][0];
     if (s != 0) {
@@ -6526,7 +6526,7 @@ float ai_Unk4cdcf0(char *c)
 }
 /* 0x4cde20, the model name "ob_<NAME>" of the record kind (+0x64 of the record +0x184) of the character */
 
-void ai_Unk4cde20(char *c)
+void cm_UpdateHandObject(char *c)
 {
     char buf[0x80];
     int *r;
@@ -7834,7 +7834,7 @@ char *ai_Unk4d0920(char *c, int a)
     unk_Unk4fbb80(r, d3_CurrentScene, 0, 0, 0, a);
     *(char *)(*(char **)(r + 0x184) + 0x240) = 4;
     *(char *)(*(char **)(r + 0x184) + 0x8d) |= 0x80;
-    ai_Unk4cde20(r);
+    cm_UpdateHandObject(r);
     k = ai_Unk4cda50(c);
     *(float *)(*(char **)(r + 0x184) + 0x1a0) = (float)(unsigned char)k[9] * ai_Unk5eb9b8;
     sprintf(*(char **)(*(char **)(r + 0x184) + 0x34), "%i", *(int *)(r + 4));
@@ -11190,8 +11190,8 @@ void ai_Unk4d8e20(char *a)
             ai_Unk4e2e60(ed3[k]);
             sound = msx_PlayAmbient("Athmos\\Athmo_sitzung.mp3", 0x40);
             for (i = 0; i < nc; i++) {
-                if (unk_Unk4fb390(*(unsigned short *)cand[i]) != 0)
-                    sprintf(name, "%i %s", idx[i], unk_Unk4fb390(*(unsigned short *)cand[i]) + 4);
+                if (gm_CharNameRecord(*(unsigned short *)cand[i]) != 0)
+                    sprintf(name, "%i %s", idx[i], gm_CharNameRecord(*(unsigned short *)cand[i]) + 4);
                 else
                     sprintf(name, "%i stallbursche_MANN", idx[i]);
                 ai_Unk4e2c30("cutscenes\\sitzungen\\sitzungen_create.esc", name);
@@ -11530,10 +11530,10 @@ void ai_Unk4db700(char *m)
     ai_Unk4e3620("cd2\\ImKerker.mp3");
     ai_Unk4e3270(0, "ADDON\\PROZESS_NEU.sbf");
     ai_Unk4947a0(a, b);
-    sprintf(names, "%s ", (char *)unk_Unk4fb390(*(unsigned short *)ch[0]) + 4);
+    sprintf(names, "%s ", (char *)gm_CharNameRecord(*(unsigned short *)ch[0]) + 4);
     for (i = 1; i < 4; i++)
-        sprintf(names + strlen(names), "%s ", (char *)unk_Unk4fb390(*(unsigned short *)ch[i]) + 4);
-    sprintf(names + strlen(names), "%s", (char *)unk_Unk4fb390(*(unsigned short *)ch[4]) + 4);
+        sprintf(names + strlen(names), "%s ", (char *)gm_CharNameRecord(*(unsigned short *)ch[i]) + 4);
+    sprintf(names + strlen(names), "%s", (char *)gm_CharNameRecord(*(unsigned short *)ch[4]) + 4);
     ai_Unk4e2c30("cutscenes\\prozess\\prozess-create2.esc", names);
     ai_Unk4e2c30("cutscenes\\prozess\\prozess-richter.esc", &ai_Unk60de4c);
     ai_Unk4e2c30("cutscenes\\prozess\\prozess-beisitzer1.esc", &ai_Unk60de4c);
@@ -12628,13 +12628,13 @@ void ai_Unk4e01e0(char *m)
     ai_Unk4e3620("cd2\\ArmerDelinquent.mp3");
     if (w == 1)
         ai_Unk4e33d0(0x1f4);
-    nm = v != 0 ? (char *)unk_Unk4fb390(*(unsigned short *)v) : (char *)unk_Unk4fb330((unsigned short)util_RandomU(2), (unsigned short)util_RandomU(0x5e) + 1);
+    nm = v != 0 ? (char *)gm_CharNameRecord(*(unsigned short *)v) : (char *)unk_Unk4fb330((unsigned short)util_RandomU(2), (unsigned short)util_RandomU(0x5e) + 1);
     sprintf(buf, "%s ", nm + 4);
-    nm = p1 != 0 ? (char *)unk_Unk4fb390(*(unsigned short *)p1) : (char *)unk_Unk4fb330((unsigned short)util_RandomU(2), (unsigned short)util_RandomU(0x5e) + 1);
+    nm = p1 != 0 ? (char *)gm_CharNameRecord(*(unsigned short *)p1) : (char *)unk_Unk4fb330((unsigned short)util_RandomU(2), (unsigned short)util_RandomU(0x5e) + 1);
     sprintf(buf + strlen(buf), "%s ", nm + 4);
-    nm = p2 != 0 ? (char *)unk_Unk4fb390(*(unsigned short *)p2) : (char *)unk_Unk4fb330((unsigned short)util_RandomU(2), (unsigned short)util_RandomU(0x5e) + 1);
+    nm = p2 != 0 ? (char *)gm_CharNameRecord(*(unsigned short *)p2) : (char *)unk_Unk4fb330((unsigned short)util_RandomU(2), (unsigned short)util_RandomU(0x5e) + 1);
     sprintf(buf + strlen(buf), "%s ", nm + 4);
-    nm = p3 != 0 ? (char *)unk_Unk4fb390(*(unsigned short *)p3) : (char *)unk_Unk4fb330((unsigned short)util_RandomU(2), (unsigned short)util_RandomU(0x5e) + 1);
+    nm = p3 != 0 ? (char *)gm_CharNameRecord(*(unsigned short *)p3) : (char *)unk_Unk4fb330((unsigned short)util_RandomU(2), (unsigned short)util_RandomU(0x5e) + 1);
     sprintf(buf + strlen(buf), "%s", nm + 4);
     ai_Unk4e2c30("cutscenes\\hinrichtung\\hinrichtung-create", buf);
     ai_Unk4e2c70(ai_Unk4e2c30("cutscenes\\hinrichtung\\hinrichtung-intro.", &ch_EmptyName));
@@ -12763,7 +12763,7 @@ int ai_Unk4e0770(char *m)
         a = b;
         b = t;
     }
-    sprintf(buf, "%s %s %i", unk_Unk4fb390(*(unsigned short *)a) + 4, unk_Unk4fb390(*(unsigned short *)b) + 4, 1);
+    sprintf(buf, "%s %s %i", gm_CharNameRecord(*(unsigned short *)a) + 4, gm_CharNameRecord(*(unsigned short *)b) + 4, 1);
     st[2] = ai_Unk4e3270("ADDON\\HOCHZEIT_NEU.sbf", 0);
     ai_Unk4e2e60("KIRCHE_HOCHZEIT.ed3");
     ai_Unk4e3620("cd2\\Hochzeit.mp3");
@@ -13203,8 +13203,8 @@ void ai_Unk4e1a80(char *m)
         h = d3_FindObject(buf, 0, 0x100, 0);
         if (h != 0)
             d3_PointToWorld(0, 0, h);
-        if (who_ok[i] != 0 && unk_Unk4fb390(ids[i]) != 0)
-            sprintf(buf, "%s", (char *)unk_Unk4fb390(ids[i]) + 4);
+        if (who_ok[i] != 0 && gm_CharNameRecord(ids[i]) != 0)
+            sprintf(buf, "%s", (char *)gm_CharNameRecord(ids[i]) + 4);
         else if (ai_Unk4e52f0(3) == 1)
             strcpy(buf, "buerger_MANN");
         else if (ai_Unk4e52f0(3) == 2)

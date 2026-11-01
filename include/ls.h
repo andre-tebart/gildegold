@@ -66,8 +66,8 @@ char ls_ClearObjectFlag(char *o);                                       /* 0x51d
 int ls_ReadBuildings(int f);                                            /* 0x51d550 */
 int ls_ReadPlayerRecords(int f);                                        /* 0x51db00 */
 int ls_ReadCharacters(int f);                                           /* 0x51de70 */
-int ls_ReadCharacter(int f);                                            /* 0x51e750 */
-int unk_Unk51e900(int f);                                               /* 0x51e900 */
+struct CHARACTER *ls_ReadCharacter(int f);                                         /* 0x51e750 */
+int ls_ReadSceneRecords(int f);                                               /* 0x51e900 */
 int unk_Unk51f080(int f);                                               /* 0x51f080 */
 int ls_ReadRelations(int f);                                            /* 0x51f650 */
 int unk_Unk51f720(int f);                                               /* 0x51f720 */

@@ -818,7 +818,7 @@ int unk_Unk51ad80(char *r, int id, int f)
 extern char * ai_Unk1468ae0[0x300];             /* 0x1468ae0, the scene objects (0x300) */
 extern char *ai_Goods;              /* 0x91aaf0, the object prototypes (0x41 bytes) */
 int mem_IsValid();                     /* 0x4225e0 */
-/* 0x51aff0 @deep draft: the loop structure is now read against the original at 0x51aff0..0x51b340 and the record pieces fixed - the draft wrote rec+0x70 / rec+0x2c / rec+0x38, the original at 0x51b262 / 0x51b29f / 0x51b2b9 writes rec+0xf0 (0xa0 bytes) / rec+0x24 / rec+0x28, exactly what the reader in unk_Unk51e900 reads back (t+0x3c, t+9, t+10), so three wrong offsets were a meaning error and are corrected; the flag/rec reset moved before the fourth loop (the original zeroes them once at 0x51b165..0x51b177), the tab local removed so both table loops re-read ls_ActionQueue per iteration as the original does. Remaining 209 code hunks: register allocation and scheduling - the original's first count loop runs in eax/ecx with no callee-saved register and the pushes ebx/ebp/esi/edi come only after it at 0x51b013, ours pushes them at entry (so cnt is memory-incremented in [esp+0x14] and the zero sits in edi), then the whole function is shifted (ebp/esi/ebx/edi roles and the esp-relative offsets of the rec pieces). Readability Q2/Q4 unchanged: the CHACTION typed view (ch.h) is blocked in ls.c by gv.h's K&R d3sm_GetVertex; the record is handled as int*. */
+/* 0x51aff0 @deep draft: the loop structure is now read against the original at 0x51aff0..0x51b340 and the record pieces fixed - the draft wrote rec+0x70 / rec+0x2c / rec+0x38, the original at 0x51b262 / 0x51b29f / 0x51b2b9 writes rec+0xf0 (0xa0 bytes) / rec+0x24 / rec+0x28, exactly what the reader in ls_ReadSceneRecords reads back (t+0x3c, t+9, t+10), so three wrong offsets were a meaning error and are corrected; the flag/rec reset moved before the fourth loop (the original zeroes them once at 0x51b165..0x51b177), the tab local removed so both table loops re-read ls_ActionQueue per iteration as the original does. Remaining 209 code hunks: register allocation and scheduling - the original's first count loop runs in eax/ecx with no callee-saved register and the pushes ebx/ebp/esi/edi come only after it at 0x51b013, ours pushes them at entry (so cnt is memory-incremented in [esp+0x14] and the zero sits in edi), then the whole function is shifted (ebp/esi/ebx/edi roles and the esp-relative offsets of the rec pieces). Readability Q2/Q4 unchanged: the CHACTION typed view (ch.h) is blocked in ls.c by gv.h's K&R d3sm_GetVertex; the record is handled as int*. */
 int ls_WriteSceneRecords(int f)
 {
     int cnt = 0, i, k, n;
@@ -1437,7 +1437,7 @@ int ls_LoadGame(int name, int kind)
     d3if_SelectScene(0, 1);
     unk_Unk511790();
     unk_Unk511840();
-    if (unk_Unk51e900(h) == 0)
+    if (ls_ReadSceneRecords(h) == 0)
         LS_LOADFAIL
     ai_JudgeCatholic = gm_FindChar(ai_JudgeCatholic);
     ai_JudgeProtestant = gm_FindChar(ai_JudgeProtestant);
@@ -1929,7 +1929,7 @@ int ls_ReadCharacters(int f)
 /* 0x51e750, reads one ch.c CHARACTER record from the save (allocated by ch_AllocAt from the id read first): its name (+8, 0x20 bytes), the group / script group (+0x2c / +0x30), the flag word +0x8c (bit 5 set when the flag byte read is 1), the full name +0x170 (0x30) and the body name +0x130 (0x40), +0x38 (0x10), +0x48 (0xc), the texts +0x1a8 (from 0x10013) and +0x1e8 (from 0x1005a), the flags &= 0xdffb, then the reference index read last goes to +0x12c (0x51e900 turns it into a pointer). Returns the record */
 
 
-int ls_ReadCharacter(int f)
+struct CHARACTER *ls_ReadCharacter(int f)
 {
     int id, ent, v;
     unsigned short *fl;         /* the flag word at +0x8c */
@@ -1962,222 +1962,227 @@ int ls_ReadCharacter(int f)
     *fl &= 0xdffb;
     ref = (int *)(ent + 0x12c);
     *ref = v;
-    return ent;
+    return (struct CHARACTER *)ent;
 }
-/* 0x51e900, reads the scene objects and the character scene records of a save game: the two lists of object records (0x51e750; first the ones that point to characters (+0x12c via 0x505df0), then those that point to buildings (0x4ffe90)), then for each scene object (the list 0x1468ae0, 0x300): its universe (0x4478e0), its name "%s_%s" / "holzfaeller_%s" ("hozfaeller" is a misspelling in the data), the model "*%s.bgf" (found with 0x42fca0, else the name of the object's character 0x4fb390 and the name is cut at the last underscore), the placement (0x403070, the owner ids, +0x1a8 / +0x1e8 texts), the object's owner: a character record (0x50d380; "sp_%i"; the karren objects "ob_KARREN_klein / mittel / GROSS" for the kinds 0x134 / 0x135 / 0x136 are added with their colour) or a building (0x43b860 and "sp_%i", the building's owner link +0x1d0 / +0x180); finally the table 0x631050 (the records of 0x194 bytes, the count 0x300 below 0x10044 else 2000 or 0x300: the fields written by 0x51aff0) and its link fixing (invalid links are reported "ls_LoadCharacter(): invalid next or prev-action pointer for action-type:%i" / "invalid stockptr for action-type:%i (character per...)" and the record is cleared). Returns 1. ROUGH */
+/* 0x51e900, reads what ls_WriteSceneRecords writes: two lists of scene characters (ls_ReadCharacter; the owner id of
+   the first turned back into its AICHAR with gm_FindChar, of the second into its AIOBJ with gm_Query), then for every
+   scene character of ch_List: the universe of its building / object (group / scriptGroup) is selected, its mesh name
+   "%s_%s" (fullname, body; "hozfaeller" is a misspelling in the data, made "holzfaeller_%s") is looked up as
+   "*%s.bgf" and, when missing, taken from the owner's name record (gm_CharNameRecord, cut at its last '_'), the mesh
+   is made (ch_CreateMesh), the ids go back into group / scriptGroup, the hand object and sit animation are set, and
+   the body is hooked up with its owner: a character (ai_Chars) gets "sp_<netId>", the owner and pick id on the body
+   and the hand object of its good (cm_UpdateHandObject); an object gets "sp_<objId>" and, for the carts 0x134 /
+   0x135 / 0x136, a cart model "ob_KARREN_klein / mittel / GROSS" with the texture set of its keeper; hidden
+   characters stay hidden. Then the action records of ch_Queue (0x300, from version 0x10044 0x500, from 0x10058 2000) and their links:
+   the character, prev / next and the function of the action type; an action without prev becomes its character's
+   queue head ("invalid stockptr" without one), '3' actions get their scene universe, walks are reset; an action
+   with a broken link ("invalid next or prev-action pointer") is unlinked and cleared. Returns 1, 0 when a read
+   fails.
+   @deep read whole against 0x51e900..0x51f07b and rewritten on the typed records (CHARACTER pos / rot /
+   owner / handObject / sitAnim, D3OBJECT pickId / owner, AICHAR jobKind / ref54 / ownName, AIOBJ sceneObj,
+   CHACTION u.scene): the two ls_ReadCharacter lists, the ch_List pass (universe, mesh name, hozfaeller
+   fix, gm_CharNameRecord fallback, ch_CreateMesh, hand object / sit anim, the character vs object owner
+   with the original's redundant owner re-test at 0x51ec3a, the cart models and texture set), the
+   action-record read (do-while; count 0x300 / 0x500 from 0x10044 / 2000 from 0x10058 - the draft had 0x300
+   for the middle range, a meaning fix) and the link pass (the type held in a local as the original's bl,
+   universe stored args[0] then u.scene.universe) all compared statement by statement; 619 vs 621
+   instructions. Left: allocation only - the ch_List loop pointer lives in [esp+0x14] and is reloaded into
+   edx at 0x51e9d6 (ours keeps it in eax), the original keeps the zero in ebp and the type in bl in the
+   link pass (ours: zero in ebx, the type spilled to [esp+0x18], the offset counter in ebp instead of
+   [esp+0x14] / edi, the 2 missing instructions), the eax/ecx/edx rotation through 0x51ea56..0x51ecd3 and
+   0x51ed71..0x51eff4 (e.g. ours mov ecx,[esi+0x34]; lea eax,[esi+0x48] vs the original's mov
+   edx,[esi+0x34]; lea ecx,[esi+0x48]), and the slot swaps [esp+0x34]/[esp+0x38], [esp+0x24]/[esp+0x28],
+   [esp+0x14]/[esp+0x1c] */
 
 
-int unk_Unk51e900(int f)
+int ls_ReadSceneRecords(int f)
 {
-    int n, i, k, saved;
-    int *o;
-    char *rec, *name, *obj;
-    char buf[128], file[260], dummy[260];
-    char flag;
-    int *t;
-    char *own;
+    int n, i, j, saved, uni;
+    CHARACTER *ch;
+    AIBLD *bld;
+    AIOBJ *part;
+    char *u;
+    void *own;
+    AICHAR *c;
+    AIOBJ *o;
+    AICHAR *keeper;
+    D3OBJECT *cart;
+    unsigned char colour;
+    unsigned char type;
+    CHACTION *a;
+    char buf[0x80], file[0x104], path[0x104];
 
     n = 0;
     saved = d3_CurrentScene;
     LS_R(&n, 4)
     for (i = 0; i < n; i++) {
-        rec = (char *)ls_ReadCharacter(f);
-        *(int *)(rec + 300) = (int)gm_FindChar(*(int *)(rec + 300));
+        ch = ls_ReadCharacter(f);
+        ch->owner = gm_FindChar((int)ch->owner);
     }
     LS_R(&n, 4)
     for (i = 0; i < n; i++) {
-        rec = (char *)ls_ReadCharacter(f);
-        *(int *)(rec + 300) = gm_Query(0, 2, 7, 1, *(int *)(rec + 300));
+        ch = ls_ReadCharacter(f);
+        ch->owner = gm_Query(0, 2, 7, 1, (int)ch->owner);
     }
-    for (o = ai_Unk1468ae0; (int)o < (unsigned)((unsigned)ai_Unk1468ae0 + 0xc00); o++) {
-        obj = (char *)*o;
-        if (obj != 0) {
-            char *bld = 0, *part = 0;
-            int uni;
-
-            bld = (char *)gm_BuildQuery(1, 1, *(int *)(obj + 0x2c));
-            if (bld == 0) {
-                uni = 0;
-            } else {
-                part = (char *)gm_Query(*(int *)(bld + 0x5d), 2, 6, 1, *(int *)(obj + 0x30));
-                if (part == 0 || *(short *)part == 0xfd)
-                    uni = init_BuildingSceneUniverse((unsigned char *)bld);
+    for (i = 0; i < CH_MAX; i++) {
+        ch = ch_List[i];
+        if (ch == 0)
+            continue;
+        part = 0;
+        bld = (AIBLD *)gm_BuildQuery(1, 1, ch->group);
+        if (bld != 0) {
+            part = (AIOBJ *)gm_Query((void *)bld->objList, 2, 6, 1, ch->scriptGroup);
+            if (part != 0 && part->id != 0xfd)
+                uni = init_ObjectSceneUniverse((unsigned short *)part);
+            else
+                uni = init_BuildingSceneUniverse((unsigned char *)bld);
+        } else {
+            uni = 0;
+        }
+        d3if_SelectScene(uni, 1);
+        sprintf(buf, "%s_%s", ch->fullname, ch->body);
+        if (strstr(buf, "hozfaeller") != 0)
+            sprintf(buf, "holzfaeller_%s", ch->body);
+        sprintf(file, "*%s.bgf", buf);
+        _strupr(file);
+        if (vfs_GetPath(file, vfs_Root, vfs_Root, path) == 0) {
+            c = ch->owner;
+            c->ownName[0] = 0;
+            strcpy(ch->fullname, (char *)gm_CharNameRecord(c->id) + 4);
+            u = strrchr(ch->fullname, '_');
+            if (u != 0) {
+                strcpy(ch->body, u + 1);
+                *u = 0;
+            }
+            sprintf(buf, "%s_%s", ch->fullname, ch->body);
+        }
+        ch_CreateMesh(ch, buf, &ch->pos);
+        if (bld != 0)
+            ch->group = bld->id;
+        if (part != 0)
+            ch->scriptGroup = part->objId;
+        if (ch->obj == 0)
+            continue;
+        if (ch->handObject[0] != 0)
+            ch_SetHandObject(ch, 2, ch->handObject);
+        if (ch->sitAnim[0] != 0) {
+            u = strrchr(ch->sitAnim, '_');
+            if (u != 0)
+                *u = 0;
+            ch_SetSitAnim(ch, ch->sitAnim);
+        }
+        own = ch->owner;
+        if (own != 0 && (char *)own >= ai_Chars[0] && (char *)own < ai_Chars[768]) {
+            c = own;
+            d3_SetObjectRot(ch->obj, &ch->rot);
+            sprintf(ch->obj->name, "sp_%i", c->netId);
+            ch->obj->owner = c;
+            ch->obj->pickId = c->id | 0x3000000;
+            c->model = (AITASK *)ch;
+            if (c->job != 0)
+                c->jobKind = c->job->kind;
+            cm_UpdateHandObject((char *)c);
+        } else if (ch->owner != 0) {
+            o = own;
+            init_HookObject((char *)ch->obj, own, 1);
+            sprintf(ch->obj->name, "sp_%i", o->objId);
+            o->sceneObj = ch;
+            if (o->id == 0x134)
+                cart = d3_CreateObject(0, &ch->pos, &ch->rot, "ob_KARREN_klein");
+            else if (o->id == 0x135)
+                cart = d3_CreateObject(0, &ch->pos, &ch->rot, "ob_KARREN_mittel");
+            else if (o->id == 0x136)
+                cart = d3_CreateObject(0, &ch->pos, &ch->rot, "ob_KARREN_GROSS");
+            else
+                cart = 0;
+            if (cart != 0) {
+                keeper = (AICHAR *)gm_ObjectOwnerChar(own);
+                if (keeper != 0 && keeper->ref54 != 0 && (keeper->kind == 5 || keeper->kind == 6 || keeper->kind == 7))
+                    colour = (unsigned char)keeper->ref54 + 'g';
                 else
-                    uni = init_ObjectSceneUniverse((unsigned short *)part);
-            }
-            d3if_SelectScene(uni, 1);
-            name = obj + 0x130;
-            sprintf(buf, "%s_%s", obj + 0x170, name);
-            if (strstr(buf, "hozfaeller") != 0)
-                sprintf(buf, "holzfaeller_%s", name);
-            sprintf(file, "*%s.bgf", buf);
-            _strupr(file);
-            if (vfs_GetPath(file, vfs_Root, vfs_Root, dummy) == 0) {
-                char *c = *(char **)(obj + 300);
-                char *s, *u;
-
-                c[0x1f4] = 0;
-                s = (char *)unk_Unk4fb390(*(unsigned short *)c) + 4;
-                strcpy(obj + 0x170, s);
-                u = strrchr(obj + 0x170, 0x5f);
-                if (u != 0) {
-                    strcpy(name, u + 1);
-                    *u = 0;
-                }
-                sprintf(buf, "%s_%s", obj + 0x170, name);
-            }
-            ch_CreateMesh(obj, buf, obj + 0x38);
-            if (bld != 0)
-                *(int *)(obj + 0x2c) = *(int *)(bld + 1);
-            if (part != 0)
-                *(int *)(obj + 0x30) = *(int *)(part + 2);
-            if (*(int *)(obj + 0x34) != 0) {
-                if (obj[0x1a8] != 0)
-                    ch_SetHandObject(obj, 2, obj + 0x1a8);
-                if (obj[0x1e8] != 0) {
-                    char *u = strrchr(obj + 0x1e8, 0x5f);
-
-                    if (u != 0)
-                        *u = 0;
-                    ch_SetSitAnim(obj, obj + 0x1e8);
-                }
-                own = *(char **)(obj + 300);
-                if (own != 0) {
-                    if ((unsigned)own < (unsigned)&ai_Chars || (unsigned)own > ((unsigned)&ai_Unk770d8c + 0x651f3)) {
-                        init_HookObject(*(int *)(obj + 0x34), own, 1);
-                        sprintf(*(char **)(obj + 0x34), "sp_%i", *(int *)(own + 2));
-                        *(char **)(own + 0x3b) = obj;
-                        {
-                            unsigned short kind = *(unsigned short *)own;
-                            char *model = 0;
-                            char *o2;
-
-                            if (kind == 0x134)
-                                model = "ob_KARREN_klein";
-                            else if (kind == 0x135)
-                                model = "ob_KARREN_mittel";
-                            else if (kind == 0x136)
-                                model = "ob_KARREN_GROSS";
-                            if (model != 0) {
-                                o2 = (char *)d3_CreateObject(0, obj + 0x38, obj + 0x48, model);
-                                if (o2 != 0) {
-                                    char *c2 = (char *)gm_Unk509ff0(own);
-                                    char col;
-
-                                    if (c2 != 0 && *(int *)(c2 + 0x54) != 0 && (c2[2] == 5 || c2[2] == 6 || c2[2] == 7))
-                                        col = c2[0x54] + 'g';
-                                    else
-                                        col = 0;
-                                    d3if_SelectTextureSet(o2, *(int *)(o2 + 0x1cc), col, 1);
-                                    ch_AttachTransport(obj, o2);
-                                    *(int *)(o2 + 0x224) = 1;
-                                    init_HookObject(o2, own, 1);
-                                }
-                            }
-                        }
-                    } else {
-                        d3_SetObjectRot(*(int *)(obj + 0x34), obj + 0x48);
-                        sprintf(*(char **)(obj + 0x34), "sp_%i", *(int *)(own + 4));
-                        *(char **)(*(int *)(obj + 0x34) + 0x200) = own;
-                        *(unsigned *)(*(int *)(obj + 0x34) + 0x48) = *(unsigned short *)own | 0x3000000;
-                        *(char **)(own + 0x184) = obj;
-                        if (*(char **)(own + 0x17c) != 0)
-                            own[0x180] = **(char **)(own + 0x17c);
-                        ai_Unk4cde20(own);
-                    }
-                }
-                if ((obj[0x8c] & 0x20) != 0)
-                    ch_SetVisible(obj, 0);
+                    colour = 0;
+                d3if_SelectTextureSet(cart, (struct D3SURF *)cart->info, colour, 1);
+                ch_AttachTransport(ch, cart);
+                cart->mask = 1;
+                init_HookObject((char *)cart, own, 1);
             }
         }
+        if ((ch->flags.bytes.lo & 0x20) != 0)
+            ch_SetVisible(ch, 0);
     }
     d3if_SelectScene(saved, 1);
     i = 0;
-    k = 0;
-    *(int *)ls_ActionQueue = 0;
+    ch_Queue[0].func = 0;
     if (ls_Version < 0x10044)
         n = 0x300;
     else
-        n = ((ls_Version > 0x10057) - 1 & 0xfffffd30) + 2000;
+        n = ls_Version < 0x10058 ? 0x500 : CH_QUEUE;
     do {
-        t = (int *)(ls_ActionQueue + k);
-        memset(t, 0, 0x194);
-        LS_R(&flag, 1)
-        *((char *)t + 9) = flag;
-        LS_R(t + 3, 4)
-        LS_R(t + 5, 4)
-        LS_R(t + 0xc, 0x20)
-        LS_R(t + 0x14, 0x20)
-        LS_R(t + 0x3c, 0xa0)
-        LS_R(t + 100, 1)
-        LS_R(t + 9, 4)
-        LS_R(t + 10, 4)
+        a = &ch_Queue[i];
+        memset(a, 0, sizeof(CHACTION));
+        LS_R(&type, 1)
+        a->type = type;
+        LS_R(&a->count, 4)
+        LS_R(&a->ch, 4)
+        LS_R(&a->args[0], 0x20)
+        LS_R(&a->args[8], 0x20)
+        LS_R(&a->u, 0xa0)
+        LS_R(&a->stop, 1)
+        LS_R(&a->prev, 4)
+        LS_R(&a->next, 4)
         i++;
-        k += 0x194;
     } while (i < n);
-    for (k = 0; k < 0xc5440; k += 0x194) {
-        t = (int *)(ls_ActionQueue + k);
-        if (*((unsigned char *)t + 9) != 0) {
-            int obj2 = ai_Unk1468ae0[t[5]];
-
-            t[5] = obj2;
-            if (obj2 != 0) {
-                t[9] = ls_ActionAt(t[9]);
-                t[10] = ls_ActionAt(t[10]);
-                t[0] = ai_Unk1469700[*((unsigned char *)t + 9) * 0x13];
-                t[3] = 0;
-                if (t[9] == 0) {
-                    int ob = t[5];
-
-                    if (ob == 0) {
-                        sprintf(dummy, "ls_LoadCharacter(): invalid stockptr for action-type:%i (character per...)", *((unsigned char *)t + 9));
-                        *((char *)t + 9) = 0;
-                    } else {
-                        if (*(int *)(ob + 0x128) != 0)
-                            ch_ClearActions(ob);
-                        *(int **)(t[5] + 0x128) = t;
-                    }
-                }
-                if (*((char *)t + 9) == '3') {
-                    int b2 = gm_BuildQuery(1, 1, t[0xd]);
-
-                    if (b2 == 0) {
-                        t[0xc] = 0;
-                        t[0x5c] = 0;
-                    } else {
-                        short *pr = (short *)gm_Query(*(int *)(b2 + 0x5d), 2, 6, 1, t[0xe]);
-
-                        if (pr == 0 || *pr == 0xfd)
-                            t[0xc] = t[0x5c] = init_BuildingSceneUniverse((unsigned char *)b2);
-                        else
-                            t[0xc] = t[0x5c] = init_ObjectSceneUniverse((unsigned short *)pr);
-                    }
-                } else if (*((char *)t + 9) == '-') {
-                    t[0x55] = -1;
-                    t[0x3d] = 0;
-                }
-                if (t[9] == -1 || t[10] == -1)
-                    goto bad;
+    for (i = 0; i < CH_QUEUE; i++) {
+        a = &ch_Queue[i];
+        type = a->type;
+        if (type != 0) {
+            a->ch = ch_List[(int)a->ch];
+            if (a->ch == 0) {
+                memset(a, 0, sizeof(CHACTION));
                 continue;
             }
-        } else {
-            if (t[9] == -1 || t[10] == -1)
-                goto bad;
-            continue;
+            a->prev = (CHACTION *)ls_ActionAt((int)a->prev);
+            a->next = (CHACTION *)ls_ActionAt((int)a->next);
+            a->func = ch_ActDefs[type].func;
+            a->count = 0;
+            if (a->prev == 0) {
+                if (a->ch != 0) {
+                    if (a->ch->actions != 0)
+                        ch_ClearActions(a->ch);
+                    a->ch->actions = a;
+                } else {
+                    sprintf(path, "ls_LoadCharacter(): invalid stockptr for action-type:%i (character per...)", type);
+                    a->type = 0;
+                }
+            }
+            if (a->type == '3') {
+                bld = (AIBLD *)gm_BuildQuery(1, 1, a->args[1]);
+                if (bld != 0) {
+                    part = (AIOBJ *)gm_Query((void *)bld->objList, 2, 6, 1, a->args[2]);
+                    if (part != 0 && part->id != 0xfd)
+                        a->u.scene.universe = a->args[0] = init_ObjectSceneUniverse((unsigned short *)part);
+                    else
+                        a->u.scene.universe = a->args[0] = init_BuildingSceneUniverse((unsigned char *)bld);
+                } else {
+                    a->u.scene.universe = a->args[0] = 0;
+                }
+            } else if (a->type == '-') {
+                a->u.walk.retryAt = -1;
+                a->u.walk.path = 0;
+            }
         }
-        memset(t, 0, 0x194);
-        continue;
-bad:
-        sprintf(file, "ls_LoadCharacter(): invalid next or prev-action pointer for action-type:%i", *((unsigned char *)t + 9));
-        t[9] = 0;
-        t[10] = 0;
-        for (i = 0; i < 0xc5440; i += 0x194) {
-            if (*(int **)(i + 0x28 + ls_ActionQueue) == t)
-                *(int *)(i + 0x28 + ls_ActionQueue) = 0;
-            if (*(int **)(i + 0x24 + ls_ActionQueue) == t)
-                *(int *)(i + 0x24 + ls_ActionQueue) = 0;
+        if ((int)a->prev == -1 || (int)a->next == -1) {
+            sprintf(file, "ls_LoadCharacter(): invalid next or prev-action pointer for action-type:%i", a->type);
+            a->prev = 0;
+            a->next = 0;
+            for (j = 0; j < CH_QUEUE; j++) {
+                if (ch_Queue[j].next == a)
+                    ch_Queue[j].next = 0;
+                if (ch_Queue[j].prev == a)
+                    ch_Queue[j].prev = 0;
+            }
+            memset(a, 0, sizeof(CHACTION));
         }
-        memset(t, 0, 0x194);
     }
     return 1;
 }

@@ -54,7 +54,13 @@ struct D3OBJECT;
 
 typedef struct D3OBJECT D3OBJECT;
 struct D3OBJECT {
-    char name[0x4c];                /* compared with _strcmpi by name lookups; real length unknown */
+    union {
+        char name[0x4c];            /* compared with _strcmpi by name lookups; real length unknown */
+        struct {
+            char padname[0x48];
+            unsigned int pickId;    /* 0x48, a character's body: its AICHAR id | 0x3000000 (ls_ReadSceneRecords) */
+        };
+    };
     D3VECTOR pos;
     char pad058[0x4];
     D3VECTOR unk05c;
@@ -73,7 +79,8 @@ struct D3OBJECT {
     D3OBJECT *prev;                 /* 0x1f4 */
     D3OBJECT *parent;               /* 0x1f8, set with d3_SetParent */
     D3OBJECT *child;                /* 0x1fc */
-    char pad200[0x8];
+    void *owner;                    /* 0x200, the game record the object stands for (a character's body: its AICHAR) */
+    char pad204[0x4];
     D3SCENE *scene;                 /* 0x208 */
     struct D3SOUND *sound;          /* 0x20c, set by d3snd_Attach */
     unsigned char state;            /* 0x210, object state bits: 1 = starts an object group, 2 = linked, 4 = dirty,

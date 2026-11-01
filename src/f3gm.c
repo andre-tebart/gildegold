@@ -833,7 +833,7 @@ unsigned *unk_Unk4fb330(int kind, int id)
 }
 /* 0x4fb390, the name record (head table entry) of the character id: a character with the job (+0x164) 0 and +0x20 above +10 gets the default record (0x6118a8 / 0x6118f0 by +9); a character with its own name (+0x1f4) and the int +0x18c gets a copy of it in the history 0x91ac40 (8 records, 0x6f1bb0 the next one; the four head numbers = the int - 0x639); kind 0x11: one of the three records 0x617398; else the record of its job (+0x164) or of its title (+0x165) in the tables by +9 (0x612bd8 / 0x614518, 0x611938 / 0x612288). ROUGH */
 
-unsigned *unk_Unk4fb390(int id)
+unsigned *gm_CharNameRecord(int id)
 {
     unsigned *p, *q;
     unsigned char *c;
@@ -1029,7 +1029,7 @@ int init_ObjectSceneUniverse();                     /* 0x511dc0 */
 int init_BuildingSceneUniverse();                     /* 0x511e60 */
 void ch_PreloadAnims(struct CHARACTER *ch, int n, ...);                     /* 0x404200 */
 void ch_SetVisible();                     /* 0x402480 */
-unsigned *unk_Unk4fb390(int id);
+unsigned *gm_CharNameRecord(int id);
 
 /* 0x4fb890, chooses the head icon number of the character c (+0x18c = icon index + 0x639; id at +0, number at +4). Without a model (+0x184) or icon names: the head numbers of the name record (0x4fb390, filled as 0x4fb620 does, "zigeunermeister" without the suffix), the character takes number (its id % count of the valid ones); returns id / count. With a model: the first model part name (0x40 bytes each, the count at +0x1e0 of its class) containing "kopf" / "KOPF" / "HEAD" / "head" whose icon "%s_ICON.bmp" exists. Otherwise +0x18c = 0x639. ROUGH */
 int gm_ChooseHeadIcon(unsigned short *c)
@@ -1048,7 +1048,7 @@ int gm_ChooseHeadIcon(unsigned short *c)
         return 0;
     m = *(int **)(c + 0xc2);
     if (m == 0 || ai_Unk6f1b94 == 0) {
-        rec = unk_Unk4fb390(*c);
+        rec = gm_CharNameRecord(*c);
         if (rec[0xd] == 0xff) {
             strcpy(name, (char *)(rec + 1));
             u = strrchr(name, '_');
@@ -1148,7 +1148,7 @@ int unk_Unk4fbb80(unsigned short *c, int scene, int *p, int *ori, int obj, char 
         pos[2] = p[2];
     }
     {
-        unsigned *rec = unk_Unk4fb390(*c);
+        unsigned *rec = gm_CharNameRecord(*c);
         if (rec != 0) {
             name = (char *)(rec + 1);
             s = name;
@@ -8814,7 +8814,7 @@ int gm_Unk509f80(char *b)
 }
 /* 0x509ff0, the character that lives in the building the object o is in (word +0x25 of the building), or o's own character */
 
-unsigned short *gm_Unk509ff0(unsigned short *o)
+unsigned short *gm_ObjectOwnerChar(unsigned short *o)
 {
     int b;
 

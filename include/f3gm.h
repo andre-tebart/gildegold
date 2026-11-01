@@ -53,7 +53,7 @@ int gm_CurseObjectCount(char *b);  /* 0x50cfd0 */
 int gm_Unk50a0f0(int o);  /* 0x50a0f0 */
 int gm_Unk50ad70(char *c, int proto, int n);  /* 0x50ad70 */
 void gm_Unk50cad0(unsigned char *b, int d);  /* 0x50cad0 */
-unsigned *unk_Unk4fb390(int id);  /* 0x4fb390 */
+unsigned *gm_CharNameRecord(int id);  /* 0x4fb390 */
 int unk_Unk4fbb80(unsigned short *c, int scene, int *p, int *ori, int obj, char *dummy);  /* 0x4fbb80 */
 float unk_Unk4fc8e0(short *c);  /* 0x4fc8e0 */
 char *unk_Unk4fd820(int unused, char *o);  /* 0x4fd820 */
@@ -91,7 +91,7 @@ void gm_Shuffled(unsigned char n, int *out);  /* 0x505ca0 */
 int gm_Unk509dc0(int unused, int kind);  /* 0x509dc0 */
 int gm_Unk509e30(void *list, unsigned char p);  /* 0x509e30 */
 int gm_Unk509ee0(char *c, char p);  /* 0x509ee0 */
-unsigned short *gm_Unk509ff0(unsigned short *o);  /* 0x509ff0 */
+unsigned short *gm_ObjectOwnerChar(unsigned short *o);  /* 0x509ff0 */
 int gm_Unk50a250(int b, unsigned short *p, unsigned cnt, int *out);  /* 0x50a250 */
 int unk_Unk4fc7a0(char *c);  /* 0x4fc7a0 */
 char unk_Unk5020e0(int k, int c);  /* 0x5020e0 */

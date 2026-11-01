@@ -32,7 +32,9 @@ typedef struct CHARACTER {         /* 0x244 bytes */
     int group;                      /* 0x2c, a group id, compared with evt_NoGroup and with a script's group */
     int scriptGroup;                /* 0x30, the group of the script that created / moved the character (chc.c) */
     D3OBJECT *obj;                  /* 0x34, the body */
-    char pad038[0x1c];
+    D3VECTOR pos;                   /* 0x38, the place ch_CreateMesh puts the body at (saved, ls_ReadCharacter) */
+    char pad044[0x4];
+    D3VECTOR rot;                   /* 0x48, its angles (d3_SetObjectRot, ls_ReadSceneRecords) */
     D3VECTOR offset;                /* 0x54, added to the body position */
     char pad060[0x4];
     D3OBJECT *rightHand;            /* 0x64, the object in the right hand (ch_SetHandObject hand 2, ch_SetVisible) */
@@ -81,14 +83,16 @@ typedef struct CHARACTER {         /* 0x244 bytes */
         CHANIM *anim;               /* the animation file in use */
         struct CHACTION *actions;   /* the action queue of the character */
     };
-    char pad12c[0x4];
+    void *owner;                    /* 0x12c, the game record the character shows: an AICHAR of ai_Chars or an
+                                       AIOBJ (a cart); the save keeps its id (ls_ReadSceneRecords) */
     char body[0x40];                /* 0x130, the part of the name after the last but one '_' */
     char fullname[0x30];            /* 0x170 */
     float unk1a0;
     float speedScale;               /* 0x1a4, walk animation speed scale 0.4 .. 1: a factor of
                                        CH_XSLOT(ch)->playSpeed, lowered by ch_GetNewPath the closer a blocking
                                        character is (0.5 minimum) and raised again by 0.01 per walk update */
-    char pad1a8[0x80];
+    char handObject[0x40];          /* 0x1a8, the model in the right hand (ch_SetHandObject hand 2 on load) */
+    char sitAnim[0x40];             /* 0x1e8, the sit animation (ch_SetSitAnim on load, cut at its last '_') */
     void (*unk228)(struct CHARACTER *ch);
     D3OBJECT *lowPolyBody;          /* 0x22c, low-poly body */
     char lowname[0x10];             /* 0x230 */
@@ -154,7 +158,7 @@ typedef struct CHOBJBITS {
 #define D3OBJ_BITS(obj, off) ((CHOBJBITS *)((char *)(obj) + (off)))
 float d3_YawTo(struct D3OBJECT *obj, float *p);                                     /* 0x448ac0, angle towards target */
 #define D3OBJ_UNK048(obj) (*(int *)&(obj)->name[0x48])
-#define D3OBJ_UNK200(obj) (*(int *)&(obj)->pad200[0])
+#define D3OBJ_UNK200(obj) (*(int *)&(obj)->owner)
 #define D3MATERIAL_UNK958(m) (*(float *)((char *)(m) + 0x958))
 /* D3OBJECT.info is the D3ANIMCTL of animated objects */
 #define D3OBJ_ANIM(obj) ((D3ANIMCTL *)(obj)->info)
@@ -248,6 +252,11 @@ struct CHACTION {                   /* 0x194 bytes, 2000 of them in ch_Queue; fu
         struct {
             char started;           /* turn actions (worker ch4) */
         } turn;
+        struct {                    /* the actions of type '3' (0x33): args[1] / args[2] name a building and its
+                                       object, the load puts their scene universe into args[0] and here */
+            char pad0f0[0x80];
+            int universe;           /* 0x170 */
+        } scene;
         struct {
             int pathLen;            /* 0xf0, number of cells in path (2 bytes each) */
             void *path;             /* 0xf4, walk actions: allocated path */

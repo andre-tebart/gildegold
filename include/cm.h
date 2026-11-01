@@ -517,7 +517,7 @@ char *ai_Unk4cdac0(char *c);  /* 0x4cdac0 */
 void ai_Unk4cdb20(char *c);  /* 0x4cdb20 */
 char ai_Unk4cdb80(char *c);  /* 0x4cdb80 */
 float ai_Unk4cdcf0(char *c);  /* 0x4cdcf0 */
-void ai_Unk4cde20(char *c);  /* 0x4cde20 */
+void cm_UpdateHandObject(char *c);  /* 0x4cde20 */
 int *ai_Unk4cdf00(char *rec, char *c);  /* 0x4cdf00 */
 int *ai_Unk4cdf80(char *c);  /* 0x4cdf80 */
 int ai_Unk4cdfe0(int x, int y);  /* 0x4cdfe0 */
@@ -903,7 +903,7 @@ int ai_AmountRow();  /* 0x5be3b0 */
 int ai_Unk4e32d0();  /* 0x4e32d0 */
 int ai_Unk4e3570();  /* 0x4e3570 */
 int amt_SendOfficeMessage(unsigned char a, char *b, char *c, unsigned char d, unsigned char e);  /* 0x4e6680 */
-unsigned * unk_Unk4fb390();  /* 0x4fb390 */
+unsigned * gm_CharNameRecord();  /* 0x4fb390 */
 int ai_Unk4e2c30();  /* 0x4e2c30 */
 int ai_Unk4e2c70();  /* 0x4e2c70 */
 int ai_Unk4e3290();  /* 0x4e3290 */
