@@ -55,6 +55,7 @@ extern GAPDATA full_data_6f2680[];
 extern GAPDATA full_data_6f2684[];
 #include "f3init_types.h"
 #include "f3init.h"
+#include "net.h"
 extern unsigned char kb_Last;
 extern int sv_PopRequest;
 extern int d2_LastWindow;
