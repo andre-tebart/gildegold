@@ -164,7 +164,7 @@ typedef struct AIARG {                  /* 0x18 bytes, what a decide callback fi
     unsigned char kind;                 /* 0x00 */
     char pad01[3];
     int ref;                            /* 0x04, what the kind refers to: a building id, an item, a character's netId (kind 7) */
-    unsigned int unk08;                 /* 0x08 */
+    unsigned int arg;                   /* 0x08, a second value of the kind: a count (kind 7 at 0x4a8ad0: 1..5), -1 = none */
     int unk0c;                          /* 0x0c */
     int unk10;                          /* 0x10 */
     float unk14;                        /* 0x14 */
@@ -228,7 +228,7 @@ int ai_Unk4973f0(float *a, float *b, int i, AIPER *p, int f, AIARG *o1, AIARG *o
 
 int ai_Unk495a50(int kind, int id, int c, AIARG *s1, AIARG *s2);                /* 0x495a50 */
 int ai_Unk4a4c10(float *a, float *b, int i, AIPER *p, AIDEC *d);                /* 0x4a4c10 */
-int ai_Unk4a58d0(AIPER *p, int a, int *flags, int b, float f, unsigned short *id); /* 0x4a58d0 */
+int ai_PickPartnerChain(AIPER *p, int a, int *flags, int b, float f, unsigned short *id); /* 0x4a58d0 */
 void cm_SendSetField(int a, int b, int c, int d, int e);                   /* 0x4c4a60 */
 void cm_SendMoneyDelta(int a, int b);                                               /* 0x4c5f60 */
 int amt_GetOfficeApplicants(int k, int n, char **out);                                   /* 0x4e76b0 */
@@ -876,7 +876,7 @@ int ai_Unk49a5b0(G5CH *p, AIARG *s1, AIARG *s2);                                
 /* 0x5ba620 with an int id (the callers here zero-extend; unk_48e070.h: unsigned short) */
 #define G8_5BA620(id) ((void *(*)(int))ai_Unk5ba620)(id)
 int ai_Unk49a690(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49a690 */
-#define G8_4A58D0(p, a, fl, b, f, id)     ((int (*)(AIPER *, int, unsigned int *, float, float, unsigned short *))ai_Unk4a58d0)((AIPER *)(p), a, fl, b, f, id)  /* am.h: b is int */
+#define G8_4A58D0(p, a, fl, b, f, id)     ((int (*)(AIPER *, int, unsigned int *, float, float, unsigned short *))ai_PickPartnerChain)((AIPER *)(p), a, fl, b, f, id)  /* am.h: b is int */
 int ai_Unk49aa80(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49aa80 */
 int ai_Unk49ab60(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49ab60 */
 int ai_Unk49ad80(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49ad80 */
@@ -1019,7 +1019,7 @@ typedef struct G9REC {                  /* 16 bytes, filled by 0x4a5760 (unk_49a
     int unk0c;                          /* 0xc */
 } G9REC;
 void ai_Unk4a5760(struct G5CH *p, int n, struct G9REC *rec, int *st);                          /* 0x4a5760, declared int elsewhere */
-/* 0x4a58d0 ai_Unk4a58d0 is declared in am.h (b is really a float) */
+/* 0x4a58d0 ai_PickPartnerChain is declared in am.h (b is really a float) */
 int ai_Unk4a5a30(AIPER *p, unsigned int fl, int n, unsigned short *ids, float lo, float hi, unsigned short *id); /* 0x4a5a30 */
 extern const int ai_Unk5ed100[16];                                                    /* 0x5ed100, random steps */
 int ai_Unk4a5b50(AIPER *p, unsigned int a, int *flags, float lo, float hi, unsigned short *id); /* 0x4a5b50, unk_490830.h: other view */

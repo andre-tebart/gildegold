@@ -340,3 +340,5 @@
 2026-11-01T20:18:33 0x004a7f50 func ai_Unk4a7f50 -> ai_PokerRateHand by:main why:rates a seat's hand 0..8 (the hand names at 0x600490); the showdown 0x4a8190 compares the kinds
 2026-11-01T20:23:41 0x004a8190 func ai_Unk4a8190 -> ai_PokerShowdown by:main why:rates the three hands (ai_PokerRateHand), picks the winning seat and stores its hand kind in winHand
 2026-11-01T20:28:12 0x004a8760 func ai_Unk4a8760 -> ai_DecideOfficePartner by:main why:decide callback: the character picks a partner among the holders of its office column (amt_GetColumnOffices), into the AIARG (kind 7, the partner's netId)
+2026-11-01T20:33:33 0x004a58d0 func ai_Unk4a58d0 -> ai_PickPartnerChain by:main why:am.c 0x4a58d0: picks a partner chain of a characters for an action with the flags flags[i] (the leader ai_Partner first, then ring entries rated in [b, f]); ids into id[]
+2026-11-01T20:35:19 0x004a8ad0 data ai_Unk4a8ad0 -> ai_DecidePartnerOtherSex by:main why:decide callback: a character with money >= 3 picks a partner by the flags of the other sex (ai_PickPartnerChain), into the AIARG (kind 7, netId, a count 1..5)

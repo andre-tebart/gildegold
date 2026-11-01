@@ -173,7 +173,8 @@ typedef struct AICHAR {                 /* 0x21c bytes, ai_Chars[768] */
     char pad003;
     unsigned int netId;                /* 0x004 */
     unsigned char health;               /* 0x008, 100 at creation (ahm.c), > 0 = alive (0x4adff0 'lives') */
-    char pad009[0x1b];
+    unsigned char sex;                  /* 0x009, 0 / non-0 (reasoned: 0x4a8ad0 asks the partner search for flags 0xf00502 / 0xf00501 by it, the other sex) */
+    char pad00a[0x1a];
     int unk024;                         /* 0x024 */
     char pad028[0x8];
     union {

@@ -20,6 +20,8 @@
 #define ai_TimeT (*(AITIME *)&ai_Time)  /* 0x770ae0, ai_Time (anm.c: char[14]) as the AITIME it is: this unit reads its fields */
 #define amt_GetOfficeI ((int (*)(int, struct AMTREC *))amt_GetOffice)  /* 0x4e6f30 (amt.h: unsigned char i): @original this unit pushes its int index raw (0x4dab50 / 0x4aad30: push ebp / push edx, no zero-extension) */
 
+#define PARTNER_FLAGS_SEX0 0xf00502  /* the partner-chain flags 0x4a8ad0 asks for a character with sex 0 (reasoned: the other sex; the low byte 2 against 1) */
+#define PARTNER_FLAGS_SEX1 0xf00501  /* ditto for sex != 0 */
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 #include "cm_types.h"
 #include "ahm.h"
@@ -1027,30 +1029,23 @@ int ai_Unk4a8a50(int a, AIPER *p, int *ctx, int d, unsigned char *m)
     }
     return 0;
 }
-/* 0x4a8ad0, decide callback: p (unk194 >= 3) picks a character of the other sex (0x4a58d0), into m (kind 7) with
-   a random count 1..5 */
+/* 0x4a8ad0, decide callback: p (money >= 3) picks a character of the other sex (ai_PickPartnerChain), into m
+   (kind 7) with a random count 1..5 */
 
-int ai_Unk4a8ad0(int a, AIPER *p, int c, int d, unsigned char *m)
+int ai_DecidePartnerOtherSex(int a, AICHAR *p, int c, int d, AIARG *m)
 {
     int flags;
     unsigned short id;
 
-    if (p->unk194 < 3)
+    if (p->money < 3)
         return 0;
-    flags = ((unsigned)&cm_SendRing + 0x4973c2) - (((unsigned char *)p)[9] != 0);
-    if (ai_Unk4a58d0(p, 1, &flags, 0, (float)util_RandomU(0x40), &id) == 0)
+    flags = p->sex != 0 ? PARTNER_FLAGS_SEX1 : PARTNER_FLAGS_SEX0;
+    if (ai_PickPartnerChain((AIPER *)p, 1, &flags, 0, (float)util_RandomU(0x40), &id) == 0)
         return 0;
-    m[0] = 7;
-    *(int *)(m + 4) = ((AIPER *)ai_CharsT)[id].netId;
-    if (util_RandomU(p->unk194 / 2) > 1 && util_RandomU(p->unk194 / 2) > 4) {
-        *(int *)(m + 8) = 5;
-        return 1;
-    }
-    if (util_RandomU(p->unk194 / 2) > 1) {
-        *(unsigned int *)(m + 8) = util_RandomU(p->unk194 / 2);
-        return 1;
-    }
-    *(int *)(m + 8) = 1;
+    m->kind = 7;
+    m->ref = ai_CharsT[id].netId;
+    /* a count 1..5: a roll of 0..money/2 - 1 when it is above 1, else 1 (the macro rolls twice, as the original) */
+    m->arg = min(util_RandomU(p->money / 2) > 1 ? util_RandomU(p->money / 2) : 1, 5);
     return 1;
 }
 /* 0x4a8bf0, eval callback: one in four */
@@ -1082,7 +1077,7 @@ int ai_Unk4a8c80(int a, AIPER *p, int c, int d, unsigned char *m)
 
     flags[0] = ((unsigned)&cm_SendRing + 0x4973c0);
     flags[1] = ((unsigned)&cm_SendRing + 0x4973c0);
-    if (ai_Unk4a58d0(p, 2, flags, 0, (float)util_RandomU(0x40), id) == 0)
+    if (ai_PickPartnerChain(p, 2, flags, 0, (float)util_RandomU(0x40), id) == 0)
         return 0;
     m[0] = 7;
     *(int *)(m + 4) = ((AIPER *)ai_CharsT)[id[0]].netId;
@@ -1099,7 +1094,7 @@ int ai_Unk4a8d20(int a, AIPER *p, int c, int d, unsigned char *m)
     if (p->unk194 < 3)
         return 0;
     flags = ((unsigned)&cm_SendRing + 0x4973c0);
-    if (ai_Unk4a58d0(p, 1, &flags, 0, (float)util_RandomU(0x12) + 32.0f, &id) == 0)
+    if (ai_PickPartnerChain(p, 1, &flags, 0, (float)util_RandomU(0x12) + 32.0f, &id) == 0)
         return 0;
     m[0] = 7;
     *(int *)(m + 4) = ((AIPER *)ai_CharsT)[id].netId;
@@ -1332,7 +1327,7 @@ int ai_Unk4a9420(int a, AIPER *p, int c, int d, unsigned char *m)
     if (p->unk194 < 2)
         return 0;
     flags = ((unsigned)&cm_SendRing + 0x4973c0);
-    if (ai_Unk4a58d0(p, 1, &flags, 0, (float)util_RandomU(0x20) + 40.0f, &id) == 0)
+    if (ai_PickPartnerChain(p, 1, &flags, 0, (float)util_RandomU(0x20) + 40.0f, &id) == 0)
         return 0;
     if (he_Unk553d60(p, &((AIPER *)ai_CharsT)[id]) == 0)
         return 0;
@@ -1350,7 +1345,7 @@ int ai_Unk4a94e0(int a, AIPER *p, int c, int d, unsigned char *m)
 
     if (p->unk194 >= 3 && (p->flags1c8 & 0x400) == 0) {
         flags = ((unsigned)&cm_SendRing + 0x4973c0);
-        if (ai_Unk4a58d0(p, 1, &flags, 0, (float)util_RandomU(0x20) + 18.0f, &id) != 0
+        if (ai_PickPartnerChain(p, 1, &flags, 0, (float)util_RandomU(0x20) + 18.0f, &id) != 0
             && (((AIPER *)ai_CharsT)[id].flags1c8 & 0x400) == 0
             && util_RandomF() + gm_Mix(p, &((AIPER *)ai_CharsT)[id], 3) >= 1.0f) {
             m[0] = 7;
@@ -1389,7 +1384,7 @@ int ai_Unk4a9660(int a, AIPER *p, int c, int d, unsigned char *m)
     if (p->unk194 < 8)
         return 0;
     flags = ((unsigned)&cm_SendRing + 0x497bc0);
-    if (ai_Unk4a58d0(p, 1, &flags, 0, (float)util_RandomU(0x10) + 18.0f, &id) == 0)
+    if (ai_PickPartnerChain(p, 1, &flags, 0, (float)util_RandomU(0x10) + 18.0f, &id) == 0)
         return 0;
     m[0] = 7;
     *(int *)(m + 4) = ((AIPER *)ai_CharsT)[id].netId;
@@ -1571,7 +1566,7 @@ int ai_Unk4a9a00(int a, AIPER *p, int c, unsigned char *in, unsigned char *m)
     default:
         return 0;
     case 0x1c:
-        return G10_CB(ai_Unk4a8ad0)(a, p, ctx, in, m);
+        return G10_CB(ai_DecidePartnerOtherSex)(a, p, ctx, in, m);
     case 0x1d:
         return G10_CB(ai_Unk4a8bf0)(a, p, ctx, in, m);
     case 0x21:
@@ -1818,7 +1813,7 @@ int ai_Unk4aa580(AIPER *p, int c, unsigned char *m)
     if (p->unk194 < 1)
         return 0;
     flags = ((unsigned)&cm_SendRing + 0x4973c0);
-    if (ai_Unk4a58d0(p, 1, &flags, 0, (float)util_RandomU(0x40), &id) == 0)
+    if (ai_PickPartnerChain(p, 1, &flags, 0, (float)util_RandomU(0x40), &id) == 0)
         return 0;
     if (he_Unk553db0(p, &((AIPER *)ai_CharsT)[id], &k) == 0)
         return 0;
