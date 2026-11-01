@@ -1469,7 +1469,7 @@ exe	0x004817a0	ai_CalcAngriff	ai	draft	draft	deep
 exe	0x00481ef0	ai_CalcMeisterDiebe	ai	draft	draft	deep	
 exe	0x00482f00	ai_CalcMeisterRaeuber	ai	draft	readable	deep	
 exe	0x004836a0	ai_CalcMeisterBank	ai	byte	draft	deep	
-exe	0x00483a60	ai_Unk483a60	ai	byte	draft	deep	
+exe	0x00483a60	ai_Unk483a60	ai	shape	draft	deep	byte+draft -> shape+draft at e0d2830: ai.h: AIJOB 0xb4..0xe7 became a union of its words and the kind-specific AITIME views (end6c / end8f / start61 / end48) that sv_RefreshPanel reads, instead of (AITIME *) casts of int fields; truer layout. ai_Unk483a60 reads only AIJOB.unkac, and the fall is a pure stack-slot swap of two spilled registers ([esp+0x10] <-> [esp+0x18]), a VC6 declaration-set tie-break: the match was no evidence of its source
 exe	0x00483d30	ai_StartBuildingWork	ai	shape	draft	deep	
 exe	0x00483ee0	ai_EndWorkerPose	ai	byte	readable		
 exe	0x00483fc0	ai_Unk483fc0	ai	draft	draft	deep	

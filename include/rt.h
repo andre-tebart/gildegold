@@ -120,7 +120,7 @@ void rt_UpdateMarkPics(void);
 int rt_FindMark(RTPOINT *p);
 void rt_RemoveMark(int i);
 void rt_HighlightRoute(RTPOINT *p, char *m);
-void rt_Unk4bf5b0(char *c);
+void rt_EditCartRoute(char *c);
 void rt_UnloadAtPoint(char *c, int pl);
 void rt_Unk4bfc60(char *c, char pl);
 int rt_SaveRoutes(void *f);

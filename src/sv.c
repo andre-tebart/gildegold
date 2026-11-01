@@ -3641,13 +3641,12 @@ extern unsigned char ai_GameState;  /* 0x6f25ac */
 extern char ai_Unk6f2338;  /* 0x6f2338 */
 extern int d2_PointerObj;  /* 0x5fe710 */
 extern char *ai_Unk7662c0p;
-extern unsigned short * ai_Unk75ec5c;
+extern unsigned short * sv_SelectedItem;
 extern int ai_Unk6f23bc, ai_Unk6f23c0, ai_Unk6f23c4, ai_Unk6f23c8, ai_Unk6f23cc, ai_Unk6f23d0, ai_Unk6f23d4, ai_Unk6f23d8, ai_Unk6f2294, ai_BuildingPerms, ai_Unk6f2320;  /* 0x6f23bc, 0x6f23c0, 0x6f23c4, 0x6f23c8, 0x6f23cc, 0x6f23d0, 0x6f23d4, 0x6f23d8, 0x6f2294, 0x6f231c, 0x6f2320 */
-extern int ai_Unk5fe7d0;  /* 0x5fe7d0 */
 int gm_Opinion(int a, int b);                     /* 0x50c520 */
 int gm_MinutesBetween();                     /* 0x4fe280 */
 void gm_AddTime(struct GCLOCK *c, int hours, int mins, int secs);                     /* 0x4fe140 */
-void rt_Unk4bf5b0();                     /* 0x4bf5b0 */
+void rt_EditCartRoute();                     /* 0x4bf5b0 */
 int d2_RemoveWindowObjects();                     /* 0x472d20 */
 int gm_ListAmount();                     /* 0x50aaf0 */
 int ai_Unk5763c0();                     /* 0x5763c0 */
@@ -3660,7 +3659,7 @@ void ai_TechTreeWindow(int param_1, int param_2);                     /* 0x591bf
 int sv_ReturnZero(void);
 void sv_OpenDefaultPanel(void);
 void sv_OpenPersonPanel(AICHAR *c);
-void sv_Unk529380(void);
+void sv_RefreshPanel(void);
 void sv_OpenItemPanel(unsigned short *p);
 
 /* 0x528ee0, opens the default info panel when no panel is open (sv_PanelForm): without a selected building the
@@ -3754,106 +3753,269 @@ void sv_OpenPersonPanel(AICHAR *c)
     }
     d2_WinOpenPic(x, 0x38, 0x521, d2_LastWindow);
 }
-/* 0x529380, the per-frame refresh of the info panel 0x623860 (the progress bar +0x1e4 of the widget 0x623864, the owner's tools row 0x62386c ..): for a selected building (0x75ec60) the title and the progress of its
-   current job (the object lists 0x53e400 (2, 0, kind 0x1c / 0x1d / 0x1e / 0x1f / 2, 3, owner) the elapsed fraction by 0x4fe280 of the start +0x44 against the end), without one the selected character 0x7662c0 (or
-   the transporter 0x75ec5c) is shown: its name, the images of 0x524900, and the progress of its action by the action byte (+0x2f8: 0x8f / 0x16 timers, 0x40 (state +0x70), 0x61, 0x43, 0x62, 0x65, 0x48, 0x6c). ROUGH */
+/* the panel's widget row sv_PanelWidgets[0..3] removed (sv_RefreshPanel writes the loop out at every use) */
+#define SV_CLEAR_PANEL_WIDGETS(i) \
+    for (i = 0; i < 4; i++) \
+        if (sv_PanelWidgets[i] != -1) { \
+            d2_RemoveObj(sv_PanelWidgets[i]); \
+            sv_PanelWidgets[i] = -1; \
+        }
+#define SV_SELBLD ((AIBLD *)sv_SelectedObject)  /* the selected building, re-read at every use */
+#define SV_SELCART ((AIOBJ *)sv_SelectedItem)  /* the selected cart, re-read at every use */
 
-void sv_Unk529380(void)
+/* 0x529380, the per-frame refresh of the open info panel (sv_PanelForm). For the selected building
+   (sv_SelectedObject with its health bar and picture): the title as sv_OpenBuildingPanel writes it, the level
+   bar, and the progress of its current job on the picture (sv_PanelBldPic fillFraction: the job found by
+   he_FindEvent for the flags5a bits 4 (0x1c), 1 (0xd: argc8 / workTotal, at least 0.01, 0.05 without a job),
+   0x40 (0x1e), 0x80 (0x1f); the time from start to end against the time from start to now) with the busy
+   picture 0x4ff (sv_PanelWidgets[0]); without a busy bit the busy picture is removed. For the selected character:
+   its name and health ("$C%s %i%%", one selected only); when it works in a building of the player, its state
+   pictures (sv_CharStateIcons, styled for 0xdf .. 0x3ba) and the progress of its job on the portrait
+   (sv_PanelPortrait) by the job kind: 0x8f / 0x16 (start .. 0xb8), 0x40 (stage 2: start .. end), 0x61 (eight
+   hours from 0xc4), 0x43 (a day), 0x62 (stage 4: four days), 0x65 (from stage 2: a day), 0x48 (stage 1:
+   start .. 0xcc), 0x6c (start .. 0xb4); 0.01 before the timed stage. For the selected cart (goods kind
+   0x1d, its panel window open): the route button opens rt_EditCartRoute, the fill bar, the name of the
+   building of its job and one picture with its amount per goods of its load, at most four
+   @deep Reconstructed whole from 0x529380..0x529fa8 (941 -> 3140 bytes; 927 vs 919 instructions): building
+   title / level / job progress for the flags5a bits 4/1/0x40/0x80, the character name+health, state icons
+   and the job-kind progress chain (0x8f,0x16,0x40,0x61,0x43,0x62,0x65,0x48,0x6c, read case by case incl.
+   the AITIME copies and gm_AddTime hours), and the cart branch (route button, fill bar, job building name,
+   goods pictures/amounts loop); every statement compared with the original, the char and cart paths align
+   except regs/order/sib. Left are two code-generation decisions, no meaning: (1) the flags5a&1 path: the
+   original keeps prog in st(0) (fld 0.05f at 0x52951c, fld st(0)/fcomp, fst [esp+0x14] before the widget
+   calls, fld after) and cross-jumps its store into the portrait store at 0x529cc1; ours keeps prog in its
+   slot (mov [esp+0x14],0x3d4ccccd / 0x3c23d70a immediates, fld at the end) with its own store+epilogue.
+   (2) tail merging: the original's flags5a&4 path jumps into the 0x80 path at its fdiv (jmp 0x52969b) and
+   the 0x40 path into the shared d2_SetForm call (jmp 0x5296d7); ours emits the 4 path's fdiv/store/widget
+   tail in full (0x529501..0x529582). Tried: a separate float for the &1 path, a single exit (if/else chain
+   without returns), the widget check shared vs per branch (934 -> 929 -> 927), the j==0 block as else (now
+   placed at the end like the original). */
+void sv_RefreshPanel(void)
 {
-    int i;
+    AICHAR *c;
+    AIJOB *j;
+    AITIME *from;
+    AITIME t;
+    float prog, total;
     int *q;
-    float prog;
-    unsigned short *tr;
-    char *b;
-    char *job;
-    int n, a, d;
-    char text[256];
+    int level, n, i, x, icon, o;
+    int icons[8];
+    unsigned char kind;
     unsigned short fl;
+    unsigned char *bld;
+    AIOBJ *load, *goods;
+    char amount[64];
+    char text[256];
 
     prog = 0.0f;
     if (sv_PanelForm == -1)
         return;
-    b = (char *)sv_SelectedObject;
-    if (b == 0 || sv_PanelHealthBar == -1 || sv_PanelBldPic == -1) {
-        if (sv_SelectedChar == 0) {
-            q = sv_PanelWidgets;
-            for (i = 0; i < 4; i++, q++)
-                if (*q != -1) {
-                    d2_RemoveObj(*q);
-                    *q = -1;
-                }
-            if (sv_PanelCartWin == -1 || ai_Unk75ec5c == 0)
+    if (sv_SelectedObject != 0 && sv_PanelHealthBar != -1 && sv_PanelBldPic != -1) {
+        level = gm_BuildingLevel(sv_SelectedObject);
+        d2_SetForm(sv_PanelForm, 1);
+        io_PrintText("$C");
+        if (SV_SELBLD->type != 0x47) {
+            io_CharacterNameMarkup(SV_SELBLD->owner, 2, 1, text);
+            if (SV_SELBLD->name[0] != 0)
+                io_PrintText("$Z%s$A%s$A>%s<", text, SV_SELBLD->type * 0xe + 0x48e, SV_SELBLD->name);
+            else
+                io_PrintText("$Z%s$A%s", text, SV_SELBLD->type * 0xe + 0x48e);
+        } else {
+            io_PrintText("$Z%s$A%s", 0x870, ai_PlayerSlots[SV_SELBLD->playerSlot]);
+        }
+        d2_SetObjValue4(sv_PanelHealthBar, 0, 100, level);
+        fl = SV_SELBLD->flags5aw;
+        if ((fl & 4) != 0) {
+            j = (AIJOB *)he_FindEvent(2, 0, 0x1c, 3, SV_SELBLD->id);
+            if (j == 0)
                 return;
-            tr = ai_Unk75ec5c;
-            if (ai_Goods[*tr * 0x41] != 0x1d)
-                return;
-            if (sv_PanelCartBtn != -1 && d2_ClickedId != -1 && d2_PointerObj == sv_PanelCartBtn && (sv_FrameMask & 0x2000) != 0) {
-                rt_Unk4bf5b0(tr);
-                tr = ai_Unk75ec5c;
+            total = (float)gm_MinutesBetween(&j->start, &j->end8f);
+            ((D2OBJ *)d2_Objs)[sv_PanelBldPic].fillFraction = (float)gm_MinutesBetween(&j->start, &ai_TimeT) / total;
+            if (sv_PanelWidgets[0] == -1) {
+                d2_SetForm(sv_PanelForm, 0);
+                sv_PanelWidgets[0] = d2_WinOpenPic(((d2_Wins[d2_LastWindow].w - 0x30) >> 1) + 0x2f, 0x4c, 0x4ff, d2_LastWindow);
             }
-            if (sv_PanelHealthBar != -1)
-                d2_SetObjValue(sv_PanelHealthBar, 0, 100, (char)tr[9]);
-            d2_SetForm(sv_PanelForm, 2);
-            d2_RemoveWindowObjects(d2_LastWindow, 1);
             return;
-        }
-        if (ai_SelectedCount < 2 && sv_SelectedChar != 0) {
-            d2_SetForm(sv_PanelForm, 1);
-            gm_HealthRatio(sv_SelectedChar);
-            io_CharacterNameMarkup(*(unsigned short *)sv_SelectedChar, 1, 4, text);
-            io_PrintText("$C%s (%i)", text, 0);
-        }
-        return;
-    }
-    n = gm_BuildingLevel(b);
-    d2_SetForm(sv_PanelForm, 1);
-    io_PrintText("$Z%s$A%s", (unsigned char)*b * 0xe + 0x48e, "");
-    d2_SetObjValue(sv_PanelHealthBar, 0, 100, n);
-    fl = *(unsigned short *)(b + 0x5a);
-    if ((fl & 4) == 0) {
-        if ((fl & 1) != 0) {
-            job = (char *)he_FindEvent(2, 0, 0xd, 3, *(int *)(b + 1));
+        } else if ((fl & 1) != 0) {
+            j = (AIJOB *)he_FindEvent(2, 0, 0xd, 3, SV_SELBLD->id);
             prog = 0.05f;
-            if (job != 0) {
-                if (3 < *(int *)(job + 0x70))
-                    prog = (float)*(int *)(job + 200) / (float)*(int *)(job + 0xc4);
-                if (prog < 0.01f)
-                    prog = 0.01f;
+            if (j != 0) {
+                if (j->stage >= 4)
+                    prog = (float)j->argc8 / j->workTotal;
+                if (prog < 0.01)
+                    prog = 0.01;
+                if (sv_PanelWidgets[0] == -1) {
+                    d2_SetForm(sv_PanelForm, 0);
+                    sv_PanelWidgets[0] = d2_WinOpenPic(((d2_Wins[d2_LastWindow].w - 0x30) >> 1) + 0x2f, 0x4c, 0x4ff, d2_LastWindow);
+                }
             }
+            ((D2OBJ *)d2_Objs)[sv_PanelBldPic].fillFraction = prog;
+            return;
         } else if ((fl & 0x40) != 0) {
-            job = (char *)he_FindEvent(2, 0, 0x1e, 3, *(int *)(b + 1));
-            if (job == 0)
+            j = (AIJOB *)he_FindEvent(2, 0, 0x1e, 3, SV_SELBLD->id);
+            if (j == 0)
                 return;
-            a = gm_MinutesBetween(job + 0x44, job + 0x52);
-            d = gm_MinutesBetween(job + 0x44, ai_Time);
-            prog = (float)d / (float)a;
-        } else if (!(fl & 0x80)) {
-            if (sv_PanelWidgets[0] == -1)
+            total = (float)gm_MinutesBetween(&j->start, &j->end);
+            ((D2OBJ *)d2_Objs)[sv_PanelBldPic].fillFraction = (float)gm_MinutesBetween(&j->start, &ai_TimeT) / total;
+            if (sv_PanelWidgets[0] == -1) {
+                d2_SetForm(sv_PanelForm, 0);
+                sv_PanelWidgets[0] = d2_WinOpenPic(((d2_Wins[d2_LastWindow].w - 0x30) >> 1) + 0x2f, 0x4c, 0x4ff, d2_LastWindow);
+            }
+            return;
+        } else if ((fl & 0x80) != 0) {
+            j = (AIJOB *)he_FindEvent(2, 0, 0x1f, 3, SV_SELBLD->id);
+            if (j == 0)
                 return;
-            d2_RemoveObj(sv_PanelWidgets[0]);
-            sv_PanelWidgets[0] = -1;
+            total = (float)gm_MinutesBetween(&j->start, &j->end);
+            ((D2OBJ *)d2_Objs)[sv_PanelBldPic].fillFraction = (float)gm_MinutesBetween(&j->start, &ai_TimeT) / total;
+            if (sv_PanelWidgets[0] == -1) {
+                d2_SetForm(sv_PanelForm, 0);
+                sv_PanelWidgets[0] = d2_WinOpenPic(((d2_Wins[d2_LastWindow].w - 0x30) >> 1) + 0x2f, 0x4c, 0x4ff, d2_LastWindow);
+            }
             return;
         } else {
-            job = (char *)he_FindEvent(2, 0, 0x1f, 3, *(int *)(b + 1));
-            if (job == 0)
-                return;
-            a = gm_MinutesBetween(job + 0x44, job + 0x52);
-            d = gm_MinutesBetween(job + 0x44, ai_Time);
-            prog = (float)d / (float)a;
-        }
-    } else {
-        job = (char *)he_FindEvent(2, 0, 0x1c, 3, *(int *)(b + 1));
-        if (job == 0)
+            if (sv_PanelWidgets[0] != -1) {
+                d2_RemoveObj(sv_PanelWidgets[0]);
+                sv_PanelWidgets[0] = -1;
+            }
             return;
-        a = gm_MinutesBetween(job + 0x44, job + 0xb8);
-        d = gm_MinutesBetween(job + 0x44, ai_Time);
-        prog = (float)d / (float)a;
+        }
     }
-    *(float *)(d2_Objs + 0x1e4 + sv_PanelBldPic * 0x2ec) = prog;
-    if (sv_PanelWidgets[0] == -1 && (fl & 1) != 0) {
+    if (sv_SelectedChar != 0) {
+        c = (AICHAR *)sv_SelectedChar;
+        if (ai_SelectedCount < 2 && c != 0) {
+            d2_SetForm(sv_PanelForm, 1);
+            n = (int)(gm_HealthRatio(c) * 100.0);
+            io_CharacterNameMarkup(c->id, 1, 4, text);
+            io_PrintText("$C%s %i%%", text, n);
+        }
+        if (c->bld == 0 || c->bld->owner != (unsigned short)ai_PlayerId || ai_SelectedCount >= 2) {
+            SV_CLEAR_PANEL_WIDGETS(i)
+            return;
+        }
+        SV_CLEAR_PANEL_WIDGETS(i)
         d2_SetForm(sv_PanelForm, 0);
-        sv_PanelWidgets[0] = d2_WinOpenPic(((*(short *)(ai_Unkf8f128 + d2_LastWindow * 0x3c4) - 0x30) >> 1) + 0x2f, 0x4c, 0x4ff, d2_LastWindow);
+        x = (d2_Wins[d2_LastWindow].w - 0x30) >> 1;
+        n = sv_CharStateIcons((char *)sv_SelectedChar, icons);
+        for (i = 0; i < n; i++) {
+            icon = icons[i];
+            if (icon >= 0xdf && icon < 0x3bb)
+                sv_PanelWidgets[i] = d2_WinOpenPicStyledS(x + 0x32, i * 0x1a + 0x38, icon, d2_LastWindow, -2);
+            else
+                sv_PanelWidgets[i] = d2_WinOpenPic(x + 0x32, i * 0x1a + 0x38, icon, d2_LastWindow);
+        }
+        j = c->job;
+        if (j != 0) {
+            if (sv_PanelPortrait == -1)
+                return;
+            kind = j->kind;
+        if (kind == 0x8f) {
+            total = (float)gm_MinutesBetween(&j->start, &j->end8f);
+            if (total != 0.0f)
+                prog = (float)gm_MinutesBetween(&j->start, &ai_TimeT) / total;
+        } else if (kind == 0x16) {
+            total = (float)gm_MinutesBetween(&j->start, &j->end8f);
+            if (total != 0.0f)
+                prog = (float)gm_MinutesBetween(&j->start, &ai_TimeT) / total;
+        } else if (kind == 0x40) {
+            if (j->stage < 2)
+                prog = 0.01f;
+            else if (j->stage == 2) {
+                total = (float)gm_MinutesBetween(&j->start, &j->end);
+                if (total != 0.0f)
+                    prog = (float)gm_MinutesBetween(&j->start, &ai_TimeT) / total;
+            }
+        } else if (kind == 0x61) {
+            from = &j->start61;
+            t = *from;
+            gm_AddTime((struct GCLOCK *)&t, 8, 0, 0);
+            total = (float)gm_MinutesBetween(from, &t);
+            if (total != 0.0f)
+                prog = (float)gm_MinutesBetween(from, &ai_TimeT) / total;
+        } else if (kind == 0x43) {
+            from = &j->start;
+            t = *from;
+            gm_AddTime((struct GCLOCK *)&t, 0x18, 0, 0);
+            total = (float)gm_MinutesBetween(from, &t);
+            if (total != 0.0f)
+                prog = (float)gm_MinutesBetween(from, &ai_TimeT) / total;
+        } else if (kind == 0x62) {
+            if (j->stage < 4)
+                prog = 0.01f;
+            else if (j->stage == 4) {
+                from = &j->start;
+                t = *from;
+                gm_AddTime((struct GCLOCK *)&t, 0x60, 0, 0);
+                total = (float)gm_MinutesBetween(from, &t);
+                if (total != 0.0f)
+                    prog = (float)gm_MinutesBetween(from, &ai_TimeT) / total;
+            }
+        } else if (kind == 0x65) {
+            if (j->stage < 2)
+                prog = 0.01f;
+            else {
+                from = &j->start;
+                t = *from;
+                gm_AddTime((struct GCLOCK *)&t, 0x18, 0, 0);
+                total = (float)gm_MinutesBetween(from, &t);
+                if (total != 0.0f)
+                    prog = (float)gm_MinutesBetween(from, &ai_TimeT) / total;
+            }
+        } else if (kind == 0x48) {
+            if (j->stage < 1)
+                prog = 0.01f;
+            else if (j->stage == 1) {
+                total = (float)gm_MinutesBetween(&j->start, &j->end48);
+                if (total != 0.0f)
+                    prog = (float)gm_MinutesBetween(&j->start, &ai_TimeT) / total;
+            }
+        } else if (kind == 0x6c) {
+            total = (float)gm_MinutesBetween(&j->start, &j->end6c);
+            if (total != 0.0f)
+                prog = (float)gm_MinutesBetween(&j->start, &ai_TimeT) / total;
+        }
+            ((D2OBJ *)d2_Objs)[sv_PanelPortrait].fillFraction = prog;
+        } else if (sv_PanelPortrait != -1)
+            ((D2OBJ *)d2_Objs)[sv_PanelPortrait].fillFraction = 0;
+        return;
     }
+    if (sv_PanelCartWin == -1 || sv_SelectedItem == 0) {
+        SV_CLEAR_PANEL_WIDGETS(i)
+        return;
+    }
+    SV_CLEAR_PANEL_WIDGETS(i)
+    if (sv_SelectedItem == 0 || ai_Goods[*sv_SelectedItem * 0x41] != 0x1d)
+        return;
+    if (sv_PanelCartBtn != -1 && d2_ClickedId != -1 && d2_PointerObj == sv_PanelCartBtn && (sv_FrameMask & 0x2000) != 0)
+        rt_EditCartRoute((char *)sv_SelectedItem);
+    if (sv_PanelHealthBar != -1)
+        d2_SetObjValue4(sv_PanelHealthBar, 0, 100, SV_SELCART->fill);
+    d2_SetForm(sv_PanelForm, 2);
+    SV_CLEAR_PANEL_WIDGETS(i)
+    d2_RemoveWindowObjects(d2_LastWindow, 1);
+    if (SV_SELCART->job24 != 0 && (bld = gm_BuildQuery(1, 1, SV_SELCART->job24->cartBld)) != 0)
+        io_PrintText("$Y$Z%s", *bld * 0xe + 0x48e);
+    load = (AIOBJ *)gm_Query((void *)SV_SELCART->list, 1, 0, 0x1dd);
+    if (load == 0)
+        return;
+    goods = (AIOBJ *)gm_Query((void *)load->list, 1, 5);
+    if (goods == 0)
+        return;
+    q = sv_PanelWidgets;
+    x = 3;
+    do {
+        if (x >= 0x83)
+            return;
+        *q = d2_WinOpenPicStyledS(x, 0x28, goods->id + 0xdf, d2_LastWindow, -2);
+        sprintf(amount, "%i", gm_ListAmount(load, goods));
+        o = d2_CreateWinText(x - 2, 0x1c, amount, d2_LastWindow);
+        ((D2OBJ *)d2_Objs)[o].interactive = 1;
+        ((D2OBJ *)d2_Objs)[o].centred = 1;
+        ((D2OBJ *)d2_Objs)[o].w = 0x20;
+        goods = (AIOBJ *)gm_QueryNext();
+        x += 0x20;
+        q++;
+    } while (goods != 0);
 }
 /* 0x529fb0, closes the info panel (0x623860): frees the widgets 0x62386c .. (4 ids), destroys the form and clears all the panel's widget ids (0x623864 .. 0x623898) */
 
@@ -4165,7 +4327,7 @@ void sv_Unk52adb0(void)
     int o;
     unsigned short *p;
 
-    SV_I((unsigned)&ai_Unk75ec5c) = 0;
+    SV_I((unsigned)&sv_SelectedItem) = 0;
     SV_I((unsigned)&sv_SelectedObject) = 0;
     SV_I((unsigned)&full_data_76631c) = 0;
     SV_I((unsigned)&sv_SelectedModel) = 0;
@@ -4178,7 +4340,7 @@ void sv_Unk52adb0(void)
         }
     } else if (o == 0) {
         SV_I((unsigned)&sv_SelectedModel) = 0;
-        SV_I((unsigned)&ai_Unk75ec5c) = 0;
+        SV_I((unsigned)&sv_SelectedItem) = 0;
         SV_I((unsigned)&sv_SelectedObject) = 0;
         SV_I((unsigned)&full_data_76631c) = 0;
         return;
@@ -4415,14 +4577,14 @@ l1f2:
         }
     }
 l3b8:
-    sv_Unk529380();
+    sv_RefreshPanel();
     if (SV_I((unsigned)&sv_SelectedObject) == SV_I((unsigned)&full_data_6f23c4) && SV_I((unsigned)&ai_FallbackBuilding) == SV_I((unsigned)&full_data_6f23c0) && SV_I((unsigned)&ai_PlayerBuilding) == SV_I((unsigned)&full_data_6f23bc)
-        && SV_I((unsigned)&sv_PanelShown) == SV_I((unsigned)&full_data_6f23c8) && SV_I((unsigned)&ai_Unk75ec5c) == SV_I((unsigned)&full_data_6f23cc) && SV_I((unsigned)&sv_SelectedChar) == SV_I((unsigned)&full_data_6f23d0)
+        && SV_I((unsigned)&sv_PanelShown) == SV_I((unsigned)&full_data_6f23c8) && SV_I((unsigned)&sv_SelectedItem) == SV_I((unsigned)&full_data_6f23cc) && SV_I((unsigned)&sv_SelectedChar) == SV_I((unsigned)&full_data_6f23d0)
         && SV_B((unsigned)&full_data_6f2338) == SV_I((unsigned)&full_data_6f23d4) && SV_I((unsigned)&ai_SelectedCount) == SV_I((unsigned)&full_data_6f23d8) && SV_I((unsigned)&ai_Unk6237cc) == 0)
         return;
     SV_I((unsigned)&ai_Unk6237cc) = 0;
     sv_Unk529fb0();
-    if (SV_I((unsigned)&ai_Unk75ec5c) == 0 || ai_Goods[*(unsigned short *)SV_I((unsigned)&ai_Unk75ec5c) * 0x41] != 0x1d || SV_I((unsigned)&ai_SelectedCount) != 0 || SV_I((unsigned)&sv_SelectedChar) != 0) {
+    if (SV_I((unsigned)&sv_SelectedItem) == 0 || ai_Goods[*(unsigned short *)SV_I((unsigned)&sv_SelectedItem) * 0x41] != 0x1d || SV_I((unsigned)&ai_SelectedCount) != 0 || SV_I((unsigned)&sv_SelectedChar) != 0) {
         if (SV_I((unsigned)&sv_SelectedModel) == 0 && SV_B((unsigned)&full_data_6f2338) == 0) {
             if (SV_I((unsigned)&ai_SelectedCount) == 0) {
                 if (SV_I((unsigned)&sv_PanelShown) == 0 && SV_I((unsigned)&sv_SelectedChar) == 0)
@@ -4435,12 +4597,12 @@ l3b8:
             if (SV_I((unsigned)&ai_SelectedCount) < 2) {
                 sv_OpenPersonPanel((AICHAR *)SV_I((unsigned)&sv_SelectedChar));
                 SV_I((unsigned)&full_data_6f23d0) = SV_I((unsigned)&sv_SelectedChar);
-                sv_Unk529380();
+                sv_RefreshPanel();
             } else
                 sv_OpenPersonPanel(0);
         }
     } else
-        sv_OpenCartPanel(SV_I((unsigned)&ai_Unk75ec5c));
+        sv_OpenCartPanel(SV_I((unsigned)&sv_SelectedItem));
 l510:
     SV_I((unsigned)&full_data_6f23d4) = SV_B((unsigned)&full_data_6f2338);
     SV_I((unsigned)&full_data_6f23c0) = SV_I((unsigned)&ai_FallbackBuilding);
@@ -4453,9 +4615,9 @@ l510:
     } else {
         SV_I((unsigned)&full_data_6f23c8) = SV_I((unsigned)&sv_PanelShown);
         SV_I((unsigned)&full_data_6f23d0) = SV_I((unsigned)&sv_SelectedChar);
-        SV_I((unsigned)&full_data_6f23cc) = SV_I((unsigned)&ai_Unk75ec5c);
+        SV_I((unsigned)&full_data_6f23cc) = SV_I((unsigned)&sv_SelectedItem);
         SV_I((unsigned)&full_data_6f23c4) = SV_I((unsigned)&sv_SelectedObject);
-        if ((SV_I((unsigned)&ai_Unk75ec5c) == 0 && SV_I((unsigned)&sv_PanelShown) == 0) || SV_I((unsigned)&sv_PanelForm) != -1) {
+        if ((SV_I((unsigned)&sv_SelectedItem) == 0 && SV_I((unsigned)&sv_PanelShown) == 0) || SV_I((unsigned)&sv_PanelForm) != -1) {
             if (SV_I((unsigned)&sv_SelectedObject) == 0 && SV_I((unsigned)&ai_FallbackBuilding) == 0) {
                 SV_I((unsigned)&full_data_6f2294) = 0;
                 return;
@@ -4467,25 +4629,25 @@ l510:
             if (p == 0 && (p = (unsigned char *)SV_I((unsigned)&ai_FallbackBuilding)) == 0)
                 p = 0;
             sv_OpenBuildingPanel(p);
-            sv_Unk529380();
+            sv_RefreshPanel();
             return;
         }
         SV_I((unsigned)&full_data_6f2294) = SV_I((unsigned)&sv_SelectedModel);
-        if (SV_I((unsigned)&ai_Unk75ec5c) != 0) {
+        if (SV_I((unsigned)&sv_SelectedItem) != 0) {
             SV_I((unsigned)&full_data_6f2294) = SV_I((unsigned)&sv_SelectedModel);
-            sv_OpenItemPanel(SV_I((unsigned)&ai_Unk75ec5c));
-            sv_Unk529380();
+            sv_OpenItemPanel(SV_I((unsigned)&sv_SelectedItem));
+            sv_RefreshPanel();
             return;
         }
         if (SV_I((unsigned)&sv_PanelShown) != 0) {
             sv_OpenItemPanel(SV_I((unsigned)&sv_PanelShown));
-            sv_Unk529380();
+            sv_RefreshPanel();
             return;
         }
     }
     SV_I((unsigned)&full_data_6f23c4) = SV_I((unsigned)&sv_SelectedObject);
     SV_I((unsigned)&full_data_6f23c8) = SV_I((unsigned)&sv_PanelShown);
-    SV_I((unsigned)&full_data_6f23cc) = SV_I((unsigned)&ai_Unk75ec5c);
+    SV_I((unsigned)&full_data_6f23cc) = SV_I((unsigned)&sv_SelectedItem);
     SV_I((unsigned)&full_data_6f23d0) = SV_I((unsigned)&sv_SelectedChar);
     SV_I((unsigned)&full_data_6f23d8) = SV_I((unsigned)&ai_SelectedCount);
 }
@@ -4776,12 +4938,12 @@ lfe4:
                 }
                 SV_I((unsigned)&sv_PanelCartChar) = SV_I(((unsigned)&ai_Unk770cec + 0x18) + *(unsigned short *)SV_I((unsigned)&ai_Unk6f22f8) * 0x21c);
             }
-            if (SV_I((unsigned)&ai_SelectedCount) == 0 && SV_B((unsigned)&full_data_6f2338) == 0 && SV_I((unsigned)&full_data_6f22f4) != 0 && SV_I((unsigned)&ai_Unk75ec5c) == 0)
+            if (SV_I((unsigned)&ai_SelectedCount) == 0 && SV_B((unsigned)&full_data_6f2338) == 0 && SV_I((unsigned)&full_data_6f22f4) != 0 && SV_I((unsigned)&sv_SelectedItem) == 0)
                 SV_I((unsigned)&sv_SelectedModel) = SV_I((unsigned)&ai_Unk6f22e8);
             SV_I((unsigned)&sv_SelectedObject) = SV_I((unsigned)&full_data_6f22f4);
             if (SV_I((unsigned)&full_data_6f22f4) != 0)
                 SV_I((unsigned)&sv_SelectedModel) = SV_I((unsigned)&ai_Unk6f22e8);
-            SV_I((unsigned)&ai_Unk75ec5c) = SV_I((unsigned)&full_data_6f22f0);
+            SV_I((unsigned)&sv_SelectedItem) = SV_I((unsigned)&full_data_6f22f0);
             if (SV_I((unsigned)&full_data_6f22f0) != 0) {
                 SV_I((unsigned)&sv_SelectedModel) = SV_I((unsigned)&ai_Unk6f22e8);
                 if (ai_Goods[*(unsigned short *)SV_I((unsigned)&full_data_6f22f0) * 0x41] == 0x1d)
@@ -5774,11 +5936,11 @@ void sv_CameraFollow(void)
                 ((int (*)())*(int *)(n + 0x18c))(SV_I((unsigned)&full_data_6f22ec), 3, n + 400, 0);
             SV_I((unsigned)&full_data_6f22ec) = 0;
         }
-        if (SV_I((unsigned)&ai_Unk75ec5c) == 0)
+        if (SV_I((unsigned)&sv_SelectedItem) == 0)
             return;
         sv_Unk52adb0();
     }
-    if (SV_I((unsigned)&ai_Unk75ec5c) == 0)
+    if (SV_I((unsigned)&sv_SelectedItem) == 0)
         return;
     sv_Unk52adb0();
 }
@@ -5793,7 +5955,7 @@ void sv_Unk52d940(unsigned fl)
     int ok, i, *p, v, who;
     short *it;
 
-    if (SV_I(((unsigned)&dm_L + 0x20)) != 0 && (SV_I(((unsigned)&ai_Unk75f280 + 0x500) + SV_I((unsigned)&sv_FrameDepth) * 8) != (int)ai_GameFrame || SV_I((unsigned)&ai_SelectedCount) != 0 || SV_I((unsigned)&ai_Unk75ec5c) != 0 || SV_I((unsigned)&sv_SelectedChar) != 0 || SV_I((unsigned)&sv_SelectedObject) != 0))
+    if (SV_I(((unsigned)&dm_L + 0x20)) != 0 && (SV_I(((unsigned)&ai_Unk75f280 + 0x500) + SV_I((unsigned)&sv_FrameDepth) * 8) != (int)ai_GameFrame || SV_I((unsigned)&ai_SelectedCount) != 0 || SV_I((unsigned)&sv_SelectedItem) != 0 || SV_I((unsigned)&sv_SelectedChar) != 0 || SV_I((unsigned)&sv_SelectedObject) != 0))
         sb_PlaySample(SV_I((unsigned)&snd_SystemBank), "MausclickRechts_s_01", 1, 0x3f, 0x7f, 0, 0);
     if (SV_I((unsigned)&full_data_6f262c) != 0) {
         if (SV_I(((unsigned)&dm_L + 0x20)) == 0 && *(char *)(unsigned)&kb_Last != 0x1c)
@@ -5856,7 +6018,7 @@ lbb6:
         SV_I((unsigned)&sv_BorderViewX) = 0;
         SV_I((unsigned)&sv_BorderViewY) = 0;
     }
-    if (SV_I(((unsigned)&dm_L + 0x20)) != 0 && (SV_B((unsigned)&full_data_6f2338) != 0 || (SV_I((unsigned)&ai_Unk75ec5c) != 0 && ai_Goods[*(unsigned short *)SV_I((unsigned)&ai_Unk75ec5c) * 0x41] == 0x1d))) {
+    if (SV_I(((unsigned)&dm_L + 0x20)) != 0 && (SV_B((unsigned)&full_data_6f2338) != 0 || (SV_I((unsigned)&sv_SelectedItem) != 0 && ai_Goods[*(unsigned short *)SV_I((unsigned)&sv_SelectedItem) * 0x41] == 0x1d))) {
         sv_Unk52adb0();
         di_ClearEvents(0x10);
     }
@@ -5885,7 +6047,7 @@ lbb6:
     if (SV_I((unsigned)&sv_FrameDepth) <= SV_I((unsigned)&sv_FrameBase) || ok) {
         if (d3_VecEqual(sv_CameraObj + 0x84, (char *)(unsigned)&sv_ViewRotX, 0.1f) != 0 || d3_VecEqual(sv_CameraObj + 0x4c, (char *)(unsigned)&sv_ViewPosX, 0.1f) != 0 || ok) {
             if (SV_I((unsigned)&ai_PlayerBuilding) == 0 && SV_I((unsigned)&ai_FallbackBuilding) == 0 && SV_I((unsigned)&sv_PanelShown) == 0) {
-                if (SV_I((unsigned)&sv_FrameDepth) == SV_I((unsigned)&sv_FrameBase) && SV_I((unsigned)&ai_Unk75ec5c) != 0)
+                if (SV_I((unsigned)&sv_FrameDepth) == SV_I((unsigned)&sv_FrameBase) && SV_I((unsigned)&sv_SelectedItem) != 0)
                     sv_Unk52adb0();
                 goto l72;
             }
@@ -7774,7 +7936,7 @@ unsigned short * sv_PanelRecord = 0;  /* 0x75e8c8, its scene record */
 char sv_PanelText[76] = {0};  /* 0x75e8d4, the panel text */
 int sv_SelectionFlags[0xc0] = {0};  /* 0x75e920, the mirror of the character selection flags (byte i per character) */
 int sv_SkyScene = 0;  /* 0x75ec20 */
-unsigned short * ai_Unk75ec5c = 0;  /* 0x75ec5c */
+unsigned short * sv_SelectedItem = 0;  /* 0x75ec5c */
 int ai_Unk75f280[576] = {0};  /* 0x75f280, the member panel: */
 float sv_ViewPos[4] = {0};  /* 0x75fb80, the stored camera position (a padded vector): set by the camera moves, restored when the player leaves a building */
 float sv_ViewRot[4] = {0};  /* 0x75fb90, its rotation (D3OBJECT.rotation) */

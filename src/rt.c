@@ -885,7 +885,7 @@ void rt_HighlightRoute(RTPOINT *p, char *m)
    with fewer than two points c's route mode is reset
    @deep behaviour + Q4: the local map window view is short - the original memsets 0x27dc where our int m[0x9ea] view gives 0x27b8 (the +0x24 shifts every later local) and reads m+0x27a4/+0xdc/+0xe0 through it; the typed map window struct (rt.h type debt) is the fix, then the 306 code hunks can be reread. Far draft from the disassembly (Ghidra lost the frame) */
 
-void rt_Unk4bf5b0(char *c)
+void rt_EditCartRoute(char *c)
 {
     char v;
     int btns[3];
@@ -931,7 +931,7 @@ void rt_Unk4bf5b0(char *c)
     }
     d2_SetForm(m[0], 2);
     sv_Unk52e4b0(d2_LastWindow, 5, btns, 3, ai_Unk144ad30, ai_Unk144ad34, ai_Unk144ad38);
-    while (sv_RunFrame(rt_Unk4bf5b0, 0x657c7)) {
+    while (sv_RunFrame(rt_EditCartRoute, 0x657c7)) {
         if (dm_L.rup != 0)
             sv_PopRequest = 1;
         ai_Unk62c26c = d2_FocusedInput == 0;

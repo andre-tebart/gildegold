@@ -87,7 +87,7 @@ void sv_OpenItemPanel(unsigned short *p);                                   /* 0
 struct AIOBJ; void sv_OpenCartPanel(struct AIOBJ *c);                                /* 0x528d90 */
 void sv_OpenDefaultPanel(void);                                                /* 0x528ee0 */
 struct AICHAR; void sv_OpenPersonPanel(struct AICHAR *c);                                 /* 0x5290f0 */
-void sv_Unk529380(void);                                                /* 0x529380 */
+void sv_RefreshPanel(void);                                                /* 0x529380 */
 void sv_Unk529fb0(void);                                                /* 0x529fb0 */
 int sv_ReturnZero(void);                                                /* 0x52a040 */
 void sv_UpdatePanel(void);                                              /* 0x52a050 */
@@ -286,7 +286,7 @@ extern unsigned short * sv_PanelRecord;                     /* 0x75e8c8 */
 extern char sv_PanelText[76];                               /* 0x75e8d4 */
 extern int sv_SelectionFlags[0xc0];                         /* 0x75e920 */
 extern int sv_SkyScene;                                    /* 0x75ec20 */
-extern unsigned short * ai_Unk75ec5c;                       /* 0x75ec5c */
+extern unsigned short * sv_SelectedItem;                       /* 0x75ec5c */
 extern int ai_Unk75f280[576];                               /* 0x75f280 */
 extern float sv_ViewPos[4];                                 /* 0x75fb80, the stored camera position (X/Y/Z views: data_views.h) */
 extern float sv_ViewRot[4];                                 /* 0x75fb90, its rotation */

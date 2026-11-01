@@ -87,6 +87,10 @@ typedef struct AIOBJ {                  /* 0x43 bytes, an object (table behind a
             unsigned char lvl1c;        /* 0x1c, a workshop's levels, compared with AIENTRY need1c / need20 */
             unsigned char lvl1d;        /* 0x1d */
         };
+        struct {
+            int pad1c24[2];
+            struct AIJOB *job24;        /* 0x24, of a cart: a job whose cartBld names a building (sv_RefreshPanel prints that building's kind; reasoned: the job the cart runs) */
+        };
         int recs[3];                    /* 0x1c..0x27, of a gm_Query kind 300 object in a shop: three record ids for gv_GetGraveInfo (0x4ab080 tries them in turn) */
     };
     char pad28[2];
@@ -144,7 +148,12 @@ typedef struct AIBTYPE {                /* 0x24d bytes, ai_BTypes[] */
 
 typedef struct AIJOB {                  /* a job (he_FindEvent / he_NextEvent) */
     char kind;                          /* 0x00 */
-    char pad01[0xab];
+    char pad01[0x43];
+    AITIME start;                       /* 0x44, the start time (sv_RefreshPanel measures the progress from it) */
+    AITIME end;                         /* 0x52, the end time of the kinds whose length is fixed at the start (0x40, the building jobs 0x1e / 0x1f) */
+    char pad60[0x10];
+    int stage;                          /* 0x70, the stage the job has reached (sv_RefreshPanel shows progress only from a kind's timed stage on) */
+    char pad74[0x38];
     union {
         int unkac;                      /* 0xac, a building id */
         int partner1;                   /* 0xac, of a pair event (kinds 0x41 / 0x6f / 0x45, he_Unk5538b0) the first partner's netId */
@@ -160,18 +169,28 @@ typedef struct AIJOB {                  /* a job (he_FindEvent / he_NextEvent) *
         int unkb0;                      /* 0xb0 */
         int partner2;                   /* 0xb0, of a pair event the second partner's netId */
     };
-    int unkb4;                          /* 0xb4 */
-    int unkb8;                          /* 0xb8, a job-kind specific payload word: of a harvest job (0x28) the
-                                           plant it works (veg_FindPlantId, ai_SendJobOrders), else a counter / an
-                                           id / a news id (he.c per kind); no single role name */
-    char padbc[0xc];
-    int argc8;                          /* 0xc8, a job-kind specific word (he.c: a random table entry, a task, an
-                                           object); a workshop's chimney smokes only while its job has none
-                                           (sv.c 0x528490) */
-    char padcc[4];
-    unsigned short in[3];               /* 0xd0, the workshop kinds */
-    unsigned short out[3];              /* 0xd6 */
-    int amount[3];                      /* 0xdc */
+    union {                             /* 0xb4..0xe7: the words, or the kind-specific times sv_RefreshPanel measures the progress to / from */
+        struct {
+            int unkb4;                          /* 0xb4 */
+            int unkb8;                          /* 0xb8, a job-kind specific payload word: of a harvest job (0x28) the
+                                                   plant it works (veg_FindPlantId, ai_SendJobOrders), else a counter / an
+                                                   id / a news id (he.c per kind); no single role name */
+            char padbc[8];
+            int workTotal;                      /* 0xc4, of a building job 0xd the total that argc8 counts up to (sv_RefreshPanel: progress argc8 / workTotal) */
+            int argc8;                          /* 0xc8, a job-kind specific word (he.c: a random table entry, a task, an
+                                                   object); a workshop's chimney smokes only while its job has none
+                                                   (sv.c 0x528490) */
+            char padcc[4];
+            unsigned short in[3];               /* 0xd0, the workshop kinds */
+            unsigned short out[3];              /* 0xd6 */
+            int amount[3];                      /* 0xdc */
+        };
+        AITIME end6c;                   /* 0xb4, of a job kind 0x6c: the end time */
+        int cartBld;                    /* 0xb4, of the job a cart runs (AIOBJ.job24): the building (sv_RefreshPanel prints its kind) */
+        struct { char padt8f[4]; AITIME end8f; };     /* 0xb8, of the kinds 0x8f / 0x16 and the building job 0x1c: the end time */
+        struct { char padt61[0x10]; AITIME start61; }; /* 0xc4, of a job kind 0x61: the start of its eight hours */
+        struct { char padt48[0x18]; AITIME end48; };  /* 0xcc, of a job kind 0x48 (stage 1): the end time */
+    };
     char pade8[9];
     char flags;                         /* 0xf1, a flags byte (nonzero defers the trade message posting; the bits are unknown) */
 } AIJOB;
