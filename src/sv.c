@@ -83,7 +83,6 @@ extern GAPDATA full_data_76631c[];
 extern GAPDATA full_data_75ec80[];
 extern GAPDATA full_data_75ec84[];
 extern unsigned char ai_TimeHour;
-extern GAPDATA full_data_6f2320[];
 
 extern char * ai_Unk6f22e8;
 extern int ai_Unk6f22f8;
@@ -100,7 +99,6 @@ extern GAPDATA full_data_6f1c4c[];
 extern GAPDATA full_data_6f22f0[];
 extern GAPDATA full_data_6f22f4[];
 extern GAPDATA full_data_6f2300[];
-extern GAPDATA full_data_6f2320[];
 extern GAPDATA full_data_6f2324[];
 extern GAPDATA full_data_6f2328[];
 extern GAPDATA full_data_6f232c[];
@@ -146,13 +144,11 @@ extern GAPDATA full_data_623240[];
 extern void *d2_ScreenSurf;  /* 0x6ed924 */
 extern int d2_HalfScreenH;
 extern int d2_HalfScreenW;
-extern GAPDATA full_data_6f2320[];
 extern void *d2_ScreenSurf;  /* 0x6ed924 */
 extern GAPDATA full_data_6f22a8[];
 extern GAPDATA full_data_6f22ec[];
 extern int ai_Unk6f2318;
 extern GAPDATA full_data_6f22fc[];
-extern GAPDATA full_data_6f2320[];
 extern GAPDATA full_data_6f23e4[];
 extern GAPDATA full_data_6f23e8[];
 extern GAPDATA full_data_6f262c[];
@@ -4536,18 +4532,18 @@ l260:
             if (SV_I((unsigned)&sv_PanelShown) == 0)
                 goto l188;
             v = gm_Query(*(int *)(SV_I((unsigned)&ai_FallbackBuilding) + 0x5d), 1, 0, *(unsigned short *)(SV_I((unsigned)&ai_FallbackBuilding) + 0x29));
-            SV_I((unsigned)&full_data_6f2320) = gm_PermissionBits(ai_PlayerId, 0, v, 0);
+            sv_PanelPerms = gm_PermissionBits(ai_PlayerId, 0, v, 0);
         } else {
 l188:
-            SV_I((unsigned)&full_data_6f2320) = gm_PermissionBits(ai_PlayerId, p, 0, 0);
+            sv_PanelPerms = gm_PermissionBits(ai_PlayerId, p, 0, 0);
         }
-        if (SV_I((unsigned)&ai_PlayerBuilding) == 0 || (SV_I((unsigned)&full_data_6f2320) & 0x10) == 0) {
+        if (SV_I((unsigned)&ai_PlayerBuilding) == 0 || (sv_PanelPerms & 0x10) == 0) {
             if (SV_I((unsigned)&ai_FallbackBuilding) == 0) {
 l1f2:
                 if (SV_I((unsigned)&sv_SelectedObject) != 0) {
                     c = gm_BuildingClass(*(unsigned char *)SV_I((unsigned)&sv_SelectedObject));
-                    SV_I((unsigned)&full_data_6f2320) = gm_PermissionBits(ai_PlayerId, SV_I((unsigned)&sv_SelectedObject), 0, 0);
-                    if ((c == 3 || c == 5) && (SV_I((unsigned)&full_data_6f2320) & 0x10) != 0)
+                    sv_PanelPerms = gm_PermissionBits(ai_PlayerId, SV_I((unsigned)&sv_SelectedObject), 0, 0);
+                    if ((c == 3 || c == 5) && (sv_PanelPerms & 0x10) != 0)
                         ai_Unk5b8fc0(SV_I((unsigned)&sv_SelectedObject));
                     else
                         ai_Unk5b84f0(SV_I((unsigned)&sv_SelectedObject));
@@ -4555,7 +4551,7 @@ l1f2:
             } else if (SV_I((unsigned)&sv_PanelShown) == 0) {
                 ai_Unk5b84f0(SV_I((unsigned)&ai_FallbackBuilding));
             } else {
-                if ((SV_I((unsigned)&full_data_6f2320) & 0x10) == 0)
+                if ((sv_PanelPerms & 0x10) == 0)
                     goto l1f2;
                 ai_TechTreeWindow(SV_I((unsigned)&ai_FallbackBuilding), *(unsigned short *)SV_I((unsigned)&sv_PanelShown));
             }
@@ -4687,7 +4683,7 @@ void sv_Unk52a680(void)
         return;
     if (SV_I((unsigned)&d2_HitUnderPointer) != -1)
         return;
-    SV_I((unsigned)&full_data_6f2320) = 0;
+    sv_PanelPerms = 0;
     SV_I((unsigned)&full_data_6f2328) = 0;
     SV_I((unsigned)&full_data_6f2324) = 0;
     SV_I((unsigned)&full_data_6f232c) = 0;
@@ -4702,11 +4698,11 @@ void sv_Unk52a680(void)
         b = (unsigned char *)SV_I((unsigned)&ai_FallbackBuilding);
         if (b == 0)
             b = 0;
-        SV_I((unsigned)&full_data_6f2320) = gm_PermissionBits(ai_PlayerId, b, SV_I((unsigned)&full_data_6f22f0), 0);
+        sv_PanelPerms = gm_PermissionBits(ai_PlayerId, b, SV_I((unsigned)&full_data_6f22f0), 0);
         if (SV_I((unsigned)&full_data_6f22f0) != 0) {
             i = *(unsigned short *)SV_I((unsigned)&full_data_6f22f0);
             k = ai_Goods[i * 0x41];
-            if ((k == 6 || k == 2) && (SV_I((unsigned)&full_data_6f2320) & 0x4000) != 0) {
+            if ((k == 6 || k == 2) && (sv_PanelPerms & 0x4000) != 0) {
                 sprintf((char *)(unsigned)&ai_Unkf8aae0, "%s %s", SV_I((unsigned)&txt_ObjectNames + i * 8), SV_I((unsigned)&full_data_143a3cc));
                 SV_US((unsigned)&d2_PointerLook) = 0xb;
             } else {
@@ -4714,34 +4710,34 @@ void sv_Unk52a680(void)
                 SV_US((unsigned)&d2_PointerLook) = 0x16;
             }
         }
-        SV_I((unsigned)&full_data_6f2328) = SV_I((unsigned)&full_data_6f2320);
+        SV_I((unsigned)&full_data_6f2328) = sv_PanelPerms;
         b = (unsigned char *)SV_I((unsigned)&full_data_6f22f4);
     } else if (k == 2) {
         SV_I((unsigned)&full_data_6f22f4) = *(int *)(o + 0x200);
-        SV_I((unsigned)&full_data_6f2320) = gm_PermissionBits(ai_PlayerId, SV_I((unsigned)&full_data_6f22f4), 0, 0);
+        sv_PanelPerms = gm_PermissionBits(ai_PlayerId, SV_I((unsigned)&full_data_6f22f4), 0, 0);
         b = (unsigned char *)SV_I((unsigned)&full_data_6f22f4);
         if (b != 0 && (b[0x5a] & 1) == 0) {
             if (b[5] != 0) {
                 sprintf((char *)(unsigned)&ai_Unkf8aae0, "%s >%s<", SV_I((unsigned)&full_data_143b3f8 + *b * 0x38), b + 5);
-                SV_I((unsigned)&full_data_6f2324) = SV_I((unsigned)&full_data_6f2320);
+                SV_I((unsigned)&full_data_6f2324) = sv_PanelPerms;
                 b = (unsigned char *)SV_I((unsigned)&full_data_6f22f4);
                 goto la9a;
             }
             strcpy((char *)(unsigned)&ai_Unkf8aae0, (char *)SV_I((unsigned)&full_data_143b3f8 + *b * 0x38));
         }
-        SV_I((unsigned)&full_data_6f2324) = SV_I((unsigned)&full_data_6f2320);
+        SV_I((unsigned)&full_data_6f2324) = sv_PanelPerms;
     } else if (k == 3) {
         SV_I((unsigned)&ai_Unk6f22f8) = *(int *)(o + 0x200);
-        SV_I((unsigned)&full_data_6f2320) = gm_PermissionBits(ai_PlayerId, 0, 0, SV_I((unsigned)&ai_Unk6f22f8));
+        sv_PanelPerms = gm_PermissionBits(ai_PlayerId, 0, 0, SV_I((unsigned)&ai_Unk6f22f8));
         if (SV_I((unsigned)&ai_Unk6f22f8) != 0) {
             io_CharacterName(*(unsigned short *)SV_I((unsigned)&ai_Unk6f22f8), 1, 4, (unsigned)&ai_Unkf8aae0);
-            if (*(char *)(SV_I((unsigned)&ai_Unk6f22f8) + 0x165) == 0x1c && (*(unsigned char *)(SV_I((unsigned)&ai_Unk6f22f8) + 0x1b4) & 1) != 0 && (SV_I((unsigned)&full_data_6f2320) & 0x800) != 0
+            if (*(char *)(SV_I((unsigned)&ai_Unk6f22f8) + 0x165) == 0x1c && (*(unsigned char *)(SV_I((unsigned)&ai_Unk6f22f8) + 0x1b4) & 1) != 0 && (sv_PanelPerms & 0x800) != 0
                 && SV_I((unsigned)&d3_CurrentScene) != 0) {
                 txt_Format((char *)(unsigned)&ai_Unkf8aae0, 0x414c, *(unsigned short *)SV_I((unsigned)&ai_Unk6f22f8));
                 SV_US((unsigned)&d2_PointerLook) = 0x2e;
             }
         }
-        SV_I((unsigned)&full_data_6f232c) = SV_I((unsigned)&full_data_6f2320);
+        SV_I((unsigned)&full_data_6f232c) = sv_PanelPerms;
         b = (unsigned char *)SV_I((unsigned)&full_data_6f22f4);
     } else {
         SV_B((unsigned)&ai_Unkf8aae0) = 0;
@@ -4772,8 +4768,8 @@ la9a:
 lb9e:
         SV_I((unsigned)&full_data_6f2300) = (int)it;
         if (SV_I((unsigned)&full_data_6f2300) != 0) {
-            SV_I((unsigned)&full_data_6f2320) = gm_PermissionBits(ai_PlayerId, b, SV_I((unsigned)&full_data_6f2300), 0);
-            if ((SV_I((unsigned)&full_data_6f2320) & 1) == 0) {
+            sv_PanelPerms = gm_PermissionBits(ai_PlayerId, b, SV_I((unsigned)&full_data_6f2300), 0);
+            if ((sv_PanelPerms & 1) == 0) {
                 SV_I((unsigned)&full_data_6f2300) = 0;
             } else {
                 SV_US((unsigned)&d2_PointerLook) = 0xb;
@@ -4793,7 +4789,7 @@ lb9e:
     }
     o = SV_C((unsigned)&ai_Unk6f22e8);
     if (memcmp(o, "tp_TUER", 8) == 0 && (b = *(unsigned char **)(o + 0x200)) != 0) {
-        if ((SV_I((unsigned)&full_data_6f2320) & 1) == 0) {
+        if ((sv_PanelPerms & 1) == 0) {
             if (b[5] == 0) {
                 strcpy((char *)(unsigned)&ai_Unkf8aae0, (char *)SV_I((unsigned)&full_data_143b3f8 + *b * 0x38));
                 goto lad73;
@@ -5829,7 +5825,7 @@ void sv_Unk52d480(void)
         return;
     o1 = SV_C((unsigned)&ai_PlayerBuilding);
     if ((o1 != 0 || (SV_C((unsigned)&ai_FallbackBuilding) != 0 && (o1 = SV_C((unsigned)&ai_FallbackBuilding)) != 0)) && (SV_I((unsigned)&sv_PanelShown) != 0 || SV_I((unsigned)&ai_FallbackBuilding) != 0)
-        && (SV_I((unsigned)&full_data_6f2320) = gm_PermissionBits(ai_PlayerId, o1, SV_I((unsigned)&sv_PanelShown), 0), (SV_I((unsigned)&full_data_6f2320) & 0x1000) == 0))
+        && (sv_PanelPerms = gm_PermissionBits(ai_PlayerId, o1, SV_I((unsigned)&sv_PanelShown), 0), (sv_PanelPerms & 0x1000) == 0))
         return;
     if ((SV_I((unsigned)&ai_BuildingPerms) & 0x1000) == 0)
         return;
@@ -6105,8 +6101,8 @@ l72:
         it = (short *)SV_I((unsigned)&sv_PanelShown);
         if (it == 0)
             it = 0;
-        SV_I((unsigned)&full_data_6f2320) = gm_PermissionBits(ai_PlayerId, who, it, 0);
-        if (*(unsigned short *)(who + 0x27) == ai_PlayerId || (SV_I((unsigned)&full_data_6f2320) & 0x1000) != 0)
+        sv_PanelPerms = gm_PermissionBits(ai_PlayerId, who, it, 0);
+        if (*(unsigned short *)(who + 0x27) == ai_PlayerId || (sv_PanelPerms & 0x1000) != 0)
             sv_BorderCameraView();
     }
     if (SV_I((unsigned)&full_data_6f23e4) != who || SV_I((unsigned)&full_data_6f23e8) != SV_I((unsigned)&sv_PanelShown) || SV_I((unsigned)&ai_Unk6f2318) != 0) {
@@ -7889,6 +7885,7 @@ int sv_SelectedModel = 0;  /* 0x6f2304 */
 char * ai_PlayerBuilding = 0;  /* 0x6f2308 */
 char * ai_FallbackBuilding = 0;  /* 0x6f230c */
 unsigned short * sv_PanelShown = 0;  /* 0x6f2310, the scene record (room) the info panel shows now */
+int sv_PanelPerms = 0;  /* 0x6f2320, the player's permission bits (gm_PermissionBits) for the building / room the panel acts on, tested for 0x10 / 0x1000 */
 int ai_SelectedCount = 0;  /* 0x6f2334 */
 unsigned char sv_OtherSelected = 0;  /* 0x6f2338, nonzero: a selection of another kind is held (reasoned: like sv_SelectedModel it keeps sv_UpdatePanel from the default panel, and it blocks the object pick 0x52adb0) */
 int sv_ResearchClass = 0;  /* 0x6f233c */

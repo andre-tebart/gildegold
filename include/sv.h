@@ -279,6 +279,7 @@ extern float sv_ZoomStartTurn;                                  /* 0x6f23b0 */
 extern float sv_ZoomBaseY;                                  /* 0x6f23b4 */
 extern int sv_MouseDragOn;                                    /* 0x6f23b8 */
 extern int sv_ShownModel;  /* 0x6f2294 */
+extern int sv_PanelPerms;  /* 0x6f2320 */
 extern unsigned char sv_OtherSelected;  /* 0x6f2338 */
 extern int sv_ShownBuilding;  /* 0x6f23bc */
 extern int sv_ShownFallback;  /* 0x6f23c0 */

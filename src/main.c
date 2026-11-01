@@ -5837,7 +5837,6 @@ GAPDATA full_data_6f22f4[4] = { 0 };  /* 0x6f22f4 */
 GAPDATA full_data_6f22fc[4] = { 0 };  /* 0x6f22fc */
 GAPDATA full_data_6f2300[4] = { 0 };  /* 0x6f2300 */
 GAPDATA full_data_6f2314[4] = { 0 };  /* 0x6f2314 */
-GAPDATA full_data_6f2320[4] = { 0 };  /* 0x6f2320 */
 GAPDATA full_data_6f2324[4] = { 0 };  /* 0x6f2324 */
 GAPDATA full_data_6f2328[4] = { 0 };  /* 0x6f2328 */
 GAPDATA full_data_6f232c[8] = { 0 };  /* 0x6f232c */
