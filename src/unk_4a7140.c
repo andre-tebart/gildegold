@@ -12,7 +12,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "unk_4a7140.h"
-#define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, ai_Unk4d88c0 0x4d88c0 move it as a word / movzx) */
+#define util_RandomU ((unsigned short (*)(unsigned short))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, ai_Unk4d88c0 0x4d88c0 move it as a word / movzx) */
 #define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (f3gm.c: char *) as the AIGOOD records it points to */
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
@@ -915,14 +915,13 @@ void ai_PokerEndRound(void)
 
 void ai_PokerNpcSetStake(void)
 {
-    int n;
+    unsigned short n;
 
     if (ai_PokerTable->turn != 0) {
-        n = ai_PokerTable->seat[ai_PokerTable->turn].bold;
-        if (n == 0)
-            n = ai_PokerTable->money - ai_PokerTable->stake >> 1;
+        if (ai_PokerTable->seat[ai_PokerTable->turn].bold != 0)
+            n = ai_PokerTable->money - ai_PokerTable->stake;
         else
-            n = (unsigned short)(ai_PokerTable->money - ai_PokerTable->stake);
+            n = ai_PokerTable->money - ai_PokerTable->stake >> 1;
         ai_PokerTable->stake2 = util_RandomU(n) + ai_PokerTable->stake;
     }
 }
