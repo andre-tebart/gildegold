@@ -800,13 +800,13 @@ exe	0x0043e820	d3e_RegisterSceneEvent	d3_engine	byte	readable
 exe	0x0043e900	d3e_SaveEvents	d3_engine	byte	readable		
 exe	0x0043e970	d3e_LoadEvents	d3_engine	byte	readable		
 exe	0x0043ea10	d3e_LoadSceneEvents	d3_engine	byte	readable		
-exe	0x0043eab0	d3fl_BlendC	d3_fl	draft	readable		
+exe	0x0043eab0	d3fl_BlendC	d3_fl	draft	readable	deep	
 exe	0x0043ed70	d3fl_BlendMMX	d3_fl	byte	readable		
 exe	0x0043eef0	d3fl_Render	d3_fl	byte	readable		
 exe	0x0043f080	d3fl_MakeWeights	d3_fl	byte	readable		
 exe	0x0043f180	d3fl_InitCache	d3_fl	byte	readable		
 exe	0x0043f270	d3fl_FreeCache	d3_fl	byte	readable		
-exe	0x0043f300	d3fl_MakeJitter	d3_fl	draft	readable		
+exe	0x0043f300	d3fl_MakeJitter	d3_fl	draft	readable	deep	
 exe	0x0043f8a0	d3fl_SetDetail	d3_fl	draft	readable	deep	
 exe	0x0043f910	d3fl_ReloadMap	d3_fl	byte	readable		
 exe	0x0043f930	d3fl_SetMips	d3_fl	byte	readable		
@@ -822,7 +822,7 @@ exe	0x00440140	d3fl_Invalidate	d3_fl	byte	readable
 exe	0x00440170	d3fl_Fill	d3_fl	byte	readable		
 exe	0x00440280	d3fl_WaterPoint	d3_fl	byte	readable		
 exe	0x004402f0	d3fl_Ramp	d3_fl	byte	readable		
-exe	0x00440360	d3fl_PrepareWater	d3_fl	draft	draft		
+exe	0x00440360	d3fl_PrepareWater	d3_fl	draft	readable	deep	
 exe	0x00441270	d3fl_SameType	d3_fl	byte	readable		
 exe	0x00441300	d3fl_MakeDivide	d3_fl	draft	readable	deep	
 exe	0x00441660	d3fl_LightCB	d3_fl	byte	readable		
@@ -837,9 +837,9 @@ exe	0x00442280	d3fl_ReloadTextures	d3_fl	byte	readable
 exe	0x00442390	d3fl_LoadMap	d3_fl	draft	readable	deep	
 exe	0x00442ac0	d3fl_TileBox	d3_fl	shape	readable		
 exe	0x00442ed0	d3fl_UpdateWater	d3_fl	shape	readable		
-exe	0x004430c0	d3fl_DrawWater	d3_fl	draft	readable		
+exe	0x004430c0	d3fl_DrawWater	d3_fl	draft	readable	deep	
 exe	0x004437f0	d3fl_UpdateTiles	d3_fl	draft	readable	deep	
-exe	0x004439e0	d3fl_Draw	d3_fl	draft	draft		
+exe	0x004439e0	d3fl_Draw	d3_fl	draft	draft	deep	
 exe	0x00446180	d3fl_Prerender	d3_fl	draft	draft	deep	
 exe	0x004463b0	map_Pick	d3_fl	draft	readable	deep	
 exe	0x00446750	map_PickScreen	d3_fl	draft	readable	deep	
@@ -1451,7 +1451,7 @@ exe	0x0047dd00	ai_WorkLimit	ai	byte	readable
 exe	0x0047dd30	ai_WorkLoad	ai	byte	readable		
 exe	0x0047dd70	ai_WorksForMaster	ai	byte	readable		
 exe	0x0047dd90	ai_IsLocalMaster	ai	byte	readable		
-exe	0x0047ddf0	ai_FindPartner	ai	draft	draft		
+exe	0x0047ddf0	ai_FindPartner	ai	draft	draft	deep	
 exe	0x0047e360	ai_MasterUpdate	ai	draft	draft	deep	
 exe	0x0047e560	ai_UpdateCharacters	ai	byte	draft	deep	
 exe	0x0047e7f0	ai_CanAct	ai	byte	readable		
@@ -1462,7 +1462,7 @@ exe	0x0047e990	ai_Unk47e990	ai	byte	draft	deep
 exe	0x0047ec20	ai_PlanSlots	ai	byte	readable		
 exe	0x0047ed60	ai_SendRemoveEmptyGoods	ai	byte	readable		
 exe	0x0047edb0	ai_EvaluateProduction	ai	draft	readable	deep	
-exe	0x0047f700	ai_EvaluateProductionFlags	ai	draft	readable		
+exe	0x0047f700	ai_EvaluateProductionFlags	ai	draft	readable	deep	
 exe	0x004801f0	ai_EvaluateProductionCategory2	ai	draft	draft	deep	
 exe	0x00480e70	ai_CalcMeisterWache	ai	draft	draft	deep	
 exe	0x004817a0	ai_CalcAngriff	ai	draft	draft		
@@ -3243,7 +3243,7 @@ exe	0x00514360	io_TrailingDigits	io_text	byte	readable
 exe	0x005143d0	io_CharacterName	io_text	shape	readable		
 exe	0x00514e90	io_CharacterNameMarkup	io_text	shape	readable		
 exe	0x00515960	io_PrintText	io_text	draft	readable	deep	
-exe	0x005176d0	txt_Format	io_text	draft	draft		
+exe	0x005176d0	txt_Format	io_text	draft	readable	deep	
 exe	0x00519010	ls_LanguageOf	ls	byte	readable		
 exe	0x005190a0	ls_GetLanguage	ls	byte	readable		
 exe	0x005190b0	ls_SaveGame	ls	draft	draft		
