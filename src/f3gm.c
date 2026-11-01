@@ -9728,7 +9728,7 @@ int gm_Unk50b3a0(unsigned short *a, unsigned short *b, int w, int h)
     return 0;
 }
 
-extern char *d2_Objs;  /* 0xf8f080, 0x2ec bytes each; @original: d2.h declares D2OBJ *; the units add byte offsets to it and cannot include d2.h (vfs_Root / vfs_Tfopen clash with vfs.h) */
+extern char *d2_Objs;  /* 0xf8f080, 0x2ec bytes each; @original: d2.h declares D2OBJ *; the units add byte offsets to it and do not include d2.h yet (their own char * declarations of d2_Objs / d2_LastWindowPtr supersede d2.h's) */
 extern int d2_LastWindow;  /* 0x6ed938 */
 int d2_RemoveWindow();                     /* 0x472ce0 */
 int d2_CreateChildWindow(short x, short y, short w, short h, unsigned int flags, int win);                     /* 0x472aa0 */

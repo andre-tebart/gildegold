@@ -96,7 +96,7 @@ typedef struct AMTGOODS {              /* a 0x80-byte goods record (gm_FindGoods
     char pad03c[0x44];
 } AMTGOODS;
 #pragma pack(push, 1)
-typedef struct AMTBLDVIEW {             /* a building record as gm_BuildQuery (f3gm.c 0x501190) returns it: the AIBLD of ai.h, which amt.c cannot include (amt.h's ai_Chars / gm_BuildQuery types differ from ai.h's) */
+typedef struct AMTBLDVIEW {             /* a building record as gm_BuildQuery (f3gm.c 0x501190) returns it: the AIBLD of ai.h, which amt.c includes now: the view can give way to AIBLD) */
     unsigned char type;                 /* 0x00, index into ai_BTypes */
     int id;                             /* 0x01, the building's own id (AIBLD.id) */
     char pad005[0x22];

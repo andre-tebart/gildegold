@@ -7,7 +7,7 @@ struct VFSFILE;
 #include "d3_io_t.h"                  /* D3BGF / D3BGFMAT */
 #include "d3.h"                       /* the D3 records and typedefs this header names */
 
-typedef struct VFSFILE VFSFILE;     /* vfs.h; its prototypes clash with d3_io_t.h (void *) */
+typedef struct VFSFILE VFSFILE;     /* vfs.h */
 
 typedef struct BGIENT {             /* one table entry, 12 bytes */
     int id;                         /* chunk id, 0x28 ends the table */

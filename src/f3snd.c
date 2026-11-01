@@ -39,7 +39,7 @@
     __asm F3SND_LABEL(__LINE__): add ecx, ebx                       \
     __asm rep stosb                                                 \
 }
-/* stdlib min / max (the body ai.h defines; f3snd cannot include ai.h, its AITIME ai_Time view differs) */
+/* stdlib min / max (the body ai.h defines too) */
 #ifndef min
 #define min(a, b) (((a) < (b)) ? (a) : (b))
 #endif

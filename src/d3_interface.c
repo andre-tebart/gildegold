@@ -27,11 +27,7 @@
 #undef d3_MirDrawObject
 #undef d3_MirBeginFrame
 #include "d3_d3d.h"
-#define vfs_Root vfs_Root_void              /* d3_fl.h's declarations clash with vfs.h */
-#define vfs_DirPath vfs_Unk42fbf0_void
 #include "d3_fl.h"
-#undef vfs_Root
-#undef vfs_DirPath
 #include "d3_interface.h"
 #include "bio.h"
 #include "d3_light.h"

@@ -5,8 +5,9 @@
    0x62d6bc and the subject changes from the action records of the table 0x62c420 to the screens. End: the
    end of the game code (the last function 0x5dd100 returns at 0x5dd3d6, nop fill to 0x5dd3e0); dinput.lib's
    c_dfDIKeyboard / c_dfDIMouse object tables follow, library data (config/symbols/game_range.toml).
-   Open: d2.h cannot be included (its vfs_Root / vfs_Tfopen declarations clash with vfs.h), so the unit reads
-   the d2 records through local views (D2INPUTVIEW, D2FADEVIEW, D2SURFVIEW ...).
+   Open: d2.h is not included yet: the unit's own declarations of d2_StartFade / d2_ReleaseFade / d2_WinOpenPic /
+   d2_ScreenSurf / d2_Inputs / d2_LockSurface / d2_UnlockSurface disagree with d2.h's, so the unit reads the d2
+   records through local views (D2INPUTVIEW, D2FADEVIEW, D2SURFVIEW ...).
    Open: ai_SaveOptionWindow / ai_SaveNameWindow / ai_LoadGameWindow / ai_JoinGameWindow still cast
    d2_GetViewWin to six arguments; as in ai_FilePickWindow the original likely nests d2_GetViewWin (win, 1)
    in the 8-argument sv_CreateFormSlider call (their @deep "cleanup split" notes).
@@ -375,8 +376,8 @@ write:
     return param_3;
 }
 
-/* views of d2.h's D2OBJ / D2INPUT (d2.h cannot be included here: its vfs_Root / vfs_Tfopen
-   declarations clash with vfs.h) */
+/* views of d2.h's D2OBJ / D2INPUT (d2.h is not included yet: the unit's own d2_* declarations disagree with
+   d2.h's, see the lead comment) */
 typedef struct D2INPUTVIEW { char pad0[0x10]; int w; char pad1[0x148]; int maxw; } D2INPUTVIEW;
 
 extern D2INPUTVIEW d2_Inputs[];         /* 0xfa6020, d2.h: D2INPUT [0x80] */

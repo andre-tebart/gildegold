@@ -3,8 +3,8 @@
    Start: 0x4bb810 (first user of the tag); 0x4bb720 / 0x4bb7d0 before it post random messages (unk_4b6480.c).
    End: the place helpers after anm_UpdateSheep (0x4bc2e0..) share "dummy_TUER" with the road code, so they are rd.c's.
    Names are ours.
-   Open: anm.c cannot include d3.h / ch.h (ch.h and rd.h redeclare d3 functions with other types), so the animal
-   object is read through raw offsets; CHARACTER.unk1a0 (a scale) and D3OBJECT.unk224 still need names.
+   Open: the animal object is read through raw offsets although anm.c sees ch.h and d3.h now (the CHARACTER /
+   D3OBJECT views can replace them); CHARACTER.unk1a0 (a scale) and D3OBJECT.unk224 still need names.
    unit of rea 8cef7d5b (src/game/anm.c); boundaries in decl/text.dcl */
 #include <stdio.h>
 #include <string.h>

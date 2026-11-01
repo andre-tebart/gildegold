@@ -201,13 +201,14 @@ typedef struct INIT_CHAR {
     char pad188[0x94];              /* 0x188 .. 0x21b */
 } INIT_CHAR;
 
-/* d3_sm.h's D3TERRAIN as far as this unit reads it (the unit cannot include d3_sm.h: gv.h's
-   d3sm_GetVertex is a K&R declaration); type debt, see the lead comment */
+/* d3_sm.h's D3TERRAIN as far as this unit reads it (written before the unit included d3_sm.h; the uses can
+   read D3TERRAIN now); type debt, see the lead comment */
 typedef struct INIT_TERRAIN {
     unsigned int size;              /* 0x000, the cells per side (0x40 / 0x80 select the shadow map size) */
 } INIT_TERRAIN;
 
-/* stdlib min / max (the body ai.h defines; f3init cannot include ai.h, its AICHAR / AIBLD views differ) */
+/* stdlib min / max (the body ai.h defines; f3init does not include ai.h yet: its cm_SendExSellObject with an int
+   third parameter, @original, supersedes ai.h's short) */
 #ifndef min
 #define min(a, b) (((a) < (b)) ? (a) : (b))
 #endif
@@ -593,7 +594,7 @@ void init_FreeScenes(void)
         p += 0xf8;
     } while ((int)p < (int)INIT_SCENE_HEIGHTMAP_END);
 }
-/* 0x50d550, the scene object callback (a function start Ghidra missed) that allocates the building for a "gb_NAME" scene object o (0x50d100 resolved the name to the building type, bits 0x2000000 in +0x48): a new instance of the type without an owner (0x501580), for the KONTOR (type 0x47) the office of the player slot whose name is the part after the last '_' of the object name (the slot number goes to +0x65, its name to +5); the object and the building are linked (+0x61 / +0x200) and "f3_init:Gebaeude des Typs %s allokiert" is the (unused) log text. An object without a state of its own takes its parent's record. @deep draft, 90 code hunks / 114 vs 106 instructions, every one read against the original 0x50d550..0x50d6a0: no missing / extra statement, constant or callee. What is left is allocation / scheduling: the original hoists the id (and eax,0xffffff before the tests + movsx of the 0x4b byte, ours compares the byte directly), swaps the loop induction registers (original i=esi / slot pointer=edi, ours the reverse), spills id at [esp+0xc] vs [esp+0x14] and places the inlined strcpy byte loops differently. spell.py: 50d5d3 reload - tried using the masked id expression directly at the sprintf use (90 code hunks unchanged, reverted); 50d6a8 dup-tail - tried the parent-record tail as if (par == 0) return (unchanged, reverted); 50d57d / 50d65c have no menu rule and the meaning is equal. Readability: Q1 init_AllocSceneBuilding, Q2 cleared (gm_CreateBuilding / ai_PlayerSlots / ai_BuildingNames named), Q3 cleared (INIT_PROTO_MASK / INIT_PLAYER_SLOTS_END), Q6 done. Q4 (11 raw accesses) is the same shared-header blocker as init_HookObject and ls.c 0x51d4f0: o's D3OBJECT has no field at 0x200 (d3.h char pad200[0x8]) and the building instance b is an AIBLD from ai.h, which this unit cannot include (gv.h declares ai_Blds / ai_Chars with other types, 30 compile errors). */
+/* 0x50d550, the scene object callback (a function start Ghidra missed) that allocates the building for a "gb_NAME" scene object o (0x50d100 resolved the name to the building type, bits 0x2000000 in +0x48): a new instance of the type without an owner (0x501580), for the KONTOR (type 0x47) the office of the player slot whose name is the part after the last '_' of the object name (the slot number goes to +0x65, its name to +5); the object and the building are linked (+0x61 / +0x200) and "f3_init:Gebaeude des Typs %s allokiert" is the (unused) log text. An object without a state of its own takes its parent's record. @deep draft, 90 code hunks / 114 vs 106 instructions, every one read against the original 0x50d550..0x50d6a0: no missing / extra statement, constant or callee. What is left is allocation / scheduling: the original hoists the id (and eax,0xffffff before the tests + movsx of the 0x4b byte, ours compares the byte directly), swaps the loop induction registers (original i=esi / slot pointer=edi, ours the reverse), spills id at [esp+0xc] vs [esp+0x14] and places the inlined strcpy byte loops differently. spell.py: 50d5d3 reload - tried using the masked id expression directly at the sprintf use (90 code hunks unchanged, reverted); 50d6a8 dup-tail - tried the parent-record tail as if (par == 0) return (unchanged, reverted); 50d57d / 50d65c have no menu rule and the meaning is equal. Readability: Q1 init_AllocSceneBuilding, Q2 cleared (gm_CreateBuilding / ai_PlayerSlots / ai_BuildingNames named), Q3 cleared (INIT_PROTO_MASK / INIT_PLAYER_SLOTS_END), Q6 done. Q4 (11 raw accesses) is the same shared-header blocker as init_HookObject and ls.c 0x51d4f0: o's D3OBJECT has no field at 0x200 (d3.h char pad200[0x8]) and the building instance b is an AIBLD from ai.h, which this unit does not include yet (its @original int-parameter cm_SendExSellObject supersedes ai.h's; the gv.h clash this note named once is gone). */
 
 
 void init_AllocSceneBuilding(int o)

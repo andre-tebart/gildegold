@@ -37,8 +37,8 @@ typedef struct SNDOPTIONBYTES {
 extern SNDOPTIONBYTES ai_SoundOptions;  /* 0x6f3600 */
 
 void sb_SetMasterVolume(int volume);/* 0x427370, sblib.c (that unit has no header yet) */
-/* msx.h / f3snd.h redefine msx_Play with different types, so the unit cannot include both; the two
-   setters are repeated from msx.h here. */
+/* the two msx.h setters (msx.h and f3snd.h once declared msx_Play with differently scoped tags; the unit
+   includes both now, these copies can go) */
 void msx_SetVolume(int vol);        /* 0x4239a0, the music master volume */
 void msx_SetAmbVolume(int vol);     /* 0x423a50, the ambient master volume */
 

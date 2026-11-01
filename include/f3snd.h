@@ -66,7 +66,7 @@ typedef struct G16TRACKS {              /* 0x24c bytes, snd_BuildingTracks[]: tr
 
 #pragma pack(push, 1)
 typedef struct G16BLDVIEW {             /* the market building as f3snd reads it (AIBLD in ai.h, which f3snd
-                                           cannot include: its AITIME ai_Time view differs) */
+                                           includes now: the view can give way to AIBLD) */
     char pad61[0x61];
     char *object;                       /* 0x61, its 3D object in the scene */
 } G16BLDVIEW;

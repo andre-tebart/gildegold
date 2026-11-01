@@ -422,8 +422,8 @@ typedef struct AIFIN {                  /* what gm_PlayerRecord finds for a char
 } AIFIN;
 
 typedef struct AIMAPENT {               /* 24 bytes, the AI's view of the vegetation records at AIBLD.plants (rd.h
-                                           G15PLANT, the same 0x18-byte layout; ai.c cannot include rd.h because of the
-                                           ai_MapRefs views) */
+                                           G15PLANT, the same 0x18-byte layout; ai.c includes rd.h now, so the readers
+                                           can take G15PLANT) */
     int id;                             /* 0x00, G15PLANT.id */
     int unk04;                          /* 0x04 */
     unsigned char x;                    /* 0x08, cell */
