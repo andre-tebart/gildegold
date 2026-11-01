@@ -27,6 +27,12 @@ extern D3DTEXFMTCTX d3d_UsedTexFormat;
 #include "rea_dump.h"           /* debug build: REA_DUMP_TRIGGER / REA_DUMP_BACKBUFFER */
 #endif
 #include "data_views.h"
+#include "bmp.h"
+#include "d3_tools.h"
+#include "dd_vesa.h"
+#include "err.h"
+#include "mem.h"
+#include "ts_texture.h"
 #define dd_BBitsC (*(char *)&dd_BBits)  /* 0x1464fbd, dd_BBits (dd_vesa.c: unsigned char) read signed: @original the byte-matched d3d_EnumTextureFormatsCallback sign-extends it */
 #define dd_GBitsC (*(char *)&dd_GBits)  /* 0x1463580, dd_GBits (dd_vesa.c: unsigned char) read signed: @original the byte-matched d3d_EnumTextureFormatsCallback sign-extends it */
 #define dd_RBitsC (*(char *)&dd_RBits)  /* 0x1463570, dd_RBits (dd_vesa.c: unsigned char) read signed: @original the byte-matched d3d_EnumTextureFormatsCallback sign-extends it */
