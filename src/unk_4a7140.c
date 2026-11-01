@@ -587,13 +587,12 @@ void ai_PokerOpenCounts(G10SEAT *s, int *n, int *g, int *m, int *r)
 /* 0x4a7f50, rates the hand of owner: 0 nothing, 1 pair, 2 two pairs, 3 three, 4 straight, 5 full house, 6 flush,
    7 poker, 8 straight flush (the names at 0x600490); the groups into g1 / g2, the highest ranks into r1 / r2 */
 
-char ai_Unk4a7f50(int owner, int *g1, int *g2, int *r1, int *r2)
+int ai_PokerRateHand(int owner, int *g1, int *g2, int *r1, int *r2)
 {
     int cnt[6];
     int rcnt[4];
     int g, r, n, i;
     int pairs, rpairs, maxn, maxr, bestr, kind, a, b;
-    G10CARD *c, *q, *q2;
 
     pairs = 0;
     rpairs = 0;
@@ -601,16 +600,13 @@ char ai_Unk4a7f50(int owner, int *g1, int *g2, int *r1, int *r2)
     maxr = 0;
     bestr = 0;
     kind = 0;
-    g = 0;
-    c = ai_PokerDeck;
     b = -1;
     a = 0;
-    do {
+    for (g = 0; g < 6; g++) {
         n = 0;
-        for (i = 4; i != 0; i--) {
-            if (c->owner == owner)
+        for (i = 0; i < 4; i++) {
+            if (ai_PokerDeck[g * 4 + i].owner == owner)
                 n++;
-            c++;
         }
         cnt[g] = n;
         if (n > 1) {
@@ -623,79 +619,59 @@ char ai_Unk4a7f50(int owner, int *g1, int *g2, int *r1, int *r2)
                 b = g;
             }
         }
-        g++;
-    } while (c < &ai_PokerDeck[24]);
-    r = 0;
-    c = ai_PokerDeck;
-    do {
+    }
+    for (r = 0; r < 4; r++) {
         n = 0;
-        q = c;
-        for (i = 6; i != 0; i--) {
-            if (q->owner == owner)
+        for (g = 0; g < 6; g++) {
+            if (ai_PokerDeck[g * 4 + r].owner == owner)
                 n++;
-            q += 4;
         }
         rcnt[r] = n;
         if (n > 1)
             rpairs++;
-        if (maxr < n) {
+        if (n > maxr) {
             maxr = n;
             bestr = r;
         }
-        c++;
-        r++;
-    } while (c < &ai_PokerDeck[4]);
+    }
     if (rpairs == 1 && maxr == 5) {
         kind = 6;
         *r1 = bestr;
     }
     if (pairs == 0) {
         if (cnt[0] == 0 || cnt[5] == 0)
-            return (kind == 6) * 4 + 4;
+            return kind == 6 ? 8 : 4;
         if (kind == 6)
             return 6;
-    } else if (pairs == 1) {
-        if (maxn == 4) {
-            *g1 = a;
-            return 7;
+    } else if (pairs == 1 && maxn == 4) {
+        *g1 = a;
+        return 7;
+    } else if (pairs == 2 && maxn == 3) {
+        *g1 = a;
+        *g2 = b;
+        return 5;
+    } else if (pairs == 1 && maxn == 3) {
+        *g1 = a;
+        return 3;
+    } else if (pairs == 2 && maxn == 2) {
+        *g1 = a;
+        *g2 = b;
+        for (r = 3; r >= 0; r--) {
+            if (ai_PokerDeck[a * 4 + r].owner == owner)
+                *r1 = r;
+            if (ai_PokerDeck[b * 4 + r].owner == owner)
+                *r2 = r;
         }
-        if (maxn == 3) {
-            *g1 = a;
-            return 3;
-        }
-        if (maxn == 2) {
-            *g1 = a;
-            q = &ai_PokerDeck[a * 4 + 3];
-            for (r = 3; r >= 0; r--) {
-                if (q->owner == owner) {
-                    *r1 = r;
-                    return 1;
-                }
-                q--;
+        return 2;
+    } else if (pairs == 1 && maxn == 2) {
+        *g1 = a;
+        for (r = 3; r >= 0; r--) {
+            if (ai_PokerDeck[a * 4 + r].owner == owner) {
+                *r1 = r;
+                return 1;
             }
-            return 1;
         }
-    } else if (pairs == 2) {
-        if (maxn == 3) {
-            *g1 = a;
-            *g2 = b;
-            return 5;
-        }
-        if (maxn == 2) {
-            *g1 = a;
-            *g2 = b;
-            q2 = &ai_PokerDeck[b * 4 + 3];
-            q = &ai_PokerDeck[a * 4 + 3];
-            for (r = 3; r >= 0; r--) {
-                if (q->owner == owner)
-                    *r1 = r;
-                if (q2->owner == owner)
-                    *r2 = r;
-                q--;
-                q2--;
-            }
-            return 2;
-        }
+        return 1;
     }
     return 0;
 }
@@ -716,7 +692,7 @@ int ai_Unk4a8190(void)
     out[1] = 0;
     for (i = 0; i < 3; i++) {
         if (ai_PokerTable->seat[i].foldedAt < 0) {
-            kind[i] = ai_Unk4a7f50(i, &g1[i], &g2[i], &r1[i], &r2[i]);
+            kind[i] = ai_PokerRateHand(i, &g1[i], &g2[i], &r1[i], &r2[i]);
             ai_PokerTable->seat[i].unk30 = kind[i];
         } else {
             out[i] = 1;
