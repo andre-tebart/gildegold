@@ -9,8 +9,10 @@
    d2_BlitPartMode K&R; 39 K&R d2 prototypes whose calls need a re-grade); also not included: ch.h cm.h
    f3gm.h f3snd.h rt.h sblib.h unk_5d33b0.h. Calls whose argument count differs from the definition (read
    the original's pushes): sb_PlaySample, d2_SetObjValue, d2_PlaceMainWindow, ch_FindByObject. The
-   @original cast macros (d2_PutPixelRGBc, d2_CreatePicObjS, d2_WinOpenPicStyledS, ai_SwitchRoomI,
+   @original cast macros (d2_PutPixelRGBc, d2_CreatePicObjS, d2_WinOpenPicStyledS, d2_OpenFormS, ai_SwitchRoomI,
    cm_SendExSetHEI) record the parameter types the original's calls show.
+   Open: data: 0x623ac0 sv_SkyHeavy, owner sv or cm (defined in cm.c as char[], lies in sv's data block between
+   sv_SkyMedium and sv_DayTables; sv reads it through the SVSKYREC view sv_SkyHeavyT, cm by byte offsets).
    Open: the camera 0xfc2dec has two names: sv_CameraObj (char *, read by raw offsets in most functions) and
    d3.h's typed d3_Camera (the camera functions); likewise ai_Unk5fb5b0 (char *) for d3_DefaultScene.
    unit of rea 8cef7d5b (src/game/sv.c); boundaries in decl/text.dcl */

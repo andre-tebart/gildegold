@@ -3326,17 +3326,17 @@ exe	0x00524770	sv_IsAtDoor	sv	byte	readable
 exe	0x00524810	sv_IsCartAtDoor	sv	byte	readable		
 exe	0x00524900	sv_CharStateIcons	sv	byte	draft		
 exe	0x00524990	sv_UpdateMemberList	sv	byte	draft		
-exe	0x00525220	sv_OpenPlayerBar	sv	draft	draft		
+exe	0x00525220	sv_OpenPlayerBar	sv	byte	draft		
 exe	0x00525440	sv_ClosePlayerBar	sv	byte	readable		
 exe	0x00525480	sv_ClockSeason	sv	byte	readable		
-exe	0x00525490	sv_Unk525490	sv	draft	draft		
-exe	0x00525510	sv_Unk525510	sv	draft	draft		
-exe	0x00525940	sv_UpdateSkyColors	sv	draft	draft		
-exe	0x00525a00	sv_FillDayPhases	sv	draft	draft		
-exe	0x00525a80	sv_Unk525a80	sv	byte	draft		
-exe	0x00525ad0	sv_Unk525ad0	sv	draft	draft		
-exe	0x00525dd0	sv_PlaceCamera	sv	draft	draft		
-exe	0x00525ee0	sv_Unk525ee0	sv	draft	draft		
+exe	0x00525490	sv_SetSkyLightColors	sv	byte	readable		
+exe	0x00525510	sv_SetupWeather	sv	byte	readable		
+exe	0x00525940	sv_UpdateSkyColors	sv	byte	readable		
+exe	0x00525a00	sv_FillDayPhases	sv	draft	readable	deep	
+exe	0x00525a80	sv_SetLampRamp	sv	byte	draft		
+exe	0x00525ad0	sv_UpdateSkyPhase	sv	shape	readable		
+exe	0x00525dd0	sv_PlaceCamera	sv	byte	readable		
+exe	0x00525ee0	sv_EaseCameraHeight	sv	byte	readable		
 exe	0x00525ff0	sv_Unk525ff0	sv	draft	draft		
 exe	0x005263a0	sv_ScrollCamera	sv	draft	readable	deep	
 exe	0x00526cf0	sv_MouseCamera	sv	draft	readable	deep	
