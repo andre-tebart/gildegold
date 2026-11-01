@@ -1141,17 +1141,15 @@ char *amt_GetSuperiorOfficeHolder(int k)
 int amt_CanTakeOffice(char *c, int k)
 {
     AMTKIND a, b;
-    unsigned int m;
 
     if (k != 0 && k <= 0x1b) {
         if (amt_GetKind(k, &a) != 0) {
             if (amt_GetKind((unsigned char)c[0x166], &b) != 0 && a.col == b.col) {
-                m = a.level % 3;
-                if (m == 0 && b.level % 3 != 0)
+                if (a.level % 3 == 0 && b.level % 3 != 0)
                     return 1;
-                if (m == 2 && b.level % 3 == 0)
+                if (a.level % 3 == 2 && b.level % 3 == 0)
                     return 1;
-                if (m == 1 && b.level % 3 == 2)
+                if (a.level % 3 == 1 && b.level % 3 == 2)
                     return 1;
             }
         }
