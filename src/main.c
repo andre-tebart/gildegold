@@ -239,8 +239,6 @@ extern GAPDATA full_data_62456c[];
 extern GAPDATA full_data_6f2428[];
 extern GAPDATA full_data_6f25a8[];
 extern GAPDATA full_data_760454[];
-extern GAPDATA full_data_76f990[];
-extern GAPDATA full_data_76f994[];
 extern int init_StatusForm;
 extern int sv_FrameMask;
 extern int sv_ViewRectBottom;
@@ -6036,8 +6034,7 @@ GAPDATA full_data_76045c[4] = { 0 };  /* 0x76045c */
 GAPDATA full_data_760460[4] = { 0 };  /* 0x760460 */
 GAPDATA full_data_7604e8[96] = { 0 };  /* 0x7604e8 */
 GAPDATA full_data_76631c[4] = { 0 };  /* 0x76631c */
-GAPDATA full_data_76f990[4] = { 0 };  /* 0x76f990 */
-GAPDATA full_data_76f994[36] = { 0 };  /* 0x76f994 */
+/* full_data_76f990 / full_data_76f994: views of ai_Unk76f920 (data_views.h), the save header's +0x70 / +0x74 */
 GAPDATA full_data_91f6e0[3] = { 0 };  /* 0x91f6e0 */
 GAPDATA full_data_91f6e3[1] = { 0 };  /* 0x91f6e3 */
 GAPDATA full_data_91f6e4[28] = { 0 };  /* 0x91f6e4 */

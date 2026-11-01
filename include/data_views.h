@@ -139,6 +139,13 @@
 /* dd_BBits */
 #define dd_Unk1464fc0            (*(int *)((char *)&dd_BBits + 0x3))  /* 0x1464fc0 */
 
+/* ai_Unk76f920 */
+#define ai_Unk76f924             (*(int *)((char *)&ai_Unk76f920 + 0x4))  /* 0x76f924 */
+#define full_data_76f990         (*(int *)((char *)&ai_Unk76f920 + 0x70))  /* 0x76f990 */
+#define full_data_76f994         (*(int *)((char *)&ai_Unk76f920 + 0x74))  /* 0x76f994 */
+#define ai_Unk76f9b8             (*(int *)((char *)&ai_Unk76f920 + 0x98))  /* 0x76f9b8 */
+#define ai_Unk76f9bc             (*(char (*)[100])((char *)&ai_Unk76f920 + 0x9c))  /* 0x76f9bc */
+
 /* ai_Unk6339db */
 #define d3if_Unk6339dc           (*(unsigned int *)((char *)&ai_Unk6339db + 0x1))  /* 0x6339dc */
 

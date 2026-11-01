@@ -58,10 +58,12 @@ int ls_ReceiveGame(void);                                               /* 0x520
 extern short ai_Unk75e13c;                                  /* 0x75e13c */
 extern LSSAVE ls_SavePath;                                  /* 0x75e640 */
 extern unsigned short ai_ScreenImage[19200];                /* 0x766320 */
-extern int ai_Unk76f920[1];                                 /* 0x76f920 */
+extern int ai_Unk76f920[0x40];                              /* 0x76f920, the 0x100-byte header of the loaded save game */
+#ifndef DATA_VIEWS_H
 extern int ai_Unk76f924;                                    /* 0x76f924 */
 extern int ai_Unk76f9b8;                                    /* 0x76f9b8 */
 extern char ai_Unk76f9bc[100];                              /* 0x76f9bc */
+#endif
 extern int ai_Unk61a658;                                    /* 0x61a658 */
 extern int ls_Language;                                     /* 0x62364c */
 extern int ls_Version;                                      /* 0x623650 */
