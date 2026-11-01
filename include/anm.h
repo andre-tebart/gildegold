@@ -37,15 +37,11 @@ int d3_VecEqual(struct D3VECTOR *a, struct D3VECTOR *b, float eps);             
 unsigned char * gm_BuildQuery(int n, ...);                                                  /* 0x501190, ai.h: AIBLD * */
 unsigned char * gm_BuildNext(void);                                                        /* 0x501030 */
 int gm_IsHomeType(unsigned char *b);                                                       /* 0x502520 */
-int gm_IsType10(unsigned char *b);                                                       /* 0x5024f0 */
 int ch_QueueAnim(struct CHARACTER *ch, char *name, int n);                                   /* 0x4057a0, ch.c */
 char d3_GetHeightAt(struct D3SM *h, struct D3VECTOR *pos, int *px, int *pz, float *py);           /* 0x45f170, ch.h: D3SM *, D3VECTOR * */
 extern struct D3SCENE *d3_DefaultScene; /* 0x5fb5b0 (as d3.h / unk_58bbd0.h) */
 int util_Random(unsigned short n);                                               /* 0x42ec00, tr.c; the callers that read a 16-bit result (ch_RandomNear, anm_Update, ai_Unk4d88c0 ..) call util_RandomU, a cast in their head */
-float util_RandomF(void);                                                        /* 0x42ec20 */
 
-void * mem_Alloc(int size, char *tag);                                            /* 0x4223c0, mem.c */
-void mem_Free(void *p);                                                          /* 0x422620, mem.c */
 
 ANMREC *anm_NewAnimal(void);
 void anm_RemoveAnimal(ANMREC *a);
