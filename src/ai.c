@@ -36,7 +36,22 @@ typedef unsigned int SOCKET;
 #include "d3_types.h"
 extern D3SCENE d3_Scenes[];
 #include "am_types.h"                /* AIACT */
-extern AIACT ai_Unkf83ec0[];  /* 0xf83ec0, am.c's registered actions, read only through data_views.h's ai_ActionFlags */
+#include "ahm.h"
+#include "am.h"
+#include "anm.h"
+#include "cm.h"
+#include "f3gm.h"
+#include "f3init.h"
+#include "gv.h"
+#include "he.h"
+#include "io_text.h"
+#include "ls.h"
+#include "rd.h"
+#include "sv.h"
+#include "tr.h"
+#include "unk_4b39f0.h"
+#include "unk_575860.h"
+#include "unk_58bbd0.h"
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 
