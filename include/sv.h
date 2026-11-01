@@ -52,9 +52,9 @@ void sv_Unk525ff0(void);                                                /* 0x525
 int sv_Unk5263a0(void);                                                 /* 0x5263a0 */
 int sv_Unk526cf0(void);                                                 /* 0x526cf0 */
 int sv_Unk527640(void);                                                 /* 0x527640 */
-void sv_Unk527840(int o);                                               /* 0x527840 */
-void sv_Unk527bb0(int o);                                               /* 0x527bb0 */
-void sv_Unk527e90(int m);                                               /* 0x527e90 */
+void sv_FlyCameraToObject(int o);                                               /* 0x527840 */
+void sv_CameraToObject(int o);                                               /* 0x527bb0 */
+void sv_FlyCameraToModel(int m);                                               /* 0x527e90 */
 void sv_Unk528140(void);                                                /* 0x528140 */
 char sv_Unk528180(char *part, char *b);                                 /* 0x528180 */
 char sv_Unk528290(char *o, char *b);                                    /* 0x528290 */
@@ -230,7 +230,7 @@ extern int ai_Unk6f22cc;                                    /* 0x6f22cc */
 extern int ai_Unk6f22d0;                                    /* 0x6f22d0 */
 extern float sv_CameraHeightFactor;                         /* 0x6f22d4 */
 extern float sv_CameraAngleFactor;                          /* 0x6f22d8 */
-extern int ai_Unk6f2304;                                    /* 0x6f2304 */
+extern int sv_SelectedModel;                                    /* 0x6f2304 */
 extern char * ai_PlayerBuilding;                            /* 0x6f2308 */
 extern char * ai_FallbackBuilding;                          /* 0x6f230c */
 extern unsigned short * sv_PanelShown;                      /* 0x6f2310 */
@@ -271,12 +271,8 @@ extern int sv_SelectionFlags[0xc0];                         /* 0x75e920 */
 extern int ai_Unk75ec20;                                    /* 0x75ec20 */
 extern unsigned short * ai_Unk75ec5c;                       /* 0x75ec5c */
 extern int ai_Unk75f280[576];                               /* 0x75f280 */
-extern int ai_Unk75fb80;                                    /* 0x75fb80 */
-extern int ai_Unk75fb84;                                    /* 0x75fb84 */
-extern int ai_Unk75fb88;                                    /* 0x75fb88 */
-extern int ai_Unk75fb90;                                    /* 0x75fb90 */
-extern int ai_Unk75fb94;                                    /* 0x75fb94 */
-extern int ai_Unk75fb98;                                    /* 0x75fb98 */
+extern float sv_ViewPos[4];                                 /* 0x75fb80, the stored camera position (X/Y/Z views: data_views.h) */
+extern float sv_ViewRot[4];                                 /* 0x75fb90, its rotation */
 extern float ai_Unk760420;                                  /* 0x760420 */
 extern int ai_Unk760440;                                    /* 0x760440 */
 extern int ai_Unk760464;                                    /* 0x760464 */
@@ -302,6 +298,6 @@ extern int ai_Unkfb9064;                                    /* 0xfb9064 */
 extern int ai_Unkfb9068;                                    /* 0xfb9068 */
 extern int ai_Unkfb906c;                                    /* 0xfb906c */
 extern int ai_Unkfba9c0[168];                               /* 0xfba9c0 */
-extern char * ai_Unkfc2dec;                                 /* 0xfc2dec */
+extern char * sv_CameraObj;                                 /* 0xfc2dec */
 
 #endif

@@ -2884,7 +2884,7 @@ int gm_IsBuildingKind(int n);           /* 0x4fe940, f3gm.c: 1 when the object p
 int gm_FindObjectProto(char *name);     /* 0x4fe900, f3gm.c: the object prototype of the name */
 unsigned unk_Unk503530(unsigned p1, unsigned char *b, unsigned short *o, int c);  /* 0x503530, f3gm.c: the permission bits of the character p in the building b (or the object o) */
 extern unsigned char init_TextureSet;      /* 0x6f1c24 */
-extern char * ai_Unkfc2dec;                /* 0xfc2dec */
+extern char * sv_CameraObj;                /* 0xfc2dec */
 /* 0x511f20 */
 void init_SyncSceneObjects(char *o)
 {
@@ -2992,7 +2992,7 @@ fx:
         if (rec != 0 && (rec[0x13] & 0xa0) != 0) {
             if (*(int *)(o + 0x1cc) == 0)
                 d3_InflateObject(o);
-            if (*(int *)(o + 0x1ec) != 0 && d3t_GetBoundingSphere(o, ai_Unkfc2dec, (struct D3VECTOR *)(pos + 2), pos) != 0) {
+            if (*(int *)(o + 0x1ec) != 0 && d3t_GetBoundingSphere(o, sv_CameraObj, (struct D3VECTOR *)(pos + 2), pos) != 0) {
                 fx = (int)(pos[0] * 1.5);
                 s = evt_Load("Effekte/upgr");
                 if (s != 0)
@@ -3645,10 +3645,10 @@ void unk_Unk513740(void)
         if (c == 0 || *(int *)(c + 0x88) == -0x40800000) {
             sv_PlaceCamera(0x3ea8f5c3);
         } else {
-            d3_SetObjectPos(ai_Unkfc2dec, c + 0x8c);
+            d3_SetObjectPos(sv_CameraObj, c + 0x8c);
             sv_PlaceCamera(*(int *)(c + 0x88));
-            *(int *)(ai_Unkfc2dec + 0x88) = *(int *)(c + 0xa0);
-            d3_SetObjectRot(ai_Unkfc2dec, ai_Unkfc2dec + 0x84);
+            *(int *)(sv_CameraObj + 0x88) = *(int *)(c + 0xa0);
+            d3_SetObjectRot(sv_CameraObj, sv_CameraObj + 0x84);
         }
         for (p = (int *)((unsigned)&ai_Unk770cec + 0x18); (int)p < (int)((unsigned)&ai_Unk770cec + 0x65418); p += 0x87) {
             if (*p != 0) {

@@ -132,7 +132,7 @@ extern int ai_Opponents[7];
 
 
 extern int sv_PopRequest;
-extern char * ai_Unkfc2dec;
+extern char * sv_CameraObj;
 
 extern void * d3_Unk6333fc;
 
@@ -208,7 +208,7 @@ extern int ai_Unkfb9060;
 extern int ai_Unkfb9064;
 extern int ai_Unkfb9068;
 extern int ai_Unkfb906c;
-extern char * ai_Unkfc2dec;
+extern char * sv_CameraObj;
 extern GAPDATA full_data_6024e4[];
 extern GAPDATA full_data_624560[];
 extern GAPDATA full_data_6f25b0[];
@@ -2081,7 +2081,7 @@ int main_ChooseModel(int job)
 /* 0x5359f0, the family choice of the character creation ("Menu\CHOOSECITY_HEADER" over the sky "Sky_Mittel_02"): nine template persons (0x5344f0: thief / gypsy 0 / 8, craftsmen 1 / 7, fighter 4, traders 3 / 5, priest 2 / 6) stand
    in the scene; the player clicks one for each of the four slots 0x75e180 [4] (father) and [5] (mother) (the clicked person 0x6f22e4 + 0x200 gets the slot in +0x23c and the dummy name "dummy_VATER" / "dummy_MUTTER" ..), the
    value stored in the slot is the profession group 0 .. 4; with both slots set the talent choice main_ChooseTalents and the model choice main_ChooseModel follow; returns 1 when the character was created (the dummy name table
-   dn[6] of 0x30 bytes, entries 4 / 5 are the only ones used) @deep read against the original and corrected: the odd slot (mother, k=5) is tested first in both the camera target choice (+0xfc.. before +0xe4..) and the click handling, both branches share the slot store; k >= 6; talents ok -> (lobby_ChooseProfession(0xc6) && main_ChooseModel(job)) else pop with ret 0, then if (ret == 0) d2_SetViewEnabled (the original's jump threading). Left is allocation only: the original pushes ebp in the prologue and keeps f in ebp (ours esi), zeroes ret / fade via ebp before the dn table copies (ours esi after them), and has one more stack slot (frame 0x16c vs 0x168: dn at esp+0x5c vs 0x58). Q7 / Q4 open: ch_* (ch.h does not include into main), the ai_Unk5fb5b0 / ai_Unkfc2dec records are untyped */
+   dn[6] of 0x30 bytes, entries 4 / 5 are the only ones used) @deep read against the original and corrected: the odd slot (mother, k=5) is tested first in both the camera target choice (+0xfc.. before +0xe4..) and the click handling, both branches share the slot store; k >= 6; talents ok -> (lobby_ChooseProfession(0xc6) && main_ChooseModel(job)) else pop with ret 0, then if (ret == 0) d2_SetViewEnabled (the original's jump threading). Left is allocation only: the original pushes ebp in the prologue and keeps f in ebp (ours esi), zeroes ret / fade via ebp before the dn table copies (ours esi after them), and has one more stack slot (frame 0x16c vs 0x168: dn at esp+0x5c vs 0x58). Q7 / Q4 open: ch_* (ch.h does not include into main), the ai_Unk5fb5b0 / sv_CameraObj records are untyped */
 
 int main_ChooseFamily(int unused)
 {
@@ -2139,24 +2139,24 @@ int main_ChooseFamily(int unused)
                             io_PrintText((unsigned)"$C");
                             io_PrintText(0x1ae6, k + 0x1aea);
                             if (k % 2 != 0) {
-                                r1[0] = *(int *)(U_I((unsigned)&ai_Unkfc2dec) + 0xfc);
-                                r1[1] = *(int *)(U_I((unsigned)&ai_Unkfc2dec) + 0x100);
-                                r1[2] = *(int *)(U_I((unsigned)&ai_Unkfc2dec) + 0x104);
-                                r2[0] = *(int *)(U_I((unsigned)&ai_Unkfc2dec) + 0x108);
-                                r2[1] = *(int *)(U_I((unsigned)&ai_Unkfc2dec) + 0x10c);
-                                r2[2] = *(int *)(U_I((unsigned)&ai_Unkfc2dec) + 0x110);
+                                r1[0] = *(int *)(U_I((unsigned)&sv_CameraObj) + 0xfc);
+                                r1[1] = *(int *)(U_I((unsigned)&sv_CameraObj) + 0x100);
+                                r1[2] = *(int *)(U_I((unsigned)&sv_CameraObj) + 0x104);
+                                r2[0] = *(int *)(U_I((unsigned)&sv_CameraObj) + 0x108);
+                                r2[1] = *(int *)(U_I((unsigned)&sv_CameraObj) + 0x10c);
+                                r2[2] = *(int *)(U_I((unsigned)&sv_CameraObj) + 0x110);
                             } else {
-                                r1[0] = *(int *)(U_I((unsigned)&ai_Unkfc2dec) + 0xe4);
-                                r1[1] = *(int *)(U_I((unsigned)&ai_Unkfc2dec) + 0xe8);
-                                r1[2] = *(int *)(U_I((unsigned)&ai_Unkfc2dec) + 0xec);
-                                r2[0] = *(int *)(U_I((unsigned)&ai_Unkfc2dec) + 0xf0);
-                                r2[1] = *(int *)(U_I((unsigned)&ai_Unkfc2dec) + 0xf4);
-                                r2[2] = *(int *)(U_I((unsigned)&ai_Unkfc2dec) + 0xf8);
+                                r1[0] = *(int *)(U_I((unsigned)&sv_CameraObj) + 0xe4);
+                                r1[1] = *(int *)(U_I((unsigned)&sv_CameraObj) + 0xe8);
+                                r1[2] = *(int *)(U_I((unsigned)&sv_CameraObj) + 0xec);
+                                r2[0] = *(int *)(U_I((unsigned)&sv_CameraObj) + 0xf0);
+                                r2[1] = *(int *)(U_I((unsigned)&sv_CameraObj) + 0xf4);
+                                r2[2] = *(int *)(U_I((unsigned)&sv_CameraObj) + 0xf8);
                             }
-                            d3anim_FreePath(U_I((unsigned)&ai_Unkfc2dec));
+                            d3anim_FreePath(U_I((unsigned)&sv_CameraObj));
                             U_I((unsigned)&d3t_CamMoving) = 0;
                             U_I((unsigned)&d3t_CamMove) = 0;
-                            d3t_PlaceObjectV(U_I((unsigned)&ai_Unkfc2dec), r1, r2, 0x50, 8);
+                            d3t_PlaceObjectV(U_I((unsigned)&sv_CameraObj), r1, r2, 0x50, 8);
                         }
                         break;
                     }
@@ -2201,10 +2201,10 @@ lskip:
                 d2_SetForm(f, 0);
                 io_PrintText((unsigned)"$C");
                 d2_SetViewEnabled(f, 0);
-                d3anim_FreePath(U_I((unsigned)&ai_Unkfc2dec));
+                d3anim_FreePath(U_I((unsigned)&sv_CameraObj));
                 U_I((unsigned)&d3t_CamMoving) = 0;
                 U_I((unsigned)&d3t_CamMove) = 0;
-                d3t_PlaceObjectV(U_I((unsigned)&ai_Unkfc2dec), U_I((unsigned)&ai_Unkfc2dec) + 0x114, U_I((unsigned)&ai_Unkfc2dec) + 0x120, 0x50, 8);
+                d3t_PlaceObjectV(U_I((unsigned)&sv_CameraObj), U_I((unsigned)&sv_CameraObj) + 0x114, U_I((unsigned)&sv_CameraObj) + 0x120, 0x50, 8);
                 if (main_ChooseTalents() != 0) {
                     if (lobby_ChooseProfession(0xc6) != 0 && main_ChooseModel(init_PlayerProfile.job) != 0) {
                         sv_PopRequest = 1;
@@ -2259,7 +2259,7 @@ lskip:
     p = (int *)U_I((unsigned)&ai_Unk5fb5b0);
     if (p != 0 && (q = p[0x3c8 / 4]) != 0 && *(int *)(q + 0x294) != 0)
         ((void (*)(int *, int, int, int))*(int *)(q + 0x294))(p, 5, q + 0x298, 0);
-    d3anim_FreePath(U_I((unsigned)&ai_Unkfc2dec));
+    d3anim_FreePath(U_I((unsigned)&sv_CameraObj));
     U_I((unsigned)&d3t_CamMoving) = 0;
     U_I((unsigned)&d3t_CamMove) = 0;
     if (fade != 0)
@@ -2718,8 +2718,8 @@ int main_ChooseCity(int unused, int host)
     sv_ClearNamePlates();
     sv_ReleaseNamePlates();
     d3if_SelectScene(0, 0);
-    d3_SetObjectPos(U_I((unsigned)&ai_Unkfc2dec), U_I((unsigned)&ai_Unkfc2dec) + 0x5c);
-    d3_SetObjectRot(U_I((unsigned)&ai_Unkfc2dec), U_I((unsigned)&ai_Unkfc2dec) + 0x90);
+    d3_SetObjectPos(U_I((unsigned)&sv_CameraObj), U_I((unsigned)&sv_CameraObj) + 0x5c);
+    d3_SetObjectRot(U_I((unsigned)&sv_CameraObj), U_I((unsigned)&sv_CameraObj) + 0x90);
     d3_SetLightSet(0, 0.0f, 1.0f, 0);
     if (host == 0)
         n = ai_ListFiles("gamedata/cities", ".CTY", (char *)recs);
@@ -3674,8 +3674,8 @@ void main_RoundReport(void)
     }
     bk = gm_PlayerRecord((unsigned)&ai_CharsT + MAIN_PID * 0x21c);
     *(int *)(bk + 0x3c) = *(int *)(bk + 0x3c) + (U_I(((unsigned)&ai_Selected + 0x1c) + MAIN_PID * 0x21c) + U_I(((unsigned)&ai_Selected + 0x18) + MAIN_PID * 0x21c));
-    d3_SetObjectPos(U_I((unsigned)&ai_Unkfc2dec), bk + 0x8c);
-    d3_SetObjectRot(U_I((unsigned)&ai_Unkfc2dec), bk + 0x9c);
+    d3_SetObjectPos(U_I((unsigned)&sv_CameraObj), bk + 0x8c);
+    d3_SetObjectRot(U_I((unsigned)&sv_CameraObj), bk + 0x9c);
     if (U_I((unsigned)&full_data_624560) != 0) {
         w1f8 = 0;
         d2_SetPointerSprite(0, 0);

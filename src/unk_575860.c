@@ -234,7 +234,7 @@ extern int ai_Unkfb9060;
 extern int ai_Unkfb9064;
 extern int ai_Unkfb9068;
 extern int ai_Unkfb906c;
-extern char * ai_Unkfc2dec;
+extern char * sv_CameraObj;
 extern struct D2OBJ *d2_Objs;
 extern float d3s_QuadUV[6];
 extern GAPDATA full_data_5fea38[];
@@ -4885,7 +4885,7 @@ void ai_Unk57e270(char *rec)
             return;
     }
     unk_Unk4eeee0(U_I(rec + 1), ai_Unk57e230, (char *)(unsigned)&full_data_6fa020);
-    cam = (char *)U_I((unsigned)&ai_Unkfc2dec);
+    cam = (char *)U_I((unsigned)&sv_CameraObj);
     cam3[0] = U_I(cam + 0x4c);
     cam3[1] = U_I(cam + 0x50);
     cam3[2] = U_I(cam + 0x54);
@@ -5045,8 +5045,8 @@ void ai_Unk57e270(char *rec)
     d3if_SelectScene(bg5, 0);
     if (U_I((unsigned)&d3_Sky))
         d3sky_Init(U_I((unsigned)&d3_Sky), 1);
-    d3_SetObjectPos(U_I((unsigned)&ai_Unkfc2dec), (float *)cam3);
-    d3_SetObjectRot(U_I((unsigned)&ai_Unkfc2dec), (char *)save3);
+    d3_SetObjectPos(U_I((unsigned)&sv_CameraObj), (float *)cam3);
+    d3_SetObjectRot(U_I((unsigned)&sv_CameraObj), (char *)save3);
     init_SetDetailLevel(U_I((unsigned)&ai_Unk633738), 0);
     d3if_Prerender(1);
     d2_ReleaseFade(pb);
@@ -5258,8 +5258,8 @@ void ai_Unk57f0e0(char *sc)
     f1 = *(float *)(sc + 0x10);
     f2 = (f1 - -0.2617994f) / 1.0471976f;
     m = d2_GetObjValue(*(int *)(sc + 0xb4));
-    d3_SetObjectPos(U_I((unsigned)&ai_Unkfc2dec), (char *)pos);
-    d3_SetObjectRot(U_I((unsigned)&ai_Unkfc2dec), (char *)ang);
+    d3_SetObjectPos(U_I((unsigned)&sv_CameraObj), (char *)pos);
+    d3_SetObjectRot(U_I((unsigned)&sv_CameraObj), (char *)ang);
     /* the recoil: sc + 0x78 (timer) / sc + 0x7c (active): the fade 0x54560, the camera pushed back by the
        object direction * 50 * the fade, the wimpel to -70 / -50 / 120, else reset and 0x43b790 (sc + 0x9c,
        0x5eec80) / 0x43b790 (sc + 0x98, sc) */

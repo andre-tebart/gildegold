@@ -139,6 +139,14 @@
 /* dd_BBits */
 #define dd_Unk1464fc0            (*(int *)((char *)&dd_BBits + 0x3))  /* 0x1464fc0 */
 
+/* sv_ViewPos / sv_ViewRot (the stored camera view, read and copied as ints by the units that save it) */
+#define sv_ViewPosX              (*(int *)((char *)&sv_ViewPos + 0x0))  /* 0x75fb80 */
+#define sv_ViewPosY              (*(int *)((char *)&sv_ViewPos + 0x4))  /* 0x75fb84 */
+#define sv_ViewPosZ              (*(int *)((char *)&sv_ViewPos + 0x8))  /* 0x75fb88 */
+#define sv_ViewRotX              (*(int *)((char *)&sv_ViewRot + 0x0))  /* 0x75fb90 */
+#define sv_ViewRotY              (*(int *)((char *)&sv_ViewRot + 0x4))  /* 0x75fb94 */
+#define sv_ViewRotZ              (*(int *)((char *)&sv_ViewRot + 0x8))  /* 0x75fb98 */
+
 /* ai_Unk75e130 */
 #define ai_Unk75e134             (*(int *)((char *)&ai_Unk75e130 + 0x4))  /* 0x75e134 */
 #define ai_Unk75e138             (*(int *)((char *)&ai_Unk75e130 + 0x8))  /* 0x75e138 */

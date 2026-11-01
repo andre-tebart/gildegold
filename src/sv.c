@@ -158,7 +158,6 @@ extern int d2_HalfScreenH;
 extern int d2_HalfScreenW;
 extern GAPDATA full_data_6f2320[];
 extern void *d2_ScreenSurf;  /* 0x6ed924 */
-extern int d3t_CamMoving;
 extern GAPDATA full_data_6f22a8[];
 extern GAPDATA full_data_6f22ec[];
 extern int ai_Unk6f2318;
@@ -204,7 +203,6 @@ extern char ai_Unk75fba0[2048];
 extern unsigned char ai_TimeHour;
 extern char ai_Unk623ac0[];
 extern GAPDATA full_data_6239d8[];
-extern struct D3OBJECT *d3t_SunRays;
 extern GAPDATA full_data_7604e8[];
 extern int ai_OptionSpeed;
 extern float ch_Unk5f1290;
@@ -361,6 +359,7 @@ int d2_RemoveWindow();                     /* 0x472ce0 */
 #include "ls.h"
 #include "ahm.h"
 #include "ai.h"
+#include "d3_tools.h"
 #include "anm.h"
 #include "bio.h"
 #include "d3_anim.h"
@@ -2243,20 +2242,19 @@ done:
     d3_SetFogSet(0, 1, a);
 }
 
-extern char * ai_Unkfc2dec;
+extern char * sv_CameraObj;
 extern float sv_CameraHeightFactor, sv_CameraAngleFactor, ai_Unk6f2374, ai_Unk6f2388, ai_Unk6f2390, ai_Unk6f238c, ai_Unk6f1c44;  /* 0x6f22d4, 0x6f22d8, 0x6f2374, 0x6f2388, 0x6f2390, 0x6f238c, 0x6f1c44 */
 extern float sv_CameraHeightNear, sv_CameraAngleNear, sv_CameraHeightFar, sv_CameraAngleFar, ai_Unk623818;  /* 0x623800, 0x623804, 0x623808, 0x62380c, 0x623818 */
 extern int ai_Unk6f2378;  /* 0x6f2378 */
 extern int ai_Unk6f22cc;  /* 0x6f22cc */
 extern int ai_Unk6f22d0;  /* 0x6f22d0 */
-extern int ai_Unk6310e4;  /* 0x6310e4 */
+extern int d3t_CamMoving;  /* 0x6310e4 */
 extern struct D3ANIM *d3t_CamMove;  /* 0x6310e8 */
 extern int ai_Unk6f2394;  /* 0x6f2394 */
-extern int ai_Unk75fb80, ai_Unk75fb84, ai_Unk75fb88, ai_Unk75fb90, ai_Unk75fb94, ai_Unk75fb98;  /* 0x75fb80, 0x75fb84, 0x75fb88, 0x75fb90, 0x75fb94, 0x75fb98 */
 extern float ai_Unk6f1c74[3];
 float d3t_GetMeanHeight();                   /* 0x412550 */
 int d3_VecEqual(struct D3VECTOR *a, struct D3VECTOR *b, float eps);  /* 0x453e80 */
-int d3t_PlaceObjectV();                     /* 0x411860 */  /* @original: sv.c's call at 2780 passes 4 arguments to ecmd.h's 5-parameter prototype */
+#define d3t_PlaceObjectV4 ((int (*)())d3t_PlaceObjectV)  /* d3_tools.h, 5 parameters: @original sv_FlyCameraToModel 0x528124 pushes 4 (the 0x14 cleanup takes an earlier push) */
 void d3_MatTranspose();                     /* 0x454040 */
 float d3_VecAngle2();                   /* 0x453b40 */
 
@@ -2271,21 +2269,21 @@ void sv_PlaceCamera(float f)
         return;
     sv_CameraHeightFactor = f;
     sv_CameraAngleFactor = f;
-    h = d3t_GetMeanHeight(ai_Unkfc2dec + 0x4c);
-    pos[0] = *(float *)(ai_Unkfc2dec + 0x4c);
-    pos[2] = *(float *)(ai_Unkfc2dec + 0x54);
+    h = d3t_GetMeanHeight(sv_CameraObj + 0x4c);
+    pos[0] = *(float *)(sv_CameraObj + 0x4c);
+    pos[2] = *(float *)(sv_CameraObj + 0x54);
     pos[1] = (float)((sv_CameraHeightFar - sv_CameraHeightNear) * sv_CameraHeightFactor + sv_CameraHeightNear + h);
-    d3_SetObjectPos(ai_Unkfc2dec, pos);
-    ang[1] = *(float *)(ai_Unkfc2dec + 0x88);
-    ang[2] = *(float *)(ai_Unkfc2dec + 0x8c);
+    d3_SetObjectPos(sv_CameraObj, pos);
+    ang[1] = *(float *)(sv_CameraObj + 0x88);
+    ang[2] = *(float *)(sv_CameraObj + 0x8c);
     ang[0] = (sv_CameraAngleFar - sv_CameraAngleNear) * sv_CameraAngleFactor + sv_CameraAngleNear;
-    d3_SetObjectRot(ai_Unkfc2dec, ang);
-    ai_Unk75fb90 = *(int *)(ai_Unkfc2dec + 0x84);
-    ai_Unk75fb94 = *(int *)(ai_Unkfc2dec + 0x88);
-    ai_Unk75fb98 = *(int *)(ai_Unkfc2dec + 0x8c);
-    ai_Unk75fb80 = *(int *)(ai_Unkfc2dec + 0x4c);
-    ai_Unk75fb84 = *(int *)(ai_Unkfc2dec + 0x50);
-    ai_Unk75fb88 = *(int *)(ai_Unkfc2dec + 0x54);
+    d3_SetObjectRot(sv_CameraObj, ang);
+    sv_ViewRotX = *(int *)(sv_CameraObj + 0x84);
+    sv_ViewRotY = *(int *)(sv_CameraObj + 0x88);
+    sv_ViewRotZ = *(int *)(sv_CameraObj + 0x8c);
+    sv_ViewPosX = *(int *)(sv_CameraObj + 0x4c);
+    sv_ViewPosY = *(int *)(sv_CameraObj + 0x50);
+    sv_ViewPosZ = *(int *)(sv_CameraObj + 0x54);
 }
 /* 0x525ee0, eases the camera height (+0x50) toward the wanted one (the terrain height + 0x623800 .. 0x623808 blend by 0x6f22d4, minus the camera offset +0x7c): a difference above 5.0 is closed by 1/15 per call, at most 10.0;
    the step is kept in 0x6f2374 (not applied while the cutscene flag 0x6310e8 is set) */
@@ -2295,10 +2293,10 @@ void sv_Unk525ee0(void)
     double d;
     float step, pos[3];
 
-    if (ai_Unkfc2dec == 0)
+    if (sv_CameraObj == 0)
         return;
-    d = d3t_GetMeanHeight(ai_Unkfc2dec + 0x4c);
-    d = ((sv_CameraHeightFar - sv_CameraHeightNear) * sv_CameraHeightFactor + sv_CameraHeightNear + d) - (*(float *)(ai_Unkfc2dec + 0x7c) + *(float *)(ai_Unkfc2dec + 0x50));
+    d = d3t_GetMeanHeight(sv_CameraObj + 0x4c);
+    d = ((sv_CameraHeightFar - sv_CameraHeightNear) * sv_CameraHeightFactor + sv_CameraHeightNear + d) - (*(float *)(sv_CameraObj + 0x7c) + *(float *)(sv_CameraObj + 0x50));
     if (5.0 < fabs(d)) {
         d = d * 0.06666667;
         step = (float)d;
@@ -2307,11 +2305,11 @@ void sv_Unk525ee0(void)
                 step = -10.0f;
         } else if (10.0f <= step)
             step = 10.0f;
-        pos[0] = *(float *)(ai_Unkfc2dec + 0x4c);
-        pos[2] = *(float *)(ai_Unkfc2dec + 0x54);
-        pos[1] = *(float *)(ai_Unkfc2dec + 0x50) + step;
+        pos[0] = *(float *)(sv_CameraObj + 0x4c);
+        pos[2] = *(float *)(sv_CameraObj + 0x54);
+        pos[1] = *(float *)(sv_CameraObj + 0x50) + step;
         if (d3t_CamMove == 0)
-            d3_SetObjectPos(ai_Unkfc2dec, pos);
+            d3_SetObjectPos(sv_CameraObj, pos);
         ai_Unk6f2374 = step;
         return;
     }
@@ -2359,14 +2357,14 @@ void sv_Unk525ff0(void)
         ai_Unk6f22d0 = 0;
         if (ai_Unk6f22cc == -1) {
             off = 0xe4;
-            if (d3_VecEqual(ai_Unkfc2dec + off, zero, 0.2f) != 0)
+            if (d3_VecEqual(sv_CameraObj + off, zero, 0.2f) != 0)
                 return;
             goto load;
         }
         if (ai_Unk6f22cc != 0) {
             if (ai_Unk6f22cc == 1) {
                 off = 0xfc;
-                if (d3_VecEqual(ai_Unkfc2dec + off, zero, 0.2f) != 0)
+                if (d3_VecEqual(sv_CameraObj + off, zero, 0.2f) != 0)
                     return;
                 goto load;
             }
@@ -2386,12 +2384,12 @@ void sv_Unk525ff0(void)
         if (ai_Unk6f22d0 != 0) {
             if (ai_Unk6f22d0 == -1) {
                 off = 0xb4;
-                if (d3_VecEqual(ai_Unkfc2dec + off, zero, 0.2f) != 0)
+                if (d3_VecEqual(sv_CameraObj + off, zero, 0.2f) != 0)
                     return;
                 goto load;
             } else if (ai_Unk6f22d0 == 1) {
                 off = 0xcc;
-                if (d3_VecEqual(ai_Unkfc2dec + off, zero, 0.2f) != 0)
+                if (d3_VecEqual(sv_CameraObj + off, zero, 0.2f) != 0)
                     return;
                 goto load;
             }
@@ -2399,23 +2397,23 @@ void sv_Unk525ff0(void)
         }
     }
     off = 0x5c;
-    memcpy(pos, ai_Unkfc2dec + 0x5c, 12);
-    memcpy(dir, ai_Unkfc2dec + 0x90, 12);
+    memcpy(pos, sv_CameraObj + 0x5c, 12);
+    memcpy(dir, sv_CameraObj + 0x90, 12);
     goto apply;
 load:
-    memcpy(pos, ai_Unkfc2dec + off, 12);
-    memcpy(dir, ai_Unkfc2dec + off + 0xc, 12);
+    memcpy(pos, sv_CameraObj + off, 12);
+    memcpy(dir, sv_CameraObj + off + 0xc, 12);
 apply:
-    ai_Unk75fb80 = pos[0];
-    ai_Unk75fb84 = pos[1];
-    ai_Unk75fb88 = pos[2];
-    ai_Unk75fb90 = dir[0];
-    ai_Unk75fb94 = dir[1];
-    ai_Unk75fb98 = dir[2];
-    d3anim_FreePath(ai_Unkfc2dec);
-    ai_Unk6310e4 = 0;
+    sv_ViewPosX = pos[0];
+    sv_ViewPosY = pos[1];
+    sv_ViewPosZ = pos[2];
+    sv_ViewRotX = dir[0];
+    sv_ViewRotY = dir[1];
+    sv_ViewRotZ = dir[2];
+    d3anim_FreePath(sv_CameraObj);
+    d3t_CamMoving = 0;
     d3t_CamMove = 0;
-    d3t_PlaceObjectV(ai_Unkfc2dec, pos, dir, ai_CameraStep, 8);
+    d3t_PlaceObjectV(sv_CameraObj, pos, dir, ai_CameraStep, 8);
     ai_Unk6f2378 = 1;
 }
 /* 0x5263a0, the camera scroll step of one frame: the border zone of the mouse (0x1467380 / 82 against the window 0x6310b0 / 0x6310b4 .. 0x5f3238 / 0x5f323c, margin 0x40, or the arrow keys 0x146828b / d / 0x1468290 / 88)
@@ -2437,7 +2435,7 @@ int sv_Unk5263a0(void)
     moved = 0;
     if (d2_PointerLook != 0 && d2_PointerLook < 9)
         d2_PointerLook = 0;
-    if (d3t_CamMove != 0 || ai_Unk6310e4 != 0)
+    if (d3t_CamMove != 0 || d3t_CamMoving != 0)
         return 0;
     if (ai_Unk6f2394 == 0)
         dt = 1.0;
@@ -2542,14 +2540,14 @@ int sv_Unk5263a0(void)
         }
     }
 scroll:
-    if (ai_Unkfc2dec != 0 && (ai_Unk6f2388 != 0.0f || ai_Unk6f2390 != 0.0f)) {
+    if (sv_CameraObj != 0 && (ai_Unk6f2388 != 0.0f || ai_Unk6f2390 != 0.0f)) {
         if (ai_FallbackBuilding == 0) {
             if (ai_PlayerBuilding != 0)
                 dt *= 0.25;
         } else
             dt *= 0.5;
         k = (float)(ai_Unk623818 * dt * (sv_CameraHeightFactor * 1.5 + 0.6000000238418579));
-        d3_MatTranspose(ai_Unkfc2dec + 0x18c, right);
+        d3_MatTranspose(sv_CameraObj + 0x18c, right);
         v[0] = ai_Unk6f2388 * k * 1.1f;
         v[1] = ai_Unk6f2390 * k * 1.1f;
         fwd[0] = right[0] * 0.0f + right[4] * 0.0f + right[8] * 1.0f;
@@ -2565,9 +2563,9 @@ scroll:
             fwd[0] = (float)(v[1] * sn + v[0] * cs);
             fwd[2] = (float)(v[1] * cs - v[0] * sn);
         }
-        dst[0] = fwd[0] + *(float *)(ai_Unkfc2dec + 0x4c);
-        dst[1] = *(float *)(ai_Unkfc2dec + 0x50);
-        dst[2] = fwd[2] + *(float *)(ai_Unkfc2dec + 0x54);
+        dst[0] = fwd[0] + *(float *)(sv_CameraObj + 0x4c);
+        dst[1] = *(float *)(sv_CameraObj + 0x50);
+        dst[2] = fwd[2] + *(float *)(sv_CameraObj + 0x54);
         if (d3_VecEqual(ai_Unk6f1c74, dst, 0.1f) == 0) {
             m = *(float **)(ai_Unk5fb5b0 + 0xb0);
             if (m != 0) {
@@ -2585,7 +2583,7 @@ scroll:
                 if (lo <= dst[2])
                     dst[2] = lo;
             }
-            d3_SetObjectPos(ai_Unkfc2dec, dst);
+            d3_SetObjectPos(sv_CameraObj, dst);
             moved = 1;
         }
         ai_Unk6f1c74[0] = fwd[0];
@@ -2607,7 +2605,7 @@ extern int ai_Unk6f22b4;  /* 0x6f22b4 */
 extern int sv_FrameDepth;  /* 0x6f229c */
 extern int sv_FrameBase;  /* 0x6f22a4 */
 extern char * sv_SelectedObject;  /* 0x75ec60 */
-extern int ai_Unk6f2304;  /* 0x6f2304 */
+extern int sv_SelectedModel;  /* 0x6f2304 */
 extern char ai_Unk62381c;
 int d3t_GetHeightRange();                     /* 0x411c70 */
 short * gm_PlayerRecord(char *ch);                   /* 0x506430 */
@@ -2616,12 +2614,12 @@ void sv_Unk525ee0(void);
 int sv_Unk5263a0(void);
 int sv_Unk526cf0(void);
 #define CAMLOG(r) do { \
-        *(int *)((r) + 0x8c) = *(int *)(ai_Unkfc2dec + 0x4c); \
-        *(int *)((r) + 0x90) = *(int *)(ai_Unkfc2dec + 0x50); \
-        *(int *)((r) + 0x94) = *(int *)(ai_Unkfc2dec + 0x54); \
-        *(int *)((r) + 0x9c) = *(int *)(ai_Unkfc2dec + 0x84); \
-        *(int *)((r) + 0xa0) = *(int *)(ai_Unkfc2dec + 0x88); \
-        *(int *)((r) + 0xa4) = *(int *)(ai_Unkfc2dec + 0x8c); \
+        *(int *)((r) + 0x8c) = *(int *)(sv_CameraObj + 0x4c); \
+        *(int *)((r) + 0x90) = *(int *)(sv_CameraObj + 0x50); \
+        *(int *)((r) + 0x94) = *(int *)(sv_CameraObj + 0x54); \
+        *(int *)((r) + 0x9c) = *(int *)(sv_CameraObj + 0x84); \
+        *(int *)((r) + 0xa0) = *(int *)(sv_CameraObj + 0x88); \
+        *(int *)((r) + 0xa4) = *(int *)(sv_CameraObj + 0x8c); \
     } while (0)
 
 /* 0x526cf0, the camera control by the mouse (buttons 0x14673a8 / 0x1467390, position 0x14683c0 / 2, wheel 0x14673c0 / c4): while a button is held the clip window is opened to the whole screen (0x5f3238 / 0x5f323c =
@@ -2641,8 +2639,8 @@ int sv_Unk526cf0(void)
     int i;
 
     my = dm_P.y;
-    cam = ai_Unkfc2dec;
-    if (ai_Unk6310e4 != 0)
+    cam = sv_CameraObj;
+    if (d3t_CamMoving != 0)
         return 0;
     if (dm_L.rhold == 0) {
     chk:
@@ -2671,7 +2669,7 @@ int sv_Unk526cf0(void)
                 ai_Unk6f2290 = (int)dm_P.x;
                 ai_Unk6f23a8 = sv_CameraHeightFactor;
                 ai_Unk6f1c8c = (int)dm_P.y;
-                ai_Unk6f23b4 = *(float *)(ai_Unkfc2dec + 0x50) - ((sv_CameraHeightFar - sv_CameraHeightNear) * sv_CameraHeightFactor + sv_CameraAngleNear);
+                ai_Unk6f23b4 = *(float *)(sv_CameraObj + 0x50) - ((sv_CameraHeightFar - sv_CameraHeightNear) * sv_CameraHeightFactor + sv_CameraAngleNear);
                 ai_Unk6f23ac = sv_CameraAngleFactor;
                 di_MaxY = ai_Unk6f1c8c - (int)(ai_Unk6f1c8c * 0.0f + 0);
                 di_MinY = ai_Unk6f1c8c - (int)(ai_Unk6f1c8c * 0.0f + 0);
@@ -2704,7 +2702,7 @@ int sv_Unk526cf0(void)
         return 0;
     }
 go:
-    cam = ai_Unkfc2dec;
+    cam = sv_CameraObj;
     if (cam != 0) {
         if (dm_L.rhold != 0 && dm_L.ldown != 0 && ai_Unk6f23a0 != 0) {
             f2 = (((float)(dm_L.wup - dm_L.wdown) * 5.0f + (float)(int)my) - (float)ai_Unk6f1c8c) * 0.0015f;
@@ -2716,16 +2714,16 @@ go:
             dir[2] = *(float *)(cam + 0x8c);
             dir[0] = (sv_CameraAngleFar - sv_CameraAngleNear) * sv_CameraAngleFactor + sv_CameraAngleNear;
             dir[1] = ai_Unk6f23b0 - (float)(dm_P.x - ai_Unk6f2290) * 0.0035f;
-            if (d3_VecEqual(cam + 0x4c, pos, 0.1f) == 0 || d3_VecEqual(ai_Unkfc2dec + 0x84, dir, 0.001f) == 0) {
-                d3_SetObjectPos(ai_Unkfc2dec, pos);
-                d3_SetObjectRot(ai_Unkfc2dec, dir);
+            if (d3_VecEqual(cam + 0x4c, pos, 0.1f) == 0 || d3_VecEqual(sv_CameraObj + 0x84, dir, 0.001f) == 0) {
+                d3_SetObjectPos(sv_CameraObj, pos);
+                d3_SetObjectRot(sv_CameraObj, dir);
                 rec = gm_PlayerRecord(ai_Chars[ai_PlayerId]);
                 if (rec != 0) {
                     *(float *)(rec + 0x88) = sv_CameraAngleFactor;
                     CAMLOG(rec);
                 }
             }
-            cam = ai_Unkfc2dec;
+            cam = sv_CameraObj;
         }
         if (cam != 0) {
             if (ai_Unk6f23a0 == 0 && dm_L.wup - dm_L.wdown != 0) {
@@ -2737,11 +2735,11 @@ go:
                     dz = 0.0;
                 sv_PlaceCamera((float)dz);
                 rec = gm_PlayerRecord(ai_Chars[ai_PlayerId]);
-                cam = ai_Unkfc2dec;
+                cam = sv_CameraObj;
                 if (rec != 0) {
                     *(float *)(rec + 0x88) = sv_CameraAngleFactor;
                     CAMLOG(rec);
-                    cam = ai_Unkfc2dec;
+                    cam = sv_CameraObj;
                 }
             }
             if (cam != 0 && dm_L.rhold != 0 && dm_L.ldown == 0) {
@@ -2762,9 +2760,9 @@ go:
                     fwd[2] = (float)(v[1] * cs - v[0] * sn);
                 }
                 fwd[1] = 0.0f;
-                dst[0] = fwd[0] + *(float *)(ai_Unkfc2dec + 0x4c);
-                dst[1] = *(float *)(ai_Unkfc2dec + 0x50);
-                dst[2] = fwd[2] + *(float *)(ai_Unkfc2dec + 0x54);
+                dst[0] = fwd[0] + *(float *)(sv_CameraObj + 0x4c);
+                dst[1] = *(float *)(sv_CameraObj + 0x50);
+                dst[2] = fwd[2] + *(float *)(sv_CameraObj + 0x54);
                 if (d3_VecEqual(ai_Unk6f1c64, dst, 0.1f) == 0) {
                     m = *(float **)(ai_Unk5fb5b0 + 0xb0);
                     if (m != 0) {
@@ -2782,7 +2780,7 @@ go:
                         if (lo <= dst[2])
                             dst[2] = lo;
                     }
-                    d3_SetObjectPos(ai_Unkfc2dec, dst);
+                    d3_SetObjectPos(sv_CameraObj, dst);
                     rec = gm_PlayerRecord(ai_Chars[ai_PlayerId]);
                     if (rec != 0)
                         CAMLOG(rec);
@@ -2806,7 +2804,7 @@ int sv_Unk527640(void)
 {
     char *rec;
 
-    if (ai_Unkfc2dec != 0 && tb_Paused == 0) {
+    if (sv_CameraObj != 0 && tb_Paused == 0) {
         if (ai_Unk760440 == 0 && ai_Unk62a8cc == -1) {
             if (dm_L.rhold == 0)
                 ai_Unk6f22b4 = sv_Unk5263a0();
@@ -2819,12 +2817,12 @@ int sv_Unk527640(void)
                 CAMLOG(rec);
                 *(float *)(rec + 0x88) = sv_CameraAngleFactor;
             }
-            ai_Unk75fb90 = *(int *)(ai_Unkfc2dec + 0x84);
-            ai_Unk75fb94 = *(int *)(ai_Unkfc2dec + 0x88);
-            ai_Unk75fb98 = *(int *)(ai_Unkfc2dec + 0x8c);
-            ai_Unk75fb80 = *(int *)(ai_Unkfc2dec + 0x4c);
-            ai_Unk75fb84 = *(int *)(ai_Unkfc2dec + 0x50);
-            ai_Unk75fb88 = *(int *)(ai_Unkfc2dec + 0x54);
+            sv_ViewRotX = *(int *)(sv_CameraObj + 0x84);
+            sv_ViewRotY = *(int *)(sv_CameraObj + 0x88);
+            sv_ViewRotZ = *(int *)(sv_CameraObj + 0x8c);
+            sv_ViewPosX = *(int *)(sv_CameraObj + 0x4c);
+            sv_ViewPosY = *(int *)(sv_CameraObj + 0x50);
+            sv_ViewPosZ = *(int *)(sv_CameraObj + 0x54);
         }
         return ai_Unk6f22b4;
     }
@@ -2843,7 +2841,7 @@ int sv_Unk527640(void)
    perspective-corrected by the model's extent (0x411c70), moved there with the pitch 3 * 0x623814 and 0x68 steps (0x411860), the position stored in the player's camera record (0x506430) and the object noted
    (0x75ec60 / 0x6f2304). ROUGH */
 
-void sv_Unk527840(int o)
+void sv_FlyCameraToObject(int o)
 {
     int m;
     float lo, hi;
@@ -2854,7 +2852,7 @@ void sv_Unk527840(int o)
 
     m = *(int *)(o + 0x61);
     d3t_GetHeightRange(m, &lo, &hi);
-    d3_MatTranspose(ai_Unkfc2dec + 0x18c, rot);
+    d3_MatTranspose(sv_CameraObj + 0x18c, rot);
     back[0] = rot[0] * -0.0f + rot[4] * -0.0f + rot[8] * -600.0f;    /* rot is 4x4: the third row, [8] / [9] / [10] (0x527c0b ..) */
     back[1] = rot[1] * -0.0f + rot[5] * -0.0f + rot[9] * -600.0f;
     back[2] = rot[2] * -0.0f + rot[6] * -0.0f + rot[10] * -600.0f;
@@ -2869,21 +2867,21 @@ void sv_Unk527840(int o)
     k = back[1] / ((hi - lo) * 0.5f + h);
     pos[0] = pos[0] - (k * back[0] - back[0] * 1.8f);
     pos[2] = pos[2] - (k * back[2] - back[2] * 1.8f);
-    dir[0] = *(float *)(ai_Unkfc2dec + 0x84);
-    dir[1] = *(float *)(ai_Unkfc2dec + 0x88);
-    dir[2] = *(float *)(ai_Unkfc2dec + 0x8c);
-    d3anim_FreePath(ai_Unkfc2dec);
+    dir[0] = *(float *)(sv_CameraObj + 0x84);
+    dir[1] = *(float *)(sv_CameraObj + 0x88);
+    dir[2] = *(float *)(sv_CameraObj + 0x8c);
+    d3anim_FreePath(sv_CameraObj);
     d3t_CamMove = 0;
-    ai_Unk6310e4 = 0;
+    d3t_CamMoving = 0;
     t = d3t_GetMeanHeight(pos);
     pos[1] = (float)((sv_CameraHeightFar - sv_CameraHeightNear) * sv_CameraHeightFactor + sv_CameraHeightNear + t);
-    d3t_PlaceObjectV(ai_Unkfc2dec, pos, dir, (int)(float)(ai_CameraStep * 3), 0x68);
-    ai_Unk75fb90 = *(int *)&dir[0];
-    ai_Unk75fb80 = *(int *)&pos[0];
-    ai_Unk75fb94 = *(int *)&dir[1];
-    ai_Unk75fb84 = *(int *)&pos[1];
-    ai_Unk75fb98 = *(int *)&dir[2];
-    ai_Unk75fb88 = *(int *)&pos[2];
+    d3t_PlaceObjectV(sv_CameraObj, pos, dir, (int)(float)(ai_CameraStep * 3), 0x68);
+    sv_ViewRotX = *(int *)&dir[0];
+    sv_ViewPosX = *(int *)&pos[0];
+    sv_ViewRotY = *(int *)&dir[1];
+    sv_ViewPosY = *(int *)&pos[1];
+    sv_ViewRotZ = *(int *)&dir[2];
+    sv_ViewPosZ = *(int *)&pos[2];
     rec = gm_PlayerRecord(ai_Chars[ai_PlayerId]);
     if (rec != 0) {
         *(float *)(rec + 0x8c) = pos[0];
@@ -2894,7 +2892,7 @@ void sv_Unk527840(int o)
         *(int *)(rec + 0xa4) = *(int *)&dir[2];
     }
     sv_SelectedObject = o;
-    ai_Unk6f2304 = *(int *)(o + 0x61);
+    sv_SelectedModel = *(int *)(o + 0x61);
 }
 
 int d3t_PlaceObject(struct D3OBJECT *camera, float px, float py, float pz, float dx, float dy, float dz, int unk, char flags);                     /* 0x411680 */
@@ -2903,7 +2901,6 @@ char d3if_SelectTextureSet(struct D3OBJECT *obj, struct D3SURF *surf, unsigned c
 unsigned char * gm_BuildQuery(int n, ...);                     /* 0x501190 */
 unsigned char * gm_BuildNext(void);                     /* 0x501030 */
 int d3t_SceneIndex();                     /* 0x411be0 */
-extern int ai_Unk75fb80, ai_Unk75fb84, ai_Unk75fb88, ai_Unk75fb90, ai_Unk75fb94, ai_Unk75fb98;  /* 0x75fb80, 0x75fb84, 0x75fb88, 0x75fb90, 0x75fb94, 0x75fb98 */
 void d3_SetWorldPosRot();                     /* 0x449920 */
 int d3t_PlayAnim();                     /* 0x411960 */
 
@@ -2937,73 +2934,85 @@ char sv_Unk528180(char *part, char *b)
     }
     return 1;
 }
-/* 0x527bb0, like 0x527840 for the object o (+0x61 its model), without the pitch / step arguments: the camera is set directly (0x43b790 position, 0x43b860 direction) 600 units back from the object, the stored view
-   0x75fb80 / 0x75fb90 and the player's camera record updated, the object noted (0x75ec60 / 0x6f2304). ROUGH */
+#define sv_Camera (*(D3OBJECT **)&sv_CameraObj)  /* 0xfc2dec, the camera object */
 
-void sv_Unk527bb0(int o)
+/* 0x527bb0, puts the camera directly 600 units back along its view from the building b's 3D object (its centre,
+   the terrain's mean height plus the zoom height, pulled in by the object's height range): the stored view
+   sv_ViewPos / sv_ViewRot and the player's camera record get the new position, b becomes sv_SelectedObject;
+   sv_FlyCameraToObject does the same with an animated move */
+void sv_CameraToObject(int b)
 {
-    int m;
-    float lo, hi, k, h;
-    float pos[3], dir[3], cen[3], back[3], rot[16];   /* rot is a D3MATRIX: d3_MatTranspose writes 0x40 bytes */
-    double t;
-    char *rec;
+    float pos[4];                   /* the new camera position (a padded vector) */
+    float dir[3];                   /* the camera rotation, kept */
+    float lo, hi;                   /* the object's height range */
+    float back[4];                  /* 600 units back along the view */
+    float cen[4];                   /* the object's centre in the world */
+    float rot[16];                  /* the camera matrix, transposed (a 4x4 D3MATRIX) */
+    float h;                        /* the camera height above the centre, then the pull-in factor */
+    double t;                       /* the mean terrain height there */
+    char *obj;
+    AIFIN *rec;
+    const float *ax = (const float *)ai_AxisPair;
+    float vx, vy, vz;               /* the view axis (0, 0, 1) scaled to -600 */
 
-    m = *(int *)(o + 0x61);
-    d3t_GetHeightRange(m, &lo, &hi);
-    d3_MatTranspose(ai_Unkfc2dec + 0x18c, rot);
-    back[0] = rot[0] * -0.0f + rot[4] * -0.0f + rot[8] * -600.0f;    /* rot is 4x4: the third row, [8] / [9] / [10] (0x527c0b ..) */
-    back[1] = rot[1] * -0.0f + rot[5] * -0.0f + rot[9] * -600.0f;
-    back[2] = rot[2] * -0.0f + rot[6] * -0.0f + rot[10] * -600.0f;
-    d3_PointToWorld(m, m + 0x4c, cen);
+    obj = ((AIBLD *)b)->object;
+    d3t_GetHeightRange(obj, &lo, &hi);
+    d3_MatTranspose(&sv_Camera->matrix, rot);
+    vx = ax[0] * -600.0f;
+    vy = ax[1] * -600.0f;
+    vz = ax[2] * -600.0f;
+    back[0] = rot[8] * vz + rot[4] * vy + rot[0] * vx;
+    back[1] = rot[9] * vz + rot[5] * vy + rot[1] * vx;
+    back[2] = rot[10] * vz + rot[6] * vy + rot[2] * vx;
+    d3_PointToWorld(obj, &((D3OBJECT *)obj)->pos, cen);
     pos[0] = cen[0] + back[0];
     pos[1] = cen[1] + back[1];
     pos[2] = cen[2] + back[2];
-    t = d3t_GetMeanHeight(pos);
-    pos[1] = (float)((sv_CameraHeightFar - sv_CameraHeightNear) * sv_CameraHeightFactor + sv_CameraHeightNear + t);
+    t = d3t_GetMeanHeight((struct D3VECTOR *)pos);
+    pos[1] = (sv_CameraHeightFar - sv_CameraHeightNear) * sv_CameraHeightFactor + sv_CameraHeightNear + t;
     h = pos[1] - cen[1];
-    d3t_GetHeightRange(m, &lo, &hi);
-    k = back[1] / ((hi - lo) * 0.5f + h);
-    pos[0] = pos[0] - (k * back[0] - back[0] * 1.8f);
-    pos[2] = pos[2] - (k * back[2] - back[2] * 1.8f);
-    dir[0] = *(float *)(ai_Unkfc2dec + 0x84);
-    dir[1] = *(float *)(ai_Unkfc2dec + 0x88);
-    dir[2] = *(float *)(ai_Unkfc2dec + 0x8c);
-    d3anim_FreePath(ai_Unkfc2dec);
+    d3t_GetHeightRange(obj, &lo, &hi);
+    h = back[1] / ((hi - lo) * 0.5f + h);
+    pos[0] = pos[0] - (h * back[0] - back[0] * 1.8);
+    pos[2] = pos[2] - (h * back[2] - back[2] * 1.8);
+    dir[0] = sv_Camera->rotation.x;
+    dir[1] = sv_Camera->rotation.y;
+    dir[2] = sv_Camera->rotation.z;
+    d3anim_FreePath(sv_CameraObj);
     d3t_CamMove = 0;
-    ai_Unk6310e4 = 0;
-    t = d3t_GetMeanHeight(pos);
-    ai_Unk75fb90 = *(int *)&dir[0];
-    ai_Unk75fb98 = *(int *)&dir[2];
-    ai_Unk75fb80 = *(int *)&pos[0];
-    ai_Unk75fb94 = *(int *)&dir[1];
-    t = (sv_CameraHeightFar - sv_CameraHeightNear) * sv_CameraHeightFactor + sv_CameraHeightNear + t;
-    ai_Unk75fb88 = *(int *)&pos[2];
-    pos[1] = (float)t;
-    *(float *)&ai_Unk75fb84 = (float)t;
-    d3_SetObjectPos(ai_Unkfc2dec, pos);
-    d3_SetObjectRot(ai_Unkfc2dec, dir);
-    rec = gm_PlayerRecord(ai_Chars[ai_PlayerId]);
+    d3t_CamMoving = 0;
+    t = d3t_GetMeanHeight((struct D3VECTOR *)pos);
+    pos[1] = (sv_CameraHeightFar - sv_CameraHeightNear) * sv_CameraHeightFactor + sv_CameraHeightNear + t;
+    sv_ViewRot[0] = dir[0];
+    sv_ViewRot[2] = dir[2];
+    sv_ViewPos[0] = pos[0];
+    sv_ViewRot[1] = dir[1];
+    sv_ViewPos[2] = pos[2];
+    sv_ViewPos[1] = pos[1];
+    d3_SetObjectPos(sv_CameraObj, pos);
+    d3_SetObjectRot(sv_CameraObj, dir);
+    rec = (AIFIN *)gm_PlayerRecord(ai_Chars[ai_PlayerId]);
     if (rec != 0) {
-        *(float *)(rec + 0x8c) = pos[0];
-        *(float *)(rec + 0x90) = pos[1];
-        *(float *)(rec + 0x94) = pos[2];
-        *(int *)(rec + 0x9c) = *(int *)&dir[0];
-        *(int *)(rec + 0xa0) = *(int *)&dir[1];
-        *(int *)(rec + 0xa4) = *(int *)&dir[2];
+        rec->camPos[0] = pos[0];
+        rec->camPos[1] = pos[1];
+        rec->camPos[2] = pos[2];
+        rec->camRot[0] = dir[0];
+        rec->camRot[1] = dir[1];
+        rec->camRot[2] = dir[2];
     }
-    sv_SelectedObject = o;
-    ai_Unk6f2304 = *(int *)(o + 0x61);
+    sv_SelectedObject = (char *)b;
+    sv_SelectedModel = (int)((AIBLD *)b)->object;
 }
 /* 0x527e90, like 0x527840 for the model m directly (no object): moves the camera animated (0x411860 with 0x68 steps) 600 units back from the model */
 
-void sv_Unk527e90(int m)
+void sv_FlyCameraToModel(int m)
 {
     float lo, hi, k, h;
     float pos[3], dir[3], cen[3], back[3], rot[16];   /* rot is a D3MATRIX: d3_MatTranspose writes 0x40 bytes */
     double t;
 
     d3t_GetHeightRange(m, &lo, &hi);
-    d3_MatTranspose(ai_Unkfc2dec + 0x18c, rot);
+    d3_MatTranspose(sv_CameraObj + 0x18c, rot);
     back[0] = rot[0] * -0.0f + rot[4] * -0.0f + rot[8] * -600.0f;    /* rot is 4x4: the third row, [8] / [9] / [10] (0x527c0b ..) */
     back[1] = rot[1] * -0.0f + rot[5] * -0.0f + rot[9] * -600.0f;
     back[2] = rot[2] * -0.0f + rot[6] * -0.0f + rot[10] * -600.0f;
@@ -3018,21 +3027,21 @@ void sv_Unk527e90(int m)
     k = back[1] / ((hi - lo) * 0.5f + h);
     pos[0] = pos[0] - (k * back[0] - back[0] * 1.8f);
     pos[2] = pos[2] - (k * back[2] - back[2] * 1.8f);
-    dir[0] = *(float *)(ai_Unkfc2dec + 0x84);
-    dir[1] = *(float *)(ai_Unkfc2dec + 0x88);
-    dir[2] = *(float *)(ai_Unkfc2dec + 0x8c);
-    d3anim_FreePath(ai_Unkfc2dec);
+    dir[0] = *(float *)(sv_CameraObj + 0x84);
+    dir[1] = *(float *)(sv_CameraObj + 0x88);
+    dir[2] = *(float *)(sv_CameraObj + 0x8c);
+    d3anim_FreePath(sv_CameraObj);
     d3t_CamMove = 0;
-    ai_Unk6310e4 = 0;
+    d3t_CamMoving = 0;
     t = d3t_GetMeanHeight(pos);
     pos[1] = (float)((sv_CameraHeightFar - sv_CameraHeightNear) * sv_CameraHeightFactor + sv_CameraHeightNear + t);
-    d3t_PlaceObjectV(ai_Unkfc2dec, pos, dir, 0x68);
+    d3t_PlaceObjectV4(sv_CameraObj, pos, dir, 0x68);
 }
 /* 0x528140, moves the camera (0x411680) to the stored view (0x75fb80 position, 0x75fb90 direction) with the step 0x623814 / 8 */
 
 void sv_Unk528140(void)
 {
-    d3t_PlaceObject(ai_Unkfc2dec, *(float *)&ai_Unk75fb80, *(float *)&ai_Unk75fb84, *(float *)&ai_Unk75fb88, *(float *)&ai_Unk75fb90, *(float *)&ai_Unk75fb94, *(float *)&ai_Unk75fb98, ai_CameraStep, 8);
+    d3t_PlaceObject(sv_CameraObj, *(float *)&sv_ViewPosX, *(float *)&sv_ViewPosY, *(float *)&sv_ViewPosZ, *(float *)&sv_ViewRotX, *(float *)&sv_ViewRotY, *(float *)&sv_ViewRotZ, ai_CameraStep, 8);
 }
 /* 0x528290, a callback over the objects of a model (name o): for the one named "sp_WIMPEL" (the banner) sets its colour (0x446f30 (o, o +0x1cc, 0x66 + the byte +0x54 of the character record (0x770bd4) of the owner, 1))
    when the owner (+0x27) is valid; returns 1 */
@@ -3090,7 +3099,7 @@ void sv_Unk528390(int c)
     while (o != 0) {
         b = *(int *)(o + 0x3b);
         if (b != 0) {
-            d3if_SelectScene(d3t_SceneIndex(*(int *)(b + 0x88), 1), 1);
+            d3if_SelectScene(d3t_SceneIndex(*(int *)(b + 0x88)), 1);   /* the 1 is SelectScene's (0x528418 is pushed before the inner call) */
             ch = ai_Chars[c];
             if (c * 0x21c != -(unsigned)&ai_Chars && *(int *)(ch + 0x54) != 0 && (ch[2] == 5 || ch[2] == 6 || ch[2] == 7)) {
                 n = *(int *)(ch + 0x54) - 0x599;
@@ -3765,7 +3774,7 @@ void sv_Unk522f10(unsigned char a, int b)
             if (ai_Unk623838 != -1) {
                 d2_EnableObject(ai_Unk623838, 0);
                 d2_EnableObject(ai_Unk62383c, 1);
-                h = (int)(*(float *)(SV_I((unsigned)&ai_Unkfc2dec) + 0x88) * 6.2831853 * 0.15915494 * 48.0 + 48.5);
+                h = (int)(*(float *)(SV_I((unsigned)&sv_CameraObj) + 0x88) * 6.2831853 * 0.15915494 * 48.0 + 48.5);
                 SV_WI(ai_Unk62383c, 0x78) = h % 0x30;
             } else {
                 d2_EnableObject(ai_Unk62383c, 0);
@@ -3881,7 +3890,7 @@ void sv_Unk52adb0(void)
     SV_I((unsigned)&ai_Unk75ec5c) = 0;
     SV_I((unsigned)&sv_SelectedObject) = 0;
     SV_I((unsigned)&full_data_76631c) = 0;
-    SV_I((unsigned)&ai_Unk6f2304) = 0;
+    SV_I((unsigned)&sv_SelectedModel) = 0;
     o = SV_I((unsigned)&ai_FallbackBuilding);
     if (SV_I((unsigned)&ai_PlayerBuilding) == 0) {
         if (o == 0) {
@@ -3890,7 +3899,7 @@ void sv_Unk52adb0(void)
                 return;
         }
     } else if (o == 0) {
-        SV_I((unsigned)&ai_Unk6f2304) = 0;
+        SV_I((unsigned)&sv_SelectedModel) = 0;
         SV_I((unsigned)&ai_Unk75ec5c) = 0;
         SV_I((unsigned)&sv_SelectedObject) = 0;
         SV_I((unsigned)&full_data_76631c) = 0;
@@ -3912,7 +3921,7 @@ void sv_ClearSelection(void)
 
     q = (char *)(unsigned)&ai_Selected;
     SV_I((unsigned)&ai_Unk7662c0) = 0;
-    SV_I((unsigned)&ai_Unk6f2304) = 0;
+    SV_I((unsigned)&sv_SelectedModel) = 0;
     do {
         *q = 0;
         q += 0x21c;
@@ -4137,7 +4146,7 @@ l3b8:
     SV_I((unsigned)&ai_Unk6237cc) = 0;
     sv_Unk529fb0();
     if (SV_I((unsigned)&ai_Unk75ec5c) == 0 || ai_Goods[*(unsigned short *)SV_I((unsigned)&ai_Unk75ec5c) * 0x41] != 0x1d || SV_I((unsigned)&ai_Unk6f2334) != 0 || SV_I((unsigned)&ai_Unk7662c0) != 0) {
-        if (SV_I((unsigned)&ai_Unk6f2304) == 0 && SV_B((unsigned)&full_data_6f2338) == 0) {
+        if (SV_I((unsigned)&sv_SelectedModel) == 0 && SV_B((unsigned)&full_data_6f2338) == 0) {
             if (SV_I((unsigned)&ai_Unk6f2334) == 0) {
                 if (SV_I((unsigned)&sv_PanelShown) == 0 && SV_I((unsigned)&ai_Unk7662c0) == 0)
                     sv_Unk528ee0();
@@ -4160,7 +4169,7 @@ l510:
     SV_I((unsigned)&full_data_6f23c0) = SV_I((unsigned)&ai_FallbackBuilding);
     SV_I((unsigned)&full_data_6f23bc) = SV_I((unsigned)&ai_PlayerBuilding);
     SV_I((unsigned)&full_data_6f23d8) = SV_I((unsigned)&ai_Unk6f2334);
-    if (SV_I((unsigned)&ai_Unk6f2304) == 0 && SV_I((unsigned)&ai_FallbackBuilding) == 0 && SV_I((unsigned)&ai_PlayerBuilding) == 0) {
+    if (SV_I((unsigned)&sv_SelectedModel) == 0 && SV_I((unsigned)&ai_FallbackBuilding) == 0 && SV_I((unsigned)&ai_PlayerBuilding) == 0) {
         SV_I((unsigned)&full_data_6f23c0) = 0;
         SV_I((unsigned)&full_data_6f23bc) = 0;
         SV_I((unsigned)&full_data_6f2294) = 0;
@@ -4176,7 +4185,7 @@ l510:
             }
             SV_I((unsigned)&full_data_6f23c0) = SV_I((unsigned)&ai_FallbackBuilding);
             SV_I((unsigned)&full_data_6f23bc) = SV_I((unsigned)&ai_PlayerBuilding);
-            SV_I((unsigned)&full_data_6f2294) = SV_I((unsigned)&ai_Unk6f2304);
+            SV_I((unsigned)&full_data_6f2294) = SV_I((unsigned)&sv_SelectedModel);
             p = (unsigned char *)SV_I((unsigned)&sv_SelectedObject);
             if (p == 0 && (p = (unsigned char *)SV_I((unsigned)&ai_FallbackBuilding)) == 0)
                 p = 0;
@@ -4184,9 +4193,9 @@ l510:
             sv_Unk529380();
             return;
         }
-        SV_I((unsigned)&full_data_6f2294) = SV_I((unsigned)&ai_Unk6f2304);
+        SV_I((unsigned)&full_data_6f2294) = SV_I((unsigned)&sv_SelectedModel);
         if (SV_I((unsigned)&ai_Unk75ec5c) != 0) {
-            SV_I((unsigned)&full_data_6f2294) = SV_I((unsigned)&ai_Unk6f2304);
+            SV_I((unsigned)&full_data_6f2294) = SV_I((unsigned)&sv_SelectedModel);
             sv_Unk528b80(SV_I((unsigned)&ai_Unk75ec5c));
             sv_Unk529380();
             return;
@@ -4491,13 +4500,13 @@ lfe4:
                 SV_I((unsigned)&ai_Unk631078) = SV_I(((unsigned)&ai_Unk770cec + 0x18) + *(unsigned short *)SV_I((unsigned)&ai_Unk6f22f8) * 0x21c);
             }
             if (SV_I((unsigned)&ai_Unk6f2334) == 0 && SV_B((unsigned)&full_data_6f2338) == 0 && SV_I((unsigned)&full_data_6f22f4) != 0 && SV_I((unsigned)&ai_Unk75ec5c) == 0)
-                SV_I((unsigned)&ai_Unk6f2304) = SV_I((unsigned)&ai_Unk6f22e8);
+                SV_I((unsigned)&sv_SelectedModel) = SV_I((unsigned)&ai_Unk6f22e8);
             SV_I((unsigned)&sv_SelectedObject) = SV_I((unsigned)&full_data_6f22f4);
             if (SV_I((unsigned)&full_data_6f22f4) != 0)
-                SV_I((unsigned)&ai_Unk6f2304) = SV_I((unsigned)&ai_Unk6f22e8);
+                SV_I((unsigned)&sv_SelectedModel) = SV_I((unsigned)&ai_Unk6f22e8);
             SV_I((unsigned)&ai_Unk75ec5c) = SV_I((unsigned)&full_data_6f22f0);
             if (SV_I((unsigned)&full_data_6f22f0) != 0) {
-                SV_I((unsigned)&ai_Unk6f2304) = SV_I((unsigned)&ai_Unk6f22e8);
+                SV_I((unsigned)&sv_SelectedModel) = SV_I((unsigned)&ai_Unk6f22e8);
                 if (ai_Goods[*(unsigned short *)SV_I((unsigned)&full_data_6f22f0) * 0x41] == 0x1d)
                     sv_ClearSelection();
             }
@@ -5403,28 +5412,28 @@ void sv_Unk52d480(void)
     pic = d2_GetPic(0x52c);
     if (SV_I((unsigned)&ai_Unk6f22cc) == -1) {
         n3 = 1;
-        if (d3_VecEqual(ai_Unkfc2dec + 0xfc, (char *)(unsigned)&ai_Unk5ebba4, 0.2f) == 0)
+        if (d3_VecEqual(sv_CameraObj + 0xfc, (char *)(unsigned)&ai_Unk5ebba4, 0.2f) == 0)
             n3 = 2;
     } else if (SV_I((unsigned)&ai_Unk6f22cc) == 1) {
         b = 1;
-        if (d3_VecEqual(ai_Unkfc2dec + 0xe4, (char *)(unsigned)&ai_Unk5ebba4, 0.2f) == 0)
+        if (d3_VecEqual(sv_CameraObj + 0xe4, (char *)(unsigned)&ai_Unk5ebba4, 0.2f) == 0)
             b = 2;
     } else if (SV_I((unsigned)&ai_Unk6f22cc) == 0) {
-        b = d3_VecEqual(ai_Unkfc2dec + 0xe4, (char *)(unsigned)&ai_Unk5ebba4, 0.2f) == 0;
-        if (d3_VecEqual(ai_Unkfc2dec + 0xfc, (char *)(unsigned)&ai_Unk5ebba4, 0.2f) == 0)
+        b = d3_VecEqual(sv_CameraObj + 0xe4, (char *)(unsigned)&ai_Unk5ebba4, 0.2f) == 0;
+        if (d3_VecEqual(sv_CameraObj + 0xfc, (char *)(unsigned)&ai_Unk5ebba4, 0.2f) == 0)
             n3 = 1;
     }
     if (SV_I((unsigned)&ai_Unk6f22d0) == -1) {
         a = 1;
-        if (d3_VecEqual(ai_Unkfc2dec + 0xb4, (char *)(unsigned)&ai_Unk5ebba4, 0.2f) == 0)
+        if (d3_VecEqual(sv_CameraObj + 0xb4, (char *)(unsigned)&ai_Unk5ebba4, 0.2f) == 0)
             a = 2;
     } else if (SV_I((unsigned)&ai_Unk6f22d0) == 1) {
         o = SV_I((unsigned)&ai_Unk6f22d0);
-        if (d3_VecEqual(ai_Unkfc2dec + 0xcc, (char *)(unsigned)&ai_Unk5ebba4, 0.2f) == 0)
+        if (d3_VecEqual(sv_CameraObj + 0xcc, (char *)(unsigned)&ai_Unk5ebba4, 0.2f) == 0)
             o = 2;
     } else if (SV_I((unsigned)&ai_Unk6f22d0) == 0) {
-        a = d3_VecEqual(ai_Unkfc2dec + 0xb4, (char *)(unsigned)&ai_Unk5ebba4, 0.2f) == 0;
-        if (d3_VecEqual(ai_Unkfc2dec + 0xcc, (char *)(unsigned)&ai_Unk5ebba4, 0.2f) == 0)
+        a = d3_VecEqual(sv_CameraObj + 0xb4, (char *)(unsigned)&ai_Unk5ebba4, 0.2f) == 0;
+        if (d3_VecEqual(sv_CameraObj + 0xcc, (char *)(unsigned)&ai_Unk5ebba4, 0.2f) == 0)
             o = 1;
     }
     d2_SetClipRect(0, 0, *(int *)((char *)d2_ScreenSurf + 4), *(int *)((char *)d2_ScreenSurf + 8));
@@ -5460,21 +5469,21 @@ void sv_CameraFollow(void)
 
     fl = 0;
     if (SV_I((unsigned)&d3t_CamMove) != 0) {
-        if (d3_VecEqual((char *)(unsigned)&d3_Unk1466620, (char *)(unsigned)&ai_Unk75fb80, 0.1f) == 0) {
-            d3anim_FreePath(ai_Unkfc2dec);
+        if (d3_VecEqual((char *)(unsigned)&d3_Unk1466620, (char *)(unsigned)&sv_ViewPosX, 0.1f) == 0) {
+            d3anim_FreePath(sv_CameraObj);
             SV_I((unsigned)&d3t_CamMove) = 0;
             SV_I((unsigned)&d3t_CamMoving) = 0;
         } else {
-            d3anim_FreePath(ai_Unkfc2dec);
+            d3anim_FreePath(sv_CameraObj);
             SV_I((unsigned)&d3t_CamMove) = 0;
             SV_I((unsigned)&d3t_CamMoving) = 0;
             fl = 1;
-            d3_SetObjectPos(ai_Unkfc2dec, (unsigned)&ai_Unk75fb80);
-            d3_SetObjectRot(ai_Unkfc2dec, (unsigned)&ai_Unk75fb90);
+            d3_SetObjectPos(sv_CameraObj, (unsigned)&sv_ViewPosX);
+            d3_SetObjectRot(sv_CameraObj, (unsigned)&sv_ViewRotX);
         }
     }
     if (SV_I((unsigned)&sv_FrameDepth) <= SV_I((unsigned)&sv_FrameBase) || fl) {
-        if ((d3_VecEqual(ai_Unkfc2dec + 0x84, (char *)(unsigned)&ai_Unk75fb90, 0.1f) == 0 || d3_VecEqual(ai_Unkfc2dec + 0x4c, (char *)(unsigned)&ai_Unk75fb80, 0.1f) == 0)
+        if ((d3_VecEqual(sv_CameraObj + 0x84, (char *)(unsigned)&sv_ViewRotX, 0.1f) == 0 || d3_VecEqual(sv_CameraObj + 0x4c, (char *)(unsigned)&sv_ViewPosX, 0.1f) == 0)
             && (!fl && (sv_Unk528140(), SV_I((unsigned)&full_data_6f22ec) != 0))) {
             n = *(int *)(SV_I((unsigned)&full_data_6f22ec) + 0x1d4);
             if (n != 0 && *(int *)(n + 0x18c) != 0)
@@ -5558,16 +5567,16 @@ l9f2:
     if (SV_I((unsigned)&ai_PlayerBuilding) == 0) {
         if (SV_I((unsigned)&ai_FallbackBuilding) != 0 && SV_I((unsigned)&sv_PanelShown) != 0 && SV_I((unsigned)&full_data_6f22fc) != 0 && SV_I((unsigned)&ai_Unk6f2334) == 0 && SV_B((unsigned)&full_data_6f2338) == 0) {
             SV_I((unsigned)&sv_PopRequest) = SV_I((unsigned)&sv_FrameDepth) - SV_I((unsigned)&sv_FrameBase) + 1;
-            d3_SetObjectPos(ai_Unkfc2dec, (unsigned)&ai_Unk75fb80);
-            d3_SetObjectRot(ai_Unkfc2dec, (unsigned)&ai_Unk75fb90);
+            d3_SetObjectPos(sv_CameraObj, (unsigned)&sv_ViewPosX);
+            d3_SetObjectRot(sv_CameraObj, (unsigned)&sv_ViewRotX);
             goto lbb6;
         }
     } else if (SV_I((unsigned)&full_data_6f22fc) != 0 && SV_I((unsigned)&ai_Unk6f2334) == 0 && SV_B((unsigned)&full_data_6f2338) == 0) {
         sb_PlaySample(snd_RoomBank, "RaumWechseln_s", 1, 0x3f, 0x7f, 0, 0);
         *(short *)(SV_I((unsigned)&ai_PlayerBuilding) + 0x29) = *(short *)SV_I((unsigned)&full_data_6f22fc);
         SV_I((unsigned)&sv_PopRequest) = SV_I((unsigned)&sv_FrameDepth) - SV_I((unsigned)&sv_FrameBase) + 1;
-        d3_SetObjectPos(ai_Unkfc2dec, (unsigned)&ai_Unk75fb80);
-        d3_SetObjectRot(ai_Unkfc2dec, (unsigned)&ai_Unk75fb90);
+        d3_SetObjectPos(sv_CameraObj, (unsigned)&sv_ViewPosX);
+        d3_SetObjectRot(sv_CameraObj, (unsigned)&sv_ViewRotX);
 lbb6:
         SV_I((unsigned)&ai_Unk6f22cc) = 0;
         SV_I((unsigned)&ai_Unk6f22d0) = 0;
@@ -5585,21 +5594,21 @@ lbb6:
     if (SV_I((unsigned)&d3t_CamMove) != 0) {
         if (SV_I((unsigned)&ai_PlayerBuilding) == 0 && SV_I((unsigned)&ai_FallbackBuilding) == 0)
             goto l72;
-        if (d3_VecEqual((char *)(unsigned)&d3_Unk1466620, (char *)(unsigned)&ai_Unk75fb80, 0.1f) == 0) {
-            d3anim_FreePath(ai_Unkfc2dec);
+        if (d3_VecEqual((char *)(unsigned)&d3_Unk1466620, (char *)(unsigned)&sv_ViewPosX, 0.1f) == 0) {
+            d3anim_FreePath(sv_CameraObj);
             SV_I((unsigned)&d3t_CamMove) = 0;
             SV_I((unsigned)&d3t_CamMoving) = 0;
         } else {
-            d3anim_FreePath(ai_Unkfc2dec);
+            d3anim_FreePath(sv_CameraObj);
             SV_I((unsigned)&d3t_CamMove) = 0;
             SV_I((unsigned)&d3t_CamMoving) = 0;
             ok = 1;
-            d3_SetObjectPos(ai_Unkfc2dec, (unsigned)&ai_Unk75fb80);
-            d3_SetObjectRot(ai_Unkfc2dec, (unsigned)&ai_Unk75fb90);
+            d3_SetObjectPos(sv_CameraObj, (unsigned)&sv_ViewPosX);
+            d3_SetObjectRot(sv_CameraObj, (unsigned)&sv_ViewRotX);
         }
     }
     if (SV_I((unsigned)&sv_FrameDepth) <= SV_I((unsigned)&sv_FrameBase) || ok) {
-        if (d3_VecEqual(ai_Unkfc2dec + 0x84, (char *)(unsigned)&ai_Unk75fb90, 0.1f) != 0 || d3_VecEqual(ai_Unkfc2dec + 0x4c, (char *)(unsigned)&ai_Unk75fb80, 0.1f) != 0 || ok) {
+        if (d3_VecEqual(sv_CameraObj + 0x84, (char *)(unsigned)&sv_ViewRotX, 0.1f) != 0 || d3_VecEqual(sv_CameraObj + 0x4c, (char *)(unsigned)&sv_ViewPosX, 0.1f) != 0 || ok) {
             if (SV_I((unsigned)&ai_PlayerBuilding) == 0 && SV_I((unsigned)&ai_FallbackBuilding) == 0 && SV_I((unsigned)&sv_PanelShown) == 0) {
                 if (SV_I((unsigned)&sv_FrameDepth) == SV_I((unsigned)&sv_FrameBase) && SV_I((unsigned)&ai_Unk75ec5c) != 0)
                     sv_Unk52adb0();
@@ -5639,8 +5648,8 @@ l1a:
             SV_I((unsigned)&sv_PopRequest) = 1;
             if (SV_I((unsigned)&ai_PlayerBuilding) != 0 && SV_I((unsigned)&sv_PanelShown) == 0)
                 SV_I((unsigned)&ai_PlayerBuilding) = 0;
-            d3_SetObjectPos(ai_Unkfc2dec, (unsigned)&ai_Unk75fb80);
-            d3_SetObjectRot(ai_Unkfc2dec, (unsigned)&ai_Unk75fb90);
+            d3_SetObjectPos(sv_CameraObj, (unsigned)&sv_ViewPosX);
+            d3_SetObjectRot(sv_CameraObj, (unsigned)&sv_ViewRotX);
             SV_I((unsigned)&ai_Unk6f22cc) = 0;
             SV_I((unsigned)&ai_Unk6f22d0) = 0;
             goto l72;
@@ -7081,7 +7090,7 @@ l64:
         if ((mask & 0x10000) == 0 && (mask & 0x40000) != 0)
             sv_Unk525ad0((unsigned)&ai_Time);
         if (SV_I((unsigned)&d3_CurrentScene) == 0)
-            d3q_Mark(SV_I((unsigned)&d3_QuadTree), SV_I((unsigned)&ai_Unkfc2dec), SV_I((unsigned)&d3_FrameCount));
+            d3q_Mark(SV_I((unsigned)&d3_QuadTree), SV_I((unsigned)&sv_CameraObj), SV_I((unsigned)&d3_FrameCount));
         d3t_UpdateCamera();
         d3if_ClearView();
     }
@@ -7316,12 +7325,6 @@ void sv_UpdateClock(void)
 }
 
 extern int ai_Unk75ec20;
-extern int ai_Unk75fb80;
-extern int ai_Unk75fb84;
-extern int ai_Unk75fb88;
-extern int ai_Unk75fb90;
-extern int ai_Unk75fb94;
-extern int ai_Unk75fb98;
 extern float ai_Unk760420;
 extern int ai_Unk760440;
 extern int ai_Unk760464;
@@ -7453,7 +7456,7 @@ int ai_Unk6f22cc = 0;  /* 0x6f22cc */
 int ai_Unk6f22d0 = 0;  /* 0x6f22d0 */
 float sv_CameraHeightFactor = 0;  /* 0x6f22d4 */
 float sv_CameraAngleFactor = 0;  /* 0x6f22d8 */
-int ai_Unk6f2304 = 0;  /* 0x6f2304 */
+int sv_SelectedModel = 0;  /* 0x6f2304 */
 char * ai_PlayerBuilding = 0;  /* 0x6f2308 */
 char * ai_FallbackBuilding = 0;  /* 0x6f230c */
 unsigned short * sv_PanelShown = 0;  /* 0x6f2310, the scene record (room) the info panel shows now */
@@ -7494,12 +7497,8 @@ int sv_SelectionFlags[0xc0] = {0};  /* 0x75e920, the mirror of the character sel
 int ai_Unk75ec20 = 0;  /* 0x75ec20 */
 unsigned short * ai_Unk75ec5c = 0;  /* 0x75ec5c */
 int ai_Unk75f280[576] = {0};  /* 0x75f280, the member panel: */
-int ai_Unk75fb80 = 0;  /* 0x75fb80 */
-int ai_Unk75fb84 = 0;  /* 0x75fb84 */
-int ai_Unk75fb88 = 0;  /* 0x75fb88 */
-int ai_Unk75fb90 = 0;  /* 0x75fb90 */
-int ai_Unk75fb94 = 0;  /* 0x75fb94 */
-int ai_Unk75fb98 = 0;  /* 0x75fb98 */
+float sv_ViewPos[4] = {0};  /* 0x75fb80, the stored camera position (a padded vector): set by the camera moves, restored when the player leaves a building */
+float sv_ViewRot[4] = {0};  /* 0x75fb90, its rotation (D3OBJECT.rotation) */
 float ai_Unk760420 = 0;  /* 0x760420 */
 int ai_Unk760440 = 0;  /* 0x760440 */
 int ai_Unk760464 = 0;  /* 0x760464 */
@@ -7526,4 +7525,4 @@ int ai_Unkfb9064 = {0}; /* 0xfb9064 */
 int ai_Unkfb9068 = {0}; /* 0xfb9068 */
 int ai_Unkfb906c = {0}; /* 0xfb906c */
 int ai_Unkfba9c0[168] = {0}; /* 0xfba9c0 */
-char * ai_Unkfc2dec = {0}; /* 0xfc2dec, the camera object */
+char * sv_CameraObj = {0}; /* 0xfc2dec, the camera object */

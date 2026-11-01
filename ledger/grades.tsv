@@ -1469,7 +1469,7 @@ exe	0x004817a0	ai_CalcAngriff	ai	draft	draft	deep
 exe	0x00481ef0	ai_CalcMeisterDiebe	ai	draft	draft	deep	
 exe	0x00482f00	ai_CalcMeisterRaeuber	ai	draft	draft	deep	
 exe	0x004836a0	ai_CalcMeisterBank	ai	byte	draft	deep	
-exe	0x00483a60	ai_Unk483a60	ai	byte	draft	deep	
+exe	0x00483a60	ai_Unk483a60	ai	shape	draft	deep	byte+draft -> shape+draft at e8472c5: AIFIN (ai.h) gets the player record's camera fields (+0x88 camAngle, +0x8c camPos, +0x9c camRot) that sv.c's camera code writes, replacing raw offsets: a truer type. ai_Unk483a60 never uses AIFIN; with the extended struct its two spill slots [esp+0x10]/[esp+0x18] swap (same 234 instructions) - a VC6 declaration-set tie-break, so the byte match was no evidence of the original's source
 exe	0x00483d30	ai_StartBuildingWork	ai	shape	draft	deep	
 exe	0x00483ee0	ai_EndWorkerPose	ai	byte	readable		
 exe	0x00483fc0	ai_Unk483fc0	ai	draft	draft	deep	

@@ -419,6 +419,11 @@ typedef struct AIFIN {                  /* what gm_PlayerRecord finds for a char
     char pad00[0x40];
     int upgradeSpent;                   /* 0x40, the money the record has paid for workshop upgrades (ai_BuyUpgrade) */
     int renovationSpent;                /* 0x44, the money it has paid for renovations (ai_BuyUpgrade, am.c 0x497ee0) */
+    char pad48[0x40];
+    float camAngle;                     /* 0x88, the player's camera angle factor (sv_CameraAngleFactor; sv.c) */
+    float camPos[3];                    /* 0x8c, the player's camera position, restored with the view (sv.c) */
+    char pad98[4];
+    float camRot[3];                    /* 0x9c, its rotation (D3OBJECT.rotation) */
 } AIFIN;
 
 typedef struct AIMAPENT {               /* 24 bytes, the AI's view of the vegetation records at AIBLD.plants (rd.h

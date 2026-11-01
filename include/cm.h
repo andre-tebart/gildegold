@@ -1044,7 +1044,7 @@ int ai_Unk4e4020();  /* 0x4e4020 */
 extern int ai_Unk6f0d9c;  /* 0x6f0d9c, the scene nesting depth */
 extern int ai_Unk60d36c;  /* 0x60d36c, -1 or the object waited for (0x4284a0) */
 extern int ai_Unk5f8438;  /* 0x5f8438 */
-extern int ai_Unk6310e4;  /* 0x6310e4 */
+extern int d3t_CamMoving;  /* 0x6310e4 */
 void d3sm_Destroy();  /* 0x45ef60 */
 void d3if_Reset();  /* 0x4473f0 */
 int ai_Unk4e3210();  /* 0x4e3210 */

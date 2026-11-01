@@ -154,7 +154,7 @@ extern GAPDATA full_data_6f58b0[];
 extern GAPDATA full_data_6f5a70[];
 extern char *ai_Unk5fb5b0;
 extern char * ai_BTypes;
-extern char * ai_Unkfc2dec;
+extern char * sv_CameraObj;
 extern GAPDATA full_data_6f26b0[];
 extern unsigned char kb_Last;
 
@@ -181,7 +181,7 @@ extern int sv_PanelFlag;
 extern char * sv_PanelObject;
 extern unsigned short * sv_PanelRecord;
 extern int ai_Unk75f280[576];
-extern char * ai_Unkfc2dec;
+extern char * sv_CameraObj;
 extern char ai_Chars[768][0x21c];
 extern int ai_GameFlags;
 extern unsigned char ai_GameState;
@@ -365,7 +365,7 @@ extern const float ai_Unk5ebba4[];
 extern char * ai_Unk6f22e8;
 
 extern struct AIBLD *ai_MarketBuilding;
-extern int ai_Unk6f2304;
+extern int sv_SelectedModel;
 extern int ai_Unk6f2318;
 extern char * sv_SelectedObject;
 extern int sv_PanelForm;
@@ -456,7 +456,7 @@ extern int d2_LastWindow;
 extern char * ai_PlayerBuilding;
 extern int ai_Unk6f22cc;
 extern int ai_Unk6f22d0;
-extern char * ai_Unkfc2dec;
+extern char * sv_CameraObj;
 extern int sv_FrameBase;
 extern int sv_FrameDepth;
 extern int sv_PopRequest;
@@ -476,14 +476,10 @@ extern int ai_Unk5f8438;
 extern char *ai_Unk5fb5b0;
 extern int ai_Unk6f22cc;
 extern int ai_Unk6f22d0;
-extern int ai_Unk75fb80;
-extern int ai_Unk75fb84;
-extern int ai_Unk75fb88;
-extern int ai_Unk75fb90;
-extern int ai_Unk75fb94;
-extern int ai_Unk75fb98;
+extern float sv_ViewPos[4];  /* 0x75fb80, sv.c: the stored camera position */
+extern float sv_ViewRot[4];  /* 0x75fb90, its rotation */
 extern int ai_Unk7662c0;
-extern char * ai_Unkfc2dec;
+extern char * sv_CameraObj;
 extern int ch_CurrentScriptGroup;
 extern char ch_StepSample[];
 extern int d2_CutsceneActive;
@@ -741,7 +737,7 @@ extern unsigned char ai_OwnPlayer;
 extern char * ai_PlayerBuilding;
 extern char ai_PlayerSlots[4][0x2f4];
 extern char ai_Unk625820[115][0x20];
-extern char * ai_Unkfc2dec;
+extern char * sv_CameraObj;
 extern int d2_LastWindow;
 extern struct D2WIN *d2_LastWindowPtr;
 extern struct D2OBJ *d2_Objs;
@@ -2932,9 +2928,9 @@ int ai_Unk58ff00(int kind, char *out)
                 *(unsigned char *)(obj + 0x211) &= 0xfd;
                 ((void (*)(void *, void *, int))d3_SetObjectAlpha)(obj, 0, 0);
                 d3t_SetTreeColor(obj);
-                if ((((pos[0] - *(float *)((unsigned)&ai_Unkfc2dec + 0x4c)) * (pos[0] - *(float *)((unsigned)&ai_Unkfc2dec + 0x4c))) +
-                     ((pos[1] - *(float *)((unsigned)&ai_Unkfc2dec + 0x50)) * (pos[1] - *(float *)((unsigned)&ai_Unkfc2dec + 0x50))) +
-                     ((pos[2] - *(float *)((unsigned)&ai_Unkfc2dec + 0x54)) * (pos[2] - *(float *)((unsigned)&ai_Unkfc2dec + 0x54)))) < bd) {
+                if ((((pos[0] - *(float *)((unsigned)&sv_CameraObj + 0x4c)) * (pos[0] - *(float *)((unsigned)&sv_CameraObj + 0x4c))) +
+                     ((pos[1] - *(float *)((unsigned)&sv_CameraObj + 0x50)) * (pos[1] - *(float *)((unsigned)&sv_CameraObj + 0x50))) +
+                     ((pos[2] - *(float *)((unsigned)&sv_CameraObj + 0x54)) * (pos[2] - *(float *)((unsigned)&sv_CameraObj + 0x54)))) < bd) {
                     /* ROUGH: the distance of the original is a sqrt of the three axes */
                     sel = obj;
                     bd = 0.0f;
@@ -3051,7 +3047,7 @@ void ai_Unk5909a0(void)
     ai_Unk576040(0xe, 0, 1, 0);
 }
 
-int ai_Unk5b2180(); int gm_IsHomeType(); void sv_SelectPanelObject(unsigned char *o, int b, char *c); void sv_Unk527840(int o); void sv_Unk527bb0();
+int ai_Unk5b2180(); int gm_IsHomeType(); void sv_SelectPanelObject(unsigned char *o, int b, char *c); void sv_FlyCameraToObject(int o); void sv_CameraToObject();
 unsigned unk_Unk503530(unsigned p1, unsigned char *b, unsigned short *o, int c); void ai_Unk59f410(); void init_ShowBuildingScene(unsigned char *b, int slot); void init_FinishBuildingScene(unsigned char *b, unsigned short *o);
 int d3t_PlaceObjectV(struct D3OBJECT *camera, struct D3VECTOR *pos, struct D3VECTOR *dir, int unk, char flags); int gm_ClockSeason(); void unk_Unk513740(void); void d3fl_MakeDivide();
 int ai_Unk5bc110(); void snd_StartMarketAmbience(void); int tb_SetFunctionOff(); void snd_StopMarketAmbience(void);
@@ -3101,7 +3097,7 @@ void ai_Unk591170(void)
             r = gm_IsHomeType(p);
             if (r == 0 || *p != 'G') {
                 if (U_I((unsigned)&ai_FallbackBuilding) == 0 && U_I((unsigned)&ai_PlayerBuilding) == 0) {
-                    sv_Unk527840(p);
+                    sv_FlyCameraToObject(p);
                     return;
                 }
                 sv_SelectPanelObjectK(p, *(unsigned short *)(p + 0x29), (void *)(unsigned)&ch_EmptyName);
@@ -3169,14 +3165,14 @@ void ai_Unk591480(void)
 {
     float v[3];
 
-    if (U_I((unsigned)&kb_Last) == '1' && U_I((unsigned)&ai_Unkfc2dec) != 0 &&
+    if (U_I((unsigned)&kb_Last) == '1' && U_I((unsigned)&sv_CameraObj) != 0 &&
         *(int *)(((unsigned)&ai_Unk75f280 + 0x500) + U_I((unsigned)&sv_FrameDepth) * 8) == (int)ai_GameFrame) {
         ai_Unk576040(0x16, 0, 0, 0);
-        v[0] = *(float *)(U_I((unsigned)&ai_Unkfc2dec) + 0x84);
+        v[0] = *(float *)(U_I((unsigned)&sv_CameraObj) + 0x84);
         v[1] = 0;
-        v[2] = *(float *)(U_I((unsigned)&ai_Unkfc2dec) + 0x8c);
-        if (d3_VecEqual((void *)(U_I((unsigned)&ai_Unkfc2dec) + 0x84), v, 0.1f) == 0)
-            d3t_PlaceObjectV(U_I((unsigned)&ai_Unkfc2dec), U_I((unsigned)&ai_Unkfc2dec) + 0x4c, v, 0x1e, 0x28);
+        v[2] = *(float *)(U_I((unsigned)&sv_CameraObj) + 0x8c);
+        if (d3_VecEqual((void *)(U_I((unsigned)&sv_CameraObj) + 0x84), v, 0.1f) == 0)
+            d3t_PlaceObjectV(U_I((unsigned)&sv_CameraObj), U_I((unsigned)&sv_CameraObj) + 0x4c, v, 0x1e, 0x28);
     }
 }
 /* 0x591520, the main game frame callback (1445 B, ROUGH SKELETON from the Ghidra pseudocode): the clock index
@@ -3230,7 +3226,7 @@ void ai_GameFrame(void)
     if ((U_I((unsigned)&ai_GameFlags) & 1) && main_Round == 1) {
         for (it = gm_BuildQuery(1, 4, U_W((unsigned)&ai_PlayerId)); it != 0; it = gm_BuildNext()) {
             if (it != U_I(((unsigned)&ai_Unk770cec + 0x4) + U_W((unsigned)&ai_PlayerId) * 0x87)) {
-                sv_Unk527bb0(it);
+                sv_CameraToObject(it);
                 break;
             }
         }
@@ -3281,7 +3277,7 @@ void ai_GameFrame(void)
         ai_Unk591480();
         if (U_I(((unsigned)&dm_L + 0x14)) != 0 && U_I(((unsigned)&dm_L + 0x24)) == 0 && U_I((unsigned)&full_data_6f22f4) != 0 &&
             U_I((unsigned)&d3t_CamMove) == 0)
-            sv_Unk527840(U_I((unsigned)&full_data_6f22f4));
+            sv_FlyCameraToObject(U_I((unsigned)&full_data_6f22f4));
         if (U_I((unsigned)&d2_ClickedId) != -1 && U_I((unsigned)&d2_PointerObj) == U_I((unsigned)&ai_Unk623884))
             ai_Unk5909a0();
         if (U_I((unsigned)&sv_SelectedObject) != 0 &&
@@ -3309,7 +3305,7 @@ void ai_GameFrame(void)
            record-less way and the +0x5a bit 0 clear sv_PanelFlag */
         if (U_I((unsigned)&sv_PanelFlag) != 0) {
             if (U_I((unsigned)&sv_PanelRecord) == 0) {
-                sv_Unk527840(U_I((unsigned)&sv_PanelObject));
+                sv_FlyCameraToObject(U_I((unsigned)&sv_PanelObject));
                 U_I((unsigned)&sv_PanelFlag) = 0;
             } else {
                 p = (char *)U_I((unsigned)&sv_PanelObject);
@@ -3318,13 +3314,13 @@ void ai_GameFrame(void)
                     U_I((unsigned)&sv_PanelFlag) = 0;
                 } else {
                     if (*(int *)(p + 0x61) != 0 && gm_IsType10((unsigned char *)p) == 0)
-                        sv_Unk527bb0(p);
+                        sv_CameraToObject(p);
                     if (gm_IsHomeType(p) != 0)
                         ai_Unk59ee40((unsigned char *)p);
                     else if (gm_IsType10((unsigned char *)p) == 0)
                         ai_Unk59e420((unsigned char *)p, *(unsigned short *)(p + 0x29));
                     else {
-                        sv_Unk527840(p);
+                        sv_FlyCameraToObject(p);
                         U_I((unsigned)&sv_PanelFlag) = 0;
                     }
                 }
@@ -7098,7 +7094,7 @@ void ai_Unk59a560(int param_1, int room)
 void ai_Unk59a710(int param_1, int param_2)
 {
     U_I((unsigned)&sv_SelectedObject) = 0;
-    U_I((unsigned)&ai_Unk6f2304) = 0;
+    U_I((unsigned)&sv_SelectedModel) = 0;
     sv_Unk529fb0();
     sv_ClearSelection();
     U_I((unsigned)&ai_Unk6f2318) = 1;
@@ -8697,8 +8693,8 @@ void ai_Unk59e0a0(int param_1, unsigned short param_2)
         *(unsigned short *)(U_I((unsigned)&ai_PlayerBuilding) + 0x29) = *p;
     }
     U_I((unsigned)&sv_PopRequest) = (U_I((unsigned)&sv_FrameDepth) - U_I((unsigned)&sv_FrameBase)) + 1;
-    d3_SetObjectPos((void *)U_I((unsigned)&ai_Unkfc2dec), (void *)(U_I((unsigned)&ai_Unkfc2dec) + 0x10));
-    d3_SetObjectRot((void *)U_I((unsigned)&ai_Unkfc2dec), (void *)(U_I((unsigned)&ai_Unkfc2dec) + 0x20));
+    d3_SetObjectPos((void *)U_I((unsigned)&sv_CameraObj), (void *)(U_I((unsigned)&sv_CameraObj) + 0x10));
+    d3_SetObjectRot((void *)U_I((unsigned)&sv_CameraObj), (void *)(U_I((unsigned)&sv_CameraObj) + 0x20));
     U_I((unsigned)&ai_Unk6f22cc) = 0;
     U_I((unsigned)&ai_Unk6f22d0) = 0;
     sb_PlaySample(snd_RoomBank, "RaumWechseln_s", 1, 0x3f, 0x7f, 0, 0);
@@ -8829,12 +8825,12 @@ void ai_Unk59e420(unsigned char *param_1, int param_2)
     kind = U_I((unsigned)&d3_CurrentScene);
     U_I((unsigned)&full_data_6f2314) = 0;
     *(short *)(param_1 + 0x29) = (short)param_2;
-    saved1 = U_I((unsigned)&ai_Unk75fb80);
-    saved2 = U_I((unsigned)&ai_Unk75fb84);
-    saved3 = U_I((unsigned)&ai_Unk75fb88);
-    saved4 = U_I((unsigned)&ai_Unk75fb90);
-    saved5 = U_I((unsigned)&ai_Unk75fb94);
-    saved6 = U_I((unsigned)&ai_Unk75fb98);
+    saved1 = U_I((unsigned)&sv_ViewPosX);
+    saved2 = U_I((unsigned)&sv_ViewPosY);
+    saved3 = U_I((unsigned)&sv_ViewPosZ);
+    saved4 = U_I((unsigned)&sv_ViewRotX);
+    saved5 = U_I((unsigned)&sv_ViewRotY);
+    saved6 = U_I((unsigned)&sv_ViewRotZ);
     if (param_2 == 0)
         U_I((unsigned)&ai_PlayerBuilding) = 0;
     if (*(unsigned short *)(param_1 + 0x27) == U_W((unsigned)&ai_PlayerId))
@@ -8871,24 +8867,24 @@ void ai_Unk59e420(unsigned char *param_1, int param_2)
                 init_SetCharacterAnimations(param_1);
                 init_ShowBuildingScene(U_I((unsigned)&ai_PlayerBuilding), *(unsigned short *)(U_I((unsigned)&ai_PlayerBuilding) + 0x29));
                 init_FinishBuildingScene(U_I((unsigned)&ai_PlayerBuilding), U_I((unsigned)&sv_PanelShown));
-                d3_SetObjectPos((void *)U_I((unsigned)&ai_Unkfc2dec), (void *)(U_I((unsigned)&ai_Unkfc2dec) + 0x5c));
-                d3_SetObjectRot((void *)U_I((unsigned)&ai_Unkfc2dec), (void *)(U_I((unsigned)&ai_Unkfc2dec) + 0x90));
+                d3_SetObjectPos((void *)U_I((unsigned)&sv_CameraObj), (void *)(U_I((unsigned)&sv_CameraObj) + 0x5c));
+                d3_SetObjectRot((void *)U_I((unsigned)&sv_CameraObj), (void *)(U_I((unsigned)&sv_CameraObj) + 0x90));
                 /* ROUGH: the device callback (0x5fb5b0 + 0x3c8 -> +0x210) */
                 if (*(unsigned short *)(param_1 + 0x27) != U_W((unsigned)&ai_PlayerId)) {
                     v = gm_BuildingClass(*param_1);
                     if ((v == 1 || v == 8) &&
-                        d3_VecEqual((void *)(U_I((unsigned)&ai_Unkfc2dec) + 0x114), (float *)(unsigned)&ai_Unk5ebba4, 0x3dcccccd) == 0 &&
-                        d3_VecEqual((void *)(U_I((unsigned)&ai_Unkfc2dec) + 0x120), (float *)(unsigned)&ai_Unk5ebba4, 0x3dcccccd) == 0) {
-                        d3_SetObjectPos((void *)U_I((unsigned)&ai_Unkfc2dec), (void *)(U_I((unsigned)&ai_Unkfc2dec) + 0x114));
-                        d3_SetObjectRot((void *)U_I((unsigned)&ai_Unkfc2dec), (void *)(U_I((unsigned)&ai_Unkfc2dec) + 0x120));
+                        d3_VecEqual((void *)(U_I((unsigned)&sv_CameraObj) + 0x114), (float *)(unsigned)&ai_Unk5ebba4, 0x3dcccccd) == 0 &&
+                        d3_VecEqual((void *)(U_I((unsigned)&sv_CameraObj) + 0x120), (float *)(unsigned)&ai_Unk5ebba4, 0x3dcccccd) == 0) {
+                        d3_SetObjectPos((void *)U_I((unsigned)&sv_CameraObj), (void *)(U_I((unsigned)&sv_CameraObj) + 0x114));
+                        d3_SetObjectRot((void *)U_I((unsigned)&sv_CameraObj), (void *)(U_I((unsigned)&sv_CameraObj) + 0x120));
                     }
                 }
-                U_I((unsigned)&ai_Unk75fb80) = U_I(U_I((unsigned)&ai_Unkfc2dec) + 0x4c);
-                U_I((unsigned)&ai_Unk75fb84) = U_I(U_I((unsigned)&ai_Unkfc2dec) + 0x50);
-                U_I((unsigned)&ai_Unk75fb88) = U_I(U_I((unsigned)&ai_Unkfc2dec) + 0x54);
-                U_I((unsigned)&ai_Unk75fb90) = U_I(U_I((unsigned)&ai_Unkfc2dec) + 0x84);
-                U_I((unsigned)&ai_Unk75fb94) = U_I(U_I((unsigned)&ai_Unkfc2dec) + 0x88);
-                U_I((unsigned)&ai_Unk75fb98) = U_I(U_I((unsigned)&ai_Unkfc2dec) + 0x8c);
+                U_I((unsigned)&sv_ViewPosX) = U_I(U_I((unsigned)&sv_CameraObj) + 0x4c);
+                U_I((unsigned)&sv_ViewPosY) = U_I(U_I((unsigned)&sv_CameraObj) + 0x50);
+                U_I((unsigned)&sv_ViewPosZ) = U_I(U_I((unsigned)&sv_CameraObj) + 0x54);
+                U_I((unsigned)&sv_ViewRotX) = U_I(U_I((unsigned)&sv_CameraObj) + 0x84);
+                U_I((unsigned)&sv_ViewRotY) = U_I(U_I((unsigned)&sv_CameraObj) + 0x88);
+                U_I((unsigned)&sv_ViewRotZ) = U_I(U_I((unsigned)&sv_CameraObj) + 0x8c);
                 U_I((unsigned)&ai_Unk6f22cc) = 0;
                 U_I((unsigned)&ai_Unk6f22d0) = 0;
             }
@@ -8964,12 +8960,12 @@ void ai_Unk59e420(unsigned char *param_1, int param_2)
             U_I((unsigned)&ai_PlayerBuilding) = 0;
             U_I((unsigned)&sv_PanelShown) = 0;
             unk_Unk513740();
-            U_I((unsigned)&ai_Unk75fb80) = saved1;
-            U_I((unsigned)&ai_Unk75fb84) = saved2;
-            U_I((unsigned)&ai_Unk75fb88) = saved3;
-            U_I((unsigned)&ai_Unk75fb90) = saved4;
-            U_I((unsigned)&ai_Unk75fb94) = saved5;
-            U_I((unsigned)&ai_Unk75fb98) = saved6;
+            U_I((unsigned)&sv_ViewPosX) = saved1;
+            U_I((unsigned)&sv_ViewPosY) = saved2;
+            U_I((unsigned)&sv_ViewPosZ) = saved3;
+            U_I((unsigned)&sv_ViewRotX) = saved4;
+            U_I((unsigned)&sv_ViewRotY) = saved5;
+            U_I((unsigned)&sv_ViewRotZ) = saved6;
             sb_PlaySample(snd_RoomBank, "GebaeudeVerlassen_s", 1, 0x3f, 0x7f, 0, 0);
             return;
         }
@@ -9003,12 +8999,12 @@ void ai_Unk59ee40(unsigned char *param_1)
     U_I((unsigned)&full_data_6237c8) = 0;
     sv_Unk52adb0();
     sv_ClearSelection();
-    saved1 = U_I((unsigned)&ai_Unk75fb80);
-    saved2 = U_I((unsigned)&ai_Unk75fb84);
-    saved3 = U_I((unsigned)&ai_Unk75fb88);
-    saved4 = U_I((unsigned)&ai_Unk75fb90);
-    saved5 = U_I((unsigned)&ai_Unk75fb94);
-    saved6 = U_I((unsigned)&ai_Unk75fb98);
+    saved1 = U_I((unsigned)&sv_ViewPosX);
+    saved2 = U_I((unsigned)&sv_ViewPosY);
+    saved3 = U_I((unsigned)&sv_ViewPosZ);
+    saved4 = U_I((unsigned)&sv_ViewRotX);
+    saved5 = U_I((unsigned)&sv_ViewRotY);
+    saved6 = U_I((unsigned)&sv_ViewRotZ);
     kind = U_I((unsigned)&d3_CurrentScene);
     strcpy((char *)(unsigned)&ch_StepSample, "normal_s");
     idx = init_BuildingSceneUniverse(param_1);
@@ -9042,33 +9038,33 @@ void ai_Unk59ee40(unsigned char *param_1)
         init_FinishBuildingScene(U_I((unsigned)&ai_FallbackBuilding), room);
         /* ROUGH: the device callback (0x5fb5b0 + 0x3c8 -> +0x210) */
         if (*(unsigned short *)(param_1 + 0x27) == U_W((unsigned)&ai_PlayerId)) {
-            d3_SetObjectPos((void *)U_I((unsigned)&ai_Unkfc2dec), (void *)(U_I((unsigned)&ai_Unkfc2dec) + 0x5c));
-            d3_SetObjectRot((void *)U_I((unsigned)&ai_Unkfc2dec), (void *)(U_I((unsigned)&ai_Unkfc2dec) + 0x90));
+            d3_SetObjectPos((void *)U_I((unsigned)&sv_CameraObj), (void *)(U_I((unsigned)&sv_CameraObj) + 0x5c));
+            d3_SetObjectRot((void *)U_I((unsigned)&sv_CameraObj), (void *)(U_I((unsigned)&sv_CameraObj) + 0x90));
         } else {
             kind = gm_BuildingClass(*param_1);
             if (kind == 2) {
-                if (d3_VecEqual((void *)(U_I((unsigned)&ai_Unkfc2dec) + 0x114), (float *)(unsigned)&ai_Unk5ebba4, 0x3dcccccd) == 0 &&
-                    d3_VecEqual((void *)(U_I((unsigned)&ai_Unkfc2dec) + 0x120), (float *)(unsigned)&ai_Unk5ebba4, 0x3dcccccd) == 0) {
-                    d3_SetObjectPos((void *)U_I((unsigned)&ai_Unkfc2dec), (void *)(U_I((unsigned)&ai_Unkfc2dec) + 0x114));
-                    d3_SetObjectRot((void *)U_I((unsigned)&ai_Unkfc2dec), (void *)(U_I((unsigned)&ai_Unkfc2dec) + 0x120));
+                if (d3_VecEqual((void *)(U_I((unsigned)&sv_CameraObj) + 0x114), (float *)(unsigned)&ai_Unk5ebba4, 0x3dcccccd) == 0 &&
+                    d3_VecEqual((void *)(U_I((unsigned)&sv_CameraObj) + 0x120), (float *)(unsigned)&ai_Unk5ebba4, 0x3dcccccd) == 0) {
+                    d3_SetObjectPos((void *)U_I((unsigned)&sv_CameraObj), (void *)(U_I((unsigned)&sv_CameraObj) + 0x114));
+                    d3_SetObjectRot((void *)U_I((unsigned)&sv_CameraObj), (void *)(U_I((unsigned)&sv_CameraObj) + 0x120));
                 }
             } else if (*(char *)(U_I((unsigned)&ai_BTypes) + *param_1 * 0x24d) == 0x1c) {
-                d3_SetObjectPos((void *)U_I((unsigned)&ai_Unkfc2dec), (void *)(U_I((unsigned)&ai_Unkfc2dec) + 0x5c));
-                d3_SetObjectRot((void *)U_I((unsigned)&ai_Unkfc2dec), (void *)(U_I((unsigned)&ai_Unkfc2dec) + 0x90));
+                d3_SetObjectPos((void *)U_I((unsigned)&sv_CameraObj), (void *)(U_I((unsigned)&sv_CameraObj) + 0x5c));
+                d3_SetObjectRot((void *)U_I((unsigned)&sv_CameraObj), (void *)(U_I((unsigned)&sv_CameraObj) + 0x90));
             } else {
-                if (d3_VecEqual((void *)(U_I((unsigned)&ai_Unkfc2dec) + 0x114), (float *)(unsigned)&ai_Unk5ebba4, 0x3dcccccd) == 0 &&
-                    d3_VecEqual((void *)(U_I((unsigned)&ai_Unkfc2dec) + 0x120), (float *)(unsigned)&ai_Unk5ebba4, 0x3dcccccd) == 0) {
-                    d3_SetObjectPos((void *)U_I((unsigned)&ai_Unkfc2dec), (void *)(U_I((unsigned)&ai_Unkfc2dec) + 0x114));
-                    d3_SetObjectRot((void *)U_I((unsigned)&ai_Unkfc2dec), (void *)(U_I((unsigned)&ai_Unkfc2dec) + 0x120));
+                if (d3_VecEqual((void *)(U_I((unsigned)&sv_CameraObj) + 0x114), (float *)(unsigned)&ai_Unk5ebba4, 0x3dcccccd) == 0 &&
+                    d3_VecEqual((void *)(U_I((unsigned)&sv_CameraObj) + 0x120), (float *)(unsigned)&ai_Unk5ebba4, 0x3dcccccd) == 0) {
+                    d3_SetObjectPos((void *)U_I((unsigned)&sv_CameraObj), (void *)(U_I((unsigned)&sv_CameraObj) + 0x114));
+                    d3_SetObjectRot((void *)U_I((unsigned)&sv_CameraObj), (void *)(U_I((unsigned)&sv_CameraObj) + 0x120));
                 }
             }
         }
-        U_I((unsigned)&ai_Unk75fb80) = U_I(U_I((unsigned)&ai_Unkfc2dec) + 0x4c);
-        U_I((unsigned)&ai_Unk75fb84) = U_I(U_I((unsigned)&ai_Unkfc2dec) + 0x50);
-        U_I((unsigned)&ai_Unk75fb88) = U_I(U_I((unsigned)&ai_Unkfc2dec) + 0x54);
-        U_I((unsigned)&ai_Unk75fb90) = U_I(U_I((unsigned)&ai_Unkfc2dec) + 0x84);
-        U_I((unsigned)&ai_Unk75fb94) = U_I(U_I((unsigned)&ai_Unkfc2dec) + 0x88);
-        U_I((unsigned)&ai_Unk75fb98) = U_I(U_I((unsigned)&ai_Unkfc2dec) + 0x8c);
+        U_I((unsigned)&sv_ViewPosX) = U_I(U_I((unsigned)&sv_CameraObj) + 0x4c);
+        U_I((unsigned)&sv_ViewPosY) = U_I(U_I((unsigned)&sv_CameraObj) + 0x50);
+        U_I((unsigned)&sv_ViewPosZ) = U_I(U_I((unsigned)&sv_CameraObj) + 0x54);
+        U_I((unsigned)&sv_ViewRotX) = U_I(U_I((unsigned)&sv_CameraObj) + 0x84);
+        U_I((unsigned)&sv_ViewRotY) = U_I(U_I((unsigned)&sv_CameraObj) + 0x88);
+        U_I((unsigned)&sv_ViewRotZ) = U_I(U_I((unsigned)&sv_CameraObj) + 0x8c);
         U_I((unsigned)&ai_Unk6f22cc) = 0;
         U_I((unsigned)&ai_Unk6f22d0) = 0;
     }
@@ -9124,12 +9120,12 @@ void ai_Unk59ee40(unsigned char *param_1)
     U_I((unsigned)&ch_CurrentGroup) = 0xffffffff;
     U_I((unsigned)&ch_CurrentScriptGroup) = 0xffffffff;
     unk_Unk513740();
-    U_I((unsigned)&ai_Unk75fb80) = saved1;
-    U_I((unsigned)&ai_Unk75fb84) = saved2;
-    U_I((unsigned)&ai_Unk75fb88) = saved3;
-    U_I((unsigned)&ai_Unk75fb90) = saved4;
-    U_I((unsigned)&ai_Unk75fb94) = saved5;
-    U_I((unsigned)&ai_Unk75fb98) = saved6;
+    U_I((unsigned)&sv_ViewPosX) = saved1;
+    U_I((unsigned)&sv_ViewPosY) = saved2;
+    U_I((unsigned)&sv_ViewPosZ) = saved3;
+    U_I((unsigned)&sv_ViewRotX) = saved4;
+    U_I((unsigned)&sv_ViewRotY) = saved5;
+    U_I((unsigned)&sv_ViewRotZ) = saved6;
 }
 /* 0x59f410, the room switch of the other buildings (1424 B, ROUGH): the room 0x76faa0 (the index word) and its
    callback : the room record 0x6f2310 = param_1, 0x5f8430 / 0x5f1298 = param_1 + 1, 0x6f22a4 = 0x6f229c + 1,
@@ -9146,12 +9142,12 @@ void ai_Unk59f410(unsigned short *param_1)
     int kind;
     int saved1, saved2, saved3, saved4, saved5, saved6;
 
-    saved1 = U_I((unsigned)&ai_Unk75fb80);
-    saved2 = U_I((unsigned)&ai_Unk75fb84);
-    saved3 = U_I((unsigned)&ai_Unk75fb88);
-    saved4 = U_I((unsigned)&ai_Unk75fb90);
-    saved5 = U_I((unsigned)&ai_Unk75fb94);
-    saved6 = U_I((unsigned)&ai_Unk75fb98);
+    saved1 = U_I((unsigned)&sv_ViewPosX);
+    saved2 = U_I((unsigned)&sv_ViewPosY);
+    saved3 = U_I((unsigned)&sv_ViewPosZ);
+    saved4 = U_I((unsigned)&sv_ViewRotX);
+    saved5 = U_I((unsigned)&sv_ViewRotY);
+    saved6 = U_I((unsigned)&sv_ViewRotZ);
     kind = U_I((unsigned)&d3_CurrentScene);
     U_I((unsigned)&sv_PanelShown) = (int)param_1;
     U_I((unsigned)&evt_NoGroup) = U_I(param_1 + 1);
@@ -9176,14 +9172,14 @@ void ai_Unk59f410(unsigned short *param_1)
         init_FinishBuildingScene(U_I((unsigned)&ai_FallbackBuilding), param_1);
         /* ROUGH: the device callback (0x5fb5b0 + 0x3c8 -> +0x210) */
         idx = U_I((unsigned)&ai_Unk5f8438);
-        d3_SetObjectPos((void *)U_I((unsigned)&ai_Unkfc2dec), (void *)(U_I((unsigned)&ai_Unkfc2dec) + 0x5c));
-        d3_SetObjectRot((void *)U_I((unsigned)&ai_Unkfc2dec), (void *)(U_I((unsigned)&ai_Unkfc2dec) + 0x90));
-        U_I((unsigned)&ai_Unk75fb80) = U_I(U_I((unsigned)&ai_Unkfc2dec) + 0x4c);
-        U_I((unsigned)&ai_Unk75fb84) = U_I(U_I((unsigned)&ai_Unkfc2dec) + 0x50);
-        U_I((unsigned)&ai_Unk75fb88) = U_I(U_I((unsigned)&ai_Unkfc2dec) + 0x54);
-        U_I((unsigned)&ai_Unk75fb90) = U_I(U_I((unsigned)&ai_Unkfc2dec) + 0x84);
-        U_I((unsigned)&ai_Unk75fb94) = U_I(U_I((unsigned)&ai_Unkfc2dec) + 0x88);
-        U_I((unsigned)&ai_Unk75fb98) = U_I(U_I((unsigned)&ai_Unkfc2dec) + 0x8c);
+        d3_SetObjectPos((void *)U_I((unsigned)&sv_CameraObj), (void *)(U_I((unsigned)&sv_CameraObj) + 0x5c));
+        d3_SetObjectRot((void *)U_I((unsigned)&sv_CameraObj), (void *)(U_I((unsigned)&sv_CameraObj) + 0x90));
+        U_I((unsigned)&sv_ViewPosX) = U_I(U_I((unsigned)&sv_CameraObj) + 0x4c);
+        U_I((unsigned)&sv_ViewPosY) = U_I(U_I((unsigned)&sv_CameraObj) + 0x50);
+        U_I((unsigned)&sv_ViewPosZ) = U_I(U_I((unsigned)&sv_CameraObj) + 0x54);
+        U_I((unsigned)&sv_ViewRotX) = U_I(U_I((unsigned)&sv_CameraObj) + 0x84);
+        U_I((unsigned)&sv_ViewRotY) = U_I(U_I((unsigned)&sv_CameraObj) + 0x88);
+        U_I((unsigned)&sv_ViewRotZ) = U_I(U_I((unsigned)&sv_CameraObj) + 0x8c);
         U_I((unsigned)&ai_Unk6f22cc) = 0;
         U_I((unsigned)&ai_Unk6f22d0) = 0;
     }
@@ -9221,13 +9217,13 @@ void ai_Unk59f410(unsigned short *param_1)
     U_I((unsigned)&ch_CurrentScriptGroup) = U_I(room + 1);
     U_I((unsigned)&sv_FrameBase) = U_I((unsigned)&sv_FrameDepth);
     U_I((unsigned)&ai_Unk6f22d0) = (int)param_1;
-    U_I((unsigned)&ai_Unk75fb80) = saved1;
-    U_I((unsigned)&ai_Unk75fb84) = saved2;
-    U_I((unsigned)&ai_Unk75fb88) = saved3;
+    U_I((unsigned)&sv_ViewPosX) = saved1;
+    U_I((unsigned)&sv_ViewPosY) = saved2;
+    U_I((unsigned)&sv_ViewPosZ) = saved3;
     U_I((unsigned)&ai_Unk6f22cc) = idx;
-    U_I((unsigned)&ai_Unk75fb90) = saved4;
-    U_I((unsigned)&ai_Unk75fb94) = saved5;
-    U_I((unsigned)&ai_Unk75fb98) = saved6;
+    U_I((unsigned)&sv_ViewRotX) = saved4;
+    U_I((unsigned)&sv_ViewRotY) = saved5;
+    U_I((unsigned)&sv_ViewRotZ) = saved6;
 }
 /* 0x59f9a0, the Rathaus guild hall window "locations\Rathaus\Rathaus_Geb_Info" (592 B): the window 0x4741f0,
    the text 0x17f6, the buttons 0x5e56c4 counts; on rebuild 0x501190 (1, 6) walks the citizens with the byte
@@ -13167,7 +13163,7 @@ void ai_Unk5a6cb0(int *m_)
             obj = (char *)*(int *)(obj + 0x61);
     }
     if (obj == 0)
-        obj = (char *)*(int *)((unsigned)&ai_Unkfc2dec);
+        obj = (char *)*(int *)((unsigned)&sv_CameraObj);
     if (obj == 0)
         return;
     d3_PointToWorld((int)obj, (int)(obj + 0x4c), pos);

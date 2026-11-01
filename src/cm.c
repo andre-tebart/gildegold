@@ -4608,7 +4608,7 @@ int ai_Unk4cac40(G17MSG *m, G17STAT *s)
             if (*(int *)(o + 0x1cc) == 0)
                 d3_InflateObject(o);
             if (*(int *)(o + 0x1ec) != 0) {
-                if (d3t_GetBoundingSphere(o, ai_Unkfc2dec, &y, &e) != 0) {
+                if (d3t_GetBoundingSphere(o, sv_CameraObj, &y, &e) != 0) {
                     ebx = (int)(y * ai_Unk5edc28);
                     sp = (char *)evt_Load("Effekte/geb_upgrade.esc");
                     if (sp != 0) {
@@ -7203,7 +7203,7 @@ next:
     ai_Unk4cee20();
 }
 /* 0x4cf370, draws the scroll arrows (sprite ids 0 .. 7 of the sheet d2_GetPic(0x52c)): the mouse hit tests against
-   the boxes at ai_Unkfc2dec + 0xb4 / 0xcc / 0xe4 / 0xfc pick the pressed (2) or the free (1) look. Rough draft. */
+   the boxes at sv_CameraObj + 0xb4 / 0xcc / 0xe4 / 0xfc pick the pressed (2) or the free (1) look. Rough draft. */
 
 void ai_Unk4cf370()
 {
@@ -7213,30 +7213,30 @@ void ai_Unk4cf370()
     t = d2_GetPic(0x52c);
     if (ai_Unk6f22cc == -1) {
         up = 1;
-        if (d3_VecEqual((float *)(ai_Unkfc2dec + 0xfc), ai_Unk5ebba4, 0.2f) == 0)
+        if (d3_VecEqual((float *)(sv_CameraObj + 0xfc), ai_Unk5ebba4, 0.2f) == 0)
             up = 2;
     } else if (ai_Unk6f22cc == 1) {
         e = 1;
-        if (d3_VecEqual((float *)(ai_Unkfc2dec + 0xe4), ai_Unk5ebba4, 0.2f) == 0)
+        if (d3_VecEqual((float *)(sv_CameraObj + 0xe4), ai_Unk5ebba4, 0.2f) == 0)
             e = 2;
     } else if (ai_Unk6f22cc == 0) {
-        if (d3_VecEqual((float *)(ai_Unkfc2dec + 0xe4), ai_Unk5ebba4, 0.2f) == 0)
+        if (d3_VecEqual((float *)(sv_CameraObj + 0xe4), ai_Unk5ebba4, 0.2f) == 0)
             e = 1;
-        if (d3_VecEqual((float *)(ai_Unkfc2dec + 0xfc), ai_Unk5ebba4, 0.2f) == 0)
+        if (d3_VecEqual((float *)(sv_CameraObj + 0xfc), ai_Unk5ebba4, 0.2f) == 0)
             up = 1;
     }
     if (ai_Unk6f22d0 == -1) {
         a = 1;
-        if (d3_VecEqual((float *)(ai_Unkfc2dec + 0xb4), ai_Unk5ebba4, 0.2f) == 0)
+        if (d3_VecEqual((float *)(sv_CameraObj + 0xb4), ai_Unk5ebba4, 0.2f) == 0)
             a = 2;
     } else if (ai_Unk6f22d0 == 1) {
         b = 1;
-        if (d3_VecEqual((float *)(ai_Unkfc2dec + 0xcc), ai_Unk5ebba4, 0.2f) == 0)
+        if (d3_VecEqual((float *)(sv_CameraObj + 0xcc), ai_Unk5ebba4, 0.2f) == 0)
             b = 2;
     } else if (ai_Unk6f22d0 == 0) {
-        if (d3_VecEqual((float *)(ai_Unkfc2dec + 0xb4), ai_Unk5ebba4, 0.2f) == 0)
+        if (d3_VecEqual((float *)(sv_CameraObj + 0xb4), ai_Unk5ebba4, 0.2f) == 0)
             a = 1;
-        if (d3_VecEqual((float *)(ai_Unkfc2dec + 0xcc), ai_Unk5ebba4, 0.2f) == 0)
+        if (d3_VecEqual((float *)(sv_CameraObj + 0xcc), ai_Unk5ebba4, 0.2f) == 0)
             b = 1;
     }
     d2_SetClipRect(0, 0, *(int *)((char *)d2_ScreenSurf + 4), *(int *)((char *)d2_ScreenSurf + 8));
@@ -13735,9 +13735,9 @@ int ai_Unk4e30c0(void)
         d3sm_Destroy(*(int *)(t + 0xb0));
         *(int *)((char *)ai_Unk5fb5b0 + 0xb0) = 0;
     }
-    d3anim_FreePath(ai_Unkfc2dec);
+    d3anim_FreePath(sv_CameraObj);
     d3t_CamMoveI = 0;
-    ai_Unk6310e4 = 0;
+    d3t_CamMoving = 0;
     d3if_Reset();
     ai_Unk6f0d9c--;
 }
@@ -14217,12 +14217,12 @@ void ai_Unk4e4060(char *m)
         ai_Unk6f0da0 = (char *)d2_StartFade(0, 0, (short)d2_ScreenW, (short)d2_ScreenH, "BLACK", 0x5a, 1);
         while ((*ai_Unk6f0da0 & 4) == 0)
             sv_RunFrame(0, fl);
-        sv_sky[0] = ai_Unk75fb80;
-        sv_sky[1] = ai_Unk75fb84;
-        sv_sky[2] = ai_Unk75fb88;
-        sv_sky[3] = ai_Unk75fb90;
-        sv_sky[4] = ai_Unk75fb94;
-        sv_sky[5] = ai_Unk75fb98;
+        sv_sky[0] = sv_ViewPosX;
+        sv_sky[1] = sv_ViewPosY;
+        sv_sky[2] = sv_ViewPosZ;
+        sv_sky[3] = sv_ViewRotX;
+        sv_sky[4] = sv_ViewRotY;
+        sv_sky[5] = sv_ViewRotZ;
         if (ai_GameFlags & 8)
             ai_Unk4e3fe0();
         tb_OpenFunction(0x46, ai_Unk4e3210);
