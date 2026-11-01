@@ -6009,10 +6009,6 @@ GAPDATA full_data_75e401[127] = { 0 };  /* 0x75e401 */
 int main_PlatformNT = 0;  /* 0x75e62c, the OS is NT based (dwPlatformId != VER_PLATFORM_WIN32_WINDOWS) */
 GAPDATA full_data_75e630[16] = { 0 };  /* 0x75e630 */
 GAPDATA full_data_75ec40[28] = { 0 };  /* 0x75ec40 */
-GAPDATA full_data_75ec80[4] = { 0 };  /* 0x75ec80 */
-GAPDATA full_data_75ec84[20] = { 0 };  /* 0x75ec84 */
-GAPDATA full_data_75ec98[4] = { 0 };  /* 0x75ec98 */
-GAPDATA full_data_75ec9c[1508] = { 0 };  /* 0x75ec9c */
 GAPDATA full_data_760444[4] = { 0 };  /* 0x760444 */
 GAPDATA full_data_760448[4] = { 0 };  /* 0x760448 */
 GAPDATA full_data_76044c[4] = { 0 };  /* 0x76044c */

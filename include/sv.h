@@ -19,6 +19,16 @@ typedef struct SVDAYPHASE {             /* 10 bytes, a phase of the day in sv_Da
     char pad6[4];                       /* +6, 0 (the last phase's are the first sky key's colour) */
 } SVDAYPHASE;
 #pragma pack(pop)
+typedef struct SVACTIVITY {             /* 0x20 bytes, an activity of sv_Activities (sv_RegisterActivity; the he.c scripts
+                                           register one per character job kind) */
+    int kind;                           /* +0x00, the AICHAR.jobKind it is for; 0 = a free entry */
+    char name[0x10];                    /* +0x04, its location name ("Getier", "Trainieren"), "" for none: the script
+                                           objects whose name holds it belong to it (sv_Unk52b500) */
+    int dayOnly;                        /* +0x14, nonzero: only inside the day window of the season (sv_Unk52b3c0) */
+    int icon;                           /* +0x18, its state icon (sv_CharStateIcons) */
+    int valueOff;                       /* +0x1c, -1 or the offset of a short in the character's +0x17c record whose
+                                           value + 0xdf is a second icon (sv_CharStateIcons) */
+} SVACTIVITY;
 
 void sv_UpdateFramesPerTick(void);                                      /* 0x520ec0 */
 void sv_InitTick(void);                                                 /* 0x520ee0 */
@@ -312,6 +322,7 @@ extern char sv_PanelText[76];                               /* 0x75e8d4 */
 extern int sv_SelectionFlags[0xc0];                         /* 0x75e920 */
 extern int sv_SkyScene;                                    /* 0x75ec20 */
 extern unsigned short * sv_SelectedItem;                       /* 0x75ec5c */
+extern SVACTIVITY sv_Activities[0x30];                          /* 0x75ec80 */
 extern int ai_Unk75f280[576];                               /* 0x75f280 */
 extern float sv_ViewPos[4];                                 /* 0x75fb80, the stored camera position (X/Y/Z views: data_views.h) */
 extern float sv_ViewRot[4];                                 /* 0x75fb90, its rotation */

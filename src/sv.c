@@ -54,8 +54,6 @@ extern GAPDATA full_data_623e84[];
 extern GAPDATA full_data_6f2354[];
 extern void *d2_ScreenSurf;  /* 0x6ed924 */
 extern void *d2_ScreenSurf;  /* 0x6ed924 */
-extern GAPDATA full_data_75ec98[];
-extern GAPDATA full_data_75ec9c[];
 extern char sv_SkyHeavy[];
 extern const char ai_AxisPair[];
 
@@ -78,8 +76,6 @@ extern GAPDATA full_data_6f22dc[];
 extern GAPDATA full_data_6f2364[];
 extern GAPDATA full_data_6faa60[];
 extern void *d2_ScreenSurf;  /* 0x6ed924 */
-extern GAPDATA full_data_75ec80[];
-extern GAPDATA full_data_75ec84[];
 extern unsigned char ai_TimeHour;
 
 extern char * ai_PickedObject;
@@ -97,7 +93,6 @@ extern int d2_HitUnderPointer;
 extern unsigned char ai_TimeHour;
 extern int ai_SceneChars[32];
 extern GAPDATA full_data_6237c8[];
-extern GAPDATA full_data_75ec84[];
 extern int gm_PlayerRecords[688];
 extern int hst_KeyNext;
 
@@ -1771,12 +1766,12 @@ int sv_CharStateIcons(char *c, int *out)
     n = 0;
     if (r != 0 && *r != 0) {
         i = 0;
-        p = (int *)(unsigned)&full_data_75ec98;
-        for (; (int)p < (int)((unsigned)&full_data_75ec98 + 0x600); p += 8, i++) {
+        p = (int *)(unsigned)&sv_Activities[0].icon;
+        for (; (int)p < (int)((unsigned)&sv_Activities[0].icon + 0x600); p += 8, i++) {
             if (p[-6] == *r) {
                 out[n++] = *p;
                 if (p[1] != -1) {
-                    out[n++] = *(unsigned short *)(r + ((int *)(unsigned)&full_data_75ec9c)[i * 8]) + 0xdf;
+                    out[n++] = *(unsigned short *)(r + ((int *)(unsigned)&sv_Activities[0].valueOff)[i * 8]) + 0xdf;
                     break;
                 }
             }
@@ -4361,20 +4356,20 @@ int sv_Unk52b350(int a, char *name, int c, int d, int e)
     int *p;
 
     i = 0;
-    p = (int *)(unsigned)&full_data_75ec80;
+    p = (int *)(unsigned)&sv_Activities;
     do {
         if (*p == 0) {
             if (name != 0)
-                strcpy((char *)((unsigned)&full_data_75ec84 + i * 0x20), name);
-            ((int *)(unsigned)&full_data_75ec80)[i * 8] = a;
-            ((int *)(unsigned)&full_data_75ec80)[i * 8 + 5] = c;
-            ((int *)(unsigned)&full_data_75ec80)[i * 8 + 6] = d;
-            ((int *)(unsigned)&full_data_75ec80)[i * 8 + 7] = e;
+                strcpy((char *)((unsigned)&sv_Activities[0].name + i * 0x20), name);
+            ((int *)(unsigned)&sv_Activities)[i * 8] = a;
+            ((int *)(unsigned)&sv_Activities)[i * 8 + 5] = c;
+            ((int *)(unsigned)&sv_Activities)[i * 8 + 6] = d;
+            ((int *)(unsigned)&sv_Activities)[i * 8 + 7] = e;
             return 1;
         }
         p += 8;
         i++;
-    } while ((int)p < (unsigned)((unsigned)full_data_75ec80 + 0x600));
+    } while ((int)p < (unsigned)((unsigned)sv_Activities + 0x600));
     return 0;
 }
 /* 0x52b3c0, finds the 0x75ec80 record of the character kind +0x180 of c (when c is not flagged 0x1000000, +0x16c == b, and the record is not time-limited or the day time (0x770ae4)
@@ -4387,9 +4382,9 @@ int sv_Unk52b3c0(char *c, int b, char *out)
 
     h = gm_ClockSeason((unsigned)&ai_Time);
     i = 0;
-    if (SV_I((unsigned)&full_data_75ec80) != 0) {
-        p = (unsigned *)(unsigned)&full_data_75ec80;
-        u = SV_U((unsigned)&full_data_75ec80);
+    if (SV_I((unsigned)&sv_Activities) != 0) {
+        p = (unsigned *)(unsigned)&sv_Activities;
+        u = SV_U((unsigned)&sv_Activities);
         while (u != *(unsigned char *)(c + 0x180)) {
             u = p[8];
             p += 8;
@@ -4398,9 +4393,9 @@ int sv_Unk52b3c0(char *c, int b, char *out)
                 return 0;
         }
         if ((*(unsigned *)(c + 0x1cc) & ((unsigned)&txt_Keys + 0x181c0)) == 0 && *(int *)(c + 0x16c) == b
-            && (((int *)(unsigned)&full_data_75ec80)[i * 8 + 5] == 0
+            && (((int *)(unsigned)&sv_Activities)[i * 8 + 5] == 0
                 || ((float)SV_US((unsigned)&ai_TimeHour) < *(float *)((unsigned)&gm_DayEndHours + h * 4) && *(float *)((unsigned)&gm_DayStartHours + h * 4) <= (float)SV_US((unsigned)&ai_TimeHour)))) {
-            strcpy(out, (char *)((unsigned)&full_data_75ec84 + i * 0x20));
+            strcpy(out, (char *)((unsigned)&sv_Activities[0].name + i * 0x20));
             return 1;
         }
     }
@@ -5005,14 +5000,14 @@ lsecond:
                 ok = 0;
                 o4 = (char *)evt_FindById(v);
                 if (o4 != 0) {
-                    w = (char *)(unsigned)&full_data_75ec84;
+                    w = (char *)(unsigned)&sv_Activities[0].name;
                     do {
                         if (ok)
                             goto lfree;
                         if (*(int *)(w - 4) != 0 && *w != 0 && strstr(o4, w) != 0)
                             ok = 1;
                         w += 0x20;
-                    } while ((int)w < ((unsigned)((unsigned)full_data_75ec84 + 0x5fc) + 0x4));
+                    } while ((int)w < ((unsigned)((unsigned)sv_Activities[0].name + 0x5fc) + 0x4));
                     if (ok)
 lfree:
                         evt_Stop((EVTSCRIPT *)o4);
@@ -7878,6 +7873,7 @@ char sv_PanelText[76] = {0};  /* 0x75e8d4, the panel text */
 int sv_SelectionFlags[0xc0] = {0};  /* 0x75e920, the mirror of the character selection flags (byte i per character) */
 int sv_SkyScene = 0;  /* 0x75ec20 */
 unsigned short * sv_SelectedItem = 0;  /* 0x75ec5c */
+SVACTIVITY sv_Activities[0x30] = {0};  /* 0x75ec80, the character activities the he.c scripts register (sv_RegisterActivity) */
 int ai_Unk75f280[576] = {0};  /* 0x75f280, the member panel: */
 float sv_ViewPos[4] = {0};  /* 0x75fb80, the stored camera position (a padded vector): set by the camera moves, restored when the player leaves a building */
 float sv_ViewRot[4] = {0};  /* 0x75fb90, its rotation (D3OBJECT.rotation) */
