@@ -3722,7 +3722,7 @@ void init_AfterTownLoad(void)
         d3_FogByDistance = 1;
         evt_NoGroup = 0;
         d3o_FogScale = 1.0f - (float)(ai_GfxFog.word & 0xff) * 0.01f;
-        sv_Unk525ad0(ai_Time);
+        sv_UpdateSkyPhase(ai_Time);
         if (ai_Unk6339db != 0) {
             d3if_Prerender(0);
             return;

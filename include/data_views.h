@@ -23,8 +23,8 @@
 #define ai_Unk7e3f84             (*(int *)((char *)&ai_PlayerSlots + 0x44))  /* 0x7e3f84 */
 #define ai_Unk7e3f94             (*(char (*)[100])((char *)&ai_PlayerSlots + 0x54))  /* 0x7e3f94 */
 #define ai_Unk7e3ff8             (*(char (*)[80])((char *)&ai_PlayerSlots + 0xb8))  /* 0x7e3ff8 */
-#define ai_Unk7e4048             (*(int (*)[4])((char *)&ai_PlayerSlots + 0x108))  /* 0x7e4048 */
-#define ai_Unk7e4058             (*(int (*)[117])((char *)&ai_PlayerSlots + 0x118))  /* 0x7e4058 */
+#define ai_SeasonCloudChance             (*(int (*)[4])((char *)&ai_PlayerSlots + 0x108))  /* 0x7e4048 */
+#define ai_SeasonClimate             (*(int (*)[117])((char *)&ai_PlayerSlots + 0x118))  /* 0x7e4058 */
 #define ai_Unk7e422c             (*(char (*)[72])((char *)&ai_PlayerSlots + 0x2ec))  /* 0x7e422c */
 #define ai_Unk7e4274             (*(AIREC2F4 (*)[3])((char *)&ai_PlayerSlots + 0x334))  /* 0x7e4274 */
 #define init_SlotCurrency        (*(short (*)[0x46e])((char *)&ai_PlayerSlots + 0x348))  /* 0x7e4288 */

@@ -3475,7 +3475,7 @@ int ai_Unk4c89b0(G17MSG *m, G17STAT *s)
         t[3] = 0;
         t4 = 0;
         util_Seed(G17_I(msg, 5));
-        sv_Unk525510(t, 1);
+        sv_SetupWeather(t, 1);
         break;
     case 2:
         ai_Unkf31144 = 1;
@@ -8343,7 +8343,7 @@ void ai_Unk4d1e00()
     }
     sv_FrameMask = 0x7d6c6;
     sv_Unk5301a0();
-    sv_Unk525ad0(ai_Time);
+    sv_UpdateSkyPhase(ai_Time);
     s = (char *)evt_Load("cutscenes\\kampf\\Kampf_Intro_Fluege.esc");
     if (s != 0) {
         evt_RunScript((EVTSCRIPT *)s);
@@ -10139,7 +10139,7 @@ void ai_Unk4d63e0(char *a)
         if (ai_Unk6f244c != 0)
             d3_SetLightSet(2, 0, 0x3f800000, 1);
         else
-            sv_Unk525ad0(ai_Time);
+            sv_UpdateSkyPhase(ai_Time);
         ai_Unk6f0cf4 = 0;
         ai_Unk6f0cf8 = 0;
         ai_Unk6f0cfc = 0;
@@ -12620,11 +12620,11 @@ void ai_Unk4e01e0(char *m)
     d3_SetLightSet(0, 0, 0x3f800000, 1);
     d3_SetFogSet(0, 0, 0);
     if (w == 1)
-        ai_Unk4e32f0(ai_Unk623ac0 + ai_Unk4e52f0(3) * 0x4c);
+        ai_Unk4e32f0(sv_SkyHeavy + ai_Unk4e52f0(3) * 0x4c);
     else if (w == 2)
-        ai_Unk4e32f0(ai_Unk623ac0 - 0xe8 + ai_Unk4e52f0(3) * 0x4c);
+        ai_Unk4e32f0(sv_SkyHeavy - 0xe8 + ai_Unk4e52f0(3) * 0x4c);
     else
-        ai_Unk4e32f0(ai_Unk623ac0 - 0x218 + ai_Unk4e52f0(4) * 0x4c);
+        ai_Unk4e32f0(sv_SkyHeavy - 0x218 + ai_Unk4e52f0(4) * 0x4c);
     ai_Unk4e3620("cd2\\ArmerDelinquent.mp3");
     if (w == 1)
         ai_Unk4e33d0(0x1f4);
@@ -15092,7 +15092,7 @@ char ai_Unk60dd68 = 49;  /* 0x60dd68 */
    digest, arguments in call order but mostly 0), not the arguments of 0x4f2720 / 0x4f3580 / 0x4f3b40 and the mood floats (0x3fb33333 ..) */
 char ai_Unk60de4c = 50;  /* 0x60de4c, scene slots of the trial */
 char ai_Unk60eae0[10][24] = { "DUMMY_NPC", "MEISTER_NPC", "POLITICIAN_NPC", "AI_NPC", "NPC", "PLAYER", "REMOTE_PLAYER", "RELATIVE_PLAYER", "USED_PLAYER", "INVISIBLE_NPC" };  /* 0x60eae0, the names of the NPC kinds */
-char ai_Unk623ac0[] = { 115, 107, 121, 95, 115, 99, 104, 119, 101, 114, 95, 48, 49, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 64, 64, -51, -52, 76, 63, 0, 0, -128, -66, 115, 107, 121, 95, 115, 99, 104, 119, 101, 114, 95, 48, 50, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 64, 64, -51, -52, 76, 63, 0, 0, -128, -66, 115, 107, 121, 95, 100, 117, 110, 107, 101, 108, 95, 48, 49, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 64, 64, -51, -52, 76, 63, 0, 0, -128, -66, 0, 0, 0, 0 };  /* 0x623ac0, 76-byte sky records: Sky_Schwer / Sky_Mittel / Sky_Schoen */
+char sv_SkyHeavy[] = { 115, 107, 121, 95, 115, 99, 104, 119, 101, 114, 95, 48, 49, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 64, 64, -51, -52, 76, 63, 0, 0, -128, -66, 115, 107, 121, 95, 115, 99, 104, 119, 101, 114, 95, 48, 50, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 64, 64, -51, -52, 76, 63, 0, 0, -128, -66, 115, 107, 121, 95, 100, 117, 110, 107, 101, 108, 95, 48, 49, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 64, 64, -51, -52, 76, 63, 0, 0, -128, -66, 0, 0, 0, 0 };  /* 0x623ac0, 76-byte sky records: Sky_Schwer / Sky_Mittel / Sky_Schoen */
 int ai_Unk624570 = 1;  /* 0x624570 */
 int ai_Unk624574 = 1;  /* 0x624574 */
 int ai_Unk624578 = 1;  /* 0x624578 */

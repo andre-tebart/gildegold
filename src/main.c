@@ -4846,7 +4846,7 @@ void main_GameLoop(int ctl)
     ai_ApplyOptions();
     d3_SetViewport((float)(U_I((unsigned)&sv_ViewRectRight) - U_I((unsigned)&sv_ViewRectLeft)), (float)(U_I((unsigned)&sv_ViewRectBottom) - U_I((unsigned)&sv_ViewRectTop)), (float)U_I((unsigned)&sv_ViewRectLeft), (float)U_I((unsigned)&sv_ViewRectTop),
                  *(float *)&U_I((unsigned)&d3_ZNear), *(float *)&U_I((unsigned)&d3_ZFar), *(float *)&U_I((unsigned)&d3_ScaleX), (int)*(short *)(unsigned)&d2_ScreenW, (int)*(short *)(unsigned)&d2_ScreenH);
-    if ((U_I((unsigned)&ai_GameFlags) & 2) != 0 && (sv_Unk525510((unsigned)&ai_TimeT, 0), U_I((unsigned)&full_data_76f990) != -1)) {
+    if ((U_I((unsigned)&ai_GameFlags) & 2) != 0 && (sv_SetupWeather((unsigned)&ai_TimeT, 0), U_I((unsigned)&full_data_76f990) != -1)) {
         p3 = (unsigned char *)gm_FindBuildingById(U_I((unsigned)&full_data_76f990));
         p4 = (unsigned short *)gm_FindObjectInst(U_I((unsigned)&full_data_76f994));
         U_I((unsigned)&ai_FrameWait) = 2;

@@ -50,11 +50,11 @@ void sv_OpenPlayerBar(int a, char k);                                   /* 0x525
 void sv_ClosePlayerBar(void);                                           /* 0x525440 */
 int sv_ClockSeason(void *t);                                            /* 0x525480 */
 char sv_SetSkyLightColors(struct D3OBJECT *o, void *ctx);                                           /* 0x525490 */
-void sv_Unk525510(int t, float flag);                                   /* 0x525510 */
+struct GCLOCK; void sv_SetupWeather(struct GCLOCK *t, int reroll);/* 0x525510 */
 void sv_UpdateSkyColors(void);                                          /* 0x525940 */
 void sv_FillDayPhases(int t);                                               /* 0x525a00 */
 char sv_Unk525a80(char *o, int f);                                      /* 0x525a80 */
-void sv_Unk525ad0(char *t);                                             /* 0x525ad0 */
+void sv_UpdateSkyPhase(char *t);                                             /* 0x525ad0 */
 void sv_PlaceCamera(float f);                                           /* 0x525dd0 */
 void sv_Unk525ee0(void);                                                /* 0x525ee0 */
 void sv_Unk525ff0(void);                                                /* 0x525ff0 */
@@ -246,7 +246,7 @@ extern char * ai_FallbackBuilding;                          /* 0x6f230c */
 extern unsigned short * sv_PanelShown;                      /* 0x6f2310 */
 extern int ai_Unk6f2334;                                    /* 0x6f2334 */
 extern int sv_ResearchClass;                                /* 0x6f233c */
-extern char ai_Unk6f2340;                                   /* 0x6f2340 */
+extern char sv_LampSwitches;                                   /* 0x6f2340 */
 extern char sv_MessageBoxOpen;                              /* 0x6f2350 */
 extern char sv_MessageBoxGreenOpen;                         /* 0x6f2351 */
 extern char sv_MessageBoxYesNoOpen;                         /* 0x6f2352 */
@@ -285,12 +285,12 @@ extern float sv_ViewPos[4];                                 /* 0x75fb80, the sto
 extern float sv_ViewRot[4];                                 /* 0x75fb90, its rotation */
 extern float ai_Unk760420;                                  /* 0x760420 */
 extern int ai_Unk760440;                                    /* 0x760440 */
-extern int ai_Unk760464;                                    /* 0x760464 */
-extern int ai_Unk760480;                                    /* 0x760480 */
-extern int ai_Unk760484;                                    /* 0x760484 */
+extern int sv_SkyPhase;                                    /* 0x760464 */
+extern int sv_CloudChance;                                    /* 0x760480 */
+extern int sv_SeasonClimate;                                    /* 0x760484 */
 extern SVWEATHER sv_Weather;                                /* 0x760488 */
 extern int sv_WinterWeather;                                    /* 0x760610 */
-extern int ai_Unk760614;                                    /* 0x760614 */
+extern int sv_WeatherHour;                                    /* 0x760614 */
 extern int d3t_Snow;                                    /* 0x76061c */
 extern int d3_SkyLayers[6];                                 /* 0x760620, the sky layer handles (sv creates 0 .. 2) */
 extern char sv_StatusText[128];                             /* 0x761f40 */

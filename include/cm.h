@@ -965,7 +965,7 @@ int ai_Unk4e0010(int scene);  /* 0x4e0010 */
 
 int ai_Unk4e0040(char *m);  /* 0x4e0040 */
 
-extern char ai_Unk623ac0[];  /* 0x623ac0, 76-byte sky records: Sky_Schwer / Sky_Mittel / Sky_Schoen */
+extern char sv_SkyHeavy[];  /* 0x623ac0, 76-byte sky records: Sky_Schwer / Sky_Mittel / Sky_Schoen */
 int ai_Unk4e32f0();  /* 0x4e32f0 */
 int ai_Unk4e33d0();  /* 0x4e33d0 */
 int ai_Unk4e33f0();  /* 0x4e33f0 */

@@ -3856,7 +3856,7 @@ float ai_GetDefaultEffectScale(void)
 
 #include <math.h>
 
-/* 0x5dbc30, builds the wind state of the weather (649 B; sv_Unk525510 calls it with the day phase, the game clock's first
+/* 0x5dbc30, builds the wind state of the weather (649 B; sv_SetupWeather calls it with the day phase, the game clock's first
    word and the two 24 entry wind rose tables sin / cos of the random wind directions): type (0 .. 3, else the default) is
    the day phase, id the clock word, from / to the sin and cos tables. The state record ai_EffectState gets the clock of
    its last update (year id, hour 6, minute 0; ai_UpdateWind advances from it), a copy of both tables, and the caller's two tables are negated in place (every
@@ -3865,7 +3865,7 @@ float ai_GetDefaultEffectScale(void)
    5 * 2 pi, 3 k 0.25 / 0.5 / 3 * pi, else 0.5 / 0.5 / 2 * 2 pi. At the end a random angle (0 .. 2 pi) is stored and the
    default effect ai_DefaultEffect gets the vector (the sin table entry 6, 0, the cos table entry 6) and the scale
    |sin(angle) * gust[6]| + base[6]. Void. Reasoned: the wind meaning follows from the caller (the wind rose tables
-   of sv_Unk525510) and the sin / cos copies; the arrays base / gust / phase are named from their formulas. */
+   of sv_SetupWeather) and the sin / cos copies; the arrays base / gust / phase are named from their formulas. */
 void ai_InitWind(int type, int id, float *from, float *to)
 {
     int i;

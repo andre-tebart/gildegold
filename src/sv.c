@@ -54,7 +54,7 @@ extern GAPDATA full_data_76631c[];
 extern void *d2_ScreenSurf;  /* 0x6ed924 */
 extern GAPDATA full_data_75ec98[];
 extern GAPDATA full_data_75ec9c[];
-extern char ai_Unk623ac0[];
+extern char sv_SkyHeavy[];
 extern const char ai_AxisPair[];
 
 #include "unk_5d33b0_types.h"
@@ -198,7 +198,7 @@ extern GAPDATA full_data_602568[];
 extern GAPDATA full_data_623ebc[];
 extern char ai_Unk75fba0[2048];
 extern unsigned char ai_TimeHour;
-extern char ai_Unk623ac0[];
+extern char sv_SkyHeavy[];
 extern int ai_OptionSpeed;
 extern float ch_Unk5f1290;
 extern GAPDATA full_data_6f22ac[];
@@ -286,8 +286,8 @@ void d2_RaiseViewWindows(int view);                     /* 0x4741a0 */
 void d2_SetObjValue();                     /* 0x475cb0 */
 void d2_RadioClear(int g);                     /* 0x46c600 */
 void d2_CloseView(int view);            /* 0x4758f0 */
-/* ai_Unk7e4048: view of ai_PlayerSlots (tools/data_views.py) */
-/* ai_Unk7e4058: view of ai_PlayerSlots (tools/data_views.py) */
+/* ai_SeasonCloudChance: view of ai_PlayerSlots (tools/data_views.py) */
+/* ai_SeasonClimate: view of ai_PlayerSlots (tools/data_views.py) */
 extern int ai_Unk6f22c0;  /* 0x6f22c0 */
 extern struct D2SURF *sv_GroundplanSurf, *sv_GroundplanView;  /* 0x6f22c4, 0x6f22c8 */
 extern char ai_Unk6f0454[3];  /* 0x6f0454 */
@@ -2042,12 +2042,12 @@ void sv_UpdateMemberList(unsigned char *g)
 
 extern OPTIONBYTES ai_GfxResolution;        /* 0x6f2f94, the player bar variant */
 extern int sv_WinterWeather;  /* 0x760610 */
-extern int ai_Unk760480;  /* 0x760480 */
-extern int ai_Unk760484;  /* 0x760484 */
-extern int ai_Unk760614;  /* 0x760614 */
+extern int sv_CloudChance;  /* 0x760480 */
+extern int sv_SeasonClimate;  /* 0x760484 */
+extern int sv_WeatherHour;  /* 0x760614 */
 extern int * d3t_Rain;  /* 0x760618 */
 extern int d3t_Snow;  /* 0x76061c */
-extern int ai_Unk760464;  /* 0x760464 */
+extern int sv_SkyPhase;  /* 0x760464 */
 extern int ai_Unk6f2370;  /* 0x6f2370 */
 extern int d3_SkyLayers[6];  /* 0x760620 */
 extern int ai_Unk633dd4;  /* 0x633dd4 */
@@ -2055,7 +2055,7 @@ extern int ai_Unk75ec20;  /* 0x75ec20 */
 extern struct D3ANIM *d3t_CamMove;  /* 0x6310e8 */
 extern int ai_Unk623e80;  /* 0x623e80 */
 extern int ai_Unk6f236c;  /* 0x6f236c */
-extern char ai_Unk6f2340;
+extern char sv_LampSwitches;
 extern float ai_Unk760420;  /* 0x760420 */
 extern float ai_Unk623e94;  /* 0x623e94 */
 /* ai_MapRefs: view of d3_Scenes (tools/data_views.py) */
@@ -2085,7 +2085,7 @@ void d3sky_SetLayerSpeed(struct D3SKY *s, struct D3SKYLAYER *l, float speed);  /
 char d3_SetFogSet(unsigned int a, unsigned int b, float t);                     /* 0x44a170 */
 char d3_SetLightSet(unsigned int set, float t, float scale, char calc);                     /* 0x449de0 */
 void sv_UpdateSkyColors(void);
-void sv_Unk525ad0(char *t);
+void sv_UpdateSkyPhase(char *t);
 
 /* 0x525220, opens the player bar ("Misc\\PlayerBar", or "Misc\\PlayerBar_1" at the other resolution) of the kind k at the right screen edge: its two scroll
    buttons (style 3) go to the window, the panel form is disabled, the 0x20 member rows are cleared, the button picture 0x51d is created and every character's
@@ -2181,82 +2181,64 @@ char sv_SetSkyLightColors(D3OBJECT *o, void *ctx)
     }
     return 1;
 }
-/* 0x525510, sets up the weather / sky for the time t (the clock record): the day phase k (0x4fe350), the cloud data 0x760480 / 0x760484 (0x7e4048 / 0x7e4058 by the climate 0x6f1bc5); with a nonzero flag the 0x18
-   cloud counters 0x760488 and their heights are rerolled (rain 0x760610: 2 / 1 / 0 at phase 3), the wind rose (sin / cos of random angles, the step +-0.175) filled; then the sky objects 0x45d880 ("Sky_Schoen_01",
-   "Sky_Schoen_02", "sky_dunkel_01") and the cloud meshes (0x413b30 / 0x4148f0) are created, every scene with sky data gets 0x525940, and 0x525ad0 runs. ROUGH */
-
-void sv_Unk525510(int t, float flag)
+#define sv_SkyHeavyT (*(SVSKYREC (*)[3])&sv_SkyHeavy)  /* 0x623ac0, sv_SkyHeavy (cm.c: char[]) as its sky records */
+/* 0x525510, sets up the day's weather and sky for the clock t: the season's cloud chance and climate from the own player's record; with
+   reroll the hours are rolled anew (winter weather in season 3: snow with rain at half the cloud chance, else snow; the clouds of each hour
+   by the chance, their thunder above 999 out of winter, the wind rose as sin / cos of a random walk of the angle by +-0.175); the wind
+   state, rain or snow by the winter weather and the strongest hour, the sky with its three layers (two fair skies and the dark one), the
+   light colours of every scene with a map and the sky phase for t */
+void sv_SetupWeather(struct GCLOCK *t, int reroll)
 {
-    int k, i, mx;
-    int idx;
-    unsigned *p;
-    unsigned short r;
+    int season, i, mx;
     float ang, step;
-    int *q;
     int scene;
-    char tmp[12];
+    D3TEXFLAGS flags;
+    char date[12];
 
-    gm_ClockToDate(t, tmp);
-    k = gm_ClockSeason(t);
-    idx = (ai_OwnPlayer * 0xbd + k) * 4;
-    ai_Unk760480 = *(int *)((char *)ai_Unk7e4048 + idx);
-    ai_Unk760484 = *(int *)((char *)ai_Unk7e4058 + idx);
-    if (flag != 0.0f) {
-        if (k == 3) {
-            r = util_RandomU(100);
-            sv_WinterWeather = ((int)r < ai_Unk760480 / 2) + 1;
+    gm_ClockToDate(t, date);
+    season = sv_ClockSeason(t);
+    sv_CloudChance = ai_SeasonCloudChance[ai_OwnPlayer * 0xbd + season];
+    sv_SeasonClimate = ai_SeasonClimate[ai_OwnPlayer * 0xbd + season];
+    if (reroll != 0) {
+        if (season == 3) {
+            sv_WinterWeather = (util_RandomU(100) < sv_CloudChance / 2) + 1;
         } else
             sv_WinterWeather = 0;
-        for (i = 0; i < 0x18; i++)
+        for (i = 0; i < 24; i++)
             sv_Weather.clouds[i] = 0;
-        p = sv_Weather.clouds;
-        do {
-            r = util_RandomU(100);
-            if ((int)r < ai_Unk760480)
-                *p = util_RandomU(ai_Unk760480 * 10) & 0xffff;
-            if ((int)*p < 0x2bd) {
-                if ((int)*p < 0x1f5) {
-                    if ((int)*p < 0xfb)
-                        *p = 0;
-                    else
-                        *p = (*p & 1) + 0x95;
-                } else
-                    *p = (*p & 1) + 499;
-            } else
-                *p = (*p & 1) + 999;
-            if (sv_WinterWeather == 0 && 0x3e6 < (int)*p)
-                p[0x18] = util_RandomU(3) & 0xffff;
+        for (i = 0; i < 24; i++) {
+            if (util_RandomU(100) < sv_CloudChance)
+                sv_Weather.clouds[i] = (unsigned short)util_Random(sv_CloudChance * 10);
+            if ((int)sv_Weather.clouds[i] > 700)
+                sv_Weather.clouds[i] = (sv_Weather.clouds[i] & 1) + 999;
+            else if ((int)sv_Weather.clouds[i] > 500)
+                sv_Weather.clouds[i] = (sv_Weather.clouds[i] & 1) + 499;
+            else if ((int)sv_Weather.clouds[i] > 250)
+                sv_Weather.clouds[i] = (sv_Weather.clouds[i] & 1) + 0x95;
             else
-                p[0x18] = 0;
-            p++;
-        } while ((int)p < (unsigned)((unsigned)sv_Weather.clouds + 0x60));
+                sv_Weather.clouds[i] = 0;
+            if (sv_WinterWeather == 0 && (int)sv_Weather.clouds[i] >= 999)
+                sv_Weather.storm[i] = (unsigned short)util_Random(3);
+            else
+                sv_Weather.storm[i] = 0;
+        }
         ang = (float)(util_RandomF() * 6.2831853);
-        step = -0.175f;
-        if (rand() < 0x4000)
-            step = 0.175f;
-        for (i = 0; i < 0x18; i++) {
+        step = rand() > 0x3fff ? -0.175f : 0.175f;
+        for (i = 0; i < 24; i++) {
             sv_Weather.windX[i] = (float)sin(ang);
             sv_Weather.windY[i] = (float)cos(ang);
             ang = (float)(util_RandomF() * step + ang);
         }
     }
-    ai_InitWind(k, *(int *)ai_Time, sv_Weather.windX, sv_Weather.windY);
+    ai_InitWind(season, ai_TimeT.year, sv_Weather.windX, sv_Weather.windY);
     sv_Weather.thunderStart = 0;
     sv_Weather.thunderLen = 0;
-    ai_Unk760614 = -1;
+    sv_WeatherHour = -1;
     mx = 0;
-    for (q = (int *)sv_Weather.clouds; (int)q < (unsigned)((unsigned)sv_Weather.clouds + 0x60); q++)
-        if (mx <= *q)
-            mx = *q;
-    if (sv_WinterWeather == 0) {
-        if (d3t_Snow != 0) {
-            d3t_FreeSnow(d3t_Snow);
-            d3t_Snow = 0;
-        }
-        if (d3t_Rain == 0)
-            d3t_Rain = d3t_CreateRain(mx);
-        d3t_SetRain(d3t_Rain, 1, 0, 0);
-    } else {
+    for (i = 0; i < 24; i++)
+        if (mx <= (int)sv_Weather.clouds[i])
+            mx = sv_Weather.clouds[i];
+    if (sv_WinterWeather != 0) {
         if (sv_WinterWeather == 1) {
             if (d3t_Rain != 0) {
                 d3t_DeleteRain(d3t_Rain);
@@ -2268,33 +2250,46 @@ void sv_Unk525510(int t, float flag)
             d3t_Snow = d3t_CreateSnow(mx);
         d3t_SetSnow(d3t_Snow, 2, 0, 0, 3, 0xff);
         d3t_SetSnow(d3t_Snow, 1, 0, 0);
+    } else {
+        if (d3t_Snow != 0) {
+            d3t_FreeSnow(d3t_Snow);
+            d3t_Snow = 0;
+        }
+        if (d3t_Rain == 0)
+            d3t_Rain = d3t_CreateRain(mx);
+        d3t_SetRain(d3t_Rain, 1, 0, 0);
     }
-    if (ai_Unk633dd4 == 0)
-        ai_Unk633dd4 = d3sky_CreateK(0xbf733333, 0xbe4ccccd, 0x44160000);
-    for (k = 0; k < 6; k++) {
-        if (d3_SkyLayers[k] != 0) {
-            d3sky_DeleteLayer(ai_Unk633dd4, d3_SkyLayers[k]);
-            d3_SkyLayers[k] = 0;
+    if (d3_Sky == 0)
+        d3_Sky = d3sky_Create(-0.95f, -0.2f, 600.0f);
+    for (i = 0; i < 6; i++) {
+        if (d3_SkyLayers[i] != 0) {
+            d3sky_DeleteLayer(d3_Sky, (struct D3SKYLAYER *)d3_SkyLayers[i]);
+            d3_SkyLayers[i] = 0;
         }
     }
-    d3_SkyLayers[0] = d3sky_CreateLayerK(ai_Unk633dd4, 0, "Sky_Schoen_01", 0xff, *(int *)&sv_SkyFair[0].scale, 0, *(int *)&sv_SkyFair[0].vscale, *(int *)&sv_SkyFair[0].voffset);
-    d3sky_SetLayerSpeed(ai_Unk633dd4, d3_SkyLayers[0], 0);
-    d3_SkyLayers[1] = d3sky_CreateLayerK(ai_Unk633dd4, 0, "Sky_Schoen_02", 0, *(int *)&sv_SkyFair[1].scale, 0, *(int *)&sv_SkyFair[1].vscale, *(int *)&sv_SkyFair[1].voffset);
-    d3sky_SetLayerSpeed(ai_Unk633dd4, d3_SkyLayers[1], 0);
-    d3_SkyLayers[2] = d3sky_CreateLayerK(ai_Unk633dd4, 0, "sky_dunkel_01", 0, *(int *)((unsigned)&ai_Unk623ac0 + 0xd8), 0, *(int *)((unsigned)&ai_Unk623ac0 + 0xdc), *(int *)((unsigned)&ai_Unk623ac0 + 0xe0));
-    d3sky_SetLayerSpeed(ai_Unk633dd4, d3_SkyLayers[2], 0);
+    flags.all = 0xff;
+    flags.b[2] = 0;
+    d3_SkyLayers[0] = (int)d3sky_CreateLayer(d3_Sky, 0, sv_SkyFair[0].name, flags, sv_SkyFair[0].scale, 0, sv_SkyFair[0].vscale, sv_SkyFair[0].voffset);
+    d3sky_SetLayerSpeed(d3_Sky, (struct D3SKYLAYER *)d3_SkyLayers[0], 0);
+    flags.all = 0;
+    flags.b[2] = 0;
+    d3_SkyLayers[1] = (int)d3sky_CreateLayer(d3_Sky, 0, sv_SkyFair[1].name, flags, sv_SkyFair[1].scale, 0, sv_SkyFair[1].vscale, sv_SkyFair[1].voffset);
+    d3sky_SetLayerSpeed(d3_Sky, (struct D3SKYLAYER *)d3_SkyLayers[1], 0);
+    flags.all = 0;
+    flags.b[2] = 0;
+    d3_SkyLayers[2] = (int)d3sky_CreateLayer(d3_Sky, 0, sv_SkyHeavyT[2].name, flags, sv_SkyHeavyT[2].scale, 0, sv_SkyHeavyT[2].vscale, sv_SkyHeavyT[2].voffset);
+    d3sky_SetLayerSpeed(d3_Sky, (struct D3SKYLAYER *)d3_SkyLayers[2], 0);
     scene = d3_CurrentScene;
-    i = 0;
-    for (q = (int *)&ai_MapRefs; (int)q < ((unsigned)((unsigned)&ai_MapRefs + 0xf7f4) + 0xc); q += 0xf8, i++) {
-        if (*q != 0) {
+    for (i = 0; i < 64; i++) {
+        if (d3_Scenes[i].map != 0) {
             d3if_SelectScene(i, 1);
             sv_UpdateSkyColors();
         }
     }
     d3if_SelectScene(scene, 1);
-    ai_Unk760464 = -100;
-    ai_Unk6f2340 = 0;
-    sv_Unk525ad0((char *)t);
+    sv_SkyPhase = -100;
+    sv_LampSwitches = 0;
+    sv_UpdateSkyPhase((char *)t);
 }
 /* 0x525940, copies the sky colour table (0x623cc0, or 0x623e10 when raining) into the sky object records (+0x128 .. +0x130 of the object 0x5fb5b0, 6 rows of 0x60) and the globals 0x5fcc78 .. / 0xfba9c0 ..; only
    when the object has its mesh (+0xac) */
@@ -2366,7 +2361,7 @@ char sv_Unk525a80(char *o, int f)
    read; during a scene change (0xfd7c4c, until 0x76054c + 0x760548) the fade is 0x44a170 (0, 2, 1.0); when the phase hardly changed nothing happens; otherwise the weather day k % 7 is set (0x438d40 with the callback
    0x525a80), 0x623e94 = k / 100 - (k / 100 as int) and 0x449de0 (the day, the fraction, 1.0, changed) applies it. ROUGH */
 
-void sv_Unk525ad0(char *t)
+void sv_UpdateSkyPhase(char *t)
 {
     int s, k, day, d, sc;
     float a;
@@ -2400,27 +2395,27 @@ void sv_Unk525ad0(char *t)
         ai_Unk6f2370 = 0;
     }
     sc = d3_CurrentScene;
-    if (((fabs(ai_Unk760420 - 1.0) < 0.1 && abs(ai_Unk760464 - k) < 10) && ai_Unk75ec20 == d3_CurrentScene) || d3t_CamMove != 0) {
+    if (((fabs(ai_Unk760420 - 1.0) < 0.1 && abs(sv_SkyPhase - k) < 10) && ai_Unk75ec20 == d3_CurrentScene) || d3t_CamMove != 0) {
         d3_SetFogSet(0, 1, a);
         return;
     }
-    if (0.2 < fabs(ai_Unk760420 - 1.0) || abs(ai_Unk760464 - k) >= 100)
+    if (0.2 < fabs(ai_Unk760420 - 1.0) || abs(sv_SkyPhase - k) >= 100)
         changed = 1;
     else
         changed = ai_Unk75ec20 != d3_CurrentScene;
     ai_Unk75ec20 = d3_CurrentScene;
     ai_Unk760420 = 1.0f;
-    ai_Unk760464 = k;
+    sv_SkyPhase = k;
     day = (int)(k * 0.01f);
     d = day % 7;
     if (ai_Unk623e80 != d && ((int *)&ai_MapRefs)[sc * 0xf8] != 0) {
-        if (d < 0 || ai_Unk6f2340 != 0) {
-            if (d < 3 || ai_Unk6f2340 != 1)
+        if (d < 0 || sv_LampSwitches != 0) {
+            if (d < 3 || sv_LampSwitches != 1)
                 goto done;
             d3_ForEachObject(ai_Unk5fb5b0, 0, 6, sv_Unk525a80, 1);
         } else
             d3_ForEachObject(ai_Unk5fb5b0, 0, 6, sv_Unk525a80, 0);
-        ai_Unk6f2340++;
+        sv_LampSwitches++;
         d = d;
     }
 done:
@@ -7068,8 +7063,8 @@ void sv_Unk5301a0(void)
     int *cnt;
 
     cnt = (int *)sv_Weather.clouds;
-    SV_I((unsigned)&ai_Unk760614) = SV_US((unsigned)&ai_TimeHour);
-    h = SV_I((unsigned)&ai_Unk760614);
+    SV_I((unsigned)&sv_WeatherHour) = SV_US((unsigned)&ai_TimeHour);
+    h = SV_I((unsigned)&sv_WeatherHour);
     if (SV_I((unsigned)&d3t_Snow) != 0)
         d3t_SetSnow(SV_I((unsigned)&d3t_Snow), 1, 1, cnt[h], 1000);
     if (SV_I((unsigned)&d3t_Rain) != 0) {
@@ -7108,9 +7103,9 @@ void sv_Unk5301a0(void)
                 name = sv_SkyMedium[k].name;
             } else {
                 k = util_RandomU(2) & 0xffff;
-                if (_strcmpi(*(char **)(d3_SkyLayers[1] + 0x1c), (char *)(unsigned)&ai_Unk623ac0 + k * 0x4c) == 0)
+                if (_strcmpi(*(char **)(d3_SkyLayers[1] + 0x1c), (char *)(unsigned)&sv_SkyHeavy + k * 0x4c) == 0)
                     k++;
-                name = (char *)(unsigned)&ai_Unk623ac0 + k * 0x4c;
+                name = (char *)(unsigned)&sv_SkyHeavy + k * 0x4c;
             }
             d3sky_SetLayerTex(d3_SkyLayers[1], name);
             *(int *)d3_SkyLayers[1] = *(int *)(name + 0x40);
@@ -7131,9 +7126,9 @@ void sv_Unk5301a0(void)
                 name = sv_SkyMedium[k].name;
             } else {
                 k = util_RandomU(2) & 0xffff;
-                if (_strcmpi(*(char **)(d3_SkyLayers[0] + 0x1c), (char *)(unsigned)&ai_Unk623ac0 + k * 0x4c) == 0)
+                if (_strcmpi(*(char **)(d3_SkyLayers[0] + 0x1c), (char *)(unsigned)&sv_SkyHeavy + k * 0x4c) == 0)
                     k++;
-                name = (char *)(unsigned)&ai_Unk623ac0 + k * 0x4c;
+                name = (char *)(unsigned)&sv_SkyHeavy + k * 0x4c;
             }
             d3sky_SetLayerTex(d3_SkyLayers[0], name);
             *(int *)d3_SkyLayers[0] = *(int *)(name + 0x40);
@@ -7173,7 +7168,7 @@ void sv_Unk530670(void)
         sb_PlaySample(snd_ThunderBank, "DonnerMittel_s", 1, 0x3f, (int)0.0f);
     }
     if (SV_I((unsigned)&d3_CurrentScene) == 0) {
-        if (10 < SV_US((unsigned)&ai_TimeHour) && SV_US((unsigned)&ai_TimeHour) < 0x12 && *(int *)((unsigned)&ai_Unk760484 + SV_US((unsigned)&ai_TimeHour) * 4) != 0
+        if (10 < SV_US((unsigned)&ai_TimeHour) && SV_US((unsigned)&ai_TimeHour) < 0x12 && *(int *)((unsigned)&sv_SeasonClimate + SV_US((unsigned)&ai_TimeHour) * 4) != 0
             && ((int *)sv_Weather.clouds)[SV_US((unsigned)&ai_TimeHour)] == 0 && 0x1e < (int)((unsigned)SV_US(((unsigned)&ai_Time + 0x6)) | ((unsigned)SV_US(((unsigned)&ai_Time + 0x8)) << 16))) {
             hh = (unsigned short)util_RandomU(0x80);
             if (0x60 < hh && SV_I((unsigned)&d3t_SunRays) == 0)
@@ -7339,7 +7334,7 @@ l64:
         evt_StepAll();
     if (SV_I((unsigned)&ai_FrameWait) == 0 && (cv >= 0 || (d2_FlushDirty(), SV_I((unsigned)&ai_FrameWait) == 0)) && (mask & 0x40) != 0 && SV_I((unsigned)&full_data_623eb0) != 0) {
         if ((mask & 0x10000) == 0 && (mask & 0x40000) != 0)
-            sv_Unk525ad0((unsigned)&ai_Time);
+            sv_UpdateSkyPhase((unsigned)&ai_Time);
         if (SV_I((unsigned)&d3_CurrentScene) == 0)
             d3q_Mark(SV_I((unsigned)&d3_QuadTree), SV_I((unsigned)&sv_CameraObj), SV_I((unsigned)&d3_FrameCount));
         d3t_UpdateCamera();
@@ -7367,7 +7362,7 @@ l64:
         ch_Update();
         ch_Unk4027b0();
     }
-    if ((mask & 0x4000) != 0 && SV_US((unsigned)&ai_TimeHour) != SV_I((unsigned)&ai_Unk760614))
+    if ((mask & 0x4000) != 0 && SV_US((unsigned)&ai_TimeHour) != SV_I((unsigned)&sv_WeatherHour))
         sv_Unk5301a0();
     if (SV_I((unsigned)&full_data_6f2580) != 0)
         snd_UpdateRain();
@@ -7578,11 +7573,11 @@ void sv_UpdateClock(void)
 extern int ai_Unk75ec20;
 extern float ai_Unk760420;
 extern int ai_Unk760440;
-extern int ai_Unk760464;
-extern int ai_Unk760480;
-extern int ai_Unk760484;
+extern int sv_SkyPhase;
+extern int sv_CloudChance;
+extern int sv_SeasonClimate;
 extern int sv_WinterWeather;
-extern int ai_Unk760614;
+extern int sv_WeatherHour;
 extern int d3t_Snow;
 extern int d3_SkyLayers[6];
 extern int d2_HitWindow;
@@ -7721,7 +7716,7 @@ char * ai_FallbackBuilding = 0;  /* 0x6f230c */
 unsigned short * sv_PanelShown = 0;  /* 0x6f2310, the scene record (room) the info panel shows now */
 int ai_Unk6f2334 = 0;  /* 0x6f2334 */
 int sv_ResearchClass = 0;  /* 0x6f233c */
-char ai_Unk6f2340 = 0;  /* 0x6f2340 */
+char sv_LampSwitches = 0;  /* 0x6f2340 */
 char sv_MessageBoxOpen = 0;  /* 0x6f2350 */
 char sv_MessageBoxGreenOpen = 0;  /* 0x6f2351 */
 char sv_MessageBoxYesNoOpen = 0;  /* 0x6f2352 (the yes / no box) */
@@ -7760,12 +7755,12 @@ float sv_ViewPos[4] = {0};  /* 0x75fb80, the stored camera position (a padded ve
 float sv_ViewRot[4] = {0};  /* 0x75fb90, its rotation (D3OBJECT.rotation) */
 float ai_Unk760420 = 0;  /* 0x760420 */
 int ai_Unk760440 = 0;  /* 0x760440 */
-int ai_Unk760464 = 0;  /* 0x760464 */
-int ai_Unk760480 = 0;  /* 0x760480 */
-int ai_Unk760484 = 0;  /* 0x760484 */
+int sv_SkyPhase = 0;  /* 0x760464 */
+int sv_CloudChance = 0;  /* 0x760480 */
+int sv_SeasonClimate = 0;  /* 0x760484 */
 SVWEATHER sv_Weather = {0};  /* 0x760488 */
 int sv_WinterWeather = 0;  /* 0x760610 */
-int ai_Unk760614 = 0;  /* 0x760614 */
+int sv_WeatherHour = 0;  /* 0x760614 */
 int d3t_Snow = 0;  /* 0x76061c */
 int d3_SkyLayers[6] = {0};  /* 0x760620, the sky layer handles: sv creates 0 .. 2, sv and main_EndGame delete all six */
 SVPLATE sv_NamePlates[0x20] = {0};  /* 0x760640, the name plate records (200 bytes each) */
