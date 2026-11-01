@@ -2525,46 +2525,47 @@ int amt_ExecuteShareMessage(short *c, int *m)
     return 0;
 }
 
-/* the text msg to every character of the kind 6 / 7 except the ones with the ids a and b (0x53dda0, channel chan) */
-/* unlinked */
-static __inline void amt_Tell(int a, int b, char *msg, int chan)
-{
-    int *q;
-
-    q = ai_CharInts[0];
-    do {
-        if ((((char *)q)[-2] == 7 || ((char *)q)[-2] == 6) && *q != a && *q != b)
-            he_ShowNews(*q, -1, msg, 0, chan, ch_EmptyName);
-        q += 0x87;
-    } while ((int)q < ((unsigned)((unsigned)ai_CharInts + 0x653fe) + 0x2));
-}
-
 /* 0x4e9ce0, executes the office-power request m of the mayor c, picked by the office c[0x169] (the offices 0x1e .. 0x21):
    0x1e (m = {1, target}): the target (a character with an office, not c) is denounced - its office goes out as the office
    message 4 and its opinion of c drops; 0x1f / 0x21 (m = {4, district 1 .. 6}): every pair of the district's office owners
    loses the damage roll of c's skill, the opinion of both ways; 0x20: the same one-sided (only the office owners' opinion of c).
    Every power takes 8 money of c (cm_SendMoneyDelta), sets the power bit 0x10000000 of +0x1c8 and tells the news (texts
    0x166e .. 0x1685, the channels 0x5fb / 0x5fd / 0x5fe) to the other characters and, when the kind of c is 6, to c itself.
-   Returns -1 when the damage roll is <= 0.3 and 1 otherwise, 0 when the message does not fit the office kind. */
+   Returns -1 when the damage roll is <= 0.3 and 1 otherwise, 0 when the message does not fit the office kind.
+   @deep read against the original in full and rewritten: ret as if/else in a register, the tell loops
+   inline (re-reading t/c netId, no -2 compare in the 0x20 case), gm_SendMoneyDelta (the thunk the original
+   calls), GetColumnOffices in both rf branches, no n!=1 guard, duplicated branch tails with their own
+   returns; message/loop/return layout now equal. Left: allocation - c sits in ebx (original esi) and t in
+   esi (original ebx), so the 0x20 dmg loop puts dmg in esi and reloads c from [esp+0x8f0] (asmdiff
+   0x4ea04a: ours mov ecx,[esp+0x8f0]/mov ecx,[ecx+4], original mov ecx,[esi+4]; 0x4ea07a ours reloads c
+   into ebx before gm_SendMoneyDelta), m kept in ebp in the 0x1f/0x20 heads (original eax, reloaded into
+   ebx later), rf slot 0x14 vs 0x10; declaration order tried, no change (size: 660 vs 646 instructions,
+   explained: ours=660 original=646: the 14 extra are the reloads of c and m from the stack (mov
+   ebx,[esp+0x8f0], mov edx,[esp+0x8f0] in the dmg loops, mov ebp,[esp+0x8f4]) the other register
+   assignment costs) */
 int amt_ExecuteMayorPowerMessage(char *c, int *m)
 {
     float rf, f;
     int ret, n, dmg, i, j, id;
     char kind;
     char *t;
+    int *q;
     AMTREC o;
     AMTREC list[6];
     AMTKIND k;
     char msg[1024], msg2[1024];
 
     rf = util_RandomF();
-    ret = rf <= 0.3f ? -1 : 1;
-    kind = c[0x169 - 0];
+    if (rf > 0.3f)
+        ret = 1;
+    else
+        ret = -1;
+    kind = c[0x169];
     if (kind == 0x1e) {
-        if (m[0] == 1 && (t = gm_FindChar(m[1])) != 0 && t[0x166] != 0 && t != (char *)c && amt_FindOffice(t, &k, &o) != 0) {
+        if (m[0] == 1 && (t = gm_FindChar(m[1])) != 0 && t[0x166] != 0 && t != c && amt_FindOffice(t, &k, &o) != 0) {
             if (rf > 0.3f)
                 amt_SendOfficeMessage((char)o.idx, 0, 0, 4, 0xff);
-            cm_SendMoneyDelta(AMT_NETID(c), -8);
+            gm_SendMoneyDelta(AMT_NETID(c), -8);
             cm_SendSetField(AMT_NETID(c), 0x1c8, 4, 0x10000000, 0);
             kind = t[2];
             if (rf > 0.3f) {
@@ -2573,18 +2574,29 @@ int amt_ExecuteMayorPowerMessage(char *c, int *m)
                     he_ShowNews(AMT_NETID(t), -1, msg, 0, 0x5fb, ch_EmptyName);
                 }
                 txt_Format(msg, 0x1682, ((AMTCHARVIEW *)t)->id, ((AMTCHARVIEW *)t)->id);
-                amt_Tell(AMT_NETID(t), AMT_NETID(c), msg, 0x5fe);
+                q = ai_CharInts[0];
+                do {
+                    if ((((char *)q)[-2] == 7 || ((char *)q)[-2] == 6) && *q != AMT_NETID(t) && *q != AMT_NETID(c))
+                        he_ShowNews(*q, -1, msg, 0, 0x5fe, ch_EmptyName);
+                    q += 0x87;
+                } while ((int)q < (int)AMT_CHARS_END);
                 if (c[2] == 6) {
                     txt_Format(msg, 0x1680, ((AMTCHARVIEW *)t)->id, ((AMTCHARVIEW *)t)->id);
                     sv_MessageBox(msg, 0);
                 }
+                return ret;
             } else {
                 if (kind == 7 || kind == 6) {
                     txt_Format(msg, 0x1685);
                     he_ShowNews(AMT_NETID(t), -1, msg, 0, 0x5fb, ch_EmptyName);
                 }
                 txt_Format(msg, 0x1683, ((AMTCHARVIEW *)t)->id, ((AMTCHARVIEW *)t)->id);
-                amt_Tell(AMT_NETID(t), AMT_NETID(c), msg, 0x5fe);
+                q = ai_CharInts[0];
+                do {
+                    if ((((char *)q)[-2] == 7 || ((char *)q)[-2] == 6) && *q != AMT_NETID(t) && *q != AMT_NETID(c))
+                        he_ShowNews(*q, -1, msg, 0, 0x5fe, ch_EmptyName);
+                    q += 0x87;
+                } while ((int)q < (int)AMT_CHARS_END);
                 if (c[2] == 6) {
                     txt_Format(msg, 0x1681, ((AMTCHARVIEW *)t)->id, ((AMTCHARVIEW *)t)->id);
                     sv_MessageBox(msg, 0);
@@ -2594,37 +2606,30 @@ int amt_ExecuteMayorPowerMessage(char *c, int *m)
         }
     } else if (kind == 0x1f || kind == 0x21) {
         if (m[0] == 4 && (unsigned int)m[1] >= 1 && (unsigned int)m[1] <= 6) {
-            n = amt_GetColumnOffices(m[1], 6, list);
             if (rf > 0.3f) {
-                f = gm_GetSkill((char *)c, 4);
+                n = amt_GetColumnOffices(m[1], 6, list);
+                f = gm_GetSkill(c, 4);
                 f = (util_RandomF() + 1.0f) * f * 15.0f;
                 dmg = (int)((f + 5.0) * 2.55f);
-                if (n != 1) {
-                    for (i = 0; i < n - 1; i++) {
-                        id = list[i].owner;
-                        if (id != AMT_NETID(c) && id != -1) {
-                            for (j = i + 1; j < n; j++) {
-                                if (list[j].owner != AMT_NETID(c) && list[j].owner != -1) {
-                                    cm_SendRelations(list[j].owner, id, -dmg, 1);
-                                    cm_SendRelations(id, list[j].owner, -dmg, 1);
-                                }
+                for (i = 0; i < n - 1; i++) {
+                    id = list[i].owner;
+                    if (id != AMT_NETID(c) && id != -1) {
+                        for (j = i + 1; j < n; j++) {
+                            if (list[j].owner != AMT_NETID(c) && list[j].owner != -1) {
+                                cm_SendRelations(list[j].owner, id, -dmg, 1);
+                                cm_SendRelations(id, list[j].owner, -dmg, 1);
                             }
                         }
                     }
                 }
+            } else {
+                n = amt_GetColumnOffices(m[1], 6, list);
             }
-            cm_SendMoneyDelta(AMT_NETID(c), -8);
+            gm_SendMoneyDelta(AMT_NETID(c), -8);
             cm_SendSetField(AMT_NETID(c), 0x1c8, 4, 0x10000000, 0);
             if (rf > 0.3f) {
                 txt_Format(msg, 0x1672, m[1] + 0x1663);
                 txt_Format(msg2, 0x1670, m[1] + 0x1663);
-            } else {
-                txt_Format(msg, 0x1673, m[1] + 0x1663);
-                txt_Format(msg2, 0x1671, m[1] + 0x1663);
-            }
-            {
-                int *q;
-
                 q = ai_CharInts[0];
                 do {
                     if ((((char *)q)[-2] == 7 || ((char *)q)[-2] == 6) && *q != AMT_NETID(c)) {
@@ -2639,17 +2644,39 @@ int amt_ExecuteMayorPowerMessage(char *c, int *m)
                     }
                     q += 0x87;
                 } while ((int)q < (int)AMT_CHARS_END);
-            }
-            if (c[2] == 6) {
-                txt_Format(msg, rf <= 0.3f ? 0x166f : 0x166e, m[1] + 0x1663);
-                sv_MessageBox(msg, 0);
+                if (c[2] == 6) {
+                    txt_Format(msg, 0x166e, m[1] + 0x1663);
+                    sv_MessageBox(msg, 0);
+                }
+                return ret;
+            } else {
+                txt_Format(msg, 0x1673, m[1] + 0x1663);
+                txt_Format(msg2, 0x1671, m[1] + 0x1663);
+                q = ai_CharInts[0];
+                do {
+                    if ((((char *)q)[-2] == 7 || ((char *)q)[-2] == 6) && *q != AMT_NETID(c)) {
+                        for (i = 0; i < n; i++) {
+                            if (list[i].owner == *q)
+                                break;
+                        }
+                        if (i < n)
+                            he_ShowNews(*q, -1, msg, 0, 0x5fb, ch_EmptyName);
+                        else
+                            he_ShowNews(*q, -1, msg2, 0, 0x5fe, ch_EmptyName);
+                    }
+                    q += 0x87;
+                } while ((int)q < (int)AMT_CHARS_END);
+                if (c[2] == 6) {
+                    txt_Format(msg, 0x166f, m[1] + 0x1663);
+                    sv_MessageBox(msg, 0);
+                }
             }
             return ret;
         }
     } else if (kind == 0x20 && m[0] == 4 && (unsigned int)m[1] >= 1 && (unsigned int)m[1] <= 6) {
         if (rf > 0.3f) {
             n = amt_GetColumnOffices(m[1], 6, list);
-            f = gm_GetSkill((char *)c, 4);
+            f = gm_GetSkill(c, 4);
             f = (util_RandomF() + 1.0f) * f * 15.0f;
             dmg = (int)((f + 5.0) * 2.55f);
             for (i = 0; i < n; i++) {
@@ -2658,18 +2685,28 @@ int amt_ExecuteMayorPowerMessage(char *c, int *m)
                     cm_SendRelations(AMT_NETID(c), id, dmg, 1);
             }
         }
-        cm_SendMoneyDelta(AMT_NETID(c), -8);
+        gm_SendMoneyDelta(AMT_NETID(c), -8);
         cm_SendSetField(AMT_NETID(c), 0x1c8, 4, 0x10000000, 0);
         if (rf > 0.3f) {
             txt_Format(msg, 0x167a, m[1] + 0x1663);
-            amt_Tell(AMT_NETID(c), -2, msg, 0x5fd);
+            q = ai_CharInts[0];
+            do {
+                if ((((char *)q)[-2] == 7 || ((char *)q)[-2] == 6) && *q != AMT_NETID(c))
+                    he_ShowNews(*q, -1, msg, 0, 0x5fd, ch_EmptyName);
+                q += 0x87;
+            } while ((int)q < (int)AMT_CHARS_END);
             if (c[2] == 6) {
                 txt_Format(msg, 0x1678, m[1] + 0x1663);
                 sv_MessageBox(msg, 0);
             }
         } else {
             txt_Format(msg, 0x167b, m[1] + 0x1663);
-            amt_Tell(AMT_NETID(c), -2, msg, 0x5fe);
+            q = ai_CharInts[0];
+            do {
+                if ((((char *)q)[-2] == 7 || ((char *)q)[-2] == 6) && *q != AMT_NETID(c))
+                    he_ShowNews(*q, -1, msg, 0, 0x5fe, ch_EmptyName);
+                q += 0x87;
+            } while ((int)q < (int)AMT_CHARS_END);
             if (c[2] == 6) {
                 txt_Format(msg, 0x1679, m[1] + 0x1663);
                 sv_MessageBox(msg, 0);
