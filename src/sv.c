@@ -94,13 +94,6 @@ extern int ai_CameraStep;  /* 0x623814, the camera move step (100 - camera speed
 extern char * ai_PickedObject;
 extern int ai_PickedChar;
 extern int d2_HitUnderPointer;
-extern GAPDATA full_data_6f22a8[];
-extern GAPDATA full_data_6f22ec[];
-extern GAPDATA full_data_6f22fc[];
-extern GAPDATA full_data_6f23e0[];
-extern GAPDATA full_data_760458[];
-extern GAPDATA full_data_76045c[];
-extern GAPDATA full_data_760460[];
 extern unsigned char ai_TimeHour;
 extern int ai_SceneChars[32];
 extern GAPDATA full_data_6237c8[];
@@ -129,10 +122,7 @@ extern void *d2_ScreenSurf;  /* 0x6ed924 */
 extern int d2_HalfScreenH;
 extern int d2_HalfScreenW;
 extern void *d2_ScreenSurf;  /* 0x6ed924 */
-extern GAPDATA full_data_6f22a8[];
-extern GAPDATA full_data_6f22ec[];
 extern int ai_Unk6f2318;
-extern GAPDATA full_data_6f22fc[];
 extern GAPDATA full_data_6f23e4[];
 extern GAPDATA full_data_6f23e8[];
 extern GAPDATA full_data_6f262c[];
@@ -4792,11 +4782,11 @@ void sv_Unk52ae70(void)
 
     found = 0;
     cls = 0;
-    SV_I((unsigned)&full_data_760458) = 0;
-    SV_I((unsigned)&full_data_76045c) = 0;
+    SV_I((unsigned)&sv_ClickedBuilding) = 0;
+    SV_I((unsigned)&sv_ClickedItem) = 0;
     SV_I((unsigned)&ai_ClickedObject) = 0;
-    SV_I((unsigned)&full_data_760460) = 0;
-    SV_I((unsigned)&full_data_6f22fc) = 0;
+    SV_I((unsigned)&sv_ClickedChar) = 0;
+    SV_I((unsigned)&sv_ClickedContact) = 0;
     if (SV_I((unsigned)&sv_SelectedChar) != 0 && *(char *)(SV_I((unsigned)&sv_SelectedChar) + 0x188) == 0)
         SV_I((unsigned)&sv_SelectedChar) = 0;
     if (SV_I((unsigned)&sv_PanelFlag) != 0) {
@@ -4844,10 +4834,10 @@ lfe4:
                 return;
             }
         } else {
-            SV_I((unsigned)&full_data_760458) = sv_HoverBuilding;
-            SV_I((unsigned)&full_data_76045c) = sv_HoverItem;
-            SV_I((unsigned)&full_data_760460) = SV_I((unsigned)&ai_PickedChar);
-            SV_I((unsigned)&full_data_6f22fc) = sv_HoverContact;
+            SV_I((unsigned)&sv_ClickedBuilding) = sv_HoverBuilding;
+            SV_I((unsigned)&sv_ClickedItem) = sv_HoverItem;
+            SV_I((unsigned)&sv_ClickedChar) = SV_I((unsigned)&ai_PickedChar);
+            SV_I((unsigned)&sv_ClickedContact) = sv_HoverContact;
             if (sv_HoverItem != 0)
                 cls = ai_Goods + *(unsigned short *)sv_HoverItem * 0x41;
             if (memcmp(SV_C((unsigned)&ai_PickedObject), "tp_TUER", 8) == 0 || (cls != 0 && *cls == 6) || sv_HoverContact != 0)
@@ -4857,12 +4847,12 @@ lfe4:
             SV_C((unsigned)&ai_ClickedObject) = SV_C((unsigned)&ai_PickedObject);
             if ((SV_C((unsigned)&ai_PickedObject)[0x211] & 1) != 0 && !found) {
                 d3t_PlaceAtObject(SV_C((unsigned)&ai_PickedObject), SV_I((unsigned)&ai_CameraStep));
-                SV_C((unsigned)&full_data_6f22ec) = SV_C((unsigned)&ai_PickedObject);
+                SV_C((unsigned)&sv_FocusObject) = SV_C((unsigned)&ai_PickedObject);
                 if (SV_C((unsigned)&ai_PickedObject) != 0 && (n = *(int *)(SV_C((unsigned)&ai_PickedObject) + 0x1d4)) != 0 && *(int *)(n + 0x108) != 0)
                     ((int (*)())*(int *)(n + 0x108))(SV_C((unsigned)&ai_PickedObject), 2, n + 0x10c, 0);
-                SV_I((unsigned)&full_data_6f22a8) = SV_I((unsigned)&sv_FrameDepth);
+                SV_I((unsigned)&sv_FocusDepth) = SV_I((unsigned)&sv_FrameDepth);
             }
-            SV_C((unsigned)&full_data_6f23e0) = SV_C((unsigned)&ai_PickedObject);
+            SV_C((unsigned)&sv_LastPicked) = SV_C((unsigned)&ai_PickedObject);
             if (SV_I((unsigned)&ai_PickedChar) != 0 && *(char *)(SV_I((unsigned)&ai_PickedChar) + 8) != 0) {
                 g = (unsigned short *)SV_I((unsigned)&ai_PickedChar);
                 n = gm_PermissionBits(ai_PlayerId, 0, 0, g);
@@ -5073,7 +5063,7 @@ void sv_Unk52bbc0(void)
     owner = 0;
     n = 0;
     done = 0;
-    cur = SV_I((unsigned)&full_data_760458);
+    cur = SV_I((unsigned)&sv_ClickedBuilding);
     m[4] = 0;
     out = (int *)(m + 0x70);
     for (rec = (int *)(unsigned)&ai_Unk770cec; !done && (int)rec < ((unsigned)((unsigned)ai_Unk770cec + 0x65296) + 0x16a); rec += 0x87) {
@@ -5095,10 +5085,10 @@ void sv_Unk52bbc0(void)
                                 break;
                             }
                         }
-                        sv_MoveToGroup(SV_I((unsigned)&full_data_760458), 0, (short)rec[-0x5b], 0);
+                        sv_MoveToGroup(SV_I((unsigned)&sv_ClickedBuilding), 0, (short)rec[-0x5b], 0);
                         ai_Unk4c5230(id);
-                        ai_Unk4c52e0(id, *(int *)(SV_I((unsigned)&full_data_760458) + 1), *(int *)(g + 2), 0, 0, 0);
-                        cur = SV_I((unsigned)&full_data_760458);
+                        ai_Unk4c52e0(id, *(int *)(SV_I((unsigned)&sv_ClickedBuilding) + 1), *(int *)(g + 2), 0, 0, 0);
+                        cur = SV_I((unsigned)&sv_ClickedBuilding);
                     } else {
                         m[4] = 'C';
                         m[0x36] = 2;
@@ -5113,7 +5103,7 @@ void sv_Unk52bbc0(void)
                         for (k = 0; k < 4; k++) {
                             if (*(int *)(o + 0xc4 + k * 4) == id) {
                                 *(int *)(o + 0xc4 + k * 4) = -1;
-                                cur = SV_I((unsigned)&full_data_760458);
+                                cur = SV_I((unsigned)&sv_ClickedBuilding);
                                 break;
                             }
                         }
@@ -5129,17 +5119,17 @@ void sv_Unk52bbc0(void)
                         break;
                     }
                 }
-                sv_MoveToGroup(SV_I((unsigned)&full_data_760458), 0, (short)rec[-0x5b], 0);
+                sv_MoveToGroup(SV_I((unsigned)&sv_ClickedBuilding), 0, (short)rec[-0x5b], 0);
                 ai_Unk4c5230(id);
-                ai_Unk4c52e0(id, *(int *)(SV_I((unsigned)&full_data_760458) + 1), *(int *)(g + 2), 0, 0, 0);
-                cur = SV_I((unsigned)&full_data_760458);
+                ai_Unk4c52e0(id, *(int *)(SV_I((unsigned)&sv_ClickedBuilding) + 1), *(int *)(g + 2), 0, 0, 0);
+                cur = SV_I((unsigned)&sv_ClickedBuilding);
             } else {
                 *out++ = id;
                 n++;
                 for (k = 0; k < 4; k++) {
                     if (*(int *)(obj + 0xc4 + k * 4) == id) {
                         *(int *)(obj + 0xc4 + k * 4) = -1;
-                        cur = SV_I((unsigned)&full_data_760458);
+                        cur = SV_I((unsigned)&sv_ClickedBuilding);
                         break;
                     }
                 }
@@ -5193,10 +5183,10 @@ lrel:
     }
     if (SV_I((unsigned)&ai_SelectedCount) == 0)
         goto lend;
-    if (SV_I((unsigned)&full_data_6f22fc) == 0) {
-        if (SV_I((unsigned)&ai_ClickedObject) != 0 || SV_I((unsigned)&full_data_76045c) != 0)
+    if (SV_I((unsigned)&sv_ClickedContact) == 0) {
+        if (SV_I((unsigned)&ai_ClickedObject) != 0 || SV_I((unsigned)&sv_ClickedItem) != 0)
             goto lafter;
-        if (SV_I((unsigned)&full_data_760458) == 0) {
+        if (SV_I((unsigned)&sv_ClickedBuilding) == 0) {
             if (map == 0 || v == 0 || SV_I(((unsigned)&dm_L + 0xc)) == 0 || SV_I((unsigned)&d2_HitWindow) != -1)
                 goto lend;
             i = 0;
@@ -5224,7 +5214,7 @@ lrel:
                 }
                 ch += 0x10e;
             } while ((int)ch < (unsigned)((unsigned)ai_Chars + 0x65400));
-            if (SV_I((unsigned)&full_data_6f22fc) != 0)
+            if (SV_I((unsigned)&sv_ClickedContact) != 0)
                 goto lgroup;
             goto lafter;
         }
@@ -5243,7 +5233,7 @@ lgroup:
                     ai_Unk4c5230(*(int *)(ch + 2));
                     if (*(int *)(ch + 0xb6) != 0)
                         sv_MoveToGroup(*(int *)(ch + 0xb6), 0, *ch, 0);
-                    if (**(short **)(unsigned)&full_data_6f22fc == 0xfd) {
+                    if (**(short **)(unsigned)&sv_ClickedContact == 0xfd) {
                         if (SV_I((unsigned)&ai_FallbackBuilding) != 0) {
                             t = init_BuildingSceneUniverse(SV_I((unsigned)&ai_FallbackBuilding));
                             v = SV_I((unsigned)&ai_FallbackBuilding);
@@ -5254,21 +5244,21 @@ lgroup:
                             v = SV_I((unsigned)&ai_PlayerBuilding);
                         }
                     } else {
-                        t = init_ObjectSceneUniverse(SV_I((unsigned)&full_data_6f22fc));
+                        t = init_ObjectSceneUniverse(SV_I((unsigned)&sv_ClickedContact));
                         v = SV_I((unsigned)&ai_FallbackBuilding);
                         if (v == 0)
                             v = SV_I((unsigned)&ai_PlayerBuilding);
                     }
                     if (-1 < t)
-                        ai_Unk4c5460(*(int *)(ch + 2), *(int *)(v + 1), *(int *)(SV_I((unsigned)&full_data_6f22fc) + 1));
+                        ai_Unk4c5460(*(int *)(ch + 2), *(int *)(v + 1), *(int *)(SV_I((unsigned)&sv_ClickedContact) + 1));
                 }
                 pp++;
             } while ((int)pp < (unsigned)((unsigned)ai_SceneChars + 0x80));
             sv_ClearSelection();
-            SV_I((unsigned)&full_data_6f22fc) = 0;
+            SV_I((unsigned)&sv_ClickedContact) = 0;
         }
 lafter:
-        if (SV_I((unsigned)&full_data_760458) == 0)
+        if (SV_I((unsigned)&sv_ClickedBuilding) == 0)
             goto lend;
     }
     sv_Unk52bbc0();
@@ -5859,20 +5849,20 @@ void sv_CameraFollow(void)
     }
     if (SV_I((unsigned)&sv_FrameDepth) <= SV_I((unsigned)&sv_FrameBase) || fl) {
         if ((d3_VecEqual(sv_CameraObj + 0x84, (char *)(unsigned)&sv_ViewRotX, 0.1f) == 0 || d3_VecEqual(sv_CameraObj + 0x4c, (char *)(unsigned)&sv_ViewPosX, 0.1f) == 0)
-            && (!fl && (sv_Unk528140(), SV_I((unsigned)&full_data_6f22ec) != 0))) {
-            n = *(int *)(SV_I((unsigned)&full_data_6f22ec) + 0x1d4);
+            && (!fl && (sv_Unk528140(), SV_I((unsigned)&sv_FocusObject) != 0))) {
+            n = *(int *)(SV_I((unsigned)&sv_FocusObject) + 0x1d4);
             if (n != 0 && *(int *)(n + 0x18c) != 0)
-                ((int (*)())*(int *)(n + 0x18c))(SV_I((unsigned)&full_data_6f22ec), 3, n + 400, 0);
-            SV_I((unsigned)&full_data_6f22ec) = 0;
+                ((int (*)())*(int *)(n + 0x18c))(SV_I((unsigned)&sv_FocusObject), 3, n + 400, 0);
+            SV_I((unsigned)&sv_FocusObject) = 0;
         }
-    } else if (SV_I((unsigned)&sv_FrameDepth) - SV_I((unsigned)&sv_PopRequest) <= SV_I((unsigned)&full_data_6f22a8)) {
+    } else if (SV_I((unsigned)&sv_FrameDepth) - SV_I((unsigned)&sv_PopRequest) <= SV_I((unsigned)&sv_FocusDepth)) {
         sv_Unk528140();
-        SV_I((unsigned)&full_data_6f22a8) = SV_I((unsigned)&sv_FrameDepth) - SV_I((unsigned)&sv_PopRequest);
-        if (SV_I((unsigned)&full_data_6f22ec) != 0) {
-            n = *(int *)(SV_I((unsigned)&full_data_6f22ec) + 0x1d4);
+        SV_I((unsigned)&sv_FocusDepth) = SV_I((unsigned)&sv_FrameDepth) - SV_I((unsigned)&sv_PopRequest);
+        if (SV_I((unsigned)&sv_FocusObject) != 0) {
+            n = *(int *)(SV_I((unsigned)&sv_FocusObject) + 0x1d4);
             if (n != 0 && *(int *)(n + 0x18c) != 0)
-                ((int (*)())*(int *)(n + 0x18c))(SV_I((unsigned)&full_data_6f22ec), 3, n + 400, 0);
-            SV_I((unsigned)&full_data_6f22ec) = 0;
+                ((int (*)())*(int *)(n + 0x18c))(SV_I((unsigned)&sv_FocusObject), 3, n + 400, 0);
+            SV_I((unsigned)&sv_FocusObject) = 0;
         }
         if (SV_I((unsigned)&sv_SelectedItem) == 0)
             return;
@@ -5940,15 +5930,15 @@ l9f2:
         goto l72;
     }
     if (SV_I((unsigned)&ai_PlayerBuilding) == 0) {
-        if (SV_I((unsigned)&ai_FallbackBuilding) != 0 && SV_I((unsigned)&sv_PanelShown) != 0 && SV_I((unsigned)&full_data_6f22fc) != 0 && SV_I((unsigned)&ai_SelectedCount) == 0 && sv_OtherSelected == 0) {
+        if (SV_I((unsigned)&ai_FallbackBuilding) != 0 && SV_I((unsigned)&sv_PanelShown) != 0 && SV_I((unsigned)&sv_ClickedContact) != 0 && SV_I((unsigned)&ai_SelectedCount) == 0 && sv_OtherSelected == 0) {
             SV_I((unsigned)&sv_PopRequest) = SV_I((unsigned)&sv_FrameDepth) - SV_I((unsigned)&sv_FrameBase) + 1;
             d3_SetObjectPos(sv_CameraObj, (unsigned)&sv_ViewPosX);
             d3_SetObjectRot(sv_CameraObj, (unsigned)&sv_ViewRotX);
             goto lbb6;
         }
-    } else if (SV_I((unsigned)&full_data_6f22fc) != 0 && SV_I((unsigned)&ai_SelectedCount) == 0 && sv_OtherSelected == 0) {
+    } else if (SV_I((unsigned)&sv_ClickedContact) != 0 && SV_I((unsigned)&ai_SelectedCount) == 0 && sv_OtherSelected == 0) {
         sb_PlaySample(snd_RoomBank, "RaumWechseln_s", 1, 0x3f, 0x7f, 0, 0);
-        *(short *)(SV_I((unsigned)&ai_PlayerBuilding) + 0x29) = *(short *)SV_I((unsigned)&full_data_6f22fc);
+        *(short *)(SV_I((unsigned)&ai_PlayerBuilding) + 0x29) = *(short *)SV_I((unsigned)&sv_ClickedContact);
         SV_I((unsigned)&sv_PopRequest) = SV_I((unsigned)&sv_FrameDepth) - SV_I((unsigned)&sv_FrameBase) + 1;
         d3_SetObjectPos(sv_CameraObj, (unsigned)&sv_ViewPosX);
         d3_SetObjectRot(sv_CameraObj, (unsigned)&sv_ViewRotX);
@@ -6033,17 +6023,17 @@ l1a:
             sv_Unk528140();
     } else {
         SV_I((unsigned)&sv_PopRequest) = 1;
-        if (SV_I((unsigned)&full_data_6f22a8) < SV_I((unsigned)&sv_FrameDepth) - 1)
+        if (SV_I((unsigned)&sv_FocusDepth) < SV_I((unsigned)&sv_FrameDepth) - 1)
             goto l72;
         if (SV_I((unsigned)&ai_PlayerBuilding) != 0 || SV_I((unsigned)&ai_FallbackBuilding) != 0)
             sv_Unk528140();
-        SV_I((unsigned)&full_data_6f22a8) = SV_I((unsigned)&sv_FrameDepth) - SV_I((unsigned)&sv_PopRequest);
+        SV_I((unsigned)&sv_FocusDepth) = SV_I((unsigned)&sv_FrameDepth) - SV_I((unsigned)&sv_PopRequest);
     }
-    if (SV_I((unsigned)&full_data_6f22ec) != 0) {
-        v = *(int *)(SV_I((unsigned)&full_data_6f22ec) + 0x1d4);
+    if (SV_I((unsigned)&sv_FocusObject) != 0) {
+        v = *(int *)(SV_I((unsigned)&sv_FocusObject) + 0x1d4);
         if (v != 0 && *(int *)(v + 0x18c) != 0)
-            ((int (*)())*(int *)(v + 0x18c))(SV_I((unsigned)&full_data_6f22ec), 3, v + 400, 0);
-        SV_I((unsigned)&full_data_6f22ec) = 0;
+            ((int (*)())*(int *)(v + 0x18c))(SV_I((unsigned)&sv_FocusObject), 3, v + 400, 0);
+        SV_I((unsigned)&sv_FocusObject) = 0;
     }
     sv_ResetSelection();
 l72:
@@ -7831,6 +7821,7 @@ int sv_SavedMinY = 0;  /* 0x6f2298 */
 int sv_FrameDepth = 0;  /* 0x6f229c, the depth of the frame callback stack */
 int sv_PopRequest = 0;  /* 0x6f22a0 */
 int sv_FrameBase = 0;  /* 0x6f22a4, the depth a screen was entered at (the base of the pop count) */
+int sv_FocusDepth = 0;  /* 0x6f22a8, sv_FrameDepth when sv_FocusObject was focused (sv_HandleObjects); the camera code releases the focus when the frame stack drops below it */
 int sv_CameraScrolled = 0;  /* 0x6f22b4 */
 int ai_Unk6f22c0 = 0;  /* 0x6f22c0 */
 struct D2SURF *sv_GroundplanSurf = 0;  /* 0x6f22c4, the groundplan bitmap while sv_LoadGroundplan reads it */
@@ -7839,8 +7830,10 @@ int sv_BorderViewX = 0;  /* 0x6f22cc */
 int sv_BorderViewY = 0;  /* 0x6f22d0 */
 float sv_CameraHeightFactor = 0;  /* 0x6f22d4 */
 float sv_CameraAngleFactor = 0;  /* 0x6f22d8 */
+char * sv_FocusObject = 0;  /* 0x6f22ec, the clicked object the camera was placed at (d3t_PlaceAtObject): its handler (+0x1d4) gets message 2 at the focus (+0x108) and 3 at the release (+0x18c) */
 int sv_HoverItem = 0;  /* 0x6f22f0, the item (AIOBJ) under the pointer, from the picked object's +0x200 (kind 1) */
 int sv_HoverBuilding = 0;  /* 0x6f22f4, the building (AIBLD) under the pointer (kind 2) */
+int sv_ClickedContact = 0;  /* 0x6f22fc, sv_HoverContact at the last click (sv_HandleObjects) */
 int sv_HoverContact = 0;  /* 0x6f2300, the goods item a contact gate under the pointer resolves to */
 int sv_SelectedModel = 0;  /* 0x6f2304 */
 char * ai_PlayerBuilding = 0;  /* 0x6f2308 */
@@ -7887,6 +7880,7 @@ int sv_ShownChar = 0;  /* 0x6f23d0, sv_SelectedChar when sv_UpdatePanel last bui
 int sv_ShownOther = 0;  /* 0x6f23d4, sv_OtherSelected when sv_UpdatePanel last built the panel */
 int sv_ShownCount = 0;  /* 0x6f23d8, ai_SelectedCount when sv_UpdatePanel last built the panel */
 int sv_PointerSpriteFor = 0;  /* 0x6f23dc, reset with the pointer sprite (-1 / 0 when sv_HoverPick frees d2_PointerSprite; reasoned: what the sprite was made for) */
+char * sv_LastPicked = 0;  /* 0x6f23e0, ai_PickedObject at the last click (sv_HandleObjects; nothing reads it) */
 unsigned char ai_GameState = 0;  /* 0x6f25ac */
 int ai_OptionScrollSpeed = 0;  /* 0x6f3614 */
 int sv_PanelFlag = 0;  /* 0x75e8c0, 1 when the panel is up (an int; cm.h / f3init.c) */
@@ -7901,6 +7895,9 @@ float sv_ViewPos[4] = {0};  /* 0x75fb80, the stored camera position (a padded ve
 float sv_ViewRot[4] = {0};  /* 0x75fb90, its rotation (D3OBJECT.rotation) */
 float sv_SkyScale = 0;  /* 0x760420 */
 int sv_BandActive = 0;  /* 0x760440 */
+int sv_ClickedBuilding = 0;  /* 0x760458, sv_HoverBuilding at the last click (sv_HandleObjects) */
+int sv_ClickedItem = 0;  /* 0x76045c, sv_HoverItem at the last click */
+int sv_ClickedChar = 0;  /* 0x760460, ai_PickedChar at the last click */
 int sv_SkyPhase = 0;  /* 0x760464 */
 int sv_CloudChance = 0;  /* 0x760480 */
 int sv_SeasonClimate = 0;  /* 0x760484 */

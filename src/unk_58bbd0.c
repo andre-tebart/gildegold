@@ -107,6 +107,8 @@ extern GAPDATA full_data_6f5a6f[];
 extern GAPDATA full_data_6f5a80[];
 extern struct D2PIC *d2_Pics;
 #include "d2_types.h"
+extern int sv_ClickedContact;  /* 0x6f22fc, sv.h */
+extern int sv_ClickedItem;  /* 0x76045c, sv.h */
 extern D2VIEW d2_Views[];
 extern D2WIN d2_Wins[];
 extern GAPDATA full_data_6f4f00[];
@@ -173,8 +175,6 @@ extern unsigned char kb_Last;
 extern char * ai_BTypes;
 extern char * ai_Goods;
 extern int ai_SelectedCount;
-extern GAPDATA full_data_6f22fc[];
-extern GAPDATA full_data_76045c[];
 extern int sv_FrameBase;
 extern int sv_FrameDepth;
 extern int sv_PanelFlag;
@@ -3123,11 +3123,11 @@ void ai_TradeContactChecks(void)
     int r;
     int p;
 
-    if (U_I((unsigned)&full_data_76045c) != 0 &&
-        ((c = *(char *)(U_I((unsigned)&ai_Goods) + *(unsigned short *)U_I((unsigned)&full_data_76045c) * 0x41), c == 6 || c == 2))) {
-        if (gm_PermissionBits(U_W((unsigned)&ai_PlayerId), U_I((unsigned)&ai_FallbackBuilding), U_I((unsigned)&full_data_76045c), 0) & 0x4000) {
+    if (U_I((unsigned)&sv_ClickedItem) != 0 &&
+        ((c = *(char *)(U_I((unsigned)&ai_Goods) + *(unsigned short *)U_I((unsigned)&sv_ClickedItem) * 0x41), c == 6 || c == 2))) {
+        if (gm_PermissionBits(U_W((unsigned)&ai_PlayerId), U_I((unsigned)&ai_FallbackBuilding), U_I((unsigned)&sv_ClickedItem), 0) & 0x4000) {
             r = gm_Query(*(int *)(U_I((unsigned)&ai_FallbackBuilding) + 0x5d), 2, 6, 0, 0xfd);
-            ai_Unk59f410(U_I((unsigned)&full_data_76045c));
+            ai_Unk59f410(U_I((unsigned)&sv_ClickedItem));
             init_ShowBuildingScene(U_I((unsigned)&ai_FallbackBuilding), 0xfd);
             init_FinishBuildingScene(U_I((unsigned)&ai_FallbackBuilding), r);
             U_I((unsigned)&sv_FrameBase) = U_I((unsigned)&sv_FrameDepth);
@@ -3145,9 +3145,9 @@ void ai_TradeContactChecks(void)
             init_FinishBuildingScene(U_I((unsigned)&ai_FallbackBuilding), r);
         }
     }
-    if (U_I((unsigned)&full_data_6f22fc) != 0 && U_I((unsigned)&ai_SelectedCount) == 0) {
+    if (U_I((unsigned)&sv_ClickedContact) != 0 && U_I((unsigned)&ai_SelectedCount) == 0) {
         r = gm_Query(*(int *)(U_I((unsigned)&ai_FallbackBuilding) + 0x5d), 2, 6, 0, 0xfd);
-        ai_Unk59f410(U_I((unsigned)&full_data_6f22fc));
+        ai_Unk59f410(U_I((unsigned)&sv_ClickedContact));
         init_ShowBuildingScene(U_I((unsigned)&ai_FallbackBuilding), 0xfd);
         init_FinishBuildingScene(U_I((unsigned)&ai_FallbackBuilding), r);
     }

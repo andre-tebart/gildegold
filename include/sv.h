@@ -239,6 +239,7 @@ extern int sv_SavedMinY;                                    /* 0x6f2298 */
 extern int sv_FrameDepth;                                   /* 0x6f229c */
 extern int sv_PopRequest;                                   /* 0x6f22a0 */
 extern int sv_FrameBase;                                    /* 0x6f22a4 */
+extern int sv_FocusDepth;                                    /* 0x6f22a8 */
 extern int sv_CameraScrolled;                                    /* 0x6f22b4 */
 extern int ai_Unk6f22c0;                                    /* 0x6f22c0 */
 extern struct D2SURF *sv_GroundplanSurf;                                   /* 0x6f22c4 */
@@ -247,6 +248,7 @@ extern int sv_BorderViewX;                                    /* 0x6f22cc */
 extern int sv_BorderViewY;                                    /* 0x6f22d0 */
 extern float sv_CameraHeightFactor;                         /* 0x6f22d4 */
 extern float sv_CameraAngleFactor;                          /* 0x6f22d8 */
+extern char * sv_FocusObject;                               /* 0x6f22ec */
 extern int sv_SelectedModel;                                    /* 0x6f2304 */
 extern char * ai_PlayerBuilding;                            /* 0x6f2308 */
 extern char * ai_FallbackBuilding;                          /* 0x6f230c */
@@ -285,11 +287,13 @@ extern int sv_PickY;  /* 0x623e9c */
 extern int sv_HoverLast;  /* 0x6f1c4c */
 extern int sv_HoverItem;  /* 0x6f22f0 */
 extern int sv_HoverBuilding;  /* 0x6f22f4 */
+extern int sv_ClickedContact;  /* 0x6f22fc */
 extern int sv_HoverContact;  /* 0x6f2300 */
 extern int sv_HoverBldPerms;  /* 0x6f2324 */
 extern int sv_HoverItemPerms;  /* 0x6f2328 */
 extern int sv_HoverCharPerms;  /* 0x6f232c */
 extern int sv_PointerSpriteFor;  /* 0x6f23dc */
+extern char * sv_LastPicked;  /* 0x6f23e0 */
 extern unsigned char sv_OtherSelected;  /* 0x6f2338 */
 extern int sv_ShownBuilding;  /* 0x6f23bc */
 extern int sv_ShownFallback;  /* 0x6f23c0 */
@@ -313,6 +317,9 @@ extern float sv_ViewPos[4];                                 /* 0x75fb80, the sto
 extern float sv_ViewRot[4];                                 /* 0x75fb90, its rotation */
 extern float sv_SkyScale;                                  /* 0x760420 */
 extern int sv_BandActive;                                    /* 0x760440 */
+extern int sv_ClickedBuilding;                               /* 0x760458 */
+extern int sv_ClickedItem;                                   /* 0x76045c */
+extern int sv_ClickedChar;                                   /* 0x760460 */
 extern int sv_SkyPhase;                                    /* 0x760464 */
 extern int sv_CloudChance;                                    /* 0x760480 */
 extern int sv_SeasonClimate;                                    /* 0x760484 */
