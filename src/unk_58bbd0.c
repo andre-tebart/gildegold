@@ -6717,7 +6717,7 @@ void ai_Unk599aa0(int param_1, int param_2)
 }
 
 void sv_ReleaseNamePlates(void); int d3t_PlaceAtObject(); void d2_SetBackgroundTexture(); 
-void sv_ClearNamePlates(void); struct D3OBJECT * d3if_Pick(float x, float y, int flags, int mask); int gm_GetGoodsValue(); int gm_Unk509e30(void *list, unsigned char p);
+void sv_ClearNamePlates(void); struct D3OBJECT * d3if_Pick(float x, float y, int flags, int mask); int gm_GetGoodsValue(); int gm_SumListAmounts(void *list, unsigned char p);
 int gm_PlayerFactor(int a, unsigned char k); int gm_Unk50a250(); int gm_Unk50a150(); void d2_EnableViewObjects();
 void he_MessageBoxQuickjump(int a1, int a2, char *text, char fl, int a5, int a6, int a7, char *jump, char *text2); void he_Unk53e1f0(); void d2_RadioClear(int g); int d2_CreateRadioGroup(int n, ...);
 int ai_PersonnelBook(); int ai_StorageWindow(); void ai_MasterLetterWindow(); int ai_OpenTransport();
@@ -7212,7 +7212,7 @@ void ai_WineCellarWindow(void)
     k = *(char *)(unsigned)&ai_OwnPlayer;
     win = d2_OpenForm(0, 0, "locations\\wohnsitz\\weinkeller");
     own = gm_GetGoodsValue((char *)(unsigned)&ai_Chars + U_W((unsigned)&ai_PlayerId) * 0x21c);
-    cellar = ((int (*)(int))gm_Unk509e30)(U_I(U_I((unsigned)&sv_PanelShown) + 0x14));
+    cellar = ((int (*)(int))gm_SumListAmounts)(U_I(U_I((unsigned)&sv_PanelShown) + 0x14));
     d2_CentreViewWindows(win);
     d2_SetForm(win, 0);
     sv_FitForm(U_I((unsigned)&d2_LastWindow));
@@ -8326,7 +8326,7 @@ int ai_Unk59d410(int param_1, int param_2, int param_3, unsigned char param_4)
     }
 }
 
-int gm_Unk509e30(void *list, unsigned char p); char * he_FindEvent(int n, ...); char * he_NextEvent(void); int ai_AmountMenu();
+int gm_SumListAmounts(void *list, unsigned char p); char * he_FindEvent(int n, ...); char * he_NextEvent(void); int ai_AmountMenu();
 int gm_BuildingClass(); unsigned gm_PermissionBits(unsigned p1, unsigned char *b, unsigned short *o, int c); int sv_MessageBoxGreen(); 
 void sv_Unk52adb0(void); void init_LoadObjectScene();
 char d3_DeflateScene(unsigned int flags); char d3_InflateScene(unsigned int flags); void init_SetCharacterAnimations(unsigned char *b);
@@ -9325,7 +9325,7 @@ void ai_Unk59fbf0(int param_1)
     int win;
 
     room = gm_Query(U_I(param_1 + 0x5d), 2, 6, 0, 0x115);
-    money = ((int (*)(int, unsigned char))gm_Unk509e30)(U_I(room + 0x14), *(unsigned char *)(unsigned)&ai_OwnPlayer);
+    money = ((int (*)(int, unsigned char))gm_SumListAmounts)(U_I(room + 0x14), *(unsigned char *)(unsigned)&ai_OwnPlayer);
     win = d2_OpenForm(0, 0, "locations\\zunfthaus\\gildenkasse");
     d2_CentreViewWindows(win);
     d2_SetForm(win, 1);
@@ -9730,7 +9730,7 @@ void ai_Unk5a0950(unsigned char *param_1)
 
     kind = *(char *)(U_I((unsigned)&ai_BTypes) + *param_1 * 0x24d);
     room = gm_Query(U_I(param_1 + 0x5d), 2, 6, 0, 0x142);
-    money = gm_Unk509e30(U_I(room + 0x14), *(unsigned char *)(unsigned)&ai_OwnPlayer);
+    money = gm_SumListAmounts(U_I(room + 0x14), *(unsigned char *)(unsigned)&ai_OwnPlayer);
     own = gm_GetGoodsValue((char *)(unsigned)&ai_Chars + U_W((unsigned)&ai_PlayerId) * 0x21c);
     id = 0;
     if (kind == 0x17 && *(unsigned char *)(((unsigned)&ai_CharInts + 0x165) + U_W((unsigned)&ai_PlayerId) * 0x21c) == 0x1e)

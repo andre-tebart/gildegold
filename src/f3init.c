@@ -262,7 +262,7 @@ typedef struct INIT_SITELIST {
 #define INIT_FIELD_RELIGION 0x0c        /* the character's religion field: 0 catholic / 1 protestant (the two judges) */
 
 /* the functions of f3gm.c this unit calls (declared by their addresses there) */
-float gm_Unk508740();
+float gm_JobWage();
 extern char ai_PlayerSlots[4][0x2f4];      /* 0x7e3f40, the player slots */
 extern INIT_STOCKBLOCK init_StockBlock[];  /* 0x7d6a60, one 0x2a90-byte stock block per player (the records start at +0x10) */
 extern char * ai_PlayerBuilding;                /* 0x6f2308 */

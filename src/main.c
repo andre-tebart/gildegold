@@ -294,7 +294,7 @@ void main_RundenBeginn(void);
 void main_EndRound(void);
 void main_RoundReport(void);
 
-void main_Unk53a520(unsigned short pl);
+void main_SettleRound(unsigned short pl);
 void main_Unk53cb40(void);
 
 extern unsigned int d3anim_CacheMax;   /* 0x5f927c, d3_anim.h */
@@ -3766,7 +3766,7 @@ void main_RoundReport(void)
         while (b != 0) {
             if (*(short *)(b + 0x27) == (short)U_I((unsigned)&ai_PlayerId) || *(short *)(b + 0x25) == (short)U_I((unsigned)&ai_PlayerId)) {
                 t = gm_BuildingClass(*b);
-                v = gm_Unk508d80(b, U_I((unsigned)&ai_PlayerId) & 0xffff, a);
+                v = gm_BuildingBalance(b, U_I((unsigned)&ai_PlayerId) & 0xffff, a);
                 if (v != 0 || (t != 5 && t != 6)) {
                     w1fc += a[0];
                     w1ec += a[1];
@@ -4170,7 +4170,7 @@ void main_Unk53b2e0(void)
         pc = (char *)((unsigned)&ai_CharInts + 0x4);
         do {
             if (*(short *)(pc - 8) != -1 && *pc != 0)
-                main_Unk53a520(i);
+                main_SettleRound(i);
             pc += 0x21c;
             i++;
         } while ((int)pc < ((unsigned)((unsigned)ai_CharInts + 0x653fe) + 0x6));
@@ -4253,331 +4253,345 @@ void main_Unk53b2e0(void)
     *(char *)(unsigned)&snd_AmbientOn = sv;
 }
 
-float gm_Unk508740();
+#define MAIN_ME ((AICHAR *)ai_PlayerChar)  /* the player's character (ai_PlayerChar: unsigned short *) */
 
-/* 0x53a520, applies the round result of player `pl` to all its figures (reset flags, rewards, relations between the figures and the other players; Sleep(0x14) every 0x20 changes; ROUGH, the __ftol operands are guesses) */
-void main_Unk53a520(unsigned short pl)
+/* 0x53a520, settles the round for the player pl: every building of pl loses its round sums and the 0x3800 flags; the kinds 4 / 0x10 / 0x13 (stores) age their objects (+0x37 by the
+   rank of the target building, message 0x2b / 0xe), the kind 5 clears its three records and pays the owner level * 16000 below a worth of 160000, the kinds 0xb .. 0xd (the player's) check the
+   master (cm_SendMessage3d / flags1b4 bit 0), the kind 0x1d runs the graveyard; a building whose master is the player gets the 0x1b equipment message; buildings of a player that is gone or
+   kind 0 / 0xd go to the player (cm_SendOwnership, 0x1b, a 0x31 for every character living there); most kinds wear down (gm_ChangeBuildingState -2 .. -4 with 69 percent). Then every building of pl
+   pays its workers (gm_ListWorkers's lists: wage * wageRate / 100, AICHAR.wage), places the ones without a figure on the stage, moves their opinion of pl by wageRate / workRate, lets the
+   unhappy ones quit (message 0x33 / 0x34 in 4 .. 9 hours) and lose 10 percent of the skills +0x82 / +0x83 above 42, pays the others of the list, and moves the goods of gm_BuildingBalance's summary.
+   sv_PumpNet and Sleep(20) every 0x20 messages
+   @deep Rewrote 0x53a520 from the original's disassembly, block by block: the building walk (three round
+   sums, the word flags 0x3800, the kind 4/0x10/0x13 object ageing with the branchless clamp, kind 5
+   records and the level * 16000 payment, the kind 0xb..0xd master check with the four flags1b4..target
+   ints, the 0x1b messages that the original sends without a memset (msg1 at +0x144, msg2 at +0x4c), the
+   ownership hand-over with the 0x31 per resident, the 69-percent wear), the title group check, the worker
+   pay loop over gm_ListWorkers (its +4 list walked by one pointer over both passes, wage = gm_JobWage *
+   (wageRate * 0.01), the stage placement, the wageRate / workRate opinion steps with their else-if
+   structure, the 0x33 (msg4 +0x23c) / 0x34 (msg1) quit messages each with its own block, the 0.9 skill
+   loss above 42.0f), the 12 others of the list (a second wage slot) and the gm_BuildingBalance goods
+   moves. gm_ListWorkers returns the count (fixed in f3gm.c, its prototypes in f3gm.h). 1044 vs 1047
+   instructions, 561 differing. Left is allocation: the original keeps the building in esi with ebp as a
+   zero register (push ebp / cmp edi, ebp for every 0) and the type record spilled to [esp+0x18], ours
+   keeps the building in ebp and pushes immediates; that rotation runs through the whole first loop
+   (0x53a528 .. 0x53aa6f) and the [esp+0x1c]/[esp+0x20] counter slots of the pass loop (0x53ab72,
+   0x53b09d); plus scheduling in the 0x31 / 0x33 message stores (0x53a9a1, 0x53ae5a), the word test of
+   flags5a (original mov ax / test ah, 0x38) and a frame 0x10 smaller than the original's 0x378 (one of the
+   16-byte temporaries sits in registers). */
+void main_SettleRound(unsigned short pl)
 {
-    int cnt = 0;
-    int left = 0x100;
-    unsigned char *c;
-    char *k;
-    int ik, t, r, v, m;
-    int ev[0x3e];
-    int tmp;
-    char cv, ck, tb;
-    unsigned char *p;
-    int pe = pl * 0x21c;
-    int *pp, *pn;
-    int sub, ps, pq, qb, q, r2, cnt2, ft, pass;
-    int nb[0x25];
-    char buf[0x40];
-    unsigned u;
+    AIMSG msg2;     /* 0x1b to a new owner; gm_ListWorkers's worker lists; 0x31 */
+    AIMSG msg1;     /* 0x1b to the master; 0x34 */
+    AIMSG msg4;     /* 0x33 */
+    int sum[0x11];  /* gm_BuildingBalance's summary */
+    int ev[4];
+    int cnt;
+    AIBLD *c;
+    AIBLD *p;
+    AIOBJ *o;
+    AICHAR *ps;
 
-    c = (unsigned char *)U_I((unsigned)&ai_BldsT);
-    do {
-        if (*c != 0 && *(unsigned short *)(c + 0x27) == pl) {
-            k = (char *)(U_I((unsigned)&ai_BTypesT) + *c * 0x24d);
-            c[0x51] = 0; c[0x52] = 0; c[0x53] = 0; c[0x54] = 0;
-            c[0x55] = 0; c[0x56] = 0; c[0x57] = 0; c[0x58] = 0;
-            c[0x4d] = 0; c[0x4e] = 0; c[0x4f] = 0; c[0x50] = 0;
-            if ((*(unsigned short *)(c + 0x5a) & 0x3800) != 0) {
-                cm_SendSetField(*(int *)(c + 1), 0x5a, 2, 0, 0x3800);
-                cnt++;
-            }
-            cv = *k;
-            ik = cnt;
-            if (cv == 4 || cv == 0x10 || cv == 0x13) {
-                r = gm_Query(*(int *)(c + 0x5d), 1, 0, 0xca);
-                while (r != 0) {
-                    ik++;
-                    if (*(unsigned char *)(r + 0x37) < 6) {
-                        ai_Unk4c5010(*(int *)(c + 1), -1, *(int *)(r + 2));
-                    } else {
-                        v = gm_FindBuildingById(*(int *)(r + 0x2a));
-                        if (v == 0) {
-                            ai_Unk4c47b0(*(int *)(r + 2));
-                        } else {
-                            char b = *(char *)(r + 0x37) - (char)gm_BuildingRank(v) * 2;
-                            tmp = (b < 0) ? 0 : (unsigned char)b;
-                            cm_BeginFieldBlock(r, *(int *)(r + 2));
-                            cm_AddFieldDelta(1, 1, r - U_I((unsigned)&cm_FieldObject) + 0x37, &tmp);
+    cnt = 0;
+    c = ai_BldsT;
+    {
+        int left = 0x100;
+
+        do {
+            if (c->type != 0 && c->owner == pl) {
+                AIBTYPE *bt = &ai_BTypesT[c->type];
+                char kind;
+
+                c->roundSums[1] = 0;
+                c->roundSums[2] = 0;
+                c->roundSums[0] = 0;
+                if ((short)(c->flags5aw & 0x3800) != 0) {
+                    cm_SendSetField(c->id, 0x5a, 2, 0, 0x3800);
+                    cnt++;
+                }
+                kind = bt->kind;
+                if (kind == 4 || kind == 0x10 || kind == 0x13) {
+                    o = (AIOBJ *)gm_Query((void *)c->objList, 1, 0, 0xca);
+                    while (o != 0) {
+                        cnt++;
+                        if (o->unk37 <= 5)
+                            ai_Unk4c5010(c->id, -1, o->objId);
+                        else {
+                            unsigned char *t = (unsigned char *)gm_FindBuildingById(o->unk2a);
+
+                            if (t != 0) {
+                                char age = o->unk37 - (char)gm_BuildingRank(t) * 2;
+
+                                age = age < 0 ? 0 : age;
+                                cm_BeginFieldBlock((char *)o, o->objId);
+                                cm_AddFieldDelta(1, 1, (char *)&o->unk37 - cm_FieldObject, &age);
+                                cm_SendFieldDeltas();
+                            } else
+                                ai_Unk4c47b0(o->objId);
+                        }
+                        o = (AIOBJ *)gm_QueryNext();
+                    }
+                } else if (kind == 5) {
+                    int zero = 0;
+                    int i;
+
+                    cm_BeginFieldBlock((char *)c, c->id);
+                    for (i = 0; i < 3; i++)
+                        cm_AddFieldValue(4, 1, (char *)&c->plants + i * 12 - cm_FieldObject, &zero);
+                    cm_SendFieldValues();
+                    cnt++;
+                    if (ai_CharsT[pl].kind != 6 && ai_CharsT[pl].kind != 7 && gm_GetGoodsValue(ai_Chars[pl]) < 160000) {
+                        cnt++;
+                        cm_SendMoveGoods(ai_CharsT[pl].netId, -1, ai_OwnPlayer, (unsigned char)bt->level * 16000);
+                    }
+                } else if (kind == 0xd || kind == 0xc || kind == 0xb) {
+                    if (c->owner == MAIN_ME->id) {
+                        AICHAR *m = (AICHAR *)gm_FindCharacterByMaster((int)c);
+
+                        if (m == 0) {
+                            cnt++;
+                            cm_SendMessage3d((char *)c, 1, 0, ai_BTypesT[c->type].unk223);
+                        } else if ((m->flags1b4 & 1) == 0) {
+                            ev[0] = m->flags1b4 | 1;
+                            ev[1] = m->budget;
+                            ev[2] = m->unk1bc;
+                            ev[3] = m->target;
+                            cm_BeginFieldBlock((char *)m, m->netId);
+                            cm_AddFieldDelta(4, 1, (char *)&m->flags1b4 - cm_FieldObject, ev);
                             cm_SendFieldDeltas();
                         }
                     }
-                    r = gm_QueryNext();
-                }
-            } else if (cv == 5) {
-                tmp = 0;
-                cm_BeginFieldBlock(c, *(int *)(c + 1));
-                ik = 0;
-                do {
-                    cm_AddFieldValue(4, 1, (int)c + ik * 12 - U_I((unsigned)&cm_FieldObject) + 0x71, &tmp);
-                    ik++;
-                } while (ik < 3);
-                cm_SendFieldValues();
-                ik = cnt + 1;
-                u = pl;
-                if (*(char *)(((unsigned)&ai_CharsT + 0x2) + u * 0x21c) != 6 && *(char *)(((unsigned)&ai_CharsT + 0x2) + u * 0x21c) != 7
-                    && gm_GetGoodsValue(PL(u)) < 160000) {
-                    cm_SendMoveGoods(U_I((unsigned)&ai_CharInts + u * 0x21c), -1, U_I((unsigned)&ai_OwnPlayer), (unsigned char)k[0x247] * 16000);
-                    ik = cnt + 2;
-                }
-            } else if (cv == 0xd || cv == 0xc || cv == 0xb) {
-                if (*(short *)(c + 0x27) == **(short **)(unsigned)&ai_PlayerChar) {
-                    r = gm_FindCharacterByMaster(c);
-                    if (r == 0) {
-                        cm_SendMessage3d(c, 1, 0, *(char *)(U_I((unsigned)&ai_BTypesT) + *c * 0x24d + 0x223));
-                        ik = cnt + 1;
-                    } else if ((*(unsigned char *)(r + 0x1b4) & 1) == 0) {
-                        ev[1] = *(int *)(r + 0x1b8);
-                        ev[2] = *(int *)(r + 0x1bc);
-                        ev[0] = *(int *)(r + 0x1b4) | 1;
-                        ev[3] = *(int *)(r + 0x1c0);
-                        cm_BeginFieldBlock(r, *(int *)(r + 4));
-                        cm_AddFieldDelta(4, 1, r - U_I((unsigned)&cm_FieldObject) + 0x1b4, ev);
-                        cm_SendFieldDeltas();
+                } else if (kind == 0x1d)
+                    unk_Unk4f1de0((char *)c);
+                if (c->masterId == MAIN_ME->id && (c->flags5a & 3) == 0) {
+                    kind = bt->kind;
+                    if (kind != 1 && kind != 3 && kind != 6 && kind != 10 && kind != 11 && kind != 12 && kind != 13 && kind != 15 && kind != 0x1c && kind != 0x1b && kind != 0x1a
+                        && kind != 0x19 && kind != 0x18 && kind != 0x17) {
+                    msg1.type = 0x1b;
+                    msg1.to = MAIN_ME->netId;
+                    msg1.fromId = -1;
+                    msg1.flags = 2;
+                    msg1.arg[0] = c->id;
+                    msg1.arg[1] = gm_EquipmentValue((unsigned char *)c, c->level);
+                    cm_SendLongMessage((char *)&msg1);
                     }
                 }
-            } else if (cv == 0x1d) {
-                unk_Unk4f1de0(c);
-            }
-            if (*(short *)(c + 0x25) == **(short **)(unsigned)&ai_PlayerChar && (c[0x5a] & 3) == 0) {
-                cv = *k;
-                if (cv != 1 && cv != 3 && cv != 6 && cv != 10 && cv != 11 && cv != 12 && cv != 13
-                    && cv != 15 && cv != 0x1c && cv != 0x1b && cv != 0x1a && cv != 0x19 && cv != 0x18 && cv != 0x17) {
-                    memset(ev, 0, 0xf8);
-                    ((char *)ev)[0] = 0x1b;
-                    ev[1] = *(int *)(*(int *)(unsigned)&ai_PlayerChar + 2);
-                    ev[2] = -1;
-                    ((char *)ev)[0x16] = 2;
-                    ev[0x1d] = gm_EquipmentValue(c, (int)(char)c[0x5c]);
-                    ev[0x1c] = *(int *)(c + 1);
-                    cm_SendLongMessage(ev);
-                }
-            }
-            if (*(char *)(((unsigned)&ai_CharsT + 0x2) + pl * 0x21c) == 0xd || *(char *)(((unsigned)&ai_CharsT + 0x2) + pl * 0x21c) == 0
-                || (cnt = ik, U_I((unsigned)&ai_CharInts + pl * 0x21c) == -1)) {
-                cm_SendOwnership(*(int *)(c + 1), *(int *)(*(int *)(unsigned)&ai_PlayerChar + 2), *(int *)(*(int *)(unsigned)&ai_PlayerChar + 2));
-                cnt = ik + 1;
-                cv = *k;
-                if (cv != 0xd && cv != 0xc && cv != 0xb) {
-                    memset(ev, 0, 0xf8);
-                    ((char *)ev)[0] = 0x1b;
-                    ev[1] = *(int *)(*(int *)(unsigned)&ai_PlayerChar + 2);
-                    ev[2] = -1;
-                    ((char *)ev)[0x16] = 2;
-                    ev[0x1d] = gm_EquipmentValue(c, (int)(char)c[0x5c]);
-                    ev[0x1c] = *(int *)(c + 1);
-                    cm_SendLongMessage(ev);
-                    cnt = ik + 2;
-                    pp = (int *)(unsigned)&ai_CharInts;
-                    do {
-                        if (pp[0x5a] == (int)c) {
-                            memset(ev, 0, 0xf8);
-                            ((char *)ev)[0] = 0x31;
-                            ev[1] = *(int *)(*(int *)(unsigned)&ai_PlayerChar + 2);
-                            ev[2] = *(int *)(c + 1);
-                            ev[0x0a] = U_I(((unsigned)&ai_TimeT + 0x8));
-                            ev[0x08] = U_I((unsigned)&ai_TimeT);
-                            ev[0x09] = U_I((unsigned)&ai_TimeHour);
-                            ev[0x1c] = *pp;
-                            ((char *)ev)[0x16] = 1;
-                            *(short *)((char *)ev + 0x14) = *(short *)((unsigned)&ai_TimeT + 0xc);
-                            cm_SendLongMessage(ev);
-                            cnt++;
-                        }
-                        pp += 0x87;
-                    } while ((int)pp < ((unsigned)((unsigned)ai_CharInts + 0x653fe) + 0x2));
-                }
-            }
-            u = util_RandomInt(100);
-            if ((unsigned short)u > 0x1e) {
-                cv = *k;
-                if (cv != 0xd && cv != 0xc && cv != 0xb && cv != 0x10 && (c[0x5a] & 1) == 0 && cv != 10) {
-                    u = util_RandomInt(3);
-                    gm_Unk50cad0(c, -((int)(u & 0xffff) + 2));
+                if (ai_CharsT[pl].kind == 0xd || ai_CharsT[pl].kind == 0 || ai_CharsT[pl].netId == -1) {
+                    cm_SendOwnership(c->id, MAIN_ME->netId, MAIN_ME->netId);
                     cnt++;
-                }
-            }
-        }
-        c += 0xa9;
-        left--;
-    } while (left != 0);
-    t = gm_Unk504350(*(char *)(((unsigned)&ai_CharInts + 0x160) + pl * 0x21c));
-    if (t > 1 && t < 6)
-        gm_HasBuilding(t);
-    p = (unsigned char *)gm_BuildQuery(1, 6);
-    while (1) {
-        if (p == 0) {
-            if (cnt > 0x20) {
-                sv_PumpNet();
-                Sleep(0x14);
-                cnt = 0;
-            }
-            t = gm_BuildQuery(1, 4, pl);
-            while (t != 0) {
-                r = gm_Unk508d80(t, pl, buf);
-                if (r != 0) {
-                    if (*(int *)(buf + 0x30) != 0 && (r2 = gm_Query(*(int *)(t + 0x5d), 2, 6, 0, 0xe8)) != 0
-                        && (v = gm_Unk509e30(*(int *)(r2 + 0x14), U_I((unsigned)&ai_OwnPlayer))) > 0) {
+                    kind = bt->kind;
+                    if (kind != 0xd && kind != 0xc && kind != 0xb) {
+                        int i;
+
+                        msg2.type = 0x1b;
+                        msg2.fromId = -1;
+                        msg2.to = MAIN_ME->netId;
+                        msg2.flags = 2;
+                        msg2.arg[0] = c->id;
+                        msg2.arg[1] = gm_EquipmentValue((unsigned char *)c, c->level);
+                        cm_SendLongMessage((char *)&msg2);
                         cnt++;
-                        cm_SendMoveGoods(U_I((unsigned)&ai_CharInts + *(unsigned short *)(t + 0x27) * 0x21c), *(int *)(r2 + 2), U_I((unsigned)&ai_OwnPlayer), v);
-                    }
-                    if (*(int *)(buf + 0x3c) != 0) {
-                        r2 = gm_Query(*(int *)(t + 0x5d), 1, 0, 0xf0);
-                        if (r2 != 0 && (v = gm_Unk509e30(*(int *)(r2 + 0x14), U_I((unsigned)&ai_OwnPlayer))) > 0) {
-                            cnt++;
-                            cm_SendMoveGoods(U_I((unsigned)&ai_CharInts + *(unsigned short *)(t + 0x27) * 0x21c), *(int *)(r2 + 2), U_I((unsigned)&ai_OwnPlayer), v);
+                        for (i = 0; i < 0x300; i++) {
+                            if (ai_CharsT[i].bld == c) {
+                                memset(&msg2, 0, sizeof(msg2));
+                                msg2.type = 0x31;
+                                msg2.fromId = c->id;
+                                msg2.to = MAIN_ME->netId;
+                                msg2.time = ai_TimeT;
+                                msg2.flags = 1;
+                                msg2.arg[0] = ai_CharsT[i].netId;
+                                cm_SendLongMessage((char *)&msg2);
+                                cnt++;
+                            }
                         }
                     }
                 }
-                t = gm_BuildNext();
-                if (cnt > 0x20) {
-                    sv_PumpNet();
-                    Sleep(0x14);
-                    cnt = 0;
+                if ((unsigned short)util_Random(100) > 0x1e) {
+                    kind = bt->kind;
+                    if (kind != 0xd && kind != 0xc && kind != 0xb && kind != 0x10 && (c->flags5a & 1) == 0 && kind != 10) {
+                        gm_ChangeBuildingState((unsigned char *)c, -(int)((util_Random(3) & 0xffff) + 2));
+                        cnt++;
+                    }
                 }
             }
-            return;
-        }
-        if (*(unsigned short *)(p + 0x27) == pl) {
-            ps = PL(*(unsigned short *)(p + 0x27));
-            if (*(char *)(U_I((unsigned)&ai_BTypesT) + *p * 0x24d) == 0x1e) {
-                r = ahm_OwnerChar(p);
+            c++;
+            left--;
+        } while (left != 0);
+    }
+    {
+        int t = gm_TitleNumberGroup(ai_CharsT[pl].jobId);
+
+        if (t >= 2 && t <= 5)
+            gm_HasBuilding(t);
+    }
+    p = (AIBLD *)gm_BuildQuery(1, 6);
+    while (p != 0) {
+        if (p->owner == pl) {
+            ps = &ai_CharsT[p->owner];
+            if (ai_BTypesT[p->type].kind == 0x1e) {
+                AICHAR *r = (AICHAR *)ahm_OwnerChar((unsigned char *)p);
+
                 if (r != 0) {
-                    v = ahm_ObjectValue(p);
-                    cm_SendMoveGoodsUnchecked(*(int *)(r + 4), *(int *)(ps + 2), U_I((unsigned)&ai_OwnPlayer), v);
+                    cm_SendMoveGoodsUnchecked(r->netId, ps->netId, ai_OwnPlayer, ahm_ObjectValue((unsigned char *)p));
                     cnt++;
                 }
-            } else {
-                r = gm_Unk502eb0(p, nb);
-                if (r != 0) {
-                    pass = 0;
-                    pn = nb + 1;
+            } else if (gm_ListWorkers((unsigned char *)p, (int *)&msg2) != 0) {
+                int *pn;
+                int pass;
+                int k;
+
+                pass = 0;
+                pn = (int *)&msg2 + 1;
+                do {
+                    int sub = 0xc;
+
                     do {
-                        sub = 0xc;
-                        do {
-                            ft = (int)gm_Unk508740(ps, *p, -1, pass);
-                            q = *pn;
-                            cnt2 = cnt;
-                            if (q != 0xffff) {
-                                cv = 0;
-                                qb = q * 0x21c;
-                                pq = PL(q);
-                                if (U_I(((unsigned)&ai_Unk770cec + 0x18) + qb) == 0) {
-                                    if (U_I(((unsigned)&ai_Unk770cec + 0x4) + qb) == 0) {
-                                        r2 = gm_BuildingMainObject(p);
-                                        if (r2 != 0 && *(int *)(r2 + 2) != -1) {
-                                            cnt++;
-                                            gm_PlaceOnStage(U_I((unsigned)&ai_CharInts + qb), *(int *)(p + 1), *(int *)(r2 + 2), 0, 0);
-                                        }
-                                    } else {
-                                        r2 = unk_Unk4fdc10(U_I(((unsigned)&ai_Unk770cec + 0x4) + qb));
-                                        if (r2 != 0 && *(int *)(r2 + 2) != -1) {
-                                            cnt++;
-                                            gm_PlaceOnStage(U_I((unsigned)&ai_CharInts + qb), *(int *)(U_I(((unsigned)&ai_Unk770cec + 0x4) + qb) + 1), *(int *)(r2 + 2), 0, 0);
-                                        }
+                        int wage = (int)(gm_JobWage((char *)ps, p->type, -1, pass) * (p->wageRate * 0.01));
+
+                        if (*pn != 0xffff) {
+                            AICHAR *q = &ai_CharsT[*pn];
+                            char rel = 0;
+                            int m;
+
+                            if (q->model == 0) {
+                                if (q->bld2 != 0) {
+                                    o = (AIOBJ *)unk_Unk4fdc10((unsigned char *)q->bld2);
+                                    if (o != 0 && o->objId != -1) {
+                                        cnt++;
+                                        gm_PlaceOnStage(q->netId, q->bld2->id, o->objId, 0, 0);
                                     }
                                 } else {
-                                    *(unsigned char *)(U_I(((unsigned)&ai_Unk770cec + 0x18) + qb) + 0x8c) &= 0xfb;
-                                }
-                                if (*(char *)(((unsigned)&ai_CharsT + 0x2) + qb) != 0x14)
-                                    cm_SendMoveGoodsUnchecked(U_I((unsigned)&ai_CharInts + qb), U_I((unsigned)&ai_CharInts + pe), U_I((unsigned)&ai_OwnPlayer), ft);
-                                if (*(int *)(p + 0x3d) < 100 && gm_Opinion(pl, *(int *)pq) > -0x78) {
-                                    v = (100 - *(int *)(p + 0x3d)) / 3;
-                                    if (v < 1)
-                                        v = 1;
-                                    cv = (char)-v;
-                                } else if (*(int *)(p + 0x3d) > 100 && gm_Opinion(pl, *(int *)pq) < 100) {
-                                    cv = 1;
-                                    v = (*(int *)(p + 0x3d) - 100) / 3;
-                                    if (v > 0)
-                                        cv = (char)v;
-                                }
-                                v = *(int *)(p + 0x41);
-                                if (v < 100) {
-                                    if (gm_Opinion(pl, *(int *)pq) >= -0x77) {
-                                        v = (*(int *)(p + 0x41) - 100) / 5;
-                                        if (v < 1)
-                                            v = 1;
-                                        cv += (char)v;
+                                    o = (AIOBJ *)gm_BuildingMainObject((unsigned char *)p);
+                                    if (o != 0 && o->objId != -1) {
+                                        cnt++;
+                                        gm_PlaceOnStage(q->netId, p->id, o->objId, 0, 0);
                                     }
-                                } else if (v > 100 && gm_Opinion(pl, *(int *)pq) < 100) {
-                                    v = (100 - *(int *)(p + 0x41)) / 5;
-                                    if (v < 1)
-                                        v = 1;
-                                    cv -= (char)v;
                                 }
-                                cnt2 = cnt + 1;
-                                if (cv != 0) {
-                                    cm_SendRelations(U_I((unsigned)&ai_CharInts + pe), U_I((unsigned)&ai_CharInts + qb), (int)cv, 0);
-                                    cnt2 = cnt + 2;
+                            } else
+                                ((CHARACTER *)q->model)->flags.bytes.lo &= 0xfb;
+                            if (q->kind != 0x14)
+                                cm_SendMoveGoodsUnchecked(ai_CharsT[*pn].netId, ai_CharsT[pl].netId, ai_OwnPlayer, wage);
+                            cnt++;
+                            if (p->wageRate < 100 && gm_Opinion(pl, q->id) > -0x78) {
+                                m = (100 - p->wageRate) / 3;
+                                if (m < 1)
+                                    m = 1;
+                                rel = -(char)m;
+                            } else if (p->wageRate > 100 && gm_Opinion(pl, q->id) < 100) {
+                                rel = 1;
+                                m = (p->wageRate - 100) / 3;
+                                if (m >= 1)
+                                    rel = (char)m;
+                            }
+                            if (p->workRate < 100 && gm_Opinion(pl, q->id) > -0x78) {
+                                m = (p->workRate - 100) / 5;
+                                if (m < 1)
+                                    m = 1;
+                                rel += (char)m;
+                            } else if (p->workRate > 100 && gm_Opinion(pl, q->id) < 100) {
+                                m = (100 - p->workRate) / 5;
+                                if (m < 1)
+                                    m = 1;
+                                rel -= (char)m;
+                            }
+                            if (rel != 0) {
+                                cnt++;
+                                cm_SendRelations(ai_CharsT[pl].netId, q->netId, rel, 0);
+                            }
+                            cm_BeginFieldBlock((char *)q, q->netId);
+                            cm_AddFieldDelta(4, 1, 0x19c, &wage);
+                            cm_SendFieldDeltas();
+                            cnt++;
+                            m = gm_Opinion(pl, q->id) + rel;
+                            if (m < -0x1a) {
+                                if (-(int)(util_Random(0x4a) & 0xffff) < m) {
+                                    if ((unsigned short)util_Random(100) > 0x32) {
+                                        memset(&msg4, 0, sizeof(msg4));
+                                        msg4.type = 0x33;
+                                        msg4.to = ai_CharsT[pl].netId;
+                                        msg4.fromId = p->id;
+                                        msg4.time = ai_TimeT;
+                                        msg4.flags = 1;
+                                        msg4.arg[0] = q->netId;
+                                        gm_AddTime((struct GCLOCK *)&msg4.time, (util_Random(6) & 0xffff) + 4, 0, 0);
+                                        cm_SendLongMessage((char *)&msg4);
+                                    } else {
+                                        memset(&msg1, 0, sizeof(msg1));
+                                        msg1.type = 0x34;
+                                        msg1.to = ai_CharsT[pl].netId;
+                                        msg1.fromId = p->id;
+                                        msg1.time = ai_TimeT;
+                                        msg1.flags = 1;
+                                        msg1.arg[0] = q->netId;
+                                        gm_AddTime((struct GCLOCK *)&msg1.time, (util_Random(6) & 0xffff) + 4, 0, 0);
+                                        cm_SendLongMessage((char *)&msg1);
+                                    }
+                                    cnt++;
                                 }
-                                cnt = cnt2;
-                                cm_BeginFieldBlock(pq, U_I((unsigned)&ai_CharInts + qb));
-                                cm_AddFieldDelta(4, 1, 0x19c, &ft);
-                                cm_SendFieldDeltas();
-                                m = gm_Opinion(pl, *(int *)pq);
-                                cnt2 = cnt + 1;
-                                if (m + cv < -0x1a) {
-                                    u = util_RandomInt(0x4a);
-                                    if (-(int)(u & 0xffff) < m + cv) {
-                                        u = util_RandomInt(100);
-                                        memset(ev, 0, 0xf8);
-                                        MSG_B(ev, 4) = ((unsigned short)u < 0x33) ? 0x34 : 0x33;
-                                        MSG_I(ev, 8) = U_I((unsigned)&ai_CharInts + pe);
-                                        MSG_I(ev, 0xc) = *(int *)(p + 1);
-                                        MSG_I(ev, 0x28) = U_I((unsigned)&ai_TimeT);
-                                        MSG_I(ev, 0x2c) = U_I((unsigned)&ai_TimeHour);
-                                        MSG_I(ev, 0x30) = U_I(((unsigned)&ai_TimeT + 0x8));
-                                        *(short *)((char *)ev + 0x34) = *(short *)((unsigned)&ai_TimeT + 0xc);
-                                        MSG_B(ev, 0x36) = 1;
-                                        MSG_I(ev, 0x58) = U_I((unsigned)&ai_CharInts + qb);
-                                        gm_AddTime((struct GCLOCK *)((char *)ev + 0x28), (util_RandomInt(6) & 0xffff) + 4, 0, 0);  /* the 0, 0 are pushed first (0x53ae4e) */
-                                        cm_SendLongMessage(ev);
-                                        cnt2 = cnt + 2;
-                                    }
-                                    cnt = cnt2;
-                                    ck = *(char *)(((unsigned)&ai_CharInts + 0x161) + qb);
-                                    if (ck == 2 || ck == 1 || ck == 0x13 || ck == 0x14 || ck == 0x10 || (cnt2 = cnt, ck == 0xf)) {
-                                        cm_BeginFieldBlock(pq, U_I((unsigned)&ai_CharInts + qb));
-                                        u = *(unsigned char *)(((unsigned)&ai_Unk770b89 + 0x79) + qb);
-                                        tb = (char)(int)((float)u * 0.95f);
-                                        if (42.0 < (float)(int)u)
-                                            cm_AddFieldDelta(1, 1, pq + 0x82 - U_I((unsigned)&cm_FieldObject), &tb);
-                                        u = *(unsigned char *)(((unsigned)&ai_Unk770b89 + 0x7a) + qb);
-                                        tb = (char)(int)((float)u * 0.95f);
-                                        if (42.0 < (float)(int)u)
-                                            cm_AddFieldDelta(1, 1, pq + 0x83 - U_I((unsigned)&cm_FieldObject), &tb);
-                                        cm_SendFieldDeltas();
-                                        cnt2 = cnt + 1;
-                                    }
+                                if (q->title == 2 || q->title == 1 || q->title == 0x13 || q->title == 0x14 || q->title == 0x10 || q->title == 0xf) {
+                                    int skill;
+                                    char lower;
+
+                                    cm_BeginFieldBlock((char *)q, q->netId);
+                                    skill = q->sk82;
+                                    lower = (char)(skill * 0.9 + 0.5);
+                                    if (skill > 42.0f)
+                                        cm_AddFieldDelta(1, 1, (char *)&q->sk82 - cm_FieldObject, &lower);
+                                    skill = q->sk83;
+                                    lower = (char)(skill * 0.9 + 0.5);
+                                    if (skill > 42.0f)
+                                        cm_AddFieldDelta(1, 1, (char *)&q->sk83 - cm_FieldObject, &lower);
+                                    cm_SendFieldDeltas();
+                                    cnt++;
                                 }
                             }
-                            cnt = cnt2;
-                            pn++;
-                            sub--;
-                        } while (sub != 0);
-                        pass++;
-                    } while (pass < 2);
-                    q = 0;
-                    do {
-                        ft = (int)gm_Unk508740(PL(*(unsigned short *)(p + 0x27)), *p, -1, 0);
-                        r2 = nb[25 + q];
-                        if (r2 != 0xffff) {
-                            cm_SendMoveGoodsUnchecked(U_I((unsigned)&ai_CharInts + r2 * 0x21c), U_I((unsigned)&ai_CharInts + pe), U_I((unsigned)&ai_OwnPlayer), ft);
-                            cm_BeginFieldBlock(PL(r2), U_I((unsigned)&ai_CharInts + r2 * 0x21c));
-                            cm_AddFieldDelta(4, 1, 0x19c, &ft);
-                            cm_SendFieldDeltas();
-                            cnt += 2;
                         }
-                        q++;
-                    } while (q < 0xc);
+                        pn++;
+                        sub--;
+                    } while (sub != 0);
+                    pass++;
+                } while (pass < 2);
+                for (k = 0; k < 0xc; k++) {
+                    int wage2 = (int)(gm_JobWage(ai_Chars[p->owner], p->type, -1, 0) * (p->wageRate * 0.01));
+                    int w = ((int *)&msg2)[0x19 + k];
+
+                    if (w != 0xffff) {
+                        cm_SendMoveGoodsUnchecked(ai_CharsT[w].netId, ai_CharsT[pl].netId, ai_OwnPlayer, wage2);
+                        cm_BeginFieldBlock(ai_Chars[w], ai_CharsT[w].netId);
+                        cm_AddFieldDelta(4, 1, 0x19c, &wage2);
+                        cm_SendFieldDeltas();
+                        cnt += 2;
+                    }
                 }
             }
         }
-        p = (unsigned char *)gm_BuildNext();
+        p = (AIBLD *)gm_BuildNext();
+    }
+    if (cnt > 0x20) {
+        sv_PumpNet();
+        Sleep(0x14);
+        cnt = 0;
+    }
+    p = (AIBLD *)gm_BuildQuery(1, 4, pl);
+    while (p != 0) {
+        if (gm_BuildingBalance(p, pl, sum) != 0) {
+            int v;
+
+            if (sum[0xc] != 0 && (o = (AIOBJ *)gm_Query((void *)p->objList, 2, 6, 0, 0xe8)) != 0 && (v = gm_SumListAmounts((void *)o->list, ai_OwnPlayer)) > 0) {
+                cnt++;
+                cm_SendMoveGoods(ai_CharsT[p->owner].netId, o->objId, ai_OwnPlayer, v);
+            }
+            if (sum[0xf] != 0 && (o = (AIOBJ *)gm_Query((void *)p->objList, 1, 0, 0xf0)) != 0 && (v = gm_SumListAmounts((void *)o->list, ai_OwnPlayer)) > 0) {
+                cnt++;
+                cm_SendMoveGoods(ai_CharsT[p->owner].netId, o->objId, ai_OwnPlayer, v);
+            }
+        }
+        p = (AIBLD *)gm_BuildNext();
+        if (cnt > 0x20) {
+            sv_PumpNet();
+            Sleep(0x14);
+            cnt = 0;
+        }
     }
 }
 

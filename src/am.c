@@ -133,7 +133,7 @@ int ai_Unk48e120(int a, AIPX *p, int b, AIARGX *o1, AIARGX *o2)
             cost = (int)(gm_BuildingKindValue(t + 1) * 0.3f);
             if (!ai_Unk4a5140(a, p, 0, &s2, &s1, 0))
                 return 0;
-            m = gm_Unk509e30(p->inventory, ai_OwnPlayer);
+            m = gm_SumListAmounts(p->inventory, ai_OwnPlayer);
             lim = (int)(m * 0.95f);
             if (lim < cost) {
                 need = cost - lim;
@@ -154,7 +154,7 @@ int ai_Unk48e120(int a, AIPX *p, int b, AIARGX *o1, AIARGX *o2)
         if (!ai_Unk4a5140(a, p, 0, &s1, &s2, 1))
             return 0;
         cost = gm_Unk509dc0(p, s1.unk04);
-        m = gm_Unk509e30(p->inventory, ai_OwnPlayer);
+        m = gm_SumListAmounts(p->inventory, ai_OwnPlayer);
         lim = (int)(m * 0.95f);
         if (lim < cost) {
             need = cost - lim;
@@ -269,7 +269,7 @@ int ai_Unk48e620(AIPX *p, AIARGX *s1, AIARGX *s2)
     if (!ai_Unk4a58d0(p, 1, &flags, 0, util_RandomU(0x20) + 25.0f, &cid))
         return 0;
     c = &((AIPX *)ai_CharsT)[cid];
-    m = gm_Unk509e30(p->inventory, ai_OwnPlayer);
+    m = gm_SumListAmounts(p->inventory, ai_OwnPlayer);
     lim = (int)(m * 0.25f);
     {
         int s1v = gm_GetWorth(p->id);
@@ -339,7 +339,7 @@ int ai_Unk48e830(AIPX *p, AIARGX *s1, AIARGX *s2)
         sel = 0;
     else
         return 0;
-    gm_Unk509e30(p->inventory, ai_OwnPlayer);
+    gm_SumListAmounts(p->inventory, ai_OwnPlayer);
     sum = gm_GetWorth(p->id) + gm_GetWorth(c->id);
     a[3] = (int)(sum * 0.01f);
     a[4] = (int)(sum * 0.015f);
@@ -368,7 +368,7 @@ int ai_Unk48e9f0(AIPX *p, AIARGX *s1, AIARGX *s2)
     int s, m, lim, sel, a[3];
 
     s = gm_GetWorth(p->id);
-    m = gm_Unk509e30(p->inventory, ai_OwnPlayer);
+    m = gm_SumListAmounts(p->inventory, ai_OwnPlayer);
     lim = (int)(m * 0.25f);
     a[0] = (int)(s * 0.01f);
     a[1] = (int)(s * 0.015f);
@@ -659,7 +659,7 @@ int ai_Unk48f2b0(int a, AIPX *p, int b, AIARG *o1, AIARG *o2)
         v = (int)(gm_BuildingKindValue(t) * 0.3f);
         if (!ai_Unk4a5140(a, p, 0, &L.s2, &L.s1, 0))
             return 0;
-        lim = (int)(gm_Unk509e30(p->inventory, ai_OwnPlayer) * 0.5f);
+        lim = (int)(gm_SumListAmounts(p->inventory, ai_OwnPlayer) * 0.5f);
         if (lim < v) {
             d = v - lim;
             if (!((float)d / v < 0.25f))
@@ -677,7 +677,7 @@ int ai_Unk48f2b0(int a, AIPX *p, int b, AIARG *o1, AIARG *o2)
         if (!ai_Unk4a5140(a, p, 0, &L.s1, &L.s2, 1))
             return 0;
         v = gm_Unk509dc0(p, L.s1.unk04);
-        lim = (int)(gm_Unk509e30(p->inventory, ai_OwnPlayer) * 0.5f);
+        lim = (int)(gm_SumListAmounts(p->inventory, ai_OwnPlayer) * 0.5f);
         if (lim < v) {
             d = v - lim;
             if (!((float)d / v < 0.25f))
@@ -1590,7 +1590,7 @@ int ai_Unk4916d0(AIPER *p, int a, int *out)
             n--;
         b = gm_FirstBuilding(1);
         o = gm_Query(b->objList, 2, 6, 0, 0x115);
-        m = gm_Unk509e30(o->unk14, ai_OwnPlayer);
+        m = gm_SumListAmounts(o->unk14, ai_OwnPlayer);
         if (m < (int)(amt_GetOwnedOfficePay() * 0.25f) * 3)
             n += util_RandomU(3) + 1;
         if (d.cur - 3 > n) {
@@ -1641,7 +1641,7 @@ int ai_Unk491860(AIPER *p, int a, int *out)
                 n--;
             b = gm_FirstBuilding(1);
             o = gm_Query(b->objList, 2, 6, 0, 0x115);
-            m = gm_Unk509e30(o->unk14, ai_OwnPlayer);
+            m = gm_SumListAmounts(o->unk14, ai_OwnPlayer);
             if (m < amt_GetOwnedOfficePay() * 3)
                 n += util_RandomU(3) + 1;
             if (d.cur - 3 > n) {
@@ -1764,7 +1764,7 @@ int ai_Unk491d80(AIPER *p, int a, int *out)
     ord_BuildingCapacityRatio();
     b = gm_FirstBuilding(1);
     o = gm_Query(b->objList, 2, 6, 0, 0x115);
-    m = gm_Unk509e30(o->unk14, ai_OwnPlayer);
+    m = gm_SumListAmounts(o->unk14, ai_OwnPlayer);
     k = amt_GetOwnedOfficePay();
     if (m < k * 3)
         n = 4;
@@ -7261,7 +7261,7 @@ int ai_Unk49d8d0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     if (b == 0)
         return 0;
     o = gm_Query(b->objList, 2, 6, 0, 0x115);
-    money = gm_Unk509e30(*(int *)((char *)o + 0x14), ai_OwnPlayer);
+    money = gm_SumListAmounts(*(int *)((char *)o + 0x14), ai_OwnPlayer);
     unk_Unk4f9e00(d);
     rec = ai_BldsT;
     for (n = 0x100; n != 0; n--, rec++) {
@@ -7450,7 +7450,7 @@ int ai_Unk49def0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     if (y == 0)
         return 0;
     o = gm_Query(y->objList, 2, 6, 0, 0x115);
-    money = gm_Unk509e30(*(int *)((char *)o + 0x14), ai_OwnPlayer);
+    money = gm_SumListAmounts(*(int *)((char *)o + 0x14), ai_OwnPlayer);
     if (!(y->flags5a & 4) && y->level < util_RandomU(0x40) + 0x25) {
         s1.kind = 4;
         s1.unk04 = y->id;
@@ -7571,7 +7571,7 @@ int ai_Unk49e350(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     o = (unsigned char *)gm_PlayerSeat(1);
     if (o == 0)
         return 0;
-    money = gm_Unk509e30(*(int *)(o + 0x14), ai_OwnPlayer);
+    money = gm_SumListAmounts(*(int *)(o + 0x14), ai_OwnPlayer);
     if (!(y->flags5a & 4) && y->level < util_RandomU(0x40) + 0x25) {
         s1.kind = 4;
         s1.unk04 = y->id;
@@ -7686,7 +7686,7 @@ int ai_Unk49e7a0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     if (b == 0)
         return 0;
     o = (unsigned char *)gm_Query(b->objList, 2, 6, 0, 0x115);
-    money = gm_Unk509e30(*(int *)(o + 0x14), ai_OwnPlayer);
+    money = gm_SumListAmounts(*(int *)(o + 0x14), ai_OwnPlayer);
     if (money < (util_RandomU(3000) + 1000) * 32)
         return 0;
     rec = ai_BldsT;
@@ -8736,7 +8736,7 @@ int ai_Unk4a0a70(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     if (bl == 0)
         return 0;
     o = (unsigned char *)gm_Query(bl->objList, 2, 6, 0, 0x142);
-    money = gm_Unk509e30(*(int *)(o + 0x14), ai_OwnPlayer);
+    money = gm_SumListAmounts(*(int *)(o + 0x14), ai_OwnPlayer);
     lvl = bl->level;
     if (lvl < util_RandomU(0x10) + 0x32 && !(bl->flags5a & 4)) {
         s1.kind = 4;
@@ -10780,7 +10780,7 @@ int ai_Unk4a67a0(AIPER *p, AIBLD *b, AIBLD *t)
     n = unk_Unk4ef090(p, r, k, r2 + 1, &x, &cost);
     if (n == 0)
         return 0;
-    if ((int)(gm_Unk509e30(*(int *)((unsigned char *)p + 0x178), ai_OwnPlayer) * 0.25f) < cost)
+    if ((int)(gm_SumListAmounts(*(int *)((unsigned char *)p + 0x178), ai_OwnPlayer) * 0.25f) < cost)
         return 0;
     ai_Unk6f0698.a[0] = pa[0];
     ai_Unk6f0698.a[1] = pa[1];

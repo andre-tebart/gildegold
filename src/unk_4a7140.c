@@ -49,7 +49,7 @@ int ai_PokerStart(AIPER *p, G10GAME *g)
     ai_Unkf83654 = g;
     memset(g, 0, sizeof(G10GAME));
     ai_Unkf83654->seat[0].who = p;
-    k = gm_ConvertMoney(gm_Unk509e30(*(int *)((unsigned char *)p + 0x178), ai_OwnPlayer), ai_OwnPlayer);
+    k = gm_ConvertMoney(gm_SumListAmounts(*(int *)((unsigned char *)p + 0x178), ai_OwnPlayer), ai_OwnPlayer);
     d = k;
     if (!(10000.0 <= d))
         d = 10000.0;
@@ -2373,7 +2373,7 @@ int ai_Unk4ab7f0(int a, AIPER *p, int c, unsigned char *m)
     if (G10_4A58D0(p, 1, (int *)&flags, 0.0f, (float)util_RandomU(0x20) + 25.0f, &id) == 0)
         return 0;
     o = &((AIPER *)ai_CharsT)[id];
-    money = (int)(gm_Unk509e30(*(int *)((unsigned char *)p + 0x178), ai_OwnPlayer) * 0.25f);
+    money = (int)(gm_SumListAmounts(*(int *)((unsigned char *)p + 0x178), ai_OwnPlayer) * 0.25f);
     gm_GetWorth(p->id);
     for (k = bestv - 1; k > 0; k--) {
         if (money > (k > 1 ? k : 1) * 32000)

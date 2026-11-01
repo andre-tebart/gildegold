@@ -3711,7 +3711,7 @@ int gm_Season();                     /* 0x4fe330 */
 int gm_ClockSeason(void *t);           /* 0x4fe350, f3gm.c */                     /* 0x4fe350 */
 int ls_GetLanguage();                     /* 0x5190a0 */
 char * gm_PlayerSeat(int p);                     /* 0x504a80 */
-int gm_Unk509e30(void *list, unsigned char p);                     /* 0x509e30 */
+int gm_SumListAmounts(void *list, unsigned char p);                     /* 0x509e30 */
 int gm_ConvertMoney(int a, unsigned char k);                     /* 0x5085b0 */
 void txt_Format(char *out, int id0, ...);  /* 0x5176d0 */
 char *_strupr(char *);                     /* 0x5ea986 */
@@ -3875,7 +3875,7 @@ void sv_Unk522f10(unsigned char a, int b)
                 who = SV_B((unsigned)&ai_OwnPlayer);
             n = gm_SumSlotAmounts(SV_I(((unsigned)&ai_Unk770cec + 0xc) + ai_PlayerId * 0x21c), who) + SV_I((unsigned)&full_data_6f22dc);
         } else {
-            n = ((int (*)(void *))gm_Unk509e30)(*(int *)(gm_PlayerSeat(SV_I((unsigned)&sv_ResearchClass)) + 0x14)) + SV_I((unsigned)&full_data_6f22dc);
+            n = ((int (*)(void *))gm_SumListAmounts)(*(int *)(gm_PlayerSeat(SV_I((unsigned)&sv_ResearchClass)) + 0x14)) + SV_I((unsigned)&full_data_6f22dc);
             who = SV_B((unsigned)&ai_OwnPlayer);
         }
         if (ai_Unk62384c != -1) {

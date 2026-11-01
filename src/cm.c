@@ -9760,7 +9760,7 @@ int ai_Unk4d4540(char *a)
     txt_Format(ba, 0x11a6, G20_US(G20_DEF), ca);                                                      \
     ai_Unk4e5470(ba, 0);                                                                                \
     if (G20_ME == ai_Unk60cb5c)                                                                         \
-        gm_Unk50cad0(ca, 0x14 - ai_Unk4e52f0(0x14));
+        gm_ChangeBuildingState(ca, 0x14 - ai_Unk4e52f0(0x14));
 /* nothing taken: the text 0x11a7 and the fight with the tavern keepers' men: every character of the table of 0x770b80
    that is a guard (kinds 10 .. 12) gets 0x4c4b00 */
 #define G20_GUARDS()                                                                                    \

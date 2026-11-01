@@ -5132,9 +5132,9 @@ void gm_ShowBuildingObjects(unsigned char *b)
             gm_ShowSlotObjects((int)b, l[i], *(unsigned short *)(b + 0x27));
     }
 }
-/* 0x502eb0, sorts the characters that work in the building b into the lists of an output record: out[0] = their number, out[1 ..] (0x18 words, -1 filled) the workers of the first job class (type bytes +0x22f), out[0xd ..] (0xc) of the second (+0x230), out[0x19 ..] (0xc) the others (not the building's own two special jobs +0x223 / +0x224), out[0x25] = the one of the special jobs. ROUGH */
+/* 0x502eb0, sorts the characters that work in the building b into the lists of an output record and returns their number: out[0] = their number, out[1 ..] (0x18 words, -1 filled) the workers of the first job class (type bytes +0x22f), out[0xd ..] (0xc) of the second (+0x230), out[0x19 ..] (0xc) the others (not the building's own two special jobs +0x223 / +0x224), out[0x25] = the one of the special jobs. ROUGH */
 
-void gm_Unk502eb0(unsigned char *b, int *out)
+int gm_ListWorkers(unsigned char *b, int *out)
 {
     int i, n, j;
     char *k;
@@ -5168,6 +5168,7 @@ void gm_Unk502eb0(unsigned char *b, int *out)
         }
     }
     out[0] = n;
+    return n;
 }
 /* 0x502fd0, the sale of the building with the id a to the player b for the price c (the sale record d, flag e): marks "buy building" in the message log (0x4c4540 .. 0x4c4580), pays the former owner (a message 0x17e6 with "_NACHRICHTEN_HS_30", 0x4c4830 the price) or the bank (0x4c47e0), hands the ownership over (0x4c54a0, and for the type 2 with e the 0x4c5540), stamps the sale record d one hour ahead (0x4fe140 +1 second, 0x4c4c60) and sets the building's owner field (0x4c4a60 (id, 0x5a, 2, 0, 2)). ROUGH */
 
@@ -5932,7 +5933,7 @@ int gm_FirstTitleNumber(int x)
 /* 0x504350, the group of the title number n (1 .. 6 and 0x28 .. 0x2d: 7; 0x23 .. 0x27: 2; 0x2e .. 0x33: 3; 0x3a .. 0x3f: 4; 0x40 .. 0x45: 5), 0 else */
 
 
-int gm_Unk504350(int n)
+int gm_TitleNumberGroup(int n)
 {
     if (0 < n && n < 7)
         return 7;
@@ -7631,7 +7632,7 @@ int gm_ClockSeason();                     /* 0x4fe350 */
 int gm_CompareTime();                     /* 0x4fe210 */
 int gv_GetTableRecord(int i, int *out);                     /* 0x4f2720 */
 float gm_ItemPrice(int item, unsigned char n);
-int gm_Unk509e30(void *list, unsigned char p);
+int gm_SumListAmounts(void *list, unsigned char p);
 
 #define PLW54(k) (*(unsigned short *)(ai_PlayerSlots[(unsigned char)(k)] + 0x54))
 #define PLTAB(i) (((int *)ai_Unk61a8ac)[i])
@@ -7979,7 +7980,7 @@ float gm_ObjectValue(int n)
 }
 /* 0x508740, the wage of a job (a) or title (b) of the building kind k for the character c, reduced for the kinds 6 / 7 */
 
-float gm_Unk508740(char *c, int k, int a, int b)
+float gm_JobWage(char *c, int k, int a, int b)
 {
     float f;
     char *p;
@@ -8191,7 +8192,7 @@ int gm_BuildingLevel(char *c)
 }
 /* 0x508d80, the income / cost summary (0x15 ints, out[3] wages, out[0x10] cost, out[0x11] income, out[0x14] profit) of the building b for the owner id; 0 when both are zero. ROUGH */
 
-int gm_Unk508d80(unsigned char *b, unsigned id, int *out)
+int gm_BuildingBalance(unsigned char *b, unsigned id, int *out)
 {
     char *own;
     char *bp;
@@ -8224,7 +8225,7 @@ int gm_Unk508d80(unsigned char *b, unsigned id, int *out)
                     pi = out + 6;
                     do {
                         if (bp[k + 0x223] != 0 && bp[k + 0x223] == (char)c[0x164] && (char)c[2] != 0x14) {
-                            r = (int)gm_Unk508740(own, *b, k, -1);
+                            r = (int)gm_JobWage(own, *b, k, -1);
                             found = 1;
                             in += r;
                             *pi += r;
@@ -8236,7 +8237,7 @@ int gm_Unk508d80(unsigned char *b, unsigned id, int *out)
                     pi = out + 4;
                     do {
                         if (bp[k + 0x22f] != 0 && bp[k + 0x22f] == (char)c[0x165] && (char)c[2] != 0x14) {
-                            r = (int)gm_Unk508740(own, *b, -1, k);
+                            r = (int)gm_JobWage(own, *b, -1, k);
                             found = 1;
                             in += r;
                             *pi += r;
@@ -8245,7 +8246,7 @@ int gm_Unk508d80(unsigned char *b, unsigned id, int *out)
                         pi++;
                     } while (k < 2);
                     if (!found && (char)c[2] != 0x14) {
-                        r = (int)gm_Unk508740(own, *b, -1, 0);
+                        r = (int)gm_JobWage(own, *b, -1, 0);
                         in += r;
                         out[4] += r;
                     }
@@ -8263,14 +8264,14 @@ int gm_Unk508d80(unsigned char *b, unsigned id, int *out)
         if (*bp == 7) {
             o = gm_Query(*(void **)(b + 0x5d), 2, 6, 0, 0xe8);
             if (o) {
-                r = gm_Unk509e30(*(void **)(o + 0x14), ai_OwnPlayer);
+                r = gm_SumListAmounts(*(void **)(o + 0x14), ai_OwnPlayer);
                 u = out[0xc];
                 out[0xc] = u + r;
                 t = t + u + r;
             }
             o = gm_Query(*(void **)(b + 0x5d), 2, 6, 0, 0xf0);
             if (o) {
-                r = gm_Unk509e30(*(void **)(o + 0x14), ai_OwnPlayer);
+                r = gm_SumListAmounts(*(void **)(o + 0x14), ai_OwnPlayer);
                 u = out[0xf];
                 out[0xf] = u + r;
                 t = t + u + r;
@@ -8713,7 +8714,7 @@ int gm_Unk509dc0(int unused, int kind)
 }
 /* 0x509e30, the sum of the amounts of the objects in the list (prototype kind 9, group 1) */
 
-int gm_Unk509e30(void *list, unsigned char p)
+int gm_SumListAmounts(void *list, unsigned char p)
 {
     int s;
     char *o;
@@ -9354,7 +9355,7 @@ int gm_CollectCarried(int id, int *out)
     for (;;) {
         if (rec == 0)
             break;
-        gm_Unk502eb0(rec, buf);
+        gm_ListWorkers(rec, buf);
         c = *(int *)(buf + 0x94);
         if (c != 0xffff && c == id) {
             *out += 0xe;
@@ -10151,7 +10152,7 @@ void gm_Unk50ca50(int id, int d)
 }
 /* 0x50cad0, changes the state byte (+0x5c) of the building b by d (kept in 0 .. 100) and sends it; when a building of a kind that matters drops to 0, every person is told (HS_66 for the owner, HS_67 for the others) */
 
-void gm_Unk50cad0(unsigned char *b, int d)
+void gm_ChangeBuildingState(unsigned char *b, int d)
 {
     unsigned char k;
     char v;
@@ -10238,8 +10239,8 @@ float gm_Unk50cd40(char *c, int k, int a, int b)
 
     j = gm_BuildingJob((unsigned char)ai_BTypes[k * 0x24d]);
     if (j != 10 && j != 0xb && j != 0xc)
-        return gm_Unk508740(c, k, a, b) * 3.0f;
-    return gm_Unk508740(c, k, a, b) * 9.0f;
+        return gm_JobWage(c, k, a, b) * 3.0f;
+    return gm_JobWage(c, k, a, b) * 9.0f;
 }
 /* 0x50cdc0, the standing of the building b with the persons ids[0 .. n - 1]: the mean of their 0x4fc8e0 weights (+0.3 for those whose title matches the building's), added to the owner's factor. ROUGH */
 

@@ -1102,7 +1102,7 @@ int unk_Unk4ef090(char *o, int a, int b, int d, int *n, int *price)
     *n = a + 2;
     v = b;
     *price = (int)((v + v + 500.0f) * (a * 0.25f + 1.0f) * d * 32.0f);
-    if (*(int *)(o + 0x194) >= *n && gm_Unk509e30(*(int *)(o + 0x178), ai_OwnPlayer) >= *price)
+    if (*(int *)(o + 0x194) >= *n && gm_SumListAmounts(*(int *)(o + 0x178), ai_OwnPlayer) >= *price)
         return 1;
     return 0;
 }

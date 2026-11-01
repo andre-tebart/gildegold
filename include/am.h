@@ -153,7 +153,7 @@ unsigned char ord_GetRatingByte(int k);                              /* 0x4f97a0
 float ord_BuildingCapacityRatio(void);                                       /* 0x4f97c0 */
 int gm_TitleGroup(int k);                                        /* 0x504ad0 */
 float gm_GetSkill(char *c, int skill);                            /* 0x504ec0 */
-int gm_Unk509e30(void *list, unsigned char p);                       /* 0x509e30 */
+int gm_SumListAmounts(void *list, unsigned char p);                       /* 0x509e30 */
 unsigned char * gm_FirstBuilding(int n);                                     /* 0x50b010 */
 
 

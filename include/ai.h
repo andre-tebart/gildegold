@@ -31,9 +31,15 @@ typedef struct AIBLD {                  /* 0xa9 bytes, ai_Blds[256] */
     unsigned short owner;               /* 0x27, index into ai_Chars */
     char pad29[0x10];
     int budget;                         /* 0x39, the money the building may spend this round: main_EndRound spreads its owner's goods value (x 75) over the buildings by AIBTYPE.level (2 / 4 / 8 shares, capped) and copies it to the AICHAR.budget of the local jobs; ai.c buys up to it */
-    char pad3d[0x1d];
-    unsigned char flags5a;              /* 0x5a */
-    char pad5b;
+    int wageRate;                       /* 0x3d, the percent of the job wages its workers get (main_SettleRound pays wage * rate / 100; below 100 lowers their opinion of the owner, above raises it) */
+    int workRate;                       /* 0x41, a percent setting whose distance from 100 moves the workers' opinion the other way (main_SettleRound; reasoned guess: the working hours) */
+    char pad45[8];
+    int roundSums[3];                   /* 0x4d, cleared at every round settlement (main_SettleRound); reasoned guess: per-round sums */
+    char pad59;
+    union {
+        unsigned char flags5a;          /* 0x5a */
+        unsigned short flags5aw;        /* 0x5a, read as a word: bits 0x3800 are cleared at the round settlement (cm_SendSetField(id, 0x5a, 2, 0, 0x3800)) */
+    };
     char level;                         /* 0x5c, the building's level 0 .. 100 (renovation below a rolled
                                            threshold, 100 - level in the renovation message, am.c) */
     int objList;                        /* 0x5d, head of the building's object-instance list (gm_Query 0x4ffe90,
@@ -212,7 +218,9 @@ typedef struct AICHAR {                 /* 0x21c bytes, ai_Chars[768] */
     char pad188[8];
     int unk190;                         /* 0x190, a sum the round change prints on the player's balance page (text 0x1eff, main.c 0x5384e0) */
     int money;                          /* 0x194, the character's money (amt.c) */
-    char pad198[0x19];
+    char pad198[4];
+    int wage;                           /* 0x19c, the wage the character was paid in the last round settlement (main_SettleRound sends it as a field delta) */
+    char pad1a0[0x11];
     unsigned char unk1b1;               /* 0x1b1 */
     char pad1b2[2];
     unsigned int flags1b4;              /* 0x1b4 */

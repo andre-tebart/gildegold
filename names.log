@@ -298,3 +298,10 @@
 2026-11-01T19:27:08 0x00617840 data ai_Unk617840 -> gm_DayEndHours by:main why:float[4] {20,21,20,19} by season: the hour the day ends (sv.c compares the clock hour < it)
 2026-11-01T19:27:08 0x00f83650 data ai_Unkf83650 -> hst_SeedPending by:main why:set by main_EndRound, cleared by the system message 5 that seeds util_Seed (cm.c); the yearly history waits while it is set
 2026-11-01T19:27:08 0x0055eba0 func he_Unk55eba0 -> he_FindFigurePlace by:main why:returns 1 with the building id, an object id and the scene where the character's figure belongs (0 for kinds 0xd / 0xe or busy jobs); main_EndRound beams the figures there
+2026-11-01T19:38:09 0x0053a520 func main_Unk53a520 -> main_SettleRound by:main why:the round settlement of a player (called per player from the round code): clears the buildings' round sums, pays the workers their wages (AICHAR.wage), moves their opinion, ownership of a gone player's buildings
+2026-11-01T19:38:09 0x00502eb0 func gm_Unk502eb0 -> gm_ListWorkers by:main why:sorts the characters working in the building into the output lists (out[1..] by job class, out[0x19..] the others) and returns their number
+2026-11-01T19:38:09 0x00508740 func gm_Unk508740 -> gm_JobWage by:main why:its comment: the wage of a job or title of the building kind for the character
+2026-11-01T19:38:09 0x00504350 func gm_Unk504350 -> gm_TitleNumberGroup by:main why:its comment: the group of the title number n
+2026-11-01T19:38:09 0x00508d80 func gm_Unk508d80 -> gm_BuildingBalance by:main why:its comment: the income / cost summary of the building for the owner
+2026-11-01T19:38:09 0x00509e30 func gm_Unk509e30 -> gm_SumListAmounts by:main why:its comment: the sum of the amounts of the objects in the list
+2026-11-01T19:38:09 0x0050cad0 func gm_Unk50cad0 -> gm_ChangeBuildingState by:main why:its comment: changes the state byte +0x5c of the building by d (0 .. 100) and sends it
