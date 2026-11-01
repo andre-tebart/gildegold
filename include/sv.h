@@ -280,6 +280,16 @@ extern float sv_ZoomBaseY;                                  /* 0x6f23b4 */
 extern int sv_MouseDragOn;                                    /* 0x6f23b8 */
 extern int sv_ShownModel;  /* 0x6f2294 */
 extern int sv_PanelPerms;  /* 0x6f2320 */
+extern int sv_PickX;  /* 0x623e98 */
+extern int sv_PickY;  /* 0x623e9c */
+extern int sv_HoverLast;  /* 0x6f1c4c */
+extern int sv_HoverItem;  /* 0x6f22f0 */
+extern int sv_HoverBuilding;  /* 0x6f22f4 */
+extern int sv_HoverContact;  /* 0x6f2300 */
+extern int sv_HoverBldPerms;  /* 0x6f2324 */
+extern int sv_HoverItemPerms;  /* 0x6f2328 */
+extern int sv_HoverCharPerms;  /* 0x6f232c */
+extern int sv_PointerSpriteFor;  /* 0x6f23dc */
 extern unsigned char sv_OtherSelected;  /* 0x6f2338 */
 extern int sv_ShownBuilding;  /* 0x6f23bc */
 extern int sv_ShownFallback;  /* 0x6f23c0 */

@@ -110,6 +110,7 @@ D2WIN * d2_PendingCaptionWin = 0;  /* 0x6ed9b8, window of d2_PendingCaptionObj *
 D2OBJ * d2_PendingCaptionObj = 0;  /* 0x6ed9bc, the object whose caption is drawn last
                                         (under the pointer / hit object): d2_DrawObjCaption, then 0 */
 int d2_TextSegFlags = 0;  /* 0x6ed9c0, flags of the next text piece */
+unsigned char d2_HoverBlocked = 0;  /* 0x6ed9c8, nonzero: sv_HoverPick names no object (read by sv.c only; reasoned name) */
 D2INPUT * d2_FocusedInput = 0;  /* 0x6ed9dc, the focused input */
 short d2_ShpW = 0;  /* 0x6f044c */
 short d2_ShpH = 0;  /* 0x6f044e */

@@ -620,8 +620,8 @@ extern float ai_Unk5ebb68;  /* 0x5ebb68 */
 extern int ai_Unk6f0d08;  /* 0x6f0d08 */
 extern char *ai_Unk6f0ce0;  /* 0x6f0ce0 */
 extern char *ai_Unk6f0cf0;  /* 0x6f0cf0 */
-extern char *ai_Unk6f22e8;  /* 0x6f22e8 */
-extern int ai_Unk6f22f8;  /* 0x6f22f8 */
+extern char *ai_PickedObject;  /* 0x6f22e8 */
+extern int ai_PickedChar;  /* 0x6f22f8 */
 
 void ai_Unk4cf9c0();  /* 0x4cf9c0 */
 void d2_SetObjText(int obj, char *text);  /* 0x4734d0 */
@@ -1146,7 +1146,7 @@ extern int ai_Unk925510;  /* 0x925510 */
 extern int ai_Unk92cac0;  /* 0x92cac0 */
 extern char ai_Unk92c600[];  /* 0x92c600, 0x480 bytes of scene state */
 extern unsigned char d3_FogByDistance;  /* 0x6334a5 */
-extern char ai_Unkf8aae0[0x80];  /* 0xf8aae0, the d2 caption / status text buffer */
+extern char d2_CaptionCopy[0x80];  /* 0xf8aae0, the d2 caption / status text buffer */
 extern unsigned short ai_Unk92bee0[];  /* 0x92bee0 */
 int tb_OpenFunction();  /* 0x42e970 */
 int tb_CloseFunction();  /* 0x42e9d0 */

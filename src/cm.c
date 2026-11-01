@@ -7257,7 +7257,7 @@ void ai_Unk4cf370()
     else if (b == 1)
         d2_DrawShape(d2_ScreenW / 2 - 0x14, (int)(ai_Unk5fe708 * ai_Unk5eb7fc), d2_ScreenSurf, t, 7);
 }
-/* 0x4cf670, the mouse pick: the object under the cursor (ai_Unk6f22e8, from the scene, else the ground point) and the
+/* 0x4cf670, the mouse pick: the object under the cursor (ai_PickedObject, from the scene, else the ground point) and the
    cursor look d2_PointerLook by the selected characters' kind (0x160 -> 0x18 .. 0x176 -> 0x25; more than one selected: 0x23;
    "sp_ESCAPE" 0x1c, "sp_CONQUER" 0x1b, "WARE" 0xe). Rough draft. */
 
@@ -7270,12 +7270,12 @@ void ai_Unk4cf670()
     float h;
 
     sc = *(char **)(ai_Unk5fb5b0 + 0xb0);
-    ai_Unk6f22e8 = 0;
+    ai_PickedObject = 0;
     d2_PointerLook = 0;
     if (dm_L.x > 0 && dm_L.x < d2_ScreenW && dm_L.y > 0 && dm_L.y < d2_ScreenH &&
         d2_PointerObj == -1) {
-        ai_Unk6f22e8 = d3if_Pick((float)dm_L.x, (float)dm_L.y, 0x40, 1);
-        if (ai_Unk6f22e8 == 0 && ai_Unk6f0d08 != 0) {
+        ai_PickedObject = d3if_Pick((float)dm_L.x, (float)dm_L.y, 0x40, 1);
+        if (ai_PickedObject == 0 && ai_Unk6f0d08 != 0) {
             if ((d3sm_PickK(sc, dm_L.x + 0x1a, dm_L.y + 0x1a, &py, &px) & 0xff) != -1) {
                 d3sm_GetVertexI(sc, py, px, v);
                 h = v[1] + ai_Unk5ebb68;
@@ -7285,9 +7285,9 @@ void ai_Unk4cf670()
             d3if_Show(ai_Unk6f0cf0, 0);
         }
     }
-    if (ai_Unk6f22e8 == 0) {
+    if (ai_PickedObject == 0) {
         ai_Unk6f0ce0 = 0;
-        ai_Unk6f22f8 = 0;
+        ai_PickedChar = 0;
         return;
     }
     for (pp = ai_Unk7603a0V; (int)pp < ((unsigned)&ai_SceneChars + 0x7c); pp++) {
@@ -7315,32 +7315,32 @@ void ai_Unk4cf670()
     }
     if (n > 1)
         cur = 0x23;
-    if (ai_Unk6f22e8 != 0 && d2_PointerObj == -1) {
-        if (strcmp(ai_Unk6f22e8, "sp_ESCAPE") == 0 && n != 0) {
+    if (ai_PickedObject != 0 && d2_PointerObj == -1) {
+        if (strcmp(ai_PickedObject, "sp_ESCAPE") == 0 && n != 0) {
             d2_PointerLook = 0x1c;
-            ai_Unk6f0ce0 = ai_Unk6f22e8;
+            ai_Unk6f0ce0 = ai_PickedObject;
             return;
         }
-        if (strncmp(ai_Unk6f22e8, "sp_CONQUER", 10) == 0 && n != 0) {
+        if (strncmp(ai_PickedObject, "sp_CONQUER", 10) == 0 && n != 0) {
             d2_PointerLook = 0x1b;
-            ai_Unk6f0ce0 = ai_Unk6f22e8;
+            ai_Unk6f0ce0 = ai_PickedObject;
             return;
         }
-        if (strncmp(ai_Unk6f22e8, "WARE", 4) == 0 && n != 0) {
+        if (strncmp(ai_PickedObject, "WARE", 4) == 0 && n != 0) {
             d2_PointerLook = 0xe;
-            ai_Unk6f0ce0 = ai_Unk6f22e8;
+            ai_Unk6f0ce0 = ai_PickedObject;
             return;
         }
-        if (*(int *)(ai_Unk6f22e8 + 0x220) == 2 && n != 0) {
-            if (!(ai_Unk4ce170(*(unsigned short *)ai_Unk6f0d74, *(int *)(ai_Unk6f22e8 + 0x200)) & 0x800) ||
+        if (*(int *)(ai_PickedObject + 0x220) == 2 && n != 0) {
+            if (!(ai_Unk4ce170(*(unsigned short *)ai_Unk6f0d74, *(int *)(ai_PickedObject + 0x200)) & 0x800) ||
                 kb_Down[0x36] != 0) {
-                ai_Unk6f0ce0 = ai_Unk6f22e8;
+                ai_Unk6f0ce0 = ai_PickedObject;
                 d2_PointerLook = cur;
                 return;
             }
         } else
             d2_PointerLook = 0;
-        ai_Unk6f0ce0 = ai_Unk6f22e8;
+        ai_Unk6f0ce0 = ai_PickedObject;
         return;
     }
     d2_PointerLook = 0;
@@ -7486,7 +7486,7 @@ void ai_Unk4cfe70()
         p += 8;
     } while ((int)p < (int)((unsigned)&ai_Unk930400 + 0xc8));
 }
-/* 0x4cfeb0, the click on an own object of the pick ai_Unk6f22e8 (type 2) while characters are selected: the first selected
+/* 0x4cfeb0, the click on an own object of the pick ai_PickedObject (type 2) while characters are selected: the first selected
    character that stands still gets the comment "_ARBEITER_KOMMENTARE_KLICK", the object is marked (+0x188). Rough draft. */
 
 void ai_Unk4cfeb0()
@@ -7502,7 +7502,7 @@ void ai_Unk4cfeb0()
             break;
     }
     if (dm_L.lup != 0 && d2_PointerObj == -1) {
-        sel = ai_Unk6f22e8;
+        sel = ai_PickedObject;
         if (sel != 0 && *(int *)(sel + 0x220) == 2) {
             o = *(char **)(sel + 0x200);
             if ((ai_Unk4ce170(*(unsigned short *)t, o) & 0x800) && kb_Down[0x36] == 0 &&
@@ -7513,7 +7513,7 @@ void ai_Unk4cfeb0()
                     snd_QueueVoice(*(unsigned short *)o, ai_Unk6f0d24, "_ARBEITER_KOMMENTARE_KLICK", -1, 0);
                 else
                     snd_QueueVoice(*(unsigned short *)o, ai_Unk6f0d28, "_ARBEITER_KOMMENTARE_KLICK", -1, 0);
-                sel = ai_Unk6f22e8;
+                sel = ai_PickedObject;
             }
         }
         ai_ClickedObject = (int)sel;
@@ -14235,7 +14235,7 @@ void ai_Unk4e4060(char *m)
         sv_ClearSelection();
         d2_ClearPointerItems();
         sv_ResetScreenClip();
-        ai_Unkf8aae0[0] = 0;
+        d2_CaptionCopy[0] = 0;
         for (i = 0, shown = 0; i < 0x8c400 / 0x2ec; i++) {
             if (*(int *)(d2_ObjsC + i * 0x2ec + 0x18) != 0 && *(int *)(d2_ObjsC + i * 0x2ec + 0x38) == 0) {
                 ai_Unk92bee0[shown] = i;
@@ -14994,7 +14994,7 @@ extern unsigned int ai_Unkf81164;
 extern G17MSG ai_Unkf81180;
 extern unsigned int cm_GroupFirstSeq;
 extern char ai_Unkf895a0[0xb00];
-extern char ai_Unkf8aae0[0x80];
+extern char d2_CaptionCopy[0x80];
 extern int ai_Unkfa5f00;
 extern int ai_Unkfa5f04;
 /* ai_Unkfd7c50: view of d3_Scenes (tools/data_views.py) */
@@ -15163,8 +15163,8 @@ int ai_Unk6f0db8 = 0;  /* 0x6f0db8 */
 int ai_Unk6f0dbc = 0;  /* 0x6f0dbc */
 int ai_Unk6f0dc0 = 0;  /* 0x6f0dc0 */
 char ai_Unk6f0dc4 = 0;  /* 0x6f0dc4 */
-char * ai_Unk6f22e8 = 0;  /* 0x6f22e8 */
-int ai_Unk6f22f8 = 0;  /* 0x6f22f8 */
+char * ai_PickedObject = 0;  /* 0x6f22e8 */
+int ai_PickedChar = 0;  /* 0x6f22f8 */
 int ai_Unk6f2438 = 0;  /* 0x6f2438 */
 int ai_Unk6f244c = 0;  /* 0x6f244c */
 int cm_NetFlags = 0;  /* 0x6f2594, flags */
@@ -15241,7 +15241,7 @@ unsigned int ai_Unkf81164 = 0;  /* 0xf81164, length of ai_Unka68d40 */
 G17MSG ai_Unkf81180 = {0};  /* 0xf81180, the message being received */
 unsigned int cm_GroupFirstSeq = 0;  /* 0xf8121c */
 char ai_Unkf895a0[0xb00] = {0}; /* 0xf895a0 */
-char ai_Unkf8aae0[0x80] = {0}; /* 0xf8aae0, the d2 caption / status text buffer (gfx.h's d2_CaptionCopy, 0x80 bytes up to d2_InputDragValue at 0xf8ab60) */
+char d2_CaptionCopy[0x80] = {0}; /* 0xf8aae0, the d2 caption / status text buffer (gfx.h's d2_CaptionCopy, 0x80 bytes up to d2_InputDragValue at 0xf8ab60) */
 /* ai_Unkf8f39c: view of d2_Wins (tools/data_views.py) */
 int ai_Unkfa5f00 = {0}; /* 0xfa5f00 */
 int ai_Unkfa5f04 = {0}; /* 0xfa5f04 */

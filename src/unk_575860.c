@@ -596,7 +596,7 @@ extern D2VIEW d2_Views[];
 extern int di_Absolute;
 extern GAPDATA full_data_62a8d0[];
 extern GAPDATA full_data_62a8d4[];
-extern GAPDATA full_data_6f22f0[];
+extern int sv_HoverItem;  /* 0x6f22f0 (sv.c) */
 extern GAPDATA full_data_6f266c[];
 extern GAPDATA full_data_6f2670[];
 extern int gm_PlayerRecords[688];
@@ -4903,7 +4903,7 @@ void ai_Unk57e270(char *rec)
     d2_ClearPointerItems();
     sv_ResetScreenClip();
     U_I((unsigned)&sv_PanelFlag) = 0;
-    U_I((unsigned)&ai_Unkf8aae0) = 0;
+    U_I((unsigned)&d2_CaptionCopy) = 0;
     pb = (char *)d2_StartFade(0, 0, U_I((unsigned)&d2_ScreenW), U_I((unsigned)&d2_ScreenH), (char *)(unsigned)"BLACK", 0x5a, 1);
     while (!(*(unsigned char *)pb & 4))
         sv_RunFrame(0, 0x10180);
@@ -8257,12 +8257,12 @@ void ai_Unk5867c0(char *unused)
 {
     char *p;
 
-    p = *(char **)(unsigned)&ai_Unk6f22f8;
+    p = *(char **)(unsigned)&ai_PickedChar;
     if (p != 0 && (*(unsigned char *)(p + 0x1b4) & 1) && U_I(((unsigned)&dm_L + 0xc)) != 0) {
         ai_EndCharExtra(p, 0);
-        p = *(char **)(unsigned)&ai_Unk6f22f8;
+        p = *(char **)(unsigned)&ai_PickedChar;
         cm_SendRelations(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c), *(int *)(p + 4), -5, 0);
-        p = (char *)sv_Unk52b490((int)*(char **)(unsigned)&ai_Unk6f22f8, (char *)(unsigned)&full_data_62a718);
+        p = (char *)sv_Unk52b490((int)*(char **)(unsigned)&ai_PickedChar, (char *)(unsigned)&full_data_62a718);
         if (p != 0)
             *(int *)(p + 0xc8c) = 1;
     }
@@ -9111,10 +9111,10 @@ void ai_Unk587e00(void)
         src = *(char **)(unsigned)&d2_Unkf8aac8;
         win = *(char **)(unsigned)&ai_DragWindow;
     }
-    if (U_I((unsigned)&ai_Unk6f22e8) != 0 && U_I((unsigned)&full_data_6f266c) != U_I((unsigned)&ai_Unk6f22e8) && U_I(((unsigned)&dm_L + 0x28)) != 0) {
-        if (U_I((unsigned)&full_data_6f22f0) == 0 || *(unsigned short *)U_I((unsigned)&full_data_6f22f0) == 0)
-            sel = (char *)U_I((unsigned)&ai_Unk6f22e8);
-        U_I((unsigned)&full_data_6f266c) = U_I((unsigned)&ai_Unk6f22e8);
+    if (U_I((unsigned)&ai_PickedObject) != 0 && U_I((unsigned)&full_data_6f266c) != U_I((unsigned)&ai_PickedObject) && U_I(((unsigned)&dm_L + 0x28)) != 0) {
+        if (sv_HoverItem == 0 || *(unsigned short *)sv_HoverItem == 0)
+            sel = (char *)U_I((unsigned)&ai_PickedObject);
+        U_I((unsigned)&full_data_6f266c) = U_I((unsigned)&ai_PickedObject);
         U_I((unsigned)&full_data_62a8d0) = -1;
     }
     if (src != (char *)-1 && (char *)U_I((unsigned)&full_data_62a8d0) != src) {

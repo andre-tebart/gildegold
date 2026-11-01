@@ -448,5 +448,6 @@ void d2_ClearInput(void);                            /* 0x476b70 */
 
 /* declared in other units' headers before (moved to the owner) */
 extern char *txt_Ptrs[0x4800];  /* 0x143a1c0 */
+extern unsigned char d2_HoverBlocked;  /* 0x6ed9c8 */
 
 #endif

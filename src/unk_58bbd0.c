@@ -203,7 +203,7 @@ extern int di_MinX;
 extern int di_MinY;
 extern GAPDATA full_data_5f3418[];
 extern GAPDATA full_data_6f1c2c[];
-extern GAPDATA full_data_6f22f4[];
+extern int sv_HoverBuilding;  /* 0x6f22f4 (sv.c) */
 #include "f3snd_types.h"
 extern G16AMBIENTON snd_AmbientOn;
 extern void sv_UpdateClock(void);
@@ -362,7 +362,7 @@ extern D2VIEW d2_Views[];
 extern D2WIN d2_Wins[];
 extern int sv_PopRequest;
 extern const float ai_Unk5ebba4[];
-extern char * ai_Unk6f22e8;
+extern char * ai_PickedObject;
 
 extern struct AIBLD *ai_MarketBuilding;
 extern int sv_SelectedModel;
@@ -428,7 +428,7 @@ extern struct D2WIN *d2_LastWindowPtr;
 extern struct D2OBJ *d2_Objs;
 extern int d2_PointerObj;
 extern unsigned char ai_OwnPlayer;
-extern char ai_Unkf8aae0[0x80];
+extern char d2_CaptionCopy[0x80];
 extern int d2_ClickedId;
 
 
@@ -887,7 +887,7 @@ extern int ai_Unk5b3f30();
 extern char ai_Unk91f700[];
 extern GAPDATA full_data_62cd7c[];
 extern GAPDATA full_data_62cda8[];
-extern char * ai_Unk6f22e8;
+extern char * ai_PickedObject;
 extern GAPDATA full_data_62c418[];
 extern GAPDATA full_data_62c420[];
 extern GAPDATA full_data_6f3880[];
@@ -3275,14 +3275,14 @@ void ai_GameFrame(void)
             mode = 3;
         }
         ai_Unk591480();
-        if (U_I(((unsigned)&dm_L + 0x14)) != 0 && U_I(((unsigned)&dm_L + 0x24)) == 0 && U_I((unsigned)&full_data_6f22f4) != 0 &&
+        if (U_I(((unsigned)&dm_L + 0x14)) != 0 && U_I(((unsigned)&dm_L + 0x24)) == 0 && sv_HoverBuilding != 0 &&
             U_I((unsigned)&d3t_CamMove) == 0)
-            sv_FlyCameraToObject(U_I((unsigned)&full_data_6f22f4));
+            sv_FlyCameraToObject(sv_HoverBuilding);
         if (U_I((unsigned)&d2_ClickedId) != -1 && U_I((unsigned)&d2_PointerObj) == U_I((unsigned)&sv_PanelBuildBtn))
             ai_Unk5909a0();
         if (U_I((unsigned)&sv_SelectedObject) != 0 &&
             (u = gm_PermissionBits(U_W((unsigned)&ai_PlayerId), U_I((unsigned)&sv_SelectedObject), 0, 0), U_I((unsigned)&sv_SelectedObject) != 0) &&
-            U_I((unsigned)&full_data_6f22f4) == U_I((unsigned)&sv_SelectedObject) &&
+            sv_HoverBuilding == U_I((unsigned)&sv_SelectedObject) &&
             ((U_I(((unsigned)&dm_L + 0x1c)) != 0 || (U_I(((unsigned)&dm_L + 0xc)) != 0 && U_I((unsigned)&d2_PointerLook) == 0xb))) &&
             (u & 1) != 0 && (*(unsigned char *)(U_I((unsigned)&sv_SelectedObject) + 0x5a) & 1) == 0) {
             v = gm_IsHomeType(U_I((unsigned)&sv_SelectedObject));
@@ -7007,7 +7007,7 @@ void ai_Unk59a3c0(void)
         for (city = (char *)((unsigned)&ai_Unk7e422c + 0x8), i = 0; city < (char *)((unsigned)((unsigned)ai_Unk7e422c + 0x5c) + 0x888); city += 0x2f4, i++)
             sv_RegisterNamePlate(objs[i], city, 0);
         r = d3if_Pick((float)(short)U_I((unsigned)&dm_L), (float)(short)U_I(((unsigned)&dm_L + 0x2)), 0x60, 1);
-        U_I((unsigned)&ai_Unk6f22e8) = r;
+        U_I((unsigned)&ai_PickedObject) = r;
         if (U_I(((unsigned)&dm_L + 0xc)) == 0 || r == 0) {
             if (U_I(((unsigned)&dm_L + 0x20)) != 0)
                 U_I((unsigned)&sv_PopRequest) = 1;
@@ -8115,7 +8115,7 @@ void ai_Unk59c700(int param_1)
         if (side == 2 || sel == -1) {
             sel = ai_Unk59c120(U_I(((unsigned)&ai_Unk770cec + 0xc) + U_W((unsigned)&ai_PlayerId) * 0x21c), recsB, win, 4, 1);
             if (sel != -1) {
-                if (*(unsigned char *)(unsigned)&ai_Unkf8aae0 == 0 || side == 0) {
+                if (*(unsigned char *)(unsigned)&d2_CaptionCopy == 0 || side == 0) {
                     txt_Format(text, 0x18f8, recsB[sel * 7 + 5], recsB[sel * 7 + 3] * 2 + 0x9a8);
                     d2_CopyCaption(text);
                 }
@@ -8128,7 +8128,7 @@ void ai_Unk59c700(int param_1)
                 d2_SetObjPic(ctl[4], 0x4f7);
             }
         } else {
-            if (*(unsigned char *)(unsigned)&ai_Unkf8aae0 == 0 || side == 0) {
+            if (*(unsigned char *)(unsigned)&d2_CaptionCopy == 0 || side == 0) {
                 txt_Format(text, 0x18fa, recsA[sel * 7 + 5], recsA[sel * 7 + 3] * 2 + 0x9a8);
                 d2_CopyCaption(text);
             }
@@ -15892,7 +15892,7 @@ int ai_Unk5b9730(int param_1)
 
 int ai_Unk5b9db0(void)
 {
-    if (U_I((unsigned)&ai_Unk6f22e8) == 0)
+    if (U_I((unsigned)&ai_PickedObject) == 0)
         return 0;
     /* ROUGH SKELETON: the 0xf8-byte frame */
     return 0;
