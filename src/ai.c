@@ -34,7 +34,6 @@ typedef unsigned int SOCKET;
 #define cm_SendRemoveGoodsI ((void (*)(int, int))cm_SendRemoveGoods)  /* 0x4c4960 (cm.h: short b): @original ai.c pushes the second argument as an int (byte-matched ai_SendRemoveEmptyGoods) */
 #define cm_SendExSellObjectI ((void (*)(int, int, int, int, unsigned char, int))cm_SendExSellObject)  /* 0x4c4880 (cm.h: short c): @original this unit pushes the third argument as an int (byte-matched ai_MeisterBewaffnen / ai_Unk497c80 / ai_Unk49c880) */
 #include "d3_types.h"
-extern D3SCENE d3_Scenes[];
 #include "am_types.h"                /* AIACT */
 #include "ahm.h"
 #include "am.h"
@@ -52,6 +51,7 @@ extern D3SCENE d3_Scenes[];
 #include "unk_4b39f0.h"
 #include "unk_575860.h"
 #include "unk_58bbd0.h"
+#include "ch.h"
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 
