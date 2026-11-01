@@ -1811,53 +1811,59 @@ int ai_DecideVisitAction(int a, AIPER *p, int c, AIARG *in, AIARG *m)
     return 0;
 }
 /* 0x4aa430, check callback of the visit actions (0x4aa120): as 0x4a9fa0; prints the action name into a debug text
-   that nobody reads */
+   that nobody reads
+   @deep read whole against the original: typed AIARG in/out, AICHAR p (name at 0x30), each case is
+   sprintf(name, prva_...) (the original pushes the string per case with one shared lea/push/call sprintf
+   tail, then add esp, 8 at the join); the rest equal. Left is VC6 cross-jumping/scheduling of the case
+   tails: ours computes the buffer address before the string in cases 0 and 4 (- lea ecx, [esp + 8] / push
+   prva_WERBUNG / push ecx / jmp) where the original pushes the string and jumps to one tail (+ push
+   prva_WERBUNG / jmp 0x4aa4f2 ... + lea ecx, [esp + 0xc] / push ecx / call sprintf), 97 vs 91 instructions
+   from the unmerged tails. Tried: char *s with one sprintf (mov eax, str / push eax instead of push str,
+   no tail join), default case last (no change) */
 
-int ai_Unk4aa430(AIPER *p, unsigned char *in, unsigned char *out)
+int ai_CheckVisitAction(AICHAR *p, AIARG *in, AIARG *out)
 {
     char name[64];
     int ctx[0x88];
     char text[256];
-    char *s;
     AIJOB *j;
 
-    if (in[0] == 0x10) {
+    if (in->kind == 0x10) {
         memset(ctx, 0, sizeof(ctx));
         ctx[0x87] = 0;
-        if ((p->flags1c8 & 0x100) != 0 && *(int *)(in + 8) == 4) {
+        if ((p->flags1c8 & 0x100) != 0 && in->arg == 4) {
             for (j = he_FindEvent(1, 0, 0x45); j != 0; j = he_NextEvent()) {
-                if (j->unkac == p->netId) {
-                    ctx[0x87] = (int)gm_FindChar(j->unkb0);
+                if (j->partner1 == p->netId) {
+                    ctx[0x87] = (int)gm_FindChar(j->partner2);
                     goto found;
                 }
             }
             return 0;
         }
 found:
-        ctx[0] = *(int *)(in + 8);
-        switch (*(int *)(in + 4)) {
+        ctx[0] = in->arg;
+        switch (in->ref) {
         case 0:
-            s = "prva_WERBUNG";
+            sprintf(name, "prva_WERBUNG");
+            break;
+        case 3:
+            sprintf(name, "prva_ANKLAGE_ERHEBEN");
+            break;
+        case 4:
+            sprintf(name, "prva_ERPRESSUNG");
+            break;
+        case 7:
+            sprintf(name, "prva_FURCHT_EINFLOESSEN");
+            break;
+        case 8:
+            sprintf(name, "prva_BELEIDIGUNG");
             break;
         default:
             return 0;
-        case 3:
-            s = "prva_ANKLAGE_ERHEBEN";
-            break;
-        case 4:
-            s = "prva_ERPRESSUNG";
-            break;
-        case 7:
-            s = "prva_FURCHT_EINFLOESSEN";
-            break;
-        case 8:
-            s = "prva_BELEIDIGUNG";
-            break;
         }
-        sprintf(name, s);
-        ctx[0x85] = *(int *)(out + 4);
-        sprintf(text, "NPC %s <%i> w\xe4hlt %s", (char *)p + 0x30, p->id, name);
-        return (ord_DispatchOrder(*(int *)(in + 4), p, ctx) & 0x60) == 0;
+        ctx[0x85] = out->ref;
+        sprintf(text, "NPC %s <%i> w\xe4hlt %s", p->name, p->id, name);
+        return (ord_DispatchOrder(in->ref, (char *)p, ctx) & 0x60) == 0;
     }
     return 0;
 }

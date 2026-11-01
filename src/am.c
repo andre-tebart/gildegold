@@ -7139,7 +7139,7 @@ int ai_Unk49d550(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 
 int ai_Unk49d5e0(G5CH *p, AIARG *s1, AIARG *s2)
 {
-    return ai_Unk4aa430(p, s1, s2) ? 0x2b : 0;
+    return ai_CheckVisitAction(p, s1, s2) ? 0x2b : 0;
 }
 /* 0x49d600, eval callback 0x2b: decision 0x16 decides the rating; none while f is set */
 
@@ -7184,7 +7184,7 @@ int ai_Unk49d6a0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 
 int ai_Unk49d730(G5CH *p, AIARG *s1, AIARG *s2)
 {
-    return ai_Unk4aa430(p, s1, s2) ? 0x2c : 0;
+    return ai_CheckVisitAction(p, s1, s2) ? 0x2c : 0;
 }
 /* 0x49d750, decide callback 0x2d: what 0x4aa120 finds */
 
@@ -7210,7 +7210,7 @@ int ai_Unk49d750(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 
 int ai_Unk49d7d0(G5CH *p, AIARG *s1, AIARG *s2)
 {
-    return ai_Unk4aa430(p, s1, s2) ? 0x2d : 0;
+    return ai_CheckVisitAction(p, s1, s2) ? 0x2d : 0;
 }
 /* 0x49d7f0, eval callback (characters with +0x166 == 0xf): rated three times higher when 0x4f9e00 is above
    the character's value +0x100 */
