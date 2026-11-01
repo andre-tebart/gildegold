@@ -13,7 +13,6 @@ struct SBSAMPLE;
 union AHMGRID;
 struct D3SM;
 #include "d2_types.h"
-extern D2WIN d2_Wins[];
 #include "txt_views.h"
 #include <windows.h>
 #include <stdio.h>
@@ -35,25 +34,19 @@ extern D2WIN d2_Wins[];
 #define ai_Unk5a9240K ((int (*)())ai_Unk5a9240)  /* 0x5a9240: @original the call passes more arguments than the draft definition names, compiled without a prototype (as before the definition's spelling reached this unit) */
 #define ai_Unk5a9c30K ((int (*)())ai_Unk5a9c30)  /* 0x5a9c30: @original the call passes more arguments than the draft definition names, compiled without a prototype (as before the definition's spelling reached this unit) */
 
-extern void main_GameLoop(int ctl);
 extern int ai_TransportWindow();
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 extern void (*he_RunHandlers[5544])(unsigned char *);
 extern unsigned char ai_TimeHour;
 extern GAPDATA full_data_6faa80[];
-extern int d2_LastWindow;
-extern struct D2OBJ *d2_Objs;
 extern GAPDATA full_data_625718[];
 extern GAPDATA full_data_6faa60[];
 extern GAPDATA full_data_6faa84[];
 extern GAPDATA full_data_6f262c[];
 extern GAPDATA full_data_6faa90[];
-extern short d2_ScreenH;
-extern short d2_ScreenW;
 extern GAPDATA full_data_62571c[];
 extern GAPDATA full_data_6faa88[];
 extern int ai_GameFlags;
-extern int tb_Paused;
 extern GAPDATA full_data_625708[];
 extern GAPDATA full_data_62570c[];
 extern GAPDATA full_data_625710[];
@@ -63,26 +56,19 @@ extern GAPDATA full_data_6f2628[];
 extern const float ai_Unk5ebba4[];
 #include "unk_5d33b0_types.h"
 extern OPTIONBYTES ai_GameSwitches;
-extern unsigned short ai_PlayerId;
 extern char ai_Chars[768][0x21c];
-extern char ai_DataPath[608];
 extern unsigned short * ai_PlayerChar;
 extern char * ai_BTypes;
 extern char * ai_Blds;
 extern int ai_Difficulty;
 extern unsigned char ai_OwnPlayer;
 extern const int ai_Unk5eeab8[24];
-extern char ch_EmptyName[1];
 extern char * cm_FieldObject;
 extern char *ai_Unk5fb5b0;
 extern const int ai_Unk5ed100[16];
 extern signed char ai_Relations[768][768];
 extern char ai_Unk625820[115][0x20];
 extern unsigned char ai_GameState;
-extern int d2_ClickedId;
-extern struct D2WIN *d2_LastWindowPtr;
-extern int d2_Unkf8aac4;
-extern int snd_SystemBank;
 extern char ai_PlayerSlots[4][0x2f4];
 extern int gm_PlayerRecords[688];
 extern GAPDATA full_data_602568[];
@@ -96,7 +82,6 @@ extern char * ai_Blds;
 extern const int ai_Unk5ed140[16];
 extern int gm_PlayerRecords[688];
 extern unsigned char ai_OwnPlayer;
-extern int d2_ClickedId;
 extern int d2_Unkf8aac4;
 extern unsigned short ai_PlayerId;
 extern unsigned char ai_TimeHour;
@@ -111,7 +96,6 @@ extern const int ai_Unk5ed100[16];
 extern char ai_Unk91f700[];
 extern const int ai_Unk5eeab8[24];
 extern int ai_ClockMs;
-extern char ch_EmptyName[1];
 extern unsigned short * ai_PlayerChar;
 extern float ai_Unk5eb780;
 extern char ai_Unk625820[115][0x20];
@@ -264,7 +248,6 @@ extern GAPDATA full_rdata_5ee01c[];
 extern GAPDATA full_data_6f263c[];
 extern GAPDATA full_data_6fa0e0[];
 
-char d3_GetHeightAt(struct D3SM *h, struct D3VECTOR *pos, int *px, int *pz, float *py);
 void gm_Shuffled(unsigned char n, int *out);
 void amt_ChangeDistrictOpinion();
 void gm_Shuffled(unsigned char n, int *out);
@@ -305,21 +288,31 @@ int ai_Unk573260();
 
 int sv_ReturnZero(void);
 int gm_CompareTime();
-int d2_SetForm(int view, int n);
-struct AMTKIND; struct D3VECTOR; int d2_WinOpenPic(short x, short y, int pic, int win);
-int d2_OpenForm();
-void d2_PlaceMainWindow();
-void d2_SetViewEnabled(int view, int on);
-void d2_RemoveObj();
-void d2_CloseView(int view);
-void d2_CentreViewWindows(int view);
-void d2_MoveObj(short x, short y, int obj);
-void d2_SetObjValue();
-void d2_RaiseViewWindows(int view);
 
 #include "time_view.h"
 #include "ls.h"
 #include "f3init.h"
+#include "d2.h"
+#include "d3_anim.h"
+#include "d3_engine.h"
+#include "d3_int_io.h"
+#include "d3_interface.h"
+#include "d3_io_a.h"
+#include "d3_par.h"
+#include "d3_sm.h"
+#include "d3_vec.h"
+#include "err.h"
+#include "gfx.h"
+#include "io_text.h"
+#include "main.h"
+#include "mem.h"
+#include "rd.h"
+#include "tb.h"
+#include "tr.h"
+#include "udp.h"
+#include "unk_458810.h"
+#include "unk_575860.h"
+#include "unk_58bbd0.h"
 #define gm_NearestBuildingK ((int (*)())gm_NearestBuilding)  /* 0x50xxxx: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
 #define sv_SelectPanelObjectK ((int (*)())sv_SelectPanelObject)  /* 0x52c4c0?: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
 #define gm_Unk50a970K ((int (*)())gm_Unk50a970)  /* 0x50a970: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
