@@ -5568,37 +5568,51 @@ void sv_SpeakPicked(void)
         }
     }
 }
-/* 0x52cef0, ages the speech bubble table 0x761fc0 (entries older than 300 ms are freed) and draws the rest above their objects (0x4486e0 gives the screen box; text: the entry's own or the default line
-   0x143a1c0[+ -8]) */
+/* 0x52cef0, frees the speech bubbles shown more than 300 ms ago and draws the others as text boxes (font 0x54, 0xa0 x 0x60)
+   above the screen box of their character's body (its low-poly body while the body is hidden, type 1), for the
+   characters of the current scene; the text is the bubble's own or the d2_Strings line
+   @deep read whole against the original: the expiry loop (time + 300u unsigned against ai_ClockMs), the
+   draw loop with the body / low-poly body screen box (two ScreenBox calls, cross-jumped as in the
+   original), the two DrawTextBox calls (own text / d2_Strings), AddDirty; instruction count 91/92. Left:
+   the draw loop's induction pointer is sv_Bubbles+0xc (name) in ours, +8 (ch) in the original (mov
+   eax,[ebx-4] vs [ebx]; mov al,[ebx] vs mov cl,[ebx+4] / lea eax,[ebx+4]), ai_ClockMs hoisted out of the
+   expiry loop in ours (0x52cef0) and loaded per entry in the original (0x52cf00), d2_ScreenSurf loaded
+   before the text branch in ours. Tried: a SVBUBBLE pointer per entry, a pointer walk (counter loop:
+   worse), a text pointer variable, a ternary condition: same or worse. d2_AddDirty is K&R in sv's head
+   (Open: d2.h unsettled), M7 stays open. */
 
-void sv_Unk52cef0(void)
+void sv_DrawBubbles(void)
 {
-    int *p, o, ob, t[3], x, y;
-    char *s;
+    int i, x, y;
+    CHARACTER *ch;
+    D3OBJECT *low;
+    D3RECT box;
 
-    p = (int *)(unsigned)&sv_BubbleObjects;
-    do {
-        if (*p != 0 && (unsigned)(p[-1] + 300) < SV_U((unsigned)&ai_ClockMs))
-            *p = 0;
-        p += 0x43;
-    } while ((int)p < ((unsigned)&sv_BubbleObjects + 0x4300));
+    for (i = 0; i < 0x40; i++) {
+        if (sv_Bubbles[i].ch != 0 && ai_ClockMs > sv_Bubbles[i].time + 300u)
+            sv_Bubbles[i].ch = 0;
+    }
     d2_SetFont(0x54);
-    p = (int *)(unsigned)&sv_BubbleObjects;
-    do {
-        o = *p;
-        if (o != 0 && *(char **)((ob = *(int *)(o + 0x34)) + 0x208) == ai_Unk5fb5b0
-            && (*(int *)(ob + 0x218) != 1 || ((ob = *(int *)(o + 0x22c)) != 0 && *(int *)(ob + 0x218) != 1))
-            && (char)d3if_ScreenBox(ob, t) != 0) {
-            y = t[1] - 0x40;
-            x = (t[2] - t[0]) / 2 - 0x50 + t[0];
-            s = (char *)(p + 1);
-            if (*s == 0)
-                s = (char *)SV_I((unsigned)&d2_Strings + p[-2] * 4);
-            d2_DrawTextBox(x, y, 0xa0, 0x60, d2_ScreenSurf, s, 0x28);
-            d2_AddDirty(x, y, SV_I((unsigned)&d2_TextDrawnW), SV_I((unsigned)&d2_TextDrawnH));
+    for (i = 0; i < 0x40; i++) {
+        ch = (CHARACTER *)sv_Bubbles[i].ch;
+        if (ch == 0 || ch->obj->scene != d3_DefaultScene)
+            continue;
+        if (ch->obj->type != 1) {
+            if (d3if_ScreenBox(ch->obj, &box) == 0)
+                continue;
+        } else {
+            low = ch->lowPolyBody;
+            if (low == 0 || low->type == 1 || d3if_ScreenBox(low, &box) == 0)
+                continue;
         }
-        p += 0x43;
-    } while ((int)p < ((unsigned)&sv_BubbleObjects + 0x4300));
+        y = box.top - 0x40;
+        x = (box.right - box.left) / 2 - 0x50 + box.left;
+        if (sv_Bubbles[i].name[0] != 0)
+            d2_DrawTextBox(x, y, 0xa0, 0x60, d2_ScreenSurf, sv_Bubbles[i].name, 0x28);
+        else
+            d2_DrawTextBox(x, y, 0xa0, 0x60, d2_ScreenSurf, d2_Strings[sv_Bubbles[i].text], 0x28);
+        d2_AddDirty(x, y, d2_TextDrawnW, d2_TextDrawnH);
+    }
 }
 /* 0x52d1e0, draws the name plates of the objects of the table 0x760640 (0x32 ints each, name at +0x48) above their screen boxes, then walks the scene objects of kind 0x20 with the callback 0x52d010 */
 
@@ -7516,7 +7530,7 @@ l2:
             if (SV_I((unsigned)&ai_Unk6f0da4) != 0)
                 ai_Unk4d8b50();
             if ((mask & 0x1000) != 0 && SV_I((unsigned)&sv_FrameDepth) == SV_I((unsigned)&sv_FrameBase) && SV_I((unsigned)&full_data_6f262c) == 0) {
-                sv_Unk52cef0();
+                sv_DrawBubbles();
                 if (SV_B(((unsigned)&kb_Down + 0x1d)) == 0) {
                     if (SV_B(((unsigned)&kb_Down + 0x38)) != 0)
                         sv_Unk52d2a0();

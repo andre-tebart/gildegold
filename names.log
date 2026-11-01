@@ -509,3 +509,4 @@
 2026-11-02T00:43:42 0x0052c4e0 func sv_Unk52c4e0 -> sv_ShowBubble by:main why:stores the character, the text id and the name in a free sv_Bubbles record that sv_Unk52cef0 draws above the character
 2026-11-02T00:48:57 0x0052c5c0 func sv_Unk52c5c0 -> sv_SpeakPicked by:main why:on a left click (dm_L.lup) picks a line for the character under the pointer (ai_PickedChar / the character of ai_PickedObject) and shows it with sv_ShowBubble
 2026-11-02T00:53:05 0x004f9e00 func unk_Unk4f9e00 -> ord_GetStatistics by:main why:copies the 10 words of ord_StatisticsRecord to o (o[6] = ai_RatingBase) and returns o[9] as a float
+2026-11-02T00:54:34 0x0052cef0 func sv_Unk52cef0 -> sv_DrawBubbles by:main why:frees the sv_Bubbles records older than 300 ms and draws the rest as text boxes above their characters
