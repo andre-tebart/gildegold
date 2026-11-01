@@ -2433,8 +2433,8 @@ int unk_Unk5112d0(int n)
    only place that seeds it, so every new game starts the same), init_StartNewGame (0x50e0d0), with the cheat
    flag 0x6f2430 the start house of the first kind 6 character (0x534040), hands out the opponent slots for the
    players the city supports beyond the first (init_CreateOpponents with a table of eight job kinds
-   0x18 0x27 0x33 0x3f 0x45 0x4b 0x12 0x06, without the kinds the persons already have; with the negative
-   ai_GameFlags only the kind 0x12), init_OpenTown (0x50f910), and gives the first building of the class 1 the
+   0x18 0x27 0x33 0x3f 0x45 0x4b 0x12 0x06, without the kinds the persons already have; with the flag 0x80
+   of ai_GameFlags only the kind 0x12), init_OpenTown (0x50f910), and gives the first building of the class 1 the
    480000 start money. Returns 1 */
 
 
@@ -2453,7 +2453,7 @@ int init_SetupNewGame(int n)
         t = timeGetTime();
         srand(t);
     }
-    init_StartNewGame();
+    ((void (*)(int))init_StartNewGame)(0);   /* @original: the original call pushes one argument (0x511422) although the callee reads none */
     if (main_StartHouseCheat != 0) {
         i = 0;
         p = ai_Chars[0] + 2;
@@ -2464,9 +2464,9 @@ int init_SetupNewGame(int n)
             }
             p += 0x21c;
             i++;
-        } while ((int)p < INIT_CHARACTERS_END + 2);
+        } while ((int)p < (int)(INIT_CHARACTERS_END + 2));
     }
-    if (0 < (int)ai_PlayerSlots[n][0x48] - (unsigned)ai_NumPlayers) {
+    if ((int)ai_PlayerSlots[n][0x48] - ai_NumPlayers > 0) {
         tab[0] = 0x18;
         tab[1] = 0x27;
         tab[2] = 0x33;
@@ -2475,9 +2475,8 @@ int init_SetupNewGame(int n)
         tab[5] = 0x4b;
         tab[6] = 0x12;
         tab[7] = 6;
-        if ((char)ai_GameFlags < 0) {
-            for (i = 0; i < 8; i++)
-                tab[i] = 0;
+        if (ai_GameFlags & 0x80) {
+            D3_ZERO(tab, sizeof(tab));
             tab[0] = 0x12;
         } else {
             p = ai_Chars[0] + 2;
@@ -2493,7 +2492,7 @@ int init_SetupNewGame(int n)
                     } while (i < 8);
                 }
                 p += 0x21c;
-            } while ((int)p < INIT_CHARACTERS_END + 2);
+            } while ((int)p < (int)(INIT_CHARACTERS_END + 2));
         }
         init_CreateOpponents((int)ai_PlayerSlots[n][0x48] - ai_NumPlayers, 8, tab);
     }
