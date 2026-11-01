@@ -32,4 +32,123 @@ void gm_Free(void);                                                   /* 0x4fe9c
 int gm_TitlesLeft(int n);                                             /* 0x504ce0 */
 int gm_CollectCarried(int id, int *out);                                   /* 0x50af00 */
 int gm_IsBankrupt(unsigned short *p, int n);                                  /* 0x50a6c0, p: an AICHAR */
+
+/* declared in other units' headers before (moved to the owner) */
+unsigned gm_Unk5056a0(short *c);  /* 0x5056a0 */
+int gm_Unk5059d0(char *c);  /* 0x5059d0 */
+int gm_Unk505ad0(char *c);  /* 0x505ad0 */
+int gm_CurseTargetCount(char *b);  /* 0x50d0b0 */
+int gm_Season(char *d);  /* 0x4fe330 */
+unsigned gm_Unk5054f0(short *c);  /* 0x5054f0 */
+int unk_Unk4fb770(char *name);  /* 0x4fb770 */
+int gm_FindRichest(short *id, int *rate);  /* 0x4fad60 */
+void gm_Shuffle(unsigned n, int *out);  /* 0x505d30 */
+int gm_Unk503f30(int x);  /* 0x503f30 */
+extern unsigned short ai_Unk76fdc4;  /* 0x76fdc4 */
+extern unsigned ai_Unk889400[732];  /* 0x889400 */
+int gm_BuildKindObjects(char *b);  /* 0x500b90 */
+int gm_BathObjectCount(char *b);  /* 0x50cf60 */
+int gm_CurseObjectCount(char *b);  /* 0x50cfd0 */
+int gm_Unk50a0f0(int o);  /* 0x50a0f0 */
+int gm_Unk50ad70(char *c, int proto, int n);  /* 0x50ad70 */
+void gm_Unk50cad0(unsigned char *b, int d);  /* 0x50cad0 */
+unsigned *unk_Unk4fb390(int id);  /* 0x4fb390 */
+int unk_Unk4fbb80(unsigned short *c, int scene, int *p, int *ori, int obj, char *dummy);  /* 0x4fbb80 */
+float unk_Unk4fc8e0(short *c);  /* 0x4fc8e0 */
+char *unk_Unk4fd820(int unused, char *o);  /* 0x4fd820 */
+void unk_Unk4fda10(char *c, char *b);  /* 0x4fda10 */
+short *unk_Unk4fda70(char *o, unsigned a, unsigned b);  /* 0x4fda70 */
+char *unk_Unk4fdc10(unsigned char *b);  /* 0x4fdc10 */
+short *unk_Unk4fddb0(unsigned char flags, int p2, int p3, unsigned char p4, unsigned char p5, char *p6);  /* 0x4fddb0 */
+void unk_Unk4fdfd0(void);  /* 0x4fdfd0 */
+unsigned short *unk_Unk5031b0(unsigned char *b, unsigned n);  /* 0x5031b0 */
+int gm_Unk5099e0(char *b, unsigned *out, int kind);  /* 0x5099e0 */
+extern char gm_CharacterStatistics[128];  /* 0x91b500 */
+int gm_CharacterWages(unsigned short id, int flag, unsigned char *out);  /* 0x4fa700 */
+int gm_TakeObjekt(int id, int proto, int n);  /* 0x500a40 */
+void gm_Unk5034b0(int o);  /* 0x5034b0 */
+int gm_Unk504e00(int a, int b);  /* 0x504e00 */
+int gm_Unk506480(char *c, int *n);  /* 0x506480 */
+unsigned gm_Unk5064d0(int a, int b);  /* 0x5064d0 */
+void gm_Unk506e70(unsigned short *c, char *out, int flag);  /* 0x506e70 */
+unsigned short gm_Unk507690(int type, int a2, int a3, int a4, unsigned char *a5, unsigned a6, int a7, int a8);  /* 0x507690 */
+unsigned short *gm_Unk50a050(unsigned short *o);  /* 0x50a050 */
+int gm_RemoveOwned(int *list, int id);  /* 0x5000c0 */
+void gm_SelectModelVariant(char *o);  /* 0x4fb5a0 */
+void gm_SetJob(int i, unsigned n);  /* 0x504790 */
+void gm_ShuffledBytes(unsigned char n, unsigned char *out);  /* 0x505be0 */
+int gm_FreeBuilding(char *b);  /* 0x5012e0 */
+int gm_RemoveObjectFromBuilding(int b, int id);  /* 0x503480 */
+unsigned char *gm_CreateBuilding(unsigned char k, unsigned short own);  /* 0x501580 */
+extern int ai_Unk6f2448;  /* 0x6f2448 */
+float gm_AddHealth(unsigned id, int d);  /* 0x4fca40 */
+int gm_AddNegative(int id, int proto, int n);  /* 0x500ae0 */
+float gm_CharacterHealth(short *c);  /* 0x4fc820 */
+extern int ch_CurrentGroup;  /* 0x5f1294 */
+float gm_GoodsValue(int p, unsigned id);  /* 0x4ffbf0 */
+void gm_Shuffled(unsigned char n, int *out);  /* 0x505ca0 */
+int gm_Unk509dc0(int unused, int kind);  /* 0x509dc0 */
+int gm_Unk509e30(void *list, unsigned char p);  /* 0x509e30 */
+int gm_Unk509ee0(char *c, char p);  /* 0x509ee0 */
+unsigned short *gm_Unk509ff0(unsigned short *o);  /* 0x509ff0 */
+int gm_Unk50a250(int b, unsigned short *p, unsigned cnt, int *out);  /* 0x50a250 */
+int unk_Unk4fc7a0(char *c);  /* 0x4fc7a0 */
+char unk_Unk5020e0(int k, int c);  /* 0x5020e0 */
+void gm_Unk502fd0(int a, int b, int c, int d, int e);  /* 0x502fd0 */
+char *gm_PlayerSeat(int p);  /* 0x504a80 */
+void gm_SendMoneyDelta(int a, int b);  /* 0x50cc50 */
+int gm_JobBuildingType(int x);  /* 0x504050 */
+float gm_MapDistance(int a, int b, int c, int d);  /* 0x4ffc90 */
+float gm_Mix(int a, int b, int c);  /* 0x504e20 */
+int gm_PlayerFactor(int a, unsigned char k);  /* 0x5085f0 */
+unsigned char *gm_FirstBuilding(int n);  /* 0x50b010 */
+int gm_FirstTitleNumber(int x);  /* 0x504290 */
+float gm_GetSkill(char *c, int skill);  /* 0x504ec0 */
+int gm_GetWorth(unsigned short id);  /* 0x50a640 */
+int gm_BuildingKindValue(int kind);  /* 0x509d30 */
+int gm_ConvertMoney(int a, unsigned char k);  /* 0x5085b0 */
+int gm_BuildingJob(int t);  /* 0x5048e0 */
+int gm_StallGoodsList(char *c, unsigned *out);  /* 0x50aa00 */
+int gm_SumSlotAmounts(void *list, unsigned char p);  /* 0x508660 */
+int gm_Unk505e60(unsigned id, int again);  /* 0x505e60 */
+float gm_Unk50cd40(char *c, int k, int a, int b);  /* 0x50cd40 */
+unsigned short *gm_QueryNext(void);  /* 0x4ffcc0 */
+int gm_OwnerWorth(char *b, int flag);  /* 0x509c80 */
+short *gm_PlayerRecord(char *c);  /* 0x506430 */
+int gm_Opinion(int a, int b);  /* 0x50c520 */
+extern int gm_NOffers;  /* 0x7e3f3c */
+float gm_ObjectValue(int n);  /* 0x5086b0 */
+int gm_ListStock(short *l, int id);  /* 0x50ab50 */
+int gm_ListAmountById(char *l, int id);  /* 0x50ab20 */
+int gm_BuildingClass(int kind);  /* 0x501d80 */
+int gm_BuildingGoodsList(char *b, unsigned *out, int kind);  /* 0x5098a0 */
+int gm_BuildingLevel(char *c);  /* 0x508d70 */
+int gm_BuildingRank(unsigned char *b);  /* 0x5090b0 */
+int gm_BuildingSkill(unsigned char *b, unsigned k, int flag);  /* 0x5092e0 */
+int gm_CollectOffers(int goods);  /* 0x500c20 */
+int gm_EquipmentValue(unsigned char *b, int unused);  /* 0x509b10 */
+char *gm_FindGoods(int p, unsigned id);  /* 0x4ffc40 */
+int gm_FindMarketObject(int id);  /* 0x500ec0 */
+int gm_FreeCapacity(short *l, int id, int n);  /* 0x50ab80 */
+void gm_GetGebaeudeHauptraum(unsigned char *b);  /* 0x501ce0 */
+int gm_GetGoodsValue(char *c);  /* 0x509e60 */
+float gm_GoodsPrice(unsigned id, unsigned char p);  /* 0x5089c0 */
+float gm_ItemPrice(int item, unsigned char n);  /* 0x5087f0 */
+float gm_Liking(unsigned a, unsigned b, int c);  /* 0x50c550 */
+int gm_ListAmount(short *l, char *o);  /* 0x50aaf0 */
+extern struct AIOBJ *ai_Objects;  /* 0x7e3f34 */
+extern int ai_GameFlags;  /* 0x6f23f8 */
+extern char * ai_Goods;  /* 0x91aaf0 */
+int gm_RemoveObject(int *list, unsigned id);  /* 0x4ffff0 */
+void unk_Unk503c60(int c, int mode);  /* 0x503c60 */
+extern char * ai_Blds;  /* 0x889f74 */
+extern int ai_Difficulty;  /* 0x6f23fc */
+extern int ai_CharCount;  /* 0x6f1bc0 */
+extern int ai_NextObjectId;  /* 0x61a654 */
+int gm_AddObjekt(int id, int proto, int n);  /* 0x500970 */
+int gm_ChooseHeadIcon(unsigned short *c);  /* 0x4fb890 */
+int gm_PlaceOnStage(int id, int a, int b, int *p4, int *p5);  /* 0x4fbd10 */
+char *gm_Query(void *list, int n, ...);  /* 0x4ffe90 */
+void gm_RefreshGoodsLists(unsigned p);  /* 0x4ff190 */
+
 #endif
