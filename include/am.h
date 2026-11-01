@@ -1020,7 +1020,7 @@ typedef struct G9REC {                  /* 16 bytes, filled by 0x4a5760 (unk_49a
 } G9REC;
 void ai_Unk4a5760(struct G5CH *p, int n, struct G9REC *rec, int *st);                          /* 0x4a5760, declared int elsewhere */
 /* 0x4a58d0 ai_PickPartnerChain is declared in am.h (b is really a float) */
-int ai_Unk4a5a30(AIPER *p, unsigned int fl, int n, unsigned short *ids, float lo, float hi, unsigned short *id); /* 0x4a5a30 */
+int ai_PickPartnerInRange(AIPER *p, unsigned int fl, int n, unsigned short *ids, float lo, float hi, unsigned short *id); /* 0x4a5a30 */
 extern const int ai_Unk5ed100[16];                                                    /* 0x5ed100, random steps */
 int ai_Unk4a5b50(AIPER *p, unsigned int a, int *flags, float lo, float hi, unsigned short *id); /* 0x4a5b50, unk_490830.h: other view */
 int ai_Unk4a5d30(AIPER *p, unsigned int fl, int n, unsigned short *ids, float lo, float hi, unsigned short *id); /* 0x4a5d30 */

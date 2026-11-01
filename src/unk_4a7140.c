@@ -1932,29 +1932,30 @@ int ai_DecideLittleKnownChar(AICHAR *p, AIARG *in, AIARG *m)
 /* 0x4aa800, decide callback: p (money >= 3) picks a character within 33..48 units and a second one 50..100 units
    from both, by chance after 0x504e20, into m (kind 7) */
 
-int ai_Unk4aa800(AIPER *p, int c, unsigned char *m)
+int ai_DecideCharPair(AIPER *p, int c, AIARG *m)
 {
     unsigned short ids[4];
     unsigned short id, id2;
     float f;
 
+    ids[0] = 0xffff;
     ids[1] = 0xffff;
     ids[2] = 0xffff;
     ids[3] = 0xffff;
     if (p->money < 3)
         return 0;
     ids[0] = p->id;
-    if (ai_Unk4a5a30(p, ((unsigned)&cm_SendRing + 0x4973c0), 4, ids, 0.0f, (float)util_RandomU(0x10) + 33.0f, &id) == 0)
+    if (ai_PickPartnerInRange(p, PARTNER_FLAGS_ANY, 4, ids, 0.0f, util_RandomU(0x10) + 33.0, &id) == 0)
         return 0;
     ids[1] = id;
-    if (ai_Unk4a5a30(p, ((unsigned)&cm_SendRing + 0x4973c0), 4, ids, 50.0f, 100.0f, &id2) == 0)
+    if (ai_PickPartnerInRange(p, PARTNER_FLAGS_ANY, 4, ids, 50.0f, 100.0f, &id2) == 0)
         return 0;
-    m[0] = 7;
-    *(int *)(m + 4) = ((AIPER *)ai_CharsT)[id].netId;
-    f = gm_Mix(p, &((AIPER *)ai_CharsT)[id], 4);
-    if (util_RandomF() + f < 1.0f)
+    m->kind = 7;
+    m->ref = ai_CharsT[id].netId;
+    f = gm_Mix((int)p, (int)&ai_CharsT[id], 4);
+    if (!(util_RandomF() + f >= 1.0f))
         return 0;
-    *(int *)(m + 8) = ((AIPER *)ai_CharsT)[id2].netId;
+    m->arg = ai_CharsT[id2].netId;
     return 1;
 }
 /* 0x4aa940, execute callback "aip_ExecPamphlet": p spreads a pamphlet about the character of m (message 0x35) */

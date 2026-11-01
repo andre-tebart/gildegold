@@ -7074,7 +7074,7 @@ int ai_Unk49d2d0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 find:
     memset(&s1, 0, sizeof(s1));
     memset(&s2, 0, sizeof(s2));
-    if (ai_Unk4aa800(p, &s1, &s2) == 0)
+    if (ai_DecideCharPair(p, &s1, &s2) == 0)
         return 0;
     *o1 = s1;
     *o2 = s2;
@@ -10386,7 +10386,7 @@ int ai_PickPartnerChain(AIPER *p, int a, int *flags, int b, float f, unsigned sh
 /* 0x4a5a30: one partner for an action with the flags fl and the chain ids[n]: the leader ai_Partner when
    0x5c33c0 accepts it, else the first ring entry (0x4a3a90) rated in [lo, hi] that it accepts; into *id */
 
-int ai_Unk4a5a30(AIPER *p, unsigned int fl, int n, unsigned short *ids, float lo, float hi, unsigned short *id)
+int ai_PickPartnerInRange(AIPER *p, unsigned int fl, int n, unsigned short *ids, float lo, float hi, unsigned short *id)
 {
     unsigned int q[0x14];
     G6RING *e;
