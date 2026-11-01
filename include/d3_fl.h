@@ -189,7 +189,6 @@ extern float d3fl_LightMargin;            /* 0x633740, world units added to map-
 char map_Pick(D3FLMAP *map, D3VECTOR *pos, char lod, int *x, int *y, float *h);      /* 0x4463b0 */
 extern D3VECTOR d3fl_Down;                  /* 0x5ebb74, {0, 0, 1} */
 extern float d3fl_Shade[1024];              /* 0xfb9940, sun shade by -cos(angle) * 1023 */
-void d3_DirToWorld(struct XOBJ *obj, float *in, float *out);                        /* 0x458810, unk_458810.h (d3_fl.c calls it through its D3OBJECT view d3_DirToWorldD) */
 /* float to int with fistp (current rounding mode), as d3_FtoI in d3_engine.h */
 __inline void d3fl_FtoI(int *dst, float f)
 {
@@ -269,12 +268,9 @@ extern int d3fl_SrcStep;                    /* 0xfc0d40, source bytes per pixel 
 extern int d3fl_WPitch;                     /* 0xfc2560, weight bytes per row step */
 void _m_empty(void);                        /* MMX emms intrinsic (Processor Pack) */
 #pragma intrinsic(_m_empty)
-extern char dd_HasMMX;                      /* 0x631220, dd_vesa.c */
 
 void d3fl_Invalidate(D3FLMAP *map);         /* 0x440140 */
-unsigned int util_Hash(unsigned char *buf, unsigned int len);                                            /* 0x401000 */
 struct TSTEXTURE; struct TSTEXTURE *tex_CreateHi(char *name, int size, D3TEXFLAGS flags, unsigned char f0, unsigned char f6a, char mips); /* 0x4613b0, ts_texture.c (TSFLAGS is D3TEXFLAGS) */
-void dd_MakeColorTables(DWORD rmask, DWORD gmask, DWORD bmask, unsigned long *tab);   /* 0x41ea20, dd_vesa.c */
 
 /* d3_fl.c functions used before their definition */
 void d3fl_BlendC(unsigned short *dst, unsigned long *w, unsigned char **src, unsigned int n);       /* 0x43eab0 */
@@ -287,8 +283,6 @@ void d3fl_PrepareWater(D3FLMAP *map);                                           
 extern char d3fl_EmptyName;                 /* 0x631090, the shared empty string (ch.h's ch_EmptyName, "") */
 extern const char d3fl_Suffix[3][11];             /* 0x5ebaa8, "", "_high_1", "_high_2": source texture mip levels */
 char *tex_FindFile(char *name);                                                         /* 0x45f9f0, ts_texture.c */
-unsigned char bmp_GetInfo(char *path, int *w, int *h, int *bpp);                        /* 0x401410 */
-unsigned char bmp_Load(char *path, unsigned char *data, unsigned char *pal, int flags); /* 0x4014d0 */
 void d3fl_ReloadTextures(D3FLMAP *map);                                                 /* 0x442280 */
 extern D3VECTOR4 d3fl_Origin;               /* 0xfbbd30, map point (0, 0, 0) in world space */
 extern D3VECTOR4 d3fl_AxisX;                /* 0xfc0d50, world step per map x */
@@ -328,7 +322,6 @@ typedef struct D3FLDESC {           /* input of d3fl_LoadMap; null pointers / si
     __asm rep movsb                                                 \
 }
 extern struct VFSDIR *vfs_Root;                      /* 0x6333fc, vfs.c */
-char * vfs_DirPath(struct VFSDIR *d, struct VFSDIR *stop, char *out);                                  /* 0x42fbf0, vfs.c */
 D3FLMAP *d3fl_LoadMap(D3FLDESC *desc);                                                  /* 0x442390 */
 struct TSTEXTURE *tex_GetFrame(int index, unsigned char frame);                         /* 0x460b00, ts_texture.c (d3_fl.c reads it through tex_GetFrameF) */
 #ifndef DATA_VIEWS_H
@@ -343,7 +336,6 @@ void d3_ClipMesh(D3CLIP mask, D3PVERT *v, int nverts, D3PTRI *t, int ntris);    
 int map_PickScreen(D3FLMAP *map, int x, int y, float r, D3VECTOR *out);                 /* 0x446750 */
 int map_Region(D3FLMAP *map, int x, int y);                                             /* 0x446910 */
 void * dd_LockSurfaceFlags(LPDIRECTDRAWSURFACE4 surf, DWORD flags);                                     /* 0x41de30, dd_vesa.c */
-void dd_UnlockSurface(LPDIRECTDRAWSURFACE4 surf);                                                      /* 0x41e740, dd_vesa.c */
 void d3d_PrecacheTexture(LPDIRECT3DTEXTURE2 t);                                                      /* 0x4360e0, d3_d3d.c */
 void d3d_BuildMipmaps(LPDIRECTDRAWSURFACE4 tex, DDSURFACEDESC2 *ddsd);                                           /* 0x4371d0, d3_d3d.c */
 struct TSTEXTURE; struct TSTEXTURE *tex_Prepare(struct TSTEXTURE *tex);                                                     /* 0x4614c0, ts_texture.c */
