@@ -31,12 +31,8 @@ extern float d3if_AmbR;                 /* 0x5fcc78 */
 extern float d3if_AmbG;                 /* 0x5fcc7c */
 extern float d3if_AmbB;                 /* 0x5fcc80 */
 
-int mem_IsValid(void *p);                                                               /* 0x4225e0 */
-int d3t_PlaceObject(struct D3OBJECT *camera, float px, float py, float pz, float dx, float dy, float dz, int unk, char flags);                /* 0x411680 */
 char d3if_Reload(D3OBJECT *obj, char *name);                                            /* 0x447340 */
-char d3_LoadScene(char *name, void *f, void (*progress)(int a, int i, int n));                                      /* 0x44be60 */
 struct D3OBJECT * d3_LoadGroup(char *name, void *f, struct D3OBJECT *parent);                                 /* 0x44c3f0 */
-void d3_WorldAngles(struct XOBJ *obj, struct D3VECTOR4 *angles);                                        /* 0x458910, world angles? */
 
 int ocmd_GetObjectHandle(char **name);                                                  /* 0x40d680 */
 char ocmd_FindCB(D3OBJECT *obj, OCMDFIND *f);                                           /* 0x40d6e0 */
@@ -133,18 +129,13 @@ typedef struct OCMDTEXFLAGS {       /* D3TEXFLAGS with the bits par_CreateEmitte
 } OCMDTEXFLAGS;
 
 extern D3EMITTERCFG d3_EmitterCfg;      /* 0x1468620 */
-extern const D3VECTOR d3_YAxis;         /* 0x5ebb94, (0, 1, 0) */
 
 D3PARTSYS *par_CreateEmitter(int count, D3VECTOR *pos, int parent, char *tex, OCMDTEXFLAGS flags, float size,
                              D3EMITTERCFG *cfg);                                     /* 0x457b30 */
-void par_Delete(D3PARTSYS *ps);                                                         /* 0x455760, d3_par.c */
 struct D3OBJECT * d3t_FindObject(char *name, char flags);                                    /* 0x411900 */
-int d3t_PlaceAtObject(D3OBJECT *obj, int unk);                                       /* 0x4118a0 */
-int d3t_MoveCameraPath(int time, int n, ...);                                        /* 0x4136d0 */
 D3ANIM *d3t_MoveObjectPath(D3OBJECT *obj, int time, int n, D3OBJECT **path);         /* 0x413960 */
 struct D3TRAIN;
 struct D3TRAIN *d3t_CreateRain(int count);                                           /* 0x413b30 */
-void d3t_DeleteRain(struct D3TRAIN *rain);                                           /* 0x413d00 */
 
 char ocmd_SelectTextureSetCB(D3OBJECT *obj, OCMDTEXSEL *ctx);                         /* 0x40e560, ForEach callback */
 int ocmd_SelectAllTextureSets(char **name, int *set);                                /* 0x40e5a0 */
