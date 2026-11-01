@@ -108,7 +108,6 @@ int ai_Unk4a8db0(int a, AIPER *p, int c, int d, unsigned char *m);              
 int ai_Unk4a8ee0(int a, AIPER *p);                                               /* 0x4a8ee0 */
 /* am.h declares ai_Unk4a58d0 with an int b (really a float) */
 #define G10_4A58D0(p, a, fl, b, f, id) ((int (*)(AIPER *, int, int *, float, float, unsigned short *))ai_Unk4a58d0)(p, a, fl, b, f, id)
-int unk_Unk4f3c50(int *ids, int *cnt, unsigned t);                                    /* 0x4f3c50 */
 int ai_Unk4a8f20(int a, AIPER *p, int c, int d, unsigned char *m);              /* 0x4a8f20 */
 int ai_Unk4a9030(int a, AIPER *p, int c, unsigned char *m);                     /* 0x4a9030 */
 int ai_Unk4a9080(int a, AIPER *p, int c, int d, unsigned char *m);              /* 0x4a9080 */
@@ -136,15 +135,10 @@ int ai_Unk4aa940(struct AIPER *p, int c, unsigned char *m);                     
 int ai_Unk4aaa10(struct AIPER *p, int c, unsigned char *m);                             /* 0x4aaa10 */
 int ai_Unk4aaae0(struct AIPER *p, int c, unsigned char *m);                             /* 0x4aaae0 */
 int ai_TrustedOfTwo(AIPER *p, AIPER *b, AIPER *c, int *k);                          /* 0x4aab90 */
-int amt_GetOffice(unsigned char i, struct AMTREC *out);  /* 0x4e6f30, amt.c (this unit calls it through amt_GetOfficeI) */
-int amt_GetOfficeRate(char *c, int x, float *out);                           /* 0x4e60b0 */
 int ai_TrustedOfFour(int k, AIPER *p, int *ids, int *out);                           /* 0x4aad30 */
 int ai_Unk4aaef0(struct AIPER *p, unsigned char *a, unsigned char *b);                  /* 0x4aaef0 */
 int ai_Unk4aafb0(struct AIPER *p, struct AIPER *o, unsigned char *m);                          /* 0x4aafb0 */
-int unk_Unk4f4d30(int id, short *a, int *v, short *c, unsigned *k);               /* 0x4f4d30 */
 int ai_Unk4ab080(struct AIPER *p, int *a, int *b);                                      /* 0x4ab080 */
-void ai_Unk4c5d40(void *p);                                                     /* 0x4c5d40 */
-void cm_SendProofExecuted(int a, int b);                                             /* 0x4c4ed0 */
 int ai_Unk4ab2c0(struct AIPER *p, int *a, int *b);                                      /* 0x4ab2c0 */
 int gm_BathObjectCount(char *b);                                                      /* 0x50cf60 */
 int ai_Unk4ab3e0(int a, AIPER *p, int c, unsigned char *m, unsigned char *m2);  /* 0x4ab3e0 */
