@@ -1752,34 +1752,37 @@ int sv_IsAtDoor(char *g, char *o)
         return 1;
     return 0;
 }
-/* 0x524810, like 0x524770 for the position record at +0x3b of g (only when its +0x88 is the table 0xfd7ba0): the radius is 650.0 (0x44228000), 1950.0 (0x44f3c000) for the building class 10, and 3250.0
-   (0x454b2000) when the object has no door dummy */
+/* 0x524810, sv_IsAtDoor for a cart g (AIOBJ, its scene character +0x3b), only while that character is in the
+   first scene: within 650.0 of the building o's door (1950.0 for a building type of kind 10, 3250.0 from the
+   building's object when it has no "dummy_TUER"); or when the character's group is the building's id */
 
-int sv_Unk524810(char *g, unsigned char *o)
+int sv_IsCartAtDoor(char *g, unsigned char *o)
 {
     float r;
-    int dst, d;
-    char pos[16];
+    SVMODEL *dst;
+    D3OBJECT *door;
+    float pos[4];
 
     r = 650.0f;
-    if (ai_BTypes[*o * 0x24d] == 10)
+    if (ai_BTypesT[*o].kind == 10)
         r = 1950.0f;
-    dst = *(int *)(g + 0x3b);
-    if (*(int *)(o + 0x61) != 0) {
+    dst = (SVMODEL *)((AIOBJ *)g)->sceneObj;
+    if (((AIBLD *)o)->object != 0) {
         if (dst == 0)
             return 0;
-        if (*(int *)(dst + 0x88) == (unsigned)&d3_Scenes) {
-            d = d3_FindObject(*(int *)(o + 0x61), 0x100, 0, "dummy_TUER");
-            if (d == 0) {
-                d3_PointToWorld(*(int *)(o + 0x61), *(int *)(o + 0x61) + 0x4c, pos);
+        if (dst->scene == &d3_Scenes[0]) {
+            door = d3_FindObject((int)((AIBLD *)o)->object, 0x100, 0, "dummy_TUER");
+            if (door != 0)
+                d3_PointToWorld(door, &door->pos, (D3VECTOR *)pos);
+            else {
+                d3_PointToWorld((D3OBJECT *)((AIBLD *)o)->object, &((D3OBJECT *)((AIBLD *)o)->object)->pos, (D3VECTOR *)pos);
                 r = 3250.0f;
-            } else
-                d3_PointToWorld(d, d + 0x4c, pos);
-            if (d3_VecEqual(*(int *)(dst + 0x34) + 0x4c, pos, r) != 0)
+            }
+            if (d3_VecEqual(&dst->obj->pos, (D3VECTOR *)pos, r) != 0)
                 return 1;
         }
     }
-    if (dst != 0 && *(int *)(dst + 0x2c) == *(int *)(o + 1))
+    if (dst != 0 && dst->group == ((AIBLD *)o)->id)
         return 1;
     return 0;
 }

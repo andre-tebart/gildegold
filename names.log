@@ -408,3 +408,4 @@
 2026-11-01T21:54:12 0x00524100 func sv_Unk524100 -> sv_AddGroupMember by:main why:0x524100 enters the character's netId into the first free (-1) of the group record's 8 member slots unless present
 2026-11-01T21:58:22 0x0053e1f0 func he_Unk53e1f0 -> he_FreeEvent by:main why:0x53e1f0 frees the event record r (its memo block +0x7c, the quick-list slot 0x74db40) and shrinks the used counters
 2026-11-01T22:00:09 0x00524770 data sv_Unk524770 -> sv_IsAtDoor by:main why:0x524770: 1 when the character's model stands idle within 750.0 of the building's dummy_TUER door, or its group is the building's id
+2026-11-01T22:00:40 0x00524810 data sv_Unk524810 -> sv_IsCartAtDoor by:main why:0x524810: sv_IsAtDoor for a cart's scene character (650 / 1950 / 3250 radius by building kind and door dummy)

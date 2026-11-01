@@ -34,7 +34,7 @@ int sv_UsedGroupSlots(char *g);                                         /* 0x524
 void sv_CountGroupMembers(char *g);                                     /* 0x5241d0 */
 void sv_MoveToGroup(unsigned char *o, short *it, int c, char *g);       /* 0x524260 */
 int sv_IsAtDoor(char *g, char *o);                                     /* 0x524770 */
-int sv_Unk524810(char *g, unsigned char *o);                            /* 0x524810 */
+int sv_IsCartAtDoor(char *g, unsigned char *o);                            /* 0x524810 */
 int sv_Unk524900(char *c, int *out);                                    /* 0x524900 */
 void sv_Unk524990(unsigned char *g);                                    /* 0x524990 */
 void sv_OpenPlayerBar(int a, char k);                                   /* 0x525220 */

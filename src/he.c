@@ -9933,7 +9933,7 @@ void he_Unk555350(int ev)
     d3if_SelectScene(sc, 1);
 }
 
-int sv_Unk524810();
+int sv_IsCartAtDoor();
 
 /* 0x555690, the run handler of the return leg of the transport event (a Ghidra miss; ROUGH, same record as 0x555350): the first round stops the transporter (0x4c5230), puts it on the road (0x4c5260 (id, 1) unless the target is a 0x5024f0 building), sends it home ("Trans", 0x4c52e0 (id, b1 id, -1, 0, 0, ..)) and starts the guide 0x4c4920; later rounds check the arrival (0x524810 (transporter, b1)), restart the guide and format the arrival news (0x1c39 + 0x1c3b / 0x1c3d / 0x1c3f / 0x1c43 / 0x1c44 by the kinds 0x47 / 0x1d .. 0x20 of the two buildings and the player's name 0x7e3f40) which a player character gets through 0x53dee0 (text 0x609, the strings 0x627318 / 0x627304) unless the world map shows the building (0x6f229c / 0x6f230c); the event is then posted again with the handle 3 */
 void he_Unk555690(int ev)
@@ -9959,7 +9959,7 @@ void he_Unk555690(int ev)
             if (gm_IsType10(b0) == 0)
                 *(int *)(ev + 0xec) = ((int (*)(int, int, int))ai_Unk4c4920)(*(int *)(a44 + 1), *(int *)(b0 + 1), *(int *)(tr + 2));
             *(unsigned char *)(ev + 0xd0) = 1;
-        } else if (sv_Unk524810(tr, b1) != 0) {
+        } else if (sv_IsCartAtDoor(tr, b1) != 0) {
             *(int *)(ev + 0xec) = ((int (*)(int, int, int))ai_Unk4c4920)(*(int *)(a44 + 1), *(int *)(b1 + 1), *(int *)(tr + 2));
             if (*(unsigned char *)b1 == 0x47) {
                 txt_Format(text, 0x1c3b, 1, 0x1c39, (char *)(unsigned)&ai_PlayerSlots + *(int *)(b1 + 0x65) * 0x2f4);
@@ -10094,7 +10094,7 @@ void he_Unk556080(int ev)
         d3if_SelectScene(sc, 1);
         return;
     }
-    if (sv_Unk524810(cart, b0) != 0) {
+    if (sv_IsCartAtDoor(cart, b0) != 0) {
         *(int *)(ev + 0xec) = ((int (*)(int, int, int))ai_Unk4c4920)(*(int *)(a44 + 1), *(int *)(b1 + 1), *(int *)(cart + 2));
         cm_RequestChrMoveToUniverse(*(int *)(cart + 2), *(int *)(b1 + 1), -1, (char *)0);
         init_BuildingSceneUniverse(b1);
@@ -13312,7 +13312,7 @@ void he_Unk567f50(int ev, unsigned short *c)
                 return;
             *(unsigned char *)(c + 0x19) = 0;
         }
-        if (sv_Unk524810(c, w) != 0 && (gm_IsType10(w) == 0 || *(int *)(c + 3) == *(int *)(U_I((unsigned)&full_data_6f2638) + 1))) {
+        if (sv_IsCartAtDoor(c, w) != 0 && (gm_IsType10(w) == 0 || *(int *)(c + 3) == *(int *)(U_I((unsigned)&full_data_6f2638) + 1))) {
             iv = rt_PointCount(*(int *)((char *)c + 0x29));
             n = *(int *)((char *)c + 0x2d) + 1;
             if (iv <= n)
