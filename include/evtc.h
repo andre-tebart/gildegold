@@ -7,7 +7,6 @@
 #include "evt.h"
 
 extern volatile unsigned long d3_Time;  /* 0x6333cc, also in d3.h */
-extern unsigned int tb_Delay;           /* 0xfe7a88 */
 
 typedef void (*EVTUSERFUNC1)(int a);
 typedef void (*EVTUSERFUNC2)(int a, int b);
@@ -25,7 +24,5 @@ int evtc_CallUserFunction(EVTUSERFUNC1 *f, int *a);                             
 int evtc_CallUserFunctionExt(EVTUSERFUNC2 *f, int *a, int *b);                          /* 0x40b860 */
 void evtc_Register(void);                                                                /* 0x40b8a0 */
 
-int ai_AlwaysTrue(void);                                                                /* 0x4a8c10, also in d3_engine.h */
-int sv_ReturnZero(void);                                                                    /* 0x52a040, an empty command (ch.h) */
 
 #endif
