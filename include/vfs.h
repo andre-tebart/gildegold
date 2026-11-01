@@ -98,8 +98,6 @@ void err_Message(char *msg);                                                    
 void * mem_Alloc(int size, char *tag);                                                   /* 0x4223c0 */
 void mem_Free(void *p);                                                                 /* 0x422620 */
 void *pool_Alloc(struct MPOOL **pool, unsigned int size, int count);                     /* 0x422a20, zeroed (mem.h) */
-void pool_Free(struct MPOOL **pool, void *ptr);                                                  /* 0x422b30 */
-void pool_Destroy(struct MPOOL **pool);                                                          /* 0x422c60 */
 
 int vfs_strcmp(char *a, char *b);                                                       /* 0x42eca0, stricmp if vfs_IgnoreCase */
 char *vfs_UpperCase(char *path);                                                        /* 0x42ecf0, strupr unless vfs_IgnoreCase */
