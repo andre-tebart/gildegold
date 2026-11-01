@@ -14,6 +14,17 @@ extern D2RADIO d2_Radios[];
 #define d2_ObjsC (*(char **)&d2_Objs)  /* 0xf8f080, d2_Objs (d2.c: D2OBJ *) read bytewise, as this unit does (+ obj * 0x2ec) */
 #define cm_SendExSellObjectI ((void (*)(int, int, int, int, int, int))cm_SendExSellObject)  /* 0x4c4880 (cm.h: short c, unsigned char e): @original rt.c pushes the third argument as an int (byte-matched rt_UnloadAtPoint) */
 #include "d3_types.h"
+#include "ahm.h"
+#include "cm.h"
+#include "f3gm.h"
+#include "he.h"
+#include "hst.h"
+#include "io_text.h"
+#include "ls.h"
+#include "mem.h"
+#include "sv.h"
+#include "unk_58bbd0.h"
+#include "vfs.h"
 extern D3SCENE d3_Scenes[];
 
 int rt_MarkGroup = -1;                  /* 0x602a90 */
