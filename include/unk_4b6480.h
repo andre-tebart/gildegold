@@ -23,18 +23,11 @@ typedef struct G14REC {
     char pad15[3];
 } G14REC;
 
-float gm_AddHealth(unsigned id, int d);                                    /* 0x4fca40, f3gm.c */
 
-unsigned gm_Unk5054f0(short *c);                                                     /* 0x5054f0 */
-unsigned gm_Unk5056a0(short *c);                                                     /* 0x5056a0 */
-int gm_Unk5059d0(char *c);                                                     /* 0x5059d0 */
-int gm_Unk505ad0(char *c);                                                     /* 0x505ad0 */
 void gm_ClockToDate(struct GCLOCK *c, unsigned char *out);                                            /* 0x4fe2c0 */
-int gm_Season(char *d);                                             /* 0x4fe330, the season of a calendar record (f3gm.c's gm_Season) */
 #define G14_4FEA50(a, o, b, k) ((int (*)(int, void *, int, int))gm_FindById)(a, o, b, k)  /* object out 2nd */
 #define G14_5087F0(a, b) ((float (*)(int, unsigned char))gm_ItemPrice)(a, b)  /* ai.h: int n */
 
-extern char ai_PlayerSlots[][0x2f4];      /* 0x7e3f40, per player (hst.c: starts with a name) */
 
 extern unsigned int ai_Unk6f0730;       /* 0x6f0730, random seed of the messages */
 
