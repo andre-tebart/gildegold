@@ -856,7 +856,7 @@ exe	0x00447340	d3if_Reload	d3_interface	byte	readable
 exe	0x004473f0	d3if_Reset	d3_interface	byte	draft	deep	
 exe	0x004475f0	d3if_InitScene	d3_interface	byte	draft	deep	
 exe	0x00447800	d3if_PrecacheCB	d3_interface	byte	readable		
-exe	0x00447860	d3if_Prerender	d3_interface	byte	draft		byte+readable -> byte+draft at cf66a1f: the fold to one file per unit attributes its undeclared call d3fl_Prerender (M7, line 412) to it; lint reported the call under the original's file name before, where it reached no function
+exe	0x00447860	d3if_Prerender	d3_interface	byte	readable		
 exe	0x004478e0	d3if_SelectScene	d3_interface	shape	draft	deep	
 exe	0x00447e60	d3if_ClearScene	d3_interface	byte	readable		
 exe	0x00447f70	d3if_MoveCB	d3_interface	byte	readable		
@@ -2209,15 +2209,15 @@ exe	0x004c4fd0	ai_Unk4c4fd0	cm	byte	draft
 exe	0x004c5010	ai_Unk4c5010	cm	byte	draft		
 exe	0x004c5050	cm_SetPlant	cm	byte	draft		
 exe	0x004c50b0	ai_Unk4c50b0	cm	draft	draft		
-exe	0x004c5100	ai_Unk4c5100	cm	byte	draft		
+exe	0x004c5100	cm_SendChrWalkTo	cm	byte	draft		
 exe	0x004c5150	ai_Unk4c5150	cm	byte	draft		
 exe	0x004c51b0	cm_RequestChrMoveToUniverse	cm	byte	draft		
-exe	0x004c5230	ai_Unk4c5230	cm	byte	draft		
+exe	0x004c5230	cm_SendChrStop	cm	byte	draft		
 exe	0x004c5260	ai_Unk4c5260	cm	byte	draft		
 exe	0x004c52a0	ai_Unk4c52a0	cm	byte	draft		
-exe	0x004c52e0	ai_Unk4c52e0	cm	draft	draft		
+exe	0x004c52e0	cm_SendChrGotoBuilding	cm	draft	draft		
 exe	0x004c5410	ai_Unk4c5410	cm	byte	draft		
-exe	0x004c5460	ai_Unk4c5460	cm	byte	draft		
+exe	0x004c5460	cm_SendChrUseGates	cm	byte	draft		
 exe	0x004c54a0	cm_SendOwnership	cm	byte	draft		
 exe	0x004c54e0	ai_Unk4c54e0	cm	byte	draft		
 exe	0x004c5510	ai_Unk4c5510	cm	byte	draft		
@@ -2979,12 +2979,12 @@ exe	0x004fe330	gm_Season	f3gm	byte	draft
 exe	0x004fe350	gm_ClockSeason	f3gm	byte	readable		
 exe	0x004fe370	gm_InitBuildingTables	f3gm	draft	draft		
 exe	0x004fe570	gm_LoadTables	f3gm	draft	draft		
-exe	0x004fe7f0	gm_ClearBuildings	f3gm	byte	draft		
+exe	0x004fe7f0	gm_ClearBuildings	f3gm	byte	readable		
 exe	0x004fe830	gm_ClearObjects	f3gm	draft	draft		
 exe	0x004fe900	gm_FindObjectProto	f3gm	shape	readable		
 exe	0x004fe940	gm_IsBuildingKind	f3gm	draft	draft		
 exe	0x004fe980	gm_FindObjectInst	f3gm	byte	draft		
-exe	0x004fe9c0	gm_Free	f3gm	byte	draft		
+exe	0x004fe9c0	gm_Free	f3gm	byte	readable		
 exe	0x004fea50	gm_FindById	f3gm	draft	draft		
 exe	0x004feb30	gm_UpdatePlayers	f3gm	byte	readable		
 exe	0x004feb60	gm_InitPlayerRecord	f3gm	draft	draft		
@@ -3051,7 +3051,7 @@ exe	0x00503f50	gm_Unk503f50	f3gm	draft	draft
 exe	0x00503fa0	gm_BuildingTypeOfJob	f3gm	draft	draft		
 exe	0x00504050	gm_JobBuildingType	f3gm	draft	readable		
 exe	0x00504100	gm_JobSlots	f3gm	draft	readable		
-exe	0x00504290	gm_FirstTitleNumber	f3gm	shape	draft		
+exe	0x00504290	gm_FirstTitleNumber	f3gm	shape	readable		
 exe	0x00504350	gm_TitleNumberGroup	f3gm	draft	readable		
 exe	0x005043d0	gm_TitleNumber	f3gm	draft	readable		
 exe	0x005044b0	gm_TitleJob	f3gm	draft	draft		
@@ -3312,7 +3312,7 @@ exe	0x00522040	sv_PanelImage	sv	byte	readable
 exe	0x00522100	sv_SetPanelEnabled	sv	byte	draft		
 exe	0x00522280	sv_Unk522280	sv	byte	draft		
 exe	0x005223c0	sv_DestroyScreen	sv	byte	draft		
-exe	0x005224a0	sv_LoadGroundplan	sv	draft	draft	deep	
+exe	0x005224a0	sv_LoadGroundplan	sv	draft	readable	deep	
 exe	0x005229b0	sv_UpdateGroundplan	sv	draft	draft	deep	
 exe	0x00522ec0	sv_SetResearchClass	sv	byte	readable		
 exe	0x00522f10	sv_UpdateCityPanel	sv	draft	draft	deep	
@@ -3326,7 +3326,7 @@ exe	0x00524770	sv_IsAtDoor	sv	byte	readable
 exe	0x00524810	sv_IsCartAtDoor	sv	byte	readable		
 exe	0x00524900	sv_CharStateIcons	sv	byte	draft		
 exe	0x00524990	sv_UpdateMemberList	sv	byte	draft		
-exe	0x00525220	sv_OpenPlayerBar	sv	byte	draft		
+exe	0x00525220	sv_OpenPlayerBar	sv	byte	readable		
 exe	0x00525440	sv_ClosePlayerBar	sv	byte	readable		
 exe	0x00525480	sv_ClockSeason	sv	byte	readable		
 exe	0x00525490	sv_SetSkyLightColors	sv	byte	readable		
@@ -3359,22 +3359,22 @@ exe	0x00528b80	sv_OpenItemPanel	sv	byte	readable
 exe	0x00528d90	sv_OpenCartPanel	sv	byte	readable		
 exe	0x00528ee0	sv_OpenDefaultPanel	sv	byte	readable		
 exe	0x005290f0	sv_OpenPersonPanel	sv	byte	readable		
-exe	0x00529380	sv_RefreshPanel	sv	draft	draft	deep	
-exe	0x00529fb0	sv_ClosePanel	sv	byte	draft		
+exe	0x00529380	sv_RefreshPanel	sv	draft	readable	deep	
+exe	0x00529fb0	sv_ClosePanel	sv	byte	readable		
 exe	0x0052a040	sv_ReturnZero	sv	byte	readable		
-exe	0x0052a050	sv_UpdatePanel	sv	byte	draft		
+exe	0x0052a050	sv_UpdatePanel	sv	byte	readable		
 exe	0x0052a680	sv_HoverPick	sv	draft	draft	deep	
-exe	0x0052adb0	sv_Unk52adb0	sv	draft	draft		
+exe	0x0052adb0	sv_ResetSelection	sv	draft	readable	deep	
 exe	0x0052ae40	sv_ClearSelection	sv	byte	draft		
-exe	0x0052ae70	sv_Unk52ae70	sv	draft	draft		
-exe	0x0052b2a0	sv_CollectGroupCharacters	sv	draft	draft		
-exe	0x0052b350	sv_Unk52b350	sv	draft	draft		
-exe	0x0052b3c0	sv_Unk52b3c0	sv	draft	draft		
+exe	0x0052ae70	sv_HandleObjects	sv	draft	readable	deep	
+exe	0x0052b2a0	sv_CollectGroupCharacters	sv	shape	readable		
+exe	0x0052b350	sv_RegisterActivity	sv	byte	readable		
+exe	0x0052b3c0	sv_ActivityName	sv	byte	readable		
 exe	0x0052b490	sv_Unk52b490	sv	byte	draft		
-exe	0x0052b500	sv_Unk52b500	sv	draft	draft		
+exe	0x0052b500	sv_RunLocationScripts	sv	byte	readable		
 exe	0x0052bb70	sv_Unk52bb70	sv	byte	draft		
-exe	0x0052bbc0	sv_Unk52bbc0	sv	draft	draft		
-exe	0x0052bec0	sv_Unk52bec0	sv	draft	draft		
+exe	0x0052bbc0	sv_SendSelectedToBuilding	sv	draft	readable	deep	
+exe	0x0052bec0	sv_HandleSelectionMouse	sv	draft	readable	deep	
 exe	0x0052c420	sv_Unk52c420	sv	byte	draft		
 exe	0x0052c4a0	sv_ReleaseBubble	sv	byte	readable		
 exe	0x0052c4e0	sv_Unk52c4e0	sv	draft	draft		
@@ -3400,8 +3400,8 @@ exe	0x0052e860	sv_CreateFormSlider	sv	draft	draft
 exe	0x0052ea30	sv_FitForm	sv	byte	draft		
 exe	0x0052eaa0	sv_ValueBar	sv	draft	draft		
 exe	0x0052eb50	sv_DrawBalanceBar	sv	draft	draft		
-exe	0x0052ee50	sv_Unk52ee50	sv	draft	draft		
-exe	0x0052eed0	sv_Unk52eed0	sv	byte	draft		
+exe	0x0052ee50	sv_StartBand	sv	draft	draft		
+exe	0x0052eed0	sv_EndBand	sv	byte	draft		
 exe	0x0052eee0	sv_Unk52eee0	sv	draft	draft		
 exe	0x0052f0d0	sv_Unk52f0d0	sv	draft	draft		
 exe	0x0052f2c0	sv_Unk52f2c0	sv	byte	draft		
@@ -3418,7 +3418,7 @@ exe	0x0052fad0	sv_Unk52fad0	sv	byte	draft
 exe	0x0052fb50	sv_PopTo	sv	draft	draft		
 exe	0x0052fb80	sv_PumpMessages	sv	byte	draft		
 exe	0x0052fc10	sv_NetworkSyncWait	sv	draft	draft		
-exe	0x0052fcf0	sv_BroadcastText	sv	draft	draft		
+exe	0x0052fcf0	sv_BroadcastText	sv	draft	readable		
 exe	0x0052fd80	sv_Unk52fd80	sv	byte	draft		
 exe	0x0052fe00	sv_PumpNet	sv	byte	readable		
 exe	0x0052fe10	sv_Unk52fe10	sv	draft	draft		
@@ -3458,11 +3458,11 @@ exe	0x005344f0	main_Unk5344f0	main	shape	draft
 exe	0x00534610	main_ChooseTalents	main	shape	readable		
 exe	0x00534b30	main_ChooseModel	main	draft	draft	deep	
 exe	0x005359f0	main_ChooseFamily	main	draft	draft	deep	
-exe	0x005361d0	main_ChoosePlayer	main	draft	draft	deep	
+exe	0x005361d0	main_ChoosePlayer	main	draft	readable	deep	
 exe	0x00536980	main_ChooseHistory	main	draft	draft	deep	
 exe	0x00536d80	main_CharacterIntro	main	byte	readable		
 exe	0x00536e80	main_ChooseDifficulty	main	byte	readable		
-exe	0x00537040	main_ChooseOpponents	main	draft	draft	deep	
+exe	0x00537040	main_ChooseOpponents	main	draft	readable	deep	
 exe	0x00537230	main_ChooseCity	main	draft	draft	deep	
 exe	0x00537930	main_NewSinglePlayerGame	main	byte	draft		
 exe	0x00537980	main_LoadingScreen	main	byte	readable		
@@ -3472,7 +3472,7 @@ exe	0x00537be0	main_Unk537be0	main	byte	draft
 exe	0x00537c70	main_PreloadSound	main	byte	draft		
 exe	0x00537db0	main_FreeSoundBanks	main	byte	draft		
 exe	0x00537de0	main_Unk537de0	main	byte	draft		
-exe	0x00537f40	main_EndGame	main	byte	draft		
+exe	0x00537f40	main_EndGame	main	byte	readable		
 exe	0x00538140	main_RundenBeginn	main	byte	readable		
 exe	0x005384e0	main_EndRound	main	draft	draft	deep	
 exe	0x00539620	main_ReplaceFigure	main	draft	draft	deep	
