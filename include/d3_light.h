@@ -142,9 +142,7 @@ typedef struct D3LFRAME {           /* the animation frame d3_RelightObjectFrame
 } D3LFRAME;
 
 extern volatile unsigned long d3_Time;      /* 0x6333cc */
-extern unsigned char d3_Hardware;          /* 0x633450 */
 extern D3OBJECT *d3_Camera;                 /* 0xfc2dec */
-extern float d3fl_Shade[1024];              /* 0xfb9940, shade by -cos(angle) * 1023 */
 extern float d3_LightRadiusMargin;          /* 0x633b18, added to the mesh radius for the light reach:
                                                the matrix z offset (m->_43) or 0 */
 extern D3VECTOR d3_AmbientColor;               /* 0x5fcc78, ambient light colour */
@@ -169,8 +167,6 @@ void d3_SetVertexColors(D3OBJECT *obj, struct D3SURF *s, char on, D3TEXFLAGS fl)
 char d3_RelightObject(D3OBJECT *obj);           /* 0x453280 */
 void d3_RelightObjects(D3OBJECT *obj);          /* 0x453580, recomputes the vertex colours of the selected objects */
 void d3_RelightObjectFrame(D3OBJECT *obj, struct D3ANIMFRAME *f); /* 0x4535b0 */
-void d3_TriNormal(struct D3VECTOR4 *a, struct D3VECTOR4 *b, struct D3VECTOR4 *c, struct D3VECTOR4 *n);   /* 0x454700, face normal */
-void d3_DirToRef(struct XOBJ *obj, struct XOBJ *ref, float *in, float *out);             /* 0x458950, unk_458810.h */
 void d3_FrameNormals(D3OBJECT *obj, D3LINFO *info, struct D3ANIMFRAME *f);              /* 0x459980, f: key frame (d3_anim.h) */
 char d3_ForEachObject2(D3SCENE *scene, D3OBJECT *obj, unsigned int mask, void (*cb)(D3OBJECT *obj)); /* 0x438e60 */
 struct D3FLMAP;
