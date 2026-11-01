@@ -44,7 +44,6 @@ struct D3SM;
 #include "d3_light.h"
 #include "data_views.h"
 
-extern void d3s_ResetShadows(struct D3OBJECT *obj);
 extern void ai_Unk4c4ac0(int a, int b, int c);
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 extern GAPDATA full_data_6f5a84[];
@@ -198,7 +197,6 @@ extern int di_MinY;
 extern GAPDATA full_data_5f3418[];
 extern GAPDATA full_data_6f1c2c[];
 extern GAPDATA full_data_6f22f4[];
-extern int main_Round;
 #include "f3snd_types.h"
 extern G16AMBIENTON snd_AmbientOn;
 extern void sv_UpdateClock(void);
@@ -452,7 +450,6 @@ extern char * ai_PlayerBuilding;
 extern int ai_Unk6f22cc;
 extern int ai_Unk6f22d0;
 extern char * ai_Unkfc2dec;
-extern int snd_RoomBank;
 extern int sv_FrameBase;
 extern int sv_FrameDepth;
 extern int sv_PopRequest;
@@ -495,7 +492,6 @@ extern char * ai_FallbackBuilding;
 #include "unk_5d33b0_types.h"
 extern OPTIONBYTES ai_GfxFloor;
 extern int * ai_Unk633738;
-extern struct D3SKY *d3_Sky;
 extern G16AMBIENTON snd_AmbientOn;
 extern char ai_Chars[768][0x21c];
 extern unsigned char ai_OwnPlayer;
@@ -1124,7 +1120,6 @@ void d2_SetObjEnabled();
 void d2_SetObjFont();
 void d2_SetObjPic();
 void d2_SetObjText();
-void he_Unk53e1f0();
 void sv_CameraFollow();
 int util_Random(unsigned short n);
 
@@ -1160,11 +1155,28 @@ typedef struct HETIME {            /* the 14 byte game time (ai.h AITIME; he.c h
 } HETIME;
 #pragma pack(pop)
 extern HETIME ai_Time;                  /* 0x770ae0 (ai.h AITIME, defined in he.c) */
-float util_RandomF();                   /* the float roll (ai.h util_RandomF) */
 
 #include "time_view.h"
 #include "ls.h"
 #include "f3init.h"
+#include "d3_engine.h"
+#include "d3_fl.h"
+#include "d3_interface.h"
+#include "d3_sky.h"
+#include "d3_sm.h"
+#include "d3_vec.h"
+#include "d3s.h"
+#include "err.h"
+#include "f3gm.h"
+#include "he.h"
+#include "io_text.h"
+#include "main.h"
+#include "mem.h"
+#include "sblib.h"
+#include "tb.h"
+#include "tr.h"
+#include "unk_458810.h"
+#include "unk_575860.h"
 #define sv_SelectPanelObjectK ((int (*)())sv_SelectPanelObject)  /* 0x52c4c0?: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
 #define gm_Unk50a970K ((int (*)())gm_Unk50a970)  /* 0x50a970: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
 /* 0x58bbd0, the production window's table init (400 B): the five-entry table 0x6f4f08 (-1 / -1 every 0x14 B) and
