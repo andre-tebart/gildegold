@@ -46,4 +46,9 @@ void main_StartCityGame(char *name, int net);
 int main_NewSinglePlayerGame(void);                /* 0x537930, the new game (main_Menue), 0: cancelled */
 int main_NetworkMenu(void);
 
+/* declared in other units' headers before (moved to the owner) */
+void main_GameLoop(int ctl);  /* 0x53bb20 */
+extern int main_ScreenRestart;  /* 0x6f25a4 */
+extern int snd_SystemBank;  /* 0x6f2400 */
+
 #endif
