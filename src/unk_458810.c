@@ -5,6 +5,7 @@
 #include <d3d.h>
 #include "d3.h"
 #include "unk_458810.h"
+#include "d3_vec.h"
 
 /* 0x458810, rotates a direction by the object's matrix and then by those of its parents */
 void d3_DirToWorld(XOBJ *obj, float *in, float *out)
