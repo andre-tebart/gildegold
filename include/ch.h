@@ -12,6 +12,7 @@ struct D3SURF;
    byte offsets whose meaning is not known yet. Names are ours. */
 #ifndef UNK_402140_H
 #define UNK_402140_H
+#include "d3.h"                       /* D3VECTOR / D3OBJECT / D3ANIM / D3SCENE: the character record embeds them */
 struct D3OBJECT;
 struct PATHOUT;
 
