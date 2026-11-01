@@ -39,7 +39,6 @@ extern GAPDATA full_data_60d5a4[];
 extern GAPDATA full_data_60d5b4[];
 extern GAPDATA full_data_92bcb8[];
 
-int ai_AlwaysTrue(void);                 /* the handler tables at 0x60bd98 / 0x60bf40 */
 
 #define G17_I(m, o) (*(int *)&(m).data[o])
 #define G17_S(m, o) (*(short *)&(m).data[o])
@@ -50,6 +49,32 @@ int ai_AlwaysTrue(void);                 /* the handler tables at 0x60bd98 / 0x6
 #include "time_view.h"
 #include "f3init.h"
 #include "sv.h"
+#include "ahm.h"
+#include "ai.h"
+#include "d3_anim.h"
+#include "d3_engine.h"
+#include "d3_fl.h"
+#include "d3_int_io.h"
+#include "d3_interface.h"
+#include "d3_io_a.h"
+#include "d3_io_t.h"
+#include "d3_sky.h"
+#include "d3_sm.h"
+#include "d3_vec.h"
+#include "err.h"
+#include "f3snd.h"
+#include "io_text.h"
+#include "ls.h"
+#include "main.h"
+#include "mem.h"
+#include "msx.h"
+#include "rd.h"
+#include "sblib.h"
+#include "tb.h"
+#include "tr.h"
+#include "unk_458810.h"
+#include "unk_575860.h"
+#include "unk_58bbd0.h"
 #define d3sm_PickK ((int (*)())d3sm_Pick)  /* 0x45f2b0 (d3_sm.c): @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
 #define d3sky_CreateLayerK ((int (*)())d3sky_CreateLayer)  /* 0x45d880 (d3_sky.c): @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) (floats as bit patterns, the flags as an int) */
 #define d3sky_CreateK ((int (*)())d3sky_Create)  /* 0x45da30 (d3_sky.c): @original the calls pass the three floats as dword bit patterns without a prototype (ai_Unk4e32f0 0x4e32f0: push 0x44160000 ..) */
