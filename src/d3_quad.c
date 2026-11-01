@@ -5,6 +5,9 @@
 #include <d3d.h>
 #include "d3.h"
 #include "d3_quad.h"
+#include "d3_engine.h"
+#include "mem.h"
+#include "unk_4591a0.h"
 #define d3_ClipBoxU ((unsigned int (*)(void *, float *, float *))d3_ClipBox)  /* 0x439650 (d3_engine.h: unsigned char): @original the byte-matched d3q_Mark reads the whole unsigned int result (no 25 ff 00 00 00 after the call) */
 
 /* 0x457c30, free a node, its item list and its subtree */
