@@ -18,6 +18,19 @@ extern int gm_PlayerRecords[688];
 #define AMT_MONEY_UNIT 64  /* money in the character messages counts in multiples of this: the amounts of the 0x4c4830 sites are built as n * 0x40 */
 
 #include "time_view.h"
+#include "ahm.h"
+#include "ai.h"
+#include "cm.h"
+#include "f3gm.h"
+#include "gv.h"
+#include "he.h"
+#include "io_text.h"
+#include "ls.h"
+#include "sv.h"
+#include "tr.h"
+#include "unk_4a7140.h"
+#include "unk_58bbd0.h"
+#include "vfs.h"
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, ai_Unk4d88c0 0x4d88c0 move it as a word / movzx) */
 
 /* 0x4e5cd0, clears the office table (42 records of 0x18 bytes at 0x925120) and numbers them: +0 the index, +4 and +0x14 -1, +8 the kind of the office
