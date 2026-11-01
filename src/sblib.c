@@ -14,6 +14,7 @@ struct SBBANK;
 #include <d3d.h>
 #include "d3.h"
 #include "sfx.h"
+#include "mem.h"
 
 typedef struct SBDATA {             /* a loaded sample: 12-byte header, then the file data */
     char fmt;                       /* 1 wav, 2 mp3 */
