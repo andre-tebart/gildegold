@@ -390,6 +390,7 @@ int d2_RemoveWindow();                     /* 0x472ce0 */
 #include "ls.h"
 #define d3sky_CreateLayerK ((int (*)())d3sky_CreateLayer)  /* 0x45d880 (d3_sky.c): @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) (floats as bit patterns, the flags as an int) */
 #define d3sky_CreateK ((int (*)())d3sky_Create)  /* 0x45da30 (d3_sky.c): @original the calls pass the three floats as dword bit patterns without a prototype (ai_Unk4e32f0 0x4e32f0: push 0x44160000 ..) */
+#define d3_PointToWorldK ((void (*)())d3_PointToWorld)  /* 0x458a20 (d3.h, 3 parameters): @original sv_Unk528180 0x5281b5 pushes 4 arguments (the 4th an uninitialised register), compiled without a prototype */
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, ai_Unk4d88c0 0x4d88c0 move it as a word / movzx) */
 #define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
 /* 0x520ec0, the tick callback: turns the frame counter sv_TickFrames into the float sv_FramesPerTick and clears it */
@@ -2917,7 +2918,7 @@ char sv_Unk528180(char *part, char *b)
         z[0] = 0;
         z[1] = 0;
         z[2] = 0;
-        d3_PointToWorld(part, part + 0x4c, w, junk);   /* @original: the 4th argument is an uninitialised register in the original (0x528180) */
+        d3_PointToWorldK(part, part + 0x4c, w, junk);   /* @original: the 4th argument is an uninitialised register in the original (0x5281b5) */
         o = (char *)d3_CreateObject(*(int *)(b + 0x61), w, z, "sp_WIMPEL");
         z[0] = 0;
         z[1] = 3.1415927f;
