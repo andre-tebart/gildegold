@@ -50,7 +50,7 @@ void sv_PlaceCamera(float f);                                           /* 0x525
 void sv_Unk525ee0(void);                                                /* 0x525ee0 */
 void sv_Unk525ff0(void);                                                /* 0x525ff0 */
 int sv_ScrollCamera(void);                                                 /* 0x5263a0 */
-int sv_Unk526cf0(void);                                                 /* 0x526cf0 */
+int sv_MouseCamera(void);                                                 /* 0x526cf0 */
 int sv_Unk527640(void);                                                 /* 0x527640 */
 void sv_FlyCameraToObject(int o);                                               /* 0x527840 */
 void sv_CameraToObject(int o);                                               /* 0x527bb0 */
@@ -208,17 +208,17 @@ extern int sv_ViewRectBottom;                               /* 0x6248b0 */
 extern int ai_Unk62a8cc;                                    /* 0x62a8cc */
 extern int ai_Unk631078;                                    /* 0x631078 */
 extern short d2_PointerLook;                                /* 0x6ed9d0 */
-extern int ai_Unk6f1c40;                                    /* 0x6f1c40 */
+extern int sv_SavedMaxY;                                    /* 0x6f1c40 */
 extern float sv_ScrollVelYPrev;                                  /* 0x6f1c44 */
-extern int ai_Unk6f1c48;                                    /* 0x6f1c48 */
-extern int ai_Unk6f1c50;                                    /* 0x6f1c50 */
-extern float ai_Unk6f1c64[3];                               /* 0x6f1c64 */
+extern int sv_DragLastY;                                    /* 0x6f1c48 */
+extern int sv_SavedMaxX;                                    /* 0x6f1c50 */
+extern float sv_DragLastPos[3];                               /* 0x6f1c64 */
 extern float sv_ScrollLastMove[3];                               /* 0x6f1c74 */
-extern int ai_Unk6f1c84;                                    /* 0x6f1c84 */
-extern int ai_Unk6f1c88;                                    /* 0x6f1c88 */
-extern int ai_Unk6f1c8c;                                    /* 0x6f1c8c */
-extern int ai_Unk6f2290;                                    /* 0x6f2290 */
-extern int ai_Unk6f2298;                                    /* 0x6f2298 */
+extern int sv_SavedMinX;                                    /* 0x6f1c84 */
+extern int sv_DragLastX;                                    /* 0x6f1c88 */
+extern int sv_ZoomStartY;                                    /* 0x6f1c8c */
+extern int sv_ZoomStartX;                                    /* 0x6f2290 */
+extern int sv_SavedMinY;                                    /* 0x6f2298 */
 extern int sv_FrameDepth;                                   /* 0x6f229c */
 extern int sv_PopRequest;                                   /* 0x6f22a0 */
 extern int sv_FrameBase;                                    /* 0x6f22a4 */
@@ -252,15 +252,15 @@ extern float sv_ScrollVelX;                                  /* 0x6f2388 */
 extern float sv_ScrollVelXPrev;                                  /* 0x6f238c */
 extern float sv_ScrollVelY;                                  /* 0x6f2390 */
 extern int sv_ScrollTime;                                    /* 0x6f2394 */
-extern int ai_Unk6f2398;                                    /* 0x6f2398 */
-extern int ai_Unk6f239c;                                    /* 0x6f239c */
-extern int ai_Unk6f23a0;                                    /* 0x6f23a0 */
-extern int ai_Unk6f23a4;                                    /* 0x6f23a4 */
-extern float ai_Unk6f23a8;                                  /* 0x6f23a8 */
-extern float ai_Unk6f23ac;                                  /* 0x6f23ac */
-extern float ai_Unk6f23b0;                                  /* 0x6f23b0 */
-extern float ai_Unk6f23b4;                                  /* 0x6f23b4 */
-extern int ai_Unk6f23b8;                                    /* 0x6f23b8 */
+extern int sv_DragStartX;                                    /* 0x6f2398 */
+extern int sv_DragStartY;                                    /* 0x6f239c */
+extern int sv_ZoomTurnOn;                                    /* 0x6f23a0 */
+extern int sv_MouseCamActive;                                    /* 0x6f23a4 */
+extern float sv_ZoomStartHeight;                                  /* 0x6f23a8 */
+extern float sv_ZoomStartAngle;                                  /* 0x6f23ac */
+extern float sv_ZoomStartTurn;                                  /* 0x6f23b0 */
+extern float sv_ZoomBaseY;                                  /* 0x6f23b4 */
+extern int sv_MouseDragOn;                                    /* 0x6f23b8 */
 extern unsigned char ai_GameState;                          /* 0x6f25ac */
 extern int ai_OptionScrollSpeed;                            /* 0x6f3614 */
 extern int sv_PanelFlag;                                    /* 0x75e8c0 */

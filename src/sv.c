@@ -2599,9 +2599,9 @@ scroll:
     return moved;
 }
 
-extern int ai_Unk6f23b8, ai_Unk6f23a0, ai_Unk6f23a4, ai_Unk6f2398, ai_Unk6f239c, ai_Unk6f1c88, ai_Unk6f1c48, ai_Unk6f1c50, ai_Unk6f1c40, ai_Unk6f1c84, ai_Unk6f2298, ai_Unk6f2290, ai_Unk6f1c8c;  /* 0x6f23b8, 0x6f23a0, 0x6f23a4, 0x6f2398, 0x6f239c, 0x6f1c88, 0x6f1c48, 0x6f1c50, 0x6f1c40, 0x6f1c84, 0x6f2298, 0x6f2290, 0x6f1c8c */
+extern int sv_MouseDragOn, sv_ZoomTurnOn, sv_MouseCamActive, sv_DragStartX, sv_DragStartY, sv_DragLastX, sv_DragLastY, sv_SavedMaxX, sv_SavedMaxY, sv_SavedMinX, sv_SavedMinY, sv_ZoomStartX, sv_ZoomStartY;  /* 0x6f23b8, 0x6f23a0, 0x6f23a4, 0x6f2398, 0x6f239c, 0x6f1c88, 0x6f1c48, 0x6f1c50, 0x6f1c40, 0x6f1c84, 0x6f2298, 0x6f2290, 0x6f1c8c */
 extern int ai_OptionScrollSpeed;
-extern float ai_Unk6f23a8, ai_Unk6f23ac, ai_Unk6f23b0, ai_Unk6f23b4, ai_Unk6f1c64[3];  /* 0x6f23a8, 0x6f23ac, 0x6f23b0, 0x6f23b4, 0x6f1c64 */
+extern float sv_ZoomStartHeight, sv_ZoomStartAngle, sv_ZoomStartTurn, sv_ZoomBaseY, sv_DragLastPos[3];  /* 0x6f23a8, 0x6f23ac, 0x6f23b0, 0x6f23b4, 0x6f1c64 */
 extern int tb_Paused;  /* 0x6333e0 */
 extern int ai_Unk760440;  /* 0x760440 */
 extern int ai_Unk62a8cc;  /* 0x62a8cc */
@@ -2616,7 +2616,7 @@ short * gm_PlayerRecord(char *ch);                   /* 0x506430 */
 void sv_PlaceCamera(float f);
 void sv_Unk525ee0(void);
 int sv_ScrollCamera(void);
-int sv_Unk526cf0(void);
+int sv_MouseCamera(void);
 #define CAMLOG(r) do { \
         *(int *)((r) + 0x8c) = *(int *)(sv_CameraObj + 0x4c); \
         *(int *)((r) + 0x90) = *(int *)(sv_CameraObj + 0x50); \
@@ -2626,179 +2626,186 @@ int sv_Unk526cf0(void);
         *(int *)((r) + 0xa4) = *(int *)(sv_CameraObj + 0x8c); \
     } while (0)
 
-/* 0x526cf0, the camera control by the mouse (buttons 0x14673a8 / 0x1467390, position 0x14683c0 / 2, wheel 0x14673c0 / c4): while a button is held the clip window is opened to the whole screen (0x5f3238 / 0x5f323c =
-   32000), the first press stores the start (0x6f1c88 / 0x6f1c48 ..); both buttons: zoom / rotate by the drag (0x6f22d4 / d8 + the mouse delta * 0.0015, the height from 0x623800 .. 0x623808, the angle from 0x6f23b0 -
-   0.0035 * dx), the camera is moved (0x43b790 / 0x43b860) unless it hardly differs, and the player's camera record (0x506430) updated (+0x88 .. +0xa4); the wheel changes the zoom by 0.1 per notch (0x525dd0); the left
-   button alone drags the map (the delta rotated by the view, 0x6f3614 * 0.0606, clamped to the map rectangle); releasing restores the clip window (0x4113f0). Returns the activity count. ROUGH */
-int sv_Unk526cf0(void)
+/* the player's camera record gets the camera's position and rotation */
+#define SV_CAMREC(r) do { \
+        (r)->camPos[0] = d3_Camera->pos.x; \
+        (r)->camPos[1] = d3_Camera->pos.y; \
+        (r)->camPos[2] = d3_Camera->pos.z; \
+        (r)->camRot[0] = d3_Camera->rotation.x; \
+        (r)->camRot[1] = d3_Camera->rotation.y; \
+        (r)->camRot[2] = d3_Camera->rotation.z; \
+    } while (0)
+
+/* 0x526cf0, the camera by the mouse. The right button frees the mouse (the clip window opened to +-32000, the
+   cursor put back on release). With both buttons the drag zooms (the height factor, 0.0015 per pixel of y and 5
+   per wheel notch) and turns (the angle factor with it, rotation.y by 0.0035 per pixel of x); the right button
+   alone drags the map by the mouse delta scaled by the scroll speed option, rotated into the view and clamped to
+   the height map 20 cells in. The wheel alone zooms by 0.1 a notch. Each change goes into the player's camera
+   record. Returns the activity: sv_MouseCamActive - wheel down + wheel up + sv_ZoomTurnOn @deep read whole against 0x526cf0..0x527640 (556 vs 565 instructions): the free-mouse start (saved clip window, cursor), the zoom/turn start values and their y range (1 - angle) / -0.0015 and -angle / -0.0015 (was a 0 * y0 leftover), the release (0.004 per pixel), the both-button zoom/turn with the copied position / rotation, the wheel (0.1f a notch, max(min(z, 1), 0)), the drag (scroll speed * 0.0606, AxisPair rows, both branches with their dead dst stores, the clamp x < lo / > hi, z max / min) and the return all match. Left: allocation (register choice of the camera / my / constants 32000 / -32000 shifts with statement order: ours ebx/esi vs the original's esi/ebx/edi, frame 0x7c vs 0x90) and the -666.6667 drag-range constant, a float object in the original (0x5eeb78, fmul dword after fchs) that a literal folds into a double / positive constant */
+int sv_MouseCamera(void)
 {
     short my;
     char *cam;
-    char *rec;
-    float z, f2, ang, sn, cs;
-    float pos[3], dst[3], dir[3], dv[3], right[16], fwd[3], v[2];   /* right is a D3MATRIX: d3_MatTranspose writes 0x40 bytes */
-    double dz;
-    float *m;
-    float lo, hi;
-    int i;
+    AIFIN *rec;
+    float z, f2, ang, sn, cs, lo, hi;
+    double k;                       /* the drag scale: the scroll speed option / 16.5 */
+    D3VECTOR zpos, zrot;            /* the camera position / rotation of the zoom and turn */
+    float dst[3], right[16], fwd[3], v[2];   /* right is a D3MATRIX: d3_MatTranspose writes 0x40 bytes */
+    D3SM *hm;                       /* the scene's height map */
+    const float *ax = (const float *)ai_AxisPair;
 
-    my = dm_P.y;
-    cam = sv_CameraObj;
     if (d3t_CamMoving != 0)
         return 0;
+    my = dm_P.y;
+    cam = sv_CameraObj;
     if (dm_L.rhold == 0) {
     chk:
         if (dm_L.ldown != 0 && dm_L.rhold != 0)
             goto go;
     } else {
-        if (ai_Unk6f23b8 == 0) {
-            ai_Unk6f1c88 = (int)dm_L.x;
-            ai_Unk6f1c48 = (int)dm_L.y;
-            ai_Unk6f1c50 = di_MaxX;
-            ai_Unk6f23b8 = 1;
+        if (sv_MouseDragOn == 0) {                /* the first frame of the right button: free the mouse */
+            sv_DragLastX = sv_DragStartX = dm_L.x;
+            sv_DragLastY = sv_DragStartY = dm_L.y;
+            sv_SavedMaxX = di_MaxX;
+            sv_MouseDragOn = 1;
             di_Absolute = 0;
-            ai_Unk6f1c40 = di_MaxY;
-            ai_Unk6f1c84 = di_MinX;
-            ai_Unk6f2298 = di_MinY;
+            sv_SavedMaxY = di_MaxY;
+            sv_SavedMinX = di_MinX;
+            sv_SavedMinY = di_MinY;
             di_MaxX = 32000;
             di_MaxY = 32000;
             di_MinX = -32000;
             di_MinY = -32000;
-            ai_Unk6f2398 = ai_Unk6f1c88;
-            ai_Unk6f239c = ai_Unk6f1c48;
         }
         if (dm_L.ldown != 0) {
-            if (ai_Unk6f23a0 == 0) {
-                ai_Unk6f23a0 = 1;
-                ai_Unk6f2290 = (int)dm_P.x;
-                ai_Unk6f23a8 = sv_CameraHeightFactor;
-                ai_Unk6f1c8c = (int)dm_P.y;
-                ai_Unk6f23b4 = *(float *)(sv_CameraObj + 0x50) - ((sv_CameraHeightFar - sv_CameraHeightNear) * sv_CameraHeightFactor + sv_CameraAngleNear);
-                ai_Unk6f23ac = sv_CameraAngleFactor;
-                di_MaxY = ai_Unk6f1c8c - (int)(ai_Unk6f1c8c * 0.0f + 0);
-                di_MinY = ai_Unk6f1c8c - (int)(ai_Unk6f1c8c * 0.0f + 0);
-                ai_Unk6f23b0 = *(float *)(cam + 0x88);
+            if (sv_ZoomTurnOn == 0) {
+                sv_ZoomTurnOn = 1;                   /* the zoom / turn starts: its start values */
+                sv_ZoomStartX = dm_P.x;
+                sv_ZoomStartHeight = sv_CameraHeightFactor;
+                sv_ZoomStartY = my;
+                sv_ZoomBaseY = ((D3OBJECT *)cam)->pos.y - ((sv_CameraHeightFar - sv_CameraHeightNear) * sv_ZoomStartHeight + sv_CameraAngleNear);
+                sv_ZoomStartAngle = sv_CameraAngleFactor;
+                di_MaxY = sv_ZoomStartY - (int)((1.0 - sv_ZoomStartAngle) * -666.6667f);   /* the drag range of the angle 0 .. 1 at 0.0015 per pixel */
+                di_MinY = sv_ZoomStartY - (int)(-sv_ZoomStartAngle * -666.6667f);
+                sv_ZoomStartTurn = ((D3OBJECT *)cam)->rotation.y;
             }
             goto chk;
         }
     }
-    if (ai_Unk6f23a0 != 0) {
-        ai_Unk6f23a0 = 0;
-        ai_Unk6f1c48 = (int)my;
+    if (sv_ZoomTurnOn != 0) {
+        sv_ZoomTurnOn = 0;
+        sv_DragLastY = (int)my;
         di_MaxX = 32000;
         di_MaxY = 32000;
-        ai_Unk6f1c88 = (int)dm_P.x;
+        sv_DragLastX = (int)dm_P.x;
         di_MinX = -32000;
         di_MinY = -32000;
-        ai_Unk6f23a8 = (float)(ai_Unk6f1c48 - ai_Unk6f1c8c) * 0.004f + ai_Unk6f23a8;
+        sv_ZoomStartHeight = (sv_DragLastY - sv_ZoomStartY) * 0.004 + sv_ZoomStartHeight;
     }
-    if (dm_L.rhold == 0 && ai_Unk6f23b8 != 0) {
-        di_MaxY = ai_Unk6f1c40;
-        di_MinX = ai_Unk6f1c84;
-        di_MaxX = ai_Unk6f1c50;
-        di_MinY = ai_Unk6f2298;
+    if (dm_L.rhold == 0 && sv_MouseDragOn != 0) {
+        di_MaxY = sv_SavedMaxY;
+        di_MinX = sv_SavedMinX;
+        di_MaxX = sv_SavedMaxX;
+        di_MinY = sv_SavedMinY;
         di_Absolute = 1;
-        ai_Unk6f23b8 = 0;
-        di_SetMousePos(ai_Unk6f2398, ai_Unk6f239c);
-        ai_Unk6f2398 = 0;
-        ai_Unk6f239c = 0;
-        ai_Unk6f23a0 = 0;
+        sv_MouseDragOn = 0;
+        di_SetMousePos(sv_DragStartX, sv_DragStartY);
+        sv_DragStartX = 0;
+        sv_DragStartY = 0;
+        sv_ZoomTurnOn = 0;
         return 0;
     }
 go:
-    cam = sv_CameraObj;
+    cam = (char *)d3_Camera;
     if (cam != 0) {
-        if (dm_L.rhold != 0 && dm_L.ldown != 0 && ai_Unk6f23a0 != 0) {
-            f2 = (((float)(dm_L.wup - dm_L.wdown) * 5.0f + (float)(int)my) - (float)ai_Unk6f1c8c) * 0.0015f;
-            sv_CameraHeightFactor = ai_Unk6f23a8 + f2;
-            pos[0] = *(float *)(cam + 0x4c);
-            pos[2] = *(float *)(cam + 0x54);
-            pos[1] = (sv_CameraHeightFar - sv_CameraHeightNear) * sv_CameraHeightFactor + ai_Unk6f23b4;
-            sv_CameraAngleFactor = f2 + ai_Unk6f23ac;
-            dir[2] = *(float *)(cam + 0x8c);
-            dir[0] = (sv_CameraAngleFar - sv_CameraAngleNear) * sv_CameraAngleFactor + sv_CameraAngleNear;
-            dir[1] = ai_Unk6f23b0 - (float)(dm_P.x - ai_Unk6f2290) * 0.0035f;
-            if (d3_VecEqual(cam + 0x4c, pos, 0.1f) == 0 || d3_VecEqual(sv_CameraObj + 0x84, dir, 0.001f) == 0) {
-                d3_SetObjectPos(sv_CameraObj, pos);
-                d3_SetObjectRot(sv_CameraObj, dir);
-                rec = gm_PlayerRecord(ai_Chars[ai_PlayerId]);
+        if (dm_L.rhold != 0 && dm_L.ldown != 0 && sv_ZoomTurnOn != 0) {     /* both buttons: zoom and turn by the drag */
+            f2 = ((dm_L.wup - dm_L.wdown) * 5.0f + my - sv_ZoomStartY) * 0.0015f;
+            sv_CameraHeightFactor = sv_ZoomStartHeight + f2;
+            zpos = ((D3OBJECT *)cam)->pos;
+            zpos.y = (sv_CameraHeightFar - sv_CameraHeightNear) * sv_CameraHeightFactor + sv_ZoomBaseY;
+            sv_CameraAngleFactor = f2 + sv_ZoomStartAngle;
+            zrot = ((D3OBJECT *)cam)->rotation;
+            zrot.x = (sv_CameraAngleFar - sv_CameraAngleNear) * sv_CameraAngleFactor + sv_CameraAngleNear;
+            zrot.y = sv_ZoomStartTurn - (dm_P.x - sv_ZoomStartX) * 0.0035f;
+            if (d3_VecEqual(&((D3OBJECT *)cam)->pos, &zpos, 0.1f) == 0 || d3_VecEqual(&d3_Camera->rotation, &zrot, 0.001f) == 0) {
+                d3_SetObjectPos(d3_Camera, &zpos);
+                d3_SetObjectRot(d3_Camera, &zrot);
+                rec = (AIFIN *)gm_PlayerRecord(ai_Chars[ai_PlayerId]);
                 if (rec != 0) {
-                    *(float *)(rec + 0x88) = sv_CameraAngleFactor;
-                    CAMLOG(rec);
+                    rec->camAngle = sv_CameraAngleFactor;
+                    SV_CAMREC(rec);
                 }
             }
-            cam = sv_CameraObj;
         }
+        cam = (char *)d3_Camera;
         if (cam != 0) {
-            if (ai_Unk6f23a0 == 0 && dm_L.wup - dm_L.wdown != 0) {
-                dz = (dm_L.wup - dm_L.wdown) * 0.1 + sv_CameraHeightFactor;
-                sv_CameraHeightFactor = (float)dz;
-                if (1.0 < dz)
-                    dz = 1.0;
-                if (dz < 0.0)
-                    dz = 0.0;
-                sv_PlaceCamera((float)dz);
-                rec = gm_PlayerRecord(ai_Chars[ai_PlayerId]);
-                cam = sv_CameraObj;
+            if (sv_ZoomTurnOn == 0 && dm_L.wup - dm_L.wdown != 0) {   /* the wheel: the zoom by 0.1 a notch */
+                z = sv_CameraHeightFactor = (dm_L.wup - dm_L.wdown) * 0.1f + sv_CameraHeightFactor;
+                sv_PlaceCamera((float)max(min(z, 1.0), 0.0));
+                rec = (AIFIN *)gm_PlayerRecord(ai_Chars[ai_PlayerId]);
                 if (rec != 0) {
-                    *(float *)(rec + 0x88) = sv_CameraAngleFactor;
-                    CAMLOG(rec);
-                    cam = sv_CameraObj;
+                    rec->camAngle = sv_CameraAngleFactor;
+                    SV_CAMREC(rec);
                 }
             }
-            if (cam != 0 && dm_L.rhold != 0 && dm_L.ldown == 0) {
-                d3_MatTranspose(cam + 0x18c, right);
-                v[0] = (float)(dm_P.x - ai_Unk6f1c88) * (float)ai_OptionScrollSpeed * 0.060606062f;
-                v[1] = -(float)(dm_P.y - ai_Unk6f1c48) * (float)ai_OptionScrollSpeed * 0.060606062f;
-                fwd[0] = right[0] * 0.0f + right[4] * 0.0f + right[8] * 1.0f;
+            cam = (char *)d3_Camera;
+            if (cam != 0 && dm_L.rhold != 0 && dm_L.ldown == 0) {    /* the right button alone: drag the map */
+                d3_MatTranspose(&d3_Camera->matrix, right);
+                k = ai_OptionScrollSpeed * 0.0606060606060606;
+                v[0] = (dm_P.x - sv_DragLastX) * k;
                 fwd[1] = 0.0f;
-                fwd[2] = right[2] * 0.0f + right[6] * 0.0f + right[10] * 1.0f;
-                if (sqrt(fwd[0] * fwd[0] + fwd[2] * fwd[2]) < 0.1f) {   /* the matrix rows only below 0.1; the original jumps to the angle branch when >= 0.1 */
-                    fwd[0] = right[0] * v[0] + right[4] * v[1];
-                    fwd[2] = right[2] * v[0] + right[6] * v[1];
-                } else {
-                    ang = d3_VecAngle2((char *)(unsigned)&ai_AxisPair, fwd);
-                    sn = (float)sin(-ang);
-                    cs = (float)cos(-ang);
-                    fwd[0] = (float)(v[1] * sn + v[0] * cs);
-                    fwd[2] = (float)(v[1] * cs - v[0] * sn);
+                v[1] = -(dm_P.y - sv_DragLastY) * k;
+                fwd[0] = right[0] * ax[0] + right[4] * ax[1] + right[8] * ax[2];
+                fwd[2] = right[2] * ax[0] + right[6] * ax[1] + right[10] * ax[2];
+                if (sqrt(fwd[0] * fwd[0] + fwd[2] * fwd[2]) < 0.1f) {   /* the view looks straight down: the matrix rows (0x527386) */
+                    dst[1] = v[1];
+                    dst[2] = 0.0f;
+                    fwd[0] = 0.0f * right[8] + v[0] * right[0] + v[1] * right[4];
+                    fwd[2] = 0.0f * right[10] + v[0] * right[2] + v[1] * right[6];
+                } else {                                                /* else rotated by the view's heading */
+                    ang = -d3_VecAngle2((char *)(unsigned)&ai_AxisPair, fwd);
+                    sn = (float)sin(ang);
+                    dst[1] = 0.0f;
+                    dst[2] = v[1];
+                    cs = (float)cos(ang);
+                    fwd[0] = sn * v[1] + cs * v[0];
+                    fwd[2] = cs * v[1] - sn * v[0];
                 }
                 fwd[1] = 0.0f;
-                dst[0] = fwd[0] + *(float *)(sv_CameraObj + 0x4c);
-                dst[1] = *(float *)(sv_CameraObj + 0x50);
-                dst[2] = fwd[2] + *(float *)(sv_CameraObj + 0x54);
-                if (d3_VecEqual(ai_Unk6f1c64, dst, 0.1f) == 0) {
-                    m = *(float **)(ai_Unk5fb5b0 + 0xb0);
-                    if (m != 0) {
-                        lo = m[4] * 20.0f + m[0];
-                        hi = (float)(*(int *)(m + 8) - 0x14) * m[4] + m[0];
-                        if (lo <= dst[0] && hi < dst[0])
-                            lo = hi;
-                        else if (lo <= dst[0])
-                            lo = dst[0];
-                        dst[0] = lo;
-                        lo = m[6] * 20.0f + m[2];
-                        hi = (float)(*(int *)(m + 8) - 0x14) * m[6] + m[2];
-                        if (dst[2] <= hi)
-                            dst[2] = hi;
-                        if (lo <= dst[2])
-                            dst[2] = lo;
+                dst[0] = fwd[0] + d3_Camera->pos.x;
+                dst[1] = d3_Camera->pos.y;
+                dst[2] = fwd[2] + d3_Camera->pos.z;
+                if (d3_VecEqual(sv_DragLastPos, dst, 0.1f) == 0) {
+                    hm = (D3SM *)d3_DefaultScene->hmap;
+                    if (hm != 0) {                                      /* clamped to the height map, 20 cells in */
+                        lo = hm->cell.x * 20.0f + hm->origin.x;
+                        if (dst[0] < lo)
+                            dst[0] = lo;
+                        else {
+                            hi = (float)(hm->size - 20) * hm->cell.x + hm->origin.x;
+                            if (dst[0] > hi)
+                                dst[0] = hi;
+                        }
+                        lo = hm->cell.z * 20.0f + hm->origin.z;
+                        hi = (float)(hm->size - 20) * hm->cell.z + hm->origin.z;
+                        dst[2] = max(dst[2], hi);           /* z runs from the far edge (a negative cell) */
+                        dst[2] = min(dst[2], lo);
                     }
-                    d3_SetObjectPos(sv_CameraObj, dst);
-                    rec = gm_PlayerRecord(ai_Chars[ai_PlayerId]);
+                    d3_SetObjectPos(d3_Camera, (struct D3VECTOR *)dst);
+                    rec = (AIFIN *)gm_PlayerRecord(ai_Chars[ai_PlayerId]);
                     if (rec != 0)
-                        CAMLOG(rec);
+                        SV_CAMREC(rec);
                 }
-                ai_Unk6f1c64[0] = dst[0];
-                ai_Unk6f1c64[1] = dst[1];
-                ai_Unk6f1c64[2] = dst[2];
-                ai_Unk6f1c88 = (int)dm_P.x;
-                ai_Unk6f1c48 = (int)dm_P.y;
-                ai_Unk6f23a4 = 1;
+                sv_DragLastPos[0] = dst[0];
+                sv_DragLastPos[1] = dst[1];
+                sv_DragLastPos[2] = dst[2];
+                sv_DragLastX = (int)dm_P.x;
+                sv_DragLastY = (int)dm_P.y;
+                sv_MouseCamActive = 1;
             }
         }
     }
-    return (ai_Unk6f23a4 - dm_L.wdown) + dm_L.wup + ai_Unk6f23a0;
+    return (sv_MouseCamActive - dm_L.wdown) + dm_L.wup + sv_ZoomTurnOn;
 }
 /* 0x527640, the per-frame camera update: with a camera and no cutscene (0x6333e0, 0x760440, 0x62a8cc = -1) 0x5263a0 (when no mouse button), the mouse control 0x526cf0 (unless flag 0x8000 of 0x760638), the
    height easing 0x525ee0 (option 0x62381c) and, when the camera moved without a selection, the stored camera record of the player (0x506430: position, direction, zoom); returns 0x6f22b4; without a camera it
@@ -2813,7 +2820,7 @@ int sv_Unk527640(void)
             if (dm_L.rhold == 0)
                 ai_Unk6f22b4 = sv_ScrollCamera();
             if (-1 < (char)(sv_FrameMask >> 8))
-                sv_Unk526cf0();
+                sv_MouseCamera();
             if (ai_Unk62381c != 0 && kb_Down[0xf] == 0)
                 sv_Unk525ee0();
             if (ai_Unk6f22b4 != 0 && sv_FrameDepth == sv_FrameBase && ai_PlayerBuilding == 0 && ai_FallbackBuilding == 0
@@ -7473,17 +7480,17 @@ int sv_ViewRectBottom = 600;  /* 0x6248b0 */
 int ai_Unk62a8cc = -1;  /* 0x62a8cc */
 int ai_Unk631078 = 0;  /* 0x631078 */
 short d2_PointerLook = 0;  /* 0x6ed9d0, the pointer direction / panel layout code (1 .. 8) */
-int ai_Unk6f1c40 = 0;  /* 0x6f1c40 */
+int sv_SavedMaxY = 0;  /* 0x6f1c40 */
 float sv_ScrollVelYPrev = 0;  /* 0x6f1c44 */
-int ai_Unk6f1c48 = 0;  /* 0x6f1c48 */
-int ai_Unk6f1c50 = 0;  /* 0x6f1c50 */
-float ai_Unk6f1c64[3] = {0};  /* 0x6f1c64 */
+int sv_DragLastY = 0;  /* 0x6f1c48 */
+int sv_SavedMaxX = 0;  /* 0x6f1c50 */
+float sv_DragLastPos[3] = {0};  /* 0x6f1c64 */
 float sv_ScrollLastMove[3] = {0};  /* 0x6f1c74 */
-int ai_Unk6f1c84 = 0;  /* 0x6f1c84 */
-int ai_Unk6f1c88 = 0;  /* 0x6f1c88 */
-int ai_Unk6f1c8c = 0;  /* 0x6f1c8c */
-int ai_Unk6f2290 = 0;  /* 0x6f2290 */
-int ai_Unk6f2298 = 0;  /* 0x6f2298 */
+int sv_SavedMinX = 0;  /* 0x6f1c84 */
+int sv_DragLastX = 0;  /* 0x6f1c88 */
+int sv_ZoomStartY = 0;  /* 0x6f1c8c */
+int sv_ZoomStartX = 0;  /* 0x6f2290 */
+int sv_SavedMinY = 0;  /* 0x6f2298 */
 int sv_FrameDepth = 0;  /* 0x6f229c, the depth of the frame callback stack */
 int sv_PopRequest = 0;  /* 0x6f22a0 */
 int sv_FrameBase = 0;  /* 0x6f22a4, the depth a screen was entered at (the base of the pop count) */
@@ -7517,15 +7524,15 @@ float sv_ScrollVelX = 0;  /* 0x6f2388 */
 float sv_ScrollVelXPrev = 0;  /* 0x6f238c */
 float sv_ScrollVelY = 0;  /* 0x6f2390 */
 int sv_ScrollTime = 0;  /* 0x6f2394 */
-int ai_Unk6f2398 = 0;  /* 0x6f2398 */
-int ai_Unk6f239c = 0;  /* 0x6f239c */
-int ai_Unk6f23a0 = 0;  /* 0x6f23a0 */
-int ai_Unk6f23a4 = 0;  /* 0x6f23a4 */
-float ai_Unk6f23a8 = 0;  /* 0x6f23a8 */
-float ai_Unk6f23ac = 0;  /* 0x6f23ac */
-float ai_Unk6f23b0 = 0;  /* 0x6f23b0 */
-float ai_Unk6f23b4 = 0;  /* 0x6f23b4 */
-int ai_Unk6f23b8 = 0;  /* 0x6f23b8 */
+int sv_DragStartX = 0;  /* 0x6f2398 */
+int sv_DragStartY = 0;  /* 0x6f239c */
+int sv_ZoomTurnOn = 0;  /* 0x6f23a0 */
+int sv_MouseCamActive = 0;  /* 0x6f23a4 */
+float sv_ZoomStartHeight = 0;  /* 0x6f23a8 */
+float sv_ZoomStartAngle = 0;  /* 0x6f23ac */
+float sv_ZoomStartTurn = 0;  /* 0x6f23b0 */
+float sv_ZoomBaseY = 0;  /* 0x6f23b4 */
+int sv_MouseDragOn = 0;  /* 0x6f23b8 */
 unsigned char ai_GameState = 0;  /* 0x6f25ac */
 int ai_OptionScrollSpeed = 0;  /* 0x6f3614 */
 int sv_PanelFlag = 0;  /* 0x75e8c0, 1 when the panel is up (an int; cm.h / f3init.c) */
