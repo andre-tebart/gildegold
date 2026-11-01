@@ -767,7 +767,7 @@ extern GAPDATA full_data_6f26b8[];
 extern GAPDATA full_data_6f26bc[];
 extern char * ai_Unk1468ae0[0x300];
 extern int d2_PointerObj;
-extern int ai_Unk62a8cc;
+extern int ai_DragWindow;
 extern int ai_Unk62c26c;
 extern int ai_ClockMs;
 extern int d2_Unkf8aac8;
@@ -2841,7 +2841,7 @@ struct D3OBJECT * d3_LoadGroup(); void d3t_InflateObjectTree(D3OBJECT *obj); int
 int ai_Unk527e90();
 struct D3OBJECT;
 char d3if_Delete(struct D3OBJECT *obj);  /* 0x447190, d3_interface.h */
-int gm_Unk509dc0(int unused, int kind); void txt_Format(char *out, int id0, ...); int sv_Unk527640();
+int gm_Unk509dc0(int unused, int kind); void txt_Format(char *out, int id0, ...); int sv_UpdateCamera();
 int d3sm_Pick(); int d3sm_GetVertex();  /* @original: the original callers read an int result (gv.h declares it int) */
 
 #define B_REC(k) (U_I((unsigned)&ai_BTypes) + (k) * 0x24d)
@@ -2957,7 +2957,7 @@ int d2_WinOpenPic(short x, short y, int pic, int win); int d2_CreateWinText(); v
 void d2_SetViewEnabled(); void d2_CloseView(int view); int cm_SendLongMessage(char *msg);
 int sv_CheckGoodAmount(); int sv_CheckStock(); void txt_Format(char *out, int id0, ...); int sv_MessageBox();
 int d3sm_GetVertex();  /* @original: the original callers read an int result (gv.h declares it int) */
-int sv_Unk527640(); int gm_Unk509ee0(char *c, char p); int gm_BuildingClass(); char unk_Unk5020e0(int k, int c);
+int sv_UpdateCamera(); int gm_Unk509ee0(char *c, char p); int gm_BuildingClass(); char unk_Unk5020e0(int k, int c);
 
 /* 0x5909a0, the construction window "BAUEN_GEB_BAUEN" (1988 B, ROUGH SKELETON from the Ghidra pseudocode): the
    window (0x5763c0 (0x40), the event 0x576040, the controls 0x4731d0 for the kinds 1 .. 9, the frames
@@ -3239,7 +3239,7 @@ void ai_GameFrame(void)
         U_I((unsigned)&sv_FrameBase) = U_I((unsigned)&sv_FrameDepth);
         if (*(char *)(((unsigned)&ai_Selected + 0x29) + U_W((unsigned)&ai_PlayerId) * 0x21c) != 0)
             ai_Unk591ad0();
-        sv_Unk527640();
+        sv_UpdateCamera();
         if (mode == 0) {
             if ((float)U_W((unsigned)&ai_TimeHour) < *(float *)((unsigned)&gm_DayStartHours + n * 4) ||
                 *(float *)((unsigned)&gm_DayEndHours + n * 4) <= (float)U_W((unsigned)&ai_TimeHour)) {
@@ -13391,7 +13391,7 @@ void ai_Unk5a7cd0(int *m_)
             m_[0x9e8] = *(int *)((unsigned)&ai_ClockMs);
     }
     if (*(int *)((unsigned)&d2_Unkf8aac8) != -1 && m_[0x9e8] + 0x4b < *(int *)((unsigned)&ai_ClockMs) &&
-        *(int *)(((unsigned)&dm_L + 0x28)) != 0 && *(int *)((unsigned)&ai_Unk62a8cc) == -1 && m_[0x9e9] > 0) {
+        *(int *)(((unsigned)&dm_L + 0x28)) != 0 && *(int *)((unsigned)&ai_DragWindow) == -1 && m_[0x9e9] > 0) {
         i = 0;
         e = (int *)(p + 0xe0);
         do {

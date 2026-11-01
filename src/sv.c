@@ -2801,14 +2801,14 @@ extern int sv_MouseDragOn, sv_ZoomTurnOn, sv_MouseCamActive, sv_DragStartX, sv_D
 extern int ai_OptionScrollSpeed;
 extern float sv_ZoomStartHeight, sv_ZoomStartAngle, sv_ZoomStartTurn, sv_ZoomBaseY, sv_DragLastPos[3];  /* 0x6f23a8, 0x6f23ac, 0x6f23b0, 0x6f23b4, 0x6f1c64 */
 extern int tb_Paused;  /* 0x6333e0 */
-extern int ai_Unk760440;  /* 0x760440 */
-extern int ai_Unk62a8cc;  /* 0x62a8cc */
-extern int ai_Unk6f22b4;  /* 0x6f22b4 */
+extern int sv_BandActive;  /* 0x760440 */
+extern int ai_DragWindow;  /* 0x62a8cc */
+extern int sv_CameraScrolled;  /* 0x6f22b4 */
 extern int sv_FrameDepth;  /* 0x6f229c */
 extern int sv_FrameBase;  /* 0x6f22a4 */
 extern char * sv_SelectedObject;  /* 0x75ec60 */
 extern int sv_SelectedModel;  /* 0x6f2304 */
-extern char ai_Unk62381c;
+extern char sv_CameraEaseOn;
 int d3t_GetHeightRange();                     /* 0x411c70 */
 short * gm_PlayerRecord(char *ch);                   /* 0x506430 */
 void sv_PlaceCamera(float f);
@@ -3005,42 +3005,44 @@ go:
     }
     return (sv_MouseCamActive - dm_L.wdown) + dm_L.wup + sv_ZoomTurnOn;
 }
-/* 0x527640, the per-frame camera update: with a camera and no cutscene (0x6333e0, 0x760440, 0x62a8cc = -1) 0x5263a0 (when no mouse button), the mouse control 0x526cf0 (unless flag 0x8000 of 0x760638), the
-   height easing 0x525ee0 (option 0x62381c) and, when the camera moved without a selection, the stored camera record of the player (0x506430: position, direction, zoom); returns 0x6f22b4; without a camera it
-   restores the clip window to the screen (0x5f3238 / 0x5f323c, 0x4113f0 (mouse x, mouse x)) once */
-
-int sv_Unk527640(void)
+/* 0x527640, the per-frame camera update: with a camera, not paused, no rubber band and no item drag: the keyboard / border
+   scroll (sv_ScrollCamera, unless the right button is held; its result is sv_CameraScrolled), the mouse control (unless bit
+   0x8000 of sv_FrameMask), the height easing (sv_CameraEaseOn and key 0xf up) and, when the camera scrolled at the base frame
+   without a selected building, the player's camera record (position, rotation, angle factor); then the camera's rotation and
+   position become the view (sv_ViewRot / sv_ViewPos). Returns sv_CameraScrolled. Without a camera it puts the mouse back to
+   the absolute screen window once and returns 0 */
+int sv_UpdateCamera(void)
 {
-    char *rec;
+    AIFIN *rec;
 
-    if (sv_CameraObj != 0 && tb_Paused == 0) {
-        if (ai_Unk760440 == 0 && ai_Unk62a8cc == -1) {
+    if (d3_Camera != 0 && tb_Paused == 0) {
+        if (sv_BandActive == 0 && ai_DragWindow == -1) {
             if (dm_L.rhold == 0)
-                ai_Unk6f22b4 = sv_ScrollCamera();
-            if (-1 < (char)(sv_FrameMask >> 8))
+                sv_CameraScrolled = sv_ScrollCamera();
+            if ((sv_FrameMask & 0x8000) == 0)
                 sv_MouseCamera();
-            if (ai_Unk62381c != 0 && kb_Down[0xf] == 0)
+            if (sv_CameraEaseOn != 0 && kb_Down[0xf] == 0)
                 sv_EaseCameraHeight();
-            if (ai_Unk6f22b4 != 0 && sv_FrameDepth == sv_FrameBase && ai_PlayerBuilding == 0 && ai_FallbackBuilding == 0
-                && (rec = gm_PlayerRecord(ai_Chars[ai_PlayerId])) != 0) {
-                CAMLOG(rec);
-                *(float *)(rec + 0x88) = sv_CameraAngleFactor;
+            if (sv_CameraScrolled != 0 && sv_FrameDepth == sv_FrameBase && ai_PlayerBuilding == 0 && ai_FallbackBuilding == 0
+                && (rec = (AIFIN *)gm_PlayerRecord(ai_Chars[ai_PlayerId])) != 0) {
+                SV_CAMREC(rec);
+                rec->camAngle = sv_CameraAngleFactor;
             }
-            sv_ViewRotX = *(int *)(sv_CameraObj + 0x84);
-            sv_ViewRotY = *(int *)(sv_CameraObj + 0x88);
-            sv_ViewRotZ = *(int *)(sv_CameraObj + 0x8c);
-            sv_ViewPosX = *(int *)(sv_CameraObj + 0x4c);
-            sv_ViewPosY = *(int *)(sv_CameraObj + 0x50);
-            sv_ViewPosZ = *(int *)(sv_CameraObj + 0x54);
+            sv_ViewRot[0] = d3_Camera->rotation.x;
+            sv_ViewRot[1] = d3_Camera->rotation.y;
+            sv_ViewRot[2] = d3_Camera->rotation.z;
+            sv_ViewPos[0] = d3_Camera->pos.x;
+            sv_ViewPos[1] = d3_Camera->pos.y;
+            sv_ViewPos[2] = d3_Camera->pos.z;
         }
-        return ai_Unk6f22b4;
+        return sv_CameraScrolled;
     }
-    ai_Unk6f22b4 = 0;
+    sv_CameraScrolled = 0;
     if (di_Absolute == 0) {
-        di_MaxY = (int)d2_ScreenH;
-        di_MaxX = d2_ScreenW - 8;
         di_MinX = 0;
         di_MinY = 0;
+        di_MaxX = d2_ScreenW - 8;
+        di_MaxY = d2_ScreenH;
         di_Absolute = 1;
         di_SetMousePos((int)dm_L.x, (int)dm_L.x);
     }
@@ -5062,7 +5064,7 @@ void sv_Unk52bec0(void)
     if (v == 0)
         v = SV_I((unsigned)&ai_FallbackBuilding);
     if (SV_I(((unsigned)&dm_L + 0x14)) == 0) {
-        if (SV_I((unsigned)&ai_Unk760440) != 0) {
+        if (SV_I((unsigned)&sv_BandActive) != 0) {
             snd_PlaySelectedClick();
             sv_Unk52eed0();
             if (SV_I(((unsigned)&dm_L + 0x14)) != 0)
@@ -5072,7 +5074,7 @@ void sv_Unk52bec0(void)
     }
 lrel:
     if (SV_I(((unsigned)&dm_L + 0x24)) == 0) {
-        if (SV_I((unsigned)&ai_Unk760440) == 0 && SV_I((unsigned)&di_Absolute) != 0 && SV_I((unsigned)&d2_HitWindow) == -1 && v != 0 && *(short *)(v + 0x27) == (short)SV_I((unsigned)&ai_PlayerId))
+        if (SV_I((unsigned)&sv_BandActive) == 0 && SV_I((unsigned)&di_Absolute) != 0 && SV_I((unsigned)&d2_HitWindow) == -1 && v != 0 && *(short *)(v + 0x27) == (short)SV_I((unsigned)&ai_PlayerId))
             sv_Unk52ee50();
         goto lend;
     }
@@ -6433,14 +6435,14 @@ void sv_Unk52ee50(void)
     if (m < SV_I((unsigned)&full_data_760448) && (SV_I((unsigned)&full_data_760448) = my, my < SV_I(((unsigned)&d3_Viewport + 0x4))))
         SV_I((unsigned)&full_data_760448) = SV_I(((unsigned)&d3_Viewport + 0x4));
     SV_I((unsigned)&full_data_76044c) = SV_I((unsigned)&full_data_760444);
-    SV_I((unsigned)&ai_Unk760440) = 1;
+    SV_I((unsigned)&sv_BandActive) = 1;
     SV_I((unsigned)&full_data_760450) = SV_I((unsigned)&full_data_760448);
 }
 /* 0x52eed0, ends the rubber band selection */
 
 void sv_Unk52eed0(void)
 {
-    SV_I((unsigned)&ai_Unk760440) = 0;
+    SV_I((unsigned)&sv_BandActive) = 0;
 }
 /* 0x52eee0, during the rubber band: moves the second corner with the mouse (clamped to the view) and flags (+0x188) the characters of the table 0x7603a0 whose screen position (three float conversions, the
    operands are lost: placeholders) lies inside the band; ROUGH */
@@ -6450,7 +6452,7 @@ void sv_Unk52eee0(void)
     unsigned fl;
     int mx, my, m, x0, x1, y0, y1, px, py, c, *p, g;
 
-    if (SV_I((unsigned)&ai_Unk760440) != 0) {
+    if (SV_I((unsigned)&sv_BandActive) != 0) {
         mx = SV_S((unsigned)&dm_L);
         m = SV_I((unsigned)&d3_Viewport);
         if (m <= mx)
@@ -6502,7 +6504,7 @@ void sv_Unk52f0d0(void)
     unsigned fl;
     int mx, my, m, x0, x1, y0, y1, px, py, c, *p, g;
 
-    if (SV_I((unsigned)&ai_Unk760440) != 0) {
+    if (SV_I((unsigned)&sv_BandActive) != 0) {
         mx = SV_S((unsigned)&dm_L);
         m = SV_I((unsigned)&d3_Viewport);
         if (m <= mx)
@@ -6567,7 +6569,7 @@ void sv_Unk52fa00(int *book);
 /* 0x52f2c0, draws the rubber band rectangle (0x41e8f0, colour -1) between the corners 0x760444 / 0x760448 and 0x76044c / 0x760450 while 0x760440 is set */
 void sv_Unk52f2c0(void)
 {
-    if (SV_I((unsigned)&ai_Unk760440) != 0) {
+    if (SV_I((unsigned)&sv_BandActive) != 0) {
         dd_Line(SV_I((unsigned)&full_data_760444), SV_I((unsigned)&full_data_760448), SV_I((unsigned)&full_data_76044c), SV_I((unsigned)&full_data_760448), -1);
         dd_Line(SV_I((unsigned)&full_data_76044c), SV_I((unsigned)&full_data_760448), SV_I((unsigned)&full_data_76044c), SV_I((unsigned)&full_data_760450) + 1, -1);
         dd_Line(SV_I((unsigned)&full_data_76044c), SV_I((unsigned)&full_data_760450), SV_I((unsigned)&full_data_760444), SV_I((unsigned)&full_data_760450), -1);
@@ -7389,7 +7391,7 @@ l64:
         ai_Unk4c2000();
     if (SV_I((unsigned)&ai_FrameWait) == 0
         && ((SV_I((unsigned)&ai_Unk633738) == 0 || (mask & 0x4000) == 0 || (mask & 0x40) == 0 || (sv_Unk530670(), SV_I((unsigned)&ai_FrameWait) == 0))
-            && ((mask & 0x10000) == 0 || SV_I((unsigned)&ai_Unk6f0dbc) == 0 || (d3t_DrawRain(SV_I((unsigned)&ai_Unk6f0dbc)), SV_I((unsigned)&ai_FrameWait) == 0)) && SV_I((unsigned)&ai_Unk760440) != 0)) {
+            && ((mask & 0x10000) == 0 || SV_I((unsigned)&ai_Unk6f0dbc) == 0 || (d3t_DrawRain(SV_I((unsigned)&ai_Unk6f0dbc)), SV_I((unsigned)&ai_FrameWait) == 0)) && SV_I((unsigned)&sv_BandActive) != 0)) {
         if (u5 == 0)
             sv_Unk52eee0();
         else
@@ -7459,7 +7461,7 @@ l2:
                     sv_Unk52d480();
             } else
                 ai_Unk4cf370();
-            if ((mask & 0x1000) != 0 && SV_I(((unsigned)&dm_L + 0x28)) == 0 && SV_I((unsigned)&ai_Unk6f22b4) == 0 && SV_I((unsigned)&d3t_CamMove) == 0 && SV_I((unsigned)&ai_Unk760440) == 0 && SV_I((unsigned)&d2_CutsceneActive) == 0 && SV_I((unsigned)&full_data_6f262c) == 0)
+            if ((mask & 0x1000) != 0 && SV_I(((unsigned)&dm_L + 0x28)) == 0 && SV_I((unsigned)&sv_CameraScrolled) == 0 && SV_I((unsigned)&d3t_CamMove) == 0 && SV_I((unsigned)&sv_BandActive) == 0 && SV_I((unsigned)&d2_CutsceneActive) == 0 && SV_I((unsigned)&full_data_6f262c) == 0)
                 sv_Unk52e050();
             sv_Unk52e0c0();
             sv_DrawPanelPointer();
@@ -7587,7 +7589,7 @@ void sv_UpdateClock(void)
 
 extern int sv_SkyScene;
 extern float sv_SkyScale;
-extern int ai_Unk760440;
+extern int sv_BandActive;
 extern int sv_SkyPhase;
 extern int sv_CloudChance;
 extern int sv_SeasonClimate;
@@ -7634,7 +7636,7 @@ float sv_CameraAngleNear = -0.471238911f;  /* 0x623804 */
 float sv_CameraHeightFar = 1600.0f;  /* 0x623808 */
 float sv_CameraAngleFar = -1.08210409f;  /* 0x62380c */
 float sv_ScrollSpeed = 1.0f;  /* 0x623818 */
-char ai_Unk62381c = 1;  /* 0x62381c */
+char sv_CameraEaseOn = 1;  /* 0x62381c */
 int ai_Unk623820 = -1;  /* 0x623820 */
 int ai_Unk623824 = -1;  /* 0x623824 */
 int ai_Unk623828 = -1;  /* 0x623828 */
@@ -7696,7 +7698,7 @@ int sv_ViewRectTop = 0;  /* 0x6248a8 */
 unsigned ai_Unk623ecc = 4294967295;  /* 0x623ecc */
 int sv_ViewRectRight = 694;  /* 0x6248ac */
 int sv_ViewRectBottom = 600;  /* 0x6248b0 */
-int ai_Unk62a8cc = -1;  /* 0x62a8cc */
+int ai_DragWindow = -1;  /* 0x62a8cc */
 int ai_Unk631078 = 0;  /* 0x631078 */
 short d2_PointerLook = 0;  /* 0x6ed9d0, the pointer direction / panel layout code (1 .. 8) */
 int sv_SavedMaxY = 0;  /* 0x6f1c40 */
@@ -7713,7 +7715,7 @@ int sv_SavedMinY = 0;  /* 0x6f2298 */
 int sv_FrameDepth = 0;  /* 0x6f229c, the depth of the frame callback stack */
 int sv_PopRequest = 0;  /* 0x6f22a0 */
 int sv_FrameBase = 0;  /* 0x6f22a4, the depth a screen was entered at (the base of the pop count) */
-int ai_Unk6f22b4 = 0;  /* 0x6f22b4 */
+int sv_CameraScrolled = 0;  /* 0x6f22b4 */
 int ai_Unk6f22c0 = 0;  /* 0x6f22c0 */
 struct D2SURF *sv_GroundplanSurf = 0;  /* 0x6f22c4, the groundplan bitmap while sv_LoadGroundplan reads it */
 struct D2SURF *sv_GroundplanView = 0;  /* 0x6f22c8, the groundplan copy the panel blits */
@@ -7765,7 +7767,7 @@ int ai_Unk75f280[576] = {0};  /* 0x75f280, the member panel: */
 float sv_ViewPos[4] = {0};  /* 0x75fb80, the stored camera position (a padded vector): set by the camera moves, restored when the player leaves a building */
 float sv_ViewRot[4] = {0};  /* 0x75fb90, its rotation (D3OBJECT.rotation) */
 float sv_SkyScale = 0;  /* 0x760420 */
-int ai_Unk760440 = 0;  /* 0x760440 */
+int sv_BandActive = 0;  /* 0x760440 */
 int sv_SkyPhase = 0;  /* 0x760464 */
 int sv_CloudChance = 0;  /* 0x760480 */
 int sv_SeasonClimate = 0;  /* 0x760484 */

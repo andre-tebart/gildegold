@@ -7755,10 +7755,10 @@ void ai_Unk4d0740(char *rec)
 {
     char *c, *m, *mdl, **pp;
 
-    if (dm_L.lhold == 0 && ai_Unk760440 != 0)
+    if (dm_L.lhold == 0 && sv_BandActive != 0)
         sv_Unk52eed0();
     if (dm_L.lhold != 0 && dm_L.rdown == 0) {
-        if (ai_Unk760440 == 0 && di_Absolute != 0 && d2_PointerObj == -1) {
+        if (sv_BandActive == 0 && di_Absolute != 0 && d2_PointerObj == -1) {
             ai_Unk4d08c0();
             sv_Unk52ee50();
         }
@@ -8101,7 +8101,7 @@ void ai_Unk4d0fa0(char *rec)
     }
     ai_Unk935d00 = *(float *)(sc + 0x10) * ai_Unk5edc58;
     sv_ScrollSpeed = 0.15f;
-    ai_Unk62381c = 0;
+    sv_CameraEaseOn = 0;
     ai_Unk6f0d04 = rec;
     ai_Unk4d0ca0();
     ai_Unk6f0cec = (int)gm_FindChar(*(int *)(rec + 0x34));
@@ -8276,7 +8276,7 @@ void ai_Unk4d1a10(char *rec)
     }
     ai_Unk4e30c0();
     snd_EndSpecialTrack();
-    ai_Unk62381c = 1;
+    sv_CameraEaseOn = 1;
     d2_CopyCaption((char *)&ch_EmptyName);
 }
 /* 0x4d1c20, places the characters ids[16] (side of the fight: dummies "dummy_<side>_NAHK_%02i" / "_FERN_%02i" for the

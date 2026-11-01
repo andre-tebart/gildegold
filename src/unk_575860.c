@@ -587,7 +587,7 @@ extern GAPDATA full_data_62a8a8[];
 extern GAPDATA full_data_6f5f60[];
 extern char ai_Chars[768][0x21c];
 extern int d2_PointerObj;
-extern int ai_Unk62a8cc;
+extern int ai_DragWindow;
 extern short d2_MouseX;
 extern short d2_MouseY;
 extern struct D2OBJ *d2_Objs;
@@ -9094,7 +9094,7 @@ void ai_Unk587e00(void)
     int item;
 
     src = *(char **)(unsigned)&d2_Unkf8aac8;
-    win = *(char **)(unsigned)&ai_Unk62a8cc;
+    win = *(char **)(unsigned)&ai_DragWindow;
     item = 0;
     sel = 0;
     ch = 0;
@@ -9102,14 +9102,14 @@ void ai_Unk587e00(void)
         (U_I((unsigned)&full_data_6f266c) != 0 && U_I(((unsigned)&dm_L + 0x28)) == 0 && win != (char *)-1)) {
         d2_CloseView(win);
         U_I((unsigned)&full_data_6f266c) = 0;
-        U_I((unsigned)&ai_Unk62a8cc) = -1;
+        U_I((unsigned)&ai_DragWindow) = -1;
         U_I((unsigned)&full_data_62a8d4) = -1;
         U_I((unsigned)&full_data_62a8d0) = -1;
         ch = 0;
         U_I((unsigned)&di_Absolute) = 1;
         di_SetMousePos(*(short *)(unsigned)&d2_MouseX, *(short *)(unsigned)&d2_MouseY);
         src = *(char **)(unsigned)&d2_Unkf8aac8;
-        win = *(char **)(unsigned)&ai_Unk62a8cc;
+        win = *(char **)(unsigned)&ai_DragWindow;
     }
     if (U_I((unsigned)&ai_Unk6f22e8) != 0 && U_I((unsigned)&full_data_6f266c) != U_I((unsigned)&ai_Unk6f22e8) && U_I(((unsigned)&dm_L + 0x28)) != 0) {
         if (U_I((unsigned)&full_data_6f22f0) == 0 || *(unsigned short *)U_I((unsigned)&full_data_6f22f0) == 0)
@@ -9147,7 +9147,7 @@ void ai_Unk587e00(void)
         d2_CloseView(win);
         src = *(char **)(unsigned)&d2_Unkf8aac8;
         win = 0;
-        U_I((unsigned)&ai_Unk62a8cc) = -1;
+        U_I((unsigned)&ai_DragWindow) = -1;
         U_I((unsigned)&full_data_62a8d4) = -1;
     }
     if (item != 0) {
@@ -9164,7 +9164,7 @@ void ai_Unk587e00(void)
         win = (char *)ai_Unk588c60(ch);
     }
     src = *(char **)(unsigned)&d2_Unkf8aac8;
-    U_I((unsigned)&ai_Unk62a8cc) = (int)win;
+    U_I((unsigned)&ai_DragWindow) = (int)win;
     if (win != (char *)-1) {
         U_I((unsigned)&full_data_62a8d0) = (int)src;
         U_I((unsigned)&full_data_62a8d4) = *(int *)(((unsigned)&d2_Views + 0x4) + (int)win * 0x2ac);

@@ -68,7 +68,7 @@ void sv_EaseCameraHeight(void);                                                /
 void sv_BorderCameraView(void);                                                /* 0x525ff0 */
 int sv_ScrollCamera(void);                                                 /* 0x5263a0 */
 int sv_MouseCamera(void);                                                 /* 0x526cf0 */
-int sv_Unk527640(void);                                                 /* 0x527640 */
+int sv_UpdateCamera(void);                                                 /* 0x527640 */
 void sv_FlyCameraToObject(int o);                                               /* 0x527840 */
 void sv_CameraToObject(int o);                                               /* 0x527bb0 */
 void sv_FlyCameraToModel(int m);                                               /* 0x527e90 */
@@ -174,7 +174,7 @@ extern float sv_CameraAngleNear;                            /* 0x623804 */
 extern float sv_CameraHeightFar;                            /* 0x623808 */
 extern float sv_CameraAngleFar;                             /* 0x62380c */
 extern float sv_ScrollSpeed;                                  /* 0x623818 */
-extern char ai_Unk62381c;                                   /* 0x62381c */
+extern char sv_CameraEaseOn;                                   /* 0x62381c */
 extern int ai_Unk623820;                                    /* 0x623820 */
 extern int ai_Unk623824;                                    /* 0x623824 */
 extern int ai_Unk623828;                                    /* 0x623828 */
@@ -222,7 +222,7 @@ extern int sv_ViewRectTop;                                  /* 0x6248a8 */
 extern unsigned ai_Unk623ecc;                               /* 0x623ecc */
 extern int sv_ViewRectRight;                                /* 0x6248ac */
 extern int sv_ViewRectBottom;                               /* 0x6248b0 */
-extern int ai_Unk62a8cc;                                    /* 0x62a8cc */
+extern int ai_DragWindow;                                    /* 0x62a8cc */
 extern int ai_Unk631078;                                    /* 0x631078 */
 extern short d2_PointerLook;                                /* 0x6ed9d0 */
 extern int sv_SavedMaxY;                                    /* 0x6f1c40 */
@@ -239,7 +239,7 @@ extern int sv_SavedMinY;                                    /* 0x6f2298 */
 extern int sv_FrameDepth;                                   /* 0x6f229c */
 extern int sv_PopRequest;                                   /* 0x6f22a0 */
 extern int sv_FrameBase;                                    /* 0x6f22a4 */
-extern int ai_Unk6f22b4;                                    /* 0x6f22b4 */
+extern int sv_CameraScrolled;                                    /* 0x6f22b4 */
 extern int ai_Unk6f22c0;                                    /* 0x6f22c0 */
 extern struct D2SURF *sv_GroundplanSurf;                                   /* 0x6f22c4 */
 extern struct D2SURF *sv_GroundplanView;                                   /* 0x6f22c8 */
@@ -291,7 +291,7 @@ extern int ai_Unk75f280[576];                               /* 0x75f280 */
 extern float sv_ViewPos[4];                                 /* 0x75fb80, the stored camera position (X/Y/Z views: data_views.h) */
 extern float sv_ViewRot[4];                                 /* 0x75fb90, its rotation */
 extern float sv_SkyScale;                                  /* 0x760420 */
-extern int ai_Unk760440;                                    /* 0x760440 */
+extern int sv_BandActive;                                    /* 0x760440 */
 extern int sv_SkyPhase;                                    /* 0x760464 */
 extern int sv_CloudChance;                                    /* 0x760480 */
 extern int sv_SeasonClimate;                                    /* 0x760484 */
