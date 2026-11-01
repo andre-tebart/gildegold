@@ -6,7 +6,6 @@
    0x4abed0 that ends unk_4a7140.c; ends with "_NACHRICHTEN_NEU_01" 0x601044 (the next block is hst.c's callback
    table). Names are ours.
    unit of rea 8cef7d5b (src/game/hmt.c); boundaries in decl/text.dcl */
-extern char ai_PlayerSlots[4][0x2f4];
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -19,7 +18,18 @@ extern char ai_PlayerSlots[4][0x2f4];
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define ai_TimeT (*(AITIME *)&ai_Time)  /* 0x770ae0, ai_Time (anm.c: char[14]) as the AITIME it is: this unit reads its fields */
 #include "cm_types.h"
-extern G17STAT ai_Unkf31160[];
+#include "ahm.h"
+#include "amt.h"
+#include "anm.h"
+#include "cm.h"
+#include "f3gm.h"
+#include "he.h"
+#include "hst.h"
+#include "io_text.h"
+#include "ls.h"
+#include "mem.h"
+#include "sv.h"
+#include "tr.h"
 
 /* the SDK calls of hmt_CreateBinaryFile; windows.h is not included (its min/max and the other SDL macros change the
    emitted code of the unit), the two entry points are declared here as the SDK does, __stdcall */
