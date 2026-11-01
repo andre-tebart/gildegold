@@ -23,6 +23,7 @@ extern int gm_PlayerRecords[688];
 #include "d3_vec.h"
 #include "surf.h"
 #include "unk_5d33b0.h"
+#define d2_SetObjValue2 ((void (*)(int, char *))d2_SetObjValue)  /* 0x475cb0 (d2.c: five parameters): @original the file selector ai_FilePickWindow pushes 2 arguments (the input, the name) */
 #define d2_PlaceMainWindowF ((void (*)(int, int))d2_PlaceMainWindow)  /* 0x475850 (d2.c: int view): @original the callers pass the placement flags too, which the original's tail jump leaves on the stack for d2_PlaceWindowScaled */
 #include "unk_575860.h"
 #include "unk_58bbd0.h"
@@ -128,12 +129,12 @@ int ai_ListFiles(char *dirPath, const char *ext, char *records)
 
 void d2_CentreViewWindows(int view); void d2_SetPointerSprite(int a, int pic); int d2_SetForm(int view, int n);
 void d2_CloseView(int view);
-int io_PrintText(char *fmt, ...); int sv_CreateFormSlider(); int d2_GetWinObj(int view, int idx, int k);
+int io_PrintText(char *fmt, ...); int d2_GetWinObj(int view, int idx, int k);
+int sv_CreateFormSlider(int x, int y, int f, int g, int p5, int *b, int *a, int *c); /* 0x52e860, sv.c:
+                                           the slider of the form f at (x, y) */
 /* Callees whose units have no header here (type debt: the canonical prototypes live in d2.h, f3gm.c,
-   gv.h, cm.h and he.h; the pointer views follow this TU's declarations). d2_GetViewWin keeps the K&R
-   declaration for now: 0x5d34b0 pushes six arguments to the two-parameter d2.c function, see @original
-   at its call; the prototype below covers 0x5d8080. */
-int d2_GetViewWin();                        /* 0x475ff0, d2.c: window i of a view, -1 if out of range */
+   gv.h, cm.h and he.h; the pointer views follow this TU's declarations). */
+int d2_GetViewWin(int view, int i);         /* 0x475ff0, d2.h: window i of a view, -1 if out of range */
 int gm_BuildingSkill(unsigned char *b, unsigned k, int flag); /* 0x5092e0, f3gm.c: the building skill (ai.h's
                                                prototype; f3snd.h's building view is unsigned char *) */
 char *gv_FindAccused(char *c, int max, int *ids, int *cnt);  /* 0x4f41b0, gv.c: the character with the
@@ -143,97 +144,84 @@ void cm_SendProofExecuted(int record, int character); /* 0x4c4ed0, cm.c: message
 void cm_SendMoneyDelta(int character, int delta); /* 0x4c5f60, cm.c: message 0x5a, adds delta to the
                                                character's money (+0x194), clamped 0 .. 0x32 */
 int he_ShowNews(int pid, int fl, char *text, int unused, int ev, char *text2); /* 0x53dda0, he.c */
-void d2_SetObjValue(); int d2_GetObjValue(); int d2_CreateWinText(short x, short y, char *text, int win); void d2_SetObjText(int obj, char *text);
+void d2_SetObjValue(); int d2_GetObjValue(int obj); int d2_CreateWinText(short x, short y, char *text, int win); void d2_SetObjText(int obj, char *text);
 char *_itoa(int, char *, int); void d2_SetObjFont(int obj, int font); int sv_RunFrame(int cb, unsigned mask);
 
-/* 0x5d34b0, the screen file selector window (849 B): param_1 the pump record (0x5309a0), param_2 the
-   flags (bit 0: 1 returns the chosen name through param_6 instead of selecting it), param_3 the caption
-   text id (0x515960), param_4 the directory / name prefix, param_5 the extension and param_6 the output
-   buffer. The window "s_menu_fileselector" 0x62d7e8 (0x4741f0 / 0x476f80) shows the list of 0x5d33b0
-   (param_4, param_5) as up to 32 entries of 0x210 bytes: the control ids go into the first dword of each
-   slot, the control records 0xf8f080 + id * 0x2ec get visible +0x4c = 1, +0x5c = 1, the word +0x14 from
-   0x6ed980 + 8 and the picture +0x1c0 = 3; the count text comes from 0x5e56c4 (itoa) and 0x4734d0. The
-   pump 0x5309a0 runs with this function as its callback; a click (0x5fe710) on an entry selects it
-   (0x475cb0) or sprintf's "%s\\%s%s" 0x62d7e0 into param_6, the cancel control (the text 0x1ccc)
-   does the same with the empty name.
-   ROUGH (layout 2026-10-24): the cancel-path sprintf has one more argument in the original than
-   Ghidra recovered, and the two control fields +0x5c / +0x14 are unchecked. */
-int ai_FilePickWindow(int param_1, int param_2, int param_3, int param_4, int param_5, int param_6)
+/* 0x5d34b0, the file selector window "s_menu_fileselector": lists the files of dir with the extension ext
+   (ai_ListFiles, up to 32) under the caption, with their count. With bit 0 of flags a click on a file writes
+   "<dir>\<name><ext>" into out and returns 1; without it the click puts the name into the name input
+   (preset txt_DefaultFileName) and the button 0x1ccc writes the input's name into out and returns 1. A right
+   click leaves (0). mask is the frame pump's mask (sv_RunFrame) */
+int ai_FilePickWindow(unsigned mask, int flags, char *caption, char *dir, char *ext, char *out)
 {
-    char list[0x4200];
+    FILEREC recs[32];
     char num[0x20];
     int win;
     int n;
     int i;
     int ctrl;
-    int sel;
-    int cancel;
-    int x14;
-    int x18;
-    int flag;
+    int input;
+    int count;
+    int okBtn;
+    int slidA;
+    int slidB;
+    int direct;
     int ret;
 
     ret = 0;
-    sel = -1;
-    cancel = -1;
-    x14 = -1;
+    input = -1;
+    count = -1;
+    okBtn = -1;
     win = d2_OpenForm(0, 0, "s_menu_fileselector");
     d2_CentreViewWindows(win);
     d2_SetPointerSprite(0, 0);
     d2_SetForm(win, 2);
-    io_PrintText(param_3);
+    io_PrintText(caption);
     d2_SetForm(win, 0);
-    ctrl = d2_GetViewWin(win, 1, 0x18, &x14, &x18, &sel); /* @original: the original pushes
-        six arguments (win, 1, 0x18, &x14, &x18, &sel) to the two-parameter 0x475ff0; the K&R
-        declaration at the top of the file keeps those pushes */
-    sv_CreateFormSlider(0x140, 0x100, U_I((unsigned)&d2_LastWindow), ctrl);
-    for (i = 0; i < 0x1080; i++)
-        ((int *)list)[i] = 0;
-    n = ai_ListFiles((char *)param_4, (char *)param_5, list);
-    flag = param_2 & 1;
-    if (flag == 0) {
+    sv_CreateFormSlider(0x140, 0x100, d2_LastWindow, d2_GetViewWin(win, 1), 0x18, &slidA, &slidB, &count);
+    memset(recs, 0, sizeof(recs));
+    n = ai_ListFiles(dir, ext, (char *)recs);
+    direct = flags & 1;
+    if (direct == 0) {
         d2_SetForm(win, 3);
-        i = io_PrintText(0x1ccc);
-        cancel = d2_GetWinObj(win, 3, i);
+        okBtn = d2_GetWinObj(win, 3, io_PrintText(0x1ccc));
         d2_SetForm(win, 0);
-        x14 = d2_GetWinObj(win, 0, 0);
-        d2_SetObjValue(x14, U_I((unsigned)&full_data_14414f4));
+        input = d2_GetWinObj(win, 0, 0);
+        d2_SetObjValue2(input, txt_DefaultFileName);
     }
     d2_SetForm(win, 1);
     for (i = 0; i < n; i++) {
-        ctrl = d2_CreateWinText(0, i * 0x18, (int)(list + i * 0x210 + 9), U_I((unsigned)&d2_LastWindow));
-        ((int *)(list + i * 0x210))[0] = ctrl;
-        U_I(U_I((unsigned)&d2_Objs) + 0x4c + ctrl * 0x2ec) = 1;
-        U_I(U_I((unsigned)&d2_Objs) + 0x5c + ctrl * 0x2ec) = 1;
-        *(unsigned short *)(U_I((unsigned)&d2_Objs) + 0x14 + ctrl * 0x2ec) = *(unsigned short *)(U_I((unsigned)&d2_LastWindowPtr) + 8);
-        U_I(U_I((unsigned)&d2_Objs) + 0x1c0 + ctrl * 0x2ec) = 3;
+        ctrl = d2_CreateWinText(0, i * 0x18, recs[i].name, d2_LastWindow);
+        recs[i].ctrl = ctrl;
+        d2_Objs[ctrl].interactive = 1;
+        d2_Objs[recs[i].ctrl].centred = 1;
+        d2_Objs[recs[i].ctrl].w = d2_LastWindowPtr->w;
+        d2_Objs[recs[i].ctrl].style = 3;
     }
     _itoa(n, num, 10);
-    d2_SetObjText(sel, num);
-    d2_SetObjFont(sel, 0x54);
-    while (sv_RunFrame((int)ai_FilePickWindow, param_1) != 0) {
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0)
-            U_I((unsigned)&sv_PopRequest) = 1;
-        if (U_I(((unsigned)&dm_L + 0x18)) != 0) {
+    d2_SetObjText(count, num);
+    d2_SetObjFont(count, 0x54);
+    while (sv_RunFrame((int)ai_FilePickWindow, mask) != 0) {
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
+        if (dm_L.lclick != 0) {
             for (i = 0; i < n; i++) {
-                if (U_I((unsigned)&d2_PointerObj) == ((int *)(list + i * 0x210))[0]) {
-                    if (flag == 0) {
-                        d2_SetObjValue(x14, (int)(list + i * 0x210 + 9));
-                    } else {
-                        sprintf(param_6, "%s\\%s%s", param_4, list + i * 0x210 + 9, param_5);
-                        U_I((unsigned)&sv_PopRequest) = 1;
+                if (d2_PointerObj == recs[i].ctrl) {
+                    if (direct != 0) {
+                        sprintf(out, "%s\\%s%s", dir, recs[i].name, ext);
+                        sv_PopRequest = 1;
                         ret = 1;
+                    } else {
+                        d2_SetObjValue2(input, recs[i].name);
                     }
                     break;
                 }
             }
         }
-        if (U_I((unsigned)&d2_ClickedId) != -1 && U_I((unsigned)&d2_PointerObj) == cancel) {
-            if (flag == 0) {
-                i = d2_GetObjValue(x14, param_5);
-                sprintf(param_6, "%s\\%s%s", param_4, i, param_5);
-            }
-            U_I((unsigned)&sv_PopRequest) = 1;
+        if (d2_ClickedId != -1 && d2_PointerObj == okBtn) {
+            if (direct == 0)
+                sprintf(out, "%s\\%s%s", dir, (char *)d2_GetObjValue(input), ext);
+            sv_PopRequest = 1;
             ret = 1;
         }
     }
@@ -379,7 +367,6 @@ void d2_CloseView(int view);                                         /* 0x4758f0
 void d2_SetObjWidth(int obj, short w);                               /* 0x46c260, d2.h */
 int d2_OpenInput(int x, int y, int w, int h, unsigned char flags);   /* 0x46a110 */
 void d2_RemoveObj(int obj);                                          /* 0x46e710 */
-int d2_GetObjValue(int obj);                                         /* 0x475980 */
 void d2_SetObjFont(int obj, int font);                               /* 0x4760b0 */
 void d2_SetObjValue();                                               /* 0x475cb0, K&R: d2.c's definition takes 5 parameters, the call sites push 2, 4 or 5 */
 void d2_SetObjMax(int obj, int v);                                   /* 0x475f40 */
@@ -484,13 +471,8 @@ extern int d2_HitWindow;                    /* 0xf8aad0, the window the pointer 
 /* ai_SaveOverwriteText: view of txt_Ptrs (build/mk_txt_views.py) */
 extern int ai_GameFlagsWord;                /* 0x6f23f8, the dword view of ai_GameFlags: the load window
                                                writes the load mode 10 whole */
-int sv_CreateFormSlider(int x, int y, int f, int g, int p5, int *b, int *a, int *c); /* 0x52e860, sv.c:
-                                           the slider of the form f at (x, y) */
 void d2_EnableObject(int obj, int on);      /* 0x475aa0, d2.h: enables / disables an object and its items */
 int sv_OpenMessageBox(int text, unsigned char flags); /* 0x521900, sv.c: opens the waiting box with text */
-int d2_GetViewWin(int view, int i);         /* 0x475ff0, d2.h: window i of a view, -1 if out of range;
-                                               the six-argument calls below go through a cast, tagged
-                                               @original (the original pushes four stray arguments) */
 
 int ai_LeaveGame = 0;  /* 0x6f25a0, set with ai_GameOver when the menu leaves the game (the
                                        load window / the game loop end); main.c clears it when a game
@@ -2404,7 +2386,6 @@ typedef struct AIREQ {
     char pad08[0x54];
 } AIREQ;
 
-int d2_GetViewWin(int view, int i);         /* 0x475ff0: the prototype of the K&R declaration above */
 
 /* 0x5d8080, the tailor chat request window "locations\schneider\plausch" 0x62dbf8 (733 B, a
    Ghidra-missed start; the contact prompt 0x5d8360 opens it through 0x5c1130): the window lists the

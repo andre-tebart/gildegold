@@ -201,7 +201,7 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define ai_LoadGameConfirmText                   (*(char * *)((char *)txt_Ptrs + 0x07324))  /* 0x14414e4 */
 #define ai_SaveProgressText                      (*(char * *)((char *)txt_Ptrs + 0x07328))  /* 0x14414e8 */
 #define ai_SaveOverwriteText                     (*(char * *)((char *)txt_Ptrs + 0x0732c))  /* 0x14414ec */
-#define full_data_14414f4                        (*(unsigned char (*)[12])((char *)txt_Ptrs + 0x07334))  /* 0x14414f4 */
+#define txt_DefaultFileName                        (*(char **)((char *)txt_Ptrs + 0x07334))  /* 0x14414f4 */
 #define ai_MessageFilterTexts                    (*(char * (*)[666])((char *)txt_Ptrs + 0x07340))  /* 0x1441500 */
 #define ai_Unk1441f68                            (*(int *)((char *)txt_Ptrs + 0x07da8))  /* 0x1441f68 */
 #define ai_Unk1441f6c                            (*(int *)((char *)txt_Ptrs + 0x07dac))  /* 0x1441f6c */

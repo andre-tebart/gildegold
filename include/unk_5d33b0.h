@@ -4,6 +4,13 @@
 
 #include "unk_5d33b0_types.h"        /* OPTIONBYTES */
 
+typedef struct FILEREC {            /* 0x210 bytes, a file of ai_ListFiles's list */
+    int ctrl;                       /* 0x00, the caller's slot header: ai_FilePickWindow keeps the file's text control here */
+    char pad04[5];
+    char name[0x100];               /* 0x09, the file name without its extension */
+    char path[0x107];               /* 0x109, "<dir>/<file name>" */
+} FILEREC;
+
 /* The option values the profile keeps (the reader 0x5d5640 and the writer 0x5d4c70, the "Game" /
    "Gfx" / "Sound" sections of 0x75e480). The reader stores the camera / mouse speed as single bytes;
    the run time reads them as integers here. */
@@ -316,7 +323,7 @@ int ai_PokerGame(void);                  /* 0x5da030, the poker game window */
    also defined below their caller (see the order note in the .c): VC6 drops a call whose result is
    unused to a side-effect-free body it has already seen, so the caller must not see them. */
 int ai_SaveOptionWindow(int image);             /* 0x5d45d0, the save window (the image to restore) */
-int ai_FilePickWindow(int param_1, int param_2, int param_3, int param_4, int param_5, int param_6); /* 0x5d34b0, the file pick window (main_Menue: the city INI) */
+int ai_FilePickWindow(unsigned mask, int flags, char *caption, char *dir, char *ext, char *out); /* 0x5d34b0, the file pick window (main_Menue: the city INI) */
 int ai_LoadGameWindow(void);             /* 0x5d4080, the load game window, 1: a game was loaded */
 void ai_CreditsScreen(void);             /* 0x5d7ba0, the credits */
 int ai_JoinGameWindow(void);             /* 0x5d42b0, the saved network game pick (main_JoinNetworkGame), 1: chosen */

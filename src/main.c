@@ -1645,7 +1645,7 @@ void main_Menue(void)
                 }
             } else if (d2_PointerObj == bini) {
                 d2_EnableObject(f, 0);
-                if (ai_FilePickWindow(0x24087, 1, (int)"$Z$[Load INI$]", (int)"gamedata/cities", (int)".INI", (int)ini) != 0) {
+                if (ai_FilePickWindow(0x24087, 1, "$Z$[Load INI$]", "gamedata/cities", ".INI", ini) != 0) {
                     sprintf(path, "%s%s", main_GfxPath, ini);
                     GetPrivateProfileStringA("A - ALLGEMEIN", "Stadtname", "Unknown", city, 0x60, path);
                     main_StartCityGame(city, 0);
@@ -1653,7 +1653,7 @@ void main_Menue(void)
                 d2_EnableObject(f, 1);
             } else if (d2_PointerObj == bnetsave) {
                 d2_EnableObject(f, 0);
-                if (ai_FilePickWindow(0x24087, 1, (int)"$Z$[Load INI$]", (int)"gamedata/cities", (int)".INI", (int)ini2) != 0) {
+                if (ai_FilePickWindow(0x24087, 1, "$Z$[Load INI$]", "gamedata/cities", ".INI", ini2) != 0) {
                     sprintf(path2, "%s%s", main_GfxPath, ini2);
                     GetPrivateProfileStringA("A - ALLGEMEIN", "Stadtname", "Unknown", city2, 0x60, path2);
                     main_StartCityGame(city2, 1);
@@ -6205,7 +6205,7 @@ GAPDATA full_data_930370[16] = { 0 };  /* 0x930370 */
 /* full_data_14414bc: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_14414c8: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_14414d0: view of txt_Ptrs (build/mk_txt_views.py) */
-/* full_data_14414f4: view of txt_Ptrs (build/mk_txt_views.py) */
+/* txt_DefaultFileName: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_1441f88: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_1441f98: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_1441fa8: view of txt_Ptrs (build/mk_txt_views.py) */
