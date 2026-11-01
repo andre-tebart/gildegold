@@ -241,7 +241,7 @@ int unk_Unk4f36e0(int id);              /* 0x4f36e0 */
 int unk_Unk4f3780(int a, int b);        /* 0x4f3780 */
 
 int unk_Unk4f3910(int a, int b, int s, int m);  /* 0x4f3910 */
-int unk_Unk4f39b0(int c);               /* 0x4f39b0 */
+int gv_CountOwnedGraves(int c);               /* 0x4f39b0 */
 int unk_Unk4f39e0(int c);               /* 0x4f39e0 */
 
 int unk_Unk4f3fe0(int p, int *out, unsigned t);  /* 0x4f3fe0 */

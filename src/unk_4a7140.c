@@ -1091,14 +1091,14 @@ int ai_Unk4a8c80(int a, AIPER *p, int c, int d, unsigned char *m)
     *(int *)(m + 8) = ((AIPER *)ai_CharsT)[id[1]].netId;
     return 1;
 }
-/* 0x4a8d20, decide callback: p (unk194 >= 3) picks a character within 32..49 units, into m (kind 7) */
+/* 0x4a8d20, decide callback: p (money >= 3) picks a character within 32..49 units, into m (kind 7) */
 
 int ai_Unk4a8d20(int a, AIPER *p, int c, int d, unsigned char *m)
 {
     int flags;
     unsigned short id;
 
-    if (p->unk194 < 3)
+    if (p->money < 3)
         return 0;
     flags = ((unsigned)&cm_SendRing + 0x4973c0);
     if (ai_PickPartnerChain(p, 1, &flags, 0, (float)util_RandomU(0x12) + 32.0f, &id) == 0)
@@ -1182,21 +1182,22 @@ int ai_DecideUnfriendlyPair(int a, AIPER *p, int c, int d, AIARG *m)
     m->arg = ai_CharsT[id[1]].netId;
     return 1;
 }
-/* 0x4a9030, eval callback: p (unk194 >= 2) with n > 0 of 0x4f39b0: the count, at most unk194 / 2, into m->0x10 */
+/* 0x4a9030, eval callback: a character p with money >= 2 that owns graves in use (gv_CountOwnedGraves):
+   their count, at most money / 2, into m->unk10 */
 
-int ai_Unk4a9030(int a, AIPER *p, int c, unsigned char *m)
+int ai_EvalGraveCount(int a, AIPER *p, int c, AIARG *m)
 {
     int n, k;
 
-    if (p->unk194 < 2)
+    if (p->money < 2)
         return 0;
-    n = unk_Unk4f39b0(p->netId);
-    if (n < 1)
+    n = gv_CountOwnedGraves(p->netId);
+    if (n <= 0)
         return 0;
-    k = p->unk194 / 2;
-    if (n <= k)
+    k = p->money / 2;
+    if (k >= n)
         k = n;
-    *(int *)(m + 0x10) = k;
+    m->arg2 = k;
     return 1;
 }
 /* 0x4a9080, decide callback: a character p knows well enough (0x4f3c50, at least 2..5) that is free (not of kind
@@ -1235,11 +1236,11 @@ int ai_Unk4a9080(int a, AIPER *p, int c, int d, unsigned char *m)
     }
     return 0;
 }
-/* 0x4a9150, eval callback: p (unk194 > 7) on its day (id & 3 = day % 4), one in four */
+/* 0x4a9150, eval callback: p (money > 7) on its day (id & 3 = day % 4), one in four */
 
 int ai_Unk4a9150(int a, AIPER *p)
 {
-    if (p->unk194 >= 8 && ai_TimeT.year % 4 == (p->netId & 3) && util_RandomU(4) == 0)
+    if (p->money >= 8 && ai_TimeT.year % 4 == (p->netId & 3) && util_RandomU(4) == 0)
         return 1;
     return 0;
 }
@@ -1303,7 +1304,7 @@ int ai_Unk4a9280(int a, AIPER *p, int c, int d, unsigned char *m)
     }
     return 0;
 }
-/* 0x4a9350, decide callback: p (unk194 > 1, not flagged 0x100) picks an acquaintance (more than 3) not flagged
+/* 0x4a9350, decide callback: p (money > 1, not flagged 0x100) picks an acquaintance (more than 3) not flagged
    0x200 whose district level is above 3, into m (kind 7) */
 
 int ai_Unk4a9350(int a, AIPER *p, int c, int d, unsigned char *m)
@@ -1314,7 +1315,7 @@ int ai_Unk4a9350(int a, AIPER *p, int c, int d, unsigned char *m)
     int n, i, j;
     AIPER *o;
 
-    if (p->unk194 > 1 && (p->flags1c8 & 0x100) == 0) {
+    if (p->money > 1 && (p->flags1c8 & 0x100) == 0) {
         n = unk_Unk4f3c50(ids, cnt, p->id);
         if (n > 0) {
             i = 0;
@@ -1336,7 +1337,7 @@ int ai_Unk4a9350(int a, AIPER *p, int c, int d, unsigned char *m)
     }
     return 0;
 }
-/* 0x4a9420, decide callback: p (unk194 >= 2) picks a character within 40..71 units that 0x553d60 accepts, into
+/* 0x4a9420, decide callback: p (money >= 2) picks a character within 40..71 units that 0x553d60 accepts, into
    m (kind 7) */
 
 int ai_Unk4a9420(int a, AIPER *p, int c, int d, unsigned char *m)
@@ -1344,7 +1345,7 @@ int ai_Unk4a9420(int a, AIPER *p, int c, int d, unsigned char *m)
     int flags;
     unsigned short id;
 
-    if (p->unk194 < 2)
+    if (p->money < 2)
         return 0;
     flags = ((unsigned)&cm_SendRing + 0x4973c0);
     if (ai_PickPartnerChain(p, 1, &flags, 0, (float)util_RandomU(0x20) + 40.0f, &id) == 0)
@@ -1355,7 +1356,7 @@ int ai_Unk4a9420(int a, AIPER *p, int c, int d, unsigned char *m)
     *(int *)(m + 4) = ((AIPER *)ai_CharsT)[id].netId;
     return 1;
 }
-/* 0x4a94e0, decide callback: p (unk194 > 2, not flagged 0x400) picks a character within 18..49 units, not flagged
+/* 0x4a94e0, decide callback: p (money > 2, not flagged 0x400) picks a character within 18..49 units, not flagged
    0x400, by chance after 0x504e20, into m (kind 7) */
 
 int ai_Unk4a94e0(int a, AIPER *p, int c, int d, unsigned char *m)
@@ -1363,7 +1364,7 @@ int ai_Unk4a94e0(int a, AIPER *p, int c, int d, unsigned char *m)
     int flags;
     unsigned short id;
 
-    if (p->unk194 >= 3 && (p->flags1c8 & 0x400) == 0) {
+    if (p->money >= 3 && (p->flags1c8 & 0x400) == 0) {
         flags = ((unsigned)&cm_SendRing + 0x4973c0);
         if (ai_PickPartnerChain(p, 1, &flags, 0, (float)util_RandomU(0x20) + 18.0f, &id) != 0
             && (((AIPER *)ai_CharsT)[id].flags1c8 & 0x400) == 0
@@ -1391,7 +1392,7 @@ int ai_Unk4a95d0(int a, AIPER *p, int c, int d, unsigned char *m)
     *(int *)(m + 4) = ((AIPER *)ai_CharsT)[id].netId;
     return 1;
 }
-/* 0x4a9660, decide callback: p (not flagged 0x40000, unk194 >= 8) picks a character within 18..33 units, into m
+/* 0x4a9660, decide callback: p (not flagged 0x40000, money >= 8) picks a character within 18..33 units, into m
    (kind 7) */
 
 int ai_Unk4a9660(int a, AIPER *p, int c, int d, unsigned char *m)
@@ -1401,7 +1402,7 @@ int ai_Unk4a9660(int a, AIPER *p, int c, int d, unsigned char *m)
 
     if ((p->flags1cc & 0x40000) != 0)
         return 0;
-    if (p->unk194 < 8)
+    if (p->money < 8)
         return 0;
     flags = ((unsigned)&cm_SendRing + 0x497bc0);
     if (ai_PickPartnerChain(p, 1, &flags, 0, (float)util_RandomU(0x10) + 18.0f, &id) == 0)
@@ -1410,7 +1411,7 @@ int ai_Unk4a9660(int a, AIPER *p, int c, int d, unsigned char *m)
     *(int *)(m + 4) = ((AIPER *)ai_CharsT)[id].netId;
     return 1;
 }
-/* 0x4a9700, decide callback: p (not flagged 0x100, unk194 >= 4) picks a character of district 4 within 16..31 units,
+/* 0x4a9700, decide callback: p (not flagged 0x100, money >= 4) picks a character of district 4 within 16..31 units,
    not its partner (0x5c), into m (kind 7); 0x20 if p cannot */
 
 int ai_Unk4a9700(int a, AIPER *p, int *ctx, int d, unsigned char *m)
@@ -1423,7 +1424,7 @@ int ai_Unk4a9700(int a, AIPER *p, int *ctx, int d, unsigned char *m)
 
     if ((p->flags1c8 & 0x100) != 0)
         return 0x20;
-    if (p->unk194 < 4)
+    if (p->money < 4)
         return 0x20;
     if (ctx[0] == 1) {
         id = p->netId;
@@ -1457,7 +1458,7 @@ int ai_Unk4a9700(int a, AIPER *p, int *ctx, int d, unsigned char *m)
     } while (--i);
     return 0;
 }
-/* 0x4a9880, decide callback: p (not flagged 0x100, unk194 >= 4) picks a character of district 5 within 16..31 units,
+/* 0x4a9880, decide callback: p (not flagged 0x100, money >= 4) picks a character of district 5 within 16..31 units,
    not its partner (0x5c), into m (kind 7); 0x20 if p cannot */
 
 int ai_Unk4a9880(int a, AIPER *p, int *ctx, int d, unsigned char *m)
@@ -1470,7 +1471,7 @@ int ai_Unk4a9880(int a, AIPER *p, int *ctx, int d, unsigned char *m)
 
     if ((p->flags1c8 & 0x100) != 0)
         return 0x20;
-    if (p->unk194 < 4)
+    if (p->money < 4)
         return 0x20;
     if (ctx[0] == 1) {
         id = p->netId;
@@ -1604,7 +1605,7 @@ int ai_Unk4a9a00(int a, AIPER *p, int c, unsigned char *in, unsigned char *m)
     case 0x2a:
         return G10_CB(ai_DecideUnfriendlyPair)(a, p, ctx, in, m);
     case 0x2b:
-        return G10_CB(ai_Unk4a9030)(a, p, ctx, in, m);
+        return G10_CB(ai_EvalGraveCount)(a, p, ctx, in, m);
     case 0x2c:
         return G10_CB(ai_Unk4a9080)(a, p, ctx, in, m);
     case 0x2d:
@@ -1820,7 +1821,7 @@ found:
     }
     return 0;
 }
-/* 0x4aa580, decide callback: p (unk194 >= 1) picks a character within 0..63 units that 0x553db0 / 0x570ea0
+/* 0x4aa580, decide callback: p (money >= 1) picks a character within 0..63 units that 0x553db0 / 0x570ea0
    accept, with fewer than 4 (0x553db0's count, by chance), into m (kind 7) */
 
 int ai_Unk4aa580(AIPER *p, int c, unsigned char *m)
@@ -1830,7 +1831,7 @@ int ai_Unk4aa580(AIPER *p, int c, unsigned char *m)
     unsigned short id;
 
     k = 0;
-    if (p->unk194 < 1)
+    if (p->money < 1)
         return 0;
     flags = ((unsigned)&cm_SendRing + 0x4973c0);
     if (ai_PickPartnerChain(p, 1, &flags, 0, (float)util_RandomU(0x40), &id) == 0)
@@ -1847,7 +1848,7 @@ int ai_Unk4aa580(AIPER *p, int c, unsigned char *m)
     *(int *)(m + 4) = ((AIPER *)ai_CharsT)[id].netId;
     return 1;
 }
-/* 0x4aa6a0, decide callback: p (unk194 > 1) picks a random acquaintance within 20..80 units that 0x553d10
+/* 0x4aa6a0, decide callback: p (money > 1) picks a random acquaintance within 20..80 units that 0x553d10
    accepts and it knows little (fewer than 2..5), into m (kind 7, its id at 0x10); in gets a count and a kind */
 
 int ai_Unk4aa6a0(AIPER *p, unsigned char *in, unsigned char *m)
@@ -1858,7 +1859,7 @@ int ai_Unk4aa6a0(AIPER *p, unsigned char *in, unsigned char *m)
     unsigned int i;
     AIPER *o;
 
-    if (p->unk194 > 1 && (n = unk_Unk4f3c50(ids, cnt, p->id)) != 0) {
+    if (p->money > 1 && (n = unk_Unk4f3c50(ids, cnt, p->id)) != 0) {
         i = util_RandomU(n);
         j = n;
         do {
@@ -1881,7 +1882,7 @@ int ai_Unk4aa6a0(AIPER *p, unsigned char *in, unsigned char *m)
     }
     return 0;
 }
-/* 0x4aa800, decide callback: p (unk194 >= 3) picks a character within 33..48 units and a second one 50..100 units
+/* 0x4aa800, decide callback: p (money >= 3) picks a character within 33..48 units and a second one 50..100 units
    from both, by chance after 0x504e20, into m (kind 7) */
 
 int ai_Unk4aa800(AIPER *p, int c, unsigned char *m)
@@ -1893,7 +1894,7 @@ int ai_Unk4aa800(AIPER *p, int c, unsigned char *m)
     ids[1] = 0xffff;
     ids[2] = 0xffff;
     ids[3] = 0xffff;
-    if (p->unk194 < 3)
+    if (p->money < 3)
         return 0;
     ids[0] = p->id;
     if (ai_Unk4a5a30(p, ((unsigned)&cm_SendRing + 0x4973c0), 4, ids, 0.0f, (float)util_RandomU(0x10) + 33.0f, &id) == 0)
@@ -2217,7 +2218,7 @@ int ai_Unk4ab2c0(AIPER *p, int *a, int *b)
     cm_EndGroup("buy dunkle ecke");
     return 1;
 }
-/* 0x4ab3e0, decide callback of action 0x44 "Blutrache": p (unk194 >= 5, not flagged 8, not of kind 3) with its
+/* 0x4ab3e0, decide callback of action 0x44 "Blutrache": p (money >= 5, not flagged 8, not of kind 3) with its
    best building of kind 0x1f holding object 0x27c picks a victim within 25..57 units and up to four helpers
    (0x4a61d0) it can afford by their weight (0x4e7c40 / 3 + 2), into m / m2 (kind 7) */
 
@@ -2243,7 +2244,7 @@ int ai_Unk4ab3e0(int a, AIPER *p, int c, unsigned char *m, unsigned char *m2)
     who[1] = 0;
     who[2] = 0;
     who[3] = 0;
-    if ((p->flags1cc & 8) != 0 || p->unk194 < 5)
+    if ((p->flags1cc & 8) != 0 || p->money < 5)
         return 0;
     if ((a != 0x44 && a != 0) || c != 0 || v == 0 || p->kind == 3)
         return 0;
@@ -2271,7 +2272,7 @@ int ai_Unk4ab3e0(int a, AIPER *p, int c, unsigned char *m, unsigned char *m2)
         return 0;
     o = &((AIPER *)ai_CharsT)[id];
     s = amt_GetKindLevel(o->unk166) / 3 + 2;
-    if (s + 2 > p->unk194)
+    if (s + 2 > p->money)
         return 0;
     n = ai_Unk4a61d0(p, 4, flags, 25.0f, 75.0f, bestv, ids);
     if (n == 0)
@@ -2279,7 +2280,7 @@ int ai_Unk4ab3e0(int a, AIPER *p, int c, unsigned char *m, unsigned char *m2)
     cnt = 0;
     for (i = 0; i < n; i++) {
         t = amt_GetKindLevel(((AIPER *)ai_CharsT)[ids[i]].unk166) / 3 + 2 + s;
-        if (t >= p->unk194) {
+        if (t >= p->money) {
             s = t;
             who[cnt++] = &((AIPER *)ai_CharsT)[ids[i]];
         }
@@ -2410,7 +2411,7 @@ int ai_Unk4ab9f0(AIPER *p, unsigned char *m)
     cm_SendLongMessage(&msg);
     return 0x45;
 }
-/* 0x4abac0, decide callback of action 0x46 "Theater": p (unk194 > 1, not of kind 3) picks its theatre (a building
+/* 0x4abac0, decide callback of action 0x46 "Theater": p (money > 1, not of kind 3) picks its theatre (a building
    of kind 0x1f holding object 0x27f, not busy by 0x5741d0; the bigger one, cap 2: 7, else 4) and a play length
    by its rank, into m (kind 7) */
 
@@ -2423,7 +2424,7 @@ int ai_Unk4abac0(int a, AIPER *p, int c, unsigned char *m)
 
     v = gm_TitleJob(p->id, 0xe);
     k = 0;
-    if ((a == 0x46 || a == 0) && c == 0 && v != 0 && p->kind != 3 && p->unk194 > 1) {
+    if ((a == 0x46 || a == 0) && c == 0 && v != 0 && p->kind != 3 && p->money > 1) {
         best = 0;
         b = ai_BldsT;
         for (i = 0x100; i != 0; i--) {
@@ -2445,8 +2446,8 @@ next:
             b = (AIBLD *)((unsigned char *)b + 0xa9);
         }
         if (best != 0 && k != 0) {
-            if (p->unk194 < 4) {
-                if (p->unk194 < 3) {
+            if (p->money < 4) {
+                if (p->money < 3) {
                     if (k > 3)
                         k = 4;
                 } else if (k > 6) {
@@ -2487,7 +2488,7 @@ int ai_Unk4abc60(AIPER *p, unsigned char *m)
     cm_SendLongMessage(&msg);
     return 0x46;
 }
-/* 0x4abd00, decide callback of action 0x47 "Ehrerbietung": p (unk194 >= 2, not flagged 0x20, not of kind 3) with a
+/* 0x4abd00, decide callback of action 0x47 "Ehrerbietung": p (money >= 2, not flagged 0x20, not of kind 3) with a
    building of kind 0x1f holding object 0x276 picks a character within 25..57 units to honour, into m (kind 7, a
    cost 2..7); returns 0x45 (sic) */
 
@@ -2501,7 +2502,7 @@ int ai_Unk4abd00(int a, AIPER *p, int c, unsigned char *m)
 
     v = gm_TitleJob(p->id, 0xe);
     flags = 0;
-    if ((p->flags1cc & 0x20) != 0 || p->unk194 < 2)
+    if ((p->flags1cc & 0x20) != 0 || p->money < 2)
         return 0;
     if ((a != 0x47 && a != 0) || c != 0 || v == 0 || p->kind == 3)
         return 0;
@@ -2513,7 +2514,7 @@ int ai_Unk4abd00(int a, AIPER *p, int c, unsigned char *m)
             if (ai_PickPartnerChainF(p, 1, (int *)&flags, 0.0f, (float)util_RandomU(0x20) + 25.0f, &id) == 0)
                 return 0;
             o = &((AIPER *)ai_CharsT)[id];
-            n = util_RandomU(p->unk194 < 8 ? p->unk194 : 8);
+            n = util_RandomU(p->money < 8 ? p->money : 8);
             if (n <= 2)
                 n = 2;
             *(int *)(m + 0x10) = n;

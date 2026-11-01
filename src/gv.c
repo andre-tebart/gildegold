@@ -3277,7 +3277,7 @@ int unk_Unk4f3910(int a, int b, int s, int m)
 }
 /* 0x4f39b0, how many records of 0x91f700 belong to the character c (+0x16) and are in state 1 */
 
-int unk_Unk4f39b0(int c)
+int gv_CountOwnedGraves(int c)
 {
     int cnt;
     int *p;

@@ -10332,7 +10332,7 @@ void ai_Unk5a1af0(int param_1)
     }
 }
 
-int unk_Unk4f39b0(); int unk_Unk4f39e0(int c); int gm_GetWorth(unsigned short id); float gm_Liking();
+int gv_CountOwnedGraves(); int unk_Unk4f39e0(int c); int gm_GetWorth(unsigned short id); float gm_Liking();
 int ai_InventoryHas(void *ch, int id); int d2_OpenForm(); void d2_SetPointerSprite(int a, int pic); 
 int d2_SetForm(int view, int n); void sv_FitForm(int f); int io_PrintText(char *fmt, ...); int d2_GetWinObj();
 int sv_CheckGoodAmount(); void cm_BeginFieldBlock(char *o, int id); int cm_AddFieldValues(unsigned char size, unsigned char n, unsigned short field, void *v); void cm_SendFieldDeltas(void);
@@ -10376,7 +10376,7 @@ void ai_IndulgenceWindow(int param_1, int param_2)
     double t;
 
     id = U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x21c);
-    n2 = unk_Unk4f39b0(id);
+    n2 = gv_CountOwnedGraves(id);
     n1 = unk_Unk4f39e0(id);
     if (n1 != 0) {
         owner = U_W(param_1 + 0x27);
@@ -10703,7 +10703,7 @@ void ai_Unk5a2b60(int param_1)
 
     if (U_W(param_1 + 0x27) == 0xffff)
         return;
-    fame = unk_Unk4f39b0(U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x21c));
+    fame = gv_CountOwnedGraves(U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x21c));
     win = d2_OpenForm(0, 0, "Locations\\Kirche\\Beichte");
     d2_CentreViewWindows(win);
     d2_SetForm(win, 0);

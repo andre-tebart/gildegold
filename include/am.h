@@ -47,7 +47,7 @@ typedef struct AIPER {                  /* a character, 0x21c bytes (ai_Chars[76
     char pad174[4];
     int inventory;                      /* 0x178, the goods inventory (AICHAR.inventory, a G8 object list) */
     char pad17c[0x18];
-    int unk194;                         /* 0x194 */
+    int money;                         /* 0x194 */
     char pad198[0x30];
     unsigned int flags1c8;              /* 0x1c8 */
     unsigned int flags1cc;              /* 0x1cc */
@@ -166,7 +166,7 @@ typedef struct AIARG {                  /* 0x18 bytes, what a decide callback fi
     int ref;                            /* 0x04, what the kind refers to: a building id, an item, a character's netId (kind 7) */
     unsigned int arg;                   /* 0x08, a second value of the kind: a count (kind 7 at 0x4a8ad0: 1..5), -1 = none */
     int unk0c;                          /* 0x0c */
-    int unk10;                          /* 0x10 */
+    int arg2;                           /* 0x10, a third value of the kind, passed on in the action's message (msg.arg[3] at 0x48ff40): a count (0x4a9030: graves), a step */
     float unk14;                        /* 0x14 */
 } AIARG;
 
@@ -377,7 +377,7 @@ typedef struct AGCH {                   /* a character, 0x21c bytes */
     char pad131[0x35];
     unsigned char unk166;               /* 0x166 */
     char pad167[0x2d];
-    int unk194;                         /* 0x194 */
+    int money;                         /* 0x194 */
     char pad198[0x30];
     unsigned int flags1c8;              /* 0x1c8 */
     char pad1cc[0x50];
@@ -467,7 +467,7 @@ typedef struct AIPX {                   /* a character, 0x21c bytes (ai_Chars[76
     char pad17c[4];
     signed char unk180;                 /* 0x180, the current action */
     char pad181[0x13];
-    int unk194;                         /* 0x194 */
+    int money;                         /* 0x194 */
     char pad198[0x34];
     unsigned int flags1cc;              /* 0x1cc */
     char pad1d0[0x4c];
