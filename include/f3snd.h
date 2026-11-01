@@ -160,7 +160,6 @@ struct SBSAMPLE *sb_PlaySample(struct SBBANK *bank, char *name, int loops, int p
 void d3_PointToWorld(struct D3OBJECT *obj_, struct D3VECTOR *in, struct D3VECTOR *out);                               /* 0x458a20 */
 int ch_CountAt(int scene, int all, struct D3VECTOR *pos, float eps);                               /* 0x402720 */
 int ch_Count(int scene, int a);                                                  /* 0x4026c0 */
-void msx_SetTrackVolume(struct MSXTRACK *t, int vol);                                       /* 0x423930, msx.h: MSXTRACK * */
 struct MSXTRACK * msx_PlayAmbient(char *name, int vol);                                      /* 0x4243f0 */
 int util_Random(unsigned short n);                                               /* 0x42ec00, tr.c; the callers that read a 16-bit result (ch_RandomNear, anm_Update, ai_Unk4d88c0 ..) call util_RandomU, a cast in their head */
 struct MSXTRACK * msx_Play(char *name, int once);                                            /* 0x423a90, msx.h: MSXTRACK * */
@@ -168,9 +167,6 @@ float util_RandomF(void);                                                       
 struct SBSAMPLE *sb_GetVariation(struct SBBANK *bank, char *name, int idx);       /* 0x426190, sblib.c (f3snd.c: sb_GetVariationI) */
 struct SBSAMPLE * sb_GetSample(struct SBBANK *bank, char *name);                                          /* 0x426030 */
 struct SBBANK * sb_LoadSampleBank(char *name, int preload);                                        /* 0x426950 */
-float gm_Liking(unsigned a, unsigned b, int c);                                       /* 0x50c550, a favour */
-int gm_BuildingGoodsList(char *b, unsigned *out, int kind);                            /* 0x5098a0 */
-int gm_Unk5099e0(char *b, unsigned *out, int kind);                            /* 0x5099e0 */
 struct D3SOUND *d3snd_Attach(struct SNDHANDLE *snd, struct D3OBJECT *obj, int volume, float range);   /* 0x417710, d3_snd.c (f3snd.c: d3snd_AttachI) */
 void * mem_Alloc(int size, char *tag);                                            /* 0x4223c0, mem.c */
 void mem_Free(void *p);                                                          /* 0x422620, mem.c */
