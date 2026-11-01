@@ -2555,7 +2555,7 @@ scroll:
         fwd[0] = right[0] * 0.0f + right[4] * 0.0f + right[8] * 1.0f;
         fwd[1] = 0.0f;
         fwd[2] = right[2] * 0.0f + right[6] * 0.0f + right[10] * 1.0f;
-        if (0.1f <= sqrt(fwd[0] * fwd[0] + fwd[2] * fwd[2])) {
+        if (sqrt(fwd[0] * fwd[0] + fwd[2] * fwd[2]) < 0.1f) {   /* the matrix rows only below 0.1; the original jumps to the angle branch when >= 0.1 */
             fwd[0] = right[0] * v[0] + right[4] * v[1];
             fwd[2] = right[2] * v[0] + right[6] * v[1];
         } else {
@@ -2572,14 +2572,14 @@ scroll:
             m = *(float **)(ai_Unk5fb5b0 + 0xb0);
             if (m != 0) {
                 lo = m[4] * 20.0f + m[0];
-                hi = (float)((int)m[8] - 0x14) * m[4] + m[0];
+                hi = (float)(*(int *)(m + 8) - 0x14) * m[4] + m[0];   /* +0x20 is the int cell count (D3SM.size), read as an int like the original */
                 if (lo <= dst[0] && hi < dst[0])
                     lo = hi;
                 else if (lo <= dst[0])
                     lo = dst[0];
                 dst[0] = lo;
                 lo = m[6] * 20.0f + m[2];
-                hi = (float)((int)m[8] - 0x14) * m[6] + m[2];
+                hi = (float)(*(int *)(m + 8) - 0x14) * m[6] + m[2];
                 if (dst[2] <= hi)
                     dst[2] = hi;
                 if (lo <= dst[2])
@@ -2751,7 +2751,7 @@ go:
                 fwd[0] = right[0] * 0.0f + right[4] * 0.0f + right[8] * 1.0f;
                 fwd[1] = 0.0f;
                 fwd[2] = right[2] * 0.0f + right[6] * 0.0f + right[10] * 1.0f;
-                if (0.1f <= sqrt(fwd[0] * fwd[0] + fwd[2] * fwd[2])) {
+                if (sqrt(fwd[0] * fwd[0] + fwd[2] * fwd[2]) < 0.1f) {   /* the matrix rows only below 0.1; the original jumps to the angle branch when >= 0.1 */
                     fwd[0] = right[0] * v[0] + right[4] * v[1];
                     fwd[2] = right[2] * v[0] + right[6] * v[1];
                 } else {
@@ -2769,14 +2769,14 @@ go:
                     m = *(float **)(ai_Unk5fb5b0 + 0xb0);
                     if (m != 0) {
                         lo = m[4] * 20.0f + m[0];
-                        hi = (float)((int)m[8] - 0x14) * m[4] + m[0];
+                        hi = (float)(*(int *)(m + 8) - 0x14) * m[4] + m[0];
                         if (lo <= dst[0] && hi < dst[0])
                             lo = hi;
                         else if (lo <= dst[0])
                             lo = dst[0];
                         dst[0] = lo;
                         lo = m[6] * 20.0f + m[2];
-                        hi = (float)((int)m[8] - 0x14) * m[6] + m[2];
+                        hi = (float)(*(int *)(m + 8) - 0x14) * m[6] + m[2];
                         if (dst[2] <= hi)
                             dst[2] = hi;
                         if (lo <= dst[2])
