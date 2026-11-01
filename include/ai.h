@@ -465,10 +465,7 @@ extern unsigned short *ai_PlayerChar;    /* 0x6f1bf8 */
 extern char *ai_PlayerBuilding;          /* 0x6f2308, the building the player is in: an AIBLD (sv.c defines char *; ai_PlayerBuildingT views) */
 extern char *ai_FallbackBuilding;        /* 0x6f230c, the second current building, used when 0x6f2308 is 0 (sv.c defines char *) */
 extern int ai_CurrentPlayer;                /* 0x6f2590, the player index whose turn the local round loop simulates */
-extern int ai_GameFlags;      /* 0x6f23f8 */
 extern int ai_Difficulty;                 /* 0x6f23fc, the game difficulty 0 .. 4 */
-extern AIOBJ *ai_Objects;             /* 0x7e3f34, the objects of the world (0x5008 rows) */
-extern int gm_NOffers;                /* 0x7e3f3c, rows of gm_Offers */
 extern AISTORE gm_Offers[];          /* 0x7e4b20 */
 extern AIGRID ai_Grid[8][8];            /* 0x91ae60 */
 extern char *cm_FieldObject;              /* 0xa68d2c */
@@ -548,9 +545,6 @@ int ai_MeisterTradeFernEinkauf2(AICHAR *ch, AIOBJ *obj);                 /* 0x48
 
 /* callees outside this unit */
 int util_Random(unsigned short n);                                       /* 0x42ec00, tr.c; the callers that read a 16-bit result (ch_RandomNear, anm_Update, ai_Unk4d88c0 ..) call util_RandomU, a cast in their head */
-int ai_ChooseAction(int id);                                                /* 0x4957d0 */
-int ai_ExecuteAction(int id);                                                /* 0x495ce0 */
-void ai_FillNearRing(AICHAR *c);                                            /* 0x4a3af0 */
 struct G15TREE * veg_FindType(int type);                                         /* 0x4bc5a0 */
 struct G15PLANT * veg_FindPlantId(struct G15PLANT *p, int id);                /* 0x4bc670, the plant record with the id (rd.c) */
 void cm_BeginFieldBlock(char *o, int id);                             /* 0x4c3ba0, starts a message about o */
@@ -571,47 +565,22 @@ void gm_SetTime(struct GCLOCK *c, unsigned char hour, unsigned min, unsigned sec
 int gm_MinutesBetween(AITIME *a, AITIME *b);                                  /* 0x4fe280, minutes between two times */
 int gm_FindObjectInst(int id);                                              /* 0x4fe980 */
 int gm_FindById(int *bld, int *obj, int *chr, int id);           /* 0x4fea50 */
-char * gm_FindGoods(int p, unsigned id);                                     /* 0x4ffc40 */
 unsigned short * gm_QueryNext(void);                                               /* 0x4ffcc0, next of gm_Query */
 char * gm_Query(void *list, int n, ...);                               /* 0x4ffe90, n (key, value) pairs */
-int gm_CollectOffers(int goods);                                             /* 0x500c20 */
 int gm_FindMarketObject(int id);                                            /* 0x500ec0 */
 unsigned char * gm_BuildNext(void);                                               /* 0x501030, next of gm_BuildQuery */
 unsigned char * gm_BuildQuery(int n, ...);                                         /* 0x501190, n (key, value) filters; key 6 takes no value */
-void gm_GetGebaeudeHauptraum(unsigned char *bld);                                         /* 0x501ce0 */
 int gm_BuildingClass(int type);    /* 0x501d80, the class 0 .. 9 of ai_BTypes[type].kind: kinds 1 .. 0x20 index the byte table 0x501e14 and jump through 0x501dec (1..9), anything else is 0; ai.c dispatches its master / workshop logic on it, f3init.c's init_Betrieb stocks the classes 1 / 4 */
 char * gm_FindBuildingById(int id);                                             /* 0x502020 */
 short * gm_FindChar(int id);                                            /* 0x505df0 */
 int gm_Unk505e60(unsigned id, int again);                              /* 0x505e60, f3gm.c */
 short * gm_PlayerRecord(char *ch);                                         /* 0x506430 */
-int gm_SumSlotAmounts(void *list, unsigned char i);                             /* 0x508660 */
-float gm_ObjectValue(int item);                                            /* 0x5086b0 */
 float gm_ItemPrice(int item, unsigned char n);                           /* 0x5087f0 */
 float gm_GoodsPrice(unsigned id, unsigned char p);                           /* 0x5089c0, a price */
-int gm_BuildingLevel(char *c);                                            /* 0x508d70 */
-int gm_BuildingRank(unsigned char *b);                                            /* 0x5090b0 */
-int gm_BuildingSkill(unsigned char *b, unsigned k, int flag);                              /* 0x5092e0 */
-int gm_BuildingGoodsList(char *b, unsigned *out, int kind);                       /* 0x5098a0 */
 int gm_EquipmentValue(unsigned char *b, int unused);                                     /* 0x509b10 */
-int gm_OwnerWorth(char *b, int flag);                                     /* 0x509c80 */
-int gm_GetGoodsValue(char *ch);                                            /* 0x509e60 */
-int gm_StallGoodsList(char *c, unsigned *out);                                 /* 0x50aa00 */
 int gm_ListAmount(short *l, char *o);                                      /* 0x50aaf0 */
-int gm_ListAmountById(char *l, int id);                                     /* 0x50ab20 */
-int gm_ListStock(short *l, int item);                                     /* 0x50ab50 */
-int gm_FreeCapacity(short *l, int item, int max);                            /* 0x50ab80 */
-int gm_Opinion(int a, int b);                    /* 0x50c520 */
 float gm_Liking(unsigned a, unsigned b, int c);                                 /* 0x50c550 */
-float gm_Unk50cd40(char *c, int k, int a, int b);                  /* 0x50cd40 */
 char * he_NextEvent(void);                                             /* 0x53e300, next of he_FindEvent */
 char * he_FindEvent(int n, ...);                                         /* 0x53e400, n (key, value) pairs */
-int he_Unk553cc0(int p);                                            /* 0x553cc0 */
-void ai_EndCharExtra(char *ch, int f);                                    /* 0x587c40 */
-int ai_DrawSettingGood(int param_1);                                            /* 0x5a8870 */
-float ai_SettingFactor(int param_1);                                          /* 0x5a88e0 */
-void ai_Unk5a8ee0(unsigned short *param_1, unsigned short *param_2);                                 /* 0x5a8ee0 */
-void ai_Unk5a8f90(unsigned short *param_1, unsigned short *param_2);                                 /* 0x5a8f90 */
-void ai_Unk5a9050(unsigned short *param_1, unsigned short *param_2);                                 /* 0x5a9050 */
-int ai_Unk5bb2d0(int param_1, int param_2);                                  /* 0x5bb2d0 */
 
 #endif
