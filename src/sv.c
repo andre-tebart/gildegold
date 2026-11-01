@@ -430,8 +430,6 @@ int d2_RemoveWindow();                     /* 0x472ce0 */
 #include "unk_58bbd0.h"
 #include "vfs.h"
 #include "shp.h"
-#define d3sky_CreateLayerK ((int (*)())d3sky_CreateLayer)  /* 0x45d880 (d3_sky.c): @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) (floats as bit patterns, the flags as an int) */
-#define d3sky_CreateK ((int (*)())d3sky_Create)  /* 0x45da30 (d3_sky.c): @original the calls pass the three floats as dword bit patterns without a prototype (ai_Unk4e32f0 0x4e32f0: push 0x44160000 ..) */
 #define d3_PointToWorldK ((void (*)())d3_PointToWorld)  /* 0x458a20 (d3.h, 3 parameters): @original sv_Unk528180 0x5281b5 pushes 4 arguments (the 4th an uninitialised register), compiled without a prototype */
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, ai_Unk4d88c0 0x4d88c0 move it as a word / movzx) */
 #define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
@@ -2291,35 +2289,36 @@ void sv_SetupWeather(struct GCLOCK *t, int reroll)
     sv_LampSwitches = 0;
     sv_UpdateSkyPhase((char *)t);
 }
-/* 0x525940, copies the sky colour table (0x623cc0, or 0x623e10 when raining) into the sky object records (+0x128 .. +0x130 of the object 0x5fb5b0, 6 rows of 0x60) and the globals 0x5fcc78 .. / 0xfba9c0 ..; only
-   when the object has its mesh (+0xac) */
+typedef struct SVLEVELCOLOR {           /* 0x10 bytes, the ambient colour of a light level in the sky tables */
+    D3VECTOR amb;
+    float pad;                          /* 0 in every record */
+} SVLEVELCOLOR;
+#define sv_LevelAmbient       (*(SVLEVELCOLOR (*)[7])&ai_Unk623cc0)  /* 0x623cc0, the ambient colours of the 7 light levels */
+#define sv_LevelAmbientWinter (*(SVLEVELCOLOR (*)[7])&ai_Unk623e10)  /* 0x623e10, the same in winter weather */
+/* 0x525940, colours the default scene's sky for the weather: its lights' keys (sv_SetSkyLightColors), then the ambient colour of
+   each of the 7 light levels from the level table (the winter one in winter weather) into the scene's levels, the current ambient
+   colour and the engine's levels; only when the scene has a map */
 
 void sv_UpdateSkyColors(void)
 {
-    int *p;
+    SVLEVELCOLOR *p;
     int i;
 
-    if (*(int *)(ai_Unk5fb5b0 + 0xac) == 0)
+    if (d3_DefaultScene->map == 0)
         return;
-    d3_ForEachObject(ai_Unk5fb5b0, 0, 8, sv_SetSkyLightColors, 0);
-    p = ai_Unk623cc0;
-    if (sv_WinterWeather != 0)
-        p = ai_Unk623e10;
-    p += 2;
-    i = 0;
-    do {
-        *(int *)(ai_Unk5fb5b0 + i + 0x128) = p[-2];
-        *(int *)(ai_Unk5fb5b0 + i + 300) = p[-1];
-        *(int *)(ai_Unk5fb5b0 + i + 0x130) = p[0];
-        ai_Unk5fcc78 = p[-2];
-        ai_Unk5fcc7c = p[-1];
-        ai_Unk5fcc80 = p[0];
-        *(int *)((char *)ai_Unkfba9c0 + i) = p[-2];
-        *(int *)((char *)ai_Unkfba9c0 + i + 4) = p[-1];
-        *(int *)((char *)ai_Unkfba9c0 + i + 8) = p[0];
-        i += 0x60;
-        p += 4;
-    } while (i < 0x2a0);
+    d3_ForEachObject(d3_DefaultScene, 0, 8, sv_SetSkyLightColors, 0);
+    p = sv_WinterWeather == 0 ? sv_LevelAmbient : sv_LevelAmbientWinter;
+    for (i = 0; i < 7; i++) {
+        ((D3IFSCENE *)d3_DefaultScene)->levels[i].amb.x = p[i].amb.x;
+        ((D3IFSCENE *)d3_DefaultScene)->levels[i].amb.y = p[i].amb.y;
+        ((D3IFSCENE *)d3_DefaultScene)->levels[i].amb.z = p[i].amb.z;
+        d3_AmbientColor.x = p[i].amb.x;
+        d3_AmbientColor.y = p[i].amb.y;
+        d3_AmbientColor.z = p[i].amb.z;
+        d3if_Levels[i].amb.x = p[i].amb.x;
+        d3if_Levels[i].amb.y = p[i].amb.y;
+        d3if_Levels[i].amb.z = p[i].amb.z;
+    }
 }
 /* 0x525a00, fills the day phase table 0x623ba9 (6 rows of 10 bytes: +0 hours, +1 minutes, +2 the seconds of day) from the minutes of the phase table 0x5eeab8 of the season k (0x4fe350) */
 
