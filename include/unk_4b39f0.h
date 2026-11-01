@@ -17,7 +17,6 @@ typedef struct G13TYPE {                /* 0x1c bytes, ai_MissionTypes[48], the 
 
 extern G13MIS ai_Missions[0x80];       /* 0xf82320 */
 extern G13TYPE ai_MissionTypes[48];        /* 0x601f88 */
-extern unsigned int ai_MissionSeed;       /* 0x75e120, random seed of the missions */
 
 int ai_ClearMissions(void);                                                          /* 0x4b39f0 */
 unsigned int ai_MissionRandom(unsigned int n);                                       /* 0x4b3a10 */
