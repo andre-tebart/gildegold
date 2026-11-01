@@ -58,6 +58,7 @@
 #include "unk_458810.h"
 #include "unk_4591a0.h"
 #include "unk_4a7140.h"
+#include "ch.h"
 #define d3_SetBlendStateI ((void (*)(int, int, int))d3_SetBlendState)  /* 0x4387b0 (d3_d3d.c: unsigned char x3): this unit passes the three flags as int (d3_DrawSortedD3D, draft; the unsigned char prototype gives 2225 bytes against the original's 2211, the int view 2229: a lead, not settled) */
 #define dd_ClearB ((void (*)(D3RECT *, unsigned char, unsigned char, unsigned char))dd_Clear)  /* 0x41e100 (dd_vesa.h: RECT *, int x3): @original this unit passes the fog colour as bytes, its D3RECT viewport */
 #define d3_MirBeginFrameE ((void (*)(D3OBJECT *, D3OBJECT **))d3_MirBeginFrame)  /* 0x4554b0 (d3_mir.h: D3MIRROR *): this unit passes the mirror as its D3OBJECT ** view */
