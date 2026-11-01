@@ -2938,7 +2938,7 @@ int gm_FindObjectProto(char *name);     /* 0x4fe900, f3gm.c: the object prototyp
 unsigned unk_Unk503530(unsigned p1, unsigned char *b, unsigned short *o, int c);  /* 0x503530, f3gm.c: the permission bits of the character p in the building b (or the object o) */
 extern unsigned char init_TextureSet;      /* 0x6f1c24 */
 extern char * ai_Unkfc2dec;                /* 0xfc2dec */
-/* 0x511f20* where ecmd.c uses void *list - unifying needs the shared-header decision; ai_Unkfc2dec = d3_Camera (d3.h, D3OBJECT *) but this unit also uses the address as an int at 0x513xxx (ai_Unkfc2dec + 0x84 / + 0x88 writes in unk_Unk513590's neighbour), so the rename is the d3.h type decision (127 refs in 6 files); init_TextureSet (0x6f1c24), ai_SceneObject (0x76fa84, the current building pointer) and ai_SceneBuilding (0x76fdc0, its object list at +0x5d) have no writer and no string anywhere - only their roles here. Q4: 41 raw accesses, the same shared-header blocker as init_HookObject: d3.h has no field at D3OBJECT +0x200 (owner record), +0x218, +0x224, +0x1cc / +0x1ec, and the record views (rec + 0x18, rec[0x13]) are AIOBJ fields that ai.h cannot be included for in this unit (gv.h's K&R d3sm_GetVertex conflicts). Q1: no evidenced name beyond 'the scene object callback that keeps o's scene record in sync'. */
+/* 0x511f20 */
 void init_SyncSceneObjects(char *o)
 {
     char *base, *proto, *s, *rec, *e, *parent;

@@ -1719,7 +1719,7 @@ int ai_CalcAngriff(AICHAR *ch, int n)
     cm_SendLongMessage(&msg);
     return 1;
 }
-/* 0x481ef0@named_by guess), gm_BuildingClass (the building-category mapper: no source, no Ghidra export, its defining unit is undrafted), he_Unk553cc0 (he.c: 1 unless an event 0x62 with +0xb0 = the id and +0xb8 == 1 runs; no role name in the sources), AIOBJ.unk06 / unk2a / unk36 / unk37, AIBLD.unk39 / unk65, AIJOB.unkac (a union id: a building id here, a netId in am.c). */
+/* 0x481ef0 */
 
 void ai_CalcMeisterDiebe(AICHAR *ch)
 {
