@@ -176,4 +176,17 @@ char dd_StringToGuid(char *s, GUID *guid);                                      
 void dd_DeviceDialog(int bpp, int unused, HWND parent, char flag, LPDIRECT3D3 d3d3);              /* 0x41cf60, Dd_vesa.c */
 
 char d3d_Restore(void);                                                /* 0x4370d0 */
+
+/* declared in other units' headers before (moved to the owner) */
+void d3d_Clear(D3RECT *r);  /* 0x435fb0 */
+char d3d_CreateDevice(DWORD texbpp, DWORD fourcc, DWORD texbpp2, DWORD zbpp);  /* 0x436160 */
+void d3d_DrawTriangles(void *unk, D3DTLVERTEX *buf, DWORD num);  /* 0x436510 */
+void d3d_Exit(void);  /* 0x4370e0 */
+int d3d_GetVertexBuffer(void **buf, int *n);  /* 0x4364f0 */
+char d3d_Init(int bitplanes, int a, int b);  /* 0x435d70 */
+void d3d_SetViewport(float w, float h, float x, float y, float zn, float zf);  /* 0x436de0 */
+void d3d_SetWBuffer(char w);  /* 0x437060 */
+void d3d_BuildMipmaps(LPDIRECTDRAWSURFACE4 tex, DDSURFACEDESC2 *ddsd);  /* 0x4371d0 */
+void d3d_PrecacheTexture(LPDIRECT3DTEXTURE2 t);  /* 0x4360e0 */
+
 #endif
