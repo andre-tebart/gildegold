@@ -54,7 +54,6 @@ typedef struct XTEX {
 
 struct D3ANIMSLOT * d3anim_GetMainSlot(struct D3ANIMCTL *ctl);                                         /* 0x435900 */
 void d3_MatMul43(D3MATRIX *a, D3MATRIX *b, D3MATRIX *out);                  /* 0x453ee0 */
-void d3_MatIdentity(D3MATRIX *m);                                             /* 0x454510 */
 void d3_MatToAngles(D3VECTOR4 *m, D3VECTOR4 *angles);                         /* 0x454690 */
 
 void d3_DirToWorld(XOBJ *obj, float *in, float *out);                        /* 0x458810 */
