@@ -1467,7 +1467,7 @@ exe	0x004801f0	ai_EvaluateProductionCategory2	ai	draft	draft	deep
 exe	0x00480e70	ai_CalcMeisterWache	ai	draft	draft	deep	
 exe	0x004817a0	ai_CalcAngriff	ai	draft	draft	deep	
 exe	0x00481ef0	ai_CalcMeisterDiebe	ai	draft	draft	deep	
-exe	0x00482f00	ai_CalcMeisterRaeuber	ai	draft	draft	deep	
+exe	0x00482f00	ai_CalcMeisterRaeuber	ai	draft	readable	deep	
 exe	0x004836a0	ai_CalcMeisterBank	ai	byte	draft	deep	
 exe	0x00483a60	ai_Unk483a60	ai	shape	draft	deep	byte+draft -> shape+draft at e8472c5: AIFIN (ai.h) gets the player record's camera fields (+0x88 camAngle, +0x8c camPos, +0x9c camRot) that sv.c's camera code writes, replacing raw offsets: a truer type. ai_Unk483a60 never uses AIFIN; with the extended struct its two spill slots [esp+0x10]/[esp+0x18] swap (same 234 instructions) - a VC6 declaration-set tie-break, so the byte match was no evidence of the original's source
 exe	0x00483d30	ai_StartBuildingWork	ai	shape	draft	deep	
@@ -1754,8 +1754,8 @@ exe	0x004a6570	ai_Unk4a6570	am	draft	draft
 exe	0x004a66f0	ai_Unk4a66f0	am	byte	draft		
 exe	0x004a67a0	ai_Unk4a67a0	am	draft	draft		
 exe	0x004a6ae0	ai_Unk4a6ae0	am	draft	draft		
-exe	0x004a7140	ai_PokerStart	unk_4a7140	draft	draft		
-exe	0x004a7430	ai_Unk4a7430	unk_4a7140	draft	draft		
+exe	0x004a7140	ai_PokerStart	unk_4a7140	byte	readable		
+exe	0x004a7430	ai_PokerDealRound	unk_4a7140	byte	readable		
 exe	0x004a74e0	ai_PokerStep	unk_4a7140	draft	draft		
 exe	0x004a7650	ai_Unk4a7650	unk_4a7140	draft	draft		
 exe	0x004a76d0	ai_Unk4a76d0	unk_4a7140	draft	draft		
@@ -1919,7 +1919,7 @@ exe	0x004b3280	hst_NextEvent	hst	shape	readable
 exe	0x004b3350	ai_Unk4b3350	hst	byte	draft		
 exe	0x004b35e0	hst_NextEventCmd	hst	shape	readable		
 exe	0x004b36d0	ai_Unk4b36d0	hst	byte	draft		
-exe	0x004b3960	ai_Unk4b3960	hst	byte	draft		
+exe	0x004b3960	hst_YearlyHistory	hst	byte	draft		
 exe	0x004b39f0	ai_ClearMissions	unk_4b39f0	byte	readable		
 exe	0x004b3a10	ai_MissionRandom	unk_4b39f0	byte	readable		
 exe	0x004b3a50	ai_FindOwnerMission	unk_4b39f0	byte	readable		
@@ -1975,7 +1975,7 @@ exe	0x004b5ef0	ai_MissionCompleteByMode	unk_4b39f0	byte	readable
 exe	0x004b5f10	ai_MissionResultDialog	unk_4b39f0	draft	readable	deep	
 exe	0x004b6040	ai_MissionPartnerDialog	unk_4b39f0	shape	readable		
 exe	0x004b60f0	ai_MissionResultByMode	unk_4b39f0	byte	readable		
-exe	0x004b6110	ai_MissionCompleteSingle	unk_4b39f0	shape	draft		
+exe	0x004b6110	ai_MissionCompleteSingle	unk_4b39f0	shape	readable		
 exe	0x004b62a0	ai_MissionCompleteSequence	unk_4b39f0	byte	readable		
 exe	0x004b62e0	ai_SaveMissions	unk_4b39f0	byte	draft		
 exe	0x004b63b0	ai_Unk4b63b0	unk_4b39f0	byte	draft		
@@ -2043,7 +2043,7 @@ exe	0x004bb4f0	ai_Unk4bb4f0	unk_4b6480	byte	draft
 exe	0x004bb590	ai_Unk4bb590	unk_4b6480	byte	draft		
 exe	0x004bb630	ai_Unk4bb630	unk_4b6480	byte	draft		
 exe	0x004bb6c0	ai_Unk4bb6c0	unk_4b6480	byte	draft		
-exe	0x004bb720	ai_Unk4bb720	unk_4b6480	byte	draft		
+exe	0x004bb720	ai_PostRandomMessages	unk_4b6480	byte	draft		
 exe	0x004bb7d0	ai_Unk4bb7d0	unk_4b6480	byte	draft		
 exe	0x004bb810	anm_Alloc	anm	byte	readable		
 exe	0x004bb840	anm_Free	anm	byte	readable		
@@ -2591,7 +2591,7 @@ exe	0x004e4a50	ai_Unk4e4a50	cm	byte	draft
 exe	0x004e4b50	ai_Unk4e4b50	cm	draft	draft		
 exe	0x004e4cc0	ai_Unk4e4cc0	cm	draft	draft		
 exe	0x004e4f40	ai_Unk4e4f40	cm	byte	draft		
-exe	0x004e4f80	ai_Unk4e4f80	cm	byte	draft		
+exe	0x004e4f80	ai_RunPendingParties	cm	byte	draft		
 exe	0x004e5050	ai_Unk4e5050	cm	byte	draft		
 exe	0x004e50a0	cm_PartyById	cm	byte	draft		
 exe	0x004e50e0	ai_Unk4e50e0	cm	byte	draft		
@@ -2614,7 +2614,7 @@ exe	0x004e5a40	ai_Unk4e5a40	cm	byte	draft
 exe	0x004e5a90	ai_Unk4e5a90	cm	byte	draft		
 exe	0x004e5af0	ai_Unk4e5af0	cm	byte	draft		
 exe	0x004e5b50	ai_Unk4e5b50	cm	byte	draft		
-exe	0x004e5bf0	ai_Unk4e5bf0	cm	byte	draft		
+exe	0x004e5bf0	ai_DebugDumpPerson	cm	byte	draft		
 exe	0x004e5cd0	amt_InitTable	amt	byte	readable		
 exe	0x004e5e50	amt_Rating	amt	draft	readable	deep	
 exe	0x004e6030	amt_FindOffice	amt	draft	readable	deep	
@@ -2676,7 +2676,7 @@ exe	0x004ea550	amt_ChangeDistrictOpinion	amt	byte	readable
 exe	0x004ea5c0	amt_GetDistrictLiking	amt	byte	readable		
 exe	0x004ea690	amt_SaveAemter	amt	draft	readable	deep	
 exe	0x004ea7a0	amt_LoadAemter	amt	byte	readable		
-exe	0x004ea8e0	amt_Unk4ea8e0	amt	byte	draft		
+exe	0x004ea8e0	amt_TellOpenOffices	amt	byte	draft		
 exe	0x004ea990	amt_GetOwnedOfficePay	amt	byte	readable		
 exe	0x004eaa00	amt_Unk4eaa00	amt	byte	draft		
 exe	0x004eaa50	ahm_OwnerChar	ahm	byte	readable		
@@ -2935,7 +2935,7 @@ exe	0x004fa580	unk_Unk4fa580	f3gm	draft	draft
 exe	0x004fa700	gm_CharacterWages	f3gm	draft	draft		
 exe	0x004fa9b0	unk_Unk4fa9b0	f3gm	byte	draft		
 exe	0x004faa00	unk_Unk4faa00	f3gm	draft	draft		
-exe	0x004fabe0	unk_Unk4fabe0	f3gm	draft	draft		
+exe	0x004fabe0	gm_EndDayIncomes	f3gm	draft	draft		
 exe	0x004fad60	gm_FindRichest	f3gm	draft	draft		
 exe	0x004fae50	unk_Unk4fae50	f3gm	draft	draft		
 exe	0x004fb0e0	unk_Unk4fb0e0	f3gm	draft	draft		
@@ -2943,7 +2943,7 @@ exe	0x004fb330	unk_Unk4fb330	f3gm	byte	draft
 exe	0x004fb390	gm_CharNameRecord	f3gm	draft	draft		
 exe	0x004fb5a0	gm_SelectModelVariant	f3gm	draft	draft		
 exe	0x004fb620	unk_Unk4fb620	f3gm	shape	draft		
-exe	0x004fb770	unk_Unk4fb770	f3gm	draft	draft		
+exe	0x004fb770	gm_HeadIconNumber	f3gm	draft	draft		
 exe	0x004fb890	gm_ChooseHeadIcon	f3gm	draft	draft		
 exe	0x004fbb80	unk_Unk4fbb80	f3gm	draft	draft		
 exe	0x004fbd10	gm_PlaceOnStage	f3gm	draft	draft		
@@ -2953,7 +2953,7 @@ exe	0x004fc7a0	unk_Unk4fc7a0	f3gm	draft	draft
 exe	0x004fc820	gm_CharacterHealth	f3gm	draft	draft		
 exe	0x004fc890	unk_Unk4fc890	f3gm	draft	draft		
 exe	0x004fc8e0	unk_Unk4fc8e0	f3gm	draft	draft		
-exe	0x004fc920	unk_Unk4fc920	f3gm	draft	draft		
+exe	0x004fc920	gm_DailyCharacters	f3gm	draft	draft		
 exe	0x004fca40	gm_AddHealth	f3gm	draft	draft		
 exe	0x004fccc0	unk_Unk4fccc0	f3gm	draft	draft		
 exe	0x004fd090	unk_Unk4fd090	f3gm	draft	draft		
@@ -3036,7 +3036,7 @@ exe	0x005029f0	gm_Unk5029f0	f3gm	byte	draft
 exe	0x00502a60	gm_ShowSlotObjects	f3gm	draft	draft		
 exe	0x00502b60	gm_AssignBuilding	f3gm	draft	draft		
 exe	0x00502e30	gm_ShowBuildingObjects	f3gm	byte	draft		
-exe	0x00502eb0	gm_Unk502eb0	f3gm	draft	draft		
+exe	0x00502eb0	gm_ListWorkers	f3gm	draft	draft		
 exe	0x00502fd0	gm_Unk502fd0	f3gm	draft	draft		
 exe	0x005031b0	unk_Unk5031b0	f3gm	draft	draft		
 exe	0x00503480	gm_RemoveObjectFromBuilding	f3gm	byte	readable		
@@ -3052,7 +3052,7 @@ exe	0x00503fa0	gm_BuildingTypeOfJob	f3gm	draft	draft
 exe	0x00504050	gm_JobBuildingType	f3gm	draft	readable		
 exe	0x00504100	gm_JobSlots	f3gm	draft	readable		
 exe	0x00504290	gm_FirstTitleNumber	f3gm	shape	draft		
-exe	0x00504350	gm_Unk504350	f3gm	draft	draft		
+exe	0x00504350	gm_TitleNumberGroup	f3gm	draft	readable		
 exe	0x005043d0	gm_TitleNumber	f3gm	draft	readable		
 exe	0x005044b0	gm_TitleJob	f3gm	draft	draft		
 exe	0x00504510	gm_Unk504510	f3gm	draft	draft		
@@ -3101,14 +3101,14 @@ exe	0x00508620	gm_Unk508620	f3gm	byte	draft
 exe	0x00508640	gm_Unk508640	f3gm	byte	draft		
 exe	0x00508660	gm_SumSlotAmounts	f3gm	byte	draft		
 exe	0x005086b0	gm_ObjectValue	f3gm	draft	draft		
-exe	0x00508740	gm_Unk508740	f3gm	draft	draft		
+exe	0x00508740	gm_JobWage	f3gm	draft	readable		
 exe	0x005087f0	gm_ItemPrice	f3gm	draft	draft		
 exe	0x005089c0	gm_GoodsPrice	f3gm	byte	draft		
 exe	0x00508a20	gm_HealthFactor	f3gm	byte	readable		
 exe	0x00508a80	gm_FormatAmount	f3gm	draft	draft		
 exe	0x00508cc0	gm_Unk508cc0	f3gm	draft	draft		
 exe	0x00508d70	gm_BuildingLevel	f3gm	byte	draft		
-exe	0x00508d80	gm_Unk508d80	f3gm	draft	draft		
+exe	0x00508d80	gm_BuildingBalance	f3gm	draft	draft		
 exe	0x00509060	gm_Unk509060	f3gm	byte	draft		
 exe	0x005090b0	gm_BuildingRank	f3gm	draft	readable		
 exe	0x00509120	gm_Unk509120	f3gm	draft	draft		
@@ -3123,7 +3123,7 @@ exe	0x00509b10	gm_EquipmentValue	f3gm	draft	draft
 exe	0x00509c80	gm_OwnerWorth	f3gm	draft	draft		
 exe	0x00509d30	gm_BuildingKindValue	f3gm	draft	readable		
 exe	0x00509dc0	gm_Unk509dc0	f3gm	draft	draft		
-exe	0x00509e30	gm_Unk509e30	f3gm	byte	draft		
+exe	0x00509e30	gm_SumListAmounts	f3gm	byte	draft		
 exe	0x00509e60	gm_GetGoodsValue	f3gm	byte	draft		
 exe	0x00509eb0	gm_Unk509eb0	f3gm	byte	draft		
 exe	0x00509ee0	gm_Unk509ee0	f3gm	draft	draft		
@@ -3166,7 +3166,7 @@ exe	0x0050c550	gm_Liking	f3gm	draft	draft
 exe	0x0050c980	gm_Unk50c980	f3gm	shape	draft		
 exe	0x0050ca10	gm_Unk50ca10	f3gm	byte	draft		
 exe	0x0050ca50	gm_Unk50ca50	f3gm	byte	draft		
-exe	0x0050cad0	gm_Unk50cad0	f3gm	draft	draft		
+exe	0x0050cad0	gm_ChangeBuildingState	f3gm	draft	draft		
 exe	0x0050cc50	gm_SendMoneyDelta	f3gm	byte	readable		
 exe	0x0050cc60	gm_ResetStock	f3gm	byte	draft		
 exe	0x0050ccd0	gm_Unk50ccd0	f3gm	draft	draft		
@@ -3235,7 +3235,7 @@ exe	0x00513050	init_ShowBuildingScene	f3init	draft	readable	deep
 exe	0x00513400	init_FinishBuildingScene	f3init	byte	readable		
 exe	0x00513590	init_SetDetailLevel	f3init	draft	readable	deep	
 exe	0x005136b0	unk_Unk5136b0	f3init	byte	draft		
-exe	0x00513740	unk_Unk513740	f3init	byte	draft		
+exe	0x00513740	init_AfterTownLoad	f3init	byte	draft		
 exe	0x00513970	init_ParseNumberList	f3init	byte	readable		
 exe	0x00513a20	init_LoadCityINI	f3init	draft	draft	deep	
 exe	0x005142e0	io_TownDisplayName	io_text	byte	readable		
@@ -3332,7 +3332,7 @@ exe	0x00525480	sv_ClockSeason	sv	byte	readable
 exe	0x00525490	sv_Unk525490	sv	draft	draft		
 exe	0x00525510	sv_Unk525510	sv	draft	draft		
 exe	0x00525940	sv_UpdateSkyColors	sv	draft	draft		
-exe	0x00525a00	sv_Unk525a00	sv	draft	draft		
+exe	0x00525a00	sv_FillDayPhases	sv	draft	draft		
 exe	0x00525a80	sv_Unk525a80	sv	byte	draft		
 exe	0x00525ad0	sv_Unk525ad0	sv	draft	draft		
 exe	0x00525dd0	sv_PlaceCamera	sv	draft	draft		
@@ -3412,8 +3412,8 @@ exe	0x0052f600	sv_Unk52f600	sv	draft	draft
 exe	0x0052f710	sv_Unk52f710	sv	draft	draft		
 exe	0x0052f9f0	sv_Unk52f9f0	sv	byte	draft		
 exe	0x0052fa00	sv_Unk52fa00	sv	byte	draft		
-exe	0x0052fa10	sv_Unk52fa10	sv	byte	draft		
-exe	0x0052fa90	sv_Unk52fa90	sv	byte	draft		
+exe	0x0052fa10	sv_CreateScrollForm	sv	byte	draft		
+exe	0x0052fa90	sv_DestroyScrollForm	sv	byte	draft		
 exe	0x0052fad0	sv_Unk52fad0	sv	byte	draft		
 exe	0x0052fb50	sv_PopTo	sv	draft	draft		
 exe	0x0052fb80	sv_PumpMessages	sv	byte	draft		
@@ -3474,19 +3474,19 @@ exe	0x00537db0	main_FreeSoundBanks	main	byte	draft
 exe	0x00537de0	main_Unk537de0	main	byte	draft		
 exe	0x00537f40	main_EndGame	main	byte	draft		
 exe	0x00538140	main_RundenBeginn	main	byte	draft		
-exe	0x005384e0	main_Unk5384e0	main	draft	draft		
+exe	0x005384e0	main_EndRound	main	draft	draft	deep	
 exe	0x00539620	main_ReplaceFigure	main	draft	draft	deep	
 exe	0x00539870	main_RoundReport	main	draft	draft	deep	
 exe	0x0053a250	main_UpdateFigure	main	draft	draft	deep	
 exe	0x0053a450	main_UpdateFigures	main	byte	draft		
-exe	0x0053a520	main_Unk53a520	main	draft	draft		
-exe	0x0053b2e0	main_Unk53b2e0	main	draft	draft		
+exe	0x0053a520	main_SettleRound	main	draft	draft	deep	
+exe	0x0053b2e0	main_BeginPlayerRound	main	draft	draft	deep	
 exe	0x0053b830	main_Unk53b830	main	byte	draft		
-exe	0x0053b840	main_Unk53b840	main	draft	draft		
-exe	0x0053bb20	main_GameLoop	main	draft	draft		
+exe	0x0053b840	main_CreateStartCouple	main	draft	readable	deep	
+exe	0x0053bb20	main_GameLoop	main	draft	draft	deep	
 exe	0x0053c9b0	main_Unk53c9b0	main	byte	draft		
-exe	0x0053cb40	main_Unk53cb40	main	draft	draft		
-exe	0x0053ccf0	WinMain	main	draft	draft		
+exe	0x0053cb40	main_PlayOutro	main	draft	readable	deep	
+exe	0x0053ccf0	WinMain	main	draft	draft	deep	
 exe	0x0053d430	he_Unk53d430	he	byte	draft		
 exe	0x0053d470	he_Unk53d470	he	byte	draft		
 exe	0x0053d4b0	he_Unk53d4b0	he	byte	draft		
@@ -3498,7 +3498,7 @@ exe	0x0053d6f0	he_Unk53d6f0	he	draft	draft
 exe	0x0053d800	he_Unk53d800	he	draft	draft		
 exe	0x0053d930	he_Unk53d930	he	byte	draft		
 exe	0x0053d9b0	he_CloseEventSlots	he	byte	draft		
-exe	0x0053d9f0	he_Unk53d9f0	he	draft	draft		
+exe	0x0053d9f0	he_ShowEventBar	he	draft	draft		
 exe	0x0053dad0	he_Unk53dad0	he	byte	draft		
 exe	0x0053daf0	he_Unk53daf0	he	draft	draft		
 exe	0x0053dcb0	he_Unk53dcb0	he	byte	draft		
@@ -3523,9 +3523,9 @@ exe	0x0053edf0	he_Unk53edf0	he	draft	draft
 exe	0x0053ee40	he_Unk53ee40	he	byte	draft		
 exe	0x0053eea0	he_Unk53eea0	he	draft	draft		
 exe	0x0053eec0	he_AddApEvent	he	draft	draft		
-exe	0x0053ef50	he_Unk53ef50	he	draft	draft		
+exe	0x0053ef50	he_CountDownApEvents	he	draft	readable		
 exe	0x0053ef80	he_SumApEvents	he	byte	readable		
-exe	0x0053efb0	he_Unk53efb0	he	byte	draft		
+exe	0x0053efb0	he_SumApEventCosts	he	byte	readable		
 exe	0x0053efe0	he_PostEvent6d	he	draft	draft		
 exe	0x0053f070	he_PostEvent6b	he	draft	draft		
 exe	0x0053f100	he_PostEvent7a	he	draft	draft		
@@ -3760,7 +3760,7 @@ exe	0x0055e600	he_Unk55e600	he	draft	draft
 exe	0x0055e730	he_Unk55e730	he	draft	draft		
 exe	0x0055e9d0	he_Unk55e9d0	he	draft	draft		
 exe	0x0055ea60	he_Unk55ea60	he	draft	draft		
-exe	0x0055eba0	he_Unk55eba0	he	draft	draft		
+exe	0x0055eba0	he_FindFigurePlace	he	draft	draft		
 exe	0x0055ee40	he_Unk55ee40	he	draft	draft		
 exe	0x0055efc0	he_Unk55efc0	he	draft	draft		
 exe	0x0055fa20	he_Unk55fa20	he	draft	draft		
