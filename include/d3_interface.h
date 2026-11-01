@@ -180,9 +180,6 @@ typedef struct D3CORNERTRI {        /* D3TRI as the corner search reads it */
     char pad27;
 } D3CORNERTRI;
 
-void d3_MatTranspose(D3MATRIX *src, D3MATRIX *dst);                    /* 0x454040 */
-void d3_MatInverse(D3MATRIX *src, D3MATRIX *dst);                    /* 0x454070 */
-void d3_MatToAngles(D3VECTOR4 *m, D3VECTOR4 *angles);                 /* 0x454690, matrix rows to angles (d3_anim.h too) */
 float d3_YawTo(D3OBJECT *obj, float *p);                          /* 0x448ac0 */
 char d3_ScreenToUV(float sx, float sy, D3OBJECT *obj, void *tex, float *outu, float *outv);   /* 0x448e60 */
 D3OBJECT *d3_FindObjectNoCase(int a, int flags, int c, char *name);  /* 0x449770, case-insensitive */
@@ -263,7 +260,6 @@ extern D3VECTOR d3o_Amb;            /* 0x5fcc78 (d3if_AmbR..) */
 extern D3VECTOR d3o_Dir;            /* 0x633b1c (d3if_Dir) */
 extern int d3o_LightSet;            /* 0x5fbcfc, the current light set */
 extern int d3o_FogSet;              /* 0x5fbd00, the current fog set */
-extern float d3o_FogScale;          /* 0x5fbd04 */
 extern D3FOGCOL d3o_SkyCol[7];      /* 0xfb91c0, sky colour per light set */
 
 char d3_SetParent(D3OBJECT *obj, D3OBJECT *parent);                                    /* 0x449960 */
