@@ -482,47 +482,47 @@ void ai_PokerPickStrategies(void)
 
 void ai_PokerNpcFold(void)
 {
-    int s, j, n, r, m, k, y;
-    int x8, xc;
-    G10SEAT *st;
+    int s, j, suitN, suit, m, mySuit, any;
+    int rankN, rank;
+    G10SEAT *st, *o;
 
     for (s = 1; s < 3; s++) {
         st = &ai_PokerTable->seat[s];
-        if (st->strategy == 0 && st->bold == 0 && ai_PokerTable->dealt > 3)
+        if (st->strategy == 0 && st->bold == 0 && ai_PokerTable->dealt >= 4)
             st->foldedAt = ai_PokerTable->phase;
         for (j = 0; j < 2; j++) {
-            if (j != s && ai_PokerTable->seat[j].foldedAt < 0) {
-                ai_Unk4a7e70(&ai_PokerTable->seat[j], &n, &r, &x8, &xc);
+            if (j != s && (o = &ai_PokerTable->seat[j])->foldedAt < 0) {
+                ai_PokerOpenCounts(o, &suitN, &suit, &rankN, &rank);
                 switch (st->strategy) {
                 case 0:
-                    if (st->bold == 0) {
-                        if (n > 1 || util_RandomU(4) == 1)
+                    if (st->bold != 0) {
+                        if (suitN > 2)
                             st->foldedAt = ai_PokerTable->phase;
-                    } else if (n > 2) {
+                    } else if (suitN > 1 || util_RandomU(4) == 1) {
                         st->foldedAt = ai_PokerTable->phase;
                     }
                     break;
                 case 1:
-                    if (st->bold == 0) {
-                        m = ai_PokerFindPair(st->card, 0, 7, &k);
-                        if (ai_PokerTable->phase > 5 && m <= n && (m < n || k < r))
+                    if (st->bold != 0) {
+                        m = ai_PokerFindPair(st->card, 0, 7, &any);
+                        if (m < suitN && ai_PokerTable->phase >= 6 && ai_PokerTable->dealt >= 5)
                             st->foldedAt = ai_PokerTable->phase;
                     } else {
-                        m = ai_PokerFindPair(st->card, 0, 7, &y);
-                        if (m < n && ai_PokerTable->phase > 5 && ai_PokerTable->dealt > 4)
+                        m = ai_PokerFindPair(st->card, 0, 7, &mySuit);
+                        if (ai_PokerTable->phase >= 6 && m <= suitN && (m < suitN || mySuit < suit))
                             st->foldedAt = ai_PokerTable->phase;
                     }
                     break;
                 case 2:
                     if (st->bold == 0) {
-                        m = ai_PokerFindPair(st->card, 0, 7, &y);
+                        m = ai_PokerFindPair(st->card, 0, 7, &any);
                         if (ai_PokerTable->dealt < 5 && m == 3 && util_RandomU(4) == 1)
                             st->foldedAt = ai_PokerTable->phase;
                     }
                     break;
                 case 3:
                     if (st->bold == 0) {
-                        m = ai_PokerFindPair(st->card, 0, 7, &y);
+                        m = ai_PokerFindPair(st->card, 0, 7, &any);
                         if (ai_PokerTable->dealt < 5 && m == 3 && util_RandomU(5) == 1)
                             st->foldedAt = ai_PokerTable->phase;
                     }
@@ -534,7 +534,7 @@ void ai_PokerNpcFold(void)
 }
 /* 0x4a7e70, the open cards (2 .. dealt-1) of seat s: the most common group (count, group) and rank (count, rank) */
 
-void ai_Unk4a7e70(G10SEAT *s, int *n, int *g, int *m, int *r)
+void ai_PokerOpenCounts(G10SEAT *s, int *n, int *g, int *m, int *r)
 {
     int cnt[10];
     int i, k;

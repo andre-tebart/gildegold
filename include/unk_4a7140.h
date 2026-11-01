@@ -85,7 +85,7 @@ void ai_PokerSwapCard(G10SEAT *s, int k);                                       
 void ai_PokerPayStakes(void);                                                         /* 0x4a7a20 */
 void ai_PokerPickStrategies(void);                                                         /* 0x4a7ac0 */
 void ai_PokerNpcFold(void);                                                         /* 0x4a7c20 */
-void ai_Unk4a7e70(G10SEAT *s, int *n, int *g, int *m, int *r);                 /* 0x4a7e70 */
+void ai_PokerOpenCounts(G10SEAT *s, int *n, int *g, int *m, int *r);                 /* 0x4a7e70 */
 char ai_Unk4a7f50(int owner, int *g1, int *g2, int *r1, int *r2);              /* 0x4a7f50 */
 int ai_Unk4a8190(void);                                                          /* 0x4a8190 */
 void ai_PokerDealThree(void);                                                         /* 0x4a8520 */
