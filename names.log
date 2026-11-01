@@ -377,3 +377,4 @@
 2026-11-01T21:07:17 0x004aa800 data ai_Unk4aa800 -> ai_DecideCharAndThird by:main why:0x4aa800 picks a character 33..48 away and a second one 50..100 away from both (kind 7, ref and arg); 0x4a5a30 picks one partner for the flags and chain ids rated within lo..hi (its address comment)
 2026-11-01T21:07:17 0x004a5a30 func ai_Unk4a5a30 -> ai_PickPartnerInRange by:main why:0x4aa800 picks a character 33..48 away and a second one 50..100 away from both (kind 7, ref and arg); 0x4a5a30 picks one partner for the flags and chain ids rated within lo..hi (its address comment)
 2026-11-01T21:07:30 0x004aa800 data ai_DecideCharAndThird -> ai_DecideCharPair by:main why:a clearer name: two characters, the second far from both
+2026-11-01T21:09:04 0x004aa940 data ai_Unk4aa940 -> aip_ExecPamphlet by:main why:its group string aip_ExecPamphlet (cm_BeginGroup / cm_EndGroup)

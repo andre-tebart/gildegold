@@ -350,6 +350,13 @@ typedef struct AIMSG {                  /* 0xf8 bytes, given to cm_SendLongMessa
                 } s;
             } u;
         };
+        struct {                        /* the pamphlet message 0x35 (0x4aa940) */
+            AITIME when;                /* 0x58, the game time it was sent */
+            char pad66[2];
+            int about;                  /* 0x68, the netId of the character it is about */
+            char pad6c;
+            unsigned char variant;      /* 0x6d, a random text variant 0..0x1c */
+        } pamphlet;
     };
     union {
         int amount[3];                  /* 0x88, of the bought goods */

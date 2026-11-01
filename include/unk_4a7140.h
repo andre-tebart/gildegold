@@ -129,7 +129,7 @@ int ai_CheckVisitAction(struct AICHAR *p, struct AIARG *in, struct AIARG *out); 
 int ai_Unk4aa580(struct AIPER *p, int c, unsigned char *m);                             /* 0x4aa580 */
 int ai_DecideLittleKnownChar(struct AICHAR *p, struct AIARG *in, struct AIARG *m);                 /* 0x4aa6a0 */
 int ai_DecideCharPair(struct AIPER *p, int c, struct AIARG *m);                             /* 0x4aa800 */
-int ai_Unk4aa940(struct AIPER *p, int c, unsigned char *m);                             /* 0x4aa940 */
+int aip_ExecPamphlet(struct AIPER *p, int c, struct AIARG *m);                             /* 0x4aa940 */
 int ai_Unk4aaa10(struct AIPER *p, int c, unsigned char *m);                             /* 0x4aaa10 */
 int ai_Unk4aaae0(struct AIPER *p, int c, unsigned char *m);                             /* 0x4aaae0 */
 int ai_TrustedOfTwo(AIPER *p, AIPER *b, AIPER *c, int *k);                          /* 0x4aab90 */
