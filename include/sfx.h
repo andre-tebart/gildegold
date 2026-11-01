@@ -65,8 +65,6 @@ __declspec(dllimport) int __stdcall AIL_get_timer_highest_delay(void);
 int MSS_auto_cleanup(void);                                                             /* 0x5de460, mss32.lib */
 int sfx_TimerHighestDelay(void);                                                        /* 0x42c3a0, AIL_get_timer_highest_delay for msx */
 
-void * mem_Alloc(int size, char *tag);                                                   /* 0x4223c0 */
-void mem_Free(void *p);                                                                 /* 0x422620 */
 
 /* inline-asm clear, as D3_ZERO in d3.h */
 #define SFX_ZERO_CAT(a, b) a##b
