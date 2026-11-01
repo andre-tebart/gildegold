@@ -63,12 +63,24 @@ struct D3OBJECT {
     };
     D3VECTOR pos;
     char pad058[0x4];
-    D3VECTOR unk05c;
+    union {
+        D3VECTOR savedPos;          /* 0x5c, a camera's saved position (objectFlags & 1: applied on load, d3_int_io.c), its
+                                       default view (sv_BorderCameraView) */
+        D3VECTOR lightColor;        /* a light's colour (D3LOBJ.color, d3_light.h) */
+    };
     char pad068[0x10];
     D3VECTOR posOffset;               /* 0x78 */
     D3VECTOR rotation;                /* 0x84, rotation angles in degrees; d3_SetObjectRot writes them */
-    D3VECTOR unk090;
-    char pad09c[0xf0];
+    union {
+        D3VECTOR savedRot;          /* 0x90, a camera's saved angles, with savedPos */
+        D3VECTOR lightParams;       /* a light's range / power / attenuation (D3LOBJ, d3_light.h) */
+    };
+    struct D3CAMVIEW {              /* 0x9c, 10 position + direction pairs: the camera's preset views (D3OBJX.unk09c);
+                                       sv_BorderCameraMove moves the camera to 1 / 2 (above / below the window) and
+                                       3 / 4 (left / right), an all-zero position meaning the view is not set */
+        D3VECTOR pos;
+        D3VECTOR dir;
+    } views[10];
     D3MATRIX matrix;                /* 0x18c */
     struct D3OBJINFO *info;         /* 0x1cc, the mesh data holder (D3OBJINFO / D3SMMESH / D3ANIMCTL views) */
     char pad1d0[0x4];

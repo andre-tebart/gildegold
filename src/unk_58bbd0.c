@@ -454,8 +454,8 @@ extern int d2_LastWindow;
 
 
 extern char * ai_PlayerBuilding;
-extern int ai_Unk6f22cc;
-extern int ai_Unk6f22d0;
+extern int sv_BorderViewX;
+extern int sv_BorderViewY;
 extern char * sv_CameraObj;
 extern int sv_FrameBase;
 extern int sv_FrameDepth;
@@ -474,8 +474,8 @@ extern const float ai_Unk5ebba4[];
 extern int ch_CurrentGroup;
 extern int ai_Unk5f8438;
 extern char *ai_Unk5fb5b0;
-extern int ai_Unk6f22cc;
-extern int ai_Unk6f22d0;
+extern int sv_BorderViewX;
+extern int sv_BorderViewY;
 extern float sv_ViewPos[4];  /* 0x75fb80, sv.c: the stored camera position */
 extern float sv_ViewRot[4];  /* 0x75fb90, its rotation */
 extern int sv_SelectedChar;
@@ -8695,8 +8695,8 @@ void ai_SwitchRoom(int param_1, unsigned short param_2)
     U_I((unsigned)&sv_PopRequest) = (U_I((unsigned)&sv_FrameDepth) - U_I((unsigned)&sv_FrameBase)) + 1;
     d3_SetObjectPos((void *)U_I((unsigned)&sv_CameraObj), (void *)(U_I((unsigned)&sv_CameraObj) + 0x10));
     d3_SetObjectRot((void *)U_I((unsigned)&sv_CameraObj), (void *)(U_I((unsigned)&sv_CameraObj) + 0x20));
-    U_I((unsigned)&ai_Unk6f22cc) = 0;
-    U_I((unsigned)&ai_Unk6f22d0) = 0;
+    U_I((unsigned)&sv_BorderViewX) = 0;
+    U_I((unsigned)&sv_BorderViewY) = 0;
     sb_PlaySample(snd_RoomBank, "RaumWechseln_s", 1, 0x3f, 0x7f, 0, 0);
 }
 /* 0x59e170, the opening hours of a building kind (112 B): the table 0x62afa0 (kind dword, the open byte +4,
@@ -8885,8 +8885,8 @@ void ai_Unk59e420(unsigned char *param_1, int param_2)
                 U_I((unsigned)&sv_ViewRotX) = U_I(U_I((unsigned)&sv_CameraObj) + 0x84);
                 U_I((unsigned)&sv_ViewRotY) = U_I(U_I((unsigned)&sv_CameraObj) + 0x88);
                 U_I((unsigned)&sv_ViewRotZ) = U_I(U_I((unsigned)&sv_CameraObj) + 0x8c);
-                U_I((unsigned)&ai_Unk6f22cc) = 0;
-                U_I((unsigned)&ai_Unk6f22d0) = 0;
+                U_I((unsigned)&sv_BorderViewX) = 0;
+                U_I((unsigned)&sv_BorderViewY) = 0;
             }
             ai_Unk576040(0x19, room, 0, 0);
             vid = *room;
@@ -9065,8 +9065,8 @@ void ai_Unk59ee40(unsigned char *param_1)
         U_I((unsigned)&sv_ViewRotX) = U_I(U_I((unsigned)&sv_CameraObj) + 0x84);
         U_I((unsigned)&sv_ViewRotY) = U_I(U_I((unsigned)&sv_CameraObj) + 0x88);
         U_I((unsigned)&sv_ViewRotZ) = U_I(U_I((unsigned)&sv_CameraObj) + 0x8c);
-        U_I((unsigned)&ai_Unk6f22cc) = 0;
-        U_I((unsigned)&ai_Unk6f22d0) = 0;
+        U_I((unsigned)&sv_BorderViewX) = 0;
+        U_I((unsigned)&sv_BorderViewY) = 0;
     }
     switch (*param_1) {
     case 0x1e:
@@ -9105,8 +9105,8 @@ void ai_Unk59ee40(unsigned char *param_1)
     }
     sv_Unk52adb0();
     sv_ClearSelection();
-    U_I((unsigned)&ai_Unk6f22cc) = 0;
-    U_I((unsigned)&ai_Unk6f22d0) = 0;
+    U_I((unsigned)&sv_BorderViewX) = 0;
+    U_I((unsigned)&sv_BorderViewY) = 0;
     /* ROUGH: 0x4284a0 / 0x429e90 / 0x52bb70 of the device record and 0x5fb5b0 callback +0x294 */
     if (U_I((unsigned)&ai_Unk5f8438) != -1)
         sv_Unk52bb70(U_I((unsigned)&ai_Unk5f8438));
@@ -9180,8 +9180,8 @@ void ai_Unk59f410(unsigned short *param_1)
         U_I((unsigned)&sv_ViewRotX) = U_I(U_I((unsigned)&sv_CameraObj) + 0x84);
         U_I((unsigned)&sv_ViewRotY) = U_I(U_I((unsigned)&sv_CameraObj) + 0x88);
         U_I((unsigned)&sv_ViewRotZ) = U_I(U_I((unsigned)&sv_CameraObj) + 0x8c);
-        U_I((unsigned)&ai_Unk6f22cc) = 0;
-        U_I((unsigned)&ai_Unk6f22d0) = 0;
+        U_I((unsigned)&sv_BorderViewX) = 0;
+        U_I((unsigned)&sv_BorderViewY) = 0;
     }
     U_I((unsigned)&snd_AmbientOn) &= 0xffffff00;
     switch (*param_1) {
@@ -9216,11 +9216,11 @@ void ai_Unk59f410(unsigned short *param_1)
     room = (unsigned short *)gm_Query(U_I(U_I((unsigned)&ai_FallbackBuilding) + 0x5d), 2, 6, 0, 0xfd);
     U_I((unsigned)&ch_CurrentScriptGroup) = U_I(room + 1);
     U_I((unsigned)&sv_FrameBase) = U_I((unsigned)&sv_FrameDepth);
-    U_I((unsigned)&ai_Unk6f22d0) = (int)param_1;
+    U_I((unsigned)&sv_BorderViewY) = (int)param_1;
     U_I((unsigned)&sv_ViewPosX) = saved1;
     U_I((unsigned)&sv_ViewPosY) = saved2;
     U_I((unsigned)&sv_ViewPosZ) = saved3;
-    U_I((unsigned)&ai_Unk6f22cc) = idx;
+    U_I((unsigned)&sv_BorderViewX) = idx;
     U_I((unsigned)&sv_ViewRotX) = saved4;
     U_I((unsigned)&sv_ViewRotY) = saved5;
     U_I((unsigned)&sv_ViewRotZ) = saved6;

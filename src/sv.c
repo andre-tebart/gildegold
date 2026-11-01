@@ -2434,9 +2434,9 @@ void sv_UpdateSkyPhase(AITIME *t)
 extern char * sv_CameraObj;
 extern float sv_CameraHeightFactor, sv_CameraAngleFactor, sv_CameraHeightStep, sv_ScrollVelX, sv_ScrollVelY, sv_ScrollVelXPrev, sv_ScrollVelYPrev;  /* 0x6f22d4, 0x6f22d8, 0x6f2374, 0x6f2388, 0x6f2390, 0x6f238c, 0x6f1c44 */
 extern float sv_CameraHeightNear, sv_CameraAngleNear, sv_CameraHeightFar, sv_CameraAngleFar, sv_ScrollSpeed;  /* 0x623800, 0x623804, 0x623808, 0x62380c, 0x623818 */
-extern int ai_Unk6f2378;  /* 0x6f2378 */
-extern int ai_Unk6f22cc;  /* 0x6f22cc */
-extern int ai_Unk6f22d0;  /* 0x6f22d0 */
+extern int sv_BorderMoved;  /* 0x6f2378 */
+extern int sv_BorderViewX;  /* 0x6f22cc */
+extern int sv_BorderViewY;  /* 0x6f22d0 */
 extern int d3t_CamMoving;  /* 0x6310e4 */
 extern struct D3ANIM *d3t_CamMove;  /* 0x6310e8 */
 extern int sv_ScrollTime;  /* 0x6f2394 */
@@ -2507,106 +2507,112 @@ void sv_EaseCameraHeight(void)
     }
     sv_CameraHeightStep = 0.0f;
 }
-/* 0x525ff0, the mouse at the screen border starts a camera move to one of the 5 preset views (+0x5c / 0x90 the default, +0xb4 / +0xcc left / right of the window, +0xe4 / +0xfc above / below, each position + direction
-   triple): the border state 0x6f22cc / 0x6f22d0 (-1, 0, 1) steps by the mouse position against the window 0x6310b0 / 0x6310b4 .. 0x5f3238 / 0x5f323c; the view is applied (0x75fb80 / 0x75fb90, 0x433b10, 0x411860 (cam,
-   pos, dir, 0x623814, 8)) unless the camera is already within 0.2 of it (0x453e80) */
-
-void sv_Unk525ff0(void)
+/* 0x525ff0, the mouse at the screen border moves the camera to one of its preset views: the border states sv_BorderViewX /
+   sv_BorderViewY (-1, 0, 1) step by the mouse position against the window di_MinX .. di_MaxX / di_MinY .. di_MaxY (x: left
+   views[3], right views[4]; y: above views[1], below views[2]; both 0: the saved view savedPos / savedRot), a view whose position
+   is all zero is not set; the view is stored (sv_ViewPos / sv_ViewRot) and the camera moved there (d3t_PlaceObjectV), then
+   sv_BorderMoved holds until the mouse is back inside the window */
+void sv_BorderCameraView(void)
 {
-    int top, bot;
-    int pos[3], dir[3];
-    int zero[4];
-    int my, off;
+    int left, right, top, bottom;
+    int y;
+    D3VECTOR4 dir, pos;
+    D3VECTOR4 none;
 
-    bot = di_MaxY - 1;
+    left = di_MinX + 1;
+    right = di_MaxX - 1;
     top = di_MinY + 1;
-    zero[0] = zero[1] = zero[2] = zero[3] = 0;
-    if (ai_Unk6f2378 != 0) {
-        if (dm_L.x < di_MinX + 1)
-            return;
-        if (di_MaxX - 1 < dm_L.x)
-            return;
-        if (dm_L.y < top)
-            return;
-        if (bot < dm_L.y)
-            return;
-        ai_Unk6f2378 = 0;
+    bottom = di_MaxY - 1;
+    none.x = 0.0f;
+    none.y = 0.0f;
+    none.z = 0.0f;
+    none.w = 0.0f;
+    if (sv_BorderMoved != 0) {
+        if (dm_L.x >= left && dm_L.x <= right && dm_L.y >= top && dm_L.y <= bottom)
+            sv_BorderMoved = 0;
         return;
     }
-    my = dm_L.y;
-    if (top < my && my < bot) {
-        if (dm_L.x < di_MinX + 1) {
-            if (ai_Unk6f22cc < 0)
+    y = dm_L.y;
+    if (y > top && y < bottom) {
+        if (dm_L.x < left) {
+            if (sv_BorderViewX <= -1)
                 return;
-            ai_Unk6f22cc--;
+            sv_BorderViewX--;
         } else {
-            if (dm_L.x <= di_MaxX - 1)
+            if (dm_L.x <= right)
                 return;
-            if (0 < ai_Unk6f22cc)
+            if (sv_BorderViewX >= 1)
                 return;
-            ai_Unk6f22cc++;
+            sv_BorderViewX++;
         }
-        ai_Unk6f22d0 = 0;
-        if (ai_Unk6f22cc == -1) {
-            off = 0xe4;
-            if (d3_VecEqual(sv_CameraObj + off, zero, 0.2f) != 0)
-                return;
-            goto load;
-        }
-        if (ai_Unk6f22cc != 0) {
-            if (ai_Unk6f22cc == 1) {
-                off = 0xfc;
-                if (d3_VecEqual(sv_CameraObj + off, zero, 0.2f) != 0)
-                    return;
-                goto load;
-            }
-            goto apply;
-        }
+        sv_BorderViewY = 0;
     } else {
-        if (my < top) {
-            if (ai_Unk6f22d0 < 0)
+        if (y < top) {
+            if (sv_BorderViewY <= -1)
                 return;
-            ai_Unk6f22d0--;
-        } else if (bot < my) {
-            if (0 < ai_Unk6f22d0)
+            sv_BorderViewY--;
+        } else if (y > bottom) {
+            if (sv_BorderViewY >= 1)
                 return;
-            ai_Unk6f22d0++;
+            sv_BorderViewY++;
         }
-        ai_Unk6f22cc = 0;
-        if (ai_Unk6f22d0 != 0) {
-            if (ai_Unk6f22d0 == -1) {
-                off = 0xb4;
-                if (d3_VecEqual(sv_CameraObj + off, zero, 0.2f) != 0)
-                    return;
-                goto load;
-            } else if (ai_Unk6f22d0 == 1) {
-                off = 0xcc;
-                if (d3_VecEqual(sv_CameraObj + off, zero, 0.2f) != 0)
-                    return;
-                goto load;
-            }
-            goto apply;
-        }
+        sv_BorderViewX = 0;
     }
-    off = 0x5c;
-    memcpy(pos, sv_CameraObj + 0x5c, 12);
-    memcpy(dir, sv_CameraObj + 0x90, 12);
-    goto apply;
-load:
-    memcpy(pos, sv_CameraObj + off, 12);
-    memcpy(dir, sv_CameraObj + off + 0xc, 12);
-apply:
-    sv_ViewPosX = pos[0];
-    sv_ViewPosY = pos[1];
-    sv_ViewPosZ = pos[2];
-    sv_ViewRotX = dir[0];
-    sv_ViewRotY = dir[1];
-    sv_ViewRotZ = dir[2];
-    d3anim_FreePath(sv_CameraObj);
+    if (sv_BorderViewX == -1) {
+        if (d3_VecEqual(&d3_Camera->views[3].pos, (D3VECTOR *)&none, 0.2f) != 0)
+            return;
+        pos.x = d3_Camera->views[3].pos.x;
+        pos.y = d3_Camera->views[3].pos.y;
+        pos.z = d3_Camera->views[3].pos.z;
+        dir.x = d3_Camera->views[3].dir.x;
+        dir.y = d3_Camera->views[3].dir.y;
+        dir.z = d3_Camera->views[3].dir.z;
+    } else if (sv_BorderViewX == 0 && sv_BorderViewY == 0) {
+        pos.x = d3_Camera->savedPos.x;
+        pos.y = d3_Camera->savedPos.y;
+        pos.z = d3_Camera->savedPos.z;
+        dir.x = d3_Camera->savedRot.x;
+        dir.y = d3_Camera->savedRot.y;
+        dir.z = d3_Camera->savedRot.z;
+    } else if (sv_BorderViewX == 1) {
+        if (d3_VecEqual(&d3_Camera->views[4].pos, (D3VECTOR *)&none, 0.2f) != 0)
+            return;
+        pos.x = d3_Camera->views[4].pos.x;
+        pos.y = d3_Camera->views[4].pos.y;
+        pos.z = d3_Camera->views[4].pos.z;
+        dir.x = d3_Camera->views[4].dir.x;
+        dir.y = d3_Camera->views[4].dir.y;
+        dir.z = d3_Camera->views[4].dir.z;
+    } else if (sv_BorderViewY == -1) {
+        if (d3_VecEqual(&d3_Camera->views[1].pos, (D3VECTOR *)&none, 0.2f) != 0)
+            return;
+        pos.x = d3_Camera->views[1].pos.x;
+        pos.y = d3_Camera->views[1].pos.y;
+        pos.z = d3_Camera->views[1].pos.z;
+        dir.x = d3_Camera->views[1].dir.x;
+        dir.y = d3_Camera->views[1].dir.y;
+        dir.z = d3_Camera->views[1].dir.z;
+    } else if (sv_BorderViewY == 1) {
+        if (d3_VecEqual(&d3_Camera->views[2].pos, (D3VECTOR *)&none, 0.2f) != 0)
+            return;
+        pos.x = d3_Camera->views[2].pos.x;
+        pos.y = d3_Camera->views[2].pos.y;
+        pos.z = d3_Camera->views[2].pos.z;
+        dir.x = d3_Camera->views[2].dir.x;
+        dir.y = d3_Camera->views[2].dir.y;
+        dir.z = d3_Camera->views[2].dir.z;
+    }
+    sv_ViewPos[0] = pos.x;
+    sv_ViewPos[1] = pos.y;
+    sv_ViewPos[2] = pos.z;
+    sv_ViewRot[0] = dir.x;
+    sv_ViewRot[1] = dir.y;
+    sv_ViewRot[2] = dir.z;
+    d3anim_FreePath(d3_Camera);
     d3t_CamMoving = 0;
     d3t_CamMove = 0;
-    d3t_PlaceObjectV(sv_CameraObj, pos, dir, ai_CameraStep, 8);
-    ai_Unk6f2378 = 1;
+    d3t_PlaceObjectV(d3_Camera, (D3VECTOR *)&pos, (D3VECTOR *)&dir, ai_CameraStep, 8);
+    sv_BorderMoved = 1;
 }
 /* 0x5263a0, one frame of the camera scroll by the screen border (a 0x40-pixel zone of the mouse window) or the
    arrow keys: the x / y scroll velocities sv_ScrollVelX / Y start at +-10 and grow by 5 * dt (dt = 0.4 * the
@@ -5665,28 +5671,28 @@ void sv_Unk52d480(void)
     if ((SV_I((unsigned)&ai_BuildingPerms) & 0x1000) == 0)
         return;
     pic = d2_GetPic(0x52c);
-    if (SV_I((unsigned)&ai_Unk6f22cc) == -1) {
+    if (SV_I((unsigned)&sv_BorderViewX) == -1) {
         n3 = 1;
         if (d3_VecEqual(sv_CameraObj + 0xfc, (char *)(unsigned)&ai_Unk5ebba4, 0.2f) == 0)
             n3 = 2;
-    } else if (SV_I((unsigned)&ai_Unk6f22cc) == 1) {
+    } else if (SV_I((unsigned)&sv_BorderViewX) == 1) {
         b = 1;
         if (d3_VecEqual(sv_CameraObj + 0xe4, (char *)(unsigned)&ai_Unk5ebba4, 0.2f) == 0)
             b = 2;
-    } else if (SV_I((unsigned)&ai_Unk6f22cc) == 0) {
+    } else if (SV_I((unsigned)&sv_BorderViewX) == 0) {
         b = d3_VecEqual(sv_CameraObj + 0xe4, (char *)(unsigned)&ai_Unk5ebba4, 0.2f) == 0;
         if (d3_VecEqual(sv_CameraObj + 0xfc, (char *)(unsigned)&ai_Unk5ebba4, 0.2f) == 0)
             n3 = 1;
     }
-    if (SV_I((unsigned)&ai_Unk6f22d0) == -1) {
+    if (SV_I((unsigned)&sv_BorderViewY) == -1) {
         a = 1;
         if (d3_VecEqual(sv_CameraObj + 0xb4, (char *)(unsigned)&ai_Unk5ebba4, 0.2f) == 0)
             a = 2;
-    } else if (SV_I((unsigned)&ai_Unk6f22d0) == 1) {
-        o = SV_I((unsigned)&ai_Unk6f22d0);
+    } else if (SV_I((unsigned)&sv_BorderViewY) == 1) {
+        o = SV_I((unsigned)&sv_BorderViewY);
         if (d3_VecEqual(sv_CameraObj + 0xcc, (char *)(unsigned)&ai_Unk5ebba4, 0.2f) == 0)
             o = 2;
-    } else if (SV_I((unsigned)&ai_Unk6f22d0) == 0) {
+    } else if (SV_I((unsigned)&sv_BorderViewY) == 0) {
         a = d3_VecEqual(sv_CameraObj + 0xb4, (char *)(unsigned)&ai_Unk5ebba4, 0.2f) == 0;
         if (d3_VecEqual(sv_CameraObj + 0xcc, (char *)(unsigned)&ai_Unk5ebba4, 0.2f) == 0)
             o = 1;
@@ -5833,8 +5839,8 @@ l9f2:
         d3_SetObjectPos(sv_CameraObj, (unsigned)&sv_ViewPosX);
         d3_SetObjectRot(sv_CameraObj, (unsigned)&sv_ViewRotX);
 lbb6:
-        SV_I((unsigned)&ai_Unk6f22cc) = 0;
-        SV_I((unsigned)&ai_Unk6f22d0) = 0;
+        SV_I((unsigned)&sv_BorderViewX) = 0;
+        SV_I((unsigned)&sv_BorderViewY) = 0;
     }
     if (SV_I(((unsigned)&dm_L + 0x20)) != 0 && (SV_B((unsigned)&full_data_6f2338) != 0 || (SV_I((unsigned)&ai_Unk75ec5c) != 0 && ai_Goods[*(unsigned short *)SV_I((unsigned)&ai_Unk75ec5c) * 0x41] == 0x1d))) {
         sv_Unk52adb0();
@@ -5905,8 +5911,8 @@ l1a:
                 SV_I((unsigned)&ai_PlayerBuilding) = 0;
             d3_SetObjectPos(sv_CameraObj, (unsigned)&sv_ViewPosX);
             d3_SetObjectRot(sv_CameraObj, (unsigned)&sv_ViewRotX);
-            SV_I((unsigned)&ai_Unk6f22cc) = 0;
-            SV_I((unsigned)&ai_Unk6f22d0) = 0;
+            SV_I((unsigned)&sv_BorderViewX) = 0;
+            SV_I((unsigned)&sv_BorderViewY) = 0;
             goto l72;
         }
         if (SV_I((unsigned)&ai_PlayerBuilding) != 0 || SV_I((unsigned)&ai_FallbackBuilding) != 0)
@@ -5938,7 +5944,7 @@ l72:
             it = 0;
         SV_I((unsigned)&full_data_6f2320) = gm_PermissionBits(ai_PlayerId, who, it, 0);
         if (*(unsigned short *)(who + 0x27) == ai_PlayerId || (SV_I((unsigned)&full_data_6f2320) & 0x1000) != 0)
-            sv_Unk525ff0();
+            sv_BorderCameraView();
     }
     if (SV_I((unsigned)&full_data_6f23e4) != who || SV_I((unsigned)&full_data_6f23e8) != SV_I((unsigned)&sv_PanelShown) || SV_I((unsigned)&ai_Unk6f2318) != 0) {
         SV_I((unsigned)&ai_BuildingPerms) = gm_PermissionBits(ai_PlayerId, who, SV_I((unsigned)&sv_PanelShown), 0);
@@ -7711,8 +7717,8 @@ int ai_Unk6f22b4 = 0;  /* 0x6f22b4 */
 int ai_Unk6f22c0 = 0;  /* 0x6f22c0 */
 struct D2SURF *sv_GroundplanSurf = 0;  /* 0x6f22c4, the groundplan bitmap while sv_LoadGroundplan reads it */
 struct D2SURF *sv_GroundplanView = 0;  /* 0x6f22c8, the groundplan copy the panel blits */
-int ai_Unk6f22cc = 0;  /* 0x6f22cc */
-int ai_Unk6f22d0 = 0;  /* 0x6f22d0 */
+int sv_BorderViewX = 0;  /* 0x6f22cc */
+int sv_BorderViewY = 0;  /* 0x6f22d0 */
 float sv_CameraHeightFactor = 0;  /* 0x6f22d4 */
 float sv_CameraAngleFactor = 0;  /* 0x6f22d8 */
 int sv_SelectedModel = 0;  /* 0x6f2304 */
@@ -7732,7 +7738,7 @@ char sv_PlayerBarKind = 0;  /* 0x6f2368 */
 int sv_DayPhase = 0;  /* 0x6f236c */
 int sv_ThunderFog = 0;  /* 0x6f2370 */
 float sv_CameraHeightStep = 0;  /* 0x6f2374 */
-int ai_Unk6f2378 = 0;  /* 0x6f2378 */
+int sv_BorderMoved = 0;  /* 0x6f2378 */
 float sv_ScrollVelX = 0;  /* 0x6f2388 */
 float sv_ScrollVelXPrev = 0;  /* 0x6f238c */
 float sv_ScrollVelY = 0;  /* 0x6f2390 */

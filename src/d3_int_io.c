@@ -582,8 +582,8 @@ char d3_LoadScene(char *name, void *f, D3IOPROGRESS progress)
                     if (o->type == 3 && !_strcmpi(cam, o->name)) {
                         d3if_MegaCam = (int)o;
                         if (o->objectFlags & 1) {
-                            d3_SetObjectPos(o, &o->unk05c);
-                            d3_SetObjectRot(o, &o->unk090);
+                            d3_SetObjectPos(o, &o->savedPos);
+                            d3_SetObjectRot(o, &o->savedRot);
                         }
                         d3_SetCamera(o);
                         break;

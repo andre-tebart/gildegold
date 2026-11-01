@@ -7211,29 +7211,29 @@ void ai_Unk4cf370()
     int t;
 
     t = d2_GetPic(0x52c);
-    if (ai_Unk6f22cc == -1) {
+    if (sv_BorderViewX == -1) {
         up = 1;
         if (d3_VecEqual((float *)(sv_CameraObj + 0xfc), ai_Unk5ebba4, 0.2f) == 0)
             up = 2;
-    } else if (ai_Unk6f22cc == 1) {
+    } else if (sv_BorderViewX == 1) {
         e = 1;
         if (d3_VecEqual((float *)(sv_CameraObj + 0xe4), ai_Unk5ebba4, 0.2f) == 0)
             e = 2;
-    } else if (ai_Unk6f22cc == 0) {
+    } else if (sv_BorderViewX == 0) {
         if (d3_VecEqual((float *)(sv_CameraObj + 0xe4), ai_Unk5ebba4, 0.2f) == 0)
             e = 1;
         if (d3_VecEqual((float *)(sv_CameraObj + 0xfc), ai_Unk5ebba4, 0.2f) == 0)
             up = 1;
     }
-    if (ai_Unk6f22d0 == -1) {
+    if (sv_BorderViewY == -1) {
         a = 1;
         if (d3_VecEqual((float *)(sv_CameraObj + 0xb4), ai_Unk5ebba4, 0.2f) == 0)
             a = 2;
-    } else if (ai_Unk6f22d0 == 1) {
+    } else if (sv_BorderViewY == 1) {
         b = 1;
         if (d3_VecEqual((float *)(sv_CameraObj + 0xcc), ai_Unk5ebba4, 0.2f) == 0)
             b = 2;
-    } else if (ai_Unk6f22d0 == 0) {
+    } else if (sv_BorderViewY == 0) {
         if (d3_VecEqual((float *)(sv_CameraObj + 0xb4), ai_Unk5ebba4, 0.2f) == 0)
             a = 1;
         if (d3_VecEqual((float *)(sv_CameraObj + 0xcc), ai_Unk5ebba4, 0.2f) == 0)
@@ -10247,7 +10247,7 @@ void ai_Unk4d6970(char *r)
     int *q;
 
     d2_SetObjValue(ai_Unk60cb64, 0, ai_Unk60d364, ai_Unk6f0d84 - ai_Unk6f0d80 + 1);
-    sv_Unk525ff0();
+    sv_BorderCameraView();
     ai_Unk4cf9c0();
     ai_Unk4cf670();
     ai_Unk4cfeb0();

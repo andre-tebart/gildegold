@@ -1222,7 +1222,7 @@ char d3s_Update(D3OBJECT *obj, D3OBJECT *light, D3TERRAIN *t)
 
     if (!d3s_TexSize || obj->type >= 5 || !(obj->objectFlags & 4) || !obj->material || !(light->objectFlags & 4)
         || *(unsigned int *)((char *)d3s_Object->material + 0x100) >= d3s_MaxPolys * 2 - 2
-        || light->unk090.y == 0.0)
+        || light->lightParams.y == 0.0)
         return 0;
     for (k = 0; k < 4; k++) {
         if (D3S_SLOTS(obj->material)[k].tex && D3S_SLOTS(obj->material)[k].light == light) {

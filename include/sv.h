@@ -65,7 +65,7 @@ char sv_SetLampRamp(char *o, int f);                                      /* 0x5
 struct AITIME; void sv_UpdateSkyPhase(struct AITIME *t);                    /* 0x525ad0 */
 void sv_PlaceCamera(float f);                                           /* 0x525dd0 */
 void sv_EaseCameraHeight(void);                                                /* 0x525ee0 */
-void sv_Unk525ff0(void);                                                /* 0x525ff0 */
+void sv_BorderCameraView(void);                                                /* 0x525ff0 */
 int sv_ScrollCamera(void);                                                 /* 0x5263a0 */
 int sv_MouseCamera(void);                                                 /* 0x526cf0 */
 int sv_Unk527640(void);                                                 /* 0x527640 */
@@ -243,8 +243,8 @@ extern int ai_Unk6f22b4;                                    /* 0x6f22b4 */
 extern int ai_Unk6f22c0;                                    /* 0x6f22c0 */
 extern struct D2SURF *sv_GroundplanSurf;                                   /* 0x6f22c4 */
 extern struct D2SURF *sv_GroundplanView;                                   /* 0x6f22c8 */
-extern int ai_Unk6f22cc;                                    /* 0x6f22cc */
-extern int ai_Unk6f22d0;                                    /* 0x6f22d0 */
+extern int sv_BorderViewX;                                    /* 0x6f22cc */
+extern int sv_BorderViewY;                                    /* 0x6f22d0 */
 extern float sv_CameraHeightFactor;                         /* 0x6f22d4 */
 extern float sv_CameraAngleFactor;                          /* 0x6f22d8 */
 extern int sv_SelectedModel;                                    /* 0x6f2304 */
@@ -264,7 +264,7 @@ extern char sv_PlayerBarKind;                                   /* 0x6f2368 */
 extern int sv_DayPhase;                                    /* 0x6f236c */
 extern int sv_ThunderFog;                                    /* 0x6f2370 */
 extern float sv_CameraHeightStep;                                  /* 0x6f2374 */
-extern int ai_Unk6f2378;                                    /* 0x6f2378 */
+extern int sv_BorderMoved;                                    /* 0x6f2378 */
 extern float sv_ScrollVelX;                                  /* 0x6f2388 */
 extern float sv_ScrollVelXPrev;                                  /* 0x6f238c */
 extern float sv_ScrollVelY;                                  /* 0x6f2390 */
