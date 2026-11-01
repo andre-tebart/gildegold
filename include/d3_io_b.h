@@ -93,4 +93,7 @@ D3BASTREAM *d3_LoadBinaryAnimStream(char *path, char *name, char relative);     
 char d3_Unk4506f0(char *path);                                                          /* 0x4506f0 */
 VFSFILE *d3_Unk4507a0(char *path);                                                      /* 0x4507a0 */
 
+/* declared in other units' headers before (moved to the owner) */
+void d3_ReadBGF(void *f, D3BGFDESC *desc);  /* 0x44f870 */
+
 #endif
