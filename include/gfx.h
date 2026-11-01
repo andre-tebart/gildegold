@@ -112,4 +112,20 @@ D2SURF *d2_LoadBmpSurface(char *name);                             /* 0x478b50, 
 void d2_ConvertRgbTo16(int a, int b, unsigned int w, unsigned int h, unsigned char *src, int c, int d, D2SURF *s);   /* 0x478bd0, rgb bytes to 16 bit pixels */
 void d2_Convert16ToRgb(int a, int b, unsigned int w, unsigned int h, unsigned short *src, int c, int d, unsigned char *dst);   /* 0x478c50, 16 bit pixels to rgb bytes */
 
+/* declared in other units' headers before (moved to the owner) */
+int d2_PutPixelClipped(int x, int y, unsigned short color, D2SURF *surf);  /* 0x479b90 */
+int d2_PutPixelRGB(int x, int y, unsigned int r, unsigned int g, unsigned int b, D2SURF *surf);  /* 0x4799e0 */
+void d2_SetSurfaceClip(int x, int y, int w, int h, D2SURF *surf);  /* 0x479cd0 */
+int d2_UnlockSurface(D2SURF *s);  /* 0x4790e0 */
+void d2_GetPixelColour(int x, int y, D2SURF *surf, unsigned char *rgb);  /* 0x4798f0 */
+int d2_LockSurface(D2SURF *s);  /* 0x479020 */
+int d2_PutPixel(int x, int y, unsigned short color, D2SURF *surf);  /* 0x479b60 */
+int d2_FreeSurface(D2SURF *s);  /* 0x478fc0 */
+int d2_ClearRect(int x, int y, int w, int h, D2SURF *surf);  /* 0x4797d0 */
+void d2_DrawRectOutline(int x, int y, int w, int h, unsigned int r, unsigned int g, unsigned int b, D2SURF *surf);  /* 0x479bf0 */
+int d2_BlitPartMode(int sx, int sy, int w, int h, D2SURF *src, int x, int y, D2SURF *dst, unsigned char mode);  /* 0x479150 */
+int d2_ClearSurface(D2SURF *surf);  /* 0x4796c0 */
+void d2_AddPointerItem(int id, int amount);  /* 0x476b90 */
+void d2_BlitPart(int sx, int sy, int w, int h, D2SURF *src, int x, int y, D2SURF *dst);  /* 0x479480 */
+
 #endif
