@@ -53,7 +53,6 @@ extern unsigned char ord_StatisticsClock;
 extern char ai_Unk925520[];
 extern GAPDATA full_data_92bcb3[];
 #include "cm_types.h"
-extern GAPDATA full_data_7604e8[];
 extern void main_Unk537b60(int kind, int cur, int total);
 extern int ai_Unk7d6a40;
 #include "ch_types.h"
@@ -1349,14 +1348,14 @@ int ls_WriteEnvironment(int f)
     int *p;
 
     LS_W((char *)(unsigned)&sv_WinterWeather, 4)
-    p = (int *)(unsigned)&full_data_7604e8;
+    p = (int *)sv_Weather.storm;
     do {
         LS_W(p - 0x18, 4)
         LS_W(p, 4)
         LS_W(p + 0x1a, 4)
         LS_W(p + 0x32, 4)
         p = p + 1;
-    } while ((int)p < (unsigned)((unsigned)full_data_7604e8 + 0x60));
+    } while ((int)p < (unsigned)((unsigned)sv_Weather.storm + 0x60));
     if (ai_SaveWind(f) != 0)
         return unk_Unk4ed480(f) != 0;
     return 0;
@@ -2634,14 +2633,14 @@ int unk_Unk5205f0(int f)
 
     if (ls_Read((int)(unsigned)&sv_WinterWeather, 4, 1, f) == 0)
         return 0;
-    p = (int *)(unsigned)&full_data_7604e8;
+    p = (int *)sv_Weather.storm;
     do {
         LS_R(p - 0x18, 4)
         LS_R(p, 4)
         LS_R(p + 0x1a, 4)
         LS_R(p + 0x32, 4)
         p++;
-    } while ((int)p < (unsigned)((unsigned)full_data_7604e8 + 0x60));
+    } while ((int)p < (unsigned)((unsigned)sv_Weather.storm + 0x60));
     if (ls_Version > 0x1004f && ai_LoadWind(f) != 0 && unk_Unk4ed910(f, ls_Version) != 0)
         return 1;
     return 0;

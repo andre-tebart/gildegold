@@ -135,8 +135,8 @@ extern unsigned char ai_OwnPlayer;
 extern int d2_ClickedId;
 extern unsigned short * ai_PlayerChar;
 extern unsigned char ai_TimeHour;
-extern unsigned ai_Unk760488[0x18];
-extern GAPDATA full_data_7604e8[];
+#include "sv_types.h"
+extern SVWEATHER sv_Weather;  /* 0x760488, sv.c (he.c does not include sv.h yet) */
 extern GAPDATA full_data_627b0c[];
 extern char ai_Unk61aa38[24];
 extern GAPDATA full_data_627b20[];
@@ -12261,8 +12261,8 @@ void he_Unk565410(int ev)
         last = (base & 0xffff) + 4;
         if (i < last) {
             do {
-                ((int *)(unsigned)&ai_Unk760488)[i] = 1000;
-                ((int *)(unsigned)&full_data_7604e8)[i] = 3;
+                ((int *)sv_Weather.clouds)[i] = 1000;
+                ((int *)sv_Weather.storm)[i] = 3;
                 i++;
             } while ((int)i < (int)last);
         }

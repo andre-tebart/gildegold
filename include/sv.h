@@ -3,6 +3,8 @@
 #ifndef SV_H
 #define SV_H
 
+#include "sv_types.h"
+
 typedef struct SVSKYREC {               /* 0x4c bytes, a sky layer: the texture and its scale / v scale / v offset (d3sky_CreateLayer) */
     char name[0x40];
     float scale;                        /* +0x40, 3.0 in every record */
@@ -286,11 +288,7 @@ extern int ai_Unk760440;                                    /* 0x760440 */
 extern int ai_Unk760464;                                    /* 0x760464 */
 extern int ai_Unk760480;                                    /* 0x760480 */
 extern int ai_Unk760484;                                    /* 0x760484 */
-extern unsigned ai_Unk760488[0x18];                         /* 0x760488 */
-extern int ai_Unk760548;                                    /* 0x760548 */
-extern int ai_Unk76054c;                                    /* 0x76054c */
-extern float ai_Unk760550[0x18];                            /* 0x760550 */
-extern float ai_Unk7605b0[0x18];                            /* 0x7605b0 */
+extern SVWEATHER sv_Weather;                                /* 0x760488 */
 extern int sv_WinterWeather;                                    /* 0x760610 */
 extern int ai_Unk760614;                                    /* 0x760614 */
 extern int d3t_Snow;                                    /* 0x76061c */

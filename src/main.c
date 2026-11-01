@@ -6046,7 +6046,6 @@ GAPDATA full_data_760454[4] = { 0 };  /* 0x760454 */
 GAPDATA full_data_760458[4] = { 0 };  /* 0x760458 */
 GAPDATA full_data_76045c[4] = { 0 };  /* 0x76045c */
 GAPDATA full_data_760460[4] = { 0 };  /* 0x760460 */
-GAPDATA full_data_7604e8[96] = { 0 };  /* 0x7604e8 */
 GAPDATA full_data_76631c[4] = { 0 };  /* 0x76631c */
 /* full_data_76f990 / full_data_76f994: views of ai_Unk76f920 (data_views.h), the save header's +0x70 / +0x74 */
 GAPDATA full_data_91f6e0[3] = { 0 };  /* 0x91f6e0 */

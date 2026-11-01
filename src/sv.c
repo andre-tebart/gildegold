@@ -55,7 +55,6 @@ extern void *d2_ScreenSurf;  /* 0x6ed924 */
 extern GAPDATA full_data_75ec98[];
 extern GAPDATA full_data_75ec9c[];
 extern char ai_Unk623ac0[];
-extern GAPDATA full_data_7604e8[];
 extern const char ai_AxisPair[];
 
 #include "unk_5d33b0_types.h"
@@ -200,7 +199,6 @@ extern GAPDATA full_data_623ebc[];
 extern char ai_Unk75fba0[2048];
 extern unsigned char ai_TimeHour;
 extern char ai_Unk623ac0[];
-extern GAPDATA full_data_7604e8[];
 extern int ai_OptionSpeed;
 extern float ch_Unk5f1290;
 extern GAPDATA full_data_6f22ac[];
@@ -2046,8 +2044,6 @@ extern OPTIONBYTES ai_GfxResolution;        /* 0x6f2f94, the player bar variant 
 extern int sv_WinterWeather;  /* 0x760610 */
 extern int ai_Unk760480;  /* 0x760480 */
 extern int ai_Unk760484;  /* 0x760484 */
-extern int ai_Unk760548;  /* 0x760548 */
-extern int ai_Unk76054c;  /* 0x76054c */
 extern int ai_Unk760614;  /* 0x760614 */
 extern int * d3t_Rain;  /* 0x760618 */
 extern int d3t_Snow;  /* 0x76061c */
@@ -2062,9 +2058,6 @@ extern int ai_Unk6f236c;  /* 0x6f236c */
 extern char ai_Unk6f2340;
 extern float ai_Unk760420;  /* 0x760420 */
 extern float ai_Unk623e94;  /* 0x623e94 */
-extern unsigned ai_Unk760488[0x18];
-extern unsigned ai_Unk7604a0[0x18];     /* 0x7604a0 */
-extern float ai_Unk760550[0x18], ai_Unk7605b0[0x18];  /* 0x760550, 0x7605b0 */
 /* ai_MapRefs: view of d3_Scenes (tools/data_views.py) */
 /* ai_Unk623baa: view of ai_Unk623ba9 (tools/data_views.py) */
 const int ai_Unk5eeab8[24] = { 390, 510, 630, 1050, 1170, 1290, 300, 420, 540, 1140, 1260, 1380, 420, 540, 660, 1020, 1140, 1260, 480, 600, 690, 960, 1020, 1140 };  /* 0x5eeab8 */
@@ -2215,8 +2208,8 @@ void sv_Unk525510(int t, float flag)
         } else
             sv_WinterWeather = 0;
         for (i = 0; i < 0x18; i++)
-            ai_Unk760488[i] = 0;
-        p = ai_Unk760488;
+            sv_Weather.clouds[i] = 0;
+        p = sv_Weather.clouds;
         do {
             r = util_RandomU(100);
             if ((int)r < ai_Unk760480)
@@ -2236,23 +2229,23 @@ void sv_Unk525510(int t, float flag)
             else
                 p[0x18] = 0;
             p++;
-        } while ((int)p < (unsigned)((unsigned)ai_Unk760488 + 0x60));
+        } while ((int)p < (unsigned)((unsigned)sv_Weather.clouds + 0x60));
         ang = (float)(util_RandomF() * 6.2831853);
         step = -0.175f;
         if (rand() < 0x4000)
             step = 0.175f;
         for (i = 0; i < 0x18; i++) {
-            ai_Unk760550[i] = (float)sin(ang);
-            ai_Unk7605b0[i] = (float)cos(ang);
+            sv_Weather.windX[i] = (float)sin(ang);
+            sv_Weather.windY[i] = (float)cos(ang);
             ang = (float)(util_RandomF() * step + ang);
         }
     }
-    ai_InitWind(k, *(int *)ai_Time, ai_Unk760550, ai_Unk7605b0);
-    ai_Unk760548 = 0;
-    ai_Unk76054c = 0;
+    ai_InitWind(k, *(int *)ai_Time, sv_Weather.windX, sv_Weather.windY);
+    sv_Weather.thunderStart = 0;
+    sv_Weather.thunderLen = 0;
     ai_Unk760614 = -1;
     mx = 0;
-    for (q = (int *)ai_Unk760488; (int)q < (unsigned)((unsigned)ai_Unk760488 + 0x60); q++)
+    for (q = (int *)sv_Weather.clouds; (int)q < (unsigned)((unsigned)sv_Weather.clouds + 0x60); q++)
         if (mx <= *q)
             mx = *q;
     if (sv_WinterWeather == 0) {
@@ -2397,7 +2390,7 @@ void sv_Unk525ad0(char *t)
         k = 600;
     if (d3_SkyLayers[2] != 0)
         a = *(unsigned char *)(d3_SkyLayers[2] + 0x26) * 0.003921569f;
-    if (((int *)&ai_MapRefs)[d3_CurrentScene * 0xf8] != 0 && (unsigned)d3_Time < (unsigned)(ai_Unk76054c + ai_Unk760548)) {
+    if (((int *)&ai_MapRefs)[d3_CurrentScene * 0xf8] != 0 && (unsigned)d3_Time < (unsigned)(sv_Weather.thunderLen + sv_Weather.thunderStart)) {
         d3_SetFogSet(0, 2, 1.0f);
         ai_Unk6f2370 = 1;
         return;
@@ -7074,7 +7067,7 @@ void sv_Unk5301a0(void)
     unsigned u;
     int *cnt;
 
-    cnt = (int *)(unsigned)&ai_Unk760488;
+    cnt = (int *)sv_Weather.clouds;
     SV_I((unsigned)&ai_Unk760614) = SV_US((unsigned)&ai_TimeHour);
     h = SV_I((unsigned)&ai_Unk760614);
     if (SV_I((unsigned)&d3t_Snow) != 0)
@@ -7089,8 +7082,8 @@ void sv_Unk5301a0(void)
         }
         d3t_SetRain(SV_I((unsigned)&d3t_Rain), 1, 1, u, 1000);
     }
-    f1 = (float)((int *)(unsigned)&ai_Unk760550)[h];
-    f2 = (float)((int *)(unsigned)&ai_Unk7605b0)[h];
+    f1 = (float)((int *)sv_Weather.windX)[h];
+    f2 = (float)((int *)sv_Weather.windY)[h];
     c = cnt[(h + 0x17) % 0x18];
     if (c <= cnt[h])
         c = cnt[h];
@@ -7174,14 +7167,14 @@ void sv_Unk530670(void)
     if (SV_I((unsigned)&d3t_Snow) != 0)
         d3t_DrawSnow(SV_I((unsigned)&d3t_Snow));
     hh = SV_US((unsigned)&ai_TimeHour);
-    if (((int *)(unsigned)&full_data_7604e8)[hh] != 0 && ((short)util_RandomU(300) == 0 || (((int *)(unsigned)&full_data_7604e8)[SV_US((unsigned)&ai_TimeHour)] == 3 && (short)util_RandomU(100) == 0))) {
-        SV_I((unsigned)&ai_Unk760548) = SV_I((unsigned)&ai_ClockMs);
-        SV_I((unsigned)&ai_Unk76054c) = (util_RandomU(8) & 0xffff) + 8;
+    if (((int *)sv_Weather.storm)[hh] != 0 && ((short)util_RandomU(300) == 0 || (((int *)sv_Weather.storm)[SV_US((unsigned)&ai_TimeHour)] == 3 && (short)util_RandomU(100) == 0))) {
+        sv_Weather.thunderStart = SV_I((unsigned)&ai_ClockMs);
+        sv_Weather.thunderLen = (util_RandomU(8) & 0xffff) + 8;
         sb_PlaySample(snd_ThunderBank, "DonnerMittel_s", 1, 0x3f, (int)0.0f);
     }
     if (SV_I((unsigned)&d3_CurrentScene) == 0) {
         if (10 < SV_US((unsigned)&ai_TimeHour) && SV_US((unsigned)&ai_TimeHour) < 0x12 && *(int *)((unsigned)&ai_Unk760484 + SV_US((unsigned)&ai_TimeHour) * 4) != 0
-            && ((int *)(unsigned)&ai_Unk760488)[SV_US((unsigned)&ai_TimeHour)] == 0 && 0x1e < (int)((unsigned)SV_US(((unsigned)&ai_Time + 0x6)) | ((unsigned)SV_US(((unsigned)&ai_Time + 0x8)) << 16))) {
+            && ((int *)sv_Weather.clouds)[SV_US((unsigned)&ai_TimeHour)] == 0 && 0x1e < (int)((unsigned)SV_US(((unsigned)&ai_Time + 0x6)) | ((unsigned)SV_US(((unsigned)&ai_Time + 0x8)) << 16))) {
             hh = (unsigned short)util_RandomU(0x80);
             if (0x60 < hh && SV_I((unsigned)&d3t_SunRays) == 0)
                 d3t_CreateSunRays();
@@ -7588,10 +7581,6 @@ extern int ai_Unk760440;
 extern int ai_Unk760464;
 extern int ai_Unk760480;
 extern int ai_Unk760484;
-extern int ai_Unk760548;
-extern int ai_Unk76054c;
-extern float ai_Unk760550[0x18];
-extern float ai_Unk7605b0[0x18];
 extern int sv_WinterWeather;
 extern int ai_Unk760614;
 extern int d3t_Snow;
@@ -7774,11 +7763,7 @@ int ai_Unk760440 = 0;  /* 0x760440 */
 int ai_Unk760464 = 0;  /* 0x760464 */
 int ai_Unk760480 = 0;  /* 0x760480 */
 int ai_Unk760484 = 0;  /* 0x760484 */
-unsigned ai_Unk760488[0x18] = {0};  /* 0x760488 */
-int ai_Unk760548 = 0;  /* 0x760548 */
-int ai_Unk76054c = 0;  /* 0x76054c */
-float ai_Unk760550[0x18] = {0};  /* 0x760550 */
-float ai_Unk7605b0[0x18] = {0};  /* 0x7605b0 */
+SVWEATHER sv_Weather = {0};  /* 0x760488 */
 int sv_WinterWeather = 0;  /* 0x760610 */
 int ai_Unk760614 = 0;  /* 0x760614 */
 int d3t_Snow = 0;  /* 0x76061c */
