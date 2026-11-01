@@ -62,4 +62,11 @@ void di_SetMousePos(int x, int y);                                      /* 0x411
 void di_GetMouse(void);                                                 /* 0x411440 */
 void di_ClearEvents(unsigned char mask);                                /* 0x4115b0 */
 
+/* declared in other units' headers before (moved to the owner) */
+extern int di_Absolute;  /* 0x5f3240 */
+extern unsigned char kb_Last;  /* 0x1468410 */
+extern int di_GuiClick;  /* 0x6310bc */
+extern int di_MaxY;  /* 0x5f323c */
+extern int di_MinY;  /* 0x6310b4 */
+
 #endif
