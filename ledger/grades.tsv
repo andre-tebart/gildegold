@@ -1469,7 +1469,7 @@ exe	0x004817a0	ai_CalcAngriff	ai	draft	draft
 exe	0x00481ef0	ai_CalcMeisterDiebe	ai	draft	draft		
 exe	0x00482f00	ai_CalcMeisterRaeuber	ai	draft	draft	deep	
 exe	0x004836a0	ai_CalcMeisterBank	ai	byte	draft	deep	
-exe	0x00483a60	ai_Unk483a60	ai	shape	draft	deep	
+exe	0x00483a60	ai_Unk483a60	ai	byte	draft	deep	
 exe	0x00483d30	ai_StartBuildingWork	ai	shape	draft	deep	
 exe	0x00483ee0	ai_EndWorkerPose	ai	byte	readable		
 exe	0x00483fc0	ai_Unk483fc0	ai	draft	draft	deep	
@@ -1843,7 +1843,7 @@ exe	0x004ad190	hmt_GetElectionObjType	hmt	byte	readable
 exe	0x004ad1b0	hmt_SetPendingElection	hmt	byte	readable		
 exe	0x004ad1c0	hmt_Election	hmt	draft	readable	deep	
 exe	0x004ad3b0	hmt_SendElectionMessage	hmt	byte	readable		
-exe	0x004ad3e0	hmt_Score	hmt	draft	draft	deep	
+exe	0x004ad3e0	hmt_Score	hmt	shape	draft	deep	
 exe	0x004ad510	hmt_ClearOffices	hmt	draft	readable	deep	
 exe	0x004ad580	hmt_Unk4ad580	hmt	draft	draft	deep	
 exe	0x004ad7a0	hmt_Unk4ad7a0	hmt	draft	draft	deep	
@@ -2732,7 +2732,7 @@ exe	0x004ed3f0	unk_Unk4ed3f0	gv	draft	draft
 exe	0x004ed480	unk_Unk4ed480	gv	draft	draft		
 exe	0x004ed910	unk_Unk4ed910	gv	draft	draft		
 exe	0x004eddf0	unk_ResetEffectSlots	gv	draft	draft		
-exe	0x004ede70	gv_FreeEffectObjects	gv	byte	draft		
+exe	0x004ede70	gv_FreeEffectObjects	gv	byte	readable		
 exe	0x004eded0	gv_FindEffect	gv	byte	readable		
 exe	0x004edf10	unk_Unk4edf10	gv	draft	draft		
 exe	0x004edf80	unk_Unk4edf80	gv	draft	draft		
@@ -3308,7 +3308,7 @@ exe	0x00521960	sv_SelectPanelObject	sv	draft	readable	deep
 exe	0x00521ba0	sv_DrawPanelPointer	sv	draft	readable	deep	
 exe	0x00521c10	sv_SceneLoadProgress	sv	shape	draft		
 exe	0x00521e70	sv_BuildScreenLayout	sv	shape	draft		
-exe	0x00522040	sv_PanelImage	sv	draft	draft		
+exe	0x00522040	sv_PanelImage	sv	draft	readable		
 exe	0x00522100	sv_SetPanelEnabled	sv	byte	draft		
 exe	0x00522280	sv_Unk522280	sv	byte	draft		
 exe	0x005223c0	sv_DestroyScreen	sv	byte	draft		
@@ -3452,8 +3452,8 @@ exe	0x00533470	main_ChooseNetworkGame	main	byte	readable
 exe	0x005335b0	main_NetworkMenu	main	byte	readable		
 exe	0x00533740	main_MoneyDialog	main	byte	draft		
 exe	0x005337f0	main_MenuButton	main	byte	draft		
-exe	0x00533850	main_Menue	main	draft	draft	deep	
-exe	0x00534040	main_GiveStartBuildings	main	byte	draft		
+exe	0x00533850	main_Menue	main	draft	readable	deep	
+exe	0x00534040	main_GiveStartBuildings	main	byte	readable		
 exe	0x005344f0	main_Unk5344f0	main	shape	draft		
 exe	0x00534610	main_ChooseTalents	main	shape	readable		
 exe	0x00534b30	main_ChooseModel	main	draft	draft	deep	
