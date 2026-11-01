@@ -25,9 +25,14 @@
 #include "rea_dump.h"           /* debug build: REA_DUMP_TRACE */
 #endif
 #include "data_views.h"
+#include "cm.h"
+#include "d3_io_a.h"
+#include "f3init.h"
+#include "mem.h"
+#include "sblib.h"
+#include "sv.h"
 #define sb_PlaySampleI ((struct SBSAMPLE *(*)(int, char *, int, int, int, int, int))sb_PlaySample)  /* 0x426fa0 (sblib.c: SBBANK *bank): this unit passes the bank as an int */
 #define d2_MoveObjI ((void (*)(int, int, int))d2_MoveObj)  /* 0x46cda0 (d2.c: short x, short y): @original this unit passes the coordinates as ints (d2_CreatePicObj) */
-extern int ai_Unkfa5f04;
 
 /* 0x476b90, adds amount to the item list drawn next to the pointer: the entry of picture id (first match, else
    the first free one); no effect when amount is 0 or the list is full (6 entries) */
