@@ -335,3 +335,4 @@
 2026-11-01T20:06:34 0x004a7650 func ai_Unk4a7650 -> ai_PokerFindPair by:main why:counts seat 2's cards per suit (4 consecutive deck cards) and returns the first suit with two or more; ai_PokerNpcFold compares the count with the others' open hands
 2026-11-01T20:08:48 0x004a76d0 func ai_Unk4a76d0 -> ai_PokerHighCard by:main why:returns the hand's card with the highest suit, then rank (cards 0..4, from 2 if high); ai_Unk4a8190 (the round's winner) compares the seats' results on ties
 2026-11-01T20:09:32 0x004a7760 func ai_Unk4a7760 -> ai_PokerDrawCard by:main why:takes a card still in the deck (owner 3) for the given seat, decrements left; the deal functions ai_PokerDealThree/Fourth/Fifth store its result in seat card slots
+2026-11-01T20:10:22 0x004a79d0 func ai_Unk4a79d0 -> ai_PokerSwapCard by:main why:puts the seat's card k out of play (owner 4, kept in swapped) and draws a replacement with ai_PokerDrawCard; ai_PokerNpcExchange calls it with the chosen card

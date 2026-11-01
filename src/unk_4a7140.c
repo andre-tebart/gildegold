@@ -296,7 +296,7 @@ void ai_PokerNpcExchange(void)
     int cnt[6];
     int s, g, j, i, n, k;
     int pairs, maxn, first, second, maxr, bestr;
-    G10CARD *c, *q;
+    int c0;
     G10SEAT *st;
 
     first = 0;
@@ -308,42 +308,34 @@ void ai_PokerNpcExchange(void)
         maxn = 0;
         pairs = 0;
         maxr = 0;
-        c = ai_PokerDeck;
-        do {
+        for (c0 = 0; c0 < 24; c0 += 4) {
             n = 0;
-            for (i = 4; i != 0; i--) {
-                if (c->owner == s)
+            for (i = 0; i < 4; i++) {
+                if (ai_PokerDeck[c0 + i].owner == s)
                     n++;
-                c++;
             }
             if (n > 1)
                 pairs++;
-            if (maxn < n) {
+            if (n > maxn) {
                 second = first;
                 maxn = n;
                 first = g;
             }
             cnt[g] = n;
             g++;
-        } while (c < &ai_PokerDeck[24]);
-        j = 0;
-        c = ai_PokerDeck;
-        do {
+        }
+        for (j = 0; j < 4; j++) {
             n = 0;
-            q = c;
-            for (i = 6; i != 0; i--) {
-                if (q->owner == s)
+            for (i = 0; i < 24; i += 4) {
+                if (ai_PokerDeck[i + j].owner == s)
                     n++;
-                q += 4;
             }
-            if (maxr < n) {
+            if (n > maxr) {
                 maxr = n;
                 bestr = j;
             }
             cnt[j] = n;
-            c++;
-            j++;
-        } while (c < &ai_PokerDeck[4]);
+        }
         st = &ai_PokerTable->seat[s];
         switch (st->strategy) {
         case 0:
@@ -378,12 +370,12 @@ void ai_PokerNpcExchange(void)
             break;
         }
         if (k >= 0)
-            ai_Unk4a79d0(st, k);
+            ai_PokerSwapCard(st, k);
     }
 }
 /* 0x4a79d0, seat s puts card k (0 or 1) away and draws a new one in its place */
 
-void ai_Unk4a79d0(G10SEAT *s, int k)
+void ai_PokerSwapCard(G10SEAT *s, int k)
 {
     int o, n;
 
@@ -893,7 +885,7 @@ void ai_PokerDealFifth(void)
 
 void ai_PokerExchange(int k)
 {
-    ai_Unk4a79d0(&ai_PokerTable->seat[0], k);
+    ai_PokerSwapCard(&ai_PokerTable->seat[0], k);
 }
 /* 0x4a8650, the ante: three stakes into the pot, the player's from p's money */
 

@@ -128,7 +128,7 @@ typedef struct POKERSEAT {              /* 0x34 bytes, unk_4a7140.h's G10SEAT; s
     int model;                          /* +0x04 */
     int card[5];                        /* +0x08, indices into the deck, -1 = none (what ai_PokerSeatPanel shows) */
     int unk1c, unk20;                   /* +0x1c */
-    int dropped;                        /* +0x24, the deck index of the card the seat put away in the exchange (ai_Unk4a79d0 sets it), -1 = none */
+    int dropped;                        /* +0x24, the deck index of the card the seat put away in the exchange (ai_PokerSwapCard sets it), -1 = none */
     int foldPhase;                      /* +0x28, the phase the seat folded in (ai_PokerNpcFold), -1 = still in */
     int unk2c, unk30;                   /* +0x2c */
 } POKERSEAT;
