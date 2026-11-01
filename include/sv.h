@@ -3,6 +3,13 @@
 #ifndef SV_H
 #define SV_H
 
+typedef struct SVSKYREC {               /* 0x4c bytes, a sky layer: the texture and its scale / v scale / v offset (d3sky_CreateLayer) */
+    char name[0x40];
+    float scale;                        /* +0x40, 3.0 in every record */
+    float vscale;                       /* +0x44, 0.8 */
+    float voffset;                      /* +0x48, -0.25 */
+} SVSKYREC;
+
 void sv_UpdateFramesPerTick(void);                                      /* 0x520ec0 */
 void sv_InitTick(void);                                                 /* 0x520ee0 */
 void sv_UnregisterTick(void);                                           /* 0x520f10 */
@@ -186,6 +193,8 @@ extern int ai_Unk623890;                                    /* 0x623890 */
 extern int ai_Unk623894;                                    /* 0x623894 */
 extern int ai_Unk623898;                                    /* 0x623898 */
 extern int ai_Unk6238a4;                                    /* 0x6238a4 */
+extern SVSKYREC sv_SkyFair[4];                              /* 0x6238a8 */
+extern SVSKYREC sv_SkyMedium[3];                            /* 0x6239d8 */
 extern char sv_Unk623ba8;                                   /* 0x623ba8 */
 extern char ai_Unk623ba9[277];                              /* 0x623ba9 */
 extern int ai_Unk623cc0[];                                  /* 0x623cc0 */

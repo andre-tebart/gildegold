@@ -55,12 +55,6 @@ extern void *d2_ScreenSurf;  /* 0x6ed924 */
 extern GAPDATA full_data_75ec98[];
 extern GAPDATA full_data_75ec9c[];
 extern char ai_Unk623ac0[];
-extern GAPDATA full_data_6238e8[];
-extern GAPDATA full_data_6238ec[];
-extern GAPDATA full_data_6238f0[];
-extern GAPDATA full_data_623934[];
-extern GAPDATA full_data_623938[];
-extern GAPDATA full_data_62393c[];
 extern GAPDATA full_data_7604e8[];
 extern const char ai_AxisPair[];
 
@@ -206,7 +200,6 @@ extern GAPDATA full_data_623ebc[];
 extern char ai_Unk75fba0[2048];
 extern unsigned char ai_TimeHour;
 extern char ai_Unk623ac0[];
-extern GAPDATA full_data_6239d8[];
 extern GAPDATA full_data_7604e8[];
 extern int ai_OptionSpeed;
 extern float ch_Unk5f1290;
@@ -2291,9 +2284,9 @@ void sv_Unk525510(int t, float flag)
             d3_SkyLayers[k] = 0;
         }
     }
-    d3_SkyLayers[0] = d3sky_CreateLayerK(ai_Unk633dd4, 0, "Sky_Schoen_01", 0xff, *(int *)(unsigned)&full_data_6238e8, 0, *(int *)(unsigned)&full_data_6238ec, *(int *)(unsigned)&full_data_6238f0);
+    d3_SkyLayers[0] = d3sky_CreateLayerK(ai_Unk633dd4, 0, "Sky_Schoen_01", 0xff, *(int *)&sv_SkyFair[0].scale, 0, *(int *)&sv_SkyFair[0].vscale, *(int *)&sv_SkyFair[0].voffset);
     d3sky_SetLayerSpeed(ai_Unk633dd4, d3_SkyLayers[0], 0);
-    d3_SkyLayers[1] = d3sky_CreateLayerK(ai_Unk633dd4, 0, "Sky_Schoen_02", 0, *(int *)(unsigned)&full_data_623934, 0, *(int *)(unsigned)&full_data_623938, *(int *)(unsigned)&full_data_62393c);
+    d3_SkyLayers[1] = d3sky_CreateLayerK(ai_Unk633dd4, 0, "Sky_Schoen_02", 0, *(int *)&sv_SkyFair[1].scale, 0, *(int *)&sv_SkyFair[1].vscale, *(int *)&sv_SkyFair[1].voffset);
     d3sky_SetLayerSpeed(ai_Unk633dd4, d3_SkyLayers[1], 0);
     d3_SkyLayers[2] = d3sky_CreateLayerK(ai_Unk633dd4, 0, "sky_dunkel_01", 0, *(int *)((unsigned)&ai_Unk623ac0 + 0xd8), 0, *(int *)((unsigned)&ai_Unk623ac0 + 0xdc), *(int *)((unsigned)&ai_Unk623ac0 + 0xe0));
     d3sky_SetLayerSpeed(ai_Unk633dd4, d3_SkyLayers[2], 0);
@@ -7112,14 +7105,14 @@ void sv_Unk5301a0(void)
         if (*(char *)(d3_SkyLayers[1] + 0x26) == 0) {
             if (c < 0x32) {
                 k = util_RandomU(4) & 0xffff;
-                if (_strcmpi(*(char **)(d3_SkyLayers[1] + 0x1c), (char *)((unsigned)&ai_Unk6238a4 + 0x4) + k * 0x4c) == 0)
+                if (_strcmpi(*(char **)(d3_SkyLayers[1] + 0x1c), sv_SkyFair[k].name) == 0)
                     k++;
-                name = (char *)((unsigned)&ai_Unk6238a4 + 0x4) + k * 0x4c;
+                name = sv_SkyFair[k].name;
             } else if (c < 0x96) {
                 k = util_RandomU(3) & 0xffff;
-                if (_strcmpi(*(char **)(d3_SkyLayers[1] + 0x1c), (char *)(unsigned)&full_data_6239d8 + k * 0x4c) == 0)
+                if (_strcmpi(*(char **)(d3_SkyLayers[1] + 0x1c), sv_SkyMedium[k].name) == 0)
                     k++;
-                name = (char *)(unsigned)&full_data_6239d8 + k * 0x4c;
+                name = sv_SkyMedium[k].name;
             } else {
                 k = util_RandomU(2) & 0xffff;
                 if (_strcmpi(*(char **)(d3_SkyLayers[1] + 0x1c), (char *)(unsigned)&ai_Unk623ac0 + k * 0x4c) == 0)
@@ -7135,14 +7128,14 @@ void sv_Unk5301a0(void)
         if (*(char *)(d3_SkyLayers[1] + 0x26) == -1) {
             if (c < 0x32) {
                 k = util_RandomU(4) & 0xffff;
-                if (_strcmpi(*(char **)(d3_SkyLayers[0] + 0x1c), (char *)((unsigned)&ai_Unk6238a4 + 0x4) + k * 0x4c) == 0)
+                if (_strcmpi(*(char **)(d3_SkyLayers[0] + 0x1c), sv_SkyFair[k].name) == 0)
                     k++;
-                name = (char *)((unsigned)&ai_Unk6238a4 + 0x4) + k * 0x4c;
+                name = sv_SkyFair[k].name;
             } else if (c < 0x96) {
                 k = util_RandomU(3) & 0xffff;
-                if (_strcmpi(*(char **)(d3_SkyLayers[0] + 0x1c), (char *)(unsigned)&full_data_6239d8 + k * 0x4c) == 0)
+                if (_strcmpi(*(char **)(d3_SkyLayers[0] + 0x1c), sv_SkyMedium[k].name) == 0)
                     k++;
-                name = (char *)(unsigned)&full_data_6239d8 + k * 0x4c;
+                name = sv_SkyMedium[k].name;
             } else {
                 k = util_RandomU(2) & 0xffff;
                 if (_strcmpi(*(char **)(d3_SkyLayers[0] + 0x1c), (char *)(unsigned)&ai_Unk623ac0 + k * 0x4c) == 0)
@@ -7671,6 +7664,19 @@ int ai_Unk623890 = -1;  /* 0x623890 */
 int ai_Unk623894 = -1;  /* 0x623894 */
 int ai_Unk623898 = -1;  /* 0x623898 */
 int ai_Unk6238a4 = -1;  /* 0x6238a4 */
+/* 0x6238a8, the skies of fair weather (sv_Unk5301a0 picks one below 50 clouds, cm picks one for the fair cutscene) */
+SVSKYREC sv_SkyFair[4] = {
+    { "Sky_Schoen_01", 3.0f, 0.8f, -0.25f },
+    { "Sky_Schoen_02", 3.0f, 0.8f, -0.25f },
+    { "Sky_Leicht_01", 3.0f, 0.8f, -0.25f },
+    { "Sky_Leicht_02", 3.0f, 0.8f, -0.25f },
+};
+/* 0x6239d8, the skies of medium cloud (50 .. 149 clouds) */
+SVSKYREC sv_SkyMedium[3] = {
+    { "Sky_Mittel_01", 3.0f, 0.8f, -0.25f },
+    { "Sky_Mittel_02", 3.0f, 0.8f, -0.25f },
+    { "Sky_Mittel_03", 3.0f, 0.8f, -0.25f },
+};
 /* 0x623ba8, the byte the day loop 0x525a00 writes with its first p[-1] (the tail of the preceding table);
    without it the write lands in the last byte of ai_Unk62a8cc in the full link and turns the drag view id
    into 0x06ffffff */
