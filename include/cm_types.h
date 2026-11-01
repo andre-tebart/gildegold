@@ -1,4 +1,4 @@
-/* The message records of cm's rings ai_Unka69140 / ai_Unk9367e0 (G17MSG) and ai_Unkf31160 (G17STAT) and the
+/* The message records of cm's rings cm_SendRing / cm_RecvPool (G17MSG) and cm_SendStates (G17STAT) and the
    network game record cm_NetGame (CMNETGAME), for the units that declare them without the rest of cm.h:
    types only. cm.h includes it. */
 #ifndef CM_TYPES_H
@@ -17,7 +17,7 @@ typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head 
     struct G17MSG *next;                /* 0x95 */
 } G17MSG;
 
-typedef struct G17STAT {                /* 10 bytes, ai_Unkf31160[]: the state of a sent message */
+typedef struct G17STAT {                /* 10 bytes, cm_SendStates[]: the state of a sent message */
     unsigned char state;                /* 0x00, 0 sent, 1 free, 2 failed */
     unsigned char unk01;
     int idx;                            /* 0x02 */

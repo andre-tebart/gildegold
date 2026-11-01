@@ -1,5 +1,5 @@
 /* cm.c -- the game messages exchanged with the server (net.c): the size of a message by its type, the send
-   ring ai_Unka69140 (0x8000 slots) and its states, the receive list ai_Unka68d24 (0x2000 records), long messages split
+   ring cm_SendRing (0x8000 slots) and its states, the receive list cm_RecvQueue (0x2000 records), long messages split
    into parts of type 7, the field blocks of an object (delta / plain values). Its .data block starts at 0x60bd80 after
    f3snd.c's literals (0x302, 2, -1 globals, the handler table 0x60bd98 of 0x4c6a20..). Tag "cm_ExecCommand" (0x4c4190,
    its texts at 0x60c0e8..). The ~0x6a message handlers and their helpers follow, then the fight code (0x4cf670..)
@@ -267,24 +267,24 @@ void ai_InitStates(void)
 
     ai_Unk60bd94 = -1;
     for (i = 0; i < 0x2000; i++) {
-        ai_Unk9367e0[i].type = 0;
+        cm_RecvPool[i].type = 0;
         if (i == 0) {
-            ai_Unk9367e0[0].prev = 0;
-            ai_Unk9367e0[0].next = &ai_Unk9367e0[1];
+            cm_RecvPool[0].prev = 0;
+            cm_RecvPool[0].next = &cm_RecvPool[1];
         } else {
-            ai_Unk9367e0[i].prev = &ai_Unk9367e0[i - 1];
+            cm_RecvPool[i].prev = &cm_RecvPool[i - 1];
             if (i < 0x1fff)
-                ai_Unk9367e0[i].next = &ai_Unk9367e0[i + 1];
+                cm_RecvPool[i].next = &cm_RecvPool[i + 1];
             else
-                ai_Unk9367e0[i].next = 0;
+                cm_RecvPool[i].next = 0;
         }
     }
-    ai_Unka68c00 = ai_Unk9367e0;
-    ai_Unka68d24 = 0;
+    cm_RecvFree = cm_RecvPool;
+    cm_RecvQueue = 0;
     ai_Unkf81180.type = 0;
-    ai_Unkf81168 = 0;
+    cm_LastSeq = 0;
     cm_SendQueue = 0;
-    for (s = ai_Unkf31160; s < ai_Unkf31160 + 0x8000; s++) {
+    for (s = cm_SendStates; s < cm_SendStates + 0x8000; s++) {
         s->idx = -1;
         s->state = 1;
     }
@@ -302,24 +302,24 @@ void ai_ResetMessages(void)
     G17STAT *s;
 
     for (i = 0; i < 0x2000; i++) {
-        ai_Unk9367e0[i].type = 0;
+        cm_RecvPool[i].type = 0;
         if (i == 0) {
-            ai_Unk9367e0[0].prev = 0;
-            ai_Unk9367e0[0].next = &ai_Unk9367e0[1];
+            cm_RecvPool[0].prev = 0;
+            cm_RecvPool[0].next = &cm_RecvPool[1];
         } else {
-            ai_Unk9367e0[i].prev = &ai_Unk9367e0[i - 1];
+            cm_RecvPool[i].prev = &cm_RecvPool[i - 1];
             if (i < 0x1fff)
-                ai_Unk9367e0[i].next = &ai_Unk9367e0[i + 1];
+                cm_RecvPool[i].next = &cm_RecvPool[i + 1];
             else
-                ai_Unk9367e0[i].next = 0;
+                cm_RecvPool[i].next = 0;
         }
     }
-    ai_Unka68c00 = ai_Unk9367e0;
-    ai_Unka68d24 = 0;
+    cm_RecvFree = cm_RecvPool;
+    cm_RecvQueue = 0;
     ai_Unkf81180.type = 0;
-    ai_Unkf81168 = 0;
+    cm_LastSeq = 0;
     cm_SendQueue = 0;
-    for (s = ai_Unkf31160; s < ai_Unkf31160 + 0x8000; s++) {
+    for (s = cm_SendStates; s < cm_SendStates + 0x8000; s++) {
         s->idx = -1;
         s->state = 1;
     }
@@ -397,22 +397,22 @@ int ai_Unk4c3720(void)
     if (net_Conn.closed != 0)
         return 0;
     last = 0;
-    first = ai_Unkf81168 + 1;
+    first = cm_LastSeq + 1;
     for (off = 0; off < ai_Unka68d30; off += 0x80) {
-        ai_Unkf81168++;
-        i = ai_Unkf81168 & 0x7fff;
-        m = &ai_Unka69140[i];
+        cm_LastSeq++;
+        i = cm_LastSeq & 0x7fff;
+        m = &cm_SendRing[i];
         m->type = 7;
         m->size = ai_Unk4c3180(m);
         memcpy(m->data, ai_Unka68800 + off, 0x80);
         m->unk03 = 0;
         m->idx = i;
-        m->seq = ai_Unkf81168;
+        m->seq = cm_LastSeq;
         m->next7 = 0;
         if (last != 0)
-            last->next7 = ai_Unkf81168;
-        ai_Unkf31160[i].state = 0;
-        ai_Unkf31160[i].idx = i;
+            last->next7 = cm_LastSeq;
+        cm_SendStates[i].state = 0;
+        cm_SendStates[i].idx = i;
         if (cm_SendQueue == 0) {
             cm_SendQueue = m;
             m->prev = 0;
@@ -437,12 +437,12 @@ int ai_Unk4c3850(G17MSG *m)
 
     if (m->type == 7 || m->next7 == 0)
         return 1;
-    for (r = ai_Unka68d24; r != 0; r = r->next) {
+    for (r = cm_RecvQueue; r != 0; r = r->next) {
         if (r->unk03 == m->unk03 && r->seq == m->next7) {
             if (*(unsigned short *)r->data < 0x7f)
                 return 1;
             for (n = 0x7e, p = r; n < *(unsigned short *)r->data; n += 0x80) {
-                for (q = ai_Unka68d24; q != 0; q = q->next)
+                for (q = cm_RecvQueue; q != 0; q = q->next)
                     if (q->unk03 == p->unk03 && q->seq == p->next7)
                         break;
                 if (q == 0)
@@ -461,9 +461,9 @@ unsigned int ai_Unk4c38e0(G17MSG *m)
     G17MSG *r, *p;
     int n;
 
-    if (m->next7 == 0 || ai_Unka68d24 == 0)
+    if (m->next7 == 0 || cm_RecvQueue == 0)
         return 0;
-    for (r = ai_Unka68d24; r->unk03 != m->unk03 || r->seq != m->next7; r = r->next)
+    for (r = cm_RecvQueue; r->unk03 != m->unk03 || r->seq != m->next7; r = r->next)
         if (r->next == 0)
             return 0;
     m->next7 = 0;
@@ -471,9 +471,9 @@ unsigned int ai_Unk4c38e0(G17MSG *m)
     memcpy(ai_Unka68d40, r->data + 2, 0x7e);
     r->type = 0;
     for (n = 0x7e, p = r; n < (int)ai_Unkf81164; n += 0x80) {
-        if (ai_Unka68d24 == 0)
+        if (cm_RecvQueue == 0)
             return 0;
-        for (r = ai_Unka68d24; r->unk03 != p->unk03 || r->seq != p->next7; r = r->next)
+        for (r = cm_RecvQueue; r->unk03 != p->unk03 || r->seq != p->next7; r = r->next)
             if (r->next == 0)
                 return 0;
         p->next7 = 0;
@@ -493,24 +493,24 @@ int ai_Unk4c39c0(G17MSG *src)
 
     if (net_Conn.closed != 0)
         return -1;
-    i = (ai_Unkf81168 + 1) & 0x7fff;
-    m = &ai_Unka69140[i];
+    i = (cm_LastSeq + 1) & 0x7fff;
+    m = &cm_SendRing[i];
     if (net_Conn.s != INVALID_SOCKET && (G17MSG *)net_Conn.tx == m)
         return -1;
     for (p = cm_SendQueue; p != 0; p = p->next)
         if (p == m)
             return -1;
-    ai_Unkf81168++;
+    cm_LastSeq++;
     *m = *src;
     m->size = ai_Unk4c3180(m);
     m->unk03 = 0;
     m->idx = i;
-    m->seq = ai_Unkf81168;
+    m->seq = cm_LastSeq;
     m->next7 = 0;
     if (src->type == 0x20 && src->data[0] == 0x0e)
         cm_LastSyncCount = m->seq;
-    ai_Unkf31160[i].state = 0;
-    ai_Unkf31160[i].idx = i;
+    cm_SendStates[i].state = 0;
+    cm_SendStates[i].idx = i;
     if (cm_SendQueue == 0) {
         cm_SendQueue = m;
         m->prev = 0;
@@ -530,7 +530,7 @@ int ai_Unk4c39c0(G17MSG *src)
 int cm_GetSlotState(int h)
 {
     if (h >= 0 && h < 0x8000)
-        return ai_Unkf31160[h].state;
+        return cm_SendStates[h].state;
     return -1;
 }
 /* 0x4c3b10, the value of slot h */
@@ -538,20 +538,20 @@ int cm_GetSlotState(int h)
 int cm_GetSlotValue(int h)
 {
     if (h >= 0 && h < 0x8000)
-        return ai_Unkf31160[h].value;
+        return cm_SendStates[h].value;
     return 0;
 }
 /* 0x4c3b30, marks the start of a group of messages */
 
 void cm_BeginSendGroup(void)
 {
-    ai_Unkf8121c = ai_Unkf81168 + 1;
+    cm_GroupFirstSeq = cm_LastSeq + 1;
 }
 /* 0x4c3b40, marks its end */
 
 void cm_EndSendGroup(void)
 {
-    ai_Unka68c04 = ai_Unkf81168 + 1;
+    cm_GroupEndSeq = cm_LastSeq + 1;
 }
 /* 0x4c3b50, the state of the group: 1 done, 0 pending, -1 one failed */
 
@@ -561,11 +561,11 @@ int cm_SendGroupState(void)
     unsigned int s;
 
     ret = 1;
-    if (ai_Unkf8121c != ai_Unka68c04 && ai_Unkf8121c < ai_Unka68c04) {
-        for (s = ai_Unkf8121c; s < ai_Unka68c04; s++) {
-            if (ai_Unkf31160[s & 0x7fff].state == 0)
+    if (cm_GroupFirstSeq != cm_GroupEndSeq && cm_GroupFirstSeq < cm_GroupEndSeq) {
+        for (s = cm_GroupFirstSeq; s < cm_GroupEndSeq; s++) {
+            if (cm_SendStates[s & 0x7fff].state == 0)
                 return 0;
-            if (ai_Unkf31160[s & 0x7fff].state == 2)
+            if (cm_SendStates[s & 0x7fff].state == 2)
                 ret = -1;
         }
     }
@@ -788,7 +788,7 @@ G17MSG *ai_Unk4c4030(char type, int timeout)
     while (d3_Time < end) {
         cm_FlushSendQueue();
         cm_ReceiveMessages();
-        for (m = ai_Unka68d24; m != 0; m = m->next)
+        for (m = cm_RecvQueue; m != 0; m = m->next)
             if (m->type == type)
                 return m;
     }
@@ -800,22 +800,22 @@ int ai_Unk4c4080(G17MSG *src)
 {
     G17MSG *m, *p;
 
-    m = ai_Unka68c00;
+    m = cm_RecvFree;
     if (m == 0) {
         if (net_Conn.s != INVALID_SOCKET)
             net_Close();
         return 1;
     }
-    ai_Unka68c00 = m->next;
+    cm_RecvFree = m->next;
     *m = *src;
     m->size = ai_Unk4c3180(m);
-    if (ai_Unka68d24 == 0) {
+    if (cm_RecvQueue == 0) {
         m->prev = 0;
         m->next = 0;
-        ai_Unka68d24 = m;
+        cm_RecvQueue = m;
         return 0;
     }
-    for (p = ai_Unka68d24; p->next != 0; p = p->next)
+    for (p = cm_RecvQueue; p->next != 0; p = p->next)
         ;
     m->prev = p;
     m->next = 0;
@@ -829,12 +829,12 @@ void ai_Unk4c4130(G17MSG *m)
     if (m->prev != 0)
         m->prev->next = m->next;
     else
-        ai_Unka68d24 = m->next;
+        cm_RecvQueue = m->next;
     if (m->next != 0)
         m->next->prev = m->prev;
     m->prev = 0;
-    m->next = ai_Unka68c00;
-    ai_Unka68c00 = m;
+    m->next = cm_RecvFree;
+    cm_RecvFree = m;
 }
 /* 0x4c4190, "cm_ExecCommand": runs the received messages (groups 5..6 checked first by 0x4c43c0), frees them;
    when the connection is closed, fails all of them */
@@ -846,17 +846,17 @@ int cm_ExecCommands(void)
     int ok;
 
     if (net_Conn.closed != 0) {
-        while ((m = ai_Unka68d24) != 0) {
+        while ((m = cm_RecvQueue) != 0) {
             if (m->idx != -1) {
-                s = &ai_Unkf31160[m->idx & 0x7fff];
+                s = &cm_SendStates[m->idx & 0x7fff];
                 s->state = 2;
                 s->unk01 = 0;
                 s->value = 0;
             }
             ai_Unk4c4130(m);
         }
-        ai_Unka68d24 = 0;
-        for (s = ai_Unkf31160; s < ai_Unkf31160 + 0x8000; s++)
+        cm_RecvQueue = 0;
+        for (s = cm_SendStates; s < cm_SendStates + 0x8000; s++)
             s->state = 2;
         if (ai_GameOver == 0) {
             ai_GameOver = 1;
@@ -864,7 +864,7 @@ int cm_ExecCommands(void)
         }
     }
     grp = 0;
-    for (m = ai_Unka68d24; m != 0; m = next) {
+    for (m = cm_RecvQueue; m != 0; m = next) {
         next = m->next;
         t = m;
         ok = 1;
@@ -880,22 +880,22 @@ int cm_ExecCommands(void)
         if (grp != 0)
             ok = 0;
         if (t->type != 7 && ai_Unk4c3850(t) != 0 && ok) {
-            if (t == ai_Unka68d24) {
-                ai_Unka68d24 = next;
+            if (t == cm_RecvQueue) {
+                cm_RecvQueue = next;
             } else {
                 t->prev->next = t->next;
                 if (t->next != 0)
                     t->next->prev = t->prev;
             }
             t->prev = 0;
-            t->next = ai_Unka68c00;
-            ai_Unka68c00 = t;
+            t->next = cm_RecvFree;
+            cm_RecvFree = t;
             ai_Unk4c38e0(t);
             if (t->type < 0x6a) {
                 if (t->idx == -1) {
                     s = 0;
                 } else {
-                    s = &ai_Unkf31160[t->idx & 0x7fff];
+                    s = &cm_SendStates[t->idx & 0x7fff];
                     s->state = 2;
                     s->unk01 = 0;
                     s->value = 0;
@@ -954,11 +954,11 @@ int ai_Unk4c43c0(G17MSG *grp)
 int ai_Unk4c4450(int a, int id)
 {
     if (id == -2)
-        return ai_Unk60bd88;
+        return cm_LastCharId;
     if (id == -3)
-        return ai_Unk60bd8c;
+        return cm_LastBuildingId;
     if (id == -4)
-        id = ai_Unk60bd90;
+        id = cm_LastObjectId;
     return id;
 }
 /* 0x4c4480, sets the long message (sent as parts with the next message); 0: one is pending or too long */
@@ -2502,7 +2502,7 @@ int ai_Unk4c6b20(G17MSG *m, G17STAT *s)
     b = gm_CreateBuilding(m->data[4], k);
     if (b == 0)
         return 1;
-    ai_Unk60bd8c = *(int *)(b + 1);
+    cm_LastBuildingId = *(int *)(b + 1);
     *(short *)(b + 0x5a) = *(short *)&m->data[0xa];
     if (*(int *)&m->data[0xc] != 0)
         memcpy(b + 0x65, &m->data[0x10], 0x30);
@@ -2536,7 +2536,7 @@ int ai_Unk4c6bf0(G17MSG *m, G17STAT *s)
     k = gm_Unk507690(m->data[4], *(int *)&m->data[5], *(int *)&m->data[9], *(unsigned short *)&m->data[0xd], b, m->data[0x13], m->data[0x14], m->data[0x15]);
     if (k == 0xffff)
         return 1;
-    ai_Unk60bd88 = *(int *)(ai_Chars[k] + 4);
+    cm_LastCharId = *(int *)(ai_Chars[k] + 4);
     if (s != 0) {
         s->state = 1;
         s->unk01 = 1;
@@ -2560,7 +2560,7 @@ int ai_Unk4c6cd0(G17MSG *m, G17STAT *s)
     if (k == 0xffff)
         return 1;
     c = ai_Chars[k];
-    ai_Unk60bd88 = *(int *)(c + 4);
+    cm_LastCharId = *(int *)(c + 4);
     strncpy(c + 0x30, (char *)&m->data[0x15], 0x10);
     t = gm_PlayerRecord(c);
     if (t != 0) {
@@ -2827,7 +2827,7 @@ money:
                     *(int *)(o2 + 0x1c) = 4;
             }
         }
-        ai_Unk60bd90 = *(int *)(o2 + 2);
+        cm_LastObjectId = *(int *)(o2 + 2);
         if (*(int *)&m->data[0x13] != 0 && r2 != 0) {
             gm_TakeObjekt(*(int *)(r2 + 4), *(unsigned short *)(ai_PlayerSlots[m->data[0xe]] + 0x54), *(int *)&m->data[0xf] * *(int *)&m->data[0x13]);
             if (y2 != 0 && *(short *)y2 == 0x1db)
@@ -3029,7 +3029,7 @@ int ai_Unk4c7e20(G17MSG *m, G17STAT *s)
     o = gm_CreateObject(*(int *)&m->data[0], *(unsigned short *)&m->data[4], 1);
     if (o == 0)
         return 1;
-    ai_Unk60bd90 = *(int *)(o + 2);
+    cm_LastObjectId = *(int *)(o + 2);
     memcpy(o + 0x1c, &m->data[6], 0x1f);
     if (s != 0)
         s->state = 1;
@@ -3950,7 +3950,7 @@ int ai_Unk4c9740(G17MSG *m, G17STAT *s)
     o = gm_CreateObject(k, 0x1b5, 1);
     if (o == 0)
         return 1;
-    ai_Unk60bd90 = *(int *)(o + 2);
+    cm_LastObjectId = *(int *)(o + 2);
     o[0x12] = 0x40;
     *(G17B7 *)(o + 0x1c) = *(G17B7 *)&m->data[8];
     o[0x22] = 0;
@@ -5047,7 +5047,7 @@ int ai_Unk4cba10(G17MSG *m, G17STAT *s)
         gm_CreateObject(ai_CharInts[id][0], m->data[0x11], 1);
         ai_Unk4cde20(ai_Chars[id]);
     }
-    ai_Unk60bd88 = ai_CharInts[id][0];
+    cm_LastCharId = ai_CharInts[id][0];
     if (s != 0) {
         s->state = 1;
         s->unk01 = 1;
@@ -5134,7 +5134,7 @@ int ai_Unk4cbca0(G17MSG *m, G17STAT *s)
     b = gm_CreateBuilding(m->data[8], *(unsigned short *)c);
     if (b == 0)
         return 1;
-    ai_Unk60bd8c = *(int *)(b + 1);
+    cm_LastBuildingId = *(int *)(b + 1);
     sc = ai_Unk5f8b10;
     d = ai_BTypes + (unsigned char)b[0] * 0x24d;
     strcpy(nm, d + 1);
@@ -5766,7 +5766,7 @@ int ai_Unk4ccce0(G17MSG *m, G17STAT *s)
     q = gm_CreateObject(*(int *)(b + 1), 0xca, 1);
     if (q == 0)
         return 1;
-    ai_Unk60bd90 = *(int *)(q + 2);
+    cm_LastObjectId = *(int *)(q + 2);
 found:
     *(G17T14 *)(q + 0x1c) = *(G17T14 *)&m->data[8];
     *(int *)(q + 0x2a) = G17_I(*m, 0x16);
@@ -14969,30 +14969,30 @@ extern CMNETGAME cm_NetGame;
 extern char ai_Unk9364e0[752];
 extern int ai_Unk9367d0;
 extern int ai_Unk9367d4;
-extern G17MSG ai_Unk9367e0[0x2000];
+extern G17MSG cm_RecvPool[0x2000];
 extern int cm_LastSyncCount;
 extern int ai_Unka687e4;
 extern unsigned char ai_Unka68800[1024];
-extern G17MSG * ai_Unka68c00;
-extern unsigned int ai_Unka68c04;
+extern G17MSG * cm_RecvFree;
+extern unsigned int cm_GroupEndSeq;
 extern int ai_Unka68c08;
 extern G17FIELDS ai_Unka68c20;
 extern G17FIELDS ai_Unka68ca0;
 extern unsigned int ai_Unka68d1c;
 extern int ai_Unka68d20;
-extern G17MSG * ai_Unka68d24;
+extern G17MSG * cm_RecvQueue;
 extern char * cm_FieldObject;
 extern int ai_Unka68d30;
 extern char * ai_Unka68d34;
 extern unsigned char ai_Unka68d40[1024];
-extern G17MSG ai_Unka69140[0x8000];
+extern G17MSG cm_SendRing[0x8000];
 extern char * ai_Unkf31140;
 extern int ai_Unkf31144;
-extern G17STAT ai_Unkf31160[0x8000];
+extern G17STAT cm_SendStates[0x8000];
 extern G17MSG * cm_SendQueue;
 extern unsigned int ai_Unkf81164;
 extern G17MSG ai_Unkf81180;
-extern unsigned int ai_Unkf8121c;
+extern unsigned int cm_GroupFirstSeq;
 extern char ai_Unkf895a0[0xb00];
 extern char ai_Unkf8aae0[0x80];
 extern int ai_Unkfa5f00;
@@ -15060,9 +15060,9 @@ int ai_Unk5f8b10 = 6251111;  /* 0x5f8b10 */
 float ai_Unk5fe708 = 1.0f;  /* 0x5fe708 */
 int ai_Unk60bd80 = 770;  /* 0x60bd80 */
 unsigned int cm_SpeedLevel = 2;  /* 0x60bd84, = 2 (0..4) */
-int ai_Unk60bd88 = -1;  /* 0x60bd88, = -1 */
-int ai_Unk60bd8c = -1;  /* 0x60bd8c, = -1 */
-int ai_Unk60bd90 = -1;  /* 0x60bd90, = -1 */
+int cm_LastCharId = -1;  /* 0x60bd88, = -1 */
+int cm_LastBuildingId = -1;  /* 0x60bd8c, = -1 */
+int cm_LastObjectId = -1;  /* 0x60bd90, = -1 */
 int ai_Unk60bd94 = -1;  /* 0x60bd94, = -1 */
 int (*ai_Unk60bd98[0x6a])(G17MSG *m, G17STAT *s) = { ai_Unk4c6a20, ai_Unk4c6a50, ai_AlwaysTrue, ai_Unk4c6a20, ai_Unk4c6a60, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a90, ai_Unk4c6ad0, ai_Unk4c6b20, ai_Unk4c6bf0, ai_Unk4c6cd0, ai_Unk4c6e10, ai_Unk4c6ec0, ai_Unk4c6f60, ai_Unk4c7010, ai_Unk4c70b0, ai_Unk4c78c0, ai_Unk4c7c30, ai_Unk4c7d80, ai_Unk4c7e20, ai_Unk4c7e90, ai_Unk4c7f70, ai_Unk4c8050, ai_Unk4c8110, ai_Unk4c81d0, ai_Unk4c8240, ai_Unk4c85c0, ai_Unk4c87a0, ai_Unk4c88a0, ai_Unk4c8990, ai_Unk4c89b0, ai_Unk4c8de0, ai_Unk4c8e70, ai_Unk4c9090, ai_Unk4c90d0, ai_Unk4c9110, ai_Unk4c9170, ai_Unk4c9280, ai_Unk4c9340, ai_Unk4c93b0, ai_Unk4c9400, ai_Unk4c9450, ai_Unk4c9520, ai_Unk4c9740, ai_Unk4c97c0, ai_Unk4c9830, ai_Unk4c99b0, ai_Unk4c9c10, ai_Unk4c9c80, ai_Unk4c9d00, ai_Unk4c9d80, ai_Unk4c9dc0, ai_Unk4ca8a0, ai_Unk4caa20, ai_Unk4caaa0, ai_Unk4cab40, ai_Unk4cac40, ai_Unk4cb100, ai_Unk4cb210, ai_Unk4cb250, ai_Unk4cb4a0, ai_Unk4cb6e0, ai_Unk4cb730, ai_Unk4cb7c0, ai_Unk4cb7f0, ai_Unk4cb850, ai_Unk4cb890, ai_Unk4cb8d0, ai_Unk4cb910, ai_Unk4cb940, ai_Unk4cb9b0, ai_Unk4cba10, ai_Unk4cbb90, ai_Unk4cbbd0, ai_Unk4cbca0, ai_Unk4cbff0, ai_Unk4cc050, ai_Unk4cc110, ai_Unk4cc1b0, ai_Unk4cc270, ai_Unk4cc330, ai_Unk4cc390, ai_Unk4cc510, ai_Unk4cc7b0, ai_Unk4cc8e0, ai_Unk4cc920, ai_Unk4cc980, ai_Unk4cca10, ai_Unk4ccaa0, ai_Unk4ccb10, ai_Unk4ccbd0, ai_Unk4ccc20, ai_Unk4ccce0, ai_Unk4cce00, ai_Unk4cce10, ai_Unk4cced0, ai_Unk4ccf10, ai_Unk4ccf90, ai_Unk4cd010, ai_Unk4cd130, ai_Unk4cd180, ai_Unk4cd1e0, ai_Unk4cd220, ai_Unk4cd2f0 };  /* 0x60bd98, the handler of each message type */
 int (*ai_Unk60bf40[0x6a])(G17MSG *m) = { sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c6350, sv_ReturnZero, ai_Unk4c63e0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c65b0, sv_ReturnZero, sv_ReturnZero, ai_Unk4c66c0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c6750, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c6780, ai_Unk4c67a0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c67c0, ai_Unk4c6870, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c69c0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero };  /* 0x60bf40, the check of each type (groups 5..6) */
@@ -15216,30 +15216,30 @@ CMNETGAME cm_NetGame = {0};  /* 0x936460, the network game (hdr.players 0x936496
 char ai_Unk9364e0[752] = {0};  /* 0x9364e0 */
 int ai_Unk9367d0 = 0;  /* 0x9367d0 */
 int ai_Unk9367d4 = 0;  /* 0x9367d4 */
-G17MSG ai_Unk9367e0[0x2000] = {0};  /* 0x9367e0, the free receive records */
+G17MSG cm_RecvPool[0x2000] = {0};  /* 0x9367e0, the free receive records */
 int cm_LastSyncCount = 0;  /* 0xa687e0, "cm_LastSyncCount" (net.h) */
 int ai_Unka687e4 = 0;  /* 0xa687e4, d3_Time of the start */
 unsigned char ai_Unka68800[1024] = {0};  /* 0xa68800, a long message to split (ai_Unka68d30 bytes) */
-G17MSG * ai_Unka68c00 = 0;  /* 0xa68c00, the free list */
-unsigned int ai_Unka68c04 = 0;  /* 0xa68c04 */
+G17MSG * cm_RecvFree = 0;  /* 0xa68c00, the free list */
+unsigned int cm_GroupEndSeq = 0;  /* 0xa68c04 */
 int ai_Unka68c08 = 0;  /* 0xa68c08, bytes used in ai_Unka68c20.buf */
 G17FIELDS ai_Unka68c20 = {0};  /* 0xa68c20 */
 G17FIELDS ai_Unka68ca0 = {0};  /* 0xa68ca0 */
 unsigned int ai_Unka68d1c = 0;  /* 0xa68d1c, "cm_LastRequCount" */
 int ai_Unka68d20 = 0;  /* 0xa68d20, bytes used in ai_Unka68ca0.buf */
-G17MSG * ai_Unka68d24 = 0;  /* 0xa68d24, the received messages */
+G17MSG * cm_RecvQueue = 0;  /* 0xa68d24, the received messages */
 char * cm_FieldObject = 0;  /* 0xa68d2c, the object of the field block (fields are offsets into it) */
 int ai_Unka68d30 = 0;  /* 0xa68d30, length of ai_Unka68800 */
 char * ai_Unka68d34 = 0;  /* 0xa68d34 */
 unsigned char ai_Unka68d40[1024] = {0};  /* 0xa68d40, a joined long message */
-G17MSG ai_Unka69140[0x8000] = {0};  /* 0xa69140, the send ring */
+G17MSG cm_SendRing[0x8000] = {0};  /* 0xa69140, the send ring */
 char * ai_Unkf31140 = 0;  /* 0xf31140, the load buffer ("cm_LoadBuf") */
 int ai_Unkf31144 = 0;  /* 0xf31144 */
-G17STAT ai_Unkf31160[0x8000] = {0};  /* 0xf31160 */
+G17STAT cm_SendStates[0x8000] = {0};  /* 0xf31160 */
 G17MSG * cm_SendQueue = 0;  /* 0xf81160, the messages to send */
 unsigned int ai_Unkf81164 = 0;  /* 0xf81164, length of ai_Unka68d40 */
 G17MSG ai_Unkf81180 = {0};  /* 0xf81180, the message being received */
-unsigned int ai_Unkf8121c = 0;  /* 0xf8121c */
+unsigned int cm_GroupFirstSeq = 0;  /* 0xf8121c */
 char ai_Unkf895a0[0xb00] = {0}; /* 0xf895a0 */
 char ai_Unkf8aae0[0x80] = {0}; /* 0xf8aae0, the d2 caption / status text buffer (gfx.h's d2_CaptionCopy, 0x80 bytes up to d2_InputDragValue at 0xf8ab60) */
 /* ai_Unkf8f39c: view of d2_Wins (tools/data_views.py) */

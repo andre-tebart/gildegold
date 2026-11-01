@@ -44,31 +44,31 @@ typedef struct G17FIELDS {              /* 0x7c bytes, a field block (0xa68c20, 
 
 typedef char ai_AssertG17MSG[sizeof(G17MSG) == 0x99 ? 1 : -1];
 
-extern G17MSG ai_Unk9367e0[0x2000];     /* 0x9367e0, the free receive records */
+extern G17MSG cm_RecvPool[0x2000];     /* 0x9367e0, the free receive records */
 extern int ai_Unka687e4;                /* 0xa687e4, d3_Time of the start */
 extern unsigned char ai_Unka68800[];    /* 0xa68800, a long message to split (ai_Unka68d30 bytes) */
-extern G17MSG *ai_Unka68c00;            /* 0xa68c00, the free list */
-extern unsigned int ai_Unka68c04;       /* 0xa68c04 */
+extern G17MSG *cm_RecvFree;            /* 0xa68c00, the free list */
+extern unsigned int cm_GroupEndSeq;       /* 0xa68c04 */
 extern int ai_Unka68c08;                /* 0xa68c08, bytes used in ai_Unka68c20.buf */
 extern G17FIELDS ai_Unka68c20;          /* 0xa68c20 */
 extern G17FIELDS ai_Unka68ca0;          /* 0xa68ca0 */
 extern int ai_Unka68d20;                /* 0xa68d20, bytes used in ai_Unka68ca0.buf */
-extern G17MSG *ai_Unka68d24;            /* 0xa68d24, the received messages */
+extern G17MSG *cm_RecvQueue;            /* 0xa68d24, the received messages */
 extern char *cm_FieldObject;              /* 0xa68d2c, the object of the field block (fields are offsets into it) */
 extern int ai_Unka68d30;                /* 0xa68d30, length of ai_Unka68800 */
 extern char *ai_Unka68d34;              /* 0xa68d34 */
 extern unsigned char ai_Unka68d40[];    /* 0xa68d40, a joined long message */
-extern G17MSG ai_Unka69140[0x8000];     /* 0xa69140, the send ring */
-extern G17STAT ai_Unkf31160[0x8000];    /* 0xf31160 */
+extern G17MSG cm_SendRing[0x8000];     /* 0xa69140, the send ring */
+extern G17STAT cm_SendStates[0x8000];    /* 0xf31160 */
 extern G17MSG *cm_SendQueue;            /* 0xf81160, the messages to send */
 extern unsigned int ai_Unkf81164;       /* 0xf81164, length of ai_Unka68d40 */
-extern int ai_Unkf81168;       /* 0xf81168, the last sequence number */
+extern int cm_LastSeq;       /* 0xf81168, the last sequence number */
 extern G17MSG ai_Unkf81180;             /* 0xf81180, the message being received */
-extern unsigned int ai_Unkf8121c;       /* 0xf8121c */
+extern unsigned int cm_GroupFirstSeq;       /* 0xf8121c */
 extern unsigned int cm_SpeedLevel;               /* 0x60bd84, = 2 (0..4) */
-extern int ai_Unk60bd88;                /* 0x60bd88, = -1 */
-extern int ai_Unk60bd8c;                /* 0x60bd8c, = -1 */
-extern int ai_Unk60bd90;                /* 0x60bd90, = -1 */
+extern int cm_LastCharId;                /* 0x60bd88, = -1 */
+extern int cm_LastBuildingId;                /* 0x60bd8c, = -1 */
+extern int cm_LastObjectId;                /* 0x60bd90, = -1 */
 extern int ai_Unk60bd94;                /* 0x60bd94, = -1 */
 extern int (*ai_Unk60bd98[0x6a])(G17MSG *m, G17STAT *s);  /* 0x60bd98, the handler of each message type */
 extern int (*ai_Unk60bf40[0x6a])(G17MSG *m);             /* 0x60bf40, the check of each type (groups 5..6) */

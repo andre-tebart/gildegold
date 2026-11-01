@@ -180,7 +180,7 @@ extern unsigned short * ai_PlayerChar;
 extern GAPDATA full_data_628a28[];
 extern char * ai_BTypes;
 #include "cm_types.h"
-extern G17STAT ai_Unkf31160[];
+extern G17STAT cm_SendStates[];
 extern unsigned short ai_Unk76fdc4;
 extern unsigned ai_Unk889400[732];
 extern int d2_ClickedId;
@@ -13804,7 +13804,7 @@ work:
         strcpy(name, "_NACHRICHTEN_HS_05");
         goto news;
     }
-    if (*(char *)(((unsigned)&ai_Unkf31160 + 0x1) + *(int *)(ev + 0xc4) * 10) != 8)
+    if (*(char *)(((unsigned)&cm_SendStates + 0x1) + *(int *)(ev + 0xc4) * 10) != 8)
         goto arrived;
     txt_Format(text, 0x1bb2, *(unsigned short *)(ev + 0xac) * 2 + 0x9a8, b);
     if (*(char *)tp == 0x1e)

@@ -265,7 +265,7 @@ int ai_Unk48e620(AIPX *p, AIARGX *s1, AIARGX *s2)
 
     if (p->unk194 < 0x10)
         return 0;
-    flags = ((unsigned)&ai_Unka69140 + 0x4973c0);
+    flags = ((unsigned)&cm_SendRing + 0x4973c0);
     if (!ai_Unk4a58d0(p, 1, &flags, 0, util_RandomU(0x20) + 25.0f, &cid))
         return 0;
     c = &((AIPX *)ai_CharsT)[cid];
@@ -292,7 +292,7 @@ int ai_Unk48e730(AIPX *p, AIARGX *s1, AIARGX *s2)
     int flags, t, sel, a[3];
     AIPX *c;
 
-    flags = ((unsigned)&ai_Unka69140 + 0x4973c0);
+    flags = ((unsigned)&cm_SendRing + 0x4973c0);
     if (!ai_Unk4a58d0(p, 1, &flags, 0, util_RandomU(0x20) + 25.0f, &cid))
         return 0;
     c = &((AIPX *)ai_CharsT)[cid];
@@ -323,7 +323,7 @@ int ai_Unk48e830(AIPX *p, AIARGX *s1, AIARGX *s2)
     float f;
     AIPX *c;
 
-    flags = ((unsigned)&ai_Unka69140 + 0x4973c0);
+    flags = ((unsigned)&cm_SendRing + 0x4973c0);
     if (!ai_Unk4a58d0(p, 1, &flags, 0, util_RandomU(0x20) + 32.0f, &cid))
         return 0;
     c = &((AIPX *)ai_CharsT)[cid];
@@ -786,7 +786,7 @@ int ai_Unk48f600(int a, AIPX *p, int b, AIARG *o1, AIARG *o2)
         unsigned short id;
         int flags;
 
-        flags = ((unsigned)&ai_Unka69140 + 0x4973c0);
+        flags = ((unsigned)&cm_SendRing + 0x4973c0);
         if (!ai_Unk4a58d0((AIPER *)p, 1, &flags, 0, util_RandomU(0x20) + 10.0f, &id))
             goto fail;
         o2->kind = 7;
@@ -963,7 +963,7 @@ int ai_Unk48ff50(AIPX *p, AIBLD *b, AIARG *o1, AIARG *o2)
         return 0;
     if (he_FindEvent(2, 0, 0x88, 3, b->id))
         return 0;
-    flags = ((unsigned)&ai_Unka69140 + 0x4973c0);
+    flags = ((unsigned)&cm_SendRing + 0x4973c0);
     if (!ai_Unk4a58d0((AIPER *)p, 1, &flags, 0, util_RandomU(0x20) + 32.0f, &id))
         return 0;
     q = &AIC[id];
@@ -1072,7 +1072,7 @@ int ai_Unk490350(AIPX *p, AIBLD *b, AIARG *o1, AIARG *o2)
         return 0;
     if (he_FindEvent(2, 0, 0x89, 3, b->id))
         return 0;
-    flags = ((unsigned)&ai_Unka69140 + 0x4973c0);
+    flags = ((unsigned)&cm_SendRing + 0x4973c0);
     if (!ai_Unk4a58d0((AIPER *)p, 1, &flags, 0, util_RandomU(0x20) + 32.0f, &id))
         return 0;
     q = &AIC[id];
@@ -5390,7 +5390,7 @@ int ai_Unk499c10(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
             gv_GetTableRecord(0x15, &d);
             if (!d.cur || util_RandomU(3) || ai_Partner) {
                 if (o1->kind == 0) {
-                    flags = ((unsigned)&ai_Unka69140 + 0x4973c0);
+                    flags = ((unsigned)&cm_SendRing + 0x4973c0);
                     t = util_RandomU(0x20) + 32.0f;
                     if (ai_Unk4a58d0(p, 1, &flags, 0, t, &cid)) {
                         c = (AIPER *)&ai_CharsT[cid];
@@ -5749,14 +5749,14 @@ int ai_Unk49a690(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     s1.unk08 = -1;
     s1.unk10 = 0x1c;
     if (i == 9) {
-        flags = (((unsigned char *)p)[9] != 0 ? 1 : 2) | ((unsigned)&ai_Unka69140 + 0x4973c0);
+        flags = (((unsigned char *)p)[9] != 0 ? 1 : 2) | ((unsigned)&cm_SendRing + 0x4973c0);
         if (G8_4A58D0(p, 1, &flags, 10.0f, (float)util_RandomU(0x20) + 40.0f, &id) == 0)
             return 0;
         s1.kind = 7;
         s1.unk04 = ai_CharsT[id].netId;
         s1.unk08 = -1;
     } else if (i == 10) {
-        flags = (((unsigned char *)p)[9] != 1 ? 1 : 2) | ((unsigned)&ai_Unka69140 + 0x4973c0);
+        flags = (((unsigned char *)p)[9] != 1 ? 1 : 2) | ((unsigned)&cm_SendRing + 0x4973c0);
         if (G8_4A58D0(p, 1, &flags, 10.0f, (float)util_RandomU(0x20) + 40.0f, &id) == 0)
             return 0;
         s1.kind = 7;
@@ -6304,15 +6304,15 @@ int ai_Unk49b7c0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     rp = &recs[i];
     s1.unk04 = recs[i].unk08;
     if (rp->item == 0x169 || rp->item == 0x16d) {
-        flags[0] = ((unsigned)&ai_Unka69140 + 0x4973c0);
-        flags[1] = ((unsigned)&ai_Unka69140 + 0x4973c0);
+        flags[0] = ((unsigned)&cm_SendRing + 0x4973c0);
+        flags[1] = ((unsigned)&cm_SendRing + 0x4973c0);
         n = 2;
     } else {
         n = 1;
         if (rp->item == 0x29a)
-            flags[0] = ((unsigned)&ai_Unka69140 + 0x497bc0);
+            flags[0] = ((unsigned)&cm_SendRing + 0x497bc0);
         else
-            flags[0] = ((unsigned)&ai_Unka69140 + 0x4973c0);
+            flags[0] = ((unsigned)&cm_SendRing + 0x4973c0);
     }
     if (rp->item == 0x177)
         flags[0] |= 0x10000;
@@ -6637,7 +6637,7 @@ int ai_Unk49c570(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     int r, money, v, x;
     G5CH *c;
 
-    flags = ((unsigned)&ai_Unka69140 + 0x4973c0);
+    flags = ((unsigned)&cm_SendRing + 0x4973c0);
     r = util_RandomU(3);
     money = gm_Unk509ee0((AIPER *)p, ai_OwnPlayer);
     if (f != 0)

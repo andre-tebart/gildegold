@@ -70,7 +70,7 @@ unsigned char ls_SaveSlot = 0;  /* 0x6f1c38, the slot the save header records */
 /* ai_Unk76fa24: view of cm_SaveAcks (tools/data_views.py) */
 int ai_NextEventId = 0;  /* 0x6f2618 */
 extern int ai_NextCharNumber, ai_NextPlayerNumber;   /* 0x6f1bb8, 0x6f1bbc, 0x6f1bc0 */
-/* ls_RefTargets: view of ai_Unkf31160 (tools/data_views.py) */
+/* ls_RefTargets: view of cm_SendStates (tools/data_views.py) */
 int gv_WriteGraveyard();                     /* 0x4f28d0 */
 
 #define LS_W(p, sz) if (vfs_fwrite((p), (sz), 1, f) <= 0) return 0;
@@ -1290,114 +1290,51 @@ int ls_WriteHistory(int f)
   }
   return 1;
 }
-/* 0x51c560, ROUGH: converted from the Ghidra pseudocode, absolute data addresses; save writer */
+#define LS_MSG_INDEX(p, table) ((p) != 0 ? ((char *)(p) - (char *)(table)) / sizeof(G17MSG) : -1)
+/* 0x51c560, writes cm's message queues: the 0x2000 records of cm_RecvPool and then the 0x8000 of cm_SendRing (each
+   a copy of the 0x99-byte G17MSG with its prev / next pointers turned into record indices of its own table, -1 for
+   none), after the first the heads cm_RecvQueue and cm_RecvFree, after the second cm_SendQueue (as indices too),
+   then cm_LastSeq, the 0x8000 send states cm_SendStates (10 bytes each), the group bounds cm_GroupFirstSeq /
+   cm_GroupEndSeq and the three ids cm_LastCharId / cm_LastBuildingId / cm_LastObjectId. Returns 1, 0 when a write
+   fails. The reader is 0x520310. */
 
 
 int ls_WriteMessageQueues(int f)
 {
-  int iVar1;
-  int *piVar2;
-  int *puVar3;
-  char *puVar4;
-  int *puVar5;
-  unsigned local_a0;
-  int local_9c [36];
-  unsigned local_b;
-  unsigned local_7;
-  piVar2 = ((char *)((unsigned)&ai_Unk9367e0 + 0x91));
-  do {
-    puVar3 = (int *)((int)piVar2 + -0x91);
-    puVar5 = local_9c;
-    for (iVar1 = 0x26; iVar1 != 0; iVar1 = iVar1 + -1) {
-      *puVar5 = *puVar3;
-      puVar3 = puVar3 + 1;
-      puVar5 = puVar5 + 1;
+    int idx;
+    G17MSG m;
+    int i;
+
+    for (i = 0; i < 0x2000; i++) {
+        m = cm_RecvPool[i];
+        idx = LS_MSG_INDEX(cm_RecvPool[i].prev, cm_RecvPool);
+        m.prev = (G17MSG *)idx;
+        idx = LS_MSG_INDEX(cm_RecvPool[i].next, cm_RecvPool);
+        m.next = (G17MSG *)idx;
+        LS_W(&m, sizeof(G17MSG))
     }
-    iVar1 = *piVar2;
-    *(char *)puVar5 = *(char *)puVar3;
-    if (iVar1 == 0) {
-      local_b = 0xffffffff;
+    idx = LS_MSG_INDEX(cm_RecvQueue, cm_RecvPool);
+    LS_W(&idx, 4)
+    idx = LS_MSG_INDEX(cm_RecvFree, cm_RecvPool);
+    LS_W(&idx, 4)
+    for (i = 0; i < 0x8000; i++) {
+        m = cm_SendRing[i];
+        idx = LS_MSG_INDEX(cm_SendRing[i].prev, cm_SendRing);
+        m.prev = (G17MSG *)idx;
+        idx = LS_MSG_INDEX(cm_SendRing[i].next, cm_SendRing);
+        m.next = (G17MSG *)idx;
+        LS_W(&m, sizeof(G17MSG))
     }
-    else {
-      local_b = (iVar1 - 0x9367e0U) / 0x99;
-    }
-    if (piVar2[1] == 0) {
-      local_a0 = 0xffffffff;
-    }
-    else {
-      local_a0 = (piVar2[1] - 0x9367e0U) / 0x99;
-    }
-    local_7 = local_a0;
-    LS_W(local_9c, 0x99)
-    piVar2 = (int *)((int)piVar2 + 0x99);
-  } while ((int)piVar2 < ((unsigned)&ai_Unka68800 + 0x71));
-  if ((*(int *)(unsigned)&ai_Unka68d24) == 0) {
-    local_a0 = 0xffffffff;
-  }
-  else {
-    local_a0 = ((*(int *)(unsigned)&ai_Unka68d24) - 0x9367e0U) / 0x99;
-  }
-  iVar1 = vfs_fwrite(&local_a0,4,1,f);
-  if (iVar1 != 0) {
-    if ((*(int *)(unsigned)&ai_Unka68c00) == 0) {
-      local_a0 = 0xffffffff;
-    }
-    else {
-      local_a0 = ((*(int *)(unsigned)&ai_Unka68c00) - 0x9367e0U) / 0x99;
-    }
-    LS_W(&local_a0, 4)
-    piVar2 = ((char *)((unsigned)&ai_Unka69140 + 0x91));
-    do {
-      puVar3 = (int *)((int)piVar2 + -0x91);
-      puVar5 = local_9c;
-      for (iVar1 = 0x26; iVar1 != 0; iVar1 = iVar1 + -1) {
-        *puVar5 = *puVar3;
-        puVar3 = puVar3 + 1;
-        puVar5 = puVar5 + 1;
-      }
-      iVar1 = *piVar2;
-      *(char *)puVar5 = *(char *)puVar3;
-      if (iVar1 == 0) {
-        local_b = 0xffffffff;
-      }
-      else {
-        local_b = (iVar1 - 0xa69140U) / 0x99;
-      }
-      if (piVar2[1] == 0) {
-        local_a0 = 0xffffffff;
-      }
-      else {
-        local_a0 = (piVar2[1] - 0xa69140U) / 0x99;
-      }
-      local_7 = local_a0;
-      LS_W(local_9c, 0x99)
-      piVar2 = (int *)((int)piVar2 + 0x99);
-    } while ((int)piVar2 < ((unsigned)&ls_RefTargets + 0x6b));
-    if ((*(int *)(unsigned)&cm_SendQueue) == 0) {
-      local_a0 = 0xffffffff;
-    }
-    else {
-      local_a0 = ((*(int *)(unsigned)&cm_SendQueue) - 0xa69140U) / 0x99;
-    }
-    LS_W(&local_a0, 4)
-    LS_W(((char *)(unsigned)&ai_Unkf81168), 4)
-    puVar4 = ((char *)(unsigned)&ai_Unkf31160);
-    while (iVar1 = vfs_fwrite(puVar4,10,1,f), iVar1 != 0) {
-      puVar4 = puVar4 + 10;
-      if (((unsigned)&ai_Unkf31160 + 0x4ffff) < (int)puVar4) {
-        LS_W(((char *)(unsigned)&ai_Unkf8121c), 4)
-        LS_W(((char *)(unsigned)&ai_Unka68c04), 4)
-        LS_W(((char *)(unsigned)&ai_Unk60bd88), 4)
-        iVar1 = vfs_fwrite(((char *)(unsigned)&ai_Unk60bd8c),4,1,f);
-        if (iVar1 != 0) {
-          iVar1 = vfs_fwrite(((char *)(unsigned)&ai_Unk60bd90),4,1,f);
-          return iVar1 != 0;
-        }
-        return 0;
-      }
-    }
-  }
-  return 0;
+    idx = LS_MSG_INDEX(cm_SendQueue, cm_SendRing);
+    LS_W(&idx, 4)
+    LS_W(&cm_LastSeq, 4)
+    for (i = 0; i < 0x8000; i++)
+        LS_W(&cm_SendStates[i], sizeof(G17STAT))
+    LS_W(&cm_GroupFirstSeq, 4)
+    LS_W(&cm_GroupEndSeq, 4)
+    LS_W(&cm_LastCharId, 4)
+    LS_W(&cm_LastBuildingId, 4)
+    return vfs_fwrite(&cm_LastObjectId, 4, 1, f) > 0;
 }
 /* 0x51c870, the table 0x7604e8 (three words per entry at +0x18 words apart; the last entry is followed by the two further blocks 0x5dbfc0 and 0x4ed480) @deep B3 code hunks 50 after the LS_W restructure (the draft mixed if(fwrite!=0) and direct calls; the original is the LS_W macro for all five writes): the rest is VC6's induction-variable base - the original keeps esi at the entry pointer 0x7604e8 (lea [esi-0x60]/[esi]/[esi+0x68]/[esi+0xc8], add esi,4, cmp 0x760548) while ours bases esi at 0x760550 (the +0x68 word) with offsets -0xc8/-0x68/0/+0x60, same addresses, and VC6 then merges the loop's return-0 blocks to the function end where the original reuses the first check's inline epilogue at 0x51c88c. Read the whole function (24 entries of four words, then 0x5dbfc0 and 0x4ed480); tried do-while and while spellings. Q1/Q2/Q3/Q5 open (0x7604e8 table unnamed, callees ai_SaveWind/unk_Unk4ed480 undeclared here) */
 
@@ -2652,7 +2589,7 @@ int unk_Unk520200(int f)
     }
     return 0;
 }
-/* 0x520310, reads the two record pools 0x9367e0 / 0xa69140 (0x99-byte records: the references at +0x91 / +0x95 are indices turned into pointers (-1 = NULL)), the pool heads 0xa68d24 / 0xa68c00 / 0xf81160, the reference table 0xf31160 (10 bytes each, 0x2000 or 0x8000 of them from 0x1003c) and the words 0xf81168, 0xf8121c, 0xa68c04, 0x60bd88 .. 0x60bd90. Returns true when all was read @deep diff read against the source: meaning verified - the 0x99-byte pool loop 0x9367e0 .. (refs at +0x91/+0x95, -1 -> NULL, else pool + n*0x99), the pool heads a68d24 / a68c00, the 0x2000/0x8000 table from 0x1003c, the reference table 0xf31160 (10-byte entries, p[1]=0, *p=-1, byte -2 = 1), the second pool loop 0xa69140, the f81160 head and the final reads (0xf8121c, 0xa68c04, 0x60bd88 / 0x60bd8c / 0x60bd90) all match. Left is codegen: the IV base - ours keeps esi at p+4 (reads [esi-0x4] / [esi] and the record at esi-0x95), the original keeps esi at p (record at esi-0x91, refs at [esi] / [esi+0x4]) - same addresses, and the loop bound n in a stack slot vs ecx; plus the shared vs inline return-0 epilogue (xor eax,eax at 0x52039e). Readability: Q1, Q2 (ai_Unka68c00 / a68d24 / f81160 / f81168), Q3 (12 image literals), Q4. */
+/* 0x520310, reads the two record pools 0x9367e0 / 0xa69140 (0x99-byte records: the references at +0x91 / +0x95 are indices turned into pointers (-1 = NULL)), the pool heads 0xa68d24 / 0xa68c00 / 0xf81160, the reference table 0xf31160 (10 bytes each, 0x2000 or 0x8000 of them from 0x1003c) and the words 0xf81168, 0xf8121c, 0xa68c04, 0x60bd88 .. 0x60bd90. Returns true when all was read @deep diff read against the source: meaning verified - the 0x99-byte pool loop 0x9367e0 .. (refs at +0x91/+0x95, -1 -> NULL, else pool + n*0x99), the pool heads a68d24 / a68c00, the 0x2000/0x8000 table from 0x1003c, the reference table 0xf31160 (10-byte entries, p[1]=0, *p=-1, byte -2 = 1), the second pool loop 0xa69140, the f81160 head and the final reads (0xf8121c, 0xa68c04, 0x60bd88 / 0x60bd8c / 0x60bd90) all match. Left is codegen: the IV base - ours keeps esi at p+4 (reads [esi-0x4] / [esi] and the record at esi-0x95), the original keeps esi at p (record at esi-0x91, refs at [esi] / [esi+0x4]) - same addresses, and the loop bound n in a stack slot vs ecx; plus the shared vs inline return-0 epilogue (xor eax,eax at 0x52039e). Readability: Q1, Q2 (cm_RecvFree / a68d24 / f81160 / f81168), Q3 (12 image literals), Q4. */
 
 
 int unk_Unk520310(int f)
@@ -2661,64 +2598,64 @@ int unk_Unk520310(int f)
     int i, n;
     char *q;
 
-    for (p = (int *)((unsigned)&ai_Unk9367e0 + 0x91); (int)p < ((unsigned)&ai_Unka68800 + 0x71); p = (int *)((char *)p + 0x99)) {
+    for (p = (int *)((unsigned)&cm_RecvPool + 0x91); (int)p < ((unsigned)&ai_Unka68800 + 0x71); p = (int *)((char *)p + 0x99)) {
         LS_R((char *)p - 0x91, 0x99)
         if (*p == -1)
             *p = 0;
         else
-            *p = (unsigned)&ai_Unk9367e0 + *p * 0x99;
+            *p = (unsigned)&cm_RecvPool + *p * 0x99;
         if (p[1] == -1)
             p[1] = 0;
         else
-            p[1] = (unsigned)&ai_Unk9367e0 + p[1] * 0x99;
+            p[1] = (unsigned)&cm_RecvPool + p[1] * 0x99;
     }
     LS_R(&n, 4)
-    ai_Unka68d24 = n == -1 ? 0 : (unsigned)&ai_Unk9367e0 + n * 0x99;
+    cm_RecvQueue = n == -1 ? 0 : (unsigned)&cm_RecvPool + n * 0x99;
     i = 0;
     LS_R(&n, 4)
-    ai_Unka68c00 = n == -1 ? 0 : (unsigned)&ai_Unk9367e0 + n * 0x99;
+    cm_RecvFree = n == -1 ? 0 : (unsigned)&cm_RecvPool + n * 0x99;
     n = ((ls_Version < 0x1003c) - 1 & 0x6000) + 0x2000;
-    for (p = (int *)((unsigned)&ai_Unkf31160 + 0x2); (int)p < ((unsigned)((unsigned)ai_Unkf31160 + 0x50000) + 0x2); p = (int *)((char *)p + 10)) {
+    for (p = (int *)((unsigned)&cm_SendStates + 0x2); (int)p < ((unsigned)((unsigned)cm_SendStates + 0x50000) + 0x2); p = (int *)((char *)p + 10)) {
         p[1] = 0;
         *p = -1;
         *((char *)p - 2) = 1;
     }
     if (n != 0) {
-        for (p = (int *)((unsigned)&ai_Unka69140 + 0x91); i < n; p = (int *)((char *)p + 0x99)) {
+        for (p = (int *)((unsigned)&cm_SendRing + 0x91); i < n; p = (int *)((char *)p + 0x99)) {
             LS_R((char *)p - 0x91, 0x99)
             if (*p == -1)
                 *p = 0;
             else
-                *p = (unsigned)&ai_Unka69140 + *p * 0x99;
+                *p = (unsigned)&cm_SendRing + *p * 0x99;
             if (p[1] == -1)
                 p[1] = 0;
             else
-                p[1] = (unsigned)&ai_Unka69140 + p[1] * 0x99;
+                p[1] = (unsigned)&cm_SendRing + p[1] * 0x99;
             i++;
         }
     }
     i = 0;
     if (ls_Read((int)&n, 4, 1, f) == 0)
         return 0;
-    cm_SendQueue = n == -1 ? 0 : (unsigned)&ai_Unka69140 + n * 0x99;
-    LS_R(&ai_Unkf81168, 4)
+    cm_SendQueue = n == -1 ? 0 : (unsigned)&cm_SendRing + n * 0x99;
+    LS_R(&cm_LastSeq, 4)
     n = ((ls_Version < 0x1003c) - 1 & 0x6000) + 0x2000;
     if (n != 0) {
-        q = (char *)(unsigned)&ai_Unkf31160;
+        q = (char *)(unsigned)&cm_SendStates;
         do {
             LS_R(q, 10)
             i++;
             q += 10;
         } while (i < n);
     }
-    if (ls_Read((int)(unsigned)&ai_Unkf8121c, 4, 1, f) == 0)
+    if (ls_Read((int)(unsigned)&cm_GroupFirstSeq, 4, 1, f) == 0)
         return 0;
-    LS_R((unsigned)&ai_Unka68c04, 4)
-    *(int *)(unsigned)&ai_Unk60bd88 = 0;
-    if (ls_Read((int)(unsigned)&ai_Unk60bd88, 4, 1, f) == 0)
+    LS_R((unsigned)&cm_GroupEndSeq, 4)
+    *(int *)(unsigned)&cm_LastCharId = 0;
+    if (ls_Read((int)(unsigned)&cm_LastCharId, 4, 1, f) == 0)
         return 0;
-    LS_R((unsigned)&ai_Unk60bd8c, 4)
-    return ls_Read((int)(unsigned)&ai_Unk60bd90, 4, 1, f) != 0;
+    LS_R((unsigned)&cm_LastBuildingId, 4)
+    return ls_Read((int)(unsigned)&cm_LastObjectId, 4, 1, f) != 0;
 }
 /* 0x5205f0, reads the table 0x7604e8 (the counterpart of 0x51c870): the count 0x760610 and the entries; from 0x10050 the two further blocks 0x5dc0c0 and 0x4ed910. Returns 1 @deep read against the original 0x5205f0..0x5206af: meaning verified - the 0x760610 count, the entry loop p = 0x7604e8 with the reads at p-0x60 / p / p+0x68 / p+0xc8 (our int offsets -0x18 / 0 / +0x1a / +0x32 are the same addresses) to p < 0x760548 (24 entries), then the version gate (our > 0x1004f is the original's jl 0x10050) and the two calls 0x5dc0c0(f) / 0x4ed910(f, ls_Version). Left is codegen: VC6 re-bases our loop pointer to p+0x68 (reads [esi-0xc8] / [esi-0x68] / [esi+0x60], condition lea eax,[esi-0x68]) where the original keeps esi = 0x7604e8 and reads [esi-0x60] / [esi] / [esi+0x68] / [esi+0xc8], plus the f register (edi in the original). Readability: Q1, Q2 (ai_LoadWind / unk_Unk4ed910), Q3 (0x760610, 0x7604e8, 0x760548). */
 
@@ -3020,5 +2957,5 @@ fail:
 }
 
 unsigned ai_Unka68d28 = 0;  /* 0xa68d28, the received bytes and the expected length (compared unsigned */
-int ai_Unkf81168 = 0;  /* 0xf81168 .. */
+int cm_LastSeq = 0;  /* 0xf81168 .. */
 unsigned ai_Unkf81220 = 0;  /* 0xf81220 / */

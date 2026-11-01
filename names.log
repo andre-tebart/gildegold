@@ -263,3 +263,14 @@
 2026-11-01T17:51:18 0x0061a658 data ai_Unk61a658 -> ai_NextPartyId by:main why:0x61a658: 0x4e5150 gives a stored party record this id, cm.c's handler 0x4c9280 sets it from the message and increments it
 2026-11-01T17:51:18 0x006f1b88 data ai_Unk6f1b88 -> ai_NextCrimeId by:main why:0x6f1b88: the id of the next offence (cm_ExAddStraftat logs it as st_id and increments it; message 0x22 sends it)
 2026-11-01T18:05:24 0x007d6a60 data ai_Unk7d6a60 -> gm_StockBlocks by:main why:0x7d6a60: five 0x2a90-byte blocks (four header words + 0x55 goods records of 0x80 bytes), written by ls_WritePlayerSlots 0x51b340 and read back by 0x51f080; defined in f3gm.c
+2026-11-01T18:08:57 0x009367e0 data ai_Unk9367e0 -> cm_RecvPool by:main why:0x9367e0: the 0x2000 G17MSG receive records (cm.h: the free receive records); ls_WriteMessageQueues / 0x520310 save and restore them with ai_Unka68d24 / ai_Unka68c00 as indices into it
+2026-11-01T18:08:57 0x00a69140 data ai_Unka69140 -> cm_SendRing by:main why:0xa69140: the 0x8000 G17MSG records of the send ring (cm.h); cm_SendQueue indexes into it in the save
+2026-11-01T18:08:57 0x00f31160 data ai_Unkf31160 -> cm_SendStates by:main why:0xf31160: G17STAT[0x8000], the state of each sent message (cm_SendGroupState 0x4c3b50 reads .state by seq & 0x7fff)
+2026-11-01T18:08:57 0x00a68d24 data ai_Unka68d24 -> cm_RecvQueue by:main why:0xa68d24: G17MSG *, the received messages (cm.h), a pointer into cm_RecvPool
+2026-11-01T18:08:57 0x00a68c00 data ai_Unka68c00 -> cm_RecvFree by:main why:0xa68c00: G17MSG *, the free list of cm_RecvPool (cm.h)
+2026-11-01T18:08:57 0x00f81168 data ai_Unkf81168 -> cm_LastSeq by:main why:0xf81168: the last sequence number (cm.h); cm_BeginSendGroup / cm_EndSendGroup take it + 1
+2026-11-01T18:08:57 0x00f8121c data ai_Unkf8121c -> cm_GroupFirstSeq by:main why:0xf8121c: cm_BeginSendGroup 0x4c3b30 sets it to cm_LastSeq + 1, cm_SendGroupState checks the states from it
+2026-11-01T18:08:57 0x00a68c04 data ai_Unka68c04 -> cm_GroupEndSeq by:main why:0xa68c04: cm_EndSendGroup 0x4c3b40 sets it to cm_LastSeq + 1, the end of the group cm_SendGroupState checks
+2026-11-01T18:08:57 0x0060bd88 data ai_Unk60bd88 -> cm_LastCharId by:main why:0x60bd88: ai_Unk4c4450 resolves the id -2 to it; set from a character's netId (ai_Chars +4)
+2026-11-01T18:08:57 0x0060bd8c data ai_Unk60bd8c -> cm_LastBuildingId by:main why:0x60bd8c: ai_Unk4c4450 resolves the id -3 to it; set from a building's id (AIBLD +1)
+2026-11-01T18:08:57 0x0060bd90 data ai_Unk60bd90 -> cm_LastObjectId by:main why:0x60bd90: ai_Unk4c4450 resolves the id -4 to it; set from an object's objId (+2)

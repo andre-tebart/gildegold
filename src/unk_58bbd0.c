@@ -984,7 +984,7 @@ extern char ai_Chars[768][0x21c];
 extern unsigned short * ai_PlayerChar;
 extern signed char ai_Relations[768][768];
 #include "cm_types.h"
-extern G17MSG ai_Unka69140[];
+extern G17MSG cm_SendRing[];
 extern int d2_PointerObj;
 extern int d2_ClickedId;
 extern int d2_LastWindow;
@@ -18342,7 +18342,7 @@ int ai_Unk5c33c0(unsigned short param_1, unsigned short param_2, unsigned int *p
         if ((u & 0x40000) == 0 && (U_I(rec + 0x1cc) & 0x3000) != 0)
             return 0;
     }
-    if ((u & ((unsigned)&ai_Unka69140 + 0x496ec0)) != 0) {
+    if ((u & ((unsigned)&cm_SendRing + 0x496ec0)) != 0) {
         b4 = (u & 0x100000) != 0 && (kind == 6 || kind == 7);
         b5 = (u & 0x200000) != 0 && kind == 5;
         b3 = (u & 0x400000) != 0 && kind != 5 && ai_WorksForMaster((int)rec) != 0;
@@ -18976,7 +18976,7 @@ void ai_Unk5c64c0(int param_1, int *param_2, int param_3)
     int i;
     int n;
 
-    n = ai_Unk4a5ef0((struct AIPER *)param_1, 9, ((unsigned)&ai_Unka69140 + 0x19c2ca) - (*(char *)(param_1 + 9) != 0), 0.0f, 100.0f, ids);
+    n = ai_Unk4a5ef0((struct AIPER *)param_1, 9, ((unsigned)&cm_SendRing + 0x19c2ca) - (*(char *)(param_1 + 9) != 0), 0.0f, 100.0f, ids);
     *param_2 = n;
     for (i = 0; i < *param_2; i++)
         *(int *)(param_3 + i * 4) = U_I((unsigned)&ai_CharInts + ids[i] * 0x87);

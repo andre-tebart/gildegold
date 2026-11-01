@@ -110,7 +110,7 @@ extern int ai_Unk75e134;                                    /* 0x75e134 */
 extern int ai_Unk75e138;                                    /* 0x75e138 */
 #endif
 extern unsigned ai_Unka68d28;                               /* 0xa68d28 */
-extern int ai_Unkf81168;                                    /* 0xf81168 */
+extern int cm_LastSeq;                                    /* 0xf81168 */
 extern unsigned ai_Unkf81220;                               /* 0xf81220 */
 
 #endif
