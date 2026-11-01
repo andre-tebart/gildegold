@@ -24,7 +24,7 @@ typedef struct SVACTIVITY {             /* 0x20 bytes, an activity of sv_Activit
     int kind;                           /* +0x00, the AICHAR.jobKind it is for; 0 = a free entry */
     char name[0x10];                    /* +0x04, its location name ("Getier", "Trainieren"), "" for none: the script
                                            objects whose name holds it belong to it (sv_Unk52b500) */
-    int dayOnly;                        /* +0x14, nonzero: only inside the day window of the season (sv_Unk52b3c0) */
+    int dayOnly;                        /* +0x14, nonzero: only inside the day window of the season (sv_ActivityName) */
     int icon;                           /* +0x18, its state icon (sv_CharStateIcons) */
     int valueOff;                       /* +0x1c, -1 or the offset of a short in the character's +0x17c record whose
                                            value + 0xdf is a second icon (sv_CharStateIcons) */
@@ -106,8 +106,8 @@ void sv_ResetSelection(void);                                                /* 
 void sv_ClearSelection(void);                                           /* 0x52ae40 */
 void sv_HandleObjects(void);                                                /* 0x52ae70 */
 void sv_CollectGroupCharacters(char *b);                                /* 0x52b2a0 */
-int sv_RegisterActivity(int a, char *name, int c, int d, int e);               /* 0x52b350 */
-int sv_Unk52b3c0(char *c, int b, char *out);                            /* 0x52b3c0 */
+int sv_RegisterActivity(int kind, char *name, int dayOnly, int icon, int valueOff);            /* 0x52b350 */
+int sv_ActivityName(struct AICHAR *c, struct AIBLD *b, char *out);                 /* 0x52b3c0 */
 int sv_Unk52b490(char *a, int b);                                       /* 0x52b490 */
 void sv_Unk52b500(unsigned char *a);                                    /* 0x52b500 */
 void sv_Unk52bb70(int id);                                              /* 0x52bb70 */

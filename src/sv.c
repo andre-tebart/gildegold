@@ -4367,31 +4367,23 @@ int sv_RegisterActivity(int kind, char *name, int dayOnly, int icon, int valueOf
     }
     return 0;
 }
-/* 0x52b3c0, finds the 0x75ec80 record of the character kind +0x180 of c (when c is not flagged 0x1000000, +0x16c == b, and the record is not time-limited or the day time (0x770ae4)
-   lies in the window 0x617830 / 0x617840 of the current hour slot) and copies its name to out; returns 1 or 0 */
-
-int sv_Unk52b3c0(char *c, int b, char *out)
+/* 0x52b3c0, copies to out the location name of the activity (sv_Activities) of c's job kind when c is not flagged
+   0x1000000, is in the building b, and the activity is not day-only or the hour lies in the season's day window
+   (gm_DayStartHours / gm_DayEndHours); returns 1, else 0 */
+int sv_ActivityName(AICHAR *c, AIBLD *b, char *out)
 {
-    int h, i;
-    unsigned *p, u;
+    int season, i;
 
-    h = gm_ClockSeason((unsigned)&ai_Time);
-    i = 0;
-    if (SV_I((unsigned)&sv_Activities) != 0) {
-        p = (unsigned *)(unsigned)&sv_Activities;
-        u = SV_U((unsigned)&sv_Activities);
-        while (u != *(unsigned char *)(c + 0x180)) {
-            u = p[8];
-            p += 8;
-            i++;
-            if (u == 0)
-                return 0;
-        }
-        if ((*(unsigned *)(c + 0x1cc) & ((unsigned)&txt_Keys + 0x181c0)) == 0 && *(int *)(c + 0x16c) == b
-            && (((int *)(unsigned)&sv_Activities)[i * 8 + 5] == 0
-                || ((float)SV_US((unsigned)&ai_TimeHour) < *(float *)((unsigned)&gm_DayEndHours + h * 4) && *(float *)((unsigned)&gm_DayStartHours + h * 4) <= (float)SV_US((unsigned)&ai_TimeHour)))) {
-            strcpy(out, (char *)((unsigned)&sv_Activities[0].name + i * 0x20));
-            return 1;
+    season = gm_ClockSeason(&ai_Time);
+    for (i = 0; sv_Activities[i].kind != 0; i++) {
+        if (sv_Activities[i].kind == c->jobKind) {
+            if ((c->flags1cc & (1 << 24)) == 0 && c->bld == b
+                && (sv_Activities[i].dayOnly == 0
+                    || ((float)ai_TimeT.hour < gm_DayEndHours[season] && gm_DayStartHours[season] <= (float)ai_TimeT.hour))) {
+                strcpy(out, sv_Activities[i].name);
+                return 1;
+            }
+            return 0;
         }
     }
     return 0;
@@ -4894,7 +4886,7 @@ void sv_Unk52b500(unsigned char *a)
             continue;
         ok = 0;
         name[0] = 0;
-        if (sv_Unk52b3c0(c, a, name) == 0) {
+        if (sv_ActivityName((AICHAR *)c, (AIBLD *)a, name) == 0) {
             k = *kind;
             if (k == 0x16 && it != 0 && *it == 0x120 && *(int *)(g + 0x30) == *(int *)((char *)it + 2) && (*(unsigned *)(c + 0x1c8) & 0x1000) == 0) {
                 strcpy(name, "besucher");
