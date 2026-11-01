@@ -49,7 +49,6 @@ extern G7GRP ai_Unk61a348[];           /* 0x61a348 */
 extern D3SCENE d3_Scenes[];               /* 0xfd7ba0: ai_Unk5fb5b0 points at it */
 extern D3SCENE d3_Scenes[];               /* 0xfd7ba0: ai_Unk5fb5b0 points at it */
 extern D3SCENE d3_Scenes[];               /* 0xfd7ba0: ai_Unk5fb5b0 points at it */
-extern char txt_Keys[0x4800][0x50];
 extern GAPDATA full_data_91f6e0[];
 extern unsigned char he_Events[339968];
 #include "amt_types.h"
@@ -106,6 +105,18 @@ int unk_Unk4fd7e0();                    /* 0x4fd7e0 */
 #include "time_view.h"
 #include "io_text.h"
 #include "ls.h"
+#include "ahm.h"
+#include "d3_io_a.h"
+#include "err.h"
+#include "f3init.h"
+#include "he.h"
+#include "main.h"
+#include "mem.h"
+#include "sv.h"
+#include "tr.h"
+#include "txt.h"
+#include "unk_575860.h"
+#include "unk_58bbd0.h"
 void *ai_Unk5a8560(int param_1);  /* 0x5a8560 */
 #define ai_Unk5a8560K ((int (*)())ai_Unk5a8560)  /* 0x5a8560: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, ai_Unk4d88c0 0x4d88c0 move it as a word / movzx) */
