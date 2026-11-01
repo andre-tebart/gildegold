@@ -357,7 +357,7 @@ extern struct D2OBJ *d2_Objs;
 extern int ai_CameraStep;
 extern char ai_PlayerSlots[4][0x2f4];
 extern int ai_ClockMs;
-extern char ai_Unk7d6a60[0xd4d0];
+extern char gm_StockBlocks[0xd4d0];
 extern D2VIEW d2_Views[];
 extern D2WIN d2_Wins[];
 extern int sv_PopRequest;
@@ -6890,7 +6890,7 @@ void ai_Unk599ef0(char *param_1, int param_2)
             io_PrintText(0x1a11);
             d2_SetForm(win, 5);
             io_PrintText(0x1a14, (char *)(unsigned)&ai_PlayerSlots + U_I(param_1 + 0x65) * 0x2f4,
-                         *(unsigned short *)((unsigned)&ai_Unk7d6a60 + U_I(param_1 + 0x65) * 0xaa4));
+                         *(unsigned short *)((unsigned)&gm_StockBlocks + U_I(param_1 + 0x65) * 0xaa4));
             n = U_I(((unsigned)&d2_Views + 0xc) + win * 0x2ac);
             ctl = (char *)((unsigned)&d2_Wins + n * 0x3c4);
             sprintf(text, "Wappen128_ns_Stadt_%s", (char *)(unsigned)&ai_PlayerSlots + U_I(param_1 + 0x65) * 0x2f4);

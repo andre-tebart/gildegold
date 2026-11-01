@@ -33,13 +33,13 @@ extern D2VIEW d2_Views[];
 #include "amt.h"
 extern char ai_Unk91f700[];
 #define GAPDATA __declspec(align(1)) unsigned char
-extern char ai_Unk7d6a60[];                 /* 0x7d6a60, the five 0x2a90-byte stock blocks (one per player slot) */
+extern char gm_StockBlocks[];                 /* 0x7d6a60, the five 0x2a90-byte stock blocks (one per player slot) */
 /* The stock area is ONE 0xd4d0-byte object at 0x7d6a60 (five blocks of 0x2a90: four header ints, then
    0x55 records of 0x80 bytes). The other names are views into it: a separate definition would reserve
    its own memory and the block writer/reader (gm_LoadTables, unk_Unk51f080, ls_WritePlayerSlots) would then
    write over whatever the COMMON linker placed inside the 0xd4d0-byte span. */
-#define init_StockBlocks (*(char (*)[0xd4c0])((char *)ai_Unk7d6a60 + 0x10))  /* 0x7d6a70, the records of block 0 */
-#define ai_Unk7d6a64 (*(int (*)[3])((char *)ai_Unk7d6a60 + 4))  /* 0x7d6a64, the rest of block 0's header */
+#define init_StockBlocks (*(char (*)[0xd4c0])((char *)gm_StockBlocks + 0x10))  /* 0x7d6a70, the records of block 0 */
+#define ai_Unk7d6a64 (*(int (*)[3])((char *)gm_StockBlocks + 4))  /* 0x7d6a64, the rest of block 0's header */
 /* 0x7d6a90 .. 0x7d6aa8 are views into stock block 0 (the record fields the price code reads), not
    separate COMMON symbols: they start inside init_StockBlocks[0] and are indexed with the same
    0x2a90 stride as the blocks. */
@@ -3126,7 +3126,7 @@ char *gm_Query(void *list, int n, ...)
 extern struct AIBLD *ai_MarketBuilding;                /* 0x6f1bc8, the market building (group 1, 5, 10) */
 extern char * cm_FieldObject;                /* 0xa68d2c */
 int cm_AddFieldValues(unsigned char size, unsigned char n, unsigned short field, void *v);                     /* 0x4c3d00 */
-extern char ai_Unk7d6a60[0xd4d0];
+extern char gm_StockBlocks[0xd4d0];
 unsigned ai_Unk6118a8[] = { 0, 1735292266, 1430937445, 4540238, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 0 };  /* 0x6118a8 */
 unsigned ai_Unk6118f0[] = { 0, 1684365677, 1852139619, 1161907551, 1162363716, 78, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 0 };  /* 0x6118f0 */
 unsigned ai_Unk611938[] = { 12, 1735550306, 1852727661, 1095589683, 20046, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 10, 1735550306, 1852727661, 1095589682, 20046, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 11, 1735550306, 1852727661, 1095589683, 20046, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 10, 1735550306, 1852727661, 1095589682, 20046, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 9, 2053926760, 1818583398, 1601332588, 1145851731, 21569, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 10, 1818326131, 1920295532, 1701340019, 1312902495, 78, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 17, 1684955496, 1802659191, 1597272677, 1313751373, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 18, 1684955496, 1802659191, 1298100837, 5131841, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 23, 1684955496, 1802659191, 1597338213, 1313751373, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 24, 1684955496, 1802659191, 1597141605, 1313751373, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 21, 1684955496, 1802659191, 1597338213, 1313751373, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 22, 1684955496, 1802659191, 1597207141, 1313751373, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 25, 1735550306, 1852727661, 1312902495, 78, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 26, 1818326131, 1920295532, 1701340019, 1312902495, 78, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 4, 1701409360, 1919251571, 1414875999, 17748, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 3, 1601462881, 1414813003, 69, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 14, 1919251810, 846357863, 1312902495, 78, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 13, 1919251810, 846357863, 1312902495, 78, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 1, 1650813284, 1431002932, 4543572, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 2, 1650813284, 1312902495, 12878, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 15, 1969578354, 1735550306, 1818588005, 1398760812, 1094995023, 84, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 16, 1969578354, 1819436386, 1819437157, 1600613993, 1145851731, 21569, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 19, 1751344486, 1601332596, 1145851731, 21569, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 20, 1802728813, 1852142693, 1969775475, 1702524005, 1280267103, 5521732, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 7, 2053926760, 1818583398, 1601332588, 1145851731, 21569, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 8, 1818326131, 1920295532, 1701340019, 1312902495, 78, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 27, 1852139844, 1264546405, 1413563730, 21077, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 28, 1852139844, 1264546405, 1413563730, 21077, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 31, 1701276026, 1919250037, 1312902495, 78, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 32, 1701276026, 1919250037, 1312902495, 78, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 33, 1852334963, 1701079397, 1298084466, 5131841, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 34, 1852334963, 1701079397, 1298084210, 5131841, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 0, 1684955496, 1802659191, 1298100837, 5131841, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };  /* 0x611938 */
@@ -3274,7 +3274,7 @@ void gm_UpdatePrices(unsigned p, void *t)
     unsigned char d[10];   /* gm_ClockToDate writes 10 bytes: out[0..5] and the int at +6 */
     int month, n, k, a, x0, x1;
     int *pl = (int *)ai_PlayerSlots[p];
-    int *rec = ai_Unk7d6a60 + p * 0xaa4;
+    int *rec = gm_StockBlocks + p * 0xaa4;
     int i;
     char *g;
     float f;
@@ -3487,7 +3487,7 @@ int gm_Unk4ff8c0(int p, int i)
     if (k != 0x17 && k != 0x25) {
         if (p == 0)
             return (int)(*(float *)&ai_RatingBase * *(float *)(g + 8) * 0.0025 + 0.5);
-        return (int)((float)ai_Unk7d6a60[p * 0xaa4] * *(float *)(g + 8) * 0.0005);
+        return (int)((float)gm_StockBlocks[p * 0xaa4] * *(float *)(g + 8) * 0.0005);
     }
     return 0;
 }
@@ -9959,7 +9959,7 @@ int gm_Opinion(int a, int b)
 
 int gm_PlayerRecords[688] = {0};  /* 0x7d5f80, the 16 player records ( */
 int ai_Unk7d6a40 = 0;  /* 0x7d6a40, the number of family records */
-char ai_Unk7d6a60[0xd4d0] = {0}; /* 0x7d6a60, the five stock blocks (five rows of four header ints plus 0x55 records of 0x80 bytes); a tentative definition, so the COMMON linker reserves the whole span and no other global lands inside it. init_StockBlock is the same object (data.csv alias). */
+char gm_StockBlocks[0xd4d0] = {0}; /* 0x7d6a60, the five stock blocks (five rows of four header ints plus 0x55 records of 0x80 bytes); a tentative definition, so the COMMON linker reserves the whole span and no other global lands inside it. init_StockBlock is the same object (data.csv alias). */
 struct AIOBJ *ai_Objects = 0;  /* 0x7e3f34, the object instances (AIOBJ, ai.h) */
 int ai_Unk7e3f38 = 0;  /* 0x7e3f38, the depth of the child stack */
 int gm_NOffers = 0;  /* 0x7e3f3c, the number of offers */

@@ -1594,8 +1594,8 @@ typedef struct G12STOCKBLOCK {          /* the 0x55 goods records of one player;
     char pad2a80[0x10];                 /* 0x2a80 */
 } G12STOCKBLOCK;
 
-extern char ai_Unk7d6a60[];  /* 0x7d6a60, the five 0x2a90-byte stock blocks (f3gm.c's definition) */
-#define init_StockBlocks ((G12STOCKBLOCK *)(ai_Unk7d6a60 + 0x10))  /* 0x7d6a70, the records of block 0; a
+extern char gm_StockBlocks[];  /* 0x7d6a60, the five 0x2a90-byte stock blocks (f3gm.c's definition) */
+#define init_StockBlocks ((G12STOCKBLOCK *)(gm_StockBlocks + 0x10))  /* 0x7d6a70, the records of block 0; a
                                        view into the one 0xd4d0-byte object, not a separate COMMON symbol
                                        (a separate definition let the block writer/reader overwrite the
                                        globals the linker placed inside the stock area) */

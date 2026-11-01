@@ -24,8 +24,25 @@ struct D3TERRAIN;
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 extern int ai_Unk7d6a40;
-extern char ai_Unk7d6a60[];  /* 0x7d6a60, the five 0x2a90-byte stock blocks (f3gm.c's definition) */
-#define ai_Unk7d6a64 (*(int (*)[3])((char *)ai_Unk7d6a60 + 4))  /* 0x7d6a64, block 0's header tail (a view) */
+extern char gm_StockBlocks[];  /* 0x7d6a60, the five 0x2a90-byte stock blocks (f3gm.c's definition) */
+#define ai_Unk7d6a64 (*(int (*)[3])((char *)gm_StockBlocks + 4))  /* 0x7d6a64, block 0's header tail (a view) */
+typedef struct GMSTOCKREC {         /* 0x80 bytes, a goods record of a stock block (the fields ls_WritePlayerSlots
+                                       saves; their meaning is not read yet) */
+    short good;                     /* 0x00 */
+    char pad02[2];
+    int f04, f08, f0c;              /* 0x04 */
+    char pad10[0x10];
+    int f20, f24;                   /* 0x20 */
+    char pad28[4];
+    int f2c, f30, f34, f38;         /* 0x2c */
+    short f3c;                      /* 0x3c */
+    char pad3e[0x42];
+} GMSTOCKREC;
+typedef struct GMSTOCKBLOCK {       /* 0x2a90 bytes, one of the five blocks of gm_StockBlocks */
+    int head[4];                    /* 0x00 */
+    GMSTOCKREC recs[0x55];          /* 0x10 */
+} GMSTOCKBLOCK;
+#define gm_StockBlocksT ((GMSTOCKBLOCK *)gm_StockBlocks)  /* 0x7d6a60, gm_StockBlocks (f3gm.c: char[]) as its five blocks */
 extern unsigned ai_Unk91ac40[136];
 extern unsigned char ord_Statistics;
 extern unsigned char ord_StatisticsClock;
@@ -883,124 +900,95 @@ int ls_WriteSceneRecords(int f)
     }
     return 1;
 }
-/* 0x51b340, ROUGH: converted from the Ghidra pseudocode, absolute data addresses; save writer */
+/* 0x51b340, writes the five stock blocks of gm_StockBlocks and the four player slots of ai_PlayerSlots: first the
+   record count 0x55, then per block its four header words and its 0x55 goods records of 0x80 bytes (each the fields
+   +0 (2 bytes), +4, +8, +0xc, +0x20, +0x24, +0x30, +0x34, +0x38, +0x3c (2 bytes), +0x2c), then per player slot of
+   0x2f4 bytes its fields in the order of the reader 0x51f080: the name (0x20), the map position +0x40 (8), +0x48,
+   +0x4c, +0x50, the currency +0x54 (2), +0x58 (8), +0x60, +0x61, the ten pairs +0x64 and the ten pairs +0xb4 (8
+   bytes each), +0x104, +0x105, the four words +0x108 and +0x118, +0x128, the eleven privilege bytes +0x12c, +0x137,
+   the seven bytes +0x138, +0x13f .. +0x142, the eight 0x12-byte entries +0x144, +0x1d4, +0x1d8, the 0xd0 bytes
+   +0x1dc and the map offset +0x2ec (8). Returns 1, 0 when a write fails.
+   @deep read whole against 0x51b340..0x51b882: the count 0x55, the five stock blocks (4 header words, 0x55
+   records of 0x80 with the 11 fields +0 (2) +4 +8 +0xc +0x20 +0x24 +0x30 +0x34 +0x38 +0x3c (2) +0x2c) and
+   the four player slots (every field, size and loop of 0x51b513..0x51b87c) match; instruction count equal
+   (479 vs 479), 32 bytes differ. Left: only the strength-reduced record pointer's bias in the record loop
+   0x51b3de..0x51b4f1 - ours add edi, 0x14 (fields at edi-4, edi, edi+4 .. edi+0x38), the original's add
+   edi, 0x18 (edi-8, edi-4, edi .. edi+0x34); every lea displacement in that loop shifts by 4, nothing else
+   differs. Tried: a char pointer walked by 0x80 (bias 0x10), char + j*0x80 index form and
+   GMSTOCKBLOCK/GMSTOCKREC struct index (bias 0x14), a struct pointer incremented / indexed through the
+   global view (larger), the int fields as one array w[14] (no change): needs a generated variant round */
 
 
 int ls_WritePlayerSlots(int f)
 {
-  int iVar1;
-  int iVar2;
-  int iVar3;
-  char *puVar4;
-  int local_4;
-  local_4 = 0x55;
-  iVar1 = vfs_fwrite(&local_4,4,1,f);
-  if (iVar1 != 0) {
-    local_4 = 0;
-    do {
-      iVar1 = local_4;
-      iVar3 = local_4 * 0x2a90;
-      LS_W(((char *)(unsigned)&ai_Unk7d6a60) + local_4 * 0xaa4, 4)
-      LS_W(((char *)(unsigned)&ai_Unk7d6a64) + iVar1 * 0xaa4, 4)
-      LS_W(((char *)((unsigned)&ai_Unk7d6a64 + 0x4)) + iVar1 * 0xaa4, 4)
-      LS_W(((char *)((unsigned)&ai_Unk7d6a64 + 0x8)) + iVar1 * 0xaa4, 4)
-      iVar1 = 0;
-      puVar4 = ((char *)((unsigned)ai_Unk7d6a60 + 0x18)) + iVar3;
-      do {
-        LS_W(puVar4 + -8, 2)
-        LS_W(puVar4 + -4, 4)
-        LS_W(puVar4, 4)
-        LS_W(puVar4 + 4, 4)
-        LS_W(puVar4 + 0x18, 4)
-        LS_W(puVar4 + 0x1c, 4)
-        LS_W(puVar4 + 0x28, 4)
-        LS_W(puVar4 + 0x2c, 4)
-        LS_W(puVar4 + 0x30, 4)
-        LS_W(puVar4 + 0x34, 2)
-        LS_W(puVar4 + 0x24, 4)
-        iVar1 = iVar1 + 1;
-        puVar4 = puVar4 + 0x80;
-      } while (iVar1 < 0x55);
-      local_4 = local_4 + 1;
-    } while (local_4 < 5);
-    local_4 = 0;
-    while( 1 ) {
-      iVar2 = local_4;
-      iVar1 = local_4 * 0x2f4;
-      iVar3 = vfs_fwrite(((char *)(unsigned)&ai_PlayerSlots) + iVar1,0x20,1,f);
-      if (iVar3 == 0) break;
-      LS_W(((char *)(unsigned)&ai_Unk7e3f80) + iVar2 * 0xbd, 8)
-      LS_W(((char *)((unsigned)&ai_PlayerSlots + 0x48)) + iVar1, 1)
-      LS_W(((char *)((unsigned)&ai_PlayerSlots + 0x4c)) + iVar1, 4)
-      LS_W(((char *)((unsigned)&ai_PlayerSlots + 0x50)) + iVar1, 4)
-      LS_W(((char *)(unsigned)&ai_Unk7e3f94) + iVar2 * 0x17a, 2)
-      LS_W(((char *)((unsigned)&ai_Unk7e3f94 + 0x4)) + iVar1, 8)
-      LS_W(((char *)((unsigned)&ai_Unk7e3f94 + 0xc)) + iVar1, 1)
-      LS_W(((char *)((unsigned)&ai_Unk7e3f94 + 0xd)) + iVar1, 1)
-      iVar2 = 0;
-      puVar4 = ((char *)((unsigned)&ai_Unk7e3f94 + 0x10)) + iVar1;
-      do {
-        LS_W(puVar4, 8)
-        iVar2 = iVar2 + 1;
-        puVar4 = puVar4 + 8;
-      } while (iVar2 < 10);
-      iVar2 = 0;
-      puVar4 = ((char *)((unsigned)&ai_Unk7e3f94 + 0x60)) + iVar1;
-      do {
-        LS_W(puVar4, 8)
-        iVar2 = iVar2 + 1;
-        puVar4 = puVar4 + 8;
-      } while (iVar2 < 10);
-      LS_W(((char *)((unsigned)&ai_Unk7e3ff8 + 0x4c)) + iVar1, 1)
-      LS_W(((char *)((unsigned)&ai_Unk7e3ff8 + 0x4d)) + iVar1, 1)
-      iVar2 = 0;
-      puVar4 = ((char *)(unsigned)&ai_Unk7e4048) + iVar1;
-      do {
-        LS_W(puVar4, 4)
-        iVar2 = iVar2 + 1;
-        puVar4 = puVar4 + 4;
-      } while (iVar2 < 4);
-      iVar2 = 0;
-      puVar4 = ((char *)(unsigned)&ai_Unk7e4058) + iVar1;
-      do {
-        LS_W(puVar4, 4)
-        iVar2 = iVar2 + 1;
-        puVar4 = puVar4 + 4;
-      } while (iVar2 < 4);
-      LS_W(((char *)((unsigned)&ai_Unk7e4058 + 0x10)) + iVar1, 4)
-      iVar2 = 0;
-      do {
-        LS_W(((char *)((unsigned)&ai_Unk7e4058 + 0x14)) + iVar2 + iVar1, 1)
-        iVar2 = iVar2 + 1;
-      } while (iVar2 < 0xb);
-      LS_W(((char *)((unsigned)&ai_Unk7e4058 + 0x1f)) + iVar1, 1)
-      iVar2 = 0;
-      do {
-        LS_W(((char *)((unsigned)&ai_Unk7e4058 + 0x20)) + iVar2 + iVar1, 1)
-        iVar2 = iVar2 + 1;
-      } while (iVar2 < 7);
-      LS_W(((char *)((unsigned)&ai_Unk7e4058 + 0x27)) + iVar1, 1)
-      LS_W(((char *)((unsigned)&ai_Unk7e4058 + 0x28)) + iVar1, 1)
-      LS_W(((char *)((unsigned)&ai_Unk7e4058 + 0x29)) + iVar1, 1)
-      LS_W(((char *)((unsigned)&ai_Unk7e4058 + 0x2a)) + iVar1, 1)
-      iVar2 = 0;
-      puVar4 = ((char *)((unsigned)&ai_Unk7e4058 + 0x2c)) + iVar1;
-      do {
-        LS_W(puVar4, 0x12)
-        iVar2 = iVar2 + 1;
-        puVar4 = puVar4 + 0x12;
-      } while (iVar2 < 8);
-      LS_W(((char *)((unsigned)&ai_Unk7e4058 + 0xbc)) + iVar1, 4)
-      LS_W(((char *)((unsigned)&ai_Unk7e4058 + 0xc0)) + iVar1, 4)
-      LS_W(((char *)((unsigned)&ai_Unk7e4058 + 0xc4)) + iVar1, 0xd0)
-      LS_W(((char *)(unsigned)&ai_Unk7e422c) + iVar1, 8)
-      local_4 = local_4 + 1;
-      if (3 < local_4) {
-        return 1;
-      }
+    int n;
+    int j;
+    char *rec;
+    char *slot;
+    GMSTOCKBLOCK *b;
+
+    n = 0x55;
+    if (vfs_fwrite(&n, 4, 1, f) <= 0)
+        return 0;
+    for (n = 0; n < 5; n++) {
+        b = &gm_StockBlocksT[n];
+        LS_W(&b->head[0], 4)
+        LS_W(&b->head[1], 4)
+        LS_W(&b->head[2], 4)
+        LS_W(&b->head[3], 4)
+        for (j = 0; j < 0x55; j++) {
+            LS_W(&b->recs[j].good, 2)
+            LS_W(&b->recs[j].f04, 4)
+            LS_W(&b->recs[j].f08, 4)
+            LS_W(&b->recs[j].f0c, 4)
+            LS_W(&b->recs[j].f20, 4)
+            LS_W(&b->recs[j].f24, 4)
+            LS_W(&b->recs[j].f30, 4)
+            LS_W(&b->recs[j].f34, 4)
+            LS_W(&b->recs[j].f38, 4)
+            LS_W(&b->recs[j].f3c, 2)
+            LS_W(&b->recs[j].f2c, 4)
+        }
     }
-  }
-  return 0;
+    for (n = 0; n < 4; n++) {
+        slot = ai_PlayerSlots[n];
+        LS_W(slot, 0x20)
+        LS_W(slot + 0x40, 8)
+        LS_W(slot + 0x48, 1)
+        LS_W(slot + 0x4c, 4)
+        LS_W(slot + 0x50, 4)
+        LS_W(slot + 0x54, 2)
+        LS_W(slot + 0x58, 8)
+        LS_W(slot + 0x60, 1)
+        LS_W(slot + 0x61, 1)
+        for (j = 0, rec = slot + 0x64; j < 10; j++, rec += 8)
+            LS_W(rec, 8)
+        for (j = 0, rec = slot + 0xb4; j < 10; j++, rec += 8)
+            LS_W(rec, 8)
+        LS_W(slot + 0x104, 1)
+        LS_W(slot + 0x105, 1)
+        for (j = 0, rec = slot + 0x108; j < 4; j++, rec += 4)
+            LS_W(rec, 4)
+        for (j = 0, rec = slot + 0x118; j < 4; j++, rec += 4)
+            LS_W(rec, 4)
+        LS_W(slot + 0x128, 4)
+        for (j = 0; j < 0xb; j++)
+            LS_W(slot + 0x12c + j, 1)
+        LS_W(slot + 0x137, 1)
+        for (j = 0; j < 7; j++)
+            LS_W(slot + 0x138 + j, 1)
+        LS_W(slot + 0x13f, 1)
+        LS_W(slot + 0x140, 1)
+        LS_W(slot + 0x141, 1)
+        LS_W(slot + 0x142, 1)
+        for (j = 0, rec = slot + 0x144; j < 8; j++, rec += 0x12)
+            LS_W(rec, 0x12)
+        LS_W(slot + 0x1d4, 4)
+        LS_W(slot + 0x1d8, 4)
+        LS_W(slot + 0x1dc, 0xd0)
+        LS_W(slot + 0x2ec, 8)
+    }
+    return 1;
 }
 /* 0x51b890, writes the two relation maps ai_Relations / ai_RelationMemory (0x300 x 0x300 bytes, row by row) */
 
