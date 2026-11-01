@@ -38,6 +38,26 @@
 #undef d3_MirBeginFrame
 #include "d3_light.h"
 #include "data_views.h"
+#include "d3_d3d.h"
+#include "d3_fl.h"
+#include "d3_int_io.h"
+#include "d3_interface.h"
+#include "d3_io_a.h"
+#include "d3_io_t.h"
+#include "d3_par.h"
+#include "d3_sm.h"
+#include "d3_snd.h"
+#include "d3_tools.h"
+#include "d3s.h"
+#include "dd_vesa.h"
+#include "f3gm.h"
+#include "f3init.h"
+#include "mem.h"
+#include "tb.h"
+#include "ts_texture.h"
+#include "unk_458810.h"
+#include "unk_4591a0.h"
+#include "unk_4a7140.h"
 #define d3_SetBlendStateI ((void (*)(int, int, int))d3_SetBlendState)  /* 0x4387b0 (d3_d3d.c: unsigned char x3): this unit passes the three flags as int (d3_DrawSortedD3D, draft; the unsigned char prototype gives 2225 bytes against the original's 2211, the int view 2229: a lead, not settled) */
 #define dd_ClearB ((void (*)(D3RECT *, unsigned char, unsigned char, unsigned char))dd_Clear)  /* 0x41e100 (dd_vesa.h: RECT *, int x3): @original this unit passes the fog colour as bytes, its D3RECT viewport */
 #define d3_MirBeginFrameE ((void (*)(D3OBJECT *, D3OBJECT **))d3_MirBeginFrame)  /* 0x4554b0 (d3_mir.h: D3MIRROR *): this unit passes the mirror as its D3OBJECT ** view */
@@ -50,11 +70,7 @@
 #define d3_AnimListHead (*(void **)((char *)d3_Unkfc2580 + 0x160))    /* 0xfc26e0 */
 #define d3_Unkfc26e4 (*(int *)((char *)d3_Unkfc2580 + 0x164))         /* 0xfc26e4 */
 extern D3INITCFG d3_Cfg;
-extern struct D3DCONFIG d3d_Config;
-extern struct D3IOANIMDATA d3_AnimHead;
-extern struct D3IOOBJ d3_StockHead;
 extern D3PARTSYS d3_ParEnd;
-extern struct D3DCARD d3d_UsedCard;
 void d3fl_FreeMap(struct D3FLMAP *map);     /* 0x43ff90, d3_fl.c (d3.h types d3_Terrain as void *) */
 /* 0x438c30, the next sibling that starts a new group (state bit 0), for top-level objects. */
 D3OBJECT *d3_NextGroup(D3OBJECT *obj)
