@@ -12,6 +12,12 @@
 #include "d3_engine.h"
 #include "d3_io_t.h"
 #include "d3_io_fl.h"
+#include "bio.h"
+#include "d3_io_b.h"
+#include "d3_vec.h"
+#include "mem.h"
+#include "ts_texture.h"
+#include "vfs.h"
 
 /* 0x450860, loads a mesh from its fast chunk file (the cache the BGF loader looks in first); returns 0 when
    there is none
