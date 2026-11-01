@@ -5,7 +5,5 @@ struct XOBJ;
 #define UNK_4591A0_H
 
 
-extern float d3_MinZ;                       /* 0xfc5344 */
-extern float d3_MaxZ;                       /* 0xfc5338 */
 
 #endif
