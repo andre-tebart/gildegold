@@ -1748,7 +1748,7 @@ exe	0x004a5a30	ai_PickPartnerInRange	am	draft	draft
 exe	0x004a5b50	ai_Unk4a5b50	am	draft	draft		
 exe	0x004a5d30	ai_Unk4a5d30	am	draft	draft		
 exe	0x004a5ef0	ai_FindCandidates	am	draft	draft		
-exe	0x004a61d0	ai_Unk4a61d0	am	draft	draft		
+exe	0x004a61d0	ai_PickPartnerChainLevel	am	draft	draft		
 exe	0x004a63f0	ai_PickActionBuilding	am	draft	draft		
 exe	0x004a6570	ai_Unk4a6570	am	draft	draft		
 exe	0x004a66f0	ai_Unk4a66f0	am	byte	draft		
@@ -1809,16 +1809,16 @@ exe	0x004aa940	aip_ExecPamphlet	unk_4a7140	byte	readable
 exe	0x004aaa10	ai_Unk4aaa10	unk_4a7140	byte	draft		
 exe	0x004aaae0	aip_ExecAnschwaerzen	unk_4a7140	byte	readable		
 exe	0x004aab90	ai_TrustedOfTwo	unk_4a7140	draft	readable	deep	
-exe	0x004aad30	ai_TrustedOfFour	unk_4a7140	draft	draft		
+exe	0x004aad30	ai_TrustedOfFour	unk_4a7140	draft	readable	deep	
 exe	0x004aaef0	ai_Unk4aaef0	unk_4a7140	byte	draft		
-exe	0x004aafb0	ai_Unk4aafb0	unk_4a7140	draft	draft		
-exe	0x004ab080	ai_Unk4ab080	unk_4a7140	draft	draft		
-exe	0x004ab2c0	ai_Unk4ab2c0	unk_4a7140	draft	draft		
-exe	0x004ab3e0	ai_Unk4ab3e0	unk_4a7140	draft	draft		
-exe	0x004ab6b0	ai_Unk4ab6b0	unk_4a7140	draft	draft		
+exe	0x004aafb0	ai_ExecMessage74	unk_4a7140	byte	readable		
+exe	0x004ab080	ai_DecideBuyDunkleEcke	unk_4a7140	byte	readable		
+exe	0x004ab2c0	ai_ExecBuyDunkleEcke	unk_4a7140	byte	readable		
+exe	0x004ab3e0	ai_DecideBlutrache	unk_4a7140	draft	readable	deep	
+exe	0x004ab6b0	ai_ExecBlutrache	unk_4a7140	byte	readable		
 exe	0x004ab7f0	ai_Unk4ab7f0	unk_4a7140	byte	draft		
 exe	0x004ab9f0	ai_Unk4ab9f0	unk_4a7140	byte	draft		
-exe	0x004abac0	ai_Unk4abac0	unk_4a7140	draft	draft		
+exe	0x004abac0	ai_DecideTheater	unk_4a7140	byte	readable		
 exe	0x004abc60	ai_Unk4abc60	unk_4a7140	shape	draft		
 exe	0x004abd00	ai_Unk4abd00	unk_4a7140	shape	draft		
 exe	0x004abe60	ai_Unk4abe60	unk_4a7140	byte	draft		
@@ -2244,7 +2244,7 @@ exe	0x004c5bc0	ai_Unk4c5bc0	cm	byte	draft
 exe	0x004c5c40	ai_Unk4c5c40	cm	draft	draft		
 exe	0x004c5ca0	ai_Unk4c5ca0	cm	draft	draft		
 exe	0x004c5d00	ai_Unk4c5d00	cm	byte	draft		
-exe	0x004c5d40	ai_Unk4c5d40	cm	byte	draft		
+exe	0x004c5d40	cm_SendScriptMessage	cm	byte	draft		
 exe	0x004c5d80	ai_Unk4c5d80	cm	byte	draft		
 exe	0x004c5dc0	ai_Unk4c5dc0	cm	draft	draft		
 exe	0x004c5e80	cm_SendMessage56	cm	byte	draft		
@@ -2838,7 +2838,7 @@ exe	0x004f4460	unk_Unk4f4460	gv	draft	draft
 exe	0x004f48f0	unk_Unk4f48f0	gv	byte	draft		
 exe	0x004f4970	unk_Unk4f4970	gv	draft	draft		
 exe	0x004f4d10	unk_Unk4f4d10	gv	byte	draft		
-exe	0x004f4d30	unk_Unk4f4d30	gv	draft	draft		
+exe	0x004f4d30	gv_GetGraveInfo	gv	draft	draft		
 exe	0x004f4e20	ord_ApplyForOffice	ord	draft	readable	deep	
 exe	0x004f4f20	ord_LevelOrder	ord	draft	readable	deep	
 exe	0x004f4ff0	ord_EspionageResultOrder	ord	byte	readable		
@@ -3308,7 +3308,7 @@ exe	0x00521960	sv_SelectPanelObject	sv	draft	readable	deep
 exe	0x00521ba0	sv_DrawPanelPointer	sv	draft	readable	deep	
 exe	0x00521c10	sv_SceneLoadProgress	sv	shape	draft		
 exe	0x00521e70	sv_BuildScreenLayout	sv	shape	draft		
-exe	0x00522040	sv_PanelImage	sv	draft	readable		
+exe	0x00522040	sv_PanelImage	sv	byte	readable		
 exe	0x00522100	sv_SetPanelEnabled	sv	byte	draft		
 exe	0x00522280	sv_Unk522280	sv	byte	draft		
 exe	0x005223c0	sv_DestroyScreen	sv	byte	draft		
@@ -3473,7 +3473,7 @@ exe	0x00537c70	main_PreloadSound	main	byte	draft
 exe	0x00537db0	main_FreeSoundBanks	main	byte	draft		
 exe	0x00537de0	main_Unk537de0	main	byte	draft		
 exe	0x00537f40	main_EndGame	main	byte	draft		
-exe	0x00538140	main_RundenBeginn	main	byte	draft		
+exe	0x00538140	main_RundenBeginn	main	byte	readable		
 exe	0x005384e0	main_EndRound	main	draft	draft	deep	
 exe	0x00539620	main_ReplaceFigure	main	draft	draft	deep	
 exe	0x00539870	main_RoundReport	main	draft	draft	deep	
