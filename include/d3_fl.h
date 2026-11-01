@@ -98,9 +98,9 @@ typedef struct D3FLTILE {           /* 0x64 bytes, 8 x 8 of them in D3FLMAP */
     D3FLPOLY *wpolys;               /* 0x2c */
     void *split;                    /* 0x30 */
     D3FLWREG *wregions;             /* 0x34 */
-    int unk38;                      /* 0x38 */
+    int nsplit;                     /* 0x38, D3FLSPLIT records in split (the extra edge vertices, d3fl_Draw) */
     void *bp;                       /* 0x3c */
-    int unk40;                      /* 0x40 */
+    int nbpUsed;                    /* 0x40, uv triples of bp in use (the split triangles, d3fl_Draw) */
     int nbp;                        /* 0x44 */
     float lodDistBias;              /* 0x48, added to both lod distance thresholds (nothing writes it: 0) */
     float centerDist;               /* 0x4c, length of center: the tile box's distance from the camera */

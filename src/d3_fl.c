@@ -1935,21 +1935,28 @@ void d3fl_DrawWater(D3FLMAP *map, D3FLTILE *t)
     (v)->c.b = min(0xff, iv);                                                   \
     (v)->specular = (v)->color;
 
-/* world position of map point (X0, Z0) at height 0, as D3FL_CORNER */
+/* camera-space position of map point (X0, Z0) at height 0, as the tile vertices: the x step (a), plus the
+   origin, plus the z step (q) */
 #define D3FL_POS(p, X0, Z0)                                                     \
-    p.x = d3fl_AxisX.x * (X0) + d3fl_Origin.x;                                  \
-    p.y = d3fl_AxisX.y * (X0) + d3fl_Origin.y;                                  \
-    p.z = d3fl_AxisX.z * (X0) + d3fl_Origin.z;                                  \
-    p.x = d3fl_AxisZ.x * (Z0) + p.x;                                            \
-    p.y = d3fl_AxisZ.y * (Z0) + p.y;                                            \
-    p.z = d3fl_AxisZ.z * (Z0) + p.z;
+    a.x = d3fl_AxisX.x * (X0);                                                  \
+    a.y = d3fl_AxisX.y * (X0);                                                  \
+    a.z = d3fl_AxisX.z * (X0);                                                  \
+    p.x = d3fl_Origin.x + a.x;                                                  \
+    p.y = d3fl_Origin.y + a.y;                                                  \
+    p.z = d3fl_Origin.z + a.z;                                                  \
+    q.x = d3fl_AxisZ.x * (Z0);                                                  \
+    q.y = d3fl_AxisZ.y * (Z0);                                                  \
+    q.z = d3fl_AxisZ.z * (Z0);                                                  \
+    p.x = q.x + p.x;                                                            \
+    p.y = q.y + p.y;                                                            \
+    p.z = q.z + p.z;
 
 #define T map->tiles[y][x]
 
 /* 0x4439e0, draws the floor: transforms the map into camera space; if the map is dirty, rebuilds the tile meshes
    (vertices, lit from the light map, and triangles; extra vertices on edges next to finer tiles), projects them and
    culls the triangles; then animates the water (water != 0) and queues the visible triangles of all tiles,
-   rendering their cache textures on first use */
+   rendering their cache textures on first use @deep read the whole function against the original 0x4439e0..0x4460d0 (light colours, camera transform of origin and axes, the tile vertex / triangle rebuild with GetTexture and the jitter uv, the four edge blocks of extra split vertices, the split re-light pass, the projection and culling, UpdateWater / DrawWater, the per-tile queueing and cache re-render), segment by segment between calls and the D3FL_LIGHT fistp sites; fixed: D3FL_POS in the original's two phases (a = AxisX * X; p = Origin + a; q = AxisZ * Z; p = q + p, as the tile vertex block writes it: the original stores the x products to the stack and adds the origin first, 0x444b3e..0x444c45), which brought the four edge blocks from -13 / -19 / -5 / -7 to -7 / -12 / +2 instructions; D3FLTILE.unk38 / unk40 named nsplit / nbpUsed from their use here. ours 2791 vs 2816 instructions, frame 0x14c vs 0x150. Left: allocation and scheduling throughout: the triangle setup of each quad keeps v0 / v1 in ebx / edi swapped with the original's edi / ebx and stores the uv / vertex pointers in another order (0x4442ff..0x444396); the edge blocks load the tile fields (+0xf0 / +0x100 / +0x108 / +0x11c / +0x120) in another order and spill other temporaries ('- mov [ebp-0x118],0 / - mov [ebp-0x128],0' vs '+ xor edx,edx / + mov [ebp-0x10c],edx', 0x444b2d); the split counters (+0xf0 / +0x100 / +0x118 / +0x120) incremented in another order (0x445b7a); the frame counters at the end (d3_TriCount / d3_VertCount / d3_DrawnVerts, 0x446016); one stack dword fewer in ours. */
 void d3fl_Draw(D3FLMAP *map, char water)
 {
     D3OBJECT *cam;
@@ -2141,8 +2148,8 @@ void d3fl_Draw(D3FLMAP *map, char water)
                             ny -= 4 / s;
                         mx = x * n;
                         my = y * n;
-                        T.unk40 = 0;
-                        T.unk38 = 0;
+                        T.nbpUsed = 0;
+                        T.nsplit = 0;
                         sp = T.split;
                         if (x < 7 && map->tiles[y][x + 1].lodLevel > 0 && map->tiles[y][x + 1].lodLevel < s) {
                             /* right edge */
@@ -2180,7 +2187,7 @@ void d3fl_Draw(D3FLMAP *map, char water)
                                         D3FL_COPY_TO(np, &poly[1], 0x28)
                                         poly[1].v[2] = (D3FLPOINT *)v;
                                         poly[1].uv = uv;
-                                        T.unk40++;
+                                        T.nbpUsed++;
                                         uv += 6;
                                         D3FL_COPY_TO(uv, np->uv, 0x18)
                                         np->uv = uv;
@@ -2195,7 +2202,7 @@ void d3fl_Draw(D3FLMAP *map, char water)
                                         D3FL_COPY_TO(np, &poly[1], 0x28)
                                         poly[1].v[0] = (D3FLPOINT *)v;
                                         poly[1].uv = uv;
-                                        T.unk40++;
+                                        T.nbpUsed++;
                                         uv += 6;
                                         D3FL_COPY_TO(uv, np->uv, 0x18)
                                         np->uv = uv;
@@ -2207,10 +2214,10 @@ void d3fl_Draw(D3FLMAP *map, char water)
                                     sp++;
                                     np->zOfs = 16.0f;
                                     np++;
-                                    T.unk40++;
+                                    T.nbpUsed++;
                                     T.npolys++;
                                     v++;
-                                    T.unk38++;
+                                    T.nsplit++;
                                     T.npoints++;
                                 }
                                 p.x += dz.x;
@@ -2226,7 +2233,7 @@ void d3fl_Draw(D3FLMAP *map, char water)
                             ly = half + my;
                             v = (D3PVERT *)T.points + T.npoints;
                             np = T.polys + T.npolys;
-                            uv = (float *)((D3FLTRIUV *)T.bp + T.unk40);
+                            uv = (float *)((D3FLTRIUV *)T.bp + T.nbpUsed);
                             poly = T.polys;
                             D3FL_POS(p, mx, ly)
                             fs = (float)s;
@@ -2256,7 +2263,7 @@ void d3fl_Draw(D3FLMAP *map, char water)
                                         D3FL_COPY_TO(np, poly, 0x28)
                                         poly->v[0] = (D3FLPOINT *)v;
                                         poly->uv = uv;
-                                        T.unk40++;
+                                        T.nbpUsed++;
                                         uv += 6;
                                         D3FL_COPY_TO(uv, np->uv, 0x18)
                                         np->uv = uv;
@@ -2271,7 +2278,7 @@ void d3fl_Draw(D3FLMAP *map, char water)
                                         D3FL_COPY_TO(np, poly, 0x28)
                                         poly->v[0] = (D3FLPOINT *)v;
                                         poly->uv = uv;
-                                        T.unk40++;
+                                        T.nbpUsed++;
                                         uv += 6;
                                         D3FL_COPY_TO(uv, np->uv, 0x18)
                                         np->uv = uv;
@@ -2283,11 +2290,11 @@ void d3fl_Draw(D3FLMAP *map, char water)
                                     sp++;
                                     np->zOfs = 16.0f;
                                     np++;
-                                    T.unk40++;
+                                    T.nbpUsed++;
                                     T.npolys++;
                                     v++;
                                     T.npoints++;
-                                    T.unk38++;
+                                    T.nsplit++;
                                 }
                                 p.x += dz.x;
                                 p.y += dz.y;
@@ -2302,7 +2309,7 @@ void d3fl_Draw(D3FLMAP *map, char water)
                             lx = half + mx;
                             v = (D3PVERT *)T.points + T.npoints;
                             np = T.polys + T.npolys;
-                            uv = (float *)((D3FLTRIUV *)T.bp + T.unk40);
+                            uv = (float *)((D3FLTRIUV *)T.bp + T.nbpUsed);
                             poly = T.polys;
                             D3FL_POS(p, lx, my)
                             fs = (float)s;
@@ -2332,7 +2339,7 @@ void d3fl_Draw(D3FLMAP *map, char water)
                                         D3FL_COPY_TO(np, &poly[1], 0x28)
                                         poly[1].uv = uv;
                                         poly[1].v[0] = (D3FLPOINT *)v;
-                                        T.unk40++;
+                                        T.nbpUsed++;
                                         uv += 6;
                                         D3FL_COPY_TO(uv, np->uv, 0x18)
                                         np->uv = uv;
@@ -2348,7 +2355,7 @@ void d3fl_Draw(D3FLMAP *map, char water)
                                         D3FL_COPY_TO(np, poly, 0x28)
                                         poly->uv = uv;
                                         poly->v[2] = (D3FLPOINT *)v;
-                                        T.unk40++;
+                                        T.nbpUsed++;
                                         uv += 6;
                                         D3FL_COPY_TO(uv, np->uv, 0x18)
                                         np->uv = uv;
@@ -2360,11 +2367,11 @@ void d3fl_Draw(D3FLMAP *map, char water)
                                     sp++;
                                     np->zOfs = 16.0f;
                                     np++;
-                                    T.unk40++;
+                                    T.nbpUsed++;
                                     T.npolys++;
                                     v++;
                                     T.npoints++;
-                                    T.unk38++;
+                                    T.nsplit++;
                                 }
                                 p.x += dx.x;
                                 p.y += dx.y;
@@ -2381,7 +2388,7 @@ void d3fl_Draw(D3FLMAP *map, char water)
                             v = (D3PVERT *)T.points + T.npoints;
                             np = T.polys + T.npolys;
                             D3FL_POS(p, lx, ly)
-                            uv = (float *)((D3FLTRIUV *)T.bp + T.unk40);
+                            uv = (float *)((D3FLTRIUV *)T.bp + T.nbpUsed);
                             fs = (float)s;
                             dx.x = d3fl_AxisX.x * fs;
                             dx.y = d3fl_AxisX.y * fs;
@@ -2412,7 +2419,7 @@ void d3fl_Draw(D3FLMAP *map, char water)
                                     D3FL_COPY_TO(np, pp, 0x28)
                                     pp->uv = uv;
                                     pp->v[2] = (D3FLPOINT *)v;
-                                    T.unk40++;
+                                    T.nbpUsed++;
                                     uv += 6;
                                     D3FL_COPY_TO(uv, np->uv, 0x18)
                                     np->uv = uv;
@@ -2421,12 +2428,12 @@ void d3fl_Draw(D3FLMAP *map, char water)
                                     uv += 6;
                                     np->v[1] = (D3FLPOINT *)v;
                                     np->zOfs = 16.0f;
-                                    T.unk40++;
+                                    T.nbpUsed++;
                                     T.npolys++;
                                     v++;
                                     sp++;
                                     T.npoints++;
-                                    T.unk38++;
+                                    T.nsplit++;
                                     np++;
                                 }
                                 p.x += dx.x;
@@ -2438,9 +2445,9 @@ void d3fl_Draw(D3FLMAP *map, char water)
                             }
                         }
                     }
-                    if (T.lodLevel > 0 && T.unk38 > 0 && !changed)
+                    if (T.lodLevel > 0 && T.nsplit > 0 && !changed)
                         /* same levels: move the edge vertices */
-                        for (i = 0, sp = T.split; i < T.unk38; i++, sp++) {
+                        for (i = 0, sp = T.split; i < T.nsplit; i++, sp++) {
                             h = height[sp->y * size + sp->x];
                             fx = (float)sp->x;
                             p.x = d3fl_AxisX.x * fx + d3fl_Origin.x;
