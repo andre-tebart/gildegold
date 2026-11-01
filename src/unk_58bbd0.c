@@ -10646,7 +10646,7 @@ void ai_Top5Window(void)
                 ai_AmountRowStatus((int *)&rec[i]);
                 ai_Unk5be720(half - w - 0x87, y - 8, U_I((unsigned)&d2_LastWindow), (int *)&rec[i]);
                 if (rec[i] == 0)
-                    strcpy(buf, (char *)U_I((unsigned)&ai_Unk143b3f4));
+                    strcpy(buf, (char *)U_I((unsigned)&txt_NoRelative));
                 else
                     txt_Format(buf, 0x196d, id[i]);
                 ai_Unk5bd1f0(buf, x, y, (*(short *)(U_I((unsigned)&d2_LastWindowPtr) + 8) - x) + 0x14,

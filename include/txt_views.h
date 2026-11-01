@@ -34,7 +34,7 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define ai_Unk143b178                            (*(char * (*)[152])((char *)txt_Ptrs + 0x00fb8))  /* 0x143b178 */
 #define ai_Unk143b3d8                            (*(char * (*)[3])((char *)txt_Ptrs + 0x01218))  /* 0x143b3d8 */
 #define ai_Unk143b3e4                            (*(char * (*)[4])((char *)txt_Ptrs + 0x01224))  /* 0x143b3e4 */
-#define ai_Unk143b3f4                            (*(char * *)((char *)txt_Ptrs + 0x01234))  /* 0x143b3f4 */
+#define txt_NoRelative                            (*(char * *)((char *)txt_Ptrs + 0x01234))  /* 0x143b3f4 */
 #define full_data_143b3f8                        (*(unsigned char (*)[12])((char *)txt_Ptrs + 0x01238))  /* 0x143b3f8 */
 #define ai_BuildingNames                         (*(int (*)[1304])((char *)txt_Ptrs + 0x01240))  /* 0x143b400 */
 #define ai_Unk143c860                            (*(int (*)[50][2])((char *)txt_Ptrs + 0x026a0))  /* 0x143c860 */

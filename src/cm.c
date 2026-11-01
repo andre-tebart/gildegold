@@ -14873,7 +14873,7 @@ void ai_Unk4e5b50(char *c, char *buf)
         if (o != 0)
             sprintf(tmp, "%i\t%s", *(int *)(o + 4), o + 0x30);
         else
-            sprintf(tmp, "%i\t%s", -1, ai_Unk143b3f4);
+            sprintf(tmp, "%i\t%s", -1, txt_NoRelative);
         strcat(buf, tmp);
         p++;
     }
