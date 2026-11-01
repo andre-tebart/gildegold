@@ -2352,21 +2352,20 @@ int amt_CanUseMayorPower3(char *c)
    ids), gm_Shuffled picks one or two of those goods and their price records (gm_FindGoods) get the factor gm_GetSkill(c, 2) times a random
    1.2 .. 2.0 (raise) or 0.5 .. 1.0 (lower); the goods go back through cm_SendGoodsDelta, m[3] / m[4] return them, c uses its power flag
    0x4000000 and pays 3 money (cm_SendMoneyDelta), every player character except c is told the news text (0x1655 / 0x1659 + the goods
-   names) and c gets it as a message box when it is a player character (kind 6). Always 0. */
+   names) and c gets it as a message box when it is a player character (kind 6). Always 0. @deep Read whole against the original and fixed: the building level and best are ints compared lvl > best (xor/mov dl, cmp eax,esi / jle), best set before id; pick is int[10] (gm_Shuffled fills n <= 10 entries; the frame 0xad8 has pick at +0x40 .. +0x68 before rec), the price-row search is a for over the 0x25 rows with a break and the i < 0x25 test, the random factor calls util_RandomF in each branch (raise 0.4f / 1.2f floats; lower 0.3f then the doubles 0.2 and 1.0), the second pick written id then id2, both news texts as full txt_Format calls (VC6 merges their call), the character scan an index loop over 768 (signed jl). Left is allocation only: the original keeps a zero in ebx from the prologue (cmp eax,ebx / cmp ax,bx / cmp esi,ebx for the t / it / id / row / n tests, the stores of id2, m[3], m[4]) with best in esi; ours zeroes esi (best) and stores / tests through it (test eax,eax etc.) and so takes ebx for the level byte (xor ebx / mov bl,[edx+eax*4+0x247] where the original has lea eax / xor edx / mov dl,[eax+0x247]). */
 
 int amt_ExecutePriceMessage(char *c, int *m)
 {
-    unsigned char lvl, best;
+    int lvl, best;
     AMTBLDVIEW *it;
     unsigned int id, id2, r;
-    int i, n, t, pick[2], cands[10];
+    int i, n, t, pick[10], cands[10];
     unsigned short *row;
-    float f, rf;
+    float f;
     AMTGOODS rec;
     AMTGOODS *p;
     int *q;
     char buf[512], msg[2048];
-    unsigned char *tab;
 
     best = 0;
     id = 0;
@@ -2380,20 +2379,16 @@ int amt_ExecutePriceMessage(char *c, int *m)
             if (it != 0) {
                 do {
                     lvl = (unsigned char)ai_BTypes[it->type * 0x24d + 0x247];
-                    if (best < lvl) {
-                        id = it->type;
+                    if (lvl > best) {
                         best = lvl;
+                        id = it->type;
                     }
                     it = (AMTBLDVIEW *)gm_BuildNext();
                 } while (it != 0);
                 if (id != 0) {
-                    i = 0;
-                    tab = amt_PriceRows;
-                    while (*tab != id) {
-                        tab += 0x15;
-                        i++;
-                        if (tab >= &amt_PriceRows[0x25 * 0x15])
-                            return 0;
+                    for (i = 0; i < 0x25; i++) {
+                        if (amt_PriceRows[i * 0x15] == id)
+                            break;
                     }
                     if (i < 0x25) {
                         n = 0;
@@ -2409,15 +2404,14 @@ int amt_ExecutePriceMessage(char *c, int *m)
                             if (n == 1)
                                 id = cands[pick[0]];
                             else {
-                                id2 = cands[pick[1]];
                                 id = cands[pick[0]];
+                                id2 = cands[pick[1]];
                             }
                             f = gm_GetSkill(c, 2);
-                            rf = util_RandomF();
                             if (m[2] == 1)
-                                f = (rf + 1.0f) * f * 0.4f + 1.2f;
+                                f = (util_RandomF() + 1.0f) * f * 0.4f + 1.2f;
                             else
-                                f = 1.0f - ((rf + 1.0f) * f * 0.3f + 0.2f);
+                                f = 1.0 - ((util_RandomF() + 1.0f) * f * 0.3f + 0.2);
                             p = (AMTGOODS *)gm_FindGoods(ai_OwnPlayer, id);
                             if (p != 0) {
                                 rec = *p;
@@ -2438,13 +2432,13 @@ int amt_ExecutePriceMessage(char *c, int *m)
                                 r = util_RandomU(3) & 0xffff;
                                 if (m[2] == 1) {
                                     txt_Format(buf, r + 0x1656, m[1] + 0x1648);
-                                    t = 0x1655;
+                                    txt_Format(msg, 0x1655, buf, id * 2 + 0x9a8, id2 * 2 + 0x9a8);
                                 } else {
                                     txt_Format(buf, r + 0x165a, m[1] + 0x1648);
-                                    t = 0x1659;
+                                    txt_Format(msg, 0x1659, buf, id * 2 + 0x9a8, id2 * 2 + 0x9a8);
                                 }
-                                txt_Format(msg, t, buf, id * 2 + 0x9a8, id2 * 2 + 0x9a8);
-                                for (q = ai_CharInts[0]; q < AMT_CHARS_END; q += 0x87) {
+                                for (i = 0; i < 768; i++) {
+                                    q = ai_CharInts[i];
                                     if ((((char *)q)[-2] == 7 || ((char *)q)[-2] == 6) && AMT_NETID(c) != *q)
                                         he_ShowNews(*q, -1, msg, 1, 0x5ec, ch_EmptyName);
                                 }
