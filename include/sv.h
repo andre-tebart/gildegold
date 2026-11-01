@@ -74,9 +74,9 @@ void sv_CameraToObject(int o);                                               /* 
 void sv_FlyCameraToModel(int m);                                               /* 0x527e90 */
 void sv_Unk528140(void);                                                /* 0x528140 */
 struct D3OBJECT; struct AIBLD; char sv_CreateBannerCB(struct D3OBJECT *part, struct AIBLD *b);                             /* 0x528180 */
-char sv_Unk528290(char *o, char *b);                                    /* 0x528290 */
+char sv_ColourBannerCB(char *o, char *b);                                    /* 0x528290 */
 void sv_Unk5282f0(char *b);                                             /* 0x5282f0 */
-void sv_Unk528390(int c);                                               /* 0x528390 */
+void sv_ColourBanners(int c);                                               /* 0x528390 */
 void sv_Unk528490(unsigned char *o);                                    /* 0x528490 */
 char sv_Unk528660(char *o, int *p);                                     /* 0x528660 */
 void sv_Unk5286a0(char *b);                                             /* 0x5286a0 */

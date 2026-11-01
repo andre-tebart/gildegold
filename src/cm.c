@@ -3548,7 +3548,7 @@ int ai_Unk4c89b0(G17MSG *m, G17STAT *s)
         ai_Unk631084 = 0;
         break;
     case 13:
-        sv_Unk528390(G17_I(msg, 1));
+        sv_ColourBanners(G17_I(msg, 1));
         break;
     case 15:
         cm_RequestedSaveSlot = G17_I(msg, 1);

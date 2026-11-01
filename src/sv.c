@@ -333,7 +333,8 @@ typedef struct SVMODEL {                /* the CHARACTER fields (ch.h) sv.c read
     D3OBJECT *obj;                      /* +0x34, the body */
     char pad38[0x50];
     D3SCENE *scene;                     /* +0x88, the scene the model is in */
-    char pad8c[0x9c];
+    char pad8c[0x98];
+    D3OBJECT **transport;               /* +0x124, the cart object the model shows (CHARACTER.transport) */
     void *actions;                      /* +0x128, the action queue, 0 = idle */
 } SVMODEL;
 typedef struct SVCHARREC {
@@ -3285,7 +3286,7 @@ void sv_Unk528140(void)
 /* 0x528290, a callback over the objects of a model (name o): for the one named "sp_WIMPEL" (the banner) sets its colour (0x446f30 (o, o +0x1cc, 0x66 + the byte +0x54 of the character record (0x770bd4) of the owner, 1))
    when the owner (+0x27) is valid; returns 1 */
 
-char sv_Unk528290(char *o, char *b)
+char sv_ColourBannerCB(char *o, char *b)
 {
     if (_stricmp(o, "sp_WIMPEL") == 0) {
         if (*(unsigned short *)(b + 0x27) != 0xffff)
@@ -3317,36 +3318,36 @@ void sv_Unk5282f0(char *b)
         }
     }
 }
-/* 0x528390, colours the banners of all buildings of the character c (index): in scene 0 every object (0x501190 (1, 4, c) / 0x501030) with a model is walked (0x438d40, 0x340, 0x528290), and the buildings of the
-   list 0x4ffe90 (0, 3, 7, 3, c, 4, 0x1d) get the model scene (0x411be0) and the banner number (the byte +0x54 of the character's record - 0x599) through 0x446f30; the scene is restored */
-
-void sv_Unk528390(int c)
+/* 0x528390, colours the banners and carts of the character c (index): in scene 0 the model of every building of c
+   (gm_BuildQuery(1, 4, c)) is walked with sv_ColourBannerCB; then each cart of c (gm_Query kind 0x1d) shown by a scene
+   character gets, in that character's scene, the texture set ref54 - 0x599 (when c is a kind 5 / 6 / 7 character with a
+   ref54 and the set is not 0); the current scene is restored */
+void sv_ColourBanners(int c)
 {
-    int scene, b, n;
-    char *o;
-    char *ch;
+    int scene;
+    AICHAR *ch;
+    AIBLD *b;
+    AIOBJ *o;
+    SVMODEL *m;
+    int set;
 
     scene = d3_CurrentScene;
+    ch = &ai_CharsT[c];
     d3if_SelectScene(0, 1);
-    o = (char *)gm_BuildQuery(1, 4, c);
-    while (o != 0) {
-        if (*(int *)(o + 0x61) != 0)
-            d3_ForEachObject(ai_Unk5fb5b0, *(int *)(o + 0x61), 0x340, sv_Unk528290, o);
-        o = (char *)gm_BuildNext();
+    for (b = (AIBLD *)gm_BuildQuery(1, 4, c); b != 0; b = (AIBLD *)gm_BuildNext()) {
+        if (b->object != 0)
+            d3_ForEachObject(d3_DefaultScene, (D3OBJECT *)b->object, 0x340, sv_ColourBannerCB, b);
     }
-    o = gm_Query(0, 3, 7, 3, c, 4, 0x1d);
-    while (o != 0) {
-        b = *(int *)(o + 0x3b);
-        if (b != 0) {
-            d3if_SelectScene(d3t_SceneIndex(*(int *)(b + 0x88)), 1);   /* the 1 is SelectScene's (0x528418 is pushed before the inner call) */
-            ch = ai_Chars[c];
-            if (c * 0x21c != -(unsigned)&ai_Chars && *(int *)(ch + 0x54) != 0 && (ch[2] == 5 || ch[2] == 6 || ch[2] == 7)) {
-                n = *(int *)(ch + 0x54) - 0x599;
-                if (n != 0)
-                    d3if_SelectTextureSet(**(int **)(b + 0x124), *(int *)(**(int **)(b + 0x124) + 0x1cc), n, 1);
+    for (o = (AIOBJ *)gm_Query(0, 3, 7, 3, c, 4, 0x1d); o != 0; o = (AIOBJ *)gm_QueryNext()) {
+        m = (SVMODEL *)o->sceneObj;
+        if (m != 0) {
+            d3if_SelectScene(d3t_SceneIndex(m->scene), 1);
+            if (ch != 0 && ch->ref54 != 0 && (ch->kind == 5 || ch->kind == 6 || ch->kind == 7)) {
+                set = ch->ref54 - 0x599;
+                if (set != 0)
+                    d3if_SelectTextureSet(*m->transport, (struct D3SURF *)(*m->transport)->info, set, 1);
             }
         }
-        o = gm_QueryNext();
     }
     d3if_SelectScene(scene, 1);
 }
