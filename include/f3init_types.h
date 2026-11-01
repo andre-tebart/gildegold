@@ -17,7 +17,7 @@ typedef struct INIT_PLAYER {
     int mission;                    /* 0x4c, the chosen mission (ai_ChooseMission's result, main_Unk536980; ai_NewMission's argument) */
     unsigned char talents[5];       /* 0x50, the five talent values (main_ChooseTalents; copied as an int and a byte) */
     char model[0x33];               /* 0x55, the character model name ("patrizier_MANN2", the model chooser main_ChooseModel) */
-    int modelId;                    /* 0x88, the model's id: unk_Unk4fb770(model) + 0x639 */
+    int modelId;                    /* 0x88, the model's id: gm_HeadIconNumber(model) + 0x639 */
 } INIT_PLAYER;                      /* 0x8c bytes (main_Menue clears 0x8c) */
 
 #endif

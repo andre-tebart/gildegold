@@ -1501,7 +1501,7 @@ int unk_Unk4ef9c0(unsigned char *o, int n)
             *(int *)(z + 0x34) = util_RandomU(0x5e) + 1;
             *(int *)(z + 0x40) = *(int *)ai_Time - util_RandomU(4) - 1;
             *(int *)(z + 0x38) = util_RandomU(2);
-            strncpy(z + 0x14, ai_Unk143b178[util_RandomU(0x95)], 0xf);
+            strncpy(z + 0x14, txt_FamilyNames[util_RandomU(0x95)], 0xf);
             g = (char *)unk_Unk4fb330(*(int *)(z + 0x38), *(int *)(z + 0x34));
             *(int *)(z + 0x3c) = 0xff;
             r = util_RandomU(4);

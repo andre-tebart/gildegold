@@ -14707,7 +14707,7 @@ void ai_Unk5aa1f0(int param_1, int *param_2, int param_3)
     }
 }
 
-void d2_RemoveObj(); int gm_Unk509060(); int unk_Unk4fb770(); int gm_Unk50a0f0(int y);
+void d2_RemoveObj(); int gm_Unk509060(); int gm_HeadIconNumber(); int gm_Unk50a0f0(int y);
 void d2_SetObjFont(); void d2_SetCaption(); void sv_SelectPanelObject(unsigned char *o, int b, char *c);
 
 /* 0x5aa4b0, frees the controls of a Domizil record (106 B): +0x1c and +0x10, then the six pairs at +0x40
@@ -14806,10 +14806,10 @@ void ai_Unk5aa700(int param_1, char *param_2)
         n = 3;
     U_I((unsigned)&full_data_6f40a0) = n;
     for (i = 0; i < n; i++) {
-        pics[0] = unk_Unk4fb770((char *)(unsigned)&full_data_624ec4);
-        pics[1] = unk_Unk4fb770((char *)(unsigned)&full_data_624fcc);
-        pics[2] = unk_Unk4fb770((char *)(unsigned)&full_data_62cbb4);
-        pics[3] = unk_Unk4fb770((char *)(unsigned)&full_data_60d38c);
+        pics[0] = gm_HeadIconNumber((char *)(unsigned)&full_data_624ec4);
+        pics[1] = gm_HeadIconNumber((char *)(unsigned)&full_data_624fcc);
+        pics[2] = gm_HeadIconNumber((char *)(unsigned)&full_data_62cbb4);
+        pics[3] = gm_HeadIconNumber((char *)(unsigned)&full_data_60d38c);
         rec = U_I((unsigned)&full_data_6f40a4 + i * 4);
         d2_WinOpenPic(0xe, i * 0x6e + 8, 0x5db, U_I((unsigned)&d2_LastWindow));
         d2_WinOpenPic(0x10, i * 0x6e + 10, pics[U_I(rec + 2) & 3] + 0x639, U_I((unsigned)&d2_LastWindow));

@@ -42,80 +42,76 @@ int ai_PokerStart(AIPER *p, G10GAME *g)
     G10CARD *c;
     G10NPC *n;
 
-    ai_Unkf83654 = 0;
-    if (p == 0 || *((unsigned char *)p + 2) != 6 || g == 0)
+    ai_PokerTable = 0;
+    if (p == 0 || p->kind != 6 || g == 0)
         return 0;
-    memset(ai_Unkf837e0, 0, sizeof(ai_Unkf837e0));
-    ai_Unkf83654 = g;
+    memset(ai_PokerOpponents, 0, sizeof(ai_PokerOpponents));
+    ai_PokerTable = g;
     memset(g, 0, sizeof(G10GAME));
-    ai_Unkf83654->seat[0].who = p;
-    k = gm_ConvertMoney(gm_SumListAmounts(*(int *)((unsigned char *)p + 0x178), ai_OwnPlayer), ai_OwnPlayer);
+    ai_PokerTable->seat[0].who = p;
+    k = gm_ConvertMoney(gm_SumListAmounts((void *)p->inventory, ai_OwnPlayer), ai_OwnPlayer);
     d = k;
-    if (!(10000.0 <= d))
+    if (10000.0 > d)
         d = 10000.0;
-    ai_Unkf83654->money = gm_PlayerFactor((int)(d / (log10(d) + 1.0) * 0.1), ai_OwnPlayer);
-    ai_Unkf83654->stake = ai_Unkf83654->money / (util_RandomU(3) + 7);
-    ai_Unkf83654->stake2 = ai_Unkf83654->stake;
-    ai_Unkf83654->unkb8 = 4;
-    k = 0;
-    c = ai_Unkf83660;
-    do {
+    ai_PokerTable->money = gm_PlayerFactor((int)(d / (log10(d) + 1.0) * 0.1f), ai_OwnPlayer);
+    ai_PokerTable->stake = ai_PokerTable->money / (util_RandomU(3) + 7);
+    ai_PokerTable->stake2 = ai_PokerTable->stake;
+    ai_PokerTable->winner = 4;
+    for (k = 0; k < 6; k++) {
         for (j = 0; j < 4; j++) {
-            c->rank = j;
-            c->suit = k;
-            c++;
+            ai_PokerDeck[k * 4 + j].suit = k;
+            ai_PokerDeck[k * 4 + j].rank = j;
         }
-        k++;
-    } while (c < &ai_Unkf83660[24]);
+    }
     for (i = 0; i < 2; i++) {
-        n = &ai_Unkf837e0[i];
-        if (i == 0)
-            n->female = (unsigned char)util_RandomU(2);
+        n = &ai_PokerOpponents[i];
+        if (i != 0)
+            n->female = ai_PokerOpponents[0].female == 0;
         else
-            n->female = ai_Unkf837e0[0].female == 0;
-        n->unk0d = (unsigned char)util_RandomU(4) + 1;
-        strncpy(n->nname, ai_Unk143b178[util_RandomU(0x95)], 15);
+            n->female = (unsigned char)util_RandomU(2);
+        n->variant = (unsigned char)util_RandomU(4) + 1;
+        strncpy(n->nname, txt_FamilyNames[util_RandomU(0x95)], 15);
         if (n->female == 0) {
             strncpy(n->vname, txt_MaleFirstNames[util_RandomU(0xbf)], 15);
             switch (util_RandomU(4)) {
             case 0:
-                ai_Unkf83654->seat[i + 1].model = unk_Unk4fb770("buerger_MANN") + 0x639;
+                ai_PokerTable->seat[i + 1].model = gm_HeadIconNumber("buerger_MANN") + 0x639;
                 break;
             case 1:
-                ai_Unkf83654->seat[i + 1].model = unk_Unk4fb770("Handwerker_MANN") + 0x639;
+                ai_PokerTable->seat[i + 1].model = gm_HeadIconNumber("Handwerker_MANN") + 0x639;
                 break;
             case 2:
-                ai_Unkf83654->seat[i + 1].model = unk_Unk4fb770("buerger3_DICKER") + 0x639;
+                ai_PokerTable->seat[i + 1].model = gm_HeadIconNumber("buerger3_DICKER") + 0x639;
                 break;
             case 3:
-                ai_Unkf83654->seat[i + 1].model = unk_Unk4fb770("schneider1_MANN") + 0x639;
+                ai_PokerTable->seat[i + 1].model = gm_HeadIconNumber("schneider1_MANN") + 0x639;
                 break;
             }
         } else {
             strncpy(n->vname, txt_FemaleFirstNames[util_RandomU(0x70)], 15);
             switch (util_RandomU(4)) {
             case 0:
-                ai_Unkf83654->seat[i + 1].model = unk_Unk4fb770("buergerin_frau") + 0x639;
+                ai_PokerTable->seat[i + 1].model = gm_HeadIconNumber("buergerin_frau") + 0x639;
                 break;
             case 1:
-                ai_Unkf83654->seat[i + 1].model = unk_Unk4fb770("buergerin2_frau") + 0x639;
+                ai_PokerTable->seat[i + 1].model = gm_HeadIconNumber("buergerin2_frau") + 0x639;
                 break;
             case 2:
-                ai_Unkf83654->seat[i + 1].model = unk_Unk4fb770("minerin_frau") + 0x639;
+                ai_PokerTable->seat[i + 1].model = gm_HeadIconNumber("minerin_frau") + 0x639;
                 break;
             case 3:
-                ai_Unkf83654->seat[i + 1].model = unk_Unk4fb770("arbeiterin_frau") + 0x639;
+                ai_PokerTable->seat[i + 1].model = gm_HeadIconNumber("arbeiterin_frau") + 0x639;
                 break;
             }
         }
         n->kind = 10;
-        ai_Unkf83654->seat[i + 1].who = n;
+        ai_PokerTable->seat[i + 1].who = n;
     }
-    return ai_Unk4a7430(g);
+    return ai_PokerDealRound(g);
 }
 /* 0x4a7430, deals a new round: all cards back, the three seats cleared */
 
-int ai_Unk4a7430(G10GAME *g)
+int ai_PokerDealRound(G10GAME *g)
 {
     G10SEAT *s;
     int i;
@@ -129,8 +125,8 @@ int ai_Unk4a7430(G10GAME *g)
     g->unkb0 = util_RandomU(3);
     g->unkbc = 0;
     for (i = 0; i < 24; i++) {
-        ai_Unkf83660[i].owner = 3;
-        ai_Unkf83660[i].shown = 0;
+        ai_PokerDeck[i].owner = 3;
+        ai_PokerDeck[i].shown = 0;
     }
     s = g->seat;
     i = 3;
@@ -154,56 +150,56 @@ int ai_Unk4a7430(G10GAME *g)
 
 int ai_PokerStep(void)
 {
-    switch (ai_Unkf83654->phase) {
+    switch (ai_PokerTable->phase) {
     case 0:
-        ai_Unkf83654->phase = 1;
-        return ai_Unkf83654->unkb0 != 0 ? 0x10 : 0x21;
+        ai_PokerTable->phase = 1;
+        return ai_PokerTable->unkb0 != 0 ? 0x10 : 0x21;
     case 1:
         ai_Unk4a8650();
-        ai_Unkf83654->phase++;
+        ai_PokerTable->phase++;
         ai_Unk4a8520();
         ai_Unk4a7ac0();
         ai_Unk4a86f0();
         return 0;
     case 2:
-        ai_Unkf83654->phase = 3;
-        return ai_Unkf83654->unkb0 != 0 ? 9 : 0x29;
+        ai_PokerTable->phase = 3;
+        return ai_PokerTable->unkb0 != 0 ? 9 : 0x29;
     case 3:
         ai_Unk4a7ac0();
         ai_Unk4a7c20();
-        ai_Unkf83654->phase++;
+        ai_PokerTable->phase++;
         ai_Unk4a8590();
         ai_Unk4a7a20();
         return 0;
     case 4:
-        ai_Unkf83654->phase = 5;
+        ai_PokerTable->phase = 5;
         ai_Unk4a7ac0();
         ai_Unk4a86f0();
-        return ai_Unkf83654->unkb0 != 0 ? 9 : 0x29;
+        return ai_PokerTable->unkb0 != 0 ? 9 : 0x29;
     case 5:
         ai_Unk4a7c20();
         ai_Unk4a7a20();
-        ai_Unkf83654->phase++;
+        ai_PokerTable->phase++;
         return 0x1c;
     case 6:
         ai_Unk4a77e0();
-        ai_Unkf83654->phase++;
+        ai_PokerTable->phase++;
         return 0x10;
     case 7:
         ai_Unk4a85e0();
-        ai_Unkf83654->phase++;
+        ai_PokerTable->phase++;
         break;
     case 8:
         ai_Unk4a7ac0();
-        ai_Unkf83654->phase++;
-        return ai_Unkf83654->unkb0 != 0 ? 9 : 0x29;
+        ai_PokerTable->phase++;
+        return ai_PokerTable->unkb0 != 0 ? 9 : 0x29;
     case 9:
         ai_Unk4a7c20();
         ai_Unk4a7a20();
-        ai_Unkf83654->phase++;
+        ai_PokerTable->phase++;
         return 0;
     case 10:
-        ai_Unkf83654->phase = 11;
+        ai_PokerTable->phase = 11;
         ai_Unk4a8690();
         return 0x10;
     }
@@ -222,7 +218,7 @@ int ai_Unk4a7650(int *hand, int shown, int skip, int *out)
     for (s = 1; s < 3; s++) {
         best = 0;
         q = cnt;
-        c = ai_Unkf83660;
+        c = ai_PokerDeck;
         do {
             n = 0;
             for (i = 4; i != 0; i--) {
@@ -233,7 +229,7 @@ int ai_Unk4a7650(int *hand, int shown, int skip, int *out)
             if (best < n)
                 best = n;
             *q++ = n;
-        } while (c < &ai_Unkf83660[24]);
+        } while (c < &ai_PokerDeck[24]);
     }
     for (g = 0; g == skip || cnt[g] < 2;) {
         if (++g > 5)
@@ -254,15 +250,15 @@ int ai_Unk4a76d0(int *hand, int high)
     if (best < 0)
         return -1;
     if (hand[i + 1] >= 0) {
-        g = ai_Unkf83660[best].suit;
-        r = ai_Unkf83660[best].rank;
+        g = ai_PokerDeck[best].suit;
+        r = ai_PokerDeck[best].rank;
         for (i++; (int)i < 5; i++) {
             k = hand[i];
             if (k < 0)
                 return best;
-            if (g < ai_Unkf83660[k].suit || (ai_Unkf83660[k].suit == g && r < ai_Unkf83660[k].rank)) {
-                g = ai_Unkf83660[k].suit;
-                r = ai_Unkf83660[k].rank;
+            if (g < ai_PokerDeck[k].suit || (ai_PokerDeck[k].suit == g && r < ai_PokerDeck[k].rank)) {
+                g = ai_PokerDeck[k].suit;
+                r = ai_PokerDeck[k].rank;
                 best = k;
             }
         }
@@ -275,19 +271,19 @@ int ai_Unk4a7760(int owner)
 {
     unsigned int i;
 
-    if (ai_Unkf83654->left == 0)
+    if (ai_PokerTable->left == 0)
         return -1;
-    if (ai_Unkf83654->left < 11) {
+    if (ai_PokerTable->left < 11) {
         for (i = 0; i < 24; i++)
-            if (ai_Unkf83660[i].owner == 3)
+            if (ai_PokerDeck[i].owner == 3)
                 break;
     } else {
         do
             i = util_RandomU(24);
-        while (ai_Unkf83660[i].owner != 3);
+        while (ai_PokerDeck[i].owner != 3);
     }
-    ai_Unkf83660[i].owner = owner;
-    ai_Unkf83654->left--;
+    ai_PokerDeck[i].owner = owner;
+    ai_PokerTable->left--;
     return i;
 }
 /* 0x4a77e0, the NPCs exchange a card by their strategy (seat->unk2c): keep pairs (1), the most common rank (2) */
@@ -309,7 +305,7 @@ void ai_Unk4a77e0(void)
         maxn = 0;
         pairs = 0;
         maxr = 0;
-        c = ai_Unkf83660;
+        c = ai_PokerDeck;
         do {
             n = 0;
             for (i = 4; i != 0; i--) {
@@ -326,9 +322,9 @@ void ai_Unk4a77e0(void)
             }
             cnt[g] = n;
             g++;
-        } while (c < &ai_Unkf83660[24]);
+        } while (c < &ai_PokerDeck[24]);
         j = 0;
-        c = ai_Unkf83660;
+        c = ai_PokerDeck;
         do {
             n = 0;
             q = c;
@@ -344,36 +340,36 @@ void ai_Unk4a77e0(void)
             cnt[j] = n;
             c++;
             j++;
-        } while (c < &ai_Unkf83660[4]);
-        st = &ai_Unkf83654->seat[s];
+        } while (c < &ai_PokerDeck[4]);
+        st = &ai_PokerTable->seat[s];
         switch (st->unk2c) {
         case 0:
             k = util_RandomU(3);
             break;
         case 1:
             if (pairs == 1) {
-                if (ai_Unkf83660[st->card[0]].suit != first)
+                if (ai_PokerDeck[st->card[0]].suit != first)
                     k = 0;
-                else if (ai_Unkf83660[st->card[1]].suit != first)
+                else if (ai_PokerDeck[st->card[1]].suit != first)
                     k = 1;
             } else if (pairs == 2) {
-                if (ai_Unkf83660[st->card[0]].suit != first && ai_Unkf83660[st->card[0]].suit != second)
+                if (ai_PokerDeck[st->card[0]].suit != first && ai_PokerDeck[st->card[0]].suit != second)
                     k = 0;
-                else if (ai_Unkf83660[st->card[1]].suit != first && ai_Unkf83660[st->card[1]].suit != second)
+                else if (ai_PokerDeck[st->card[1]].suit != first && ai_PokerDeck[st->card[1]].suit != second)
                     k = 1;
             }
             break;
         case 2:
-            if (ai_Unkf83660[st->card[0]].rank != bestr)
+            if (ai_PokerDeck[st->card[0]].rank != bestr)
                 k = 0;
-            else if (ai_Unkf83660[st->card[1]].rank != bestr)
+            else if (ai_PokerDeck[st->card[1]].rank != bestr)
                 k = 1;
             break;
         case 3:
             if (pairs == 1) {
-                if (ai_Unkf83660[st->card[0]].suit == first)
+                if (ai_PokerDeck[st->card[0]].suit == first)
                     k = 0;
-                else if (ai_Unkf83660[st->card[1]].suit != first)
+                else if (ai_PokerDeck[st->card[1]].suit != first)
                     k = 1;
             }
             break;
@@ -389,12 +385,12 @@ void ai_Unk4a79d0(G10SEAT *s, int k)
     int o, n;
 
     if (k < 2) {
-        o = ai_Unkf83660[s->card[k]].owner;
-        ai_Unkf83660[s->card[k]].owner = 4;
+        o = ai_PokerDeck[s->card[k]].owner;
+        ai_PokerDeck[s->card[k]].owner = 4;
         s->unk24 = s->card[k];
         n = ai_Unk4a7760(o);
         s->card[k] = n;
-        ai_Unkf83660[n].shown = 0;
+        ai_PokerDeck[n].shown = 0;
     }
 }
 /* 0x4a7a20, every seat still in (unk28 < 0) pays the stake into the pot (0xa0); the player's from p's money */
@@ -404,14 +400,14 @@ void ai_Unk4a7a20(void)
     int i;
 
     for (i = 0; i < 3; i++) {
-        if (ai_Unkf83654->seat[i].unk28 < 0) {
-            ai_Unkf83654->unka0 += ai_Unkf83654->stake2;
+        if (ai_PokerTable->seat[i].unk28 < 0) {
+            ai_PokerTable->unka0 += ai_PokerTable->stake2;
             if (i == 0) {
-                gm_PlayerFactor(ai_Unkf83654->stake2, ai_OwnPlayer);
-                cm_SendMoveGoodsUnchecked(-1, *(int *)((unsigned char *)ai_Unkf83654->seat[0].who + 4), ai_OwnPlayer,
-                             ai_Unkf83654->stake2);
+                gm_PlayerFactor(ai_PokerTable->stake2, ai_OwnPlayer);
+                cm_SendMoveGoodsUnchecked(-1, *(int *)((unsigned char *)ai_PokerTable->seat[0].who + 4), ai_OwnPlayer,
+                             ai_PokerTable->stake2);
             }
-            ai_Unkf83654->seat[i].unk1c += ai_Unkf83654->stake2;
+            ai_PokerTable->seat[i].unk1c += ai_PokerTable->stake2;
         }
     }
 }
@@ -432,7 +428,7 @@ void ai_Unk4a7ac0(void)
         maxr = 0;
         maxn = 0;
         pairs = 0;
-        c = ai_Unkf83660;
+        c = ai_PokerDeck;
         pc = cnt;
         do {
             n = 0;
@@ -446,9 +442,9 @@ void ai_Unk4a7ac0(void)
             if ((int)maxn < (int)n)
                 maxn = n;
             *pc++ = n;
-        } while (c < &ai_Unkf83660[24]);
+        } while (c < &ai_PokerDeck[24]);
         j = 0;
-        c = ai_Unkf83660;
+        c = ai_PokerDeck;
         do {
             n = 0;
             q = c;
@@ -464,26 +460,26 @@ void ai_Unk4a7ac0(void)
             cnt[j] = n;
             c++;
             j++;
-        } while (c < &ai_Unkf83660[4]);
-        b5 = ai_Unkf83654->unkb5;
+        } while (c < &ai_PokerDeck[4]);
+        b5 = ai_PokerTable->unkb5;
         if (b5 < 5 && pairs < 2 && (int)maxn < 2) {
-            ai_Unkf83654->seat[s].unk2c = 3;
+            ai_PokerTable->seat[s].unk2c = 3;
         } else if (b5 == maxr) {
-            ai_Unkf83654->seat[s].unk2c = 2;
+            ai_PokerTable->seat[s].unk2c = 2;
         } else {
-            if (ai_Unkf83654->phase < 6 && (int)(b5 - maxr) < 2) {
+            if (ai_PokerTable->phase < 6 && (int)(b5 - maxr) < 2) {
                 for (j = 0; j < 6; j++)
-                    if (ai_Unkf83660[j * 4 + first].owner != s && ai_Unkf83660[j * 4 + first].shown == 0)
+                    if (ai_PokerDeck[j * 4 + first].owner != s && ai_PokerDeck[j * 4 + first].shown == 0)
                         break;
                 if (j == 6) {
-                    ai_Unkf83654->seat[s].unk2c = 2;
+                    ai_PokerTable->seat[s].unk2c = 2;
                     continue;
                 }
             }
             if (b5 == 5 && (int)maxn < 2)
-                ai_Unkf83654->seat[s].unk2c = 0;
+                ai_PokerTable->seat[s].unk2c = 0;
             else
-                ai_Unkf83654->seat[s].unk2c = 1;
+                ai_PokerTable->seat[s].unk2c = 1;
         }
     }
 }
@@ -496,44 +492,44 @@ void ai_Unk4a7c20(void)
     G10SEAT *st;
 
     for (s = 1; s < 3; s++) {
-        st = &ai_Unkf83654->seat[s];
-        if (st->unk2c == 0 && st->unk20 == 0 && ai_Unkf83654->unkb5 > 3)
-            st->unk28 = ai_Unkf83654->phase;
+        st = &ai_PokerTable->seat[s];
+        if (st->unk2c == 0 && st->unk20 == 0 && ai_PokerTable->unkb5 > 3)
+            st->unk28 = ai_PokerTable->phase;
         for (j = 0; j < 2; j++) {
-            if (j != s && ai_Unkf83654->seat[j].unk28 < 0) {
-                ai_Unk4a7e70(&ai_Unkf83654->seat[j], &n, &r, &x8, &xc);
+            if (j != s && ai_PokerTable->seat[j].unk28 < 0) {
+                ai_Unk4a7e70(&ai_PokerTable->seat[j], &n, &r, &x8, &xc);
                 switch (st->unk2c) {
                 case 0:
                     if (st->unk20 == 0) {
                         if (n > 1 || util_RandomU(4) == 1)
-                            st->unk28 = ai_Unkf83654->phase;
+                            st->unk28 = ai_PokerTable->phase;
                     } else if (n > 2) {
-                        st->unk28 = ai_Unkf83654->phase;
+                        st->unk28 = ai_PokerTable->phase;
                     }
                     break;
                 case 1:
                     if (st->unk20 == 0) {
                         m = ai_Unk4a7650(st->card, 0, 7, &k);
-                        if (ai_Unkf83654->phase > 5 && m <= n && (m < n || k < r))
-                            st->unk28 = ai_Unkf83654->phase;
+                        if (ai_PokerTable->phase > 5 && m <= n && (m < n || k < r))
+                            st->unk28 = ai_PokerTable->phase;
                     } else {
                         m = ai_Unk4a7650(st->card, 0, 7, &y);
-                        if (m < n && ai_Unkf83654->phase > 5 && ai_Unkf83654->unkb5 > 4)
-                            st->unk28 = ai_Unkf83654->phase;
+                        if (m < n && ai_PokerTable->phase > 5 && ai_PokerTable->unkb5 > 4)
+                            st->unk28 = ai_PokerTable->phase;
                     }
                     break;
                 case 2:
                     if (st->unk20 == 0) {
                         m = ai_Unk4a7650(st->card, 0, 7, &y);
-                        if (ai_Unkf83654->unkb5 < 5 && m == 3 && util_RandomU(4) == 1)
-                            st->unk28 = ai_Unkf83654->phase;
+                        if (ai_PokerTable->unkb5 < 5 && m == 3 && util_RandomU(4) == 1)
+                            st->unk28 = ai_PokerTable->phase;
                     }
                     break;
                 case 3:
                     if (st->unk20 == 0) {
                         m = ai_Unk4a7650(st->card, 0, 7, &y);
-                        if (ai_Unkf83654->unkb5 < 5 && m == 3 && util_RandomU(5) == 1)
-                            st->unk28 = ai_Unkf83654->phase;
+                        if (ai_PokerTable->unkb5 < 5 && m == 3 && util_RandomU(5) == 1)
+                            st->unk28 = ai_PokerTable->phase;
                     }
                     break;
                 }
@@ -559,13 +555,13 @@ void ai_Unk4a7e70(G10SEAT *s, int *n, int *g, int *m, int *r)
     cnt[8] = 0;
     cnt[0] = 0;
     cnt[9] = 0;
-    if (ai_Unkf83654->unkb5 > 2) {
-        i = ai_Unkf83654->unkb5 - 2;
+    if (ai_PokerTable->unkb5 > 2) {
+        i = ai_PokerTable->unkb5 - 2;
         p = &s->card[2];
         do {
             k = *p++;
-            cnt[ai_Unkf83660[k].rank]++;
-            cnt[ai_Unkf83660[k].suit + 4]++;
+            cnt[ai_PokerDeck[k].rank]++;
+            cnt[ai_PokerDeck[k].suit + 4]++;
         } while (--i);
     }
     *n = cnt[4];
@@ -603,7 +599,7 @@ char ai_Unk4a7f50(int owner, int *g1, int *g2, int *r1, int *r2)
     bestr = 0;
     kind = 0;
     g = 0;
-    c = ai_Unkf83660;
+    c = ai_PokerDeck;
     b = -1;
     a = 0;
     do {
@@ -625,9 +621,9 @@ char ai_Unk4a7f50(int owner, int *g1, int *g2, int *r1, int *r2)
             }
         }
         g++;
-    } while (c < &ai_Unkf83660[24]);
+    } while (c < &ai_PokerDeck[24]);
     r = 0;
-    c = ai_Unkf83660;
+    c = ai_PokerDeck;
     do {
         n = 0;
         q = c;
@@ -645,7 +641,7 @@ char ai_Unk4a7f50(int owner, int *g1, int *g2, int *r1, int *r2)
         }
         c++;
         r++;
-    } while (c < &ai_Unkf83660[4]);
+    } while (c < &ai_PokerDeck[4]);
     if (rpairs == 1 && maxr == 5) {
         kind = 6;
         *r1 = bestr;
@@ -666,7 +662,7 @@ char ai_Unk4a7f50(int owner, int *g1, int *g2, int *r1, int *r2)
         }
         if (maxn == 2) {
             *g1 = a;
-            q = &ai_Unkf83660[a * 4 + 3];
+            q = &ai_PokerDeck[a * 4 + 3];
             for (r = 3; r >= 0; r--) {
                 if (q->owner == owner) {
                     *r1 = r;
@@ -685,8 +681,8 @@ char ai_Unk4a7f50(int owner, int *g1, int *g2, int *r1, int *r2)
         if (maxn == 2) {
             *g1 = a;
             *g2 = b;
-            q2 = &ai_Unkf83660[b * 4 + 3];
-            q = &ai_Unkf83660[a * 4 + 3];
+            q2 = &ai_PokerDeck[b * 4 + 3];
+            q = &ai_PokerDeck[a * 4 + 3];
             for (r = 3; r >= 0; r--) {
                 if (q->owner == owner)
                     *r1 = r;
@@ -716,9 +712,9 @@ int ai_Unk4a8190(void)
     out[2] = 0;
     out[1] = 0;
     for (i = 0; i < 3; i++) {
-        if (ai_Unkf83654->seat[i].unk28 < 0) {
+        if (ai_PokerTable->seat[i].unk28 < 0) {
             kind[i] = ai_Unk4a7f50(i, &g1[i], &g2[i], &r1[i], &r2[i]);
-            ai_Unkf83654->seat[i].unk30 = kind[i];
+            ai_PokerTable->seat[i].unk30 = kind[i];
         } else {
             out[i] = 1;
         }
@@ -729,7 +725,7 @@ int ai_Unk4a8190(void)
         w = 0;
     } else if (kind[0] == 0) {
         if (kind[1] == 0)
-            w = ai_Unk4a76d0(ai_Unkf83654->seat[0].card, 0) <= ai_Unk4a76d0(ai_Unkf83654->seat[1].card, 0);
+            w = ai_Unk4a76d0(ai_PokerTable->seat[0].card, 0) <= ai_Unk4a76d0(ai_PokerTable->seat[1].card, 0);
         else
             w = 1;
     } else if (kind[1] == 0 || kind[1] < kind[0]) {
@@ -763,7 +759,7 @@ int ai_Unk4a8190(void)
             w = g1[0] <= g1[1];
             break;
         case 4:
-            w = ai_Unk4a76d0(ai_Unkf83654->seat[0].card, 0) <= ai_Unk4a76d0(ai_Unkf83654->seat[1].card, 0);
+            w = ai_Unk4a76d0(ai_PokerTable->seat[0].card, 0) <= ai_Unk4a76d0(ai_PokerTable->seat[1].card, 0);
             break;
         case 5:
             r1[0] = g1[0];
@@ -779,31 +775,31 @@ int ai_Unk4a8190(void)
         }
     }
     if (out[2] != 0) {
-        ai_Unkf83654->unkbc = kind[w];
+        ai_PokerTable->unkbc = kind[w];
         return w;
     }
     k = kind[w];
     if (k == 0) {
         if (kind[2] != 0) {
-            ai_Unkf83654->unkbc = kind[2];
+            ai_PokerTable->unkbc = kind[2];
             return 2;
         }
-        a = ai_Unk4a76d0(ai_Unkf83654->seat[w].card, 0);
-        b = ai_Unk4a76d0(ai_Unkf83654->seat[1].card, 0);
+        a = ai_Unk4a76d0(ai_PokerTable->seat[w].card, 0);
+        b = ai_Unk4a76d0(ai_PokerTable->seat[1].card, 0);
         if (b < a)
             return w;
         return 1;
     }
     if (kind[2] != 0 && kind[2] >= k) {
         if (k < kind[2]) {
-            ai_Unkf83654->unkbc = kind[2];
+            ai_PokerTable->unkbc = kind[2];
             return 2;
         }
         switch (k) {
         case 1:
             if (g1[w] <= g1[2]) {
                 if (g1[w] < g1[2] || r1[w] <= r1[2]) {
-                    ai_Unkf83654->unkbc = kind[2];
+                    ai_PokerTable->unkbc = kind[2];
                     return 2;
                 }
             }
@@ -811,12 +807,12 @@ int ai_Unk4a8190(void)
         case 2:
             if (g1[w] <= g1[2]) {
                 if (g1[w] < g1[2]) {
-                    ai_Unkf83654->unkbc = kind[2];
+                    ai_PokerTable->unkbc = kind[2];
                     return 2;
                 }
                 if (g2[w] <= g2[2]) {
                     if (g2[w] < g2[2] || r1[w] <= r1[2]) {
-                        ai_Unkf83654->unkbc = kind[2];
+                        ai_PokerTable->unkbc = kind[2];
                         return 2;
                     }
                 }
@@ -826,19 +822,19 @@ int ai_Unk4a8190(void)
         case 5:
         case 7:
             if (g1[w] <= g1[2]) {
-                ai_Unkf83654->unkbc = kind[2];
+                ai_PokerTable->unkbc = kind[2];
                 return 2;
             }
             break;
         case 4:
-            if (ai_Unk4a76d0(ai_Unkf83654->seat[w].card, 0) <= ai_Unk4a76d0(ai_Unkf83654->seat[2].card, 0))
+            if (ai_Unk4a76d0(ai_PokerTable->seat[w].card, 0) <= ai_Unk4a76d0(ai_PokerTable->seat[2].card, 0))
                 w = 2;
-            ai_Unkf83654->unkbc = kind[w];
+            ai_PokerTable->unkbc = kind[w];
             return w;
         case 6:
         case 8:
             if (r1[w] <= r1[2]) {
-                ai_Unkf83654->unkbc = kind[2];
+                ai_PokerTable->unkbc = kind[2];
                 return 2;
             }
             break;
@@ -846,7 +842,7 @@ int ai_Unk4a8190(void)
             return w;
         }
     }
-    ai_Unkf83654->unkbc = k;
+    ai_PokerTable->unkbc = k;
     return w;
 }
 /* 0x4a8520, deals three cards to each seat (the first two hidden, the third open) */
@@ -857,14 +853,14 @@ void ai_Unk4a8520(void)
 
     for (k = 0; k < 3; k++) {
         for (i = 0; i < 3; i++) {
-            ai_Unkf83654->seat[i].card[k] = ai_Unk4a7760(i);
+            ai_PokerTable->seat[i].card[k] = ai_Unk4a7760(i);
             if (k > 1)
-                ai_Unkf83660[ai_Unkf83654->seat[i].card[k]].shown = 1;
+                ai_PokerDeck[ai_PokerTable->seat[i].card[k]].shown = 1;
             else
-                ai_Unkf83660[ai_Unkf83654->seat[i].card[k]].shown = 0;
+                ai_PokerDeck[ai_PokerTable->seat[i].card[k]].shown = 0;
         }
     }
-    ai_Unkf83654->unkb5 += 3;
+    ai_PokerTable->unkb5 += 3;
 }
 /* 0x4a8590, deals the fourth card to each seat, open */
 
@@ -873,10 +869,10 @@ void ai_Unk4a8590(void)
     int i;
 
     for (i = 0; i < 3; i++) {
-        ai_Unkf83654->seat[i].card[3] = ai_Unk4a7760(i);
-        ai_Unkf83660[ai_Unkf83654->seat[i].card[3]].shown = 1;
+        ai_PokerTable->seat[i].card[3] = ai_Unk4a7760(i);
+        ai_PokerDeck[ai_PokerTable->seat[i].card[3]].shown = 1;
     }
-    ai_Unkf83654->unkb5++;
+    ai_PokerTable->unkb5++;
 }
 /* 0x4a85e0, deals the fifth card to each seat, open */
 
@@ -885,37 +881,37 @@ void ai_Unk4a85e0(void)
     int i;
 
     for (i = 0; i < 3; i++) {
-        ai_Unkf83654->seat[i].card[4] = ai_Unk4a7760(i);
-        ai_Unkf83660[ai_Unkf83654->seat[i].card[4]].shown = 1;
+        ai_PokerTable->seat[i].card[4] = ai_Unk4a7760(i);
+        ai_PokerDeck[ai_PokerTable->seat[i].card[4]].shown = 1;
     }
-    ai_Unkf83654->unkb5++;
+    ai_PokerTable->unkb5++;
 }
 /* 0x4a8630, the player exchanges card k */
 
 void ai_PokerExchange(int k)
 {
-    ai_Unk4a79d0(&ai_Unkf83654->seat[0], k);
+    ai_Unk4a79d0(&ai_PokerTable->seat[0], k);
 }
 /* 0x4a8650, the ante: three stakes into the pot, the player's from p's money */
 
 void ai_Unk4a8650(void)
 {
-    ai_Unkf83654->unka0 = ai_Unkf83654->stake2 * 3;
-    cm_SendMoveGoodsUnchecked(-1, *(int *)((unsigned char *)ai_Unkf83654->seat[0].who + 4), ai_OwnPlayer, ai_Unkf83654->stake2);
+    ai_PokerTable->unka0 = ai_PokerTable->stake2 * 3;
+    cm_SendMoveGoodsUnchecked(-1, *(int *)((unsigned char *)ai_PokerTable->seat[0].who + 4), ai_OwnPlayer, ai_PokerTable->stake2);
 }
-/* 0x4a8690, ends the round: the winner into unkb8, the pot to the player if he won, all cards back */
+/* 0x4a8690, ends the round: the winner into winner, the pot to the player if he won, all cards back */
 
 void ai_Unk4a8690(void)
 {
     int i;
 
-    ai_Unkf83654->unkb8 = (short)ai_Unk4a8190();
-    if (ai_Unkf83654->unkb8 == 0)
-        cm_SendMoveGoodsUnchecked(*(int *)((unsigned char *)ai_Unkf83654->seat[0].who + 4), -1, ai_OwnPlayer,
-                     ai_Unkf83654->unka0);
+    ai_PokerTable->winner = (short)ai_Unk4a8190();
+    if (ai_PokerTable->winner == 0)
+        cm_SendMoveGoodsUnchecked(*(int *)((unsigned char *)ai_PokerTable->seat[0].who + 4), -1, ai_OwnPlayer,
+                     ai_PokerTable->unka0);
     for (i = 0; i < 24; i++) {
-        ai_Unkf83660[i].owner = 3;
-        ai_Unkf83660[i].shown = 0;
+        ai_PokerDeck[i].owner = 3;
+        ai_PokerDeck[i].shown = 0;
     }
 }
 /* 0x4a86f0, the NPC whose turn it is (unkb0) sets the stake: up to half the margin above the stake, or all of it
@@ -925,13 +921,13 @@ void ai_Unk4a86f0(void)
 {
     int n;
 
-    if (ai_Unkf83654->unkb0 != 0) {
-        n = ai_Unkf83654->seat[ai_Unkf83654->unkb0].unk20;
+    if (ai_PokerTable->unkb0 != 0) {
+        n = ai_PokerTable->seat[ai_PokerTable->unkb0].unk20;
         if (n == 0)
-            n = ai_Unkf83654->money - ai_Unkf83654->stake >> 1;
+            n = ai_PokerTable->money - ai_PokerTable->stake >> 1;
         else
-            n = (unsigned short)(ai_Unkf83654->money - ai_Unkf83654->stake);
-        ai_Unkf83654->stake2 = util_RandomU(n) + ai_Unkf83654->stake;
+            n = (unsigned short)(ai_PokerTable->money - ai_PokerTable->stake);
+        ai_PokerTable->stake2 = util_RandomU(n) + ai_PokerTable->stake;
     }
 }
 /* 0x4a8760, decide callback: character p (or the one of the ctx record, kind 2) picks a partner in its district
@@ -2583,8 +2579,8 @@ int ai_Unk4abed0(int a)
     return ai_Unk495520(&act, a) != 0;
 }
 
-G10GAME * ai_Unkf83654 = 0;  /* 0xf83654 */
-G10CARD ai_Unkf83660[24] = {0};  /* 0xf83660 */
-G10NPC ai_Unkf837e0[2] = {0};  /* 0xf837e0 */
+G10GAME * ai_PokerTable = 0;  /* 0xf83654 */
+G10CARD ai_PokerDeck[24] = {0};  /* 0xf83660 */
+G10NPC ai_PokerOpponents[2] = {0};  /* 0xf837e0 */
 int ai_Unk600e10[19] = { 18, 19, 20, 28, 29, 33, 36, 37, 39, 40, 41, 42, 43, 44, 45, 49, 50, 53, 55 };  /* 0x600e10, the leisure actions */
 int ai_Unk600e5c[3] = { 0, 3, 7 };  /* 0x600e5c */

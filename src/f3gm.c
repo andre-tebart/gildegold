@@ -988,7 +988,7 @@ void unk_Unk4fb620(unsigned *rec)
 }
 /* 0x4fb770, the number of the first head icon (of the heads 0 .. 3) that exists for the head name (split at the last '_' as in 0x4fb620; "zigeunermeister" uses the form without the suffix), 0 when none. ROUGH */
 
-int unk_Unk4fb770(char *name)
+int gm_HeadIconNumber(char *name)
 {
     char buf[128], suffix[128], icon[128];
     char *u;
@@ -1933,7 +1933,7 @@ void unk_Unk4fd120(void)
 extern char ai_Unkf8ef80[256];
 /* txt_MaleFirstNames: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_FemaleFirstNames: view of txt_Ptrs (build/mk_txt_views.py) */
-/* ai_Unk143b178: view of txt_Ptrs (build/mk_txt_views.py) */
+/* txt_FamilyNames: view of txt_Ptrs (build/mk_txt_views.py) */
 int ai_Unk6f1bb4 = 0;  /* 0x6f1bb4 */
 extern char gm_CharacterStatistics[128];
 char * ai_Unk60c1ec = (void *)((unsigned)&he_Events + 0xc234);  /* 0x60c1ec, the memory pool tag */
@@ -7736,7 +7736,7 @@ unsigned short gm_Unk507690(int type, int a2, int a3, int a4, unsigned char *a5,
             c[0x84] = av[0x28];
             memcpy(c + 0x88, av + 0x2c, 0xa8);
             CF(0x1d0, float) = util_RandomF() * 0.5f + 0.25f;
-            CF(0x18c, int) = unk_Unk4fb770(av + 0xd7) + 0x639;
+            CF(0x18c, int) = gm_HeadIconNumber(av + 0xd7) + 0x639;
             CF(0x1c, float) = 1000.0f;
             CF(0x50, unsigned short) = (unsigned short)ai_NextCharNumber++;
             CF(0x20, float) = 12.0f;
@@ -7860,7 +7860,7 @@ skip:
         rr = util_RandomU((int)CF(0x14, float));
         CF(0x18, float) = CF(0x1c, float);
         CF(0x10, float) = (CF(0x1c, float) * 0.33f + rr) - CF(0x1c, float) * 0.1f;
-        strncpy(c + 0x40, ai_Unk143b178[util_RandomU(0x95)], 0xf);
+        strncpy(c + 0x40, txt_FamilyNames[util_RandomU(0x95)], 0xf);
     } else {
         c[0xc] = (char)p1[6];
         CF(0x1d0, float) = *(float *)(p1 + 0xe8);

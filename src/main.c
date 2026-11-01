@@ -2086,7 +2086,7 @@ int main_ChooseModel(int job)
                     strcpy(cur, women[idx]);
                 }
                 strcpy(init_PlayerProfile.model, cur);
-                init_PlayerProfile.modelId = unk_Unk4fb770(cur) + 0x639;
+                init_PlayerProfile.modelId = gm_HeadIconNumber(cur) + 0x639;
                 obj = ch_Create(cur, &pos);
                 ch_PlaceAtObject(obj, dummy);
                 ch_SetVisible(obj, 0);
@@ -2572,7 +2572,7 @@ lback:
                             gm_Unk503ee0((unsigned *)rec, init_PlayerProfile.job);
                             *(int *)init_PlayerProfile.talents = *(int *)rec;
                             init_PlayerProfile.talents[4] = rec[4];
-                            init_PlayerProfile.modelId = unk_Unk4fb770("patrizier_MANN2") + 0x639;
+                            init_PlayerProfile.modelId = gm_HeadIconNumber("patrizier_MANN2") + 0x639;
 lok:
                             ret = 1;
                             sv_PopRequest = 1;
@@ -5334,7 +5334,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, char *cmd, int show)
             init_PlayerProfile.coat = 0x59a;
             init_PlayerProfile.sex = 0;
             init_PlayerProfile.faith = 1;
-            i = unk_Unk4fb770("patrizier_MANN2");
+            i = gm_HeadIconNumber("patrizier_MANN2");
             init_PlayerProfile.modelId = i + 0x639;
             strcpy(init_PlayerProfile.firstName, "Tobias");
             strcpy(init_PlayerProfile.familyName, "Severin");

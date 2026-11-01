@@ -44,7 +44,9 @@ typedef struct AIPER {                  /* a character, 0x21c bytes (ai_Chars[76
     unsigned char unk168;               /* 0x168 */
     char pad169[0x7];
     AIBLD *bld2;                        /* 0x170 */
-    char pad174[0x20];
+    char pad174[4];
+    int inventory;                      /* 0x178, the goods inventory (AICHAR.inventory, a G8 object list) */
+    char pad17c[0x18];
     int unk194;                         /* 0x194 */
     char pad198[0x30];
     unsigned int flags1c8;              /* 0x1c8 */

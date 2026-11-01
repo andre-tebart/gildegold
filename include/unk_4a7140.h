@@ -15,7 +15,7 @@ typedef struct G10NPC {                 /* 0x21c bytes, the two opponents at 0xf
     char pad03[6];
     unsigned char female;               /* 0x09 */
     char pad0a[3];
-    unsigned char unk0d;                /* 0x0d, 1..4 */
+    unsigned char variant;              /* 0x0d, 1..4, rolled for each opponent at the start; no reader found (reasoned guess: a variant of the opponent's play or looks) */
     char pad0e[0x22];
     char vname[16];                     /* 0x30 */
     char nname[16];                     /* 0x40 */
@@ -44,7 +44,7 @@ typedef struct G10GAME {                /* 0xc0 bytes, the game the caller hands
     unsigned char left;                 /* 0xb4, cards left in the deck */
     unsigned char unkb5;                /* 0xb5 */
     short pad;
-    short unkb8;                        /* 0xb8 */
+    short winner;                       /* 0xb8, the winning seat of the round (ai_Unk4a8190 at the round end; 0 = the player), 4 = none yet (ai_PokerStart) */
     short padba;
     int unkbc;                          /* 0xbc */
 } G10GAME;
@@ -68,14 +68,14 @@ typedef struct G10DREC {                /* 0x18 bytes, a district's character as
     unsigned char k;                    /* 0x10 */
     char pad11[7];
 } G10DREC;
-extern G10GAME *ai_Unkf83654;                                                    /* 0xf83654 */
-extern G10CARD ai_Unkf83660[24];                                                 /* 0xf83660 */
-extern G10NPC ai_Unkf837e0[2];                                                   /* 0xf837e0 */
+extern G10GAME *ai_PokerTable;                                                    /* 0xf83654 */
+extern G10CARD ai_PokerDeck[24];                                                 /* 0xf83660 */
+extern G10NPC ai_PokerOpponents[2];                                                   /* 0xf837e0 */
 
 
 
 int ai_PokerStart(AIPER *p, G10GAME *g);                                          /* 0x4a7140 */
-int ai_Unk4a7430(G10GAME *g);                                                    /* 0x4a7430 */
+int ai_PokerDealRound(G10GAME *g);                                                    /* 0x4a7430 */
 int ai_PokerStep(void);                                                          /* 0x4a74e0 */
 int ai_Unk4a7650(int *hand, int shown, int skip, int *out);                         /* 0x4a7650 */
 int ai_Unk4a76d0(int *hand, int high);                                           /* 0x4a76d0 */

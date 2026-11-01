@@ -31,7 +31,7 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define ai_Unk143ab0c                            (*(char * (*)[84])((char *)txt_Ptrs + 0x0094c))  /* 0x143ab0c */
 #define txt_MaleFirstNames                            (*(char * (*)[197])((char *)txt_Ptrs + 0x00a9c))  /* 0x143ac5c */
 #define txt_FemaleFirstNames                            (*(char * (*)[130])((char *)txt_Ptrs + 0x00db0))  /* 0x143af70 */
-#define ai_Unk143b178                            (*(char * (*)[152])((char *)txt_Ptrs + 0x00fb8))  /* 0x143b178 */
+#define txt_FamilyNames                            (*(char * (*)[152])((char *)txt_Ptrs + 0x00fb8))  /* 0x143b178 */
 #define ai_Unk143b3d8                            (*(char * (*)[3])((char *)txt_Ptrs + 0x01218))  /* 0x143b3d8 */
 #define ai_Unk143b3e4                            (*(char * (*)[4])((char *)txt_Ptrs + 0x01224))  /* 0x143b3e4 */
 #define txt_NoRelative                            (*(char * *)((char *)txt_Ptrs + 0x01234))  /* 0x143b3f4 */

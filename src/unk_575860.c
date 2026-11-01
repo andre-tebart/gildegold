@@ -4295,7 +4295,7 @@ void ai_Unk57b8a0(int arg)
     }
 }
 
-int unk_Unk4fb770();
+int gm_HeadIconNumber();
 unsigned *gm_Unk503ee0(unsigned *out, int n);
 
 /* 0x57bc30, the tutorial info block (168 B, ROUGH): the bytes 0x75e5a0 = 0x4b, 0x75e5a1 = 0x18, 0x75e5a2 =
@@ -4315,7 +4315,7 @@ void ai_SetupTutorialPlayer(void)
     U_I(((unsigned)&init_PlayerProfile + 0x4)) = 0x59a;
     *(unsigned char *)((unsigned)&init_PlayerProfile + 0x8) = 0;
     *(unsigned char *)((unsigned)&init_PlayerProfile + 0x9) = 0;
-    init_PlayerProfile.modelId = unk_Unk4fb770((char *)(unsigned)&full_data_624ee0) + 0x639;
+    init_PlayerProfile.modelId = gm_HeadIconNumber((char *)(unsigned)&full_data_624ee0) + 0x639;
     strcpy((char *)((unsigned)&init_PlayerProfile + 0xa), *(char **)(unsigned)&full_data_1449e48);
     strcpy((char *)((unsigned)&init_PlayerProfile + 0x2a), *(char **)(unsigned)&full_data_1449e4c);
     gm_Unk503ee0((unsigned *)local, *(unsigned char *)((unsigned)&init_PlayerProfile + 0x3));

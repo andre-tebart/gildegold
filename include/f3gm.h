@@ -41,7 +41,7 @@ int gm_Unk505ad0(char *c);  /* 0x505ad0 */
 int gm_CurseTargetCount(char *b);  /* 0x50d0b0 */
 int gm_Season(char *d);  /* 0x4fe330 */
 unsigned gm_Unk5054f0(short *c);  /* 0x5054f0 */
-int unk_Unk4fb770(char *name);  /* 0x4fb770 */
+int gm_HeadIconNumber(char *name);  /* 0x4fb770 */
 int gm_FindRichest(short *id, int *rate);  /* 0x4fad60 */
 void gm_Shuffle(unsigned n, int *out);  /* 0x505d30 */
 int gm_Unk503f30(int x);  /* 0x503f30 */
