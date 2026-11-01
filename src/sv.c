@@ -38,11 +38,6 @@ extern D2VIEW d2_Views[];
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 extern void *d2_BackSurf;
-extern int d2_CutsceneActive;
-extern float d3_ViewW;
-extern float d3_ViewX;
-extern float d3_ViewH;
-extern float d3_ViewY;
 extern GAPDATA full_data_623e84[];
 extern GAPDATA full_data_6f2354[];
 extern void *d2_ScreenSurf;  /* 0x6ed924 */
@@ -51,7 +46,6 @@ extern void *d2_ScreenSurf;  /* 0x6ed924 */
 extern GAPDATA full_data_75ec98[];
 extern GAPDATA full_data_75ec9c[];
 extern char ai_Unk623ac0[];
-extern struct D3IOANIMDATA d3_AnimHead;
 extern GAPDATA full_data_6238e8[];
 extern GAPDATA full_data_6238ec[];
 extern GAPDATA full_data_6238f0[];
@@ -60,7 +54,6 @@ extern GAPDATA full_data_623938[];
 extern GAPDATA full_data_62393c[];
 extern GAPDATA full_data_7604e8[];
 extern const char ai_AxisPair[];
-extern char ai_PlayerSlots[4][0x2f4];
 
 #include "unk_5d33b0_types.h"
 extern OPTIONBYTES ai_OptionPanelHelp;
@@ -82,11 +75,9 @@ extern GAPDATA full_data_6faa60[];
 extern void *d2_ScreenSurf;  /* 0x6ed924 */
 extern GAPDATA full_data_6f2338[];
 extern GAPDATA full_data_76631c[];
-extern int ai_Unk7603a0[32];
 extern GAPDATA full_data_75ec80[];
 extern GAPDATA full_data_75ec84[];
 extern unsigned char ai_TimeHour;
-extern char txt_Keys[0x4800][0x50];
 extern GAPDATA full_data_6f2294[];
 extern GAPDATA full_data_6f2320[];
 extern GAPDATA full_data_6f23bc[];
@@ -119,7 +110,6 @@ extern GAPDATA full_data_6f2328[];
 extern GAPDATA full_data_6f232c[];
 extern GAPDATA full_data_6f23dc[];
 extern int ai_CameraStep;  /* 0x623814, the camera move step (100 - camera speed); sv.c converts it with fild at the float uses */
-extern int ai_ClickedObject;
 extern char * ai_Unk6f22e8;
 extern int ai_Unk6f22f8;
 extern int d2_HitUnderPointer;
@@ -136,12 +126,10 @@ extern GAPDATA full_data_76045c[];
 extern GAPDATA full_data_760460[];
 extern unsigned char ai_TimeHour;
 extern int ai_Unk7603a0[32];
-extern void * d3_Unk6333fc;
 extern GAPDATA full_data_6237c8[];
 extern GAPDATA full_data_75ec84[];
 extern int gm_PlayerRecords[688];
 extern int hst_KeyNext;
-extern unsigned char txt_GroupLevel[0x4800];
 
 extern int d2_TextDrawnH;
 extern int d2_TextDrawnW;
@@ -174,8 +162,6 @@ extern GAPDATA full_data_6f2320[];
 extern GAPDATA full_data_6f2338[];
 extern GAPDATA full_data_6f23e4[];
 extern GAPDATA full_data_6f23e8[];
-extern int snd_SystemBank;
-extern int snd_RoomBank;
 extern GAPDATA full_data_6f262c[];
 extern GAPDATA full_data_6f2630[];
 extern GAPDATA full_data_6faa80[];
@@ -203,11 +189,8 @@ extern GAPDATA full_data_760448[];
 extern GAPDATA full_data_76044c[];
 extern GAPDATA full_data_760450[];
 extern int ai_Unk7603a0[32];
-extern int snd_BookBank;
 extern GAPDATA full_data_6f23f0[];
-extern int main_QuitProgram;
 extern GAPDATA full_data_75ec40[];
-extern HWND main_Window;
 extern char ai_Unk75fba0[2048];
 
 extern GAPDATA full_data_602568[];
@@ -215,10 +198,8 @@ extern GAPDATA full_data_623ebc[];
 extern char ai_Unk75fba0[2048];
 extern unsigned char ai_TimeHour;
 extern char ai_Unk623ac0[];
-extern struct D3SKY *d3_Sky;
 extern GAPDATA full_data_6239d8[];
 extern struct D3OBJECT *d3t_SunRays;
-extern int snd_ThunderBank;
 extern GAPDATA full_data_7604e8[];
 extern int ai_OptionSpeed;
 extern float ch_Unk5f1290;
@@ -226,8 +207,6 @@ extern GAPDATA full_data_6f22ac[];
 extern int d2_HalfScreenH;
 extern int d2_HalfScreenW;
 extern int ai_GameFlags;
-extern int ai_GameOver;
-extern int ai_MissionPartner;
 
 extern int ch_CurrentGroup;
 extern int ai_Unk6f0cd4;
@@ -245,7 +224,6 @@ extern struct D2INPUT *d2_FocusedInput;
 extern int d2_HitUnderPointer;
 extern short d2_MouseX;
 extern short d2_MouseY;
-extern int d3_FrameCount;
 
 
 extern GAPDATA full_data_623eac[];
@@ -286,7 +264,6 @@ extern char ch_EmptyName[];             /* 0x631090 */
 extern int di_Absolute, di_MinX, di_MinY, di_MaxX, di_MaxY;  /* 0x5f3240, 0x6310b0, 0x6310b4, 0x5f3238, 0x5f323c (di_input.c) */
 extern short d2_ScreenW;  /* 0xfb9072 (d2.h), the screen size */
 extern short d2_ScreenH;  /* 0xfb9070 */
-extern int sv_FrameMask;           /* 0x760638 */
 extern int d2_LastWindow;  /* 0x6ed938 */
 extern char *d2_LastWindowPtr;  /* 0x6ed980, window created last; @original: d2.h declares D2WIN *; the units add byte offsets to it and cannot include d2.h (vfs_Root / vfs_Tfopen clash with vfs.h) */
 extern int d2_ClickedId;  /* 0xf8a668 */
@@ -313,12 +290,11 @@ void d2_RadioClear(int g);                     /* 0x46c600 */
 void d2_CloseView(int view);            /* 0x4758f0 */
 /* ai_Unk7e4048: view of ai_PlayerSlots (tools/data_views.py) */
 /* ai_Unk7e4058: view of ai_PlayerSlots (tools/data_views.py) */
-extern int ai_Unk6f22c0, ai_Unk6f22c4, ai_Unk6f22c8, ai_FrameWait;  /* 0x6f22c0, 0x6f22c4, 0x6f22c8, 0x6f22bc */
+extern int ai_Unk6f22c0, ai_Unk6f22c4, ai_Unk6f22c8;  /* 0x6f22c0, 0x6f22c4, 0x6f22c8, 0x6f22bc */
 extern char ai_Unk6f0454[3];  /* 0x6f0454 */
 extern char *ai_Unk6ed92c;  /* 0x6ed92c */
 extern OPTIONBYTES ai_GamePanel;  /* 0x6f3668 */
 /* ai_Unk6f0455: view of ai_Unk6f0454 (tools/data_views.py) */
-extern unsigned short ai_PlayerId;  /* 0x6f25b8 */
 /* the object / character record fields sv.c reads (AIBLD / AICHAR in ai.h; ai.h cannot be included here: its
    declarations of ai_Time / ai_Chars / ai_BTypes / ai_Blds clash with gv.h's char views). Views, as gv.h's ORDCHAR */
 #pragma pack(push, 1)
@@ -357,17 +333,12 @@ typedef struct SVCHARREC {
 #pragma pack(pop)
 extern SVPLATE sv_NamePlates[0x20];
 
-int gm_IsHomeType(unsigned char *b);     /* 0x502520, f3gm.c */
 int gm_IsType10(unsigned char *b);       /* 0x5024f0, f3gm.c */
-int init_ObjectSceneUniverse(unsigned short *p);     /* 0x511dc0, f3init.c */
-void init_LoadObjectScene(int n);        /* 0x50d7f0, f3init.c */
-void ai_GameFrame(void);                     /* 0x591520 */
 int d2_DrawMousePointer(int x, int y);         /* 0x476f00, gfx.c */
 void d2_SetClipRect(int x0, int y0, int x1, int y1);                     /* 0x47cb40 */
 int d2_AddHitRect();                     /* 0x478890, @original: sv.c's callers were compiled against the non-prototype declaration (sv_BuildScreenLayout passes an int d2_ScreenW - 0x50 without a short conversion, 464 bytes vs 480) */
 int d2_CreateWindow();                     /* 0x472390 */
 void d2_PlaceWindowScaled();                     /* 0x475730 */
-void mem_Free(void *p);                     /* 0x422620 */
 void * d2_GetPic();                     /* 0x4690b0 */
 int d2_LockSurface();                     /* 0x479020 */
 int d2_ClearSurface();                     /* 0x4796c0 */
@@ -377,9 +348,7 @@ int d2_UnlockSurface();                     /* 0x4790e0 */
 struct D2SURF * d2_MakeSurface(struct D2SURF *desc, int flags);                     /* 0x478cc0 */
 int d2_CreatePicObj();                     /* 0x46cd80 */
 void d2_EnableObject();                     /* 0x475aa0 */
-int gm_TitleGroup();                     /* 0x504ad0 */
 void d2_SetViewEnabled(int view, int on);  /* 0x475590 */
-void he_Unk53dad0();                     /* 0x53dad0 */
 void d2_RemoveObj();                     /* 0x46e710 */
 int d2_FreeSurface(struct D2SURF *s);                     /* 0x478fc0 */
 void d2_RemoveHitRect();                     /* 0x4788f0 */
@@ -388,6 +357,36 @@ int d2_RemoveWindow();                     /* 0x472ce0 */
 #include "time_view.h"
 #include "io_text.h"
 #include "ls.h"
+#include "ahm.h"
+#include "ai.h"
+#include "anm.h"
+#include "bio.h"
+#include "d3_anim.h"
+#include "d3_d3d.h"
+#include "d3_engine.h"
+#include "d3_interface.h"
+#include "d3_io_t.h"
+#include "d3_sky.h"
+#include "d3_sm.h"
+#include "d3_snd.h"
+#include "d3_vec.h"
+#include "d3s.h"
+#include "dd_vesa.h"
+#include "err.h"
+#include "f3init.h"
+#include "he.h"
+#include "hst.h"
+#include "main.h"
+#include "mem.h"
+#include "msx.h"
+#include "tr.h"
+#include "ts_texture.h"
+#include "txt.h"
+#include "unk_458810.h"
+#include "unk_4b39f0.h"
+#include "unk_575860.h"
+#include "unk_58bbd0.h"
+#include "vfs.h"
 #define d3sky_CreateLayerK ((int (*)())d3sky_CreateLayer)  /* 0x45d880 (d3_sky.c): @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) (floats as bit patterns, the flags as an int) */
 #define d3sky_CreateK ((int (*)())d3sky_Create)  /* 0x45da30 (d3_sky.c): @original the calls pass the three floats as dword bit patterns without a prototype (ai_Unk4e32f0 0x4e32f0: push 0x44160000 ..) */
 #define d3_PointToWorldK ((void (*)())d3_PointToWorld)  /* 0x458a20 (d3.h, 3 parameters): @original sv_Unk528180 0x5281b5 pushes 4 arguments (the 4th an uninitialised register), compiled without a prototype */
