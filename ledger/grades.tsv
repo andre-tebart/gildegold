@@ -2106,7 +2106,7 @@ exe	0x004bf3b0	rt_UpdateMarkPics	rt	byte	readable
 exe	0x004bf3e0	rt_FindMark	rt	byte	readable		
 exe	0x004bf410	rt_RemoveMark	rt	byte	readable		
 exe	0x004bf440	rt_HighlightRoute	rt	draft	draft	deep	
-exe	0x004bf5b0	rt_Unk4bf5b0	rt	draft	draft	deep	
+exe	0x004bf5b0	rt_EditCartRoute	rt	draft	draft	deep	
 exe	0x004bfa40	rt_UnloadAtPoint	rt	byte	draft	deep	
 exe	0x004bfc60	rt_Unk4bfc60	rt	draft	draft	deep	
 exe	0x004bff40	rt_SaveRoutes	rt	draft	draft	deep	
@@ -3357,13 +3357,13 @@ exe	0x00528800	sv_AddPanelButton	sv	byte	draft
 exe	0x00528860	sv_OpenBuildingPanel	sv	draft	readable	deep	
 exe	0x00528b80	sv_OpenItemPanel	sv	byte	readable		
 exe	0x00528d90	sv_OpenCartPanel	sv	byte	readable		
-exe	0x00528ee0	sv_Unk528ee0	sv	draft	draft		
-exe	0x005290f0	sv_Unk5290f0	sv	draft	draft		
-exe	0x00529380	sv_Unk529380	sv	draft	draft		
-exe	0x00529fb0	sv_Unk529fb0	sv	byte	draft		
+exe	0x00528ee0	sv_OpenDefaultPanel	sv	byte	readable		
+exe	0x005290f0	sv_OpenPersonPanel	sv	byte	readable		
+exe	0x00529380	sv_RefreshPanel	sv	draft	draft	deep	
+exe	0x00529fb0	sv_ClosePanel	sv	byte	draft		
 exe	0x0052a040	sv_ReturnZero	sv	byte	readable		
-exe	0x0052a050	sv_UpdatePanel	sv	draft	draft		
-exe	0x0052a680	sv_Unk52a680	sv	draft	draft		
+exe	0x0052a050	sv_UpdatePanel	sv	byte	draft		
+exe	0x0052a680	sv_HoverPick	sv	draft	draft	deep	
 exe	0x0052adb0	sv_Unk52adb0	sv	draft	draft		
 exe	0x0052ae40	sv_ClearSelection	sv	byte	draft		
 exe	0x0052ae70	sv_Unk52ae70	sv	draft	draft		
@@ -3936,9 +3936,9 @@ exe	0x00575710	he_SetMessageKindFiltered	he	byte	draft
 exe	0x00575860	ai_Unk575860	unk_575860	draft	draft		
 exe	0x00576020	unk_ClearEndGameGate	unk_575860	byte	draft		
 exe	0x00576030	unk_SetEndGameGate	unk_575860	byte	draft		
-exe	0x00576040	ai_Unk576040	unk_575860	draft	draft		
+exe	0x00576040	ai_CampaignStep	unk_575860	draft	draft		
 exe	0x00576340	ai_ScriptQuery	unk_575860	draft	draft		
-exe	0x005763c0	ai_Unk5763c0	unk_575860	byte	draft		
+exe	0x005763c0	ai_RunAllows	unk_575860	byte	draft		
 exe	0x00576410	ai_Unk576410	unk_575860	byte	draft		
 exe	0x00576460	ai_Unk576460	unk_575860	byte	draft		
 exe	0x00576490	ai_Unk576490	unk_575860	byte	draft		
@@ -4421,8 +4421,8 @@ exe	0x005b7690	ai_Unk5b7690	unk_58bbd0	draft	draft
 exe	0x005b7b80	ai_Unk5b7b80	unk_58bbd0	draft	draft		
 exe	0x005b7dd0	ai_Unk5b7dd0	unk_58bbd0	draft	draft		
 exe	0x005b82a0	ai_Unk5b82a0	unk_58bbd0	draft	draft		
-exe	0x005b84f0	ai_Unk5b84f0	unk_58bbd0	draft	draft		
-exe	0x005b8fc0	ai_Unk5b8fc0	unk_58bbd0	draft	draft		
+exe	0x005b84f0	ai_BuildingWindow	unk_58bbd0	draft	draft		
+exe	0x005b8fc0	ai_ManagedBuildingWindow	unk_58bbd0	draft	draft		
 exe	0x005b92e0	ai_Unk5b92e0	unk_58bbd0	draft	draft		
 exe	0x005b9730	ai_Unk5b9730	unk_58bbd0	draft	draft		
 exe	0x005b9db0	ai_Unk5b9db0	unk_58bbd0	draft	draft		
