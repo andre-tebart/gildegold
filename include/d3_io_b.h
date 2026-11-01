@@ -6,7 +6,6 @@ struct VFSFILE;
 #define UNK_44EE50_H
 
 typedef struct VFSFILE VFSFILE;     /* vfs.h; its prototypes clash with d3_io_t.h (void *) */
-int vfs_fseek(struct VFSFILE *f, long offset, int origin);                                /* 0x430fa0 */
 
 typedef struct BGIENT {             /* one table entry, 12 bytes */
     int id;                         /* chunk id, 0x28 ends the table */
@@ -36,9 +35,6 @@ typedef struct BGIRD {              /* reader context; the first 0x38 bytes are 
 
 extern int bgi_Depth;                                                           /* 0x633b00 */
 
-void bio_rd_c(struct VFSFILE *f, char *c);                                                /* 0x401180 */
-void bio_rd_v3(struct VFSFILE *f, int *v);                                                /* 0x401260 */
-int vfs_fread(void *buf, int size, int n, struct VFSFILE *f);                             /* 0x430bd0 */
 
 void agi_Kind(void *unused, char *out);                                         /* 0x44ee50 */
 int bgi_ReadId(void *f);                                                        /* 0x44eea0 */
