@@ -1720,7 +1720,7 @@ spying:
     sprintf(buf, "ai_CalcAngriff(): Meister %s hat schon eine Spionage bei '%s' laufen", ch->name, best->name);
     return 1;
 }
-/* 0x481ef0 */
+/* 0x481ef0 @deep Read whole against the original and fixed: both best-building picks as if(!best)/else-if, the entfuehren filter kind <= 7 (cmp 7/ja), the einbrechen test unk37 >= 0x5f (jae) || (float)unk37 >= rand(20) + unk36*2.0f (unk37 converted first, the fadd st,st), the id counts clamped into their own variable (cmp 8/jl, three sites), the busy checks of the burgle and the spy part as gotos to one sprintf exit each, placed after their send as in the original (0x4827be, 0x48297e). The instruction multiset is now equal up to register / slot names, symbol aliases (ai_Time vs NOWX, ai_Chars+4 vs ai_CharInts) and reloads. Left: register allocation (ch in ebp, the original ebx; ours reloads ch / obj from the frame: 13 extra mov reg,[esp+N], loads 10 into a register for the BuySlots/BuyCapacity pushes where the original pushes 0xa), a frame 4 bytes smaller (0x524 vs 0x528, one slot fewer, not changed by keeping the rank in r), and block layout: the r==1 (entfuehren) block, which the original places after the CalcAngriff call (+0xac0..), sits inline after the r==1 test in ours (jnp at +0x349: ours to +0xee7, the original's to +0xeb7; jne at +0x32a: ours to +0x7b2, the original's to +0x3bc). (size: 1195 vs 1181 instructions, explained: ours 1195 vs 1181: the 13 extra mov reg,[esp+N] reloads of ch / obj / n that the original keeps in ebx / ebp (asmdiff +0x482016 mov edi,[esp+0x538], +0x482023 mov esi,[esp+0x24]) plus mov ebx,0xa for the pushed 10s) */
 
 void ai_CalcMeisterDiebe(AICHAR *ch)
 {
@@ -1824,18 +1824,20 @@ void ai_CalcMeisterDiebe(AICHAR *ch)
                     if (bb->owner != ch->bld->owner && bb->owner != 0xffff && !(bb->flags5a & 1) && r != 3 && r != 5
                         && r != 0
                         && (!ai_CharsT[bb->owner].bld || ai_CharsT[bb->owner].bld->owner != ch->bld->owner)
-                        && ai_CharsT[bb->owner].kind < 8) {
+                        && ai_CharsT[bb->owner].kind <= 7) {
                         if (!bb->object || !ord_GetGridCell(bb->object + 0x4c, &i, &j))
                             w = 0.0f;
                         else
                             w = 1.0f - (ai_Grid[i][j].a * 0.125f + ai_Grid[i][j].b) / max;
                         w = util_RandomU(100) * w * 0.01;
-                        if (best) {
-                            if (!((float)gm_GetGoodsValue(&ai_CharsT[bb->owner]) * w > (float)gm_GetGoodsValue(&ai_CharsT[best->owner]) * bestw))
-                                continue;
+                        if (!best) {
+                            bestw = w;
+                            best = bb;
+                        } else if ((float)gm_GetGoodsValue(&ai_CharsT[bb->owner]) * w
+                                   > (float)gm_GetGoodsValue(&ai_CharsT[best->owner]) * bestw) {
+                            bestw = w;
+                            best = bb;
                         }
-                        bestw = w;
-                        best = bb;
                     }
                 }
             }
@@ -1898,12 +1900,13 @@ burgle:
                     r = gm_BuildingRank(bb);
                     w = (8.0f - r) * w * 0.5;
                     w = util_RandomU(100) * w * 0.01;
-                    if (best) {
-                        if (!((float)gm_OwnerWorth(bb, obj != 0) * w > (float)gm_OwnerWorth(best, obj != 0) * bestw))
-                            continue;
+                    if (!best) {
+                        bestw = w;
+                        best = bb;
+                    } else if ((float)gm_OwnerWorth(bb, obj != 0) * w > (float)gm_OwnerWorth(best, obj != 0) * bestw) {
+                        bestw = w;
+                        best = bb;
                     }
-                    bestw = w;
-                    best = bb;
                 }
             }
             if (!best) {
@@ -1916,21 +1919,13 @@ burgle:
             goto pick;
         for (o = gm_Query(ch->bld->objList, 1, 0, 0xca); o; o = gm_QueryNext()) {
             if (o->unk2a == best->id) {
-                if (o->unk37 > 0x5e || (float)o->unk36 + (float)o->unk36 + (float)util_RandomU(20) <= (float)o->unk37) {
-                    for (job = he_FindEvent(2, 0, 0x40, 3, ch->bld->id); job; job = he_NextEvent()) {
-                        if (job->unkac == best->id) {
-                            sprintf(buf, "ai_CalcMeisterDiebe(): Meister %s hat aber noch eine Spionage bei '%s' "
-                                    "nicht beendet", name, best->name);
-                            return;
-                        }
-                    }
-                    for (job = he_FindEvent(2, 0, 0x3f, 3, ch->bld->id); job; job = he_NextEvent()) {
-                        if (job->unkac == best->id) {
-                            sprintf(buf, "ai_CalcMeisterDiebe(): Meister %s hat aber noch eine Spionage bei '%s' "
-                                    "nicht beendet", name, best->name);
-                            return;
-                        }
-                    }
+                if (o->unk37 >= 0x5f || (float)o->unk37 >= util_RandomU(20) + o->unk36 * 2.0f) {
+                    for (job = he_FindEvent(2, 0, 0x40, 3, ch->bld->id); job; job = he_NextEvent())
+                        if (job->unkac == best->id)
+                            goto unfinished;
+                    for (job = he_FindEvent(2, 0, 0x3f, 3, ch->bld->id); job; job = he_NextEvent())
+                        if (job->unkac == best->id)
+                            goto unfinished;
                     sprintf(buf, "ai_CalcMeisterDiebe(): Meister %s bricht bei '%s' ein", name, best->name);
                     memset(&msg, 0, sizeof(msg));
                     msg.type = 0x3f;
@@ -1940,32 +1935,29 @@ burgle:
                     msg.flags = 1;
                     msg.arg[0] = best->id;
                     msg.arg[1] = ch->bld->id;
-                    if (n > 7)
-                        n = 8;
-                    AI_FILL_IDS(n)
+                    t = n;
+                    if (t >= 8)
+                        t = 8;
+                    AI_FILL_IDS(t)
                     if (msg.ids[0] != -1) {
                         cm_SendLongMessage(&msg);
                         ch->target = -1;
                     }
                     return;
+                unfinished:
+                    sprintf(buf, "ai_CalcMeisterDiebe(): Meister %s hat aber noch eine Spionage bei '%s' nicht beendet",
+                            name, best->name);
+                    return;
                 }
                 break;
             }
         }
-        for (job = he_FindEvent(2, 0, 0x40, 3, ch->bld->id); job; job = he_NextEvent()) {
-            if (job->unkac == best->id) {
-                sprintf(buf, "ai_CalcMeisterDiebe(): Meister %s hat schon eine Spionage bei '%s' laufen", name,
-                        best->name);
-                return;
-            }
-        }
-        for (job = he_FindEvent(2, 0, 0x3f, 3, ch->bld->id); job; job = he_NextEvent()) {
-            if (job->unkac == best->id) {
-                sprintf(buf, "ai_CalcMeisterDiebe(): Meister %s hat schon eine Spionage bei '%s' laufen", name,
-                        best->name);
-                return;
-            }
-        }
+        for (job = he_FindEvent(2, 0, 0x40, 3, ch->bld->id); job; job = he_NextEvent())
+            if (job->unkac == best->id)
+                goto spying;
+        for (job = he_FindEvent(2, 0, 0x3f, 3, ch->bld->id); job; job = he_NextEvent())
+            if (job->unkac == best->id)
+                goto spying;
         sprintf(buf, "ai_CalcMeisterDiebe(): Meister %s spioniert bei '%s'", name, best->name);
         memset(&msg, 0, sizeof(msg));
         msg.type = 0x40;
@@ -1975,10 +1967,14 @@ burgle:
         msg.flags = 1;
         msg.arg[0] = best->id;
         msg.arg[1] = ch->bld->id;
-        if (n > 7)
-            n = 8;
-        AI_FILL_IDS(n)
+        t = n;
+        if (t >= 8)
+            t = 8;
+        AI_FILL_IDS(t)
         cm_SendLongMessage(&msg);
+        return;
+    spying:
+        sprintf(buf, "ai_CalcMeisterDiebe(): Meister %s hat schon eine Spionage bei '%s' laufen", name, best->name);
         return;
     } else if (r == 3) {
 other:
@@ -1994,9 +1990,10 @@ pick:
     msg.time = ai_TimeT;
     msg.flags = 1;
     msg.arg[10] = ai_CharsT[ch->bld->owner].netId;
-    if (n > 7)
-        n = 8;
-    AI_FILL_IDS(n)
+    t = n;
+    if (t >= 8)
+        t = 8;
+    AI_FILL_IDS(t)
     if (msg.ids[0] != -1)
         cm_SendLongMessage(&msg);
 }
