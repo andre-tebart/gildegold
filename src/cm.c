@@ -6169,9 +6169,9 @@ void ai_Unk4cd580(int a, int b)
     ai_Unk9367d4 = b;
     ai_Unk936408 = 0;
 }
-/* 0x4cd5d0 */
+/* 0x4cd5d0, the lobby's player list ai_Unk936420 (the count, then the eight player ids) */
 
-char *ai_Unk4cd5d0()
+unsigned int *ai_Unk4cd5d0()
 {
     return ai_Unk936420;
 }
@@ -6181,32 +6181,32 @@ char *ai_Unk4cd5e0(int id)
 {
     return ai_Unk4cd380(id);
 }
-/* 0x4cd5f0 */
+/* 0x4cd5f0, this player's lobby record (the one of the id ai_Unk9367d0) */
 
-char *ai_Unk4cd5f0()
+CMLOBBYPLAYER *ai_Unk4cd5f0()
 {
-    return ai_Unk4cd380(ai_Unk9367d0);
+    return (CMLOBBYPLAYER *)ai_Unk4cd380(ai_Unk9367d0);
 }
-/* 0x4cd600 */
+/* 0x4cd600, the lobby state: [0] the lobby is open (ai_Unk4cd580), [1] a lobby message came in (ai_Unk4cd870) */
 
 int *ai_Unk4cd600()
 {
     return &ai_Unk936400;
 }
-/* 0x4cd610, sends message 0x5f, kind 0 */
+/* 0x4cd610, sends the lobby message 0x5f kind 0 (asks for the player list); returns the send slot (cm_GetSlotState) */
 
-void ai_Unk4cd610()
+int ai_Unk4cd610()
 {
     G17MSG m;
 
     memset(m.data, 0, 0x80);
     G17_I(m, 0) = 0;
     m.type = 0x5f;
-    ai_Unk4c39c0(&m);
+    return ai_Unk4c39c0(&m);
 }
-/* 0x4cd650, kind 1 */
+/* 0x4cd650, kind 1: this player's ready flag v; returns the send slot */
 
-void ai_Unk4cd650(int v)
+int ai_Unk4cd650(int v)
 {
     G17MSG m;
 
@@ -6215,11 +6215,11 @@ void ai_Unk4cd650(int v)
     m.type = 0x5f;
     G17_I(m, 0) = 1;
     G17_I(m, 8) = v;
-    ai_Unk4c39c0(&m);
+    return ai_Unk4c39c0(&m);
 }
-/* 0x4cd6a0, kind 3 */
+/* 0x4cd6a0, kind 3: this player leaves the lobby; returns the send slot */
 
-void ai_Unk4cd6a0()
+int ai_Unk4cd6a0()
 {
     G17MSG m;
 
@@ -6227,11 +6227,12 @@ void ai_Unk4cd6a0()
     m.type = 0x5f;
     G17_I(m, 0) = 3;
     G17_I(m, 4) = ai_Unk9367d0;
-    ai_Unk4c39c0(&m);
+    return ai_Unk4c39c0(&m);
 }
-/* 0x4cd6e0, kind 6: a text line (0x3f characters) of this player */
+/* 0x4cd6e0, kind 6: a chat line (0x3f characters) of this player to the player id to (0: everybody); returns the
+   send slot */
 
-void ai_Unk4cd6e0(char *text, int v)
+int ai_Unk4cd6e0(int to, char *text)
 {
     G17MSG m;
     struct {
@@ -6241,39 +6242,39 @@ void ai_Unk4cd6e0(char *text, int v)
 
     memset(m.data, 0, 0x80);
     t.a = ai_Unk9367d0;
-    t.b = v;
+    t.b = to;
     strncpy(t.name, text, 0x3f);
     m.type = 0x5f;
     t.name[0x3f] = 0;
     G17_I(m, 0) = 6;
     memcpy(&m.data[4], &t, 0x48);
-    ai_Unk4c39c0(&m);
+    return ai_Unk4c39c0(&m);
 }
-/* 0x4cd760, kind 2: the 0x57-byte record p (its id is set here) */
+/* 0x4cd760, kind 2: this player joins with the record p (its id is set here); returns the send slot */
 
-void ai_Unk4cd760(char *p)
+int ai_Unk4cd760(CMLOBBYPLAYER *p)
 {
     G17MSG m;
 
     memset(m.data, 0, 0x80);
     m.type = 0x5f;
-    *(int *)p = ai_Unk9367d0;
+    p->id = ai_Unk9367d0;
     G17_I(m, 0) = 2;
     memcpy(&m.data[4], p, 0x57);
-    ai_Unk4c39c0(&m);
+    return ai_Unk4c39c0(&m);
 }
-/* 0x4cd7c0, kind 4 */
+/* 0x4cd7c0, kind 4: this player's changed record p (its id is set here); returns the send slot */
 
-void ai_Unk4cd7c0(char *p)
+int ai_Unk4cd7c0(CMLOBBYPLAYER *p)
 {
     G17MSG m;
 
     memset(m.data, 0, 0x80);
     m.type = 0x5f;
-    *(int *)p = ai_Unk9367d0;
+    p->id = ai_Unk9367d0;
     G17_I(m, 0) = 4;
     memcpy(&m.data[4], p, 0x57);
-    ai_Unk4c39c0(&m);
+    return ai_Unk4c39c0(&m);
 }
 /* 0x4cd820, kind 5 */
 

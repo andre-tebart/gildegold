@@ -47,4 +47,25 @@ typedef struct CMJOIN {                 /* 0x30 bytes at 0x9367a0 (inside ai_Unk
     int char54;                         /* 0x2c */
 } CMJOIN;
 
+#pragma pack(push, 1)
+typedef struct CMLOBBYPLAYER {          /* 0x57 bytes, a player of the network lobby: the 8 records of ai_Unk9364e0,
+                                           sent whole by the lobby messages of type 0x5f (kinds 2 and 4) */
+    int id;                             /* 0x00, the player's net id (ai_Unk9367d0 for this player), 0: a free record */
+    int ready;                          /* 0x04, 1: ready to start (kind 1; ai_Unk4cd510 counts them) */
+    char pad08[2];                      /* 0x08, no user seen */
+    unsigned char status;               /* 0x0a, 0x10 as INIT_PLAYER.status of a new profile */
+    unsigned char job;                  /* 0x0b, the profession (INIT_PLAYER.job, the profile key "Beruf") */
+    int coat;                           /* 0x0c, the coat of arms index (INIT_PLAYER.coat - 0x59a, "Wappen") */
+    unsigned char sex;                  /* 0x10, 0 male / 1 female ("Geschlecht") */
+    unsigned char faith;                /* 0x11, "Glauben" */
+    char firstName[0x10];               /* 0x12, "Name" */
+    char familyName[0x10];              /* 0x22, "Familienname" */
+    int unk32;                          /* 0x32, -1 for a new player; no reader seen */
+    unsigned char talents[5];           /* 0x36, 0x5a 0x46 0x78 0x46 0x5a for a new player (a reasoned guess: the
+                                           five talents of INIT_PLAYER.talents) */
+    char pad3b[0x1c];                   /* 0x3b, no user seen */
+} CMLOBBYPLAYER;
+#pragma pack(pop)
+typedef char cm_AssertCMLOBBYPLAYER[sizeof(CMLOBBYPLAYER) == 0x57 ? 1 : -1];
+
 #endif

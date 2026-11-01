@@ -496,16 +496,16 @@ G18LOG *ai_Unk4cd4c0();  /* 0x4cd4c0 */
 void ai_Unk4cd500();  /* 0x4cd500 */
 int ai_Unk4cd510();  /* 0x4cd510 */
 void ai_Unk4cd580(int a, int b);  /* 0x4cd580 */
-char *ai_Unk4cd5d0();  /* 0x4cd5d0 */
+unsigned int *ai_Unk4cd5d0();  /* 0x4cd5d0 */
 char *ai_Unk4cd5e0(int id);  /* 0x4cd5e0 */
-char *ai_Unk4cd5f0();  /* 0x4cd5f0 */
+CMLOBBYPLAYER *ai_Unk4cd5f0();  /* 0x4cd5f0 */
 int *ai_Unk4cd600();  /* 0x4cd600 */
-void ai_Unk4cd610();  /* 0x4cd610 */
-void ai_Unk4cd650(int v);  /* 0x4cd650 */
-void ai_Unk4cd6a0();  /* 0x4cd6a0 */
-void ai_Unk4cd6e0(char *text, int v);  /* 0x4cd6e0 */
-void ai_Unk4cd760(char *p);  /* 0x4cd760 */
-void ai_Unk4cd7c0(char *p);  /* 0x4cd7c0 */
+int ai_Unk4cd610();  /* 0x4cd610 */
+int ai_Unk4cd650(int v);  /* 0x4cd650 */
+int ai_Unk4cd6a0();  /* 0x4cd6a0 */
+int ai_Unk4cd6e0(int to, char *text);  /* 0x4cd6e0 */
+int ai_Unk4cd760(CMLOBBYPLAYER *p);  /* 0x4cd760 */
+int ai_Unk4cd7c0(CMLOBBYPLAYER *p);  /* 0x4cd7c0 */
 void ai_Unk4cd820(int v);  /* 0x4cd820 */
 int ai_Unk4cd870(G17MSG *m, G17STAT *s);  /* 0x4cd870 */
 char *ai_Unk4cd9d0(int id);  /* 0x4cd9d0 */
