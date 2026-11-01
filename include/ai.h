@@ -467,11 +467,9 @@ extern char *ai_FallbackBuilding;        /* 0x6f230c, the second current buildin
 extern int ai_CurrentPlayer;                /* 0x6f2590, the player index whose turn the local round loop simulates */
 extern int ai_GameFlags;      /* 0x6f23f8 */
 extern int ai_Difficulty;                 /* 0x6f23fc, the game difficulty 0 .. 4 */
-extern signed char ai_Relations[768][768];  /* 0x7e5360 */
 extern AIOBJ *ai_Objects;             /* 0x7e3f34, the objects of the world (0x5008 rows) */
 extern int gm_NOffers;                /* 0x7e3f3c, rows of gm_Offers */
 extern AISTORE gm_Offers[];          /* 0x7e4b20 */
-extern signed char ai_RelationMemory[768][768];  /* 0x889f80 */
 extern AIGRID ai_Grid[8][8];            /* 0x91ae60 */
 extern char *cm_FieldObject;              /* 0xa68d2c */
 #ifndef DATA_VIEWS_H
@@ -550,14 +548,11 @@ int ai_MeisterTradeFernEinkauf2(AICHAR *ch, AIOBJ *obj);                 /* 0x48
 
 /* callees outside this unit */
 int util_Random(unsigned short n);                                       /* 0x42ec00, tr.c; the callers that read a 16-bit result (ch_RandomNear, anm_Update, ai_Unk4d88c0 ..) call util_RandomU, a cast in their head */
-float util_RandomF(void);                                                /* 0x42ec20 */
-int ai_LoadActionTable(void);                                            /* 0x494e70, loads the AI action table */
 int ai_ChooseAction(int id);                                                /* 0x4957d0 */
 int ai_ExecuteAction(int id);                                                /* 0x495ce0 */
 void ai_FillNearRing(AICHAR *c);                                            /* 0x4a3af0 */
 struct G15TREE * veg_FindType(int type);                                         /* 0x4bc5a0 */
 struct G15PLANT * veg_FindPlantId(struct G15PLANT *p, int id);                /* 0x4bc670, the plant record with the id (rd.c) */
-int veg_Fits(struct G15PLANT *p, int x, int z, int size);                  /* 0x4bc710 */
 void cm_BeginFieldBlock(char *o, int id);                             /* 0x4c3ba0, starts a message about o */
 int cm_AddFieldDelta(int size, int n, short field, void *v);                /* 0x4c3c00, adds a field */
 int cm_AddFieldValues(unsigned char size, unsigned char n, unsigned short field, void *v);                  /* 0x4c3d00 */
@@ -565,17 +560,11 @@ void cm_BeginGroup(const char *s);                                        /* 0x4
 void cm_EndGroup(const char *s);                                        /* 0x4c4580 */
 void cm_SendMoveGoods(int a, int b, unsigned char c, int d);                 /* 0x4c47e0 */
 void cm_SendExSellObject(int a, int b, short c, int d, unsigned char e, int f);         /* 0x4c4880, cm.c */
-void cm_SendRemoveGoods(int a, short b);                                               /* 0x4c4960, cm.c */
 void cm_SendFieldDeltas(void);                                                 /* 0x4c49a0, sends the message */
 void cm_SendRelations(int a, int b, int c, int d);                  /* 0x4c4b00 */
 int cm_SendLongMessage(char *msg);                                           /* 0x4c4b70 */
-void cm_SetPlant(int a, unsigned char b, unsigned char c, short d, unsigned char e, int f); /* 0x4c5050 */
-int cm_SendMessage3d(char *p, unsigned char b, int c, int d);                        /* 0x4c55d0 */
 char * ai_Unk4cd9d0(int id);                                              /* 0x4cd9d0 */
 int gv_EntryIndex(char *r, int *e);                                        /* 0x4ef6b0 */
-int gv_SendGrave(unsigned char *o);                                           /* 0x4f15e0 */
-int unk_Unk4f22a0(char *o, unsigned char m);                                   /* 0x4f22a0 */
-int gv_GetTableRecord(int i, int *out);                                       /* 0x4f2720 */
 int ord_GetGridCell(char *p, int *x, int *y);                               /* 0x4f8300 */
 void gm_AddTime(struct GCLOCK *c, int hours, int mins, int secs);                       /* 0x4fe140 */
 void gm_SetTime(struct GCLOCK *c, unsigned char hour, unsigned min, unsigned sec);                   /* 0x4fe1e0, the gm_SetTime of f3gm.c in the AITIME view */
@@ -589,11 +578,9 @@ int gm_CollectOffers(int goods);                                             /* 
 int gm_FindMarketObject(int id);                                            /* 0x500ec0 */
 unsigned char * gm_BuildNext(void);                                               /* 0x501030, next of gm_BuildQuery */
 unsigned char * gm_BuildQuery(int n, ...);                                         /* 0x501190, n (key, value) filters; key 6 takes no value */
-int gm_BuildingMainObject(unsigned char *bld);                                /* 0x501b50, the building's main object (f3gm.c) */
 void gm_GetGebaeudeHauptraum(unsigned char *bld);                                         /* 0x501ce0 */
 int gm_BuildingClass(int type);    /* 0x501d80, the class 0 .. 9 of ai_BTypes[type].kind: kinds 1 .. 0x20 index the byte table 0x501e14 and jump through 0x501dec (1..9), anything else is 0; ai.c dispatches its master / workshop logic on it, f3init.c's init_Betrieb stocks the classes 1 / 4 */
 char * gm_FindBuildingById(int id);                                             /* 0x502020 */
-int gm_IsHomeType(unsigned char *bld);                                            /* 0x502520 */
 short * gm_FindChar(int id);                                            /* 0x505df0 */
 int gm_Unk505e60(unsigned id, int again);                              /* 0x505e60, f3gm.c */
 short * gm_PlayerRecord(char *ch);                                         /* 0x506430 */
@@ -616,11 +603,6 @@ int gm_FreeCapacity(short *l, int item, int max);                            /* 
 int gm_Opinion(int a, int b);                    /* 0x50c520 */
 float gm_Liking(unsigned a, unsigned b, int c);                                 /* 0x50c550 */
 float gm_Unk50cd40(char *c, int k, int a, int b);                  /* 0x50cd40 */
-int init_BuildingSceneUniverse(unsigned char *b);                                            /* 0x511e60 */
-void txt_Format(char *buf, int id, ...);                               /* 0x5176d0 */
-int ls_GetLanguage(void);                                                  /* 0x5190a0 */
-void sv_MoveToGroup(unsigned char *o, short *it, int c, char *g);                /* 0x524260, every caller zero-extends the id */
-void he_MessageBoxQuickjump(int a1, int a2, char *text, char fl, int a5, int a6, int a7, char *jump, char *text2);                     /* 0x53dee0, he.c */
 char * he_NextEvent(void);                                             /* 0x53e300, next of he_FindEvent */
 char * he_FindEvent(int n, ...);                                         /* 0x53e400, n (key, value) pairs */
 int he_Unk553cc0(int p);                                            /* 0x553cc0 */
