@@ -32,7 +32,6 @@ typedef struct NETSTAT {            /* per packet type */
 
 extern NETCONN net_Conn;                    /* 0x1460ae0 */
 extern int net_Seq;                         /* 0x1460ac4, last received sequence number */
-extern int cm_LastSyncCount;                   /* 0xa687e0 */
 extern int net_WSAStarted;                  /* 0x633160 */
 extern unsigned int net_RecvPackets;        /* 0x633178 */
 extern unsigned int net_RecvBytes;          /* 0x633174 */
