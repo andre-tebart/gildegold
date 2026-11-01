@@ -181,4 +181,8 @@ int ahm_WriteRecord(void *f, unsigned char *o);  /* 0x4ecf10 */
 int ahm_ReadRecord(void *f, unsigned char *o);  /* 0x4ed040, reads the alchemist record of o (+0x65) from the file f */
 int ahm_DeleteAlchemist(int unused, int *rec, unsigned char *o);  /* 0x4ece60 */
 
+/* declared in other units' headers before (moved to the owner) */
+extern unsigned short ai_PlayerId;  /* 0x6f25b8 */
+extern unsigned short d2_HighBitMask;  /* 0xf8a11c */
+
 #endif
