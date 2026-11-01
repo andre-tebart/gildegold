@@ -25,7 +25,6 @@ extern char ai_PlayerSlots[4][0x2f4];
 #include "net.h"                     /* net_Conn: s is -1 (an invalid socket) when no network game runs */
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
-extern struct D3IOANIMDATA d3_AnimHead;
 extern int gm_PlayerRecords[688];
 #include "ai_types.h"
 extern AISTORE gm_Offers[];            /* 0x7e4b20 */
@@ -245,24 +244,16 @@ typedef struct INIT_SITELIST {
 #define INIT_FIELD_RELIGION 0x0c        /* the character's religion field: 0 catholic / 1 protestant (the two judges) */
 
 /* the functions of f3gm.c this unit calls (declared by their addresses there) */
-char *gm_Query(void *list, int n, ...);
 unsigned short *gm_QueryNext(void);
-unsigned char *gm_BuildQuery(int n, ...);
-unsigned char *gm_BuildNext(void);
-int gm_PlayerFactor(int a, unsigned char k);
 float gm_ItemPrice(int item, unsigned char n);
 int gm_ListStock(short *l, int id);               /* 0x50ab50, f3gm.c */
 unsigned char *gm_FirstBuilding(int n);
 float gm_Unk508740();
-int gm_IsHomeType(unsigned char *b);
 extern char ai_PlayerSlots[4][0x2f4];      /* 0x7e3f40, the player slots */
 extern INIT_STOCKBLOCK init_StockBlock[];  /* 0x7d6a60, one 0x2a90-byte stock block per player (the records start at +0x10) */
 extern char ch_EmptyName[];             /* 0x631090 */
-extern int d3_CurrentScene;                /* 0x633444 */
-extern int ai_NextObjectId;                /* 0x61a654, the next object id */
 extern char * ai_PlayerBuilding;                /* 0x6f2308 */
 extern char * ai_FallbackBuilding;                /* 0x6f230c */
-char d3t_GetBoundingSphere(struct D3OBJECT *obj, struct D3OBJECT *camera, struct D3VECTOR *center, float *radius);  /* 0x411eb0, d3_tools.c: the center and radius of the mesh's 8-corner box */
 int gm_IsBuildingKind(int n);           /* 0x4fe940, f3gm.c: 1 when the object prototype n is a building part */
 int gm_FindObjectProto(char *name);     /* 0x4fe900, f3gm.c: the object prototype of the name */
 int gm_FindBuildingKind(char *name);    /* 0x502060, f3gm.c: the building kind of the name */
@@ -272,7 +263,6 @@ unsigned char * gm_CreateBuilding(unsigned char kind, unsigned short owner);    
 
 extern char *ai_Goods;              /* 0x91aaf0, the object prototypes (0x2dc of 0x41 bytes) */
 struct D3SCENE;
-extern struct D3SCENE *d3_DefaultScene;  /* 0x5fb5b0, the current scene (d3.h: D3SCENE *) */
 /* init_SceneDirty: view of d3_Scenes (tools/data_views.py) */
 extern char init_SceneName[];             /* 0xfd7ba0, the name of each scene record (0x3e0 bytes apart) */
 extern char * ai_Unk1468ae0[0x300];             /* 0x1468ae0, the scene objects (0x100) */
@@ -281,22 +271,12 @@ extern unsigned char ai_GameState;      /* 0x6f25ac */
 extern int sv_FrameMask;           /* 0x760638 */
 extern short d2_ScreenW;  /* 0xfb9072 */
 extern short d2_ScreenH;  /* 0xfb9070 */
-extern int ai_GameFlags;      /* 0x6f23f8 */
-void he_RemoveGfxInfos(int obj);            /* 0x53ebe0, he.h */
-char d3if_ShowTree(struct D3OBJECT *obj, char show);                     /* 0x447300 */
-char d3if_SelectScene(int index, char keep);   /* 0x4478e0, d3_interface.c */
-void d3if_Reset(void);                         /* 0x4473f0, d3_interface.c */
-void d3sm_Destroy(struct D3SM *h);             /* 0x45ef60, rd.h */
-char d3_LoadScene(char *name, void *f, void (*progress)(int a, int i, int n));  /* 0x44be60, cm.h */
-char d3_ForEachObject2(struct D3SCENE *scene, struct D3OBJECT *obj, unsigned int mask, void (*cb)(struct D3OBJECT *obj));  /* 0x438e60, d3_engine.h */
 struct D2FADE;
 struct D2FADE *d2_StartFade(int x, int y, int w, int h, char *name, int dur, unsigned int flags); /* 0x4767d0, d2.h */                     /* 0x4767d0 */
 void d2_ReleaseFade(struct D2FADE *f); /* 0x476860, d2.h */                     /* 0x476860 */
 int sv_RunFrame(int cb, unsigned mask);                     /* 0x5309a0 */
 int ai_Unk42ea50();                     /* 0x42ea50 */
-int tb_SetFunctionOff();                     /* 0x42ea10 */
 int ai_Unk402220();                     /* 0x402220 */
-struct D3VECTOR; int d3_VecEqual(struct D3VECTOR *a, struct D3VECTOR *b, float eps);                     /* 0x453e80 */
 int ch_PlaceOnGround();                     /* 0x404a80 */
 
 /* the canonical declarations of the engine / other-unit functions the scene loaders call (their headers drag the
@@ -308,17 +288,13 @@ struct D3HMAP *ch_GetSceneHMap(struct D3SCENE *scene);                          
 void ch_SetPos(struct CHARACTER *ch, D3VECTOR *pos, int unk);                    /* 0x4025c0, ch.h */
 int ch_PlaceOnGround(struct CHARACTER *ch, int force);                           /* 0x404a80, ch.h */
 struct D3OBJECT *ch_FindDummy(void);                                             /* 0x406790, ch.h */
-int d3t_FindFreeScene(void);                                                     /* 0x411bb0, d3_tools.c */
-void err_Message(char *text);                                                    /* 0x4222b0, err.c */
 int tb_SetFunctionOff(void (*proc)(void), int off);                              /* 0x42ea10, tb.h */
-int tb_IsFunctionOff(void (*proc)(void));                                        /* 0x42ea50, tb.h */
 void d2_ClearScreen(void);                                                       /* 0x46e990, d2.h */
 void d2_ShowPicture(int pic);                                                    /* 0x46cfd0, d2.c */
 int d2_ClearSurface(struct D2SURF *surf);                                        /* 0x4796c0, gfx.c */
 void gm_RandomMarketShake(int unk);                                             /* 0x4ff450, f3gm.c */  /* @original: the original pushes one argument at both call sites; f3gm.c defines no parameter */
 extern short d2_ScreenW;  /* 0xfb9072, d2.h */
 extern short d2_ScreenH;  /* 0xfb9070 */
-struct D3SM; struct D3TERRAIN; void d3sm_Build(struct D3SM *h, struct D3TERRAIN *t);                                               /* 0x45e620, d3_engine.h */
 void sv_SceneLoadProgress(int kind, int cur, int total);                         /* 0x521c10, sv.c */
 void sv_UpdateClock(void);                                                       /* 0x5315c0, sv.c */
 extern char * cm_FieldObject;                /* 0xa68d2c */
@@ -333,14 +309,12 @@ int cm_FlushSendQueue();                     /* 0x4c3680 */
 int cm_ReceiveMessages();                     /* 0x4c3fd0 */
 int cm_ExecCommands();                     /* 0x4c4190 */
 int cm_GetSlotValue(int h);                     /* 0x4c3b10 */
-int cm_GetSlotState(int h);                     /* 0x4c3ae0, cm.h (gv.h has the K&R form) */
 int cm_AddFieldDelta(int size, int n, short field, void *v);                     /* 0x4c3c00 */
 void cm_SendExSellObject(int a, int b, int c, int d, unsigned char e, int f);                     /* 0x4c4880, @original: this unit's call sites push the third argument as an int - 0x50f42c zero-extends the unsigned short goods id (`and eax,0xffff`) where cm.h's short view would sign-extend */
 void cm_SendMoveGoods(int a, int b, unsigned char c, int d);                     /* 0x4c47e0 */
 int cm_AddFieldValue(unsigned char size, unsigned char n, unsigned short field, void *v);                     /* 0x4c3d90 */
 void cm_SendFieldValues(void);                     /* 0x4c49e0 */
 int amt_GetOffice(unsigned char i, struct AMTREC *out);  /* 0x4e6f30, amt.c: copies the office i to out (an AMTREC, 0x18 bytes) */
-int amt_GetKindLevel(int k);                    /* 0x4e7c40, amt.c: the level of the office kind k */
 int amt_GetKind(int k, struct AMTKIND *out);              /* 0x4e6f80, amt.c: copies the office kind k to out (an AMTKIND, 0x18 bytes) */
 int amt_GetFirstOffice(unsigned int k, struct AMTREC *out);  /* 0x4e6ec0, amt.c: copies the first office of the kind k to out (an AMTREC) */
 int amt_SendOfficeOwner(int a, char *b, int c); /* 0x4e6650, amt.c */
@@ -353,8 +327,6 @@ void hmt_Begin(void);                           /* 0x4ad0a0, hmt.c */
 extern int sv_PanelFlag;                /* 0x75e8c0 */
 int gm_BuildingClass(int type);                     /* 0x501d80 */
 int gm_BuildingMainObject(unsigned char *b);                     /* 0x501b50 */
-int ai_BuildingName(int id, char *out);                  /* 0x58f640, unk_58bbd0.c: the name of a building kind id */
-int ai_FindBauplaetze(char *prefix, int *list);           /* 0x58f7a0, unk_58bbd0.c: the free placement candidates of a name prefix */
 void ai_ObjectAngle(void *out, int plot);                 /* 0x58fd90, unk_58bbd0.c: the angle of the object plot to out */
 void cm_SendOwnership(int a, int b, int c);               /* 0x4c54a0, cm.c: message 0x38, the building a changes its person from b to c */
 void cm_SendBoss(int a, int b);                            /* 0x4c5540, cm.c: message 0x39, the building a gets the character b as its boss */
@@ -363,10 +335,6 @@ unsigned char *gm_NearestFreeBuilding(unsigned char *b, unsigned kind); /* 0x501
 int gm_FirstTitleNumber(int x);                          /* 0x504290, f3gm.c: the first title number of the job group of x */
 int gm_BuildingKindValue(int kind);                      /* 0x509d30, f3gm.c: the sum of the prices of the kind's negative object words */
 void main_SetLoadProgress(int unused, int pct);          /* 0x537af0, main.c: the loading progress bar */
-void he_PostEvent6d(void);                                /* 0x53efe0, he.c: posts the event 0x6d (once) */
-void he_PostEvent6b(void);                                /* 0x53f070, he.c: posts the event 0x6b (once) */
-void he_PostEvent7a(void);                                /* 0x53f100, he.c: posts the event 0x7a (once) */
-void he_PostEvent2b(void);                                /* 0x53f190, he.c: posts the event 0x2b for every figure of kind 5 / 7 without one */
 int cm_SendMessage3d(char *p, unsigned char b, int c, int d);                     /* 0x4c55d0 */
 int gv_SendGrave(unsigned char *o);                     /* 0x4f15e0 */
 int cm_GetSlotState();                     /* 0x4c3ae0 */
@@ -400,7 +368,6 @@ void gm_UpdatePlayers(void);                 /* 0x4feb30, f3gm.c */
 void gm_InitPlayerRecord(int p);                 /* 0x4feb60, f3gm.c */
 void gm_ResetStock(void);                    /* 0x50cc60, f3gm.h: the stock of the type 0x1e stalls to 2 */
 int gm_FindMarketObject(int id);                     /* 0x500ec0 */
-int gm_ClockSeason(void *t);                     /* 0x4fe350, f3gm.c: the season of the clock (day % 4) */
 void cm_SendOwnership(int a, int b, int c);                     /* 0x4c54a0 */
 int sv_PumpMessages();                     /* 0x52fb80 */
 void sv_NetworkSyncWait(unsigned fl);           /* 0x52fc10, sv.c */
@@ -409,16 +376,12 @@ struct G13MIS *ai_NewRandomMission(int owner, int kind, int x);  /* 0x4b3c10, un
 void ai_ShowMissions(int owner);                /* 0x4b5310, unk_4b39f0.c */
 void cm_SetSpeedLevel(unsigned int v);          /* 0x4c3ef0, cm.h */
 int cm_SendMessage0c(int a, int b, short c, unsigned char d, int e, unsigned char f, unsigned char g, const char *s1, const char *s2);  /* 0x4c46d0, cm.h */  /* @original: the callers store the returned slot, cm.c defines void */
-void d2_SetViewEnabled(int view, int on);       /* 0x475590, d2.h */
 void main_GiveStartBuildings(int p);                     /* 0x534040, main.c range: gm_BuildQuery(1, 0, 6) makes the "Home-Sweet" house and hands it to character c (0x502b60) */
 struct D3FLMAP;
-char *tex_FindFile(char *name);                                     /* 0x45f9f0, d3_fl.h */
 int d3fl_ReplaceTexture(struct D3FLMAP *map, char *name, int idx);  /* 0x442210, d3_fl.c */
 char d3if_SelectTextureSet(struct D3OBJECT *obj, struct D3SURF *surf, unsigned char set, char reload);   /* 0x446f30, ecmd.c */
 int cm_SendExSysMessage(unsigned char id, void *msg);                     /* 0x4c4db0 */
-void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d);  /* 0x4c4830, cm.h */
 extern INIT_OBJ *sv_PanelShown;          /* 0x6f2310, the room object the info panel shows (sv.c's unsigned short * view) */
-extern char ai_Time[];  /* 0x770ae0 */
 /* the animation names of a building class (0x6c4 bytes each, in the table 0x61ae08): the class kind, then the
    0x30-byte name slots of which the first 16 are used (ch_PreloadAnims gets 0x10 of them) */
 typedef struct INIT_ANIMSET {
@@ -426,17 +389,16 @@ typedef struct INIT_ANIMSET {
     char names[36][0x30];           /* 0x04 .. 0x6c3 */
 } INIT_ANIMSET;
 extern INIT_ANIMSET init_ClassAnims[19];
-extern unsigned short ai_PlayerId;              /* 0x6f25b8 */
 int ai_Unk6f2440 = 0;  /* 0x6f2440 */
 int main_MoneyCheat = 0;  /* 0x6f2444, set from the command line switch "MO_MONEY" (main.c); nonzero gives 500000 start money instead of 2000 and the first kind 6 character its starter buildings */
+#include "anm.h"
+#include "rd.h"
 int ai_MapSize = 0;  /* 0x6f4ee8 */
 extern int ch_CurrentGroup;                /* 0x5f1294 */
 void ch_PreloadAnims(struct CHARACTER *ch, int n, ...);  /* 0x404200, ch.h (varargs) */
 void sv_CollectGroupCharacters(char *b);                 /* 0x52b2a0, sv.c: the characters of the group b into 0x7603a0 */
-char d3if_Show(struct D3OBJECT *obj, char show);                     /* 0x4471b0 */
 void d3if_Prerender(char map);                     /* 0x447860, d3_interface.c */
 void sv_UpdateSkyColors();                     /* 0x525940 */
-void d3fl_SetDetail(unsigned int n);                     /* 0x43f8a0 */
 void d3fl_SetShift(struct D3FLMAP *map, unsigned char shift, char light);   /* 0x446dc0, d3_fl.c */
 void sv_Unk52bb70(int id);                     /* 0x52bb70 */
 void ch_ClearSceneCallbacks();                     /* 0x40b4d0 */
@@ -459,6 +421,26 @@ int ai_Unk7603a0[32] = {0};  /* 0x7603a0 .. INIT_WINDOWS_END: the */
 #include "rd_types.h"                 /* G15BK, the building sites ai_Bauplaetze (rd.h cannot be included here) */
 #include "ls.h"
 #include "f3init.h"
+#include "ahm.h"
+#include "d3_engine.h"
+#include "d3_fl.h"
+#include "d3_int_io.h"
+#include "d3_interface.h"
+#include "d3_io_t.h"
+#include "d3_sm.h"
+#include "d3_tools.h"
+#include "d3_vec.h"
+#include "err.h"
+#include "he.h"
+#include "io_text.h"
+#include "main.h"
+#include "tb.h"
+#include "tr.h"
+#include "ts_texture.h"
+#include "unk_458810.h"
+#include "unk_58bbd0.h"
+#include "unk_5d33b0.h"
+#include "vfs.h"
 signed char init_BuildingUniverse[0x22] = {0};  /* 0x76fa60, the universe of each building class's scene */
 unsigned short * ai_SceneObject = 0;  /* 0x76fa84 */
 signed char init_ObjectUniverse[0x2dc] = {0};  /* 0x76faa0, the universe of each object prototype's scene (-1 = not loaded) */
@@ -471,31 +453,23 @@ int evt_NoGroup = -1;  /* 0x5f8430 */
 float d3o_FogScale = 1.0f;  /* 0x5fbd04 */
 /* init_SlotCurrency: view of ai_PlayerSlots (tools/data_views.py) */
 /* 0x50a810, f3gm.c: the first kind 6 / 7 / 1 / 2 character with a job whose master is m */
-struct VFSENTRY * vfs_FindFile(char *path, struct VFSDIR *d, struct VFSDIR **found);  /* 0x42f8f0, sv.c: the path lookup
 int ai_Unk454510();                     /* 0x454510 */
 int ai_Unk43c570();                     /* 0x43c570 */
 int ai_Unk43ca20();                     /* 0x43ca20 */
 void amt_InitTable(void);               /* 0x4e5cd0, amt.h */
 void gv_ClearGraveyard(void);           /* 0x4f4350, gv.c */
 int cm_SendMessage10(unsigned char n, int b, void *p, short d);  /* 0x4c45c0, cm.h */
-struct D3SM * d3sm_Create(struct D3TERRAIN *t, int size, int mask);  /* 0x45eeb0, d3_sm.h */
 void gm_AssignBuilding(unsigned char *b, int place, int own);  /* 0x502b60, f3gm.c */  /* @original: f3gm.c defines `unsigned short place, unsigned own`; the caller below zero-extends the word load (xor/mov cx, no and mask) */
 void gm_SyncMarket(unsigned p);         /* 0x4fec10, f3gm.c */
 void ai_MsgNoOp(struct AICHAR *c);                     /* 0x4b70f0 */
-int d3t_SceneIndex(struct D3SCENE *scene);                     /* 0x411be0 */
 void ch_SetVisible(struct CHARACTER *ch, int show);                     /* 0x402480 */
 void ch_PlaceTransport(struct CHARACTER *ch, char now);                     /* 0x403620 */
 struct G15PLANT;
-void veg_ShowPlants(struct G15PLANT *p);                     /* 0x4bcb90, rd.h: the plants of a building's vegetation map */
 void gm_SelectModelVariant(char *o);                     /* 0x4fb5a0, f3gm.c: the model variant of the object o */
-int gm_ChooseHeadIcon(unsigned short *c);                     /* 0x4fb890 */
 void gm_ShowBuildingObjects(unsigned char *b);                     /* 0x502e30, f3gm.c */
 int ai_Unk45f9f0();                     /* 0x45f9f0 */
 int ai_Unk442210();                     /* 0x442210 */
 void ai_Unk4c2f30(char *a);
-D3OBJECT *d3_SpawnObject(int type, char *name);                     /* 0x43c570, d3_engine.h */
-void d3_LinkTop(D3OBJECT *obj);                                     /* 0x43ca20, d3_engine.h */
-void d3_MatIdentity(D3MATRIX *m);                                   /* 0x454510, d3_vec.h */
 
 /* ---- the start-of-game setup rules 0x50e0d0 .. 0x50e5a0 (no strings; ROUGH drafts) ---- */
 
@@ -508,10 +482,7 @@ void d3_MatIdentity(D3MATRIX *m);                                   /* 0x454510,
 /* ---- the town scene loading 0x5124f0 .. 0x5128d0, 0x510770, 0x510ad0, 0x513050 (ROUGH drafts) ---- */
 
 extern OPTIONBYTES ai_GfxFog;        /* 0x6f35cc, the detail byte */
-extern unsigned char d3_FogByDistance;               /* 0x6334a5 */
 extern unsigned char ai_Unk633751;      /* 0x633751 */
-extern unsigned int d3fl_DetailScale;   /* 0x633748 */
-extern unsigned char d3fl_DetailSizeShift;  /* 0x633751 */
 /* 0x50d100, maps the name of the scene object o (copied: "ob_NAME_X" / "gb_NAME") to a prototype: a variant suffix "_A" .. "_H" is cut off, "ob" looks the name up in the object prototypes (the result 0x1000000 | number at SCENEOBJ.proto), "gb" in the building prototypes (0x2000000 | number), a name containing "KONTOR" is the building 0x47 (0x2000047). Returns 1 when found. */
 
 int init_SceneNameToPrototype(char *o)
