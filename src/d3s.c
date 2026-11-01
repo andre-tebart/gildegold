@@ -20,6 +20,12 @@
 #include "d3s.h"
 #include "data_views.h"
 #include "d3_light.h"
+#include "d3_engine.h"
+#include "d3_vec.h"
+#include "dd_vesa.h"
+#include "mem.h"
+#include "ts_texture.h"
+#include "unk_458810.h"
 extern unsigned char d3_MipSkip;
 
 struct TSTEXTURE; struct TSTEXTURE *tex_Create(char *name, int size, char hicol, D3TEXFLAGS flags, unsigned char f0, unsigned char f6a,
@@ -56,9 +62,7 @@ int d3s_MaxPolys2 = 0;  /* 0x633dc8 */
 extern int d3s_ShadowMapSize;              /* 0x633dcc, cells per side of the object shadow map */
 extern const unsigned char d3s_Palette[];
 extern float * d3s_Verts;
-extern int d3s_NumVerts;
 extern float * d3s_UVs;
-extern int d3s_NumUVs;
 extern char d3s_Enabled;
 D3SCENT * d3s_Cache = 0;  /* 0x633dd0 */
 char d3s_LodTexSize = 0;  /* 0xfb91d8, 1: the shadow texture size follows the mesh LOD */
@@ -74,7 +78,6 @@ int d3s_NumVerts = 0;  /* 0xfb9220 */
 float d3s_QuadUV2[6] = {0};  /* 0xfb9240 */
 extern D3OBJECT *d3s_Lights[4];             /* 0xfb91e0 */
 extern unsigned int d3s_NumLights;          /* 0xfb9264 */
-extern struct D3SM *d3sm_Shadow;            /* 0x633df8 */
 void d3sm_Destroy(struct D3SM *h);          /* 0x45ef60 */
 
 /* float to int with fistp (current rounding mode) */
