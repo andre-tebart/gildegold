@@ -232,4 +232,11 @@ typedef struct D3ANIMMESHX {        /* D3ANIMMESH with the root position and ang
 D3ANIMDATA *d3anim_CreateMorphAnim(D3ANIMMESH *mesh, D3ANIMDATA *src, D3ANIMFRAME *frame, D3ANIMDATA *dst,
                                    D3ANIMFRAME *dframe, D3ANIMMESH *dmesh, char *name, int n);  /* 0x433f80 */
 
+/* declared in other units' headers before (moved to the owner) */
+void d3anim_ApplyRootMotion(D3OBJECT *obj, D3ANIMSLOT *s, int from, int to, int flags);  /* 0x4315c0 */
+void d3anim_PauseAnim(D3ANIMCTL *ctl, char *name);  /* 0x435810 */
+void d3anim_PlayAnim(D3ANIMCTL *ctl, char *name, char on);  /* 0x435870 */
+void d3anim_SetFrame(D3OBJECT *obj, D3ANIMSLOT *s, int frame);  /* 0x435950 */
+char d3anim_StepObject(D3OBJECT *obj, void *ctx);  /* 0x432750 */
+
 #endif
