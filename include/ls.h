@@ -32,6 +32,32 @@ int unk_Unk51c560(int f);                                               /* 0x51c
 int unk_Unk51c870(int f);                                               /* 0x51c870 */
 int ls_Read(void *buf, int size, int count, int f);                     /* 0x51c920 */
 int unk_Unk51c950(int name, int kind);                                  /* 0x51c950, kind is not read (main passes 1 / 2, f3init 5) */
+typedef struct LSHEADER {               /* 0x100 bytes, the header of a save game (ls_ReadSaveHeader; ai_Unk76f920) */
+    int version;                        /* 0x00, kept in ls_Version */
+    unsigned char flags;                /* 0x04, bit 1: a map-only save */
+    char name[0x20];                    /* 0x05 */
+    char pad25[3];
+    char slotPair[8];                   /* 0x28, the two ints at +0x40 / +0x44 of the player's slot (ai_PlayerSlots) */
+    unsigned char slotByte;             /* 0x30, the byte +0x48 of the player's slot */
+    unsigned char numPlayers;           /* 0x31, ai_NumPlayers (from 0x10033) */
+    char clock[0xe];                    /* 0x32, ai_Time (from 0x10028) */
+    char charText30[0x10];              /* 0x40, the player's character +0x30 (16 bytes, a name part?) */
+    char charText40[0x10];              /* 0x50, its +0x40 (from 0x10054) */
+    unsigned char charByte164;          /* 0x60, its +0x164 */
+    unsigned char charByte166;          /* 0x61, its +0x166 */
+    unsigned char charByte0d;           /* 0x62, its +0xd */
+    unsigned char charByte0c;           /* 0x63, its +0xc (from 0x10054) */
+    int charRef54;                      /* 0x64, its +0x54 reference (from 0x10054) */
+    int worth;                          /* 0x68, its worth (gm_GetWorth, converted) */
+    unsigned char charByte09;           /* 0x6c, its +9 */
+    unsigned char saveSlot;             /* 0x6d, ls_SaveSlot */
+    char pad6e[2];
+    int startBuilding;                  /* 0x70, the building the view starts at (main.c), -1 below 0x1002b */
+    int startObject;                    /* 0x74, the object instance with it (main.c), -1 below 0x1002b */
+    int party[8];                       /* 0x78, the party table (from 0x10034) */
+    int difficulty;                     /* 0x98, ai_Difficulty of the save, 2 below 0x10038 */
+    char title[0x60];                   /* 0x9c, "Savegame" below 0x10039 */
+} LSHEADER;
 int ls_ReadSaveHeader(int f, int *h);                                   /* 0x51cee0 */
 int unk_Unk51d2d0(int f);                                               /* 0x51d2d0 */
 int ls_ReadObjects(int f);                                              /* 0x51d3d0 */

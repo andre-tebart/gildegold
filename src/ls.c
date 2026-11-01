@@ -1493,74 +1493,72 @@ fail:
     ai_Unkf31140 = 0;
     return 0;
 }
-/* 0x51cee0, the header of a save game: the id (kept in 0x623650, the version), the flag byte, the name, two words, the language and further bytes (each from the version noted), the 8 words of the party table, the screen shot (0xe100 bytes, converted back to the 16 bit bitmap 0x766320 with 0x41e670), the mode word (+0x98, 2 for versions below 0x10038) and the title (+0x9c, "Savegame" below 0x10039). Returns 1. ROUGH */
+/* 0x51cee0, reads the header of a save game into h (an LSHEADER), each field from the version it came in
+   with (the version itself goes to ls_Version); the 160 x 120 screen shot (24 bit, 0xe100 bytes) is converted
+   into ai_ScreenImage. Returns 1, 0 when a read fails or the version is below 0x10025 @deep read whole against 0x51cee0..0x51d2c0 (433 vs 434 instructions): every read with its version gate, the early return 0 below 0x10025 (it keeps the 23 failed reads' inline returns apart), the reads-first branch order of 0x1002b / 0x10038 / 0x10039, the 120 x 160 shot through shot[k * 3 ..] match. Left: allocation - ours keeps &hd->difficulty in esi for the read and the default store (lea esi,[ebx+0x98] / mov [esi],2), the original recomputes it (lea edx,[ebx+0x98] / mov [ebx+0x98],2) and orders the 0x10039 test before add ebx,0x9c; the strcpy of 'Savegame' reads the original's merged literal tail 'game' (0x62366c) */
 
 
 int ls_ReadSaveHeader(int f, int *h)
 {
-    char *hb = (char *)h;
+    LSHEADER *hd = (LSHEADER *)h;
     char *shot;
     int i, j, k = 0;
-    unsigned char *px;
 
     shot = (char *)mem_Alloc(0xe100, "ls:tmp");
-    LS_R(h, 4)
-    ls_Version = *h;
-    LS_R(hb + 4, 1)
-    LS_R(hb + 5, 0x20)
-    LS_R(hb + 0x28, 8)
-    LS_R(hb + 0x30, 1)
+    LS_R(&hd->version, 4)
+    ls_Version = hd->version;
+    LS_R(&hd->flags, 1)
+    LS_R(hd->name, 0x20)
+    LS_R(hd->slotPair, 8)
+    LS_R(&hd->slotByte, 1)
     if (ls_Version >= 0x10033)
-        LS_R(hb + 0x31, 1)
+        LS_R(&hd->numPlayers, 1)
     if (ls_Version >= 0x10028) {
-        LS_R(hb + 0x32, 0xe)
-        LS_R(hb + 0x40, 0x10)
+        LS_R(hd->clock, 0xe)
+        LS_R(hd->charText30, 0x10)
         if (ls_Version >= 0x10054) {
-            LS_R(hb + 0x50, 0x10)
-            LS_R(hb + 99, 1)
-            LS_R(hb + 0x64, 4)
+            LS_R(hd->charText40, 0x10)
+            LS_R(&hd->charByte0c, 1)
+            LS_R(&hd->charRef54, 4)
         }
-        LS_R(hb + 0x60, 1)
-        LS_R(hb + 0x61, 1)
-        LS_R(hb + 0x62, 1)
-        LS_R(hb + 0x68, 4)
-        LS_R(hb + 0x6c, 1)
-        LS_R(hb + 0x6d, 1)
-        if (ls_Version < 0x1002b) {
-            *(int *)(hb + 0x70) = -1;
-            *(int *)(hb + 0x74) = -1;
+        LS_R(&hd->charByte164, 1)
+        LS_R(&hd->charByte166, 1)
+        LS_R(&hd->charByte0d, 1)
+        LS_R(&hd->worth, 4)
+        LS_R(&hd->charByte09, 1)
+        LS_R(&hd->saveSlot, 1)
+        if (ls_Version >= 0x1002b) {
+            LS_R(&hd->startBuilding, 4)
+            LS_R(&hd->startObject, 4)
         } else {
-            LS_R(hb + 0x70, 4)
-            LS_R(hb + 0x74, 4)
+            hd->startBuilding = -1;
+            hd->startObject = -1;
         }
         if (ls_Version >= 0x10034) {
             for (i = 0; i < 8; i++)
-                LS_R(hb + 0x78 + i * 4, 4)
+                LS_R(&hd->party[i], 4)
         }
         LS_R(shot, 0xe100)
-        px = (unsigned char *)shot;
-        for (j = 0x78; j != 0; j--) {
+        for (j = 0x78; j != 0; j--) {               /* the 160 x 120 screen shot, 24 bit, into the 16-bit image */
             for (i = 0xa0; i != 0; i--) {
-                ((unsigned short *)(unsigned)&ai_ScreenImage)[k] = dd_RGB(px[0], px[1], px[2]);
-                px += 3;
+                ai_ScreenImage[k] = dd_RGB(shot[k * 3], shot[k * 3 + 1], shot[k * 3 + 2]);
                 k++;
             }
         }
     }
     if (shot != 0)
         mem_Free(shot);
-    if (ls_Version >= 0x10025) {
-        if (ls_Version < 0x10038)
-            *(int *)(hb + 0x98) = 2;
-        else
-            LS_R(hb + 0x98, 4)
-        if (ls_Version < 0x10039)
-            strcpy(hb + 0x9c, "Savegame");
-        else
-            LS_R(hb + 0x9c, 0x60)
-        return 1;
-    }
-    return 0;
+    if (ls_Version < 0x10025)
+        return 0;
+    if (ls_Version >= 0x10038)
+        LS_R(&hd->difficulty, 4)
+    else
+        hd->difficulty = 2;
+    if (ls_Version >= 0x10039)
+        LS_R(hd->title, 0x60)
+    else
+        strcpy(hd->title, "Savegame");
+    return 1;
 }
 /* 0x51d2d0, after a load: builds the scene (0x44be60 with the loader 0x537b60), the scene tree (0x45eeb0, size 0x100, 0x80 when the scene kind is 0x40), sets the detail bits (+0x71c, mask 0x1c, from 0x61adf8) and registers the two scene callbacks 0x51d4f0 (0x1c0) / 0x51d530 (0xc0) with 0x438e60. Returns 1 @deep B3 code hunks 52: same operations, VC6 scheduling/register shape - the scene size (0x100, 0x80 when the kind is 0x40) is materialised in eax and pushed once where the original duplicates push 2 per branch and pushes the constant at each site (0x51d323/0x51d32c); ours saves esi (the 'saved' local 0x633444) before the 0x45eeb0 call (push esi at 0x51d32d) and cleans 0x14 bytes later, the original pushes esi after the call (0x51d341) with the 45eeb0 args cleaned at 0x51d339 and mov ds:0xfd7c50,eax before the push; the +0x1c70 byte xor is only a register choice (eax/cl vs ecx/al). Read the whole function; tried the size select as an if/else and as an inline ternary, VC6 emits the same. Q1/Q2/Q3/Q5 open (0x537b60/0x51d4f0/0x51d530 function pointers, 0x71c field) */
 
