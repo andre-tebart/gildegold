@@ -14,6 +14,12 @@
 #include <d3d.h>
 #include "d3.h"
 #include "d3_anim.h"
+#include "d3_engine.h"
+#include "d3_light.h"
+#include "d3_vec.h"
+#include "mem.h"
+#include "ts_texture.h"
+#include "unk_458810.h"
 
 extern D3ANIMDATA d3anim_Head;              /* 0xfc2580, list head; d3anim_Head.next at 0xfc26e0 */
 extern D3ANIMDATA d3anim_Tail;              /* 0xfe7440, list end */
