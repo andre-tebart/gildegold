@@ -206,14 +206,11 @@ extern float ch_Unk5f1290;
 extern GAPDATA full_data_6f22ac[];
 extern int d2_HalfScreenH;
 extern int d2_HalfScreenW;
-extern int ai_GameFlags;
 
-extern int ch_CurrentGroup;
 extern int ai_Unk6f0cd4;
 extern unsigned int ai_Unk6f0da4;
 extern int ai_Unk6f0dbc;
 extern char * ai_Unk6f22e8;
-extern int ai_Unk6f2448;
 extern int ai_TimeCopy[4];
 extern int ai_Unka687e4;
 extern int ai_Unkf31144;
@@ -274,8 +271,6 @@ extern char *d2_Objs;  /* 0xf8f080, 0x2ec bytes each; @original: d2.h declares D
 void d2_SetPointerSprite(int a, int pic);      /* 0x476f80, gfx.c */
 void d2_ClearPointerItems(void);                     /* 0x476c70 */
 void d2_CopyCaption(char *caption);            /* 0x478870, gfx.c */
-char *gm_FindCharacterByMaster(int master);    /* 0x50a810, f3gm.c */
-int gm_SumSlotAmounts(void *list, unsigned char i);                     /* 0x508660 */
 int d2_OpenForm(int x, int y, char *name);                     /* 0x4741f0 */
 int d2_SetForm(int view, int n);                     /* 0x475f70 */
 void d2_CentreViewWindows(int view);            /* 0x475600 */
@@ -379,7 +374,6 @@ typedef struct SVMEMBERROW {            /* 0x28 bytes, a row of the member list 
 #pragma pack(pop)
 extern SVPLATE sv_NamePlates[0x20];
 
-int gm_IsType10(unsigned char *b);       /* 0x5024f0, f3gm.c */
 int d2_DrawMousePointer(int x, int y);         /* 0x476f00, gfx.c */
 int d2_AddHitRect();                     /* 0x478890, @original: sv.c's callers were compiled against the non-prototype declaration (sv_BuildScreenLayout passes an int d2_ScreenW - 0x50 without a short conversion, 464 bytes vs 480) */
 int d2_CreateWindow();                     /* 0x472390 */
@@ -433,6 +427,7 @@ int d2_RemoveWindow();                     /* 0x472ce0 */
 #include "unk_58bbd0.h"
 #include "vfs.h"
 #include "shp.h"
+#include "f3gm.h"
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, ai_Unk4d88c0 0x4d88c0 move it as a word / movzx) */
 #define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
 /* 0x520ec0, the tick callback: turns the frame counter sv_TickFrames into the float sv_FramesPerTick and clears it */
