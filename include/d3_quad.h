@@ -36,7 +36,6 @@ typedef struct D3QMAT {
 struct MPOOL;
 extern struct MPOOL *d3_QItemPool;  /* 0x633db4 */
 extern struct MPOOL *d3_QNodePool;  /* 0x633db0 */
-void pool_Free(struct MPOOL **pool, void *ptr);                               /* 0x422b30 (mem.h) */
 
 void d3q_FreeNode(D3QNODE *n);                                              /* 0x457c30 */
 char d3q_AddObject(D3OBJECT *obj, D3QNODE *n);                              /* 0x457c90 */
