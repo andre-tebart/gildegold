@@ -53,7 +53,6 @@ extern void *d2_BackSurf;
 extern GAPDATA full_data_623e84[];
 extern GAPDATA full_data_6f2354[];
 extern void *d2_ScreenSurf;  /* 0x6ed924 */
-extern GAPDATA full_data_76631c[];
 extern void *d2_ScreenSurf;  /* 0x6ed924 */
 extern GAPDATA full_data_75ec98[];
 extern GAPDATA full_data_75ec9c[];
@@ -79,7 +78,6 @@ extern GAPDATA full_data_6f22dc[];
 extern GAPDATA full_data_6f2364[];
 extern GAPDATA full_data_6faa60[];
 extern void *d2_ScreenSurf;  /* 0x6ed924 */
-extern GAPDATA full_data_76631c[];
 extern GAPDATA full_data_75ec80[];
 extern GAPDATA full_data_75ec84[];
 extern unsigned char ai_TimeHour;
@@ -4297,7 +4295,7 @@ void sv_Unk52adb0(void)
 
     SV_I((unsigned)&sv_SelectedItem) = 0;
     SV_I((unsigned)&sv_SelectedObject) = 0;
-    SV_I((unsigned)&full_data_76631c) = 0;
+    SV_I((unsigned)&sv_SelectedExtra) = 0;
     SV_I((unsigned)&sv_SelectedModel) = 0;
     o = SV_I((unsigned)&ai_FallbackBuilding);
     if (SV_I((unsigned)&ai_PlayerBuilding) == 0) {
@@ -4310,7 +4308,7 @@ void sv_Unk52adb0(void)
         SV_I((unsigned)&sv_SelectedModel) = 0;
         SV_I((unsigned)&sv_SelectedItem) = 0;
         SV_I((unsigned)&sv_SelectedObject) = 0;
-        SV_I((unsigned)&full_data_76631c) = 0;
+        SV_I((unsigned)&sv_SelectedExtra) = 0;
         return;
     }
     sv_OtherSelected = 0;
@@ -7914,6 +7912,7 @@ int sv_Bubbles[0x40][0x43] = {0};  /* 0x761fc0, the 64 speech bubble records (0x
 /* sv_BubbleObjects: view of sv_Bubbles (+0x8) */
 int sv_SelectedChar = 0;  /* 0x7662c0 */
 int sv_GroundplanButtons[15] = {0};  /* 0x7662e0, 15 widget ids */
+int sv_SelectedExtra = 0;  /* 0x76631c, a fourth selection word, cleared with sv_SelectedItem / sv_SelectedObject / sv_SelectedModel (its only use; name and int type are a guess) */
 int cm_Bombs[0x40] = {0};  /* 0x935c00, cm's 32 bomb records (object, time), cm.h */
 int d2_HitWindow = 0;  /* 0xf8aad0 */
 int ai_Unkfb9060 = {0}; /* 0xfb9060 */

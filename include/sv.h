@@ -328,6 +328,7 @@ extern int sv_BubbleObjects[4286];                          /* 0x761fc8, the obj
 #endif
 extern int sv_SelectedChar;                                    /* 0x7662c0 */
 extern int sv_GroundplanButtons[15];                                /* 0x7662e0 */
+extern int sv_SelectedExtra;                                       /* 0x76631c */
 extern int cm_Bombs[0x40];                                  /* 0x935c00 */
 extern int d2_HitWindow;                                    /* 0xf8aad0 */
 extern int ai_Unkfb9060;                                    /* 0xfb9060 */
