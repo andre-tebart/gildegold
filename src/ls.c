@@ -102,8 +102,7 @@ unsigned char he_Events[339968] = {0};  /* 0x6fab40, the */
 char * he_QuickList[10921] = {0};  /* 0x74db40, pointers to the */
 int ai_Unk7585e4 = 0;  /* 0x7585e4 */
 void (*he_RunHandlers[5544])(unsigned char *) = {0};  /* 0x758600, the event run handlers by type (he.c */
-int ai_Unk75e134 = 0;  /* 0x75e134 */
-int ai_Unk75e138 = 0;  /* 0x75e138 .. the clock copy */
+/* ai_Unk75e134 / ai_Unk75e138 / ai_Unk75e13c: views of ai_Unk75e130 (data_views.h), the clock copy */
 
 void he_FreeEvents();                    /* 0x53d590 */
 
@@ -1388,16 +1387,13 @@ int ls_Read(void *buf, int size, int count, int f)
 }
 
 
-short ai_Unk75e13c = 0;  /* 0x75e13c, its 2-byte last field ( */
 LSSAVE ls_SavePath = {0};  /* 0x75e640 */
 unsigned short ai_ScreenImage[19200] = {0};  /* 0x766320, the */
 int ai_Unk76f920[0x40] = {0};  /* 0x76f920, the 0x100-byte header of the loaded save game (id, flag byte, name, ..; ls_ReadSaveHeader fills it up to +0xfc) */
 /* 0x51c950, loads a save game: opens the file (0x430470, mode 0x5f1084), resets the game (0x503e80, 0x40b240, 0x50d490), reads the header (0x51cee0, versions 0x10026 .. 0x1005a only) and the fixed globals (each from its version: 0x6f1bcc from 0x10022, 0x61a658 from 0x10030, 0x6f1b88 from 0x1003d), then the readers of the subsystems in the order 0x51d3d0, 0x51d550, 0x51db00, 0x51de70, 0x51f080, 0x4ea7a0 (from 0x10045), 0x51d2d0, [unless the header flag +4 has bit 2 (a map only save): 0x4ea7a0, 0x4f2b30, 0x51f650 (from 0x10016), 0x51f720, 0x4ed270 (from 0x1002a), 0x51fb90, 0x520000, 0x520200, 0x520310, 0x5205f0 (from 0x1002e), 0x5206b0, then the references (0x511790 / 0x511840 / 0x51e900), the character pointers 0x6f1bfc / 0x6f1c00 (0x505df0), 0x4b63b0, 0x589b30 (from 0x10029), 0x5a8a20 (from 0x10047), 0x4ec140 (from 0x10049), 0x4ada80 (from 0x10052), 0x4c0040 (from 0x10053)]. The first one that fails closes the file, frees the buffer 0xf31140 and returns 0. At the end 0x528770, 0x511790, 0x513740, 0x513590(0x633738, 1) and the path 0x76f9bc is kept in 0x75e640. Returns 1. ROUGH */
 /* ai_Unk76f924 / ai_Unk76f9b8 / ai_Unk76f9bc: views of ai_Unk76f920 (data_views.h) */
 extern char * ai_Unkf31140;                /* 0xf31140 */
-extern int ai_Unk75e134;  /* 0x75e134, the clock copy */
-extern int ai_Unk75e130;  /* 0x75e130 */
-extern int ai_Unk75e138;  /* 0x75e138 */
+extern int ai_Unk75e130[4];  /* 0x75e130, the clock copy */
 #define LS_RD(p, sz) ls_Read((int)(p), (sz), 1, h)
 /* 0x51c950 */
 int unk_Unk51c950(int name, int kind)
@@ -1425,7 +1421,7 @@ int unk_Unk51c950(int name, int kind)
         LS_RD(&ai_Unk6f1bcc, 4);
     LS_RD(&ai_UpdateStart, 0x18);   /* the 0x18-byte block ai_UpdateStart .. ai_CountCarry (0xf89580) */
     ai_Unk75e134 = *(int *)(ai_Time + 4);
-    ai_Unk75e130 = *(int *)ai_Time;
+    ai_Unk75e130[0] = *(int *)ai_Time;
     ai_Unk75e138 = *(int *)(ai_Time + 8);
     ai_Unk75e13c = *(short *)(ai_Time + 0xc);
     if ((ai_Unk76f924 & 2) == 0)
@@ -2935,7 +2931,7 @@ int ls_ReceiveGame(void)
             vfs_fclose(fh);
             goto fail;
         }
-        ai_Unk75e130 = *(int *)ai_Time;
+        ai_Unk75e130[0] = *(int *)ai_Time;
         ai_Unk75e134 = *(int *)(ai_Time + 4);
         ai_Unk75e138 = *(int *)(ai_Time + 8);
         ai_Unk75e13c = *(short *)(ai_Time + 0xc);

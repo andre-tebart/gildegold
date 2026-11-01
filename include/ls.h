@@ -55,7 +55,9 @@ int ls_FixupAfterLoad(void);                                            /* 0x520
 int ls_SendGame(char *name);                                            /* 0x520a30 */
 int ls_ReceiveGame(void);                                               /* 0x520b80 */
 
+#ifndef DATA_VIEWS_H
 extern short ai_Unk75e13c;                                  /* 0x75e13c */
+#endif
 extern LSSAVE ls_SavePath;                                  /* 0x75e640 */
 extern unsigned short ai_ScreenImage[19200];                /* 0x766320 */
 extern int ai_Unk76f920[0x40];                              /* 0x76f920, the 0x100-byte header of the loaded save game */
@@ -77,8 +79,10 @@ extern int ai_Unk6f2620;                                    /* 0x6f2620 */
 extern unsigned char he_Events[339968];                     /* 0x6fab40 */
 extern char * he_QuickList[10921];                          /* 0x74db40 */
 extern int ai_Unk7585e4;                                    /* 0x7585e4 */
+#ifndef DATA_VIEWS_H
 extern int ai_Unk75e134;                                    /* 0x75e134 */
 extern int ai_Unk75e138;                                    /* 0x75e138 */
+#endif
 extern unsigned ai_Unka68d28;                               /* 0xa68d28 */
 extern int ai_Unkf81168;                                    /* 0xf81168 */
 extern unsigned ai_Unkf81220;                               /* 0xf81220 */

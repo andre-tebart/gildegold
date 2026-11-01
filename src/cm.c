@@ -14926,7 +14926,7 @@ void ai_Unk4e5bf0(char *c)
 }
 
 extern unsigned int ai_MissionSeed;
-extern int ai_Unk75e130;
+extern int ai_Unk75e130[4];
 extern char * sv_SelectedObject;
 extern char ai_Unk75fba0[2048];
 extern int cm_SaveAcks[8][2];
@@ -15172,7 +15172,7 @@ int cm_RequestedSaveSlot = 0;  /* 0x6f25c8 */
 char cm_RequestedSaveName[72] = {0};  /* 0x6f25d0 */
 /* ai_Unk6f35ca: view of ai_GfxFloor (tools/data_views.py) */
 unsigned int ai_MissionSeed = 0;  /* 0x75e120, the random seed of the missions (as unk_4b39f0.h) */
-int ai_Unk75e130 = 0;  /* 0x75e130, the year of the clock copy 0x75e130..0x75e13e (an AITIME; its other fields are ls.c's ai_Unk75e134 / 75e138 / 75e13c) */
+int ai_Unk75e130[4] = {0};  /* 0x75e130, the clock copy 0x75e130..0x75e13e (14 bytes, written whole by cm.c / sv.c): [0] the year; ai_Unk75e134 / 75e138 / 75e13c are views */
 char * sv_SelectedObject = 0;  /* 0x75ec60 */
 char ai_Unk75fba0[2048] = {0};  /* 0x75fba0 */
 int cm_SaveAcks[8][2] = {0};  /* 0x76fa20 */
