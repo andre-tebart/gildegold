@@ -2156,20 +2156,21 @@ int ai_Unk4aaef0(AIPER *p, unsigned char *a, unsigned char *b)
     }
     return 0;
 }
-/* 0x4aafb0, execute callback: message 0x74 from p to o about the object at m */
+/* 0x4aafb0, execute callback of 0x49ee20 (a of kind 4, b of kind 1): message 0x74 to p from the character
+   a->ref (arg[1]) about b->ref (arg[2]); p pays 1 (gm_SendMoneyDelta -1) */
 
-int ai_Unk4aafb0(AIPER *p, AIPER *o, unsigned char *m)
+int ai_ExecMessage74(AIPER *p, AIARG *a, AIARG *b)
 {
     AIMSG msg;
 
-    memset(&msg, 0, sizeof(msg));
+    AI_ZERO(&msg, sizeof(msg));
     msg.type = 0x74;
     msg.flags = 2;
     msg.to = p->netId;
-    msg.fromId = o->netId;
+    msg.fromId = a->ref;
     msg.time = ai_TimeT;
-    msg.arg[1] = *(int *)(m + 4);
-    msg.arg[0] = msg.fromId;
+    msg.arg[1] = a->ref;
+    msg.arg[2] = b->ref;
     cm_SendLongMessage(&msg);
     gm_SendMoneyDelta(p->netId, -1);
     return 1;
