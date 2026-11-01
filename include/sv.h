@@ -28,7 +28,7 @@ void sv_UpdateGroundplan(unsigned flags);                                      /
 void sv_SetResearchClass(unsigned char *o);                             /* 0x522ec0 */
 void sv_UpdateCityPanel(unsigned char a, int b);                              /* 0x522f10 */
 void sv_RedrawScreen(void);                                             /* 0x524010 */
-void sv_Unk524100(int c, char *g);                                      /* 0x524100 */
+void sv_AddGroupMember(int c, char *g);                                      /* 0x524100 */
 void sv_RemoveGroupMember(int c, char *g);                              /* 0x524160 */
 int sv_UsedGroupSlots(char *g);                                         /* 0x5241b0 */
 void sv_CountGroupMembers(char *g);                                     /* 0x5241d0 */

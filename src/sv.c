@@ -1476,34 +1476,25 @@ void sv_RedrawScreen(void)
     d2_PlaceWindow(ai_Unk623840, 1);
     d2_BlitPart(0, 0, (int)d2_ScreenW, (int)d2_ScreenH, ai_Unk6ed92c, 0, 0, d2_ScreenSurf);
 }
-/* 0x524100, enters the character c (index) into the first free of the 8 member slots (+0x8c) of the group record g, when it is not in already */
+/* 0x524100, enters the character c (index) into the first free (-1) of the 8 member slots of the group record
+   g, unless he is a member already; a member slot holds the character's AICHAR.netId */
 
-void sv_Unk524100(int c, char *g)
+void sv_AddGroupMember(int c, char *g)
 {
+    AICHAR *ch;
     int i;
-    int *p;
 
-    p = (int *)(g + 0x8c);
-    i = 0;
-    do {
-        if (*p == *(int *)(ai_Chars[c] + 4)) {
-            if (i < 8)
-                return;
+    ch = &ai_CharsT[c];
+    for (i = 0; i < 8; i++)
+        if (((SVGROUP *)g)->member[i] == ch->netId)
             break;
-        }
-        i++;
-        p++;
-    } while (i < 8);
-    p = (int *)(g + 0x8c);
-    i = 0;
-    do {
-        if (*p == -1) {
-            *(int *)(g + 0x8c + i * 4) = *(int *)(ai_Chars[c] + 4);
+    if (i < 8)
+        return;
+    for (i = 0; i < 8; i++)
+        if (((SVGROUP *)g)->member[i] == -1) {
+            ((SVGROUP *)g)->member[i] = ch->netId;
             return;
         }
-        i++;
-        p++;
-    } while (i < 8);
 }
 /* 0x524160, removes the character c (index) from the member slots (+0x8c) of the group record g @deep @deep: behaviour draft, readable done. 11 code hunks left, two causes, both entry scheduling / dead values: (1) the original materialises the character base (lea ecx,[eax*4+0x770b80]) and then never loads through it - it loads the id with the SIB form mov edx,[eax*4+0x770b84]; ours emits only the load. Tried: 'ch = ai_Chars[c]; id = *(int *)(ch + 4)' (CSE, no lea), the typed ((SVCHARREC *)ai_Chars[c])->netId (no lea), the char[0x21c] index form - all 11; (2) the original computes p = g+0x8c after 'i = 0' (xor eax,eax; lea ecx,[esi+0x8c]), ours hoists the lea above the id computation - the statement order is already id / i = 0 / p = ..., a scheduler choice; spelling p as grp->member + i changes the lea to a SIB form (worse). Kept: id via SVCHARREC.netId, the scan through SVGROUP.member (the pointer scan + indexed store, the original's add ecx,4 loop), which made it readable (Q4 clear). Nothing else in the body differs: the do-while, the -1 store and the 8 bound are the original's. */
 
@@ -1683,7 +1674,7 @@ void sv_MoveToGroup(unsigned char *o, short *it, int c, char *g)
     if (g == 0)
         newkind = 0;
     else {
-        sv_Unk524100(*(unsigned short *)ch, g);
+        sv_AddGroupMember(*(unsigned short *)ch, g);
         switch ((unsigned char)g[0]) {
         case 3:
         case 4:
