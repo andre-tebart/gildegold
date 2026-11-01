@@ -1416,14 +1416,16 @@ int ai_Unk4a9660(int a, AIPER *p, int c, int d, unsigned char *m)
     *(int *)(m + 4) = ((AIPER *)ai_CharsT)[id].netId;
     return 1;
 }
-/* 0x4a9700, decide callback: p (not flagged 0x100, money >= 4) picks a character of district 4 within 16..31 units,
-   not its partner (0x5c), into m (kind 7); 0x20 if p cannot */
+/* 0x4a9700, decide callback: p (not flagged 0x100, money >= 4) picks one of the holders of the offices of
+   column 4 (amt_GetColumnOffices, up to 6), starting at a random one, that is not the character of ctx (p itself
+   for ctx kind 1, the one at ctx + 0x21c for kind 2) and that p likes less than 16..31, nor p's spouse
+   (relatives[0]), into m (kind 7); 0x20 when p cannot */
 
-int ai_Unk4a9700(int a, AIPER *p, int *ctx, int d, unsigned char *m)
+int ai_DecideColumn4Officer(int a, AICHAR *p, int *ctx, int d, AIARG *m)
 {
-    G10DREC rec[6];
-    AIPER *who[6];
-    AIPER *o;
+    AMTREC rec[6];
+    AICHAR *who[6];
+    AICHAR *o;
     int id, n, i;
     unsigned int r;
 
@@ -1438,13 +1440,13 @@ int ai_Unk4a9700(int a, AIPER *p, int *ctx, int d, unsigned char *m)
             return 0;
         if (ctx[0x87] == 0)
             return 0;
-        id = ((AIPER *)ctx[0x87])->netId;
+        id = ((AICHAR *)ctx[0x87])->netId;
     }
     n = amt_GetColumnOffices(4, 6, rec);
     for (i = 0; i < n; i++)
-        who[i] = AI_505DF0(rec[i].id);
-    if (n < 6)
-        memset(&who[n], 0, (6 - n) * sizeof(who[0]));
+        who[i] = (AICHAR *)gm_FindChar(rec[i].owner);
+    for (i = n; i < 6; i++)
+        who[i] = 0;
     r = util_RandomU(6);
     i = 6;
     do {
@@ -1453,14 +1455,15 @@ int ai_Unk4a9700(int a, AIPER *p, int *ctx, int d, unsigned char *m)
             o = who[r];
             if (o == 0)
                 return 0;
-            if (*(int *)((unsigned char *)p + 0x5c) == o->netId)
+            if (p->relatives[0] == o->netId)
                 return 0;
-            m[0] = 7;
-            *(int *)(m + 4) = o->netId;
+            m->kind = 7;
+            m->ref = o->netId;
             return 1;
         }
+        i--;
         r = (int)(r + 1) % 6;
-    } while (--i);
+    } while (i != 0);
     return 0;
 }
 /* 0x4a9880, decide callback: p (not flagged 0x100, money >= 4) picks a character of district 5 within 16..31 units,
@@ -1620,7 +1623,7 @@ int ai_Unk4a9a00(int a, AIPER *p, int c, unsigned char *in, unsigned char *m)
     case 0x32:
         return G10_CB(ai_Unk4a9660)(a, p, ctx, in, m);
     case 0x35:
-        return G10_CB(ai_Unk4a9700)(a, p, ctx, in, m);
+        return G10_CB(ai_DecideColumn4Officer)(a, p, ctx, in, m);
     case 0x37:
         return G10_CB(ai_Unk4a9880)(a, p, ctx, in, m);
     }
