@@ -4819,7 +4819,7 @@ void sv_HandleObjects(void)
                 d3t_PlaceAtObject((D3OBJECT *)ai_PickedObject, ai_CameraStep);
                 sv_FocusObject = ai_PickedObject;
                 if (ai_PickedObject != 0 && ((D3OBJECT *)ai_PickedObject)->events != 0 && ((D3OBJECT *)ai_PickedObject)->events[2].fn != 0)
-                    ((D3OBJECT *)ai_PickedObject)->events[2].fn((D3OBJECT *)ai_PickedObject, 2, ((D3OBJECT *)ai_PickedObject)->events[2].data, 0);
+                    ((D3OBJECT *)ai_PickedObject)->events[2].fn((D3OBJECT *)ai_PickedObject, 2, ((D3OBJECT *)ai_PickedObject)->events[2].name, 0);
                 sv_FocusDepth = sv_FrameDepth;
             }
             sv_LastPicked = ai_PickedObject;

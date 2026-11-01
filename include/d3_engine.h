@@ -692,12 +692,7 @@ void ts_UpdateScroll(unsigned long now);                                        
 int ai_AlwaysTrue(void);                                                                /* 0x4a8c10 */
 
 /* event tables ("d3e:") */
-#define D3E_NEVENTS 7
-typedef void (*D3EVHANDLER)(void);
-typedef struct D3EVENT {            /* 0x84 bytes, D3E_NEVENTS of them in D3OBJX::unk1d4 / D3_SCENE3C8 */
-    D3EVHANDLER fn;
-    char name[0x80];                /* 0x04, name of the handler */
-} D3EVENT;
+/* D3E_NEVENTS, D3EVHANDLER, D3EVENT: d3_types.h */
 typedef struct D3EVNAME {           /* 0x24 bytes */
     char name[0x20];
     int id;
