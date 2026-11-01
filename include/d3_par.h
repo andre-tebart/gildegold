@@ -2,6 +2,7 @@
    Original file name unknown. Names are ours. */
 #ifndef D3_PAR_H
 #define D3_PAR_H
+#include "d3.h"                       /* the D3 records and typedefs this header names */
 
 /* The list of particle systems is bracketed by two fake nodes whose link fields are plain globals:
    the end marker d3_ParEnd (0xfb9280), whose prev field (+0x318) is the tail pointer at 0xfb9598, and the head

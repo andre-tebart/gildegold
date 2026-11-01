@@ -4,6 +4,7 @@
    Names are ours (ocmd_ + the script name). */
 #ifndef UNK_40D680_H
 #define UNK_40D680_H
+#include "d3.h"                       /* the D3 records and typedefs this header names */
 
 struct XOBJ;
 struct D3VECTOR4;

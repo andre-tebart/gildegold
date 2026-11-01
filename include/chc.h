@@ -4,6 +4,8 @@
    pointer to its value. Names are ours (chc_ + the script name). */
 #ifndef UNK_40BA10_H
 #define UNK_40BA10_H
+#include "ch.h"                       /* CHARACTER */
+#include "d3.h"                       /* the D3 records and typedefs this header names */
 
 #include "evt.h"
 

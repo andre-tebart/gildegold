@@ -4,6 +4,8 @@ struct TSTEXTURE;
    except rd_object. */
 #ifndef UNK_44ABB0_H
 #define UNK_44ABB0_H
+#include "d3_engine.h"                /* D3CLIP / D3SRCPOLY / D3PTRI */
+#include "d3.h"                       /* the D3 records and typedefs this header names */
 struct VFSFILE;
 
 typedef union D3IOFLAGS {           /* tex_Load flags as the floor reader builds them */

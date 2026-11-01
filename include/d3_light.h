@@ -7,6 +7,7 @@ struct XOBJ;
    fields d3.h does not name (rounds 11 mesh / d3x had two, unified in round 12 by worker geo). Names are ours. */
 #ifndef UNK_451E80_H
 #define UNK_451E80_H
+#include "d3.h"                       /* the D3 records and typedefs this header names */
 
 typedef struct D3LVERT {            /* 0x50 bytes, a mesh vertex (D3PVERT, D3OBJINFO::keys) as the light code sees it */
     float x, y, z;                  /* 0x00, camera space */

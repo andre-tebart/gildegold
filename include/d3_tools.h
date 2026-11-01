@@ -2,6 +2,7 @@
    and heights, the camera paths, rain, snow, the particle emitters and the sun rays. Names are ours. */
 #ifndef D3_TOOLS_H
 #define D3_TOOLS_H
+#include "d3.h"                       /* the D3 records and typedefs this header names */
 
 struct D3OBJECT;
 struct D3VECTOR;

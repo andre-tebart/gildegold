@@ -1,6 +1,7 @@
 /* Types of d3s.c (0x459d80..0x45ce60): the object shadow TU ("d3s:" tags, "Schatten" texture). Names are ours. */
 #ifndef D3S_H
 #define D3S_H
+#include "d3.h"                       /* the D3 records and typedefs this header names */
 
 typedef struct D3SPANPIX {          /* 0x1c bytes per pixel of the rasterizer's span buffer (first dword = value) */
     int v;

@@ -2,6 +2,7 @@
    (0x44cd40..0x44e570; 0x44df40.. from worker d3io3). Names are ours. */
 #ifndef UNK_44CD40_H
 #define UNK_44CD40_H
+#include "d3.h"                       /* the D3 records and typedefs this header names */
 
 typedef union D3BGFFLAGS {          /* tex_Load flags as the loader builds them */
     unsigned int all;

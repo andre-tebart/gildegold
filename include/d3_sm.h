@@ -2,6 +2,7 @@
    Names are ours. */
 #ifndef UNK_45DB40_H
 #define UNK_45DB40_H
+#include "d3.h"                       /* the D3 records and typedefs this header names */
 
 typedef struct D3SMENTRY {          /* 0x1c bytes, one per height map cell */
     int type;                       /* ground type, index into d3sm_GroundNames; 0xd = border */

@@ -2,6 +2,7 @@
    original file is the d3_par one or a neighbour (unknown). Names are ours. */
 #ifndef D3_QUAD_H
 #define D3_QUAD_H
+#include "d3.h"                       /* the D3 records and typedefs this header names */
 
 typedef struct D3QITEM {            /* 8 bytes, pool 0x633db4 (128 per block) */
     D3OBJECT *obj;

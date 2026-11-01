@@ -5,6 +5,8 @@ struct D3FLMAP;                     /* the tag (d3_fl.h spells it out; MS compat
 /* d3_engine.c types (only what the functions from 0x438c30 need so far). */
 #ifndef D3_ENGINE_H
 #define D3_ENGINE_H
+#include <windows.h>                  /* HWND (d3_Init) */
+#include "d3.h"                       /* the D3 records and typedefs this header names */
 struct XOBJ;
 struct D3SOUND;
 

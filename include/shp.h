@@ -1,10 +1,13 @@
 struct D2SHP;
+struct D2FRAME;
 struct D2SURF;
 /* Declarations of unk_47ab30.c (0x47ab30..0x47c5e0, the shape ("shp") part of D2.C): grabbing a rectangle of a
    surface into a run-length coded shape, clipped drawing of shapes, shape conversion between 8 / 16 / 24 bit.
    d2.h lacks these. Names are ours. */
 #ifndef UNK_47AB30_H
 #define UNK_47AB30_H
+#include "d2_types.h"                 /* D2SURF */
+#include "d3.h"                       /* the D3 records and typedefs this header names */
 struct D2RGB;
 
 #pragma pack(push, 1)
@@ -105,7 +108,7 @@ int d2_DrawShapeScaled(int x, int y, void *surf, void *pic, char i, char mode, i
 void d2_FillRect(int x, int y, int w, int h, void *surf);  /* 0x47ce60 */
 void d2_FreeAnim(int n);  /* 0x47ce30 */
 void d2_FreeLightTable(void);  /* 0x479ee0 */
-D2FRAME *d2_GetFrame(void *pic, short i);  /* 0x47cb70 */
+struct D2FRAME *d2_GetFrame(void *pic, short i);  /* 0x47cb70 */
 void d2_SetBlitParams(void *dst, void *src, void *mask, short w, short h, short n);  /* 0x47ced0 */
 
 #endif

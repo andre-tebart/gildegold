@@ -263,7 +263,7 @@ void d3_SetObjectPosXYZ(D3OBJECT *obj, float x, float y, float z);              
 void d3_SetObjectRotXYZ(D3OBJECT *obj, float x, float y, float z);                      /* 0x43b920 */
 
 void d3d_Error(char *file, int line, char *call);                                      /* 0x418e90 */
-void d3_BeginScene(unsigned char fog, DWORD fogcol, unsigned char zbuffer);                                                 /* 0x4385a0 */
+void d3_BeginScene(unsigned char fog, unsigned long fogcol, unsigned char zbuffer);                                                 /* 0x4385a0 */
 void d3_SetBlendState(unsigned char balpha, unsigned char glow, unsigned char colorkey);   /* 0x4387b0, d3_d3d.c */
 void d3_EndScene(void);                                                                /* 0x438780 */
 

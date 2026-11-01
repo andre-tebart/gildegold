@@ -3,6 +3,7 @@
    s->num_indices, l->t->surftext). */
 #ifndef D3_SKY_H
 #define D3_SKY_H
+#include "d3.h"                       /* the D3 records and typedefs this header names */
 
 #define D3SKY_ROWS 6
 #define D3SKY_COLS 8

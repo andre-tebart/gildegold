@@ -2,6 +2,8 @@
    mirrored copy of the objects behind it. Original file name unknown (d3_mir.c?). Names are ours. */
 #ifndef UNK_454890_H
 #define UNK_454890_H
+#include "d3_engine.h"                /* D3CLIP / D3SRCPOLY / D3PTRI */
+#include "d3.h"                       /* the D3 records and typedefs this header names */
 struct XOBJ;
 struct D3VECTOR4;
 

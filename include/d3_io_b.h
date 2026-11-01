@@ -4,6 +4,8 @@ struct VFSFILE;
    the TU extent is not known (0x44e570.. up to at least 0x44f870). Names are ours. */
 #ifndef UNK_44EE50_H
 #define UNK_44EE50_H
+#include "d3_io_t.h"                  /* D3BGF / D3BGFMAT */
+#include "d3.h"                       /* the D3 records and typedefs this header names */
 
 typedef struct VFSFILE VFSFILE;     /* vfs.h; its prototypes clash with d3_io_t.h (void *) */
 

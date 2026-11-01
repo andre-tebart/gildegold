@@ -4,6 +4,7 @@ struct VFSFILE;
    Names are ours. */
 #ifndef D2_H
 #define D2_H
+#include "d3.h"                       /* the D3 records and typedefs this header names */
 struct D3OBJECT;
 
 struct IDirectDrawSurface4;          /* <ddraw.h>, for the surface prototypes below */

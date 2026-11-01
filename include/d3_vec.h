@@ -4,6 +4,7 @@ struct D3VECTOR4;
    Names are ours. */
 #ifndef UNK_453920_H
 #define UNK_453920_H
+#include "d3.h"                       /* the D3 records and typedefs this header names */
 
 extern const D3VECTOR d3_YAxis;          /* 0x5ebb94, (0, 1, 0) */
 extern D3VECTOR d3_ZAxis;                /* 0x5ebb74, (0, 0, 1) */

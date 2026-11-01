@@ -5,6 +5,8 @@ struct VFSFILE;
    d3_FindBGF and d3_CalcNormals are declared in d3_io_t.h. Names are ours. */
 #ifndef UNK_450860_H
 #define UNK_450860_H
+#include "d3_io_t.h"                  /* D3BGF / D3BGFMAT */
+#include "d3.h"                       /* the D3 records and typedefs this header names */
 
 typedef struct D3BGFVERT { float x, y, z, nx, ny, nz; } D3BGFVERT;
 
