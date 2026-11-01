@@ -8060,7 +8060,7 @@ float gm_HealthFactor(int c)
 }
 /* 0x508a80, formats the amount v for the player slot k into out: "%i%c" below 1000, else with a '.' every three digits ("%s%c", the unit char 0x11 at the end), "0%c" for zero, a '-' in front for negative values. ROUGH */
 
-void gm_Unk508a80(int v, unsigned char k, char *out)
+void gm_FormatAmount(int v, unsigned char k, char *out)
 {
     int n, i, j, e;
     char a[0x40], b[0x80];

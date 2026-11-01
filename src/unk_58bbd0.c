@@ -1250,7 +1250,7 @@ void ai_Unk58bbd0(void)
 
 struct D3VECTOR; int d3_VecEqual(struct D3VECTOR *a, struct D3VECTOR *b, float eps); int sv_CheckCharacterFlag(); int d2_OpenForm(); void d2_CentreViewWindows(int view);
 float gm_GoodsPrice(unsigned id, unsigned char p);   /* 0x5089c0, the price (ai.h / cm.h / rt.h: float) */
-void gm_Unk508a80(int v, unsigned char k, char *out);  /* 0x508a80, above its first call (line 1119) */
+void gm_FormatAmount(int v, unsigned char k, char *out);  /* 0x508a80, above its first call (line 1119) */
 void sv_OpenPlayerBar(int a, char k); int d2_SetForm(int view, int n); int io_PrintText(char *fmt, ...); void sv_Unk52e6d0(int f, int b, int c);
 int d2_GetViewWin(); int sv_CreateFormSlider(); void d2_SetPointerSprite(int a, int pic); char * gm_Query(void *list, int n, ...);
 int gm_FreeCapacity(); int sv_MessageBox(); char * he_FindEvent(int n, ...); char * he_NextEvent(void);
@@ -2110,7 +2110,7 @@ void ai_Unk58e6a0(int param_1, int param_2, int *param_3, int param_4, unsigned 
     if ((param_5 & 2) != 0) {
         /* the amount text of the carrier's goods (0x5089c0 / 0x508a80) */
         gm_GoodsPrice(*param_3, param_6[0x65]);
-        ((int (*)(int))gm_Unk508a80)(U_I((unsigned)&ai_OwnPlayer));
+        ((int (*)(int))gm_FormatAmount)(U_I((unsigned)&ai_OwnPlayer));
         if (param_3[6] == -1)
             param_3[6] = d2_CreateWinText((short)param_3[2] + 0x10, (short)param_3[3] + 0x40, text, U_I((unsigned)&d2_LastWindow));
         else
@@ -2121,7 +2121,7 @@ void ai_Unk58e6a0(int param_1, int param_2, int *param_3, int param_4, unsigned 
     }
     if ((param_5 & 1) != 0) {
         gm_GoodsPrice(*param_3, *param_6 == 0x47 ? param_6[0x65] : U_I((unsigned)&ai_OwnPlayer));
-        ((int (*)(int))gm_Unk508a80)(U_I((unsigned)&ai_OwnPlayer));
+        ((int (*)(int))gm_FormatAmount)(U_I((unsigned)&ai_OwnPlayer));
         if (param_3[7] == -1)
             param_3[7] = d2_CreateWinText((short)param_3[2] + 0x10, (short)param_3[3] + 0x49, text, U_I((unsigned)&d2_LastWindow));
         else
@@ -6816,7 +6816,7 @@ int ai_Unk599e00(int param_1, int param_2, int param_3, int param_4, int param_5
     id = d2_WinOpenPic(param_1 + 2, param_2 + 2, param_4 + 0xdf, param_3);
     d2_WinOpenPic(param_1 + 3, param_2 + 0x35, 0x746, param_3);
     U_I(U_I((unsigned)&d2_Objs) + 0x4c + id * 0x2ec) = 1;
-    gm_Unk508a80((int)gm_GoodsPrice(param_4, param_5), param_5, text);
+    gm_FormatAmount((int)gm_GoodsPrice(param_4, param_5), param_5, text);
     id = d2_CreateWinText(param_1 + 7, param_2 + 0x3a, text, U_I((unsigned)&d2_LastWindow));
     *(short *)(U_I((unsigned)&d2_Objs) + 0x14 + id * 0x2ec) = 0x24;
     *(short *)(U_I((unsigned)&d2_Objs) + 0x74 + id * 0x2ec) = 0x54;

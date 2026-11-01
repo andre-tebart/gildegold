@@ -1853,7 +1853,7 @@ D2OBJ *o;
             d2_DrawTextBox(x - 0x30, y, o->picW + 0x60, o->h, d2_ScreenSurf, o->caption, flags);
     }
 }
-/* 0x46d3d0, draws all objects in drawing order, each clipped to its windows @deep draft (93 differing instructions of 1137 vs 1156; 997/3456 bytes). The reading is register allocation and scheduling only: the mode flags variable sits in edi where the original uses ebp (spell regs at 46db68, the whole 46db68..46dbf5 block), the caption/dirty blocks push the same arguments in another order (46dbfa..46dc7f), and the 46e0d4..46e102 stretch is instruction-stream misalignment (garbage decode on one side) with 46e14c.. alignment fill. spell dup-tail at 46dbb0 (5 instructions, the caption bounds) tried as if/else instead of the ternaries tx = captionX != -1 ? ... : ...: identical bytes, reverted; pull-after-branch and polarity swap do not apply (the arms compute different expressions, no common statement). code at 46e0fc: no menu rule, the bytes are a misaligned decode. Q1 fixed (renamed d2_Unk46d3d0 this session); Q2 blocked: d3io_NoopCallback (empty no-op, no evidence, @deep in d3_io_a.c), d2_NoBackgroundRestore (char flag only compared to 1, no writer in our source), d2_SetSurfaceClip (defined in gfx.c 0x479cd0, its prototype would have to move unit), D2OBJ/D2WIN unk00/unk58/unk6e/unk268 (no evidence in this function's reads); fillFraction named this session. Left: the ebp/edi allocation and the push scheduling (listing/c2prio/siblings). */
+/* 0x46d3d0, draws all objects in drawing order, each clipped to its windows @deep draft (93 differing instructions of 1137 vs 1156; 997/3456 bytes). The reading is register allocation and scheduling only: the mode flags variable sits in edi where the original uses ebp (spell regs at 46db68, the whole 46db68..46dbf5 block), the caption/dirty blocks push the same arguments in another order (46dbfa..46dc7f), and the 46e0d4..46e102 stretch is instruction-stream misalignment (garbage decode on one side) with 46e14c.. alignment fill. spell dup-tail at 46dbb0 (5 instructions, the caption bounds) tried as if/else instead of the ternaries tx = captionX != -1 ? ... : ...: identical bytes, reverted; pull-after-branch and polarity swap do not apply (the arms compute different expressions, no common statement). code at 46e0fc: no menu rule, the bytes are a misaligned decode. Q1 fixed (renamed d2_Unk46d3d0 this session); Q2 blocked: d3io_NoopCallback (empty no-op, no evidence, @deep in d3_io_a.c), d2_NoBackgroundRestore (char flag only compared to 1, no writer in our source), d2_SetSurfaceClip (defined in gfx.c 0x479cd0, its prototype would have to move unit), D2OBJ/D2WIN unk00/unk58/unk6e (no evidence in this function's reads); fillFraction named this session. Left: the ebp/edi allocation and the push scheduling (listing/c2prio/siblings). */
 
 void d2_DrawObjects(void)
 {
@@ -2043,7 +2043,7 @@ void d2_DrawObjects(void)
                 if (o->drawFrames > 0) {
                     d2_SetSurfaceClip(x0, y0, x1 - x0, y1 - y0, d2_ScreenSurf);
                     d2_DrawWindow(o->input, d2_ScreenSurf);
-                    if ((d2_Wins[o->input].flags & 0x1000) && d2_Wins[o->input].unk268 == 1)
+                    if ((d2_Wins[o->input].flags & 0x1000) && d2_Wins[o->input].drawFrames == 1)
                         d2_DrawWindow(o->input, d2_BackSurf);
                     if (!o->win) {
                         if (d2_Wins[o->input].flags & 0x8000)
@@ -3696,7 +3696,7 @@ int pic;
     D2WOP(o)->scrollY = 0;
     d2_Wins[obj].visible = 0x30;
 }
-/* 0x472390, creates a window; returns its index, -1 if there is no free one, 0 if a surface could not be made @deep draft: 638/976 bytes differ, 121 asm lines after this session's two meaning fixes (win->w = w, the surface desc[1] = w; 740 bytes / 167 lines before), hunks code 121 / regs 58. Read against the original 0x472390..: the free-window scan (counter/pointer in ebp/eax vs eax/ecx), the index scaling lea chain, the flags register (ours ecx/bh vs original ebx), the -1 materialisation (or ebx,-1 vs or eax,-1) and the y+h add order at 472611 are register allocation / scheduling; the 4724a1 desc push order now reads right. Tried: the operand order win->h + win->y -> win->y + win->h at 472611 (identical bytes, reverted). Q2 left, no writer anywhere in src/ (name gaps): D2WIN.unk268 (written 2 here, compared == 1 at d2.c:1967), D2WIN.unk274 (written -1 here only). The two child-object slots are cornerObj / extraObj (0x3bc / 0x3c0). Named this session: d2_CreateWindow (from d2_CreateWindow), d2_LastWindow / d2_LastWindowPtr (d2_LastWindow / d2_LastWindowPtr, the window created last). */
+/* 0x472390, creates a window; returns its index, -1 if there is no free one, 0 if a surface could not be made @deep draft: 638/976 bytes differ, 121 asm lines after this session's two meaning fixes (win->w = w, the surface desc[1] = w; 740 bytes / 167 lines before), hunks code 121 / regs 58. Read against the original 0x472390..: the free-window scan (counter/pointer in ebp/eax vs eax/ecx), the index scaling lea chain, the flags register (ours ecx/bh vs original ebx), the -1 materialisation (or ebx,-1 vs or eax,-1) and the y+h add order at 472611 are register allocation / scheduling; the 4724a1 desc push order now reads right. Tried: the operand order win->h + win->y -> win->y + win->h at 472611 (identical bytes, reverted). Q2 left, no writer anywhere in src/ (name gaps): D2WIN.unk274 (written -1 here only). The two child-object slots are cornerObj / extraObj (0x3bc / 0x3c0). Named this session: d2_CreateWindow (from d2_CreateWindow), d2_LastWindow / d2_LastWindowPtr (d2_LastWindow / d2_LastWindowPtr, the window created last). */
 
 int d2_CreateWindow(x, y, w, h, flags)
 short x;
@@ -3792,7 +3792,7 @@ unsigned int flags;
     d2_Objs[ob].win = 0;
     win->parent = ob;
     win->backgroundState = 1;
-    win->unk268 = 2;
+    win->drawFrames = 2;
     win->bgpic = -1;
     win->font = d2_DefaultFont;
     win->scrollBar = -1;

@@ -9,8 +9,8 @@ int io_CharacterNameMarkup(int id, unsigned char c, unsigned char kind, char *ou
 int io_PrintText(char *fmt, ...);                                                /* 0x515960, the text engine: prints the text fmt (a literal or an id of the text */
 void txt_Format(char *out, int id0, ...);                                        /* 0x5176d0, the same token engine as 0x515960 into the buffer out instead of the */
 
-extern int ai_Unk6333b8;                                     /* 0x6333b8 */
-extern int ai_Unk6ed978;                                     /* 0x6ed978 */
-extern int ai_Unkfe7c20;                                     /* 0xfe7c20 */
-extern int ai_Unk114fe60[18440];                             /* 0x114fe60 */
+extern int txt_Count;                                     /* 0x6333b8 */
+extern int d2_LayoutMode;                                     /* 0x6ed978 */
+extern int txt_Loaded;                                     /* 0xfe7c20 */
+extern int txt_Random[0x4800];                           /* 0x114fe60 */
 #endif

@@ -74,7 +74,7 @@ typedef struct D2WIN {              /* 0x3c4 bytes, d2_Wins[0..0x60] */
     unsigned char scrollStep;       /* 0x260, pixels per scroll step (d2_ScrollWindow) */
     char pad261[3];
     int visible;                    /* 0x264, also the scroll step of the buttons */
-    short unk268;                   /* 0x268 */
+    short drawFrames;               /* 0x268, 2 after the window is created (d2_CreateWindow) or its text grew (io_PrintText); == 1 with flags 0x1000 also draws it to d2_BackSurf (a reasoned guess: the windows' D2OBJ.drawFrames) */
     short pad26a;
     int parent;                     /* 0x26c, object of the window */
     int backgroundState;            /* 0x270, the window background's save/restore state, decremented after every
@@ -87,7 +87,8 @@ typedef struct D2WIN {              /* 0x3c4 bytes, d2_Wins[0..0x60] */
     short font;                     /* 0x27c */
     char pad27e[2];
     int active;                     /* 0x280 */
-    int args[0x41];                 /* 0x284, parameters of the text commands */
+    int args[0x40];                 /* 0x284, parameters of the text commands ("%l" "%t" "%m" "%i" tokens of io_PrintText) */
+    int nargs;                      /* 0x384, args used */
     int bgpic;                      /* 0x388, tiled background picture, -1 = none */
     int tileBackground;             /* 0x38c, 1: the background is the tiled d2_BackgroundTile */
     D2TEX *spr;                     /* 0x390, background texture (d3if_LoadSprite) */
@@ -173,7 +174,8 @@ typedef struct D2PIC {              /* 0x54 bytes, one picture of the archive; d
 } D2PIC;
 
 typedef struct D2CTRL {             /* what D2OBJ::buf points to (a D2BUF) */
-    char pad000[0x198];
+    int view;                       /* 0x00, the view index (d2_RedrawView; a D2VIEW's id) */
+    char pad004[0x194];
     int loaded;                     /* 0x198, nonzero: its two surfaces exist (D2VIEW.loaded), so the
                                        pointer position is d2_PointerX / 0c, not the mouse */
 } D2CTRL;
