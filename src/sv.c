@@ -3417,7 +3417,7 @@ char sv_Unk528660(char *o, int *p)
     return p[0] < 0x20;
 }
 
-extern int d3_QuadTree, sv_PanelBldPic, sv_PanelHealthBar, ai_Unk62387c, sv_PanelItemBtn, sv_PanelTransportBtn, ai_Unk623890, sv_PanelActionBtn, ai_Unk631078;  /* 0x6f1c28, 0x623864, 0x623868, 0x62387c, 0x623888, 0x62388c, 0x623890, 0x623894, 0x631078 */
+extern int d3_QuadTree, sv_PanelBldPic, sv_PanelHealthBar, sv_PanelCartWin, sv_PanelItemBtn, sv_PanelTransportBtn, sv_PanelCartBtn, sv_PanelActionBtn, sv_PanelCartChar;  /* 0x6f1c28, 0x623864, 0x623868, 0x62387c, 0x623888, 0x62388c, 0x623890, 0x623894, 0x631078 */
 extern int sv_PanelWidgets[4];  /* 0x62386c */
 
 int d2_WinCreateSlider();                     /* 0x46bf10 */
@@ -3603,33 +3603,34 @@ void sv_OpenItemPanel(unsigned short *p)
         }
     }
 }
-/* 0x528d90, opens the info panel for the transporter p ("panel\\infopanel_transporter"): the title ("$Z%2N1$A%s": the owner's id and the name 0x9a8 + 2 * id), the image 0xdf + id, for the own transporter the button 0xac
-   (0x623890), the load bar 0x623868 (+0x12 byte) and notes the panel's form 0x62387c and the position record 0x631078 */
-
-void sv_Unk528d90(unsigned short *p)
+/* 0x528d90, opens the info panel (sv_PanelForm, "panel\infopanel_transporter") for the cart c unless one is open or its
+   building has no owner: the title ("$Z%2N1$A%s": the owner character's id and the goods name text 0x9a8 + 2 * id), the
+   cart picture 0xdf + id (interactive), for the player's own cart the button 0xac (sv_PanelCartBtn, txt_PanelBtnCart),
+   the load bar (sv_PanelHealthBar, the fill percent); then notes the panel's window (sv_PanelCartWin) and the scene
+   character that shows the cart (sv_PanelCartChar) */
+void sv_OpenCartPanel(AIOBJ *c)
 {
-    short *owner;
-    int x, w;
+    unsigned short *owner;
+    int x;
 
     if (sv_PanelForm != -1)
         return;
-    owner = (short *)gm_ObjectBuildingOwner(p);
+    owner = gm_ObjectBuildingOwner((unsigned short *)c);
     if (owner == 0)
         return;
-    sv_PanelForm = d2_OpenForm(d2_ScreenW - 0x68, 0x106, "panel\\infopanel_transporter");
+    sv_PanelForm = d2_OpenFormS(d2_ScreenW - 0x68, 0x106, "panel\\infopanel_transporter");
     d2_SetForm(sv_PanelForm, 1);
-    io_PrintText("$Z%2N1$A%s", *owner, *p * 2 + 0x9a8);
+    io_PrintText("$Z%2N1$A%s", *owner, c->id * 2 + 0x9a8);
     d2_SetForm(sv_PanelForm, 0);
-    x = ((*(short *)(ai_Unkf8f128 + d2_LastWindow * 0x3c4) - 0x30) >> 1) - 1;
-    w = d2_WinOpenPic(x, 0x30, *p + 0xdf, d2_LastWindow);
-    *(int *)(d2_Objs + 0x4c + w * 0x2ec) = 1;
-    if (*owner == (short)ai_PlayerId)
-        ai_Unk623890 = sv_AddPanelButton(x, 0xac, ai_Unk144ad24);
+    x = ((d2_Wins[d2_LastWindow].w - 0x30) >> 1) - 1;
+    ((D2OBJ *)d2_Objs)[d2_WinOpenPic(x, 0x30, c->id + 0xdf, d2_LastWindow)].interactive = 1;
+    if (*owner == ai_PlayerId)
+        sv_PanelCartBtn = sv_AddPanelButton(x, 0xac, txt_PanelBtnCart);
     sv_PanelHealthBar = d2_WinOpenSlider(0x18, 0x66, 0x30, 0, 100, 0x75, 0x442, d2_LastWindow);
-    d2_SetObjValue(sv_PanelHealthBar, 0, 100, (char)p[9]);
+    d2_SetObjValue4(sv_PanelHealthBar, 0, 100, c->fill);
     d2_SetForm(sv_PanelForm, 2);
-    ai_Unk62387c = d2_LastWindow;
-    ai_Unk631078 = *(int *)((char *)p + 0x3b);
+    sv_PanelCartWin = d2_LastWindow;
+    sv_PanelCartChar = (int)c->sceneObj;
 }
 
 extern int ai_Unk623884;  /* 0x623884 */
@@ -3661,7 +3662,6 @@ void sv_Unk528ee0(void);
 void sv_Unk5290f0(unsigned short *p);
 void sv_Unk529380(void);
 void sv_OpenItemPanel(unsigned short *p);
-void sv_Unk528d90(unsigned short *p);
 
 /* 0x528ee0, opens the default info panel when no panel is open (0x623860): without a selection the "standard" panel with the buttons 0x8c / 0xa6; for an own building (0x6f230c with the owner +0x27 = the player) the
    building panel with the name, the image, the health bar and the buttons 0x8c, 0xa6 (0x623898 for kind 0x1e) */
@@ -3778,12 +3778,12 @@ void sv_Unk529380(void)
                     d2_RemoveObj(*q);
                     *q = -1;
                 }
-            if (ai_Unk62387c == -1 || ai_Unk75ec5c == 0)
+            if (sv_PanelCartWin == -1 || ai_Unk75ec5c == 0)
                 return;
             tr = ai_Unk75ec5c;
             if (ai_Goods[*tr * 0x41] != 0x1d)
                 return;
-            if (ai_Unk623890 != -1 && d2_ClickedId != -1 && d2_PointerObj == ai_Unk623890 && (sv_FrameMask & 0x2000) != 0) {
+            if (sv_PanelCartBtn != -1 && d2_ClickedId != -1 && d2_PointerObj == sv_PanelCartBtn && (sv_FrameMask & 0x2000) != 0) {
                 rt_Unk4bf5b0(tr);
                 tr = ai_Unk75ec5c;
             }
@@ -3873,11 +3873,11 @@ void sv_Unk529fb0(void)
         ai_Unk623898 = -1;
         sv_PanelActionBtn = -1;
         sv_PanelTransportBtn = -1;
-        ai_Unk623890 = -1;
+        sv_PanelCartBtn = -1;
         ai_Unk623884 = -1;
         sv_PanelItemBtn = -1;
         ai_Unk623880 = -1;
-        ai_Unk62387c = -1;
+        sv_PanelCartWin = -1;
     }
 }
 /* 0x52a040, an empty callback returning 0 */
@@ -4436,7 +4436,7 @@ l3b8:
                 sv_Unk5290f0(0);
         }
     } else
-        sv_Unk528d90(SV_I((unsigned)&ai_Unk75ec5c));
+        sv_OpenCartPanel(SV_I((unsigned)&ai_Unk75ec5c));
 l510:
     SV_I((unsigned)&full_data_6f23d4) = SV_B((unsigned)&full_data_6f2338);
     SV_I((unsigned)&full_data_6f23c0) = SV_I((unsigned)&ai_FallbackBuilding);
@@ -4767,10 +4767,10 @@ lfe4:
                     SV_I((unsigned)&sv_SelectedChar) = (int)g;
                     SV_B((unsigned)&ai_Selected + *g * 0x21c) = 1;
                     SV_I((unsigned)&ai_Unk6f2334) = 1;
-                    SV_I((unsigned)&ai_Unk631078) = SV_I(((unsigned)&ai_Unk770cec + 0x18) + *g * 0x21c);
+                    SV_I((unsigned)&sv_PanelCartChar) = SV_I(((unsigned)&ai_Unk770cec + 0x18) + *g * 0x21c);
                     snd_PlayWorkerClick(g);
                 }
-                SV_I((unsigned)&ai_Unk631078) = SV_I(((unsigned)&ai_Unk770cec + 0x18) + *(unsigned short *)SV_I((unsigned)&ai_Unk6f22f8) * 0x21c);
+                SV_I((unsigned)&sv_PanelCartChar) = SV_I(((unsigned)&ai_Unk770cec + 0x18) + *(unsigned short *)SV_I((unsigned)&ai_Unk6f22f8) * 0x21c);
             }
             if (SV_I((unsigned)&ai_Unk6f2334) == 0 && SV_B((unsigned)&full_data_6f2338) == 0 && SV_I((unsigned)&full_data_6f22f4) != 0 && SV_I((unsigned)&ai_Unk75ec5c) == 0)
                 SV_I((unsigned)&sv_SelectedModel) = SV_I((unsigned)&ai_Unk6f22e8);
@@ -7665,12 +7665,12 @@ int sv_PanelForm = -1;  /* 0x623860 */
 int sv_PanelBldPic = -1;  /* 0x623864 */
 int sv_PanelHealthBar = -1;  /* 0x623868 */
 int sv_PanelWidgets[4] = {-1, -1, -1, -1};  /* 0x62386c, the info panel's 4 widget ids (freed by one loop: 0x62386c .. 0x62387c) */
-int ai_Unk62387c = -1;  /* 0x62387c */
+int sv_PanelCartWin = -1;  /* 0x62387c */
 int ai_Unk623880 = -1;  /* 0x623880 */
 int ai_Unk623884 = -1;  /* 0x623884 */
 int sv_PanelItemBtn = -1;  /* 0x623888 */
 int sv_PanelTransportBtn = -1;  /* 0x62388c */
-int ai_Unk623890 = -1;  /* 0x623890 */
+int sv_PanelCartBtn = -1;  /* 0x623890 */
 int sv_PanelActionBtn = -1;  /* 0x623894 */
 int ai_Unk623898 = -1;  /* 0x623898 */
 int ai_Unk6238a4 = -1;  /* 0x6238a4 */
@@ -7708,7 +7708,7 @@ unsigned ai_Unk623ecc = 4294967295;  /* 0x623ecc */
 int sv_ViewRectRight = 694;  /* 0x6248ac */
 int sv_ViewRectBottom = 600;  /* 0x6248b0 */
 int ai_DragWindow = -1;  /* 0x62a8cc */
-int ai_Unk631078 = 0;  /* 0x631078 */
+int sv_PanelCartChar = 0;  /* 0x631078 */
 short d2_PointerLook = 0;  /* 0x6ed9d0, the pointer direction / panel layout code (1 .. 8) */
 int sv_SavedMaxY = 0;  /* 0x6f1c40 */
 float sv_ScrollVelYPrev = 0;  /* 0x6f1c44 */

@@ -34,7 +34,7 @@ int rt_MarkGroup = -1;                  /* 0x602a90 */
 int ai_Unk62c26c = 1;  /* 0x62c26c */
 extern RTMARK rt_Marks[8];
 /* ai_Unk143a588: view of txt_Ptrs (build/mk_txt_views.py) */
-/* ai_Unk144ad24: view of txt_Ptrs (build/mk_txt_views.py) */
+/* txt_PanelBtnCart: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_Unk144ad28: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_Unk144ad2c: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_Unk144ad30: view of txt_Ptrs (build/mk_txt_views.py) */
@@ -905,7 +905,7 @@ void rt_Unk4bf5b0(char *c)
     m[5] = 0xb07d7fb0;
     m[1] = 0x10;
     m[0x16] = 0x723;
-    strcpy((char *)&m[0x17], ai_Unk144ad24);
+    strcpy((char *)&m[0x17], txt_PanelBtnCart);
     ai_Unk5a78a0(m);
     ai_Unk5a6cb0(m);
     rt_Unk6f074c = d2_CopySurface(ai_Unk6f26ac);

@@ -84,7 +84,7 @@ void sv_Unk528770(void);                                                /* 0x528
 int sv_AddPanelButton(int x, int y, int text);                               /* 0x528800 */
 struct AIBLD; void sv_OpenBuildingPanel(struct AIBLD *b);                                /* 0x528860 */
 void sv_OpenItemPanel(unsigned short *p);                                   /* 0x528b80 */
-void sv_Unk528d90(unsigned short *p);                                   /* 0x528d90 */
+struct AIOBJ; void sv_OpenCartPanel(struct AIOBJ *c);                                /* 0x528d90 */
 void sv_Unk528ee0(void);                                                /* 0x528ee0 */
 void sv_Unk5290f0(unsigned short *p);                                   /* 0x5290f0 */
 void sv_Unk529380(void);                                                /* 0x529380 */
@@ -194,12 +194,12 @@ extern int sv_PanelForm;                                    /* 0x623860 */
 extern int sv_PanelBldPic;                                    /* 0x623864 */
 extern int sv_PanelHealthBar;                                    /* 0x623868 */
 extern int sv_PanelWidgets[4];                                 /* 0x62386c, the info panel's 4 widget ids */
-extern int ai_Unk62387c;                                    /* 0x62387c */
+extern int sv_PanelCartWin;                                    /* 0x62387c */
 extern int ai_Unk623880;                                    /* 0x623880 */
 extern int ai_Unk623884;                                    /* 0x623884 */
 extern int sv_PanelItemBtn;                                    /* 0x623888 */
 extern int sv_PanelTransportBtn;                                    /* 0x62388c */
-extern int ai_Unk623890;                                    /* 0x623890 */
+extern int sv_PanelCartBtn;                                    /* 0x623890 */
 extern int sv_PanelActionBtn;                                    /* 0x623894 */
 extern int ai_Unk623898;                                    /* 0x623898 */
 extern int ai_Unk6238a4;                                    /* 0x6238a4 */
@@ -223,7 +223,7 @@ extern unsigned ai_Unk623ecc;                               /* 0x623ecc */
 extern int sv_ViewRectRight;                                /* 0x6248ac */
 extern int sv_ViewRectBottom;                               /* 0x6248b0 */
 extern int ai_DragWindow;                                    /* 0x62a8cc */
-extern int ai_Unk631078;                                    /* 0x631078 */
+extern int sv_PanelCartChar;                                    /* 0x631078 */
 extern short d2_PointerLook;                                /* 0x6ed9d0 */
 extern int sv_SavedMaxY;                                    /* 0x6f1c40 */
 extern float sv_ScrollVelYPrev;                                  /* 0x6f1c44 */

@@ -368,7 +368,7 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define full_data_144acf0                        (*(unsigned char (*)[4])((char *)txt_Ptrs + 0x10b30))  /* 0x144acf0 */
 #define full_data_144acf4                        (*(unsigned char (*)[28])((char *)txt_Ptrs + 0x10b34))  /* 0x144acf4 */
 #define full_data_144ad10                        (*(unsigned char (*)[24])((char *)txt_Ptrs + 0x10b50))  /* 0x144ad10 */
-#define ai_Unk144ad24                            (*(char * *)((char *)txt_Ptrs + 0x10b64))  /* 0x144ad24 */
+#define txt_PanelBtnCart                            (*(char * *)((char *)txt_Ptrs + 0x10b64))  /* 0x144ad24 */
 #define ai_Unk144ad28                            (*(char * *)((char *)txt_Ptrs + 0x10b68))  /* 0x144ad28 */
 #define ai_Unk144ad2c                            (*(char * *)((char *)txt_Ptrs + 0x10b6c))  /* 0x144ad2c */
 #define ai_Unk144ad30                            (*(int *)((char *)txt_Ptrs + 0x10b70))  /* 0x144ad30 */
