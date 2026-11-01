@@ -87,4 +87,5 @@ void ai_EndCharExtra(char *ch, int f);  /* 0x587c40 */
 void ai_SetupTutorialPlayer(void);  /* 0x57bc30, sets up the tutorial player's profile */
 int ai_TutorialWindow(void);  /* 0x57bce0, the tutorial chooser window: 1 starts the tutorial, 0 is the back */
 
+int ai_SaveSlotTable(int fh);  /* 0x589aa0, writes the slot table 0x6f5ec0 */
 #endif

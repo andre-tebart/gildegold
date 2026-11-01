@@ -72,8 +72,8 @@
 /* cm_SaveAcks */
 #define ai_Unk76fa24             (*(char (*)[60])((char *)&cm_SaveAcks + 0x4))  /* 0x76fa24 */
 
-/* ai_Unk6f2618 */
-#define ai_Unk6f261c             (*(int *)((char *)&ai_Unk6f2618 + 0x4))  /* 0x6f261c */
+/* ai_NextEventId */
+#define ai_Unk6f261c             (*(int *)((char *)&ai_NextEventId + 0x4))  /* 0x6f261c */
 
 /* d3_ScrollPool */
 #define d3_ScrollSpeed           (*(float (*)[15])((char *)&d3_ScrollPool + 0x4))  /* 0x5ebc24 */

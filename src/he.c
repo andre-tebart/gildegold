@@ -867,8 +867,8 @@ unsigned char *he_Unk53e040(unsigned char *m)
                     U_I((unsigned)&ai_Unk6f2620) = j;
             }
             *r = m[4];
-            U_I(((unsigned)&he_Events + 0x4) + off) = U_I((unsigned)&ai_Unk6f2618);
-            U_I((unsigned)&ai_Unk6f2618)++;
+            U_I(((unsigned)&he_Events + 0x4) + off) = U_I((unsigned)&ai_NextEventId);
+            U_I((unsigned)&ai_NextEventId)++;
             U_I(((unsigned)&he_Events + 0x10) + off) = *(int *)(m + 0xc);
             d = (int *)(((unsigned)&he_Events + 0x14) + off);
             s = (int *)(m + 0x10);

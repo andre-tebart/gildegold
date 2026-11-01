@@ -145,4 +145,5 @@ int ai_Unk5c37a0(short *param_1, char *param_2, unsigned char *param_3);  /* 0x5
 int ai_Unk5cf8a0(int param_1, int *param_2);  /* 0x5cf8a0 */
 void ai_SendSwapText(unsigned short *param_1, unsigned short *param_2, unsigned short *param_3);  /* 0x5a9330 */
 
+int ai_SaveSettings(void *param_1);  /* 0x5a8940, saves the settings */
 #endif

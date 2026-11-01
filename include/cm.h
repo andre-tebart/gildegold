@@ -80,7 +80,7 @@ extern float ai_DifficultyScale;              /* 0x5fef08 */
 extern int ai_Unk6f0cd0;                /* 0x6f0cd0, received messages */
 extern unsigned short ai_PlayerId;     /* 0x6f25b8, the player */
 extern volatile unsigned long d3_Time;  /* 0x6333cc */
-extern int ai_Unk6f1b88;                /* 0x6f1b88 */
+extern int ai_NextCrimeId;                /* 0x6f1b88 */
 extern char ai_Unk625820[][0x20];       /* 0x625820, names ("HE_NULL", ..) */
 extern char ai_Time[];                /* 0x770ae0, AITIME (ai.h) */
 
@@ -118,7 +118,7 @@ int amt_CheckApplication(struct AMTAPP *m);                                     
 int amt_CheckOfficeMessage(struct AMTMSG *m);                                                       /* 0x4e6710 */
 extern signed char ai_Relations[0x300][0x300];  /* 0x7e5360, relations between the characters */
 extern signed char ai_RelationMemory[0x300][0x300];  /* 0x889f80 */
-extern int ai_Unk6f2618;                /* 0x6f2618 */
+extern int ai_NextEventId;                /* 0x6f2618 */
 int he_IsMessageKindFiltered(int id);                                                        /* 0x575640 */
 unsigned char * he_Unk53e040(unsigned char *m);                                                   /* 0x53e040, AIMSG * */
 char * he_FindEvent(int n, ...);                                                  /* 0x53e400, ai.h: AIJOB * */
@@ -349,7 +349,7 @@ void ai_ApplyOptions(void);  /* 0x5d5e90 */
 extern const int ai_Unk5edc10[];  /* 0x5edc10 */
 extern char *ai_Unk5fb5b0;  /* 0x5fb5b0 */
 extern int ai_Unk60bd80;  /* 0x60bd80 */
-extern int ai_Unk61a658;  /* 0x61a658 */
+extern int ai_NextPartyId;  /* 0x61a658 */
 extern int ai_Unk624570;  /* 0x624570 */
 extern int ai_Unk624574;  /* 0x624574 */
 extern int ai_Unk624578;  /* 0x624578 */

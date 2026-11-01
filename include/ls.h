@@ -10,26 +10,26 @@ int ls_LanguageOf(char *s);                                             /* 0x519
 int ls_GetLanguage(void);                                               /* 0x5190a0 */
 int ls_SaveGame(int name, char *path, unsigned flags);                  /* 0x5190b0 */
 int ls_WriteSaveHeader(int f, unsigned flags);                          /* 0x5194c0 */
-void unk_Unk519a00(void);                                               /* 0x519a00 */
-void unk_Unk519aa0(void);                                               /* 0x519aa0 */
-int unk_Unk519b50(int f);                                               /* 0x519b50 */
+void ls_RefsToIds(void);                                               /* 0x519a00 */
+void ls_IdsToRefs(void);                                               /* 0x519aa0 */
+int ls_RelinkScene(int f);                                               /* 0x519b50 */
 int ls_WriteObjects(int f);                                             /* 0x519bf0 */
-int unk_Unk519d20(int f);                                               /* 0x519d20 */
-int unk_Unk51a1a0(int f);                                               /* 0x51a1a0 */
-int unk_Unk51a4b0(int f);                                               /* 0x51a4b0 */
+int ls_WriteBuildings(int f);                                               /* 0x519d20 */
+int ls_WritePlayerRecords(int f);                                               /* 0x51a1a0 */
+int ls_WriteCharacters(int f);                                               /* 0x51a4b0 */
 unsigned ls_ActionIndex(char *p);                                       /* 0x51ad30 */
 int ls_ActionAt(int n);                                                 /* 0x51ad60 */
 int unk_Unk51ad80(char *r, int id, int f);                              /* 0x51ad80 */
-int unk_Unk51aff0(int f);                                               /* 0x51aff0 */
-int unk_Unk51b340(int f);                                               /* 0x51b340 */
+int ls_WriteSceneRecords(int f);                                               /* 0x51aff0 */
+int ls_WritePlayerSlots(int f);                                               /* 0x51b340 */
 int ls_WriteRelations(int f);                                           /* 0x51b890 */
-int unk_Unk51b910(int f);                                               /* 0x51b910 */
+int ls_WriteStatistics(int f);                                               /* 0x51b910 */
 int ls_WriteAvatars(void *f);                                           /* 0x51bdb0 */
-int unk_Unk51bdc0(int f);                                               /* 0x51bdc0 */
-int unk_Unk51c2f0(int f);                                               /* 0x51c2f0 */
+int ls_WritePlayerTable(int f);                                               /* 0x51bdc0 */
+int ls_WriteParties(int f);                                               /* 0x51c2f0 */
 int ls_WriteHistory(int f);                                             /* 0x51c450 */
-int unk_Unk51c560(int f);                                               /* 0x51c560 */
-int unk_Unk51c870(int f);                                               /* 0x51c870 */
+int ls_WriteMessageQueues(int f);                                               /* 0x51c560 */
+int ls_WriteEnvironment(int f);                                               /* 0x51c870 */
 int ls_Read(void *buf, int size, int count, int f);                     /* 0x51c920 */
 int ls_LoadGame(int name, int kind);                                  /* 0x51c950, kind is not read (main passes 1 / 2, f3init 5) */
 typedef struct LSHEADER {               /* 0x100 bytes, the header of a save game (ls_ReadSaveHeader; ai_Unk76f920) */
@@ -92,15 +92,15 @@ extern int ai_Unk76f924;                                    /* 0x76f924 */
 extern int ai_Unk76f9b8;                                    /* 0x76f9b8 */
 extern char ai_Unk76f9bc[100];                              /* 0x76f9bc */
 #endif
-extern int ai_Unk61a658;                                    /* 0x61a658 */
+extern int ai_NextPartyId;                                    /* 0x61a658 */
 extern int ls_Language;                                     /* 0x62364c */
 extern int ls_Version;                                      /* 0x623650 */
 extern const char ls_LanguageNames[][0x40];                 /* 0x5ee978 */
 extern int * ai_Unk633738;                                  /* 0x633738 */
-extern int ai_Unk6f1b88;                                    /* 0x6f1b88 */
-extern int ai_Unk6f1bcc;                                    /* 0x6f1bcc */
+extern int ai_NextCrimeId;                                    /* 0x6f1b88 */
+extern int ls_SpareInt;                                    /* 0x6f1bcc */
 extern unsigned char ls_SaveSlot;                           /* 0x6f1c38 */
-extern int ai_Unk6f2618;                                    /* 0x6f2618 */
+extern int ai_NextEventId;                                    /* 0x6f2618 */
 extern int ai_Unk6f2620;                                    /* 0x6f2620 */
 extern unsigned char he_Events[339968];                     /* 0x6fab40 */
 extern char * he_QuickList[10921];                          /* 0x74db40 */

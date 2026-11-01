@@ -1436,7 +1436,7 @@ void ai_MissionCompleteSequence(int id)
 unsigned vfs_fwrite(void *buf, int size, int n, struct VFSFILE *f);                             /* 0x430e30 */
 
 /* 0x4b62e0, saves the mission kind and the running missions to f */
-int ai_Unk4b62e0(void *f)
+int ai_SaveMissions(void *f)
 {
     int i;
 

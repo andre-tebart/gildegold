@@ -168,7 +168,7 @@ typedef struct MAINCHARNEW {        /* the AICHAR fields the character replaceme
     unsigned char flag9;            /* 0x09, 1: the female name table is used */
     char pad0a[0x26];
     char name[0x20];                /* 0x30 */
-    short seq;                      /* 0x50, a running number (ai_Unk6f1bb8) */
+    short seq;                      /* 0x50, a running number (ai_NextCharNumber) */
     char pad52[10];
     int clear[8];                   /* 0x5c, set to -1 */
 } MAINCHARNEW;
@@ -199,7 +199,7 @@ extern int sv_ViewRectRight;
 extern int sv_ViewRectTop;
 
 
-extern int ai_Unk6f1bb8;
+extern int ai_NextCharNumber;
 extern char ai_Unk925520[];
 extern GAPDATA full_data_92bca8[];
 extern unsigned char he_Events[339968];
@@ -3630,10 +3630,10 @@ void main_ReplaceFigure(unsigned p)
         } else {
             strcpy(ch->name, ai_Unk143af70[(unsigned short)util_RandomInt(0x70)]);
         }
-        ch->seq = (short)U_I((unsigned)&ai_Unk6f1bb8);
+        ch->seq = (short)U_I((unsigned)&ai_NextCharNumber);
         for (i = 0; i < 8; i++)
             ch->clear[i] = -1;
-        U_I((unsigned)&ai_Unk6f1bb8) = U_I((unsigned)&ai_Unk6f1bb8) + 1;
+        U_I((unsigned)&ai_NextCharNumber) = U_I((unsigned)&ai_NextCharNumber) + 1;
         s = (char *)((unsigned)&ai_Unk925520 + 0x8);
         do {
             if (s[0x28] != 0) {

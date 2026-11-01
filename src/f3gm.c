@@ -36,7 +36,7 @@ extern char ai_Unk91f700[];
 extern char ai_Unk7d6a60[];                 /* 0x7d6a60, the five 0x2a90-byte stock blocks (one per player slot) */
 /* The stock area is ONE 0xd4d0-byte object at 0x7d6a60 (five blocks of 0x2a90: four header ints, then
    0x55 records of 0x80 bytes). The other names are views into it: a separate definition would reserve
-   its own memory and the block writer/reader (gm_LoadTables, unk_Unk51f080, unk_Unk51b340) would then
+   its own memory and the block writer/reader (gm_LoadTables, unk_Unk51f080, ls_WritePlayerSlots) would then
    write over whatever the COMMON linker placed inside the 0xd4d0-byte span. */
 #define init_StockBlocks (*(char (*)[0xd4c0])((char *)ai_Unk7d6a60 + 0x10))  /* 0x7d6a70, the records of block 0 */
 #define ai_Unk7d6a64 (*(int (*)[3])((char *)ai_Unk7d6a60 + 4))  /* 0x7d6a64, the rest of block 0's header */
@@ -3161,8 +3161,8 @@ char ai_Unk61a9ec[] = "f3_gm:lpObjekteINST";  /* 0x61a9ec */
 char ai_Unk61aa00[20] = { 102, 51, 95, 103, 109, 58, 108, 112, 79, 98, 106, 101, 107, 116, 101, 80, 82, 79, 84, 0 };  /* 0x61aa00 */
 char ai_Unk61aa20[] = "f3_gm:lpGebaeudeINST";  /* 0x61aa20 */
 char ai_Unk61aa38[24] = { 102, 51, 95, 103, 109, 58, 108, 112, 71, 101, 98, 97, 101, 117, 100, 101, 80, 82, 79, 84, 0, 0, 0, 0 };  /* 0x61aa38 */
-int ai_Unk6f1bb8 = 0;  /* 0x6f1bb8 */
-int ai_Unk6f1bbc = 0;  /* 0x6f1bbc */
+int ai_NextCharNumber = 0;  /* 0x6f1bb8 */
+int ai_NextPlayerNumber = 0;  /* 0x6f1bbc */
 int ai_CharCount = 0;  /* 0x6f1bc0 */
 char * ai_Unk6f1bd0 = 0;  /* 0x6f1bd0 */
 char ai_Unk6f1bd4 = 0;  /* 0x6f1bd4 */
@@ -4917,7 +4917,7 @@ int gm_IsHomeType(unsigned char *b)
 int gm_JobBuildingType(int x);
 extern unsigned short * sv_PanelShown;                /* 0x6f2310 */
 /* ai_Unk61a688: view of ai_Unk61a686 (tools/data_views.py) */
-extern int ai_CharCount, ai_Unk6f1bb8, ai_Unk6f1bbc;  /* 0x6f1bc0, 0x6f1bb8, 0x6f1bbc */
+extern int ai_CharCount, ai_NextCharNumber, ai_NextPlayerNumber;  /* 0x6f1bc0, 0x6f1bb8, 0x6f1bbc */
 char d3if_ShowTree(struct D3OBJECT *obj, char show);                     /* 0x447300 */
 void cm_BeginGroup(const char *s);                     /* 0x4c4540 */
 void cm_EndGroup(const char *s);                     /* 0x4c4580 */
@@ -5718,8 +5718,8 @@ void gm_ResetCharacters(void)
         p = p2;
     } while ((int)p2 < (unsigned)((unsigned)gm_PlayerRecords + 0xac0));
     ai_CharCount = 0;
-    ai_Unk6f1bb8 = 0;
-    ai_Unk6f1bbc = 0;
+    ai_NextCharNumber = 0;
+    ai_NextPlayerNumber = 0;
 }
 /* 0x503ee0, copies the 6-byte record n of the table 0x61a688 (0x5f records; larger n: the first one) to out and returns out
    (the original returns the record by value: eax is the hidden result pointer, WinMain 0x53d352 reads the record through it) */
@@ -7637,7 +7637,7 @@ int gm_Unk509e30(void *list, unsigned char p);
 #define PLTAB(i) (((int *)ai_Unk61a8ac)[i])
 #define OPROTO(i) (ai_Goods + (unsigned)(i) * 0x41)
 
-extern int ai_CharCount, ai_Unk6f1bb8, ai_Unk6f1bbc, ai_Unk6f2448, ai_NextObjectId;  /* 0x6f1bc0, 0x6f1bb8, 0x6f1bbc, 0x6f2448, 0x61a654 */
+extern int ai_CharCount, ai_NextCharNumber, ai_NextPlayerNumber, ai_Unk6f2448, ai_NextObjectId;  /* 0x6f1bc0, 0x6f1bb8, 0x6f1bbc, 0x6f2448, 0x61a654 */
 
 extern char ai_Unk61a8c8[];  /* 0x61a8c8 */
 const float ai_Unk5ee160[476] = { 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 16.0f, 24.0f, 2.20000005f, 2.79999995f, 2.4000001f, 3.0f, 2.0f, 3.0f, 2.29999995f, 2.9000001f, 2.4000001f, 3.0f, 2.0f, 2.70000005f, 2.29999995f, 2.9000001f, 2.5f, 3.0f, 2.0999999f, 2.70000005f, 2.5f, 3.0f, 2.0f, 2.5999999f, 2.4000001f, 3.0f, 2.4000001f, 3.0f, 16.0f, 24.0f, 2.20000005f, 2.79999995f, 2.4000001f, 3.0f, 2.0f, 3.0f, 2.29999995f, 2.9000001f, 2.4000001f, 3.0f, 2.0f, 2.70000005f, 2.29999995f, 2.9000001f, 2.5f, 3.0f, 2.0999999f, 2.70000005f, 2.5f, 3.0f, 2.0f, 2.5999999f, 2.4000001f, 3.0f, 2.4000001f, 3.0f, 16.0f, 24.0f, 2.20000005f, 2.79999995f, 2.4000001f, 3.0f, 2.0f, 3.0f, 2.29999995f, 2.9000001f, 2.4000001f, 3.0f, 2.0f, 2.70000005f, 2.29999995f, 2.9000001f, 2.5f, 3.0f, 2.0999999f, 2.70000005f, 2.5f, 3.0f, 2.0f, 2.5999999f, 2.4000001f, 3.0f, 2.4000001f, 3.0f, 16.0f, 24.0f, 2.29999995f, 2.79999995f, 2.29999995f, 2.79999995f, 2.0f, 3.0f, 2.29999995f, 2.79999995f, 2.4000001f, 3.0f, 2.20000005f, 2.9000001f, 2.29999995f, 2.9000001f, 2.5f, 3.0f, 2.0f, 2.5999999f, 2.4000001f, 2.79999995f, 2.20000005f, 2.79999995f, 2.4000001f, 3.0f, 2.20000005f, 3.0f, 16.0f, 24.0f, 2.29999995f, 2.79999995f, 2.29999995f, 2.79999995f, 2.0f, 3.0f, 2.29999995f, 2.79999995f, 2.4000001f, 3.0f, 2.20000005f, 2.9000001f, 2.29999995f, 2.9000001f, 2.5f, 3.0f, 2.29999995f, 2.79999995f, 2.4000001f, 2.79999995f, 2.20000005f, 2.79999995f, 2.29999995f, 2.79999995f, 2.4000001f, 3.0f, 16.0f, 24.0f, 2.29999995f, 2.79999995f, 2.29999995f, 2.79999995f, 2.0f, 3.0f, 2.29999995f, 2.79999995f, 2.4000001f, 3.0f, 2.20000005f, 2.9000001f, 2.20000005f, 2.70000005f, 2.5f, 3.0f, 2.5f, 3.0f, 2.4000001f, 2.70000005f, 2.29999995f, 2.9000001f, 2.20000005f, 2.79999995f, 2.0f, 3.0f, 16.0f, 24.0f, 2.4000001f, 3.0f, 2.5f, 3.0f, 2.0f, 3.0f, 2.0999999f, 2.9000001f, 2.5f, 3.0f, 2.0f, 2.5f, 2.5f, 3.0f, 2.5f, 3.0f, 2.5f, 3.0f, 2.20000005f, 3.0f, 2.0f, 2.5999999f, 2.4000001f, 3.0f, 2.20000005f, 3.0f, 16.0f, 24.0f, 2.29999995f, 2.79999995f, 2.29999995f, 2.9000001f, 2.0f, 3.0f, 2.0999999f, 2.9000001f, 2.20000005f, 2.70000005f, 2.0f, 2.79999995f, 2.0999999f, 2.5999999f, 2.20000005f, 2.70000005f, 2.20000005f, 2.70000005f, 2.20000005f, 2.70000005f, 2.29999995f, 2.79999995f, 2.5f, 3.0f, 2.29999995f, 2.79999995f, 16.0f, 24.0f, 2.5f, 2.9000001f, 2.4000001f, 2.9000001f, 2.0f, 3.0f, 2.0999999f, 2.9000001f, 2.0f, 2.9000001f, 2.0f, 2.5999999f, 2.5999999f, 2.9000001f, 2.29999995f, 2.79999995f, 2.4000001f, 2.79999995f, 2.20000005f, 2.79999995f, 2.29999995f, 2.79999995f, 2.5f, 3.0f, 2.29999995f, 2.79999995f, 16.0f, 24.0f, 2.5f, 2.9000001f, 2.29999995f, 2.79999995f, 2.0f, 3.0f, 2.4000001f, 2.9000001f, 2.5f, 2.9000001f, 2.0999999f, 2.9000001f, 2.0999999f, 2.79999995f, 2.0999999f, 2.9000001f, 2.5f, 2.79999995f, 2.5999999f, 2.9000001f, 2.5f, 3.0f, 2.29999995f, 2.79999995f, 2.29999995f, 2.70000005f, 16.0f, 24.0f, 2.29999995f, 2.9000001f, 2.29999995f, 3.0f, 2.0f, 3.0f, 2.4000001f, 2.9000001f, 2.5f, 3.0f, 2.0999999f, 3.0f, 2.0f, 2.70000005f, 2.0f, 2.9000001f, 2.29999995f, 2.79999995f, 2.0f, 2.29999995f, 2.5999999f, 3.0f, 2.0f, 2.4000001f, 2.29999995f, 2.70000005f, 16.0f, 24.0f, 2.29999995f, 2.9000001f, 2.0999999f, 2.70000005f, 2.0f, 3.0f, 2.4000001f, 2.9000001f, 2.5f, 3.0f, 2.0999999f, 3.0f, 2.0f, 2.70000005f, 2.29999995f, 2.9000001f, 2.0f, 2.79999995f, 2.0999999f, 2.29999995f, 2.5999999f, 3.0f, 2.0f, 2.4000001f, 2.29999995f, 2.70000005f, 16.0f, 24.0f, 2.29999995f, 2.9000001f, 2.0999999f, 2.70000005f, 2.0f, 3.0f, 2.4000001f, 2.9000001f, 2.5f, 3.0f, 2.0999999f, 3.0f, 2.0f, 2.70000005f, 2.29999995f, 2.9000001f, 2.0f, 2.79999995f, 2.0999999f, 2.29999995f, 2.5999999f, 3.0f, 2.0f, 2.4000001f, 2.29999995f, 2.70000005f, 16.0f, 24.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 16.0f, 24.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };  /* 0x5ee160 */
@@ -7737,7 +7737,7 @@ unsigned short gm_Unk507690(int type, int a2, int a3, int a4, unsigned char *a5,
             CF(0x1d0, float) = util_RandomF() * 0.5f + 0.25f;
             CF(0x18c, int) = unk_Unk4fb770(av + 0xd7) + 0x639;
             CF(0x1c, float) = 1000.0f;
-            CF(0x50, unsigned short) = (unsigned short)ai_Unk6f1bb8++;
+            CF(0x50, unsigned short) = (unsigned short)ai_NextCharNumber++;
             CF(0x20, float) = 12.0f;
             CF(0x14, float) = util_RandomSq() * 7.0f + 30.0f;
             rr = util_RandomU((int)CF(0x14, float));
@@ -7845,12 +7845,12 @@ skip:
         CF(0x64, int) = a3;
         c[0x58] = 1;
         if (type == 6 || type == 7 || type == 5) {
-            if (ai_Unk6f1bbc > 0xf)
+            if (ai_NextPlayerNumber > 0xf)
                 return 0xffff;
-            CF(0x50, unsigned short) = (unsigned short)ai_Unk6f1bbc | 0x8000;
-            ai_Unk6f1bbc++;
+            CF(0x50, unsigned short) = (unsigned short)ai_NextPlayerNumber | 0x8000;
+            ai_NextPlayerNumber++;
         } else if (type < 10)
-            CF(0x50, unsigned short) = (unsigned short)ai_Unk6f1bb8++;
+            CF(0x50, unsigned short) = (unsigned short)ai_NextCharNumber++;
         else
             CF(0x50, unsigned short) = 0x7fff;
         CF(0x1c, float) = 1000.0f;

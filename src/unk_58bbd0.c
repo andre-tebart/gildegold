@@ -13868,7 +13868,7 @@ void ai_FreeSettings(void)
 /* 0x5a8940, the settings saved (213 B): the count, then every record +0 / +4 / +0x44 and the seven slots
    {good, weight} by 0x430e30 (the file param_1); 1 done, 0 on a write error */
 
-int ai_Unk5a8940(void *param_1)
+int ai_SaveSettings(void *param_1)
 {
     int n;
     int *p;

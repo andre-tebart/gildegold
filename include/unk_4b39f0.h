@@ -39,4 +39,5 @@ extern int ai_MissionPartner;  /* 0x6248a0 */
 int ai_Unk4b44e0(G13MIS *m, int ev);  /* 0x4b44e0 */
 extern int sv_FrameMask;  /* 0x760638 */
 
+int ai_SaveMissions(void *f);  /* 0x4b62e0, saves the mission kind and the running missions to f */
 #endif

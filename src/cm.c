@@ -1322,7 +1322,7 @@ void cm_SendKillCharacter(int a, int b)
     G17_I(m, 4) = b;
     ai_Unk4c39c0(&m);
 }
-/* 0x4c4e40, message 0x22: 0x2d bytes of p, the id ai_Unk6f1b88, 1 and a random number */
+/* 0x4c4e40, message 0x22: 0x2d bytes of p, the id ai_NextCrimeId, 1 and a random number */
 
 void ai_Unk4c4e40(void *p)
 {
@@ -1330,7 +1330,7 @@ void ai_Unk4c4e40(void *p)
 
     m.type = 0x22;
     memcpy(m.data, p, 0x2d);
-    G17_I(m, 0) = ai_Unk6f1b88;
+    G17_I(m, 0) = ai_NextCrimeId;
     G17_I(m, 0x25) = 1;
     G17_I(m, 0x29) = rand();
     ai_Unk4c39c0(&m);
@@ -3354,7 +3354,7 @@ int ai_Unk4c85c0(G17MSG *m, G17STAT *s)
         if (s == 0 && (msg[0x36] & 2))
             msg[0x36] = (msg[0x36] & ~2) | 4;
 set:
-        ai_Unk6f2618 = *(int *)&m->data[0];
+        ai_NextEventId = *(int *)&m->data[0];
     }
     if (msg[4] == 0x11 && he_IsMessageKindFiltered(*(int *)(msg + 0x58)) != 0)
         return 0;
@@ -3630,9 +3630,9 @@ int ai_Unk4c8e70(G17MSG *m, G17STAT *s)
     int pos[3];
 
     if (ai_Unk1460ae0 != -1)
-        ai_Unk6f1b88 = G17_I(*m, 0);
+        ai_NextCrimeId = G17_I(*m, 0);
     else
-        ai_Unk6f1b88 = ai_Unk6f1b88 + 1;
+        ai_NextCrimeId = ai_NextCrimeId + 1;
     slot = unk_Unk4f36b0();
     if (slot == -1)
         return -1;
@@ -3641,8 +3641,8 @@ int ai_Unk4c8e70(G17MSG *m, G17STAT *s)
         ai_Unk4b44e0(c, 0x17);
     rec = ai_Unk91f700 + slot * 0x2d;
     memcpy(rec, &m->data[0], 0x2d);
-    *(int *)rec = ai_Unk6f1b88;
-    sprintf(buf, "cm_ExAddStraftat(): Executed---- st_id = %i, taeter = %i, opfer = %i", ai_Unk6f1b88,
+    *(int *)rec = ai_NextCrimeId;
+    sprintf(buf, "cm_ExAddStraftat(): Executed---- st_id = %i, taeter = %i, opfer = %i", ai_NextCrimeId,
             G17_I(*m, 0x16), G17_I(*m, 0x12));
     v = G17_I(*m, 0x21);
     if (v == -1) {
@@ -3777,7 +3777,7 @@ int ai_Unk4c9280(G17MSG *m, G17STAT *s)
 
     memcpy(buf, ai_Unka68d40, 0x114);
     if (ai_Unk1460ae0 != -1)
-        ai_Unk61a658 = G17_I(*m, 0);
+        ai_NextPartyId = G17_I(*m, 0);
     o = ai_Unk4e5150(buf);
     if (o != 0) {
         if (ai_GameFlags & 4)
@@ -3794,7 +3794,7 @@ int ai_Unk4c9280(G17MSG *m, G17STAT *s)
         if (ai_CharInts[ai_PlayerId][0] != *(int *)(o + 0x34) && !(ai_GameFlags & 4))
             o[0x26] &= 0x7f;
     }
-    ai_Unk61a658++;
+    ai_NextPartyId++;
     return ret;
 }
 /* 0x4c9340, handler of type 0x28: allocates a cutscene ("cm_ExAllocCutscene") */
@@ -14594,7 +14594,7 @@ int ai_Unk4e5150(int *src)
     r = (G28REC *)ai_Unk4e5120();
     if (r != 0) {
         memcpy(r, src, 0x114);
-        r->id = ai_Unk61a658;
+        r->id = ai_NextPartyId;
         if (((unsigned char *)r)[0x31] == 0)
             ((unsigned char *)r)[0x31] = 8;
     }

@@ -2790,7 +2790,7 @@ int gv_FindTableRecord(char *c, unsigned b, int *out)
 /* 0x4f28d0, writes the graveyard game state to the file f: the tag 0x1d, the ints +0x18 of the 0x1d table records (0x611270), 0x6f1b88, the counts of the used 0x2d-byte records at 0x91f700 (first int not -1) and of the used pairs at 0x91b6e0, then
    the used records (fields 4, 0xe, 4, 4, 2, 1, 4, 4, 4 bytes) and the used pairs; 1 when all was written. ROUGH */
 
-int unk_Unk4f28d0(void *f)
+int gv_WriteGraveyard(void *f)
 {
     int tag, cnt, cnt2;
     char *p;

@@ -1,6 +1,6 @@
 /* ls.c -- the save game (0x519010 ..): the tag "ls_" ("ls:tmp" 0x623654, "ls_LoadCharacter(): invalid next or prev-action pointer ...", "ls_SendGame"), the language number of a name (0x519010: the table "GERMAN" .. 0x5ee978), the save game writer 0x5190b0 (header 0x5194c0: "SCENARIO", the player, the party records and the screen shot of 0xe100 bytes, then one writer per subsystem), the pointer <-> index conversions before / after a save (0x519a00 / 0x519aa0 / 0x519b50) and the other writers (0x519bf0 ..), the readers (0x51c950 ..) and the network send / receive of a save game (0x520a30 / 0x520b80). The unit starts at its first global 0x62364c (the language number, -1); its strings run to "ls_SendGame" 0x62376c / "rbn" 0x623778, and it ends at 0x520ec0, sv.c's first function. Names are ours.
    Open: not included yet (dcp headers conflicts ls HEADER): hmt.h.
-   Open: ls_LoadGame's readers and globals are mostly unnamed (unk_Unk51f080 .. unk_Unk5205f0, ai_Unk6f1bb8 ..).
+   Open: ls_LoadGame's readers and globals are mostly unnamed (unk_Unk51f080 .. unk_Unk5205f0, ai_NextCharNumber ..).
    unit of rea 8cef7d5b (src/game/ls.c); boundaries in decl/text.dcl */
 struct D3SM;
 struct D3TERRAIN;
@@ -37,7 +37,7 @@ extern int ai_Unk7d6a40;
 extern int ai_Unk7e3f38;
 
 #include "cm.h"
-int ai_Unk61a658 = 1;  /* 0x61a658 */
+int ai_NextPartyId = 1;  /* 0x61a658 */
 int ls_Language = 65535;  /* 0x62364c, the language number ( */
 int ls_Version = 65626;  /* 0x623650 */
 const char ls_LanguageNames[][0x40] = { "GERMAN", "ENGLISH", "FRENCH", "ITALIAN", "SPANISH" };  /* 0x5ee978, the language names (5 of */
@@ -45,17 +45,14 @@ extern int gm_PlayerRecords[688];          /* 0x7d5f80, the 16 player records (0
 /* gm_PlayerRecordBytes: view of gm_PlayerRecords (tools/data_views.py) */
 extern char *ls_ActionQueue;            /* 0x631050, the action queue (ch.h: CHACTION *ch_Queue) */
 int * ai_Unk633738 = 0;  /* 0x633738, the scene (its first word the kind: */
-int ai_Unk6f1b88 = 0;  /* 0x6f1b88 .. */
-int ai_Unk6f1bcc = 0;  /* 0x6f1bcc */
+int ai_NextCrimeId = 0;  /* 0x6f1b88 .. */
+int ls_SpareInt = 0;  /* 0x6f1bcc */
 unsigned char ls_SaveSlot = 0;  /* 0x6f1c38, the slot the save header records */
 /* ai_Unk76fa24: view of cm_SaveAcks (tools/data_views.py) */
-int ai_Unk6f2618 = 0;  /* 0x6f2618 */
-extern int ai_Unk6f1bb8, ai_Unk6f1bbc;   /* 0x6f1bb8, 0x6f1bbc, 0x6f1bc0 */
+int ai_NextEventId = 0;  /* 0x6f2618 */
+extern int ai_NextCharNumber, ai_NextPlayerNumber;   /* 0x6f1bb8, 0x6f1bbc, 0x6f1bc0 */
 /* ls_RefTargets: view of ai_Unkf31160 (tools/data_views.py) */
-int unk_Unk4f28d0();                     /* 0x4f28d0 */
-int ai_Unk4b62e0();                     /* 0x4b62e0 */
-int ai_Unk589aa0();                     /* 0x589aa0 */
-int ai_Unk5a8940();                     /* 0x5a8940 */
+int gv_WriteGraveyard();                     /* 0x4f28d0 */
 
 #define LS_W(p, sz) if (vfs_fwrite((p), (sz), 1, f) <= 0) return 0;
 #include "rd_types.h"                 /* G15BK */
@@ -97,7 +94,7 @@ extern char hst_Key[];                 /* 0xf83520, the history key ("G12", 0x20
 int ai_LoadWind();                     /* 0x5dc0c0 */
 int unk_Unk4ed910();                     /* 0x4ed910 */
 
-/* ai_Unk6f261c: view of ai_Unk6f2618 (tools/data_views.py) */
+/* ai_Unk6f261c: view of ai_NextEventId (tools/data_views.py) */
 int ai_Unk6f2620 = 0;  /* 0x6f2620 / */
 unsigned char he_Events[339968] = {0};  /* 0x6fab40, the */
 char * he_QuickList[10921] = {0};  /* 0x74db40, pointers to the */
@@ -137,7 +134,27 @@ int ls_GetLanguage(void)
 {
     return ls_Language;
 }
-/* 0x5190b0, loads / writes the save game: opens the file (0x430470, mode 0x5f8324), remembers the path in 0x75e640, makes the references plain (0x519a00), the header (0x5194c0) and the fixed globals, then the writers of the subsystems in this order: 0x519bf0 (buildings), 0x519d20, 0x51a1a0, 0x51a4b0, 0x51b340, 0x4ea690, 0x519b50 and, when (flags & 2) == 0, 0x4f28d0, 0x51b890, 0x51b910, 0x4ed1e0, 0x51bdc0, 0x51c2f0, 0x51c450, 0x51c560, 0x51c870, 0x51aff0, 0x4b62e0, 0x589aa0, 0x5a8940, 0x4ebfb0, 0x4adb20, 0x4bff40; the first one that fails closes the file (0x430aa0), restores the references (0x519aa0) and returns 0. Returns 1. ROUGH: the callee of the file functions is 0x430e30(data, size, count, file) */
+/* 0x5190b0, writes the save game name (vfs_Tfopen "wb"): remembers the path in ls_SavePath, turns the references
+   into ids (ls_RefsToIds), writes the header (ls_WriteSaveHeader, flags) and the fixed globals (the id counters, the
+   clock, the own player and its character's netId, the character counters, the update block), then the writers of
+   the subsystems in this order: objects, buildings, player records, characters, player slots, offices, the scene
+   relink and, when (flags & 2) == 0, the graveyard, relations, statistics, avatars, the player table, parties,
+   history, message queues, environment, scene records, missions, slot table, settings, walk, hmt and routes. The
+   first writer that fails closes the file, turns the ids back into references (ls_IdsToRefs) and returns 0; returns
+   1 after the last.
+   @deep read against the whole original 0x5190b0..0x5194bb: every failure path closes the file with
+   vfs_fclose(f) - the original pushes f before each branch (push esi; jne) and calls vfs_fclose with it,
+   the draft called it without an argument through a cast (that kept the blocks apart, 72 differing, but it
+   was not the original's call); the step order, the fixed globals and their sizes are equal. Readability:
+   the 23 placeholders named (ls_RefsToIds / ls_IdsToRefs, the writers, the id counters), ROUGH removed,
+   the prototypes of ai_SaveMissions / ai_SaveSlotTable / ai_SaveSettings in their owners' headers and
+   hmt.h included (typing commit). Left: block layout - the original keeps one failure block per step (call
+   vfs_fclose; add esp,4; call ls_IdsToRefs; pop esi; xor eax,eax; pop ebx; ret, at 0x5191e1, 0x519200,
+   ...) and returns the f == 0 case inline (jne; pop esi; pop ebx; ret at 0x5190ce), ours cross-jumps all
+   of them into one tail (je 0x519425 / je 0x519432); the step blocks themselves are equal (size: 331 vs
+   389 instructions, explained: ours=331 original=389: the 58 instructions are the duplicated failure tails
+   - the original has 24 copies of the 7-instruction close / restore / return block plus the inline early
+   return, ours one shared copy (VC6 tail merging of identical blocks)) */
 
 
 int ls_SaveGame(int name, char *path, unsigned flags)
@@ -148,52 +165,52 @@ int ls_SaveGame(int name, char *path, unsigned flags)
     if (f == 0)
         return 0;
     strcpy(ls_SavePath.path, path);
-    unk_Unk519a00();
+    ls_RefsToIds();
     if (ls_WriteSaveHeader(f, flags) == 0) {
-        ((int (*)())vfs_fclose)();
-        unk_Unk519aa0();
+        vfs_fclose(f);
+        ls_IdsToRefs();
         return 0;
     }
     vfs_fwrite(&ai_NextObjectId, 4, 1, f);
-    vfs_fwrite(&ai_Unk6f2618, 4, 1, f);
+    vfs_fwrite(&ai_NextEventId, 4, 1, f);
     vfs_fwrite(ai_Time, 0xe, 1, f);
     vfs_fwrite(&ai_OwnPlayer, 1, 1, f);
     vfs_fwrite(ai_PlayerCharC + 4, 4, 1, f);
-    vfs_fwrite(&ai_Unk6f1bb8, 4, 1, f);
-    vfs_fwrite(&ai_Unk6f1bbc, 4, 1, f);
+    vfs_fwrite(&ai_NextCharNumber, 4, 1, f);
+    vfs_fwrite(&ai_NextPlayerNumber, 4, 1, f);
     vfs_fwrite(&ai_CharCount, 4, 1, f);
-    vfs_fwrite(&ai_Unk6f1bcc, 4, 1, f);
+    vfs_fwrite(&ls_SpareInt, 4, 1, f);
     vfs_fwrite(&ai_UpdateStart, 0x18, 1, f);   /* the 0x18-byte block ai_UpdateStart .. ai_CountCarry (0xf89580) */
-    vfs_fwrite(&ai_Unk61a658, 4, 1, f);
-    vfs_fwrite(&ai_Unk6f1b88, 4, 1, f);
-#define LS_STEP(fn) if (fn(f) == 0) { ((void (*)())vfs_fclose)(); unk_Unk519aa0(); return 0; }
+    vfs_fwrite(&ai_NextPartyId, 4, 1, f);
+    vfs_fwrite(&ai_NextCrimeId, 4, 1, f);
+#define LS_STEP(fn) if (fn(f) == 0) { vfs_fclose(f); ls_IdsToRefs(); return 0; }
     LS_STEP(ls_WriteObjects)
-    LS_STEP(unk_Unk519d20)
-    LS_STEP(unk_Unk51a1a0)
-    LS_STEP(unk_Unk51a4b0)
-    LS_STEP(unk_Unk51b340)
+    LS_STEP(ls_WriteBuildings)
+    LS_STEP(ls_WritePlayerRecords)
+    LS_STEP(ls_WriteCharacters)
+    LS_STEP(ls_WritePlayerSlots)
     LS_STEP(amt_SaveAemter)
-    LS_STEP(unk_Unk519b50)
+    LS_STEP(ls_RelinkScene)
     if ((flags & 2) == 0) {
-        LS_STEP(unk_Unk4f28d0)
+        LS_STEP(gv_WriteGraveyard)
         LS_STEP(ls_WriteRelations)
-        LS_STEP(unk_Unk51b910)
+        LS_STEP(ls_WriteStatistics)
         LS_STEP(gv_WriteAvatars)
-        LS_STEP(unk_Unk51bdc0)
-        LS_STEP(unk_Unk51c2f0)
+        LS_STEP(ls_WritePlayerTable)
+        LS_STEP(ls_WriteParties)
         LS_STEP(ls_WriteHistory)
-        LS_STEP(unk_Unk51c560)
-        LS_STEP(unk_Unk51c870)
-        LS_STEP(unk_Unk51aff0)
-        LS_STEP(ai_Unk4b62e0)
-        LS_STEP(ai_Unk589aa0)
-        LS_STEP(ai_Unk5a8940)
+        LS_STEP(ls_WriteMessageQueues)
+        LS_STEP(ls_WriteEnvironment)
+        LS_STEP(ls_WriteSceneRecords)
+        LS_STEP(ai_SaveMissions)
+        LS_STEP(ai_SaveSlotTable)
+        LS_STEP(ai_SaveSettings)
         LS_STEP(ahm_SaveWalk)
         LS_STEP(hmt_Save)
         LS_STEP(rt_SaveRoutes)
     }
     vfs_fclose(f);
-    unk_Unk519aa0();
+    ls_IdsToRefs();
     return 1;
 }
 /* 0x5194c0, the header of the save game: the id 0x1005a (also kept in 0x623650), a flag word (the argument), the player's name (0x20 bytes), two words, a byte, the language byte, the clock, then the scenario record (the name "SCENARIO" and the first character's fields: +0xb0 / +0xc0 16 bytes, +0x8c, +0xd4, +0xce4 / +0xce6, +0x8d, a value of 0x50a640 and the byte +0x89; or the zeroed defaults when no character), the byte 0x6f1c38, the buildings 0x6f2308 / 0x6f230c / 0x6f2310 ids, the table 0x76fa24 (8 words of 8 bytes), and the screen shot (0x78 x 0xa0 pixels of 3 bytes made with 0x41e6d0 from the bitmap 0x766320, 0xe100 bytes); finally 0x6f23fc and the 0x60 bytes of 0x75e640. Returns 1 when everything was written. ROUGH */
@@ -277,7 +294,7 @@ int ls_WriteSaveHeader(int f, unsigned flags)
 /* 0x519a00, before a save: the objects of the buildings get their building back (+0x200 of the building's scene object, +0x61), and the references of the 10-byte table 0xf31166 (kind byte at -5: 1 character, 2 building, 3 object, 9 ..) are turned into plain ids (the id inside the record: +4 / +1 / +2 / +0) @deep B: 50 code hunks, read in asmdiff: they are register / scheduling shapes with no meaning difference - the first loop swaps the index and base registers (ours [edx+eax*1] vs the original [eax+edx*1], k in edx vs eax), the second loop's comparison polarity (ours cmp/jge, the original cmp/jl) and the *p reload: the original reloads [eax] after the store in the kind==3 / kind==9 branches, ours forwards the register (edx) - the kinds, offsets (+4/+2/+1/+0) and bounds (0xa900 / 0xf81166) match the original at 0x519a00 exactly. Shape is match-deep's. Q2/Q7: the callees d3if_SelectScene, ai_Unkf31166 and the referenced globals are unnamed; Q6 is described. */
 
 
-void unk_Unk519a00(void)
+void ls_RefsToIds(void)
 {
     int saved = d3_CurrentScene;
     int k;
@@ -307,7 +324,7 @@ void unk_Unk519a00(void)
 /* 0x519aa0, after a save: the buildings' objects point back to their buildings (+0x200) and the ids of the references table are turned into pointers again (0x505df0 character, 0x4fe980 object, 0x502020 building, 0x4e50a0 kind 9) @deep B: 40 code hunks, read in asmdiff (the equal stretches around them checked too): the kind order 1, 3, 2, 9, the offsets and the calls 0x505df0 / 0x4fe980 / 0x502020 / 0x4e50a0 match the original at 0x519aa0 exactly; the hunks are shapes - ours keeps the loop counter in another register of the first loop, the second loop's entry compares through ecx with jge where the original compares esi with jl, and the original reloads [esi] before the kind==3 / kind==2 pushes where ours forwards a register. Shape is match-deep's. Q2/Q7: the callees and globals are unnamed; Q6 is described. */
 
 
-void unk_Unk519aa0(void)
+void ls_IdsToRefs(void)
 {
     int saved = d3_CurrentScene;
     int k;
@@ -337,7 +354,7 @@ void unk_Unk519aa0(void)
 /* 0x519b50, after a load: the buildings' objects point back to their buildings, the scene is restored (0x44aa10) and the pointers are set again @deep B: 16 code hunks, all one register-order choice: the same addressing modes with the index and base registers swapped (ours [edx+eax*1] / [ecx+edx*1], the original [eax+edx*1] / [edx+ecx*1] - k lives in eax in the original and in edx/ecx in ours); every other instruction is equal (8 + 12 + 29 equal). No meaning difference: the two loops, 0x44aa10(0, f), the restores and the return 1 match the original at 0x519b50. Register assignment is match-deep's (vargen ren). Q2/Q7: the unnamed callees/globals; Q6 is described. */
 
 
-int unk_Unk519b50(int f)
+int ls_RelinkScene(int f)
 {
     int saved = d3_CurrentScene;
     int k;
@@ -405,7 +422,7 @@ int ls_WriteObjects(int f)
 /* 0x519d20, the buildings: the count of the used ones (0x100 records of 0xa9 bytes at 0x889f74), then each in pieces (the fields +0 .. +0x5c, then the type specific tail: type 0x1e (the 0x600 bytes of 0x18-byte stock records behind +0x71), the types 0x48 .. 0x4a by 0x4f17f0, 0x4b .. 0x4d by 0x4ecf10, the others 0x30 bytes at +0x65), the 0x10 bytes at +0x99; at the end the table of the bounding boxes 0xf812e4 (count 0xf812e0, 0x60 bytes each: name, min, max) @deep B: 280 code + 114 regs hunks, one systematic register swap through the whole body: ours keeps the building record in edi and the file f in esi, the original esi / edi (sampled asmdiff at 0x519d9a .. 0x519ded: every block is push esi / lea edx,[edi+off] vs push edi / lea edx,[esi+off] with the same offsets and sizes); the count n lives in a stack slot in the original (inc DWORD PTR [esp+0x10]) and the original's frame is 1 slot (push ecx) against our 2 (sub esp,0x8), which shifts everything. The meaning matches (0x100 records of 0xa9 bytes, the field pieces, the type tails). Shape is match-deep's (vargen ren). Q2/Q7: the callees (0x430e30 -> vfs_fwrite is now named) and the ai_Unk globals are still unnamed; Q6 described. */
 
 
-int unk_Unk519d20(int f)
+int ls_WriteBuildings(int f)
 {
     int n = 0, off = 0, i, j;
     char *p, c;
@@ -479,7 +496,7 @@ int unk_Unk519d20(int f)
 /* 0x51a1a0, the records of 0x7d5f80 .. 0x7d6a42 (0xac bytes each): the id, name, ids, the floats and ints at the offsets below; the fields +0x52 .. +0x6a only when the save game's version 0x623650 is above 0x10013 @deep B: 135 code hunks, read at the start and sampled: the base pointer 0x7d5f82 lands in eax in ours and in esi in the original, so the first block is sub eax,0x2 vs lea eax,[esi-0x2] and every later block's lea/sub and pairing shifts; the offsets (-2, 0, 0x12, 0x26, 0x1a, 0x1e, 0x2a, 0x2e, 0x32, 0x36, 0x3e, 0x42, 0x46, 0x4a, 0x4e and the 0x10013 version tail +0x52 .. +0x6a), the sizes and vfs_fwrite calls match the original at 0x51a1a0 exactly. Shape is match-deep's. Q2/Q7: gm_PlayerRecordBytes and ls_Version unnamed; Q6 described. */
 
 
-int unk_Unk51a1a0(int f)
+int ls_WritePlayerRecords(int f)
 {
     char *p = gm_PlayerRecordBytes;
 
@@ -528,7 +545,7 @@ int unk_Unk51a1a0(int f)
    @deep draft: 836 differing instructions, every one read in the asmdiff/diffclass: the record field list and its order match the original at 0x51a5b4..0x51ad15 exactly (offsets c-2, c+0, c+2, c+4, c+6, c+7, c+8, c+0xa, c+0xb, c+0xe, c+0x12 .. c+0x20a, sizes 1/2/4/5/0x10/0x18/0x20/0xa8, the four reference fields with +1 / +4 and -1, the two -0x59a / -0x639 offsets), so no meaning error is left; what differs is stack slot choice (the original keeps local_c, cnt and local_4 in the top local slot [esp+0x1c], ours puts local_c in [esp+0x20] and cnt in [esp+0xc] and uses the dead argument slot differently) and push scheduling (the original hoists push esi / push 0x1 / push 0x4 above the je of the table loop and of the three pointer-field blocks, ours merges the branches and schedules the pushes after); needs vargen slot / order rounds. The two manual vfs_fwrite checks are fixed to the original's unsigned jbe (LS_W); the record loop now uses the natural unbiased pointer and VC6 biases the induction variable to +2 as the original does. Readability Q2/Q4 need AICHAR field names for the record (the save writes raw slices) + the judge/slot globals named. */
 
 
-int unk_Unk51a4b0(int f)
+int ls_WriteCharacters(int f)
 {
   int cnt;
   char *c;
@@ -747,7 +764,7 @@ extern char * ai_Unk1468ae0[0x300];             /* 0x1468ae0, the scene objects 
 extern char *ai_Goods;              /* 0x91aaf0, the object prototypes (0x41 bytes) */
 int mem_IsValid();                     /* 0x4225e0 */
 /* 0x51aff0 @deep draft: the loop structure is now read against the original at 0x51aff0..0x51b340 and the record pieces fixed - the draft wrote rec+0x70 / rec+0x2c / rec+0x38, the original at 0x51b262 / 0x51b29f / 0x51b2b9 writes rec+0xf0 (0xa0 bytes) / rec+0x24 / rec+0x28, exactly what the reader in unk_Unk51e900 reads back (t+0x3c, t+9, t+10), so three wrong offsets were a meaning error and are corrected; the flag/rec reset moved before the fourth loop (the original zeroes them once at 0x51b165..0x51b177), the tab local removed so both table loops re-read ls_ActionQueue per iteration as the original does. Remaining 209 code hunks: register allocation and scheduling - the original's first count loop runs in eax/ecx with no callee-saved register and the pushes ebx/ebp/esi/edi come only after it at 0x51b013, ours pushes them at entry (so cnt is memory-incremented in [esp+0x14] and the zero sits in edi), then the whole function is shifted (ebp/esi/ebx/edi roles and the esp-relative offsets of the rec pieces). Readability Q2/Q4 unchanged: the CHACTION typed view (ch.h) is blocked in ls.c by gv.h's K&R d3sm_GetVertex; the record is handled as int*. */
-int unk_Unk51aff0(int f)
+int ls_WriteSceneRecords(int f)
 {
     int cnt = 0, i, k, n;
     int *p;
@@ -831,7 +848,7 @@ int unk_Unk51aff0(int f)
 /* 0x51b340, ROUGH: converted from the Ghidra pseudocode, absolute data addresses; save writer */
 
 
-int unk_Unk51b340(int f)
+int ls_WritePlayerSlots(int f)
 {
   int iVar1;
   int iVar2;
@@ -977,7 +994,7 @@ int ls_WriteRelations(int f)
 /* 0x51b910, ROUGH: converted from the Ghidra pseudocode, absolute data addresses; save writer @deep B3 code hunks 81, all four hunks are two loops' induction-variable base: 0x51bc0f/0x51bd2e VC6 bases the IV at p+4 (lea [edi-8]..[edi+8], cmp edi-4) / row+2, the original keeps p (lea [edi-4]..[edi+0xc], cmp edi) / row; the 372 instructions before them are equal after the LS_W early-return rewrite (the if(r!=0){...} return 0 form made VC6 merge every return block, 361 hunks); read both loops and tried char* byte offsets, int*, int address, while and for spellings, VC6 canonicalizes the same; the loops' data/offsets are identical, only the base register spelling differs. Readability Q1/Q2/Q3/Q5 open: 34 save-image globals have no role evidence yet */
 
 
-int unk_Unk51b910(int f)
+int ls_WriteStatistics(int f)
 {
   int iVar1;
   char *puVar3;
@@ -1048,7 +1065,7 @@ int ls_WriteAvatars(void *f)
 }
 /* 0x51bdc0, ROUGH: converted from the Ghidra pseudocode, absolute data addresses; save writer @deep B3 code hunks 762: the draft copies Ghidra element indices as byte offsets - the player table 0x6fab40 has 0x400 records of 0x14c bytes (original add eax,0x14c at 0x51bdde) but the draft writes 0x6fab48 + i*0xa6, 0x6fab50 + i*0x53, 0x6fabb0 + i*0x53, 0x6fabbc[i*0x53], 0x6fabc0 + i*0x53 instead of base+8/0x10/0x70/0x7c/0x80; the 0x100 records at 0x74e1e0 have stride 0xa4 (add eax,0xa4 at 0x51c040; index*4 at 0x51c07c) and the draft steps a char* by 0x29; the 0x100 records at 0x758ca0 have stride 0x50 (add eax,0x50 at 0x51c1bd; fields +8/+0xc/+0x10, 0x40 bytes at +0x10) and the draft steps by 0x14; so the whole function needs the rewrite with corrected bases (the 0x51b340 note: patching addresses alone makes unitdiff worse because every block's register shape changes). Also the prologue: the original runs the first count loop in eax/ecx and pushes ebx/ebp/esi/edi only at 0x51bde8, ours pushes at entry (same shape as 0x51aff0). Q1/Q2/Q3/Q5 open, no evidence for the three record tables' names */
 
-int unk_Unk51bdc0(int f)
+int ls_WritePlayerTable(int f)
 {
   int uVar1;
   char *pcVar2;
@@ -1175,7 +1192,7 @@ int unk_Unk51bdc0(int f)
 /* 0x51c2f0, ROUGH: converted from the Ghidra pseudocode, absolute data addresses; save writer @deep B3 code hunks 116, both are VC6 register spellings, not meaning: the count loop at 0x51c2f9 keeps the counter in ecx and stores it once at 0x51c31e (push ecx frame), ours keeps it in the stack slot (inc DWORD PTR [esp]); the record loop at 0x51c334 keeps the loop pointer in esi at 0x925534 (record base +0x14, accesses [esi-0x14]/[esi-0xc]/[esi]/[esi+0x12]/[esi+0x1c]/[esi+0x20]/[esi+0x60]/[esi+0x68]/[esi+4]/[esi-8]), ours bases esi at 0x925520 with shifted offsets, same addresses. Read the whole function: stride 0x114 (add eax,0x114), 96 records, field order/sizes/args match the original; tried char* byte offsets, int* element offsets, for and do-while spellings, VC6 canonicalises to the lowest base and spills the counter either way. Readability Q1/Q2/Q3/Q5 open (the 0x925520 table is unnamed) */
 
 
-int unk_Unk51c2f0(int f)
+int ls_WriteParties(int f)
 {
   char *piVar1;
   int iVar2;
@@ -1250,7 +1267,7 @@ int ls_WriteHistory(int f)
 /* 0x51c560, ROUGH: converted from the Ghidra pseudocode, absolute data addresses; save writer */
 
 
-int unk_Unk51c560(int f)
+int ls_WriteMessageQueues(int f)
 {
   int iVar1;
   int *piVar2;
@@ -1359,7 +1376,7 @@ int unk_Unk51c560(int f)
 /* 0x51c870, the table 0x7604e8 (three words per entry at +0x18 words apart; the last entry is followed by the two further blocks 0x5dbfc0 and 0x4ed480) @deep B3 code hunks 50 after the LS_W restructure (the draft mixed if(fwrite!=0) and direct calls; the original is the LS_W macro for all five writes): the rest is VC6's induction-variable base - the original keeps esi at the entry pointer 0x7604e8 (lea [esi-0x60]/[esi]/[esi+0x68]/[esi+0xc8], add esi,4, cmp 0x760548) while ours bases esi at 0x760550 (the +0x68 word) with offsets -0xc8/-0x68/0/+0x60, same addresses, and VC6 then merges the loop's return-0 blocks to the function end where the original reuses the first check's inline epilogue at 0x51c88c. Read the whole function (24 entries of four words, then 0x5dbfc0 and 0x4ed480); tried do-while and while spellings. Q1/Q2/Q3/Q5 open (0x7604e8 table unnamed, callees ai_SaveWind/unk_Unk4ed480 undeclared here) */
 
 
-int unk_Unk51c870(int f)
+int ls_WriteEnvironment(int f)
 {
     int *p;
 
@@ -1412,12 +1429,12 @@ int ls_LoadGame(int name, int kind)
     ai_JudgeProtestant = 0;
     init_FreeScenes();
     if (ls_ReadSaveHeader(h, ai_Unk76f920) == 0 || ai_Unk76f920[0] > 0x1005a || ai_Unk76f920[0] < 0x10026
-        || !LS_RD(&ai_NextObjectId, 4) || !LS_RD(&ai_Unk6f2618, 4) || !LS_RD(ai_Time, 0xe)
-        || !LS_RD(&ai_OwnPlayer, 1) || !LS_RD(&ai_PlayerCharC, 4) || !LS_RD(&ai_Unk6f1bb8, 4)
-        || !LS_RD(&ai_Unk6f1bbc, 4) || !LS_RD(&ai_CharCount, 4))
+        || !LS_RD(&ai_NextObjectId, 4) || !LS_RD(&ai_NextEventId, 4) || !LS_RD(ai_Time, 0xe)
+        || !LS_RD(&ai_OwnPlayer, 1) || !LS_RD(&ai_PlayerCharC, 4) || !LS_RD(&ai_NextCharNumber, 4)
+        || !LS_RD(&ai_NextPlayerNumber, 4) || !LS_RD(&ai_CharCount, 4))
         goto close;
     if (ls_Version >= 0x10022)
-        LS_RD(&ai_Unk6f1bcc, 4);
+        LS_RD(&ls_SpareInt, 4);
     LS_RD(&ai_UpdateStart, 0x18);   /* the 0x18-byte block ai_UpdateStart .. ai_CountCarry (0xf89580) */
     ai_Unk75e134 = *(int *)(ai_Time + 4);
     ai_Unk75e130[0] = *(int *)ai_Time;
@@ -1426,11 +1443,11 @@ int ls_LoadGame(int name, int kind)
     if ((ai_Unk76f924 & 2) == 0)
         ai_Difficulty = ai_Unk76f9b8;
     if (ls_Version >= 0x10030)
-        LS_RD(&ai_Unk61a658, 4);
+        LS_RD(&ai_NextPartyId, 4);
     if (ls_Version >= 0x1003d)
-        LS_RD(&ai_Unk6f1b88, 4);
+        LS_RD(&ai_NextCrimeId, 4);
     else
-        ai_Unk6f1b88 = 1000000;
+        ai_NextCrimeId = 1000000;
     if (ls_ReadObjects(h) == 0 || ls_ReadBuildings(h) == 0 || ls_ReadPlayerRecords(h) == 0 || ls_ReadCharacters(h) == 0
         || unk_Unk51f080(h) == 0 || (ls_Version >= 0x10045 && amt_LoadAemter(h, ls_Version) == 0) || unk_Unk51d2d0(h) == 0)
         goto close;
@@ -2914,9 +2931,9 @@ int ls_ReceiveGame(void)
     ls_ReadSaveHeader(fh, hdr);
     if ((((char *)hdr)[4] & 2) != 0 && hdr[0] <= 0x1005a) {
 #define LS_RF(p, sz) ls_Read((int)(p), (sz), 1, fh)
-        if (!LS_RF(&ai_NextObjectId, 4) || !LS_RF(&ai_Unk6f2618, 4) || !LS_RF(ai_Time, 0xe)
-            || !LS_RF(&ai_OwnPlayer, 1) || !LS_RF(&ai_PlayerCharC, 4) || !LS_RF(&ai_Unk6f1bb8, 4)
-            || !LS_RF(&ai_Unk6f1bbc, 4) || !LS_RF(&ai_CharCount, 4)) {
+        if (!LS_RF(&ai_NextObjectId, 4) || !LS_RF(&ai_NextEventId, 4) || !LS_RF(ai_Time, 0xe)
+            || !LS_RF(&ai_OwnPlayer, 1) || !LS_RF(&ai_PlayerCharC, 4) || !LS_RF(&ai_NextCharNumber, 4)
+            || !LS_RF(&ai_NextPlayerNumber, 4) || !LS_RF(&ai_CharCount, 4)) {
             vfs_fclose(fh);
             goto fail;
         }
@@ -2924,14 +2941,14 @@ int ls_ReceiveGame(void)
         ai_Unk75e134 = *(int *)(ai_Time + 4);
         ai_Unk75e138 = *(int *)(ai_Time + 8);
         ai_Unk75e13c = *(short *)(ai_Time + 0xc);
-        LS_RF(&ai_Unk6f1bcc, 4);
+        LS_RF(&ls_SpareInt, 4);
         LS_RF(&ai_UpdateStart, 0x18);   /* the 0x18-byte block ai_UpdateStart .. ai_CountCarry (0xf89580) */
         if (ls_Version >= 0x10030)
-            LS_RF(&ai_Unk61a658, 4);
+            LS_RF(&ai_NextPartyId, 4);
         if (ls_Version < 0x1003d)
-            ai_Unk6f1b88 = 1000000;
+            ai_NextCrimeId = 1000000;
         else
-            LS_RF(&ai_Unk6f1b88, 4);
+            LS_RF(&ai_NextCrimeId, 4);
         if (ls_ReadObjects(fh) == 0) {
             ((int (*)())vfs_fclose)();
             goto fail;

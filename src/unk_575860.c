@@ -9700,7 +9700,7 @@ unsigned vfs_fwrite(void *buf, int size, int n, struct VFSFILE *f);
 
 /* 0x589aa0, loads the 12-byte slot table 0x6f5ec0 from a file (142 B): n = 0xb read through 0x430e30 (&n, 4, 1,
    fh), then each slot (the byte +0, the dword +4, the dword +8); 0 on a short read, 1 */
-int ai_Unk589aa0(int fh)
+int ai_SaveSlotTable(int fh)
 {
     int n;
     int i;
