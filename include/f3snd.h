@@ -134,7 +134,6 @@ extern int snd_Season;                  /* 0x6f0b8c, the season */
 extern unsigned int snd_LastGust;       /* 0x6f0b90, time of the last gust */
 extern char ai_Time[];                /* 0x770ae0, AITIME (ai.h) */
 extern char snd_TimeCopy[14];           /* 0xf81240, a copy of ai_Time */
-extern char *ai_Unkfc2dec;              /* 0xfc2dec, the camera object */
 extern int *d3t_Rain;               /* 0x760618, the rain level */
 extern int snd_Bank;                    /* 0x6f2404, the sample bank */
 extern int snd_RainDrops;               /* 0xf81254, the "Tropfen_s" loop */

@@ -1,11 +1,13 @@
 /* f3snd.c -- tag "f3snd: snd_AddToQueue" (mem_Alloc, 0x4c0230); the sound queue and ambient sounds: the playing list snd_Queue, the gusts ("Boehe_Leicht_s", "Boehe_Mittel_s",
    "Boehe_Stark_s", .data 0x602b10 right after rt.c's "rt_load"). Start: the first function after rt.c's
    save / load; no module tag. Names are ours.
-   Open: the camera 0xfc2dec is read as the char * alias ai_Unkfc2dec (d3.h: d3_Camera) with raw offsets.
    unit of rea 8cef7d5b (src/game/f3snd.c); boundaries in decl/text.dcl */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <windows.h>
+#include <d3d.h>
+#include "d3.h"
 #include "f3snd.h"
 
 /* d3_Time * 13, spelled so that the volatile is read three times */
@@ -188,7 +190,7 @@ void snd_UpdateRain(void)
         return;
     }
     w = 0;
-    f = *(float *)(ai_Unkfc2dec + 0x50) - d3t_GetMeanHeight(ai_Unkfc2dec + 0x4c);
+    f = d3_Camera->pos.y - d3t_GetMeanHeight(&d3_Camera->pos);
     memcpy(snd_TimeCopy, ai_Time, 14);
     if (d3t_Rain == 0 || (n = *d3t_Rain) == 0) {
         SND_STOP(snd_RainHeavyFar);
@@ -323,7 +325,7 @@ void ai_Unk4c0e60(void)
                 ai_Unk6f0b94 = 0;
             }
         }
-        h = (2000.0f - *(float *)(ai_Unkfc2dec + 0x50) - d3t_GetMeanHeight(ai_Unkfc2dec + 0x4c)) * 0.0005f;
+        h = (2000.0f - d3_Camera->pos.y - d3t_GetMeanHeight(&d3_Camera->pos)) * 0.0005f;
         if (d3t_Rain != 0)
             n = *d3t_Rain;
         a = ai_Unk602bd8[ai_Unk6f0b9c];
