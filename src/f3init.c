@@ -31,7 +31,7 @@ extern char ai_PlayerSlots[4][0x2f4];
 extern int gm_PlayerRecords[688];
 #include "ai_types.h"
 extern AISTORE gm_Offers[];            /* 0x7e4b20 */
-extern float ai_Unk760420;
+extern float sv_SkyScale;
 #include "ch_types.h"
 
 /* the scene object view of this unit: a CHARACTER (ch.h, 0x244 bytes, the list 0x1468ae0); the unit cannot
@@ -409,7 +409,7 @@ int init_StatusForm = 0;  /* 0x75df00, the panel form the load status is printed
 #include "f3init_types.h"
 INIT_PLAYER init_PlayerProfile = {0};  /* 0x75e5a0 */
 int ai_SceneChars[32] = {0};  /* 0x7603a0 .. INIT_WINDOWS_END: the characters of the current scene (INIT_CHAR pointers; cm.c 0x4cf000 updates them each tick) */
-#define INIT_WINDOWS_END (unsigned)&ai_Unk760420       /* one past the scene window table 0x7603a0 (0x20 ints) */
+#define INIT_WINDOWS_END (unsigned)&sv_SkyScale       /* one past the scene window table 0x7603a0 (0x20 ints) */
 #include "rd_types.h"                 /* G15BK, the building sites ai_Bauplaetze (rd.h cannot be included here) */
 #include "ls.h"
 #include "f3init.h"

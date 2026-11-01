@@ -61,8 +61,8 @@ char sv_SetSkyLightColors(struct D3OBJECT *o, void *ctx);                       
 struct GCLOCK; void sv_SetupWeather(struct GCLOCK *t, int reroll);/* 0x525510 */
 void sv_UpdateSkyColors(void);                                          /* 0x525940 */
 struct GCLOCK; void sv_FillDayPhases(struct GCLOCK *t);                                             /* 0x525a00 */
-char sv_Unk525a80(char *o, int f);                                      /* 0x525a80 */
-void sv_UpdateSkyPhase(char *t);                                             /* 0x525ad0 */
+char sv_SetLampRamp(char *o, int f);                                      /* 0x525a80 */
+struct AITIME; void sv_UpdateSkyPhase(struct AITIME *t);                    /* 0x525ad0 */
 void sv_PlaceCamera(float f);                                           /* 0x525dd0 */
 void sv_Unk525ee0(void);                                                /* 0x525ee0 */
 void sv_Unk525ff0(void);                                                /* 0x525ff0 */
@@ -208,10 +208,10 @@ extern SVSKYREC sv_SkyMedium[3];                            /* 0x6239d8 */
 extern char sv_DayTables[278];                              /* 0x623ba8 */
 extern int ai_Unk623cc0[];                                  /* 0x623cc0 */
 extern int ai_Unk623e10[];                                  /* 0x623e10 */
-extern int ai_Unk623e80;                                    /* 0x623e80 */
+extern int sv_LampPhase;                                    /* 0x623e80 */
 extern int ai_Unk623e88;                                    /* 0x623e88 */
 extern int sv_GroundplanScene;                                    /* 0x623e8c */
-extern float ai_Unk623e94;                                  /* 0x623e94 */
+extern float sv_DayPhaseFrac;                                  /* 0x623e94 */
 extern int ai_Unk623ea0;                                    /* 0x623ea0 */
 extern int ai_Unk623ea4;                                    /* 0x623ea4 */
 extern int ai_Unk623ea8;                                    /* 0x623ea8 */
@@ -261,8 +261,8 @@ extern int sv_ScreenDirty;                                  /* 0x6f2358 */
 extern int sv_GroundplanBuilding;                                    /* 0x6f235c */
 extern int sv_GroundplanRoom;                                    /* 0x6f2360 */
 extern char sv_PlayerBarKind;                                   /* 0x6f2368 */
-extern int ai_Unk6f236c;                                    /* 0x6f236c */
-extern int ai_Unk6f2370;                                    /* 0x6f2370 */
+extern int sv_DayPhase;                                    /* 0x6f236c */
+extern int sv_ThunderFog;                                    /* 0x6f2370 */
 extern float ai_Unk6f2374;                                  /* 0x6f2374 */
 extern int ai_Unk6f2378;                                    /* 0x6f2378 */
 extern float sv_ScrollVelX;                                  /* 0x6f2388 */
@@ -285,12 +285,12 @@ extern char * sv_PanelObject;                               /* 0x75e8c4 */
 extern unsigned short * sv_PanelRecord;                     /* 0x75e8c8 */
 extern char sv_PanelText[76];                               /* 0x75e8d4 */
 extern int sv_SelectionFlags[0xc0];                         /* 0x75e920 */
-extern int ai_Unk75ec20;                                    /* 0x75ec20 */
+extern int sv_SkyScene;                                    /* 0x75ec20 */
 extern unsigned short * ai_Unk75ec5c;                       /* 0x75ec5c */
 extern int ai_Unk75f280[576];                               /* 0x75f280 */
 extern float sv_ViewPos[4];                                 /* 0x75fb80, the stored camera position (X/Y/Z views: data_views.h) */
 extern float sv_ViewRot[4];                                 /* 0x75fb90, its rotation */
-extern float ai_Unk760420;                                  /* 0x760420 */
+extern float sv_SkyScale;                                  /* 0x760420 */
 extern int ai_Unk760440;                                    /* 0x760440 */
 extern int sv_SkyPhase;                                    /* 0x760464 */
 extern int sv_CloudChance;                                    /* 0x760480 */

@@ -2046,16 +2046,16 @@ extern int sv_WeatherHour;  /* 0x760614 */
 extern int * d3t_Rain;  /* 0x760618 */
 extern int d3t_Snow;  /* 0x76061c */
 extern int sv_SkyPhase;  /* 0x760464 */
-extern int ai_Unk6f2370;  /* 0x6f2370 */
+extern int sv_ThunderFog;  /* 0x6f2370 */
 extern int d3_SkyLayers[6];  /* 0x760620 */
 extern int ai_Unk633dd4;  /* 0x633dd4 */
-extern int ai_Unk75ec20;  /* 0x75ec20 */
+extern int sv_SkyScene;  /* 0x75ec20 */
 extern struct D3ANIM *d3t_CamMove;  /* 0x6310e8 */
-extern int ai_Unk623e80;  /* 0x623e80 */
-extern int ai_Unk6f236c;  /* 0x6f236c */
+extern int sv_LampPhase;  /* 0x623e80 */
+extern int sv_DayPhase;  /* 0x6f236c */
 extern char sv_LampSwitches;
-extern float ai_Unk760420;  /* 0x760420 */
-extern float ai_Unk623e94;  /* 0x623e94 */
+extern float sv_SkyScale;  /* 0x760420 */
+extern float sv_DayPhaseFrac;  /* 0x623e94 */
 /* ai_MapRefs: view of d3_Scenes (tools/data_views.py) */
 const int sv_PhaseMinutes[24] = { 390, 510, 630, 1050, 1170, 1290, 300, 420, 540, 1140, 1260, 1380, 420, 540, 660, 1020, 1140, 1260, 480, 600, 690, 960, 1020, 1140 };  /* 0x5eeab8 */
 
@@ -2082,7 +2082,7 @@ void d3sky_SetLayerSpeed(struct D3SKY *s, struct D3SKYLAYER *l, float speed);  /
 char d3_SetFogSet(unsigned int a, unsigned int b, float t);                     /* 0x44a170 */
 char d3_SetLightSet(unsigned int set, float t, float scale, char calc);                     /* 0x449de0 */
 void sv_UpdateSkyColors(void);
-void sv_UpdateSkyPhase(char *t);
+void sv_UpdateSkyPhase(AITIME *t);
 
 /* 0x525220, opens the player bar ("Misc\\PlayerBar", or "Misc\\PlayerBar_1" at the other resolution) of the kind k at the right screen edge: its two scroll
    buttons (style 3) go to the window, the panel form is disabled, the 0x20 member rows are cleared, the button picture 0x51d is created and every character's
@@ -2287,7 +2287,7 @@ void sv_SetupWeather(struct GCLOCK *t, int reroll)
     d3if_SelectScene(scene, 1);
     sv_SkyPhase = -100;
     sv_LampSwitches = 0;
-    sv_UpdateSkyPhase((char *)t);
+    sv_UpdateSkyPhase((AITIME *)t);
 }
 typedef struct SVLEVELCOLOR {           /* 0x10 bytes, the ambient colour of a light level in the sky tables */
     D3VECTOR amb;
@@ -2348,7 +2348,7 @@ void sv_FillDayPhases(struct GCLOCK *t)
 }
 /* 0x525a80, a callback (the object o, a flag f): sets the float +0x1a4 of the record +0x1e8 of o to a random 0.3 .. 0.9 (f = 0) or -0.3 + 0.6 * ... (f != 0); returns 1 */
 
-char sv_Unk525a80(char *o, int f)
+char sv_SetLampRamp(char *o, int f)
 {
     double v;
 
@@ -2360,18 +2360,19 @@ char sv_Unk525a80(char *o, int f)
         *(float *)(*(int *)(o + 0x1e8) + 0x1a4) = (float)v;
     return 1;
 }
-/* 0x525ad0, positions the sky for the time t (+4 hours, +6 minutes ..): the second of the day is mapped through the phase table 0x623baa .. 0x623bdc to 0 .. 600 (k); with the sky object 0x760628 its alpha (+0x26) is
-   read; during a scene change (0xfd7c4c, until 0x76054c + 0x760548) the fade is 0x44a170 (0, 2, 1.0); when the phase hardly changed nothing happens; otherwise the weather day k % 7 is set (0x438d40 with the callback
-   0x525a80), 0x623e94 = k / 100 - (k / 100 as int) and 0x449de0 (the day, the fraction, 1.0, changed) applies it. ROUGH */
-
-void sv_UpdateSkyPhase(char *t)
+/* 0x525ad0, applies the sky phase of the clock t: the second of the day is mapped through the day phases to the sky phase k
+   (0 .. 600: 100 per phase, 200 for the midday phase); the dark sky layer's alpha is the fog strength; while a thunder flash
+   lasts (in a scene with a map) the thunder fog set 2 is on; when the phase, the scale and the scene hardly changed only the fog
+   is renewed; otherwise the light set k / 100 mod 7 and its fraction go to d3_SetLightSet (changed when the phase moved by 100 or
+   the scene changed), the lamps get their ramps at the first two light sets of the day */
+void sv_UpdateSkyPhase(AITIME *t)
 {
     int s, k, day, d, sc;
-    float a;
+    float a, frac;
     int changed;
 
     a = 0.0f;
-    s = (*(int *)(t + 6) + *(unsigned short *)(t + 4) * 0x3c) * 0x3c;
+    s = (t->min + t->hour * 60) * 60;
     if (s < sv_DayPhases[0].sec)
         k = 0;
     else if (s < sv_DayPhases[1].sec)
@@ -2387,45 +2388,44 @@ void sv_UpdateSkyPhase(char *t)
     else
         k = 600;
     if (d3_SkyLayers[2] != 0)
-        a = *(unsigned char *)(d3_SkyLayers[2] + 0x26) * 0.003921569f;
-    if (((int *)&ai_MapRefs)[d3_CurrentScene * 0xf8] != 0 && (unsigned)d3_Time < (unsigned)(sv_Weather.thunderLen + sv_Weather.thunderStart)) {
+        a = ((D3SKYLAYER *)d3_SkyLayers[2])->alpha * 0.003921569f;
+    if (d3_Scenes[d3_CurrentScene].map != 0 && (unsigned)d3_Time < (unsigned)(sv_Weather.thunderStart + sv_Weather.thunderLen)) {
         d3_SetFogSet(0, 2, 1.0f);
-        ai_Unk6f2370 = 1;
+        sv_ThunderFog = 1;
         return;
     }
-    if (ai_Unk6f2370 != 0) {
+    if (sv_ThunderFog != 0) {
         d3_SetFogSet(0, 1, a);
-        ai_Unk6f2370 = 0;
+        sv_ThunderFog = 0;
     }
     sc = d3_CurrentScene;
-    if (((fabs(ai_Unk760420 - 1.0) < 0.1 && abs(sv_SkyPhase - k) < 10) && ai_Unk75ec20 == d3_CurrentScene) || d3t_CamMove != 0) {
+    if (((fabs(sv_SkyScale - 1.0f) < 0.1 && abs(sv_SkyPhase - k) < 10) && sv_SkyScene == d3_CurrentScene) || d3t_CamMove != 0) {
         d3_SetFogSet(0, 1, a);
         return;
     }
-    if (0.2 < fabs(ai_Unk760420 - 1.0) || abs(sv_SkyPhase - k) >= 100)
+    if (fabs(sv_SkyScale - 1.0f) > 0.2 || abs(sv_SkyPhase - k) >= 100)
         changed = 1;
     else
-        changed = ai_Unk75ec20 != d3_CurrentScene;
-    ai_Unk75ec20 = d3_CurrentScene;
-    ai_Unk760420 = 1.0f;
+        changed = sv_SkyScene != d3_CurrentScene;
+    sv_SkyScene = d3_CurrentScene;
     sv_SkyPhase = k;
-    day = (int)(k * 0.01f);
+    sv_SkyScale = 1.0f;
+    frac = k * 0.01;
+    day = (int)frac;
     d = day % 7;
-    if (ai_Unk623e80 != d && ((int *)&ai_MapRefs)[sc * 0xf8] != 0) {
-        if (d < 0 || sv_LampSwitches != 0) {
-            if (d < 3 || sv_LampSwitches != 1)
-                goto done;
-            d3_ForEachObject(ai_Unk5fb5b0, 0, 6, sv_Unk525a80, 1);
-        } else
-            d3_ForEachObject(ai_Unk5fb5b0, 0, 6, sv_Unk525a80, 0);
-        sv_LampSwitches++;
-        d = d;
+    if (sv_LampPhase != d && d3_Scenes[sc].map != 0) {
+        if (d >= 0 && sv_LampSwitches == 0) {
+            d3_ForEachObject(d3_DefaultScene, 0, 6, sv_SetLampRamp, 0);
+            sv_LampSwitches++;
+        } else if (d >= 3 && sv_LampSwitches == 1) {
+            d3_ForEachObject(d3_DefaultScene, 0, 6, sv_SetLampRamp, 1);
+            sv_LampSwitches++;
+        }
+        sv_LampPhase = d;
     }
-done:
-    ai_Unk623e80 = d;
-    ai_Unk623e94 = (float)k * 0.01f - (float)day;
-    ai_Unk6f236c = d;
-    d3_SetLightSet(d, ai_Unk623e94, 1.0f, changed);
+    sv_DayPhaseFrac = frac = frac - (float)day;
+    sv_DayPhase = d;
+    d3_SetLightSet(d, frac, 1.0f, changed);
     d3_SetFogSet(0, 1, a);
 }
 
@@ -7573,8 +7573,8 @@ void sv_UpdateClock(void)
     gm_AddTime((unsigned)&ai_TimeCopy, h, m, t - (m + h * 60) * 60);
 }
 
-extern int ai_Unk75ec20;
-extern float ai_Unk760420;
+extern int sv_SkyScene;
+extern float sv_SkyScale;
 extern int ai_Unk760440;
 extern int sv_SkyPhase;
 extern int sv_CloudChance;
@@ -7670,10 +7670,10 @@ SVSKYREC sv_SkyMedium[3] = {
 ALIGN1 char sv_DayTables[278] = { 4, 0, 64, 56, 0, 0, 0, 0, 0, 0, 6, 0, 96, 84, 0, 0, 0, 0, 0, 0, 12, 0, -64, -88, 0, 0, 0, 0, 0, 0, 16, 0, 0, -31, 0, 0, 0, 0, 0, 0, 18, 0, 32, -3, 0, 0, 0, 0, 0, 0, 19, 0, 48, 11, 1, 0, 0, 0, 5, 67, 0, 0, 3, 67, 0, 0, 127, 67, 0, -128, -103, 67, 0, 0, -18, 66, 0, 0, 15, 67, 0, 0, 90, 67, 0, 0, -81, 67, 0, 0, 85, 67, 0, 0, 52, 67, 0, 0, 32, 67, 0, -128, -69, 67, 0, 0, 127, 67, 0, 0, 78, 67, 0, 0, -10, 66, 0, -128, -1, 67, 0, 0, 127, 67, 0, 0, 57, 67, 0, 0, -84, 66, 0, -128, -1, 67, 0, 0, 34, 67, 0, 0, 1, 67, 0, 0, 69, 67, 0, 0, -93, 67, 0, 0, 5, 67, 0, 0, 3, 67, 0, 0, 127, 67, 0, -128, -103, 67, 0, 0, 5, 67, 0, 0, -32, 66, 0, 0, 127, 67, 0, 0, -20, 67, 0, 0, -34, 66, 0, 0, 13, 67, 0, 0, 53, 67, 0, -128, -30, 67, 0, 0, 59, 67, 0, 0, 83, 67, 0, 0, 26, 67, 0, 0, -71, 67, 0, 0, 127, 67, 0, 0, 66, 67, 0, 0, -22, 66, 0, -128, -1, 67, 0, 0, 127, 67, 0, 0, 47, 67, 0, 0, 104, 66, 0, 0, -49, 67, 0, 0, 76, 67, 0, 0, 64, 67, 0, 0, 53, 67, 0, -128, -47, 67, 0, 0, 5, 67, 0, 0, -32, 66, 0, 0, 127, 67, 0, 0 };
 int ai_Unk623cc0[] = { 1104150528, 1097859072, 1116602368, 0, 1102577664, 1107820544, 1113325568, 0, 1116209152, 1112276992, 1110179840, 0, 1120272384, 1117519872, 1109393408, 0, 1116602368, 1113587712, 1108606976, 0, 1107820544, 1102053376, 1112539136, 0, 1104150528, 1097859072, 1116602368, 0, 1122500608, 1124270080, 1132396544, 1133019136, 1121452032, 1125056512, 1128792064, 1133969408, 1123680256, 1127284736, 1126170624, 1134592000, 1124990976, 1128726528, 1130168320, 1135247360, 1126629376, 1127153664, 1126957056, 1135411200, 1124990976, 1124728832, 1128792064, 1135706112, 1122107392, 1124270080, 1132396544, 1132691456, 1124401152, 1121976320, 1132396544, 1134592000, 1122893824, 1125384192, 1125122048, 1138425856, 1123287040, 1125253120, 1125122048, 1136361472, 1125318656, 1127612416, 1128595456, 1135706112, 1124597760, 1124139008, 1125122048, 1135083520, 1125777408, 1128267776, 1129185280, 1134264320, 1124401152, 1121976320, 1132396544, 1134428160 };  /* 0x623cc0 */
 int ai_Unk623e10[] = { 1099431936, 1097859072, 1116602368, 0, 1096810496, 1104674816, 1114112000, 0, 1096810496, 1102053376, 1114112000, 0, 1101004800, 1107296256, 1113325568, 0, 1101004800, 1103101952, 1114898432, 0, 1101004800, 1094713344, 1110966272, 0, 1099431936, 1097859072, 1116602368, 0 };  /* 0x623e10 */
-int ai_Unk623e80 = -1;  /* 0x623e80 */
+int sv_LampPhase = -1;  /* 0x623e80 */
 int ai_Unk623e88 = 1;  /* 0x623e88 */
 int sv_GroundplanScene = -1;  /* 0x623e8c */
-float ai_Unk623e94 = 0.5f;  /* 0x623e94 */
+float sv_DayPhaseFrac = 0.5f;  /* 0x623e94 */
 int ai_Unk623ea0 = -1;  /* 0x623ea0 */
 int ai_Unk623ea4 = -1;  /* 0x623ea4 */
 int ai_Unk623ea8 = -1;  /* 0x623ea8 */
@@ -7723,8 +7723,8 @@ int sv_ScreenDirty = 0;  /* 0x6f2358 */
 int sv_GroundplanBuilding = 0;  /* 0x6f235c */
 int sv_GroundplanRoom = 0;  /* 0x6f2360 */
 char sv_PlayerBarKind = 0;  /* 0x6f2368 */
-int ai_Unk6f236c = 0;  /* 0x6f236c */
-int ai_Unk6f2370 = 0;  /* 0x6f2370 */
+int sv_DayPhase = 0;  /* 0x6f236c */
+int sv_ThunderFog = 0;  /* 0x6f2370 */
 float ai_Unk6f2374 = 0;  /* 0x6f2374 */
 int ai_Unk6f2378 = 0;  /* 0x6f2378 */
 float sv_ScrollVelX = 0;  /* 0x6f2388 */
@@ -7747,12 +7747,12 @@ char * sv_PanelObject = 0;  /* 0x75e8c4, the object the info panel shows */
 unsigned short * sv_PanelRecord = 0;  /* 0x75e8c8, its scene record */
 char sv_PanelText[76] = {0};  /* 0x75e8d4, the panel text */
 int sv_SelectionFlags[0xc0] = {0};  /* 0x75e920, the mirror of the character selection flags (byte i per character) */
-int ai_Unk75ec20 = 0;  /* 0x75ec20 */
+int sv_SkyScene = 0;  /* 0x75ec20 */
 unsigned short * ai_Unk75ec5c = 0;  /* 0x75ec5c */
 int ai_Unk75f280[576] = {0};  /* 0x75f280, the member panel: */
 float sv_ViewPos[4] = {0};  /* 0x75fb80, the stored camera position (a padded vector): set by the camera moves, restored when the player leaves a building */
 float sv_ViewRot[4] = {0};  /* 0x75fb90, its rotation (D3OBJECT.rotation) */
-float ai_Unk760420 = 0;  /* 0x760420 */
+float sv_SkyScale = 0;  /* 0x760420 */
 int ai_Unk760440 = 0;  /* 0x760440 */
 int sv_SkyPhase = 0;  /* 0x760464 */
 int sv_CloudChance = 0;  /* 0x760480 */

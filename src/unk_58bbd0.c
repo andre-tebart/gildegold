@@ -252,7 +252,7 @@ extern int d2_ClickedId;
 extern char * ai_FallbackBuilding;
 extern unsigned char ai_TimeHour;
 extern int d2_PointerObj;
-extern float ai_Unk760420;
+extern float sv_SkyScale;
 extern int d2_ClickedId;
 extern int sv_PopRequest;
 
@@ -634,13 +634,13 @@ extern GAPDATA full_data_602568[];
 extern char * ai_PlayerBuilding;
 extern unsigned char ai_TimeHour;
 extern int ai_SceneChars[32];
-extern float ai_Unk760420;
+extern float sv_SkyScale;
 
 extern int sv_PopRequest;
 
 extern unsigned char ai_TimeHour;
 extern int ai_SceneChars[32];
-extern float ai_Unk760420;
+extern float sv_SkyScale;
 extern int d2_ClickedId;
 
 extern int sv_PopRequest;
@@ -699,7 +699,7 @@ extern char * ai_PlayerBuilding;
 extern unsigned char ai_TimeHour;
 extern int d2_PointerObj;
 extern int ai_SceneChars[32];
-extern float ai_Unk760420;
+extern float sv_SkyScale;
 extern int d2_ClickedId;
 
 extern unsigned short * sv_PanelShown;
@@ -709,7 +709,7 @@ extern char * ai_PlayerBuilding;
 extern unsigned char ai_TimeHour;
 extern int d2_PointerObj;
 extern int ai_SceneChars[32];
-extern float ai_Unk760420;
+extern float sv_SkyScale;
 extern int d2_ClickedId;
 
 
@@ -4277,7 +4277,7 @@ int ai_Unk593f40(char *name)
             *(unsigned char *)((char *)msg + 0x36) = 2;
             strcpy((char *)msg + 0x58, name);
             snd_PlayFavourComment();
-            for (i = 0, p = (int *)(unsigned)&ai_SceneChars; (int)p < (unsigned)&ai_Unk760420; p++) {
+            for (i = 0, p = (int *)(unsigned)&ai_SceneChars; (int)p < (unsigned)&sv_SkyScale; p++) {
                 if (*p != 0 && *(unsigned char *)(*p + 0x188) != 0) {
                     /* ROUGH: the entries' +4 go to the message argument list */
                     msg[0x16 + i] = *(int *)(*p + 4);

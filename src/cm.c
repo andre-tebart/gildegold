@@ -104,7 +104,7 @@ extern GAPDATA full_data_92bcb8[];
 #define amt_GetOfficeI ((int (*)(int, struct AMTREC *))amt_GetOffice)  /* 0x4e6f30 (amt.h: unsigned char i): @original this unit pushes its int index raw (0x4dab50 / 0x4aad30: push ebp / push edx, no zero-extension) */
 #define ahm_CreateAlchemistI ((int (*)(int *))ahm_CreateAlchemist)  /* 0x4ec500 (ahm.h: unsigned short): @original the caller 0x4ccf90 reads the id as an int (no and eax,0xffff) */
 #define ai_Unk7603a0V (*(char * (*)[])&ai_SceneChars)  /* 0x7603a0, @original ai_Unk4cfeb0 (0x4cfeb0, byte) walks the table as pointers, `pp < ai_Unk760420V` its end: the int[32] / float spellings make it draft (15) */
-#define ai_Unk760420V (*(char * (*)[])&ai_Unk760420)  /* 0x760420, @original the end of ai_Unk7603a0V's walk in ai_Unk4cfeb0 (0x4cfeb0, byte) */
+#define ai_Unk760420V (*(char * (*)[])&sv_SkyScale)  /* 0x760420, @original the end of ai_Unk7603a0V's walk in ai_Unk4cfeb0 (0x4cfeb0, byte) */
 /* 0x4c3180, the size of message m by its type */
 
 int ai_Unk4c3180(G17MSG *m)
@@ -4631,7 +4631,7 @@ int ai_Unk4cac40(G17MSG *m, G17STAT *s)
                     init_TextureSet = 3;
                 init_TextureSetHook(*(int *)(b + 0x61));
                 d3_ForEachObject2(ai_Unk5fb5b0, *(int *)(b + 0x61), 0x2c0, unk_Unk511600);
-                y = (float)ai_Unk6f236c + ai_Unk623e94;
+                y = (float)sv_DayPhase + sv_DayPhaseFrac;
                 d3_ForEachObject(ai_Unk5fb5b0, *(int *)(b + 0x61), 0x21e, d3_SetLightKeyCB, (void *)(int)y);
                 d3_RelightObjects(*(D3OBJECT **)(b + 0x61));
                 if (*(int *)(b + 0x95) != -1) {
