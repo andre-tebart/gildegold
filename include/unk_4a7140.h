@@ -113,7 +113,7 @@ int ai_DecideAcquaintance(int a, AICHAR *p, int c, int d, AIARG *m);            
 int ai_EvalOwnYearTurn(int a, AICHAR *p);                                                /* 0x4a9150 */
 int ai_DecideSuitor(int a, AICHAR *p, int c, int d, AIARG *m);                 /* 0x4a91a0 */
 int ai_DecideCloseAcquaintance(int a, AICHAR *p, int c, int d, AIARG *m);  /* 0x4a9280 */
-int ai_Unk4a9350(int a, AIPER *p, int c, int d, unsigned char *m);              /* 0x4a9350 */
+int ai_DecideOfficeAcquaintance(int a, AICHAR *p, int c, int d, AIARG *m);  /* 0x4a9350 */
 int ai_Unk4a9420(int a, AIPER *p, int c, int d, unsigned char *m);              /* 0x4a9420 */
 int ai_Unk4a94e0(int a, AIPER *p, int c, int d, unsigned char *m);              /* 0x4a94e0 */
 int ai_Unk4a95d0(int a, AIPER *p, int c, int d, unsigned char *m);              /* 0x4a95d0 */

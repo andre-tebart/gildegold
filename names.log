@@ -354,3 +354,4 @@
 2026-11-01T20:48:12 0x004a91a0 func ai_Unk4a91a0 -> ai_DecideSuitor by:main why:0x4a91a0 decide callback: an unmarried character (relatives[0] none) not in an event 0x41 picks a candidate of the other sex (reasoned: a suitor), into m kind 7
 2026-11-01T20:49:00 0x004a5ef0 func ai_Unk4a5ef0 -> ai_FindCandidates by:main why:0x4a5ef0: up to n candidate characters for an action with the flags fl, from two random walks over all 768 characters, rated within lo..hi (its address comment)
 2026-11-01T20:49:29 0x004a9280 func ai_Unk4a9280 -> ai_DecideCloseAcquaintance by:main why:0x4a9280 decide callback: as ai_DecideAcquaintance (0x4a9080) with a higher count threshold (5..12)
+2026-11-01T20:49:59 0x004a9350 func ai_Unk4a9350 -> ai_DecideOfficeAcquaintance by:main why:0x4a9350 decide callback: an owner counted at least 4 times (gv_RankRecordOwners) not flagged 0x200 whose office kind has level >= 4 (amt_GetKind), into m kind 7
