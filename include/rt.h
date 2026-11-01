@@ -34,8 +34,6 @@ extern unsigned char ai_OwnPlayer;      /* 0x6f1bc5, the player */
 extern char ai_Unkfd7c50[];            /* 0xfd7c50 (as cm.h) */
 #endif
 extern struct D2OBJ *d2_Objs;  /* 0xf8f080, 0x2ec bytes each (d2.c); this header's unit adds byte offsets through d2_ObjsC */
-extern unsigned int ai_Unk889400[];     /* 0x889400, the goods of the last routing_choose_good list (0 ends) */
-extern unsigned short ai_Unk76fdc4;     /* 0x76fdc4, their number */
 
 extern int d2_ClickedId;                /* 0xf8a668 */
 extern int d2_LastWindow;                /* 0x6ed938, window created last */
@@ -61,13 +59,11 @@ extern int rt_Unk6f074c;                /* 0x6f074c, the saved screen of 0x4bf5b
 extern char *ai_Unk6f26ac;              /* 0x6f26ac, the screen surface */
 extern int ai_Unk62c26c;                /* 0x62c26c */
 extern struct D2INPUT *d2_FocusedInput;      /* 0x6ed9dc (as d2.h / cm.h) */
-extern char ai_PlayerSlots[][0x2f4];      /* 0x7e3f40, 0x2f4 bytes per player (as cm.h / unk_4b6480.h) */
 extern char ch_EmptyName[];             /* 0x631090 */
 extern int rt_MarkGroup;                /* 0x602a90, a d2 radio group (-1: none) */
 
 void d3_PointToWorld(struct D3OBJECT *obj_, struct D3VECTOR *in, struct D3VECTOR *out);                               /* 0x458a20, d3.h: D3 types */
 char d3_GetHeightAt(struct D3SM *h, struct D3VECTOR *pos, int *px, int *pz, float *py);           /* 0x45f170, ch.h: D3SM *, D3VECTOR * */
-void ai_Unk5a6b70(int param_1, int param_2, int param_3);                                     /* 0x5a6b70 */
 int d2_CreateRadioGroup(int n, ...);                                             /* 0x46c490 */
 void d2_RadioAdd(int g, int obj);                                                /* 0x46c560 */
 int d2_GetObjValue(int obj);                                                       /* 0x475980 */
@@ -77,14 +73,10 @@ void d2_CentreViewWindows(int view);                                            
 int d2_SetForm(int view, int n);                                                   /* 0x475f70 */
 int d2_GetWinObj(int view, int idx, int k);                                        /* 0x475b80 */
 void d2_CloseView(int view);                                                        /* 0x4758f0 */
-char * gm_Query(void *list, int n, ...);                                               /* 0x4ffe90 */
-unsigned short * gm_QueryNext(void);                                                        /* 0x4ffcc0 */
-int gm_BuildKindObjects(char *b);                                                      /* 0x500b90 */
 void d2_RadioSelect(int g, int sel);                                               /* 0x46c630 */
 void d2_ClearInput(void);                                                         /* 0x476b70 */
 int d2_GetViewWin(int view, int i);                                               /* 0x475ff0 */
 int d2_RemoveWindowObjects(int win, int all);                                              /* 0x472d20 */
-int gm_ListStock(short *l, int good);                                               /* 0x50ab50 */
 int d2_WinOpenInputIcon(int x, int y, int icon, unsigned char flags, int win);   /* 0x469ee0 */
 int d2_WinOpenSlider(int x, int y, int len, int p4, int p5, int pic, unsigned int flags, int win); /* 0x46a960 */
 void d2_SetObjFont(int obj, int font);                                            /* 0x4760b0 */
@@ -98,21 +90,9 @@ void d2_SetCaption(int obj, char *text);                                        
 void d2_SetSliderFlags(int obj, int a);                                               /* 0x46bdd0 */
 void d2_SetList(int id, int n, ...);                                          /* 0x46bca0 */
 void d2_SetObjPic(int obj, int pic);                                             /* 0x469250 */
-void ai_Unk5a78a0(int *m);                                                       /* 0x5a78a0, town map window: open */
-void ai_Unk5a6cb0(int *m);                                                       /* 0x5a6cb0 */
-void ai_Unk5a7cd0(int *m);                                                       /* 0x5a7cd0, per frame */
-void ai_Unk5a82f0(int *m);                                                       /* 0x5a82f0, close */
 struct D2SURF * d2_CopySurface(struct D2SURF *surf);                                                    /* 0x479780 */
 void d2_BlitPart(int sx, int sy, int w, int h, struct D2SURF *src, int x, int y, struct D2SURF *dst);  /* 0x479480 */
 int d2_FreeSurface(struct D2SURF *s);                                                        /* 0x478fc0 */
-int gm_BuildingGoodsList(char *b, unsigned *out, int kind);                                   /* 0x5098a0 */
-unsigned short * gm_Unk50a050(unsigned short *c);                                                    /* 0x50a050, the cart's owner */
-int gm_StallGoodsList(char *c, unsigned *out);                                           /* 0x50aa00 */
-int gm_FindMarketObject(int id);                                                    /* 0x500ec0 */
-int gm_ListAmount(short *l, char *o);                                   /* 0x50aaf0 */
-int gm_FreeCapacity(short *st, int good, int n);                                     /* 0x50ab80 */
-float gm_GoodsPrice(unsigned id, unsigned char p);                                   /* 0x5089c0, a price */
-int gm_Unk509ee0(char *c, char p);                                      /* 0x509ee0, ai.h: AIPER * */
 void d2_RadioClear(int g);                                                      /* 0x46c600, d2.h: D2RADIO * */
 
 RTPOINT *rt_AddPoint(RTPOINT *p);
