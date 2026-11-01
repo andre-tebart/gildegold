@@ -73,18 +73,14 @@ void hmt_ClearOffices(void);                                                    
 void hmt_Unk4ad580(void);                                                        /* 0x4ad580 */
 void hmt_Unk4ad7a0(void);                                                        /* 0x4ad7a0 */
 extern const int hmt_Unk5ee114;                                                        /* 0x5ee114, 8000000 */
-void gm_Shuffle(unsigned n, int *out);                                              /* 0x505d30, defined elsewhere (shuffles ids) */
-int gm_Unk503f30(int id);                                                        /* 0x503f30, defined elsewhere */
 void hmt_Create(int type, int unk, unsigned short v, struct AICHAR *c);                 /* 0x4adbb0 */
 void hmt_NextEvent(void);                                                        /* 0x4ade60 */
 void hmt_NextPerson(void);                                                       /* 0x4adec0 */
 int hmt_RandomHeadIcon(void);                                                         /* 0x4adf20 */
-int gm_AddObjekt(int id, int proto, int n);                            /* 0x500970, defined elsewhere */
 #ifndef DATA_VIEWS_H
 extern char ai_Unkf42400;                                                        /* 0xf42400 */
 #endif
 int hmt_Load(void *f);                                                           /* 0x4ada80 */
 int hmt_Save(VFSFILE *f);                                                        /* 0x4adb20 */
 extern char ch_EmptyName[];                                                      /* 0x631090, "" */
-int gm_FindRichest(short *id, int *rate);                                          /* 0x4fad60, defined elsewhere: the id and worth of the richest active character */
 #endif
