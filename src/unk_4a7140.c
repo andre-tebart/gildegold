@@ -2031,12 +2031,19 @@ int aip_ExecAnschwaerzen(AIPER *p, int c, AIARG *m)
     cm_EndGroup("aip_ExecAnschwaerzen");
     return 1;
 }
-/* 0x4aab90, which of b and c character p trusts more (distance 0.66, 0x504ec0 0.34, item 0x2be +0.2): 1 b, 0 c,
-   2 neither; *k 2 if the difference is small, else 1 (the middle part is a rough draft) */
+/* 0x4aab90, which of b and c character p trusts more (liking 0.66, skill 4 0.34): 1 b, 0 c, 2 neither (within
+   5); *k 1 when the skills (item 0x2be +0.2) differ by more than half the ratings, else 2
+   @deep read whole against the original and reconciled: the item bonus adds to wb / wc in place
+   (fld/fadd/fstp on the same slot), the comparison is |wb-wc|*0.66 > |x1-x2|*0.33 -> *k 1 (test ah, 5 / jp
+   as the original); now 142 vs 142 instructions, every instruction equal but the stack slots. Left is slot
+   allocation: the original keeps x1 / x2 in an 8-byte frame (+ sub esp, 8 ... fld dword ptr [esp + 0x14] /
+   fcomp dword ptr [esp + 0x10]) where ours puts them into the dead argument slots of b / c with a 4-byte
+   frame (- push ecx ... fld dword ptr [esp + 0x1c] / fcomp dword ptr [esp + 0x20], pop ecx in each
+   epilogue). Tried: declaration order (no change) */
 
 int ai_TrustedOfTwo(AIPER *p, AIPER *b, AIPER *c, int *k)
 {
-    float db, wb, dc, wc, x1, x2, fb, fc;
+    float db, wb, dc, wc, x1, x2;
 
     *k = 0;
     if (p == c)
@@ -2049,16 +2056,14 @@ int ai_TrustedOfTwo(AIPER *p, AIPER *b, AIPER *c, int *k)
     wc = gm_GetSkill(c, 4);
     x1 = db * 0.66 + wb * 0.34;
     x2 = dc * 0.66 + wc * 0.34;
-    fb = wb;
     if (ai_InventoryHas(b, 0x2be) != 0)
-        fb += 0.2f;
-    fc = wc;
+        wb += 0.2f;
     if (ai_InventoryHas(c, 0x2be) != 0)
-        fc += 0.2f;
-    if (abs((int)(fb - fc)) * 0.66 <= abs((int)(x1 - x2)) * 0.33)
-        *k = 2;
-    else
+        wc += 0.2f;
+    if (abs((int)(wb - wc)) * 0.66 > abs((int)(x1 - x2)) * 0.33)
         *k = 1;
+    else
+        *k = 2;
     if (x2 < x1 - 5.0f)
         return 1;
     if (x1 < x2 - 5.0f)
