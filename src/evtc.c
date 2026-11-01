@@ -6,6 +6,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include "evtc.h"
+#include "sv.h"
+#include "tb.h"
+#include "unk_4a7140.h"
 
 /* 0x40b580, random number 0 .. *n - 1 */
 int evtc_Random(int *n)
