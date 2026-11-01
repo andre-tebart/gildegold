@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "tr.h"
+#include "mem.h"
 
 char *tr_Key1 = "*bRaIn DeaD%&";  /* 0x5f8fd0 */
 char *tr_Key2 = "%aRscH Ab :-)";  /* 0x5f8fd4 */
