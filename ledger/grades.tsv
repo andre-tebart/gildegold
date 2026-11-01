@@ -1465,8 +1465,8 @@ exe	0x0047edb0	ai_EvaluateProduction	ai	draft	readable	deep
 exe	0x0047f700	ai_EvaluateProductionFlags	ai	draft	readable	deep	
 exe	0x004801f0	ai_EvaluateProductionCategory2	ai	draft	draft	deep	
 exe	0x00480e70	ai_CalcMeisterWache	ai	draft	draft	deep	
-exe	0x004817a0	ai_CalcAngriff	ai	draft	draft		
-exe	0x00481ef0	ai_CalcMeisterDiebe	ai	draft	draft		
+exe	0x004817a0	ai_CalcAngriff	ai	draft	draft	deep	
+exe	0x00481ef0	ai_CalcMeisterDiebe	ai	draft	draft	deep	
 exe	0x00482f00	ai_CalcMeisterRaeuber	ai	draft	draft	deep	
 exe	0x004836a0	ai_CalcMeisterBank	ai	byte	draft	deep	
 exe	0x00483a60	ai_Unk483a60	ai	byte	draft	deep	
@@ -1480,7 +1480,7 @@ exe	0x004864b0	ai_BuildTradeOffers	ai	draft	draft	deep
 exe	0x00487040	ai_CalcEntryCost	ai	byte	draft	deep	
 exe	0x00487180	ai_HasMaterials	ai	draft	readable	deep	
 exe	0x00487410	ai_StartProduction	ai	draft	readable	deep	
-exe	0x00487780	ai_AddEquipmentNeeds	ai	draft	readable		
+exe	0x00487780	ai_AddEquipmentNeeds	ai	draft	readable	deep	
 exe	0x00487b40	ai_UpdateStaff	ai	byte	draft		
 exe	0x00487ea0	ai_Unk487ea0	ai	byte	draft		
 exe	0x00487fb0	ai_BuyUpgrade	ai	draft	readable	deep	
@@ -2616,7 +2616,7 @@ exe	0x004e5af0	ai_Unk4e5af0	cm	byte	draft
 exe	0x004e5b50	ai_Unk4e5b50	cm	byte	draft		
 exe	0x004e5bf0	ai_Unk4e5bf0	cm	byte	draft		
 exe	0x004e5cd0	amt_InitTable	amt	byte	readable		
-exe	0x004e5e50	amt_Rating	amt	draft	readable		
+exe	0x004e5e50	amt_Rating	amt	draft	readable	deep	
 exe	0x004e6030	amt_FindOffice	amt	draft	readable	deep	
 exe	0x004e60b0	amt_GetOfficeRate	amt	byte	readable		
 exe	0x004e6180	amt_ApplyForOffice	amt	draft	readable	deep	
@@ -2641,11 +2641,11 @@ exe	0x004e6f80	amt_GetKind	amt	byte	readable
 exe	0x004e6fc0	amt_GetColumnOffices	amt	draft	readable	deep	
 exe	0x004e7040	amt_GetColumnOfficesOwned	amt	draft	readable	deep	
 exe	0x004e70f0	amt_GetColumn7Offices	amt	byte	readable		
-exe	0x004e7150	amt_GetOfficeCandidates	amt	draft	readable		
-exe	0x004e7320	amt_GetOfficeCandidatesFull	amt	draft	readable		
+exe	0x004e7150	amt_GetOfficeCandidates	amt	draft	readable	deep	
+exe	0x004e7320	amt_GetOfficeCandidatesFull	amt	draft	readable	deep	
 exe	0x004e7510	amt_GetOfficeHolder	amt	byte	readable		
 exe	0x004e7550	amt_GetSuperiorOfficeHolder	amt	byte	readable		
-exe	0x004e75c0	amt_CanTakeOffice	amt	draft	readable		
+exe	0x004e75c0	amt_CanTakeOffice	amt	byte	readable		
 exe	0x004e76b0	amt_GetOfficeApplicants	amt	byte	readable		
 exe	0x004e7770	amt_GetEligibleOffices	amt	byte	readable		
 exe	0x004e78a0	amt_GetOpenOffice	amt	byte	readable		
@@ -2669,7 +2669,7 @@ exe	0x004e9400	amt_HasTownObject	amt	byte	readable
 exe	0x004e94a0	amt_Unk4e94a0	amt	byte	draft		
 exe	0x004e94e0	amt_CanUseMayorPower2	amt	byte	readable		
 exe	0x004e95a0	amt_CanUseMayorPower3	amt	byte	readable		
-exe	0x004e9660	amt_ExecutePriceMessage	amt	draft	readable		
+exe	0x004e9660	amt_ExecutePriceMessage	amt	draft	readable	deep	
 exe	0x004e9a00	amt_ExecuteShareMessage	amt	byte	readable		
 exe	0x004e9ce0	amt_ExecuteMayorPowerMessage	amt	draft	readable		
 exe	0x004ea550	amt_ChangeDistrictOpinion	amt	byte	readable		
