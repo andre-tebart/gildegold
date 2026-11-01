@@ -22,6 +22,21 @@ struct D3OBJECT;
 #include "d3_io_t.h"
 #include "surf.h"
 #include "d3_tools.h"
+#include "bio.h"
+#include "d3_anim.h"
+#include "d3_engine.h"
+#include "d3_fl.h"
+#include "d3_interface.h"
+#include "d3_light.h"
+#include "d3_par.h"
+#include "d3_sm.h"
+#include "d3_vec.h"
+#include "dd_vesa.h"
+#include "f3gm.h"
+#include "mem.h"
+#include "ts_texture.h"
+#include "unk_458810.h"
+#include "unk_4591a0.h"
 
 /* the pose a camera / zoom target stores in D3OBJECT 0x5c and 0x90 (serialized for object types 2/3;
    objectFlags bit 0 marks a key). For a light the same bytes are D3LOBJ.color and D3LOBJ.range/power/atten;
