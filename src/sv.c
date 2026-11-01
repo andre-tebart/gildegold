@@ -2254,7 +2254,6 @@ extern int ai_Unk6f2394;  /* 0x6f2394 */
 extern float ai_Unk6f1c74[3];
 float d3t_GetMeanHeight();                   /* 0x412550 */
 int d3_VecEqual(struct D3VECTOR *a, struct D3VECTOR *b, float eps);  /* 0x453e80 */
-#define d3t_PlaceObjectV4 ((int (*)())d3t_PlaceObjectV)  /* d3_tools.h, 5 parameters: @original sv_FlyCameraToModel 0x528124 pushes 4 (the 0x14 cleanup takes an earlier push) */
 void d3_MatTranspose();                     /* 0x454040 */
 float d3_VecAngle2();                   /* 0x453b40 */
 
@@ -3019,39 +3018,58 @@ void sv_CameraToObject(int b)
     sv_SelectedObject = (char *)b;
     sv_SelectedModel = (int)((AIBLD *)b)->object;
 }
-/* 0x527e90, like 0x527840 for the model m directly (no object): moves the camera animated (0x411860 with 0x68 steps) 600 units back from the model */
+/* 0x527e90, moves the camera (animated, d3t_PlaceObjectV) to 600 units back along its view from the 3D object
+   m, like sv_FlyCameraToObject for a bare object: no stored view, no selection @deep read whole against 0x527e90..0x528130: the statements, the AxisPair*-600 back vector through the 4x4 rows, the two mean-height placements, the distance-scaled step min(3*step, max(step, len)) and the 5-argument d3t_PlaceObjectV all match (192 vs 192 instructions). Left: allocation only - the height-above-centre temp h gets a low slot ([esp+0x2c]) where the original keeps it at the frame top ([esp+0xb8], frame 0x9c vs ours 0x8c), and with it the second d3t_GetHeightRange's push ecx is scheduled before the pos[1] store (ours 0x527f97) instead of after (0x527fbe); tried h declared first: no change */
 
 void sv_FlyCameraToModel(int m)
 {
-    float lo, hi, k, h;
-    float pos[3], dir[3], cen[3], back[3], rot[16];   /* rot is a D3MATRIX: d3_MatTranspose writes 0x40 bytes */
-    double t;
+    float h;                        /* the camera height above the centre, then the pull-in factor */
+    float pos[4];                   /* the target camera position (a padded vector) */
+    float dir[3];                   /* the camera rotation, kept */
+    float lo, hi;                   /* the object's height range */
+    float back[4];                  /* 600 units back along the view */
+    float cen[4];                   /* the object's centre in the world */
+    float rot[16];                  /* the camera matrix, transposed (a 4x4 D3MATRIX) */
+    double t;                       /* the mean terrain height there */
+    float step, dx, dy, dz, len;
+    D3OBJECT *cam;
+    const float *ax = (const float *)ai_AxisPair;
+    float vx, vy, vz;               /* the view axis (0, 0, 1) scaled to -600 */
 
-    d3t_GetHeightRange(m, &lo, &hi);
-    d3_MatTranspose(sv_CameraObj + 0x18c, rot);
-    back[0] = rot[0] * -0.0f + rot[4] * -0.0f + rot[8] * -600.0f;    /* rot is 4x4: the third row, [8] / [9] / [10] (0x527c0b ..) */
-    back[1] = rot[1] * -0.0f + rot[5] * -0.0f + rot[9] * -600.0f;
-    back[2] = rot[2] * -0.0f + rot[6] * -0.0f + rot[10] * -600.0f;
-    d3_PointToWorld(m, m + 0x4c, cen);
+    d3t_GetHeightRange((char *)m, &lo, &hi);
+    d3_MatTranspose(&d3_Camera->matrix, rot);
+    vx = ax[0] * -600.0f;
+    vy = ax[1] * -600.0f;
+    vz = ax[2] * -600.0f;
+    back[0] = rot[8] * vz + rot[4] * vy + rot[0] * vx;
+    back[1] = rot[9] * vz + rot[5] * vy + rot[1] * vx;
+    back[2] = rot[10] * vz + rot[6] * vy + rot[2] * vx;
+    d3_PointToWorld((char *)m, &((D3OBJECT *)m)->pos, cen);
     pos[0] = cen[0] + back[0];
     pos[1] = cen[1] + back[1];
     pos[2] = cen[2] + back[2];
-    t = d3t_GetMeanHeight(pos);
-    pos[1] = (float)((sv_CameraHeightFar - sv_CameraHeightNear) * sv_CameraHeightFactor + sv_CameraHeightNear + t);
+    t = d3t_GetMeanHeight((struct D3VECTOR *)pos);
+    pos[1] = (sv_CameraHeightFar - sv_CameraHeightNear) * sv_CameraHeightFactor + sv_CameraHeightNear + t;
     h = pos[1] - cen[1];
-    d3t_GetHeightRange(m, &lo, &hi);
-    k = back[1] / ((hi - lo) * 0.5f + h);
-    pos[0] = pos[0] - (k * back[0] - back[0] * 1.8f);
-    pos[2] = pos[2] - (k * back[2] - back[2] * 1.8f);
-    dir[0] = *(float *)(sv_CameraObj + 0x84);
-    dir[1] = *(float *)(sv_CameraObj + 0x88);
-    dir[2] = *(float *)(sv_CameraObj + 0x8c);
-    d3anim_FreePath(sv_CameraObj);
+    d3t_GetHeightRange((char *)m, &lo, &hi);
+    h = back[1] / ((hi - lo) * 0.5f + h);
+    pos[0] = pos[0] - (h * back[0] - back[0] * 1.8);
+    pos[2] = pos[2] - (h * back[2] - back[2] * 1.8);
+    dir[0] = d3_Camera->rotation.x;
+    dir[1] = d3_Camera->rotation.y;
+    dir[2] = d3_Camera->rotation.z;
+    d3anim_FreePath(d3_Camera);
     d3t_CamMove = 0;
     d3t_CamMoving = 0;
-    t = d3t_GetMeanHeight(pos);
-    pos[1] = (float)((sv_CameraHeightFar - sv_CameraHeightNear) * sv_CameraHeightFactor + sv_CameraHeightNear + t);
-    d3t_PlaceObjectV4(sv_CameraObj, pos, dir, 0x68);
+    t = d3t_GetMeanHeight((struct D3VECTOR *)pos);
+    cam = d3_Camera;
+    pos[1] = (sv_CameraHeightFar - sv_CameraHeightNear) * sv_CameraHeightFactor + sv_CameraHeightNear + t;
+    dx = pos[0] - cam->pos.x;
+    dy = pos[1] - cam->pos.y;
+    dz = pos[2] - cam->pos.z;
+    step = (float)ai_CameraStep;
+    len = (float)sqrt(dz * dz + dy * dy + dx * dx) * step * 0.0005f;   /* the steps for the distance */
+    d3t_PlaceObjectV(cam, (struct D3VECTOR *)pos, (struct D3VECTOR *)dir, (int)min(ai_CameraStep * 3, max(step, len)), 0x68);
 }
 /* 0x528140, moves the camera (0x411680) to the stored view (0x75fb80 position, 0x75fb90 direction) with the step 0x623814 / 8 */
 
