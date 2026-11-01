@@ -5,7 +5,6 @@ struct D3VECTOR4;
 #ifndef UNK_453920_H
 #define UNK_453920_H
 
-extern float d3fl_Shade[1024];           /* 0xfb9940, also declared in d3_fl.h */
 extern const D3VECTOR d3_YAxis;          /* 0x5ebb94, (0, 1, 0) */
 extern D3VECTOR d3_ZAxis;                /* 0x5ebb74, (0, 0, 1) */
 
