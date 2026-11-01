@@ -84,5 +84,7 @@ void ai_Unk57b810(float *a, float *b, float *c, float *d, float t, float *out); 
 
 /* declared in other units' headers before (moved to the owner) */
 void ai_EndCharExtra(char *ch, int f);  /* 0x587c40 */
+void ai_SetupTutorialPlayer(void);  /* 0x57bc30, sets up the tutorial player's profile */
+int ai_TutorialWindow(void);  /* 0x57bce0, the tutorial chooser window: 1 starts the tutorial, 0 is the back */
 
 #endif

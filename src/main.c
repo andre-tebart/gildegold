@@ -2,8 +2,6 @@
    "Die Gilde", the single instance mutex, the version string, engine start / stop, the main menu, the
    network and character creation dialogs, the round loop. Its strings (0x62493c ..) follow sv.c's last one
    ("MASTER(): .." 0x624534); he.c starts at 0x53d430.
-   Open: ch.h, chc.h, hmt.h, amt.h, hst.h, cm.h, sblib.h, unk_575860.h are not included (header conflicts;
-   their prototypes disagree with main's calls, e.g. the result of gm_Unk503ee0); the callees are declared locally.
    Open: 0x534040, 0x53a520 and 0x53b2e0 are out of address order.
    unit of rea 8cef7d5b (src/game/main.c); boundaries in decl/text.dcl */
 extern int gm_PlayerRecords[688];
@@ -1447,7 +1445,7 @@ int sv_RegisterNamePlate();
    (main_MenuButton: new game, load, tutorial, network, game options, gfx / sfx options or with main_DevMenu the data
    tools "Create Save with INI" / "Create Save for Network" / "Check Textfile", credits, quit), starts one of three
    menu songs and runs the screen loop until a choice pops it; then it clears both scenes and lets the song fade
-   out. @deep body read against the original and completed: the full screen d3_SetViewport after the scene loads (missing in the draft), the D3_ZERO_AT clear of init_PlayerProfile (0x8c, the inline asm that makes the ebp frame), the two d3_LoadScene calls of an if/else, d2_LastWindow read once into win for the 9 buttons, the plain do..while (sv_RunFrame) loop; calls and constants match the original's sequence (asmdiff --all skeleton). Left is allocation: the original keeps 0 in ebx for the whole function (push ebx for every 0 argument, cmp al,bl) and pushes 1 as an immediate, ours keeps 1 in edi / 0 in esi, so the three msx_Play cases are not cross-jumped (push 1; push str; jmp shared call); the original saves edi late (push edi at 0x53393f, pop at 0x533fd9) and caches GetPrivateProfileStringA in esi, which puts f in the slot [ebp-0x3c] (frame 0x50c, ours 0x508 with f in ebx); the button ids take other slots. Q7 open for hmt_Reset / ai_TutorialWindow / ai_SetupTutorialPlayer (hmt.h / unk_575860.h do not include into main yet: void results assigned in main, notes Open work). */
+   out. @deep body read against the original and completed: the full screen d3_SetViewport after the scene loads (missing in the draft), the D3_ZERO_AT clear of init_PlayerProfile (0x8c, the inline asm that makes the ebp frame), the two d3_LoadScene calls of an if/else, d2_LastWindow read once into win for the 9 buttons, the plain do..while (sv_RunFrame) loop; calls and constants match the original's sequence (asmdiff --all skeleton). Left is allocation: the original keeps 0 in ebx for the whole function (push ebx for every 0 argument, cmp al,bl) and pushes 1 as an immediate, ours keeps 1 in edi / 0 in esi, so the three msx_Play cases are not cross-jumped (push 1; push str; jmp shared call); the original saves edi late (push edi at 0x53393f, pop at 0x533fd9) and caches GetPrivateProfileStringA in esi, which puts f in the slot [ebp-0x3c] (frame 0x50c, ours 0x508 with f in ebx); the button ids take other slots. */
 void main_Menue(void)
 {
     unsigned char *fade;
