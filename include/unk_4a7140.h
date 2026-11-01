@@ -78,7 +78,7 @@ int ai_PokerStart(AIPER *p, G10GAME *g);                                        
 int ai_PokerDealRound(G10GAME *g);                                                    /* 0x4a7430 */
 unsigned short ai_PokerStep(void);                                                        /* 0x4a74e0 */
 int ai_PokerFindPair(int *hand, int shown, int skip, int *out);                         /* 0x4a7650 */
-int ai_Unk4a76d0(int *hand, int high);                                           /* 0x4a76d0 */
+int ai_PokerHighCard(int *hand, int high);                                           /* 0x4a76d0 */
 int ai_Unk4a7760(int owner);                                                     /* 0x4a7760 */
 void ai_PokerNpcExchange(void);                                                         /* 0x4a77e0 */
 void ai_Unk4a79d0(G10SEAT *s, int k);                                            /* 0x4a79d0 */

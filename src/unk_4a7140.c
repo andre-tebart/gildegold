@@ -232,29 +232,38 @@ int ai_PokerFindPair(int *hand, int shown, int skip, int *out)
     }
     return 0;
 }
-/* 0x4a76d0, the highest card of a hand (group, then rank): of cards 0..4, or 2..4 if high */
+/* 0x4a76d0, the highest card of a hand (group, then rank): of cards 0..4, or 2..4 if high
+   @deep Read whole against the original: high selects start 2/0, -1 when that card is missing, early
+   return when the next is missing, then the j-loop keeps the best suit then rank, reloading deck[best]
+   after best = hand[j] (the hand[j] spelling defeats copy propagation exactly as the original). Body from
+   the loop on is instruction-equal (23 equal). Remaining hunk is allocation only: ours keeps hand in esi
+   (push esi first, mov esi,[esp+8]) and j in edx then mov ebp,edx; the original keeps hand in edx, pushes
+   ebp first and builds j directly as lea ebp,[ecx+1] (asmdiff: -push esi/-mov esi,[esp+8] vs +mov
+   edx,[esp+4]/+push ebp; -lea edx,[ecx+1] ... -mov ebp,edx vs +lea ebp,[ecx+1]). Tried: i++ loop, separate
+   j, nested if vs early return, k temp, pointer temp, compare against deck[best]. */
 
-int ai_Unk4a76d0(int *hand, int high)
+int ai_PokerHighCard(int *hand, int high)
 {
-    unsigned int i;
-    int best, k, g, r;
+    int i, j, best, g, r;
 
     i = high != 0 ? 2 : 0;
     best = hand[i];
     if (best < 0)
         return -1;
-    if (hand[i + 1] >= 0) {
-        g = ai_PokerDeck[best].suit;
-        r = ai_PokerDeck[best].rank;
-        for (i++; (int)i < 5; i++) {
-            k = hand[i];
-            if (k < 0)
-                return best;
-            if (g < ai_PokerDeck[k].suit || (ai_PokerDeck[k].suit == g && r < ai_PokerDeck[k].rank)) {
-                g = ai_PokerDeck[k].suit;
-                r = ai_PokerDeck[k].rank;
-                best = k;
-            }
+    if (hand[i + 1] < 0)
+        return best;
+    g = ai_PokerDeck[best].suit;
+    r = ai_PokerDeck[best].rank;
+    for (j = i + 1; j < 5; j++) {
+        if (hand[j] < 0)
+            break;
+        if (ai_PokerDeck[hand[j]].suit > g) {
+            best = hand[j];
+            g = ai_PokerDeck[best].suit;
+            r = ai_PokerDeck[best].rank;
+        } else if (ai_PokerDeck[hand[j]].suit == g && ai_PokerDeck[hand[j]].rank > r) {
+            best = hand[j];
+            r = ai_PokerDeck[best].rank;
         }
     }
     return best;
@@ -719,7 +728,7 @@ int ai_Unk4a8190(void)
         w = 0;
     } else if (kind[0] == 0) {
         if (kind[1] == 0)
-            w = ai_Unk4a76d0(ai_PokerTable->seat[0].card, 0) <= ai_Unk4a76d0(ai_PokerTable->seat[1].card, 0);
+            w = ai_PokerHighCard(ai_PokerTable->seat[0].card, 0) <= ai_PokerHighCard(ai_PokerTable->seat[1].card, 0);
         else
             w = 1;
     } else if (kind[1] == 0 || kind[1] < kind[0]) {
@@ -753,7 +762,7 @@ int ai_Unk4a8190(void)
             w = g1[0] <= g1[1];
             break;
         case 4:
-            w = ai_Unk4a76d0(ai_PokerTable->seat[0].card, 0) <= ai_Unk4a76d0(ai_PokerTable->seat[1].card, 0);
+            w = ai_PokerHighCard(ai_PokerTable->seat[0].card, 0) <= ai_PokerHighCard(ai_PokerTable->seat[1].card, 0);
             break;
         case 5:
             r1[0] = g1[0];
@@ -778,8 +787,8 @@ int ai_Unk4a8190(void)
             ai_PokerTable->winHand = kind[2];
             return 2;
         }
-        a = ai_Unk4a76d0(ai_PokerTable->seat[w].card, 0);
-        b = ai_Unk4a76d0(ai_PokerTable->seat[1].card, 0);
+        a = ai_PokerHighCard(ai_PokerTable->seat[w].card, 0);
+        b = ai_PokerHighCard(ai_PokerTable->seat[1].card, 0);
         if (b < a)
             return w;
         return 1;
@@ -821,7 +830,7 @@ int ai_Unk4a8190(void)
             }
             break;
         case 4:
-            if (ai_Unk4a76d0(ai_PokerTable->seat[w].card, 0) <= ai_Unk4a76d0(ai_PokerTable->seat[2].card, 0))
+            if (ai_PokerHighCard(ai_PokerTable->seat[w].card, 0) <= ai_PokerHighCard(ai_PokerTable->seat[2].card, 0))
                 w = 2;
             ai_PokerTable->winHand = kind[w];
             return w;
