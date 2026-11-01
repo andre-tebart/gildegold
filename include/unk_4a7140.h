@@ -100,7 +100,7 @@ int ai_Unk4a8a50(int a, AIPER *p, int *ctx, int d, unsigned char *m);           
 int ai_DecidePartnerOtherSex(int a, struct AICHAR *p, int c, int d, struct AIARG *m);              /* 0x4a8ad0 */
 int ai_Unk4a8bf0(void);                                                          /* 0x4a8bf0 */
 int ai_AlwaysTrue(void);                                                          /* 0x4a8c10 */
-int ai_Unk4a8c20(int a, AIPER *p);                                               /* 0x4a8c20 */
+int ai_EvalOwnTimeSlot(int a, AIPER *p);                                               /* 0x4a8c20 */
 int ai_Unk4a8c80(int a, AIPER *p, int c, int d, unsigned char *m);              /* 0x4a8c80 */
 int ai_Unk4a8d20(int a, AIPER *p, int c, int d, unsigned char *m);              /* 0x4a8d20 */
 int ai_Unk4a8db0(int a, AIPER *p, int c, int d, unsigned char *m);              /* 0x4a8db0 */

@@ -1060,11 +1060,15 @@ int ai_AlwaysTrue(void)
 {
     return 1;
 }
-/* 0x4a8c20, eval callback: on p's day (id & 3 = day % 4, id & 7 = the hour & 7), one in four */
+/* 0x4a8c20, eval callback: true one time in four when it is p's slot (netId & 3 = year % 4 and netId & 7 =
+   hour % 8), so each character gets its turn spread over the years and hours */
 
-int ai_Unk4a8c20(int a, AIPER *p)
+int ai_EvalOwnTimeSlot(int a, AIPER *p)
 {
-    if ((p->netId & 3) == ai_TimeT.year % 4 && (p->netId & 7) == (ai_TimeT.hour & 7))
+    int id;
+
+    id = p->netId;
+    if ((id & 3) == ai_TimeT.year % 4 && (id & 7) == ai_TimeT.hour % 8)
         return util_RandomU(4) == 0;
     return 0;
 }
@@ -1572,7 +1576,7 @@ int ai_Unk4a9a00(int a, AIPER *p, int c, unsigned char *in, unsigned char *m)
     case 0x21:
         return G10_CB(ai_AlwaysTrue)(a, p, ctx, in, m);
     case 0x24:
-        return G10_CB(ai_Unk4a8c20)(a, p, ctx, in, m);
+        return G10_CB(ai_EvalOwnTimeSlot)(a, p, ctx, in, m);
     case 0x25:
         return G10_CB(ai_Unk4a8c80)(a, p, ctx, in, m);
     case 0x27:
