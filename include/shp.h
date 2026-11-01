@@ -43,7 +43,6 @@ typedef struct D2KEY {              /* a colour key: 3 compared bytes, padded to
 extern D2KEY d2_TransparentColour;          /* 0x6f0454 */
 extern D2KEY d2_EndMarkerColour;          /* 0x5fed74 */
 extern D2KEY d2_StartMarkerColour;          /* 0x5fed78 */
-extern unsigned short d2_HighBitMask; /* 0xf8a11c, mask of the half dark colours */
 extern unsigned char d2_Palette[256][4];  /* 0xf8a120, palette */
 #ifndef DATA_VIEWS_H
 extern unsigned short *d2_ShpLightTable;    /* 0x6f0460, colour table */
@@ -77,7 +76,6 @@ void *d2_ShpConvertTo16(D2SHP *s, int p);
 /* views of gfx.c functions (unk_479610.h until layout 2026-10-22; gfx.h declares 0x478930 / 0x478960 with
    char * / D2RGB * parameters) */
 struct D2SURF * d2_CopySurface(struct D2SURF *surf);                         /* 0x479780 */
-void d2_GetPixelColour(int x, int y, D2SURF *surf, unsigned char *rgb);  /* 0x4798f0, pixel colour into rgb */
 int d2_MakeLightTable(char add);                                 /* 0x479d00 */
 
 /* declared in other units' headers before (moved to the owner) */
