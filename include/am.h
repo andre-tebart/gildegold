@@ -149,7 +149,6 @@ int ai_Unk495520(AIACT *act, int a);                            /* 0x495520, reg
 int ai_Unk4a49a0(float *a, float *b, int i, AIPER *p, int f, void *x, void *y);  /* 0x4a49a0 */
 char * amt_GetOfficeHolder(int k);                            /* 0x4e7510 */
 int amt_GetOwnedOfficePay(void);                                         /* 0x4ea990 */
-int unk_Unk4f39e0(int c);                                        /* 0x4f39e0 */
 unsigned char ord_GetRatingByte(int k);                              /* 0x4f97a0 */
 float ord_BuildingCapacityRatio(void);                                       /* 0x4f97c0 */
 int gm_TitleGroup(int k);                                        /* 0x504ad0 */
@@ -238,7 +237,6 @@ void gm_Unk503ee0(unsigned *out, int n);                                        
 #define AI_505DF0(id) ((AIPER *)gm_FindChar(id))  /* ai.h: returns AICHAR * */
 int gm_Unk509ee0(char *c, char p);                                    /* 0x509ee0 */
 int gm_GetWorth(unsigned short id);                                            /* 0x50a640 */
-int he_ShowNews(int pid, int fl, char *text, int unused, int ev, char *text2);          /* 0x53dda0 */
 /* ai.h declares he_FindEvent with five arguments; 0x496b10 calls it with three */
 #define AI_53E400_3(a, b, k) ((AIJOBX *(*)(int, int, int, ...))he_FindEvent)(a, b, k)
 
@@ -444,13 +442,6 @@ void ai_Unk493a40(AGDUEL *d);                                   /* 0x493a40 */
 int ai_Unk493be0(AGCH *p, AIOBJ *o);                            /* 0x493be0 */
 AGCH *ai_Unk493ea0(AGCH *p);                                    /* 0x493ea0 */
 
-int unk_Unk4f0430(int *g, char *o, int v, short s, int x);       /* 0x4f0430 */
-void unk_Unk4f0e80(int *g, int x, char *o, int v, char b, int y);  /* 0x4f0e80, gv.c */
-unsigned gv_FindEntry(void *a, unsigned char *o, unsigned after, int (*cb)(), int l);  /* 0x4ef7c0 */
-int unk_Unk4ef710();                                             /* 0x4ef710, a callback */
-int gv_EntryIsFree();                                             /* 0x4ef760, a callback */
-int unk_Unk4f2440(unsigned short *c, int k1, int k2, int *out);              /* 0x4f2440 */
-int unk_Unk4f2330(unsigned short *c, int a, int kind, int flag, int *out);       /* 0x4f2330 */
 int gm_Unk509ee0(char *c, char p);                     /* 0x509ee0 */
 int gm_GetWorth(unsigned short id);                            /* 0x50a640 */
 int gm_ConvertMoney(int a, unsigned char k);                       /* 0x5085b0 */
@@ -534,7 +525,6 @@ int ai_Unk4a67a0(struct AIPER *p, struct AIBLD *b, struct AIBLD *t);            
 int ai_Unk4a6ae0(struct AIPER *p, struct AIBLD *b);                                    /* 0x4a6ae0 */
 void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d);                 /* 0x4c4830 */
 int amt_GetKindLevel(int v);                                                 /* 0x4e7c40 */
-void unk_Unk4eea70(char *o);                                           /* 0x4eea70 */
 void gm_SendMoneyDelta(int a, int b);                                        /* 0x50cc50 */
 int he_Unk56f170(int id);                                                /* 0x56f170 */
 
@@ -758,12 +748,10 @@ int ai_Unk4c3eb0(unsigned char k, float v);                    /* 0x4c3eb0 */
 void ai_Unk4c4a20(void);                                        /* 0x4c4a20 */
 int unk_Unk4fc7a0(char *c);                                      /* 0x4fc7a0 */
 int amt_GetOfficeCandidates(char *c, int n, struct AMTCAND *out);                     /* 0x4e7150 */
-int ai_Unk4a9a00(int a, struct AIPER *p, int c, unsigned char *in, unsigned char *m);  /* 0x4a9a00 */
 /* ai_TimeHour (0x770ae4, the clock's hour) is no object: time_view.h views it in ai_Time + 4 */
 extern void *main_Instance;              /* 0x75e140, the module handle */
 int ai_Unk48fb70(int a);                                                        /* 0x48fb70 */
 int ai_Unk4a16f0(int a);                                                        /* 0x4a16f0 */
-int ai_Unk4abed0(int a);                                                        /* 0x4abed0 */     /* 0x770ae4 */
 
 /* ---- small functions 0x4984d0..0x4a3af0 (was unk_4984d0.h) ---- */
 typedef struct G6RING {                 /* 12 bytes, the ring at 0xf83c20 (ai_FillNearRing fills it) */
@@ -811,8 +799,6 @@ int ai_Unk498a80(G5CH *p, AIARG *s1, AIARG *s2);                                
 int ai_Unk498b80(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x498b80 */
 int amt_GetColumnOfficesOwned(int col, int max, struct AMTREC *out);                                      /* 0x4e7040 */
 
-int ai_Unk4aafb0(struct AIPER *p, struct AIPER *o, unsigned char *m);                                /* 0x4aafb0 */
-int ai_Unk4ab2c0(struct AIPER *p, int *a, int *b);                                /* 0x4ab2c0 */
 int amt_GetKind(int k, struct AMTKIND *out);                             /* 0x4e6f80 */
 int amt_FindOffice(char *c, struct AMTKIND *kind, struct AMTREC *office);                                    /* 0x4e6030 */
 
@@ -919,29 +905,19 @@ int ai_Unk49c190(G5CH *p, AIARG *s1, AIARG *s2);                                
 int ai_Unk49c3e0(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49c3e0 */
 int ai_Unk49c790(int a, G5CH *p, int f, AIARG *s1, AIARG *o);                   /* 0x49c790 */
 int ai_Unk49c880(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49c880 */
-int unk_Unk4f39b0(int a);                                                        /* 0x4f39b0 */
 int ai_Unk49c8e0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49c8e0 */
 int ai_Unk49cb60(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49cb60 */
 int ai_Unk49cd30(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49cd30 */
-int ai_Unk4a9fa0(struct AIPER *p, unsigned char *in, unsigned char *out);                                /* 0x4a9fa0 */
 int ai_Unk49cdb0(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49cdb0 */
 int ai_Unk49cdd0(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2); /* 0x49cdd0 */
-int ai_Unk4aa6a0(struct AIPER *p, unsigned char *in, unsigned char *m);                                /* 0x4aa6a0 */
 int ai_Unk49ce50(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49ce50 */
-int ai_Unk4aaa10(struct AIPER *p, int c, unsigned char *m);                                /* 0x4aaa10 */
 int ai_Unk49d030(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49d030 */
 int ai_Unk49d050(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2); /* 0x49d050 */
-int ai_Unk4aa580(struct AIPER *p, int c, unsigned char *m);                                /* 0x4aa580 */
 int ai_Unk49d0f0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49d0f0 */
-int ai_Unk4aa940(struct AIPER *p, int c, unsigned char *m);                                /* 0x4aa940 */
 int ai_Unk49d280(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49d280 */
-int ai_Unk4aa800(struct AIPER *p, int c, unsigned char *m);                                /* 0x4aa800 */
 int ai_Unk49d2d0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49d2d0 */
-int ai_Unk4aaae0(struct AIPER *p, int c, unsigned char *m);                                /* 0x4aaae0 */
 int ai_Unk49d460(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49d460 */
 int ai_Unk49d4b0(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2); /* 0x49d4b0 */
-int ai_Unk4aa120(int a, struct AIPER *p, int c, unsigned char *in, unsigned char *m);                  /* 0x4aa120 */
-int ai_Unk4aa430(struct AIPER *p, unsigned char *in, unsigned char *out);                                /* 0x4aa430 */
 int ai_Unk49d550(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49d550 */
 int ai_Unk49d5e0(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49d5e0 */
 int ai_Unk49d600(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2); /* 0x49d600 */
@@ -963,9 +939,7 @@ int ai_Unk49e350(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  
 int ai_Unk49e680(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49e680 */
 int ai_Unk49e7a0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49e7a0 */
 int ai_Unk49ea90(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49ea90 */
-int ai_Unk4aaef0(struct AIPER *p, unsigned char *a, unsigned char *b);                                /* 0x4aaef0 */
 int ai_Unk49ec10(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2); /* 0x49ec10 */
-int ai_Unk4ab080(struct AIPER *p, int *a, int *b);                                /* 0x4ab080 */
 int ai_Unk49ed10(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49ed10 */
 extern const int ai_Unk5ed140[16];                                                   /* 0x5ed140, random steps */
 int gm_Unk50a250(int b, unsigned short *p, unsigned cnt, int *out);                       /* 0x50a250 */
@@ -1001,13 +975,10 @@ void ai_Unk4948f0(struct AIC4 *ch, int *out);                                   
 #define G8_4948F0(p, r) ai_Unk4948f0((p), (int *)(r))
 int ai_Unk4a13e0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x4a13e0 */
 int ai_Unk4a1640(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x4a1640 */
-int ai_AlwaysTrue(void);                                                             /* 0x4a8c10, an execute callback */
-int sv_ReturnZero(void);                                                             /* 0x52a040, a decide / execute stub */
 int ai_SeanceDecide(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);    /* unlinked: LINK folds it (/OPT:ICF) into sv_ReturnZero */
 int ai_SeanceExec(G5CH *p, AIARG *s1, AIARG *s2);                   /* unlinked: LINK folds it (/OPT:ICF) into sv_ReturnZero */
 int ai_Unk4a16f0(int a);                                                        /* 0x4a16f0 */
 #define G8_4C4830(a, b, k, d) ((void (*)(int, unsigned int, unsigned char, int))cm_SendMoveGoodsUnchecked)(a, b, k, d)  /* above: c is int */
-int unk_Unk4f3a30(int p, int n);                                      /* 0x4f3a30 */
 void ai_Unk5a8b80(unsigned short *param_1, char *param_2, int param_3, int param_4, int param_5);                   /* 0x5a8b80 */
 void ai_Unk5a8c00(unsigned short *param_1, char *param_2, int param_3);                                 /* 0x5a8c00 */
 /* 0x4c4830 with an int c (unk_48e070.h: unsigned char) */
@@ -1033,7 +1004,6 @@ extern G7GRP ai_Unk61a348[];            /* 0x61a348 */
 int ai_Unk4a4680(G7MKT *m);
 int ai_Unk4a4e30(struct AIBLD *b, int k);                                              /* 0x4a4e30 */
 int ai_Unk4a4e70(AIPER *p, int name);                                           /* 0x4a4e70 */
-int ai_BuildingName(int name, char *out);                                          /* 0x58f640 */
 int ai_FindBauplaetze(char *name, int *out);                                         /* 0x58f7a0 */
 extern int d3_CurrentScene;             /* 0x633444 */
 char d3if_SelectScene(int index, char keep);                                        /* 0x4478e0 */
@@ -1045,7 +1015,6 @@ int amt_GetKindLevel(int k);                                              /* 0x4
 extern const int ai_Unk5ed180[];              /* 0x5ed180, ring steps */
 extern const int ai_Unk5ed1a8;                /* 0x5ed1a8, the last of the ring sizes before it */
 int ai_Unk4a4ae0(float *a, float *b, int i, AIPER *p);                          /* 0x4a4ae0 */
-int unk_Unk4f39e0(int c);                                              /* 0x4f39e0 */
 
 char unk_Unk5020e0(int k, int c);                                      /* 0x5020e0 */
 /* 0x4a5140 ai_Unk4a5140 is declared in am.h */
@@ -1107,20 +1076,12 @@ typedef struct G9KIND {                 /* filled by 0x4ef000 */
 extern G9SHOT ai_Unk6f0698;                                                      /* 0x6f0698 */
 extern const G9BALL ai_Unk5edfe0[3];                                                   /* 0x5edfe0 */
 extern const float ai_Unk5eee08;                                                       /* 0x5eee08, 7874 */
-char * gv_FindEffect(int id);                                                  /* 0x4eded0 */
-void unk_Unk4ef170(char *o, unsigned *a, unsigned *b);                                   /* 0x4ef170 */
-void unk_Unk4ef000(int n, int *out);                                             /* 0x4ef000 */
-float unk_Unk4ef330(char *o);                                                    /* 0x4ef330 */
 int ai_SphereVolume(float radius, float size, float *out);                                   /* 0x5dc1a0 */
 struct SPHEREVOLUME; void ai_PositionShare(float a, float b, struct SPHEREVOLUME *rec, float *out);                        /* 0x5dc210 */
 int ai_SolveCannonAim(float *a, float *b, float *rng, float *x, float *y, float *ang, float *vb, float *vc, float *vd); /* 0x5dd100 */
-float unk_Unk4eef50(int r, int k, int c);                                         /* 0x4eef50 */
-int unk_Unk4ef090(char *o, int a, int b, int d, int *n, int *price);              /* 0x4ef090 */
 int ai_Unk4a67a0(struct AIPER *p, struct AIBLD *b, struct AIBLD *t);                                  /* 0x4a67a0 */
-void unk_Unk4ef260(char *o, float *a, float *b);                                 /* 0x4ef260 */
 int ai_InitShot(struct SHOTREC *shot, struct D3VECTOR *pos, struct D3VECTOR *dir, float charge, float size, float density); /* 0x5dc240 */
 int ai_ScatterShot(struct SHOTREC *shot, float sideSpread, struct D3VECTOR *side, float otherSpread, struct D3VECTOR *other, float speedSpread);    /* 0x5dc3a0 */
-int unk_Unk4eeb70(char *o, int *c, int *a, int *b, int *d, float v, int n, int x); /* 0x4eeb70 */
 int ai_Unk4a6ae0(struct AIPER *p, struct AIBLD *b);                                            /* 0x4a6ae0 */
 #undef amt_GetKindLevel
 
