@@ -3602,7 +3602,7 @@ void main_EndRound(void)
     amt_TellOpenOffices(ai_Chars[MAIN_PLAYER]);
     snd_FadeMusic(1.0f, 2000);
 }
-/* 0x539620, a player (the character slot p, kind 6 = prisoner / dead, health 0) is replaced by a new figure: first it checks that some slot of kind 6 with health is left (else ai_GameOver); every he_Events record (0x14c bytes) of that character whose kind is in the first list is closed (he_Unk53e1f0), in the second its +0x70 is set to -1; the kind byte becomes 5, a name is copied from the name table 0x143ac5c (flag9 clear, random 0xbf) or 0x143af70 (random 0x70), the running number and the eight ids are reset, and the events of the table 0x925520 that concern the character in the states 3 .. 9 are dropped @deep All statements read against the original and fixed: two separate lists (la 15 entries from 0x5d, lb {0x45, 0x47, 0} walked as for (j = 0; lb[j]; j++) la[j] == kind), the character scan as an index loop (kind 6 and health != 0), typed MAINCHARNEW fields, two inline strcpy of txt_MaleFirstNames / af70 pointer tables, signed pointer compares; only 'order' hunks and one code hunk are left: after the index scan the original keeps two identical blocks ('mov [ai_GameOver],1; pop edi; add esp,0x48; ret' at 0x5396cb and 0x5396e2, 'cmp ecx,0xffff; jne 0x5396f1' between them) where VC6 cross-jumps the second into the first (ours: 'je 0x5396cb', 17 bytes shorter, size 558 vs 581). Tried: if/else around the rest, return inside the while vs after it. A tail-merge layout question, not a statement. */
+/* 0x539620, a player (the character slot p, kind 6 = prisoner / dead, health 0) is replaced by a new figure: first it checks that some slot of kind 6 with health is left (else ai_GameOver); every he_Events record (0x14c bytes) of that character whose kind is in the first list is closed (he_FreeEvent), in the second its +0x70 is set to -1; the kind byte becomes 5, a name is copied from the name table 0x143ac5c (flag9 clear, random 0xbf) or 0x143af70 (random 0x70), the running number and the eight ids are reset, and the events of the table 0x925520 that concern the character in the states 3 .. 9 are dropped @deep All statements read against the original and fixed: two separate lists (la 15 entries from 0x5d, lb {0x45, 0x47, 0} walked as for (j = 0; lb[j]; j++) la[j] == kind), the character scan as an index loop (kind 6 and health != 0), typed MAINCHARNEW fields, two inline strcpy of txt_MaleFirstNames / af70 pointer tables, signed pointer compares; only 'order' hunks and one code hunk are left: after the index scan the original keeps two identical blocks ('mov [ai_GameOver],1; pop edi; add esp,0x48; ret' at 0x5396cb and 0x5396e2, 'cmp ecx,0xffff; jne 0x5396f1' between them) where VC6 cross-jumps the second into the first (ours: 'je 0x5396cb', 17 bytes shorter, size 558 vs 581). Tried: if/else around the rest, return inside the while vs after it. A tail-merge layout question, not a statement. */
 
 void main_ReplaceFigure(unsigned p)
 {
@@ -3633,7 +3633,7 @@ void main_ReplaceFigure(unsigned p)
             if (*e != 0 && *(unsigned short *)(e + 8) == p) {
                 for (pi = la; *pi != 0; pi++) {
                     if (*pi == *e) {
-                        he_Unk53e1f0(e);
+                        he_FreeEvent(e);
                         break;
                     }
                 }

@@ -376,7 +376,7 @@ void he_FreeEvents(void)
             if ((int)p >= (int)((unsigned)&he_Events + 0x53000))
                 return;
             if (*p != 0)
-                he_Unk53e1f0(p);
+                he_FreeEvent(p);
             i++;
             p += 0x14c;
         } while (i <= U_I((unsigned)&ai_Unk6f261c));
@@ -435,7 +435,7 @@ int he_Unk53d630(void)
     } while ((int)p < (unsigned)((unsigned)full_data_6faa80 + 0xc0));
     if (best != 0) {
         he_Unk53d800(best);
-        he_Unk53e1f0(best);
+        he_FreeEvent(best);
         return 0xf;
     }
     if (bi != -1) {
@@ -897,7 +897,7 @@ unsigned char *he_Unk53e040(unsigned char *m)
 }
 /* 0x53e1f0, frees the event record `r` (the memo block at +0x7c, the slot of the quick list 0x74db40) and shrinks the used counters 0x6f261c / 0x6f2620 */
 
-void he_Unk53e1f0(int *r)
+void he_FreeEvent(int *r)
 {
     unsigned i;
     int *q;
@@ -2202,7 +2202,7 @@ void he_Unk541060(void)
 
     r = (int)he_FindEvent(1, 0, 0x3b);
     if (r != 0)
-        he_Unk53e1f0((int *)r);
+        he_FreeEvent((int *)r);
     HM_I(ev, 0x28) = U_I((unsigned)&ai_Time);
     HM_B(ev, 4) = 0x3b;
     HM_I(ev, 0xc) = -1;
@@ -2222,7 +2222,7 @@ void he_Unk5410f0(void)
 
     r = (int)he_FindEvent(1, 0, 0x73);
     if (r != 0)
-        he_Unk53e1f0((int *)r);
+        he_FreeEvent((int *)r);
     HM_B(ev, 4) = 0x73;
     HM_I(ev, 8) = *(int *)(*(int *)(unsigned)&ai_PlayerChar + 4);
     HM_I(ev, 0x2c) = U_I((unsigned)&ai_TimeHour);
@@ -2242,7 +2242,7 @@ void he_Unk541170(void)
 
     r = (int)he_FindEvent(1, 0, 0xa6);
     if (r != 0)
-        he_Unk53e1f0((int *)r);
+        he_FreeEvent((int *)r);
     HM_I(ev, 0x28) = U_I((unsigned)&ai_Time);
     HM_B(ev, 4) = 0xa6;
     HM_I(ev, 0xc) = -1;
@@ -2549,7 +2549,7 @@ void he_Unk544330(int ev)
     b = gm_FindChar(*(int *)(ev + 0xc));
     mul = 1;
     if (*(int *)(ev + 0x70) == -1 || *(int *)(ev + 0x70) == -2) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
     } else if ((*(unsigned char *)(ev + 0x78) & 4) == 0 && (*(int *)(ev + 0x84) == -1 || cm_GetSlotState(*(int *)(ev + 0x84)) != 0)) {
         *(int *)(ev + 0x84) = -1;
         if (a == 0) {
@@ -2704,7 +2704,7 @@ void he_Unk544840(int ev)
             else if (a != 0 && (*(unsigned *)(a + 0x1c8) & 0x40000) != 0 && b == 0)
                 cm_SendSetField(*(int *)(a + 4), 0x1c8, 4, 0, 0x40000);
         }
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if ((*(unsigned char *)(ev + 0x78) & 4) != 0)
@@ -2952,13 +2952,13 @@ void he_Unk547430(int ev)
             *(HETIME *)(edi + 0x52) = ai_Time;
             cm_SendExSetHE(-1, edi);
         }
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (st == 0) {
         he_Unk53d6f0(ev, 0, 0, (int)"Special\\Beleidigung", 0x5ec);
         if (*(int *)(ev + 0x74) == 0) {
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
             return;
         }
         if (*(unsigned char *)(unsigned)&ai_GameState != 2)
@@ -2986,7 +2986,7 @@ void he_Unk547430(int ev)
         if (gm_CompareTime((unsigned)&ai_Time, ev + 0x52) > 0) {
             he_Unk5472d0(edi, ebx, ebp);
             he_Unk53d800(ev);
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
             return;
         }
         if (U_I((unsigned)&d2_Unkf8aac4) != *(int *)(*(int *)(ev + 0x74) + 8))
@@ -2999,7 +2999,7 @@ void he_Unk547430(int ev)
         else if (h == 1)
             he_Unk5472d0(edi, ebx, ebp);
         he_Unk53d800(ev);
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
     }
 }
 /* 0x547750, a Ghidra miss (disassembled): the run handler of the insult event (the figures +0xac a and +0xb0 b, flag 0x400 of +0x1c8 = in a quarrel): sets the clock to 0x18 units with +0x56 = 6, +0x58 = 0x1e; with the relation 0x4f2e30 (4 ..) it is decided: when b is of kind 6 / 7 a message record of 0x f8 bytes (type 0x46, 0x4fe310) is posted and the event goes on (state 1), else a chance (0x504e20 + 0x42ec20 against 1.0) lets a pay (the news 0x1d81 / 0x1d83, the ability 0x4ea550, the relation -0x14, the same as 0x5472d0) or sets the flags and goes to the state 2 (ROUGH) */
@@ -3157,7 +3157,7 @@ void he_Unk547ba0(int ev)
             gm_AddTime(ev + 0x52, 0, 2, 0);
             *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
         }
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     default:
         *(int *)(ev + 0x84) = -1;
@@ -3173,7 +3173,7 @@ void he_Unk547ee0(int ev)
 
     gm_FindById(&o, 0, 0, *(int *)(ev + 0xb0));
     if (o == 0)
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
     c = *(unsigned char *)o;
     *(int *)(ev + 0xbc) = cm_SendMessage3d(o, 0, *(unsigned char *)(U_I((unsigned)&ai_BTypes) + c * 0x24d + 0x22f), 0);
     *(HETIME *)(ev + 0x52) = ai_Time;
@@ -3192,7 +3192,7 @@ void he_Unk547f90(int ev)
     gm_FindById(&o1, 0, 0, *(int *)(ev + 0xb0));
     gm_FindById(0, 0, &o2, *(int *)(ev + 0xac));
     if (*(int *)(ev + 0x70) == -2 || o1 == 0)
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
     if (*(int *)(ev + 0x70) == 0 && cm_GetSlotState(*(int *)(ev + 0xbc)) != 0) {
         r = cm_GetSlotValue(*(int *)(ev + 0xbc));
         if (r != 0) {
@@ -3201,7 +3201,7 @@ void he_Unk547f90(int ev)
             txt_Format(text, *(unsigned short *)(ev + 0xb8), *(unsigned short *)r, k, o2);
             he_MessageBoxQuickjump(*(int *)(ev + 0xac), *(int *)(ev + 0xac), text, 0, 0x5ec, *(int *)(ev + 0xb0), *(int *)(ev + 0xb4), 0, "_NACHRICHTEN_HS_00");
         }
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
     }
 }
 /* 0x548110, a Ghidra miss (disassembled): the start of the insult news event: the clock +0x18 units ahead, the news 0x1d64 (for b of kind 6 / 7, "_NACHRICHTEN_HS_20") and the event is posted (state 0); a gone figure ends it with the clock copied (ROUGH) */
@@ -3269,7 +3269,7 @@ void he_Unk548230(int ev)
     *(int *)(ev + 0x84) = -1;
     if (st >= -2) {
         if (st < 0) {
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
         } else if (st == 0 && (*(unsigned char *)(ev + 0x78) & 2) != 0) {
             *(HETIME *)(ev + 0x52) = ai_Time;
             gm_AddTime(ev + 0x52, 0, 2, 0);
@@ -3298,7 +3298,7 @@ void he_Unk548300(int ev)
             return;
         }
     }
-    he_Unk53e1f0((int *)ev);
+    he_FreeEvent((int *)ev);
 }
 /* 0x548330, a Ghidra miss: +0xb0 = +0xac + 1, the due clock now, posted 0x18 units ahead */
 
@@ -3315,7 +3315,7 @@ void he_Unk548380(int ev)
     int st = *(int *)(ev + 0x70);
 
     if (st == -2 || st == 0)
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
 }
 /* 0x5483a0, the init of a timed event: +0xb0 = -1, the clock +0x52 = the start (+0x44) + random(4) + 2 in the minute word (+0x56), state 0 */
 
@@ -3334,7 +3334,7 @@ void he_Unk5483f0(int ev)
     int rec, o = 0, a, v, lv;
 
     if (*(int *)(ev + 0x70) == -2) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     txt_Format(text, 0x10c2, ((unsigned)&ai_PlayerSlots + 0x20) + U_I((unsigned)&ai_OwnPlayer) * 0x1fc, (unsigned short)util_Random(3) + 0x10c4);
@@ -3361,7 +3361,7 @@ void he_Unk5483f0(int ev)
             }
         }
     }
-    he_Unk53e1f0((int *)ev);
+    he_FreeEvent((int *)ev);
 }
 /* 0x5485b0, the run handler of the pay event for a master exam of the player (state 0 opens the window "Berufe\Messagebox_Meisterpruefung", the news 0x10b1; state 1 = the answer yes: pays 0x4c47e0 (the amount 0x50a640 of the player) and 0x50ca10 (8), no: 0x50ca10 (-6)) (ROUGH) */
 
@@ -3372,7 +3372,7 @@ void he_Unk5485b0(int ev)
     if (*(int *)(ev + 0x70) == -1 || *(int *)(ev + 0x70) == -2) {
         if (*(int *)(ev + 0x74) != 0)
             he_Unk53d800(ev);
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (gm_CompareTime((unsigned)&ai_Time, ev + 0x44) == -1)
@@ -3399,13 +3399,13 @@ void he_Unk5485b0(int ev)
                 cm_SendMoveGoods(*(int *)(U_I((unsigned)&ai_PlayerChar) + 4), U_I((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), U_I((unsigned)&ai_OwnPlayer), v);
                 gm_Unk50ca10(*(unsigned short *)(ev + 8), 8);
                 he_Unk53d800(ev);
-                he_Unk53e1f0((int *)ev);
+                he_FreeEvent((int *)ev);
                 return;
             }
             if (U_I((unsigned)&d2_ClickedId) == 1) {
                 gm_Unk50ca10(*(unsigned short *)(ev + 8), -6);
                 he_Unk53d800(ev);
-                he_Unk53e1f0((int *)ev);
+                he_FreeEvent((int *)ev);
                 return;
             }
         }
@@ -3429,7 +3429,7 @@ void he_Unk548790(int ev)
     if (st == -1 || st == -2) {
         if (*(int *)(ev + 0x74) != 0)
             he_Unk53d800(ev);
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (gm_CompareTime((unsigned)&ai_Time, ev + 0x44) == -1)
@@ -3446,13 +3446,13 @@ void he_Unk548790(int ev)
             *(int *)(ev + 0x70) = 1;
             return;
         }
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (*(int *)(ev + 0x70) == 1) {
         if (gm_CompareTime((unsigned)&ai_Time, ev + 0x52) > 0) {
             he_Unk53d800(ev);
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
             return;
         }
         if (*(int *)(ev + 0x74) == 0) {
@@ -3473,12 +3473,12 @@ void he_Unk548790(int ev)
                 *(int *)(msg + 0x70) = amt;
                 cm_SendLongMessage(msg);
                 he_Unk53d800(ev);
-                he_Unk53e1f0((int *)ev);
+                he_FreeEvent((int *)ev);
                 return;
             }
             if (h == 1) {
                 he_Unk53d800(ev);
-                he_Unk53e1f0((int *)ev);
+                he_FreeEvent((int *)ev);
             }
         }
     }
@@ -3493,7 +3493,7 @@ void he_Unk5489b0(int ev)
 
     st = *(int *)(ev + 0x70);
     if (st == -2) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (st != 0)
@@ -3513,7 +3513,7 @@ void he_Unk5489b0(int ev)
         he_ShowNews(U_I((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), U_I((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), text, 0, 0x5ff, (char *)0);
         cm_SendMoveGoods(U_I((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, *(unsigned char *)(unsigned)&ai_OwnPlayer, (int)((double)*(int *)(ev + 0xb0) * 0.5));
     }
-    he_Unk53e1f0((int *)ev);
+    he_FreeEvent((int *)ev);
 }
 /* 0x548b70, the init of a timed event: the clock +0x52 = the start (+0x44); a random half (0x42ec00 (2) != 0) frees it at once */
 
@@ -3521,7 +3521,7 @@ void he_Unk548b70(int ev)
 {
     *(HETIME *)(ev + 0x52) = *(HETIME *)(ev + 0x44);
     if ((short)util_Random(2) != 0)
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
 }
 /* 0x548bb0, a Ghidra miss: the run handler of the tip event for the player (word +8): in the state 0 the player's figures (0x501190 kind 4, up to 0x10 with the kind byte 1 or 9 of the building record 0x24d bytes from 0x7e3f30) are collected, one is picked at random and for each of its 0x4ffe90 records (kind 2/6, 0x2a or 0x116) the pay 0x4c4880 (the amount 0.xx * 0x50aaf0 ..) is sent with the text "%s .." (0x5ff710); a player of kind 6 hears the news 0x10b7 with the total (ROUGH) */
 
@@ -3533,14 +3533,14 @@ void he_Unk548bb0(int ev)
     int n = 0, e, ebp, edi, esi, v, total = 0;
 
     if (*(int *)(ev + 0x70) == -2) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (*(int *)(ev + 0x70) != 0)
         return;
     esi = gm_BuildQuery(1, 4, *(unsigned short *)(ev + 8));
     if (esi == 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     while (n < 16) {
@@ -3554,7 +3554,7 @@ void he_Unk548bb0(int ev)
             break;
     }
     if (n == 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     ebp = sel[(unsigned short)util_Random(n)];
@@ -3579,7 +3579,7 @@ void he_Unk548bb0(int ev)
         txt_Format(text, 0x10b7, ebp, total);
         he_MessageBoxQuickjump(U_I((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), U_I((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), text, 0, 0x5ec, *(int *)(ebp + 1), -1, 0, (char *)0);
     }
-    he_Unk53e1f0((int *)ev);
+    he_FreeEvent((int *)ev);
 }
 /* 0x548de0, a Ghidra miss: the run handler of the event of the player (word +8): in the state 0 one of the figures of the player (0x501190 kind 4) with 0x501d80 == 6 is picked at random and 0x50cad0 (-0x32) is called for it; a player of kind 6 hears the news 0x10b8 (ROUGH) */
 
@@ -3590,14 +3590,14 @@ void he_Unk548de0(int ev)
     int n = 0, esi;
 
     if (*(int *)(ev + 0x70) == -2) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (*(int *)(ev + 0x70) != 0)
         return;
     esi = gm_BuildQuery(1, 4, *(unsigned short *)(ev + 8));
     if (esi == 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     while (n < 16) {
@@ -3610,7 +3610,7 @@ void he_Unk548de0(int ev)
             break;
     }
     if (n == 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     esi = sel[(unsigned short)util_Random(n)];
@@ -3620,7 +3620,7 @@ void he_Unk548de0(int ev)
         txt_Format(text, 0x10b8, esi);
         he_MessageBoxQuickjump(U_I((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), U_I((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), text, 0, 0x5ec, *(int *)(esi + 1), -1, 0, (char *)0);
     }
-    he_Unk53e1f0((int *)ev);
+    he_FreeEvent((int *)ev);
 }
 /* 0x548ef0, a Ghidra miss: the start handler: the due clock +0x52 = now, posted 0x60 units ahead */
 
@@ -3637,7 +3637,7 @@ void he_Unk548f30(int ev)
 
     if (st >= -2) {
         if (st < 0) {
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
         } else if (st == 0 && (*(unsigned char *)(ev + 0x78) & 2) != 0) {
             *(HETIME *)(ev + 0x52) = ai_Time;
             gm_AddTime(ev + 0x52, 0, 2, 0);
@@ -3663,7 +3663,7 @@ void he_Unk548fa0(int ev)
                 return;
             }
         }
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
     }
 }
 /* 0x549040, a Ghidra miss: the due clock +0x52 = now, posted 5 units ahead */
@@ -3691,7 +3691,7 @@ void he_Unk549080(int ev)
                 return;
             }
         }
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
     }
 }
 /* 0x549110, a Ghidra miss: the init: state 0, +0xac = 0 */
@@ -3713,7 +3713,7 @@ void he_Unk549120(int ev)
     o = gm_FindChar(*(int *)(rec + 0x5c));
     st = *(int *)(ev + 0x70);
     if (o == 0 || *(unsigned char *)(o + 8) == 0 || *(unsigned char *)(rec + 8) == 0 || st == -2) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (st == 0) {
@@ -3724,7 +3724,7 @@ void he_Unk549120(int ev)
                 n++;
         }
         if (n == 5) {
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
             return;
         }
         f = (5.0f - (float)n) * 0.2f;
@@ -3799,7 +3799,7 @@ void he_Unk549430(int ev)
 
     st = *(int *)(ev + 0x70);
     if (st == -2 || st == -1) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if ((*(unsigned char *)(ev + 0x78) & 4) != 0)
@@ -3874,7 +3874,7 @@ void he_Unk549770(int ev)
 
     st = *(int *)(ev + 0x70);
     if (st == -2 || st == -1) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if ((*(unsigned char *)(ev + 0x78) & 4) != 0)
@@ -3920,18 +3920,18 @@ void he_Unk549970(int ev)
 
     a = *(unsigned char *)(((unsigned)&ai_Unk770b89 + 0x77) + *(unsigned short *)(ev + 8) * 0x21c + *(unsigned char *)(ev + 0xae));
     if (!((float)a < (252.0f))) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     e = (int)he_FindEvent(2, 2, *(unsigned short *)(ev + 8), 0, 0x60);
     if (e != 0) {
         if (e != ev) {
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
             return;
         }
         while ((e = (int)he_NextEvent()) != 0) {
             if (e != ev) {
-                he_Unk53e1f0((int *)ev);
+                he_FreeEvent((int *)ev);
                 return;
             }
         }
@@ -3958,7 +3958,7 @@ void he_Unk549aa0(int ev)
 
     st = *(int *)(ev + 0x70);
     if (st == -2) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (st != 0)
@@ -3986,7 +3986,7 @@ void he_Unk549aa0(int ev)
         }
     }
     ai_Unk4c5870(*(int *)(rec + 4));
-    he_Unk53e1f0((int *)ev);
+    he_FreeEvent((int *)ev);
 }
 /* 0x549ce0, the init of the festival event: a random building (0x889f74 table, 0xa9 bytes each) of kind 7 is looked for (up to 0x100 tries), +0xb0 = its index, +0xb4 = a random entry of the table 0x5ed140, a message record (type 0x78) goes to every figure of kind 6 / 7, four 0x4c59f0 tasks are started (+0xbc .. +0xc8), +0xd0 = the building, the event is posted (state 0) and 0x5a91c0 is called; none found: it is posted as failed (ROUGH) */
 
@@ -4082,7 +4082,7 @@ void he_Unk54a020(int ev)
                 }
             }
         }
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if ((*(unsigned char *)(ev + 0x78) & 4) != 0)
@@ -4256,7 +4256,7 @@ void he_Unk54a6f0(int ev)
             *(unsigned char *)(ev + 0xd8) = *(unsigned char *)(ev + 0xd8) + 1;
     }
     if (*(unsigned char *)(ev + 0xd8) == 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     memset((void *)(ev + 0xac), -1, 6 * 4);
@@ -4336,7 +4336,7 @@ void he_Unk54a7b0(int ev)
                 }
             }
         }
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (st != 0)
@@ -4423,12 +4423,12 @@ void he_Unk54ae60(int ev)
     if (st == -2 || st == -1 || esi == 0 || ebx == 0) {
         if (*(int *)(ev + 0x74) != 0)
             he_Unk53d800(ev);
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
     }
     if (*(int *)(ev + 0x70) == 0) {
         he_Unk53d6f0(ev, 0, 0, (int)"Berufe\\Messagebox_SCHUTZGELD", 0x5f3);
         if (*(int *)(ev + 0x74) == 0) {
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
             return;
         }
         d2_SetForm(*(int *)(*(int *)(ev + 0x74) + 8), 0);
@@ -4448,7 +4448,7 @@ void he_Unk54ae60(int ev)
         return;
     if (gm_CompareTime((unsigned)&ai_Time, ev + 0x52) > 0) {
         he_Unk53d800(ev);
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (U_I((unsigned)&d2_Unkf8aac4) != *(int *)(*(int *)(ev + 0x74) + 8) || U_I((unsigned)&d2_ClickedId) == -1)
@@ -4472,7 +4472,7 @@ void he_Unk54ae60(int ev)
         cm_SendExSetHE(3, esi);
     }
     he_Unk53d800(ev);
-    he_Unk53e1f0((int *)ev);
+    he_FreeEvent((int *)ev);
 }
 
 int gm_EquipmentValue(unsigned char *b, int unused);
@@ -4504,7 +4504,7 @@ void he_Unk54b1e0(int ev)
     if (st == -1 || st == -2) {
         if (ebp != 0 && (*(unsigned char *)(ev + 0x78) & 2) != 0)
             cm_SendSetField(*(int *)(ebp + 1), 0x5a, 2, 0, 0x100);
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if ((*(unsigned char *)(ev + 0x78) & 4) != 0)
@@ -4642,7 +4642,7 @@ void he_Unk54ba20(int ev)
     ebx = gm_FindChar(*(int *)(ev + 0xac));
     st = *(int *)(ev + 0x70);
     if (st == -2 || ebx == 0 || esi == 0 || *(unsigned short *)(esi + 0x27) == 0xffff) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (st == 0) {
@@ -4695,7 +4695,7 @@ void he_Unk54ba20(int ev)
         sv_MoveToGroup(esi, 0, *(unsigned short *)ebx, ev);
         ai_Unk4c5230(*(int *)(ebx + 4));
         ai_Unk4c52e0(*(int *)(ebx + 4), *(int *)(ev + 0xb4), *(int *)(ev + 0xb8), 0, 0, "BetriebsPr\xfc" "fung");
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
     }
 }
 /* 0x54be20, a Ghidra miss: the init of the patrol-meeting event: +0xd4 = -1, +0xdc = 0, the start (+0x44) and the due clock (+0x52) = now, posted at once (0x4fe140 (.., 0, 1, 0), state 0) */
@@ -4725,14 +4725,14 @@ void he_Unk54bec0(int ev)
     st = *(int *)(ev + 0x70);
     if (st == -2) {
         if ((*(unsigned char *)(ev + 0x78) & 4) != 0) {
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
             return;
         }
         *(int *)(ev + 0x70) = 5;
         found = 1;
     }
     if (*(int *)(ev + 0x70) == -1) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if ((*(unsigned char *)(ev + 0x78) & 4) != 0)
@@ -4853,7 +4853,7 @@ void he_Unk54bec0(int ev)
         }
         gm_AddTime(ev + 0x52, 0, 2, 0);
         if (found) {
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
             return;
         }
         *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
@@ -4902,7 +4902,7 @@ void he_Unk54c570(int ev)
     float r, sk, lim, pr;
 
     if (*(int *)(ev + 0x70) == -2) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     sprintf(text, "-------> RunSimUnfall: calculating at <Day = %i Time = %i.2:%i.2>", *(int *)(unsigned)&ai_Time, *(unsigned short *)(unsigned)&ai_TimeHour, *(unsigned short *)((unsigned)&ai_Time + 0x6));
@@ -4980,7 +4980,7 @@ void he_Unk54c8e0(int ev)
     int n = 0, rec, v, i, j, t;
 
     if (*(int *)(ev + 0x70) == -1) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if ((*(unsigned char *)(ev + 0x78) & 4) != 0)
@@ -5080,7 +5080,7 @@ void he_Unk54cc50(int ev)
     if (st == -2 || st == -1 || *(unsigned short *)ebp == 0xffff || esi == 0) {
         if (*(int *)(ev + 0x74) != 0)
             he_Unk53d800(ev);
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (st == 0) {
@@ -5091,7 +5091,7 @@ void he_Unk54cc50(int ev)
                 he_Unk53d6f0(ev, 0, 0, (int)"SPECIAL\\TITEL_ANDERE", 0x5fe);
         }
         if (*(int *)(ev + 0x74) == 0) {
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
             return;
         }
         d2_CentreViewWindows(*(int *)(*(int *)(ev + 0x74) + 8));
@@ -5144,7 +5144,7 @@ void he_Unk54cc50(int ev)
             return;
         if (U_I((unsigned)&d2_ClickedId) == 0) {
             he_Unk53d800(ev);
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
             return;
         }
         if (*(unsigned char *)(unsigned)&full_data_6f2630 == 0)
@@ -5153,7 +5153,7 @@ void he_Unk54cc50(int ev)
             return;
         *(unsigned char *)(unsigned)&full_data_6f2630 = 0;
         he_Unk53d800(ev);
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
     }
 }
 /* 0x54d190, a Ghidra miss: the init of the title event: the due clock now, +0x56 = 0x16, +0x58 = 0x1e, +0x5c / +0xac / +0xb0 = 0 */
@@ -5204,7 +5204,7 @@ void he_Unk54d260(int ev)
     int cnt3;
 
     if (*(int *)(ev + 0x70) == -2) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     memset(tab, 0, sizeof(tab));
@@ -5320,14 +5320,14 @@ void he_Unk54d7d0(int ev)
     if (st == -2 || st == -1 || *(unsigned short *)rec == 0xffff) {
         if (*(int *)(ev + 0x74) != 0)
             he_Unk53d800(ev);
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (st == 0) {
         if (*(int *)(ev + 0x74) == 0)
             he_Unk53d6f0(ev, 0, 0, (int)"SPECIAL\\TALENT_STUFE", 0x5ec);
         if (*(int *)(ev + 0x74) == 0) {
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
             return;
         }
         d2_CentreViewWindows(*(int *)(*(int *)(ev + 0x74) + 8));
@@ -5359,14 +5359,14 @@ void he_Unk54d7d0(int ev)
             return;
         if (h == 0) {
             he_Unk53d800(ev);
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
             return;
         }
         if (*(unsigned char *)(unsigned)&full_data_6f2630 == 0 || U_I((unsigned)&full_data_6f262c) != *(int *)(ev + 0x74))
             return;
         *(unsigned char *)(unsigned)&full_data_6f2630 = 0;
         he_Unk53d800(ev);
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
     }
 }
 /* 0x54da20, a Ghidra miss: the init of the talent event: +0xac = the number of the talent (0x4ac140), +0xb4 = -1, the due clock now, posted (state 0) */
@@ -5389,7 +5389,7 @@ void he_Unk54da80(int ev)
 
     st = *(int *)(ev + 0x70);
     if (st == -1 || st == -2) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (*(int *)(ev + 0x84) != -1 && cm_GetSlotState(*(int *)(ev + 0x84)) == 0)
@@ -5501,7 +5501,7 @@ void he_Unk54dec0(int ev)
 
     st = *(int *)(ev + 0x70);
     if (st == -1 || st == -2) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if ((*(unsigned char *)(ev + 0x78) & 4) != 0)
@@ -5657,12 +5657,12 @@ void he_Unk54e890(int ev)
     ebx = gm_FindChar(*(int *)(ev + 0xac));
     st = *(int *)(ev + 0x70);
     if (st == -1) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (st == -2) {
         if ((*(unsigned char *)(ev + 0x78) & 4) != 0) {
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
             return;
         }
         if (edi != 0) {
@@ -5670,7 +5670,7 @@ void he_Unk54e890(int ev)
             if (ebx != 0)
                 cm_SendRelations(*(int *)(ebx + 4), *(int *)(edi + 4), (-8 - *(int *)(ev + 0xb4)) * 5, 1);
         }
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if ((*(unsigned char *)(ev + 0x78) & 4) != 0)
@@ -5746,7 +5746,7 @@ void he_Unk54ebd0(int ev)
     int pr0[16] = { 1, 3, 5, 7, 0xb, 0xd, 0x11, 0x13, 0x2ed, 0x2ef, 0x2f3, 0x2f5, 0x2f9, 0x2fb, 0x2fd, 0x2ff };
 
     if (*(int *)(ev + 0x70) == -2) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     sprintf(text, "-------> RunSimKrankheiten: calculating at <Day = %i Time = %i.2:%i.2>", *(int *)(unsigned)&ai_Time, *(unsigned short *)(unsigned)&ai_TimeHour, *(unsigned short *)((unsigned)&ai_Time + 0x6));
@@ -5870,7 +5870,7 @@ void he_Unk54f160(int ev)
                 cm_SendKillCharacter(*(int *)(a + 4), 1);
             }
         }
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if ((*(unsigned char *)(ev + 0x78) & 4) != 0)
@@ -6056,7 +6056,7 @@ void he_Unk54fb50(int ev)
         *(int *)(ev + 0x70) = 0;
         return;
     }
-    he_Unk53e1f0((int *)ev);
+    he_FreeEvent((int *)ev);
 }
 /* 0x54fc00, a Ghidra miss: creates the effect 0x177 on the scene record of the object p (0x415ad0 (scene, 0x5f36ec, 1, colour 0x64ffa0.., .., 0x12c, 1, ..)); returns its handle (ROUGH, the float arguments are raw) */
 
@@ -6109,7 +6109,7 @@ void he_Unk54fce0(int ev)
             *(int *)(ev + 0x70) = (*(int *)(ev + 0xb0) != 0) * 2 - 1;
             return;
         }
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     case 0:
         r = gm_CompareTime((unsigned)&ai_Time, ev + 0xb4);
@@ -6138,7 +6138,7 @@ void he_Unk54fce0(int ev)
             par_Delete(*(int *)(ev + 0xb0));
             d3if_SelectScene(sc, 1);
         }
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     default:
         return;
@@ -6157,7 +6157,7 @@ void he_Unk54fe80(int ev)
         gm_AddTime(ev + 0xb0, 0, *(int *)(r + 4), 0);
         return;
     }
-    he_Unk53e1f0((int *)ev);
+    he_FreeEvent((int *)ev);
 }
 /* 0x54ff20, a Ghidra miss (disassembled): the run handler of the "Taschendieb" cleanup (+0xac a building id of 0x502020): in the state 0 every figure of the tavern (job record +0x180 with +0x2c == +0xac, boss +0x16c, 0.5 chance) gets the 0x4fdc10 object, is stopped (0x4c5970 / 0x4c5b90) and sent (0x4c52e0 "0x626f58") to its object; posted 0x1e units ahead and ends when the due time +0xb0 is over (ROUGH) */
 
@@ -6169,14 +6169,14 @@ void he_Unk54ff20(int ev)
     if (st < -2)
         return;
     if (st < 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (st != 0)
         return;
     ebp = gm_FindBuildingById(*(int *)(ev + 0xac));
     if (ebp == 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     for (esi = (unsigned)&ai_CharInts; esi < ((unsigned)((unsigned)ai_CharInts + 0x653fe) + 0x2); esi += 0x21c) {
@@ -6192,7 +6192,7 @@ void he_Unk54ff20(int ev)
     *(HETIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0, 0x1e, 0);
     if (gm_CompareTime((unsigned)&ai_Time, ev + 0xb0) == 1)
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
 }
 
 int d3t_PlayAnim();
@@ -6408,7 +6408,7 @@ void he_Unk542100(int ev)
     int cmd[4];
 
     if (*(int *)(ev + 0x70) == -1 || *(int *)(ev + 0x70) == -2) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if ((*(unsigned char *)(ev + 0x78) & 4) != 0)
@@ -6514,7 +6514,7 @@ void he_Unk542590(int ev)
     int v69 = 0;
 
     if (*(int *)(ev + 0x70) == -1 || *(int *)(ev + 0x70) == -2) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if ((*(unsigned char *)(ev + 0x78) & 4) != 0)
@@ -6636,7 +6636,7 @@ void he_Unk543180(int ev)
     char buf[0x100];
 
     if (*(int *)(ev + 0x70) == -1 || *(int *)(ev + 0x70) == -2) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if ((*(unsigned char *)(ev + 0x78) & 4) != 0)
@@ -6679,7 +6679,7 @@ void he_Unk5432f0(int ev)
     r = gm_FindChar(*(int *)(ev + 0xb4));
     st = *(int *)(ev + 0x70);
     if (st == -2 || p == 0 || q == 0 || r == 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         if (*(int *)(ev + 0x74) != 0)
             he_Unk53d800(ev);
         return;
@@ -6690,7 +6690,7 @@ void he_Unk5432f0(int ev)
     if (st == 0) {
         he_Unk53d6f0(ev, 0, 0, (char *)"Berufe\Messagebox_Meisterpruefung", 0x5ec);
         if (*(int *)(ev + 0x74) == 0) {
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
             return;
         }
         d2_SetForm(*(int *)(*(int *)(ev + 0x74) + 8), 0);
@@ -6718,7 +6718,7 @@ void he_Unk5432f0(int ev)
             he_ShowNews(*(int *)(q + 4), *(int *)(q + 4), buf, 0, 0x5fa, (char *)0);
             cm_SendRelations(*(int *)(p + 4), *(int *)(r + 4), -20, 1);
             he_Unk53d800(ev);
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
             return;
         }
         if (h == 1) {
@@ -6728,7 +6728,7 @@ void he_Unk5432f0(int ev)
             cm_SendRelations(*(int *)(r + 4), *(int *)(q + 4), -15, 1);
         }
         he_Unk53d800(ev);
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (st == 2) {
@@ -6743,7 +6743,7 @@ void he_Unk5432f0(int ev)
             cm_SendRelations(*(int *)(q + 4), *(int *)(r + 4), -15, 1);
             cm_SendRelations(*(int *)(r + 4), *(int *)(q + 4), -15, 1);
         }
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
     }
 }
 /* 0x5436a0, a Ghidra miss (disassembled): starts the group event: state 0, clock +0x52 in 0x18 units (state word 0x14); with +0xc0 == 1 every member figure (+0xac .. +0xb8) gets the message 0x36 carrying the event clock and id (flag 9 for the players, else 1), then posts the event (ROUGH) */
@@ -6838,7 +6838,7 @@ void he_Unk542b60(int ev)
     char buf[0x200];
 
     if (*(int *)(ev + 0x70) == -1 || *(int *)(ev + 0x70) == -2) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if ((*(unsigned char *)(ev + 0x78) & 4) != 0)
@@ -6933,7 +6933,7 @@ void he_Unk5437c0(int ev)
     char line[256];
 
     if (*(int *)(ev + 0x70) == -2 || *(int *)(ev + 0x70) == -1) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
     } else if ((*(unsigned char *)(ev + 0x78) & 4) == 0) {
         gm_FindById(&bld, 0, 0, *(int *)(ev + 0x10));
         if (bld != 0 && (rec = gm_Query(*(int *)(bld + 0x5d), 1, 0, 0x17)) == 0) {
@@ -7100,17 +7100,17 @@ void he_Unk543ac0(int ev)
     txt_Format(buf, h == 0 ? 0x1785 : 0x1786, *(unsigned short *)me);
     he_ShowNews(*(int *)(cr + 4), -1, buf, 0, 0x5ec, (char *)0);
     if (st == 2) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     he_Unk53d800(ev);
-    he_Unk53e1f0((int *)ev);
+    he_FreeEvent((int *)ev);
     return;
 fail:
     if (*(int *)(ev + 0x74) != 0)
         he_Unk53d800(ev);
 done:
-    he_Unk53e1f0((int *)ev);
+    he_FreeEvent((int *)ev);
 }
 /* 0x5455e0, a Ghidra miss (disassembled): sets the due clock (+0x52) to now with a random hour (+0x56 = 10 + random(10)) and minute (+0x58 = random(0x3b)), +0x5c = 0 */
 
@@ -7129,7 +7129,7 @@ void he_Unk545640(int ev)
 {
     if (*(int *)(ev + 0x70) != -2)
         ai_Unk4bb6c0(ev + 0xac);
-    he_Unk53e1f0((int *)ev);
+    he_FreeEvent((int *)ev);
 }
 
 void gm_Shuffled(unsigned char n, int *out);
@@ -7205,12 +7205,12 @@ void he_Unk545840(int ev)
 
     st = *(int *)(ev + 0x70);
     if (st == -1) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if ((*(unsigned char *)(ev + 0x78) & 4) != 0) {
         if (st == -2)
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
         return;
     }
     for (i = 0; i < 4; i++) {
@@ -7282,7 +7282,7 @@ void he_Unk545840(int ev)
             }
         }
         if (flag) {
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
             return;
         }
         if (n != 0) {
@@ -7419,7 +7419,7 @@ void he_Unk5461c0(int ev)
     st = *(int *)(ev + 0x70);
     if (st == -2) {
         if ((*(unsigned char *)(ev + 0x78) & 2) == 0) {
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
             return;
         }
         flag = 1;
@@ -7442,7 +7442,7 @@ void he_Unk5461c0(int ev)
                 }
             }
         }
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     case 0:
         if ((*(unsigned char *)(ev + 0x78) == 0) & 2)
@@ -7491,7 +7491,7 @@ void he_Unk5461c0(int ev)
         *(HETIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 2, 0);
         if (flag) {
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
             return;
         }
         *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
@@ -7710,7 +7710,7 @@ void he_Unk546ef0(int ev)
             b = gm_FindChar(*(int *)(ev + 0xb0));
             if (b != 0)
                 cm_SendSetField(*(int *)(b + 4), 0x1c8, 4, 0, 0x200);
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
         }
         return;
     }
@@ -7943,12 +7943,12 @@ void he_Unk5509f0(int ev)
     } while (n != 0);
     *(int *)(ev + 0xb8) = (*(int *)(ev + 0xbc) + idx) & 0xff;
     if (esi == 0)
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
     else
         txt_Format(text, (char *)((unsigned)&ai_Unk625820 + 0x1760), esi);
     *(int *)(ev + 0xb4) = *(int *)(esi + 1);
     if (he_Unk550070(ev) == 0)
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
     gm_AddTime(ev + 0x52, 0, 0xf, 0);
 }
 /* 0x550b60 (a Ghidra function with 0x5509f0 .. glued before it), the run handler of the "Sensenmann" event: states -2 / -1 free the object (0x447190), the sound (0x4e3640, flag 0x6f2634) and the record; state 0 flies the object (0x550370: 1 = on, 2 = arrived: the next target building by +0xc0 steps, 0x550850), state 2 restarts the flight (0x5506c0) (ROUGH) */
@@ -7965,11 +7965,11 @@ void he_Unk550b60(int ev)
         if (U_I((unsigned)&full_data_6f2634) != 0)
             ai_Unk4e3640();
         U_I((unsigned)&full_data_6f2634) = 0;
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (*(int *)(ev + 0xc8) == 0 && he_Unk550070(ev) == 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         if (U_I((unsigned)&full_data_6f2634) != 0)
             ai_Unk4e3640();
         U_I((unsigned)&full_data_6f2634) = 0;
@@ -8422,7 +8422,7 @@ void he_Unk551b70(int ev)
     unsigned char *s;
 
     if (st == -1 || st == -2) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if ((*(unsigned char *)(ev + 0x78) & 4) != 0)
@@ -8511,7 +8511,7 @@ void he_Unk551d70(int ev)
         return;
     }
     if (st < 0 || st >= 6) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     n = ((int (*)(int, int, struct AMTREC *, int))amt_GetColumnOffices)(*(int *)(ev + 0xb0 + st * 4), arr, 6, 0);
@@ -8566,7 +8566,7 @@ void he_Unk552090(int ev)
     if (st == -1 || st == -2) {
         if (*(int *)(ev + 0x74) != 0)
             he_Unk53d800(ev);
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (st == 0) {
@@ -8579,14 +8579,14 @@ void he_Unk552090(int ev)
             io_PrintText(0x10b9, (char *)((unsigned)&ai_PlayerSlots + 0x20) + *(unsigned char *)(unsigned)&ai_OwnPlayer * 0x2f4, *(unsigned short *)(ev + 8));
             *(int *)(ev + 0x70) = 1;
         } else {
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
         }
         return;
     }
     if (st == 1) {
         if (gm_CompareTime((unsigned)&ai_Time, ev + 0x52) > 0) {
             he_Unk53d800(ev);
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
             return;
         }
         if (*(int *)(ev + 0x74) == 0) {
@@ -8602,10 +8602,10 @@ void he_Unk552090(int ev)
             r = he_FindEvent(2, 2, *(unsigned short *)(ev + 8), 1, *(int *)(ev + 0xb0));
             *(int *)(r + 0xb0) = 1;
             he_Unk53d800(ev);
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
         } else if (h == 1) {
             he_Unk53d800(ev);
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
         }
     }
 }
@@ -8640,7 +8640,7 @@ void he_Unk552270(int ev)
     float f, t;
 
     if (st < 0 || st > 1) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (st == 0) {
@@ -8684,7 +8684,7 @@ void he_Unk552270(int ev)
         txt_Format(text, 0x10bb);
         he_ShowNews(*(int *)(ev + 0xac), -1, text, 0x20, 0x5fd, (unsigned)&ch_EmptyName);
     }
-    he_Unk53e1f0((int *)ev);
+    he_FreeEvent((int *)ev);
 }
 /* 0x5524e0, the allocation handler of an event without the flag 4 of +0x78: the due clock (+0x52) is a copy of the start clock (+0x44) and the event is posted (0x4c4c60 (0, ev), handle in +0x84) */
 
@@ -8704,7 +8704,7 @@ void cm_SendFieldDeltas(void);
 void he_Unk552520(int ev)
 {
     if (*(int *)(ev + 0x70) < 0 || *(int *)(ev + 0xac) <= 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if ((*(unsigned char *)(ev + 0x78) & 4) != 0)
@@ -8723,7 +8723,7 @@ void he_Unk5525a0(int ev)
     int x[4];
 
     if (*(int *)(ev + 0x70) < 0 || *(int *)(ev + 0xb0) <= 0 || *(int *)(ev + 0xac) <= 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if ((*(unsigned char *)(ev + 0x78) & 4) != 0)
@@ -8777,7 +8777,7 @@ void he_Unk552820(int ev)
     int st = *(int *)(ev + 0x70);
 
     if (st == -1 || st == -2) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if ((*(unsigned char *)(ev + 0x78) & 4) != 0)
@@ -8815,7 +8815,7 @@ void he_Unk552920(int ev)
     int n, r;
 
     if (st == -1 || st == -2) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if ((*(unsigned char *)(ev + 0x78) & 4) != 0)
@@ -8898,7 +8898,7 @@ int snd_QueueVoice(int id, int bank, char *text, int var, unsigned int delay);
 void he_Unk552b90(int ev)
 {
     if (ai_Unk578120(ev) != 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     *(int *)(ev + 0x70) = 0;
@@ -8920,7 +8920,7 @@ void he_Unk552bc0(int ev)
     case 2:
         ai_Unk577820();
         ai_Unk578150();
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         U_I((unsigned)&ai_GameOver) = 1;
         sv_PopTo((void *)(unsigned)&main_GameLoop);
         break;
@@ -8954,7 +8954,7 @@ void he_Unk552ca0(int ev)
     if (st == -2 || st == -1 || *(unsigned short *)ch == 0xffff || p == 0) {
         if (*(int *)(ev + 0x74) != 0)
             he_Unk53d800(ev);
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (st == 0) {
@@ -8965,7 +8965,7 @@ void he_Unk552ca0(int ev)
                 he_Unk53d6f0(ev, 0, 0, (int)"SPECIAL\TITEL_ANDERE", 0x5fe);
         }
         if (*(int *)(ev + 0x74) == 0) {
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
             return;
         }
         d2_CentreViewWindows(*(int *)(*(int *)(ev + 0x74) + 8));
@@ -9029,14 +9029,14 @@ void he_Unk552ca0(int ev)
             return;
         if (U_I((unsigned)&d2_ClickedId) == 0) {
             he_Unk53d800(ev);
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
             return;
         }
         if (cl == 0 || U_I((unsigned)&full_data_6f262c) != *(int *)(ev + 0x74))
             return;
         *(char *)(unsigned)&full_data_6f2630 = 0;
         he_Unk53d800(ev);
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
     }
 }
 
@@ -9424,7 +9424,7 @@ void he_Unk553e90(int ev)
             return;
         b = gm_BuildQuery(1, 1, *(int *)(ev + 0x10));
         if (b == 0) {
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
             return;
         }
         gm_Query(*(int *)(b + 0x5d), 1, 1, *(int *)(ev + 0xb0));
@@ -9439,7 +9439,7 @@ void he_Unk553e90(int ev)
     p = cm_GetSlotValue(*(int *)(ev + 0xb4));
     b = gm_BuildQuery(1, 1, *(int *)(ev + 0x10));
     if (b == 0 || p == 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     ty = *(unsigned short *)p;
@@ -9487,7 +9487,7 @@ void he_Unk553e90(int ev)
     c[0] = *(int *)(b + 1);
     c[1] = *(int *)(q + 2);
     cm_SendExSysMessage(4, c);
-    he_Unk53e1f0((int *)ev);
+    he_FreeEvent((int *)ev);
 }
 
 float gm_Unk50cd40();
@@ -9509,7 +9509,7 @@ void he_Unk554320(int ev)
     switch (st) {
     case -2:
     case -1:
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     case 0:
         *(int *)(ev + 0x70) = st + 1;
@@ -9519,7 +9519,7 @@ void he_Unk554320(int ev)
             return;
         b = gm_BuildQuery(1, 1, *(int *)(ev + 0x10));
         if (b == 0) {
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
             return;
         }
         ch = (unsigned)&ai_Chars + *(unsigned short *)(b + 0x27) * 0x21c;
@@ -9528,7 +9528,7 @@ void he_Unk554320(int ev)
         if (r < 0) {
             txt_Format(text, 0x1a40, b);
             he_MessageBoxQuickjump(*(int *)(ch + 4), *(int *)(ev + 0x10), text, 0, 0x5f2, *(int *)(b + 1), *(int *)(ev + 0xe0), 0, 0);
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
             return;
         }
         for (i = 0; i < 12; i++) {
@@ -9536,7 +9536,7 @@ void he_Unk554320(int ev)
                 break;
         }
         if (i >= 12) {
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
             return;
         }
         *(int *)(ev + 0xe4) = cm_SendMessage3d(b, *(unsigned char *)(ev + 0xac), 0, 0);
@@ -9550,13 +9550,13 @@ void he_Unk554320(int ev)
         p = cm_GetSlotValue(*(int *)(ev + 0xe4));
         if (p == 0) {
             he_ShowNews(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, (char *)((unsigned)&ai_Unk625820 + 0x19ec), 0, 0x5f2, 0);
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
             return;
         }
         *(int *)(ev + 0xe8) = *(int *)(p + 4);
         b = gm_BuildQuery(1, 1, *(int *)(ev + 0x10));
         if (b == 0) {
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
             return;
         }
         if (*(int *)(ev + 0xe0) == -1) {
@@ -9572,7 +9572,7 @@ void he_Unk554320(int ev)
     case 3:
         b = gm_BuildQuery(1, 1, *(int *)(ev + 0x10));
         if (b == 0) {
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
             return;
         }
         p = gm_FindChar(*(int *)(ev + 0xe8));
@@ -9604,7 +9604,7 @@ void he_Unk554320(int ev)
                 break;
         }
         if (i >= 12) {
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
             return;
         }
         *(HETIME *)(ev + 0x52) = ai_Time;
@@ -9633,7 +9633,7 @@ void he_Unk554860(int ev)
     switch (st) {
     case -2:
     case -1:
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     case 0:
         *(int *)(ev + 0x70) = st + 1;
@@ -9643,7 +9643,7 @@ void he_Unk554860(int ev)
             return;
         b = gm_BuildQuery(1, 1, *(int *)(ev + 0x10));
         if (b == 0) {
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
             return;
         }
         ch = (unsigned)&ai_Chars + *(unsigned short *)(b + 0x27) * 0x21c;
@@ -9653,11 +9653,11 @@ void he_Unk554860(int ev)
         if (r < 0) {
             txt_Format(text, 0x1a41, b);
             he_MessageBoxQuickjump(*(int *)(ch + 4), *(int *)(ev + 0x10), text, 0, 0x5f2, *(int *)(b + 1), *(int *)(ev + 0xb4), 0, 0);
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
             return;
         }
         if (*(int *)(ev + 0xb0) <= 0) {
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
             return;
         }
         *(int *)(ev + 0xb8) = cm_SendMessage3d(b, 1, 0, *(unsigned char *)(kind + *(unsigned char *)(ev + 0xac) + 0x223));
@@ -9669,14 +9669,14 @@ void he_Unk554860(int ev)
         p = cm_GetSlotValue(*(int *)(ev + 0xb8));
         if (p == 0) {
             he_ShowNews(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, (char *)((unsigned)&ai_Unk625820 + 0x1a1c), 0, 0x5f8, 0);
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
             return;
         }
         U_I((unsigned)&ai_Unk6f2318) = 1;
         *(int *)(ev + 0xbc) = *(int *)(p + 4);
         b = gm_BuildQuery(1, 1, *(int *)(ev + 0x10));
         if (b == 0) {
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
             return;
         }
         kind = U_I((unsigned)&ai_BTypes) + *(unsigned char *)b * 0x24d;
@@ -9705,7 +9705,7 @@ void he_Unk554860(int ev)
         }
         cm_RequestChrMoveToUniverse(*(int *)(ev + 0xbc), *(int *)(ev + 0x10), tgt, (char *)(unsigned)"dummy_EINGANG");
         if (*(int *)(ev + 0xb0) <= 0) {
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
             return;
         }
         gm_AddTime(ev + 0x52, 0, (unsigned short)util_Random(10) + 10, 0);
@@ -9785,7 +9785,7 @@ void he_Unk554cb0(int ev)
     *(int *)(ev + 0xc8) = mode;
     if (mode == 4 && b1 == b2) {
         err_Message((char *)((unsigned)&ai_Unk625820 + 0x1a6c));
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     *(int *)(ev + 0xb8) = *(int *)(b2 + 0x30) + *(int *)(b1 + 0x30);
@@ -9808,7 +9808,7 @@ void he_Unk554cb0(int ev)
     *(int *)(ev + 0xec) = -1;
     return;
 fail:
-    he_Unk53e1f0((int *)ev);
+    he_FreeEvent((int *)ev);
 }
 /* 0x5551c0, an object callback of 0x438d40: objects whose name contains "dummy_TRANSPORTER" are collected into the context (32 pointers, +0x80 the count); returns 1 while there is room */
 
@@ -10133,7 +10133,7 @@ void he_Unk556600(int ev)
     if (a44 == 0 || a45 == 0 || b0 == 0 || b1 == 0)
         return;
     if (cart == 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     st = *(int *)(ev + 0x70);
@@ -10153,7 +10153,7 @@ void he_Unk556600(int ev)
             return;
         h = *(int *)(ev + 0xe8);
         if (h != -1 && cm_GetSlotState(h) == 2) {
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
             return;
         }
         mode = *(int *)(ev + 0xc8);
@@ -10169,7 +10169,7 @@ void he_Unk556600(int ev)
             err_Message("he_RunTransport: invalid type!");
         return;
     default:
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
 }
@@ -10188,7 +10188,7 @@ void he_Unk556dc0(int ev)
     gm_FindById(&o, 0, 0, *(int *)(ev + 0xac));
     if (o != 0) {
         if ((*(unsigned char *)(o + 0x13) & 0x20) != 0) {
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
             return;
         }
         cm_SendSetField(*(int *)(o + 2), 0x13, 1, 0x20, 0);
@@ -10215,7 +10215,7 @@ void he_Unk556ed0(int ev)
             return;
         b = gm_Query(0, 1, 0, *(int *)(ev + 0xac));
         if (b == 0) {
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
             return;
         }
         *(int *)(ev + 0x70) = 1;
@@ -10224,7 +10224,7 @@ void he_Unk556ed0(int ev)
     case 2:
         gm_FindById(&o, 0, 0, *(int *)(ev + 0xac));
         if (o == 0) {
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
             return;
         }
         txt_Format(text, 0x1c49);
@@ -10235,13 +10235,13 @@ void he_Unk556ed0(int ev)
         else
             he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, text, 0, 0x5ec, *(int *)(o + 1), -1, 0, 0);
         cm_SendSetField(*(int *)(o + 2), 0x13, 1, 0, 0x20);
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     case 3:
         gm_FindById(&o, 0, 0, *(int *)(ev + 0xac));
         if (o != 0)
             cm_SendSetField(*(int *)(o + 2), 0x13, 1, 0, 0x20);
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
 }
@@ -10252,7 +10252,7 @@ void he_Unk557160(int ev)
     *(int *)(ev + 0x70) = 0;
     *(int *)(ev + 0xec) = 0;
     if (*(unsigned char *)(((unsigned)&ai_Chars + 0x2) + *(unsigned short *)(ev + 8) * 0x21c) != 6)
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
 }
 
 int cm_PartyById();
@@ -10282,7 +10282,7 @@ void he_Unk557190(int ev)
                 pl = U_I((unsigned)&ai_FallbackBuilding);
             he_Unk53d6f0(ev, 0, 0, (int)((fl & 1) ? "misc\EventMessagebox_QJ_BIG" : "misc\EventMessagebox_QJ"), *(int *)(ev + 0xac));
             if (*(int *)(ev + 0x74) == 0) {
-                he_Unk53e1f0((int *)ev);
+                he_FreeEvent((int *)ev);
                 return;
             }
             d2_SetForm(*(int *)(*(int *)(ev + 0x74) + 8), 1);
@@ -10314,7 +10314,7 @@ void he_Unk557190(int ev)
             }
         }
         if (*(int *)(ev + 0x74) == 0) {
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
             return;
         }
         d2_CentreViewWindows(*(int *)(*(int *)(ev + 0x74) + 8));
@@ -10350,7 +10350,7 @@ void he_Unk557190(int ev)
                 di_ClearButtons();
             sb_Stop(*(int *)(ev + 0xec));
             he_Unk53d800(ev);
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
         }
         return;
     }
@@ -10376,12 +10376,12 @@ void he_Unk5578a0(int ev)
             return;
         gm_FindById(&o, 0, 0, *(int *)(ev + 0xac));
         if (o == 0) {
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
             return;
         }
         b = gm_BuildQuery(1, 1, *(int *)(ev + 0x10));
         if (b == 0) {
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
             return;
         }
         kind = U_I((unsigned)&ai_BTypes) + *(unsigned char *)b * 0x24d;
@@ -10411,7 +10411,7 @@ void he_Unk5578a0(int ev)
             tid = 0x5f6;
             b = gm_BuildQuery(1, 0, *(int *)(ev + 0x10));
             if (b == 0) {
-                he_Unk53e1f0((int *)ev);
+                he_FreeEvent((int *)ev);
                 return;
             }
             own = gm_FindCharacterByMaster(b);
@@ -10423,13 +10423,13 @@ void he_Unk5578a0(int ev)
                 he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, text, 0, tid, *(int *)(b + 1), *(int *)(q + 2), 0, 0);
             else
                 he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), *(int *)(b + 1), text, 0, tid, -1, 0, 0, 0);
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
             return;
         }
         gm_AddTime(ev + 0x52, 0, 0, 1);
         return;
     default:
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
 }
@@ -10450,14 +10450,14 @@ void he_Unk557b70(int ev)
 
     if (st < 0 || st > 3) {
         err_Message("he_RunLagerErweitern():Wrong LagerID...");
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (gm_CompareTime(ev + 0x52, (unsigned)&ai_Time) >= 0)
         return;
     gm_FindById(&o, 0, 0, *(int *)(ev + 0xac));
     if (o == 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     cm_BeginFieldBlock(o, *(int *)(o + 2));
@@ -10473,7 +10473,7 @@ void he_Unk557b70(int ev)
         else
             he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), *(int *)(b + 1), text, 0, 0x5f6, -1, 0, 0, 0);
     }
-    he_Unk53e1f0((int *)ev);
+    he_FreeEvent((int *)ev);
 }
 /* 0x557d70, the allocation handler of the group event: the +0xac persons (ids from +0x8c) that exist are sent (0x524260 (0, 0, type, ev)); with none the record is freed, else state 1 and the event is posted 5 later */
 
@@ -10489,7 +10489,7 @@ void he_Unk557d70(int ev)
         }
     }
     if (any == 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     *(HETIME *)(ev + 0x52) = ai_Time;
@@ -10510,7 +10510,7 @@ void he_Unk557e20(int ev)
     float pos[3], pos2[3];
 
     if (gm_ClockSeason((unsigned)&ai_Time) < 0 || st < -2 || st > 4) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     switch (st) {
@@ -10521,7 +10521,7 @@ void he_Unk557e20(int ev)
             if (p != 0)
                 sv_MoveToGroup(0, 0, *(unsigned short *)p, ev);
         }
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     case 0:
         b = gm_BuildQuery(1, 1, *(int *)(ev + 0x10));
@@ -10551,7 +10551,7 @@ void he_Unk557e20(int ev)
             }
         }
         (void)pos2;
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
 }
@@ -10578,7 +10578,7 @@ void he_Unk558550(int ev)
     char text[0x200];
 
     if (st < -2 || st > 1) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     switch (st) {
@@ -10589,7 +10589,7 @@ void he_Unk558550(int ev)
             if (p != 0)
                 sv_MoveToGroup(0, 0, *(unsigned short *)p, ev);
         }
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     case 0:
         for (i = 0; i < *(unsigned char *)(ev + 0xac); i++) {
@@ -10612,7 +10612,7 @@ void he_Unk558550(int ev)
             txt_Format(text, 0x1805, b);
             he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, text, 0, 0x5ec, *(int *)(b + 1), q != 0 ? *(int *)(q + 2) : -1, 0, 0);
         }
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
 }
@@ -10628,12 +10628,12 @@ void he_Unk5588c0(int ev)
 
     p = gm_FindChar(*(int *)(ev + 0xb0));
     if (p == 0 || (*(int *)(p + 0x17c) != 0 && *(unsigned char *)*(int *)(p + 0x17c) == 0x16)) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     b = gm_BuildQuery(1, 1, *(int *)(ev + 0x10));
     if (b == 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (*(int *)(ev + 0xb4) != -1)
@@ -10657,7 +10657,7 @@ void he_Unk558a40(int ev)
 
     p = gm_FindChar(*(int *)(ev + 0xb0));
     if (p == 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (gm_CompareTime(ev + 0x52, (unsigned)&ai_Time) >= 0)
@@ -10670,7 +10670,7 @@ void he_Unk558a40(int ev)
         he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, text, 0, 0x5ec, *(int *)(b + 1), q != 0 ? *(int *)(q + 2) : -1, "_NACHRICHTEN_HS_81", 0);
     }
     sv_MoveToGroup(0, 0, *(unsigned short *)p, ev);
-    he_Unk53e1f0((int *)ev);
+    he_FreeEvent((int *)ev);
 }
 /* 0x558de0, the allocation handler: due clock = the clock at +0xb4 */
 
@@ -10685,7 +10685,7 @@ void he_Unk558e10(int ev)
     int st = *(int *)(ev + 0x70);
 
     if (st == 9) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (st == 3) {
@@ -10728,19 +10728,19 @@ void he_Unk558f10(int ev)
     char text[0x200];
 
     if (st < -2 || st > 8) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     p = gm_FindChar(*(int *)(ev + 0xb0));
     if (p == 0 || st < 0) {
         if (p != 0)
             sv_MoveToGroup(0, 0, *(unsigned short *)p, ev);
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     b = gm_BuildQuery(1, 1, *(int *)(ev + 0x10));
     if (b == 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     switch (st) {
@@ -10805,7 +10805,7 @@ void he_Unk55a030(int ev)
     int p, h;
 
     if (st < -2 || st > 2) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     p = gm_FindChar(*(int *)(ev + 0xb0));
@@ -10814,7 +10814,7 @@ void he_Unk55a030(int ev)
             ai_Unk4c5230(*(int *)(p + 4));
             ((void (*)(int))cm_SendKillCharacter)(*(int *)(p + 4));
         }
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     h = *(int *)(ev + 0xc4);
@@ -10871,19 +10871,19 @@ void he_Unk55a730(int ev)
     char text[0x200];
 
     if (st < -2 || st > 6) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     p = gm_FindChar(*(int *)(ev + 0xb0));
     if (p == 0 || st < 0) {
         if (p != 0)
             sv_MoveToGroup(0, 0, *(unsigned short *)p, ev);
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     b = gm_BuildQuery(1, 1, *(int *)(ev + 0x10));
     if (b == 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     h = *(int *)(ev + 0xcc);
@@ -10907,7 +10907,7 @@ void he_Unk55af70(int ev)
     gm_AddTime(ev + 0x52, 0, (unsigned short)util_Random(3), 0);
     b = gm_BuildQuery(1, 1, *(int *)(ev + 0x10));
     if (b == 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     kind = *(unsigned char *)(U_I((unsigned)&ai_BTypes) + *(unsigned char *)b * 0x24d);
@@ -10920,7 +10920,7 @@ void he_Unk55af70(int ev)
     he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, text, 0, 0x5ec, *(int *)(b + 1), -1, "_NACHRICHTEN_HS_43", 0);
     if (((int (*)(void *))gm_SumListAmounts)(b) != 0)
         ((void (*)(int))cm_SendMoveGoods)(b);
-    he_Unk53e1f0((int *)ev);
+    he_FreeEvent((int *)ev);
 }
 /* 0x55b140, the run handler of the random theft message event (ROUGH): a flagged (2) record with a pending handle +0x84 waits (0x4c3ae0); states -2 .. -1 and above 0 free the record; state 0 with +0xb8 >= 2 looks at the building +0xac (not of the kinds 0xb / 0xc / 0xd; the type 0x27 needs a player owner of kind 6 / 7 at +0x27), rolls a chance from the building's value (0x509b10 (building, +0x5c), the factor 0x5ebb44 and +0xb0) against 0x42ec00(100) and sends a message record (type 0x6e, +0x4a = 1) through 0x4c4b70, then posts the event (0x4c4c60 (0, ev)) with the chance for a second round (0x4c4a60) */
 
@@ -10937,18 +10937,18 @@ void he_Unk55b140(int ev)
         *(int *)(ev + 0x84) = -1;
     }
     if (st < -2 || st > 0 || st != 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (*(int *)(ev + 0xb8) >= 2) {
         b = gm_BuildQuery(1, 1, *(int *)(ev + 0xac));
         if (b == 0) {
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
             return;
         }
         kind = *(unsigned char *)(U_I((unsigned)&ai_BTypes) + *(unsigned char *)b * 0x24d);
         if (kind == 0xd || kind == 0xc || kind == 0xb) {
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
             return;
         }
         o = gm_EquipmentValue(b, *(char *)(b + 0x5c));
@@ -10979,7 +10979,7 @@ void he_Unk55b3e0(int ev)
 
     b = gm_BuildQuery(1, 1, *(int *)(ev + 0xac));
     if (b == 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     *(int *)(ev + 0x10) = *(int *)(b + 1);
@@ -11009,7 +11009,7 @@ void he_Unk55b530(int ev)
     char text[0x100];
 
     if (st < 0 || (b = gm_BuildQuery(1, 1, *(int *)(ev + 0xac))) == 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     m = gm_MinutesBetween((unsigned)&ai_Time, ev + 0x60);
@@ -11032,7 +11032,7 @@ void he_Unk55b720(int ev)
     *(HETIME *)(ev + 0x44) = ai_Time;
     b = gm_BuildQuery(1, 1, *(int *)(ev + 0xac));
     if (b == 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     kind = U_I((unsigned)&ai_BTypes) + *(unsigned char *)b * 0x24d;
@@ -11040,7 +11040,7 @@ void he_Unk55b720(int ev)
     gm_AddTime(ev + 0x52, 0, d != 0 ? d : 0x1e, 0);
     *(int *)(ev + 0x10) = *(int *)(b + 1);
     if ((*(unsigned short *)(b + 0x5a) & 0x40) != 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     *(unsigned short *)(b + 0x5a) = *(unsigned short *)(b + 0x5a) | 0x40;
@@ -11055,7 +11055,7 @@ void he_Unk55b830(int ev)
     char text[0x200];
 
     if (st < 0 || (b = gm_BuildQuery(1, 1, *(int *)(ev + 0xac))) == 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     own = gm_FindCharacterByMaster(b);
@@ -11068,7 +11068,7 @@ void he_Unk55b830(int ev)
     }
     ai_Unk4c54e0(b);
     cm_SendSetField(*(int *)(b + 1), 0x5a, 2, 0x40, 0);
-    he_Unk53e1f0((int *)ev);
+    he_FreeEvent((int *)ev);
 }
 /* 0x55ba00, the allocation handler of a building event: both clocks now, due 1 unit later, the building +0xac (none: free) is +0x10 and gets the message 0x5a / 2 / 0x80 when its byte +0x5a is 0 */
 
@@ -11081,7 +11081,7 @@ void he_Unk55ba00(int ev)
     gm_AddTime(ev + 0x52, 0, 1, 0);
     b = gm_BuildQuery(1, 1, *(int *)(ev + 0xac));
     if (b == 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     *(int *)(ev + 0x10) = *(int *)(b + 1);
@@ -11097,12 +11097,12 @@ void he_Unk55bad0(int ev)
     char text[0x400];
 
     if (st < 0 || st > 3) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     b = gm_BuildQuery(1, 1, *(int *)(ev + 0xac));
     if (b == 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     switch (st) {
@@ -11125,7 +11125,7 @@ void he_Unk55bad0(int ev)
         return;
     default:
         cm_SendExSysMessage(4, ev + 0xb0);
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
 }
@@ -11149,12 +11149,12 @@ void he_Unk55bd80(int ev)
     char text[0x200];
 
     if (st < 0 || st > 3) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     b = gm_BuildQuery(1, 1, *(int *)(ev + 0xac));
     if (b == 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     switch (st) {
@@ -11176,7 +11176,7 @@ void he_Unk55bd80(int ev)
             he_ShowNews(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, text, 0, 0x5ec, 0);
         }
         ai_Unk4c5510(b);
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
 }
@@ -11206,13 +11206,13 @@ void he_Unk55bfd0(int ev)
     char text[0x200];
 
     if (st < 0 || st > 3) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     buyer = gm_FindChar(*(int *)(ev + 0xb4));
     b = gm_FindBuildingById(*(int *)(ev + 0xac));
     if (buyer == 0 || b == 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     switch (st) {
@@ -11238,11 +11238,11 @@ void he_Unk55bfd0(int ev)
         }
         cm_SendSetField(*(int *)(buyer + 1), 0x5a, 2, 0x200, 0);
         he_Unk53d800(ev);
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     default:
         he_Unk53d800(ev);
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
 }
@@ -11262,7 +11262,7 @@ void he_Unk55c540(int ev)
     *(int *)(ev + 0xbc) = *(int *)(ev + 0xb8);
     b = gm_BuildQuery(1, 1, *(int *)(ev + 0xac));
     if (b == 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if ((*(unsigned char *)(ev + 0x78) & 2) == 0)
@@ -11285,20 +11285,20 @@ void he_Unk55c700(int ev)
     char text[0x200];
 
     if (st < 0 || st > 3 || (st != 0 && cm_GetSlotState(*(int *)(ev + 0x84)) == 0 && *(int *)(ev + 0x84) != -1)) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     b = gm_BuildQuery(1, 1, *(int *)(ev + 0xac));
     if (b == 0) {
         sprintf(text, "he_RunKredit(): Could not find GebaeudeId '%i'", *(int *)(ev + 0xac));
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     amt = (int)gm_GetGoodsValue(*(unsigned short *)(b + 0x27));
     txt_Format(text, 0x17f0, b, amt);
     he_ShowNews(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, text, 0, 0x5ec, 0);
     cm_SendMoveGoodsUnchecked(*(int *)(ev + 0xb0), *(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), *(unsigned char *)(unsigned)&ai_OwnPlayer, amt);
-    he_Unk53e1f0((int *)ev);
+    he_FreeEvent((int *)ev);
 }
 /* 0x55cb00, the run handler of a message event (ROUGH): states -2 / -1 and the missing figure +0xb0 free the record; a figure of kind 6 / 7 gets a message record (0x4c4b70) and the news 0x4c59b0; then the record is freed */
 
@@ -11309,7 +11309,7 @@ void he_Unk55cb00(int ev)
     unsigned char m[0xf8];
 
     if (st <= -2 || (p = gm_FindChar(*(int *)(ev + 0xb0))) == 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (*(unsigned char *)(p + 2) == 6 || *(unsigned char *)(p + 2) == 7) {
@@ -11317,7 +11317,7 @@ void he_Unk55cb00(int ev)
         cm_SendLongMessage(m);
         ((void (*)(int))ai_Unk4c59b0)(*(int *)(ev + 0x10));
     }
-    he_Unk53e1f0((int *)ev);
+    he_FreeEvent((int *)ev);
 }
 
 int gm_TitlesLeft();
@@ -11334,14 +11334,14 @@ void he_Unk55cc10(int ev)
     if (gm_CompareTime(ev + 0x52, (unsigned)&ai_Time) == 0)
         return;
     if (st < 0 || st > 3) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     switch (st) {
     case 0:
         he_Unk53d6f0(ev, 0, 0, (int)"Berufe\\Messagebox_Meisterpruefung", 0x5fd);
         if (*(int *)(ev + 0x74) == 0)
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
         return;
     case 1:
         p = gm_FindChar(*(int *)(ev + 0xac));
@@ -11362,7 +11362,7 @@ void he_Unk55cc10(int ev)
         return;
     default:
         he_Unk53d800(ev);
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
 }
@@ -11391,13 +11391,13 @@ void he_Unk55ce60(int ev)
     if (st < 0 || st > 2) {
         if (*(int *)(ev + 0x74) != 0)
             he_Unk53d800(ev);
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (st == 0) {
         he_Unk53d6f0(ev, 0, 0, (int)"Berufe\\Meisterpruefung_BESTANDEN", 0x5fd);
         if (*(int *)(ev + 0x74) == 0) {
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
             return;
         }
         d2_CentreViewWindows(*(int *)(*(int *)(ev + 0x74) + 8));
@@ -11411,7 +11411,7 @@ void he_Unk55ce60(int ev)
     if (U_I((unsigned)&d2_ClickedId) == -1)
         return;
     he_Unk53d800(ev);
-    he_Unk53e1f0((int *)ev);
+    he_FreeEvent((int *)ev);
 }
 
 struct G15PLANT * veg_FindPlantId(struct G15PLANT *p, int id);
@@ -11430,7 +11430,7 @@ void he_Unk55d310(int ev)
 
     b = gm_BuildQuery(1, 1, *(int *)(ev + 0xac));
     if (b == 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     gm_BuildingSkill(b, 0x10, 1);
@@ -11447,13 +11447,13 @@ void he_Unk55d390(int ev)
     char text[0x200];
 
     if (st < 0 || (b = gm_BuildQuery(1, 1, *(int *)(ev + 0xac))) == 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     txt_Format(text, 0x190b, *(int *)(ev + 0xb4), *(unsigned char *)(ev + 0xb0));
     he_ShowNews(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, text, 0, 0x5ff, 0);
     cm_SendExSellObject(*(int *)(ev + 0xb4), -1, *(unsigned char *)(ev + 0xb0), 0, 0, 0);
-    he_Unk53e1f0((int *)ev);
+    he_FreeEvent((int *)ev);
 }
 /* 0x55d490, the allocation handler of the harvest event (ROUGH): the due clock is now (+1), state 0; the building +0xac (0x501190) and the field object +0xb8 (0x4bc670) and the worker +0xb0 (0x505df0; a free worker without job / not of the job 0x28: the group 0x524260 (building, 0xfd contact via 0x4ffe90, ..)) are set up, the job handle +0xc0 = 0x4c5050 (building, 1), +0xb4 = -1 and the word +0xbc = the minute word; a missing worker frees the record */
 
@@ -11470,7 +11470,7 @@ void he_Unk55d490(int ev)
     p = gm_FindChar(*(int *)(ev + 0xb0));
     if (p == 0) {
         sv_MoveToGroup(0, 0, 0, ev);
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (b != 0 && *(int *)(b + 0x10) != -1 && *(unsigned char *)(p + 0x180) != 0x28) {
@@ -11491,20 +11491,20 @@ void he_Unk55d5c0(int ev)
 
     b = gm_BuildQuery(1, 1, *(int *)(ev + 0xac));
     if (b == 0 || st < 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     p = gm_FindChar(*(int *)(ev + 0xb0));
     if (p == 0) {
         sv_MoveToGroup(0, 0, 0, ev);
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     init_BuildingSceneUniverse(b);
     sprintf(path, "%slocations/%s/%s_%s.esc", evt_Path, "", "Ernten_start_%s", "");
     ((void (*)(int, int))cm_SetPlant)(*(int *)(ev + 0xac), 0);
     sv_MoveToGroup(b, 0, *(unsigned short *)p, ev);
-    he_Unk53e1f0((int *)ev);
+    he_FreeEvent((int *)ev);
 }
 /* 0x55db60, a run handler: ends the job of the building +0xac (0x4c5050 (.., 0)) and frees the record; a missing figure releases the group (0x524260) first */
 
@@ -11517,7 +11517,7 @@ void he_Unk55db60(int ev)
         ((void (*)(int, int))cm_SetPlant)(*(int *)(ev + 0xac), 0);
     else
         sv_MoveToGroup(0, 0, 0, ev);
-    he_Unk53e1f0((int *)ev);
+    he_FreeEvent((int *)ev);
 }
 /* 0x55dbe0, the run handler "Entlassen" (the dismissal of a worker, jump table 0x55dbc0; ROUGH): states -2 / -1 free; the figure +0xac (0x505df0), its job record +0x16c (0x4c3ba0 / 0x4c3d90 / 0x4c49e0 mark it, 0x50c520 the wage check against -0x1e), the relation 0x4c4b00, the job end 0x4c5970 / 0x4c5b90, the contact 0x4fdcb0 and the walk away (0x4c52e0 (.., "Entlassen" 0x627860)); the record is freed, state -1 on a failed check */
 
@@ -11527,7 +11527,7 @@ void he_Unk55dbe0(int ev)
     int p;
 
     if (st == -2 || st == -1) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     p = gm_FindChar(*(int *)(ev + 0xac));
@@ -11545,7 +11545,7 @@ void he_Unk55dbe0(int ev)
     ((void (*)(int, int))ai_Unk4c5970)(0, 0);
     ai_Unk4c5b90(*(int *)(p + 4));
     ai_Unk4c52e0(*(int *)(p + 4), -1, -1, 0, 0, "Entlassen");
-    he_Unk53e1f0((int *)ev);
+    he_FreeEvent((int *)ev);
 }
 /* 0x55dd70, the allocation handler of the 0x55de30 event (ROUGH): another record of type 0x32 for the same figure (+0xac) is ended (+0xb0 = -1), the due clock is now + 1 and a missing figure frees the record; a flagged (2) record sends the message 0x1cc / 4 / 0x1000000 to the figure */
 
@@ -11562,7 +11562,7 @@ void he_Unk55dd70(int ev)
     gm_AddTime(ev + 0x52, 0, 0, 1);
     p = gm_FindChar(*(int *)(ev + 0xac));
     if (p == 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if ((*(unsigned char *)(ev + 0x78) & 2) != 0)
@@ -11578,12 +11578,12 @@ void he_Unk55de30(int ev)
         return;
     p = gm_FindChar(*(int *)(ev + 0xac));
     if (p == 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     cm_SendExSetHE(-1, ev);
     cm_SendSetField(*(int *)(p + 4), 0x1cc, 4, 0, ((unsigned)&txt_Keys + 0x181c0));
-    he_Unk53e1f0((int *)ev);
+    he_FreeEvent((int *)ev);
 }
 /* 0x55e180, a Ghidra miss: the allocation handler of the event 0x33: the player 0x505df0 (+0xac) must exist and his kind byte (+2) must not be 0x14 (else free), the run clock is the start clock */
 
@@ -11596,7 +11596,7 @@ void he_Unk55e180(int ev)
         *(HETIME *)(ev + 0x52) = *(HETIME *)(ev + 0x44);
         return;
     }
-    he_Unk53e1f0((int *)ev);
+    he_FreeEvent((int *)ev);
 }
 /* 0x55e1d0, the run handler "Entlassen" of the dismissal with news (ROUGH skeleton, 464 bytes): the figure +0xac (0x505df0), 0x50c520, the job end 0x4c5970 / 0x4c5b90, the marks 0x4c3ba0 / 0x4c3d90 / 0x4c49e0, the walk away (0x4fdcb0 contact, 0x4c52e0 "Entlassen"), the relation 0x4c4b00 and the news "_NACHRICHTEN_HS_01" (0x53dee0, with the building main object) to the owner; the record is freed */
 
@@ -11607,7 +11607,7 @@ void he_Unk55e1d0(int ev)
 
     p = gm_FindChar(*(int *)(ev + 0xac));
     if (p == 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     ((void (*)(int, int))ai_Unk4c5970)(0, 0);
@@ -11615,7 +11615,7 @@ void he_Unk55e1d0(int ev)
     ai_Unk4c52e0(*(int *)(p + 4), -1, -1, 0, 0, "Entlassen");
     txt_Format(text, 0x1bba, p);
     he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, text, 0, 0x5ec, *(int *)(p + 4), -1, "_NACHRICHTEN_HS_01", 0);
-    he_Unk53e1f0((int *)ev);
+    he_FreeEvent((int *)ev);
 }
 /* 0x55e3a0, the allocation handler: the due clock is the start clock (+0x44) */
 
@@ -11636,7 +11636,7 @@ void he_Unk55e3d0(int ev)
         txt_Format(text, 0x1bba, p);
         he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, text, 0, 0x5ec, *(int *)(p + 4), -1, "_NACHRICHTEN_HS_09", 0);
     }
-    he_Unk53e1f0((int *)ev);
+    he_FreeEvent((int *)ev);
 }
 /* 0x55e5c0, the allocation handler: due clock now + 4 hours (0x4fe140 (clock, 0, 0, 4)) */
 
@@ -11654,7 +11654,7 @@ void he_Unk55e600(int ev)
     char text[0x100];
 
     if (st < 0 || (b = gm_BuildQuery(1, 1, *(int *)(ev + 0x10))) == 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     ((void (*)(int))gm_PlayerFactor)(0x3e8);
@@ -11667,7 +11667,7 @@ void he_Unk55e600(int ev)
             }
         }
     }
-    he_Unk53e1f0((int *)ev);
+    he_FreeEvent((int *)ev);
 }
 /* 0x55e730, the run handler of the exam repeat event ("Berufe\Messagebox_Meisterpruefung"; ROUGH skeleton, 815 bytes): opens the window for the player (0x53d6f0, d2_SetForm), shows the offer (0x515960, the news 0x53dda0 via 0x5176d0), the answer pays / refuses (0x4c5fa0, 0x50b290, 0x4c4b00 relation) and closes (0x53d800, free) */
 
@@ -11678,13 +11678,13 @@ void he_Unk55e730(int ev)
     if (st < 0 || st > 1) {
         if (*(int *)(ev + 0x74) != 0)
             he_Unk53d800(ev);
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (st == 0) {
         he_Unk53d6f0(ev, 0, 0, (int)"Berufe\\Messagebox_Meisterpruefung", 0x5fd);
         if (*(int *)(ev + 0x74) == 0) {
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
             return;
         }
         d2_SetForm(*(int *)(*(int *)(ev + 0x74) + 8), 1);
@@ -11695,7 +11695,7 @@ void he_Unk55e730(int ev)
         return;
     ((void (*)(int))ai_Unk4c5fa0)(*(int *)(ev + 0xac));
     he_Unk53d800(ev);
-    he_Unk53e1f0((int *)ev);
+    he_FreeEvent((int *)ev);
 }
 
 int init_ObjectSceneUniverse();
@@ -11813,7 +11813,7 @@ void he_Unk55efc0(int ev)
 
     p = gm_FindChar(*(int *)(ev + 0xac));
     if (p == 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     c = he_Unk55ea60(p);
@@ -11841,12 +11841,12 @@ void he_Unk55fa90(int ev)
     char text[0x100];
 
     if (st < 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (gm_Unk509ee0(*(char **)(unsigned)&ai_PlayerChar, *(unsigned char *)(unsigned)&ai_OwnPlayer) == 0) {
         sprintf(text, "he_RunMarktSupervisor(): Could not find markt-lager:%s", "");
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     ((void (*)(int))cm_SendMoveGoods)(ev);
@@ -11882,13 +11882,13 @@ void he_Unk560900(int ev)
     char text[0x200];
 
     if (st < 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     p = gm_FindChar(*(int *)(ev + 0xac));
     b = gm_BuildQuery(1, 1, *(int *)(ev + 0x10));
     if (p == 0 || b == 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     gm_GetGebaeudeHauptraum(b);
@@ -11919,13 +11919,13 @@ void he_Unk561190(int ev)
     char text[0x200];
 
     if (st == -2 || st == -1) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     p = gm_FindChar(*(int *)(ev + 0xac));
     b = gm_BuildQuery(1, 1, *(int *)(ev + 0x10));
     if (p == 0 || b == 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     txt_Format(text, 0x19da, b);
@@ -11935,7 +11935,7 @@ void he_Unk561190(int ev)
     cm_BeginFieldBlock(p, *(int *)(p + 4));
     cm_AddFieldDelta(1, 1, 0, text);
     cm_SendFieldDeltas();
-    he_Unk53e1f0((int *)ev);
+    he_FreeEvent((int *)ev);
 }
 /* 0x561470, the allocation handler: the due clock is now + a random 0x42ec00(0x1e) units */
 
@@ -11953,13 +11953,13 @@ void he_Unk5614c0(int ev)
     if (st < 0 || st > 1) {
         if (*(int *)(ev + 0x74) != 0)
             he_Unk53d800(ev);
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (st == 0) {
         he_Unk53d6f0(ev, 0, 0, (int)"locations\\diebesgilde\\Diebesgilde_Loesegeld_Msg", 0x5fd);
         if (*(int *)(ev + 0x74) == 0) {
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
             return;
         }
         d2_SetForm(*(int *)(*(int *)(ev + 0x74) + 8), 1);
@@ -11972,7 +11972,7 @@ void he_Unk5614c0(int ev)
         cm_SendMoveGoodsUnchecked(*(int *)(ev + 0xac), -1, *(unsigned char *)(unsigned)&ai_OwnPlayer, *(int *)(ev + 0xb0));
     ((void (*)(int))ai_Unk4c5fa0)(*(int *)(ev + 0xac));
     he_Unk53d800(ev);
-    he_Unk53e1f0((int *)ev);
+    he_FreeEvent((int *)ev);
 }
 /* 0x5619a0, a Ghidra miss: the allocation handler of the event 0x3f: an older event of the type with the same +0xac makes this one -1 (free on its first run); the first run is now + 1 */
 
@@ -12028,19 +12028,19 @@ void he_Unk561c20(int ev)
     char text[0x200];
 
     if (st < 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     b = gm_BuildQuery(1, 1, *(int *)(ev + 0xac));
     if (b == 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     txt_Format(text, 0x1bba, b);
     he_ShowNews(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, text, 0, 0x5fb, 0);
     ((void (*)(int))gm_PlayerFactor)((unsigned short)util_Random(100));
     cm_SendMoveGoodsUnchecked(*(int *)(ev + 0xac), -1, 0, 0);
-    he_Unk53e1f0((int *)ev);
+    he_FreeEvent((int *)ev);
 }
 /* 0x5628e0, the run handler "GebSpionage" (spying on a building; ROUGH skeleton, 2064 bytes): like the espionage walk 0x55a030 the spies (group 0x524260 (building, .., id, ev), 0x4c5230, 0x4c52e0 "GebSpionage") walk to the building (0x524770), look around (gm_Unk504e00, 0x5090b0, _ftol rolls), the owner is told (the news "_NACHRICHTEN_HS_78", 0x501ce0 shows the building) and the group released; the record is freed at the end */
 
@@ -12051,13 +12051,13 @@ void he_Unk5628e0(int ev)
     char text[0x200];
 
     if (st < 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     b = gm_BuildQuery(1, 1, *(int *)(ev + 0x10));
     p = gm_FindChar(*(int *)(ev + 0xb0));
     if (b == 0 || p == 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     ai_Unk4c5230(*(int *)(p + 4));
@@ -12086,14 +12086,14 @@ void he_Unk5630f0(int ev)
     int p;
 
     if (st < 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (*(int *)(ev + 0x84) != -1 && cm_GetSlotState(*(int *)(ev + 0x84)) == 0)
         return;
     p = gm_FindChar(*(int *)(ev + 0xb0));
     if (p == 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     sv_MoveToGroup(0, 0, *(unsigned short *)p, ev);
@@ -12116,13 +12116,13 @@ void he_Unk5639c0(int ev)
     int b, p;
 
     if (st < 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     b = gm_BuildQuery(1, 1, *(int *)(ev + 0x10));
     p = gm_FindChar(*(int *)(ev + 0xb0));
     if (b == 0 || p == 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     ai_Unk4c5230(*(int *)(p + 4));
@@ -12182,7 +12182,7 @@ void he_Unk564860(int ev)
     *(unsigned char *)(ev + 0xb4) = 0;
     b = gm_BuildQuery(1, 1, *(int *)(ev + 0xac));
     if (b == 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     gm_NearestBuildingK(b);
@@ -12198,14 +12198,14 @@ void he_Unk5649b0(int ev)
     char name[0x40];
 
     if (st < 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (*(int *)(ev + 0x84) != -1 && cm_GetSlotState(*(int *)(ev + 0x84)) == 0)
         return;
     b = gm_BuildQuery(1, 1, *(int *)(ev + 0xac));
     if (b == 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     sprintf(name, "brand_he_%i_%i", *(int *)(ev + 0xac), st);
@@ -12282,11 +12282,11 @@ void he_Unk565410(int ev)
             } while (n != 0);
             *(char *)(ev + 0xec) = 0;
         }
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     case -2:
     case -1:
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     default:
         return;
@@ -12330,7 +12330,7 @@ void he_Unk565620(int ev)
     case 0:
         p = gm_FindChar(*(int *)(ev + 0xac));
         if (p == 0) {
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
             return;
         }
         d = gm_MinutesBetween(ev + 0x60, (unsigned)&ai_Time);
@@ -12354,14 +12354,14 @@ void he_Unk565620(int ev)
             txt_Format(text, 0x1a18, o, *(unsigned short *)p);
             he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, text, 0, 0x5f2, *(int *)(ev + 0x10), -1, 0, (unsigned)&full_data_627b0c);
         }
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     case -2:
     case -1:
         p = gm_FindChar(*(int *)(ev + 0xac));
         if (p != 0)
             sv_MoveToGroup(0, 0, *(unsigned short *)p, 0);
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     default:
         return;
@@ -12379,7 +12379,7 @@ void he_Unk565850(int ev)
     c = 0;
     p = (unsigned char *)gm_FindBuildingById(*(int *)(ev + 0xb4));
     if (p == 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     rec = (char *)(U_I((unsigned)&ai_BTypes) + *p * 0x24d);
@@ -12415,7 +12415,7 @@ void he_Unk565940(int ev)
     if (st < -2)
         return;
     if (st < 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (st != 0)
@@ -12446,7 +12446,7 @@ void he_Unk565940(int ev)
                 ai_Unk4c52e0(*(int *)(r + 4), v[0], v[1], 0, 0, (unsigned)&full_data_627b20);
         }
     }
-    he_Unk53e1f0((int *)ev);
+    he_FreeEvent((int *)ev);
 }
 /* 0x565b00, the allocation handler "he_AllocDiePlayer": the player 0x505df0 (+0xac) must exist (else the error message and free); his flag byte +8 is cleared, the next run is now */
 
@@ -12457,7 +12457,7 @@ void he_Unk565b00(int ev)
     p = gm_FindChar(*(int *)(ev + 0xac));
     if (p == 0) {
         err_Message("he_AllocDiePlayer: player not found!");
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     *(char *)(p + 8) = 0;
@@ -12519,7 +12519,7 @@ void he_Unk565b60(int ev)
     default:
         return;
     }
-    he_Unk53e1f0((int *)ev);
+    he_FreeEvent((int *)ev);
 }
 /* 0x565d10, the allocation handler "he_AllocKillPlayer" (ROUGH): the player 0x505df0 (+0xac) must exist (else the error message and free); when another event of the type 0x72 already kills him this one is freed, else
    +0xb4 / +0xb0 / +0x84 = -1 and the run clock is the start clock (+0x44) */
@@ -12531,12 +12531,12 @@ void he_Unk565d10(int ev)
     p = gm_FindChar(*(int *)(ev + 0xac));
     if (p == 0) {
         err_Message("he_AllocKillPlayer: player not found!");
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     for (o = (int)he_FindEvent(1, 0, 0x72); o != 0; o = (int)he_NextEvent()) {
         if (o != ev && *(int *)(o + 0xac) == *(int *)(ev + 0xac)) {
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
             return;
         }
     }
@@ -12562,12 +12562,12 @@ void he_Unk565db0(int ev)
 
     st = *(int *)(ev + 0x70);
     if (st == -1) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     p = gm_FindChar(*(int *)(ev + 0xac));
     if (p == 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (*(int *)(p + 0x20c) != -1 && st != 6) {
@@ -12580,7 +12580,7 @@ void he_Unk565db0(int ev)
         f = *(int *)(p + 0x184);
         if (f == 0) {
             if ((*(unsigned char *)(ev + 0x78) & 2) == 0) {
-                he_Unk53e1f0((int *)ev);
+                he_FreeEvent((int *)ev);
                 return;
             }
             *(int *)(ev + 0x70) = 3;
@@ -12619,7 +12619,7 @@ void he_Unk565db0(int ev)
         gm_AddTime(ev + 0x52, 0, 0x1e, 0);
         *(int *)(ev + 0x70) = *(int *)(ev + 0x70) + 1;
         if ((*(unsigned char *)(ev + 0x78) & 4) != 0)
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
         return;
     case 3:
         if (*(char *)(p + 2) != 6 && *(char *)(p + 2) != 7) {
@@ -12656,12 +12656,12 @@ void he_Unk565db0(int ev)
             cm_SendFieldDeltas();
         }
         cm_SendKillCharacter(*(int *)(p + 4), gm_Unk5075c0(p));
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     case 5:
         gm_Unk506890(p, U_I((unsigned)&ai_PlayerChar));
         cm_SendKillCharacter(*(int *)(p + 4), gm_Unk5075c0(p));
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     case 6:
         a = cm_GetSlotState(*(int *)(ev + 0xb4));
@@ -12679,7 +12679,7 @@ void he_Unk565db0(int ev)
         return;
     case 7:
         if (*(unsigned char *)(p + 8) != 0) {
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
             return;
         }
         if (cm_PartyById(*(int *)(ev + 0xb0)) == 0) {
@@ -12693,7 +12693,7 @@ void he_Unk565db0(int ev)
         gm_AddTime(ev + 0x52, 2, 0, 0);
         return;
     case -2:
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     default:
         return;
@@ -12721,7 +12721,7 @@ void he_Unk566370(int ev)
     int id;
 
     if (U_I((unsigned)&ai_Time) != *(int *)(ev + 0x44)) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     season = gm_ClockSeason((unsigned)&ai_Time);
@@ -12795,11 +12795,11 @@ void he_Unk566370(int ev)
             if (*(char *)((unsigned)&ai_GameSwitches + 0x1) != 0 && (unsigned short)util_Random(10) > 7)
                 snd_QueueVoice(id, 0, "_NACHTWAECHTER_NACHTS_ENDE", -1, 0xfa);
         }
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     case -2:
     case -1:
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     default:
         return;
@@ -12845,12 +12845,12 @@ void he_Unk566830(int ev)
                 ai_Unk4c52e0(*slot, -1, -1, 0, 0, (unsigned)&full_data_627d74);
             sv_MoveToGroup(0, 0, *(unsigned short *)p, 0);
         }
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     case 0:
         b = gm_BuildQuery(1, 1, *(int *)(ev + 0xac));
         if (b == 0) {
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
             return;
         }
         for (i = 0, slot = (int *)(ev + 0x8c); i < 8; i++, slot++) {
@@ -12959,7 +12959,7 @@ void he_Unk566830(int ev)
         }
         b = gm_BuildQuery(1, 1, *(int *)(ev + 0xb0));
         if (b == 0) {
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
             return;
         }
         lead = ((void *(*)(unsigned char *))gm_GetGebaeudeHauptraum)(b);
@@ -12969,7 +12969,7 @@ void he_Unk566830(int ev)
                 ai_Unk4c52e0(*slot, *(int *)(b + 1), *(int *)(lead + 2), 0, 0, (unsigned)&full_data_6279f0);
             }
         }
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     case 5:
         b = gm_BuildQuery(1, 1, *(int *)(ev + 0xac));
@@ -12981,7 +12981,7 @@ void he_Unk566830(int ev)
         *(int *)(ev + 0x70) = -2;
         return;
     default:
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
 }
@@ -13008,7 +13008,7 @@ void he_Unk567660(int ev)
     if (st < -2)
         return;
     if (st < 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (st != 0)
@@ -13129,7 +13129,7 @@ void he_Unk567a80(int ev)
     st = *(int *)(ev + 0x70);
     if (-3 < st) {
         if (st < 0) {
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
         } else if (st == 0) {
             v = *(int *)((unsigned)&full_data_6fa26c + *(int *)(ev + 0xac) * 16);
             if (v != 0 && v != -1 && *(char *)((unsigned)&ai_GamePanel + 0x1) != 0)
@@ -13170,7 +13170,7 @@ void he_Unk567c00(int ev)
     st = *(int *)(ev + 0x70);
     if (-3 < st) {
         if (st < 0) {
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
         } else if (st == 0) {
             if (*(char *)((unsigned)&ai_GamePanel + 0x3) != 0) {
                 he_ShowNews(*(int *)((unsigned)&ai_CharInts + U_I((unsigned)&ai_PlayerId) * 0x21c), -1, *(int *)((unsigned)&full_data_1442430 + *(int *)((unsigned)&full_data_6fa1e0 + *(int *)(ev + 0xac) * 4) * 4), 0, 0x5f9, 0);
@@ -13244,11 +13244,11 @@ void he_Unk567d60(int ev)
         return;
     case 2:
         *(char *)(((unsigned)&ai_Chars + 0x2) + *(unsigned short *)(ev + 8) * 0x21c) = 6;
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     case -2:
     case -1:
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     default:
         return;
@@ -13358,7 +13358,7 @@ void he_Unk568220(int ev)
     if (st < -2)
         return;
     if (st < 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (st != 0)
@@ -13557,7 +13557,7 @@ void he_Unk568be0(int ev)
             if (*(int *)(rec + 0x17c) == ev)
                 sv_MoveToGroup(0, 0, *(unsigned short *)rec, 0);
         }
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (*(unsigned short *)(obj + 0x27) != 0xffff) {
@@ -13614,7 +13614,7 @@ void he_Unk568be0(int ev)
                         if (*(int *)(rec + 0x17c) == ev)
                             sv_MoveToGroup(b2[4], *(unsigned short *)rec, 0, 0);
                     }
-                    he_Unk53e1f0((int *)ev);
+                    he_FreeEvent((int *)ev);
                     return;
                 }
             }
@@ -13635,7 +13635,7 @@ void he_Unk568be0(int ev)
             if (*(int *)(rec + 0x17c) == ev)
                 sv_MoveToGroup(obj, *(unsigned short *)rec, 0, 0);
         }
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     case -2:
     case -1:
@@ -13643,7 +13643,7 @@ void he_Unk568be0(int ev)
             if (*(int *)(rec + 0x17c) == ev)
                 sv_MoveToGroup(0, 0, *(unsigned short *)rec, 0);
         }
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     default:
         return;
@@ -13740,7 +13740,7 @@ void he_Unk569210(int ev)
         if (b == 0)
             goto done_free;
         txt_Format(text, "he_RunProduktion(): geb:%G", b);
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     switch (*(int *)(ev + 0x70)) {
@@ -13927,7 +13927,7 @@ fetch:
         if (*(int *)(ev + 0xc8) != 0) {
             h = (int)he_FindEvent(2, 0, 0x11, 3, *(int *)(ev + 4));
             if (h != 0)
-                he_Unk53e1f0((int *)h);
+                he_FreeEvent((int *)h);
             h = *(int *)(ev + 0x88);
             *(int *)(ev + 0xc8) = 0;
             if (h != 0) {
@@ -13999,7 +13999,7 @@ state2:
     if (b == 0)
         goto done_free;
     ai_Unk4c5840(*(int *)(b + 1));
-    he_Unk53e1f0((int *)ev);
+    he_FreeEvent((int *)ev);
     return;
 state_free:
     gm_FindById(bo, 0, 0, *(int *)(ev + 0xbc));
@@ -14010,7 +14010,7 @@ state_free:
             sv_MoveToGroup(0, *(unsigned short *)rec, 0, 0);
     }
 done_free:
-    he_Unk53e1f0((int *)ev);
+    he_FreeEvent((int *)ev);
 }
 /* 0x56a100, the alloc of an event record: both clocks (+0x52 / +0x60) = the start clock (+0x44), due a random 0 .. 59 units of the kind 4 later */
 
@@ -14038,14 +14038,14 @@ void he_Unk56a170(int ev)
             if (*(int *)(rec + 0x17c) == ev)
                 sv_MoveToGroup(0, *(unsigned short *)rec, 0, 0);
         }
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     case 0:
         *(int *)(ev + 0x70) = 1;
         return;
     case 1:
         if (*(int *)(ev + 0x14) == 0 && *(int *)(ev + 0x18) == 0) {
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
             return;
         }
         if (gm_CompareTime(ev + 0x52, (unsigned)&ai_Time) >= 0)
@@ -14066,7 +14066,7 @@ void he_Unk56a170(int ev)
             if (*(int *)(rec + 0x17c) == ev)
                 sv_MoveToGroup(b, *(unsigned short *)rec, 0, 0);
         }
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
 }
@@ -14099,14 +14099,14 @@ void he_Unk56a3d0(int ev)
             if (*(int *)(rec + 0x17c) == ev)
                 sv_MoveToGroup(0, *(unsigned short *)rec, 0, 0);
         }
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     case 0:
         *(int *)(ev + 0x70) = 1;
         return;
     case 1:
         if (*(int *)(ev + 0x14) == 0 && *(int *)(ev + 0x18) == 0) {
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
             return;
         }
         if (gm_CompareTime(ev + 0x52, (unsigned)&ai_Time) >= 0)
@@ -14151,7 +14151,7 @@ void he_Unk56a3d0(int ev)
             if (*(int *)(rec + 0x17c) == ev)
                 sv_MoveToGroup(bo[0], *(unsigned short *)rec, 0, 0);
         }
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
 }
@@ -14166,7 +14166,7 @@ void he_Unk56a710(int ev)
     case -2:
     case -1:
         he_Unk53d800(ev);
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     case 0:
         id = *(int *)(ev + 0xac);
@@ -14178,7 +14178,7 @@ void he_Unk56a710(int ev)
     case 1:
         if (U_I((unsigned)&d2_Unkf8aac4) == *(int *)(*(int *)(ev + 0x74) + 8) && U_I((unsigned)&d2_ClickedId) != -1 && U_I((unsigned)&d2_ClickedId) == 0) {
             he_Unk53d800(ev);
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
         }
         return;
     }
@@ -14196,7 +14196,7 @@ void he_Unk56a7b0(int ev)
 
     for (e2 = (int)he_FindEvent(2, 0, 0xb, 3, *(int *)(ev + 0x10)); e2 != 0; e2 = he_NextEvent()) {
         if (*(int *)(e2 + 0xac) == *(int *)(ev + 0xac) && *(int *)(e2 + 4) != *(int *)(ev + 4)) {
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
             return;
         }
     }
@@ -14221,7 +14221,7 @@ void he_Unk56a7b0(int ev)
         else
             *(int *)(ev + 0xec) = cm_SendLongMessage(msg);
     } else
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
     *(unsigned char *)(ev + 0xf0) = 0;
     if (gm_FindChar(*(int *)(ev + 0xb4)) != 0)
         *(unsigned char *)(ev + 0xf0) = 4;
@@ -14282,7 +14282,7 @@ void he_Unk56a960(int ev)
     }
     if (*(char *)(ev + 0xf1) == 0 && ai_Unk5ae8e0(A, B) == 0) {
         ai_Unk5ae8e0(A, B);
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     g = gm_Query(*(int *)(B + 0x14), 1, 0, 0x1dd);
@@ -14418,7 +14418,7 @@ rearm:
     gm_AddTime(ev + 0x52, 0, 5, 0);
     return;
 done_free:
-    he_Unk53e1f0((int *)ev);
+    he_FreeEvent((int *)ev);
 }
 /* 0x56b380, the alloc of an event record: both clocks (+0x52 / +0x60) = the start clock (+0x44), due now + 1, +0xbc / +0xc0 / +0xc4 = 0 */
 
@@ -14477,7 +14477,7 @@ void he_Unk56b3f0(int ev)
     }
     return;
 done:
-    he_Unk53e1f0((int *)ev);
+    he_FreeEvent((int *)ev);
 }
 
 int ai_BuildingName();
@@ -14515,7 +14515,7 @@ void he_Unk56b570(int ev)
     }
     for (i = 0; i < n; i++) {
         if (ai_FindNearestObject(ev + 0xd4, tab) == 0) {
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
             d3if_SelectScene(scene, 1);
             return;
         }
@@ -14525,7 +14525,7 @@ void he_Unk56b570(int ev)
     *(int *)(ev + 0x84) = -1;
     return;
 done:
-    he_Unk53e1f0((int *)ev);
+    he_FreeEvent((int *)ev);
 }
 /* 0x56b700, an object callback of the event (o: +0x4c the position, +0x84 .. +0x8c a target): places the object at the target lifted by 1.47 (0x411860 (o, pos, target, 0x46, 0x20)) and counts +0xd0 down */
 
@@ -14769,7 +14769,7 @@ void he_Unk56be30(int ev)
         if (*(unsigned char *)(ev + 0x78) & 2)
             ((void (*)(int))cm_SendExSysMessage)(0);
         d3if_SelectScene(U_I((unsigned)&d3_CurrentScene), 1);
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         break;
     case 0:
         /* 0x4fe210 (ev + 0x52, &ai_Time); 0x505df0 (ev + 0xac); 0x4c47e0 (4 args) -> +0xcc; 0x506430; 0x50c4e0 (ev + 0xb4) */
@@ -14822,7 +14822,7 @@ void he_Unk56ce40(int ev)
     int i, h, arg;
 
     if (*(signed char *)(unsigned)&ai_MissionMode < 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     for (i = 0; i < 0x80; i++) {
@@ -14836,7 +14836,7 @@ void he_Unk56ce40(int ev)
     switch (*(int *)(ev + 0x70)) {
     case -2:
     case -1:
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         break;
     case 0:
         if (ai_Missions[i].unk20 == 0 && *(unsigned short *)(unsigned)&ai_TimeHour < 0x16) {
@@ -14967,7 +14967,7 @@ void he_Unk56d2d0(int ev)
             return;
         }
     }
-    he_Unk53e1f0((int *)ev);
+    he_FreeEvent((int *)ev);
 }
 
 int gm_ClockSeason();
@@ -14989,7 +14989,7 @@ void he_Unk56d3d0(int ev)
         *(int *)(ev + 0x70) = -2;
     st = *(int *)(ev + 0x70);
     if (st == -2 || st == -1) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (*(float *)((unsigned)&gm_DayEndHours + d * 4) <= (float)*(unsigned short *)(unsigned)&ai_TimeHour ||
@@ -15005,7 +15005,7 @@ void he_Unk56d3d0(int ev)
             ai_Unk5a9c30K(h, c, v, *(int *)(ev + 0xb0));
         ahm_SendAddPlace(c, *(int *)(ev + 0xb0));
         sv_MoveToGroup(0, 0, *(unsigned short *)c, 0);
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (he_Unk56ddc0(*(int *)(c + 0x16c), 0x24b) != 0) {
@@ -15052,7 +15052,7 @@ void he_Unk56d610(int ev)
     snd_PlayFavourComment();
     return;
 done:
-    he_Unk53e1f0((int *)ev);
+    he_FreeEvent((int *)ev);
 }
 
 struct AHMSLOT * ahm_FindSlot();
@@ -15072,7 +15072,7 @@ void he_Unk56d730(int ev)
         *(int *)(ev + 0x70) = -2;
     st = *(int *)(ev + 0x70);
     if (st == -2 || st == -1) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (*(float *)((unsigned)&gm_DayEndHours + d * 4) <= (float)*(unsigned short *)(unsigned)&ai_TimeHour ||
@@ -15093,7 +15093,7 @@ void he_Unk56d730(int ev)
             ai_Unk5a9bc0(h, c, v, *(int *)(ev + 0xb0));
         ahm_SendSetPlaceValue(c, *(int *)(ev + 0xb0), *(float *)(ev + 0xb4) + *(float *)(p + 4));
         sv_MoveToGroup(0, 0, *(unsigned short *)c, 0);
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (st == 0) {
@@ -15134,7 +15134,7 @@ void he_Unk56d990(int ev)
     snd_PlayFavourComment();
     return;
 done:
-    he_Unk53e1f0((int *)ev);
+    he_FreeEvent((int *)ev);
 }
 /* 0x56daa0, the run handler of the research event 0x97: the record is 0x4eab20 (the +0xb0 kind); state 1 hands the result over (0x5a9b50, 0x4ec940), releases the building group and frees; state 0 takes the elapsed time off +0xb8 and retries after 5 until it is used up; in the night +0x52 is retried after 1 / 0xf */
 
@@ -15149,7 +15149,7 @@ void he_Unk56daa0(int ev)
         *(int *)(ev + 0x70) = -2;
     st = *(int *)(ev + 0x70);
     if (st == -2 || st == -1) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (*(float *)((unsigned)&gm_DayEndHours + d * 4) <= (float)*(unsigned short *)(unsigned)&ai_TimeHour ||
@@ -15168,7 +15168,7 @@ void he_Unk56daa0(int ev)
             ai_Unk5a9b50(h, c, v, *(int *)(ev + 0xb0));
         ahm_SendSetShare(c, *(int *)(ev + 0xb0));
         sv_MoveToGroup(0, 0, *(unsigned short *)c, 0);
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (st == 0) {
@@ -15236,7 +15236,7 @@ void he_Unk56de10(int ev)
     c = (char *)gm_FindChar(*(int *)(ev + 0xc));
     st = *(int *)(ev + 0x70);
     if (st == -1 || st == -2) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (*(unsigned char *)(ev + 0x78) & 4)
@@ -15427,7 +15427,7 @@ taken:
     txt_Format(text, 0x3ff7, *(unsigned short *)(ev + 8));
     he_ShowNews(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, text, 0, 0x5fa, 0);
     *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
-    he_Unk53e1f0((int *)ev);
+    he_FreeEvent((int *)ev);
 }
 
 int gm_MinutesBetween();                 /* 0x4fe280 */
@@ -15463,7 +15463,7 @@ void he_Unk56e5b0(int ev)
                 he_ShowNews(U_I((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, (char *)U_I((unsigned)&full_data_144a1a4), 1, 0x5fa,
                              (char *)(unsigned)&full_data_628dd4);
         }
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (*(unsigned char *)(ev + 0x78) & 4)
@@ -15669,7 +15669,7 @@ void he_Unk56efc0(int ev)
 
 void ai_Unk56f040(int *r)
 {
-    he_Unk53e1f0(r);
+    he_FreeEvent(r);
 }
 /* 0x56f050, the alloc of the event 0x9b (not while paused, flags +0x78 & 4): due = now +0x30 hours (0x4fe140), state 0 scheduled (0x4c4c60) */
 
@@ -15689,7 +15689,7 @@ void he_Unk56f0b0(int ev)
     int r;
 
     if (HM_I(ev, 0x70) != 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     r = gm_FindChar(HM_I(ev, 0xac));
@@ -15701,7 +15701,7 @@ void he_Unk56f0b0(int ev)
         txt_Format(text, 0x4036, *(unsigned short *)r);
         he_ShowNews(HM_I(ev, 0xb0), -1, text, 1, 0x5fa, 0);
     }
-    he_Unk53e1f0((int *)ev);
+    he_FreeEvent((int *)ev);
 }
 /* 0x56f170, 1 when a running event of the type 0x99 has the owner +0xb0 == `owner` (the search 0x53e400 / 0x53e300) */
 
@@ -16049,13 +16049,13 @@ void he_Unk56fda0(int ev)
     int state, r;
 
     if (per == 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     state = HM_I(ev, 0x70);
     if (state == -1 || state == -2) {
         sv_MoveToGroup(0, 0, *(unsigned short *)per, ev);
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (*(unsigned char *)(ev + 0x78) & 4)
@@ -16154,11 +16154,11 @@ void he_Unk570130(int ev)
             he_ShowNews(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, text, 0, 0x5fa, 0);
         }
         HM_I(ev, 0x84) = cm_SendExSetHE(-1, ev);
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (gm_FindChar(HM_I(ev, 0xb4)) == 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     HM_I(ev, 0xbc) = 0;
@@ -16194,11 +16194,11 @@ void he_Unk5702e0(int ev)
     if (state == -1 || state == -2) {
         if (per != 0)
             sv_MoveToGroup(0, 0, *(unsigned short *)per, 0);
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (per == 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     switch (state) {
@@ -16299,7 +16299,7 @@ void he_Unk5706e0(int ev)
         return;
     r = ai_Unk4a6570((unsigned)&ai_Chars + *(unsigned short *)(ev + 8) * 0x21c, 5, 4, 0, 0, 5, ev + 0xb4);
     if (r == 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (r < 5)
@@ -16332,11 +16332,11 @@ void he_Unk5707a0(int ev)
     if (state == -1 || state == -2) {
         if (per != 0)
             sv_MoveToGroup(0, 0, *(unsigned short *)per, 0);
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (per == 0 || per[8] == 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     switch (state) {
@@ -16458,14 +16458,14 @@ void he_Unk570cc0(int ev)
     if (state == -2) {
         if (HM_I(ev, 0x74) != 0)
             he_Unk53d800(ev);
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (state == 0) {
         if (HM_I(ev, 0x74) == 0)
             he_Unk53d6f0(ev, 0, 0, (char *)((unsigned)&ai_Unk625820 + 0x11a0), 0x5ec);
         if (HM_I(ev, 0x74) == 0) {
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
             return;
         }
         d2_CentreViewWindows(HM_I(HM_I(ev, 0x74), 8));
@@ -16481,7 +16481,7 @@ void he_Unk570cc0(int ev)
     if (gm_CompareTime(&ai_Time, ev + 0x52) > 0) {
         he_Unk570c70((int *)(ev + 0xac), (unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c);
         he_Unk53d800(ev);
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (HM_I(ev, 0x74) == 0) {
@@ -16496,14 +16496,14 @@ void he_Unk570cc0(int ev)
     if (state == 0) {
         he_Unk570bf0((int *)(ev + 0xac), (unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c);
         he_Unk53d800(ev);
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (state != 1)
         return;
     he_Unk570c70((int *)(ev + 0xac), (unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c);
     he_Unk53d800(ev);
-    he_Unk53e1f0((int *)ev);
+    he_FreeEvent((int *)ev);
 }
 
 int ai_Unk4a5d30(struct AIPER *p, unsigned int fl, int n, unsigned short *ids, float lo, float hi, unsigned short *id); /* 0x4a5d30 */
@@ -16552,7 +16552,7 @@ void he_Unk570ef0(int ev)
         }
     }
     if (n == 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     HM_I(ev, 0xb0) = 0;
@@ -16651,7 +16651,7 @@ free_all:
         if (r != 0)
             sv_MoveToGroup(0, 0, *(unsigned short *)r, 0);
     }
-    he_Unk53e1f0((int *)ev);
+    he_FreeEvent((int *)ev);
 }
 /* 0x571550, the alloc of the event 0x8d: the character +0x8c or the building 0x502020 (+0x10) missing -> free; the group 0x4ffe90 (building +0x5d, 1, 0, 0xfd), the character registered (0x524260), +0xac = 0, +0xb8 = 0x1fe, the start clock +0xbc and the due clock +0x52 = now + 5 hours, state 0 */
 
@@ -16662,12 +16662,12 @@ void he_Unk571550(int ev)
     int grp;
 
     if (per == 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     bld = (char *)gm_FindBuildingById(HM_I(ev, 0x10));
     if (bld == 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     grp = gm_Query(HM_I(bld, 0x5d), 1, 0, 0xfd);
@@ -16743,7 +16743,7 @@ void he_Unk571640(int ev)
     if (per != 0)
         sv_MoveToGroup(0, 0, *(unsigned short *)per, 0);
 free_one:
-    he_Unk53e1f0((int *)ev);
+    he_FreeEvent((int *)ev);
 }
 /* 0x571990, the alloc of the event 0x8e: the due clock +0x52 = now + 0x48 hours, state 0 */
 
@@ -16768,7 +16768,7 @@ void he_Unk5719e0(int ev)
         n = ((int (*)(char *, char))gm_Unk509ee0)(per, *(char *)(unsigned)&ai_OwnPlayer);
         if (HM_I(ev, 0xac) < n) {
             cm_SendMoveGoods(-1, *(int *)(per + 4), *(unsigned char *)(unsigned)&ai_OwnPlayer, HM_I(ev, 0xac));
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
             return;
         }
         for (i = 0; i < 5; i++) {
@@ -16783,7 +16783,7 @@ void he_Unk5719e0(int ev)
         if (!found)
             ((float (*)(unsigned short, int))gm_AddHealth)(*(unsigned short *)per, -1001);
     }
-    he_Unk53e1f0((int *)ev);
+    he_FreeEvent((int *)ev);
 }
 /* 0x571ac0, the alloc of the event 0x8f: the character +0xac missing, already with an event 0x8f (+0x17c type 0x8f) or the building 0x501190 (1, 1, +0x10) missing -> free; +0xb4 != -1 -> the group 0x4ffe90 (building +0x5d, 2, 6, 1, +0xb4); the due clock +0x52 and the start clock +0x44 = now; the character registered (0x524260) in the group (or alone without one); the second clock +0x60 = now; due now + 0x1e hours (0x4fe140); +0xb8 = the due clock and 0x4fe140 (+0xb8, 3, 0, 0) */
 
@@ -16814,7 +16814,7 @@ void he_Unk571ac0(int ev)
     gm_AddTime(ev + 0xb8, 3, 0, 0);
     return;
 free_ev:
-    he_Unk53e1f0((int *)ev);
+    he_FreeEvent((int *)ev);
 }
 /* 0x571c30, the run of the event 0x8f: only the states -2 .. 0 (below -> nothing, -1 / -2 -> free). State 0: the character +0xac missing, the byte +0x80 [+0xb0] >= 1000.0f (0x5eceb4) or +0xb8 not due (0x4fe210) -> the release part; the building 0x501190 (1, 1, +0x10) missing -> free; the value 0x5092e0 (+0xc) and 0x509400 (+0x60, now, building) -> the byte +0x80 [+0xb0] = a share of it (the constants 0x5eec10, 0x5ee928, 0x5ece60, 0x5eb8a8); 0x4c3ba0 (character, +4), 0x4c3d00 (1, 1, the byte record, &out), 0x4c49a0, the due clock +0x52 and +0x60 = now, due now + 0x1e hours. The release part: the character 0x505df0 (+0xac) and the building 0x501190 (1, 1, +0x10) -> free when missing; the leader 0x50a810 (building) with +0x1b4 bit 0 -> release; the group 0x4ffe90 (+0x5d, 1, 1, +0xb4) or 0x501ce0 (building) -> the text 0x1bc8 (and the strings 0x631090 / 0x6274c8) to the player, the message 0x53dee0; the character released (0x524260) and the event freed. ROUGH */
 
@@ -16873,10 +16873,10 @@ release:
     he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), HM_I(ev, 0x10), text, 0, 0x5f2, *(int *)(bld + 1), *(int *)(grp + 2), (char *)(unsigned)&ch_EmptyName, (char *)((unsigned)&ai_Unk625820 + 0x1ca8));
 released:
     sv_MoveToGroup(bld, 0, *(unsigned short *)per, 0);
-    he_Unk53e1f0((int *)ev);
+    he_FreeEvent((int *)ev);
     return;
 free_ev:
-    he_Unk53e1f0((int *)ev);
+    he_FreeEvent((int *)ev);
 }
 /* 0x571f60, the alloc of the event 0x90: paused -> nothing; state 0; the due clock +0x52 = now; 0x53e400 (2, 0, 0x90, 3, +0x10) finds another running event 0x90 of the building -> state -1 (0x4c4c60); else the message 0x91 (+0x28 the clock, +0x36 0xa, +0x58 +4, +0x5c -1, +0x60 +0xb0) through 0x4c4b70, +0xb4 / +0xb0 capped at 2, +0xb8 = 0, 0x50cc50 (pid, -(+0xb4 + 2) * (+0xb0 + 2)), due now + 5 hours, state 0 */
 
@@ -17058,7 +17058,7 @@ void he_Unk5725b0(int ev)
     char *bld;
 
     if (HM_I(ev, 0x70) == -2 || HM_I(ev, 0x70) == -1)
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
     if (*(unsigned char *)(ev + 0x78) & 4)
         return;
     *(HETIME *)(ev + 0x52) = ai_Time;
@@ -17129,7 +17129,7 @@ void he_Unk5726b0(int ev)
         evt_Stop((EVTSCRIPT *)obj);
         d3if_SelectScene(*(int *)(unsigned)&d3_CurrentScene, 1);
     }
-    he_Unk53e1f0((int *)ev);
+    he_FreeEvent((int *)ev);
 }
 /* 0x572860, the alloc of the events 0x8b and 0x92: the due clock +0x52 = now; the minute word +0x56 >= 0x17 -> due + 0x18 hours and the minute word = 0xc, else due + 6 hours; state 0 */
 
@@ -17195,14 +17195,14 @@ void he_Unk572a50(int ev)
     if (state == -2) {
         if (HM_I(ev, 0x74) != 0)
             he_Unk53d800(ev);
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (state == 0) {
         if (HM_I(ev, 0x74) == 0)
             he_Unk53d6f0(ev, 0, 0, (char *)((unsigned)&ai_Unk625820 + 0x11a0), 0x5ec);
         if (HM_I(ev, 0x74) == 0) {
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
             return;
         }
         d2_CentreViewWindows(HM_I(HM_I(ev, 0x74), 8));
@@ -17215,7 +17215,7 @@ void he_Unk572a50(int ev)
         if (gm_CompareTime(&ai_Time, ev + 0x52) > 0) {
             he_Unk5729c0(ev);
             he_Unk53d800(ev);
-            he_Unk53e1f0((int *)ev);
+            he_FreeEvent((int *)ev);
             return;
         }
         if (HM_I(ev, 0x74) == 0) {
@@ -17226,13 +17226,13 @@ void he_Unk572a50(int ev)
             if (*(int *)(unsigned)&d2_ClickedId == 0) {
                 he_Unk5728d0(ev);
                 he_Unk53d800(ev);
-                he_Unk53e1f0((int *)ev);
+                he_FreeEvent((int *)ev);
                 return;
             }
             if (*(int *)(unsigned)&d2_ClickedId == 1) {
                 he_Unk5729c0(ev);
                 he_Unk53d800(ev);
-                he_Unk53e1f0((int *)ev);
+                he_FreeEvent((int *)ev);
                 return;
             }
         }
@@ -17270,7 +17270,7 @@ void he_Unk572bf0(int ev)
     switch (HM_I(ev, 0x70)) {
     case -2:
     case -1:
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     case 0:
         bld = (char *)gm_BuildQuery(1, 5, 0x1d);
@@ -17363,7 +17363,7 @@ tail:
                 he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, text, 0, 0x5f2, 0, *(int *)(per + 2), (char *)(unsigned)&full_data_629000, 0);
             }
         }
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     case 2:
         *(HETIME *)(ev + 0x52) = ai_Time;
@@ -17394,7 +17394,7 @@ void he_Unk572fd0(int ev)
     switch (HM_I(ev, 0x70)) {
     case -2:
     case -1:
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     case 0:
         break;
@@ -17403,16 +17403,16 @@ void he_Unk572fd0(int ev)
     }
     per = (char *)gm_FindChar(HM_I(ev, 0xac));
     if (per == 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     bld = HM_I(per, 0x16c);
     if (bld == 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (gm_Opinion(*(unsigned short *)(bld + 0x27), *(unsigned short *)per) > -0x1a) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     grp = (char *)gm_Query(HM_I(bld, 0x5d), 2, 6, 0, 0x2a);
@@ -17446,7 +17446,7 @@ void he_Unk572fd0(int ev)
     }
     he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, text, 0, 0x5f2, HM_I(bld, 1), HM_I(owner, 2), 0, (char *)(unsigned)&full_data_629000);
 free:
-    he_Unk53e1f0((int *)ev);
+    he_FreeEvent((int *)ev);
 }
 /* 0x573200, 1 when an event of the type 0x8d exists whose +0x10 argument is the word after `a` (searched with 0x53e400 (2, 3, .., 0, 0x8d)) and whose +0xb0 is `a` and byte +0xb4 is `b` */
 
@@ -17611,7 +17611,7 @@ void he_Unk573580(int ev)
     char *per, *pl;
 
     if (HM_I(ev, 0x70) == -1 || HM_I(ev, 0x70) == -2) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (HM_B(ev, 0x78) & 4)
@@ -17900,14 +17900,14 @@ void he_Unk573fb0(int ev)
     int n, x;
 
     if (HM_I(ev, 0x70) == -1 || HM_I(ev, 0x70) == -2) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     HM_I(ev, 0x70) = HM_I(ev, 0x70) + 1;
     a = (char *)gm_FindChar(HM_I(ev, 0xb0));
     b = (char *)gm_FindChar(HM_I(ev, 0xac));
     if (a == 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     n = HM_I(a, 0x194);
@@ -17923,7 +17923,7 @@ void he_Unk573fb0(int ev)
         gm_AddTime(ev + 0x52, 0x18, 0, 0);
         return;
     }
-    he_Unk53e1f0((int *)ev);
+    he_FreeEvent((int *)ev);
 }
 /* 0x574060, the alloc of the event 0x9f: state -1, the start and the due clock +0x44 / +0x52 = now, the due clock + 24 hours
    (0x4fe140) */
@@ -17940,7 +17940,7 @@ void he_Unk574060(int ev)
 void he_Unk5740d0(int ev)
 {
     if (HM_I(ev, 0x70) == -1 || HM_I(ev, 0x70) == -2)
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
 }
 /* 0x5740f0, 1 when an event of the type 0x9f of the player word of `a` exists (0x53e400 (2, 0, 0x9f, 2, word)) */
 
@@ -18050,7 +18050,7 @@ void he_Unk5743c0(int ev)
     if (HM_I(ev, 0x84) != -1 && cm_GetSlotState(HM_I(ev, 0x84)) == 0)
         return;
     if (HM_I(ev, 0x70) == -1 || HM_I(ev, 0x70) == -2) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (HM_I(ev, 0x70) == 0) {
@@ -18112,7 +18112,7 @@ void he_Unk574550(int ev)
             break;
     }
     if (i == 4) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     *(HETIME *)(ev + 0x44) = ai_Time;
@@ -18224,7 +18224,7 @@ void he_Unk5748d0(int ev)
     }
     state = HM_I(ev, 0x70);
     if (state == -1 || state == -2 || n == 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (state == 0) {
@@ -18258,7 +18258,7 @@ void he_Unk5748d0(int ev)
     }
     ((void (*)(int, int))ai_Unk4c5230)(HM_I(pers[0], 4), HM_I(ev, 0xb4));
     ai_Unk575030(ev);
-    he_Unk53e1f0((int *)ev);
+    he_FreeEvent((int *)ev);
 }
 /* 0x574fe0, the meeting room of the event 0xa1: up to three of the words +0xc0 .. (+0xc0 + n * 2, n stepping by n % 4 + 1 from
    +0xbc) are looked up as buildings (0x501190 (1, 5, word)); returns the first hit, 0 when none */
@@ -18337,15 +18337,15 @@ void he_Unk5751e0(int ev)
     per = (char *)gm_FindChar(HM_I(ev, 0xc));
     state = HM_I(ev, 0x70);
     if (state == -1 || state == -2) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (state > 3) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (per == 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     HM_I(ev, 0x70) = state + 1;
@@ -18389,11 +18389,11 @@ void he_Unk5753a0(int ev)
     per = (char *)gm_FindChar(HM_I(ev, 0xc));
     state = HM_I(ev, 0x70);
     if (state == -1 || state == -2) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     if (per == 0) {
-        he_Unk53e1f0((int *)ev);
+        he_FreeEvent((int *)ev);
         return;
     }
     r = util_RandomF();
@@ -18403,7 +18403,7 @@ void he_Unk5753a0(int ev)
         he_Unk575540(per);
     else
         he_Unk575570(per);
-    he_Unk53e1f0((int *)ev);
+    he_FreeEvent((int *)ev);
 }
 /* 0x575430, the good outcome of the event 0xa4 (ROUGH): a record of the kind 0x5a9f10 (3, 6) is looked up (0x4a5760 (per, 1,
    ..)); with a record of the level +0xe 3 or more the figure's +0xac grows (0x5089c0 / 0x5de518) and the payment 0x4c4830

@@ -6719,7 +6719,7 @@ void ai_Unk599aa0(int param_1, int param_2)
 void sv_ReleaseNamePlates(void); int d3t_PlaceAtObject(); void d2_SetBackgroundTexture(); 
 void sv_ClearNamePlates(void); struct D3OBJECT * d3if_Pick(float x, float y, int flags, int mask); int gm_GetGoodsValue(); int gm_SumListAmounts(void *list, unsigned char p);
 int gm_PlayerFactor(int a, unsigned char k); int gm_Unk50a250(); int gm_Unk50a150(); void d2_EnableViewObjects();
-void he_MessageBoxQuickjump(int a1, int a2, char *text, char fl, int a5, int a6, int a7, char *jump, char *text2); void he_Unk53e1f0(); void d2_RadioClear(int g); int d2_CreateRadioGroup(int n, ...);
+void he_MessageBoxQuickjump(int a1, int a2, char *text, char fl, int a5, int a6, int a7, char *jump, char *text2); void he_FreeEvent(); void d2_RadioClear(int g); int d2_CreateRadioGroup(int n, ...);
 int ai_PersonnelBook(); int ai_StorageWindow(); void ai_MasterLetterWindow(); int ai_OpenTransport();
 int ai_Unk5b5a20(); int ai_Unk5b5690(); int ai_AmountRowStatus(); int ai_AmountRow();
 void ai_Unk5bd1f0(); void cm_BeginGroup(const char *s); void cm_SendScriptMessage(void *p); void cm_SendProofExecuted(int a, int b);
@@ -7351,7 +7351,7 @@ done:
 }
 
 short * gm_FindChar(int id); void txt_Format(char *out, int id0, ...); int sv_CheckGoodAmount(); int sv_MessageBox();
-short * gm_PlayerRecord(char *c); void he_MessageBoxQuickjump(int a1, int a2, char *text, char fl, int a5, int a6, int a7, char *jump, char *text2); void he_Unk53e1f0(); int gm_Unk50a150();
+short * gm_PlayerRecord(char *c); void he_MessageBoxQuickjump(int a1, int a2, char *text, char fl, int a5, int a6, int a7, char *jump, char *text2); void he_FreeEvent(); int gm_Unk50a150();
 void d2_RadioClear(int g); int d2_CreateRadioGroup(int n, ...); void d2_SetObjText(); int d2_CreateChildWindow(short x, short y, short w, short h, unsigned int flags, int win);
 int d2_RemoveWindow(); void d2_RemoveObj(); int gm_Unk50a1c0(); int gm_SumSlotAmounts(void *list, unsigned char i);
 void gm_Unk50a880(int n, int *ids, int flag); void d2_AddPointerItem(int id, int amount); void d2_ClearPointerItems(void); int d2_CountPointerItems();
@@ -7392,7 +7392,7 @@ void ai_Unk59b030(int param_1, int param_2)
         txt_Format(msg, 0x18d8, *per, param_1, U_I(param_2 + 0xb4));
         he_MessageBoxQuickjump(U_I((unsigned)&ai_CharInts + slot * 0x87), -1, msg, 0, 0x5ec, U_I(param_1 + 1), -1, 0, 0);
     }
-    he_Unk53e1f0(param_2);
+    he_FreeEvent(param_2);
 }
 /* 0x59b160, the money lender's credit list "locations\geldleihe\geldleihe_Kreditaufnehmen" (1232 B, ROUGH:
    the row records / controls of the list are condensed): the window 0x4741f0, the rectangle 0xf8f4b8 ..

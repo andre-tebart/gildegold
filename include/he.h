@@ -21,7 +21,7 @@ int he_ShowNews(int pid, int fl, char *text, int unused, int ev, char *text2);
 void he_MessageBoxQuickjump(int a1, int a2, char *text, char fl, int a5, int a6, int a7, char *jump, char *text2);
 
 unsigned char * he_Unk53e040(unsigned char *m);
-void he_Unk53e1f0(int *r);
+void he_FreeEvent(int *r);
 char *he_NextEvent(void);
 char *he_FindEvent(int n, ...);
 void he_ShowConstruction(int ev);               /* 0x56b780, the construction state of the building event ev */

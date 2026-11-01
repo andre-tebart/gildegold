@@ -62,6 +62,7 @@ extern GAPDATA full_data_7604e8[];
 extern const char ai_AxisPair[];
 
 #include "unk_5d33b0_types.h"
+#include "ai_types.h"
 extern OPTIONBYTES ai_OptionPanelHelp;
 extern char ai_PlayerSlots[4][0x2f4];
 extern unsigned char ai_TimeHour;
@@ -319,17 +320,34 @@ typedef struct SVPLATEOBJ {             /* the 3D object fields the plate code c
     char pad00[0x224];
     int plate;                          /* +0x224, the name plate attached to the object */
 } SVPLATEOBJ;
-typedef struct SVGROUP {                 /* the group record fields sv.c reads (the 8 member slots) */
-    char pad00[0x8c];
+typedef struct SVGROUP {                 /* the group record fields sv.c reads (AICHAR.job, ai.h AIJOB) */
+    unsigned char kind;                 /* +0x00, the job kind (sv_MoveToGroup's switch) */
+    char pad01[0x51];
+    AITIME time;                        /* +0x52, when the job was left empty (kinds 0x14 / 0x15 / 0x28 / 0x8c) */
+    char pad60[0x10];
+    int state;                          /* +0x70, of a kind 0x28 job: below 3 the job is reset (-1) when a member leaves */
+    char pad74[0x18];
     int member[8];                      /* +0x8c, the character ids of the members, -1 = a free slot */
 } SVGROUP;
+typedef struct SVMODEL {                /* the CHARACTER fields (ch.h) sv.c reads of a character's model */
+    char pad00[0x28];
+    int scriptId;                       /* +0x28, the event script the model runs, -1 = none */
+    char pad2c[0x5c];
+    D3SCENE *scene;                     /* +0x88, the scene the model is in */
+} SVMODEL;
 typedef struct SVCHARREC {
     unsigned short id;                  /* +0x00 */
     char pad02[2];
     unsigned int netId;                 /* +0x04, the id the order events carry (AICHAR.netId) */
-    char pad08[0x170];
+    char pad08[0x164];
+    unsigned char *bld;                 /* +0x16c, the building the character is in (AICHAR.bld) */
+    char pad170[8];
     int inventory;                      /* +0x178, the character's goods inventory (AICHAR.inventory) */
-    char pad17c[0x18];
+    SVGROUP *group;                     /* +0x17c, the job the character is a member of (AICHAR.job) */
+    unsigned char groupKind;            /* +0x180, its kind (AICHAR.jobKind) */
+    char pad181[3];
+    SVMODEL *model;                     /* +0x184, the character's model (a ch.h CHARACTER) */
+    char pad188[0xc];
     int money;                          /* +0x194, the character's money (AICHAR.money) */
     char pad198[0x19];
     unsigned char flag1b1;              /* +0x1b1, nonzero: the info panel stays closed for the character */
@@ -1118,6 +1136,7 @@ void sv_DestroyScreen(void)
 extern char *ai_Goods;              /* 0x91aaf0 */
 #define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (f3gm.c: char *) as the AIGOOD records it points to */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
+#define ai_TimeT (*(AITIME *)&ai_Time)  /* 0x770ae0, ai_Time (anm.c: char[14]) as the AITIME it is */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 int d2_BlitPartMode();                     /* 0x479150 */  /* @original: sv.c's call at 1099 passes 1 argument to d2.h's 8-parameter prototype */
 extern int ai_Unk6f22dc, sv_ResearchClass, sv_ScreenDirty, sv_GroundplanBuilding, sv_GroundplanRoom, sv_GroundplanScene;  /* 0x6f22dc, 0x6f233c, 0x6f2358, 0x6f235c, 0x6f2360, 0x623e8c */
@@ -1575,106 +1594,113 @@ int gm_ClockSeason(void *t);           /* 0x4fe350, f3gm.c */                   
 struct CHACTION * ch_AddAction(struct CHARACTER *ch, unsigned int type, ...);                   /* 0x40b2f0 */
 char *strstr();                   /* 0x5de6b0, strstr (LIBC; as ls.c) */
 void cm_SendExSetHE(unsigned char k, char *p);                     /* 0x4c4c60 */
-void he_Unk53e1f0();                     /* 0x53e1f0 */
+#define cm_SendExSetHEI ((void (*)(int, char *))cm_SendExSetHE)  /* @original: sv_MoveToGroup pushes -1, not 0xff (an int / signed parameter at its calls) */
+void he_FreeEvent();                     /* 0x53e1f0 */
 int cm_AddFieldValue(unsigned char size, unsigned char n, unsigned short field, void *v);                     /* 0x4c3d90 */
 void cm_SendFieldValues(void);                     /* 0x4c49e0 */
 
-/* 0x524260, moves the character c (index) from its current group record (+0x17c) to the group g and the item it, by the kinds of the groups: tells the old group's owner (the messages 0x33 / 0x39 with the tag
-   "sv_ChangePlayerHE" when the new item differs and the time of day is in the window of 0x617830 / 0x617840 or the building is of kind 4 / 0x13 / 0x1d), removes c from the old group (0x524160), finishes it by its kind
-   (the switch: 3 / 4 / 8 / 9 0x5241d0, 0x14 / 0x15 / 0x8c count and reset the clock, 0x16 ... 0x53e1f0, 0x28 the pause, 0x48 / 0x49 / 0x75 / 0xa1 empty groups are closed 0x4c4c60), adds c to the new group
-   (0x524100), and sends the group message (0x4c3ba0 / 0x4c3d90 / 0x4c49e0 with the kind of the new group) when the group changed. ROUGH */
+/* 0x524260, moves the character c (index) from his current job (the group record AICHAR.job) to the job g;
+   o is the building and it the room the character goes to (o defaults to his building): when the room is in
+   another scene, it is day time (gm_DayStartHours .. gm_DayEndHours of the season) or the building is of kind
+   4 / 0x13 / 0x1d, his model is sent there (the actions 0x33 / 0x39 tagged "sv_ChangePlayerHE") and its script
+   stopped. He leaves the old job (sv_RemoveGroupMember) and the job is finished by its kind (the member count,
+   the time an emptied job was left, he_FreeEvent, the pause script, cm_SendExSetHE for an empty job); without
+   an old job a running "Pause" / "pause" script of the model is stopped. Then he joins g (sv_AddGroupMember)
+   and the new job kind (field 0x180) is sent and the job set when it changed
+   @deep read against the original and fixed: room (*it != 0xfd) polarity, w >= 0, the action arguments
+   o->id / it->objId, old != 0 first, the case bodies in the original's order (0x28 before 0x14; tables now
+   equal), <= 0 slot tests, 'pause' before 'Pause', g != 0 first, newkind = 0 at entry, the job time as an
+   AITIME struct copy (memcpy took esi/edi), cm_SendExSetHE(-1) as an int push; typed SVCHARREC / SVGROUP /
+   SVMODEL. Instruction count equal (287). Left is allocation only: with --regs ebp=esi,esi=ebx,ebx=ebp 16
+   lines differ, the callee-save push order (ours push ebp first / ebx later, the original push ebx first /
+   ebp later), and ev taking ebp where the original reuses old's esi in the no-old path; ch / old / it
+   rotate over ebx / esi / ebp */
 void sv_MoveToGroup(unsigned char *o, short *it, int c, char *g)
 {
-    char *ch, *old, *msg, *ev, *b;
+    SVCHARREC *ch;
+    SVGROUP *old;
+    AIBTYPE *bt;
+    char *msg;
+    EVTSCRIPT *ev;
     int w, k;
-    char kind;
     char newkind;
 
+    newkind = 0;
     if (c >= 0x300)
         return;
-    ch = ai_Chars[c];
-    old = *(char **)(ch + 0x17c);
-    if (old == g)
+    ch = (SVCHARREC *)ai_Chars[c];
+    old = ch->group;
+    if ((char *)old == g)
         return;
     if (o == 0)
-        o = *(unsigned char **)(ch + 0x16c);
+        o = ch->bld;
     if (it != 0) {
-        b = ai_BTypes + *o * 0x24d;
-        if (*it == 0xfd)
-            w = init_BuildingSceneUniverse(o);
-        else
+        bt = &ai_BTypesT[*o];
+        if (*it != 0xfd)
             w = init_ObjectSceneUniverse(it);
+        else
+            w = init_BuildingSceneUniverse(o);
         k = gm_ClockSeason(ai_Time);
-        if ((((float)*(unsigned short *)(ai_Time + 4) < gm_DayEndHours[k] && gm_DayStartHours[k] <= (float)*(unsigned short *)(ai_Time + 4)) || b[0] == 4 || b[0] == 0x13 || b[0] == 0x1d)
-            && w > -1 && *(int *)(ch + 0x184) != 0 && (char *)(unsigned)&d3_Scenes + w * 0x3e0 != *(char **)(*(int *)(ch + 0x184) + 0x88)) {
-            msg = ch_AddAction(*(int *)(ch + 0x184), 0x33, w, *(int *)(o + 1), *(int *)(it + 2));
+        if ((((float)ai_TimeT.hour < gm_DayEndHours[k] && gm_DayStartHours[k] <= (float)ai_TimeT.hour) || bt->kind == 4 || bt->kind == 0x13 || bt->kind == 0x1d)
+            && w >= 0 && ch->model != 0 && &d3_Scenes[w] != ch->model->scene) {
+            msg = (char *)ch_AddAction((struct CHARACTER *)ch->model, 0x33, w, ((AIBLD *)o)->id, ((AIOBJ *)it)->objId);
             strcpy(msg + 0x70, "sv_ChangePlayerHE");
-            msg = ch_AddAction(*(int *)(ch + 0x184), 0x39, w);
+            msg = (char *)ch_AddAction((struct CHARACTER *)ch->model, 0x39, w);
             strcpy(msg + 0x70, "sv_ChangePlayerHE");
-            if (*(int *)(*(int *)(ch + 0x184) + 0x28) != -1) {
-                ev = (int)evt_FindById(*(int *)(*(int *)(ch + 0x184) + 0x28));
+            if (ch->model->scriptId != -1) {
+                ev = evt_FindById(ch->model->scriptId);
                 if (ev != 0)
-                    evt_Stop((EVTSCRIPT *)ev);
+                    evt_Stop(ev);
             }
         }
     }
-    if (old == 0) {
-        if (*(int *)(ch + 0x184) != 0 && *(int *)(*(int *)(ch + 0x184) + 0x28) != -1) {
-            ev = (int)evt_FindById(*(int *)(*(int *)(ch + 0x184) + 0x28));
-            if (ev != 0 && (strstr(ev, "Pause") != 0 || strstr(ev, "pause") != 0))
-                evt_Stop((EVTSCRIPT *)ev);
-        }
-    } else {
-        sv_RemoveGroupMember(*(unsigned short *)ch, old);
-        switch ((unsigned char)old[0]) {
+    if (old != 0) {
+        sv_RemoveGroupMember(ch->id, (char *)old);
+        switch (old->kind) {
         case 3:
         case 4:
         case 8:
         case 9:
-            sv_CountGroupMembers(old);
+            sv_CountGroupMembers((char *)old);
+            break;
+        case 0x28:
+            if (ch->model != 0 && ch->model->scriptId != -1)
+                evt_Stop(evt_FindById(ch->model->scriptId));
+            if (old->state < 3) {
+                old->time = ai_TimeT;
+                old->state = -1;
+            }
             break;
         case 0x14:
         case 0x15:
         case 0x8c:
-            sv_CountGroupMembers(old);
-            if (sv_UsedGroupSlots(old) < 1) {
-                *(int *)(old + 0x52) = *(int *)ai_Time;
-                *(int *)(old + 0x56) = *(int *)(ai_Time + 4);
-                *(int *)(old + 0x5a) = *(int *)(ai_Time + 8);
-                *(short *)(old + 0x5e) = *(short *)(ai_Time + 0xc);
-                cm_SendExSetHE(-1, old);
-            }
-            break;
-        case 0x16:
-        case 0x88:
-        case 0x89:
-        case 0x8d:
-        case 0x8f:
-            he_Unk53e1f0(old);
-            break;
-        case 0x28:
-            if (*(int *)(ch + 0x184) != 0 && *(int *)(*(int *)(ch + 0x184) + 0x28) != -1)
-                evt_Stop(evt_FindById(*(int *)(*(int *)(ch + 0x184) + 0x28)));
-            if (*(int *)(old + 0x70) < 3) {
-                *(int *)(old + 0x52) = *(int *)ai_Time;
-                *(int *)(old + 0x56) = *(int *)(ai_Time + 4);
-                *(int *)(old + 0x5a) = *(int *)(ai_Time + 8);
-                *(int *)(old + 0x70) = -1;
-                *(short *)(old + 0x5e) = *(short *)(ai_Time + 0xc);
+            sv_CountGroupMembers((char *)old);
+            if (sv_UsedGroupSlots((char *)old) <= 0) {
+                old->time = ai_TimeT;
+                cm_SendExSetHEI(-1, (char *)old);
             }
             break;
         case 0x48:
         case 0x49:
         case 0x75:
         case 0xa1:
-            if (sv_UsedGroupSlots(old) < 1)
-                cm_SendExSetHE(-1, old);
+            if (sv_UsedGroupSlots((char *)old) <= 0)
+                cm_SendExSetHEI(-1, (char *)old);
+            break;
+        case 0x16:
+        case 0x88:
+        case 0x89:
+        case 0x8d:
+        case 0x8f:
+            he_FreeEvent(old);
         }
+    } else if (ch->model != 0 && ch->model->scriptId != -1) {
+        ev = evt_FindById(ch->model->scriptId);
+        if (ev != 0 && (strstr((char *)ev, "pause") != 0 || strstr((char *)ev, "Pause") != 0))
+            evt_Stop(ev);
     }
-    if (g == 0)
-        newkind = 0;
-    else {
-        sv_AddGroupMember(*(unsigned short *)ch, g);
+    if (g != 0) {
+        sv_AddGroupMember(ch->id, g);
         switch ((unsigned char)g[0]) {
         case 3:
         case 4:
@@ -1686,12 +1712,13 @@ void sv_MoveToGroup(unsigned char *o, short *it, int c, char *g)
             sv_CountGroupMembers(g);
         }
         newkind = g[0];
-    }
-    if ((*(char **)(ch + 0x17c) != 0 && g == 0) || newkind != 0) {
-        cm_BeginFieldBlock(ch, *(int *)(ch + 4));
+    } else
+        newkind = 0;
+    if ((ch->group != 0 && g == 0) || newkind != 0) {
+        cm_BeginFieldBlock(ch, ch->netId);
         cm_AddFieldValue(1, 1, 0x180, &newkind);
         cm_SendFieldValues();
-        *(char **)(ch + 0x17c) = g;
+        ch->group = (SVGROUP *)g;
     }
 }
 /* 0x524770, 1 when the object o stands at the door of the group record g's destination (+0x184): the door position of o (the dummy "TUER", 0x449690) is within 0x2eee (0x443b8000 = 750.0) of the destination's
