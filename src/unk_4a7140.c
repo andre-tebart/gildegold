@@ -2498,19 +2498,20 @@ int ai_Unk4ab9f0(AIPER *p, unsigned char *m)
     return 0x45;
 }
 /* 0x4abac0, decide callback of action 0x46 "Theater": p (money > 1, not of kind 3) picks its theatre (a building
-   of kind 0x1f holding object 0x27f, not busy by 0x5741d0; the bigger one, cap 2: 7, else 4) and a play length
-   by its rank, into m (kind 7) */
+   of kind 0x1f holding object 0x27f, no curse event on it; the bigger one, cap 2: 7, else 4), a roll r below that
+   size capped by its money (2: 4, 3: 7, 4 and more: 10) and from r a play length (below 4: 2, below 7: 3, else
+   4), into m (kind 7: the building, r, the length) */
 
-int ai_Unk4abac0(int a, AIPER *p, int c, unsigned char *m)
+int ai_DecideTheater(int a, AIPER *p, int c, AIARG *m)
 {
     int v, k, n, i;
-    unsigned int r;
+    int r;
     AIBLD *b, *best;
     AIBTYPE *bt;
 
     v = gm_TitleJobI(p->id, 0xe);
     k = 0;
-    if ((a == 0x46 || a == 0) && c == 0 && v != 0 && p->kind != 3 && p->money > 1) {
+    if ((a == 0x46 || a == 0) && c == 0 && v != 0 && p->kind != 3 && p->money >= 2) {
         best = 0;
         b = ai_BldsT;
         for (i = 0x100; i != 0; i--) {
@@ -2518,39 +2519,38 @@ int ai_Unk4abac0(int a, AIPER *p, int c, unsigned char *m)
                 bt = &ai_BTypesT[b->type];
                 if (bt->kind == 0x1f && gm_Query(b->objList, 2, 6, 0, 0x27f) != 0 && ai_FindCurseEvent(b) == 0) {
                     if (best == 0) {
-                        n = bt->cap247 != 2 ? 4 : 7;
+                        k = bt->cap247 != 2 ? 4 : 7;
+                        best = b;
                     } else {
                         n = bt->cap247 != 2 ? 4 : 7;
-                        if (n <= k)
-                            goto next;
+                        if (n > k) {
+                            k = n;
+                            best = b;
+                        }
                     }
-                    k = n;
-                    best = b;
                 }
             }
-next:
-            b = (AIBLD *)((unsigned char *)b + 0xa9);
+            b++;
         }
         if (best != 0 && k != 0) {
-            if (p->money < 4) {
-                if (p->money < 3) {
-                    if (k > 3)
-                        k = 4;
-                } else if (k > 6) {
+            if (p->money >= 4) {
+                if (k >= 10)
+                    k = 10;
+            } else if (p->money >= 3) {
+                if (k >= 7)
                     k = 7;
-                }
-            } else if (k > 9) {
-                k = 10;
+            } else if (k >= 4) {
+                k = 4;
             }
             r = util_RandomU(k);
             if (r < 4)
                 k = 2;
             else
-                k = (r > 6) + 3;
-            *(int *)(m + 4) = best->id;
-            *(unsigned int *)(m + 0xc) = r;
-            *(int *)(m + 0x10) = k;
-            m[0] = 7;
+                k = (r >= 7) + 3;
+            m->ref = best->id;
+            m->ref2 = r;
+            m->arg2 = k;
+            m->kind = 7;
             return 0x46;
         }
     }
@@ -2656,7 +2656,7 @@ int ai_Unk4abed0(int a)
     act.id = 0x46;
     strcpy(act.name, "Theater");
     act.eval = ai_Unk4a49a0;
-    act.decide = ai_Unk4abac0;
+    act.decide = ai_DecideTheater;
     act.exec = ai_Unk4abc60;
     act.flags = 1;
     if (!ai_Unk495520(&act, a))
