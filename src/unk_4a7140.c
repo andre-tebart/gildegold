@@ -407,62 +407,62 @@ void ai_PokerPayStakes(void)
     }
 }
 /* 0x4a7ac0, picks each NPC's strategy (seat->strategy) from its hand: 3 nothing yet, 2 go for the rank, 1 pairs,
-   0 random */
+   0 random
+   @deep Read whole against the original and rewritten: both counting loops in the original's index form
+   (deck[k+i] by suits, deck[i+j] by ranks: the strength-reduced jl loop ends now equal), int counters
+   (signed jle), cnt[g++], the strategy chain with pairs <= 1 / dealt - maxr <= 1 as the original's
+   constants, the column check over deck[j*4+first]. The two counting loops are instruction-equal up to
+   registers. Remaining is allocation: the original keeps s in ebp and dealt in dl for the whole body
+   (frame 0x28), ours gives s ebx and spills it to [esp+0x18] and dealt to [esp+0x24] (frame 0x30), so ours
+   reloads them (asmdiff: -mov ebp,[esp+0x18] / -cmp edi,ebp vs +cmp [eax-4],ebp; -mov byte ptr
+   [esp+0x24],bl vs +mov dl,[esi+0xb5]; -mov esi,[esp+0x18] / -inc esi / -mov [esp+0x18],esi vs +inc ebp),
+   and pairs / maxn swap register and slot in the first loop (-inc edi / -cmp ecx,[esp+0x14] vs +inc
+   [esp+0x14] / +cmp ecx,edi). */
 
 void ai_PokerPickStrategies(void)
 {
-    unsigned int cnt[6];
-    int s, j, i, pairs, first;
-    unsigned int n, maxn, maxr;
-    unsigned char b5;
-    G10CARD *c, *q;
-    unsigned int *pc;
+    int cnt[6];
+    int s, g, j, i, k, pairs, first;
+    int n, maxn, maxr;
+    unsigned char dealt;
 
     first = 0;
     for (s = 1; s < 3; s++) {
         maxr = 0;
         maxn = 0;
         pairs = 0;
-        c = ai_PokerDeck;
-        pc = cnt;
-        do {
+        g = 0;
+        for (k = 0; k < 24; k += 4) {
             n = 0;
-            for (i = 4; i != 0; i--) {
-                if (c->owner == s)
+            for (i = 0; i < 4; i++) {
+                if (ai_PokerDeck[k + i].owner == s)
                     n++;
-                c++;
             }
-            if ((int)n > 1)
+            if (n > 1)
                 pairs++;
-            if ((int)maxn < (int)n)
+            if (n > maxn)
                 maxn = n;
-            *pc++ = n;
-        } while (c < &ai_PokerDeck[24]);
-        j = 0;
-        c = ai_PokerDeck;
-        do {
+            cnt[g++] = n;
+        }
+        for (j = 0; j < 4; j++) {
             n = 0;
-            q = c;
-            for (i = 6; i != 0; i--) {
-                if (q->owner == s)
+            for (i = 0; i < 24; i += 4) {
+                if (ai_PokerDeck[i + j].owner == s)
                     n++;
-                q += 4;
             }
-            if ((int)maxr < (int)n) {
+            if (n > maxr) {
                 maxr = n;
                 first = j;
             }
             cnt[j] = n;
-            c++;
-            j++;
-        } while (c < &ai_PokerDeck[4]);
-        b5 = ai_PokerTable->dealt;
-        if (b5 < 5 && pairs < 2 && (int)maxn < 2) {
+        }
+        dealt = ai_PokerTable->dealt;
+        if (dealt < 5 && pairs <= 1 && maxn < 2) {
             ai_PokerTable->seat[s].strategy = 3;
-        } else if (b5 == maxr) {
+        } else if (dealt == maxr) {
             ai_PokerTable->seat[s].strategy = 2;
         } else {
-            if (ai_PokerTable->phase < 6 && (int)(b5 - maxr) < 2) {
+            if (ai_PokerTable->phase < 6 && dealt - maxr <= 1) {
                 for (j = 0; j < 6; j++)
                     if (ai_PokerDeck[j * 4 + first].owner != s && ai_PokerDeck[j * 4 + first].shown == 0)
                         break;
@@ -471,7 +471,7 @@ void ai_PokerPickStrategies(void)
                     continue;
                 }
             }
-            if (b5 == 5 && (int)maxn < 2)
+            if (dealt == 5 && maxn < 2)
                 ai_PokerTable->seat[s].strategy = 0;
             else
                 ai_PokerTable->seat[s].strategy = 1;
