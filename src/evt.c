@@ -21,6 +21,12 @@
 #include "ch.h"
 #include "evt.h"
 #include "evtc.h"
+#include "d3_interface.h"
+#include "err.h"
+#include "f3gm.h"
+#include "f3init.h"
+#include "mem.h"
+#include "vfs.h"
 
 /* 0x4273d0 */
 void evt_Error(EVTSCRIPT *sc, char *pos, char *msg)
