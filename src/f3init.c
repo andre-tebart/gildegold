@@ -358,7 +358,7 @@ int main_StartHouseCheat = 0;  /* 0x6f2430, no writer in the exe: nonzero gives 
 extern char ai_Unk7e3f40_[];
 
 
-void sv_Unk528490(unsigned char *o);                     /* 0x528490 */
+struct AIBLD; void sv_UpdateChimneySmoke(struct AIBLD *b);                     /* 0x528490 */
 void ai_CheckBuildSites(void);                     /* 0x58fb60 */
 void gm_UpdatePlayers(void);                 /* 0x4feb30, f3gm.c */
 void gm_InitPlayerRecord(int p);                 /* 0x4feb60, f3gm.c */
@@ -2606,7 +2606,7 @@ void unk_Unk511790(void)
         o = *(char **)(b + 0x61);
         if (o != 0) {
             o[0x212] = (o[0x212] & 0xf7) | 4;
-            sv_Unk528490(b);
+            sv_UpdateChimneySmoke(b);
         }
         b = (char *)gm_BuildNext();
     }

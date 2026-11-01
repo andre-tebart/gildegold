@@ -77,7 +77,7 @@ struct D3OBJECT; struct AIBLD; char sv_CreateBannerCB(struct D3OBJECT *part, str
 char sv_ColourBannerCB(char *o, char *b);                                    /* 0x528290 */
 void sv_Unk5282f0(char *b);                                             /* 0x5282f0 */
 void sv_ColourBanners(int c);                                               /* 0x528390 */
-void sv_Unk528490(unsigned char *o);                                    /* 0x528490 */
+struct AIBLD; void sv_UpdateChimneySmoke(struct AIBLD *b);                                /* 0x528490 */
 char sv_Unk528660(char *o, int *p);                                     /* 0x528660 */
 void sv_Unk5286a0(char *b);                                             /* 0x5286a0 */
 void sv_Unk528770(void);                                                /* 0x528770 */

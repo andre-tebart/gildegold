@@ -3052,7 +3052,7 @@ unsigned gm_PermissionBits(unsigned p1, unsigned char *b, unsigned short *o, int
 int d3t_PlaceObjectV(struct D3OBJECT *camera, struct D3VECTOR *pos, struct D3VECTOR *dir, int unk, char flags); int gm_ClockSeason(); void init_AfterTownLoad(void); void d3fl_MakeDivide();
 int ai_Unk5bc110(); void snd_StartMarketAmbience(void); int tb_SetFunctionOff(); void snd_StopMarketAmbience(void);
 void d2_CopyCaption(char *caption); void sv_SetStatusText(char *s); void sv_Unk52adb0(void);
-void sv_Unk528490(unsigned char *o); int ai_ScriptQuery();
+struct AIBLD; void sv_UpdateChimneySmoke(struct AIBLD *b); int ai_ScriptQuery();
 int gm_IsType10(unsigned char *b); void ai_Unk59e420(); void ai_Unk59ee40(); void ai_Unk59a800();
 int gm_Unk50c340(); int d2_GetWinObj(); void sv_SetResearchClass(unsigned char *o); int ai_Unk5b7dd0();
 float gm_ItemPrice(int item, unsigned char n); int ai_Unk5049e0(); int sv_CheckStock(); int sv_CheckGoodAmount();
@@ -3258,7 +3258,7 @@ void ai_GameFrame(void)
                 (float)U_W((unsigned)&ai_TimeHour) < *(float *)((unsigned)&gm_DayEndHours + n * 4)) {
                 for (it = gm_BuildQuery(1, 6); it != 0; it = gm_BuildNext())
                     if (*(int *)(it + 0x95) == -1)
-                        sv_Unk528490(it);
+                        sv_UpdateChimneySmoke(it);
                 mode = 2;
             }
         } else if (mode == 2 &&

@@ -50,7 +50,9 @@ typedef struct AIBLD {                  /* 0xa9 bytes, ai_Blds[256] */
     char pad6d[4];
     int plants;                         /* 0x71, the 64 G15PLANT records (0x18 bytes each, rd.h) of the
                                            building's vegetation map (rd.c: veg_Fits / veg_FindPlantId) */
-    char pad75[0x34];
+    char pad75[0x20];
+    int smokeEffect;                    /* 0x95, the id of the running chimney smoke effect (evt_FindById), -1 none (sv.c 0x528490) */
+    char pad99[0x10];
 } AIBLD;
 
 typedef struct AIOBJ {                  /* 0x43 bytes, an object (table behind ai_Objects): carts, stores, the
@@ -159,7 +161,11 @@ typedef struct AIJOB {                  /* a job (he_FindEvent / he_NextEvent) *
     int unkb8;                          /* 0xb8, a job-kind specific payload word: of a harvest job (0x28) the
                                            plant it works (veg_FindPlantId, ai_SendJobOrders), else a counter / an
                                            id / a news id (he.c per kind); no single role name */
-    char padbc[0x14];
+    char padbc[0xc];
+    int argc8;                          /* 0xc8, a job-kind specific word (he.c: a random table entry, a task, an
+                                           object); a workshop's chimney smokes only while its job has none
+                                           (sv.c 0x528490) */
+    char padcc[4];
     unsigned short in[3];               /* 0xd0, the workshop kinds */
     unsigned short out[3];              /* 0xd6 */
     int amount[3];                      /* 0xdc */

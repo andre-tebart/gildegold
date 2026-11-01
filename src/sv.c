@@ -3351,36 +3351,49 @@ void sv_ColourBanners(int c)
     }
     d3if_SelectScene(scene, 1);
 }
-/* 0x528490, the chimney smoke of the building o (not kind 7): when one of its characters (type 4 at +0x180, home +0x16c = o) is at work (no group or a group without +0xc8) and the time of day is inside the window of
-   0x617830 / 0x617840, an effect "effekte\\Schornstein_dunkel_esc" (0x4287b0) is started at the "dummy_RAUCH_0" dummy of the model (0x429ab0) and its handle stored at +0x95; otherwise a running effect is stopped
-   (0x429e90) and the handle cleared. ROUGH */
-
-void sv_Unk528490(unsigned char *o)
+/* 0x528490, the chimney smoke of the building b (not of kind 7, with a model): when its first worker (a living character
+   of job kind 4 in b, not of kind 10) has no job or a job without argc8, and the hour lies inside the season's day hours
+   (gm_DayStartHours .. gm_DayEndHours), the smoke effect "effekte\Schornstein_dunkel_esc" is started at the model's
+   "dummy_RAUCH_0" dummy (in scene 0) unless one runs; its id is kept in b->smokeEffect and its group cleared. Otherwise a
+   running smoke effect is stopped and b->smokeEffect set to -1
+   @deep read whole against 0x528490..0x52865c and rewritten typed (AIBLD.smokeEffect 0x95, AIJOB.argc8,
+   AICHAR walk, EVTSCRIPT id/group): the type-7 / model test, the worker scan with the index i reused for
+   ai_Chars[i].job, the smokeEffect / day-hour window (one fcom/fcomp: hour >= start && hour < end, fixed
+   from two returns), the effect start in scene 0 and the stop branch all match (143 vs 144 instructions).
+   Left is allocation in the scan loop: ours keeps the constant 0xffff in esi (cmp word ptr [eax-2], si;
+   reused for the hour mask: and ecx, esi) and the walking pointer biased to +2 (cmp byte ptr [eax], 0xa)
+   with health loaded into bl (mov bl,[eax+6]; test bl,bl), the original keeps 0xa in bl (mov bl, 0xa; cmp
+   byte ptr [eax+2], bl), compares cmp byte ptr [eax+8], 0 / cmp word ptr [eax], 0xffff directly and masks
+   with the immediate; season in edi vs esi. Tried: pointer loop with (int) compare, pointer-first, index
+   loop, health != 0, (short)id != -1 (all equal or worse) */
+void sv_UpdateChimneySmoke(AIBLD *b)
 {
-    int k, i, scene, d, e;
-    char *c;
-    float pos[3];
+    int season, i, scene;
+    AICHAR *ch;
+    AIJOB *job;
+    D3OBJECT *d;
+    EVTSCRIPT *e;
+    D3VECTOR4 pos;
 
-    k = gm_ClockSeason(ai_Time);
-    scene = d3_CurrentScene;
-    if (ai_BTypes[*o * 0x24d] != 7 && *(int *)(o + 0x61) != 0) {
+    season = gm_ClockSeason(ai_Time);
+    if (ai_BTypesT[b->type].kind != 7 && b->object != 0) {
         for (i = 0; i < 0x300; i++) {
-            c = ai_Chars[i];
-            if (c[8] != 0 && *(short *)c != -1 && c[2] != 10 && *(unsigned char **)(c + 0x16c) == o && c[0x180] == 4) {
-                if (*(int *)(c + 0x17c) == 0 || *(int *)(*(int *)(c + 0x17c) + 200) == 0) {
-                    if (*(int *)(o + 0x95) != -1)
+            ch = &ai_CharsT[i];
+            if (ch->health > 0 && ch->id != 0xffff && ch->kind != 10 && ch->bld == b && ch->jobKind == 4) {
+                job = ai_CharsT[i].job;
+                if (job == 0 || job->argc8 == 0) {
+                    if (b->smokeEffect != -1)
                         return;
-                    if ((float)(*(unsigned short *)(ai_Time + 4)) < gm_DayStartHours[k])
+                    if (!((float)ai_TimeT.hour >= gm_DayStartHours[season] && (float)ai_TimeT.hour < gm_DayEndHours[season]))
                         return;
-                    if (gm_DayEndHours[k] <= (float)(*(unsigned short *)(ai_Time + 4)))
-                        return;
+                    scene = d3_CurrentScene;
                     d3if_SelectScene(0, 1);
-                    d = d3_FindObject(*(int *)(o + 0x61), 0x100, 0, "dummy_RAUCH_0");
-                    if (d != 0 && (e = (int)evt_Load("effekte\\Schornstein_dunkel_esc")) != 0) {
-                        d3_PointToWorld(d, d + 0x4c, pos);
-                        if (evt_RunScriptArgs((EVTSCRIPT *)e, 3, (int)pos[0], (int)pos[1], (int)pos[2]) != 0)
-                            *(int *)(o + 0x95) = *(int *)(e + 0x100);
-                        *(int *)(e + 0x104) = 0;
+                    d = d3_FindObject((int)b->object, 0x100, 0, "dummy_RAUCH_0");
+                    if (d != 0 && (e = evt_Load("effekte\\Schornstein_dunkel_esc")) != 0) {
+                        d3_PointToWorld(d, &d->pos, (D3VECTOR *)&pos);
+                        if (evt_RunScriptArgs(e, 3, (int)pos.x, (int)pos.y, (int)pos.z) != 0)
+                            b->smokeEffect = e->id;
+                        e->group = 0;
                     }
                     d3if_SelectScene(scene, 1);
                     return;
@@ -3388,14 +3401,11 @@ void sv_Unk528490(unsigned char *o)
                 break;
             }
         }
-        if (*(int *)(o + 0x95) != -1) {
-            e = (int)evt_FindById(*(int *)(o + 0x95));
+        if (b->smokeEffect != -1) {
+            e = evt_FindById(b->smokeEffect);
             if (e != 0)
-                evt_Stop((EVTSCRIPT *)e);
-            o[0x95] = 0xff;
-            o[0x96] = 0xff;
-            o[0x97] = 0xff;
-            o[0x98] = 0xff;
+                evt_Stop(e);
+            b->smokeEffect = -1;
         }
     }
 }

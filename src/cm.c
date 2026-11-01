@@ -4639,7 +4639,7 @@ int ai_Unk4cac40(G17MSG *m, G17STAT *s)
                     if (sp != 0)
                         evt_Stop(sp);
                     *(int *)(b + 0x95) = -1;
-                    sv_Unk528490(b);
+                    sv_UpdateChimneySmoke(b);
                 }
             }
         }
@@ -4907,7 +4907,7 @@ int ai_Unk4cb7f0(G17MSG *m, G17STAT *s)
 
     b = gm_BuildQuery(1, 1, G17_I(*m, 0));
     if (b != 0 && *(int *)(b + 0x61) != 0 && gm_IsHomeType(b) == 0)
-        sv_Unk528490(b);
+        sv_UpdateChimneySmoke(b);
     if (s != 0) {
         s->state = 1;
         s->unk01 = 0;
