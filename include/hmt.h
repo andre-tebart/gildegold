@@ -75,28 +75,16 @@ void hmt_Unk4ad7a0(void);                                                       
 extern const int hmt_Unk5ee114;                                                        /* 0x5ee114, 8000000 */
 void gm_Shuffle(unsigned n, int *out);                                              /* 0x505d30, defined elsewhere (shuffles ids) */
 int gm_Unk503f30(int id);                                                        /* 0x503f30, defined elsewhere */
-int cm_GetSlotState(int h);                                                         /* 0x4c3ae0, defined elsewhere */
-void sv_PumpNet(void);                                                         /* 0x52fe00, defined elsewhere */
-int cm_GetSlotValue(int h);                                                     /* 0x4c3b10, defined elsewhere */
 void hmt_Create(int type, int unk, unsigned short v, struct AICHAR *c);                 /* 0x4adbb0 */
 void hmt_NextEvent(void);                                                        /* 0x4ade60 */
 void hmt_NextPerson(void);                                                       /* 0x4adec0 */
 int hmt_RandomHeadIcon(void);                                                         /* 0x4adf20 */
-void amt_SetEventOwner(int id);                                                       /* 0x4e6b40, defined elsewhere */
-void amt_SetPersonOwner(int id);                                                       /* 0x4e6b70, defined elsewhere */
 int gm_AddObjekt(int id, int proto, int n);                            /* 0x500970, defined elsewhere */
 #ifndef DATA_VIEWS_H
 extern char ai_Unkf42400;                                                        /* 0xf42400 */
 #endif
 int hmt_Load(void *f);                                                           /* 0x4ada80 */
 int hmt_Save(VFSFILE *f);                                                        /* 0x4adb20 */
-int ls_Read(void *buf, int size, int n, int f);                             /* 0x51c920, ls.c: true when the fread returned a positive count */
-char * amt_GetSuperiorOfficeHolder(int type);                                                    /* 0x4e7550, defined elsewhere */
-int cm_SendExSysMessage(unsigned char id, void *msg);                                            /* 0x4c4db0, defined elsewhere */
-int cm_SendCreateCharacter(unsigned char a, int b, int c, unsigned short d, int e, unsigned char f, unsigned char g, unsigned char h);  /* 0x4c4650, defined elsewhere */
-int amt_GetFirstOffice(unsigned int k, struct AMTREC *out);                                         /* 0x4e6ec0, defined elsewhere */
-int amt_SendOfficeMessage(unsigned char a, char *b, char *c, unsigned char d, unsigned char e);                /* 0x4e6680, defined elsewhere */
-void cm_SendKillCharacter(int a, int b);                                                /* 0x4c4e00, defined elsewhere */
 extern char ch_EmptyName[];                                                      /* 0x631090, "" */
 int gm_FindRichest(short *id, int *rate);                                          /* 0x4fad60, defined elsewhere: the id and worth of the richest active character */
 #endif
