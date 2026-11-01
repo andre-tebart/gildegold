@@ -53,7 +53,6 @@ extern int gm_PlayerRecords[688];
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 extern int main_Inactive;       /* 0x6f2584, 1 while the app is deactivated */
-extern char ai_DataPath[];
 extern unsigned char ai_GfxResolution;  /* 0x6f2f94 (unk_5d33b0.c: OPTIONBYTES): @original main_OpenScreen reads it as a byte object (0x531d43 mov al, byte ptr [0x6f2f94]); through the 4-byte union VC6 loads the dword and masks it (and eax, 0xff: 264 instead of 226 differing instructions) */
 extern int ai_ScreenModeH;
 extern int ai_ScreenModeW;
@@ -63,9 +62,7 @@ extern int di_MaxX;
 extern char main_GamePath[];
 extern int main_TextureDivider;
 #include "cm_types.h"
-extern CMNETGAME cm_NetGame;  /* 0x936460, cm.c: the network game */
 #define cm_JoinChar (*(CMJOIN *)((char *)&ai_Unk9364e0 + 0x2c0))  /* 0x9367a0, the joined character (CMJOIN) */
-extern G17MSG ai_Unk9367e0[];
 extern GAPDATA full_data_5f320c[];
 extern int main_TextReopen;
 extern int main_HmtMode;
@@ -76,7 +73,6 @@ extern GAPDATA full_data_60da10[];
 extern GAPDATA full_data_624b48[];
 extern GAPDATA full_data_624b4c[];
 extern GAPDATA full_data_624b50[];
-extern char ai_Unk9364e0[752];
 extern void * d3_Unk6333fc;
 extern GAPDATA full_data_5f1084[];
 extern GAPDATA full_data_624b48[];
@@ -93,7 +89,6 @@ extern void * d3_Unk6333fc;
 
 extern GAPDATA full_data_5f1084[];
 extern int sv_PopRequest;
-extern char ai_MissionMode;
 extern char ai_DataPath[];
 
 
@@ -110,7 +105,6 @@ extern int ai_Unkfb906c;
 
 extern GAPDATA full_data_5f320c[];
 extern INIT_PLAYER init_PlayerProfile;
-extern int sv_FrameMask;
 extern int sv_PopRequest;
 
 extern GAPDATA full_data_624ce0[];
@@ -120,9 +114,6 @@ extern GAPDATA full_data_624cec[];
 extern GAPDATA full_data_624cf8[];
 extern INIT_PLAYER init_PlayerProfile;
 extern int sv_PopRequest;
-extern int ai_Unk5f8438;
-extern char *ai_Unk5fb5b0;
-extern int * ai_Unk633738;
 extern GAPDATA full_data_602568[];
 extern char ai_DataPath[];
 extern char ai_OptionsFile[288];
@@ -149,8 +140,6 @@ extern int ai_Opponents[7];
 
 extern int sv_PopRequest;
 extern char ai_DataPath[];
-extern int ai_Unk60d360;
-extern char * ai_Unk6f22e8;
 extern char * ai_Unkfc2dec;
 
 extern void * d3_Unk6333fc;
@@ -164,8 +153,6 @@ extern int ai_Unkfb9060;
 extern int ai_Unkfb9064;
 extern int ai_Unkfb9068;
 extern int ai_Unkfb906c;
-extern char cm_RequestedSaveName[72];
-extern float gm_AddHealth();  /* 0x4fca40, f3gm.c: (unsigned id, int d) */
 #define main_AddHealthS ((float (*)(unsigned short, int))gm_AddHealth)  /* @original this caller passes the id as a word ("mov ax,[id]; push eax") and pops the float result */
 extern float ai_Unk617830[], ai_Unk617840[];  /* 0x617830 / 0x617840 (f3gm.c) */
 #pragma pack(push, 1)
@@ -194,16 +181,13 @@ typedef struct MAINCHARNEW {        /* the AICHAR fields the character replaceme
     int clear[8];                   /* 0x5c, set to -1 */
 } MAINCHARNEW;
 #define main_BookObject (*(int *)((char *)&cm_RequestedSaveName + 0x44))  /* 0x6f2614, the book object "Buch" loaded at the game start (reasoned: a pointer-sized field after the 64-byte name and the int at +0x40) */
-extern unsigned int ai_MissionSeed;
 extern GAPDATA full_data_75df20[];
-extern char * sv_SelectedObject;
 extern int ch_SndLib;
 extern char cm_RequestedSaveName[72];
 extern float ai_Unk617830[], ai_Unk617840[];  /* 0x617830 / 0x617840 (f3gm.c) */
 extern GAPDATA full_data_6f25c0[];
 extern GAPDATA full_data_75e630[];
 extern int snd_Bank;
-extern int cm_SkipEvents;
 extern int * d3t_Rain;
 #include "ch_types.h"
 extern struct CHARACTER *ch_List[0x300];  /* 0x1468ae0 (ch.h) */
@@ -212,8 +196,6 @@ extern struct D3ANIM *d3t_CamMove;
 extern int sv_FrameMask;
 extern OPTIONBYTES ai_GamePanel;
 extern char ai_MissionMode;
-extern int ai_Unk6f2438;
-extern int ai_Unkf83650;
 extern int ai_Unkfb9060;
 extern int ai_Unkfb9064;
 extern int ai_Unkfb9068;
@@ -252,12 +234,10 @@ extern char ai_MissionMode;
 
 extern GAPDATA full_data_75e401[];
 extern INIT_PLAYER init_PlayerProfile;
-extern int ai_Unk1460ae0;
 extern int ai_Unkfb9060;
 extern int ai_Unkfb9064;
 extern int ai_Unkfb9068;
 extern int ai_Unkfb906c;
-extern int cm_NetFlags;
 extern GAPDATA full_data_624560[];
 #include "f3snd_types.h"
 extern G16AMBIENTON snd_AmbientOn;
@@ -267,9 +247,7 @@ extern char ai_DataPath[];
 
 extern OPTIONBYTES ai_GamePanel;
 extern int ai_Unk1460ae0;
-extern int ai_Unk60bd94;
 extern char * ai_Unk60c1ec;
-extern int ai_Unkf31144;
 extern int cm_NetFlags;
 
 
@@ -325,7 +303,6 @@ extern int sv_PopRequest;
 
 extern HWND main_Window;
 extern int snd_SfxEnabled;              /* 0x6f257c, f3snd.h */
-extern int snd_MusicEnabled;            /* 0x6f2578, f3snd.h */
 
 void main_EndGame(void);
 void main_Unk537be0(void);
@@ -339,14 +316,12 @@ void main_Unk53cb40(void);
 extern unsigned int d3anim_CacheMax;   /* 0x5f927c, d3_anim.h */
 void hst_ResetLists(void);              /* 0x4b1f30, hst.c */
 void ai_ClearTurnTable(void);           /* 0x587de0, unk_575860.c: not in unk_575860.h (adding it there moves unk_575860's drafts ai_Unk579570 / ai_Unk57aeb0) */
-void ai_InitStates(void);               /* 0x4c3480 */
 int sb_Init(int mem, int count, int a, int b, int c);  /* 0x425bc0 */
 void sb_SetPath(char *path);            /* 0x426240 */
 int main_PreloadSound(char *f);         /* 0x537c70 */
 int ch_Open(void);                      /* 0x40afb0 */
 int hmt_CreateBinaryFile(void);         /* 0x4ac440 */
 void hmt_Init(void);                    /* 0x4aca90 */
-void ai_BuildFloatTable(void);          /* 0x4d27a0 */
 void chc_Register(void);                /* 0x40d270 */
 #define d2_MoveObjS ((void (*)(short, short, int))d2_MoveObj)  /* 0x46cda0 as its definition reads it (d2.c f_46cda0.c: short x, short y): this unit's callers push the short sums untruncated (0x532212 `sub dx, [..]; sub edx, 0x30; push edx`); d2.h keeps int for d2_CreatePicObj (@original) */
 #define util_RandomInt ((int (*)(unsigned short))util_Random)  /* 0x42ec00 as tr.c defines it: @original this unit reads the full int result (0x53b8c9 util_Random(4) + 0x20 pushed without the 16-bit mask ai.h's unsigned short prototype adds) */
@@ -362,7 +337,6 @@ void main_FreeSoundBanks(void);         /* 0x537db0 */
 void sb_Exit(void);                     /* 0x425ce0, sblib.c */
 int hmt_Exit(void);                     /* 0x4acde0, hmt.h */
 void ch_Close(void);                    /* 0x40b1a0, ch.h */
-void ai_ResetMessages(void);                /* 0x4c3560 */
 void amt_CheckOffices(void);            /* 0x4e9260, amt.h */
 
 #include "time_view.h"
@@ -378,6 +352,7 @@ void amt_CheckOffices(void);            /* 0x4e9260, amt.h */
 #include "d3_tools.h"
 #include "ahm.h"
 #include "gv.h"
+#include "cm.h"
 #define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (f3gm.c: char *) as the AIGOOD records it points to */
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
