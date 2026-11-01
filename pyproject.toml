@@ -2,7 +2,4 @@
 name = "gildegold"
 version = "0.0.0"
 requires-python = ">=3.15"
-dependencies = ["decompanion"]
-
-[tool.uv.sources]
-decompanion = { path = "C:/Users/andre/Documents/decompanion", editable = true }
+dependencies = []

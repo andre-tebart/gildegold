@@ -68,9 +68,9 @@ reason = "the GOG install's folders linked, its ini/dll/asi files copied; the in
   link = ["*/"]
   copy = ["*.ini", "*.dll", "*.asi", "*.as6", "*.def", "*.sdb", "*.info"]
   [[setup.step]]
-  run = ["python", "tools/run/compat_shim.py"]
+  run = ["uv", "run", "python", "tools/run/compat_shim.py"]
   [[setup.step]]
-  run = ["python", "tools/run/game_ini.py"]
+  run = ["uv", "run", "python", "tools/run/game_ini.py"]
 
 [[run]]
 name = "play"
