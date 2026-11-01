@@ -687,7 +687,6 @@ void par_Draw(D3PARTSYS *ps);                                                   
 struct D3SKY; char d3sky_Draw(struct D3SKY *s);                                                             /* 0x45d500 */
 void d3_DrawSorted(void);                                                                /* 0x43b600 */
 void ts_UpdateScroll(unsigned long now);                                                   /* 0x460cb0 */
-char d3anim_StepObject(D3OBJECT *obj, void *ctx);                                            /* 0x432750, d3_anim.c */
 int ai_AlwaysTrue(void);                                                                /* 0x4a8c10 */
 
 /* event tables ("d3e:") */
