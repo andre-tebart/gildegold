@@ -5,6 +5,7 @@
    begin (their table 0x611768 follows gv's strings). The last functions of the file (0x4f2750 .. 0x4f1de0) are
    out of address order. Names are ours.
    Open: the avatars, the effect slots and the graveyard may be several modules sharing one .data block.
+   Open: not included yet (dcp headers conflicts gv HEADER): unk_5d33b0.h.
    unit of rea 8cef7d5b (src/game/gv.c); boundaries in decl/text.dcl */
 #include "txt_views.h"
 #include <windows.h>

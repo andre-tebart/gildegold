@@ -4,6 +4,11 @@
    Open: the start and the end rest on the .data order only.
    Open: sv.c includes ai.h but not d2.h yet: its char * declarations of d2_Objs / d2_LastWindowPtr and its K&R
    d2_BlitPartMode supersede d2.h's, so the d2 records go through the SV* views and the SV_I / SV_W address macros.
+   Open: not included yet (dcp headers conflicts sv HEADER): ch.h cm.h d2.h d3_tools.h f3gm.h f3snd.h gfx.h rt.h
+   sblib.h unk_5d33b0.h; held by own declarations that differ from the owner's: d2_Objs, d2_LastWindowPtr,
+   d3t_PlaceObjectV, d2_BlitPartMode, d2_AddHitRect; calls whose argument count differs from the definition
+   (read the original's pushes): sb_PlaySample, d3t_SceneIndex, d3t_PlaceObjectV, d2_SetObjValue,
+   d2_PlaceMainWindow, ch_FindByObject, gm_Season.
    unit of rea 8cef7d5b (src/game/sv.c); boundaries in decl/text.dcl */
 struct CHARACTER;
 struct D2SHP;

@@ -1,6 +1,13 @@
 /* unk_58bbd0 -- the production / trade windows and the location, privilege and statistics windows of the game
    screen (0x58bbd0 .. 0x5d33b0, about 480 functions); name unknown, subject and boundary evidence below.
    Open: the AIMSG message records are built by raw offsets throughout (ai.h's AIMSG view is not used yet).
+   Open: not included yet (dcp headers conflicts unk_58bbd0 HEADER): ahm.h ai.h am.h amt.h anm.h ch.h chc.h cm.h
+   d2.h d3_int_io.h d3_tools.h f3snd.h gfx.h gv.h hst.h rd.h rt.h sv.h unk_4b39f0.h unk_5d33b0.h vfs.h; held by
+   own declarations that differ from the owner's: ai_Time, d3sm_GetVertex, d2_CreateWinText, AIBLD,
+   cm_SendExSetHE, ai_VgFilter, d3sm_Pick; calls whose argument count differs from the definition (read the
+   original's pushes): vfs_GetPath, d2_SetViewEnabled, d2_GetWinObj, d2_CreateWinText, d2_GetObjValue,
+   d3_LoadGroup, d2_GetViewWin, sv_MessageBox, d2_CreateScrollButtons, d2_PlotLine, sv_CheckGoodAmount,
+   d2_SetObjValue, d2_PlaceMainWindow, d3t_PlayAnim, d3t_SetTreeColor, sv_CreateFormSlider.
    unit of rea 8cef7d5b (src/game/unk_58bbd0.c); boundaries in decl/text.dcl */
 #define GAPDATA __declspec(align(1)) unsigned char
 #define unk_Unk5136b0K ((int (*)())unk_Unk5136b0)  /* 0x5136b0 (f3init.c, void): @original the call passes more arguments than the draft definition names, compiled without a prototype (as before the definition's spelling reached this unit) */

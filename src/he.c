@@ -5,6 +5,11 @@
    main.c's INI strings); the tutorial / campaign block (.data 0x62918c) follows.
    (no @bytes: the block after he_Unk555b60's ret at 0x556055 is its int 3 error path, reached by the je at 0x555dd7)
    Open: the event record (0x14c B, also ai.h AIJOB) and the message record (0xf8 B) are untyped; handlers use raw offsets.
+   Open: not included yet (dcp headers conflicts he HEADER): ahm.h ai.h am.h amt.h anm.h ch.h cm.h d3_tools.h
+   f3gm.h f3snd.h gv.h hmt.h hst.h rt.h sblib.h sv.h unk_4b39f0.h unk_4b6480.h unk_5d33b0.h; held by own
+   declarations that differ from the owner's: ai_Time, cm_SendExSetHE, ahm_SendSetShare; calls whose argument
+   count differs from the definition (read the original's pushes): gm_AddTime, gm_Liking, gm_TitleNumber,
+   gm_TitleGroup, ch_QueueAnim, d2_SetObjValue, d3t_PlayAnim, ahm_SendSetShare, sb_Stop, sv_Unk524770.
    unit of rea 8cef7d5b (src/game/he.c); boundaries in decl/text.dcl */
 struct AHMSLOT;
 struct D3HMAP;

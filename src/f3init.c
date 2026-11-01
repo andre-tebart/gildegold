@@ -1,6 +1,9 @@
 /* f3init.c -- the game initialisation of the town (0x50d100 ..): tag "f3_init:" ("f3_init:Gebaeude des Typs %s allokiert", 0x622ecc) and "init_" in the error strings ("init_LoadObjektScene:", "init_LoadGebaeudeScene:", "init_LocalData()"). The scene object names ("ob_NAME" / "gb_NAME" with the variant suffixes "_A" .. "_H") are mapped to the object / building prototypes, the object and building scenes "scenes/*ob_%s.ed3" / "scenes/*gb_%s.ed3" are loaded into universes of their own (tables 0x76faa0 per object prototype, 0x76fa60 per building class), the start objects are placed. The .data of this unit starts at 0x61adf8 (right after f3gm's last string 0x61ade0): its initialised globals (0x61adf8 / 0x61ae00 and the table of 19 records of 0x6c4 bytes at 0x61ae08) come first, then its strings from "KONTOR" (0x622e94) on. The unit ends at 0x5142e0, where io_text.c's text builders start. Names are ours.
    Open: type debt - the local views SCENEOBJ / INIT_* and the local canonical prototypes stand in for the types and
    prototypes of ch.h, ai.h, amt.h, d3_sm.h and rd.h, whose headers did not compile into this unit (gv.h conflicts).
+   Open: not included yet (dcp headers conflicts f3init HEADER): ai.h amt.h cm.h d2.h f3snd.h gfx.h hmt.h hst.h
+   sv.h unk_4b39f0.h unk_4b6480.h; held by own declarations that differ from the owner's: cm_SendExSellObject,
+   amt_GetKind, amt_GetOffice, d2_ClearSurface, sv_PanelShown, amt_GetFirstOffice, gm_AssignBuilding.
    unit of rea 8cef7d5b (src/game/f3init.c); boundaries in decl/text.dcl */
 struct VFSENTRY;
 struct D3OBJECT;

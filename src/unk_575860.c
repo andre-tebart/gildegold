@@ -7,6 +7,9 @@
    The original file name is unknown (no leaked tag). Names are ours.
    Open: type debt - the state record S, the 0x74-byte chapter records and the message (AIMSG) / contact-list
    records are accessed by byte offset; ai.h's AIMSG and a record type would clear most of the drafts' offsets.
+   Open: not included yet (dcp headers conflicts unk_575860 HEADER): d2.h gfx.h sv.h unk_5d33b0.h; held by own
+   declarations that differ from the owner's: d2_CreateWinText, SHOTREC; calls whose argument count differs from
+   the definition (read the original's pushes): d2_GetObjValue, d2_PlaceMainWindow, sv_Unk52eb50.
    unit of rea 8cef7d5b (src/game/unk_575860.c); boundaries in decl/text.dcl */
 struct AHMSTEP;
 struct D3SKY;

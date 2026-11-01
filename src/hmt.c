@@ -5,6 +5,8 @@
    0x4ac440.. starts at 0x600f60 right after unk_4a7140.c's ("Blutrache" 0x600f54). Starts after the registration
    0x4abed0 that ends unk_4a7140.c; ends with "_NACHRICHTEN_NEU_01" 0x601044 (the next block is hst.c's callback
    table). Names are ours.
+   Open: not included yet (dcp headers conflicts hmt HEADER): main.h; held by own declarations that differ from
+   the owner's: GetModuleFileNameA.
    unit of rea 8cef7d5b (src/game/hmt.c); boundaries in decl/text.dcl */
 #include <stdio.h>
 #include <stdlib.h>

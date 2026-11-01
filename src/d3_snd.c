@@ -3,6 +3,8 @@
    direction. Extent in GildeGold.exe (inferred, not proven): 0x417650..0x418ce0; 0x417ec0.. is the
    water ambience ("d3sndw") and may be a file of its own.
    Functions are kept in their original order. Names are ours.
+   Open: not included yet (dcp headers conflicts d3_snd HEADER): d3_fl.h; held by own declarations that differ
+   from the owner's: map_Region.
    unit of rea 8cef7d5b (src/game/d3_snd.c); boundaries in decl/text.dcl */
 #include <stdio.h>
 #include <stdlib.h>

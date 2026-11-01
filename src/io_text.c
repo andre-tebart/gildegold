@@ -4,6 +4,8 @@
    (0x623564) and ends before the language getter 0x519010 (its global 0x62364c opens the "ls" unit).
    Open: the 0x21c character record is untyped; the name builders read it as unsigned char at raw offsets
    (0x9, 0xd, 0x164.., 0x166; 0x1cc through gv.h's ORDCHAR).
+   Open: not included yet (dcp headers conflicts io_text HEADER): d2.h; held by own declarations that differ
+   from the owner's: d2_Objs.
    unit of rea 8cef7d5b (src/game/io_text.c); boundaries in decl/text.dcl */
 #include "d2_types.h"
 extern D2WIN d2_Wins[];

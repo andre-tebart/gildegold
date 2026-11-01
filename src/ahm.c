@@ -3,6 +3,8 @@ table of 8 ints, then the strings "RCPID" .. "alchemy_data.ini"). Starts at 0x4e
    rests on the .data order only (the next block, the avatar table 0x60f310, is gv.c's). Names are ours.
    Open: ahm.h is not canonical - its mem_Alloc `const char *tag` conflicts with gv.h's `char *tag`, so he.c / ls.c / cm.h
    and others still declare ahm.c's functions locally (some K&R).
+   Open: not included yet (dcp headers conflicts ahm HEADER): anm.h cm.h; held by own declarations that differ
+   from the owner's: util_Random.
    unit of rea 8cef7d5b (src/game/ahm.c); boundaries in decl/text.dcl */
 #include "txt_views.h"
 #include <windows.h>

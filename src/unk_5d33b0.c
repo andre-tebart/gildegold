@@ -11,6 +11,9 @@
    Open: ai_SaveOptionWindow / ai_SaveNameWindow / ai_LoadGameWindow / ai_JoinGameWindow still cast
    d2_GetViewWin to six arguments; as in ai_FilePickWindow the original likely nests d2_GetViewWin (win, 1)
    in the 8-argument sv_CreateFormSlider call (their @deep "cleanup split" notes).
+   Open: not included yet (dcp headers conflicts unk_5d33b0 HEADER): ch.h cm.h d2.h d3_int_io.h gfx.h; held by
+   own declarations that differ from the owner's: d2_StartFade, d2_ReleaseFade, d2_WinOpenPic, d2_ScreenSurf,
+   d2_Inputs, d2_LockSurface, d2_UnlockSurface, ch_List, d3io_Lod.
    unit of rea 8cef7d5b (src/game/unk_5d33b0.c); boundaries in decl/text.dcl */
 extern int gm_PlayerRecords[688];
 #include "txt_views.h"

@@ -8,6 +8,8 @@
    ch_Unk631060, ch_Unk5f1290, ch_Unk402540.
    Open: D3OBJ_UNK200 is D3OBJECT.pad200[0] (the per-object int d3_WriteObject saves and rd_object restores,
    the item pointer of the sprite spawners); it wants a typed field in the shared d3.h.
+   Open: not included yet (dcp headers conflicts ch HEADER): sv.h; held by calls whose argument count differs
+   from the definition (read the original's pushes): sv_ReturnZero.
    unit of rea 8cef7d5b (src/game/ch.c); boundaries in decl/text.dcl */
 #include <stdio.h>
 #include <stdarg.h>

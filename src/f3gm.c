@@ -8,6 +8,11 @@
    costs gm_Unk4fa4b0 a byte).
    Open: gm_GetWorth is a float in gv.h, the unit reads it as an int (I50A640).
    Open: gm_GetGebaeudeHauptraum (0x501ce0) is drafted void, but its callers use the result as a pointer.
+   Open: not included yet (dcp headers conflicts f3gm HEADER): ai.h anm.h ch.h cm.h d2.h d3_engine.h
+   d3_interface.h d3_tools.h gfx.h hmt.h hst.h rt.h unk_458810.h unk_4b39f0.h; held by own declarations that
+   differ from the owner's: d2_Objs, gm_MinutesBetween, gm_ClockSeason, gm_CompareTime; calls whose argument
+   count differs from the definition (read the original's pushes): d3if_SelectScene, gm_Liking, gm_TitleNumber,
+   d3t_SceneIndex.
    unit of rea 8cef7d5b (src/game/f3gm.c); boundaries in decl/text.dcl */
 struct CHARACTER;
 struct CHTRANSPORT;

@@ -1,4 +1,6 @@
 /* ts_texture -- name leaked (the #line below); bounded by the d3_sm.c and d2.c tags.
+   Open: not included yet (dcp headers conflicts ts_texture HEADER): bio.h; held by own declarations that differ
+   from the owner's: file_Exists.
    unit of rea 8cef7d5b (src/game/ts_texture.c); boundaries in decl/text.dcl */
 #line 1 "D:\\develop\\Units\\d3\\ts_texture.c"
 /* ts_texture.c -- original path D:\develop\Units\d3\ts_texture.c

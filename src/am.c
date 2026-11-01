@@ -7,6 +7,8 @@
    "%sgebaeude/*%s_%c.ogr" 0x600478, the next block is unk_4a7140.c's. Names are ours.
    Open: am.h keeps the joined parts' character views (AIPX / AGCH / AIC4 / G5CH / AIPER) and duplicate callee
    prototypes / cast macros; they need unifying with ai.h's types.
+   Open: not included yet (dcp headers conflicts am HEADER): txt.h; held by own declarations that differ from
+   the owner's: txt_Keys.
    unit of rea 8cef7d5b (src/game/am.c); boundaries in decl/text.dcl */
 #include "txt_views.h"
 #include <stdio.h>
