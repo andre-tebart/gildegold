@@ -16,13 +16,19 @@
 #include "d3_fl.h"
 #include "d3_interface.h"
 #include "d3_int_io.h"
+#include "bio.h"
+#include "d3_io_t.h"
+#include "d3_sm.h"
+#include "err.h"
+#include "mem.h"
+#include "ts_texture.h"
+#include "vfs.h"
 /* 0xfc2ffc is the next field of the 0xfc2e00 head sentinel (0xfc2e00 + 0x1fc), not a separate global:
    d3io_LoadObjectFile links the first stock object there. */
 #define d3_StockListHead (*(D3OPS **)((char *)d3_Unkfc2e00 + 0x1fc))  /* 0xfc2ffc */
 /* err.h's other declarations shift the /O2 register allocation of the byte-matched d3_LoadScene (3 bytes at
    0x44c0df); the file only calls err_Message. Its own prototype keeps the call typed, where a local copy of
    the whole header does not compile byte-identically. */
-void err_Message(char *text);
 void d3_SetFog(unsigned long start, unsigned long end, unsigned long color);  /* 0x43a6f0, d3_engine.c; @original: the reader passes the raw dwords of the two floats (no int -> float conversion; the original pushes them unchanged) */
 /* 0x44abb0, reads an object with its children and following siblings ("rd_object" in the error message) */
 D3OBJECT *rd_object(void *f, D3OBJECT *parent, unsigned int version, char reload)
