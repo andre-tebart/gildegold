@@ -49,6 +49,8 @@ extern GAPDATA full_data_91f6e4[];
 #include "unk_4b39f0.h"
 #include "unk_58bbd0.h"
 #include "vfs.h"
+#include "d3_interface.h"
+#include "unk_458810.h"
 extern int gm_PlayerRecords[688];
 
 extern const float unk_Tab5ee034[];
