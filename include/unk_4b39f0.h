@@ -31,4 +31,12 @@ G13MIS *ai_NewRandomMission(int owner, int kind, int x);                        
 int ai_RandomMissionType(int kind);                                                      /* 0x4b3c40 */
 G13MIS *ai_NewMission(int owner, int type, int x);                                /* 0x4b3ca0 */
 
+/* declared in other units' headers before (moved to the owner) */
+extern unsigned char ai_NumPlayers;  /* 0x62489c */
+extern int ai_GameOver;  /* 0x6f259c */
+extern char ai_MissionMode;  /* 0x624580 */
+extern int ai_MissionPartner;  /* 0x6248a0 */
+int ai_Unk4b44e0(G13MIS *m, int ev);  /* 0x4b44e0 */
+extern int sv_FrameMask;  /* 0x760638 */
+
 #endif
