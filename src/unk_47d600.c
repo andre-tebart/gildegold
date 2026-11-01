@@ -238,7 +238,7 @@ void d2_ShpBlit8To16(int x, int y, void *bits, D2SHP *s)
                 jne Lblit16_m0_row
                 jmp Lblit16_done
                 xor ebp,ebp
-                mov eax,dword ptr [d2_ClipTop+4]         ; mode 1 (dead): brightens the surface pixel
+                mov eax,dword ptr d2_ShpLightTable        ; mode 1 (dead): brightens the surface pixel
     Lblit16_m1_row:
                 mov edx,dword ptr [esi]
                 add esi,0x4

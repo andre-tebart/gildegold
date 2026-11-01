@@ -139,9 +139,6 @@
 /* dd_BBits */
 #define dd_Unk1464fc0            (*(int *)((char *)&dd_BBits + 0x3))  /* 0x1464fc0 */
 
-/* d2_ClipTop */
-#define d2_ShpLightTable         (*(unsigned short **)((char *)&d2_ClipTop + 0x4))  /* 0x6f0460 */
-
 /* ai_Unk6339db */
 #define d3if_Unk6339dc           (*(unsigned int *)((char *)&ai_Unk6339db + 0x1))  /* 0x6339dc */
 

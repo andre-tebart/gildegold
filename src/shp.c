@@ -1849,7 +1849,7 @@ void d2_ShpBlit16ClipY(int x, int y, void *bits, D2SHP *s)
                 jmp LclipY_done
     LclipY_mode3_entry:
                 xor ebp,ebp
-                mov eax,dword ptr [d2_ClipTop+4]
+                mov eax,dword ptr d2_ShpLightTable
     LclipY_mode3_row:
                 mov edx,dword ptr [esi]
                 add esi,0x4
@@ -2199,7 +2199,7 @@ void d2_ShpBlit16ClipXY(int x, int y, void *bits, D2SHP *s)
                 jne LclipXY_mode0_row
                 jmp LclipXY_done
                 xor ebp,ebp
-                mov eax,dword ptr [d2_ClipTop+4]
+                mov eax,dword ptr d2_ShpLightTable
     LclipXY_mode3_entry:
                 mov edx,dword ptr [esi]
                 add esi,0x4
@@ -2422,7 +2422,7 @@ void d2_ShpBlit16ClipXY(int x, int y, void *bits, D2SHP *s)
 }
 #pragma optimize("", on)
 
-/* d2_ShpLightTable: view of d2_ClipTop (tools/data_views.py) */
+unsigned short *d2_ShpLightTable = 0;  /* 0x6f0460, colour table (own object: d2_ClipTop is a 4-byte int) */
 unsigned int d2_LastAnimTick = 0;  /* 0x6f0464, tick of the last animation step */
 int d2_ShpX = 0;  /* 0xf8a108 */
 int d2_ShpY = 0;  /* 0xf8a10c */

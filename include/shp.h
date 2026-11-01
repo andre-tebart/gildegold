@@ -47,9 +47,7 @@ extern D2KEY d2_TransparentColour;          /* 0x6f0454 */
 extern D2KEY d2_EndMarkerColour;          /* 0x5fed74 */
 extern D2KEY d2_StartMarkerColour;          /* 0x5fed78 */
 extern unsigned char d2_Palette[256][4];  /* 0xf8a120, palette */
-#ifndef DATA_VIEWS_H
 extern unsigned short *d2_ShpLightTable;    /* 0x6f0460, colour table */
-#endif
 extern int d2_SurfPitch;            /* 0x5fed84 */
 extern int d2_LightTableExternal;            /* 0xf8a630 */
 
