@@ -2386,32 +2386,34 @@ t = amt_GetKindLevel(ai_CharsT[ids[i]].officeKind) / 3 + 2;
 /* 0x4ab6b0, execute callback of action 0x44 "Blutrache": p pays the cost, is flagged (0x1cc bit 3), the victim
    loses standing with every helper by their relation (0x504e20), and 0x5a9470 starts the feud */
 
-int ai_Unk4ab6b0(AIPER *p, unsigned char *m, unsigned char *m2)
+int ai_ExecBlutrache(AIPER *p, AIARG *m, AIARG *m2)
 {
     AIPER *who[4];
     AIPER *o;
-    int cost, n, i;
+    int cost, n, i, d;
 
-    cost = *(int *)(m + 0x10);
+    cost = m->arg2;
     if (m2 == 0 || p == 0)
         return 0;
-    o = gm_FindPer(*(int *)(m + 4));
+    o = gm_FindPer(m->ref);
     if (o == 0)
         return 0;
-    who[0] = gm_FindPer(*(int *)(m + 0xc));
+    who[0] = gm_FindPer(m->ref2);
     if (who[0] == 0)
         return 0;
     n = 1;
-    if ((who[n] = gm_FindPer(*(int *)(m + 8))) == 0)
+    if ((who[n] = gm_FindPer(m->arg)) == 0)
         n++;
-    if ((who[n] = gm_FindPer(*(int *)(m2 + 0xc))) == 0)
+    if ((who[n] = gm_FindPer(m2->ref2)) == 0)
         n++;
-    if ((who[n] = gm_FindPer(*(int *)(m2 + 8))) == 0)
+    if ((who[n] = gm_FindPer(m2->arg)) == 0)
         n++;
     gm_SendMoneyDelta(p->netId, -cost);
     cm_SendSetField(p->netId, 0x1cc, 4, 8, 0);
-    for (i = 0; i < n; i++)
-        cm_SendRelations(o->id, who[i]->id, -(50 - (int)(gm_Mix(p, who[i], 4) * -50.0f)), 1);
+    for (i = 0; i < n; i++) {
+        d = 50 - (int)(gm_Mix(p, who[i], 4) * -50.0f);
+        cm_SendRelations(o->id, who[i]->id, -d, 1);
+    }
     ai_GypsyDeliveryText(o, n, who);
     return 0x44;
 }
@@ -2637,7 +2639,7 @@ int ai_Unk4abed0(int a)
     strcpy(act.name, "Blutrache");
     act.eval = ai_Unk4a49a0;
     act.decide = ai_DecideBlutrache;
-    act.exec = ai_Unk4ab6b0;
+    act.exec = ai_ExecBlutrache;
     act.flags = 0x1c3;
     if (!ai_Unk495520(&act, a))
         return 0;
