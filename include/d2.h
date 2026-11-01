@@ -246,7 +246,6 @@ extern int d2_ClickedId;            /* 0xf8a668 */
 extern D2SEG d2_TextSegs[];        /* 0xf8abe0 */
 extern char d2_PointerTexName[];         /* 0xf8ef00 */
 extern D2VIEW d2_Views[0x30];   /* 0xfb1020 */
-extern unsigned char kb_Last;        /* 0x1468410, last key (di_input.c) */
 extern int d2_ScrollMarkerPic;            /* 0x5fe734, scroll marker picture (3 frames) */
 extern int d2_WinBorderPic;            /* 0x5fe744, frame picture of a window */
 extern int d2_WinBorderPergaPic;            /* 0x5fe748, another 8 pixel frame picture */
@@ -297,13 +296,6 @@ void d2_BlitPart(int sx, int sy, int w, int h, struct D2SURF *src, int x, int y,
 int d2_ClearSurface(D2SURF *surf);                                                 /* 0x4796c0, clears */
 int d2_PutPixel(int x, int y, unsigned short color, D2SURF *surf);             /* 0x479b60, plots a pixel */
 int d2_PutPixelClipped(int x, int y, unsigned short color, D2SURF *surf);             /* 0x479b90, the same, clipped */
-void d2_FreeLightTable(void);                                                        /* 0x479ee0 */
-void *d2_BankConvertTo16(void *pic, int a, int b);                                    /* 0x47c410 */
-int d2_DrawShape(int x, int y, void *surf, void *pic, unsigned char i);         /* 0x47c6f0, draws frame i */
-int d2_DrawShapeMode2(int x, int y, void *surf, void *pic, unsigned char i);        /* 0x47c970 */
-int d2_DrawShapeMode3(int x, int y, void *surf, void *pic, char i);                  /* 0x47cae0 */
-void d2_SetClipRect(int x0, int y0, int x1, int y1);                              /* 0x47cb40, sets the clip rectangle */
-D2FRAME *d2_GetFrame(void *pic, short i);                                      /* 0x47cb70, frame i of a picture */
 
 struct D3IFSPRITE; char d3if_DrawSprite(struct D3IFSPRITE *t, int x, int y, float angle, float sx, float sy, float alpha); /* 0x448270 */
 char d3_ScreenToUV(float sx, float sy, struct D3OBJECT *obj, void *tex, float *outu, float *outv); /* 0x448e60 */
@@ -317,14 +309,6 @@ void d2_EnableObject(int obj, int on);                                          
 void d2_DissolveStep(D2DISSOLVE *d);                                              /* 0x476110, one step of a dissolve */
 void d2_DrawFades(void);                                                        /* 0x476b10 */
 void d2_SetSurfaceClip(int x, int y, int w, int h, D2SURF *surf);                    /* 0x479cd0, sets the clip rectangle */
-int d2_DrawShapeHalfDark(int x, int y, void *surf, void *pic, char i);                 /* 0x47c770 */
-int d2_DrawShapeScaled(int x, int y, void *surf, void *pic, char i, char mode, int on);  /* 0x47c830 */
-void d2_SetMode5Colour(unsigned char r, unsigned char g, unsigned char b);           /* 0x47ca10, sets the text colour */
-int d2_DrawShapeMode5(int x, int y, void *surf, void *pic, unsigned char i);         /* 0x47ca40 */
-void d2_StepAnims(void);                                                        /* 0x47cb90 */
-int d2_StartAnim(short x, short y, void *data, unsigned char z);                          /* 0x47cd20 */
-void d2_DrawAnim(int n, void *surf);                                           /* 0x47cdb0 */
-void d2_FreeAnim(int n);                                                       /* 0x47ce30 */
 D3TEXHANDLE *d3if_LoadSprite(char *name, char glow);                                      /* 0x448200 */
 void d2_SetObjEnabled(int obj, int on);                                             /* 0x475e40 */
 void d2_ScaleObject(int obj, int a);                                            /* 0x475e80, scales a picture object; a > 1 larger, a < -1 smaller */
@@ -332,9 +316,7 @@ void d2_ReleaseFade(D2FADE *f);                                             /* 0
 int d2_BlitPartMode(int sx, int sy, int w, int h, struct D2SURF *src, int x, int y, struct D2SURF *dst, unsigned char mode); /* 0x479150 */
 int d2_ClearRect(int x, int y, int w, int h, D2SURF *surf);                     /* 0x4797d0, clears a rectangle */
 void d2_DrawRectOutline(int x, int y, int w, int h, unsigned int r, unsigned int g, unsigned int b, D2SURF *surf); /* 0x479bf0, outline of w x h */
-void d2_FillRect(int x, int y, int w, int h, void *surf);                      /* 0x47ce60 */
 int d2_GetSurfaceDesc(D2SURF *surf, struct _DDSURFACEDESC2 *desc);                   /* 0x479120, 0x7c byte surface desc */
-int d2_SetColourFormat(int a, int b);                                                 /* 0x479df0, sets the colour masks */
 
 /* d2.c */
 int d2_FreeOldest(void);                                    /* 0x4687a0 */
@@ -454,7 +436,6 @@ extern unsigned int d2_PenSize;   /* 0x6ed97c, pen size */
 extern D2DISSOLVE *d2_CurrentDissolve;    /* 0xf8abc8 */
 extern D2FRCT d2_PointerItems[6];   /* 0xf8ab80, the item list drawn next to the pointer */
 extern volatile int tb_Calls;       /* 0x6333d8, timer callbacks */
-void d2_SetBlitParams(void *dst, void *src, void *mask, short w, short h, short n); /* 0x47ced0 */
 int d2_PutPixelRGB(int x, int y, unsigned int r, unsigned int g, unsigned int b, D2SURF *surf); /* 0x4799e0 */
 int d2_GetViewWin(int view, int i);                  /* 0x475ff0 */
 void d2_SetObjFont(int obj, int font);               /* 0x4760b0 */
@@ -465,7 +446,6 @@ void d2_FillPaintbox(int x, int y, int w, int h);      /* 0x476760 */
 D2FADE *d2_StartFade(int x, int y, int w, int h, char *name, int dur, unsigned int flags); /* 0x4767d0 */
 void d2_DrawFade(D2FADE *f, D2SURF *surf);         /* 0x4768a0 */
 void d2_ClearInput(void);                            /* 0x476b70 */
-void d2_AddPointerItem(int id, int amount);              /* 0x476b90 */
 
 /* declared in other units' headers before (moved to the owner) */
 extern char *txt_Ptrs[0x4800];  /* 0x143a1c0 */
