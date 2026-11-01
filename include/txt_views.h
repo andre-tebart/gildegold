@@ -203,9 +203,9 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define ai_SaveOverwriteText                     (*(char * *)((char *)txt_Ptrs + 0x0732c))  /* 0x14414ec */
 #define txt_DefaultFileName                        (*(char **)((char *)txt_Ptrs + 0x07334))  /* 0x14414f4 */
 #define ai_MessageFilterTexts                    (*(char * (*)[666])((char *)txt_Ptrs + 0x07340))  /* 0x1441500 */
-#define ai_Unk1441f68                            (*(int *)((char *)txt_Ptrs + 0x07da8))  /* 0x1441f68 */
+#define txt_PanelBtnBuild                            (*(int *)((char *)txt_Ptrs + 0x07da8))  /* 0x1441f68 */
 #define txt_PanelBtnOwn                            (*(int *)((char *)txt_Ptrs + 0x07dac))  /* 0x1441f6c */
-#define ai_Unk1441f70                            (*(int *)((char *)txt_Ptrs + 0x07db0))  /* 0x1441f70 */
+#define txt_PanelBtnKind1e                            (*(int *)((char *)txt_Ptrs + 0x07db0))  /* 0x1441f70 */
 #define txt_PanelBtnForeign                            (*(int *)((char *)txt_Ptrs + 0x07db4))  /* 0x1441f74 */
 #define txt_PanelBtnItemOwn                            (*(int *)((char *)txt_Ptrs + 0x07db8))  /* 0x1441f78 */
 #define txt_PanelBtnItem                            (*(int *)((char *)txt_Ptrs + 0x07dbc))  /* 0x1441f7c */

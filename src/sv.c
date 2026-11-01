@@ -3634,8 +3634,8 @@ void sv_OpenCartPanel(AIOBJ *c)
     sv_PanelCartChar = (int)c->sceneObj;
 }
 
-extern int ai_Unk623884;  /* 0x623884 */
-extern int ai_Unk623898;  /* 0x623898 */
+extern int sv_PanelBuildBtn;  /* 0x623884 */
+extern int sv_PanelKind1eBtn;  /* 0x623898 */
 extern int ai_Unk623880;  /* 0x623880 */
 extern int ai_Unk6f2334;  /* 0x6f2334 */
 extern unsigned char ai_GameState;  /* 0x6f25ac */
@@ -3659,42 +3659,45 @@ int ai_Unk5b8fc0();                     /* 0x5b8fc0 */
 int ai_Unk5b84f0();                     /* 0x5b84f0 */
 void ai_TechTreeWindow(int param_1, int param_2);                     /* 0x591bf0 */
 int sv_ReturnZero(void);
-void sv_Unk528ee0(void);
+void sv_OpenDefaultPanel(void);
 void sv_Unk5290f0(unsigned short *p);
 void sv_Unk529380(void);
 void sv_OpenItemPanel(unsigned short *p);
 
-/* 0x528ee0, opens the default info panel when no panel is open (0x623860): without a selection the "standard" panel with the buttons 0x8c / 0xa6; for an own building (0x6f230c with the owner +0x27 = the player) the
-   building panel with the name, the image, the health bar and the buttons 0x8c, 0xa6 (0x623898 for kind 0x1e) */
-void sv_Unk528ee0(void)
+/* 0x528ee0, opens the default info panel when no panel is open (sv_PanelForm): without a selected building the
+   "standard" panel with the construction button 0x8c (sv_PanelBuildBtn) and the item button 0xa6; for the player's
+   own fallback building (ai_FallbackBuilding, owner = ai_PlayerId) the building panel with the owner and kind name,
+   the building picture, the health bar (its level), the button 0x8c and either the kind 0x1e button
+   (sv_PanelKind1eBtn) or the item button 0xa6 */
+void sv_OpenDefaultPanel(void)
 {
-    int hp;
-    char text[128];
+    int level;
+    char name[128];
 
     if (sv_PanelForm != -1)
         return;
     if (ai_FallbackBuilding == 0) {
         if (ai_PlayerBuilding == 0) {
-            sv_PanelForm = d2_OpenForm(d2_ScreenW - 0x68, 0x106, "panel\\infopanel_standard");
+            sv_PanelForm = d2_OpenFormS(d2_ScreenW - 0x68, 0x106, "panel\\infopanel_standard");
             d2_SetForm(sv_PanelForm, 0);
-            ai_Unk623884 = sv_AddPanelButton(0, 0x8c, ai_Unk1441f68);
+            sv_PanelBuildBtn = sv_AddPanelButton(0, 0x8c, txt_PanelBtnBuild);
             sv_PanelItemBtn = sv_AddPanelButton(0, 0xa6, txt_PanelBtnItem);
             return;
         }
-    } else if (*(short *)(ai_FallbackBuilding + 0x27) == (short)ai_PlayerId) {
-        hp = gm_BuildingLevel(ai_FallbackBuilding);
-        sv_PanelForm = d2_OpenForm(d2_ScreenW - 0x68, 0x106, "panel\\infopanel_gebaeude");
+    } else if (((AIBLD *)ai_FallbackBuilding)->owner == (unsigned short)ai_PlayerId) {
+        level = gm_BuildingLevel((char *)ai_FallbackBuilding);
+        sv_PanelForm = d2_OpenFormS(d2_ScreenW - 0x68, 0x106, "panel\\infopanel_gebaeude");
         d2_SetForm(sv_PanelForm, 0);
         d2_SetForm(sv_PanelForm, 1);
-        io_CharacterNameMarkup(*(unsigned short *)(ai_FallbackBuilding + 0x27), 2, 1, text);
-        io_PrintText("$Z%s$A%s$A%s", text, *(unsigned char *)ai_FallbackBuilding * 0xe + 0x48e, ai_FallbackBuilding + 5);
+        io_CharacterNameMarkup(((AIBLD *)ai_FallbackBuilding)->owner, 2, 1, name);
+        io_PrintText("$Z%s$A%s$A%s", name, ((AIBLD *)ai_FallbackBuilding)->type * 0xe + 0x48e, ((AIBLD *)ai_FallbackBuilding)->name);
         d2_SetForm(sv_PanelForm, 0);
-        d2_WinOpenPic(((*(short *)(ai_Unkf8f128 + d2_LastWindow * 0x3c4) - 0x30) >> 1) - 1, 0x4c, *(unsigned char *)ai_FallbackBuilding + 0x427, d2_LastWindow);
+        d2_WinOpenPic(((d2_Wins[d2_LastWindow].w - 0x30) >> 1) - 1, 0x4c, ((AIBLD *)ai_FallbackBuilding)->type + 0x427, d2_LastWindow);
         sv_PanelHealthBar = d2_WinOpenSlider(0x15, 0x7a, 0x30, 0, 100, 0x75, 0x442, d2_LastWindow);
-        d2_SetObjValue(sv_PanelHealthBar, 0, 100, hp);
+        d2_SetObjValue4(sv_PanelHealthBar, 0, 100, level);
         sv_PanelActionBtn = sv_AddPanelButton(0, 0x8c, txt_PanelBtnOwn);
-        if (*(unsigned char *)ai_FallbackBuilding == 0x1e) {
-            ai_Unk623898 = sv_AddPanelButton(0, 0xa6, ai_Unk1441f70);
+        if (((AIBLD *)ai_FallbackBuilding)->type == 0x1e) {
+            sv_PanelKind1eBtn = sv_AddPanelButton(0, 0xa6, txt_PanelBtnKind1e);
             return;
         }
         sv_PanelItemBtn = sv_AddPanelButton(0, 0xa6, txt_PanelBtnItem);
@@ -3871,11 +3874,11 @@ void sv_Unk529fb0(void)
         sv_PanelForm = -1;
         sv_PanelBldPic = -1;
         sv_PanelHealthBar = -1;
-        ai_Unk623898 = -1;
+        sv_PanelKind1eBtn = -1;
         sv_PanelActionBtn = -1;
         sv_PanelTransportBtn = -1;
         sv_PanelCartBtn = -1;
-        ai_Unk623884 = -1;
+        sv_PanelBuildBtn = -1;
         sv_PanelItemBtn = -1;
         ai_Unk623880 = -1;
         sv_PanelCartWin = -1;
@@ -4423,7 +4426,7 @@ l3b8:
         if (SV_I((unsigned)&sv_SelectedModel) == 0 && SV_B((unsigned)&full_data_6f2338) == 0) {
             if (SV_I((unsigned)&ai_Unk6f2334) == 0) {
                 if (SV_I((unsigned)&sv_PanelShown) == 0 && SV_I((unsigned)&sv_SelectedChar) == 0)
-                    sv_Unk528ee0();
+                    sv_OpenDefaultPanel();
                 goto l510;
             }
         } else if (SV_I((unsigned)&ai_Unk6f2334) == 0)
@@ -7614,9 +7617,9 @@ extern int ai_Unkfb9068;
 extern int ai_Unkfb906c;
 extern int ai_Unkfba9c0[168];
 /* ai_Unk143a3a8: view of txt_Ptrs (build/mk_txt_views.py) */
-/* ai_Unk1441f68: view of txt_Ptrs (build/mk_txt_views.py) */
+/* txt_PanelBtnBuild: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_PanelBtnOwn: view of txt_Ptrs (build/mk_txt_views.py) */
-/* ai_Unk1441f70: view of txt_Ptrs (build/mk_txt_views.py) */
+/* txt_PanelBtnKind1e: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_PanelBtnForeign: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_PanelBtnItemOwn: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_PanelBtnItem: view of txt_Ptrs (build/mk_txt_views.py) */
@@ -7668,12 +7671,12 @@ int sv_PanelHealthBar = -1;  /* 0x623868 */
 int sv_PanelWidgets[4] = {-1, -1, -1, -1};  /* 0x62386c, the info panel's 4 widget ids (freed by one loop: 0x62386c .. 0x62387c) */
 int sv_PanelCartWin = -1;  /* 0x62387c */
 int ai_Unk623880 = -1;  /* 0x623880 */
-int ai_Unk623884 = -1;  /* 0x623884 */
+int sv_PanelBuildBtn = -1;  /* 0x623884 */
 int sv_PanelItemBtn = -1;  /* 0x623888 */
 int sv_PanelTransportBtn = -1;  /* 0x62388c */
 int sv_PanelCartBtn = -1;  /* 0x623890 */
 int sv_PanelActionBtn = -1;  /* 0x623894 */
-int ai_Unk623898 = -1;  /* 0x623898 */
+int sv_PanelKind1eBtn = -1;  /* 0x623898 */
 int ai_Unk6238a4 = -1;  /* 0x6238a4 */
 /* 0x6238a8, the skies of fair weather (sv_Unk5301a0 picks one below 50 clouds, cm picks one for the fair cutscene) */
 SVSKYREC sv_SkyFair[4] = {

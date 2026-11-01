@@ -189,7 +189,7 @@ extern struct AIBLD *ai_MarketBuilding;
 extern unsigned char ai_TimeHour;
 extern float gm_DayStartHours[];
 extern float gm_DayEndHours[];
-extern int ai_Unk623884;
+extern int sv_PanelBuildBtn;
 extern char * sv_SelectedObject;
 extern int d2_ClickedId;
 extern short d2_MouseX;
@@ -236,7 +236,7 @@ extern GAPDATA full_data_6f5a60[];
 
 
 extern int d2_PointerObj;
-extern int ai_Unk623898;
+extern int sv_PanelKind1eBtn;
 extern int d2_ClickedId;
 
 
@@ -3278,7 +3278,7 @@ void ai_GameFrame(void)
         if (U_I(((unsigned)&dm_L + 0x14)) != 0 && U_I(((unsigned)&dm_L + 0x24)) == 0 && U_I((unsigned)&full_data_6f22f4) != 0 &&
             U_I((unsigned)&d3t_CamMove) == 0)
             sv_FlyCameraToObject(U_I((unsigned)&full_data_6f22f4));
-        if (U_I((unsigned)&d2_ClickedId) != -1 && U_I((unsigned)&d2_PointerObj) == U_I((unsigned)&ai_Unk623884))
+        if (U_I((unsigned)&d2_ClickedId) != -1 && U_I((unsigned)&d2_PointerObj) == U_I((unsigned)&sv_PanelBuildBtn))
             ai_Unk5909a0();
         if (U_I((unsigned)&sv_SelectedObject) != 0 &&
             (u = gm_PermissionBits(U_W((unsigned)&ai_PlayerId), U_I((unsigned)&sv_SelectedObject), 0, 0), U_I((unsigned)&sv_SelectedObject) != 0) &&
@@ -4115,7 +4115,7 @@ void ai_Unk593b00(int param_1)
             else if (U_I((unsigned)&ai_ClickedObject) == ziel || U_I((unsigned)&ai_ClickedObject) == stroh)
                 ai_Unk5bba00(param_1);
         }
-        if (U_I((unsigned)&d2_ClickedId) != -1 && U_I((unsigned)&d2_PointerObj) == U_I((unsigned)&ai_Unk623898))
+        if (U_I((unsigned)&d2_ClickedId) != -1 && U_I((unsigned)&d2_PointerObj) == U_I((unsigned)&sv_PanelKind1eBtn))
             ai_Unk5b9730(param_1);
         r = sv_RunFrame(ai_Unk593b00, 0x67fff);
     }

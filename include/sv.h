@@ -85,7 +85,7 @@ int sv_AddPanelButton(int x, int y, int text);                               /* 
 struct AIBLD; void sv_OpenBuildingPanel(struct AIBLD *b);                                /* 0x528860 */
 void sv_OpenItemPanel(unsigned short *p);                                   /* 0x528b80 */
 struct AIOBJ; void sv_OpenCartPanel(struct AIOBJ *c);                                /* 0x528d90 */
-void sv_Unk528ee0(void);                                                /* 0x528ee0 */
+void sv_OpenDefaultPanel(void);                                                /* 0x528ee0 */
 void sv_Unk5290f0(unsigned short *p);                                   /* 0x5290f0 */
 void sv_Unk529380(void);                                                /* 0x529380 */
 void sv_Unk529fb0(void);                                                /* 0x529fb0 */
@@ -196,12 +196,12 @@ extern int sv_PanelHealthBar;                                    /* 0x623868 */
 extern int sv_PanelWidgets[4];                                 /* 0x62386c, the info panel's 4 widget ids */
 extern int sv_PanelCartWin;                                    /* 0x62387c */
 extern int ai_Unk623880;                                    /* 0x623880 */
-extern int ai_Unk623884;                                    /* 0x623884 */
+extern int sv_PanelBuildBtn;                                    /* 0x623884 */
 extern int sv_PanelItemBtn;                                    /* 0x623888 */
 extern int sv_PanelTransportBtn;                                    /* 0x62388c */
 extern int sv_PanelCartBtn;                                    /* 0x623890 */
 extern int sv_PanelActionBtn;                                    /* 0x623894 */
-extern int ai_Unk623898;                                    /* 0x623898 */
+extern int sv_PanelKind1eBtn;                                    /* 0x623898 */
 extern int ai_Unk6238a4;                                    /* 0x6238a4 */
 extern SVSKYREC sv_SkyFair[4];                              /* 0x6238a8 */
 extern SVSKYREC sv_SkyMedium[3];                            /* 0x6239d8 */
