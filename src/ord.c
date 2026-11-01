@@ -14,7 +14,6 @@
 #include "di_input.h"
 #include "data_views.h"
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, ai_Unk4d88c0 0x4d88c0 move it as a word / movzx) */
-#define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
 #define d3sm_GetVertexI ((int (*)())d3sm_GetVertex)  /* 0x45f100 (d3_sm.c: char, D3SM *, int, int, D3VECTOR *): @original this unit's callers read an int result (byte-matched unk_Unk4f86a0 (ord.c): no 0f be c0 after the call) */
 #include "d3_types.h"
 extern D3SCENE d3_Scenes[];
@@ -2218,141 +2217,130 @@ void ord_InitMessageRecord(int a, float b, float c, float d)
 
 int he_ShowNews(int pid, int fl, char *text, int unused, int ev, char *text2);                     /* 0x53dda0 */
 
-/* unlinked */
-static __inline void ord_Stamp(char *d)
-{
-    *(int *)d = *(int *)ai_Time;
-    *(int *)(d + 4) = *(int *)(ai_Time + 4);
-    *(int *)(d + 8) = *(int *)(ai_Time + 8);
-    *(short *)(d + 0xc) = *(short *)(ai_Time + 0xc);
-}
+/* the record 0x91b480 as its ORDMSGREC */
+#define ord_MessageRec (*(ORDMSGREC *)&ord_MessageRecord)  /* 0x91b480 */
+
+#pragma pack(push, 1)
+typedef struct ORDLONGMSG {             /* 0xf8 bytes, the long message of cm_SendLongMessage as 0x4f9220 fills it */
+    char pad00[4];
+    unsigned char kind;                 /* 0x04, the event: 0x59 / 0x4e / 0x50 */
+    char pad05[3];
+    int netId;                          /* 0x08, the character's net id */
+    int target;                         /* 0x0c, -1 = none */
+    char pad10[0x18];
+    union {
+        ORDSTIME time;                  /* 0x28, when: the game clock, moved on by gm_AddTime */
+        struct {
+            char pad[6];
+            int minute;                 /* 0x2e, the minute word and the next, cleared together */
+        } at;
+    };
+    unsigned char mode;                 /* 0x36 */
+    char pad37[0x21];
+    int value;                          /* 0x58, -1 or a random amount */
+    char pad5c[0x40];
+    int limit;                          /* 0x9c, 1000 */
+    char padA0[0x58];
+} ORDLONGMSG;
+#pragma pack(pop)
 
 /* 0x4f9220, advances the message event record 0x91b480 (ORDMSGREC): disabled it does nothing; idle (phase 0) it
    adds random * scale + base to the accumulator and, above the limit, counts the message, timestamps the record,
    picks the next phase from a 16-entry table chosen by the stage (stage 0 goes straight to phase 3, stage 4 resets
-   the stage), sends the long message 0x59 / 0x4e / 0x50 to the player (character ai_PlayerChar, gm_AddTime 0x4fe140
-   later) and finally the whole record (message 0x4c5e80, tag 'set '); running, it returns while he_FindEvent (1, 0,
-   the phase's object) exists, else clears the phase and the accumulator. */
+   the stage), sends the long message 0x59 / 0x4e / 0x50 to the player (character ai_PlayerChar, gm_AddTime later)
+   and finally the whole record (message 0x4c5e80, tag 'set '); running, it returns while he_FindEvent (1, 0, the
+   phase's event) exists, else clears the phase and the accumulator. @deep Read all of it against the original and rebuilt: typed ORDMSGREC record (view ord_MessageRec), the running branch tests the global's phase with one he_FindEvent call per phase (cross-jumped as the original's push 0x59/0x4e/0x50), the stage tables are three 16-int initializers (the original's hoisted common stores tbl[0,1,7,8,14,15] then the five-store runs match instruction for instruction), the long message is an ORDLONGMSG (kind 0x04, netId 0x08, target 0x0c, clock 0x28, mode 0x36, value 0x58, limit 0x9c, the int at 0x2e cleared in phases 1/2), the hour tests read ord_GameClock's hour word (cmp ax, 0x17), phases 2/3 test hour >= 0x17 first as the original. 350 vs 338 instructions, the 12 are VC6 cross-jumping: the original merges the four gm_AddTime calls of phases 1 and 3 into one (phase 1's plain path: lea ecx,[ebp-0x140]; push eax; push ecx; jmp 0x4f968e, its +7 path jmp 0x4f9686), ours keeps phase 1's two calls and the push &msg / cm_SendLongMessage tails apart; that follows from the per-phase store schedule and register choice (phase 3: hour in eax / -1 in ecx in the original, ours hour in ecx / -1 in eax; phase 2: the -1 stores before the netId store), which reordering the phase-1 statements did not change. */
 void ord_UpdateMessageEvent(void)
 {
-    int r[9];
-    int out[10];
-    char msg[0xf8];
-    int tbl[16];
-    float f;
-    int i, ph;
+    ORDMSGREC r;
+    ORDINITMSG out;
+    ORDLONGMSG msg;
 
-    if (*(int *)ord_MessageRecord != 1)
+    if (ord_MessageRec.enabled != 1)
         return;
-    memcpy(r, ord_MessageRecord, 0x24);
-    if (r[7] < 1) {
-        f = util_RandomF() * *(float *)&r[4] + *(float *)&r[3] + *(float *)&r[5];
-        *(float *)&r[5] = f;
-        if (f > *(float *)&r[6]) {
-            memset(msg, 0, sizeof(msg));
-            r[1]++;
-            r[2] = *(int *)ai_Time;
-            if (r[8] < 4) {
-                if (r[8] == 0) {
-                    r[7] = 3;
-                    goto phase3;
-                }
-                tbl[15] = 2;
-                tbl[14] = 2;
-                tbl[8] = 1;
-                tbl[7] = 1;
-                tbl[1] = 0;
-                tbl[0] = 0;
-                if (r[8] == 1) {
-                    for (i = 2; i < 7; i++)
-                        tbl[i] = 1;
-                    for (i = 9; i < 14; i++)
-                        tbl[i] = 2;
-                } else {
-                    for (i = 2; i < 7; i++)
-                        tbl[i] = 0;
-                    if (r[8] == 2) {
-                        for (i = 9; i < 14; i++)
-                            tbl[i] = 2;
-                    } else {
-                        for (i = 9; i < 14; i++)
-                            tbl[i] = 1;
-                    }
-                }
-                r[7] = tbl[util_RandomU(0x10) & 0xffff];
-                r[7]++;
-                if (r[7] == 1) {
-                    msg[4] = 0x59;
-                    *(int *)(msg + 8) = *(int *)(ai_PlayerCharC + 4);
-                    *(int *)(msg + 0xc) = -1;
-                    ord_Stamp(msg + 0x28);
-                    msg[0x36] = 2;
-                    *(int *)(msg + 0x58) = (util_RandomU(3) & 0xffff) * 3;
-                    ord_Stamp(msg + 0x28);
-                    *(int *)(msg + 0x2e) = 0;
-                    if (ai_TimeHour < 0x17 && ai_TimeHour >= 7)
-                        gm_AddTime(msg + 0x28, util_RandomU(4), (util_RandomU(2) & 0xffff) * 0x1e, 0);
-                    else
-                        gm_AddTime(msg + 0x28, util_RandomU(4) + 7, (util_RandomU(2) & 0xffff) * 0x1e, 0);
-                    cm_SendLongMessage(msg);
-                } else if (r[7] == 2) {
-                    msg[4] = 0x4e;
-                    *(int *)(msg + 8) = *(int *)(ai_PlayerCharC + 4);
-                    *(int *)(msg + 0xc) = -1;
-                    *(int *)(msg + 0x58) = -1;
-                    ord_Stamp(msg + 0x28);
-                    msg[0x36] = 1;
-                    *(int *)(msg + 0x9c) = 1000;
-                    *(int *)(msg + 0x2e) = 0;
-                    if (ai_TimeHour < 0x17)
-                        gm_AddTime(msg + 0x28, util_RandomU(4), (util_RandomU(2) & 0xffff) * 0x1e, 0);
-                    else
-                        gm_AddTime(msg + 0x28, util_RandomU(4) + 7, (util_RandomU(2) & 0xffff) * 0x1e, 0);
-                    cm_SendLongMessage(msg);
-                } else if (r[7] == 3)
-                    goto phase3;
-            } else {
-                r[8] = 0;
-                r[7] = 3;
-              phase3:
-                msg[4] = 0x50;
-                *(int *)(msg + 8) = *(int *)(ai_PlayerCharC + 4);
-                ord_Stamp(msg + 0x28);
-                *(int *)(msg + 0xc) = -1;
-                msg[0x36] = 2;
-                *(int *)(msg + 0x58) = -1;
-                *(int *)(msg + 0x9c) = 1000;
-                if (ai_TimeHour < 0x17)
-                    gm_AddTime(msg + 0x28, util_RandomU(4), (util_RandomU(2) & 0xffff) * 0x1e, 0);
-                else
-                    gm_AddTime(msg + 0x28, util_RandomU(4) + 7, (util_RandomU(2) & 0xffff) * 0x1e, 0);
-                cm_SendLongMessage(msg);
-            }
-            r[8] = r[7];
+    r = ord_MessageRec;
+    if (ord_MessageRec.phase > 0) {
+        if (ord_MessageRec.phase == 1) {
+            if (he_FindEvent(1, 0, 0x59) != 0)
+                return;
+        } else if (ord_MessageRec.phase == 2) {
+            if (he_FindEvent(1, 0, 0x4e) != 0)
+                return;
+        } else if (ord_MessageRec.phase == 3) {
+            if (he_FindEvent(1, 0, 0x50) != 0)
+                return;
         }
-    } else {
-        switch (r[7]) {
-        case 1:
-            ph = 0x59;
-            break;
-        case 2:
-            ph = 0x4e;
-            break;
-        case 3:
-            ph = 0x50;
-            break;
-        default:
-            goto clear;
+        r.phase = 0;
+        r.value = 0.0f;
+    } else if ((r.value = util_RandomF() * r.scale + r.base + r.value) > r.limit) {
+        memset(&msg, 0, sizeof(msg));
+        r.count++;
+        r.time = ai_TimeYear;
+        if (r.stage >= 4) {
+            r.stage = 0;
+            r.phase = 3;
+        } else if (r.stage == 0) {
+            r.phase = 3;
+        } else if (r.stage == 1) {
+            int t[16] = { 0, 0, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2 };
+
+            r.phase = t[util_RandomU(0x10)] + 1;
+        } else if (r.stage == 2) {
+            int t[16] = { 0, 0, 0, 0, 0, 0, 0, 1, 1, 2, 2, 2, 2, 2, 2, 2 };
+
+            r.phase = t[util_RandomU(0x10)] + 1;
+        } else {
+            int t[16] = { 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 2, 2 };
+
+            r.phase = t[util_RandomU(0x10)] + 1;
         }
-        if (he_FindEvent(1, 0, ph) != 0)
-            return;
-      clear:
-        r[7] = 0;
-        *(float *)&r[5] = 0.0f;
+        if (r.phase == 1) {
+            msg.kind = 0x59;
+            msg.netId = ORD_CHAR(ai_PlayerChar)->netId;
+            msg.target = -1;
+            msg.time = ord_GameClock;
+            msg.mode = 2;
+            msg.value = util_RandomU(3) * 3;
+            msg.time = ord_GameClock;
+            msg.at.minute = 0;
+            if ((unsigned short)ord_GameClock.hourWord < 0x17 && (unsigned short)ord_GameClock.hourWord >= 7)
+                gm_AddTime((struct GCLOCK *)&msg.time, util_RandomU(4), util_RandomU(2) * 0x1e, 0);
+            else
+                gm_AddTime((struct GCLOCK *)&msg.time, util_RandomU(4) + 7, util_RandomU(2) * 0x1e, 0);
+            cm_SendLongMessage((char *)&msg);
+        } else if (r.phase == 2) {
+            msg.kind = 0x4e;
+            msg.netId = ORD_CHAR(ai_PlayerChar)->netId;
+            msg.target = -1;
+            msg.value = -1;
+            msg.time = ord_GameClock;
+            msg.mode = 1;
+            msg.limit = 1000;
+            msg.at.minute = 0;
+            if ((unsigned short)ord_GameClock.hourWord >= 0x17)
+                gm_AddTime((struct GCLOCK *)&msg.time, util_RandomU(4) + 7, util_RandomU(2) * 0x1e, 0);
+            else
+                gm_AddTime((struct GCLOCK *)&msg.time, util_RandomU(4), util_RandomU(2) * 0x1e, 0);
+            cm_SendLongMessage((char *)&msg);
+        } else if (r.phase == 3) {
+            msg.kind = 0x50;
+            msg.netId = ORD_CHAR(ai_PlayerChar)->netId;
+            msg.time = ord_GameClock;
+            msg.target = -1;
+            msg.mode = 2;
+            msg.value = -1;
+            msg.limit = 1000;
+            if ((unsigned short)ord_GameClock.hourWord >= 0x17)
+                gm_AddTime((struct GCLOCK *)&msg.time, util_RandomU(4) + 7, util_RandomU(2) * 0x1e, 0);
+            else
+                gm_AddTime((struct GCLOCK *)&msg.time, util_RandomU(4), util_RandomU(2) * 0x1e, 0);
+            cm_SendLongMessage((char *)&msg);
+        }
+        r.stage = r.phase;
     }
-    ORD_COPY3(out, r, 0x24);
-    out[9] = 0x73657420;
-    cm_SendMessage56(out);
+    ORD_COPY3(&out, &r, 0x24);
+    out.tag = 0x73657420;
+    cm_SendMessage56(&out);
 }
 /* 0x4f9850, ord_ReportStatistics, in a game year >= 8 divisible by 4: averages the last four rounds of the
    statistics history (ord_StatisticsRounds[12..15]) into a = the share without the second object, b = the share
