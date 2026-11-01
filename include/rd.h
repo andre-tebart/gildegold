@@ -102,9 +102,6 @@ typedef struct G15BKFIND {              /* context of rd_FindSiteCB */
 #ifndef DATA_VIEWS_H
 #endif
 extern G15ROAD rd_Road;            /* 0xf81300 */
-extern int ai_NBauplaetze;                /* 0xf812e0, the number of building sites */
-extern G15BK *ai_Bauplaetze;             /* 0xf812e4 */
-extern int ai_MapSize;                /* 0x6f4ee8 */
 #ifndef DATA_VIEWS_H
 extern unsigned char d3_Scene0Flags;      /* 0xfd7f78 */
 #endif
@@ -117,8 +114,6 @@ extern void *d3_Terrain;              /* 0x633738, a height map with a transform
 /* views of other units */
 struct D3SM * d3sm_Create(struct D3TERRAIN *t, int size, int mask);                         /* 0x45eeb0, d3_sm.h: D3HMAP * */
 void d3sm_Destroy(struct D3SM *h);                                                   /* 0x45ef60 */
-void d3_LocalToWorld(struct XOBJ *obj, float *in, float *out);                             /* 0x458c10 */
-int ai_BuildingName(int name, char *out);                                           /* 0x58f640, am.h */
 int ai_FindBauplaetze(char *name, int *out);                                          /* 0x58f7a0, am.h */
 unsigned short path_Find(struct PATHOUT *out, struct PMAP *map, int sx, int sy, int ex, int ey, int type); /* 0x424f30, path.h: PATHOUT *, PMAP * */
 struct D3FLMAP; void d3fl_MakeDivide(struct D3FLMAP *map);                                                 /* 0x441300, d3_fl.c */
