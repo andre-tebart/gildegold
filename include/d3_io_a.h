@@ -48,9 +48,6 @@ typedef struct AGICTX {             /* reader context */
 } AGICTX;
 
 char *tex_FindFile(char *name);                                                 /* 0x45f9f0 */
-unsigned char bmp_GetInfo(char *path, int *w, int *h, int *bpp);                /* 0x401410 */
-char * util_ReadLine(struct VFSFILE *f);                                                   /* 0x4010b0 */
-void * mem_Alloc(int size, char *tag);                                           /* 0x4223c0 */
 
 char agi_IsPow2(int n);                                                         /* 0x44e570 */
 int agi_CheckBitmap(char *name, char report);                                   /* 0x44e5a0 */
