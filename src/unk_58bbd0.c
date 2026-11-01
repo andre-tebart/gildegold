@@ -6472,7 +6472,7 @@ void ai_Unk599240(int param_1, int param_2)
     sv_CameraFollow();
 }
 
-int gv_GetGraveInfo(); void ai_Unk5bd1f0(); void ai_Unk4c5d40(void *p); void cm_SendProofExecuted(int a, int b);
+int gv_GetGraveInfo(); void ai_Unk5bd1f0(); void cm_SendScriptMessage(void *p); void cm_SendProofExecuted(int a, int b);
 
 /* 0x5992c0, the dark-corner menu of the player's own table (1008 B, ROUGH SKELETON from the Ghidra pseudocode):
    the window "locations\Wirtshaus_DUNKLEECKE" (0x4741f0 / 0x475600 / 0x475f70 (0) / 0x52ea30 / 0x476f80); the
@@ -6722,7 +6722,7 @@ int gm_PlayerFactor(int a, unsigned char k); int gm_Unk50a250(); int gm_Unk50a15
 void he_MessageBoxQuickjump(int a1, int a2, char *text, char fl, int a5, int a6, int a7, char *jump, char *text2); void he_Unk53e1f0(); void d2_RadioClear(int g); int d2_CreateRadioGroup(int n, ...);
 int ai_PersonnelBook(); int ai_StorageWindow(); void ai_MasterLetterWindow(); int ai_OpenTransport();
 int ai_Unk5b5a20(); int ai_Unk5b5690(); int ai_AmountRowStatus(); int ai_AmountRow();
-void ai_Unk5bd1f0(); void cm_BeginGroup(const char *s); void ai_Unk4c5d40(void *p); void cm_SendProofExecuted(int a, int b);
+void ai_Unk5bd1f0(); void cm_BeginGroup(const char *s); void cm_SendScriptMessage(void *p); void cm_SendProofExecuted(int a, int b);
 
 /* 0x599af0, the tavern contact listener "contact_WUERFELSPIEL" / "contact_STAMMTISCH" / "ob_DUNKLE_ECKE"
    (440 B): the pump 0x5309a0 (0x599af0, 0x67fff), the contact list 0x58f510 (param_1) and the three lookups

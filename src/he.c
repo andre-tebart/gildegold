@@ -809,7 +809,7 @@ char *gm_Query(void *list, int n, ...);
 void cm_BeginGroup(const char *s);
 void cm_EndGroup(const char *s);
 void ai_Unk4c5d80(int *p);
-void ai_Unk4c5d40(void *p);
+void cm_SendScriptMessage(void *p);
 int sprintf(char *buf, const char *fmt, ...);
 void mem_Free(void *p);
 void err_Message(char *text);
@@ -1688,7 +1688,7 @@ void he_Unk53f500(void)
             arg[1] = -1;
             arg[3] = -1;
             cm_BeginGroup("clear dunkle ecke");
-            ai_Unk4c5d40(arg);
+            cm_SendScriptMessage(arg);
             cm_EndGroup("clear dunkle ecke");
         }
         f = gm_BuildNext();

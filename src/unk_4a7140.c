@@ -2245,9 +2245,11 @@ int ai_DecideBuyDunkleEcke(AIPER *p, AIARG *a, AIARG *b)
     }
     return 0;
 }
-/* 0x4ab2c0, execute callback "buy dunkle ecke": p buys item a[1] for a[4] in the shop b if it still sells it */
+/* 0x4ab2c0, execute callback "buy dunkle ecke": p buys the record a->ref for a->arg2 in the shop b->ref if its
+   kind 300 object still holds it: the script message 'buy ' (shop, p, record, price), the proof executed, the
+   price to the shop's owner */
 
-int ai_Unk4ab2c0(AIPER *p, int *a, int *b)
+int ai_ExecBuyDunkleEcke(AIPER *p, AIARG *a, AIARG *b)
 {
     int rec[5];
     AIBLD *bld;
@@ -2255,7 +2257,7 @@ int ai_Unk4ab2c0(AIPER *p, int *a, int *b)
     int *q;
     int i;
 
-    bld = gm_BuildQuery(1, 1, b[1]);
+    bld = gm_BuildQuery(1, 1, b->ref);
     if (bld == 0)
         return 0;
     o = gm_Query(bld->objList, 1, 0, 0x120);
@@ -2265,24 +2267,24 @@ int ai_Unk4ab2c0(AIPER *p, int *a, int *b)
     if (o == 0)
         return 0;
     i = 0;
-    q = (int *)((unsigned char *)o + 0x1c);
-    rec[3] = a[1];
+    q = o->recs;
     do {
-        if (*q == rec[3])
+        if (*q == a->ref)
             break;
         i++;
         q++;
     } while (i < 3);
     if (i == 3)
         return 0;
-    rec[0] = 0x62757920;
+    rec[0] = 0x62757920;    /* 'buy ' */
     rec[2] = bld->id;
     rec[1] = p->netId;
-    rec[4] = a[4];
+    rec[3] = a->ref;
+    rec[4] = a->arg2;
     cm_BeginGroup("buy dunkle ecke");
-    ai_Unk4c5d40(rec);
-    cm_SendProofExecuted(a[1], p->netId);
-    cm_SendMoveGoodsUnchecked(((AIPER *)ai_CharsT)[bld->owner].netId, p->netId, 0, a[4]);
+    cm_SendScriptMessage(rec);
+    cm_SendProofExecuted(a->ref, p->netId);
+    cm_SendMoveGoodsUnchecked(((AIPER *)ai_CharsT)[bld->owner].netId, p->netId, 0, a->arg2);
     cm_EndGroup("buy dunkle ecke");
     return 1;
 }

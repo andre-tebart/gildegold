@@ -1926,7 +1926,7 @@ void ai_Unk4c5d00(int a, int b, int c)
 }
 /* 0x4c5d40, message 0x53 (0x14 bytes of p) */
 
-void ai_Unk4c5d40(void *p)
+void cm_SendScriptMessage(void *p)
 {
     G17MSG m;
 

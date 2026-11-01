@@ -383,3 +383,5 @@
 2026-11-01T21:17:36 0x004aafb0 func ai_Unk4aafb0 -> ai_ExecMessage74 by:main why:execute callback of 0x49ee20 (kinds 4 / 1): sends message 0x74 from the character a->ref to p about b->ref, then p pays 1
 2026-11-01T21:19:29 0x004f4d30 func unk_Unk4f4d30 -> gv_GetGraveInfo by:main why:reads the gv_Graveyard entry (0x2d bytes) of the record id: its character, the liking, the table record's low byte
 2026-11-01T21:21:32 0x004ab080 data ai_Unk4ab080 -> ai_DecideBuyDunkleEcke by:main why:decide callback of 0x49ed90 whose execute side 0x4ab2c0 is 'buy dunkle ecke': picks the shop item (kind 0x13) and building (kind 4) to buy
+2026-11-01T21:22:14 0x004c5d40 func ai_Unk4c5d40 -> cm_SendScriptMessage by:main why:0x4c5d40: message 0x53 with a 0x14-byte script record led by a four-char command ('buy ' at 0x4ab2c0, 'relc' at 0x53f500); 0x4ab2c0: its group string 'buy dunkle ecke'
+2026-11-01T21:22:14 0x004ab2c0 func ai_Unk4ab2c0 -> ai_ExecBuyDunkleEcke by:main why:0x4c5d40: message 0x53 with a 0x14-byte script record led by a four-char command ('buy ' at 0x4ab2c0, 'relc' at 0x53f500); 0x4ab2c0: its group string 'buy dunkle ecke'
