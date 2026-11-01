@@ -5718,17 +5718,19 @@ void gm_ResetCharacters(void)
     ai_Unk6f1bb8 = 0;
     ai_Unk6f1bbc = 0;
 }
-/* 0x503ee0, copies the 6-byte record n of the table 0x61a688 (0x5f records; larger n: the first one) to out */
+/* 0x503ee0, copies the 6-byte record n of the table 0x61a688 (0x5f records; larger n: the first one) to out and returns out
+   (the original returns the record by value: eax is the hidden result pointer, WinMain 0x53d352 reads the record through it) */
 
-void gm_Unk503ee0(unsigned *out, int n)
+unsigned *gm_Unk503ee0(unsigned *out, int n)
 {
     if (n > 0x5e) {
         *out = *(unsigned *)ai_Unk61a688;
         *(short *)(out + 1) = *(short *)(ai_Unk61a688 + 4);
-        return;
+        return out;
     }
     *out = *(unsigned *)(ai_Unk61a688 + n * 6);
     *(short *)(out + 1) = *(short *)(ai_Unk61a688 + 4 + n * 6);
+    return out;
 }
 /* 0x503f30, 0 when the kind number of 0x504ad0 (x) is 10 .. 14, else 2 */
 

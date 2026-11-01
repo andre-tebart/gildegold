@@ -4328,7 +4328,7 @@ void ai_Unk57b8a0(int arg)
 }
 
 int unk_Unk4fb770();
-void gm_Unk503ee0(unsigned *out, int n);
+unsigned *gm_Unk503ee0(unsigned *out, int n);
 
 /* 0x57bc30, the tutorial info block (168 B, ROUGH): the bytes 0x75e5a0 = 0x4b, 0x75e5a1 = 0x18, 0x75e5a2 =
    0x10, 0x75e5a3 = 0x33, the dword 0x75e5a4 = 0x59a, 0x75e5a8 / 0x75e5a9 = 0; 0x75e628 = 0x4fb770 (0x624ee0)

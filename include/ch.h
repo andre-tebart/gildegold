@@ -13,6 +13,7 @@ struct D3SURF;
 #ifndef UNK_402140_H
 #define UNK_402140_H
 struct D3OBJECT;
+struct PATHOUT;
 
 #define CH_MAX 768
 
@@ -448,7 +449,7 @@ typedef struct CHWAYPT {            /* 12 bytes; a list ends with flags == 0 */
 } CHWAYPT;
 extern D3SM *ch_PathMap;            /* 0x63108c */
 int ch_GetWaypoints(D3SM *h, CHARACTER *ch, CHWAYPT *out);                              /* 0x407790 */
-extern PATHOUT ch_Path;              /* 0x14696e0 (overlaps ch_Motions as declared above) */
+extern struct PATHOUT ch_Path;              /* 0x14696e0 (overlaps ch_Motions as declared above) */
 extern unsigned char ch_PathBuf[]; /* 0x14686e0 */
 /* 0x406bc0 is ch3's ch_ThinPath; ch4 calls it with a PATHOUT / byte buffer / D3SM */
 int ch_PathToTarget(CHACTION *a);                                                         /* 0x408490 */
