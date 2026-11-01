@@ -6,6 +6,7 @@
    unit of rea 8cef7d5b (src/game/sfx.c); boundaries in decl/text.dcl */
 #include <windows.h>
 #include "sfx.h"
+#include "mem.h"
 
 /* 0x42b720 */
 int sfx_Startup(void)
