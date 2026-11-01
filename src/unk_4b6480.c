@@ -7,6 +7,18 @@
 #include <string.h>
 #include <windows.h>
 #include "unk_4b6480.h"
+#include "ahm.h"
+#include "amt.h"
+#include "anm.h"
+#include "cm.h"
+#include "f3gm.h"
+#include "he.h"
+#include "hst.h"
+#include "io_text.h"
+#include "main.h"
+#include "sv.h"
+#include "tr.h"
+#include "unk_58bbd0.h"
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, ai_Unk4d88c0 0x4d88c0 move it as a word / movzx) */
 #define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (f3gm.c: char *) as the AIGOOD records it points to */
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
