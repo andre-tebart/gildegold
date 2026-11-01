@@ -110,7 +110,6 @@ typedef struct D3VERTEX {          /* 0x50 bytes, what D3TRI::v points to */
     char pad48[0x8];
 } D3VERTEX;
 
-void d3_UpdateWorldMatrix(D3OBJECT *obj, D3OBJECT *camera, char force);                         /* 0x439870, d3_engine.c */
 D3BOXVERT *d3_GetBoxVerts(D3OBJECT *obj, struct D3OBJINFO *info, void *unk);           /* 0x459ab0 */
 
 typedef struct D3MESHKEY {          /* 0x50 bytes */
