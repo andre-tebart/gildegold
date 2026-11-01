@@ -163,7 +163,7 @@ unsigned char * gm_FirstBuilding(int n);                                     /* 
 typedef struct AIARG {                  /* 0x18 bytes, what a decide callback fills for its execute callback */
     unsigned char kind;                 /* 0x00 */
     char pad01[3];
-    int unk04;                          /* 0x04 */
+    int ref;                            /* 0x04, what the kind refers to: a building id, an item, a character's netId (kind 7) */
     unsigned int unk08;                 /* 0x08 */
     int unk0c;                          /* 0x0c */
     int unk10;                          /* 0x10 */

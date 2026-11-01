@@ -928,88 +928,83 @@ void ai_PokerNpcSetStake(void)
 /* 0x4a8760, decide callback: character p (or the one of the ctx record, kind 2) picks a partner in its district
    (a character with flag 1 within 33 units, else one of a higher rank within 40..71), into m (kind 7) */
 
-int ai_Unk4a8760(int a, unsigned char *p, int *ctx, int d, unsigned char *m)
+int ai_DecideOfficePartner(int a, AICHAR *p, int *ctx, int d, AIARG *m)
 {
     G10DIST info, info2;
     G10DREC rec[6];
-    unsigned char *who[6];
-    unsigned char *o;
-    unsigned char k;
-    int id, n, cnt, i, j;
-    unsigned int r;
+    AICHAR *who[6];
+    AICHAR *o, *c;
+    int k, id, n, cnt, i, j, r;
 
-    i = 0;
     o = 0;
     if (ctx[0] == 1) {
-        if (p[0x168] != 0)
+        if (p->appliedOffice != 0)
             return 0;
-        id = *(int *)(p + 4);
-        k = p[0x166];
+        id = p->netId;
+        k = p->officeKind;
     } else {
         if (ctx[0] != 2)
             return 0;
-        o = (unsigned char *)ctx[0x87];
-        if (o == 0)
+        c = (AICHAR *)ctx[0x87];
+        if (c == 0)
             return 0;
-        k = o[0x166];
-        id = *(int *)(o + 4);
-        o = 0;
+        k = c->officeKind;
+        id = c->netId;
     }
-    if (amt_GetKind(k, &info) != 0) {
-        n = amt_GetColumnOffices(info.id, 6, rec);
-        j = 0;
-        cnt = 0;
-        if (n > 0) {
-            for (j = 0; j < n; j++) {
-                if (rec[j].k == 2) {
-                    cnt++;
-                    if (rec[j].id == id)
-                        return 0;
-                }
+    if (amt_GetKind(k, &info) == 0)
+        return 0;
+    n = amt_GetColumnOffices(info.id, 6, rec);
+    i = 0;
+    cnt = 0;
+    if (n > 0) {
+        for (; i < n; i++) {
+            if (rec[i].k == 2) {
+                cnt++;
+                if (rec[i].id == id)
+                    return 0;
             }
-            if (cnt > 2)
-                return 0;
         }
-        if (n > 0) {
-            for (i = 0; i < n; i++)
-                who[i] = (unsigned char *)gm_FindChar(rec[i].id);
-        }
-        if (n < 6)
-            memset(&who[n], 0, (6 - n) * sizeof(who[0]));
-        r = util_RandomU(6);
-        for (j = 6; j != 0; j--) {
-            if (who[r] != 0 && id != *(int *)(who[r] + 4)
-                && gm_Liking(*(short *)who[r], *(short *)p, 1) < 33.0f && rec[r].k == 1) {
-                o = who[r];
-                if (o != 0 && *(int *)(p + 0x5c) != *(int *)(o + 4)) {
-                    m[0] = 7;
-                    *(int *)(m + 4) = *(int *)(o + 4);
-                    return 1;
-                }
-                break;
-            }
-            r = (int)(r + 1) % 6;
-        }
-        if (info.lvl != 3 && info.lvl != 6 && info.lvl != 9 && p[0x130] == 7) {
-            r = util_RandomU(6);
-            for (j = 6; j != 0; j--) {
-                if (who[r] != 0 && id != *(int *)(who[r] + 4)) {
-                    if (amt_GetKind(who[r][0x166], &info2) == 0)
-                        return 0;
-                    if (info.lvl < info2.lvl && rec[r].k == 1
-                        && gm_Liking(*(short *)who[r], *(short *)p, 1) < (float)util_RandomU(0x20) + 40.0f) {
-                        o = who[r];
-                        break;
-                    }
-                }
-                r = (int)(r + 1) % 6;
-            }
-            if (o != 0 && *(int *)(p + 0x5c) != *(int *)(o + 4)) {
-                m[0] = 7;
-                *(int *)(m + 4) = *(int *)(o + 4);
+        if (cnt > 2)
+            return 0;
+    }
+    for (i = 0; i < n; i++)
+        who[i] = (AICHAR *)gm_FindChar(rec[i].id);
+    for (i = n; i < 6; i++)
+        who[i] = 0;
+    r = util_RandomU(6);
+    for (j = 6; j-- != 0;) {
+        if (who[r] != 0 && id != who[r]->netId
+            && gm_Liking(who[r]->id, p->id, 1) < 33.0f && rec[r].k == 1) {
+            o = who[r];
+            if (o != 0 && p->relatives[0] != o->netId) {
+                m->kind = 7;
+                m->ref = o->netId;
                 return 1;
             }
+            break;
         }
+        r = (r + 1) % 6;
+    }
+    if (info.lvl == 3 || info.lvl == 6 || info.lvl == 9 || p->sel != 7)
+        return 0;
+    r = util_RandomU(6);
+    for (j = 6; j-- != 0;) {
+        c = who[r];
+        if (c != 0 && id != c->netId) {
+            if (amt_GetKind(c->officeKind, &info2) == 0)
+                return 0;
+            if (info2.lvl > info.lvl && rec[r].k == 1
+                && gm_Liking(c->id, p->id, 1) < (float)util_RandomU(0x20) + 40.0f) {
+                o = who[r];
+                break;
+            }
+        }
+        r = (r + 1) % 6;
+    }
+    if (o != 0 && p->relatives[0] != o->netId) {
+        m->kind = 7;
+        m->ref = o->netId;
+        return 1;
     }
     return 0;
 }
@@ -1569,7 +1564,7 @@ int ai_Unk4a9a00(int a, AIPER *p, int c, unsigned char *in, unsigned char *m)
     }
     switch (k) {
     case 0x12:
-        return G10_CB(ai_Unk4a8760)(a, p, ctx, in, m);
+        return G10_CB(ai_DecideOfficePartner)(a, p, ctx, in, m);
     case 0x13:
     case 0x14:
         return G10_CB(ai_Unk4a8a50)(a, p, ctx, in, m);

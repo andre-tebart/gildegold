@@ -125,10 +125,10 @@ int ai_Unk48e120(int a, AIPX *p, int b, AIARGX *o1, AIARGX *o2)
                 return 0;
             if (bld->flags5a & 0x41)
                 return 0;
-            s2.unk04 = t + 1;
+            s2.ref = t + 1;
             s2.unk08 = 1;
             s1.kind = 4;
-            s1.unk04 = bld->id;
+            s1.ref = bld->id;
             s1.unk08 = 1;
             cost = (int)(gm_BuildingKindValue(t + 1) * 0.3f);
             if (!ai_Unk4a5140(a, p, 0, &s2, &s1, 0))
@@ -149,11 +149,11 @@ int ai_Unk48e120(int a, AIPX *p, int b, AIARGX *o1, AIARGX *o2)
             goto ok;
         }
         s1.kind = 5;
-        s1.unk04 = 0x4b;
+        s1.ref = 0x4b;
         s1.unk08 = 1;
         if (!ai_Unk4a5140(a, p, 0, &s1, &s2, 1))
             return 0;
-        cost = gm_Unk509dc0(p, s1.unk04);
+        cost = gm_Unk509dc0(p, s1.ref);
         m = gm_SumListAmounts(p->inventory, ai_OwnPlayer);
         lim = (int)(m * 0.95f);
         if (lim < cost) {
@@ -185,11 +185,11 @@ int ai_Unk48e370(AIPX *p, AIARGX *s1, AIARGX *s2)
         msg.to = p->netId;
         TMX(msg) = NOWX;
         msg.type = 0x1e;
-        msg.fromId = s2->unk04;
+        msg.fromId = s2->ref;
         msg.flags = 1;
-        msg.car = s2->unk04;
+        msg.car = s2->ref;
         cm_BeginGroup("building_upgrade");
-        cost = (int)(gm_BuildingKindValue(s2->unk04) * 0.3f);
+        cost = (int)(gm_BuildingKindValue(s2->ref) * 0.3f);
         cm_SendMoveGoods(-1, p->netId, ai_OwnPlayer, cost);
         cm_SendLongMessage(&msg);
         cm_EndGroup("building_upgrade");
@@ -217,11 +217,11 @@ int ai_Unk48e470(int a, AIPX *p, int b, AIARGX *o1, AIARGX *o2)
         return 0;
     if (!gm_Query(bld->objList, 2, 6, 0, 0x266)) {
         s1.kind = 2;
-        s1.unk04 = 0x266;
+        s1.ref = 0x266;
         s1.unk08 = 1;
         s1.unk14 = 0.22f;
         s2.kind = 4;
-        s2.unk04 = bld->id;
+        s2.ref = bld->id;
         s2.unk08 = 1;
         r = ai_Unk495a50(0x41, p->id, 1, &s1, &s2);
         if (r) {
@@ -565,11 +565,11 @@ int ai_Unk48f010(int a, AIPX *p, int b, AIARGX *o1, AIARGX *o2)
         return 0;
     if (!gm_Query(bld->objList, 2, 6, 0, 0x256)) {
         s1.kind = 2;
-        s1.unk04 = 0x256;
+        s1.ref = 0x256;
         s1.unk08 = 1;
         s1.unk14 = 0.22f;
         s2.kind = 4;
-        s2.unk04 = bld->id;
+        s2.ref = bld->id;
         s2.unk08 = 1;
         r = ai_Unk495a50(0x42, p->id, 1, &s1, &s2);
         if (r) {
@@ -593,9 +593,9 @@ int ai_Unk48f010(int a, AIPX *p, int b, AIARGX *o1, AIARGX *o2)
     if (!ai_Unk4a67a0(p, bld, b2))
         return 0;
     o1->kind = 4;
-    o1->unk04 = bld->id;
+    o1->ref = bld->id;
     o2->kind = 4;
-    o2->unk04 = b2->id;
+    o2->ref = b2->id;
     return 0x42;
 }
 /* 0x48f1e0, execute of 0x48f010 */
@@ -606,10 +606,10 @@ int ai_Unk48f1e0(AIPX *p, AIARGX *s1, AIARGX *s2)
 
     if (s1->kind != 4 || s2->kind != 4)
         return 0;
-    gm_FindById((int)&x, 0, 0, s1->unk04);
+    gm_FindById((int)&x, 0, 0, s1->ref);
     if (!x)
         return 0;
-    gm_FindById((int)&y, 0, 0, s2->unk04);
+    gm_FindById((int)&y, 0, 0, s2->ref);
     if (!y)
         return 0;
     return ai_Unk4a6ae0(p, x) ? 0x42 : 0;
@@ -651,10 +651,10 @@ int ai_Unk48f2b0(int a, AIPX *p, int b, AIARG *o1, AIARG *o2)
         if ((unsigned char)ai_BTypesT[bl->type].level >= 3 || (bl->flags5a & 0x41))
             return 0;
         t = bl->type + 1;
-        L.s2.unk04 = t;
+        L.s2.ref = t;
         L.s2.unk08 = 1;
         L.s1.kind = 4;
-        L.s1.unk04 = bl->id;
+        L.s1.ref = bl->id;
         L.s1.unk08 = 1;
         v = (int)(gm_BuildingKindValue(t) * 0.3f);
         if (!ai_Unk4a5140(a, p, 0, &L.s2, &L.s1, 0))
@@ -672,11 +672,11 @@ int ai_Unk48f2b0(int a, AIPX *p, int b, AIARG *o1, AIARG *o2)
         *o2 = L.s1;
     } else {
         L.s2.kind = 5;
-        L.s2.unk04 = 0x54;
+        L.s2.ref = 0x54;
         L.s2.unk08 = 1;
         if (!ai_Unk4a5140(a, p, 0, &L.s1, &L.s2, 1))
             return 0;
-        v = gm_Unk509dc0(p, L.s1.unk04);
+        v = gm_Unk509dc0(p, L.s1.ref);
         lim = (int)(gm_SumListAmounts(p->inventory, ai_OwnPlayer) * 0.5f);
         if (lim < v) {
             d = v - lim;
@@ -702,12 +702,12 @@ int ai_Unk48f500(AIPX *p, AIARG *s1, AIARG *s2)
         memset(&msg, 0, sizeof(msg));
         msg.type = 0x1e;
         msg.to = p->netId;
-        msg.fromId = s2->unk04;
+        msg.fromId = s2->ref;
         msg.flags = 1;
         msg.time = ai_TimeT;
-        msg.arg[0] = s2->unk04;
+        msg.arg[0] = s2->ref;
         cm_BeginGroup("building_upgrade");
-        v = gm_BuildingKindValue(s1->unk04);
+        v = gm_BuildingKindValue(s1->ref);
         cm_SendMoveGoods(-1, p->netId, ai_OwnPlayer, (int)(v * 0.3f));
         cm_SendLongMessage(&msg);
         cm_EndGroup("building_upgrade");
@@ -763,7 +763,7 @@ int ai_Unk48f600(int a, AIPX *p, int b, AIARG *o1, AIARG *o2)
                 r = (r + 1) % 15;
             o1->kind = 2;
             o1->unk08 = 1;
-            o1->unk04 = rec[r].item;
+            o1->ref = rec[r].item;
             o1->unk14 = 0.05f;
             o1->unk10 = 1;
             o2->kind = 0;
@@ -776,11 +776,11 @@ int ai_Unk48f600(int a, AIPX *p, int b, AIARG *o1, AIARG *o2)
         r = (r + 1) % 15;
     o1->kind = 1;
     o1->unk08 = 1;
-    o1->unk04 = rec[r].unk08;
+    o1->ref = rec[r].unk08;
     o1->unk14 = 0.05f;
     o1->unk10 = 3;
     o2->kind = 0;
-    o2->unk04 = -1;
+    o2->ref = -1;
     o2->unk08 = -1;
     if (r < 6) {
         unsigned short id;
@@ -790,7 +790,7 @@ int ai_Unk48f600(int a, AIPX *p, int b, AIARG *o1, AIARG *o2)
         if (!ai_Unk4a58d0((AIPER *)p, 1, &flags, 0, util_RandomU(0x20) + 10.0f, &id))
             goto fail;
         o2->kind = 7;
-        o2->unk04 = AIC[id].netId;
+        o2->ref = AIC[id].netId;
         o2->unk08 = -1;
         o2->unk10 = 0x48;
         return 0x48;
@@ -808,7 +808,7 @@ int ai_Unk48f600(int a, AIPX *p, int b, AIARG *o1, AIARG *o2)
             goto fail;
     done:
         o2->kind = 4;
-        o2->unk04 = out;
+        o2->ref = out;
         o2->unk08 = -1;
         o2->unk10 = 0x48;
         return 0x48;
@@ -831,7 +831,7 @@ int ai_Unk48f990(AIPX *p, AIARG *s1, AIARG *s2)
 
     if (s1->kind == 2) {
         if (s1->unk10 == 1) {
-            cm_SendExSellObjectI(p->netId, -1, s1->unk04, 1, ai_OwnPlayer, 0);
+            cm_SendExSellObjectI(p->netId, -1, s1->ref, 1, ai_OwnPlayer, 0);
             cm_SendSetField(p->netId, 0x1cc, 4, 0x40000000, 0);
             return 0x48;
         }
@@ -840,22 +840,22 @@ int ai_Unk48f990(AIPX *p, AIARG *s1, AIARG *s2)
             if (bl) {
                 o = gm_Query(bl->objList, 2, 6, 0, 0x2a);
                 if (o) {
-                    q = gm_Query(o->unk14, 2, 6, 0, s1->unk04);
+                    q = gm_Query(o->unk14, 2, 6, 0, s1->ref);
                     if (q && q->unk0e > 1) {
-                        cm_SendExSellObjectI(p->netId, o->objId, s1->unk04, 1, ai_OwnPlayer, 0);
+                        cm_SendExSellObjectI(p->netId, o->objId, s1->ref, 1, ai_OwnPlayer, 0);
                         return 0x48;
                     }
                 }
             }
         }
     } else if (s1->kind == 1) {
-        o = gm_Query(p->inventory, 1, 1, s1->unk04);
+        o = gm_Query(p->inventory, 1, 1, s1->ref);
         if (!o)
             return 0;
         g = ai_Unk5ba620(o->id);
         if (g) {
             u.obj = o;
-            u.unk04 = s2->unk04;
+            u.unk04 = s2->ref;
             u.unk08 = s2->unk08;
             u.unk0c = 0;
             u.unk10 = 0;
@@ -979,7 +979,7 @@ int ai_Unk48ff50(AIPX *p, AIBLD *b, AIARG *o1, AIARG *o2)
         o2->unk08 = x;
     }
     o2->unk0c = q->netId;
-    o2->unk04 = c->netId;
+    o2->ref = c->netId;
     o2->unk10 = 4;
     return 1;
 }
@@ -996,8 +996,8 @@ int ai_Unk4900c0(AIPX *p, AIBLD *b, int unused, AIARG *o)
     msg.fromId = b->id;
     msg.time = ai_TimeT;
     msg.arg[1] = o->unk0c;
-    msg.arg[2] = o->unk04;
-    msg.ids[0] = o->unk04;
+    msg.arg[2] = o->ref;
+    msg.ids[0] = o->ref;
     msg.arg[3] = o->unk10;
     msg.arg[0] = o->unk08;
     cm_SendLongMessage(&msg);
@@ -1032,7 +1032,7 @@ int ai_Unk490170(AIPX *p, AIBLD *b, AIARG *o1, AIARG *o2)
         return 0;
 done:
     o2->unk08 = u2;
-    o2->unk04 = u1;
+    o2->ref = u1;
     o2->unk0c = x;
     return 1;
 }
@@ -1048,7 +1048,7 @@ int ai_Unk4902b0(AIPX *p, AIBLD *b, int unused, AIARG *o)
     msg.to = p->netId;
     msg.fromId = b->id;
     msg.time = ai_TimeT;
-    msg.arg[1] = o->unk04;
+    msg.arg[1] = o->ref;
     msg.arg[2] = o->unk08;
     msg.arg[0] = o->unk0c;
     cm_SendLongMessage(&msg);
@@ -1077,7 +1077,7 @@ int ai_Unk490350(AIPX *p, AIBLD *b, AIARG *o1, AIARG *o2)
         return 0;
     q = &AIC[id];
     o2->unk0c = q->netId;
-    o2->unk04 = c->netId;
+    o2->ref = c->netId;
     o2->unk10 = 4;
     if (q->bld2) {
         o2->unk08 = q->bld2->id;
@@ -1106,8 +1106,8 @@ int ai_Unk4904c0(AIPX *p, AIBLD *b, int unused, AIARG *o)
     msg.fromId = b->id;
     msg.time = ai_TimeT;
     msg.arg[1] = o->unk0c;
-    msg.arg[2] = o->unk04;
-    msg.ids[0] = o->unk04;
+    msg.arg[2] = o->ref;
+    msg.ids[0] = o->ref;
     msg.arg[3] = o->unk10;
     msg.arg[0] = o->unk08;
     cm_SendLongMessage(&msg);
@@ -1128,7 +1128,7 @@ int ai_Unk490570(AIPX *p, AIBLD *b, AIARG *o1, AIARG *o2)
         return 0;
     if (he_FindEvent(2, 0, 0x8a, 3, b->id))
         return 0;
-    o2->unk04 = c->netId;
+    o2->ref = c->netId;
     return util_RandomU(3) == 0;
 }
 /* 0x490600, execute of method 0x8a */
@@ -1143,8 +1143,8 @@ int ai_Unk490600(AIPX *p, AIBLD *b, int unused, AIARG *o)
     msg.to = p->netId;
     msg.fromId = b->id;
     msg.time = ai_TimeT;
-    msg.arg[0] = o->unk04;
-    msg.ids[0] = o->unk04;
+    msg.arg[0] = o->ref;
+    msg.ids[0] = o->ref;
     cm_SendLongMessage(&msg);
     return 0x3d;
 }
@@ -3478,10 +3478,10 @@ int ai_ChooseAction(int i)
     for (act = G5_ACTS; act < G5_ACTS + 0x49; act++, k++) {
         if (act->id != 0 && act->id != p->act && (act->flags & p->mask) != 0) {
             s1.kind = 0;
-            s1.unk04 = 0;
+            s1.ref = 0;
             s1.unk08 = 0;
             s2.kind = 0;
-            s2.unk04 = 0;
+            s2.ref = 0;
             s2.unk08 = 0;
             if (act->eval != 0 && act->eval(&a, &b, k, p, 0, &s1, &s2) != 0 && (best1 <= a || best2 <= b) &&
                 act->decide != 0 && (r = act->decide(0, p, 0, &s1, &s2)) != 0) {
@@ -3692,11 +3692,11 @@ int ai_Unk4960b0(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
         AIARG s1, s2;
 
         s1.kind = 0;
-        s1.unk04 = 0;
+        s1.ref = 0;
         s1.unk08 = 0;
         s1.unk14 = 0.66f;
         s2.kind = 0;
-        s2.unk04 = 0;
+        s2.ref = 0;
         s2.unk08 = 0;
         r = ai_Unk495a50(4, p->id, 1, &s1, &s2);
         if (r) {
@@ -3708,7 +3708,7 @@ int ai_Unk4960b0(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
     if (he_FindEvent(2, 2, p->id, 0, 0x60))
         return 0;
     if (o1->kind == 0xe) {
-        k = o1->unk04;
+        k = o1->ref;
         memset(q, 0, sizeof(q));
         q[0] = 1;
         f = (ord_DispatchOrder(ids[k], p, q) & 2) ? -1.0f : 0.0f;
@@ -3790,11 +3790,11 @@ int ai_Unk4960b0(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
             AIARG s1, s2;
 
             s1.kind = 2;
-            s1.unk04 = id;
+            s1.ref = id;
             s1.unk08 = 1;
             s1.unk14 = 0.44f;
             s2.kind = 4;
-            s2.unk04 = p->bld2->id;
+            s2.ref = p->bld2->id;
             s2.unk08 = 1;
             r = ai_Unk495a50(4, p->id, 1, &s1, &s2);
             if (r) {
@@ -3805,7 +3805,7 @@ int ai_Unk4960b0(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
         }
     }
     o1->kind = 0xe;
-    o1->unk04 = k;
+    o1->ref = k;
     o1->unk10 = n[k];
     return 4;
 }
@@ -3820,7 +3820,7 @@ int ai_Unk4965b0(AIPER *p, AIARG *s1, AIARG *s2)
     m.type = 0x60;
     m.to = p->netId;
     m.fromId = -1;
-    m.unk5a = (unsigned char)s1->unk04;
+    m.unk5a = (unsigned char)s1->ref;
     cm_SendLongMessage((AIMSG *)&m);
     return 4;
 }
@@ -3852,9 +3852,9 @@ int ai_Unk496610(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
 
         s2.kind = 0;
         s1.kind = 0xe;
-        s1.unk04 = 0;
+        s1.ref = 0;
         s1.unk08 = 0;
-        s2.unk04 = 0;
+        s2.ref = 0;
         s2.unk08 = 0;
         r = ai_Unk495a50(5, p->id, 0, &s1, &s2);
         if (r) {
@@ -3868,11 +3868,11 @@ int ai_Unk496610(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
         AIARG s1, s2;
 
         s1.kind = 0;
-        s1.unk04 = 0;
+        s1.ref = 0;
         s1.unk08 = 0;
         s1.unk14 = 0.66f;
         s2.kind = 0;
-        s2.unk04 = 0;
+        s2.ref = 0;
         s2.unk08 = 0;
         r = ai_Unk495a50(4, p->id, 1, &s1, &s2);
         if (r) {
@@ -3934,10 +3934,10 @@ int ai_Unk496610(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
         AIARG s1, s2;
 
         s1.kind = 0xf;
-        s1.unk04 = 0;
+        s1.ref = 0;
         s1.unk08 = 0;
         s2.kind = 0;
-        s2.unk04 = 0;
+        s2.ref = 0;
         s2.unk08 = 0;
         r = ai_Unk495a50(5, p->id, 0, &s1, &s2);
         if (r) {
@@ -3969,11 +3969,11 @@ int ai_Unk496610(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
             AIARG s1, s2;
 
             s1.kind = 2;
-            s1.unk04 = id;
+            s1.ref = id;
             s1.unk08 = 1;
             s1.unk14 = 0.44f;
             s2.kind = 4;
-            s2.unk04 = p->bld2->id;
+            s2.ref = p->bld2->id;
             s2.unk08 = 1;
             r = ai_Unk495a50(5, p->id, 1, &s1, &s2);
             if (r) {
@@ -3984,7 +3984,7 @@ int ai_Unk496610(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
         }
     }
     o1->kind = 0xe;
-    o1->unk04 = ka;
+    o1->ref = ka;
     o1->unk10 = n[ka];
     return 5;
 }
@@ -3999,7 +3999,7 @@ int ai_Unk496ab0(AIPER *p, AIARG *s1, AIARG *s2)
     m.fromId = p->netId;
     m.flags = 1;
     m.type = 0x60;
-    m.unk5a = (unsigned char)s1->unk04;
+    m.unk5a = (unsigned char)s1->ref;
     cm_SendLongMessage((AIMSG *)&m);
     return 5;
 }
@@ -4055,7 +4055,7 @@ int ai_Unk496b10(float *a, float *b, int i, AIPER *p, int f, AIARG *o1, AIARG *o
         if (bi == -1)
             goto fallback;
         o1->kind = 7;
-        o1->unk04 = c[bi]->netId;
+        o1->ref = c[bi]->netId;
         o1->unk08 = 1;
     }
     for (j = 0; j < 4; j++) {
@@ -4094,11 +4094,11 @@ int ai_Unk496e40(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
         AIARG s1, s2;
 
         s1.kind = 0;
-        s1.unk04 = 0;
+        s1.ref = 0;
         s1.unk08 = 0;
         s1.unk14 = 0.66f;
         s2.kind = 0;
-        s2.unk04 = 0;
+        s2.ref = 0;
         s2.unk08 = 0;
         r = ai_Unk495a50(9, p->id, 1, &s1, &s2);
         if (r) {
@@ -4116,11 +4116,11 @@ int ai_Unk496e40(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
         AIARG s1, s2;
 
         s1.kind = 2;
-        s1.unk04 = 0x14;
+        s1.ref = 0x14;
         s1.unk08 = 1;
         s1.unk14 = 0.22f;
         s2.kind = 4;
-        s2.unk04 = p->bld2->id;
+        s2.ref = p->bld2->id;
         s2.unk08 = 1;
         r = ai_Unk495a50(9, p->id, 1, &s1, &s2);
         if (r) {
@@ -4163,26 +4163,26 @@ int ai_Unk496e40(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
         if (!c)
             return 0;
         o1->kind = 7;
-        o1->unk04 = c->netId;
+        o1->ref = c->netId;
         o1->unk08 = 1;
         lo = (int)max(abs(gm_GetWorth(p->id) + gm_GetWorth(c->id)) / 1275.0f, 1600.0f);
         if (lo > lim)
             return 0;
         hi2 = min(lim, lo + 320000);
         o2->kind = 0x12;
-        o2->unk04 = 0;
+        o2->ref = 0;
         o2->unk08 = (int)(util_RandomF() * (hi2 - lo) + lo);
         o2->unk10 = (int)(o2->unk08 * 500.0f / (gm_GetWorth(p->id) + gm_GetWorth(c->id)));
         return 9;
     }
     if (o1->kind == 7) {
-        c = AI_505DF0(o1->unk04);
+        c = AI_505DF0(o1->ref);
         if (!c || c == AI_6F0468)
             return 0;
         hi2 = (int)max(lim * 0.01f, 3200.0f);
         hi = min(lim * 0.15f, 160000.0f);
         o2->kind = 0x12;
-        o2->unk04 = 0;
+        o2->ref = 0;
         o2->unk08 = (int)(util_RandomF() * ((int)hi - hi2) + hi2);
         o2->unk10 = (int)(o2->unk08 * 500.0f / (gm_GetWorth(p->id) + gm_GetWorth(c->id)));
         return 9;
@@ -4201,7 +4201,7 @@ int ai_Unk4972d0(AIPER *p, AIARG *s1, AIARG *s2)
         return 0;
     if (s2->kind != 0x12)
         return 0;
-    c = AI_505DF0(s1->unk04);
+    c = AI_505DF0(s1->ref);
     if (!c)
         return 0;
     cm_SendMoveGoods(c->netId, p->netId, ai_OwnPlayer, s2->unk08);
@@ -4251,7 +4251,7 @@ int ai_Unk497490(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     if (f == 0) {
         if (p->unk00d < 2) {
             s1.kind = 13;
-            s1.unk04 = 2;
+            s1.ref = 2;
             s1.unk08 = 1;
             s1.unk14 = 0.44f;
             memset(&s2, 0, sizeof(s2));
@@ -4266,7 +4266,7 @@ int ai_Unk497490(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             if (k == 0) {
                 if (util_RandomU(4) == 0) {
                     s2.kind = 0x10;
-                    s2.unk04 = 0x12;
+                    s2.ref = 0x12;
                     s2.unk08 = 0;
                     if (ai_Unk4a9a00(a, p, 0, &s2, &s1) != 0) {
                         *o1 = s2;
@@ -4277,7 +4277,7 @@ int ai_Unk497490(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             } else {
                 r = list[util_RandomU(k) * 3];
                 if (r != 0 && r < 0x1c) {
-                    o1->unk04 = r;
+                    o1->ref = r;
                     o1->kind = 10;
                     return 10;
                 }
@@ -4292,7 +4292,7 @@ int ai_Unk497630(G5CH *p, AIARG *s1)
 {
     if (s1->kind != 10)
         return 0;
-    return amt_ApplyForOffice(p, s1->unk04) ? 10 : 0;
+    return amt_ApplyForOffice(p, s1->ref) ? 10 : 0;
 }
 /* 0x497660, decide: whether a good (o1, kind 2) can be made from what o2 holds (action 11) */
 
@@ -4305,16 +4305,16 @@ int ai_Unk497660(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
     int i, n, v;
     unsigned short k;
 
-    if (b == 1 && o1->kind == 2 && !AI_GOODX[o1->unk04].unk40 && AI_GOODX[o1->unk04].type != 2) {
+    if (b == 1 && o1->kind == 2 && !AI_GOODX[o1->ref].unk40 && AI_GOODX[o1->ref].type != 2) {
         c = 0;
         bld = 0;
         obj = 0;
         if (o2->kind == 1) {
-            obj = (AIOBJ *)gm_FindObjectInst(o2->unk04);
+            obj = (AIOBJ *)gm_FindObjectInst(o2->ref);
             if (!obj)
                 return 0;
             if (AI_GOODX[obj->id].type == 2 || AI_GOODX[obj->id].type == 6) {
-                if (!gm_Query(obj->unk14, 1, 0, o1->unk04) && (bld = gm_FindBuildingById(obj->unk06)) != 0) {
+                if (!gm_Query(obj->unk14, 1, 0, o1->ref) && (bld = gm_FindBuildingById(obj->unk06)) != 0) {
                     t = &AI_BTX[bld->type];
                     n = t->n;
                     for (i = 0; i < n; i++)
@@ -4322,7 +4322,7 @@ int ai_Unk497660(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
                             break;
                     if (i < n) {
                         for (i++; i < n; i++)
-                            if ((t->k[i] & 0x7fff) == o1->unk04)
+                            if ((t->k[i] & 0x7fff) == o1->ref)
                                 break;
                         if (i < n && (!t->p[i].a || gm_Query(obj->unk14, 1, 0, t->p[i].a))) {
                             k = t->p[i].b;
@@ -4334,12 +4334,12 @@ int ai_Unk497660(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
                 return 0;
             }
         } else if (o2->kind == 4) {
-            bld = gm_FindBuildingById(o2->unk04);
-            if (bld && !gm_Query(bld->objList, 1, 0, o1->unk04)) {
+            bld = gm_FindBuildingById(o2->ref);
+            if (bld && !gm_Query(bld->objList, 1, 0, o1->ref)) {
                 t = &AI_BTX[bld->type];
                 n = t->n;
                 for (i = 0; i < n; i++)
-                    if ((t->k[i] & 0x7fff) == o1->unk04)
+                    if ((t->k[i] & 0x7fff) == o1->ref)
                         break;
                 if (i < n && (!t->p[i].a || gm_Query(bld->objList, 1, 0, t->p[i].a))) {
                     k = t->p[i].b;
@@ -4349,7 +4349,7 @@ int ai_Unk497660(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
             }
             return 0;
         } else if (o2->kind == 7) {
-            c = AI_505DF0(o2->unk04);
+            c = AI_505DF0(o2->ref);
             if (!c)
                 return 0;
         } else
@@ -4374,7 +4374,7 @@ rate:
         }
         if (o1->unk14 > 0.0f && o1->unk14 < 1.0f)
             v = (int)(v * o1->unk14);
-        return v < (int)gm_GoodsPrice(o1->unk04, ai_OwnPlayer) ? 0 : 11;
+        return v < (int)gm_GoodsPrice(o1->ref, ai_OwnPlayer) ? 0 : 11;
     }
     return 0;
 }
@@ -4386,17 +4386,17 @@ int ai_Unk4979d0(AIPER *p, AIARG *s1, AIARG *s2)
     int id, price;
 
     if (s2->kind == 1) {
-        o = (AIOBJ *)gm_FindObjectInst(s2->unk04);
+        o = (AIOBJ *)gm_FindObjectInst(s2->ref);
         if (!o)
             return 0;
         id = o->objId;
     } else if (s2->kind == 4) {
-        AIBLD *bld = gm_FindBuildingById(s2->unk04);
+        AIBLD *bld = gm_FindBuildingById(s2->ref);
         if (!bld)
             return 0;
         id = bld->id;
     } else if (s2->kind == 7) {
-        AIPER *c = AI_505DF0(s2->unk04);
+        AIPER *c = AI_505DF0(s2->ref);
         if (!c)
             return 0;
         id = c->netId;
@@ -4407,15 +4407,15 @@ int ai_Unk4979d0(AIPER *p, AIARG *s1, AIARG *s2)
     if (s1->kind != 2)
         return 0;
     if (s1->unk10 == 0x39) {
-        price = (int)gm_GoodsPrice(s1->unk04, ai_OwnPlayer);
+        price = (int)gm_GoodsPrice(s1->ref, ai_OwnPlayer);
         gm_FindById(0, (unsigned short **)&it, 0, s1->unk0c);
         if (!it)
             return 0;
         cm_SendMoveGoods(-1, it->objId, ai_OwnPlayer, price);
-        cm_SendExSellObjectI(id, -1, s1->unk04, s1->unk08, ai_OwnPlayer, 0);
+        cm_SendExSellObjectI(id, -1, s1->ref, s1->unk08, ai_OwnPlayer, 0);
         return 0x39;
     }
-    cm_SendExSellObjectI(id, -1, s1->unk04, s1->unk08, ai_OwnPlayer, (int)gm_GoodsPrice(s1->unk04, ai_OwnPlayer));
+    cm_SendExSellObjectI(id, -1, s1->ref, s1->unk08, ai_OwnPlayer, (int)gm_GoodsPrice(s1->ref, ai_OwnPlayer));
     return 11;
 }
 /* 0x497af0, decide: sell a good (o1, kind 2) to a building (o2, kind 4) with room for it (action 14) */
@@ -4435,11 +4435,11 @@ int ai_Unk497af0(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
         return 0;
     if (o1->kind != 2)
         return 0;
-    if (AI_GOODX[o1->unk04].type != 2)
+    if (AI_GOODX[o1->ref].type != 2)
         return 0;
     if (o2->kind != 4)
         return 0;
-    bld = gm_FindBuildingById(o2->unk04);
+    bld = gm_FindBuildingById(o2->ref);
     if (!bld)
         return 0;
     if (bld->owner == 0xffff)
@@ -4448,7 +4448,7 @@ int ai_Unk497af0(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
     v = gm_Unk509ee0(c, ai_OwnPlayer);
     if (o1->unk14 > 0.0f && o1->unk14 < 1.0f)
         v = (int)(v * o1->unk14);
-    if (v < (int)gm_GoodsPrice(o1->unk04, ai_OwnPlayer))
+    if (v < (int)gm_GoodsPrice(o1->ref, ai_OwnPlayer))
         return 0;
     t = &AI_BTX[bld->type];
     n = 0;
@@ -4467,12 +4467,12 @@ int ai_Unk497c80(AIPER *p, AIARG *s1, AIARG *s2)
 {
     AIBLD *bld;
 
-    bld = gm_FindBuildingById(s2->unk04);
+    bld = gm_FindBuildingById(s2->ref);
     if (!bld)
         return 0;
     if (s1->kind != 2)
         return 0;
-    cm_SendExSellObjectI(bld->id, -1, s1->unk04, s1->unk08, ai_OwnPlayer, (int)gm_GoodsPrice(s1->unk04, ai_OwnPlayer));
+    cm_SendExSellObjectI(bld->id, -1, s1->ref, s1->unk08, ai_OwnPlayer, (int)gm_GoodsPrice(s1->ref, ai_OwnPlayer));
     return 14;
 }
 /* 0x497cf0, decide: renovate the character's worst building (action 15) */
@@ -4502,12 +4502,12 @@ int ai_Unk497cf0(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
         if (f == 0.0f || f > lim)
             return 0;
         o1->kind = 4;
-        o1->unk04 = best->id;
+        o1->ref = best->id;
         o1->unk08 = 1;
         o1->unk10 = v;
         o1->unk14 = f;
         o2->kind = 7;
-        o2->unk04 = p->netId;
+        o2->ref = p->netId;
         o2->unk08 = (int)lim;
         o2->unk10 = 1;
         return 15;
@@ -4515,7 +4515,7 @@ int ai_Unk497cf0(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
     if (o1->kind == 4) {
         bl = AI_BLDX;
         for (i = 0; i < 0x100; i++, bl++) {
-            if (bl->type && bl->id == o1->unk04) {
+            if (bl->type && bl->id == o1->ref) {
                 if (bl->flags5a & 5)
                     return 0;
                 f = ai_Unk4a4e30(bl, o1->unk10);
@@ -4540,10 +4540,10 @@ int ai_Unk497ee0(AIPER *p, AIARG *s1, AIARG *s2)
     msg.to = p->netId;
     msg.fromId = -1;
     msg.flags = 1;
-    msg.arg[0] = s1->unk04;
+    msg.arg[0] = s1->ref;
     msg.arg[1] = s1->unk10;
     cm_BeginGroup("renovieren");
-    cm_SendMoveGoods(-1, s2->unk04, ai_OwnPlayer, (int)s1->unk14);
+    cm_SendMoveGoods(-1, s2->ref, ai_OwnPlayer, (int)s1->unk14);
     cm_SendLongMessage(&msg);
     cm_EndGroup("renovieren");
     fin = (AIFINX *)gm_PlayerRecord((AICHAR *)p);
@@ -4636,7 +4636,7 @@ found:
                             return 0;
                         }
                         o1->kind = 4;
-                        o1->unk04 = bl->id;
+                        o1->ref = bl->id;
                         o1->unk08 = 1;
                         break;
                     }
@@ -4648,16 +4648,16 @@ found:
         return 0;
     }
     if (o1->kind == 5) {
-        if (o1->unk04 == 4 && !ok[0])
+        if (o1->ref == 4 && !ok[0])
             return 0;
-        if (o1->unk04 == 5 && !ok[1])
+        if (o1->ref == 5 && !ok[1])
             return 0;
-        if (o1->unk04 == 6 && !ok[2])
+        if (o1->ref == 6 && !ok[2])
             return 0;
-        if (o1->unk04 == 7 && !ok[3])
+        if (o1->ref == 7 && !ok[3])
             return 0;
         for (bl = AI_501190_2(1, 6); o1->kind == 5 && bl; bl = AI_501030()) {
-            if ((unsigned char)ai_BTypesT[bl->type].kind == o1->unk04) {
+            if ((unsigned char)ai_BTypesT[bl->type].kind == o1->ref) {
                 for (j = he_FindEvent(1, 0, 0x1b); j; j = he_NextEvent()) {
                     if (j->unkac == bl->id) {
                         v = ((AIJOBX *)j)->unkb0;
@@ -4671,7 +4671,7 @@ found:
                             return 0;
                         }
                         o1->kind = 4;
-                        o1->unk04 = bl->id;
+                        o1->ref = bl->id;
                         o1->unk08 = 1;
                         break;
                     }
@@ -4693,8 +4693,8 @@ int ai_Unk498470(G5CH *p, AIARG *s1)
     if (s1->kind != 4)
         return 0;
     for (j = he_FindEvent(1, 0, 0x1b); j != 0; j = he_NextEvent()) {
-        if (((int *)j)[0xac / 4] == s1->unk04) {
-            gm_Unk502fd0(s1->unk04, p->netId, ((int *)j)[0xb0 / 4], (AIJOBX *)j, 1);
+        if (((int *)j)[0xac / 4] == s1->ref) {
+            gm_Unk502fd0(s1->ref, p->netId, ((int *)j)[0xb0 / 4], (AIJOBX *)j, 1);
             return 0x10;
         }
     }
@@ -4740,7 +4740,7 @@ int ai_Unk4984d0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             if (*(short *)(b + 0x27) == (short)p->id && ((lo32 & 0xe07d43b0) != 0 || (hi32 & 1) != 0)) {
                 money = (int)G6_509EE0(p, ai_OwnPlayer);
                 s2.kind = 0;
-                s2.unk04 = 0;
+                s2.ref = 0;
                 s2.unk08 = 0;
                 if (o1->kind == 0) {
                     h = *(unsigned char **)((char *)p + 0x170);
@@ -4754,14 +4754,14 @@ int ai_Unk4984d0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
                                     j++;
                                 while (up[j + 1] != h[0]);
                             }
-                            s1.unk04 = up[j];
+                            s1.ref = up[j];
                             s1.unk08 = 1;
                             s2.kind = 4;
-                            s2.unk04 = *(int *)(h + 1);
+                            s2.ref = *(int *)(h + 1);
                             s2.unk08 = 1;
                             if (ai_Unk4a5140(a, p, f, &s1, &s2, 0) == 0)
                                 return 0;
-                            cost = gm_Unk509dc0(p, s1.unk04);
+                            cost = gm_Unk509dc0(p, s1.ref);
                             if (cost <= money)
                                 goto take;
                             if ((float)(cost - money) / (float)cost >= 0.25f)
@@ -4774,10 +4774,10 @@ int ai_Unk4984d0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
                             return 0;
                     }
                     s1.kind = 5;
-                    s1.unk04 = 6;
+                    s1.ref = 6;
                     s1.unk08 = 1;
                     if (ai_Unk4a5140(a, p, f, &s1, &s2, 1) != 0) {
-                        cost = gm_Unk509dc0(p, s1.unk04);
+                        cost = gm_Unk509dc0(p, s1.ref);
                         if (cost <= money)
                             goto take;
                         if ((float)(cost - money) / (float)cost < 0.25f) {
@@ -4787,11 +4787,11 @@ int ai_Unk4984d0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
                         }
                     }
                     s1.kind = 5;
-                    s1.unk04 = 4;
+                    s1.ref = 4;
                     s1.unk08 = 1;
                     if (ai_Unk4a5140(a, p, f, &s1, &s2, 1) == 0)
                         return 0;
-                    cost = gm_Unk509dc0(p, s1.unk04);
+                    cost = gm_Unk509dc0(p, s1.ref);
                     if (money < cost) {
                         if ((float)(cost - money) / (float)cost >= 0.25f)
                             return 0;
@@ -4805,13 +4805,13 @@ int ai_Unk4984d0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
                     h = *(unsigned char **)((char *)p + 0x170);
                     s1 = *o1;
                     if (h == 0) {
-                        if (((unsigned char *)ai_BTypesT)[o1->unk04 * 0x24d] != 2)
+                        if (((unsigned char *)ai_BTypesT)[o1->ref * 0x24d] != 2)
                             return 0;
                         if (ai_Unk4a5140(a, p, f, &s1, &s2, 1) == 0)
                             return 0;
                         if (((unsigned char *)p)[2] != 5)
                             return 0;
-                        cost = gm_Unk509dc0(p, s1.unk04);
+                        cost = gm_Unk509dc0(p, s1.ref);
                         if (money < cost) {
                             if ((float)(cost - money) / (float)cost >= 0.25f)
                                 return 0;
@@ -4823,8 +4823,8 @@ int ai_Unk4984d0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
                         t = h[0];
                         if (((unsigned char *)ai_BTypesT)[t * 0x24d] != 2)
                             return 0;
-                        s1.unk04 = o1->unk04;
-                        if (s1.unk04 - t != 1)
+                        s1.ref = o1->ref;
+                        if (s1.ref - t != 1)
                             return 0;
                         if (t == 5)
                             return 0;
@@ -4832,9 +4832,9 @@ int ai_Unk4984d0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
                             return 0;
                         s1.unk08 = 1;
                         s2.kind = 4;
-                        s2.unk04 = *(int *)(h + 1);
+                        s2.ref = *(int *)(h + 1);
                         s2.unk08 = 1;
-                        cost = (int)gm_BuildingKindValue(s1.unk04);
+                        cost = (int)gm_BuildingKindValue(s1.ref);
                         if (ai_Unk4a5140(a, p, f, &s1, &s2, 0) == 0)
                             return 0;
                         if (money < cost) {
@@ -4869,11 +4869,11 @@ int ai_Unk498a80(G5CH *p, AIARG *s1, AIARG *s2)
         m.unk08 = p->netId;
         m.time = ai_TimeT;
         m.type = 0x1e;
-        m.unk0c = s2->unk04;
+        m.unk0c = s2->ref;
         m.unk36 = 1;
-        m.unk58 = s2->unk04;
+        m.unk58 = s2->ref;
         cm_BeginGroup("building_upgrade");
-        cm_SendMoveGoods(-1, p->netId, ai_OwnPlayer, (int)(gm_BuildingKindValue(s1->unk04) * 0.3f));
+        cm_SendMoveGoods(-1, p->netId, ai_OwnPlayer, (int)(gm_BuildingKindValue(s1->ref) * 0.3f));
         cm_SendLongMessage((AIMSG *)&m);
         cm_EndGroup("building_upgrade");
         return 0x11;
@@ -4894,14 +4894,14 @@ int ai_Unk498b80(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         b = *(AIBLD **)((char *)p + 0x170);
         if (b != 0 && o1->kind == 0 && ai_Unk4a5540(&item, &obj, b, 0) != 0) {
             s1.kind = 2;
-            s1.unk04 = item;
+            s1.ref = item;
             s1.unk08 = 1;
             if (obj != -1) {
                 s2.kind = 1;
-                s2.unk04 = obj;
+                s2.ref = obj;
             } else {
                 s2.kind = 4;
-                s2.unk04 = *(int *)((char *)b + 1);
+                s2.ref = *(int *)((char *)b + 1);
             }
             s2.unk08 = 1;
             s2.unk14 = 0.44f;
@@ -4941,7 +4941,7 @@ int ai_Unk498c70(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
         return 0;
     lim = (int)(gm_Unk509ee0(p, ai_OwnPlayer) * 0.66f);
     s2.kind = 0;
-    s2.unk04 = 0;
+    s2.ref = 0;
     s2.unk08 = 0;
     for (i = 0; i < 0x100; i++) {
         if (AI_BLDX[i].type && AI_BLDX[i].owner == p->id) {
@@ -4991,10 +4991,10 @@ int ai_Unk498c70(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
                             return 0;
                         }
                         o1->kind = 5;
-                        o1->unk04 = bl->type + 1;
+                        o1->ref = bl->type + 1;
                         o1->unk08 = 1;
                         o2->kind = 4;
-                        o2->unk04 = bl->id;
+                        o2->ref = bl->id;
                         o2->unk08 = 1;
                         return 0x13;
                     }
@@ -5020,15 +5020,15 @@ int ai_Unk498c70(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
             return 0;
     }
     s1.kind = 5;
-    s1.unk04 = sel;
+    s1.ref = sel;
     s1.unk08 = 1;
     s2.kind = 0;
-    s2.unk04 = 0;
+    s2.ref = 0;
     s2.unk08 = 0;
     if (ai_Unk4a5140(0, p, b, &s1, &s2, 1)) {
         int v2, d2;
 
-        v2 = gm_Unk509dc0(p, s1.unk04);
+        v2 = gm_Unk509dc0(p, s1.ref);
         if (lim < v2) {
             if ((float)(v2 - lim) / v2 < 0.25f) {
                 o1->kind = 0x12;
@@ -5061,10 +5061,10 @@ int ai_Unk498c70(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
                             return 0;
                         }
                         s1.kind = 4;
-                        s1.unk04 = bl->id;
+                        s1.ref = bl->id;
                         s1.unk08 = 1;
                         s2.kind = 8;
-                        s2.unk04 = j->unk04;
+                        s2.ref = j->unk04;
                         break;
                     }
                 }
@@ -5085,22 +5085,22 @@ int ai_Unk499290(AIPER *p, AIARG *s1, AIARG *s2)
     AIJOBX *j;
 
     if (s1->kind == 4 && s2->kind == 8) {
-        j = (AIJOBX *)he_FindEvent(1, 1, s2->unk04);
+        j = (AIJOBX *)he_FindEvent(1, 1, s2->ref);
         if (!j)
             return 0;
-        gm_Unk502fd0(s1->unk04, p->netId, j->unkb0, j, 1);
+        gm_Unk502fd0(s1->ref, p->netId, j->unkb0, j, 1);
         return 0x13;
     }
     if (s2->kind == 4) {
         memset(&msg, 0, sizeof(msg));
         msg.type = 0x1e;
         msg.to = p->netId;
-        msg.fromId = s2->unk04;
+        msg.fromId = s2->ref;
         msg.flags = 1;
         msg.time = ai_TimeT;
-        msg.arg[0] = s2->unk04;
+        msg.arg[0] = s2->ref;
         cm_BeginGroup("building_upgrade");
-        cm_SendMoveGoods(-1, p->netId, ai_OwnPlayer, (int)(gm_BuildingKindValue(s1->unk04) * 0.3f));
+        cm_SendMoveGoods(-1, p->netId, ai_OwnPlayer, (int)(gm_BuildingKindValue(s1->ref) * 0.3f));
         cm_SendLongMessage(&msg);
         cm_EndGroup("building_upgrade");
         return 0x13;
@@ -5139,15 +5139,15 @@ int ai_Unk499400(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
     if (!ai_Unk4a5540(&w, &z, y, 0))
         return 0;
     s1.kind = 2;
-    s1.unk04 = w;
+    s1.ref = w;
     s1.unk08 = 1;
     s1.unk14 = 0.44f;
     if (z != -1) {
         s2.kind = 1;
-        s2.unk04 = z;
+        s2.ref = z;
     } else {
         s2.kind = 4;
-        s2.unk04 = y->id;
+        s2.ref = y->id;
     }
     s2.unk08 = 1;
     s2.unk14 = 0.44f;
@@ -5210,10 +5210,10 @@ int ai_Unk499660(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
     if (!b) {
         if (p->bld2 == 0 && p->kind != 3) {
             s1.kind = 0;
-            s1.unk04 = 0;
+            s1.ref = 0;
             s1.unk08 = 0;
             s2.kind = 0;
-            s2.unk04 = 0;
+            s2.ref = 0;
             s2.unk08 = 0;
             r = ai_Unk495a50(0x17, p->id, 1, &s1, &s2);
             if (r) {
@@ -5227,11 +5227,11 @@ int ai_Unk499660(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
                 return 0;
         } else if (!gm_Query(p->bld2->objList, 2, 6, 0, 0x14)) {
             s1.kind = 2;
-            s1.unk04 = 0x14;
+            s1.ref = 0x14;
             s1.unk08 = 1;
             s1.unk14 = 0.22f;
             s2.kind = 4;
-            s2.unk04 = p->bld2->id;
+            s2.ref = p->bld2->id;
             s2.unk08 = 1;
             r = ai_Unk495a50(0x17, p->id, 1, &s1, &s2);
             if (r) {
@@ -5261,11 +5261,11 @@ int ai_Unk499660(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
                         g = gm_Mix(p, ch, 2);
                         if (!(util_RandomF() + g >= 1.0f)) {
                             s1.kind = 0xe;
-                            s1.unk04 = 2;
+                            s1.ref = 2;
                             s1.unk08 = 1;
                             s1.unk14 = 0.0f;
                             s2.kind = 0;
-                            s2.unk04 = 0;
+                            s2.ref = 0;
                             s2.unk08 = 0;
                             r = ai_Unk495a50(0x17, p->id, 0, &s1, &s2);
                             if (r) {
@@ -5278,7 +5278,7 @@ int ai_Unk499660(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
                             && he_Unk553d10((AIPER *)&ai_CharsT[y->owner], p) && he_Unk553cc0((AIBLD *)y)
                             && he_Unk570ea0((AIPER *)&ai_CharsT[y->owner], p)) {
                             o1->kind = 4;
-                            o1->unk04 = y->id;
+                            o1->ref = y->id;
                             o1->unk08 = 1;
                             o1->unk10 = v;
                             o1->unk14 = (float)(d.cur * 2 + 1);
@@ -5300,7 +5300,7 @@ int ai_Unk499a90(AIPER *p, AIARG *s1, AIARG *s2)
 
     if (s1->kind != 4)
         return 0;
-    bl = gm_FindBuildingById(s1->unk04);
+    bl = gm_FindBuildingById(s1->ref);
     if (!bl)
         return 0;
     memset(&msg, 0, sizeof(msg));
@@ -5357,10 +5357,10 @@ int ai_Unk499c10(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
         if (!(m * 0.22f < v)) {
             if (p->bld2 == 0 && p->kind != 3) {
                 s1.kind = 5;
-                s1.unk04 = 4;
+                s1.ref = 4;
                 s1.unk08 = 1;
                 s2.kind = 0;
-                s2.unk04 = 0;
+                s2.ref = 0;
                 s2.unk08 = 0;
                 r = ai_Unk495a50(0x18, p->id, 1, &s1, &s2);
                 if (r) {
@@ -5374,11 +5374,11 @@ int ai_Unk499c10(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
                     return 0;
             } else if (!gm_Query(p->bld2->objList, 2, 6, 0, 0x14)) {
                 s1.kind = 2;
-                s1.unk04 = 0x14;
+                s1.ref = 0x14;
                 s1.unk08 = 1;
                 s1.unk14 = 0.22f;
                 s2.kind = 4;
-                s2.unk04 = p->bld2->id;
+                s2.ref = p->bld2->id;
                 s2.unk08 = 1;
                 r = ai_Unk495a50(0x18, p->id, 1, &s1, &s2);
                 if (r) {
@@ -5398,11 +5398,11 @@ int ai_Unk499c10(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
                             g = gm_Mix(p, c, 3);
                             if (!(util_RandomF() + g >= 1.0f)) {
                                 s1.kind = 0xe;
-                                s1.unk04 = 3;
+                                s1.ref = 3;
                                 s1.unk08 = 1;
                                 s1.unk14 = 0.0f;
                                 s2.kind = 0;
-                                s2.unk04 = 0;
+                                s2.ref = 0;
                                 s2.unk08 = 0;
                                 r = ai_Unk495a50(0x18, p->id, 0, &s1, &s2);
                                 if (r) {
@@ -5413,7 +5413,7 @@ int ai_Unk499c10(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
                             }
                             if (he_Unk553d60(c, p) && he_Unk553d10(c, p)) {
                                 o1->kind = 7;
-                                o1->unk04 = c->netId;
+                                o1->ref = c->netId;
                                 o1->unk08 = 1;
                                 o1->unk10 = v;
                                 o1->unk14 = (float)(d.cur * 2 + 1);
@@ -5436,7 +5436,7 @@ int ai_Unk499f20(AIPER *p, AIARG *s1, AIARG *s2)
 
     if (s1->kind != 7)
         return 0;
-    c = AI_505DF0(s1->unk04);
+    c = AI_505DF0(s1->ref);
     if (!c)
         return 0;
     memset(&msg, 0, sizeof(msg));
@@ -5468,14 +5468,14 @@ int ai_Unk49a020(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
     if (b != 1) {
         if (b != 0)
             return 0;
-    } else if (o1->kind != 0xd || o1->unk04 != 2)
+    } else if (o1->kind != 0xd || o1->ref != 2)
         return 0;
     {
         if (p->unk00d < 2 && (p->flags1c8 & 0x4000)) {
             m = gm_Unk509ee0(p, ai_OwnPlayer);
             if (m >= 0 && !(m * 0.44f < 16000.0f)) {
                 o1->kind = 0xd;
-                o1->unk04 = 2;
+                o1->ref = 2;
                 o1->unk08 = 1;
                 return 0x19;
             }
@@ -5544,9 +5544,9 @@ int ai_Unk49a290(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     s1.unk08 = 1;
     s2.unk08 = 1;
     s1.kind = 0;
-    s1.unk04 = 0;
+    s1.ref = 0;
     s2.kind = 0;
-    s2.unk04 = 0;
+    s2.ref = 0;
     r = ai_Unk495a50(0x1a, p->id, 0, &s1, &s2);
     if (r == 0)
         return 0;
@@ -5617,8 +5617,8 @@ int ai_Unk49a390(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         return 0;
     if (st[0] < 6) {
         if (st[2] == 0) {
-            s1.unk04 = rec[0];
-            s2.unk04 = p->netId;
+            s1.ref = rec[0];
+            s2.ref = p->netId;
             s1.kind = 2;
             s1.unk08 = 1;
             s1.unk14 = 0.05f;
@@ -5635,11 +5635,11 @@ int ai_Unk49a390(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         return 0;
     }
     s1.kind = 1;
-    s1.unk04 = rec[2];
+    s1.ref = rec[2];
     s1.unk08 = 1;
     *o1 = s1;
     s2.kind = 4;
-    s2.unk04 = *(int *)((char *)o + 1);
+    s2.ref = *(int *)((char *)o + 1);
     s2.unk08 = -1;
     s2.unk10 = 0x1b;
     *o2 = s2;
@@ -5653,12 +5653,12 @@ int ai_Unk49a5b0(G5CH *p, AIARG *s1, AIARG *s2)
     AIOBJ *o;
     float *g;
 
-    o = gm_Query(*(int *)((char *)p + 0x178), 1, 1, s1->unk04);
+    o = gm_Query(*(int *)((char *)p + 0x178), 1, 1, s1->ref);
     if (o != 0) {
         g = (float *)G8_5BA620(*(unsigned short *)o);
         if (g != 0) {
             u.obj = o;
-            u.unk04 = s2->unk04;
+            u.unk04 = s2->ref;
             u.unk08 = -1;
             u.unk0c = 0;
             u.unk10 = 0;
@@ -5721,8 +5721,8 @@ int ai_Unk49a690(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
                 i = (unsigned char)info[2] < 7 ? 2 : 4;
             while (recs[i].unk04 != 0)
                 i = (i + 1) % 12;
-            s1.unk04 = recs[i].item;
-            s2.unk04 = p->netId;
+            s1.ref = recs[i].item;
+            s2.ref = p->netId;
             s1.kind = 2;
             s1.unk08 = 1;
             s1.unk14 = 0.05f;
@@ -5742,10 +5742,10 @@ int ai_Unk49a690(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     while (recs[i].unk04 < 1)
         i = (i + 1) % 12;
     s2.kind = 1;
-    s2.unk04 = recs[i].unk08;
+    s2.ref = recs[i].unk08;
     s2.unk08 = 1;
     s1.kind = 0;
-    s1.unk04 = -1;
+    s1.ref = -1;
     s1.unk08 = -1;
     s1.unk10 = 0x1c;
     if (i == 9) {
@@ -5753,14 +5753,14 @@ int ai_Unk49a690(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         if (G8_4A58D0(p, 1, &flags, 10.0f, (float)util_RandomU(0x20) + 40.0f, &id) == 0)
             return 0;
         s1.kind = 7;
-        s1.unk04 = ai_CharsT[id].netId;
+        s1.ref = ai_CharsT[id].netId;
         s1.unk08 = -1;
     } else if (i == 10) {
         flags = (((unsigned char *)p)[9] != 1 ? 1 : 2) | ((unsigned)&cm_SendRing + 0x4973c0);
         if (G8_4A58D0(p, 1, &flags, 10.0f, (float)util_RandomU(0x20) + 40.0f, &id) == 0)
             return 0;
         s1.kind = 7;
-        s1.unk04 = ai_CharsT[id].netId;
+        s1.ref = ai_CharsT[id].netId;
         s1.unk08 = -1;
     } else if (i == 8) {
         r = ai_Unk495a50(k, p->id, 3, &s2, &s1);
@@ -5782,14 +5782,14 @@ int ai_Unk49aa80(G5CH *p, AIARG *s1, AIARG *s2)
     AIOBJ *o;
     float *g;
 
-    o = gm_Query(*(int *)((char *)p + 0x178), 1, 1, s1->unk04);
+    o = gm_Query(*(int *)((char *)p + 0x178), 1, 1, s1->ref);
     if (o != 0) {
         g = (float *)G8_5BA620(*(unsigned short *)o);
         if (g != 0) {
             u.obj = o;
             u.unk0c = 0;
             u.unk10 = 0;
-            u.unk04 = s2->unk04;
+            u.unk04 = s2->ref;
             u.unk08 = s2->unk08;
             if (ai_Unk5cf8a0(p, &u) == 1) {
                 if (u.unk0c == 1) {
@@ -5833,10 +5833,10 @@ int ai_Unk49ab60(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             while (recs[i].unk04 != 0)
                 i = (i + 1) % 2;
             s1.kind = 2;
-            s1.unk04 = recs[i].item;
+            s1.ref = recs[i].item;
             s1.unk08 = 1;
             s2.unk08 = 1;
-            s2.unk04 = p->netId;
+            s2.ref = p->netId;
             s1.unk14 = 0.05f;
             s2.kind = 7;
             r = ai_Unk495a50(k, p->id, 2, &s1, &s2);
@@ -5854,9 +5854,9 @@ int ai_Unk49ab60(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         i = (i + 1) % 2;
     s2.kind = 1;
     s2.unk08 = 1;
-    s2.unk04 = recs[i].unk08;
+    s2.ref = recs[i].unk08;
     s1.kind = 0;
-    s1.unk04 = -1;
+    s1.ref = -1;
     s1.unk08 = -1;
     s1.unk10 = 0x1d;
     if (i == 0) {
@@ -5879,7 +5879,7 @@ int ai_Unk49ad80(G5CH *p, AIARG *s1, AIARG *s2)
     AIOBJ *o;
     float *g;
 
-    o = gm_Query(*(int *)((char *)p + 0x178), 1, 1, s1->unk04);
+    o = gm_Query(*(int *)((char *)p + 0x178), 1, 1, s1->ref);
     if (o != 0) {
         g = (float *)G8_5BA620(*(unsigned short *)o);
         if (g != 0) {
@@ -5932,10 +5932,10 @@ int ai_Unk49ae50(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             while (recs[i].unk04 != 0)
                 i = (i + 1) % 4;
             s1.kind = 2;
-            s1.unk04 = recs[i].item;
+            s1.ref = recs[i].item;
             s1.unk08 = 1;
             s2.unk08 = 1;
-            s2.unk04 = p->netId;
+            s2.ref = p->netId;
             s1.unk14 = 0.05f;
             s2.kind = 7;
             r = ai_Unk495a50(k, p->id, 2, &s1, &s2);
@@ -5953,10 +5953,10 @@ int ai_Unk49ae50(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         i = (i + 1) % 4;
     s1.kind = 1;
     s1.unk08 = 1;
-    s1.unk04 = recs[i].unk08;
+    s1.ref = recs[i].unk08;
     *o1 = s1;
     s2.kind = 0;
-    s2.unk04 = -1;
+    s2.ref = -1;
     s2.unk08 = -1;
     s2.unk10 = 0x1e;
     *o2 = s2;
@@ -5970,7 +5970,7 @@ int ai_Unk49b050(G5CH *p, AIARG *s1, AIARG *s2)
     AIOBJ *o;
     float *g;
 
-    o = gm_Query(*(int *)((char *)p + 0x178), 1, 1, s1->unk04);
+    o = gm_Query(*(int *)((char *)p + 0x178), 1, 1, s1->ref);
     if (o != 0) {
         g = (float *)G8_5BA620(*(unsigned short *)o);
         if (g != 0) {
@@ -6024,8 +6024,8 @@ int ai_Unk49b120(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         return 0;
     if (st[0] < 6) {
         if (st[2] == 0) {
-            s1.unk04 = rec.item;
-            s2.unk04 = p->netId;
+            s1.ref = rec.item;
+            s2.ref = p->netId;
             s1.kind = 2;
             s1.unk08 = 1;
             s1.unk14 = 0.05f;
@@ -6041,9 +6041,9 @@ int ai_Unk49b120(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     } else if (st[2] == 0) {
         return 0;
     }
-    s1.unk04 = -1;
+    s1.ref = -1;
     s1.unk08 = -1;
-    s2.unk04 = rec.unk08;
+    s2.ref = rec.unk08;
     s2.kind = 1;
     s2.unk08 = 1;
     s1.kind = 0;
@@ -6063,7 +6063,7 @@ int ai_Unk49b2b0(G5CH *p, AIARG *s1, AIARG *s2)
     AIOBJ *o;
     float *g;
 
-    o = gm_Query(*(int *)((char *)p + 0x178), 1, 1, s1->unk04);
+    o = gm_Query(*(int *)((char *)p + 0x178), 1, 1, s1->ref);
     if (o != 0) {
         g = (float *)G8_5BA620(*(unsigned short *)o);
         if (g != 0) {
@@ -6152,8 +6152,8 @@ int ai_Unk49b380(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             while (recs[i].unk04 != 0)
                 i = (i + 1) % n;
             s2.kind = 2;
-            s2.unk04 = recs[i].item;
-            s1.unk04 = p->netId;
+            s2.ref = recs[i].item;
+            s1.ref = p->netId;
             s2.unk08 = 1;
             s2.unk14 = 0.05f;
             s1.kind = 7;
@@ -6169,25 +6169,25 @@ int ai_Unk49b380(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         i = (i + 1) % n;
     s2.kind = 1;
     s2.unk08 = 1;
-    s2.unk04 = recs[i].unk08;
+    s2.ref = recs[i].unk08;
     s2.unk14 = 0.05f;
     switch (recs[i].item) {
     case 0x170:
         s1.kind = 0;
         s1.unk08 = -1;
-        s1.unk04 = -1;
+        s1.ref = -1;
         break;
     case 0x167:
         s1.kind = 7;
         s1.unk08 = -1;
-        s1.unk04 = w->netId;
+        s1.ref = w->netId;
         break;
     case 0x162:
     case 0x163:
     case 0x164:
         s1.kind = 7;
         s1.unk08 = -1;
-        s1.unk04 = c->netId;
+        s1.ref = c->netId;
         break;
     default:
         return 0;
@@ -6214,14 +6214,14 @@ int ai_Unk49b6f0(G5CH *p, AIARG *s1, AIARG *s2)
     AIOBJ *o;
     float *g;
 
-    o = gm_Query(*(int *)((char *)p + 0x178), 1, 1, s1->unk04);
+    o = gm_Query(*(int *)((char *)p + 0x178), 1, 1, s1->ref);
     if (o == 0)
         return 0;
     g = (float *)G8_5BA620(*(unsigned short *)o);
     if (g == 0)
         return 0;
     u.obj = o;
-    u.unk04 = s2->unk04;
+    u.unk04 = s2->ref;
     u.unk08 = -1;
     u.unk0c = 0;
     u.unk10 = 0;
@@ -6278,8 +6278,8 @@ int ai_Unk49b7c0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             i = util_RandomU(12);
             while (recs[i].unk04 != 0)
                 i = (i + 1) % 12;
-            s1.unk04 = recs[i].item;
-            s2.unk04 = p->netId;
+            s1.ref = recs[i].item;
+            s2.ref = p->netId;
             s1.kind = 2;
             s1.unk08 = 1;
             s1.unk14 = 0.05f;
@@ -6302,7 +6302,7 @@ int ai_Unk49b7c0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     s1.unk08 = 1;
     s1.unk14 = 0.05f;
     rp = &recs[i];
-    s1.unk04 = recs[i].unk08;
+    s1.ref = recs[i].unk08;
     if (rp->item == 0x169 || rp->item == 0x16d) {
         flags[0] = ((unsigned)&cm_SendRing + 0x4973c0);
         flags[1] = ((unsigned)&cm_SendRing + 0x4973c0);
@@ -6329,18 +6329,18 @@ int ai_Unk49b7c0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     switch (rp->item) {
     case 0x169:
     case 0x16d:
-        s2.unk04 = ai_CharsT[id[0]].netId;
+        s2.ref = ai_CharsT[id[0]].netId;
         s2.unk08 = ai_CharsT[id[1]].netId;
         s2.kind = 7;
         break;
     case 0x177:
         s2.kind = 4;
-        s2.unk04 = *(int *)((char *)ai_CharsT[id[0]].bld2 + 1);
+        s2.ref = *(int *)((char *)ai_CharsT[id[0]].bld2 + 1);
         s2.unk08 = -1;
         break;
     case 0x178:
         s2.kind = 4;
-        s2.unk04 = v;
+        s2.ref = v;
         s2.unk08 = -1;
         break;
     case 0x16a:
@@ -6352,7 +6352,7 @@ int ai_Unk49b7c0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     case 0x29a:
     case 0x29c:
         s2.unk08 = -1;
-        s2.unk04 = ai_CharsT[id[0]].netId;
+        s2.ref = ai_CharsT[id[0]].netId;
         s2.kind = 7;
         break;
     default:
@@ -6377,12 +6377,12 @@ int ai_Unk49bc50(G5CH *p, AIARG *s1, AIARG *s2)
     AIOBJ *o;
     float *g;
 
-    o = gm_Query(*(int *)((char *)p + 0x178), 1, 1, s1->unk04);
+    o = gm_Query(*(int *)((char *)p + 0x178), 1, 1, s1->ref);
     if (o != 0) {
         g = (float *)G8_5BA620(*(unsigned short *)o);
         if (g != 0) {
             u.obj = o;
-            u.unk04 = s2->unk04;
+            u.unk04 = s2->ref;
             u.unk08 = s2->unk08;
             if (ai_Unk5cf8a0(p, &u) == 1) {
                 if (u.unk0c == 1) {
@@ -6440,13 +6440,13 @@ int ai_Unk49bd90(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             i = util_RandomU(10);
             while (recs[i].unk04 != 0)
                 i = (i + 1) % 10;
-            s1.unk04 = recs[i].item;
+            s1.ref = recs[i].item;
             s1.unk08 = 1;
             s2.unk08 = 1;
             s1.kind = 2;
             s1.unk14 = 0.05f;
             s2.kind = 7;
-            s2.unk04 = p->netId;
+            s2.ref = p->netId;
             r = ai_Unk495a50(k, p->id, 2, &s1, &s2);
             if (r == 0)
                 return r;
@@ -6463,8 +6463,8 @@ int ai_Unk49bd90(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     s1.kind = 1;
     s1.unk08 = 1;
     s2.kind = 0;
-    s1.unk04 = recs[i].unk08;
-    s2.unk04 = -1;
+    s1.ref = recs[i].unk08;
+    s2.ref = -1;
     s2.unk08 = -1;
     s2.unk10 = 0x22;
     if (i == 0) {
@@ -6490,7 +6490,7 @@ int ai_Unk49c000(G5CH *p, AIARG *s1, AIARG *s2)
     AIOBJ *o;
     float *g;
 
-    o = gm_Query(*(int *)((char *)p + 0x178), 1, 1, s1->unk04);
+    o = gm_Query(*(int *)((char *)p + 0x178), 1, 1, s1->ref);
     if (o != 0) {
         g = (float *)G8_5BA620(*(unsigned short *)o);
         if (g != 0) {
@@ -6544,14 +6544,14 @@ int ai_Unk49c190(G5CH *p, AIARG *s1, AIARG *s2)
     AIOBJ *o;
     float *g;
 
-    o = gm_Query(*(int *)((char *)p + 0x178), 1, 1, s1->unk04);
+    o = gm_Query(*(int *)((char *)p + 0x178), 1, 1, s1->ref);
     if (o == 0)
         return 0;
     g = (float *)G8_5BA620(*(unsigned short *)o);
     if (g == 0)
         return 0;
     u.obj = o;
-    u.unk04 = s2->unk04;
+    u.unk04 = s2->ref;
     u.unk08 = s2->unk08;
     if (ai_Unk5cf8a0(p, &u) != 1)
         return 0;
@@ -6602,14 +6602,14 @@ int ai_Unk49c3e0(G5CH *p, AIARG *s1, AIARG *s2)
     AIOBJ *o;
     float *g;
 
-    o = gm_Query(*(int *)((char *)p + 0x178), 1, 1, s1->unk04);
+    o = gm_Query(*(int *)((char *)p + 0x178), 1, 1, s1->ref);
     if (o == 0)
         return 0;
     g = (float *)G8_5BA620(*(unsigned short *)o);
     if (g == 0)
         return 0;
     u.obj = o;
-    u.unk04 = s2->unk04;
+    u.unk04 = s2->ref;
     u.unk08 = s2->unk08;
     if (ai_Unk5cf8a0(p, &u) != 1)
         return 0;
@@ -6652,11 +6652,11 @@ int ai_Unk49c570(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     if (he_FindEvent(2, 0, 0x18, 2, (int)p->id) != 0)
         return 0;
     o1->kind = 7;
-    o1->unk04 = c->netId;
+    o1->ref = c->netId;
     o1->unk08 = 1;
     o1->unk10 = v;
     o2->kind = 0;
-    o2->unk04 = 0;
+    o2->ref = 0;
     o2->unk08 = 0;
     o2->unk10 = 0;
     return 0x25;
@@ -6678,7 +6678,7 @@ int ai_Unk49c700(G5CH *p, AIARG *s1)
         *(int *)&m.unk58 = *(int *)(h + 1);
     else
         *(int *)&m.unk58 = -1;
-    *(int *)((char *)&m + 0x70) = s1->unk04;
+    *(int *)((char *)&m + 0x70) = s1->ref;
     *(int *)((char *)&m + 0x90) = s1->unk10;
     cm_BeginGroup("spionage");
     cm_SendLongMessage((AIMSG *)&m);
@@ -6695,16 +6695,16 @@ int ai_Unk49c790(int a, G5CH *p, int f, AIARG *s1, AIARG *o)
     int money;
 
     if (f == 2 && s1->kind == 2) {
-        bld = (unsigned char *)gm_FindMarketObject(s1->unk04);
+        bld = (unsigned char *)gm_FindMarketObject(s1->ref);
         if (bld != 0) {
-            obj = gm_Query(*(int *)(bld + 0x14), 1, 0, s1->unk04);
+            obj = gm_Query(*(int *)(bld + 0x14), 1, 0, s1->ref);
             if (obj != 0 && gm_ListAmount(bld, obj) >= 1) {
                 money = gm_Unk509ee0((AIPER *)p, ai_OwnPlayer);
                 if (s1->unk14 > 0.0f && s1->unk14 < 1.0f)
                     money = (int)(money * s1->unk14);
-                if (money >= (int)gm_GoodsPrice(s1->unk04, ai_OwnPlayer)) {
+                if (money >= (int)gm_GoodsPrice(s1->ref, ai_OwnPlayer)) {
                     o->kind = 1;
-                    o->unk04 = *(int *)(bld + 2);
+                    o->ref = *(int *)(bld + 2);
                     o->unk08 = 1;
                     return 0xc;
                 }
@@ -6719,8 +6719,8 @@ int ai_Unk49c880(G5CH *p, AIARG *s1, AIARG *s2)
 {
     if (s1->kind != 2)
         return 0;
-    cm_SendExSellObjectI(p->netId, s2->unk04, s1->unk04, s1->unk08, ai_OwnPlayer,
-                 (int)gm_GoodsPrice(s1->unk04, ai_OwnPlayer));
+    cm_SendExSellObjectI(p->netId, s2->ref, s1->ref, s1->unk08, ai_OwnPlayer,
+                 (int)gm_GoodsPrice(s1->ref, ai_OwnPlayer));
     return 0xc;
 }
 /* 0x49c8e0, decide callback 0x26: on its day / hour slot, the character rents rooms (?) in a building
@@ -6770,7 +6770,7 @@ int ai_Unk49c8e0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         if (n2 <= 1)
             n2 = 1;
         o1->kind = 4;
-        o1->unk04 = *(int *)(b + 1);
+        o1->ref = *(int *)(b + 1);
         o1->unk10 = w;
         o1->unk14 = (float)n2;
         o2->kind = 0x12;
@@ -6784,7 +6784,7 @@ int ai_Unk49c8e0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         c = n2 * 2;
     }
     o1->kind = 4;
-    o1->unk04 = *(int *)(b + 1);
+    o1->ref = *(int *)(b + 1);
     o1->unk10 = c;
     o1->unk14 = (float)w;
     o2->kind = 0xf;
@@ -6801,7 +6801,7 @@ int ai_Unk49cb60(G5CH *p, AIARG *s1, AIARG *s2)
 
     if (s1->kind != 4)
         return 0;
-    b = (unsigned char *)gm_BuildQuery(1, 1, s1->unk04);
+    b = (unsigned char *)gm_BuildQuery(1, 1, s1->ref);
     if (b == 0 || *(unsigned short *)(b + 0x27) == 0xffff)
         return 0;
     o = gm_Query(*(int *)(b + 0x5d), 2, 6, 0, 0xf2);
@@ -6841,7 +6841,7 @@ int ai_Unk49cd30(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     if (f != 0)
         return 0;
     s1.kind = 0;
-    s1.unk04 = 0;
+    s1.ref = 0;
     s1.unk08 = 0;
     if (ai_Unk4a9a00(0, p, 0, &s1, &s2) == 0)
         return 0;
@@ -6886,9 +6886,9 @@ int ai_Unk49ce50(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         if (((unsigned char *)p)[2] != 3) {
             s1.unk08 = 1;
             s1.kind = 5;
-            s1.unk04 = 4;
+            s1.ref = 4;
             s2.kind = 0;
-            s2.unk04 = 0;
+            s2.ref = 0;
             s2.unk08 = 0;
             r = ai_Unk495a50(0x28, p->id, 1, &s1, &s2);
             goto done;
@@ -6896,11 +6896,11 @@ int ai_Unk49ce50(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     } else if (((unsigned char *)p)[2] != 3) {
         if (gm_Query(*(int *)(h + 0x5d), 2, 6, 0, 0x15) == 0) {
             s1.kind = 2;
-            s1.unk04 = 0x15;
+            s1.ref = 0x15;
             s1.unk08 = 1;
             s1.unk14 = 0.44f;
             s2.kind = 4;
-            s2.unk04 = *(int *)(h + 1);
+            s2.ref = *(int *)(h + 1);
             s2.unk08 = 1;
             r = ai_Unk495a50(0x28, p->id, 1, &s1, &s2);
             goto done;
@@ -6917,11 +6917,11 @@ find:
     g = gm_Mix((AIPER *)p, (AIPER *)&ai_CharsT[s2.unk10], 4);
     if (util_RandomF() + g < 1.0f) {
         s1.kind = 4;
-        s1.unk04 = 3;
+        s1.ref = 3;
         s1.unk08 = 1;
         s1.unk14 = 0.0f;
         s2.kind = 0;
-        s2.unk04 = 0;
+        s2.ref = 0;
         s2.unk08 = 0;
         r = ai_Unk495a50(0x28, p->id, 0, &s1, &s2);
         goto done;
@@ -6981,9 +6981,9 @@ int ai_Unk49d0f0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         if (((unsigned char *)p)[2] != 3) {
             s1.unk08 = 1;
             s1.kind = 5;
-            s1.unk04 = 4;
+            s1.ref = 4;
             s2.kind = 0;
-            s2.unk04 = 0;
+            s2.ref = 0;
             s2.unk08 = 0;
             r = ai_Unk495a50(0x28, p->id, 1, &s1, &s2);
             goto done;
@@ -6991,11 +6991,11 @@ int ai_Unk49d0f0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     } else if (((unsigned char *)p)[2] != 3) {
         if (gm_Query(*(int *)(h + 0x5d), 2, 6, 0, 0x15) == 0) {
             s1.kind = 2;
-            s1.unk04 = 0x15;
+            s1.ref = 0x15;
             s1.unk08 = 1;
             s1.unk14 = 0.44f;
             s2.kind = 4;
-            s2.unk04 = *(int *)(h + 1);
+            s2.ref = *(int *)(h + 1);
             s2.unk08 = 1;
             r = ai_Unk495a50(0x29, p->id, 1, &s1, &s2);
             goto done;
@@ -7048,9 +7048,9 @@ int ai_Unk49d2d0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         if (((unsigned char *)p)[2] != 3) {
             s1.unk08 = 1;
             s1.kind = 5;
-            s1.unk04 = 4;
+            s1.ref = 4;
             s2.kind = 0;
-            s2.unk04 = 0;
+            s2.ref = 0;
             s2.unk08 = 0;
             r = ai_Unk495a50(0x28, p->id, 1, &s1, &s2);
             goto done;
@@ -7058,11 +7058,11 @@ int ai_Unk49d2d0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     } else if (((unsigned char *)p)[2] != 3) {
         if (gm_Query(*(int *)(h + 0x5d), 2, 6, 0, 0x15) == 0) {
             s1.kind = 2;
-            s1.unk04 = 0x15;
+            s1.ref = 0x15;
             s1.unk08 = 1;
             s1.unk14 = 0.44f;
             s2.kind = 4;
-            s2.unk04 = *(int *)(h + 1);
+            s2.ref = *(int *)(h + 1);
             s2.unk08 = 1;
             r = ai_Unk495a50(0x28, p->id, 1, &s1, &s2);
             goto done;
@@ -7126,7 +7126,7 @@ int ai_Unk49d550(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         memset(&s2, 0, sizeof(s2));
         s1.unk08 = 0;
         s1.kind = 0x10;
-        s1.unk04 = 8;
+        s1.ref = 8;
         if (ai_Unk4aa120(a, p, 0, &s1, &s2) != 0) {
             *o1 = s1;
             *o2 = s2;
@@ -7171,7 +7171,7 @@ int ai_Unk49d6a0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         memset(&s2, 0, sizeof(s2));
         s1.unk08 = 0;
         s1.kind = 0x10;
-        s1.unk04 = 4;
+        s1.ref = 4;
         if (ai_Unk4aa120(a, p, 0, &s1, &s2) != 0) {
             *o1 = s1;
             *o2 = s2;
@@ -7198,7 +7198,7 @@ int ai_Unk49d750(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     if (f != 0)
         return 0;
     s1.kind = 0;
-    s1.unk04 = 0;
+    s1.ref = 0;
     s1.unk08 = 0;
     if (ai_Unk4aa120(0, p, 0, &s1, &s2) == 0)
         return 0;
@@ -7290,22 +7290,22 @@ int ai_Unk49d8d0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         if (cntA != 0 && recA != 0) {
             r = recA;
             o1->kind = 4;
-            o1->unk04 = 2;
+            o1->ref = 2;
             v = gm_BuildingKindValue(2);
         } else if (cntB != 0 && recB != 0) {
             r = recB;
             o1->kind = 4;
-            o1->unk04 = 3;
+            o1->ref = 3;
             v = gm_BuildingKindValue(3);
         } else {
             s1.kind = 5;
-            s1.unk04 = 1;
+            s1.ref = 1;
             v = gm_BuildingKindValue(1);
             if (money < v * 1.2f)
                 return 0;
             s1.unk08 = 1;
             s2.kind = 0;
-            s2.unk04 = 0;
+            s2.ref = 0;
             s2.unk08 = 0;
             if (ai_Unk4a5140(0, (AIPER *)p, 1, &s1, &s2, 1) == 0)
                 return 0;
@@ -7317,7 +7317,7 @@ int ai_Unk49d8d0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             return 0;
         o1->unk08 = 1;
         o2->kind = 4;
-        o2->unk04 = r->id;
+        o2->ref = r->id;
         o2->unk08 = 1;
         return 0x2e;
     }
@@ -7326,14 +7326,14 @@ int ai_Unk49d8d0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     lvl = best->level;
     if (lvl - util_RandomU(0x20) >= 0x42)
         return 0;
-    s1.unk04 = best->id;
+    s1.ref = best->id;
     s1.kind = 4;
     s1.unk08 = 1;
     if (lvl < 0x21)
         s1.unk10 = 0x32;
     else
         s1.unk10 = lvl >= 0x42 ? 10 : 30;
-    s2.unk04 = *(int *)((char *)o + 2);
+    s2.ref = *(int *)((char *)o + 2);
     s2.unk08 = money;
     s2.unk10 = 1;
     s2.kind = 1;
@@ -7359,19 +7359,19 @@ int ai_Unk49dc10(G5CH *p, AIARG *s1, AIARG *s2)
         memset(&m, 0, sizeof(m));
         m.type = 0x1e;
         m.to = p->netId;
-        m.unk0c = s2->unk04;
+        m.unk0c = s2->ref;
         m.unk36 = 1;
         m.time = ai_TimeT;
-        *(int *)&m.unk58 = s2->unk04;
+        *(int *)&m.unk58 = s2->ref;
         cm_BeginGroup("upgr_arbeiter_unterk");
-        cm_SendMoveGoods(-1, *(int *)(c + 2), ai_OwnPlayer, (int)(gm_BuildingKindValue(s1->unk04) * 0.3f));
+        cm_SendMoveGoods(-1, *(int *)(c + 2), ai_OwnPlayer, (int)(gm_BuildingKindValue(s1->ref) * 0.3f));
         cm_SendLongMessage((AIMSG *)&m);
         cm_EndGroup("upgr_arbeiter_unterk");
         return 0x2e;
     }
     cm_BeginGroup("bau_arbeiter_unterk");
     if (ai_Unk4a5320((AIPER *)ai_PlayerChar, s1, s2) != 0) {
-        cm_SendMoveGoods(-1, *(int *)(c + 2), ai_OwnPlayer, gm_BuildingKindValue(s1->unk04));
+        cm_SendMoveGoods(-1, *(int *)(c + 2), ai_OwnPlayer, gm_BuildingKindValue(s1->ref));
         cm_EndGroup("bau_arbeiter_unterk");
         return 0x2e;
     }
@@ -7404,14 +7404,14 @@ int ai_Unk49dd90(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         if (!ai_Unk4a5540(&w, &z, y, 0))
             continue;
         s1.kind = 2;
-        s1.unk04 = w;
+        s1.ref = w;
         s1.unk08 = 1;
         if (z != -1) {
             s2.kind = 1;
-            s2.unk04 = z;
+            s2.ref = z;
         } else {
             s2.kind = 4;
-            s2.unk04 = y->id;
+            s2.ref = y->id;
         }
         s2.unk08 = 1;
         s2.unk14 = 0.44f;
@@ -7453,7 +7453,7 @@ int ai_Unk49def0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     money = gm_SumListAmounts(*(int *)((char *)o + 0x14), ai_OwnPlayer);
     if (!(y->flags5a & 4) && y->level < util_RandomU(0x40) + 0x25) {
         s1.kind = 4;
-        s1.unk04 = y->id;
+        s1.ref = y->id;
         s1.unk08 = 1;
         lvl = y->level;
         if (lvl < 0x21)
@@ -7461,7 +7461,7 @@ int ai_Unk49def0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         else
             s1.unk10 = lvl >= 0x42 ? 10 : 30;
         s2.kind = 1;
-        s2.unk04 = *(int *)((char *)o + 2);
+        s2.ref = *(int *)((char *)o + 2);
         s2.unk08 = money;
         s2.unk10 = 1;
         r = ai_Unk495a50(0xf, p->id, 0, &s1, &s2);
@@ -7470,14 +7470,14 @@ int ai_Unk49def0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     }
     if (ai_Unk4a5540(&w, &z, y, 0)) {
         s1.kind = 2;
-        s1.unk04 = w;
+        s1.ref = w;
         s1.unk08 = 1;
         if (z != -1) {
             s2.kind = 1;
-            s2.unk04 = z;
+            s2.ref = z;
         } else {
             s2.kind = 4;
-            s2.unk04 = y->id;
+            s2.ref = y->id;
         }
         s2.unk08 = 1;
         s2.unk14 = 0.44f;
@@ -7502,12 +7502,12 @@ int ai_Unk49def0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     if (money < v * 0.4f)
         return 0;
     o1->kind = 4;
-    o1->unk04 = act;
+    o1->ref = act;
     o1->unk08 = 1;
     o1->unk10 = 0;
     o2->kind = 4;
     o2->unk10 = 0;
-    o2->unk04 = y->id;
+    o2->ref = y->id;
     o2->unk08 = 1;
     return 0x31;
 done:
@@ -7532,12 +7532,12 @@ int ai_Unk49e230(G5CH *p, AIARG *s1, AIARG *s2)
     memset(&m, 0, sizeof(m));
     m.type = 0x1e;
     m.to = p->netId;
-    m.unk0c = s2->unk04;
+    m.unk0c = s2->ref;
     m.unk36 = 1;
     m.time = ai_TimeT;
-    *(int *)&m.unk58 = s2->unk04;
+    *(int *)&m.unk58 = s2->ref;
     cm_BeginGroup("upgr_rathaus");
-    cm_SendMoveGoods(-1, *(int *)(c + 2), ai_OwnPlayer, (int)(gm_BuildingKindValue(s1->unk04) * 0.3f));
+    cm_SendMoveGoods(-1, *(int *)(c + 2), ai_OwnPlayer, (int)(gm_BuildingKindValue(s1->ref) * 0.3f));
     cm_SendLongMessage((AIMSG *)&m);
     cm_EndGroup("upgr_rathaus");
     return 0x31;
@@ -7574,7 +7574,7 @@ int ai_Unk49e350(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     money = gm_SumListAmounts(*(int *)(o + 0x14), ai_OwnPlayer);
     if (!(y->flags5a & 4) && y->level < util_RandomU(0x40) + 0x25) {
         s1.kind = 4;
-        s1.unk04 = y->id;
+        s1.ref = y->id;
         s1.unk08 = 1;
         lvl = y->level;
         if (lvl < 0x21)
@@ -7582,7 +7582,7 @@ int ai_Unk49e350(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         else
             s1.unk10 = lvl >= 0x42 ? 10 : 30;
         s2.kind = 1;
-        s2.unk04 = *(int *)(o + 2);
+        s2.ref = *(int *)(o + 2);
         s2.unk08 = money;
         s2.unk10 = 1;
         r = ai_Unk495a50(0xf, p->id, 0, &s1, &s2);
@@ -7591,14 +7591,14 @@ int ai_Unk49e350(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     }
     if (ai_Unk4a5540(&w, &z, y, 0)) {
         s1.kind = 2;
-        s1.unk04 = w;
+        s1.ref = w;
         s1.unk08 = 1;
         if (z != -1) {
             s2.kind = 1;
-            s2.unk04 = z;
+            s2.ref = z;
         } else {
             s2.kind = 4;
-            s2.unk04 = y->id;
+            s2.ref = y->id;
         }
         s2.unk08 = 1;
         s2.unk14 = 0.44f;
@@ -7623,12 +7623,12 @@ int ai_Unk49e350(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     if (money < v * 0.4f)
         return 0;
     o1->kind = 4;
-    o1->unk04 = act;
+    o1->ref = act;
     o1->unk08 = 1;
     o1->unk10 = 0;
     o2->kind = 4;
     o2->unk10 = 0;
-    o2->unk04 = y->id;
+    o2->ref = y->id;
     o2->unk08 = 1;
     return 0x3c;
 done:
@@ -7653,12 +7653,12 @@ int ai_Unk49e680(G5CH *p, AIARG *s1, AIARG *s2)
     memset(&m, 0, sizeof(m));
     m.type = 0x1e;
     m.to = p->netId;
-    m.unk0c = s2->unk04;
+    m.unk0c = s2->ref;
     m.unk36 = 1;
     m.time = ai_TimeT;
-    *(int *)&m.unk58 = s2->unk04;
+    *(int *)&m.unk58 = s2->ref;
     cm_BeginGroup("upgr_kerker");
-    cm_SendMoveGoods(-1, *(int *)(c + 2), ai_OwnPlayer, (int)(gm_BuildingKindValue(s1->unk04) * 0.3f));
+    cm_SendMoveGoods(-1, *(int *)(c + 2), ai_OwnPlayer, (int)(gm_BuildingKindValue(s1->ref) * 0.3f));
     cm_SendLongMessage((AIMSG *)&m);
     cm_EndGroup("upgr_kerker");
     return 0x3c;
@@ -7697,14 +7697,14 @@ int ai_Unk49e7a0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         lvl = rec->level;
         if (lvl < util_RandomU(0x40) + 0x25) {
             s1.kind = 4;
-            s1.unk04 = rec->id;
+            s1.ref = rec->id;
             s1.unk08 = 1;
             if (lvl < 0x21)
                 s1.unk10 = 0x32;
             else
                 s1.unk10 = lvl >= 0x42 ? 10 : 30;
             s2.unk08 = money;
-            s2.unk04 = *(int *)(o + 2);
+            s2.ref = *(int *)(o + 2);
             s2.kind = 1;
             s2.unk10 = 1;
             r = ai_Unk495a50(0xf, p->id, 0, &s1, &s2);
@@ -7730,26 +7730,26 @@ int ai_Unk49e7a0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         return 0;
     if (cntA != 0 && recA != 0) {
         o1->kind = 4;
-        o1->unk04 = 9;
+        o1->ref = 9;
         o1->unk08 = 1;
         o2->kind = 4;
-        o2->unk04 = recA->id;
+        o2->ref = recA->id;
         o2->unk08 = 1;
         return 0x2f;
     }
     if (cntB != 0 && recB != 0) {
         o1->kind = 4;
-        o1->unk04 = 0xa;
+        o1->ref = 0xa;
         o1->unk08 = 1;
         o2->kind = 4;
-        o2->unk04 = recB->id;
+        o2->ref = recB->id;
         o2->unk08 = 1;
         return 0x2f;
     }
-    s1.unk04 = 8;
+    s1.ref = 8;
     s1.unk08 = 1;
     s2.kind = 0;
-    s2.unk04 = 0;
+    s2.ref = 0;
     s2.unk08 = 0;
     if (ai_Unk4a5140(0, (AIPER *)p, 1, &s1, &s2, 1) == 0)
         return 0;
@@ -7773,12 +7773,12 @@ int ai_Unk49ea90(G5CH *p, AIARG *s1, AIARG *s2)
         memset(&m, 0, sizeof(m));
         m.type = 0x1e;
         m.to = p->netId;
-        m.unk0c = s2->unk04;
+        m.unk0c = s2->ref;
         m.unk36 = 1;
         m.time = ai_TimeT;
-        *(int *)&m.unk58 = s2->unk04;
+        *(int *)&m.unk58 = s2->ref;
         cm_BeginGroup("upgr_brunnen");
-        cm_SendMoveGoods(-1, *(int *)(c + 2), ai_OwnPlayer, (int)(gm_BuildingKindValue(s1->unk04) * 0.3f));
+        cm_SendMoveGoods(-1, *(int *)(c + 2), ai_OwnPlayer, (int)(gm_BuildingKindValue(s1->ref) * 0.3f));
         cm_SendLongMessage((AIMSG *)&m);
         cm_EndGroup("upgr_brunnen");
     } else {
@@ -7787,7 +7787,7 @@ int ai_Unk49ea90(G5CH *p, AIARG *s1, AIARG *s2)
             cm_EndGroup("bau_brunnen");
             return 0;
         }
-        cm_SendMoveGoods(-1, *(int *)(c + 2), ai_OwnPlayer, gm_BuildingKindValue(s1->unk04));
+        cm_SendMoveGoods(-1, *(int *)(c + 2), ai_OwnPlayer, gm_BuildingKindValue(s1->ref));
         cm_EndGroup("bau_brunnen");
     }
     n = s1->unk10;
@@ -7950,10 +7950,10 @@ int ai_Unk49eec0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         if (best < 0 && best > 2)
             return 0;
         o1->kind = 4;
-        o1->unk04 = b->id;
+        o1->ref = b->id;
         o1->unk08 = own->id;
         o2->kind = 0x14;
-        o2->unk04 = rec[best].a;
+        o2->ref = rec[best].a;
         o2->unk08 = rec[best].b;
         o2->unk10 = rec[best].c;
         return 0x33;
@@ -7992,10 +7992,10 @@ int ai_Unk49eec0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     if (best < 0 || best > 2)
         return 0;
     o1->kind = 4;
-    o1->unk04 = b->id;
+    o1->ref = b->id;
     o1->unk08 = -1;
     o2->kind = 0x14;
-    o2->unk04 = rec[best].a;
+    o2->ref = rec[best].a;
     o2->unk08 = rec[best].b;
     o2->unk10 = rec[best].c;
     return 0x33;
@@ -8012,7 +8012,7 @@ int ai_Unk49f370(G5CH *p, AIARG *s1, AIARG *s2)
 
     if (s1->kind != 4 || s2->kind != 0x14)
         return 0;
-    G8_4FEA50((int *)&a, 0, 0, s1->unk04);
+    G8_4FEA50((int *)&a, 0, 0, s1->ref);
     if (a == 0)
         return 0;
     G8_4FEA50((int *)&b, 0, 0, s1->unk08);
@@ -8024,12 +8024,12 @@ int ai_Unk49f370(G5CH *p, AIARG *s1, AIARG *s2)
     m.unk36 = 0x12;
     *(int *)&m.unk58 = a->id;
     m.from = p->netId;
-    m.unk60 = s2->unk04;
+    m.unk60 = s2->ref;
     m.unk64 = s2->unk08;
     m.unk6c = s2->unk10;
-    v = s2->unk04;
+    v = s2->ref;
     cm_BeginGroup("AI Kredit");
-    cm_SendMoveGoods(p->netId, a->id, ai_OwnPlayer, s2->unk04);
+    cm_SendMoveGoods(p->netId, a->id, ai_OwnPlayer, s2->ref);
     cm_SendLongMessage((AIMSG *)&m);
     if (b != 0) {
         cm_BeginFieldBlock((AIPER *)b, b->id);
@@ -8114,15 +8114,15 @@ int ai_Unk49f5c0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     y = gm_FirstTitleNumber(x);
     if (y == 0)
         return 0;
-    s1.unk04 = y;
+    s1.ref = y;
     s1.kind = 5;
     s1.unk08 = 1;
     s2.kind = 0;
-    s2.unk04 = 0;
+    s2.ref = 0;
     s2.unk08 = 0;
     if (ai_Unk4a5140(a, p, f, &s1, &s2, 1) == 0)
         return 0;
-    if (money < gm_BuildingKindValue(s1.unk04))
+    if (money < gm_BuildingKindValue(s1.ref))
         return 0;
     *o1 = s1;
     o1->unk10 = x;
@@ -8207,7 +8207,7 @@ int ai_Unk49f850(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         }
         if (k == 0 && util_RandomU(4) == 0) {
             o1->kind = 4;
-            o1->unk04 = bl[found]->id;
+            o1->ref = bl[found]->id;
             o1->unk08 = 'leav';
             return 0x35;
         }
@@ -8217,7 +8217,7 @@ int ai_Unk49f850(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         if (util_RandomF() + 0.166667f > sum)
             goto noop;
         o1->kind = 4;
-        o1->unk04 = bl[found]->id;
+        o1->ref = bl[found]->id;
         o1->unk08 = 'leav';
         return 0x35;
     }
@@ -8232,15 +8232,15 @@ int ai_Unk49f850(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     if (util_RandomF() > 0.75f)
         goto noop;
     o1->kind = 4;
-    o1->unk04 = bl[j]->id;
+    o1->ref = bl[j]->id;
     o1->unk08 = 'join';
     o2->kind = 0x12;
-    o2->unk04 = ai_CharsT[bl[j]->owner].netId;
+    o2->ref = ai_CharsT[bl[j]->owner].netId;
     o2->unk08 = 0;
     return 0x35;
 noop:
     o1->kind = 0;
-    o1->unk04 = -1;
+    o1->ref = -1;
     o1->unk08 = 'noop';
     return 0x35;
 }
@@ -8253,7 +8253,7 @@ int ai_Unk49fb80(G5CH *p, AIARG *s1, AIARG *s2)
 
     if (s1->unk08 == 'join') {
         r.tag = s1->unk08;
-        r.bld = s1->unk04;
+        r.bld = s1->ref;
         r.ch = p->netId;
         cm_BeginGroup("stammtisch join AI-Plr");
         ai_Unk4c5d80(&r);
@@ -8263,7 +8263,7 @@ int ai_Unk49fb80(G5CH *p, AIARG *s1, AIARG *s2)
     }
     if (s1->unk08 == 'leav') {
         r.tag = s1->unk08;
-        r.bld = s1->unk04;
+        r.bld = s1->ref;
         r.ch = p->netId;
         cm_BeginGroup("stammtisch leave AI-Plr");
         ai_Unk4c5d80(&r);
@@ -8359,7 +8359,7 @@ int ai_Unk49fc90(int a, G5CH *p, int f, AIARG *o1)
                 if (d == -1 || d == 1) {
 set:
                     o1->kind = 0x15;
-                    o1->unk04 = lo + 1;
+                    o1->ref = lo + 1;
                     o1->unk10 = d;
                     return 0x36;
                 }
@@ -8376,7 +8376,7 @@ int ai_Unk4a0040(G5CH *p, AIARG *s1, AIARG *s2)
 
     if (s1->kind == 0x15) {
         r.kind = 3;
-        r.a = s1->unk04;
+        r.a = s1->ref;
         r.b = s1->unk10;
         amt_ExecutePriceMessage(p, &r);
         return 0x36;
@@ -8417,7 +8417,7 @@ int ai_Unk4a0090(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         return 0;
     o1->unk10 = v;
     o1->kind = 4;
-    o1->unk04 = b;
+    o1->ref = b;
     return 0x37;
 }
 /* 0x4a01f0, execute callback 0x37: hands the request (2, s1->unk04, s1->unk10) of s1 (kind 4) to 0x4e9a00 */
@@ -8428,7 +8428,7 @@ int ai_Unk4a01f0(G5CH *p, AIARG *s1, AIARG *s2)
 
     if (s1->kind == 4) {
         r.kind = 2;
-        r.a = s1->unk04;
+        r.a = s1->ref;
         r.b = s1->unk10;
         amt_ExecuteShareMessage(p, &r);
         return 0x37;
@@ -8642,7 +8642,7 @@ int ai_Unk4a0890(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         if (c == 0)
             return 0;
         o1->kind = 7;
-        o1->unk04 = c->netId;
+        o1->ref = c->netId;
         o1->unk10 = 1;
         return 0x38;
     }
@@ -8654,7 +8654,7 @@ int ai_Unk4a0890(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         return 0;
     if (n == 0)
         return 0;
-    o1->unk04 = n;
+    o1->ref = n;
     o1->kind = 0x16;
     o1->unk10 = 4;
     return 0x38;
@@ -8669,7 +8669,7 @@ int ai_Unk4a0940(G5CH *p, AIARG *s1, AIARG *s2)
     if (s1->kind != 7 && s1->kind != 0x16)
         return 0;
     r.kind = s1->unk10;
-    r.a = s1->unk04;
+    r.a = s1->ref;
     r.b = 0;
     amt_ExecuteMayorPowerMessage(p, &r);
     return 0x38;
@@ -8740,13 +8740,13 @@ int ai_Unk4a0a70(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     lvl = bl->level;
     if (lvl < util_RandomU(0x10) + 0x32 && !(bl->flags5a & 4)) {
         s1.kind = 4;
-        s1.unk04 = bl->id;
+        s1.ref = bl->id;
         s1.unk08 = 1;
         if (lvl < 0x21)
             need = 0x32;
         else
             need = lvl >= 0x42 ? 10 : 30;
-        s2.unk04 = *(int *)(o + 2);
+        s2.ref = *(int *)(o + 2);
         s2.unk10 = 1;
         s1.unk10 = need;
         s2.kind = 1;
@@ -8766,17 +8766,17 @@ int ai_Unk4a0a70(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     }
     if (ai_Unk4a5540(&f, &a, bl, 0) != 0) {
         s1.kind = 2;
-        s1.unk04 = f;
+        s1.ref = f;
         s1.unk08 = 1;
         s1.unk0c = *(int *)(o + 2);
         s1.unk10 = 0x39;
         s2.unk10 = money;
         if (a != -1) {
             s2.kind = 1;
-            s2.unk04 = a;
+            s2.ref = a;
         } else {
             s2.kind = 4;
-            s2.unk04 = bl->id;
+            s2.ref = bl->id;
         }
         s2.unk08 = 1;
         *(int *)&s2.unk14 = 0;
@@ -8791,7 +8791,7 @@ credit:
             if ((int)((m - 80000) * 0.25f) < amt)
                 return 0;
             o1->kind = 1;
-            o1->unk04 = *(int *)(o + 2);
+            o1->ref = *(int *)(o + 2);
             o1->unk10 = c;
             o2->unk08 = amt;
             o2->kind = 0x12;
@@ -8813,11 +8813,11 @@ credit:
     amt = (int)(gm_BuildingKindValue(n) * 0.4f);
     if (amt < money) {
         o1->kind = 4;
-        o1->unk04 = n;
+        o1->ref = n;
         o1->unk08 = 1;
         o1->unk0c = bl->id;
         o2->kind = 1;
-        o2->unk04 = *(int *)(o + 2);
+        o2->ref = *(int *)(o + 2);
         o2->unk08 = 1;
         return 0x39;
     }
@@ -8828,7 +8828,7 @@ credit:
     if ((int)((m - 80000) * 0.5f) < amt)
         return 0;
     o1->kind = 1;
-    o1->unk04 = *(int *)(o + 2);
+    o1->ref = *(int *)(o + 2);
     o1->unk10 = 1;
     o2->unk08 = amt;
     o2->kind = 0x12;
@@ -8844,7 +8844,7 @@ int ai_Unk4a0e60(G5CH *p, AIARG *s1, AIARG *s2)
     AIBLD *b;
 
     if (s1->kind == 1 && s2->kind == 0x12 && s2->unk08 > 0) {
-        G8_4FEA50(0, (int)&o, 0, s1->unk04);
+        G8_4FEA50(0, (int)&o, 0, s1->ref);
         if (o == 0)
             return 0;
         cm_SendMoveGoods(*(int *)(o + 2), p->netId, ai_OwnPlayer, s2->unk08);
@@ -8855,7 +8855,7 @@ int ai_Unk4a0e60(G5CH *p, AIARG *s1, AIARG *s2)
     G8_4FEA50((int *)&b, 0, 0, s1->unk0c);
     if (b == 0)
         return 0;
-    G8_4FEA50(0, (int)&o, 0, s2->unk04);
+    G8_4FEA50(0, (int)&o, 0, s2->ref);
     if (o == 0)
         return 0;
     memset(&m, 0, sizeof(m));
@@ -8866,7 +8866,7 @@ int ai_Unk4a0e60(G5CH *p, AIARG *s1, AIARG *s2)
     m.time = ai_TimeT;
     *(int *)&m.unk58 = s1->unk0c;
     cm_BeginGroup("upgr_ai_zunfthaus");
-    cm_SendMoveGoods(-1, *(int *)(o + 2), ai_OwnPlayer, (int)(gm_BuildingKindValue(s1->unk04) * 0.3f));
+    cm_SendMoveGoods(-1, *(int *)(o + 2), ai_OwnPlayer, (int)(gm_BuildingKindValue(s1->ref) * 0.3f));
     cm_SendLongMessage((AIMSG *)&m);
     cm_EndGroup("upgr_ai_zunfthaus");
     return 0x39;
@@ -8967,9 +8967,9 @@ int ai_Unk4a1170(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         q = gm_TitleGroup(((unsigned char *)p)[0x164]);
     }
     o1->kind = 7;
-    o1->unk04 = best->netId;
+    o1->ref = best->netId;
     o2->kind = 0x17;
-    o2->unk04 = gm_TitleNumber(q, 1);
+    o2->ref = gm_TitleNumber(q, 1);
     o2->unk10 = price;
     return 0x3a;
 }
@@ -8981,12 +8981,12 @@ int ai_Unk4a1360(G5CH *p, AIARG *s1, AIARG *s2)
     G8MSG m;
 
     if (s1->kind == 7 && s2->kind == 0x17) {
-        m.to = s1->unk04;
+        m.to = s1->ref;
         m.unk36 = 0x12;
         *(int *)&m.unk58 = p->netId;
         m.type = 0x5e;
         m.unk0c = -1;
-        *(unsigned char *)&m.from = (unsigned char)s2->unk04;
+        *(unsigned char *)&m.from = (unsigned char)s2->ref;
         m.unk60 = s2->unk10;
         cm_SendLongMessage((AIMSG *)&m);
         return 0x3a;
@@ -9050,10 +9050,10 @@ int ai_Unk4a13e0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     if (gm_Unk509ee0((AIPER *)p, ai_OwnPlayer) < rec[m].a * 10)
         return 0;
     o1->kind = 7;
-    o1->unk04 = best->netId;
+    o1->ref = best->netId;
     o1->unk10 = rec[m].a;
     o2->kind = 0xe;
-    o2->unk04 = rec[m].b;
+    o2->ref = rec[m].b;
     o2->unk10 = rec[m].c;
     return 0x3b;
 }
@@ -9073,7 +9073,7 @@ int ai_Unk4a1640(G5CH *p, AIARG *s1, AIARG *s2)
     m.unk36 = 0x12;
     m.type = 0x5f;
     m.to = ((G5CH *)c)->netId;
-    ((unsigned char *)&m)[0x64] = (unsigned char)s2->unk04;
+    ((unsigned char *)&m)[0x64] = (unsigned char)s2->ref;
     *(int *)&m.unk58 = p->netId;
     m.unk0c = -1;
     ((unsigned char *)&m)[0x65] = (unsigned char)s2->unk10;
@@ -10118,7 +10118,7 @@ int ai_Unk4a5140(int a, AIPER *p, int b, AIARG *s1, AIARG *s2, int f)
     q[0] = 1;
     if (s1->kind != 5)
         return 0;
-    k = s1->unk04;
+    k = s1->ref;
     if (ai_BTypesT[k].kind == 2) {
         h = *(unsigned char **)((unsigned char *)p + 0x170);
         if (h != 0 && ai_BTypesT[k].cap247 <= ai_BTypesT[*h].cap247 && ai_BTypesT[*h].kind == 2)
@@ -10145,10 +10145,10 @@ int ai_Unk4a5140(int a, AIPER *p, int b, AIARG *s1, AIARG *s2, int f)
     }
     if (f == 0)
         return 1;
-    r = ai_Unk4a4e70(p, s1->unk04);
+    r = ai_Unk4a4e70(p, s1->ref);
     if (r == 0)
         return 0;
-    s2->unk04 = r;
+    s2->ref = r;
     s2->kind = 0xc;
     s2->unk08 = 1;
     return 1;
@@ -10168,9 +10168,9 @@ int ai_Unk4a5320(AIPER *p, AIARG *s1, AIARG *s2)
         return 0;
     if (s2->kind != 0xc)
         return 0;
-    plot = s2->unk04;
+    plot = s2->ref;
     strcpy(name, "gb_");
-    strcat(name, ai_BTypesT[s1->unk04].pad001);
+    strcat(name, ai_BTypesT[s1->ref].pad001);
     _strupr(name + 2);
     alt = 0;
     for (;;) {
@@ -10181,7 +10181,7 @@ int ai_Unk4a5320(AIPER *p, AIARG *s1, AIARG *s2)
         if (vfs_GetPath(path, vfs_Root, vfs_Root, found) != 0)
             break;
         if (alt) {
-            sprintf(name, "amt_ExecGebaeudeBauen(): Keine Group f\xfcr %s gefunden", ai_BTypesT[s1->unk04].pad001);
+            sprintf(name, "amt_ExecGebaeudeBauen(): Keine Group f\xfcr %s gefunden", ai_BTypesT[s1->ref].pad001);
             return 0;
         }
         alt = 1;
@@ -10189,7 +10189,7 @@ int ai_Unk4a5320(AIPER *p, AIARG *s1, AIARG *s2)
     sprintf((char *)&m + 0x9c, "%s", path);
     m.time = ai_TimeT;
     m.to = *(int *)((unsigned char *)p + 4);
-    m.arg[1] = s1->unk04;
+    m.arg[1] = s1->ref;
     m.type = 0xd;
     m.flags = 2;
     m.fromId = m.to;

@@ -191,6 +191,12 @@ typedef struct AICHAR {                 /* 0x21c bytes, ai_Chars[768] */
                                            ls_ReadCharacters); its low byte picks a cart's texture set
                                            ('g' + it, ls_ReadSceneRecords) */
         };
+        struct {
+            char padname5c[0x2c];
+            int relatives[8];           /* 0x05c, the netIds of the character's relatives (gm_KillSpieler clears
+                                           them when one dies, ai_Unk49b380 walks [3..7]); relatives[0] is never
+                                           picked as a partner (ai_DecideOfficePartner) */
+        };
     };
     float mood[14][3];                  /* 0x088, 13 triples (a, b, value), the current one at 0x124 */
     unsigned char sel;                  /* 0x130 */

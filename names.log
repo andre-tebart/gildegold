@@ -339,3 +339,4 @@
 2026-11-01T20:13:40 0x004a7e70 func ai_Unk4a7e70 -> ai_PokerOpenCounts by:main why:counts the open cards (2 .. dealt-1) of a seat per suit and rank and returns the most common of each with its count; ai_PokerNpcFold weighs the opponents' open hands with it
 2026-11-01T20:18:33 0x004a7f50 func ai_Unk4a7f50 -> ai_PokerRateHand by:main why:rates a seat's hand 0..8 (the hand names at 0x600490); the showdown 0x4a8190 compares the kinds
 2026-11-01T20:23:41 0x004a8190 func ai_Unk4a8190 -> ai_PokerShowdown by:main why:rates the three hands (ai_PokerRateHand), picks the winning seat and stores its hand kind in winHand
+2026-11-01T20:28:12 0x004a8760 func ai_Unk4a8760 -> ai_DecideOfficePartner by:main why:decide callback: the character picks a partner among the holders of its office column (amt_GetColumnOffices), into the AIARG (kind 7, the partner's netId)
