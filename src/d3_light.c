@@ -15,12 +15,17 @@
 #include "d3.h"
 #include "d3_engine.h"
 #include "d3_light.h"
+#include "d3_fl.h"
+#include "d3_vec.h"
+#include "mem.h"
+#include "txt.h"
+#include "unk_458810.h"
+#include "unk_4591a0.h"
 #define d3_DirToRefD ((void (*)(D3OBJECT *, D3OBJECT *, D3VECTOR *, D3VECTOR4 *))d3_DirToRef)  /* 0x458950 (unk_458810.h: XOBJ *, XOBJ *, float *, float *): this unit's D3OBJECT / vector view */
 #define d3_PointToRefD ((void (*)(D3OBJECT *, D3OBJECT *, D3VECTOR *, D3VECTOR4 *))d3_PointToRef)  /* 0x458b20 (unk_458810.h: XOBJ *, XOBJ *, float *, float *): this unit's D3OBJECT / vector view */
 #define d3_WorldMatrixD ((void (*)(D3OBJECT *, D3OBJECT *, int, void *))d3_WorldMatrix)  /* 0x458da0 (unk_458810.h: XOBJ *, XOBJ *, char, D3MATRIX *): this unit's D3OBJECT view of the object */
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
-extern char txt_Keys[0x4800][0x50];
 
 /* 0x451e80, callback: resets the colours of every vertex the light touches */
 
