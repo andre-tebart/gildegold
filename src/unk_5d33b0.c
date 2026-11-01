@@ -4093,7 +4093,7 @@ int ai_ScatterShot(SHOTREC *shot, float sideSpread, D3VECTOR *side, float otherS
    gravity pulls y; the velocity takes Heun's average of the change at the old and the predicted velocity,
    the position moves by velocity * step in inches. When ai_ShotHitsGround finds the move from the old to the
    new position hits the ground and the ball made more than 50 steps, it lands there: state 2, the energy
-   0.5 * mass * v^2, returns 0. Returns 1 while it flies. */
+   0.5 * mass * v^2, returns 0. Returns 1 while it flies. @deep Read whole against the original 0x5dc4a0..0x5dc9c6: statement set and meaning match (state test, d3_GetHeightAt out-of-map exit, the three wind drags, the per-ms loop with Heun's average, next = pos copy, time/steps ++, ai_ShotHitsGround with px/pz, the landing energy). The velocity is now copied whole into a D3VECTOR v each step (the original copies shot->vel by dwords to [esp+0x10..0x18] and reloads v.x/v.y/v.z from memory for the drags; 311 -> 332 differing but 339 -> 348 of 354 instructions). Left: (1) VC6 reorders the drag product chain - the original multiplies sign*area*drag*density*v*v*0.5 (wind x/z: area*w*w*sign*...), ours sign*drag*density*v*v*area*0.5 for every association tried (6 macro forms give identical code or worse); (2) the temporaries: the original spills dx and the half sums into 0x84/0x68/0x6c and reuses the dead v slots [0x10]/[0x14] for (bx+ax)*0.5 / (by+ay)*0.5, frame 0x98 vs ours 0x5c - FPU stack scheduling and spill-slot allocation. */
 int ai_StepShot(SHOTREC *shot)
 {
     float fall = ai_ShotStep * ai_Gravity;
@@ -4102,8 +4102,8 @@ int ai_StepShot(SHOTREC *shot)
     int ticks, i, px, pz, npx, npz;
     float height;
     float windX, windY, windZ;
-    float vx, vy, vz, dx, dy, dz, ax, ay, az, bx, by, bz;
-    D3VECTOR next;
+    float dx, dy, dz, ax, ay, az, bx, by, bz;
+    D3VECTOR v, next;
 
     if (shot->state != 1)
         return 0;
@@ -4117,21 +4117,19 @@ int ai_StepShot(SHOTREC *shot)
     windY = DRAG(shot->wind.pos[1]);
     windZ = DRAG(shot->wind.pos[2]);
     for (i = 0; i < ticks; i++) {
-        vx = shot->vel.v.x;
-        vy = shot->vel.v.y;
-        vz = shot->vel.v.z;
-        dx = DRAG(vx);
-        dy = DRAG(vy);
-        dz = DRAG(vz);
+        v = shot->vel.v;
+        dx = DRAG(v.x);
+        dy = DRAG(v.y);
+        dz = DRAG(v.z);
         ax = (dx + windX) * perMass;
         ay = (dy + windY) * perMass - fall;
         az = (dz + windZ) * perMass;
-        vx = ax + vx;
-        vy = ay + vy;
-        vz = az + vz;
-        dx = DRAG(vx);
-        dy = DRAG(vy);
-        dz = DRAG(vz);
+        v.x = ax + v.x;
+        v.y = ay + v.y;
+        v.z = az + v.z;
+        dx = DRAG(v.x);
+        dy = DRAG(v.y);
+        dz = DRAG(v.z);
         next.x = shot->pos.x;
         next.y = shot->pos.y;
         next.z = shot->pos.z;
