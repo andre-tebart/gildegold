@@ -6,15 +6,12 @@ struct VFSFILE;
 #ifndef UNK_42C3B0_H
 #define UNK_42C3B0_H
 
-extern int txt_Count;                   /* 0x6333b8, entries in txt_Random/txt_Keys */
 extern int txt_GroupCount;               /* 0x6333bc, text groups parsed by the last txt_OpenText, never read */
 extern char *txt_Buffer;                /* 0x6333c0, mem_Alloc'd text pool */
 extern int txt_Size;                    /* 0x6333c4, bytes used in txt_Buffer */
-extern int txt_Loaded;                  /* 0xfe7c20 */
 extern char txt_BinPath[256];           /* 0xfe7c40 */
 extern char txt_Dir[256];               /* 0xfe7d40 */
 extern char txt_Keys[0x4800][0x50];     /* 0xfe7e40 */
-extern int txt_Random[0x4800];          /* 0x114fe60 */
 extern char txt_Names[0x4800][0x50];    /* 0x12c9fa0, indexed by group - 1 */
 extern int txt_GroupFirst[0x4800];      /* 0x144c1e0, first text of each group */
 extern char txt_HeaderName[0x120];      /* 0x12c9e80, "#headerfile" */
