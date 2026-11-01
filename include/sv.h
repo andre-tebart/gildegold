@@ -11,6 +11,14 @@ typedef struct SVSKYREC {               /* 0x4c bytes, a sky layer: the texture 
     float vscale;                       /* +0x44, 0.8 */
     float voffset;                      /* +0x48, -0.25 */
 } SVSKYREC;
+#pragma pack(push, 1)
+typedef struct SVDAYPHASE {             /* 10 bytes, a phase of the day in sv_DayTables (sv_FillDayPhases) */
+    char hour;                          /* +0 */
+    char min;                           /* +1 */
+    int sec;                            /* +2, the second of the day it starts at */
+    char pad6[4];                       /* +6, 0 (the last phase's are the first sky key's colour) */
+} SVDAYPHASE;
+#pragma pack(pop)
 
 void sv_UpdateFramesPerTick(void);                                      /* 0x520ec0 */
 void sv_InitTick(void);                                                 /* 0x520ee0 */
@@ -197,8 +205,7 @@ extern int ai_Unk623898;                                    /* 0x623898 */
 extern int ai_Unk6238a4;                                    /* 0x6238a4 */
 extern SVSKYREC sv_SkyFair[4];                              /* 0x6238a8 */
 extern SVSKYREC sv_SkyMedium[3];                            /* 0x6239d8 */
-extern char sv_Unk623ba8;                                   /* 0x623ba8 */
-extern char ai_Unk623ba9[277];                              /* 0x623ba9 */
+extern char sv_DayTables[278];                              /* 0x623ba8 */
 extern int ai_Unk623cc0[];                                  /* 0x623cc0 */
 extern int ai_Unk623e10[];                                  /* 0x623e10 */
 extern int ai_Unk623e80;                                    /* 0x623e80 */

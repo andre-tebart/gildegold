@@ -2057,7 +2057,6 @@ extern char sv_LampSwitches;
 extern float ai_Unk760420;  /* 0x760420 */
 extern float ai_Unk623e94;  /* 0x623e94 */
 /* ai_MapRefs: view of d3_Scenes (tools/data_views.py) */
-/* ai_Unk623baa: view of ai_Unk623ba9 (tools/data_views.py) */
 const int ai_Unk5eeab8[24] = { 390, 510, 630, 1050, 1170, 1290, 300, 420, 540, 1140, 1260, 1380, 420, 540, 660, 1020, 1140, 1260, 480, 600, 690, 960, 1020, 1140 };  /* 0x5eeab8 */
 
 extern char *ai_Unk5fb5b0;              /* 0x5fb5b0 */
@@ -2155,8 +2154,9 @@ typedef struct SVSKYKEY {               /* 0x10 bytes, a light key's colour in t
     float rgb[3];
     float val;
 } SVSKYKEY;
-#define sv_SkyKeys       (*(SVSKYKEY (*)[7])((char *)&ai_Unk623ba9 + 0x37))  /* 0x623be0, the sky lights' keys */
-#define sv_SkyKeysAlt    (*(SVSKYKEY (*)[7])((char *)&ai_Unk623ba9 + 0xa7))  /* 0x623c50, the same for the lights with objectFlags 0x10 */
+#define sv_DayPhases     (*(SVDAYPHASE (*)[6])&sv_DayTables)  /* 0x623ba8, the day phases */
+#define sv_SkyKeys       (*(SVSKYKEY (*)[7])((char *)&sv_DayTables + 0x38))  /* 0x623be0, the sky lights' keys */
+#define sv_SkyKeysAlt    (*(SVSKYKEY (*)[7])((char *)&sv_DayTables + 0xa8))  /* 0x623c50, the same for the lights with objectFlags 0x10 */
 #define sv_SkyKeysWinter (*(SVSKYKEY (*)[7])((char *)&ai_Unk623cc0 + 0x70))  /* 0x623d30, the keys in winter weather */
 #define sv_SkyKeysWinterAlt (*(SVSKYKEY (*)[7])((char *)&ai_Unk623cc0 + 0xe0))  /* 0x623da0 */
 /* 0x525490, the d3_ForEachObject callback over the sky scene's lights: copies the colours of the first 6 keys from the sky table
@@ -2330,7 +2330,7 @@ void sv_FillDayPhases(int t)
     char h, m;
 
     k = gm_ClockSeason(t);
-    p = ai_Unk623ba9;
+    p = sv_DayTables + 1;
     q = ai_Unk5eeab8 + k * 6;
     do {
         h = (char)(*q / 0x3c);
@@ -2340,7 +2340,7 @@ void sv_FillDayPhases(int t)
         *(int *)(p + 1) = (m + h * 0x3c) * 0x3c;
         p += 10;
         q++;
-    } while ((int)p < ((unsigned)((unsigned)ai_Unk623ba9 + 0x1) + 0x3b));
+    } while ((int)p < ((unsigned)sv_DayTables + 0x3c));
 }
 /* 0x525a80, a callback (the object o, a flag f): sets the float +0x1a4 of the record +0x1e8 of o to a random 0.3 .. 0.9 (f = 0) or -0.3 + 0.6 * ... (f != 0); returns 1 */
 
@@ -2368,18 +2368,18 @@ void sv_UpdateSkyPhase(char *t)
 
     a = 0.0f;
     s = (*(int *)(t + 6) + *(unsigned short *)(t + 4) * 0x3c) * 0x3c;
-    if (s < ai_Unk623baa[0])
+    if (s < sv_DayPhases[0].sec)
         k = 0;
-    else if (s < *(int *)((char *)ai_Unk623baa + 10))
-        k = ((s - ai_Unk623baa[0]) * 100) / (*(int *)((char *)ai_Unk623baa + 10) - ai_Unk623baa[0]);
-    else if (s < *(int *)((char *)ai_Unk623baa + 20))
-        k = ((s - *(int *)((char *)ai_Unk623baa + 10)) * 100) / (*(int *)((char *)ai_Unk623baa + 20) - *(int *)((char *)ai_Unk623baa + 10)) + 100;
-    else if (s < *(int *)((char *)ai_Unk623baa + 30))
-        k = ((s - *(int *)((char *)ai_Unk623baa + 20)) * 200) / (*(int *)((char *)ai_Unk623baa + 30) - *(int *)((char *)ai_Unk623baa + 20)) + 200;
-    else if (s < *(int *)((char *)ai_Unk623baa + 40))
-        k = ((s - *(int *)((char *)ai_Unk623baa + 30)) * 100) / (*(int *)((char *)ai_Unk623baa + 40) - *(int *)((char *)ai_Unk623baa + 30)) + 400;
-    else if (s < *(int *)((char *)ai_Unk623baa + 50))
-        k = ((s - *(int *)((char *)ai_Unk623baa + 40)) * 100) / (*(int *)((char *)ai_Unk623baa + 50) - *(int *)((char *)ai_Unk623baa + 40)) + 500;
+    else if (s < sv_DayPhases[1].sec)
+        k = ((s - sv_DayPhases[0].sec) * 100) / (sv_DayPhases[1].sec - sv_DayPhases[0].sec);
+    else if (s < sv_DayPhases[2].sec)
+        k = ((s - sv_DayPhases[1].sec) * 100) / (sv_DayPhases[2].sec - sv_DayPhases[1].sec) + 100;
+    else if (s < sv_DayPhases[3].sec)
+        k = ((s - sv_DayPhases[2].sec) * 200) / (sv_DayPhases[3].sec - sv_DayPhases[2].sec) + 200;
+    else if (s < sv_DayPhases[4].sec)
+        k = ((s - sv_DayPhases[3].sec) * 100) / (sv_DayPhases[4].sec - sv_DayPhases[3].sec) + 400;
+    else if (s < sv_DayPhases[5].sec)
+        k = ((s - sv_DayPhases[4].sec) * 100) / (sv_DayPhases[5].sec - sv_DayPhases[4].sec) + 500;
     else
         k = 600;
     if (d3_SkyLayers[2] != 0)
@@ -7660,14 +7660,10 @@ SVSKYREC sv_SkyMedium[3] = {
     { "Sky_Mittel_02", 3.0f, 0.8f, -0.25f },
     { "Sky_Mittel_03", 3.0f, 0.8f, -0.25f },
 };
-/* 0x623ba8, the byte the day loop 0x525a00 writes with its first p[-1] (the tail of the preceding table);
-   without it the write lands in the last byte of ai_Unk62a8cc in the full link and turns the drag view id
-   into 0x06ffffff */
-ALIGN1 char sv_Unk623ba8 = 4;
-/* 0x623ba9, the day phase times: one 277-byte object (the original packs the int table 1 byte after the
-   flag byte, so ai_Unk623baa is a view at +1); the 0x623ba8 byte the day loop writes with p[-1] is the
-   preceding object's tail */
-ALIGN1 char ai_Unk623ba9[277] = { 0, 64, 56, 0, 0, 0, 0, 0, 0, 6, 0, 96, 84, 0, 0, 0, 0, 0, 0, 12, 0, -64, -88, 0, 0, 0, 0, 0, 0, 16, 0, 0, -31, 0, 0, 0, 0, 0, 0, 18, 0, 32, -3, 0, 0, 0, 0, 0, 0, 19, 0, 48, 11, 1, 0, 0, 0, 5, 67, 0, 0, 3, 67, 0, 0, 127, 67, 0, -128, -103, 67, 0, 0, -18, 66, 0, 0, 15, 67, 0, 0, 90, 67, 0, 0, -81, 67, 0, 0, 85, 67, 0, 0, 52, 67, 0, 0, 32, 67, 0, -128, -69, 67, 0, 0, 127, 67, 0, 0, 78, 67, 0, 0, -10, 66, 0, -128, -1, 67, 0, 0, 127, 67, 0, 0, 57, 67, 0, 0, -84, 66, 0, -128, -1, 67, 0, 0, 34, 67, 0, 0, 1, 67, 0, 0, 69, 67, 0, 0, -93, 67, 0, 0, 5, 67, 0, 0, 3, 67, 0, 0, 127, 67, 0, -128, -103, 67, 0, 0, 5, 67, 0, 0, -32, 66, 0, 0, 127, 67, 0, 0, -20, 67, 0, 0, -34, 66, 0, 0, 13, 67, 0, 0, 53, 67, 0, -128, -30, 67, 0, 0, 59, 67, 0, 0, 83, 67, 0, 0, 26, 67, 0, 0, -71, 67, 0, 0, 127, 67, 0, 0, 66, 67, 0, 0, -22, 66, 0, -128, -1, 67, 0, 0, 127, 67, 0, 0, 47, 67, 0, 0, 104, 66, 0, 0, -49, 67, 0, 0, 76, 67, 0, 0, 64, 67, 0, 0, 53, 67, 0, -128, -47, 67, 0, 0, 5, 67, 0, 0, -32, 66, 0, 0, 127, 67, 0, 0 };
+/* 0x623ba8, the day tables: the 6 day phases (SVDAYPHASE, 10 bytes each, sv_FillDayPhases writes them from the season's
+   minutes; their int seconds sit at odd addresses, so the object is packed) and the sky key colours sv_SkyKeys (+0x38) /
+   sv_SkyKeysAlt (+0xa8); one object, the last phase's 4 pad bytes are the first key's colour */
+ALIGN1 char sv_DayTables[278] = { 4, 0, 64, 56, 0, 0, 0, 0, 0, 0, 6, 0, 96, 84, 0, 0, 0, 0, 0, 0, 12, 0, -64, -88, 0, 0, 0, 0, 0, 0, 16, 0, 0, -31, 0, 0, 0, 0, 0, 0, 18, 0, 32, -3, 0, 0, 0, 0, 0, 0, 19, 0, 48, 11, 1, 0, 0, 0, 5, 67, 0, 0, 3, 67, 0, 0, 127, 67, 0, -128, -103, 67, 0, 0, -18, 66, 0, 0, 15, 67, 0, 0, 90, 67, 0, 0, -81, 67, 0, 0, 85, 67, 0, 0, 52, 67, 0, 0, 32, 67, 0, -128, -69, 67, 0, 0, 127, 67, 0, 0, 78, 67, 0, 0, -10, 66, 0, -128, -1, 67, 0, 0, 127, 67, 0, 0, 57, 67, 0, 0, -84, 66, 0, -128, -1, 67, 0, 0, 34, 67, 0, 0, 1, 67, 0, 0, 69, 67, 0, 0, -93, 67, 0, 0, 5, 67, 0, 0, 3, 67, 0, 0, 127, 67, 0, -128, -103, 67, 0, 0, 5, 67, 0, 0, -32, 66, 0, 0, 127, 67, 0, 0, -20, 67, 0, 0, -34, 66, 0, 0, 13, 67, 0, 0, 53, 67, 0, -128, -30, 67, 0, 0, 59, 67, 0, 0, 83, 67, 0, 0, 26, 67, 0, 0, -71, 67, 0, 0, 127, 67, 0, 0, 66, 67, 0, 0, -22, 66, 0, -128, -1, 67, 0, 0, 127, 67, 0, 0, 47, 67, 0, 0, 104, 66, 0, 0, -49, 67, 0, 0, 76, 67, 0, 0, 64, 67, 0, 0, 53, 67, 0, -128, -47, 67, 0, 0, 5, 67, 0, 0, -32, 66, 0, 0, 127, 67, 0, 0 };
 int ai_Unk623cc0[] = { 1104150528, 1097859072, 1116602368, 0, 1102577664, 1107820544, 1113325568, 0, 1116209152, 1112276992, 1110179840, 0, 1120272384, 1117519872, 1109393408, 0, 1116602368, 1113587712, 1108606976, 0, 1107820544, 1102053376, 1112539136, 0, 1104150528, 1097859072, 1116602368, 0, 1122500608, 1124270080, 1132396544, 1133019136, 1121452032, 1125056512, 1128792064, 1133969408, 1123680256, 1127284736, 1126170624, 1134592000, 1124990976, 1128726528, 1130168320, 1135247360, 1126629376, 1127153664, 1126957056, 1135411200, 1124990976, 1124728832, 1128792064, 1135706112, 1122107392, 1124270080, 1132396544, 1132691456, 1124401152, 1121976320, 1132396544, 1134592000, 1122893824, 1125384192, 1125122048, 1138425856, 1123287040, 1125253120, 1125122048, 1136361472, 1125318656, 1127612416, 1128595456, 1135706112, 1124597760, 1124139008, 1125122048, 1135083520, 1125777408, 1128267776, 1129185280, 1134264320, 1124401152, 1121976320, 1132396544, 1134428160 };  /* 0x623cc0 */
 int ai_Unk623e10[] = { 1099431936, 1097859072, 1116602368, 0, 1096810496, 1104674816, 1114112000, 0, 1096810496, 1102053376, 1114112000, 0, 1101004800, 1107296256, 1113325568, 0, 1101004800, 1103101952, 1114898432, 0, 1101004800, 1094713344, 1110966272, 0, 1099431936, 1097859072, 1116602368, 0 };  /* 0x623e10 */
 int ai_Unk623e80 = -1;  /* 0x623e80 */

@@ -107,9 +107,6 @@
 /* ai_Unk61a686 */
 #define ai_Unk61a688             (*(char (*)[548])((char *)&ai_Unk61a686 + 0x2))  /* 0x61a688 */
 
-/* ai_Unk623ba9 */
-#define ai_Unk623baa             (*(int (*)[69])((char *)&ai_Unk623ba9 + 0x1))  /* 0x623baa */
-
 /* ch_Motions */
 #define ai_Unk1469700            (*(int (*)[1216])((char *)&ch_Motions + 0x20))  /* 0x1469700 */
 #define ch_ActDefs               (*(CHACTDEF (*)[64])((char *)&ch_Motions + 0x20))  /* 0x1469700 */
