@@ -76,6 +76,7 @@ reason = "the GOG install's folders linked, its ini/dll/asi files copied; the in
 name = "play"
 variant = "debug"
 setup = "game"
+debug = true
 args = ["DIRECTWINDOW"]
 
 [[run]]
