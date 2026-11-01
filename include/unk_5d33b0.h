@@ -187,9 +187,6 @@ int sv_MessageBoxGreen(int a, int b, unsigned flags); /* 0x521410, sv.c: the gre
 struct AIBLD;
 struct AIPER;
 int gm_BathObjectCount(char *b);             /* 0x50cf60, f3gm.c: 1 + the kitchen / bath objects of the building (as unk_4a7140.h) */
-void ai_GypsyDeliveryText(unsigned short *param_1, int param_2, int *param_3); /* 0x5a9470, unk_58bbd0.c: the delivery text for n chosen records (as unk_4a7140.h) */
-int ai_AmountRowStatus(int *row);                    /* 0x5be1d0, unk_58bbd0.c: the status fields of a list row */
-int ai_AmountRow(int x, int y, int win, int pic, int *row, int mode); /* 0x5be3b0, unk_58bbd0.c: draws a list row at (x, y) */
 void gm_SendMoneyDelta(int a, int b);                /* 0x50cc50, f3gm.c: forwards to cm_SendMoneyDelta */
 int amt_GetKindLevel(int k);                         /* 0x4e7c40, amt.c: the level of the office kind k */
 extern int snd_SystemBank;        /* 0x6f2400, main.c: the handle of the system sample bank (system.sbf) */
