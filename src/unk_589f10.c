@@ -1,13 +1,14 @@
-/* unk_589f10.c -- the network lobby (0x589f10 .. 0x58bbd0): the "menu\netlobby" screen, the player / city and
-   player / profession pickers (Menu\CHOOSEPLAYER, Menu\CHOOSEPROFESSION) of a network game, the player record
-   0x6f5e20 .. 0x6f5e76 (name +0x12, family name +0x22, the city / emblem +0xc, gender +0x10 (a word with the
-   religion at +0x11), profession +0xb, the chosen player 0x6f5e78) and the profile "Network" of 0x75e480.
+/* unk_589f10.c -- the network lobby (0x589f10 .. 0x58bbd0): the "menu\netlobby" screen lobby_Screen, its
+   form parts (lobby_Add* / lobby_Show*), the player / city and profession pickers (Menu\CHOOSEPLAYER,
+   Menu\CHOOSEPROFESSION) and this player's lobby record lobby_Player (CMLOBBYPLAYER, cm_types.h) with the
+   "Network" profile of ai_OptionsFile; the lobby messages go through cm.c's cm_Lobby* API.
    Name unknown (@named_by -). Start: the previous unit ends with "gamedata/screenshots/gilde%04i.bmp" 0x62aa58,
-   then the globals 0x62aa7c .. 0x62aa88 open this unit's .data block, whose first literal "menu\netlobby" is used
-   by 0x589f10 (code seam at the nop fill 0x589f08). End: the literals climb through 0x58ba70; the next block
+   then the globals 0x62aa7c .. 0x62aa88 open this unit's .data block, whose first literal "menu\netlobby" is
+   used by 0x589f10 (code seam at the nop fill 0x589f08). End: the literals climb through 0x58ba70; the next block
    starts with "Handel\Handel_PRODUKTION" 0x62b038 (0x58bd60), so its table init 0x58bbd0 opens the next unit.
-   Open: the control API (0x4731d0, 0x473650, 0x52e350, 0x52e860) is unnamed and the player record untyped,
-   which keeps every function unreadable.
+   Open: the control API (0x4731d0, 0x473650, 0x52e350, 0x52e860) is unnamed; the U_I / U_B / U_W raw views remain
+   in the pickers.
+   Open: 0x1460ae0 has two names, net_Conn (net.h) and ai_Unk1460ae0 (cm.h / gv.h / ahm.h).
    unit of rea 8cef7d5b (src/game/unk_589f10.c); boundaries in decl/text.dcl */
 #include "d2_types.h"
 #include "txt_views.h"
