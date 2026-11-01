@@ -1118,8 +1118,9 @@ void sv_DestroyScreen(void)
 extern char *ai_Goods;              /* 0x91aaf0 */
 #define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (f3gm.c: char *) as the AIGOOD records it points to */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
+#define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 int d2_BlitPartMode();                     /* 0x479150 */  /* @original: sv.c's call at 1099 passes 1 argument to d2.h's 8-parameter prototype */
-extern int ai_Unk6f22dc, sv_ResearchClass, sv_ScreenDirty, ai_Unk6f235c, ai_Unk6f2360, ai_Unk623e8c;  /* 0x6f22dc, 0x6f233c, 0x6f2358, 0x6f235c, 0x6f2360, 0x623e8c */
+extern int ai_Unk6f22dc, sv_ResearchClass, sv_ScreenDirty, sv_GroundplanBuilding, sv_GroundplanRoom, sv_GroundplanScene;  /* 0x6f22dc, 0x6f233c, 0x6f2358, 0x6f235c, 0x6f2360, 0x623e8c */
 extern int sv_ResearchClass;  /* 0x6f233c, the class number of the research list the panel shows (gm_BuildingClass) */
 extern char d2_GfxDir[];             /* 0xf8ef80, the data directory */
 extern char sv_GroundplanColours[];
@@ -1128,6 +1129,12 @@ int sprintf(char *buf, const char *fmt, ...);                     /* 0x5de652 */
 struct D2SURF * d2_LoadBmpSurface();                     /* 0x478b50 */
 void d2_GetPixelColour();                     /* 0x4798f0 */
 int d2_PutPixelRGB();                     /* 0x4799e0 */
+void ai_SwitchRoom(int param_1, unsigned short param_2);                     /* 0x59e0a0 */
+unsigned gm_PermissionBits(unsigned p1, unsigned char *b, unsigned short *o, int c);                     /* 0x503530 */
+int d2_FindPic();                     /* 0x468890 */
+char *_strupr(char *);                     /* 0x5ea986 */
+#define ai_SwitchRoomI ((void (*)(int, int))ai_SwitchRoom)  /* @original: sv_UpdateGroundplan zero-extends the room word into an int argument (xor edx,edx / mov dx,[esi]) */
+extern int d2_PicShift;                   /* 0x6ed98c, d2.h (not includable here) */
 #define d2_PutPixelRGBc ((int (*)(int, int, unsigned char, unsigned char, unsigned char, struct D2SURF *))d2_PutPixelRGB)  /* @original: sv_LoadGroundplan pushes the colour bytes as dwords loaded from the pixel buffer (char parameters, gfx.c masks them) */
 int d2_CompareColour();                     /* 0x478930 */
 int gm_BuildingClass(int kind);                /* 0x501d80, f3gm.c, the class of a building kind */
@@ -1160,7 +1167,6 @@ void sv_LoadGroundplan(void)
     int x, y, i, n, slot, cnt, pic, cls;
     unsigned id;
     char kind;
-    unsigned short *list;
     unsigned short *obj;
     unsigned char white[3];
     unsigned char rgb[4];
@@ -1265,10 +1271,10 @@ loaded:
                         }
                 } else {
                     obj = 0;
-                    for (slot = 0, list = bt->slot; slot < 0x40; slot++, list++) {
-                        if (*list == 0xffff)
+                    for (slot = 0; slot < 0x40; slot++) {
+                        if (bt->slot[slot] == 0xffff)
                             continue;
-                        id = *list & 0x7fff;
+                        id = bt->slot[slot] & 0x7fff;
                         kind = ai_GoodsT[id].type;
                         if ((kind == 2 || kind == 6) && id != 0xfd) {
                             if (cnt == i) {
@@ -1292,17 +1298,36 @@ loaded:
     if (sv_GroundplanSurf != 0)
         d2_UnlockSurface(sv_GroundplanSurf);
 }
-/* 0x5229b0, the per-frame update of the item buttons for the selected building: when the selection (0x6f2308 / 0x6f2310 / the scene 0x633444) changed, the buttons are freed and rebuilt (0x5224a0); without a
-   selection the player's background bitmap is drawn; with the mouse (flag 0x2000 of param_1) over a button cell the item (0x4ffe90 / 0x4ffcc0 by the cell colour) is shown in the panel (0x478870) or, for a
-   foreign one, 0x59e0a0 / 0x521960 is called. ROUGH */
-
-void sv_Unk5229b0(unsigned flags)
+/* 0x5229b0, the per-frame groundplan of the panel: rebuilds the cell buttons (sv_LoadGroundplan) when the scene,
+   the player's building or its room changed since the last build (or the screen is dirty); without a building
+   draws the arms of the own city (_STADTWAPPEN_<slot name>, else _STADTWAPPEN_BERLIN), else blits the groundplan;
+   with flags 0x2000 and the pointer on a cell (sv_GroundplanColours index n) finds the n-th good of the player's
+   building (or the n-th offered object) and of the fallback building: on a left click one the player may use
+   (ai_ScriptQuery 0x19, gm_PermissionBits 0x4000) is entered (ai_SwitchRoom) or selected for the panel
+   (sv_SelectPanelObject), otherwise its caption is shown; clears sv_ScreenDirty
+   @deep reconstructed whole against the original (city-arms branch, the pointer-cell lookup, both building
+   parts with the script / permission checks, sv_ScreenDirty cleared on every path); 407 vs 411 ins. Left
+   only the goods-kind load in the two slot loops: 0x522c86 / 0x522db4 ours mov cl,[eax+ebp] where the
+   original materializes the address (mov ecx,eax; add ecx,ebp; mov cl,[ecx]) of ai_GoodsT[id].type; tried
+   a pointer local (AIGOOD *good), a char* index (ai_Goods[id * 0x41]), id as int / unsigned / unsigned
+   short (the last breaks the frame): all the same or worse, so it is instruction selection, not the
+   source. sv_LoadGroundplan has the same pair */
+void sv_UpdateGroundplan(unsigned flags)
 {
-    int i;
+    int i, x, y, cnt, slot, pic;
+    void *shape;
+    unsigned id;
+    char kind;
+    AIBLD *b;
+    AIBTYPE *bt;
+    AIOBJ *obj;
+    unsigned char rgb[4];
+    char name[0x80];
+    char path[0x80];
 
-    if (d3_CurrentScene != ai_Unk623e8c || (int)sv_PanelShown != ai_Unk6f2360 || (int)ai_PlayerBuilding != ai_Unk6f235c || sv_ScreenDirty != 0) {
-        ai_Unk6f235c = (int)ai_PlayerBuilding;
-        ai_Unk6f2360 = (int)sv_PanelShown;
+    if (d3_CurrentScene != sv_GroundplanScene || (int)sv_PanelShown != sv_GroundplanRoom || (int)ai_PlayerBuilding != sv_GroundplanBuilding || sv_ScreenDirty != 0) {
+        sv_GroundplanBuilding = (int)ai_PlayerBuilding;
+        sv_GroundplanRoom = (int)sv_PanelShown;
         for (i = 0; i < 15; i++) {
             if (sv_GroundplanButtons[i] != -1) {
                 d2_RemoveObj(sv_GroundplanButtons[i]);
@@ -1311,16 +1336,97 @@ void sv_Unk5229b0(unsigned flags)
         }
         if (ai_PlayerBuilding != 0 || ai_FallbackBuilding != 0)
             sv_LoadGroundplan();
-        ai_Unk623e8c = d3_CurrentScene;
+        sv_GroundplanScene = d3_CurrentScene;
     }
     if (ai_PlayerBuilding == 0 && ai_FallbackBuilding == 0) {
-        sv_ScreenDirty = 0;
-        return;
+        strcpy(name, ai_PlayerSlots[ai_OwnPlayer]);
+        _strupr(name);
+        sprintf(path, "_STADTWAPPEN_%s", name);
+        pic = d2_FindPic(path);
+        if (pic == -1)
+            pic = d2_FindPic("_STADTWAPPEN_BERLIN");
+        shape = d2_GetPic(pic);             /* sets d2_PicShift */
+        d2_DrawShape(d2_ScreenW - 0x6e, 0x5b, d2_ScreenSurf, shape, d2_PicShift + 1);
+    } else {
+        if (sv_GroundplanView != 0)
+            d2_BlitPartMode(0, 0, sv_GroundplanView->w, sv_GroundplanView->h, sv_GroundplanView, d2_ScreenW - 0x6e, 0x5b, d2_ScreenSurf, 1);
+        if (flags & 0x2000) {
+            x = dm_L.x - d2_ScreenW + 0x72;
+            y = dm_L.y - 0x59;
+            if (sv_GroundplanSurf != 0 && x >= 0 && x < sv_GroundplanSurf->w && y >= 0 && y < sv_GroundplanSurf->h) {
+                d2_LockSurface(sv_GroundplanSurf);
+                d2_GetPixelColour(x, y, sv_GroundplanSurf, rgb);
+                for (i = 0; i < 15; i++)
+                    if (d2_CompareColour(rgb, sv_GroundplanColours + i * 3) == 0)
+                        break;
+                d2_UnlockSurface(sv_GroundplanSurf);
+                if (i < 15) {
+                    b = (AIBLD *)ai_PlayerBuilding;
+                    if (b != 0) {
+                        obj = 0;
+                        bt = &ai_BTypesT[b->type];
+                        cnt = 0;
+                        if (bt->kind == 2) {
+                            for (obj = (AIOBJ *)gm_Query((void *)b->objList, 1, 4, 2); obj != 0; obj = (AIOBJ *)gm_QueryNext())
+                                if (obj->id != 0xfd) {
+                                    if (cnt == i)
+                                        break;
+                                    cnt++;
+                                }
+                        } else {
+                            for (slot = 0; slot < 0x40; slot++) {
+                                if (bt->slot[slot] == 0xffff)
+                                    continue;
+                                id = bt->slot[slot] & 0x7fff;
+                                kind = ai_GoodsT[id].type;
+                                if ((kind == 2 || kind == 6) && id != 0xfd) {
+                                    if (cnt == i) {
+                                        obj = (AIOBJ *)gm_Query((void *)b->objList, 1, 0, id);
+                                        break;
+                                    }
+                                    cnt++;
+                                }
+                            }
+                        }
+                        if (dm_L.lclick != 0 && obj != 0 && obj->id != *sv_PanelShown
+                            && ai_ScriptQuery(0x19, (int)ai_PlayerBuilding, 0, obj->id) == 1
+                            && !(ai_CharsT[ai_PlayerId].unk1b1 > 0)) {
+                            if (gm_PermissionBits(ai_PlayerId, (unsigned char *)ai_PlayerBuilding, &obj->id, 0) & 0x4000)
+                                ai_SwitchRoomI(-1, obj->id);
+                        } else if (obj != 0)
+                            d2_CopyCaption((char *)txt_ObjectNames[obj->id][0]);
+                    }
+                    b = (AIBLD *)ai_FallbackBuilding;
+                    if (b != 0) {
+                        bt = &ai_BTypesT[b->type];
+                        obj = 0;
+                        cnt = 0;
+                        for (slot = 0; slot < 0x40; slot++) {
+                            if (bt->slot[slot] == 0xffff)
+                                continue;
+                            id = bt->slot[slot] & 0x7fff;
+                            kind = ai_GoodsT[id].type;
+                            if ((kind == 2 || kind == 6) && id != 0xfd) {
+                                if (cnt == i) {
+                                    obj = (AIOBJ *)gm_Query((void *)b->objList, 1, 0, id);
+                                    break;
+                                }
+                                cnt++;
+                            }
+                        }
+                        if (dm_L.lclick != 0 && obj != 0
+                            && (sv_PanelShown == 0 || (obj->id != *sv_PanelShown && ai_ScriptQuery(0x19, (int)ai_FallbackBuilding, 0, obj->id) == 1))
+                            && !(ai_CharsT[ai_PlayerId].unk1b1 > 0)) {
+                            if (gm_PermissionBits(ai_PlayerId, (unsigned char *)ai_FallbackBuilding, &obj->id, 0) & 0x4000)
+                                sv_SelectPanelObject((unsigned char *)ai_FallbackBuilding, obj->objId, ch_EmptyName);
+                        } else if (obj != 0)
+                            d2_CopyCaption((char *)txt_ObjectNames[obj->id][0]);
+                    }
+                }
+            }
+        }
     }
-    if (sv_GroundplanView != 0)                    /* 0x522b0c: the surface 0x6f22c8 is blitted as the player's background strip at (screenW - 0x6e, 0x5b), keyed */
-        d2_BlitPartMode(0, 0, sv_GroundplanView->w, sv_GroundplanView->h, sv_GroundplanView, (int)d2_ScreenW - 0x6e, 0x5b, d2_ScreenSurf, 1);
-    if ((flags & 0x2000) == 0)
-        sv_ScreenDirty = 0;
+    sv_ScreenDirty = 0;
 }
 /* 0x522ec0, remembers the research list of the building o for the panel (sv_ResearchClass): the category 3 (0x501d80,
    the research buildings) sets it to 1, the category 5 takes the class number of the building kind (gm_BuildingClass) */
@@ -3227,7 +3333,6 @@ void d2_SetObjFont();                     /* 0x4760b0 */
 void d2_SetObjWidth(int obj, short w);                     /* 0x46c260 */
 int gm_BuildingLevel();                     /* 0x508d70 */
 int d2_WinOpenSlider(int x, int y, int len, int p4, int p5, int pic, unsigned int flags, int win);                     /* 0x46a960 */
-unsigned gm_PermissionBits(unsigned p1, unsigned char *b, unsigned short *o, int c);                     /* 0x503530 */
 unsigned short * gm_Unk50a050(unsigned short *p);                     /* 0x50a050 */
 int gm_Unk508cc0();                     /* 0x508cc0 */
 int sv_Unk528800(int x, int y, int text);
@@ -3703,7 +3808,6 @@ void d2_MoveObj(short x, short y, int obj);                     /* 0x46cda0 */
 void d2_DrawText(int x, int y, void *surf, char *text, unsigned char flags);                     /* 0x46f000 */
 void d2_DrawTextBox(int x, int y, int w, int h, void *surf, char *text, unsigned int flags);                     /* 0x46f1a0 */
 void d2_AddDirty();                     /* 0x468eb0 */
-int d2_FindPic();                     /* 0x468890 */
 int d2_ShpBlit();                     /* 0x47bd70 */
 void d2_SetClipRect(int x0, int y0, int x1, int y1);                     /* 0x47cb40 */
 void * d2_SetFont(int font);                     /* 0x476030 */
@@ -3717,7 +3821,6 @@ char * gm_PlayerSeat(int p);                     /* 0x504a80 */
 int gm_SumListAmounts(void *list, unsigned char p);                     /* 0x509e30 */
 int gm_ConvertMoney(int a, unsigned char k);                     /* 0x5085b0 */
 void txt_Format(char *out, int id0, ...);  /* 0x5176d0 */
-char *_strupr(char *);                     /* 0x5ea986 */
 
 /* 0x522f10, the city / time panel (the big panel at the top of the screen): a = 1 builds the widgets (the city name, the shield, the date, the clock, the name plates), 0 refreshes
    their texts and the sky clock / sun hand; ROUGH (the widget arguments are read from the disassembly, the layout of the texts is guessed) */
@@ -3795,7 +3898,7 @@ void sv_Unk522f10(unsigned char a, int b)
             if (ai_Unk62382c != -1) strcpy(SV_W(ai_Unk62382c) + 0xbc, SV_C(((unsigned)&ai_MessageFilterTexts + 0x9c8)));
             if (ai_Unk62383c != -1) strcpy(SV_W(ai_Unk62383c) + 0xbc, SV_C(((unsigned)&ai_MessageFilterTexts + 0x9d8)));
         }
-        sv_Unk5229b0(a);
+        sv_UpdateGroundplan(a);
         d2_SetFont(0x55);
         gm_ClockToDate((unsigned)&ai_Time, &t);
         if (ls_GetLanguage() == 2) {
@@ -4088,7 +4191,6 @@ int ai_Unk5763c0();                     /* 0x5763c0 */
 void ai_Unk576040(int a, int b, int c, int d);                     /* 0x576040 */
 int ai_AmountMenu();                     /* 0x5c1130 */
 int gm_BuildingClass(int kind);                /* 0x501d80, f3gm.c, the class of a building kind */
-unsigned gm_PermissionBits(unsigned p1, unsigned char *b, unsigned short *o, int c);                     /* 0x503530 */
 int ai_TransportWindow();                     /* 0x5af1d0 */
 int ai_Unk5b8fc0();                     /* 0x5b8fc0 */
 int ai_Unk5b84f0();                     /* 0x5b84f0 */
@@ -4331,10 +4433,10 @@ void sv_Unk52a680(void)
             i = *(unsigned short *)SV_I((unsigned)&full_data_6f22f0);
             k = ai_Goods[i * 0x41];
             if ((k == 6 || k == 2) && (SV_I((unsigned)&full_data_6f2320) & 0x4000) != 0) {
-                sprintf((char *)(unsigned)&ai_Unkf8aae0, "%s %s", SV_I((unsigned)&ai_Unk143c860 + i * 8), SV_I((unsigned)&full_data_143a3cc));
+                sprintf((char *)(unsigned)&ai_Unkf8aae0, "%s %s", SV_I((unsigned)&txt_ObjectNames + i * 8), SV_I((unsigned)&full_data_143a3cc));
                 SV_US((unsigned)&d2_PointerLook) = 0xb;
             } else {
-                sprintf((char *)(unsigned)&ai_Unkf8aae0, "%s", SV_I((unsigned)&ai_Unk143c860 + i * 8));
+                sprintf((char *)(unsigned)&ai_Unkf8aae0, "%s", SV_I((unsigned)&txt_ObjectNames + i * 8));
                 SV_US((unsigned)&d2_PointerLook) = 0x16;
             }
         }
@@ -4406,9 +4508,9 @@ lb9e:
                     if (SV_I((unsigned)&sv_PanelShown) == 0)
                         msg = SV_I((unsigned)&full_data_143b3f8 + *b * 0x38);
                     else
-                        msg = SV_I((unsigned)&ai_Unk143c860 + *(unsigned short *)SV_I((unsigned)&sv_PanelShown) * 8);
+                        msg = SV_I((unsigned)&txt_ObjectNames + *(unsigned short *)SV_I((unsigned)&sv_PanelShown) * 8);
                 } else {
-                    msg = SV_I((unsigned)&ai_Unk143c860 + *(unsigned short *)SV_I((unsigned)&full_data_6f2300) * 8);
+                    msg = SV_I((unsigned)&txt_ObjectNames + *(unsigned short *)SV_I((unsigned)&full_data_6f2300) * 8);
                     t = (char *)SV_I((unsigned)&full_data_143a3cc);
                 }
                 sprintf((char *)(unsigned)&ai_Unkf8aae0, "%s %s", msg, t);
@@ -5363,7 +5465,7 @@ void sv_Unk52d2a0(void)
     while (q != 0) {
         if (*(int *)(q + 0xc) != 0 && (c = ai_Goods[*q * 0x41]) != 6 && c != 2 && (char)d3if_ScreenBox(*(int *)(q + 0xc), t) != 0) {
             x = (t[2] - t[0]) / 2 - 0x50 + t[0];
-            d2_DrawTextBox(x, t[1], 0xa0, 0x60, d2_ScreenSurf, SV_I((unsigned)&ai_Unk143c860 + *q * 8), 0x28);
+            d2_DrawTextBox(x, t[1], 0xa0, 0x60, d2_ScreenSurf, SV_I((unsigned)&txt_ObjectNames + *q * 8), 0x28);
             d2_AddDirty(x, t[1], SV_I((unsigned)&d2_TextDrawnW), SV_I((unsigned)&d2_TextDrawnH));
         }
         q = (unsigned short *)gm_QueryNext();
@@ -5377,7 +5479,7 @@ void sv_Unk52d2a0(void)
     while (q != 0) {
         if (*(int *)(q + 0xc) != 0 && ((c = ai_Goods[*q * 0x41]) == 6 || c == 2) && (char)d3if_ScreenBox(*(int *)(q + 0xc), t) != 0) {
             x = (t[2] - t[0]) / 2 - 0x50 + t[0];
-            d2_DrawTextBox(x, t[1], 0xa0, 0x60, d2_ScreenSurf, SV_I((unsigned)&ai_Unk143c860 + *q * 8), 0x28);
+            d2_DrawTextBox(x, t[1], 0xa0, 0x60, d2_ScreenSurf, SV_I((unsigned)&txt_ObjectNames + *q * 8), 0x28);
             d2_AddDirty(x, t[1], SV_I((unsigned)&d2_TextDrawnW), SV_I((unsigned)&d2_TextDrawnH));
         }
         q = (unsigned short *)gm_QueryNext();
@@ -5417,11 +5519,11 @@ lfound:
         return;
     if (*it == 0xfd) {
         if (SV_I((unsigned)&sv_PanelShown) != 0)
-            sprintf(buf, "%s %s", SV_I((unsigned)&ai_Unk143c860 + *(unsigned short *)SV_I((unsigned)&sv_PanelShown) * 8), SV_I((unsigned)&full_data_143a3d0));
+            sprintf(buf, "%s %s", SV_I((unsigned)&txt_ObjectNames + *(unsigned short *)SV_I((unsigned)&sv_PanelShown) * 8), SV_I((unsigned)&full_data_143a3d0));
         else
             sprintf(buf, "%s %s", SV_I((unsigned)&full_data_143b3f8 + *(unsigned char *)b * 0x38), SV_I((unsigned)&full_data_143a3d0));
     } else
-        sprintf(buf, "%s %s", SV_I((unsigned)&ai_Unk143c860 + *it * 8), SV_I((unsigned)&full_data_143a3cc));
+        sprintf(buf, "%s %s", SV_I((unsigned)&txt_ObjectNames + *it * 8), SV_I((unsigned)&full_data_143a3cc));
     if ((char)d3if_ScreenBox(part, t) != 0) {
         x = (t[2] - t[0]) / 2 - 0x50 + t[0];
         y = t[1];
@@ -5431,11 +5533,10 @@ lfound:
 }
 
 struct SBSAMPLE * sb_PlaySample();                     /* 0x426fa0 */
-int ai_Unk576340();                     /* 0x576340 */
+int ai_ScriptQuery();                     /* 0x576340 */
 int ai_Unk575860();                     /* 0x575860 */
 void ai_Unk591170(void);                     /* 0x591170 */
 void anm_Update(void);                     /* 0x4bb860 */
-void ai_Unk59e0a0(int param_1, unsigned short param_2);                     /* 0x59e0a0 */
 void sv_ReleaseNamePlates(void);                /* 0x52e190 */
 void gm_GetGebaeudeHauptraum(unsigned char *b);                     /* 0x501ce0 */
 
@@ -5635,8 +5736,8 @@ lbb6:
         sv_Unk52adb0();
         di_ClearEvents(0x10);
     }
-    if ((SV_I((unsigned)&ai_PlayerBuilding) != 0 && ai_Unk576340(0x1a, SV_I((unsigned)&ai_PlayerBuilding), 0, *(unsigned short *)SV_I((unsigned)&sv_PanelShown)) == 0)
-        || (SV_I((unsigned)&ai_FallbackBuilding) != 0 && ai_Unk576340(0x1c, SV_I((unsigned)&ai_FallbackBuilding), 0, 0) == 0))
+    if ((SV_I((unsigned)&ai_PlayerBuilding) != 0 && ai_ScriptQuery(0x1a, SV_I((unsigned)&ai_PlayerBuilding), 0, *(unsigned short *)SV_I((unsigned)&sv_PanelShown)) == 0)
+        || (SV_I((unsigned)&ai_FallbackBuilding) != 0 && ai_ScriptQuery(0x1c, SV_I((unsigned)&ai_FallbackBuilding), 0, 0) == 0))
         di_ClearAxes();
     if (SV_I((unsigned)&ai_Unk6f2334) != 0 || SV_B((unsigned)&full_data_6f2338) != 0 || SV_I(((unsigned)&dm_L + 0x20)) == 0)
         goto l72;
@@ -5675,13 +5776,13 @@ lbb6:
                 if (SV_I((unsigned)&ai_PlayerBuilding) == 0) {
                     if (SV_I((unsigned)&ai_FallbackBuilding) == 0)
                         goto l1a;
-                    if (ai_Unk576340(0x1c, SV_I((unsigned)&ai_FallbackBuilding), 0, 0) == 1) {
+                    if (ai_ScriptQuery(0x1c, SV_I((unsigned)&ai_FallbackBuilding), 0, 0) == 1) {
                         c = SV_C(((unsigned)&ai_Selected + 0x29))[ai_PlayerId * 0x21c];
                         v = SV_I((unsigned)&ai_FallbackBuilding);
                         goto lbd;
                     }
                 } else {
-                    if (ai_Unk576340(0x1a, SV_I((unsigned)&ai_PlayerBuilding), 0, *(unsigned short *)SV_I((unsigned)&sv_PanelShown)) == 1) {
+                    if (ai_ScriptQuery(0x1a, SV_I((unsigned)&ai_PlayerBuilding), 0, *(unsigned short *)SV_I((unsigned)&sv_PanelShown)) == 1) {
                         c = SV_C(((unsigned)&ai_Selected + 0x29))[ai_PlayerId * 0x21c];
                         v = SV_I((unsigned)&ai_PlayerBuilding);
 lbd:
@@ -5693,7 +5794,7 @@ lbd:
 l1a:
                     SV_I((unsigned)&sv_PanelShown) = 0;
                 } else
-                    ai_Unk59e0a0(-1, *it);
+                    ai_SwitchRoom(-1, *it);
             }
             SV_I((unsigned)&sv_PopRequest) = 1;
             if (SV_I((unsigned)&ai_PlayerBuilding) != 0 && SV_I((unsigned)&sv_PanelShown) == 0)
@@ -7468,7 +7569,7 @@ int ai_Unk623cc0[] = { 1104150528, 1097859072, 1116602368, 0, 1102577664, 110782
 int ai_Unk623e10[] = { 1099431936, 1097859072, 1116602368, 0, 1096810496, 1104674816, 1114112000, 0, 1096810496, 1102053376, 1114112000, 0, 1101004800, 1107296256, 1113325568, 0, 1101004800, 1103101952, 1114898432, 0, 1101004800, 1094713344, 1110966272, 0, 1099431936, 1097859072, 1116602368, 0 };  /* 0x623e10 */
 int ai_Unk623e80 = -1;  /* 0x623e80 */
 int ai_Unk623e88 = 1;  /* 0x623e88 */
-int ai_Unk623e8c = -1;  /* 0x623e8c */
+int sv_GroundplanScene = -1;  /* 0x623e8c */
 float ai_Unk623e94 = 0.5f;  /* 0x623e94 */
 int ai_Unk623ea0 = -1;  /* 0x623ea0 */
 int ai_Unk623ea4 = -1;  /* 0x623ea4 */
@@ -7516,8 +7617,8 @@ char sv_MessageBoxOpen = 0;  /* 0x6f2350 */
 char sv_MessageBoxGreenOpen = 0;  /* 0x6f2351 */
 char sv_MessageBoxYesNoOpen = 0;  /* 0x6f2352 (the yes / no box) */
 int sv_ScreenDirty = 0;  /* 0x6f2358 */
-int ai_Unk6f235c = 0;  /* 0x6f235c */
-int ai_Unk6f2360 = 0;  /* 0x6f2360 */
+int sv_GroundplanBuilding = 0;  /* 0x6f235c */
+int sv_GroundplanRoom = 0;  /* 0x6f2360 */
 char ai_Unk6f2368 = 0;  /* 0x6f2368 */
 int ai_Unk6f236c = 0;  /* 0x6f236c */
 int ai_Unk6f2370 = 0;  /* 0x6f2370 */

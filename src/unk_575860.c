@@ -1155,7 +1155,7 @@ inc:
 /* 0x576340, calls the run record's callback +0x3c with the four arguments as an int[4] and returns its result;
    1 when a gate fails (0x6f265c, the run record, [r+0x3c]), 0 while 0x6333e0 is set (a transition in progress) */
 
-int ai_Unk576340(int a, int b, int c, int d)
+int ai_ScriptQuery(int a, int b, int c, int d)
 {
     int p[4];
     char *r;
@@ -7534,7 +7534,7 @@ void ai_GypsyHelperWindow(char *b)
         *(int *)(U_I((unsigned)&d2_Objs) + 0x1cc + id * 0x2ec) = 100;
         *(int *)(U_I((unsigned)&d2_Objs) + 0x1d0 + id * 0x2ec) = 0x10;
         *(unsigned short *)(U_I((unsigned)&d2_Objs) + 0x74 + id * 0x2ec) = 0x54;
-        d2_SetCaption(id, (char *)U_I((unsigned)&ai_Unk143c860 + kinds[i] * 8));
+        d2_SetCaption(id, (char *)U_I((unsigned)&txt_ObjectNames + kinds[i] * 8));
         btns[i] = id;
         d2_SetObjEnabled(id, 1);
     }
@@ -9677,7 +9677,7 @@ void ai_Unk589670(void)
         else
             e = 0;
         d2_WinOpenPic(0x60, *(unsigned char *)((unsigned)&full_data_6f5ec0 + i * 0xc) + 0x427, (char *)win, U_I((unsigned)&d2_LastWindow));
-        d2_CreateWinText(0x9c, i, line, U_I((unsigned)&ai_Unk143c860));
+        d2_CreateWinText(0x9c, i, line, U_I((unsigned)&txt_ObjectNames));
         d2_CreateWinText(0x60, i, line, U_I((unsigned)&full_data_1442334));
         d2_WinOpenPic(0x128, 0, (char *)(i + 0xdf), U_I((unsigned)&d2_LastWindow));
         d2_CreateWinText(0x164, i, line, U_I((unsigned)&full_data_1442334));

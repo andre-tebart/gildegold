@@ -1269,7 +1269,7 @@ void gm_FormatAmount(int v, unsigned char k, char *out);  /* 0x508a80, above its
 void sv_OpenPlayerBar(int a, char k); int d2_SetForm(int view, int n); int io_PrintText(char *fmt, ...); void sv_Unk52e6d0(int f, int b, int c);
 int d2_GetViewWin(); int sv_CreateFormSlider(); void d2_SetPointerSprite(int a, int pic); char * gm_Query(void *list, int n, ...);
 int gm_FreeCapacity(); int sv_MessageBox(); char * he_FindEvent(int n, ...); char * he_NextEvent(void);
-int ai_Unk576340(); int cm_SendLongMessage(char *msg); int cm_GetSlotState(); int cm_GetSlotValue(int h);
+int ai_ScriptQuery(); int cm_SendLongMessage(char *msg); int cm_GetSlotState(); int cm_GetSlotValue(int h);
 void snd_PlayFavourComment(void); void sv_MoveToGroup(unsigned char *o, short *it, int c, char *g); int sv_RunFrame(int cb, unsigned mask); void d2_CloseView(int view);
 void sv_ClosePlayerBar(void); int gm_ListAmount(); char * gm_Query(void *list, int n, ...); void ai_Unk58cc10();
 int ai_Unk58d720(); void ai_Unk58dd00(int param_1, int param_2, int param_3, int param_4); char *_itoa(int, char *, int); void d2_SetObjText();
@@ -2178,7 +2178,7 @@ void ai_Unk58e6a0(int param_1, int param_2, int *param_3, int param_4, unsigned 
     U_I(U_I((unsigned)&d2_Objs) + 0x1cc + param_3[4] * 0x2ec) = 4;
     U_I(U_I((unsigned)&d2_Objs) + 0x1d0 + param_3[4] * 0x2ec) = 0;
     sprintf((char *)(U_I((unsigned)&d2_Objs) + 0xbc + param_3[4] * 0x2ec), (char *)(unsigned)&full_data_62b098,
-                 U_I((unsigned)&ai_Unk143c860 + *param_3 * 8), param_3[0xc], U_I((unsigned)&ai_Unk144a160));
+                 U_I((unsigned)&txt_ObjectNames + *param_3 * 8), param_3[0xc], U_I((unsigned)&ai_Unk144a160));
     /* ROUGH: the control positions 0x46cda0 of the icon, the two labels, the two amounts and the slider */
     n = U_I(((unsigned)&d2_Wins + 0x4) + scr * 0x3c4);
     a = *(short *)(((unsigned)&d2_Wins + 0x4) + scr * 0x3c4 + 2);
@@ -3052,7 +3052,7 @@ unsigned gm_PermissionBits(unsigned p1, unsigned char *b, unsigned short *o, int
 int d3t_PlaceObjectV(struct D3OBJECT *camera, struct D3VECTOR *pos, struct D3VECTOR *dir, int unk, char flags); int gm_ClockSeason(); void init_AfterTownLoad(void); void d3fl_MakeDivide();
 int ai_Unk5bc110(); void snd_StartMarketAmbience(void); int tb_SetFunctionOff(); void snd_StopMarketAmbience(void);
 void d2_CopyCaption(char *caption); void sv_SetStatusText(char *s); void sv_Unk52adb0(void);
-void sv_Unk528490(unsigned char *o); int ai_Unk576340();
+void sv_Unk528490(unsigned char *o); int ai_ScriptQuery();
 int gm_IsType10(unsigned char *b); void ai_Unk59e420(); void ai_Unk59ee40(); void ai_Unk59a800();
 int gm_Unk50c340(); int d2_GetWinObj(); void sv_SetResearchClass(unsigned char *o); int ai_Unk5b7dd0();
 float gm_ItemPrice(int item, unsigned char n); int ai_Unk5049e0(); int sv_CheckStock(); int sv_CheckGoodAmount();
@@ -3286,10 +3286,10 @@ void ai_GameFrame(void)
             ((U_I(((unsigned)&dm_L + 0x1c)) != 0 || (U_I(((unsigned)&dm_L + 0xc)) != 0 && U_I((unsigned)&d2_PointerLook) == 0xb))) &&
             (u & 1) != 0 && (*(unsigned char *)(U_I((unsigned)&sv_SelectedObject) + 0x5a) & 1) == 0) {
             v = gm_IsHomeType(U_I((unsigned)&sv_SelectedObject));
-            if (v == 0 || (v = ai_Unk576340(0x1b, U_I((unsigned)&sv_SelectedObject), 0, 0), v != 1)) {
+            if (v == 0 || (v = ai_ScriptQuery(0x1b, U_I((unsigned)&sv_SelectedObject), 0, 0), v != 1)) {
                 v = gm_IsType10(U_I((unsigned)&sv_SelectedObject));
                 if (v == 0 &&
-                    (v = ai_Unk576340(0x19, U_I((unsigned)&sv_SelectedObject), 0,
+                    (v = ai_ScriptQuery(0x19, U_I((unsigned)&sv_SelectedObject), 0,
                                       *(unsigned short *)(U_I((unsigned)&sv_SelectedObject) + 0x29)), v == 1))
                     ai_Unk59e420(U_I((unsigned)&sv_SelectedObject), *(unsigned short *)(U_I((unsigned)&sv_SelectedObject) + 0x29));
             } else {
@@ -4880,7 +4880,7 @@ void ai_TradeSearchWindow(unsigned char *param_1, int param_2)
         U_I(U_I((unsigned)&d2_Objs) + id * 0x2ec + 0x1cc) = 100;
         U_I(U_I((unsigned)&d2_Objs) + id * 0x2ec + 0x1d0) = 0x10;
         *(unsigned short *)(U_I((unsigned)&d2_Objs) + id * 0x2ec + 0x74) = 0x54;
-        d2_SetCaption(id, U_I((unsigned)&ai_Unk143c860 + kinds[i] * 8));
+        d2_SetCaption(id, U_I((unsigned)&txt_ObjectNames + kinds[i] * 8));
         ctrls[i] = id;
         d2_SetObjEnabled(id, 1);
     }
@@ -5020,7 +5020,7 @@ void ai_AquariumSearchWindow(int param_1, int param_2)
         U_I(U_I((unsigned)&d2_Objs) + id * 0x2ec + 0x1cc) = 100;
         U_I(U_I((unsigned)&d2_Objs) + id * 0x2ec + 0x1d0) = 0x10;
         *(unsigned short *)(U_I((unsigned)&d2_Objs) + id * 0x2ec + 0x74) = 0x54;
-        d2_SetCaption(id, U_I((unsigned)&ai_Unk143c860 + kinds[i] * 8));
+        d2_SetCaption(id, U_I((unsigned)&txt_ObjectNames + kinds[i] * 8));
         ctrls[i] = id;
         d2_SetObjEnabled(id, 1);
     }
@@ -7823,14 +7823,14 @@ void ai_Unk59be90(int *param_1)
             else if (v == 0)
                 strcpy(nameA, "ZZZZZZZZZ");
             else
-                strcpy(nameA, ((char **)(unsigned)&ai_Unk143c860)[v]);
+                strcpy(nameA, ((char **)(unsigned)&txt_ObjectNames)[v]);
             v = param_1[(j + 1) * 7 + 3];
             if (v == U_W((unsigned)&ai_Unk7e3f94 + U_I((unsigned)&ai_OwnPlayer) * 0x2f4))
                 strcpy(nameB, "AAAAAAAAA");
             else if (v == 0)
                 strcpy(nameB, "ZZZZZZZZZ");
             else
-                strcpy(nameB, ((char **)(unsigned)&ai_Unk143c860)[v]);
+                strcpy(nameB, ((char **)(unsigned)&txt_ObjectNames)[v]);
             if (strcmp(nameA, nameB) > 0) {
                 memcpy(tmp, param_1 + j * 7, 0x1c);
                 memcpy(param_1 + j * 7, param_1 + (j + 1) * 7, 0x1c);
@@ -7920,7 +7920,7 @@ int ai_Unk59c120(int param_1, int *param_2, int param_3, int param_4, char param
             } else {
                 r = gm_Unk508640(U_I(r + 0xe), param_2[i * 7 + 2]);
                 d2_SetObjValue(param_2[i * 7], 0, r, v);
-                txt_Format(text, "%I %s", r, U_I((unsigned)&ai_Unk143c860 + param_2[i * 7 + 2] * 8));
+                txt_Format(text, "%I %s", r, U_I((unsigned)&txt_ObjectNames + param_2[i * 7 + 2] * 8));
                 d2_SetObjText(param_2[i * 7 + 1], text);
                 *(unsigned short *)(U_I((unsigned)&d2_Objs) + 0x14 + param_2[i * 7] * 0x2ec) = 0xbe;
                 param_2[i * 7 + 5] = r;
@@ -7979,7 +7979,7 @@ void ai_Unk59c450(int param_1, int param_2, int param_3, int param_4)
         v = d2_CreateWinText((*(short *)((unsigned)&d2_LastWindowPtr + 8) - 0xbe) >> 1, i * 0x4c + 0x30, (char *)(unsigned)&ch_EmptyName,
                          U_I((unsigned)&d2_LastWindow));
         *rec = v;
-        txt_Format(text, "%S", U_I((unsigned)&ai_Unk143c860 + rec[2] * 8));
+        txt_Format(text, "%S", U_I((unsigned)&txt_ObjectNames + rec[2] * 8));
         d2_SetObjText(*rec, text);
         d2_SetObjFont(rec[-1], 0x54);
         d2_SetObjFont(*rec, 0x54);
@@ -8674,7 +8674,7 @@ void ai_Unk59df80(int param_1, int room)
    0x6f229c - 0x6f22a4 + 1 count, the room matrices 0x43b790 / 0x43b860 (0xfc2dec + 0 / + 0x10), the counters
    0x6f22cc / 0x6f22d0 = 0 and the sound "RaumWechseln_s" (0x426fa0) */
 
-void ai_Unk59e0a0(int param_1, unsigned short param_2)
+void ai_SwitchRoom(int param_1, unsigned short param_2)
 {
     unsigned short *p;
     int i;
@@ -15110,7 +15110,7 @@ int ai_Unk5ae6b0(unsigned int param_1, int param_2, int param_3, int param_4)
         *(int *)(carrier + 0x70) = -1;
         carrier = he_NextEvent();
     }
-    if (ai_Unk576340(0x24, param_4, 0, 0) != 1)
+    if (ai_ScriptQuery(0x24, param_4, 0, 0) != 1)
         return 0;
     memset(msg, 0, 0xf8);
     *(unsigned char *)(msg + 4) = 0xf;
@@ -15274,20 +15274,20 @@ int ai_Unk5ae9a0(int param_1, int param_2, unsigned char *param_3, int param_4, 
                 m = d2_GetObjValue(row[4], 0);
                 d2_SetObjValue(row[4], 0, row[0xc], m - n);
             } else if (param_5 == 0) {
-                if (ai_Unk576340(0x25, param_3, 0, row[0]) != 0) {
+                if (ai_ScriptQuery(0x25, param_3, 0, row[0]) != 0) {
                     ai_Unk576040(0x25, param_3, 0, row[0]);
                     goto order;
                 }
-            } else if (ai_Unk576340(0x2a, param_3, 0, row[0]) != 0) {
+            } else if (ai_ScriptQuery(0x2a, param_3, 0, row[0]) != 0) {
                 ai_Unk576040(0x2a, param_3, 0, row[0]);
                 goto order;
             }
         } else if (param_5 == 0) {
-            if (ai_Unk576340(0x27, param_3, 0, row[0]) != 0) {
+            if (ai_ScriptQuery(0x27, param_3, 0, row[0]) != 0) {
                 ai_Unk576040(0x27, param_3, 0, row[0]);
                 goto order;
             }
-        } else if (ai_Unk576340(0x29, param_3, 0, row[0]) != 0) {
+        } else if (ai_ScriptQuery(0x29, param_3, 0, row[0]) != 0) {
             ai_Unk576040(0x29, param_3, 0, row[0]);
 order:
             cm_SendExSellObject(param_1, *(int *)(param_2 + 2), row[0], n, param_7, (int)v);

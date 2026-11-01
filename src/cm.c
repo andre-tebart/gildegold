@@ -9707,7 +9707,7 @@ int ai_Unk4d4540(char *a)
 }
 
 #define G20_US(p) (*(unsigned short *)(p))
-#define G20_NAME(id) (((char **)ai_Unk143c860)[(id) * 2])
+#define G20_NAME(id) (((char **)txt_ObjectNames)[(id) * 2])
 #define G20_ME (ai_CharInts[ai_PlayerId][0])
 #define G20_ATT ((char *)ai_Unk6f0ce8)
 #define G20_DEF ((char *)ai_Unk6f0cec)

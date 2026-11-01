@@ -303,7 +303,7 @@ int rt_Unk4bdcd0(unsigned char *b, int x, int def)
                 *(int *)(d2_ObjsC + o * 0x2ec + 0x1d4) = 0x525;
                 *(int *)(d2_ObjsC + o * 0x2ec + 0x1cc) = 4;
                 *(int *)(d2_ObjsC + o * 0x2ec + 0x1d0) = 0xf;
-                sprintf(d2_ObjsC + o * 0x2ec + 0xbc, "%s", *(char **)(ai_Unk143c860 + ai_Unk889400[n] * 8));
+                sprintf(d2_ObjsC + o * 0x2ec + 0xbc, "%s", *(char **)(txt_ObjectNames + ai_Unk889400[n] * 8));
                 n++;
             }
         }
@@ -492,7 +492,7 @@ unsigned int rt_Unk4be3b0(char *b, int x, unsigned int def)
 }
 /* 0x4be790, the controls of one good slot (k 0..2) of a route point: a slider (0x50ab50(a, good) steps) and the
    good's picture with its name; out = {-1, picture, slider}; returns the picture
-   @deep behaviour: frame matches (0x24) and every statement corresponds (offs inits, the slider 0x50ab50, d2_WinOpenSlider(x-8, y+0x1d, 0x2f, 0, s, 0x6a, 0x2d, win), d2_WinOpenInputIcon(x, y+0x22, good+0xdf, 0x8a, win), the out[] stores and the d2_Objs fields); the 102 code hunks are register allocation and scheduling (ebp/ebx/eax swaps, the two open calls interleaved, offs stores reordered) - misalignment, no statement differs. Q2 (ai_Unk143c860, gm_ListStock, d2_SetObjFont) and Q4 (4) stay open */
+   @deep behaviour: frame matches (0x24) and every statement corresponds (offs inits, the slider 0x50ab50, d2_WinOpenSlider(x-8, y+0x1d, 0x2f, 0, s, 0x6a, 0x2d, win), d2_WinOpenInputIcon(x, y+0x22, good+0xdf, 0x8a, win), the out[] stores and the d2_Objs fields); the 102 code hunks are register allocation and scheduling (ebp/ebx/eax swaps, the two open calls interleaved, offs stores reordered) - misalignment, no statement differs. Q2 (txt_ObjectNames, gm_ListStock, d2_SetObjFont) and Q4 (4) stay open */
 
 int rt_Unk4be790(unsigned short *bt, int a, int good, int k, int x, int y, int win, int *out)
 {
@@ -520,7 +520,7 @@ int rt_Unk4be790(unsigned short *bt, int a, int good, int k, int x, int y, int w
     *(int *)(d2_ObjsC + o * 0x2ec + 0x1c0) = 0x22;
     *(int *)(d2_ObjsC + o * 0x2ec + 0x1cc) = 4;
     *(int *)(d2_ObjsC + o * 0x2ec + 0x1d0) = 0xf;
-    sprintf(d2_ObjsC + o * 0x2ec + 0xbc, "%s", *(char **)(ai_Unk143c860 + good * 8));
+    sprintf(d2_ObjsC + o * 0x2ec + 0xbc, "%s", *(char **)(txt_ObjectNames + good * 8));
     return o;
 }
 /* 0x4be8e0, removes the three controls of out (0x4be790) */

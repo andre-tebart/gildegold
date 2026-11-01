@@ -7621,7 +7621,7 @@ int gm_Unk5075c0(char *c)
 }
 
 extern int ai_Difficulty;
-/* ai_Unk143c860: view of txt_Ptrs (build/mk_txt_views.py) */
+/* txt_ObjectNames: view of txt_Ptrs (build/mk_txt_views.py) */
 int ai_GameFlags = 0;  /* 0x6f23f8 */
 extern float gm_DayStartHours[], gm_DayEndHours[];  /* 0x617830 / 0x617840 */
 char * ahm_OwnerChar();                     /* 0x4eaa50 */
@@ -8029,7 +8029,7 @@ float gm_ItemPrice(int item, unsigned char n)
             if (*w == 0)
                 break;
             if (*w == 0xffff)
-                sprintf(buf, "eval_ObjektPreis2Credits:Unterobjekt f\xfcr '%s' nicht vorhanden!!!", (char *)ai_Unk143c860[item][0]);
+                sprintf(buf, "eval_ObjektPreis2Credits:Unterobjekt f\xfcr '%s' nicht vorhanden!!!", (char *)txt_ObjectNames[item][0]);
             else
                 s = (float)(gm_ItemPrice(*w, n) * w[-4] / *(unsigned short *)(p + 0x36) + s);
             i++;

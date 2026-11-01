@@ -24,7 +24,7 @@ void sv_SetPanelEnabled(int n);                                         /* 0x522
 void sv_Unk522280(void);                                                /* 0x522280 */
 void sv_DestroyScreen(void);                                            /* 0x5223c0 */
 void sv_LoadGroundplan(void);                                                /* 0x5224a0 */
-void sv_Unk5229b0(unsigned flags);                                      /* 0x5229b0 */
+void sv_UpdateGroundplan(unsigned flags);                                      /* 0x5229b0 */
 void sv_SetResearchClass(unsigned char *o);                             /* 0x522ec0 */
 void sv_Unk522f10(unsigned char a, int b);                              /* 0x522f10 */
 void sv_RedrawScreen(void);                                             /* 0x524010 */
@@ -192,7 +192,7 @@ extern int ai_Unk623cc0[];                                  /* 0x623cc0 */
 extern int ai_Unk623e10[];                                  /* 0x623e10 */
 extern int ai_Unk623e80;                                    /* 0x623e80 */
 extern int ai_Unk623e88;                                    /* 0x623e88 */
-extern int ai_Unk623e8c;                                    /* 0x623e8c */
+extern int sv_GroundplanScene;                                    /* 0x623e8c */
 extern float ai_Unk623e94;                                  /* 0x623e94 */
 extern int ai_Unk623ea0;                                    /* 0x623ea0 */
 extern int ai_Unk623ea4;                                    /* 0x623ea4 */
@@ -240,8 +240,8 @@ extern char sv_MessageBoxOpen;                              /* 0x6f2350 */
 extern char sv_MessageBoxGreenOpen;                         /* 0x6f2351 */
 extern char sv_MessageBoxYesNoOpen;                         /* 0x6f2352 */
 extern int sv_ScreenDirty;                                  /* 0x6f2358 */
-extern int ai_Unk6f235c;                                    /* 0x6f235c */
-extern int ai_Unk6f2360;                                    /* 0x6f2360 */
+extern int sv_GroundplanBuilding;                                    /* 0x6f235c */
+extern int sv_GroundplanRoom;                                    /* 0x6f2360 */
 extern char ai_Unk6f2368;                                   /* 0x6f2368 */
 extern int ai_Unk6f236c;                                    /* 0x6f236c */
 extern int ai_Unk6f2370;                                    /* 0x6f2370 */

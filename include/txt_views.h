@@ -37,7 +37,7 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define txt_NoRelative                            (*(char * *)((char *)txt_Ptrs + 0x01234))  /* 0x143b3f4 */
 #define full_data_143b3f8                        (*(unsigned char (*)[12])((char *)txt_Ptrs + 0x01238))  /* 0x143b3f8 */
 #define ai_BuildingNames                         (*(int (*)[1304])((char *)txt_Ptrs + 0x01240))  /* 0x143b400 */
-#define ai_Unk143c860                            (*(int (*)[50][2])((char *)txt_Ptrs + 0x026a0))  /* 0x143c860 */
+#define txt_ObjectNames                            (*(int (*)[50][2])((char *)txt_Ptrs + 0x026a0))  /* 0x143c860 */
 #define ai_ContactTextPersonnelBook              (*(char * *)((char *)txt_Ptrs + 0x02830))  /* 0x143c9f0 */
 #define full_data_143cb38                        (*(unsigned char (*)[144])((char *)txt_Ptrs + 0x02978))  /* 0x143cb38 */
 #define ai_ContactTextMasterLetter               (*(char * *)((char *)txt_Ptrs + 0x02a08))  /* 0x143cbc8 */

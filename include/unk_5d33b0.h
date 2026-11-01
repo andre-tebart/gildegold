@@ -177,7 +177,7 @@ void ai_ApplyOptions(void);         /* 0x5d5e90, applies the option values to th
 void ai_SaveOptions(void);          /* 0x5d4c70, writes the options to the INI */
 int ai_ApplyGfxOptions(void);     /* 0x5d5c40, applies the graphics options (the shadow setup) */
 void ai_LoadOptions(void);          /* 0x5d5640, reads the options from the INI */
-extern int sv_ScreenDirty;          /* 0x6f2358, sv.c: nonzero = rebuild the screen (sv_Unk5229b0 clears it) */
+extern int sv_ScreenDirty;          /* 0x6f2358, sv.c: nonzero = rebuild the screen (sv_UpdateGroundplan clears it) */
 void sv_DestroyScreen(void);        /* 0x5223c0, sv.c: destroys the screen's widgets and views */
 int sv_PanelImage(void);            /* 0x522040, sv.c: the panel image number of the player's group */
 void sv_BuildScreenLayout(int s);   /* 0x521e70, sv.c: builds the main screen layout for the panel image s */
