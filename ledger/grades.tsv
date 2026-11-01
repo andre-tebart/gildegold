@@ -3269,8 +3269,8 @@ exe	0x0051c450	ls_WriteHistory	ls	shape	readable
 exe	0x0051c560	unk_Unk51c560	ls	draft	draft		
 exe	0x0051c870	unk_Unk51c870	ls	draft	draft	deep	
 exe	0x0051c920	ls_Read	ls	byte	readable		
-exe	0x0051c950	unk_Unk51c950	ls	draft	draft		
-exe	0x0051cee0	ls_ReadSaveHeader	ls	draft	draft		
+exe	0x0051c950	ls_LoadGame	ls	draft	draft	deep	
+exe	0x0051cee0	ls_ReadSaveHeader	ls	draft	readable	deep	
 exe	0x0051d2d0	unk_Unk51d2d0	ls	draft	draft	deep	
 exe	0x0051d3d0	ls_ReadObjects	ls	byte	readable		
 exe	0x0051d4f0	ls_HookBuildingCB	ls	byte	draft	deep	
@@ -3338,12 +3338,12 @@ exe	0x00525ad0	sv_Unk525ad0	sv	draft	draft
 exe	0x00525dd0	sv_PlaceCamera	sv	draft	draft		
 exe	0x00525ee0	sv_Unk525ee0	sv	draft	draft		
 exe	0x00525ff0	sv_Unk525ff0	sv	draft	draft		
-exe	0x005263a0	sv_Unk5263a0	sv	draft	draft		
-exe	0x00526cf0	sv_Unk526cf0	sv	draft	draft		
+exe	0x005263a0	sv_ScrollCamera	sv	draft	readable	deep	
+exe	0x00526cf0	sv_MouseCamera	sv	draft	readable	deep	
 exe	0x00527640	sv_Unk527640	sv	draft	draft		
-exe	0x00527840	sv_Unk527840	sv	draft	draft		
-exe	0x00527bb0	sv_Unk527bb0	sv	draft	draft		
-exe	0x00527e90	sv_Unk527e90	sv	draft	draft		
+exe	0x00527840	sv_FlyCameraToObject	sv	shape	readable		
+exe	0x00527bb0	sv_CameraToObject	sv	shape	readable		
+exe	0x00527e90	sv_FlyCameraToModel	sv	draft	readable	deep	
 exe	0x00528140	sv_Unk528140	sv	byte	draft		
 exe	0x00528180	sv_Unk528180	sv	draft	draft		
 exe	0x00528290	sv_Unk528290	sv	byte	draft		
@@ -4095,7 +4095,7 @@ exe	0x00587e00	ai_Unk587e00	unk_575860	draft	draft
 exe	0x00588160	ai_Unk588160	unk_575860	draft	draft		
 exe	0x00588310	ai_Unk588310	unk_575860	draft	draft		
 exe	0x00588950	ai_Unk588950	unk_575860	draft	draft		
-exe	0x00588bb0	ai_Unk588bb0	unk_575860	draft	draft		
+exe	0x00588bb0	ai_OpenHelpTooltip	unk_575860	byte	readable		
 exe	0x00588c60	ai_Unk588c60	unk_575860	draft	draft		
 exe	0x005890c0	ai_Unk5890c0	unk_575860	draft	draft		
 exe	0x00589400	ai_Unk589400	unk_575860	byte	draft		
