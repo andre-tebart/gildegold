@@ -187,12 +187,12 @@ int ai_IsLocalMaster(AICHAR *c)
     return 1;
 }
 /* 0x47ddf0, looks for a partner (a character that suits this one) and sends the messages about it; returns
-   the partner when the two have met enough, else 0 */
+   the partner when the two have met enough, else 0 @deep read the whole function against the original 0x47ddf0..0x47e356 (the partner search over ai_CharsT with gm_Unk505e60 / ai_RelationMemory / gm_Liking, the warning message block with the clamp, the four partner states and the reset block); fixed: the scan ends at the array end (cmp ebp, &ai_CharsT[768].kind, signed: (int)o < (int)(ai_CharsT + 768)), the clamp bounds written inline (max(min(a, diff * 2 + 0x23), diff * 2 + 0xf), the original keeps no k / k2). Every statement, callee, field offset and constant matches. Left: block layout and allocation: the original returns through 7 duplicated epilogues and lays the state blocks a = 1 (0x47e2ba) and a = unk216 + 1 (0x47e307) out of line after the reset block, its zero returns as xor edi,edi / mov eax,edi (p = 0); ours keeps them inline with 3 epilogues ('- cmp al,dl / - ja 0x47e15e' vs '+ cmp dl,al / + jae 0x47e2ba'); tried a single-exit form with p = 0 assignments (else-if chain): 408 -> 463 differing, the blocks still inline, reverted. The loop keeps i * 0x300 in the dead parameter slot [esp+0x28] (ours a register), frame 0x14 vs 0x1c. (size: 419 vs 445 instructions, explained: the 26 missing instructions are epilogues: the original has 7 return paths each with its own pop edi/esi/ebp/ebx, add esp, ret (6 instructions), ours 3) */
 
 AICHAR *ai_FindPartner(AICHAR *c)
 {
     AICHAR *o, *p;
-    int i, best, d, k, k2;
+    int i, best, d;
     float f, bestf;
     unsigned char a, z;
     unsigned short id;
@@ -219,7 +219,7 @@ AICHAR *ai_FindPartner(AICHAR *c)
             }
             i++;
             o++;
-        } while ((int)&o->kind < (unsigned)&gm_PlayerRecordBytes);
+        } while ((int)o < (int)(ai_CharsT + 768));
         if (best == -1)
             return 0;
         if (ai_Relations[best][c->id] / 2 + ai_RelationMemory[best][c->id] < -0x32 - util_RandomU(0x20)) {
@@ -228,9 +228,7 @@ AICHAR *ai_FindPartner(AICHAR *c)
             cm_AddFieldDelta(1, 1, 0x215, &a);
             d = abs((int)bestf);
             a = (unsigned char)(d / 3 + 1);
-            k = ai_Difficulty * 2 + 0x23;
-            k2 = ai_Difficulty * 2 + 0xf;
-            a = max(min(a, k), k2);
+            a = max(min(a, ai_Difficulty * 2 + 0x23), ai_Difficulty * 2 + 0xf);
             cm_AddFieldDelta(1, 1, 0x216, &a);
             cm_AddFieldDelta(4, 1, 0x210, &ai_CharsT[best].netId);
             cm_AddFieldDelta(1, 1, 0x214, &ai_RelationMemory[best][c->id]);
