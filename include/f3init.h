@@ -92,7 +92,7 @@ extern int main_MoneyCheat;                                 /* 0x6f2444 */
 extern int ai_MapSize;                                      /* 0x6f4ee8 */
 extern int init_StatusForm;                                 /* 0x75df00 */
 extern INIT_PLAYER init_PlayerProfile;                      /* 0x75e5a0 */
-extern int ai_Unk7603a0[32];                                /* 0x7603a0 */
+extern int ai_SceneChars[32];                                /* 0x7603a0 */
 extern signed char init_BuildingUniverse[0x22];             /* 0x76fa60 */
 extern unsigned short * ai_SceneObject;                     /* 0x76fa84 */
 extern signed char init_ObjectUniverse[0x2dc];              /* 0x76faa0 */

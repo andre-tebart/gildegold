@@ -103,7 +103,7 @@ extern GAPDATA full_data_92bcb8[];
 #define ch_AddActionCBK ((struct CHACTION *(*)())ch_AddActionCB)  /* 0x40b400 (ch.h): @original cm.c's calls were compiled without a prototype (default promotions) */
 #define amt_GetOfficeI ((int (*)(int, struct AMTREC *))amt_GetOffice)  /* 0x4e6f30 (amt.h: unsigned char i): @original this unit pushes its int index raw (0x4dab50 / 0x4aad30: push ebp / push edx, no zero-extension) */
 #define ahm_CreateAlchemistI ((int (*)(int *))ahm_CreateAlchemist)  /* 0x4ec500 (ahm.h: unsigned short): @original the caller 0x4ccf90 reads the id as an int (no and eax,0xffff) */
-#define ai_Unk7603a0V (*(char * (*)[])&ai_Unk7603a0)  /* 0x7603a0, @original ai_Unk4cfeb0 (0x4cfeb0, byte) walks the table as pointers, `pp < ai_Unk760420V` its end: the int[32] / float spellings make it draft (15) */
+#define ai_Unk7603a0V (*(char * (*)[])&ai_SceneChars)  /* 0x7603a0, @original ai_Unk4cfeb0 (0x4cfeb0, byte) walks the table as pointers, `pp < ai_Unk760420V` its end: the int[32] / float spellings make it draft (15) */
 #define ai_Unk760420V (*(char * (*)[])&ai_Unk760420)  /* 0x760420, @original the end of ai_Unk7603a0V's walk in ai_Unk4cfeb0 (0x4cfeb0, byte) */
 /* 0x4c3180, the size of message m by its type */
 
@@ -7101,7 +7101,7 @@ void ai_Unk4cefe0()
         ai_Unk60cb60 = -1;
     }
 }
-/* 0x4cf000, the per-tick update of the characters (ai_Unk7603a0[]): the counter byte +8 of each counts down (when
+/* 0x4cf000, the per-tick update of the characters (ai_SceneChars[]): the counter byte +8 of each counts down (when
    the clock of the player record ai_Unk6f0d74 matches, every 0x15e ticks), the record 0x172's characters are
    shaded by their distance to the others (rest 255), characters at a cutscene slot turn towards their partner;
    ends with the floating numbers (0x4cee20). Rough draft. */
@@ -7290,7 +7290,7 @@ void ai_Unk4cf670()
         ai_Unk6f22f8 = 0;
         return;
     }
-    for (pp = ai_Unk7603a0V; (int)pp < ((unsigned)&ai_Unk7603a0 + 0x7c); pp++) {
+    for (pp = ai_Unk7603a0V; (int)pp < ((unsigned)&ai_SceneChars + 0x7c); pp++) {
         c = *pp;
         if (c != 0 && c[0x188] != 0) {
             if (ai_Unk4ce170(*(unsigned short *)ai_Unk6f0d74, c) & 0x800) {
@@ -7421,7 +7421,7 @@ void ai_Unk4cf9c0()
 
 #define G19_R(id, o, t) (*(t *)(d2_ObjsC + (id) * 0x2ec + (o)))
 
-/* 0x4cfc10, builds the portrait boxes of ai_Unk930400[6] (see 0x4cf9c0) for the selected characters ai_Unk7603a0[]:
+/* 0x4cfc10, builds the portrait boxes of ai_Unk930400[6] (see 0x4cf9c0) for the selected characters ai_SceneChars[]:
    window objects, the picture of the job, the texts, 0x80 pixels apart. Rough draft. */
 void ai_Unk4cfc10()
 {
@@ -7437,7 +7437,7 @@ void ai_Unk4cfc10()
         G19_E(e, 0x14) = -1;
     }
     e = ai_Unk930400;
-    for (pp = ai_Unk7603a0V; e < ai_Unk930400 + 0xc0 && (int)pp < ((unsigned)&ai_Unk7603a0 + 0x7c); pp++) {
+    for (pp = ai_Unk7603a0V; e < ai_Unk930400 + 0xc0 && (int)pp < ((unsigned)&ai_SceneChars + 0x7c); pp++) {
         if (*pp == 0)
             continue;
         if (!(ai_Unk4ce170(*(unsigned short *)ai_Unk6f0d74, *pp) & 0x800))
@@ -7847,7 +7847,7 @@ char *ai_Unk4d0920(char *c, int a)
     }
     return r;
 }
-/* 0x4d0a30, fills ai_Unk7603a0[] (32 pointers) with the records of ai_Unk930600 whose object belongs to the scene ai_Unk5fb5b0 */
+/* 0x4d0a30, fills ai_SceneChars[] (32 pointers) with the records of ai_Unk930600 whose object belongs to the scene ai_Unk5fb5b0 */
 
 void ai_Unk4d0a30()
 {
@@ -7856,7 +7856,7 @@ void ai_Unk4d0a30()
 
     memset(ai_Unk7603a0V, 0, 0x80);
     p = ai_Unk7603a0V;
-    for (r = ai_Unk930600; (int)p < ((unsigned)&ai_Unk7603a0 + 0x7c) && (int)(r + 0x184) < ((unsigned)&ai_Unk930600 + 0x4504); r += 0x21c) {
+    for (r = ai_Unk930600; (int)p < ((unsigned)&ai_SceneChars + 0x7c) && (int)(r + 0x184) < ((unsigned)&ai_Unk930600 + 0x4504); r += 0x21c) {
         if (*(int *)(r + 0x184) != 0 && *(char **)(*(char **)(r + 0x184) + 0x88) == ai_Unk5fb5b0)
             *p++ = r;
     }

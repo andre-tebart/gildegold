@@ -38,7 +38,8 @@ extern float ai_Unk760420;
    include ch.h (gv.h's d3sm_GetVertex is a K&R declaration), so the fields this unit reads are declared here
    (type debt, see the lead comment) */
 typedef struct SCENEOBJ {
-    char pad000[0x2c];              /* 0x00 .. 0x2b */
+    char pad000[0x28];              /* 0x00 .. 0x27 */
+    int script;                     /* 0x28, the id of the event script running for the object (-1 = none; init_LoadShopScript) */
     int group;                      /* 0x2c, ch.h CHARACTER.group: the group id the character belongs to (compared with
                                        ch_CurrentGroup / evt_NoGroup; here with the building's id) */
     int scriptGroup;                /* 0x30, ch.h CHARACTER.scriptGroup: the group of the script that created / moved it
@@ -195,7 +196,7 @@ typedef struct INIT_CHAR {
     unsigned char kind;             /* 0x002 */
     char pad003[0x1];               /* 0x003 */
     unsigned int netId;             /* 0x004, the record's network id (the field block id) */
-    char pad008[0x1];               /* 0x008 (ai.h health) */
+    unsigned char health;           /* 0x008, ai.h AICHAR.health (100 at creation, > 0 = alive) */
     unsigned char female;           /* 0x009, 0 male / 1 female (unk_4a7140.h's female, he.c's title texts by +9) */
     unsigned short age;             /* 0x00a, the age in years (am.c: "grown up (0x0a + 4 >= 0x20)") */
     char pad00c[0x20];              /* 0x00c .. 0x02b */
@@ -407,7 +408,7 @@ int init_StatusForm = 0;  /* 0x75df00, the panel form the load status is printed
    from the registration message 0xc (0x4c46d0: short + 0xc, byte + 0xe, int + 0xf, sex + 0x13, faith + 0x14) */
 #include "f3init_types.h"
 INIT_PLAYER init_PlayerProfile = {0};  /* 0x75e5a0 */
-int ai_Unk7603a0[32] = {0};  /* 0x7603a0 .. INIT_WINDOWS_END: the */
+int ai_SceneChars[32] = {0};  /* 0x7603a0 .. INIT_WINDOWS_END: the characters of the current scene (INIT_CHAR pointers; cm.c 0x4cf000 updates them each tick) */
 #define INIT_WINDOWS_END (unsigned)&ai_Unk760420       /* one past the scene window table 0x7603a0 (0x20 ints) */
 #include "rd_types.h"                 /* G15BK, the building sites ai_Bauplaetze (rd.h cannot be included here) */
 #include "ls.h"
@@ -457,7 +458,7 @@ struct G15PLANT;
 void gm_ShowBuildingObjects(unsigned char *b);                     /* 0x502e30, f3gm.c */
 int ai_Unk45f9f0();                     /* 0x45f9f0 */
 int ai_Unk442210();                     /* 0x442210 */
-void ai_Unk4c2f30(char *a);
+void ai_FavourComment(char *a);
 
 /* ---- the start-of-game setup rules 0x50e0d0 .. 0x50e5a0 (no strings; ROUGH drafts) ---- */
 
@@ -3057,55 +3058,64 @@ void unk_Unk5124d0(void)
     if (b != 0)
         init_BuildingSceneUniverse(b);
 }
-/* 0x5124f0, loads the shopping script of the building b ("%slocations\%s\Einkauf_%s.esc" in the engine's script folder) for its owner's window (the entry of 0x7603a0 whose character is 0x50a810 of b) and starts it with the window's character; the handle goes to init_ShopScript. ROUGH */
-
-
+/* 0x5124f0, loads the shopping script of the building b for the character of b's master (gm_FindCharacterByMaster)
+   when it is among the scene characters ai_SceneChars with its byte +8 above 1 and, with an object o, its model
+   belongs to o's group (+0x30): "%slocations\%s\Einkauf_%s.esc" in the script folder evt_Path with the name of b's
+   type for a home, else of o's prototype. When the file exists, an earlier script of the character's model (+0x28)
+   is stopped, the new one runs with the model and ai_FavourComment, the script records the model and its id goes to
+   the model and to init_ShopScript (-1 when the script does not load).
+   @deep read against the whole original 0x5124f0..0x5126a0 and rewritten: the window walk as a for loop
+   with the break at its head (no goto), the later reads through c (the last candidate, esi) as the
+   original does, the home-type record first, name initialised 0 and taken from the goods record only when
+   that is nonzero, the old script id read once; Q2 (ai_SceneChars, ai_FavourComment), Q4 (INIT_CHAR.health
+   / model, SCENEOBJ.script / scriptGroup, INIT_OBJ, EVTSCRIPT.id / character), Q5, Q7
+   (gm_FindCharacterByMaster in f3gm.h) cleared. 99 -> 95 differing, 132 vs 139 instructions. Left:
+   allocation - the original keeps b in ebp and name in a frame slot ([esp+0x10], frame 0x13c vs 0x138) and
+   so duplicates the sprintf tail for the goods path (0x5125be) with the null path reading the slot (mov
+   eax,[esp+0x10]); ours keeps name in ebp, reloads b from its argument slot and joins the paths before one
+   sprintf (lea eax,[ebp+1]); the rest are the follow-on register choices (eax/ecx/edx around
+   evt_RunScriptArgs and the id stores) */
 void init_LoadShopScript(unsigned char *b, unsigned short *o)
 {
-    int c, w, i, nm, r, h;
-    int *q;
+    INIT_CHAR *c, *w, *m;
+    INIT_CHAR **q;
+    EVTSCRIPT *h, *old;
+    char *name;
+    int id;
     char buf[0x104];
     char s1[4], s2[0x30];
-    char *nmp;
 
+    name = 0;
     w = 0;
     c = 0;
-    i = gm_FindCharacterByMaster(b);
-    q = ai_Unk7603a0;
-    do {
+    m = (INIT_CHAR *)gm_FindCharacterByMaster((int)b);
+    for (q = (INIT_CHAR **)ai_SceneChars; (int)q < (int)INIT_WINDOWS_END; q++) {
         if (w != 0)
-            goto have;
+            break;
         c = *q;
-        if (c != 0 && c == i)
+        if (c != 0 && c == m)
             w = c;
-        q++;
-    } while ((int)q < INIT_WINDOWS_END);
-    if (w != 0) {
-have:
-        if (1 < *(unsigned char *)(w + 8) && (o == 0 || *(int *)(*(int *)(w + 0x184) + 0x30) == *(int *)(o + 2))) {
-            if (gm_IsHomeType(b) == 0) {
-                nmp = ai_Goods + (unsigned)*o * 0x41;
-                if (nmp == 0)
-                    nmp = 0;
-            } else
-                nmp = ai_BTypes + (unsigned)*b * 0x24d;
-            sprintf(buf, "%slocations\\%s\\Einkauf_%s.esc", evt_Path, nmp + 1, nmp + 1);
-            r = vfs_FindFile(buf, vfs_Root, s1);
-            if (r != 0) {
-                sprintf(s2, "sp_%i", *(int *)(w + 4));
-                h = evt_LoadScript(buf);
-                if (h != 0) {
-                    i = *(int *)(*(int *)(w + 0x184) + 0x28);
-                    if (i != -1 && (i = (int)evt_FindById(i)) != 0)
-                        evt_Stop((EVTSCRIPT *)i);
-                    evt_RunScriptArgs((EVTSCRIPT *)h, 2, *(int *)(w + 0x184), ai_Unk4c2f30);
-                    *(int *)(h + 0xc94) = *(int *)(w + 0x184);
-                    *(int *)(*(int *)(w + 0x184) + 0x28) = *(int *)(h + 0x100);
-                    init_ShopScript = *(int *)(h + 0x100);
-                    return;
-                }
-                init_ShopScript = -1;
+    }
+    if (w != 0 && w->health > 1 && (o == 0 || w->model->scriptGroup == ((INIT_OBJ *)o)->objId)) {
+        if (gm_IsHomeType(b) != 0)
+            name = (char *)INIT_BTYPE(b);
+        else if (ai_Goods + ((INIT_OBJ *)o)->proto * 0x41 != 0)
+            name = ai_Goods + ((INIT_OBJ *)o)->proto * 0x41;
+        sprintf(buf, "%slocations\\%s\\Einkauf_%s.esc", evt_Path, name + 1, name + 1);
+        if (vfs_FindFile(buf, vfs_Root, s1) != 0) {
+            sprintf(s2, "sp_%i", c->netId);
+            h = evt_LoadScript(buf);
+            if (h != 0) {
+                id = c->model->script;
+                if (id != -1 && (old = evt_FindById(id)) != 0)
+                    evt_Stop(old);
+                evt_RunScriptArgs(h, 2, c->model, ai_FavourComment);
+                h->character = (struct CHARACTER *)c->model;
+                c->model->script = h->id;
+                init_ShopScript = h->id;
+                return;
             }
+            init_ShopScript = -1;
         }
     }
 }

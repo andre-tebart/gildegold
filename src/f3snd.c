@@ -1067,11 +1067,11 @@ void snd_PlaySelectedClick(void)
         }
     }
 }
-/* 0x4c2d20, now and then (40% of the calls) a comment of the selected workers (ai_Unk7603a0[0x20]) about
+/* 0x4c2d20, now and then (40% of the calls) a comment of the selected workers (ai_SceneChars[0x20]) about
    their favour with the player: the average gm_Liking favour over the selected workers selects the text
    ("SCHLECHTE_GUNST" < 0x32, "MITTLERE_GUNST" < 0x4b, "GUTE_GUNST" above), spoken by the more numerous
    sex (w / m, the last selected woman / man), -5 (a neutral voice) when the preferred one is missing
-   @deep 65 code hunks, same operation / scheduling only: the whole original 0x4c2d20..0x4c2f2f read against the source, every constant and callee corresponds (the 0.4 double gate, snd_LoadVoiceBank of ARBEITER_KOMMENTARE_BEFEHL_HANDWERKER.sbf, the 0x20 selected-worker scan at 0x7603a0 with the +0x188 selected and +9 sex bytes, men/women counts, the float favour sum truncated per step (fiadd + __ftol), f /= men+women, the 0x32/0x4b thresholds, the w/m choice and the -5 fallback, SCHLECHTE/MITTLERE/GUTE_GUNST). Left: ours CSEs snd_VoiceBankOrders into edx across the tail where the original compares memory (cmp ds:0x6f0cbc,esi) and reloads in every play branch; the original's out-of-line early-return block at 0x4c2e2a; the init store order (mov edi,ebx) and eax/edx choice for the men+women add. Readability debt after this session: Q2 ai_Unk7603a0 (now unsigned short *[0x20]), gm_Liking. */
+   @deep 65 code hunks, same operation / scheduling only: the whole original 0x4c2d20..0x4c2f2f read against the source, every constant and callee corresponds (the 0.4 double gate, snd_LoadVoiceBank of ARBEITER_KOMMENTARE_BEFEHL_HANDWERKER.sbf, the 0x20 selected-worker scan at 0x7603a0 with the +0x188 selected and +9 sex bytes, men/women counts, the float favour sum truncated per step (fiadd + __ftol), f /= men+women, the 0x32/0x4b thresholds, the w/m choice and the -5 fallback, SCHLECHTE/MITTLERE/GUTE_GUNST). Left: ours CSEs snd_VoiceBankOrders into edx across the tail where the original compares memory (cmp ds:0x6f0cbc,esi) and reloads in every play branch; the original's out-of-line early-return block at 0x4c2e2a; the init store order (mov edi,ebx) and eax/edx choice for the men+women add. Readability debt after this session: Q2 ai_SceneChars (now unsigned short *[0x20]), gm_Liking. */
 
 void snd_PlayFavourComment(void)
 {
@@ -1093,7 +1093,7 @@ void snd_PlayFavourComment(void)
     if (snd_VoiceBankOrders == 0)
         snd_VoiceBankOrders = snd_LoadVoiceBank("ARBEITER_KOMMENTARE_BEFEHL_HANDWERKER.sbf", 0);
     for (i = 0; i < 0x20; i++) {
-        c = (unsigned short *)ai_Unk7603a0[i];
+        c = (unsigned short *)ai_SceneChars[i];
         if (c != 0 && (char)c[0xc4] != 0) {
             if (*((char *)c + 9) == 0) {
                 men++;
@@ -1143,7 +1143,7 @@ void snd_PlayFavourComment(void)
    do not clean).
    @deep 14 code hunks, one scheduling cluster only: the whole original 0x4c2f30..0x4c30df read against the source; ours differs only in the position of the pop esi (ours right after the two out calls, the original after the level test at 0x4c2fea), which shifts the esp offsets of out[1] and x by 4 in that one block; the next 102 instructions are equal. Meaning fixes done in this session: out is a 0xb8-byte unsigned array (the 0xbc frame: x at R-0xbc, out at R-0xb8), r is a 32-bit unsigned (the original's mov bp,ax + and ebp,0xffff), x is volatile (the original stores it to its slot and reloads it at every use - a matching trick, not cleaned), and the special-kind / generic calls are one ternary so that the compiler emits the original's single shared test tail. Readability debt: Q1 name, Q2 gm_BuildingGoodsList / gm_Unk5099e0 / gm_Liking, Q4 the four raw casts (the party record +0x34 / +0x200 and the character +0x16c). */
 
-void ai_Unk4c2f30(char *a)
+void ai_FavourComment(char *a)
 {
     volatile int x;
     unsigned out[0x2e];

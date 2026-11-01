@@ -9022,7 +9022,7 @@ void ai_Unk587c90(char *unused)
         return;
     cnt = 0;
     for (i = 0; i < 0x20; i++) {
-        p = *(char **)((unsigned)&ai_Unk7603a0 + i * 4);
+        p = *(char **)((unsigned)&ai_SceneChars + i * 4);
         if (p != 0 && *(unsigned char *)(p + 2) == 0x14 && *(int *)(p + 0x184) != 0 &&
             *(int *)(*(int *)(p + 0x184) + 0x88) == U_I((unsigned)&ai_Unk5fb5b0))
             list[cnt++] = (int)p;

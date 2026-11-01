@@ -633,13 +633,13 @@ extern struct D2OBJ *d2_Objs;
 extern GAPDATA full_data_602568[];
 extern char * ai_PlayerBuilding;
 extern unsigned char ai_TimeHour;
-extern int ai_Unk7603a0[32];
+extern int ai_SceneChars[32];
 extern float ai_Unk760420;
 
 extern int sv_PopRequest;
 
 extern unsigned char ai_TimeHour;
-extern int ai_Unk7603a0[32];
+extern int ai_SceneChars[32];
 extern float ai_Unk760420;
 extern int d2_ClickedId;
 
@@ -698,7 +698,7 @@ extern int ai_Unk5a6270();
 extern char * ai_PlayerBuilding;
 extern unsigned char ai_TimeHour;
 extern int d2_PointerObj;
-extern int ai_Unk7603a0[32];
+extern int ai_SceneChars[32];
 extern float ai_Unk760420;
 extern int d2_ClickedId;
 
@@ -708,7 +708,7 @@ extern int ai_Unk5a6270();
 extern char * ai_PlayerBuilding;
 extern unsigned char ai_TimeHour;
 extern int d2_PointerObj;
-extern int ai_Unk7603a0[32];
+extern int ai_SceneChars[32];
 extern float ai_Unk760420;
 extern int d2_ClickedId;
 
@@ -4277,7 +4277,7 @@ int ai_Unk593f40(char *name)
             *(unsigned char *)((char *)msg + 0x36) = 2;
             strcpy((char *)msg + 0x58, name);
             snd_PlayFavourComment();
-            for (i = 0, p = (int *)(unsigned)&ai_Unk7603a0; (int)p < (unsigned)&ai_Unk760420; p++) {
+            for (i = 0, p = (int *)(unsigned)&ai_SceneChars; (int)p < (unsigned)&ai_Unk760420; p++) {
                 if (*p != 0 && *(unsigned char *)(*p + 0x188) != 0) {
                     /* ROUGH: the entries' +4 go to the message argument list */
                     msg[0x16 + i] = *(int *)(*p + 4);
@@ -11634,7 +11634,7 @@ int ai_Unk5a48d0(int param_1)
                 carrier = (char *)he_NextEvent();
             if (carrier != 0) {
                 U_I((unsigned)&sv_PopRequest) = 2;
-                for (tp = (int *)(unsigned)&ai_Unk7603a0; tp < (int *)(unsigned)((unsigned)ai_Unk7603a0 + 0x80); tp++) {
+                for (tp = (int *)(unsigned)&ai_SceneChars; tp < (int *)(unsigned)((unsigned)ai_SceneChars + 0x80); tp++) {
                     e = (char *)*tp;
                     if (e != 0 && *(unsigned char *)(e + 0x188) != 0)
                         sv_MoveToGroup(0, 0, U_W(e), carrier);
@@ -11654,7 +11654,7 @@ int ai_Unk5a48d0(int param_1)
                 for (i = 0; i < 8; i++)
                     U_I(msg + 0x38 + i * 4) = -1;
                 n = 0;
-                for (tp = (int *)(unsigned)&ai_Unk7603a0; tp < (int *)(unsigned)((unsigned)ai_Unk7603a0 + 0x80); tp++) {
+                for (tp = (int *)(unsigned)&ai_SceneChars; tp < (int *)(unsigned)((unsigned)ai_SceneChars + 0x80); tp++) {
                     e = (char *)*tp;
                     if (e != 0 && *(unsigned char *)(e + 0x188) != 0) {
                         U_I(msg + 0x38 + n * 4) = U_I(e + 4);
@@ -11737,7 +11737,7 @@ void ai_Unk5a4b90(int param_1)
         if (U_I((unsigned)&d2_ClickedId) != -1) {
             if (U_I((unsigned)&d2_ClickedId) == 0) {
                 n = 0;
-                for (tp = (int *)(unsigned)&ai_Unk7603a0; tp < (int *)(unsigned)((unsigned)ai_Unk7603a0 + 0x80) && n < 6; tp++) {
+                for (tp = (int *)(unsigned)&ai_SceneChars; tp < (int *)(unsigned)((unsigned)ai_SceneChars + 0x80) && n < 6; tp++) {
                     e = *tp;
                     if (e != 0 && *(char *)(e + 0x188) != 0) {
                         list[n] = U_I(e + 4);
@@ -12581,7 +12581,7 @@ int ai_Unk5a6270(int param_1, char *param_2)
                 for (i = 0; i < 6; i++)
                     U_I(msg + 0x38 + i * 4) = -1;
                 n = 0;
-                for (tp = (int *)(unsigned)&ai_Unk7603a0; tp < (int *)(unsigned)((unsigned)ai_Unk7603a0 + 0x80) && n < 6; tp++) {
+                for (tp = (int *)(unsigned)&ai_SceneChars; tp < (int *)(unsigned)((unsigned)ai_SceneChars + 0x80) && n < 6; tp++) {
                     e = *tp;
                     if (e != 0 && *(char *)(e + 0x188) != 0) {
                         U_I(msg + 0x38 + n * 4) = U_I(e + 4);
@@ -12664,18 +12664,18 @@ int ai_Unk5a64d0(int param_1, char *param_2)
                 U_I(msg + 0x60) = U_I(U_I((unsigned)&ai_PlayerBuilding) + 1);
                 U_I(msg + 0x64) = U_I(U_I((unsigned)&sv_PanelShown) + 2);
                 for (i = 0; i < 0x20; i++) {
-                    e = U_I((unsigned)&ai_Unk7603a0 + i * 4);
+                    e = U_I((unsigned)&ai_SceneChars + i * 4);
                     if (e != 0 && *(char *)(e + 0x188) != 0)
                         break;
                 }
                 if (i < 0x20) {
-                    e = U_I((unsigned)&ai_Unk7603a0 + i * 4);
+                    e = U_I((unsigned)&ai_SceneChars + i * 4);
                     U_I(msg + 0x5c) = U_I(e + 4);
                     cm_SendLongMessage(msg);
                     snd_PlayFavourComment();
                 }
                 n = 0;
-                for (tp = (int *)(unsigned)&ai_Unk7603a0; tp < (int *)(unsigned)((unsigned)ai_Unk7603a0 + 0x80); tp++) {
+                for (tp = (int *)(unsigned)&ai_SceneChars; tp < (int *)(unsigned)((unsigned)ai_SceneChars + 0x80); tp++) {
                     e = *tp;
                     if (e != 0 && *(char *)(e + 0x188) != 0)
                         n++;

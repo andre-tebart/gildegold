@@ -17,6 +17,7 @@ int gm_TitleNumber(int group, int rank);        /* 0x5043d0, the title number of
 int gm_TitleGroup(int n);                       /* 0x504ad0, the title group of the title n */
 int gm_IsType10(unsigned char *b);              /* 0x5024f0, 1 for the town market */
 int gm_IsHomeType(unsigned char *b);            /* 0x502520, 1 for a home type */
+char *gm_FindCharacterByMaster(int m);          /* 0x50a810, the first kind 6 / 7 / 1 / 2 character with a job whose master (+0x16c) is m */
 void gm_ShowSlotObjects(int unused, int scene, int c);  /* 0x502a60, the scene objects of the character's five slots on */
 void gm_AssignBuilding(unsigned char *b, unsigned short place, unsigned own);  /* 0x502b60 */
 

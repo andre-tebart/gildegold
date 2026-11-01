@@ -131,7 +131,7 @@ extern GAPDATA full_data_760458[];
 extern GAPDATA full_data_76045c[];
 extern GAPDATA full_data_760460[];
 extern unsigned char ai_TimeHour;
-extern int ai_Unk7603a0[32];
+extern int ai_SceneChars[32];
 extern GAPDATA full_data_6237c8[];
 extern GAPDATA full_data_75ec84[];
 extern int gm_PlayerRecords[688];
@@ -193,7 +193,7 @@ extern GAPDATA full_data_760444[];
 extern GAPDATA full_data_760448[];
 extern GAPDATA full_data_76044c[];
 extern GAPDATA full_data_760450[];
-extern int ai_Unk7603a0[32];
+extern int ai_SceneChars[32];
 extern GAPDATA full_data_6f23f0[];
 extern GAPDATA full_data_75ec40[];
 extern char ai_Unk75fba0[2048];
@@ -3981,27 +3981,27 @@ void sv_CollectGroupCharacters(char *b)
 {
     int i, *p, *q;
 
-    p = (int *)(unsigned)&ai_Unk7603a0;
+    p = (int *)(unsigned)&ai_SceneChars;
     for (i = 0x20; i != 0; i--)
         *p++ = 0;
     if (b == 0) {
-        p = (int *)(unsigned)&ai_Unk7603a0;
+        p = (int *)(unsigned)&ai_SceneChars;
         q = (int *)((unsigned)&ai_Unk770cec + 0x18);
         do {
-            if ((int)p > ((unsigned)&ai_Unk7603a0 + 0x7b))
+            if ((int)p > ((unsigned)&ai_SceneChars + 0x7b))
                 return;
             if (*q != 0 && *(int *)(*q + 0x2c) == -1)
                 *p++ = (int)(q - 0x61);
             q += 0x87;
         } while ((int)q < ((unsigned)((unsigned)ai_Unk770cec + 0x65296) + 0x182));
     } else {
-        p = (int *)(unsigned)&ai_Unk7603a0;
+        p = (int *)(unsigned)&ai_SceneChars;
         q = (int *)((unsigned)&ai_Unk770cec + 0x18);
-        while ((int)p < ((unsigned)&ai_Unk7603a0 + 0x7c)) {
+        while ((int)p < ((unsigned)&ai_SceneChars + 0x7c)) {
             i = *q;
             if (i != 0 && *(int *)(i + 0x2c) == *(int *)(b + 1)) {
                 *p++ = (int)(q - 0x61);
-                if ((int)p > ((unsigned)&ai_Unk7603a0 + 0x20))
+                if ((int)p > ((unsigned)&ai_SceneChars + 0x20))
                     ch_SetVisible(i, 0);
             }
             q += 0x87;
@@ -4588,7 +4588,7 @@ void sv_Unk52b500(unsigned char *a)
     }
     h = gm_ClockSeason((unsigned)&ai_Time);
     for (i = 0; i < 0x20; i++) {
-        c = (char *)SV_I((unsigned)&ai_Unk7603a0 + i * 4);
+        c = (char *)SV_I((unsigned)&ai_SceneChars + i * 4);
         if (c == 0 || (g = *(char **)(c + 0x184)) == 0)
             continue;
         if (*(int *)(g + 0x2c) != *(int *)(a + 1) || *(char *)(c + 8) == 0 || *(char **)(g + 0x88) != ai_Unk5fb5b0)
@@ -4649,7 +4649,7 @@ l7f0:
             if (*(int *)(g + 0x28) == -1) {
                 for (n = 0; n < 8; n++)
                     used[n] = 1;
-                for (p = (int *)(unsigned)&ai_Unk7603a0; (int)p < (unsigned)((unsigned)ai_Unk7603a0 + 0x80); p++) {
+                for (p = (int *)(unsigned)&ai_SceneChars; (int)p < (unsigned)((unsigned)ai_SceneChars + 0x80); p++) {
                     if (*p != 0 && (w = *(char **)(*p + 0x184)) != 0 && (v = *(int *)(w + 0x28)) != -1
                         && (o4 = (char *)evt_FindById(v)) != 0 && (r = (char *)strstr(o4, name)) != 0) {
                         len = strlen(name);
@@ -4905,7 +4905,7 @@ lgroup:
             sprintf(name, "dummy_%s", (char *)SV_I((unsigned)&ai_ClickedObject) + 8);
             if (d3_FindObject(SV_I((unsigned)&ai_ClickedObject), 0x100, 0, name) == 0)
                 strcpy(name, (char *)SV_I((unsigned)&ai_ClickedObject));
-            pp = (unsigned *)(unsigned)&ai_Unk7603a0;
+            pp = (unsigned *)(unsigned)&ai_SceneChars;
             do {
                 ch = (unsigned short *)*pp;
                 v = 0;
@@ -4933,7 +4933,7 @@ lgroup:
                         ai_Unk4c5460(*(int *)(ch + 2), *(int *)(v + 1), *(int *)(SV_I((unsigned)&full_data_6f22fc) + 1));
                 }
                 pp++;
-            } while ((int)pp < (unsigned)((unsigned)ai_Unk7603a0 + 0x80));
+            } while ((int)pp < (unsigned)((unsigned)ai_SceneChars + 0x80));
             sv_ClearSelection();
             SV_I((unsigned)&full_data_6f22fc) = 0;
         }
@@ -6263,7 +6263,7 @@ void sv_Unk52eee0(void)
         y1 = SV_I((unsigned)&full_data_760448);
         if (SV_I((unsigned)&full_data_760448) <= SV_I((unsigned)&full_data_760450))
             y1 = SV_I((unsigned)&full_data_760450);
-        p = (int *)(unsigned)&ai_Unk7603a0;
+        p = (int *)(unsigned)&ai_SceneChars;
         do {
             c = *p;
             if (c != 0 && *(char *)(c + 8) != 0) {
@@ -6277,7 +6277,7 @@ void sv_Unk52eee0(void)
                 }
             }
             p++;
-        } while ((int)p < (unsigned)((unsigned)ai_Unk7603a0 + 0x80));
+        } while ((int)p < (unsigned)((unsigned)ai_SceneChars + 0x80));
     }
 }
 /* 0x52f0d0, like 0x52eee0 (the flags come from 0x4ce170): moves the second corner with the mouse (clamped to the view) and flags (+0x188) the characters of the table 0x7603a0 whose screen position (three float conversions, the
@@ -6315,7 +6315,7 @@ void sv_Unk52f0d0(void)
         y1 = SV_I((unsigned)&full_data_760448);
         if (SV_I((unsigned)&full_data_760448) <= SV_I((unsigned)&full_data_760450))
             y1 = SV_I((unsigned)&full_data_760450);
-        p = (int *)(unsigned)&ai_Unk7603a0;
+        p = (int *)(unsigned)&ai_SceneChars;
         do {
             c = *p;
             if (c != 0 && *(char *)(c + 8) != 0) {
@@ -6329,7 +6329,7 @@ void sv_Unk52f0d0(void)
                 }
             }
             p++;
-        } while ((int)p < (unsigned)((unsigned)ai_Unk7603a0 + 0x80));
+        } while ((int)p < (unsigned)((unsigned)ai_SceneChars + 0x80));
     }
 }
 
