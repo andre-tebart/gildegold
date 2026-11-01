@@ -360,6 +360,7 @@ int d2_RemoveWindow();                     /* 0x472ce0 */
 #include "ahm.h"
 #include "ai.h"
 #include "d3_tools.h"
+#include "d3_sm.h"
 #include "anm.h"
 #include "bio.h"
 #include "d3_anim.h"
@@ -2243,15 +2244,15 @@ done:
 }
 
 extern char * sv_CameraObj;
-extern float sv_CameraHeightFactor, sv_CameraAngleFactor, ai_Unk6f2374, ai_Unk6f2388, ai_Unk6f2390, ai_Unk6f238c, ai_Unk6f1c44;  /* 0x6f22d4, 0x6f22d8, 0x6f2374, 0x6f2388, 0x6f2390, 0x6f238c, 0x6f1c44 */
-extern float sv_CameraHeightNear, sv_CameraAngleNear, sv_CameraHeightFar, sv_CameraAngleFar, ai_Unk623818;  /* 0x623800, 0x623804, 0x623808, 0x62380c, 0x623818 */
+extern float sv_CameraHeightFactor, sv_CameraAngleFactor, ai_Unk6f2374, sv_ScrollVelX, sv_ScrollVelY, sv_ScrollVelXPrev, sv_ScrollVelYPrev;  /* 0x6f22d4, 0x6f22d8, 0x6f2374, 0x6f2388, 0x6f2390, 0x6f238c, 0x6f1c44 */
+extern float sv_CameraHeightNear, sv_CameraAngleNear, sv_CameraHeightFar, sv_CameraAngleFar, sv_ScrollSpeed;  /* 0x623800, 0x623804, 0x623808, 0x62380c, 0x623818 */
 extern int ai_Unk6f2378;  /* 0x6f2378 */
 extern int ai_Unk6f22cc;  /* 0x6f22cc */
 extern int ai_Unk6f22d0;  /* 0x6f22d0 */
 extern int d3t_CamMoving;  /* 0x6310e4 */
 extern struct D3ANIM *d3t_CamMove;  /* 0x6310e8 */
-extern int ai_Unk6f2394;  /* 0x6f2394 */
-extern float ai_Unk6f1c74[3];
+extern int sv_ScrollTime;  /* 0x6f2394 */
+extern float sv_ScrollLastMove[3];
 float d3t_GetMeanHeight();                   /* 0x412550 */
 int d3_VecEqual(struct D3VECTOR *a, struct D3VECTOR *b, float eps);  /* 0x453e80 */
 void d3_MatTranspose();                     /* 0x454040 */
@@ -2415,182 +2416,186 @@ apply:
     d3t_PlaceObjectV(sv_CameraObj, pos, dir, ai_CameraStep, 8);
     ai_Unk6f2378 = 1;
 }
-/* 0x5263a0, the camera scroll step of one frame: the border zone of the mouse (0x1467380 / 82 against the window 0x6310b0 / 0x6310b4 .. 0x5f3238 / 0x5f323c, margin 0x40, or the arrow keys 0x146828b / d / 0x1468290 / 88)
-   accelerates the scroll speeds 0x6f2388 (x) / 0x6f2390 (y) by 5 * dt (dt = 0.4 * the elapsed ms, at most 4.0) up to +-50 starting at +-10, picks the direction code 0x6ed9d0 (1 .. 8, 5 .. 8 the corners) and decays
-   the speeds otherwise; the camera is then moved (0x43b790) by the speed rotated into the view direction (0x453b40, sin / cos), clamped to the map rectangle (0x5fb5b0 + 0xb0) and refused near the point 0x6f1c74;
-   returns 1 when the camera moved. ROUGH */
+/* 0x5263a0, one frame of the camera scroll by the screen border (a 0x40-pixel zone of the mouse window) or the
+   arrow keys: the x / y scroll velocities sv_ScrollVelX / Y start at +-10 and grow by 5 * dt (dt = 0.4 * the
+   elapsed ms, at most 4) up to +-50, decay to 0 otherwise; d2_PointerLook gets the direction (1 .. 8, 5 .. 8
+   the corners). The camera moves by the velocities rotated into the view (by the view's heading, or by the
+   matrix rows when it looks straight down), slower inside a building, clamped to the height map 20 cells in,
+   unless the move equals the last one (sv_ScrollLastMove). Returns 1 when the camera moved @deep read whole against 0x5263a0..0x526ce2 (571 vs 579 instructions): the look 1..8 test, dt from the clock (1.0f first frame, min(dt, 4.0)), the border/key/corner speed ramps with their double 50/-50 bounds, both decays (x > 0 .. else x < 0), the building slow-down, k = speed * dt * (factor*1.5 + 0.6), the AxisPair rows, both branches with their dead dst stores, the clamp (x: < lo / else > hi; z: max(hi) / min(lo)) all match. Left, allocation and layout: the angle a kept in a register where the original stores and reloads it (0x526b36 fstp/fld, fld [esp] before fcos), fwd[2] kept with fst where the original stores and reloads (0x526aaa), the 0.1 bound compared as a double literal vs the original's float at 0x5eb91c, the x-decay block placed before the left/right bodies (ours 0x526820) where the original puts it after them (0x5268c4), one register (ecx vs edx at 0x526ad6), frame 0x74 vs 0x80 */
 
-int sv_Unk5263a0(void)
+int sv_ScrollCamera(void)
 {
     int moved, my;
-    double dt;
+    float dt;                       /* the frame time factor, at most 4 */
     float k, f;
     float pos[3], dst[3], v[3], right[16], fwd[3];   /* right is a D3MATRIX: d3_MatTranspose writes 0x40 bytes */
     float a, sn, cs;
-    float *m;
+    D3SM *hm;                       /* the scene's height map */
     float lo, hi;
     int dirs;
+    const float *ax = (const float *)ai_AxisPair;
 
     moved = 0;
-    if (d2_PointerLook != 0 && d2_PointerLook < 9)
+    dirs = 0;
+    if ((unsigned short)d2_PointerLook >= 1 && (unsigned short)d2_PointerLook <= 8)
         d2_PointerLook = 0;
     if (d3t_CamMove != 0 || d3t_CamMoving != 0)
         return 0;
-    if (ai_Unk6f2394 == 0)
-        dt = 1.0;
+    if (sv_ScrollTime != 0)
+        dt = (unsigned)(d3_Time - sv_ScrollTime) * 0.4;
     else
-        dt = (unsigned)(d3_Time - ai_Unk6f2394) * 0.4;
-    if (4.0 <= dt)
-        dt = 4.0;
-    ai_Unk6f2394 = d3_Time;
+        dt = 1.0f;
+    dt = min(dt, 4.0);
+    sv_ScrollTime = d3_Time;
     my = dm_L.y;
     f = (float)(5.0 * dt);
-    dirs = 0;
     if ((my == di_MinY && dm_L.x < di_MinX + 0x40) || (my < di_MinY + 0x40 && dm_L.x == di_MinX)) {
-        if (ai_Unk6f2390 == 0.0f)
-            ai_Unk6f2390 = 10.0f;
-        if (ai_Unk6f2390 < 50.0f)
-            ai_Unk6f2390 += f;
-        if (ai_Unk6f2388 == 0.0f)
-            ai_Unk6f2388 = -10.0f;
-        if (-50.0f < ai_Unk6f2388)
-            ai_Unk6f2388 -= f;
+        if (sv_ScrollVelY == 0.0f)
+            sv_ScrollVelY = 10.0f;
+        if (sv_ScrollVelY < 50.0)
+            sv_ScrollVelY += f;
+        if (sv_ScrollVelX == 0.0f)
+            sv_ScrollVelX = -10.0f;
+        if (-50.0 < sv_ScrollVelX)
+            sv_ScrollVelX -= f;
         d2_PointerLook = 5;
-    } else if ((my == di_MinY && di_MaxX - 0x40 < dm_L.x) || (my < di_MinY + 0x40 && dm_L.x == di_MaxX)) {
-        if (ai_Unk6f2390 == 0.0f)
-            ai_Unk6f2390 = 10.0f;
-        if (ai_Unk6f2390 < 50.0f)
-            ai_Unk6f2390 += f;
-        if (ai_Unk6f2388 == 0.0f)
-            ai_Unk6f2388 = 10.0f;
-        if (ai_Unk6f2388 < 50.0f)
-            ai_Unk6f2388 += f;
+    } else if ((my == di_MinY && dm_L.x > di_MaxX - 0x40) || (my < di_MinY + 0x40 && dm_L.x == di_MaxX)) {
+        if (sv_ScrollVelY == 0.0f)
+            sv_ScrollVelY = 10.0f;
+        if (sv_ScrollVelY < 50.0)
+            sv_ScrollVelY += f;
+        if (sv_ScrollVelX == 0.0f)
+            sv_ScrollVelX = 10.0f;
+        if (sv_ScrollVelX < 50.0)
+            sv_ScrollVelX += f;
         d2_PointerLook = 6;
-    } else if ((my == di_MaxY && di_MaxX - 0x40 < dm_L.x) || (di_MaxY - 0x40 < my && dm_L.x == di_MaxX)) {
-        if (ai_Unk6f2390 == 0.0f)
-            ai_Unk6f2390 = -10.0f;
-        if (-50.0f < ai_Unk6f2390)
-            ai_Unk6f2390 -= f;
-        if (ai_Unk6f2388 == 0.0f)
-            ai_Unk6f2388 = 10.0f;
-        if (ai_Unk6f2388 < 50.0f)
-            ai_Unk6f2388 += f;
+    } else if ((my == di_MaxY && dm_L.x > di_MaxX - 0x40) || (my > di_MaxY - 0x40 && dm_L.x == di_MaxX)) {
+        if (sv_ScrollVelY == 0.0f)
+            sv_ScrollVelY = -10.0f;
+        if (-50.0 < sv_ScrollVelY)
+            sv_ScrollVelY -= f;
+        if (sv_ScrollVelX == 0.0f)
+            sv_ScrollVelX = 10.0f;
+        if (sv_ScrollVelX < 50.0)
+            sv_ScrollVelX += f;
         d2_PointerLook = 8;
-    } else if ((my == di_MaxY && dm_L.x < di_MinX + 0x40) || (di_MaxY - 0x40 < my && dm_L.x == di_MinX)) {
-        if (ai_Unk6f2390 == 0.0f)
-            ai_Unk6f2390 = -10.0f;
-        if (-50.0f < ai_Unk6f2390)
-            ai_Unk6f2390 -= f;
-        if (ai_Unk6f2388 == 0.0f)
-            ai_Unk6f2388 = -10.0f;
-        if (-50.0f < ai_Unk6f2388)
-            ai_Unk6f2388 -= f;
+    } else if ((my == di_MaxY && dm_L.x < di_MinX + 0x40) || (my > di_MaxY - 0x40 && dm_L.x == di_MinX)) {
+        if (sv_ScrollVelY == 0.0f)
+            sv_ScrollVelY = -10.0f;
+        if (-50.0 < sv_ScrollVelY)
+            sv_ScrollVelY -= f;
+        if (sv_ScrollVelX == 0.0f)
+            sv_ScrollVelX = -10.0f;
+        if (-50.0 < sv_ScrollVelX)
+            sv_ScrollVelX -= f;
         d2_PointerLook = 7;
     } else {
         if (dm_L.x == di_MinX || kb_Down[0xcb] != 0) {
-            if (ai_Unk6f2388 == 0.0f)
-                ai_Unk6f2388 = -10.0f;
-            if (-50.0f < ai_Unk6f2388)
-                ai_Unk6f2388 -= f;
+            if (sv_ScrollVelX == 0.0f)
+                sv_ScrollVelX = -10.0f;
+            if (-50.0 < sv_ScrollVelX)
+                sv_ScrollVelX -= f;
             d2_PointerLook = 4;
         } else if (dm_L.x == di_MaxX || kb_Down[0xcd] != 0) {
-            if (ai_Unk6f2388 == 0.0f)
-                ai_Unk6f2388 = 10.0f;
-            if (ai_Unk6f2388 < 50.0f)
-                ai_Unk6f2388 += f;
+            if (sv_ScrollVelX == 0.0f)
+                sv_ScrollVelX = 10.0f;
+            if (sv_ScrollVelX < 50.0)
+                sv_ScrollVelX += f;
             d2_PointerLook = 3;
         } else {
             if (my == di_MaxY || kb_Down[0xd0] != 0) {
-                if (ai_Unk6f2390 == 0.0f)
-                    ai_Unk6f2390 = -10.0f;
-                if (-50.0f < ai_Unk6f2390)
-                    ai_Unk6f2390 -= f;
+                if (sv_ScrollVelY == 0.0f)
+                    sv_ScrollVelY = -10.0f;
+                if (-50.0 < sv_ScrollVelY)
+                    sv_ScrollVelY -= f;
                 dirs = 1;
                 d2_PointerLook = 1;
             } else if (my == di_MinY || kb_Down[0xc8] != 0) {
-                if (ai_Unk6f2390 == 0.0f)
-                    ai_Unk6f2390 = 10.0f;
-                if (ai_Unk6f2390 < 50.0f)
-                    ai_Unk6f2390 += f;
+                if (sv_ScrollVelY == 0.0f)
+                    sv_ScrollVelY = 10.0f;
+                if (sv_ScrollVelY < 50.0)
+                    sv_ScrollVelY += f;
                 dirs = 1;
                 d2_PointerLook = 2;
             }
-            if (ai_Unk6f2388 <= 0.0f) {
-                if (ai_Unk6f2388 < 0.0f) {
-                    ai_Unk6f2388 += f;
-                    if (0.0f < ai_Unk6f2388)
-                        ai_Unk6f2388 = 0.0f;
-                }
-            } else {
-                ai_Unk6f2388 -= f;
-                if (ai_Unk6f2388 < 0.0f)
-                    ai_Unk6f2388 = 0.0f;
+            if (sv_ScrollVelX > 0.0f) {          /* the x speed decays to 0 */
+                sv_ScrollVelX -= f;
+                if (sv_ScrollVelX < 0.0f)
+                    sv_ScrollVelX = 0.0f;
+            } else if (sv_ScrollVelX < 0.0f) {
+                sv_ScrollVelX += f;
+                if (sv_ScrollVelX > 0.0f)
+                    sv_ScrollVelX = 0.0f;
             }
             if (dirs)
                 goto scroll;
         }
-        if (ai_Unk6f2390 <= 0.0f) {
-            if (!(0.0f <= ai_Unk6f2390) && (ai_Unk6f2390 += f, ai_Unk6f2390 > 0.0f))
-                ai_Unk6f2390 = 0.0f;
-        } else {
-            ai_Unk6f2390 -= f;
-            if (!(0.0f <= ai_Unk6f2390))
-                ai_Unk6f2390 = 0.0f;
+        if (sv_ScrollVelY > 0.0f) {              /* the y speed decays to 0 */
+            sv_ScrollVelY -= f;
+            if (sv_ScrollVelY < 0.0f)
+                sv_ScrollVelY = 0.0f;
+        } else if (sv_ScrollVelY < 0.0f) {
+            sv_ScrollVelY += f;
+            if (sv_ScrollVelY > 0.0f)
+                sv_ScrollVelY = 0.0f;
         }
     }
 scroll:
-    if (sv_CameraObj != 0 && (ai_Unk6f2388 != 0.0f || ai_Unk6f2390 != 0.0f)) {
-        if (ai_FallbackBuilding == 0) {
-            if (ai_PlayerBuilding != 0)
-                dt *= 0.25;
-        } else
+    if (d3_Camera != 0 && (sv_ScrollVelX != 0.0f || sv_ScrollVelY != 0.0f)) {
+        if (ai_FallbackBuilding != 0)
             dt *= 0.5;
-        k = (float)(ai_Unk623818 * dt * (sv_CameraHeightFactor * 1.5 + 0.6000000238418579));
-        d3_MatTranspose(sv_CameraObj + 0x18c, right);
-        v[0] = ai_Unk6f2388 * k * 1.1f;
-        v[1] = ai_Unk6f2390 * k * 1.1f;
-        fwd[0] = right[0] * 0.0f + right[4] * 0.0f + right[8] * 1.0f;
+        else if (ai_PlayerBuilding != 0)
+            dt *= 0.25;
+        k = (float)(sv_ScrollSpeed * dt * (sv_CameraHeightFactor * 1.5 + 0.6000000238418579));
+        d3_MatTranspose(&d3_Camera->matrix, right);
+        v[0] = sv_ScrollVelX * k * 1.1;
         fwd[1] = 0.0f;
-        fwd[2] = right[2] * 0.0f + right[6] * 0.0f + right[10] * 1.0f;
-        if (sqrt(fwd[0] * fwd[0] + fwd[2] * fwd[2]) < 0.1f) {   /* the matrix rows only below 0.1; the original jumps to the angle branch when >= 0.1 */
-            fwd[0] = right[0] * v[0] + right[4] * v[1];
-            fwd[2] = right[2] * v[0] + right[6] * v[1];
-        } else {
-            a = d3_VecAngle2((char *)(unsigned)&ai_AxisPair, fwd);
-            sn = (float)sin(-a);
-            cs = (float)cos(-a);
-            fwd[0] = (float)(v[1] * sn + v[0] * cs);
-            fwd[2] = (float)(v[1] * cs - v[0] * sn);
+        v[1] = sv_ScrollVelY * k * 1.1;
+        fwd[0] = right[0] * ax[0] + right[4] * ax[1] + right[8] * ax[2];
+        fwd[2] = right[2] * ax[0] + right[6] * ax[1] + right[10] * ax[2];
+        if (sqrt(fwd[0] * fwd[0] + fwd[2] * fwd[2]) < 0.1f) {   /* the view looks straight down: the matrix rows (0x526ac2) */
+            dst[1] = v[1];
+            dst[2] = 0.0f;
+            fwd[0] = 0.0f * right[8] + v[0] * right[0] + v[1] * right[4];
+            fwd[2] = 0.0f * right[10] + v[0] * right[2] + v[1] * right[6];
+        } else {                                                /* else rotated by the view's heading */
+            a = -d3_VecAngle2((char *)(unsigned)&ai_AxisPair, fwd);
+            sn = (float)sin(a);
+            dst[1] = 0.0f;
+            dst[2] = v[1];
+            cs = (float)cos(a);
+            fwd[0] = sn * v[1] + cs * v[0];
+            fwd[2] = cs * v[1] - sn * v[0];
         }
-        dst[0] = fwd[0] + *(float *)(sv_CameraObj + 0x4c);
-        dst[1] = *(float *)(sv_CameraObj + 0x50);
-        dst[2] = fwd[2] + *(float *)(sv_CameraObj + 0x54);
-        if (d3_VecEqual(ai_Unk6f1c74, dst, 0.1f) == 0) {
-            m = *(float **)(ai_Unk5fb5b0 + 0xb0);
-            if (m != 0) {
-                lo = m[4] * 20.0f + m[0];
-                hi = (float)(*(int *)(m + 8) - 0x14) * m[4] + m[0];   /* +0x20 is the int cell count (D3SM.size), read as an int like the original */
-                if (lo <= dst[0] && hi < dst[0])
-                    lo = hi;
-                else if (lo <= dst[0])
-                    lo = dst[0];
-                dst[0] = lo;
-                lo = m[6] * 20.0f + m[2];
-                hi = (float)(*(int *)(m + 8) - 0x14) * m[6] + m[2];
-                if (dst[2] <= hi)
-                    dst[2] = hi;
-                if (lo <= dst[2])
-                    dst[2] = lo;
+        fwd[1] = 0.0f;
+        dst[0] = fwd[0] + d3_Camera->pos.x;
+        dst[1] = d3_Camera->pos.y;
+        dst[2] = fwd[2] + d3_Camera->pos.z;
+        if (d3_VecEqual(sv_ScrollLastMove, dst, 0.1f) == 0) {
+            hm = (D3SM *)d3_DefaultScene->hmap;
+            if (hm != 0) {                                       /* clamped to the height map, 20 cells in */
+                lo = hm->cell.x * 20.0f + hm->origin.x;
+                if (dst[0] < lo)
+                    dst[0] = lo;
+                else {
+                    hi = (float)(hm->size - 20) * hm->cell.x + hm->origin.x;
+                    if (dst[0] > hi)
+                        dst[0] = hi;
+                }
+                lo = hm->cell.z * 20.0f + hm->origin.z;
+                hi = (float)(hm->size - 20) * hm->cell.z + hm->origin.z;
+                dst[2] = max(dst[2], hi);           /* z runs from the far edge (a negative cell): hi is the lower bound */
+                dst[2] = min(dst[2], lo);
             }
-            d3_SetObjectPos(sv_CameraObj, dst);
+            d3_SetObjectPos(d3_Camera, (struct D3VECTOR *)dst);
             moved = 1;
         }
-        ai_Unk6f1c74[0] = fwd[0];
-        ai_Unk6f1c74[1] = 0.0f;
-        ai_Unk6f1c74[2] = fwd[2];
+        sv_ScrollLastMove[0] = fwd[0];
+        sv_ScrollLastMove[1] = fwd[1];
+        sv_ScrollLastMove[2] = fwd[2];
     }
-    ai_Unk6f238c = ai_Unk6f2388;
-    ai_Unk6f1c44 = ai_Unk6f2390;
+    sv_ScrollVelXPrev = sv_ScrollVelX;
+    sv_ScrollVelYPrev = sv_ScrollVelY;
     return moved;
 }
 
@@ -2610,7 +2615,7 @@ int d3t_GetHeightRange();                     /* 0x411c70 */
 short * gm_PlayerRecord(char *ch);                   /* 0x506430 */
 void sv_PlaceCamera(float f);
 void sv_Unk525ee0(void);
-int sv_Unk5263a0(void);
+int sv_ScrollCamera(void);
 int sv_Unk526cf0(void);
 #define CAMLOG(r) do { \
         *(int *)((r) + 0x8c) = *(int *)(sv_CameraObj + 0x4c); \
@@ -2806,7 +2811,7 @@ int sv_Unk527640(void)
     if (sv_CameraObj != 0 && tb_Paused == 0) {
         if (ai_Unk760440 == 0 && ai_Unk62a8cc == -1) {
             if (dm_L.rhold == 0)
-                ai_Unk6f22b4 = sv_Unk5263a0();
+                ai_Unk6f22b4 = sv_ScrollCamera();
             if (-1 < (char)(sv_FrameMask >> 8))
                 sv_Unk526cf0();
             if (ai_Unk62381c != 0 && kb_Down[0xf] == 0)
@@ -7410,7 +7415,7 @@ float sv_CameraHeightNear = 450.0f;  /* 0x623800 */
 float sv_CameraAngleNear = -0.471238911f;  /* 0x623804 */
 float sv_CameraHeightFar = 1600.0f;  /* 0x623808 */
 float sv_CameraAngleFar = -1.08210409f;  /* 0x62380c */
-float ai_Unk623818 = 1.0f;  /* 0x623818 */
+float sv_ScrollSpeed = 1.0f;  /* 0x623818 */
 char ai_Unk62381c = 1;  /* 0x62381c */
 int ai_Unk623820 = -1;  /* 0x623820 */
 int ai_Unk623824 = -1;  /* 0x623824 */
@@ -7469,11 +7474,11 @@ int ai_Unk62a8cc = -1;  /* 0x62a8cc */
 int ai_Unk631078 = 0;  /* 0x631078 */
 short d2_PointerLook = 0;  /* 0x6ed9d0, the pointer direction / panel layout code (1 .. 8) */
 int ai_Unk6f1c40 = 0;  /* 0x6f1c40 */
-float ai_Unk6f1c44 = 0;  /* 0x6f1c44 */
+float sv_ScrollVelYPrev = 0;  /* 0x6f1c44 */
 int ai_Unk6f1c48 = 0;  /* 0x6f1c48 */
 int ai_Unk6f1c50 = 0;  /* 0x6f1c50 */
 float ai_Unk6f1c64[3] = {0};  /* 0x6f1c64 */
-float ai_Unk6f1c74[3] = {0};  /* 0x6f1c74 */
+float sv_ScrollLastMove[3] = {0};  /* 0x6f1c74 */
 int ai_Unk6f1c84 = 0;  /* 0x6f1c84 */
 int ai_Unk6f1c88 = 0;  /* 0x6f1c88 */
 int ai_Unk6f1c8c = 0;  /* 0x6f1c8c */
@@ -7508,10 +7513,10 @@ int ai_Unk6f236c = 0;  /* 0x6f236c */
 int ai_Unk6f2370 = 0;  /* 0x6f2370 */
 float ai_Unk6f2374 = 0;  /* 0x6f2374 */
 int ai_Unk6f2378 = 0;  /* 0x6f2378 */
-float ai_Unk6f2388 = 0;  /* 0x6f2388 */
-float ai_Unk6f238c = 0;  /* 0x6f238c */
-float ai_Unk6f2390 = 0;  /* 0x6f2390 */
-int ai_Unk6f2394 = 0;  /* 0x6f2394 */
+float sv_ScrollVelX = 0;  /* 0x6f2388 */
+float sv_ScrollVelXPrev = 0;  /* 0x6f238c */
+float sv_ScrollVelY = 0;  /* 0x6f2390 */
+int sv_ScrollTime = 0;  /* 0x6f2394 */
 int ai_Unk6f2398 = 0;  /* 0x6f2398 */
 int ai_Unk6f239c = 0;  /* 0x6f239c */
 int ai_Unk6f23a0 = 0;  /* 0x6f23a0 */

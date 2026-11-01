@@ -8100,7 +8100,7 @@ void ai_Unk4d0fa0(char *rec)
         sc = *(char **)(ai_Unk5fb5b0 + 0xb0);
     }
     ai_Unk935d00 = *(float *)(sc + 0x10) * ai_Unk5edc58;
-    ai_Unk623818 = 0.15f;
+    sv_ScrollSpeed = 0.15f;
     ai_Unk62381c = 0;
     ai_Unk6f0d04 = rec;
     ai_Unk4d0ca0();
@@ -8269,7 +8269,7 @@ void ai_Unk4d1a10(char *rec)
             *(int *)(r + 0x184) = 0;
         }
     }
-    ai_Unk623818 = 1.0f;
+    sv_ScrollSpeed = 1.0f;
     if (ai_Unk633738 != 0) {
         ai_Unk633dd4 = 0;
         *(int *)(ai_Unkfd7c50 + d3_CurrentScene * 0x3e0 + 8) = 0;

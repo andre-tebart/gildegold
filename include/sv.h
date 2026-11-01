@@ -49,7 +49,7 @@ void sv_Unk525ad0(char *t);                                             /* 0x525
 void sv_PlaceCamera(float f);                                           /* 0x525dd0 */
 void sv_Unk525ee0(void);                                                /* 0x525ee0 */
 void sv_Unk525ff0(void);                                                /* 0x525ff0 */
-int sv_Unk5263a0(void);                                                 /* 0x5263a0 */
+int sv_ScrollCamera(void);                                                 /* 0x5263a0 */
 int sv_Unk526cf0(void);                                                 /* 0x526cf0 */
 int sv_Unk527640(void);                                                 /* 0x527640 */
 void sv_FlyCameraToObject(int o);                                               /* 0x527840 */
@@ -156,7 +156,7 @@ extern float sv_CameraHeightNear;                           /* 0x623800 */
 extern float sv_CameraAngleNear;                            /* 0x623804 */
 extern float sv_CameraHeightFar;                            /* 0x623808 */
 extern float sv_CameraAngleFar;                             /* 0x62380c */
-extern float ai_Unk623818;                                  /* 0x623818 */
+extern float sv_ScrollSpeed;                                  /* 0x623818 */
 extern char ai_Unk62381c;                                   /* 0x62381c */
 extern int ai_Unk623820;                                    /* 0x623820 */
 extern int ai_Unk623824;                                    /* 0x623824 */
@@ -209,11 +209,11 @@ extern int ai_Unk62a8cc;                                    /* 0x62a8cc */
 extern int ai_Unk631078;                                    /* 0x631078 */
 extern short d2_PointerLook;                                /* 0x6ed9d0 */
 extern int ai_Unk6f1c40;                                    /* 0x6f1c40 */
-extern float ai_Unk6f1c44;                                  /* 0x6f1c44 */
+extern float sv_ScrollVelYPrev;                                  /* 0x6f1c44 */
 extern int ai_Unk6f1c48;                                    /* 0x6f1c48 */
 extern int ai_Unk6f1c50;                                    /* 0x6f1c50 */
 extern float ai_Unk6f1c64[3];                               /* 0x6f1c64 */
-extern float ai_Unk6f1c74[3];                               /* 0x6f1c74 */
+extern float sv_ScrollLastMove[3];                               /* 0x6f1c74 */
 extern int ai_Unk6f1c84;                                    /* 0x6f1c84 */
 extern int ai_Unk6f1c88;                                    /* 0x6f1c88 */
 extern int ai_Unk6f1c8c;                                    /* 0x6f1c8c */
@@ -248,10 +248,10 @@ extern int ai_Unk6f236c;                                    /* 0x6f236c */
 extern int ai_Unk6f2370;                                    /* 0x6f2370 */
 extern float ai_Unk6f2374;                                  /* 0x6f2374 */
 extern int ai_Unk6f2378;                                    /* 0x6f2378 */
-extern float ai_Unk6f2388;                                  /* 0x6f2388 */
-extern float ai_Unk6f238c;                                  /* 0x6f238c */
-extern float ai_Unk6f2390;                                  /* 0x6f2390 */
-extern int ai_Unk6f2394;                                    /* 0x6f2394 */
+extern float sv_ScrollVelX;                                  /* 0x6f2388 */
+extern float sv_ScrollVelXPrev;                                  /* 0x6f238c */
+extern float sv_ScrollVelY;                                  /* 0x6f2390 */
+extern int sv_ScrollTime;                                    /* 0x6f2394 */
 extern int ai_Unk6f2398;                                    /* 0x6f2398 */
 extern int ai_Unk6f239c;                                    /* 0x6f239c */
 extern int ai_Unk6f23a0;                                    /* 0x6f23a0 */
