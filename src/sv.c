@@ -2855,9 +2855,9 @@ void sv_Unk527840(int o)
     m = *(int *)(o + 0x61);
     d3t_GetHeightRange(m, &lo, &hi);
     d3_MatTranspose(ai_Unkfc2dec + 0x18c, rot);
-    back[0] = rot[0] * -0.0f + rot[3] * -0.0f + rot[6] * -600.0f;
-    back[1] = rot[1] * -0.0f + rot[4] * -0.0f + rot[7] * -600.0f;
-    back[2] = rot[2] * -0.0f + rot[5] * -0.0f + rot[8] * -600.0f;
+    back[0] = rot[0] * -0.0f + rot[4] * -0.0f + rot[8] * -600.0f;    /* rot is 4x4: the third row, [8] / [9] / [10] (0x527c0b ..) */
+    back[1] = rot[1] * -0.0f + rot[5] * -0.0f + rot[9] * -600.0f;
+    back[2] = rot[2] * -0.0f + rot[6] * -0.0f + rot[10] * -600.0f;
     d3_PointToWorld(m, m + 0x4c, cen);
     pos[0] = cen[0] + back[0];
     pos[1] = cen[1] + back[1];
@@ -2951,9 +2951,9 @@ void sv_Unk527bb0(int o)
     m = *(int *)(o + 0x61);
     d3t_GetHeightRange(m, &lo, &hi);
     d3_MatTranspose(ai_Unkfc2dec + 0x18c, rot);
-    back[0] = rot[0] * -0.0f + rot[3] * -0.0f + rot[6] * -600.0f;
-    back[1] = rot[1] * -0.0f + rot[4] * -0.0f + rot[7] * -600.0f;
-    back[2] = rot[2] * -0.0f + rot[5] * -0.0f + rot[8] * -600.0f;
+    back[0] = rot[0] * -0.0f + rot[4] * -0.0f + rot[8] * -600.0f;    /* rot is 4x4: the third row, [8] / [9] / [10] (0x527c0b ..) */
+    back[1] = rot[1] * -0.0f + rot[5] * -0.0f + rot[9] * -600.0f;
+    back[2] = rot[2] * -0.0f + rot[6] * -0.0f + rot[10] * -600.0f;
     d3_PointToWorld(m, m + 0x4c, cen);
     pos[0] = cen[0] + back[0];
     pos[1] = cen[1] + back[1];
@@ -3004,9 +3004,9 @@ void sv_Unk527e90(int m)
 
     d3t_GetHeightRange(m, &lo, &hi);
     d3_MatTranspose(ai_Unkfc2dec + 0x18c, rot);
-    back[0] = rot[0] * -0.0f + rot[3] * -0.0f + rot[6] * -600.0f;
-    back[1] = rot[1] * -0.0f + rot[4] * -0.0f + rot[7] * -600.0f;
-    back[2] = rot[2] * -0.0f + rot[5] * -0.0f + rot[8] * -600.0f;
+    back[0] = rot[0] * -0.0f + rot[4] * -0.0f + rot[8] * -600.0f;    /* rot is 4x4: the third row, [8] / [9] / [10] (0x527c0b ..) */
+    back[1] = rot[1] * -0.0f + rot[5] * -0.0f + rot[9] * -600.0f;
+    back[2] = rot[2] * -0.0f + rot[6] * -0.0f + rot[10] * -600.0f;
     d3_PointToWorld(m, m + 0x4c, cen);
     pos[0] = cen[0] + back[0];
     pos[1] = cen[1] + back[1];
