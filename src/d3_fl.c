@@ -776,7 +776,7 @@ void d3fl_Ramp(unsigned char *p, int a, int b, unsigned char v0, unsigned char v
     }
 }
 /* 0x440360, finds the water tile type ("WASSER"), builds the water height map, its regions and the water
-   strips, points and polygons of the tiles */
+   strips, points and polygons of the tiles @deep read the whole function against the original 0x440360..0x441253 (water type search, mask and its 8 neighbours, the shore ramps, the diagonal switch with its tables, regions, region records, strips/points/polys, the removed-region compaction, the frees) and fixed: if (found) {...} else watertype = 0xff (the original lays the found branch first, 0x441149 after the cmask free), the strips test if (!in) {...} else if (!v) (the original tests in first, 0x440ce7), the corner bits built in the unsigned char q with byte adds (add bl,bl / or bl,dl, the last bit and 0xff), the flag words cleared through D3TEXFLAGS.all. ours 1331 vs 1326 instructions, switch tables equal. Left: allocation and scheduling: the 8 neighbour writes of the mask keep x+1 / x-1 in [ebp-0x28] / [ebp-4] and y-1 / y+1 in other registers ('- mov ebx,[esi+0xc] / - mov edx,[esi]' vs '+ mov ebx,ecx / + mov edx,[esi+0xc]', a 29/30-line regs/slots run at 0x4404f4..0x4405bb), the region init loop rotated with i in [ebp-0x30] and a jmp into the body ('+ jmp 0x440b29 / + mov edx,[ebp-0x30]', 0x440aee), the strip loop counters swap [ebp+8] / [ebp-0x14] / [ebp-0x1c] (0x440f51, 0x44106d), and the slots of found / k / tx (e.g. [ebp-1] vs [ebp-0x15]). */
 
 void d3fl_PrepareWater(D3FLMAP *map)
 {
@@ -790,7 +790,7 @@ void d3fl_PrepareWater(D3FLMAP *map)
     D3FLPOLY *p;
     D3TEXFLAGS f;
     int oldn, i, j, x, y, k, n, x0, x1, y1, np, npoly, first, left, off;
-    unsigned char found, in, v, h0, h1;
+    unsigned char found, in, v, h0, h1, q;
     int tx, ty;
 
     oldn = map->nregions;
@@ -835,9 +835,7 @@ void d3fl_PrepareWater(D3FLMAP *map)
                     mask[((y + 1) & map->mask) * map->size + ((x + 1) & map->mask)] = 0xff;
                 }
             }
-        if (!found)
-            map->watertype = 0xff;
-        else {
+        if (found) {
             if (map->water) {
                 for (i = 0; i < map->size * map->size; i++) {
                     map->water[i] &= mask[i];
@@ -877,11 +875,13 @@ void d3fl_PrepareWater(D3FLMAP *map)
             }
             /* diagonals of the quads at the shore */
             for (y = 0; y < map->size; y++)
-                for (x = 0; x < map->size; x++)
-                    switch ((((map->types[map->size * y + x] == map->watertype) * 2
-                              | map->types[((y + 1) & map->mask) * map->size + x] == map->watertype) * 2
-                             | map->types[map->size * y + ((x + 1) & map->mask)] == map->watertype) * 2
-                            | map->types[((y + 1) & map->mask) * map->size + ((x + 1) & map->mask)] == map->watertype) {
+                for (x = 0; x < map->size; x++) {
+                    /* the water corners of the quad as bits: (x, y) 8, (x, y + 1) 4, (x + 1, y) 2, (x + 1, y + 1) 1 */
+                    q = map->types[map->size * y + x] == map->watertype;
+                    q = q * 2 | map->types[((y + 1) & map->mask) * map->size + x] == map->watertype;
+                    q = q * 2 | map->types[map->size * y + ((x + 1) & map->mask)] == map->watertype;
+                    q *= 2;
+                    switch (q | (unsigned char)(map->types[((y + 1) & map->mask) * map->size + ((x + 1) & map->mask)] == map->watertype)) {
                     case 2:
                     case 4:
                     case 6:
@@ -897,6 +897,7 @@ void d3fl_PrepareWater(D3FLMAP *map)
                         map->divide[0][map->size * y + x] |= 0x80;
                         break;
                     }
+                }
             /* regions: connected quads with water at all four corners */
             cmask = mem_Alloc(map->size * map->size, "d3_fl:Water(CalcRegions)");
             D3FL_FILL(cmask, 0xff, map->size * map->size);
@@ -925,7 +926,7 @@ void d3fl_PrepareWater(D3FLMAP *map)
                         first = oldn;
                     }
                     if (!(tex = tex_FindF("EF_WASS_06A_2T_W_AN0"))) {
-                        *(int *)&f = 0;
+                        f.all = 0;
                         f.b[0] = 0xac;
                         if (tex = (D3FLTEX *)tex_Load("EF_WASS_06A_2T_W_AN0", f, 0, 0))
                             tex_Reload((D3TEXHANDLE *)tex, 0);
@@ -937,7 +938,7 @@ void d3fl_PrepareWater(D3FLMAP *map)
                             if (i < map->nregions - 1)
                                 tex_AddRef(tex, 1);
                         } else
-                            *(int *)&regs[i].flags = 0;
+                            regs[i].flags.all = 0;
                         regs[i].f14 = 62.0f;
                         regs[i].speed[0] = 0.023f;
                         regs[i].speed[1] = 0.02f;
@@ -982,23 +983,23 @@ void d3fl_PrepareWater(D3FLMAP *map)
                             for (x = n * i; x <= x1; x++) {
                                 k = (y & map->mask) * map->size + (x & map->mask);
                                 v = map->water[k];
-                                if (in) {
-                                    if (!v) {
-                                        in = 0;
-                                        r->x1 = x - 1;
-                                        if (r->x0 < r->x1) {
-                                            np += r->x1 - r->x0 + 1;
-                                            r++;
-                                        }
+                                if (!in) {
+                                    if (v > 0 && ((y < (j + 1) * n && x < (i + 1) * n && cmask[k] < 0xff)
+                                                  || (y > n * j && cmask[k - map->size] < 0xff)
+                                                  || (x > n * i && cmask[k - 1] < 0xff))) {
+                                        in = 1;
+                                        r->y = y;
+                                        r->x0 = x;
+                                        r->idx = np;
+                                        r->flag = 0xff;
                                     }
-                                } else if (v > 0 && ((y < (j + 1) * n && x < (i + 1) * n && cmask[k] < 0xff)
-                                                     || (y > n * j && cmask[k - map->size] < 0xff)
-                                                     || (x > n * i && cmask[k - 1] < 0xff))) {
-                                    in = 1;
-                                    r->y = y;
-                                    r->x0 = x;
-                                    r->idx = np;
-                                    r->flag = 0xff;
+                                } else if (!v) {
+                                    in = 0;
+                                    r->x1 = x - 1;
+                                    if (r->x0 < r->x1) {
+                                        np += r->x1 - r->x0 + 1;
+                                        r++;
+                                    }
                                 }
                                 n = map->n;
                                 if (y < (j + 1) * n && x < (i + 1) * n && cmask[k] < 0xff)
@@ -1081,6 +1082,8 @@ void d3fl_PrepareWater(D3FLMAP *map)
                             }
                     }
             mem_Free(cmask);
+        } else {
+            map->watertype = 0xff;
         }
         mem_Free(mask);
     }
