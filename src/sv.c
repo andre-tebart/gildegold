@@ -432,7 +432,6 @@ int d2_RemoveWindow();                     /* 0x472ce0 */
 #include "unk_58bbd0.h"
 #include "vfs.h"
 #include "shp.h"
-#define d3_PointToWorldK ((void (*)())d3_PointToWorld)  /* 0x458a20 (d3.h, 3 parameters): @original sv_Unk528180 0x5281b5 pushes 4 arguments (the 4th an uninitialised register), compiled without a prototype */
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, ai_Unk4d88c0 0x4d88c0 move it as a word / movzx) */
 #define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
 /* 0x520ec0, the tick callback: turns the frame counter sv_TickFrames into the float sv_FramesPerTick and clears it */
@@ -2815,14 +2814,6 @@ void sv_PlaceCamera(float f);
 void sv_EaseCameraHeight(void);
 int sv_ScrollCamera(void);
 int sv_MouseCamera(void);
-#define CAMLOG(r) do { \
-        *(int *)((r) + 0x8c) = *(int *)(sv_CameraObj + 0x4c); \
-        *(int *)((r) + 0x90) = *(int *)(sv_CameraObj + 0x50); \
-        *(int *)((r) + 0x94) = *(int *)(sv_CameraObj + 0x54); \
-        *(int *)((r) + 0x9c) = *(int *)(sv_CameraObj + 0x84); \
-        *(int *)((r) + 0xa0) = *(int *)(sv_CameraObj + 0x88); \
-        *(int *)((r) + 0xa4) = *(int *)(sv_CameraObj + 0x8c); \
-    } while (0)
 
 /* the player's camera record gets the camera's position and rotation */
 #define SV_CAMREC(r) do { \
@@ -3133,33 +3124,35 @@ int d3t_SceneIndex();                     /* 0x411be0 */
 void d3_SetWorldPosRot();                     /* 0x449920 */
 int d3t_PlayAnim();                     /* 0x411960 */
 
-/* 0x528180, the callback of 0x5282f0 over the model parts of the building b (+0x61 its model): for the part named "dummy_FAHNE" it creates the banner object "sp_WIMPEL" (model "sonstiges\sp_WIMPEL.baf") at the
-   dummy's position (0x458a20), turned by pi around the y axis (0x4545c0), coloured for the owner like 0x528290, and flags it (+0x211 bit 1 cleared, +0x212 = +0x212 & 0xf7 | 0x44); returns 1; ROUGH (the 4th argument of
-   0x458a20 is an uninitialised register in the original) */
-char sv_Unk528180(char *part, char *b)
+/* 0x528180, the d3_ForEachObject callback of 0x5282f0 over the model parts of the building b: for the part named
+   "dummy_FAHNE" it creates the banner object "sp_WIMPEL" in b's model scene at the dummy's world position, turned by pi
+   around the y axis, coloured for the owner like 0x528290 (texture set 'f' + the owner's ref54 byte, kind 4), starts its
+   animation "sonstiges\sp_WIMPEL.baf" and sets its flags (stateFlags 0x44 on, 8 off; objectFlags 2 off); returns 1 */
+char sv_CreateBannerCB(D3OBJECT *part, AIBLD *b)
 {
-    float z[3], w[3], m[16];   /* m is a D3MATRIX: d3_MatFromAngles writes 0x40 bytes (m[3] overflowed the stack) */
-    char *o;
-    int junk;
+    D3VECTOR rot;
+    D3VECTOR4 pos;
+    D3MATRIX m;
+    D3OBJECT *o;
 
-    if (_stricmp(part, "dummy_FAHNE") == 0) {
-        z[0] = 0;
-        z[1] = 0;
-        z[2] = 0;
-        d3_PointToWorldK(part, part + 0x4c, w, junk);   /* @original: the 4th argument is an uninitialised register in the original (0x5281b5) */
-        o = (char *)d3_CreateObject(*(int *)(b + 0x61), w, z, "sp_WIMPEL");
-        z[0] = 0;
-        z[1] = 3.1415927f;
-        z[2] = 0;
-        d3_MatFromAngles(z, m);
-        d3_SetWorldPosRot(o, w, m);
-        if (*(unsigned short *)(b + 0x27) != 0xffff) {
-            d3if_SelectTextureSet(o, *(int *)(o + 0x1cc), (char)(*(char *)(ai_Chars[*(unsigned short *)(b + 0x27)] + 0x54) + 'f'), 1);
-            *(int *)(o + 0x220) = 4;
+    if (_stricmp(part->name, "dummy_FAHNE") == 0) {
+        rot.x = 0;
+        rot.y = 0;
+        rot.z = 0;
+        d3_PointToWorld(part, &part->pos, (D3VECTOR *)&pos);
+        o = d3_CreateObject((int)b->object, (D3VECTOR *)&pos, &rot, "sp_WIMPEL");
+        rot.x = 0;
+        rot.y = 3.1415927f;
+        rot.z = 0;
+        d3_MatFromAngles((D3VECTOR4 *)&rot, &m);
+        d3_SetWorldPosRot(o, &pos, &m);
+        if (b->owner != 0xffff) {
+            d3if_SelectTextureSet(o, (struct D3SURF *)o->info, (unsigned char)((char)ai_CharsT[b->owner].ref54 + 'f'), 1);
+            o->kind = 4;
         }
         d3t_PlayAnim(o, "sonstiges\\sp_WIMPEL.baf", 1);
-        o[0x212] = (o[0x212] & 0xf7) | 0x44;
-        o[0x211] &= 0xfd;
+        o->stateFlags = (o->stateFlags & 0xf7) | 0x44;
+        o->objectFlags &= 0xfd;
     }
     return 1;
 }
@@ -3316,11 +3309,11 @@ void sv_Unk5282f0(char *b)
             if ((*(unsigned char *)(m + 0x210) & 1) == 0) {
                 save = *(int *)(m + 0x1f0);
                 *(int *)(m + 0x1f0) = 0;
-                d3_ForEachObject(ai_Unk5fb5b0, *(int *)(b + 0x61), 0x100, sv_Unk528180, b);
+                d3_ForEachObject(ai_Unk5fb5b0, *(int *)(b + 0x61), 0x100, sv_CreateBannerCB, b);
                 *(int *)(*(int *)(b + 0x61) + 0x1f0) = save;
                 return;
             }
-            d3_ForEachObject(ai_Unk5fb5b0, m, 0x100, sv_Unk528180, b);
+            d3_ForEachObject(ai_Unk5fb5b0, m, 0x100, sv_CreateBannerCB, b);
         }
     }
 }
