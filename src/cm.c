@@ -6072,7 +6072,7 @@ void ai_Unk4cd3c0(int id, int x, char *text)
     char *p;
     int n;
 
-    p = ai_Unk4cd5e0(id);
+    p = cm_LobbyFindPlayer(id);
     if (p != 0) {
         sprintf(ai_Unk935da0[ai_Unk9363f4].name, "%s %s", p + 0x12, p + 0x22);
         n = ai_Unk9363f4;
@@ -6149,7 +6149,7 @@ int cm_LobbyAllReady()
         return 0;
     for (p = ai_Unk936424; (int)p < (int)(ai_Unk936424 + 8); p++) {
         if (*p != 0) {
-            q = ai_Unk4cd5e0(*p);
+            q = cm_LobbyFindPlayer(*p);
             if (q == 0)
                 return 0;
             if (*(int *)(q + 4) == 1)
@@ -6177,7 +6177,7 @@ unsigned int *cm_LobbyPlayerList()
 }
 /* 0x4cd5e0 */
 
-char *ai_Unk4cd5e0(int id)
+char *cm_LobbyFindPlayer(int id)
 {
     return ai_Unk4cd380(id);
 }

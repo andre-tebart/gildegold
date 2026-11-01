@@ -610,95 +610,232 @@ void lobby_ShowChat(void)
         d2_ScrollWindow(U_I((unsigned)&d2_LastWindow));
     }
 }
-/* 0x58af50, the choose-player window (2352 B, ROUGH SKELETON): reads the profile "Network" (the name into
-   0x75e5aa, the family name into 0x75e5ca, the emblem 0x75e5a4 = the profile int + 0x59a, the gender word
-   0x75e5a8), the window "Menu\nCHOOSEPLAYER" 0x6250d0 (0x4741f0 / 0x475600), the city name 0x5142e0
-   (0x936476) and the controls 1 .. 6 (0x475b80, 0x473650 x2, 0x52e350 x2, 0x515960, 0x475cb0 x2); the eight
-   emblem buttons 0x4731d0 ((i % n) * 0x30 + 0x50, (i / n) * 0x30 + 0x20, i + 0x59a) with their window entries
-   (+0x48 = 1, +0x28 = 0, +0x2c = 0, +0x50 = 1, +0x1c0 = 3) and 0x46c560; the chosen emblem / gender
-   highlighted (0x46c630); the state machine 0 .. 5 over the two text fields, the two gender buttons and the
-   eight emblems; the frame loop 0x5309a0 (0x5361d0, mask) with the profile write back and the return 1 when a
-   player was chosen. ROUGH: the state machine and the profile write back are condensed to the calls; see the
-   disassembly 0x58af50 .. 0x58b8xx */
+/* 0x58af50, the choose-player window "Menu\CHOOSEPLAYER" of the network lobby: loads the "Network" profile
+   (name, family name, coat of arms, sex, faith) into init_PlayerProfile, shows the two name inputs, the sex
+   and faith button rows and the eight coats of arms (the ones other lobby players hold are disabled), then
+   steps through them (state 0 .. 5: Enter takes a name, a click a button, the coat ends it; escape, a right
+   click or the exit button go one step back or leave); writes the profile back and returns 1 when the player
+   was chosen @deep Reconstructed whole against the original 0x58af50..0x58b87b (profile load, form, sex/faith rows, 8 coats, lobby_List coat locking, the state machine 0..5, profile write back); 667 vs 671 instructions; the rest is slots (stack-slot order of the locals) plus one hunk: in state 5 the original evaluates 'cmp ai_MissionMode, 0xff; je; mov eax, [esp+0x1ac] (b)' and then overwrites eax with 1 (ret = sv_PopRequest = 1) - a dead load of the second parameter; tried 'if (ai_MissionMode != -1) ret = b; ret = 1', the ?: forms, else branches, ret=1 before, sv_PopRequest = ret: VC6 drops all of them, so which source keeps this dead load is a variant question (asmdiff: '+ mov al, byte ptr [X] / cmp al, 0xff / je X / mov eax, dword ptr [esp + 0x1ac]'). */
 
-int lobby_ChoosePlayer(int a, int b)
+int lobby_ChoosePlayer(unsigned mask, int b)
 {
-    char name[48];
-    char buf[256];
-    int btns[8];
+    char num[48];
+    char town[256];
+    int coats[8];
+    int sexRow[2];
+    int faithRow[2];
+    int sexBtn[2];
+    int faithBtn[2];
     int win;
-    int obj;
+    int firstIn;
+    int familyIn;
+    int exitBtn;
+    int coatGroup;
+    int sexGroup;
+    int faithGroup;
     int ret;
+    int state;
+    int perRow;
     int i;
     int id;
-    int g1;
-    int g2;
-    int n;
+    int h;
+    CMLOBBYPLAYER *p;
+    char redraw;
 
+    redraw = 1;
     ret = 0;
-    GetPrivateProfileStringA((char *)(unsigned)"Network", (char *)(unsigned)"Name", (char *)(unsigned)"Vorname", (char *)((unsigned)&init_PlayerProfile + 0xa), 0x20,
-                             (char *)(unsigned)&ai_OptionsFile);
-    GetPrivateProfileStringA((char *)(unsigned)"Network", (char *)(unsigned)"Familienname", (char *)(unsigned)"Nachname", (char *)((unsigned)&init_PlayerProfile + 0x2a), 0x20,
-                             (char *)(unsigned)&ai_OptionsFile);
-    U_I(((unsigned)&init_PlayerProfile + 0x4)) = GetPrivateProfileIntA((char *)(unsigned)"Network", (char *)(unsigned)"Wappen", 0, (char *)(unsigned)&ai_OptionsFile) + 0x59a;
-    U_B(((unsigned)&init_PlayerProfile + 0x8)) = (char)GetPrivateProfileIntA((char *)(unsigned)"Network", (char *)(unsigned)"Geschlecht", 0, (char *)(unsigned)&ai_OptionsFile);
-    U_B(((unsigned)&init_PlayerProfile + 0x9)) = (char)GetPrivateProfileIntA((char *)(unsigned)"Network", (char *)(unsigned)"Glauben", 0, (char *)(unsigned)&ai_OptionsFile);
-    win = d2_OpenForm(0, 0, (char *)(unsigned)"Menu\\CHOOSEPLAYER");
+    state = 0;
+    GetPrivateProfileStringA("Network", "Name", "Vorname", init_PlayerProfile.firstName, 0x20, ai_OptionsFile);
+    GetPrivateProfileStringA("Network", "Familienname", "Nachname", init_PlayerProfile.familyName, 0x20, ai_OptionsFile);
+    init_PlayerProfile.coat = GetPrivateProfileIntA("Network", "Wappen", 0, ai_OptionsFile) + 0x59a;
+    init_PlayerProfile.sex = GetPrivateProfileIntA("Network", "Geschlecht", 0, ai_OptionsFile);
+    init_PlayerProfile.faith = GetPrivateProfileIntA("Network", "Glauben", 0, ai_OptionsFile);
+    win = d2_OpenForm(0, 0, "Menu\\CHOOSEPLAYER");
     d2_CentreViewWindows(win);
-    io_TownDisplayName(cm_NetGame.hdr.name, buf);
+    io_TownDisplayName(cm_NetGame.hdr.name, town);
     d2_SetForm(win, 1);
-    io_PrintText(0x1acf, buf);
-    n = d2_GetWinObj(win, 1, io_PrintText(0x1ad0, 0x1ad2));
+    io_PrintText(0x1acf, town);
+    firstIn = d2_GetWinObj(win, 1, io_PrintText(0x1ad0, 0x1ad2));
     d2_SetForm(win, 2);
-    g1 = d2_GetWinObj(win, 2, io_PrintText(0x1ad1, 0x1ad3));
+    familyIn = d2_GetWinObj(win, 2, io_PrintText(0x1ad1, 0x1ad3));
     d2_SetForm(win, 3);
     io_PrintText(0x1ad4);
-    sv_ButtonRow(U_I((unsigned)&d2_LastWindow), 0x1c, (char *)&g2, 2, U_I((unsigned)&full_data_1440d14), U_I((unsigned)&full_data_1440d18));
+    sv_ButtonRow(d2_LastWindow, 0x1c, sexRow, 2, txt_Male, txt_Female);
+    sexBtn[0] = sexRow[0];
+    sexBtn[1] = sexRow[1];
     d2_SetForm(win, 4);
     io_PrintText(0x1ad7);
-    sv_ButtonRow(U_I((unsigned)&d2_LastWindow), 0x1c, (char *)&g2, 2, U_I((unsigned)&full_data_1440d20), U_I((unsigned)&full_data_1440d24));
+    sv_ButtonRow(d2_LastWindow, 0x1c, faithRow, 2, txt_Faith0, txt_Faith1);
+    faithBtn[0] = faithRow[0];
+    faithBtn[1] = faithRow[1];
     d2_SetForm(win, 5);
     io_PrintText(0x1adb);
-    n = (*(short *)((unsigned)&ai_Unkf8f128 + U_I((unsigned)&d2_LastWindow) * 0x3c4) + -0x20) / 0x30;
-    obj = d2_CreateRadioGroup(0);
+    perRow = (d2_Wins[d2_LastWindow].w - 0x20) / 0x30;
+    coatGroup = d2_CreateRadioGroup(0);
     for (i = 0; i < 8; i++) {
-        id = d2_WinOpenPic((i % n) * 0x30 + 0x50, (i / n) * 0x30 + 0x20, i + 0x59a, U_I((unsigned)&d2_LastWindow));
-        btns[i] = id;
-        U_I(U_I((unsigned)&d2_Objs) + id * 0x2ec + 0x48) = 1;
-        U_I(U_I((unsigned)&d2_Objs) + id * 0x2ec + 0x28) = 0;
-        U_I(U_I((unsigned)&d2_Objs) + id * 0x2ec + 0x2c) = 0;
-        U_I(U_I((unsigned)&d2_Objs) + id * 0x2ec + 0x50) = 1;
-        U_I(U_I((unsigned)&d2_Objs) + id * 0x2ec + 0x1c0) = 3;
-        d2_RadioAdd(obj, id);
+        id = d2_WinOpenPic((i % perRow) * 0x30 + 0x50, (i / perRow) * 0x30 + 0x20, i + 0x59a, d2_LastWindow);
+        coats[i] = id;
+        d2_Objs[id].checkable = 1;
+        d2_Objs[id].checked = 0;
+        d2_Objs[id].highlighted = 0;
+        d2_Objs[id].greyed = 1;
+        d2_Objs[id].style = 3;
+        d2_RadioAdd(coatGroup, id);
     }
     d2_SetForm(win, 6);
-    id = d2_GetWinObj(win, 6, io_PrintText(0x7e));
-    d2_SetObjValue(n, (char *)((unsigned)&init_PlayerProfile + 0xa));
-    d2_SetObjValue(g1, (char *)((unsigned)&init_PlayerProfile + 0x2a));
+    exitBtn = d2_GetWinObj(win, 6, io_PrintText(0x7e));
+    d2_SetObjValue2(firstIn, init_PlayerProfile.firstName);
+    d2_SetObjValue2(familyIn, init_PlayerProfile.familyName);
     for (i = 0; i < 8; i++)
-        if (U_I(U_I((unsigned)&d2_Objs) + btns[i] * 0x2ec + 8) == U_I(((unsigned)&init_PlayerProfile + 0x4))) {
-            d2_RadioSelect(obj, i);
+        if (d2_Objs[coats[i]].pic == init_PlayerProfile.coat) {
+            d2_RadioSelect(coatGroup, i);
             break;
         }
-    d2_SetObjMax(n, 0xc);
-    d2_SetObjMax(g1, 0xc);
-    g2 = d2_CreateRadioGroup(2, g1, 0);
-    d2_RadioSelect(g2, U_B(((unsigned)&init_PlayerProfile + 0x8)));
-    g2 = d2_CreateRadioGroup(2, g1, 0);
-    d2_RadioSelect(g2, U_B(((unsigned)&init_PlayerProfile + 0x9)));
+    d2_SetObjMax(firstIn, 0xc);
+    d2_SetObjMax(familyIn, 0xc);
+    sexGroup = d2_CreateRadioGroup(2, sexBtn[0], sexBtn[1]);
+    d2_RadioSelect(sexGroup, init_PlayerProfile.sex);
+    faithGroup = d2_CreateRadioGroup(2, faithBtn[0], faithBtn[1]);
+    d2_RadioSelect(faithGroup, init_PlayerProfile.faith);
     d2_ClearInput();
-    U_B((unsigned)&kb_Last) = 0;
-    /* ROUGH: the state machine 0 .. 5 (the two text fields 0x475980 -> 0x75e5aa / 0x75e5ca, the gender
-       buttons 0x46c6c0 and the clicked 0x5fe710, the eight emblems, the exit) and the profile write back
-       (WritePrivateProfileStringA x5, 0x5e56c4) are not written yet; the frame pump 0x5309a0 (0x5361d0, b) */
-    while (1) {
-        d2_MenuNavigate(obj);
-        if (sv_RunFrame((unsigned)&main_ChoosePlayer, b) == 0) {
-            d2_RadioClear(g2);
-            d2_RadioClear(g1);
-            d2_RadioClear(obj);
-            d2_CloseView(win);
-            return ret;
+    kb_Last = 0;
+    /* the coats of arms the other lobby players hold cannot be taken */
+    for (i = 0; i < 8; i++)
+        d2_Objs[coats[i]].clickDisabled = 0;
+    for (i = 1; i < 9; i++) {
+        if (lobby_List[i] == 0)
+            continue;
+        p = (CMLOBBYPLAYER *)cm_LobbyFindPlayer(lobby_List[i]);
+        if (p == 0 || p->id == 0 || p == lobby_Me)
+            continue;
+        d2_Objs[coats[p->coat]].clickDisabled = 1;
+        if (d2_Objs[coats[p->coat]].checked != 0) {
+            d2_Objs[coats[p->coat]].checked = 0;
+            d2_Objs[coats[lobby_Me->coat]].checked = 1;
         }
     }
+    do {
+        if (lobby_State[1] != 0) {
+            /* a lobby message came in: fetch the player list again */
+            lobby_State[1] = 0;
+            h = cm_LobbyRequestList();
+            while (cm_GetSlotState(h) == 0)
+                sv_PumpNet();
+            lobby_List = cm_LobbyPlayerList();
+            for (i = 0; i < 8; i++)
+                d2_Objs[coats[i]].clickDisabled = 0;
+            for (i = 1; i < 9; i++) {
+                if (lobby_List[i] == 0)
+                    continue;
+                p = (CMLOBBYPLAYER *)cm_LobbyFindPlayer(lobby_List[i]);
+                if (p == 0 || p->id == 0 || p == lobby_Me)
+                    continue;
+                d2_Objs[coats[p->coat]].clickDisabled = 1;
+                d2_Objs[coats[p->coat]].checked = 0;
+            }
+        }
+        if (dm_L.rup != 0 || (d2_ClickedId != -1 && d2_PointerObj == exitBtn) || kb_Last == 1) {
+            /* back one step, or leave from the first */
+            if (state == 0) {
+                sv_PopRequest = 1;
+            } else {
+                state--;
+                redraw = 1;
+            }
+        }
+        if (redraw) {
+            for (i = 0; i < 5; i++) {
+                id = d2_GetWinObj(win, 0, i);
+                if (i <= state)
+                    d2_EnableObject(id, 1);
+                else
+                    d2_EnableObject(id, 0);
+            }
+            if (state == 0)
+                d2_FocusInput(firstIn);
+            else if (state == 1)
+                d2_FocusInput(familyIn);
+            redraw = 0;
+        }
+        if (state == 0) {
+            if (kb_Last == 0x1c) {
+                strcpy(init_PlayerProfile.firstName, (char *)d2_GetObjValue(firstIn));
+                state = 1;
+                redraw = 1;
+                kb_Last = 0;
+            }
+        } else if (state == 1) {
+            if (kb_Last == 0x1c) {
+                strcpy(init_PlayerProfile.familyName, (char *)d2_GetObjValue(familyIn));
+                state = 2;
+                redraw = 1;
+                kb_Last = 0;
+            }
+        } else if (state == 2) {
+            d2_MenuNavigate(sexGroup);
+            if (d2_ClickedId != -1) {
+                if (d2_PointerObj == sexBtn[0]) {
+                    init_PlayerProfile.sex = 0;
+                    state = 3;
+                    redraw = 1;
+                } else if (d2_PointerObj == sexBtn[1]) {
+                    init_PlayerProfile.sex = 1;
+                    state = 3;
+                    redraw = 1;
+                }
+            }
+        } else if (state == 3) {
+            d2_MenuNavigate(faithGroup);
+            if (d2_ClickedId != -1) {
+                if (d2_PointerObj == faithBtn[1]) {
+                    init_PlayerProfile.faith = 1;
+                    state = 4;
+                    redraw = 1;
+                } else if (d2_PointerObj == faithBtn[0]) {
+                    init_PlayerProfile.faith = 0;
+                    state = 4;
+                    redraw = 1;
+                }
+            }
+        } else if (state == 4) {
+            d2_MenuNavigate(coatGroup);
+            if (kb_Last == 0x1c) {
+                state = 5;
+                redraw = 1;
+            }
+            if (d2_ClickedId >= 0x59a && d2_ClickedId < 0x5a2) {
+                /* a coat was clicked: clear the others */
+                for (i = 0; i < 8; i++) {
+                    if (&d2_Objs[coats[i]] != d2_ClickedObj) {
+                        d2_Objs[coats[i]].checked = 0;
+                        d2_Objs[coats[i]].highlighted = 0;
+                        d2_Objs[coats[i]].greyed = 1;
+                    }
+                }
+                state++;
+            }
+        } else if (state == 5) {
+            init_PlayerProfile.tool1 = 0;
+            init_PlayerProfile.tool2 = 0;
+            init_PlayerProfile.status = 0x12;
+            init_PlayerProfile.coat = d2_Objs[d2_Radios[coatGroup].objs[d2_Radios[coatGroup].sel]].pic;
+            if (ai_MissionMode != -1)       /* the original keeps this test and the load of b, then sets 1 */
+                ret = b;
+            ret = 1;
+            sv_PopRequest = 1;
+        }
+    } while (sv_RunFrame((int)main_ChoosePlayer, mask) != 0);
+    d2_RadioClear(sexGroup);
+    d2_RadioClear(faithGroup);
+    d2_RadioClear(coatGroup);
+    d2_CloseView(win);
+    WritePrivateProfileStringA("Network", "Name", init_PlayerProfile.firstName, ai_OptionsFile);
+    WritePrivateProfileStringA("Network", "Familienname", init_PlayerProfile.familyName, ai_OptionsFile);
+    _itoa(init_PlayerProfile.coat - 0x59a, num, 10);
+    WritePrivateProfileStringA("Network", "Wappen", num, ai_OptionsFile);
+    _itoa(init_PlayerProfile.sex, num, 10);
+    WritePrivateProfileStringA("Network", "Geschlecht", num, ai_OptionsFile);
+    _itoa(init_PlayerProfile.faith, num, 10);
+    WritePrivateProfileStringA("Network", "Glauben", num, ai_OptionsFile);
+    return ret;
 }

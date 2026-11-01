@@ -2454,7 +2454,7 @@ int main_ChoosePlayer(int mask, int flag)
             }
             if (d2_ClickedId >= 0x59a && d2_ClickedId < 0x5a2) {
                 for (i = 0; i < 8; i++) {
-                    if (&d2_Objs[ent[i]] != d2_Unkf8a670) {
+                    if (&d2_Objs[ent[i]] != d2_ClickedObj) {
                         d2_Objs[ent[i]].checked = 0;
                         d2_Objs[ent[i]].highlighted = 0;
                         d2_Objs[ent[i]].greyed = 1;
@@ -6190,10 +6190,10 @@ GAPDATA full_data_930370[16] = { 0 };  /* 0x930370 */
 /* full_data_1440bc8: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_1440be8: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_1440c10: view of txt_Ptrs (build/mk_txt_views.py) */
-/* full_data_1440d14: view of txt_Ptrs (build/mk_txt_views.py) */
-/* full_data_1440d18: view of txt_Ptrs (build/mk_txt_views.py) */
-/* full_data_1440d20: view of txt_Ptrs (build/mk_txt_views.py) */
-/* full_data_1440d24: view of txt_Ptrs (build/mk_txt_views.py) */
+/* txt_Male: view of txt_Ptrs (build/mk_txt_views.py) */
+/* txt_Female: view of txt_Ptrs (build/mk_txt_views.py) */
+/* txt_Faith0: view of txt_Ptrs (build/mk_txt_views.py) */
+/* txt_Faith1: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_1440d80: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_1440da4: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_144134c: view of txt_Ptrs (build/mk_txt_views.py) */

@@ -850,10 +850,10 @@ void d2_MouseUpdate(void)
             d2_Unkf8a65c = d2_Unkf8aa80;
         }
         if (k != -1)
-            d2_Unkf8a670 = &d2_Objs[k];
+            d2_ClickedObj = &d2_Objs[k];
     } else {
         d2_ClickedId = -1;
-        d2_Unkf8a670 = 0;
+        d2_ClickedObj = 0;
         d2_Unkf8a65c = -1;
     }
     my = d2_MouseY;
@@ -1687,7 +1687,7 @@ int d2_Unkf8a65c = 0;  /* 0xf8a65c */
 int d2_InputDragOffsetY = 0;  /* 0xf8a660 */
 int d2_SavedMaxY = 0;  /* 0xf8a664 */
 int d2_SavedMinY = 0;  /* 0xf8a66c */
-D2OBJ * d2_Unkf8a670 = 0;  /* 0xf8a670 */
+D2OBJ * d2_ClickedObj = 0;  /* 0xf8a670 */
 D2HIT d2_HitRects[0x40] = {0};  /* 0xf8a680 (d2_AddHitRect allows i = 0x40, one past: the original's latent overrun) */
 int d2_Unkf8aa80 = 0;  /* 0xf8aa80 */
 int d2_HitCount = 0;  /* 0xf8aa84 */

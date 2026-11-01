@@ -23,7 +23,7 @@ void lobby_ShowCity(void);                /* 0x58aa30, the city emblem window */
 void lobby_ShowMyPlayer(void);                /* 0x58aba0, the current player's info window */
 void lobby_FetchPlayers(void);                /* 0x58ad20, waits for the player list */
 void lobby_ShowPlayers(void);                /* 0x58ada0, the player list window */
-int lobby_ChoosePlayer(int a, int b);         /* 0x58af50, the choose-player window */
+int lobby_ChoosePlayer(unsigned mask, int b);  /* 0x58af50, the choose-player window */
 int lobby_ChooseProfession(int a);                /* 0x58b880, the choose-profession window */
 void lobby_ShowChat(void);                /* 0x58ba70, the chat lines of the lobby */
 

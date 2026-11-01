@@ -88,7 +88,7 @@ typedef struct D2CTRLX {            /* D2CTRL as the mouse code sees it */
 } D2CTRLX;
 
 extern int d2_Unkf8a65c;            /* 0xf8a65c */
-extern D2OBJ *d2_Unkf8a670;         /* 0xf8a670 */
+extern D2OBJ *d2_ClickedObj;         /* 0xf8a670 */
 extern D2HIT d2_HitRects[];        /* 0xf8a680 */
 extern int d2_Unkf8aa80;            /* 0xf8aa80 */
 extern int d2_HitCount;            /* 0xf8aa84 */
