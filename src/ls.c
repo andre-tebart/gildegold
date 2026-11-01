@@ -16,6 +16,9 @@ struct D3TERRAIN;
 #include "data_views.h"
 #include "ls.h"
 #define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
+#define ai_PlayerBuildingT (*(struct AIBLD **)&ai_PlayerBuilding)  /* 0x6f2308, ai_PlayerBuilding (sv.c: char *) as the AIBLD it points to */
+#define ai_FallbackBuildingT (*(struct AIBLD **)&ai_FallbackBuilding)  /* 0x6f230c, ai_FallbackBuilding (sv.c: char *) as the AIBLD it points to */
+#define sv_PanelShownT (*(struct AIOBJ **)&sv_PanelShown)  /* 0x6f2310, sv_PanelShown (sv.c: unsigned short *) as the AIOBJ (room object) it points to */
 #include "d3_types.h"
 #define GAPDATA __declspec(align(1)) unsigned char
 
@@ -212,77 +215,113 @@ int ls_SaveGame(int name, char *path, unsigned flags)
     ls_IdsToRefs();
     return 1;
 }
-/* 0x5194c0, the header of the save game: the id 0x1005a (also kept in 0x623650), a flag word (the argument), the player's name (0x20 bytes), two words, a byte, the language byte, the clock, then the scenario record (the name "SCENARIO" and the first character's fields: +0xb0 / +0xc0 16 bytes, +0x8c, +0xd4, +0xce4 / +0xce6, +0x8d, a value of 0x50a640 and the byte +0x89; or the zeroed defaults when no character), the byte 0x6f1c38, the buildings 0x6f2308 / 0x6f230c / 0x6f2310 ids, the table 0x76fa24 (8 words of 8 bytes), and the screen shot (0x78 x 0xa0 pixels of 3 bytes made with 0x41e6d0 from the bitmap 0x766320, 0xe100 bytes); finally 0x6f23fc and the 0x60 bytes of 0x75e640. Returns 1 when everything was written. ROUGH */
+/* 0x5194c0, writes the save game header (LSHDR) field by field to f: the version 0x1005a (kept in ls_Version), the
+   flags (the argument), the own player's slot (its name, the two words +0x40 / +0x44, the byte +0x48), ai_NumPlayers,
+   the clock, then the player's character (its texts +0x30 / +0x40, the bytes +0xc, the word +0x54, the bytes +0x164 /
+   +0x166 / +0xd, its worth through gm_GetWorth / gm_ConvertMoney and the byte +9) or, without one (ai_PlayerId
+   0xffff), "SCENARIO" and zero bytes (the worth word is then written uninitialized, as in the original), then
+   ls_SaveSlot, the id of the player's building (or the fallback one, -1 none), the id of the object the info panel
+   shows (-1 none), the second word of the 8 cm_SaveAcks slots, the screen shot (0xa0 x 0x78 pixels of
+   ai_ScreenImage split into 3 bytes each by dd_SplitRGB, 0xe100 bytes), ai_Difficulty and the first 0x60 bytes of
+   ls_SavePath. Returns 1, 0 when one of the checked writes fails (the shot buffer is then not freed). */
 
 
 int ls_WriteSaveHeader(int f, unsigned flags)
 {
-    char scen[0x10];
-    char b0, b1, b2, b3;
-    int fields[2];
-    unsigned id;
-    char *shot;
-    int i, j, k, rgb, who;
-    char name[0x23];
-    int v[2];
-    char c1, c2;
+    unsigned char noJob, noByteD, noOffice, noByte9;
     int ref;
+    int worth;
+    int y;
+    unsigned char *shot;
+    int version;
+    char noText[0x10] = "SCENARIO";
+    LSHDR hdr;
+    int i, x, k;
+    char *slot;
 
-    strcpy(scen, "SCENARIO");
-    b0 = b1 = b2 = b3 = 0;
+    noByte9 = noByteD = noOffice = noJob = 0;
     ref = -1;
-    shot = (char *)mem_Alloc(0xe100, "ls:tmp");
-    id = 0x1005a;
+    k = 0;
+    shot = (unsigned char *)mem_Alloc(0xe100, "ls:tmp");
+    version = 0x1005a;
     ls_Version = 0x1005a;
-    if (vfs_fwrite(&id, 4, 1, f) <= 0 || vfs_fwrite(&flags, 1, 1, f) <= 0)
+    if (vfs_fwrite(&version, 4, 1, f) <= 0)
         return 0;
-    who = ai_OwnPlayer;
-    strcpy(name, ai_PlayerSlots[who]);
-    v[0] = *(int *)(ai_PlayerSlots[who] + 0x40);
-    v[1] = *(int *)(ai_PlayerSlots[who] + 0x44);
-    c1 = ai_PlayerSlots[who][0x48];
-    c2 = ai_NumPlayers;
-    if (vfs_fwrite(name, 0x20, 1, f) <= 0 || vfs_fwrite(v, 8, 1, f) <= 0 || vfs_fwrite(&c1, 1, 1, f) <= 0
-        || vfs_fwrite(&c2, 1, 1, f) <= 0 || vfs_fwrite(ai_Time, 0xe, 1, f) <= 0)
+    if (vfs_fwrite(&flags, 1, 1, f) <= 0)
         return 0;
-    if (ai_PlayerId == -1) {
-        if (vfs_fwrite(scen, 0x10, 1, f) <= 0 || vfs_fwrite(&b1, 1, 1, f) <= 0 || vfs_fwrite(&b3, 1, 1, f) <= 0
-            || vfs_fwrite(&b0, 1, 1, f) <= 0 || vfs_fwrite(&ref, 4, 1, f) <= 0)
+    slot = ai_PlayerSlots[ai_OwnPlayer];
+    strcpy(hdr.player, slot);
+    hdr.playerWords[0] = ((int *)(slot + 0x40))[0];
+    hdr.playerWords[1] = ((int *)(slot + 0x40))[1];
+    hdr.playerByte = slot[0x48];
+    hdr.players = ai_NumPlayers;
+    if (vfs_fwrite(hdr.player, 0x20, 1, f) <= 0)
+        return 0;
+    if (vfs_fwrite(hdr.playerWords, 8, 1, f) <= 0)
+        return 0;
+    if (vfs_fwrite(&hdr.playerByte, 1, 1, f) <= 0)
+        return 0;
+    if (vfs_fwrite(&hdr.players, 1, 1, f) <= 0)
+        return 0;
+    if (vfs_fwrite(ai_Time, 0xe, 1, f) <= 0)
+        return 0;
+    if (ai_PlayerId != 0xffff) {
+        if (vfs_fwrite(ai_Chars[ai_PlayerId] + 0x30, 0x10, 1, f) <= 0)
             return 0;
-        if (vfs_fwrite(&b2, 1, 1, f) <= 0)
+        if (vfs_fwrite(ai_Chars[ai_PlayerId] + 0x40, 0x10, 1, f) <= 0)
+            return 0;
+        if (vfs_fwrite(ai_Chars[ai_PlayerId] + 0xc, 1, 1, f) <= 0)
+            return 0;
+        if (vfs_fwrite(ai_Chars[ai_PlayerId] + 0x54, 4, 1, f) <= 0)
+            return 0;
+        if (vfs_fwrite(ai_Chars[ai_PlayerId] + 0x164, 1, 1, f) <= 0)
+            return 0;
+        if (vfs_fwrite(ai_Chars[ai_PlayerId] + 0x166, 1, 1, f) <= 0)
+            return 0;
+        if (vfs_fwrite(ai_Chars[ai_PlayerId] + 0xd, 1, 1, f) <= 0)
+            return 0;
+        worth = gm_ConvertMoney(gm_GetWorth(ai_PlayerId), ai_OwnPlayer);
+        if (vfs_fwrite(&worth, 4, 1, f) <= 0)
+            return 0;
+        if (vfs_fwrite(ai_Chars[ai_PlayerId] + 9, 1, 1, f) <= 0)
             return 0;
     } else {
-        char *c = ai_Chars[(unsigned short)ai_PlayerId];
-
-        if (vfs_fwrite(c + 0x30, 0x10, 1, f) <= 0 || vfs_fwrite(c + 0x40, 0x10, 1, f) <= 0
-            || vfs_fwrite(c + 0xc, 1, 1, f) <= 0 || vfs_fwrite(c + 0x54, 4, 1, f) <= 0
-            || vfs_fwrite(c + 0x164, 1, 1, f) <= 0 || vfs_fwrite(c + 0x166, 1, 1, f) <= 0
-            || vfs_fwrite(c + 0xd, 1, 1, f) <= 0)
+        if (vfs_fwrite(noText, 0x10, 1, f) <= 0)
             return 0;
-        ref = ((int (*)(int))gm_ConvertMoney)(gm_GetWorth(ai_PlayerId));
-        if (vfs_fwrite(&ref, 4, 1, f) <= 0 || vfs_fwrite(c + 9, 1, 1, f) <= 0)
+        if (vfs_fwrite(&noJob, 1, 1, f) <= 0)
+            return 0;
+        if (vfs_fwrite(&noOffice, 1, 1, f) <= 0)
+            return 0;
+        if (vfs_fwrite(&noByteD, 1, 1, f) <= 0)
+            return 0;
+        if (vfs_fwrite(&worth, 4, 1, f) <= 0)
+            return 0;
+        if (vfs_fwrite(&noByte9, 1, 1, f) <= 0)
             return 0;
     }
     if (vfs_fwrite(&ls_SaveSlot, 1, 1, f) <= 0)
         return 0;
-    ref = ai_PlayerBuilding ? *(int *)(ai_PlayerBuilding + 1) : (ai_FallbackBuilding ? *(int *)(ai_FallbackBuilding + 1) : -1);
+    if (ai_PlayerBuildingT != 0)
+        ref = ai_PlayerBuildingT->id;
+    else if (ai_FallbackBuildingT != 0)
+        ref = ai_FallbackBuildingT->id;
+    else
+        ref = -1;
     vfs_fwrite(&ref, 4, 1, f);
-    ref = sv_PanelShown ? *(int *)(sv_PanelShown + 2) : -1;
+    if (sv_PanelShownT != 0)
+        ref = sv_PanelShownT->objId;
+    else
+        ref = -1;
     vfs_fwrite(&ref, 4, 1, f);
     for (i = 0; i < 8; i++)
-        vfs_fwrite(ai_Unk76fa24 + i * 8, 4, 1, f);
-    k = 0;
-    for (j = 0x78; j != 0; j--) {
-        int px = k * 3 + 1 + (int)shot;
-
-        for (i = 0xa0; i != 0; i--) {
-            dd_SplitRGB(ai_ScreenImage[k], px - 1, px, px + 1);
+        vfs_fwrite(&cm_SaveAcks[i][1], 4, 1, f);
+    for (y = 0; y < 0x78; y++) {
+        for (x = 0; x < 0xa0; x++) {
+            dd_SplitRGB(ai_ScreenImage[k], shot + k * 3, shot + k * 3 + 1, shot + k * 3 + 2);
             k++;
-            px += 3;
         }
     }
-    rgb = vfs_fwrite(shot, 0xe100, 1, f);
-    if (rgb == 0)
+    if (vfs_fwrite(shot, 0xe100, 1, f) <= 0)
         return 0;
     if (shot != 0)
         mem_Free(shot);
