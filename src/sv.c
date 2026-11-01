@@ -170,7 +170,6 @@ extern GAPDATA full_data_6f23e8[];
 extern GAPDATA full_data_6f262c[];
 extern GAPDATA full_data_6f2630[];
 extern GAPDATA full_data_6faa80[];
-extern GAPDATA full_data_6faa84[];
 extern OPTIONBYTES ai_GameSwitches;
 extern char ai_Unkf8aae0[0x80];
 extern short d2_MouseX;

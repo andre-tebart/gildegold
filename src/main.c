@@ -6004,10 +6004,8 @@ GAPDATA full_data_6fa264[4] = { 0 };  /* 0x6fa264 */
 GAPDATA full_data_6fa268[4] = { 0 };  /* 0x6fa268 */
 GAPDATA full_data_6fa26c[2036] = { 0 };  /* 0x6fa26c */
 GAPDATA full_data_6faa60[32] = { 0 };  /* 0x6faa60 */
-GAPDATA full_data_6faa80[4] = { 0 };  /* 0x6faa80 */
-GAPDATA full_data_6faa84[4] = { 0 };  /* 0x6faa84 */
-GAPDATA full_data_6faa88[8] = { 0 };  /* 0x6faa88 */
-GAPDATA full_data_6faa90[176] = { 0 };  /* 0x6faa90 */
+GAPDATA full_data_6faa80[192] = { 0 };  /* 0x6faa80, the event bar's 16 slots of 12 bytes (owner record, window id, panel handle; he.c) */
+/* full_data_6faa84 / 6faa88 / 6faa90: views of full_data_6faa80 */
 GAPDATA full_data_7585f4[12] = { 0 };  /* 0x7585f4 */
 GAPDATA full_data_75df20[512] = { 0 };  /* 0x75df20 */
 void * main_Instance = 0;  /* 0x75e140, its instance handle (HINSTANCE) */
