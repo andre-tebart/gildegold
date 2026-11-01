@@ -2346,8 +2346,9 @@ void ord_UpdateMessageEvent(void)
    statistics history (ord_StatisticsRounds[12..15]) into a = the share without the second object, b = the share
    without the first object, c = the combined score and d = the overall score; rates a / b / c against 0.15 (the
    texts 0x1c11 .. 0x1c14 when the share is low, 0x1c15 .. 0x1c18 when it is high) and the income rating of
-   gm_IncomeRating (0x4f9ec0) against 0 (0x1c13 / 0x1c17). The lowest of a / b / c and the rating (k, the later
-   column on a tie: the tests are <=) above 0.2 picks the tier phrase: below 0.3 the base text id ids[k], below
+   gm_IncomeRating (0x4f9ec0) against 0 (0x1c13 / 0x1c17). The lowest m of a / b / c and the rating above 0.2
+   picks the tier phrase, k being the last column greater than the minimum so far (the original's test, not the
+   column of the minimum): below 0.3 the base text id ids[k], below
    0.5 ids[k + 2], else ids[k + 4], formatted as ids[x] and ids[x] + 1 with "%s%s"; the four base ids are 0x1bf5 /
    0x1bfb / 0x1c01 / 0x1c07. d above 0.55 formats the sentence 0x1c0d (ending 0x1c0e), below 0.45 the sentence
    0x1c0f (ending 0x1c10), and sends it (flag 1) and then the tier phrase to every player character (kind 6, its
@@ -2382,18 +2383,15 @@ void ord_ReportStatistics(void)
     k = 0;
     any = 0;
     m = a;
-    if (b <= m) {
+    if (b > m)
         k = 1;
-        m = b;
-    }
-    if (v <= m) {
+    m = m < b ? m : b;
+    if (v > m)
         k = 2;
-        m = v;
-    }
-    if (c <= m) {
+    m = m < v ? m : v;
+    if (c > m)
         k = 3;
-        m = c;
-    }
+    m = m < c ? m : c;
     if (m > 0.2) {
         ids[0] = 0x1bf5;
         ids[1] = 0x1bfb;
