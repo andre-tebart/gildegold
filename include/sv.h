@@ -23,7 +23,7 @@ typedef struct SVACTIVITY {             /* 0x20 bytes, an activity of sv_Activit
                                            register one per character job kind) */
     int kind;                           /* +0x00, the AICHAR.jobKind it is for; 0 = a free entry */
     char name[0x10];                    /* +0x04, its location name ("Getier", "Trainieren"), "" for none: the script
-                                           objects whose name holds it belong to it (sv_Unk52b500) */
+                                           objects whose name holds it belong to it (sv_RunLocationScripts) */
     int dayOnly;                        /* +0x14, nonzero: only inside the day window of the season (sv_ActivityName) */
     int icon;                           /* +0x18, its state icon (sv_CharStateIcons) */
     int valueOff;                       /* +0x1c, -1 or the offset of a short in the character's +0x17c record whose
@@ -109,7 +109,7 @@ void sv_CollectGroupCharacters(char *b);                                /* 0x52b
 int sv_RegisterActivity(int kind, char *name, int dayOnly, int icon, int valueOff);            /* 0x52b350 */
 int sv_ActivityName(struct AICHAR *c, struct AIBLD *b, char *out);                 /* 0x52b3c0 */
 int sv_Unk52b490(char *a, int b);                                       /* 0x52b490 */
-void sv_Unk52b500(unsigned char *a);                                    /* 0x52b500 */
+void sv_RunLocationScripts(struct AIBLD *a);                                      /* 0x52b500 */
 void sv_Unk52bb70(int id);                                              /* 0x52bb70 */
 void sv_Unk52bbc0(void);                                                /* 0x52bbc0 */
 void sv_Unk52bec0(void);                                                /* 0x52bec0 */

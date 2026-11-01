@@ -200,9 +200,13 @@ typedef struct AIJOB {                  /* a job (he_FindEvent / he_NextEvent) *
     char flags;                         /* 0xf1, a flags byte (nonzero defers the trade message posting; the bits are unknown) */
 } AIJOB;
 
-typedef struct AITASK {
-    char pad00[0x2c];
-    int bldId;                          /* 0x2c, the building the character was sent to (f3gm.c 0x4fbd10) */
+typedef struct AITASK {                 /* the character's scene character (ch.h CHARACTER: scriptId, group, scriptGroup, scene) as ai.h reads it */
+    char pad00[0x28];
+    int scriptId;                       /* 0x28, the event script it runs, -1 = none (CHARACTER.scriptId) */
+    int bldId;                          /* 0x2c, the building the character was sent to (f3gm.c 0x4fbd10; CHARACTER.group) */
+    int scriptGroup;                    /* 0x30, the group of the script that created / moved it (CHARACTER.scriptGroup) */
+    char pad34[0x54];
+    struct D3SCENE *scene;              /* 0x88, the scene it stands in (CHARACTER.scene) */
 } AITASK;
 
 typedef struct AICHAR {                 /* 0x21c bytes, ai_Chars[768] */

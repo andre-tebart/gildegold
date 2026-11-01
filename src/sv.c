@@ -4851,153 +4851,147 @@ void sv_HandleObjects(void)
     }
 }
 
-int init_BuildingKindName();                     /* 0x50dba0 */
-struct VFSENTRY * vfs_FindFile(char *path, struct VFSDIR *d, struct VFSDIR **found);                     /* 0x42f8f0 */
 int sv_RunFrame(int cb, unsigned mask);                     /* 0x5309a0 */
 
-/* 0x52b500, keeps the "extras" (script objects "sp_<id>") of the characters of the group of the building a (the table 0x7603a0 = the characters of 0x52b2a0): a character gets the object of its role (names "bewohner",
-   "besucher", "meister", "pause", "faulenzen" or the one from the 0x75ec80 table of 0x52b3c0), created from the script "<scripts>locations\<class>\<name><n>_<class>.esc" (n = the first free number among the
-   objects already using the name) and linked back (+0xc94 / +0x28); a character whose role ended loses the object (0x429e90); ROUGH */
-void sv_Unk52b500(unsigned char *a)
+/* 0x52b500, runs the location scripts of the characters in ai_SceneChars that stand in the building a (their scene
+   character's group is a's id, alive, in the default scene): a character gets the script of its activity
+   (sv_ActivityName) or of its role ("besucher" for a visitor of a type 0x16 building's room 0x120, "bewohner" at
+   home, "meister" / "pause" / "faulenzen" for an idle one at work), loaded from
+   "<evt_Path>locations\<class>\<name><n>_<class>.esc" (n the first number no running script of the scene uses,
+   else 0) and started with "sp_<netId>"; a character whose activity ended (the day window passed or its job's
+   argc8 is set) stops its activity script. Every 500 ms it fires event 6 of the default scene first */
+void sv_RunLocationScripts(AIBLD *a)
 {
-    char *cls, *kind, *c, *g, *w, *o4, *r;
-    short *it;
-    int h, i, ok, k, n, d, v, len, *p;
-    char name[0x20], cn[0x60], path[0x80], sp[0x80];
+    AIGOOD *cls;
+    AIBTYPE *kind;
+    AICHAR *c, *e;
+    AITASK *m;
+    EVTSCRIPT *s;
+    char *r;
+    int season, i, j, ok, n, d;
+    VFSDIR *found;
+    char name[0x60];
+    char cn[0x80];
     int used[8];
+    char path[0x80];
+    char sp[0x80];
 
     cls = 0;
-    it = (short *)SV_I((unsigned)&sv_PanelShown);
-    if (it != 0 && *it != 0xfd)
-        cls = ai_Goods + *(unsigned short *)it * 0x41;
-    kind = ai_BTypes + *a * 0x24d;
-    if (SV_I((unsigned)&sv_SceneEventTime) + 500 < SV_I((unsigned)&ai_ClockMs)) {
-        if (ai_Unk5fb5b0 != 0 && (k = *(int *)(ai_Unk5fb5b0 + 0x3c8)) != 0 && *(int *)(k + 0x318) != 0)
-            ((int (*)())*(int *)(k + 0x318))(ai_Unk5fb5b0, 6, k + 0x31c, 0);
-        SV_I((unsigned)&sv_SceneEventTime) = SV_I((unsigned)&ai_ClockMs);
+    if (sv_PanelShown != 0 && *sv_PanelShown != 0xfd)
+        cls = &ai_GoodsT[*sv_PanelShown];
+    kind = &ai_BTypesT[a->type];
+    if (ai_ClockMs > sv_SceneEventTime + 500) {
+        if (d3_DefaultScene != 0 && d3_DefaultScene->events != 0 && d3_DefaultScene->events[6].fn != 0)
+            d3_DefaultScene->events[6].fn(d3_DefaultScene, 6, d3_DefaultScene->events[6].name, 0);
+        sv_SceneEventTime = ai_ClockMs;
     }
-    h = gm_ClockSeason((unsigned)&ai_Time);
+    season = gm_ClockSeason(&ai_Time);
     for (i = 0; i < 0x20; i++) {
-        c = (char *)SV_I((unsigned)&ai_SceneChars + i * 4);
-        if (c == 0 || (g = *(char **)(c + 0x184)) == 0)
-            continue;
-        if (*(int *)(g + 0x2c) != *(int *)(a + 1) || *(char *)(c + 8) == 0 || *(char **)(g + 0x88) != ai_Unk5fb5b0)
+        c = (AICHAR *)ai_SceneChars[i];
+        if (c == 0 || c->model == 0 || c->model->bldId != a->id || c->health <= 0 || c->model->scene != d3_DefaultScene)
             continue;
         ok = 0;
         name[0] = 0;
-        if (sv_ActivityName((AICHAR *)c, (AIBLD *)a, name) == 0) {
-            k = *kind;
-            if (k == 0x16 && it != 0 && *it == 0x120 && *(int *)(g + 0x30) == *(int *)((char *)it + 2) && (*(unsigned *)(c + 0x1c8) & 0x1000) == 0) {
-                strcpy(name, "besucher");
-                ok = 1;
-            } else if (k == 1 && *(unsigned char **)(c + 0x170) == a && (*(unsigned *)(c + 0x1c8) & 0x1000) == 0) {
-                strcpy(name, "bewohner");
-                ok = 1;
-            } else if (*(char *)(c + 0x180) == 0 && *(unsigned char **)(c + 0x16c) == a && *(int *)(g + 0x28) == -1) {
-                if (*(char *)(c + 0x164) == 0) {
-                    if (*(char *)(c + 0x165) == 0x1c && (*(unsigned char *)(c + 0x1b4) & 1) != 0)
-                        strcpy(name, "faulenzen");
-                    else
-                        strcpy(name, "pause");
-                } else
-                    strcpy(name, "meister");
-                ok = 1;
-            }
-        } else {
-            k = *kind;
-            if (k == 0xd) {
-                if (it != 0) {
-                    if (*it == 0x37 && *(int *)(g + 0x30) == *(int *)((char *)it + 2)) {
+        if (sv_ActivityName(c, a, name) != 0) {
+            if (kind->kind == 0xd) {
+                if (sv_PanelShown != 0) {
+                    if (*sv_PanelShown == 0x37 && c->model->scriptGroup == ((AIOBJ *)sv_PanelShown)->objId) {
                         ok = 1;
-                        goto l7f0;
+                        goto lstart;
                     }
-                    if (*it != 0xfd || *(int *)(g + 0x30) != *(int *)((char *)it + 2))
-                        goto l7f0;
+                    if (*sv_PanelShown != 0xfd || c->model->scriptGroup != ((AIOBJ *)sv_PanelShown)->objId)
+                        goto lstart;
                 }
-                w = *(char **)(c + 0x17c);
                 ok = 1;
-                if (w != 0 && *(int *)(w + 200) != 0)
+                if (c->job != 0 && c->job->argc8 != 0)
                     ok = 0;
-            } else {
-                if (k == 8 && *it == 0xdd && *(char *)(c + 0x180) == 0x15) {
-                    ok = 1;
-                    goto l7f0;
-                }
-                w = *(char **)(c + 0x17c);
+            } else if (kind->kind == 8 && *sv_PanelShown == 0xdd && c->jobKind == 0x15) {
                 ok = 1;
-                if (w != 0 && *w == 4 && *(int *)(w + 200) != 0)
+            } else {
+                ok = 1;
+                if (c->job != 0 && c->job->kind == 4 && c->job->argc8 != 0)
                     ok = 0;
             }
+        } else if (kind->kind == 0x16 && sv_PanelShown != 0 && *sv_PanelShown == 0x120
+                   && c->model->scriptGroup == ((AIOBJ *)sv_PanelShown)->objId && (c->flags1c8 & 0x1000) == 0) {
+            strcpy(name, "besucher");
+            ok = 1;
+        } else if (kind->kind == 1 && c->bld2 == a && (c->flags1c8 & 0x1000) == 0) {
+            strcpy(name, "bewohner");
+            ok = 1;
+        } else if (c->jobKind == 0 && c->bld == a && c->model->scriptId == -1) {
+            if (c->jobId != 0)
+                strcpy(name, "meister");
+            else if (c->title == 0x1c && (c->flags1b4 & 1) != 0)
+                strcpy(name, "faulenzen");
+            else
+                strcpy(name, "pause");
+            ok = 1;
         }
-l7f0:
-        if (*(char *)(c + 0x165) == 0x1c && (*(unsigned char *)(c + 0x1b4) & 1) != 0 && *(int *)(g + 0x28) == -1) {
+lstart:
+        if (c->title == 0x1c && (c->flags1b4 & 1) != 0 && c->model->scriptId == -1)
             strcpy(name, "faulenzen");
-        } else if (!ok) {
-            goto lsecond;
-        }
+        else if (!ok)
+            goto lstop;
         if (name[0] != 0) {
-            if (*(int *)(g + 0x28) == -1) {
-                for (n = 0; n < 8; n++)
-                    used[n] = 1;
-                for (p = (int *)(unsigned)&ai_SceneChars; (int)p < (unsigned)((unsigned)ai_SceneChars + 0x80); p++) {
-                    if (*p != 0 && (w = *(char **)(*p + 0x184)) != 0 && (v = *(int *)(w + 0x28)) != -1
-                        && (o4 = (char *)evt_FindById(v)) != 0 && (r = (char *)strstr(o4, name)) != 0) {
-                        len = strlen(name);
-                        d = r[len] - '0';
-                        if (d < 0 || d > 9)
-                            break;
-                        used[d] = 0;
-                    }
-                }
-                n = 0;
-                do {
-                    if (used[n] != 0)
+            m = c->model;
+            if (m->scriptId != -1 && evt_FindById(m->scriptId) != 0)
+                continue;
+            if (m->scriptId != -1)
+                continue;
+            for (n = 0; n < 8; n++)
+                used[n] = 1;
+            for (j = 0; j < 0x20; j++) {
+                e = (AICHAR *)ai_SceneChars[j];
+                if (e != 0 && e->model != 0 && e->model->scriptId != -1 && (s = evt_FindById(e->model->scriptId)) != 0
+                    && (r = strstr(s->name, name)) != 0) {
+                    d = r[strlen(name)] - '0';
+                    if (d < 0 || d > 9)
                         break;
-                    n++;
-                } while (n < 8);
-                if (*(char *)(c + 0x180) == 0x16)
-                    strcpy(cn, "Training_Allgemein");
-                else if (cls == 0)
-                    init_BuildingKindName(*a, cn);
-                else
-                    strcpy(cn, cls + 1);
-                sprintf(path, "%slocations\\%s\\%s%i_%s.esc", evt_Path, cn, name, n, cn);
-                if (vfs_FindFile(path, SV_I((unsigned)&d3_Unk6333fc), &d) == 0)
-                    sprintf(path, "%slocations\\%s\\%s0_%s.esc", evt_Path, cn, name, cn);
-                if (vfs_FindFile(path, SV_I((unsigned)&d3_Unk6333fc), &d) != 0) {
-                    sprintf(sp, "sp_%i", *(int *)(c + 4));
-                    o4 = (char *)evt_LoadScript(path);
-                    if (o4 != 0) {
-                        evt_RunScriptArgs((EVTSCRIPT *)o4, 1, sp);
-                        *(char **)(o4 + 0xc94) = g;
-                        *(int *)(g + 0x28) = *(int *)(o4 + 0x100);
-                    }
+                    used[d] = 0;
+                }
+            }
+            for (n = 0; n < 8; n++)
+                if (used[n] != 0)
+                    break;
+            if (c->jobKind == 0x16)
+                strcpy(cn, "Training_Allgemein");
+            else if (cls == 0)
+                init_BuildingKindName(a->type, cn);
+            else
+                strcpy(cn, cls->name);
+            sprintf(path, "%slocations\\%s\\%s%i_%s.esc", evt_Path, cn, name, n, cn);
+            if (vfs_FindFile(path, vfs_Root, &found) == 0)
+                sprintf(path, "%slocations\\%s\\%s0_%s.esc", evt_Path, cn, name, cn);
+            if (vfs_FindFile(path, vfs_Root, &found) != 0) {
+                sprintf(sp, "sp_%i", c->netId);
+                s = evt_LoadScript(path);
+                if (s != 0) {
+                    evt_RunScriptArgs(s, 1, sp);
+                    s->character = (CHARACTER *)m;
+                    m->scriptId = s->id;
                 }
             }
             continue;
         }
-lsecond:
+lstop:
         ok = 0;
-        if (*(unsigned char **)(c + 0x16c) == a && g != 0 && (v = *(int *)(g + 0x28)) != -1) {
-            if (*(char *)(c + 0x180) == 0 || *(float *)((unsigned)&gm_DayEndHours + h * 4) < (float)SV_US((unsigned)&ai_TimeHour))
-                ok = 1;
-            w = *(char **)(c + 0x17c);
-            if ((w != 0 && *w == 4 && *(int *)(w + 200) != 0) || ok) {
-                ok = 0;
-                o4 = (char *)evt_FindById(v);
-                if (o4 != 0) {
-                    w = (char *)(unsigned)&sv_Activities[0].name;
-                    do {
-                        if (ok)
-                            goto lfree;
-                        if (*(int *)(w - 4) != 0 && *w != 0 && strstr(o4, w) != 0)
-                            ok = 1;
-                        w += 0x20;
-                    } while ((int)w < ((unsigned)((unsigned)sv_Activities[0].name + 0x5fc) + 0x4));
+        if (c->bld != a || c->model == 0 || c->model->scriptId == -1)
+            continue;
+        if (c->jobKind == 0 || (float)ai_TimeT.hour > gm_DayEndHours[season])
+            ok = 1;
+        if ((c->job != 0 && c->job->kind == 4 && c->job->argc8 != 0) || ok) {
+            ok = 0;
+            s = evt_FindById(c->model->scriptId);
+            if (s != 0) {
+                for (j = 0; j < 0x30; j++) {
                     if (ok)
-lfree:
-                        evt_Stop((EVTSCRIPT *)o4);
+                        break;
+                    if (sv_Activities[j].kind != 0 && sv_Activities[j].name[0] != 0 && strstr(s->name, sv_Activities[j].name) != 0)
+                        ok = 1;
                 }
+                if (ok)
+                    evt_Stop(s);
             }
         }
     }
@@ -7437,7 +7431,7 @@ l64:
     if (c == 0 || (mask & 0x10000) != 0) {
         SV_I((unsigned)&ch_CurrentGroup) = -1;
     } else {
-        sv_Unk52b500((unsigned char *)c);
+        sv_RunLocationScripts((AIBLD *)c);
         sv_UpdateMemberList(c);
         SV_I((unsigned)&ch_CurrentGroup) = *(int *)(c + 1);
     }
@@ -7690,7 +7684,7 @@ float sv_FramesPerTick = 30.0f;  /* 0x62378c */
 int sv_TickFrames = 30;  /* 0x623790, the frames drawn since the last timer tick (counted by the frame loop) */
 char sv_GroundplanColours[] = "\377\376\005\005%\377\377/\021\005\377\030\3746\343\377\231\005\005\377\366z\005\005\266W\377<\005P\031H\005\013\304^\305\005g\357\234\231\005\010r";  /* 0x623794, the table of */
 int sv_StatusTime = -1;  /* 0x6237c4, when the status line was set (d3_Time) */
-unsigned sv_SceneEventTime = 0xffffffff;  /* 0x6237c8, ai_ClockMs when sv_Unk52b500 last fired event 6 of the default scene (every 500 ms; the scene changes of unk_58bbd0.c reset it to 0) */
+unsigned sv_SceneEventTime = 0xffffffff;  /* 0x6237c8, ai_ClockMs when sv_RunLocationScripts last fired event 6 of the default scene (every 500 ms; the scene changes of unk_58bbd0.c reset it to 0) */
 int sv_PanelRebuild = 1;  /* 0x6237cc */
 /* 0x6237d0, the camera limits: three settings of (height, angle), first the near view pair and then (+3 pairs)
    the far one. ai_ApplyGfxOptions (0x5d5c40) copies the pair of the camera_limits option (ai_GfxFloor.byte[1])
