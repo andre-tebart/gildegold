@@ -5092,44 +5092,56 @@ void main_Unk53c9b0(void)
     mov_Play(U_I((unsigned)&full_data_6f241c));
     sv_PumpMessages();
 }
-/* 0x53cb40, the outro: fades the music out, waits for the black fade, plays outro.mpg, restores the window and the music volume (byte 0x6f3602 / 127) (ROUGH) */
-
+#define main_MoviesOpen (*(int *)&full_data_6f2574)  /* 0x6f2574, nonzero while the movie player is set up (mov_Init); the outro opens and closes it itself otherwise */
+#define main_OutroMovie (*(int *)&full_data_6f241c)  /* 0x6f241c, the id mov_Open gave the outro */
+#define main_MoviePath ((char *)full_data_624798)  /* 0x624798, the directory of the movies ("%soutro.mpg") */
+#define main_AmbientByte (*(unsigned char *)&snd_AmbientOn)  /* 0x6f0b60, snd_AmbientOn.on as the byte it is */
+/* 0x53cb40, the outro: fades the music out and waits for the black fade, switches the ambient sounds off, plays outro.mpg (input released, own window), restores the focus, the input and the music volume (msxVolume / 127) and the ambient flag
+   @deep Read against the original: the ambient flag is saved after the fade loop (not inside it), the
+   loop's msx_FadeTo >= 0.0f against the float zero, kb_Last as a byte, the volume factor 0.007874016f as a
+   float constant; typed (D2FADE, msxVolume, views for the movie flag / id / path). 111 / 111 instructions,
+   4 differing. Left is one load: 0x53cbb7 the original reads snd_AmbientOn as a byte (xor ebx, ebx / mov
+   bl, [0x6f0b60]) where ours, through f3snd.h's G16AMBIENTON union (4 bytes, 0x4c23f0 reads the word),
+   loads the dword and masks it (mov ebx, [snd_AmbientOn] / and ebx, 0xff); a byte-cast view over the union
+   compiles the same. The original's main.c saw a 1-byte object; declaring it so in main.c conflicts with
+   f3snd.h (M5). Same load in main_BeginPlayerRound. */
 void main_PlayOutro(void)
 {
-    char sv;
-    unsigned char *f;
+    int sv;
+    D2FADE *f;
     char buf[0x104];
 
-    if (U_I((unsigned)&full_data_6f2574) == 0)
+    if (main_MoviesOpen == 0)
         mov_Init();
     snd_FadeMusic(0.0f, 1000);
-    f = (unsigned char *)d2_StartFade(0, 0, (int)*(short *)(unsigned)&d2_ScreenW, (int)*(short *)(unsigned)&d2_ScreenH, "BLACK", 0x5a, 1);
-    while (sv = *(char *)(unsigned)&snd_AmbientOn, (*f & 4) == 0 || 0.0 <= *(float *)(unsigned)&msx_FadeTo)
-        sv_RunFrame(0, U_I((unsigned)&sv_FrameMask));
-    *(char *)(unsigned)&snd_AmbientOn = 0;
-    sprintf(buf, "%soutro.mpg", (char *)(unsigned)&full_data_624798);
-    U_I((unsigned)&di_Disabled) = 1;
+    f = d2_StartFade(0, 0, d2_ScreenW, d2_ScreenH, "BLACK", 0x5a, 1);
+    while ((f->flags & 4) == 0 || msx_FadeTo >= 0.0f)
+        sv_RunFrame(0, sv_FrameMask);
+    sv = main_AmbientByte;
+    main_AmbientByte = 0;
+    sprintf(buf, "%soutro.mpg", main_MoviePath);
+    di_Disabled = 1;
     di_PollKeyboard();
-    U_I((unsigned)&di_Disabled) = 0;
+    di_Disabled = 0;
     di_AcquireMouse(0);
     di_AcquireKeyboard(0);
     sv_PumpMessages();
     Sleep(500);
-    U_I((unsigned)&full_data_6f241c) = mov_Open(buf, 0, U_I((unsigned)&main_Instance), 0, 0, 0, 0, 0x8a);
+    main_OutroMovie = mov_Open(buf, 0, (HINSTANCE)main_Instance, 0, 0, 0, 0, 0x8a);
     Sleep(200);
-    mov_Play(U_I((unsigned)&full_data_6f241c));
+    mov_Play(main_OutroMovie);
     d2_ReleaseFade(f);
     sv_PumpMessages();
-    SetFocus((HWND)U_I((unsigned)&main_Window));
+    SetFocus(main_Window);
     di_AcquireMouse(1);
     di_AcquireKeyboard(1);
-    U_I((unsigned)&di_Disabled) = 1;
+    di_Disabled = 1;
     di_PollKeyboard();
-    U_I((unsigned)&di_Disabled) = 0;
-    U_I((unsigned)&kb_Last) = 0;
-    snd_FadeMusic((float)*(unsigned char *)((unsigned)&ai_SoundOptions + 0x2) * 0.007874016, 1000);
-    *(char *)(unsigned)&snd_AmbientOn = sv;
-    if (U_I((unsigned)&full_data_6f2574) == 0)
+    di_Disabled = 0;
+    kb_Last = 0;
+    snd_FadeMusic((float)ai_SoundOptions.msxVolume * 0.007874016f, 1000);
+    main_AmbientByte = (unsigned char)sv;
+    if (main_MoviesOpen == 0)
         mov_Exit();
 }
 /* 0x53ccf0, the program entry (WinMain: instance, previous, command line, show): reads game.INI (Network / Gfx / Sound / General), parses the command line (STADT=" BERUF=" IP=" PORT=" MO_MONEY FULLSCREEN DIRECTWINDOW), starts the engine
