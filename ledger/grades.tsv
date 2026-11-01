@@ -408,9 +408,9 @@ exe	0x0041ec50	surf_Shrink16	surf	byte	readable
 exe	0x0041ee70	surf_Shrink24	surf	byte	readable		
 exe	0x0041f000	surf_Down32	surf	draft	readable	deep	
 exe	0x0041f220	surf_Up8	surf	byte	readable		
-exe	0x0041f2b0	surf_Up16	surf	draft	readable		
-exe	0x0041f800	surf_Up24	surf	draft	readable		
-exe	0x0041fc00	surf_Up32	surf	draft	readable		
+exe	0x0041f2b0	surf_Up16	surf	draft	readable	deep	
+exe	0x0041f800	surf_Up24	surf	draft	readable	deep	
+exe	0x0041fc00	surf_Up32	surf	draft	readable	deep	
 exe	0x00420140	surf_ScaleBlit	surf	shape	readable		
 exe	0x004202d0	surf_Pal8To16	surf	byte	readable		
 exe	0x00420450	surf_24To16	surf	byte	readable		
@@ -1277,7 +1277,7 @@ exe	0x0046cd80	d2_CreatePicObj	d2	byte	readable
 exe	0x0046cda0	d2_MoveObj	d2	byte	readable		
 exe	0x0046cfd0	d2_ShowPicture	d2	byte	readable		
 exe	0x0046d040	d2_DrawPic	d2	shape	readable	deep	
-exe	0x0046d220	d2_DrawObjCaption	d2	draft	readable		
+exe	0x0046d220	d2_DrawObjCaption	d2	draft	readable	deep	
 exe	0x0046d3d0	d2_DrawObjects	d2	draft	draft	deep	
 exe	0x0046e150	d2_DrawAll	d2	byte	readable		
 exe	0x0046e190	d2_FindWindowAt	d2	byte	readable		
@@ -1319,7 +1319,7 @@ exe	0x00473980	d2_CreateWinCaption	d2	byte	readable
 exe	0x00473b30	d2_ReplaceInputText	d2	byte	readable		
 exe	0x00473c10	d2_Open	d2	byte	readable		
 exe	0x004741a0	d2_RaiseViewWindows	d2	byte	readable		
-exe	0x004741f0	d2_OpenForm	d2	draft	readable		
+exe	0x004741f0	d2_OpenForm	d2	draft	readable	deep	
 exe	0x00474b30	d2_LoadView	d2	byte	readable		
 exe	0x00474ca0	d2_SetViewTextures	d2	byte	readable		
 exe	0x00474d10	d2_ClearViewTextures	d2	byte	readable		
@@ -2073,7 +2073,7 @@ exe	0x004bc8d0	veg_GrowPlants	rd	byte	readable
 exe	0x004bc940	veg_LoadModel	rd	draft	readable	deep	
 exe	0x004bcb90	veg_ShowPlants	rd	byte	readable		
 exe	0x004bcbe0	veg_HidePlants	rd	byte	readable		
-exe	0x004bcc20	rd_BuildRoad	rd	draft	draft		
+exe	0x004bcc20	rd_BuildRoad	rd	draft	readable	deep	
 exe	0x004bd340	rd_PathToRoad	rd	draft	readable	deep	
 exe	0x004bd4a0	rd_AddBauplaetze	rd	byte	readable		
 exe	0x004bd500	rd_AllBauplatzToSupermap	rd	draft	readable	deep	
@@ -2696,7 +2696,7 @@ exe	0x004eafa0	ahm_ResearchMinutes	ahm	byte	readable
 exe	0x004eafd0	ahm_ResearchProgress	ahm	shape	readable		
 exe	0x004eb0b0	ahm_ShareProgress	ahm	byte	readable		
 exe	0x004eb130	ahm_PlaceFactor	ahm	byte	readable		
-exe	0x004eb180	ahm_ResearchState	ahm	draft	readable		
+exe	0x004eb180	ahm_ResearchState	ahm	byte	readable		
 exe	0x004eb410	ahm_RescheduleResearch	ahm	byte	readable		
 exe	0x004eb480	ahm_LoadPrototypes	ahm	byte	readable		
 exe	0x004eb4c0	ahm_LoadIni	ahm	draft	readable	deep	
@@ -2723,7 +2723,7 @@ exe	0x004ecd50	ahm_SendAddValue	ahm	byte	readable
 exe	0x004ecdb0	ahm_AddValue	ahm	draft	readable	deep	
 exe	0x004ece10	ahm_SendDelete	ahm	byte	readable		
 exe	0x004ece60	ahm_DeleteAlchemist	ahm	byte	draft		
-exe	0x004ecf10	ahm_WriteRecord	ahm	draft	readable		
+exe	0x004ecf10	ahm_WriteRecord	ahm	byte	readable		
 exe	0x004ed040	ahm_ReadRecord	ahm	draft	readable	deep	
 exe	0x004ed170	gv_AllocAvatar	gv	shape	readable		
 exe	0x004ed1e0	gv_WriteAvatars	gv	byte	readable		

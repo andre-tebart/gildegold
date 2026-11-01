@@ -10,6 +10,11 @@ Migrated from the notes/tus.md table on 2026-10-23 (the row's prose, unchanged):
 - Was: tag "ahm_"
 
 ## Open work
+- 0x4ec940 / 0x4ecc30 (near misses, the clamp 0 / v / 1.0 order): try the clamp form that matched
+  ahm_ResearchState - `(1.0f < v ? 1.0f : v) > 0.0f ? (1.0f < v ? 1.0f : v) : 0.0f`, max(min(v, 1), 0) written out
+  as a MIN / MAX macro pair expands (it puts v in a stack slot and gives the 1.0 / 0 / 1.0? / v order).
+- ahm_ReadRecord: ahm_WriteRecord matched once every read had its own `if (..) return 0;` and the places a
+  `for (i = 0; i < 6; i++)` of two calls; the reader probably has the same shape.
 - **headers (2026-10-30, typing pass 2)**: head.c includes txt_views.h, ahm.h, f3gm.h, net.h, vfs.h; keeps 3 cast / view macros with @original byte evidence (the address and the matched caller are in each comment): ai_TimeK, cm_SendExSetHEI, vfs_freadU.
 - Complete: 0x4eaa50 .. 0x4ed040 all have drafts (the unit ends at 0x4ed170, see tus.md).
 - Rough: 0x4eb4c0 (INI loader, the clamps), 0x4ec320 / 0x4ec3d0 (float chains), 0x4eb180, 0x4ec500 (character creation, 760 / 1072 B off; a copy of the shape of the other creation functions). Near misses: 0x4ec940 / 0x4ecc30 (10 B: the three-way clamp 0 / v / 1.0
@@ -291,3 +296,8 @@ Check 2567/4664 unchanged, grade regressions 0; ahm.c 33/46 byte, 2414 differing
 - ahm_ReadRecord (0x4ed040) -> match-deep: the same shared-tail / prologue difference (the original inlines
   the return-0 epilogue and skips it with jne, ours jumps to one shared tail with je); the `!ls_Read(...)`
   spelling compiles to the same 136 differing instructions (not the cause). Body complete.
+
+## match-base 2026-11-01
+- ahm_ResearchState byte: the clamp is max(min(v, 1.0f), 0.0f) expanded (each operand twice), VC6 then keeps v in a
+  dead argument slot; case 0x95 has its own variable (slot of `a`), 0x96 / 0x97 share one (slot of `o`).
+- ahm_WriteRecord byte: one early return per vfs_fwrite (`<= 0`, the callee is unsigned), six place pairs in a for loop.

@@ -12,6 +12,12 @@ Migrated from the notes/tus.md table on 2026-10-23 (the row's prose, unchanged):
 - Was: unk_41ebc0.c (round 12)
 
 ## Open work
+- surf_Up16 / surf_Up24 / surf_Up32 (match-base 2026-11-01, deep): rewritten to the original's data flow (all
+  twelve neighbour channels up front, row deltas and column steps in their own variables). Left: the original keeps
+  src on the stack and reloads it for each G / B mask (R mask in ebx); ours keeps src and the masks in registers.
+  Up24: the original strength-reduces x * 3 into a stepped slot and a p00 pointer; ours sinks the p11 loads past
+  the dy guard. Up24 / Up32 use `if (dy > 0) { ..; do .. while (++yy < dy); }` (the guard before the deltas);
+  Up16 still has the plain for loops - try the same form there.
 - see notes/units/dd_vesa.md, Open work: "Header cleanup: Dd_vesa.c globals/functions are declared both in d3_d3d.h (with D3DCARD) a ..."
 
 ## Also about this unit
@@ -36,3 +42,8 @@ Migrated from the notes/tus.md table on 2026-10-23 (the row's prose, unchanged):
 ## match-base 2026-10-24 (base-4 worker, shard 4/5)
 - Unit readability now: surf_Blit / surf_ScaleBlit were declared in d3.h; they moved to surf.h, and the two
   users (d3_d3d.c, d3_tools.c) include surf.h. No code changed (surf.c 12/12, both users unchanged).
+
+## match-base 2026-11-01
+- The upscalers (Up16 / Up24 / Up32): y0 = y1 and x0 = x1 at the loop tops, right computed before down, the
+  six deltas r10 - r00 .. b11 - b01 once per source pixel, per destination row the end values and the column
+  steps hr - lr .. once, the output written as one OR of the shifted channels (bytes for Up24).

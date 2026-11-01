@@ -11,6 +11,10 @@ Migrated from the notes/tus.md table on 2026-10-23 (the row's prose, unchanged):
 - Was: unk_4bc2e0.c (layout 2026-10-22)
 
 ## Open work
+- rd_BuildRoad 0x4bcc20 (match-base 2026-11-01, deep, 495 vs 522): our VC6 cross-jumps the three inline
+  `d3sm_Destroy(rd_Road.grid); return 0;` blocks (ai_BuildingName fail, bk == 0, first rd_PathToRoad) into the shared
+  fail tail; the original keeps each with its own epilogue (the 27 missing instructions). All-inline returns without
+  goto were worse (197 ins). Also v[1] = bk->y0 is fld/fstp in the original, mov in ours; frame 0xc4 vs 0xc8.
 - veg_LoadModel 0x4bc940 (match-base 2026-10-31 opus3, deep, 182 vs 180): left the byte-register choice in the height part (ours spills o from ebx around heights[z * size + x]).
 - **headers (2026-10-30, typing pass 2)**: head.c includes anm.h, f3gm.h, d3.h, d3_light.h, data_views.h; no @original cast or view; views / casts without byte evidence of their own (weak definitions or drafts' spellings, notes/headers.md debt item 1): util_RandomS.
 - Near-misses: 0x4bc5a0 (53 B: the first load of the table id is a 32-bit `mov eax` in the original, ours `mov ax`;
@@ -71,3 +75,9 @@ rd.c includes <windows.h>, <d3d.h>, d3.h and d3_light.h (d3_light.h is not self-
 - head includes d3_sm.h (typing commit, all 23 functions unchanged): D3TERRAIN for d3_Terrain.
 - veg_LoadModel: pos = origin, then += x * axisx, += z * axisz, += height * axisy per component (each height
   re-read); one sprintf per branch with the literal format. The address comment had a cut-off @deep tail; cleaned.
+
+## match-base 2026-11-01
+- rd_BuildRoad: the DDA tests fabs(dx) > fabs(dz) (the double results, no float temps) and does the x-major branch
+  first (z step dz / fabs(dx)); the map fill is `>= 0x780` single cells first, else 3x3 with k added before the cell x.
+- ai_Unkfd7f78 -> d3_Scene0Flags: d3_Scenes[0] + 0x3d8 = D3IFSCENE.sceneFlags (d3_SceneFlags saved for scene 0);
+  bit 2 set skips d3fl_MakeDivide.
