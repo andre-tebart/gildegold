@@ -351,7 +351,7 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define ai_TailorAmountText                      (*(char * *)((char *)txt_Ptrs + 0x108a8))  /* 0x144aa68 */
 #define ai_ContactTextProductionTailor           (*(char * *)((char *)txt_Ptrs + 0x108c4))  /* 0x144aa84 */
 #define ai_ContactTextCardGame                   (*(char * *)((char *)txt_Ptrs + 0x108dc))  /* 0x144aa9c */
-#define full_data_144abd4                        (*(unsigned char (*)[12])((char *)txt_Ptrs + 0x10a14))  /* 0x144abd4 */
+#define txt_NetPlayers                           (*(char **)((char *)txt_Ptrs + 0x10a14))  /* 0x144abd4 */
 #define full_data_144abe0                        (*(unsigned char (*)[4])((char *)txt_Ptrs + 0x10a20))  /* 0x144abe0 */
 #define full_data_144abe4                        (*(unsigned char (*)[4])((char *)txt_Ptrs + 0x10a24))  /* 0x144abe4 */
 #define full_data_144abe8                        (*(unsigned char (*)[4])((char *)txt_Ptrs + 0x10a28))  /* 0x144abe8 */

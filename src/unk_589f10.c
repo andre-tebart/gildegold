@@ -45,7 +45,6 @@ extern GAPDATA full_data_625100[];
 extern GAPDATA full_data_62510c[];
 extern GAPDATA full_data_60ea78[];
 extern GAPDATA full_data_629188[];
-extern GAPDATA full_data_62aaa4[];
 extern GAPDATA full_data_62aaac[];
 extern GAPDATA full_data_62aab4[];
 extern GAPDATA full_data_62aac0[];
@@ -353,35 +352,40 @@ void lobby_AddChatScroll(void)
         sv_CreateFormSlider(0, 0, U_I((unsigned)&d2_LastWindow), s, 0x35, &a, &b, &c);
     }
 }
-/* 0x58aa30, the city emblem window (368 B): control 2 of 0x62aa88, the text 0x602568; the city name 0x936476
-   upcased (0x5ea986) into "..\..\Grafik\STADTWAPPEN\.." 0x6240e0 via 0x5de652, the image 0x468890 (the fallback
-   "..\..\Grafik\STADTWAPPEN\BERLIN" 0x6240cc); the control 0x4731d0 (5, 5, the image, screen) and the text
-   0x473650 (the control's x + 0xf, 0x19, the city name) and below it the population "%s: %d" 0x62aaa4 with
-   U_I (0x144abd4) and the byte 0x936496 */
+/* 0x58aa30, shows the city of the network game on part 2 of the lobby form: the city's emblem picture
+   "_STADTWAPPEN_<NAME>" (upcased; "_STADTWAPPEN_BERLIN" when there is none), right of it the city name and
+   below that the label txt_NetPlayers with the game's player count @deep Read whole against the original: mode 0x3f test with strcpy x2 + _strupr in each branch, players byte hoisted into ebx after the branches, emblem pic, txt_NetPlayers label; instruction count equal (112/112). Only remaining: the original pushes ebx/esi/edi in the prologue (+0xb) while ours pushes them at the join after the branches (asmdiff: '+ push ebx/esi/edi' at 0x58aa3b, '- push ebx/esi/edi' at 0x58aac3), so every stack offset before the join differs by 0xc ([esp+eax] vs [esp+eax+0xc]) - saved-register placement, allocation/scheduling. */
 
 void lobby_ShowCity(void)
 {
-    char a[256];
-    char b[256];
-    char c[256];
-    int id;
+    char name[256];
+    char pic[256];
+    char city[256];
+    int obj;
     int x;
-    int y;
+    int players;
 
     d2_SetForm(lobby_Form, 2);
-    io_PrintText((char *)(unsigned)"$C");
-    strcpy(a, cm_NetGame.hdr.name);
-    strcpy(b, cm_NetGame.hdr.name);
-    _strupr(a);
-    sprintf(c, (char *)(unsigned)"_STADTWAPPEN_%s", a);
-    id = d2_FindPic(c);
-    if (id == -1)
-        id = d2_FindPic((char *)(unsigned)"_STADTWAPPEN_BERLIN");
-    id = d2_WinOpenPic(5, 5, id, U_I((unsigned)&d2_LastWindow));
-    x = *(short *)(U_I((unsigned)&d2_Objs) + 0x14 + id * 0x2ec) + 0xf;
-    y = d2_CreateWinText(x, 0x19, b, U_I((unsigned)&d2_LastWindow));
-    sprintf(a, (char *)(unsigned)&full_data_62aaa4, U_I((unsigned)&full_data_144abd4), cm_NetGame.hdr.players);
-    d2_CreateWinText(x, *(short *)(U_I((unsigned)&d2_Objs) + 0x16 + y * 0x2ec) + 0x1b, a, U_I((unsigned)&d2_LastWindow));
+    io_PrintText("$C");
+    if (cm_NetGame.mode == 0x3f) {
+        strcpy(name, cm_NetGame.hdr.name);
+        strcpy(city, cm_NetGame.hdr.name);
+        _strupr(name);
+    } else {
+        strcpy(name, cm_NetGame.hdr.name);
+        strcpy(city, cm_NetGame.hdr.name);
+        _strupr(name);
+    }
+    players = cm_NetGame.hdr.players;
+    sprintf(pic, "_STADTWAPPEN_%s", name);
+    obj = d2_FindPic(pic);
+    if (obj == -1)
+        obj = d2_FindPic("_STADTWAPPEN_BERLIN");
+    obj = d2_WinOpenPic(5, 5, obj, d2_LastWindow);
+    x = d2_Objs[obj].w + 0xf;
+    obj = d2_CreateWinText(x, 0x19, city, d2_LastWindow);
+    sprintf(name, "%s: %d", txt_NetPlayers, players);
+    d2_CreateWinText(x, d2_Objs[obj].h + 0x1b, name, d2_LastWindow);
 }
 /* 0x58aba0, the current player's info window (384 B): the player record 0x6f267c[0x6f5ea0 + 1] (0x4cd380)
    gives the city (+0xc); control 3 of 0x62aa88 and the text 0x602568; the city image control 0x4731d0

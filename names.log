@@ -171,3 +171,4 @@
 2026-11-01T10:01:50 0x0058b880 func ai_Unk58b880 -> lobby_ChooseProfession by:main why:the profession picker Menu\CHOOSEPROFESSION of the lobby
 2026-11-01T10:01:50 0x0058ba70 func ai_Unk58ba70 -> lobby_ShowChat by:main why:shows the chat lines on the lobby form
 2026-11-01T10:01:52 0x005fe710 data ai_Unk5fe710 -> d2_PointerObj by:main why:0x5fe710: d2.h already names it d2_PointerObj (the object under the pointer / clicked control)
+2026-11-01T10:09:13 0x0144abd4 data full_data_144abd4 -> txt_NetPlayers by:main why:lobby_ShowCity prints it with "%s: %d" before the network game's hdr.players count (a reasoned guess: the label of the player count)
