@@ -88,7 +88,6 @@ extern void * d3_Unk6333fc;
 
 extern GAPDATA full_data_5f1084[];
 extern int sv_PopRequest;
-extern char ai_DataPath[];
 
 
 
@@ -114,7 +113,6 @@ extern GAPDATA full_data_624cf8[];
 extern INIT_PLAYER init_PlayerProfile;
 extern int sv_PopRequest;
 extern GAPDATA full_data_602568[];
-extern char ai_DataPath[];
 extern char ai_OptionsFile[288];
 
 
@@ -126,9 +124,7 @@ extern int ai_OptionHistorie;
 
 extern unsigned char hst_TextsOn;
 extern INIT_PLAYER init_PlayerProfile;
-extern int sv_FrameMask;
 extern int sv_PopRequest;
-extern char ai_MissionMode;
 extern OPTIONBYTES ai_GamePanel;
 extern int ai_Opponents[7];
 
@@ -138,7 +134,6 @@ extern int ai_Opponents[7];
 
 
 extern int sv_PopRequest;
-extern char ai_DataPath[];
 extern char * ai_Unkfc2dec;
 
 extern void * d3_Unk6333fc;
@@ -181,15 +176,11 @@ typedef struct MAINCHARNEW {        /* the AICHAR fields the character replaceme
 } MAINCHARNEW;
 #define main_BookObject (*(int *)((char *)&cm_RequestedSaveName + 0x44))  /* 0x6f2614, the book object "Buch" loaded at the game start (reasoned: a pointer-sized field after the 64-byte name and the int at +0x40) */
 extern GAPDATA full_data_75df20[];
-extern int ch_SndLib;
 extern char cm_RequestedSaveName[72];
 extern float ai_Unk617830[], ai_Unk617840[];  /* 0x617830 / 0x617840 (f3gm.c) */
 extern GAPDATA full_data_6f25c0[];
 extern GAPDATA full_data_75e630[];
 #include "ch_types.h"
-extern struct CHARACTER *ch_List[0x300];  /* 0x1468ae0 (ch.h) */
-extern CHMOTION ch_Motions[];
-extern struct D3ANIM *d3t_CamMove;
 extern int sv_FrameMask;
 extern OPTIONBYTES ai_GamePanel;
 extern char ai_MissionMode;
@@ -239,7 +230,6 @@ extern GAPDATA full_data_624560[];
 #include "f3snd_types.h"
 extern int sv_FrameMask;
 extern int sv_PopRequest;
-extern char ai_DataPath[];
 
 extern OPTIONBYTES ai_GamePanel;
 extern int ai_Unk1460ae0;
@@ -264,7 +254,6 @@ extern GAPDATA full_data_6f241c[];
 extern int di_Disabled;
 extern GAPDATA full_data_6f2574[];
 extern G16AMBIENTON snd_AmbientOn;
-extern char ai_DataPath[];
 extern unsigned char ai_GfxResolution;  /* 0x6f2f94 (unk_5d33b0.c: OPTIONBYTES): @original main_OpenScreen reads it as a byte object (0x531d43 mov al, byte ptr [0x6f2f94]); through the 4-byte union VC6 loads the dword and masks it (and eax, 0xff: 264 instead of 226 differing instructions) */
 extern char ai_OptionsFile[288];
 extern int ai_ScreenModeH;
@@ -309,13 +298,8 @@ void main_Unk53a520(unsigned short pl);
 void main_Unk53cb40(void);
 
 extern unsigned int d3anim_CacheMax;   /* 0x5f927c, d3_anim.h */
-void hst_ResetLists(void);              /* 0x4b1f30, hst.c */
 void ai_ClearTurnTable(void);           /* 0x587de0, unk_575860.c: not in unk_575860.h (adding it there moves unk_575860's drafts ai_Unk579570 / ai_Unk57aeb0) */
 int main_PreloadSound(char *f);         /* 0x537c70 */
-int ch_Open(void);                      /* 0x40afb0 */
-int hmt_CreateBinaryFile(void);         /* 0x4ac440 */
-void hmt_Init(void);                    /* 0x4aca90 */
-void chc_Register(void);                /* 0x40d270 */
 #define d2_MoveObjS ((void (*)(short, short, int))d2_MoveObj)  /* 0x46cda0 as its definition reads it (d2.c f_46cda0.c: short x, short y): this unit's callers push the short sums untruncated (0x532212 `sub dx, [..]; sub edx, 0x30; push edx`); d2.h keeps int for d2_CreatePicObj (@original) */
 #define util_RandomInt ((int (*)(unsigned short))util_Random)  /* 0x42ec00 as tr.c defines it: @original this unit reads the full int result (0x53b8c9 util_Random(4) + 0x20 pushed without the 16-bit mask ai.h's unsigned short prototype adds) */
 #define d2_SetObjValue4 ((void (*)(int, int, int, int))d2_SetObjValue)  /* the 4-argument call (as unk_5d33b0.h) */
@@ -327,8 +311,6 @@ int main_ChooseCity(int unused, int host);  /* 0x537230, the player setup / city
    selection main_ChooseOpponents (diff of the picked city); returns 1 when a game was set up (the second parameter is the host flag, the first unused) */
 struct D3OBJECT;
 void main_FreeSoundBanks(void);         /* 0x537db0 */
-int hmt_Exit(void);                     /* 0x4acde0, hmt.h */
-void ch_Close(void);                    /* 0x40b1a0, ch.h */
 
 #include "time_view.h"
 #include "f3init.h"
@@ -354,6 +336,13 @@ void ch_Close(void);                    /* 0x40b1a0, ch.h */
 #include "unk_458810.h"
 #include "unk_575860.h"
 #include "unk_589f10.h"
+#include "am.h"
+#include "ch.h"
+#include "chc.h"
+#include "hmt.h"
+#include "hst.h"
+#include "unk_4b39f0.h"
+#include "unk_4b6480.h"
 #define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (f3gm.c: char *) as the AIGOOD records it points to */
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
