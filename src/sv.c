@@ -4769,115 +4769,114 @@ void sv_HoverPick(void)
         d2_PointerLook = 0;
     }
 }
-/* 0x52ae70, "sv_HandleObjects": turns the object under the cursor (0x6f22e8, found by 0x52a680) into the selection state: the quick-jump contact name 0x75e8d4 (panel flag 0x75e8c0) is looked
-   up as an object when the panel shows the remembered subject, the hint objects 0x760458 .. 0x760460, the highlight (0x4118a0, 0x6f22ec) and the group selection (0x7662c0 / 0x6f2334) are
-   set; ROUGH */
-
-void sv_Unk52ae70(void)
+/* 0x52ae70, "sv_HandleObjects": turns a click into the selection. A pending quick jump (sv_PanelFlag) looks up its
+   contact name (sv_PanelText) as an object when the panel shows the current building's remembered room; a left
+   click inside the view (or that jump) copies the hover state into the sv_Clicked* state, focuses the camera on a
+   zoom target object that is no door / goods / contact (calling its event 2), selects the clicked character when
+   the player may command him (0x800) and sets the selected object, item and model; a click on nothing resets the
+   selection
+   @deep read the whole function against 0x52ae70..0x52b29d (297 vs 298 ins): the clicked-state clears, the
+   quick-jump lookups (two blocks, each FindObject / sprintf then sv_PanelFlag = 0), the click test
+   (dm_L.lup, CamMove, view rect, hit window / widget), the nothing-picked reset, the sv_Clicked* copies,
+   the door test (strcmp "tp_TUER" gives the original's mov ecx,8 / repe cmpsb; memcmp gives cmpsd), the
+   camera focus with events[2], the character selection and the selected object / item / model: all match.
+   Left, allocation / scheduling only: (1) at +0x31d the original pushes the snd_PlayWorkerClick argument
+   first (push eax; mov cx,[eax]; mov [sv_SelectedChar],eax) and stores ai_SelectedCount = 1 after the
+   selected byte, ours stores sv_SelectedChar / ai_SelectedCount first and pushes late; (2) the last goods
+   kind test: original mov esi,eax; shl esi,6; add ecx,esi; add eax,ecx; cmp byte [eax],0x1d, ours mov
+   edx,eax; shl edx,6; add ecx,edx; cmp byte [eax+ecx],0x1d (tried the expression direct and through cls) */
+void sv_HandleObjects(void)
 {
-    unsigned short *g;
-    char *o, *cls, *s, *t;
-    int subj, n, found;
+    char *subj;
+    AIGOOD *cls;
+    D3OBJECT *o;
+    int found, door, perms;
     char msg[0x80];
 
     found = 0;
+    door = 0;
     cls = 0;
-    SV_I((unsigned)&sv_ClickedBuilding) = 0;
-    SV_I((unsigned)&sv_ClickedItem) = 0;
-    SV_I((unsigned)&ai_ClickedObject) = 0;
-    SV_I((unsigned)&sv_ClickedChar) = 0;
-    SV_I((unsigned)&sv_ClickedContact) = 0;
-    if (SV_I((unsigned)&sv_SelectedChar) != 0 && *(char *)(SV_I((unsigned)&sv_SelectedChar) + 0x188) == 0)
-        SV_I((unsigned)&sv_SelectedChar) = 0;
-    if (SV_I((unsigned)&sv_PanelFlag) != 0) {
-        subj = SV_I((unsigned)&ai_PlayerBuilding);
-        if (subj == 0)
-            subj = SV_I((unsigned)&ai_FallbackBuilding);
-        if (subj == SV_I((unsigned)&sv_PanelObject)) {
-            if (SV_I((unsigned)&sv_PanelShown) == SV_I((unsigned)&sv_PanelRecord)
-                || (SV_I((unsigned)&ai_FallbackBuilding) != 0 && SV_I((unsigned)&sv_PanelShown) == 0 && SV_I((unsigned)&sv_PanelRecord) != 0 && *(short *)SV_I((unsigned)&sv_PanelRecord) == 0xfd)) {
-                if (SV_B((unsigned)&sv_PanelText) != 0) {
-                    o = (char *)d3_FindObject(0, 0x60, 0, (unsigned)&sv_PanelText);
-                    if (o != 0) {
-                        found = 1;
-                        SV_I((unsigned)&sv_PanelFlag) = 0;
-                        SV_C((unsigned)&ai_PickedObject) = o;
-                        goto lf73;
-                    }
-                    sprintf(msg, "sv_HandleObjects(): Could not find QuickJump.ContactName: %s", (char *)(unsigned)&sv_PanelText);
-                }
-                SV_I((unsigned)&sv_PanelFlag) = 0;
+    sv_ClickedBuilding = 0;
+    sv_ClickedItem = 0;
+    ai_ClickedObject = 0;
+    sv_ClickedChar = 0;
+    sv_ClickedContact = 0;
+    if (sv_SelectedChar != 0 && ((AICHAR *)sv_SelectedChar)->selected == 0)
+        sv_SelectedChar = 0;
+    if (sv_PanelFlag != 0) {
+        subj = ai_PlayerBuilding != 0 ? ai_PlayerBuilding : ai_FallbackBuilding;
+        if (subj == sv_PanelObject
+            && (sv_PanelShown == sv_PanelRecord
+                || (ai_FallbackBuilding != 0 && sv_PanelShown == 0 && sv_PanelRecord != 0 && *sv_PanelRecord == 0xfd))) {
+            if (sv_PanelText[0] != 0) {
+                o = d3_FindObject(0, 0x60, 0, sv_PanelText);
+                if (o != 0) {
+                    ai_PickedObject = (char *)o;
+                    found = 1;
+                } else
+                    sprintf(msg, "sv_HandleObjects(): Could not find QuickJump.ContactName: %s", sv_PanelText);
             }
-lf73:
-            if (SV_I((unsigned)&sv_PanelRecord) == 0 || *(short *)SV_I((unsigned)&sv_PanelRecord) == 0xfd) {
-                if (SV_B((unsigned)&sv_PanelText) != 0) {
-                    o = (char *)d3_FindObject(0, 0x60, 0, (unsigned)&sv_PanelText);
-                    if (o != 0) {
-                        found = 1;
-                        SV_I((unsigned)&sv_PanelFlag) = 0;
-                        SV_C((unsigned)&ai_PickedObject) = o;
-                        goto lfe4;
-                    }
-                    sprintf(msg, "sv_HandleObjects(): Could not find QuickJump.ContactName: %s", (char *)(unsigned)&sv_PanelText);
-                }
-                SV_I((unsigned)&sv_PanelFlag) = 0;
+            sv_PanelFlag = 0;
+        }
+        if (subj == sv_PanelObject && (sv_PanelRecord == 0 || *sv_PanelRecord == 0xfd)) {
+            if (sv_PanelText[0] != 0) {
+                o = d3_FindObject(0, 0x60, 0, sv_PanelText);
+                if (o != 0) {
+                    ai_PickedObject = (char *)o;
+                    found = 1;
+                } else
+                    sprintf(msg, "sv_HandleObjects(): Could not find QuickJump.ContactName: %s", sv_PanelText);
             }
+            sv_PanelFlag = 0;
         }
     }
-lfe4:
-    if ((SV_I(((unsigned)&dm_L + 0xc)) != 0 && SV_I((unsigned)&d3t_CamMove) == 0 && SV_S((unsigned)&dm_L) > SV_I((unsigned)&sv_ViewRectLeft) && SV_S((unsigned)&dm_L) < SV_I((unsigned)&sv_ViewRectRight)
-         && SV_I((unsigned)&sv_ViewRectTop) < SV_S(((unsigned)&dm_L + 0x2)) && SV_S(((unsigned)&dm_L + 0x2)) < SV_I((unsigned)&sv_ViewRectBottom) && d2_HitWindow == -1 && SV_I((unsigned)&d2_HitUnderPointer) == -1)
-        || found) {
-        if (SV_C((unsigned)&ai_PickedObject) == 0) {
-            if (sv_OtherSelected == 0) {
-                sv_ResetSelection();
-                return;
-            }
-        } else {
-            SV_I((unsigned)&sv_ClickedBuilding) = sv_HoverBuilding;
-            SV_I((unsigned)&sv_ClickedItem) = sv_HoverItem;
-            SV_I((unsigned)&sv_ClickedChar) = SV_I((unsigned)&ai_PickedChar);
-            SV_I((unsigned)&sv_ClickedContact) = sv_HoverContact;
+    if ((dm_L.lup != 0 && d3t_CamMove == 0 && dm_L.x > sv_ViewRectLeft && dm_L.x < sv_ViewRectRight
+         && dm_L.y > sv_ViewRectTop && dm_L.y < sv_ViewRectBottom && d2_HitWindow == -1 && d2_HitUnderPointer == -1)
+        || found != 0) {
+        if (ai_PickedObject != 0) {
+            sv_ClickedBuilding = sv_HoverBuilding;
+            sv_ClickedItem = sv_HoverItem;
+            ai_ClickedObject = (int)ai_PickedObject;
+            sv_ClickedChar = ai_PickedChar;
+            sv_ClickedContact = sv_HoverContact;
             if (sv_HoverItem != 0)
-                cls = ai_Goods + *(unsigned short *)sv_HoverItem * 0x41;
-            if (memcmp(SV_C((unsigned)&ai_PickedObject), "tp_TUER", 8) == 0 || (cls != 0 && *cls == 6) || sv_HoverContact != 0)
-                found = 1;
-            else
-                found = 0;
-            SV_C((unsigned)&ai_ClickedObject) = SV_C((unsigned)&ai_PickedObject);
-            if ((SV_C((unsigned)&ai_PickedObject)[0x211] & 1) != 0 && !found) {
-                d3t_PlaceAtObject(SV_C((unsigned)&ai_PickedObject), SV_I((unsigned)&ai_CameraStep));
-                SV_C((unsigned)&sv_FocusObject) = SV_C((unsigned)&ai_PickedObject);
-                if (SV_C((unsigned)&ai_PickedObject) != 0 && (n = *(int *)(SV_C((unsigned)&ai_PickedObject) + 0x1d4)) != 0 && *(int *)(n + 0x108) != 0)
-                    ((int (*)())*(int *)(n + 0x108))(SV_C((unsigned)&ai_PickedObject), 2, n + 0x10c, 0);
-                SV_I((unsigned)&sv_FocusDepth) = SV_I((unsigned)&sv_FrameDepth);
+                cls = &ai_GoodsT[((AIOBJ *)sv_HoverItem)->id];
+            if (strcmp(ai_PickedObject, "tp_TUER") == 0 || (cls != 0 && cls->type == 6) || sv_HoverContact != 0)
+                door = 1;
+            if ((((D3OBJECT *)ai_PickedObject)->objectFlags & 1) != 0 && door == 0) {
+                d3t_PlaceAtObject((D3OBJECT *)ai_PickedObject, ai_CameraStep);
+                sv_FocusObject = ai_PickedObject;
+                if (ai_PickedObject != 0 && ((D3OBJECT *)ai_PickedObject)->events != 0 && ((D3OBJECT *)ai_PickedObject)->events[2].fn != 0)
+                    ((D3OBJECT *)ai_PickedObject)->events[2].fn((D3OBJECT *)ai_PickedObject, 2, ((D3OBJECT *)ai_PickedObject)->events[2].data, 0);
+                sv_FocusDepth = sv_FrameDepth;
             }
-            SV_C((unsigned)&sv_LastPicked) = SV_C((unsigned)&ai_PickedObject);
-            if (SV_I((unsigned)&ai_PickedChar) != 0 && *(char *)(SV_I((unsigned)&ai_PickedChar) + 8) != 0) {
-                g = (unsigned short *)SV_I((unsigned)&ai_PickedChar);
-                n = gm_PermissionBits(ai_PlayerId, 0, 0, g);
+            sv_LastPicked = ai_PickedObject;
+            if (ai_PickedChar != 0 && ((AICHAR *)ai_PickedChar)->health != 0) {
+                perms = gm_PermissionBits(ai_PlayerId, 0, 0, ai_PickedChar);
                 sv_ClearSelection();
-                if ((n & 0x800) != 0 && (*(char *)((char *)g + 0x165) != 0x1c || (g[0xda] & 1) == 0)) {
-                    SV_I((unsigned)&sv_SelectedChar) = (int)g;
-                    SV_B((unsigned)&ai_Selected + *g * 0x21c) = 1;
-                    SV_I((unsigned)&ai_SelectedCount) = 1;
-                    SV_I((unsigned)&sv_PanelCartChar) = SV_I(((unsigned)&ai_Unk770cec + 0x18) + *g * 0x21c);
-                    snd_PlayWorkerClick(g);
+                if ((perms & 0x800) != 0 && (((AICHAR *)ai_PickedChar)->title != 0x1c || (((AICHAR *)ai_PickedChar)->flags1b4 & 1) == 0)) {
+                    sv_SelectedChar = ai_PickedChar;
+                    ai_CharsT[((AICHAR *)ai_PickedChar)->id].selected = 1;
+                    ai_SelectedCount = 1;
+                    sv_PanelCartChar = (int)ai_CharsT[((AICHAR *)ai_PickedChar)->id].model;
+                    snd_PlayWorkerClick((struct G16CHARCLICK *)ai_PickedChar);
                 }
-                SV_I((unsigned)&sv_PanelCartChar) = SV_I(((unsigned)&ai_Unk770cec + 0x18) + *(unsigned short *)SV_I((unsigned)&ai_PickedChar) * 0x21c);
+                sv_PanelCartChar = (int)ai_CharsT[((AICHAR *)ai_PickedChar)->id].model;
             }
-            if (SV_I((unsigned)&ai_SelectedCount) == 0 && sv_OtherSelected == 0 && sv_HoverBuilding != 0 && SV_I((unsigned)&sv_SelectedItem) == 0)
-                SV_I((unsigned)&sv_SelectedModel) = SV_I((unsigned)&ai_PickedObject);
-            SV_I((unsigned)&sv_SelectedObject) = sv_HoverBuilding;
+            if (ai_SelectedCount == 0 && sv_OtherSelected == 0 && sv_HoverBuilding != 0 && sv_SelectedItem == 0)
+                sv_SelectedModel = (int)ai_PickedObject;
+            sv_SelectedObject = (char *)sv_HoverBuilding;
+            sv_SelectedItem = (unsigned short *)sv_HoverItem;
             if (sv_HoverBuilding != 0)
-                SV_I((unsigned)&sv_SelectedModel) = SV_I((unsigned)&ai_PickedObject);
-            SV_I((unsigned)&sv_SelectedItem) = sv_HoverItem;
+                sv_SelectedModel = (int)ai_PickedObject;
             if (sv_HoverItem != 0) {
-                SV_I((unsigned)&sv_SelectedModel) = SV_I((unsigned)&ai_PickedObject);
-                if (ai_Goods[*(unsigned short *)sv_HoverItem * 0x41] == 0x1d)
+                sv_SelectedModel = (int)ai_PickedObject;
+                cls = &ai_GoodsT[((AIOBJ *)sv_HoverItem)->id];
+                if (cls->type == 0x1d)
                     sv_ClearSelection();
             }
-        }
+        } else if (sv_OtherSelected == 0)
+            sv_ResetSelection();
     }
 }
 
@@ -7521,7 +7520,7 @@ l64:
         }
         if (SV_I(((unsigned)&dm_L + 0x28)) == 0) {
             if ((mask & 0x10) != 0)
-                sv_Unk52ae70();
+                sv_HandleObjects();
             if ((mask & 0x20) != 0) {
                 sv_Unk52bec0();
                 sv_Unk52c5c0();

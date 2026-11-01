@@ -53,6 +53,12 @@ struct D3OBJECT;
 #include "d3_types.h"                /* D3SCENE, D3TEXFLAGS */
 
 typedef struct D3OBJECT D3OBJECT;
+typedef struct D3EVENTSLOT {        /* 0x84 bytes, one entry of a picked object's event table (D3OBJECT.events),
+                                       indexed by the message: sv calls events[2] at the camera focus and events[3]
+                                       at the release (sv_HandleObjects, sv_CameraFollow), each with its own data */
+    int (*fn)(D3OBJECT *obj, int msg, void *data, int arg);
+    char data[0x80];
+} D3EVENTSLOT;
 struct D3OBJECT {
     union {
         char name[0x4c];            /* compared with _strcmpi by name lookups; real length unknown */
@@ -84,7 +90,11 @@ struct D3OBJECT {
     D3MATRIX matrix;                /* 0x18c */
     struct D3OBJINFO *info;         /* 0x1cc, the mesh data holder (D3OBJINFO / D3SMMESH / D3ANIMCTL views) */
     char pad1d0[0x4];
-    float radius;                   /* 0x1d4, the mesh driver's radius (D3LOPS::radius, d3_light.h); read as obj->info->mesh->radius */
+    union {
+        float radius;               /* 0x1d4, the mesh driver's radius (D3LOPS::radius, d3_light.h); read as obj->info->mesh->radius */
+        D3EVENTSLOT *events;        /* 0x1d4, of an object the pointer picks (sv_HandleObjects): its event table, 0 = none
+                                       (reasoned: the same word as radius, read only on picked objects) */
+    };
     char pad1d8[0x14];
     D3MATERIAL *material;           /* 0x1ec */
     D3OBJECT *next;                 /* 0x1f0, sibling list */

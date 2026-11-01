@@ -261,7 +261,8 @@ typedef struct AICHAR {                 /* 0x21c bytes, ai_Chars[768] */
     char pad181[3];
     AITASK *model;                      /* 0x184, the character's model record; its +0x2c is the building the
                                            character was sent to (f3gm.c 0x4fbd10) */
-    char pad188[4];
+    unsigned char selected;             /* 0x188, nonzero: the character is in the player's selection (sv_ClearSelection clears it, sv_HandleObjects sets it) */
+    char pad189[3];
     int picture;                        /* 0x18c, the portrait picture (sv.c: the person panel, the member list) */
     int unk190;                         /* 0x190, a sum the round change prints on the player's balance page (text 0x1eff, main.c 0x5384e0) */
     int money;                          /* 0x194, the character's money (amt.c) */

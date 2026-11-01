@@ -94,7 +94,7 @@ void sv_UpdatePanel(void);                                              /* 0x52a
 void sv_HoverPick(void);                                                /* 0x52a680 */
 void sv_ResetSelection(void);                                                /* 0x52adb0 */
 void sv_ClearSelection(void);                                           /* 0x52ae40 */
-void sv_Unk52ae70(void);                                                /* 0x52ae70 */
+void sv_HandleObjects(void);                                                /* 0x52ae70 */
 void sv_CollectGroupCharacters(char *b);                                /* 0x52b2a0 */
 int sv_Unk52b350(int a, char *name, int c, int d, int e);               /* 0x52b350 */
 int sv_Unk52b3c0(char *c, int b, char *out);                            /* 0x52b3c0 */
