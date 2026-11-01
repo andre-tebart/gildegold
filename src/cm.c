@@ -1442,9 +1442,9 @@ void ai_Unk4c50b0(int a, int b, short c)
     G17_I(m, 4) = a;
     ai_Unk4c39c0(&m);
 }
-/* 0x4c5100, message 0x2e */
+/* 0x4c5100, sends message 0x2e: its handler (0x4c97c0) gives the person "sp_<a>" the walk action 0x2d to (b, c) in scene d */
 
-void ai_Unk4c5100(int a, int b, int c, int d)
+void cm_SendChrWalkTo(int a, int b, int c, int d)
 {
     G17MSG m;
 
@@ -1570,9 +1570,9 @@ void ai_Unk4c5410(int a, const char *s, unsigned char c)
     strncpy((char *)&m.data[4], s, 0x2f);
     ai_Unk4c39c0(&m);
 }
-/* 0x4c5460, message 0x36 */
+/* 0x4c5460, sends message 0x36: its handler (0x4ca8a0) lets the person "sp_<a>" use the gates of building b (room object c) */
 
-void ai_Unk4c5460(int a, int b, int c)
+void cm_SendChrUseGates(int a, int b, int c)
 {
     G17MSG m;
 
@@ -7756,11 +7756,11 @@ void ai_Unk4d0740(char *rec)
     char *c, *m, *mdl, **pp;
 
     if (dm_L.lhold == 0 && sv_BandActive != 0)
-        sv_Unk52eed0();
+        sv_EndBand();
     if (dm_L.lhold != 0 && dm_L.rdown == 0) {
         if (sv_BandActive == 0 && di_Absolute != 0 && d2_PointerObj == -1) {
             ai_Unk4d08c0();
-            sv_Unk52ee50();
+            sv_StartBand();
         }
     } else if (dm_L.lup != 0) {
         for (pp = ai_Unk7603a0V; (int)pp < (int)ai_Unk760420V; pp++) {

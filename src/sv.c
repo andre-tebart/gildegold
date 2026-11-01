@@ -5121,149 +5121,152 @@ void sv_SendSelectedToBuilding(void)
     if (msg.type != 0)
         cm_SendLongMessage((char *)&msg);
 }
-/* 0x52bec0, the mouse release of the selection (called every frame with 0x6f2334 counting the selected characters): with the selection mode 0x1467394 (button released 0x14673a4): the click without a pick sends
-   the selected characters of the player (flag +0x188 / kind from 0x503530 & 0x800) to the clicked map cell (0x45f2b0 (map +0xb0 of the scene, x, y, &cx, &cy), the cell types 0 / 0xd are skipped over the nine
-   neighbour offsets off[9], 0x4c5100 (id, cx, cy, 0x633444)); with a picked group 0x6f22fc the group members (0x7603a0, 0x10 slots) are sent to it (0x4c5230, 0x4c5460 (id, target +1, pick +1)); 0x52bbc0 moves
-   the selection into the picked object when 0x760458 is set; then the selected flags are mirrored (0x75e920) and the focus / hilight of each (0x4134a0 (+0x34, flag), 0x476b90) updated (ROUGH: the offset
-   table off[] is the neighbour spiral, the __ftol operands (off * 50.0 / cell size + c) are decoded from the disassembly) */
-
-void sv_Unk52bec0(void)
+#define sv_SelectionBytes (*(unsigned char (*)[0x300])&sv_SelectionFlags)  /* 0x75e920, the flags as the bytes they are, one per character */
+/* 0x52bec0, the selection's mouse handling (every frame): a held left button ends a rubber band (sv_EndBand) or,
+   with the right button up, starts one in the player's own building (sv_StartBand). With characters selected a
+   release sends them: with nothing clicked to the map cell under the pointer (d3sm_Pick on the default scene's
+   height map; the first of nine neighbour cells inside the map whose ground is neither 0 nor the border 0xd, else
+   the cell itself), each through cm_SendChrWalkTo after leaving its group and stopping its script; with a clicked
+   contact the selected scene characters to it (cm_SendChrStop, cm_SendChrUseGates of the current building and the
+   contact's room); with a clicked building through sv_SendSelectedToBuilding. Then it rebuilds the selection
+   state: the grey look of the characters whose flag changed, sv_SelectedChar, ai_SelectedCount and the pointer
+   items of those in their own building; a right release drops the selection
+   @deep read the whole function against 0x52bec0..0x52c413 (396 vs 391 ins): the band end / start (lhold,
+   rdown, sv_BandActive, di_Absolute, the own building), the four clicked-state tests with the original's
+   threading (contact -> group, object / item -> building test, building -> send), the map-cell send over
+   ai_CharsT (selected, alive, permission 0x800, model; the off[9][2] initializer per character, the spiral
+   index i kept across characters and cell set once, the 50.0 / cell size scaling, the fallback to the
+   picked cell after 8, sv_MoveToGroup, the script stop, cm_SendChrWalkTo), the contact send over
+   ai_SceneChars (the dummy_ name, the 0xfd room via init_BuildingSceneUniverse, the building choice,
+   cm_SendChrUseGates), sv_SendSelectedToBuilding, and the rebuild loop (the grey look by the CHARACTER
+   fading bit, sv_SelectedChar, the pointer items, the byte flags): all equal. Left, allocation: the
+   original holds the constants 0 / -1 / 1 in ebx / edi / ebp all through (cmp [mem],ebx; rematerialized
+   after each send) and keeps map in [esp+0x14], cell in ebx; ours holds 0 in edi, map in ebx and cell in a
+   slot (frame 0x98 vs 0x94), so the spiral loop stores cell and jumps once more and the character pointer
+   is biased by 8 */
+void sv_HandleSelectionMouse(void)
 {
-    int off[9][2] = { {0, 0}, {-1, 0}, {-1, -1}, {0, -1}, {1, -1}, {1, 0}, {1, 1}, {0, 1}, {-1, 1} };
-    char *pk; int map, v, cx, cy, ix, iy, size, i, cell, t, tgt;
-    int *p;
-    char *pc;
-    char name[0x80];
-    unsigned short *ch;
-    unsigned *pp;
+    D3SM *map;
+    AIBLD *b;
+    AICHAR *c;
+    int cx, cy, i, j, ix, iy, size, cell, t;
 
     cx = -1;
     cy = -1;
-    map = *(int *)(SV_I((unsigned)&ai_Unk5fb5b0) + 0xb0);
-    v = SV_I((unsigned)&ai_PlayerBuilding);
-    if (v == 0)
-        v = SV_I((unsigned)&ai_FallbackBuilding);
-    if (SV_I(((unsigned)&dm_L + 0x14)) == 0) {
-        if (SV_I((unsigned)&sv_BandActive) != 0) {
-            snd_PlaySelectedClick();
-            sv_Unk52eed0();
-            if (SV_I(((unsigned)&dm_L + 0x14)) != 0)
-                goto lrel;
-        }
-        goto lend;
+    cell = 0;
+    map = (D3SM *)d3_DefaultScene->hmap;
+    b = 0;
+    if (ai_PlayerBuilding != 0)
+        b = (AIBLD *)ai_PlayerBuilding;
+    else if (ai_FallbackBuilding != 0)
+        b = (AIBLD *)ai_FallbackBuilding;
+    if (dm_L.lhold == 0 && sv_BandActive != 0) {
+        snd_PlaySelectedClick();
+        sv_EndBand();
     }
-lrel:
-    if (SV_I(((unsigned)&dm_L + 0x24)) == 0) {
-        if (SV_I((unsigned)&sv_BandActive) == 0 && SV_I((unsigned)&di_Absolute) != 0 && SV_I((unsigned)&d2_HitWindow) == -1 && v != 0 && *(short *)(v + 0x27) == (short)SV_I((unsigned)&ai_PlayerId))
-            sv_Unk52ee50();
-        goto lend;
-    }
-    if (SV_I((unsigned)&ai_SelectedCount) == 0)
-        goto lend;
-    if (SV_I((unsigned)&sv_ClickedContact) == 0) {
-        if (SV_I((unsigned)&ai_ClickedObject) != 0 || SV_I((unsigned)&sv_ClickedItem) != 0)
-            goto lafter;
-        if (SV_I((unsigned)&sv_ClickedBuilding) == 0) {
-            if (map == 0 || v == 0 || SV_I(((unsigned)&dm_L + 0xc)) == 0 || SV_I((unsigned)&d2_HitWindow) != -1)
-                goto lend;
+    if (dm_L.lhold != 0 && dm_L.rdown == 0) {
+        if (sv_BandActive == 0 && di_Absolute != 0 && d2_HitWindow == -1 && b != 0 && b->owner == ai_PlayerId)
+            sv_StartBand();
+    } else if (ai_SelectedCount != 0) {
+        if (sv_ClickedContact == 0 && ai_ClickedObject == 0 && sv_ClickedItem == 0 && sv_ClickedBuilding == 0
+            && map != 0 && b != 0 && dm_L.lup != 0 && d2_HitWindow == -1) {
             i = 0;
-            ch = (unsigned short *)(unsigned)&ai_Chars;
-            do {
-                cell = 0;
-                if (*(char *)(ch + 0xc4) != 0 && *(char *)(ch + 4) != 0 && (gm_PermissionBits(SV_I((unsigned)&ai_PlayerId), 0, 0, ch) & 0x800) != 0 && *(int *)(ch + 0xc2) != 0) {
-                    if (d3sm_Pick(map, (int)*(short *)(unsigned)&dm_L, (int)*(short *)((unsigned)&dm_L + 0x2), &cx, &cy) != 0) {
-                        size = *(int *)(map + 0x20);
+            for (j = 0; j < 768; j++) {
+                c = &ai_CharsT[j];
+                if (c->selected != 0 && c->health != 0 && (gm_PermissionBits(ai_PlayerId, 0, 0, (int)c) & 0x800) != 0
+                    && c->model != 0) {
+                    int off[9][2] = { {0, 0}, {-1, 0}, {-1, -1}, {0, -1}, {1, -1}, {1, 0}, {1, 1}, {0, 1}, {-1, 1} };
+
+                    if (d3sm_Pick(map, dm_L.x, dm_L.y, &cx, &cy) != 0) {
+                        size = map->size;
                         do {
-                            ix = (int)((float)off[i][0] * (50.0 / *(float *)(map + 0x10)) + cx);
-                            iy = (int)((float)off[i][1] * (50.0 / *(float *)(map + 0x18)) + cy);
+                            ix = (int)(off[i][0] * (50.0 / map->cell.x) + cx);
+                            iy = (int)(off[i][1] * (50.0 / map->cell.z) + cy);
                             if (ix < size && iy < size)
-                                cell = *(int *)(*(int *)(map + 0x24) + (size * iy + ix) * 0x1c);
-                            i++;
-                            t = cx;
-                            tgt = cy;
-                        } while (i < 8 && (ix < 0 || size <= ix || iy < 0 || size <= iy || cell == 0 || (t = ix, tgt = iy, cell == 0xd)));
-                        if (*(int *)(ch + 0xb6) != 0)
-                            sv_MoveToGroup(*(int *)(ch + 0xb6), 0, *ch, 0);
-                        if (*(int *)(*(int *)(ch + 0xc2) + 0x28) != -1 && (pk = (int)evt_FindById(*(int *)(*(int *)(ch + 0xc2) + 0x28))) != 0)
-                            evt_Stop((EVTSCRIPT *)pk);
-                        ai_Unk4c5100(*(int *)(ch + 2), t, tgt, SV_I((unsigned)&d3_CurrentScene));
+                                cell = map->entries[size * iy + ix].type;
+                            if (++i >= 8) {
+                                ix = cx;
+                                iy = cy;
+                                break;
+                            }
+                        } while (ix < 0 || ix >= size || iy < 0 || iy >= size || cell == 0 || cell == 0xd);
+                        if (c->bld != 0)
+                            sv_MoveToGroup((unsigned char *)c->bld, 0, c->id, 0);
+                        if (c->model->scriptId != -1 && (t = (int)evt_FindById(c->model->scriptId)) != 0)
+                            evt_Stop((EVTSCRIPT *)t);
+                        cm_SendChrWalkTo(c->netId, ix, iy, d3_CurrentScene);
                     }
                 }
-                ch += 0x10e;
-            } while ((int)ch < (unsigned)((unsigned)ai_Chars + 0x65400));
-            if (SV_I((unsigned)&sv_ClickedContact) != 0)
-                goto lgroup;
-            goto lafter;
-        }
-    } else {
-lgroup:
-        if (map != 0 && SV_I(((unsigned)&dm_L + 0xc)) != 0 && SV_I((unsigned)&d2_HitWindow) == -1) {
-            t = -1;
-            sprintf(name, "dummy_%s", (char *)SV_I((unsigned)&ai_ClickedObject) + 8);
-            if (d3_FindObject(SV_I((unsigned)&ai_ClickedObject), 0x100, 0, name) == 0)
-                strcpy(name, (char *)SV_I((unsigned)&ai_ClickedObject));
-            pp = (unsigned *)(unsigned)&ai_SceneChars;
-            do {
-                ch = (unsigned short *)*pp;
-                v = 0;
-                if (ch != 0 && *(char *)(ch + 0xc4) != 0) {
-                    cm_SendChrStop(*(int *)(ch + 2));
-                    if (*(int *)(ch + 0xb6) != 0)
-                        sv_MoveToGroup(*(int *)(ch + 0xb6), 0, *ch, 0);
-                    if (**(short **)(unsigned)&sv_ClickedContact == 0xfd) {
-                        if (SV_I((unsigned)&ai_FallbackBuilding) != 0) {
-                            t = init_BuildingSceneUniverse(SV_I((unsigned)&ai_FallbackBuilding));
-                            v = SV_I((unsigned)&ai_FallbackBuilding);
-                            if (v == 0)
-                                v = SV_I((unsigned)&ai_PlayerBuilding);
-                        } else if (SV_I((unsigned)&ai_PlayerBuilding) != 0) {
-                            t = 0;
-                            v = SV_I((unsigned)&ai_PlayerBuilding);
-                        }
-                    } else {
-                        t = init_ObjectSceneUniverse(SV_I((unsigned)&sv_ClickedContact));
-                        v = SV_I((unsigned)&ai_FallbackBuilding);
-                        if (v == 0)
-                            v = SV_I((unsigned)&ai_PlayerBuilding);
-                    }
-                    if (-1 < t)
-                        ai_Unk4c5460(*(int *)(ch + 2), *(int *)(v + 1), *(int *)(SV_I((unsigned)&sv_ClickedContact) + 1));
-                }
-                pp++;
-            } while ((int)pp < (unsigned)((unsigned)ai_SceneChars + 0x80));
-            sv_ClearSelection();
-            SV_I((unsigned)&sv_ClickedContact) = 0;
-        }
-lafter:
-        if (SV_I((unsigned)&sv_ClickedBuilding) == 0)
-            goto lend;
-    }
-    sv_SendSelectedToBuilding();
-lend:
-    SV_I((unsigned)&ai_SelectedCount) = 0;
-    d2_ClearPointerItems();
-    i = 0;
-    p = (int *)((unsigned)&ai_Unk770cec + 0x18);
-    do {
-        cell = *p;
-        if (cell != 0) {
-            pc = (char *)p;
-            if ((char)p[1] != *(char *)((unsigned)&sv_SelectionFlags + i) && (*(unsigned char *)(cell + 0x8c) & 0x40) == 0)
-                d3t_SetGrey(*(int *)(cell + 0x34), (char)p[1] != 0);
-            if ((char)p[1] != 0) {
-                if (SV_I((unsigned)&ai_SelectedCount) == 0)
-                    SV_I((unsigned)&sv_SelectedChar) = (int)(p - 0x61);
-                SV_I((unsigned)&ai_SelectedCount) = SV_I((unsigned)&ai_SelectedCount) + 1;
-                if (p[-6] != 0 && *(int *)(p[-6] + 1) == *(int *)(*p + 0x2c) && (SV_I((unsigned)&ai_FallbackBuilding) != 0 || (SV_I((unsigned)&sv_PanelShown) != 0 && **(short **)(unsigned)&sv_PanelShown != 0x120)))
-                    d2_AddPointerItem(p[2], 1);
             }
         }
-        t = p[1];
-        p += 0x87;
-        *(char *)((unsigned)&sv_SelectionFlags + i) = (char)t;
-        i++;
-    } while ((int)p < ((unsigned)((unsigned)ai_Unk770cec + 0x65296) + 0x182));
-    if (SV_I(((unsigned)&dm_L + 0x20)) != 0 && SV_I((unsigned)&ai_SelectedCount) != 0)
+        if (sv_ClickedContact != 0 && map != 0 && dm_L.lup != 0 && d2_HitWindow == -1) {
+            char name[0x80];
+
+            t = -1;
+            sprintf(name, "dummy_%s", (char *)ai_ClickedObject + 8);
+            if (d3_FindObject((int)ai_ClickedObject, 0x100, 0, name) == 0)
+                strcpy(name, (char *)ai_ClickedObject);
+            for (j = 0; j < 0x20; j++) {
+                c = (AICHAR *)ai_SceneChars[j];
+                b = 0;
+                if (c != 0 && c->selected != 0) {
+                    cm_SendChrStop(c->netId);
+                    if (c->bld != 0)
+                        sv_MoveToGroup((unsigned char *)c->bld, 0, c->id, 0);
+                    if (((AIOBJ *)sv_ClickedContact)->id == 0xfd) {
+                        if (ai_FallbackBuilding != 0) {
+                            t = init_BuildingSceneUniverse((unsigned char *)ai_FallbackBuilding);
+                            if (ai_FallbackBuilding != 0)
+                                b = (AIBLD *)ai_FallbackBuilding;
+                            else if (ai_PlayerBuilding != 0)
+                                b = (AIBLD *)ai_PlayerBuilding;
+                        } else if (ai_PlayerBuilding != 0) {
+                            t = 0;
+                            if (ai_FallbackBuilding != 0)
+                                b = (AIBLD *)ai_FallbackBuilding;
+                            else if (ai_PlayerBuilding != 0)
+                                b = (AIBLD *)ai_PlayerBuilding;
+                        }
+                    } else {
+                        t = init_ObjectSceneUniverse((unsigned short *)sv_ClickedContact);
+                        if (ai_FallbackBuilding != 0)
+                            b = (AIBLD *)ai_FallbackBuilding;
+                        else if (ai_PlayerBuilding != 0)
+                            b = (AIBLD *)ai_PlayerBuilding;
+                    }
+                    if (t >= 0)
+                        cm_SendChrUseGates(c->netId, b->id, ((AIOBJ *)sv_ClickedContact)->objId);
+                }
+            }
+            sv_ClearSelection();
+            sv_ClickedContact = 0;
+        }
+        if (sv_ClickedBuilding != 0)
+            sv_SendSelectedToBuilding();
+    }
+    ai_SelectedCount = 0;
+    d2_ClearPointerItems();
+    for (j = 0; j < 768; j++) {
+        c = &ai_CharsT[j];
+        if (c->model != 0) {
+            if (c->selected != sv_SelectionBytes[j] && ((CHARACTER *)c->model)->flags.fading == 0) {
+                if (c->selected != 0)
+                    d3t_SetGrey(((CHARACTER *)c->model)->obj, 1);
+                else
+                    d3t_SetGrey(((CHARACTER *)c->model)->obj, 0);
+            }
+            if (c->selected != 0) {
+                if (ai_SelectedCount == 0)
+                    sv_SelectedChar = (int)c;
+                ai_SelectedCount++;
+                if (c->bld != 0 && c->bld->id == c->model->bldId
+                    && (ai_FallbackBuilding != 0 || (sv_PanelShown != 0 && *sv_PanelShown != 0x120)))
+                    d2_AddPointerItem(c->picture, 1);
+            }
+        }
+        sv_SelectionBytes[j] = c->selected;
+    }
+    if (dm_L.rup != 0 && ai_SelectedCount != 0)
         sv_ClearSelection();
 }
 /* 0x52c420, for every group record (0x4ffe90 (0, 2, 7, 4, 0x1d)) sets bit 1 of +0x20 when some character (0x770cec stride 0x21c: kind 1, owner +0x1c matching, flag +0x48 & 1) belongs to it */
@@ -6494,7 +6497,7 @@ void sv_DrawBalanceBar(int x, int y, int a, int b, unsigned k)
 }
 /* 0x52ee50, starts the rubber band selection (0x760440 = 1): both corners (0x760444 / 0x760448 and 0x76044c / 0x760450) are the mouse position clamped to the view rectangle 0xfc2930 .. 0xfc293c */
 
-void sv_Unk52ee50(void)
+void sv_StartBand(void)
 {
     int mx, my, m;
 
@@ -6518,7 +6521,7 @@ void sv_Unk52ee50(void)
 }
 /* 0x52eed0, ends the rubber band selection */
 
-void sv_Unk52eed0(void)
+void sv_EndBand(void)
 {
     SV_I((unsigned)&sv_BandActive) = 0;
 }
@@ -7499,7 +7502,7 @@ l64:
             if ((mask & 0x10) != 0)
                 sv_HandleObjects();
             if ((mask & 0x20) != 0) {
-                sv_Unk52bec0();
+                sv_HandleSelectionMouse();
                 sv_Unk52c5c0();
             }
         }

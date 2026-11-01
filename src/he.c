@@ -9993,7 +9993,7 @@ void he_Unk555690(int ev)
 
 struct D3HMAP * ch_GetHMap();
 char d3_GetHeightAt(struct D3SM *h, struct D3VECTOR *pos, int *px, int *pz, float *py);
-void ai_Unk4c5100(int a, int b, int c, int d);
+void cm_SendChrWalkTo(int a, int b, int c, int d);
 
 /* 0x555b60, the run handler "he_TransportStadtStadt()" of the city-to-city transport (the error text "character-action not attached but target should be reached : %s" is in the 0x627330 literal; ROUGH, outlined from the disassembly): +0xb0 / +0xb4 the buildings (0x501190 (1, 1, id)), +0xc4 the id of the building the cart is at, +0xd0 started, +0xd4 rounds, +0xac the cart's id. Before the start (+0xc4 = the first building's id, +0xd0 = 0): a start position is taken (the building's transporter dummy 0x555210 or its +0x61 object, 0x458a20, the ground 0x45f170), the cart object is looked up (0x4ffe90 (building object, 1, 1, +0xac), else 0x4fe980) and put on the road (0x4c5260, 0x4c5100, the guide 0x4c4920) and +0xd0 = 1; with +0xc4 = the second building's id the cart's arrival (0x453e80 against the target, or more than 6 rounds) ends the trip: the guide is dropped, the cart gets the message 0x13 / 0x40, the arrival news is formatted (0x1c39 .. 0x1c44 by kind) and shown to a player character (0x53dee0, unless the world map shows the building: 0x6f229c / 0x6f2308 / 0x6f2310 with the ranges 0x92 .. 0x97 and 0x2db), the event is posted with the handle 3; the cart not found while it should have arrived gives the debug error 0x4222b0 */
 void he_Unk555b60(int ev)
@@ -10024,7 +10024,7 @@ void he_Unk555b60(int ev)
             d3_GetHeightAt(U_I((unsigned)&ai_Unkfd7c50), pos, 0, 0, 0);
             if (gm_IsType10(b0) == 0) {
                 ai_Unk4c5260(*(int *)(cart + 2), 0);
-                ((void (*)(int, int))ai_Unk4c5100)(*(int *)(cart + 2), pos);
+                ((void (*)(int, int))cm_SendChrWalkTo)(*(int *)(cart + 2), pos);
                 if (gm_IsType10(b0) == 0)
                     *(int *)(ev + 0xec) = ((int (*)(int, int, int))ai_Unk4c4920)(*(int *)(a44 + 1), *(int *)(b1 + 1), *(int *)(cart + 2));
             }
@@ -10103,7 +10103,7 @@ void he_Unk556080(int ev)
         if (o != 0) {
             d3_PointToWorld(o, o + 0x4c, pos);
             d3_GetHeightAt(U_I((unsigned)&ai_Unkfd7c50), pos, 0, 0, 0);
-            ((void (*)(int, int))ai_Unk4c5100)(*(int *)(cart + 2), pos);
+            ((void (*)(int, int))cm_SendChrWalkTo)(*(int *)(cart + 2), pos);
         }
         cm_SendSetField(*(int *)(cart + 2), 0x13, 1, 0, 0x40);
         e = *(unsigned char *)(((unsigned)&ai_Chars + 0x2) + *(unsigned short *)(ev + 8) * 0x21c);
