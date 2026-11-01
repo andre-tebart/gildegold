@@ -8,7 +8,6 @@
    Open: am.h keeps the joined parts' character views (AIPX / AGCH / AIC4 / G5CH / AIPER) and duplicate callee
    prototypes / cast macros; they need unifying with ai.h's types.
    unit of rea 8cef7d5b (src/game/am.c); boundaries in decl/text.dcl */
-extern char ai_PlayerSlots[4][0x2f4];
 #include "txt_views.h"
 #include <stdio.h>
 #include <string.h>
@@ -20,7 +19,6 @@ extern char ai_PlayerSlots[4][0x2f4];
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 #include "cm_types.h"
-extern G17MSG ai_Unka69140[];
 extern unsigned char txt_Keys;  /* @original ai_Unk498c70 (0x498c70, byte) tests flags1c8 & 0x1000000 as &txt_Keys + 0x181c0 of this byte view: the char[0x4800][0x50] spelling, a view macro or the literal flip its add operands at +0x4cc (shape) */
 
 int gm_TitleJob(int i, int p);        /* 0x5044b0, @original: the byte-matched callers (ai_Unk49ed10, ai_Unk498c70) read the result without the unsigned char mask (no `and eax,0xff` after the call) */
@@ -62,6 +60,14 @@ int ai_Unkf86900[73] = {0};  /* 0xf86900, the actions being evaluated */
 #include "tr.h"
 #include "unk_58bbd0.h"
 #include "f3gm.h"
+#include "ahm.h"
+#include "amt.h"
+#include "anm.h"
+#include "cm.h"
+#include "d3_interface.h"
+#include "d3_tools.h"
+#include "unk_458810.h"
+#include "unk_5d33b0.h"
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, ai_Unk4d88c0 0x4d88c0 move it as a word / movzx) */
 #define d3t_GetObjectBoundsV ((void (*)(void *, void *, void *))d3t_GetObjectBounds)  /* 0x413150 (d3_tools.c: D3VECTOR *, D3VECTOR *, D3OBJECT *): this unit's untyped view */
 #define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (f3gm.c: char *) as the AIGOOD records it points to */
