@@ -710,4 +710,18 @@ void bio_rd_i(struct VFSFILE *f, int *i);         /* 0x4011d0 */
 void bio_wr_s(struct VFSFILE *f, char *s);       /* 0x401210 */
 void bio_wr_i(struct VFSFILE *f, int i);         /* 0x401240 */
 
+/* declared in other units' headers before (moved to the owner) */
+void d3_Unlink(D3OBJECT *obj);  /* 0x43d0e0 */
+extern int d3if_Unk5fb5c4;  /* 0x5fb5c4 */
+char d3_GetBounds(D3OBJECT *obj, D3OBJECT *camera, D3VECTOR *center, float *radius);  /* 0x43d860 */
+D3OBJECT *d3_NextGroup(D3OBJECT *obj);  /* 0x438c30 */
+char d3_ForEachObject2(D3SCENE *scene, D3OBJECT *obj, unsigned int mask, void (*cb)(D3OBJECT *obj));  /* 0x438e60 */
+void d3e_LoadSceneEvents(void *f);  /* 0x43ea10 */
+void d3_ClipMesh(D3CLIP mask, D3PVERT *v, int nverts, D3PTRI *t, int ntris);  /* 0x439a60 */
+void d3_AppendSibling(D3OBJECT *first, D3OBJECT *obj);  /* 0x43cb20 */
+char d3_AttachToBone(D3OBJECT *obj, char *name);  /* 0x43d6c0 */
+char d3_DeflateScene(unsigned int flags);  /* 0x43db30 */
+char d3_InflateScene(unsigned int flags);  /* 0x43deb0 */
+void d3_SetObject078(D3OBJECT *obj, D3VECTOR *v);  /* 0x43b820 */
+
 #endif
