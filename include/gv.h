@@ -107,19 +107,15 @@ extern int ai_ClockMs;                /* 0x6333cc */
 extern int d3_CurrentScene;                /* 0x633444 */
 
 int util_Random(unsigned short n);      /* 0x42ec00, tr.c; the callers that read a 16-bit result (ch_RandomNear, anm_Update, ai_Unk4d88c0 ..) call util_RandomU, a cast in their head */
-unsigned vfs_fwrite(void *buf, int size, int n, struct VFSFILE *f);                       /* 0x430e30 */
-int ls_Read(void *buf, int size, int count, int f);  /* 0x51c920, ls.c's read (true when the fread returned a positive count); ls.c has no header yet */
 unsigned char * gm_BuildQuery(int n, ...);                     /* 0x501190 */
 void ai_Unk5a9e40(int param_1, int param_2);                     /* 0x5a9e40 */
 char d3if_Delete(struct D3OBJECT *obj);  /* 0x447190, d3_interface.h */
 int gm_MinutesBetween();                     /* 0x4fe280 */
 int ai_StepShot();                     /* 0x5dc4a0 */
 int ai_StepShotSlow();                     /* 0x5dc9d0 */
-void d3t_GetMeshBounds(struct D3VECTOR *mn, struct D3VECTOR *mx, struct D3OBJECT *obj);               /* 0x413310, d3_tools.c */
 struct D3PARTSYS *d3t_CreateExplosion(void *parent, struct D3VECTOR *pos, int count, float radius, float height, float z, float size, unsigned int duration); /* 0x416040, d3_tools.c */
 struct SBSAMPLE; struct SBBANK;
 struct SBSAMPLE * sb_GetSample(struct SBBANK *bank, char *name);   /* 0x426030 */
-int d3snd_PlayAt(struct SNDHANDLE *snd, struct D3OBJECT *obj, int volume, float range);                     /* 0x417e30 */
 int gm_FindById();                     /* 0x4fea50 */
 int cm_SendLongMessage(char *msg);                     /* 0x4c4b70 */
 void cm_BeginFieldBlock(char *o, int id);                     /* 0x4c3ba0 */
@@ -152,10 +148,8 @@ int unk_Unk4eee00(int *p, int w);       /* 0x4eee00 */
 void unk_Unk4eeee0(int id, void *cb, void *arg);  /* 0x4eeee0 */
 float unk_Unk4eef50(int a, int b, int c);  /* 0x4eef50 */
 void unk_Unk4ef000(int n, int *out);    /* 0x4ef000 */
-void ai_Unk4c6230(int *p);                     /* 0x4c6230 */
 int unk_Unk4f2e30();                     /* 0x4f2e30 */
 void cm_SendMoneyDelta(int a, int b);                     /* 0x4c5f60 */
-void ai_Unk4c6260(void *p);                     /* 0x4c6260 */
 extern unsigned char ai_OwnPlayer;      /* 0x6f1bc5 */
 void unk_Unk4ef170(char *o, unsigned *a, unsigned *b);  /* 0x4ef170 */
 void unk_Unk4ef260(char *o, float *a, float *b);  /* 0x4ef260 */
@@ -192,7 +186,6 @@ void gv_FreeGraveyard(int *g);             /* 0x4f0180 */
 int unk_Unk4f01d0(int *g, char *o, int v, int b);  /* 0x4f01d0 */
 int unk_Unk4f0240(int *p);              /* 0x4f0240 */
 int unk_Unk4f0430(int *g, char *o, int v, short s, int x);  /* 0x4f0430 */
-void ai_Unk4c60b0(void *p);                     /* 0x4c60b0 */
 int unk_Unk4f0490(short *p);            /* 0x4f0490 */
 int unk_Unk4f0700(int *g, char *o, int v, int b, short s, int x);  /* 0x4f0700 */
 int unk_Unk4f0770(char *p);             /* 0x4f0770 */
@@ -208,14 +201,12 @@ int unk_Unk4f0c80(unsigned char *p);    /* 0x4f0c80 */
 int unk_Unk4f0d70(char *o, int x);      /* 0x4f0d70 */
 int unk_Unk4f0dd0(unsigned char *p);    /* 0x4f0dd0 */
 void unk_Unk4f0e80(int *g, int x, char *o, int v, char b, int y);  /* 0x4f0e80 */
-void ai_Unk4c60f0(void *p);                     /* 0x4c60f0 */
 int unk_Unk4f0ed0(int *p);              /* 0x4f0ed0 */
 int unk_Unk4f1170(char *o, int v, int b, int x, int y);  /* 0x4f1170 */
 int gv_SendGrave(unsigned char *o);    /* 0x4f15e0 */
 int unk_Unk4f1660(char *c);             /* 0x4f1660 */
 int unk_Unk4f1d50(unsigned char *o, int *n);  /* 0x4f1d50 */
 float unk_Unk4f16f0(char *o);           /* 0x4f16f0 */
-void ai_Unk4c6130(void *p);                     /* 0x4c6130 */
 void ai_Unk4c4ac0(int a, int b, int c);                     /* 0x4c4ac0 */
 extern int ai_Unk1460ae0;               /* 0x1460ae0 */
 int unk_Unk4f17f0(void *f, unsigned char *o);  /* 0x4f17f0 */
@@ -223,8 +214,6 @@ char * gm_Query(void *list, int n, ...);                   /* 0x4ffe90 */
 unsigned unk_Unk4f1200(char *p);        /* 0x4f1200 */
 int gv_ReadGraveyard(void *f, unsigned char *o);  /* 0x4f1aa0, reads the graveyard record of o from the file f (allocated by 0x4efc10) */
 float util_RandomF(void);               /* 0x42ec20 */
-extern signed char ai_Relations[768][768];  /* 0x7e5360 */
-extern signed char ai_RelationMemory[768][768];  /* 0x889f80 */
 extern int ai_CharCount;                /* 0x6f1bc0, the number of characters in use (of ai_Chars[0x300]) */
 int gm_PlaceOnStage(int id, int a, int b, int *p4, int *p5);                     /* 0x4fbd10 */
 int gm_ChooseHeadIcon(unsigned short *c);                     /* 0x4fb890 */
@@ -246,8 +235,6 @@ int gm_BuildingSkill();                     /* 0x5092e0 */
 
 int unk_Unk4f2b30(void *f);             /* 0x4f2b30 */
 int gv_TableRecordText(char *out, int i);    /* 0x4f2fe0 */
-extern int ls_Version;                /* 0x623650, the save version */
-void txt_Format(char *buf, int id, ...);  /* 0x5176d0 */
 
 void unk_Unk4f3610(int v, int *out);    /* 0x4f3610 */
 int unk_Unk4f3640(int b, int a);        /* 0x4f3640 */
@@ -275,7 +262,6 @@ float gm_Liking();                   /* 0x50c550 */
 void unk_Unk4f3700(void);               /* 0x4f3700 */
 int unk_Unk4f37e0(int id, int m);       /* 0x4f37e0 */
 void unk_Unk4f4390(int n, char *r);     /* 0x4f4390 */
-void ai_Unk4c4e90(int a, int b);                     /* 0x4c4e90 */
 char * he_FindEvent(int n, ...);         /* 0x53e400, as he.h */
 int cm_GetSlotState();                     /* 0x4c3ae0 */
 void sv_PumpNet();                    /* 0x52fe00 */
@@ -293,7 +279,6 @@ extern const int unk_Tab5ee0f8[];             /* 0x5ee0f8, experience thresholds
 extern unsigned char ai_NumPlayers;     /* 0x62489c, the number of players (as ai.h / cm.h / unk_4b39f0.c) */
 int gm_GetWorth(unsigned short id);    /* 0x50a640 */
 void cm_SendSetField(int a, int b, int c, int d, int e);                     /* 0x4c4a60 */
-void he_MessageBoxQuickjump(int a1, int a2, char *text, char fl, int a5, int a6, int a7, char *jump, char *text2);                     /* 0x53dee0 */
 int cm_SendLongMessage(char *msg);                     /* 0x4c4b70 */
 void cm_BeginFieldBlock(char *o, int id);                     /* 0x4c3ba0 */
 int cm_AddFieldDelta(int size, int n, short field, void *v);                     /* 0x4c3c00 */
@@ -324,13 +309,11 @@ int ai_EspionageResult(int param_1, int *m);  /* 0x5cd400, the espionage result 
 
 int gv_SetTableRecord(short *c, int i, int v);  /* 0x4f2750 */
 int unk_Unk4f27d0(int *p);              /* 0x4f27d0 */
-void ai_Unk4c5930(char *p);                     /* 0x4c5930 */
 void ai_Unk5a9110(unsigned short *param_1, int param_2);                     /* 0x5a9110 */
 
 int unk_Unk4f2e30(int i, int v, int a, int b, int obj);  /* 0x4f2e30 */
 float util_RandomF(void);               /* 0x42ec20 */
 int ai_InventoryHas(void *ch, int id);                     /* 0x5ba6b0 */
-void ai_Unk4c4e40(void *p);                     /* 0x4c4e40 */
 
 void unk_Unk4f1de0(char *o);            /* 0x4f1de0 */
 int unk_Unk4f2330(unsigned short *c, int a, int kind, int flag, int *out);  /* 0x4f2330 */
@@ -433,7 +416,6 @@ void d2_CentreViewWindows(int view);                     /* 0x475600 */
 int d2_SetForm(int view, int n);                       /* 0x475f70 */
 void d2_CloseView(int view);                     /* 0x4758f0 */
 void d2_SetPointerSprite(int a, int pic);            /* 0x476f80, d2.h / gfx.h */
-int io_PrintText(char *fmt, ...);                     /* 0x515960 */
 int sv_RunFrame(int cb, unsigned mask);                     /* 0x5309a0 */
 extern int sv_PopRequest;                /* 0x6f22a0 */
 extern int d2_ClickedId;                /* 0xf8a668 */
@@ -456,7 +438,6 @@ extern char ord_StatisticsHistory[];            /* 0x91ab00 */
 extern char ord_StatisticsRecord[];            /* 0x91b4c0 */
 extern ORDCELL ord_GridCells[8][8];     /* 0x91ae60, ai.h's ai_Grid (the same address); see ORDCELL */
 extern int ai_RatingBase;                /* 0x6f1b9c, the rating's old value (stored as bits; ai.h's ai_Rating follows it at 0x6f1ba0) */
-extern float ai_Rating;                  /* 0x6f1ba0, the smoothed game rating (ai.h's name) */
 extern float ord_RatingRate;             /* 0x91aaf4, the change rate of the rating (ord.c 0x4f8ed0; ls.c saves it) */
 extern float ai_RatingBaseF;             /* 0x6f1b9c, ai_RatingBase read as the float its bits hold */
 #ifndef DATA_VIEWS_H
@@ -486,7 +467,6 @@ void unk_Unk4f88c0(void);               /* 0x4f88c0 */
 extern char gv_Graveyard[], gv_GraveyardEnd[];  /* 0x91f700, 0x925100: 0x200 records of 0x2d bytes, and their end */
 void ord_RebuildGridSums(void);               /* 0x4f8920 */
 
-void cm_SendMessage56(void *p);                     /* 0x4c5e80 */
 void ord_GetMessageRecord(int *out);           /* 0x4f9170 */
 void ord_InitMessageRecord(int a, float b, float c, float d);  /* 0x4f9190 */
 
