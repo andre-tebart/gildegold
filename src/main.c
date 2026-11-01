@@ -79,7 +79,6 @@ extern GAPDATA full_data_624b48[];
 extern GAPDATA full_data_624b4c[];
 extern GAPDATA full_data_624b50[];
 extern char ai_OptionsFile[288];
-extern char ai_DataPath[];
 
 extern char ai_OptionsFile[288];
 extern char ai_Unk9364e0[752];
@@ -187,8 +186,6 @@ extern char cm_RequestedSaveName[72];
 extern float ai_Unk617830[], ai_Unk617840[];  /* 0x617830 / 0x617840 (f3gm.c) */
 extern GAPDATA full_data_6f25c0[];
 extern GAPDATA full_data_75e630[];
-extern int snd_Bank;
-extern int * d3t_Rain;
 #include "ch_types.h"
 extern struct CHARACTER *ch_List[0x300];  /* 0x1468ae0 (ch.h) */
 extern CHMOTION ch_Motions[];
@@ -240,7 +237,6 @@ extern int ai_Unkfb9068;
 extern int ai_Unkfb906c;
 extern GAPDATA full_data_624560[];
 #include "f3snd_types.h"
-extern G16AMBIENTON snd_AmbientOn;
 extern int sv_FrameMask;
 extern int sv_PopRequest;
 extern char ai_DataPath[];
@@ -302,7 +298,6 @@ extern int sv_PopRequest;
 #define U_I(a) (*(int *)(a))
 
 extern HWND main_Window;
-extern int snd_SfxEnabled;              /* 0x6f257c, f3snd.h */
 
 void main_EndGame(void);
 void main_Unk537be0(void);
@@ -316,8 +311,6 @@ void main_Unk53cb40(void);
 extern unsigned int d3anim_CacheMax;   /* 0x5f927c, d3_anim.h */
 void hst_ResetLists(void);              /* 0x4b1f30, hst.c */
 void ai_ClearTurnTable(void);           /* 0x587de0, unk_575860.c: not in unk_575860.h (adding it there moves unk_575860's drafts ai_Unk579570 / ai_Unk57aeb0) */
-int sb_Init(int mem, int count, int a, int b, int c);  /* 0x425bc0 */
-void sb_SetPath(char *path);            /* 0x426240 */
 int main_PreloadSound(char *f);         /* 0x537c70 */
 int ch_Open(void);                      /* 0x40afb0 */
 int hmt_CreateBinaryFile(void);         /* 0x4ac440 */
@@ -334,10 +327,8 @@ int main_ChooseCity(int unused, int host);  /* 0x537230, the player setup / city
    selection main_ChooseOpponents (diff of the picked city); returns 1 when a game was set up (the second parameter is the host flag, the first unused) */
 struct D3OBJECT;
 void main_FreeSoundBanks(void);         /* 0x537db0 */
-void sb_Exit(void);                     /* 0x425ce0, sblib.c */
 int hmt_Exit(void);                     /* 0x4acde0, hmt.h */
 void ch_Close(void);                    /* 0x40b1a0, ch.h */
-void amt_CheckOffices(void);            /* 0x4e9260, amt.h */
 
 #include "time_view.h"
 #include "f3init.h"
@@ -353,6 +344,16 @@ void amt_CheckOffices(void);            /* 0x4e9260, amt.h */
 #include "ahm.h"
 #include "gv.h"
 #include "cm.h"
+#include "amt.h"
+#include "d3_anim.h"
+#include "d3_io_a.h"
+#include "d3_sm.h"
+#include "d3_vec.h"
+#include "f3snd.h"
+#include "sblib.h"
+#include "unk_458810.h"
+#include "unk_575860.h"
+#include "unk_589f10.h"
 #define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (f3gm.c: char *) as the AIGOOD records it points to */
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
