@@ -3217,8 +3217,8 @@ void unk_Unk512890(void)
 /* 0x5128d0, switches the seasonal textures of the town scene (d3_Terrain, the names of 0x40 bytes at +0x1a64) to
    the current season (gm_ClockSeason): when no name carries the season's suffix yet, each is cut at its old suffix
    ("_FRUEHLING" / "_HERBST" / "_SNOW") and gets the season's suffix when that texture exists (tex_FindFile), then
-   the tile is set again (d3fl_ReplaceTexture). The summer (1) only cuts the suffixes; the four seasons are four
-   near copies in the original. */
+   the tile is set again (d3fl_ReplaceTexture). The summer (1) only cuts the suffixes (a name without one stays as
+   it is); the four seasons are four near copies in the original. */
 
 
 void init_SetSeasonTextures(void)
@@ -3233,13 +3233,13 @@ void init_SetSeasonTextures(void)
     if (season == 3) {
         found = 0;
         i = 0;
-        while (i < 0x200) {
+        while (!found) {
+            if (i >= 0x200)
+                break;
             nm = (char *)d3_Terrain + 0x1a64 + i;
             if (*nm != 0 && strstr(nm, "_SNOW") != 0)
                 found = 1;
             i += 0x40;
-            if (found)
-                break;
         }
         if (found)
             return;
@@ -3262,13 +3262,13 @@ void init_SetSeasonTextures(void)
     if (season == 2) {
         found = 0;
         i = 0;
-        while (i < 0x200) {
+        while (!found) {
+            if (i >= 0x200)
+                break;
             nm = (char *)d3_Terrain + 0x1a64 + i;
             if (*nm != 0 && strstr(nm, "_HERBST") != 0)
                 found = 1;
             i += 0x40;
-            if (found)
-                break;
         }
         if (found)
             return;
@@ -3291,13 +3291,13 @@ void init_SetSeasonTextures(void)
     if (season == 0) {
         found = 0;
         i = 0;
-        while (i < 0x200) {
+        while (!found) {
+            if (i >= 0x200)
+                break;
             nm = (char *)d3_Terrain + 0x1a64 + i;
             if (*nm != 0 && strstr(nm, "_FRUEHLING") != 0)
                 found = 1;
             i += 0x40;
-            if (found)
-                break;
         }
         if (found)
             return;
@@ -3320,12 +3320,15 @@ void init_SetSeasonTextures(void)
     if (season == 1) {
         found = 0;
         i = 0;
-        for (i = 0; i < 0x200 && !found; i += 0x40) {
+        while (!found) {
+            if (i >= 0x200)
+                break;
             if (*((char *)d3_Terrain + 0x1a64 + i) != 0
                 && (strstr((char *)d3_Terrain + 0x1a64 + i, "_FRUEHLING") != 0
                     || strstr((char *)d3_Terrain + 0x1a64 + i, "_HERBST") != 0
                     || strstr((char *)d3_Terrain + 0x1a64 + i, "_SNOW") != 0))
                 found = 1;
+            i += 0x40;
         }
         if (!found)
             return;
@@ -3334,10 +3337,11 @@ void init_SetSeasonTextures(void)
             nm = (char *)d3_Terrain + 0x1a64 + i;
             if (*nm != 0) {
                 strcpy(a, nm);
-                if ((u = strstr(a, "_FRUEHLING")) != 0 || (u = strstr(a, "_HERBST")) != 0 || (u = strstr(a, "_SNOW")) != 0)
+                if ((u = strstr(a, "_FRUEHLING")) != 0 || (u = strstr(a, "_HERBST")) != 0 || (u = strstr(a, "_SNOW")) != 0) {
                     *u = 0;
-                if (tex_FindFile(a) != 0)
-                    d3fl_ReplaceTexture((struct D3FLMAP *)d3_Terrain, a, j);
+                    if (tex_FindFile(a) != 0)
+                        d3fl_ReplaceTexture((struct D3FLMAP *)d3_Terrain, a, j);
+                }
             }
         }
     }
