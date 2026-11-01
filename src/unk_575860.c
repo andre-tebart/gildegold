@@ -47,7 +47,7 @@ extern int d2_LastWindow;
 extern GAPDATA full_data_624204[];
 extern GAPDATA full_data_629304[];
 extern GAPDATA full_data_602568[];
-extern int ai_Unk5fe710;
+extern int d2_PointerObj;
 extern int d2_ClickedId;
 extern unsigned char kb_Last;
 extern GAPDATA full_data_629314[];
@@ -242,7 +242,7 @@ extern GAPDATA full_data_62a284[];
 extern GAPDATA full_data_62a2a4[];
 extern char ai_Time[14];
 extern unsigned char ai_TimeHour;
-extern int ai_Unk5fe710;
+extern int d2_PointerObj;
 extern int d2_LastWindow;
 extern GAPDATA full_data_62a2c4[];
 extern int sv_PopRequest;
@@ -340,7 +340,7 @@ extern unsigned char ai_OwnPlayer;
 extern unsigned short ai_PlayerId;
 extern char ai_Time[14];
 extern unsigned char ai_TimeHour;
-extern int ai_Unk5fe710;
+extern int d2_PointerObj;
 extern int d2_ClickedId;
 extern int d2_LastWindow;
 extern struct D2OBJ *d2_Objs;
@@ -357,7 +357,7 @@ extern unsigned char ai_OwnPlayer;
 extern unsigned short ai_PlayerId;
 extern char ai_Time[14];
 extern unsigned char ai_TimeHour;
-extern int ai_Unk5fe710;
+extern int d2_PointerObj;
 extern int d2_ClickedId;
 extern int d2_LastWindow;
 extern struct D2OBJ *d2_Objs;
@@ -374,7 +374,7 @@ extern char ai_Chars[768][0x21c];
 extern unsigned short ai_PlayerId;
 extern char ai_Time[14];
 extern unsigned char ai_TimeHour;
-extern int ai_Unk5fe710;
+extern int d2_PointerObj;
 extern int d2_ClickedId;
 extern int d2_LastWindow;
 extern struct D2OBJ *d2_Objs;
@@ -392,7 +392,7 @@ extern unsigned char ai_OwnPlayer;
 extern unsigned short ai_PlayerId;
 extern char ai_Time[14];
 extern unsigned char ai_TimeHour;
-extern int ai_Unk5fe710;
+extern int d2_PointerObj;
 extern int d2_ClickedId;
 extern int d2_LastWindow;
 
@@ -418,7 +418,7 @@ extern GAPDATA full_data_62a4a8[];
 extern int sv_PopRequest;
 extern char ai_Chars[768][0x21c];
 extern unsigned short ai_PlayerId;
-extern int ai_Unk5fe710;
+extern int d2_PointerObj;
 extern int d2_ClickedId;
 extern int d2_LastWindow;
 extern GAPDATA full_data_602568[];
@@ -461,7 +461,7 @@ extern GAPDATA full_data_62a54c[];
 extern GAPDATA full_data_62a564[];
 extern GAPDATA full_data_62a56c[];
 extern GAPDATA full_data_62a59c[];
-extern int ai_Unk5fe710;
+extern int d2_PointerObj;
 extern GAPDATA full_data_62a5bc[];
 extern unsigned char ai_OwnPlayer;
 extern int sv_FrameMask;
@@ -474,7 +474,7 @@ extern char ai_Chars[768][0x21c];
 extern unsigned char ai_OwnPlayer;
 extern unsigned short ai_PlayerId;
 extern const int ai_Unk5eeab8[24];
-extern int ai_Unk5fe710;
+extern int d2_PointerObj;
 extern int d2_ClickedId;
 extern int d2_LastWindow;
 extern GAPDATA full_data_62a5bc[];
@@ -488,7 +488,7 @@ extern unsigned char ai_TimeHour;
 
 extern GAPDATA full_data_62a5bc[];
 extern int sv_PopRequest;
-extern int ai_Unk5fe710;
+extern int d2_PointerObj;
 extern int d2_ClickedId;
 extern int d2_LastWindow;
 extern GAPDATA full_data_62a5f8[];
@@ -497,7 +497,7 @@ extern char * ai_BTypes;
 extern char ai_Time[14];
 extern unsigned char ai_TimeHour;
 
-extern int ai_Unk5fe710;
+extern int d2_PointerObj;
 extern int d2_ClickedId;
 extern int d2_LastWindow;
 extern struct D2OBJ *d2_Objs;
@@ -509,7 +509,7 @@ extern char ai_Chars[768][0x21c];
 extern unsigned short ai_PlayerId;
 extern char ai_Time[14];
 extern unsigned char ai_TimeHour;
-extern int ai_Unk5fe710;
+extern int d2_PointerObj;
 extern int d2_ClickedId;
 extern int d2_LastWindow;
 
@@ -527,7 +527,7 @@ extern GAPDATA full_data_62a664[];
 extern int sv_PopRequest;
 extern char ai_Chars[768][0x21c];
 extern unsigned short ai_PlayerId;
-extern int ai_Unk5fe710;
+extern int d2_PointerObj;
 extern int d2_ClickedId;
 extern int d2_LastWindow;
 
@@ -550,7 +550,7 @@ extern GAPDATA full_data_62a6f8[];
 extern GAPDATA full_data_62a70c[];
 extern char ai_Time[14];
 extern unsigned char ai_TimeHour;
-extern int ai_Unk5fe710;
+extern int d2_PointerObj;
 extern signed char ai_Relations[768][768];
 extern const int ai_Unk5eeab8[24];
 
@@ -584,7 +584,7 @@ extern char ai_Chars[768][0x21c];
 extern unsigned short ai_PlayerId;
 extern char ai_Time[14];
 extern unsigned char ai_TimeHour;
-extern int ai_Unk5fe710;
+extern int d2_PointerObj;
 extern int d2_ClickedId;
 extern int d2_LastWindow;
 
@@ -597,7 +597,7 @@ extern char ai_Chars[768][0x21c];
 extern unsigned short ai_PlayerId;
 extern char ai_Time[14];
 extern unsigned char ai_TimeHour;
-extern int ai_Unk5fe710;
+extern int d2_PointerObj;
 extern int d2_ClickedId;
 extern int d2_LastWindow;
 
@@ -615,7 +615,7 @@ extern const int ai_Unk5eeab8[24];
 extern char ai_Chars[768][0x21c];
 extern char ai_Time[14];
 extern unsigned char ai_TimeHour;
-extern int ai_Unk5fe710;
+extern int d2_PointerObj;
 extern int d2_ClickedId;
 extern int d2_LastWindow;
 
@@ -640,7 +640,7 @@ extern unsigned short ai_PlayerId;
 extern char ai_Time[14];
 extern unsigned char ai_TimeHour;
 extern char ai_Chars[768][0x21c];
-extern int ai_Unk5fe710;
+extern int d2_PointerObj;
 extern int ai_Unk6f2448;
 extern int d2_ClickedId;
 extern int d2_LastWindow;
@@ -664,7 +664,7 @@ extern char * ai_Blds;
 extern char ai_Chars[768][0x21c];
 extern char * ai_Goods;
 extern struct AIOBJ *ai_Objects;
-extern int ai_Unk5fe710;
+extern int d2_PointerObj;
 extern int ai_Unk62a8cc;
 extern char * ai_Unk6f22e8;
 extern short d2_MouseX;
@@ -2280,7 +2280,7 @@ int ai_Unk577a00(void)
     }
 #endif
     if (U_I((unsigned)&d2_ClickedId) != -1) {
-        if (U_I((unsigned)&ai_Unk5fe710) != *(int *)(st + 0x20))
+        if (U_I((unsigned)&d2_PointerObj) != *(int *)(st + 0x20))
             return 0;
     } else {
         if (*(unsigned char *)(unsigned)&kb_Last != 0x1c)
@@ -2520,7 +2520,7 @@ int ai_Unk5780e0(void)
 {
     if (!U_I((unsigned)&full_data_6f265c))
         return -4;
-    if (U_I((unsigned)&d2_ClickedId) != -1 && U_I((unsigned)&ai_Unk5fe710) == U_I(S + 0x4c))
+    if (U_I((unsigned)&d2_ClickedId) != -1 && U_I((unsigned)&d2_PointerObj) == U_I(S + 0x4c))
         return 1;
     return 0;
 }
@@ -4491,9 +4491,9 @@ int ai_TutorialWindow(void)
         if (U_I(((unsigned)&dm_L + 0x20)) != 0 || *(unsigned char *)(unsigned)&kb_Last == 1 || U_I((unsigned)&d2_ClickedId) == 1)
             U_I((unsigned)&sv_PopRequest) = 1;
         if (U_I((unsigned)&d2_ClickedId) != -1) {
-            if (U_I((unsigned)&ai_Unk5fe710) == back) {
+            if (U_I((unsigned)&d2_PointerObj) == back) {
                 U_I((unsigned)&sv_PopRequest) = 1;
-            } else if (U_I((unsigned)&ai_Unk5fe710) == start) {
+            } else if (U_I((unsigned)&d2_PointerObj) == start) {
                 U_I((unsigned)&sv_PopRequest) = 1;
                 n = 0;
                 for (i = 0; i < 5; i++) {
@@ -4712,7 +4712,7 @@ int ai_Unk57dc50(char *rec, int *arg, int idx)
         if (U_I(((unsigned)&dm_L + 0x20)) != 0) {
             U_I((unsigned)&sv_PopRequest) = 1;
         } else if (U_I((unsigned)&d2_ClickedId) != -1) {
-            if (U_I((unsigned)&ai_Unk5fe710) == t1) {
+            if (U_I((unsigned)&d2_PointerObj) == t1) {
                 memset(msg, 0, 0xf8);
                 *(unsigned char *)(msg + 0x04) = 0x97;
                 *(unsigned char *)(msg + 0x36) = 1;
@@ -4727,7 +4727,7 @@ int ai_Unk57dc50(char *rec, int *arg, int idx)
                 *(int *)(msg + 0x68) = (util_Random(0x5a0) & 0xffff) + 1000;
                 cm_SendLongMessage(msg);
                 U_I((unsigned)&sv_PopRequest) = 1;
-            } else if (U_I((unsigned)&ai_Unk5fe710) == t2) {
+            } else if (U_I((unsigned)&d2_PointerObj) == t2) {
                 U_I((unsigned)&sv_PopRequest) = 1;
             }
         }
@@ -4808,7 +4808,7 @@ int ai_Unk57de60(char *rec)
         if (U_I(((unsigned)&dm_L + 0x20)) != 0) {
             U_I((unsigned)&sv_PopRequest) = 1;
         } else if (U_I((unsigned)&d2_ClickedId) != -1) {
-            if (U_I((unsigned)&ai_Unk5fe710) == b1) {
+            if (U_I((unsigned)&d2_PointerObj) == b1) {
                 v = ((int (*)(int))gm_PlayerFactor)(d2_GetObjValue(fld, *(unsigned char *)(unsigned)&ai_OwnPlayer));
                 if (sv_CheckGoodAmount((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, v, *(unsigned char *)(unsigned)&ai_OwnPlayer) != 0) {
                     ahm_SendAddValue(rr, ((float)v / (float)sp) * f * 0.75f);
@@ -4816,7 +4816,7 @@ int ai_Unk57de60(char *rec)
                     U_I((unsigned)&sv_PopRequest) = 1;
                     cm_SendMoveGoods(*(int *)(rr + 4), *(int *)((unsigned)&ai_CharInts + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c), *(unsigned char *)(unsigned)&ai_OwnPlayer, v);
                 }
-            } else if (U_I((unsigned)&ai_Unk5fe710) == b2) {
+            } else if (U_I((unsigned)&d2_PointerObj) == b2) {
                 U_I((unsigned)&sv_PopRequest) = 1;
             }
         }
@@ -4873,12 +4873,12 @@ int ai_Unk57e0e0(char *rec)
         if (U_I(((unsigned)&dm_L + 0x20)) != 0) {
             U_I((unsigned)&sv_PopRequest) = 1;
         } else if (U_I((unsigned)&d2_ClickedId) != -1) {
-            if (U_I((unsigned)&ai_Unk5fe710) == b1) {
+            if (U_I((unsigned)&d2_PointerObj) == b1) {
                 done = 1;
                 ahm_RescheduleResearch(rec);
                 ahm_SendDelete(rr);
                 U_I((unsigned)&sv_PopRequest) = 1;
-            } else if (U_I((unsigned)&ai_Unk5fe710) == b2) {
+            } else if (U_I((unsigned)&d2_PointerObj) == b2) {
                 U_I((unsigned)&sv_PopRequest) = 1;
             }
         }
@@ -5091,7 +5091,7 @@ void ai_Unk57e270(char *rec)
         sv_SetPanelEnabled(0);
         now = U_I((unsigned)&ai_ClockMs);
         dt = (float)(now - last) * 0.013513514f;
-        if (U_I(run + 4) == 0 && (U_I(((unsigned)&dm_L + 0x20)) != 0 || (U_I((unsigned)&d2_ClickedId) != -1 && U_I((unsigned)&ai_Unk5fe710) == *(int *)(sc + 0xbc)))) {
+        if (U_I(run + 4) == 0 && (U_I(((unsigned)&dm_L + 0x20)) != 0 || (U_I((unsigned)&d2_ClickedId) != -1 && U_I((unsigned)&d2_PointerObj) == *(int *)(sc + 0xbc)))) {
             U_I((unsigned)&sv_PopRequest) = 1;
         } else {
             ai_Unk57ec40((float *)sc, dt);
@@ -5100,11 +5100,11 @@ void ai_Unk57e270(char *rec)
             ai_Unk57f690((float *)sc);
             if (U_I(run + 4) == 0) {
                 if (U_I((unsigned)&d2_ClickedId) != -1) {
-                    if (U_I((unsigned)&ai_Unk5fe710) == *(int *)(sc + 0xc8))
+                    if (U_I((unsigned)&d2_PointerObj) == *(int *)(sc + 0xc8))
                         ai_Unk57fdd0(rec, (float *)sc, run, 0, 0x2656c7);
-                    else if (U_I((unsigned)&ai_Unk5fe710) == *(int *)(sc + 0xcc))
+                    else if (U_I((unsigned)&d2_PointerObj) == *(int *)(sc + 0xcc))
                         ai_Unk57fdd0(rec, (float *)sc, run, 1, 0x2656c7);
-                    else if (U_I((unsigned)&ai_Unk5fe710) == *(int *)(sc + 0xd0))
+                    else if (U_I((unsigned)&d2_PointerObj) == *(int *)(sc + 0xd0))
                         ai_Unk57fdd0(rec, (float *)sc, run, 2, 0x2656c7);
                 }
                 if (U_I(run + 4) == 0 && ai_Unk57f620((float *)sc) != 0) {
@@ -5393,7 +5393,7 @@ void ai_Unk57f5d0(char *sc)
 int ai_Unk57f620(char *sc)
 {
     if (*(int *)(sc + 0x7c) == 0 && *(float *)(sc + 0x20) <= 0.01f) {
-        if (U_I((unsigned)&d2_ClickedId) != -1 && U_I((unsigned)&ai_Unk5fe710) == *(int *)(sc + 0xb8)) {
+        if (U_I((unsigned)&d2_ClickedId) != -1 && U_I((unsigned)&d2_PointerObj) == *(int *)(sc + 0xb8)) {
             *(char *)((unsigned)&kb_Down + 0x32) = 0;
             *(int *)(sc + 0x78) = *(int *)(sc + 0x6c);
             *(int *)(sc + 0x7c) = 1;
@@ -5884,7 +5884,7 @@ void ai_Unk581020(char *rec)
         if (U_I(((unsigned)&dm_L + 0x20)) != 0) {
             U_I((unsigned)&sv_PopRequest) = 1;
         } else if (U_I((unsigned)&d2_ClickedId) != -1) {
-            if (U_I((unsigned)&ai_Unk5fe710) == b1) {
+            if (U_I((unsigned)&d2_PointerObj) == b1) {
                 if (sv_CheckGoodAmount((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, id, *(unsigned char *)(unsigned)&ai_OwnPlayer) != 0) {
                     if (ai_Unk580fe0(rec) != 0) {
                         r = gm_PlayerRecord((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c);
@@ -5916,7 +5916,7 @@ void ai_Unk581020(char *rec)
                         U_I((unsigned)&sv_PopRequest) = 1;
                     }
                 }
-            } else if (U_I((unsigned)&ai_Unk5fe710) == b2) {
+            } else if (U_I((unsigned)&d2_PointerObj) == b2) {
                 U_I((unsigned)&sv_PopRequest) = 1;
             }
         }
@@ -6007,7 +6007,7 @@ void ai_Unk581400(char *rec)
         if (U_I(((unsigned)&dm_L + 0x20)) != 0) {
             U_I((unsigned)&sv_PopRequest) = 1;
         } else if (U_I((unsigned)&d2_ClickedId) != -1) {
-            if (U_I((unsigned)&ai_Unk5fe710) == b1) {
+            if (U_I((unsigned)&d2_PointerObj) == b1) {
                 if (sv_CheckGoodAmount((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, cost[i], *(unsigned char *)(unsigned)&ai_OwnPlayer) != 0 &&
                     sv_CheckMoney((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, amt[i]) == 1 &&
                     ai_Unk580fe0(rec) != 0) {
@@ -6048,7 +6048,7 @@ void ai_Unk581400(char *rec)
                     snd_PlayVoice(-7, 0, (char *)(unsigned)&full_data_62a3ec, 0);
                     U_I((unsigned)&sv_PopRequest) = 1;
                 }
-            } else if (U_I((unsigned)&ai_Unk5fe710) == b2) {
+            } else if (U_I((unsigned)&d2_PointerObj) == b2) {
                 U_I((unsigned)&sv_PopRequest) = 1;
             }
         }
@@ -6130,7 +6130,7 @@ void ai_Unk581950(char *rec)
         if (U_I(((unsigned)&dm_L + 0x20)) != 0) {
             U_I((unsigned)&sv_PopRequest) = 1;
         } else if (U_I((unsigned)&d2_ClickedId) != -1) {
-            if (U_I((unsigned)&ai_Unk5fe710) == b1) {
+            if (U_I((unsigned)&d2_PointerObj) == b1) {
                 if (sv_CheckMoney((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, amt[i]) == 1 &&
                     ai_Unk580fe0(rec) != 0) {
                     cm_SendMoneyDelta(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c), -amt[i]);
@@ -6166,7 +6166,7 @@ void ai_Unk581950(char *rec)
                     snd_PlayVoice(-7, 0, (char *)(unsigned)&full_data_62a3ec, 0);
                     U_I((unsigned)&sv_PopRequest) = 1;
                 }
-            } else if (U_I((unsigned)&ai_Unk5fe710) == b2) {
+            } else if (U_I((unsigned)&d2_PointerObj) == b2) {
                 U_I((unsigned)&sv_PopRequest) = 1;
             }
         }
@@ -6238,7 +6238,7 @@ void ai_Unk581db0(char *rec)
         if (U_I(((unsigned)&dm_L + 0x20)) != 0) {
             U_I((unsigned)&sv_PopRequest) = 1;
         } else if (U_I((unsigned)&d2_ClickedId) != -1) {
-            if (U_I((unsigned)&ai_Unk5fe710) == b1) {
+            if (U_I((unsigned)&d2_PointerObj) == b1) {
                 if (sv_CheckGoodAmount((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, amount, *(unsigned char *)(unsigned)&ai_OwnPlayer) != 0 &&
                     sv_CheckMoney((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, 0x10) == 1 &&
                     ai_Unk580fe0(rec) != 0) {
@@ -6279,7 +6279,7 @@ void ai_Unk581db0(char *rec)
                     snd_PlayVoice(-7, 0, (char *)(unsigned)&full_data_62a3ec, -1);
                     U_I((unsigned)&sv_PopRequest) = 1;
                 }
-            } else if (U_I((unsigned)&ai_Unk5fe710) == b2) {
+            } else if (U_I((unsigned)&d2_PointerObj) == b2) {
                 U_I((unsigned)&sv_PopRequest) = 1;
             }
         }
@@ -6399,7 +6399,7 @@ void ai_Unk5823b0(char *rec, char *list)
         if (U_I(((unsigned)&dm_L + 0x20)) != 0) {
             U_I((unsigned)&sv_PopRequest) = 1;
         } else if (U_I((unsigned)&d2_ClickedId) != -1) {
-            if (U_I((unsigned)&ai_Unk5fe710) == b1) {
+            if (U_I((unsigned)&d2_PointerObj) == b1) {
                 if (sv_CheckMoney((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, price) == 1) {
                     v = 0;
                     cm_SendMoneyDelta(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c), -price);
@@ -6413,7 +6413,7 @@ void ai_Unk5823b0(char *rec, char *list)
                     }
                     U_I((unsigned)&sv_PopRequest) = 1;
                 }
-            } else if (U_I((unsigned)&ai_Unk5fe710) == b2) {
+            } else if (U_I((unsigned)&d2_PointerObj) == b2) {
                 U_I((unsigned)&sv_PopRequest) = 1;
             }
         }
@@ -7012,11 +7012,11 @@ int ai_Unk583de0(char *rec, int a, unsigned char b)
         if (U_I(((unsigned)&dm_L + 0x20)) != 0) {
             U_I((unsigned)&sv_PopRequest) = 1;
         } else if (U_I((unsigned)&d2_ClickedId) != -1) {
-            if (U_I((unsigned)&ai_Unk5fe710) == b1) {
+            if (U_I((unsigned)&d2_PointerObj) == b1) {
                 unk_Unk4f0900(0, rec, a, b);
                 done = 1;
                 U_I((unsigned)&sv_PopRequest) = 1;
-            } else if (U_I((unsigned)&ai_Unk5fe710) == b2) {
+            } else if (U_I((unsigned)&d2_PointerObj) == b2) {
                 U_I((unsigned)&sv_PopRequest) = 1;
             }
         }
@@ -7109,7 +7109,7 @@ int ai_Unk584010(char *rec, int a, unsigned char b, int idx)
         if (U_I(((unsigned)&dm_L + 0x20)) != 0) {
             U_I((unsigned)&sv_PopRequest) = 1;
         } else if (U_I((unsigned)&d2_ClickedId) != -1) {
-            if (U_I((unsigned)&ai_Unk5fe710) == b1) {
+            if (U_I((unsigned)&d2_PointerObj) == b1) {
                 if (cost != 0) {
                     if (sv_CheckGoodAmount((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, cost, *(unsigned char *)(unsigned)&ai_OwnPlayer) == 0)
                         goto pump;
@@ -7127,7 +7127,7 @@ int ai_Unk584010(char *rec, int a, unsigned char b, int idx)
                     U_I((unsigned)&sv_PopRequest) = 1;
                     r = 1;
                 }
-            } else if (U_I((unsigned)&ai_Unk5fe710) == b2) {
+            } else if (U_I((unsigned)&d2_PointerObj) == b2) {
                 U_I((unsigned)&sv_PopRequest) = 1;
             }
         }
@@ -7175,7 +7175,7 @@ int ai_Unk584260(char *rec, int a, int b)
         if (U_I(((unsigned)&dm_L + 0x20)) != 0) {
             U_I((unsigned)&sv_PopRequest) = 1;
         } else if (U_I((unsigned)&d2_ClickedId) != -1) {
-            if (U_I((unsigned)&ai_Unk5fe710) == btn) {
+            if (U_I((unsigned)&d2_PointerObj) == btn) {
                 d2_SetViewEnabled(win, 0);
                 if (ai_Unk584010(rec, a, b, sel) == 1) {
                     r = 1;
@@ -7184,7 +7184,7 @@ int ai_Unk584260(char *rec, int a, int b)
                 d2_SetViewEnabled(win, 1);
             } else {
                 for (i = 0; i < 4; i++) {
-                    if (U_I((unsigned)&ai_Unk5fe710) == btns[i] && i != sel) {
+                    if (U_I((unsigned)&d2_PointerObj) == btns[i] && i != sel) {
                         sel = i;
                         ai_Unk583c50(rec, win, 2, btns, &sel);
                         d2_SetObjEnabled(btn, ai_Unk583ef0(rec, a, b, btns, &sel));
@@ -7220,12 +7220,12 @@ void ai_Unk584410(char *rec, int *w)
         if (U_I(((unsigned)&dm_L + 0x20)) != 0) {
             U_I((unsigned)&sv_PopRequest) = 1;
         } else if (U_I((unsigned)&d2_ClickedId) != -1) {
-            if (U_I((unsigned)&ai_Unk5fe710) == btns[0]) {
+            if (U_I((unsigned)&d2_PointerObj) == btns[0]) {
                 d2_SetViewEnabled(w[0], 0);
                 if (ai_Unk583de0(rec, w[8], *(unsigned char *)((char *)w + 0x24)) == 1)
                     U_I((unsigned)&sv_PopRequest) = 1;
                 d2_SetViewEnabled(w[0], 1);
-            } else if (U_I((unsigned)&ai_Unk5fe710) == btns[1]) {
+            } else if (U_I((unsigned)&d2_PointerObj) == btns[1]) {
                 d2_SetViewEnabled(w[0], 0);
                 if (ai_Unk584260(rec, w[8], *(unsigned char *)((char *)w + 0x24)) == 1)
                     U_I((unsigned)&sv_PopRequest) = 1;
@@ -7284,7 +7284,7 @@ int ai_Unk584520(char *rec, int idx)
         if (U_I(((unsigned)&dm_L + 0x20)) != 0) {
             U_I((unsigned)&sv_PopRequest) = 1;
         } else if (U_I((unsigned)&d2_ClickedId) != -1) {
-            if (U_I((unsigned)&ai_Unk5fe710) == b1) {
+            if (U_I((unsigned)&d2_PointerObj) == b1) {
                 if (cost != 0) {
                     if (sv_CheckGoodAmount((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, cost, *(unsigned char *)(unsigned)&ai_OwnPlayer) == 0)
                         goto pump;
@@ -7302,7 +7302,7 @@ int ai_Unk584520(char *rec, int idx)
                     U_I((unsigned)&sv_PopRequest) = 1;
                     r = 1;
                 }
-            } else if (U_I((unsigned)&ai_Unk5fe710) == b2) {
+            } else if (U_I((unsigned)&d2_PointerObj) == b2) {
                 U_I((unsigned)&sv_PopRequest) = 1;
             }
         }
@@ -7345,14 +7345,14 @@ void ai_Unk5847a0(char *rec)
         if (U_I(((unsigned)&dm_L + 0x20)) != 0) {
             U_I((unsigned)&sv_PopRequest) = 1;
         } else if (U_I((unsigned)&d2_ClickedId) != -1) {
-            if (U_I((unsigned)&ai_Unk5fe710) == btn) {
+            if (U_I((unsigned)&d2_PointerObj) == btn) {
                 d2_SetViewEnabled(win, 0);
                 if (ai_Unk584520(rec, sel) == 1)
                     U_I((unsigned)&sv_PopRequest) = 1;
                 d2_SetViewEnabled(win, 1);
             } else {
                 for (i = 0; i < 4; i++) {
-                    if (U_I((unsigned)&ai_Unk5fe710) == btns[i] && i != sel) {
+                    if (U_I((unsigned)&d2_PointerObj) == btns[i] && i != sel) {
                         sel = i;
                         ai_Unk583c50(rec, win, 2, btns, &sel);
                         break;
@@ -7416,7 +7416,7 @@ int ai_Unk584900(char *rec, char *ev)
         if (U_I(((unsigned)&dm_L + 0x20)) != 0) {
             U_I((unsigned)&sv_PopRequest) = 1;
         } else if (U_I((unsigned)&d2_ClickedId) != -1) {
-            if (U_I((unsigned)&ai_Unk5fe710) == b1) {
+            if (U_I((unsigned)&d2_PointerObj) == b1) {
                 p = 0;
                 for (i = 0; i < 0x300; i++) {
                     if (*(char *)((unsigned)&ai_Chars + i * 0x21c + 0x188)) {
@@ -7447,7 +7447,7 @@ int ai_Unk584900(char *rec, char *ev)
                     r = 1;
                     U_I((unsigned)&sv_PopRequest) = 1;
                 }
-            } else if (U_I((unsigned)&ai_Unk5fe710) == b2) {
+            } else if (U_I((unsigned)&d2_PointerObj) == b2) {
                 U_I((unsigned)&sv_PopRequest) = 1;
             }
         }
@@ -7506,7 +7506,7 @@ int ai_Unk584b70(char *o, int *ev)
             if (U_I(((unsigned)&dm_L + 0x20)) != 0) {
                 U_I((unsigned)&sv_PopRequest) = 1;
             } else if (U_I((unsigned)&d2_ClickedId) != -1) {
-                if (U_I((unsigned)&ai_Unk5fe710) == b1) {
+                if (U_I((unsigned)&d2_PointerObj) == b1) {
                     if (*(int *)*(int *)((char *)ev + 0xc) == -1) {
                         U_I((unsigned)&sv_PopRequest) = 1;
                     } else {
@@ -7523,7 +7523,7 @@ int ai_Unk584b70(char *o, int *ev)
                         r = 1;
                         U_I((unsigned)&sv_PopRequest) = 1;
                     }
-                } else if (U_I((unsigned)&ai_Unk5fe710) == b2) {
+                } else if (U_I((unsigned)&d2_PointerObj) == b2) {
                     U_I((unsigned)&sv_PopRequest) = 1;
                 }
             }
@@ -7685,7 +7685,7 @@ void ai_GypsyHelperWindow(char *b)
                 U_I((unsigned)&sv_PopRequest) = 1;
         } else {
             for (i = 0; i < n; i++)
-                if (U_I((unsigned)&ai_Unk5fe710) == btns[i])
+                if (U_I((unsigned)&d2_PointerObj) == btns[i])
                     break;
             if (i != n) {
                 memset(msg, 0, 0xf8);
@@ -7804,7 +7804,7 @@ void ai_Unk585380(char *rec)
             if (U_I(((unsigned)&dm_L + 0x20)) != 0) {
                 U_I((unsigned)&sv_PopRequest) = 1;
             } else if (U_I((unsigned)&d2_ClickedId) != -1) {
-                if (U_I((unsigned)&ai_Unk5fe710) == b1) {
+                if (U_I((unsigned)&d2_PointerObj) == b1) {
                     if (sv_CheckMoney((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, n) == 1) {
                         memset(msg, 0, 0xf8);
                         *(unsigned char *)(msg + 0x04) = 0x90;
@@ -7821,7 +7821,7 @@ void ai_Unk585380(char *rec)
                         cm_SendLongMessage(msg);
                         U_I((unsigned)&sv_PopRequest) = 1;
                     }
-                } else if (U_I((unsigned)&ai_Unk5fe710) == b2) {
+                } else if (U_I((unsigned)&d2_PointerObj) == b2) {
                     U_I((unsigned)&sv_PopRequest) = 1;
                 }
             }
@@ -7893,14 +7893,14 @@ int ai_Unk585750(char *unused, char *ev, int *out)
         if (U_I(((unsigned)&dm_L + 0x20)) != 0) {
             U_I((unsigned)&sv_PopRequest) = 1;
         } else if (U_I((unsigned)&d2_ClickedId) != -1) {
-            if (U_I((unsigned)&ai_Unk5fe710) == b4) {
+            if (U_I((unsigned)&d2_PointerObj) == b4) {
                 U_I((unsigned)&sv_PopRequest) = 1;
             } else {
-                if (U_I((unsigned)&ai_Unk5fe710) == b1) {
+                if (U_I((unsigned)&d2_PointerObj) == b1) {
                     v = sv_CheckMoney((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, 4);
-                } else if (U_I((unsigned)&ai_Unk5fe710) == b2) {
+                } else if (U_I((unsigned)&d2_PointerObj) == b2) {
                     v = sv_CheckMoney((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, 6) * 2;
-                } else if (U_I((unsigned)&ai_Unk5fe710) == b3) {
+                } else if (U_I((unsigned)&d2_PointerObj) == b3) {
                     v = sv_CheckMoney((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, 8) * 3;
                 } else {
                     goto pump;
@@ -8276,7 +8276,7 @@ int ai_Unk586560(char *a, int *w, int *out)
         if (U_I(((unsigned)&dm_L + 0x20)) == 0) {
             if (U_I((unsigned)&d2_ClickedId) != -1) {
                 for (i = 0; i < 8; i++) {
-                    if (U_I((unsigned)&ai_Unk5fe710) == w[10 + i * 3]) {
+                    if (U_I((unsigned)&d2_PointerObj) == w[10 + i * 3]) {
                         w[0x22] = i;
                         d2_SetViewEnabled(w[0], 0);
                         r = ai_Unk585750(a, (char *)w, out);
@@ -8512,7 +8512,7 @@ void ai_Unk586ab0(char *rec)
         if (U_I(((unsigned)&dm_L + 0x20)) != 0) {
             U_I((unsigned)&sv_PopRequest) = 1;
         } else if (U_I((unsigned)&d2_ClickedId) != -1) {
-            if (U_I((unsigned)&ai_Unk5fe710) == b1) {
+            if (U_I((unsigned)&d2_PointerObj) == b1) {
                 v = 0;
                 n = d2_GetObjValue(slider);
                 if (sv_CheckMoney((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, n) == 0)
@@ -8559,7 +8559,7 @@ void ai_Unk586ab0(char *rec)
                     U_I((unsigned)&sv_PopRequest) = 1;
                     sv_MessageBox((char *)U_I((unsigned)&full_data_144a428), 0);
                 }
-            } else if (U_I((unsigned)&ai_Unk5fe710) == b2) {
+            } else if (U_I((unsigned)&d2_PointerObj) == b2) {
                 U_I((unsigned)&sv_PopRequest) = 1;
             }
         }
@@ -8629,7 +8629,7 @@ void ai_Unk586e40(char *rec)
         if (U_I(((unsigned)&dm_L + 0x20)) != 0) {
             U_I((unsigned)&sv_PopRequest) = 1;
         } else if (U_I((unsigned)&d2_ClickedId) != -1) {
-            if (U_I((unsigned)&ai_Unk5fe710) == b1) {
+            if (U_I((unsigned)&d2_PointerObj) == b1) {
                 v = 0;
                 if (sv_CheckMoney((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, 4) == 0)
                     v = 1;
@@ -8678,7 +8678,7 @@ void ai_Unk586e40(char *rec)
                         U_I((unsigned)&sv_PopRequest) = 1;
                     }
                 }
-            } else if (U_I((unsigned)&ai_Unk5fe710) == b2) {
+            } else if (U_I((unsigned)&d2_PointerObj) == b2) {
                 U_I((unsigned)&sv_PopRequest) = 1;
             }
         }
@@ -8789,7 +8789,7 @@ void ai_Unk587370(char *rec)
         if (U_I(((unsigned)&dm_L + 0x20)) != 0) {
             U_I((unsigned)&sv_PopRequest) = 1;
         } else if (U_I((unsigned)&d2_ClickedId) != -1) {
-            if (U_I((unsigned)&ai_Unk5fe710) == b1) {
+            if (U_I((unsigned)&d2_PointerObj) == b1) {
                 f = 0;
                 for (i = 0; i < 0x300; i++) {
                     if (*(char *)((unsigned)&ai_Chars + i * 0x21c + 0x188)) {
@@ -8814,7 +8814,7 @@ void ai_Unk587370(char *rec)
                     cm_SendLongMessage(msg);
                     U_I((unsigned)&sv_PopRequest) = 1;
                 }
-            } else if (U_I((unsigned)&ai_Unk5fe710) == b2) {
+            } else if (U_I((unsigned)&d2_PointerObj) == b2) {
                 U_I((unsigned)&sv_PopRequest) = 1;
             }
         }
@@ -8988,11 +8988,11 @@ void ai_Unk587810(char *rec)
             d2_SetObjEnabled(b3, gm_GetSkill(f, 4) < 1.0);
         }
         if (U_I((unsigned)&d2_ClickedId) != -1) {
-            if (U_I((unsigned)&ai_Unk5fe710) == b1)
+            if (U_I((unsigned)&d2_PointerObj) == b1)
                 sel = 1;
-            else if (U_I((unsigned)&ai_Unk5fe710) == b2)
+            else if (U_I((unsigned)&d2_PointerObj) == b2)
                 sel = 2;
-            else if (U_I((unsigned)&ai_Unk5fe710) == b3)
+            else if (U_I((unsigned)&d2_PointerObj) == b3)
                 sel = 4;
             else
                 continue;
@@ -9217,7 +9217,7 @@ void ai_Unk587e00(void)
         U_I((unsigned)&full_data_62a8d0) = -1;
     }
     if (src != (char *)-1 && (char *)U_I((unsigned)&full_data_62a8d0) != src) {
-        p = *(char **)(U_I((unsigned)&d2_Objs) + U_I((unsigned)&ai_Unk5fe710) * 0x2ec + 0x2e8);
+        p = *(char **)(U_I((unsigned)&d2_Objs) + U_I((unsigned)&d2_PointerObj) * 0x2ec + 0x2e8);
         if (p == 0) {
             if (src >= (char *)0xdf && src < (char *)0x427)
                 item = (int)src - 0xdf;

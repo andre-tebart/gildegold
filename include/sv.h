@@ -145,7 +145,7 @@ extern const int ai_Unk5eeab8[24];                          /* 0x5eeab8 */
 extern int ai_Unk5fcc78;                                    /* 0x5fcc78 */
 extern int ai_Unk5fcc7c;                                    /* 0x5fcc7c */
 extern int ai_Unk5fcc80;                                    /* 0x5fcc80 */
-extern int ai_Unk5fe710;                                    /* 0x5fe710 */
+extern int d2_PointerObj;                                    /* 0x5fe710 */
 extern float sv_FramesPerTick;                              /* 0x62378c */
 extern int sv_TickFrames;                                   /* 0x623790 */
 extern char ai_Unk623794[];                                 /* 0x623794 */

@@ -493,19 +493,19 @@ char *ai_Unk4cd380(int id);  /* 0x4cd380 */
 void ai_Unk4cd3c0(int id, int x, char *text);  /* 0x4cd3c0 */
 G18LOG *ai_Unk4cd480();  /* 0x4cd480 */
 G18LOG *ai_Unk4cd4c0();  /* 0x4cd4c0 */
-void ai_Unk4cd500();  /* 0x4cd500 */
-int ai_Unk4cd510();  /* 0x4cd510 */
+void cm_LobbyClearChat();  /* 0x4cd500 */
+int cm_LobbyAllReady();  /* 0x4cd510 */
 void ai_Unk4cd580(int a, int b);  /* 0x4cd580 */
-unsigned int *ai_Unk4cd5d0();  /* 0x4cd5d0 */
+unsigned int *cm_LobbyPlayerList();  /* 0x4cd5d0 */
 char *ai_Unk4cd5e0(int id);  /* 0x4cd5e0 */
-CMLOBBYPLAYER *ai_Unk4cd5f0();  /* 0x4cd5f0 */
-int *ai_Unk4cd600();  /* 0x4cd600 */
-int ai_Unk4cd610();  /* 0x4cd610 */
-int ai_Unk4cd650(int v);  /* 0x4cd650 */
-int ai_Unk4cd6a0();  /* 0x4cd6a0 */
-int ai_Unk4cd6e0(int to, char *text);  /* 0x4cd6e0 */
-int ai_Unk4cd760(CMLOBBYPLAYER *p);  /* 0x4cd760 */
-int ai_Unk4cd7c0(CMLOBBYPLAYER *p);  /* 0x4cd7c0 */
+CMLOBBYPLAYER *cm_LobbyMyPlayer();  /* 0x4cd5f0 */
+int *cm_LobbyState();  /* 0x4cd600 */
+int cm_LobbyRequestList();  /* 0x4cd610 */
+int cm_LobbySetReady(int v);  /* 0x4cd650 */
+int cm_LobbyLeave();  /* 0x4cd6a0 */
+int cm_LobbySendChat(int to, char *text);  /* 0x4cd6e0 */
+int cm_LobbyJoin(CMLOBBYPLAYER *p);  /* 0x4cd760 */
+int cm_LobbyUpdatePlayer(CMLOBBYPLAYER *p);  /* 0x4cd7c0 */
 void ai_Unk4cd820(int v);  /* 0x4cd820 */
 int ai_Unk4cd870(G17MSG *m, G17STAT *s);  /* 0x4cd870 */
 char *ai_Unk4cd9d0(int id);  /* 0x4cd9d0 */

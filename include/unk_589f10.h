@@ -16,15 +16,15 @@ extern int lobby_Rows[8];               /* 0x6f5e80, the control of each player 
 extern int lobby_MyRow;                 /* 0x6f5ea0, the player list line of this player */
 extern int *lobby_State;                /* 0x6f5ea4, cm's lobby state: [1] a lobby message came in */
 
-int ai_Unk589f10(void);                 /* 0x589f10, the network lobby screen (ROUGH) */
-void ai_Unk58a9d0(void);                /* 0x58a9d0, the lobby's control 5 / 6 hook */
-void ai_Unk58a940(void);                /* 0x58a940, adds the lobby's buttons */
-void ai_Unk58aa30(void);                /* 0x58aa30, the city emblem window */
-void ai_Unk58aba0(void);                /* 0x58aba0, the current player's info window */
-void ai_Unk58ad20(void);                /* 0x58ad20, waits for the player list */
-void ai_Unk58ada0(void);                /* 0x58ada0, the player list window */
-int ai_Unk58af50(int a, int b);         /* 0x58af50, the choose-player window */
-int ai_Unk58b880(int a);                /* 0x58b880, the choose-profession window */
-void ai_Unk58ba70(void);                /* 0x58ba70, the chat lines of the lobby */
+int lobby_Screen(void);                 /* 0x589f10, the network lobby screen (ROUGH) */
+void lobby_AddChatScroll(void);                /* 0x58a9d0, the lobby's control 5 / 6 hook */
+void lobby_AddButtons(void);                /* 0x58a940, adds the lobby's buttons */
+void lobby_ShowCity(void);                /* 0x58aa30, the city emblem window */
+void lobby_ShowMyPlayer(void);                /* 0x58aba0, the current player's info window */
+void lobby_FetchPlayers(void);                /* 0x58ad20, waits for the player list */
+void lobby_ShowPlayers(void);                /* 0x58ada0, the player list window */
+int lobby_ChoosePlayer(int a, int b);         /* 0x58af50, the choose-player window */
+int lobby_ChooseProfession(int a);                /* 0x58b880, the choose-profession window */
+void lobby_ShowChat(void);                /* 0x58ba70, the chat lines of the lobby */
 
 #endif

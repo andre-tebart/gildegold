@@ -51,7 +51,7 @@ typedef struct CMJOIN {                 /* 0x30 bytes at 0x9367a0 (inside ai_Unk
 typedef struct CMLOBBYPLAYER {          /* 0x57 bytes, a player of the network lobby: the 8 records of ai_Unk9364e0,
                                            sent whole by the lobby messages of type 0x5f (kinds 2 and 4) */
     int id;                             /* 0x00, the player's net id (ai_Unk9367d0 for this player), 0: a free record */
-    int ready;                          /* 0x04, 1: ready to start (kind 1; ai_Unk4cd510 counts them) */
+    int ready;                          /* 0x04, 1: ready to start (kind 1; cm_LobbyAllReady counts them) */
     char pad08[2];                      /* 0x08, no user seen */
     unsigned char status;               /* 0x0a, 0x10 as INIT_PLAYER.status of a new profile */
     unsigned char job;                  /* 0x0b, the profession (INIT_PLAYER.job, the profile key "Beruf") */

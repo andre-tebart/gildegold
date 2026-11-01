@@ -969,7 +969,7 @@ int main_PlayerCountDialog(void)
     return ok;
 }
 
-extern int ai_Unk5fe710, d2_LastWindow;
+extern int d2_PointerObj, d2_LastWindow;
 
 /* 0x5328f0, hosts a network game: the player count dialog (main_PlayerCountDialog), the player name / city choice (main_ChooseCity (1, 1)), then the network game record in ls_SavePath (106 bytes at
    +0xa0: the record size 0x6a, two words of 1, the city name from ai_DataPath + 0x220, the player count, the word at +0x84) is filled, the save name "<gamedata/cities>/<city>.net" and the host address
@@ -1097,7 +1097,7 @@ int main_EnterHostAddress(void)
     while (run != 0) {
         if (U_I(((unsigned)&dm_L + 0x20)) != 0 || *(char *)(unsigned)&kb_Last == 1)
             sv_PopRequest = 1;
-        if ((U_I((unsigned)&d2_ClickedId) != -1 || *(char *)(unsigned)&kb_Last == 0x1c) && (ai_Unk5fe710 == ok || *(char *)(unsigned)&kb_Last == 0x1c)) {
+        if ((U_I((unsigned)&d2_ClickedId) != -1 || *(char *)(unsigned)&kb_Last == 0x1c) && (d2_PointerObj == ok || *(char *)(unsigned)&kb_Last == 0x1c)) {
             r = 1;
             s = (char *)d2_GetObjValue(ed);
             strcpy(buf, s);
@@ -2120,7 +2120,7 @@ int main_ChooseModel(int job)
 /* 0x5359f0, the family choice of the character creation ("Menu\CHOOSECITY_HEADER" over the sky "Sky_Mittel_02"): nine template persons (0x5344f0: thief / gypsy 0 / 8, craftsmen 1 / 7, fighter 4, traders 3 / 5, priest 2 / 6) stand
    in the scene; the player clicks one for each of the four slots 0x75e180 [4] (father) and [5] (mother) (the clicked person 0x6f22e4 + 0x200 gets the slot in +0x23c and the dummy name "dummy_VATER" / "dummy_MUTTER" ..), the
    value stored in the slot is the profession group 0 .. 4; with both slots set the talent choice main_ChooseTalents and the model choice main_ChooseModel follow; returns 1 when the character was created (the dummy name table
-   dn[6] of 0x30 bytes, entries 4 / 5 are the only ones used) @deep read against the original and corrected: the odd slot (mother, k=5) is tested first in both the camera target choice (+0xfc.. before +0xe4..) and the click handling, both branches share the slot store; k >= 6; talents ok -> (ai_Unk58b880(0xc6) && main_ChooseModel(job)) else pop with ret 0, then if (ret == 0) d2_SetViewEnabled (the original's jump threading). Left is allocation only: the original pushes ebp in the prologue and keeps f in ebp (ours esi), zeroes ret / fade via ebp before the dn table copies (ours esi after them), and has one more stack slot (frame 0x16c vs 0x168: dn at esp+0x5c vs 0x58). Q7 / Q4 open: ch_* (ch.h does not include into main), the ai_Unk5fb5b0 / ai_Unkfc2dec records are untyped */
+   dn[6] of 0x30 bytes, entries 4 / 5 are the only ones used) @deep read against the original and corrected: the odd slot (mother, k=5) is tested first in both the camera target choice (+0xfc.. before +0xe4..) and the click handling, both branches share the slot store; k >= 6; talents ok -> (lobby_ChooseProfession(0xc6) && main_ChooseModel(job)) else pop with ret 0, then if (ret == 0) d2_SetViewEnabled (the original's jump threading). Left is allocation only: the original pushes ebp in the prologue and keeps f in ebp (ours esi), zeroes ret / fade via ebp before the dn table copies (ours esi after them), and has one more stack slot (frame 0x16c vs 0x168: dn at esp+0x5c vs 0x58). Q7 / Q4 open: ch_* (ch.h does not include into main), the ai_Unk5fb5b0 / ai_Unkfc2dec records are untyped */
 
 int main_ChooseFamily(int unused)
 {
@@ -2245,7 +2245,7 @@ lskip:
                 U_I((unsigned)&d3t_CamMove) = 0;
                 d3t_PlaceObjectV(U_I((unsigned)&ai_Unkfc2dec), U_I((unsigned)&ai_Unkfc2dec) + 0x114, U_I((unsigned)&ai_Unkfc2dec) + 0x120, 0x50, 8);
                 if (main_ChooseTalents() != 0) {
-                    if (ai_Unk58b880(0xc6) != 0 && main_ChooseModel(init_PlayerProfile.job) != 0) {
+                    if (lobby_ChooseProfession(0xc6) != 0 && main_ChooseModel(init_PlayerProfile.job) != 0) {
                         sv_PopRequest = 1;
                         ret = 1;
                     }
@@ -2581,7 +2581,7 @@ lback:
                         }
                         goto lok;
                     } else if (r == 0) {
-                        if (ai_Unk58b880(0xc6) != 0) {
+                        if (lobby_ChooseProfession(0xc6) != 0) {
                             gm_Unk503ee0((unsigned *)rec, init_PlayerProfile.job);
                             *(int *)init_PlayerProfile.talents = *(int *)rec;
                             init_PlayerProfile.talents[4] = rec[4];
@@ -4732,7 +4732,7 @@ void main_GameLoop(int ctl)
     ai_InitStates();
     if ((U_I((unsigned)&ai_GameFlags) & 0x44) != 0) {
         U_I((unsigned)&d2_CutsceneActive) = 0;
-        iv = ai_Unk589f10();
+        iv = lobby_Screen();
         if (iv != 0) {
             if (U_I(((unsigned)&ls_SavePath + 0x80)) != 0) {
                 Sleep(1000);

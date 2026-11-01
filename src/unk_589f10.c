@@ -28,7 +28,7 @@
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 extern char ai_OptionsFile[288];
 extern int ai_Unk1460ae0;
-extern int ai_Unk5fe710;
+extern int d2_PointerObj;
 extern D2INPUT d2_Inputs[];
 extern GAPDATA full_data_602568[];
 extern GAPDATA full_data_6230f8[];
@@ -67,18 +67,18 @@ extern int main_ChoosePlayer(int mask, int flag);
 #define U_W(a) (*(unsigned short *)(a))
 
 void d2_FocusInput(); int sprintf(char *buf, const char *fmt, ...);
-int ai_Unk58af50(); int ai_Unk58b880();
+int lobby_ChoosePlayer(); int lobby_ChooseProfession();
 
 int lobby_Buttons[2] = { -1 };  /* 0x62aa7c, the controls of the lobby form's button row 4 (sv_ButtonRow): [0] ready, [1] the character (the player and profession pickers) */
 int lobby_LeaveButton = -1;  /* 0x62aa84, the control of the button row 8: leave the lobby */
 int lobby_Form = -1;  /* 0x62aa88, the lobby form "menu\netlobby" (d2_OpenForm), -1: not open */
-unsigned int *lobby_List = 0;  /* 0x6f267c, cm's player list (ai_Unk4cd5d0): the count, then the eight player ids */
+unsigned int *lobby_List = 0;  /* 0x6f267c, cm's player list (cm_LobbyPlayerList): the count, then the eight player ids */
 int lobby_ChatTo = 0;  /* 0x6f5e00, the id of the player the chat lines go to (the selected list line), -1: everybody */
 CMLOBBYPLAYER lobby_Player = {0};  /* 0x6f5e20, this player's record as sent to the lobby (join / change) */
-CMLOBBYPLAYER *lobby_Me = 0;  /* 0x6f5e78, this player's record in cm's table (ai_Unk4cd5f0) */
+CMLOBBYPLAYER *lobby_Me = 0;  /* 0x6f5e78, this player's record in cm's table (cm_LobbyMyPlayer) */
 int lobby_Rows[8] = {0};  /* 0x6f5e80, the text control of each line of the player list */
 int lobby_MyRow = 0;  /* 0x6f5ea0, the player list line of this player */
-int *lobby_State = 0;  /* 0x6f5ea4, cm's lobby state (ai_Unk4cd600): [1] a lobby message came in */
+int *lobby_State = 0;  /* 0x6f5ea4, cm's lobby state (cm_LobbyState): [1] a lobby message came in */
 
 /* 0x589f10, the network lobby screen (2595 B, ROUGH): clears the player record 0x6f5e20 (0x57 B), reads the
    "Network" profile (name / family name / emblem / gender / religion / profession) into it, opens the lobby
@@ -92,7 +92,7 @@ int *lobby_State = 0;  /* 0x6f5ea4, cm's lobby state (ai_Unk4cd600): [1] a lobby
    box 0x60ea78 instead. ROUGH: the text of the sub blocks is transcribed from the disassembly / pseudocode,
    the exact store order and the local frame are not verified */
 
-int ai_Unk589f10(void)
+int lobby_Screen(void)
 {
     char buf[256];
     char text[256];
@@ -107,18 +107,18 @@ int ai_Unk589f10(void)
     char *r;
 
     ret = 0;
-    ai_Unk4cd500();
+    cm_LobbyClearChat();
     memset(&lobby_Player, 0, 0x57);
     lobby_List = 0;
     lobby_ChatTo = -1;
-    lobby_State = ai_Unk4cd600();
+    lobby_State = cm_LobbyState();
     if (lobby_State == 0) {
         win = d2_OpenForm(0, 0, (char *)(unsigned)"misc\\Messagebox_NONE_PERGA");
         d2_CentreViewWindows(win);
         io_PrintText(0x87);
         U_I((unsigned)&d2_ClickedId) = -1;
         while (U_I(((unsigned)&dm_L + 0x20)) == 0 && U_B((unsigned)&kb_Last) != 1) {
-            if (sv_RunFrame((int)ai_Unk589f10, 0x24087) == 0) {
+            if (sv_RunFrame((int)lobby_Screen, 0x24087) == 0) {
                 d2_CloseView(win);
                 return 0;
             }
@@ -152,7 +152,7 @@ int ai_Unk589f10(void)
         strcpy(lobby_Player.firstName, (char *)((unsigned)&ai_Unk9364e0 + 0x2c0));
         strcpy(lobby_Player.familyName, (char *)((unsigned)&ai_Unk9364e0 + 0x2d0));
     }
-    id = ai_Unk4cd760(&lobby_Player);
+    id = cm_LobbyJoin(&lobby_Player);
     if (id == -1)
         return -1;
     while (cm_GetSlotState(id) == 0)
@@ -162,20 +162,20 @@ int ai_Unk589f10(void)
         sv_MessageBox(buf, 0x100);
         return -1;
     }
-    id = ((int (*)())ai_Unk4cd610)();
+    id = ((int (*)())cm_LobbyRequestList)();
     if (id == -1)
         return -1;
     while (cm_GetSlotState(id) == 0)
         sv_PumpNet();
     d2_ShowPicture(0x7d6);
-    lobby_Me = ai_Unk4cd5f0();
+    lobby_Me = cm_LobbyMyPlayer();
     if (lobby_Me == 0) {
         win = d2_OpenForm(0, 0, (char *)(unsigned)"misc\\Messagebox_NONE_PERGA");
         d2_CentreViewWindows(win);
         io_PrintText(0x87);
         U_I((unsigned)&d2_ClickedId) = -1;
         while (U_I(((unsigned)&dm_L + 0x20)) == 0 && U_B((unsigned)&kb_Last) != 1) {
-            if (sv_RunFrame((int)ai_Unk589f10, 0x24087) == 0) {
+            if (sv_RunFrame((int)lobby_Screen, 0x24087) == 0) {
                 d2_CloseView(win);
                 return 0;
             }
@@ -186,12 +186,12 @@ int ai_Unk589f10(void)
     }
     lobby_Form = d2_OpenForm(0x3c, 0, "menu\netlobby");
     d2_CentreViewWindows(lobby_Form);
-    ai_Unk58a9d0();
-    ai_Unk58a940();
-    ai_Unk58aa30();
-    ai_Unk58ad20();
-    ai_Unk58aba0();
-    ai_Unk58ada0();
+    lobby_AddChatScroll();
+    lobby_AddButtons();
+    lobby_ShowCity();
+    lobby_FetchPlayers();
+    lobby_ShowMyPlayer();
+    lobby_ShowPlayers();
     d2_SetForm(lobby_Form, 1);
     id = d2_GetWinObj(lobby_Form, 0, (char *)0);
     d2_SetObjMax(id, 0x40);
@@ -220,45 +220,45 @@ int ai_Unk589f10(void)
             strcpy(name, p);
             d2_SetObjValue(id, (char *)(unsigned)&ch_EmptyName);
             if (strlen(name) != 0)
-                ai_Unk4cd6e0(lobby_ChatTo == -1 ? 0 : lobby_ChatTo, name);
+                cm_LobbySendChat(lobby_ChatTo == -1 ? 0 : lobby_ChatTo, name);
         }
         if (U_I((unsigned)&ai_Unk1460ae0) == -1) {
             ret = -1;
             U_I((unsigned)&sv_PopRequest) = 1;
-        } else if (ai_Unk4cd510() == 0) {
+        } else if (cm_LobbyAllReady() == 0) {
             if (U_I((unsigned)&d2_ClickedId) != -1) {
-                if (U_I((unsigned)&ai_Unk5fe710) == lobby_LeaveButton) {
-                    n = ((int (*)())ai_Unk4cd6a0)();
+                if (U_I((unsigned)&d2_PointerObj) == lobby_LeaveButton) {
+                    n = ((int (*)())cm_LobbyLeave)();
                     while (cm_GetSlotState(n) == 0)
                         sv_PumpNet();
                     U_I((unsigned)&sv_PopRequest) = 1;
                     ret = -1;
-                } else if (U_I((unsigned)&ai_Unk5fe710) == lobby_Buttons[0]) {
-                    n = ((int (*)(int))ai_Unk4cd650)(lobby_Me->ready == 0);
+                } else if (U_I((unsigned)&d2_PointerObj) == lobby_Buttons[0]) {
+                    n = ((int (*)(int))cm_LobbySetReady)(lobby_Me->ready == 0);
                     while (cm_GetSlotState(n) == 0)
                         sv_PumpNet();
                     U_I((unsigned)&d2_Objs + 0x28 + lobby_Buttons[0] * 0x2ec) = lobby_Me->ready;
-                    if (ai_Unk4cd510() != 0)
+                    if (cm_LobbyAllReady() != 0)
                         U_I((unsigned)&sv_PopRequest) = 1;
-                } else if (U_I((unsigned)&ai_Unk5fe710) == lobby_Buttons[1]) {
+                } else if (U_I((unsigned)&d2_PointerObj) == lobby_Buttons[1]) {
                     if (lobby_Me->ready != 0) {
-                        n = ((int (*)(int))ai_Unk4cd650)(0);
+                        n = ((int (*)(int))cm_LobbySetReady)(0);
                         while (cm_GetSlotState(n) == 0)
                             sv_PumpNet();
                         U_I((unsigned)&d2_Objs + 0x28 + lobby_Buttons[0] * 0x2ec) = lobby_Me->ready;
                     }
-                    if (lobby_Me->ready == 0 && ai_Unk58af50(0x24087, 1) != 0) {
+                    if (lobby_Me->ready == 0 && lobby_ChoosePlayer(0x24087, 1) != 0) {
                         strcpy(lobby_Player.firstName, (char *)((unsigned)&init_PlayerProfile + 0xa));
                         strcpy(lobby_Player.familyName, (char *)((unsigned)&init_PlayerProfile + 0x2a));
                         lobby_Player.coat = U_I(((unsigned)&init_PlayerProfile + 0x4)) - 0x59a;
                         lobby_Player.sex = U_B(((unsigned)&init_PlayerProfile + 0x8));
                         lobby_Player.faith = U_B(((unsigned)&init_PlayerProfile + 0x9));
-                        n = ai_Unk4cd7c0(&lobby_Player);
+                        n = cm_LobbyUpdatePlayer(&lobby_Player);
                         while (cm_GetSlotState(n) == 0)
                             sv_PumpNet();
-                        if (ai_Unk58b880(0x24087) != 0) {
+                        if (lobby_ChooseProfession(0x24087) != 0) {
                             lobby_Player.job = U_B(((unsigned)&init_PlayerProfile + 0x3));
-                            n = ai_Unk4cd7c0(&lobby_Player);
+                            n = cm_LobbyUpdatePlayer(&lobby_Player);
                             while (cm_GetSlotState(n) == 0)
                                 sv_PumpNet();
                         }
@@ -267,7 +267,7 @@ int ai_Unk589f10(void)
                     /* the player list: the clicked entry 0x6f5e80[i] is the only one selected, the id
                        0x6f267c[i + 1] goes to 0x6f5e00 */
                     for (i = 0; i < lobby_List[0]; i++) {
-                        if (i != lobby_MyRow && U_I((unsigned)&ai_Unk5fe710) == lobby_Rows[i]) {
+                        if (i != lobby_MyRow && U_I((unsigned)&d2_PointerObj) == lobby_Rows[i]) {
                             n = U_I((unsigned)&d2_Objs + 0x28 + lobby_Rows[i] * 0x2ec) == 0;
                             U_I((unsigned)&d2_Objs + 0x28 + lobby_Rows[i] * 0x2ec) = n;
                             if (n == 0) {
@@ -290,20 +290,20 @@ int ai_Unk589f10(void)
         }
         U_I((unsigned)&d2_ClickedId) = -1;
         if (lobby_State[1] != 0) {
-            if (ai_Unk4cd510() == 0) {
-                n = ((int (*)())ai_Unk4cd610)();
+            if (cm_LobbyAllReady() == 0) {
+                n = ((int (*)())cm_LobbyRequestList)();
                 while (cm_GetSlotState(n) == 0)
                     sv_PumpNet();
-                lobby_List = ai_Unk4cd5d0();
-                ai_Unk58aba0();
-                ai_Unk58ada0();
-                ai_Unk58ba70();
+                lobby_List = cm_LobbyPlayerList();
+                lobby_ShowMyPlayer();
+                lobby_ShowPlayers();
+                lobby_ShowChat();
                 lobby_State[1] = 0;
             } else {
                 U_I((unsigned)&sv_PopRequest) = 1;
             }
         }
-        if (sv_RunFrame((int)ai_Unk589f10, 0x24087) == 0) {
+        if (sv_RunFrame((int)lobby_Screen, 0x24087) == 0) {
             d2_CloseView(lobby_Form);
             r = (char *)lobby_Me;
             U_B(((unsigned)&init_PlayerProfile + 0x2)) = 0x12;
@@ -337,7 +337,7 @@ char *_itoa(int, char *, int); char *_strupr(char *);
    U_I (0x144abf0)); in the single-player mode 0x9364dc 0x7f the control 0x62aa80 is disabled (the window table
    0xf8f080 + id * 0x2ec, +0x3c = 1)
    @deep byte but not readable: Q1 (unit unnamed, @named_by -), Q2 (d2_SetForm control API, sv_ButtonRow), Q3 (10 lobby globals), Q4 U_I; the whole lobby/control API has to be named and the globals typed first; no Q6 fix exists */
-void ai_Unk58a940(void)
+void lobby_AddButtons(void)
 {
     d2_SetForm(lobby_Form, 4);
     sv_ButtonRow(U_I((unsigned)&d2_LastWindow), 0, lobby_Buttons, 2, U_I((unsigned)&full_data_144abe8), U_I((unsigned)&full_data_144abec));
@@ -350,7 +350,7 @@ void ai_Unk58a940(void)
    screen 0x6ed938, U_I (0x6ed938), 0x35, three out ints) with control 6
    @deep byte but not readable: Q1 (unit unnamed, @named_by -), Q2 (d2_SetForm, sv_CreateFormSlider), Q3, Q4 U_I; same lobby/control API naming debt as 0x58a940 */
 
-void ai_Unk58a9d0(void)
+void lobby_AddChatScroll(void)
 {
     int a;
     int b;
@@ -370,7 +370,7 @@ void ai_Unk58a9d0(void)
    0x473650 (the control's x + 0xf, 0x19, the city name) and below it the population "%s: %d" 0x62aaa4 with
    U_I (0x144abd4) and the byte 0x936496 */
 
-void ai_Unk58aa30(void)
+void lobby_ShowCity(void)
 {
     char a[256];
     char b[256];
@@ -402,7 +402,7 @@ void ai_Unk58aa30(void)
    each below the last
    @deep Q1 (unit unnamed, @named_by -); B: code 117 + slots 12 + fill 3; Q2 (6 callees incl. 0x4731d0/0x473650/0x5de652), Q3 (21 addresses), Q4 U_I/U_B + 2 casts; the same missing control API and typed player record */
 
-void ai_Unk58aba0(void)
+void lobby_ShowMyPlayer(void)
 {
     char text[256];
     char *u;
@@ -437,16 +437,16 @@ void ai_Unk58aba0(void)
    the entry 0x6f267c[1 .. 8] with a player (0x4cd820) is awaited (0x4c3ae0)
    @deep Q1 (unit unnamed, @named_by -); B: code 28 (the entry scan of the player list 0x6f267c, 0x4cd820); Q2 (5 callees), Q3 (0x6f267c), Q4 U_I; needs the player-list API and the record typed */
 
-void ai_Unk58ad20(void)
+void lobby_FetchPlayers(void)
 {
     int h;
     int r;
     int i;
 
-    h = ((int (*)())ai_Unk4cd610)();
+    h = ((int (*)())cm_LobbyRequestList)();
     while (cm_GetSlotState(h) == 0)
         sv_PumpNet();
-    lobby_List = ai_Unk4cd5d0();
+    lobby_List = cm_LobbyPlayerList();
     r = -1;
     for (i = 4; i < 0x24; i += 4)
         if (U_I((char *)lobby_List + i) != 0)
@@ -463,7 +463,7 @@ void ai_Unk58ad20(void)
    +0x1c0 = 3); the record id equal 0x6f5e00 marks the control (+0x28 = 1)
    @deep Q1 (unit unnamed, @named_by -); B: code 117 + fill 3 + slots 2 (the original's strcat is a rep movs hand loop, note Open work); Q2 (6 callees), Q3 (13 addresses), Q4 U_I + 2 casts */
 
-void ai_Unk58ada0(void)
+void lobby_ShowPlayers(void)
 {
     char text[256];
     char *u;
@@ -510,7 +510,7 @@ void ai_Unk58ada0(void)
    0x56 and 0x46c560 (the object list); the frame loop 0x5309a0 (0x58b880, mask) with 0x46c6c0, the clicked
    control 0x5fe710 against the ids -> 0x5043d0 (the profession, 1) into 0x75e5a3, 0x6f22a0 = 1, return 1
    @deep Q1 (unit unnamed, @named_by -); B: code 70 + fill 3 + regs 2 (the choose-profession window); Q2 (12 callees), Q3 (8 addresses), Q4 U_I/U_B */
-int ai_Unk58b880(int param)
+int lobby_ChooseProfession(int param)
 {
     int ids[22];
     int win;
@@ -548,7 +548,7 @@ int ai_Unk58b880(int param)
         d2_RadioAdd(obj, id);
     }
     U_I((unsigned)&d2_ClickedId) = -1;
-    n = sv_RunFrame((int)ai_Unk58b880, param);
+    n = sv_RunFrame((int)lobby_ChooseProfession, param);
     while (1) {
         if (n == 0) {
             d2_RadioClear(obj);
@@ -558,7 +558,7 @@ int ai_Unk58b880(int param)
         d2_MenuNavigate(obj);
         if (U_I((unsigned)&d2_ClickedId) != -1) {
             for (i = 0; i < 0xb; i++) {
-                if (U_I((unsigned)&ai_Unk5fe710) == ids[i + 0xb]) {
+                if (U_I((unsigned)&d2_PointerObj) == ids[i + 0xb]) {
                     U_B(((unsigned)&init_PlayerProfile + 0x3)) = gm_TitleNumber(ids[i], 1);
                     U_I((unsigned)&sv_PopRequest) = 1;
                     ret = 1;
@@ -566,7 +566,7 @@ int ai_Unk58b880(int param)
                 }
             }
         }
-        n = sv_RunFrame((int)ai_Unk58b880, param);
+        n = sv_RunFrame((int)lobby_ChooseProfession, param);
     }
 }
 /* 0x58ba70, the chat lines of the lobby (352 B): control 5 of 0x62aa88 and the text 0x602568; the chat records
@@ -577,7 +577,7 @@ int ai_Unk58b880(int param)
    height 0xf8f12a < the box) -> 0xf8f364 = +0x18, 0xf8f368 = the delta, 0x46f840 (the screen)
    @deep Q1 (unit unnamed, @named_by -); B: code 151 + regs 14 (the chat lines); Q2 (7 callees), Q3 (12 addresses), Q4 U_I + 2 casts */
 
-void ai_Unk58ba70(void)
+void lobby_ShowChat(void)
 {
     char text[352];
     int p;
@@ -628,7 +628,7 @@ void ai_Unk58ba70(void)
    player was chosen. ROUGH: the state machine and the profile write back are condensed to the calls; see the
    disassembly 0x58af50 .. 0x58b8xx */
 
-int ai_Unk58af50(int a, int b)
+int lobby_ChoosePlayer(int a, int b)
 {
     char name[48];
     char buf[256];

@@ -6127,14 +6127,14 @@ G18LOG *ai_Unk4cd4c0()
 }
 /* 0x4cd500 */
 
-void ai_Unk4cd500()
+void cm_LobbyClearChat()
 {
     ai_Unk9363f4 = 0;
     ai_Unk6f0cd8 = 0;
 }
 /* 0x4cd510, all players of the list (ai_Unk936424[8]) have state 1 and their number is the one asked for */
 
-int ai_Unk4cd510()
+int cm_LobbyAllReady()
 {
     unsigned int n;
     int cnt = 0;
@@ -6171,7 +6171,7 @@ void ai_Unk4cd580(int a, int b)
 }
 /* 0x4cd5d0, the lobby's player list ai_Unk936420 (the count, then the eight player ids) */
 
-unsigned int *ai_Unk4cd5d0()
+unsigned int *cm_LobbyPlayerList()
 {
     return ai_Unk936420;
 }
@@ -6183,19 +6183,19 @@ char *ai_Unk4cd5e0(int id)
 }
 /* 0x4cd5f0, this player's lobby record (the one of the id ai_Unk9367d0) */
 
-CMLOBBYPLAYER *ai_Unk4cd5f0()
+CMLOBBYPLAYER *cm_LobbyMyPlayer()
 {
     return (CMLOBBYPLAYER *)ai_Unk4cd380(ai_Unk9367d0);
 }
 /* 0x4cd600, the lobby state: [0] the lobby is open (ai_Unk4cd580), [1] a lobby message came in (ai_Unk4cd870) */
 
-int *ai_Unk4cd600()
+int *cm_LobbyState()
 {
     return &ai_Unk936400;
 }
 /* 0x4cd610, sends the lobby message 0x5f kind 0 (asks for the player list); returns the send slot (cm_GetSlotState) */
 
-int ai_Unk4cd610()
+int cm_LobbyRequestList()
 {
     G17MSG m;
 
@@ -6206,7 +6206,7 @@ int ai_Unk4cd610()
 }
 /* 0x4cd650, kind 1: this player's ready flag v; returns the send slot */
 
-int ai_Unk4cd650(int v)
+int cm_LobbySetReady(int v)
 {
     G17MSG m;
 
@@ -6219,7 +6219,7 @@ int ai_Unk4cd650(int v)
 }
 /* 0x4cd6a0, kind 3: this player leaves the lobby; returns the send slot */
 
-int ai_Unk4cd6a0()
+int cm_LobbyLeave()
 {
     G17MSG m;
 
@@ -6232,7 +6232,7 @@ int ai_Unk4cd6a0()
 /* 0x4cd6e0, kind 6: a chat line (0x3f characters) of this player to the player id to (0: everybody); returns the
    send slot */
 
-int ai_Unk4cd6e0(int to, char *text)
+int cm_LobbySendChat(int to, char *text)
 {
     G17MSG m;
     struct {
@@ -6252,7 +6252,7 @@ int ai_Unk4cd6e0(int to, char *text)
 }
 /* 0x4cd760, kind 2: this player joins with the record p (its id is set here); returns the send slot */
 
-int ai_Unk4cd760(CMLOBBYPLAYER *p)
+int cm_LobbyJoin(CMLOBBYPLAYER *p)
 {
     G17MSG m;
 
@@ -6265,7 +6265,7 @@ int ai_Unk4cd760(CMLOBBYPLAYER *p)
 }
 /* 0x4cd7c0, kind 4: this player's changed record p (its id is set here); returns the send slot */
 
-int ai_Unk4cd7c0(CMLOBBYPLAYER *p)
+int cm_LobbyUpdatePlayer(CMLOBBYPLAYER *p)
 {
     G17MSG m;
 
@@ -7243,7 +7243,7 @@ void ai_Unk4cf670()
     ai_Unk6f22e8 = 0;
     d2_PointerLook = 0;
     if (dm_L.x > 0 && dm_L.x < d2_ScreenW && dm_L.y > 0 && dm_L.y < d2_ScreenH &&
-        ai_Unk5fe710 == -1) {
+        d2_PointerObj == -1) {
         ai_Unk6f22e8 = d3if_Pick((float)dm_L.x, (float)dm_L.y, 0x40, 1);
         if (ai_Unk6f22e8 == 0 && ai_Unk6f0d08 != 0) {
             if ((d3sm_PickK(sc, dm_L.x + 0x1a, dm_L.y + 0x1a, &py, &px) & 0xff) != -1) {
@@ -7285,7 +7285,7 @@ void ai_Unk4cf670()
     }
     if (n > 1)
         cur = 0x23;
-    if (ai_Unk6f22e8 != 0 && ai_Unk5fe710 == -1) {
+    if (ai_Unk6f22e8 != 0 && d2_PointerObj == -1) {
         if (strcmp(ai_Unk6f22e8, "sp_ESCAPE") == 0 && n != 0) {
             d2_PointerLook = 0x1c;
             ai_Unk6f0ce0 = ai_Unk6f22e8;
@@ -7330,7 +7330,7 @@ void ai_Unk4cf9c0()
 
     if (d2_ClickedId != -1) {
         for (e = ai_Unk930400; e < ai_Unk930400 + 0xc0; e += 0x20) {
-            if (G19_E(e, 8) != -1 && ai_Unk5fe710 == G19_E(e, 0)) {
+            if (G19_E(e, 8) != -1 && d2_PointerObj == G19_E(e, 0)) {
                 if (*(char **)(d2_ObjsC + G19_E(e, 0) * 0x2ec + 0x28) != 0)
                     *(char *)(*(char **)(e + 0x1c) + 0x188) = 1;
                 else
@@ -7471,7 +7471,7 @@ void ai_Unk4cfeb0()
             c[8] != 0)
             break;
     }
-    if (dm_L.lup != 0 && ai_Unk5fe710 == -1) {
+    if (dm_L.lup != 0 && d2_PointerObj == -1) {
         sel = ai_Unk6f22e8;
         if (sel != 0 && *(int *)(sel + 0x220) == 2) {
             o = *(char **)(sel + 0x200);
@@ -7728,7 +7728,7 @@ void ai_Unk4d0740(char *rec)
     if (dm_L.lhold == 0 && ai_Unk760440 != 0)
         sv_Unk52eed0();
     if (dm_L.lhold != 0 && dm_L.rdown == 0) {
-        if (ai_Unk760440 == 0 && di_Absolute != 0 && ai_Unk5fe710 == -1) {
+        if (ai_Unk760440 == 0 && di_Absolute != 0 && d2_PointerObj == -1) {
             ai_Unk4d08c0();
             sv_Unk52ee50();
         }
@@ -9616,7 +9616,7 @@ int ai_Unk4d4540(char *a)
             }
             if (d2_ClickedId == -1)
                 continue;
-            sel = ai_Unk5fe710;
+            sel = d2_PointerObj;
             if (sel == b4) {
                 sv_PopRequest = 1;
                 res = 1;
@@ -10227,7 +10227,7 @@ void ai_Unk4d6970(char *r)
     ai_Unk4ce300();
     ai_Unk4ce830();
     if (ai_Unk6f0d88 == 0 && ai_Unk6f0cf4 == 0) {
-        if (d2_ClickedId != -1 && ai_Unk5fe710 == ai_Unk60cb68) {
+        if (d2_ClickedId != -1 && d2_PointerObj == ai_Unk60cb68) {
             q = ai_Unk4cdf00(r, ai_Unk6f0d74);
             memcpy(sl, q, 0x2c);
             sl[0] = *(int *)(ai_Unk6f0d74 + 4);
@@ -11268,8 +11268,8 @@ int ai_Unk4da9e0(char *a, char *b, char *c, int *out)
         else if (d2_ClickedId != -1) {
             r = 0;
             sv_PopRequest = 1;
-            if (ai_Unk5fe710 != b1)
-                r = (ai_Unk5fe710 != b3) + 1;
+            if (d2_PointerObj != b1)
+                r = (d2_PointerObj != b3) + 1;
         }
     }
     d2_CloseView(v);
@@ -11319,7 +11319,7 @@ int ai_Unk4dab50(int a, char *b, int *c, int *out)
             sv_PopRequest = 1;
         else if (d2_ClickedId != -1) {
             for (i = 0; i < n; i++) {
-                if (ai_Unk5fe710 == btn[i]) {
+                if (d2_PointerObj == btn[i]) {
                     res = *(int *)(cand[i] + 4);
                     sv_PopRequest = 1;
                     break;
@@ -11813,7 +11813,7 @@ void ai_Unk4dd960(char *r, int *m)
                 sv_PopRequest = 1;
             else if (d2_ClickedId != -1) {
                 for (i = 0; i < 3; i++)
-                    if (ai_Unk5fe710 == sel[i])
+                    if (d2_PointerObj == sel[i])
                         break;
                 if (i < 3)
                     *(int *)(r + 0x94) = btn[i];
@@ -11928,11 +11928,11 @@ void ai_Unk4dd960(char *r, int *m)
                 sv_PopRequest = 1;
             else if (d2_ClickedId != -1) {
                 sv_PopRequest = 1;
-                if (ai_Unk5fe710 == sel[0])
+                if (d2_PointerObj == sel[0])
                     *(int *)(r + 0x94) = n;
-                else if (ai_Unk5fe710 == sel[1])
+                else if (d2_PointerObj == sel[1])
                     *(int *)(r + 0x94) = n + 1;
-                else if (ai_Unk5fe710 == sel[2])
+                else if (d2_PointerObj == sel[2])
                     *(int *)(r + 0x94) = n + 2;
             }
         }
@@ -12479,11 +12479,11 @@ void ai_Unk4dfdd0(char *m)
     while (sv_RunFrame(ai_Unk4dfdd0, ai_Unk60d360) != 0) {
         ai_Unk4cee20();
         if (d2_ClickedId != -1) {
-            if (ai_Unk5fe710 == b1)
+            if (d2_PointerObj == b1)
                 m[0x94] = 2;
-            else if (ai_Unk5fe710 == b2)
+            else if (d2_PointerObj == b2)
                 m[0x94] = 3;
-            else if (ai_Unk5fe710 == b3)
+            else if (d2_PointerObj == b3)
                 m[0x94] = 4;
             sv_PopRequest = 1;
         }

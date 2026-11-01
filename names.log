@@ -149,3 +149,25 @@
 2026-11-01T08:45:24 0x00fd7f78 data ai_Unkfd7f78 -> d3_Scene0Flags by:main why:d3_Scenes[0] + 0x3d8 = D3IFSCENE.sceneFlags (d3_interface.h), the saved d3_SceneFlags of scene 0; its low byte (rd_BuildRoad tests bit 2)
 2026-11-01T09:24:37 0x00602d70 data ai_Unk602d70 -> snd_BuildingTracks by:main why:0x602d70: the building music table by kind / room / season read by snd_EnterBuilding; 0x6f0a60: the 256-byte text snd_EnterBuilding sprintf's 'Starting/Resuming location-track %s' into
 2026-11-01T09:24:37 0x006f0a60 data ai_Unk6f0a60 -> snd_DebugText by:main why:0x602d70: the building music table by kind / room / season read by snd_EnterBuilding; 0x6f0a60: the 256-byte text snd_EnterBuilding sprintf's 'Starting/Resuming location-track %s' into
+2026-11-01T10:01:50 0x004cd500 func ai_Unk4cd500 -> cm_LobbyClearChat by:main why:resets the lobby chat ring that 0x4cd3c0 fills (message 0x5f handler 0x4cd870)
+2026-11-01T10:01:50 0x004cd510 func ai_Unk4cd510 -> cm_LobbyAllReady by:main why:nonzero when every lobby player is ready; the lobby screen pops on it
+2026-11-01T10:01:50 0x004cd5d0 func ai_Unk4cd5d0 -> cm_LobbyPlayerList by:main why:returns the lobby player list ai_Unk936420 (count, then ids) the lobby screen stores in lobby_List
+2026-11-01T10:01:50 0x004cd5f0 func ai_Unk4cd5f0 -> cm_LobbyMyPlayer by:main why:returns this player's CMLOBBYPLAYER record (lobby_Me)
+2026-11-01T10:01:50 0x004cd600 func ai_Unk4cd600 -> cm_LobbyState by:main why:returns the lobby state block ai_Unk936400 whose [1] the 0x5f handler sets on every message
+2026-11-01T10:01:50 0x004cd610 func ai_Unk4cd610 -> cm_LobbyRequestList by:main why:sends lobby request kind 0 (the player list), returns the send slot
+2026-11-01T10:01:50 0x004cd650 func ai_Unk4cd650 -> cm_LobbySetReady by:main why:sends lobby request kind 1 with the ready flag, returns the send slot
+2026-11-01T10:01:50 0x004cd6a0 func ai_Unk4cd6a0 -> cm_LobbyLeave by:main why:sends lobby request kind 3 (leave), called by the leave button
+2026-11-01T10:01:50 0x004cd6e0 func ai_Unk4cd6e0 -> cm_LobbySendChat by:main why:sends lobby request kind 6 (to, text): the chat line of the lobby input
+2026-11-01T10:01:50 0x004cd760 func ai_Unk4cd760 -> cm_LobbyJoin by:main why:sends lobby request kind 2 with the player record lobby_Player on entering the lobby
+2026-11-01T10:01:50 0x004cd7c0 func ai_Unk4cd7c0 -> cm_LobbyUpdatePlayer by:main why:sends lobby request kind 4 with the changed player record after the pickers
+2026-11-01T10:01:50 0x00589f10 func ai_Unk589f10 -> lobby_Screen by:main why:the network lobby screen "menu\netlobby" with its frame loop
+2026-11-01T10:01:50 0x0058a940 func ai_Unk58a940 -> lobby_AddButtons by:main why:creates the lobby form's button rows (lobby_Buttons, lobby_LeaveButton)
+2026-11-01T10:01:50 0x0058a9d0 func ai_Unk58a9d0 -> lobby_AddChatScroll by:main why:creates the chat scroll of the lobby form
+2026-11-01T10:01:50 0x0058aa30 func ai_Unk58aa30 -> lobby_ShowCity by:main why:shows the city of the lobby game on the lobby form
+2026-11-01T10:01:50 0x0058aba0 func ai_Unk58aba0 -> lobby_ShowMyPlayer by:main why:shows this player's record (lobby_Me) on the lobby form
+2026-11-01T10:01:50 0x0058ad20 func ai_Unk58ad20 -> lobby_FetchPlayers by:main why:reads the player list into lobby_List
+2026-11-01T10:01:50 0x0058ada0 func ai_Unk58ada0 -> lobby_ShowPlayers by:main why:fills the player list rows lobby_Rows
+2026-11-01T10:01:50 0x0058af50 func ai_Unk58af50 -> lobby_ChoosePlayer by:main why:the player / city picker Menu\CHOOSEPLAYER of the lobby
+2026-11-01T10:01:50 0x0058b880 func ai_Unk58b880 -> lobby_ChooseProfession by:main why:the profession picker Menu\CHOOSEPROFESSION of the lobby
+2026-11-01T10:01:50 0x0058ba70 func ai_Unk58ba70 -> lobby_ShowChat by:main why:shows the chat lines on the lobby form
+2026-11-01T10:01:52 0x005fe710 data ai_Unk5fe710 -> d2_PointerObj by:main why:0x5fe710: d2.h already names it d2_PointerObj (the object under the pointer / clicked control)

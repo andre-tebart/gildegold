@@ -40,7 +40,7 @@ extern int gm_PlayerRecords[688];
 
 extern OPTIONBYTES ai_GfxDetail, ai_GfxFloor, ai_GfxSet, ai_GfxFog, ai_GfxResolution, ai_GameSwitches, ai_GamePanel, ai_OptionPanelHelp;
 /* full rebuild: the symbols whose original addresses the code above spells literally */
-extern int ai_Unk5fe710;
+extern int d2_PointerObj;
 
 extern struct D2OBJ *d2_Objs;              /* 0xf8f080, d2.h: D2OBJ * */
 extern struct D2WIN *d2_LastWindowPtr;     /* 0x6ed980, d2.h: the window a screen works in (created last) */
@@ -216,7 +216,7 @@ int ai_FilePickWindow(int param_1, int param_2, int param_3, int param_4, int pa
             U_I((unsigned)&sv_PopRequest) = 1;
         if (U_I(((unsigned)&dm_L + 0x18)) != 0) {
             for (i = 0; i < n; i++) {
-                if (U_I((unsigned)&ai_Unk5fe710) == ((int *)(list + i * 0x210))[0]) {
+                if (U_I((unsigned)&d2_PointerObj) == ((int *)(list + i * 0x210))[0]) {
                     if (flag == 0) {
                         d2_SetObjValue(x14, (int)(list + i * 0x210 + 9));
                     } else {
@@ -228,7 +228,7 @@ int ai_FilePickWindow(int param_1, int param_2, int param_3, int param_4, int pa
                 }
             }
         }
-        if (U_I((unsigned)&d2_ClickedId) != -1 && U_I((unsigned)&ai_Unk5fe710) == cancel) {
+        if (U_I((unsigned)&d2_ClickedId) != -1 && U_I((unsigned)&d2_PointerObj) == cancel) {
             if (flag == 0) {
                 i = d2_GetObjValue(x14, param_5);
                 sprintf(param_6, "%s\\%s%s", param_4, i, param_5);

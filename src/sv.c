@@ -1675,7 +1675,7 @@ int sv_Unk524900(char *c, int *out)
     return n;
 }
 
-extern int ai_Unk5fe710;  /* 0x5fe710 */
+extern int d2_PointerObj;  /* 0x5fe710 */
 extern int ai_Unk7662c0;
 extern char ai_Unk6f2368;
 int d2_CreateChildWindow(short x, short y, short w, short h, unsigned int flags, int win);                     /* 0x472aa0 */
@@ -1782,7 +1782,7 @@ void sv_Unk524990(unsigned char *g)
     }
     for (p = &ai_Unk75f280[4 + 1]; (int)p < ((unsigned)&ai_Unk75f280 + 0x510); p += 10) {
         id = *p;
-        if (d2_ClickedId != -1 && id != 0xffff && ai_Unk5fe710 == p[-4]) {
+        if (d2_ClickedId != -1 && id != 0xffff && d2_PointerObj == p[-4]) {
             if (*(int *)(d2_Objs + 0x28 + p[-4] * 0x2ec) == 0)
                 ai_Chars[id][0x188] = 0;
             else {
@@ -3370,7 +3370,7 @@ extern int ai_Unk623880;  /* 0x623880 */
 extern int ai_Unk6f2334;  /* 0x6f2334 */
 extern unsigned char ai_GameState;  /* 0x6f25ac */
 extern char ai_Unk6f2338;  /* 0x6f2338 */
-extern int ai_Unk5fe710;  /* 0x5fe710 */
+extern int d2_PointerObj;  /* 0x5fe710 */
 extern char *ai_Unk7662c0p;
 extern unsigned short * ai_Unk75ec5c;
 extern int ai_Unk6f23bc, ai_Unk6f23c0, ai_Unk6f23c4, ai_Unk6f23c8, ai_Unk6f23cc, ai_Unk6f23d0, ai_Unk6f23d4, ai_Unk6f23d8, ai_Unk6f2294, ai_BuildingPerms, ai_Unk6f2320;  /* 0x6f23bc, 0x6f23c0, 0x6f23c4, 0x6f23c8, 0x6f23cc, 0x6f23d0, 0x6f23d4, 0x6f23d8, 0x6f2294, 0x6f231c, 0x6f2320 */
@@ -3516,7 +3516,7 @@ void sv_Unk529380(void)
             tr = ai_Unk75ec5c;
             if (ai_Goods[*tr * 0x41] != 0x1d)
                 return;
-            if (ai_Unk623890 != -1 && d2_ClickedId != -1 && ai_Unk5fe710 == ai_Unk623890 && (sv_FrameMask & 0x2000) != 0) {
+            if (ai_Unk623890 != -1 && d2_ClickedId != -1 && d2_PointerObj == ai_Unk623890 && (sv_FrameMask & 0x2000) != 0) {
                 rt_Unk4bf5b0(tr);
                 tr = ai_Unk75ec5c;
             }
@@ -3843,9 +3843,9 @@ void sv_Unk522f10(unsigned char a, int b)
             d2_EnableObject(ai_Unk6238a4, 0);
             SV_I((unsigned)&full_data_6f2364) = 0;
         }
-        if (d2_ClickedId != -1 && ai_Unk5fe710 == ai_Unk6238a4)
+        if (d2_ClickedId != -1 && d2_PointerObj == ai_Unk6238a4)
             SV_I((unsigned)&full_data_6f2364) = SV_I((unsigned)&full_data_6f2364) == 0;
-        if (SV_I((unsigned)&full_data_623e90) != SV_I((unsigned)&full_data_625718) || (d2_ClickedId != -1 && ai_Unk5fe710 == ai_Unk6238a4)) {
+        if (SV_I((unsigned)&full_data_623e90) != SV_I((unsigned)&full_data_625718) || (d2_ClickedId != -1 && d2_PointerObj == ai_Unk6238a4)) {
             if (SV_I((unsigned)&full_data_6f2364) != 0) {
                 d2_SetForm(SV_I((unsigned)&full_data_6faa60), 0);
                 d2_MoveObj(SV_S(((unsigned)&d2_Wins + 0x6) + d2_LastWindow * 0x3c4), d2_ScreenW - 0x1d - (SV_I((unsigned)&full_data_625718) << 5), SV_I(((unsigned)&ai_Unkf8f13c + 0x250) + d2_LastWindow * 0x3c4));
@@ -4060,8 +4060,8 @@ void sv_UpdatePanel(void)
     if (fl == 0) {
 l260:
         if (d2_ClickedId != -1) {
-            if (SV_I((unsigned)&ai_Unk62388c) == -1 || ai_Unk5fe710 != SV_I((unsigned)&ai_Unk62388c) || fl == 0) {
-                if (SV_I((unsigned)&ai_Unk623888) != -1 && ai_Unk5fe710 == SV_I((unsigned)&ai_Unk623888) && fl != 0 && ai_Unk5763c0(0x80) == 1) {
+            if (SV_I((unsigned)&ai_Unk62388c) == -1 || d2_PointerObj != SV_I((unsigned)&ai_Unk62388c) || fl == 0) {
+                if (SV_I((unsigned)&ai_Unk623888) != -1 && d2_PointerObj == SV_I((unsigned)&ai_Unk623888) && fl != 0 && ai_Unk5763c0(0x80) == 1) {
                     q = st;
                     for (c = 0x14; c != 0; c--)
                         *q++ = 0;
@@ -4084,7 +4084,7 @@ l260:
             }
         }
     } else if (d2_ClickedId != -1) {
-        if (SV_I((unsigned)&ai_Unk623894) == -1 || ai_Unk5fe710 != SV_I((unsigned)&ai_Unk623894))
+        if (SV_I((unsigned)&ai_Unk623894) == -1 || d2_PointerObj != SV_I((unsigned)&ai_Unk623894))
             goto l260;
         p = (unsigned char *)SV_I((unsigned)&ai_PlayerBuilding);
         if (p == 0) {
@@ -4224,7 +4224,7 @@ void sv_Unk52a680(void)
         || SV_I((unsigned)&sv_ViewRectBottom) <= SV_I((unsigned)&full_data_623e9c) || d2_HitWindow != -1 || SV_I((unsigned)&d2_HitUnderPointer) != -1
         || ((SV_C((unsigned)&ai_Unk6f22e8) = d3if_Pick((float)SV_I((unsigned)&full_data_623e98), (float)SV_I((unsigned)&full_data_623e9c), 0x20, 1)) == 0
             && (SV_C((unsigned)&ai_Unk6f22e8) = d3if_Pick((float)SV_S((unsigned)&dm_L), (float)SV_S(((unsigned)&dm_L + 0x2)), 0x40, 1)) == 0)) {
-        if (ai_Unk5fe710 == -1 || (SV_B(SV_I((unsigned)&d2_Objs) + 0x1c0 + ai_Unk5fe710 * 0x2ec) & 0x40) == 0)
+        if (d2_PointerObj == -1 || (SV_B(SV_I((unsigned)&d2_Objs) + 0x1c0 + d2_PointerObj * 0x2ec) & 0x40) == 0)
             SV_B((unsigned)&ai_Unkf8aae0) = 0;
         if (SV_I((unsigned)&d2_PointerSprite) != -1) {
             d2_FreeAnim(SV_I((unsigned)&d2_PointerSprite));
@@ -5530,11 +5530,11 @@ l9f2:
         *(char *)(unsigned)&kb_Last = 0;
         return;
     }
-    if (SV_I(((unsigned)&dm_L + 0x20)) != 0 && ai_Unk5fe710 != -1) {
+    if (SV_I(((unsigned)&dm_L + 0x20)) != 0 && d2_PointerObj != -1) {
         i = 0;
         p = (int *)(unsigned)&full_data_6faa84;
         do {
-            if (*p != -1 && p != (int *)4 && ai_Unk5fe710 == *(int *)(SV_I((unsigned)&d2_Objs) + *p * 0x2ec)) {
+            if (*p != -1 && p != (int *)4 && d2_PointerObj == *(int *)(SV_I((unsigned)&d2_Objs) + *p * 0x2ec)) {
                 *(int *)(SV_I((unsigned)&full_data_6faa80 + i * 12) + 0x70) = -1;
                 SV_I((unsigned)&full_data_6f2630) = 0;
                 di_ClearButtons();
@@ -6425,9 +6425,9 @@ void sv_Unk52f600(int bk)
                 p++;
             } while (i < *(char *)(bk + 0x271));
         }
-        if (*(int *)(bk + 0x26c) != -1 && ai_Unk5fe710 == *(int *)(bk + 0x26c) && SV_I(((unsigned)&dm_L + 0xc)) != 0)
+        if (*(int *)(bk + 0x26c) != -1 && d2_PointerObj == *(int *)(bk + 0x26c) && SV_I(((unsigned)&dm_L + 0xc)) != 0)
             sv_Unk52fa00((int *)bk);
-        if (*(int *)(bk + 0x268) != -1 && ai_Unk5fe710 == *(int *)(bk + 0x268) && SV_I(((unsigned)&dm_L + 0xc)) != 0)
+        if (*(int *)(bk + 0x268) != -1 && d2_PointerObj == *(int *)(bk + 0x268) && SV_I(((unsigned)&dm_L + 0xc)) != 0)
             sv_Unk52f9f0((int *)bk);
         i = (int)*(char *)(bk + 0x270) + SV_B((unsigned)&full_data_6f23f0);
         if (i < *(char *)(bk + 0x271)) {
@@ -6739,7 +6739,7 @@ int sv_Unk52fe10(void)
         if (SV_I(((unsigned)&dm_L + 0x20)) != 0 || *(char *)(unsigned)&kb_Last == 1)
             SV_I((unsigned)&sv_PopRequest) = 1;
         d2_FocusInput(ed);
-        if ((SV_I((unsigned)&d2_ClickedId) != -1 || *(char *)(unsigned)&kb_Last == 0x1c) && (ai_Unk5fe710 == w || *(char *)(unsigned)&kb_Last == 0x1c)) {
+        if ((SV_I((unsigned)&d2_ClickedId) != -1 || *(char *)(unsigned)&kb_Last == 0x1c) && (d2_PointerObj == w || *(char *)(unsigned)&kb_Last == 0x1c)) {
             for (k = 0; k < 8; k++) {
                 if (ids[k] != -1 && d2_GetObjValue(ids[k]) != 0)
                     ids[k + 8] = *(int *)(*(int *)(SV_I((unsigned)&d2_Objs) + 0x2e8 + ids[k] * 0x2ec) + 4);
@@ -7135,7 +7135,7 @@ l64:
         if ((mask & 0x10) == 0) {
             if (SV_I(((unsigned)&dm_L + 0x28)) != 0)
                 goto l2;
-            if (ai_Unk5fe710 == -1 || (SV_B(SV_I((unsigned)&d2_Objs) + 0x1c0 + ai_Unk5fe710 * 0x2ec) & 0x40) == 0)
+            if (d2_PointerObj == -1 || (SV_B(SV_I((unsigned)&d2_Objs) + 0x1c0 + d2_PointerObj * 0x2ec) & 0x40) == 0)
                 d2_CopyCaption(ch_EmptyName);
             SV_I((unsigned)&ai_Unk6f22e8) = 0;
             SV_I((unsigned)&full_data_6f22f0) = 0;
@@ -7227,23 +7227,23 @@ l2:
             ai_Unk589c90();
         if (ai_PlayerId == 0xffff || SV_B(((unsigned)&ai_CharInts + 0x4) + ai_PlayerId * 0x21c) == 0) {
             if (SV_I((unsigned)&d2_ClickedId) != -1
-                && (ai_Unk5fe710 == ai_Unk623848 || ai_Unk5fe710 == ai_Unk623824 || ai_Unk5fe710 == ai_Unk62382c || ai_Unk5fe710 == ai_Unk623830 || ai_Unk5fe710 == ai_Unk623828
-                    || ai_Unk5fe710 == ai_Unk623820))
+                && (d2_PointerObj == ai_Unk623848 || d2_PointerObj == ai_Unk623824 || d2_PointerObj == ai_Unk62382c || d2_PointerObj == ai_Unk623830 || d2_PointerObj == ai_Unk623828
+                    || d2_PointerObj == ai_Unk623820))
                 sv_SetStatusText(SV_C((unsigned)&full_data_143a3e4));
         } else if (SV_I((unsigned)&d2_ClickedId) != -1) {
-            if (ai_Unk5fe710 == ai_Unk623848)
+            if (d2_PointerObj == ai_Unk623848)
                 ai_Unk5c8640();
-            else if (ai_Unk5fe710 == ai_Unk623824)
+            else if (d2_PointerObj == ai_Unk623824)
                 ai_Unk5c82f0();
-            else if (ai_Unk5fe710 == ai_Unk62382c)
+            else if (d2_PointerObj == ai_Unk62382c)
                 ai_Unk5bac10();
-            else if (ai_Unk5fe710 == ai_Unk623830)
+            else if (d2_PointerObj == ai_Unk623830)
                 ai_Unk5bcc70();
-            else if (ai_Unk5fe710 == ai_Unk623828)
+            else if (d2_PointerObj == ai_Unk623828)
                 ai_Unk5c7f00();
-            else if (ai_Unk5fe710 == ai_Unk623834)
+            else if (d2_PointerObj == ai_Unk623834)
                 ai_MessageFilterScreen();
-            else if (ai_Unk5fe710 == ai_Unk623820)
+            else if (d2_PointerObj == ai_Unk623820)
                 ai_Unk5c4150(SV_I((unsigned)&ai_CharInts + ai_PlayerId * 0x21c), 0x11, 0, 0x657c7);
         }
     }
@@ -7349,7 +7349,7 @@ extern int ai_Unkfba9c0[168];
 int ai_Unk5fcc78 = 1128792064;  /* 0x5fcc78 */
 int ai_Unk5fcc7c = 1128792064;  /* 0x5fcc7c */
 int ai_Unk5fcc80 = 1128792064;  /* 0x5fcc80 */
-int ai_Unk5fe710 = -1;  /* 0x5fe710 */
+int d2_PointerObj = -1;  /* 0x5fe710 */
 float sv_FramesPerTick = 30.0f;  /* 0x62378c */
 int sv_TickFrames = 30;  /* 0x623790, the frames drawn since the last timer tick (counted by the frame loop) */
 char ai_Unk623794[] = "\377\376\005\005%\377\377/\021\005\377\030\3746\343\377\231\005\005\377\366z\005\005\266W\377<\005P\031H\005\013\304^\305\005g\357\234\231\005\010r";  /* 0x623794, the table of */
