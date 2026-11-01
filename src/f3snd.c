@@ -11,6 +11,32 @@
 /* d3_Time * 13, spelled so that the volatile is read three times */
 #define F3SND_TIME ((d3_Time << 3) + (d3_Time << 2) + d3_Time)
 
+/* The engine's inline-asm fill (as D3FL_FILL in d3_fl.h): size and value through temps (declared in
+   this order), the destination named directly in the asm. */
+#define F3SND_CAT(a, b) a##b
+#define F3SND_LABEL(n) F3SND_CAT(f3snd_fill_tail, n)
+#define F3SND_FILL(dvar, val, size) {                               \
+    int _fn = (size); int _fv = (val);                              \
+    __asm mov edi, dvar                                             \
+    __asm mov eax, _fv                                              \
+    __asm mov ebx, _fn                                              \
+    __asm mov ah, al                                                \
+    __asm shl eax, 16                                               \
+    __asm mov ecx, eax                                              \
+    __asm shr ecx, 16                                               \
+    __asm add eax, ecx                                              \
+    __asm lea ecx, [edi+edi*2]                                      \
+    __asm and ecx, 3                                                \
+    __asm sub ebx, ecx                                              \
+    __asm jle F3SND_LABEL(__LINE__)                                 \
+    __asm rep stosb                                                 \
+    __asm mov ecx, ebx                                              \
+    __asm and ebx, 3                                                \
+    __asm shr ecx, 2                                                \
+    __asm rep stosd                                                 \
+    __asm F3SND_LABEL(__LINE__): add ecx, ebx                       \
+    __asm rep stosb                                                 \
+}
 /* stdlib min / max (the body ai.h defines; f3snd cannot include ai.h, its AITIME ai_Time view differs) */
 #ifndef min
 #define min(a, b) (((a) < (b)) ? (a) : (b))
@@ -73,7 +99,7 @@ int snd_AddToQueue(char *smp, unsigned int delay)
     if (smp != 0) {
         s = mem_Alloc(0x10, "f3snd: snd_AddToQueue");
         if (s != 0) {
-            memset(s, 0, 0x10);
+            F3SND_FILL(s, 0, 0x10);
             sb_SetRestartC(smp, 1);
             s->smp = smp;
             s->delay = delay;
