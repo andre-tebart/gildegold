@@ -25,6 +25,9 @@ extern unsigned char txt_Keys;  /* @original ai_Unk498c70 (0x498c70, byte) tests
 
 int gm_TitleJob(int i, int p);        /* 0x5044b0, @original: the byte-matched callers (ai_Unk49ed10, ai_Unk498c70) read the result without the unsigned char mask (no `and eax,0xff` after the call) */
 
+#include "hst.h"
+#include "unk_4a7140.h"
+#include "unk_4b39f0.h"
 int ai_Unk5ffd1c = -1;                  /* 0x5ffd1c */
 G6RING * ai_Unk60034c = ai_Unkf83c20;  /* 0x60034c, the next entry */
 int ai_Unk600350 = 1;  /* 0x600350, the step */
@@ -51,6 +54,13 @@ int ai_Unkf86900[73] = {0};  /* 0xf86900, the actions being evaluated */
 
 #include "time_view.h"
 #include "ls.h"
+#include "gv.h"
+#include "he.h"
+#include "io_text.h"
+#include "main.h"
+#include "sv.h"
+#include "tr.h"
+#include "unk_58bbd0.h"
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, ai_Unk4d88c0 0x4d88c0 move it as a word / movzx) */
 #define d3t_GetObjectBoundsV ((void (*)(void *, void *, void *))d3t_GetObjectBounds)  /* 0x413150 (d3_tools.c: D3VECTOR *, D3VECTOR *, D3OBJECT *): this unit's untyped view */
 #define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (f3gm.c: char *) as the AIGOOD records it points to */
