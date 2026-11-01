@@ -26,8 +26,6 @@ extern int d2_TextCursorSprite;            /* 0x5febe8, sprite of the text curso
 extern int d2_Unk5febec;            /* 0x5febec */
 extern int d2_DragStartValue;            /* 0x6ed9c4 */
 extern void *d2_PointerPic;          /* 0x6ed9cc, "_MOUSE_CURSOR" data */
-extern short d2_PointerLook;          /* 0x6ed9d0 */
-extern int d2_CutsceneActive;            /* 0x6ed9d4 */
 extern int d2_Unk6ed9e4;            /* 0x6ed9e4 */
 extern int d2_DragStartX;            /* 0x6ed9e8 */
 extern int d2_DragStartY;            /* 0x6ed9ec */
@@ -44,7 +42,6 @@ extern D2SLOT d2_ItemListSurf256;         /* 0xf8aa90 */
 extern D2SLOT d2_ItemListSurf128[3];      /* 0xf8aaa0 */
 extern int d2_Unkf8aac8;            /* 0xf8aac8 */
 extern int d2_Unkf8aacc;            /* 0xf8aacc */
-extern int d2_HitWindow;            /* 0xf8aad0 */
 extern int d2_TextCursorX;            /* 0xf8aad4 */
 extern int d2_TextCursorY;            /* 0xf8aad8 */
 extern void *d2_ItemListSurf64;          /* 0xf8aadc */
