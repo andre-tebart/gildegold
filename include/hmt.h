@@ -80,7 +80,7 @@ int hmt_RandomHeadIcon(void);                                                   
 #ifndef DATA_VIEWS_H
 extern char ai_Unkf42400;                                                        /* 0xf42400 */
 #endif
-int hmt_Load(void *f);                                                           /* 0x4ada80 */
+int hmt_Load(void *f, int version);                                              /* 0x4ada80, version: the save game's (ls_LoadGame passes ls_Version; unread) */
 int hmt_Save(VFSFILE *f);                                                        /* 0x4adb20 */
 extern char ch_EmptyName[];                                                      /* 0x631090, "" */
 #endif

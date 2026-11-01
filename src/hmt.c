@@ -653,7 +653,7 @@ void hmt_Unk4ad580(void)
 }
 /* 0x4ada80, loads the hmt state from the savegame f; on failure it is reset; 1 or 0 @deep code hunks 8: the original's success return is out of line (jne over the success block), ours returns inline (je); if / else with an empty then tried before, no change (match-deep) */
 
-int hmt_Load(void *f)
+int hmt_Load(void *f, int version)
 {
     if (ls_Read(&hmt_CurrentPerson, 4, 1, f) && ls_Read(&hmt_Person, 4, 1, f)
         && ls_Read(&hmt_CurrentEvent, 4, 1, f) && ls_Read(&hmt_Event, 4, 1, f)

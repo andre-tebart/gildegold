@@ -56,7 +56,6 @@ int unk_Unk4f28d0();                     /* 0x4f28d0 */
 int ai_Unk4b62e0();                     /* 0x4b62e0 */
 int ai_Unk589aa0();                     /* 0x589aa0 */
 int ai_Unk5a8940();                     /* 0x5a8940 */
-int hmt_Save();                     /* 0x4adb20 */
 
 #define LS_W(p, sz) if (vfs_fwrite((p), (sz), 1, f) <= 0) return 0;
 #include "rd_types.h"                 /* G15BK */
@@ -94,6 +93,7 @@ extern char hst_Key[];                 /* 0xf83520, the history key ("G12", 0x20
 #include "d3_sm.h"
 #include "unk_5d33b0.h"
 #include "dd_vesa.h"
+#include "hmt.h"
 int ai_LoadWind();                     /* 0x5dc0c0 */
 int unk_Unk4ed910();                     /* 0x4ed910 */
 
