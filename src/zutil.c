@@ -6,6 +6,7 @@
 /* @(#) $Id$ */
 
 #include "zutil.h"
+#include "ch.h"
 
 struct internal_state      {int dummy;}; /* for buggy compilers */
 
@@ -13,7 +14,6 @@ struct internal_state      {int dummy;}; /* for buggy compilers */
 extern void exit OF((int));
 #endif
 
-extern char ch_EmptyName[];      /* 0x631090 (ch.h), the shared empty string: the original pools "" into it */
 
 /* 0x5fe570 */
 const char *z_errmsg[10] = {
