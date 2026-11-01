@@ -9537,7 +9537,7 @@ void ai_Unk589410(void)
     }
 }
 
-char * gm_FindBuildingById(int id); int gm_FindObjectInst(int id); unsigned unk_Unk503530(unsigned p1, unsigned char *b, unsigned short *o, int c);
+char * gm_FindBuildingById(int id); int gm_FindObjectInst(int id); unsigned gm_PermissionBits(unsigned p1, unsigned char *b, unsigned short *o, int c);
 
 /* 0x589450, validates the 12-byte slots 0x6f5ec4 .. 0x6f5f4c (113 B): a slot's +0 (not -1) through
    0x502020 (id): 0 -> 0x589400 (the slot); else the +4 value through 0x4fe980: 0 while +4 is not -1 ->
@@ -9561,7 +9561,7 @@ void ai_Unk589450(void)
             ai_Unk589400((int *)(p - 8));
             continue;
         }
-        if ((unk_Unk503530(*(unsigned short *)(unsigned)&ai_PlayerId, id, e, 0) & 1) == 0)
+        if ((gm_PermissionBits(*(unsigned short *)(unsigned)&ai_PlayerId, id, e, 0) & 1) == 0)
             ai_Unk589400((int *)(p - 8));
     }
 }

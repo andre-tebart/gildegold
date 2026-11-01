@@ -3224,7 +3224,7 @@ void d2_SetObjFont();                     /* 0x4760b0 */
 void d2_SetObjWidth(int obj, short w);                     /* 0x46c260 */
 int gm_BuildingLevel();                     /* 0x508d70 */
 int d2_WinOpenSlider(int x, int y, int len, int p4, int p5, int pic, unsigned int flags, int win);                     /* 0x46a960 */
-unsigned unk_Unk503530(unsigned p1, unsigned char *b, unsigned short *o, int c);                     /* 0x503530 */
+unsigned gm_PermissionBits(unsigned p1, unsigned char *b, unsigned short *o, int c);                     /* 0x503530 */
 unsigned short * gm_Unk50a050(unsigned short *p);                     /* 0x50a050 */
 int gm_Unk508cc0();                     /* 0x508cc0 */
 int sv_Unk528800(int x, int y, int text);
@@ -3337,7 +3337,7 @@ void sv_Unk528860(unsigned char *o)
     if ((o[0x5a] & 1) == 0 && *o != 0x47 && *o != 0x1d && *o != 0x57) {
         k = gm_BuildingClass(*o);
         b = ai_BTypes + *o * 0x24d;
-        fl = unk_Unk503530(ai_PlayerId, o, 0, 0);
+        fl = gm_PermissionBits(ai_PlayerId, o, 0, 0);
         v = ai_Unk1441f6c;
         if (*(short *)(o + 0x27) != (short)ai_PlayerId && *(short *)(o + 0x25) != (short)ai_PlayerId && (fl & 0x10) == 0)
             v = ai_Unk1441f74;
@@ -3387,7 +3387,7 @@ void sv_Unk528b80(unsigned short *p)
         *(int *)(d2_Objs + 0x4c + w * 0x2ec) = 1;
         if (b != 0 && ((c = ai_Goods[*p * 0x41]) == 2 || c == 6)) {
             owner = (short *)gm_Unk50a050(p);
-            fl = unk_Unk503530(ai_PlayerId, b, 0, 0);
+            fl = gm_PermissionBits(ai_PlayerId, b, 0, 0);
             if ((*owner == (short)ai_PlayerId || (fl & 0x10) != 0) && gm_Unk508cc0(b, p, 0) != 0)
                 ai_Unk623894 = sv_Unk528800(0, 0x8c, ai_Unk1441f78);
             ai_Unk623888 = sv_Unk528800(0, 0xa6, ai_Unk1441f7c);
@@ -4085,7 +4085,7 @@ int ai_Unk5763c0();                     /* 0x5763c0 */
 void ai_Unk576040(int a, int b, int c, int d);                     /* 0x576040 */
 int ai_AmountMenu();                     /* 0x5c1130 */
 int gm_BuildingClass(int kind);                /* 0x501d80, f3gm.c, the class of a building kind */
-unsigned unk_Unk503530(unsigned p1, unsigned char *b, unsigned short *o, int c);                     /* 0x503530 */
+unsigned gm_PermissionBits(unsigned p1, unsigned char *b, unsigned short *o, int c);                     /* 0x503530 */
 int ai_TransportWindow();                     /* 0x5af1d0 */
 int ai_Unk5b8fc0();                     /* 0x5b8fc0 */
 int ai_Unk5b84f0();                     /* 0x5b84f0 */
@@ -4133,7 +4133,7 @@ l260:
             } else if (SV_I((unsigned)&sv_SelectedObject) != 0 && *(unsigned char *)SV_I((unsigned)&sv_SelectedObject) != 0x47) {
                 c = gm_BuildingClass(*(unsigned char *)SV_I((unsigned)&sv_SelectedObject));
                 if ((c == 1 || c == 2 || c == 4 || c == 7 || c == 8 || (k = ai_BTypes[*p * 0x24d]) == 0x10 || k == 0x1e) && ai_Unk5763c0(0x400) == 1) {
-                    SV_I((unsigned)&ai_BuildingPerms) = unk_Unk503530(ai_PlayerId, p, 0, 0);
+                    SV_I((unsigned)&ai_BuildingPerms) = gm_PermissionBits(ai_PlayerId, p, 0, 0);
                     ai_Unk576040(0x12, p, 0, 0);
                     ai_TransportWindow(p, 1);
                     ai_Unk576040(0x12, p, 1, 0);
@@ -4157,17 +4157,17 @@ l260:
             if (SV_I((unsigned)&sv_PanelShown) == 0)
                 goto l188;
             v = gm_Query(*(int *)(SV_I((unsigned)&ai_FallbackBuilding) + 0x5d), 1, 0, *(unsigned short *)(SV_I((unsigned)&ai_FallbackBuilding) + 0x29));
-            SV_I((unsigned)&full_data_6f2320) = unk_Unk503530(ai_PlayerId, 0, v, 0);
+            SV_I((unsigned)&full_data_6f2320) = gm_PermissionBits(ai_PlayerId, 0, v, 0);
         } else {
 l188:
-            SV_I((unsigned)&full_data_6f2320) = unk_Unk503530(ai_PlayerId, p, 0, 0);
+            SV_I((unsigned)&full_data_6f2320) = gm_PermissionBits(ai_PlayerId, p, 0, 0);
         }
         if (SV_I((unsigned)&ai_PlayerBuilding) == 0 || (SV_I((unsigned)&full_data_6f2320) & 0x10) == 0) {
             if (SV_I((unsigned)&ai_FallbackBuilding) == 0) {
 l1f2:
                 if (SV_I((unsigned)&sv_SelectedObject) != 0) {
                     c = gm_BuildingClass(*(unsigned char *)SV_I((unsigned)&sv_SelectedObject));
-                    SV_I((unsigned)&full_data_6f2320) = unk_Unk503530(ai_PlayerId, SV_I((unsigned)&sv_SelectedObject), 0, 0);
+                    SV_I((unsigned)&full_data_6f2320) = gm_PermissionBits(ai_PlayerId, SV_I((unsigned)&sv_SelectedObject), 0, 0);
                     if ((c == 3 || c == 5) && (SV_I((unsigned)&full_data_6f2320) & 0x10) != 0)
                         ai_Unk5b8fc0(SV_I((unsigned)&sv_SelectedObject));
                     else
@@ -4323,7 +4323,7 @@ void sv_Unk52a680(void)
         b = (unsigned char *)SV_I((unsigned)&ai_FallbackBuilding);
         if (b == 0)
             b = 0;
-        SV_I((unsigned)&full_data_6f2320) = unk_Unk503530(ai_PlayerId, b, SV_I((unsigned)&full_data_6f22f0), 0);
+        SV_I((unsigned)&full_data_6f2320) = gm_PermissionBits(ai_PlayerId, b, SV_I((unsigned)&full_data_6f22f0), 0);
         if (SV_I((unsigned)&full_data_6f22f0) != 0) {
             i = *(unsigned short *)SV_I((unsigned)&full_data_6f22f0);
             k = ai_Goods[i * 0x41];
@@ -4339,7 +4339,7 @@ void sv_Unk52a680(void)
         b = (unsigned char *)SV_I((unsigned)&full_data_6f22f4);
     } else if (k == 2) {
         SV_I((unsigned)&full_data_6f22f4) = *(int *)(o + 0x200);
-        SV_I((unsigned)&full_data_6f2320) = unk_Unk503530(ai_PlayerId, SV_I((unsigned)&full_data_6f22f4), 0, 0);
+        SV_I((unsigned)&full_data_6f2320) = gm_PermissionBits(ai_PlayerId, SV_I((unsigned)&full_data_6f22f4), 0, 0);
         b = (unsigned char *)SV_I((unsigned)&full_data_6f22f4);
         if (b != 0 && (b[0x5a] & 1) == 0) {
             if (b[5] != 0) {
@@ -4353,7 +4353,7 @@ void sv_Unk52a680(void)
         SV_I((unsigned)&full_data_6f2324) = SV_I((unsigned)&full_data_6f2320);
     } else if (k == 3) {
         SV_I((unsigned)&ai_Unk6f22f8) = *(int *)(o + 0x200);
-        SV_I((unsigned)&full_data_6f2320) = unk_Unk503530(ai_PlayerId, 0, 0, SV_I((unsigned)&ai_Unk6f22f8));
+        SV_I((unsigned)&full_data_6f2320) = gm_PermissionBits(ai_PlayerId, 0, 0, SV_I((unsigned)&ai_Unk6f22f8));
         if (SV_I((unsigned)&ai_Unk6f22f8) != 0) {
             io_CharacterName(*(unsigned short *)SV_I((unsigned)&ai_Unk6f22f8), 1, 4, (unsigned)&ai_Unkf8aae0);
             if (*(char *)(SV_I((unsigned)&ai_Unk6f22f8) + 0x165) == 0x1c && (*(unsigned char *)(SV_I((unsigned)&ai_Unk6f22f8) + 0x1b4) & 1) != 0 && (SV_I((unsigned)&full_data_6f2320) & 0x800) != 0
@@ -4393,7 +4393,7 @@ la9a:
 lb9e:
         SV_I((unsigned)&full_data_6f2300) = (int)it;
         if (SV_I((unsigned)&full_data_6f2300) != 0) {
-            SV_I((unsigned)&full_data_6f2320) = unk_Unk503530(ai_PlayerId, b, SV_I((unsigned)&full_data_6f2300), 0);
+            SV_I((unsigned)&full_data_6f2320) = gm_PermissionBits(ai_PlayerId, b, SV_I((unsigned)&full_data_6f2300), 0);
             if ((SV_I((unsigned)&full_data_6f2320) & 1) == 0) {
                 SV_I((unsigned)&full_data_6f2300) = 0;
             } else {
@@ -4535,7 +4535,7 @@ lfe4:
             SV_C((unsigned)&full_data_6f23e0) = SV_C((unsigned)&ai_Unk6f22e8);
             if (SV_I((unsigned)&ai_Unk6f22f8) != 0 && *(char *)(SV_I((unsigned)&ai_Unk6f22f8) + 8) != 0) {
                 g = (unsigned short *)SV_I((unsigned)&ai_Unk6f22f8);
-                n = unk_Unk503530(ai_PlayerId, 0, 0, g);
+                n = gm_PermissionBits(ai_PlayerId, 0, 0, g);
                 sv_ClearSelection();
                 if ((n & 0x800) != 0 && (*(char *)((char *)g + 0x165) != 0x1c || (g[0xda] & 1) == 0)) {
                     SV_I((unsigned)&ai_Unk7662c0) = (int)g;
@@ -4873,7 +4873,7 @@ lrel:
             ch = (unsigned short *)(unsigned)&ai_Chars;
             do {
                 cell = 0;
-                if (*(char *)(ch + 0xc4) != 0 && *(char *)(ch + 4) != 0 && (unk_Unk503530(SV_I((unsigned)&ai_PlayerId), 0, 0, ch) & 0x800) != 0 && *(int *)(ch + 0xc2) != 0) {
+                if (*(char *)(ch + 0xc4) != 0 && *(char *)(ch + 4) != 0 && (gm_PermissionBits(SV_I((unsigned)&ai_PlayerId), 0, 0, ch) & 0x800) != 0 && *(int *)(ch + 0xc2) != 0) {
                     if (d3sm_Pick(map, (int)*(short *)(unsigned)&dm_L, (int)*(short *)((unsigned)&dm_L + 0x2), &cx, &cy) != 0) {
                         size = *(int *)(map + 0x20);
                         do {
@@ -5095,7 +5095,7 @@ void sv_Unk52c5c0(void)
         b = SV_C((unsigned)&ai_FallbackBuilding);
     if (b != 0)
         cls = ai_BTypes + *(unsigned char *)b * 0x24d;
-    if (g == 0 || (unk_Unk503530(ai_PlayerId, 0, 0, g), (g = SV_C((unsigned)&ai_Unk6f22f8)) == 0)) {
+    if (g == 0 || (gm_PermissionBits(ai_PlayerId, 0, 0, g), (g = SV_C((unsigned)&ai_Unk6f22f8)) == 0)) {
         if (o != 0) {
             v = ch_FindByObject(o);
             goto l67e;
@@ -5452,7 +5452,7 @@ void sv_Unk52d480(void)
         return;
     o1 = SV_C((unsigned)&ai_PlayerBuilding);
     if ((o1 != 0 || (SV_C((unsigned)&ai_FallbackBuilding) != 0 && (o1 = SV_C((unsigned)&ai_FallbackBuilding)) != 0)) && (SV_I((unsigned)&sv_PanelShown) != 0 || SV_I((unsigned)&ai_FallbackBuilding) != 0)
-        && (SV_I((unsigned)&full_data_6f2320) = unk_Unk503530(ai_PlayerId, o1, SV_I((unsigned)&sv_PanelShown), 0), (SV_I((unsigned)&full_data_6f2320) & 0x1000) == 0))
+        && (SV_I((unsigned)&full_data_6f2320) = gm_PermissionBits(ai_PlayerId, o1, SV_I((unsigned)&sv_PanelShown), 0), (SV_I((unsigned)&full_data_6f2320) & 0x1000) == 0))
         return;
     if ((SV_I((unsigned)&ai_BuildingPerms) & 0x1000) == 0)
         return;
@@ -5728,12 +5728,12 @@ l72:
         it = (short *)SV_I((unsigned)&sv_PanelShown);
         if (it == 0)
             it = 0;
-        SV_I((unsigned)&full_data_6f2320) = unk_Unk503530(ai_PlayerId, who, it, 0);
+        SV_I((unsigned)&full_data_6f2320) = gm_PermissionBits(ai_PlayerId, who, it, 0);
         if (*(unsigned short *)(who + 0x27) == ai_PlayerId || (SV_I((unsigned)&full_data_6f2320) & 0x1000) != 0)
             sv_Unk525ff0();
     }
     if (SV_I((unsigned)&full_data_6f23e4) != who || SV_I((unsigned)&full_data_6f23e8) != SV_I((unsigned)&sv_PanelShown) || SV_I((unsigned)&ai_Unk6f2318) != 0) {
-        SV_I((unsigned)&ai_BuildingPerms) = unk_Unk503530(ai_PlayerId, who, SV_I((unsigned)&sv_PanelShown), 0);
+        SV_I((unsigned)&ai_BuildingPerms) = gm_PermissionBits(ai_PlayerId, who, SV_I((unsigned)&sv_PanelShown), 0);
         sv_ReleaseNamePlates();
         SV_I((unsigned)&full_data_6f23e8) = SV_I((unsigned)&sv_PanelShown);
         SV_I((unsigned)&ai_Unk6f2318) = 0;
@@ -6267,7 +6267,7 @@ void sv_Unk52eee0(void)
         do {
             c = *p;
             if (c != 0 && *(char *)(c + 8) != 0) {
-                fl = unk_Unk503530(ai_PlayerId, 0, 0, c);
+                fl = gm_PermissionBits(ai_PlayerId, 0, 0, c);
                 *(char *)(c + 0x188) = 0;
                 if ((fl & 0x800) != 0 && (g = *(int *)(c + 0x184)) != 0 && *(char **)(g + 0x88) == ai_Unk5fb5b0 && *(int *)(*(int *)(g + 0x34) + 0x1cc) != 0) {
                     px = (int)0.0f;             /* the screen position of the character (float operands lost) */

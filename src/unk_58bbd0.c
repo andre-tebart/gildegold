@@ -3048,7 +3048,7 @@ void ai_Unk5909a0(void)
 }
 
 int ai_Unk5b2180(); int gm_IsHomeType(); void sv_SelectPanelObject(unsigned char *o, int b, char *c); void sv_FlyCameraToObject(int o); void sv_CameraToObject();
-unsigned unk_Unk503530(unsigned p1, unsigned char *b, unsigned short *o, int c); void ai_Unk59f410(); void init_ShowBuildingScene(unsigned char *b, int slot); void init_FinishBuildingScene(unsigned char *b, unsigned short *o);
+unsigned gm_PermissionBits(unsigned p1, unsigned char *b, unsigned short *o, int c); void ai_Unk59f410(); void init_ShowBuildingScene(unsigned char *b, int slot); void init_FinishBuildingScene(unsigned char *b, unsigned short *o);
 int d3t_PlaceObjectV(struct D3OBJECT *camera, struct D3VECTOR *pos, struct D3VECTOR *dir, int unk, char flags); int gm_ClockSeason(); void unk_Unk513740(void); void d3fl_MakeDivide();
 int ai_Unk5bc110(); void snd_StartMarketAmbience(void); int tb_SetFunctionOff(); void snd_StopMarketAmbience(void);
 void d2_CopyCaption(char *caption); void sv_SetStatusText(char *s); void sv_Unk52adb0(void);
@@ -3102,7 +3102,7 @@ void ai_Unk591170(void)
                 }
                 sv_SelectPanelObjectK(p, *(unsigned short *)(p + 0x29), (void *)(unsigned)&ch_EmptyName);
             } else {
-                u = unk_Unk503530(U_W((unsigned)&ai_PlayerId), p, 0, 0);
+                u = gm_PermissionBits(U_W((unsigned)&ai_PlayerId), p, 0, 0);
                 if (u & 1) {
                     sv_SelectPanelObjectK(p, 0xfd, (void *)(unsigned)&ch_EmptyName);
                     return;
@@ -3125,7 +3125,7 @@ void ai_TradeContactChecks(void)
 
     if (U_I((unsigned)&full_data_76045c) != 0 &&
         ((c = *(char *)(U_I((unsigned)&ai_Goods) + *(unsigned short *)U_I((unsigned)&full_data_76045c) * 0x41), c == 6 || c == 2))) {
-        if (unk_Unk503530(U_W((unsigned)&ai_PlayerId), U_I((unsigned)&ai_FallbackBuilding), U_I((unsigned)&full_data_76045c), 0) & 0x4000) {
+        if (gm_PermissionBits(U_W((unsigned)&ai_PlayerId), U_I((unsigned)&ai_FallbackBuilding), U_I((unsigned)&full_data_76045c), 0) & 0x4000) {
             r = gm_Query(*(int *)(U_I((unsigned)&ai_FallbackBuilding) + 0x5d), 2, 6, 0, 0xfd);
             ai_Unk59f410(U_I((unsigned)&full_data_76045c));
             init_ShowBuildingScene(U_I((unsigned)&ai_FallbackBuilding), 0xfd);
@@ -3281,7 +3281,7 @@ void ai_GameFrame(void)
         if (U_I((unsigned)&d2_ClickedId) != -1 && U_I((unsigned)&d2_PointerObj) == U_I((unsigned)&ai_Unk623884))
             ai_Unk5909a0();
         if (U_I((unsigned)&sv_SelectedObject) != 0 &&
-            (u = unk_Unk503530(U_W((unsigned)&ai_PlayerId), U_I((unsigned)&sv_SelectedObject), 0, 0), U_I((unsigned)&sv_SelectedObject) != 0) &&
+            (u = gm_PermissionBits(U_W((unsigned)&ai_PlayerId), U_I((unsigned)&sv_SelectedObject), 0, 0), U_I((unsigned)&sv_SelectedObject) != 0) &&
             U_I((unsigned)&full_data_6f22f4) == U_I((unsigned)&sv_SelectedObject) &&
             ((U_I(((unsigned)&dm_L + 0x1c)) != 0 || (U_I(((unsigned)&dm_L + 0xc)) != 0 && U_I((unsigned)&d2_PointerLook) == 0xb))) &&
             (u & 1) != 0 && (*(unsigned char *)(U_I((unsigned)&sv_SelectedObject) + 0x5a) & 1) == 0) {
@@ -8327,7 +8327,7 @@ int ai_Unk59d410(int param_1, int param_2, int param_3, unsigned char param_4)
 }
 
 int gm_Unk509e30(void *list, unsigned char p); char * he_FindEvent(int n, ...); char * he_NextEvent(void); int ai_AmountMenu();
-int gm_BuildingClass(); unsigned unk_Unk503530(unsigned p1, unsigned char *b, unsigned short *o, int c); int sv_MessageBoxGreen(); 
+int gm_BuildingClass(); unsigned gm_PermissionBits(unsigned p1, unsigned char *b, unsigned short *o, int c); int sv_MessageBoxGreen(); 
 void sv_Unk52adb0(void); void init_LoadObjectScene();
 char d3_DeflateScene(unsigned int flags); char d3_InflateScene(unsigned int flags); void init_SetCharacterAnimations(unsigned char *b);
 void init_ShowBuildingScene(unsigned char *b, int slot); void init_FinishBuildingScene(unsigned char *b, unsigned short *o); 
@@ -8751,7 +8751,7 @@ int ai_Unk59e210(unsigned char *param_1)
 
     kind = *(char *)(U_I((unsigned)&ai_BTypes) + *param_1 * 0x24d);
     k = gm_BuildingClass(*param_1);
-    f = unk_Unk503530(U_I((unsigned)&ai_PlayerId), param_1, 0, 0);
+    f = gm_PermissionBits(U_I((unsigned)&ai_PlayerId), param_1, 0, 0);
     if ((param_1[0x5b] & 4) != 0)
         return 0;
     if (*(signed char *)(unsigned)&ai_GameFlags < 0)

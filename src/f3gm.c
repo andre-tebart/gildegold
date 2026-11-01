@@ -5353,7 +5353,7 @@ int gm_BuildingJob();                     /* 0x5048e0 */
 int gm_TitleGroup();                     /* 0x504ad0 */
 
 /* 0x503530, the permission bits of the character p1 in the building b (or, without a building, in the object o / the character c): a bit set of what he may do there (0x1 enter, 0x4 .. 0x30 use, 0x40 .., 0x800 .., 0x2000 .., 0x4000, 0x5000 ..: the exact meaning of each bit is open) by the building type: a case per type, owner (+0x27) and place (+0x25) words compared with p1, the job list (six bytes at +0x223) searched for the job number of the character (0x5044b0). With the flag 0x6f2448 everything is allowed (-1, -2 for the types 3 / 0x21). ROUGH */
-unsigned unk_Unk503530(unsigned p1, unsigned char *b, unsigned short *o, int c)
+unsigned gm_PermissionBits(unsigned p1, unsigned char *b, unsigned short *o, int c)
 {
     char *p;
     unsigned v, jn, w;
