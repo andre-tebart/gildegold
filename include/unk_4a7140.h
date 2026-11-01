@@ -31,7 +31,7 @@ typedef struct G10SEAT {                /* 0x34 bytes; seat 0 is the player, 1 a
     int swapped;                        /* 0x24, the card the seat gave away in the exchange, -1 = none */
     int foldedAt;                       /* 0x28, the phase the seat folded in, -1 = still playing */
     int strategy;                       /* 0x2c, the NPC's exchange strategy (0x4a77e0: 1 keep pairs, 2 the most common rank, 3 ..) */
-    int unk30;                          /* 0x30 */
+    int hand;                           /* 0x30, the hand kind at the showdown (ai_PokerRateHand) */
 } G10SEAT;
 typedef struct G10GAME {                /* 0xc0 bytes, the game the caller hands to 0x4a7140 (0xf83654) */
     int phase;                          /* 0x00 */
@@ -44,7 +44,7 @@ typedef struct G10GAME {                /* 0xc0 bytes, the game the caller hands
     unsigned char left;                 /* 0xb4, cards left in the deck */
     unsigned char dealt;                /* 0xb5, the cards dealt this round (+3 at the deal, +1 per further card) */
     short pad;
-    short winner;                       /* 0xb8, the winning seat of the round (ai_Unk4a8190 at the round end; 0 = the player), 4 = none yet (ai_PokerStart) */
+    short winner;                       /* 0xb8, the winning seat of the round (ai_PokerShowdown at the round end; 0 = the player), 4 = none yet (ai_PokerStart) */
     short padba;
     int winHand;                        /* 0xbc, the hand kind of the round's winner */
 } G10GAME;
@@ -87,7 +87,7 @@ void ai_PokerPickStrategies(void);                                              
 void ai_PokerNpcFold(void);                                                         /* 0x4a7c20 */
 void ai_PokerOpenCounts(G10SEAT *s, int *n, int *g, int *m, int *r);                 /* 0x4a7e70 */
 int ai_PokerRateHand(int owner, int *g1, int *g2, int *r1, int *r2);              /* 0x4a7f50 */
-int ai_Unk4a8190(void);                                                          /* 0x4a8190 */
+int ai_PokerShowdown(void);                                                          /* 0x4a8190 */
 void ai_PokerDealThree(void);                                                         /* 0x4a8520 */
 void ai_PokerDealFourth(void);                                                         /* 0x4a8590 */
 void ai_PokerDealFifth(void);                                                         /* 0x4a85e0 */

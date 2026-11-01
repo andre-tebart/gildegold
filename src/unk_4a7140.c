@@ -675,14 +675,25 @@ int ai_PokerRateHand(int owner, int *g1, int *g2, int *r1, int *r2)
     }
     return 0;
 }
-/* 0x4a8190, the showdown: the winning seat (seat 0 against 1, the better of them against 2), its hand into winHand */
+/* 0x4a8190, the showdown: the winning seat (seat 0 against 1, the better of them against 2), its hand into winHand;
+   two empty hands against an empty seat 2 compare the high card of the winner with seat 1's (as the original does)
+   @deep Read the whole original 0x4a8190..0x4a84da against the C: rating loop (int seat counter reused as
+   the winner, as the original's esi), the seat-0/1 chain, both 8-case switches (tables 0x4a84dc / 0x4a84fc
+   case by case), the seat-2 comparison and every winHand store / return path correspond; compare operand
+   order fixed. Left: the original keeps ai_PokerTable in edi and the seat offset in ebx (ours swapped:
+   regs), and it gives each 'winHand = kind[2]; return 2' its own epilogue copy (5 copies at 0x4a83ae,
+   0x4a83d3, 0x4a840b, 0x4a843f, 0x4a8460) where VC6 merges ours into one block, plus the first switch's
+   shared tails (case 1/8 and 2/6 r1 compares, case 4 / both-empty high-card call) merged in the other
+   direction. Tried: w = 2 / break with a common tail (252 ins, worse), the high-card if-assign (kept).
+   (size: 276 vs 296 instructions, explained: 276 vs 296: the original duplicates the 8-instruction 'store
+   kind[2]; mov eax,2; epilogue' block four more times than ours (32 instructions), ours keeps two extra
+   r1-compare tails in the first switch) */
 
-int ai_Unk4a8190(void)
+int ai_PokerShowdown(void)
 {
     int g1[3], r1[3], kind[3], out[3], g2[3];
     int r2[3];
-    unsigned int i, w;
-    int k, a, b;
+    int w, k;    /* w: the seat, first the loop over the seats, then the winner */
 
     kind[0] = 0;
     kind[2] = 0;
@@ -690,12 +701,12 @@ int ai_Unk4a8190(void)
     out[0] = 0;
     out[2] = 0;
     out[1] = 0;
-    for (i = 0; i < 3; i++) {
-        if (ai_PokerTable->seat[i].foldedAt < 0) {
-            kind[i] = ai_PokerRateHand(i, &g1[i], &g2[i], &r1[i], &r2[i]);
-            ai_PokerTable->seat[i].unk30 = kind[i];
+    for (w = 0; w < 3; w++) {
+        if (ai_PokerTable->seat[w].foldedAt < 0) {
+            kind[w] = ai_PokerRateHand(w, &g1[w], &g2[w], &r1[w], &r2[w]);
+            ai_PokerTable->seat[w].hand = kind[w];
         } else {
-            out[i] = 1;
+            out[w] = 1;
         }
     }
     if (out[0] != 0) {
@@ -707,16 +718,18 @@ int ai_Unk4a8190(void)
             w = ai_PokerHighCard(ai_PokerTable->seat[0].card, 0) <= ai_PokerHighCard(ai_PokerTable->seat[1].card, 0);
         else
             w = 1;
-    } else if (kind[1] == 0 || kind[1] < kind[0]) {
+    } else if (kind[1] == 0) {
         w = 0;
-    } else if (kind[0] < kind[1]) {
+    } else if (kind[1] < kind[0]) {
+        w = 0;
+    } else if (kind[1] > kind[0]) {
         w = 1;
     } else {
         switch (kind[0]) {
         case 1:
-            if (g1[0] > g1[1])
+            if (g1[1] < g1[0])
                 w = 0;
-            else if (g1[0] < g1[1])
+            else if (g1[1] > g1[0])
                 w = 1;
             else
                 w = r1[0] <= r1[1];
@@ -724,14 +737,14 @@ int ai_Unk4a8190(void)
         case 2:
             if (g1[1] < g1[0])
                 w = 0;
-            else if (g1[0] < g1[1])
+            else if (g1[1] > g1[0])
                 w = 1;
             else if (g2[1] < g2[0])
                 w = 0;
-            else if (g2[1] <= g2[0])
-                w = r1[0] <= r1[1];
-            else
+            else if (g2[1] > g2[0])
                 w = 1;
+            else
+                w = r1[0] <= r1[1];
             break;
         case 3:
         case 7:
@@ -741,9 +754,7 @@ int ai_Unk4a8190(void)
             w = ai_PokerHighCard(ai_PokerTable->seat[0].card, 0) <= ai_PokerHighCard(ai_PokerTable->seat[1].card, 0);
             break;
         case 5:
-            r1[0] = g1[0];
-            r1[1] = g1[1];
-            w = r1[0] <= r1[1];
+            w = g1[0] <= g1[1];
             break;
         case 6:
             w = r1[0] <= r1[1];
@@ -757,40 +768,46 @@ int ai_Unk4a8190(void)
         ai_PokerTable->winHand = kind[w];
         return w;
     }
+    if (kind[w] == 0 && kind[2] == 0) {
+        if (ai_PokerHighCard(ai_PokerTable->seat[w].card, 0) <= ai_PokerHighCard(ai_PokerTable->seat[1].card, 0))
+            w = 1;
+        return w;
+    }
     k = kind[w];
     if (k == 0) {
-        if (kind[2] != 0) {
-            ai_PokerTable->winHand = kind[2];
-            return 2;
-        }
-        a = ai_PokerHighCard(ai_PokerTable->seat[w].card, 0);
-        b = ai_PokerHighCard(ai_PokerTable->seat[1].card, 0);
-        if (b < a)
-            return w;
-        return 1;
+        ai_PokerTable->winHand = kind[2];
+        return 2;
     }
     if (kind[2] != 0 && kind[2] >= k) {
-        if (k < kind[2]) {
+        if (kind[2] > k) {
             ai_PokerTable->winHand = kind[2];
             return 2;
         }
         switch (k) {
         case 1:
-            if (g1[w] <= g1[2]) {
-                if (g1[w] < g1[2] || r1[w] <= r1[2]) {
+            if (g1[2] >= g1[w]) {
+                if (g1[2] > g1[w]) {
+                    ai_PokerTable->winHand = kind[2];
+                    return 2;
+                }
+                if (r1[w] <= r1[2]) {
                     ai_PokerTable->winHand = kind[2];
                     return 2;
                 }
             }
             break;
         case 2:
-            if (g1[w] <= g1[2]) {
-                if (g1[w] < g1[2]) {
+            if (g1[2] >= g1[w]) {
+                if (g1[2] > g1[w]) {
                     ai_PokerTable->winHand = kind[2];
                     return 2;
                 }
-                if (g2[w] <= g2[2]) {
-                    if (g2[w] < g2[2] || r1[w] <= r1[2]) {
+                if (g2[2] >= g2[w]) {
+                    if (g2[2] > g2[w]) {
+                        ai_PokerTable->winHand = kind[2];
+                        return 2;
+                    }
+                    if (r1[w] <= r1[2]) {
                         ai_PokerTable->winHand = kind[2];
                         return 2;
                     }
@@ -884,7 +901,7 @@ void ai_PokerEndRound(void)
 {
     int i;
 
-    ai_PokerTable->winner = (short)ai_Unk4a8190();
+    ai_PokerTable->winner = (short)ai_PokerShowdown();
     if (ai_PokerTable->winner == 0)
         cm_SendMoveGoodsUnchecked(*(int *)((unsigned char *)ai_PokerTable->seat[0].who + 4), -1, ai_OwnPlayer,
                      ai_PokerTable->pot);

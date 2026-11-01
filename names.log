@@ -338,3 +338,4 @@
 2026-11-01T20:10:22 0x004a79d0 func ai_Unk4a79d0 -> ai_PokerSwapCard by:main why:puts the seat's card k out of play (owner 4, kept in swapped) and draws a replacement with ai_PokerDrawCard; ai_PokerNpcExchange calls it with the chosen card
 2026-11-01T20:13:40 0x004a7e70 func ai_Unk4a7e70 -> ai_PokerOpenCounts by:main why:counts the open cards (2 .. dealt-1) of a seat per suit and rank and returns the most common of each with its count; ai_PokerNpcFold weighs the opponents' open hands with it
 2026-11-01T20:18:33 0x004a7f50 func ai_Unk4a7f50 -> ai_PokerRateHand by:main why:rates a seat's hand 0..8 (the hand names at 0x600490); the showdown 0x4a8190 compares the kinds
+2026-11-01T20:23:41 0x004a8190 func ai_Unk4a8190 -> ai_PokerShowdown by:main why:rates the three hands (ai_PokerRateHand), picks the winning seat and stores its hand kind in winHand
