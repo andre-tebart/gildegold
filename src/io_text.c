@@ -428,7 +428,6 @@ extern int txt_Loaded;
 extern int d2_LastWindow;                /* 0x6ed938, the current text window */
 int txt_Count = 0;  /* 0x6333b8 */
 int d2_LayoutMode = 0;  /* 0x6ed978 */
-/* ai_Unkf8f13c: view of d2_Wins (tools/data_views.py) */
 extern char *d2_Objs;  /* 0xf8f080, 0x2ec bytes each; @original: d2.h declares D2OBJ *; the units add byte offsets to it and cannot include d2.h (vfs_Root / vfs_Tfopen clash with vfs.h) */
 #define D2_OBJS ((D2OBJ *)d2_Objs)     /* d2_Objs as d2.h types it */
 #define ai_PlayerCity (*(unsigned short (*)[4][0x17a])((char *)&ai_PlayerSlots + 0x54))  /* 0x7e3f94, the city id (word +0x54) of each 0x2f4-byte player slot: ai_PlayerCity[player][0] */
@@ -445,17 +444,6 @@ void err_Message(char *text);                    /* 0x4222b0 */
 void gm_FormatAmount(int v, unsigned char k, char *out);                   /* 0x508a80 */
 int io_TrailingDigits();                /* 0x514360 */
 int ls_GetLanguage();                     /* 0x5190a0, the language number */
-#define TXT_ID(c) ((char)(c) + -0x30)
-
-/* replaces the token buf[at .. at + toklen) by the string sub */
-/* unlinked */
-static __inline void txt_Subst(char *buf, int at, int toklen, const char *sub)
-{
-    int n = strlen(sub);
-
-    memmove(buf + at + n, buf + at + toklen, strlen(buf + at + toklen) + 1);
-    memcpy(buf + at, sub, n);
-}
 
 /* 0x515960, the text engine: prints the text fmt (a literal or an id of txt_Ptrs below 0x4800) with the arguments of its tokens ("%" "$" "{" + an optional digit + a letter) appended to the text of the current window d2_LastWindow and redraws the window (or its view; "%X" redraws all). Returns the window's object count (nobjs: the index the object of this text's "%ia" gets, the redraw has created it before the caller's d2_GetWinObj), -1 when the texts are not loaded, the window is not active, or the text is missing / too long.
    The tokens: "%s" / "%S" a text id (or a string above 0x4800) whose grammar field dig (or 1) is taken when the text has a gender in txt_Random; after "%u" / "%U" / "%b" / "%B" / "%e" / "%E" (gcase 1 .. 6: the article tables txt_Ptrs[0x3b / 0x38 / 0x3e + gender], the even ones capitalised in German) the article goes in front, with a number found before the token ("3 %us") moved between them; the scan restarts at the substitution, so a substituted text's own tokens are expanded too ("%ia[Weiter]"). "$S" is ten blanks, "%G" a good's name (and ">variant<"), "%N" a character name (io_CharacterName, dig the case, the digit after N the kind), "%T" an amount (gm_FormatAmount), "%D" a clock as "<season> <year>", "%i" a number with a '.' between the thousands ("%Ni" zero padded to N; a count other than 1 makes the next "%s" plural), "%I" a number without dots, "%f" a double ("%Nf<p>"), "%a" a number followed by 0x14, "%w" the city name of a player, "{r<group><n>}" one of the next n texts of the random group, "%v" / "%vv" skips an argument, "%%" the char 0x16. "%ii" / "%ic" / "%ib" / "%ia" / "%in" / "%it", "%l" / "%t" and "%m" / "%mt" / "%mb" keep their argument (or -1) in the window's argument table args for the redraw (the icons and buttons of the text); "$C" clears the window's text and that table and removes its objects; "%W" flushes the text so far and switches the form (d2_SetForm(dig, n)). Every other '$' / '%' command ("$A", "$Z", "$R", "$L", "$Y", "$[", "$]" ...) stays in the text for the window's text drawing. @deep read the whole function against the original (0x515960..0x51760a, all 25 case bodies via the jump table 0x51760c / index table 0x517674) and reconstructed every statement: the 's'/'S' article blocks (txt_Ptrs[0x3b/0x38/0x3e + gender], the digits before the token via io_TrailingDigits, toupper in German), '$S' ten blanks, the F fallthrough, the '%i' dot grouping both ways, '%I', '%f' with _itoa formats, '%W' flush + d2_SetForm(dig, n), u/U/b/B/e/E removals, '%N' (case dig, kind digit), '%a' '%i%c' 0x14, '{r}' random group search + atoi + util_Random, '%D' season txt_Ptrs[0x4c + gm_Season], '%G' good name + '>%s<' variant, '%%' 0x16, the end redraw (ctrl->loaded / view). ours 2238 vs 2244 instructions, switch tables in the same case order. Left: (1) window addressing: the original keeps the window's byte offset d2_LastWindow*0x3c4 in [esp+0x20] and addresses [esi + d2_Wins+field] (asmdiff head: '- mov ecx,[eax*4+d2_Wins+0x280] / - lea eax,[eax*4+d2_Wins] / - mov [esp+0x24],eax' vs '+ shl eax,2 / + mov [esp+0x20],eax / + cmp [eax+0xf8f3a0],ebx'); ours a D2WIN *w ([esi+0x2c]). An index d2_Wins[win] factors args[n] into (win*0xf1+n)*4 (2074 differing); an offset variable with #define WIN (*(D2WIN *)((char *)d2_Wins + woff)) reproduces the addressing and prologue exactly but switches VC6 cross-jumping back on (2115 vs 2244: f, b/B, G tails merged) - the on/off switch also flipped with unrelated edits (r-case if/else, e/E toklen), a compiler-state threshold, not meaning. (2) cross-jump/scheduling: e/E jump into the u memmove tail in the original (ours own calls, memmove 24 vs 22), the r error block shared (err_Message 3 vs 2), the 'I' va_arg increment hoisted above the first sprintf, the 'i' table branch reloads buf[pos+1] after the args store; (3) slots: dig/st share [esp+0xc], art/k/len [esp+0x14], p/good/grp [esp+0x18] in the original (58 slots hunks). */
@@ -1023,316 +1011,473 @@ int io_PrintText(char *fmt, ...)
         d2_DrawAll();
     return ret;
 }
-/* 0x5176d0, the same token engine as 0x515960 into the buffer out instead of the text window: the text id (or literal) id0 and its arguments; the window's argument table is used by the tokens "%l" / "%t" / "%m" / "%i" as in the original but nothing is redrawn. ROUGH skeleton like 0x515960 (the original is a second copy of its 7.5 KB). */
-
-
+/* 0x5176d0, the text engine of io_PrintText into the buffer out instead of a window: expands the text id0 (an id of txt_Ptrs below 0x4800, else a literal) with the arguments of its tokens and copies the result to out (nothing when the texts are not loaded or the text is missing / too long). Its own token set: "%s" / "%S" a text id (or string) in its grammar field dig, with the article of "%u" / "%U" / "%b" / "%B" / "%e" / "%E" (gcase 1 .. 6) and a number before the token moved between them, "%G" a good's name (and ">variant<"), "%N" a character name, "%T" an amount, "%D" a clock as "<season> <year>", "%I" a number with a '.' between the thousands ("%NI" zero padded; negative numbers keep their sign), "%i" a number without dots ("%Ni" zero padded), "%f" a double ("%Nf<p>", p decimals, default none), "%a" a number followed by 0x14, "%w" the city name of a player, "{r<group><n>}" a random text of the group, "%v" / "%vv" skips an argument, "%%" the char 0x16, "$C" clears out. A count other than 1 ("%i" / "%I") makes the next "%s" plural. The window tokens "%ii" / "%ic" / "%ib" / "%ia" / "%in" are skipped without their argument; every other command stays in the text. @deep rebuilt from the original 0x5176d0..0x518f5a (all 21 case bodies via jump table 0x518f5c / index table 0x518fb4, read against the disassembly): its own case set (no l/t/m/W/X; window tokens %ii/%ic/%ib/%ia/%in skipped without an argument), 'i' = plain number with the original's literal "%0%ii" for %Ni, 'I' = dot grouping with the sign kept, plural = 1, 'f' default 0 decimals, b without and B with the '%' check, e/E like u, G with toklen 2/3 and its own article blocks (digits4..6), S/G tails with strlen(buf)+2-pos, 'C' clears out, frame sizes from the slots (goodname 0x80, num 0x20). ours 1913 vs 1906 instructions, same case order. Left: (1) allocation: the original keeps dig in esi and toklen/gcase/s in slots [esp+0x14]/[0x1c]/[0x20], ours dig in edi (spilled to [esp+0x18] at the dig parse: '- mov [esp+0x18],edi / - mov edi,[esp+0x18]' vs '+ or esi,-1'), toklen in esi in G ('- sub edx,esi' vs '+ mov ecx,[esp+0x14] / + sub edx,ecx'); (2) cross-jumping: the original's S gcase==0 tail jumps into G's tail (0x51790f jmp 0x518a26), 'a' else into T's memmove (0x518843 jmp 0x51815f), ours the other way round (T jumps into a's) and own tails; the I non-dig sprintf pushes merge differently; (3) slots: the loop counters k/i of the dot grouping swap [esp+0x10]/[esp+0x14]. */
 void txt_Format(char *out, int id0, ...)
 {
-    char buf[0x17d0 + 0x20];
-    char tmp[0x17d0];
-    char word[0x40];
-    int *ap = (int *)&out + 2;
-    char *fmt = (char *)id0;
-    int st, pos, dig, code, len;
-    int gcase, flag9, flag10, flag8, gender;
-    int *w;
-    char *s;
+    char buf[0x17d0];                   /* the text being expanded */
+    char tmp[0x17d0];                   /* the substitution */
+    char fmtbuf[0x20];                  /* a sprintf format built at run time, or the plain digits of "%I" */
+    char num[0x20];                     /* _itoa digits */
+    union {
+        unsigned char b[0xc];
+        short w[6];                     /* w[1]: the year */
+    } date;                             /* gm_ClockToDate's calendar record */
+    char rnum[0x20];                    /* the count of a "{r}" token */
+    char goodname[0x80];
+    char digits1[0x40], digits2[0x40], digits3[0x40];   /* "%s": the number before the token */
+    char digits4[0x40], digits5[0x40], digits6[0x40];   /* "%G": the number before the token */
+    char sign[0x100];                   /* "%I": the grouped number with its sign */
+    va_list ap;
+    int pos, dig, st, toklen, i, k, n, len, v, id;
+    int gcase, gender, plural;
+    char code, c;
+    char *s, *art, *p;
+    unsigned char *good;
 
     gcase = 0;
-    flag9 = 0;
-    flag10 = 0;
-    flag8 = 0;
     gender = 0;
+    plural = 0;
     if (txt_Loaded == 0)
         return;
-    w = ai_Unkf8f13c[d2_LastWindow];
+    va_start(ap, id0);
     memset(buf, 0, sizeof(buf));
-    if ((unsigned)fmt < 0x4800) {
-        s = txt_Ptrs[(int)fmt];
+    if (id0 < 0x4800) {
+        s = txt_Ptrs[id0];
         if (s == 0)
             return;
         if (strlen(s) > 0x17c0)
             return;
         strncpy(buf, s, 0x17c0);
     } else {
-        strcpy(buf, fmt);
+        strcpy(buf, (char *)id0);
     }
-    pos = 0;
-    while (strlen(buf) > 0 && pos < strlen(buf) && pos < 0x17d1) {
-        if (buf[pos] != '%' && buf[pos] != '$' && buf[pos] != '{') {
+    for (pos = 0; pos < strlen(buf) && pos <= 0x17d0; pos++) {
+        while (buf[pos] == '%' || buf[pos] == '$' || buf[pos] == '{') {
             pos++;
-            continue;
-        }
-        st = pos;
-        pos++;
-        dig = TXT_ID(buf[pos]);
-        if (dig < 0 || dig > 9)
-            dig = -1;
-        else
-            pos++;
-        code = buf[pos];
-        switch (code) {
-        case '%':
-            buf[pos - 1] = 0x16;
-            memmove(buf + pos, buf + pos + 1, strlen(buf + pos));
-            break;
-        case 'B':
-            st = pos - ((dig != -1) + 1);
-            if (buf[st] == '%') {
-                gcase = 4;
-                memmove(buf + st, buf + st + 1, strlen(buf + st + 1) + 1);
-                pos = st - 1;
-            }
-            break;
-        case 'C':
-            /* w is the record +0x1c, so the text-command argument table (D2WIN +0x284, args[0x40] values) is
-               w + 0x9a and its count (record +0x384) is w[0xda]. The draft cleared w + 0x9a - 1 / w[0x92],
-               i.e. the record's `active` (+0x280) and `visible` (+0x264): every "$C" text deactivated its own
-               window, so the text was never drawn. The original also passes (win, all = 0). */
-            memset((void *)w[4], 0, 0x80);
-            memset(w + 0x9a, 0, 0x100);
-            w[0xda] = 0;
-            d2_RemoveWindowObjects(d2_LastWindow, 0);
-            pos++;
-            break;
-        case 'D':
-            /* the argument is a clock; the calendar record goes into word (the original's 10-byte stack
-               slot) and the text is "<season name> <year>". The season name table 0x143a2f0 is not set up
-               yet (no unit declares it), so the year alone is printed for now. */
-            gm_ClockToDate((struct GCLOCK *)ap[0], (unsigned char *)word);
-            ap++;
-            sprintf(tmp, "%i", *(short *)(word + 2));
-            txt_Subst(buf, st, pos - st + 1, tmp);
-            break;
-        case 'E':
-            gcase = 6;
-            txt_Subst(buf, pos - ((dig != -1) + 1), (dig != -1) + 2, "");
-            pos = pos - ((dig != -1) + 1) - 1;
-            break;
-        case 'e':
-            gcase = 5;
-            txt_Subst(buf, pos - ((dig != -1) + 1), (dig != -1) + 2, "");
-            pos = pos - ((dig != -1) + 1) - 1;
-            break;
-        case 'b':
-            st = pos - ((dig != -1) + 1);
-            if (buf[st] == '%') {
-                gcase = 3;
-                memmove(buf + st, buf + st + 1, strlen(buf + st + 1) + 1);
-                pos = st - 1;
-            }
-            break;
-        case 'u':
-            gcase = 1;
-            txt_Subst(buf, pos - ((dig != -1) + 1), (dig != -1) + 2, "");
-            pos = pos - ((dig != -1) + 1) - 1;
-            break;
-        case 'U':
-            gcase = 2;
-            txt_Subst(buf, pos - ((dig != -1) + 1), (dig != -1) + 2, "");
-            pos = pos - ((dig != -1) + 1) - 1;
-            break;
-        case 'G': {
-            unsigned char *good = (unsigned char *)*ap++;
-            int id = (int)*good * 0xe + 0x48e;
-
-            s = id < 0x4801 ? txt_Ptrs[id] : 0;
-            if (dig != -1)
-                s = (char *)txt_Field(s, dig, 4);
-            if (s == 0)
-                s = txt_Ptrs[id];
-            if (good[5] == 0)
-                strcpy(word, s);
-            else
-                sprintf(word, "%s", s);
-            if (gcase == 0) {
-                if (strlen(word) + pos + 1 > 0x17cb)
-                    return;
-                txt_Subst(buf, st, pos - st + 1, word);
-            } else {
-                s = (char *)txt_Field(word, gcase, 4);
-                sprintf(tmp, "%s", s);
-                txt_Subst(buf, st, pos - st + 1, tmp);
-                gcase = 0;
-            }
-            break;
-        }
-        case 'I':
-        case 'a':
-            /* a plain number: the call sites pass an int (main_Unk5384e0's "$LRunden APs:$R+%a$A" passes
-               ai_Chars[i].+0x190, the save format's default 4). The draft read it as a char * and crashed. */
-            sprintf(tmp, "%i", *ap++);
-            txt_Subst(buf, st, pos - st + 1, tmp);
-            break;
-        case 'N':
-            if (dig != -1 && buf[pos - 1] == '%' && buf[pos] != '$') {
-                io_CharacterName(*ap++, gcase, dig, tmp);
-                txt_Subst(buf, st, pos - st + 1, tmp);
-            }
-            pos++;
-            break;
-        case 'S':
-        case 's': {
-            int id = *ap++;
-
-            if (id < 0x4801) {
-                s = txt_Ptrs[id];
-                gender = txt_Random[id];
-            } else {
-                s = (char *)id;
-            }
-            if (gender == 0xff && s == 0)
-                s = txt_Ptrs[id];
-            if (gcase == 0) {
-                if (strlen(s) + pos + 1 > 0x17cb)
-                    return;
-                txt_Subst(buf, st, pos - st + 1, s);
-                pos = st - 1;      /* rescan the replacement (see io_PrintText: "%ia[Weiter]") */
-            } else {
-                s = (char *)txt_Field(s, gcase, 4);
-                sprintf(tmp, "%s", s);
-                if (ls_GetLanguage() == 0 && (gcase == 2 || gcase == 4 || gcase == 6))
-                    gcase = 0;
-                txt_Subst(buf, st, pos - st + 1, tmp);
-                gcase = 0;
-            }
-            flag8 = 0;
-            break;
-        }
-        case 'T':
-            if (buf[pos - 1] == '%') {
-                s = ((int (*)(void *))gm_FormatAmount)(*ap++);
-                txt_Subst(buf, pos - 1, 2, s);
-            }
-            pos++;
-            break;
-        case 'W': {
-            char *wb = (char *)w[4];
-            int n = strlen(wb) + strlen(buf);
-
-            dig = dig < 1 || dig > 8 ? -1 : dig;
-            if (n < 0x17cf) {
-                strncat(wb, buf, pos);
-                strcat(wb, "\x02");
-                *(short *)(w + 0x93) = 2;
-            }
-            sprintf(tmp, "%s", buf);
-            tmp[strlen(buf) - pos] = 0;
-            ((int (*)())d2_SetForm)();
-            if (dig != -1)
-                pos += 2;
-            break;
-        }
-        case 'X':
-            buf[pos - 1] = ' ';
-            buf[pos] = ' ';
-            flag10 = 1;
-            pos++;
-            break;
-        case 'f': {
-            int prec = TXT_ID(buf[pos + 1]);
-
-            if (prec < 1 || prec > 8)
-                prec = 2;
-            else
+            dig = buf[pos] - '0';
+            if (dig >= 0 && dig <= 9)
                 pos++;
-            sprintf(word, dig == -1 ? "%%.%df" : "%%%d.%df", prec);
-            ap += 2;
-            sprintf(tmp, word, *(double *)(ap - 2));
-            txt_Subst(buf, pos - ((prec != -1) + 1), 2, tmp);
-            pos++;
-            break;
-        }
-        case 'i':
-            if (buf[pos + 1] == 'i' || buf[pos + 1] == 'c' || buf[pos + 1] == 'b' || buf[pos + 1] == 'a'
-                || buf[pos + 1] == 'n' || buf[pos + 1] == 't') {
-                if (w[0xda] < 0x41) {
-                    w[0x9a + w[0xda]] = -1;
-                    if (buf[pos + 1] == 'a' || buf[pos + 1] == 'n')
-                        w[0x9a + w[0xda]] = -1;
-                    else if (buf[pos + 1] == 't')
-                        w[0x9a + w[0xda]] = (((char *)w)[0x260] == 0x53 || ((char *)w)[0x260] == 0x55) ? 0 : 5;
-                    else
-                        w[0x9a + w[0xda]] = *ap++;
-                    flag9 = 1;
-                    w[0xda]++;
+            else
+                dig = -1;
+            code = buf[pos];
+            switch (code) {
+            case 'C':
+                pos++;
+                memset(out, 0, 0x80);
+                break;
+            case 'S':
+            case 's':
+                pos++;
+                id = va_arg(ap, int);
+                if (id > 0x4800) {
+                    s = (char *)id;
                 } else {
-                    ((int (*)())err_Message)();
+                    gender = txt_Random[id];
+                    s = txt_Ptrs[id];
                 }
-                pos += 2;
-            } else {
-                int v = *ap++;
-
-                if (v > 1 || v == 0)
-                    flag8 = 2;
-                sprintf(word, "%d", v);
-                /* the digits of the number are written with a dot between each three */
-                len = strlen(word);
-                strcpy(tmp, word);
-                txt_Subst(buf, st, pos - st + 1, tmp);
-            }
-            break;
-        case 'l':
-        case 't':
-            flag9 = 1;
-            w[0x9a + w[0xda]] = *ap++;
-            w[0xda]++;
-            pos++;
-            break;
-        case 'm':
-            flag9 = 1;
-            if (buf[pos + 1] == 't') {
-                w[0x9a + w[0xda]] = ap[0];
-                w[0xda]++;
-                w[0x9a + w[0xda]] = ap[1];
-                w[0xda]++;
-                pos += 2;
-                ap += 2;
-            } else if (buf[pos + 1] == 'b') {
-                w[0x9a + w[0xda]] = -1;
-                w[0xda]++;
-                pos += 2;
-            } else {
-                w[0x9a + w[0xda]] = -1;
-                w[0xda]++;
+                toklen = (dig != -1) + 2;
+                if (gender != 0xff) {
+                    if (dig == -1)
+                        dig = 1;
+                    if (buf[pos - 1] == 's' && plural == 0)
+                        s = txt_Field(s, dig, 4);
+                    else
+                        s = txt_Field(s, dig, 8);
+                } else if (s == 0) {
+                    s = txt_Ptrs[id];
+                }
+                if (gcase == 0) {
+                    if (strlen(s) + pos > 0x17cb)
+                        return;
+                    st = pos - toklen;
+                    memmove(&buf[st + strlen(s)], &buf[pos], strlen(buf) + 2 - pos);
+                    memcpy(&buf[st], s, strlen(s));
+                    pos = st;
+                    break;
+                }
+                /* a number right before the token (only blanks between) goes between the article and the word */
+                for (i = pos - toklen - 1; i >= 0; i--) {
+                    if (isdigit(buf[i]))
+                        break;
+                    if (buf[i] != ' ') {
+                        i = -1;
+                        break;
+                    }
+                }
+                if (gcase == 1 || gcase == 2) {
+                    if (buf[pos - 1] == 's' && plural == 0)
+                        art = txt_Field(txt_Ptrs[gender + 0x3b], dig, 4);
+                    else
+                        art = txt_Field(txt_Ptrs[gender + 0x3b], dig, 8);
+                    if (i <= -1) {
+                        sprintf(tmp, "%s %s", art, s);
+                    } else {
+                        n = io_TrailingDigits(buf, i, digits1);
+                        sprintf(tmp, "%s %s %s", art, digits1, s);
+                        toklen = pos - n;
+                    }
+                    if (ls_GetLanguage() == 0 && gcase == 2)
+                        tmp[0] = toupper(tmp[0]);
+                }
+                if (gcase == 3 || gcase == 4) {
+                    if (buf[pos - 1] == 's' && plural == 0)
+                        art = txt_Field(txt_Ptrs[gender + 0x38], dig, 4);
+                    else
+                        art = txt_Field(txt_Ptrs[gender + 0x38], dig, 8);
+                    if (i <= -1) {
+                        sprintf(tmp, "%s %s", art, s);
+                    } else {
+                        n = io_TrailingDigits(buf, i, digits2);
+                        sprintf(tmp, "%s %s %s", art, digits2, s);
+                        toklen = pos - n;
+                    }
+                    if (ls_GetLanguage() == 0 && gcase == 4)
+                        tmp[0] = toupper(tmp[0]);
+                }
+                if (gcase == 5 || gcase == 6) {
+                    if (buf[pos - 1] == 's' && plural == 0)
+                        art = txt_Field(txt_Ptrs[gender + 0x3e], dig, 4);
+                    else
+                        art = txt_Field(txt_Ptrs[gender + 0x3e], dig, 8);
+                    if (i <= -1) {
+                        sprintf(tmp, "%s %s", art, s);
+                    } else {
+                        n = io_TrailingDigits(buf, i, digits3);
+                        sprintf(tmp, "%s %s %s", art, digits3, s);
+                        toklen = pos - n;
+                    }
+                    if (ls_GetLanguage() == 0 && gcase == 6)
+                        tmp[0] = toupper(tmp[0]);
+                }
+                if (strlen(tmp) + pos > 0x17cb)
+                    return;
+                st = pos - toklen;
+                memmove(&buf[st + strlen(tmp)], &buf[pos], strlen(buf) + 2 - pos);
+                memcpy(&buf[st], tmp, strlen(tmp));
+                gcase = 0;
+                plural = 0;
+                pos = st;
+                break;
+            case 'i':
+                c = buf[pos + 1];
+                if (c == 'i' || c == 'c' || c == 'b' || c == 'a' || c == 'n') {
+                    /* a window token of io_PrintText: no window here */
+                    pos += 2;
+                    break;
+                }
+                if (dig != -1) {
+                    v = va_arg(ap, int);
+                    if (v > 1 || v == 0)
+                        plural = 1;
+                    sprintf(fmtbuf, "%0%ii", dig);    /* as the original: "%0%" is a '%', the format becomes "%ii" */
+                    sprintf(tmp, fmtbuf, v);
+                    memmove(&buf[pos + strlen(tmp) - 3], &buf[pos], strlen(buf) + 1 - pos);
+                    memcpy(&buf[pos - 2], tmp, strlen(tmp));
+                } else {
+                    v = va_arg(ap, int);
+                    if (v > 1 || v == 0)
+                        plural = 1;
+                    sprintf(tmp, "%i", v);
+                    memmove(&buf[pos - 1 + strlen(tmp)], &buf[pos + 1], strlen(buf) + 1 - pos);
+                    memcpy(&buf[pos - 1], tmp, strlen(tmp));
+                }
+                break;
+            case 'I':
+                if (dig != -1) {
+                    /* zero padded to dig places, then the dots: tmp -> fmtbuf backwards */
+                    _itoa(dig, num, 10);
+                    strcpy(fmtbuf, "%0");
+                    strcat(fmtbuf, num);
+                    strcat(fmtbuf, "i");
+                    v = va_arg(ap, int);
+                    if (v > 1 || v == 0)
+                        plural = 1;
+                    sprintf(tmp, fmtbuf, v);
+                    k = -1;
+                    len = strlen(tmp) / 3 + strlen(tmp);
+                    n = len;
+                    for (i = strlen(tmp); i >= 0; i--) {
+                        fmtbuf[n--] = tmp[i];
+                        if (i != 0 && k > 0 && (k + 1) % 3 == 0)
+                            fmtbuf[n--] = '.';
+                        k++;
+                    }
+                    fmtbuf[len] = 0;
+                    memmove(&buf[pos + strlen(fmtbuf) - 3], &buf[pos], strlen(buf) + 1 - pos);
+                    memcpy(&buf[pos - 2], fmtbuf, strlen(fmtbuf));
+                } else {
+                    /* the digits of |v| into fmtbuf, then with the dots: fmtbuf -> tmp backwards, the sign in
+                       front */
+                    v = va_arg(ap, int);
+                    if (v > 1 || v == 0)
+                        plural = 1;
+                    if (v < 0)
+                        sprintf(fmtbuf, "%i", -v);
+                    else
+                        sprintf(fmtbuf, "%i", v);
+                    k = -1;
+                    len = (strlen(fmtbuf) - 1) / 3 + strlen(fmtbuf);
+                    n = len;
+                    for (i = strlen(fmtbuf); i >= 0; i--) {
+                        tmp[n--] = fmtbuf[i];
+                        if (i != 0 && k > 0 && (k + 1) % 3 == 0)
+                            tmp[n--] = '.';
+                        k++;
+                    }
+                    tmp[len] = 0;
+                    if (v >= 0) {
+                        strcpy(sign, tmp);
+                    } else {
+                        strcpy(sign + 1, tmp);
+                        sign[0] = '-';
+                    }
+                    memmove(&buf[pos - 1 + strlen(sign)], &buf[pos + 1], strlen(buf) + 1 - pos);
+                    memcpy(&buf[pos - 1], sign, strlen(sign));
+                }
+                break;
+            case 'T':
+                if (buf[pos - 1] == '%') {
+                    gm_FormatAmount(va_arg(ap, int), ai_OwnPlayer, tmp);
+                    memmove(&buf[pos - 1 + strlen(tmp)], &buf[pos + 1], strlen(buf) + 1 - pos);
+                    memcpy(&buf[pos - 1], tmp, strlen(tmp));
+                }
+                break;
+            case 'w':
+                /* the argument is a player index: the city id (word +0x54) of its player slot picks the city
+                   name (the text pairs from txt_Ptrs[0x9a8]) */
+                strcpy(tmp, txt_Field(txt_Ptrs[0x9a8 + ai_PlayerCity[va_arg(ap, int)][0] * 2], 1, 8));
+                memmove(&buf[pos - 1 + strlen(tmp)], &buf[pos + 1], strlen(buf) + 1 - pos);
+                memcpy(&buf[pos - 1], tmp, strlen(tmp));
+                break;
+            case 'f':
+                /* "%f<p>" / "%<w>f<p>": p decimals (1 .. 8, else 0), w the zero padded width */
+                k = buf[pos + 1] - '0';
+                if (k > 0 && k < 9)
+                    pos++;
+                else
+                    k = 0;
+                if (dig != -1) {
+                    _itoa(dig, num, 10);
+                    strcpy(fmtbuf, "%0");
+                    strcat(fmtbuf, num);
+                    _itoa(k, num, 10);
+                    strcat(fmtbuf, ".");
+                    strcat(fmtbuf, num);
+                    strcat(fmtbuf, "f");
+                    sprintf(tmp, fmtbuf, va_arg(ap, double));
+                    if (strlen(tmp) + pos > 0x17cb)
+                        return;
+                    pos++;
+                    memmove(&buf[pos - 4 + strlen(tmp)], &buf[pos], strlen(buf) + 1 - pos);
+                    memcpy(&buf[pos - 4], tmp, strlen(tmp));
+                } else {
+                    _itoa(k, num, 10);
+                    strcpy(fmtbuf, "%.");
+                    strcat(fmtbuf, num);
+                    strcat(fmtbuf, "f");
+                    sprintf(tmp, fmtbuf, va_arg(ap, double));
+                    if (strlen(tmp) + pos > 0x17cb)
+                        return;
+                    pos++;
+                    memmove(&buf[pos - 3 + strlen(tmp)], &buf[pos], strlen(buf) + 1 - pos);
+                    memcpy(&buf[pos - 3], tmp, strlen(tmp));
+                }
+                break;
+            case 'v':
                 pos++;
+                if (buf[pos] == 'v')
+                    va_arg(ap, int);
+                break;
+            case 'F':
+                pos++;
+                break;
+            case 'u':
+                gcase = 1;
+                st = pos - ((dig != -1) + 1);
+                memmove(&buf[st], &buf[pos + 1], strlen(buf) - pos);
+                pos = st - 1;
+                break;
+            case 'U':
+                gcase = 2;
+                st = pos - ((dig != -1) + 1);
+                memmove(&buf[st], &buf[pos + 1], strlen(buf) - pos);
+                pos = st - 1;
+                break;
+            case 'b':
+                gcase = 3;
+                st = pos - ((dig != -1) + 1);
+                memmove(&buf[st], &buf[pos + 1], strlen(buf) - pos);
+                pos = st - 1;
+                break;
+            case 'B':
+                st = pos - ((dig != -1) + 1);
+                if (buf[st] != '%') {
+                    pos++;
+                    break;
+                }
+                gcase = 4;
+                memmove(&buf[st], &buf[pos + 1], strlen(buf) - pos);
+                pos = st - 1;
+                break;
+            case 'e':
+                gcase = 5;
+                st = pos - ((dig != -1) + 1);
+                memmove(&buf[st], &buf[pos + 1], strlen(buf) - pos);
+                pos = st - 1;
+                break;
+            case 'E':
+                gcase = 6;
+                st = pos - ((dig != -1) + 1);
+                memmove(&buf[st], &buf[pos + 1], strlen(buf) - pos);
+                pos = st - 1;
+                break;
+            case 'N':
+                /* "%<case>N<kind>" */
+                pos++;
+                if (dig != -1 && buf[pos - 3] == '%' && buf[pos - 2] != '$') {
+                    io_CharacterName(va_arg(ap, int), dig, buf[pos] - '0', tmp);
+                    memmove(&buf[pos - 4 + strlen(tmp)], &buf[pos], strlen(buf) + 2 - pos);
+                    memcpy(&buf[pos - 3], tmp, strlen(tmp));
+                }
+                break;
+            case 'a':
+                if (buf[pos - 1] == '%') {
+                    sprintf(tmp, "%i%c", va_arg(ap, int), 0x14);
+                    memmove(&buf[pos - 1 + strlen(tmp)], &buf[pos + 1], strlen(buf) + 1 - pos);
+                    memcpy(&buf[pos - 1], tmp, strlen(tmp));
+                } else {
+                    sprintf(tmp, "%c", 0x14);
+                    memmove(&buf[pos - 1 + strlen(tmp)], &buf[pos + 1], strlen(buf) + 1 - pos);
+                    memcpy(&buf[pos - 1], tmp, strlen(tmp));
+                }
+                break;
+            case 'D':
+                gm_ClockToDate(va_arg(ap, struct GCLOCK *), date.b);
+                sprintf(tmp, "%s %i", txt_Ptrs[0x4c + gm_Season((char *)date.b)], date.w[1]);
+                memmove(&buf[pos + strlen(tmp) - 2], &buf[pos], strlen(buf) + 2 - pos);
+                memcpy(&buf[pos - 1], tmp, strlen(tmp));
+                break;
+            case 'G':
+                /* the argument is a good record: its byte 0 is the good (the text pairs from 0x48e), +5 a
+                   variant name */
+                pos++;
+                good = va_arg(ap, unsigned char *);
+                id = good[0] * 0xe + 0x48e;
+                if (id > 0x4800) {
+                    s = (char *)id;
+                } else {
+                    gender = txt_Random[id];
+                    s = txt_Ptrs[id];
+                }
+                if (dig == -1) {
+                    toklen = 2;
+                    dig = 1;
+                } else {
+                    toklen = 3;
+                }
+                s = txt_Field(s, dig, 4);
+                if (s == 0)
+                    s = txt_Ptrs[id];
+                if (good[5] != 0)
+                    sprintf(goodname, "%s >%s<", s, good + 5);
+                else
+                    strcpy(goodname, s);
+                if (gcase == 0) {
+                    if (strlen(goodname) + pos > 0x17cb)
+                        return;
+                    st = pos - toklen;
+                    memmove(&buf[st + strlen(goodname)], &buf[pos], strlen(buf) + 2 - pos);
+                    memcpy(&buf[st], goodname, strlen(goodname));
+                    pos = st;
+                    break;
+                }
+                for (i = pos - toklen - 1; i >= 0; i--) {
+                    if (isdigit(buf[i]))
+                        break;
+                    if (buf[i] != ' ') {
+                        i = -1;
+                        break;
+                    }
+                }
+                if (gcase == 1 || gcase == 2) {
+                    art = txt_Field(txt_Ptrs[gender + 0x3b], dig, 4);
+                    if (i <= -1) {
+                        sprintf(tmp, "%s %s", art, goodname);
+                    } else {
+                        n = io_TrailingDigits(buf, i, digits4);
+                        sprintf(tmp, "%s %s %s", art, digits4, goodname);
+                        toklen = pos - n;
+                    }
+                    if (ls_GetLanguage() == 0 && gcase == 2)
+                        tmp[0] = toupper(tmp[0]);
+                }
+                if (gcase == 3 || gcase == 4) {
+                    art = txt_Field(txt_Ptrs[gender + 0x38], dig, 4);
+                    if (i <= -1) {
+                        sprintf(tmp, "%s %s", art, goodname);
+                    } else {
+                        n = io_TrailingDigits(buf, i, digits5);
+                        sprintf(tmp, "%s %s %s", art, digits5, goodname);
+                        toklen = pos - n;
+                    }
+                    if (ls_GetLanguage() == 0 && gcase == 4)
+                        tmp[0] = toupper(tmp[0]);
+                }
+                if (gcase == 5 || gcase == 6) {
+                    art = txt_Field(txt_Ptrs[gender + 0x3e], dig, 4);
+                    if (i <= -1) {
+                        sprintf(tmp, "%s %s", art, goodname);
+                    } else {
+                        n = io_TrailingDigits(buf, i, digits6);
+                        sprintf(tmp, "%s %s %s", art, digits6, goodname);
+                        toklen = pos - n;
+                    }
+                    if (ls_GetLanguage() == 0 && gcase == 6)
+                        tmp[0] = toupper(tmp[0]);
+                }
+                if (strlen(tmp) + pos > 0x17cb)
+                    return;
+                st = pos - toklen;
+                memmove(&buf[st + strlen(tmp)], &buf[pos], strlen(buf) + 2 - pos);
+                memcpy(&buf[st], tmp, strlen(tmp));
+                gcase = 0;
+                pos = st;
+                break;
+            case 'r':
+                /* "{r<group><n>}": a random one of the n texts of txt_Random group 9 + group from this text on */
+                if (code == 'r') {
+                    memset(rnum, 0, sizeof(rnum));
+                    k = 0;
+                    v = buf[pos + 1] - '1';
+                    if (v >= 0 && v <= 9)
+                        k = v + 9;
+                    len = pos + 3;
+                    while (isdigit(buf[len++]))
+                        ;
+                    len = len - 4 - pos;
+                    strncpy(rnum, &buf[pos + 3], len);
+                    n = atoi(rnum);
+                    for (i = id0; i < txt_Count; i++) {
+                        if (txt_Random[i] == k)
+                            break;
+                    }
+                    if (i >= txt_Count) {
+                        err_Message("io_Text(): Missing Random-Text (e.g. {r1})...");
+                        break;
+                    }
+                    p = txt_Ptrs[i + (unsigned short)util_Random(n)];
+                    if (p == 0)
+                        break;
+                    memmove(&buf[pos - len + strlen(p) - 5], &buf[pos], strlen(buf) + len - pos + 5);
+                    memcpy(&buf[pos - 1], p, strlen(p));
+                }
+                break;
+            case '%':
+                buf[pos - 1] = 0x16;
+                memmove(&buf[pos], &buf[pos + 1], strlen(buf) + 1 - pos);
+                break;
             }
-            break;
-        case 'r':
-            if (code == 'r') {
-                memset(word, 0, 0x20);
-                ((int (*)())err_Message)();
-            }
-            break;
-        case 'v':
-            pos++;
-            if (buf[pos] == 'v')
-                ap++;
-            break;
-        case 'w': {
-            /* 0x5181b8: the argument is a player index, not a string: the word +0x54 of the player slot is
-               its city id, and that entry of the city name table 0x143c860 gives the text (txt_Field with
-               type 8). The skeleton read the argument as a char *; sv_Unk522f10's "%I~ %w" (money, player)
-               then crashed in txt_Field. */
-            int who = *ap++;
-            int city = *(unsigned short *)(ai_PlayerSlots[who] + 0x54);
-
-            s = txt_Field(((char **)ai_Unk143c860)[city * 2], 1, 8);
-            strcpy(tmp, s);
-            txt_Subst(buf, st, pos - st + 1, tmp);
-            break;
         }
-        default:
-            /* not a substitution: the original jumps back to the scan with pos on the command letter
-               (0x515ac5 -> 0x515a72, the '$' / '%' drawing commands 'A', 'Z', 'R', 'L', 'Y', '[' and ']'
-               among them), so the tail pos++ skips only that letter and a following '%' is still seen.
-               Advancing here as well skipped "$Z%s"'s '%': the window got a lone "s" */
-            break;
-        }
-        if (code != 'B' && code != 'b')
-            pos++;
-        if (pos >= (int)strlen(buf))
-            break;
     }
     strcpy(out, buf);
 }
