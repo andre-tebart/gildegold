@@ -9123,7 +9123,7 @@ void ai_Unk587e00(void)
                 item = (int)src - 0xdf;
             else if (src >= (char *)0x427 && src < (char *)0x47f)
                 item = (int)src - 0x427;
-        } else if (p >= (char *)(unsigned)&ai_Chars && p < (char *)(unsigned)&gm_PlayerRecords) {
+        } else if (p >= (char *)(unsigned)&ai_Chars && p < (char *)(unsigned)ai_Chars[768]) {  /* ai_Chars[768]: one past the table (0x7d5f80) */
             ch = (*(unsigned short *)p != 0xffff) ? p : 0;
         } else if (p >= (char *)U_I((unsigned)&ai_Blds) && p < (char *)U_I((unsigned)&ai_Blds) + 0xa900) {
             item = *(unsigned char *)p;
