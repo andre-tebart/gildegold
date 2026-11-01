@@ -5,6 +5,7 @@
 #include <windows.h>
 #include <dinput.h>
 #include "di_input.h"
+#include "tb.h"
 
 int kb_Base = 0x200;                    /* 0x5f3234 */
 int di_MaxX = 790;                      /* 0x5f3238 mouse limits (as in the exe image) */
