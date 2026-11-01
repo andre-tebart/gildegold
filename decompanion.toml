@@ -45,3 +45,40 @@ reason.root = "157 game objects carry C2 9044 (only MSVC600-SP5PP makes it), lin
 include_dirs = ["C:/Tools/DXSDK61/include"]
 lib_dirs = ["C:/Tools/DXSDK61/lib"]
 reason.include_dirs = "the game includes ddraw.h / dinput.h of the DirectX 6.1 SDK (rea config/build.toml dxsdk_root; dinput.lib tables at 0x5dd3e0 byte-equal its lib)"
+
+# Running a build (decompanion docs/run.md): `dcp run play`.
+[[variant]]
+name = "debug"
+reason = "manual testing (rea's play): 16-bit back buffer in a window, frame dumps, the start shortcut"
+  [[variant.unit]]
+  glob = "dd_vesa"
+  cflags = ["/DREA_FIX_16BPP", "/DREA_FRAME_DUMP"]
+  [[variant.unit]]
+  glob = ["d3_d3d", "shp", "gfx", "d2"]
+  cflags = ["/DREA_FRAME_DUMP"]
+  [[variant.unit]]
+  glob = ["main", "unk_575860"]
+  cflags = ["/DREA_START"]
+
+[[setup]]
+name = "game"
+reason = "the GOG install's folders linked, its ini/dll/asi files copied; the install itself is never written"
+  [[setup.stage]]
+  from = "{target.dir}"
+  link = ["*/"]
+  copy = ["*.ini", "*.dll", "*.asi", "*.as6", "*.def", "*.sdb", "*.info"]
+  [[setup.step]]
+  run = ["python", "tools/run/compat_shim.py"]
+  [[setup.step]]
+  run = ["python", "tools/run/game_ini.py"]
+
+[[run]]
+name = "play"
+variant = "debug"
+setup = "game"
+args = ["DIRECTWINDOW"]
+
+[[run]]
+name = "plain"
+setup = "game"
+args = ["DIRECTWINDOW"]
