@@ -2444,32 +2444,35 @@ int d3_VecEqual(struct D3VECTOR *a, struct D3VECTOR *b, float eps);  /* 0x453e80
 void d3_MatTranspose();                     /* 0x454040 */
 float d3_VecAngle2();                   /* 0x453b40 */
 
-/* 0x525dd0, in scene 0 sets the camera height factors 0x6f22d4 / 0x6f22d8 to f and moves the camera (0x43b790: the x / z of its position and the height 0x623800 .. 0x623808 blended by f over the terrain height
-   0x412550) and the camera angle (0x43b860: +0x88 / +0x8c and 0x623804 .. 0x62380c blended); stores the camera position and direction (0x75fb80 / 0x75fb90) */
+/* 0x525dd0, in scene 0 sets both camera blend factors to f and places the camera: its height is the near / far height blended by
+   f over the terrain's mean height under it, its x angle the near / far angle blended by f; stores the camera's rotation and
+   position as the view (sv_ViewRot / sv_ViewPos) */
 void sv_PlaceCamera(float f)
 {
-    float pos[3], ang[3];
+    D3VECTOR pos, rot;
     double h;
 
     if (d3_CurrentScene != 0)
         return;
     sv_CameraHeightFactor = f;
     sv_CameraAngleFactor = f;
-    h = d3t_GetMeanHeight(sv_CameraObj + 0x4c);
-    pos[0] = *(float *)(sv_CameraObj + 0x4c);
-    pos[2] = *(float *)(sv_CameraObj + 0x54);
-    pos[1] = (float)((sv_CameraHeightFar - sv_CameraHeightNear) * sv_CameraHeightFactor + sv_CameraHeightNear + h);
-    d3_SetObjectPos(sv_CameraObj, pos);
-    ang[1] = *(float *)(sv_CameraObj + 0x88);
-    ang[2] = *(float *)(sv_CameraObj + 0x8c);
-    ang[0] = (sv_CameraAngleFar - sv_CameraAngleNear) * sv_CameraAngleFactor + sv_CameraAngleNear;
-    d3_SetObjectRot(sv_CameraObj, ang);
-    sv_ViewRotX = *(int *)(sv_CameraObj + 0x84);
-    sv_ViewRotY = *(int *)(sv_CameraObj + 0x88);
-    sv_ViewRotZ = *(int *)(sv_CameraObj + 0x8c);
-    sv_ViewPosX = *(int *)(sv_CameraObj + 0x4c);
-    sv_ViewPosY = *(int *)(sv_CameraObj + 0x50);
-    sv_ViewPosZ = *(int *)(sv_CameraObj + 0x54);
+    h = d3t_GetMeanHeight(&d3_Camera->pos);
+    pos.x = d3_Camera->pos.x;
+    pos.y = d3_Camera->pos.y;
+    pos.z = d3_Camera->pos.z;
+    pos.y = (float)((sv_CameraHeightFar - sv_CameraHeightNear) * sv_CameraHeightFactor + sv_CameraHeightNear + h);
+    d3_SetObjectPos(d3_Camera, &pos);
+    rot.x = d3_Camera->rotation.x;
+    rot.y = d3_Camera->rotation.y;
+    rot.z = d3_Camera->rotation.z;
+    rot.x = (sv_CameraAngleFar - sv_CameraAngleNear) * sv_CameraAngleFactor + sv_CameraAngleNear;
+    d3_SetObjectRot(d3_Camera, &rot);
+    sv_ViewRot[0] = d3_Camera->rotation.x;
+    sv_ViewRot[1] = d3_Camera->rotation.y;
+    sv_ViewRot[2] = d3_Camera->rotation.z;
+    sv_ViewPos[0] = d3_Camera->pos.x;
+    sv_ViewPos[1] = d3_Camera->pos.y;
+    sv_ViewPos[2] = d3_Camera->pos.z;
 }
 /* 0x525ee0, eases the camera height (+0x50) toward the wanted one (the terrain height + 0x623800 .. 0x623808 blend by 0x6f22d4, minus the camera offset +0x7c): a difference above 5.0 is closed by 1/15 per call, at most 10.0;
    the step is kept in 0x6f2374 (not applied while the cutscene flag 0x6310e8 is set) */
