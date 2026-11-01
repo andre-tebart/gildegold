@@ -96,15 +96,15 @@ void ai_PokerAnte(void);                                                        
 void ai_PokerEndRound(void);                                                         /* 0x4a8690 */
 void ai_PokerNpcSetStake(void);                                                         /* 0x4a86f0 */
 int ai_DecideOfficePartner(int a, struct AICHAR *p, int *ctx, int d, struct AIARG *m);   /* 0x4a8760 */
-int ai_Unk4a8a50(int a, AIPER *p, int *ctx, int d, unsigned char *m);           /* 0x4a8a50 */
+int ai_DecideTableValue(int a, AIPER *p, int *ctx, int d, unsigned char *m);           /* 0x4a8a50 */
 int ai_DecidePartnerOtherSex(int a, struct AICHAR *p, int c, int d, struct AIARG *m);              /* 0x4a8ad0 */
-int ai_Unk4a8bf0(void);                                                          /* 0x4a8bf0 */
+int ai_EvalOneInFour(void);                                                          /* 0x4a8bf0 */
 int ai_AlwaysTrue(void);                                                          /* 0x4a8c10 */
 int ai_EvalOwnTimeSlot(int a, AIPER *p);                                               /* 0x4a8c20 */
-int ai_Unk4a8c80(int a, AIPER *p, int c, int d, unsigned char *m);              /* 0x4a8c80 */
-int ai_Unk4a8d20(int a, AIPER *p, int c, int d, unsigned char *m);              /* 0x4a8d20 */
+int ai_DecideTwoNearChars(int a, AIPER *p, int c, int d, unsigned char *m);              /* 0x4a8c80 */
+int ai_DecideNearChar(int a, AIPER *p, int c, int d, unsigned char *m);              /* 0x4a8d20 */
 int ai_DecideBuildingResident(int a, AIPER *p, int c, int d, struct AIARG *m);              /* 0x4a8db0 */
-int ai_Unk4a8ee0(int a, AIPER *p);                                               /* 0x4a8ee0 */
+int ai_EvalTitleGroup7(int a, AIPER *p);                                               /* 0x4a8ee0 */
 /* am.h declares ai_PickPartnerChain with an int b (really a float) */
 #define ai_PickPartnerChainF(p, a, fl, b, f, id) ((int (*)(AIPER *, int, int *, float, float, unsigned short *))ai_PickPartnerChain)(p, a, fl, b, f, id)
 int ai_DecideUnfriendlyPair(int a, AIPER *p, int c, int d, struct AIARG *m);              /* 0x4a8f20 */
@@ -116,12 +116,12 @@ int ai_DecideCloseAcquaintance(int a, AICHAR *p, int c, int d, AIARG *m);  /* 0x
 int ai_DecideOfficeAcquaintance(int a, AICHAR *p, int c, int d, AIARG *m);  /* 0x4a9350 */
 int ai_Unk4a9420(int a, AIPER *p, int c, int d, unsigned char *m);              /* 0x4a9420 */
 int ai_Unk4a94e0(int a, AIPER *p, int c, int d, unsigned char *m);              /* 0x4a94e0 */
-int ai_Unk4a95d0(int a, AIPER *p, int c, int d, unsigned char *m);              /* 0x4a95d0 */
-int ai_Unk4a9660(int a, AIPER *p, int c, int d, unsigned char *m);              /* 0x4a9660 */
+int ai_DecideFarChar(int a, AIPER *p, int c, int d, unsigned char *m);              /* 0x4a95d0 */
+int ai_DecideCloseChar(int a, AIPER *p, int c, int d, unsigned char *m);              /* 0x4a9660 */
 int ai_DecideColumn4Officer(int a, AICHAR *p, int *ctx, int d, AIARG *m);  /* 0x4a9700 */
 int ai_DecideColumn5Officer(int a, AICHAR *p, int *ctx, int d, AIARG *m);  /* 0x4a9880 */
-extern int ai_Unk600e10[19];                                                     /* 0x600e10, the leisure actions */
-int ai_Unk4a9a00(int a, struct AIPER *p, int c, unsigned char *in, unsigned char *m);  /* 0x4a9a00 */
+extern int ai_LeisureActions[19];                                                     /* 0x600e10, the leisure actions */
+int ai_DecideLeisureAction(int a, struct AIPER *p, int c, struct AIARG *in, struct AIARG *m);  /* 0x4a9a00 */
 int ai_Unk4a9fa0(struct AIPER *p, unsigned char *in, unsigned char *out);              /* 0x4a9fa0 */
 extern int ai_Unk600e5c[3];                                                      /* 0x600e5c */
 int ai_Unk4aa120(int a, struct AIPER *p, int c, unsigned char *in, unsigned char *m);  /* 0x4aa120 */

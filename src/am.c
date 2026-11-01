@@ -4268,7 +4268,7 @@ int ai_Unk497490(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
                     s2.kind = 0x10;
                     s2.ref = 0x12;
                     s2.arg = 0;
-                    if (ai_Unk4a9a00(a, p, 0, &s2, &s1) != 0) {
+                    if (ai_DecideLeisureAction(a, p, 0, &s2, &s1) != 0) {
                         *o1 = s2;
                         *o2 = s1;
                         return 0x27;
@@ -6843,7 +6843,7 @@ int ai_Unk49cd30(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     s1.kind = 0;
     s1.ref = 0;
     s1.arg = 0;
-    if (ai_Unk4a9a00(0, p, 0, &s1, &s2) == 0)
+    if (ai_DecideLeisureAction(0, p, 0, &s1, &s2) == 0)
         return 0;
     *o1 = s1;
     *o2 = s2;
