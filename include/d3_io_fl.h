@@ -8,20 +8,11 @@ struct VFSFILE;
 
 typedef struct D3BGFVERT { float x, y, z, nx, ny, nz; } D3BGFVERT;
 
-void bio_rd_c(struct VFSFILE *f, char *c);                                                /* 0x401180 */
-void bio_rd_v3(struct VFSFILE *f, int *v);                                                /* 0x401260 */
 struct VFSFILE * d3_Unk4507a0(char *path);                                                 /* 0x4507a0, opens the fast chunk file */
-void d3_TriNormal(struct D3VECTOR4 *a, struct D3VECTOR4 *b, struct D3VECTOR4 *c, struct D3VECTOR4 *n);              /* 0x454700, face normal */
 void d3_CalcBounds(D3BGF *m);                                                    /* 0x450ec0 */
 int d3_FLChunkSize(D3BGF *m, D3BGFDESC *d);                                       /* 0x451180 */
 
 /* 0x451250 d3_AddFLChunk (was unk_451250.h, worker mesh) */
-long vfs_ftell(struct VFSFILE *f);                                                 /* 0x431170 */
-int vfs_fseek(struct VFSFILE *f, long offset, int origin);                            /* 0x430fa0 */
-int vfs_fread(void *buf, int size, int n, struct VFSFILE *f);                     /* 0x430bd0 */
-unsigned vfs_fwrite(void *buf, int size, int n, struct VFSFILE *f);                    /* 0x430e30 */
-void bio_wr_c(struct VFSFILE *f, char c);                                        /* 0x4011f0 */
-void bio_wr_v3(struct VFSFILE *f, int *v);                                       /* 0x4012d0 */
 
 /* D3_ZERO (d3.h) with destination and size both named directly in the asm */
 #define D3FL_ZERO_AT(var, size) {                                   \
