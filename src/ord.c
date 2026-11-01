@@ -16,6 +16,16 @@
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, ai_Unk4d88c0 0x4d88c0 move it as a word / movzx) */
 #define d3sm_GetVertexI ((int (*)())d3sm_GetVertex)  /* 0x45f100 (d3_sm.c: char, D3SM *, int, int, D3VECTOR *): @original this unit's callers read an int result (byte-matched unk_Unk4f86a0 (ord.c): no 0f be c0 after the call) */
 #include "d3_types.h"
+#include "ahm.h"
+#include "ai.h"
+#include "anm.h"
+#include "cm.h"
+#include "f3gm.h"
+#include "he.h"
+#include "io_text.h"
+#include "sv.h"
+#include "tr.h"
+#include "unk_58bbd0.h"
 extern D3SCENE d3_Scenes[];
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
