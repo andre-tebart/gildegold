@@ -5275,7 +5275,7 @@ int ai_Unk499660(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
                             return r;
                         }
                         if (he_Unk553d60((AIPER *)&ai_CharsT[y->owner], p)
-                            && he_Unk553d10((AIPER *)&ai_CharsT[y->owner], p) && he_Unk553cc0((AIBLD *)y)
+                            && he_NoEvent2ePair((AIPER *)&ai_CharsT[y->owner], p) && he_Unk553cc0((AIBLD *)y)
                             && he_Unk570ea0((AIPER *)&ai_CharsT[y->owner], p)) {
                             o1->kind = 4;
                             o1->ref = y->id;
@@ -5411,7 +5411,7 @@ int ai_Unk499c10(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
                                 }
                                 return r;
                             }
-                            if (he_Unk553d60(c, p) && he_Unk553d10(c, p)) {
+                            if (he_Unk553d60(c, p) && he_NoEvent2ePair(c, p)) {
                                 o1->kind = 7;
                                 o1->ref = c->netId;
                                 o1->arg = 1;
@@ -6912,7 +6912,7 @@ int ai_Unk49ce50(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 find:
     memset(&s1, 0, sizeof(s1));
     memset(&s2, 0, sizeof(s2));
-    if (ai_Unk4aa6a0(p, &s1, &s2) == 0)
+    if (ai_DecideLittleKnownChar(p, &s1, &s2) == 0)
         return 0;
     g = gm_Mix((AIPER *)p, (AIPER *)&ai_CharsT[s2.arg2], 4);
     if (util_RandomF() + g < 1.0f) {
