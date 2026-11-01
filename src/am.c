@@ -6853,7 +6853,7 @@ int ai_Unk49cd30(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 
 int ai_Unk49cdb0(G5CH *p, AIARG *s1, AIARG *s2)
 {
-    return ai_Unk4a9fa0(p, s1, s2) ? 0x27 : 0;
+    return ai_CheckLeisureAction(p, s1, s2) ? 0x27 : 0;
 }
 /* 0x49cdd0, eval callback 0x27: decision 0x13 decides the rating */
 
