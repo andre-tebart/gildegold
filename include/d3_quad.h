@@ -36,7 +36,6 @@ typedef struct D3QMAT {
 struct MPOOL;
 extern struct MPOOL *d3_QItemPool;  /* 0x633db4 */
 extern struct MPOOL *d3_QNodePool;  /* 0x633db0 */
-void *pool_Alloc(struct MPOOL **pool, unsigned int size, int count);        /* 0x422a20, zeroed (mem.h) */
 void pool_Free(struct MPOOL **pool, void *ptr);                               /* 0x422b30 (mem.h) */
 
 void d3q_FreeNode(D3QNODE *n);                                              /* 0x457c30 */
@@ -45,7 +44,6 @@ D3QNODE *d3q_MakeChild(D3QNODE *parent, float *min, float *max);           /* 0x
 char d3q_GetBounds(D3OBJECT *obj, float *min, float *max);                  /* 0x457db0 */
 void d3q_Build(D3QNODE *n, unsigned int minitems, volatile unsigned int depth, volatile unsigned int maxdepth);   /* 0x457f20 */
 extern D3BOXVERT d3_QBox[8];        /* 0x633b30 */
-unsigned char d3_ClipBox(void *box, float *zmin, float *zmax);                        /* 0x439650, d3_engine.c (d3_quad.c reads it through d3_ClipBoxU) */
 
 D3QNODE *d3q_Create(D3OBJECT *start, unsigned int mask, unsigned int minitems, unsigned int maxdepth);  /* 0x4582d0 */
 D3BOXVERT *d3q_BoxCorners(D3QNODE *n, float *pos, float *m);                /* 0x458360 */
