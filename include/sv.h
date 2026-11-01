@@ -177,6 +177,7 @@ extern float sv_FramesPerTick;                              /* 0x62378c */
 extern int sv_TickFrames;                                   /* 0x623790 */
 extern char sv_GroundplanColours[];                                 /* 0x623794 */
 extern int sv_StatusTime;                                   /* 0x6237c4 */
+extern unsigned sv_SceneEventTime;                          /* 0x6237c8 */
 extern int sv_PanelRebuild;                                    /* 0x6237cc */
 extern float sv_CameraLimits[12];                           /* 0x6237d0 */
 extern float sv_CameraHeightNear;                           /* 0x623800 */

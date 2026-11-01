@@ -483,7 +483,7 @@ extern char * sv_CameraObj;
 extern int ch_CurrentScriptGroup;
 extern char ch_StepSample[];
 extern int d2_CutsceneActive;
-extern GAPDATA full_data_6237c8[];
+extern unsigned sv_SceneEventTime;  /* 0x6237c8, sv.h */
 extern GAPDATA full_data_6f2314[];
 extern int snd_RoomBank;
 extern int sv_FrameBase;
@@ -8819,7 +8819,7 @@ void ai_Unk59e420(unsigned char *param_1, int param_2)
     }
     sv_ResetScreenClip();
     sv_RunFrame(ai_Unk59e420, 0x20007);
-    U_I((unsigned)&full_data_6237c8) = 0;
+    U_I((unsigned)&sv_SceneEventTime) = 0;
     sv_ResetSelection();
     sv_ClearSelection();
     kind = U_I((unsigned)&d3_CurrentScene);
@@ -8996,7 +8996,7 @@ void ai_Unk59ee40(unsigned char *param_1)
         return;
     }
     U_I((unsigned)&sv_FrameBase) = U_I((unsigned)&sv_FrameDepth) + 1;
-    U_I((unsigned)&full_data_6237c8) = 0;
+    U_I((unsigned)&sv_SceneEventTime) = 0;
     sv_ResetSelection();
     sv_ClearSelection();
     saved1 = U_I((unsigned)&sv_ViewPosX);
@@ -9153,7 +9153,7 @@ void ai_Unk59f410(unsigned short *param_1)
     U_I((unsigned)&evt_NoGroup) = U_I(param_1 + 1);
     U_I((unsigned)&ch_CurrentScriptGroup) = U_I(param_1 + 1);
     U_I((unsigned)&sv_FrameBase) = U_I((unsigned)&sv_FrameDepth) + 1;
-    U_I((unsigned)&full_data_6237c8) = 0;
+    U_I((unsigned)&sv_SceneEventTime) = 0;
     sv_ResetSelection();
     sv_ClearSelection();
     idx = -1;

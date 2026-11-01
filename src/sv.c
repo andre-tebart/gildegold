@@ -92,7 +92,6 @@ extern int ai_PickedChar;
 extern int d2_HitUnderPointer;
 extern unsigned char ai_TimeHour;
 extern int ai_SceneChars[32];
-extern GAPDATA full_data_6237c8[];
 extern int gm_PlayerRecords[688];
 extern int hst_KeyNext;
 
@@ -4872,10 +4871,10 @@ void sv_Unk52b500(unsigned char *a)
     if (it != 0 && *it != 0xfd)
         cls = ai_Goods + *(unsigned short *)it * 0x41;
     kind = ai_BTypes + *a * 0x24d;
-    if (SV_I((unsigned)&full_data_6237c8) + 500 < SV_I((unsigned)&ai_ClockMs)) {
+    if (SV_I((unsigned)&sv_SceneEventTime) + 500 < SV_I((unsigned)&ai_ClockMs)) {
         if (ai_Unk5fb5b0 != 0 && (k = *(int *)(ai_Unk5fb5b0 + 0x3c8)) != 0 && *(int *)(k + 0x318) != 0)
             ((int (*)())*(int *)(k + 0x318))(ai_Unk5fb5b0, 6, k + 0x31c, 0);
-        SV_I((unsigned)&full_data_6237c8) = SV_I((unsigned)&ai_ClockMs);
+        SV_I((unsigned)&sv_SceneEventTime) = SV_I((unsigned)&ai_ClockMs);
     }
     h = gm_ClockSeason((unsigned)&ai_Time);
     for (i = 0; i < 0x20; i++) {
@@ -7691,6 +7690,7 @@ float sv_FramesPerTick = 30.0f;  /* 0x62378c */
 int sv_TickFrames = 30;  /* 0x623790, the frames drawn since the last timer tick (counted by the frame loop) */
 char sv_GroundplanColours[] = "\377\376\005\005%\377\377/\021\005\377\030\3746\343\377\231\005\005\377\366z\005\005\266W\377<\005P\031H\005\013\304^\305\005g\357\234\231\005\010r";  /* 0x623794, the table of */
 int sv_StatusTime = -1;  /* 0x6237c4, when the status line was set (d3_Time) */
+unsigned sv_SceneEventTime = 0xffffffff;  /* 0x6237c8, ai_ClockMs when sv_Unk52b500 last fired event 6 of the default scene (every 500 ms; the scene changes of unk_58bbd0.c reset it to 0) */
 int sv_PanelRebuild = 1;  /* 0x6237cc */
 /* 0x6237d0, the camera limits: three settings of (height, angle), first the near view pair and then (+3 pairs)
    the far one. ai_ApplyGfxOptions (0x5d5c40) copies the pair of the camera_limits option (ai_GfxFloor.byte[1])
