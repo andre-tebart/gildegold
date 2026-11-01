@@ -1811,7 +1811,7 @@ void *surf;
     d2_AddDirty((short)x, (short)y, d2_Pics[pic].w, d2_Pics[pic].h);
     d2_UnlockSurface(surf);
 }
-/* 0x46d220, draws the caption of an object (style bit 4: below it, bit 0x20: with a sprite behind) */
+/* 0x46d220, draws the caption of an object (style bit 4: below it, bit 0x20: with a sprite behind) @deep read whole against the original: the caption call is two calls, 'if (style & 4)' at o->x - 0x30 / o->y + o->h, else at the computed x / y (the original has two d2_DrawTextBox call sites with an epilogue after the first); every flag test, offset and argument matches. Left: allocation - the original keeps flags in the dead o argument slot ('+ mov dword ptr [esp + 0x1c], 8', 'or dword ptr [esp + 0x20], ebx') and x / y in ebp / edi with the 0x20 constant in ebx ('test bl, al'), ours keeps flags in ebp and x in that slot ('- mov ebp, 8', '- add dword ptr [esp + 0x1c], eax'); tried the declaration order (no change) */
 
 void d2_DrawObjCaption(o)
 D2OBJ *o;
@@ -1847,11 +1847,10 @@ D2OBJ *o;
                          (float)o->picH / (float)d2_CaptionTex->size, 0.5f);
             d2_LockSurface(d2_ScreenSurf);
         }
-        if (o->style & 4) {
-            x = o->x;
-            y = o->y + o->h;
-        }
-        d2_DrawTextBox(x - 0x30, y, o->picW + 0x60, o->h, d2_ScreenSurf, o->caption, flags);
+        if (o->style & 4)
+            d2_DrawTextBox(o->x - 0x30, o->y + o->h, o->picW + 0x60, o->h, d2_ScreenSurf, o->caption, flags);
+        else
+            d2_DrawTextBox(x - 0x30, y, o->picW + 0x60, o->h, d2_ScreenSurf, o->caption, flags);
     }
 }
 /* 0x46d3d0, draws all objects in drawing order, each clipped to its windows @deep draft (93 differing instructions of 1137 vs 1156; 997/3456 bytes). The reading is register allocation and scheduling only: the mode flags variable sits in edi where the original uses ebp (spell regs at 46db68, the whole 46db68..46dbf5 block), the caption/dirty blocks push the same arguments in another order (46dbfa..46dc7f), and the 46e0d4..46e102 stretch is instruction-stream misalignment (garbage decode on one side) with 46e14c.. alignment fill. spell dup-tail at 46dbb0 (5 instructions, the caption bounds) tried as if/else instead of the ternaries tx = captionX != -1 ? ... : ...: identical bytes, reverted; pull-after-branch and polarity swap do not apply (the arms compute different expressions, no common statement). code at 46e0fc: no menu rule, the bytes are a misaligned decode. Q1 fixed (renamed d2_Unk46d3d0 this session); Q2 blocked: d3io_NoopCallback (empty no-op, no evidence, @deep in d3_io_a.c), d2_NoBackgroundRestore (char flag only compared to 1, no writer in our source), d2_SetSurfaceClip (defined in gfx.c 0x479cd0, its prototype would have to move unit), D2OBJ/D2WIN unk00/unk58/unk6e/unk268 (no evidence in this function's reads); fillFraction named this session. Left: the ebp/edi allocation and the push scheduling (listing/c2prio/siblings). */
