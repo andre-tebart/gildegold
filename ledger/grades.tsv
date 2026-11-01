@@ -2148,11 +2148,11 @@ exe	0x004c3720	ai_Unk4c3720	cm	draft	draft
 exe	0x004c3850	ai_Unk4c3850	cm	draft	draft		
 exe	0x004c38e0	ai_Unk4c38e0	cm	draft	draft		
 exe	0x004c39c0	ai_Unk4c39c0	cm	draft	draft		
-exe	0x004c3ae0	cm_GetSlotState	cm	byte	draft		
-exe	0x004c3b10	cm_GetSlotValue	cm	byte	draft		
-exe	0x004c3b30	cm_BeginSendGroup	cm	byte	draft		
-exe	0x004c3b40	cm_EndSendGroup	cm	byte	draft		
-exe	0x004c3b50	cm_SendGroupState	cm	draft	draft		
+exe	0x004c3ae0	cm_GetSlotState	cm	byte	readable		
+exe	0x004c3b10	cm_GetSlotValue	cm	byte	readable		
+exe	0x004c3b30	cm_BeginSendGroup	cm	byte	readable		
+exe	0x004c3b40	cm_EndSendGroup	cm	byte	readable		
+exe	0x004c3b50	cm_SendGroupState	cm	draft	readable		
 exe	0x004c3ba0	cm_BeginFieldBlock	cm	byte	draft		
 exe	0x004c3c00	cm_AddFieldDelta	cm	draft	draft		
 exe	0x004c3d00	cm_AddFieldValues	cm	draft	draft		
@@ -2405,7 +2405,7 @@ exe	0x004cdac0	ai_Unk4cdac0	cm	byte	draft
 exe	0x004cdb20	ai_Unk4cdb20	cm	byte	draft		
 exe	0x004cdb80	ai_Unk4cdb80	cm	draft	draft		
 exe	0x004cdcf0	ai_Unk4cdcf0	cm	draft	draft		
-exe	0x004cde20	ai_Unk4cde20	cm	draft	draft		
+exe	0x004cde20	cm_UpdateHandObject	cm	draft	draft		
 exe	0x004cdf00	ai_Unk4cdf00	cm	draft	draft		
 exe	0x004cdf80	ai_Unk4cdf80	cm	draft	draft		
 exe	0x004cdfe0	ai_Unk4cdfe0	cm	byte	draft		
@@ -2940,7 +2940,7 @@ exe	0x004fad60	gm_FindRichest	f3gm	draft	draft
 exe	0x004fae50	unk_Unk4fae50	f3gm	draft	draft		
 exe	0x004fb0e0	unk_Unk4fb0e0	f3gm	draft	draft		
 exe	0x004fb330	unk_Unk4fb330	f3gm	byte	draft		
-exe	0x004fb390	unk_Unk4fb390	f3gm	draft	draft		
+exe	0x004fb390	gm_CharNameRecord	f3gm	draft	draft		
 exe	0x004fb5a0	gm_SelectModelVariant	f3gm	draft	draft		
 exe	0x004fb620	unk_Unk4fb620	f3gm	shape	draft		
 exe	0x004fb770	unk_Unk4fb770	f3gm	draft	draft		
@@ -3129,7 +3129,7 @@ exe	0x00509eb0	gm_Unk509eb0	f3gm	byte	draft
 exe	0x00509ee0	gm_Unk509ee0	f3gm	draft	draft		
 exe	0x00509f20	gm_Unk509f20	f3gm	draft	draft		
 exe	0x00509f80	gm_Unk509f80	f3gm	draft	draft		
-exe	0x00509ff0	gm_Unk509ff0	f3gm	byte	draft		
+exe	0x00509ff0	gm_ObjectOwnerChar	f3gm	byte	draft		
 exe	0x0050a050	gm_Unk50a050	f3gm	byte	draft		
 exe	0x0050a0b0	gm_Unk50a0b0	f3gm	byte	draft		
 exe	0x0050a0f0	gm_Unk50a0f0	f3gm	draft	draft		
@@ -3247,7 +3247,7 @@ exe	0x005176d0	txt_Format	io_text	draft	readable	deep
 exe	0x00519010	ls_LanguageOf	ls	byte	readable		
 exe	0x005190a0	ls_GetLanguage	ls	byte	readable		
 exe	0x005190b0	ls_SaveGame	ls	draft	readable	deep	
-exe	0x005194c0	ls_WriteSaveHeader	ls	draft	draft		
+exe	0x005194c0	ls_WriteSaveHeader	ls	byte	readable		
 exe	0x00519a00	ls_RefsToIds	ls	draft	draft	deep	
 exe	0x00519aa0	ls_IdsToRefs	ls	byte	draft	deep	
 exe	0x00519b50	ls_RelinkScene	ls	shape	draft	deep	
@@ -3259,19 +3259,19 @@ exe	0x0051ad30	ls_ActionIndex	ls	byte	readable
 exe	0x0051ad60	ls_ActionAt	ls	byte	readable		
 exe	0x0051ad80	unk_Unk51ad80	ls	draft	draft	deep	
 exe	0x0051aff0	ls_WriteSceneRecords	ls	draft	draft	deep	
-exe	0x0051b340	ls_WritePlayerSlots	ls	draft	draft		
+exe	0x0051b340	ls_WritePlayerSlots	ls	draft	readable	deep	
 exe	0x0051b890	ls_WriteRelations	ls	shape	readable		
 exe	0x0051b910	ls_WriteStatistics	ls	draft	draft	deep	
 exe	0x0051bdb0	ls_WriteAvatars	ls	byte	readable		
 exe	0x0051bdc0	ls_WritePlayerTable	ls	draft	draft	deep	
 exe	0x0051c2f0	ls_WriteParties	ls	draft	draft	deep	
 exe	0x0051c450	ls_WriteHistory	ls	shape	readable		
-exe	0x0051c560	ls_WriteMessageQueues	ls	draft	draft		
+exe	0x0051c560	ls_WriteMessageQueues	ls	shape	readable		
 exe	0x0051c870	ls_WriteEnvironment	ls	draft	draft	deep	
 exe	0x0051c920	ls_Read	ls	byte	readable		
 exe	0x0051c950	ls_LoadGame	ls	draft	draft	deep	
 exe	0x0051cee0	ls_ReadSaveHeader	ls	draft	readable	deep	
-exe	0x0051d2d0	unk_Unk51d2d0	ls	draft	draft	deep	
+exe	0x0051d2d0	ls_LoadScene	ls	draft	draft	deep	
 exe	0x0051d3d0	ls_ReadObjects	ls	byte	readable		
 exe	0x0051d4f0	ls_HookBuildingCB	ls	byte	draft	deep	
 exe	0x0051d530	ls_ClearObjectFlag	ls	byte	readable		
@@ -3279,10 +3279,10 @@ exe	0x0051d550	ls_ReadBuildings	ls	draft	draft	deep
 exe	0x0051db00	ls_ReadPlayerRecords	ls	draft	draft	deep	
 exe	0x0051de70	ls_ReadCharacters	ls	draft	draft	deep	
 exe	0x0051e750	ls_ReadCharacter	ls	shape	readable		
-exe	0x0051e900	unk_Unk51e900	ls	draft	draft		
-exe	0x0051f080	unk_Unk51f080	ls	draft	draft		
+exe	0x0051e900	ls_ReadSceneRecords	ls	draft	readable	deep	
+exe	0x0051f080	ls_ReadPlayerSlots	ls	draft	readable	deep	
 exe	0x0051f650	ls_ReadRelations	ls	shape	readable		
-exe	0x0051f720	unk_Unk51f720	ls	draft	draft		
+exe	0x0051f720	ls_ReadStatistics	ls	byte	readable		
 exe	0x0051fb80	ls_ReadAvatars	ls	byte	readable		
 exe	0x0051fb90	unk_Unk51fb90	ls	draft	draft	deep	
 exe	0x00520000	unk_Unk520000	ls	draft	draft	deep	
@@ -3291,7 +3291,7 @@ exe	0x00520310	unk_Unk520310	ls	draft	draft	deep
 exe	0x005205f0	unk_Unk5205f0	ls	draft	draft	deep	
 exe	0x005206b0	ls_FixupAfterLoad	ls	draft	draft	deep	
 exe	0x00520a30	ls_SendGame	ls	shape	readable		
-exe	0x00520b80	ls_ReceiveGame	ls	draft	draft		
+exe	0x00520b80	ls_ReceiveGame	ls	byte	readable		
 exe	0x00520ec0	sv_UpdateFramesPerTick	sv	byte	readable		
 exe	0x00520ee0	sv_InitTick	sv	byte	readable		
 exe	0x00520f10	sv_UnregisterTick	sv	byte	readable		
@@ -3440,7 +3440,7 @@ exe	0x00531b80	main_SetScreenSaver	main	byte	readable
 exe	0x00531ba0	main_Init	main	byte	readable		
 exe	0x00531c20	main_ShutdownEngine	main	byte	readable		
 exe	0x00531c50	main_OpenScreen	main	draft	readable	deep	
-exe	0x00532160	main_OpenEngine	main	draft	readable		
+exe	0x00532160	main_OpenEngine	main	byte	readable		
 exe	0x005324f0	main_CreateWindow	main	draft	readable	deep	
 exe	0x00532700	main_StartCityGame	main	byte	readable		
 exe	0x005327e0	main_PlayerCountDialog	main	draft	readable	deep	
