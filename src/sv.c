@@ -4,10 +4,13 @@
    Open: the start and the end rest on the .data order only.
    Open: sv.c includes ai.h but not d2.h yet: its char * declarations of d2_Objs / d2_LastWindowPtr and its K&R
    d2_BlitPartMode supersede d2.h's, so the d2 records go through the SV* views and the SV_I / SV_W address macros.
-   Open: not included yet (dcp headers conflicts sv HEADER): ch.h cm.h d2.h f3gm.h f3snd.h gfx.h rt.h
-   sblib.h unk_5d33b0.h; held by own declarations that differ from the owner's: d2_Objs, d2_LastWindowPtr,
-   d2_BlitPartMode, d2_AddHitRect; calls whose argument count differs from the definition (read the
-   original's pushes): sb_PlaySample, d2_SetObjValue, d2_PlaceMainWindow, ch_FindByObject, gm_Season.
+   This blocks Q4 / Q7 of every function that touches widgets or calls a K&R d2 / gfx prototype.
+   Open: head: include/gfx.h, include/d2.h unsettled (d2_Objs / d2_LastWindowPtr char *, d2_AddHitRect and
+   d2_BlitPartMode K&R; 39 K&R d2 prototypes whose calls need a re-grade); also not included: ch.h cm.h
+   f3gm.h f3snd.h rt.h sblib.h unk_5d33b0.h. Calls whose argument count differs from the definition (read
+   the original's pushes): sb_PlaySample, d2_SetObjValue, d2_PlaceMainWindow, ch_FindByObject. The
+   @original cast macros (d2_PutPixelRGBc, d2_CreatePicObjS, d2_WinOpenPicStyledS, ai_SwitchRoomI,
+   cm_SendExSetHEI) record the parameter types the original's calls show.
    Open: the camera 0xfc2dec has two names: sv_CameraObj (char *, read by raw offsets in most functions) and
    d3.h's typed d3_Camera (the camera functions); likewise ai_Unk5fb5b0 (char *) for d3_DefaultScene.
    unit of rea 8cef7d5b (src/game/sv.c); boundaries in decl/text.dcl */
