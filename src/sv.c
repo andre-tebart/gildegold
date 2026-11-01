@@ -293,7 +293,8 @@ void d2_RadioClear(int g);                     /* 0x46c600 */
 void d2_CloseView(int view);            /* 0x4758f0 */
 /* ai_Unk7e4048: view of ai_PlayerSlots (tools/data_views.py) */
 /* ai_Unk7e4058: view of ai_PlayerSlots (tools/data_views.py) */
-extern int ai_Unk6f22c0, ai_Unk6f22c4, ai_Unk6f22c8;  /* 0x6f22c0, 0x6f22c4, 0x6f22c8, 0x6f22bc */
+extern int ai_Unk6f22c0;  /* 0x6f22c0 */
+extern struct D2SURF *sv_GroundplanSurf, *sv_GroundplanView;  /* 0x6f22c4, 0x6f22c8 */
 extern char ai_Unk6f0454[3];  /* 0x6f0454 */
 extern char *ai_Unk6ed92c;  /* 0x6ed92c */
 extern OPTIONBYTES ai_GamePanel;  /* 0x6f3668 */
@@ -916,7 +917,7 @@ void sv_BuildScreenLayout(int s)
         d2_UnlockSurface(ai_Unk6ed92c);
     }
     ai_Unkfb9068 = sv_ViewRectRight;
-    q = ai_Unk7662e0;
+    q = sv_GroundplanButtons;
     for (i = 0xf; i != 0; i--)
         *q++ = -1;
     ai_Unkfb9060 = sv_ViewRectLeft;
@@ -928,8 +929,8 @@ void sv_BuildScreenLayout(int s)
     ai_Unkfb906c = sv_ViewRectBottom;
     tab[1] = 0x68;
     tab[2] = 0x6e;
-    ai_Unk6f22c8 = d2_MakeSurface(tab, 3);
-    d2_ClearSurface(ai_Unk6f22c8);
+    sv_GroundplanView = d2_MakeSurface(tab, 3);
+    d2_ClearSurface(sv_GroundplanView);
     ai_Unk6238a4 = d2_CreatePicObj(0x286, 0x23c, 0x544);
     *(int *)(d2_Objs + 0x4c + ai_Unk6238a4 * 0x2ec) = 1;
     d2_EnableObject(ai_Unk6238a4, 0);
@@ -1011,12 +1012,12 @@ void sv_SetPanelEnabled(int n)
         d2_EnableObject(ai_Unk62384c, n);
     if (ai_Unk623840 != -1)
         d2_EnableObject(*(int *)(ai_Unkf8f128 + 0x264 + ai_Unk623840 * 0x3c4), n);
-    q = ai_Unk7662e0;
+    q = sv_GroundplanButtons;
     do {
         if (*q != -1)
             d2_EnableObject(*q, n);
         q++;
-    } while ((int)q < (int)((unsigned)&ai_Unk7662e0 + 0x3c));
+    } while ((int)q < (int)((unsigned)&sv_GroundplanButtons + 0x3c));
 }
 /* 0x522280, closes the panel widgets (0x46e710, id := -1) and hides the rest */
 
@@ -1078,21 +1079,21 @@ void sv_DestroyScreen(void)
 {
     int *q;
 
-    q = ai_Unk7662e0;
+    q = sv_GroundplanButtons;
     do {
         if (*q != -1) {
             d2_RemoveObj(*q);
             *q = -1;
         }
         q++;
-    } while ((int)q < (int)((unsigned)&ai_Unk7662e0 + 0x3c));
-    if (ai_Unk6f22c4 != 0) {
-        d2_FreeSurface(ai_Unk6f22c4);
-        ai_Unk6f22c4 = 0;
+    } while ((int)q < (int)((unsigned)&sv_GroundplanButtons + 0x3c));
+    if (sv_GroundplanSurf != 0) {
+        d2_FreeSurface(sv_GroundplanSurf);
+        sv_GroundplanSurf = 0;
     }
-    if (ai_Unk6f22c8 != 0) {
-        d2_FreeSurface(ai_Unk6f22c8);
-        ai_Unk6f22c8 = 0;
+    if (sv_GroundplanView != 0) {
+        d2_FreeSurface(sv_GroundplanView);
+        sv_GroundplanView = 0;
     }
     if (ai_Unk6f22c0 != 0) {
         mem_Free(ai_Unk6f22c0);
@@ -1115,173 +1116,181 @@ void sv_DestroyScreen(void)
 }
 
 extern char *ai_Goods;              /* 0x91aaf0 */
+#define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (f3gm.c: char *) as the AIGOOD records it points to */
+#define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
 int d2_BlitPartMode();                     /* 0x479150 */  /* @original: sv.c's call at 1099 passes 1 argument to d2.h's 8-parameter prototype */
 extern int ai_Unk6f22dc, sv_ResearchClass, sv_ScreenDirty, ai_Unk6f235c, ai_Unk6f2360, ai_Unk623e8c;  /* 0x6f22dc, 0x6f233c, 0x6f2358, 0x6f235c, 0x6f2360, 0x623e8c */
 extern int sv_ResearchClass;  /* 0x6f233c, the class number of the research list the panel shows (gm_BuildingClass) */
-extern char ai_Unkf8ef80[];             /* 0xf8ef80, the data directory */
-extern char ai_Unk623794[];
-extern unsigned char ai_Unk623ee8[8];
+extern char d2_GfxDir[];             /* 0xf8ef80, the data directory */
+extern char sv_GroundplanColours[];
 extern int d3_CurrentScene;                /* 0x633444 */
 int sprintf(char *buf, const char *fmt, ...);                     /* 0x5de652 */
 struct D2SURF * d2_LoadBmpSurface();                     /* 0x478b50 */
 void d2_GetPixelColour();                     /* 0x4798f0 */
 int d2_PutPixelRGB();                     /* 0x4799e0 */
+#define d2_PutPixelRGBc ((int (*)(int, int, unsigned char, unsigned char, unsigned char, struct D2SURF *))d2_PutPixelRGB)  /* @original: sv_LoadGroundplan pushes the colour bytes as dwords loaded from the pixel buffer (char parameters, gfx.c masks them) */
 int d2_CompareColour();                     /* 0x478930 */
 int gm_BuildingClass(int kind);                /* 0x501d80, f3gm.c, the class of a building kind */
-int unk_Unk502570();                     /* 0x502570 */
+int gm_GoodPicture();                     /* 0x502570 */
 int d2_CreatePicObj();                     /* 0x46cd80 */
+#define d2_CreatePicObjS ((int (*)(short, short, int))d2_CreatePicObj)  /* @original: sv_LoadGroundplan adds d2_ScreenW + x in 16 bits (a short x, as d2.c's callers) */
 unsigned short * gm_QueryNext(void);                   /* 0x4ffcc0 */
 int gm_ResearchClass(int k, int *out);         /* 0x50b090, f3gm.c, the research class of a building kind */
 
-/* 0x5224a0, loads the groundplan bitmap of the selected building (0x6f2308 or 0x6f230c) into the view 0x6f22c4: "%sbmp\\groundplans\\riss_%s.bmp" with the building's name, else by its class (0x501d80: 1 craftsmen: tinkturei /
-   parfuemer / wirtshaus / handwerks, 3 rathaus / Arbeiter, 5 zunfthaus, others geldleihe / lagerhaus / kirche / stadtwache / handwerks), copies it to the view 0x6f22c8, then walks the companion bitmap (the name + a
-   suffix 0x623ee8) for the colours of the table 0x623794 and creates one button (0x46cd80) per marked cell for the matching offered item (0x4ffe90 / 0x4ffcc0 / 0x502570); the buttons go to the table 0x7662e0. ROUGH */
-void sv_Unk5224a0(void)
+/* 0x5224a0, loads the groundplan of the selected building (ai_PlayerBuilding, else ai_FallbackBuilding):
+   bmp\groundplans\riss_<type name>.bmp, else one by the building class (gm_BuildingClass 1: wirtshaus /
+   parfuemerie / tinkturei / the name / handwerksbetrieb, 3: rathaus / Arbeiterunterkunft, 5: zunfthaus, other:
+   geldleihe / lagerhaus / kirche / stadtwache / the name / handwerksbetrieb); copies it into sv_GroundplanView,
+   then reads the cell map <name>_C.bmp: a white pixel marks a cell, the pixel right of it one of the 15
+   sv_GroundplanColours, the n-th colour the n-th good of the building's type (kinds 2 / 6, its slot list) or
+   the n-th offered object (type kind 2); one picture button per cell into sv_GroundplanButtons
+   @deep read whole against the original and reconstructed (strings, per-branch sprintf, class/kind chains,
+   char-parameter PutPixelRGB, short CreatePicObj x, strcat _C.bmp, kind-2 query branch first, slot loop);
+   411 vs 412 ins. Left: the cell map's y loop is top-tested in the original (0x5227d1 cmp ebx,[eax+8]; jge
+   0x522974 ... 0x522913 jmp 0x5227d1, exit block xor ebp,ebp re-zeroing the cached 0) where ours is
+   rotated (cmp [eax+8],ebp; jle / bottom mov ecx,[eax+8]; inc ebx; cmp ebx,ecx; jl) and our epilogue
+   follows the loop; for / while / for(;;)+break / goto loop all compile identically, so the form is the
+   optimizer's (the 0-register ebp reused as i in the loop), not the source. Also 0x5228c4 mov cl,[eax+ebx]
+   vs mov ecx,eax; add ecx,ebx; mov cl,[ecx] (addressing choice of ai_GoodsT[id].type, same with a char*
+   index) */
+void sv_LoadGroundplan(void)
 {
-    unsigned char *b;
-    char *rec;
-    int k, x, y, w, h, c, n, i, cnt;
+    AIBLD *b;
+    AIBTYPE *bt;
+    int x, y, i, n, slot, cnt, pic, cls;
+    unsigned id;
+    char kind;
+    unsigned short *list;
+    unsigned short *obj;
+    unsigned char white[3];
+    unsigned char rgb[4];
     char name[0x100];
-    unsigned char col[3], px[4];
-    char *dir;
-    short *it;
-    unsigned short *lst;
-    char *ext;
 
-    col[0] = 0xff;
-    col[1] = 0xff;
-    col[2] = 0xff;
-    b = (unsigned char *)ai_PlayerBuilding;
-    if (b == 0)
-        b = (unsigned char *)ai_FallbackBuilding;
-    if (ai_Unk6f22c4 != 0) {
-        d2_FreeSurface(ai_Unk6f22c4);
-        ai_Unk6f22c4 = 0;
+    white[0] = 0xff;
+    white[1] = 0xff;
+    white[2] = 0xff;
+    if (ai_PlayerBuilding != 0)
+        b = (AIBLD *)ai_PlayerBuilding;
+    else
+        b = (AIBLD *)ai_FallbackBuilding;
+    if (sv_GroundplanSurf != 0) {
+        d2_FreeSurface(sv_GroundplanSurf);
+        sv_GroundplanSurf = 0;
     }
-    rec = ai_BTypes + *b * 0x24d;
-    sprintf(name, "%sbmp\\groundplans\\riss_%s.bmp", ai_Unkf8ef80, rec + 1);
-    ai_Unk6f22c4 = d2_LoadBmpSurface(name);
-    if (ai_Unk6f22c4 == 0) {
-        k = gm_BuildingClass(*b);
-        if (k == 1) {
-            if (rec[0] == 0x16)
-                dir = "%sbmp\\groundplans\\riss_wirtshaus.bmp";
-            else if (rec[0] == 0x0e)
-                dir = "%sbmp\\groundplans\\riss_parfuemer.bmp";
-            else if (rec[0] == 8)
-                dir = "%sbmp\\groundplans\\riss_tinkturei.bmp";
+    bt = &ai_BTypesT[b->type];
+    sprintf(name, "%sbmp\groundplans\riss_%s.bmp", d2_GfxDir, bt->pad001);
+    sv_GroundplanSurf = d2_LoadBmpSurface(name);
+    if (sv_GroundplanSurf == 0) {
+        cls = gm_BuildingClass(b->type);
+        if (cls == 1) {
+            if (bt->kind == 0x16)
+                sprintf(name, "%sbmp\groundplans\riss_wirtshaus.bmp", d2_GfxDir);
+            else if (bt->kind == 0x0e)
+                sprintf(name, "%sbmp\groundplans\riss_parfuemerie.bmp", d2_GfxDir);
+            else if (bt->kind == 8)
+                sprintf(name, "%sbmp\groundplans\riss_tinkturei.bmp", d2_GfxDir);
             else {
-                sprintf(name, "%sbmp\\groundplans\\riss_%s.bmp", ai_Unkf8ef80, rec + 1);
-                ai_Unk6f22c4 = d2_LoadBmpSurface(name);
-                if (ai_Unk6f22c4 != 0)
-                    goto have;
-                dir = "%sbmp\\groundplans\\riss_handwerks.bmp";
+                sprintf(name, "%sbmp\groundplans\riss_%s.bmp", d2_GfxDir, bt->pad001);
+                sv_GroundplanSurf = d2_LoadBmpSurface(name);
+                if (sv_GroundplanSurf != 0)
+                    goto loaded;
+                sprintf(name, "%sbmp\groundplans\riss_handwerksbetrieb.bmp", d2_GfxDir);
             }
-        } else if (k == 3) {
-            if (rec[0] == 0x0f)
-                dir = "%sbmp\\groundplans\\riss_rathaus_b.bmp";
-            else if (rec[0] == 1)
-                dir = "%sbmp\\groundplans\\Riss_Arbeiterunterkunft.bmp";
-            else
-                dir = 0;
-        } else {
-            if (k == 5)
-                dir = "%sbmp\\groundplans\\riss_zunfthaus.bmp";
-            else if (rec[0] == 5)
-                dir = "%sbmp\\groundplans\\riss_geldleihe.bmp";
-            else if (rec[0] == 9)
-                dir = "%sbmp\\groundplans\\riss_lagerhaus.bmp";
-            else if (rec[0] == 7)
-                dir = "%sbmp\\groundplans\\riss_kirche_bm.bmp";
-            else if (rec[0] == 0x13)
-                dir = "%sbmp\\groundplans\\riss_stadtwache.bmp";
-            else {
-                sprintf(name, "%sbmp\\groundplans\\riss_%s.bmp", ai_Unkf8ef80, rec + 1);
-                ai_Unk6f22c4 = d2_LoadBmpSurface(name);
-                if (ai_Unk6f22c4 != 0)
-                    goto have;
-                dir = "%sbmp\\groundplans\\riss_handwerks.bmp";
-            }
+        } else if (cls == 3) {
+            if (bt->kind == 0x0f)
+                sprintf(name, "%sbmp\groundplans\riss_rathaus.bmp", d2_GfxDir);
+            else if (bt->kind == 1)
+                sprintf(name, "%sbmp\groundplans\Riss_Arbeiterunterkunft.bmp", d2_GfxDir);
+        } else if (cls == 5)
+            sprintf(name, "%sbmp\groundplans\riss_zunfthaus.bmp", d2_GfxDir);
+        else if (bt->kind == 5)
+            sprintf(name, "%sbmp\groundplans\riss_geldleihe.bmp", d2_GfxDir);
+        else if (bt->kind == 9)
+            sprintf(name, "%sbmp\groundplans\riss_lagerhaus.bmp", d2_GfxDir);
+        else if (bt->kind == 7)
+            sprintf(name, "%sbmp\groundplans\riss_kirche.bmp", d2_GfxDir);
+        else if (bt->kind == 0x13)
+            sprintf(name, "%sbmp\groundplans\riss_stadtwache.bmp", d2_GfxDir);
+        else {
+            sprintf(name, "%sbmp\groundplans\riss_%s.bmp", d2_GfxDir, bt->pad001);
+            sv_GroundplanSurf = d2_LoadBmpSurface(name);
+            if (sv_GroundplanSurf != 0)
+                goto loaded;
+            sprintf(name, "%sbmp\groundplans\riss_handwerksbetrieb.bmp", d2_GfxDir);
         }
-        if (dir != 0)
-            sprintf(name, dir, ai_Unkf8ef80);
-        if (ai_Unk6f22c4 == 0) {
-            ai_Unk6f22c4 = d2_LoadBmpSurface(name);
-            if (ai_Unk6f22c4 == 0)
+        if (sv_GroundplanSurf == 0) {
+            sv_GroundplanSurf = d2_LoadBmpSurface(name);
+            if (sv_GroundplanSurf == 0)
                 return;
         }
     }
-have:
-    d2_LockSurface(ai_Unk6f22c4);
-    d2_LockSurface(ai_Unk6f22c8);
-    for (y = 0; y < *(int *)(ai_Unk6f22c4 + 8); y++)
-        for (x = 0; x < *(int *)(ai_Unk6f22c4 + 4); x++) {
-            d2_GetPixelColour(x, y, ai_Unk6f22c4, px);
-            d2_PutPixelRGB(x, y, *(int *)px, *(int *)px, *(int *)px, ai_Unk6f22c8);
+loaded:
+    d2_LockSurface(sv_GroundplanSurf);
+    d2_LockSurface(sv_GroundplanView);
+    for (y = 0; y < sv_GroundplanSurf->h; y++)
+        for (x = 0; x < sv_GroundplanSurf->w; x++) {
+            d2_GetPixelColour(x, y, sv_GroundplanSurf, rgb);
+            d2_PutPixelRGBc(x, y, rgb[0], rgb[1], rgb[2], sv_GroundplanView);
         }
-    d2_UnlockSurface(ai_Unk6f22c8);
-    if (ai_Unk6f22c4 != 0) {
-        d2_FreeSurface(ai_Unk6f22c4);
-        ai_Unk6f22c4 = 0;
+    d2_UnlockSurface(sv_GroundplanView);
+    if (sv_GroundplanSurf != 0) {
+        d2_FreeSurface(sv_GroundplanSurf);
+        sv_GroundplanSurf = 0;
     }
-    ext = strrchr(name, '.');
-    *ext = 0;
-    memcpy(name + strlen(name), ai_Unk623ee8, 6);
-    ai_Unk6f22c4 = d2_LoadBmpSurface(name);
+    *strrchr(name, '.') = 0;
+    strcat(name, "_C.bmp");
+    sv_GroundplanSurf = d2_LoadBmpSurface(name);
     n = 0;
-    d2_LockSurface(ai_Unk6f22c4);
-    if (ai_Unk6f22c4 != 0) {
-        for (y = 0; y < *(int *)(ai_Unk6f22c4 + 8); y++)
-            for (x = 0; x < *(int *)(ai_Unk6f22c4 + 4); x++) {
-                d2_GetPixelColour(x, y, ai_Unk6f22c4, px);
-                if (d2_CompareColour(px, col) != 0)
+    d2_LockSurface(sv_GroundplanSurf);
+    y = 0;
+    if (sv_GroundplanSurf != 0) {
+        while (y < sv_GroundplanSurf->h) {
+            for (x = 0; x < sv_GroundplanSurf->w; x++) {
+                d2_GetPixelColour(x, y, sv_GroundplanSurf, rgb);
+                if (d2_CompareColour(rgb, white) != 0)
                     continue;
-                d2_GetPixelColour(x + 1, y, ai_Unk6f22c4, px);
+                d2_GetPixelColour(x + 1, y, sv_GroundplanSurf, rgb);
                 for (i = 0; i < 15; i++)
-                    if (d2_CompareColour(px, ai_Unk623794 + i * 3) == 0)
+                    if (d2_CompareColour(rgb, sv_GroundplanColours + i * 3) == 0)
                         break;
                 if (i >= 15)
                     continue;
-                it = 0;
                 cnt = 0;
-                if (rec[0] != 2) {
-                    lst = (unsigned short *)(rec + 0x23);
-                    for (c = 0; c < 0x40; c++, lst++) {
-                        unsigned id = *lst & 0x7fff;
-                        char cls;
-                        if (*lst == 0xffff)
-                            continue;
-                        cls = ai_Goods[id * 0x41];
-                        if ((cls != 2 && cls != 6) || id == 0xfd)
-                            continue;
-                        if (cnt != i) {
-                            cnt++;
-                            continue;
-                        }
-                        it = (short *)gm_Query(*(int *)(b + 0x5d), 1, 0, id);
-                        break;
-                    }
-                } else {
-                    it = (short *)gm_Query(*(int *)(b + 0x5d), 1, 4, 2);
-                    while (it != 0) {
-                        if (*it != 0xfd) {
+                if (bt->kind == 2) {
+                    for (obj = (unsigned short *)gm_Query((void *)b->objList, 1, 4, 2); obj != 0; obj = gm_QueryNext())
+                        if (*obj != 0xfd) {
                             if (cnt == i)
                                 break;
                             cnt++;
                         }
-                        it = (short *)gm_QueryNext();
+                } else {
+                    obj = 0;
+                    for (slot = 0, list = bt->slot; slot < 0x40; slot++, list++) {
+                        if (*list == 0xffff)
+                            continue;
+                        id = *list & 0x7fff;
+                        kind = ai_GoodsT[id].type;
+                        if ((kind == 2 || kind == 6) && id != 0xfd) {
+                            if (cnt == i) {
+                                obj = (unsigned short *)gm_Query((void *)b->objList, 1, 0, id);
+                                break;
+                            }
+                            cnt++;
+                        }
                     }
                 }
-                if (it != 0 && (k = unk_Unk502570(it)) != -1) {
-                    ai_Unk7662e0[n] = d2_CreatePicObj(d2_ScreenW + x - 0x7e, y + 0x4c, k);
+                if (obj != 0 && (pic = gm_GoodPicture(obj)) != -1) {
+                    sv_GroundplanButtons[n] = d2_CreatePicObjS(d2_ScreenW + x - 0x7e, y + 0x4c, pic);
                     n++;
                 }
             }
+            y++;
+        }
     }
-    if (ai_Unk6f22c8 != 0)
-        d2_UnlockSurface(ai_Unk6f22c8);
-    if (ai_Unk6f22c4 != 0)
-        d2_UnlockSurface(ai_Unk6f22c4);
+    if (sv_GroundplanView != 0)
+        d2_UnlockSurface(sv_GroundplanView);
+    if (sv_GroundplanSurf != 0)
+        d2_UnlockSurface(sv_GroundplanSurf);
 }
 /* 0x5229b0, the per-frame update of the item buttons for the selected building: when the selection (0x6f2308 / 0x6f2310 / the scene 0x633444) changed, the buttons are freed and rebuilt (0x5224a0); without a
    selection the player's background bitmap is drawn; with the mouse (flag 0x2000 of param_1) over a button cell the item (0x4ffe90 / 0x4ffcc0 by the cell colour) is shown in the panel (0x478870) or, for a
@@ -1295,21 +1304,21 @@ void sv_Unk5229b0(unsigned flags)
         ai_Unk6f235c = (int)ai_PlayerBuilding;
         ai_Unk6f2360 = (int)sv_PanelShown;
         for (i = 0; i < 15; i++) {
-            if (ai_Unk7662e0[i] != -1) {
-                d2_RemoveObj(ai_Unk7662e0[i]);
-                ai_Unk7662e0[i] = -1;
+            if (sv_GroundplanButtons[i] != -1) {
+                d2_RemoveObj(sv_GroundplanButtons[i]);
+                sv_GroundplanButtons[i] = -1;
             }
         }
         if (ai_PlayerBuilding != 0 || ai_FallbackBuilding != 0)
-            sv_Unk5224a0();
+            sv_LoadGroundplan();
         ai_Unk623e8c = d3_CurrentScene;
     }
     if (ai_PlayerBuilding == 0 && ai_FallbackBuilding == 0) {
         sv_ScreenDirty = 0;
         return;
     }
-    if (ai_Unk6f22c8 != 0)                    /* 0x522b0c: the surface 0x6f22c8 is blitted as the player's background strip at (screenW - 0x6e, 0x5b), keyed */
-        d2_BlitPartMode(0, 0, *(int *)(ai_Unk6f22c8 + 4), *(int *)(ai_Unk6f22c8 + 8), (void *)ai_Unk6f22c8, (int)d2_ScreenW - 0x6e, 0x5b, d2_ScreenSurf, 1);
+    if (sv_GroundplanView != 0)                    /* 0x522b0c: the surface 0x6f22c8 is blitted as the player's background strip at (screenW - 0x6e, 0x5b), keyed */
+        d2_BlitPartMode(0, 0, sv_GroundplanView->w, sv_GroundplanView->h, sv_GroundplanView, (int)d2_ScreenW - 0x6e, 0x5b, d2_ScreenSurf, 1);
     if ((flags & 0x2000) == 0)
         sv_ScreenDirty = 0;
 }
@@ -7399,7 +7408,7 @@ int ai_Unk5fcc80 = 1128792064;  /* 0x5fcc80 */
 int d2_PointerObj = -1;  /* 0x5fe710 */
 float sv_FramesPerTick = 30.0f;  /* 0x62378c */
 int sv_TickFrames = 30;  /* 0x623790, the frames drawn since the last timer tick (counted by the frame loop) */
-char ai_Unk623794[] = "\377\376\005\005%\377\377/\021\005\377\030\3746\343\377\231\005\005\377\366z\005\005\266W\377<\005P\031H\005\013\304^\305\005g\357\234\231\005\010r";  /* 0x623794, the table of */
+char sv_GroundplanColours[] = "\377\376\005\005%\377\377/\021\005\377\030\3746\343\377\231\005\005\377\366z\005\005\266W\377<\005P\031H\005\013\304^\305\005g\357\234\231\005\010r";  /* 0x623794, the table of */
 int sv_StatusTime = -1;  /* 0x6237c4, when the status line was set (d3_Time) */
 int ai_Unk6237cc = 1;  /* 0x6237cc */
 /* 0x6237d0, the camera limits: three settings of (height, angle), first the near view pair and then (+3 pairs)
@@ -7469,7 +7478,6 @@ int ai_Unk623ec8 = -1;  /* 0x623ec8 */
 int sv_ViewRectLeft = 0;  /* 0x6248a4 */
 int sv_ViewRectTop = 0;  /* 0x6248a8 */
 unsigned ai_Unk623ecc = 4294967295;  /* 0x623ecc */
-unsigned char ai_Unk623ee8[8] = { 95, 67, 46, 98, 109, 112, 0, 0 };  /* 0x623ee8 */
 int sv_ViewRectRight = 694;  /* 0x6248ac */
 int sv_ViewRectBottom = 600;  /* 0x6248b0 */
 int ai_Unk62a8cc = -1;  /* 0x62a8cc */
@@ -7491,8 +7499,8 @@ int sv_PopRequest = 0;  /* 0x6f22a0 */
 int sv_FrameBase = 0;  /* 0x6f22a4, the depth a screen was entered at (the base of the pop count) */
 int ai_Unk6f22b4 = 0;  /* 0x6f22b4 */
 int ai_Unk6f22c0 = 0;  /* 0x6f22c0 */
-int ai_Unk6f22c4 = 0;  /* 0x6f22c4 */
-int ai_Unk6f22c8 = 0;  /* 0x6f22c8 */
+struct D2SURF *sv_GroundplanSurf = 0;  /* 0x6f22c4, the groundplan bitmap while sv_LoadGroundplan reads it */
+struct D2SURF *sv_GroundplanView = 0;  /* 0x6f22c8, the groundplan copy the panel blits */
 int ai_Unk6f22cc = 0;  /* 0x6f22cc */
 int ai_Unk6f22d0 = 0;  /* 0x6f22d0 */
 float sv_CameraHeightFactor = 0;  /* 0x6f22d4 */
@@ -7560,7 +7568,7 @@ int sv_Bubbles[0x40][0x43] = {0};  /* 0x761fc0, the 64 speech bubble records (0x
                                       stamp (ai_ClockMs), +8 its object (sv_BubbleObjects), +0xc the name */
 /* sv_BubbleObjects: view of sv_Bubbles (+0x8) */
 int ai_Unk7662c0 = 0;  /* 0x7662c0 */
-int ai_Unk7662e0[15] = {0};  /* 0x7662e0, 15 widget ids */
+int sv_GroundplanButtons[15] = {0};  /* 0x7662e0, 15 widget ids */
 int cm_Bombs[0x40] = {0};  /* 0x935c00, cm's 32 bomb records (object, time), cm.h */
 int d2_HitWindow = 0;  /* 0xf8aad0 */
 int ai_Unkfb9060 = {0}; /* 0xfb9060 */

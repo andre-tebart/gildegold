@@ -875,7 +875,7 @@ extern GAPDATA full_data_6f52e0[];
 extern int ai_MapSize;
 extern char ai_PlayerSlots[4][0x2f4];
 extern char * ai_Unk6f26ac;
-extern char ai_Unkf8ef80[256];
+extern char d2_GfxDir[256];
 extern GAPDATA full_data_62c270[];
 extern GAPDATA full_data_62cce8[];
 extern GAPDATA full_data_6f4ee4[];
@@ -15427,7 +15427,7 @@ void ai_Unk5b2090(void)
     int id;
     int bmp;
 
-    sprintf(path, (char *)(unsigned)&full_data_62cce8, (char *)(unsigned)&ai_Unkf8ef80,
+    sprintf(path, (char *)(unsigned)&full_data_62cce8, (char *)(unsigned)&d2_GfxDir,
             (char *)((unsigned)&ai_PlayerSlots + *(unsigned char *)(unsigned)&ai_OwnPlayer * 0x2f4));
     bmp = d2_LoadBmpSurface(path);
     if (bmp != 0) {

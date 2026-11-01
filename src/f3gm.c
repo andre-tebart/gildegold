@@ -1930,7 +1930,7 @@ void unk_Unk4fd120(void)
     }
 }
 
-extern char ai_Unkf8ef80[256];
+extern char d2_GfxDir[256];
 /* txt_MaleFirstNames: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_FemaleFirstNames: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_FamilyNames: view of txt_Ptrs (build/mk_txt_views.py) */
@@ -2222,7 +2222,7 @@ void unk_LoadIconNames(void)
     ai_Unk6f0454[0] = 0;
     ai_Unk6f0454[2] = 0;
     ai_Unk6f1b90 = 0;
-    sprintf(path, "%sCharacter_Names.dat", ai_Unkf8ef80);
+    sprintf(path, "%sCharacter_Names.dat", d2_GfxDir);
     f = fopen(path, "rb");
     if (f != 0) {
         do {
@@ -4938,7 +4938,7 @@ void unk_Unk503c60(int c, int mode);                     /* 0x503c60 */
 extern char *ai_Unk5fb5b0;  /* 0x5fb5b0 (d3_DefaultScene, now defined in d3_engine.c) */
 
 /* 0x502570, the string-table number of the object o (0x60e + n) for the object kinds 2 / 6: a table of (n, object) pairs (0x13 -> 0x54, 2 -> 0x15, 4 -> 0x18 ..) searched for the prototype number of the object; -1 when it is not in it. ROUGH */
-int unk_Unk502570(unsigned short *o)
+int gm_GoodPicture(unsigned short *o)
 {
     int t[0x6d] = { 0x1, 0x54, 0x2, 0x15, 0x4, 0x18, 0xd, 0x14, 0x9, 0x16, 0x18, 0x17, 0xf, 0x37, 0x0, 0x12, 0x19, 0x9, 0x1, 0xcf, 0x20, 0xd6, 0x1b, 0xdd, 0x1f, 0x120, 0xa, 0x12e, 0x1c, 0x10e, 0x1d, 0x110, 0x1, 0x114, 0x1e, 0x139, 0x1e, 0x138, 0x1, 0x137, 0x1d, 0xf2, 0xe, 0xe6, 0x21, 0xe5, 0x21, 0xf0, 0xb, 0xf7, 0x1c, 0xb7, 0x15, 0xba, 0x1a, 0xbb, 0x5, 0x4d, 0x7, 0x5c, 0x14, 0x60, 0x12, 0x65, 0x1a, 0x145, 0x2, 0x146, 0x15, 0x14c, 0x16, 0x74, 0x20, 0x85, 0x20, 0x118, 0x20, 0x9b, 0x20, 0xa5, 0x1c, 0xf3, 0x22, 0x205, 0x23, 0x21b, 0x24, 0x211, 0x25, 0x276, 0x26, 0x28a, 0x27, 0x27f, 0x28, 0x24b, 0x29, 0x256, 0x2a, 0x266, 0x9, 0x2c, 0x20, 0x2d, 0x20, 0x33, 0x20, 0x0, -1 };
     char k;
@@ -9974,7 +9974,7 @@ int ai_Unk919f80[732] = {0};  /* 0x919f80 */
 char * ai_Goods = 0;  /* 0x91aaf0, the object prototypes ( */
 unsigned ai_Unk91ac40[136] = {0};  /* 0x91ac40 */
 char gm_CharacterStatistics[128] = {0};  /* 0x91b500, the character statistics ( */
-char ai_Unkf8ef80[256] = {0}; /* 0xf8ef80, the game root path */
+char d2_GfxDir[256] = {0}; /* 0xf8ef80, the game root path */
 /* 0x50c550, how much the person a likes the person b, 0 .. 100 (100 for the same person, 50 when one of them is unknown (0xffff)): the sum of the liking of a's two bound persons (0x5092e0 of the words +0x170 and, for a person with a kind 4 spouse at +0xce6, of 0x50b010(1), and of the guild head of the faith byte 0x1e .. 0x21 -> the persons 0x17 .. 0x1a), the stored mutual rating of the two (0x7e5360 matrix, scaled to 0 .. 100), the best building of the class 0x21 the person a lives in (the byte +0x247, up to 3), the rating of 0x4e5e50, the bonuses per kind of b's job group (0x5ba6b0 of the goods 0x155 .. 0x166: 10 / 7 / 8 / 15 times the count), the kinds 0x2b6 (+5 when b has a spouse, +5 when b has the flags 0x3e00), the owner link (0x16b, times 7), minus 3 per level of the bits 14..16 (a different faith byte) and bits 23..24 of a's flags +0x1ac. ROUGH: converted from the pseudocode, the long float expression is lost in part */
 float gm_Liking(unsigned a, unsigned b, int c)
 {

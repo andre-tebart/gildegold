@@ -23,7 +23,7 @@ int sv_PanelImage(void);                                                /* 0x522
 void sv_SetPanelEnabled(int n);                                         /* 0x522100 */
 void sv_Unk522280(void);                                                /* 0x522280 */
 void sv_DestroyScreen(void);                                            /* 0x5223c0 */
-void sv_Unk5224a0(void);                                                /* 0x5224a0 */
+void sv_LoadGroundplan(void);                                                /* 0x5224a0 */
 void sv_Unk5229b0(unsigned flags);                                      /* 0x5229b0 */
 void sv_SetResearchClass(unsigned char *o);                             /* 0x522ec0 */
 void sv_Unk522f10(unsigned char a, int b);                              /* 0x522f10 */
@@ -148,7 +148,7 @@ extern int ai_Unk5fcc80;                                    /* 0x5fcc80 */
 extern int d2_PointerObj;                                    /* 0x5fe710 */
 extern float sv_FramesPerTick;                              /* 0x62378c */
 extern int sv_TickFrames;                                   /* 0x623790 */
-extern char ai_Unk623794[];                                 /* 0x623794 */
+extern char sv_GroundplanColours[];                                 /* 0x623794 */
 extern int sv_StatusTime;                                   /* 0x6237c4 */
 extern int ai_Unk6237cc;                                    /* 0x6237cc */
 extern float sv_CameraLimits[12];                           /* 0x6237d0 */
@@ -202,7 +202,6 @@ extern int ai_Unk623ec8;                                    /* 0x623ec8 */
 extern int sv_ViewRectLeft;                                 /* 0x6248a4 */
 extern int sv_ViewRectTop;                                  /* 0x6248a8 */
 extern unsigned ai_Unk623ecc;                               /* 0x623ecc */
-extern unsigned char ai_Unk623ee8[8];                       /* 0x623ee8 */
 extern int sv_ViewRectRight;                                /* 0x6248ac */
 extern int sv_ViewRectBottom;                               /* 0x6248b0 */
 extern int ai_Unk62a8cc;                                    /* 0x62a8cc */
@@ -224,8 +223,8 @@ extern int sv_PopRequest;                                   /* 0x6f22a0 */
 extern int sv_FrameBase;                                    /* 0x6f22a4 */
 extern int ai_Unk6f22b4;                                    /* 0x6f22b4 */
 extern int ai_Unk6f22c0;                                    /* 0x6f22c0 */
-extern int ai_Unk6f22c4;                                    /* 0x6f22c4 */
-extern int ai_Unk6f22c8;                                    /* 0x6f22c8 */
+extern struct D2SURF *sv_GroundplanSurf;                                   /* 0x6f22c4 */
+extern struct D2SURF *sv_GroundplanView;                                   /* 0x6f22c8 */
 extern int ai_Unk6f22cc;                                    /* 0x6f22cc */
 extern int ai_Unk6f22d0;                                    /* 0x6f22d0 */
 extern float sv_CameraHeightFactor;                         /* 0x6f22d4 */
@@ -293,7 +292,7 @@ extern int sv_Bubbles[0x40][0x43];                          /* 0x761fc0, the 64 
 extern int sv_BubbleObjects[4286];                          /* 0x761fc8, the object field (+8) of each bubble record */
 #endif
 extern int ai_Unk7662c0;                                    /* 0x7662c0 */
-extern int ai_Unk7662e0[15];                                /* 0x7662e0 */
+extern int sv_GroundplanButtons[15];                                /* 0x7662e0 */
 extern int cm_Bombs[0x40];                                  /* 0x935c00 */
 extern int d2_HitWindow;                                    /* 0xf8aad0 */
 extern int ai_Unkfb9060;                                    /* 0xfb9060 */
