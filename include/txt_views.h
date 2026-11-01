@@ -24,7 +24,7 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define full_data_143a3f4                        (*(unsigned char (*)[408])((char *)txt_Ptrs + 0x00234))  /* 0x143a3f4 */
 #define ai_Unk143a588                            (*(int (*)[7])((char *)txt_Ptrs + 0x003c8))  /* 0x143a588 */
 #define ai_Unk143a610                            (*(char * (*)[2])((char *)txt_Ptrs + 0x00450))  /* 0x143a610 */
-#define ai_Unk143a618                            (*(char * *)((char *)txt_Ptrs + 0x00458))  /* 0x143a618 */
+#define txt_PseudoCharName                            (*(char * *)((char *)txt_Ptrs + 0x00458))  /* 0x143a618 */
 #define full_data_143a63c                        (*(unsigned char (*)[68])((char *)txt_Ptrs + 0x0047c))  /* 0x143a63c */
 #define ai_Unk143a680                            (*(char * (*)[221])((char *)txt_Ptrs + 0x004c0))  /* 0x143a680 */
 #define ai_Unk143a9f4                            (*(char * (*)[70])((char *)txt_Ptrs + 0x00834))  /* 0x143a9f4 */
@@ -142,7 +142,7 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define full_data_1440a50                        (*(unsigned char (*)[68])((char *)txt_Ptrs + 0x06890))  /* 0x1440a50 */
 #define full_data_1440a94                        (*(unsigned char (*)[32])((char *)txt_Ptrs + 0x068d4))  /* 0x1440a94 */
 #define full_data_1440ab4                        (*(unsigned char (*)[20])((char *)txt_Ptrs + 0x068f4))  /* 0x1440ab4 */
-#define ai_Unk1440ac8                            (*(char * *)((char *)txt_Ptrs + 0x06908))  /* 0x1440ac8 */
+#define txt_NoCharacter                            (*(char * *)((char *)txt_Ptrs + 0x06908))  /* 0x1440ac8 */
 #define full_data_1440acc                        (*(unsigned char (*)[4])((char *)txt_Ptrs + 0x0690c))  /* 0x1440acc */
 #define full_data_1440ad0                        (*(unsigned char (*)[20])((char *)txt_Ptrs + 0x06910))  /* 0x1440ad0 */
 #define full_data_1440ae4                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x06924))  /* 0x1440ae4 */

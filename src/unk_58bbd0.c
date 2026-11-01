@@ -14617,7 +14617,7 @@ void ai_Unk5aa0d0(int param_1, int param_2, int *param_3)
     id = d2_WinOpenPic(param_1, param_2, 0x5db, U_I((unsigned)&d2_LastWindow));
     param_3[3] = id;
     U_I((unsigned)&d2_Objs + 0x4c + id * 0x2ec) = 1;
-    id = d2_CreateWinText(param_1 - 0x36, param_2 - 0x11, U_I((unsigned)&ai_Unk1440ac8), U_I((unsigned)&d2_LastWindow));
+    id = d2_CreateWinText(param_1 - 0x36, param_2 - 0x11, U_I((unsigned)&txt_NoCharacter), U_I((unsigned)&d2_LastWindow));
     param_3[5] = id;
     U_W((unsigned)&d2_Objs + 0x14 + id * 0x2ec) = 0xa0;
     U_I((unsigned)&d2_Objs + 0x5c + param_3[5] * 0x2ec) = 1;
@@ -14753,7 +14753,7 @@ void ai_Unk5aa520(int param_1, int param_2, int param_3, int param_4)
         return;
     }
     ai_Unk5aa4b0(param_2);
-    strcpy(text, (char *)U_I((unsigned)&ai_Unk1440ac8));
+    strcpy(text, (char *)U_I((unsigned)&txt_NoCharacter));
     *(unsigned char *)(param_2 + 0x20) = 0;
     d2_SetObjText(*(int *)(param_2 + 0x14), text);
     U_W((unsigned)&d2_Objs + 0x14 + *(int *)(param_2 + 0x14) * 0x2ec) = 0xa0;

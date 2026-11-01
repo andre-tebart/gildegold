@@ -60,17 +60,23 @@ int io_TrailingDigits(char *s, int n, char *out)
 
 
 
-/* 0x5143d0, the name text of the character id (0xfffe = the one named by 0x143a618, < 0 or 0xffff = the empty name 0x1440ac8) in grammatical case c (2 = genitive: "'" after s / z / sharp s / x, else "s") and of the kind 1..9 (1 name, 2 rank + name, 3 rank + name + title, 4 trade + name, 5 the rank word, 6 title or name, 7 name + title, 8 / 9 genitive name + rank words); written to out. ROUGH: the original repeats the strlen of its ends-in-s test (a macro). Returns 0 for no character. */
-/* ai_Unk143a618: view of txt_Ptrs (build/mk_txt_views.py) */
-/* ai_Unk1440ac8: view of txt_Ptrs (build/mk_txt_views.py) */
-#define G30_ENDS_S(p) ((p)[strlen(p) - 1] == 's' || (p)[strlen(p) - 1] == 'z' || (p)[strlen(p) - 1] == (char)0xdf || (p)[strlen(p) - 1] == 'x')
-/* 0x5143d0 */
+/* txt_PseudoCharName: view of txt_Ptrs (build/mk_txt_views.py) */
+/* txt_NoCharacter: view of txt_Ptrs (build/mk_txt_views.py) */
+#define G30_ENDS_S(p) ((p)[strlen(p) - 1] == 's' || (p)[strlen(p) - 1] == 'z' || (p)[strlen(p) - 1] == '\xdf' || (p)[strlen(p) - 1] == 'x')  /* the sharp s: on an unsigned char record name the original compares the zero-extended byte with -0x21, never equal */
+#define CH_NAME(r) ((r) + 0x30)         /* the first name */
+#define CH_FAMILY(r) ((r) + 0x40)       /* the family name */
+/* 0x5143d0, writes the name of the character id (0xfffe: the empty record with the default first name
+   txt_PseudoCharName) into out in the form kind: 1 the first name, 2 the level title + first + family name,
+   3 the profession title + names, 4 the job / rank title + first name, 5 the profession title, 6 the family
+   (else the first) name, 7 first + family name, 8 / 9 the profession (9: the privilege's office from flags1cc)
+   or level title + first name; c 2 makes it a genitive ("'" after s / z / ss / x, else "s"), c is also the
+   case txt_Field picks for 8 / 9. The player's own character is the player slot's name. Returns 0 for no
+   character (the text txt_NoCharacter) */
 int io_CharacterName(int id, unsigned char c, unsigned char kind, char *out)
 {
     char A[0x100], B[0x100], C[0x100];
     char tmp[0x21c];
-    char *rec, *N, *T;
-    char *w;
+    unsigned char *rec;
     int v;
 
     A[0] = ch_EmptyName[0];
@@ -80,19 +86,17 @@ int io_CharacterName(int id, unsigned char c, unsigned char kind, char *out)
     B[0] = ch_EmptyName[0];
     memset(B + 1, 0, 0xff);
     if (id < 0 || id == 0xffff) {
-        strcpy(out, ai_Unk1440ac8);
+        strcpy(out, txt_NoCharacter);
         return 0;
     }
     if (id != 0xfffe) {
-        rec = ai_Chars[id];
+        rec = (unsigned char *)ai_Chars[id];
     } else {
         memset(tmp, 0, 0x21c);
-        strcpy(tmp + 0x30, ai_Unk143a618);
-        rec = tmp;
+        rec = (unsigned char *)tmp;
+        strcpy(CH_NAME(rec), txt_PseudoCharName);
     }
-    N = rec + 0x30;
-    T = rec + 0x40;
-    if (rec == ai_PlayerCharC) {
+    if ((char *)rec == ai_PlayerCharC) {
         strcpy(out, ai_PlayerSlots[ai_OwnPlayer]);
         if (c == 2)
             strcat(out, "'s");
@@ -100,7 +104,7 @@ int io_CharacterName(int id, unsigned char c, unsigned char kind, char *out)
     }
     switch (kind) {
     case 1:
-        strcpy(out, N);
+        strcpy(out, CH_NAME(rec));
         if (c == 2) {
             if (G30_ENDS_S(out))
                 strcat(out, "'");
@@ -110,114 +114,129 @@ int io_CharacterName(int id, unsigned char c, unsigned char kind, char *out)
         break;
     case 2:
         if (rec[0xd]) {
-            w = txt_Field(txt_Ptrs[0x114 + (rec[9] ? 0xa : 0) + (unsigned char)rec[0xd]], 1, 4);
-            if (rec[0x40])
-                sprintf(out, "%s %s %s", w, N, T);
+            if (*CH_FAMILY(rec) == 0)
+                sprintf(out, "%s %s", txt_Field(txt_Ptrs[(rec[9] ? 0x11e : 0x114) + rec[0xd]], 1, 4),
+                        CH_NAME(rec));
             else
-                sprintf(out, "%s %s", w, N);
+                sprintf(out, "%s %s %s", txt_Field(txt_Ptrs[(rec[9] ? 0x11e : 0x114) + rec[0xd]], 1, 4),
+                        CH_NAME(rec), CH_FAMILY(rec));
         } else {
-            sprintf(out, "%s", N);
+            sprintf(out, "%s", CH_NAME(rec));
         }
         break;
     case 3:
         if (rec[0x166]) {
-            w = txt_Field(txt_Ptrs[0x253 + (rec[9] ? 0x28 : 0) + (unsigned char)rec[0x166]], 1, 4);
-            if (*T)
-                sprintf(out, "%s %s %s", w, N, T);
+            if (*CH_FAMILY(rec))
+                sprintf(out, "%s %s %s", txt_Field(txt_Ptrs[(rec[9] ? 0x27b : 0x253) + rec[0x166]], 1, 4),
+                        CH_NAME(rec), CH_FAMILY(rec));
             else
-                sprintf(out, "%s %s", w, N);
-        } else if (*T) {
-            sprintf(out, "%s %s", N, T);
+                sprintf(out, "%s %s", txt_Field(txt_Ptrs[(rec[9] ? 0x27b : 0x253) + rec[0x166]], 1, 4),
+                        CH_NAME(rec));
+        } else if (*CH_FAMILY(rec)) {
+            sprintf(out, "%s %s", CH_NAME(rec), CH_FAMILY(rec));
         } else {
-            sprintf(out, "%s", N);
+            sprintf(out, "%s", CH_NAME(rec));
         }
         if (c == 2) {
-            if (G30_ENDS_S(T))
+            if (G30_ENDS_S(CH_FAMILY(rec)))
                 strcat(out, "'");
             else
                 strcat(out, "s");
         }
         break;
     case 4:
-        if (rec[0x164]) {
-            w = txt_Field(txt_Ptrs[0x130 + (rec[9] ? 0x5f : 0) + (unsigned char)rec[0x164]], 1, 4);
-            sprintf(out, "%s %s", w, N);
-        } else if (rec[0x165]) {
-            w = txt_Field(txt_Ptrs[0x20d + (rec[9] ? 0x23 : 0) + (unsigned char)rec[0x165]], 1, 4);
-            sprintf(out, "%s %s", w, N);
-        } else {
-            sprintf(out, "%s", N);
-        }
+        if (rec[0x164])
+            sprintf(out, "%s %s", txt_Field(txt_Ptrs[(rec[9] ? 0x18f : 0x130) + rec[0x164]], 1, 4),
+                    CH_NAME(rec));
+        else if (rec[0x165])
+            sprintf(out, "%s %s", txt_Field(txt_Ptrs[(rec[9] ? 0x230 : 0x20d) + rec[0x165]], 1, 4),
+                    CH_NAME(rec));
+        else
+            sprintf(out, "%s", CH_NAME(rec));
         if (c == 2) {
-            if (G30_ENDS_S(N))
+            if (G30_ENDS_S(CH_NAME(rec)))
                 strcat(out, "'");
             else
                 strcat(out, "s");
         }
         break;
     case 5:
-        w = txt_Field(txt_Ptrs[0x253 + (rec[9] ? 0x28 : 0) + (unsigned char)rec[0x166]], 1, 4);
-        sprintf(out, "%s", w);
+        sprintf(out, "%s", txt_Field(txt_Ptrs[(rec[9] ? 0x27b : 0x253) + rec[0x166]], 1, 4));
         break;
     case 6:
-        if (*T)
-            strcpy(out, T);
+        if (*CH_FAMILY(rec))
+            strcpy(out, CH_FAMILY(rec));
         else
-            strcpy(out, N);
+            strcpy(out, CH_NAME(rec));
         break;
     case 7:
         if (c == 2) {
-            if (G30_ENDS_S(T)) {
-                if (*T)
-                    sprintf(out, "%s %s'", N, T);
+            if (G30_ENDS_S(CH_FAMILY(rec))) {
+                if (*CH_FAMILY(rec))
+                    sprintf(out, "%s %s'", CH_NAME(rec), CH_FAMILY(rec));
                 else
-                    sprintf(out, "%s'", N);
+                    sprintf(out, "%s'", CH_NAME(rec));
             } else {
-                if (*T)
-                    sprintf(out, "%s %ss", N, T);
+                if (*CH_FAMILY(rec))
+                    sprintf(out, "%s %ss", CH_NAME(rec), CH_FAMILY(rec));
                 else
-                    sprintf(out, "%ss", N);
+                    sprintf(out, "%ss", CH_NAME(rec));
             }
-        } else if (*T) {
-            sprintf(out, "%s %s", N, T);
+        } else if (*CH_FAMILY(rec)) {
+            sprintf(out, "%s %s", CH_NAME(rec), CH_FAMILY(rec));
         } else {
-            sprintf(out, "%s", N);
+            sprintf(out, "%s", CH_NAME(rec));
         }
         break;
     case 8:
-    case 9:
-        if (kind == 8) {
-            v = (unsigned char)rec[0x166];
+        if (rec[0xd])
+            strcpy(C, txt_Field(txt_Ptrs[(rec[9] ? 0x11e : 0x114) + rec[0xd]], c, 4));
+        if (rec[0x166])
+            strcpy(B, txt_Field(txt_Ptrs[(rec[9] ? 0x27b : 0x253) + rec[0x166]], c, 4));
+        if (c == 2) {
+            if (G30_ENDS_S(CH_NAME(rec)))
+                sprintf(A, "%s'", CH_NAME(rec));
+            else
+                sprintf(A, "%ss", CH_NAME(rec));
         } else {
-            unsigned f = *(unsigned *)(rec + 0x1cc);
-            if (f & 0x3e00) {
-                if (f & 0x1000)
-                    v = 0x26;
-                else if (f & 0x2000)
-                    v = 0x27;
-                else if (f & 0x800)
-                    v = 0x25;
-                else if (f & 0x400)
-                    v = 0x24;
-                else
-                    v = (f & 0x200) ? 0x23 : 0;
-            } else {
-                v = (unsigned char)rec[0x166];
-            }
+            strcpy(A, CH_NAME(rec));
+        }
+        if (rec[0x166])
+            sprintf(out, "%s %s", B, A);
+        else
+            sprintf(out, "%s %s", C, A);
+        break;
+    case 9:
+        if (ORD_CHAR(rec)->flags1cc & 0x3e00) {
+            if (ORD_CHAR(rec)->flags1cc & 0x1000)
+                v = 0x26;
+            else if (ORD_CHAR(rec)->flags1cc & 0x2000)
+                v = 0x27;
+            else if (ORD_CHAR(rec)->flags1cc & 0x800)
+                v = 0x25;
+            else if (ORD_CHAR(rec)->flags1cc & 0x400)
+                v = 0x24;
+            else
+                v = (ORD_CHAR(rec)->flags1cc & 0x200) ? 0x23 : 0;
+        } else {
+            v = rec[0x166];
         }
         if (rec[0xd])
-            strcpy(C, txt_Field(txt_Ptrs[0x114 + (rec[9] ? 0xa : 0) + (unsigned char)rec[0xd]], c, 4));
+            strcpy(C, txt_Field(txt_Ptrs[(rec[9] ? 0x11e : 0x114) + rec[0xd]], c, 4));
         if (v)
-            strcpy(B, txt_Field(txt_Ptrs[0x253 + (rec[9] ? 0x28 : 0) + v], c, 4));
+            strcpy(B, txt_Field(txt_Ptrs[(rec[9] ? 0x27b : 0x253) + v], c, 4));
         if (c == 2) {
-            if (G30_ENDS_S(N))
-                sprintf(A, "%s'", N);
+            if (G30_ENDS_S(CH_NAME(rec)))
+                sprintf(A, "%s'", CH_NAME(rec));
             else
-                sprintf(A, "%ss", N);
+                sprintf(A, "%ss", CH_NAME(rec));
         } else {
-            strcpy(A, N);
+            strcpy(A, CH_NAME(rec));
         }
-        sprintf(out, "%s %s", v ? B : C, A);
+        if (v)
+            sprintf(out, "%s %s", B, A);
+        else
+            sprintf(out, "%s %s", C, A);
         break;
     }
     return 1;
@@ -249,7 +268,7 @@ int io_CharacterNameMarkup(int id, unsigned char c, unsigned char kind, char *ou
         rec = ai_Chars[id];
     } else {
         memset(tmp, 0, 0x21c);
-        strcpy(tmp + 0x30, ai_Unk143a618);
+        strcpy(tmp + 0x30, txt_PseudoCharName);
         rec = tmp;
     }
     N = rec + 0x30;
