@@ -4609,7 +4609,19 @@ void main_SettleRound(unsigned short pl)
 void d3_SetViewport(float w, float h, float x, float y, float zn, float zf, float scale, int a, int b);
 
 /* 0x53bb20, the main game loop of the process (the dialog callback of the process level, `ctl` = 0 on the first call): the start-up / load of the game by the mode flags 0x6f23f8 (1 new game, 2 load, 4 network, 8, 0x10, 0x40 .., 0x80), the "Init" export of the optional
-   plug-in DLL (0x75dda0), the autosave, then the round loop: one player at a time (0x6f25b8) the day change 0x5384e0, the start of the round 0x53b2e0 ... until the game is left (0x6f259c); ends with the network error / player left messages (ROUGH) */
+   plug-in DLL (0x75dda0), the autosave, then the round loop: one player at a time (0x6f25b8) the day change 0x5384e0, the start of the round 0x53b2e0 ... until the game is left (0x6f259c); ends with the network error / player left messages (ROUGH)
+   @deep Read against the original and restructured 0x53bb20 (598 -> 198 differing, 992 vs 994
+   instructions, frame 0x4b4 vs 0x4bc): the network branch first (flags & 4), the separate 0x7c system
+   message buffer for AUTOSAVE, the load progress call pair, the mode dispatch (0x41: new city / network
+   with ai_Unk1460ae0 != -1 around the 0x40 / start choice and the failure after it; 0x40; 2 with
+   sv_ClockSeason, not gm_ClockSeason), the money cheat order and the index loops, the panel object pair of
+   calls, the player id scans with the id in a short, the current player count loop, ls_SaveSlot as a byte,
+   the clock loops on an AHMCLOCK copy (main_Now) testing its hour. Left: the original reads ai_GameFlags
+   into al before each test (mov al, [ai_GameFlags] / test al, X at 0x53bb6a, 0x53c418, 0x53c42a, 0x53c443,
+   0x53c49c, js for bit 7 at 0x53c4c7) where ours tests memory, with the knock-on of ebp as the zero
+   register (push ebp / cmp edx, ebp at 0x53bb5b, 0x53c20a, 0x53c2ab) and edi = 0x17 held for the hour
+   compares (0x53c695, 0x53c6b8); the store schedule of the AUTOSAVE copy (0x53c5de) and of the office
+   record (0x53c883 .. 0x53c8df); an 8-byte smaller frame (slot rotation of the clock copies). */
 void main_GameLoop(int ctl)
 {
     int iv, i6, i5;
@@ -4620,7 +4632,8 @@ void main_GameLoop(int ctl)
     unsigned short us;
     unsigned u;
     int cl[0x3e];
-    int ck[4];
+    int sys[0x1f];
+    AHMCLOCK ck;
     int clk[4];
     char ap[0x104], ab[0x104];
     int pl[0x45];
@@ -4634,26 +4647,7 @@ void main_GameLoop(int ctl)
     if ((U_I((unsigned)&ai_GameFlags) & 1) != 0 && ctl == 0)
         amt_InitTable();
     U_I(((unsigned)&ls_SavePath + 0x80)) = 0;
-    if ((U_I((unsigned)&ai_GameFlags) & 4) == 0) {
-        net_Connect(0, 0);
-        iv = main_Unk53b830();
-        if (iv != 1) {
-            while (1) {
-                U_I((unsigned)&d2_CutsceneActive) = 0;
-                U_I((unsigned)&sv_FrameMask) = 0x24087;
-                txt_Format(cl, 0x79);
-                iv = sv_MessageBox(cl, 1);
-                if (iv == 0)
-                    break;
-                U_I((unsigned)&d2_CutsceneActive) = 1;
-                d2_DrawAll();
-                Sleep(1000);
-            }
-            U_I((unsigned)&ai_GameOver) = 1;
-            U_I((unsigned)&ai_LeaveGame) = 0;
-            return;
-        }
-    } else {
+    if ((U_I((unsigned)&ai_GameFlags) & 4) != 0) {
         w = -1;
         ai_Unk4b1f90();
         if ((U_I((unsigned)&ai_GameFlags) & 0x10) != 0) {
@@ -4712,6 +4706,25 @@ void main_GameLoop(int ctl)
         }
         net_Connect(main_NetHost, U_I(((unsigned)&ls_SavePath + 0x84)));
         d2_CloseView(w);
+    } else {
+        net_Connect(0, 0);
+        iv = main_Unk53b830();
+        if (iv != 1) {
+            while (1) {
+                U_I((unsigned)&d2_CutsceneActive) = 0;
+                U_I((unsigned)&sv_FrameMask) = 0x24087;
+                txt_Format(cl, 0x79);
+                iv = sv_MessageBox(cl, 1);
+                if (iv == 0)
+                    break;
+                U_I((unsigned)&d2_CutsceneActive) = 1;
+                d2_DrawAll();
+                Sleep(1000);
+            }
+            U_I((unsigned)&ai_GameOver) = 1;
+            U_I((unsigned)&ai_LeaveGame) = 0;
+            return;
+        }
     }
     ai_InitStates();
     if ((U_I((unsigned)&ai_GameFlags) & 0x44) != 0) {
@@ -4731,68 +4744,67 @@ void main_GameLoop(int ctl)
     U_I((unsigned)&d2_CutsceneActive) = 1;
     main_LoadingScreen();
     d2_SetForm(U_I((unsigned)&init_StatusForm), 1);
-    w = U_I(((unsigned)&d2_Strings + 0x1b4));
-    if ((U_I((unsigned)&ai_GameFlags) & 4) != 0)
-        w = U_I(((unsigned)&ai_DifficultyTexts + 0x84));
-    main_SetLoadProgress(w, 5);
+    if ((ai_GameFlags & 4) != 0)
+        main_SetLoadProgress(U_I(((unsigned)&ai_DifficultyTexts + 0x84)), 5);
+    else
+        main_SetLoadProgress(U_I(((unsigned)&d2_Strings + 0x1b4)), 5);
     sv_PumpMessages();
     main_SetLoadProgress(U_I(((unsigned)&d2_Strings + 0x1b0)), 5);
     main_Unk537de0();
     if ((U_I((unsigned)&ai_GameFlags) & 1) != 0 && U_I((unsigned)&full_data_6f2428) != 0)
         main_CreateStartCouple();
     main_SetLoadProgress(0, 10);
-    if ((U_I((unsigned)&ai_GameFlags) & 0x41) == 0) {
-        if ((U_I((unsigned)&ai_GameFlags) & 0x40) == 0) {
-            if ((U_I((unsigned)&ai_GameFlags) & 2) != 0) {
-                U_I((unsigned)&ai_Difficulty) = *(unsigned char *)((unsigned)&ai_GamePanel + 0x2);
-                iv = ls_LoadGame(main_NetSaveName, 1);
-                if (iv == 0) {
-                    U_I((unsigned)&sv_FrameMask) = 0x46086;
-                    sv_MessageBox(U_I((unsigned)&full_data_14414d0), 0);
-                    U_I((unsigned)&ai_GameOver) = 1;
-                    main_EndGame();
-                    main_Unk537be0();
-                    return;
-                }
-                sv_FillDayPhases((unsigned)&ai_TimeT);
-                U_I((unsigned)&full_data_760454) = gm_ClockSeason((unsigned)&ai_TimeT);
+    if ((ai_GameFlags & 0x41) != 0) {
+        if ((ai_GameFlags & 4) == 0) {
+            sprintf(ap, "%s/%s.cty", "gamedata/cities", (char *)((unsigned)&ai_DataPath + 0x220));
+            if (ls_LoadGame(ap, 2) == 0) {
+                main_Exit();
+                return;
+            }
+            main_CreateStartCouple();
+            init_SetupNewGame(ai_OwnPlayer);
+            init_LocalData();
+            init_FillMarkets(ai_OwnPlayer);
+            main_SetLoadProgress(0, 100);
+            main_SetLoadProgress(0, 100);
+            if (ai_Unk6f2440 != 0)
+                unk_Unk511c70();
+        } else if (ai_Unk1460ae0 != -1) {
+            if ((ai_GameFlags & 0x40) != 0) {
+                unk_Unk5112d0(((unsigned)&ls_SavePath + 0xca));
+                ai_Difficulty = 2;
+            } else {
+                init_StartNetworkGame(main_NetSaveName);
+                ai_Difficulty = 2;
             }
         } else {
-            U_I((unsigned)&ai_Difficulty) = 2;
-            if (U_I((unsigned)&ai_Unk1460ae0) == -1)
-                goto L_fail;
-            unk_Unk5112d0(main_NetSaveName);
-        }
-    } else if ((U_I((unsigned)&ai_GameFlags) & 4) == 0) {
-        sprintf(ap, "%s/%s.cty", "gamedata/cities", (char *)((unsigned)&ai_DataPath + 0x220));
-        iv = ls_LoadGame(ap, 2);
-        if (iv == 0) {
-            main_Exit();
-            return;
-        }
-        main_CreateStartCouple();
-        init_SetupNewGame(*(unsigned char *)(unsigned)&ai_OwnPlayer);
-        init_LocalData();
-        init_FillMarkets(*(unsigned char *)(unsigned)&ai_OwnPlayer);
-        main_SetLoadProgress(0, 100);
-        main_SetLoadProgress(0, 100);
-        if (U_I((unsigned)&ai_Unk6f2440) != 0)
-            unk_Unk511c70();
-    } else {
-        if (U_I((unsigned)&ai_Unk1460ae0) == -1) {
-L_fail:
             sv_MessageBox(U_I(((unsigned)&ai_DifficultyTexts + 0x80)), 0);
             main_EndGame();
             main_Unk537be0();
             return;
         }
-        if ((U_I((unsigned)&ai_GameFlags) & 0x40) == 0) {
-            init_StartNetworkGame(main_NetSaveName);
-            U_I((unsigned)&ai_Difficulty) = 2;
-        } else {
-            unk_Unk5112d0(((unsigned)&ls_SavePath + 0xca));
-            U_I((unsigned)&ai_Difficulty) = 2;
+    } else if ((ai_GameFlags & 0x40) != 0) {
+        ai_Difficulty = 2;
+        if (ai_Unk1460ae0 != -1)
+            unk_Unk5112d0(main_NetSaveName);
+        else {
+            sv_MessageBox(U_I(((unsigned)&ai_DifficultyTexts + 0x80)), 0);
+            main_EndGame();
+            main_Unk537be0();
+            return;
         }
+    } else if ((ai_GameFlags & 2) != 0) {
+        ai_Difficulty = ai_GamePanel.byte[2];
+        if (ls_LoadGame(main_NetSaveName, 1) == 0) {
+            sv_FrameMask = 0x46086;
+            sv_MessageBox(U_I((unsigned)&full_data_14414d0), 0);
+            ai_GameOver = 1;
+            main_EndGame();
+            main_Unk537be0();
+            return;
+        }
+        sv_FillDayPhases((int)&ai_TimeT);
+        main_Season = sv_ClockSeason(&ai_TimeT);
     }
     unk_Unk5124d0();
     if ((U_I((unsigned)&ai_GameFlags) & 1) != 0) {
@@ -4805,18 +4817,14 @@ L_fail:
                 sv_PumpNet();
                 iv = cm_GetSlotState(w);
             }
-            if (U_I((unsigned)&main_MoneyCheat) == 0)
-                iv = (5 - U_I((unsigned)&ai_Difficulty)) * 0xfa;
-            else
+            if (main_MoneyCheat != 0)
                 iv = 750000;
-            pc = (char *)((unsigned)&ai_CharsT + 0x2);
-            do {
-                if (pc[6] != 0 && (*pc == 6 || *pc == 7)) {
-                    w = gm_PlayerFactor(iv, *(unsigned char *)(unsigned)&ai_OwnPlayer);
-                    cm_SendMoveGoods(*(int *)(pc + 2), -1, *(unsigned char *)(unsigned)&ai_OwnPlayer, w);
-                }
-                pc += 0x21c;
-            } while ((int)pc < (unsigned)((unsigned)ai_CharsT + 0x65402));
+            else
+                iv = (5 - ai_Difficulty) * 0xfa;
+            for (idx = 0; idx < 0x300; idx++) {
+                if (ai_CharsT[idx].health != 0 && (ai_CharsT[idx].kind == 6 || ai_CharsT[idx].kind == 7))
+                    cm_SendMoveGoods(ai_CharsT[idx].netId, -1, ai_OwnPlayer, gm_PlayerFactor(iv, ai_OwnPlayer));
+            }
         }
         if ((U_I((unsigned)&ai_GameFlags) & 1) != 0)
             ai_Unk4b1d20();
@@ -4841,21 +4849,17 @@ L_fail:
         p3 = (unsigned char *)gm_FindBuildingById(U_I((unsigned)&full_data_76f990));
         p4 = (unsigned short *)gm_FindObjectInst(U_I((unsigned)&full_data_76f994));
         U_I((unsigned)&ai_FrameWait) = 2;
-        if (p3 == 0 || p4 == 0) {
-            init_LoadBuildingScene(*p3);
-            w = -1;
-        } else {
+        if (p3 != 0 && p4 != 0) {
             init_LoadObjectScene(*p4);
-            w = *(int *)(p4 + 1);
+            sv_SelectPanelObject(p3, *(int *)(p4 + 1), (unsigned)&ch_EmptyName);
+        } else {
+            init_LoadBuildingScene(*p3);
+            sv_SelectPanelObject(p3, -1, (unsigned)&ch_EmptyName);
         }
-        sv_SelectPanelObject(p3, w, (unsigned)&ch_EmptyName);
     }
-    us = *(unsigned short *)(unsigned)&ai_PlayerId;
-    while (us < 0x300 && U_I((unsigned)&ai_GameOver) == 0 && *(char *)(((unsigned)&ai_CharsT + 0x2) + (U_I((unsigned)&ai_PlayerId) & 0xffff) * 0x21c) != 6) {
+    for (us = ai_PlayerId; us < 0x300 && ai_GameOver == 0 && ai_CharsT[MAIN_PLAYER].kind != 6; ai_PlayerId = us)
         us++;
-        *(unsigned short *)(unsigned)&ai_PlayerId = us;
-    }
-    if ((char)U_I((unsigned)&ai_GameFlags) < 0) {
+    if ((ai_GameFlags & 0x80) != 0) {
         ai_Unk578180();
         memset(cl, 0, 0xf8);
         /* `cl` is an int array, so the byte offsets must not pick up the int scaling of MSG_B / MSG_I. */
@@ -4873,23 +4877,14 @@ L_fail:
             U_I((unsigned)&ai_CurrentPlayer) = 0;
             main_RundenBeginn();
         } else {
-            u = U_I((unsigned)&ai_PlayerId) & 0xffff;
-            if (u != 0) {
-                pc = (char *)((unsigned)&ai_CharsT + 0x2);
-                do {
-                    if (*pc == 6)
-                        iv++;
-                    pc += 0x21c;
-                    u--;
-                    U_I((unsigned)&ai_CurrentPlayer) = iv;
-                } while (u != 0);
+            for (idx = 0; idx < MAIN_PLAYER; idx++) {
+                if (ai_CharsT[idx].kind == 6)
+                    iv++;
             }
+            ai_CurrentPlayer = iv;
         }
-        us = *(unsigned short *)(unsigned)&ai_PlayerId;
-        while (us < 0x300 && U_I((unsigned)&ai_GameOver) == 0 && *(char *)(((unsigned)&ai_CharsT + 0x2) + (U_I((unsigned)&ai_PlayerId) & 0xffff) * 0x21c) != 6) {
+        for (us = ai_PlayerId; us < 0x300 && ai_GameOver == 0 && ai_CharsT[MAIN_PLAYER].kind != 6; ai_PlayerId = us)
             us++;
-            *(unsigned short *)(unsigned)&ai_PlayerId = us;
-        }
         if (*(char *)(((unsigned)&ai_CharsT + 0x2) + (U_I((unsigned)&ai_PlayerId) & 0xffff) * 0x21c) == 6) {
             if ((U_I((unsigned)&ai_GameFlags) & 0x46) == 0) {
                 clk[1] = U_I((unsigned)&ai_TimeHour);
@@ -4933,7 +4928,7 @@ L_fail:
                 u = U_I((unsigned)&ai_GameFlags) & 0xff;
             }
             if ((u & 0x42) == 0 && U_I((unsigned)&full_data_62456c) != 0 && U_I((unsigned)&ai_GameOver) == 0 && (char)u >= 0) {
-                U_I((unsigned)&ls_SaveSlot) = 0;
+                ls_SaveSlot = 0;
                 if ((u & 4) == 0) {
                     sprintf(ap, "%s\\gamedata\\saves\\autosave.sav", "\\project\\gfx\\");
                     i5 = fopen(ap, "rb");
@@ -4958,10 +4953,10 @@ L_fail:
                     ai_LoadScreenImage(ap);
                     ls_SaveGame("Gamedata\\Saves\\Autosave.SAV", "Autosave", 1);
                 } else if ((u & 0x10) != 0) {
-                    memset(cl, 0, 0x7c);
-                    strcpy((char *)cl + 4, "AUTOSAVE");
-                    cl[0] = 0;
-                    w = cm_SendExSysMessage(0xf, cl);
+                    memset(sys, 0, 0x7c);
+                    strcpy((char *)sys + 4, "AUTOSAVE");
+                    sys[0] = 0;
+                    w = cm_SendExSysMessage(0xf, sys);
                     iv = cm_GetSlotState(w);
                     while (iv == 0) {
                         sv_PumpNet();
@@ -4976,20 +4971,12 @@ L_fail:
             if (U_I((unsigned)&ai_GameOver) == 0) {
                 tb_SetFunctionOff((unsigned)&sv_UpdateClock, 1);
                 if ((U_I((unsigned)&ai_GameFlags) & 8) == 0) {
-                    ck[0] = U_I((unsigned)&ai_TimeT);
-                    ck[1] = U_I((unsigned)&ai_TimeHour);
-                    ck[2] = U_I(((unsigned)&ai_TimeT + 0x8));
-                    *(short *)(ck + 3) = *(short *)((unsigned)&ai_TimeT + 0xc);
-                    us = (unsigned short)U_I((unsigned)&ai_TimeHour);
-                    while (us < 0x17) {
-                        gm_AddTime(ck, 0, 0x1e, 0);
-                        w = ai_Unk4c4d40(ck);
-                        iv = cm_GetSlotState(w);
-                        while (iv == 0) {
+                    ck = main_Now;
+                    while ((unsigned short)ck.b < 0x17) {
+                        gm_AddTime((struct GCLOCK *)&ck, 0, 0x1e, 0);
+                        w = ai_Unk4c4d40(&ck);
+                        while (cm_GetSlotState(w) == 0)
                             sv_PumpNet();
-                            iv = cm_GetSlotState(w);
-                        }
-                        us = (unsigned short)ck[1];
                     }
                 }
                 main_RoundReport();
@@ -5005,24 +4992,16 @@ L_next:
         if (U_I((unsigned)&ai_GameOver) == 0) {
             if (U_I((unsigned)&ai_Unk1460ae0) == -1) {
                 tb_SetFunctionOff((unsigned)&sv_UpdateClock, 1);
-                ck[0] = U_I((unsigned)&ai_TimeT);
-                ck[1] = U_I((unsigned)&ai_TimeHour);
-                ck[2] = U_I(((unsigned)&ai_TimeT + 0x8));
-                *(short *)(ck + 3) = *(short *)((unsigned)&ai_TimeT + 0xc);
-                us = (unsigned short)U_I((unsigned)&ai_TimeHour);
-                while (us < 0x17) {
-                    gm_AddTime(ck, 0, 0x1e, 0);
-                    w = ai_Unk4c4d40(ck);
-                    iv = cm_GetSlotState(w);
-                    while (iv == 0) {
+                ck = main_Now;
+                while ((unsigned short)ck.b < 0x17) {
+                    gm_AddTime((struct GCLOCK *)&ck, 0, 0x1e, 0);
+                    w = ai_Unk4c4d40(&ck);
+                    while (cm_GetSlotState(w) == 0)
                         sv_PumpNet();
-                        iv = cm_GetSlotState(w);
-                    }
-                    us = (unsigned short)ck[1];
                 }
-                gm_AddTime(ck, 0x18, 0, 0);
-                gm_SetTime(ck, 6, 0, 0);
-                ai_Unk4c4d40(ck);
+                gm_AddTime((struct GCLOCK *)&ck, 0x18, 0, 0);
+                gm_SetTime((struct GCLOCK *)&ck, 6, 0, 0);
+                ai_Unk4c4d40(&ck);
                 tb_SetFunctionOff((unsigned)&sv_UpdateClock, 0);
             }
             if ((U_I((unsigned)&cm_NetFlags) & 8) != 0 || U_I((unsigned)&ai_Unk1460ae0) == -1) {
@@ -5079,7 +5058,7 @@ L_next:
         sv_MessageBox(pc, 0);
     }
 L_end:
-    if ((char)U_I((unsigned)&ai_GameFlags) < 0)
+    if ((ai_GameFlags & 0x80) != 0)
         ai_Unk578370();
     main_EndGame();
 }
