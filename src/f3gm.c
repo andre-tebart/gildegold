@@ -36,7 +36,7 @@ extern char ai_Unk91f700[];
 extern char gm_StockBlocks[];                 /* 0x7d6a60, the five 0x2a90-byte stock blocks (one per player slot) */
 /* The stock area is ONE 0xd4d0-byte object at 0x7d6a60 (five blocks of 0x2a90: four header ints, then
    0x55 records of 0x80 bytes). The other names are views into it: a separate definition would reserve
-   its own memory and the block writer/reader (gm_LoadTables, unk_Unk51f080, ls_WritePlayerSlots) would then
+   its own memory and the block writer/reader (gm_LoadTables, ls_ReadPlayerSlots, ls_WritePlayerSlots) would then
    write over whatever the COMMON linker placed inside the 0xd4d0-byte span. */
 #define init_StockBlocks (*(char (*)[0xd4c0])((char *)gm_StockBlocks + 0x10))  /* 0x7d6a70, the records of block 0 */
 #define ai_Unk7d6a64 (*(int (*)[3])((char *)gm_StockBlocks + 4))  /* 0x7d6a64, the rest of block 0's header */

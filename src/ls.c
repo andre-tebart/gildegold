@@ -1,5 +1,5 @@
 /* ls.c -- the save game (0x519010 ..): the tag "ls_" ("ls:tmp" 0x623654, "ls_LoadCharacter(): invalid next or prev-action pointer ...", "ls_SendGame"), the language number of a name (0x519010: the table "GERMAN" .. 0x5ee978), the save game writer 0x5190b0 (header 0x5194c0: "SCENARIO", the player, the party records and the screen shot of 0xe100 bytes, then one writer per subsystem), the pointer <-> index conversions before / after a save (0x519a00 / 0x519aa0 / 0x519b50) and the other writers (0x519bf0 ..), the readers (0x51c950 ..) and the network send / receive of a save game (0x520a30 / 0x520b80). The unit starts at its first global 0x62364c (the language number, -1); its strings run to "ls_SendGame" 0x62376c / "rbn" 0x623778, and it ends at 0x520ec0, sv.c's first function. Names are ours.
-   Open: ls_LoadGame's readers are mostly unnamed (unk_Unk51f080 .. unk_Unk5205f0).
+   Open: ls_LoadGame's readers are mostly unnamed (ls_ReadPlayerSlots .. unk_Unk5205f0).
    unit of rea 8cef7d5b (src/game/ls.c); boundaries in decl/text.dcl */
 struct D3SM;
 struct D3TERRAIN;
@@ -1412,7 +1412,7 @@ int ls_LoadGame(int name, int kind)
     else
         ai_NextCrimeId = 1000000;
     if (ls_ReadObjects(h) == 0 || ls_ReadBuildings(h) == 0 || ls_ReadPlayerRecords(h) == 0 || ls_ReadCharacters(h) == 0
-        || unk_Unk51f080(h) == 0 || (ls_Version >= 0x10045 && amt_LoadAemter(h, ls_Version) == 0) || unk_Unk51d2d0(h) == 0)
+        || ls_ReadPlayerSlots(h) == 0 || (ls_Version >= 0x10045 && amt_LoadAemter(h, ls_Version) == 0) || unk_Unk51d2d0(h) == 0)
         goto close;
     if ((ai_Unk76f924 & 2) != 0) {          /* a map-only save ends here */
         vfs_fclose(h);
@@ -2186,129 +2186,100 @@ int ls_ReadSceneRecords(int f)
     }
     return 1;
 }
-/* 0x51f080, reads the five player blocks of 0x7d6a60 (0x2a90 bytes: four words and n records of 0x80 bytes, n = 0x3e or the count read first from 0x10048; the counterpart of 0x51b340) and the player slots of 0x7e3f40 (0x2f4 bytes: the name, the 8 bytes +0x40, the fields up to +0x2a4 + 0x48 in the order of the writer, from version 0x10037 the 8 bytes +0x2ec); the town name of the first slot is looked up in the text table ("_STADTAUSWAHL_%s_INFO+0", 0x42e770) and copied to +0x20 (else the slot's own name). Returns 1. ROUGH */
+/* 0x51f080, reads what ls_WritePlayerSlots writes: the record count of the stock blocks (from version 0x10048, else
+   0x3e), the five blocks of gm_StockBlocks (four header words, then that many goods records with the fields +0 (2
+   bytes), +4, +8, +0xc, +0x20, +0x24, +0x30, +0x34, +0x38, +0x3c (2 bytes), +0x2c), then the four player slots of
+   ai_PlayerSlots field by field (the map offset +0x2ec from version 0x10037). Finally the town text of the first
+   slot ("_STADTAUSWAHL_<name>_INFO+0", upper case, txt_FindKey) is copied to its +0x20, the slot's own name when
+   there is none. Returns 1, 0 when a read fails.
+   @deep read whole against 0x51f080..0x51f646: the count (0x3e, read from 0x10048), the five stock blocks
+   (4 header words, n records with the 11 fields +0 (2) +4 +8 +0xc +0x20 +0x24 +0x30 +0x34 +0x38 +0x3c (2)
+   +0x2c), the four player slots (every field, size and loop, +0x2ec from 0x10037) and the _STADTAUSWAHL_
+   town text lookup match; 508 vs 508 instructions, 32 bytes differ. Left: only the strength-reduced record
+   pointer's bias in the record loop 0x51f12c..0x51f24c - ours lea edi, [ebx + 0xc] (blk+0x14: fields at
+   edi-4 .. edi+0x38), the original's lea edi, [ebx + 0x10] (blk+0x18: edi-8 .. edi+0x34); the same bias as
+   ls_WritePlayerSlots 0x51b340 (same record type, same tries there: char pointer, index form, struct
+   index, int array): needs a generated variant round */
 
 
-int unk_Unk51f080(int f)
+int ls_ReadPlayerSlots(int f)
 {
-    int n = 0x3e, i, j;
-    int *p5, *p7;
-    char *p, *s, *q;
-    char buf[256];
-    int idx;
+    int n;
+    int b, j, k;
+    GMSTOCKBLOCK *blk;
+    char *slot;
+    char buf[0x100];
 
-    if (ls_Version >= 0x10048 && ls_Read((int)&n, 4, 1, f) == 0)
-        return 0;
-    for (p5 = (int *)((unsigned)&ai_Unk7d6a64 + 0x4); (int)p5 < (int)((unsigned)&ai_Unk7d6a64 + 0xd4d4); p5 += 0xaa4) {  /* the bound is the address + 0xd4d4 (the end of the five 0x2a90-byte blocks); ls.c declares ai_Unk7d6a64 as a scalar, so the plain `(unsigned)ai_Unk7d6a64` read the byte value and skipped the loop */
-        LS_R(p5 - 2, 4)
-        LS_R(p5 - 1, 4)
-        LS_R(p5, 4)
-        LS_R(p5 + 1, 4)
-        i = 0;
-        if (n > 0) {
-            p7 = p5 + 4;
-            do {
-                LS_R(p7 - 2, 2)
-                LS_R(p7 - 1, 4)
-                LS_R(p7, 4)
-                LS_R(p7 + 1, 4)
-                LS_R(p7 + 6, 4)
-                LS_R(p7 + 7, 4)
-                LS_R(p7 + 10, 4)
-                LS_R(p7 + 11, 4)
-                LS_R(p7 + 12, 4)
-                LS_R(p7 + 13, 2)
-                LS_R(p7 + 9, 4)
-                i++;
-                p7 += 0x20;
-            } while (i < n);
+    n = 0x3e;
+    if (ls_Version >= 0x10048)
+        LS_R(&n, 4)
+    for (b = 0; b < 5; b++) {
+        blk = &gm_StockBlocksT[b];
+        LS_R(&blk->head[0], 4)
+        LS_R(&blk->head[1], 4)
+        LS_R(&blk->head[2], 4)
+        LS_R(&blk->head[3], 4)
+        for (j = 0; j < n; j++) {
+            LS_R(&blk->recs[j].good, 2)
+            LS_R(&blk->recs[j].f04, 4)
+            LS_R(&blk->recs[j].f08, 4)
+            LS_R(&blk->recs[j].f0c, 4)
+            LS_R(&blk->recs[j].f20, 4)
+            LS_R(&blk->recs[j].f24, 4)
+            LS_R(&blk->recs[j].f30, 4)
+            LS_R(&blk->recs[j].f34, 4)
+            LS_R(&blk->recs[j].f38, 4)
+            LS_R(&blk->recs[j].f3c, 2)
+            LS_R(&blk->recs[j].f2c, 4)
         }
     }
-    s = (char *)((unsigned)&ai_PlayerSlots + 0x48);
-    for (;;) {
-        p = s - 0x48;
-        LS_R(p, 0x20)
-        LS_R(s - 8, 8)
-        LS_R(s, 1)
-        LS_R(s + 4, 4)
-        LS_R(s + 8, 4)
-        LS_R(s + 0xc, 2)
-        LS_R(s + 0x10, 8)
-        LS_R(s + 0x18, 1)
-        LS_R(s + 0x19, 1)
-        i = 0;
-        q = s + 0x1c;
-        do {
-            LS_R(q, 8)
-            i++;
-            q += 8;
-        } while (i < 10);
-        i = 0;
-        q = p + 0xb4;
-        do {
-            LS_R(q, 8)
-            i++;
-            q += 8;
-        } while (i < 10);
-        LS_R(p + 0x104, 1)
-        LS_R(p + 0x105, 1)
-        i = 0;
-        q = p + 0x108;
-        do {
-            LS_R(q, 4)
-            i++;
-            q += 4;
-        } while (i < 4);
-        i = 0;
-        q = p + 0x118;
-        do {
-            LS_R(q, 4)
-            i++;
-            q += 4;
-        } while (i < 4);
-        LS_R(p + 0x128, 4)
-        i = 0;
-        do {
-            LS_R(p + i + 0x12c, 1)
-            i++;
-        } while (i < 0xb);
-        LS_R(p + 0x137, 1)
-        i = 0;
-        do {
-            LS_R(p + i + 0x138, 1)
-            i++;
-        } while (i < 7);
-        if (ls_Read((int)(p + 0x13f), 1, 1, f) == 0)
-            break;
-        LS_R(p + 0x140, 1)
-        LS_R(p + 0x141, 1)
-        LS_R(p + 0x142, 1)
-        i = 0;
-        q = p + 0x144;
-        do {
-            LS_R(q, 0x12)
-            i++;
-            q += 0x12;
-        } while (i < 8);
-        LS_R(p + 0x1d4, 4)
-        LS_R(p + 400 + 0x48, 4)
-        LS_R(p + 0x1dc, 0xd0)
-        if (ls_Version >= 0x10037 && ls_Read((int)(p + 0x2ec), 8, 1, f) == 0)
-            return 0;
-        s += 0x2f4;
-        if ((int)s > ((unsigned)((unsigned)ai_PlayerSlots + 0xbe0) + 0x37)) {
-            sprintf(buf, "_STADTAUSWAHL_%s_INFO+0", ai_PlayerSlots[0]);
-            _strupr(buf);
-            idx = txt_FindKey(buf);
-            if (idx == -1) {
-                strcpy(ai_PlayerSlots[0] + 0x20, ai_PlayerSlots[0]);
-                return 1;
-            }
-            strcpy(ai_PlayerSlots[0] + 0x20, txt_Ptrs[idx]);
-            return 1;
-        }
+    for (b = 0; b < 4; b++) {
+        slot = ai_PlayerSlots[b];
+        LS_R(slot, 0x20)
+        LS_R(slot + 0x40, 8)
+        LS_R(slot + 0x48, 1)
+        LS_R(slot + 0x4c, 4)
+        LS_R(slot + 0x50, 4)
+        LS_R(slot + 0x54, 2)
+        LS_R(slot + 0x58, 8)
+        LS_R(slot + 0x60, 1)
+        LS_R(slot + 0x61, 1)
+        for (j = 0; j < 10; j++)
+            LS_R(slot + 0x64 + j * 8, 8)
+        for (j = 0; j < 10; j++)
+            LS_R(slot + 0xb4 + j * 8, 8)
+        LS_R(slot + 0x104, 1)
+        LS_R(slot + 0x105, 1)
+        for (j = 0; j < 4; j++)
+            LS_R(slot + 0x108 + j * 4, 4)
+        for (j = 0; j < 4; j++)
+            LS_R(slot + 0x118 + j * 4, 4)
+        LS_R(slot + 0x128, 4)
+        for (j = 0; j < 0xb; j++)
+            LS_R(slot + 0x12c + j, 1)
+        LS_R(slot + 0x137, 1)
+        for (j = 0; j < 7; j++)
+            LS_R(slot + 0x138 + j, 1)
+        LS_R(slot + 0x13f, 1)
+        LS_R(slot + 0x140, 1)
+        LS_R(slot + 0x141, 1)
+        LS_R(slot + 0x142, 1)
+        for (j = 0; j < 8; j++)
+            LS_R(slot + 0x144 + j * 0x12, 0x12)
+        LS_R(slot + 0x1d4, 4)
+        LS_R(slot + 0x1d8, 4)
+        LS_R(slot + 0x1dc, 0xd0)
+        if (ls_Version >= 0x10037)
+            LS_R(slot + 0x2ec, 8)
     }
-    return 0;
+    sprintf(buf, "_STADTAUSWAHL_%s_INFO+0", ai_PlayerSlots[0]);
+    _strupr(buf);
+    k = txt_FindKey(buf);
+    if (k != -1)
+        strcpy(ai_PlayerSlots[0] + 0x20, txt_Ptrs[k]);
+    else
+        strcpy(ai_PlayerSlots[0] + 0x20, ai_PlayerSlots[0]);
+    return 1;
 }
 /* 0x51f650, reads the two relation maps ai_Relations / ai_RelationMemory (n x n bytes, a row of 0x300: n = 0x100 below 0x1003a, 0x100 below 0x10042 else 0x300; the second map from 0x10036). Returns 1 */
 
@@ -2936,7 +2907,7 @@ int ls_ReceiveGame(void)
                     *p = 5;
                 p += 0x21c;
             } while ((int)p < (unsigned)((unsigned)ai_Chars + 0x65402));
-            if (unk_Unk51f080(fh) != 0) {
+            if (ls_ReadPlayerSlots(fh) != 0) {
                 if (ls_Version >= 0x10045 && amt_LoadAemter(fh, ls_Version) == 0) {
                     vfs_fclose(fh);
                     goto fail;
