@@ -1977,7 +1977,7 @@ exe	0x004b6040	ai_MissionPartnerDialog	unk_4b39f0	shape	readable
 exe	0x004b60f0	ai_MissionResultByMode	unk_4b39f0	byte	readable		
 exe	0x004b6110	ai_MissionCompleteSingle	unk_4b39f0	shape	draft		
 exe	0x004b62a0	ai_MissionCompleteSequence	unk_4b39f0	byte	readable		
-exe	0x004b62e0	ai_Unk4b62e0	unk_4b39f0	byte	draft		
+exe	0x004b62e0	ai_SaveMissions	unk_4b39f0	byte	draft		
 exe	0x004b63b0	ai_Unk4b63b0	unk_4b39f0	byte	draft		
 exe	0x004b6480	ai_MsgRewardPct1to3	unk_4b6480	byte	readable		
 exe	0x004b6570	ai_MsgRewardPct2to4	unk_4b6480	byte	readable		
@@ -2134,8 +2134,8 @@ exe	0x004c28a0	snd_LoadBuildingVoices	f3snd	byte	readable
 exe	0x004c2c00	snd_UnloadBuildingVoices	f3snd	byte	readable		
 exe	0x004c2c70	snd_PlayWorkerClick	f3snd	byte	readable		
 exe	0x004c2ce0	snd_PlaySelectedClick	f3snd	byte	readable		
-exe	0x004c2d20	snd_PlayFavourComment	f3snd	draft	draft	deep	
-exe	0x004c2f30	ai_Unk4c2f30	f3snd	shape	draft	deep	
+exe	0x004c2d20	snd_PlayFavourComment	f3snd	draft	readable	deep	
+exe	0x004c2f30	ai_FavourComment	f3snd	shape	draft	deep	
 exe	0x004c30e0	snd_StartMarketAmbience	f3snd	byte	readable		
 exe	0x004c3140	snd_StopMarketAmbience	f3snd	byte	readable		
 exe	0x004c3180	ai_Unk4c3180	cm	draft	draft		
@@ -2671,7 +2671,7 @@ exe	0x004e94e0	amt_CanUseMayorPower2	amt	byte	readable
 exe	0x004e95a0	amt_CanUseMayorPower3	amt	byte	readable		
 exe	0x004e9660	amt_ExecutePriceMessage	amt	draft	readable	deep	
 exe	0x004e9a00	amt_ExecuteShareMessage	amt	byte	readable		
-exe	0x004e9ce0	amt_ExecuteMayorPowerMessage	amt	draft	readable		
+exe	0x004e9ce0	amt_ExecuteMayorPowerMessage	amt	draft	readable	deep	
 exe	0x004ea550	amt_ChangeDistrictOpinion	amt	byte	readable		
 exe	0x004ea5c0	amt_GetDistrictLiking	amt	byte	readable		
 exe	0x004ea690	amt_SaveAemter	amt	draft	readable	deep	
@@ -2804,7 +2804,7 @@ exe	0x004f2720	gv_GetTableRecord	gv	draft	draft
 exe	0x004f2750	gv_SetTableRecord	gv	draft	draft		
 exe	0x004f27d0	unk_Unk4f27d0	gv	draft	draft		
 exe	0x004f2870	gv_FindTableRecord	gv	draft	draft		
-exe	0x004f28d0	unk_Unk4f28d0	gv	draft	draft		
+exe	0x004f28d0	gv_WriteGraveyard	gv	draft	draft		
 exe	0x004f2b30	unk_Unk4f2b30	gv	draft	draft		
 exe	0x004f2da0	unk_Unk4f2da0	gv	byte	draft		
 exe	0x004f2e30	unk_Unk4f2e30	gv	draft	draft		
@@ -2909,7 +2909,7 @@ exe	0x004f8700	unk_Unk4f8700	ord	shape	draft
 exe	0x004f8890	ord_GetKindRecord	ord	byte	readable		
 exe	0x004f88c0	unk_Unk4f88c0	ord	byte	draft		
 exe	0x004f8920	ord_RebuildGridSums	ord	draft	draft	deep	
-exe	0x004f8ae0	ord_ComputeStatistics	ord	draft	readable	deep	
+exe	0x004f8ae0	ord_ComputeStatistics	ord	shape	readable	deep	
 exe	0x004f8ed0	ord_UpdateStatistics	ord	draft	draft	deep	
 exe	0x004f9020	ord_LoadStatistics	ord	draft	readable	deep	
 exe	0x004f9170	ord_GetMessageRecord	ord	byte	readable		
@@ -3041,7 +3041,7 @@ exe	0x00502fd0	gm_Unk502fd0	f3gm	draft	draft
 exe	0x005031b0	unk_Unk5031b0	f3gm	draft	draft		
 exe	0x00503480	gm_RemoveObjectFromBuilding	f3gm	byte	readable		
 exe	0x005034b0	gm_Unk5034b0	f3gm	draft	draft		
-exe	0x00503530	unk_Unk503530	f3gm	draft	draft		
+exe	0x00503530	gm_PermissionBits	f3gm	draft	draft		
 exe	0x00503c20	gm_Unk503c20	f3gm	draft	draft		
 exe	0x00503c60	unk_Unk503c60	f3gm	draft	draft		
 exe	0x00503e80	gm_ResetCharacters	f3gm	draft	draft		
@@ -3191,19 +3191,19 @@ exe	0x0050dc30	init_LoadBuildingScene	f3init	draft	readable	deep
 exe	0x0050e0d0	init_StartNewGame	f3init	draft	readable	deep	
 exe	0x0050e330	init_CreateOpponents	f3init	draft	draft	deep	
 exe	0x0050e5a0	init_PlaceOffices	f3init	shape	readable	deep	
-exe	0x0050e690	init_CreateStartCharacters	f3init	draft	readable		
+exe	0x0050e690	init_CreateStartCharacters	f3init	draft	readable	deep	
 exe	0x0050f0b0	init_CreateOpeningObjects	f3init	byte	readable		
 exe	0x0050f340	init_StockMarketStalls	f3init	draft	readable	deep	
 exe	0x0050f570	init_Betrieb	f3init	draft	readable	deep	
 exe	0x0050f750	init_OpenBuilding	f3init	draft	readable	deep	
-exe	0x0050f910	init_OpenTown	f3init	draft	draft		draft+readable -> draft+draft at f274727: Q6: the description came from a foreign declaration copy or a file name only (decompanion 399f0a8); the definition has none
+exe	0x0050f910	init_OpenTown	f3init	draft	readable	deep	
 exe	0x00510730	init_CollectSiteObject	f3init	byte	readable		
 exe	0x00510770	init_LoadSiteScene	f3init	shape	draft		shape+readable -> shape+draft at f274727: Q6: the description came from a foreign declaration copy or a file name only (decompanion 399f0a8); the definition has none
 exe	0x00510ad0	init_InitTown	f3init	shape	readable		
 exe	0x00510e20	init_ShowStatus	f3init	byte	readable		
 exe	0x00510e50	init_StartNetworkGame	f3init	draft	draft	deep	draft+readable -> draft+draft at f274727: Q6: the description came from a foreign declaration copy or a file name only (decompanion 399f0a8); the definition has none
 exe	0x005112d0	unk_Unk5112d0	f3init	byte	draft		
-exe	0x00511400	init_SetupNewGame	f3init	draft	readable		
+exe	0x00511400	init_SetupNewGame	f3init	byte	readable		
 exe	0x005115b0	unk_Unk5115b0	f3init	byte	draft		
 exe	0x00511600	unk_Unk511600	f3init	byte	draft		
 exe	0x005116b0	unk_Unk5116b0	f3init	byte	draft		
@@ -3217,16 +3217,16 @@ exe	0x00511bc0	init_FillMarkets	f3init	byte	readable
 exe	0x00511c70	unk_Unk511c70	f3init	shape	draft		
 exe	0x00511dc0	init_ObjectSceneUniverse	f3init	byte	readable		
 exe	0x00511e60	init_BuildingSceneUniverse	f3init	draft	readable	deep	
-exe	0x00511f20	init_SyncSceneObjects	f3init	draft	draft		
+exe	0x00511f20	init_SyncSceneObjects	f3init	draft	readable	deep	
 exe	0x005124d0	unk_Unk5124d0	f3init	byte	draft		
-exe	0x005124f0	init_LoadShopScript	f3init	draft	draft		
+exe	0x005124f0	init_LoadShopScript	f3init	draft	readable	deep	
 exe	0x005126a0	init_SoundObjectHook	f3init	shape	readable	deep	
 exe	0x00512780	init_GateObjectHook	f3init	byte	draft		
 exe	0x005127c0	init_SoundObjectFreeHook	f3init	byte	readable		
 exe	0x005127f0	init_PlayTownSound	f3init	byte	readable		
 exe	0x00512840	init_PlayGraveyardSound	f3init	byte	draft		
 exe	0x00512890	unk_Unk512890	f3init	byte	draft		
-exe	0x005128d0	init_SetSeasonTextures	f3init	draft	readable		
+exe	0x005128d0	init_SetSeasonTextures	f3init	shape	readable		
 exe	0x00512de0	init_PlantTextureSetHook	f3init	byte	draft		
 exe	0x00512e40	init_TextureSetHook	f3init	draft	readable	deep	
 exe	0x00512e80	init_BuildingTextureSetHook	f3init	shape	draft		
@@ -3246,28 +3246,28 @@ exe	0x00515960	io_PrintText	io_text	draft	readable	deep
 exe	0x005176d0	txt_Format	io_text	draft	readable	deep	
 exe	0x00519010	ls_LanguageOf	ls	byte	readable		
 exe	0x005190a0	ls_GetLanguage	ls	byte	readable		
-exe	0x005190b0	ls_SaveGame	ls	draft	draft		
+exe	0x005190b0	ls_SaveGame	ls	draft	readable	deep	
 exe	0x005194c0	ls_WriteSaveHeader	ls	draft	draft		
-exe	0x00519a00	unk_Unk519a00	ls	draft	draft	deep	
-exe	0x00519aa0	unk_Unk519aa0	ls	byte	draft	deep	
-exe	0x00519b50	unk_Unk519b50	ls	shape	draft	deep	
+exe	0x00519a00	ls_RefsToIds	ls	draft	draft	deep	
+exe	0x00519aa0	ls_IdsToRefs	ls	byte	draft	deep	
+exe	0x00519b50	ls_RelinkScene	ls	shape	draft	deep	
 exe	0x00519bf0	ls_WriteObjects	ls	shape	readable		
-exe	0x00519d20	unk_Unk519d20	ls	draft	draft	deep	
-exe	0x0051a1a0	unk_Unk51a1a0	ls	draft	draft	deep	
-exe	0x0051a4b0	unk_Unk51a4b0	ls	draft	draft	deep	
+exe	0x00519d20	ls_WriteBuildings	ls	draft	draft	deep	
+exe	0x0051a1a0	ls_WritePlayerRecords	ls	draft	draft	deep	
+exe	0x0051a4b0	ls_WriteCharacters	ls	draft	draft	deep	
 exe	0x0051ad30	ls_ActionIndex	ls	byte	readable		
 exe	0x0051ad60	ls_ActionAt	ls	byte	readable		
 exe	0x0051ad80	unk_Unk51ad80	ls	draft	draft	deep	
-exe	0x0051aff0	unk_Unk51aff0	ls	draft	draft	deep	
-exe	0x0051b340	unk_Unk51b340	ls	draft	draft		
+exe	0x0051aff0	ls_WriteSceneRecords	ls	draft	draft	deep	
+exe	0x0051b340	ls_WritePlayerSlots	ls	draft	draft		
 exe	0x0051b890	ls_WriteRelations	ls	shape	readable		
-exe	0x0051b910	unk_Unk51b910	ls	draft	draft	deep	
+exe	0x0051b910	ls_WriteStatistics	ls	draft	draft	deep	
 exe	0x0051bdb0	ls_WriteAvatars	ls	byte	readable		
-exe	0x0051bdc0	unk_Unk51bdc0	ls	draft	draft	deep	
-exe	0x0051c2f0	unk_Unk51c2f0	ls	draft	draft	deep	
+exe	0x0051bdc0	ls_WritePlayerTable	ls	draft	draft	deep	
+exe	0x0051c2f0	ls_WriteParties	ls	draft	draft	deep	
 exe	0x0051c450	ls_WriteHistory	ls	shape	readable		
-exe	0x0051c560	unk_Unk51c560	ls	draft	draft		
-exe	0x0051c870	unk_Unk51c870	ls	draft	draft	deep	
+exe	0x0051c560	ls_WriteMessageQueues	ls	draft	draft		
+exe	0x0051c870	ls_WriteEnvironment	ls	draft	draft	deep	
 exe	0x0051c920	ls_Read	ls	byte	readable		
 exe	0x0051c950	ls_LoadGame	ls	draft	draft	deep	
 exe	0x0051cee0	ls_ReadSaveHeader	ls	draft	readable	deep	
@@ -4104,7 +4104,7 @@ exe	0x00589450	ai_Unk589450	unk_575860	draft	draft
 exe	0x005894d0	ai_Unk5894d0	unk_575860	draft	draft		
 exe	0x00589570	ai_Unk589570	unk_575860	draft	draft		
 exe	0x00589670	ai_Unk589670	unk_575860	draft	draft		
-exe	0x00589aa0	ai_Unk589aa0	unk_575860	draft	draft		
+exe	0x00589aa0	ai_SaveSlotTable	unk_575860	draft	draft		
 exe	0x00589b30	ai_Unk589b30	unk_575860	draft	draft		
 exe	0x00589bc0	ai_Unk589bc0	unk_575860	draft	draft		
 exe	0x00589c90	ai_Unk589c90	unk_575860	draft	draft		
@@ -4330,7 +4330,7 @@ exe	0x005a8870	ai_DrawSettingGood	unk_58bbd0	draft	draft
 exe	0x005a88e0	ai_SettingFactor	unk_58bbd0	byte	draft		
 exe	0x005a8900	ai_Unk5a8900	unk_58bbd0	byte	draft		
 exe	0x005a8920	ai_FreeSettings	unk_58bbd0	byte	draft		
-exe	0x005a8940	ai_Unk5a8940	unk_58bbd0	draft	draft		
+exe	0x005a8940	ai_SaveSettings	unk_58bbd0	draft	draft		
 exe	0x005a8a20	ai_Unk5a8a20	unk_58bbd0	draft	draft		
 exe	0x005a8b80	ai_Unk5a8b80	unk_58bbd0	byte	draft		
 exe	0x005a8c00	ai_Unk5a8c00	unk_58bbd0	byte	draft		

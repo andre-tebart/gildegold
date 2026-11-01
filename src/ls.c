@@ -1,6 +1,5 @@
 /* ls.c -- the save game (0x519010 ..): the tag "ls_" ("ls:tmp" 0x623654, "ls_LoadCharacter(): invalid next or prev-action pointer ...", "ls_SendGame"), the language number of a name (0x519010: the table "GERMAN" .. 0x5ee978), the save game writer 0x5190b0 (header 0x5194c0: "SCENARIO", the player, the party records and the screen shot of 0xe100 bytes, then one writer per subsystem), the pointer <-> index conversions before / after a save (0x519a00 / 0x519aa0 / 0x519b50) and the other writers (0x519bf0 ..), the readers (0x51c950 ..) and the network send / receive of a save game (0x520a30 / 0x520b80). The unit starts at its first global 0x62364c (the language number, -1); its strings run to "ls_SendGame" 0x62376c / "rbn" 0x623778, and it ends at 0x520ec0, sv.c's first function. Names are ours.
-   Open: not included yet (dcp headers conflicts ls HEADER): hmt.h.
-   Open: ls_LoadGame's readers and globals are mostly unnamed (unk_Unk51f080 .. unk_Unk5205f0, ai_NextCharNumber ..).
+   Open: ls_LoadGame's readers are mostly unnamed (unk_Unk51f080 .. unk_Unk5205f0).
    unit of rea 8cef7d5b (src/game/ls.c); boundaries in decl/text.dcl */
 struct D3SM;
 struct D3TERRAIN;
@@ -146,7 +145,7 @@ int ls_GetLanguage(void)
    vfs_fclose(f) - the original pushes f before each branch (push esi; jne) and calls vfs_fclose with it,
    the draft called it without an argument through a cast (that kept the blocks apart, 72 differing, but it
    was not the original's call); the step order, the fixed globals and their sizes are equal. Readability:
-   the 23 placeholders named (ls_RefsToIds / ls_IdsToRefs, the writers, the id counters), ROUGH removed,
+   the 23 placeholders named (ls_RefsToIds / ls_IdsToRefs, the writers, the id counters), the rough-draft marker dropped,
    the prototypes of ai_SaveMissions / ai_SaveSlotTable / ai_SaveSettings in their owners' headers and
    hmt.h included (typing commit). Left: block layout - the original keeps one failure block per step (call
    vfs_fclose; add esp,4; call ls_IdsToRefs; pop esi; xor eax,eax; pop ebx; ret, at 0x5191e1, 0x519200,
