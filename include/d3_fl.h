@@ -282,7 +282,6 @@ void d3fl_PrepareWater(D3FLMAP *map);                                           
 /* ---- 0x441f50..0x4439e0 (worker map) ---- */
 extern char d3fl_EmptyName;                 /* 0x631090, the shared empty string (ch.h's ch_EmptyName, "") */
 extern const char d3fl_Suffix[3][11];             /* 0x5ebaa8, "", "_high_1", "_high_2": source texture mip levels */
-char *tex_FindFile(char *name);                                                         /* 0x45f9f0, ts_texture.c */
 void d3fl_ReloadTextures(D3FLMAP *map);                                                 /* 0x442280 */
 extern D3VECTOR4 d3fl_Origin;               /* 0xfbbd30, map point (0, 0, 0) in world space */
 extern D3VECTOR4 d3fl_AxisX;                /* 0xfc0d50, world step per map x */
@@ -330,14 +329,10 @@ extern unsigned int d3_AnimDiv[];           /* 0x5ebc60, ts_texture.c */
 extern D3VECTOR4 d3fl_LightCol;             /* 0xfbb860, color per light-map unit */
 extern D3VECTOR4 d3fl_Ambient;              /* 0xfbbd20 */
 extern D3VECTOR4 d3fl_SunCol;               /* 0xfbb880, added where the light map has bit 7 */
-void d3_ClipMesh(D3CLIP mask, D3PVERT *v, int nverts, D3PTRI *t, int ntris);          /* 0x439a60, d3_engine.c (d3_engine.h's types: the d3_fl callers pass their D3FLPOINT / D3FLPOLY views) */
 
 /* ---- 0x4439e0..0x446990 (worker d3fl3) ---- */
 int map_PickScreen(D3FLMAP *map, int x, int y, float r, D3VECTOR *out);                 /* 0x446750 */
 int map_Region(D3FLMAP *map, int x, int y);                                             /* 0x446910 */
-void * dd_LockSurfaceFlags(LPDIRECTDRAWSURFACE4 surf, DWORD flags);                                     /* 0x41de30, dd_vesa.c */
-void d3d_PrecacheTexture(LPDIRECT3DTEXTURE2 t);                                                      /* 0x4360e0, d3_d3d.c */
-void d3d_BuildMipmaps(LPDIRECTDRAWSURFACE4 tex, DDSURFACEDESC2 *ddsd);                                           /* 0x4371d0, d3_d3d.c */
 struct TSTEXTURE; struct TSTEXTURE *tex_Prepare(struct TSTEXTURE *tex);                                                     /* 0x4614c0, ts_texture.c */
 
 /* ---- 0x4439e0 (worker d3fl4) ---- */
