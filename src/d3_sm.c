@@ -304,11 +304,11 @@ void d3sm_Build(D3SM *h, D3TERRAIN *t)
     }
     h->origin.y = box[0].y + 1.0f;
     h->origin.x = box[0].x;
-    h->origin.z = box[0].z;
+    h->origin.z = box[1].z;               /* z runs from the far edge: origin at the maximum, a negative cell (0x45ea01 / 0x45ea27) */
     f = (float)h->size - 1.75f;
     h->cell.x = (box[1].x - box[0].x) / f;
     h->cell.y = (box[1].y - box[0].y) * (1.0f / 253.0f);
-    h->cell.z = (box[1].z - box[0].z) / f;
+    h->cell.z = (box[0].z - box[1].z) / f;
     radius = (int)(50.0f / h->cell.x + 0.5f) / 4;
     if (radius < 1)
         radius = 1;
