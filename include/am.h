@@ -202,8 +202,6 @@ typedef char ai_AssertAIXMSG[sizeof(AIXMSG) == 0xf8 ? 1 : -1];
 
 extern AIACT ai_Unkf83ec0[];            /* 0xf83ec0, the registered actions */
 #define AI_6F0468 ((AIPER *)ai_Partner)  /* ai.h declares it AICHAR * */
-extern struct AICHAR *ai_JudgeCatholic;             /* 0x6f1bfc */
-extern struct AICHAR *ai_JudgeProtestant;             /* 0x6f1c00 */
 
 void ai_Unk495ee0(void);                                                        /* 0x495ee0 */
 int ai_Unk495fa0(int a, AIPER *p, int b, AIARG *o1, AIARG *o2);                 /* 0x495fa0 */
@@ -348,9 +346,6 @@ float gm_Mix(int a, int b, int c);                                  /* 0x504e20 
 int gm_BuildingKindValue(int k);                                                        /* 0x509d30 */
 int gm_Unk509dc0(int unused, int kind);                                              /* 0x509dc0 */
 int unk_Unk4f8700(char *c);                                                     /* 0x4f8700 */
-int he_Unk553d10(int a, int b);                                           /* 0x553d10 */
-int he_Unk553d60(int a, int b);                                           /* 0x553d60 */
-int he_Unk570ea0(int a, int b);                                           /* 0x570ea0 */
 unsigned short *gm_Unk509ff0(unsigned short *o);                                                  /* 0x509ff0 */
 
 /* ---- 0x48e070..0x490b90 (was unk_48e070.h) ---- */
@@ -526,7 +521,6 @@ int ai_Unk4a6ae0(struct AIPER *p, struct AIBLD *b);                             
 void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d);                 /* 0x4c4830 */
 int amt_GetKindLevel(int v);                                                 /* 0x4e7c40 */
 void gm_SendMoneyDelta(int a, int b);                                        /* 0x50cc50 */
-int he_Unk56f170(int id);                                                /* 0x56f170 */
 
 /* this unit, in address order */
 int ai_Unk48e070(AIPX *p, int *out);                                     /* 0x48e070 */
@@ -578,7 +572,6 @@ int ai_Unk49eec0(int a, struct G5CH *p, int f, struct AIARG *o1, struct AIARG *o
 int gm_BuildingKindValue(int a);                                                        /* 0x509d30 */
 int gm_Unk509dc0(int unused, int kind);                                               /* 0x509dc0 */
 int ai_Unk5ba620(int param_1);                                         /* 0x5ba620 */
-int ai_Unk5cf8a0(int param_1, int *param_2);                                            /* 0x5cf8a0 */
 
 /* ---- 0x494020..0x494e70 (was unk_494020.h) ---- */
 #pragma pack(push, 1)
@@ -659,7 +652,6 @@ float gm_Mix(int a, int b, int c);                    /* 0x504e20 */
 int gm_ConvertMoney(int a, unsigned char b);                       /* 0x5085b0 */
 int gm_GetWorth(unsigned short id);                            /* 0x50a640 */
 int ord_DispatchOrder(int id, char *c, int *m);           /* 0x4f81c0 */
-int ai_InventoryHas(void *ch, int id);                             /* 0x5ba6b0 */
 
 int ai_Unk494020(AIPLAN *q);                                    /* 0x494020 */
 int ai_Unk4941b0(void);                                         /* 0x4941b0 */
@@ -879,7 +871,6 @@ void ai_Unk4a5760(struct G5CH *p, int n, struct G9REC *rec, int *st);           
 int ai_Unk49a5b0(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49a5b0 */
 /* 0x5ba620 with an int id (the callers here zero-extend; unk_48e070.h: unsigned short) */
 #define G8_5BA620(id) ((void *(*)(int))ai_Unk5ba620)(id)
-int ai_Unk5cf8a0(int param_1, int *param_2);                                            /* 0x5cf8a0 */
 int ai_Unk49a690(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49a690 */
 #define G8_4A58D0(p, a, fl, b, f, id)     ((int (*)(AIPER *, int, unsigned int *, float, float, unsigned short *))ai_Unk4a58d0)((AIPER *)(p), a, fl, b, f, id)  /* am.h: b is int */
 int ai_Unk49aa80(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49aa80 */
@@ -979,8 +970,6 @@ int ai_SeanceDecide(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);    /* unlinked
 int ai_SeanceExec(G5CH *p, AIARG *s1, AIARG *s2);                   /* unlinked: LINK folds it (/OPT:ICF) into sv_ReturnZero */
 int ai_Unk4a16f0(int a);                                                        /* 0x4a16f0 */
 #define G8_4C4830(a, b, k, d) ((void (*)(int, unsigned int, unsigned char, int))cm_SendMoveGoodsUnchecked)(a, b, k, d)  /* above: c is int */
-void ai_Unk5a8b80(unsigned short *param_1, char *param_2, int param_3, int param_4, int param_5);                   /* 0x5a8b80 */
-void ai_Unk5a8c00(unsigned short *param_1, char *param_2, int param_3);                                 /* 0x5a8c00 */
 /* 0x4c4830 with an int c (unk_48e070.h: unsigned char) */
 #define G8_4C4830I(a, b, c, d) ((void (*)(int, unsigned int, int, int))cm_SendMoveGoodsUnchecked)(a, b, c, d)
 
@@ -1004,7 +993,6 @@ extern G7GRP ai_Unk61a348[];            /* 0x61a348 */
 int ai_Unk4a4680(G7MKT *m);
 int ai_Unk4a4e30(struct AIBLD *b, int k);                                              /* 0x4a4e30 */
 int ai_Unk4a4e70(AIPER *p, int name);                                           /* 0x4a4e70 */
-int ai_FindBauplaetze(char *name, int *out);                                         /* 0x58f7a0 */
 extern int d3_CurrentScene;             /* 0x633444 */
 char d3if_SelectScene(int index, char keep);                                        /* 0x4478e0 */
 void d3_PointToWorld(struct D3OBJECT *obj_, struct D3VECTOR *in, struct D3VECTOR *out);                              /* 0x458a20 */                                                     /* 0x4a4680 */
@@ -1019,8 +1007,6 @@ int ai_Unk4a4ae0(float *a, float *b, int i, AIPER *p);                          
 char unk_Unk5020e0(int k, int c);                                      /* 0x5020e0 */
 /* 0x4a5140 ai_Unk4a5140 is declared in am.h */
 extern char ai_DataPath[];                                                      /* 0x75dca0, the data path */
-void ai_ObjectPosition(void *out, int plot);                                     /* 0x58fd40 (unk_58bbd0.c) */
-void ai_ObjectAngle(void *out, int plot);                                     /* 0x58fd90 (unk_58bbd0.c) */
 /* 0x4a5320 ai_Unk4a5320 is declared in am.h */
 typedef struct G9REC {                  /* 16 bytes, filled by 0x4a5760 (unk_49a0a0.h G8REC, unk_48e070.h AIRECX) */
     int item;                           /* 0x0 */
@@ -1028,9 +1014,7 @@ typedef struct G9REC {                  /* 16 bytes, filled by 0x4a5760 (unk_49a
     int unk08;                          /* 0x8 */
     int unk0c;                          /* 0xc */
 } G9REC;
-int ai_InventoryHas(void *ch, int id);                                             /* 0x5ba6b0 */
 void ai_Unk4a5760(struct G5CH *p, int n, struct G9REC *rec, int *st);                          /* 0x4a5760, declared int elsewhere */
-int ai_Unk5c33c0(unsigned short a, unsigned short b, unsigned int *q, int c);   /* 0x5c33c0 */
 /* 0x4a58d0 ai_Unk4a58d0 is declared in am.h (b is really a float) */
 int ai_Unk4a5a30(AIPER *p, unsigned int fl, int n, unsigned short *ids, float lo, float hi, unsigned short *id); /* 0x4a5a30 */
 extern const int ai_Unk5ed100[16];                                                    /* 0x5ed100, random steps */
@@ -1039,7 +1023,6 @@ int ai_Unk4a5d30(AIPER *p, unsigned int fl, int n, unsigned short *ids, float lo
 unsigned int ai_Unk4a5ef0(AIPER *p, unsigned int n, unsigned int fl, float lo, float hi, unsigned short *out); /* 0x4a5ef0 */
 unsigned int ai_Unk4a61d0(AIPER *p, unsigned int a, unsigned int fl, float lo, float hi, int d, unsigned short *id); /* 0x4a61d0 */
 extern const int ai_Unk5ed140[16];                                                    /* 0x5ed140, random steps */
-int ai_Unk5c37a0(short *param_1, char *param_2, unsigned char *param_3);                           /* 0x5c37a0 */
 /* 0x4a63f0 ai_Unk4a63f0 is declared in am.h */
 int ai_Unk4a6570(AIPER *p, int a, __int64 mask, float lo, float hi, unsigned char n, int *out); /* 0x4a6570 */
 void d3t_GetObjectBounds(struct D3VECTOR *mn, struct D3VECTOR *mx, struct D3OBJECT *obj);             /* 0x413150, d3_tools.c */
