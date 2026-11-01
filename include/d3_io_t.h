@@ -93,10 +93,6 @@ struct D3BGF {                      /* 0x20c bytes, a loaded mesh ("d3_io:LoadAG
 
 extern struct VFSDIR *vfs_Root;                                                                  /* 0x6333fc */
 struct VFSFILE * vfs_Tfopen(char *name, char *mode, int unk);                                    /* 0x430470 */
-void d3_CalcNormals(D3BGF *m);                                                           /* 0x450dc0 */
-D3BGF *d3_FindBGF(char *path, char *name, char *texnames, int unk1e4, int ntex);       /* 0x450860 */
-void d3_AddFLChunk(char *path, char weld);                                               /* 0x451250, d3_io_fl.c */
-void d3_ReadBGF(void *f, D3BGFDESC *desc);                                              /* 0x44f870 */
 
 void d3iot_DeleteStockObject(D3BGF *m);                                                 /* 0x44cd40 */
 void d3iot_CalcBounds(D3BGF *m);                                                        /* 0x44ce40 */
@@ -179,7 +175,6 @@ typedef struct D3IOPATH {           /* 0x44 bytes, the animation of an object (o
     D3IOKEY *keys;                  /* 0x40 */
 } D3IOPATH;
 
-int d3io_FindStock(char *name);                                                   /* 0x44c5d0 */
 struct D3OBJECT; struct D3LINFO; void d3_TransformNormals(struct D3OBJECT *obj, struct D3LINFO *info);                                                        /* 0x4598d0, stock object callback */
 extern D3IOOBJ d3_StockHead;                                                    /* 0xfc4a40, list sentinel */
 #ifndef DATA_VIEWS_H
@@ -187,7 +182,6 @@ extern D3IOOBJ *d3_StockList;                                                   
 #endif
 extern char d3_AnimDir[];                                                       /* 0x5fbf80, "animations/" */
 extern int d3_Unk6333cc;                                                        /* 0x6333cc */
-extern void *d3_Unk6333fc;                                                      /* 0x6333fc */
 #ifndef DATA_VIEWS_H
 extern D3IOANIMDATA *d3_AnimList;                                                    /* 0xfe75a4 */
 #endif
