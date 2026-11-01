@@ -25,6 +25,8 @@
 #define PARTNER_FLAGS_SEX0 0xf00502  /* the partner-chain flags 0x4a8ad0 asks for a character with sex 0 (reasoned: the other sex; the low byte 2 against 1) */
 #define PARTNER_FLAGS_SEX1 0xf00501  /* ditto for sex != 0 */
 #define PARTNER_FLAGS_ANY 0xf00500  /* the same flags with the low byte 0, either sex (0x4a8f20; reasoned) */
+#define SUITOR_FLAGS_SEX0 0xc0140a  /* the candidate flags 0x4a91a0 passes ai_FindCandidates for a character with sex 0 (reasoned: the other sex, as PARTNER_FLAGS_SEX0) */
+#define SUITOR_FLAGS_SEX1 0xc01409  /* ditto for sex != 0 */
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 #include "cm_types.h"
 #include "ahm.h"
@@ -1245,26 +1247,27 @@ int ai_EvalOwnYearTurn(int a, AICHAR *p)
         return 1;
     return 0;
 }
-/* 0x4a91a0, decide callback: on p's day, p without a partner (0x5c) and not in a list 0x53e400 record (0xac /
-   0xb0) picks one of up to 12 characters of the other sex 30..100 units away (0x4a5ef0), into m (kind 7) */
+/* 0x4a91a0, decide callback: in its year of four (netId % 4 = the year % 4), an unmarried p (relatives[0] no
+   character) that is in no event 0x41 (he_FindEvent, either side +0xac / +0xb0) picks one of up to 12
+   characters of the other sex 30..100 units away (ai_FindCandidates), into m (kind 7) */
 
-int ai_Unk4a91a0(int a, AIPER *p, int c, int d, unsigned char *m)
+int ai_DecideSuitor(int a, AICHAR *p, int c, int d, AIARG *m)
 {
     unsigned short ids[12];
     AIJOB *r;
     unsigned int n;
 
-    if (ai_TimeT.year % 4 == (p->netId & 3) && gm_FindChar(*(int *)((unsigned char *)p + 0x5c)) == 0) {
-        for (r = he_FindEvent(1, 0, 0x41); r != 0; r = he_NextEvent()) {
-            if (r->unkb0 == p->netId)
+    if (ai_TimeT.year % 4 == p->netId % 4 && gm_FindChar(p->relatives[0]) == 0) {
+        for (r = (AIJOB *)he_FindEvent(1, 0, 0x41); r != 0; r = (AIJOB *)he_NextEvent()) {
+            if (r->partner2 == p->netId)
                 return 0;
-            if (r->unkac == p->netId)
+            if (r->partner1 == p->netId)
                 return 0;
         }
-        n = ai_Unk4a5ef0(p, 12, ((unsigned)&cm_SendRing + 0x1982ca) - (((unsigned char *)p)[9] != 0), 30.0f, 100.0f, ids);
+        n = ai_FindCandidates((AIPER *)p, 12, p->sex != 0 ? SUITOR_FLAGS_SEX1 : SUITOR_FLAGS_SEX0, 30.0f, 100.0f, ids);
         if (n != 0) {
-            m[0] = 7;
-            *(int *)(m + 4) = ((AIPER *)ai_CharsT)[ids[util_RandomU(n)]].netId;
+            m->kind = 7;
+            m->ref = ai_CharsT[ids[util_RandomU(n)]].netId;
             return 1;
         }
     }
@@ -1758,7 +1761,7 @@ int ai_Unk4aa120(int a, AIPER *p, int c, unsigned char *in, unsigned char *m)
     }
     switch (k) {
     case 0:
-        return G10_CB(ai_Unk4a91a0)(a, p, ctx, in, m);
+        return G10_CB(ai_DecideSuitor)(a, p, ctx, in, m);
     default:
         return 0;
     case 3:

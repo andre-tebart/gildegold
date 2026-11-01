@@ -10526,7 +10526,7 @@ int ai_Unk4a5d30(AIPER *p, unsigned int fl, int n, unsigned short *ids, float lo
    0x5c33c0, of a rank (0x505f30) within 5 of p's and, when the window is narrower than 0..100, rated in
    [lo, hi]; ids into out[], returns the number */
 
-unsigned int ai_Unk4a5ef0(AIPER *p, unsigned int n, unsigned int fl, float lo, float hi, unsigned short *out)
+unsigned int ai_FindCandidates(AIPER *p, unsigned int n, unsigned int fl, float lo, float hi, unsigned short *out)
 {
     unsigned int q[0x14];
     unsigned char *c;

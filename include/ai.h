@@ -141,6 +141,7 @@ typedef struct AIJOB {                  /* a job (he_FindEvent / he_NextEvent) *
     char pad01[0xab];
     union {
         int unkac;                      /* 0xac, a building id */
+        int partner1;                   /* 0xac, of a pair event (kinds 0x41 / 0x6f / 0x45, he_Unk5538b0) the first partner's netId */
         union {
             int id;                     /* 0xac */
             struct {
@@ -149,7 +150,10 @@ typedef struct AIJOB {                  /* a job (he_FindEvent / he_NextEvent) *
             } w;
         } u;
     };
-    int unkb0;                          /* 0xb0 */
+    union {
+        int unkb0;                      /* 0xb0 */
+        int partner2;                   /* 0xb0, of a pair event the second partner's netId */
+    };
     int unkb4;                          /* 0xb4 */
     int unkb8;                          /* 0xb8, a job-kind specific payload word: of a harvest job (0x28) the
                                            plant it works (veg_FindPlantId, ai_SendJobOrders), else a counter / an

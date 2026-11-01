@@ -1024,7 +1024,7 @@ int ai_Unk4a5a30(AIPER *p, unsigned int fl, int n, unsigned short *ids, float lo
 extern const int ai_Unk5ed100[16];                                                    /* 0x5ed100, random steps */
 int ai_Unk4a5b50(AIPER *p, unsigned int a, int *flags, float lo, float hi, unsigned short *id); /* 0x4a5b50, unk_490830.h: other view */
 int ai_Unk4a5d30(AIPER *p, unsigned int fl, int n, unsigned short *ids, float lo, float hi, unsigned short *id); /* 0x4a5d30 */
-unsigned int ai_Unk4a5ef0(AIPER *p, unsigned int n, unsigned int fl, float lo, float hi, unsigned short *out); /* 0x4a5ef0 */
+unsigned int ai_FindCandidates(AIPER *p, unsigned int n, unsigned int fl, float lo, float hi, unsigned short *out); /* 0x4a5ef0 */
 unsigned int ai_Unk4a61d0(AIPER *p, unsigned int a, unsigned int fl, float lo, float hi, int d, unsigned short *id); /* 0x4a61d0 */
 extern const int ai_Unk5ed140[16];                                                    /* 0x5ed140, random steps */
 /* 0x4a63f0 ai_PickActionBuilding is declared in am.h */
