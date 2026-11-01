@@ -467,4 +467,7 @@ void d2_DrawFade(D2FADE *f, D2SURF *surf);         /* 0x4768a0 */
 void d2_ClearInput(void);                            /* 0x476b70 */
 void d2_AddPointerItem(int id, int amount);              /* 0x476b90 */
 
+/* declared in other units' headers before (moved to the owner) */
+extern char *txt_Ptrs[0x4800];  /* 0x143a1c0 */
+
 #endif
