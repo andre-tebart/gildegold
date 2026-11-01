@@ -1590,7 +1590,7 @@ send3:
     for (; k < 8; k++)                                                                                      \
         msg.ids[k] = -1;
 
-/* 0x4817a0, ai_CalcAngriff: spy on a building, then attack it */
+/* 0x4817a0, ai_CalcAngriff: spy on a building, then attack it @deep Read whole against the original and fixed: weight split into (8-rank)*w*0.5 then rand*w*0.01 (rank call inline), best/bestw chosen with if(!best)/else-if, the unk37 test signed (no unsigned cast), the spy/attack busy checks goto two shared sprintf exits, the id count clamped into its own variable (cmp 8/jl), the attack send under ids[0] != -1 so the return 1 is shared. Instruction multiset now equal but for register names (ch ebx, eax/ecx/edx rotations in the FindEvent loops) and one sprintf tail VC6 does not cross-jump. Left is block layout only: VC6 places our spy send (sprintf 'spioniert bei' + fill + SendLongMessage) after the attack code (ours jmp +0x606 from the third spy loop) where the original falls into it at +0x3c7, and our return 0 of the kind check sits at the function end instead of inline at +0x2d8 (je at +0x2d0: ours to +0x2de, the original's to +0x2e5); the if/goto/loop-break variants of the query loop all compile to the same layout. */
 int ai_CalcAngriff(AICHAR *ch, int n)
 {
     AIOBJ *o;
@@ -1634,14 +1634,15 @@ int ai_CalcAngriff(AICHAR *ch, int n)
                         w = 0.0f;
                     else
                         w = 1.0f - (ai_Grid[i][j].a * 0.125f + ai_Grid[i][j].b) / max;
-                    r = gm_BuildingRank(bb);
-                    w = (8.0f - r) * w * 0.5 * util_RandomU(100) * 0.01;
-                    if (best) {
-                        if (!((float)gm_OwnerWorth(bb, 0) * w > (float)gm_OwnerWorth(best, 0) * bestw))
-                            continue;
+                    w = (8.0f - gm_BuildingRank(bb)) * w * 0.5;
+                    w = util_RandomU(100) * w * 0.01;
+                    if (!best) {
+                        bestw = w;
+                        best = bb;
+                    } else if ((float)gm_OwnerWorth(bb, 0) * w > (float)gm_OwnerWorth(best, 0) * bestw) {
+                        bestw = w;
+                        best = bb;
                     }
-                    bestw = w;
-                    best = bb;
                 }
             }
         }
@@ -1651,86 +1652,72 @@ int ai_CalcAngriff(AICHAR *ch, int n)
                   && ai_BTypesT[best->type].kind != 0x10))
         return 0;
     for (o = gm_Query(ch->bld->objList, 1, 0, 0xca); o; o = gm_QueryNext()) {
-        if (o->unk2a == best->id) {
-            if ((unsigned)util_RandomU(0x32) + 0x32 <= o->unk37) {
-                if (n < 3)
-                    return 0;
-                for (job = he_FindEvent(2, 0, 0x40, 3, ch->bld->id); job; job = he_NextEvent()) {
-                    if (job->unkac == best->id) {
-                        sprintf(buf, "ai_CalcAngriff(): Meister %s hat aber noch eine Spionage bei '%s' nicht beendet",
-                                ch->name, best->name);
-                        return 1;
-                    }
-                }
-                for (job = he_FindEvent(2, 0, 0x3f, 3, ch->bld->id); job; job = he_NextEvent()) {
-                    if (job->unkac == best->id) {
-                        sprintf(buf, "ai_CalcAngriff(): Meister %s hat aber noch eine Spionage bei '%s' nicht beendet",
-                                ch->name, best->name);
-                        return 1;
-                    }
-                }
-                for (job = he_FindEvent(2, 0, 0x49, 3, ch->bld->id); job; job = he_NextEvent()) {
-                    if (job->unkac == best->id) {
-                        sprintf(buf, "ai_CalcAngriff(): Meister %s hat aber noch eine Spionage bei '%s' nicht beendet",
-                                ch->name, best->name);
-                        return 1;
-                    }
-                }
-                sprintf(buf, "ai_CalcAngriff(): Meister %s greift an '%s' ", ch->name, best->name);
-                memset(&msg, 0, sizeof(msg));
-                msg.type = 0x49;
-                msg.to = ai_CharsT[ch->bld->owner].netId;
-                msg.fromId = ch->bld->id;
-                msg.time = ai_TimeT;
-                msg.flags = 1;
-                msg.arg[0] = best->id;
-                msg.arg[1] = ch->bld->id;
-                if (n > 7)
-                    n = 8;
-                AI_FILL_IDS(n)
-                if (msg.ids[0] == -1)
-                    return 1;
-                cm_SendLongMessage(&msg);
-                ch->target = -1;
-                return 1;
-            }
+        if (o->unk2a == best->id)
             break;
-        }
     }
-    for (job = he_FindEvent(2, 0, 0x40, 3, ch->bld->id); job; job = he_NextEvent()) {
-        if (job->unkac == best->id) {
-            sprintf(buf, "ai_CalcAngriff(): Meister %s hat schon eine Spionage bei '%s' laufen", ch->name,
-                    best->name);
-            return 1;
-        }
+    /* no report on the building, or its knowledge (unk37) below a random 50..99: spy (again) */
+    if (!o || util_RandomU(0x32) + 0x32 > o->unk37) {
+        for (job = he_FindEvent(2, 0, 0x40, 3, ch->bld->id); job; job = he_NextEvent())
+            if (job->unkac == best->id)
+                goto spying;
+        for (job = he_FindEvent(2, 0, 0x3f, 3, ch->bld->id); job; job = he_NextEvent())
+            if (job->unkac == best->id)
+                goto spying;
+        for (job = he_FindEvent(2, 0, 0x49, 3, ch->bld->id); job; job = he_NextEvent())
+            if (job->unkac == best->id)
+                goto spying;
+        sprintf(buf, "ai_CalcAngriff(): Meister %s spioniert bei '%s'", ch->name, best->name);
+        memset(&msg, 0, sizeof(msg));
+        msg.type = 0x40;
+        msg.to = ai_CharsT[ch->bld->owner].netId;
+        msg.fromId = ch->bld->id;
+        msg.time = ai_TimeT;
+        msg.flags = 1;
+        msg.arg[0] = best->id;
+        msg.arg[1] = ch->bld->id;
+        t = n;
+        if (t >= 8)
+            t = 8;
+        AI_FILL_IDS(t)
+        cm_SendLongMessage(&msg);
+        return 1;
     }
-    for (job = he_FindEvent(2, 0, 0x3f, 3, ch->bld->id); job; job = he_NextEvent()) {
-        if (job->unkac == best->id) {
-            sprintf(buf, "ai_CalcAngriff(): Meister %s hat schon eine Spionage bei '%s' laufen", ch->name,
-                    best->name);
-            return 1;
-        }
-    }
-    for (job = he_FindEvent(2, 0, 0x49, 3, ch->bld->id); job; job = he_NextEvent()) {
-        if (job->unkac == best->id) {
-            sprintf(buf, "ai_CalcAngriff(): Meister %s hat schon eine Spionage bei '%s' laufen", ch->name,
-                    best->name);
-            return 1;
-        }
-    }
-    sprintf(buf, "ai_CalcAngriff(): Meister %s spioniert bei '%s'", ch->name, best->name);
+    if (n < 3)
+        return 0;
+    for (job = he_FindEvent(2, 0, 0x40, 3, ch->bld->id); job; job = he_NextEvent())
+        if (job->unkac == best->id)
+            goto unfinished;
+    for (job = he_FindEvent(2, 0, 0x3f, 3, ch->bld->id); job; job = he_NextEvent())
+        if (job->unkac == best->id)
+            goto unfinished;
+    for (job = he_FindEvent(2, 0, 0x49, 3, ch->bld->id); job; job = he_NextEvent())
+        if (job->unkac == best->id)
+            goto unfinished;
+    sprintf(buf, "ai_CalcAngriff(): Meister %s greift an '%s' ", ch->name, best->name);
     memset(&msg, 0, sizeof(msg));
-    msg.type = 0x40;
+    msg.type = 0x49;
     msg.to = ai_CharsT[ch->bld->owner].netId;
     msg.fromId = ch->bld->id;
     msg.time = ai_TimeT;
     msg.flags = 1;
     msg.arg[0] = best->id;
     msg.arg[1] = ch->bld->id;
-    if (n > 7)
-        n = 8;
-    AI_FILL_IDS(n)
-    cm_SendLongMessage(&msg);
+    t = n;
+    if (t >= 8)
+        t = 8;
+    AI_FILL_IDS(t)
+    if (msg.ids[0] != -1) {
+        cm_SendLongMessage(&msg);
+        ch->target = -1;
+    }
+    return 1;
+
+unfinished:
+    sprintf(buf, "ai_CalcAngriff(): Meister %s hat aber noch eine Spionage bei '%s' nicht beendet", ch->name,
+            best->name);
+    return 1;
+spying:
+    sprintf(buf, "ai_CalcAngriff(): Meister %s hat schon eine Spionage bei '%s' laufen", ch->name, best->name);
     return 1;
 }
 /* 0x481ef0 */
