@@ -359,4 +359,13 @@ void d3fl_FreeTiles(D3FLMAP *map);                  /* 0x441db0 */
 void d3fl_Inflate(D3FLMAP *map);                    /* 0x441ea0 */
 void d3fl_MakeLight(D3FLMAP *map);                  /* 0x441860 */
 
+/* declared in other units' headers before (moved to the owner) */
+void d3fl_MakeDivide(D3FLMAP *map);  /* 0x441300 */
+void d3fl_SetDetail(unsigned int n);  /* 0x43f8a0 */
+void d3fl_SetShift(D3FLMAP *map, unsigned char shift, char light);  /* 0x446dc0 */
+void d3fl_Exit(void);  /* 0x43fed0 */
+float d3fl_FarDist(D3FLMAP *map, D3VECTOR *pos, D3MATRIX *m);  /* 0x446990 */
+void d3fl_Init(unsigned int n, unsigned int detail, char mips, char b);  /* 0x43fe00 */
+void d3fl_SetMips(char on);  /* 0x43f930 */
+
 #endif
