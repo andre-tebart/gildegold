@@ -11,6 +11,7 @@
 #include <winsock2.h>
 #include "err.h"
 #include "net.h"
+#include "cm.h"
 
 extern NETCONN net_Conn;
 
