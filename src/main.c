@@ -5145,11 +5145,23 @@ void main_PlayOutro(void)
         mov_Exit();
 }
 /* 0x53ccf0, the program entry (WinMain: instance, previous, command line, show): reads game.INI (Network / Gfx / Sound / General), parses the command line (STADT=" BERUF=" IP=" PORT=" MO_MONEY FULLSCREEN DIRECTWINDOW), starts the engine
-   (0x5324f0 / 0x531ba0 / 0x531c50 / 0x532160), then the game loop 0x53bb20 until the game ends (ROUGH) */
+   (0x5324f0 / 0x531ba0 / 0x531c50 / 0x532160), then the game loop 0x53bb20 until the game ends (ROUGH)
+   @deep Read against the original and fixed: the two path copies as do { c = src[i]; dst[i] = c; i++; }
+   while (c), mode as an int, the resolution byte stored before the screen mode lookup
+   (ai_ScreenModes[(unsigned char)res]), the quoted-argument copies as while (s < e) *d++ = *s++, the IP
+   flag is net itself (the draft's second r variable is gone; the job index has its own variable), the
+   OpenEngine / OpenScreen failures with their own exits, the default profile typed (coat as the int 0x59a,
+   the job byte), the talents copied from gm_Unk503ee0's record as an int plus the +4 byte, then bytes 3 /
+   0 / 1 set to 0xa8 / 0 / 0 (the draft had a misread mask). 507 vs 508 instructions, 83 differing, size
+   1849 / 1849. Left: the three quoted-argument copies (0x53d06a, 0x53d0a6, 0x53d0e2) where ours keeps the
+   source in ebx and walks a copy in ecx with the destination in esi, the original walks the source in esi
+   and the destination in ebx; the resolution zero-extension order (0x53cfc0: xor ecx, ecx / mov cl, al);
+   the frame 4 bytes smaller (one slot); the talent byte schedule (0x53d368). */
 
 int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, char *cmd, int show)
 {
-    char mode;
+    int mode;
+    char c;
     int net = 0;
     int sv = 0;
     int r, i, k;
@@ -5171,10 +5183,10 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, char *cmd, int show)
     GetModuleFileNameA((HMODULE)U_I((unsigned)&main_Instance), (char *)(unsigned)&ai_OptionsFile, 0x104);
     i = 0;
     do {
-        p = (char *)(unsigned)&ai_OptionsFile + i;
-        *((char *)(unsigned)&main_AppDir + i) = *p;
+        c = ((char *)&ai_OptionsFile)[i];
+        ((char *)&main_AppDir)[i] = c;
         i++;
-    } while (*p != 0);
+    } while (c != 0);
     p = strrchr((char *)(unsigned)&main_AppDir, 0x5c);
     *p = 0;
     p = strrchr((char *)(unsigned)&ai_OptionsFile, 0x5c);
@@ -5183,10 +5195,10 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, char *cmd, int show)
     GetPrivateProfileStringA("Network", "Server", "Server\\Server.dll", (char *)((unsigned)&ai_DataPath + 0x100), 0x104, (char *)(unsigned)&ai_OptionsFile);
     i = 0;
     do {
-        p = (char *)((unsigned)&ai_DataPath + 0x100) + i;
-        *((char *)((unsigned)&ls_SavePath + 0x160) + i) = *p;
+        c = ((char *)&ai_DataPath + 0x100)[i];
+        ((char *)&ls_SavePath + 0x160)[i] = c;
         i++;
-    } while (*p != 0);
+    } while (c != 0);
     p = strrchr((char *)((unsigned)&ls_SavePath + 0x160), 0x5c);
     *p = 0;
     _strupr(cmd);
@@ -5209,10 +5221,9 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, char *cmd, int show)
     ls_LanguageOf((char *)(unsigned)"german");
     U_I((unsigned)&full_data_6f2574) = GetPrivateProfileIntA("General", "show_intro", 0, (char *)(unsigned)&ai_OptionsFile);
     res = GetPrivateProfileIntA("Gfx", "cur_res", 0, (char *)(unsigned)&ai_OptionsFile);
-    k = (res & 0xff) * 8;
-    U_I((unsigned)&ai_ScreenModeW) = U_I((unsigned)&ai_ScreenModes + k);
-    U_I((unsigned)&ai_ScreenModeH) = U_I(((unsigned)&ai_ScreenModes + 0x4) + k);
-    *(char *)(unsigned)&ai_GfxResolution = (char)res;
+    ai_GfxResolution = (unsigned char)res;
+    ai_ScreenModeW = ai_ScreenModes[(unsigned char)res].w;
+    ai_ScreenModeH = ai_ScreenModes[(unsigned char)res].h;
     if (strstr(cmd, "MO_MONEY") != 0)
         U_I((unsigned)&main_MoneyCheat) = 1;
     GetPrivateProfileStringA("General", "Stadt", "Augsburg", (char *)((unsigned)&ai_DataPath + 0x220), 0x40, (char *)(unsigned)&ai_OptionsFile);
@@ -5224,8 +5235,8 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, char *cmd, int show)
         d = (char *)((unsigned)&ai_DataPath + 0x220);
         e = (char *)strchr(s, 0x22);
         if (e != 0)
-            for (; s < e; s++)
-                *d++ = *s;
+            while (s < e)
+                *d++ = *s++;
         *d = 0;
     }
     r = strstr(cmd, "BERUF=\"");
@@ -5234,22 +5245,19 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, char *cmd, int show)
         d = (char *)(unsigned)&full_data_6f2470;
         e = (char *)strchr(s, 0x22);
         if (e != 0)
-            for (; s < e; s++)
-                *d++ = *s;
+            while (s < e)
+                *d++ = *s++;
         *d = 0;
     }
     r = strstr(cmd, "IP=\"");
-    if (r == 0) {
-        r = 0;
-    } else {
+    if (r != 0) {
         s = (char *)(r + 4);
         d = main_NetHost;
         e = (char *)strchr(s, 0x22);
         if (e != 0)
-            for (; s < e; s++)
-                *d++ = *s;
+            while (s < e)
+                *d++ = *s++;
         *d = 0;
-        r = 1;
         net = 1;
     }
     i = strstr(cmd, "PORT=\"");
@@ -5287,58 +5295,57 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, char *cmd, int show)
     }
     i = main_OpenEngine();
     if (i == 0) {
-L_fail:
         main_Exit();
         return 0;
     }
     do {
         if (U_I((unsigned)&full_data_6f2434) == 0) {
-            if (r == 0) {
+            if (net == 0) {
                 main_Menue();
                 if (main_ScreenRestart != 0) {
                     main_ShutdownScreen();
                     sv_PumpMessages();
                     i = main_OpenScreen(mode);
-                    if (i == 0)
-                        goto L_fail;
-                    main_ScreenRestart = r;
+                    if (i == 0) {
+                        main_Exit();
+                        return 0;
+                    }
+                    main_ScreenRestart = net;
                     sv_PumpMessages();
                 }
             } else {
                 U_I((unsigned)&ai_GameFlags) = 5;
             }
         } else {
-            r = 0x38;
+            k = 0x38;
             if (*(char *)(unsigned)&full_data_6f2470 != 0) {
-                i = 0;
-                do {
-                    k = _strcmpi((char *)(unsigned)&full_data_6f2470, ((char **)(unsigned)&ai_Unk143a680)[i]);
-                    r = i;
-                    if (k == 0)
+                for (i = 0; i < 0x5f; i++) {
+                    if (_strcmpi((char *)(unsigned)&full_data_6f2470, ((char **)(unsigned)&ai_Unk143a680)[i]) == 0) {
+                        k = i;
                         break;
-                    i++;
-                    r = 0x38;
-                } while (i < 0x5f);
+                    }
+                }
             }
             U_I((unsigned)&ai_GameFlags) = 9;
-            *(char *)(unsigned)&init_PlayerProfile = (char)util_RandomInt(0x5f) + 1;
-            *(char *)((unsigned)&init_PlayerProfile + 0x1) = (char)util_RandomInt(0x5f) + 1;
-            *(char *)((unsigned)&init_PlayerProfile + 0x3) = (char)r;
-            *(char *)((unsigned)&init_PlayerProfile + 0x2) = 0x12;
-            *(short *)((unsigned)&init_PlayerProfile + 0x4) = 0x59a;
-            *(char *)((unsigned)&init_PlayerProfile + 0x8) = 0;
-            *(char *)((unsigned)&init_PlayerProfile + 0x9) = 1;
+            init_PlayerProfile.tool1 = (unsigned char)util_RandomInt(0x5f) + 1;
+            init_PlayerProfile.tool2 = (unsigned char)util_RandomInt(0x5f) + 1;
+            init_PlayerProfile.job = (unsigned char)k;
+            init_PlayerProfile.status = 0x12;
+            init_PlayerProfile.coat = 0x59a;
+            init_PlayerProfile.sex = 0;
+            init_PlayerProfile.faith = 1;
             i = unk_Unk4fb770("patrizier_MANN2");
             init_PlayerProfile.modelId = i + 0x639;
-            strcpy((char *)((unsigned)&init_PlayerProfile + 0xa), "Tobias");
-            strcpy((char *)((unsigned)&init_PlayerProfile + 0x2a), "Severin");
-            q = (char *)gm_Unk503ee0(c21c, *(char *)((unsigned)&init_PlayerProfile + 0x3));
+            strcpy(init_PlayerProfile.firstName, "Tobias");
+            strcpy(init_PlayerProfile.familyName, "Severin");
+            q = (char *)gm_Unk503ee0(c21c, init_PlayerProfile.job);
+            *(int *)init_PlayerProfile.talents = *(int *)q;
             s220 = *(short *)(q + 4);
             init_PlayerProfile.talents[4] = (char)s220;
-            *(int *)init_PlayerProfile.talents = (*(int *)q & ((unsigned)&txt_Keys + 0x181bf)) | 0xa8000000;
-            *(int *)init_PlayerProfile.talents &= 0xffff0000;
+            init_PlayerProfile.talents[3] = (char)0xa8;
+            init_PlayerProfile.talents[0] = 0;
+            init_PlayerProfile.talents[1] = 0;
             ai_Unk4b1f90(1);
-            r = net;
         }
         U_I((unsigned)&ai_LeaveGame) = 1;
         if (U_I((unsigned)&ai_GameFlags) != 0 && U_I((unsigned)&main_QuitProgram) == 0) {
@@ -5346,7 +5353,7 @@ L_fail:
                 main_GameLoop(0);
             } while (U_I((unsigned)&ai_LeaveGame) != 0);
         }
-        if (U_I((unsigned)&full_data_6f2434) != 0 || r != 0)
+        if (U_I((unsigned)&full_data_6f2434) != 0 || net != 0)
             U_I((unsigned)&main_QuitProgram) = 1;
         U_I((unsigned)&sv_PopRequest) = 0;
         U_I((unsigned)&sv_FrameDepth) = 0;
