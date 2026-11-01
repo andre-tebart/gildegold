@@ -335,15 +335,12 @@ extern SVPLATE sv_NamePlates[0x20];
 
 int gm_IsType10(unsigned char *b);       /* 0x5024f0, f3gm.c */
 int d2_DrawMousePointer(int x, int y);         /* 0x476f00, gfx.c */
-void d2_SetClipRect(int x0, int y0, int x1, int y1);                     /* 0x47cb40 */
 int d2_AddHitRect();                     /* 0x478890, @original: sv.c's callers were compiled against the non-prototype declaration (sv_BuildScreenLayout passes an int d2_ScreenW - 0x50 without a short conversion, 464 bytes vs 480) */
 int d2_CreateWindow();                     /* 0x472390 */
 void d2_PlaceWindowScaled();                     /* 0x475730 */
 void * d2_GetPic();                     /* 0x4690b0 */
 int d2_LockSurface();                     /* 0x479020 */
 int d2_ClearSurface();                     /* 0x4796c0 */
-int d2_DrawShape(int x, int y, void *surf, void *pic, unsigned char i);                     /* 0x47c6f0 */
-struct D2SHP * d2_GrabShape(int x, int y, int w, int h, struct D2SURF *surf, unsigned char mode, char grab8);                     /* 0x47b220 */
 int d2_UnlockSurface();                     /* 0x4790e0 */
 struct D2SURF * d2_MakeSurface(struct D2SURF *desc, int flags);                     /* 0x478cc0 */
 int d2_CreatePicObj();                     /* 0x46cd80 */
@@ -387,6 +384,7 @@ int d2_RemoveWindow();                     /* 0x472ce0 */
 #include "unk_575860.h"
 #include "unk_58bbd0.h"
 #include "vfs.h"
+#include "shp.h"
 #define d3sky_CreateLayerK ((int (*)())d3sky_CreateLayer)  /* 0x45d880 (d3_sky.c): @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) (floats as bit patterns, the flags as an int) */
 #define d3sky_CreateK ((int (*)())d3sky_Create)  /* 0x45da30 (d3_sky.c): @original the calls pass the three floats as dword bit patterns without a prototype (ai_Unk4e32f0 0x4e32f0: push 0x44160000 ..) */
 #define d3_PointToWorldK ((void (*)())d3_PointToWorld)  /* 0x458a20 (d3.h, 3 parameters): @original sv_Unk528180 0x5281b5 pushes 4 arguments (the 4th an uninitialised register), compiled without a prototype */
