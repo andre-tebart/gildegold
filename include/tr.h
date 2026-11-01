@@ -53,8 +53,6 @@ extern TRREC *tr_Table;                 /* 0x6333f8 */
     __asm rep movsb                                                 \
 }
 
-void * mem_Alloc(int size, char *tag);                                                   /* 0x4223c0 */
-void mem_Free(void *p);                                                                 /* 0x422620 */
 
 int tr_startup(unsigned short n);                                                       /* 0x42ea90 */
 void tr_shutdown(void);                                                                 /* 0x42ebc0 */
