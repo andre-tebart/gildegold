@@ -1847,6 +1847,7 @@ extern char sv_PlayerBarKind;
 #define sv_MemberRows (*(SVMEMBERROW (*)[0x20])&ai_Unk75f280)  /* 0x75f280, the member list rows (he.c and sv.c declare int[576]) */
 int d2_CreateChildWindow(short x, short y, short w, short h, unsigned int flags, int win);                     /* 0x472aa0 */
 int d2_WinOpenPicStyled();                     /* 0x473350 */
+#define d2_OpenFormS ((int (*)(short, short, char *))d2_OpenForm)  /* @original: sv_OpenPlayerBar computes x = d2_ScreenW - 0x68 in 16 bits (sub cx, 0x68; push ecx) */
 #define d2_WinOpenPicStyledS ((int (*)(short, short, int, int, int))d2_WinOpenPicStyled)  /* @original: sv_UpdateMemberList computes the y of each call afresh (a short y, as d2_WinOpenPic's) */
 int d2_CreateWinText(short x, short y, char *text, int win);                     /* 0x473650 */
 void d2_SetObjText();                     /* 0x4734d0 */
@@ -2100,50 +2101,52 @@ char d3_SetLightSet(unsigned int set, float t, float scale, char calc);         
 void sv_UpdateSkyColors(void);
 void sv_Unk525ad0(char *t);
 
-/* 0x525220, opens the player bar ("Misc\\PlayerBar" / "Misc\\PlayerBar_1" by 0x6f2f94) of the kind k (0x6f2368), the form 0x62385c at the screen bottom, its two sliders +0x1c0 = 3, hides the panel 0x623860, clears the 0x20
-   member rows of 0x75f280 and creates the button 0x51d; the characters' flags (0x770d08) are cleared for the rows' owners. ROUGH */
+/* 0x525220, opens the player bar ("Misc\\PlayerBar", or "Misc\\PlayerBar_1" at the other resolution) of the kind k at the right screen edge: its two scroll
+   buttons (style 3) go to the window, the panel form is disabled, the 0x20 member rows are cleared, the button picture 0x51d is created and every character's
+   member list selection is dropped */
 void sv_OpenPlayerBar(int a, char k)
 {
     int s, f, i;
-    int *p;
-    char *c;
 
     if (sv_PlayerBarForm != -1)
         return;
     sv_PlayerBarKind = k;
-    sv_PlayerBarForm = d2_OpenForm(d2_ScreenW - 0x68, 0x106, ai_GfxResolution.byte[0] == 0 ? "Misc\\PlayerBar" : "Misc\\PlayerBar_1");
+    if (ai_GfxResolution.byte[0] == 0)
+        sv_PlayerBarForm = d2_OpenFormS(d2_ScreenW - 0x68, 0x106, "Misc\\PlayerBar");
+    else
+        sv_PlayerBarForm = d2_OpenFormS(d2_ScreenW - 0x68, 0x106, "Misc\\PlayerBar_1");
     d2_SetForm(sv_PlayerBarForm, 1);
     s = d2_LastWindow;
     d2_SetForm(sv_PlayerBarForm, 2);
     f = d2_GetWinObj(sv_PlayerBarForm, 2, 0);
-    *(int *)(d2_Objs + 0x1c0 + f * 0x2ec) = 3;
-    *(int *)(ai_Unkf8f128 + 0x3a0 + d2_LastWindow * 0x3c4) = f;
-    *(int *)(d2_Objs + 0x1e0 + f * 0x2ec) = s;
+    ((D2OBJ *)d2_Objs)[f].style = 3;
+    d2_Wins[d2_LastWindow].btnup = f;
+    ((D2OBJ *)d2_Objs)[f].winIndex = s;
     f = d2_GetWinObj(sv_PlayerBarForm, 2, 1);
-    *(int *)(d2_Objs + 0x1c0 + f * 0x2ec) = 3;
-    *(int *)(ai_Unkf8f128 + 0x3a4 + d2_LastWindow * 0x3c4) = f;
-    *(int *)(d2_Objs + 0x1e0 + f * 0x2ec) = s;
-    *(int *)(ai_Unkf8f128 + 0x25c + s * 0x3c4) = 0x4e;
+    ((D2OBJ *)d2_Objs)[f].style = 3;
+    d2_Wins[d2_LastWindow].btndown = f;
+    ((D2OBJ *)d2_Objs)[f].winIndex = s;
+    d2_Wins[s].visible = 0x4e;
     if (sv_PlayerBarForm != -1) {
         if (sv_PanelForm != -1)
             d2_SetViewEnabled(sv_PanelForm, 0);
         d2_SetForm(sv_PlayerBarForm, 1);
-        for (p = &ai_Unk75f280[2]; (int)p < ((unsigned)&ai_Unk75f280 + 0x508); p += 10) {
-            p[-2] = -1;
-            p[0] = -1;
-            p[1] = -1;
-            p[2] = 0xffff;
-            p[3] = -1;
-            p[4] = -1;
-            p[5] = 0;
+        for (i = 0; i < 0x20; i++) {
+            sv_MemberRows[i].check = -1;
+            sv_MemberRows[i].icon[0] = -1;
+            sv_MemberRows[i].icon[1] = -1;
+            sv_MemberRows[i].chr = 0xffff;
+            sv_MemberRows[i].text = -1;
+            sv_MemberRows[i].window = -1;
+            sv_MemberRows[i].cleared1c = 0;
         }
         d2_SetForm(sv_PlayerBarForm, 2);
         f = d2_WinOpenPicStyled(0x11, 4, 0x51d, d2_LastWindow, -2);
-        *(int *)(d2_Objs + 0x4c + f * 0x2ec) = 1;
-        *(int *)(d2_Objs + 0x1c0 + f * 0x2ec) = 3;
-        for (c = ai_Chars[0] + 0x188; (int)c < ((unsigned)((unsigned)ai_Chars + 0x65402) + 0x186); c += 0x21c)
-            if (*c != 0 && c[-0x24] != 0)
-                *c = 0;
+        ((D2OBJ *)d2_Objs)[f].interactive = 1;
+        ((D2OBJ *)d2_Objs)[f].style = 3;
+        for (i = 0; i < 768; i++)
+            if (((SVCHARREC *)ai_Chars[i])->selected != 0 && ((SVCHARREC *)ai_Chars[i])->jobId != 0)
+                ((SVCHARREC *)ai_Chars[i])->selected = 0;
     }
 }
 /* 0x525440, closes the player bar (d2_CloseView, sv_PlayerBarForm), shows the info panel (sv_PanelForm) again and
