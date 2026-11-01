@@ -167,8 +167,6 @@ extern char d3d_StatesSet;                  /* 0x633433 */
 extern char d3d_Mipmaps;                    /* 0x633434, mipmapping usable: d3d_UsedCard.info.maxMipFilter > 1 */
 extern int d3d_ZBufferCaps;                 /* 0xfe7608, memory caps for the z buffer surface: 0x800 system, 0x6000 video memory | 3D device */
 
-HKEY reg_OpenKey(char *key, int mode);                                                      /* 0x4103a0 */
-void reg_CloseKey(HKEY key);                                                                  /* 0x410430 */
 HRESULT CALLBACK d3d_EnumDeviceCallback(GUID *guid, LPSTR desc, LPSTR name,
     LPD3DDEVICEDESC hal, LPD3DDEVICEDESC hel, LPVOID ctx);                             /* 0x41c460, Dd_vesa.c */
 char dd_SetSurfaceName(LPDIRECTDRAWSURFACE4 surf, char *data, char unk);                      /* 0x41eb00, Dd_vesa.c */
