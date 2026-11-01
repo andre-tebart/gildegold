@@ -147,10 +147,10 @@
 #define sv_ViewRotY              (*(int *)((char *)&sv_ViewRot + 0x4))  /* 0x75fb94 */
 #define sv_ViewRotZ              (*(int *)((char *)&sv_ViewRot + 0x8))  /* 0x75fb98 */
 
-/* ai_Unk75e130 */
-#define ai_Unk75e134             (*(int *)((char *)&ai_Unk75e130 + 0x4))  /* 0x75e134 */
-#define ai_Unk75e138             (*(int *)((char *)&ai_Unk75e130 + 0x8))  /* 0x75e138 */
-#define ai_Unk75e13c             (*(short *)((char *)&ai_Unk75e130 + 0xc))  /* 0x75e13c */
+/* ai_TimeCopy */
+#define ai_Unk75e134             (*(int *)((char *)&ai_TimeCopy + 0x4))  /* 0x75e134 */
+#define ai_Unk75e138             (*(int *)((char *)&ai_TimeCopy + 0x8))  /* 0x75e138 */
+#define ai_Unk75e13c             (*(short *)((char *)&ai_TimeCopy + 0xc))  /* 0x75e13c */
 
 /* ai_Unk76f920 */
 #define ai_Unk76f924             (*(int *)((char *)&ai_Unk76f920 + 0x4))  /* 0x76f924 */

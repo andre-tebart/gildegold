@@ -218,7 +218,7 @@ extern unsigned int ai_Unk6f0da4;
 extern int ai_Unk6f0dbc;
 extern char * ai_Unk6f22e8;
 extern int ai_Unk6f2448;
-extern int ai_Unk75e130[4];
+extern int ai_TimeCopy[4];
 extern int ai_Unka687e4;
 extern int ai_Unkf31144;
 extern char cm_RequestedSaveName[72];
@@ -247,7 +247,7 @@ extern void *d2_ScreenSurf;  /* 0x6ed924 */
 extern int ai_GameFlags;
 extern int ai_OptionSpeed;
 extern unsigned char ai_TimeHour;
-extern int ai_Unk75e130[4];
+extern int ai_TimeCopy[4];
 extern GAPDATA full_data_6248b4[];
 
 int d2_CreateWinText(short x, short y, char *text, int win);
@@ -7119,7 +7119,7 @@ l64:
             he_Unk53daf0();
         he_Unk53edf0();
         if (SV_I((unsigned)&ai_Unk1460ae0) == -1 && SV_I((unsigned)&ai_Unka687e4) < SV_I((unsigned)&ai_ClockMs) && SV_B((unsigned)&ai_GameState) != 0)
-            ai_Unk4c4d40((unsigned)&ai_Unk75e130);
+            ai_Unk4c4d40((unsigned)&ai_TimeCopy);
         if ((mask & 0x10000) == 0 && SV_B((unsigned)&ai_GameState) != 0 && SV_I((unsigned)&sv_PanelFlag) == 0 && ai_Unk4e4cc0() != 0 && SV_B((unsigned)&full_data_6f22ac) != 0)
             SV_I((unsigned)&sv_PopRequest) = 1;
     }
@@ -7368,7 +7368,7 @@ void sv_UpdateClock(void)
     t = (int)(((float)SV_I((unsigned)&ai_OptionSpeed) * 0.00625f + 0.5) * SV_I((unsigned)&full_data_6248b4));
     h = t / 3600;
     m = (t - h * 3600) / 60;
-    gm_AddTime((unsigned)&ai_Unk75e130, h, m, t - (m + h * 60) * 60);
+    gm_AddTime((unsigned)&ai_TimeCopy, h, m, t - (m + h * 60) * 60);
 }
 
 extern int ai_Unk75ec20;

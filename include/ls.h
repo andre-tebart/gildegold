@@ -59,7 +59,7 @@ typedef struct LSHEADER {               /* 0x100 bytes, the header of a save gam
     char title[0x60];                   /* 0x9c, "Savegame" below 0x10039 */
 } LSHEADER;
 int ls_ReadSaveHeader(int f, int *h);                                   /* 0x51cee0 */
-int unk_Unk51d2d0(int f);                                               /* 0x51d2d0 */
+int ls_LoadScene(int f);                                               /* 0x51d2d0 */
 int ls_ReadObjects(int f);                                              /* 0x51d3d0 */
 char ls_HookBuildingCB(char *o);                                        /* 0x51d4f0 */
 char ls_ClearObjectFlag(char *o);                                       /* 0x51d530 */
@@ -109,8 +109,8 @@ extern int ai_Unk7585e4;                                    /* 0x7585e4 */
 extern int ai_Unk75e134;                                    /* 0x75e134 */
 extern int ai_Unk75e138;                                    /* 0x75e138 */
 #endif
-extern unsigned ai_Unka68d28;                               /* 0xa68d28 */
+extern unsigned cm_LoadSize;                               /* 0xa68d28 */
 extern int cm_LastSeq;                                    /* 0xf81168 */
-extern unsigned ai_Unkf81220;                               /* 0xf81220 */
+extern unsigned cm_LoadReceived;                               /* 0xf81220 */
 
 #endif

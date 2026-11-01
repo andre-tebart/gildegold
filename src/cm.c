@@ -2461,9 +2461,9 @@ int ai_Unk4c6a60(G17MSG *m, G17STAT *s)
 
 int ai_Unk4c6a90(G17MSG *m, G17STAT *s)
 {
-    ai_Unka68d28 = *(int *)&m->data[0];
-    ai_Unkf31140 = mem_Alloc(ai_Unka68d28, "cm_LoadBuf");
-    ai_Unkf81220 = 0;
+    cm_LoadSize = *(int *)&m->data[0];
+    cm_LoadBuf = mem_Alloc(cm_LoadSize, "cm_LoadBuf");
+    cm_LoadReceived = 0;
     if (s != 0)
         s->state = 1;
     return 0;
@@ -2472,8 +2472,8 @@ int ai_Unk4c6a90(G17MSG *m, G17STAT *s)
 
 int ai_Unk4c6ad0(G17MSG *m, G17STAT *s)
 {
-    memcpy(ai_Unkf31140 + ai_Unkf81220, m->data, 0x80);
-    ai_Unkf81220 += 0x80;
+    memcpy(cm_LoadBuf + cm_LoadReceived, m->data, 0x80);
+    cm_LoadReceived += 0x80;
     if (s != 0)
         s->state = 1;
     return 0;
@@ -3492,7 +3492,7 @@ int ai_Unk4c89b0(G17MSG *m, G17STAT *s)
         *(short *)&ai_Time[4] = G17_S(msg, 5);
         *(int *)&ai_Time[6] = G17_I(msg, 7);
         *(int *)&ai_Time[10] = G17_I(msg, 0xb);
-        *(G17T14 *)&ai_Unk75e130 = *(G17T14 *)ai_Time;
+        *(G17T14 *)&ai_TimeCopy = *(G17T14 *)ai_Time;
         if (p == 0)
             tb_SetFunctionOff(sv_UpdateClock, 0);
         break;
@@ -14926,7 +14926,7 @@ void ai_Unk4e5bf0(char *c)
 }
 
 extern unsigned int ai_MissionSeed;
-extern int ai_Unk75e130[4];
+extern int ai_TimeCopy[4];
 extern char * sv_SelectedObject;
 extern char ai_Unk75fba0[2048];
 extern int cm_SaveAcks[8][2];
@@ -14986,7 +14986,7 @@ extern int ai_Unka68d30;
 extern char * ai_Unka68d34;
 extern unsigned char ai_Unka68d40[1024];
 extern G17MSG cm_SendRing[0x8000];
-extern char * ai_Unkf31140;
+extern char * cm_LoadBuf;
 extern int ai_Unkf31144;
 extern G17STAT cm_SendStates[0x8000];
 extern G17MSG * cm_SendQueue;
@@ -15172,7 +15172,7 @@ int cm_RequestedSaveSlot = 0;  /* 0x6f25c8 */
 char cm_RequestedSaveName[72] = {0};  /* 0x6f25d0 */
 /* ai_Unk6f35ca: view of ai_GfxFloor (tools/data_views.py) */
 unsigned int ai_MissionSeed = 0;  /* 0x75e120, the random seed of the missions (as unk_4b39f0.h) */
-int ai_Unk75e130[4] = {0};  /* 0x75e130, the clock copy 0x75e130..0x75e13e (14 bytes, written whole by cm.c / sv.c): [0] the year; ai_Unk75e134 / 75e138 / 75e13c are views */
+int ai_TimeCopy[4] = {0};  /* 0x75e130, the clock copy 0x75e130..0x75e13e (14 bytes, written whole by cm.c / sv.c): [0] the year; ai_Unk75e134 / 75e138 / 75e13c are views */
 char * sv_SelectedObject = 0;  /* 0x75ec60 */
 char ai_Unk75fba0[2048] = {0};  /* 0x75fba0 */
 int cm_SaveAcks[8][2] = {0};  /* 0x76fa20 */
@@ -15233,7 +15233,7 @@ int ai_Unka68d30 = 0;  /* 0xa68d30, length of ai_Unka68800 */
 char * ai_Unka68d34 = 0;  /* 0xa68d34 */
 unsigned char ai_Unka68d40[1024] = {0};  /* 0xa68d40, a joined long message */
 G17MSG cm_SendRing[0x8000] = {0};  /* 0xa69140, the send ring */
-char * ai_Unkf31140 = 0;  /* 0xf31140, the load buffer ("cm_LoadBuf") */
+char * cm_LoadBuf = 0;  /* 0xf31140, the load buffer ("cm_LoadBuf") */
 int ai_Unkf31144 = 0;  /* 0xf31144 */
 G17STAT cm_SendStates[0x8000] = {0};  /* 0xf31160 */
 G17MSG * cm_SendQueue = 0;  /* 0xf81160, the messages to send */

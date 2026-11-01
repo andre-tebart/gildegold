@@ -280,3 +280,8 @@
 2026-11-01T18:15:12 0x004cde20 func ai_Unk4cde20 -> cm_UpdateHandObject by:main why:0x4cde20: sets the right-hand model "ob_<NAME>" of the good the character carries on its scene character (+0x184), ch_SetHandObject hand 2, or clears it
 2026-11-01T18:19:35 0x0051f080 func unk_Unk51f080 -> ls_ReadPlayerSlots by:main why:0x51f080: reads back what ls_WritePlayerSlots 0x51b340 writes (the stock blocks and the four player slots, same fields in the same order)
 2026-11-01T18:21:09 0x0051f720 func unk_Unk51f720 -> ls_ReadStatistics by:main why:0x51f720: reads back what ls_WriteStatistics 0x51b910 writes, the same globals in the same order
+2026-11-01T18:22:29 0x00f31140 data ai_Unkf31140 -> cm_LoadBuf by:main why:0xf31140: the buffer of a save game received over the network, allocated with the tag "cm_LoadBuf" (cm.c 0x4c...: mem_Alloc(size, "cm_LoadBuf")), freed by ls_ReceiveGame
+2026-11-01T18:22:29 0x00a68d28 data ai_Unka68d28 -> cm_LoadSize by:main why:0xa68d28: the size of cm_LoadBuf (taken from the first message, mem_Alloc'd with it)
+2026-11-01T18:22:29 0x00f81220 data ai_Unkf81220 -> cm_LoadReceived by:main why:0xf81220: the bytes of cm_LoadBuf received so far (0, then += 0x80 per message); ls_ReceiveGame waits until it reaches cm_LoadSize
+2026-11-01T18:22:29 0x0075e130 data ai_Unk75e130 -> ai_TimeCopy by:main why:0x75e130: a 14-byte copy of the game clock ai_Time (cm.c copies it whole, ls_LoadGame / ls_ReceiveGame after reading the clock)
+2026-11-01T18:22:29 0x0051d2d0 func unk_Unk51d2d0 -> ls_LoadScene by:main why:0x51d2d0: after a load, builds the scene from the save file (d3_LoadScene(0, f, ...)) and its scene tree and callbacks

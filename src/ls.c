@@ -18,6 +18,9 @@ struct D3TERRAIN;
 #define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
 #define ai_PlayerBuildingT (*(struct AIBLD **)&ai_PlayerBuilding)  /* 0x6f2308, ai_PlayerBuilding (sv.c: char *) as the AIBLD it points to */
 #define ai_FallbackBuildingT (*(struct AIBLD **)&ai_FallbackBuilding)  /* 0x6f230c, ai_FallbackBuilding (sv.c: char *) as the AIBLD it points to */
+#define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
+#define ai_TimeT (*(AITIME *)&ai_Time)  /* 0x770ae0, ai_Time (anm.c: char[14]) as the AITIME it is */
+#define ai_TimeCopyT (*(AITIME *)&ai_TimeCopy)  /* 0x75e130, ai_TimeCopy (cm.c: int[4]) as the AITIME it holds */
 #define sv_PanelShownT (*(struct AIOBJ **)&sv_PanelShown)  /* 0x6f2310, sv_PanelShown (sv.c: unsigned short *) as the AIOBJ (room object) it points to */
 #include "d3_types.h"
 #define GAPDATA __declspec(align(1)) unsigned char
@@ -119,7 +122,7 @@ unsigned char he_Events[339968] = {0};  /* 0x6fab40, the */
 char * he_QuickList[10921] = {0};  /* 0x74db40, pointers to the */
 int ai_Unk7585e4 = 0;  /* 0x7585e4 */
 void (*he_RunHandlers[5544])(unsigned char *) = {0};  /* 0x758600, the event run handlers by type (he.c */
-/* ai_Unk75e134 / ai_Unk75e138 / ai_Unk75e13c: views of ai_Unk75e130 (data_views.h), the clock copy */
+/* ai_Unk75e134 / ai_Unk75e138 / ai_Unk75e13c: views of ai_TimeCopy (data_views.h), the clock copy */
 
 void he_FreeEvents();                    /* 0x53d590 */
 
@@ -1373,10 +1376,10 @@ unsigned short ai_ScreenImage[19200] = {0};  /* 0x766320, the */
 int ai_Unk76f920[0x40] = {0};  /* 0x76f920, the 0x100-byte header of the loaded save game (id, flag byte, name, ..; ls_ReadSaveHeader fills it up to +0xfc) */
 /* 0x51c950, loads a save game: opens the file (0x430470, mode 0x5f1084), resets the game (0x503e80, 0x40b240, 0x50d490), reads the header (0x51cee0, versions 0x10026 .. 0x1005a only) and the fixed globals (each from its version: 0x6f1bcc from 0x10022, 0x61a658 from 0x10030, 0x6f1b88 from 0x1003d), then the readers of the subsystems in the order 0x51d3d0, 0x51d550, 0x51db00, 0x51de70, 0x51f080, 0x4ea7a0 (from 0x10045), 0x51d2d0, [unless the header flag +4 has bit 2 (a map only save): 0x4ea7a0, 0x4f2b30, 0x51f650 (from 0x10016), 0x51f720, 0x4ed270 (from 0x1002a), 0x51fb90, 0x520000, 0x520200, 0x520310, 0x5205f0 (from 0x1002e), 0x5206b0, then the references (0x511790 / 0x511840 / 0x51e900), the character pointers 0x6f1bfc / 0x6f1c00 (0x505df0), 0x4b63b0, 0x589b30 (from 0x10029), 0x5a8a20 (from 0x10047), 0x4ec140 (from 0x10049), 0x4ada80 (from 0x10052), 0x4c0040 (from 0x10053)]. The first one that fails closes the file, frees the buffer 0xf31140 and returns 0. At the end 0x528770, 0x511790, 0x513740, 0x513590(0x633738, 1) and the path 0x76f9bc is kept in 0x75e640. Returns 1. ROUGH */
 /* ai_Unk76f924 / ai_Unk76f9b8 / ai_Unk76f9bc: views of ai_Unk76f920 (data_views.h) */
-extern char * ai_Unkf31140;                /* 0xf31140 */
-extern int ai_Unk75e130[4];  /* 0x75e130, the clock copy */
+extern char * cm_LoadBuf;                /* 0xf31140 */
+extern int ai_TimeCopy[4];  /* 0x75e130, the clock copy */
 #define LS_RD(p, sz) ls_Read((int)(p), (sz), 1, h)
-#define LS_LOADFAIL { vfs_fclose(h); mem_Free(ai_Unkf31140); ai_Unkf31140 = 0; return 0; }   /* a late reader failed: the file closed, the load buffer freed */
+#define LS_LOADFAIL { vfs_fclose(h); mem_Free(cm_LoadBuf); cm_LoadBuf = 0; return 0; }   /* a late reader failed: the file closed, the load buffer freed */
 /* 0x51c950 @deep read whole against 0x51c950..0x51cee0 (420 vs 420 instructions, 1421 vs 1421 bytes): every reader, each version gate on ls_Version with the read first, the map-only early end (a failed fix-up goes through the close again, as the original does), the inline LS_LOADFAIL blocks of the late readers, ls_ReadAvatars (the forwarder the original calls), the inline strcpy of the path. Left: scheduling only - the original hoists the next call's push esi above the failure branch of the || chains and jumps to the shared close one byte later (0x51ced0, after its push esi) where ours pushes after the branch and jumps to 0x51cecf (order 58, branch 7) */
 int ls_LoadGame(int name, int kind)
 {
@@ -1400,7 +1403,7 @@ int ls_LoadGame(int name, int kind)
         LS_RD(&ls_SpareInt, 4);
     LS_RD(&ai_UpdateStart, 0x18);   /* the 0x18-byte block ai_UpdateStart .. ai_CountCarry (0xf89580) */
     ai_Unk75e134 = *(int *)(ai_Time + 4);
-    ai_Unk75e130[0] = *(int *)ai_Time;
+    ai_TimeCopy[0] = *(int *)ai_Time;
     ai_Unk75e138 = *(int *)(ai_Time + 8);
     ai_Unk75e13c = *(short *)(ai_Time + 0xc);
     if ((ai_Unk76f924 & 2) == 0)
@@ -1412,7 +1415,7 @@ int ls_LoadGame(int name, int kind)
     else
         ai_NextCrimeId = 1000000;
     if (ls_ReadObjects(h) == 0 || ls_ReadBuildings(h) == 0 || ls_ReadPlayerRecords(h) == 0 || ls_ReadCharacters(h) == 0
-        || ls_ReadPlayerSlots(h) == 0 || (ls_Version >= 0x10045 && amt_LoadAemter(h, ls_Version) == 0) || unk_Unk51d2d0(h) == 0)
+        || ls_ReadPlayerSlots(h) == 0 || (ls_Version >= 0x10045 && amt_LoadAemter(h, ls_Version) == 0) || ls_LoadScene(h) == 0)
         goto close;
     if ((ai_Unk76f924 & 2) != 0) {          /* a map-only save ends here */
         vfs_fclose(h);
@@ -1534,7 +1537,7 @@ int ls_ReadSaveHeader(int f, int *h)
 /* 0x51d2d0, after a load: builds the scene (0x44be60 with the loader 0x537b60), the scene tree (0x45eeb0, size 0x100, 0x80 when the scene kind is 0x40), sets the detail bits (+0x71c, mask 0x1c, from 0x61adf8) and registers the two scene callbacks 0x51d4f0 (0x1c0) / 0x51d530 (0xc0) with 0x438e60. Returns 1 @deep B3 code hunks 52: same operations, VC6 scheduling/register shape - the scene size (0x100, 0x80 when the kind is 0x40) is materialised in eax and pushed once where the original duplicates push 2 per branch and pushes the constant at each site (0x51d323/0x51d32c); ours saves esi (the 'saved' local 0x633444) before the 0x45eeb0 call (push esi at 0x51d32d) and cleans 0x14 bytes later, the original pushes esi after the call (0x51d341) with the 45eeb0 args cleaned at 0x51d339 and mov ds:0xfd7c50,eax before the push; the +0x1c70 byte xor is only a register choice (eax/cl vs ecx/al). Read the whole function; tried the size select as an if/else and as an inline ternary, VC6 emits the same. Q1/Q2/Q3/Q5 open (0x537b60/0x51d4f0/0x51d530 function pointers, 0x71c field) */
 
 
-int unk_Unk51d2d0(int f)
+int ls_LoadScene(int f)
 {
     int saved, size;
     unsigned char *b;
@@ -2834,91 +2837,74 @@ int ls_SendGame(char *name)
     vfs_fclose(fh);
     return 1;
 }
-/* 0x520b80, takes the save game that arrived over the network (the buffer 0xf31140, length 0xa68d28, wait for 0xf81220 to reach it), opens it as a memory file (0x4311d0), reads the header and the globals like 0x51c950 (only when the header flag has bit 2: the network start flag, and the version is below 0x1005b), the readers 0x51d3d0, 0x51d550, 0x51db00, 0x51de70 (the characters of the kind 6 become kind 5), 0x51f080, 0x4ea7a0 (from 0x10045), 0x51d2d0 (unless the header flag has bit 4) and 0x5206b0. The first failing step closes the file, frees the buffer and returns 0. Returns 1. ROUGH */
+/* 0x520b80, takes the save game that arrived over the network: waits (pumping messages and the network) until
+   cm_LoadBuf holds all cm_LoadSize bytes, opens it as a memory file, reads its header and, only for a network start
+   (header flag bit 1) of a version up to 0x1005a, the globals as ls_LoadGame does (the id counters, the clock and
+   its copy ai_TimeCopy, the own player and its character, the counters, the update block, the party / crime ids
+   by version), then the objects, buildings, player records and characters (the characters of kind 6 become kind
+   5), the player slots, the Aemter (from 0x10045), the scene (unless header flag bit 2) and the fix-up. Closes the
+   file and frees the buffer; returns 1, 0 when a step fails. */
 
 
 int ls_ReceiveGame(void)
 {
-    int fh, i;
-    int hdr[0x40];
-    char *p;
+    int h;
+    LSHDR hdr;
+    int i;
 
-    while (ai_Unkf31140 == 0 || ai_Unkf81220 < ai_Unka68d28) {
+    while (cm_LoadBuf == 0 || cm_LoadReceived < cm_LoadSize) {
         sv_PumpMessages();
         sv_PumpNet();
     }
-    fh = vfs_MemOpen(ai_Unkf31140, ai_Unka68d28, "rb");
-    if (fh == 0) {
-        mem_Free(ai_Unkf31140);
-        ai_Unkf31140 = 0;
+    h = (int)vfs_MemOpen(cm_LoadBuf, cm_LoadSize, "rb");
+    if (h == 0) {
+        mem_Free(cm_LoadBuf);
+        cm_LoadBuf = 0;
         return 0;
     }
     ai_PlayerCharC = 0;
-    ls_ReadSaveHeader(fh, hdr);
-    if ((((char *)hdr)[4] & 2) != 0 && hdr[0] <= 0x1005a) {
-#define LS_RF(p, sz) ls_Read((int)(p), (sz), 1, fh)
-        if (!LS_RF(&ai_NextObjectId, 4) || !LS_RF(&ai_NextEventId, 4) || !LS_RF(ai_Time, 0xe)
-            || !LS_RF(&ai_OwnPlayer, 1) || !LS_RF(&ai_PlayerCharC, 4) || !LS_RF(&ai_NextCharNumber, 4)
-            || !LS_RF(&ai_NextPlayerNumber, 4) || !LS_RF(&ai_CharCount, 4)) {
-            vfs_fclose(fh);
-            goto fail;
-        }
-        ai_Unk75e130[0] = *(int *)ai_Time;
-        ai_Unk75e134 = *(int *)(ai_Time + 4);
-        ai_Unk75e138 = *(int *)(ai_Time + 8);
-        ai_Unk75e13c = *(short *)(ai_Time + 0xc);
-        LS_RF(&ls_SpareInt, 4);
-        LS_RF(&ai_UpdateStart, 0x18);   /* the 0x18-byte block ai_UpdateStart .. ai_CountCarry (0xf89580) */
-        if (ls_Version >= 0x10030)
-            LS_RF(&ai_NextPartyId, 4);
-        if (ls_Version < 0x1003d)
-            ai_NextCrimeId = 1000000;
-        else
-            LS_RF(&ai_NextCrimeId, 4);
-        if (ls_ReadObjects(fh) == 0) {
-            ((int (*)())vfs_fclose)();
-            goto fail;
-        }
-        if (ls_ReadBuildings(fh) != 0) {
-            if (ls_ReadPlayerRecords(fh) == 0) {
-                ((int (*)())vfs_fclose)();
-                goto fail;
-            }
-            if (ls_ReadCharacters(fh) == 0) {
-                vfs_fclose(fh);
-                goto fail;
-            }
-            p = ai_Chars[0] + 2;
-            do {
-                if (*(unsigned short *)(p - 2) != 0xffff && *p == 6)
-                    *p = 5;
-                p += 0x21c;
-            } while ((int)p < (unsigned)((unsigned)ai_Chars + 0x65402));
-            if (ls_ReadPlayerSlots(fh) != 0) {
-                if (ls_Version >= 0x10045 && amt_LoadAemter(fh, ls_Version) == 0) {
-                    vfs_fclose(fh);
-                    goto fail;
-                }
-                if ((((char *)hdr)[4] & 4) == 0 && unk_Unk51d2d0(fh) == 0) {
-                    vfs_fclose(fh);
-                    goto fail;
-                }
-                if (ls_FixupAfterLoad() != 0) {
-                    vfs_fclose(fh);
-                    mem_Free(ai_Unkf31140);
-                    ai_Unkf31140 = 0;
-                    return 1;
-                }
-            }
-        }
+    ls_ReadSaveHeader(h, (int *)&hdr);
+    if ((hdr.flags & 2) == 0 || hdr.version > 0x1005a)
+        LS_LOADFAIL
+    if (!LS_RD(&ai_NextObjectId, 4) || !LS_RD(&ai_NextEventId, 4) || !LS_RD(ai_Time, 0xe)
+        || !LS_RD(&ai_OwnPlayer, 1) || !LS_RD(&ai_PlayerCharC, 4) || !LS_RD(&ai_NextCharNumber, 4)
+        || !LS_RD(&ai_NextPlayerNumber, 4) || !LS_RD(&ai_CharCount, 4))
+        LS_LOADFAIL
+    ai_TimeCopyT = ai_TimeT;
+    LS_RD(&ls_SpareInt, 4);
+    LS_RD(&ai_UpdateStart, 0x18);   /* the 0x18-byte block ai_UpdateStart .. ai_CountCarry (0xf89580) */
+    if (ls_Version >= 0x10030)
+        LS_RD(&ai_NextPartyId, 4);
+    if (ls_Version >= 0x1003d)
+        LS_RD(&ai_NextCrimeId, 4);
+    else
+        ai_NextCrimeId = 1000000;
+    if (ls_ReadObjects(h) == 0)
+        LS_LOADFAIL
+    if (ls_ReadBuildings(h) == 0)
+        LS_LOADFAIL
+    if (ls_ReadPlayerRecords(h) == 0)
+        LS_LOADFAIL
+    if (ls_ReadCharacters(h) == 0)
+        LS_LOADFAIL
+    for (i = 0; i < 768; i++) {
+        if (ai_CharsT[i].id != 0xffff && ai_CharsT[i].kind == 6)
+            ai_CharsT[i].kind = 5;
     }
-    vfs_fclose(fh);
-fail:
-    mem_Free(ai_Unkf31140);
-    ai_Unkf31140 = 0;
-    return 0;
+    if (ls_ReadPlayerSlots(h) == 0)
+        LS_LOADFAIL
+    if (ls_Version >= 0x10045 && amt_LoadAemter(h, ls_Version) == 0)
+        LS_LOADFAIL
+    if ((hdr.flags & 4) == 0 && ls_LoadScene(h) == 0)
+        LS_LOADFAIL
+    if (ls_FixupAfterLoad() == 0)
+        LS_LOADFAIL
+    vfs_fclose(h);
+    mem_Free(cm_LoadBuf);
+    cm_LoadBuf = 0;
+    return 1;
 }
 
-unsigned ai_Unka68d28 = 0;  /* 0xa68d28, the received bytes and the expected length (compared unsigned */
+unsigned cm_LoadSize = 0;  /* 0xa68d28, the received bytes and the expected length (compared unsigned */
 int cm_LastSeq = 0;  /* 0xf81168 .. */
-unsigned ai_Unkf81220 = 0;  /* 0xf81220 / */
+unsigned cm_LoadReceived = 0;  /* 0xf81220 / */

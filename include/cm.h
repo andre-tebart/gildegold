@@ -150,9 +150,9 @@ float gm_ItemPrice(int item, unsigned char n);                                  
 int gm_Unk50a0f0(int y);                                                     /* 0x50a0f0 */
 void util_Seed(unsigned int seed);                                               /* 0x42ec90, tr.c */
 extern int cm_NetFlags;                /* 0x6f2594, flags */
-extern unsigned ai_Unka68d28;           /* 0xa68d28, size of the load buffer */
-extern char *ai_Unkf31140;              /* 0xf31140, the load buffer ("cm_LoadBuf") */
-extern unsigned ai_Unkf81220;           /* 0xf81220, bytes in it */
+extern unsigned cm_LoadSize;           /* 0xa68d28, size of the load buffer */
+extern char *cm_LoadBuf;              /* 0xf31140, the load buffer ("cm_LoadBuf") */
+extern unsigned cm_LoadReceived;           /* 0xf81220, bytes in it */
 extern unsigned short *ai_PlayerChar;    /* 0x6f1bf8, the player's character (ai.c; this header's units add byte offsets through ai_PlayerCharC) */
 
 int ai_Unk4c3180(G17MSG *m);                                                     /* 0x4c3180 */
@@ -364,7 +364,7 @@ extern int ai_GameFlags;  /* 0x6f23f8 */
 extern int cm_RequestedSaveSlot;  /* 0x6f25c8 */
 extern char cm_RequestedSaveName[];  /* 0x6f25d0 */
 extern unsigned int ai_MissionSeed;  /* 0x75e120, the random seed of the missions (as unk_4b39f0.h) */
-extern int ai_Unk75e130[4];  /* 0x75e130, the clock copy (14 bytes) */
+extern int ai_TimeCopy[4];  /* 0x75e130, the clock copy (14 bytes) */
 extern int cm_SaveAcks[][2];  /* 0x76fa20 */
 extern int ai_Unk91b6e0[0x800][2];  /* 0x91b6e0 */
 extern char ai_Unk91f700[];  /* 0x91f700 */
