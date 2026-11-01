@@ -34,13 +34,10 @@ extern unsigned char ai_OwnPlayer;      /* 0x6f1bc5, the player */
 extern char ai_Unkfd7c50[];            /* 0xfd7c50 (as cm.h) */
 #endif
 extern struct D2OBJ *d2_Objs;  /* 0xf8f080, 0x2ec bytes each (d2.c); this header's unit adds byte offsets through d2_ObjsC */
-extern char *ai_BTypes;                 /* 0x7e3f30, ai.h: AIBTYPE * (0x24d bytes each, the kind at 0) */
 extern unsigned int ai_Unk889400[];     /* 0x889400, the goods of the last routing_choose_good list (0 ends) */
 extern unsigned short ai_Unk76fdc4;     /* 0x76fdc4, their number */
 
-extern int sv_PopRequest;                /* 0x6f22a0, closes the dialog */
 extern int d2_ClickedId;                /* 0xf8a668 */
-extern int d2_PointerObj;                /* 0x5fe710, focused object */
 extern int d2_LastWindow;                /* 0x6ed938, window created last */
 
 extern RTPOINT *rt_EditRoute;           /* 0x6f0758, the route being edited */
@@ -55,7 +52,6 @@ extern RTPOINT *rt_EditRoute;           /* 0x6f0758, the route being edited */
 
 
 
-extern char *cm_FieldObject;              /* 0xa68d2c, the carts (AI update offsets) */
 extern int rt_PickedBuilding;                /* 0x6f0754, the building shown */
 
 
@@ -69,9 +65,6 @@ extern char ai_PlayerSlots[][0x2f4];      /* 0x7e3f40, 0x2f4 bytes per player (a
 extern char ch_EmptyName[];             /* 0x631090 */
 extern int rt_MarkGroup;                /* 0x602a90, a d2 radio group (-1: none) */
 
-void * mem_Alloc(int size, char *tag);                                            /* 0x4223c0, mem.c */
-void mem_Free(void *p);                                                          /* 0x422620, mem.c */
-char *gm_FindBuildingById(int id);                                                      /* 0x502020, ai.h: AIBLD * */
 void d3_PointToWorld(struct D3OBJECT *obj_, struct D3VECTOR *in, struct D3VECTOR *out);                               /* 0x458a20, d3.h: D3 types */
 char d3_GetHeightAt(struct D3SM *h, struct D3VECTOR *pos, int *px, int *pz, float *py);           /* 0x45f170, ch.h: D3SM *, D3VECTOR * */
 void ai_Unk5a6b70(int param_1, int param_2, int param_3);                                     /* 0x5a6b70 */
@@ -84,24 +77,19 @@ void d2_CentreViewWindows(int view);                                            
 int d2_SetForm(int view, int n);                                                   /* 0x475f70 */
 int d2_GetWinObj(int view, int idx, int k);                                        /* 0x475b80 */
 void d2_CloseView(int view);                                                        /* 0x4758f0 */
-int io_PrintText(char *fmt, ...);                                                    /* 0x515960, a text */
 char * gm_Query(void *list, int n, ...);                                               /* 0x4ffe90 */
 unsigned short * gm_QueryNext(void);                                                        /* 0x4ffcc0 */
 int gm_BuildKindObjects(char *b);                                                      /* 0x500b90 */
-int sv_RunFrame(int cb, unsigned mask);                                              /* 0x5309a0, the dialog loop */
 void d2_RadioSelect(int g, int sel);                                               /* 0x46c630 */
 void d2_ClearInput(void);                                                         /* 0x476b70 */
 int d2_GetViewWin(int view, int i);                                               /* 0x475ff0 */
 int d2_RemoveWindowObjects(int win, int all);                                              /* 0x472d20 */
-int sv_Unk528800(int a, int y, int text);                                        /* 0x528800, a tab button */
 int gm_ListStock(short *l, int good);                                               /* 0x50ab50 */
 int d2_WinOpenInputIcon(int x, int y, int icon, unsigned char flags, int win);   /* 0x469ee0 */
 int d2_WinOpenSlider(int x, int y, int len, int p4, int p5, int pic, unsigned int flags, int win); /* 0x46a960 */
 void d2_SetObjFont(int obj, int font);                                            /* 0x4760b0 */
 void d2_RemoveObj(int obj);                                                      /* 0x46e710 */
-int gm_FindObjectInst(int id);                                                      /* 0x4fe980, a cart type (unsigned short kind 0x134..) */
 void d2_EnableViewObjects(int view, int on);                                             /* 0x4754d0 */
-void sv_ButtonRow(int f, int y, int *out, int n, ...);                         /* 0x52e350, a row of n buttons */
 int d2_CreateWinText(short x, short y, char *text, int win);                         /* 0x473650 */
 void d2_SetObjEnabled(int obj, int on);                                              /* 0x475e40 */
 void d2_SetObjValue(int obj, int a, int b, int c, int d);                         /* 0x475cb0, d2.c: the 5th parameter (value2) is pushed by 18 of the original call sites; rt.c's push 4 (d2_SetObjValue4 in its head) */
@@ -110,9 +98,6 @@ void d2_SetCaption(int obj, char *text);                                        
 void d2_SetSliderFlags(int obj, int a);                                               /* 0x46bdd0 */
 void d2_SetList(int id, int n, ...);                                          /* 0x46bca0 */
 void d2_SetObjPic(int obj, int pic);                                             /* 0x469250 */
-void cm_BeginFieldBlock(char *o, int id);                                              /* 0x4c3ba0, ai.h: void * */
-int cm_AddFieldValue(unsigned char size, unsigned char n, unsigned short field, void *v);                               /* 0x4c3d90 */
-void cm_SendFieldValues(void);                                                         /* 0x4c49e0 */
 void ai_Unk5a78a0(int *m);                                                       /* 0x5a78a0, town map window: open */
 void ai_Unk5a6cb0(int *m);                                                       /* 0x5a6cb0 */
 void ai_Unk5a7cd0(int *m);                                                       /* 0x5a7cd0, per frame */
@@ -120,9 +105,6 @@ void ai_Unk5a82f0(int *m);                                                      
 struct D2SURF * d2_CopySurface(struct D2SURF *surf);                                                    /* 0x479780 */
 void d2_BlitPart(int sx, int sy, int w, int h, struct D2SURF *src, int x, int y, struct D2SURF *dst);  /* 0x479480 */
 int d2_FreeSurface(struct D2SURF *s);                                                        /* 0x478fc0 */
-void sv_Unk52e4b0(int f, int y, int *out, int n, ...);      /* 0x52e4b0 */
-void ai_Unk4c6320(char *c);                                                      /* 0x4c6320 */
-void ai_Unk4c62a0(char *o, char *pts);                                          /* 0x4c62a0 */
 int gm_BuildingGoodsList(char *b, unsigned *out, int kind);                                   /* 0x5098a0 */
 unsigned short * gm_Unk50a050(unsigned short *c);                                                    /* 0x50a050, the cart's owner */
 int gm_StallGoodsList(char *c, unsigned *out);                                           /* 0x50aa00 */
@@ -131,12 +113,6 @@ int gm_ListAmount(short *l, char *o);                                   /* 0x50a
 int gm_FreeCapacity(short *st, int good, int n);                                     /* 0x50ab80 */
 float gm_GoodsPrice(unsigned id, unsigned char p);                                   /* 0x5089c0, a price */
 int gm_Unk509ee0(char *c, char p);                                      /* 0x509ee0, ai.h: AIPER * */
-void cm_SendExSellObject(int a, int b, short c, int d, unsigned char e, int f);         /* 0x4c4880, cm.c */
-int io_TownDisplayName(char *name, char *out);                                    /* 0x5142e0 */
-void txt_Format(char *buf, int id, ...);                                       /* 0x5176d0 */
-int he_ShowNews(int pid, int fl, char *text, int unused, int ev, char *text2);           /* 0x53dda0 */
-unsigned vfs_fwrite(void *buf, int size, int n, struct VFSFILE *f);                               /* 0x430e30 */
-int ls_Read(void *p, int size, int n, int f);                               /* 0x51c920, ls.c: true when the fread returned a positive count */
 void d2_RadioClear(int g);                                                      /* 0x46c600, d2.h: D2RADIO * */
 
 RTPOINT *rt_AddPoint(RTPOINT *p);
