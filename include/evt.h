@@ -158,7 +158,6 @@ extern int evt_LastOp;              /* 0x6332d4 */
 extern EVTSCRIPT *evt_Scope;        /* 0x6332d8 */
 extern int evt_ReturnValue;         /* 0x6332e0, the value of the last script "return" */
 extern int evt_Parens;              /* 0x6332e4 */
-extern int evt_NoGroup;             /* 0x5f8430, -1: the script / action belongs to no group */
 extern int evt_NextId;              /* 0x5f8434 */
 extern char evt_Path[];            /* 0x5f8330, the scripts directory */
 extern int evt_Lines[0x800];        /* 0x145e260 */
@@ -187,8 +186,6 @@ void err_Message(char *msg);                                                    
 void * mem_Alloc(int size, char *tag);                                                   /* 0x4223c0 */
 void mem_Free(void *p);                                                                 /* 0x422620 */
 struct VFSFILE * vfs_Tfopen(char *name, char *mode, int unk);                                    /* 0x430470 */
-int vfs_fclose(struct VFSFILE *f);                                                                /* 0x430aa0 */
-int vfs_fread(void *buf, int size, int n, struct VFSFILE *f);                                     /* 0x430bd0 */
 void evt_Error(EVTSCRIPT *sc, char *pos, char *msg);                                    /* 0x4273d0, reports a script error: prefixes "Line N:" from the line table, appends text and line to the 31-entry evt_Log ring (evt_LogPos wraps at 30) and formats the console message; no return */
 EVTVAR *evt_AddGlobal(char *name, void *data, int type);                                /* 0x427570, registers the global variable name (type, data, count 1), growing evt_Globals by 0x300 entries when fewer than 0x30 are free; returns it */
 EVTVAR *evt_AddLocal(EVTSCRIPT *sc, int type, int count, char *name);                   /* 0x4276a0, allocates count values of type (1 int 4, 2 byte 1, 6 string 0x60, 7 float 4) on the script stack in the first free of the frame's 8 locals; reports "Stack Overflow!" (and stops) above 0x400 and "Too many locals!" when all 8 are taken; returns the entry or 0 */
