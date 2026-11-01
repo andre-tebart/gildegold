@@ -306,8 +306,8 @@ void cm_SendFieldValues(void);                     /* 0x4c49e0 */
 int amt_GetOffice(unsigned char i, struct AMTREC *out);  /* 0x4e6f30, amt.c: copies the office i to out (an AMTREC, 0x18 bytes) */
 int amt_GetKind(int k, struct AMTKIND *out);              /* 0x4e6f80, amt.c: copies the office kind k to out (an AMTKIND, 0x18 bytes) */
 int amt_GetFirstOffice(unsigned int k, struct AMTREC *out);  /* 0x4e6ec0, amt.c: copies the first office of the kind k to out (an AMTREC) */
-int amt_SendOfficeOwner(int a, char *b, int c); /* 0x4e6650, amt.c */
-void gm_AgeCharacter(char *c, unsigned age);    /* 0x4fc6f0, f3gm.c: ages the character c to the age */
+int amt_SendOfficeOwner(char a, char *b, unsigned char c); /* 0x4e6650, amt.c */
+void gm_AgeCharacter(char *c, unsigned short age);    /* 0x4fc6f0, f3gm.c: ages the character c to the age */
 int ai_WorksForMaster(struct AICHAR *c);                 /* 0x47dd70, ai.c */
 void hmt_Begin(void);                           /* 0x4ad0a0, hmt.c */
 extern int sv_PanelFlag;                /* 0x75e8c0 */
@@ -1177,7 +1177,21 @@ unsigned short init_PlaceOffices(int n, int *out, int *ids)
    1 3 3 4 4 5 6 7 7 7 and 1000 10000 10000 20000 20000 40000 50000 60000 80000 100000, the money through
    gm_PlayerFactor), the office flags (field 0x1cc) and the first office of the kinds 0x23 .. 0x25, then the
    spouses of the unmarried (cm_SendRelations both ways, a child of kind 8 when the age gap is above 5), and
-   eight extra pairs of the kind 3 characters. Sends the field blocks / characters over the network; returns 1. */
+   eight extra pairs of the kind 3 characters. Sends the field blocks / characters over the network; returns 1.
+   @deep read against the whole original 0x50e690..0x50f0a1 and corrected: signed level /3 and int money
+   (msg3), loop bounds n>=30/n>=12 and the signed table end, wait loops as while (j != -1 &&
+   cm_GetSlotState(j) == 0) (the byte-matched amt_CheckOffices shape), one shared SetField wait (else j =
+   -1), the spouse loop as do .. while (u && v) with the job ternary u-first, the 8-pair loop's create
+   arguments inline (util_Random(4) + 0xf unmasked), gm_PlayerFactor's first argument inline, the true
+   parameter types of amt_SendOfficeOwner (char, char *, unsigned char) and gm_AgeCharacter (unsigned
+   short); 458 -> 217 differing, 758 vs 761 instructions, frame equal. Left: allocation and scheduling -
+   the constants of the t[] init in other registers (ours ebp=0x10/ecx=0x18/edx=0x19, original ebx/edx/ecx)
+   and cnt in ebx vs ebp; the t[] add loop indexed i*4 (inc esi, [esp+esi*4]) where the original keeps a
+   byte offset (add esi,4; cmp esi,0x78) - tried a separate loop variable, no change; ids / rec / ob slots
+   placed 0x30 apart (lea [esp+0x108] vs [esp+0x138]) - tried the declaration order of the original's
+   frame, no change; the office kind level kept in esi across the calls (ours) vs reloaded from [esp+0x110]
+   (original); the money bonus product ordered r*(msg3*0.01)*fl (ours) vs (r*fl)*(msg3*0.01) - tried fl
+   left and inline, no match; the msg4 = 2 store scheduled before the pushes */
 
 
 int init_CreateStartCharacters(void)
@@ -1190,7 +1204,8 @@ int init_CreateStartCharacters(void)
     INIT_OFFICE rec, ob1, ob2, ob3;
     INIT_KIND kind;
     int cnt, i, n, k, j, h, w;
-    unsigned msg0, msg1, msg4, msg3;
+    unsigned msg0, msg1, msg4;
+    int msg3;
     char msg5;
     char c;
     float fl;
@@ -1209,27 +1224,21 @@ int init_CreateStartCharacters(void)
     gm_Shuffle(6, t + 18);
     gm_Shuffle(6, t + 24);
     memset(f0, 0, sizeof(f0));
-    {
-        int *tp = t;
-
-        do {
-            *tp += util_RandomU(3) & 0xffff;
-            tp++;
-        } while (tp < t + 30);
-    }
+    for (i = 0; i < 30; i++)
+        t[i] += util_RandomU(3) & 0xffff;
     n = 0;
     p = (INIT_CHAR *)ai_Chars[0];
     do {
-        if (n > 0x1d)
+        if (n >= 30)
             break;
-        if (n > 0xb)
+        if (n >= 12)
             break;
         if (ai_WorksForMaster((char *)p) != 0 && p->kind != 5) {
             f0[n] = p;
             n++;
         }
         p = (INIT_CHAR *)((char *)p + 0x21c);
-    } while ((int)p < INIT_CHARACTERS_END);
+    } while ((int)p < (int)INIT_CHARACTERS_END);
     for (i = 0; i < 30; i++)
         ids[i] = i;
     gm_Shuffle(4, ids);
@@ -1266,11 +1275,10 @@ int init_CreateStartCharacters(void)
         amt_GetOffice((unsigned char)ids[k], &rec);
         amt_GetKind(rec.kindWord & 0xff, &kind);
         age = (unsigned short)t[k];
-        msg5 = (char)((util_RandomU(0x2a) & 0xffff) + ((kind.levelWord & 0xff) / 3 + 1) * 21.0f);
-        msg0 = (util_RandomU(2) & 0xffff) + t[(kind.levelWord & 0xff) + 0x1e];
+        msg5 = (char)((util_RandomU(0x2a) & 0xffff) + ((int)(kind.levelWord & 0xff) / 3 + 1) * 21.0f);
+        msg0 = util_RandomU(2) + t[(kind.levelWord & 0xff) + 0x1e];
         w = t[(kind.levelWord & 0xff) + 0x28];
-        j = (int)(util_RandomF() * w * -0.5f);
-        msg3 = gm_PlayerFactor(w - j, ai_OwnPlayer);
+        msg3 = gm_PlayerFactor(w - (int)(util_RandomF() * w * -0.5f), ai_OwnPlayer);
         ch = f0[k];
         cm_SendMoveGoods(ch->netId, -1, ai_OwnPlayer, msg3);
         cm_BeginFieldBlock((char *)ch, ch->netId);
@@ -1286,24 +1294,18 @@ int init_CreateStartCharacters(void)
         cm_SendFieldDeltas();
         gm_AgeCharacter((char *)ch, age);
         j = amt_SendOfficeOwner((unsigned char)ids[k], (char *)ch, 0xff);
-        if (j != -1) {
-            while (cm_GetSlotState(j) == 0)
-                sv_PumpNet();
-        }
+        while (j != -1 && cm_GetSlotState(j) == 0)
+            sv_PumpNet();
         c = ch->officeKind;
         if (c == 0x18 || c == 0x1a || c == 0x1b) {
             j = ((int (*)(void *, int, int, int, int))cm_SendSetField)(ch->netId, 0x1cc, 4, 0x80, 0);
-            if (j != -1) {
-                while (cm_GetSlotState(j) == 0)
-                    sv_PumpNet();
-            }
         } else if (c == 0x16 || c == 0x17 || c == 0x19) {
             j = ((int (*)(void *, int, int, int, int))cm_SendSetField)(ch->netId, 0x1cc, 4, 0x40, 0);
-            if (j != -1) {
-                while (cm_GetSlotState(j) == 0)
-                    sv_PumpNet();
-            }
+        } else {
+            j = -1;
         }
+        while (j != -1 && cm_GetSlotState(j) == 0)
+            sv_PumpNet();
         c = ch->officeKind;
         if (c == 0x1b) {
             amt_GetFirstOffice(0x25, &ob1);
@@ -1316,72 +1318,62 @@ int init_CreateStartCharacters(void)
             amt_SendOfficeOwner(ob3.idWord, (char *)ch, 0xff);
         }
     }
-    for (;;) {
+    do {
         u = 0;
         v = 0;
         for (k = 0; k < 30 && !(u && v); k++) {
             q = f0[k];
 
-            if (q->age > 0x16) {
+            if (q->age >= 0x17) {
                 if (u == 0 && q->female == 0 && q->partner == -1)
                     u = q;
                 else if (v == 0 && q->female == 1 && q->partner == -1)
                     v = q;
             }
         }
-        if (u == 0 || v == 0)
-            break;
-        n = v->age - 0x12;
-        cm_BeginFieldBlock((char *)u, u->netId);
-        cm_AddFieldDelta(4, 1, 0x5c, &v->netId);
-        cm_SendFieldDeltas();
-        cm_BeginFieldBlock((char *)v, v->netId);
-        cm_AddFieldDelta(4, 1, 0x5c, &u->netId);
-        cm_SendFieldDeltas();
-        if (n > 5) {
-            w = gm_TitleNumber(gm_TitleGroup(util_RandomU(2) == 0 ? v->jobId : u->jobId), 1);
-            msg4 = 2;
-            j = ((int (*)(unsigned char, int, int, unsigned short, int, unsigned char, unsigned char, unsigned char))cm_SendCreateCharacter)(8, u->netId, v->netId, n, -1, w, 0, 2);
-            if (j != -1) {
-                while (cm_GetSlotState(j) == 0)
-                    sv_PumpNet();
-            }
-            ch = (INIT_CHAR *)cm_GetSlotValue(j);
-            cm_SendMoveGoods(ch->netId, -1, ai_OwnPlayer, ((util_RandomU(0x400) & 0xffff) + 0x200) * 0x20);
-            cm_BeginFieldBlock((char *)ch, ch->netId);
-            cm_AddFieldDelta(1, 1, 0xd, &msg4);
+        if (u != 0 && v != 0) {
+            n = v->age - 0x12;
+            cm_BeginFieldBlock((char *)u, u->netId);
+            cm_AddFieldDelta(4, 1, 0x5c, &v->netId);
             cm_SendFieldDeltas();
-        }
-        ((int (*)(int, int, int, int))cm_SendRelations)(u->netId, v->netId, (util_RandomU(0x20) & 0xffff) + 0x60, 0);
-        j = ((int (*)(int, int, int, int))cm_SendRelations)(v->netId, u->netId, (util_RandomU(0x20) & 0xffff) + 0x60, 0);
-        if (j != -1) {
-            while (cm_GetSlotState(j) == 0)
+            cm_BeginFieldBlock((char *)v, v->netId);
+            cm_AddFieldDelta(4, 1, 0x5c, &u->netId);
+            cm_SendFieldDeltas();
+            if (n > 5) {
+                w = gm_TitleNumber(gm_TitleGroup(util_RandomU(2) != 0 ? u->jobId : v->jobId), 1);
+                msg4 = 2;
+                j = ((int (*)(unsigned char, int, int, unsigned short, int, unsigned char, unsigned char, unsigned char))cm_SendCreateCharacter)(8, u->netId, v->netId, n, -1, w, 0, 2);
+                while (j != -1 && cm_GetSlotState(j) == 0)
+                    sv_PumpNet();
+                ch = (INIT_CHAR *)cm_GetSlotValue(j);
+                cm_SendMoveGoods(ch->netId, -1, ai_OwnPlayer, ((util_RandomU(0x400) & 0xffff) + 0x200) * 0x20);
+                cm_BeginFieldBlock((char *)ch, ch->netId);
+                cm_AddFieldDelta(1, 1, 0xd, &msg4);
+                cm_SendFieldDeltas();
+            }
+            ((int (*)(int, int, int, int))cm_SendRelations)(u->netId, v->netId, (util_RandomU(0x20) & 0xffff) + 0x60, 0);
+            j = ((int (*)(int, int, int, int))cm_SendRelations)(v->netId, u->netId, (util_RandomU(0x20) & 0xffff) + 0x60, 0);
+            while (j != -1 && cm_GetSlotState(j) == 0)
                 sv_PumpNet();
         }
-    }
+    } while (u != 0 && v != 0);
     for (i = 8; i != 0; i--) {
         msg0 = 2;
         msg1 = (util_RandomU(9) & 0xffff) + 1;
-        w = gm_TitleNumber((util_RandomU(0xc) & 0xffff) + 1, (util_RandomU(2) & 0xffff) + 1);
-        n = util_RandomU(4);
-        h = ((int (*)(unsigned char, int, int, unsigned short, int, unsigned char, unsigned char, unsigned char))cm_SendCreateCharacter)(3, -1, -1, n + 0xf, -1, w, 0, 0);
-        if (h != -1) {
-            while (cm_GetSlotState(h) == 0)
-                sv_PumpNet();
-        }
+        h = ((int (*)(unsigned char, int, int, unsigned short, int, unsigned char, unsigned char, unsigned char))cm_SendCreateCharacter)(3, -1, -1, util_Random(4) + 0xf, -1,
+            gm_TitleNumber((util_RandomU(0xc) & 0xffff) + 1, (util_RandomU(2) & 0xffff) + 1), 0, 0);
+        while (h != -1 && cm_GetSlotState(h) == 0)
+            sv_PumpNet();
         ch = (INIT_CHAR *)cm_GetSlotValue(h);
         cm_SendMoveGoods(ch->netId, -1, ai_OwnPlayer, ((util_RandomU(0x400) & 0xffff) + 0x200) * 0x20);
         cm_BeginFieldBlock((char *)ch, ch->netId);
         cm_AddFieldDelta(1, 1, 0xd, &msg0);
         cm_AddFieldDelta(1, 1, 0x167, &msg1);
         cm_SendFieldDeltas();
-        w = gm_TitleNumber((util_RandomU(0xc) & 0xffff) + 1, (util_RandomU(2) & 0xffff) + 1);
-        n = util_RandomU(4);
-        h = ((int (*)(unsigned char, int, int, unsigned short, int, unsigned char, unsigned char, unsigned char))cm_SendCreateCharacter)(3, -1, -1, n + 0xe, -1, w, 0, 1);
-        if (h != -1) {
-            while (cm_GetSlotState(h) == 0)
-                sv_PumpNet();
-        }
+        h = ((int (*)(unsigned char, int, int, unsigned short, int, unsigned char, unsigned char, unsigned char))cm_SendCreateCharacter)(3, -1, -1, util_Random(4) + 0xe, -1,
+            gm_TitleNumber((util_RandomU(0xc) & 0xffff) + 1, (util_RandomU(2) & 0xffff) + 1), 0, 1);
+        while (h != -1 && cm_GetSlotState(h) == 0)
+            sv_PumpNet();
         ch = (INIT_CHAR *)cm_GetSlotValue(h);
         cm_SendMoveGoods(ch->netId, -1, ai_OwnPlayer, ((util_RandomU(0x400) & 0xffff) + 0x200) * 0x20);
         cm_BeginFieldBlock((char *)ch, ch->netId);

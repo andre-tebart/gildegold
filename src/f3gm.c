@@ -1462,7 +1462,7 @@ float unk_Unk4fc890(short *c);
 void unk_Unk4fd120(void);
 
 /* 0x4fc6f0, ages the health float (+0x1c) of the character c to the age (+10 = age): above the lifetime float (+0x20) by an iteration of v = (v - k) + k / v with k = +0x14 (as many times as the years over), otherwise towards the float +0x18; the change goes to 0x4c4ac0 (id, 0x1c, ..), the age to the character through 0x4c3c00 (2, 1, 10, &age). ROUGH, the number of iterations is a guess */
-void gm_AgeCharacter(char *c, unsigned age)
+void gm_AgeCharacter(char *c, unsigned short age)
 {
     float k, v, d;
     int n;
