@@ -29,9 +29,20 @@
 
 #endif
 #include "data_views.h"
+#include "ch.h"
+#include "cm.h"
+#include "d3_interface.h"
+#include "d3_io_a.h"
+#include "d3s.h"
+#include "gfx.h"
+#include "io_text.h"
+#include "mem.h"
+#include "sv.h"
+#include "tb.h"
+#include "ts_texture.h"
+#include "vfs.h"
 #define d2_OpenPicS ((int (*)(short, short, int))d2_OpenPic)  /* 0x46cb20 (K&R, int x, y): @original d2_CreatePicObj (0x46cd80, byte) was compiled against the short prototype */
 #define d2_MoveObjI ((void (*)(int, int, int))d2_MoveObj)  /* 0x46cda0 (d2.c: short x, short y): @original this unit passes the coordinates as ints (d2_CreatePicObj) */
-extern int ai_Unkfa5f04;
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 extern struct D3OBJECT *d3s_Lights[4];
