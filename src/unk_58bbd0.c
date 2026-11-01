@@ -6472,7 +6472,7 @@ void ai_Unk599240(int param_1, int param_2)
     sv_CameraFollow();
 }
 
-int unk_Unk4f4d30(); void ai_Unk5bd1f0(); void ai_Unk4c5d40(void *p); void cm_SendProofExecuted(int a, int b);
+int gv_GetGraveInfo(); void ai_Unk5bd1f0(); void ai_Unk4c5d40(void *p); void cm_SendProofExecuted(int a, int b);
 
 /* 0x5992c0, the dark-corner menu of the player's own table (1008 B, ROUGH SKELETON from the Ghidra pseudocode):
    the window "locations\Wirtshaus_DUNKLEECKE" (0x4741f0 / 0x475600 / 0x475f70 (0) / 0x52ea30 / 0x476f80); the
@@ -6516,7 +6516,7 @@ void ai_Unk5992c0(int param_1, int param_2, int param_3)
     ctl = -1;
     while (sv_RunFrame(ai_Unk5992c0, 0x677c7) != 0) {
         for (i = 0; i < 3; i++) {
-            r = unk_Unk4f4d30(*(int *)(param_3 + 0x1c + i * 4),
+            r = gv_GetGraveInfo(*(int *)(param_3 + 0x1c + i * 4),
                              (void *)((unsigned)&ai_Chars + *(unsigned short *)(param_1 + 0x27) * 0x21c),
                              &vals[i], &x, &y);
             if (r == 0) {
@@ -6629,7 +6629,7 @@ void ai_Unk5996b0(int param_1, int param_2)
     changed = 1;
     while (sv_RunFrame(ai_Unk5992c0, 0x677c7) != 0) {
         for (i = 0; i < 3; i++) {
-            r = unk_Unk4f4d30(*(int *)(param_2 + 0x1c + i * 4),
+            r = gv_GetGraveInfo(*(int *)(param_2 + 0x1c + i * 4),
                              (void *)((unsigned)&ai_Chars + *(unsigned short *)(param_1 + 0x27) * 0x21c),
                              &vals[i], &x, &y);
             if (r == 0) {

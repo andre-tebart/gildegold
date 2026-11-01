@@ -381,3 +381,5 @@
 2026-11-01T21:10:21 0x004aaae0 data ai_Unk4aaae0 -> aip_ExecAnschwaerzen by:main why:its group string aip_ExecAnschwaerzen (cm_BeginGroup / cm_EndGroup)
 2026-11-01T21:16:08 0x00505df0 func AI_505DF0 -> gm_FindPer by:main why:am.h cast macro: gm_FindChar (0x505df0, the character with the id) read as AIPER *
 2026-11-01T21:17:36 0x004aafb0 func ai_Unk4aafb0 -> ai_ExecMessage74 by:main why:execute callback of 0x49ee20 (kinds 4 / 1): sends message 0x74 from the character a->ref to p about b->ref, then p pays 1
+2026-11-01T21:19:29 0x004f4d30 func unk_Unk4f4d30 -> gv_GetGraveInfo by:main why:reads the gv_Graveyard entry (0x2d bytes) of the record id: its character, the liking, the table record's low byte
+2026-11-01T21:21:32 0x004ab080 data ai_Unk4ab080 -> ai_DecideBuyDunkleEcke by:main why:decide callback of 0x49ed90 whose execute side 0x4ab2c0 is 'buy dunkle ecke': picks the shop item (kind 0x13) and building (kind 4) to buy

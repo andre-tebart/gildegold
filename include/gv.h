@@ -252,7 +252,7 @@ int unk_Unk4f4420(char *c, unsigned k); /* 0x4f4420 */
 short * gm_FindChar(int id);                   /* 0x505df0 */
 
 void unk_Unk4f4d10(void);               /* 0x4f4d10 */
-int unk_Unk4f4d30(int id, short *a, int *v, short *c, unsigned *k);  /* 0x4f4d30 */
+int gv_GetGraveInfo(int id, short *a, int *v, short *c, unsigned *k);  /* 0x4f4d30 */
 void unk_Unk4f4970(unsigned i);              /* 0x4f4970 */
 int gm_Unk505e60(unsigned id, int again);                     /* 0x505e60 */
 float gm_Liking();                   /* 0x50c550 */

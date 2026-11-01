@@ -7848,7 +7848,7 @@ int ai_Unk49ed10(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             return 0x32;
         }
     }
-    if (ai_Unk4ab080(p, &s1, &s2) != 0) {
+    if (ai_DecideBuyDunkleEcke(p, &s1, &s2) != 0) {
         *o1 = s1;
         *o2 = s2;
         return 0x32;

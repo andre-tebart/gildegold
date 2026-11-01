@@ -82,8 +82,9 @@ typedef struct AIOBJ {                  /* 0x43 bytes, an object (table behind a
             unsigned char lvl1c;        /* 0x1c, a workshop's levels, compared with AIENTRY need1c / need20 */
             unsigned char lvl1d;        /* 0x1d */
         };
+        int recs[3];                    /* 0x1c..0x27, of a gm_Query kind 300 object in a shop: three record ids for gv_GetGraveInfo (0x4ab080 tries them in turn) */
     };
-    char pad20[0xa];
+    char pad28[2];
     int unk2a;                          /* 0x2a */
     char pad2e[8];
     unsigned char unk36;                /* 0x36 */

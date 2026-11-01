@@ -136,7 +136,7 @@ int ai_TrustedOfTwo(AIPER *p, AIPER *b, AIPER *c, int *k);                      
 int ai_TrustedOfFour(int k, AIPER *p, int *ids, int *out);                           /* 0x4aad30 */
 int ai_Unk4aaef0(struct AIPER *p, unsigned char *a, unsigned char *b);                  /* 0x4aaef0 */
 int ai_ExecMessage74(struct AIPER *p, struct AIARG *a, struct AIARG *b);                          /* 0x4aafb0 */
-int ai_Unk4ab080(struct AIPER *p, int *a, int *b);                                      /* 0x4ab080 */
+int ai_DecideBuyDunkleEcke(struct AIPER *p, struct AIARG *a, struct AIARG *b);                               /* 0x4ab080 */
 int ai_Unk4ab2c0(struct AIPER *p, int *a, int *b);                                      /* 0x4ab2c0 */
 int ai_Unk4ab3e0(int a, AIPER *p, int c, unsigned char *m, unsigned char *m2);  /* 0x4ab3e0 */
 int ai_Unk4ab6b0(AIPER *p, unsigned char *m, unsigned char *m2);                 /* 0x4ab6b0 */
