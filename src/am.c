@@ -4037,9 +4037,9 @@ int ai_Unk496b10(float *a, float *b, int i, AIPER *p, int f, AIARG *o1, AIARG *o
         dist[2] = 100.0f;
         best = 100.0f;
         bi = -1;
-        c[0] = AI_505DF0(job->unkb4);
-        c[1] = AI_505DF0(job->unkb8);
-        c[2] = AI_505DF0(job->unkbc);
+        c[0] = gm_FindPer(job->unkb4);
+        c[1] = gm_FindPer(job->unkb8);
+        c[2] = gm_FindPer(job->unkbc);
         if (c[0] && c[0] != AI_6F0468)
             dist[0] = gm_Liking(p->id, c[0]->id, 1);
         if (c[1] && c[1] != AI_6F0468)
@@ -4176,7 +4176,7 @@ int ai_Unk496e40(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
         return 9;
     }
     if (o1->kind == 7) {
-        c = AI_505DF0(o1->ref);
+        c = gm_FindPer(o1->ref);
         if (!c || c == AI_6F0468)
             return 0;
         hi2 = (int)max(lim * 0.01f, 3200.0f);
@@ -4201,7 +4201,7 @@ int ai_Unk4972d0(AIPER *p, AIARG *s1, AIARG *s2)
         return 0;
     if (s2->kind != 0x12)
         return 0;
-    c = AI_505DF0(s1->ref);
+    c = gm_FindPer(s1->ref);
     if (!c)
         return 0;
     cm_SendMoveGoods(c->netId, p->netId, ai_OwnPlayer, s2->arg);
@@ -4349,7 +4349,7 @@ int ai_Unk497660(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
             }
             return 0;
         } else if (o2->kind == 7) {
-            c = AI_505DF0(o2->ref);
+            c = gm_FindPer(o2->ref);
             if (!c)
                 return 0;
         } else
@@ -4396,7 +4396,7 @@ int ai_Unk4979d0(AIPER *p, AIARG *s1, AIARG *s2)
             return 0;
         id = bld->id;
     } else if (s2->kind == 7) {
-        AIPER *c = AI_505DF0(s2->ref);
+        AIPER *c = gm_FindPer(s2->ref);
         if (!c)
             return 0;
         id = c->netId;
@@ -5436,7 +5436,7 @@ int ai_Unk499f20(AIPER *p, AIARG *s1, AIARG *s2)
 
     if (s1->kind != 7)
         return 0;
-    c = AI_505DF0(s1->ref);
+    c = gm_FindPer(s1->ref);
     if (!c)
         return 0;
     memset(&msg, 0, sizeof(msg));
@@ -6107,12 +6107,12 @@ int ai_Unk49b380(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         return 0;
     rel = (int *)((char *)p + 0x5c);
     for (i = 3; i < 8; i++) {
-        c = AI_505DF0(rel[i]);
+        c = gm_FindPer(rel[i]);
         if (c != 0 && c->unk00a < 0x28)
             break;
     }
     for (i = 3; i < 8; i++) {
-        c = AI_505DF0(rel[i]);
+        c = gm_FindPer(rel[i]);
         if (c != 0 && c->unk00a < 0x28)
             break;
     }
@@ -6130,7 +6130,7 @@ int ai_Unk49b380(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
                 break;
         }
         if (j != 0) {
-            w = AI_505DF0(((int *)j)[0xb0 / 4]);
+            w = gm_FindPer(((int *)j)[0xb0 / 4]);
             if (w == 0)
                 return 0;
             recs[0].item = 0x167;

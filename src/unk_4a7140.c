@@ -29,6 +29,7 @@
 #define PARTNER_FLAGS_ANY 0xf00500  /* the same flags with the low byte 0, either sex (0x4a8f20; reasoned) */
 #define SUITOR_FLAGS_SEX0 0xc0140a  /* the candidate flags 0x4a91a0 passes ai_FindCandidates for a character with sex 0 (reasoned: the other sex, as PARTNER_FLAGS_SEX0) */
 #define SUITOR_FLAGS_SEX1 0xc01409  /* ditto for sex != 0 */
+#define AIPER_F1CC_DISTRUST 0x400000  /* the flags1cc bit that costs a candidate 0.2 trust in 0x4aad30 (reasoned name: its only reader) */
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 #include "cm_types.h"
 #include "ahm.h"
@@ -1993,7 +1994,7 @@ int ai_Unk4aaa10(AIPER *p, int c, unsigned char *m)
 
     if (m[0] != 7)
         return 0;
-    o = AI_505DF0(*(int *)(m + 4));
+    o = gm_FindPer(*(int *)(m + 4));
     if (o == 0)
         return 0;
     cm_BeginGroup("aip_ExecDrohen");
@@ -2070,8 +2071,18 @@ int ai_TrustedOfTwo(AIPER *p, AIPER *b, AIPER *c, int *k)
         return 0;
     return 2;
 }
-/* 0x4aad30, of the four candidates ids the one character p trusts most for district k (distance + 0x4e60b0, item
-   0x2be +0.2, flag 0x400000 -0.2); a tie is broken at random; -1 if none */
+/* 0x4aad30, of the four candidates ids the one character p trusts most for district k (liking + the office rating,
+   item 0x2be +0.2, flag AIPER_F1CC_DISTRUST -0.2); a tie is broken at random; -1 if none
+   @deep Read whole 0x4aad30..0x4aaeee against the C: the scoring loop (gm_FindChar, amt_GetOffice rate,
+   gm_Liking, item 0x2be +0.2, flags1cc 0x400000 -0.2, -1000), the best/tie loop (c[i] tested in both
+   branches as the original's second test edx), bi<0 / tie checks, the signed (r+1)%4 tie-break loop
+   (do-while with the counter decremented before the step: dec edx / test edx) all correspond; every
+   instruction between the blocks is equal. Left: the original gives each return -1 its own 'pop edi; or
+   eax,-1; pop esi; add esp,0x38; ret' copy (0x4aad55, 0x4aae6f, 0x4aaed8 plus the loop end) where VC6
+   cross-jumps ours into one block (- je X / jl X to the shared tail, + jne/jge over an inline epilogue),
+   the same epilogue-duplication quirk as ai_PokerShowdown 0x4a8190. (size: 147 vs 162 instructions,
+   explained: 146 vs 162: the original's three extra inline 'pop edi; or eax,-1; pop esi; add esp,0x38;
+   ret' return -1 copies (15 instructions) and the test edx,edx the dec placement needs) */
 
 int ai_TrustedOfFour(int k, AIPER *p, int *ids, int *out)
 {
@@ -2079,21 +2090,20 @@ int ai_TrustedOfFour(int k, AIPER *p, int *ids, int *out)
     AIPER *c[4];
     G10DIST info;
     float f, best;
-    int tie, bi, i;
-    unsigned int r;
+    int tie, bi, i, r;
 
     *out = 0;
     if (amt_GetOfficeI(k, &info) == 0)
         return -1;
     for (i = 0; i < 4; i++) {
-        c[i] = AI_505DF0(ids[i]);
+        c[i] = gm_FindPer(ids[i]);
         if (c[i] == 0 || amt_GetOfficeRate(c[i], (unsigned char)info.lvl, &f) == 0) {
             sc[i] = -1000.0f;
         } else {
             sc[i] = gm_Liking(c[i]->id, p->id, 1) + f;
             if (ai_InventoryHas(c[i], 0x2be) != 0)
                 sc[i] += 0.2f;
-            if ((c[i]->flags1cc & 0x400000) != 0)
+            if ((c[i]->flags1cc & AIPER_F1CC_DISTRUST) != 0)
                 sc[i] -= 0.2f;
         }
     }
@@ -2101,14 +2111,12 @@ int ai_TrustedOfFour(int k, AIPER *p, int *ids, int *out)
     tie = 0;
     bi = -1;
     for (i = 0; i < 4; i++) {
-        if (c[i] != 0) {
-            if (sc[i] > best) {
-                best = sc[i];
-                tie = 0;
-                bi = i;
-            } else if (c[i] != 0 && best == sc[i]) {
-                tie = 1;
-            }
+        if (c[i] != 0 && sc[i] > best) {
+            best = sc[i];
+            tie = 0;
+            bi = i;
+        } else if (c[i] != 0 && best == sc[i]) {
+            tie = 1;
         }
     }
     if (bi < 0)
@@ -2116,14 +2124,16 @@ int ai_TrustedOfFour(int k, AIPER *p, int *ids, int *out)
     if (!tie)
         return c[bi]->netId;
     r = util_RandomU(4);
-    for (i = 4; i != 0; i--) {
+    i = 4;
+    do {
         if (sc[r] == best && c[r] != 0) {
-            if ((int)r >= 0)
+            if (r >= 0)
                 return c[r]->netId;
             return -1;
         }
+        i--;
         r = (r + 1) % 4;
-    }
+    } while (i != 0);
     return -1;
 }
 /* 0x4aaef0, decide callback: a building of p (type with cap > 1) with a free workplace object (lists 0x120 / 300)
@@ -2364,18 +2374,18 @@ int ai_Unk4ab6b0(AIPER *p, unsigned char *m, unsigned char *m2)
     cost = *(int *)(m + 0x10);
     if (m2 == 0 || p == 0)
         return 0;
-    o = AI_505DF0(*(int *)(m + 4));
+    o = gm_FindPer(*(int *)(m + 4));
     if (o == 0)
         return 0;
-    who[0] = AI_505DF0(*(int *)(m + 0xc));
+    who[0] = gm_FindPer(*(int *)(m + 0xc));
     if (who[0] == 0)
         return 0;
     n = 1;
-    if ((who[n] = AI_505DF0(*(int *)(m + 8))) == 0)
+    if ((who[n] = gm_FindPer(*(int *)(m + 8))) == 0)
         n++;
-    if ((who[n] = AI_505DF0(*(int *)(m2 + 0xc))) == 0)
+    if ((who[n] = gm_FindPer(*(int *)(m2 + 0xc))) == 0)
         n++;
-    if ((who[n] = AI_505DF0(*(int *)(m2 + 8))) == 0)
+    if ((who[n] = gm_FindPer(*(int *)(m2 + 8))) == 0)
         n++;
     gm_SendMoneyDelta(p->netId, -cost);
     cm_SendSetField(p->netId, 0x1cc, 4, 8, 0);
@@ -2587,7 +2597,7 @@ int ai_Unk4abe60(AIPER *p, unsigned char *m)
 {
     AIPER *o;
 
-    o = AI_505DF0(*(int *)(m + 4));
+    o = gm_FindPer(*(int *)(m + 4));
     if (o == 0)
         return 0;
     cm_SendSetField(p->netId, 0x1cc, 4, 0x20, 0);

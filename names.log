@@ -379,3 +379,4 @@
 2026-11-01T21:07:30 0x004aa800 data ai_DecideCharAndThird -> ai_DecideCharPair by:main why:a clearer name: two characters, the second far from both
 2026-11-01T21:09:04 0x004aa940 data ai_Unk4aa940 -> aip_ExecPamphlet by:main why:its group string aip_ExecPamphlet (cm_BeginGroup / cm_EndGroup)
 2026-11-01T21:10:21 0x004aaae0 data ai_Unk4aaae0 -> aip_ExecAnschwaerzen by:main why:its group string aip_ExecAnschwaerzen (cm_BeginGroup / cm_EndGroup)
+2026-11-01T21:16:08 0x00505df0 func AI_505DF0 -> gm_FindPer by:main why:am.h cast macro: gm_FindChar (0x505df0, the character with the id) read as AIPER *

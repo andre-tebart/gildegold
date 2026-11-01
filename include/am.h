@@ -234,7 +234,7 @@ void cm_SendMoneyDelta(int a, int b);                                           
 int amt_GetOfficeApplicants(int k, int n, char **out);                                   /* 0x4e76b0 */
 int ord_DispatchOrder(int id, char *c, int *m);                                     /* 0x4f81c0 */
 unsigned *gm_Unk503ee0(unsigned *out, int n);                                            /* 0x503ee0, 6 bytes returned through out */
-#define AI_505DF0(id) ((AIPER *)gm_FindChar(id))  /* ai.h: returns AICHAR * */
+#define gm_FindPer(id) ((AIPER *)gm_FindChar(id))  /* ai.h: returns AICHAR * */
 int gm_Unk509ee0(char *c, char p);                                    /* 0x509ee0 */
 int gm_GetWorth(unsigned short id);                                            /* 0x50a640 */
 /* ai.h declares he_FindEvent with five arguments; 0x496b10 calls it with three */
