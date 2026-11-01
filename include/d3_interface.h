@@ -66,9 +66,7 @@ extern unsigned char d3if_Unk6339db;    /* 0x6339db */
 #ifndef DATA_VIEWS_H
 extern unsigned int d3if_Unk6339dc;     /* 0x6339dc, counts the scene switches */
 #endif
-#ifndef DATA_VIEWS_H
 extern int d3if_Unkfba944;          /* 0xfba944 */
-#endif
 
 void d3_AddChild(D3OBJECT *parent, D3OBJECT *obj);                                      /* 0x43cb80, d3_engine.c */
 int d3io_FindStock(char *name);                                                           /* 0x44c5d0 */

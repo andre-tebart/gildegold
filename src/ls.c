@@ -73,6 +73,7 @@ int ls_SpareInt = 0;  /* 0x6f1bcc */
 unsigned char ls_SaveSlot = 0;  /* 0x6f1c38, the slot the save header records */
 /* ai_Unk76fa24: view of cm_SaveAcks (tools/data_views.py) */
 int ai_NextEventId = 0;  /* 0x6f2618 */
+int ai_Unk6f261c = 0;  /* 0x6f261c, the highest used index of he_Events (own object: ai_NextEventId is a 4-byte int) */
 extern int ai_NextCharNumber, ai_NextPlayerNumber;   /* 0x6f1bb8, 0x6f1bbc, 0x6f1bc0 */
 /* ls_RefTargets: view of cm_SendStates (tools/data_views.py) */
 int gv_WriteGraveyard();                     /* 0x4f28d0 */

@@ -3217,7 +3217,8 @@ char sv_Unk528660(char *o, int *p)
     return p[0] < 0x20;
 }
 
-extern int d3_QuadTree, ai_Unk623864, ai_Unk623868, ai_Unk62386c, ai_Unk62387c, ai_Unk623888, ai_Unk62388c, ai_Unk623890, ai_Unk623894, ai_Unk631078;  /* 0x6f1c28, 0x623864, 0x623868, 0x62386c, 0x62387c, 0x623888, 0x62388c, 0x623890, 0x623894, 0x631078 */
+extern int d3_QuadTree, ai_Unk623864, ai_Unk623868, ai_Unk62387c, ai_Unk623888, ai_Unk62388c, ai_Unk623890, ai_Unk623894, ai_Unk631078;  /* 0x6f1c28, 0x623864, 0x623868, 0x62387c, 0x623888, 0x62388c, 0x623890, 0x623894, 0x631078 */
+extern int ai_Unk62386c[4];  /* 0x62386c */
 
 int d2_WinCreateSlider();                     /* 0x46bf10 */
 void d2_SetObjFont();                     /* 0x4760b0 */
@@ -3345,16 +3346,16 @@ void sv_Unk528860(unsigned char *o)
         if ((k == 1 || k == 2 || k == 4 || k == 7 || k == 8 || *b == 0x10 || *b == 0x1e || *b == 0x1f || *b == 0x1d) && *b != 5) {
             if (ai_FallbackBuilding == 0)
                 ai_Unk62388c = sv_Unk528800(0, 0xa6, (int)"Transport");
-            ai_Unk62386c = -1;
+            ai_Unk62386c[0] = -1;
             return;
         }
-        ai_Unk62386c = -1;
+        ai_Unk62386c[0] = -1;
         ai_Unk62388c = -1;
         return;
     }
     ai_Unk623894 = -1;
     ai_Unk62388c = -1;
-    ai_Unk62386c = -1;
+    ai_Unk62386c[0] = -1;
 }
 /* 0x528b80, opens the info panel for the item p (not the ids 0x92 .. 0x97 and 0x2db): the title text with the item's name (0x9a8 + 2 * id; the selected building's name and owner before it), the image (0xdf + id), and for items of the class 2 / 6 the owner's buttons
    (0x528800: 0x8c at 0x623894 when the item may be changed (0x508cc0), 0xa6 at 0x623888) */
@@ -3564,7 +3565,7 @@ void sv_Unk529380(void)
     b = (char *)sv_SelectedObject;
     if (b == 0 || ai_Unk623868 == -1 || ai_Unk623864 == -1) {
         if (ai_Unk7662c0 == 0) {
-            q = &ai_Unk62386c;
+            q = ai_Unk62386c;
             for (i = 0; i < 4; i++, q++)
                 if (*q != -1) {
                     d2_RemoveObj(*q);
@@ -3616,10 +3617,10 @@ void sv_Unk529380(void)
             d = gm_MinutesBetween(job + 0x44, ai_Time);
             prog = (float)d / (float)a;
         } else if (!(fl & 0x80)) {
-            if (ai_Unk62386c == -1)
+            if (ai_Unk62386c[0] == -1)
                 return;
-            d2_RemoveObj(ai_Unk62386c);
-            ai_Unk62386c = -1;
+            d2_RemoveObj(ai_Unk62386c[0]);
+            ai_Unk62386c[0] = -1;
             return;
         } else {
             job = (char *)he_FindEvent(2, 0, 0x1f, 3, *(int *)(b + 1));
@@ -3638,9 +3639,9 @@ void sv_Unk529380(void)
         prog = (float)d / (float)a;
     }
     *(float *)(d2_Objs + 0x1e4 + ai_Unk623864 * 0x2ec) = prog;
-    if (ai_Unk62386c == -1 && (fl & 1) != 0) {
+    if (ai_Unk62386c[0] == -1 && (fl & 1) != 0) {
         d2_SetForm(sv_PanelForm, 0);
-        ai_Unk62386c = d2_WinOpenPic(((*(short *)(ai_Unkf8f128 + d2_LastWindow * 0x3c4) - 0x30) >> 1) + 0x2f, 0x4c, 0x4ff, d2_LastWindow);
+        ai_Unk62386c[0] = d2_WinOpenPic(((*(short *)(ai_Unkf8f128 + d2_LastWindow * 0x3c4) - 0x30) >> 1) + 0x2f, 0x4c, 0x4ff, d2_LastWindow);
     }
 }
 /* 0x529fb0, closes the info panel (0x623860): frees the widgets 0x62386c .. (4 ids), destroys the form and clears all the panel's widget ids (0x623864 .. 0x623898) */
@@ -3650,14 +3651,14 @@ void sv_Unk529fb0(void)
     int *q;
 
     if (sv_PanelForm != -1) {
-        q = &ai_Unk62386c;
+        q = ai_Unk62386c;
         do {
             if (*q != -1) {
                 d2_RemoveObj(*q);
                 *q = -1;
             }
             q++;
-        } while ((int)q < (int)((unsigned)&ai_Unk62386c + 0x10));
+        } while ((int)q < (int)((unsigned)ai_Unk62386c + 0x10));
         d2_CloseView(sv_PanelForm);
         sv_PanelForm = -1;
         ai_Unk623864 = -1;
@@ -5034,17 +5035,17 @@ void sv_Unk52c4e0(int o, int b, char *name)
         } while ((int)p < ((unsigned)&sv_BubbleObjects + 0x4300));
         i = -1;
         j = 0;
-        p = (int *)((unsigned)&sv_StatusText + 0x84);
+        p = (int *)((unsigned)&sv_Bubbles + 0x4);
         do {
             if (*p < SV_I((unsigned)&ai_ClockMs))
                 i = j;
             p += 0x43;
             j++;
-        } while ((int)p < ((unsigned)((unsigned)sv_StatusText + 0x88) + 0x42fc));
+        } while ((int)p < ((unsigned)&sv_Bubbles + 0x4304));
         if (i != -1) {
 lfound:
-            e = (int *)(i * 0x10c + ((unsigned)&sv_StatusText + 0x80));
-            ((int *)((unsigned)&sv_StatusText + 0x84))[i * 0x43] = SV_I((unsigned)&ai_ClockMs);
+            e = (int *)(i * 0x10c + (unsigned)&sv_Bubbles);
+            ((int *)((unsigned)&sv_Bubbles + 0x4))[i * 0x43] = SV_I((unsigned)&ai_ClockMs);
             ((int *)(unsigned)&sv_BubbleObjects)[i * 0x43] = o;
             *e = b;
             *(int *)(o + 0x228) = (int)sv_ReleaseBubble;
@@ -7443,7 +7444,7 @@ int sv_PlayerBarForm = -1;  /* 0x62385c, the player bar's form, -1 = closed */
 int sv_PanelForm = -1;  /* 0x623860 */
 int ai_Unk623864 = -1;  /* 0x623864 */
 int ai_Unk623868 = -1;  /* 0x623868 */
-int ai_Unk62386c = -1;  /* 0x62386c */
+int ai_Unk62386c[4] = {-1, -1, -1, -1};  /* 0x62386c, the info panel's 4 widget ids (freed by one loop: 0x62386c .. 0x62387c) */
 int ai_Unk62387c = -1;  /* 0x62387c */
 int ai_Unk623880 = -1;  /* 0x623880 */
 int ai_Unk623884 = -1;  /* 0x623884 */
@@ -7561,8 +7562,10 @@ int ai_Unk760614 = 0;  /* 0x760614 */
 int d3t_Snow = 0;  /* 0x76061c */
 int d3_SkyLayers[6] = {0};  /* 0x760620, the sky layer handles: sv creates 0 .. 2, sv and main_EndGame delete all six */
 SVPLATE sv_NamePlates[0x20] = {0};  /* 0x760640, the name plate records (200 bytes each) */
-char sv_StatusText[136] = {0};  /* 0x761f40, the status line text */
-int sv_BubbleObjects[4286] = {0};  /* 0x761fc8, the object of each speech bubble ( */
+char sv_StatusText[128] = {0};  /* 0x761f40, the status line text */
+int sv_Bubbles[0x40][0x43] = {0};  /* 0x761fc0, the 64 speech bubble records (0x10c bytes): +0 the bubble, +4 its time
+                                      stamp (ai_ClockMs), +8 its object (sv_BubbleObjects), +0xc the name */
+/* sv_BubbleObjects: view of sv_Bubbles (+0x8) */
 int ai_Unk7662c0 = 0;  /* 0x7662c0 */
 int ai_Unk7662e0[15] = {0};  /* 0x7662e0, 15 widget ids */
 int cm_Bombs[0x40] = {0};  /* 0x935c00, cm's 32 bomb records (object, time), cm.h */

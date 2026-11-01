@@ -829,7 +829,7 @@ int dd_LockBits = 0;  /* 0x1464fb4 */
 unsigned int dd_Unk1464fb8 = 0;  /* 0x1464fb8 */
 unsigned char dd_BShift = 0;  /* 0x1464fbc */
 unsigned char dd_BBits = {0}; /* 0x1464fbd */
-/* dd_Unk1464fc0: view of dd_BBits (tools/data_views.py) */
+int dd_Unk1464fc0 = 0;  /* 0x1464fc0 (own object: dd_BBits is one byte) */
 unsigned char dd_BLoss = 0;  /* 0x1464fc4 */
 char dd_Unk1464fe0[0x100] = {0};  /* 0x1464fe0 */
 HBITMAP dd_Bitmap = {0};  /* 0x14650e0 */

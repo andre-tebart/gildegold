@@ -101,6 +101,7 @@ extern int ai_NextCrimeId;                                    /* 0x6f1b88 */
 extern int ls_SpareInt;                                    /* 0x6f1bcc */
 extern unsigned char ls_SaveSlot;                           /* 0x6f1c38 */
 extern int ai_NextEventId;                                    /* 0x6f2618 */
+extern int ai_Unk6f261c;                                      /* 0x6f261c, the highest used index of he_Events */
 extern int ai_Unk6f2620;                                    /* 0x6f2620 */
 extern unsigned char he_Events[339968];                     /* 0x6fab40 */
 extern char * he_QuickList[10921];                          /* 0x74db40 */

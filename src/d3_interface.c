@@ -1660,5 +1660,5 @@ int d3if_CamSeite = 0;  /* 0x6338c0 */
 /* d3if_Unk6339dc: view of ai_Unk6339db (tools/data_views.py) */
 int d3if_Unk633dcc = 0;  /* 0x633dcc */
 char d3if_ParList[788] = {0};  /* 0xfb95e0 */
-/* d3if_Unkfba944: view of d3_AnimPath (tools/data_views.py) */
+int d3if_Unkfba944 = 0;  /* 0xfba944 (own object: d3_AnimPath is a 4-byte pointer) */
 D3IFTRIPLE d3if_Fog[6] = {0}; /* 0xfba960 */

@@ -197,9 +197,7 @@ extern int d2_PaletteDepth;            /* 0xf8a64c */
 extern short d2_MouseX;             /* 0xf8a674, mouse x */
 extern short d2_MouseY;             /* 0xf8a676, mouse y */
 extern char d2_GfxPath[];         /* 0xfa5f20 */
-#ifndef DATA_VIEWS_H
 extern int d2_PointerX;            /* 0xfa5f08, pointer x */
-#endif
 extern int d2_PointerY;            /* 0xfa5f0c, pointer y */
 extern int d2_Unk63120c;            /* 0x63120c, current page, = dd_Page (dd_vesa.h); d2.c uses dd_Page */
 extern int d2_PointerObj;            /* 0x5fe710, focused object */

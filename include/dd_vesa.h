@@ -112,9 +112,7 @@ extern int dd_LockBits;                         /* 0x1464fb4 */
 extern unsigned int dd_Unk1464fb8;              /* 0x1464fb8 */
 extern unsigned char dd_BShift;                 /* 0x1464fbc */
 extern unsigned char dd_BBits;                  /* 0x1464fbd */
-#ifndef DATA_VIEWS_H
 extern int dd_Unk1464fc0;                       /* 0x1464fc0 */
-#endif
 extern unsigned char dd_BLoss;                  /* 0x1464fc4 */
 extern HBITMAP dd_Bitmap;                       /* 0x14650e0 */
 extern unsigned char dd_RLoss;                  /* 0x14650e4 */

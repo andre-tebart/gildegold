@@ -43,13 +43,13 @@ char ai_DataPath[608] = {0};  /* 0x75dca0, the data path */
 G6RING ai_Unkf83c20[32] = {0};  /* 0xf83c20 */
 char ai_Unkf83da0[260] = {0};  /* 0xf83da0, the ini file of the actions */
 int ai_Unkf83ea4 = 0;  /* 0xf83ea4, the depth of the evaluation stack */
-AIACT ai_Unkf83ec0[36] = {0};  /* 0xf83ec0, the registered actions */
+AIACT ai_Unkf83ec0[0x49] = {0};  /* 0xf83ec0, the registered actions (0x49 of them: the init clears 0x49 * 0x94 bytes) */
 /* ai_Unkf84c40: view of ai_Unkf83ec0 (tools/data_views.py) */
 /* ai_Unkf84c60: view of ai_Unkf83ec0 (tools/data_views.py) */
 /* ai_Unkf84cd4: view of ai_Unkf83ec0 (tools/data_views.py) */
 /* ai_Unkf84cf4: view of ai_Unkf83ec0 (tools/data_views.py) */
-float ai_Unkf86894 = 0;  /* 0xf86894 */
-float ai_Unkf868b4 = 0;  /* 0xf868b4 */
+/* ai_Unkf86894: view of ai_Unkf83ec0 (+0x29d4, in the last action record) */
+/* ai_Unkf868b4: view of ai_Unkf83ec0 (+0x29f4, in the last action record) */
 int ai_Unkf86900[73] = {0};  /* 0xf86900, the actions being evaluated */
 
 #include "time_view.h"

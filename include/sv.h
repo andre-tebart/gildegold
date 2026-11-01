@@ -176,7 +176,7 @@ extern int sv_PlayerBarForm;                                /* 0x62385c */
 extern int sv_PanelForm;                                    /* 0x623860 */
 extern int ai_Unk623864;                                    /* 0x623864 */
 extern int ai_Unk623868;                                    /* 0x623868 */
-extern int ai_Unk62386c;                                    /* 0x62386c */
+extern int ai_Unk62386c[4];                                 /* 0x62386c, the info panel's 4 widget ids */
 extern int ai_Unk62387c;                                    /* 0x62387c */
 extern int ai_Unk623880;                                    /* 0x623880 */
 extern int ai_Unk623884;                                    /* 0x623884 */
@@ -287,8 +287,11 @@ extern int ai_Unk760610;                                    /* 0x760610 */
 extern int ai_Unk760614;                                    /* 0x760614 */
 extern int d3t_Snow;                                    /* 0x76061c */
 extern int d3_SkyLayers[6];                                 /* 0x760620, the sky layer handles (sv creates 0 .. 2) */
-extern char sv_StatusText[136];                             /* 0x761f40 */
-extern int sv_BubbleObjects[4286];                          /* 0x761fc8 */
+extern char sv_StatusText[128];                             /* 0x761f40 */
+extern int sv_Bubbles[0x40][0x43];                          /* 0x761fc0, the 64 speech bubble records (0x10c bytes) */
+#ifndef DATA_VIEWS_H
+extern int sv_BubbleObjects[4286];                          /* 0x761fc8, the object field (+8) of each bubble record */
+#endif
 extern int ai_Unk7662c0;                                    /* 0x7662c0 */
 extern int ai_Unk7662e0[15];                                /* 0x7662e0 */
 extern int cm_Bombs[0x40];                                  /* 0x935c00 */

@@ -46,6 +46,8 @@
 #define ai_Unkf84c60             (*(float (*)[8])((char *)&ai_Unkf83ec0 + 0xda0))  /* 0xf84c60 */
 #define ai_Unkf84cd4             (*(float (*)[8])((char *)&ai_Unkf83ec0 + 0xe14))  /* 0xf84cd4 */
 #define ai_Unkf84cf4             (*(float (*)[8])((char *)&ai_Unkf83ec0 + 0xe34))  /* 0xf84cf4 */
+#define ai_Unkf86894             (*(float *)((char *)&ai_Unkf83ec0 + 0x29d4))  /* 0xf86894 */
+#define ai_Unkf868b4             (*(float *)((char *)&ai_Unkf83ec0 + 0x29f4))  /* 0xf868b4 */
 
 /* cm_SendStates */
 #define ls_RefTargets            (*(int (*)[17574])((char *)&cm_SendStates + 0x6))  /* 0xf31166 */
@@ -71,9 +73,6 @@
 
 /* cm_SaveAcks */
 #define ai_Unk76fa24             (*(char (*)[60])((char *)&cm_SaveAcks + 0x4))  /* 0x76fa24 */
-
-/* ai_NextEventId */
-#define ai_Unk6f261c             (*(int *)((char *)&ai_NextEventId + 0x4))  /* 0x6f261c */
 
 /* d3_ScrollPool */
 #define d3_ScrollSpeed           (*(float (*)[15])((char *)&d3_ScrollPool + 0x4))  /* 0x5ebc24 */
@@ -127,17 +126,11 @@
 /* ai_GameState */
 #define sv_MenuOpen              (*(unsigned char *)((char *)&ai_GameState + 0x2))  /* 0x6f25ae */
 
-/* d3_AnimPath */
-#define d3if_Unkfba944           (*(int *)((char *)&d3_AnimPath + 0x4))  /* 0xfba944 */
-
 /* d3d_Config */
 #define d3_ShadowMode            (*(struct D3BITS3 *)((char *)&d3d_Config + 0x1))  /* 0xfe7671 */
 
 /* dd_GBits */
 #define dd_GLoss                 (*(unsigned char *)((char *)&dd_GBits + 0x1))  /* 0x1463581 */
-
-/* dd_BBits */
-#define dd_Unk1464fc0            (*(int *)((char *)&dd_BBits + 0x3))  /* 0x1464fc0 */
 
 /* sv_ViewPos / sv_ViewRot (the stored camera view, read and copied as ints by the units that save it) */
 #define sv_ViewPosX              (*(int *)((char *)&sv_ViewPos + 0x0))  /* 0x75fb80 */
@@ -165,7 +158,7 @@
 /* ai_Unk6f0454 */
 #define ai_Unk6f0455             (*(char (*)[2])((char *)&ai_Unk6f0454 + 0x1))  /* 0x6f0455 */
 
-/* ai_Unkfa5f04 */
-#define d2_PointerX              (*(int *)((char *)&ai_Unkfa5f04 + 0x4))  /* 0xfa5f08 */
+/* sv_Bubbles */
+#define sv_BubbleObjects         (*(int (*)[4286])((char *)&sv_Bubbles + 0x8))  /* 0x761fc8 */
 
 #endif

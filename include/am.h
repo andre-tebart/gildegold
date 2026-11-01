@@ -540,8 +540,10 @@ int ai_Unk48f010(int a, AIPX *p, int b, AIARGX *o1, AIARGX *o2);         /* 0x48
 int ai_Unk48f1e0(AIPX *p, AIARGX *s1, AIARGX *s2);                       /* 0x48f1e0 */
 
 extern unsigned short ai_PlayerId;     /* 0x6f25b8 */
+#ifndef DATA_VIEWS_H
 extern float ai_Unkf86894;              /* 0xf86894 */
 extern float ai_Unkf868b4;              /* 0xf868b4 */
+#endif
 
 int ai_Unk48f250(AIPX *p, AIBLD **out);                                         /* 0x48f250 */
 int ai_Unk48f2b0(int a, AIPX *p, int b, AIARG *o1, AIARG *o2);                  /* 0x48f2b0 */
