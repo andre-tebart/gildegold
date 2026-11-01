@@ -231,7 +231,7 @@ exe	0x0040eaa0	ocmd_DeleteRain	ecmd	byte	readable
 exe	0x0040eac0	ocmd_ParticleCB	ecmd	byte	readable		
 exe	0x0040ec70	ocmd_CreateParticle	ecmd	byte	readable		
 exe	0x0040edc0	ocmd_KillParticle	ecmd	byte	readable		
-exe	0x0040ee10	ocmd_SetCameraToDummy	ecmd	byte	draft	deep	
+exe	0x0040ee10	ocmd_SetCameraToDummy	ecmd	byte	readable		
 exe	0x0040eea0	ocmd_StopCameraFlight	ecmd	byte	readable		
 exe	0x0040eec0	ocmd_RenameObject	ecmd	byte	readable		
 exe	0x0040eef0	ocmd_SetBlocked	ecmd	byte	readable		
@@ -772,7 +772,7 @@ exe	0x0043ce10	d3_InitSurf	d3_engine	byte	readable
 exe	0x0043ce60	d3_InitObject	d3_engine	shape	draft	deep	
 exe	0x0043cfb0	d3_AddObjectDrawData	d3_engine	byte	readable		
 exe	0x0043d0e0	d3_Unlink	d3_engine	byte	readable		
-exe	0x0043d180	d3_CloneObject	d3_engine	shape	draft	deep	byte+draft -> shape+draft at 8ca01bc: ai.h names AIBLD.smokeEffect (0x95) and AIJOB.argc8 (0xc8) out of their pads for sv_UpdateChimneySmoke (typed fields instead of raw offsets). d3_CloneObject uses neither; its byte match is a VC6 declaration-set tie-break: a single unused 'typedef int AIDUMMYX;' inserted at line 30 of HEAD's ai.h drops it to draft, so the match was no evidence of the original's source. Left: one swapped mov edx,[ebp-8] (order)
+exe	0x0043d180	d3_CloneObject	d3_engine	byte	draft	deep	
 exe	0x0043d430	d3_SetObjectAlpha	d3_engine	shape	readable	deep	
 exe	0x0043d630	d3_SetAlphaCB	d3_engine	byte	readable		
 exe	0x0043d690	d3_SetAlpha	d3_engine	byte	readable		
@@ -3106,7 +3106,7 @@ exe	0x005087f0	gm_ItemPrice	f3gm	draft	draft
 exe	0x005089c0	gm_GoodsPrice	f3gm	byte	draft		
 exe	0x00508a20	gm_HealthFactor	f3gm	byte	readable		
 exe	0x00508a80	gm_FormatAmount	f3gm	draft	draft		
-exe	0x00508cc0	gm_Unk508cc0	f3gm	draft	draft		
+exe	0x00508cc0	gm_ListObjectsAfter	f3gm	draft	readable		
 exe	0x00508d70	gm_BuildingLevel	f3gm	byte	draft		
 exe	0x00508d80	gm_BuildingBalance	f3gm	draft	draft		
 exe	0x00509060	gm_Unk509060	f3gm	byte	draft		
@@ -3130,7 +3130,7 @@ exe	0x00509ee0	gm_Unk509ee0	f3gm	draft	draft
 exe	0x00509f20	gm_Unk509f20	f3gm	draft	draft		
 exe	0x00509f80	gm_Unk509f80	f3gm	draft	draft		
 exe	0x00509ff0	gm_ObjectOwnerChar	f3gm	byte	draft		
-exe	0x0050a050	gm_Unk50a050	f3gm	byte	draft		
+exe	0x0050a050	gm_ObjectBuildingOwner	f3gm	byte	draft		
 exe	0x0050a0b0	gm_Unk50a0b0	f3gm	byte	draft		
 exe	0x0050a0f0	gm_Unk50a0f0	f3gm	draft	draft		
 exe	0x0050a150	gm_Unk50a150	f3gm	byte	draft		
@@ -3337,26 +3337,26 @@ exe	0x00525a80	sv_SetLampRamp	sv	byte	draft
 exe	0x00525ad0	sv_UpdateSkyPhase	sv	shape	readable		
 exe	0x00525dd0	sv_PlaceCamera	sv	byte	readable		
 exe	0x00525ee0	sv_EaseCameraHeight	sv	byte	readable		
-exe	0x00525ff0	sv_Unk525ff0	sv	draft	draft		
+exe	0x00525ff0	sv_BorderCameraView	sv	byte	readable		
 exe	0x005263a0	sv_ScrollCamera	sv	draft	readable	deep	
 exe	0x00526cf0	sv_MouseCamera	sv	draft	readable	deep	
-exe	0x00527640	sv_Unk527640	sv	draft	draft		
+exe	0x00527640	sv_UpdateCamera	sv	byte	readable		
 exe	0x00527840	sv_FlyCameraToObject	sv	shape	readable		
 exe	0x00527bb0	sv_CameraToObject	sv	shape	readable		
 exe	0x00527e90	sv_FlyCameraToModel	sv	draft	readable	deep	
 exe	0x00528140	sv_Unk528140	sv	byte	draft		
-exe	0x00528180	sv_Unk528180	sv	draft	draft		
-exe	0x00528290	sv_Unk528290	sv	byte	draft		
+exe	0x00528180	sv_CreateBannerCB	sv	byte	readable		
+exe	0x00528290	sv_ColourBannerCB	sv	byte	draft		
 exe	0x005282f0	sv_Unk5282f0	sv	byte	draft		
-exe	0x00528390	sv_Unk528390	sv	draft	draft		
-exe	0x00528490	sv_Unk528490	sv	draft	draft		
+exe	0x00528390	sv_ColourBanners	sv	byte	readable		
+exe	0x00528490	sv_UpdateChimneySmoke	sv	draft	readable	deep	
 exe	0x00528660	sv_Unk528660	sv	byte	draft		
 exe	0x005286a0	sv_Unk5286a0	sv	byte	draft		
 exe	0x00528770	sv_Unk528770	sv	byte	draft		
-exe	0x00528800	sv_Unk528800	sv	byte	draft		
-exe	0x00528860	sv_Unk528860	sv	draft	draft		
-exe	0x00528b80	sv_Unk528b80	sv	draft	draft		
-exe	0x00528d90	sv_Unk528d90	sv	draft	draft		
+exe	0x00528800	sv_AddPanelButton	sv	byte	draft		
+exe	0x00528860	sv_OpenBuildingPanel	sv	draft	readable	deep	
+exe	0x00528b80	sv_OpenItemPanel	sv	byte	readable		
+exe	0x00528d90	sv_OpenCartPanel	sv	byte	readable		
 exe	0x00528ee0	sv_Unk528ee0	sv	draft	draft		
 exe	0x005290f0	sv_Unk5290f0	sv	draft	draft		
 exe	0x00529380	sv_Unk529380	sv	draft	draft		
