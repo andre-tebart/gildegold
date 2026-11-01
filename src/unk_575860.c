@@ -9250,8 +9250,8 @@ int ai_Unk588bb0(char *s)
     _strupr(buf);
     sprintf(buf + 0x88, (char *)(unsigned)&full_data_62a9cc, buf + 8);
     v = txt_FindKey(buf + 0x94);
-    if (v == -1 || txt_Ptrs[v] == 0)
-        return 0;
+    if (v == -1)
+        return v;   /* -1: no window (the original returns txt_FindKey's -1, 0x588c06; 0 would be window 0) */
     win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62a9b4);
     d2_CentreViewWindows(win);
     d2_SetForm(0, 1);
