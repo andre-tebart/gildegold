@@ -54,7 +54,7 @@ typedef struct G16LOC {                 /* 0x114 bytes, snd_LocationTracks[]: a 
     char pad113;
 } G16LOC;
 
-typedef struct G16TRACKS {              /* 0x24c bytes, ai_Unk602d70[]: tracks by kind / room / season */
+typedef struct G16TRACKS {              /* 0x24c bytes, snd_BuildingTracks[]: tracks by kind / room / season */
     unsigned int kind;                  /* 0x00, 0 ends */
     unsigned int room;                  /* 0x04, 0: any */
     int season;                         /* 0x08, -1: any */
@@ -113,11 +113,11 @@ extern int snd_VoiceBankClick;          /* 0x6f0cc0, voice bank: click comments 
 extern int snd_VoiceBankNoise;          /* 0x6f0cc4, voice bank: click noises */
 extern int snd_VoiceBankGreeting;       /* 0x6f0ccc, voice bank: greeting */
 extern G16LOC snd_LocationTracks[];           /* 0x6094d0 */
-extern G16TRACKS ai_Unk602d70[];        /* 0x602d70 */
+extern G16TRACKS snd_BuildingTracks[];        /* 0x602d70 */
 extern char *ai_FallbackBuilding;        /* 0x6f230c, the second current building, used when 0x6f2308 is 0 (sv.c defines char *) */
 extern unsigned short ai_PlayerId;      /* 0x6f25b8, the player (as am.h / cm.h / gv.h declare it) */
 extern G16TRACKHANDLES snd_TrackHandles; /* 0x6f0b6c, the music track and its copy */
-extern char ai_Unk6f0a60[];             /* 0x6f0a60, a debug text */
+extern char snd_DebugText[];             /* 0x6f0a60, a debug text */
 extern char snd_TrackText[];             /* 0x6f0760, a debug text */
 extern char snd_LastTrack[];             /* 0x6f0ba8, the outdoor track played last */
 extern G16AMB ai_Unk602bd8[][5];        /* 0x602bd8, per season: birds, crickets, chickens, horses, dogs */
