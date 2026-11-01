@@ -56,6 +56,12 @@ void gm_ChangeBuildingState(unsigned char *b, int d);  /* 0x50cad0 */
 int gm_ListWorkers(unsigned char *b, int *out);  /* 0x502eb0, the worker lists of the building b (out[1 ..], out[0x19 ..]); returns their number */
 int gm_TitleNumberGroup(int n);  /* 0x504350, the group of the title number n */
 int gm_HasBuilding(int p);  /* 0x5049c0 */
+void gm_EndDayIncomes(unsigned flags);  /* 0x4fabe0, the end of the day for the income histories */
+void gm_DailyCharacters(void);  /* 0x4fc920, the daily step of all characters */
+void gm_UpdatePlayers(void);  /* 0x4feb30 */
+void unk_Unk4fa580(void);  /* 0x4fa580, the daily upkeep of the characters */
+void unk_Unk4fa9b0(void);  /* 0x4fa9b0 */
+void unk_Unk4faa00(void);  /* 0x4faa00 */
 float gm_JobWage(char *c, int k, int a, int b);  /* 0x508740, the wage of a job (a) or title (b) of the building kind k for the character c */
 int gm_BuildingBalance(unsigned char *b, unsigned id, int *out);  /* 0x508d80, the income / cost summary of the building b for the owner id */
 unsigned *gm_CharNameRecord(int id);  /* 0x4fb390 */

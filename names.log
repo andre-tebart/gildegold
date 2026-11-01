@@ -305,3 +305,11 @@
 2026-11-01T19:38:09 0x00508d80 func gm_Unk508d80 -> gm_BuildingBalance by:main why:its comment: the income / cost summary of the building for the owner
 2026-11-01T19:38:09 0x00509e30 func gm_Unk509e30 -> gm_SumListAmounts by:main why:its comment: the sum of the amounts of the objects in the list
 2026-11-01T19:38:09 0x0050cad0 func gm_Unk50cad0 -> gm_ChangeBuildingState by:main why:its comment: changes the state byte +0x5c of the building by d (0 .. 100) and sends it
+2026-11-01T19:43:37 0x0053b2e0 func main_Unk53b2e0 -> main_BeginPlayerRound by:main why:the start of the player's round: the per-character flag resets, the round intro page Runden/Spielerrunde_Beginn_NEU, the daily world steps each followed by Sleep(100), main_SettleRound per character, the goal fanfare
+2026-11-01T19:43:37 0x004e5bf0 func ai_Unk4e5bf0 -> ai_DebugDumpPerson by:main why:its comment: the debug dump of a person (one line in a 0x1fb8 byte buffer)
+2026-11-01T19:43:37 0x004e4f80 func ai_Unk4e4f80 -> ai_RunPendingParties by:main why:its comment: runs all pending parties of the player pl he is a member of
+2026-11-01T19:43:37 0x004b3960 func ai_Unk4b3960 -> hst_YearlyHistory by:main why:its comment: the yearly history (network sync message 5, then the history dialog of hst_TextsOn)
+2026-11-01T19:43:37 0x0053cb40 func main_Unk53cb40 -> main_PlayOutro by:main why:its comment: the outro, fades the music out and plays outro.mpg
+2026-11-01T19:43:37 0x004fabe0 func unk_Unk4fabe0 -> gm_EndDayIncomes by:main why:its comment: the end of the day for the incomes, shifts the 17-entry histories of the five sums
+2026-11-01T19:43:37 0x004fc920 func unk_Unk4fc920 -> gm_DailyCharacters by:main why:its comment: the daily step of all characters
+2026-11-01T19:43:37 0x0053ef50 func he_Unk53ef50 -> he_CountDownApEvents by:main why:its comment: counts the AP events down, an expired one loses its values

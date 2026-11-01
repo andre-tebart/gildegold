@@ -295,7 +295,7 @@ void main_EndRound(void);
 void main_RoundReport(void);
 
 void main_SettleRound(unsigned short pl);
-void main_Unk53cb40(void);
+void main_PlayOutro(void);
 
 extern unsigned int d3anim_CacheMax;   /* 0x5f927c, d3_anim.h */
 void ai_ClearTurnTable(void);           /* 0x587de0, unk_575860.c: not in unk_575860.h (adding it there moves unk_575860's drafts ai_Unk579570 / ai_Unk57aeb0) */
@@ -3260,6 +3260,7 @@ void main_RundenBeginn(void)
 #define main_PlayerIdInt (*(int *)&ai_PlayerId)  /* 0x6f25b8, ai_PlayerId (unsigned short) as the int the round change reads and masks */
 #define MAIN_PLAYER (main_PlayerIdInt & 0xffff)  /* the player character's index */
 #define main_ApEvents (*(HEAPEVENT (*)[0x100])((char *)&he_RunHandlers + 0x6a0))  /* 0x758ca0, the AP events (he.h; ls.c's he_RunHandlers block holds them) */
+#define main_GameEnded (*(unsigned char *)((char *)&ai_GameState + 0x1))  /* 0x6f25ad, nonzero when the player has reached the game's goal: the round start plays the fanfare and the outro (cleared at the game start) */
 #define main_GfxOn (*(int *)&full_data_624560)  /* 0x624560, nonzero when the round change shows its pages and fades (main_RoundReport tests it too) */
 #define main_NoRoundFade (*(int *)&full_data_6f25c0)  /* 0x6f25c0, 1 skips the black fade before the round page (set by main_RoundReport, cleared by the round start) */
 #define main_Season (*(int *)&full_data_760454)  /* 0x760454, the season of the game clock (sv_ClockSeason / gm_ClockSeason) */
@@ -4068,121 +4069,114 @@ void main_Unk53b840(void)
 void ord_InitMessageRecord(int a, float b, float c, float d);
 int sv_MessageBox();
 
-/* 0x53b2e0, starts the player's round: resets the per-player flags, the round intro screen, the world set-up calls (each followed by Sleep(100)), the fanfare dialog (ROUGH) */
-void main_Unk53b2e0(void)
+/* 0x53b2e0, starts the player's round: dumps every character and clears its round flags, takes the kind 6 one as the player, a random CD check loop (main_Unk53b830, text 0x79), the parties, the round intro page, the alchemists' plants and the kind 7 buildings, then the daily steps of the world (each followed by sv_PumpNet / Sleep(100), main_SettleRound for every living character) or only the income histories when this machine is not the master; the goal fanfare and the outro, the yearly history
+   @deep Rewrote 0x53b2e0 against the original: the character loop as an index loop (the original's jl end
+   compare), the 0x1c8 / 0x1cc masks, sv as the zero-extended int, the CD check loop as a do-while guarded
+   by the first call, the dirty rect order, the backslash of Runden\Spielerrunde_Beginn_NEU (it was lost:
+   \S compiled to S), the kind-7 dword +0x69, the main_SettleRound loop over id != 0xffff and health, 10.0
+   - (4 - difficulty) * 2.5 in double, the relation loops, the hst_YearlyHistory(0 / 1) pair. 384 vs 387
+   instructions, 115 differing. Left is allocation and block layout: the original hoists Sleep into ebp for
+   the whole function (mov ebp, [Sleep] at 0x53b356) where ours loads it into edi for the CD loop and into
+   esi later (every call ebp / call esi line), cur in ebx vs ebp, the loop index in edi vs ebp
+   (0x53b5a5..0x53b5cf); the original moves the CD loop's GameOver / sv_PopTo / return block out of line to
+   0x53b531 (ours emits it after the loop's jmp), and reads ai_GameFlags into al before test al, 4
+   (0x53b351) where ours tests the memory byte. */
+void main_BeginPlayerRound(void)
 {
-    char sv = *(char *)(unsigned)&snd_AmbientOn;
+    int sv = (unsigned char)snd_AmbientOn.on;
     int cur = -1;
-    int i, n, t;
-    unsigned *pf;
-    unsigned char *pb;
-    char *pc;
-    int *pi;
-    unsigned short r;
-    int w;
-    char s130[12];
-    int a124[9];
+    int i, w;
+    AIBLD *b;
+    char date[12];
+    int rec[9];
     char buf[256];
 
     ord_CountGridObjects();
-    i = 0;
-    pf = (unsigned *)((unsigned)&ai_Selected + 0x40);
-    do {
-        ai_Unk4e5bf0(pf - 0x72);
-        pf[0] &= 0xe0874703;
-        pf[1] &= 0x3d31ffc7;
-        if (*((char *)pf - 0x1c6) == 6)
+    for (i = 0; i < 0x300; i++) {
+        ai_DebugDumpPerson(ai_Chars[i]);
+        ai_CharsT[i].flags1c8 &= 0xe0874703;
+        ai_CharsT[i].flags1cc &= 0x3d31ffc7;
+        if (ai_CharsT[i].kind == 6)
             cur = i;
-        pf += 0x87;
-        i++;
-    } while ((int)pf < ((unsigned)((unsigned)ai_Selected + 0x6527a) + 0x1c6));
-    *(short *)(unsigned)&ai_PlayerId = (short)cur;
+    }
+    ai_PlayerId = (unsigned short)cur;
     he_Unk53ee40();
-    if ((U_I((unsigned)&ai_GameFlags) & 4) == 0 && (r = util_RandomInt(10)) > 6) {
-        n = main_Unk53b830();
-        while (n != 1) {
-            U_I((unsigned)&d2_CutsceneActive) = 0;
-            U_I((unsigned)&sv_FrameMask) = 0x24087;
+    if ((ai_GameFlags & 4) == 0 && (unsigned short)util_Random(10) > 6 && main_Unk53b830() != 1) {
+        do {
+            d2_CutsceneActive = 0;
+            sv_FrameMask = 0x24087;
             txt_Format(buf, 0x79);
-            n = sv_MessageBox(buf, 1);
-            if (n == 0) {
-                U_I((unsigned)&ai_GameOver) = 1;
-                sv_PopTo(main_GameLoop);
+            if (sv_MessageBox((int)buf, 1) == 0) {
+                ai_GameOver = 1;
+                sv_PopTo((int)main_GameLoop);
                 return;
             }
             d2_DrawAll();
             Sleep(1000);
-            n = main_Unk53b830();
-        }
+        } while (main_Unk53b830() != 1);
     }
-    U_I((unsigned)&sv_FrameMask) = 0x24087;
-    if ((U_I((unsigned)&ai_GameFlags) & 4) != 0)
+    sv_FrameMask = 0x24087;
+    if ((ai_GameFlags & 4) != 0)
         sv_NetworkSyncWait(0x24087);
     ai_Unk4e36a0(0);
-    if ((char)ai_Unk4e4f80(cur) != 0 && U_I((unsigned)&full_data_624560) != 0) {
-        U_I((unsigned)&ai_Unkfb9060) = (int)*(short *)(unsigned)&d2_ScreenW;
-        U_I((unsigned)&ai_Unkfb906c) = (int)*(short *)(unsigned)&d2_ScreenH;
-        U_I((unsigned)&ai_Unkfb9068) = 0;
-        U_I((unsigned)&ai_Unkfb9064) = 0;
-        d2_ClearSurface(U_I((unsigned)&d2_ScreenSurf));
+    if (ai_RunPendingParties(cur) != 0 && main_GfxOn != 0) {
+        d2_DirtyRectRight = 0;
+        d2_DirtyRectLeft = d2_ScreenW;
+        d2_DirtyRectTop = 0;
+        d2_DirtyRectBottom = d2_ScreenH;
+        d2_ClearSurface(d2_ScreenSurf);
         d2_ShowPicture(0x79d);
     }
     he_Unk53eea0();
-    he_Unk53ef50();
-    if (U_I((unsigned)&full_data_624560) != 0) {
-        w = d2_OpenForm(0, 0, "Runden\Spielerrunde_Beginn_NEU");
+    he_CountDownApEvents();
+    if (main_GfxOn != 0) {
+        w = d2_OpenForm(0, 0, "Runden\\Spielerrunde_Beginn_NEU");
         d2_PlaceMainWindowF(w, 3);
         d2_SetForm(w, 1);
         io_PrintText(0x7d);
-        gm_ClockToDate((unsigned)&ai_TimeT, s130);
+        gm_ClockToDate((struct GCLOCK *)&ai_TimeT, date);
         d2_SetForm(w, 0);
         d2_CloseView(w);
     }
-    pb = (unsigned char *)gm_BuildQuery(1, 6);
-    while (pb != 0) {
-        if (*pb == 0x1e) {
-            i = init_BuildingSceneUniverse(pb);
-            t = U_I((unsigned)&d3_CurrentScene);
+    b = (AIBLD *)gm_BuildQuery(1, 6);
+    while (b != 0) {
+        if (b->type == 0x1e) {
+            int scene;
+
+            i = init_BuildingSceneUniverse((unsigned char *)b);
+            scene = d3_CurrentScene;
             if (i != -1) {
-                d3if_SelectScene((int)*(char *)((unsigned)&init_BuildingUniverse + *(unsigned char *)(U_I((unsigned)&ai_BTypesT) + *pb * 0x24d)), 1);
+                d3if_SelectScene(init_BuildingUniverse[ai_BTypesT[b->type].kind], 1);
                 d3_InflateScene(3);
-                veg_GrowPlants(*(int *)(pb + 0x71));
+                veg_GrowPlants((G15PLANT *)b->plants);
                 d3_DeflateScene(3);
-                d3if_SelectScene(t, 1);
+                d3if_SelectScene(scene, 1);
             }
-        } else if (*(char *)(U_I((unsigned)&ai_BTypesT) + *pb * 0x24d) == 7) {
-            pb[0x69] = 0;
-            pb[0x6a] = 0;
-            pb[0x6b] = 0;
-            pb[0x6c] = 0;
-        }
-        pb = (unsigned char *)gm_BuildNext();
+        } else if (ai_BTypesT[b->type].kind == 7)
+            b->unk69 = 0;
+        b = (AIBLD *)gm_BuildNext();
     }
-    i = 0;
     gm_UpdatePlayers();
     unk_Unk4f88c0();
-    if ((U_I((unsigned)&cm_NetFlags) & 8) == 0 && U_I((unsigned)&ai_Unk1460ae0) != -1) {
-        unk_Unk4fabe0(2);
-    } else {
+    if ((cm_NetFlags & 8) == 0 && ai_Unk1460ae0 != -1)
+        gm_EndDayIncomes(2);
+    else {
         unk_Unk4f3700();
         sv_PumpNet();
         Sleep(100);
-        pc = (char *)((unsigned)&ai_CharInts + 0x4);
-        do {
-            if (*(short *)(pc - 8) != -1 && *pc != 0)
-                main_SettleRound(i);
-            pc += 0x21c;
-            i++;
-        } while ((int)pc < ((unsigned)((unsigned)ai_CharInts + 0x653fe) + 0x6));
+        for (i = 0; i < 0x300; i++) {
+            if (ai_CharsT[i].id != 0xffff && ai_CharsT[i].health != 0)
+                main_SettleRound((unsigned short)i);
+        }
         sv_PumpNet();
         Sleep(100);
-        unk_Unk4fc920();
+        gm_DailyCharacters();
         sv_PumpNet();
         Sleep(100);
         unk_Unk4faa00();
         sv_PumpNet();
         Sleep(100);
-        unk_Unk4fabe0(3);
+        gm_EndDayIncomes(3);
         unk_Unk4fa580();
         sv_PumpNet();
         Sleep(100);
@@ -4201,56 +4195,49 @@ void main_Unk53b2e0(void)
         sv_PumpNet();
         Sleep(100);
         ord_UpdateStatistics();
-        ord_GetMessageRecord(a124);
-        if (a124[0] == -1)
-            ord_InitMessageRecord(1, 1.0f, 0.5f, 10.0f - (float)(4 - U_I((unsigned)&ai_Difficulty)) * 2.5f);
+        ord_GetMessageRecord(rec);
+        if (rec[0] == -1)
+            ord_InitMessageRecord(1, 1.0f, 0.5f, (float)(10.0 - (4 - ai_Difficulty) * 2.5));
         else
             ord_UpdateMessageEvent();
         he_Unk53f6b0();
         sv_PumpNet();
         Sleep(100);
-        pi = (int *)(unsigned)&ai_CharInts;
-        do {
-            cm_SendRelations(-1, *pi, 0, 3);
-            pi += 0x87;
-        } while ((int)pi < ((unsigned)((unsigned)ai_CharInts + 0x653fe) + 0x2));
+        for (i = 0; i < 0x300; i++)
+            cm_SendRelations(-1, ai_CharsT[i].netId, 0, 3);
         cm_SendRelations(-1, -1, 0, 4);
         hmt_Unk4ad7a0();
     }
-    pi = (int *)((unsigned)&ai_Selected + 0x64);
-    do {
-        *pi = 0;
-        pi += 0x87;
-    } while ((int)pi < ((unsigned)((unsigned)ai_Selected + 0x6527a) + 0x1ea));
-    if (U_I((unsigned)&full_data_624560) != 0) {
-        if (*(char *)((unsigned)&ai_GameState + 0x1) != 0 && (U_I((unsigned)&ai_GameFlags) & 4) == 0) {
+    for (i = 0; i < 0x300; i++)
+        ai_CharsT[i].unk1ec = 0;
+    if (main_GfxOn != 0) {
+        if (main_GameEnded != 0 && (ai_GameFlags & 4) == 0) {
             w = sv_CreateScrollForm();
             d2_SetForm(w, 2);
             io_PrintText(0x7d);
             d2_SetForm(w, 1);
-            io_PrintText(0x1ba0, U_I((unsigned)&ai_PlayerId) & 0xffff, U_I((unsigned)&ai_PlayerId) & 0xffff);
+            io_PrintText(0x1ba0, MAIN_PLAYER, MAIN_PLAYER);
             snd_QueueVoice(-7, 0, "FanfarePositivHeldenhaftLang", -1, 0);
-            i = sv_RunFrame((int)main_Unk53b2e0, 0x66087);
+            i = sv_RunFrame((int)main_BeginPlayerRound, 0x66087);
             while (i != 0) {
-                if (U_I((unsigned)&d2_ClickedId) == 0)
+                if (d2_ClickedId == 0)
                     sv_PopRequest = 1;
-                i = sv_RunFrame((int)main_Unk53b2e0, 0x66087);
+                i = sv_RunFrame((int)main_BeginPlayerRound, 0x66087);
             }
             d2_CloseView(w);
-            main_Unk53cb40();
-            U_I((unsigned)&ai_GameOver) = 1;
+            main_PlayOutro();
+            ai_GameOver = 1;
         }
-        if (U_I((unsigned)&full_data_624560) != 0 && U_I((unsigned)&ai_GameOver) == 0) {
-            if ((U_I((unsigned)&cm_NetFlags) & 8) == 0 && U_I((unsigned)&ai_Unk1460ae0) != -1)
-                w = 0;
+        if (main_GfxOn != 0 && ai_GameOver == 0) {
+            if ((cm_NetFlags & 8) == 0 && ai_Unk1460ae0 != -1)
+                hst_YearlyHistory(0);
             else
-                w = 1;
-            ai_Unk4b3960(w);
+                hst_YearlyHistory(1);
         }
     }
-    if ((U_I((unsigned)&cm_NetFlags) & 8) != 0 || U_I((unsigned)&ai_Unk1460ae0) == -1)
+    if ((cm_NetFlags & 8) != 0 || ai_Unk1460ae0 == -1)
         main_UpdateFigures();
-    *(char *)(unsigned)&snd_AmbientOn = sv;
+    snd_AmbientOn.on = (char)sv;
 }
 
 #define MAIN_ME ((AICHAR *)ai_PlayerChar)  /* the player's character (ai_PlayerChar: unsigned short *) */
@@ -5053,7 +5040,7 @@ L_next:
             }
             if ((U_I((unsigned)&ai_GameFlags) & 4) != 0)
                 sv_NetworkSyncWait(0x24087);
-            main_Unk53b2e0();
+            main_BeginPlayerRound();
         }
         main_Round++;
     }
@@ -5104,7 +5091,7 @@ void main_Unk53c9b0(void)
 }
 /* 0x53cb40, the outro: fades the music out, waits for the black fade, plays outro.mpg, restores the window and the music volume (byte 0x6f3602 / 127) (ROUGH) */
 
-void main_Unk53cb40(void)
+void main_PlayOutro(void)
 {
     char sv;
     unsigned char *f;

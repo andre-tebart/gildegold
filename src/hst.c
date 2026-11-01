@@ -2772,7 +2772,7 @@ __declspec(dllimport) unsigned long __stdcall GetTickCount(void);
 
 /* 0x4b3960, the yearly history: tells the others (message 5 with the tick count) in a network game, waits
    while hst_SeedPending, then shows the history dialog of hst_TextsOn (1: texts, 2: texts and commands) */
-void ai_Unk4b3960(int cmd)
+void hst_YearlyHistory(int cmd)
 {
     int msg[0x1f];
 

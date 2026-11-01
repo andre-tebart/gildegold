@@ -14513,7 +14513,7 @@ int ai_Unk4e4f40(void)
 /* 0x4e4f80, runs all pending parties (0x4e4f40) of the player pl that he is a member of: his field +0x208 holds the id of the party while it runs
    (0x4e4060), every party is dropped (0x4e5180) and the field is sent back (0x4c3d90); 1 when one ran. ROUGH */
 
-char ai_Unk4e4f80(int pl)
+char ai_RunPendingParties(int pl)
 {
     char ret;
     int save;
@@ -14910,7 +14910,7 @@ void ai_Unk4e5b50(char *c, char *buf)
 }
 /* 0x4e5bf0, the debug dump of a person (one line made by 0x4e58e0, 0x4e5980, 0x4e5a40, 0x4e5a90, 0x4e5af0 and 0x4e5b50 in a 0x1fb8 byte buffer; the end of the cut_ code) */
 
-void ai_Unk4e5bf0(char *c)
+void ai_DebugDumpPerson(char *c)
 {
     char buf[0x1fb8];
 

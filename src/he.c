@@ -1473,7 +1473,7 @@ int *he_AddApEvent(int a, char *name, int c, int d)
 }
 /* 0x53ef50, counts the AP events down; an expired one loses its values */
 
-void he_Unk53ef50(void)
+void he_CountDownApEvents(void)
 {
     char c;
     char *p = (char *)((unsigned)&he_RunHandlers + 0x6a0);

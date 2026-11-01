@@ -46,7 +46,8 @@ typedef struct AIBLD {                  /* 0xa9 bytes, ai_Blds[256] */
                                            released with gm_RemoveObject) */
     char *object;                       /* 0x61, its 3D object in the scene */
     int unk65;                          /* 0x65 */
-    char pad69[8];
+    int unk69;                          /* 0x69, cleared for the kind 7 buildings at every round start (main.c 0x53b2e0) */
+    char pad6d[4];
     int plants;                         /* 0x71, the 64 G15PLANT records (0x18 bytes each, rd.h) of the
                                            building's vegetation map (rd.c: veg_Fits / veg_FindPlantId) */
     char pad75[0x34];
@@ -238,7 +239,9 @@ typedef struct AICHAR {                 /* 0x21c bytes, ai_Chars[768] */
     unsigned int flags1cc;              /* 0x1cc */
     char pad1d0[0x14];
     float mood3Rate;                    /* 0x1e4, scales the base growth of mood need 3; message 0x1a keeps it in sync */
-    char pad1e8[0xc];
+    char pad1e8[4];
+    int unk1ec;                         /* 0x1ec, cleared for every character at the round start (main.c 0x53b2e0) */
+    char pad1f0[4];
     char ownName[0x1c];                 /* 0x1f4, the character's own name, empty: the job's name record
                                            (gm_CharNameRecord) */
     int partner;                        /* 0x210 */

@@ -1366,7 +1366,7 @@ void ai_MissionResultByMode(int id)
         ai_MissionPartnerDialog(id);
 }
 
-void main_Unk53cb40(void);                                                         /* 0x53cb40, defined elsewhere */
+void main_PlayOutro(void);                                                         /* 0x53cb40, defined elsewhere */
 
 /* 0x4b6110, the single player's mission complete sequence: 0x4b5460, then the choice of the next mission
    (0x4b4280 from the next kind on): none (message 0x0a), cancel (message 0x0a with 1, then 0x4b5950) or the
@@ -1391,7 +1391,7 @@ void ai_MissionCompleteSingle(int id)
     }
     id = (id & ~9) | 0x100;
     ai_MissionSuccessDialog(t, id);
-    main_Unk53cb40();
+    main_PlayOutro();
     r = ai_ChooseMissionFrom(next);
     if (r == 0) {
         ai_MissionMode = -1;

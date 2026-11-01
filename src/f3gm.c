@@ -583,7 +583,7 @@ void unk_Unk4faa00(void)
 }
 /* 0x4fabe0, the end of the day for the incomes: shifts the 17-entry history of each of the five sums (0x91b580 / 0x91b5c4 / 0x91b608 / 0x91b64c / 0x91b690, 0x40 bytes) one place and clears the sums 0x91b5c0 / 0x91b604 / 0x91b648 / 0x91b68c / 0x91b6d0; runs 0x4fa4b0 (i, out, flags) for the 0x300 characters (clearing +0x198 / +0x19c); with flag 1 also 0x4fb0e0 and a list of up to 8 objects of the group (1, 5, 7) (0x501190 / 0x501030); then clears the ints +0x4d and (for kinds 11 .. 13) +0x69 in the 256 building records. ROUGH */
 
-void unk_Unk4fabe0(unsigned flags)
+void gm_EndDayIncomes(unsigned flags)
 {
     unsigned char *o;
     int *c;
@@ -1547,7 +1547,7 @@ float unk_Unk4fc8e0(short *c)
 }
 /* 0x4fc920, the daily step of all characters: the kind 0x12 ones get the byte 8 at +2 (0x4c3c00 (1, 1, 2)); every character of kind < 10 or 0x14 that is active runs 0x4fbe90 and, when the lifetime float (+0x20) - 1 equals the age and it has a model (+0x184), the call 0x4c5690 (id, "stallbursche_MANN" / "magd_FRAU" by the byte +9); then 0x4fd120 */
 
-void unk_Unk4fc920(void)
+void gm_DailyCharacters(void)
 {
     unsigned loc;
     char *c;
