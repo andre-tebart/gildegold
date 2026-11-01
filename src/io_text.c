@@ -23,13 +23,14 @@ extern D2WIN d2_Wins[];
 #include "hst.h"
 #include "ls.h"
 #include "tr.h"
+#include "ch.h"
+#include "err.h"
 #define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
 
 struct GCLOCK;
 void gm_ClockToDate(struct GCLOCK *c, unsigned char *out);  /* 0x4fe2c0, f3gm.c: the calendar record of a clock */
 int gm_Season(char *d);                 /* 0x4fe330, f3gm.c: the season of a calendar record */
 
-extern char ch_EmptyName[];             /* 0x631090 */
 extern char ai_PlayerSlots[4][0x2f4];      /* 0x7e3f40, the player slots */
 extern int __mb_cur_max;                /* 0x62e3a0, the CRT multibyte state (MB_CUR_MAX of ctype.h) */
 extern unsigned short *_pctype;         /* 0x62e194, the CRT ctype table (the 0x100 entry values) */
