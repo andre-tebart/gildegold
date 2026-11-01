@@ -13,6 +13,7 @@
 #include <io.h>
 #include "vfs.h"
 #include "mem.h"
+#include "err.h"
 
 static int gz_magic[2] = {0x1f, 0x8b};   /* 0x5f9004, the first data of this file (as in gzio.c) */
 struct MPOOL * vfs_EntryPool = 0;  /* 0x633400 */
