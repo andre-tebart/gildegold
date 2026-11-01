@@ -121,12 +121,7 @@ extern char dd_Unk1464fe0[0x100];                      /* 0x1464fe0, passed to d
 extern int dd_PitchPixels;                      /* 0x14661a0 */
 
 /* outside this file */
-HKEY reg_OpenKey(char *section, int mode);                                                   /* 0x4103a0, -1 on failure */
-int reg_GetString(HKEY h, char *key, char *buf);                                         /* 0x410440 */
-void reg_SetString(HKEY h, char *key, char *value);                                      /* 0x4104b0 */
-void reg_CloseKey(HKEY h);                                                                  /* 0x410430 */
 void d3_InitKeyCodes(unsigned char *p);                                                              /* 0x418ce0 */
-void err_Message(char *msg);                                                            /* 0x4222b0 */
 
 char dd_Restore(void);                                                                  /* 0x41bdd0 */
 void dd_Exit(void);                                                                     /* 0x41be00 */
