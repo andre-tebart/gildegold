@@ -1347,7 +1347,7 @@ int ai_DecideOfficeAcquaintance(int a, AICHAR *p, int c, int d, AIARG *m)
 /* 0x4a9420, decide callback: p (money >= 2) picks a character within 40..71 units that 0x553d60 accepts, into
    m (kind 7) */
 
-int ai_Unk4a9420(int a, AIPER *p, int c, int d, unsigned char *m)
+int ai_DecideAcceptedChar(int a, AIPER *p, int c, int d, unsigned char *m)
 {
     int flags;
     unsigned short id;
@@ -1366,7 +1366,7 @@ int ai_Unk4a9420(int a, AIPER *p, int c, int d, unsigned char *m)
 /* 0x4a94e0, decide callback: p (money > 2, not flagged 0x400) picks a character within 18..49 units, not flagged
    0x400, by chance after 0x504e20, into m (kind 7) */
 
-int ai_Unk4a94e0(int a, AIPER *p, int c, int d, unsigned char *m)
+int ai_DecideUnflaggedChar(int a, AIPER *p, int c, int d, unsigned char *m)
 {
     int flags;
     unsigned short id;
@@ -1714,14 +1714,21 @@ found:
 }
 /* 0x4aa120, decide callback of the visit actions: as 0x4a9a00 with the actions of the table 0x600e5c that p (ctx 1)
    or p with its partner (ctx 2, from the job list 0x45) may do, unless in already names one (kind 0x10), and asks
-   that action's callback */
+   that action's callback
+   @deep read whole against the original, rewritten as ai_DecideLeisureAction (in->kind==0 first, index
+   loops with jl, int side for the coin, direct returns per case); instruction count 247 vs 249. Left is
+   allocation: the original keeps in in ebx (+ mov ebx, dword ptr [esp + 0x25c]) and n1 in ebp, n2 in
+   [esp+0x10]; ours n1 in ebx, n2 in ebp and in reloaded (- mov eax, dword ptr [esp + 0x25c] / mov byte ptr
+   [eax], 0x10); our side is stored in the slot (- mov dword ptr [esp + 0x10], eax); the default return
+   value is eax set before the switch jump (+ xor eax, eax / + mov eax, dword ptr [esp + 0x10]) where ours
+   has a separate return 0 (table entries +0x4/+0x8/+0x14). Tried: r variable over the switch (213 ins,
+   worse) */
 
-int ai_Unk4aa120(int a, AIPER *p, int c, unsigned char *in, unsigned char *m)
+int ai_DecideVisitAction(int a, AIPER *p, int c, AIARG *in, AIARG *m)
 {
     int ctx[0x88];
     int l1[3], l2[3];
-    int n1, n2, k, kind;
-    int *t;
+    int n1, n2, i, k, kind, side;
     AIJOB *j;
 
     memset(ctx, 0, sizeof(ctx));
@@ -1730,72 +1737,78 @@ int ai_Unk4aa120(int a, AIPER *p, int c, unsigned char *in, unsigned char *m)
     ctx[0x87] = 0;
     if ((p->flags1c8 & 0x100) != 0) {
         for (j = he_FindEvent(1, 0, 0x45); j != 0; j = he_NextEvent()) {
-            if (j->unkac == p->netId) {
-                ctx[0x87] = (int)gm_FindChar(j->unkb0);
+            if (j->partner1 == p->netId) {
+                ctx[0x87] = (int)gm_FindChar(j->partner2);
                 break;
             }
         }
     }
-    if (in[0] != 0) {
-        if (in[0] != 0x10)
-            return 0;
-        k = *(int *)(in + 4);
+    if (in->kind == 0) {
         ctx[0] = 1;
-        if ((ord_DispatchOrder(k, p, ctx) & 2) == 0) {
-            ctx[0] = 2;
-            if ((ord_DispatchOrder(k, p, ctx) & 2) == 0)
-                return 0;
-            *(int *)(in + 8) = 4;
-        } else {
-            *(int *)(in + 8) = 3;
-        }
-    } else {
-        ctx[0] = 1;
-        for (t = ai_Unk600e5c; t < &ai_Unk600e5c[3]; t++) {
-            if ((ord_DispatchOrder(*t, p, ctx) & 2) != 0)
-                l1[n1++] = *t;
+        for (i = 0; i < 3; i++) {
+            if ((ord_DispatchOrder(ai_VisitActions[i], p, ctx) & 2) != 0)
+                l1[n1++] = ai_VisitActions[i];
         }
         if (ctx[0x87] != 0) {
             ctx[0] = 2;
             n2 = 0;
-            for (t = ai_Unk600e5c; t < &ai_Unk600e5c[3]; t++) {
-                if ((ord_DispatchOrder(*t, p, ctx) & 2) != 0)
-                    l2[n2++] = *t;
+            for (i = 0; i < 3; i++) {
+                if ((ord_DispatchOrder(ai_VisitActions[i], p, ctx) & 2) != 0)
+                    l2[n2++] = ai_VisitActions[i];
             }
         }
-        if (n1 == 0 && n2 == 0)
-            return 0;
-        if (n1 == 0 || (n2 != 0 && util_RandomU(2) != 0)) {
+        if (n1 == 0) {
+            if (n2 == 0)
+                return 0;
+            side = 1;
+        } else if (n2 == 0) {
+            side = 0;
+        } else {
+            side = util_RandomU(2);
+        }
+        if (side == 0) {
+            ctx[0] = 1;
+            k = l1[util_RandomU(n1)];
+            kind = 3;
+            if ((ord_DispatchOrder(k, p, ctx) & 2) == 0)
+                return 0;
+        } else {
             ctx[0] = 2;
             k = l2[util_RandomU(n2)];
             kind = 4;
             if ((ord_DispatchOrder(k, p, ctx) & 2) == 0)
                 return 0;
+        }
+        in->kind = 0x10;
+        in->ref = k;
+        in->arg = kind;
+    } else {
+        if (in->kind != 0x10)
+            return 0;
+        k = in->ref;
+        ctx[0] = 1;
+        if ((ord_DispatchOrder(k, p, ctx) & 2) != 0) {
+            in->arg = 3;
         } else {
-            ctx[0] = 1;
-            kind = 3;
-            k = l1[util_RandomU(n1)];
+            ctx[0] = 2;
             if ((ord_DispatchOrder(k, p, ctx) & 2) == 0)
                 return 0;
+            in->arg = 4;
         }
-        in[0] = 0x10;
-        *(int *)(in + 4) = k;
-        *(int *)(in + 8) = kind;
     }
     switch (k) {
     case 0:
         return G10_CB(ai_DecideSuitor)(a, p, ctx, in, m);
-    default:
-        return 0;
     case 3:
         return G10_CB(ai_DecideCloseAcquaintance)(a, p, ctx, in, m);
     case 4:
         return G10_CB(ai_DecideOfficeAcquaintance)(a, p, ctx, in, m);
     case 7:
-        return G10_CB(ai_Unk4a9420)(a, p, ctx, in, m);
+        return G10_CB(ai_DecideAcceptedChar)(a, p, ctx, in, m);
     case 8:
-        return G10_CB(ai_Unk4a94e0)(a, p, ctx, in, m);
+        return G10_CB(ai_DecideUnflaggedChar)(a, p, ctx, in, m);
     }
+    return 0;
 }
 /* 0x4aa430, check callback of the visit actions (0x4aa120): as 0x4a9fa0; prints the action name into a debug text
    that nobody reads */
@@ -2616,4 +2629,4 @@ G10GAME * ai_PokerTable = 0;  /* 0xf83654 */
 G10CARD ai_PokerDeck[24] = {0};  /* 0xf83660 */
 G10NPC ai_PokerOpponents[2] = {0};  /* 0xf837e0 */
 int ai_LeisureActions[19] = { 18, 19, 20, 28, 29, 33, 36, 37, 39, 40, 41, 42, 43, 44, 45, 49, 50, 53, 55 };  /* 0x600e10, the leisure actions */
-int ai_Unk600e5c[3] = { 0, 3, 7 };  /* 0x600e5c */
+int ai_VisitActions[3] = { 0, 3, 7 };  /* 0x600e5c */

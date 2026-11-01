@@ -7127,7 +7127,7 @@ int ai_Unk49d550(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         s1.arg = 0;
         s1.kind = 0x10;
         s1.ref = 8;
-        if (ai_Unk4aa120(a, p, 0, &s1, &s2) != 0) {
+        if (ai_DecideVisitAction(a, p, 0, &s1, &s2) != 0) {
             *o1 = s1;
             *o2 = s2;
             return 0x2b;
@@ -7172,7 +7172,7 @@ int ai_Unk49d6a0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         s1.arg = 0;
         s1.kind = 0x10;
         s1.ref = 4;
-        if (ai_Unk4aa120(a, p, 0, &s1, &s2) != 0) {
+        if (ai_DecideVisitAction(a, p, 0, &s1, &s2) != 0) {
             *o1 = s1;
             *o2 = s2;
             return 0x2c;
@@ -7200,7 +7200,7 @@ int ai_Unk49d750(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     s1.kind = 0;
     s1.ref = 0;
     s1.arg = 0;
-    if (ai_Unk4aa120(0, p, 0, &s1, &s2) == 0)
+    if (ai_DecideVisitAction(0, p, 0, &s1, &s2) == 0)
         return 0;
     *o1 = s1;
     *o2 = s2;
