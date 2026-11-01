@@ -37,6 +37,7 @@
 #include "anm.h"
 #include "cm.h"
 #include "f3gm.h"
+#define gm_TitleJobI ((int (*)(int, int))gm_TitleJob)  /* 0x5044b0 (f3gm.h: unsigned char): @original the byte-matched callers here read the result as an int (no `and eax,0xff` after the call): 0x4ab7f0, and 0x4ab3e0 / 0x4abd00 compare it as an int */
 #include "gv.h"
 #include "he.h"
 #include "tr.h"
@@ -1105,7 +1106,7 @@ int ai_DecideNearChar(int a, AIPER *p, int c, int d, unsigned char *m)
 
     if (p->money < 3)
         return 0;
-    flags = ((unsigned)&cm_SendRing + 0x4973c0);
+    flags = PARTNER_FLAGS_ANY;
     if (ai_PickPartnerChain(p, 1, &flags, 0, (float)util_RandomU(0x12) + 32.0f, &id) == 0)
         return 0;
     m[0] = 7;
@@ -1355,7 +1356,7 @@ int ai_DecideAcceptedChar(int a, AIPER *p, int c, int d, unsigned char *m)
 
     if (p->money < 2)
         return 0;
-    flags = ((unsigned)&cm_SendRing + 0x4973c0);
+    flags = PARTNER_FLAGS_ANY;
     if (ai_PickPartnerChain(p, 1, &flags, 0, (float)util_RandomU(0x20) + 40.0f, &id) == 0)
         return 0;
     if (he_Unk553d60(p, &((AIPER *)ai_CharsT)[id]) == 0)
@@ -1373,7 +1374,7 @@ int ai_DecideUnflaggedChar(int a, AIPER *p, int c, int d, unsigned char *m)
     unsigned short id;
 
     if (p->money >= 3 && (p->flags1c8 & 0x400) == 0) {
-        flags = ((unsigned)&cm_SendRing + 0x4973c0);
+        flags = PARTNER_FLAGS_ANY;
         if (ai_PickPartnerChain(p, 1, &flags, 0, (float)util_RandomU(0x20) + 18.0f, &id) != 0
             && (((AIPER *)ai_CharsT)[id].flags1c8 & 0x400) == 0
             && util_RandomF() + gm_Mix(p, &((AIPER *)ai_CharsT)[id], 3) >= 1.0f) {
@@ -1880,7 +1881,7 @@ int ai_Unk4aa580(AIPER *p, int c, unsigned char *m)
     k = 0;
     if (p->money < 1)
         return 0;
-    flags = ((unsigned)&cm_SendRing + 0x4973c0);
+    flags = PARTNER_FLAGS_ANY;
     if (ai_PickPartnerChain(p, 1, &flags, 0, (float)util_RandomU(0x40), &id) == 0)
         return 0;
     if (he_Unk553db0(p, &((AIPER *)ai_CharsT)[id], &k) == 0)
@@ -2290,9 +2291,21 @@ int ai_ExecBuyDunkleEcke(AIPER *p, AIARG *a, AIARG *b)
 }
 /* 0x4ab3e0, decide callback of action 0x44 "Blutrache": p (money >= 5, not flagged 8, not of kind 3) with its
    best building of kind 0x1f holding object 0x27c picks a victim within 25..57 units and up to four helpers
-   (0x4a61d0) it can afford by their weight (0x4e7c40 / 3 + 2), into m / m2 (kind 7) */
+   (ai_PickPartnerChainLevel) by their weight (office level / 3 + 2): a helper is taken when the running sum
+   with its weight reaches p's money (s + w >= money, as the original compares); the sum into m->arg2, the
+   victim and helpers into m / m2 (kind 7)
+   @deep Read whole 0x4ab3e0..0x4ab6b0 against the C: the early checks (flag 8, money >= 5, a 0x44/0, c,
+   gm_TitleJob 0xe int result, kind 3), the 0x100-building walk with gm_BathObjectCount, flags = 0 at the
+   top (its address goes to ai_PickPartnerChainF, the original zeroes it in p's arg slot),
+   PARTNER_FLAGS_ANY, the 25+random(32) radius, o's office level /3+2 (read through o),
+   ai_PickPartnerChainLevel, the helper loop and the AIARG stores all correspond; 222 vs 222 instructions,
+   frame 0x1c equal. Left: register choice in the helper loop and the tail - the original forms s + w with
+   lea ecx, [eax + esi] and loads p->money into eax after it (ours: mov ecx, [ebp+0x194] first, add eax,
+   esi in place), the who[] address in eax vs edx, and the tail loads o into ecx / m into eax where ours
+   swaps them; plus the order hunk xor ebx / xor edi. Tried: t = s + (w), w then s + w / s += w, p->money
+   <= s + t, for (i = 0, cnt = 0; ...) - no change. */
 
-int ai_Unk4ab3e0(int a, AIPER *p, int c, unsigned char *m, unsigned char *m2)
+int ai_DecideBlutrache(int a, AIPER *p, int c, AIARG *m, AIARG *m2)
 {
     unsigned short ids[4];
     AIPER *who[4];
@@ -2303,13 +2316,14 @@ int ai_Unk4ab3e0(int a, AIPER *p, int c, unsigned char *m, unsigned char *m2)
     AIBLD *b, *best;
     AIPER *o;
 
-    v = gm_TitleJob(p->id, 0xe);
+    v = gm_TitleJobI(p->id, 0xe);
     ids[0] = 0xffff;
     ids[1] = 0xffff;
     ids[2] = 0xffff;
     ids[3] = 0xffff;
     best = 0;
     bestv = 0;
+    flags = 0;
     who[0] = 0;
     who[1] = 0;
     who[2] = 0;
@@ -2337,36 +2351,36 @@ int ai_Unk4ab3e0(int a, AIPER *p, int c, unsigned char *m, unsigned char *m2)
     }
     if (best == 0 || bestv == 0)
         return 0;
-    flags = ((unsigned)&cm_SendRing + 0x4973c0);
+    flags = PARTNER_FLAGS_ANY;
     if (ai_PickPartnerChainF(p, 1, (int *)&flags, 0.0f, (float)util_RandomU(0x20) + 25.0f, &id) == 0)
         return 0;
     o = &((AIPER *)ai_CharsT)[id];
-    s = amt_GetKindLevel(o->unk166) / 3 + 2;
+    s = amt_GetKindLevel(o->officeKind) / 3 + 2;
     if (s + 2 > p->money)
         return 0;
-    n = ai_Unk4a61d0(p, 4, flags, 25.0f, 75.0f, bestv, ids);
+    n = ai_PickPartnerChainLevel(p, 4, flags, 25.0f, 75.0f, bestv, ids);
     if (n == 0)
         return 0;
     cnt = 0;
     for (i = 0; i < n; i++) {
-        t = amt_GetKindLevel(((AIPER *)ai_CharsT)[ids[i]].unk166) / 3 + 2 + s;
-        if (t >= p->money) {
-            s = t;
+t = amt_GetKindLevel(ai_CharsT[ids[i]].officeKind) / 3 + 2;
+        if (s + t >= p->money) {
+            s += t;
             who[cnt++] = &((AIPER *)ai_CharsT)[ids[i]];
         }
     }
     if (cnt == 0)
         return 0;
-    *(int *)(m + 4) = o->netId;
-    *(int *)(m + 0xc) = who[0]->netId;
+    m->ref = o->netId;
+    m->ref2 = who[0]->netId;
     if (cnt > 1)
-        *(int *)(m + 8) = who[1]->netId;
+        m->arg = who[1]->netId;
     if (cnt > 2)
-        *(int *)(m2 + 0xc) = who[2]->netId;
+        m2->ref2 = who[2]->netId;
     if (cnt > 3)
-        *(int *)(m2 + 8) = who[3]->netId;
-    *(int *)(m + 0x10) = s;
-    m[0] = 7;
+        m2->arg = who[3]->netId;
+    m->arg2 = s;
+    m->kind = 7;
     return 0x44;
 }
 /* 0x4ab6b0, execute callback of action 0x44 "Blutrache": p pays the cost, is flagged (0x1cc bit 3), the victim
@@ -2414,7 +2428,7 @@ int ai_Unk4ab7f0(int a, AIPER *p, int c, unsigned char *m)
     AIBLD *b, *best;
     AIPER *o;
 
-    v = gm_TitleJob(p->id, 0xe);
+    v = gm_TitleJobI(p->id, 0xe);
     bestv = 0;
     best = 0;
     flags = (unsigned int)best;
@@ -2441,7 +2455,7 @@ int ai_Unk4ab7f0(int a, AIPER *p, int c, unsigned char *m)
     }
     if (best == 0 || bestv == 0)
         return 0;
-    flags = ((unsigned)&cm_SendRing + 0x4973c0);
+    flags = PARTNER_FLAGS_ANY;
     if (ai_PickPartnerChainF(p, 1, (int *)&flags, 0.0f, (float)util_RandomU(0x20) + 25.0f, &id) == 0)
         return 0;
     o = &((AIPER *)ai_CharsT)[id];
@@ -2492,7 +2506,7 @@ int ai_Unk4abac0(int a, AIPER *p, int c, unsigned char *m)
     AIBLD *b, *best;
     AIBTYPE *bt;
 
-    v = gm_TitleJob(p->id, 0xe);
+    v = gm_TitleJobI(p->id, 0xe);
     k = 0;
     if ((a == 0x46 || a == 0) && c == 0 && v != 0 && p->kind != 3 && p->money > 1) {
         best = 0;
@@ -2570,7 +2584,7 @@ int ai_Unk4abd00(int a, AIPER *p, int c, unsigned char *m)
     AIBLD *b;
     AIPER *o;
 
-    v = gm_TitleJob(p->id, 0xe);
+    v = gm_TitleJobI(p->id, 0xe);
     flags = 0;
     if ((p->flags1cc & 0x20) != 0 || p->money < 2)
         return 0;
@@ -2580,7 +2594,7 @@ int ai_Unk4abd00(int a, AIPER *p, int c, unsigned char *m)
     for (i = 0; i < 0x100; i++) {
         if (b->type != 0 && b->owner == p->id && ai_BTypesT[b->type].kind == 0x1f
             && gm_Query(b->objList, 2, 6, 0, 0x276) != 0) {
-            flags = ((unsigned)&cm_SendRing + 0x4973c0);
+            flags = PARTNER_FLAGS_ANY;
             if (ai_PickPartnerChainF(p, 1, (int *)&flags, 0.0f, (float)util_RandomU(0x20) + 25.0f, &id) == 0)
                 return 0;
             o = &((AIPER *)ai_CharsT)[id];
@@ -2622,7 +2636,7 @@ int ai_Unk4abed0(int a)
     act.id = 0x44;
     strcpy(act.name, "Blutrache");
     act.eval = ai_Unk4a49a0;
-    act.decide = ai_Unk4ab3e0;
+    act.decide = ai_DecideBlutrache;
     act.exec = ai_Unk4ab6b0;
     act.flags = 0x1c3;
     if (!ai_Unk495520(&act, a))

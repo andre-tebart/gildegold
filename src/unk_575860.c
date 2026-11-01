@@ -710,6 +710,7 @@ char *const ai_Unk5eec60 = (char *)full_data_6fa020 + 0x40;  /* 0x5eec60, the po
 #include "anm.h"
 #include "bmp.h"
 #include "f3gm.h"
+#define gm_TitleJobI ((int (*)(int, int))gm_TitleJob)  /* 0x5044b0 (f3gm.h: unsigned char): @original the byte-matched callers here read the result as an int (no `and eax,0xff` after the call): ai_Unk587b70 0x587b70 (shape) */
 #include "f3snd.h"
 #include "gv.h"
 #include "he.h"
@@ -8953,7 +8954,7 @@ int ai_Unk587b70(char *ch, char *b, char *x)
 
     kind = *(unsigned char *)b;
     bldg = (char *)U_I((unsigned)&ai_BTypes) + kind * 0x24d;
-    v = gm_TitleJob(*(unsigned short *)ch, gm_BuildingJob(*(unsigned char *)bldg));
+    v = gm_TitleJobI(*(unsigned short *)ch, gm_BuildingJob(*(unsigned char *)bldg));
     f = 0x81;
     if (*(unsigned short *)(b + 0x25) == *(unsigned short *)ch)
         f = 0x10bd;

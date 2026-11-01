@@ -138,7 +138,7 @@ int ai_Unk4aaef0(struct AIPER *p, unsigned char *a, unsigned char *b);          
 int ai_ExecMessage74(struct AIPER *p, struct AIARG *a, struct AIARG *b);                          /* 0x4aafb0 */
 int ai_DecideBuyDunkleEcke(struct AIPER *p, struct AIARG *a, struct AIARG *b);                               /* 0x4ab080 */
 int ai_ExecBuyDunkleEcke(struct AIPER *p, struct AIARG *a, struct AIARG *b);                               /* 0x4ab2c0 */
-int ai_Unk4ab3e0(int a, AIPER *p, int c, unsigned char *m, unsigned char *m2);  /* 0x4ab3e0 */
+int ai_DecideBlutrache(int a, AIPER *p, int c, struct AIARG *m, struct AIARG *m2);  /* 0x4ab3e0 */
 int ai_Unk4ab6b0(AIPER *p, unsigned char *m, unsigned char *m2);                 /* 0x4ab6b0 */
 int ai_Unk4ab7f0(int a, AIPER *p, int c, unsigned char *m);                     /* 0x4ab7f0 */
 int ai_Unk4ab9f0(AIPER *p, unsigned char *m);                                    /* 0x4ab9f0 */

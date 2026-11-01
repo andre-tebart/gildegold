@@ -18,6 +18,7 @@ extern int gm_PlayerRecords[688];
 #include <strmif.h>
 #include <control.h>
 #include "f3gm.h"
+#define gm_TitleJobI ((int (*)(int, int))gm_TitleJob)  /* 0x5044b0 (f3gm.h: unsigned char): @original the byte-matched callers here read the result as an int (no `and eax,0xff` after the call): main_RundenBeginn 0x538140 */
 #include "mov.h"
 #include "txt.h"
 #include "di_input.h"
@@ -3206,7 +3207,7 @@ void main_RundenBeginn(void)
                 rec = (MAINPLREC *)gm_PlayerRecord((char *)ch);
                 k = 0;
                 do {
-                    t = gm_TitleJob(ch->id, k);
+                    t = gm_TitleJobI(ch->id, k);
                     if (gm_TitlesLeft(t) == 6) {
                         txt_Format(b4, 0x15c5, rec->job[k] + 0x130);
                         e = (char *)he_AddApEvent(ch->id, b4, 1, 0);

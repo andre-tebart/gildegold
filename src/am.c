@@ -23,7 +23,7 @@
 #include "cm_types.h"
 extern unsigned char txt_Keys;  /* @original ai_Unk498c70 (0x498c70, byte) tests flags1c8 & 0x1000000 as &txt_Keys + 0x181c0 of this byte view: the char[0x4800][0x50] spelling, a view macro or the literal flip its add operands at +0x4cc (shape) */
 
-int gm_TitleJob(int i, int p);        /* 0x5044b0, @original: the byte-matched callers (ai_Unk49ed10, ai_Unk498c70) read the result without the unsigned char mask (no `and eax,0xff` after the call) */
+#define gm_TitleJobI ((int (*)(int, int))gm_TitleJob)  /* 0x5044b0 (f3gm.h: unsigned char), @original: the byte-matched callers (ai_Unk49ed10, ai_Unk498c70) read the result without the unsigned char mask (no `and eax,0xff` after the call) */
 
 #include "hst.h"
 #include "unk_4a7140.h"
@@ -252,7 +252,7 @@ int ai_Unk48e470(int a, AIPX *p, int b, AIARGX *o1, AIARGX *o2)
         return 0;
     *o1 = s1;
     *o2 = s2;
-    o1->unk0c = bld->id;
+    o1->ref2 = bld->id;
     return 0x41;
 }
 /* 0x48e620, decide helper: a character to pay for the upgrade, level 0 */
@@ -279,7 +279,7 @@ int ai_Unk48e620(AIPX *p, AIARGX *s1, AIARGX *s2)
         return 0;
     s2->arg = cost;
     s1->arg = 0;
-    s2->unk0c = c->netId;
+    s2->ref2 = c->netId;
     s2->arg2 = 0;
     s1->arg2 = 0;
     return 1;
@@ -309,7 +309,7 @@ int ai_Unk48e730(AIPX *p, AIARGX *s1, AIARGX *s2)
     else
         return 0;
     s1->arg = a[sel];
-    s2->unk0c = c->netId;
+    s2->ref2 = c->netId;
     s2->arg2 = sel;
     s1->arg2 = 1;
     return 1;
@@ -356,7 +356,7 @@ int ai_Unk48e830(AIPX *p, AIARGX *s1, AIARGX *s2)
         sel2 = sel;
     s2->arg = a[sel2 + 3];
     s1->arg = a[sel2];
-    s2->unk0c = c->netId;
+    s2->ref2 = c->netId;
     s2->arg2 = sel2;
     s1->arg2 = 2;
     return 1;
@@ -411,7 +411,7 @@ int ai_Unk48eb50(AIPX *p, AIARGX *s1, AIARGX *s2)
     AIPX *c;
     int v;
 
-    c = (AIPX *)gm_FindChar(s1->unk0c);
+    c = (AIPX *)gm_FindChar(s1->ref2);
     if (!c)
         return 0;
     cm_SendMoveGoodsUnchecked(-1, p->netId, ai_OwnPlayer, s2->arg);
@@ -419,7 +419,7 @@ int ai_Unk48eb50(AIPX *p, AIARGX *s1, AIARGX *s2)
     memset(&msg, 0, sizeof(msg));
     msg.to = p->netId;
     TMX(msg) = NOWX;
-    msg.fromId = s1->unk0c;
+    msg.fromId = s1->ref2;
     msg.type = 0x99;
     msg.flags = 2;
     msg.ch = c->netId;
@@ -450,13 +450,13 @@ int ai_Unk48ec90(AIPX *p, AIARGX *s1, AIARGX *s2)
     AIPX *c;
     int v;
 
-    c = (AIPX *)gm_FindChar(s1->unk0c);
+    c = (AIPX *)gm_FindChar(s1->ref2);
     if (!c)
         return 0;
     gm_SendMoneyDelta(p->netId, -(int)s1->arg);
     memset(&msg, 0, sizeof(msg));
     msg.to = p->netId;
-    msg.fromId = s1->unk0c;
+    msg.fromId = s1->ref2;
     TMX(msg) = NOWX;
     msg.type = 0x99;
     msg.flags = 2;
@@ -488,7 +488,7 @@ int ai_Unk48edc0(AIPX *p, AIARGX *s1, AIARGX *s2)
     AIPX *c;
     int v;
 
-    c = (AIPX *)gm_FindChar(s1->unk0c);
+    c = (AIPX *)gm_FindChar(s1->ref2);
     if (!c)
         return 0;
     cm_SendMoveGoodsUnchecked(-1, p->netId, ai_OwnPlayer, s2->arg);
@@ -496,7 +496,7 @@ int ai_Unk48edc0(AIPX *p, AIARGX *s1, AIARGX *s2)
     memset(&msg, 0, sizeof(msg));
     msg.to = p->netId;
     TMX(msg) = NOWX;
-    msg.fromId = s1->unk0c;
+    msg.fromId = s1->ref2;
     msg.type = 0x99;
     msg.flags = 2;
     msg.ch = c->netId;
@@ -530,7 +530,7 @@ int ai_Unk48ef10(AIPX *p, AIARGX *s1, AIARGX *s2)
     memset(&msg, 0, sizeof(msg));
     msg.to = p->netId;
     TMX(msg) = NOWX;
-    msg.fromId = s1->unk0c;
+    msg.fromId = s1->ref2;
     msg.dst[2] = s2->arg2;
     msg.type = 0x99;
     msg.flags = 2;
@@ -836,7 +836,7 @@ int ai_Unk48f990(AIPX *p, AIARG *s1, AIARG *s2)
             return 0x48;
         }
         if (s1->arg2 == 2 && s2->kind == 4) {
-            bl = AI_501190_5(2, 1, s2->unk0c, 5, 0x1e);
+            bl = AI_501190_5(2, 1, s2->ref2, 5, 0x1e);
             if (bl) {
                 o = gm_Query(bl->objList, 2, 6, 0, 0x2a);
                 if (o) {
@@ -952,7 +952,7 @@ int ai_Unk48ff50(AIPX *p, AIBLD *b, AIARG *o1, AIARG *o2)
     int flags, x;
 
     o1->arg2 = 0;
-    o1->unk0c = b->id;
+    o1->ref2 = b->id;
     flags = 0;
     if (p->money < 4)
         return 0;
@@ -978,7 +978,7 @@ int ai_Unk48ff50(AIPX *p, AIBLD *b, AIARG *o1, AIARG *o2)
             return 0;
         o2->arg = x;
     }
-    o2->unk0c = q->netId;
+    o2->ref2 = q->netId;
     o2->ref = c->netId;
     o2->arg2 = 4;
     return 1;
@@ -995,7 +995,7 @@ int ai_Unk4900c0(AIPX *p, AIBLD *b, int unused, AIARG *o)
     msg.to = p->netId;
     msg.fromId = b->id;
     msg.time = ai_TimeT;
-    msg.arg[1] = o->unk0c;
+    msg.arg[1] = o->ref2;
     msg.arg[2] = o->ref;
     msg.ids[0] = o->ref;
     msg.arg[3] = o->arg2;
@@ -1014,7 +1014,7 @@ int ai_Unk490170(AIPX *p, AIBLD *b, AIARG *o1, AIARG *o2)
     u1 = util_RandomU(3);
     u2 = util_RandomU(3);
     o1->arg2 = 1;
-    o1->unk0c = b->id;
+    o1->ref2 = b->id;
     n = (u2 + 2) * (u1 + 2);
     if (n > (unsigned int)p->money)
         return 0;
@@ -1033,7 +1033,7 @@ int ai_Unk490170(AIPX *p, AIBLD *b, AIARG *o1, AIARG *o2)
 done:
     o2->arg = u2;
     o2->ref = u1;
-    o2->unk0c = x;
+    o2->ref2 = x;
     return 1;
 }
 /* 0x4902b0, execute of method 0x90 */
@@ -1050,7 +1050,7 @@ int ai_Unk4902b0(AIPX *p, AIBLD *b, int unused, AIARG *o)
     msg.time = ai_TimeT;
     msg.arg[1] = o->ref;
     msg.arg[2] = o->arg;
-    msg.arg[0] = o->unk0c;
+    msg.arg[0] = o->ref2;
     cm_SendLongMessage(&msg);
     return 0x3d;
 }
@@ -1063,7 +1063,7 @@ int ai_Unk490350(AIPX *p, AIBLD *b, AIARG *o1, AIARG *o2)
     int flags, x;
 
     o1->arg2 = 2;
-    o1->unk0c = b->id;
+    o1->ref2 = b->id;
     flags = 0;
     if (!gm_Query(b->objList, 2, 0, 0x204, 6))
         return 0;
@@ -1076,7 +1076,7 @@ int ai_Unk490350(AIPX *p, AIBLD *b, AIARG *o1, AIARG *o2)
     if (!ai_PickPartnerChain((AIPER *)p, 1, &flags, 0, util_RandomU(0x20) + 32.0f, &id))
         return 0;
     q = &AIC[id];
-    o2->unk0c = q->netId;
+    o2->ref2 = q->netId;
     o2->ref = c->netId;
     o2->arg2 = 4;
     if (q->bld2) {
@@ -1105,7 +1105,7 @@ int ai_Unk4904c0(AIPX *p, AIBLD *b, int unused, AIARG *o)
     msg.to = p->netId;
     msg.fromId = b->id;
     msg.time = ai_TimeT;
-    msg.arg[1] = o->unk0c;
+    msg.arg[1] = o->ref2;
     msg.arg[2] = o->ref;
     msg.ids[0] = o->ref;
     msg.arg[3] = o->arg2;
@@ -1120,7 +1120,7 @@ int ai_Unk490570(AIPX *p, AIBLD *b, AIARG *o1, AIARG *o2)
     AIPX *c;
 
     o1->arg2 = 3;
-    o1->unk0c = b->id;
+    o1->ref2 = b->id;
     if (!gm_Query(b->objList, 2, 0, 0x1fb, 6))
         return 0;
     c = ai_Unk48feb0(b);
@@ -1408,7 +1408,7 @@ int ai_Unk490fc0(AIPER *p, int a, int *out)
             *out = 1;
             return 1;
         }
-    } else if (x < 0.5f && d.cur == 1 && (v > u || p->unk166 == 0x11)) {
+    } else if (x < 0.5f && d.cur == 1 && (v > u || p->officeKind == 0x11)) {
         *out = 0;
         return 1;
     } else {
@@ -2764,11 +2764,11 @@ int ai_Unk493be0(AGCH *p, AIOBJ *o)
     if (p == 0 || o == 0 || p->sel == 0 || p->money < 2)
         return 0;
     if (p->sel == 7) {
-        if (p->unk166 != 0) {
+        if (p->officeKind != 0) {
             float d;
             int x;
 
-            if (amt_GetKindB(p->unk166, info) == 0)
+            if (amt_GetKindB(p->officeKind, info) == 0)
                 return 0;
             nn = amt_GetColumnOffices(info[1], 6, rec);
             if (nn == 0)
@@ -3100,7 +3100,7 @@ int ai_Unk4946c0(AIC4 *ch, AIPLAN *q)
             n += 2;
     }
     if (n == 5) {
-        if (c->unk166 == 0)
+        if (c->officeKind == 0)
             n = 4;
     } else if (n == 7 && c->unk00d < 2)
         n = 6;
@@ -4023,7 +4023,7 @@ int ai_Unk496b10(float *a, float *b, int i, AIPER *p, int f, AIARG *o1, AIARG *o
     *a = 0.0f;
     *b = 0.0f;
     if (!p->unk168) {
-        if (p->unk166 == 0xd)
+        if (p->officeKind == 0xd)
             goto fallback;
         x = ai_JudgeCatholic ? ai_JudgeCatholic->netId : -1;
         y = ai_JudgeProtestant ? ai_JudgeProtestant->netId : -1;
@@ -4230,7 +4230,7 @@ int ai_Unk4973f0(float *a, float *b, int i, AIPER *p, int f, AIARG *o1, AIARG *o
     }
     *a = 0.0f;
     *b = 0.0f;
-    if (p->unk167 && !p->unk166)
+    if (p->unk167 && !p->officeKind)
         k = 10.0f;
     else
         k = 1.0f;
@@ -4408,7 +4408,7 @@ int ai_Unk4979d0(AIPER *p, AIARG *s1, AIARG *s2)
         return 0;
     if (s1->arg2 == 0x39) {
         price = (int)gm_GoodsPrice(s1->ref, ai_OwnPlayer);
-        gm_FindById(0, (unsigned short **)&it, 0, s1->unk0c);
+        gm_FindById(0, (unsigned short **)&it, 0, s1->ref2);
         if (!it)
             return 0;
         cm_SendMoveGoods(-1, it->objId, ai_OwnPlayer, price);
@@ -4974,7 +4974,7 @@ int ai_Unk498c70(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
             bt = &AI_BTX[bl->type];
             if (bt->unk247 < bt->unk248) {
                 k = gm_BuildingJob(bt->kind);
-                r = gm_TitleJob(p->id, k);
+                r = gm_TitleJobI(p->id, k);
                 if (r) {
                     n = gm_TitlesLeft(r);
                     n = n / 2 + n % 2;
@@ -7808,7 +7808,7 @@ int ai_Unk49ec10(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2
     *b = -1e30f;
     if (f != 0)
         return 0;
-    q = gm_TitleJob(p->id, 4);
+    q = gm_TitleJobI(p->id, 4);
     if (q != 0 && gm_TitlesLeft(q) > 2) {
         if (ai_Unk4aaef0(p, &s1, &s2) == 0)
             return 0;
@@ -7832,7 +7832,7 @@ int ai_Unk49ed10(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     AIARG s2;
     int q;
 
-    q = gm_TitleJob(p->id, 4);
+    q = gm_TitleJobI(p->id, 4);
     if (a != 0x32 && a != 0x25 && a != 0)
         return 0;
     if (f != 0)
@@ -8768,7 +8768,7 @@ int ai_Unk4a0a70(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         s1.kind = 2;
         s1.ref = f;
         s1.arg = 1;
-        s1.unk0c = *(int *)(o + 2);
+        s1.ref2 = *(int *)(o + 2);
         s1.arg2 = 0x39;
         s2.arg2 = money;
         if (a != -1) {
@@ -8815,7 +8815,7 @@ credit:
         o1->kind = 4;
         o1->ref = n;
         o1->arg = 1;
-        o1->unk0c = bl->id;
+        o1->ref2 = bl->id;
         o2->kind = 1;
         o2->ref = *(int *)(o + 2);
         o2->arg = 1;
@@ -8852,7 +8852,7 @@ int ai_Unk4a0e60(G5CH *p, AIARG *s1, AIARG *s2)
     }
     if (s1->kind != 4 || s2->kind != 1)
         return 0;
-    G8_4FEA50((int *)&b, 0, 0, s1->unk0c);
+    G8_4FEA50((int *)&b, 0, 0, s1->ref2);
     if (b == 0)
         return 0;
     G8_4FEA50(0, (int)&o, 0, s2->ref);
@@ -8860,11 +8860,11 @@ int ai_Unk4a0e60(G5CH *p, AIARG *s1, AIARG *s2)
         return 0;
     memset(&m, 0, sizeof(m));
     m.type = 0x1e;
-    m.unk0c = s1->unk0c;
+    m.unk0c = s1->ref2;
     m.to = p->netId;
     m.unk36 = 1;
     m.time = ai_TimeT;
-    *(int *)&m.unk58 = s1->unk0c;
+    *(int *)&m.unk58 = s1->ref2;
     cm_BeginGroup("upgr_ai_zunfthaus");
     cm_SendMoveGoods(-1, *(int *)(o + 2), ai_OwnPlayer, (int)(gm_BuildingKindValue(s1->ref) * 0.3f));
     cm_SendLongMessage((AIMSG *)&m);
@@ -10582,7 +10582,7 @@ unsigned int ai_FindCandidates(AIPER *p, unsigned int n, unsigned int fl, float 
 /* 0x4a61d0: as 0x4a5b50 with one flag set fl for every slot, and the partners' quarter (0x166, 0x4e7c40) at most
    d away from p's; returns the number found */
 
-unsigned int ai_Unk4a61d0(AIPER *p, unsigned int a, unsigned int fl, float lo, float hi, int d, unsigned short *id)
+unsigned int ai_PickPartnerChainLevel(AIPER *p, unsigned int a, unsigned int fl, float lo, float hi, int d, unsigned short *id)
 {
     unsigned int q[0x14];
     unsigned int i, c;

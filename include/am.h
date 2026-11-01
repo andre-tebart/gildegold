@@ -39,7 +39,7 @@ typedef struct AIPER {                  /* a character, 0x21c bytes (ai_Chars[76
     char pad131[0x33];
     unsigned char jobId;               /* 0x164 */
     char pad165[0x1];
-    unsigned char unk166;               /* 0x166 */
+    unsigned char officeKind;           /* 0x166, the kind of the office held, 0 = none (ai.h AICHAR) */
     unsigned char unk167;               /* 0x167 */
     unsigned char unk168;               /* 0x168 */
     char pad169[0x7];
@@ -165,7 +165,7 @@ typedef struct AIARG {                  /* 0x18 bytes, what a decide callback fi
     char pad01[3];
     int ref;                            /* 0x04, what the kind refers to: a building id, an item, a character's netId (kind 7) */
     unsigned int arg;                   /* 0x08, a second value of the kind: a count (kind 7 at 0x4a8ad0: 1..5), -1 = none */
-    int unk0c;                          /* 0x0c */
+    int ref2;                           /* 0x0c, a second reference: a character's netId (the helper at 0x4ab3e0, the sender msg.fromId) */
     int arg2;                           /* 0x10, a third value of the kind, passed on in the action's message (msg.arg[3] at 0x48ff40): a count (0x4a9030: graves), a step */
     float unk14;                        /* 0x14 */
 } AIARG;
@@ -375,7 +375,7 @@ typedef struct AGCH {                   /* a character, 0x21c bytes */
     char pad088[0xa8];
     unsigned char sel;                  /* 0x130 */
     char pad131[0x35];
-    unsigned char unk166;               /* 0x166 */
+    unsigned char officeKind;           /* 0x166, the kind of the office held, 0 = none (ai.h AICHAR) */
     char pad167[0x2d];
     int money;                         /* 0x194 */
     char pad198[0x30];
@@ -592,7 +592,7 @@ typedef struct AIC4 {                   /* 0x21c bytes, ai_Chars[] with the fiel
     char pad028[0xe4];
     float unk10c;                       /* 0x10c */
     char pad110[0x56];
-    unsigned char unk166;               /* 0x166 */
+    unsigned char officeKind;           /* 0x166, the kind of the office held, 0 = none (ai.h AICHAR) */
     char pad167[0xa9];
     int partner;                        /* 0x210 */
     char pad214[8];
@@ -1025,7 +1025,7 @@ extern const int ai_Unk5ed100[16];                                              
 int ai_Unk4a5b50(AIPER *p, unsigned int a, int *flags, float lo, float hi, unsigned short *id); /* 0x4a5b50, unk_490830.h: other view */
 int ai_Unk4a5d30(AIPER *p, unsigned int fl, int n, unsigned short *ids, float lo, float hi, unsigned short *id); /* 0x4a5d30 */
 unsigned int ai_FindCandidates(AIPER *p, unsigned int n, unsigned int fl, float lo, float hi, unsigned short *out); /* 0x4a5ef0 */
-unsigned int ai_Unk4a61d0(AIPER *p, unsigned int a, unsigned int fl, float lo, float hi, int d, unsigned short *id); /* 0x4a61d0 */
+unsigned int ai_PickPartnerChainLevel(AIPER *p, unsigned int a, unsigned int fl, float lo, float hi, int d, unsigned short *id); /* 0x4a61d0 */
 extern const int ai_Unk5ed140[16];                                                    /* 0x5ed140, random steps */
 /* 0x4a63f0 ai_PickActionBuilding is declared in am.h */
 int ai_Unk4a6570(AIPER *p, int a, __int64 mask, float lo, float hi, unsigned char n, int *out); /* 0x4a6570 */
