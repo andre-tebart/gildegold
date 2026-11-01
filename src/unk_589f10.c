@@ -55,6 +55,10 @@ extern GAPDATA full_data_6f2684[];
 #include "f3init.h"
 #include "net.h"
 #include "gfx.h"
+#include "d3_io_a.h"
+#include "main.h"
+#include "unk_4b39f0.h"
+#include "unk_5d33b0.h"
 extern int sv_PopRequest;
 extern INIT_PLAYER init_PlayerProfile;
 extern int main_ChoosePlayer(int mask, int flag);
