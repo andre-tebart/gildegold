@@ -93,27 +93,29 @@ void amt_InitTable(void)
     amt_Table[40].kind = 38;
     amt_Table[41].kind = 39;
 }
-/* 0x4e5e50, the rating of the character a (+0x164 / +0x166 the office rank and party bytes) as seen by b: the float tables 0x5edc90 (15 rows of 10: id, 9
-   columns) and 0x5edef0 (5 rows) by the rank (amt_KindColumn, 1 .. 6) and the status bits +0x1cc (0x400 .. 0x2000, 0x200 give the keys 0x24 .. 0x27, 0x23);
-   mode (>= 2: plus the absolute value of the entry, >= 3: plus 10.0); with flag the friendship value of amt_GetKind / 0x4f2720 is taken off (a = b's party: added,
-   mode 2: times 0.75). Every branch checked against the original on 2026-10-25 (the tabA / tabB loops, the status-key
-   chain, the +10.0 and the flag block); the remaining instruction difference is register allocation / scheduling */
+/* 0x4e5e50, the rating of the character a (+0x164 / +0x166 the office rank and party bytes) as seen by b: the float tables 0x5edc90 (15 rows of 10: an int id, 9
+   columns) and 0x5edef0 (5 rows, an int status key, 9 columns) by the rank (amt_KindColumn, 1 .. 6) and the status bits +0x1cc (0x400 .. 0x2000, 0x200 give the keys
+   0x24 .. 0x27, 0x23); mode (>= 2: plus the absolute value of the entry, >= 3: plus 10.0); with flag the friendship value of amt_GetKind / 0x4f2720 is taken off
+   (a = b's party: added, mode 2: times 0.75) @deep Read whole against the original and fixed: the table ids are compared as ints (mov ecx,[esi] / cmp eax,ecx; the TabA search calls gm_TitleGroup per row and compares it with AMT_BITS), both table searches are for loops with the hit's body inside and a break (a miss leaves r untouched, the old code read the row after the end), a's status test is & 0x3c00 then the 0x200 key (the old 0x3e00 mask came from a merged condition). Left, unchanged by goto / break-then-test / assignment-in-condition variants: VC6 folds our akey (= 0x200 ? 0x23 : 0) into the 0x3c00 test (ours test ah,0x3e / jne, the original test ch,0x3c / jne then and/neg/sbb/and 0x23 stored to [esp+0x54], a's dead home slot), places the TabA hit block after the status chain (je at +0x4f: ours to +0x73, the original's to +0x5f), and keeps r in a frame slot of its own (frame 0x44 vs 0x40; the original keeps r in b's home slot [esp+0x58]) with the key in ecx where the original has eax. */
 
 float amt_Rating(char *a, char *b, int mode, int flag)
 {
     float r, fl;
     char buf[0x40];
-    int k, i, key, n;
+    int k, i, key, akey, n;
     unsigned int f2;
 
     r = 0.0f;
     k = amt_KindColumn((unsigned char)b[0x166]);
     if (k > 0 && k < 7) {
-        for (i = 0; amt_TabA[i * 10] != (float)gm_TitleGroup((unsigned char)a[0x164]) && (int)&amt_TabA[i * 10] < AMT_TABA_END; i++)
-            ;
-        r = amt_TabA[i * 10 + k + 1];
-        if ((unsigned int)mode >= 2)
-            r = r + (float)abs((int)amt_TabA[i * 10 + k + 1]);
+        for (i = 0; i < 15; i++) {
+            if (gm_TitleGroup((unsigned char)a[0x164]) == AMT_BITS(&amt_TabA[i * 10])) {
+                r = amt_TabA[i * 10 + k + 1];
+                if ((unsigned int)mode >= 2)
+                    r = r + (float)abs((int)amt_TabA[i * 10 + k + 1]);
+                break;
+            }
+        }
     }
     f2 = AMT_STATUS(b);
     if (f2 & 0x1000)
@@ -128,11 +130,17 @@ float amt_Rating(char *a, char *b, int mode, int flag)
         key = (f2 & 0x200) ? 0x23 : 0;
     if (key != 0) {
         f2 = AMT_STATUS(a);
-        if ((f2 & 0x3c00) == 0 && ((f2 & 0x200) ? 0x23 : 0) == 0) {
-            for (n = 0; n < 5 && AMT_BITS(&amt_TabB[n * 10]) != key; n++)
-                ;
-            if (n < 5)
-                r = r + amt_TabB[n * 10 + amt_KindColumn((unsigned char)b[0x166]) + 1];
+        if ((f2 & 0x3c00) == 0) {
+            /* a's own status key (only 0x23 is left possible): a without status gets b's from amt_TabB */
+            akey = (f2 & 0x200) ? 0x23 : 0;
+            if (akey == 0) {
+                for (n = 0; n < 5; n++) {
+                    if (AMT_BITS(&amt_TabB[n * 10]) == key) {
+                        r = r + amt_TabB[n * 10 + amt_KindColumn((unsigned char)b[0x166]) + 1];
+                        break;
+                    }
+                }
+            }
         }
         if ((unsigned int)mode >= 3)
             r = r + 10.0f;
