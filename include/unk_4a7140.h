@@ -26,27 +26,27 @@ typedef struct G10SEAT {                /* 0x34 bytes; seat 0 is the player, 1 a
     void *who;                          /* 0x00, AIPER (seat 0) / G10NPC */
     int model;                          /* 0x04, 0x639 + the model's index (0x4fb770) */
     int card[5];                        /* 0x08, indices into the deck, -1 = none */
-    int unk1c;                          /* 0x1c */
-    int unk20;                          /* 0x20 */
-    int unk24;                          /* 0x24 */
-    int unk28;                          /* 0x28 */
-    int unk2c;                          /* 0x2c, the NPC's strategy (0x4a77e0) */
+    int bet;                            /* 0x1c, what the seat has put into the pot this round (+= stake2) */
+    int bold;                           /* 0x20, 1 for one NPC in five (rolled per round): folds only with a clearly better open hand (reasoned name) */
+    int swapped;                        /* 0x24, the card the seat gave away in the exchange, -1 = none */
+    int foldedAt;                       /* 0x28, the phase the seat folded in, -1 = still playing */
+    int strategy;                       /* 0x2c, the NPC's exchange strategy (0x4a77e0: 1 keep pairs, 2 the most common rank, 3 ..) */
     int unk30;                          /* 0x30 */
 } G10SEAT;
 typedef struct G10GAME {                /* 0xc0 bytes, the game the caller hands to 0x4a7140 (0xf83654) */
     int phase;                          /* 0x00 */
     G10SEAT seat[3];                    /* 0x04 */
-    int unka0;                          /* 0xa0 */
+    int pot;                            /* 0xa0, the money in the pot (+= stake2 per bet; paid to the winner at the round end) */
     int stake;                          /* 0xa4 */
     int money;                          /* 0xa8 */
     int stake2;                         /* 0xac */
-    int unkb0;                          /* 0xb0, 0..2 */
+    int turn;                           /* 0xb0, 0..2, the seat whose turn it is (0x4a86f0: that NPC sets the stake; 0 = the player's dialog); rolled per round */
     unsigned char left;                 /* 0xb4, cards left in the deck */
-    unsigned char unkb5;                /* 0xb5 */
+    unsigned char dealt;                /* 0xb5, the cards dealt this round (+3 at the deal, +1 per further card) */
     short pad;
     short winner;                       /* 0xb8, the winning seat of the round (ai_Unk4a8190 at the round end; 0 = the player), 4 = none yet (ai_PokerStart) */
     short padba;
-    int unkbc;                          /* 0xbc */
+    int winHand;                        /* 0xbc, the hand kind of the round's winner */
 } G10GAME;
 typedef struct G10CARD {                /* 16 bytes, the deck at 0xf83660 (24 cards) */
     int suit;                           /* 0x0 */
