@@ -1273,37 +1273,37 @@ int ai_DecideSuitor(int a, AICHAR *p, int c, int d, AIARG *m)
     }
     return 0;
 }
-/* 0x4a9280, decide callback: as 0x4a9080 with a closer acquaintance (at least 5..12) */
+/* 0x4a9280, decide callback: as ai_DecideAcquaintance with an owner counted more often (at least 5..12 times) */
 
-int ai_Unk4a9280(int a, AIPER *p, int c, int d, unsigned char *m)
+int ai_DecideCloseAcquaintance(int a, AICHAR *p, int c, int d, AIARG *m)
 {
     int cnt[32];
     int ids[32];
-    unsigned short r;
-    int n, i, j;
-    AIPER *o;
+    int n, i, j, lim;
+    AICHAR *o;
     unsigned char k;
 
-    r = util_RandomU(8);
-    if (p->unk166 != 13) {
+    lim = util_RandomU(8) + 5;
+    if (p->officeKind != 13) {
         n = gv_RankRecordOwners(ids, cnt, p->id);
         if (n > 0) {
             i = 0;
             j = n;
             do {
-                if (cnt[i] >= r + 5) {
-                    o = AI_505DF0(ids[i]);
-                    if (o != 0 && o->kind != 15 && ((unsigned char *)o)[8] != 0) {
-                        k = o->unk166;
+                if (cnt[i] >= lim) {
+                    o = (AICHAR *)gm_FindChar(ids[i]);
+                    if (o != 0 && o->kind != 15 && o->health != 0) {
+                        k = o->officeKind;
                         if (k != 13 && k != 27 && k != 15 && k != 21) {
-                            m[0] = 7;
-                            *(int *)(m + 4) = o->netId;
+                            m->kind = 7;
+                            m->ref = o->netId;
                             return 1;
                         }
                     }
                 }
+                j--;
                 i = (i + 1) % n;
-            } while (--j);
+            } while (j != 0);
         }
     }
     return 0;
@@ -1765,7 +1765,7 @@ int ai_Unk4aa120(int a, AIPER *p, int c, unsigned char *in, unsigned char *m)
     default:
         return 0;
     case 3:
-        return G10_CB(ai_Unk4a9280)(a, p, ctx, in, m);
+        return G10_CB(ai_DecideCloseAcquaintance)(a, p, ctx, in, m);
     case 4:
         return G10_CB(ai_Unk4a9350)(a, p, ctx, in, m);
     case 7:

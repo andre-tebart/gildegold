@@ -353,3 +353,4 @@
 2026-11-01T20:47:14 0x004a9150 data ai_Unk4a9150 -> ai_EvalOwnYearTurn by:main why:0x4a9150 eval callback: money >= 8 and netId % 4 == ai_Time.year % 4 (the character's turn in a four-year cycle), then one in four
 2026-11-01T20:48:12 0x004a91a0 func ai_Unk4a91a0 -> ai_DecideSuitor by:main why:0x4a91a0 decide callback: an unmarried character (relatives[0] none) not in an event 0x41 picks a candidate of the other sex (reasoned: a suitor), into m kind 7
 2026-11-01T20:49:00 0x004a5ef0 func ai_Unk4a5ef0 -> ai_FindCandidates by:main why:0x4a5ef0: up to n candidate characters for an action with the flags fl, from two random walks over all 768 characters, rated within lo..hi (its address comment)
+2026-11-01T20:49:29 0x004a9280 func ai_Unk4a9280 -> ai_DecideCloseAcquaintance by:main why:0x4a9280 decide callback: as ai_DecideAcquaintance (0x4a9080) with a higher count threshold (5..12)
