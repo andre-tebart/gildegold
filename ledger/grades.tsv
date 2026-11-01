@@ -1595,7 +1595,7 @@ exe	0x00495520	ai_Unk495520	am	draft	draft
 exe	0x00495770	ai_Unk495770	am	byte	draft		
 exe	0x00495790	ai_Unk495790	am	byte	draft		
 exe	0x004957a0	ai_Unk4957a0	am	byte	draft		
-exe	0x004957d0	ai_ChooseAction	am	draft	draft		
+exe	0x004957d0	ai_ChooseAction	am	draft	readable		
 exe	0x00495a50	ai_Unk495a50	am	draft	draft		
 exe	0x00495ce0	ai_ExecuteAction	am	draft	draft		
 exe	0x00495ee0	ai_Unk495ee0	am	byte	draft		
@@ -1743,13 +1743,13 @@ exe	0x004a5140	ai_Unk4a5140	am	draft	draft
 exe	0x004a5320	ai_Unk4a5320	am	draft	draft		
 exe	0x004a5540	ai_Unk4a5540	am	draft	draft		
 exe	0x004a5760	ai_Unk4a5760	am	draft	draft		
-exe	0x004a58d0	ai_Unk4a58d0	am	draft	draft		
+exe	0x004a58d0	ai_PickPartnerChain	am	draft	draft		
 exe	0x004a5a30	ai_Unk4a5a30	am	draft	draft		
 exe	0x004a5b50	ai_Unk4a5b50	am	draft	draft		
 exe	0x004a5d30	ai_Unk4a5d30	am	draft	draft		
 exe	0x004a5ef0	ai_Unk4a5ef0	am	draft	draft		
 exe	0x004a61d0	ai_Unk4a61d0	am	draft	draft		
-exe	0x004a63f0	ai_Unk4a63f0	am	draft	draft		
+exe	0x004a63f0	ai_PickActionBuilding	am	draft	draft		
 exe	0x004a6570	ai_Unk4a6570	am	draft	draft		
 exe	0x004a66f0	ai_Unk4a66f0	am	byte	draft		
 exe	0x004a67a0	ai_Unk4a67a0	am	draft	draft		
@@ -1766,26 +1766,26 @@ exe	0x004a7a20	ai_PokerPayStakes	unk_4a7140	byte	draft
 exe	0x004a7ac0	ai_PokerPickStrategies	unk_4a7140	draft	readable	deep	
 exe	0x004a7c20	ai_PokerNpcFold	unk_4a7140	shape	readable		
 exe	0x004a7e70	ai_PokerOpenCounts	unk_4a7140	draft	readable	deep	
-exe	0x004a7f50	ai_Unk4a7f50	unk_4a7140	draft	draft		
-exe	0x004a8190	ai_Unk4a8190	unk_4a7140	draft	draft		
+exe	0x004a7f50	ai_PokerRateHand	unk_4a7140	shape	readable		
+exe	0x004a8190	ai_PokerShowdown	unk_4a7140	draft	readable	deep	
 exe	0x004a8520	ai_PokerDealThree	unk_4a7140	byte	readable		
 exe	0x004a8590	ai_PokerDealFourth	unk_4a7140	byte	readable		
 exe	0x004a85e0	ai_PokerDealFifth	unk_4a7140	byte	readable		
 exe	0x004a8630	ai_PokerExchange	unk_4a7140	byte	readable		
 exe	0x004a8650	ai_PokerAnte	unk_4a7140	byte	draft		
 exe	0x004a8690	ai_PokerEndRound	unk_4a7140	byte	draft		
-exe	0x004a86f0	ai_PokerNpcSetStake	unk_4a7140	draft	readable		
-exe	0x004a8760	ai_Unk4a8760	unk_4a7140	draft	draft		
+exe	0x004a86f0	ai_PokerNpcSetStake	unk_4a7140	shape	readable		
+exe	0x004a8760	ai_DecideOfficePartner	unk_4a7140	shape	readable		
 exe	0x004a8a50	ai_Unk4a8a50	unk_4a7140	byte	draft		
-exe	0x004a8ad0	ai_Unk4a8ad0	unk_4a7140	draft	draft		
+exe	0x004a8ad0	ai_DecidePartnerOtherSex	unk_4a7140	byte	readable		
 exe	0x004a8bf0	ai_Unk4a8bf0	unk_4a7140	byte	draft		
 exe	0x004a8c10	ai_AlwaysTrue	unk_4a7140	byte	readable		
-exe	0x004a8c20	ai_Unk4a8c20	unk_4a7140	draft	draft		
+exe	0x004a8c20	ai_EvalOwnTimeSlot	unk_4a7140	byte	readable		
 exe	0x004a8c80	ai_Unk4a8c80	unk_4a7140	byte	draft		
 exe	0x004a8d20	ai_Unk4a8d20	unk_4a7140	byte	draft		
-exe	0x004a8db0	ai_Unk4a8db0	unk_4a7140	draft	draft		
+exe	0x004a8db0	ai_DecideBuildingResident	unk_4a7140	draft	readable	deep	
 exe	0x004a8ee0	ai_Unk4a8ee0	unk_4a7140	byte	draft		
-exe	0x004a8f20	ai_Unk4a8f20	unk_4a7140	draft	draft		
+exe	0x004a8f20	ai_DecideUnfriendlyPair	unk_4a7140	byte	readable		
 exe	0x004a9030	ai_Unk4a9030	unk_4a7140	draft	draft		
 exe	0x004a9080	ai_Unk4a9080	unk_4a7140	draft	draft		
 exe	0x004a9150	ai_Unk4a9150	unk_4a7140	draft	draft		

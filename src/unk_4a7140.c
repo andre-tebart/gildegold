@@ -5,6 +5,8 @@
    (registration 0x4abed0, the last function); one .data block 0x600490..0x600f60 in function order.
    Open: possible second unit from 0x4aa580 (3-parameter callbacks, "aip_Exec*"); codegen is neutral, only the
    single .data block keeps it one file.
+   Open: the leisure callbacks take the character as AIPER (am.h) or AICHAR (ai.h), as each needs named fields;
+   the two views wait for the am.h / ai.h unification (am.c's Open line).
    unit of rea 8cef7d5b (src/game/unk_4a7140.c); boundaries in decl/text.dcl */
 #include "txt_views.h"
 #include <math.h>
