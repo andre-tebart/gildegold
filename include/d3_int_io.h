@@ -73,7 +73,6 @@ extern char d3_LodMissing;                  /* 0x6339e4, set when an object LOD 
 
 void d3_AppendSibling(D3OBJECT *first, D3OBJECT *obj);                                  /* 0x43cb20, d3_engine.c */
 void d3e_LoadEvents(void *f, D3OBJECT *obj);                                            /* 0x43e970, d3_engine.c */
-int d3_SceneVersion(unsigned int version);                                                 /* 0x44a9e0, d3_obj.c */
 D3OBJECT *rd_object(void *f, D3OBJECT *parent, unsigned int version, char reload);  /* 0x44abb0 */
 struct D3FLMAP *d3io_ReadFloor(void *f, unsigned int version);                           /* 0x44b920 */
 
