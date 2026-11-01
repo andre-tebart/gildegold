@@ -117,8 +117,6 @@ int amt_GetOfficeRate(char *c, int x, float *out);  /* 0x4e60b0 */
 void amt_InitTable(void);               /* 0x4e5cd0 */
 extern const float amt_TabA[];                /* 0x5edc90, 15 rows of 10 floats (id, 9 columns by the rank) */
 extern const float amt_TabB[];                /* 0x5edef0, 5 rows of 10 */
-int gm_TitleGroup(int k);                /* 0x504ad0, am.h */
-int gv_GetTableRecord(int i, int *out);                     /* 0x4f2720 */
 float amt_Rating(char *a, char *b, int mode, int flag);  /* 0x4e5e50 */
 
 #pragma pack(push, 1)
@@ -162,63 +160,40 @@ typedef struct AMTRANGEW {               /* an AMTRANGE's first pair read as the
     int word1;                           /* 0x2, s1 | (the low half of i2) << 16 */
 } AMTRANGEW;
 #pragma pack(pop)
-extern char ai_Chars[][0x21c];      /* 0x770b80 */
-extern unsigned short *ai_PlayerChar;    /* 0x6f1bf8, @original: cm.h / gv.h declare char * (the same pointer; their units add byte offsets, ai_PlayerChar + 4, ch[2]); am.c / amt.c read the first word (*ai_PlayerChar) */
 extern char ch_EmptyName[];             /* 0x631090 */
-void txt_Format(char *buf, int id, ...);  /* 0x5176d0 */
-int he_ShowNews(int pid, int fl, char *text, int unused, int ev, char *text2);                     /* 0x53dda0 */
-unsigned char * gm_BuildQuery(int n, ...);                   /* 0x501190 */
-unsigned char * gm_BuildNext(void);                   /* 0x501030 */
 int gm_GetWorth(unsigned short id);    /* 0x50a640 */
 extern int d3_CurrentScene;                /* 0x633444 */
-extern char *ai_BTypes;              /* 0x7e3f30 */
 extern char ai_DataPath[];             /* 0x75dca0 */
 extern char ai_Time[];             /* 0x770ae0 */
-int ai_BuildingName(int name, char *out);  /* 0x58f640, am.h */
 int ai_FindBauplaetze(char *name, int *out); /* 0x58f7a0, am.h */
 void ai_ObjectAngle(void *out, int plot);  /* 0x58fd90 (unk_58bbd0.c) */
 void err_Message(char *text);                     /* 0x4222b0 */
 int cm_SendLongMessage(char *msg);                     /* 0x4c4b70 */
 char * he_FindEvent(int n, ...);                     /* 0x53e400 */
-float util_RandomF(void);               /* 0x42ec20 */
 float gm_GetSkill(char *c, int skill);                   /* 0x504ec0 */
 float gm_GoodsValue(int p, unsigned id); /* 0x4ffbf0 */
 int gm_JobBuildingType(int x);          /* 0x504050 */
 void gm_Shuffled(unsigned char n, int *out); /* 0x505ca0 */
 char * gm_FindGoods(int p, unsigned id);                     /* 0x4ffc40 */
-void cm_SendGoodsDelta(char *p, unsigned char k);                     /* 0x4c5710 */
 void cm_SendSetField(int a, int b, int c, int d, int e);                     /* 0x4c4a60 */
 void cm_SendMoneyDelta(int a, int b);                     /* 0x4c5f60 */
 void gm_SendMoneyDelta(int a, int b);                          /* 0x50cc50, f3gm.c: forwards to cm_SendMoneyDelta (the original calls this thunk) */
 int sv_MessageBox(int text, unsigned flags); /* 0x521150, sv.c */
-int gm_FindById(int *bld, int *obj, int *chr, int id);                     /* 0x4fea50 */
-void he_MessageBoxQuickjump(int a1, int a2, char *text, char fl, int a5, int a6, int a7, char *jump, char *text2);                     /* 0x53dee0 */
 extern int amt_Flip;                    /* 0x60f118, 2 at the start */
 extern unsigned char amt_PriceRows[];   /* 0x61a348, the guild-house price table: 37 rows of 0x15 bytes (the building kind, 10 goods ids) */
 #define AMT_CHARS_END (&ai_CharInts[0x300][0])  /* 0x7d5f84, the word past the last character record */
 int util_Random(unsigned short n);      /* 0x42ec00, tr.c; the callers that read a 16-bit result (ch_RandomNear, anm_Update, ai_Unk4d88c0 ..) call util_RandomU, a cast in their head */
-int gm_TitleNumber(int group, int rank);  /* 0x5043d0, f3gm.c: the title number of the rank in the group */
-int cm_SendCreateCharacter(unsigned char a, int b, int c, unsigned short d, int e, unsigned char f, unsigned char g, unsigned char h);  /* 0x4c4650 */
 void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d);  /* 0x4c4830 */
 extern unsigned char ai_OwnPlayer;      /* 0x6f1bc5 */
 void cm_BeginFieldBlock(char *o, int id);     /* 0x4c3ba0 */
 int cm_AddFieldDelta(int size, int n, short field, void *v);  /* 0x4c3c00 */
 void cm_SendFieldDeltas(void);                /* 0x4c49a0 */
-int ai_TrustedOfTwo(struct AIPER *p, struct AIPER *b, struct AIPER *c, int *k);  /* 0x4aab90 */
-int ai_TrustedOfFour(int k, struct AIPER *p, int *ids, int *out);                /* 0x4aad30 */
 void cm_SendRelations(int a, int b, int c, int d);                     /* 0x4c4b00 */
 int cm_GetSlotState(int h);                     /* 0x4c3ae0 */
-void sv_PumpNet();                    /* 0x52fe00 */
 /* ai_TimeHour (0x770ae4, the clock's hour) is no object: time_view.h views it in ai_Time + 4 */
 extern unsigned short ai_PlayerId;     /* 0x6f25b8 (as am.h / cm.h / gv.h) */
-void cm_SendTradeMessage(char *p);                     /* 0x4c5fe0 */
 void ai_Unk5a8cb0(unsigned short *x, char *c);   /* 0x5a8cb0, unk_58bbd0.c: sends the office text 0x20bb to c for x */
 void ai_SendSwapText(unsigned short *c, unsigned short *o1, unsigned short *o2);  /* 0x5a9330, unk_58bbd0.c: the swap text */
-short * gm_FindChar(int id);             /* 0x505df0 */
-void cm_BeginGroup(const char *s);       /* 0x4c4540 */
-void cm_EndGroup(const char *s);       /* 0x4c4580 */
-int cm_SendApplication(char *p);                      /* 0x4c58a0 */
-int cm_SendOfficeRecord(char *p);                     /* 0x4c58e0 */
 int amt_ApplyForOffice(char *c, unsigned int kind);  /* 0x4e6180 */
 int amt_CheckApplication(struct AMTAPP *m);           /* 0x4e6360 */
 int amt_AcceptApplication(AMTAPP *m);           /* 0x4e6430 */
@@ -287,8 +262,6 @@ int amt_LoadAemter(void *f, int version);  /* 0x4ea7a0 */
 void amt_Unk4ea8e0(char *c);            /* 0x4ea8e0 */
 void amt_Unk4eaa00(unsigned int k);     /* 0x4eaa00 */
 float gm_Liking(unsigned a, unsigned b, int c);   /* 0x50c550 */
-int ls_Read(void *buf, int size, int count, int f);  /* 0x51c920, ls.c's read (true when the fread returned a positive count); ls.c has no header yet */
-unsigned vfs_fwrite(void *buf, int size, int n, struct VFSFILE *f);  /* 0x430e30 */
 
 int amt_GetOwnedOfficePay(void);        /* 0x4ea990 */
 
