@@ -149,7 +149,6 @@ void gm_RefreshGoodsLists(unsigned p);                     /* 0x4ff190 */
 int gm_AddObjekt(int id, int proto, int n);                     /* 0x500970 */
 void unk_Unk503c60(int c, int mode);                     /* 0x503c60 */
 void cm_SendCommand(void *p);                     /* 0x4c61b0 */
-float util_RandomSq(void);              /* 0x42ec40 */
 extern char ai_Chars[][0x21c];      /* 0x770b80, the characters */
 extern signed char ai_Relations[768][768];  /* 0x7e5360 */
 extern signed char ai_RelationMemory[768][768];  /* 0x889f80 */
@@ -163,7 +162,6 @@ extern int ai_Unk1460ae0;               /* 0x1460ae0 */
 int ahm_SaveWalk(void *f);             /* 0x4ebfb0 */
 int ahm_LoadWalk(void *f);             /* 0x4ec140 */
 int ahm_SendCreateAlchemist(unsigned char *o, AHMSTEP *s);  /* 0x4ec490, posts the type 99 message that creates the alchemist's owner character from the step */
-int ls_Read(void *buf, int size, int count, int f);  /* 0x51c920, ls.c's read (true when the fread returned a positive count); ls.c has no header yet */
 void cm_SendCreateAlchemist(void *p);                     /* 0x4c6170 */
 
 int ahm_StepValue(char *p);             /* 0x4ec320 */
