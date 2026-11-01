@@ -4163,7 +4163,7 @@ int ai_StepShot(SHOTREC *shot)
 
 /* 0x5dc9d0, moves a cannon ball in slow motion (1318 B; gv.c 0x4edf80 calls it instead of ai_StepShot when the
    effect's +0x14 flag is set): ai_StepShot instruction for instruction with the step ai_ShotHalfStep (1/148 s)
-   for ai_ShotStep, in the gravity, the per-mass factor and the position move. */
+   for ai_ShotStep, in the gravity, the per-mass factor and the position move. @deep Read whole against the original 0x5dc9d0..0x5dcef6: it is ai_StepShot instruction for instruction with ai_ShotHalfStep for ai_ShotStep (the disassemblies differ only in those four operands); same body and the same velocity copy v (348 of 354 instructions). Left, as in ai_StepShot: (1) VC6 reorders the drag product chain - the original multiplies sign*area*drag*density*v*v*0.5 (wind x/z: area*w*w*sign*...), ours sign*drag*density*v*v*area*0.5 for every association tried (6 macro forms, identical code or worse); (2) the temporaries: the original spills dx and the half sums into 0x84/0x68/0x6c and reuses the dead v slots [0x10]/[0x14], frame 0x98 vs ours 0x5c - FPU stack scheduling and spill-slot allocation. */
 int ai_StepShotSlow(SHOTREC *shot)
 {
     float fall = ai_ShotHalfStep * ai_Gravity;
@@ -4172,8 +4172,8 @@ int ai_StepShotSlow(SHOTREC *shot)
     int ticks, i, px, pz, npx, npz;
     float height;
     float windX, windY, windZ;
-    float vx, vy, vz, dx, dy, dz, ax, ay, az, bx, by, bz;
-    D3VECTOR next;
+    float dx, dy, dz, ax, ay, az, bx, by, bz;
+    D3VECTOR v, next;
 
     if (shot->state != 1)
         return 0;
@@ -4187,21 +4187,19 @@ int ai_StepShotSlow(SHOTREC *shot)
     windY = DRAG(shot->wind.pos[1]);
     windZ = DRAG(shot->wind.pos[2]);
     for (i = 0; i < ticks; i++) {
-        vx = shot->vel.v.x;
-        vy = shot->vel.v.y;
-        vz = shot->vel.v.z;
-        dx = DRAG(vx);
-        dy = DRAG(vy);
-        dz = DRAG(vz);
+        v = shot->vel.v;
+        dx = DRAG(v.x);
+        dy = DRAG(v.y);
+        dz = DRAG(v.z);
         ax = (dx + windX) * perMass;
         ay = (dy + windY) * perMass - fall;
         az = (dz + windZ) * perMass;
-        vx = ax + vx;
-        vy = ay + vy;
-        vz = az + vz;
-        dx = DRAG(vx);
-        dy = DRAG(vy);
-        dz = DRAG(vz);
+        v.x = ax + v.x;
+        v.y = ay + v.y;
+        v.z = az + v.z;
+        dx = DRAG(v.x);
+        dy = DRAG(v.y);
+        dz = DRAG(v.z);
         next.x = shot->pos.x;
         next.y = shot->pos.y;
         next.z = shot->pos.z;
