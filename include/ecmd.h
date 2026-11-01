@@ -31,7 +31,6 @@ extern float d3if_AmbR;                 /* 0x5fcc78 */
 extern float d3if_AmbG;                 /* 0x5fcc7c */
 extern float d3if_AmbB;                 /* 0x5fcc80 */
 
-char d3if_Reload(D3OBJECT *obj, char *name);                                            /* 0x447340 */
 struct D3OBJECT * d3_LoadGroup(char *name, void *f, struct D3OBJECT *parent);                                 /* 0x44c3f0 */
 
 int ocmd_GetObjectHandle(char **name);                                                  /* 0x40d680 */
