@@ -1104,20 +1104,28 @@ int ai_Unk4a8d20(int a, AIPER *p, int c, int d, unsigned char *m)
     *(int *)(m + 4) = ((AIPER *)ai_CharsT)[id].netId;
     return 1;
 }
-/* 0x4a8db0, decide callback: a building of the character 0x6f0468 (or one near p), and a random character whose
-   building (0x16c) it is, into m (kind 7) */
+/* 0x4a8db0, decide callback: a building for action 4 of ai_Partner (or action 6 of p, rated 32..63), then from a
+   random start the first living character of kind 0 whose building (bld) it is, into m (kind 7, netId, building)
+   @deep Read the whole original 0x4a8db0..0x4a8ed4: both ai_PickActionBuilding calls (args checked push by
+   push: the __int64 class mask 0x1807d4190 as low/high, lo 0, the window 100 / roll+32), gm_BuildQuery,
+   the 0x300-character scan (id != -1, bld, kind 0, signed (i+1) % 0x300) and the AIARG stores correspond.
+   Left: the original hoists the two mask halves into esi / edi before the first call (push esi / push edi
+   at both calls) where ours pushes immediates (tried a local __int64 mask and the split-int view
+   AI_4A63F0_7: no change), and after the scan ours tests n once more on the break path (0x4a8e9e: test
+   esi,esi / jne + a second return-0 block) where the original goes straight to the found block; tried
+   do-while + break, top-tested while + break, the return inside the loop, a goto (those merge the three
+   early return-0 epilogues into the loop's: worse), for (n; n-- != 0;). */
 
-int ai_Unk4a8db0(int a, AIPER *p, int c, int d, unsigned char *m)
+int ai_DecideBuildingResident(int a, AIPER *p, int c, int d, AIARG *m)
 {
-    int k;
-    unsigned int i;
-    int n;
+    int k, i, n;
     AIBLD *b;
+    AICHAR *o;
 
     if (ai_Partner != 0)
-        ai_Unk4a63f0(AI_6F0468, 4, 0x1807d4190, 0, 100.0f, &k);
+        ai_PickActionBuilding((AIPER *)ai_Partner, 4, 0x1807d4190, 0, 100.0f, &k);
     if (k == -1) {
-        if (ai_Unk4a63f0(p, 6, 0x1807d4190, 0, (float)util_RandomU(0x20) + 32.0f, &k) == 0)
+        if (ai_PickActionBuilding(p, 6, 0x1807d4190, 0, (float)util_RandomU(0x20) + 32.0f, &k) == 0)
             return 0;
     }
     b = gm_BuildQuery(1, 1, k);
@@ -1125,18 +1133,20 @@ int ai_Unk4a8db0(int a, AIPER *p, int c, int d, unsigned char *m)
         return 0;
     i = util_RandomU(0x300);
     n = 0x300;
-    while (((AIPER *)ai_CharsT)[i].id == 0xffff
-           || *(AIBLD **)((unsigned char *)&((AIPER *)ai_CharsT)[i] + 0x16c) != b
-           || ((AIPER *)ai_CharsT)[i].kind != 0) {
-        if (--n == 0)
-            return 0;
-        i = (int)(i + 1) % 0x300;
+    while (n != 0) {
+        if (ai_CharsT[i].id != 0xffff && ai_CharsT[i].bld == b && ai_CharsT[i].kind == 0)
+            break;
+        n--;
+        i = (i + 1) % 0x300;
     }
-    if (&((AIPER *)ai_CharsT)[i] == 0)
+    if (n == 0)
         return 0;
-    m[0] = 7;
-    *(int *)(m + 4) = ((AIPER *)ai_CharsT)[i].netId;
-    *(int *)(m + 8) = b->id;
+    o = &ai_CharsT[i];
+    if (o == 0)
+        return 0;
+    m->kind = 7;
+    m->ref = o->netId;
+    m->arg = b->id;
     return 1;
 }
 /* 0x4a8ee0, eval callback: two in three if p's jobId is of kind 7, else one in four */
@@ -1582,7 +1592,7 @@ int ai_Unk4a9a00(int a, AIPER *p, int c, unsigned char *in, unsigned char *m)
     case 0x27:
         return G10_CB(ai_Unk4a8d20)(a, p, ctx, in, m);
     case 0x28:
-        return G10_CB(ai_Unk4a8db0)(a, p, ctx, in, m);
+        return G10_CB(ai_DecideBuildingResident)(a, p, ctx, in, m);
     case 0x29:
         return G10_CB(ai_Unk4a8ee0)(a, p, ctx, in, m);
     case 0x2a:

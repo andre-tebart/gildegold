@@ -1130,7 +1130,7 @@ int sprintf(char *buf, const char *fmt, ...); /* 0x5de652, the CRT's sprintf */
 
 struct AMTREC;  /* file-scope tag for the prototypes below */
 
-#define AI_4A63F0_7(p, a, fl, b, c, f, o) ((int (*)(void *, int, unsigned int, int, int, float, int *))ai_Unk4a63f0)(p, a, fl, b, c, f, o)
+#define AI_4A63F0_7(p, a, fl, b, c, f, o) ((int (*)(void *, int, unsigned int, int, int, float, int *))ai_PickActionBuilding)(p, a, fl, b, c, f, o)
 
 struct GCLOCK;  /* f3gm.h typedef; file-scope tag for the gm_AddTime prototype */
 
@@ -11913,7 +11913,7 @@ void ai_Unk5a5080(int param_1)
     } while (sv_RunFrame(ai_Unk5a5080, 0x67fff) != 0);
 }
 
-int ai_Unk4a63f0(struct AIPER *p, int a, __int64 mask, int c, float f, int *out); int unk_Unk4f2e30();
+int ai_PickActionBuilding(struct AIPER *p, int a, __int64 mask, int c, float f, int *out); int unk_Unk4f2e30();
 
 /* 0x5a5120, the kidnapping window "locations\diebesgilde\diebesgilde_entfuehrung" (698 B): param_1 the building
    (byte +0x1b1 a running attempt -> the text 0x19ba), the live character 0x520f90 (3, 0x770b80 + slot * 0x21c),

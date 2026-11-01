@@ -337,7 +337,7 @@ int ai_Unk4a4e30(struct AIBLD *b, int k);                                       
 int ai_Unk4a5140(int a, struct AIPER *p, int b, struct AIARG *s1, struct AIARG *s2, int f);         /* 0x4a5140 */
 int ai_Unk4a5320(struct AIPER *p, struct AIARG *s1, struct AIARG *s2);                               /* 0x4a5320 */
 int ai_Unk4a5540(int *item, int *obj, AIBLD *bld, int f);                       /* 0x4a5540 */
-int ai_Unk4a63f0(struct AIPER *p, int a, __int64 mask, int c, float f, int *out);    /* 0x4a63f0 */
+int ai_PickActionBuilding(struct AIPER *p, int a, __int64 mask, int c, float f, int *out);    /* 0x4a63f0 */
 void gm_Unk502fd0(int a, int b, int c, int d, int e);                     /* 0x502fd0 */
 int gm_JobBuildingType(int k);                                                        /* 0x504050 */
 int gm_FirstTitleNumber(int k);                                                        /* 0x504290 */
@@ -571,7 +571,7 @@ void ai_Unk4a5760(struct G5CH *p, int n, struct G9REC *rec, int *st);           
 /* am.h declares 0x4a63f0 with an __int64 mask; 0x48ff50..0x490350 pass it as two ints */
 /* am.h: id is an int; 0x490690 passes an unsigned short */
 #define AI_5044B0_US(id, a) ((int (*)(unsigned short, int))gm_TitleJob)(id, a)
-#define AI_4A63F0_7(p, a, fl, b, c, f, o) ((int (*)(void *, int, unsigned int, int, int, float, int *))ai_Unk4a63f0)(p, a, fl, b, c, f, o)
+#define AI_4A63F0_7(p, a, fl, b, c, f, o) ((int (*)(void *, int, unsigned int, int, int, float, int *))ai_PickActionBuilding)(p, a, fl, b, c, f, o)
 int ai_Unk49eec0(int a, struct G5CH *p, int f, struct AIARG *o1, struct AIARG *o2);                  /* 0x49eec0 */
 int gm_BuildingKindValue(int a);                                                        /* 0x509d30 */
 int gm_Unk509dc0(int unused, int kind);                                               /* 0x509dc0 */
@@ -1027,7 +1027,7 @@ int ai_Unk4a5d30(AIPER *p, unsigned int fl, int n, unsigned short *ids, float lo
 unsigned int ai_Unk4a5ef0(AIPER *p, unsigned int n, unsigned int fl, float lo, float hi, unsigned short *out); /* 0x4a5ef0 */
 unsigned int ai_Unk4a61d0(AIPER *p, unsigned int a, unsigned int fl, float lo, float hi, int d, unsigned short *id); /* 0x4a61d0 */
 extern const int ai_Unk5ed140[16];                                                    /* 0x5ed140, random steps */
-/* 0x4a63f0 ai_Unk4a63f0 is declared in am.h */
+/* 0x4a63f0 ai_PickActionBuilding is declared in am.h */
 int ai_Unk4a6570(AIPER *p, int a, __int64 mask, float lo, float hi, unsigned char n, int *out); /* 0x4a6570 */
 void d3t_GetObjectBounds(struct D3VECTOR *mn, struct D3VECTOR *mx, struct D3OBJECT *obj);             /* 0x413150, d3_tools.c */
 int ai_Unk4a66f0(AIBLD *x, float *a, AIBLD *y, float *b);                        /* 0x4a66f0 */

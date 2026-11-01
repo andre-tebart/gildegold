@@ -103,7 +103,7 @@ int ai_AlwaysTrue(void);                                                        
 int ai_EvalOwnTimeSlot(int a, AIPER *p);                                               /* 0x4a8c20 */
 int ai_Unk4a8c80(int a, AIPER *p, int c, int d, unsigned char *m);              /* 0x4a8c80 */
 int ai_Unk4a8d20(int a, AIPER *p, int c, int d, unsigned char *m);              /* 0x4a8d20 */
-int ai_Unk4a8db0(int a, AIPER *p, int c, int d, unsigned char *m);              /* 0x4a8db0 */
+int ai_DecideBuildingResident(int a, AIPER *p, int c, int d, struct AIARG *m);              /* 0x4a8db0 */
 int ai_Unk4a8ee0(int a, AIPER *p);                                               /* 0x4a8ee0 */
 /* am.h declares ai_PickPartnerChain with an int b (really a float) */
 #define G10_4A58D0(p, a, fl, b, f, id) ((int (*)(AIPER *, int, int *, float, float, unsigned short *))ai_PickPartnerChain)(p, a, fl, b, f, id)

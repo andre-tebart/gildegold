@@ -427,7 +427,7 @@ int ai_Unk4b7550(G14MSG *m)
         return 0x400;
     mask.LowPart = 0x400000;
     mask.HighPart = 0;
-    if (!ai_Unk4a63f0((AIPER *)c, 6, mask.QuadPart, 0, 100.0f, &o))
+    if (!ai_PickActionBuilding((AIPER *)c, 6, mask.QuadPart, 0, 100.0f, &o))
         return 0x400;
     if (!AI_4FEA50_4(&r, 0, 0, o))
         return 0x400;

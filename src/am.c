@@ -435,7 +435,7 @@ int ai_Unk48eb50(AIPX *p, AIARGX *s1, AIARGX *s2)
         v = -1;
         m.s.lo = 0x7b4c4a0;
         m.s.hi = 0;
-        ((int (*)(AIPX *, int, __int64, int, float, int *))ai_Unk4a63f0)(c, 0, m.q, 0, 100.0f, &v);
+        ((int (*)(AIPX *, int, __int64, int, float, int *))ai_PickActionBuilding)(c, 0, m.q, 0, 100.0f, &v);
         msg.car = v;
     }
     cm_SendLongMessage(&msg);
@@ -473,7 +473,7 @@ int ai_Unk48ec90(AIPX *p, AIARGX *s1, AIARGX *s2)
         v = -1;
         m.s.lo = 0x7b4c4a0;
         m.s.hi = 0;
-        ((int (*)(AIPX *, int, __int64, int, float, int *))ai_Unk4a63f0)(c, 0, m.q, 0, 100.0f, &v);
+        ((int (*)(AIPX *, int, __int64, int, float, int *))ai_PickActionBuilding)(c, 0, m.q, 0, 100.0f, &v);
         msg.car = v;
     }
     cm_SendLongMessage(&msg);
@@ -512,7 +512,7 @@ int ai_Unk48edc0(AIPX *p, AIARGX *s1, AIARGX *s2)
         v = -1;
         m.s.lo = 0x7b4c4a0;
         m.s.hi = 0;
-        ((int (*)(AIPX *, int, __int64, int, float, int *))ai_Unk4a63f0)(c, 0, m.q, 0, 100.0f, &v);
+        ((int (*)(AIPX *, int, __int64, int, float, int *))ai_PickActionBuilding)(c, 0, m.q, 0, 100.0f, &v);
         msg.car = v;
     }
     cm_SendLongMessage(&msg);
@@ -541,7 +541,7 @@ int ai_Unk48ef10(AIPX *p, AIARGX *s1, AIARGX *s2)
     msg.n = msg.fromId;
     m.s.lo = 0x7b4c4a0;
         m.s.hi = 0;
-        ((int (*)(AIPX *, int, __int64, int, float, int *))ai_Unk4a63f0)(p, 0, m.q, 0, 100.0f, &v);
+        ((int (*)(AIPX *, int, __int64, int, float, int *))ai_PickActionBuilding)(p, 0, m.q, 0, 100.0f, &v);
     msg.car = v;
     cm_SendLongMessage(&msg);
     return 1;
@@ -585,7 +585,7 @@ int ai_Unk48f010(int a, AIPX *p, int b, AIARGX *o1, AIARGX *o2)
     }
     m.s.lo = 0xe07c43b4;
     m.s.hi = 1;
-    if (!((int (*)(AIPX *, int, __int64, int, float, int *))ai_Unk4a63f0)(p, 6, m.q, 0, (float)(util_RandomU(0x20) + 0x20), &v))
+    if (!((int (*)(AIPX *, int, __int64, int, float, int *))ai_PickActionBuilding)(p, 6, m.q, 0, (float)(util_RandomU(0x20) + 0x20), &v))
         return 0;
     gm_FindById((int)&b2, 0, 0, v);
     if (!b2)
@@ -5133,7 +5133,7 @@ int ai_Unk499400(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
         return 0;
     m.LowPart = 0xa07d7bb0;
     m.HighPart = 1;
-    if (!ai_Unk4a63f0(p, 4, m.QuadPart, 0, 100.0f, &x))
+    if (!ai_PickActionBuilding(p, 4, m.QuadPart, 0, 100.0f, &x))
         return 0;
     gm_FindById((int)&y, 0, 0, x);
     if (!ai_Unk4a5540(&w, &z, y, 0))
@@ -5247,8 +5247,8 @@ int ai_Unk499660(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
             mask.LowPart = 0x344015;
             mask.HighPart = 1;
             x = -1;
-            if ((ai_Partner && (ai_Unk4a63f0((AIPER *)ai_Partner, 4, mask.QuadPart, 0, 100.0f, &x), x != -1))
-                || ai_Unk4a63f0(p, 6, mask.QuadPart, 0, util_RandomU(0x20) + 19.0f, &x)) {
+            if ((ai_Partner && (ai_PickActionBuilding((AIPER *)ai_Partner, 4, mask.QuadPart, 0, 100.0f, &x), x != -1))
+                || ai_PickActionBuilding(p, 6, mask.QuadPart, 0, util_RandomU(0x20) + 19.0f, &x)) {
                 gm_FindById((int)&y, 0, 0, x);
                 if (y && y->owner != 0xffff && he_Unk570ea0((AIPER *)&ai_CharsT[y->owner], p)) {
                     memset(buf, 0, sizeof(buf));
@@ -5590,7 +5590,7 @@ int ai_Unk49a390(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         k = 0x1c;
     if (f != 0 || a != 0)
         return 0;
-    if (ai_Unk4a63f0((AIPER *)p, 4, 0x90010, 0, 100.0f, &b) == 0)
+    if (ai_PickActionBuilding((AIPER *)p, 4, 0x90010, 0, 100.0f, &b) == 0)
         return 0;
     G8_4FEA50(&o, 0, 0, b);
     if (o == 0)
@@ -6320,8 +6320,8 @@ int ai_Unk49b7c0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         mask.LowPart = 0xa07c4390;
         mask.HighPart = 1;
         v = -1;
-        if (!(ai_Partner && (ai_Unk4a63f0((AIPER *)ai_Partner, 4, mask.QuadPart, 0, 100.0f, &v), v != -1))
-            && !ai_Unk4a63f0((AIPER *)p, 6, mask.QuadPart, 0, (float)util_RandomU(0x40), &v))
+        if (!(ai_Partner && (ai_PickActionBuilding((AIPER *)ai_Partner, 4, mask.QuadPart, 0, 100.0f, &v), v != -1))
+            && !ai_PickActionBuilding((AIPER *)p, 6, mask.QuadPart, 0, (float)util_RandomU(0x40), &v))
             return 0;
     } else if (G8_4A58D0(p, n, flags, 0.0f, (float)util_RandomU(0x40), id) == 0) {
         return 0;
@@ -7396,7 +7396,7 @@ int ai_Unk49dd90(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     for (n = 4; n != 0; n--) {
         m.LowPart = 2;
         m.HighPart = 0;
-        if (!ai_Unk4a63f0((AIPER *)p, 2, m.QuadPart, 0, 100.0f, &x))
+        if (!ai_PickActionBuilding((AIPER *)p, 2, m.QuadPart, 0, 100.0f, &x))
             continue;
         gm_FindById((int)&y, 0, 0, x);
         if (y == 0)
@@ -7444,7 +7444,7 @@ int ai_Unk49def0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         return 0;
     m.LowPart = 0x8000;
     m.HighPart = 0;
-    if (!ai_Unk4a63f0((AIPER *)p, 2, m.QuadPart, 0, 100.0f, &x))
+    if (!ai_PickActionBuilding((AIPER *)p, 2, m.QuadPart, 0, 100.0f, &x))
         return 0;
     gm_FindById((int)&y, 0, 0, x);
     if (y == 0)
@@ -7563,7 +7563,7 @@ int ai_Unk49e350(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         return 0;
     m.LowPart = 0x40;
     m.HighPart = 0;
-    if (!ai_Unk4a63f0((AIPER *)p, 2, m.QuadPart, 0, 100.0f, &x))
+    if (!ai_PickActionBuilding((AIPER *)p, 2, m.QuadPart, 0, 100.0f, &x))
         return 0;
     gm_FindById((int)&y, 0, 0, x);
     if (y == 0)
@@ -8403,7 +8403,7 @@ int ai_Unk4a0090(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         return 0;
     m.LowPart = 0x807d4190;
     m.HighPart = 1;
-    if (!ai_Unk4a63f0((AIPER *)p, 6, m.QuadPart, 0, (float)(util_RandomU(0x20) + 0x20), &b))
+    if (!ai_PickActionBuilding((AIPER *)p, 6, m.QuadPart, 0, (float)(util_RandomU(0x20) + 0x20), &b))
         return 0;
     gm_FindById((int)&y, 0, 0, b);
     if (y == 0)
@@ -10637,7 +10637,7 @@ unsigned int ai_Unk4a61d0(AIPER *p, unsigned int a, unsigned int fl, float lo, f
    with the class mask (bit 63 forced) and, when the window is narrower than 0..100, whose owner p rates
    (0x50c550) in [lo, hi]; its id into *out (-1 for none). am.h declares lo as int (c) */
 
-int ai_Unk4a63f0(AIPER *p, int a, __int64 mask, int c, float f, int *out)
+int ai_PickActionBuilding(AIPER *p, int a, __int64 mask, int c, float f, int *out)
 {
     unsigned int q[0x12];
     AIBLD *b;
