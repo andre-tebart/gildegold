@@ -82,4 +82,7 @@ int ai_Unk57aeb0(void);                 /* 0x57aeb0, the chapter 5 chain (ROUGH)
 int ai_Unk57b750(void);                 /* 0x57b750, the main-outro record */
 void ai_Unk57b810(float *a, float *b, float *c, float *d, float t, float *out);  /* 0x57b810, the Bezier */
 
+/* declared in other units' headers before (moved to the owner) */
+void ai_EndCharExtra(char *ch, int f);  /* 0x587c40 */
+
 #endif
