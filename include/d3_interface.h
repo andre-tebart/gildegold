@@ -275,4 +275,10 @@ int d3_SceneVersion(unsigned int version);                                      
 void d3_SaveScene(char *name, struct VFSFILE *f);                                              /* 0x44aa10 */
 
 void d3if_Reset(void);                                         /* 0x4473f0 */
+
+/* declared in other units' headers before (moved to the owner) */
+void d3if_FreeSprite(D3TEXHANDLE *t);  /* 0x4481e0 */
+D3TEXHANDLE *d3if_LoadSprite(char *name, char glow);  /* 0x448200 */
+char d3if_Reload(D3OBJECT *obj, char *name);  /* 0x447340 */
+
 #endif
