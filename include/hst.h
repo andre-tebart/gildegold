@@ -51,8 +51,6 @@ int ai_CommandLawChange(int s, int b, char *fmt);                               
 int ai_CommandFaithChange(int a, int b, char *fmt);                               /* 0x4b0d40 */
 int ai_CommandRiot(void);                                                        /* 0x4b0fd0 */
 int ai_Unk4b1060(int a, int b, char *fmt);                                       /* 0x4b1060 */
-float gm_CharacterHealth(short *c);                                              /* 0x4fc820, the health of the character c now (-1 for a free slot / an inactive one) */
-float gm_AddHealth(unsigned id, int d);                                    /* 0x4fca40, f3gm.c */
 void hst_ResetLists(void);                                                /* 0x4b1f30 */
 
 /* declared in other units' headers before (moved to the owner) */
