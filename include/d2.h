@@ -272,7 +272,6 @@ extern int d2_HalfScreenH;            /* 0xf8f088, half the screen height */
 extern int d2_HalfScreenW;            /* 0xf8f08c, half the screen width */
 
 /* functions of other units */
-DWORD dd_RGB(unsigned char r, unsigned char g, unsigned char b);                  /* 0x41e670 */
 void d3if_FreeSprite(D3TEXHANDLE *t);                                                    /* 0x4481e0 */
 int d2_NewObject(void);                                                         /* 0x46c9f0, allocates an object */
 void d2_AddRefcount(int pic);                                                   /* 0x46ca60 */
@@ -306,7 +305,6 @@ int d2_DrawShapeMode3(int x, int y, void *surf, void *pic, char i);             
 void d2_SetClipRect(int x0, int y0, int x1, int y1);                              /* 0x47cb40, sets the clip rectangle */
 D2FRAME *d2_GetFrame(void *pic, short i);                                      /* 0x47cb70, frame i of a picture */
 
-void dd_Flip(void);                                                             /* 0x41e390 */
 struct D3IFSPRITE; char d3if_DrawSprite(struct D3IFSPRITE *t, int x, int y, float angle, float sx, float sy, float alpha); /* 0x448270 */
 char d3_ScreenToUV(float sx, float sy, struct D3OBJECT *obj, void *tex, float *outu, float *outv); /* 0x448e60 */
 void d3io_NoopCallback(void *t);                                                            /* 0x44ee40, (x, y, surf, pic) */
@@ -441,7 +439,6 @@ void d2_ClearViewTextures(int view);                                            
 void d2_FillViewTextures(int view, char *tex1, char *tex2);                            /* 0x474d90 */
 void d2_RedrawView(int view);                                                    /* 0x474e80 */
 void d2_EnableViewObjects(int view, int on);                                            /* 0x4754d0 */
-void err_Message(char *msg);                        /* 0x4222b0 */
 void d2_SetViewEnabled(int view, int on);                /* 0x475590 */
 void d2_CentreViewWindows(int view);                        /* 0x475600 */
 void d2_PlaceWindow(int win, unsigned char flags);    /* 0x4756b0 */
