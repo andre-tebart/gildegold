@@ -59,6 +59,7 @@ extern GAPDATA full_data_6f2684[];
 #include "main.h"
 #include "unk_4b39f0.h"
 #include "unk_5d33b0.h"
+#include "ch.h"
 extern int sv_PopRequest;
 extern INIT_PLAYER init_PlayerProfile;
 extern int main_ChoosePlayer(int mask, int flag);
