@@ -279,3 +279,4 @@
 2026-11-01T18:15:12 0x004fb390 func unk_Unk4fb390 -> gm_CharNameRecord by:main why:0x4fb390: the name record (head table entry) of the character id (default / own name +0x1f4 / job / title records)
 2026-11-01T18:15:12 0x004cde20 func ai_Unk4cde20 -> cm_UpdateHandObject by:main why:0x4cde20: sets the right-hand model "ob_<NAME>" of the good the character carries on its scene character (+0x184), ch_SetHandObject hand 2, or clears it
 2026-11-01T18:19:35 0x0051f080 func unk_Unk51f080 -> ls_ReadPlayerSlots by:main why:0x51f080: reads back what ls_WritePlayerSlots 0x51b340 writes (the stock blocks and the four player slots, same fields in the same order)
+2026-11-01T18:21:09 0x0051f720 func unk_Unk51f720 -> ls_ReadStatistics by:main why:0x51f720: reads back what ls_WriteStatistics 0x51b910 writes, the same globals in the same order

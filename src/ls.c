@@ -1423,7 +1423,7 @@ int ls_LoadGame(int name, int kind)
         return 1;
     }
     if ((ls_Version < 0x10045 && amt_LoadAemter(h, ls_Version) == 0) || unk_Unk4f2b30(h) == 0
-        || (ls_Version >= 0x10016 && ls_ReadRelations(h) == 0) || unk_Unk51f720(h) == 0
+        || (ls_Version >= 0x10016 && ls_ReadRelations(h) == 0) || ls_ReadStatistics(h) == 0
         || (ls_Version >= 0x1002a && ls_ReadAvatars((void *)h) == 0) || unk_Unk51fb90(h) == 0
         || unk_Unk520000(h) == 0 || unk_Unk520200(h) == 0)
         goto close;
@@ -2320,76 +2320,63 @@ int ls_ReadRelations(int f)
     }
     return 1;
 }
-/* 0x51f720, reads the global tables 0x91b4c0 .. 0x91b690 (the counterpart of the writer 0x51b910). ROUGH: converted from the pseudocode */
+/* 0x51f720, reads what ls_WriteStatistics writes: the ten words of ord_StatisticsRecord, ord_RatingRate, the
+   statistics clock (a word, a short and two words), ai_RatingBase, ai_Rating, the nine words of ord_MessageRecord,
+   the 16 records of five words of ord_StatisticsHistory, the five 0x44-byte rows of gm_IncomeHistory and the
+   8 x 8 cells of ord_GridCells (a, b, used, average). Returns 1, 0 when a read fails. */
 
 
-int unk_Unk51f720(int f)
+int ls_ReadStatistics(int f)
 {
-  int iVar1;
-  int iVar2;
-  short *puVar3;
-  int *puVar4;
-  short *puVar5;
-  LS_R(((char *)(unsigned)&ord_Statistics), 4)
-  LS_R(((char *)((unsigned)&ord_Statistics + 0x4)), 4)
-  LS_R(((char *)((unsigned)&ord_Statistics + 0x8)), 4)
-  LS_R(((char *)((unsigned)&ord_Statistics + 0xc)), 4)
-  LS_R(((char *)((unsigned)&ord_Statistics + 0x10)), 4)
-  LS_R(((char *)((unsigned)&ord_Statistics + 0x14)), 4)
-  LS_R(((char *)((unsigned)&ord_Statistics + 0x18)), 4)
-  LS_R(((char *)((unsigned)&ord_Statistics + 0x1c)), 4)
-  LS_R(((char *)((unsigned)&ord_Statistics + 0x20)), 4)
-  LS_R(((char *)((unsigned)&ord_Statistics + 0x24)), 4)
-  LS_R(((char *)(unsigned)&ord_RatingRate), 4)
-  LS_R(((char *)(unsigned)&ord_StatisticsClock), 4)
-  LS_R(((char *)((unsigned)&ord_StatisticsClock + 0x4)), 2)
-  LS_R(((char *)((unsigned)&ord_StatisticsClock + 0x6)), 4)
-  LS_R(((char *)((unsigned)&ord_StatisticsClock + 0xa)), 4)
-  LS_R(((char *)(unsigned)&ai_RatingBase), 4)
-  LS_R(((char *)(unsigned)&ai_Rating), 4)
-  LS_R(((char *)(unsigned)&ord_MessageRecord), 4)
-  LS_R(((char *)((unsigned)&ord_MessageRecord + 0x4)), 4)
-  LS_R(((char *)((unsigned)&ord_MessageRecord + 0x8)), 4)
-  LS_R(((char *)((unsigned)&ord_MessageRecord + 0xc)), 4)
-  LS_R(((char *)((unsigned)&ord_MessageRecord + 0x10)), 4)
-  LS_R(((char *)((unsigned)&ord_MessageRecord + 0x14)), 4)
-  LS_R(((char *)((unsigned)&ord_MessageRecord + 0x18)), 4)
-  LS_R(((char *)((unsigned)&ord_MessageRecord + 0x1c)), 4)
-  LS_R(((char *)((unsigned)&ord_MessageRecord + 0x20)), 4)
-  puVar4 = ((char *)((unsigned)&ord_StatisticsHistory + 0x4));
-  do {
-    LS_R(puVar4 + -1, 4)
-    LS_R(puVar4, 4)
-    LS_R(puVar4 + 1, 4)
-    LS_R(puVar4 + 2, 4)
-    LS_R(puVar4 + 3, 4)
-    puVar4 = puVar4 + 5;
-  } while ((int)puVar4 < ((unsigned)((unsigned)ord_StatisticsHistory + 0x140) + 0x4));
-  LS_R(((char *)(unsigned)&gm_IncomeHistory), 0x44)
-  LS_R(((char *)(unsigned)&gm_IncomeHistory + 0x44), 0x44)
-  LS_R(((char *)(unsigned)&gm_IncomeHistory + 0x88), 0x44)
-  iVar1 = ls_Read((int)((unsigned)&gm_IncomeHistory + 0xcc), 0x44, 1, f);
-  if (iVar1 != 0) {
-    LS_R(((char *)(unsigned)&gm_IncomeHistory + 0x110), 0x44)
-    puVar3 = ((char *)((unsigned)&ai_Grid + 0x2));
-    do {
-      iVar1 = 0;
-      puVar5 = puVar3;
-      do {
-        LS_R(puVar5 + -1, 2)
-        LS_R(puVar5, 2)
-        LS_R(puVar5 + 1, 1)
-        LS_R(puVar5 + 3, 4)
-        iVar1 = iVar1 + 1;
-        puVar5 = puVar5 + 0xc;
-      } while (iVar1 < 8);
-      puVar3 = puVar3 + 0x60;
-      if (((unsigned)&ord_RatingBytes + 0x1) < (int)puVar3) {
-        return 1;
-      }
-    } while( 1 );
-  }
-  return 0;
+    int i, j;
+
+    LS_R(ord_StatisticsRecord, 4)
+    LS_R(ord_StatisticsRecord + 0x4, 4)
+    LS_R(ord_StatisticsRecord + 0x8, 4)
+    LS_R(ord_StatisticsRecord + 0xc, 4)
+    LS_R(ord_StatisticsRecord + 0x10, 4)
+    LS_R(ord_StatisticsRecord + 0x14, 4)
+    LS_R(ord_StatisticsRecord + 0x18, 4)
+    LS_R(ord_StatisticsRecord + 0x1c, 4)
+    LS_R(ord_StatisticsRecord + 0x20, 4)
+    LS_R(ord_StatisticsRecord + 0x24, 4)
+    LS_R(&ord_RatingRate, 4)
+    LS_R(&ord_StatisticsClock, 4)
+    LS_R(&ord_StatisticsClock + 0x4, 2)
+    LS_R(&ord_StatisticsClock + 0x6, 4)
+    LS_R(&ord_StatisticsClock + 0xa, 4)
+    LS_R(&ai_RatingBase, 4)
+    LS_R(&ai_Rating, 4)
+    LS_R(ord_MessageRecord, 4)
+    LS_R(ord_MessageRecord + 0x4, 4)
+    LS_R(ord_MessageRecord + 0x8, 4)
+    LS_R(ord_MessageRecord + 0xc, 4)
+    LS_R(ord_MessageRecord + 0x10, 4)
+    LS_R(ord_MessageRecord + 0x14, 4)
+    LS_R(ord_MessageRecord + 0x18, 4)
+    LS_R(ord_MessageRecord + 0x1c, 4)
+    LS_R(ord_MessageRecord + 0x20, 4)
+    for (i = 0; i < 16; i++) {
+        LS_R(ord_StatisticsHistory + i * 0x14, 4)
+        LS_R(ord_StatisticsHistory + i * 0x14 + 0x4, 4)
+        LS_R(ord_StatisticsHistory + i * 0x14 + 0x8, 4)
+        LS_R(ord_StatisticsHistory + i * 0x14 + 0xc, 4)
+        LS_R(ord_StatisticsHistory + i * 0x14 + 0x10, 4)
+    }
+    LS_R(gm_IncomeHistory, 0x44)
+    LS_R(gm_IncomeHistory + 0x44, 0x44)
+    LS_R(gm_IncomeHistory + 0x88, 0x44)
+    LS_R(gm_IncomeHistory + 0xcc, 0x44)
+    LS_R(gm_IncomeHistory + 0x110, 0x44)
+    for (i = 0; i < 8; i++) {
+        for (j = 0; j < 8; j++) {
+            LS_R(&ord_GridCells[i][j].a, 2)
+            LS_R(&ord_GridCells[i][j].b, 2)
+            LS_R(&ord_GridCells[i][j].used, 1)
+            LS_R(&ord_GridCells[i][j].average, 4)
+        }
+    }
+    return 1;
 }
 /* 0x51fb80, the save game's reader of the avatar table: forwards to gv_ReadAvatars (0x4ed270) */
 
