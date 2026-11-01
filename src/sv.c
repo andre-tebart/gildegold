@@ -2430,7 +2430,7 @@ void sv_UpdateSkyPhase(AITIME *t)
 }
 
 extern char * sv_CameraObj;
-extern float sv_CameraHeightFactor, sv_CameraAngleFactor, ai_Unk6f2374, sv_ScrollVelX, sv_ScrollVelY, sv_ScrollVelXPrev, sv_ScrollVelYPrev;  /* 0x6f22d4, 0x6f22d8, 0x6f2374, 0x6f2388, 0x6f2390, 0x6f238c, 0x6f1c44 */
+extern float sv_CameraHeightFactor, sv_CameraAngleFactor, sv_CameraHeightStep, sv_ScrollVelX, sv_ScrollVelY, sv_ScrollVelXPrev, sv_ScrollVelYPrev;  /* 0x6f22d4, 0x6f22d8, 0x6f2374, 0x6f2388, 0x6f2390, 0x6f238c, 0x6f1c44 */
 extern float sv_CameraHeightNear, sv_CameraAngleNear, sv_CameraHeightFar, sv_CameraAngleFar, sv_ScrollSpeed;  /* 0x623800, 0x623804, 0x623808, 0x62380c, 0x623818 */
 extern int ai_Unk6f2378;  /* 0x6f2378 */
 extern int ai_Unk6f22cc;  /* 0x6f22cc */
@@ -2449,7 +2449,8 @@ float d3_VecAngle2();                   /* 0x453b40 */
    position as the view (sv_ViewRot / sv_ViewPos) */
 void sv_PlaceCamera(float f)
 {
-    D3VECTOR pos, rot;
+    D3VECTOR4 pos;
+    D3VECTOR rot;
     double h;
 
     if (d3_CurrentScene != 0)
@@ -2461,7 +2462,7 @@ void sv_PlaceCamera(float f)
     pos.y = d3_Camera->pos.y;
     pos.z = d3_Camera->pos.z;
     pos.y = (float)((sv_CameraHeightFar - sv_CameraHeightNear) * sv_CameraHeightFactor + sv_CameraHeightNear + h);
-    d3_SetObjectPos(d3_Camera, &pos);
+    d3_SetObjectPos(d3_Camera, (D3VECTOR *)&pos);
     rot.x = d3_Camera->rotation.x;
     rot.y = d3_Camera->rotation.y;
     rot.z = d3_Camera->rotation.z;
@@ -2474,35 +2475,35 @@ void sv_PlaceCamera(float f)
     sv_ViewPos[1] = d3_Camera->pos.y;
     sv_ViewPos[2] = d3_Camera->pos.z;
 }
-/* 0x525ee0, eases the camera height (+0x50) toward the wanted one (the terrain height + 0x623800 .. 0x623808 blend by 0x6f22d4, minus the camera offset +0x7c): a difference above 5.0 is closed by 1/15 per call, at most 10.0;
-   the step is kept in 0x6f2374 (not applied while the cutscene flag 0x6310e8 is set) */
+/* 0x525ee0, eases the camera's height toward the wanted one (the near / far height blended by sv_CameraHeightFactor over the
+   terrain's mean height, against the camera's height with its offset): more than 5 off, a fifteenth of the difference per call,
+   at most 10, moves it (not while a camera move runs); the step is kept in sv_CameraHeightStep, 0 when within 5 */
 
-void sv_Unk525ee0(void)
+void sv_EaseCameraHeight(void)
 {
-    double d;
-    float step, pos[3];
+    float d, step;
+    D3VECTOR4 pos;
 
-    if (sv_CameraObj == 0)
+    if (d3_Camera == 0)
         return;
-    d = d3t_GetMeanHeight(sv_CameraObj + 0x4c);
-    d = ((sv_CameraHeightFar - sv_CameraHeightNear) * sv_CameraHeightFactor + sv_CameraHeightNear + d) - (*(float *)(sv_CameraObj + 0x7c) + *(float *)(sv_CameraObj + 0x50));
+    d = d3t_GetMeanHeight(&d3_Camera->pos);
+    d = (sv_CameraHeightFar - sv_CameraHeightNear) * sv_CameraHeightFactor + sv_CameraHeightNear + d - (d3_Camera->posOffset.y + d3_Camera->pos.y);
     if (5.0 < fabs(d)) {
-        d = d * 0.06666667;
-        step = (float)d;
-        if (d <= 0.0) {
-            if (step < 0.0f && step <= -10.0f)
-                step = -10.0f;
-        } else if (10.0f <= step)
-            step = 10.0f;
-        pos[0] = *(float *)(sv_CameraObj + 0x4c);
-        pos[2] = *(float *)(sv_CameraObj + 0x54);
-        pos[1] = *(float *)(sv_CameraObj + 0x50) + step;
+        step = d * 0.06666667f;
+        if (step > 0.0f)
+            step = step < 10.0f ? step : 10.0f;
+        else if (step < 0.0f)
+            step = step > -10.0f ? step : -10.0f;
+        pos.x = d3_Camera->pos.x;
+        pos.y = d3_Camera->pos.y;
+        pos.z = d3_Camera->pos.z;
+        pos.y = pos.y + step;
         if (d3t_CamMove == 0)
-            d3_SetObjectPos(sv_CameraObj, pos);
-        ai_Unk6f2374 = step;
+            d3_SetObjectPos(d3_Camera, (D3VECTOR *)&pos);
+        sv_CameraHeightStep = step;
         return;
     }
-    ai_Unk6f2374 = 0.0f;
+    sv_CameraHeightStep = 0.0f;
 }
 /* 0x525ff0, the mouse at the screen border starts a camera move to one of the 5 preset views (+0x5c / 0x90 the default, +0xb4 / +0xcc left / right of the window, +0xe4 / +0xfc above / below, each position + direction
    triple): the border state 0x6f22cc / 0x6f22d0 (-1, 0, 1) steps by the mouse position against the window 0x6310b0 / 0x6310b4 .. 0x5f3238 / 0x5f323c; the view is applied (0x75fb80 / 0x75fb90, 0x433b10, 0x411860 (cam,
@@ -2803,7 +2804,7 @@ extern char ai_Unk62381c;
 int d3t_GetHeightRange();                     /* 0x411c70 */
 short * gm_PlayerRecord(char *ch);                   /* 0x506430 */
 void sv_PlaceCamera(float f);
-void sv_Unk525ee0(void);
+void sv_EaseCameraHeight(void);
 int sv_ScrollCamera(void);
 int sv_MouseCamera(void);
 #define CAMLOG(r) do { \
@@ -3011,7 +3012,7 @@ int sv_Unk527640(void)
             if (-1 < (char)(sv_FrameMask >> 8))
                 sv_MouseCamera();
             if (ai_Unk62381c != 0 && kb_Down[0xf] == 0)
-                sv_Unk525ee0();
+                sv_EaseCameraHeight();
             if (ai_Unk6f22b4 != 0 && sv_FrameDepth == sv_FrameBase && ai_PlayerBuilding == 0 && ai_FallbackBuilding == 0
                 && (rec = gm_PlayerRecord(ai_Chars[ai_PlayerId])) != 0) {
                 CAMLOG(rec);
@@ -7728,7 +7729,7 @@ int sv_GroundplanRoom = 0;  /* 0x6f2360 */
 char sv_PlayerBarKind = 0;  /* 0x6f2368 */
 int sv_DayPhase = 0;  /* 0x6f236c */
 int sv_ThunderFog = 0;  /* 0x6f2370 */
-float ai_Unk6f2374 = 0;  /* 0x6f2374 */
+float sv_CameraHeightStep = 0;  /* 0x6f2374 */
 int ai_Unk6f2378 = 0;  /* 0x6f2378 */
 float sv_ScrollVelX = 0;  /* 0x6f2388 */
 float sv_ScrollVelXPrev = 0;  /* 0x6f238c */

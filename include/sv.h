@@ -64,7 +64,7 @@ struct GCLOCK; void sv_FillDayPhases(struct GCLOCK *t);                         
 char sv_SetLampRamp(char *o, int f);                                      /* 0x525a80 */
 struct AITIME; void sv_UpdateSkyPhase(struct AITIME *t);                    /* 0x525ad0 */
 void sv_PlaceCamera(float f);                                           /* 0x525dd0 */
-void sv_Unk525ee0(void);                                                /* 0x525ee0 */
+void sv_EaseCameraHeight(void);                                                /* 0x525ee0 */
 void sv_Unk525ff0(void);                                                /* 0x525ff0 */
 int sv_ScrollCamera(void);                                                 /* 0x5263a0 */
 int sv_MouseCamera(void);                                                 /* 0x526cf0 */
@@ -263,7 +263,7 @@ extern int sv_GroundplanRoom;                                    /* 0x6f2360 */
 extern char sv_PlayerBarKind;                                   /* 0x6f2368 */
 extern int sv_DayPhase;                                    /* 0x6f236c */
 extern int sv_ThunderFog;                                    /* 0x6f2370 */
-extern float ai_Unk6f2374;                                  /* 0x6f2374 */
+extern float sv_CameraHeightStep;                                  /* 0x6f2374 */
 extern int ai_Unk6f2378;                                    /* 0x6f2378 */
 extern float sv_ScrollVelX;                                  /* 0x6f2388 */
 extern float sv_ScrollVelXPrev;                                  /* 0x6f238c */
