@@ -733,7 +733,7 @@ int main_OpenEngine(void)
     }
     hst_ResetLists();
     d2_ClearScreen();
-    f = d2_OpenForm(0, 0, "Misc\Loading_main");
+    f = d2_OpenForm(0, 0, "Misc\\Loading_main");
     d2_PlaceWindow(d2_Views[f].wins[0], 3);
     d2_MoveObjS(0, d2_ScreenH - d2_Wins[d2_Views[f].wins[1]].h - 0x30, d2_Wins[d2_Views[f].wins[1]].parent);
     d2_PlaceWindow(d2_Views[f].wins[1], 1);
@@ -764,7 +764,7 @@ int main_OpenEngine(void)
         sprintf(tmp, "%ssfx\\", main_GamePath);
         sb_SetPath(tmp);
         snd_SystemBank = sb_LoadSampleBank("system.sbf", 0);
-        sprintf(tmp2, "%s\include_sfx.ini", main_AppDir);
+        sprintf(tmp2, "%s\\include_sfx.ini", main_AppDir);
         main_PreloadSound(tmp2);
     }
     if (snd_MusicEnabled != 0) {
@@ -789,7 +789,7 @@ int main_OpenEngine(void)
     while ((fade->flags & 4) == 0)
         sv_RunFrame(0, 0x24087);
     d2_ReleaseFade(fade);
-    memset(&init_PlayerProfile, 0, 0x8c);
+    D3_ZERO_AT(offset init_PlayerProfile, 0x8c);  /* the original's inline-asm clear (it makes the ebp frame) */
     main_ScreenOpen = 1;
     evt_Init();
     evtc_Register();
