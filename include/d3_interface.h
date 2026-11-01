@@ -78,6 +78,7 @@ struct TSTEXTURE; void tex_GetParams(struct TSTEXTURE *tex, unsigned char *opts,
 
 char d3if_Delete(D3OBJECT *obj);                                                        /* 0x447190 */
 char d3if_Show(struct D3OBJECT *obj, char show);                                               /* 0x4471b0 */
+char d3if_ScreenBox(D3OBJECT *obj, D3RECT *r);                                                   /* 0x4486e0, the screen rectangle an object covers */
 char d3if_ShowTree(D3OBJECT *obj, char show);                                           /* 0x447300 */
 D3OBJECT *d3if_Pick(float x, float y, int flags, int mask);                       /* 0x448630, the object under a screen position, 0 if none */
 
