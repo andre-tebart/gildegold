@@ -9065,7 +9065,7 @@ void ai_ClearTurnTable(void)
     memset((char *)(unsigned)&full_data_6f5f60, 0, 0x4000);
 }
 
-int ai_Unk588310(); int ai_Unk588950(); int ai_Unk588160(); int ai_Unk588bb0();
+int ai_Unk588310(); int ai_Unk588950(); int ai_Unk588160(); int ai_OpenHelpTooltip();
 int ai_Unk588c60(); void d2_RaiseViewWindows(int view);
 
 /* 0x587e00, the item drag-and-drop handler (863 B, ROUGH: the classification and every call are written, the
@@ -9158,7 +9158,7 @@ void ai_Unk587e00(void)
         else
             win = (char *)ai_Unk588950(item);
     } else if (sel != 0) {
-        win = (char *)ai_Unk588bb0(sel);
+        win = (char *)ai_OpenHelpTooltip(sel);
     } else if (ch != 0) {
         win = (char *)ai_Unk588c60(ch);
     }
@@ -9235,12 +9235,11 @@ int ai_Unk588160(int idx)
     }
     return win;
 }
-/* 0x588bb0, the drag window of a named record (169 B, ROUGH): s = the name. The line: strcpy (0x180 bytes), the
-   0x5ea986 uppercase, the 0x5de652 line (0x62a9cc, the buffer + 8) at +0x88; 0x42e770 (the line + 0x94) == -1 ->
-   0. The window 0x62a9b4 with 0x475600, the section 1, the text 0x62a9a8 (the value), the section 2 and the text
-   (the value + 1); the window */
+/* 0x588bb0, opens the help tooltip of the record named s: the key "_HILFE_<S>+0" (the name upper-cased) is
+   looked up in the texts; without it -1 (no window). Else the form "ToolTip\ToolTip_Contact", centred, its
+   section 1 the text's title line and section 2 the text after it; returns the window */
 
-int ai_Unk588bb0(char *s)
+int ai_OpenHelpTooltip(char *s)
 {
     char buf[0x180];
     int v;
@@ -9248,14 +9247,14 @@ int ai_Unk588bb0(char *s)
 
     strcpy(buf, s);
     _strupr(buf);
-    sprintf(buf + 0x80, (char *)(unsigned)&full_data_62a9cc, buf);   /* the key from the whole name, built at buf + 0x80 and looked up there (0x588bd8 .. 0x588bf6) */
+    sprintf(buf + 0x80, "_HILFE_%s+0", buf);   /* the key from the whole name, built at buf + 0x80 and looked up there (0x588bd8 .. 0x588bf6) */
     v = txt_FindKey(buf + 0x80);
     if (v == -1)
         return v;   /* -1: no window (the original returns txt_FindKey's -1, 0x588c06; 0 would be window 0) */
-    win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62a9b4);
+    win = d2_OpenForm(0, 0, "ToolTip\\ToolTip_Contact");
     d2_CentreViewWindows(win);
     d2_SetForm(0, 1);
-    io_PrintText((unsigned)&full_data_62a9a8, v);
+    io_PrintText("$Z$[%s$]", v);
     d2_SetForm(0, 2);
     io_PrintText(v + 1);
     return win;
