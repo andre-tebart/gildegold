@@ -26,6 +26,21 @@
 #include "ch.h"
 #define d3anim_StartAnimCh ((int (*)(void *, char *, CHANIMFLAGS))d3anim_StartAnim)  /* 0x435550 (d3.h: D3ANIMFLAGS f): @original this unit passes its field-wise CHANIMFLAGS, 12 bytes like D3ANIMFLAGS, as the original TU did */
 #include "data_views.h"
+#include "d3_engine.h"
+#include "d3_fl.h"
+#include "d3_interface.h"
+#include "d3_io_t.h"
+#include "d3_light.h"
+#include "d3_snd.h"
+#include "d3_tools.h"
+#include "d3_vec.h"
+#include "err.h"
+#include "f3gm.h"
+#include "mem.h"
+#include "sblib.h"
+#include "tr.h"
+#include "unk_458810.h"
+#include "vfs.h"
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, ai_Unk4d88c0 0x4d88c0 move it as a word / movzx) */
 #define d3t_CamMoveI (*(int *)&d3t_CamMove)  /* 0x6310e8, d3t_CamMove (d3_tools.c: D3ANIM *) as the int this unit tests and clears */
 
@@ -42,7 +57,6 @@ int ch_Enabled = 1;  /* 0x5f12a4 */
 int ch_DirtyX0 = 256;  /* 0x5f12a8, changed ground rectangle */
 int ch_DirtyZ0 = 256;  /* 0x5f12ac */
 
-extern D3SCENE d3_Scenes[D3_MAX_SCENES];
 extern unsigned char ch_PathBuf[1024];
 extern CHMOTION ch_Motions[64];
 extern char ch_MotionsTail[0x20];
