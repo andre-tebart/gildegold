@@ -126,9 +126,6 @@ void d3anim_CalculateAnimNormals(D3ANIMDATA *a, D3ANIMMESH *mesh);              
 int d3anim_NextFrame(D3ANIMFLAGS f, int frame, int a, int b, int c);                        /* 0x4324e0 */
 char d3anim_MapBones(D3OBJECT *obj);                                                       /* 0x4319e0 */
 void d3anim_PoseBones(D3OBJECT *obj);                                                       /* 0x431ae0 */
-void d3_TriNormal(struct D3VECTOR4 *a, struct D3VECTOR4 *b, struct D3VECTOR4 *c, struct D3VECTOR4 *n);              /* 0x454700, face normal */
-void d3_Lerp3(float *a, float *b, float t, float *out);               /* 0x4539b0, lerp */
-void d3_MatToAngles(D3VECTOR4 *m, D3VECTOR4 *angles);                                    /* 0x454690, matrix rows to angles */
 
 /* Object path animations (d3anim_CreatePath; D3ANIM in d3.h is the same struct, D3ANIMKEY the same key). */
 typedef struct D3PATHKEY {          /* 0x58 bytes */
