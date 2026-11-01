@@ -51,7 +51,6 @@ extern unsigned short *d2_ShpLightTable;    /* 0x6f0460, colour table */
 extern int d2_SurfPitch;            /* 0x5fed84 */
 extern int d2_LightTableExternal;            /* 0xf8a630 */
 
-void dd_SplitRGB(DWORD c, unsigned char *r, unsigned char *g, unsigned char *b);        /* 0x41e6d0 */
 void d2_SetLineTable(int *lines, D2SHP *s);                                    /* 0x479f10 */
 struct D2SHP * d2_GrabShape24Runs(int x, int y, int w, int h, unsigned char *pix, unsigned char flag, unsigned short pitch); /* 0x479f40 */
 struct D2SHP * d2_GrabShape24NoRuns(int x, int y, int w, int h, unsigned char *pix, unsigned char flag, unsigned short pitch); /* 0x47a460 */
@@ -77,8 +76,6 @@ void *d2_ShpConvertTo16(D2SHP *s, int p);
 
 /* views of gfx.c functions (unk_479610.h until layout 2026-10-22; gfx.h declares 0x478930 / 0x478960 with
    char * / D2RGB * parameters) */
-int d2_CompareColour(char *a, char *b);       /* 0x478930, 0 = same colour */
-void d2_SetColour(struct D2RGB *c, unsigned char r, unsigned char g, unsigned char b); /* 0x478960 */
 struct D2SURF * d2_CopySurface(struct D2SURF *surf);                         /* 0x479780 */
 void d2_GetPixelColour(int x, int y, D2SURF *surf, unsigned char *rgb);  /* 0x4798f0, pixel colour into rgb */
 int d2_MakeLightTable(char add);                                 /* 0x479d00 */
