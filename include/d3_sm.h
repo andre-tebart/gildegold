@@ -74,4 +74,8 @@ char d3sm_FindGround(D3SM *h, int x, int z, int *ox, int *oz);           /* 0x45
 char d3_GetHeightAt(D3SM *h, D3VECTOR *pos, int *px, int *pz, float *py);        /* 0x45f170, the cell of pos and
                                                                             (h != 0) the interpolated height there */
 
+/* declared in other units' headers before (moved to the owner) */
+void d3sm_Destroy(D3SM *h);  /* 0x45ef60 */
+extern D3SM *d3sm_Shadow;  /* 0x633df8 */
+
 #endif
