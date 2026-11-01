@@ -940,41 +940,35 @@ int sv_PanelImage(void)
 {
     int i, k;
     char *p;
-    int is9;
+    int img;
 
+    img = 0x534;
     if (ai_GamePanel.byte[0] == 0) {
         i = 0;
-        for (p = ai_Chars[0] + 2; (int)p < (unsigned)((unsigned)ai_Chars + 0x65402); p += 0x21c) {
+        for (p = &ai_Chars[0][2]; (int)p < (int)&ai_Chars[768][2]; p += 0x21c) {
             if (*p == 6 || *p == 7)
                 break;
             i++;
         }
         k = gm_TitleGroup((unsigned char)ai_Chars[i][0x164]);
         if (k == 1 || k == 2 || k == 10)
-            return 0x534;
-        if (k == 3 || k == 4)
-            return 0x538;
-        if (k == 0xb || k == 0xc || k == 6)
-            return 0x53c;
-        if (k == 5)
-            return 0x540;
-        if (k == 7)
-            return 0x540;
-        if (k == 8)
-            return 0x540;
-        is9 = k == 9;
-    } else {
-        if (ai_GamePanel.byte[0] == 1)
-            return 0x534;
-        if (ai_GamePanel.byte[0] == 2)
-            return 0x538;
-        if (ai_GamePanel.byte[0] == 3)
-            return 0x53c;
-        is9 = ai_GamePanel.byte[0] == 4;
+            img = 0x534;
+        else if (k == 3 || k == 4)
+            img = 0x538;
+        else if (k == 0xb || k == 0xc || k == 6)
+            img = 0x53c;
+        else if (k == 5 || k == 7 || k == 8 || k == 9)
+            img = 0x540;
+    } else if (ai_GamePanel.byte[0] == 1) {
+        img = 0x534;
+    } else if (ai_GamePanel.byte[0] == 2) {
+        img = 0x538;
+    } else if (ai_GamePanel.byte[0] == 3) {
+        img = 0x53c;
+    } else if (ai_GamePanel.byte[0] == 4) {
+        img = 0x540;
     }
-    if (is9)
-        return 0x540;
-    return 0x534;
+    return img;
 }
 /* 0x522100, enables (n != 0) or disables (n == 0) the panel widgets (0x475aa0 marks an object disabled
    when its on argument is 0): the flag 0x623e88 = n, and every widget id of the panel set (0x623860 by
