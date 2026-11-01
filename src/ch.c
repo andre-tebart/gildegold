@@ -343,8 +343,8 @@ int ch_Delete(CHARACTER *ch)
                     cur = d3_CurrentScene;
                     d3if_SelectScene(d3t_SceneIndex(ch->scene), 1);
                 }
-                if (ch->unk228)
-                    ch->unk228(ch);
+                if (ch->onDelete)
+                    ch->onDelete(ch);
                 d3if_Delete(ch->obj);
                 ch->obj = 0;
                 if (ch->transport && *ch->transport)

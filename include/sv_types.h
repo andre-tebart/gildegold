@@ -1,4 +1,4 @@
-/* The weather record of sv.c (SVWEATHER, sv_Weather) for the units that declare it without the rest of sv.h:
+/* The weather record of sv.c (SVWEATHER, sv_Weather) and the speech bubble record (SVBUBBLE) for the units that declare it without the rest of sv.h:
    types only. sv.h includes it. */
 #ifndef SV_TYPES_H
 #define SV_TYPES_H
@@ -14,5 +14,12 @@ typedef struct SVWEATHER {              /* 0x188 bytes at 0x760488: the day's we
     float windX[24];                    /* +0x0c8, the wind direction of the hour: sin of the angle */
     float windY[24];                    /* +0x128, cos of the angle */
 } SVWEATHER;
+
+typedef struct SVBUBBLE {               /* 0x10c bytes, a speech bubble over a character (sv_Bubbles) */
+    int text;                           /* +0x000, the d2_Strings id shown when name is empty */
+    int time;                           /* +0x004, ai_ClockMs when it was shown (freed 300 ms later) */
+    struct CHARACTER *ch;               /* +0x008, the character it belongs to, 0 = free */
+    char name[0x100];                   /* +0x00c, its own text, "" = the d2_Strings line */
+} SVBUBBLE;
 
 #endif

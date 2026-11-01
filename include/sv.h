@@ -115,7 +115,7 @@ void sv_SendSelectedToBuilding(void);                                           
 void sv_HandleSelectionMouse(void);                                                /* 0x52bec0 */
 void sv_Unk52c420(void);                                                /* 0x52c420 */
 void sv_ReleaseBubble(int o);                                           /* 0x52c4a0 */
-void sv_Unk52c4e0(int o, int b, char *name);                            /* 0x52c4e0 */
+void sv_ShowBubble(struct CHARACTER *ch, int text, char *name);         /* 0x52c4e0, shows a speech bubble over the character ch */
 void sv_Unk52c5c0(void);                                                /* 0x52c5c0 */
 void sv_Unk52cef0(void);                                                /* 0x52cef0 */
 void sv_Unk52d010(char *part);                                          /* 0x52d010 */
@@ -341,7 +341,7 @@ extern int sv_WeatherHour;                                    /* 0x760614 */
 extern int d3t_Snow;                                    /* 0x76061c */
 extern int d3_SkyLayers[6];                                 /* 0x760620, the sky layer handles (sv creates 0 .. 2) */
 extern char sv_StatusText[128];                             /* 0x761f40 */
-extern int sv_Bubbles[0x40][0x43];                          /* 0x761fc0, the 64 speech bubble records (0x10c bytes) */
+extern SVBUBBLE sv_Bubbles[0x40];                           /* 0x761fc0, the 64 speech bubble records */
 #ifndef DATA_VIEWS_H
 extern int sv_BubbleObjects[4286];                          /* 0x761fc8, the object field (+8) of each bubble record */
 #endif

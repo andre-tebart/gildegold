@@ -93,7 +93,7 @@ typedef struct CHARACTER {         /* 0x244 bytes */
                                        character is (0.5 minimum) and raised again by 0.01 per walk update */
     char handObject[0x40];          /* 0x1a8, the model in the right hand (ch_SetHandObject hand 2 on load) */
     char sitAnim[0x40];             /* 0x1e8, the sit animation (ch_SetSitAnim on load, cut at its last '_') */
-    void (*unk228)(struct CHARACTER *ch);
+    void (*onDelete)(struct CHARACTER *ch); /* 0x228, called by ch_Delete (sv_ShowBubble sets sv_ReleaseBubble) */
     D3OBJECT *lowPolyBody;          /* 0x22c, low-poly body */
     char lowname[0x10];             /* 0x230 */
     unsigned char pathType;         /* 0x240, the path_Find unit type (selects the terrain cost table

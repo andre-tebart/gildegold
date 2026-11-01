@@ -5308,64 +5308,52 @@ void sv_ReleaseBubble(int o)
         i++;
     } while ((int)p < (int)(sv_BubbleObjects + 0x40 * 0x43));
 }
-/* 0x52c4e0, registers the object o (it must belong to the current scene: +0x88 == 0x5fb5b0) with the value b and the optional name in the table 0x761fc0 (a free entry, else the oldest expired one,
-   time 0x761fc4 < 0x6333cc ms); the object's +0x228 callback becomes 0x52c4a0 */
+/* 0x52c4e0, shows a speech bubble over the character ch (only one of the current scene, and one bubble per character): the text id
+   text, or the own text name, goes into a free sv_Bubbles record, else into the last one stamped before now; ch's delete
+   callback becomes sv_ReleaseBubble
+   @deep read whole against the original: the three loops (own entry, free entry with the cmp 0x40 after
+   the break, last entry stamped before ai_ClockMs), the stores time/ch/text, onDelete, strcpy/empty name
+   all match; SVBUBBLE typed. Left: VC6 keeps ai_ClockMs in esi from inside loop 2 (0x52c524 mov
+   esi,[ai_ClockMs]) through the time store (mov [eax+4],esi), saving esi in the prologue; the original
+   loads it in the expiry block only (push esi; mov esi,[ai_ClockMs] at 0x52c53c .. pop esi 0x52c562) and
+   reloads it for the store (0x52c572 mov ecx,[ai_ClockMs]). Tried: a local now, indexed stores without b,
+   goto found, i == 0x40: all equal or worse. The branch-target hunks follow from the 5 byte
+   prologue/epilogue size. */
 
-void sv_Unk52c4e0(int o, int b, char *name)
+void sv_ShowBubble(CHARACTER *ch, int text, char *name)
 {
-    int i, j, *p;
-    int *e;
+    int i, j;
+    SVBUBBLE *b;
 
-    if (o != 0 && *(char **)(o + 0x88) == ai_Unk5fb5b0) {
-        p = (int *)(unsigned)&sv_BubbleObjects;
-        do {
-            if (*p == o)
-                return;
-            p += 0x43;
-        } while ((int)p < ((unsigned)&sv_BubbleObjects + 0x4300));
-        i = 0;
-        p = (int *)(unsigned)&sv_BubbleObjects;
-        do {
-            if (*p == 0) {
-                if (i < 0x40)
-                    goto lfound;
-                break;
-            }
-            p += 0x43;
-            i++;
-        } while ((int)p < ((unsigned)&sv_BubbleObjects + 0x4300));
-        i = -1;
-        j = 0;
-        p = (int *)((unsigned)&sv_Bubbles + 0x4);
-        do {
-            if (*p < SV_I((unsigned)&ai_ClockMs))
-                i = j;
-            p += 0x43;
-            j++;
-        } while ((int)p < ((unsigned)&sv_Bubbles + 0x4304));
-        if (i != -1) {
-lfound:
-            e = (int *)(i * 0x10c + (unsigned)&sv_Bubbles);
-            ((int *)((unsigned)&sv_Bubbles + 0x4))[i * 0x43] = SV_I((unsigned)&ai_ClockMs);
-            ((int *)(unsigned)&sv_BubbleObjects)[i * 0x43] = o;
-            *e = b;
-            *(int *)(o + 0x228) = (int)sv_ReleaseBubble;
-            if (name != 0) {
-                strcpy((char *)e + 0xc, name);
-                return;
-            }
-            *(char *)(i * 0x10c + ((unsigned)&sv_BubbleObjects + 0x4)) = 0;
-        }
+    if (ch == 0 || ch->scene != d3_DefaultScene)
+        return;
+    for (i = 0; i < 0x40; i++) {
+        if (sv_Bubbles[i].ch == (struct CHARACTER *)ch)
+            return;
     }
+    for (i = 0; i < 0x40; i++) {
+        if (sv_Bubbles[i].ch == 0)
+            break;
+    }
+    if (i >= 0x40) {
+        i = -1;
+        for (j = 0; j < 0x40; j++) {
+            if (sv_Bubbles[j].time < ai_ClockMs)
+                i = j;
+        }
+        if (i == -1)
+            return;
+    }
+    b = &sv_Bubbles[i];
+    b->time = ai_ClockMs;
+    b->ch = (struct CHARACTER *)ch;
+    b->text = text;
+    ch->onDelete = (void (*)(struct CHARACTER *))sv_ReleaseBubble;
+    if (name != 0)
+        strcpy(b->name, name);
+    else
+        b->name[0] = 0;
 }
-
-char d3if_ScreenBox(D3OBJECT *obj, D3RECT *r);                     /* 0x4486e0 */
-/* 0x42ec00 */
-int gm_TitleGroup();                     /* 0x504ad0 */
-char * gm_FindBuildingById(int id);                     /* 0x502020 */
-float unk_Unk4f9e00(int *o);                     /* 0x4f9e00 */
-float ord_BuildingCapacityRatio();                     /* 0x4f97c0 */
-
 /* 0x52c5c0, picks the speech bubble for the character under the cursor (0x6f22f8) or the object (0x6f22e8) and shows it through 0x52c4e0: a text id (0x11e9 + n * 0xf, or by the role +0x180 of the
    character: 0x1250 ..) or a text built into a buffer; ROUGH (the switch cases are read from the Ghidra output, the 5 kinds of the final switch are mostly lost) */
 void sv_Unk52c5c0(void)
@@ -5572,14 +5560,14 @@ lftol:
     }
     if (g == 0) {
         if (o != 0)
-            sv_Unk52c4e0(ch_FindByObject(o), id, 0);
+            sv_ShowBubble(ch_FindByObject(o), id, 0);
     } else {
         if (id != -1) {
-            sv_Unk52c4e0(*(int *)(g + 0x184), id, 0);
+            sv_ShowBubble((CHARACTER *)*(int *)(g + 0x184), id, 0);
             return;
         }
         if (text[0] != 0) {
-            sv_Unk52c4e0(*(int *)(g + 0x184), 0, text);
+            sv_ShowBubble((CHARACTER *)*(int *)(g + 0x184), 0, text);
             return;
         }
     }
@@ -7891,8 +7879,7 @@ int d3t_Snow = 0;  /* 0x76061c */
 int d3_SkyLayers[6] = {0};  /* 0x760620, the sky layer handles: sv creates 0 .. 2, sv and main_EndGame delete all six */
 SVPLATE sv_NamePlates[0x20] = {0};  /* 0x760640, the name plate records (200 bytes each) */
 char sv_StatusText[128] = {0};  /* 0x761f40, the status line text */
-int sv_Bubbles[0x40][0x43] = {0};  /* 0x761fc0, the 64 speech bubble records (0x10c bytes): +0 the bubble, +4 its time
-                                      stamp (ai_ClockMs), +8 its object (sv_BubbleObjects), +0xc the name */
+SVBUBBLE sv_Bubbles[0x40] = {0};  /* 0x761fc0, the 64 speech bubble records */
 /* sv_BubbleObjects: view of sv_Bubbles (+0x8) */
 int sv_SelectedChar = 0;  /* 0x7662c0 */
 int sv_GroundplanButtons[15] = {0};  /* 0x7662e0, 15 widget ids */
