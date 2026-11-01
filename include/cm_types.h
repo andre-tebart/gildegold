@@ -60,7 +60,7 @@ typedef struct CMLOBBYPLAYER {          /* 0x57 bytes, a player of the network l
     unsigned char faith;                /* 0x11, "Glauben" */
     char firstName[0x10];               /* 0x12, "Name" */
     char familyName[0x10];              /* 0x22, "Familienname" */
-    int unk32;                          /* 0x32, -1 for a new player; no reader seen */
+    int reserved;                       /* 0x32, -1 for a new player; no reader seen */
     unsigned char talents[5];           /* 0x36, 0x5a 0x46 0x78 0x46 0x5a for a new player (a reasoned guess: the
                                            five talents of INIT_PLAYER.talents) */
     char pad3b[0x1c];                   /* 0x3b, no user seen */

@@ -28,8 +28,6 @@
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 extern char ai_OptionsFile[288];
 extern int ai_Unk1460ae0;
-extern int d2_PointerObj;
-extern D2INPUT d2_Inputs[];
 extern GAPDATA full_data_602568[];
 extern GAPDATA full_data_6230f8[];
 extern GAPDATA full_data_623108[];
@@ -56,11 +54,13 @@ extern GAPDATA full_data_6f2684[];
 #include "f3init_types.h"
 #include "f3init.h"
 #include "net.h"
-extern unsigned char kb_Last;
+#include "gfx.h"
 extern int sv_PopRequest;
-extern int d2_LastWindow;
 extern INIT_PLAYER init_PlayerProfile;
 extern int main_ChoosePlayer(int mask, int flag);
+
+#define d2_SetObjValue2 ((void (*)(int, char *))d2_SetObjValue)  /* 0x475cb0 (d2.c: five parameters): @original the lobby screen pushes 2 arguments (input, ch_EmptyName) */
+#define cm_JoinChar (*(CMJOIN *)((char *)&ai_Unk9364e0 + 0x2c0))  /* 0x9367a0, the joined character (CMJOIN), as main.c reads it */
 
 #define U_I(a) (*(int *)(a))
 #define U_B(a) (*(unsigned char *)(a))
@@ -80,18 +80,15 @@ int lobby_Rows[8] = {0};  /* 0x6f5e80, the text control of each line of the play
 int lobby_MyRow = 0;  /* 0x6f5ea0, the player list line of this player */
 int *lobby_State = 0;  /* 0x6f5ea4, cm's lobby state (cm_LobbyState): [1] a lobby message came in */
 
-/* 0x589f10, the network lobby screen (2595 B, ROUGH): clears the player record 0x6f5e20 (0x57 B), reads the
-   "Network" profile (name / family name / emblem / gender / religion / profession) into it, opens the lobby
-   screen "menu\netlobby" 0x62aa8c, builds the four sub windows (0x58a9d0 / 0x58a940 / 0x58aa30 / 0x58ad20 /
-   0x58aba0 / 0x58ada0) and runs its frame loop 0x5309a0 (the callback 0x589f10, mask 0x24087): the input key
-   0x1468410 (0x1c = enter) toggles the active text field, the clicked control 0x5fe710 is compared with the
-   window ids 0x62aa7c / 0x62aa80 / 0x62aa84 (toggle the selected player, the city and the profession pickers)
-   and with the player list 0x6f5e80; the engine state 0x1460ae0 == -1 ends the screen (returns -1); the
-   player's choice is written back to the profile ("%d" 0x629188, 0x5de652) and the record 0x75e5a0 ..
-   0x75e5ca keeps the last choice. The paths where the record 0x6f5ea4 / 0x6f5e78 is missing open the message
-   box 0x60ea78 instead. ROUGH: the text of the sub blocks is transcribed from the disassembly / pseudocode,
-   the exact store order and the local frame are not verified */
-
+/* 0x589f10, the network lobby screen: clears this player's record lobby_Player, fills it from the "Network"
+   profile (or from the joined saved game's character), joins the lobby (cm_LobbyJoin) and fetches the player
+   list; without a lobby state or an own record it shows the message box text 0x87 until a right click or
+   escape. Then it opens "menu\netlobby" with its chat input, buttons, city, own player and player list and runs
+   the frame loop: enter toggles the chat input and sends the typed line to lobby_ChatTo (0: everybody), the
+   ready button toggles ready, the character button (when not ready) runs the player and profession pickers and
+   sends the changed record, a click on a player line selects it as the chat target, the leave button leaves
+   (returns -1, as does a lost connection); all players ready pops the screen. On leaving it writes the own
+   record back to init_PlayerProfile and the "Network" profile. @deep Read all of it against the original and rewrote it: AI_ZERO_AT clear of lobby_Player (0x57 temp at [ebp-4]), the profile reads, defaults and the cm_JoinChar copy, join / list waits, both message-box loops (while with continue: the original keeps the return inline), the form setup through d2_Objs / d2_Inputs fields, the do-while frame loop with the net_Conn.s / cm_LobbyAllReady / d2_ClickedId dispatch, the leave / ready / character buttons, the player-list pick with sel (VC6 threads the not-found exit), the lobby_State[1] refresh and the write-back into init_PlayerProfile; the form name literal had a newline (menu + \n), now the backslash path. 748 = 748 instructions. Left: scheduling and allocation only: the defaults (the original loads cm_NetGame.mode and keeps 0x5a in cl before the stores, ours al after), the d2_ClickedId = -1 store placed before the d2_Inputs w store instead of after it, the player-list pick registers (original i in ecx, row in edx, sel copied to edi and the checked state re-read with cmp [..], esi; ours i in edx, row in ecx, the state loaded into edi), and ecx/edx swapped for d2_PointerObj in the button compares. */
 int lobby_Screen(void)
 {
     char buf[256];
@@ -100,91 +97,90 @@ int lobby_Screen(void)
     int ret;
     int state;
     int win;
-    int id;
-    int i;
-    int n;
-    char *p;
-    char *r;
+    int input;
+    int slot;
+    int sel;
+    unsigned int i;
+    unsigned int n;
 
     ret = 0;
     cm_LobbyClearChat();
-    memset(&lobby_Player, 0, 0x57);
+    AI_ZERO_AT(offset lobby_Player, 0x57);
     lobby_List = 0;
     lobby_ChatTo = -1;
     lobby_State = cm_LobbyState();
     if (lobby_State == 0) {
-        win = d2_OpenForm(0, 0, (char *)(unsigned)"misc\\Messagebox_NONE_PERGA");
+        win = d2_OpenForm(0, 0, "misc\\Messagebox_NONE_PERGA");
         d2_CentreViewWindows(win);
         io_PrintText(0x87);
-        U_I((unsigned)&d2_ClickedId) = -1;
-        while (U_I(((unsigned)&dm_L + 0x20)) == 0 && U_B((unsigned)&kb_Last) != 1) {
-            if (sv_RunFrame((int)lobby_Screen, 0x24087) == 0) {
-                d2_CloseView(win);
-                return 0;
-            }
+        d2_ClickedId = -1;
+        while (dm_L.rup == 0 && kb_Last != 1) {
+            if (sv_RunFrame((int)lobby_Screen, 0x24087) != 0)
+                continue;
+            d2_CloseView(win);
+            return 0;
         }
-        U_I((unsigned)&sv_PopRequest) = 1;
+        sv_PopRequest = 1;
         d2_CloseView(win);
         return 0;
     }
-    GetPrivateProfileStringA((char *)(unsigned)"Network", (char *)(unsigned)"Name", (char *)(unsigned)"Vorname", lobby_Player.firstName, 0x20,
-                             (char *)(unsigned)&ai_OptionsFile);
-    GetPrivateProfileStringA((char *)(unsigned)"Network", (char *)(unsigned)"Familienname", (char *)(unsigned)"Nachname", lobby_Player.familyName, 0x20,
-                             (char *)(unsigned)&ai_OptionsFile);
-    lobby_Player.coat = GetPrivateProfileIntA((char *)(unsigned)"Network", (char *)(unsigned)"Wappen", 0, (char *)(unsigned)&ai_OptionsFile);
-    lobby_Player.sex = (char)GetPrivateProfileIntA((char *)(unsigned)"Network", (char *)(unsigned)"Geschlecht", 0, (char *)(unsigned)&ai_OptionsFile);
-    lobby_Player.faith = (char)GetPrivateProfileIntA((char *)(unsigned)"Network", (char *)(unsigned)"Glauben", 0, (char *)(unsigned)&ai_OptionsFile);
-    lobby_Player.job = (char)GetPrivateProfileIntA((char *)(unsigned)"Network", "Beruf", 0, (char *)(unsigned)&ai_OptionsFile);
-    lobby_Player.job = gm_TitleNumber(gm_TitleGroup(lobby_Player.job), 1);
-    U_B(((unsigned)&init_PlayerProfile + 0x2)) = 0x10;
+    GetPrivateProfileStringA("Network", "Name", "Vorname", lobby_Player.firstName, 0x20, ai_OptionsFile);
+    GetPrivateProfileStringA("Network", "Familienname", "Nachname", lobby_Player.familyName, 0x20, ai_OptionsFile);
+    lobby_Player.coat = GetPrivateProfileIntA("Network", "Wappen", 0, ai_OptionsFile);
+    lobby_Player.sex = (unsigned char)GetPrivateProfileIntA("Network", "Geschlecht", 0, ai_OptionsFile);
+    lobby_Player.faith = (unsigned char)GetPrivateProfileIntA("Network", "Glauben", 0, ai_OptionsFile);
+    lobby_Player.job = (unsigned char)GetPrivateProfileIntA("Network", "Beruf", 0, ai_OptionsFile);
+    slot = gm_TitleGroup(lobby_Player.job);
+    lobby_Player.job = gm_TitleNumber(slot, 1);
+    init_PlayerProfile.status = 0x10;
     lobby_Player.status = 0x10;
     lobby_Player.talents[1] = 0x46;
     lobby_Player.talents[3] = 0x46;
-    lobby_Player.unk32 = -1;
+    lobby_Player.reserved = -1;
     lobby_Player.talents[0] = 0x5a;
     lobby_Player.talents[2] = 0x78;
     lobby_Player.talents[4] = 0x5a;
     if (cm_NetGame.mode == 0x7f) {
-        lobby_Player.job = U_B(((unsigned)&ai_Unk9364e0 + 0x2e0));
-        lobby_Player.sex = U_B(((unsigned)&ai_Unk9364e0 + 0x2e4));
-        lobby_Player.coat = U_I(((unsigned)&ai_Unk9364e0 + 0x2ec)) - 0x59a;
-        lobby_Player.faith = U_B(((unsigned)&ai_Unk9364e0 + 0x2e8));
-        strcpy(lobby_Player.firstName, (char *)((unsigned)&ai_Unk9364e0 + 0x2c0));
-        strcpy(lobby_Player.familyName, (char *)((unsigned)&ai_Unk9364e0 + 0x2d0));
+        lobby_Player.job = (unsigned char)cm_JoinChar.char164;
+        lobby_Player.sex = (unsigned char)cm_JoinChar.char09;
+        lobby_Player.faith = (unsigned char)cm_JoinChar.char0c;
+        lobby_Player.coat = cm_JoinChar.char54 - 0x59a;
+        strcpy(lobby_Player.firstName, cm_JoinChar.text1);
+        strcpy(lobby_Player.familyName, cm_JoinChar.text2);
     }
-    id = cm_LobbyJoin(&lobby_Player);
-    if (id == -1)
+    slot = cm_LobbyJoin(&lobby_Player);
+    if (slot == -1)
         return -1;
-    while (cm_GetSlotState(id) == 0)
+    while (cm_GetSlotState(slot) == 0)
         sv_PumpNet();
-    if (cm_GetSlotState(id) == 2) {
+    if (cm_GetSlotState(slot) == 2) {
         txt_Format(buf, 0x88);
-        sv_MessageBox(buf, 0x100);
+        sv_MessageBox((int)buf, 0x100);
         return -1;
     }
-    id = ((int (*)())cm_LobbyRequestList)();
-    if (id == -1)
+    slot = cm_LobbyRequestList();
+    if (slot == -1)
         return -1;
-    while (cm_GetSlotState(id) == 0)
+    while (cm_GetSlotState(slot) == 0)
         sv_PumpNet();
     d2_ShowPicture(0x7d6);
     lobby_Me = cm_LobbyMyPlayer();
     if (lobby_Me == 0) {
-        win = d2_OpenForm(0, 0, (char *)(unsigned)"misc\\Messagebox_NONE_PERGA");
+        win = d2_OpenForm(0, 0, "misc\\Messagebox_NONE_PERGA");
         d2_CentreViewWindows(win);
         io_PrintText(0x87);
-        U_I((unsigned)&d2_ClickedId) = -1;
-        while (U_I(((unsigned)&dm_L + 0x20)) == 0 && U_B((unsigned)&kb_Last) != 1) {
-            if (sv_RunFrame((int)lobby_Screen, 0x24087) == 0) {
-                d2_CloseView(win);
-                return 0;
-            }
+        d2_ClickedId = -1;
+        while (dm_L.rup == 0 && kb_Last != 1) {
+            if (sv_RunFrame((int)lobby_Screen, 0x24087) != 0)
+                continue;
+            d2_CloseView(win);
+            return 0;
         }
-        U_I((unsigned)&sv_PopRequest) = 1;
+        sv_PopRequest = 1;
         d2_CloseView(win);
         return 0;
     }
-    lobby_Form = d2_OpenForm(0x3c, 0, "menu\netlobby");
+    lobby_Form = d2_OpenForm(0x3c, 0, "menu\\netlobby");
     d2_CentreViewWindows(lobby_Form);
     lobby_AddChatScroll();
     lobby_AddButtons();
@@ -193,141 +189,133 @@ int lobby_Screen(void)
     lobby_ShowMyPlayer();
     lobby_ShowPlayers();
     d2_SetForm(lobby_Form, 1);
-    id = d2_GetWinObj(lobby_Form, 0, (char *)0);
-    d2_SetObjMax(id, 0x40);
+    input = d2_GetWinObj(lobby_Form, 0, 0);
+    d2_SetObjMax(input, 0x40);
     state = 0;
-    d2_SetObjValue(id, (char *)(unsigned)&ch_EmptyName);
-    i = id * 0x2ec;
-    *(short *)(i + 0x14 + U_I((unsigned)&d2_Objs)) = 0x26c;
-    n = *(int *)(i + 0x78 + U_I((unsigned)&d2_Objs));
-    d2_Inputs[n].flags |= 0x200;
-    d2_Inputs[n].w = 0x26c;
-    U_I((unsigned)&d2_ClickedId) = -1;
-    d2_Inputs[n].maxw = 0x26c;
-    while (1) {
+    d2_SetObjValue2(input, ch_EmptyName);
+    d2_Objs[input].w = 0x26c;
+    d2_Inputs[d2_Objs[input].input].flags |= 0x200;
+    d2_Inputs[d2_Objs[input].input].w = 0x26c;
+    d2_ClickedId = -1;
+    d2_Inputs[d2_Objs[input].input].maxw = 0x26c;
+    do {
         if (state == 0) {
-            if (U_I((unsigned)&d2_FocusedInput) == 0) {
-                if (U_B((unsigned)&kb_Last) == 0x1c) {
-                    d2_FocusInput(id);
-                    state = 1;
-                }
-            } else {
+            if (d2_FocusedInput != 0)
+                state = 1;
+            else if (kb_Last == 0x1c) {
+                d2_FocusInput(input);
                 state = 1;
             }
-        } else if (U_I((unsigned)&d2_FocusedInput) == 0 || U_B((unsigned)&kb_Last) == 0x1c) {
+        } else if (d2_FocusedInput == 0 || kb_Last == 0x1c) {
             state = 0;
-            p = (char *)d2_GetObjValue(id);
-            strcpy(name, p);
-            d2_SetObjValue(id, (char *)(unsigned)&ch_EmptyName);
-            if (strlen(name) != 0)
-                cm_LobbySendChat(lobby_ChatTo == -1 ? 0 : lobby_ChatTo, name);
+            strcpy(name, (char *)d2_GetObjValue(input));
+            d2_SetObjValue2(input, ch_EmptyName);
+            if (strlen(name) != 0) {
+                if (lobby_ChatTo != -1)
+                    cm_LobbySendChat(lobby_ChatTo, name);
+                else
+                    cm_LobbySendChat(0, name);
+            }
         }
-        if (U_I((unsigned)&ai_Unk1460ae0) == -1) {
+        if (net_Conn.s == -1) {
             ret = -1;
-            U_I((unsigned)&sv_PopRequest) = 1;
-        } else if (cm_LobbyAllReady() == 0) {
-            if (U_I((unsigned)&d2_ClickedId) != -1) {
-                if (U_I((unsigned)&d2_PointerObj) == lobby_LeaveButton) {
-                    n = ((int (*)())cm_LobbyLeave)();
-                    while (cm_GetSlotState(n) == 0)
+            sv_PopRequest = 1;
+        } else if (cm_LobbyAllReady() != 0) {
+            sv_PopRequest = 1;
+        } else if (d2_ClickedId != -1) {
+            if (d2_PointerObj == lobby_LeaveButton) {
+                slot = cm_LobbyLeave();
+                while (cm_GetSlotState(slot) == 0)
+                    sv_PumpNet();
+                sv_PopRequest = 1;
+                ret = -1;
+            } else if (d2_PointerObj == lobby_Buttons[0]) {
+                slot = cm_LobbySetReady(lobby_Me->ready == 0);
+                while (cm_GetSlotState(slot) == 0)
+                    sv_PumpNet();
+                d2_Objs[lobby_Buttons[0]].checked = lobby_Me->ready;
+                if (cm_LobbyAllReady() != 0)
+                    sv_PopRequest = 1;
+            } else if (d2_PointerObj == lobby_Buttons[1]) {
+                if (lobby_Me->ready != 0) {
+                    slot = cm_LobbySetReady(0);
+                    while (cm_GetSlotState(slot) == 0)
                         sv_PumpNet();
-                    U_I((unsigned)&sv_PopRequest) = 1;
-                    ret = -1;
-                } else if (U_I((unsigned)&d2_PointerObj) == lobby_Buttons[0]) {
-                    n = ((int (*)(int))cm_LobbySetReady)(lobby_Me->ready == 0);
-                    while (cm_GetSlotState(n) == 0)
+                    d2_Objs[lobby_Buttons[0]].checked = lobby_Me->ready;
+                }
+                if (lobby_Me->ready == 0 && lobby_ChoosePlayer(0x24087, 1) != 0) {
+                    strcpy(lobby_Player.firstName, init_PlayerProfile.firstName);
+                    strcpy(lobby_Player.familyName, init_PlayerProfile.familyName);
+                    lobby_Player.coat = init_PlayerProfile.coat - 0x59a;
+                    lobby_Player.sex = init_PlayerProfile.sex;
+                    lobby_Player.faith = init_PlayerProfile.faith;
+                    slot = cm_LobbyUpdatePlayer(&lobby_Player);
+                    while (cm_GetSlotState(slot) == 0)
                         sv_PumpNet();
-                    U_I((unsigned)&d2_Objs + 0x28 + lobby_Buttons[0] * 0x2ec) = lobby_Me->ready;
-                    if (cm_LobbyAllReady() != 0)
-                        U_I((unsigned)&sv_PopRequest) = 1;
-                } else if (U_I((unsigned)&d2_PointerObj) == lobby_Buttons[1]) {
-                    if (lobby_Me->ready != 0) {
-                        n = ((int (*)(int))cm_LobbySetReady)(0);
-                        while (cm_GetSlotState(n) == 0)
+                    if (lobby_ChooseProfession(0x24087) != 0) {
+                        lobby_Player.job = init_PlayerProfile.job;
+                        slot = cm_LobbyUpdatePlayer(&lobby_Player);
+                        while (cm_GetSlotState(slot) == 0)
                             sv_PumpNet();
-                        U_I((unsigned)&d2_Objs + 0x28 + lobby_Buttons[0] * 0x2ec) = lobby_Me->ready;
-                    }
-                    if (lobby_Me->ready == 0 && lobby_ChoosePlayer(0x24087, 1) != 0) {
-                        strcpy(lobby_Player.firstName, (char *)((unsigned)&init_PlayerProfile + 0xa));
-                        strcpy(lobby_Player.familyName, (char *)((unsigned)&init_PlayerProfile + 0x2a));
-                        lobby_Player.coat = U_I(((unsigned)&init_PlayerProfile + 0x4)) - 0x59a;
-                        lobby_Player.sex = U_B(((unsigned)&init_PlayerProfile + 0x8));
-                        lobby_Player.faith = U_B(((unsigned)&init_PlayerProfile + 0x9));
-                        n = cm_LobbyUpdatePlayer(&lobby_Player);
-                        while (cm_GetSlotState(n) == 0)
-                            sv_PumpNet();
-                        if (lobby_ChooseProfession(0x24087) != 0) {
-                            lobby_Player.job = U_B(((unsigned)&init_PlayerProfile + 0x3));
-                            n = cm_LobbyUpdatePlayer(&lobby_Player);
-                            while (cm_GetSlotState(n) == 0)
-                                sv_PumpNet();
-                        }
-                    }
-                } else {
-                    /* the player list: the clicked entry 0x6f5e80[i] is the only one selected, the id
-                       0x6f267c[i + 1] goes to 0x6f5e00 */
-                    for (i = 0; i < lobby_List[0]; i++) {
-                        if (i != lobby_MyRow && U_I((unsigned)&d2_PointerObj) == lobby_Rows[i]) {
-                            n = U_I((unsigned)&d2_Objs + 0x28 + lobby_Rows[i] * 0x2ec) == 0;
-                            U_I((unsigned)&d2_Objs + 0x28 + lobby_Rows[i] * 0x2ec) = n;
-                            if (n == 0) {
-                                lobby_ChatTo = -1;
-                            } else {
-                                lobby_ChatTo = lobby_List[i + 1];
-                            }
-                            if (-1 < i) {
-                                for (n = 0; n < lobby_List[0]; n++)
-                                    if (i != n)
-                                        U_I((unsigned)&d2_Objs + 0x28 + lobby_Rows[n] * 0x2ec) = 0;
-                            }
-                            break;
-                        }
                     }
                 }
+            } else {
+                /* a player line (not the own one): toggles it and makes it the chat target, the others off */
+                sel = -1;
+                for (i = 0; i < lobby_List[0]; i++) {
+                    if (i != lobby_MyRow && d2_PointerObj == lobby_Rows[i]) {
+                        d2_Objs[lobby_Rows[i]].checked = d2_Objs[lobby_Rows[i]].checked == 0;
+                        sel = i;
+                        if (d2_Objs[lobby_Rows[i]].checked != 0)
+                            lobby_ChatTo = lobby_List[i + 1];
+                        else
+                            lobby_ChatTo = -1;
+                        break;
+                    }
+                }
+                if (sel >= 0) {
+                    for (n = 0; n < lobby_List[0]; n++)
+                        if (n != sel)
+                            d2_Objs[lobby_Rows[n]].checked = 0;
+                }
             }
-        } else {
-            U_I((unsigned)&sv_PopRequest) = 1;
         }
-        U_I((unsigned)&d2_ClickedId) = -1;
+        d2_ClickedId = -1;
         if (lobby_State[1] != 0) {
-            if (cm_LobbyAllReady() == 0) {
-                n = ((int (*)())cm_LobbyRequestList)();
-                while (cm_GetSlotState(n) == 0)
+            if (cm_LobbyAllReady() != 0)
+                sv_PopRequest = 1;
+            else {
+                slot = cm_LobbyRequestList();
+                while (cm_GetSlotState(slot) == 0)
                     sv_PumpNet();
                 lobby_List = cm_LobbyPlayerList();
                 lobby_ShowMyPlayer();
                 lobby_ShowPlayers();
                 lobby_ShowChat();
                 lobby_State[1] = 0;
-            } else {
-                U_I((unsigned)&sv_PopRequest) = 1;
             }
         }
-        if (sv_RunFrame((int)lobby_Screen, 0x24087) == 0) {
-            d2_CloseView(lobby_Form);
-            r = (char *)lobby_Me;
-            U_B(((unsigned)&init_PlayerProfile + 0x2)) = 0x12;
-            U_B(((unsigned)&init_PlayerProfile + 0x3)) = U_B(r + 0xb);
-            U_W(((unsigned)&init_PlayerProfile + 0x8)) = U_W(r + 0x10);
-            U_I(((unsigned)&init_PlayerProfile + 0x4)) = U_I(r + 0xc);
-            strcpy((char *)((unsigned)&init_PlayerProfile + 0x2a), r + 0x22);
-            strcpy((char *)((unsigned)&init_PlayerProfile + 0xa), r + 0x12);
-            WritePrivateProfileStringA((char *)(unsigned)"Network", (char *)(unsigned)"Name", (char *)((unsigned)&init_PlayerProfile + 0xa),
-                                       (char *)(unsigned)&ai_OptionsFile);
-            WritePrivateProfileStringA((char *)(unsigned)"Network", (char *)(unsigned)"Familienname", (char *)((unsigned)&init_PlayerProfile + 0x2a),
-                                       (char *)(unsigned)&ai_OptionsFile);
-            sprintf(text, (char *)(unsigned)"%d", U_I(((unsigned)&init_PlayerProfile + 0x4)));
-            WritePrivateProfileStringA((char *)(unsigned)"Network", (char *)(unsigned)"Wappen", text, (char *)(unsigned)&ai_OptionsFile);
-            sprintf(text, (char *)(unsigned)"%d", U_B(((unsigned)&init_PlayerProfile + 0x8)));
-            WritePrivateProfileStringA((char *)(unsigned)"Network", (char *)(unsigned)"Geschlecht", text, (char *)(unsigned)&ai_OptionsFile);
-            sprintf(text, (char *)(unsigned)"%d", U_B(((unsigned)&init_PlayerProfile + 0x9)));
-            WritePrivateProfileStringA((char *)(unsigned)"Network", (char *)(unsigned)"Glauben", text, (char *)(unsigned)&ai_OptionsFile);
-            sprintf(text, (char *)(unsigned)"%d", U_B(((unsigned)&init_PlayerProfile + 0x3)));
-            WritePrivateProfileStringA((char *)(unsigned)"Network", "Beruf", text, (char *)(unsigned)&ai_OptionsFile);
-            ((void (*)(void))d3io_NoopCallback)();
-            return ret;
-        }
-    }
+    } while (sv_RunFrame((int)lobby_Screen, 0x24087) != 0);
+    d2_CloseView(lobby_Form);
+    init_PlayerProfile.status = 0x12;
+    init_PlayerProfile.job = lobby_Me->job;
+    init_PlayerProfile.sex = lobby_Me->sex;
+    init_PlayerProfile.faith = lobby_Me->faith;
+    init_PlayerProfile.coat = lobby_Me->coat;
+    strcpy(init_PlayerProfile.familyName, lobby_Me->familyName);
+    strcpy(init_PlayerProfile.firstName, lobby_Me->firstName);
+    WritePrivateProfileStringA("Network", "Name", init_PlayerProfile.firstName, ai_OptionsFile);
+    WritePrivateProfileStringA("Network", "Familienname", init_PlayerProfile.familyName, ai_OptionsFile);
+    sprintf(text, "%d", init_PlayerProfile.coat);
+    WritePrivateProfileStringA("Network", "Wappen", text, ai_OptionsFile);
+    sprintf(text, "%d", init_PlayerProfile.sex);
+    WritePrivateProfileStringA("Network", "Geschlecht", text, ai_OptionsFile);
+    sprintf(text, "%d", init_PlayerProfile.faith);
+    WritePrivateProfileStringA("Network", "Glauben", text, ai_OptionsFile);
+    sprintf(text, "%d", init_PlayerProfile.job);
+    WritePrivateProfileStringA("Network", "Beruf", text, ai_OptionsFile);
+    ((void (*)(void))d3io_NoopCallback)();
+    return ret;
 }
 
 char *_itoa(int, char *, int); char *_strupr(char *);
