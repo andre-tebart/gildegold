@@ -54,6 +54,8 @@ extern int gm_PlayerRecords[688];
 #include "tr.h"
 #include "unk_4a7140.h"
 #include "unk_4b39f0.h"
+#include "d3_engine.h"
+#include "d3_fl.h"
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, ai_Unk4d88c0 0x4d88c0 move it as a word / movzx) */
 #define sb_PlaySampleI ((struct SBSAMPLE *(*)(int, char *, int, int, int, int, int))sb_PlaySample)  /* 0x426fa0 (sblib.c: SBBANK *bank): this unit passes the bank as an int */
 #define sv_CheckGoodAmountB ((int (*)(char *, int, unsigned char))sv_CheckGoodAmount)  /* 0x521040 (sv.c: unsigned t): @original ai_CurseWindow (0x5d8c90) passes the good as a byte (mov cl, [ai_OwnPlayer], no zero extension) */
