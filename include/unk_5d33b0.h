@@ -384,4 +384,12 @@ int cm_SendPlayerId(void);                  /* 0x4c3f90, cm.c: sends message 0x1
 void main_GameLoop(int ctl);                /* 0x53bb20, main.c: the main game loop / dialog callback */
 void txt_Format(char *out, int id0, ...);   /* 0x5176d0, io_text.c: formats a text id into out */
 
+/* declared in other units' headers before (moved to the owner) */
+int ai_InitShot(SHOTREC *shot, D3VECTOR *pos, D3VECTOR *dir, float charge, float size, float density);  /* 0x5dc240 */
+int ai_ScatterShot(SHOTREC *shot, float sideSpread, D3VECTOR *side, float otherSpread, D3VECTOR *other, float speedSpread);  /* 0x5dc3a0 */
+int ai_SolveCannonAim(float *from, float *to, float *range, float *outElev, float *outYaw, float *outSpeed, float *outDir, float *outUp, float *outSide);  /* 0x5dd100 */
+int ai_SphereVolume(float radius, float size, float *out);  /* 0x5dc1a0 */
+int ai_StepShot(SHOTREC *shot);  /* 0x5dc4a0 */
+int ai_StepShotSlow(SHOTREC *shot);  /* 0x5dc9d0 */
+
 #endif
