@@ -9,6 +9,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include "txt.h"
+#include "err.h"
+#include "io_text.h"
+#include "mem.h"
+#include "vfs.h"
 
 /* 0x42c3b0, returns the n-th of the NUL-separated fields at p. */
 char *txt_Field(char *p, int n, char type)
