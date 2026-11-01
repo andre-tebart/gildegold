@@ -71,7 +71,6 @@ int bio_rd_array_quick(struct VFSFILE *f, int size, void **out);                
 
 extern char d3_LodMissing;                  /* 0x6339e4, set when an object LOD is missing */
 
-void d3_AppendSibling(D3OBJECT *first, D3OBJECT *obj);                                  /* 0x43cb20, d3_engine.c */
 void d3e_LoadEvents(void *f, D3OBJECT *obj);                                            /* 0x43e970, d3_engine.c */
 D3OBJECT *rd_object(void *f, D3OBJECT *parent, unsigned int version, char reload);  /* 0x44abb0 */
 struct D3FLMAP *d3io_ReadFloor(void *f, unsigned int version);                           /* 0x44b920 */
@@ -197,7 +196,6 @@ typedef struct D3IOSET {            /* D3IFLEVEL (0x60 bytes) */
 typedef void (*D3IOPROGRESS)(int a, int i, int n);
 
 D3OBJECT *d3_CloneObject(D3OBJECT *src);                                                /* 0x43d180, d3_engine.c */
-void d3e_LoadSceneEvents(void *f);                                                      /* 0x43ea10, d3_engine.c */
 char d3_LoadScene(char *name, void *f, D3IOPROGRESS progress);                    /* 0x44be60 */
 struct VFSFILE * vfs_Tfopen(char *name, char *mode, int unk);                                    /* 0x430470, vfs.c */
 int vfs_fclose(struct VFSFILE *f);                                                                /* 0x430aa0, vfs.c */
