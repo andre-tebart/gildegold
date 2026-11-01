@@ -489,4 +489,8 @@ extern char ord_StatisticsTime[];            /* 0x91b470, a clock stamp (14 byte
 int gm_MinutesBetween();                     /* 0x4fe280 */
 void ord_AdvanceRatingBase(void);               /* 0x4f9c00 */
 
+/* declared in other units' headers before (moved to the owner) */
+extern struct AICHAR *ai_JudgeCatholic;  /* 0x6f1bfc */
+extern struct AICHAR *ai_JudgeProtestant;  /* 0x6f1c00 */
+
 #endif
