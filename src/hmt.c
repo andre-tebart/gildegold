@@ -30,6 +30,7 @@
 #include "mem.h"
 #include "sv.h"
 #include "tr.h"
+#include "ch.h"
 
 /* the SDK calls of hmt_CreateBinaryFile; windows.h is not included (its min/max and the other SDL macros change the
    emitted code of the unit), the two entry points are declared here as the SDK does, __stdcall */
