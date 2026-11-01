@@ -99,4 +99,13 @@ typedef struct TSHICOL {            /* 0x308 bytes, ts_HiColCount of them at ts_
 } TSHICOL;
 
 void tex_SetPalette(void *pal);                                    /* 0x45fb30 */
+
+/* declared in other units' headers before (moved to the owner) */
+void tex_Exit(void);  /* 0x45fd00 */
+void tex_Init(int count, int maxhicol, int mips, unsigned int cache);  /* 0x45fa80 */
+void tex_ReloadAll(char keep, void (*cb)(int, int, int));  /* 0x461090 */
+void ts_UpdateScroll(unsigned long time);  /* 0x460cb0 */
+char *tex_FindFile(char *name);  /* 0x45f9f0 */
+extern void * d3_Unk6333fc;  /* 0x6333fc */
+
 #endif
