@@ -976,11 +976,11 @@ int amt_GetColumn7Offices(int all, int max, AMTREC *out)
 /* 0x4e7150, the offices the character c may apply for, best first: the open ones (state 3, fewer than 4 applicants) among the first 30 table records (the offices of the
    guild columns) whose kind has a rate for c (amt_GetOfficeRate); one entry per kind, sorted by level and, at the same level, by rate (an empty place is -100.0 / kind 0 /
    level 0). Writes up to n entries to out (n * 4 bytes of it are cleared first), returns their number capped at n; the callers are the application list 0x4ea8e0 and the
-   AI decision 0x497490 (am.c), which applies for a random candidate */
+   AI decision 0x497490 (am.c), which applies for a random candidate @deep Read whole against the original and fixed: the duplicate search runs with a found flag (for i = n-1; i >= 0 && !found; the test edx / jne at the loop top), the place search sets a stop flag on the first entry that is not lower (level unsigned, jb / jne, then the rate test ah,0x41), a run to -1 re-checks out[0] (the original's second level / rate test at +0x124) and only a stop inserts, the record walk is an index loop over the first 30 (signed jl on the strength-reduced pointer, ours had an unsigned pointer compare), the cap cnt >= n. Left: VC6 walks our records from &amt_Table[j].cnt (+0xc: mov bl,[eax-4] for kind) where the original walks from &amt_Table[j].kind (+8, mov bl,[eax]; moving the kind load first made it worse, 76 ins), the locals sit in other ebp slots (rate [ebp-8] vs [ebp-4], cnt [ebp-4] vs [ebp-0xc], the walk pointer [ebp-0xc] vs [ebp-8]) and our AI_ZERO copies out through a slot first (mov ecx,[ebp+0x10] / mov [ebp-0xc],ecx / mov edi,[ebp-0xc] where the original loads edi directly). */
 
 int amt_GetOfficeCandidates(char *c, int n, AMTCAND *out)
 {
-    int cnt, i, k, kind;
+    int cnt, i, j, k, kind, found, stop;
     float rate;
     AMTREC *p;
 
@@ -993,27 +993,37 @@ int amt_GetOfficeCandidates(char *c, int n, AMTCAND *out)
         out[i].kind = 0;
         out[i].level = 0;
     }
-    for (p = amt_Table; p < amt_Table + 30; p++) {
+    for (j = 0; j < 30; j++) {
+        p = &amt_Table[j];
         if (p->state != 3 || p->cnt >= 4)
             continue;
         kind = p->kind;
         if (amt_GetOfficeRate(c, kind, &rate) == 0)
             continue;
-        for (i = n - 1; i >= 0; i--) {
+        found = 0;
+        for (i = n - 1; i >= 0 && !found; i--) {
             if (out[i].kind == kind)
-                break;
+                found = 1;
         }
-        if (i >= 0)
+        if (found)
             continue;
+        /* the place: below the last entry of a higher level or of the same level with a better rate */
+        stop = 0;
         for (i = n - 1; i >= 0; i--) {
-            if (amt_Kinds[kind].level > out[i].level)
+            if (out[i].level < amt_Kinds[kind].level)
                 continue;
-            if (out[i].level == amt_Kinds[kind].level && out[i].rate <= rate)
-                continue;
-            break;
+            if (out[i].level != amt_Kinds[kind].level || !(out[i].rate <= rate)) {
+                stop = 1;
+                break;
+            }
         }
-        if (i == -1)
+        if (i == -1) {
             i = 0;
+            if (out[0].level < amt_Kinds[kind].level || (out[0].level == amt_Kinds[kind].level && out[0].rate <= rate))
+                stop = 1;
+        }
+        if (!stop)
+            continue;
         cnt++;
         for (k = n - 1; k > i; k--) {
             out[k].level = out[k - 1].level;
@@ -1024,7 +1034,7 @@ int amt_GetOfficeCandidates(char *c, int n, AMTCAND *out)
         out[i].rate = rate;
         out[i].kind = p->kind;
     }
-    if (n <= cnt)
+    if (cnt >= n)
         cnt = n;
     return cnt;
 }
