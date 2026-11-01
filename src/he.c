@@ -9,7 +9,7 @@
    f3gm.h f3snd.h gv.h hmt.h hst.h rt.h sblib.h sv.h unk_4b39f0.h unk_4b6480.h unk_5d33b0.h; held by own
    declarations that differ from the owner's: ai_Time, cm_SendExSetHE, ahm_SendSetShare; calls whose argument
    count differs from the definition (read the original's pushes): gm_AddTime, gm_Liking, gm_TitleNumber,
-   gm_TitleGroup, ch_QueueAnim, d2_SetObjValue, d3t_PlayAnim, ahm_SendSetShare, sb_Stop, sv_Unk524770.
+   gm_TitleGroup, ch_QueueAnim, d2_SetObjValue, d3t_PlayAnim, ahm_SendSetShare, sb_Stop, sv_IsAtDoor.
    unit of rea 8cef7d5b (src/game/he.c); boundaries in decl/text.dcl */
 struct AHMSLOT;
 struct D3HMAP;
@@ -4035,7 +4035,7 @@ void he_Unk549ce0(int ev)
     *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
 }
 
-int sv_Unk524770();
+int sv_IsAtDoor();
 void cm_SendKillCharacter(int a, int b);
 void ai_Unk5a9240(int param_1);
 float gm_Unk505440();
@@ -4153,7 +4153,7 @@ void he_Unk54a020(int ev)
         }
         for (i = 0; i < 4; i++) {
             p = gm_FindChar(*(int *)(ev + 0xbc + i * 4));
-            if (p != 0 && sv_Unk524770(p, o) == 0) {
+            if (p != 0 && sv_IsAtDoor(p, o) == 0) {
                 *(int *)(ev + 0x70) = 2;
                 gm_AddTime(ev + 0x52, 0, 5, 0);
                 *(int *)(ev + 0x84) = cm_SendExSetHE(2, ev);
@@ -4229,7 +4229,7 @@ void he_Unk54a020(int ev)
         }
         for (i = 0; i < 4; i++) {
             p = gm_FindChar(*(int *)(ev + 0xbc + i * 4));
-            if (p == 0 || sv_Unk524770(p, o) == 0) {
+            if (p == 0 || sv_IsAtDoor(p, o) == 0) {
                 *(int *)(ev + 0x70) = 3;
                 gm_AddTime(ev + 0x52, 0, 5, 0);
                 *(int *)(ev + 0x84) = cm_SendExSetHE(3, ev);
@@ -5945,7 +5945,7 @@ void he_Unk54f160(int ev)
             *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
             return;
         }
-        if (sv_Unk524770(a, o) == 0) {
+        if (sv_IsAtDoor(a, o) == 0) {
             *(int *)(ev + 0x70) = 2;
             gm_AddTime(ev + 0x52, 0, 5, 0);
             *(int *)(ev + 0x84) = cm_SendExSetHE(2, ev);
@@ -5982,7 +5982,7 @@ void he_Unk54f160(int ev)
         }
         if (*(int *)(ev + 0x70) == 3) {
             a = gm_FindChar(*(int *)(ev + 0xac));
-            if (a != 0 && sv_Unk524770(a, o) == 0) {
+            if (a != 0 && sv_IsAtDoor(a, o) == 0) {
                 *(int *)(ev + 0x70) = 3;
                 gm_AddTime(ev + 0x52, 0, 5, 0);
                 *(int *)(ev + 0x84) = cm_SendExSetHE(3, ev);
@@ -8162,7 +8162,7 @@ void he_Unk5512c0(int ev)
 
 void ai_Unk4c5ec0(int a);
 void ai_Unk4c5230(int a);
-int sv_Unk524770();
+int sv_IsAtDoor();
 void cm_SendSetField(int a, int b, int c, int d, int e);
 
 /* 0x551340, steps one 16-byte slot (id, target id, 4 flag bytes) of the 0x5512c0 event: no id -> 0; the person (0x505df0) is looked up and its target (0x4fea50, out in the local): without a target a person that has an object (+0x184) is released (0x4c5ec0) and given the message 0x1c8 (4, 0, 0x40000000); with a target the walk is checked (0x524770) and while the person is still on its way (and the hour is before 0x16) the result is 2, else the slot is cleared (the person stops: 0x4c5230 / 0x4c5ec0, message 0x1c8) and the result 0 (ROUGH) */
@@ -8177,7 +8177,7 @@ int he_Unk551340(int *s)
     if (a != 0) {
         gm_FindById(&o, 0, 0, s[1]);
         if (o != 0) {
-            if (sv_Unk524770(a, o) == 0 && *(unsigned short *)(unsigned)&ai_TimeHour < 0x16)
+            if (sv_IsAtDoor(a, o) == 0 && *(unsigned short *)(unsigned)&ai_TimeHour < 0x16)
                 return 2;
             if (*(int *)(a + 0x184) != 0) {
                 ai_Unk4c5230(*(int *)(a + 4));
@@ -8319,7 +8319,7 @@ void he_Unk551780(unsigned char *s)
     if (o == 0)
         goto cleanup;
     v10 = (U_I((unsigned)&d3t_Snow) != 0) + (U_I((unsigned)&d3t_Rain) != 0 ? 2 : 0) + (unsigned short)util_Random(6) + 2;
-    if (sv_Unk524770(a, v18) == 0)
+    if (sv_IsAtDoor(a, v18) == 0)
         return;
     obj = *(int *)(a + 0x184);
     if (obj != 0 && *(int *)(obj + 0x2c) != -1 && *(int *)(obj + 0x30) != -1) {
@@ -10499,7 +10499,7 @@ void he_Unk557d70(int ev)
 
 int gm_ClockSeason();
 int gm_FreeCapacity();
-int sv_Unk524770();
+int sv_IsAtDoor();
 
 /* 0x557e20, the run handler of the herb gathering trip ("Kr\344uter" animation; ROUGH skeleton, 7 states by the jump table 0x5584a8; a season check 0x4fe350 against the float tables 0x617830 / 0x617840): the +0xac group persons (ids from +0x8c) are sent to the building +0x10 / the field positions (0x501190, 0x458a20, the 3D distance test against the range), gather ("Kr\344uter" 0x4c52e0, 0x4c5230), arrive (0x524770) and are given the harvest (the amount from 0x5092e0 and two random rolls 0x42ec00, 0x50ab80 / 0x50a810 for the owner), paid out by 0x4c4880 (.., -1) and the news 0x17fd / 0x1802 .. 0x1804 is shown to the owner (0x53dee0); the end frees the record and the persons (0x524260) */
 void he_Unk557e20(int ev)
@@ -10544,7 +10544,7 @@ void he_Unk557e20(int ev)
         b = gm_BuildQuery(1, 1, *(int *)(ev + 0x10));
         for (i = 0; i < *(unsigned char *)(ev + 0xac); i++) {
             p = gm_FindChar(*(int *)(ev + 0x8c + i * 4));
-            if (p != 0 && sv_Unk524770(p, 0) != 0) {
+            if (p != 0 && sv_IsAtDoor(p, 0) != 0) {
                 n++;
                 txt_Format(text, 0x17fd, p);
                 he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, text, 0, 0x5ec, -1, 0, 0, 0);
@@ -12012,7 +12012,7 @@ void he_Unk561a20(int ev)
             ai_Unk4c5230(*(int *)(p + 4));
             ai_Unk4c52e0(*(int *)(p + 4), *(int *)(b + 1), -1, 0, 0, "Einbruch");
         } else {
-            sv_Unk524770(p, 0);
+            sv_IsAtDoor(p, 0);
         }
     }
     *(HETIME *)(ev + 0x52) = ai_Time;
@@ -12873,7 +12873,7 @@ void he_Unk566830(int ev)
             if (*slot == -1)
                 continue;
             p = gm_FindChar(*slot);
-            if (p != 0 && *(int *)(p + 0x184) != 0 && sv_Unk524770(p, b) == 0) {
+            if (p != 0 && *(int *)(p + 0x184) != 0 && sv_IsAtDoor(p, b) == 0) {
                 *(HETIME *)(ev + 0x52) = ai_Time;
                 gm_AddTime(ev + 0x52, 0, 4, 0);
                 return;
@@ -18199,7 +18199,7 @@ void sv_MoveToGroup(unsigned char *o, short *it, int c, char *g); /* 0x524260, t
 void ai_Unk4c5230(int a); /* 0x4c5230 */
 int ai_Unk4c52e0();                 /* 0x4c52e0 */
 void ai_Unk4c5410(int a, const char *s, unsigned char c); /* 0x4c5410 */
-int sv_Unk524770();                 /* 0x524770 */
+int sv_IsAtDoor();                 /* 0x524770 */
 int ai_Unk574fe0();                 /* 0x574fe0 */
 void ai_Unk575030();                /* 0x575030 */
 
@@ -18247,7 +18247,7 @@ void he_Unk5748d0(int ev)
     }
     /* the later states: 1 the scene, 2 the payments, 3 the close (all ROUGH) */
     if (state == 1) {
-        sv_Unk524770(ev);
+        sv_IsAtDoor(ev);
         sv_MoveToGroup(0, 0, 0x1f, ev);
         he_Unk5746b0(ev);
         return;

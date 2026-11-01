@@ -33,7 +33,7 @@ void sv_RemoveGroupMember(int c, char *g);                              /* 0x524
 int sv_UsedGroupSlots(char *g);                                         /* 0x5241b0 */
 void sv_CountGroupMembers(char *g);                                     /* 0x5241d0 */
 void sv_MoveToGroup(unsigned char *o, short *it, int c, char *g);       /* 0x524260 */
-int sv_Unk524770(char *g, char *o);                                     /* 0x524770 */
+int sv_IsAtDoor(char *g, char *o);                                     /* 0x524770 */
 int sv_Unk524810(char *g, unsigned char *o);                            /* 0x524810 */
 int sv_Unk524900(char *c, int *out);                                    /* 0x524900 */
 void sv_Unk524990(unsigned char *g);                                    /* 0x524990 */

@@ -332,8 +332,13 @@ typedef struct SVGROUP {                 /* the group record fields sv.c reads (
 typedef struct SVMODEL {                /* the CHARACTER fields (ch.h) sv.c reads of a character's model */
     char pad00[0x28];
     int scriptId;                       /* +0x28, the event script the model runs, -1 = none */
-    char pad2c[0x5c];
+    int group;                          /* +0x2c, the group id (compared with a building's id) */
+    char pad30[4];
+    D3OBJECT *obj;                      /* +0x34, the body */
+    char pad38[0x50];
     D3SCENE *scene;                     /* +0x88, the scene the model is in */
+    char pad8c[0x9c];
+    void *actions;                      /* +0x128, the action queue, 0 = idle */
 } SVMODEL;
 typedef struct SVCHARREC {
     unsigned short id;                  /* +0x00 */
@@ -1721,26 +1726,29 @@ void sv_MoveToGroup(unsigned char *o, short *it, int c, char *g)
         ch->group = (SVGROUP *)g;
     }
 }
-/* 0x524770, 1 when the object o stands at the door of the group record g's destination (+0x184): the door position of o (the dummy "TUER", 0x449690) is within 0x2eee (0x443b8000 = 750.0) of the destination's
-   position (+0x34 + 0x4c) and the destination is not busy (+0x128); or when the destination's owner (+0x2c) is o's id */
+/* 0x524770, 1 when the character g's model stands at the door of the building o: the door ("dummy_TUER" of
+   the building's object, else the object itself) is within 750.0 of the model's body and the model is idle (no
+   queued action); or when the model's group is the building's id */
 
-int sv_Unk524770(char *g, char *o)
+int sv_IsAtDoor(char *g, char *o)
 {
-    int dst, d;
-    char pos[16];
+    SVMODEL *dst;
+    D3OBJECT *door;
+    float pos[4];
 
-    dst = *(int *)(g + 0x184);
-    if (*(int *)(o + 0x61) != 0) {
+    dst = ((SVCHARREC *)g)->model;
+    if (((AIBLD *)o)->object != 0) {
         if (dst == 0)
             return 0;
-        d = d3_FindObject(*(int *)(o + 0x61), 0x100, 0, "dummy_TUER");
-        if (d == 0)
-            d = *(int *)(o + 0x61);
-        d3_PointToWorld(d, d + 0x4c, pos);
-        if (d3_VecEqual(*(int *)(dst + 0x34) + 0x4c, pos, 750.0f) != 0 && *(int *)(dst + 0x128) == 0)
+        door = d3_FindObject((int)((AIBLD *)o)->object, 0x100, 0, "dummy_TUER");
+        if (door != 0)
+            d3_PointToWorld(door, &door->pos, (D3VECTOR *)pos);
+        else
+            d3_PointToWorld((D3OBJECT *)((AIBLD *)o)->object, &((D3OBJECT *)((AIBLD *)o)->object)->pos, (D3VECTOR *)pos);
+        if (d3_VecEqual(&dst->obj->pos, (D3VECTOR *)pos, 750.0f) != 0 && dst->actions == 0)
             return 1;
     }
-    if (dst != 0 && *(int *)(dst + 0x2c) == *(int *)(o + 1))
+    if (dst != 0 && dst->group == ((AIBLD *)o)->id)
         return 1;
     return 0;
 }
