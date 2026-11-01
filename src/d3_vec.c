@@ -7,11 +7,9 @@
 #include "d3.h"
 #include "d3_vec.h"
 #include "f3init.h"
+#include "d3_engine.h"
+#include "d3_fl.h"
 
-extern unsigned int d3_LightKeysCulled;     /* 0x633b08 */
-extern unsigned int d3_LightKeysVisible;    /* 0x633b0c */
-extern unsigned int d3_LightGeneration;     /* 0x633b10 */
-extern unsigned int d3_LightKeyBudgetCulled;  /* 0x5fcc6c */
 
 /* 0x453920, fills d3fl_Shade with 1 - 2/pi * acos(i / 1024) and sets the per-frame light key
  * budgets for lights that are culled (out of view) and for the ones that pass the clip test */
