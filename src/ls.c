@@ -1348,7 +1348,7 @@ int ls_WriteEnvironment(int f)
 {
     int *p;
 
-    LS_W((char *)(unsigned)&ai_Unk760610, 4)
+    LS_W((char *)(unsigned)&sv_WinterWeather, 4)
     p = (int *)(unsigned)&full_data_7604e8;
     do {
         LS_W(p - 0x18, 4)
@@ -2632,7 +2632,7 @@ int unk_Unk5205f0(int f)
 {
     int *p;
 
-    if (ls_Read((int)(unsigned)&ai_Unk760610, 4, 1, f) == 0)
+    if (ls_Read((int)(unsigned)&sv_WinterWeather, 4, 1, f) == 0)
         return 0;
     p = (int *)(unsigned)&full_data_7604e8;
     do {

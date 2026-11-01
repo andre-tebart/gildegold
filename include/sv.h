@@ -40,7 +40,7 @@ void sv_UpdateMemberList(unsigned char *g);                                    /
 void sv_OpenPlayerBar(int a, char k);                                   /* 0x525220 */
 void sv_ClosePlayerBar(void);                                           /* 0x525440 */
 int sv_ClockSeason(void *t);                                            /* 0x525480 */
-char sv_Unk525490(char *o);                                             /* 0x525490 */
+char sv_SetSkyLightColors(struct D3OBJECT *o, void *ctx);                                           /* 0x525490 */
 void sv_Unk525510(int t, float flag);                                   /* 0x525510 */
 void sv_UpdateSkyColors(void);                                          /* 0x525940 */
 void sv_FillDayPhases(int t);                                               /* 0x525a00 */
@@ -282,7 +282,7 @@ extern int ai_Unk760548;                                    /* 0x760548 */
 extern int ai_Unk76054c;                                    /* 0x76054c */
 extern float ai_Unk760550[0x18];                            /* 0x760550 */
 extern float ai_Unk7605b0[0x18];                            /* 0x7605b0 */
-extern int ai_Unk760610;                                    /* 0x760610 */
+extern int sv_WinterWeather;                                    /* 0x760610 */
 extern int ai_Unk760614;                                    /* 0x760614 */
 extern int d3t_Snow;                                    /* 0x76061c */
 extern int d3_SkyLayers[6];                                 /* 0x760620, the sky layer handles (sv creates 0 .. 2) */

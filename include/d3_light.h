@@ -72,7 +72,8 @@ struct D3LREC {                     /* "d3_light:rlight_object": the vertices on
 };
 
 typedef struct D3LKEY {             /* 0x38 bytes */
-    char pad00[0x24];
+    char pad00[0x18];
+    float rgb[3];                   /* 0x18, the key's colour (sv_SetSkyLightColors copies the sky tables into the first 6 keys with val) */
     float val;                      /* 0x24 */
     char pad28[0x10];
 } D3LKEY;

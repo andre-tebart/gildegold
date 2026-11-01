@@ -2050,7 +2050,7 @@ void sv_UpdateMemberList(unsigned char *g)
 }
 
 extern OPTIONBYTES ai_GfxResolution;        /* 0x6f2f94, the player bar variant */
-extern int ai_Unk760610;  /* 0x760610 */
+extern int sv_WinterWeather;  /* 0x760610 */
 extern int ai_Unk760480;  /* 0x760480 */
 extern int ai_Unk760484;  /* 0x760484 */
 extern int ai_Unk760548;  /* 0x760548 */
@@ -2167,25 +2167,31 @@ int sv_ClockSeason(void *t)
 {
     return gm_ClockSeason(t);
 }
-/* 0x525490, a callback (the object o in the argument): copies the 6 colour records of the table by the day phase (0x760610 and the flag 0x10 of o +0x211 pick 0x623be0 / 0x623c50 / 0x623d30 / 0x623da0) into the
-   record +0x1e8 of o (+0x18 .. +0x24 of 6 rows of 0x38); returns 1 */
+typedef struct SVSKYKEY {               /* 0x10 bytes, a light key's colour in the sky tables (D3LKEY.rgb / val) */
+    float rgb[3];
+    float val;
+} SVSKYKEY;
+#define sv_SkyKeys       (*(SVSKYKEY (*)[7])((char *)&ai_Unk623ba9 + 0x37))  /* 0x623be0, the sky lights' keys */
+#define sv_SkyKeysAlt    (*(SVSKYKEY (*)[7])((char *)&ai_Unk623ba9 + 0xa7))  /* 0x623c50, the same for the lights with objectFlags 0x10 */
+#define sv_SkyKeysWinter (*(SVSKYKEY (*)[7])((char *)&ai_Unk623cc0 + 0x70))  /* 0x623d30, the keys in winter weather */
+#define sv_SkyKeysWinterAlt (*(SVSKYKEY (*)[7])((char *)&ai_Unk623cc0 + 0xe0))  /* 0x623da0 */
+/* 0x525490, the d3_ForEachObject callback over the sky scene's lights: copies the colours of the first 6 keys from the sky table
+   (by sv_WinterWeather and the light's objectFlags 0x10) into the light's keys; returns 1 (go on) */
 
-char sv_Unk525490(char *o)
+char sv_SetSkyLightColors(D3OBJECT *o, void *ctx)
 {
-    int *t;
+    SVSKYKEY *t;
     int i;
-    unsigned char f;
 
-    f = (unsigned char)o[0x211];
-    if (ai_Unk760610 == 0)
-        t = (int *)((f & 0x10) ? ((unsigned)&ai_Unk623baa + 0xa6) : ((unsigned)&ai_Unk623baa + 0x36));
+    if (sv_WinterWeather == 0)
+        t = (o->objectFlags & 0x10) ? sv_SkyKeysAlt : sv_SkyKeys;
     else
-        t = (int *)((f & 0x10) ? ((unsigned)&ai_Unk623cc0 + 0xe0) : ((unsigned)&ai_Unk623cc0 + 0x70));
-    for (i = 0; i < 0x150; i += 0x38) {
-        *(int *)(*(int *)(o + 0x1e8) + i + 0x18) = t[0 + i / 0x38 * 4];
-        *(int *)(*(int *)(o + 0x1e8) + i + 0x1c) = t[1 + i / 0x38 * 4];
-        *(int *)(*(int *)(o + 0x1e8) + i + 0x20) = t[2 + i / 0x38 * 4];
-        *(int *)(*(int *)(o + 0x1e8) + i + 0x24) = t[3 + i / 0x38 * 4];
+        t = (o->objectFlags & 0x10) ? sv_SkyKeysWinterAlt : sv_SkyKeysWinter;
+    for (i = 0; i < 6; i++) {
+        D3_L(o)->light->keys[i].rgb[0] = t[i].rgb[0];
+        D3_L(o)->light->keys[i].rgb[1] = t[i].rgb[1];
+        D3_L(o)->light->keys[i].rgb[2] = t[i].rgb[2];
+        D3_L(o)->light->keys[i].val = t[i].val;
     }
     return 1;
 }
@@ -2212,9 +2218,9 @@ void sv_Unk525510(int t, float flag)
     if (flag != 0.0f) {
         if (k == 3) {
             r = util_RandomU(100);
-            ai_Unk760610 = ((int)r < ai_Unk760480 / 2) + 1;
+            sv_WinterWeather = ((int)r < ai_Unk760480 / 2) + 1;
         } else
-            ai_Unk760610 = 0;
+            sv_WinterWeather = 0;
         for (i = 0; i < 0x18; i++)
             ai_Unk760488[i] = 0;
         p = ai_Unk760488;
@@ -2232,7 +2238,7 @@ void sv_Unk525510(int t, float flag)
                     *p = (*p & 1) + 499;
             } else
                 *p = (*p & 1) + 999;
-            if (ai_Unk760610 == 0 && 0x3e6 < (int)*p)
+            if (sv_WinterWeather == 0 && 0x3e6 < (int)*p)
                 p[0x18] = util_RandomU(3) & 0xffff;
             else
                 p[0x18] = 0;
@@ -2256,7 +2262,7 @@ void sv_Unk525510(int t, float flag)
     for (q = (int *)ai_Unk760488; (int)q < (unsigned)((unsigned)ai_Unk760488 + 0x60); q++)
         if (mx <= *q)
             mx = *q;
-    if (ai_Unk760610 == 0) {
+    if (sv_WinterWeather == 0) {
         if (d3t_Snow != 0) {
             d3t_FreeSnow(d3t_Snow);
             d3t_Snow = 0;
@@ -2265,7 +2271,7 @@ void sv_Unk525510(int t, float flag)
             d3t_Rain = d3t_CreateRain(mx);
         d3t_SetRain(d3t_Rain, 1, 0, 0);
     } else {
-        if (ai_Unk760610 == 1) {
+        if (sv_WinterWeather == 1) {
             if (d3t_Rain != 0) {
                 d3t_DeleteRain(d3t_Rain);
                 d3t_Rain = 0;
@@ -2314,9 +2320,9 @@ void sv_UpdateSkyColors(void)
 
     if (*(int *)(ai_Unk5fb5b0 + 0xac) == 0)
         return;
-    d3_ForEachObject(ai_Unk5fb5b0, 0, 8, sv_Unk525490, 0);
+    d3_ForEachObject(ai_Unk5fb5b0, 0, 8, sv_SetSkyLightColors, 0);
     p = ai_Unk623cc0;
-    if (ai_Unk760610 != 0)
+    if (sv_WinterWeather != 0)
         p = ai_Unk623e10;
     p += 2;
     i = 0;
@@ -7593,7 +7599,7 @@ extern int ai_Unk760548;
 extern int ai_Unk76054c;
 extern float ai_Unk760550[0x18];
 extern float ai_Unk7605b0[0x18];
-extern int ai_Unk760610;
+extern int sv_WinterWeather;
 extern int ai_Unk760614;
 extern int d3t_Snow;
 extern int d3_SkyLayers[6];
@@ -7767,7 +7773,7 @@ int ai_Unk760548 = 0;  /* 0x760548 */
 int ai_Unk76054c = 0;  /* 0x76054c */
 float ai_Unk760550[0x18] = {0};  /* 0x760550 */
 float ai_Unk7605b0[0x18] = {0};  /* 0x7605b0 */
-int ai_Unk760610 = 0;  /* 0x760610 */
+int sv_WinterWeather = 0;  /* 0x760610 */
 int ai_Unk760614 = 0;  /* 0x760614 */
 int d3t_Snow = 0;  /* 0x76061c */
 int d3_SkyLayers[6] = {0};  /* 0x760620, the sky layer handles: sv creates 0 .. 2, sv and main_EndGame delete all six */
