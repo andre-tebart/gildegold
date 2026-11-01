@@ -59,4 +59,12 @@ typedef struct D3SKY {              /* 0xacc bytes */
 void d3sky_Init(struct D3SKY *s, char build);                          /* 0x45d690, places the vertices on the
                                                                    screen; build also for a new sky */
 
+/* declared in other units' headers before (moved to the owner) */
+void d3sky_Destroy(D3SKY *s);  /* 0x45daa0 */
+void d3sky_FadeLayer(D3SKY *s, D3SKYLAYER *l, unsigned char alpha, float time);  /* 0x45d9a0 */
+void d3sky_SetLayerSpeed(D3SKY *s, D3SKYLAYER *l, float speed);  /* 0x45d960 */
+extern D3SKY *d3_Sky;  /* 0x633dd4 */
+void d3sky_Free(void);  /* 0x45db20 */
+void d3sky_InitColors(void);  /* 0x45dae0 */
+
 #endif
