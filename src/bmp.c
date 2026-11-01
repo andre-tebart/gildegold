@@ -6,6 +6,7 @@
 #include <windows.h>
 #include "bmp.h"
 #include "qnt.h"
+#include "mem.h"
 
 /* the engine's inline-asm clear (D3_ZERO in d3.h, which needs the DirectX headers) */
 #define BMP_CAT(a, b) a##b
