@@ -25,6 +25,7 @@ extern D2VIEW d2_Views[];
 #include "gv.h"
 #include "di_input.h"
 #include "data_views.h"
+#include "amt.h"
 extern char ai_Unk91f700[];
 #define GAPDATA __declspec(align(1)) unsigned char
 extern char ai_Unk7d6a60[];                 /* 0x7d6a60, the five 0x2a90-byte stock blocks (one per player slot) */
@@ -52,7 +53,6 @@ extern D3SCENE d3_Scenes[];               /* 0xfd7ba0: ai_Unk5fb5b0 points at it
 extern GAPDATA full_data_91f6e0[];
 extern unsigned char he_Events[339968];
 #include "amt_types.h"
-extern AMTREC amt_Table[];
 extern GAPDATA full_data_7585f4[];
 
 #include "ai_types.h"
@@ -91,10 +91,8 @@ extern short * ai_Unk6f1bac;
 #define ai_Unk91b68c (gm_IncomeHistory + 0x10c)  /* 0x91b68c, row 3 */
 #define ai_Unk91b6d0 (gm_IncomeHistory + 0x150)  /* 0x91b6d0, row 4 */
 
-void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d);                     /* 0x4c4830 */
 int gm_GetGoodsValue();                     /* 0x509e60 */
 int gm_TitleGroup();                     /* 0x504ad0 */
-int amt_HasTownObject();                 /* 0x4e9400 */
 char * gm_PlayerSeat(int p);                     /* 0x504a80 */
 int gm_PlayerFactor(int a, unsigned char k);                     /* 0x5085f0 */
 int unk_Unk4fd7e0();                    /* 0x4fd7e0 */
