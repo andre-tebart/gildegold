@@ -19562,7 +19562,7 @@ void ai_Unk5c7970(int param_1, int param_2, int param_3, int param_4, int param_
     *(char *)(unsigned)&d2_PenSize = old;
 }
 
-float unk_Unk4f9e00(int *o);
+float ord_GetStatistics(int *o);
 
 /* 0x5c7f00, the statistics panel window "panel_statistik_stadt" 0x62d440 (1520 B, ROUGH SKELETON): the gate
    0x5763c0 and the state step 0x576040 (0xc, 0, 0, 0); the window 0x4741f0 / 0x476f80 / 0x475600 and the
@@ -19612,7 +19612,7 @@ void ai_Unk5c7f00(void)
     d2_CentreViewWindows(win);
     d2_SetForm(win, 1);
     io_PrintText(0x1f0e, ((unsigned)&ai_PlayerSlots + 0x20) + *(unsigned char *)(unsigned)&ai_OwnPlayer * 0x2f4, (unsigned)&ai_Time);
-    f = unk_Unk4f9e00(vals);
+    f = ord_GetStatistics(vals);
     d2_SetForm(win, 2);
     io_PrintText(0x1f14, (int)*(float *)(unsigned)&ai_RatingBase);
     io_PrintText(0x1f15, min(4, (int)((f + *(double *)(unsigned)&full_rdata_5eb8a8) * (2.5))) + 0x1f16);

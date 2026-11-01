@@ -173,6 +173,8 @@ typedef struct AIJOB {                  /* a job (he_FindEvent / he_NextEvent) *
     union {
         int unkb0;                      /* 0xb0 */
         int partner2;                   /* 0xb0, of a pair event the second partner's netId */
+        int id2;                        /* 0xb0, a second id: a building (kind 100) or a character (kind 0x89) as
+                                           sv_SpeakPicked looks them up */
     };
     union {                             /* 0xb4..0xe7: the words, or the kind-specific times sv_RefreshPanel measures the progress to / from */
         struct {
@@ -192,6 +194,8 @@ typedef struct AIJOB {                  /* a job (he_FindEvent / he_NextEvent) *
         };
         AITIME end6c;                   /* 0xb4, of a job kind 0x6c: the end time */
         int cartBld;                    /* 0xb4, of the job a cart runs (AIOBJ.job24): the building (sv_RefreshPanel prints its kind) */
+        int id3;                        /* 0xb4, a third id: of a kind 0x1a the character sv_SpeakPicked looks up */
+        struct { char padid4[0x10]; int id4; };       /* 0xc4, of a kind 0x18: the character sv_SpeakPicked looks up */
         struct { char padt8f[4]; AITIME end8f; };     /* 0xb8, of the kinds 0x8f / 0x16 and the building job 0x1c: the end time */
         struct { char padt61[0x10]; AITIME start61; }; /* 0xc4, of a job kind 0x61: the start of its eight hours */
         struct { char padt48[0x18]; AITIME end48; };  /* 0xcc, of a job kind 0x48 (stage 1): the end time */

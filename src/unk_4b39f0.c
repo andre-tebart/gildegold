@@ -756,7 +756,7 @@ typedef struct G13ECON {                /* 0x28 bytes, filled by 0x4f9e00 */
     char pad1c[0x0c];
 } G13ECON;
 
-struct VFSFILE; float unk_Unk4f9e00(int *o);                                                /* 0x4f9e00, defined elsewhere */
+struct VFSFILE; float ord_GetStatistics(int *o);                                                /* 0x4f9e00, defined elsewhere */
 
 /* 0x4b4dc0, mission condition (from year 10): 0x4b5160 with "t->goal is not below value 0x18 of 0x4f9e00" */
 int ai_Unk4b4dc0(AICHAR *c, int x, G13TYPE *t)
@@ -765,7 +765,7 @@ int ai_Unk4b4dc0(AICHAR *c, int x, G13TYPE *t)
 
     if (ai_TimeT.year < 10)
         return 0;
-    unk_Unk4f9e00(&e);
+    ord_GetStatistics(&e);
     if (t->goal < e.unk18)
         return ai_TimedCondition(x, 0, t->unk18);
     return ai_TimedCondition(x, 1, t->unk18);
@@ -776,7 +776,7 @@ int ai_Unk4b4e30(AICHAR *c, G13TYPE *t)
 {
     G13ECON e;
 
-    if (unk_Unk4f9e00(&e) > 0.1)
+    if (ord_GetStatistics(&e) > 0.1)
         return 0;
     if (e.unk0c < 0.3f)
         return 0;

@@ -920,7 +920,7 @@ int ai_Unk49d6a0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  
 int ai_Unk49d730(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49d730 */
 int ai_Unk49d750(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49d750 */
 int ai_Unk49d7d0(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49d7d0 */
-float unk_Unk4f9e00(int *o);                                                   /* 0x4f9e00 */
+float ord_GetStatistics(int *o);                                                   /* 0x4f9e00 */
 int ai_Unk4a4ae0(float *a, float *b, int i, AIPER *p);                          /* 0x4a4ae0, as in unk_4a3af0.h */
 #define G8_4A4AE0(a, b, i, p, f, o1, o2) ((int (*)(float *, float *, int, G5CH *, int, AIARG *, AIARG *))ai_Unk4a4ae0)(a, b, i, p, f, o1, o2)  /* declared with 4 parameters */
 int ai_Unk49d7f0(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2); /* 0x49d7f0 */

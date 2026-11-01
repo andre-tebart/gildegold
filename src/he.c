@@ -5476,7 +5476,7 @@ void he_Unk54da80(int ev)
     }
 }
 
-float unk_Unk4f9e00(int *o);
+float ord_GetStatistics(int *o);
 int ord_GetKindRecord();
 void cm_SendBoss(int a, int b);
 float gm_AddHealth(unsigned id, int d);
@@ -5515,7 +5515,7 @@ void he_Unk54dec0(int ev)
         *(int *)(ev + 0x84) = cm_SendExSetHE(1, ev);
         return;
     case 1:
-        unk_Unk4f9e00(tm);
+        ord_GetStatistics(tm);
         f = (float)(tm[6] - tm[3]) / (float)(*(int *)(ev + 0xac) + 2);
         *(float *)(ev + 0xb0) = 1.0f - f;
         *(float *)(ev + 0xb4) = f;

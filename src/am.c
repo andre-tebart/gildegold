@@ -7226,7 +7226,7 @@ int ai_Unk49d7f0(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2
     }
     *a = 0.0f;
     *b = 0.0f;
-    unk_Unk4f9e00(d);
+    ord_GetStatistics(d);
     if ((*(float *)((char *)p + 0x100) - 2.0) * 0.4f < d[3]) {
         G8_4A4AE0(a, b, i, p, f, o1, o2);
         *a *= 3.0f;
@@ -7262,7 +7262,7 @@ int ai_Unk49d8d0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         return 0;
     o = gm_Query(b->objList, 2, 6, 0, 0x115);
     money = gm_SumListAmounts(*(int *)((char *)o + 0x14), ai_OwnPlayer);
-    unk_Unk4f9e00(d);
+    ord_GetStatistics(d);
     rec = ai_BldsT;
     for (n = 0x100; n != 0; n--, rec++) {
         k = rec->type;
@@ -7487,7 +7487,7 @@ int ai_Unk49def0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     }
     if (y->flags5a & 0x41)
         return 0;
-    unk_Unk4f9e00(d);
+    ord_GetStatistics(d);
     if (y->type == 0x24) {
         act = 0x25;
         if (util_RandomU(0x200) + d[6] < 1250.0f)
@@ -7608,7 +7608,7 @@ int ai_Unk49e350(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     }
     if (y->flags5a & 0x41)
         return 0;
-    unk_Unk4f9e00(d);
+    ord_GetStatistics(d);
     if (y->type == 0x11) {
         act = 0x12;
         if (util_RandomU(0x200) + d[6] < 1250.0f)

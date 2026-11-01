@@ -116,7 +116,7 @@ void sv_HandleSelectionMouse(void);                                             
 void sv_Unk52c420(void);                                                /* 0x52c420 */
 void sv_ReleaseBubble(int o);                                           /* 0x52c4a0 */
 void sv_ShowBubble(struct CHARACTER *ch, int text, char *name);         /* 0x52c4e0, shows a speech bubble over the character ch */
-void sv_Unk52c5c0(void);                                                /* 0x52c5c0 */
+void sv_SpeakPicked(void);                                                /* 0x52c5c0 */
 void sv_Unk52cef0(void);                                                /* 0x52cef0 */
 void sv_Unk52d010(char *part);                                          /* 0x52d010 */
 void sv_Unk52d1e0(void);                                                /* 0x52d1e0 */

@@ -449,7 +449,7 @@ float ord_BuildingCapacityRatio(void);              /* 0x4f97c0 */
 
 float ord_StatisticsRating(void);              /* 0x4f9ce0 */
 float ord_WeightedRecordSum(int *out);          /* 0x4f9d40 */
-float unk_Unk4f9e00(int *o);            /* 0x4f9e00 */
+float ord_GetStatistics(int *o);            /* 0x4f9e00 */
 
 extern char ord_StatisticsTime[];            /* 0x91b470, a clock stamp (14 bytes) */
 int gm_MinutesBetween();                     /* 0x4fe280 */
