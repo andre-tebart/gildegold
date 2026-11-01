@@ -3,6 +3,7 @@ struct D3VECTOR4;
    Field names unkXXX are byte offsets whose meaning is not known yet. */
 #ifndef D3_ANIM_H
 #define D3_ANIM_H
+#include "d3.h"                       /* the D3 records and typedefs this header names */
 
 typedef struct D3ANIMFRAME {        /* 0xc0 bytes, one key frame of a vertex animation */
     int time;                       /* 0x00, start time of the frame (ch_CheckAniMorph blends over half the gap) */

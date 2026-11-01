@@ -6,6 +6,7 @@ struct VFSFILE;
    __FILE__ string "D:\develop\Units\d3\d3_interface.c" at 0x5fbd94. Names are ours. */
 #ifndef D3_INTERFACE_H
 #define D3_INTERFACE_H
+#include "d3.h"                       /* the D3 records and typedefs this header names */
 
 /* one of the 6 groups of three dwords (fog colour and two more) kept per scene and as globals */
 typedef struct D3IFTRIPLE {
