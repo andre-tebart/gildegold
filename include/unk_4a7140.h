@@ -76,25 +76,25 @@ extern G10NPC ai_PokerOpponents[2];                                             
 
 int ai_PokerStart(AIPER *p, G10GAME *g);                                          /* 0x4a7140 */
 int ai_PokerDealRound(G10GAME *g);                                                    /* 0x4a7430 */
-int ai_PokerStep(void);                                                          /* 0x4a74e0 */
+unsigned short ai_PokerStep(void);                                                        /* 0x4a74e0 */
 int ai_Unk4a7650(int *hand, int shown, int skip, int *out);                         /* 0x4a7650 */
 int ai_Unk4a76d0(int *hand, int high);                                           /* 0x4a76d0 */
 int ai_Unk4a7760(int owner);                                                     /* 0x4a7760 */
-void ai_Unk4a77e0(void);                                                         /* 0x4a77e0 */
+void ai_PokerNpcExchange(void);                                                         /* 0x4a77e0 */
 void ai_Unk4a79d0(G10SEAT *s, int k);                                            /* 0x4a79d0 */
-void ai_Unk4a7a20(void);                                                         /* 0x4a7a20 */
-void ai_Unk4a7ac0(void);                                                         /* 0x4a7ac0 */
-void ai_Unk4a7c20(void);                                                         /* 0x4a7c20 */
+void ai_PokerPayStakes(void);                                                         /* 0x4a7a20 */
+void ai_PokerPickStrategies(void);                                                         /* 0x4a7ac0 */
+void ai_PokerNpcFold(void);                                                         /* 0x4a7c20 */
 void ai_Unk4a7e70(G10SEAT *s, int *n, int *g, int *m, int *r);                 /* 0x4a7e70 */
 char ai_Unk4a7f50(int owner, int *g1, int *g2, int *r1, int *r2);              /* 0x4a7f50 */
 int ai_Unk4a8190(void);                                                          /* 0x4a8190 */
-void ai_Unk4a8520(void);                                                         /* 0x4a8520 */
-void ai_Unk4a8590(void);                                                         /* 0x4a8590 */
-void ai_Unk4a85e0(void);                                                         /* 0x4a85e0 */
+void ai_PokerDealThree(void);                                                         /* 0x4a8520 */
+void ai_PokerDealFourth(void);                                                         /* 0x4a8590 */
+void ai_PokerDealFifth(void);                                                         /* 0x4a85e0 */
 void ai_PokerExchange(int k);                                                        /* 0x4a8630 */
-void ai_Unk4a8650(void);                                                         /* 0x4a8650 */
-void ai_Unk4a8690(void);                                                         /* 0x4a8690 */
-void ai_Unk4a86f0(void);                                                         /* 0x4a86f0 */
+void ai_PokerAnte(void);                                                         /* 0x4a8650 */
+void ai_PokerEndRound(void);                                                         /* 0x4a8690 */
+void ai_PokerNpcSetStake(void);                                                         /* 0x4a86f0 */
 int ai_Unk4a8760(int a, unsigned char *p, int *ctx, int d, unsigned char *m);   /* 0x4a8760 */
 int ai_Unk4a8a50(int a, AIPER *p, int *ctx, int d, unsigned char *m);           /* 0x4a8a50 */
 int ai_Unk4a8ad0(int a, AIPER *p, int c, int d, unsigned char *m);              /* 0x4a8ad0 */

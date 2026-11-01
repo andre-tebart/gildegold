@@ -142,61 +142,61 @@ int ai_PokerDealRound(G10GAME *g)
     } while (--i);
     return 1;
 }
-/* 0x4a74e0, one step of the game: returns the dialog to show (0x10 / 0x21 / 9 / 0x29 / 0x1c) or 0 */
+/* 0x4a74e0, one step of the game: returns the button mask ai_PokerGame shows (1 first button, 8 second, 0x10 fourth, 0x20 bet slider) or 0 */
 
-int ai_PokerStep(void)
+unsigned short ai_PokerStep(void)
 {
     switch (ai_PokerTable->phase) {
     case 0:
         ai_PokerTable->phase = 1;
         return ai_PokerTable->turn != 0 ? 0x10 : 0x21;
     case 1:
-        ai_Unk4a8650();
+        ai_PokerAnte();
         ai_PokerTable->phase++;
-        ai_Unk4a8520();
-        ai_Unk4a7ac0();
-        ai_Unk4a86f0();
+        ai_PokerDealThree();
+        ai_PokerPickStrategies();
+        ai_PokerNpcSetStake();
         return 0;
     case 2:
         ai_PokerTable->phase = 3;
-        return ai_PokerTable->turn != 0 ? 9 : 0x29;
+        return (ai_PokerTable->turn != 0 ? 0 : 0x20) | 9;
     case 3:
-        ai_Unk4a7ac0();
-        ai_Unk4a7c20();
+        ai_PokerPickStrategies();
+        ai_PokerNpcFold();
         ai_PokerTable->phase++;
-        ai_Unk4a8590();
-        ai_Unk4a7a20();
+        ai_PokerDealFourth();
+        ai_PokerPayStakes();
         return 0;
     case 4:
         ai_PokerTable->phase = 5;
-        ai_Unk4a7ac0();
-        ai_Unk4a86f0();
-        return ai_PokerTable->turn != 0 ? 9 : 0x29;
+        ai_PokerPickStrategies();
+        ai_PokerNpcSetStake();
+        return (ai_PokerTable->turn != 0 ? 0 : 0x20) | 9;
     case 5:
-        ai_Unk4a7c20();
-        ai_Unk4a7a20();
+        ai_PokerNpcFold();
+        ai_PokerPayStakes();
         ai_PokerTable->phase++;
         return 0x1c;
     case 6:
-        ai_Unk4a77e0();
+        ai_PokerNpcExchange();
         ai_PokerTable->phase++;
         return 0x10;
     case 7:
-        ai_Unk4a85e0();
+        ai_PokerDealFifth();
         ai_PokerTable->phase++;
         break;
     case 8:
-        ai_Unk4a7ac0();
+        ai_PokerPickStrategies();
         ai_PokerTable->phase++;
-        return ai_PokerTable->turn != 0 ? 9 : 0x29;
+        return (ai_PokerTable->turn != 0 ? 0 : 0x20) | 9;
     case 9:
-        ai_Unk4a7c20();
-        ai_Unk4a7a20();
+        ai_PokerNpcFold();
+        ai_PokerPayStakes();
         ai_PokerTable->phase++;
         return 0;
     case 10:
         ai_PokerTable->phase = 11;
-        ai_Unk4a8690();
+        ai_PokerEndRound();
         return 0x10;
     }
     return 0;
@@ -284,7 +284,7 @@ int ai_Unk4a7760(int owner)
 }
 /* 0x4a77e0, the NPCs exchange a card by their strategy (seat->strategy): keep pairs (1), the most common rank (2) */
 
-void ai_Unk4a77e0(void)
+void ai_PokerNpcExchange(void)
 {
     int cnt[6];
     int s, g, j, i, n, k;
@@ -391,7 +391,7 @@ void ai_Unk4a79d0(G10SEAT *s, int k)
 }
 /* 0x4a7a20, every seat still in (foldedAt < 0) pays the stake into the pot; the player's from p's money */
 
-void ai_Unk4a7a20(void)
+void ai_PokerPayStakes(void)
 {
     int i;
 
@@ -410,7 +410,7 @@ void ai_Unk4a7a20(void)
 /* 0x4a7ac0, picks each NPC's strategy (seat->strategy) from its hand: 3 nothing yet, 2 go for the rank, 1 pairs,
    0 random */
 
-void ai_Unk4a7ac0(void)
+void ai_PokerPickStrategies(void)
 {
     unsigned int cnt[6];
     int s, j, i, pairs, first;
@@ -481,7 +481,7 @@ void ai_Unk4a7ac0(void)
 }
 /* 0x4a7c20, each NPC decides whether to fold (seat->foldedAt = the phase) against the open cards of the others */
 
-void ai_Unk4a7c20(void)
+void ai_PokerNpcFold(void)
 {
     int s, j, n, r, m, k, y;
     int x8, xc;
@@ -843,7 +843,7 @@ int ai_Unk4a8190(void)
 }
 /* 0x4a8520, deals three cards to each seat (the first two hidden, the third open) */
 
-void ai_Unk4a8520(void)
+void ai_PokerDealThree(void)
 {
     int k, i;
 
@@ -860,7 +860,7 @@ void ai_Unk4a8520(void)
 }
 /* 0x4a8590, deals the fourth card to each seat, open */
 
-void ai_Unk4a8590(void)
+void ai_PokerDealFourth(void)
 {
     int i;
 
@@ -872,7 +872,7 @@ void ai_Unk4a8590(void)
 }
 /* 0x4a85e0, deals the fifth card to each seat, open */
 
-void ai_Unk4a85e0(void)
+void ai_PokerDealFifth(void)
 {
     int i;
 
@@ -890,14 +890,14 @@ void ai_PokerExchange(int k)
 }
 /* 0x4a8650, the ante: three stakes into the pot, the player's from p's money */
 
-void ai_Unk4a8650(void)
+void ai_PokerAnte(void)
 {
     ai_PokerTable->pot = ai_PokerTable->stake2 * 3;
     cm_SendMoveGoodsUnchecked(-1, *(int *)((unsigned char *)ai_PokerTable->seat[0].who + 4), ai_OwnPlayer, ai_PokerTable->stake2);
 }
 /* 0x4a8690, ends the round: the winner into winner, the pot to the player if he won, all cards back */
 
-void ai_Unk4a8690(void)
+void ai_PokerEndRound(void)
 {
     int i;
 
@@ -913,7 +913,7 @@ void ai_Unk4a8690(void)
 /* 0x4a86f0, the NPC whose turn it is (turn) sets the stake: up to half the margin above the stake, or all of it
    if it bluffs */
 
-void ai_Unk4a86f0(void)
+void ai_PokerNpcSetStake(void)
 {
     int n;
 

@@ -2842,7 +2842,7 @@ void sv_ButtonRow(int f, int y, int *out, int n, ...); int sv_CheckGoodAmount();
 struct GCLOCK;
 int gm_ConvertMoney(int a, unsigned char k); int gm_PlayerFactor(int a, unsigned char k);
 int ai_PokerStart();
-int ai_PokerStep(); int gm_BuildingSkill(); float ai_NormalizeEffectScale(float x);
+unsigned short ai_PokerStep(); int gm_BuildingSkill(); float ai_NormalizeEffectScale(float x);
 
 /* 0x5d8c90, the "Fluch wirken" (curse) window "Locations\zigeuner\blutrache" 0x62dc68 (905 B): the building is the
    gypsy house. When the player's status bit 0x10 (+0x1cc of its record) is set the voice "RAUSWURF" is played and the green

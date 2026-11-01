@@ -129,7 +129,7 @@ typedef struct POKERSEAT {              /* 0x34 bytes, unk_4a7140.h's G10SEAT; s
     int card[5];                        /* +0x08, indices into the deck, -1 = none (what ai_PokerSeatPanel shows) */
     int unk1c, unk20;                   /* +0x1c */
     int dropped;                        /* +0x24, the deck index of the card the seat put away in the exchange (ai_Unk4a79d0 sets it), -1 = none */
-    int foldPhase;                      /* +0x28, the phase the seat folded in (ai_Unk4a7c20), -1 = still in */
+    int foldPhase;                      /* +0x28, the phase the seat folded in (ai_PokerNpcFold), -1 = still in */
     int unk2c, unk30;                   /* +0x2c */
 } POKERSEAT;
 typedef struct POKERGAME {              /* 0xc0 bytes at 0x6f3500, unk_4a7140.h's G10GAME (ai_PokerStart fills it, ai_PokerStep steps it) */
@@ -154,7 +154,7 @@ void ai_PokerWindow2(void);            /* 0x5db110, the second poker window "Loc
 struct AIPER;
 struct G10GAME;
 int ai_PokerStart(struct AIPER *p, struct G10GAME *g);  /* 0x4a7140, unk_4a7140.c: starts a poker game of the player's character into g (ai_PokerState), 0 when it cannot */
-int ai_PokerStep(void);             /* 0x4a74e0, unk_4a7140.c: one step of the game, returns the button mask to show (0x10 / 0x21 / 9 / 0x29 / 0x1c) or 0 */
+unsigned short ai_PokerStep(void);          /* 0x4a74e0, unk_4a7140.c: one step of the game, returns the button mask to show (0x10 / 0x21 / 9 / 0x29 / 0x1c) or 0 */
 void ai_PokerExchange(int k);           /* 0x4a8630, unk_4a7140.c: the player exchanges card k */
 int gm_PlayerFactor(int a, unsigned char k);   /* 0x5085f0, f3gm.c: a * the factor of the player slot k */
 int gm_GetWorth(unsigned short id);            /* 0x50a640, f3gm.c: the worth of the character id */
