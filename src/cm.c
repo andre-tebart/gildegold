@@ -1484,9 +1484,9 @@ void cm_RequestChrMoveToUniverse(int a, int b, int c, const char *s)
         err_Message("cm_RequestChrMoveToUniverse(): dummyname is too long...");
     ai_Unk4c39c0(&m);
 }
-/* 0x4c5230, message 0x31 */
+/* 0x4c5230, sends message 0x31: its handler (0x4c9c10) stops the actions of the person "sp_<a>" */
 
-void ai_Unk4c5230(int a)
+void cm_SendChrStop(int a)
 {
     G17MSG m;
 
@@ -1519,7 +1519,7 @@ void ai_Unk4c52a0(int a, int b, int c)
 }
 /* 0x4c52e0, message 0x35 about character id and building bld; c -1 and not f: the building's object (or -1, flag 1) */
 
-int ai_Unk4c52e0(int id, int bld, int c, const char *s, int f, const char *s2)
+int cm_SendChrGotoBuilding(int id, int bld, int c, const char *s, int f, const char *s2)
 {
     G17MSG m;
     char *ch, *b, *o;

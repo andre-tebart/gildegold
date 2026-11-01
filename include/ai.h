@@ -195,6 +195,8 @@ typedef struct AIJOB {                  /* a job (he_FindEvent / he_NextEvent) *
         struct { char padt8f[4]; AITIME end8f; };     /* 0xb8, of the kinds 0x8f / 0x16 and the building job 0x1c: the end time */
         struct { char padt61[0x10]; AITIME start61; }; /* 0xc4, of a job kind 0x61: the start of its eight hours */
         struct { char padt48[0x18]; AITIME end48; };  /* 0xcc, of a job kind 0x48 (stage 1): the end time */
+        struct { char padgc4[0x10]; int members[4]; };  /* 0xc4, of a group job 'C' (0x43): the netIds of its up to four
+                                                          members, -1 = free (sv_SendSelectedToBuilding) */
     };
     char pade8[9];
     char flags;                         /* 0xf1, a flags byte (nonzero defers the trade message posting; the bits are unknown) */

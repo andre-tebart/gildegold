@@ -12183,7 +12183,7 @@ void ai_Unk5a5530(int param_1)
     d2_CloseView(win);
 }
 
-float gm_GetSkill(char *c, int skill); int ai_Unk4c52e0(); 
+float gm_GetSkill(char *c, int skill); int cm_SendChrGotoBuilding(); 
 
 /* 0x5a5910, the kidnapping attempt (694 B): the player's character 0x770b80 + slot * 0x21c, the owner's
    0x770b80 + U_W(param_1 + 0x27) * 0x21c, 0x476f80; the text 0x3fea (the crew byte 0x1b1 * 2) through 0x521150
@@ -12223,7 +12223,7 @@ void ai_Unk5a5910(int param_1)
             ai_Unk4c5fa0(U_I(ch + 4), -(unsigned char)*(ch + 0x1b1), 0);
             if (U_I(((unsigned)&ai_Unk770cec + 0x18) + U_W((unsigned)&ai_PlayerId) * 0x21c) != 0 &&
                 he_FindFigurePlace(ch, &a, &b, 0) != 0)
-                ai_Unk4c52e0(U_I(ch + 4), a, b, 0, 0, (char *)U_I((unsigned)"L\366segeld"));
+                cm_SendChrGotoBuilding(U_I(ch + 4), a, b, 0, 0, (char *)U_I((unsigned)"L\366segeld"));
             rec = he_FindEvent(1, 0, 0x3d);
             while (rec != 0) {
                 if (U_I(rec + 0xb0) == U_I(param_1 + 1) && U_I(ch + 4) == U_I(rec + 0xac)) {

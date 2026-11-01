@@ -5010,103 +5010,116 @@ void sv_Unk52bb70(int id)
         o = (int)evt_FindById(id);
     }
 }
-/* 0x52bbc0, moves the selected characters (the table 0x770cec, stride 0x21c, the selected flag byte at +0x1c of the entry) into the group (object kind 'C') of the first one's object: the first selected character fixes
-   the object (+0x10) and the owner (+0); the entries that belong to the current group 0x760458 are taken out (0x4ffe90 (+0x5d, 1, 0, 0x146) / 0x524260 / 0x4c5230 / 0x4c52e0), the others are collected (up to four ids)
-   into a message ('C', +8 the player record, +0x36 = 2, +0x58 / +0x5c the two group handles, +0x70 the four ids) that 0x4c4b70 sends; the group slot list (+0xc4, 4 ints) loses the moved id; the selected flags are cleared
-   (ROUGH) */
-
-void sv_Unk52bbc0(void)
+/* 0x52bbc0, sends the selected characters of the first selected one's group job ('C') to the clicked building
+   (sv_ClickedBuilding): a member already belonging to it is moved in at once (sv_MoveToGroup, its actions stopped and
+   a goto message to the building's room object 0x146), the others (up to four) are collected into one 'C' message to
+   the player with the clicked and the owning building's ids; each leaves the job's member slots and the selection.
+   The job is announced (cm_SendExSetHE) afterwards
+   @deep read the whole function against 0x52bbc0..0x52beb5 (218 vs 217 ins): the selected-character loop
+   (signed i < 768, the done test first), the first member fixing the group job and its kind 'C', the
+   not-in-the-building branch first (the 'C' AIMSG: type, flags 2, to = the player's netId, arg[0] / arg[1]
+   the building ids, the ids from arg[6] with the -1 fill as rep stosd), the in-the-building branch
+   (gm_Query room 0x146, member slot cleared, sv_MoveToGroup, cm_SendChrStop, cm_SendChrGotoBuilding, cur
+   reloaded), the second-member branch with done after four, the selected flag cleared, cm_SendExSetHE /
+   cm_SendLongMessage: all equal. Left, allocation only (asmdiff --regs ebx=ebp,edx=ebx,ebp=edx leaves only
+   these): the original keeps cur in ebx and the job in ebp (ours edx / ebx, so ours zeroes ebx for
+   msg.type), keeps out in edi across the loop (ours reloads [esp+0x14] in the second-member branch) and
+   loads the job's kind into dl before the 0x43 store; the netId register (edx vs ebx / edi) */
+void sv_SendSelectedToBuilding(void)
 {
-    char *obj, *o;
-    int *rec, *out;
-    int state, owner, cur, n, done, k, g, id;
-    unsigned char m[0xf8];
+    AIJOB *job;
+    AICHAR *c;
+    AIBLD *owner, *cur;
+    AIOBJ *room;
+    int *out, *p;
+    int n, done, kind, i, k;
+    AIMSG msg;
 
-    obj = 0;
-    state = 0;
-    owner = 0;
     n = 0;
     done = 0;
-    cur = SV_I((unsigned)&sv_ClickedBuilding);
-    m[4] = 0;
-    out = (int *)(m + 0x70);
-    for (rec = (int *)(unsigned)&ai_Unk770cec; !done && (int)rec < ((unsigned)((unsigned)ai_Unk770cec + 0x65296) + 0x16a); rec += 0x87) {
-        if ((char)rec[7] == 0)
+    kind = 0;
+    job = 0;
+    owner = 0;
+    cur = (AIBLD *)sv_ClickedBuilding;
+    msg.type = 0;
+    out = &msg.arg[6];
+    for (i = 0; i < 768; i++) {
+        if (done)
+            break;
+        c = &ai_CharsT[i];
+        if (c->selected == 0)
             continue;
-        id = rec[-0x5a];
-        if (state == 0) {
-            o = (char *)rec[4];
-            if (o != 0 && rec[0] != 0) {
-                owner = rec[0];
-                state = 0x43;
-                obj = o;
-                if (*o == 'C') {
-                    if (owner == cur) {
-                        g = gm_Query(*(int *)(cur + 0x5d), 1, 0, 0x146);
-                        for (k = 0; k < 4; k++) {
-                            if (*(int *)(o + 0xc4 + k * 4) == id) {
-                                *(int *)(o + 0xc4 + k * 4) = -1;
-                                break;
-                            }
-                        }
-                        sv_MoveToGroup(SV_I((unsigned)&sv_ClickedBuilding), 0, (short)rec[-0x5b], 0);
-                        ai_Unk4c5230(id);
-                        ai_Unk4c52e0(id, *(int *)(SV_I((unsigned)&sv_ClickedBuilding) + 1), *(int *)(g + 2), 0, 0, 0);
-                        cur = SV_I((unsigned)&sv_ClickedBuilding);
-                    } else {
-                        m[4] = 'C';
-                        m[0x36] = 2;
-                        *(int *)(m + 8) = SV_I((unsigned)&ai_CharInts + SV_U((unsigned)&ai_PlayerId) * 0x21c);
-                        *(int *)(m + 0x58) = *(int *)(cur + 1);
-                        *(int *)(m + 0x5c) = *(int *)(owner + 1);
-                        *out++ = id;
+        if (kind == 0) {
+            if (c->job != 0 && c->bld != 0) {
+                kind = 'C';
+                job = c->job;
+                if (job->kind == 'C') {
+                    if (c->bld != cur) {
+                        msg.type = 'C';
+                        msg.flags = 2;
+                        owner = c->bld;
+                        msg.to = ai_CharsT[ai_PlayerId].netId;
+                        msg.arg[0] = cur->id;
+                        msg.arg[1] = owner->id;
+                        *out++ = c->netId;
                         n++;
-                        for (k = n; k < 4; k++)
-                            *out++ = -1;
-                        out = (int *)(m + 0x70) + n;
+                        for (p = out, k = n; k < 4; k++)
+                            *p++ = -1;
                         for (k = 0; k < 4; k++) {
-                            if (*(int *)(o + 0xc4 + k * 4) == id) {
-                                *(int *)(o + 0xc4 + k * 4) = -1;
-                                cur = SV_I((unsigned)&sv_ClickedBuilding);
+                            if (job->members[k] == c->netId) {
+                                job->members[k] = -1;
+                                cur = (AIBLD *)sv_ClickedBuilding;
                                 break;
                             }
                         }
+                    } else {
+                        room = (AIOBJ *)gm_Query((void *)cur->objList, 1, 0, 0x146);
+                        for (k = 0; k < 4; k++) {
+                            if (job->members[k] == c->netId) {
+                                job->members[k] = -1;
+                                break;
+                            }
+                        }
+                        sv_MoveToGroup((unsigned char *)sv_ClickedBuilding, 0, c->id, 0);
+                        cm_SendChrStop(c->netId);
+                        cm_SendChrGotoBuilding(c->netId, ((AIBLD *)sv_ClickedBuilding)->id, room->objId, 0, 0, 0);
+                        cur = (AIBLD *)sv_ClickedBuilding;
                     }
                 }
             }
-        } else if (state == 0x43 && rec[0] == owner && (char *)rec[4] == obj) {
-            if (rec[0] == cur) {
-                g = gm_Query(*(int *)(cur + 0x5d), 1, 0, 0x146);
-                for (k = 0; k < 4; k++) {
-                    if (*(int *)(obj + 0xc4 + k * 4) == id) {
-                        *(int *)(obj + 0xc4 + k * 4) = -1;
-                        break;
-                    }
-                }
-                sv_MoveToGroup(SV_I((unsigned)&sv_ClickedBuilding), 0, (short)rec[-0x5b], 0);
-                ai_Unk4c5230(id);
-                ai_Unk4c52e0(id, *(int *)(SV_I((unsigned)&sv_ClickedBuilding) + 1), *(int *)(g + 2), 0, 0, 0);
-                cur = SV_I((unsigned)&sv_ClickedBuilding);
-            } else {
-                *out++ = id;
+        } else if (kind == 'C' && c->bld == owner && c->job == job) {
+            if (c->bld != cur) {
+                *out++ = c->netId;
                 n++;
                 for (k = 0; k < 4; k++) {
-                    if (*(int *)(obj + 0xc4 + k * 4) == id) {
-                        *(int *)(obj + 0xc4 + k * 4) = -1;
-                        cur = SV_I((unsigned)&sv_ClickedBuilding);
+                    if (job->members[k] == c->netId) {
+                        job->members[k] = -1;
+                        cur = (AIBLD *)sv_ClickedBuilding;
                         break;
                     }
                 }
                 if (n > 3)
                     done = 1;
+            } else {
+                room = (AIOBJ *)gm_Query((void *)cur->objList, 1, 0, 0x146);
+                for (k = 0; k < 4; k++) {
+                    if (job->members[k] == c->netId) {
+                        job->members[k] = -1;
+                        break;
+                    }
+                }
+                sv_MoveToGroup((unsigned char *)sv_ClickedBuilding, 0, c->id, 0);
+                cm_SendChrStop(c->netId);
+                cm_SendChrGotoBuilding(c->netId, ((AIBLD *)sv_ClickedBuilding)->id, room->objId, 0, 0, 0);
+                cur = (AIBLD *)sv_ClickedBuilding;
             }
         }
-        *(char *)(rec + 7) = 0;
+        c->selected = 0;
     }
-    if (obj != 0)
-        cm_SendExSetHE(*(int *)(obj + 0x70), obj);
-    if (m[4] != 0)
-        cm_SendLongMessage(m);
+    if (job != 0)
+        cm_SendExSetHE(job->stage, (char *)job);
+    if (msg.type != 0)
+        cm_SendLongMessage((char *)&msg);
 }
 /* 0x52bec0, the mouse release of the selection (called every frame with 0x6f2334 counting the selected characters): with the selection mode 0x1467394 (button released 0x14673a4): the click without a pick sends
    the selected characters of the player (flag +0x188 / kind from 0x503530 & 0x800) to the clicked map cell (0x45f2b0 (map +0xb0 of the scene, x, y, &cx, &cy), the cell types 0 / 0xd are skipped over the nine
@@ -5194,7 +5207,7 @@ lgroup:
                 ch = (unsigned short *)*pp;
                 v = 0;
                 if (ch != 0 && *(char *)(ch + 0xc4) != 0) {
-                    ai_Unk4c5230(*(int *)(ch + 2));
+                    cm_SendChrStop(*(int *)(ch + 2));
                     if (*(int *)(ch + 0xb6) != 0)
                         sv_MoveToGroup(*(int *)(ch + 0xb6), 0, *ch, 0);
                     if (**(short **)(unsigned)&sv_ClickedContact == 0xfd) {
@@ -5225,7 +5238,7 @@ lafter:
         if (SV_I((unsigned)&sv_ClickedBuilding) == 0)
             goto lend;
     }
-    sv_Unk52bbc0();
+    sv_SendSelectedToBuilding();
 lend:
     SV_I((unsigned)&ai_SelectedCount) = 0;
     d2_ClearPointerItems();

@@ -255,7 +255,7 @@ void amt_ChangeDistrictOpinion();
 void gm_Shuffled(unsigned char n, int *out);
 struct AIPER; struct AMTREC; struct CHARACTER; struct CHACTION; struct EVTSCRIPT; struct G15PLANT; struct G11REC; struct GCLOCK;
 void cm_SendProofExecuted(int a, int b);
-void ai_Unk4c5230(int a);
+void cm_SendChrStop(int a);
 void cm_SendFieldDeltas(void);
 void cm_SendRelations(int a, int b, int c, int d);
 int util_Random(unsigned short n);      /* 0x42ec00, tr.c's definition: this TU's callers were compiled against the 16-bit parameter and result */
@@ -2280,7 +2280,7 @@ struct CHACTION * ch_AddAction(struct CHARACTER *ch, unsigned int type, ...);
 int ch_QueueAnim();
 void sv_MoveToGroup(unsigned char *o, short *it, int c, char *g);
 void cm_SendSetField(int a, int b, int c, int d, int e);
-int ai_Unk4c52e0();
+int cm_SendChrGotoBuilding();
 
 /* 0x541280, a figure's behaviour at an event: for every one of the 8 figures (+0x8c) without a pending job in 40 percent of the cases walks the way points of the event (0x4bc390 / 0x45f170 / 0x40b2f0, job 0x2d, "he_CharacterBehavior"), else plays one of three gestures ("gestik/..") twice (ROUGH) */
 void he_Unk541280(int ev, int p2)
@@ -2343,7 +2343,7 @@ void he_Unk5414a0(int p1, unsigned short *p2, int p3, int p4, float p5, int p6)
                 evt_Stop((EVTSCRIPT *)u1);
             }
             cm_SendSetField(*(int *)(p2 + 2), 0x1c8, 4, 0x800, 0);
-            ai_Unk4c52e0(*(int *)(p2 + 2), l900, l8fc, 0, l8fc == -1, "Unfall");
+            cm_SendChrGotoBuilding(*(int *)(p2 + 2), l900, l8fc, 0, l8fc == -1, "Unfall");
             if (*(char *)(p3 + 2) != 6 && *(char *)(p3 + 2) != 7)
                 return;
             txt_Format(buf, 0x1baf, *p2, p4);
@@ -2435,7 +2435,7 @@ void he_Unk5417d0(int p1, unsigned short *p2, int p3, int p4, int p5, float p6)
             u1 = (int)evt_FindById(*(int *)(*(int *)(p2 + 0xc2) + 0x28));
             evt_Stop((EVTSCRIPT *)u1);
         }
-        ai_Unk4c52e0(*(int *)(p2 + 2), l900, l8fc, 0, l8fc == -1, "Unfall");
+        cm_SendChrGotoBuilding(*(int *)(p2 + 2), l900, l8fc, 0, l8fc == -1, "Unfall");
         if (*(char *)(p3 + 2) != 6 && *(char *)(p3 + 2) != 7)
             return;
         news = 0x1631;
@@ -3197,7 +3197,7 @@ void he_Unk547f90(int ev)
         r = cm_GetSlotValue(*(int *)(ev + 0xbc));
         if (r != 0) {
             k = ((*(char *)(r + 9) != 0) ? 0x23 : 0) + 0x20d + *(unsigned char *)(r + 0x165);
-            ai_Unk4c52e0(*(int *)(r + 4), *(int *)(ev + 0xb0), *(int *)(ev + 0xb4), 0, 0, "RndGeselle");
+            cm_SendChrGotoBuilding(*(int *)(r + 4), *(int *)(ev + 0xb0), *(int *)(ev + 0xb4), 0, 0, "RndGeselle");
             txt_Format(text, *(unsigned short *)(ev + 0xb8), *(unsigned short *)r, k, o2);
             he_MessageBoxQuickjump(*(int *)(ev + 0xac), *(int *)(ev + 0xac), text, 0, 0x5ec, *(int *)(ev + 0xb0), *(int *)(ev + 0xb4), 0, "_NACHRICHTEN_HS_00");
         }
@@ -4077,7 +4077,7 @@ void he_Unk54a020(int ev)
             for (i = 0; i < 4; i++) {
                 p = gm_FindChar(*(int *)(ev + 0xbc + i * 4));
                 if (p != 0) {
-                    ai_Unk4c5230(*(int *)(p + 4));
+                    cm_SendChrStop(*(int *)(p + 4));
                     cm_SendKillCharacter(*(int *)(p + 4), 1);
                 }
             }
@@ -4135,8 +4135,8 @@ void he_Unk54a020(int ev)
         for (i = 0; i < 4; i++) {
             p = gm_FindChar(*(int *)(ev + 0xbc + i * 4));
             if (p != 0) {
-                ai_Unk4c5230(*(int *)(p + 4));
-                ai_Unk4c52e0(*(int *)(p + 4), *(int *)(esi + 1), -1, 0, 1, "Pest");
+                cm_SendChrStop(*(int *)(p + 4));
+                cm_SendChrGotoBuilding(*(int *)(p + 4), *(int *)(esi + 1), -1, 0, 1, "Pest");
                 n++;
             }
         }
@@ -4212,8 +4212,8 @@ void he_Unk54a020(int ev)
         for (i = 0; i < 4; i++) {
             p = gm_FindChar(*(int *)(ev + 0xbc + i * 4));
             if (p != 0) {
-                ai_Unk4c5230(*(int *)(p + 4));
-                ai_Unk4c52e0(*(int *)(p + 4), *(int *)(o + 1), -1, 0, 1, "Pest");
+                cm_SendChrStop(*(int *)(p + 4));
+                cm_SendChrGotoBuilding(*(int *)(p + 4), *(int *)(o + 1), -1, 0, 1, "Pest");
                 n++;
             }
         }
@@ -4316,8 +4316,8 @@ void he_Unk54a7b0(int ev)
                     k = (unsigned short)util_Random(4) + 3;
                     for (; k > 0; k--)
                         sum += (unsigned short)util_Random((val + 1) * val) + val * 2;
-                    ai_Unk4c5230(*(int *)(p + 4));
-                    ai_Unk4c52e0(*(int *)(p + 4), *(int *)(s + 1), *(int *)(o + 2), 0, 0, "Taschendieb");
+                    cm_SendChrStop(*(int *)(p + 4));
+                    cm_SendChrGotoBuilding(*(int *)(p + 4), *(int *)(s + 1), *(int *)(o + 2), 0, 0, "Taschendieb");
                     sv_MoveToGroup(0, *(unsigned short *)p, 0, 0);
                 }
             }
@@ -4395,8 +4395,8 @@ void he_Unk54a7b0(int ev)
             edi = goals[(unsigned short)util_Random(n)];
         }
         sv_MoveToGroup(edi, 0, *(unsigned short *)esi, ev);
-        ai_Unk4c5230(*(int *)(esi + 4));
-        ai_Unk4c52e0(*(int *)(esi + 4), *(int *)(edi + 1), -1, 0, 1, "Taschendieb");
+        cm_SendChrStop(*(int *)(esi + 4));
+        cm_SendChrGotoBuilding(*(int *)(esi + 4), *(int *)(edi + 1), -1, 0, 1, "Taschendieb");
         *(int *)(ev + 0xac + idx * 4) = *(int *)(edi + 1);
     }
 }
@@ -4522,8 +4522,8 @@ void he_Unk54b1e0(int ev)
     switch (*(int *)(ev + 0x70)) {
     case 1:
         sv_MoveToGroup(ebp, 0, *(unsigned short *)edi, ev);
-        ai_Unk4c5230(*(int *)(edi + 4));
-        ai_Unk4c52e0(*(int *)(edi + 4), *(int *)(ebp + 1), -1, 0, 1, "Schutzgeld");
+        cm_SendChrStop(*(int *)(edi + 4));
+        cm_SendChrGotoBuilding(*(int *)(edi + 4), *(int *)(ebp + 1), -1, 0, 1, "Schutzgeld");
         *(HETIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 10, 0);
         *(int *)(ev + 0x70) = 2;
@@ -4608,8 +4608,8 @@ void he_Unk54b1e0(int ev)
             he_ShowNews(U_I((unsigned)&ai_CharInts + *(unsigned short *)(ebp + 0x27) * 0x21c), U_I((unsigned)&ai_CharInts + *(unsigned short *)(ebp + 0x27) * 0x21c), text, 0, 0x5f3, (char *)0);
         }
         sv_MoveToGroup(ebp, 0, *(unsigned short *)edi, 0);
-        ai_Unk4c5230(*(int *)(edi + 4));
-        ai_Unk4c52e0(*(int *)(edi + 4), *(int *)(ev + 0xbc), *(int *)(ev + 0xc0), 0, 0, "Schutzgeld");
+        cm_SendChrStop(*(int *)(edi + 4));
+        cm_SendChrGotoBuilding(*(int *)(edi + 4), *(int *)(ev + 0xbc), *(int *)(ev + 0xc0), 0, 0, "Schutzgeld");
         *(HETIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 2, 0);
         *(int *)(ev + 0x70) = -1;
@@ -4647,8 +4647,8 @@ void he_Unk54ba20(int ev)
     }
     if (st == 0) {
         sv_MoveToGroup(esi, *(unsigned short *)ebx, 0, ev);
-        ai_Unk4c5230(*(int *)(ebx + 4));
-        ai_Unk4c52e0(*(int *)(ebx + 4), *(int *)(esi + 1), -1, 0, 1, "BetriebsPr\xfc" "fung");
+        cm_SendChrStop(*(int *)(ebx + 4));
+        cm_SendChrGotoBuilding(*(int *)(ebx + 4), *(int *)(esi + 1), -1, 0, 1, "BetriebsPr\xfc" "fung");
         *(HETIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 10, 0);
         *(int *)(ev + 0x70) = 1;
@@ -4693,8 +4693,8 @@ void he_Unk54ba20(int ev)
     }
     if (st == 2) {
         sv_MoveToGroup(esi, 0, *(unsigned short *)ebx, ev);
-        ai_Unk4c5230(*(int *)(ebx + 4));
-        ai_Unk4c52e0(*(int *)(ebx + 4), *(int *)(ev + 0xb4), *(int *)(ev + 0xb8), 0, 0, "BetriebsPr\xfc" "fung");
+        cm_SendChrStop(*(int *)(ebx + 4));
+        cm_SendChrGotoBuilding(*(int *)(ebx + 4), *(int *)(ev + 0xb4), *(int *)(ev + 0xb8), 0, 0, "BetriebsPr\xfc" "fung");
         he_FreeEvent((int *)ev);
     }
 }
@@ -4744,8 +4744,8 @@ void he_Unk54bec0(int ev)
             p = gm_FindChar(*(int *)(ev + 0x8c + i * 4));
             if (p != 0 && *(int *)(p + 0x184) != 0) {
                 sv_MoveToGroup(0, 0, *(unsigned short *)p, ev);
-                ai_Unk4c5230(*(int *)(p + 4));
-                ai_Unk4c52e0(*(int *)(p + 4), -1, -1, ev + 0xac, 1, "Patrol");
+                cm_SendChrStop(*(int *)(p + 4));
+                cm_SendChrGotoBuilding(*(int *)(p + 4), -1, -1, ev + 0xac, 1, "Patrol");
             }
         }
         gm_AddTime(ev + 0x52, 0, 5, 0);
@@ -4847,8 +4847,8 @@ void he_Unk54bec0(int ev)
             p = gm_FindChar(*(int *)(ev + 0x8c + i * 4));
             if (p != 0 && *(int *)(p + 0x184) != 0) {
                 sv_MoveToGroup(0, 0, *(unsigned short *)p, 0);
-                ai_Unk4c5230(*(int *)(p + 4));
-                ai_Unk4c52e0(*(int *)(p + 4), *(int *)(ev + 0xcc), *(int *)(ev + 0xd0), 0, 0, "Patrol");
+                cm_SendChrStop(*(int *)(p + 4));
+                cm_SendChrGotoBuilding(*(int *)(p + 4), *(int *)(ev + 0xcc), *(int *)(ev + 0xd0), 0, 0, "Patrol");
             }
         }
         gm_AddTime(ev + 0x52, 0, 2, 0);
@@ -5866,7 +5866,7 @@ void he_Unk54f160(int ev)
         if ((*(unsigned char *)(ev + 0x78) & 2) != 0) {
             a = gm_FindChar(*(int *)(ev + 0xac));
             if (a != 0) {
-                ai_Unk4c5230(*(int *)(a + 4));
+                cm_SendChrStop(*(int *)(a + 4));
                 cm_SendKillCharacter(*(int *)(a + 4), 1);
             }
         }
@@ -5922,8 +5922,8 @@ void he_Unk54f160(int ev)
         sprintf(text, "Dunkle Ecke: next target = %G", found);
         a = gm_FindChar(*(int *)(ev + 0xac));
         if (a != 0) {
-            ai_Unk4c5230(*(int *)(a + 4));
-            ai_Unk4c52e0(*(int *)(a + 4), *(int *)(found + 1), -1, 0, 1, "Dunkle Ecke");
+            cm_SendChrStop(*(int *)(a + 4));
+            cm_SendChrGotoBuilding(*(int *)(a + 4), *(int *)(found + 1), -1, 0, 1, "Dunkle Ecke");
             gm_AddTime(ev + 0x52, 0, 5, 0);
             *(int *)(ev + 0xb8) = *(int *)(found + 1);
             *(int *)(ev + 0x84) = cm_SendExSetHE(2, ev);
@@ -5962,8 +5962,8 @@ void he_Unk54f160(int ev)
         gm_FindById(&o, 0, 0, *(int *)(ev + 0xb0));
         if (o != 0 && *(unsigned short *)(o + 0x27) != 0xffff) {
             if (*(int *)(ev + 0xbc) <= 0) {
-                ai_Unk4c5230(*(int *)(a + 4));
-                ai_Unk4c52e0(*(int *)(a + 4), *(int *)(o + 1), *(int *)(ev + 0xb4), 0, 0, "Dunkle Ecke");
+                cm_SendChrStop(*(int *)(a + 4));
+                cm_SendChrGotoBuilding(*(int *)(a + 4), *(int *)(o + 1), *(int *)(ev + 0xb4), 0, 0, "Dunkle Ecke");
                 *(int *)(ev + 0x84) = cm_SendExSetHE(3, ev);
                 return;
             }
@@ -6186,7 +6186,7 @@ void he_Unk54ff20(int ev)
             ai_Unk4c5970(*(int *)esi, 0, 0);
             ai_Unk4c5b90(*(int *)esi);
             if (o != 0)
-                ai_Unk4c52e0(*(int *)esi, *(int *)(*(int *)(esi + 0x16c) + 1), *(int *)(o + 2), 0, 0, "Unkendunk");
+                cm_SendChrGotoBuilding(*(int *)esi, *(int *)(*(int *)(esi + 0x16c) + 1), *(int *)(o + 2), 0, 0, "Unkendunk");
         }
     }
     *(HETIME *)(ev + 0x52) = ai_Time;
@@ -7189,7 +7189,7 @@ void he_Unk545670(int ev)
 
 int gm_MinutesBetween();
 int gm_PlayerFactor(int a, unsigned char k);
-void ai_Unk4c5230(int a);
+void cm_SendChrStop(int a);
 void ai_Unk4c5410(int a, const char *s, unsigned char c);
 void cm_SendMoveGoods(int a, int b, unsigned char c, int d);
 unsigned char *gm_BuildQuery(int n, ...);
@@ -7243,8 +7243,8 @@ void he_Unk545840(int ev)
                 p = gm_FindChar(g);
                 if (p != 0 && *(int *)(p + 0x184) != 0) {
                     sv_MoveToGroup(0, 0, *(unsigned short *)p, ev);
-                    ai_Unk4c5230(g);
-                    ai_Unk4c52e0(g, *(int *)(t + 1), -1, 0, 1, "Streife");
+                    cm_SendChrStop(g);
+                    cm_SendChrGotoBuilding(g, *(int *)(t + 1), -1, 0, 1, "Streife");
                 } else {
                     *(int *)(ev + 0xc4 + i * 4) = -1;
                 }
@@ -7273,8 +7273,8 @@ void he_Unk545840(int ev)
                     for (; k > 0; k--)
                         sum += (unsigned short)util_Random((val + 1) * val) + val * 2;
                     n++;
-                    ai_Unk4c5230(g);
-                    ai_Unk4c52e0(g, *(int *)(t + 1), *(int *)(obj + 2), 0, 0, "Streife");
+                    cm_SendChrStop(g);
+                    cm_SendChrGotoBuilding(g, *(int *)(t + 1), *(int *)(obj + 2), 0, 0, "Streife");
                     sv_MoveToGroup(0, 0, *(unsigned short *)p, ev);
                 } else {
                     *(int *)(ev + 0xc4 + i * 4) = -1;
@@ -7343,8 +7343,8 @@ void he_Unk545840(int ev)
                     p = gm_FindChar(g);
                     if (p != 0 && *(int *)(p + 0x184) != 0) {
                         sv_MoveToGroup(0, 0, *(unsigned short *)p, ev);
-                        ai_Unk4c5230(g);
-                        ai_Unk4c52e0(g, *(int *)(t + 1), -1, 0, 1, "Streife");
+                        cm_SendChrStop(g);
+                        cm_SendChrGotoBuilding(g, *(int *)(t + 1), -1, 0, 1, "Streife");
                         k = (unsigned short)util_Random(2) + 1;
                         ai_Unk4c5410(g, names[(unsigned short)util_Random(3)], k);
                     } else {
@@ -7436,8 +7436,8 @@ void he_Unk5461c0(int ev)
             for (i = 0; i < 8; i++) {
                 g = *(int *)(ev + 0x8c + i * 4);
                 if (g != -1 && (p = gm_FindChar(g)) != 0) {
-                    ai_Unk4c5230(g);
-                    ai_Unk4c52e0(g, *(int *)(t + 1), *(int *)(o + 2), 0, 0, "Razzia");
+                    cm_SendChrStop(g);
+                    cm_SendChrGotoBuilding(g, *(int *)(t + 1), *(int *)(o + 2), 0, 0, "Razzia");
                     sv_MoveToGroup(t, 0, *(unsigned short *)p, 0);
                 }
             }
@@ -7455,8 +7455,8 @@ void he_Unk5461c0(int ev)
                     p = gm_FindChar(g);
                     if (p != 0) {
                         sv_MoveToGroup(t, 0, *(unsigned short *)p, ev);
-                        ai_Unk4c5230(g);
-                        ai_Unk4c52e0(g, *(int *)(t + 1), -1, 0, 0, "Razzia");
+                        cm_SendChrStop(g);
+                        cm_SendChrGotoBuilding(g, *(int *)(t + 1), -1, 0, 0, "Razzia");
                     } else {
                         *(int *)(ev + 0x8c + i * 4) = -1;
                     }
@@ -7480,8 +7480,8 @@ void he_Unk5461c0(int ev)
             if (g != -1) {
                 p = gm_FindChar(g);
                 if (p != 0 && *(unsigned char *)(p + 8) > 0) {
-                    ai_Unk4c5230(g);
-                    ai_Unk4c52e0(g, *(int *)(t + 1), *(int *)(o + 2), 0, 0, "Razzia");
+                    cm_SendChrStop(g);
+                    cm_SendChrGotoBuilding(g, *(int *)(t + 1), *(int *)(o + 2), 0, 0, "Razzia");
                     sv_MoveToGroup(t, 0, *(unsigned short *)p, ev);
                 } else {
                     *(int *)(ev + 0x8c + i * 4) = -1;
@@ -8161,7 +8161,7 @@ void he_Unk5512c0(int ev)
 }
 
 void ai_Unk4c5ec0(int a);
-void ai_Unk4c5230(int a);
+void cm_SendChrStop(int a);
 int sv_IsAtDoor();
 void cm_SendSetField(int a, int b, int c, int d, int e);
 
@@ -8180,7 +8180,7 @@ int he_Unk551340(int *s)
             if (sv_IsAtDoor(a, o) == 0 && *(unsigned short *)(unsigned)&ai_TimeHour < 0x16)
                 return 2;
             if (*(int *)(a + 0x184) != 0) {
-                ai_Unk4c5230(*(int *)(a + 4));
+                cm_SendChrStop(*(int *)(a + 4));
                 ai_Unk4c5ec0(s[0]);
             }
             s[0] = -1;
@@ -8291,7 +8291,7 @@ unsigned char * gm_BuildNext(void);
 char *gm_FindBuildingById(int id);
 int he_Unk55ee40();
 void ai_Unk4c5b90(int a);
-int ai_Unk4c52e0();
+int cm_SendChrGotoBuilding();
 
 /* 0x551780, steps one 16-byte slot of the 0x5512c0 event (a person on a walk through town; bytes: +8 the stage counter, +9 flags 0x40 / 0x10 / 0x04 (done), +0xa the step, +0xb the building index, +0xc the hour it started): the person (0x505df0) is gone -> the slot is cleared; with a target (0x4fea50) the walk is checked (0x524770) and a person with a work object (+0x184) is held / released by the hour (message 0x1c8 / 0x1000, 0x4c5b90); every 1 + budget / 2 stages (budget = 2 + random 0x42ec00(6) + the two flags) the person plays an animation (0x5516a0); else a new target building is looked for, with a chance above 0.5 from the 0x20 buildings of the list 0x501190 (1, 5, 0x16) through 0x55ee40, else by walking the 0x100 buildings with step +0xa for one of the kinds in the mask 0xa7f4c3a0; the found building number goes to +0xb, its id to +4, and the person is sent there (0x4c52e0 "...", the flag differs for the kinds 0x16 / 7 / 0xf) (ROUGH) */
 void he_Unk551780(unsigned char *s)
@@ -8354,7 +8354,7 @@ void he_Unk551780(unsigned char *s)
     }
 cleanup:
     s[9] &= 0xef;
-    ai_Unk4c5230(*(int *)(a + 4));
+    cm_SendChrStop(*(int *)(a + 4));
     if ((float)util_RandomF() > 0.5f) {
         int e = gm_BuildQuery(1, 5, 0x16);
         int i = 0;
@@ -8406,9 +8406,9 @@ cleanup:
     s[8]++;
     kind = *(unsigned char *)(U_I((unsigned)&ai_BTypes) + *(unsigned char *)bld * 0x24d);
     if (kind == 0x16 || kind == 7 || kind == 0xf)
-        ai_Unk4c52e0(*(int *)s, *(int *)(s + 4), -1, 0, 0, (char *)((unsigned)&ai_Unk625820 + 0x17c8));
+        cm_SendChrGotoBuilding(*(int *)s, *(int *)(s + 4), -1, 0, 0, (char *)((unsigned)&ai_Unk625820 + 0x17c8));
     else
-        ai_Unk4c52e0(*(int *)s, *(int *)(s + 4), -1, 0, 1, (char *)((unsigned)&ai_Unk625820 + 0x17c8));
+        cm_SendChrGotoBuilding(*(int *)s, *(int *)(s + 4), -1, 0, 1, (char *)((unsigned)&ai_Unk625820 + 0x17c8));
 }
 
 int cm_GetSlotState();
@@ -9263,8 +9263,8 @@ void he_Unk5538b0(unsigned short *p)
 }
 
 void ai_Unk4c5410(int a, const char *s, unsigned char c);
-int ai_Unk4c52e0();
-void ai_Unk4c5230(int a);
+int cm_SendChrGotoBuilding();
+void cm_SendChrStop(int a);
 
 /* 0x553ae0 (ROUGH): `q` (+0 an object with a scene record at +0x61, +4 the range, +8 the other person) looks for a running record of type 0x43 (no +0xd4 target yet, another +0xc, with one of its four persons +0xc4 .. closer than the range, 3D distance of the scene positions); stores it in q+0xc, sends the four persons (message 0x4c5230, "gestik/herranwinken" for the person itself, 0x4c52e0 "Detected", "gestik/abfaellig" 1 .. 2), sets the target +0xd4 (the other person's id), the due clock now + 8 and the record's message 0x400; 1 = found */
 int he_Unk553ae0(int *q)
@@ -9312,10 +9312,10 @@ int he_Unk553ae0(int *q)
         pp = gm_FindChar(h);
         if (pp == 0)
             continue;
-        ai_Unk4c5230(h);
+        cm_SendChrStop(h);
         if (*(int *)(pp + 4) == h)
             ai_Unk4c5410(h, "gestik/herranwinken", 2);
-        ai_Unk4c52e0(h, *(int *)(q[0] + 1), -1, 0, 1, "Detected");
+        cm_SendChrGotoBuilding(h, *(int *)(q[0] + 1), -1, 0, 1, "Detected");
         ai_Unk4c5410(h, "gestik/abfaellig", (unsigned short)util_Random(2) + 1);
     }
     *(int *)(best + 0xd4) = *(int *)(q[2] + 4);
@@ -9884,8 +9884,8 @@ void he_Unk555350(int ev)
     if (tr != 0) {
         he_Unk5552c0(ev, tr);
         if (*(unsigned char *)(ev + 0xd0) == 0) {
-            ai_Unk4c5230(*(int *)(tr + 2));
-            ai_Unk4c52e0(*(int *)(tr + 2), *(int *)(b1 + 1), -1, 0, 1, "Trans");
+            cm_SendChrStop(*(int *)(tr + 2));
+            cm_SendChrGotoBuilding(*(int *)(tr + 2), *(int *)(b1 + 1), -1, 0, 1, "Trans");
             *(int *)(ev + 0xec) = ((int (*)(int, int, int))ai_Unk4c4920)(*(int *)(a44 + 1), *(int *)(b0 + 1), *(int *)(tr + 2));
             *(unsigned char *)(ev + 0xd0) = 1;
         } else if (*(int *)(tr + 0x3b) != 0 && *(int *)(*(int *)(tr + 0x3b) + 0x128) == 0) {
@@ -9952,10 +9952,10 @@ void he_Unk555690(int ev)
     if (tr != 0) {
         he_Unk5552c0(ev, tr);
         if (*(unsigned char *)(ev + 0xd0) == 0) {
-            ai_Unk4c5230(*(int *)(tr + 2));
+            cm_SendChrStop(*(int *)(tr + 2));
             if (gm_IsType10(b0) == 0)
                 ai_Unk4c5260(*(int *)(tr + 2), 1);
-            ai_Unk4c52e0(*(int *)(tr + 2), *(int *)(b1 + 1), -1, 0, 0, "Trans");
+            cm_SendChrGotoBuilding(*(int *)(tr + 2), *(int *)(b1 + 1), -1, 0, 0, "Trans");
             if (gm_IsType10(b0) == 0)
                 *(int *)(ev + 0xec) = ((int (*)(int, int, int))ai_Unk4c4920)(*(int *)(a44 + 1), *(int *)(b0 + 1), *(int *)(tr + 2));
             *(unsigned char *)(ev + 0xd0) = 1;
@@ -10087,8 +10087,8 @@ void he_Unk556080(int ev)
     }
     he_Unk5552c0(ev, cart);
     if (*(unsigned char *)(ev + 0xd0) == 0) {
-        ai_Unk4c5230(*(int *)(cart + 2));
-        ai_Unk4c52e0(*(int *)(cart + 2), *(int *)(b1 + 1), -1, 0, 0, "Trans");
+        cm_SendChrStop(*(int *)(cart + 2));
+        cm_SendChrGotoBuilding(*(int *)(cart + 2), *(int *)(b1 + 1), -1, 0, 0, "Trans");
         *(int *)(ev + 0xec) = ((int (*)(int, int, int))ai_Unk4c4920)(*(int *)(a44 + 1), *(int *)(b0 + 1), *(int *)(cart + 2));
         *(unsigned char *)(ev + 0xd0) = 1;
         d3if_SelectScene(sc, 1);
@@ -10112,7 +10112,7 @@ void he_Unk556080(int ev)
             he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), *(int *)(cart + 2), text, 0, 0x609, 0, 0, (char *)"_NACHRICHTEN_HS_59", 0);
         }
         *(int *)(ev + 0x84) = cm_SendExSetHE(3, ev);
-        ai_Unk4c52e0(*(int *)(cart + 2), *(int *)(b1 + 1), -1, 0, 0, "Trans");
+        cm_SendChrGotoBuilding(*(int *)(cart + 2), *(int *)(b1 + 1), -1, 0, 0, "Trans");
     }
     d3if_SelectScene(sc, 1);
 }
@@ -10532,8 +10532,8 @@ void he_Unk557e20(int ev)
         for (i = 0; i < *(unsigned char *)(ev + 0xac); i++) {
             p = gm_FindChar(*(int *)(ev + 0x8c + i * 4));
             if (p != 0) {
-                ai_Unk4c5230(*(int *)(p + 4));
-                ai_Unk4c52e0(*(int *)(p + 4), *(int *)(b + 1), -1, 0, 0, "Kr\344uter");
+                cm_SendChrStop(*(int *)(p + 4));
+                cm_SendChrGotoBuilding(*(int *)(p + 4), *(int *)(b + 1), -1, 0, 0, "Kr\344uter");
                 n++;
             }
         }
@@ -10595,8 +10595,8 @@ void he_Unk558550(int ev)
         for (i = 0; i < *(unsigned char *)(ev + 0xac); i++) {
             p = gm_FindChar(*(int *)(ev + 0x8c + i * 4));
             if (p != 0) {
-                ai_Unk4c5230(*(int *)(p + 4));
-                ai_Unk4c52e0(*(int *)(p + 4), *(int *)(ev + 0x10), -1, 0, 0, "Getier");
+                cm_SendChrStop(*(int *)(p + 4));
+                cm_SendChrGotoBuilding(*(int *)(p + 4), *(int *)(ev + 0x10), -1, 0, 0, "Getier");
             }
         }
         *(HETIME *)(ev + 0x52) = ai_Time;
@@ -10746,7 +10746,7 @@ void he_Unk558f10(int ev)
     switch (st) {
     case 0:
         cm_SendMoveGoodsUnchecked(*(int *)(p + 4), 0, 0, 0);
-        ai_Unk4c52e0(*(int *)(p + 4), *(int *)(b + 1), -1, 0, 0, "Sabotage");
+        cm_SendChrGotoBuilding(*(int *)(p + 4), *(int *)(b + 1), -1, 0, 0, "Sabotage");
         *(HETIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 1, 0);
         *(int *)(ev + 0x70) = 1;
@@ -10811,7 +10811,7 @@ void he_Unk55a030(int ev)
     p = gm_FindChar(*(int *)(ev + 0xb0));
     if (p == 0 || st < 0) {
         if (p != 0) {
-            ai_Unk4c5230(*(int *)(p + 4));
+            cm_SendChrStop(*(int *)(p + 4));
             ((void (*)(int))cm_SendKillCharacter)(*(int *)(p + 4));
         }
         he_FreeEvent((int *)ev);
@@ -10820,8 +10820,8 @@ void he_Unk55a030(int ev)
     h = *(int *)(ev + 0xc4);
     if (h != -1 && cm_GetSlotState(h) == 0)
         return;
-    ai_Unk4c5230(*(int *)(p + 4));
-    ai_Unk4c52e0(*(int *)(p + 4), *(int *)(ev + 0x10), -1, 0, 0, "Spionage");
+    cm_SendChrStop(*(int *)(p + 4));
+    cm_SendChrGotoBuilding(*(int *)(p + 4), *(int *)(ev + 0x10), -1, 0, 0, "Spionage");
     *(HETIME *)(ev + 0x52) = ai_Time;
     *(int *)(ev + 0x84) = cm_SendExSetHE(1, ev);
 }
@@ -10889,7 +10889,7 @@ void he_Unk55a730(int ev)
     h = *(int *)(ev + 0xcc);
     if (h != -1 && cm_GetSlotState(h) == 0)
         return;
-    ai_Unk4c52e0(*(int *)(p + 4), *(int *)(b + 1), -1, 0, 0, "PRUEGEL");
+    cm_SendChrGotoBuilding(*(int *)(p + 4), *(int *)(b + 1), -1, 0, 0, "PRUEGEL");
     txt_Format(text, 0x1bba, b);
     he_ShowNews(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, text, 0, 0x5ec, 0);
     *(HETIME *)(ev + 0x52) = ai_Time;
@@ -11162,7 +11162,7 @@ void he_Unk55bd80(int ev)
         for (c = (unsigned)&ai_CharInts; c < ((unsigned)((unsigned)ai_CharInts + 0x653fe) + 0x2); c += 0x21c) {
             if (*(int *)(c + 0x168) == b && *(int *)(c + 0x180) != 0) {
                 ai_Unk4c5b90(*(int *)c);
-                ai_Unk4c52e0(*(int *)c, -1, -1, 0, 0, "GebAbreissen");
+                cm_SendChrGotoBuilding(*(int *)c, -1, -1, 0, 0, "GebAbreissen");
             }
         }
         *(HETIME *)(ev + 0x52) = ai_Time;
@@ -11544,7 +11544,7 @@ void he_Unk55dbe0(int ev)
     }
     ((void (*)(int, int))ai_Unk4c5970)(0, 0);
     ai_Unk4c5b90(*(int *)(p + 4));
-    ai_Unk4c52e0(*(int *)(p + 4), -1, -1, 0, 0, "Entlassen");
+    cm_SendChrGotoBuilding(*(int *)(p + 4), -1, -1, 0, 0, "Entlassen");
     he_FreeEvent((int *)ev);
 }
 /* 0x55dd70, the allocation handler of the 0x55de30 event (ROUGH): another record of type 0x32 for the same figure (+0xac) is ended (+0xb0 = -1), the due clock is now + 1 and a missing figure frees the record; a flagged (2) record sends the message 0x1cc / 4 / 0x1000000 to the figure */
@@ -11612,7 +11612,7 @@ void he_Unk55e1d0(int ev)
     }
     ((void (*)(int, int))ai_Unk4c5970)(0, 0);
     ai_Unk4c5b90(*(int *)(p + 4));
-    ai_Unk4c52e0(*(int *)(p + 4), -1, -1, 0, 0, "Entlassen");
+    cm_SendChrGotoBuilding(*(int *)(p + 4), -1, -1, 0, 0, "Entlassen");
     txt_Format(text, 0x1bba, p);
     he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, text, 0, 0x5ec, *(int *)(p + 4), -1, "_NACHRICHTEN_HS_01", 0);
     he_FreeEvent((int *)ev);
@@ -11818,7 +11818,7 @@ void he_Unk55efc0(int ev)
     }
     c = he_Unk55ea60(p);
     ai_Unk4c5b90(*(int *)(p + 4));
-    ai_Unk4c52e0(*(int *)(p + 4), c, -1, 0, 0, "Go to work");
+    cm_SendChrGotoBuilding(*(int *)(p + 4), c, -1, 0, 0, "Go to work");
     cm_RequestChrMoveToUniverse(*(int *)(p + 4), -1, c, "dummy_EINGANG");
     he_FindFigurePlace(p);
     he_Unk55ee40(p);
@@ -11892,8 +11892,8 @@ void he_Unk560900(int ev)
         return;
     }
     gm_GetGebaeudeHauptraum(b);
-    ai_Unk4c5230(*(int *)(p + 4));
-    ai_Unk4c52e0(*(int *)(p + 4), *(int *)(b + 1), -1, 0, 0, "dummy_EINGANG_ZELLE");
+    cm_SendChrStop(*(int *)(p + 4));
+    cm_SendChrGotoBuilding(*(int *)(p + 4), *(int *)(b + 1), -1, 0, 0, "dummy_EINGANG_ZELLE");
     txt_Format(text, 0x1bba, b);
     he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, text, 0, 0x5ec, *(int *)(b + 1), -1, "_NACHRICHTEN_HS_71", 0);
     sv_MoveToGroup(b, 0, *(unsigned short *)p, ev);
@@ -11931,7 +11931,7 @@ void he_Unk561190(int ev)
     txt_Format(text, 0x19da, b);
     he_ShowNews(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, text, 0, 0x5fb, 0);
     he_FindFigurePlace(*(int *)(p + 0x184));
-    ai_Unk4c52e0(*(int *)(p + 4), -1, -1, 0, 0, "L\366segeld");
+    cm_SendChrGotoBuilding(*(int *)(p + 4), -1, -1, 0, 0, "L\366segeld");
     cm_BeginFieldBlock(p, *(int *)(p + 4));
     cm_AddFieldDelta(1, 1, 0, text);
     cm_SendFieldDeltas();
@@ -12009,8 +12009,8 @@ void he_Unk561a20(int ev)
             continue;
         if (st == 0) {
             sv_MoveToGroup(b, 0, *(unsigned short *)p, ev);
-            ai_Unk4c5230(*(int *)(p + 4));
-            ai_Unk4c52e0(*(int *)(p + 4), *(int *)(b + 1), -1, 0, 0, "Einbruch");
+            cm_SendChrStop(*(int *)(p + 4));
+            cm_SendChrGotoBuilding(*(int *)(p + 4), *(int *)(b + 1), -1, 0, 0, "Einbruch");
         } else {
             sv_IsAtDoor(p, 0);
         }
@@ -12060,8 +12060,8 @@ void he_Unk5628e0(int ev)
         he_FreeEvent((int *)ev);
         return;
     }
-    ai_Unk4c5230(*(int *)(p + 4));
-    ai_Unk4c52e0(*(int *)(p + 4), *(int *)(b + 1), -1, 0, 0, "GebSpionage");
+    cm_SendChrStop(*(int *)(p + 4));
+    cm_SendChrGotoBuilding(*(int *)(p + 4), *(int *)(b + 1), -1, 0, 0, "GebSpionage");
     sv_MoveToGroup(b, 0, *(unsigned short *)p, ev);
     gm_GetGebaeudeHauptraum(b);
     txt_Format(text, 0x1bba, b);
@@ -12097,7 +12097,7 @@ void he_Unk5630f0(int ev)
         return;
     }
     sv_MoveToGroup(0, 0, *(unsigned short *)p, ev);
-    ai_Unk4c52e0(*(int *)(p + 4), -1, -1, 0, 0, "STADT");
+    cm_SendChrGotoBuilding(*(int *)(p + 4), -1, -1, 0, 0, "STADT");
     *(HETIME *)(ev + 0x52) = ai_Time;
     *(int *)(ev + 0x84) = cm_SendExSetHE(1, ev);
 }
@@ -12125,8 +12125,8 @@ void he_Unk5639c0(int ev)
         he_FreeEvent((int *)ev);
         return;
     }
-    ai_Unk4c5230(*(int *)(p + 4));
-    ai_Unk4c52e0(*(int *)(p + 4), *(int *)(b + 1), -1, 0, 0, "Angriff");
+    cm_SendChrStop(*(int *)(p + 4));
+    cm_SendChrGotoBuilding(*(int *)(p + 4), *(int *)(b + 1), -1, 0, 0, "Angriff");
     sv_MoveToGroup(b, 0, *(unsigned short *)p, ev);
     *(HETIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0, 1, 0);
@@ -12443,7 +12443,7 @@ void he_Unk565940(int ev)
             /* the original caller pushes 3 arguments (0x565ab5 push ecx, 0x565ab6 push edx, 0x565ab7 push edi) to the
                1-argument 0x55ea60, which reads only [esp+8] (0x55ea61); the extra pushes are the original bytes */
             if (he_Unk55ea60(r, &v[0], &v[1]) != 0)    /* @original: 3 args to the 1-arg 0x55ea60 (see above) */
-                ai_Unk4c52e0(*(int *)(r + 4), v[0], v[1], 0, 0, (unsigned)&full_data_627b20);
+                cm_SendChrGotoBuilding(*(int *)(r + 4), v[0], v[1], 0, 0, (unsigned)&full_data_627b20);
         }
     }
     he_FreeEvent((int *)ev);
@@ -12838,11 +12838,11 @@ void he_Unk566830(int ev)
             p = gm_FindChar(*slot);
             if (p == 0)
                 continue;
-            ai_Unk4c5230(*slot);
+            cm_SendChrStop(*slot);
             if (b != 0 && lead != 0)
-                ai_Unk4c52e0(*slot, *(int *)(b + 1), *(int *)(lead + 2), 0, 0, (unsigned)&full_data_627d74);
+                cm_SendChrGotoBuilding(*slot, *(int *)(b + 1), *(int *)(lead + 2), 0, 0, (unsigned)&full_data_627d74);
             else
-                ai_Unk4c52e0(*slot, -1, -1, 0, 0, (unsigned)&full_data_627d74);
+                cm_SendChrGotoBuilding(*slot, -1, -1, 0, 0, (unsigned)&full_data_627d74);
             sv_MoveToGroup(0, 0, *(unsigned short *)p, 0);
         }
         he_FreeEvent((int *)ev);
@@ -12860,8 +12860,8 @@ void he_Unk566830(int ev)
             if (p == 0)
                 continue;
             sv_MoveToGroup(b, *(unsigned short *)p, 0, ev);
-            ai_Unk4c5230(*slot);
-            ai_Unk4c52e0(*slot, *(int *)(b + 1), -1, 0, 1, (unsigned)&full_data_627d74);
+            cm_SendChrStop(*slot);
+            cm_SendChrGotoBuilding(*slot, *(int *)(b + 1), -1, 0, 1, (unsigned)&full_data_627d74);
         }
         *(HETIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 4, 0);
@@ -12907,8 +12907,8 @@ void he_Unk566830(int ev)
             if (p == 0)
                 continue;
             sv_MoveToGroup(b, *(unsigned short *)p, 0, ev);
-            ai_Unk4c5230(*slot);
-            ai_Unk4c52e0(*slot, *(int *)(b + 1), -1, 0, 0, (unsigned)&full_data_627d74);
+            cm_SendChrStop(*slot);
+            cm_SendChrGotoBuilding(*slot, *(int *)(b + 1), -1, 0, 0, (unsigned)&full_data_627d74);
             ((void (*)(int, const char *))ai_Unk4c5410)(*slot, names[(unsigned short)((int (*)(int, int))util_Random)(3, 1)]);
         }
         *(int *)(ev + 0x70) = 5;
@@ -12965,8 +12965,8 @@ void he_Unk566830(int ev)
         lead = ((void *(*)(unsigned char *))gm_GetGebaeudeHauptraum)(b);
         for (i = 0, slot = (int *)(ev + 0x8c); i < 8; i++, slot++) {
             if (*slot != -1) {
-                ai_Unk4c5230(*slot);
-                ai_Unk4c52e0(*slot, *(int *)(b + 1), *(int *)(lead + 2), 0, 0, (unsigned)&full_data_6279f0);
+                cm_SendChrStop(*slot);
+                cm_SendChrGotoBuilding(*slot, *(int *)(b + 1), *(int *)(lead + 2), 0, 0, (unsigned)&full_data_6279f0);
             }
         }
         he_FreeEvent((int *)ev);
@@ -15432,7 +15432,7 @@ taken:
 
 int gm_MinutesBetween();                 /* 0x4fe280 */
 void cm_SendKillCharacter(int a, int b); /* 0x4c4e00 */
-void ai_Unk4c5230(int a); /* 0x4c5230 */
+void cm_SendChrStop(int a); /* 0x4c5230 */
 int ai_PickActionBuilding(struct AIPER *p, int a, __int64 mask, int c, float f, int *out);   /* 0x4a63f0 (am.h); the 7-dword callers go through AI_4A63F0_7 */
 int he_Unk56f1b0();                 /* 0x56f1b0 */
 int he_Unk56f260();                 /* 0x56f260 */
@@ -15445,7 +15445,7 @@ int he_Unk56f3f0();                 /* 0x56f3f0 */
 int he_Unk56f600();                 /* 0x56f600 */
 int he_Unk56f740();                 /* 0x56f740 */
 int gm_FindById();                 /* 0x4fea50 */
-void ai_Unk4c5230(int a); /* 0x4c5230 */
+void cm_SendChrStop(int a); /* 0x4c5230 */
 void ai_Unk56f040(int *r);          /* 0x56f040 */
 
 /* 0x56e5b0, the run of the event 0x99 (the construction run): the states -1 / -2 free the event (with the text 0x628dd4 to the player when the state is -1); paused or with the handle +0x84 still active it does nothing. State 0 waits for the notification +0xcc (0x4c3ae0 / 0x4c3b10: the building kind into +0xb8); kind 3 schedules state 6, else the text 0x628dc8 (0x4c52e0) and state 1. States 1 / 3 look up the building of +0xb8 (0x505df0, done = [0x184]+0x128); while it is not done they wait (0 / 4 minutes); when it is, the checks 0x56f2e0 / 0x56f1b0 / 0x56f3f0 pick the texts 0x4004 .. 0x401a (0x5176d0 / 0x53dda0) and state 4. State 4 the text 0x628dc8 and state 5. State 5 waits until the building is done, then waits the rest of the run time (0x21c / 0xb40 / 0x5a0 seconds by the kind +0xbc, at least 5) and frees. State 6 the domicile search 0x56f600 (state 7; else the action 0x4a63f0 and state 6), state 7 the search 0x56f740 (state 6 / 7) */
@@ -15480,7 +15480,7 @@ void he_Unk56e5b0(int ev)
                 *(HETIME *)(ev + 0x52) = ai_Time;
                 *(int *)(ev + 0x84) = cm_SendExSetHE(6, ev);
             } else if ((e = gm_BuildQuery(1, 1, HM_I(ev, 0xac))) != 0) {
-                *(int *)(ev + 0xcc) = ai_Unk4c52e0(HM_I(r, 4), HM_I(e, 1), -1, 0, 1, (char *)(unsigned)&full_data_628dc8);
+                *(int *)(ev + 0xcc) = cm_SendChrGotoBuilding(HM_I(r, 4), HM_I(e, 1), -1, 0, 1, (char *)(unsigned)&full_data_628dc8);
                 *(int *)(ev + 0x84) = cm_SendExSetHE(1, ev);
             } else {
                 *(HETIME *)(ev + 0x52) = ai_Time;
@@ -15559,7 +15559,7 @@ void he_Unk56e5b0(int ev)
         if (r == 0)
             *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
         else {
-            *(int *)(ev + 0xcc) = ai_Unk4c52e0(HM_I(ev, 0xb0), HM_I(ev, 0xb8), -1, 0, 0, (char *)(unsigned)&full_data_628dc8);
+            *(int *)(ev + 0xcc) = cm_SendChrGotoBuilding(HM_I(ev, 0xb0), HM_I(ev, 0xb8), -1, 0, 0, (char *)(unsigned)&full_data_628dc8);
             *(int *)(ev + 0x84) = cm_SendExSetHE(5, ev);
         }
         return;
@@ -15612,8 +15612,8 @@ void he_Unk56e5b0(int ev)
             HM_I(ev, 0xac) = HM_I(k, 0xb4);
             HM_I(ev, 0xc4) = HM_I(k, 4);
             HM_I(ev, 0xc8) = 1;
-            ai_Unk4c5230(HM_I(r, 4));
-            ai_Unk4c52e0(HM_I(r, 4), HM_I(ev, 0xac), -1, 0, 1, (char *)(unsigned)&full_data_628dec);
+            cm_SendChrStop(HM_I(r, 4));
+            cm_SendChrGotoBuilding(HM_I(r, 4), HM_I(ev, 0xac), -1, 0, 1, (char *)(unsigned)&full_data_628dec);
             *(HETIME *)(ev + 0x52) = ai_Time;
             gm_AddTime(ev + 0x52, 0, 5, 0);
             *(int *)(ev + 0x84) = cm_SendExSetHE(7, ev);
@@ -15621,8 +15621,8 @@ void he_Unk56e5b0(int ev)
             AI_4A63F0_7(per, 0, 0xa7f4c7a0, 1, 0, 100.0f, (int *)(ev + 0xac));
             HM_I(ev, 0xc4) = -1;
             HM_I(ev, 0xc8) = 0;
-            ai_Unk4c5230(HM_I(r, 4));
-            ai_Unk4c52e0(HM_I(r, 4), HM_I(ev, 0xac), -1, 0, 1, (char *)(unsigned)&full_data_628dec);
+            cm_SendChrStop(HM_I(r, 4));
+            cm_SendChrGotoBuilding(HM_I(r, 4), HM_I(ev, 0xac), -1, 0, 1, (char *)(unsigned)&full_data_628dec);
             *(HETIME *)(ev + 0x52) = ai_Time;
             gm_AddTime(ev + 0x52, 0, 0xf, 0);
             *(int *)(ev + 0x84) = cm_SendExSetHE(6, ev);
@@ -15908,8 +15908,8 @@ int he_Unk56f740(int a, int b, char *c)
     if (sqrt(dx * dx + dy * dy + dz * dz) >= 1850.0f) {
         if (HM_I(c, 0xb4) != HM_I(b, 0xac)) {
             HM_I(b, 0xac) = HM_I(c, 0xb4);
-            ai_Unk4c5230(HM_I(a, 4));
-            ai_Unk4c52e0(HM_I(a, 4), HM_I(c, 0xb4), -1, 0, 1, (char *)(unsigned)&full_data_628dec);
+            cm_SendChrStop(HM_I(a, 4));
+            cm_SendChrGotoBuilding(HM_I(a, 4), HM_I(c, 0xb4), -1, 0, 1, (char *)(unsigned)&full_data_628dec);
         }
         return 0;
     }
@@ -16074,7 +16074,7 @@ void he_Unk56fda0(int ev)
             HM_I(ev, 0x84) = cm_SendExSetHE(-1, ev);
             return;
         }
-        HM_I(ev, 0xbc) = ai_Unk4c52e0(HM_I(per, 4), *(int *)(r + 1), -1, 0, 1, (char *)(unsigned)&full_data_628e98);
+        HM_I(ev, 0xbc) = cm_SendChrGotoBuilding(HM_I(per, 4), *(int *)(r + 1), -1, 0, 1, (char *)(unsigned)&full_data_628e98);
         HM_I(ev, 0x84) = cm_SendExSetHE(2, ev);
         return;
     case 1:
@@ -16106,7 +16106,7 @@ void he_Unk56fda0(int ev)
             HM_I(ev, 0x84) = cm_SendExSetHE(-1, ev);
             return;
         }
-        HM_I(ev, 0xbc) = ai_Unk4c52e0(HM_I(per, 4), *(int *)(HM_I(per, 0x16c) + 1), -1, 0, 0, (char *)(unsigned)&full_data_628e98);
+        HM_I(ev, 0xbc) = cm_SendChrGotoBuilding(HM_I(per, 4), *(int *)(HM_I(per, 0x16c) + 1), -1, 0, 0, (char *)(unsigned)&full_data_628e98);
         HM_I(ev, 0x84) = cm_SendExSetHE(4, ev);
         return;
     case 4:
@@ -16210,7 +16210,7 @@ void he_Unk5702e0(int ev)
     case 1:
         r = gm_BuildQuery(1, 1, HM_I(ev, 0xac));
         if (r != 0) {
-            ai_Unk4c52e0(HM_I(ev, 0xb4), *(int *)(r + 1), -1, 0, 1, (char *)(unsigned)&full_data_628ea4);
+            cm_SendChrGotoBuilding(HM_I(ev, 0xb4), *(int *)(r + 1), -1, 0, 1, (char *)(unsigned)&full_data_628ea4);
             HM_I(ev, 0x70) = HM_I(ev, 0x70) + 1;
             return;
         }
@@ -16250,7 +16250,7 @@ void he_Unk5702e0(int ev)
     case 3:
         r = gm_FindChar(HM_I(ev, 0xb4));
         if (r != 0 && (r = HM_I(r, 0x16c)) != 0) {
-            ai_Unk4c52e0(HM_I(ev, 0xb4), *(int *)(r + 1), -1, 0, 0, (char *)(unsigned)&full_data_628ea4);
+            cm_SendChrGotoBuilding(HM_I(ev, 0xb4), *(int *)(r + 1), -1, 0, 0, (char *)(unsigned)&full_data_628ea4);
             HM_I(ev, 0x70) = HM_I(ev, 0x70) + 1;
             return;
         }
@@ -16351,7 +16351,7 @@ void he_Unk5707a0(int ev)
             HM_I(ev, 0x70) = -1;
             return;
         }
-        ai_Unk4c52e0(HM_I(ev, 0xac), *(int *)(r + 1), -1, 0, 1, (char *)(unsigned)&full_data_628eb8);
+        cm_SendChrGotoBuilding(HM_I(ev, 0xac), *(int *)(r + 1), -1, 0, 1, (char *)(unsigned)&full_data_628eb8);
         HM_I(ev, 0x70) = HM_I(ev, 0x70) + 1;
         return;
     case 2:
@@ -16409,7 +16409,7 @@ void he_Unk5707a0(int ev)
             HM_I(ev, 0x70) = -1;
             return;
         }
-        ai_Unk4c52e0(HM_I(ev, 0xac), *(int *)(HM_I(r, 0x16c) + 1), -1, 0, 0, (char *)(unsigned)&full_data_628eb8);
+        cm_SendChrGotoBuilding(HM_I(ev, 0xac), *(int *)(HM_I(r, 0x16c) + 1), -1, 0, 0, (char *)(unsigned)&full_data_628eb8);
         HM_I(ev, 0x70) = HM_I(ev, 0x70) + 1;
         return;
     case 4:
@@ -18196,8 +18196,8 @@ void he_Unk5746b0(int ev)
 
 void gm_GetGebaeudeHauptraum(unsigned char *b); /* 0x501ce0 */
 void sv_MoveToGroup(unsigned char *o, short *it, int c, char *g); /* 0x524260, the group register */
-void ai_Unk4c5230(int a); /* 0x4c5230 */
-int ai_Unk4c52e0();                 /* 0x4c52e0 */
+void cm_SendChrStop(int a); /* 0x4c5230 */
+int cm_SendChrGotoBuilding();                 /* 0x4c52e0 */
 void ai_Unk4c5410(int a, const char *s, unsigned char c); /* 0x4c5410 */
 int sv_IsAtDoor();                 /* 0x524770 */
 int ai_Unk574fe0();                 /* 0x574fe0 */
@@ -18237,8 +18237,8 @@ void he_Unk5748d0(int ev)
             gm_FindById(&bld, 0, 0, HM_I(ev, 0x10));
             if (bld != 0 && ((void *(*)(unsigned char *))gm_GetGebaeudeHauptraum)(bld) != 0) {
                 sv_MoveToGroup(pers[0], bld, 0x1f, ev);
-                ((void (*)(int, int))ai_Unk4c5230)(HM_I(pers[0], 4), HM_I(ev, 0xb4));
-                ai_Unk4c52e0(HM_I(pers[0], 4), pers[1], 0, 0, 0, (char *)(unsigned)&full_data_629070);
+                ((void (*)(int, int))cm_SendChrStop)(HM_I(pers[0], 4), HM_I(ev, 0xb4));
+                cm_SendChrGotoBuilding(HM_I(pers[0], 4), pers[1], 0, 0, 0, (char *)(unsigned)&full_data_629070);
             }
         }
         gm_AddTime(ev + 0x52, 0, 2, 0);
@@ -18256,7 +18256,7 @@ void he_Unk5748d0(int ev)
         gm_AddTime(ev + 0x52, 0, 2, 0);
         return;
     }
-    ((void (*)(int, int))ai_Unk4c5230)(HM_I(pers[0], 4), HM_I(ev, 0xb4));
+    ((void (*)(int, int))cm_SendChrStop)(HM_I(pers[0], 4), HM_I(ev, 0xb4));
     ai_Unk575030(ev);
     he_FreeEvent((int *)ev);
 }

@@ -498,3 +498,6 @@
 2026-11-02T00:19:28 0x0052b350 func sv_Unk52b350 -> sv_RegisterActivity by:main why:fills the first free SVACTIVITY of sv_Activities (kind, name, dayOnly, icon, valueOff); he.c registers one per job kind
 2026-11-02T00:20:44 0x0052b3c0 func sv_Unk52b3c0 -> sv_ActivityName by:main why:copies the SVACTIVITY name of the character's job kind when it applies (building, flag, day window)
 2026-11-02T00:26:40 0x0052b500 func sv_Unk52b500 -> sv_RunLocationScripts by:main why:loads and starts the "<evt_Path>locations\<class>\<name><n>_<class>.esc" scripts of the characters of a building, stops the ended ones
+2026-11-02T00:30:48 0x0052bbc0 func sv_Unk52bbc0 -> sv_SendSelectedToBuilding by:main why:sends the selected members of a group job to sv_ClickedBuilding (moved in at once or collected into a 'C' message)
+2026-11-02T00:31:37 0x004c5230 func ai_Unk4c5230 -> cm_SendChrStop by:main why:sends message 0x31 / 0x35: their cm.c handlers stop the actions of "sp_<id>" (0x4c9c10) and send it to a building ("cm_ExChrGotoBuilding", 0x4c9dc0)
+2026-11-02T00:31:37 0x004c52e0 func ai_Unk4c52e0 -> cm_SendChrGotoBuilding by:main why:sends message 0x31 / 0x35: their cm.c handlers stop the actions of "sp_<id>" (0x4c9c10) and send it to a building ("cm_ExChrGotoBuilding", 0x4c9dc0)

@@ -229,10 +229,10 @@ void ai_Unk4c50b0(int a, int b, short c);                                       
 void ai_Unk4c5100(int a, int b, int c, int d);                                   /* 0x4c5100 */
 void ai_Unk4c5150(int a, int b, int c, const char *s);                           /* 0x4c5150 */
 void cm_RequestChrMoveToUniverse(int a, int b, int c, const char *s);                           /* 0x4c51b0, "cm_RequestChrMoveToUniverse" */
-void ai_Unk4c5230(int a);                                                        /* 0x4c5230 */
+void cm_SendChrStop(int a);                                                        /* 0x4c5230 */
 void ai_Unk4c5260(int a, int b);                                                 /* 0x4c5260 */
 void ai_Unk4c52a0(int a, int b, int c);                                          /* 0x4c52a0 */
-int ai_Unk4c52e0(int id, int bld, int c, const char *s, int f, const char *s2);  /* 0x4c52e0 */
+int cm_SendChrGotoBuilding(int id, int bld, int c, const char *s, int f, const char *s2);  /* 0x4c52e0 */
 void ai_Unk4c5410(int a, const char *s, unsigned char c);                        /* 0x4c5410 */
 void ai_Unk4c5460(int a, int b, int c);                                          /* 0x4c5460 */
 void cm_SendOwnership(int a, int b, int c);                                          /* 0x4c54a0 */
