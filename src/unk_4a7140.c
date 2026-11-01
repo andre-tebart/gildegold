@@ -1237,11 +1237,11 @@ int ai_DecideAcquaintance(int a, AICHAR *p, int c, int d, AIARG *m)
     }
     return 0;
 }
-/* 0x4a9150, eval callback: p (money > 7) on its day (id & 3 = day % 4), one in four */
+/* 0x4a9150, eval callback: p with money >= 8 in its year of four (netId % 4 = the year % 4), one in four */
 
-int ai_Unk4a9150(int a, AIPER *p)
+int ai_EvalOwnYearTurn(int a, AICHAR *p)
 {
-    if (p->money >= 8 && ai_TimeT.year % 4 == (p->netId & 3) && util_RandomU(4) == 0)
+    if (p->money >= 8 && p->netId % 4 == ai_TimeT.year % 4 && util_RandomU(4) == 0)
         return 1;
     return 0;
 }
@@ -1610,7 +1610,7 @@ int ai_Unk4a9a00(int a, AIPER *p, int c, unsigned char *in, unsigned char *m)
     case 0x2c:
         return G10_CB(ai_DecideAcquaintance)(a, p, ctx, in, m);
     case 0x2d:
-        return G10_CB(ai_Unk4a9150)(a, p, ctx, in, m);
+        return G10_CB(ai_EvalOwnYearTurn)(a, p, ctx, in, m);
     case 0x31:
         return G10_CB(ai_Unk4a95d0)(a, p, ctx, in, m);
     case 0x32:

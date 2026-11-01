@@ -110,7 +110,7 @@ int ai_Unk4a8ee0(int a, AIPER *p);                                              
 int ai_DecideUnfriendlyPair(int a, AIPER *p, int c, int d, struct AIARG *m);              /* 0x4a8f20 */
 int ai_EvalGraveCount(int a, AIPER *p, int c, AIARG *m);                            /* 0x4a9030 */
 int ai_DecideAcquaintance(int a, AICHAR *p, int c, int d, AIARG *m);                     /* 0x4a9080 */
-int ai_Unk4a9150(int a, AIPER *p);                                               /* 0x4a9150 */
+int ai_EvalOwnYearTurn(int a, AICHAR *p);                                                /* 0x4a9150 */
 int ai_Unk4a91a0(int a, AIPER *p, int c, int d, unsigned char *m);              /* 0x4a91a0 */
 int ai_Unk4a9280(int a, AIPER *p, int c, int d, unsigned char *m);              /* 0x4a9280 */
 int ai_Unk4a9350(int a, AIPER *p, int c, int d, unsigned char *m);              /* 0x4a9350 */
