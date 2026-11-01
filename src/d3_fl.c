@@ -1783,7 +1783,7 @@ void d3fl_UpdateWater(unsigned long time, unsigned int n, D3FLREGION *r)
         }
     }
 }
-/* 0x4430c0, transforms, lights and projects the water points of a tile and queues its water polygons */
+/* 0x4430c0, transforms, lights and projects the water points of a tile and queues its water polygons @deep read the whole function against the original 0x4430c0..0x4437e1 (setup, the region/point loop with wave, clamp and lighting, d3_ClipMesh, both projection loops, the counters, the sort queue) and fixed: sun = AxisY * f, then sun += wave as two statement groups (the original stores the products and adds the wave after), the clamp min(255.0f, max(0.0f, h + w)) (the original loads the constant first: fld 0 / fcomp st(1), fld 255 / fcompp), the lit colours L * f + SunCol + Ambient (VC6 swaps the last two addends: the original adds Ambient then SunCol), the poly test flags & 0x80 (test / jns). ours 494 vs 500 instructions, the lighting block now equal but for the iv / temp slots. Left: allocation and loop shape: the original walks the strip records through ebp = r + 8 ([ebp-4] y, [ebp] x0, [ebp+8] flag) with a jmp into the rotated loop ('+ lea ebp,[eax+8] / + jmp 0x443195'), ours r in esi; the wave index as lea [x&3 + ym*4] << 4 per point where ours keeps ym*4 in a slot ('- and ecx,3 / - add ecx,ebx' vs '+ lea ecx,[eax+edx*4]'); map / t in ebx / esi swapped (regs ebx->esi); the counters d3_TriCount / d3_VertCount updated in another order and npolys / npoints in other registers; the sort loop keeps d3_SortPtr in edi; the fog distance products in another x87 stack order. */
 
 void d3fl_DrawWater(D3FLMAP *map, D3FLTILE *t)
 {
@@ -1830,13 +1830,16 @@ void d3fl_DrawWater(D3FLMAP *map, D3FLTILE *t)
                 idx = (x & mask) + row;
                 f = water[idx];
                 wv = reg->wave[ym][x & 3];
-                sun.x = d3fl_AxisY.x * f + wv[0];
-                sun.y = d3fl_AxisY.y * f + wv[1];
-                sun.z = d3fl_AxisY.z * f + wv[2];
+                sun.x = d3fl_AxisY.x * f;
+                sun.y = d3fl_AxisY.y * f;
+                sun.z = d3fl_AxisY.z * f;
+                sun.x += wv[0];
+                sun.y += wv[1];
+                sun.z += wv[2];
                 v->x = p.x + sun.x;
                 v->y = p.y + sun.y;
                 v->z = p.z + sun.z;
-                a = (unsigned char)min(max(h + wv[3], 0.0f), 255.0f);
+                a = (unsigned char)min(255.0f, max(0.0f, h + wv[3]));
                 if (reg->flags.b[2] & 1)
                     v->color = (a << 8 | a) << 8 | a;
                 else {
@@ -1844,11 +1847,11 @@ void d3fl_DrawWater(D3FLMAP *map, D3FLTILE *t)
                     f = (float)(l & 0x7f);
                     f += f;
                     if (l & 0x80) {
-                        d3fl_FtoI(&iv, d3fl_LightCol.x * f + d3fl_Ambient.x + d3fl_SunCol.x);
+                        d3fl_FtoI(&iv, d3fl_LightCol.x * f + d3fl_SunCol.x + d3fl_Ambient.x);
                         v->c.r = min(0xff, iv);
-                        d3fl_FtoI(&iv, d3fl_LightCol.y * f + d3fl_Ambient.y + d3fl_SunCol.y);
+                        d3fl_FtoI(&iv, d3fl_LightCol.y * f + d3fl_SunCol.y + d3fl_Ambient.y);
                         v->c.g = min(0xff, iv);
-                        d3fl_FtoI(&iv, d3fl_LightCol.z * f + d3fl_Ambient.z + d3fl_SunCol.z);
+                        d3fl_FtoI(&iv, d3fl_LightCol.z * f + d3fl_SunCol.z + d3fl_Ambient.z);
                     } else {
                         d3fl_FtoI(&iv, d3fl_LightCol.x * f + d3fl_Ambient.x);
                         v->c.r = min(0xff, iv);
@@ -1892,7 +1895,7 @@ void d3fl_DrawWater(D3FLMAP *map, D3FLTILE *t)
         d3_VertCount += npoints;
         npolys = min(npolys, (int)(d3_SortMax - d3_SortCount));
         for (i = npolys, poly = t->wpolys; i > 0; i--, poly++)
-            if (poly->flags < 0) {
+            if (poly->flags & 0x80) {
                 reg = &map->regions[poly->region];
                 d3_SortPtr->item = poly;
                 if (reg->tex2) {
