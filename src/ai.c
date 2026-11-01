@@ -9,8 +9,8 @@
    TU evidence: the unit's .data starts at 0x5fef04 (0x5fef00 belongs to the blit code before it) and its string
    literals 0x5fef0c..0x5ffd18 follow the function order without a new data block; 0x5ffd1c starts the next obj.
    Names are ours except the ones taken from the strings.
-   Open: any new member in ai.h's AIMSG.arg union (a text id, an order count / item) or an AIBLD.unk65 union (player
-   slot 0..4 for shops / banks, a work record for kind 0x1d) flips ai_Unk483a60 to 5 differing bytes (slot tie-break).
+   Open: any new member in ai.h's AIMSG.arg union (a text id, an order count / item) flips ai_Unk483a60 to 5 differing
+   bytes (slot tie-break).
    Open: AIOBJ.unk1c (a building id in the trade code, a count / level elsewhere) - its rename across units is undecided.
    unit of rea 8cef7d5b (src/game/ai.c); boundaries in decl/text.dcl */
 extern int gm_PlayerRecords[688];

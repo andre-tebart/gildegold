@@ -434,7 +434,7 @@ unsigned int rt_Unk4be3b0(char *b, int x, unsigned int def)
     d2_SetForm(w, 3);
     g = d2_CreateRadioGroup(0);
     for (i = 0, y = 4; y < 0xd6; i++, y += 0x1e) {
-        o = sv_Unk528800(0, y, ai_Unk143a588[i]);
+        o = sv_AddPanelButton(0, y, ai_Unk143a588[i]);
         tabs[i] = o;
         *(void **)(d2_ObjsC + o * 0x2ec + 0x2e8) = gm_Query(*(int *)(b + 0x5d), 2, 6, 0, kinds[i]);
         d2_RadioAdd(g, o);

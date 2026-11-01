@@ -45,7 +45,10 @@ typedef struct AIBLD {                  /* 0xa9 bytes, ai_Blds[256] */
     int objList;                        /* 0x5d, head of the building's object-instance list (gm_Query 0x4ffe90,
                                            released with gm_RemoveObject) */
     char *object;                       /* 0x61, its 3D object in the scene */
-    int unk65;                          /* 0x65 */
+    union {
+        int unk65;                      /* 0x65, moved by +-1 per event towards AIPOS.unk18 (ai.c 0x4836a0) */
+        int playerSlot;                 /* 0x65, of a kind 0x47 building: its ai_PlayerSlots index (sv_OpenBuildingPanel) */
+    };
     int unk69;                          /* 0x69, cleared for the kind 7 buildings at every round start (main.c 0x53b2e0) */
     char pad6d[4];
     int plants;                         /* 0x71, the 64 G15PLANT records (0x18 bytes each, rd.h) of the

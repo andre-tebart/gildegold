@@ -81,8 +81,8 @@ struct AIBLD; void sv_UpdateChimneySmoke(struct AIBLD *b);                      
 char sv_Unk528660(char *o, int *p);                                     /* 0x528660 */
 void sv_Unk5286a0(char *b);                                             /* 0x5286a0 */
 void sv_Unk528770(void);                                                /* 0x528770 */
-int sv_Unk528800(int x, int y, int text);                               /* 0x528800 */
-void sv_Unk528860(unsigned char *o);                                    /* 0x528860 */
+int sv_AddPanelButton(int x, int y, int text);                               /* 0x528800 */
+struct AIBLD; void sv_OpenBuildingPanel(struct AIBLD *b);                                /* 0x528860 */
 void sv_Unk528b80(unsigned short *p);                                   /* 0x528b80 */
 void sv_Unk528d90(unsigned short *p);                                   /* 0x528d90 */
 void sv_Unk528ee0(void);                                                /* 0x528ee0 */
@@ -191,16 +191,16 @@ extern int ai_Unk623850;                                    /* 0x623850 */
 extern int sv_PanelPic;                                     /* 0x623854 */
 extern int sv_PlayerBarForm;                                /* 0x62385c */
 extern int sv_PanelForm;                                    /* 0x623860 */
-extern int ai_Unk623864;                                    /* 0x623864 */
-extern int ai_Unk623868;                                    /* 0x623868 */
-extern int ai_Unk62386c[4];                                 /* 0x62386c, the info panel's 4 widget ids */
+extern int sv_PanelBldPic;                                    /* 0x623864 */
+extern int sv_PanelHealthBar;                                    /* 0x623868 */
+extern int sv_PanelWidgets[4];                                 /* 0x62386c, the info panel's 4 widget ids */
 extern int ai_Unk62387c;                                    /* 0x62387c */
 extern int ai_Unk623880;                                    /* 0x623880 */
 extern int ai_Unk623884;                                    /* 0x623884 */
 extern int ai_Unk623888;                                    /* 0x623888 */
-extern int ai_Unk62388c;                                    /* 0x62388c */
+extern int sv_PanelTransportBtn;                                    /* 0x62388c */
 extern int ai_Unk623890;                                    /* 0x623890 */
-extern int ai_Unk623894;                                    /* 0x623894 */
+extern int sv_PanelActionBtn;                                    /* 0x623894 */
 extern int ai_Unk623898;                                    /* 0x623898 */
 extern int ai_Unk6238a4;                                    /* 0x6238a4 */
 extern SVSKYREC sv_SkyFair[4];                              /* 0x6238a8 */

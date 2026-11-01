@@ -281,6 +281,8 @@ int d2_WinOpenSlider(int x, int y, int len, int p4, int p5, int pic, unsigned in
 void d2_MenuNavigate(int g);                     /* 0x46c6c0 */
 void d2_RaiseViewWindows(int view);                     /* 0x4741a0 */
 void d2_SetObjValue();                     /* 0x475cb0 */
+#define d2_SetObjValue4 ((void (*)(int, int, int, int))d2_SetObjValue)  /* 0x475cb0 (d2.c: five parameters): @original sv_OpenBuildingPanel pushes 4 arguments (0x528a1e), as rt.c's calls */
+extern D2WIN d2_Wins[];  /* 0xf8f120, d2.h */
 void d2_RadioClear(int g);                     /* 0x46c600 */
 void d2_CloseView(int view);            /* 0x4758f0 */
 /* ai_SeasonCloudChance: view of ai_PlayerSlots (tools/data_views.py) */
@@ -3415,17 +3417,16 @@ char sv_Unk528660(char *o, int *p)
     return p[0] < 0x20;
 }
 
-extern int d3_QuadTree, ai_Unk623864, ai_Unk623868, ai_Unk62387c, ai_Unk623888, ai_Unk62388c, ai_Unk623890, ai_Unk623894, ai_Unk631078;  /* 0x6f1c28, 0x623864, 0x623868, 0x62387c, 0x623888, 0x62388c, 0x623890, 0x623894, 0x631078 */
-extern int ai_Unk62386c[4];  /* 0x62386c */
+extern int d3_QuadTree, sv_PanelBldPic, sv_PanelHealthBar, ai_Unk62387c, ai_Unk623888, sv_PanelTransportBtn, ai_Unk623890, sv_PanelActionBtn, ai_Unk631078;  /* 0x6f1c28, 0x623864, 0x623868, 0x62387c, 0x623888, 0x62388c, 0x623890, 0x623894, 0x631078 */
+extern int sv_PanelWidgets[4];  /* 0x62386c */
 
 int d2_WinCreateSlider();                     /* 0x46bf10 */
 void d2_SetObjFont();                     /* 0x4760b0 */
 void d2_SetObjWidth(int obj, short w);                     /* 0x46c260 */
-int gm_BuildingLevel();                     /* 0x508d70 */
 int d2_WinOpenSlider(int x, int y, int len, int p4, int p5, int pic, unsigned int flags, int win);                     /* 0x46a960 */
 unsigned short * gm_Unk50a050(unsigned short *p);                     /* 0x50a050 */
 int gm_Unk508cc0();                     /* 0x508cc0 */
-int sv_Unk528800(int x, int y, int text);
+int sv_AddPanelButton(int x, int y, int text);
 
 /* 0x5286a0, tints the banners of the building b: its model's parts named "sp_WIMPEL" (0x438d40, 0x40, the collector 0x528660; the model's +0x1f0 cleared when its flag +0x210 & 1 is not set) are recoloured
    (0x458780 with the colour 0x6f1c28, when set) and updated (0x447190) */
@@ -3482,7 +3483,7 @@ void sv_Unk528770(void)
 }
 /* 0x528800, creates a panel button at (x + 3, y) from the image 0xc5 (0x46bf10) with the text, the state 0x54, the flag +0x5c = 1 and the frame 0x60; returns the widget id */
 
-int sv_Unk528800(int x, int y, int text)
+int sv_AddPanelButton(int x, int y, int text)
 {
     int w;
 
@@ -3492,67 +3493,74 @@ int sv_Unk528800(int x, int y, int text)
     d2_SetObjWidth(w, 0x60);
     return w;
 }
-/* 0x528860, opens the building info panel ("panel\\infopanel_gebaeude", 0x623860) for the object o: the title text ("$Z%s$A%s", with the owner name "$A>%s<" when o+5 is set; kind 0x47 uses the player's name 0x870),
-   the building image (0x427 + kind), the health bar 0x623868 (0x46a960) except for the kinds 0x47 / 0x1d / 0x57, and for owned buildings the buttons (0x528800: 0x8c at 0x623894, "Transport" 0xa6 at 0x62388c for
-   kinds that carry goods). ROUGH */
-
-void sv_Unk528860(unsigned char *o)
+/* 0x528860, opens the building info panel (sv_PanelForm, "panel\infopanel_gebaeude") for the building b unless one is open:
+   the title (kind 0x47: text 0x870 and the name of the player slot b->unk65; else the owner's name markup, the kind's
+   name text 0x48e + 14 * kind and, when b has a name of its own, "$A>name<"), the building picture 0x427 + kind centred in
+   the window (sv_PanelBldPic, interactive; its user record is the owner's character unless that is the player), the
+   health bar (sv_PanelHealthBar, the level 0 .. 100; not for the kinds 0x47 / 0x1d / 0x57) and, unless flag 1 of
+   b->flags5a is set or for those kinds, the action button 0x8c (sv_PanelActionBtn: txt_PanelBtnOwn for the player's own
+   or permitted building, else txt_PanelBtnForeign) and for the goods carrying classes the "Transport" button
+   (sv_PanelTransportBtn, not with a fallback building); the unused widget ids are set to -1
+   @deep read whole against 0x528860..0x528b74 and rewritten typed (AIBLD / AIBTYPE / D2WIN.w / D2OBJ
+   interactive+user, d2_OpenFormS 16-bit x, title branch order != 0x47 first, the label as one ?:
+   argument): every statement matches, 244 vs 247 instructions. Left is the constant -1: the original keeps
+   it in ebp for the whole function and re-materialises it after ebp served as the AIBTYPE pointer (or
+   ebp,-1 at 0x528b28 / 0x528b3b, then mov [sv_PanelWidgets], ebp and the else-path stores via ebp), ours
+   stores immediates / eax (mov dword ptr [X], 0xffffffff; or eax,-1; mov [X], eax) and lays the three
+   tails out in another order. Tried: the tail as if/else without returns and with a shared widget store
+   (both 39 ins / 140 bytes, unchanged) */
+void sv_OpenBuildingPanel(AIBLD *b)
 {
-    int hp, k, v;
-    char text[128];
-    char *b;
-    unsigned short owner;
-    unsigned fl;
-    char kind;
+    int level, cls;
+    char name[128];
+    AIBTYPE *bt;
+    unsigned perm;
 
-    hp = gm_BuildingLevel(o);
+    level = gm_BuildingLevel((char *)b);
     if (sv_PanelForm != -1)
         return;
-    sv_PanelForm = d2_OpenForm(d2_ScreenW - 0x68, 0x106, "panel\\infopanel_gebaeude");
+    sv_PanelForm = d2_OpenFormS(d2_ScreenW - 0x68, 0x106, "panel\\infopanel_gebaeude");
     d2_SetForm(sv_PanelForm, 1);
-    if (*o == 0x47) {
-        io_PrintText("$Z%s$A%s", 0x870, (char *)(unsigned)&ai_PlayerSlots + *(int *)(o + 0x65) * 0x2f4);
-    } else {
-        io_CharacterNameMarkup(*(unsigned short *)(o + 0x27), 2, 1, text);
-        if (o[5] != 0)
-            io_PrintText("$Z%s$A%s$A>%s<", text, *o * 0xe + 0x48e, o + 5);
+    if (b->type != 0x47) {
+        io_CharacterNameMarkup(b->owner, 2, 1, name);
+        if (b->name[0] != 0)
+            io_PrintText("$Z%s$A%s$A>%s<", name, b->type * 0xe + 0x48e, b->name);
         else
-            io_PrintText("$Z%s$A%s", text, *o * 0xe + 0x48e);
+            io_PrintText("$Z%s$A%s", name, b->type * 0xe + 0x48e);
+    } else {
+        io_PrintText("$Z%s$A%s", 0x870, ai_PlayerSlots[b->playerSlot]);
     }
     d2_SetForm(sv_PanelForm, 0);
-    ai_Unk623864 = d2_WinOpenPic((*(short *)(ai_Unkf8f128 + d2_LastWindow * 0x3c4) - 0x30) >> 1, 0x48, *o + 0x427, d2_LastWindow);
-    *(int *)(d2_Objs + 0x4c + ai_Unk623864 * 0x2ec) = 1;
-    owner = *(unsigned short *)(o + 0x27);
-    if (owner != 0xffff && owner != *(unsigned short *)ai_PlayerCharC)
-        *(char **)(d2_Objs + 0x2e8 + ai_Unk623864 * 0x2ec) = ai_Chars[owner];
-    kind = *o;
-    if (kind == 0x47 || kind == 0x1d || kind == 0x57)
-        ai_Unk623868 = -1;
+    sv_PanelBldPic = d2_WinOpenPic((d2_Wins[d2_LastWindow].w - 0x30) >> 1, 0x48, b->type + 0x427, d2_LastWindow);
+    ((D2OBJ *)d2_Objs)[sv_PanelBldPic].interactive = 1;
+    if (b->owner != 0xffff && b->owner != *ai_PlayerChar)
+        ((D2OBJ *)d2_Objs)[sv_PanelBldPic].user = ai_Chars[b->owner];
+    if (b->type == 0x47 || b->type == 0x1d || b->type == 0x57)
+        sv_PanelHealthBar = -1;
     else {
-        ai_Unk623868 = d2_WinOpenSlider(0x15, 0x7b, 0x38, 0, 100, 0x75, 0x442, d2_LastWindow);
-        d2_SetObjValue(ai_Unk623868, 0, 100, hp);
+        sv_PanelHealthBar = d2_WinOpenSlider(0x15, 0x7b, 0x38, 0, 100, 0x75, 0x442, d2_LastWindow);
+        d2_SetObjValue4(sv_PanelHealthBar, 0, 100, level);
     }
-    if ((o[0x5a] & 1) == 0 && *o != 0x47 && *o != 0x1d && *o != 0x57) {
-        k = gm_BuildingClass(*o);
-        b = ai_BTypes + *o * 0x24d;
-        fl = gm_PermissionBits(ai_PlayerId, o, 0, 0);
-        v = ai_Unk1441f6c;
-        if (*(short *)(o + 0x27) != (short)ai_PlayerId && *(short *)(o + 0x25) != (short)ai_PlayerId && (fl & 0x10) == 0)
-            v = ai_Unk1441f74;
-        ai_Unk623894 = sv_Unk528800(0, 0x8c, v);
-        if ((k == 1 || k == 2 || k == 4 || k == 7 || k == 8 || *b == 0x10 || *b == 0x1e || *b == 0x1f || *b == 0x1d) && *b != 5) {
+    if ((b->flags5a & 1) == 0 && b->type != 0x47 && b->type != 0x1d && b->type != 0x57) {
+        cls = gm_BuildingClass(b->type);
+        bt = &ai_BTypesT[b->type];
+        perm = gm_PermissionBits(ai_PlayerId, (unsigned char *)b, 0, 0);
+        sv_PanelActionBtn = sv_AddPanelButton(0, 0x8c, b->owner != ai_PlayerId && b->masterId != ai_PlayerId && (perm & 0x10) == 0
+                                                       ? txt_PanelBtnForeign : txt_PanelBtnOwn);
+        if ((cls == 1 || cls == 2 || cls == 4 || cls == 7 || cls == 8 || bt->kind == 0x10 || bt->kind == 0x1e || bt->kind == 0x1f
+             || bt->kind == 0x1d) && bt->kind != 5) {
             if (ai_FallbackBuilding == 0)
-                ai_Unk62388c = sv_Unk528800(0, 0xa6, (int)"Transport");
-            ai_Unk62386c[0] = -1;
+                sv_PanelTransportBtn = sv_AddPanelButton(0, 0xa6, (int)"Transport");
+            sv_PanelWidgets[0] = -1;
             return;
         }
-        ai_Unk62386c[0] = -1;
-        ai_Unk62388c = -1;
+        sv_PanelWidgets[0] = -1;
+        sv_PanelTransportBtn = -1;
         return;
     }
-    ai_Unk623894 = -1;
-    ai_Unk62388c = -1;
-    ai_Unk62386c[0] = -1;
+    sv_PanelActionBtn = -1;
+    sv_PanelTransportBtn = -1;
+    sv_PanelWidgets[0] = -1;
 }
 /* 0x528b80, opens the info panel for the item p (not the ids 0x92 .. 0x97 and 0x2db): the title text with the item's name (0x9a8 + 2 * id; the selected building's name and owner before it), the image (0xdf + id), and for items of the class 2 / 6 the owner's buttons
    (0x528800: 0x8c at 0x623894 when the item may be changed (0x508cc0), 0xa6 at 0x623888) */
@@ -3587,8 +3595,8 @@ void sv_Unk528b80(unsigned short *p)
             owner = (short *)gm_Unk50a050(p);
             fl = gm_PermissionBits(ai_PlayerId, b, 0, 0);
             if ((*owner == (short)ai_PlayerId || (fl & 0x10) != 0) && gm_Unk508cc0(b, p, 0) != 0)
-                ai_Unk623894 = sv_Unk528800(0, 0x8c, ai_Unk1441f78);
-            ai_Unk623888 = sv_Unk528800(0, 0xa6, ai_Unk1441f7c);
+                sv_PanelActionBtn = sv_AddPanelButton(0, 0x8c, ai_Unk1441f78);
+            ai_Unk623888 = sv_AddPanelButton(0, 0xa6, ai_Unk1441f7c);
         }
     }
 }
@@ -3613,9 +3621,9 @@ void sv_Unk528d90(unsigned short *p)
     w = d2_WinOpenPic(x, 0x30, *p + 0xdf, d2_LastWindow);
     *(int *)(d2_Objs + 0x4c + w * 0x2ec) = 1;
     if (*owner == (short)ai_PlayerId)
-        ai_Unk623890 = sv_Unk528800(x, 0xac, ai_Unk144ad24);
-    ai_Unk623868 = d2_WinOpenSlider(0x18, 0x66, 0x30, 0, 100, 0x75, 0x442, d2_LastWindow);
-    d2_SetObjValue(ai_Unk623868, 0, 100, (char)p[9]);
+        ai_Unk623890 = sv_AddPanelButton(x, 0xac, ai_Unk144ad24);
+    sv_PanelHealthBar = d2_WinOpenSlider(0x18, 0x66, 0x30, 0, 100, 0x75, 0x442, d2_LastWindow);
+    d2_SetObjValue(sv_PanelHealthBar, 0, 100, (char)p[9]);
     d2_SetForm(sv_PanelForm, 2);
     ai_Unk62387c = d2_LastWindow;
     ai_Unk631078 = *(int *)((char *)p + 0x3b);
@@ -3649,7 +3657,6 @@ int sv_ReturnZero(void);
 void sv_Unk528ee0(void);
 void sv_Unk5290f0(unsigned short *p);
 void sv_Unk529380(void);
-void sv_Unk528860(unsigned char *o);
 void sv_Unk528b80(unsigned short *p);
 void sv_Unk528d90(unsigned short *p);
 
@@ -3666,8 +3673,8 @@ void sv_Unk528ee0(void)
         if (ai_PlayerBuilding == 0) {
             sv_PanelForm = d2_OpenForm(d2_ScreenW - 0x68, 0x106, "panel\\infopanel_standard");
             d2_SetForm(sv_PanelForm, 0);
-            ai_Unk623884 = sv_Unk528800(0, 0x8c, ai_Unk1441f68);
-            ai_Unk623888 = sv_Unk528800(0, 0xa6, ai_Unk1441f7c);
+            ai_Unk623884 = sv_AddPanelButton(0, 0x8c, ai_Unk1441f68);
+            ai_Unk623888 = sv_AddPanelButton(0, 0xa6, ai_Unk1441f7c);
             return;
         }
     } else if (*(short *)(ai_FallbackBuilding + 0x27) == (short)ai_PlayerId) {
@@ -3679,14 +3686,14 @@ void sv_Unk528ee0(void)
         io_PrintText("$Z%s$A%s$A%s", text, *(unsigned char *)ai_FallbackBuilding * 0xe + 0x48e, ai_FallbackBuilding + 5);
         d2_SetForm(sv_PanelForm, 0);
         d2_WinOpenPic(((*(short *)(ai_Unkf8f128 + d2_LastWindow * 0x3c4) - 0x30) >> 1) - 1, 0x4c, *(unsigned char *)ai_FallbackBuilding + 0x427, d2_LastWindow);
-        ai_Unk623868 = d2_WinOpenSlider(0x15, 0x7a, 0x30, 0, 100, 0x75, 0x442, d2_LastWindow);
-        d2_SetObjValue(ai_Unk623868, 0, 100, hp);
-        ai_Unk623894 = sv_Unk528800(0, 0x8c, ai_Unk1441f6c);
+        sv_PanelHealthBar = d2_WinOpenSlider(0x15, 0x7a, 0x30, 0, 100, 0x75, 0x442, d2_LastWindow);
+        d2_SetObjValue(sv_PanelHealthBar, 0, 100, hp);
+        sv_PanelActionBtn = sv_AddPanelButton(0, 0x8c, txt_PanelBtnOwn);
         if (*(unsigned char *)ai_FallbackBuilding == 0x1e) {
-            ai_Unk623898 = sv_Unk528800(0, 0xa6, ai_Unk1441f70);
+            ai_Unk623898 = sv_AddPanelButton(0, 0xa6, ai_Unk1441f70);
             return;
         }
-        ai_Unk623888 = sv_Unk528800(0, 0xa6, ai_Unk1441f7c);
+        ai_Unk623888 = sv_AddPanelButton(0, 0xa6, ai_Unk1441f7c);
     }
 }
 /* 0x5290f0, opens the person info panel ("panel\\infopanel_personen") for the character p (0 for none or several selected: the text "%i %s" with the count 0x6f2334 and 0x144adb0): the name and age
@@ -3718,8 +3725,8 @@ void sv_Unk5290f0(unsigned short *p)
         io_PrintText("%s (%i)", text, age);
         d2_SetForm(sv_PanelForm, 0);
         w = *(short *)(ai_Unkf8f128 + d2_LastWindow * 0x3c4);
-        ai_Unk623868 = d2_WinOpenSlider(0x18, 0x6c, 0x30, 0, 100, 0x75, 0x442, d2_LastWindow);
-        d2_SetObjValue(ai_Unk623868, -127, 0x7f, hp);
+        sv_PanelHealthBar = d2_WinOpenSlider(0x18, 0x6c, 0x30, 0, 100, 0x75, 0x442, d2_LastWindow);
+        d2_SetObjValue(sv_PanelHealthBar, -127, 0x7f, hp);
         t = *((char *)p + 2);
         if (t == 5 || t == 6 || t == 7)
             d2_WinOpenPic(((w - 0x30) >> 1) - 8, 0x30, *(int *)(p + 0x2a), d2_LastWindow);
@@ -3760,9 +3767,9 @@ void sv_Unk529380(void)
     if (sv_PanelForm == -1)
         return;
     b = (char *)sv_SelectedObject;
-    if (b == 0 || ai_Unk623868 == -1 || ai_Unk623864 == -1) {
+    if (b == 0 || sv_PanelHealthBar == -1 || sv_PanelBldPic == -1) {
         if (sv_SelectedChar == 0) {
-            q = ai_Unk62386c;
+            q = sv_PanelWidgets;
             for (i = 0; i < 4; i++, q++)
                 if (*q != -1) {
                     d2_RemoveObj(*q);
@@ -3777,8 +3784,8 @@ void sv_Unk529380(void)
                 rt_Unk4bf5b0(tr);
                 tr = ai_Unk75ec5c;
             }
-            if (ai_Unk623868 != -1)
-                d2_SetObjValue(ai_Unk623868, 0, 100, (char)tr[9]);
+            if (sv_PanelHealthBar != -1)
+                d2_SetObjValue(sv_PanelHealthBar, 0, 100, (char)tr[9]);
             d2_SetForm(sv_PanelForm, 2);
             d2_RemoveWindowObjects(d2_LastWindow, 1);
             return;
@@ -3794,7 +3801,7 @@ void sv_Unk529380(void)
     n = gm_BuildingLevel(b);
     d2_SetForm(sv_PanelForm, 1);
     io_PrintText("$Z%s$A%s", (unsigned char)*b * 0xe + 0x48e, "");
-    d2_SetObjValue(ai_Unk623868, 0, 100, n);
+    d2_SetObjValue(sv_PanelHealthBar, 0, 100, n);
     fl = *(unsigned short *)(b + 0x5a);
     if ((fl & 4) == 0) {
         if ((fl & 1) != 0) {
@@ -3814,10 +3821,10 @@ void sv_Unk529380(void)
             d = gm_MinutesBetween(job + 0x44, ai_Time);
             prog = (float)d / (float)a;
         } else if (!(fl & 0x80)) {
-            if (ai_Unk62386c[0] == -1)
+            if (sv_PanelWidgets[0] == -1)
                 return;
-            d2_RemoveObj(ai_Unk62386c[0]);
-            ai_Unk62386c[0] = -1;
+            d2_RemoveObj(sv_PanelWidgets[0]);
+            sv_PanelWidgets[0] = -1;
             return;
         } else {
             job = (char *)he_FindEvent(2, 0, 0x1f, 3, *(int *)(b + 1));
@@ -3835,10 +3842,10 @@ void sv_Unk529380(void)
         d = gm_MinutesBetween(job + 0x44, ai_Time);
         prog = (float)d / (float)a;
     }
-    *(float *)(d2_Objs + 0x1e4 + ai_Unk623864 * 0x2ec) = prog;
-    if (ai_Unk62386c[0] == -1 && (fl & 1) != 0) {
+    *(float *)(d2_Objs + 0x1e4 + sv_PanelBldPic * 0x2ec) = prog;
+    if (sv_PanelWidgets[0] == -1 && (fl & 1) != 0) {
         d2_SetForm(sv_PanelForm, 0);
-        ai_Unk62386c[0] = d2_WinOpenPic(((*(short *)(ai_Unkf8f128 + d2_LastWindow * 0x3c4) - 0x30) >> 1) + 0x2f, 0x4c, 0x4ff, d2_LastWindow);
+        sv_PanelWidgets[0] = d2_WinOpenPic(((*(short *)(ai_Unkf8f128 + d2_LastWindow * 0x3c4) - 0x30) >> 1) + 0x2f, 0x4c, 0x4ff, d2_LastWindow);
     }
 }
 /* 0x529fb0, closes the info panel (0x623860): frees the widgets 0x62386c .. (4 ids), destroys the form and clears all the panel's widget ids (0x623864 .. 0x623898) */
@@ -3848,21 +3855,21 @@ void sv_Unk529fb0(void)
     int *q;
 
     if (sv_PanelForm != -1) {
-        q = ai_Unk62386c;
+        q = sv_PanelWidgets;
         do {
             if (*q != -1) {
                 d2_RemoveObj(*q);
                 *q = -1;
             }
             q++;
-        } while ((int)q < (int)((unsigned)ai_Unk62386c + 0x10));
+        } while ((int)q < (int)((unsigned)sv_PanelWidgets + 0x10));
         d2_CloseView(sv_PanelForm);
         sv_PanelForm = -1;
-        ai_Unk623864 = -1;
-        ai_Unk623868 = -1;
+        sv_PanelBldPic = -1;
+        sv_PanelHealthBar = -1;
         ai_Unk623898 = -1;
-        ai_Unk623894 = -1;
-        ai_Unk62388c = -1;
+        sv_PanelActionBtn = -1;
+        sv_PanelTransportBtn = -1;
         ai_Unk623890 = -1;
         ai_Unk623884 = -1;
         ai_Unk623888 = -1;
@@ -4329,13 +4336,13 @@ void sv_UpdatePanel(void)
         f = 1;
     else
         f = 0;
-    d2_SetObjEnabled(SV_I((unsigned)&ai_Unk62388c), f);
+    d2_SetObjEnabled(SV_I((unsigned)&sv_PanelTransportBtn), f);
     p = o;
     fl = SV_U((unsigned)&sv_FrameMask) & 0x2000;
     if (fl == 0) {
 l260:
         if (d2_ClickedId != -1) {
-            if (SV_I((unsigned)&ai_Unk62388c) == -1 || d2_PointerObj != SV_I((unsigned)&ai_Unk62388c) || fl == 0) {
+            if (SV_I((unsigned)&sv_PanelTransportBtn) == -1 || d2_PointerObj != SV_I((unsigned)&sv_PanelTransportBtn) || fl == 0) {
                 if (SV_I((unsigned)&ai_Unk623888) != -1 && d2_PointerObj == SV_I((unsigned)&ai_Unk623888) && fl != 0 && ai_Unk5763c0(0x80) == 1) {
                     q = st;
                     for (c = 0x14; c != 0; c--)
@@ -4359,7 +4366,7 @@ l260:
             }
         }
     } else if (d2_ClickedId != -1) {
-        if (SV_I((unsigned)&ai_Unk623894) == -1 || d2_PointerObj != SV_I((unsigned)&ai_Unk623894))
+        if (SV_I((unsigned)&sv_PanelActionBtn) == -1 || d2_PointerObj != SV_I((unsigned)&sv_PanelActionBtn))
             goto l260;
         p = (unsigned char *)SV_I((unsigned)&ai_PlayerBuilding);
         if (p == 0) {
@@ -4452,7 +4459,7 @@ l510:
             p = (unsigned char *)SV_I((unsigned)&sv_SelectedObject);
             if (p == 0 && (p = (unsigned char *)SV_I((unsigned)&ai_FallbackBuilding)) == 0)
                 p = 0;
-            sv_Unk528860(p);
+            sv_OpenBuildingPanel(p);
             sv_Unk529380();
             return;
         }
@@ -7604,9 +7611,9 @@ extern int ai_Unkfb906c;
 extern int ai_Unkfba9c0[168];
 /* ai_Unk143a3a8: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_Unk1441f68: view of txt_Ptrs (build/mk_txt_views.py) */
-/* ai_Unk1441f6c: view of txt_Ptrs (build/mk_txt_views.py) */
+/* txt_PanelBtnOwn: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_Unk1441f70: view of txt_Ptrs (build/mk_txt_views.py) */
-/* ai_Unk1441f74: view of txt_Ptrs (build/mk_txt_views.py) */
+/* txt_PanelBtnForeign: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_Unk1441f78: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_Unk1441f7c: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_Unk144adb0: view of txt_Ptrs (build/mk_txt_views.py) */
@@ -7652,16 +7659,16 @@ int ai_Unk623850 = -1;  /* 0x623850 */
 int sv_PanelPic = -1;  /* 0x623854 */
 int sv_PlayerBarForm = -1;  /* 0x62385c, the player bar's form, -1 = closed */
 int sv_PanelForm = -1;  /* 0x623860 */
-int ai_Unk623864 = -1;  /* 0x623864 */
-int ai_Unk623868 = -1;  /* 0x623868 */
-int ai_Unk62386c[4] = {-1, -1, -1, -1};  /* 0x62386c, the info panel's 4 widget ids (freed by one loop: 0x62386c .. 0x62387c) */
+int sv_PanelBldPic = -1;  /* 0x623864 */
+int sv_PanelHealthBar = -1;  /* 0x623868 */
+int sv_PanelWidgets[4] = {-1, -1, -1, -1};  /* 0x62386c, the info panel's 4 widget ids (freed by one loop: 0x62386c .. 0x62387c) */
 int ai_Unk62387c = -1;  /* 0x62387c */
 int ai_Unk623880 = -1;  /* 0x623880 */
 int ai_Unk623884 = -1;  /* 0x623884 */
 int ai_Unk623888 = -1;  /* 0x623888 */
-int ai_Unk62388c = -1;  /* 0x62388c */
+int sv_PanelTransportBtn = -1;  /* 0x62388c */
 int ai_Unk623890 = -1;  /* 0x623890 */
-int ai_Unk623894 = -1;  /* 0x623894 */
+int sv_PanelActionBtn = -1;  /* 0x623894 */
 int ai_Unk623898 = -1;  /* 0x623898 */
 int ai_Unk6238a4 = -1;  /* 0x6238a4 */
 /* 0x6238a8, the skies of fair weather (sv_Unk5301a0 picks one below 50 clouds, cm picks one for the fair cutscene) */
