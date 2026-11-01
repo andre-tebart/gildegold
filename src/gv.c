@@ -3783,7 +3783,7 @@ int unk_Unk4f3b40(int p, int n, int *ids)
 /* 0x4f3c50, the owners of the records that the character slot t holds (pairs in 0x91b6e0, record in state 1): counts how often each owner (+0x16) occurs and keeps the 32 best in ids[] / cnt[] sorted by count (descending, one
    insertion pass per owner); ids is first -1, cnt 0; returns the number of different owners (at most 0x20). ROUGH */
 
-int unk_Unk4f3c50(int *ids, int *cnt, unsigned t)
+int gv_RankRecordOwners(int *ids, int *cnt, unsigned short t)
 {
     int local[512];
     int n, i, k, c, j, own, id, x;

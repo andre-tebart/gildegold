@@ -109,7 +109,7 @@ int ai_Unk4a8ee0(int a, AIPER *p);                                              
 #define ai_PickPartnerChainF(p, a, fl, b, f, id) ((int (*)(AIPER *, int, int *, float, float, unsigned short *))ai_PickPartnerChain)(p, a, fl, b, f, id)
 int ai_DecideUnfriendlyPair(int a, AIPER *p, int c, int d, struct AIARG *m);              /* 0x4a8f20 */
 int ai_EvalGraveCount(int a, AIPER *p, int c, AIARG *m);                            /* 0x4a9030 */
-int ai_Unk4a9080(int a, AIPER *p, int c, int d, unsigned char *m);              /* 0x4a9080 */
+int ai_DecideAcquaintance(int a, AICHAR *p, int c, int d, AIARG *m);                     /* 0x4a9080 */
 int ai_Unk4a9150(int a, AIPER *p);                                               /* 0x4a9150 */
 int ai_Unk4a91a0(int a, AIPER *p, int c, int d, unsigned char *m);              /* 0x4a91a0 */
 int ai_Unk4a9280(int a, AIPER *p, int c, int d, unsigned char *m);              /* 0x4a9280 */

@@ -1200,38 +1200,39 @@ int ai_EvalGraveCount(int a, AIPER *p, int c, AIARG *m)
     m->arg2 = k;
     return 1;
 }
-/* 0x4a9080, decide callback: a character p knows well enough (0x4f3c50, at least 2..5) that is free (not of kind
-   15, not in the places 13 / 27 / 15 / 21), into m (kind 7) */
+/* 0x4a9080, decide callback: one of the owners p counts most often (gv_RankRecordOwners, at least 2..5 times),
+   walked from the first, that is a living character (not of kind 15) and holds none of the office kinds
+   13 / 27 / 15 / 21, into m (kind 7, its netId); none when p itself holds office kind 13 */
 
-int ai_Unk4a9080(int a, AIPER *p, int c, int d, unsigned char *m)
+int ai_DecideAcquaintance(int a, AICHAR *p, int c, int d, AIARG *m)
 {
     int cnt[32];
     int ids[32];
-    unsigned short r;
-    int n, i, j;
-    AIPER *o;
+    int n, i, j, lim;
+    AICHAR *o;
     unsigned char k;
 
-    r = util_RandomU(4);
-    if (p->unk166 != 13) {
-        n = unk_Unk4f3c50(ids, cnt, p->id);
+    lim = util_RandomU(4) + 2;
+    if (p->officeKind != 13) {
+        n = gv_RankRecordOwners(ids, cnt, p->id);
         if (n != 0) {
             i = 0;
             j = n;
             do {
-                if (cnt[i] >= r + 2) {
-                    o = AI_505DF0(ids[i]);
-                    if (o != 0 && o->kind != 15 && ((unsigned char *)o)[8] != 0) {
-                        k = o->unk166;
+                if (cnt[i] >= lim) {
+                    o = (AICHAR *)gm_FindChar(ids[i]);
+                    if (o != 0 && o->kind != 15 && o->health != 0) {
+                        k = o->officeKind;
                         if (k != 13 && k != 27 && k != 15 && k != 21) {
-                            m[0] = 7;
-                            *(int *)(m + 4) = o->netId;
+                            m->kind = 7;
+                            m->ref = o->netId;
                             return 1;
                         }
                     }
                 }
+                j--;
                 i = (i + 1) % n;
-            } while (--j);
+            } while (j != 0);
         }
     }
     return 0;
@@ -1282,7 +1283,7 @@ int ai_Unk4a9280(int a, AIPER *p, int c, int d, unsigned char *m)
 
     r = util_RandomU(8);
     if (p->unk166 != 13) {
-        n = unk_Unk4f3c50(ids, cnt, p->id);
+        n = gv_RankRecordOwners(ids, cnt, p->id);
         if (n > 0) {
             i = 0;
             j = n;
@@ -1316,7 +1317,7 @@ int ai_Unk4a9350(int a, AIPER *p, int c, int d, unsigned char *m)
     AIPER *o;
 
     if (p->money > 1 && (p->flags1c8 & 0x100) == 0) {
-        n = unk_Unk4f3c50(ids, cnt, p->id);
+        n = gv_RankRecordOwners(ids, cnt, p->id);
         if (n > 0) {
             i = 0;
             j = n;
@@ -1607,7 +1608,7 @@ int ai_Unk4a9a00(int a, AIPER *p, int c, unsigned char *in, unsigned char *m)
     case 0x2b:
         return G10_CB(ai_EvalGraveCount)(a, p, ctx, in, m);
     case 0x2c:
-        return G10_CB(ai_Unk4a9080)(a, p, ctx, in, m);
+        return G10_CB(ai_DecideAcquaintance)(a, p, ctx, in, m);
     case 0x2d:
         return G10_CB(ai_Unk4a9150)(a, p, ctx, in, m);
     case 0x31:
@@ -1859,7 +1860,7 @@ int ai_Unk4aa6a0(AIPER *p, unsigned char *in, unsigned char *m)
     unsigned int i;
     AIPER *o;
 
-    if (p->money > 1 && (n = unk_Unk4f3c50(ids, cnt, p->id)) != 0) {
+    if (p->money > 1 && (n = gv_RankRecordOwners(ids, cnt, p->id)) != 0) {
         i = util_RandomU(n);
         j = n;
         do {
