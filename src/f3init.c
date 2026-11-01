@@ -30,7 +30,6 @@ extern int gm_PlayerRecords[688];
 extern AISTORE gm_Offers[];            /* 0x7e4b20 */
 extern float ai_Unk760420;
 #include "ch_types.h"
-extern CHMOTION ch_Motions[];
 
 /* the scene object view of this unit: a CHARACTER (ch.h, 0x244 bytes, the list 0x1468ae0); the unit cannot
    include ch.h (gv.h's d3sm_GetVertex is a K&R declaration), so the fields this unit reads are declared here
@@ -244,29 +243,20 @@ typedef struct INIT_SITELIST {
 #define INIT_FIELD_RELIGION 0x0c        /* the character's religion field: 0 catholic / 1 protestant (the two judges) */
 
 /* the functions of f3gm.c this unit calls (declared by their addresses there) */
-unsigned short *gm_QueryNext(void);
-float gm_ItemPrice(int item, unsigned char n);
-int gm_ListStock(short *l, int id);               /* 0x50ab50, f3gm.c */
-unsigned char *gm_FirstBuilding(int n);
 float gm_Unk508740();
 extern char ai_PlayerSlots[4][0x2f4];      /* 0x7e3f40, the player slots */
 extern INIT_STOCKBLOCK init_StockBlock[];  /* 0x7d6a60, one 0x2a90-byte stock block per player (the records start at +0x10) */
-extern char ch_EmptyName[];             /* 0x631090 */
 extern char * ai_PlayerBuilding;                /* 0x6f2308 */
 extern char * ai_FallbackBuilding;                /* 0x6f230c */
 int gm_IsBuildingKind(int n);           /* 0x4fe940, f3gm.c: 1 when the object prototype n is a building part */
-int gm_FindObjectProto(char *name);     /* 0x4fe900, f3gm.c: the object prototype of the name */
 int gm_FindBuildingKind(char *name);    /* 0x502060, f3gm.c: the building kind of the name */
 unsigned unk_Unk503530(unsigned p1, unsigned char *b, unsigned short *o, int c);  /* 0x503530, f3gm.c: the permission bits of the character p in the building b (or the object o) */
-unsigned char * gm_CreateBuilding(unsigned char kind, unsigned short owner);                     /* 0x501580 */
 
 
-extern char *ai_Goods;              /* 0x91aaf0, the object prototypes (0x2dc of 0x41 bytes) */
 struct D3SCENE;
 /* init_SceneDirty: view of d3_Scenes (tools/data_views.py) */
 extern char init_SceneName[];             /* 0xfd7ba0, the name of each scene record (0x3e0 bytes apart) */
 extern char * ai_Unk1468ae0[0x300];             /* 0x1468ae0, the scene objects (0x100) */
-extern int d3_CurrentScene;  /* 0x633444 */
 extern unsigned char ai_GameState;      /* 0x6f25ac */
 extern int sv_FrameMask;           /* 0x760638 */
 extern short d2_ScreenW;  /* 0xfb9072 */
@@ -277,17 +267,12 @@ void d2_ReleaseFade(struct D2FADE *f); /* 0x476860, d2.h */                     
 int sv_RunFrame(int cb, unsigned mask);                     /* 0x5309a0 */
 int ai_Unk42ea50();                     /* 0x42ea50 */
 int ai_Unk402220();                     /* 0x402220 */
-int ch_PlaceOnGround();                     /* 0x404a80 */
 
 /* the canonical declarations of the engine / other-unit functions the scene loaders call (their headers drag the
    gv.h conflicts in; the types match the canonical prototypes, the CHARACTER arguments are cast through the
    SCENEOBJ view - type debt, see the lead comment) */
 struct CHARACTER;
-extern struct CHARACTER *ch_List[INIT_CHARACTER_COUNT];  /* 0x1468ae0, as ch.h (CH_MAX); this unit reads the characters as their SCENEOBJ */
-struct D3HMAP *ch_GetSceneHMap(struct D3SCENE *scene);                           /* 0x402220, ch.h */
-void ch_SetPos(struct CHARACTER *ch, D3VECTOR *pos, int unk);                    /* 0x4025c0, ch.h */
 int ch_PlaceOnGround(struct CHARACTER *ch, int force);                           /* 0x404a80, ch.h */
-struct D3OBJECT *ch_FindDummy(void);                                             /* 0x406790, ch.h */
 int tb_SetFunctionOff(void (*proc)(void), int off);                              /* 0x42ea10, tb.h */
 void d2_ClearScreen(void);                                                       /* 0x46e990, d2.h */
 void d2_ShowPicture(int pic);                                                    /* 0x46cfd0, d2.c */
@@ -319,21 +304,14 @@ int amt_GetKind(int k, struct AMTKIND *out);              /* 0x4e6f80, amt.c: co
 int amt_GetFirstOffice(unsigned int k, struct AMTREC *out);  /* 0x4e6ec0, amt.c: copies the first office of the kind k to out (an AMTREC) */
 int amt_SendOfficeOwner(int a, char *b, int c); /* 0x4e6650, amt.c */
 void gm_AgeCharacter(char *c, unsigned age);    /* 0x4fc6f0, f3gm.c: ages the character c to the age */
-int gm_TitleGroup(int k);                       /* 0x504ad0, f3gm.c */
-int gm_TitleNumber(int group, int rank);        /* 0x5043d0, f3gm.c */
-void gm_Shuffle(unsigned n, int *out);                /* 0x505d30, f3gm.c */
 int ai_WorksForMaster(struct AICHAR *c);                 /* 0x47dd70, ai.c */
 void hmt_Begin(void);                           /* 0x4ad0a0, hmt.c */
 extern int sv_PanelFlag;                /* 0x75e8c0 */
-int gm_BuildingClass(int type);                     /* 0x501d80 */
-int gm_BuildingMainObject(unsigned char *b);                     /* 0x501b50 */
 void ai_ObjectAngle(void *out, int plot);                 /* 0x58fd90, unk_58bbd0.c: the angle of the object plot to out */
 void cm_SendOwnership(int a, int b, int c);               /* 0x4c54a0, cm.c: message 0x38, the building a changes its person from b to c */
 void cm_SendBoss(int a, int b);                            /* 0x4c5540, cm.c: message 0x39, the building a gets the character b as its boss */
 int cm_RequestCreateGeb(int a, int k, float *pos, int *v);/* 0x4c5ae0, cm.c: message 0x4c, a building of kind k at pos */
 unsigned char *gm_NearestFreeBuilding(unsigned char *b, unsigned kind); /* 0x501f60, f3gm.c */
-int gm_FirstTitleNumber(int x);                          /* 0x504290, f3gm.c: the first title number of the job group of x */
-int gm_BuildingKindValue(int kind);                      /* 0x509d30, f3gm.c: the sum of the prices of the kind's negative object words */
 void main_SetLoadProgress(int unused, int pct);          /* 0x537af0, main.c: the loading progress bar */
 int cm_SendMessage3d(char *p, unsigned char b, int c, int d);                     /* 0x4c55d0 */
 int gv_SendGrave(unsigned char *o);                     /* 0x4f15e0 */
@@ -341,7 +319,6 @@ int cm_GetSlotState();                     /* 0x4c3ae0 */
 void cm_RequestChrMoveToUniverse(int a, int b, int c, const char *s);                     /* 0x4c51b0 */
 void d2_DrawAll(void);                      /* 0x46e150, d2.c */
 unsigned short *gm_CreateObject(int id, unsigned proto, int n);  /* 0x500190, f3gm.c: the new object instance */
-int gm_PlayerFactor(int a, unsigned char k);                     /* 0x5085f0 */
 int d2_SetForm(int view, int n);                     /* 0x475f70 */
 unsigned short * gm_QueryNext(void);                   /* 0x4ffcc0 */
 float gm_ItemPrice(int item, unsigned char n);
@@ -366,8 +343,6 @@ void sv_Unk528490(unsigned char *o);                     /* 0x528490 */
 void ai_CheckBuildSites(void);                     /* 0x58fb60 */
 void gm_UpdatePlayers(void);                 /* 0x4feb30, f3gm.c */
 void gm_InitPlayerRecord(int p);                 /* 0x4feb60, f3gm.c */
-void gm_ResetStock(void);                    /* 0x50cc60, f3gm.h: the stock of the type 0x1e stalls to 2 */
-int gm_FindMarketObject(int id);                     /* 0x500ec0 */
 void cm_SendOwnership(int a, int b, int c);                     /* 0x4c54a0 */
 int sv_PumpMessages();                     /* 0x52fb80 */
 void sv_NetworkSyncWait(unsigned fl);           /* 0x52fc10, sv.c */
@@ -379,7 +354,6 @@ int cm_SendMessage0c(int a, int b, short c, unsigned char d, int e, unsigned cha
 void main_GiveStartBuildings(int p);                     /* 0x534040, main.c range: gm_BuildQuery(1, 0, 6) makes the "Home-Sweet" house and hands it to character c (0x502b60) */
 struct D3FLMAP;
 int d3fl_ReplaceTexture(struct D3FLMAP *map, char *name, int idx);  /* 0x442210, d3_fl.c */
-char d3if_SelectTextureSet(struct D3OBJECT *obj, struct D3SURF *surf, unsigned char set, char reload);   /* 0x446f30, ecmd.c */
 int cm_SendExSysMessage(unsigned char id, void *msg);                     /* 0x4c4db0 */
 extern INIT_OBJ *sv_PanelShown;          /* 0x6f2310, the room object the info panel shows (sv.c's unsigned short * view) */
 /* the animation names of a building class (0x6c4 bytes each, in the table 0x61ae08): the class kind, then the
@@ -394,17 +368,16 @@ int main_MoneyCheat = 0;  /* 0x6f2444, set from the command line switch "MO_MONE
 #include "anm.h"
 #include "rd.h"
 int ai_MapSize = 0;  /* 0x6f4ee8 */
-extern int ch_CurrentGroup;                /* 0x5f1294 */
-void ch_PreloadAnims(struct CHARACTER *ch, int n, ...);  /* 0x404200, ch.h (varargs) */
 void sv_CollectGroupCharacters(char *b);                 /* 0x52b2a0, sv.c: the characters of the group b into 0x7603a0 */
 void d3if_Prerender(char map);                     /* 0x447860, d3_interface.c */
 void sv_UpdateSkyColors();                     /* 0x525940 */
 void d3fl_SetShift(struct D3FLMAP *map, unsigned char shift, char light);   /* 0x446dc0, d3_fl.c */
 void sv_Unk52bb70(int id);                     /* 0x52bb70 */
-void ch_ClearSceneCallbacks();                     /* 0x40b4d0 */
 extern int __mb_cur_max;                /* 0x62e3a0, the CRT locale state */
 extern unsigned short *_pctype;         /* 0x62e194, the CRT ctype table */
 #include "unk_5d33b0_types.h"
+#include "ch.h"
+#include "f3gm.h"
 extern OPTIONBYTES ai_GfxFloor;        /* 0x6f35c8 */
 extern int snd_SfxEnabled;              /* 0x6f257c, sound on */
 struct SBSAMPLE; struct SBBANK;
@@ -462,10 +435,7 @@ int cm_SendMessage10(unsigned char n, int b, void *p, short d);  /* 0x4c45c0, cm
 void gm_AssignBuilding(unsigned char *b, int place, int own);  /* 0x502b60, f3gm.c */  /* @original: f3gm.c defines `unsigned short place, unsigned own`; the caller below zero-extends the word load (xor/mov cx, no and mask) */
 void gm_SyncMarket(unsigned p);         /* 0x4fec10, f3gm.c */
 void ai_MsgNoOp(struct AICHAR *c);                     /* 0x4b70f0 */
-void ch_SetVisible(struct CHARACTER *ch, int show);                     /* 0x402480 */
-void ch_PlaceTransport(struct CHARACTER *ch, char now);                     /* 0x403620 */
 struct G15PLANT;
-void gm_SelectModelVariant(char *o);                     /* 0x4fb5a0, f3gm.c: the model variant of the object o */
 void gm_ShowBuildingObjects(unsigned char *b);                     /* 0x502e30, f3gm.c */
 int ai_Unk45f9f0();                     /* 0x45f9f0 */
 int ai_Unk442210();                     /* 0x442210 */
