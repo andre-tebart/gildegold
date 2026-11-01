@@ -22,6 +22,7 @@
 
 #define PARTNER_FLAGS_SEX0 0xf00502  /* the partner-chain flags 0x4a8ad0 asks for a character with sex 0 (reasoned: the other sex; the low byte 2 against 1) */
 #define PARTNER_FLAGS_SEX1 0xf00501  /* ditto for sex != 0 */
+#define PARTNER_FLAGS_ANY 0xf00500  /* the same flags with the low byte 0, either sex (0x4a8f20; reasoned) */
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 #include "cm_types.h"
 #include "ahm.h"
@@ -1157,23 +1158,26 @@ int ai_Unk4a8ee0(int a, AIPER *p)
         return 1;
     return util_RandomU(4) == 0;
 }
-/* 0x4a8f20, decide callback: two characters 33..100 units from p of which one is within 60 units of the other,
-   into m (kind 7) */
+/* 0x4a8f20, decide callback: a chain of two characters p rates in 33..77+roll (ai_PickPartnerChain, either sex)
+   that do not both like each other above 60, into m (kind 7, both netIds) */
 
-int ai_Unk4a8f20(int a, AIPER *p, int c, int d, unsigned char *m)
+int ai_DecideUnfriendlyPair(int a, AIPER *p, int c, int d, AIARG *m)
 {
     int flags[2];
     unsigned short id[2];
+    float l1, l2;
 
-    flags[0] = ((unsigned)&cm_SendRing + 0x4973c0);
-    flags[1] = ((unsigned)&cm_SendRing + 0x4973c0);
-    if (G10_4A58D0(p, 2, flags, 33.0f, (float)util_RandomU(0x18) + 77.0f, id) == 0)
+    flags[0] = PARTNER_FLAGS_ANY;
+    flags[1] = PARTNER_FLAGS_ANY;
+    if (ai_PickPartnerChainF(p, 2, flags, 33.0f, (float)util_RandomU(0x18) + 77.0f, id) == 0)
         return 0;
-    if (gm_Liking(id[0], id[1], 1) > 60.0f && gm_Liking(id[1], id[0], 1) > 60.0f)
+    l1 = gm_Liking(id[0], id[1], 1);
+    l2 = gm_Liking(id[1], id[0], 1);
+    if (l1 > 60.0f && l2 > 60.0f)
         return 0;
-    m[0] = 7;
-    *(int *)(m + 4) = ((AIPER *)ai_CharsT)[id[0]].netId;
-    *(int *)(m + 8) = ((AIPER *)ai_CharsT)[id[1]].netId;
+    m->kind = 7;
+    m->ref = ai_CharsT[id[0]].netId;
+    m->arg = ai_CharsT[id[1]].netId;
     return 1;
 }
 /* 0x4a9030, eval callback: p (unk194 >= 2) with n > 0 of 0x4f39b0: the count, at most unk194 / 2, into m->0x10 */
@@ -1379,7 +1383,7 @@ int ai_Unk4a95d0(int a, AIPER *p, int c, int d, unsigned char *m)
     if ((p->flags1cc & 0x80000) != 0)
         return 0;
     flags = ((unsigned)&cm_SendRing + 0x497bc0);
-    if (G10_4A58D0(p, 1, &flags, 20.0f, (float)util_RandomU(0x20) + 32.0f, &id) == 0)
+    if (ai_PickPartnerChainF(p, 1, &flags, 20.0f, (float)util_RandomU(0x20) + 32.0f, &id) == 0)
         return 0;
     m[0] = 7;
     *(int *)(m + 4) = ((AIPER *)ai_CharsT)[id].netId;
@@ -1596,7 +1600,7 @@ int ai_Unk4a9a00(int a, AIPER *p, int c, unsigned char *in, unsigned char *m)
     case 0x29:
         return G10_CB(ai_Unk4a8ee0)(a, p, ctx, in, m);
     case 0x2a:
-        return G10_CB(ai_Unk4a8f20)(a, p, ctx, in, m);
+        return G10_CB(ai_DecideUnfriendlyPair)(a, p, ctx, in, m);
     case 0x2b:
         return G10_CB(ai_Unk4a9030)(a, p, ctx, in, m);
     case 0x2c:
@@ -2261,7 +2265,7 @@ int ai_Unk4ab3e0(int a, AIPER *p, int c, unsigned char *m, unsigned char *m2)
     if (best == 0 || bestv == 0)
         return 0;
     flags = ((unsigned)&cm_SendRing + 0x4973c0);
-    if (G10_4A58D0(p, 1, (int *)&flags, 0.0f, (float)util_RandomU(0x20) + 25.0f, &id) == 0)
+    if (ai_PickPartnerChainF(p, 1, (int *)&flags, 0.0f, (float)util_RandomU(0x20) + 25.0f, &id) == 0)
         return 0;
     o = &((AIPER *)ai_CharsT)[id];
     s = amt_GetKindLevel(o->unk166) / 3 + 2;
@@ -2365,7 +2369,7 @@ int ai_Unk4ab7f0(int a, AIPER *p, int c, unsigned char *m)
     if (best == 0 || bestv == 0)
         return 0;
     flags = ((unsigned)&cm_SendRing + 0x4973c0);
-    if (G10_4A58D0(p, 1, (int *)&flags, 0.0f, (float)util_RandomU(0x20) + 25.0f, &id) == 0)
+    if (ai_PickPartnerChainF(p, 1, (int *)&flags, 0.0f, (float)util_RandomU(0x20) + 25.0f, &id) == 0)
         return 0;
     o = &((AIPER *)ai_CharsT)[id];
     money = (int)(gm_SumListAmounts(*(int *)((unsigned char *)p + 0x178), ai_OwnPlayer) * 0.25f);
@@ -2504,7 +2508,7 @@ int ai_Unk4abd00(int a, AIPER *p, int c, unsigned char *m)
         if (b->type != 0 && b->owner == p->id && ai_BTypesT[b->type].kind == 0x1f
             && gm_Query(b->objList, 2, 6, 0, 0x276) != 0) {
             flags = ((unsigned)&cm_SendRing + 0x4973c0);
-            if (G10_4A58D0(p, 1, (int *)&flags, 0.0f, (float)util_RandomU(0x20) + 25.0f, &id) == 0)
+            if (ai_PickPartnerChainF(p, 1, (int *)&flags, 0.0f, (float)util_RandomU(0x20) + 25.0f, &id) == 0)
                 return 0;
             o = &((AIPER *)ai_CharsT)[id];
             n = util_RandomU(p->unk194 < 8 ? p->unk194 : 8);

@@ -106,8 +106,8 @@ int ai_Unk4a8d20(int a, AIPER *p, int c, int d, unsigned char *m);              
 int ai_DecideBuildingResident(int a, AIPER *p, int c, int d, struct AIARG *m);              /* 0x4a8db0 */
 int ai_Unk4a8ee0(int a, AIPER *p);                                               /* 0x4a8ee0 */
 /* am.h declares ai_PickPartnerChain with an int b (really a float) */
-#define G10_4A58D0(p, a, fl, b, f, id) ((int (*)(AIPER *, int, int *, float, float, unsigned short *))ai_PickPartnerChain)(p, a, fl, b, f, id)
-int ai_Unk4a8f20(int a, AIPER *p, int c, int d, unsigned char *m);              /* 0x4a8f20 */
+#define ai_PickPartnerChainF(p, a, fl, b, f, id) ((int (*)(AIPER *, int, int *, float, float, unsigned short *))ai_PickPartnerChain)(p, a, fl, b, f, id)
+int ai_DecideUnfriendlyPair(int a, AIPER *p, int c, int d, struct AIARG *m);              /* 0x4a8f20 */
 int ai_Unk4a9030(int a, AIPER *p, int c, unsigned char *m);                     /* 0x4a9030 */
 int ai_Unk4a9080(int a, AIPER *p, int c, int d, unsigned char *m);              /* 0x4a9080 */
 int ai_Unk4a9150(int a, AIPER *p);                                               /* 0x4a9150 */
