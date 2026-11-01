@@ -103,8 +103,8 @@ void ai_Unk5a9690(int param_1, int param_2);  /* 0x5a9690 */
 void ai_Unk5a96e0(int param_1, unsigned short *param_2, int param_3, int param_4, int param_5, int param_6);  /* 0x5a96e0 */
 void ai_Unk5a9780(int param_1, int param_2, int param_3, int param_4);  /* 0x5a9780 */
 void ai_Unk5a9e40(int param_1, int param_2);  /* 0x5a9e40 */
-int ai_Unk5c8bc0(unsigned short *param_1);  /* 0x5c8bc0 */
-int ai_Unk5c8ef0(unsigned short *param_1);  /* 0x5c8ef0 */
+int ai_Unk5c8bc0(unsigned short *param_1, void *unused);  /* 0x5c8bc0, the caller (ord 0x4f50ae) pushes a second argument the handler does not read */
+int ai_Unk5c8ef0(unsigned short *param_1, void *unused);  /* 0x5c8ef0, the caller (ord 0x4f58a4) pushes a second argument the handler does not read */
 int ai_WorkerDismissalWindow(int param_1, int *m);  /* 0x5ce7f0 */
 void ai_Unk5a6b70(int param_1, int param_2, int param_3);  /* 0x5a6b70 */
 void ai_Unk5a6cb0(int *m_);  /* 0x5a6cb0 */

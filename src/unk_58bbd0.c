@@ -19918,7 +19918,7 @@ int gm_Unk505840(char *c);   /* 0x505840 (defined in f3gm.c) */
    (0x4c4a60 (handle, 0x1c8, 4, 0x40, 0)) with the pump 0x52fe00, shows 0x521150 and sets 0x6f22a0; the
    return 0x81. The other types pay 0x4c47e0 when the amount > 1 and return 0x11, else 0; the pump
    0x5309a0 and the end 0x4758f0. ROUGH: the strcpy blocks of the pseudocode are written as strcpy. */
-int ai_Unk5c8bc0(unsigned short *param_1)
+int ai_Unk5c8bc0(unsigned short *param_1, void *unused)
 {
     char buf[256];
     char text[1024];
@@ -20007,7 +20007,7 @@ int ai_Unk5c8bc0(unsigned short *param_1)
    chain with 0x4c49a0 and 0x4c47e0, return 0x11. The pump 0x5309a0 and the end 0x4758f0. ROUGH: the float
    arguments of 0x5de518 are lost; the price conversions are written as float calls. */
 
-int ai_Unk5c8ef0(unsigned short *param_1)
+int ai_Unk5c8ef0(unsigned short *param_1, void *unused)
 {
     int ret;
     int done;
