@@ -373,7 +373,6 @@ void par_DeleteAll(void);                   /* 0x4556b0, d3_par.c */
 void d3_ExitShadows(void);                    /* 0x45aee0 */
 void d3fl_Exit(void);                       /* 0x43fed0, d3_fl.c */
 void tex_Exit(void);                        /* 0x45fd00, ts_texture.c */
-void d3_ShadeReset(void);                   /* 0x453990, d3_vec.c */
 void d3d_Exit(void);                        /* 0x4370e0, d3_d3d.c */
 void dd_Exit(void);                         /* 0x41be00, dd_vesa.c */
 
