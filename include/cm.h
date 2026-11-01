@@ -567,7 +567,6 @@ void ai_Unk4ceb80(int id);  /* 0x4ceb80 */
 void ai_Unk4cec00();  /* 0x4cec00 */
 void ai_Unk4cec30(int a, char *c);  /* 0x4cec30 */
 void ai_Unk4ced80(int a);  /* 0x4ced80 */
-extern unsigned char kb_Last;  /* 0x1468410 */
 void d3fl_MakeDivide();  /* 0x441300 */
 struct D3OBJECT; struct D3RECT; char d3if_ScreenBox(struct D3OBJECT *obj, struct D3RECT *r);  /* 0x4486e0 */
 int d2_WinOpenSlider();  /* 0x46a960 */
@@ -666,7 +665,6 @@ char ai_Unk4d0570(char *rec, char *c);  /* 0x4d0570 */
 void ai_Unk4d0740(char *rec);  /* 0x4d0740 */
 int snd_PlayVoice(int id, int bank, char *text, int var);  /* 0x4c2760 */
 char d3if_SelectTextureSet(struct D3OBJECT *obj, struct D3SURF *surf, unsigned char set, char reload);  /* 0x446f30 */
-extern int di_Absolute;  /* 0x5f3240 */
 extern int ai_Unk6f0d34;  /* 0x6f0d34 */
 extern int ai_Unk6f0d38;  /* 0x6f0d38 */
 
