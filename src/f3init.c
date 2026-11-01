@@ -403,7 +403,7 @@ struct SBSAMPLE; struct SBBANK;
 int _isctype(int c, int mask);
 int init_StatusForm = 0;  /* 0x75df00, the panel form the load status is printed in */
 /* 0x75e5a0, the player profile of the character creation: main_ChoosePlayer reads it from game.INI ([Network]
-   Name, Familienname, Wappen, Geschlecht, Glauben) and writes the result of its stage 5, main_Unk53b840
+   Name, Familienname, Wappen, Geschlecht, Glauben) and writes the result of its stage 5, main_CreateStartCouple
    takes it for the start couple, 0x57bc30 is the default profile of the demo. Layout from those writers and
    from the registration message 0xc (0x4c46d0: short + 0xc, byte + 0xe, int + 0xf, sex + 0x13, faith + 0x14) */
 #include "f3init_types.h"
@@ -2271,7 +2271,7 @@ void init_ShowStatus(int t)
 
 
 /* 0x75e5a0, the player profile of the character creation: main_ChoosePlayer reads it from game.INI ([Network]
-   Name, Familienname, Wappen, Geschlecht, Glauben) and writes the result of its stage 5, main_Unk53b840
+   Name, Familienname, Wappen, Geschlecht, Glauben) and writes the result of its stage 5, main_CreateStartCouple
    takes it for the start couple, 0x57bc30 is the default profile of the demo. Layout from those writers and
    from the registration message 0xc (0x4c46d0: short + 0xc, byte + 0xe, int + 0xf, sex + 0x13, faith + 0x14) */
 

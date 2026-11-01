@@ -171,10 +171,32 @@ typedef struct MAINCHARNEW {        /* the AICHAR fields the character replaceme
     unsigned char health;           /* 0x08 */
     unsigned char flag9;            /* 0x09, 1: the female name table is used */
     char pad0a[0x26];
-    char name[0x20];                /* 0x30 */
+    union {
+        char name[0x20];            /* 0x30 */
+        struct {
+            char firstName[0x10];   /* 0x30 */
+            char familyName[0x10];  /* 0x40, the start couple's father gets the profile's family name (main_CreateStartCouple) */
+        };
+    };
     short seq;                      /* 0x50, a running number (ai_NextCharNumber) */
-    char pad52[10];
-    int clear[8];                   /* 0x5c, set to -1 */
+    char pad52[2];
+    int coat;                       /* 0x54, the coat of arms (AICHAR.ref54: the save adds the base 0x59a back, as INIT_PLAYER.coat's object ids); the start couple get the player's */
+    char pad58[4];
+    union {
+        int clear[8];               /* 0x5c, set to -1 */
+        struct {
+            int spouse;             /* 0x5c, the netId of the husband / wife (the start couple point at each other) */
+            int parent1;            /* 0x60, the netIds of the parents (the player gets the start couple) */
+            int parent2;            /* 0x64 */
+            int child;              /* 0x68, the netId of a child (the start couple get the player) */
+        } rel;
+    };
+    char pad7c[4];
+    unsigned char talents[5];       /* 0x80, the five talent values (from the profile, INIT_PLAYER.talents) */
+    char pad85[0x107];
+    int modelId;                    /* 0x18c, the model's id (INIT_PLAYER.modelId) */
+    char pad190[0x64];
+    char ownName[0x1c];             /* 0x1f4, the model name (AICHAR.ownName; from INIT_PLAYER.model) */
 } MAINCHARNEW;
 #define main_BookObject (*(int *)((char *)&cm_RequestedSaveName + 0x44))  /* 0x6f2614, the book object "Buch" loaded at the game start (reasoned: a pointer-sized field after the 64-byte name and the int at +0x40) */
 extern GAPDATA full_data_75df20[];
@@ -3579,7 +3601,7 @@ void main_EndRound(void)
     amt_TellOpenOffices(ai_Chars[MAIN_PLAYER]);
     snd_FadeMusic(1.0f, 2000);
 }
-/* 0x539620, a player (the character slot p, kind 6 = prisoner / dead, health 0) is replaced by a new figure: first it checks that some slot of kind 6 with health is left (else ai_GameOver); every he_Events record (0x14c bytes) of that character whose kind is in the first list is closed (he_Unk53e1f0), in the second its +0x70 is set to -1; the kind byte becomes 5, a name is copied from the name table 0x143ac5c (flag9 clear, random 0xbf) or 0x143af70 (random 0x70), the running number and the eight ids are reset, and the events of the table 0x925520 that concern the character in the states 3 .. 9 are dropped @deep All statements read against the original and fixed: two separate lists (la 15 entries from 0x5d, lb {0x45, 0x47, 0} walked as for (j = 0; lb[j]; j++) la[j] == kind), the character scan as an index loop (kind 6 and health != 0), typed MAINCHARNEW fields, two inline strcpy of ai_Unk143ac5c / af70 pointer tables, signed pointer compares; only 'order' hunks and one code hunk are left: after the index scan the original keeps two identical blocks ('mov [ai_GameOver],1; pop edi; add esp,0x48; ret' at 0x5396cb and 0x5396e2, 'cmp ecx,0xffff; jne 0x5396f1' between them) where VC6 cross-jumps the second into the first (ours: 'je 0x5396cb', 17 bytes shorter, size 558 vs 581). Tried: if/else around the rest, return inside the while vs after it. A tail-merge layout question, not a statement. */
+/* 0x539620, a player (the character slot p, kind 6 = prisoner / dead, health 0) is replaced by a new figure: first it checks that some slot of kind 6 with health is left (else ai_GameOver); every he_Events record (0x14c bytes) of that character whose kind is in the first list is closed (he_Unk53e1f0), in the second its +0x70 is set to -1; the kind byte becomes 5, a name is copied from the name table 0x143ac5c (flag9 clear, random 0xbf) or 0x143af70 (random 0x70), the running number and the eight ids are reset, and the events of the table 0x925520 that concern the character in the states 3 .. 9 are dropped @deep All statements read against the original and fixed: two separate lists (la 15 entries from 0x5d, lb {0x45, 0x47, 0} walked as for (j = 0; lb[j]; j++) la[j] == kind), the character scan as an index loop (kind 6 and health != 0), typed MAINCHARNEW fields, two inline strcpy of txt_MaleFirstNames / af70 pointer tables, signed pointer compares; only 'order' hunks and one code hunk are left: after the index scan the original keeps two identical blocks ('mov [ai_GameOver],1; pop edi; add esp,0x48; ret' at 0x5396cb and 0x5396e2, 'cmp ecx,0xffff; jne 0x5396f1' between them) where VC6 cross-jumps the second into the first (ours: 'je 0x5396cb', 17 bytes shorter, size 558 vs 581). Tried: if/else around the rest, return inside the while vs after it. A tail-merge layout question, not a statement. */
 
 void main_ReplaceFigure(unsigned p)
 {
@@ -3625,9 +3647,9 @@ void main_ReplaceFigure(unsigned p)
         } while ((int)e < (int)((unsigned)he_Events + 0x53000));
         ch->kind = 5;
         if (ch->flag9 == 0) {
-            strcpy(ch->name, ai_Unk143ac5c[(unsigned short)util_RandomInt(0xbf)]);
+            strcpy(ch->name, txt_MaleFirstNames[(unsigned short)util_RandomInt(0xbf)]);
         } else {
-            strcpy(ch->name, ai_Unk143af70[(unsigned short)util_RandomInt(0x70)]);
+            strcpy(ch->name, txt_FemaleFirstNames[(unsigned short)util_RandomInt(0x70)]);
         }
         ch->seq = (short)U_I((unsigned)&ai_NextCharNumber);
         for (i = 0; i < 8; i++)
@@ -3986,83 +4008,85 @@ int main_Unk53b830(void)
 {
     return 1;
 }
-/* 0x53b840, creates the two figures of the start couple (records of 0x70 / 0xbf random names) and links them (ROUGH) */
+/* 0x53b840, creates the player character from the profile (cm_SendMessage0c) and its parents, the start couple (cm_SendCreateCharacter, mother with the female flag): random first names (txt_FemaleFirstNames / txt_MaleFirstNames), the father the profile's family name, the player's number and coat, the family links (spouse, parents, child), the model, love 0x7f between all three, 16000 .. 32352 money for each parent, the profile's mission and talents
+   @deep Rewrote 0x53b840 typed against the original (154 -> 10 differing, 245 / 245 instructions, size 725
+   / 725): the profile's int coat argument, the two cm_SendCreateCharacter (mother with the female flag),
+   the start couple's fields through MAINCHARNEW (seq, coat, spouse / parent1 / parent2 / child, talents,
+   modelId, ownName), the random index taken before the destination and the table pointer, the name copy as
+   do { c = *t++; *d++ = c; } while (c) (the first copy now equal), the inline strcpy of the model,
+   ai_MissionMode > -1 as a char. Left is one register choice in the second name copy: 0x53b9b9 .. 0x53b9c7
+   ours mov eax, [tbl + idx*4] / mov cl, [eax] / inc eax / test cl, cl, the original mov ecx, [tbl + idx*4]
+   / mov al, [ecx] / inc ecx / test al, al (the original pops ebp, the first copy's destination, right
+   before this loop; ours keeps eax for the pointer). Tried: a second char / pointer variable for the
+   second copy (no change), the while ((*d++ = *t++)) form (22 differing). */
 
-void main_Unk53b840(void)
+void main_CreateStartCouple(void)
 {
-    int a, b, k;
-    char *t, *s;
-    unsigned short *p6, *p7;
-    int r6, r7;
-    char *d;
-    unsigned u;
+    MAINCHARNEW *a, *mother, *father;
+    int h1, h2;
+    char *d, *t;
+    int k;
+    char c;
 
     ai_ClearMissions();
-    if (*(char *)((unsigned)&init_PlayerProfile + 0x2) != 0) {
+    if (init_PlayerProfile.status != 0) {
         cm_BeginSendGroup();
-        r6 = cm_SendMessage0c(-1, -1, 0x10, *(char *)((unsigned)&init_PlayerProfile + 0x3), *(char *)((unsigned)&init_PlayerProfile + 0x4), *(char *)((unsigned)&init_PlayerProfile + 0x8), *(char *)((unsigned)&init_PlayerProfile + 0x9), ((unsigned)&init_PlayerProfile + 0xa), ((unsigned)&init_PlayerProfile + 0x2a));
+        h1 = cm_SendMessage0c(-1, -1, 0x10, init_PlayerProfile.job, init_PlayerProfile.coat, init_PlayerProfile.sex, init_PlayerProfile.faith, init_PlayerProfile.firstName, init_PlayerProfile.familyName);
         cm_EndSendGroup();
-        a = cm_SendGroupState();
-        while (a == 0) {
+        while (cm_SendGroupState() == 0)
             sv_PumpNet();
-            a = cm_SendGroupState();
-        }
-        a = cm_GetSlotValue(r6);
+        a = (MAINCHARNEW *)cm_GetSlotValue(h1);
         cm_BeginSendGroup();
-        r6 = cm_SendCreateCharacter(9, -1, -1, util_RandomInt(4) + 0x20, -1, *(char *)((unsigned)&init_PlayerProfile + 0x1), 0, 1);
-        r7 = cm_SendCreateCharacter(9, -1, -1, util_RandomInt(4) + 0x20, -1, *(char *)(unsigned)&init_PlayerProfile, 0, 0);
+        h1 = cm_SendCreateCharacter(9, -1, -1, util_Random(4) + 0x20, -1, init_PlayerProfile.tool2, 0, 1);
+        h2 = cm_SendCreateCharacter(9, -1, -1, util_Random(4) + 0x20, -1, init_PlayerProfile.tool1, 0, 0);
         cm_EndSendGroup();
-        b = cm_SendGroupState();
-        while (b == 0) {
+        while (cm_SendGroupState() == 0)
             sv_PumpNet();
-            b = cm_SendGroupState();
-        }
-        p6 = (unsigned short *)cm_GetSlotValue(r6);
-        p7 = (unsigned short *)cm_GetSlotValue(r7);
-        strncpy((char *)(p7 + 0x20), (char *)((unsigned)&init_PlayerProfile + 0x2a), 0x10);
-        p6[0x28] = *(unsigned short *)(a + 0x50);
-        *(int *)(p6 + 0x2a) = *(int *)(a + 0x54);
-        *(int *)(p6 + 0x34) = *(int *)(a + 4);
-        u = util_RandomInt(0x70);
-        d = (char *)(p6 + 0x18);
-        s = *(char **)((unsigned)&ai_Unk143af70 + (u & 0xffff) * 4);
-        do { *d++ = *s; } while (*s++ != 0);
-        gm_CharNameRecord(*p6);
-        p7[0x28] = *(unsigned short *)(a + 0x50);
-        *(int *)(p7 + 0x2a) = *(int *)(a + 0x54);
-        *(int *)(p7 + 0x34) = *(int *)(a + 4);
-        u = util_RandomInt(0xbf);
-        d = (char *)(p7 + 0x18);
-        s = *(char **)((unsigned)&ai_Unk143ac5c + (u & 0xffff) * 4);
-        do { *d++ = *s; } while (*s++ != 0);
-        gm_CharNameRecord(*p7);
-        *(int *)(p6 + 0x2e) = *(int *)(p7 + 2);
-        *(int *)(p7 + 0x2e) = *(int *)(p6 + 2);
-        *(int *)(a + 0x60) = *(int *)(p7 + 2);
-        *(int *)(a + 100) = *(int *)(p6 + 2);
-        *(int *)(p6 + 0x34) = *(int *)(a + 4);
-        t = init_PlayerProfile.model;
-        *(int *)(p7 + 0x34) = *(int *)(a + 4);
-        do { t[a - (unsigned)&full_data_75e401] = *t; } while (*t++ != 0);
-        *(int *)(a + 0x18c) = init_PlayerProfile.modelId;
-        cm_SendRelations(*(int *)(a + 4), *(int *)(p7 + 2), 0x7f, 0);
-        cm_SendRelations(*(int *)(p7 + 2), *(int *)(a + 4), 0x7f, 0);
-        cm_SendRelations(*(int *)(a + 4), *(int *)(p6 + 2), 0x7f, 0);
-        cm_SendRelations(*(int *)(p6 + 2), *(int *)(a + 4), 0x7f, 0);
-        cm_SendRelations(*(int *)(p7 + 2), *(int *)(p6 + 2), 0x7f, 0);
-        cm_SendRelations(*(int *)(p6 + 2), *(int *)(p7 + 2), 0x7f, 0);
-        u = util_RandomInt(0x200);
-        cm_SendMoveGoods(*(int *)(p7 + 2), -1, *(unsigned char *)(unsigned)&ai_OwnPlayer, ((u & 0xffff) + 500) * 0x20);
-        u = util_RandomInt(0x200);
-        k = ((u & 0xffff) + 500) * 0x20;
-        cm_SendMoveGoods(*(int *)(p6 + 2), -1, *(unsigned char *)(unsigned)&ai_OwnPlayer, k);
-        if (U_I((unsigned)&ai_MissionMode) >= 0)
-            ai_NewMission(*(int *)(a + 4), init_PlayerProfile.mission, 0);
-        k = 0;
+        mother = (MAINCHARNEW *)cm_GetSlotValue(h1);
+        father = (MAINCHARNEW *)cm_GetSlotValue(h2);
+        strncpy(father->familyName, init_PlayerProfile.familyName, 0x10);
+        mother->seq = a->seq;
+        mother->coat = a->coat;
+        mother->rel.child = a->netId;
+        k = (unsigned short)util_Random(0x70);
+        d = mother->firstName;
+        t = txt_FemaleFirstNames[k];
         do {
-            *(char *)(a + 0x80 + k) = init_PlayerProfile.talents[k];
-            k++;
-        } while (k < 5);
+            c = *t++;
+            *d++ = c;
+        } while (c != 0);
+        gm_CharNameRecord(mother->id);
+        father->seq = a->seq;
+        father->coat = a->coat;
+        father->rel.child = a->netId;
+        k = (unsigned short)util_Random(0xbf);
+        d = father->firstName;
+        t = txt_MaleFirstNames[k];
+        do {
+            c = *t++;
+            *d++ = c;
+        } while (c != 0);
+        gm_CharNameRecord(father->id);
+        mother->rel.spouse = father->netId;
+        father->rel.spouse = mother->netId;
+        a->rel.parent1 = father->netId;
+        a->rel.parent2 = mother->netId;
+        mother->rel.child = a->netId;
+        father->rel.child = a->netId;
+        strcpy(a->ownName, init_PlayerProfile.model);
+        a->modelId = init_PlayerProfile.modelId;
+        cm_SendRelations(a->netId, father->netId, 0x7f, 0);
+        cm_SendRelations(father->netId, a->netId, 0x7f, 0);
+        cm_SendRelations(a->netId, mother->netId, 0x7f, 0);
+        cm_SendRelations(mother->netId, a->netId, 0x7f, 0);
+        cm_SendRelations(father->netId, mother->netId, 0x7f, 0);
+        cm_SendRelations(mother->netId, father->netId, 0x7f, 0);
+        cm_SendMoveGoods(father->netId, -1, ai_OwnPlayer, ((unsigned short)util_Random(0x200) + 500) * 0x20);
+        cm_SendMoveGoods(mother->netId, -1, ai_OwnPlayer, ((unsigned short)util_Random(0x200) + 500) * 0x20);
+        if (ai_MissionMode > -1)
+            ai_NewMission(a->netId, init_PlayerProfile.mission, 0);
+        for (k = 0; k < 5; k++)
+            a->talents[k] = init_PlayerProfile.talents[k];
     }
 }
 
@@ -4715,7 +4739,7 @@ void main_GameLoop(int ctl)
     main_SetLoadProgress(U_I(((unsigned)&d2_Strings + 0x1b0)), 5);
     main_Unk537de0();
     if ((U_I((unsigned)&ai_GameFlags) & 1) != 0 && U_I((unsigned)&full_data_6f2428) != 0)
-        main_Unk53b840();
+        main_CreateStartCouple();
     main_SetLoadProgress(0, 10);
     if ((U_I((unsigned)&ai_GameFlags) & 0x41) == 0) {
         if ((U_I((unsigned)&ai_GameFlags) & 0x40) == 0) {
@@ -4746,7 +4770,7 @@ void main_GameLoop(int ctl)
             main_Exit();
             return;
         }
-        main_Unk53b840();
+        main_CreateStartCouple();
         init_SetupNewGame(*(unsigned char *)(unsigned)&ai_OwnPlayer);
         init_LocalData();
         init_FillMarkets(*(unsigned char *)(unsigned)&ai_OwnPlayer);

@@ -76,7 +76,7 @@ int ai_PokerStart(AIPER *p, G10GAME *g)
         n->unk0d = (unsigned char)util_RandomU(4) + 1;
         strncpy(n->nname, ai_Unk143b178[util_RandomU(0x95)], 15);
         if (n->female == 0) {
-            strncpy(n->vname, ai_Unk143ac5c[util_RandomU(0xbf)], 15);
+            strncpy(n->vname, txt_MaleFirstNames[util_RandomU(0xbf)], 15);
             switch (util_RandomU(4)) {
             case 0:
                 ai_Unkf83654->seat[i + 1].model = unk_Unk4fb770("buerger_MANN") + 0x639;
@@ -92,7 +92,7 @@ int ai_PokerStart(AIPER *p, G10GAME *g)
                 break;
             }
         } else {
-            strncpy(n->vname, ai_Unk143af70[util_RandomU(0x70)], 15);
+            strncpy(n->vname, txt_FemaleFirstNames[util_RandomU(0x70)], 15);
             switch (util_RandomU(4)) {
             case 0:
                 ai_Unkf83654->seat[i + 1].model = unk_Unk4fb770("buergerin_frau") + 0x639;

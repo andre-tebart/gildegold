@@ -1515,9 +1515,9 @@ int unk_Unk4ef9c0(unsigned char *o, int n)
                 r = (r + 1) & 3;
             } while (k != 0);
             if (*(int *)(z + 0x38) == 0)
-                strncpy(z + 4, ai_Unk143ac5c[util_RandomU(0xbf)], 0xf);
+                strncpy(z + 4, txt_MaleFirstNames[util_RandomU(0xbf)], 0xf);
             else
-                strncpy(z + 4, ai_Unk143af70[util_RandomU(0x70)], 0xf);
+                strncpy(z + 4, txt_FemaleFirstNames[util_RandomU(0x70)], 0xf);
             cnt++;
             i = cnt;
         } while (cnt < n);

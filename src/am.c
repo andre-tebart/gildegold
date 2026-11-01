@@ -2292,9 +2292,9 @@ unsigned int ai_Unk492fd0(unsigned int k)
     memset(&ai_Unk6f0478, 0, sizeof(ai_Unk6f0478));
     ai_Unk6f0478.unk009 = (unsigned char)util_RandomU(2);
     if (ai_Unk6f0478.unk009 == 0)
-        strncpy(ai_Unk6f0478.name, ai_Unk143ac5c[util_RandomU(0xbf)], 15);
+        strncpy(ai_Unk6f0478.name, txt_MaleFirstNames[util_RandomU(0xbf)], 15);
     else
-        strncpy(ai_Unk6f0478.name, ai_Unk143af70[util_RandomU(0x70)], 15);
+        strncpy(ai_Unk6f0478.name, txt_FemaleFirstNames[util_RandomU(0x70)], 15);
     switch (k) {
     case 1:
         base = 0x15;

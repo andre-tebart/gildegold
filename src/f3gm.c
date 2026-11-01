@@ -1931,8 +1931,8 @@ void unk_Unk4fd120(void)
 }
 
 extern char ai_Unkf8ef80[256];
-/* ai_Unk143ac5c: view of txt_Ptrs (build/mk_txt_views.py) */
-/* ai_Unk143af70: view of txt_Ptrs (build/mk_txt_views.py) */
+/* txt_MaleFirstNames: view of txt_Ptrs (build/mk_txt_views.py) */
+/* txt_FemaleFirstNames: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_Unk143b178: view of txt_Ptrs (build/mk_txt_views.py) */
 int ai_Unk6f1bb4 = 0;  /* 0x6f1bb4 */
 extern char gm_CharacterStatistics[128];
@@ -7895,9 +7895,9 @@ skip:
         strcpy(c + 0x40, (char *)(p1 + 0x20));
     }
     if (c[9] == 0)
-        strncpy(c + 0x30, ai_Unk143ac5c[util_RandomU(0xbf)], 0xf);
+        strncpy(c + 0x30, txt_MaleFirstNames[util_RandomU(0xbf)], 0xf);
     else
-        strncpy(c + 0x30, ai_Unk143af70[util_RandomU(0x70)], 0xf);
+        strncpy(c + 0x30, txt_FemaleFirstNames[util_RandomU(0x70)], 0xf);
     if (CF(0x20, float) < (float)CF(0xa, unsigned short)) {
         n = (int)CF(0x14, float);
         f = CF(0x20, float);
