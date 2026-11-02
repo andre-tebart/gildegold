@@ -1104,3 +1104,8 @@
 2026-11-02T18:10:19 0x004fa160 func unk_Unk4fa160 -> gm_IncomeKind3 by:main why:fills the first free entry of the income record with kind 3 (out[k] = 3), the rate of decision 0xd, sums into income row 2
 2026-11-02T18:12:26 0x006f1b98 data ai_Unk6f1b98 -> gm_NetMsgCount by:main why:f3gm.c counts the messages it sends (++ after cm_SendMoveGoodsUnchecked) and pumps the net (sv_PumpNet) and resets it past 0x40
 2026-11-02T18:12:26 0x004fa2a0 func unk_Unk4fa2a0 -> gm_IncomeKind4 by:main why:fills the first free entry of the income record with kind 4 (out[k] = 4), the rate of decision 0xc, sums into income row 3
+2026-11-02T18:14:10 0x004fa4b0 func unk_Unk4fa4b0 -> gm_CharacterIncomes by:main why:clears the 0x38-byte income record and fills it with the character's income kinds 1/2, 5, 3, 4 (calls 0x4f9f60 / 0x4fa060 / 0x4fa3d0 / gm_IncomeKind3 / gm_IncomeKind4)
+2026-11-02T18:14:10 0x004f9f60 func unk_Unk4f9f60 -> gm_IncomeKind1 by:main why:fills the first free entry of the income record with kind 1 (record 9's rate, sum row 0)
+2026-11-02T18:14:10 0x004fa060 func unk_Unk4fa060 -> gm_IncomeKind2 by:main why:fills the first free entry of the income record with kind 2 (record 10's rate, sum row 1)
+2026-11-02T18:14:10 0x004fa3d0 func unk_Unk4fa3d0 -> gm_IncomeKind5 by:main why:fills the first free entry of the income record with kind 5 (record 0xb's rate, sum row 4)
+2026-11-02T18:14:10 0x004fd7e0 func unk_Unk4fd7e0 -> gm_IsUnderAge by:main why:1 when the character's age (+10) is below its float +0x20; gm_CharacterIncomes collects no income then (reasoned: the age of majority)

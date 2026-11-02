@@ -99,10 +99,10 @@ extern short * ai_Unk6f1bac;
 #define gm_IncomeRows (*(int (*)[5][17])&gm_IncomeHistory)  /* 0x91b580, the five rows of 17 ints; [row][16] is the current sum */
 
 int gm_GetGoodsValue(char *c);              /* 0x509e60 */
-int gm_TitleGroup();                     /* 0x504ad0 */
+int gm_TitleGroup(int n);                /* 0x504ad0 */
 char * gm_PlayerSeat(int p);                     /* 0x504a80 */
 int gm_PlayerFactor(int a, unsigned char k);                     /* 0x5085f0 */
-int unk_Unk4fd7e0();                    /* 0x4fd7e0 */
+int gm_IsUnderAge(unsigned id);         /* 0x4fd7e0 */
 
 #define CH(i) (ai_Chars[(unsigned short)(i)])
 #define REC_RATE(rec) ((rec)[6])
@@ -178,7 +178,7 @@ float gm_IncomeRating(void)
 /* 0x4f9f60, income kind 1 of the character id (rate of the record 9 * 0.01 * the character's int at +0x19c, not below 0): stores kind 1, the amount (+8 + 4k) and the record's rate (+0x20 + 4k) in the first free slot k of the 6 of out;
    flag 1 sends the amount to the player, flag 2 adds it to the sum 0x91b5c0. Returns 1 (slot found) or 0 */
 
-int unk_Unk4f9f60(unsigned id, char *out, unsigned char flags)
+int gm_IncomeKind1(unsigned id, char *out, unsigned char flags)
 {
     int rec[9];
     int k, n, cnt;
@@ -215,7 +215,7 @@ int unk_Unk4f9f60(unsigned id, char *out, unsigned char flags)
 }
 /* 0x4fa060, income kind 2 (the record 10, the int at +0x19c; sum 0x91b604): a copy of 0x4f9f60 */
 
-int unk_Unk4fa060(unsigned id, char *out, unsigned char flags)
+int gm_IncomeKind2(unsigned id, char *out, unsigned char flags)
 {
     int rec[9];
     int k, n, cnt;
@@ -346,7 +346,7 @@ int gm_IncomeKind4(unsigned id, GMINCOME *out, unsigned char flags)
 }
 /* 0x4fa3d0, income kind 5 (the record 0xb, the int at +0x19c; sum 0x91b6d0); the message goes to all players (-1). ROUGH */
 
-int unk_Unk4fa3d0(unsigned id, char *out, unsigned char flags)
+int gm_IncomeKind5(unsigned id, char *out, unsigned char flags)
 {
     int rec[9];
     int k, n, cnt;
@@ -379,30 +379,41 @@ int unk_Unk4fa3d0(unsigned id, char *out, unsigned char flags)
     }
     return 0;
 }
-/* 0x4fa4b0, collects the incomes of the character id into the 0x38-byte record out (cleared first): 0 when the slot is free / not active (+8) / 0x4fd7e0 says so; the incomes 1 or 2 (by 0x4e9400 of the character's job at +0x164), 5, 3 (only when +0x1a8 > 0) and 4. Returns 1 */
+/* 0x4fa4b0, collects the incomes of the character id into the record out (cleared first): none (0) for a free
+   record, one not in use (health 0) or one under age (gm_IsUnderAge); else the kind 1 or 2 (2 when the title group
+   of the character's job has a town object, amt_HasTownObject), 5, 3 (only when v1a8 is positive) and 4. Returns 1
+   @deep Read whole against the original: statement structure equal (branch targets shift only by the
+   one-instruction size difference). Tried: index loop vs memset (identical code), the index
+   ORD_CHARS[(unsigned short)id] at each use (out in ebx, id in edi, ebp pushed late: allocation), a
+   character pointer c (lea ebp,[..+ai_Chars] where the original folds the base into [esi+ai_Chars+off]:
+   wrong form, reverted), the index temp i = (unsigned short)id (kept: 11 of 84 differ). Remaining hunk at
+   +0x5: ours mov edx,ebx / and edx,0xffff / mov ecx,0xe / xor eax,eax / rep stosd / lea eax,[edx+edx*2],
+   the original mov eax,ebx / and eax,0xffff / lea eax,[eax+eax*2] scheduled before xor eax,eax / rep
+   stosd: the same instructions with the index in edx instead of eax and the memset moved before it;
+   because of that order ours repeats xor eax,eax at the first return 0 (the original reuses the zero eax
+   of the stosd), the one extra instruction. Scheduling / allocation of the prologue only. */
 
-int unk_Unk4fa4b0(unsigned id, int *out, unsigned char flags)
+int gm_CharacterIncomes(unsigned id, GMINCOME *out, unsigned char flags)
 {
-    char *c;
-    int i;
+    int i, k;
 
-    c = CH(id);
-    for (i = 0; i < 0xe; i++)
-        out[i] = 0;
-    if (*(short *)c == -1)
+    i = (unsigned short)id;
+    for (k = 0; k < 0xe; k++)
+        ((int *)out)[k] = 0;
+    if (ORD_CHARS[i].id == 0xffff)
         return 0;
-    if (c[8] == 0)
+    if (ORD_CHARS[i].health == 0)
         return 0;
-    if (unk_Unk4fd7e0(id) != 0)
+    if (gm_IsUnderAge(id) != 0)
         return 0;
-    if (amt_HasTownObject(gm_TitleGroup(*(int *)(c + 0x164))) == 0)
-        unk_Unk4f9f60(id, (char *)out, flags);
+    if (amt_HasTownObject(gm_TitleGroup(ORD_CHARS[i].jobId)) != 0)
+        gm_IncomeKind2(id, (char *)out, flags);
     else
-        unk_Unk4fa060(id, (char *)out, flags);
-    unk_Unk4fa3d0(id, (char *)out, flags);
-    if (*(int *)(c + 0x1a8) > 0)
-        gm_IncomeKind3(id, (GMINCOME *)out, flags);
-    gm_IncomeKind4(id, (GMINCOME *)out, flags);
+        gm_IncomeKind1(id, (char *)out, flags);
+    gm_IncomeKind5(id, (char *)out, flags);
+    if (ORD_CHARS[i].v1a8 > 0)
+        gm_IncomeKind3(id, out, flags);
+    gm_IncomeKind4(id, out, flags);
     return 1;
 }
 
@@ -617,7 +628,7 @@ void gm_EndDayIncomes(unsigned flags)
     *(int *)ai_Unk91b6d0 = 0;
     gm_NetMsgCount = 0;
     for (i = 0; i < 0x300; i++) {
-        unk_Unk4fa4b0(i, ent, flags);
+        gm_CharacterIncomes(i, (GMINCOME *)ent, flags);
         c = (int *)(ai_Chars[i] + 0x198);
         c[1] = 0;
         c[0] = 0;
@@ -1867,7 +1878,7 @@ void unk_Unk4fd120(void)
         if (*(short *)c != -1 && (unsigned char)c[8] > 1) {
             if ((float)m <= 652.80005f) {
             L1:
-                if (c[2] == 8 && unk_Unk4fd7e0(*(unsigned short *)c) == 0) {
+                if (c[2] == 8 && gm_IsUnderAge(*(unsigned short *)c) == 0) {
                     a = gm_FindChar(*(int *)(c + 0x5e));
                     b = gm_FindChar(*(int *)(c + 0x62));
                     if ((a == 0 || a[2] == 0x0f) && (b == 0 || b[2] == 0x0f)) {
@@ -2024,7 +2035,7 @@ unsigned unk_Unk4fd5c0(int param)
 }
 /* 0x4fd7e0, 1 when the character id is younger than its lifetime float (+0x20): age (+10) below it */
 
-int unk_Unk4fd7e0(unsigned id)
+int gm_IsUnderAge(unsigned id)
 {
     if ((float)*(unsigned short *)(ai_Chars[id & 0xffff] + 10) < *(float *)(ai_Chars[id & 0xffff] + 0x20))
         return 1;
@@ -2293,7 +2304,7 @@ void unk_Unk4fdfd0(void)
                 v = 0.0f;
             k = (int)v;
             s[1 + k]++;
-            if (unk_Unk4fd7e0(i) != 0)
+            if (gm_IsUnderAge(i) != 0)
                 f[9] += 1.0f;
             f[10 + (unsigned char)c[2]] = gm_CharacterHealth((short *)c) + f[10 + (unsigned char)c[2]];
             f[18 + (unsigned char)c[2]] = unk_Unk4fc890((short *)c) + f[18 + (unsigned char)c[2]];
@@ -5365,7 +5376,7 @@ void gm_Unk5034b0(int o)
 int ai_Unk587b70();                     /* 0x587b70 */
 extern int gm_AllowAll;                /* 0x6f2448 */
 int gm_BuildingJob();                     /* 0x5048e0 */
-int gm_TitleGroup();                     /* 0x504ad0 */
+int gm_TitleGroup(int n);                /* 0x504ad0 */
 
 /* 0x503530, the permission bits of the character p1 in the building b (or, without a building, in the object o / the character c): a bit set of what he may do there (0x1 enter, 0x4 .. 0x30 use, 0x40 .., 0x800 .., 0x2000 .., 0x4000, 0x5000 ..: the exact meaning of each bit is open) by the building type: a case per type, owner (+0x27) and place (+0x25) words compared with p1, the job list (six bytes at +0x223) searched for the job number of the character (0x5044b0). With the flag 0x6f2448 everything is allowed (-1, -2 for the types 3 / 0x21). ROUGH */
 unsigned gm_PermissionBits(unsigned p1, unsigned char *b, unsigned short *o, int c)

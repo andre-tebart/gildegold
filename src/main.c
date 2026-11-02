@@ -3822,7 +3822,7 @@ void main_RoundReport(void)
             w1f8 = w1f8 + a[1] + a[2];
             w1fc = w1fc + a[1] + a[2];
         }
-        if (unk_Unk4fa4b0(U_I((unsigned)&ai_PlayerId), kind, 0) != 0) {
+        if (gm_CharacterIncomes(U_I((unsigned)&ai_PlayerId), kind, 0) != 0) {
             i = 0;
             do {
                 if (kind[i] == 0)

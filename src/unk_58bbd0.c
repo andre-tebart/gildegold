@@ -18231,7 +18231,7 @@ void ai_MasterLetterWindow(unsigned char *param_1)
     sv_CameraFollow();
 }
 
-int unk_Unk4fd7e0(); int ai_WorksForMaster();
+int gm_IsUnderAge(); int ai_WorksForMaster();
 
 /* 0x5c33c0, the master letter eligibility test (992 B): 0 when param_2 (the index) is param_1, has no
    record, is the +0x1b1 flagged character, is the own character 0x6f1bf8 or leaves the filter record
@@ -18315,9 +18315,9 @@ int ai_PassesPartnerFilter(unsigned short param_1, unsigned short param_2, unsig
             (kind != 5 && *(unsigned char *)(rec + 0x166) == 0) &&
             *(unsigned char *)(rec + 0x169) == 0)
             return 0;
-        if ((u & 0x200) && unk_Unk4fd7e0(param_2) == 0)
+        if ((u & 0x200) && gm_IsUnderAge(param_2) == 0)
             return 0;
-        if ((u & 0x400) && unk_Unk4fd7e0(param_2) != 0)
+        if ((u & 0x400) && gm_IsUnderAge(param_2) != 0)
             return 0;
         u = *(unsigned int *)(p3 + 4);
         if ((u & 0x2000) && U_I(rec + 0x184) != 0)

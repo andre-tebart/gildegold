@@ -110,7 +110,9 @@ typedef struct ORDCHAR {
     unsigned char level;            /* 0x00d, the level the level orders test */
     char pad00e[0x4e];
     int partner;                    /* 0x05c, the partner character id, -1 = none */
-    char pad060[0x106];
+    char pad060[0x104];
+    unsigned char jobId;            /* 0x164, the title / job id gm_TitleGroup groups (ai.h AICHAR.jobId) */
+    char title;                     /* 0x165, the title rank (ai.h AICHAR.title) */
     unsigned char job;              /* 0x166, the profession id the job orders test (text 0x253 + job) */
     char pad167[2];
     unsigned char job2;             /* 0x169, the second profession field, tested by the same orders */
