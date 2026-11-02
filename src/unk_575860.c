@@ -30,6 +30,10 @@
    the unit's view ai_ClockMsVolatile); its owner and the other units declare it plain int.
    Open: the alchemist windows ai_AlchemistWindow / ai_AlchemistResearchWindow are @deep (allocation); their buttons call
    ai_AlchemistFundWindow / ai_AlchemistRescheduleWindow with (obj, record), the record parameter unread.
+   Open: type debt - the graveyard detail window record GVDETAILWIN and the seance result GVSEANCE (0x58 bytes)
+   are typed in the seance functions (ai_SeanceWindow .. ai_SeancePick); ai_Unk583b70 / ai_RentGraveDetail /
+   ai_Unk586610 still take int *w, and ai_Unk586610 declares its out as int[2] although ai_SeanceWindow writes
+   the whole GVSEANCE into it (the original's object is 0x58 bytes).
    Open: not included yet (dcp headers conflicts unk_575860 HEADER): d2.h gfx.h sv.h; held by own declarations that
    differ from the owner's: d2_CreateWinText; calls whose argument count differs from the definition (read the
    original's pushes): d2_GetObjValue, sv_DrawBalanceBar (d2_PlaceMainWindow goes through d2_PlaceMainWindowF).

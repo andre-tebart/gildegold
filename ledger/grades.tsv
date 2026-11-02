@@ -2799,7 +2799,7 @@ exe	0x004f2440	unk_Unk4f2440	gv	byte	draft
 exe	0x004f24a0	gv_ProtectionPrice	gv	byte	readable		
 exe	0x004f2540	gv_FindHeldEntry	gv	byte	readable		
 exe	0x004f25d0	gv_FindReservedEntry	gv	byte	readable		
-exe	0x004f2660	unk_Unk4f2660	gv	shape	draft		
+exe	0x004f2660	gv_SeanceChance	gv	shape	draft		
 exe	0x004f2720	gv_GetTableRecord	gv	byte	readable		
 exe	0x004f2750	gv_SetTableRecord	gv	byte	readable		
 exe	0x004f27d0	gv_OnDecisionValue	gv	byte	readable		
@@ -3861,7 +3861,7 @@ exe	0x0056f3f0	he_Unk56f3f0	he	draft	draft
 exe	0x0056f600	he_Unk56f600	he	draft	draft		
 exe	0x0056f740	he_Unk56f740	he	draft	draft		
 exe	0x0056f980	he_Unk56f980	he	byte	draft		
-exe	0x0056fbc0	he_Unk56fbc0	he	shape	draft		
+exe	0x0056fbc0	he_SetLifeByAge	he	shape	draft		
 exe	0x0056fc50	he_Unk56fc50	he	byte	draft		
 exe	0x0056fda0	he_Unk56fda0	he	draft	draft		
 exe	0x00570130	he_Unk570130	he	byte	draft		
@@ -4005,7 +4005,7 @@ exe	0x00578370	ai_TutorialStop	unk_575860	byte	draft
 exe	0x00578440	ai_TutorialFreeRuns	unk_575860	byte	draft		
 exe	0x005784a0	ai_TutorialInitMainIntro	unk_575860	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	unk_575860	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	shape	readable		byte+readable -> shape+readable at e120fa8: he.h gains the prototype of he_HasGraveWork (0x573200, its definition fixed to the original's three arguments); the prototype replaces an unprototyped local declaration in unk_575860. ai_TutorialInitChapter2 calls nothing of it: its match flips eax/ecx (two regs hunks) on any added declaration before it (also seen with four unrelated const tables), a VC6 declaration-set tie-break, no evidence of the original's source [waits for: unk_575860's head settled (d2.h / sv.h included, the local prototypes gone), then re-search the tie-break]
+exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	byte	readable		
 exe	0x00579570	ai_TutorialInitChapter3	unk_575860	draft	readable	deep	
 exe	0x0057aa80	ai_TutorialInitChapter4	unk_575860	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	unk_575860	byte	readable		
@@ -4064,14 +4064,14 @@ exe	0x005847a0	ai_Unk5847a0	unk_575860	byte	draft
 exe	0x00584900	ai_GraveCare	unk_575860	byte	readable		
 exe	0x00584b70	ai_GraveRaiseHelper	unk_575860	byte	readable		
 exe	0x00584d70	ai_GypsyHelperWindow	unk_575860	draft	draft	deep	
-exe	0x00585380	ai_Unk585380	unk_575860	draft	draft		
-exe	0x00585750	ai_Unk585750	unk_575860	draft	draft		
-exe	0x005859c0	ai_Unk5859c0	unk_575860	draft	draft		
-exe	0x00585c40	ai_Unk585c40	unk_575860	draft	draft		
-exe	0x00585cb0	ai_Unk585cb0	unk_575860	draft	draft		
-exe	0x00585f30	ai_Unk585f30	unk_575860	draft	draft		
-exe	0x00586200	ai_Unk586200	unk_575860	draft	draft		
-exe	0x00586560	ai_Unk586560	unk_575860	draft	draft		
+exe	0x00585380	ai_GraveFogWindow	unk_575860	draft	readable	deep	
+exe	0x00585750	ai_SeanceWindow	unk_575860	byte	readable		
+exe	0x005859c0	ai_SeanceRitual	unk_575860	draft	readable	deep	
+exe	0x00585c40	ai_SeanceRollFormulas	unk_575860	byte	readable		
+exe	0x00585cb0	ai_SeanceGhost	unk_575860	byte	readable		
+exe	0x00585f30	ai_SeanceSacrifice	unk_575860	byte	readable		
+exe	0x00586200	ai_SeanceGift	unk_575860	byte	readable		
+exe	0x00586560	ai_SeancePick	unk_575860	byte	readable		
 exe	0x00586610	ai_Unk586610	unk_575860	draft	draft		
 exe	0x005867c0	ai_Unk5867c0	unk_575860	byte	draft		
 exe	0x00586840	ai_Unk586840	unk_575860	draft	draft		
@@ -4394,7 +4394,7 @@ exe	0x005af1b0	ai_OpenTransportSell	unk_58bbd0	byte	draft
 exe	0x005af1c0	ai_OpenTransportBuy	unk_58bbd0	byte	draft		
 exe	0x005af1d0	ai_TransportWindow	unk_58bbd0	draft	draft		
 exe	0x005b2090	ai_Unk5b2090	unk_58bbd0	draft	draft		
-exe	0x005b2180	ai_Unk5b2180	unk_58bbd0	draft	draft		
+exe	0x005b2180	ai_MapPick	unk_58bbd0	draft	draft		
 exe	0x005b2530	ai_Unk5b2530	unk_58bbd0	draft	draft		
 exe	0x005b26b0	ai_StorageWindow	unk_58bbd0	draft	draft		
 exe	0x005b3130	ai_Unk5b3130	unk_58bbd0	draft	draft		
