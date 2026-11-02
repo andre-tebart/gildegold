@@ -4,6 +4,8 @@
 #ifndef F3GM_H
 #define F3GM_H
 
+#include "f3gm_types.h"
+
 unsigned char *gm_BuildNext(void);              /* 0x501030, the next building of the query */
 unsigned char *gm_BuildQuery(int n, ...);       /* 0x501190, n (kind, value) filters; 6 takes no value */
 int gm_BuildingMainObject(unsigned char *bld);  /* 0x501b50, the main object of the building by its class (an AIOBJ, ai.c +0x2 objId) */
@@ -166,5 +168,6 @@ int gm_ChooseHeadIcon(unsigned short *c);  /* 0x4fb890 */
 int gm_PlaceOnStage(int id, int a, int b, int *p4, int *p5);  /* 0x4fbd10 */
 char *gm_Query(void *list, int n, ...);  /* 0x4ffe90 */
 void gm_RefreshGoodsLists(unsigned p);  /* 0x4ff190 */
+JOBTALENTS gm_GetJobTalents(int job);  /* 0x503ee0, the record of the job (0x5f and above: the first) */
 
 #endif

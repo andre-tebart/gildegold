@@ -2476,12 +2476,12 @@ int main_CharacterIntro(int unused);
    start menu pages: 0x4b4040 (the history choice, hist), 0x5361d0 (the player setup, cb mask 0xc6), the character creation 0x536d80 / 0x5359f0 (1 = continue with the family choice, 0 = quick start with the model
    "patrizier_MANN2" (0x75e628 = index + 0x639), -1 = back) and the scripted start menu pages "Startmenu/B_Persoenliches.esc" / "Startmenu/A_Stadtwahl.esc" (0x4e2bf0 / 0x4e2c70, 0x760638 = 0x12d6); returns
    non-zero when the character was created, sets the mode flag ai_GameFlags |= 8 then (else clears it). The quick start copies the
-   talents of the job's record: gm_Unk503ee0 returns a 6-byte record by value in the original (hidden pointer, eax), the call here
+   talents of the job's record: gm_GetJobTalents returns a 6-byte record by value in the original (hidden pointer, eax), the call here
    passes the buffer by hand @deep read against the original and rebuilt (259 -> 112 ins, size 1018 vs 1015): the language branch inverted (ls_GetLanguage() != 0 = three buttons) and its io_PrintText with the original's six arguments (0x1ac0, 0x1ac2, 0x1ac4, 0x1ac2, 0x1ac4, 1), if / do .. while (sv_RunFrame), the plain-click path continues without d2_SetViewEnabled(f, 1), ai_Unk58b880 is tested (the draft assigned it to ret), the shared lok / lback2 tails, main_MessageBox, txt_Ptrs[0x1af9]. Left: (1) frame 0x24 vs 0x1c: gm_Unk503ee0 returns its 6-byte record by value in the original (hidden pointer; the caller copies the record to a temp: mov dx,[eax+4] / mov word [esp+0x34],dx, then 5 bytes into init_PlayerProfile.talents); typing it needs gm_Unk503ee0's definition (f3gm), am.h and unk_575860's prototype changed; (2) allocation: the original keeps again in ebx and ret in ebp, hist in a slot, ours ret in a slot and hist in ebx; the epilogue's ai_GameFlags |= 8 as load / or al / store */
 int main_ChooseHistory(void)
 {
     int again, back, ret, f, b0, b1, b2, grp, hist, h, r;
-    unsigned char rec[6];
+    JOBTALENTS rec;
 
     again = 0;
     ret = 0;
@@ -2566,9 +2566,9 @@ lback:
                         goto lok;
                     } else if (r == 0) {
                         if (lobby_ChooseProfession(0xc6) != 0) {
-                            gm_Unk503ee0((unsigned *)rec, init_PlayerProfile.job);
-                            *(int *)init_PlayerProfile.talents = *(int *)rec;
-                            init_PlayerProfile.talents[4] = rec[4];
+                            rec = gm_GetJobTalents(init_PlayerProfile.job);
+                            *(int *)init_PlayerProfile.talents = *(int *)rec.skills;
+                            init_PlayerProfile.talents[4] = rec.skills[4];
                             init_PlayerProfile.modelId = gm_HeadIconNumber("patrizier_MANN2") + 0x639;
 lok:
                             ret = 1;
@@ -5148,7 +5148,7 @@ void main_PlayOutro(void)
    (ai_ScreenModes[(unsigned char)res]), the quoted-argument copies as while (s < e) *d++ = *s++, the IP
    flag is net itself (the draft's second r variable is gone; the job index has its own variable), the
    OpenEngine / OpenScreen failures with their own exits, the default profile typed (coat as the int 0x59a,
-   the job byte), the talents copied from gm_Unk503ee0's record as an int plus the +4 byte, then bytes 3 /
+   the job byte), the talents copied from gm_GetJobTalents's record as an int plus the +4 byte, then bytes 3 /
    0 / 1 set to 0xa8 / 0 / 0 (the draft had a misread mask). 507 vs 508 instructions, 83 differing, size
    1849 / 1849. Left: the three quoted-argument copies (0x53d06a, 0x53d0a6, 0x53d0e2) where ours keeps the
    source in ebx and walks a copy in ecx with the destination in esi, the original walks the source in esi
@@ -5162,13 +5162,12 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, char *cmd, int show)
     int net = 0;
     int sv = 0;
     int r, i, k;
-    char *p, *q;
+    char *p;
     char *s, *e;
     char *d;
     unsigned res;
     char c224[4];
-    short s220;
-    char c21c[8];
+    JOBTALENTS c21c;
     char num[0x80];
     OSVERSIONINFOA vi;
     char bm[0x100];
@@ -5335,10 +5334,9 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, char *cmd, int show)
             init_PlayerProfile.modelId = i + 0x639;
             strcpy(init_PlayerProfile.firstName, "Tobias");
             strcpy(init_PlayerProfile.familyName, "Severin");
-            q = (char *)gm_Unk503ee0(c21c, init_PlayerProfile.job);
-            *(int *)init_PlayerProfile.talents = *(int *)q;
-            s220 = *(short *)(q + 4);
-            init_PlayerProfile.talents[4] = (char)s220;
+            c21c = gm_GetJobTalents(init_PlayerProfile.job);
+            *(int *)init_PlayerProfile.talents = *(int *)c21c.skills;
+            init_PlayerProfile.talents[4] = c21c.skills[4];
             init_PlayerProfile.talents[3] = (char)0xa8;
             init_PlayerProfile.talents[0] = 0;
             init_PlayerProfile.talents[1] = 0;

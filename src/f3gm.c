@@ -19,6 +19,7 @@ struct CHTRANSPORT;
 struct AICHAR;
 extern char ai_PlayerSlots[4][0x2f4];
 #include "d2_types.h"
+#include "f3gm_types.h"
 extern D2WIN d2_Wins[];
 extern D2VIEW d2_Views[];
 #include "txt_views.h"
@@ -5722,19 +5723,15 @@ void gm_ResetCharacters(void)
     ai_NextCharNumber = 0;
     ai_NextPlayerNumber = 0;
 }
-/* 0x503ee0, copies the 6-byte record n of the table 0x61a688 (0x5f records; larger n: the first one) to out and returns out
-   (the original returns the record by value: eax is the hidden result pointer, WinMain 0x53d352 reads the record through it) */
+#define gm_JobTalents (*(JOBTALENTS (*)[0x5b])((char *)&ai_Unk61a686 + 0x2))  /* 0x61a688, the job records */
 
-unsigned *gm_Unk503ee0(unsigned *out, int n)
+/* 0x503ee0, the talents record of the job, by value (the hidden result pointer; jobs 0x5f and above: the first record) */
+
+JOBTALENTS gm_GetJobTalents(int job)
 {
-    if (n > 0x5e) {
-        *out = *(unsigned *)ai_Unk61a688;
-        *(short *)(out + 1) = *(short *)(ai_Unk61a688 + 4);
-        return out;
-    }
-    *out = *(unsigned *)(ai_Unk61a688 + n * 6);
-    *(short *)(out + 1) = *(short *)(ai_Unk61a688 + 4 + n * 6);
-    return out;
+    if (job >= 0x5f)
+        return gm_JobTalents[0];
+    return gm_JobTalents[job];
 }
 /* 0x503f30, 0 when the kind number of 0x504ad0 (x) is 10 .. 14, else 2 */
 

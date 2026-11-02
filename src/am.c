@@ -3946,7 +3946,7 @@ int ai_Unk4965b0(AIPER *p, AIARG *s1, AIARG *s2)
 
 int ai_Unk496610(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
 {
-    AIX6 r6;
+    JOBTALENTS r6;
     int q[0x88];
     float w[5];
     unsigned int cnt[5], n[5];
@@ -3981,7 +3981,7 @@ int ai_Unk496610(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
         }
         return r;
     }
-    gm_Unk503ee0(&r6, p->jobId);
+    r6 = gm_GetJobTalents(p->jobId);
     if (p->bld2 == 0 && p->kind != 3) {
         AIARG s1, s2;
 
@@ -4005,7 +4005,7 @@ int ai_Unk496610(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
     kb = util_RandomU(5);
     for (i = 0; i < 5; i++) {
         memset(q, 0, sizeof(q));
-        v = r6.v[i];
+        v = r6.skills[i];
         q[0] = 1;
         if (v > best) {
             if (best > 0) {
@@ -9117,7 +9117,7 @@ int ai_Unk4a1360(G5CH *p, AIARG *s1, AIARG *s2)
 
 int ai_Unk4a13e0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 {
-    AIX6 x;
+    JOBTALENTS x;
     float s[3];
     G8OFFER rec[3];
     G5CH *c, *best;
@@ -9150,10 +9150,10 @@ int ai_Unk4a13e0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     if (best == 0)
         return 0;
     G8_4948F0(p, rec);
-    gm_Unk503ee0(&x, ((unsigned char *)best)[0x164]);
+    x = gm_GetJobTalents(((unsigned char *)best)[0x164]);
     for (n = 0; n < 3; n++) {
-        va = max((float)x.v[rec[n].b], 1.0f);
-        vb = max((float)x.v[rec[n].c], 1.0f);
+        va = max((float)x.skills[rec[n].b], 1.0f);
+        vb = max((float)x.skills[rec[n].c], 1.0f);
         s[n] = ((unsigned char *)best)[0x80 + rec[n].c] / vb + ((unsigned char *)best)[0x80 + rec[n].b] / va;
     }
     if (util_RandomU(2) != 0) {

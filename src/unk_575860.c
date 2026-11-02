@@ -4294,7 +4294,6 @@ void ai_Unk57b8a0(int arg)
 }
 
 int gm_HeadIconNumber();
-unsigned *gm_Unk503ee0(unsigned *out, int n);
 
 /* 0x57bc30, the tutorial info block (168 B, ROUGH): the bytes 0x75e5a0 = 0x4b, 0x75e5a1 = 0x18, 0x75e5a2 =
    0x10, 0x75e5a3 = 0x33, the dword 0x75e5a4 = 0x59a, 0x75e5a8 / 0x75e5a9 = 0; 0x75e628 = 0x4fb770 (0x624ee0)
@@ -4303,8 +4302,7 @@ unsigned *gm_Unk503ee0(unsigned *out, int n);
    local and 0x75e5f4 */
 void ai_SetupTutorialPlayer(void)
 {
-    char local[0x10];
-    char *r;
+    JOBTALENTS t;
 
     *(unsigned char *)(unsigned)&init_PlayerProfile = 0x4b;
     *(unsigned char *)((unsigned)&init_PlayerProfile + 0x1) = 0x18;
@@ -4316,11 +4314,9 @@ void ai_SetupTutorialPlayer(void)
     init_PlayerProfile.modelId = gm_HeadIconNumber((char *)(unsigned)&full_data_624ee0) + 0x639;
     strcpy((char *)((unsigned)&init_PlayerProfile + 0xa), *(char **)(unsigned)&full_data_1449e48);
     strcpy((char *)((unsigned)&init_PlayerProfile + 0x2a), *(char **)(unsigned)&full_data_1449e4c);
-    gm_Unk503ee0((unsigned *)local, *(unsigned char *)((unsigned)&init_PlayerProfile + 0x3));
-    r = local;
-    *(int *)init_PlayerProfile.talents = *(int *)r;
-    *(unsigned short *)(local + 0xc) = *(unsigned short *)(r + 4);
-    init_PlayerProfile.talents[4] = *(unsigned char *)(r + 4);
+    t = gm_GetJobTalents(*(unsigned char *)((unsigned)&init_PlayerProfile + 0x3));
+    *(int *)init_PlayerProfile.talents = *(int *)t.skills;
+    init_PlayerProfile.talents[4] = t.skills[4];
 }
 
 int sv_RunFrame(int cb, unsigned mask);
