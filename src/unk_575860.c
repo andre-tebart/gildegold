@@ -5394,23 +5394,7 @@ char ai_ShotCallbackArg[0x40] = { 0 };  /* 0x6fa020, the argument gv_SetEffectCa
    ai_CannonSwitchAnim (0 .. 2) and a fire (ai_CannonFireCheck) ai_CannonExplosion; a right button release or a click
    on the quit control sets sv_PopRequest. The teardown fades out again, closes the three windows, removes the two
    objects, deletes the 3D objects, re-enables the listed objects, restores viewport, clip rectangle, scene, sky and
-   camera and releases the callback of the run record
-   @deep Read whole function against the original and rewritten (typed rec/scene structs, fade mask,
-   view/object scan as a do-while over an int address, unsigned dt via fild qword, obj[5], camTarget int[3]
-   copied by memcpy as ints, string literals, 6fa020 settled as ai_ShotCallbackArg). The mnemonic sequence
-   of ours and the original differ in 76 of 1328 lines, all of them mov/push/test-vs-cmp/or position; the
-   call, push-argument and branch sequences are identical once registers are normalised (normalised diff of
-   call/push/cmp/jcc lines shows only constants kept in registers: the original pushes/compares esi (=0)
-   and edi/ebp (=-1) where ours uses immediates 0 / -1, e.g. 'push edi' vs 'push 0' at the d2_StartFade and
-   sv_RunFrame calls, 'cmp eax, esi' vs 'test eax, eax' for the d3if_Delete checks). The 12 differing
-   branch targets are the same branches pointing at the same statements, shifted by the byte-size
-   difference (ours 2481 vs 2501) accumulated before them (e.g. the two early 'je' to the epilogue, the
-   d2_Objs scan jumps one instruction apart). Remaining hunks are regs/slots only: original pins rec=ebp,
-   run=ebx across the loop and keeps 0/-1 in esi/edi; ours has rec=ebx and reloads run from [esp+0x20]
-   (asmdiff 0x57e2c1 'mov ebx,eax / add esp,4 / test ebx,ebx' vs 'add esp,4 / mov [esp+0x18],eax / test
-   eax,eax'; 0x57e853 'mov eax,[ebx+4]' vs 'mov eax,[ebp+4]'); the flag object's byte updates (0x57e700
-   'mov cl,[esi+0x212] / and cl,0xf7 / or cl,0x44' vs three read-modify-writes reloading [esp+0x124])
-   follow from the same pressure; the remaining 5 instructions come from the constants-in-registers. */
+   camera and releases the callback of the run record */
 void ai_CannonScene(char *rec)
 {
     GVEFFECT *run;
@@ -5635,20 +5619,7 @@ double _CIfmod();
    mouse at the screen edges (5 pixels) give the directions a (vertical) and b (horizontal) in -1 .. 1; each
    speed (pitchSpeed, yawSpeed) falls toward 0 without a direction and otherwise grows by dt * 0.8 (or * 0.25
    when it runs against the direction) up to +-1, the frame deltas are speed * dt * 0.8 (pitch) and * 1.5 (yaw).
-   The pitch is kept within -15 .. 45 degrees (the pitch speed is cleared at a stop), the yaw within 0 .. 2 pi
-   @deep Rewritten from the original with the typed CANNONSCENE (pitch/yaw, speeds, deltas, drag state):
-   same statement structure as the original (drag zone check, init/step/release blocks, key directions a/b
-   with the <=5 / >=H-5 edges, speed decel/accel with the 0.25/0.8 factors and the clamps, delta only
-   computed on the decel/accel paths, pitch clamp, fmod of the yaw). The 12 differing branch targets are
-   the same branches landing a few bytes apart (e.g. jne +0x106 ours +0x16e vs +0x175, jle +0x25a ours
-   +0x294 vs +0x299); the one real layout difference is the shared 'state = ebx(0)' store that the original
-   reaches from both the y<0x50 and y>H-0x50 jumps (asmdiff 0x57ecf5). Remaining hunks are registers and
-   FPU scheduling: the original keeps 0 in ebx/ebp/edi so every zero compare is 'cmp edi, ebx' / 'cmp byte
-   [..], bl' where ours has 'test ebp, ebp' (asmdiff 0x57ee22, 0x57edb5); in the accel branches the
-   original loads dt before the speed compare ('fld [esp+0x18]' at 0x57ee9b) and stores then reloads the
-   speed before the clamp ('fstp [esi+0x54] / fld [esi+0x54] / fcomp' at 0x57eeb9..0x57eebf) where ours
-   keeps the value in the FPU ('fcom / fst'); the 'test ah,5 / jp' vs 'and eax,0x100 / jne' choices at
-   0x57eea3 and 0x57eec7 are the same comparisons with operands in the other order. */
+   The pitch is kept within -15 .. 45 degrees (the pitch speed is cleared at a stop), the yaw within 0 .. 2 pi */
 void ai_CannonAim(CANNONSCENE *sc, float dt)
 {
     int a = 0;
