@@ -5614,26 +5614,33 @@ void sv_DrawBubbles(void)
         d2_AddDirty(x, y, d2_TextDrawnW, d2_TextDrawnH);
     }
 }
-/* 0x52d1e0, draws the name plates of the objects of the table 0x760640 (0x32 ints each, name at +0x48) above their screen boxes, then walks the scene objects of kind 0x20 with the callback 0x52d010 */
+/* 0x52d1e0, draws the text of every name plate (sv_NamePlates) above the screen box of its object (one with mesh data
+   or of type 0), then the names of the contact gates of the current scene (sv_DrawGateName)
+   @deep read whole against the original: font 0x54, the 32 plates (object with mesh data or of type 0,
+   screen box), the text box and dirty rect, then d3_ForEachObject2(d3_DefaultScene, 0, 0x20,
+   sv_DrawGateName); 65 vs 66 instructions. Left is the loop's induction pointer: ours walks
+   sv_NamePlates+0x48 (the text, mov ebx,sv_NamePlates+0x48 / mov eax,[ebx-0x48] / push ebx), the original
+   sv_NamePlates (the object, mov ebx,sv_NamePlates / lea edx,[ebx+0x48]), as in sv_DrawBubbles; plus the
+   register rotation of x / y / TextDrawnW,H (regs 18) and the pushed ebx. d2_AddDirty is K&R in sv's head
+   (Open: d2.h unsettled), M7 stays open. */
 
-void sv_Unk52d1e0(void)
+void sv_DrawNamePlates(void)
 {
-    int *p, o, t[3], x;
+    int i, x, y;
+    D3OBJECT *o;
+    D3RECT box;
 
     d2_SetFont(0x54);
-    p = (int *)(unsigned)&sv_NamePlates;
-    do {
-        o = *p;
-        if (o != 0 && (*(int *)(o + 0x1cc) != 0 || *(int *)(o + 0x218) == 0)) {
-            if ((char)d3if_ScreenBox(o, t) != 0) {
-                x = (t[2] - t[0]) / 2 - 0x50 + t[0];
-                d2_DrawTextBox(x, t[1], 0xa0, 0x60, d2_ScreenSurf, (char *)(p + 0x12), 0x28);
-                d2_AddDirty(x, t[1], SV_I((unsigned)&d2_TextDrawnW), SV_I((unsigned)&d2_TextDrawnH));
-            }
+    for (i = 0; i < 0x20; i++) {
+        o = (D3OBJECT *)sv_NamePlates[i].obj;
+        if (o != 0 && (o->info != 0 || o->type == 0) && d3if_ScreenBox(o, &box) != 0) {
+            y = box.top;
+            x = (box.right - box.left) / 2 - 0x50 + box.left;
+            d2_DrawTextBox(x, y, 0xa0, 0x60, d2_ScreenSurf, sv_NamePlates[i].text, 0x28);
+            d2_AddDirty(x, y, d2_TextDrawnW, d2_TextDrawnH);
         }
-        p += 0x32;
-    } while ((int)p < (unsigned)((unsigned)sv_NamePlates + 0x1900));
-    d3_ForEachObject2(ai_Unk5fb5b0, 0, 0x20, sv_DrawGateName);
+    }
+    d3_ForEachObject2(d3_DefaultScene, 0, 0x20, sv_DrawGateName);
 }
 /* 0x52d2a0, draws the names of the items (0x4ffe90 lists of the shown building / group: the not-person items first, then the persons (class 6 / 2)) above their screen boxes */
 
@@ -7543,7 +7550,7 @@ l2:
                     if (SV_B(((unsigned)&kb_Down + 0x38)) != 0)
                         sv_Unk52d2a0();
                 } else
-                    sv_Unk52d1e0();
+                    sv_DrawNamePlates();
             }
             if ((mask & 0x80000) == 0) {
                 if (SV_I((unsigned)&sv_PanelShown) != 0 || SV_I((unsigned)&ai_FallbackBuilding) != 0)
