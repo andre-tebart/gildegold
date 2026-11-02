@@ -5078,39 +5078,40 @@ void ai_AlchemistWindow(unsigned char *obj)
     d2_CloseView(form);
     sv_CameraFollow();
 }
-/* 0x57dc50, a tutorial skill window (520 B): arg 1 = the record, arg 2 = the value put into the message, arg 3 =
-   the skill index. The lookup 0x4eb180 (record, &a, &b, 0) != 0 or index 3 clears the answer flag; the window
-   "Locations_Domizil_skill" (0x62a2c4) with 0x476f80 (0, 0) / 0x475600, the sound 0x52ea30 (0x6ed938), the
-   texts 0x4045 (index + 0x4172), index + 0x4176 and 0x4046 (0x182, only with the answer), the two entries
-   0x475b80 (window, 2, 0x515960 (0x4047) / +1) and 0x475e40 (the first entry, the answer), 0xf8a668 = -1.
-   Then the pump loop 0x5309a0 (this handler, 0x677c7): the click 0x14673a0 -> 0x6f22a0 = 1; the window
-   0x5fe710 == the first entry -> the message (0xf8 bytes: type 0x97 at +4, 1 at +0x36, the record +1 dword at
-   +0xc, the character 0x770b84 [word record +0x27] at +8, the game time 0x770ae0 at +0x28, arg[0] = *arg 2 at
-   +0x58, arg[1] = the index at +0x5c, arg[4] = random 0x42ec00 (0x5a0) & 0xffff + 1000 at +0x68) and
-   0x6f22a0 = 1; the second entry -> 0x6f22a0 = 1; the pump 0 -> 0x4758f0 (window), 1 */
-
-
-
-int ai_AlchemistTrainShareWindow(char *rec, int *arg, int idx)
+/* 0x57dc50, the share research window of the alchemist object obj (record rec) for the share idx ("Locations\Domizil\skill"):
+   the share's name (text idx + 0x4172) and description (idx + 0x4176) and, while no research runs (ahm_ResearchState)
+   and the share is not the fourth, the question 0x4046; the first answer posts the message 0x97 (cm_SendLongMessage:
+   from the building, to the owner character, the game clock, arg[0] the record's id, arg[1] the share, arg[4] a
+   random duration 1000 .. 66535) and closes the window; the second answer and the right mouse button close it.
+   Answers 1
+   @deep read whole against the original and reconstructed typed (AIMSG, AHMREC, the form name as a
+   literal); asmdiff --symbols: every call, argument, constant and branch in the original's order, 520 vs
+   520 bytes (the same 94 leading instructions equal). Left: scheduling of the message block only (the
+   0x57cde0 family): the original loads the owner's netId (lea/lea/lea, mov ecx,[ai_CharInts]) and the
+   clock words (NOWX, ai_TimeHour, 0x770ae8, the word 0x770aec) interleaved with the fromId and arg stores,
+   ours copies the clock first (ai_Time, ai_Time+0xc) and the owner after; struct copy, field-wise copy in
+   several orders give the same schedule */
+int ai_AlchemistTrainShareWindow(unsigned char *obj, AHMREC *rec, int idx)
 {
-    char msg[0xf8];
-    char *win;
+    AIMSG msg;
+    AHMCLOCK *clk;
+    int win;
     int a;
-    int b;
+    float b;
     int t1;
     int t2;
     int ok;
 
     ok = 1;
-    if (ahm_ResearchState(rec, &a, &b, 0) != 0)
+    if (ahm_ResearchState(obj, &a, &b, 0) != 0)
         ok = 0;
     if (idx == 3)
         ok = 0;
-    win = (char *)d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62a2c4);
+    win = d2_OpenForm(0, 0, "Locations\Domizil\skill");
     d2_SetPointerSprite(0, 0);
     d2_CentreViewWindows(win);
     d2_SetForm(win, 0);
-    sv_FitForm(U_I((unsigned)&d2_LastWindow));
+    sv_FitForm(d2_LastWindow);
     d2_SetForm(win, 1);
     io_PrintText(0x4045, idx + 0x4172);
     io_PrintText(idx + 0x4176);
@@ -5121,47 +5122,37 @@ int ai_AlchemistTrainShareWindow(char *rec, int *arg, int idx)
     t1 = d2_GetWinObj(win, 2, a);
     t2 = d2_GetWinObj(win, 2, a + 1);
     d2_SetObjEnabled(t1, ok);
-    U_I((unsigned)&d2_ClickedId) = -1;
+    d2_ClickedId = -1;
     for (;;) {
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0) {
-            U_I((unsigned)&sv_PopRequest) = 1;
-        } else if (U_I((unsigned)&d2_ClickedId) != -1) {
-            if (U_I((unsigned)&d2_PointerObj) == t1) {
-                memset(msg, 0, 0xf8);
-                *(unsigned char *)(msg + 0x04) = 0x97;
-                *(unsigned char *)(msg + 0x36) = 1;
-                *(int *)(msg + 0x0c) = *(int *)(rec + 1);
-                *(int *)(msg + 0x08) = ((int *)(unsigned)&ai_CharInts)[*(unsigned short *)(rec + 0x27) * 0x87];
-                *(int *)(msg + 0x28) = U_I((unsigned)&ai_Time);
-                *(int *)(msg + 0x2c) = U_I((unsigned)&ai_TimeHour);
-                *(int *)(msg + 0x30) = U_I(((unsigned)&ai_Time + 0x8));
-                *(unsigned short *)(msg + 0x34) = *(unsigned short *)((unsigned)&ai_Time + 0xc);
-                *(int *)(msg + 0x58) = *arg;
-                *(int *)(msg + 0x5c) = idx;
-                *(int *)(msg + 0x68) = (util_Random(0x5a0) & 0xffff) + 1000;
-                cm_SendLongMessage(msg);
-                U_I((unsigned)&sv_PopRequest) = 1;
-            } else if (U_I((unsigned)&d2_PointerObj) == t2) {
-                U_I((unsigned)&sv_PopRequest) = 1;
+        if (dm_L.rup != 0) {
+            sv_PopRequest = 1;
+        } else if (d2_ClickedId != -1) {
+            if (d2_PointerObj == t1) {
+                memset(&msg, 0, sizeof(msg));
+                clk = (AHMCLOCK *)&msg.time;
+                msg.type = 0x97;
+                msg.flags = 1;
+                msg.fromId = ((AIBLD *)obj)->id;
+                msg.to = ai_CharsT[((AIBLD *)obj)->owner].netId;
+                clk->a = ai_TimeK.a;
+                clk->b = ai_TimeK.b;
+                clk->c = ai_TimeK.c;
+                clk->d = ai_TimeK.d;
+                msg.arg[0] = rec->id;
+                msg.arg[1] = idx;
+                msg.arg[4] = (util_Random(0x5a0) & 0xffff) + 1000;
+                cm_SendLongMessage((char *)&msg);
+                sv_PopRequest = 1;
+            } else if (d2_PointerObj == t2) {
+                sv_PopRequest = 1;
             }
         }
-        if (sv_RunFrame(ai_AlchemistTrainShareWindow, 0x677c7) == 0) {
+        if (sv_RunFrame((int)ai_AlchemistTrainShareWindow, 0x677c7) == 0) {
             d2_CloseView(win);
             return 1;
         }
     }
 }
-
-int ahm_ObjectValue();
-char * ahm_OwnerChar();
-float ahm_Share();
-int d2_GetObjValue();
-int gm_ConvertMoney(int a, unsigned char k);
-int gm_PlayerFactor(int a, unsigned char k);
-int sv_CheckGoodAmount();
-int ahm_SendAddValue();
-void cm_SendMoveGoods(int a, int b, unsigned char c, int d);
-
 /* 0x57de60, the tutorial training window (631 B, the 0x57dc50 sibling): the skill points 0x4ec3d0 (record) and
    their tenth 0x4ec3d0 / 10; the run record 0x4eaa50 (record), 0 for none -> 0; the factor 0x4eab20 (record, 3)
    (a float); the window "Locations_Domizil_skill" (0x62a2c4) with 0x476f80 (0, 0) / 0x475600, the sound
