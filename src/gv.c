@@ -3202,18 +3202,19 @@ int gv_FindCrimesByState(int state, int *out)
     }
     return n;
 }
-/* 0x4f3640, stores the pair (a, b) in the free slot (0x4f3780 (a, b)) of the table 0x91b6e0 ("gs_AddBeweis: Executed .." is printed); 1 when stored */
+/* 0x4f3640, the character owner holds evidence of the crime crime: stores the pair in its slot of ai_Evidence
+   (gv_EvidenceSlot: the first free one; none when full or already there) and prints a trace; 1 when stored */
 
-int unk_Unk4f3640(int b, int a)
+int gv_AddEvidence(int crime, int owner)
 {
-    int k;
+    int slot;
     char buf[512];
 
-    k = unk_Unk4f3780(a, b);
-    if (k >= 0) {
-        ((int *)unk_Tab91b6e0)[k * 2] = a;
-        ((int *)unk_Tab91b6e0)[k * 2 + 1] = b;
-        sprintf(buf, "gs_AddBeweis: Executed .. own", a, b, k);
+    slot = gv_EvidenceSlot(owner, crime);
+    if (slot > -1) {
+        ai_Evidence[slot][0] = owner;
+        ai_Evidence[slot][1] = crime;
+        sprintf(buf, "gs_AddBeweis(): Executed---- owner = %i, st_id = %i, slot = %i", owner, crime, slot);
         return 1;
     }
     return 0;
@@ -3255,7 +3256,7 @@ int unk_Unk4f36e0(int id)
 }
 /* 0x4f3780, the slot for the pair (a, b) in the table 0x91b6e0 (2048 pairs): -2 when it exists already, else the first free one or -1 */
 
-int unk_Unk4f3780(int a, int b)
+int gv_EvidenceSlot(int a, int b)
 {
     int ok, r, i;
     int *t;

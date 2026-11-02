@@ -366,10 +366,10 @@ int gv_ReadCrimes(int f);             /* 0x4f2b30 */
 int gv_TableRecordText(char *out, int i);    /* 0x4f2fe0 */
 
 int gv_FindCrimesByState(int state, int *out);    /* 0x4f3610 */
-int unk_Unk4f3640(int b, int a);        /* 0x4f3640 */
+int gv_AddEvidence(int crime, int owner);        /* 0x4f3640 */
 int unk_Unk4f36b0(void);                /* 0x4f36b0 */
 int unk_Unk4f36e0(int id);              /* 0x4f36e0 */
-int unk_Unk4f3780(int a, int b);        /* 0x4f3780 */
+int gv_EvidenceSlot(int a, int b);        /* 0x4f3780 */
 
 int unk_Unk4f3910(int a, int b, int s, int m);  /* 0x4f3910 */
 int gv_CountOwnedGraves(int c);               /* 0x4f39b0 */

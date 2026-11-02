@@ -3669,7 +3669,7 @@ int ai_Unk4c8e70(G17MSG *m, G17STAT *s)
     }
     for (j = he_FindEvent(1, 0, 0x18); j != 0; j = he_NextEvent()) {
         if (*(int *)(j + 0xc4) == *(int *)(rec + 0x16)) {
-            if (unk_Unk4f3640(*(int *)rec, ai_CharInts[*(unsigned short *)(j + 8)][0]) == 0)
+            if (gv_AddEvidence(*(int *)rec, ai_CharInts[*(unsigned short *)(j + 8)][0]) == 0)
                 break;
             if (s != 0) {
                 c2 = gm_FindChar(*(int *)(j + 0xc4));
@@ -3707,7 +3707,7 @@ int ai_Unk4c90d0(G17MSG *m, G17STAT *s)
 {
     int i;
 
-    i = unk_Unk4f3780(G17_I(*m, 4), G17_I(*m, 0));
+    i = gv_EvidenceSlot(G17_I(*m, 4), G17_I(*m, 0));
     if (i > -1) {
         ai_Evidence[i][0] = G17_I(*m, 4);
         ai_Evidence[i][1] = G17_I(*m, 0);
