@@ -2641,7 +2641,7 @@ int ai_RegisterSocialActions(int a)
     act.decide = ai_DecideBlutrache;
     act.exec = ai_ExecBlutrache;
     act.flags = 0x1c3;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x45;
@@ -2650,7 +2650,7 @@ int ai_RegisterSocialActions(int a)
     act.decide = ai_Unk4ab7f0;
     act.exec = ai_Unk4ab9f0;
     act.flags = 0x1c3;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x46;
@@ -2659,7 +2659,7 @@ int ai_RegisterSocialActions(int a)
     act.decide = ai_DecideTheater;
     act.exec = ai_Unk4abc60;
     act.flags = 1;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x47;
@@ -2668,7 +2668,7 @@ int ai_RegisterSocialActions(int a)
     act.decide = ai_Unk4abd00;
     act.exec = ai_Unk4abe60;
     act.flags = 3;
-    return ai_Unk495520(&act, a) != 0;
+    return am_RegisterMethod(&act, a) != 0;
 }
 
 G10GAME * ai_PokerTable = 0;  /* 0xf83654 */

@@ -947,7 +947,7 @@ int ai_RegisterBuildingActions(int a)
     act.decide = ai_Unk48e120;
     act.exec = ai_ExecBuildDomizil;
     act.flags = 0x1c3;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x41;
@@ -956,7 +956,7 @@ int ai_RegisterBuildingActions(int a)
     act.decide = ai_Unk48e470;
     act.exec = ai_Unk48eab0;
     act.flags = 0x1c3;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x42;
@@ -965,7 +965,7 @@ int ai_RegisterBuildingActions(int a)
     act.decide = ai_Unk48f010;
     act.exec = ai_Unk48f1e0;
     act.flags = 0x1c1;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x43;
@@ -974,7 +974,7 @@ int ai_RegisterBuildingActions(int a)
     act.decide = ai_DecideBuildSculpture;
     act.exec = ai_ExecBuildSculpture;
     act.flags = 3;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x48;
@@ -983,7 +983,7 @@ int ai_RegisterBuildingActions(int a)
     act.decide = ai_DecideUseAlchemyItems;
     act.exec = ai_ExecUseAlchemyItems;
     act.flags = 0x1c3;
-    return ai_Unk495520(&act, a) != 0;
+    return am_RegisterMethod(&act, a) != 0;
 }
 /* 0x48feb0, a random character of the building (kind 0x14, not busy with a grave action) */
 
@@ -1400,7 +1400,7 @@ int ai_RegisterGraveActions(int a)
     act.decide = ai_DecideGraveyardOwner;
     act.exec = ai_Unk490830;
     act.flags = 0x1c3;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x3e;
@@ -1409,7 +1409,7 @@ int ai_RegisterGraveActions(int a)
     act.decide = ai_Unk4908d0;
     act.exec = ai_Unk490b90;
     act.flags = 1;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x3f;
@@ -1418,7 +1418,7 @@ int ai_RegisterGraveActions(int a)
     act.decide = ai_SeanceDecide;
     act.exec = ai_SeanceExec;
     act.flags = 1;
-    return ai_Unk495520(&act, a) != 0;
+    return am_RegisterMethod(&act, a) != 0;
 }
 /* 0x490e00, decision 0 */
 
@@ -3468,17 +3468,51 @@ int ai_LoadActionTable(void)
 }
 #undef AM_WRITE
 #undef AM_READ
-/* 0x495520, registers an action: its need weights come from the ini file when ini is set */
+/* 0x495520, registers an action into ai_Actions: its short / long desire weights come from ai_method_addon.ini when ini is set, else they are cleared */
 
-int ai_Unk495520(AIACT *a, int ini)
+int am_RegisterMethod(AIACT *a, int ini)
 {
     G5ACT *act = (G5ACT *)a;
     char key[64];
     char val[128];
     int i, found;
 
-    if (act->id != 0 && act->id < 0x49) {
-        if (ini == 0) {
+    if (act->id > 0 && act->id < 0x49) {
+        if (ini != 0) {
+            for (i = 0; i < 4; i++) {
+                sprintf(key, "ShortDesire%li", i + 1);
+                if (GetPrivateProfileStringA(act->name, key, "", val, 0x80, ai_ActionIniPath) != 0) {
+                    act->w1[i].k = (unsigned char)ai_GetDesireByName(val);
+                    sprintf(key, "ShortChange%li", i + 1);
+                    GetPrivateProfileStringA(act->name, key, "", val, 0x80, ai_ActionIniPath);
+                    act->w1[i].w = (float)atof(val);
+                } else {
+                    act->w1[i].k = 0xff;
+                    act->w1[i].w = 0.0f;
+                }
+                sprintf(key, "LongDesire%li", i + 1);
+                if (GetPrivateProfileStringA(act->name, key, "", val, 0x80, ai_ActionIniPath) != 0) {
+                    act->w2[i].k = (unsigned char)ai_GetDesireByName(val);
+                    sprintf(key, "LongChange%li", i + 1);
+                    GetPrivateProfileStringA(act->name, key, "", val, 0x80, ai_ActionIniPath);
+                    act->w2[i].w = (float)atof(val);
+                } else {
+                    act->w2[i].k = 0xff;
+                    act->w2[i].w = 0.0f;
+                }
+            }
+            /* an action without any need it changes is reported (the message is only formatted);
+               the compare with -1 of the zero-extended kind is always true, as in the original */
+            found = 0;
+            for (i = 0; !found && i < 4; i++) {
+                if ((act->w1[i].k != -1 && act->w1[i].w != 0.0f) ||
+                    (act->w2[i].k != -1 && act->w2[i].w != 0.0f))
+                    found = 1;
+            }
+            if (!found)
+                sprintf(val, "am_RegisterMethod(): Methode '%s' hat keinerlei Auswirkungen!!!", act->name);
+            memmove(act->w3, act->w1, 0x20);
+        } else {
             for (i = 0; i < 4; i++) {
                 act->w1[i].k = 0xff;
                 act->w1[i].w = 0.0f;
@@ -3487,40 +3521,6 @@ int ai_Unk495520(AIACT *a, int ini)
                 act->w3[i].k = 0xff;
                 act->w3[i].w = 0.0f;
             }
-        } else {
-            for (i = 1; i <= 4; i++) {
-                sprintf(key, "ShortDesire%li", i);
-                if (GetPrivateProfileStringA(act->name, key, "", val, 0x80, ai_ActionIniPath) == 0) {
-                    act->w1[i - 1].k = 0xff;
-                    act->w1[i - 1].w = 0.0f;
-                } else {
-                    act->w1[i - 1].k = (unsigned char)ai_Unk4a47c0(val);
-                    sprintf(key, "ShortChange%li", i);
-                    GetPrivateProfileStringA(act->name, key, "", val, 0x80, ai_ActionIniPath);
-                    act->w1[i - 1].w = (float)atof(val);
-                }
-                sprintf(key, "LongDesire%li", i);
-                if (GetPrivateProfileStringA(act->name, key, "", val, 0x80, ai_ActionIniPath) == 0) {
-                    act->w2[i - 1].k = 0xff;
-                    act->w2[i - 1].w = 0.0f;
-                } else {
-                    act->w2[i - 1].k = (unsigned char)ai_Unk4a47c0(val);
-                    sprintf(key, "LongChange%li", i);
-                    GetPrivateProfileStringA(act->name, key, "", val, 0x80, ai_ActionIniPath);
-                    act->w2[i - 1].w = (float)atof(val);
-                }
-            }
-            found = 0;
-            for (i = 0; !found; i++) {
-                if (i > 3) {
-                    sprintf(val, "am_RegisterMethod(): Methode '%s' hat keinerlei Auswirkungen!!!", act->name);
-                    break;
-                }
-                if ((act->w1[i].k != 0xff && act->w1[i].w != 0.0f) ||
-                    (act->w2[i].k != 0xff && act->w2[i].w != 0.0f))
-                    found = 1;
-            }
-            memcpy(act->w3, act->w1, 0x20);
         }
         G5_ACTS[act->id] = *act;
     }
@@ -9195,7 +9195,7 @@ int ai_RegisterBaseActions(int a)
     act.decide = ai_Unk496030;
     act.exec = ai_AlwaysTrue;
     act.flags = 0x1;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x2;
@@ -9204,7 +9204,7 @@ int ai_RegisterBaseActions(int a)
     act.decide = ai_Unk496050;
     act.exec = ai_Unk496070;
     act.flags = 0x1;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x3;
@@ -9213,7 +9213,7 @@ int ai_RegisterBaseActions(int a)
     act.decide = ai_Unk496080;
     act.exec = ai_Unk4960a0;
     act.flags = 0x1;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x4;
@@ -9222,7 +9222,7 @@ int ai_RegisterBaseActions(int a)
     act.decide = ai_Unk4960b0;
     act.exec = ai_Unk4965b0;
     act.flags = 0x1;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x5;
@@ -9231,7 +9231,7 @@ int ai_RegisterBaseActions(int a)
     act.decide = ai_Unk496610;
     act.exec = ai_Unk496ab0;
     act.flags = 0x1;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x6;
@@ -9240,7 +9240,7 @@ int ai_RegisterBaseActions(int a)
     act.decide = ai_Unk495fa0;
     act.exec = ai_Unk495fc0;
     act.flags = 0x1;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x7;
@@ -9249,7 +9249,7 @@ int ai_RegisterBaseActions(int a)
     act.decide = ai_Unk495fd0;
     act.exec = ai_Unk495ff0;
     act.flags = 0x1;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x8;
@@ -9258,7 +9258,7 @@ int ai_RegisterBaseActions(int a)
     act.decide = ai_Unk496000;
     act.exec = ai_Unk496020;
     act.flags = 0x1;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x9;
@@ -9267,7 +9267,7 @@ int ai_RegisterBaseActions(int a)
     act.decide = ai_Unk496e40;
     act.exec = ai_Unk4972d0;
     act.flags = 0x19;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0xa;
@@ -9276,7 +9276,7 @@ int ai_RegisterBaseActions(int a)
     act.decide = ai_Unk497490;
     act.exec = ai_Unk497630;
     act.flags = 0x1b;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0xb;
@@ -9285,7 +9285,7 @@ int ai_RegisterBaseActions(int a)
     act.decide = ai_Unk497660;
     act.exec = ai_Unk4979d0;
     act.flags = 0x1;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0xd;
@@ -9294,7 +9294,7 @@ int ai_RegisterBaseActions(int a)
     act.decide = sv_ReturnZero;
     act.exec = sv_ReturnZero;
     act.flags = 0x1;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0xe;
@@ -9303,7 +9303,7 @@ int ai_RegisterBaseActions(int a)
     act.decide = ai_Unk497af0;
     act.exec = ai_Unk497c80;
     act.flags = 0xff;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0xf;
@@ -9312,7 +9312,7 @@ int ai_RegisterBaseActions(int a)
     act.decide = ai_Unk497cf0;
     act.exec = ai_Unk497ee0;
     act.flags = 0xff;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x10;
@@ -9321,7 +9321,7 @@ int ai_RegisterBaseActions(int a)
     act.decide = ai_Unk497fa0;
     act.exec = ai_Unk498470;
     act.flags = 0x3;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x11;
@@ -9330,7 +9330,7 @@ int ai_RegisterBaseActions(int a)
     act.decide = ai_Unk4984d0;
     act.exec = ai_Unk498a80;
     act.flags = 0x3;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x12;
@@ -9339,7 +9339,7 @@ int ai_RegisterBaseActions(int a)
     act.decide = ai_Unk498b80;
     act.exec = sv_ReturnZero;
     act.flags = 0x3;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x13;
@@ -9348,7 +9348,7 @@ int ai_RegisterBaseActions(int a)
     act.decide = ai_Unk498c70;
     act.exec = ai_Unk499290;
     act.flags = 0x3;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x14;
@@ -9357,7 +9357,7 @@ int ai_RegisterBaseActions(int a)
     act.decide = sv_ReturnZero;
     act.exec = sv_ReturnZero;
     act.flags = 0x3;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x15;
@@ -9366,7 +9366,7 @@ int ai_RegisterBaseActions(int a)
     act.decide = ai_Unk499400;
     act.exec = sv_ReturnZero;
     act.flags = 0x3;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x16;
@@ -9375,7 +9375,7 @@ int ai_RegisterBaseActions(int a)
     act.decide = ai_Unk499520;
     act.exec = ai_Unk499580;
     act.flags = 0x3b;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x17;
@@ -9384,7 +9384,7 @@ int ai_RegisterBaseActions(int a)
     act.decide = ai_Unk499660;
     act.exec = ai_Unk499a90;
     act.flags = 0x1c3;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x18;
@@ -9393,7 +9393,7 @@ int ai_RegisterBaseActions(int a)
     act.decide = ai_Unk499c10;
     act.exec = ai_Unk499f20;
     act.flags = 0x1c9;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x19;
@@ -9402,7 +9402,7 @@ int ai_RegisterBaseActions(int a)
     act.decide = ai_Unk49a020;
     act.exec = ai_Unk49a0a0;
     act.flags = 0x1b;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x1a;
@@ -9411,7 +9411,7 @@ int ai_RegisterBaseActions(int a)
     act.decide = ai_Unk49a290;
     act.exec = ai_Unk49a380;
     act.flags = 0x1;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x1b;
@@ -9420,7 +9420,7 @@ int ai_RegisterBaseActions(int a)
     act.decide = ai_Unk49a390;
     act.exec = ai_Unk49a5b0;
     act.flags = 0x3;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x1c;
@@ -9429,7 +9429,7 @@ int ai_RegisterBaseActions(int a)
     act.decide = ai_Unk49a690;
     act.exec = ai_Unk49aa80;
     act.flags = 0x19;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x1d;
@@ -9438,7 +9438,7 @@ int ai_RegisterBaseActions(int a)
     act.decide = ai_Unk49ab60;
     act.exec = ai_Unk49ad80;
     act.flags = 0x39;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x1e;
@@ -9447,7 +9447,7 @@ int ai_RegisterBaseActions(int a)
     act.decide = ai_Unk49ae50;
     act.exec = ai_Unk49b050;
     act.flags = 0x3b;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x1f;
@@ -9456,7 +9456,7 @@ int ai_RegisterBaseActions(int a)
     act.decide = ai_Unk49b120;
     act.exec = ai_Unk49b2b0;
     act.flags = 0x3f;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x20;
@@ -9465,7 +9465,7 @@ int ai_RegisterBaseActions(int a)
     act.decide = ai_Unk49b380;
     act.exec = ai_Unk49b6f0;
     act.flags = 0x17;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x21;
@@ -9474,7 +9474,7 @@ int ai_RegisterBaseActions(int a)
     act.decide = ai_Unk49b7c0;
     act.exec = ai_Unk49bc50;
     act.flags = 0xc9;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x22;
@@ -9483,7 +9483,7 @@ int ai_RegisterBaseActions(int a)
     act.decide = ai_Unk49bd90;
     act.exec = ai_Unk49c000;
     act.flags = 0x39;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x23;
@@ -9492,7 +9492,7 @@ int ai_RegisterBaseActions(int a)
     act.decide = ai_Unk49c170;
     act.exec = ai_Unk49c190;
     act.flags = 0xff;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x24;
@@ -9501,7 +9501,7 @@ int ai_RegisterBaseActions(int a)
     act.decide = ai_Unk49c3c0;
     act.exec = ai_Unk49c3e0;
     act.flags = 0xff;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x25;
@@ -9510,7 +9510,7 @@ int ai_RegisterBaseActions(int a)
     act.decide = ai_Unk49c570;
     act.exec = ai_Unk49c700;
     act.flags = 0x69;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0xc;
@@ -9519,7 +9519,7 @@ int ai_RegisterBaseActions(int a)
     act.decide = ai_Unk49c790;
     act.exec = ai_Unk49c880;
     act.flags = 0xff;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x26;
@@ -9528,7 +9528,7 @@ int ai_RegisterBaseActions(int a)
     act.decide = ai_Unk49c8e0;
     act.exec = ai_Unk49cb60;
     act.flags = 0x39;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x27;
@@ -9537,7 +9537,7 @@ int ai_RegisterBaseActions(int a)
     act.decide = ai_Unk49cd30;
     act.exec = ai_Unk49cdb0;
     act.flags = 0xff;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x28;
@@ -9546,7 +9546,7 @@ int ai_RegisterBaseActions(int a)
     act.decide = ai_Unk49ce50;
     act.exec = ai_Unk49d030;
     act.flags = 0x5d;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x29;
@@ -9555,7 +9555,7 @@ int ai_RegisterBaseActions(int a)
     act.decide = ai_Unk49d0f0;
     act.exec = ai_Unk49d280;
     act.flags = 0x5d;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x2a;
@@ -9564,7 +9564,7 @@ int ai_RegisterBaseActions(int a)
     act.decide = ai_Unk49d2d0;
     act.exec = ai_Unk49d460;
     act.flags = 0x39;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x2b;
@@ -9573,7 +9573,7 @@ int ai_RegisterBaseActions(int a)
     act.decide = ai_Unk49d550;
     act.exec = ai_Unk49d5e0;
     act.flags = 0xc9;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x2c;
@@ -9582,7 +9582,7 @@ int ai_RegisterBaseActions(int a)
     act.decide = ai_Unk49d6a0;
     act.exec = ai_Unk49d730;
     act.flags = 0xc9;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x2d;
@@ -9591,7 +9591,7 @@ int ai_RegisterBaseActions(int a)
     act.decide = ai_Unk49d750;
     act.exec = ai_Unk49d7d0;
     act.flags = 0xff;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x2e;
@@ -9600,7 +9600,7 @@ int ai_RegisterBaseActions(int a)
     act.decide = ai_Unk49d8d0;
     act.exec = ai_Unk49dc10;
     act.flags = 0x39;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x2f;
@@ -9609,7 +9609,7 @@ int ai_RegisterBaseActions(int a)
     act.decide = ai_Unk49e7a0;
     act.exec = ai_Unk49ea90;
     act.flags = 0x3b;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x30;
@@ -9618,7 +9618,7 @@ int ai_RegisterBaseActions(int a)
     act.decide = ai_Unk49dd90;
     act.exec = sv_ReturnZero;
     act.flags = 0x39;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x31;
@@ -9627,7 +9627,7 @@ int ai_RegisterBaseActions(int a)
     act.decide = ai_Unk49def0;
     act.exec = ai_Unk49e230;
     act.flags = 0x39;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x3c;
@@ -9636,7 +9636,7 @@ int ai_RegisterBaseActions(int a)
     act.decide = ai_Unk49e350;
     act.exec = ai_Unk49e680;
     act.flags = 0x39;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x32;
@@ -9645,7 +9645,7 @@ int ai_RegisterBaseActions(int a)
     act.decide = ai_Unk49ed10;
     act.exec = ai_Unk49ee20;
     act.flags = 0x69;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x33;
@@ -9654,7 +9654,7 @@ int ai_RegisterBaseActions(int a)
     act.decide = ai_DecideTakeCredit;
     act.exec = ai_Unk49f370;
     act.flags = 0x7;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x34;
@@ -9663,7 +9663,7 @@ int ai_RegisterBaseActions(int a)
     act.decide = ai_Unk49f5c0;
     act.exec = ai_Unk49f7f0;
     act.flags = 0x7;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x35;
@@ -9672,7 +9672,7 @@ int ai_RegisterBaseActions(int a)
     act.decide = ai_Unk49f850;
     act.exec = ai_Unk49fb80;
     act.flags = 0x19;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x36;
@@ -9681,7 +9681,7 @@ int ai_RegisterBaseActions(int a)
     act.decide = ai_Unk49fc90;
     act.exec = ai_Unk4a0040;
     act.flags = 0x3;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x37;
@@ -9690,7 +9690,7 @@ int ai_RegisterBaseActions(int a)
     act.decide = ai_Unk4a0090;
     act.exec = ai_Unk4a01f0;
     act.flags = 0x43;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x38;
@@ -9699,7 +9699,7 @@ int ai_RegisterBaseActions(int a)
     act.decide = ai_Unk4a0890;
     act.exec = ai_Unk4a0940;
     act.flags = 0x4b;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x39;
@@ -9708,7 +9708,7 @@ int ai_RegisterBaseActions(int a)
     act.decide = ai_Unk4a0a70;
     act.exec = ai_Unk4a0e60;
     act.flags = 0x1b;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x3a;
@@ -9717,7 +9717,7 @@ int ai_RegisterBaseActions(int a)
     act.decide = ai_Unk4a1170;
     act.exec = ai_Unk4a1360;
     act.flags = 0x1f;
-    if (!ai_Unk495520(&act, a))
+    if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x3b;
@@ -9726,7 +9726,7 @@ int ai_RegisterBaseActions(int a)
     act.decide = ai_Unk4a13e0;
     act.exec = ai_Unk4a1640;
     act.flags = 0x13;
-    return ai_Unk495520(&act, a) != 0;
+    return am_RegisterMethod(&act, a) != 0;
 }
 /* 0x4a3a90, the next entry of the ring */
 
@@ -9944,7 +9944,7 @@ int ai_Unk4a4680(G7MKT *m)
 }
 /* 0x4a47c0, amt_GetDesireByName */
 
-int ai_Unk4a47c0(char *s)
+int ai_GetDesireByName(char *s)
 {
     char buf[128];
 

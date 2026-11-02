@@ -136,7 +136,7 @@ int ai_Unk492b80(AIPER *p, int a, int *out);                    /* 0x492b80, dec
 int ai_Unk492d50(AIPER *p, int a, int *out);                    /* 0x492d50, decision 27 */
 int ai_Unk492e90(AIPER *p, int a, int *out);                    /* 0x492e90, decision 28 */
 
-int ai_Unk495520(AIACT *act, int a);                            /* 0x495520, registers an action */
+int am_RegisterMethod(AIACT *act, int a);                            /* 0x495520, registers an action */
 int ai_Unk4a49a0(float *a, float *b, int i, AIPER *p, int f, void *x, void *y);  /* 0x4a49a0 */
 char * amt_GetOfficeHolder(int k);                            /* 0x4e7510 */
 int amt_GetOwnedOfficePay(void);                                         /* 0x4ea990 */
@@ -716,7 +716,7 @@ extern char ai_ActionIniPath[];             /* 0xf83da0, the ini file of the act
 extern int ai_WriteActionTable;               /* 0x6f2464, set: write the action table */
 
 int ai_LoadActionTable(void);                                         /* 0x494e70 */
-/* 0x495520 ai_Unk495520 is declared in am.h */
+/* 0x495520 am_RegisterMethod is declared in am.h */
 void ai_Unk495770(int k);                                       /* 0x495770 */
 void ai_Unk495790(void);                                        /* 0x495790 */
 int ai_Unk4957a0(int k);                                        /* 0x4957a0 */
@@ -726,7 +726,7 @@ int ai_Unk497630(G5CH *p, AIARG *s1);                            /* 0x497630 */
 int amt_ApplyForOffice(char *c, unsigned int kind);                                /* 0x4e6180 */
 int ai_Unk498470(G5CH *p, AIARG *s1);                            /* 0x498470 */
 
-int ai_Unk4a47c0(char *s);                                      /* 0x4a47c0, a need name -> index */
+int ai_GetDesireByName(char *s);                                      /* 0x4a47c0, a need name -> index */
 void ai_Unk4c3e70(char *p);                                     /* 0x4c3e70 */
 int ai_Unk4c3eb0(unsigned char k, float v);                    /* 0x4c3eb0 */
 void ai_Unk4c4a20(void);                                        /* 0x4c4a20 */
