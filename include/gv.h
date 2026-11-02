@@ -277,6 +277,12 @@ typedef struct ORDOBJ {
         unsigned char lvl1c;        /* 0x1c, a workshop's level (ai.h AIOBJ.lvl1c); gm_SyncMarket raises it to the market's goods count */
         int v1c[4];                 /* 0x1c */
         unsigned char cap[2];       /* 0x1c, of the objects 0x2a / 0x116 two capacities from the building kind (gm_SetCapacities) */
+        struct {                    /* 0x1c, of the object 0x1b5 of the building kinds 0x14 .. 0x16: -1, -1, -1, 0 when created (gm_CreateBuilding) */
+            char v1b5a;             /* 0x1c */
+            char v1b5b;             /* 0x1d */
+            int v1b5c;              /* 0x1e */
+            unsigned char v1b5d;    /* 0x22 */
+        };
         struct {
             int cartBld;            /* 0x1c, of a cart: the id of its building, -1 = none */
             int cart20;             /* 0x20 */

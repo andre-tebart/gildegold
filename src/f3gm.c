@@ -4416,195 +4416,200 @@ extern char ai_Time[];             /* 0x770ae0 */
 void * mem_Alloc(int size, char *tag);                   /* 0x4223c0 */
 unsigned short * gm_AllocRaum(unsigned char *b, unsigned n);
 
-/* 0x501580, creates a building of the type k for the owner o (the next free instance, 0x5012b0): the id (0x61a654 counter), the owner / place words, the default values (rank 100, 0x7d00 ..), a name from the names of its type that no building has yet (up to 12 candidates of 0x20 characters: "Building name too long: %s" is the error text), the objects of its prototype (0x500190 / 0x5031b0 for the kinds 2 / 6), the main object (0x501ce0) and the per-type extras: dates (the clock at +0x69 .. +0x75) for the types 4 .. 7, an empty owner for 0xb .. 0xd, the counters of 0xe .. 0x10, the object 0x1b5 for 0x14 .. 0x16, the "f3_gm:PlantMap" of 0x1e (0x600 bytes of 0x18-byte cells), 0x4efc10 / 0x4ef9c0 for 0x48 .. 0x4a, "AHM_INFO" (0x3c bytes) for 0x4b .. 0x4d. ROUGH */
+/* 0x501580, creates a building of the kind k for the owner own (a character slot, 0xffff none) in the next free instance (gm_FindFreeBuilding): a new id (ai_NextObjectId), the owner and master words, the start values (budget 0x7d00, wage rate 100, level 100, price factor 1.0, no smoke effect), a player's production setting (ai_ProdSetting), a name picked at random from the up to 12 names of its kind that no building has yet (the kind's own name when none is free; "Building name too long: %s" is the unused error text), the objects of its prototype (the rooms of the kinds 2 / 6 by gm_AllocRaum, the others while no room came before), its main room and the per-kind extras: the creation time and the owner's netId for the kinds 4 .. 7, -1 for 0xb .. 0xd, 10 / 3 / 5 for 0xe .. 0x10, the object 0x1b5 for 0x14 .. 0x16, the "f3_gm:PlantMap" of 0x1e, the price factor 0.8 of 0x1e .. 0x20, the graveyard of 0x48 .. 0x4a, the "AHM_INFO" block of 0x4b .. 0x4d; then the capacities and the kind's stock (gm_SetCapacities, gm_StockBuildingObjects). Returns the building, 0 when there are no tables or no free instance
+   @deep Read whole against the original 0x501580..0x501b4e and rewritten on typed ORDBLD / ORDOBJ fields
+   (statements, constants, callees, the AI_ZERO asm clear of +0x65, the case order with the 4..7 else -1,
+   the 0x1b5 object bytes, the word stores of 0x35..0x37 all match; switch tables equal). What is left is
+   allocation: the original keeps base (ai_BTypes) in edi from the prologue (push edi first, so both early
+   returns pop edi; ours keeps it in edx and pushes edi only before the asm block, popping it before the
+   0x26 test: hunks +0x9 / +0x2d / +0x35 / +0x102 / +0x516 / +0x53e), it holds any in edi and w in the slot
+   [ebp-4] shared with n (ours any in [ebp-0x14], w in edi: hunks +0x2bc / +0x2ea / +0x31a / +0x33c /
+   +0x356), keeps 0 in ebx and re-zeroes it after the ai_Goods temp (ours zero in edi: +0x383, cmp eax,ebx
+   vs edi), and the arrays sit at other frame slots (err/names swapped: +0x18b / +0x2d7; declaration order
+   tried, all 24 permutations unchanged at 147); the ai_Goods index id*0x41 as mov ecx,eax; add ecx,ebx vs
+   [eax+ebx] is the same expression in another register (an explicit id local tried, unchanged).
+   Instruction count 422 vs 431: the 2 early-return pop edi, the late xor ebx,ebx and that 3-instruction
+   lookup. */
 unsigned char *gm_CreateBuilding(unsigned char k, unsigned short own)
 {
-    unsigned char *b;
-    char *base, *proto;
+    ORDBLD *b;
+    char *base;
+    unsigned char *proto;
+    char *name;
+    int *info;
     char dbg[0x100];
     char names[12][0x40];
     char cand[0x100];
     char err[0x200];
-    int i, n, j, found, any;
+    int i, j, n, any, id;
     unsigned short *w;
-    char *src, *u;
-    short *s;
-    int *q;
-    int ch;
+    unsigned short *s;
+    ORDOBJ *o;
     char c;
-    char *bl;
 
     base = ai_BTypes;
     if (base == 0)
         return 0;
     any = 0;
-    b = (unsigned char *)gm_FindFreeBuilding();
+    b = (ORDBLD *)gm_FindFreeBuilding();
     if (b == 0)
         return 0;
-    *b = k;
-    proto = base + k * 0x24d;
+    b->type = k;
+    proto = (unsigned char *)base + k * 0x24d;
     sprintf(dbg, "----->GebID= %i GebProt= %i", ai_NextObjectId, k);
-    *(int *)(b + 1) = ai_NextObjectId;
+    b->id = ai_NextObjectId;
     ai_NextObjectId++;
-    *(unsigned short *)(b + 0x25) = own;
-    *(unsigned short *)(b + 0x27) = own;
-    for (i = 0x29; i <= 0x2f; i++)
-        b[i] = 0;
-    for (i = 0x5d; i <= 0x64; i++)
-        b[i] = 0;
-    *(int *)(b + 0x30) = 0;
-    *(int *)(b + 0x39) = 0x7d00;
-    *(int *)(b + 0x3d) = 100;
-    *(int *)(b + 0x41) = 2;
-    *(int *)(b + 0x45) = 100;
-    *(int *)(b + 0x49) = 0;
-    *(float *)(b + 0x4b) = 1.0f;
-    b[0x5c] = 100;
-    *(int *)(b + 0x95) = -1;
-    if (own != 0xffff && ai_Chars[own][2] == 6)
+    b->masterId = own;
+    b->owner = own;
+    b->mainRoom = 0;
+    b->v2b = 0;
+    b->b2f = 0;
+    b->objList = 0;
+    b->object = 0;
+    b->v30 = 0;
+    b->budget = 0x7d00;
+    b->wageRate = 100;
+    b->workRate = 2;
+    b->v45 = 100;
+    b->priceFactor = 1.0f;
+    b->level = 100;
+    b->smokeEffect = -1;
+    if (own != 0xffff && ORD_CHARS[own].kind == 6)
         ai_ProdSettingK(b);
-    *(unsigned *)(b + 0x99) = 0;
-    for (i = 0x9d; i <= 0xa8; i++)
-        b[i] = 0;
-    *(int *)(b + 0xa5) = -1;
-    *(unsigned *)(b + 0x99) |= 1;
-    memset(b + 0x65, 0, 0x30);
+    memset(&b->flags99, 0, 0x10);
+    b->flags99 |= 1;
+    b->va5 = -1;
+    AI_ZERO(&b->v65, 0x30);
     n = 0;
-    if (**(char **)(&ai_BuildingNames[k * 0xe]) == 0) {
-        b[5] = ch_EmptyName[0];
-    } else {
-        strcpy((char *)b + 5, *(char **)(&ai_BuildingNames[k * 0xe - 2]));
-    }
+    name = (char *)ai_BuildingNames[k * 0xe];
+    if (*name != 0)
+        strcpy(b->name, (char *)ai_BuildingNames[k * 0xe - 2]);
+    else
+        b->name[0] = ch_EmptyName[0];
     for (i = 0; i < 0xc; i++) {
-        src = *(char **)(&ai_BuildingNames[k * 0xe + i]);
-        if (*src != 0) {
-            strcpy(cand, src);
-            bl = ai_Blds;
-            for (j = 0; j < 0x100; j++, bl += 0xa9) {
-                if (*bl != 0 && strcmp(bl + 5, cand) == 0)
+        name = (char *)ai_BuildingNames[k * 0xe + i];
+        if (*name != 0) {
+            strcpy(cand, (char *)ai_BuildingNames[k * 0xe + i]);
+            for (j = 0; j < 0x100; j++) {
+                if (((ORDBLD *)ai_Blds)[j].type != 0 && strcmp(((ORDBLD *)ai_Blds)[j].name, cand) == 0)
                     break;
             }
             if (j < 0x100)
                 continue;
-            if (strlen(cand) < 0x20) {
-                strcpy(names[n], cand);
-                n++;
-            } else
+            if (strlen(cand) < 0x20)
+                strcpy(names[n++], cand);
+            else
                 sprintf(err, "Building name too long: %s", cand);
         }
     }
-    if (n != 0) {
-        j = util_RandomU(n) & 0xffff;
-        strcpy((char *)b + 5, names[j]);
-    }
+    if (n != 0)
+        strcpy(b->name, names[util_RandomU(n)]);
     w = (unsigned short *)(proto + 0x23);
     for (i = 0; i < 0x40; i++, w++) {
         if (*w == 0)
             break;
         if (*w != 0xffff) {
-            c = ai_Goods[(*w & 0x7fff) * 0x41];
+            id = *w & 0x7fff;
+            c = ai_Goods[id * 0x41];
             if (c == 2 || c == 6)
                 any = 1;
-            if ((short)*w < 0) {
+            if (*w & 0x8000) {
                 if (c == 2 || c == 6) {
                     any = 1;
-                    gm_AllocRaum(b, *w & 0x7fff);
+                    gm_AllocRaum((unsigned char *)b, id);
                 } else if (any == 0)
-                    gm_CreateObject(*(int *)(b + 1), *w & 0x7fff, 1);
+                    gm_CreateObject(b->id, id, 1);
             }
         }
     }
-    s = (short *)gm_Query(*(void **)(b + 0x5d), 1, 4, 2);
+    s = (unsigned short *)gm_Query((void *)b->objList, 1, 4, 2);
     while (s != 0) {
         if (*s != 0xfd) {
-            *(short *)(b + 0x29) = *s;
+            b->mainRoom = *s;
             break;
         }
-        s = (short *)gm_QueryNext();
+        s = (unsigned short *)gm_QueryNext();
     }
-    s = (short *)((void *(*)(unsigned char *))gm_GetGebaeudeHauptraum)(b);
+    s = (unsigned short *)((void *(*)(unsigned char *))gm_GetGebaeudeHauptraum)((unsigned char *)b);
     if (s != 0)
-        *(short *)(b + 0x29) = *s;
-    if (gm_IsHomeType(b) != 0)
-        *(int *)(b + 0x30) = 0x1388;
+        b->mainRoom = *s;
+    if (gm_IsHomeType((unsigned char *)b) != 0)
+        b->v30 = 0x1388;
     switch (k) {
     case 4:
     case 5:
     case 6:
     case 7:
-        *(int *)(b + 0x69) = *(int *)ai_Time;
-        *(int *)(b + 0x6d) = *(int *)(ai_Time + 4);
-        *(int *)(b + 0x71) = *(int *)(ai_Time + 8);
-        *(short *)(b + 0x75) = *(short *)(ai_Time + 12);
-        if (own != 0xffff) {
-            *(int *)(b + 0x65) = *(int *)(ai_Chars[own] + 4);
-            break;
-        }
-    case 0xb:
-    case 0xc:
-    case 0xd:
-        *(int *)(b + 0x65) = -1;
-        break;
-    case 0xe:
-    case 0xf:
-    case 0x10:
-        *(int *)(b + 0x65) = 10;
-        *(int *)(b + 0x69) = 3;
-        *(int *)(b + 0x6d) = 5;
+        b->created = ai_TimeT;
+        if (own != 0xffff)
+            b->v65 = ORD_CHARS[own].netId;
+        else
+            b->v65 = -1;
         break;
     case 0x14:
     case 0x15:
     case 0x16:
-        q = (int *)gm_CreateObject(*(int *)(b + 1), 0x1b5, 1);
-        if (q != 0) {
-            *((char *)q + 0x22) = 0;
-            *((char *)q + 0x1c) = -1;
-            *((char *)q + 0x1d) = -1;
-            *(int *)((char *)q + 0x1e) = -1;
+        o = (ORDOBJ *)gm_CreateObject(b->id, 0x1b5, 1);
+        if (o != 0) {
+            o->v1b5d = 0;
+            o->v1b5a = -1;
+            o->v1b5b = -1;
+            o->v1b5c = -1;
         }
         break;
+    case 0x47:
+        b->v30 = 0x13880;
+        break;
     case 0x1e:
-        *(void **)(b + 0x71) = mem_Alloc(0x600, "f3_gm:PlantMap");
-        for (i = 0; i < 0x600; i += 0x18) {
-            *((char *)*(void **)(b + 0x71) + i + 0xd) = -1;
-            *(int *)((char *)*(void **)(b + 0x71) + i + 0x14) = 0;
+        b->plants = (struct G15PLANT *)mem_Alloc(0x600, "f3_gm:PlantMap");
+        for (i = 0; i < 0x40; i++) {
+            b->plants[i].state = -1;
+            b->plants[i].obj = 0;
         }
     case 0x1f:
     case 0x20:
-        *(int *)(b + 0x30) = 100;
-        *(float *)(b + 0x49) = 0.8f;
+        b->v30 = 100;
+        b->priceFactor = 0.8f;
         break;
     case 0x35:
     case 0x36:
     case 0x37:
-        *(int *)(b + 0x65) = 0;
-        *(int *)(b + 0x69) = 0;
-        *(int *)(b + 0x6d) = 0;
+        b->v65 = 0;
+        b->w69[0] = 0;
+        b->w69[1] = 0;
+        b->v6d = 0;
         break;
-    case 0x47:
-        *(int *)(b + 0x30) = 0x13880;
+    case 0xb:
+    case 0xc:
+    case 0xd:
+        b->v65 = -1;
+        break;
+    case 0xe:
+    case 0xf:
+    case 0x10:
+        b->v65 = 10;
+        b->daySum = 3;
+        b->v6d = 5;
         break;
     case 0x48:
     case 0x49:
     case 0x4a:
-        *(int *)(b + 0x65) = (int)gv_AllocGraveyard(b);
-        gv_BuryNewDead(b, 3);
+        b->block65 = (int)gv_AllocGraveyard((unsigned char *)b);
+        gv_BuryNewDead((unsigned char *)b, 3);
         break;
     case 0x4b:
     case 0x4c:
     case 0x4d:
-        q = (int *)mem_Alloc(0x3c, "AHM_INFO");
-        *(int **)(b + 0x65) = q;
-        *q = -1;
+        info = (int *)mem_Alloc(0x3c, "AHM_INFO");
+        b->block65 = (int)info;
+        *info = -1;
     }
-    if (*b == 0x26) {
-        b[0x29] = 0xe;
-        b[0x2a] = 1;
-    }
-    gm_SetCapacities(b);
-    gm_BuildingClass(*b);
-    gm_StockBuildingObjects(b);
-    return b;
+    if (b->type == 0x26)
+        b->mainRoom = 0x10e;
+    gm_SetCapacities((unsigned char *)b);
+    gm_BuildingClass(b->type);
+    gm_StockBuildingObjects((char *)b);
+    return (unsigned char *)b;
 }
 /* 0x501b50, the main object of the building b by its building class (0x501d80): classes 1 / 7 / 8: by type 0x1d the object 0x205, 0x16 the 0x12e, 4 the 0x54, 0x1f the 0xfd; class 4: 0xf7; homes (0x502520): 0xfd; else the first object of the kind 2 (not 0xfd) in the building's prototype list. ROUGH */
 
