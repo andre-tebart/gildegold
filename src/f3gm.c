@@ -83,7 +83,7 @@ struct D3SURF;  /* d3_engine.h typedef; file-scope tag for the d3if_SelectTextur
 
 unsigned char * gm_FirstBuilding(int n);                   /* 0x50b010 */
 
-extern int ai_Unk6f1b98;
+extern int gm_NetMsgCount;
 extern int ai_Unk61772c;
 extern int ai_Unk617730;
 extern short * ai_Unk6f1bac;
@@ -203,7 +203,7 @@ int unk_Unk4f9f60(unsigned id, char *out, unsigned char flags)
                     char *o, *b = (char *)gm_FirstBuilding(1);
                     o = (char *)gm_Query(*(int *)(b + 0x5d), 2, 6, 0, 0x115);
                     cm_SendMoveGoodsUnchecked(*(int *)(o + 2), *(int *)(CH(id) + 4), 0, n);
-                    ai_Unk6f1b98++;
+                    gm_NetMsgCount++;
                 }
                 if (flags & 2)
                     *(int *)ai_Unk91b5c0 += n;
@@ -240,7 +240,7 @@ int unk_Unk4fa060(unsigned id, char *out, unsigned char flags)
                     char *o, *b = (char *)gm_FirstBuilding(1);
                     o = (char *)gm_Query(*(int *)(b + 0x5d), 2, 6, 0, 0x115);
                     cm_SendMoveGoodsUnchecked(*(int *)(o + 2), *(int *)(CH(id) + 4), 0, n);
-                    ai_Unk6f1b98++;
+                    gm_NetMsgCount++;
                 }
                 if (flags & 2)
                     *(int *)ai_Unk91b604 += n;
@@ -298,44 +298,51 @@ int gm_IncomeKind3(unsigned id, GMINCOME *out, unsigned char flags)
     }
     return 1;
 }
-/* 0x4fa2a0, income kind 4 (the record 0xc, the sum of the ints at +0x1a0 and +0x1a4; sum 0x91b68c). ROUGH */
+/* 0x4fa2a0, the income kind 4 of the character id: the rate of the decision 0xc percent of the character's trade
+   sums v1a0 + v1a4 into the first free entry of out (0 when out is full; no entry, but 1, when the sum is not
+   positive); flags 1 moves the amount from the character to the object of the first building (one more net
+   message), flags 2 adds it to the income sum of row 3 */
 
-int unk_Unk4fa2a0(unsigned id, char *out, unsigned char flags)
+int gm_IncomeKind4(unsigned id, GMINCOME *out, unsigned char flags)
 {
-    int rec[9];
-    int k, n, cnt;
+    int rate;
+    AIDEC rec;
+    int k, n, base;
     float x;
-    char *c;
+    ORDBLD *b;
+    ORDOBJ *o;
 
-    gv_GetTableRecord(0xc, rec);
-    gm_Query(*(int *)((char *)gm_FirstBuilding(1) + 0x5d), 2, 6, 0, 0x115);
-    c = CH(id);
-    cnt = *(int *)(c + 0x1a4) + *(int *)(c + 0x1a0);
-    x = (float)(rec[6] * 0.01f * *(int *)(c + 0x1a4));
+    gv_GetTableRecord(0xc, (int *)&rec);
+    rate = rec.cur;
+    b = (ORDBLD *)gm_FirstBuilding(1);
+    gm_Query((void *)b->objList, 2, 6, 0, 0x115);
+    id &= 0xffff;
+    base = ORD_CHARS[id].v1a4 + ORD_CHARS[id].v1a0;
+    x = (float)(rate * 0.01f);
+    x = (float)(x * base);
     if (!(x > 0))
         x = 0;
     n = (int)x;
     for (k = 0; k < 6; k++) {
-        if (out[k] == 0) {
-            if (k >= 6)
-                return 0;
-            if (cnt > 0) {
-                out[k] = 4;
-                *(int *)(out + 0x20 + k * 4) = rec[6];
-                *(int *)(out + 8 + k * 4) = n;
-                if (flags & 1) {
-                    char *o, *b = (char *)gm_FirstBuilding(1);
-                    o = (char *)gm_Query(*(int *)(b + 0x5d), 2, 6, 0, 0x115);
-                    cm_SendMoveGoodsUnchecked(*(int *)(o + 2), *(int *)(CH(id) + 4), 0, n);
-                    ai_Unk6f1b98++;
-                }
-                if (flags & 2)
-                    *(int *)ai_Unk91b68c += n;
-            }
-            return 1;
-        }
+        if (out->kind[k] == 0)
+            break;
     }
-    return 0;
+    if (k >= 6)
+        return 0;
+    if (base > 0) {
+        out->kind[k] = 4;
+        out->rate[k] = rate;
+        out->amount[k] = n;
+        if (flags & 1) {
+            b = (ORDBLD *)gm_FirstBuilding(1);
+            o = (ORDOBJ *)gm_Query((void *)b->objList, 2, 6, 0, 0x115);
+            cm_SendMoveGoodsUnchecked(o->objId, ORD_CHARS[id].netId, 0, n);
+            gm_NetMsgCount++;
+        }
+        if (flags & 2)
+            gm_IncomeRows[3][16] += n;
+    }
+    return 1;
 }
 /* 0x4fa3d0, income kind 5 (the record 0xb, the int at +0x19c; sum 0x91b6d0); the message goes to all players (-1). ROUGH */
 
@@ -362,7 +369,7 @@ int unk_Unk4fa3d0(unsigned id, char *out, unsigned char flags)
                 *(int *)(out + 0x20 + k * 4) = rec[6];
                 if (flags & 1) {
                     cm_SendMoveGoodsUnchecked(-1, *(int *)(CH(id) + 4), 0, n);
-                    ai_Unk6f1b98++;
+                    gm_NetMsgCount++;
                 }
                 if (flags & 2)
                     *(int *)ai_Unk91b6d0 += n;
@@ -395,7 +402,7 @@ int unk_Unk4fa4b0(unsigned id, int *out, unsigned char flags)
     unk_Unk4fa3d0(id, (char *)out, flags);
     if (*(int *)(c + 0x1a8) > 0)
         gm_IncomeKind3(id, (GMINCOME *)out, flags);
-    unk_Unk4fa2a0(id, (char *)out, flags);
+    gm_IncomeKind4(id, (GMINCOME *)out, flags);
     return 1;
 }
 
@@ -422,12 +429,12 @@ void unk_Unk4fa580(void)
     rec = (char *)gm_PlayerSeat(1);
     gv_GetTableRecord(5, r);
     rate = gm_PlayerFactor(0xe - r[6], ai_OwnPlayer);
-    ai_Unk6f1b98 = 0;
+    gm_NetMsgCount = 0;
     for (i = 0; i < 0x300; i++) {
         p = ai_Chars[i];
-        if (ai_Unk6f1b98 > 0x40) {
+        if (gm_NetMsgCount > 0x40) {
             sv_PumpNet();
-            ai_Unk6f1b98 = 0;
+            gm_NetMsgCount = 0;
         }
         if (*(short *)p != -1 && p[8] != 0 && p[2] == 0 && *(unsigned char **)(p + 0x170) != 0) {
             b = ai_BTypes + **(unsigned char **)(p + 0x170) * 0x24d;
@@ -435,7 +442,7 @@ void unk_Unk4fa580(void)
             if (v < 0) {
                 if (*(int *)(p + 0x16c) != 0) {
                     cm_SendRelations(*(int *)(ai_Chars[*(unsigned short *)(*(int *)(p + 0x16c) + 0x27)] + 4), *(int *)(p + 4), -10, 1);
-                    ai_Unk6f1b98++;
+                    gm_NetMsgCount++;
                     goto A;
                 }
                 d = v < 0 ? -v : v;
@@ -448,10 +455,10 @@ void unk_Unk4fa580(void)
                     continue;
                 cm_SendMoveGoodsUnchecked(*(int *)(rec + 2), *(int *)(p + 4), 0, rate);
             }
-            ai_Unk6f1b98++;
+            gm_NetMsgCount++;
         }
     }
-    ai_Unk6f1b98 = 0;
+    gm_NetMsgCount = 0;
 }
 /* 0x4fa700, the wage figures of the character id for the report: out[0] = the byte +0x166, out[1] = +0x169, out[2] = the kind 0x23 .. 0x27 by the highest of the flag bits 0x200 .. 0x2000 of the int +0x1cc, out[4] / [8] / [0xc] = the three amounts (0x4e6f80 of the kinds, 0 when the character is no active person); flag != 0 sends the amounts to the player (and for kind 3 a random extra, 0x4c5f60). Returns 1 when amounts were computed. ROUGH */
 
@@ -499,21 +506,21 @@ int gm_CharacterWages(unsigned short id, int flag, unsigned char *out)  /* the c
                 return 0;
             if (*(int *)(out + 4) != 0) {
                 cm_SendMoveGoodsUnchecked(*(int *)(c + 4), -1, 0, *(int *)(out + 4));
-                ai_Unk6f1b98++;
+                gm_NetMsgCount++;
             }
             if (*(int *)(out + 8) != 0) {
                 cm_SendMoveGoodsUnchecked(*(int *)(c + 4), -1, 0, *(int *)(out + 8));
-                ai_Unk6f1b98++;
+                gm_NetMsgCount++;
             }
             if (*(int *)(out + 0xc) != 0) {
                 cm_SendMoveGoodsUnchecked(*(int *)(c + 4), -1, 0, *(int *)(out + 0xc));
-                ai_Unk6f1b98++;
+                gm_NetMsgCount++;
             }
             if (c[2] == 3) {
                 unsigned short rr = util_RandomU((tmp[2] & 0xff) + 2);
                 cm_SendMoveGoodsUnchecked(*(int *)(c + 4), -1, 0, (rr + (tmp[2] & 0xff)) * 0x1900);
                 cm_SendMoneyDelta(*(int *)(c + 4), r[2] & 0xff);
-                ai_Unk6f1b98 += 2;
+                gm_NetMsgCount += 2;
             }
         }
     }
@@ -526,15 +533,15 @@ void unk_Unk4fa9b0(void)
     unsigned char out[16];
     int i;
 
-    ai_Unk6f1b98 = 0;
+    gm_NetMsgCount = 0;
     for (i = 0; i < 0x300; i++) {
         gm_CharacterWages(i, 1, out);
-        if (ai_Unk6f1b98 > 0x40) {
+        if (gm_NetMsgCount > 0x40) {
             sv_PumpNet();
-            ai_Unk6f1b98 = 0;
+            gm_NetMsgCount = 0;
         }
     }
-    ai_Unk6f1b98 = 0;
+    gm_NetMsgCount = 0;
 }
 /* 0x4faa00, for each active character: the three ints at +0x1d8 .. summed with the 0x50a640 value of the character (the best one is found by 0x4fad60), written through 0x4c3c00 (4, 1, ..) to +0x1d4 .. and +0x1e0, and the float messages 0x4c4ac0 (0x1e4) / 0x4c3eb0. ROUGH, the float code is far off */
 
@@ -549,11 +556,11 @@ void unk_Unk4faa00(void)
     int *pi;
 
     gm_FindRichest(&id, &top);
-    ai_Unk6f1b98 = 0;
+    gm_NetMsgCount = 0;
     for (c = ai_Chars[0]; (int)c < (unsigned)((unsigned)ai_Chars + 0x65400); c += 0x21c) {
-        if (ai_Unk6f1b98 > 0x40) {
+        if (gm_NetMsgCount > 0x40) {
             sv_PumpNet();
-            ai_Unk6f1b98 = 0;
+            gm_NetMsgCount = 0;
         }
         if (*(short *)c != -1 && (unsigned char)c[2] < 10 && c[8] != 0) {
             sum = 0;
@@ -577,16 +584,16 @@ void unk_Unk4faa00(void)
                 lim = (double)fv;
             q = 1.0f - (float)a / (float)top;
             cm_SendFieldDeltas();
-            ai_Unk6f1b98++;
+            gm_NetMsgCount++;
             cm_SendFloatDelta(*(int *)(c + 4), 0x1e4, -(*(float *)(c + 0x1e4) - ((float)lim + q) * 0.5));
             q = -(*(float *)(c + 0xb4) - *(float *)(c + 0xb4) * 0.95);
             ai_BeginNeedBlock(c);
             ai_AddNeedDelta(3, q);
             ai_SendNeedBlock();
-            ai_Unk6f1b98++;
+            gm_NetMsgCount++;
         }
     }
-    ai_Unk6f1b98 = 0;
+    gm_NetMsgCount = 0;
 }
 /* 0x4fabe0, the end of the day for the incomes: shifts the 17-entry history of each of the five sums (0x91b580 / 0x91b5c4 / 0x91b608 / 0x91b64c / 0x91b690, 0x40 bytes) one place and clears the sums 0x91b5c0 / 0x91b604 / 0x91b648 / 0x91b68c / 0x91b6d0; runs 0x4fa4b0 (i, out, flags) for the 0x300 characters (clearing +0x198 / +0x19c); with flag 1 also 0x4fb0e0 and a list of up to 8 objects of the group (1, 5, 7) (0x501190 / 0x501030); then clears the ints +0x4d and (for kinds 11 .. 13) +0x69 in the 256 building records. ROUGH */
 
@@ -608,15 +615,15 @@ void gm_EndDayIncomes(unsigned flags)
     *(int *)ai_Unk91b648 = 0;
     *(int *)ai_Unk91b68c = 0;
     *(int *)ai_Unk91b6d0 = 0;
-    ai_Unk6f1b98 = 0;
+    gm_NetMsgCount = 0;
     for (i = 0; i < 0x300; i++) {
         unk_Unk4fa4b0(i, ent, flags);
         c = (int *)(ai_Chars[i] + 0x198);
         c[1] = 0;
         c[0] = 0;
-        if (ai_Unk6f1b98 > 0x40) {
+        if (gm_NetMsgCount > 0x40) {
             sv_PumpNet();
-            ai_Unk6f1b98 = 0;
+            gm_NetMsgCount = 0;
         }
     }
     if (flags & 1) {
@@ -759,27 +766,27 @@ void unk_Unk4fb0e0(void)
         return;
     gv_GetTableRecord(2, r);
     if (r[6] == 2) {
-        ai_Unk6f1b98 = 0;
+        gm_NetMsgCount = 0;
         for (i = 0; i < 0x300; i++) {
             c = ai_Chars[i];
             if (*(short *)c != -1 && (unsigned char)c[2] < 10 && c[2] != 0 && c[2] != 6 && c[2] != 7 && c[2] != 8 && *(unsigned short *)(c + 10) > 0xb && *(float *)(c + 0x1d0) < util_RandomF2() * 0.2) {
                 loc = c[0xc] == 0;
                 cm_SendFloatDelta(*(int *)(c + 4), 0x1d0, (float)(util_RandomF2() * 0.5 + 0.25));
-                ai_Unk6f1b98++;
+                gm_NetMsgCount++;
                 cm_BeginFieldBlock(c, *(int *)(c + 4));
                 cm_AddFieldDelta(1, 1, 0xc, &loc);
                 cm_SendFieldDeltas();
-                ai_Unk6f1b98++;
-                if (ai_Unk6f1b98 > 0x40) {
+                gm_NetMsgCount++;
+                if (gm_NetMsgCount > 0x40) {
                     sv_PumpNet();
-                    ai_Unk6f1b98 = 0;
+                    gm_NetMsgCount = 0;
                 }
             }
         }
-        ai_Unk6f1b98 = 0;
+        gm_NetMsgCount = 0;
         return;
     }
-    ai_Unk6f1b98 = 0;
+    gm_NetMsgCount = 0;
     for (i = 0; i < 0x300; i++) {
         c = ai_Chars[i];
         if (*(short *)c != -1 && (unsigned char)c[2] < 10 && c[2] != 0 && c[2] != 6 && c[2] != 7 && c[2] != 8 && *(unsigned short *)(c + 10) > 0xb && (c[0xc] != 0) != (r[6] != 0)) {
@@ -788,17 +795,17 @@ void unk_Unk4fb0e0(void)
                 t = *(int *)(*(int *)(c + 0x170) + 1);
             m = gv_Accuse(2, r[6] == 0, *(int *)(c + 4), -1, t);
             if (m != -1)
-                ai_Unk6f1b98++;
+                gm_NetMsgCount++;
             if (*(float *)(c + 0x1d0) > 0.1)
                 cm_SendFloatDelta(*(int *)(c + 4), 0x1d0, -0.1f);
-            ai_Unk6f1b98++;
-            if (ai_Unk6f1b98 > 0x40) {
+            gm_NetMsgCount++;
+            if (gm_NetMsgCount > 0x40) {
                 sv_PumpNet();
-                ai_Unk6f1b98 = 0;
+                gm_NetMsgCount = 0;
             }
         }
     }
-    ai_Unk6f1b98 = 0;
+    gm_NetMsgCount = 0;
 }
 
 /* the head tables (records of 0x44 bytes: +0 the id, +4 the name, +0x34 four head numbers): 0x6118a8 / 0x6118f0 (the two default entries), 0x611938 (0x23 records, kind 0), 0x612288, 0x612bd8 (0x5f records, kind 0) / 0x614518 (0x5f, kind 1), 0x617398 (3 records), the history 0x91ac40 (8 records) */
@@ -807,7 +814,7 @@ int d3_CurrentScene = 0;  /* 0x633444 */
 char ai_Unk6f0454[3] = {0};  /* 0x6f0454 .. 0x6f0456 (unk_LoadIconNames writes [0..2]) */
 int ai_Unk6f1b90 = 0;  /* 0x6f1b90, the number of icon names */
 char * ai_Unk6f1b94 = 0;  /* 0x6f1b94, the icon names ( */
-int ai_Unk6f1b98 = 0;  /* 0x6f1b98, the number of queued messages ( */
+int gm_NetMsgCount = 0;  /* 0x6f1b98, the number of queued messages ( */
 short * ai_Unk6f1bac = 0;  /* 0x6f1bac */
 int ai_Unk6f1bb0 = 0;  /* 0x6f1bb0 */
 void unk_Unk4fb620(unsigned *rec);
@@ -1289,7 +1296,7 @@ float unk_Unk4fbe90(unsigned short *c)
     if (p[2] == 0x0f) {
         if (gm_Unk5075c0(c) != 0) {
             cm_SendKillCharacter(*(int *)(p + 4), 1);
-            ai_Unk6f1b98++;
+            gm_NetMsgCount++;
         }
         return -1.0f;
     }
@@ -1373,7 +1380,7 @@ float unk_Unk4fbe90(unsigned short *c)
                 f = (f & 0xe1ffffff) | ((f >> 1) & 0xe000000);
         }
         cm_SendSetField(*(int *)(p + 4), 0x2c, 4, f, -1);
-        ai_Unk6f1b98++;
+        gm_NetMsgCount++;
     }
     if (p[0x1cc] & 2) {
         fl = (float)((util_RandomU(0x10) & 0xffff) + 0x11);
@@ -1381,20 +1388,20 @@ float unk_Unk4fbe90(unsigned short *c)
         cm_BeginFieldBlock(c, *(int *)(p + 4));
         cm_AddFieldDelta(4, 1, 0x1c, &t);
         cm_SendFieldDeltas();
-        ai_Unk6f1b98++;
+        gm_NetMsgCount++;
         if (t <= 0.0f) {
             b = 0;
             cm_BeginFieldBlock(c, *(int *)(p + 4));
             cm_AddFieldValue(1, 1, (char *)p - cm_FieldObject + 8, &b);
             cm_SendFieldValues();
-            ai_Unk6f1b98++;
+            gm_NetMsgCount++;
             G_MSG72(m, p);
-            ai_Unk6f1b98++;
+            gm_NetMsgCount++;
             mst = *(char **)(p + 0x16c);
             if (mst != 0 && *(unsigned short *)(mst + 0x27) != 0xffff && (ai_Chars[*(unsigned short *)(mst + 0x27)][2] == 6 || ai_Chars[*(unsigned short *)(mst + 0x27)][2] == 7)) {
                 txt_Format(buf, 0x1c51, mst, *c);
                 he_ShowNews(*(int *)(ai_Chars[*(unsigned short *)(*(int *)(p + 0x16c) + 0x27)] + 4), -1, buf, 0, 0x60a, ch_EmptyName);
-                ai_Unk6f1b98++;
+                gm_NetMsgCount++;
             }
         }
         return t;
@@ -1411,7 +1418,7 @@ float unk_Unk4fbe90(unsigned short *c)
         cm_BeginFieldBlock(c, *(int *)(p + 4));
         cm_AddFieldDelta(4, 1, 0x1c, &t);
         cm_SendFieldDeltas();
-        ai_Unk6f1b98++;
+        gm_NetMsgCount++;
     } else {
         t = ((*(float *)(p + 0x1c) - *(float *)(p + 0x10)) / *(float *)(p + 0x20)) * h + *(float *)(p + 0x10);
     }
@@ -1425,17 +1432,17 @@ float unk_Unk4fbe90(unsigned short *c)
             cm_AddFieldDelta(4, 1, 0x1c, &t);
             cm_AddFieldDelta(4, 1, 0x24, &d);
             cm_SendFieldDeltas();
-            ai_Unk6f1b98++;
+            gm_NetMsgCount++;
             cm_SendSetField(*(int *)(p + 4), 0x1cc, 4, 2, 0);
-            ai_Unk6f1b98++;
+            gm_NetMsgCount++;
             return t;
         }
         cm_BeginFieldBlock(c, *(int *)(p + 4));
         cm_AddFieldValue(1, 1, (char *)p - cm_FieldObject + 8, &b);
         cm_SendFieldValues();
-        ai_Unk6f1b98++;
+        gm_NetMsgCount++;
         G_MSG72(m, p);
-        ai_Unk6f1b98++;
+        gm_NetMsgCount++;
         mst = *(char **)(p + 0x16c);
         if (mst != 0 && *(unsigned short *)(mst + 0x27) != 0xffff && (ai_Chars[*(unsigned short *)(mst + 0x27)][2] == 6 || ai_Chars[*(unsigned short *)(mst + 0x27)][2] == 7)) {
             if ((p[0x1cc] & 4) == 0) {
@@ -1445,7 +1452,7 @@ float unk_Unk4fbe90(unsigned short *c)
                 txt_Format(buf, 0x4080, p + 0x30, p + 0x40, *(unsigned short *)(p + 10));
                 he_ShowNews(*(int *)(ai_Chars[*(unsigned short *)(*(int *)(p + 0x16c) + 0x27)] + 4), -1, buf, 0, 0x60a, "_NACHRICHTEN_DOMIZIL_05");
             }
-            ai_Unk6f1b98++;
+            gm_NetMsgCount++;
         }
         return 0.0f;
     }
@@ -1458,7 +1465,7 @@ float unk_Unk4fbe90(unsigned short *c)
     cm_BeginFieldBlock(c, *(int *)(p + 4));
     cm_AddFieldDelta(2, 1, 10, &k);
     cm_SendFieldDeltas();
-    ai_Unk6f1b98++;
+    gm_NetMsgCount++;
     return (float)d;
 }
 
@@ -1493,7 +1500,7 @@ void gm_AgeCharacter(char *c, unsigned short age)
         cm_BeginFieldBlock(c, *(int *)(c + 4));
         cm_AddFieldDelta(2, 1, 10, &age);
         cm_SendFieldDeltas();
-        ai_Unk6f1b98++;
+        gm_NetMsgCount++;
     }
 }
 /* 0x4fc7a0, the age the character c dies at: the aging steps (v = (v - k) + k / v, k = +0x14) until its life value +0x1c falls to 1.0, added to max(+0x20, the age +0xa) (the draft below stops after the loop; the original counts the steps and adds them) */
@@ -1560,26 +1567,26 @@ void gm_DailyCharacters(void)
     char *c;
     int i;
 
-    ai_Unk6f1b98 = 0;
+    gm_NetMsgCount = 0;
     for (i = 0; i < 0x300; i++) {
         c = ai_Chars[i];
-        if (ai_Unk6f1b98 > 0x40) {
+        if (gm_NetMsgCount > 0x40) {
             sv_PumpNet();
-            ai_Unk6f1b98 = 0;
+            gm_NetMsgCount = 0;
         }
         if (c[2] == 0x12) {
             loc = 8;
             cm_BeginFieldBlock(c, *(int *)(c + 4));
             cm_AddFieldDelta(1, 1, 2, &loc);
             cm_SendFieldDeltas();
-            ai_Unk6f1b98++;
+            gm_NetMsgCount++;
         }
     }
     for (i = 0; i < 0x300; i++) {
         c = ai_Chars[i];
-        if (ai_Unk6f1b98 > 0x40) {
+        if (gm_NetMsgCount > 0x40) {
             sv_PumpNet();
-            ai_Unk6f1b98 = 0;
+            gm_NetMsgCount = 0;
         }
         if (((unsigned char)c[2] < 10 || c[2] == 0x14) && c[8] != 0) {
             unk_Unk4fbe90((unsigned short *)c);
@@ -1591,12 +1598,12 @@ void gm_DailyCharacters(void)
                 else
                     name = "magd_FRAU";
                 ai_Unk4c5690(*(int *)(c + 4), name);
-                ai_Unk6f1b98++;
+                gm_NetMsgCount++;
             }
         }
     }
     unk_Unk4fd120();
-    ai_Unk6f1b98 = 0;
+    gm_NetMsgCount = 0;
 }
 /* 0x4fca40, changes the health of the character id by d (kind 0x14: the float +0x1c directly, dies below 0 through the message 0x72; others: the health of 0x4fc820's formula plus d, the int +0x24 = d through 0x4c3d00): -1 for a free slot, kind 10 or an inactive one; returns the new health, 0 when the character died. ROUGH */
 
@@ -1719,7 +1726,7 @@ void unk_Unk4fccc0(char *c)
     o = gm_FindChar(*(int *)(c + 0x5c));
     if (1.0 < *(float *)(c + 0x7c)) {
         cm_SendFloatDelta(*(int *)(c + 4), 0x7c, (float)(util_RandomF2() * -0.5 - *(float *)(c + 0x7c)));
-        ai_Unk6f1b98++;
+        gm_NetMsgCount++;
         if (o == 0)
             return;
         memcpy(clk, ai_Time, 14);
@@ -1788,7 +1795,7 @@ void unk_Unk4fccc0(char *c)
             cm_AddFieldDelta(1, 1, 2, &arg);
             cm_SendFieldDeltas();
             cm_SendNewParty(msg);
-            ai_Unk6f1b98++;
+            gm_NetMsgCount++;
             return;
         }
     }
@@ -1824,7 +1831,7 @@ void unk_Unk4fccc0(char *c)
             }
             fv = (float)((util_RandomF2() + 1.0) * ai_Unk617734[cnt]);
             cm_SendFloatDelta(*(int *)(c + 4), 0x7c, fv);
-            ai_Unk6f1b98++;
+            gm_NetMsgCount++;
         }
     }
 }

@@ -1102,3 +1102,5 @@
 2026-11-02T18:07:35 0x00589e00 func ai_Unk589e00 -> ai_BookmarkSetBuilding by:main why:0x589e00 stores a building's id and its main object's id into ai_Bookmarks[i]; 0x589e50 presets the bookmarks with the market, the town hall, the player's home and the player's buildings
 2026-11-02T18:07:35 0x00589e50 func ai_Unk589e50 -> ai_BookmarksPreset by:main why:0x589e00 stores a building's id and its main object's id into ai_Bookmarks[i]; 0x589e50 presets the bookmarks with the market, the town hall, the player's home and the player's buildings
 2026-11-02T18:10:19 0x004fa160 func unk_Unk4fa160 -> gm_IncomeKind3 by:main why:fills the first free entry of the income record with kind 3 (out[k] = 3), the rate of decision 0xd, sums into income row 2
+2026-11-02T18:12:26 0x006f1b98 data ai_Unk6f1b98 -> gm_NetMsgCount by:main why:f3gm.c counts the messages it sends (++ after cm_SendMoveGoodsUnchecked) and pumps the net (sv_PumpNet) and resets it past 0x40
+2026-11-02T18:12:26 0x004fa2a0 func unk_Unk4fa2a0 -> gm_IncomeKind4 by:main why:fills the first free entry of the income record with kind 4 (out[k] = 4), the rate of decision 0xc, sums into income row 3
