@@ -769,14 +769,18 @@ typedef struct G6RING {                 /* 12 bytes, the ring at 0xf83c20 (ai_Fi
     unsigned int flags;                 /* 0x8, why the character is listed */
 } G6RING;
 
-extern G6RING ai_Unkf83c20[];           /* 0xf83c20 */
-extern G6RING *ai_Unk60034c;            /* 0x60034c, the next entry */
-extern int ai_Unk600350;                /* 0x600350, the step */
-extern unsigned int ai_Unk6f070c;       /* 0x6f070c, the number of entries */
+extern G6RING ai_NearRing[];           /* 0xf83c20 */
+typedef struct G6CURSOR {               /* 8 bytes, the walk over ai_NearRing */
+    G6RING *next;                       /* 0x0, the entry ai_NextNearRingEntry returns next */
+    int step;                           /* 0x4, the stride (coprime to the count, ai_FillNearRing) */
+} G6CURSOR;
+extern G6CURSOR ai_NearRingCursorState;          /* 0x60034c */
+extern G6CURSOR *const ai_NearRingCursor;        /* 0x5ed1b0, points to ai_NearRingCursorState */
+extern unsigned int ai_NearRingCount;       /* 0x6f070c, the number of entries */
 
 int ai_ExecuteDarkCorner(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49ee20 */
 G5CH *ai_PickLeastLikedRival(G5CH *p);                                                    /* 0x4a0240 */
-G6RING *ai_Unk4a3a90(void);                                                     /* 0x4a3a90 */
+G6RING *ai_NextNearRingEntry(void);                                                     /* 0x4a3a90 */
 int ai_PickDislikedColumn(G5CH *p);                                                      /* 0x4a0410 */
 int ai_DecidePriceManipulation(int a, G5CH *p, int f, AIARG *o1);                             /* 0x49fc90 */
 int amt_MayorBonusStep(char *c);                                                      /* 0x4e94a0 */

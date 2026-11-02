@@ -31,18 +31,17 @@ extern unsigned char txt_Keys;  /* @original ai_DecideBuildBusiness (0x498c70, b
 #include "unk_4a7140.h"
 #include "unk_4b39f0.h"
 int ai_Unk5ffd1c = -1;                  /* 0x5ffd1c */
-G6RING * ai_Unk60034c = ai_Unkf83c20;  /* 0x60034c, the next entry */
-int ai_Unk600350 = 1;  /* 0x600350, the step */
+G6CURSOR ai_NearRingCursorState = { ai_NearRing, 1 };  /* 0x60034c, the next entry of ai_NearRing and the stride */
 int ai_Unk6f0470 = 0;  /* 0x6f0470, number of characters of kind 5, 6, 7 */
 AGCH ai_DuelOpponent = {0};  /* 0x6f0478 */
 G9SHOT ai_Unk6f0698 = {0};  /* 0x6f0698 */
-unsigned int ai_Unk6f070c = 0;  /* 0x6f070c, the number of entries */
+unsigned int ai_NearRingCount = 0;  /* 0x6f070c, the number of entries */
 int ai_WriteActionTable = 0;  /* 0x6f2464, set: write the action table */
 char ai_DataPath[608] = {0};  /* 0x75dca0, the data path */
 /* ai_Unk7e3f80: view of ai_PlayerSlots (tools/data_views.py) */
 /* ai_Unk7e3f84: view of ai_PlayerSlots (tools/data_views.py) */
 /* ai_Unk7e4274: view of ai_PlayerSlots (tools/data_views.py) */
-G6RING ai_Unkf83c20[32] = {0};  /* 0xf83c20 */
+G6RING ai_NearRing[32] = {0};  /* 0xf83c20 */
 char ai_ActionIniPath[260] = {0};  /* 0xf83da0, the ini file of the actions */
 int ai_Unkf83ea4 = 0;  /* 0xf83ea4, the depth of the evaluation stack */
 AIACT ai_Actions[0x49] = {0};  /* 0xf83ec0, the registered actions (0x49 of them: the init clears 0x49 * 0x94 bytes) */
@@ -2339,6 +2338,7 @@ const int ai_Unk5ed100[16] = { 1, 5, 7, 11, 13, 17, 19, 23, 745, 749, 751, 755, 
 const int ai_RandomStrides[16] = { 1, 3, 5, 7, 11, 13, 17, 19, 237, 239, 243, 245, 249, 251, 253, 255 };  /* 0x5ed140, random steps */
 const int ai_Unk5ed180[] = { 1, 3, 5, 7, 11, 13, 17, 19, 23, 29 };  /* 0x5ed180, ring steps */
 const int ai_Unk5ed1a8 = 31;  /* 0x5ed1a8, the last of the ring sizes before it */
+G6CURSOR *const ai_NearRingCursor = &ai_NearRingCursorState;  /* 0x5ed1b0, the code reaches the cursor through this constant pointer (mov reg, [0x5ed1b0]) */
 const G9BALL ai_Unk5edfe0[3] = { { 2000.0f, 3000.0f, 0.0599999987f }, { 2450.0f, 3850.0f, 0.0649999976f }, { 3600.0f, 5950.0f, 0.075000003f } };  /* 0x5edfe0 */
 const float ai_Unk5eee08 = 7874.0f;  /* 0x5eee08, 7874 */
 
@@ -10014,13 +10014,13 @@ int ai_RegisterBaseActions(int a)
 }
 /* 0x4a3a90, the next entry of the ring */
 
-G6RING *ai_Unk4a3a90(void)
+G6RING *ai_NextNearRingEntry(void)
 {
-    G6RING *r = ai_Unk60034c;
+    G6RING *r = ai_NearRingCursor->next;
 
-    if (ai_Unk6f070c == 0)
-        return ai_Unkf83c20;
-    ai_Unk60034c = &ai_Unkf83c20[(unsigned int)(ai_Unk60034c - ai_Unkf83c20 + ai_Unk600350) % ai_Unk6f070c];
+    if (ai_NearRingCount == 0)
+        return ai_NearRing;
+    ai_NearRingCursor->next = &ai_NearRing[(unsigned int)(ai_NearRingCursor->next - ai_NearRing + ai_NearRingCursor->step) % ai_NearRingCount];
     return r;
 }
 
@@ -10028,7 +10028,7 @@ G6RING *ai_Unk4a3a90(void)
 #define G7_ADD(k, f, cond)                                                          \
     n = amt_GetColumnOfficesOwned((k), 6, &info);                                                \
     for (j = 0; j < n; j++) {                                                       \
-        if (r > ai_Unkf83c20 + 31)                                                  \
+        if (r > ai_NearRing + 31)                                                  \
             break;                                                                  \
         if ((cond) && (o = (G5CH *)gm_FindChar(info.e[j].id)) != 0 && o != p) {    \
             r->flags = (f);                                                         \
@@ -10056,9 +10056,9 @@ void ai_FillNearRing(AICHAR *c)
     int *sz;
 
     cnt = 0;
-    ai_Unk6f070c = 0;
-    memset(ai_Unkf83c20, 0, 32 * sizeof(G6RING));
-    r = ai_Unkf83c20;
+    ai_NearRingCount = 0;
+    memset(ai_NearRing, 0, 32 * sizeof(G6RING));
+    r = ai_NearRing;
     if (((unsigned char *)p)[0x166] == 0) {
         G7_ADD(1, 0x40, amt_GetKindLevel(info.e[j].k) < 3)
         G7_ADD(2, 0x40, amt_GetKindLevel(info.e[j].k) < 3)
@@ -10117,14 +10117,14 @@ void ai_FillNearRing(AICHAR *c)
         for (j = 0; j < n; j++) {
             if ((G5CH *)fam[j] != p) {
                 for (i = 0; i < cnt; i++) {
-                    if (ai_Unkf83c20[i].who == (G5CH *)fam[j]) {
-                        ai_Unkf83c20[i].flags |= 2;
+                    if (ai_NearRing[i].who == (G5CH *)fam[j]) {
+                        ai_NearRing[i].flags |= 2;
                         break;
                     }
                 }
                 if (i < cnt)
                     continue;
-                if (r <= ai_Unkf83c20 + 31) {
+                if (r <= ai_NearRing + 31) {
                     r->flags = 2;
                     r->dist = gm_Liking(o->id, p->id, 1);
                     cnt++;
@@ -10145,14 +10145,14 @@ void ai_FillNearRing(AICHAR *c)
                     f |= 4;
                 if (f != 0) {
                     for (i = 0; i < cnt; i++) {
-                        if (ai_Unkf83c20[i].who == o) {
-                            ai_Unkf83c20[i].flags |= f;
+                        if (ai_NearRing[i].who == o) {
+                            ai_NearRing[i].flags |= f;
                             break;
                         }
                     }
                     if (i < cnt)
                         continue;
-                    if (r <= ai_Unkf83c20 + 31) {
+                    if (r <= ai_NearRing + 31) {
                         r->flags = f;
                         r->dist = gm_Liking(o->id, p->id, 1);
                         r->who = o;
@@ -10165,14 +10165,14 @@ void ai_FillNearRing(AICHAR *c)
     }
     step = (4 - ai_Difficulty) * 5;
     for (i = 0; i < cnt; i++) {
-        k1 = ((unsigned char *)ai_Unkf83c20[i].who)[2];
+        k1 = ((unsigned char *)ai_NearRing[i].who)[2];
         if (k1 == 6 || k1 == 7)
-            ai_Unkf83c20[i].dist = (float)step + ai_Unkf83c20[i].dist;
+            ai_NearRing[i].dist = (float)step + ai_NearRing[i].dist;
     }
-    ai_Unk6f070c = cnt;
+    ai_NearRingCount = cnt;
     if (cnt < 4) {
-        ai_Unk60034c = ai_Unkf83c20;
-        ai_Unk600350 = 1;
+        ai_NearRingCursor->next = ai_NearRing;
+        ai_NearRingCursor->step = 1;
         return;
     }
     g = 11;
@@ -10180,10 +10180,10 @@ void ai_FillNearRing(AICHAR *c)
         if (*sz < cnt)
             break;
     }
-    ai_Unk60034c = &ai_Unkf83c20[util_RandomU(cnt)];
-    ai_Unk600350 = ai_Unk5ed180[util_RandomU(g)];
-    if (ai_Unk600350 > 1 && ai_Unk6f070c % ai_Unk600350 == 0)
-        ai_Unk600350 += (util_RandomU(2) != 0 ? 2 : 0) - 1;
+    ai_NearRingCursor->next = &ai_NearRing[util_RandomU(cnt)];
+    ai_NearRingCursor->step = ai_Unk5ed180[util_RandomU(g)];
+    if (ai_NearRingCursor->step > 1 && ai_NearRingCount % ai_NearRingCursor->step == 0)
+        ai_NearRingCursor->step += (util_RandomU(2) != 0 ? 2 : 0) - 1;
 }
 /* 0x4a4680, the current prices of the items of group m->key against their base prices */
 
@@ -10747,8 +10747,8 @@ int ai_PickPartnerChain(AIPER *p, int a, int *flags, float b, float f, unsigned 
             else
                 ((unsigned short *)&q[7])[i] = id[i - 1];
             found = 0;
-            e = ai_Unk4a3a90();
-            for (n = ai_Unk6f070c; !found; n--, e = ai_Unk4a3a90()) {
+            e = ai_NextNearRingEntry();
+            for (n = ai_NearRingCount; !found; n--, e = ai_NextNearRingEntry()) {
                 if (n == 0) {
                     if (!found)
                         return 0;
@@ -10792,8 +10792,8 @@ int ai_PickPartnerInRange(AIPER *p, unsigned int fl, int n, unsigned short *ids,
         }
     }
     q[16] = 0;
-    for (k = ai_Unk6f070c; ; k--) {
-        e = ai_Unk4a3a90();
+    for (k = ai_NearRingCount; ; k--) {
+        e = ai_NextNearRingEntry();
         if (k == 0 || e->who == 0)
             break;
         if (lo <= e->dist && e->dist <= hi
