@@ -455,6 +455,11 @@ typedef struct AIMSG {                  /* 0xf8 bytes, given to cm_SendLongMessa
             int price;                  /* 0x64, the lease price (gv_LeasePrice) */
             int years;                  /* 0x68, the years the lease is extended by (10) */
         } lease;
+        struct {                        /* the graveyard work 0x8d on a grave (ai_GraveCare; he_HasGraveWork finds its event) */
+            int pad58;
+            int size;                   /* 0x5c, the grave's size (list) */
+            unsigned char index;        /* 0x60, its index in that list */
+        } graveWork;
         struct {                        /* the study message 0x5f ("Studium", ai_ExecuteStudy) */
             int ch;                     /* 0x58, the netId of the character who pays */
             int pad5c;
