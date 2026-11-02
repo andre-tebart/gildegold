@@ -3063,7 +3063,7 @@ exe	0x005049c0	gm_HasBuilding	f3gm	byte	readable
 exe	0x005049e0	gm_ClassTreasury	f3gm	byte	readable		
 exe	0x00504a80	gm_PlayerSeat	f3gm	byte	draft		
 exe	0x00504ad0	gm_TitleGroup	f3gm	byte	readable		
-exe	0x00504c00	gm_TitleJobGroup	f3gm	draft	readable		
+exe	0x00504c00	gm_TitleJobGroup	f3gm	byte	readable		
 exe	0x00504ce0	gm_TitlesLeft	f3gm	shape	readable		
 exe	0x00504e00	gm_SkillPoints	f3gm	byte	readable		
 exe	0x00504e20	gm_Mix	f3gm	shape	readable		
