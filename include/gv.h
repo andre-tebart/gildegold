@@ -195,7 +195,7 @@ char *gv_GetEffect(int id);            /* 0x4eedd0 */
 int gv_StartShot(struct GVSHOTMSG *m, int w);       /* 0x4eee00 */
 void unk_Unk4eeee0(int id, void *cb, void *arg);  /* 0x4eeee0 */
 float gv_SalvoCharge(int a, int b, int c);  /* 0x4eef50 */
-void unk_Unk4ef000(int n, int *out);    /* 0x4ef000 */
+void gv_CannonKind(int n, int *out);    /* 0x4ef000 */
 int gv_Accuse();                     /* 0x4f2e30 */
 void cm_SendMoneyDelta(int a, int b);                     /* 0x4c5f60 */
 extern unsigned char ai_OwnPlayer;      /* 0x6f1bc5 */

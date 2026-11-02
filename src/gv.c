@@ -1031,28 +1031,25 @@ float gv_SalvoCharge(int a, int b, int c)
     }
     return sum;
 }
-/* 0x4ef000, out[0] = n (0 .. 4), out[1] = n + 2, out[3 .. 5] and out[6 .. 8]: 500 * 32 * i * t and 700 * 32 * i * t (i = 1 .. 3, t = n * 0.25 + 1) as ints */
+/* 0x4ef000, the stats of the cannon kind n (clamped 0 .. 4) into out (am.c G9KIND): out[0] = n, out[1] = n + 2 (the level the
+   building needs, am.c 0x4a67a0), and for the salvos of i = 1 .. 3 balls out[1 + i] = 500 * 32 * i * t and out[4 + i] =
+   700 * 32 * i * t as ints, t = n * 0.25 + 1 (the products go through v: in one expression VC6 folds 500 * 32) */
 
-void unk_Unk4ef000(int n, int *out)
+void gv_CannonKind(int n, int *out)
 {
-    float t, a;
-    int i;
-    int *p;
+    float t, a, v;
+    int kind, i;
 
-    if (n < 4) {
-        if (n < 1)
-            n = 0;
-    } else
-        n = 4;
-    out[0] = n;
-    out[1] = n + 2;
-    t = (float)n * 0.25f + 1.0f;
-    p = out + 5;
-    for (i = 1; i < 4; i++) {
+    kind = max(min(n, 4), 0);
+    out[0] = kind;
+    out[1] = kind + 2;
+    t = (float)kind * 0.25f + 1.0f;
+    for (i = 1; i <= 3; i++) {
         a = (float)i * t;
-        p[-3] = (int)(500.0f * a * 32.0f);
-        p[0] = (int)(a * 700.0f * 32.0f);
-        p++;
+        v = 500.0f * a;
+        out[1 + i] = (int)(v * 32.0f);
+        v = a * 700.0f;
+        out[4 + i] = (int)(v * 32.0f);
     }
 }
 /* 0x4ef090, checks a purchase: the tier a (clamped 0 .. 4) gives the slot count *n = a + 2, the price *price = (2 * b + 500) * (a * 0.25 + 1) * d * 32 from b (clamped 0 .. 100) and d (1 .. 3);

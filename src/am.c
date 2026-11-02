@@ -10761,7 +10761,7 @@ int ai_Unk4a67a0(AIPER *p, AIBLD *b, AIBLD *t)
         return 0;
     unk_Unk4ef170(b, &r2, &r);
     r = util_RandomU(r + 1);
-    unk_Unk4ef000(r, &kind);
+    gv_CannonKind(r, &kind);
     if (*(int *)((unsigned char *)p + 0x194) < kind.level)
         return 0;
     f = unk_Unk4ef330(b);
