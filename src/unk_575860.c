@@ -1183,22 +1183,20 @@ int ai_Unk576490(int *p)
         return 0;
     return 1;
 }
-/* 0x5764b0, a callback predicate: 0 when the step kind is 0x1a, the record p[1] names a building kind whose table
-   byte (0x7e3f30, 0x24d bytes per kind) is 0x12 and the word 0x6f2310 is 0x74; else 1. 65 B, the next start
-   0x576500 is not Ghidra's (its 1776 B record begins here) */
+/* 0x5764b0, the default query callback of the run records (TUTRUN.query): 0 (refuse) for the event 0x1a on a
+   building of the type kind 0x12 while the panel shows the room 0x74, else 1 (allow); the other callbacks fall
+   back to it */
 
-int ai_Unk5764b0(int *p)
+int ai_QueryDefault(int *args)
 {
-    int kind;
+    AIBLD *bld;
 
-    if (p[0] != 0x1a || !p[1])
+    if (args[0] != 0x1a || !args[1])
         return 1;
-    kind = *(unsigned char *)p[1];
-    if (*(unsigned char *)(*(char **)(unsigned)&ai_BTypes + kind * 0x24d) != 0x12)
-        return 1;
-    if (*(unsigned short *)(unsigned)&sv_PanelShown != 0x74)
-        return 1;
-    return 0;
+    bld = (AIBLD *)args[1];
+    if (((AIBTYPE *)ai_BTypes)[bld->type].kind == 0x12 && *sv_PanelShown == 0x74)
+        return 0;
+    return 1;
 }
 /* 0x576500, a callback predicate: the kinds 0x19 / 0x1a with a building whose table byte is 0xf; the kind 0x19
    matches when the step word p[3] is 0x10e, the kind 0x1a when the building word 0x6f2310 is 0x10e; a missing
@@ -1615,7 +1613,7 @@ int ai_Unk576e70(int *p)
                 && (p[3] == 0x79 || p[3] == 0x7a || p[3] == 0x78))
             return 1;
     }
-    return ai_Unk5764b0(p);
+    return ai_QueryDefault(p);
 }
 /* 0x576ee0, the twin of 0x576ba0 for a building of the table byte 0x2: the kind 0x2b with the step word
    0x5 / 0x2 / 0xd / 0x8 and the flag +0x38 clear sets the flag and the state 0xa (3); the kind 0x10 sets the
@@ -1700,7 +1698,7 @@ int ai_Unk5770e0(int *p)
             return 1;
         return 0;
     }
-    return ai_Unk5764b0(p);
+    return ai_QueryDefault(p);
 }
 /* 0x577110, when `arg` is 0: finds the character record 0x770b80 + i * 0x21c whose owner (the pointer at
    0x770cec + i * 0x21c, +0x21c per record) has the player word 0x6f25b8 at +0x27, asks 0x55ea60 for two values and
@@ -1747,7 +1745,7 @@ int ai_Unk5771b0(int *p)
         }
         return 0;
     }
-    return ai_Unk5764b0(p);
+    return ai_QueryDefault(p);
 }
 /* 0x577230, when `arg` is 0: posts the message 0x2bc0 for the player's character id (0x770b80 + id * 0x21c, +4)
    and a fight message (0x4c4880) on the record of 0x500ec0 (0x155): (id +2, -1, 0x155, 3, 0x6f1bc5, 0) */
@@ -3094,7 +3092,7 @@ int ai_Unk579570(void)
     U_I(r + 0x28) = (unsigned)(full_data_629db0 + 0x14);
     U_I(r + 0x2c) = 0x429;
     U_I(r + 0x30) = 0xd5;
-    U_I(r + 0x3c) = (unsigned)&ai_Unk5764b0;
+    U_I(r + 0x3c) = (unsigned)&ai_QueryDefault;
     U_I(r + 0x40) = 0x1d;
     U_I(r + 0x44) = 0x58c;
     U_I(r + 0x48) = 0xb;
@@ -3218,7 +3216,7 @@ int ai_Unk579570(void)
     U_I(r + 0x28) = (unsigned)(full_data_629c20 + 0x14);
     U_I(r + 0x2c) = 0x429;
     U_I(r + 0x30) = 0x8e;
-    U_I(r + 0x3c) = (unsigned)&ai_Unk5764b0;
+    U_I(r + 0x3c) = (unsigned)&ai_QueryDefault;
     U_I(r + 0x40) = 0x21;
     U_I(r + 0x44) = 0x58c;
     U_I(r + 0x48) = 0xa;
@@ -3372,7 +3370,7 @@ int ai_Unk579570(void)
     U_I(r + 0x10) = (unsigned)&full_data_629ac8;
     U_I(r + 0x2c) = 0x58c;
     U_I(r + 0x30) = 0x47;
-    U_I(r + 0x3c) = (unsigned)&ai_Unk5764b0;
+    U_I(r + 0x3c) = (unsigned)&ai_QueryDefault;
     U_I(r + 0x40) = 0x3;
     U_I(r + 0x44) = 0x1aa;
     U_I(r + 0x48) = 0xb;
