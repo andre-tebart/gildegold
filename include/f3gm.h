@@ -39,7 +39,7 @@ int gm_CollectCarried(int id, int *out);                                   /* 0x
 int gm_IsBankrupt(unsigned short *p, int n);                                  /* 0x50a6c0, p: an AICHAR */
 
 /* declared in other units' headers before (moved to the owner) */
-unsigned gm_Unk5056a0(short *c);  /* 0x5056a0 */
+struct ORDCHAR; int gm_CatchUpperDisease(struct ORDCHAR *c);  /* 0x5056a0, the character catches one of the upper diseases 5 .. 8; the kind or 0 */
 int gm_Unk5059d0(char *c);  /* 0x5059d0 */
 int gm_Unk505ad0(char *c);  /* 0x505ad0 */
 int gm_CurseTargetCount(char *b);  /* 0x50d0b0 */

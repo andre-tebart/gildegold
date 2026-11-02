@@ -1206,3 +1206,4 @@
 2026-11-02T23:36:58 0x00617850 data ai_Unk617850 -> gm_Diseases by:main why:gm_GetDisease copies its 3-int records {kind, cost factor, severity range} out for gm_CatchDisease (the disease simulation)
 2026-11-02T23:37:25 0x00505440 data gm_Unk505440 -> gm_CatchPlague by:main why:he_Unk54a020, the run handler of the plague event ("Pest"), calls it for the figures of the target building and passes its result as the infection strength
 2026-11-02T23:38:11 0x005054f0 data gm_Unk5054f0 -> gm_CatchMinorDisease by:main why:it picks one of the diseases 2 .. 5 (gm_GetDisease records) the character has not caught, at half the record's severity range; the message handler ai_Unk4bb330 (not with the item 0x290) calls it
+2026-11-02T23:39:20 0x005056a0 data gm_Unk5056a0 -> gm_CatchUpperDisease by:main why:the twin of gm_CatchMinorDisease for the disease records 5 .. 8 (gm_GetDisease); the message handler ai_Unk4bb430 (not with the item 0x290) calls it

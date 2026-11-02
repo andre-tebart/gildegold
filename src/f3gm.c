@@ -7042,55 +7042,71 @@ int gm_CatchMinorDisease(ORDCHAR *c)
     gm_AddHealth(c->id, -cost);
     return disease;
 }
-/* 0x5056a0, like 0x5054f0 for the fields 3 .. 6 (records 5 .. 8) */
+/* 0x5056a0, gm_CatchMinorDisease for the upper four diseases 5 .. 8 (the fields of the word +0x2c at bits 14, 17, 20
+   and 23): the character c catches one it does not have yet, from a random start, at util_Random(half the record's
+   range) of gm_GetDisease, and pays severity * the record's cost (gm_AddHealth). The disease 5 is written into the
+   field of 8 (the original's code: its branch shares the 8's shift and mask). Returns the disease kind or 0 */
 
-unsigned gm_Unk5056a0(short *c)
+int gm_CatchUpperDisease(ORDCHAR *c)
 {
-    unsigned w, f, x, v;
-    unsigned tab[8];
-    int i, cost;
-    int rec[3];
+    int kinds[4];
+    int empty[4];
+    GMDISEASE rec;
+    unsigned w, sent;
+    int f, found, n, v, disease, cost;
 
-    w = *(unsigned *)(c + 0x16);
-    tab[0] = 5;
-    tab[1] = 6;
-    tab[2] = 7;
-    tab[3] = 8;
-    tab[4] = (w & 0x1c000) == 0;
-    tab[5] = (w & 0xe0000) == 0;
-    tab[6] = (w & ((unsigned)&he_Events + 0x54c0)) == 0;
-    tab[7] = (w & 0x1800000) == 0;
-    f = util_RandomU(4) & 0xffff;
-    i = 4;
-    while (tab[f + 4] != 1) {
-        i--;
+    w = c->v02c;
+    empty[0] = 0;
+    empty[1] = 0;
+    empty[2] = 0;
+    empty[3] = 0;
+    kinds[0] = 5;
+    kinds[1] = 6;
+    kinds[2] = 7;
+    kinds[3] = 8;
+    if ((w & (7 << 14)) == 0)
+        empty[0] = 1;
+    if ((w & (7 << 17)) == 0)
+        empty[1] = 1;
+    if ((w & (7 << 20)) == 0)
+        empty[2] = 1;
+    if ((w & (3 << 23)) == 0)
+        empty[3] = 1;
+    found = -1;
+    f = util_RandomU(4);
+    n = 4;
+    do {
+        if (empty[f] == 1) {
+            found = f;
+            break;
+        }
+        n--;
         f = (f + 1) % 4;
-        if (i == 0)
-            return 0;
-    }
-    f = tab[f];
-    if (gm_GetDisease(f, rec) == 0)
+    } while (n != 0);
+    if (found == -1)
         return 0;
-    v = util_RandomU((int)(float)rec[2]) & 0xffff;
+    disease = kinds[found];
+    if (gm_GetDisease(disease, (int *)&rec) == 0)
+        return 0;
+    v = util_RandomU((int)((unsigned)rec.range * 0.5));
     if (v == 0)
         return 0;
-    cost = (int)(float)rec[0];
-    w = *(unsigned *)(c + 0x16);
-    if (f == 5 || f == 8)
-        x = (v << 0x17 ^ w) & 0x1800000;
-    else if (f == 6)
-        x = (v << 0x11 ^ w) & 0xe0000;
-    else if (f == 7)
-        x = (v << 0x14 ^ w) & ((unsigned)&he_Events + 0x54c0);
-    else
-        goto send;
-    w = w ^ x;
-send:
-    cm_BeginFieldBlock(c, *(int *)(c + 2));
-    cm_AddFieldDelta(4, 1, 0x2c, &w);
+    cost = (int)(v * rec.cost);
+    w = c->v02c;
+    if (disease == 5)
+        w ^= ((v << 23) ^ w) & (3 << 23);
+    else if (disease == 6)
+        w ^= ((v << 17) ^ w) & (7 << 17);
+    else if (disease == 7)
+        w ^= ((v << 20) ^ w) & (7 << 20);
+    else if (disease == 8)
+        w ^= ((v << 23) ^ w) & (3 << 23);
+    sent = w;
+    cm_BeginFieldBlock((char *)c, c->netId);
+    cm_AddFieldDelta(4, 1, 0x2c, &sent);  /* 0x2c: v02c */
     cm_SendFieldDeltas();
-    gm_AddHealth(*c, -cost);
-    return f;
+    gm_AddHealth(c->id, -cost);
+    return disease;
 }
 /* 0x505840, clears one set field of the word +0x2c of the character c (a random start field of 8, the first that is not 0) and sends the word; returns the record number (2 .. 9) or 0 */
 
