@@ -1519,7 +1519,7 @@ exe	0x0048f2b0	ai_DecideBuildSculpture	am	draft	readable	deep
 exe	0x0048f500	ai_ExecBuildSculpture	am	byte	readable		
 exe	0x0048f600	ai_DecideUseAlchemyItems	am	draft	readable	deep	
 exe	0x0048f990	ai_ExecUseAlchemyItems	am	byte	draft		
-exe	0x0048fb70	ai_Unk48fb70	am	byte	draft		
+exe	0x0048fb70	ai_RegisterBuildingActions	am	byte	draft		
 exe	0x0048feb0	ai_PickRandomBuildingChar	am	byte	draft		
 exe	0x0048ff50	ai_DecideGraveyardOwner0	am	shape	readable		
 exe	0x004900c0	ai_ExecGraveyardOwner0	am	byte	readable		
@@ -1533,7 +1533,7 @@ exe	0x00490690	ai_DecideGraveyardOwner	am	byte	readable
 exe	0x00490830	ai_Unk490830	am	byte	draft		
 exe	0x004908d0	ai_Unk4908d0	am	byte	draft		
 exe	0x00490b90	ai_Unk490b90	am	byte	draft		
-exe	0x00490c10	ai_Unk490c10	am	byte	draft		
+exe	0x00490c10	ai_RegisterGraveActions	am	byte	draft		
 exe	0x00490e00	ai_Unk490e00	am	byte	draft		
 exe	0x00490fc0	ai_Unk490fc0	am	byte	draft		
 exe	0x00491200	ai_Unk491200	am	byte	draft		
@@ -1570,8 +1570,8 @@ exe	0x004933d0	ai_Unk4933d0	am	byte	draft
 exe	0x00493420	ai_DuelThrow	am	draft	readable	deep	
 exe	0x004937a0	ai_Unk4937a0	am	byte	draft		
 exe	0x00493890	ai_DuelOpponentAction	am	byte	readable		
-exe	0x00493a40	ai_Unk493a40	am	draft	draft		
-exe	0x00493be0	ai_Unk493be0	am	draft	draft		
+exe	0x00493a40	ai_DuelNextPhase	am	draft	readable	deep	
+exe	0x00493be0	ai_ChooseObjectTarget	am	draft	readable	deep	
 exe	0x00493ea0	ai_Unk493ea0	am	byte	draft		
 exe	0x00494020	ai_Unk494020	am	byte	draft		
 exe	0x004941b0	ai_Unk4941b0	am	byte	draft		
@@ -1580,7 +1580,7 @@ exe	0x004941e0	ai_Unk4941e0	am	byte	draft
 exe	0x004942a0	ai_Unk4942a0	am	byte	draft		
 exe	0x00494300	ai_Unk494300	am	byte	draft		
 exe	0x00494410	ai_Unk494410	am	byte	draft		
-exe	0x004945c0	ai_Unk4945c0	am	draft	draft		
+exe	0x004945c0	ai_PlanRank	am	draft	readable	deep	
 exe	0x004946c0	ai_Unk4946c0	am	byte	draft		
 exe	0x004947a0	ai_Unk4947a0	am	byte	draft		
 exe	0x00494830	ai_Unk494830	am	byte	draft		
@@ -1590,14 +1590,14 @@ exe	0x00494a30	ai_Unk494a30	am	byte	draft
 exe	0x00494ac0	ai_Unk494ac0	am	byte	draft		
 exe	0x00494d40	ai_Unk494d40	am	byte	draft		
 exe	0x00494d90	ai_Unk494d90	am	byte	draft		
-exe	0x00494e70	ai_LoadActionTable	am	draft	draft		
-exe	0x00495520	ai_Unk495520	am	draft	draft		
-exe	0x00495770	ai_Unk495770	am	byte	draft		
-exe	0x00495790	ai_Unk495790	am	byte	draft		
-exe	0x004957a0	ai_Unk4957a0	am	byte	draft		
-exe	0x004957d0	ai_ChooseAction	am	draft	readable		
-exe	0x00495a50	ai_Unk495a50	am	draft	draft		
-exe	0x00495ce0	ai_ExecuteAction	am	draft	draft		
+exe	0x00494e70	ai_LoadActionTable	am	byte	readable		
+exe	0x00495520	am_RegisterMethod	am	byte	readable		
+exe	0x00495770	ai_PushAction	am	byte	draft		
+exe	0x00495790	ai_PopAction	am	byte	draft		
+exe	0x004957a0	ai_ActionOnStack	am	byte	draft		
+exe	0x004957d0	ai_ChooseAction	am	draft	readable	deep	
+exe	0x00495a50	ai_ChooseSubAction	am	shape	readable		
+exe	0x00495ce0	ai_ExecuteAction	am	draft	readable	deep	
 exe	0x00495ee0	ai_Unk495ee0	am	byte	draft		
 exe	0x00495fa0	ai_Unk495fa0	am	byte	draft		
 exe	0x00495fc0	ai_Unk495fc0	am	byte	draft		
@@ -1729,11 +1729,11 @@ exe	0x004a1170	ai_Unk4a1170	am	shape	draft
 exe	0x004a1360	ai_Unk4a1360	am	byte	draft		
 exe	0x004a13e0	ai_Unk4a13e0	am	draft	draft		
 exe	0x004a1640	ai_Unk4a1640	am	draft	draft		
-exe	0x004a16f0	ai_Unk4a16f0	am	draft	draft		
+exe	0x004a16f0	ai_RegisterBaseActions	am	draft	draft		
 exe	0x004a3a90	ai_Unk4a3a90	am	draft	draft		
 exe	0x004a3af0	ai_FillNearRing	am	draft	draft		
 exe	0x004a4680	ai_Unk4a4680	am	draft	draft		
-exe	0x004a47c0	ai_Unk4a47c0	am	byte	draft		
+exe	0x004a47c0	ai_GetDesireByName	am	byte	readable		
 exe	0x004a49a0	ai_Unk4a49a0	am	draft	draft		
 exe	0x004a4ae0	ai_Unk4a4ae0	am	draft	draft		
 exe	0x004a4c10	ai_Unk4a4c10	am	draft	draft		
@@ -1745,7 +1745,7 @@ exe	0x004a5540	ai_Unk4a5540	am	draft	draft
 exe	0x004a5760	ai_FindWantedItems	am	draft	draft		
 exe	0x004a58d0	ai_PickPartnerChain	am	draft	draft		
 exe	0x004a5a30	ai_PickPartnerInRange	am	draft	draft		
-exe	0x004a5b50	ai_Unk4a5b50	am	draft	draft		
+exe	0x004a5b50	ai_FindPartnersRandomWalk	am	draft	draft		
 exe	0x004a5d30	ai_Unk4a5d30	am	draft	draft		
 exe	0x004a5ef0	ai_FindCandidates	am	draft	draft		
 exe	0x004a61d0	ai_PickPartnerChainLevel	am	draft	draft		
@@ -1822,7 +1822,7 @@ exe	0x004abac0	ai_DecideTheater	unk_4a7140	byte	readable
 exe	0x004abc60	ai_Unk4abc60	unk_4a7140	shape	draft		
 exe	0x004abd00	ai_Unk4abd00	unk_4a7140	shape	draft		
 exe	0x004abe60	ai_Unk4abe60	unk_4a7140	byte	draft		
-exe	0x004abed0	ai_Unk4abed0	unk_4a7140	byte	draft		
+exe	0x004abed0	ai_RegisterSocialActions	unk_4a7140	byte	draft		
 exe	0x004ac140	hmt_RecordCount	hmt	byte	readable		
 exe	0x004ac150	hmt_RandomRecord	hmt	byte	readable		
 exe	0x004ac170	hmt_RandomTextOffset	hmt	draft	readable	deep	
@@ -2157,8 +2157,8 @@ exe	0x004c3ba0	cm_BeginFieldBlock	cm	byte	draft
 exe	0x004c3c00	cm_AddFieldDelta	cm	draft	draft		
 exe	0x004c3d00	cm_AddFieldValues	cm	draft	draft		
 exe	0x004c3d90	cm_AddFieldValue	cm	draft	draft		
-exe	0x004c3e70	ai_Unk4c3e70	cm	byte	draft		
-exe	0x004c3eb0	ai_Unk4c3eb0	cm	draft	draft		
+exe	0x004c3e70	ai_BeginNeedBlock	cm	byte	draft		
+exe	0x004c3eb0	ai_AddNeedDelta	cm	draft	draft		
 exe	0x004c3ef0	cm_SetSpeedLevel	cm	byte	readable		
 exe	0x004c3f20	ai_Unk4c3f20	cm	byte	draft		
 exe	0x004c3f50	ai_Unk4c3f50	cm	byte	draft		
@@ -2189,7 +2189,7 @@ exe	0x004c4920	ai_Unk4c4920	cm	byte	draft
 exe	0x004c4960	cm_SendRemoveGoods	cm	byte	draft		
 exe	0x004c49a0	cm_SendFieldDeltas	cm	byte	draft		
 exe	0x004c49e0	cm_SendFieldValues	cm	byte	draft		
-exe	0x004c4a20	ai_Unk4c4a20	cm	byte	draft		
+exe	0x004c4a20	ai_SendNeedBlock	cm	byte	draft		
 exe	0x004c4a60	cm_SendSetField	cm	byte	draft		
 exe	0x004c4ac0	cm_SendFloatDelta	cm	byte	draft		
 exe	0x004c4b00	cm_SendRelations	cm	byte	draft		
