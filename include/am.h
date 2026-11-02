@@ -705,7 +705,8 @@ typedef struct G5CH {                   /* a character, 0x21c bytes (ai_Chars[76
     unsigned int flags1c8;              /* 0x1c8, (AIPER.flags1c8): 0x2000000 keeps it from the regulars' table (ai_DecideStammtisch) */
     char pad1cc[0x1c];
     unsigned int flags1e8;              /* 0x1e8, (AIPER.flags1e8) */
-    char pad1ec[0x24];
+    unsigned int goodsMask;             /* 0x1ec, (AICHAR.unk1ec): a good whose Domizil entry mask (+0x10) shares a bit is not usable (0x4a5760); reasoned name */
+    char pad1f0[0x20];
     int partner;                        /* 0x210 */
     char pad214[4];
     unsigned char mask;                 /* 0x218, the action groups it may use */
@@ -1021,6 +1022,12 @@ typedef struct G9REC {                  /* 16 bytes, filled by 0x4a5760 (unk_49a
     int entryId;                        /* 0x8, the inventory entry's id (+0x02), -1 none */
     int entry;                          /* 0xc, the inventory entry itself */
 } G9REC;
+typedef struct G9DOMIZIL {              /* 0x1c bytes, an entry of the Domizil table 0x62c420 (ai_FindUsableGood returns it) */
+    int id;                             /* 0x00, the good, 0 ends the table */
+    char pad04[0xc];
+    unsigned int mask;                  /* 0x10, tested against the character's goodsMask (0x1ec) */
+    char pad14[8];
+} G9DOMIZIL;
 void ai_FindWantedItems(struct G5CH *p, int n, struct G9REC *rec, int *st);                          /* 0x4a5760, declared int elsewhere */
 /* 0x4a58d0 ai_PickPartnerChain is declared in am.h */
 int ai_PickPartnerInRange(AIPER *p, unsigned int fl, int n, unsigned short *ids, float lo, float hi, unsigned short *id); /* 0x4a5a30 */

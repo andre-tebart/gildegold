@@ -10692,63 +10692,54 @@ int ai_FindGoodToMake(int *item, int *obj, AIBLD *b, int f)
     }
     return 0;
 }
-/* 0x4a5760: for n wanted items rec[i].item, finds them in the character's inventory list (0x178, next at 0x3f;
-   goods of kind 9 skipped): rec[i].entryId the entry's id, rec[i].entry the entry, rec[i].value its 0x0e value when
-   usable (0x5ba620 class matches 0x1ec or 0x5ba6b0 refuses), else -1. st[0] counts the entries, st[1] the
-   unusable, st[2] the usable ones */
+/* 0x4a5760: for n wanted items rec[i].item, finds them in the character's inventory list (goods of kind 9
+   skipped): rec[i].entryId the entry's id, rec[i].entry the entry, rec[i].value its count when usable (its
+   Domizil entry's mask shares no bit with the character's goodsMask and ai_InventoryHas refuses), else -1.
+   st[0] counts the entries, st[1] the unusable, st[2] the usable ones */
 
 void ai_FindWantedItems(G5CH *p, int n, G9REC *rec, int *st)
 {
-    unsigned short *e;
+    AIOBJ *e;
     G9REC *r;
-    unsigned char *c;
-    int i, v;
+    G9DOMIZIL *d;
+    int i;
 
-    if (n > 0) {
-        for (r = rec, i = n; i != 0; i--, r++) {
-            r->entryId = -1;
-            r->value = 0;
-        }
+    for (r = rec, i = n; i > 0; i--, r++) {
+        r->entryId = -1;
+        r->value = 0;
     }
     st[1] = 0;
     st[2] = 0;
     st[0] = 0;
-    for (e = *(unsigned short **)((unsigned char *)p + 0x178); e != 0; e = *(unsigned short **)((unsigned char *)e + 0x3f)) {
-        if (ai_GoodsT[*e].type == 9)
+    for (e = (AIOBJ *)p->inventory; e != 0; e = e->next) {
+        if (ai_GoodsT[e->id].type == 9)
             continue;
         st[0]++;
-        for (i = 0, r = rec; i < n; i++, r++) {
-            if (*e != (unsigned int)r->item)
+        for (i = 0; i < n; i++) {
+            if (e->id != rec[i].item)
                 continue;
-            c = (unsigned char *)ai_FindUsableGoodP(*e);
-            if (c == 0) {
-                v = -1;
-                r = &rec[i];
-                r->value = -1;
+            d = (G9DOMIZIL *)ai_FindUsableGoodP(e->id);
+            if (d == 0) {
+                rec[i].value = -1;
                 st[1]++;
-                r->entry = 0;
+                rec[i].entry = 0;
+                rec[i].entryId = -1;
+            } else if (!(d->mask & p->goodsMask) && ai_InventoryHas(p, e->id) == 0) {
+                st[2]++;
+                rec[i].value = e->count;
+                rec[i].entryId = e->objId;
+                rec[i].entry = (int)e;
             } else {
-                if (!(*(unsigned int *)(c + 0x10) & *(unsigned int *)((unsigned char *)p + 0x1ec))
-                    && ai_InventoryHas(p, *e) == 0) {
-                    st[2]++;
-                    rec[i].value = *(int *)(e + 7);
-                    rec[i].entryId = *(int *)(e + 1);
-                    rec[i].entry = (int)e;
-                    break;
-                }
-                r = &rec[i];
-                r->value = -1;
+                rec[i].value = -1;
                 st[1]++;
-                v = *(int *)(e + 1);
-                r->entry = (int)e;
+                rec[i].entryId = e->objId;
+                rec[i].entry = (int)e;
             }
-            r->entryId = v;
             break;
         }
     }
-    for (; n > 0; n--, rec++) {
-        if (rec->entryId == -1 && (c = (unsigned char *)ai_FindUsableGoodP(rec->item)) != 0
-            && (*(unsigned int *)(c + 0x10) & *(unsigned int *)((unsigned char *)p + 0x1ec)))
+    for (i = 0; i < n; i++) {
+        if (rec[i].entryId == -1 && (d = (G9DOMIZIL *)ai_FindUsableGoodP(rec[i].item)) != 0 && (d->mask & p->goodsMask))
             st[1]++;
     }
 }

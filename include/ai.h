@@ -106,7 +106,7 @@ typedef struct AIOBJ {                  /* 0x43 bytes, an object (table behind a
     unsigned char unk37;                /* 0x37 */
     char pad38[3];
     void *sceneObj;                     /* 0x3b, the scene character (ch.h CHARACTER) that shows a cart */
-    char pad3f[4];
+    struct AIOBJ *next;                 /* 0x3f, the next object of its list (an inventory, a store) */
 } AIOBJ;
 
 typedef struct AIGOOD {                 /* 0x41 bytes, ai_Goods[] */
