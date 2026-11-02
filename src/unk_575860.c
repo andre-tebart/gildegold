@@ -3107,7 +3107,14 @@ fail:
    a step table ("FTInitScriptChapter3Step*"), the steps 2, 6, 8 and 10 the position marker's path
    ("FTInitAnimChapter3Step*"), whose points depend on the screen width (800, 1024, else). The voice bank
    "TUTORIAL_CHAPTER_3.sbf" is loaded into ai_TutorialBanks[3]. The first record, or 0 after a failed allocation
-   (the records built so far freed) */
+   (the records built so far freed)
+   @deep read whole against the original: every record, step table and marker path stored at the original's
+   offsets with its values (asmdiff --symbols: no ! line, 1213 vs 1213 instructions, size 5377 = 5377).
+   Left: register choice for the repeated float constants of the marker paths, three hunks: 0x579df6 (step
+   6 path 0 wait/travel/rest: original ecx=0x420c0000 edi=0x430e0000 edx=0x428e0000, ours edi/ecx/edx),
+   0x579f27 (path 1 +0x4c/+0x50/+0x54 the same constants in ecx/edi/edx vs edi/ecx/edx) and 0x57a1b6 (step
+   8 path 0 +4/+8: the reload of marks and mov eax,0x43910000 scheduled one store apart), plus regs hunks
+   eax<->ecx at 0x57a110 / 0x57a168: allocation and scheduling only */
 
 int ai_TutorialInitChapter3(void)
 {
