@@ -3047,7 +3047,7 @@ void ai_Unk5909a0(void)
     ai_CampaignStep(0xe, 0, 1, 0);
 }
 
-int ai_Unk5b2180(); int gm_IsHomeType(); void sv_SelectPanelObject(unsigned char *o, int b, char *c); void sv_FlyCameraToObject(int o); void sv_CameraToObject();
+int ai_MapPick(); int gm_IsHomeType(); void sv_SelectPanelObject(unsigned char *o, int b, char *c); void sv_FlyCameraToObject(int o); void sv_CameraToObject();
 unsigned gm_PermissionBits(unsigned p1, unsigned char *b, unsigned short *o, int c); void ai_Unk59f410(); void init_ShowBuildingScene(unsigned char *b, int slot); void init_FinishBuildingScene(unsigned char *b, unsigned short *o);
 int d3t_PlaceObjectV(struct D3OBJECT *camera, struct D3VECTOR *pos, struct D3VECTOR *dir, int unk, char flags); int gm_ClockSeason(); void init_AfterTownLoad(void); void d3fl_MakeDivide();
 int ai_Unk5bc110(); void snd_StartMarketAmbience(void); int tb_SetFunctionOff(); void snd_StopMarketAmbience(void);
@@ -3083,7 +3083,7 @@ void ai_HandleMapKey(void)
         msg[4] = 0;
         msg[2] = 0;
         msg[0x13] = 0x71f;
-        p = (char *)ai_Unk5b2180(1, msg, 0, 0, 0);
+        p = (char *)ai_MapPick(1, msg, 0, 0, 0);
         if (p != 0 && sv_OtherSelected == 0) {
             if (U_I((unsigned)&ai_FallbackBuilding) != 0) {
                 r = gm_IsHomeType(p);
@@ -4184,7 +4184,7 @@ void ai_Unk593ca0(int param_1)
 }
 
 int ai_Unk5b9db0(); int ai_Unk5b9730(); void ai_Unk5a45c0(); 
-int ai_Unk5b2180();
+int ai_MapPick();
 
 /* 0x593e80, the information listener (186 B): 0x52e190, the pump 0x5309a0 (this, 0x67fff); the contacts
    INFORMATION (0x143cb38, 0xc) -> 0x5a45c0, MEISTERBRIEF (0x143cbc8, 0xc) -> 0x5c3200, PERSONALBUCH
@@ -4299,7 +4299,7 @@ void ai_Unk594180(int param_1)
 {
     if (sv_CheckCharacterFlag(param_1) == 0) {
         sv_OpenPlayerBar(param_1, 0);
-        ai_Unk5b2180(4, 0, U_I((unsigned)&full_data_1440c10), (void *)ai_Unk593f40, 0);
+        ai_MapPick(4, 0, U_I((unsigned)&full_data_1440c10), (void *)ai_Unk593f40, 0);
         sv_ClosePlayerBar();
         sv_ClearSelection();
     }
@@ -4358,7 +4358,7 @@ void ai_Unk594470(int param_1)
     cfg[4] = 7;
     cfg[2] = 0x93810;
     sv_OpenPlayerBar(param_1, 0);
-    ai_Unk5b2180(1, cfg, U_I((unsigned)&full_data_1440974), (void *)ai_Unk5941c0, 0);
+    ai_MapPick(1, cfg, U_I((unsigned)&full_data_1440974), (void *)ai_Unk5941c0, 0);
     sv_ClosePlayerBar();
     sv_ClearSelection();
 }
@@ -4421,7 +4421,7 @@ void ai_Unk594790(int param_1)
         cfg[2] = 0xa07c43a0;
         cfg[3] = 1;
         sv_OpenPlayerBar(param_1, 0);
-        ai_Unk5b2180(1, cfg, U_I((unsigned)&full_data_1440be8), (void *)ai_Unk5944e0, 0);
+        ai_MapPick(1, cfg, U_I((unsigned)&full_data_1440be8), (void *)ai_Unk5944e0, 0);
         sv_ClosePlayerBar();
         sv_ClearSelection();
     }
@@ -4500,7 +4500,7 @@ void ai_Unk594b10(int param_1)
             cfg[4] = 6;
             cfg[2] = 0;
             txt_Format(text, 0x19f6);
-            ai_Unk5b2180(1, cfg, text, (void *)ai_Unk594810, 0);
+            ai_MapPick(1, cfg, text, (void *)ai_Unk594810, 0);
             sv_ClosePlayerBar();
             sv_ClearSelection();
         }
@@ -4565,7 +4565,7 @@ void ai_Unk594db0(int param_1)
             cfg[2] = 0xa07443a0;
             cfg[3] = 1;
             txt_Format(text, 0x1a83);
-            ai_Unk5b2180(1, cfg, text, (void *)ai_Unk594bb0, 0);
+            ai_MapPick(1, cfg, text, (void *)ai_Unk594bb0, 0);
             sv_ClosePlayerBar();
             sv_ClearSelection();
         }
@@ -5309,7 +5309,7 @@ void ai_Unk596400(int param_1, int param_2)
                 cfg[3] = 3;
                 cfg[0x13] = 0x727;
                 txt_Format(text, 0x16ff);
-                ai_Unk5b2180(1, cfg, text, (void *)(unsigned)&ai_Unk5b3630, 0);
+                ai_MapPick(1, cfg, text, (void *)(unsigned)&ai_Unk5b3630, 0);
             } else if (U_I((unsigned)&ai_ClickedObject) == pruegel) {
                 memset(cfg, 0, 0x50);
                 cfg[1] = 0x400;
@@ -9459,7 +9459,7 @@ void ai_Unk59fe40(int param_1)
 int amt_GetFirstOffice(unsigned int k, struct AMTREC *out); int amt_ApplyForOffice(); int amt_KindColumn(); void sv_PumpNet();
 int ai_Unk5bea50(); int ai_Unk5c1a80(); int amt_GetOfficeCandidatesFull(); int amt_GetOfficeCandidates();
 int ai_AmountRowStatus(); int ai_AmountRow(); int ai_Unk5c2160(); int ai_Unk5bd060();
-int amt_CanUseMayorPower2(); int sv_CheckMoney(); int ai_Unk5b2180(); void d2_SetObjEnabled();
+int amt_CanUseMayorPower2(); int sv_CheckMoney(); int ai_MapPick(); void d2_SetObjEnabled();
 int sv_ReturnZero(void);
 
 /* 0x5a0220, the office application window of a room "locations\rathaus\amtsbewerbung2" (870 B, ROUGH: the
@@ -9870,7 +9870,7 @@ void ai_Unk5a0f10(int param_1)
         req[3] = 1;
         req[4] = 6;
         req[19] = 0x727;
-        ai_Unk5b2180(1, req, (void *)U_I((unsigned)&full_data_143fb3c), (void *)(unsigned)&ai_Unk5a0ca0, 0);
+        ai_MapPick(1, req, (void *)U_I((unsigned)&full_data_143fb3c), (void *)(unsigned)&ai_Unk5a0ca0, 0);
         return;
     }
     if (r != -1) {
@@ -11231,7 +11231,7 @@ void ai_DungeonEmptyListener(void)
 }
 
 int he_Unk553cc0(); int gm_Unk509120(); void snd_PlayFavourComment(void); 
-void sv_OpenPlayerBar(int a, char k); int ai_Unk5b2180(); void sv_ClosePlayerBar(void);
+void sv_OpenPlayerBar(int a, char k); int ai_MapPick(); void sv_ClosePlayerBar(void);
 
 /* 0x5a3f10, the burglary window "locations\diebesgilde\diebesgilde_einbruch" (542 B, ROUGH): the owner's
    record (0x770b80 + owner * 0x21c); the gate 0x553cc0 (param_1) with the text 0x1a92 (the owner slot) and
@@ -11334,7 +11334,7 @@ void ai_Unk5a4130(int param_1)
     req[5] = 1;
     req[6] = 7;
     req[7] = 0x727;
-    ai_Unk5b2180(1, req, buf, (void *)(unsigned)&ai_Unk5a3f10, 0);
+    ai_MapPick(1, req, buf, (void *)(unsigned)&ai_Unk5a3f10, 0);
     sv_ClosePlayerBar();
     sv_ClearSelection();
 }
@@ -11476,7 +11476,7 @@ void ai_Unk5a44e0(unsigned char *param_1)
     req[4] = 7;
     req[19] = 0x727;
     txt_Format(buf, 0x19f6);
-    ai_Unk5b2180(1, req, buf, (void *)(unsigned)&ai_Unk5a41d0, 0);
+    ai_MapPick(1, req, buf, (void *)(unsigned)&ai_Unk5a41d0, 0);
     sv_ClosePlayerBar();
     sv_ClearSelection();
 }
@@ -11694,7 +11694,7 @@ void ai_Unk5a4b30(int param_1)
     req[4] = 7;
     req[2] = 0x90010;
     sv_OpenPlayerBar(param_1, 0);
-    ai_Unk5b2180(1, req, (char *)U_I((unsigned)&full_data_1440974), (void *)(unsigned)&ai_Unk5a48d0, 0);
+    ai_MapPick(1, req, (char *)U_I((unsigned)&full_data_1440974), (void *)(unsigned)&ai_Unk5a48d0, 0);
     sv_ClosePlayerBar();
     sv_ClearSelection();
 }
@@ -12319,7 +12319,7 @@ void ai_Unk5a5f60(int param_1)
     if (param_1 == 0)
         return;
     sv_OpenPlayerBar(param_1, 0);
-    ai_Unk5b2180(1, req, (char *)U_I((unsigned)&full_data_1440b60), (void *)(unsigned)&ai_Unk5a5d70, 0);
+    ai_MapPick(1, req, (char *)U_I((unsigned)&full_data_1440b60), (void *)(unsigned)&ai_Unk5a5d70, 0);
     sv_ClosePlayerBar();
     sv_ClearSelection();
 }
@@ -12343,7 +12343,7 @@ void ai_Unk5a61f0(int param_1)
         return;
     req[19] = 0x727;
     sv_OpenPlayerBar(param_1, 0);
-    ai_Unk5b2180(1, req, (char *)U_I((unsigned)&full_data_1440b70), (void *)(unsigned)&ai_Unk5a5fd0, 0);
+    ai_MapPick(1, req, (char *)U_I((unsigned)&full_data_1440b70), (void *)(unsigned)&ai_Unk5a5fd0, 0);
     sv_ClosePlayerBar();
     sv_ClearSelection();
 }
@@ -12355,7 +12355,7 @@ void ai_Unk5a6480(int param_1)
     if (sv_CheckCharacterFlag(param_1) != 0 || param_1 == 0)
         return;
     sv_OpenPlayerBar(param_1, 0);
-    ai_Unk5b2180(4, 0, (char *)U_I((unsigned)&full_data_1440b7c), (void *)(unsigned)&ai_Unk5a6270, 0);
+    ai_MapPick(4, 0, (char *)U_I((unsigned)&full_data_1440b7c), (void *)(unsigned)&ai_Unk5a6270, 0);
     sv_ClosePlayerBar();
     sv_ClearSelection();
 }
@@ -12710,7 +12710,7 @@ void ai_Unk5a6720(int param_1)
     req[3] = 1;
     req[19] = 0x727;
     sv_OpenPlayerBar(param_1, 0);
-    ai_Unk5b2180(1, req, (char *)U_I((unsigned)&full_data_1440b88), (void *)(unsigned)&ai_Unk5a64d0, 0);
+    ai_MapPick(1, req, (char *)U_I((unsigned)&full_data_1440b88), (void *)(unsigned)&ai_Unk5a64d0, 0);
     sv_ClosePlayerBar();
     sv_ClearSelection();
 }
@@ -15459,7 +15459,7 @@ void ai_Unk5b2090(void)
    dispatch is left as a comment. The record is 0x27ac bytes in the original's 0x27b0-byte frame (0x5a78a0
    stores the background tile at +0x27a8); a smaller local let that store run into the caller's frame */
 
-int ai_Unk5b2180(int param_1, int param_2, char *param_3, int param_4, int param_5)
+int ai_MapPick(int param_1, int param_2, char *param_3, int param_4, int param_5)
 {
     struct {
         int view;               /* +0x000 */
@@ -15481,9 +15481,9 @@ int ai_Unk5b2180(int param_1, int param_2, char *param_3, int param_4, int param
         map.name[0] = *(char *)(unsigned)&ch_EmptyName;
     ai_Unk5a78a0((int *)&map);
     ai_Unk5a6cb0((int *)&map);
-    if (sv_RunFrame(ai_Unk5b2180, 0x677c7) == 0)
+    if (sv_RunFrame(ai_MapPick, 0x677c7) == 0)
         return 0;
-    while (sv_RunFrame(ai_Unk5b2180, 0x677c7) != 0) {
+    while (sv_RunFrame(ai_MapPick, 0x677c7) != 0) {
         /* ROUGH: the click dispatch 0x5fe710, the flag 0x14673a0 / 0x1467398, 0x6ed9dc and 0x5a7cd0 */
         ai_Unk5a7cd0(&map.flags);
     }
@@ -22535,7 +22535,7 @@ int ai_Unk5cfc00(int param_1, int *param_2)
         cfg[1] = -1;
         cfg[2] = 4;
         cfg[4] = 6;
-        req = ai_Unk5b2180(1, (int)cfg, text, 0, 0);
+        req = ai_MapPick(1, (int)cfg, text, 0, 0);
         if (req == 0)
             return 0;
     } else {
@@ -22610,7 +22610,7 @@ int ai_Unk5cff70(int param_1, int *param_2)
         cfg[2] = 0xa0744300;
         cfg[3] = 1;
         cfg[4] = 6;
-        h = ai_Unk5b2180(1, (int)cfg, text, 0, 0);
+        h = ai_MapPick(1, (int)cfg, text, 0, 0);
         if (h == 0)
             return 0;
     } else {
@@ -22829,7 +22829,7 @@ int ai_Unk5d0780(int param_1, int param_2)
         cfg[2] = 0x90010;
         cfg[3] = 0;
         cfg[4] = 4;
-        req = ai_Unk5b2180(1, (int)cfg, text, 0, 0);
+        req = ai_MapPick(1, (int)cfg, text, 0, 0);
         if (req == 0)
             return 0;
     } else {

@@ -8519,108 +8519,106 @@ void ai_GypsyHelperWindow(AIBLD *rec)
     sv_CameraFollow();
 }
 
-void d2_SetSliderFlags(); int snd_QueueVoice(int id, int bank, char *text, int var, unsigned int delay); int ai_Unk5b2180();
+void d2_SetSliderFlags(); int snd_QueueVoice(int id, int bank, char *text, int var, unsigned int delay); int ai_MapPick();
 
-/* 0x585380, the graveyard "Fog" window (975 B): rec = the building record (+1 the id). The text 0x40c8 (0x40b6)
-   into a 0x400 buffer, then a running 0x90 event with the id rec+1 (0x53e400 (2, 0, 0x90, 3, rec + 1)) -> 4c27d0
-   (-1, 0, "_NACHRICHTEN_FRIEDHOF_14" 0x62a664, 0, 100), 0x521150 (buf, 0) and out. Else a 0x50-byte query record
-   (1, -1, 0xa07c43b4, 1, 6 at +0x10, 0x727 at +0x4c) through 0x5b2180 (1, &q, U_I (0x144a498), 0, 0); 0 ->
-   0x52d7a0 (). Else the window "Locations_Friedhof_Fog" (0x62a64c) with 0x476f80 / 0x475600, the sound
-   0x52ea30, the text 0x40b7 (0x40b6, its owner word +0x27, res), two sliders 0x46a960 (100, 0xa0 / 0xbe, 200,
-   0, 2, 0x7b, 0x82, sound) with 0x475cb0 (0, 2, 0), 0x46bdd0 (0x82), 0x46bc70 (U_I (0x144a4bc) / 0x144a4cc) and
-   0x46bca0 (3, U_I (0x144a4c0..c8) / 0x144a4d0..d8), the entries 0x40be / +1 in 0x475b80 (window, 2, text),
-   0xf8a668 = -1; each frame 0x475f70 (window, 3), 0x515960 (0x602568), the count (slider values + 2 multiplied)
-   as 0x40b9 / 0x40ba, the pump 0x5309a0 (this window, 0x677c7): the escape 0x14673a0 -> 0x6f22a0 = 1; the first
-   entry: 0x520f90 (the character, the count) == 1 -> the message (type 0x90 at +4, 2 at +0x36, the character
-   0x770b84 at +8, rec + 1 at +0xc, the clock 0x770ae0 .. 0x770aec at +0x28, res + 1 at +0x58, the two slider
-   values at +0x5c / +0x60) through 0x4c4b70 and 0x6f22a0 = 1; the second entry -> 0x6f22a0 = 1; the pump 0 ->
-   0x4758f0 (window), 0x52d7a0 () */
-void ai_Unk585380(char *rec)
+/* 0x585380, the graveyard's fog window (the Graveyard Owner's action 0x90, am.c ai_DecideGraveyardOwner1): rec =
+   the graveyard. A fog of this graveyard still pending (he_FindEvent 0x90) -> the voice "_NACHRICHTEN_FRIEDHOF_14"
+   and the message txt 0x40c8 (0x40b6), out. Else the player picks the target building on the map (ai_MapPick,
+   the building filter 0x1a07c43b4 of the AI's pick, title txt 0x40b6); none -> out. The form
+   "Locations\Friedhof\Fog" shows the target (txt 0x40b7), two three-step sliders (labels txt 0x40bf / 0x40c3,
+   steps 0x40c0 .. 0x40c2 / 0x40c4 .. 0x40c6) and the order / leave entries from txt 0x40be on; each frame the
+   cost (factor1 + 2) * (factor2 + 2) (txt 0x40b9 / 0x40ba). Order, when the player has the money: the message
+   0x90 (flags 2) from the graveyard to the player's character with the target and the two factors, and the
+   form closes; a right click or leave closes it too. The camera follows again at the end
+   @deep Read whole against the original 0x585380..0x58574f and reconstructed: the pending-fog check
+   he_FindEvent(2,0,0x90,3,rec->id) with voice + message box, the AI_ZERO inline-asm clear of the AMOUNTCFG
+   map filter (flags 1, mode -1, filter 0x1a07c43b4, kind 6, option4c 0x727), ai_MapPick, the Fog form with
+   its two sliders and txt_Ptrs labels, the cost (f2+2)*(f1+2), the 0x90 message (to, fromId, time, arg
+   0..2) and the do/while pump; 280 of 289 instructions equal. Left is only the callee-saved push
+   placement: the original pushes ebx/esi/edi in the prologue (+0x9..0xb) and pops them before the early
+   return (pop edi/pop esi/pop ebx before mov esp,ebp), ours shrink-wraps them past the early return (push
+   ebx / push esi / push edi at +0x64..); the branch-target difference (je at +0x3b: +0x64 vs +0x6a) is
+   only that 3-byte shift. Tried: the early exit as if/else with one exit (same code), the inverted if
+   (found == 0) {..} else {..} (135 differing, reverted). VC6 shrink-wrapping, no source lead left */
+void ai_GraveFogWindow(AIBLD *rec)
 {
     char buf[0x400];
-    char msg[0xf8];
-    char q[0x50];
-    char *res;
+    AIMSG msg;
+    AMOUNTCFG cfg;
+    AIBLD *target;
     int win;
-    int slider1;
-    int slider2;
-    int b1;
-    int b2;
-    int v;
-    int n;
+    int factor1;
+    int factor2;
+    int btnOrder;
+    int btnLeave;
+    int k;
+    int cost;
 
     txt_Format(buf, (char *)0x40c8, 0x40b6);
-    if (he_FindEvent(2, 0, 0x90, 3, rec + 1) != 0) {
-        snd_QueueVoice(-1, 0, (char *)(unsigned)&full_data_62a664, 0, 100);
+    if (he_FindEvent(2, 0, 0x90, 3, rec->id) != 0) {
+        snd_QueueVoice(-1, 0, "_NACHRICHTEN_FRIEDHOF_14", 0, 100);
         sv_MessageBox(buf, 0);
         return;
     }
-    memset(q, 0, 0x50);
-    *(int *)(q + 0x00) = 1;
-    *(int *)(q + 0x04) = -1;
-    *(int *)(q + 0x08) = 0xa07c43b4;
-    *(int *)(q + 0x0c) = 1;
-    *(int *)(q + 0x10) = 6;
-    *(int *)(q + 0x4c) = 0x727;
-    res = (char *)ai_Unk5b2180(1, q, U_I((unsigned)&full_data_144a498), 0, 0);
-    if (res != 0) {
-        win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62a64c);
+    AI_ZERO(&cfg, sizeof(cfg));
+    cfg.flags = 1;
+    cfg.mode = -1;
+    cfg.kind = 6;
+    cfg.filter = 0x1a07c43b4;
+    cfg.option4c = 0x727;
+    target = (AIBLD *)ai_MapPick(1, &cfg, txt_Ptrs[0x40b6], 0, 0);
+    if (target != 0) {
+        win = d2_OpenForm(0, 0, "Locations\Friedhof\Fog");
         d2_SetPointerSprite(0, 0);
         d2_CentreViewWindows(win);
         d2_SetForm(win, 0);
-        sv_FitForm(U_I((unsigned)&d2_LastWindow));
+        sv_FitForm(d2_LastWindow);
         d2_SetForm(win, 1);
-        io_PrintText(0x40b7, 0x40b6, *(unsigned short *)(res + 0x27), res);
-        slider1 = d2_WinOpenSlider(100, 0xa0, 0xc8, 0, 2, 0x7b, 0x82, U_I((unsigned)&d2_LastWindow));
-        d2_SetObjValue(slider1, 0, 2, 0);
-        d2_SetSliderFlags(slider1, 0x82);
-        d2_SetLabel(slider1, U_I((unsigned)&full_data_144a4bc));
-        d2_SetList(slider1, 3, U_I((unsigned)&full_data_144a4c0), U_I((unsigned)&full_data_144a4c4), U_I((unsigned)&full_data_144a4c8));
-        slider2 = d2_WinOpenSlider(100, 0xbe, 0xc8, 0, 2, 0x7b, 0x82, U_I((unsigned)&d2_LastWindow));
-        d2_SetObjValue(slider2, 0, 2, 0);
-        d2_SetSliderFlags(slider2, 0x82);
-        d2_SetLabel(slider2, U_I((unsigned)&full_data_144a4cc));
-        d2_SetList(slider2, 3, U_I((unsigned)&full_data_144a4d0), U_I((unsigned)&full_data_144a4d4), U_I((unsigned)&full_data_144a4d8));
+        io_PrintText(0x40b7, 0x40b6, target->owner, target);
+        factor1 = d2_WinOpenSlider(100, 0xa0, 0xc8, 0, 2, 0x7b, 0x82, d2_LastWindow);
+        d2_SetObjValue(factor1, 0, 2, 0);
+        d2_SetSliderFlags(factor1, 0x82);
+        d2_SetLabel(factor1, txt_Ptrs[0x40bf]);
+        d2_SetList(factor1, 3, txt_Ptrs[0x40c0], txt_Ptrs[0x40c1], txt_Ptrs[0x40c2]);
+        factor2 = d2_WinOpenSlider(100, 0xbe, 0xc8, 0, 2, 0x7b, 0x82, d2_LastWindow);
+        d2_SetObjValue(factor2, 0, 2, 0);
+        d2_SetSliderFlags(factor2, 0x82);
+        d2_SetLabel(factor2, txt_Ptrs[0x40c3]);
+        d2_SetList(factor2, 3, txt_Ptrs[0x40c4], txt_Ptrs[0x40c5], txt_Ptrs[0x40c6]);
         d2_SetForm(win, 2);
-        v = io_PrintText(0x40be);
-        b1 = d2_GetWinObj(win, 2, v);
-        b2 = d2_GetWinObj(win, 2, v + 1);
-        U_I((unsigned)&d2_ClickedId) = -1;
-        for (;;) {
+        k = io_PrintText(0x40be);
+        btnOrder = d2_GetWinObj(win, 2, k);
+        btnLeave = d2_GetWinObj(win, 2, k + 1);
+        d2_ClickedId = -1;
+        do {
             d2_SetForm(win, 3);
-            io_PrintText((char *)(unsigned)"$C");
-            n = (d2_GetObjValue(slider1) + 2) * (d2_GetObjValue(slider2) + 2);
+            io_PrintText("$C");
+            cost = (d2_GetObjValue(factor2) + 2) * (d2_GetObjValue(factor1) + 2);
             io_PrintText(0x40b9);
-            io_PrintText(0x40ba, n);
-            if (U_I(((unsigned)&dm_L + 0x20)) != 0) {
-                U_I((unsigned)&sv_PopRequest) = 1;
-            } else if (U_I((unsigned)&d2_ClickedId) != -1) {
-                if (U_I((unsigned)&d2_PointerObj) == b1) {
-                    if (sv_CheckMoney((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, n) == 1) {
-                        memset(msg, 0, 0xf8);
-                        *(unsigned char *)(msg + 0x04) = 0x90;
-                        *(unsigned char *)(msg + 0x36) = 2;
-                        *(int *)(msg + 0x08) = *(int *)((unsigned)&ai_CharInts + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c);
-                        *(int *)(msg + 0x0c) = U_I(rec + 1);
-                        *(int *)(msg + 0x28) = U_I((unsigned)&ai_Time);
-                        *(int *)(msg + 0x2c) = U_I((unsigned)&ai_TimeHour);
-                        *(int *)(msg + 0x30) = U_I(((unsigned)&ai_Time + 0x8));
-                        *(unsigned short *)(msg + 0x34) = *(unsigned short *)((unsigned)&ai_Time + 0xc);
-                        *(int *)(msg + 0x58) = U_I(res + 1);
-                        *(int *)(msg + 0x5c) = d2_GetObjValue(slider1);
-                        *(int *)(msg + 0x60) = d2_GetObjValue(slider2);
-                        cm_SendLongMessage(msg);
-                        U_I((unsigned)&sv_PopRequest) = 1;
+            io_PrintText(0x40ba, cost);
+            if (dm_L.rup != 0) {
+                sv_PopRequest = 1;
+            } else if (d2_ClickedId != -1) {
+                if (d2_PointerObj == btnOrder) {
+                    if (sv_CheckMoney(ai_Chars[ai_PlayerId], cost) == 1) {
+                        memset(&msg, 0, sizeof(msg));
+                        msg.type = 0x90;
+                        msg.flags = 2;
+                        msg.to = ((AICHAR *)ai_Chars[ai_PlayerId])->netId;
+                        msg.fromId = rec->id;
+                        msg.time = ai_TimeT;
+                        msg.arg[1] = d2_GetObjValue(factor1);
+                        msg.arg[2] = d2_GetObjValue(factor2);
+                        msg.arg[0] = target->id;
+                        cm_SendLongMessage((char *)&msg);
+                        sv_PopRequest = 1;
                     }
-                } else if (U_I((unsigned)&d2_PointerObj) == b2) {
-                    U_I((unsigned)&sv_PopRequest) = 1;
+                } else if (d2_PointerObj == btnLeave) {
+                    sv_PopRequest = 1;
                 }
             }
-            if (sv_RunFrame(ai_Unk585380, 0x677c7) == 0) {
-                d2_CloseView(win);
-                break;
-            }
-        }
+        } while (sv_RunFrame(ai_GraveFogWindow, 0x677c7) != 0);
+        d2_CloseView(win);
     }
     sv_CameraFollow();
 }
@@ -9206,7 +9204,7 @@ void ai_Unk586840(char *rec)
                 switch (U_I((unsigned)&kb_Last)) {
                 case 0x1e: ai_Unk586e40(rec); break;
                 case 0x2f: ai_Unk587370(rec); break;
-                case 0x22: ai_Unk585380(rec); break;
+                case 0x22: ai_GraveFogWindow(rec); break;
                 case 0x23: ai_Unk586ab0(rec); break;
                 case 0x19: ai_Unk587300(rec); break;
                 case 0x16: ai_Unk5871e0(rec); break;
@@ -9818,7 +9816,7 @@ void ai_Unk587ad0(char *rec)
             if (U_I((unsigned)&ai_ClickedObject) == c0)
                 ai_Unk587810(rec);
             else if (U_I((unsigned)&ai_ClickedObject) == c1)
-                ai_Unk585380(rec);
+                ai_GraveFogWindow(rec);
         }
     }
 }

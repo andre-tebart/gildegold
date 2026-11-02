@@ -207,7 +207,9 @@ typedef struct AMOUNTCFG {              /* 0x50 bytes, the config of the special
     int option14;                       /* +0x14, 2 in the blood revenge window (meaning not derived) */
     int unk18;                          /* +0x18 */
     unsigned short ids[16];             /* +0x1c, the character ids the menu leaves out / lists, 0xffff = none */
-    char pad3c[0x14];
+    char pad3c[0x10];
+    int option4c;                       /* +0x4c, 0x727 (the sabotage menu, the graveyard's fog target pick), 0x71f
+                                           (ai_HandleMapKey's pick; meaning not derived) */
 } AMOUNTCFG;
 #pragma pack(push, 2)
 typedef struct GAMECLOCK {              /* 14 bytes, ai.h's AITIME (ai_Time itself is char[] here, f3snd.h) */
