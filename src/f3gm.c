@@ -3679,31 +3679,32 @@ int gm_FreeList(int *list)
 
 int gm_AddObjekt(int id, int proto, int n)
 {
-    int b, o, c, r;
+    ORDBLD *b;
+    ORDOBJ *o;
+    ORDCHAR *c;
     int *list;
+    ORDOBJ *r;
     char buf[512];
 
-    if (proto != 0) {
-        if (gm_FindById(&b, &o, &c, id) != 0) {
-            if (b == 0) {
-                if (o == 0) {
-                    if (c == 0)
-                        return 0;
-                    list = (int *)(c + 0x178);
-                } else
-                    list = (int *)(o + 0x14);
-            } else
-                list = (int *)(b + 0x5d);
-            r = (int)gm_Query(*list, 1, 0, proto);
-            if (r != 0) {
-                *(int *)(r + 0xe) += n;
-                return r;
-            }
-            return gm_CreateObject(id, proto, n);
-        }
+    if (proto == 0)
+        return 0;
+    if (gm_FindById((int *)&b, (int *)&o, (int *)&c, id) == 0) {
         sprintf(buf, "gm_AddObjekt(): Parent not found. ObjProt:%i Menge:%i", proto, n);
+        return 0;
     }
-    return 0;
+    if (b != 0)
+        list = &b->objList;
+    else if (o != 0)
+        list = &o->list;
+    else if (c != 0)
+        list = &c->inventory;
+    else
+        return 0;
+    r = (ORDOBJ *)gm_Query((void *)*list, 1, 0, proto);
+    if (r == 0)
+        return (int)gm_CreateObject(id, proto, n);
+    r->count += n;
+    return (int)r;
 }
 /* 0x500a40, takes the amount n of the prototype proto from the owner id: 1 when it had enough (the instance is removed when it drops to 0 or below), else 0 */
 
