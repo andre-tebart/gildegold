@@ -1628,25 +1628,25 @@ exe	0x00497cf0	ai_Unk497cf0	am	byte	draft
 exe	0x00497ee0	ai_Unk497ee0	am	byte	draft		
 exe	0x00497fa0	ai_DecideBuyBuilding	am	draft	draft	deep	
 exe	0x00498470	ai_ExecuteBuyBuilding	am	draft	readable	deep	
-exe	0x004984d0	ai_Unk4984d0	am	draft	draft		
-exe	0x00498a80	ai_Unk498a80	am	draft	draft		
-exe	0x00498b80	ai_Unk498b80	am	draft	draft		
+exe	0x004984d0	ai_DecideBuildResidence	am	draft	readable	deep	
+exe	0x00498a80	ai_ExecuteBuildResidence	am	shape	readable		
+exe	0x00498b80	ai_DecideUpgradeResidence	am	byte	readable		
 exe	0x00498c70	ai_Unk498c70	am	byte	draft		
 exe	0x00499290	ai_Unk499290	am	byte	draft		
-exe	0x00499400	ai_Unk499400	am	draft	draft		
+exe	0x00499400	ai_DecideUpgradeBusiness	am	draft	readable	deep	
 exe	0x00499520	ai_Unk499520	am	byte	draft		
 exe	0x00499580	ai_Unk499580	am	byte	draft		
 exe	0x004995d0	ai_Unk4995d0	am	byte	draft		
 exe	0x00499660	ai_Unk499660	am	byte	draft		
 exe	0x00499a90	ai_Unk499a90	am	byte	draft		
 exe	0x00499b80	ai_Unk499b80	am	byte	draft		
-exe	0x00499c10	ai_Unk499c10	am	draft	draft		
+exe	0x00499c10	ai_DecideBeatUp	am	shape	readable		
 exe	0x00499f20	ai_Unk499f20	am	byte	draft		
 exe	0x0049a020	ai_Unk49a020	am	byte	draft		
-exe	0x0049a0a0	ai_Unk49a0a0	am	draft	draft		
-exe	0x0049a290	ai_Unk49a290	am	draft	draft		
+exe	0x0049a0a0	ai_ExecuteCitizenship	am	draft	readable	deep	
+exe	0x0049a290	ai_DecideSaveAps	am	byte	readable		
 exe	0x0049a380	ai_Unk49a380	am	byte	draft		
-exe	0x0049a390	ai_Unk49a390	am	draft	draft		
+exe	0x0049a390	ai_DecideUseMilitaryObject	am	shape	readable		
 exe	0x0049a5b0	ai_Unk49a5b0	am	shape	draft		
 exe	0x0049a690	ai_Unk49a690	am	draft	draft		
 exe	0x0049aa80	ai_Unk49aa80	am	shape	draft		
@@ -1741,7 +1741,7 @@ exe	0x004a4e30	ai_Unk4a4e30	am	byte	draft
 exe	0x004a4e70	ai_Unk4a4e70	am	draft	draft		
 exe	0x004a5140	ai_CanBuildType	am	draft	draft		
 exe	0x004a5320	ai_ExecBuildBuilding	am	draft	draft		
-exe	0x004a5540	ai_Unk4a5540	am	draft	draft		
+exe	0x004a5540	ai_FindGoodToMake	am	draft	draft		
 exe	0x004a5760	ai_FindWantedItems	am	draft	draft		
 exe	0x004a58d0	ai_PickPartnerChain	am	draft	draft		
 exe	0x004a5a30	ai_PickPartnerInRange	am	draft	draft		
@@ -3688,7 +3688,7 @@ exe	0x005538b0	he_Unk5538b0	he	draft	draft
 exe	0x00553ae0	he_Unk553ae0	he	draft	draft		
 exe	0x00553cc0	he_Unk553cc0	he	byte	draft		
 exe	0x00553d10	he_NoEvent2ePair	he	byte	draft		
-exe	0x00553d60	he_Unk553d60	he	byte	draft		
+exe	0x00553d60	he_NoEvent4bPair	he	byte	draft		
 exe	0x00553db0	he_Unk553db0	he	shape	draft		
 exe	0x00553e10	he_Unk553e10	he	byte	draft		
 exe	0x00553e90	he_Unk553e90	he	draft	draft		

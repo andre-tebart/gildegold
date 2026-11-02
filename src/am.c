@@ -5,8 +5,8 @@
    +0x20), the partner / building finders and the AI cannon shot. Starts with its first global ai_Unk5ffd1c
    (-1 at 0x5ffd1c) right after the AI unit's strings; its one .data string block (in function order) ends with
    "%sgebaeude/*%s_%c.ogr" 0x600478, the next block is unk_4a7140.c's. Names are ours.
-   Open: am.h keeps the joined parts' character views (AIPX / AGCH / AIC4 / G5CH / AIPER) and duplicate callee
-   prototypes / cast macros; they need unifying with ai.h's types.
+   Open: am.h keeps the joined parts' character views (AIPX / AGCH / AIC4 / G5CH / AIPER), message views of ai.h's
+   AIMSG (AIXMSG / G8MSG) and duplicate callee prototypes / cast macros; they need unifying with ai.h's types.
    Open: AIJOBX (am.h) duplicates ai.h's AIJOB; the building offer's price (+0xb0) is a member of AIJOBX only,
    the same union member in AIJOB flips ai_Unk483a60's byte match by the declaration set.
    Open: not included yet (dcp headers conflicts am HEADER): txt.h; held by own declarations that differ from
