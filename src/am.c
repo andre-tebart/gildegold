@@ -87,6 +87,7 @@ int ai_Unkf86900[73] = {0};  /* 0xf86900, the actions being evaluated */
 #define AI_CHAIN_USEREPUTATION 0xf00500  /* the partner-chain flags of action 0x1c "UseObject (Ansehen)" (ai_DecideUseReputationObject), as AI_CHAIN_BEATUP; the bits are not named yet */
 #define AI_CHAIN_MEAN 0xf00500  /* the partner-chain flags of action 0x21 "UseObject (Gemeinheit)" (ai_DecideUseMeanObject; | 0x800 for the good 0x29a, | 0x10000 for 0x177), as AI_CHAIN_BEATUP */
 #define AI_CHAIN_SPY 0xf00500  /* the partner-chain flags of action 0x25 (spying, 0x49c570), as AI_CHAIN_BEATUP */
+#define AI_CHF_BUILT 0x1000000  /* flags1c8 bit an execute callback sets after it built a building (ai_ExecBuildBuilding); ai_Unk498c70 tests it */
 /* 0x48e070, the building of a master (kind != 3) in *out; 2: has one, 1: has a good one, 0: none */
 
 int ai_Unk48e070(AIPX *p, int *out)
@@ -5320,7 +5321,7 @@ int ai_Unk499290(AIPER *p, AIARG *s1, AIARG *s2)
         return 0x13;
     }
     if (ai_ExecBuildBuilding(p, s1, s2)) {
-        cm_SendSetField(p->netId, 0x1c8, 4, 0x1000000, 0);
+        cm_SendSetField(p->netId, 0x1c8, 4, AI_CHF_BUILT, 0);
         return 0x13;
     }
     return 0;
@@ -8456,17 +8457,19 @@ int ai_DecideChangeProfession(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     *o2 = s2;
     return 0x34;
 }
-/* 0x49f7f0, execute callback 0x34: builds what 0x49f5c0 chose (0x4a5320), sets flag 0x1000000 of the
-   character's field 0x1c8 and records the building class s1->unk10 */
+/* 0x49f7f0, execute callback of "Change Profession" (0x34): builds the building ai_DecideChangeProfession
+   chose, marks the character AI_CHF_BUILT, makes the chosen title class (s1->arg2) its job and books the
+   money delta 8 */
 
-int ai_Unk49f7f0(G5CH *p, AIARG *s1, AIARG *s2)
+int ai_ExecuteChangeProfession(G5CH *p, AIARG *s1, AIARG *s2)
 {
-    if (ai_ExecBuildBuilding((AIPER *)p, s1, s2) == 0)
-        return 0;
-    cm_SendSetField(p->netId, 0x1c8, 4, 0x1000000, 0);
-    ai_Unk4c59b0(p->netId, s1->arg2);
-    gm_SendMoneyDelta(p->netId, 8);
-    return 0x34;
+    if (ai_ExecBuildBuilding((AIPER *)p, s1, s2) != 0) {
+        cm_SendSetField(p->netId, 0x1c8, 4, AI_CHF_BUILT, 0);
+        cm_SendSetJob(p->netId, s1->arg2);
+        gm_SendMoneyDelta(p->netId, 8);
+        return 0x34;
+    }
+    return 0;
 }
 /* 0x49f850, decide callback 0x35, the regulars' table ("stammtisch"): up to four kind-0x37 buildings of other
    owners with a table object 0x12d; a member leaves ('leav') when it likes the others too little, else joins
@@ -9888,7 +9891,7 @@ int ai_RegisterBaseActions(int a)
     strcpy(act.name, "Change Profession");
     act.eval = ai_Unk49f4f0;
     act.decide = ai_DecideChangeProfession;
-    act.exec = ai_Unk49f7f0;
+    act.exec = ai_ExecuteChangeProfession;
     act.flags = 0x7;
     if (!am_RegisterMethod(&act, a))
         return 0;

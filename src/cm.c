@@ -1787,15 +1787,15 @@ void ai_Unk4c5970(int a, int b, int c)
     G17_I(m, 8) = c;
     ai_Unk4c39c0(&m);
 }
-/* 0x4c59b0, message 0x48 */
+/* 0x4c59b0, sends message 0x48: its handler (0x4cb9b0) gives the character id the job (gm_SetJob) */
 
-void ai_Unk4c59b0(int a, unsigned char b)
+void cm_SendSetJob(int id, int job)
 {
     G17MSG m;
 
     m.type = 0x48;
-    G17_I(m, 0) = a;
-    m.data[4] = b;
+    G17_I(m, 0) = id;
+    m.data[4] = job;
     ai_Unk4c39c0(&m);
 }
 /* 0x4c59f0, message 0x49 with a text */

@@ -3251,7 +3251,7 @@ float gm_GoodsPrice(unsigned id, unsigned char p);
 int gm_TitleGroup();
 int gm_JobSlots();
 int cm_AddFieldValues(unsigned char size, unsigned char n, unsigned short field, void *v);
-void ai_Unk4c59b0(int a, unsigned char b);
+void cm_SendSetJob(int id, int job);
 int cm_SendCreateCharacter(unsigned char a, int b, int c, unsigned short d, int e, unsigned char f, unsigned char g, unsigned char h);
 short *gm_PlayerRecord(char *c);
 int ai_Unk5d08c0();
@@ -3832,7 +3832,7 @@ void he_Unk549430(int ev)
     b2 = (unsigned char)(util_Random(0x10) + 0x10);
     cm_AddFieldValues(1, 1, x14 + 0x80, &b2);
     cm_SendFieldDeltas();
-    ai_Unk4c59b0(*(int *)(rec + 4), *(unsigned char *)(ev + 0xb0));
+    cm_SendSetJob(*(int *)(rec + 4), *(unsigned char *)(ev + 0xb0));
     o = gm_FindChar(*(int *)(ev + 0xac));
     if (o == 0) {
         *(HETIME *)(ev + 0x52) = ai_Time;
@@ -11181,7 +11181,7 @@ void he_Unk55bd80(int ev)
 
 float gm_Liking();
 void cm_SendOwnership(int a, int b, int c);
-void ai_Unk4c59b0(int a, unsigned char b);
+void cm_SendSetJob(int id, int job);
 int ai_Unk5b92e0();
 
 /* 0x55bf50, a Ghidra miss: the allocation handler of the event 0x21 (ROUGH): the object 0x502020 (+0xac); the first run is random(10) + 10 units ahead; 0x4c4a60 (object + 1, 0x5a, 2, 0x200, 0) */
@@ -11313,7 +11313,7 @@ void he_Unk55cb00(int ev)
     if (*(unsigned char *)(p + 2) == 6 || *(unsigned char *)(p + 2) == 7) {
         memset(m, 0, sizeof(m));
         cm_SendLongMessage(m);
-        ((void (*)(int))ai_Unk4c59b0)(*(int *)(ev + 0x10));
+        ((void (*)(int))cm_SendSetJob)(*(int *)(ev + 0x10));
     }
     he_FreeEvent((int *)ev);
 }
