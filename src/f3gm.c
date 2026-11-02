@@ -2400,33 +2400,38 @@ extern char ai_Unk61aa38[], ai_Unk61aa20[], ai_Unk61aa00[], ai_Unk61a9ec[];  /* 
 void * mem_Alloc(int size, char *tag);                   /* 0x4223c0 */
 void util_Randomize();                     /* 0x42ec80 */
 
-/* 0x4fe140, adds hours / minutes / seconds (any sign for the hours) to the clock c, carrying into the days (the minutes and seconds only upward) */
+/* 0x4fe140, adds hours / minutes / seconds (any sign for the hours) to the clock c, carrying into the days (the minutes and seconds only upward)
+   @deep read against the original 0x4fe140 and reconciled: the read-modify-write form of sec / min / hour
+   (the original keeps the intermediate store c->min = min + sec/60, which only the compound form
+   reproduces), h signed with unsigned /24 and h -= d*24 (the mul by 0xaaaaaaab), the negative-hour borrow.
+   Remaining is register allocation only: the original holds the new minute and the day in edi (push edi;
+   '+ mov edi, [ecx+6]; add edi, eax; mov [ecx+6], edi', '+ mov edi, [ecx]; add edi, edx; mov [ecx], edi',
+   pop edi in both returns), ours uses esi then reloads 'mov esi, 0x3c' and does the day updates through
+   eax; ours=55 vs original=57 are the push/pop edi. Tried: separate t temporary, secs += c->sec, %24
+   instead of -= d*24 (worse) */
 void gm_AddTime(GCLOCK *c, int hours, int mins, int secs)
 {
-    unsigned h;
-    int t;
+    int h;
     int d;
 
-    secs = c->sec + secs;
-    t = c->min + secs / 0x3c;
-    c->sec = secs % 0x3c;
-    mins = t + mins;
-    c->min = t;
-    c->hour = (short)c->hour + (short)(mins / 0x3c);
-    c->min = mins % 0x3c;
+    c->sec += secs;
+    c->min += c->sec / 60;
+    c->sec %= 60;
+    c->min += mins;
+    c->hour += c->min / 60;
+    c->min %= 60;
     h = c->hour + hours;
-    if (0x17 < (int)h) {
-        d = h / 0x18;
-        h = h % 0x18;
-        c->day = c->day + d;
+    if (h >= 24) {
+        d = (unsigned)h / 24;
+        c->day += d;
+        h -= d * 24;
     }
-    if ((int)h < 0) {
-        t = (-h - 1) / 0x18 + 1;
-        c->day = c->day - t;
-        c->hour = (short)h + (short)t * 0x18;
-        return;
-    }
-    c->hour = (short)h;
+    if (h < 0) {
+        d = (unsigned)(-1 - h) / 24 + 1;
+        c->day -= d;
+        c->hour = h + d * 24;
+    } else
+        c->hour = h;
 }
 /* 0x4fe1e0, sets the time of day of the clock c (hour, minute, second) */
 
