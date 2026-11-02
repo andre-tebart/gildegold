@@ -1667,9 +1667,10 @@ int cm_SendMessage3d(char *p, unsigned char b, int c, int d)
     m.data[0xe] = (unsigned char)d;
     return ai_Unk4c39c0(&m);
 }
-/* 0x4c5690, message 0x3e with a text */
+/* 0x4c5690, message 0x3e: the character a and a text, the model name it takes (reasoned guess: its one caller,
+   gm_DailyCharacters, sends "stallbursche_MANN" / "magd_FRAU" by the sex when a character comes of age) */
 
-void ai_Unk4c5690(int a, const char *s)
+void cm_SendCharModel(int a, const char *s)
 {
     G17MSG m;
 

@@ -1566,11 +1566,11 @@ float gm_DailyCharacterStep(unsigned short *id)
     return (float)d;
 }
 
-void ai_Unk4c5690(int a, const char *s);                     /* 0x4c5690 */
+void cm_SendCharModel(int a, const char *s);                     /* 0x4c5690 */
 int cm_AddFieldValues(unsigned char size, unsigned char n, unsigned short field, void *v);                     /* 0x4c3d00 */
 float gm_CharacterHealth(short *c);
 float gm_CharacterBaseHealth(short *c);
-void unk_Unk4fd120(void);
+void gm_PopulationStep(void);
 
 /* 0x4fc6f0, ages the character c to the age: its life f01c becomes f018 when the age is not above its f020,
    else f018 run through v = f014 / v + (v - f014) once per year above f020; the change goes out as a float
@@ -1676,50 +1676,50 @@ float gm_HealthRatio(short *c)
         return 0.0f;
     return gm_CharacterHealth(c) / gm_CharacterBaseHealth(c);
 }
-/* 0x4fc920, the daily step of all characters: the kind 0x12 ones get the byte 8 at +2 (0x4c3c00 (1, 1, 2)); every character of kind < 10 or 0x14 that is active runs 0x4fbe90 and, when the lifetime float (+0x20) - 1 equals the age and it has a model (+0x184), the call 0x4c5690 (id, "stallbursche_MANN" / "magd_FRAU" by the byte +9); then 0x4fd120 */
+/* 0x4fc920, the daily step of all characters: every kind 0x12 character gets the kind byte 8 (a field delta of
+   +2); then every active character of a kind below 10 or 0x14 runs gm_DailyCharacterStep, and one whose age
+   w00a has reached f020 - 1 and that has a model gets the model "stallbursche_MANN" / "magd_FRAU" by its sex;
+   then the population step */
 
 void gm_DailyCharacters(void)
 {
-    unsigned loc;
-    char *c;
-    int i;
+    ORDCHAR *c;
+    int i, v;
 
     gm_NetMsgCount = 0;
     for (i = 0; i < 0x300; i++) {
-        c = ai_Chars[i];
+        c = &ORD_CHARS[i];
         if (gm_NetMsgCount > 0x40) {
             sv_PumpNet();
             gm_NetMsgCount = 0;
         }
-        if (c[2] == 0x12) {
-            loc = 8;
-            cm_BeginFieldBlock(c, *(int *)(c + 4));
-            cm_AddFieldDelta(1, 1, 2, &loc);
+        if (ai_Chars[i][2] == 0x12) {     /* c->kind, read through the record */
+            v = 8;
+            cm_BeginFieldBlock(ai_Chars[i], c->netId);
+            cm_AddFieldDelta(1, 1, 2, &v);
             cm_SendFieldDeltas();
             gm_NetMsgCount++;
         }
     }
     for (i = 0; i < 0x300; i++) {
-        c = ai_Chars[i];
+        c = &ORD_CHARS[i];
         if (gm_NetMsgCount > 0x40) {
             sv_PumpNet();
             gm_NetMsgCount = 0;
         }
-        if (((unsigned char)c[2] < 10 || c[2] == 0x14) && c[8] != 0) {
+        if ((c->kind < 10 || c->kind == 0x14) && c->health != 0) {
             gm_DailyCharacterStep((unsigned short *)c);
-            loc = *(unsigned short *)(c + 10);
-            if (*(float *)(c + 0x20) - 1.0 == (float)loc && *(int *)(c + 0x184) != 0) {
-                char *name;
-                if (c[9] == 0)
-                    name = "stallbursche_MANN";
+            v = c->w00a;
+            if ((float)v == c->f020 - 1.0f && c->model != 0) {
+                if (c->textVariant == 0)
+                    cm_SendCharModel(c->netId, "stallbursche_MANN");
                 else
-                    name = "magd_FRAU";
-                ai_Unk4c5690(*(int *)(c + 4), name);
+                    cm_SendCharModel(c->netId, "magd_FRAU");
                 gm_NetMsgCount++;
             }
         }
     }
-    unk_Unk4fd120();
+    gm_PopulationStep();
     gm_NetMsgCount = 0;
 }
 /* 0x4fca40, changes the health of the character id by d (kind 0x14: the float +0x1c directly, dies below 0 through the message 0x72; others: the health of 0x4fc820's formula plus d, the int +0x24 = d through 0x4c3d00): -1 for a free slot, kind 10 or an inactive one; returns the new health, 0 when the character died. ROUGH */
@@ -1954,7 +1954,7 @@ void gm_PartnerStep(char *c)
 }
 /* 0x4fd120, the yearly population step: counts the active characters (n); every kind 3 (child?) character that is old enough (age +10 at least 0x2c + random 4, or n >= 652.8) with no job / title bytes (+0x164, +0x166, +0x167) and removable (0x4fd090) is removed by 0x4fca40 (id, ..); the others (age above 1): kind 8 (no 0x4fd7e0, partners 0x5e / 0x62 gone) get the event messages 3 / 2 and a payment 0x4c4830 ((random + 0x800) * the mark * 0x20); the other aging characters 0x47dd70 (counted; relatives +0x1ee); then a random new arrival (0x4c4650 (0x10 ..) and a gift of (random + 10000) * 0x40) and, below 652.8 characters, up to (0x28 - the events) / 2 newcomers (0x4c4650 (3, .., 0x14 ..), random wage 0x400 .. + 0x400). ROUGH */
 
-void unk_Unk4fd120(void)
+void gm_PopulationStep(void)
 {
     int n, events, kids, i, t, m;
     char *c;
