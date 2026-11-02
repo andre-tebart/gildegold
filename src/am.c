@@ -1048,9 +1048,9 @@ int ai_DecideGraveyardOwner0(AIPX *p, AIBLD *b, AIARG *o1, AIARG *o2)
     o2->arg2 = 4;
     return 1;
 }
-/* 0x4900c0, execute of method 0x88 */
+/* 0x4900c0, way 0 of the "Graveyard Owner" execute: sends message 0x88 (flags 2) from the building to the character with the way's AIARG (ref2, ref, arg2, arg) */
 
-int ai_Unk4900c0(AIPX *p, AIBLD *b, int unused, AIARG *o)
+int ai_ExecGraveyardOwner0(AIPX *p, AIBLD *b, int unused, AIARG *o)
 {
     AIMSG msg;
 
@@ -1062,9 +1062,9 @@ int ai_Unk4900c0(AIPX *p, AIBLD *b, int unused, AIARG *o)
     msg.time = ai_TimeT;
     msg.arg[1] = o->ref2;
     msg.arg[2] = o->ref;
-    msg.ids[0] = o->ref;
     msg.arg[3] = o->arg2;
     msg.arg[0] = o->arg;
+    msg.ids[0] = o->ref;
     cm_SendLongMessage(&msg);
     return 0x3d;
 }
@@ -1259,7 +1259,7 @@ int ai_Unk490830(AGCH *p, AGARG *s1, AGARG *s2)
     if (s1 != 0) {
         switch (a->kind) {
         case 0:
-            return ai_Unk4900c0((AIPX *)p, (AIBLD *)s1, (int)a, s2);
+            return ai_ExecGraveyardOwner0((AIPX *)p, (AIBLD *)s1, (int)a, s2);
         case 1:
             return ai_Unk4902b0((AIPX *)p, (AIBLD *)s1, (int)a, s2);
         case 2:

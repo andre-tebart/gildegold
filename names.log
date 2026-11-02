@@ -730,3 +730,4 @@
 2026-11-02T05:44:20 0x0048f990 data ai_Unk48f990 -> ai_ExecUseAlchemyItems by:main why:decide / exec of action 0x48 'UseAlchemistryItems' (ai_Unk48fb70)
 2026-11-02T05:45:27 0x0048ff50 func ai_Unk48ff50 -> ai_DecideGraveyardOwner0 by:main why:48ff50 is the first of the four ways ai_Unk490690 (decide of 'Graveyard Owner' 0x3d) tries (message 0x88); 48feb0 returns a random character of kind 0x14 at the building (at least two)
 2026-11-02T05:45:27 0x0048feb0 data ai_Unk48feb0 -> ai_PickRandomBuildingChar by:main why:48ff50 is the first of the four ways ai_Unk490690 (decide of 'Graveyard Owner' 0x3d) tries (message 0x88); 48feb0 returns a random character of kind 0x14 at the building (at least two)
+2026-11-02T05:48:53 0x004900c0 data ai_Unk4900c0 -> ai_ExecGraveyardOwner0 by:main why:way 0 of the Graveyard Owner execute (0x490830 calls it for way 0); sends message 0x88 built from ai_DecideGraveyardOwner0's AIARG
