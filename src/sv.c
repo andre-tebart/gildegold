@@ -134,8 +134,6 @@ extern int d2_TextDrawnH;
 extern int d2_TextDrawnW;
 extern void *d2_ScreenSurf;  /* 0x6ed924 */
 extern float d3s_QuadUV[6];
-extern GAPDATA full_data_6f1c90[];
-extern GAPDATA full_data_6f23ec[];
 extern struct D2PIC *d2_Pics;
 extern GAPDATA full_data_760444[];
 extern GAPDATA full_data_760448[];
@@ -6299,7 +6297,7 @@ void sv_DisableVisibleWidgets(int a)
     short idx;
 
     if (a != 0) {
-        SV_I((unsigned)&full_data_6f23ec) = 0;
+        sv_DisabledCount = 0;
         p = (int *)((unsigned)&ai_Unkfb1030 + 0x190);
         w = SV_I((unsigned)&d2_Objs);
         do {
@@ -6308,8 +6306,8 @@ void sv_DisableVisibleWidgets(int a)
                 n = 0;
                 do {
                     if (*(int *)(n + 0x18 + w) != 0 && *(int **)(n + 0x40 + w) == p - 0x68 && *(int *)(n + 0x38 + w) == 0) {
-                        ((unsigned short *)(unsigned)&full_data_6f1c90)[SV_I((unsigned)&full_data_6f23ec)] = idx;
-                        SV_I((unsigned)&full_data_6f23ec)++;
+                        sv_DisabledWidgets[sv_DisabledCount] = idx;
+                        sv_DisabledCount++;
                         *(int *)(n + 0x38 + w) = 1;
                         w = SV_I((unsigned)&d2_Objs);
                     }
@@ -6322,12 +6320,12 @@ void sv_DisableVisibleWidgets(int a)
         return;
     }
     i = 0;
-    if (0 < SV_I((unsigned)&full_data_6f23ec)) {
+    if (0 < sv_DisabledCount) {
         do {
-            n = ((unsigned short *)(unsigned)&full_data_6f1c90)[i];
+            n = sv_DisabledWidgets[i];
             i++;
             *(int *)(SV_I((unsigned)&d2_Objs) + 0x38 + n * 0x2ec) = 0;
-        } while (i < SV_I((unsigned)&full_data_6f23ec));
+        } while (i < sv_DisabledCount);
     }
 }
 /* 0x52e6d0, builds the picture frames of the dialog form f (0x4731d0 (x, y, picture, form)): the title bar 0x520 / 0x427 + the building kind, the corners; the picture b = 0x73b selects the
@@ -7848,6 +7846,7 @@ float sv_ScrollLastMove[3] = {0};  /* 0x6f1c74 */
 int sv_SavedMinX = 0;  /* 0x6f1c84 */
 int sv_DragLastX = 0;  /* 0x6f1c88 */
 int sv_ZoomStartY = 0;  /* 0x6f1c8c */
+unsigned short sv_DisabledWidgets[0x300] = {0};  /* 0x6f1c90, the d2 objects sv_DisableVisibleWidgets disabled (one per d2_Objs record at most) */
 int sv_ZoomStartX = 0;  /* 0x6f2290 */
 int sv_ShownModel = 0;  /* 0x6f2294, sv_SelectedModel when sv_UpdatePanel last built the panel */
 int sv_SavedMinY = 0;  /* 0x6f2298 */
@@ -7916,6 +7915,7 @@ int sv_PointerSpriteFor = 0;  /* 0x6f23dc, reset with the pointer sprite (-1 / 0
 char * sv_LastPicked = 0;  /* 0x6f23e0, ai_PickedObject at the last click (sv_HandleObjects; nothing reads it) */
 char *sv_PermsBuilding = 0;  /* 0x6f23e4, the building ai_BuildingPerms was last computed for (the right-click handler 0x52d940) */
 unsigned short *sv_PermsRoom = 0;  /* 0x6f23e8, the room (sv_PanelShown) it was computed for */
+int sv_DisabledCount = 0;  /* 0x6f23ec, the entries of sv_DisabledWidgets */
 unsigned char ai_GameState = 0;  /* 0x6f25ac */
 int ai_OptionScrollSpeed = 0;  /* 0x6f3614 */
 int sv_PanelFlag = 0;  /* 0x75e8c0, 1 when the panel is up (an int; cm.h / f3init.c) */

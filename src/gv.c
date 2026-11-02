@@ -27,7 +27,6 @@
 #define ai_Unk5a9e40K ((int (*)())ai_Unk5a9e40)  /* 0x5a9e40: @original the call passes more arguments than the draft definition names, compiled without a prototype (as before the definition's spelling reached this unit) */
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
-extern GAPDATA full_data_6f1ce4[];
 extern GAPDATA full_data_91f6e3[];
 extern GAPDATA full_data_91f6e4[];
 #include "amt_types.h"
