@@ -10433,64 +10433,88 @@ int ai_OpenCharTooltip(char *ch)
     ai_CampaignStep(7, (int)ch, 0, 0);
     return view;
 }
-/* 0x5890c0, the drag window of a character of a lower kind (823 B, ROUGH SKELETON: the window, every call and
-   the text ids are on the disassembly, the branch details around them are summarised): ch = the character
-   record (+0 the word, +2 the kind). The kind 0xa and up -> return 0. The window 0x62a9f8 with 0x475600, the
-   section 1, the text 0x62a9ec (the word), the section 4, the 0x38-byte record {ch} in 0x5be1d0 and, when it
-   answers, 0x5be720 (0xa6, 5, U_I (0x6ed938), the line); the section 2; the kind != 0x14 -> 0x505e30 (the word)
-   -> int in 0x515960 (0x2b); the flags and the texts 0x2c .. 0x41, the kind lists 0x53e400 / 0x53e300 and
-   0x505df0 (ch) as in 0x588c60; the entries 0 .. 0x4d step 0xf: the line 0x62a56c (0x5176d0, i + 0x16b7),
-   0x473650 (0, i * 0xf, the line, U_I (0x6ed938)) and 0x52eb50 (0x64, i * 0xf, ch, i, 0x4df); then the pump
-   loop 0x5309a0 (this handler, 0x677c7): the escape 0x14673a0 -> 0x6f22a0 = 1; 0x520f20 () and
-   0x4758f0 (the window); 0 */
-
-
-int ai_Unk5890c0(char *ch)
+/* 0x5890c0, the modal info window of the character ch (kinds below 0xa only): the form
+   "ToolTip\ToolTip_Personen" laid out as ai_OpenCharTooltip does without its rank lines - section 1 the name,
+   section 4 the amount row, section 2 the age (not for the kind 0x14), the title, the offices (text 0x2d: none
+   0x253, else officeKind / secondOffice), the line 0x37, the worth, the partner (0x2f .. 0x32), the byte +0x00c
+   (0x33) and the children (0x34, none 0x35); section 3 the five skill bars; then the frame pump (the right
+   button closes it) and the view closed */
+void ai_CharInfoWindow(char *ch)
 {
+    int view;
+    int row[14];                        /* an amount row (unk_5d33b0.c GYPSYROW): row[0] the character */
     char line[0x100];
-    char rec[0x38];
-    int win;
+    AICHAR *c;
+    AICHAR *p;
+    AIJOB *ev;
+    int any;
     int i;
-    int k;
 
-    if (*(unsigned char *)(ch + 2) >= 0xa)
-        return 0;
-    win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62a9f8);
-    d2_CentreViewWindows(win);
+    c = (AICHAR *)ch;
+    if (c->kind >= 0xa)
+        return;
+    view = d2_OpenForm(0, 0, "ToolTip\\ToolTip_Personen");
+    d2_CentreViewWindows(view);
     d2_SetForm(0, 1);
-    io_PrintText((unsigned)&full_data_62a9ec, *(unsigned short *)ch);
+    io_PrintText("$Z$[%1N3$]", c->id);
     d2_SetForm(0, 4);
-    memset(rec, 0, 0x38);
-    *(char **)rec = ch;
-    if (ai_AmountRowStatus(rec) != 0)
-        ai_DrawAmountRow(0xa6, 5, U_I((unsigned)&d2_LastWindow), line);
+    memset(row, 0, sizeof(row));
+    row[0] = (int)c;
+    if (ai_AmountRowStatus(row) != 0)
+        ai_DrawAmountRow(0xa6, 5, d2_LastWindow, row);
     d2_SetForm(0, 2);
-    if (*(unsigned char *)(ch + 2) != 0x14)
-        io_PrintText(0x2b, (int)*(float *)&U_I(((unsigned)&ai_Unk5ee160 + 0x7e8)));
+    if (c->kind != 0x14)
+        io_PrintText(0x2b, (int)gm_CharAge(c->id));
+    io_PrintText(0x2c, (c->sex ? 0x18f : 0x130) + c->jobId, gm_TitlesLeft(c->jobId));
     io_PrintText(0x2d);
-    io_PrintText(0x2c, 0);
-    if (gm_FindChar(ch) != 0)
-        io_PrintText(0x2f);
-    io_PrintText(0x31);
-    io_PrintText(0x33);
+    if (c->officeKind == 0 && c->secondOffice == 0) {
+        io_PrintText("$3>%s$A", 0x253);
+    } else {
+        if (c->officeKind != 0)
+            io_PrintText("$3>%s$A", (c->sex ? 0x27b : 0x253) + c->officeKind);
+        if (c->secondOffice != 0)
+            io_PrintText("$3>%s$A", (c->sex ? 0x27b : 0x253) + c->secondOffice);
+    }
+    io_PrintText(0x37, (c->sex ? 0x11e : 0x114) + c->b00d);
+    io_PrintText(0x2e, gm_GetWorth(c->id));
+    io_PrintText(0x2f);
+    p = (AICHAR *)gm_FindChar(c->relatives[0]);
+    if (p != 0 && p->health > 0) {
+        io_PrintText(0x30, p->id);
+    } else {
+        for (ev = (AIJOB *)he_FindEvent(1, 0, 0x41); ev != 0; ev = (AIJOB *)he_NextEvent()) {
+            if (ev->partner1 == c->netId)
+                break;
+        }
+        if (ev != 0 && (p = (AICHAR *)gm_FindChar(ev->partner2)) != 0)
+            io_PrintText(0x31, p->id);
+        else
+            io_PrintText(0x32);
+    }
+    io_PrintText(0x33, c->b00c + 0x486);
+    any = 0;
     io_PrintText(0x34);
-    io_PrintText(0x35, (char *)(unsigned)&full_data_62a9e4);
-    if (he_FindEvent(2, 0, 0x41) != 0) {
-        while (he_NextEvent() != 0)
-            ;
+    for (i = 0; i < 5; i++) {
+        p = (AICHAR *)gm_FindChar(c->relatives[3 + i]);
+        if (p != 0) {
+            io_PrintText("$3>%1N1$A", p->id);
+            any = 1;
+        }
     }
-    for (i = 0, k = 2; k < 0x4d; i++, k += 0xf) {
-        txt_Format(line, (char *)(unsigned)&full_data_62a56c, (char *)(i + 0x16b7));
-        d2_CreateWinText(0, i * 0xf, line, U_I((unsigned)&d2_LastWindow));
-        sv_DrawBalanceBar(0x64, i * 0xf, ch, i, 0x4df);
+    if (any == 0)
+        io_PrintText("$3>%s$A", 0x35);
+    d2_SetForm(0, 3);
+    for (i = 0; i < 5; i++) {
+        txt_Format(line, (int)"%s:", i + 0x16b7);
+        d2_CreateWinText(0, i * 15, line, d2_LastWindow);
+        sv_DrawBalanceBar(0x64, i * 15 + 2, ch, i, 0x4df);
     }
-    while (sv_RunFrame(ai_Unk5890c0, 0x677c7) != 0) {
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0)
-            U_I((unsigned)&sv_PopRequest) = 1;
-    }
+    do {
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
+    } while (sv_RunFrame((int)ai_CharInfoWindow, 0x677c7));
     sv_ResetScreenClip();
-    d2_CloseView(win);
-    return 0;
+    d2_CloseView(view);
 }
 /* 0x589400, clears one 12-byte slot of the table 0x6f5ec0 (14 B): its +4 / +8 = -1 */
 

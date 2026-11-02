@@ -13192,7 +13192,7 @@ void ai_Unk5a6cb0(int *m_)
 int d2_OpenForm(); void d2_PlaceMainWindow(); void d2_RaiseWindow(); int io_PrintText(char *fmt, ...);
 int d2_SetForm(int view, int n); int d2_CreateChildWindow(short x, short y, short w, short h, unsigned int flags, int win);
 void d2_CloseView(int view); void d2_RemoveObj(); void d2_ScrollWindowBy();
-int ai_Unk5890c0(); int d2_CreatePicObj(); unsigned char *ai_Unk5a84d0();
+void ai_CharInfoWindow(); int d2_CreatePicObj(); unsigned char *ai_Unk5a84d0();
 
 /* 0x5a78a0, the map window's open (317 B): the previous screen 0x6ed930 is saved (+0x27a8), the window
    "Misc\Landkarte2" 0x62c274 (0x4741f0) takes the screen 0x6f26ac, the map screen 0x472aa0 (0x4a, 0x4c, 0x206,
@@ -13398,7 +13398,7 @@ void ai_Unk5a7cd0(int *m_)
             if (*(int *)((unsigned)&d2_PointerObj) != -1 && *(int *)((unsigned)&d2_PointerObj) == e[-1] &&
                 *(unsigned short *)(*e + 0x27) != 0xffff &&
                 *(unsigned char *)(((unsigned)&ai_Chars + 0x2) + *(unsigned short *)(*e + 0x27) * 0x21c) < 10)
-                ai_Unk5890c0((unsigned)&ai_Chars + *(unsigned short *)(*e + 0x27) * 0x21c);
+                ai_CharInfoWindow((unsigned)&ai_Chars + *(unsigned short *)(*e + 0x27) * 0x21c);
             i++;
             e += 6;
         } while (i < m_[0x9e9]);
