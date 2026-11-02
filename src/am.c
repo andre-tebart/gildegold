@@ -3551,7 +3551,13 @@ int ai_Unk4957a0(int k)
     }
     return 0;
 }
-/* 0x4957d0, chooses the next action of character i: the best short-term and the best long-term rating */
+/* 0x4957d0, chooses the next action of character i: the best short-term and the best long-term rating
+   @deep read the whole function against the original: index loop over the 0x49 actions (jl), p->mask &
+   act->flags, the >= rating tests and the id1-first final choice (best1 != 0 && best1 >= best2) now match
+   instruction for instruction (same count, 168). Left is allocation: the strength-reduced action pointer
+   is based at &act->decide (0xf83ee8, ebp-0x28 for id) in the original, at &act->eval in ours (ebp-0x24),
+   shifting every [ebp+x] by 4 (0x495831..0x495969); and the original keeps 0 in esi (cmp eax,esi at
+   0x4958a3) where ours tests eax,eax. Tried act pointer vs G5_ACTS[k] direct access: no change. */
 
 int ai_ChooseAction(int i)
 {
@@ -3574,25 +3580,25 @@ int ai_ChooseAction(int i)
     b1s2.kind = 0;
     b2s2.kind = 0;
     p = &G5_CHARS[i];
-    k = 0;
-    for (act = G5_ACTS; act < G5_ACTS + 0x49; act++, k++) {
-        if (act->id != 0 && act->id != p->act && (act->flags & p->mask) != 0) {
+    for (k = 0; k < 0x49; k++) {
+        act = &G5_ACTS[k];
+        if (act->id != 0 && act->id != p->act && (p->mask & act->flags) != 0) {
             s1.kind = 0;
             s1.ref = 0;
             s1.arg = 0;
             s2.kind = 0;
             s2.ref = 0;
             s2.arg = 0;
-            if (act->eval != 0 && act->eval(&a, &b, k, p, 0, &s1, &s2) != 0 && (best1 <= a || best2 <= b) &&
+            if (act->eval != 0 && act->eval(&a, &b, k, p, 0, &s1, &s2) != 0 && (a >= best1 || b >= best2) &&
                 act->decide != 0 && (r = act->decide(0, p, 0, &s1, &s2)) != 0) {
-                if (best1 <= a) {
+                if (a >= best1) {
                     b1s1 = s1;
                     best1 = a;
                     id1 = act->id;
                     b1s2 = s2;
                     r1 = r;
                 }
-                if (best2 <= b) {
+                if (b >= best2) {
                     best2 = b;
                     id2 = act->id;
                     b2s1 = s1;
@@ -3602,16 +3608,16 @@ int ai_ChooseAction(int i)
             }
         }
     }
-    if (best1 == 0.0f || best1 < best2) {
-        p->prev = (unsigned char)id2;
-        p->arg1 = b2s1;
-        p->act = (unsigned char)r2;
-        p->arg2 = b2s2;
-    } else {
+    if (best1 != 0.0f && best1 >= best2) {
         p->prev = (unsigned char)id1;
         p->arg1 = b1s1;
         p->act = (unsigned char)r1;
         p->arg2 = b1s2;
+    } else {
+        p->prev = (unsigned char)id2;
+        p->arg1 = b2s1;
+        p->act = (unsigned char)r2;
+        p->arg2 = b2s2;
     }
     return p->act;
 }
