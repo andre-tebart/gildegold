@@ -27,7 +27,7 @@
    Open: some functions index ai_PlayerSlots with the stride 0x5e8 where gv_ReserveGrave shows 0x2f4 (gv_PlayerRecs);
    gv_FindEntry's callback is an unprototyped int (*)() (its callbacks take differing pointer types).
    Open: head: cm.h redeclares gv functions (gv_GrowGraveyard as struct GVYARD *); cm.c cannot include gv.h yet (two
-   calls conflict: unk_Unk4f3580, unk_Unk4f4460).
+   calls conflict: gv_CrimeText, unk_Unk4f4460).
    Open: GVEFFPART duplicates SHOTREC and UNKHITS-style copies remain (am.h G9KIND / G9CANNON view gv's records); gv.h
    does not include unk_5d33b0.h, so the parts are cast to SHOTREC.
    unit of rea 8cef7d5b (src/game/gv.c); boundaries in decl/text.dcl */
@@ -3034,46 +3034,49 @@ int gv_TableRecordText(char *out, int i)
     return r;
 }
 
-/* 0x4f30a0, the text of a record with the type byte (+0x1c) 2 .. 8: types 2 / 3 / 4 / 8 pick the text numbers 0x140a / 0x140f / 0x1414 / 0x1428 (+ 1 for mode < 2); anything else the fixed text; 1 when a text was built.
-   +4 the int value (shown by address), +0x12 the character id (its short id or 0xfffe). */
-int unk_Unk4f30a0(char *out, CRIME r, int mode)
+/* 0x4f30a0, the text of a crime against the laws 2 .. 8: laws 2 / 3 / 4 / 8 pick the texts 0x140a / 0x140f / 0x1414 / 0x1428
+   (+ 1 for mode <= 1) with the crime's time, law 2 also the text 0x13f9 / 0x13fb + v1d (year below 0x75 or not), law 4
+   the victim's short id (0xfffe when not found); any other law the fixed text and 0, else 1. */
+
+int gv_CrimeTextLaw2to8(char *out, CRIME r, int mode)
 {
-    int m;
-    unsigned short *p;
+    int ok;
+    int text;
+    unsigned short *victim;
     unsigned short id;
 
-    m = mode < 2;
-    p = (unsigned short *)gm_FindChar(r.victim);
-    if (p == 0)
-        id = 0xfffe;
+    ok = 1;
+    text = mode <= 1;
+    victim = (unsigned short *)gm_FindChar(r.victim);
+    if (victim != 0)
+        id = *victim;
     else
-        id = *p;
+        id = 0xfffe;
     switch (r.law) {
     case 2:
+        if (r.time.year < 0x75)
+            txt_Format(out, text + 0x140a, &r.time, r.v1d + 0x13f9);
+        else
+            txt_Format(out, text + 0x140a, &r.time, r.v1d + 0x13fb);
         break;
     case 3:
-        txt_Format(out, m + 0x140f, &r.time);
-        return 1;
+        txt_Format(out, text + 0x140f, &r.time);
+        break;
     case 4:
-        txt_Format(out, m + 0x1414, &r.time, id);
-        return 1;
+        txt_Format(out, text + 0x1414, &r.time, id);
+        break;
+    case 8:
+        txt_Format(out, text + 0x1428, &r.time);
+        break;
     default:
         strcpy(out, "Hm, das ist doch nicht verboten");
-        return 0;
-    case 8:
-        txt_Format(out, m + 0x1428, &r.time);
-        return 1;
+        ok = 0;
     }
-    if (r.time.year < 0x75) {
-        txt_Format(out, m + 0x140a, &r.time, r.v1d + 0x13f9);
-        return 1;
-    }
-    txt_Format(out, m + 0x140a, &r.time, r.v1d + 0x13fb);
-    return 1;
+    return ok;
 }
 /* 0x4f31d0, the text of a record with the type byte 0xe / 0x10 (texts 0x1446 / 0x1450, + 1 for mode < 2); anything else the fixed text; 1 when a text was built. */
 
-int unk_Unk4f31d0(char *out, CRIME r, int mode)
+int gv_CrimeTextLaw9to16(char *out, CRIME r, int mode)
 {
     int m;
     unsigned short *p;
@@ -3098,7 +3101,7 @@ int unk_Unk4f31d0(char *out, CRIME r, int mode)
 }
 /* 0x4f3270, the text of a record with the type byte 0x11 .. 0x1c (texts 0x1455 + 5 * n, + 1 for mode < 2; the object name (0x4fea50 of the id at +0x21, default "Geb\xe4ude") goes in as "%1G" when found); returns 0 always. ROUGH */
 
-int unk_Unk4f3270(char *out, CRIME r, int mode)
+int gv_CrimeTextLaw17to28(char *out, CRIME r, int mode)
 {
     char name[0x80] = "Geb\xe4ude";
     int m, obj, k;
@@ -3162,14 +3165,14 @@ int unk_Unk4f3270(char *out, CRIME r, int mode)
 }
 /* 0x4f3580, picks the text builder by the type byte (+0x1c) of the record: below 9 0x4f30a0, below 0x11 0x4f31d0, below 0x1d 0x4f3270; 0 otherwise */
 
-int unk_Unk4f3580(char *out, CRIME r, int mode)
+int gv_CrimeText(char *out, CRIME r, int mode)
 {
     if (r.law < 9)
-        return unk_Unk4f30a0(out, r, mode);
+        return gv_CrimeTextLaw2to8(out, r, mode);
     if (r.law < 0x11)
-        return unk_Unk4f31d0(out, r, mode);
+        return gv_CrimeTextLaw9to16(out, r, mode);
     if (r.law < 0x1d)
-        return unk_Unk4f3270(out, r, mode);
+        return gv_CrimeTextLaw17to28(out, r, mode);
     return 0;
 }
 /* 0x4f3610, fills out[] with the indexes of the (up to 32) 0x2d-byte records of 0x91f700 whose int at +0x25 equals v */

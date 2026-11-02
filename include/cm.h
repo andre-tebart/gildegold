@@ -1057,7 +1057,7 @@ int ai_Unk4e19a0(char *m);  /* 0x4e19a0 */
 
 
 int gv_GetTableRecord(int i, int *out);  /* 0x4f2720 */
-int unk_Unk4f3580();  /* 0x4f3580 */
+int gv_CrimeText();  /* 0x4f3580 */
 float gm_Liking();  /* 0x50c550 */
 void unk_Unk4f48f0();  /* 0x4f48f0 */
 void unk_Unk4f4460();  /* 0x4f4460 */

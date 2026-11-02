@@ -417,10 +417,10 @@ void gm_AddTime(struct GCLOCK *c, int hours, int mins, int secs);               
 int gv_CannonCost(char *o, int a, int b, int d, int *n, int *price);  /* 0x4ef090 */
 int unk_Unk4f2440(unsigned short *c, int k1, int k2, int *out);  /* 0x4f2440 */
 int gv_ProtectionPrice(unsigned short *c);  /* 0x4f24a0, returns gm_PlayerFactor's value (0x4f2532 ret after the 0x5085f0 call) */
-int unk_Unk4f30a0(char *out, CRIME r, int mode);  /* 0x4f30a0 */
-int unk_Unk4f31d0(char *out, CRIME r, int mode);  /* 0x4f31d0 */
-int unk_Unk4f3270(char *out, CRIME r, int mode);  /* 0x4f3270 */
-int unk_Unk4f3580(char *out, CRIME r, int mode);  /* 0x4f3580 */
+int gv_CrimeTextLaw2to8(char *out, CRIME r, int mode);  /* 0x4f30a0 */
+int gv_CrimeTextLaw9to16(char *out, CRIME r, int mode);  /* 0x4f31d0 */
+int gv_CrimeTextLaw17to28(char *out, CRIME r, int mode);  /* 0x4f3270 */
+int gv_CrimeText(char *out, CRIME r, int mode);  /* 0x4f3580 */
 char *gv_FindAccused(char *c, int max, int *ids, int *cnt);  /* 0x4f41b0 */
 void unk_Unk4f4460(unsigned short *c, int a);  /* 0x4f4460 */
 void unk_Unk4f48f0(unsigned short *c, int a, char *out);  /* 0x4f48f0 */
