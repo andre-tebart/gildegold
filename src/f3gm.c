@@ -8,8 +8,7 @@
    costs gm_Unk4fa4b0 a byte).
    Open: gm_GetWorth is int in every header now; the older callers still go through the K&R cast I50A640.
    Open: ai.h is not includable here, so the character / building / object records are read through gv.h's views
-   ORDCHAR / ORDBLD / ORDOBJ, the long message through f3gm_types.h's GMMSG (AIMSG), or by byte offset (the rest;
-   G_MSG72 still fills the message 0x72 by offset for 0x4fca40).
+   ORDCHAR / ORDBLD / ORDOBJ, the long message through f3gm_types.h's GMMSG (AIMSG), or by byte offset (the rest).
    Open: gm_GetGebaeudeHauptraum (0x501ce0) is drafted void, but its callers use the result as a pointer.
    Open: the head tables (gm_BoyHead .. gm_SpyHeads, gm_OwnNameHeads) are GMHEAD records but still defined as
    unsigned arrays; their readers cast them.
@@ -1329,19 +1328,6 @@ int he_ShowNews(int pid, int fl, char *text, int unused, int ev, char *text2);  
 void cm_SendSetField(int a, int b, int c, int d, int e);                     /* 0x4c4a60 */
 void gm_PartnerStep(char *c);                   /* 0x4fccc0 */
 
-/* the 0xf8-byte message 0x72 (kind at +4, the character id at +8 and +0x58, -1 at +0xc, the clock 0x770ae0 at +0x28 .. +0x34, 2 at +0x36) of 0x4fbe90 */
-#define G_MSG72(m, c)                                                  \
-    memset(m, 0, 0xf8);                                                \
-    *(int *)((m) + 8) = *(int *)((c) + 4);                             \
-    *(int *)((m) + 0x28) = *(int *)ai_Time;                       \
-    *(int *)((m) + 0x2c) = *(int *)(ai_Time + 4);                 \
-    (m)[4] = 0x72;                                                     \
-    *(int *)((m) + 0xc) = -1;                                          \
-    (m)[0x36] = 2;                                                     \
-    *(int *)((m) + 0x30) = *(int *)(ai_Time + 8);                 \
-    *(short *)((m) + 0x34) = *(short *)(ai_Time + 0xc);           \
-    *(int *)((m) + 0x58) = *(int *)((m) + 8);                          \
-    cm_SendLongMessage(m)
 #define ai_TimeT (*(AITIME *)&ai_Time)  /* 0x770ae0, ai_Time (gv.h: char[]) as the AITIME it is */
 /* sends the message 0x72 (the character c died) in the GMMSG m */
 #define GM_SENDDEATH(m, c)                                             \
@@ -1722,55 +1708,55 @@ void gm_DailyCharacters(void)
     gm_PopulationStep();
     gm_NetMsgCount = 0;
 }
-/* 0x4fca40, changes the health of the character id by d (kind 0x14: the float +0x1c directly, dies below 0 through the message 0x72; others: the health of 0x4fc820's formula plus d, the int +0x24 = d through 0x4c3d00): -1 for a free slot, kind 10 or an inactive one; returns the new health, 0 when the character died. ROUGH */
+/* 0x4fca40, changes the life of the character id by d and returns the new life value (-1 for a free slot, a
+   kind 10 character or a dead one; 0 when the change kills it: health 0 and the death message 0x72). A raised
+   dead person (kind 0x14) has its life f01c moved by d; every other character has v024 moved by d, its life
+   being f01c (or the line from f010 over the years up to f020) plus v024, not below 0 */
 
 float gm_AddHealth(unsigned id, int d)
 {
-    char m[0xf8];
-    char b;
-    char *c;
-    float a, f, fc, lim;
+    GMMSG m;
+    unsigned char b;
+    ORDCHAR *c;
+    float a, f;
 
-    id &= 0xffff;
-    c = ai_Chars[id];
-    if (*(short *)c == -1 || c[2] == 10 || c[8] == 0)
+    c = &ORD_CHARS[id & 0xffff];
+    if (c->id == 0xffff || c->kind == 10 || c->health == 0)
         return -1.0f;
-    if (c[2] == 0x14) {
-        a = (float)d;
-        fc = *(float *)(c + 0x1c) + a;
-        if (fc <= 0.0f) {
+    if (c->kind != 0x14) {
+        a = (float)c->w00a;
+        if (a <= c->f020)
+            f = ((c->f01c - c->f010) / c->f020) * a + c->f010;
+        else
+            f = c->f01c;
+        f = (float)c->v024 + d + f;
+        f = f > 0.0 ? f : 0.0;
+        if (f <= 0.0) {
             b = 0;
-            cm_BeginFieldBlock(c, *(int *)(c + 4));
-            cm_AddFieldValue(1, 1, c - cm_FieldObject + 8, &b);
+            cm_BeginFieldBlock((char *)c, c->netId);
+            cm_AddFieldValue(1, 1, (char *)&c->health - cm_FieldObject, &b);
             cm_SendFieldValues();
-            G_MSG72(m, c);
+            GM_SENDDEATH(m, c);
             return 0.0f;
         }
-        cm_SendFloatDelta(*(int *)(c + 4), 0x1c, a);
-        return fc;
+        cm_BeginFieldBlock((char *)c, c->netId);
+        cm_AddFieldValues(4, 1, 0x24, &d);
+        cm_SendFieldDeltas();
+        return f;
     }
-    a = (float)*(unsigned short *)(c + 10);
-    lim = *(float *)(c + 0x20);
-    if (a > lim)
-        f = *(float *)(c + 0x1c);
-    else
-        f = ((*(float *)(c + 0x1c) - *(float *)(c + 0x10)) / lim) * a + *(float *)(c + 0x10);
-    f = *(int *)(c + 0x24) + d + f;
-    if (f <= 0.0f)
-        f = 0.0f;
-    fc = f;
-    if (f <= 0.0f) {
+    a = (float)d;
+    f = c->f01c;
+    f += a;
+    if (f <= 0.0) {
         b = 0;
-        cm_BeginFieldBlock(c, *(int *)(c + 4));
-        cm_AddFieldValue(1, 1, c - cm_FieldObject + 8, &b);
+        cm_BeginFieldBlock((char *)c, c->netId);
+        cm_AddFieldValue(1, 1, (char *)&c->health - cm_FieldObject, &b);
         cm_SendFieldValues();
-        G_MSG72(m, c);
+        GM_SENDDEATH(m, c);
         return 0.0f;
     }
-    cm_BeginFieldBlock(c, *(int *)(c + 4));
-    cm_AddFieldValues(4, 1, 0x24, &d);
-    cm_SendFieldDeltas();
-    return fc;
+    cm_SendFloatDelta(c->netId, 0x1c, a);
+    return f;
 }
 /* 0x4fd090, 1 when the character c (not a player, kind 6 / 7) may be removed: no other player (kind 6 / 7) has it as one of the three direct relations (+0x5a, +0x5e, +0x62) and, when the five slots from +0x66 hold it, they are all filled */
 
