@@ -1272,45 +1272,37 @@ int ai_QueryChapter2Step7(int *args)
     }
     return 1;
 }
-/* 0x5766d0, a transition callback on the step arguments: 1 when the step applied a state change (the kind 0xa
-   step p[2] 0 / 1 drives the states 4 <-> 9 / 0xa -> 0xb), 3 otherwise; the kind 7 with a record whose byte +2
-   is 5 moves the pending state 9 to 0xa */
+/* 0x5766d0, the step callback of the run record FTInitChapter1Step5: the event 0xa with the argument 0 switches
+   the state 4 to 9, with 1 the state 9 back to 4 and 0xa to 0xb; the event 7 on a record whose byte +2 is 5
+   switches the state 9 to 0xa; each switch restarts the step clock and answers 1, anything else answers 3 */
 
-int ai_Unk5766d0(int *p)
+int ai_StepChapter1Step5(int *args)
 {
-    if (p[0] == 0xa) {
-        if (p[2] == 0 && U_I(S + 4) == 4) {
-            U_I(S) = 9;
-            U_I(S + 4) = 9;
-            U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
+    if (args[0] == 0xa) {
+        if (args[2] == 0 && ai_Tutorial->next == 4) {
+            ai_Tutorial->state = 9;
+            ai_Tutorial->next = 9;
+            ai_Tutorial->stepAt = ai_ClockMsVolatile;
             return 1;
         }
-        if (p[2] == 1) {
-            if (U_I(S + 4) == 9) {
-                U_I(S) = 4;
-                U_I(S + 4) = 4;
-                U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
+        if (args[2] == 1) {
+            if (ai_Tutorial->next == 9) {
+                ai_Tutorial->state = 4;
+                ai_Tutorial->next = 4;
+                ai_Tutorial->stepAt = ai_ClockMsVolatile;
                 return 1;
             }
-            if (U_I(S + 4) == 0xa) {
-                U_I(S) = 0xb;
-                U_I(S + 4) = 0xb;
-                U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
+            if (ai_Tutorial->next == 0xa) {
+                ai_Tutorial->state = 0xb;
+                ai_Tutorial->next = 0xb;
+                ai_Tutorial->stepAt = ai_ClockMsVolatile;
                 return 1;
             }
         }
-        return 3;
-    }
-    if (p[0] == 7) {
-        if (!p[1])
-            return 3;
-        if (U_I(S + 4) != 9)
-            return 3;
-        if (*(unsigned char *)(p[1] + 2) != 5)
-            return 3;
-        U_I(S) = 0xa;
-        U_I(S + 4) = 0xa;
-        U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
+    } else if (args[0] == 7 && args[1] && ai_Tutorial->next == 9 && ((unsigned char *)args[1])[2] == 5) {
+        ai_Tutorial->state = 0xa;
+        ai_Tutorial->next = 0xa;
+        ai_Tutorial->stepAt = ai_ClockMsVolatile;
         return 1;
     }
     return 3;
@@ -2676,7 +2668,7 @@ int ai_Unk578570(void)
     U_I(r + 0x20) = (unsigned)&full_data_629590;
     U_I(r + 0x2c) = 0x429;
     U_I(r + 0x30) = 0x8e;
-    U_I(r + 0x38) = (unsigned)&ai_Unk5766d0;
+    U_I(r + 0x38) = (unsigned)&ai_StepChapter1Step5;
     U_I(r + 0x3c) = (unsigned)&ai_Unk576490;
     U_I(r + 0x40) = 0x1;
     U_I(r + 0x44) = 0x2148;

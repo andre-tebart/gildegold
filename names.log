@@ -949,3 +949,4 @@
 2026-11-02T10:58:50 0x00576600 data ai_Unk576600 -> ai_QueryChapter2Step5 by:main why:the TUTRUN.query callback (0x3c) of the run record FTInitChapter2Step5
 2026-11-02T10:59:18 0x00576640 func ai_Unk576640 -> ai_QueryChapter2Step6 by:main why:the TUTRUN.query callback (0x3c) of the run record FTInitChapter2Step6
 2026-11-02T10:59:50 0x00576680 data ai_Unk576680 -> ai_QueryChapter2Step7 by:main why:the TUTRUN.query callback (0x3c) of the run record FTInitChapter2Step7
+2026-11-02T11:00:17 0x005766d0 func ai_Unk5766d0 -> ai_StepChapter1Step5 by:main why:the TUTRUN.stepHook callback (0x38) of the run record FTInitChapter1Step5
