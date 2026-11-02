@@ -14,7 +14,15 @@ struct D3OBJECT;
 extern char unk_Avatars[0x20][0xf4];    /* 0x60f310 */
 extern char gv_Effects[];             /* 0x6f1008, 8 slots of 0x170 bytes */
 extern AITIME gv_LastTime;              /* 0x6f0e38, ai_Time at the last effect step (struct copies of it) */
-extern char gv_CannonBld[], gv_CannonSpare[], gv_CannonCamTarget[], gv_CannonSliderA[], gv_CannonSliderB[], gv_CannonSelected[];  /* 0x925100, 0x925104, 0x925108, 0x925114, 0x925118, 0x92511c */
+typedef struct GVCANNON {               /* 0x20 bytes, the state of the cannon scene (unk_575860 0x57e270 ..), saved with the effects */
+    int bld;                            /* 0x00, the record id (rec + 1) the scene was last set up for, -1 after the reset */
+    int spare;                          /* 0x04, no reader besides the save game */
+    int camTarget[3];                   /* 0x08, the camera ints kept from the camera +0x84 .. +0x8c */
+    int sliderA;                        /* 0x14, the first panel slider (0 .. 4) */
+    int sliderB;                        /* 0x18, the second panel slider (0 .. 100) */
+    int selected;                       /* 0x1c, the selected object (the scene's +0xa0) */
+} GVCANNON;
+extern GVCANNON gv_Cannon;              /* 0x925100 */
 extern char ai_Time[];             /* 0x770ae0 */
 extern int ai_TimeYear;            /* 0x770ae0, ai_Time's first int: the game year (AITIME.year in ai.h;
                                       the alias am.h / cm.h use for AITIME.hour is ai_TimeHour) */

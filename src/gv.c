@@ -233,17 +233,17 @@ int gv_WriteEffects(void *f)
         return 0;
     if (vfs_fwrite(&gv_LastTime.xy, 4, 1, (struct VFSFILE *)f) <= 0)
         return 0;
-    if (vfs_fwrite(&gv_CannonBld, 4, 1, (struct VFSFILE *)f) <= 0)
+    if (vfs_fwrite(&gv_Cannon.bld, 4, 1, (struct VFSFILE *)f) <= 0)
         return 0;
-    if (vfs_fwrite(&gv_CannonSpare, 4, 1, (struct VFSFILE *)f) <= 0)
+    if (vfs_fwrite(&gv_Cannon.spare, 4, 1, (struct VFSFILE *)f) <= 0)
         return 0;
-    if (vfs_fwrite(&gv_CannonCamTarget, 12, 1, (struct VFSFILE *)f) <= 0)
+    if (vfs_fwrite(&gv_Cannon.camTarget, 12, 1, (struct VFSFILE *)f) <= 0)
         return 0;
-    if (vfs_fwrite(&gv_CannonSliderA, 4, 1, (struct VFSFILE *)f) <= 0)
+    if (vfs_fwrite(&gv_Cannon.sliderA, 4, 1, (struct VFSFILE *)f) <= 0)
         return 0;
-    if (vfs_fwrite(&gv_CannonSliderB, 4, 1, (struct VFSFILE *)f) <= 0)
+    if (vfs_fwrite(&gv_Cannon.sliderB, 4, 1, (struct VFSFILE *)f) <= 0)
         return 0;
-    if (vfs_fwrite(&gv_CannonSelected, 4, 1, (struct VFSFILE *)f) <= 0)
+    if (vfs_fwrite(&gv_Cannon.selected, 4, 1, (struct VFSFILE *)f) <= 0)
         return 0;
     for (i = 0; i < 8; i++) {
         e = &gv_EffectsT[i];
@@ -341,17 +341,17 @@ int gv_ReadEffects(void *f, int v)
         return 0;
     if (ls_Read(&gv_LastTime.xy, 4, 1, (int)f) == 0)
         return 0;
-    if (ls_Read(&gv_CannonBld, 4, 1, (int)f) == 0)
+    if (ls_Read(&gv_Cannon.bld, 4, 1, (int)f) == 0)
         return 0;
-    if (ls_Read(&gv_CannonSpare, 4, 1, (int)f) == 0)
+    if (ls_Read(&gv_Cannon.spare, 4, 1, (int)f) == 0)
         return 0;
-    if (ls_Read(&gv_CannonCamTarget, 12, 1, (int)f) == 0)
+    if (ls_Read(&gv_Cannon.camTarget, 12, 1, (int)f) == 0)
         return 0;
-    if (ls_Read(&gv_CannonSliderA, 4, 1, (int)f) == 0)
+    if (ls_Read(&gv_Cannon.sliderA, 4, 1, (int)f) == 0)
         return 0;
-    if (ls_Read(&gv_CannonSliderB, 4, 1, (int)f) == 0)
+    if (ls_Read(&gv_Cannon.sliderB, 4, 1, (int)f) == 0)
         return 0;
-    if (ls_Read(&gv_CannonSelected, 4, 1, (int)f) == 0)
+    if (ls_Read(&gv_Cannon.selected, 4, 1, (int)f) == 0)
         return 0;
     q = gv_EffectArgs;
     for (i = 0; i < 8; i++) {
@@ -436,23 +436,23 @@ int gv_ReadEffects(void *f, int v)
     }
     return 1;
 }
-/* 0x4eddf0, resets the effect slots (0x6f1008, 8 of 0x170 bytes): all zero, then id -1 and the floats +8 / +0xc / +0x10 = 1.0; copies the four ints 0x770ae0 .. to 0x6f0e38 ..; clears 8 ints at 0x925100 and sets the first to -1 */
+/* 0x4eddf0, resets the effect slots gv_Effects: all zero, then id -1 and the floats f08 / f0c / f10 = 1.0; gv_LastTime := ai_Time;
+   clears the cannon scene state (8 ints from gv_Cannon.bld) and sets gv_Cannon.bld to -1 */
 
 void unk_ResetEffectSlots(void)
 {
-    int *p;
     int i;
 
     memset(gv_Effects, 0, 0xb80);
-    for (p = (int *)gv_Effects; (int)p < (unsigned)((unsigned)gv_Effects + 0xb80); p += 0x5c) {
-        p[0] = -1;
-        *(float *)&p[2] = 1.0f;
-        *(float *)&p[3] = 1.0f;
-        *(float *)&p[4] = 1.0f;
+    for (i = 0; i < 8; i++) {
+        gv_EffectsT[i].id = -1;
+        gv_EffectsT[i].f08 = 1.0f;
+        gv_EffectsT[i].f0c = 1.0f;
+        gv_EffectsT[i].f10 = 1.0f;
     }
     gv_LastTime = gv_TimeT;
-    memset(gv_CannonBld, 0, 0x20);
-    *(int *)gv_CannonBld = -1;
+    memset(&gv_Cannon.bld, 0, 0x20);
+    gv_Cannon.bld = -1;
 }
 /* 0x4ede70, frees the objects (3 per slot at +0x15c, 0x447190) of all effect slots; the scene is switched with 0x4478e0 around it */
 
@@ -3225,7 +3225,7 @@ int unk_Unk4f36e0(int id)
             return i;
         p = (int *)((char *)p + 0x2d);
         i++;
-    } while ((int)p < (int)((unsigned)&gv_CannonBld));
+    } while ((int)p < (int)((unsigned)&gv_Cannon.bld));
     return -1;
 }
 /* 0x4f3780, the slot for the pair (a, b) in the table 0x91b6e0 (2048 pairs): -2 when it exists already, else the first free one or -1 */
@@ -3290,7 +3290,7 @@ int unk_Unk4f3910(int a, int b, int s, int m)
                 }
                 q = (int *)((char *)q + 0x2d);
                 i++;
-            } while ((int)q < (unsigned)&gv_CannonBld);
+            } while ((int)q < (unsigned)&gv_Cannon.bld);
         }
         p += 2;
         if ((int)p > ((unsigned)unk_Tab91b6e0 + 0x4003))
@@ -4396,9 +4396,4 @@ char ord_StatisticsHistory[320] = {0}; /* 0x91ab00 */
 char ord_RatingBytes[16] = {0};  /* 0x91b460, 5 + 1 bytes */
 char ord_MessageRecord[0x24] = {0}; /* 0x91b480, the 9-int record the messages carry, then the tag */
 char gm_IncomeHistory[0x154] = {0};  /* 0x91b580, the 17-round history of the five income sums (rows of */
-char gv_CannonBld[4] = {0}; /* 0x925100 */
-char gv_CannonSpare[4] = {0};  /* 0x925104 */
-char gv_CannonCamTarget[12] = {0};  /* 0x925108 */
-char gv_CannonSliderA[4] = {0};  /* 0x925114 */
-char gv_CannonSliderB[4] = {0};  /* 0x925118 */
-char gv_CannonSelected[4] = {0};  /* 0x92511c */
+GVCANNON gv_Cannon = {0};  /* 0x925100, the cannon scene state */

@@ -268,8 +268,6 @@ extern GAPDATA full_data_6f9f68[];
 extern GAPDATA full_data_6f9f6c[];
 extern GAPDATA full_data_6f9f70[];
 extern GAPDATA full_data_6f9f74[];
-extern char gv_CannonSliderA[4];
-extern char gv_CannonSliderB[4];
 extern int d2_LastWindow;
 extern struct D2OBJ *d2_Objs;
 extern struct D2PIC *d2_Pics;
@@ -4940,26 +4938,26 @@ void ai_Unk57e270(char *rec)
     if (U_I((unsigned)&d3_Sky))
         d3sky_Init(U_I((unsigned)&d3_Sky), 1);
     d3t_GetObjectBounds(a4, b4, U_I(rec + 0x61));
-    if (U_I((unsigned)&gv_CannonBld) != U_I(rec + 1)) {
-        U_I((unsigned)&gv_CannonSliderA) = 0;
-        U_I((unsigned)&gv_CannonSliderB) = 0;
-        U_I((unsigned)&gv_CannonSelected) = 0;
-        U_I((unsigned)&gv_CannonCamTarget) = save3[0];
-        U_I(((unsigned)&gv_CannonCamTarget + 0x4)) = save3[1];
-        U_I(((unsigned)&gv_CannonCamTarget + 0x8)) = save3[2];
-        U_I((unsigned)&gv_CannonBld) = U_I(rec + 1);
+    if (U_I((unsigned)&gv_Cannon.bld) != U_I(rec + 1)) {
+        U_I((unsigned)&gv_Cannon.sliderA) = 0;
+        U_I((unsigned)&gv_Cannon.sliderB) = 0;
+        U_I((unsigned)&gv_Cannon.selected) = 0;
+        U_I((unsigned)&gv_Cannon.camTarget) = save3[0];
+        U_I(((unsigned)&gv_Cannon.camTarget + 0x4)) = save3[1];
+        U_I(((unsigned)&gv_Cannon.camTarget + 0x8)) = save3[2];
+        U_I((unsigned)&gv_Cannon.bld) = U_I(rec + 1);
     }
     d3_PointToWorld(U_I(rec + 0x61), U_I(rec + 0x61) + 0x4c, (float *)sc);
-    *(int *)(sc + 0x10) = U_I((unsigned)&gv_CannonCamTarget);
-    *(int *)(sc + 0x14) = U_I(((unsigned)&gv_CannonCamTarget + 0x4));
-    *(int *)(sc + 0x18) = U_I(((unsigned)&gv_CannonCamTarget + 0x8));
+    *(int *)(sc + 0x10) = U_I((unsigned)&gv_Cannon.camTarget);
+    *(int *)(sc + 0x14) = U_I(((unsigned)&gv_Cannon.camTarget + 0x4));
+    *(int *)(sc + 0x18) = U_I(((unsigned)&gv_Cannon.camTarget + 0x8));
     *(float *)(sc + 4) = (*(float *)(sc + 0xe8) - *(float *)(sc + 0xf8)) * 0.8f + *(float *)(sc + 4);
     pp = 0;
     obj[3] = d3_CreateObject(0, (char *)(unsigned)&ai_Unk5ebba4, (char *)&pp, (char *)(unsigned)&full_data_62a350);
     obj[0] = d3_CreateObject(obj[3], (char *)(unsigned)&ai_Unk5ebba4, (char *)(unsigned)&ai_Unk5ebbb4, (char *)(unsigned)&full_data_62a340);
     obj[1] = d3_CreateObject(obj[3], (char *)(unsigned)&ai_Unk5ebba4, (char *)(unsigned)&ai_Unk5ebbb4, (char *)(unsigned)&full_data_62a328);
     obj[2] = d3_CreateObject(obj[3], (char *)(unsigned)&ai_Unk5ebba4, (char *)(unsigned)&ai_Unk5ebbb4, (char *)(unsigned)&full_data_62a310);
-    sel = U_I((unsigned)&gv_CannonSelected);
+    sel = U_I((unsigned)&gv_Cannon.selected);
     *(int *)(sc + 0x20) = 0;
     d3_SetObjectPos(obj[3], (float *)sc);
     d3_SetObjectRot(obj[3], sc + 0x10);
@@ -5451,12 +5449,12 @@ void ai_Unk57f890(char *rec, char *sc, char *run)
     *(int *)(U_I((unsigned)&d2_Objs) + 0x5c + m * 0x2ec) = 1;
     *(short *)(U_I((unsigned)&d2_Objs) + 0x14 + m * 0x2ec) = *(short *)((unsigned)&ai_Unkf8f128 + U_I((unsigned)&d2_LastWindow) * 0x3c4) / 2;
     d2_SetObjFont(m, 0x54);
-    U_I((unsigned)&gv_CannonSliderA) = a;
-    U_I((unsigned)&gv_CannonSliderB) = b;
-    U_I((unsigned)&gv_CannonSelected) = *(int *)(sc + 0xa0);
-    U_I((unsigned)&gv_CannonCamTarget) = *(int *)(sc + 0x10);
-    U_I(((unsigned)&gv_CannonCamTarget + 0x4)) = *(int *)(sc + 0x14);
-    U_I(((unsigned)&gv_CannonCamTarget + 0x8)) = *(int *)(sc + 0x18);
+    U_I((unsigned)&gv_Cannon.sliderA) = a;
+    U_I((unsigned)&gv_Cannon.sliderB) = b;
+    U_I((unsigned)&gv_Cannon.selected) = *(int *)(sc + 0xa0);
+    U_I((unsigned)&gv_Cannon.camTarget) = *(int *)(sc + 0x10);
+    U_I(((unsigned)&gv_Cannon.camTarget + 0x4)) = *(int *)(sc + 0x14);
+    U_I(((unsigned)&gv_Cannon.camTarget + 0x8)) = *(int *)(sc + 0x18);
 }
 /* 0x57fdb0, the cannon's pitch as 0 .. 1 (28 B): (sc + 0x10 + 0.2617994) / (0.7853982 + 0.2617994) */
 
@@ -5666,12 +5664,12 @@ void ai_Unk580a90(char *sc)
     d2_SetForm(*(int *)(sc + 0xa4), 1);
     v = d2_WinOpenSlider(0x140, 0x14, 100, 0, 100, 0x7b, 0x82, U_I((unsigned)&d2_LastWindow));
     *(int *)(sc + 0xb0) = v;
-    d2_SetObjValue(v, 0, 4, U_I((unsigned)&gv_CannonSliderA), 1);
+    d2_SetObjValue(v, 0, 4, U_I((unsigned)&gv_Cannon.sliderA), 1);
     d2_SetLabel(*(int *)(sc + 0xb0), U_I((unsigned)&full_data_144a344));
     d2_SetList(*(int *)(sc + 0xb0), 5, U_I((unsigned)&full_data_144a34c), U_I((unsigned)&full_data_144a350), U_I((unsigned)&full_data_144a354), U_I((unsigned)&full_data_144a358), U_I((unsigned)&full_data_144a35c));
     v = d2_WinOpenSlider(0x140, 0x32, 100, 0, 100, 0x7b, 0x82, U_I((unsigned)&d2_LastWindow));
     *(int *)(sc + 0xb4) = v;
-    d2_SetObjValue(v, 0, 100, U_I((unsigned)&gv_CannonSliderB), 1);
+    d2_SetObjValue(v, 0, 100, U_I((unsigned)&gv_Cannon.sliderB), 1);
     d2_SetLabel(*(int *)(sc + 0xb4), U_I((unsigned)&full_data_144a348));
     id = d2_WinOpenPic(0x14, 0x17, 0x7d3, U_I((unsigned)&d2_LastWindow));
     *(int *)(sc + 0xc8) = id;
