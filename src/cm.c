@@ -7241,9 +7241,9 @@ void ai_Unk4cf370()
     }
     d2_SetClipRect(0, 0, *(int *)((char *)d2_ScreenSurf + 4), *(int *)((char *)d2_ScreenSurf + 8));
     if (a == 2)
-        d2_DrawShape(d2_ScreenW / 2 - 0x14, (int)(ai_Unk5fe708 * ai_Unk5edc50 - ai_Unk5eb81c), d2_ScreenSurf, t, 0);
+        d2_DrawShape(d2_ScreenW / 2 - 0x14, (int)(d2_ScreenScale * ai_Unk5edc50 - ai_Unk5eb81c), d2_ScreenSurf, t, 0);
     else if (a == 1)
-        d2_DrawShape(d2_ScreenW / 2 - 0x14, (int)(ai_Unk5fe708 * ai_Unk5edc50 - ai_Unk5eb81c), d2_ScreenSurf, t, a);
+        d2_DrawShape(d2_ScreenW / 2 - 0x14, (int)(d2_ScreenScale * ai_Unk5edc50 - ai_Unk5eb81c), d2_ScreenSurf, t, a);
     if (e == 2)
         d2_DrawShape(8, d2_ScreenH / 2 + 0x14, d2_ScreenSurf, t, e);
     else if (e == 1)
@@ -7253,9 +7253,9 @@ void ai_Unk4cf370()
     else if (up == 1)
         d2_DrawShape(d2_ScreenW - 0x28, d2_ScreenH / 2 + 0x14, d2_ScreenSurf, t, 5);
     if (b == 2)
-        d2_DrawShape(d2_ScreenW / 2 - 0x14, (int)(ai_Unk5fe708 * ai_Unk5eb7fc), d2_ScreenSurf, t, 6);
+        d2_DrawShape(d2_ScreenW / 2 - 0x14, (int)(d2_ScreenScale * ai_Unk5eb7fc), d2_ScreenSurf, t, 6);
     else if (b == 1)
-        d2_DrawShape(d2_ScreenW / 2 - 0x14, (int)(ai_Unk5fe708 * ai_Unk5eb7fc), d2_ScreenSurf, t, 7);
+        d2_DrawShape(d2_ScreenW / 2 - 0x14, (int)(d2_ScreenScale * ai_Unk5eb7fc), d2_ScreenSurf, t, 7);
 }
 /* 0x4cf670, the mouse pick: the object under the cursor (ai_PickedObject, from the scene, else the ground point) and the
    cursor look d2_PointerLook by the selected characters' kind (0x160 -> 0x18 .. 0x176 -> 0x25; more than one selected: 0x23;
@@ -15057,7 +15057,7 @@ const double ai_Unk5edc60 = 6.5012084524677184e-315;  /* 0x5edc60 */
 const double ai_Unk5edc68 = 0.0055555555555555558;  /* 0x5edc68 */
 int ai_Unk5f8438 = -1;  /* 0x5f8438 */
 int ai_Unk5f8b10 = 6251111;  /* 0x5f8b10 */
-float ai_Unk5fe708 = 1.0f;  /* 0x5fe708 */
+float d2_ScreenScale = 1.0f;  /* 0x5fe708 */
 int ai_Unk60bd80 = 770;  /* 0x60bd80 */
 unsigned int cm_SpeedLevel = 2;  /* 0x60bd84, = 2 (0..4) */
 int cm_LastCharId = -1;  /* 0x60bd88, = -1 */

@@ -606,7 +606,7 @@ extern float ai_Unk5eb7fc;  /* 0x5eb7fc */
 extern float ai_Unk5eb81c;  /* 0x5eb81c */
 extern const float ai_Unk5ebba4[];  /* 0x5ebba4 */
 extern const float ai_Unk5edc50;  /* 0x5edc50 */
-extern float ai_Unk5fe708;  /* 0x5fe708 */
+extern float d2_ScreenScale;  /* 0x5fe708 */
 extern void *d2_ScreenSurf;  /* 0x6ed924, the screen surface (d2.c defines it) */
 extern short d2_ScreenH;  /* 0xfb9070 */
 extern short d2_ScreenW;  /* 0xfb9072 */

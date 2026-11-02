@@ -125,7 +125,7 @@ void sv_DrawBorderArrows(void);                                                /
 void sv_CameraFollow(void);                                             /* 0x52d7a0 */
 void sv_HandleRightClick(unsigned fl);                                         /* 0x52d940 */
 void sv_Unk52e050(void);                                                /* 0x52e050 */
-void sv_Unk52e0c0(void);                                                /* 0x52e0c0 */
+void sv_DrawStatusText(void);                                                /* 0x52e0c0 */
 void sv_ClearNamePlates(void);                                          /* 0x52e170 */
 void sv_ReleaseNamePlates(void);                                        /* 0x52e190 */
 int sv_RegisterNamePlate(char *name, char *text, int b);                /* 0x52e1c0 */

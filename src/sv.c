@@ -128,7 +128,7 @@ extern int d2_TextDrawnW;
 extern int d2_TextLeft;
 extern int d2_TextTop;
 extern void *d2_ScreenSurf;  /* 0x6ed924 */
-extern float ai_Unk5fe708;
+extern float d2_ScreenScale;
 extern int d2_HalfScreenW;
 extern int d2_TextDrawnH;
 extern int d2_TextDrawnW;
@@ -6091,25 +6091,26 @@ void sv_Unk52e050(void)
         d2_AddDirty(SV_I((unsigned)&d2_TextLeft), SV_I((unsigned)&d2_TextTop), SV_I((unsigned)&d2_TextDrawnW), SV_I((unsigned)&d2_TextDrawnH));
     }
 }
-/* 0x52e0c0, draws the status line 0x761f40 (screen centre, y by a float of the clock) until it is 0x15e ms old */
+/* 0x52e0c0, draws the status line sv_StatusText (font 0x53, 600 wide, centred, at y 505 (the 0x8000 frame mask) or
+   575 scaled by d2_ScreenScale) and clears it 350 ms after sv_SetStatusText set it */
 
-void sv_Unk52e0c0(void)
+void sv_DrawStatusText(void)
 {
     int x, y;
 
-    if (SV_B((unsigned)&sv_StatusText) != 0) {
+    if (sv_StatusText[0] != 0) {
         d2_SetFont(0x53);
-        if ((SV_U((unsigned)&sv_FrameMask) & 0x8000) != 0) {
-            x = SV_I((unsigned)&d2_HalfScreenW) - 300;
-            y = (int)(*(float *)(unsigned)&ai_Unk5fe708 * 505.0f);
+        if ((sv_FrameMask & 0x8000) != 0) {
+            x = d2_HalfScreenW - 300;
+            y = (int)(d2_ScreenScale * 505.0f);
         } else {
-            x = SV_I((unsigned)&d2_HalfScreenW) - 300;
-            y = (int)(*(float *)(unsigned)&ai_Unk5fe708 * 575.0f);
+            x = d2_HalfScreenW - 300;
+            y = (int)(d2_ScreenScale * 575.0f);
         }
-        d2_DrawTextBox(x, y, 600, 0x18, d2_ScreenSurf, (char *)(unsigned)&sv_StatusText, 0x28);
-        d2_AddDirty(x, y, SV_I((unsigned)&d2_TextDrawnW), SV_I((unsigned)&d2_TextDrawnH));
-        if (SV_U((unsigned)&sv_StatusTime) + 0x15e <= SV_U((unsigned)&ai_ClockMs))
-            SV_B((unsigned)&sv_StatusText) = 0;
+        d2_DrawTextBox(x, y, 600, 0x18, d2_ScreenSurf, sv_StatusText, 0x28);
+        d2_AddDirty(x, y, d2_TextDrawnW, d2_TextDrawnH);
+        if (d3_Time >= sv_StatusTime + 0x15e)
+            sv_StatusText[0] = 0;
     }
 }
 /* 0x52e170, clears the name plate records sv_NamePlates */
@@ -7361,8 +7362,8 @@ void sv_SetScreenCenter(unsigned fl)
 
         if ((fl & 0x100) != 0) {
             w = (int)(*(float *)(unsigned)&d3_ViewW * 0.5f + *(float *)(unsigned)&d3_ViewX
-                      - *(float *)(unsigned)&ai_Unk5fe708 * 6.0f);
-            h = (int)(*(float *)(unsigned)&d3_ViewH * 0.5f + *(float *)(unsigned)&ai_Unk5fe708 * 10.0f
+                      - *(float *)(unsigned)&d2_ScreenScale * 6.0f);
+            h = (int)(*(float *)(unsigned)&d3_ViewH * 0.5f + *(float *)(unsigned)&d2_ScreenScale * 10.0f
                       + *(float *)(unsigned)&d3_ViewY);
         } else {
             w = (int)(*(float *)(unsigned)&d3_ViewW * 0.5f + *(float *)(unsigned)&d3_ViewX);
@@ -7579,7 +7580,7 @@ l2:
                 ai_Unk4cf370();
             if ((mask & 0x1000) != 0 && SV_I(((unsigned)&dm_L + 0x28)) == 0 && SV_I((unsigned)&sv_CameraScrolled) == 0 && SV_I((unsigned)&d3t_CamMove) == 0 && SV_I((unsigned)&sv_BandActive) == 0 && SV_I((unsigned)&d2_CutsceneActive) == 0 && SV_I((unsigned)&he_ActiveSlot) == 0)
                 sv_Unk52e050();
-            sv_Unk52e0c0();
+            sv_DrawStatusText();
             sv_DrawPanelPointer();
             d2_UnlockSurface(d2_ScreenSurf);
         }
