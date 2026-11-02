@@ -1624,82 +1624,82 @@ GVYARD *gv_AllocGraveyard(unsigned char *o)
     }
     return 0;
 }
-/* 0x4eff50, upgrades the graveyard record of the object o to the next size (kind - 1 .. : the building's kind byte is one more than the record's +4): allocates a new one (0x4efc10), copies the first grave
-   records, the entries of the lists and the four flag bytes (+0x18 .. +0x1b) over, frees the old one (0x4f0180); returns the new record, or 0 (the old one stays) when it does not fit. ROUGH */
+/* 0x4eff50, moves the graveyard building o to the record of its new level (the type's level one above GVYARD.kind, which
+   is below 3): allocates the larger record (gv_AllocGraveyard), copies the graves of the old sizes and the entries' state
+   (all but their grave pointers) over, takes the open flags and frees the old record (gv_FreeGraveyard); returns the new
+   record, or 0 (the old one stays) when o does not qualify or there is no memory
+   @deep Read in full against the original (all 188 instructions reconciled): the qualification test, the
+   alloc / restore, the per-level counts and grave memcpys (rep movsd 0x88 / 0xcc / 0xcc / 0x88), the three
+   field-by-field entry copy loops, the open flags and the free match statement for statement. Remaining:
+   the frame (original sub esp,0x10 with n2 at [esp+0x18]; ours push ecx with n2 at [esp+0x10]), the o /
+   zero pair in ebp / edi swapped (ours edi / ebp), the old->lists[0]->grave load the original hoists above
+   the level test while ours loads nw->lists[0] first, and the base/index order in the sib stores of the
+   first copy loop ([edx+esi+4] vs [esi+edx+4]). Tried separate loop indices per list (no change) and s/d
+   grave pointers set before the level test (worse: 146 code). Frame, allocation and scheduling only. */
 
-int unk_Unk4eff50(unsigned char *o)
+GVYARD *gv_GrowGraveyard(unsigned char *o)
 {
-    int *old, *nw;
-    char *b;
-    int *s, *d;
-    int i, n0, n1, n2, k;
+    AIBLD *bld = (AIBLD *)o;
+    AIBTYPE *bt;
+    GVYARD *old, *nw;
+    int n0, n1, n2, i;
 
-    old = *(int **)(o + 0x65);
-    b = ai_BTypes + o[0] + o[0] * 0x24c;
-    if (b[0] == 0x1d && old != 0 && old[1] < 3 && (unsigned char)b[0x247] - old[1] == 1) {
-        *(int *)(o + 0x65) = 0;
-        nw = (int *)gv_AllocGraveyard(o);
-        if (nw != 0) {
-            s = *(int **)(old[2] + 0x10);
-            d = *(int **)(nw[2] + 0x10);
-            if ((unsigned char)b[0x247] == 2) {
-                k = 0;
-                n0 = 8;
-                n1 = 4;
-                for (i = 0x88; i != 0; i--)
-                    *d++ = *s++;
-                s = *(int **)(old[3] + 0x10);
-                d = *(int **)(nw[3] + 0x10);
-            } else {
-                k = 2;
-                n0 = 0xc;
-                n1 = 6;
-                for (i = 0xcc; i != 0; i--)
-                    *d++ = *s++;
-                s = *(int **)(old[3] + 0x10);
-                d = *(int **)(nw[3] + 0x10);
-                for (i = 0xcc; i != 0; i--)
-                    *d++ = *s++;
-                s = *(int **)(old[4] + 0x10);
-                d = *(int **)(nw[4] + 0x10);
-            }
-            for (i = 0x88; i != 0; i--)
-                *d++ = *s++;
-            if (old[2] != 0 && n0 != 0) {
-                for (i = 0; n0 != 0; n0--, i += 0x14) {
-                    *(int *)(i + nw[2]) = *(int *)(i + old[2]);
-                    *(int *)(nw[2] + 4 + i) = *(int *)(i + 4 + old[2]);
-                    *(short *)(nw[2] + 8 + i) = *(short *)(i + 8 + old[2]);
-                    *(short *)(nw[2] + 10 + i) = *(short *)(i + 10 + old[2]);
-                    *(char *)(nw[2] + 0xc + i) = *(char *)(i + 0xc + old[2]);
-                }
-            }
-            if (old[3] != 0 && n1 != 0) {
-                for (i = 0; n1 != 0; n1--, i += 0x14) {
-                    *(int *)(i + nw[3]) = *(int *)(i + old[3]);
-                    *(int *)(i + 4 + nw[3]) = *(int *)(i + 4 + old[3]);
-                    *(short *)(i + 8 + nw[3]) = *(short *)(i + 8 + old[3]);
-                    *(short *)(i + 10 + nw[3]) = *(short *)(i + 10 + old[3]);
-                    *(char *)(i + 0xc + nw[3]) = *(char *)(i + 0xc + old[3]);
-                }
-            }
-            if (old[4] != 0 && k != 0) {
-                for (i = 0; k != 0; k--, i += 0x14) {
-                    *(int *)(i + nw[4]) = *(int *)(i + old[4]);
-                    *(int *)(i + 4 + nw[4]) = *(int *)(i + 4 + old[4]);
-                    *(short *)(i + 8 + nw[4]) = *(short *)(i + 8 + old[4]);
-                    *(short *)(i + 10 + nw[4]) = *(short *)(i + 10 + old[4]);
-                    *(char *)(i + 0xc + nw[4]) = *(char *)(i + 0xc + old[4]);
-                }
-            }
-            *((char *)nw + 0x18) = *((char *)old + 0x18);
-            *((char *)nw + 0x19) = *((char *)old + 0x19);
-            *((char *)nw + 0x1a) = *((char *)old + 0x1a);
-            *((char *)nw + 0x1b) = *((char *)old + 0x1b);
-            gv_FreeGraveyard(old);
-            return *(int *)(o + 0x65);
+    old = bld->yard;
+    bt = (AIBTYPE *)(ai_BTypes + bld->type + bld->type * 0x24c);
+    if (bt->kind == 0x1d && old != 0 && old->kind < 3 && bt->cap247 - old->kind == 1) {
+        bld->yard = 0;
+        nw = gv_AllocGraveyard(o);
+        if (nw == 0) {
+            bld->yard = old;
+            return 0;
         }
-        *(int **)(o + 0x65) = old;
+        if (bt->cap247 == 2) {                  /* from level 1: 8 graves of size 0, 4 of size 1 */
+            n2 = 0;
+            n0 = 8;
+            n1 = 4;
+            memcpy(nw->lists[0]->grave, old->lists[0]->grave, 8 * sizeof(GVGRAVE));
+            memcpy(nw->lists[1]->grave, old->lists[1]->grave, 4 * 2 * sizeof(GVGRAVE));
+        } else {                                /* from level 2: 12 / 6 / 2 graves of the sizes 0 .. 2 */
+            n2 = 2;
+            n0 = 12;
+            n1 = 6;
+            memcpy(nw->lists[0]->grave, old->lists[0]->grave, 12 * sizeof(GVGRAVE));
+            memcpy(nw->lists[1]->grave, old->lists[1]->grave, 6 * 2 * sizeof(GVGRAVE));
+            memcpy(nw->lists[2]->grave, old->lists[2]->grave, 2 * 4 * sizeof(GVGRAVE));
+        }
+        if (old->lists[0] != 0) {
+            for (i = 0; i < n0; i++) {
+                nw->lists[0][i].size = old->lists[0][i].size;
+                nw->lists[0][i].id = old->lists[0][i].id;
+                nw->lists[0][i].w08 = old->lists[0][i].w08;
+                nw->lists[0][i].until = old->lists[0][i].until;
+                nw->lists[0][i].b0c = old->lists[0][i].b0c;
+            }
+        }
+        if (old->lists[1] != 0) {
+            for (i = 0; i < n1; i++) {
+                nw->lists[1][i].size = old->lists[1][i].size;
+                nw->lists[1][i].id = old->lists[1][i].id;
+                nw->lists[1][i].w08 = old->lists[1][i].w08;
+                nw->lists[1][i].until = old->lists[1][i].until;
+                nw->lists[1][i].b0c = old->lists[1][i].b0c;
+            }
+        }
+        if (old->lists[2] != 0) {
+            for (i = 0; i < n2; i++) {
+                nw->lists[2][i].size = old->lists[2][i].size;
+                nw->lists[2][i].id = old->lists[2][i].id;
+                nw->lists[2][i].w08 = old->lists[2][i].w08;
+                nw->lists[2][i].until = old->lists[2][i].until;
+                nw->lists[2][i].b0c = old->lists[2][i].b0c;
+            }
+        }
+        nw->open[0] = old->open[0];
+        nw->open[1] = old->open[1];
+        nw->open[2] = old->open[2];
+        nw->open[3] = old->open[3];
+        gv_FreeGraveyard((int *)old);
+        return bld->yard;
     }
     return 0;
 }

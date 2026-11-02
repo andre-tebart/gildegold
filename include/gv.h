@@ -259,7 +259,7 @@ extern int ai_NextObjectId;                /* 0x61a654 */
 
 void * mem_Alloc(int size, char *tag);        /* 0x4223c0, allocates zeroed memory */
 void mem_Free(void *p);                 /* 0x422620 */
-int unk_Unk4eff50(unsigned char *o);    /* 0x4eff50 */
+GVYARD *gv_GrowGraveyard(unsigned char *o);  /* 0x4eff50 */
 void gv_FreeGraveyard(int *g);             /* 0x4f0180 */
 int unk_Unk4f01d0(int *g, char *o, int v, int b);  /* 0x4f01d0 */
 int unk_Unk4f0240(int *p);              /* 0x4f0240 */

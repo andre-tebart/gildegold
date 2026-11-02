@@ -410,7 +410,7 @@ char d3_SetLightKeyCB(struct D3OBJECT *obj, float *time);  /* 0x449da0 */
 struct D3OBJECT * d3_LoadGroup();  /* 0x44c3f0 */
 float d3_VecAngle();  /* 0x4539f0 */
 void d3_DirToWorld();  /* 0x458810 */
-int unk_Unk4eff50();  /* 0x4eff50 */
+struct GVYARD *gv_GrowGraveyard(unsigned char *o);  /* 0x4eff50 */
 int ord_GetKindRecord();  /* 0x4f8890 */
 int gm_ClockSeason();  /* 0x4fe350 */
 void gm_RefreshGoodsLists(unsigned p);  /* 0x4ff190 */

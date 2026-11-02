@@ -4570,7 +4570,7 @@ int ai_Unk4cac40(G17MSG *m, G17STAT *s)
     gm_SetCapacities(b);
     gm_StockBuildingObjects(b);
     if (d[0] == 0x1d)
-        unk_Unk4eff50(b);
+        gv_GrowGraveyard(b);
     strcpy(nm, ai_BTypes + (unsigned char)b[0] * 0x24d + 1);
     _strupr(nm + 2);
     for (i = 0; i < 4; i++) {
