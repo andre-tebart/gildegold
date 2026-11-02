@@ -7011,72 +7011,68 @@ int ai_Unk49c880(G5CH *p, AIARG *s1, AIARG *s2)
                  (int)gm_GoodsPrice(s1->ref, ai_OwnPlayer));
     return 0xc;
 }
-/* 0x49c8e0, decide callback 0x26: on its day / hour slot, the character rents rooms (?) in a building
-   (1, 5, 7) of another owner; the price depends on its fame */
+/* 0x49c8e0, decide callback 0x26 "Ablass Kaufen": on its year / hour slot, a character guilty enough buys an
+   indulgence in a building (1, 5, 7) of another owner; the price depends on its worth, guilt and the owner's
+   liking (half with the good 0x2c6), or it pays with its money field when that is 4 or more */
 
-int ai_Unk49c8e0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
+int ai_DecideBuyIndulgence(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 {
-    int n1, n2, i, money, w, c;
-    float x, t;
-    unsigned char *b;
-    unsigned char *list[10];
+    int guilt, graves, i, money, w, c;
+    float worth;
+    AIBLDX *b;
+    AIBLDX *list[10];
 
-    if (f != 0)
-        return 0;
-    if ((p->netId & 3) != ai_TimeT.year % 4)
-        return 0;
-    if ((p->netId & 7) != (int)ai_TimeT.hour % 8)
-        return 0;
-    n1 = gv_CulpritGuilt(p->netId);
-    n2 = gv_CountOwnedGraves(p->netId);
-    if (util_RandomU(8) + 8 > n1)
-        return 0;
-    i = 0;
-    for (b = (unsigned char *)gm_BuildQuery(1, 5, 7); b != 0; b = (unsigned char *)gm_BuildNext()) {
-        if (*(unsigned short *)(b + 0x27) != 0xffff && *(unsigned short *)(b + 0x27) != p->id
-            && !(b[0x5a] & 1))
-            list[i++] = b;
+    if (f == 0 && (p->netId & 3) == ai_TimeT.year % 4 && (p->netId & 7) == (int)ai_TimeT.hour % 8) {
+        guilt = gv_CulpritGuilt(p->netId);
+        graves = gv_CountOwnedGraves(p->netId);
+        if (util_RandomU(8) + 8 <= guilt) {
+            i = 0;
+            b = AI_501190_3(1, 5, 7);
+            if (b != 0) {
+                do {
+                    if (b->owner != 0xffff && b->owner != p->id && !(b->flags5a & 1))
+                        list[i++] = b;
+                } while ((b = AI_BUILDNEXT()) != 0);
+                if (i != 0) {
+                    b = list[util_RandomU(i)];
+                    if (p->money < 4) {
+                        /* the price: the character's worth, its guilt and the owner's liking, clamped */
+                        money = gm_CharCurrency((AIPER *)p, ai_OwnPlayer);
+                        worth = gm_GetWorth(p->id) * 0.005f;
+                        w = (int)((200.0f - gm_Liking(p->id, b->owner, 1)) * 0.01f * guilt * worth);
+                        w = (int)min(max(w * 0.01, 3200.0), 320000.0);
+                        if (ai_InventoryHas(p, 0x2c6))
+                            w /= 2;
+                        if (!(w > money * 0.44f)) {
+                            if (graves <= 1)
+                                graves = 1;
+                            o1->kind = 4;
+                            o1->ref = b->id;
+                            o1->arg2 = w;
+                            o1->fvalue = (float)graves;
+                            o2->kind = 0x12;
+                            return 0x26;
+                        }
+                    } else {
+                        c = p->money / 2;
+                        c += c & 1;
+                        w = c / 2;
+                        if (w > graves) {
+                            w = graves;
+                            c = graves * 2;
+                        }
+                        o1->kind = 4;
+                        o1->ref = b->id;
+                        o1->arg2 = c;
+                        o1->fvalue = (float)w;
+                        o2->kind = 0xf;
+                        return 0x26;
+                    }
+                }
+            }
+        }
     }
-    if (i == 0)
-        return 0;
-    b = list[util_RandomU(i)];
-    if (*(int *)((char *)p + 0x194) < 4) {
-        money = gm_CharCurrency((AIPER *)p, ai_OwnPlayer);
-        x = gm_GetWorth(p->id) * 0.005f;
-        w = (int)((200.0f - gm_Liking(p->id, *(unsigned short *)(b + 0x27), 1)) * 0.01f * n1 * x);
-        t = w * 0.01;
-        if (t > 3200.0) {
-            if (!(t < 320000.0))
-                t = 320000.0;
-        } else
-            t = 3200.0;
-        w = (int)t;
-        if (ai_InventoryHas(p, 0x2c6))
-            w /= 2;
-        if (money * 0.44f < w)
-            return 0;
-        if (n2 <= 1)
-            n2 = 1;
-        o1->kind = 4;
-        o1->ref = *(int *)(b + 1);
-        o1->arg2 = w;
-        o1->fvalue = (float)n2;
-        o2->kind = 0x12;
-        return 0x26;
-    }
-    c = *(int *)((char *)p + 0x194) / 2;
-    c += c & 1;
-    w = c / 2;
-    if (w > n2) {
-        w = n2;
-        c = n2 * 2;
-    }
-    o1->kind = 4;
-    o1->ref = *(int *)(b + 1);
-    o1->arg2 = c;
-    o1->fvalue = (float)w;
-    o2->kind = 0xf;
-    return 0x26;
+    return 0;
 }
 /* 0x49cb60, execute callback 0x26: pays the rent (s2->kind 0x12, with a message) or takes over the rooms
    (s2->kind 0xf) of the building s1->unk04 */
@@ -9713,7 +9709,7 @@ int ai_RegisterBaseActions(int a)
     act.id = 0x26;
     strcpy(act.name, "Ablass Kaufen");
     act.eval = ai_EvalMoodWeights;
-    act.decide = ai_Unk49c8e0;
+    act.decide = ai_DecideBuyIndulgence;
     act.exec = ai_Unk49cb60;
     act.flags = 0x39;
     if (!am_RegisterMethod(&act, a))

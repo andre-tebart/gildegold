@@ -693,7 +693,9 @@ typedef struct G5CH {                   /* a character, 0x21c bytes (ai_Chars[76
     unsigned char appliedOffice;        /* 0x168, the office kind applied for, 0 = none (ai.h AICHAR) */
     char pad169[0xf];
     int inventory;                      /* 0x178, the goods inventory (AICHAR.inventory, a G8 object list) */
-    char pad17c[0x94];
+    char pad17c[0x18];
+    int money;                          /* 0x194, (AIPER.money) */
+    char pad198[0x78];
     int partner;                        /* 0x210 */
     char pad214[4];
     unsigned char mask;                 /* 0x218, the action groups it may use */
@@ -879,7 +881,7 @@ int ai_ExecuteUsePerfume(G5CH *p, AIARG *s1, AIARG *s2);                        
 int ai_ExecuteUseTrank(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49c3e0 */
 int ai_Unk49c790(int a, G5CH *p, int f, AIARG *s1, AIARG *o);                   /* 0x49c790 */
 int ai_Unk49c880(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49c880 */
-int ai_Unk49c8e0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49c8e0 */
+int ai_DecideBuyIndulgence(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49c8e0 */
 int ai_Unk49cb60(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49cb60 */
 int ai_Unk49cd30(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49cd30 */
 int ai_Unk49cdb0(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49cdb0 */
