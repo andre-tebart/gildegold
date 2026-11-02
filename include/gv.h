@@ -422,7 +422,7 @@ int gv_CrimeTextLaw9to16(char *out, CRIME r, int mode);  /* 0x4f31d0 */
 int gv_CrimeTextLaw17to28(char *out, CRIME r, int mode);  /* 0x4f3270 */
 int gv_CrimeText(char *out, CRIME r, int mode);  /* 0x4f3580 */
 char *gv_FindAccused(char *c, int max, int *ids, int *cnt);  /* 0x4f41b0 */
-void unk_Unk4f4460(unsigned short *c, int a);  /* 0x4f4460 */
+void gv_PassSentence(struct AICHAR *c, int a);  /* 0x4f4460 */
 void unk_Unk4f48f0(unsigned short *c, int a, char *out);  /* 0x4f48f0 */
 
 unsigned ord_ApplyForOffice(ORDCHAR *c, int *m);  /* 0x4f4e20 */

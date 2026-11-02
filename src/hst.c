@@ -1220,7 +1220,7 @@ typedef struct G12XMSG {                /* 0x100 bytes, given to 0x4c4fa0 (a vot
 } G12XMSG;
 #pragma pack(pop)
 
-int ai_Unk4c4fa0(void *p);                                                   /* 0x4c4fa0 */
+int cm_SendNewParty(void *p);                                                   /* 0x4c4fa0 */
 
 /* 0x4b0640, the STRAFE_HINRICHTUNG text command (callback 0x601b50[10], name 0x601070[10])
    "-KANONE" / "-GALGEN" / "-KOEPFEN" / "-SHAUFEN": starts the execution (kind 3, 0, 2, 4) of the character args[k]
@@ -1290,7 +1290,7 @@ int ai_CommandExecution(G12ARG *args, int k, char *fmt)
     gm_AddTime(&msg.time, 0x18, 0, 0);
     msg.unk26 = 0x22;
     msg.time.hour = 10;
-    ai_Unk4c4fa0(&msg);
+    cm_SendNewParty(&msg);
     return 1;
 }
 /* 0x4b08e0, the STRAFE_KERKER text command (callback 0x601b50[11], name 0x601070[11]) "-n": sets the byte field

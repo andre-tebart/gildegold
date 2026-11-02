@@ -74,13 +74,20 @@ typedef struct G28REC {
     int id;
     char pad04[4];
     unsigned char kind;                 /* 0x08 */
-    char pad09[0xb];
+    char pad09[3];
+    int host;                           /* 0x0c, the netId of the player's character who holds it (gv_PassSentence, he.c) */
+    char pad10[4];
     int thing;                          /* 0x14 */
-    char pad18[0xe];
+    AITIME time;                        /* 0x18, when it takes place (ai_Time plus some hours) */
     unsigned char flags;                /* 0x26 */
     char pad27[9];
-    unsigned char used;                 /* 0x30 */
-    char pad31[0x114 - 0x31];
+    unsigned char used;                 /* 0x30, the number of members[] (ai_Unk4e51b0: at most 16) */
+    char pad31[3];
+    int members[16];                    /* 0x34, the members' netIds (-1 for one removed, ai_Unk4e5210) */
+    char pad74[8];
+    unsigned char variant;              /* 0x7c, written by gv_PassSentence with a random 0 .. 4 */
+    unsigned char zero7d;               /* 0x7d, only seen written 0 (gv_PassSentence) */
+    char pad7e[0x114 - 0x7e];
 } G28REC;
 typedef char cm_AssertG28REC[sizeof(G28REC) == 0x114 ? 1 : -1];
 

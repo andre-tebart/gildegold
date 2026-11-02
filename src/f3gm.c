@@ -1684,7 +1684,7 @@ void gm_AddTime(struct GCLOCK *c, int hours, int mins, int secs);               
 int cm_SendCreateCharacter(unsigned char a, int b, int c, unsigned short d, int e, unsigned char f, unsigned char g, unsigned char h);                     /* 0x4c4650 */
 int cm_GetSlotState();                     /* 0x4c3ae0 */
 int cm_GetSlotValue(int h);                     /* 0x4c3b10 */
-int ai_Unk4c4fa0(void *p);                     /* 0x4c4fa0 */
+int cm_SendNewParty(void *p);                     /* 0x4c4fa0 */
 int gm_TitleNumber();                     /* 0x5043d0 */
 int ai_WorksForMaster(struct AICHAR *c);                     /* 0x47dd70 */
 
@@ -1780,7 +1780,7 @@ void unk_Unk4fccc0(char *c)
             cm_BeginFieldBlock(p, msg[0xe]);
             cm_AddFieldDelta(1, 1, 2, &arg);
             cm_SendFieldDeltas();
-            ai_Unk4c4fa0(msg);
+            cm_SendNewParty(msg);
             ai_Unk6f1b98++;
             return;
         }

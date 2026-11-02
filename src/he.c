@@ -2663,7 +2663,7 @@ unsigned int ai_Unk5c6530(int param_1, int param_2);
 int gv_FindReservedEntry();
 int gv_EntryIndex(char *r, int *e);
 int gv_OrderSetGraveHolder();
-int ai_Unk4c4fa0(void *p);
+int cm_SendNewParty(void *p);
 int cm_SendRelations(int a, int b, int c, int d);
 void cm_SendFloatDelta(int id, int field, float delta);
 
@@ -2849,7 +2849,7 @@ void he_Unk544840(int ev)
             *(char *)(ev + 0xbb) = 1;
             *(int *)(ev + 0x84) = -1;
             cm_SendExSetHE(4, ev);
-            ai_Unk4c4fa0(msg);
+            cm_SendNewParty(msg);
             return;
         }
         if (*(char *)(a + 2) == 6) {
@@ -3117,7 +3117,7 @@ void he_Unk547ba0(int ev)
                 *(int *)(msg + 0x38) = *(int *)(b + 4);
                 msg[0x7c] = 0;
                 gm_AddTime(msg + 0x18, 0, 0x1e, 0);
-                ai_Unk4c4fa0(msg);
+                cm_SendNewParty(msg);
             }
             cm_SendSetField(*(int *)(a + 4), 0x1c8, 4, 0, 0x400);
         }
@@ -3754,7 +3754,7 @@ void he_Unk549120(int ev)
         msg[0x30] = 2;
         *(int *)(msg + 0x34) = *(int *)(o + 4);
         gm_AddTime(msg + 0x18, 0, 0x1e, 0);
-        ai_Unk4c4fa0(msg);
+        cm_SendNewParty(msg);
     }
     *(int *)(ev + 0xac) = 0;
     if (*(int *)(rec + 0x170) != 0)
@@ -4806,7 +4806,7 @@ void he_Unk54bec0(int ev)
             *(int *)(msg + 0x10c) = *(int *)(ev + 0xcc);
             *(HETIME *)(msg + 0x18) = ai_Time;
             gm_AddTime(msg + 0x18, 0, 0x1e, 0);
-            *(int *)(ev + 0xd8) = ((int (*)(void *))ai_Unk4c4fa0)(msg);
+            *(int *)(ev + 0xd8) = ((int (*)(void *))cm_SendNewParty)(msg);
             gm_AddTime(ev + 0x52, 0, 10, 0);
             *(int *)(ev + 0x70) = 3;
             *(int *)(ev + 0x84) = cm_SendExSetHE(3, ev);
@@ -5048,7 +5048,7 @@ void he_Unk54c8e0(int ev)
         *(int *)(msg + 0x70) = *(int *)(ev + 0xb0);
         *(HETIME *)(msg + 0x14) = ai_Time;
         gm_AddTime(msg + 0x14, 0, 0x1e, 0);
-        ai_Unk4c4fa0(msg);
+        cm_SendNewParty(msg);
     }
     *(HETIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0x18, 0, 0);
@@ -6825,7 +6825,7 @@ void he_Unk542960(int ev)
     }
 }
 
-int ai_Unk4c4fa0(void *p);
+int cm_SendNewParty(void *p);
 
 /* 0x542b60, a Ghidra miss (disassembled): the run handler of the offer event (see 0x542960): state 0 waits for the offer (+0xd4) to be answered (0x4c3ae0, result 1 = accepted, 2 = refused): accepted tells every member (news 0x1bc0 / 0x1bbf / 0x1bc1 / 0x1bc2, messages 0x5f5, "_NACHRICHTEN_HS_16 / 15 / 11 / 12") and re-posts the event in state 1, which sends the 0x4c4fa0 message 0xa2 (kind 5 / 6 by +0xc0) with all the members and the clocks, state 2 (refused) tells the sender (news 0x1bbe) and counts the retry (+0x58 += 2). The message layout and the sprintf arguments are only approximated (ROUGH) */
 void he_Unk542b60(int ev)
@@ -6906,7 +6906,7 @@ void he_Unk542b60(int ev)
         m[0x0e - 4] = U_I((unsigned)&ai_CharInts + (unsigned short)U_I((unsigned)&ai_PlayerId) * 0x21c);
         *(HETIME *)((char *)m + 0x24) = ai_Time;
         gm_AddTime((char *)m + 0x24, 0, 0x2d, 0);
-        ai_Unk4c4fa0(m);
+        cm_SendNewParty(m);
         gm_AddTime(ev + 0x52, 0, 2, 0);
         *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
     }
@@ -7569,7 +7569,7 @@ void he_Unk5461c0(int ev)
             if (edi != 0 && ebx != 0) {
                 *(HETIME *)(msg + 0x18) = ai_Time;
                 gm_AddTime(msg + 0x18, 0, 0x1e, 0);
-                *(int *)(ev + 0xb4) = ((int (*)(void *))ai_Unk4c4fa0)(msg);
+                *(int *)(ev + 0xb4) = ((int (*)(void *))cm_SendNewParty)(msg);
                 *(HETIME *)(ev + 0x52) = ai_Time;
                 gm_AddTime(ev + 0x52, 0, 0, 1);
                 *(int *)(ev + 0x70) = 4;
@@ -11418,7 +11418,7 @@ void ai_Unk4c5970(int a, int b, int c);
 void cm_SendFieldValues(void);
 int cm_AddFieldValue(unsigned char size, unsigned char n, unsigned short field, void *v);
 int gm_Opinion(int a, int b);
-void ai_Unk4c5fa0(int a, int b, int c);
+void cm_SendMessage5b(int a, int b, int c);
 int gm_PlayerFactor(int a, unsigned char k);
 
 /* 0x55d310, the allocation handler of a building event: the building +0xac (none: free) gets a due time of 0x18 units + a random 0x5092e0 (building, 0x10, 1) part, +0x58 = 0 */
@@ -11691,7 +11691,7 @@ void he_Unk55e730(int ev)
     }
     if (U_I((unsigned)&d2_ClickedId) == -1)
         return;
-    ((void (*)(int))ai_Unk4c5fa0)(*(int *)(ev + 0xac));
+    ((void (*)(int))cm_SendMessage5b)(*(int *)(ev + 0xac));
     he_Unk53d800(ev);
     he_FreeEvent((int *)ev);
 }
@@ -11968,7 +11968,7 @@ void he_Unk5614c0(int ev)
         return;
     if (U_I((unsigned)&d2_ClickedId) == 0)
         cm_SendMoveGoodsUnchecked(*(int *)(ev + 0xac), -1, *(unsigned char *)(unsigned)&ai_OwnPlayer, *(int *)(ev + 0xb0));
-    ((void (*)(int))ai_Unk4c5fa0)(*(int *)(ev + 0xac));
+    ((void (*)(int))cm_SendMessage5b)(*(int *)(ev + 0xac));
     he_Unk53d800(ev);
     he_FreeEvent((int *)ev);
 }
@@ -12635,7 +12635,7 @@ void he_Unk565db0(int ev)
         *(int *)(m + 0x28) = -1;
         m[0x44] = 1;
         *(int *)(m + 0x48) = h;
-        *(int *)(ev + 0xb4) = ((int (*)(void *))ai_Unk4c4fa0)(m + 0x10);
+        *(int *)(ev + 0xb4) = ((int (*)(void *))cm_SendNewParty)(m + 0x10);
         *(HETIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 1, 0);
         *(int *)(ev + 0x70) = 6;

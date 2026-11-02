@@ -222,7 +222,7 @@ int cm_SendRetireCrime(int a, int b);                                           
 void cm_SendProofExecuted(int a, int b);                                                 /* 0x4c4ed0 */
 void ai_Unk4c4f10(int a, int b, int c);                                          /* 0x4c4f10 */
 void ai_Unk4c4f50(int id, int b);                                                /* 0x4c4f50, "cm_RequestSendCutInfo" */
-int ai_Unk4c4fa0(void *p);                                                      /* 0x4c4fa0 */
+int cm_SendNewParty(void *p);                                                      /* 0x4c4fa0 */
 void ai_Unk4c4fd0(int a, int b);                                                 /* 0x4c4fd0 */
 void ai_Unk4c5010(int a, int b, int c);                                          /* 0x4c5010 */
 void cm_SetPlant(int a, unsigned char b, unsigned char c, short d, unsigned char e, int f); /* 0x4c5050 */
@@ -270,7 +270,7 @@ void ai_Unk4c5ec0(int a);                                                       
 void ai_Unk4c5ef0(int a);                                                        /* 0x4c5ef0 */
 void ai_Unk4c5f20(void *p);                                                      /* 0x4c5f20 */
 void cm_SendMoneyDelta(int a, int b);                                                 /* 0x4c5f60 */
-void ai_Unk4c5fa0(int a, int b, int c);                                          /* 0x4c5fa0 */
+void cm_SendMessage5b(int a, int b, int c);                                          /* 0x4c5fa0 */
 void cm_SendTradeMessage(char *p);                                                      /* 0x4c5fe0 */
 void ai_Unk4c6020(int a, int b, int c);                                          /* 0x4c6020 */
 void ai_Unk4c6060(char *o, void *p);                                             /* 0x4c6060 */
@@ -1060,7 +1060,7 @@ int gv_GetTableRecord(int i, int *out);  /* 0x4f2720 */
 int gv_CrimeText();  /* 0x4f3580 */
 float gm_Liking();  /* 0x50c550 */
 void unk_Unk4f48f0();  /* 0x4f48f0 */
-void unk_Unk4f4460();  /* 0x4f4460 */
+void gv_PassSentence();  /* 0x4f4460 */
 int ai_Unk494830();  /* 0x494830 */
 int ai_Unk494300();  /* 0x494300 */
 int ai_Unk4947a0();  /* 0x4947a0 */

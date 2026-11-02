@@ -12063,7 +12063,7 @@ found:
     sv_MessageBox((char *)U_I((unsigned)&full_data_14408ac), 0);
 }
 
-void ai_Unk4c5fa0(int a, int b, int c);
+void cm_SendMessage5b(int a, int b, int c);
 
 /* 0x5a5530, the kidnapping ransom window (992 B, ROUGH): 0x520fe0 (param_1); the victim 0x505df0 (param_1 +
    0x65) or the text 0x14408e0; a record of the type 0x3e with the victim +0xac shows the text 0x19c9; else a
@@ -12166,7 +12166,7 @@ void ai_Unk5a5530(int param_1)
                 cm_BeginFieldBlock(param_1, U_I(param_1 + 1));
                 cm_AddFieldDelta(4, 1, (param_1 - U_I((unsigned)&cm_FieldObject)) + 0x65, &out);
                 cm_SendFieldDeltas();
-                ai_Unk4c5fa0(U_I(ch + 4), -(unsigned char)*(ch + 0x1b1), 0);
+                cm_SendMessage5b(U_I(ch + 4), -(unsigned char)*(ch + 0x1b1), 0);
                 txt_Format(buf2, 0x19c6, U_W(ch));
                 sv_MessageBox(buf2, 0);
                 U_I((unsigned)&sv_PopRequest) = 1;
@@ -12220,7 +12220,7 @@ void ai_Unk5a5910(int param_1)
             cm_BeginFieldBlock(param_1, U_I(param_1 + 1));
             cm_AddFieldDelta(4, 1, (param_1 - U_I((unsigned)&cm_FieldObject)) + 0x65, &ok);
             cm_SendFieldDeltas();
-            ai_Unk4c5fa0(U_I(ch + 4), -(unsigned char)*(ch + 0x1b1), 0);
+            cm_SendMessage5b(U_I(ch + 4), -(unsigned char)*(ch + 0x1b1), 0);
             if (U_I(((unsigned)&ai_Unk770cec + 0x18) + U_W((unsigned)&ai_PlayerId) * 0x21c) != 0 &&
                 he_FindFigurePlace(ch, &a, &b, 0) != 0)
                 cm_SendChrGotoBuilding(U_I(ch + 4), a, b, 0, 0, (char *)U_I((unsigned)"L\366segeld"));

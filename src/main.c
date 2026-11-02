@@ -5030,7 +5030,7 @@ L_next:
                     pl[5] = -1;
                     pl[8] = U_I(((unsigned)&ai_TimeT + 0x8));
                     *(short *)(pl + 9) = *(short *)((unsigned)&ai_TimeT + 0xc);
-                    w = ai_Unk4c4fa0(pl);
+                    w = cm_SendNewParty(pl);
                     iv = cm_GetSlotState(w);
                     while (iv == 0) {
                         sv_PumpNet();

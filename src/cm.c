@@ -9,7 +9,7 @@
    Open: not included yet (dcp headers conflicts cm HEADER): am.h amt.h anm.h ch.h d2.h f3gm.h gfx.h gv.h he.h
    hmt.h hst.h rt.h unk_4a7140.h unk_4b39f0.h unk_5d33b0.h; held by calls whose argument count differs from the
    definition (read the original's pushes): ai_Unk4941b0, ai_Unk4941d0, ch_Create, d2_SetObjValue, gm_SkillPoints,
-   gv_CrimeText, unk_Unk4f4460, he_Unk555210.
+   gv_CrimeText, gv_PassSentence, he_Unk555210.
    unit of rea 8cef7d5b (src/game/cm.c); boundaries in decl/text.dcl */
 #include "d2_types.h"
 extern D2WIN d2_Wins[];
@@ -1384,7 +1384,7 @@ void ai_Unk4c4f50(int id, int b)
 }
 /* 0x4c4fa0, message 0x27: p (0x114 bytes) as the long message */
 
-int ai_Unk4c4fa0(void *p)
+int cm_SendNewParty(void *p)
 {
     G17MSG m;
 
@@ -2025,7 +2025,7 @@ void cm_SendMoneyDelta(int a, int b)
 }
 /* 0x4c5fa0, message 0x5b */
 
-void ai_Unk4c5fa0(int a, int b, int c)
+void cm_SendMessage5b(int a, int b, int c)
 {
     G17MSG m;
 
@@ -11704,7 +11704,7 @@ void ai_Unk4db700(char *m)
         ai_Unk4e32d0(0x64, mode, "_PROZESS_7_STRAFEN", 0, 0);
         ai_Unk4e32d0(0xc8, 0, "_PROZESS_8", 0, 0);
         if (*(int *)(m + 0xc) == ai_CharInts[ai_PlayerId][0])
-            unk_Unk4f4460(0, 0, 0, mode, 0);
+            gv_PassSentence(0, 0, 0, mode, 0);
         io_PrintText(0x1531);
         if (*(int *)(m + 0xc) == ai_CharInts[ai_PlayerId][0]) {
             cm_SendMoveGoodsUnchecked(mode, ai_OwnPlayer, 0, 0);

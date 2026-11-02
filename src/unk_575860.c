@@ -2047,7 +2047,7 @@ void ai_Unk577690(int arg)
     *(unsigned short *)(rec + 0x2c) = *(unsigned short *)((unsigned)&ai_Time + 0xc);
     rec[0x10] = 1;
     rec[0x2e] = (char)0xa0;
-    ai_Unk4c4fa0(rec);
+    cm_SendNewParty(rec);
 }
 
 #define R8 (*(int *)(*(char **)(*(char **)(S + 0x1c) + 0x74) + 8))
