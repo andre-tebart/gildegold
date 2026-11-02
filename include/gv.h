@@ -262,7 +262,7 @@ void mem_Free(void *p);                 /* 0x422620 */
 GVYARD *gv_GrowGraveyard(unsigned char *o);  /* 0x4eff50 */
 void gv_FreeGraveyard(int *g);             /* 0x4f0180 */
 int unk_Unk4f01d0(int *g, char *o, int v, int b);  /* 0x4f01d0 */
-int unk_Unk4f0240(int *p);              /* 0x4f0240 */
+int gv_BuryCharacter(int *p);              /* 0x4f0240 */
 int unk_Unk4f0430(int *g, char *o, int v, short s, int x);  /* 0x4f0430 */
 int unk_Unk4f0490(short *p);            /* 0x4f0490 */
 int unk_Unk4f0700(int *g, char *o, int v, int b, short s, int x);  /* 0x4f0700 */

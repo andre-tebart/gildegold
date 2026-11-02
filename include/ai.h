@@ -224,11 +224,22 @@ typedef struct AICHAR {                 /* 0x21c bytes, ai_Chars[768] */
     unsigned int netId;                /* 0x004 */
     unsigned char health;               /* 0x008, 100 at creation (ahm.c), > 0 = alive (0x4adff0 'lives') */
     unsigned char sex;                  /* 0x009, 0 / non-0 (reasoned: 0x4a8ad0 asks the partner search for flags 0xf00502 / 0xf00501 by it, the other sex) */
-    char pad00a[0x1a];
+    char pad00a[3];
+    unsigned char b00d;                 /* 0x00d, 1 .. 2 (gv: kept in a grave as GVGRAVE.v30) */
+    char pad00e[0x16];
     int unk024;                         /* 0x024 */
     char pad028[0x8];
     union {
         char name[0x58];                /* 0x030 */
+        struct {
+            char first[0x10];           /* 0x030, the first name (gv: copied to the grave, GVGRAVE.first) */
+            char family[0x10];          /* 0x040, the family name (GVGRAVE.family) */
+            unsigned short w050;        /* 0x050, must equal the grave entry's GVENTRY.w08 to be buried there (gv_BuryCharacter) */
+        };
+        struct {
+            char padname80[0x50];
+            unsigned char skills[5];    /* 0x080, five values (gv: copied to the grave, GVGRAVE.traits) */
+        };
         struct {
             char padname[0x51];
             unsigned char sk81;         /* 0x081, skills */

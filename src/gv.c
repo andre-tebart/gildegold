@@ -1737,75 +1737,73 @@ int unk_Unk4f01d0(int *g, char *o, int v, int b)
     }
     return -1;
 }
-/* 0x4f0240, the graveyard order of the message p (+4 a character, +8 an object id, +0xc the list, +0x10 the entry): the object's graveyard gets a new record of the dead character (names +0x30 / +0x40, +0x80 .., age
-   and skills; time 0x770ae0); returns 0, or a negative reason (-1 no object / own object, -2 not a graveyard, -3 no record, -4 no list, -6 no character, -7 the entry does not fit). ROUGH */
+/* 0x4f0240, graveyard order (p: +4 the character, +8 the graveyard building, +0xc the grave size, +0x10 the entry): buries
+   the dead character in the graves of that entry, in the first free grave or else the one buried longest ago (GVGRAVE.year):
+   its id, names, skills, offices, sex and portrait and the burial year (ai_Time); returns 0, or a negative reason: -1 no
+   building or one without owner or the player's own, -2 no graveyard, -3 no graveyard record, -4 the size is not open,
+   -6 no character, -7 no such entry or its w08 is not the character's AICHAR.w050 */
 
-int unk_Unk4f0240(int *p)
+int gv_BuryCharacter(int *p)
 {
-    unsigned char *o;
-    char *c;
-    int *rec, *e, *z, *best, *q;
-    int *lst;
-    int i, n, list;
+    AIBLD *bld;
+    GVYARD *g;
+    AICHAR *c;
+    GVENTRY *e;
+    GVGRAVE *lst, *best, *q;
+    int i, list;
     char *s, *d;
     char ch;
 
-    gm_FindById(&o, 0, 0, p[2]);
-    if (o == 0 || *(unsigned short *)(o + 0x27) == 0xffff || ai_Chars[*(unsigned short *)(o + 0x27)] == ai_PlayerCharC)
+    gm_FindById((int *)&bld, 0, 0, p[2]);
+    if (bld == 0 || bld->owner == 0xffff || &gv_CharsT[bld->owner] == gv_PlayerAiChar)
         return -1;
-    if (ai_BTypes[o[0] * 0x24d] != 0x1d)
+    if (((AIBTYPE *)(ai_BTypes + bld->type * 0x24d))->kind != 0x1d)
         return -2;
-    rec = *(int **)(o + 0x65);
-    if (rec == 0)
+    g = bld->yard;
+    if (g == 0)
         return -3;
-    if (gv_SizeOpen((char *)rec, p[3]) == 0)
+    if (gv_SizeOpen((char *)g, p[3]) == 0)
         return -4;
-    gm_FindById(0, 0, &c, p[1]);
+    gm_FindById(0, 0, (int *)&c, p[1]);
     if (c == 0)
         return -6;
     list = p[3];
-    e = (int *)gv_ListEntry((char *)rec, list, (unsigned char)p[4]);
-    if (e == 0 || *(short *)((char *)e + 8) != *(short *)(c + 0x50))
+    e = (GVENTRY *)gv_ListEntry((char *)g, list, (unsigned char)p[4]);
+    if (e == 0 || e->w08 != c->w050)
         return -7;
-    lst = (int *)e[4];
-    i = 0;
+    lst = e->grave;
     best = lst;
     q = lst;
-    if (gv_EntryCounts[list] > 0) {
-        do {
-            if (*best == -1)
-                break;
-            if (*q == -1) {
-                best = lst + i * 0x11;
-                break;
-            }
-            if (q[0x10] < best[0x10])
-                best = q;
-            i++;
-            q += 0x11;
-        } while (i < gv_EntryCounts[list]);
+    for (i = 0; i < gv_EntryCounts[list]; i++, q++) {
+        if (best->id == -1)
+            break;
+        if (q->id == -1) {
+            best = &lst[i];
+            break;
+        }
+        if (best->year > q->year)
+            best = q;
     }
-    *best = *(int *)(c + 4);
-    s = c + 0x30;
-    d = (char *)(best + 1);
+    best->id = c->netId;
+    s = c->first;
+    d = best->first;
     do {
         ch = *s++;
         *d++ = ch;
     } while (ch != 0);
-    s = c + 0x40;
-    d = (char *)(best + 5);
+    s = c->family;
+    d = best->family;
     do {
         ch = *s++;
         *d++ = ch;
     } while (ch != 0);
-    best[9] = *(int *)(c + 0x80);
-    *(char *)(best + 10) = c[0x84];
-    best[0xb] = (unsigned char)c[0x167];
-    best[0xc] = (unsigned char)c[0xd];
-    best[0xd] = (unsigned char)c[0x164];
-    best[0xe] = (unsigned char)c[9];
-    best[0x10] = *(int *)ai_Time;
-    best[0xf] = *(int *)(c + 0x18c);
+    memcpy(best->traits, c->skills, sizeof(best->traits));
+    best->v2c = c->prevOffice;
+    best->v30 = c->b00d;
+    best->nameId = c->jobId;
+    best->sex = c->sex;
+    best->year = gv_TimeT.year;
+    best->icon = c->picture;
     return 0;
 }
 /* 0x4f0430, the message 0x4c60b0 type 1 (graveyard id +4 of g, object id +1 of o, value v, short s, int x, byte 0xff); -1 when g or o is 0 */

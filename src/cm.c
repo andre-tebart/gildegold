@@ -5806,7 +5806,7 @@ int ai_Unk4cce10(G17MSG *m, G17STAT *s)
         G17_I(*m, 0x1b) = rand();
     switch (G17_I(*m, 0)) {
     case 0:
-        r = unk_Unk4f0240(&m->data[0]);
+        r = gv_BuryCharacter(&m->data[0]);
         break;
     case 1:
         r = unk_Unk4f0490(&m->data[0]);
