@@ -23,9 +23,9 @@
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 #include "cm_types.h"
-extern unsigned char txt_Keys;  /* @original ai_Unk498c70 (0x498c70, byte) tests flags1c8 & 0x1000000 as &txt_Keys + 0x181c0 of this byte view: the char[0x4800][0x50] spelling, a view macro or the literal flip its add operands at +0x4cc (shape) */
+extern unsigned char txt_Keys;  /* @original ai_DecideBuildBusiness (0x498c70, byte) tests flags1c8 & 0x1000000 as &txt_Keys + 0x181c0 of this byte view: the char[0x4800][0x50] spelling, a view macro or the literal flip its add operands at +0x4cc (shape) */
 
-#define gm_TitleJobI ((int (*)(int, int))gm_TitleJob)  /* 0x5044b0 (f3gm.h: unsigned char), @original: the byte-matched callers (ai_Unk49ed10, ai_Unk498c70) read the result without the unsigned char mask (no `and eax,0xff` after the call) */
+#define gm_TitleJobI ((int (*)(int, int))gm_TitleJob)  /* 0x5044b0 (f3gm.h: unsigned char), @original: the byte-matched callers (ai_DecideDarkCorner, ai_DecideBuildBusiness) read the result without the unsigned char mask (no `and eax,0xff` after the call) */
 
 #include "hst.h"
 #include "unk_4a7140.h"
@@ -81,13 +81,13 @@ int ai_Unkf86900[73] = {0};  /* 0xf86900, the actions being evaluated */
 #define ai_TimeT (*(AITIME *)&ai_Time)  /* 0x770ae0, ai_Time (anm.c: char[14]) as the AITIME it is: this unit reads its fields */
 #define gv_OrderMoveGraveI ((void (*)(AGCH *, int, void *, int, int, int))gv_OrderMoveGrave)  /* 0x4f0e80 (gv.c: int *c, char *o): @original the byte-matched ai_Unk490b90 passes its AGCH record and s1 as they are */
 #define gm_CharLevelS ((int (*)(unsigned short, int))gm_CharLevel)  /* 0x505e60 (f3gm.c: unsigned short id, so the cast is now the prototype itself): @original this unit pushes the id as 16 bits (byte-matched ai_Unk494a30 / ai_Unk494ac0 / ai_Unk494d40) */
-#define cm_SendExSellObjectI ((void (*)(int, int, int, int, unsigned char, int))cm_SendExSellObject)  /* 0x4c4880 (cm.h: short c): @original this unit pushes the third argument as an int (byte-matched ai_MeisterBewaffnen / ai_Unk497c80 / ai_Unk49c880) */
+#define cm_SendExSellObjectI ((void (*)(int, int, int, int, unsigned char, int))cm_SendExSellObject)  /* 0x4c4880 (cm.h: short c): @original this unit pushes the third argument as an int (byte-matched ai_MeisterBewaffnen / ai_ExecuteBuyRoom / ai_ExecuteBuyMarketObject) */
 #define amt_GetKindB ((int (*)(unsigned char, void *))amt_GetKind)  /* 0x4e6f80 (amt.h: int k): @original ai_Unk4a05e0 passes (unsigned char)k without widening */
 #define AI_CHAIN_BEATUP 0xf00500  /* the partner-chain flags (ai_PickPartnerChain) of action 0x18 "Verpruegeln" (ai_DecideBeatUp); the bits are not named yet */
 #define AI_CHAIN_USEREPUTATION 0xf00500  /* the partner-chain flags of action 0x1c "UseObject (Ansehen)" (ai_DecideUseReputationObject), as AI_CHAIN_BEATUP; the bits are not named yet */
 #define AI_CHAIN_MEAN 0xf00500  /* the partner-chain flags of action 0x21 "UseObject (Gemeinheit)" (ai_DecideUseMeanObject; | 0x800 for the good 0x29a, | 0x10000 for 0x177), as AI_CHAIN_BEATUP */
 #define AI_CHAIN_SPY 0xf00500  /* the partner-chain flags of action 0x25 (spying, 0x49c570), as AI_CHAIN_BEATUP */
-#define AI_CHF_BUILT 0x1000000  /* flags1c8 bit an execute callback sets after it built a building (ai_ExecBuildBuilding); ai_Unk498c70 tests it */
+#define AI_CHF_BUILT 0x1000000  /* flags1c8 bit an execute callback sets after it built a building (ai_ExecBuildBuilding); ai_DecideBuildBusiness tests it */
 #define AI_CHF_STAMMTISCH 0x2000000  /* flags1c8 bit ai_ExecuteStammtisch sets after a regulars' table decision; ai_DecideStammtisch skips a character that has it */
 /* 0x48e070, the building of a master (kind != 3) in *out; 2: has one, 1: has a good one, 0: none */
 
@@ -3708,7 +3708,7 @@ void ai_Unk495ee0(void)
 }
 /* 0x495fa0 */
 
-int ai_Unk495fa0(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
+int ai_DecideDummyRighteousness(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
 {
     if (a)
         return 0;
@@ -3716,13 +3716,13 @@ int ai_Unk495fa0(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
 }
 /* 0x495fc0 */
 
-int ai_Unk495fc0(AIPER *p, AIARG *s1, AIARG *s2)
+int ai_ExecuteDummyRighteousness(AIPER *p, AIARG *s1, AIARG *s2)
 {
     return 6;
 }
 /* 0x495fd0 */
 
-int ai_Unk495fd0(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
+int ai_DecideDummySafety(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
 {
     if (a)
         return 0;
@@ -3730,13 +3730,13 @@ int ai_Unk495fd0(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
 }
 /* 0x495ff0 */
 
-int ai_Unk495ff0(AIPER *p, AIARG *s1, AIARG *s2)
+int ai_ExecuteDummySafety(AIPER *p, AIARG *s1, AIARG *s2)
 {
     return 7;
 }
 /* 0x496000 */
 
-int ai_Unk496000(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
+int ai_DecideDummyProcreation(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
 {
     if (a)
         return 0;
@@ -3744,13 +3744,13 @@ int ai_Unk496000(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
 }
 /* 0x496020 */
 
-int ai_Unk496020(AIPER *p, AIARG *s1, AIARG *s2)
+int ai_ExecuteDummyProcreation(AIPER *p, AIARG *s1, AIARG *s2)
 {
     return 8;
 }
 /* 0x496030 */
 
-int ai_Unk496030(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
+int ai_DecideDummyHealth(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
 {
     if (a)
         return 0;
@@ -3758,7 +3758,7 @@ int ai_Unk496030(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
 }
 /* 0x496050 */
 
-int ai_Unk496050(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
+int ai_DecideDummyJob(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
 {
     if (a)
         return 0;
@@ -3766,13 +3766,13 @@ int ai_Unk496050(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
 }
 /* 0x496070 */
 
-int ai_Unk496070(AIPER *p, AIARG *s1, AIARG *s2)
+int ai_ExecuteDummyJob(AIPER *p, AIARG *s1, AIARG *s2)
 {
     return 2;
 }
 /* 0x496080 */
 
-int ai_Unk496080(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
+int ai_DecideDummyPleasure(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
 {
     if (a)
         return 0;
@@ -3780,7 +3780,7 @@ int ai_Unk496080(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
 }
 /* 0x4960a0 */
 
-int ai_Unk4960a0(AIPER *p, AIARG *s1, AIARG *s2)
+int ai_ExecuteDummyPleasure(AIPER *p, AIARG *s1, AIARG *s2)
 {
     return 3;
 }
@@ -3937,7 +3937,7 @@ int ai_DecideTrainSkill(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
 }
 /* 0x4965b0, execute of 0x4960b0 */
 
-int ai_Unk4965b0(AIPER *p, AIARG *s1, AIARG *s2)
+int ai_ExecuteTrainSkill(AIPER *p, AIARG *s1, AIARG *s2)
 {
     AIXMSG m;
 
@@ -4125,7 +4125,7 @@ int ai_DecideTrainJobSkill(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
 }
 /* 0x496ab0, execute of 0x496610 */
 
-int ai_Unk496ab0(AIPER *p, AIARG *s1, AIARG *s2)
+int ai_ExecuteTrainJobSkill(AIPER *p, AIARG *s1, AIARG *s2)
 {
     AIXMSG m;
 
@@ -4227,7 +4227,7 @@ fallback:
 }
 /* 0x496e40, decide: talk a companion into money (action 9) */
 
-int ai_Unk496e40(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
+int ai_DecideBribe(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
 {
     AIPER *list[6];
     AIPER *c;
@@ -4337,7 +4337,7 @@ int ai_Unk496e40(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
 }
 /* 0x4972d0, execute of 0x496e40: pays the companion, with a message to the player */
 
-int ai_Unk4972d0(AIPER *p, AIARG *s1, AIARG *s2)
+int ai_ExecuteBribe(AIPER *p, AIARG *s1, AIARG *s2)
 {
     char buf[0x400];
     AIPER *c;
@@ -4365,7 +4365,7 @@ int ai_Unk4972d0(AIPER *p, AIARG *s1, AIARG *s2)
 }
 /* 0x4973f0, evaluate: the default rating, ten times for a character with 0x167 set and 0x166 clear */
 
-int ai_Unk4973f0(float *a, float *b, int i, AIPER *p, int f, AIARG *o1, AIARG *o2)
+int ai_EvalApplyForOffice(float *a, float *b, int i, AIPER *p, int f, AIARG *o1, AIARG *o2)
 {
     float k;
 
@@ -4434,7 +4434,7 @@ int ai_DecideApplyForOffice(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 }
 /* 0x497630, execute callback of 0x497490's kind 10 */
 
-int ai_Unk497630(G5CH *p, AIARG *s1)
+int ai_ExecuteApplyForOffice(G5CH *p, AIARG *s1)
 {
     if (s1->kind != 10)
         return 0;
@@ -4588,7 +4588,7 @@ int ai_ExecuteProduceGood(AIPER *p, AIARG *s1, AIARG *s2)
 }
 /* 0x497af0, decide: sell a good (o1, kind 2) to a building (o2, kind 4) with room for it (action 14) */
 
-int ai_Unk497af0(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
+int ai_DecideBuyRoom(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
 {
     AIBLD *bld;
     AIBTX *t;
@@ -4631,7 +4631,7 @@ int ai_Unk497af0(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
 }
 /* 0x497c80, execute of 0x497af0 */
 
-int ai_Unk497c80(AIPER *p, AIARG *s1, AIARG *s2)
+int ai_ExecuteBuyRoom(AIPER *p, AIARG *s1, AIARG *s2)
 {
     AIBLD *bld;
 
@@ -4645,7 +4645,7 @@ int ai_Unk497c80(AIPER *p, AIARG *s1, AIARG *s2)
 }
 /* 0x497cf0, decide: renovate the character's worst building (action 15) */
 
-int ai_Unk497cf0(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
+int ai_DecideRepairBuilding(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
 {
     AIBLDX *bl, *best;
     float lim, f;
@@ -4698,7 +4698,7 @@ int ai_Unk497cf0(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
 }
 /* 0x497ee0, execute of 0x497cf0: pays for the renovation */
 
-int ai_Unk497ee0(AIPER *p, AIARG *s1, AIARG *s2)
+int ai_ExecuteRepairBuilding(AIPER *p, AIARG *s1, AIARG *s2)
 {
     AIMSG msg;
     AIFINX *fin;
@@ -5133,7 +5133,7 @@ int ai_DecideUpgradeResidence(int a, AIPER *p, int f, AIARG *o1, AIARG *o2)
 }
 /* 0x498c70, decide: build up the character's workshops (action 0x13) */
 
-int ai_Unk498c70(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
+int ai_DecideBuildBusiness(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
 {
     AIARG t1, t2, s1, s2;
     AIBTX *bt;
@@ -5295,7 +5295,7 @@ int ai_Unk498c70(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
 }
 /* 0x499290, execute of 0x498c70: pays a job, upgrades a building or runs 0x4a5320 */
 
-int ai_Unk499290(AIPER *p, AIARG *s1, AIARG *s2)
+int ai_ExecuteBuildBusiness(AIPER *p, AIARG *s1, AIARG *s2)
 {
     AIMSG msg;
     AIJOBX *j;
@@ -5388,7 +5388,7 @@ int ai_DecideUpgradeBusiness(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
 }
 /* 0x499520, decide: action 0x16 when 0x4f81c0 rates kind 2 so */
 
-int ai_Unk499520(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
+int ai_DecideVisitMedicus(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
 {
     int buf[0x88];
 
@@ -5400,7 +5400,7 @@ int ai_Unk499520(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
 }
 /* 0x499580, execute of 0x499520 */
 
-int ai_Unk499580(AIPER *p, AIARG *s1, AIARG *s2)
+int ai_ExecuteVisitMedicus(AIPER *p, AIARG *s1, AIARG *s2)
 {
     int buf[0x88];
 
@@ -5410,7 +5410,7 @@ int ai_Unk499580(AIPER *p, AIARG *s1, AIARG *s2)
 }
 /* 0x4995d0, evaluate: decision record 0x18, the default rating without it */
 
-int ai_Unk4995d0(float *a, float *b, int i, AIPER *p, int f, AIARG *o1, AIARG *o2)
+int ai_EvalSabotage(float *a, float *b, int i, AIPER *p, int f, AIARG *o1, AIARG *o2)
 {
     AIDEC d;
 
@@ -5423,7 +5423,7 @@ int ai_Unk4995d0(float *a, float *b, int i, AIPER *p, int f, AIARG *o1, AIARG *o
 }
 /* 0x499660, decide: sabotage a rival's building (action 0x17) */
 
-int ai_Unk499660(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
+int ai_DecideSabotage(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
 {
     int buf[0x88];
     AIDEC d;
@@ -5521,7 +5521,7 @@ int ai_Unk499660(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
 }
 /* 0x499a90, execute of 0x499660 */
 
-int ai_Unk499a90(AIPER *p, AIARG *s1, AIARG *s2)
+int ai_ExecuteSabotage(AIPER *p, AIARG *s1, AIARG *s2)
 {
     AIMSG msg;
     AIBLD *bl;
@@ -5552,7 +5552,7 @@ int ai_Unk499a90(AIPER *p, AIARG *s1, AIARG *s2)
 }
 /* 0x499b80, evaluate: decision record 0x15, the default rating without it */
 
-int ai_Unk499b80(float *a, float *b, int i, AIPER *p, int f, AIARG *o1, AIARG *o2)
+int ai_EvalBeatUp(float *a, float *b, int i, AIPER *p, int f, AIARG *o1, AIARG *o2)
 {
     AIDEC d;
 
@@ -5660,7 +5660,7 @@ int ai_DecideBeatUp(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
 }
 /* 0x499f20, execute of 0x499c10 */
 
-int ai_Unk499f20(AIPER *p, AIARG *s1, AIARG *s2)
+int ai_ExecuteBeatUp(AIPER *p, AIARG *s1, AIARG *s2)
 {
     AIMSG msg;
     AIPER *c;
@@ -5692,7 +5692,7 @@ int ai_Unk499f20(AIPER *p, AIARG *s1, AIARG *s2)
 }
 /* 0x49a020, decide: action 0x19 for a character with flag 0x4000 and little money */
 
-int ai_Unk49a020(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
+int ai_DecideCitizenship(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
 {
     int m;
 
@@ -5810,7 +5810,7 @@ refuse:
 }
 /* 0x49a380, execute callback 0x1a */
 
-int ai_Unk49a380(G5CH *p, AIARG *s1, AIARG *s2)
+int ai_ExecuteSaveAps(G5CH *p, AIARG *s1, AIARG *s2)
 {
     return 0x1a;
 }
@@ -5893,7 +5893,7 @@ int ai_DecideUseMilitaryObject(int a, AIPER *p, int f, AIARG *o1, AIARG *o2)
 }
 /* 0x49a5b0, execute callback 0x1b: uses the object s1->unk04 of the character's list */
 
-int ai_Unk49a5b0(G5CH *p, AIARG *s1, AIARG *s2)
+int ai_ExecuteUseMilitaryObject(G5CH *p, AIARG *s1, AIARG *s2)
 {
     G8USE u;
     AIOBJ *o;
@@ -6026,7 +6026,7 @@ int ai_DecideUseReputationObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 }
 /* 0x49aa80, execute callback 0x1c: uses the object s1->unk04 of the character's list */
 
-int ai_Unk49aa80(G5CH *p, AIARG *s1, AIARG *s2)
+int ai_ExecuteUseReputationObject(G5CH *p, AIARG *s1, AIARG *s2)
 {
     G8USE u;
     AIOBJ *o;
@@ -6124,7 +6124,7 @@ int ai_DecideUseApsObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 }
 /* 0x49ad80, execute callback 0x1d: uses the object s1->unk04 of the character's list */
 
-int ai_Unk49ad80(G5CH *p, AIARG *s1, AIARG *s2)
+int ai_ExecuteUseApsObject(G5CH *p, AIARG *s1, AIARG *s2)
 {
     G8USE u;
     AIOBJ *o;
@@ -6216,7 +6216,7 @@ int ai_DecideUseEducationObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 }
 /* 0x49b050, execute callback 0x1e: uses the object s1->unk04 of the character's list */
 
-int ai_Unk49b050(G5CH *p, AIARG *s1, AIARG *s2)
+int ai_ExecuteUseEducationObject(G5CH *p, AIARG *s1, AIARG *s2)
 {
     G8USE u;
     AIOBJ *o;
@@ -6308,7 +6308,7 @@ int ai_DecideUseHealthObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 }
 /* 0x49b2b0, execute callback 0x1f: uses the object s1->unk04 of the character's list */
 
-int ai_Unk49b2b0(G5CH *p, AIARG *s1, AIARG *s2)
+int ai_ExecuteUseHealthObject(G5CH *p, AIARG *s1, AIARG *s2)
 {
     G8USE u;
     AIOBJ *o;
@@ -6649,7 +6649,7 @@ int ai_DecideUseMeanObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 }
 /* 0x49bc50, execute callback 0x21: uses the object s1->unk04 of the character's list, scales four needs */
 
-int ai_Unk49bc50(G5CH *p, AIARG *s1, AIARG *s2)
+int ai_ExecuteUseMeanObject(G5CH *p, AIARG *s1, AIARG *s2)
 {
     G8USE u;
     AIOBJ *o;
@@ -6770,7 +6770,7 @@ done:
 }
 /* 0x49c000, execute callback 0x22: uses the object s1->unk04 of the character's list */
 
-int ai_Unk49c000(G5CH *p, AIARG *s1, AIARG *s2)
+int ai_ExecuteUseSafetyObject(G5CH *p, AIARG *s1, AIARG *s2)
 {
     G8USE u;
     AIOBJ *o;
@@ -6800,7 +6800,7 @@ int ai_Unk49c000(G5CH *p, AIARG *s1, AIARG *s2)
 }
 /* 0x49c0d0, eval callback for the goods actions 0x1c..0x22: decision 0x11 decides the rating */
 
-int ai_Unk49c0d0(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2)
+int ai_EvalUsePerfume(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2)
 {
     AIDEC d;
 
@@ -6816,7 +6816,7 @@ int ai_Unk49c0d0(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2
 }
 /* 0x49c170, decide callback 0x23 */
 
-int ai_Unk49c170(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
+int ai_DecideUsePerfume(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 {
     if (o1->kind == 1 && f == 3)
         return 0x23;
@@ -6859,7 +6859,7 @@ int ai_ExecuteUsePerfume(G5CH *p, AIARG *s1, AIARG *s2)
 }
 /* 0x49c320, eval callback for the goods actions 0x1c..0x22: decision 0x12 decides the rating */
 
-int ai_Unk49c320(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2)
+int ai_EvalUseTrank(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2)
 {
     AIDEC d;
 
@@ -6875,7 +6875,7 @@ int ai_Unk49c320(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2
 }
 /* 0x49c3c0, decide callback 0x24 */
 
-int ai_Unk49c3c0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
+int ai_DecideUseTrank(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 {
     if (o1->kind == 1 && f == 4)
         return 0x24;
@@ -6953,7 +6953,7 @@ int ai_DecideSpy(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 }
 /* 0x49c700, execute callback 0x25: sends the "spionage" message */
 
-int ai_Unk49c700(G5CH *p, AIARG *s1)
+int ai_ExecuteSpy(G5CH *p, AIARG *s1)
 {
     G8MSG m;
     unsigned char *h;
@@ -6978,7 +6978,7 @@ int ai_Unk49c700(G5CH *p, AIARG *s1)
 /* 0x49c790, callback 0x0c: buy the good s1->unk04 at the place that sells it, if the character can pay
    (s1->fvalue in (0, 1) is the share of the money to use) */
 
-int ai_Unk49c790(int a, G5CH *p, int f, AIARG *s1, AIARG *o)
+int ai_DecideBuyMarketObject(int a, G5CH *p, int f, AIARG *s1, AIARG *o)
 {
     unsigned char *bld;
     AIOBJ *obj;
@@ -7005,7 +7005,7 @@ int ai_Unk49c790(int a, G5CH *p, int f, AIARG *s1, AIARG *o)
 }
 /* 0x49c880, execute callback 0x0c: the character buys the good s1->unk04 from s2->unk04 at its price */
 
-int ai_Unk49c880(G5CH *p, AIARG *s1, AIARG *s2)
+int ai_ExecuteBuyMarketObject(G5CH *p, AIARG *s1, AIARG *s2)
 {
     if (s1->kind != 2)
         return 0;
@@ -7079,7 +7079,7 @@ int ai_DecideBuyIndulgence(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 /* 0x49cb60, execute callback 0x26: pays the rent (s2->kind 0x12, with a message) or takes over the rooms
    (s2->kind 0xf) of the building s1->unk04 */
 
-int ai_Unk49cb60(G5CH *p, AIARG *s1, AIARG *s2)
+int ai_ExecuteBuyIndulgence(G5CH *p, AIARG *s1, AIARG *s2)
 {
     unsigned char *b;
     AIOBJ *o;
@@ -7117,7 +7117,7 @@ int ai_Unk49cb60(G5CH *p, AIARG *s1, AIARG *s2)
 }
 /* 0x49cd30, decide callback 0x27: what 0x4a9a00 decides */
 
-int ai_Unk49cd30(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
+int ai_DecideUseOffice(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 {
     AIARG s1;
     AIARG s2;
@@ -7137,13 +7137,13 @@ int ai_Unk49cd30(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 }
 /* 0x49cdb0, execute callback 0x27 */
 
-int ai_Unk49cdb0(G5CH *p, AIARG *s1, AIARG *s2)
+int ai_ExecuteUseOffice(G5CH *p, AIARG *s1, AIARG *s2)
 {
     return ai_CheckLeisureAction(p, s1, s2) ? 0x27 : 0;
 }
 /* 0x49cdd0, eval callback 0x27: decision 0x13 decides the rating */
 
-int ai_Unk49cdd0(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2)
+int ai_EvalThreaten(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2)
 {
     AIDEC d;
 
@@ -7235,13 +7235,13 @@ done:
 }
 /* 0x49d030, execute callback 0x28 */
 
-int ai_Unk49d030(G5CH *p, AIARG *s1, AIARG *s2)
+int ai_ExecuteThreaten(G5CH *p, AIARG *s1, AIARG *s2)
 {
     return ai_Unk4aaa10(p, s1, s2) ? 0x28 : 0;
 }
 /* 0x49d050, eval callback 0x28: decision 3 decides the rating; none while f is set */
 
-int ai_Unk49d050(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2)
+int ai_EvalPamphlets(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2)
 {
     AIDEC d;
 
@@ -7314,7 +7314,7 @@ done:
 }
 /* 0x49d280, execute callback 0x29: sets flag 0x100 of +0x1e8 */
 
-int ai_Unk49d280(G5CH *p, AIARG *s1, AIARG *s2)
+int ai_ExecutePamphlets(G5CH *p, AIARG *s1, AIARG *s2)
 {
     if (aip_ExecPamphlet(p, s1, s2) != 0) {
         cm_SendSetField(p->netId, 0x1e8, 4, 0x100, 0);
@@ -7377,7 +7377,7 @@ done:
 }
 /* 0x49d460, execute callback 0x2a: sets flag 0x200 of +0x1e8 */
 
-int ai_Unk49d460(G5CH *p, AIARG *s1, AIARG *s2)
+int ai_ExecuteDenounce(G5CH *p, AIARG *s1, AIARG *s2)
 {
     if (aip_ExecAnschwaerzen(p, s1, s2) != 0) {
         cm_SendSetField(p->netId, 0x1e8, 4, 0x200, 0);
@@ -7387,7 +7387,7 @@ int ai_Unk49d460(G5CH *p, AIARG *s1, AIARG *s2)
 }
 /* 0x49d4b0, eval callback 0x2a: decision 4 decides the rating; none while f is set */
 
-int ai_Unk49d4b0(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2)
+int ai_EvalInsult(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2)
 {
     AIDEC d;
 
@@ -7405,7 +7405,7 @@ int ai_Unk49d4b0(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2
 }
 /* 0x49d550, decide callback 0x2b: what 0x4aa120 finds for the kind 0x10 / 8 */
 
-int ai_Unk49d550(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
+int ai_DecideInsult(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 {
     AIARG s1;
     AIARG s2;
@@ -7426,13 +7426,13 @@ int ai_Unk49d550(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 }
 /* 0x49d5e0, execute callback 0x2b */
 
-int ai_Unk49d5e0(G5CH *p, AIARG *s1, AIARG *s2)
+int ai_ExecuteInsult(G5CH *p, AIARG *s1, AIARG *s2)
 {
     return ai_CheckVisitAction(p, s1, s2) ? 0x2b : 0;
 }
 /* 0x49d600, eval callback 0x2b: decision 0x16 decides the rating; none while f is set */
 
-int ai_Unk49d600(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2)
+int ai_EvalBlackmail(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2)
 {
     AIDEC d;
 
@@ -7450,7 +7450,7 @@ int ai_Unk49d600(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2
 }
 /* 0x49d6a0, decide callback 0x2c: what 0x4aa120 finds for the kind 0x10 / 4 */
 
-int ai_Unk49d6a0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
+int ai_DecideBlackmail(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 {
     AIARG s1;
     AIARG s2;
@@ -7471,13 +7471,13 @@ int ai_Unk49d6a0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 }
 /* 0x49d730, execute callback 0x2c */
 
-int ai_Unk49d730(G5CH *p, AIARG *s1, AIARG *s2)
+int ai_ExecuteBlackmail(G5CH *p, AIARG *s1, AIARG *s2)
 {
     return ai_CheckVisitAction(p, s1, s2) ? 0x2c : 0;
 }
 /* 0x49d750, decide callback 0x2d: what 0x4aa120 finds */
 
-int ai_Unk49d750(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
+int ai_DecideUsePrivileges(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 {
     AIARG s1;
     AIARG s2;
@@ -7497,7 +7497,7 @@ int ai_Unk49d750(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 }
 /* 0x49d7d0, execute callback 0x2d */
 
-int ai_Unk49d7d0(G5CH *p, AIARG *s1, AIARG *s2)
+int ai_ExecuteUsePrivileges(G5CH *p, AIARG *s1, AIARG *s2)
 {
     return ai_CheckVisitAction(p, s1, s2) ? 0x2d : 0;
 }
@@ -7648,7 +7648,7 @@ int ai_DecideMayor(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 /* 0x49dc10, execute callback 0x2e: upgrades ("upgr_arbeiter_unterk", s2->kind 4) or builds
    ("bau_arbeiter_unterk") the workers' lodging, paid to 0x504a80(1) */
 
-int ai_Unk49dc10(G5CH *p, AIARG *s1, AIARG *s2)
+int ai_ExecuteMayor(G5CH *p, AIARG *s1, AIARG *s2)
 {
     G8MSG m;
     unsigned char *c;
@@ -7682,7 +7682,7 @@ int ai_Unk49dc10(G5CH *p, AIARG *s1, AIARG *s2)
 /* 0x49dd90, decide callback 0x15 (characters with +0x166 == 0xf): up to four tries to find a good to sell
    (as 0x499400 in am.c) */
 
-int ai_Unk49dd90(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
+int ai_DecideMayorUpgrade(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 {
     AIARG s1;
     AIARG s2;
@@ -7820,7 +7820,7 @@ int ai_DecideMayorTownHall(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 }
 /* 0x49e230, execute callback 0x31: upgrades the town hall ("upgr_rathaus"), paid to 0x504a80(1) */
 
-int ai_Unk49e230(G5CH *p, AIARG *s1, AIARG *s2)
+int ai_ExecuteMayorTownHall(G5CH *p, AIARG *s1, AIARG *s2)
 {
     G8MSG m;
     unsigned char *c;
@@ -7943,7 +7943,7 @@ int ai_DecideMayorPrison(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 }
 /* 0x49e680, execute callback 0x3c: upgrades ("upgr_kerker"), paid to 0x504a80(1) */
 
-int ai_Unk49e680(G5CH *p, AIARG *s1, AIARG *s2)
+int ai_ExecuteMayorPrison(G5CH *p, AIARG *s1, AIARG *s2)
 {
     G8MSG m;
     unsigned char *c;
@@ -8147,7 +8147,7 @@ int ai_EvalDarkCorner(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIAR
 /* 0x49ed10, decide callback 0x32: what 0x4aaef0 finds (when 0x5044b0(p, 4) has more than two entries),
    else what 0x4ab080 finds */
 
-int ai_Unk49ed10(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
+int ai_DecideDarkCorner(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 {
     AIARG s1;
     AIARG s2;
@@ -8322,7 +8322,7 @@ int ai_DecideTakeCredit(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 /* 0x49f370, execute callback 0x33: the AI credit ("AI Kredit"): message 0x23 from the lender's building s1->unk04
    to the owner of s1->unk08, the offer s2 (0x14) attached; the money is paid; always returns 0 */
 
-int ai_Unk49f370(G5CH *p, AIARG *s1, AIARG *s2)
+int ai_ExecuteTakeCredit(G5CH *p, AIARG *s1, AIARG *s2)
 {
     G8MSG m;
     AIBLD *a;
@@ -8361,7 +8361,7 @@ int ai_Unk49f370(G5CH *p, AIARG *s1, AIARG *s2)
 /* 0x49f4f0, eval callback 0x34: only for a kind-5 character without 0x169; with 3..5 entries in its list 0x164
    a random chance of the plain rating, with 6 or more the doubled / tripled rating */
 
-int ai_Unk49f4f0(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2)
+int ai_EvalChangeProfession(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2)
 {
     int n;
 
@@ -8732,7 +8732,7 @@ set:
 }
 /* 0x4a0040, execute callback 0x36: hands the request (3, s1->unk04, s1->unk10) of s1 (kind 0x15) to 0x4e9660 */
 
-int ai_Unk4a0040(G5CH *p, AIARG *s1, AIARG *s2)
+int ai_ExecutePriceManipulation(G5CH *p, AIARG *s1, AIARG *s2)
 {
     G8REQ r;
 
@@ -8749,7 +8749,7 @@ int ai_Unk4a0040(G5CH *p, AIARG *s1, AIARG *s2)
    max(0x50a640 * 0.01, 160) (at most 22 % of its money), a building (0x4a63f0 kind 6) whose object list some
    character points to */
 
-int ai_Unk4a0090(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
+int ai_DecideGuildRiot(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 {
     LARGE_INTEGER m;
     int v, n, b, y, i;
@@ -8784,7 +8784,7 @@ int ai_Unk4a0090(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 }
 /* 0x4a01f0, execute callback 0x37: hands the request (2, s1->unk04, s1->unk10) of s1 (kind 4) to 0x4e9a00 */
 
-int ai_Unk4a01f0(G5CH *p, AIARG *s1, AIARG *s2)
+int ai_ExecuteGuildRiot(G5CH *p, AIARG *s1, AIARG *s2)
 {
     G8REQ r;
 
@@ -8996,7 +8996,7 @@ int ai_Unk4a05e0(G5CH *p)
 /* 0x4a0890, decide callback 0x38 (0x4e95a0 must allow it): by the character's office 0x169: 0x1e someone
    (0x4a0240, kind 7), 0x20 / 0x1f / 0x21 a quarter (0x4a0410 / 0x4a05e0, kind 0x16) */
 
-int ai_Unk4a0890(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
+int ai_DecideGuildLevel3(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 {
     G5CH *c;
     unsigned char k;
@@ -9034,7 +9034,7 @@ int ai_Unk4a0890(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 /* 0x4a0940, execute callback 0x38: hands the request (s1->unk10, s1->unk04, 0) of s1 (kind 7 / 0x16) to
    0x4e9ce0 */
 
-int ai_Unk4a0940(G5CH *p, AIARG *s1, AIARG *s2)
+int ai_ExecuteGuildLevel3(G5CH *p, AIARG *s1, AIARG *s2)
 {
     G8REQ r;
 
@@ -9049,7 +9049,7 @@ int ai_Unk4a0940(G5CH *p, AIARG *s1, AIARG *s2)
 /* 0x4a0990, eval callback 0x38: by the office 0x169 (0x1e..0x21) the office building (kind 0x17..0x1a); rated
    three times higher while its level 0x5c is below 50 + a random 0..15 */
 
-int ai_Unk4a0990(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2)
+int ai_EvalUpgradeGuild(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2)
 {
     AIBLD *bl;
     unsigned char k;
@@ -9219,7 +9219,7 @@ credit:
 /* 0x4a0e60, execute callback 0x39: pays the credit (s1 kind 1, s2 kind 0x12) into the treasury s1->unk04, or
    upgrades the guild hall ("upgr_ai_zunfthaus", s1 kind 4, s2 kind 1) for 30 % of the price of type s1->unk04 */
 
-int ai_Unk4a0e60(G5CH *p, AIARG *s1, AIARG *s2)
+int ai_ExecuteUpgradeGuild(G5CH *p, AIARG *s1, AIARG *s2)
 {
     G8MSG m;
     unsigned char *o;
@@ -9257,7 +9257,7 @@ int ai_Unk4a0e60(G5CH *p, AIARG *s1, AIARG *s2)
    the five children 0x68.. who is grown up (0x0a + 4 >= 0x20), unmarried (0x164) and has no job 0x5e; rated
    only when that child is old enough */
 
-int ai_Unk4a1000(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2)
+int ai_EvalApprenticeship(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2)
 {
     G5CH *c, *best;
     int m, w;
@@ -9299,7 +9299,7 @@ int ai_Unk4a1000(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2
    (o2 kind 0x17): a random one the dynasty has none of (0x506430 + 0x74, kind 5), the family's (0x504ad0) or
    a random 1..15; the character pays 1.5 % of 0x50a640 and needs six times that */
 
-int ai_Unk4a1170(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
+int ai_DecideApprenticeship(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 {
     G5CH *c, *best;
     unsigned char *fin;
@@ -9358,7 +9358,7 @@ int ai_Unk4a1170(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 /* 0x4a1360, execute callback 0x3a: message 0x5e to the child s1->unk04 (kind 7): the building class s2->unk04
    (kind 0x17) and the price s2->unk10 */
 
-int ai_Unk4a1360(G5CH *p, AIARG *s1, AIARG *s2)
+int ai_ExecuteApprenticeship(G5CH *p, AIARG *s1, AIARG *s2)
 {
     G8MSG m;
 
@@ -9379,7 +9379,7 @@ int ai_Unk4a1360(G5CH *p, AIARG *s1, AIARG *s2)
    offers of 0x4948f0 (o2 kind 0xe), the best or the worst by the child's ratio 0x80.. to the family's 0x503ee0
    values; the character needs ten times the price */
 
-int ai_Unk4a13e0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
+int ai_DecideStudy(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 {
     JOBTALENTS x;
     float s[3];
@@ -9476,7 +9476,7 @@ int ai_RegisterBaseActions(int a)
     act.id = 0x1;
     strcpy(act.name, "DummyUnversehrtheit");
     act.eval = ai_EvalMoodWeights;
-    act.decide = ai_Unk496030;
+    act.decide = ai_DecideDummyHealth;
     act.exec = ai_AlwaysTrue;
     act.flags = 0x1;
     if (!am_RegisterMethod(&act, a))
@@ -9485,8 +9485,8 @@ int ai_RegisterBaseActions(int a)
     act.id = 0x2;
     strcpy(act.name, "DummyBeruf");
     act.eval = ai_EvalMoodWeights;
-    act.decide = ai_Unk496050;
-    act.exec = ai_Unk496070;
+    act.decide = ai_DecideDummyJob;
+    act.exec = ai_ExecuteDummyJob;
     act.flags = 0x1;
     if (!am_RegisterMethod(&act, a))
         return 0;
@@ -9494,8 +9494,8 @@ int ai_RegisterBaseActions(int a)
     act.id = 0x3;
     strcpy(act.name, "DummyVergnuegen");
     act.eval = ai_EvalMoodWeights;
-    act.decide = ai_Unk496080;
-    act.exec = ai_Unk4960a0;
+    act.decide = ai_DecideDummyPleasure;
+    act.exec = ai_ExecuteDummyPleasure;
     act.flags = 0x1;
     if (!am_RegisterMethod(&act, a))
         return 0;
@@ -9504,7 +9504,7 @@ int ai_RegisterBaseActions(int a)
     strcpy(act.name, "Bildung");
     act.eval = ai_EvalMoodWeights;
     act.decide = ai_DecideTrainSkill;
-    act.exec = ai_Unk4965b0;
+    act.exec = ai_ExecuteTrainSkill;
     act.flags = 0x1;
     if (!am_RegisterMethod(&act, a))
         return 0;
@@ -9513,7 +9513,7 @@ int ai_RegisterBaseActions(int a)
     strcpy(act.name, "Bildung (Beruf)");
     act.eval = ai_EvalMoodWeights;
     act.decide = ai_DecideTrainJobSkill;
-    act.exec = ai_Unk496ab0;
+    act.exec = ai_ExecuteTrainJobSkill;
     act.flags = 0x1;
     if (!am_RegisterMethod(&act, a))
         return 0;
@@ -9521,8 +9521,8 @@ int ai_RegisterBaseActions(int a)
     act.id = 0x6;
     strcpy(act.name, "DummyRechtschaffenheit");
     act.eval = ai_EvalMoodWeights;
-    act.decide = ai_Unk495fa0;
-    act.exec = ai_Unk495fc0;
+    act.decide = ai_DecideDummyRighteousness;
+    act.exec = ai_ExecuteDummyRighteousness;
     act.flags = 0x1;
     if (!am_RegisterMethod(&act, a))
         return 0;
@@ -9530,8 +9530,8 @@ int ai_RegisterBaseActions(int a)
     act.id = 0x7;
     strcpy(act.name, "DummySicherheit");
     act.eval = ai_EvalMoodWeights;
-    act.decide = ai_Unk495fd0;
-    act.exec = ai_Unk495ff0;
+    act.decide = ai_DecideDummySafety;
+    act.exec = ai_ExecuteDummySafety;
     act.flags = 0x1;
     if (!am_RegisterMethod(&act, a))
         return 0;
@@ -9539,8 +9539,8 @@ int ai_RegisterBaseActions(int a)
     act.id = 0x8;
     strcpy(act.name, "DummyFortpflanzung");
     act.eval = ai_EvalMoodWeights;
-    act.decide = ai_Unk496000;
-    act.exec = ai_Unk496020;
+    act.decide = ai_DecideDummyProcreation;
+    act.exec = ai_ExecuteDummyProcreation;
     act.flags = 0x1;
     if (!am_RegisterMethod(&act, a))
         return 0;
@@ -9548,17 +9548,17 @@ int ai_RegisterBaseActions(int a)
     act.id = 0x9;
     strcpy(act.name, "Bestechung");
     act.eval = ai_EvalLeastLikedOfEvent;
-    act.decide = ai_Unk496e40;
-    act.exec = ai_Unk4972d0;
+    act.decide = ai_DecideBribe;
+    act.exec = ai_ExecuteBribe;
     act.flags = 0x19;
     if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0xa;
     strcpy(act.name, "Amtsbewerbung");
-    act.eval = ai_Unk4973f0;
+    act.eval = ai_EvalApplyForOffice;
     act.decide = ai_DecideApplyForOffice;
-    act.exec = ai_Unk497630;
+    act.exec = ai_ExecuteApplyForOffice;
     act.flags = 0x1b;
     if (!am_RegisterMethod(&act, a))
         return 0;
@@ -9575,8 +9575,8 @@ int ai_RegisterBaseActions(int a)
     act.id = 0xd;
     strcpy(act.name, "Objekt kaufen (AP)");
     act.eval = ai_EvalMoodWeights;
-    act.decide = sv_ReturnZero;
-    act.exec = sv_ReturnZero;
+    act.decide = ai_BuyObjectApDecide;
+    act.exec = ai_BuyObjectApExec;
     act.flags = 0x1;
     if (!am_RegisterMethod(&act, a))
         return 0;
@@ -9584,8 +9584,8 @@ int ai_RegisterBaseActions(int a)
     act.id = 0xe;
     strcpy(act.name, "Raum kaufen");
     act.eval = ai_EvalMoodWeights;
-    act.decide = ai_Unk497af0;
-    act.exec = ai_Unk497c80;
+    act.decide = ai_DecideBuyRoom;
+    act.exec = ai_ExecuteBuyRoom;
     act.flags = 0xff;
     if (!am_RegisterMethod(&act, a))
         return 0;
@@ -9593,8 +9593,8 @@ int ai_RegisterBaseActions(int a)
     act.id = 0xf;
     strcpy(act.name, "Repair Building");
     act.eval = ai_EvalMoodWeights;
-    act.decide = ai_Unk497cf0;
-    act.exec = ai_Unk497ee0;
+    act.decide = ai_DecideRepairBuilding;
+    act.exec = ai_ExecuteRepairBuilding;
     act.flags = 0xff;
     if (!am_RegisterMethod(&act, a))
         return 0;
@@ -9629,8 +9629,8 @@ int ai_RegisterBaseActions(int a)
     act.id = 0x13;
     strcpy(act.name, "Betrieb bauen");
     act.eval = ai_EvalMoodWeights;
-    act.decide = ai_Unk498c70;
-    act.exec = ai_Unk499290;
+    act.decide = ai_DecideBuildBusiness;
+    act.exec = ai_ExecuteBuildBusiness;
     act.flags = 0x3;
     if (!am_RegisterMethod(&act, a))
         return 0;
@@ -9638,8 +9638,8 @@ int ai_RegisterBaseActions(int a)
     act.id = 0x14;
     strcpy(act.name, "Betrieb upgraden (AP)");
     act.eval = ai_EvalMoodWeights;
-    act.decide = sv_ReturnZero;
-    act.exec = sv_ReturnZero;
+    act.decide = ai_UpgradeBusinessApDecide;
+    act.exec = ai_UpgradeBusinessApExec;
     act.flags = 0x3;
     if (!am_RegisterMethod(&act, a))
         return 0;
@@ -9656,26 +9656,26 @@ int ai_RegisterBaseActions(int a)
     act.id = 0x16;
     strcpy(act.name, "Medicus ausfsuchen");
     act.eval = ai_EvalMoodWeights;
-    act.decide = ai_Unk499520;
-    act.exec = ai_Unk499580;
+    act.decide = ai_DecideVisitMedicus;
+    act.exec = ai_ExecuteVisitMedicus;
     act.flags = 0x3b;
     if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x17;
     strcpy(act.name, "Sabotieren");
-    act.eval = ai_Unk4995d0;
-    act.decide = ai_Unk499660;
-    act.exec = ai_Unk499a90;
+    act.eval = ai_EvalSabotage;
+    act.decide = ai_DecideSabotage;
+    act.exec = ai_ExecuteSabotage;
     act.flags = 0x1c3;
     if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x18;
     strcpy(act.name, "Verpruegeln");
-    act.eval = ai_Unk499b80;
+    act.eval = ai_EvalBeatUp;
     act.decide = ai_DecideBeatUp;
-    act.exec = ai_Unk499f20;
+    act.exec = ai_ExecuteBeatUp;
     act.flags = 0x1c9;
     if (!am_RegisterMethod(&act, a))
         return 0;
@@ -9683,7 +9683,7 @@ int ai_RegisterBaseActions(int a)
     act.id = 0x19;
     strcpy(act.name, "Buergerrecht");
     act.eval = ai_EvalMoodWeights;
-    act.decide = ai_Unk49a020;
+    act.decide = ai_DecideCitizenship;
     act.exec = ai_ExecuteCitizenship;
     act.flags = 0x1b;
     if (!am_RegisterMethod(&act, a))
@@ -9693,7 +9693,7 @@ int ai_RegisterBaseActions(int a)
     strcpy(act.name, "ApsSparen");
     act.eval = ai_EvalMoodWeights;
     act.decide = ai_DecideSaveAps;
-    act.exec = ai_Unk49a380;
+    act.exec = ai_ExecuteSaveAps;
     act.flags = 0x1;
     if (!am_RegisterMethod(&act, a))
         return 0;
@@ -9702,7 +9702,7 @@ int ai_RegisterBaseActions(int a)
     strcpy(act.name, "UseObject (Military)");
     act.eval = ai_EvalMoodWeights;
     act.decide = ai_DecideUseMilitaryObject;
-    act.exec = ai_Unk49a5b0;
+    act.exec = ai_ExecuteUseMilitaryObject;
     act.flags = 0x3;
     if (!am_RegisterMethod(&act, a))
         return 0;
@@ -9711,7 +9711,7 @@ int ai_RegisterBaseActions(int a)
     strcpy(act.name, "UseObject (Ansehen)");
     act.eval = ai_EvalMoodWeights;
     act.decide = ai_DecideUseReputationObject;
-    act.exec = ai_Unk49aa80;
+    act.exec = ai_ExecuteUseReputationObject;
     act.flags = 0x19;
     if (!am_RegisterMethod(&act, a))
         return 0;
@@ -9720,7 +9720,7 @@ int ai_RegisterBaseActions(int a)
     strcpy(act.name, "UseObject (APS)");
     act.eval = ai_EvalMoodWeights;
     act.decide = ai_DecideUseApsObject;
-    act.exec = ai_Unk49ad80;
+    act.exec = ai_ExecuteUseApsObject;
     act.flags = 0x39;
     if (!am_RegisterMethod(&act, a))
         return 0;
@@ -9729,7 +9729,7 @@ int ai_RegisterBaseActions(int a)
     strcpy(act.name, "UseObject (Bildung)");
     act.eval = ai_EvalMoodWeights;
     act.decide = ai_DecideUseEducationObject;
-    act.exec = ai_Unk49b050;
+    act.exec = ai_ExecuteUseEducationObject;
     act.flags = 0x3b;
     if (!am_RegisterMethod(&act, a))
         return 0;
@@ -9738,7 +9738,7 @@ int ai_RegisterBaseActions(int a)
     strcpy(act.name, "UseObject (Unversehrtheit)");
     act.eval = ai_EvalMoodWeights;
     act.decide = ai_DecideUseHealthObject;
-    act.exec = ai_Unk49b2b0;
+    act.exec = ai_ExecuteUseHealthObject;
     act.flags = 0x3f;
     if (!am_RegisterMethod(&act, a))
         return 0;
@@ -9756,7 +9756,7 @@ int ai_RegisterBaseActions(int a)
     strcpy(act.name, "UseObject (Gemeinheit)");
     act.eval = ai_EvalMoodWeights;
     act.decide = ai_DecideUseMeanObject;
-    act.exec = ai_Unk49bc50;
+    act.exec = ai_ExecuteUseMeanObject;
     act.flags = 0xc9;
     if (!am_RegisterMethod(&act, a))
         return 0;
@@ -9765,15 +9765,15 @@ int ai_RegisterBaseActions(int a)
     strcpy(act.name, "UseObject (Sicherheit)");
     act.eval = ai_EvalMoodWeights;
     act.decide = ai_DecideUseSafetyObject;
-    act.exec = ai_Unk49c000;
+    act.exec = ai_ExecuteUseSafetyObject;
     act.flags = 0x39;
     if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x23;
     strcpy(act.name, "Use Parfuem");
-    act.eval = ai_Unk49c0d0;
-    act.decide = ai_Unk49c170;
+    act.eval = ai_EvalUsePerfume;
+    act.decide = ai_DecideUsePerfume;
     act.exec = ai_ExecuteUsePerfume;
     act.flags = 0xff;
     if (!am_RegisterMethod(&act, a))
@@ -9781,8 +9781,8 @@ int ai_RegisterBaseActions(int a)
     AI_ZERO(&act, sizeof(act));
     act.id = 0x24;
     strcpy(act.name, "Use Trank");
-    act.eval = ai_Unk49c320;
-    act.decide = ai_Unk49c3c0;
+    act.eval = ai_EvalUseTrank;
+    act.decide = ai_DecideUseTrank;
     act.exec = ai_ExecuteUseTrank;
     act.flags = 0xff;
     if (!am_RegisterMethod(&act, a))
@@ -9792,7 +9792,7 @@ int ai_RegisterBaseActions(int a)
     strcpy(act.name, "Spionage");
     act.eval = ai_EvalMoodWeights;
     act.decide = ai_DecideSpy;
-    act.exec = ai_Unk49c700;
+    act.exec = ai_ExecuteSpy;
     act.flags = 0x69;
     if (!am_RegisterMethod(&act, a))
         return 0;
@@ -9800,8 +9800,8 @@ int ai_RegisterBaseActions(int a)
     act.id = 0xc;
     strcpy(act.name, "Objekt Kaufen (Markt)");
     act.eval = ai_EvalMoodWeights;
-    act.decide = ai_Unk49c790;
-    act.exec = ai_Unk49c880;
+    act.decide = ai_DecideBuyMarketObject;
+    act.exec = ai_ExecuteBuyMarketObject;
     act.flags = 0xff;
     if (!am_RegisterMethod(&act, a))
         return 0;
@@ -9810,7 +9810,7 @@ int ai_RegisterBaseActions(int a)
     strcpy(act.name, "Ablass Kaufen");
     act.eval = ai_EvalMoodWeights;
     act.decide = ai_DecideBuyIndulgence;
-    act.exec = ai_Unk49cb60;
+    act.exec = ai_ExecuteBuyIndulgence;
     act.flags = 0x39;
     if (!am_RegisterMethod(&act, a))
         return 0;
@@ -9818,26 +9818,26 @@ int ai_RegisterBaseActions(int a)
     act.id = 0x27;
     strcpy(act.name, "UseAmt");
     act.eval = ai_EvalMoodWeights;
-    act.decide = ai_Unk49cd30;
-    act.exec = ai_Unk49cdb0;
+    act.decide = ai_DecideUseOffice;
+    act.exec = ai_ExecuteUseOffice;
     act.flags = 0xff;
     if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x28;
     strcpy(act.name, "Drohen");
-    act.eval = ai_Unk49cdd0;
+    act.eval = ai_EvalThreaten;
     act.decide = ai_DecideThreaten;
-    act.exec = ai_Unk49d030;
+    act.exec = ai_ExecuteThreaten;
     act.flags = 0x5d;
     if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x29;
     strcpy(act.name, "Pamphlete");
-    act.eval = ai_Unk49d050;
+    act.eval = ai_EvalPamphlets;
     act.decide = ai_DecidePamphlets;
-    act.exec = ai_Unk49d280;
+    act.exec = ai_ExecutePamphlets;
     act.flags = 0x5d;
     if (!am_RegisterMethod(&act, a))
         return 0;
@@ -9846,25 +9846,25 @@ int ai_RegisterBaseActions(int a)
     strcpy(act.name, "Anschwaerzen");
     act.eval = ai_EvalMoodWeights;
     act.decide = ai_DecideDenounce;
-    act.exec = ai_Unk49d460;
+    act.exec = ai_ExecuteDenounce;
     act.flags = 0x39;
     if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x2b;
     strcpy(act.name, "Beleidigen");
-    act.eval = ai_Unk49d4b0;
-    act.decide = ai_Unk49d550;
-    act.exec = ai_Unk49d5e0;
+    act.eval = ai_EvalInsult;
+    act.decide = ai_DecideInsult;
+    act.exec = ai_ExecuteInsult;
     act.flags = 0xc9;
     if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x2c;
     strcpy(act.name, "Erpressen");
-    act.eval = ai_Unk49d600;
-    act.decide = ai_Unk49d6a0;
-    act.exec = ai_Unk49d730;
+    act.eval = ai_EvalBlackmail;
+    act.decide = ai_DecideBlackmail;
+    act.exec = ai_ExecuteBlackmail;
     act.flags = 0xc9;
     if (!am_RegisterMethod(&act, a))
         return 0;
@@ -9872,8 +9872,8 @@ int ai_RegisterBaseActions(int a)
     act.id = 0x2d;
     strcpy(act.name, "UsePrivs");
     act.eval = ai_EvalMoodWeights;
-    act.decide = ai_Unk49d750;
-    act.exec = ai_Unk49d7d0;
+    act.decide = ai_DecideUsePrivileges;
+    act.exec = ai_ExecuteUsePrivileges;
     act.flags = 0xff;
     if (!am_RegisterMethod(&act, a))
         return 0;
@@ -9882,7 +9882,7 @@ int ai_RegisterBaseActions(int a)
     strcpy(act.name, "Buergermeister");
     act.eval = ai_EvalMayor;
     act.decide = ai_DecideMayor;
-    act.exec = ai_Unk49dc10;
+    act.exec = ai_ExecuteMayor;
     act.flags = 0x39;
     if (!am_RegisterMethod(&act, a))
         return 0;
@@ -9899,7 +9899,7 @@ int ai_RegisterBaseActions(int a)
     act.id = 0x30;
     strcpy(act.name, "Buergermeister upgrade");
     act.eval = ai_EvalMoodWeights;
-    act.decide = ai_Unk49dd90;
+    act.decide = ai_DecideMayorUpgrade;
     act.exec = sv_ReturnZero;
     act.flags = 0x39;
     if (!am_RegisterMethod(&act, a))
@@ -9909,7 +9909,7 @@ int ai_RegisterBaseActions(int a)
     strcpy(act.name, "Buergermeister Rathaus");
     act.eval = ai_EvalMoodWeights;
     act.decide = ai_DecideMayorTownHall;
-    act.exec = ai_Unk49e230;
+    act.exec = ai_ExecuteMayorTownHall;
     act.flags = 0x39;
     if (!am_RegisterMethod(&act, a))
         return 0;
@@ -9918,7 +9918,7 @@ int ai_RegisterBaseActions(int a)
     strcpy(act.name, "Buergermeister Kerker");
     act.eval = ai_EvalMoodWeights;
     act.decide = ai_DecideMayorPrison;
-    act.exec = ai_Unk49e680;
+    act.exec = ai_ExecuteMayorPrison;
     act.flags = 0x39;
     if (!am_RegisterMethod(&act, a))
         return 0;
@@ -9926,7 +9926,7 @@ int ai_RegisterBaseActions(int a)
     act.id = 0x32;
     strcpy(act.name, "Dunkle Ecke");
     act.eval = ai_EvalDarkCorner;
-    act.decide = ai_Unk49ed10;
+    act.decide = ai_DecideDarkCorner;
     act.exec = ai_ExecuteDarkCorner;
     act.flags = 0x69;
     if (!am_RegisterMethod(&act, a))
@@ -9936,14 +9936,14 @@ int ai_RegisterBaseActions(int a)
     strcpy(act.name, "Kredit Nehmen");
     act.eval = ai_EvalMoodWeights;
     act.decide = ai_DecideTakeCredit;
-    act.exec = ai_Unk49f370;
+    act.exec = ai_ExecuteTakeCredit;
     act.flags = 0x7;
     if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x34;
     strcpy(act.name, "Change Profession");
-    act.eval = ai_Unk49f4f0;
+    act.eval = ai_EvalChangeProfession;
     act.decide = ai_DecideChangeProfession;
     act.exec = ai_ExecuteChangeProfession;
     act.flags = 0x7;
@@ -9963,7 +9963,7 @@ int ai_RegisterBaseActions(int a)
     strcpy(act.name, "Zunft Preismanipulation");
     act.eval = ai_EvalMoodWeights;
     act.decide = ai_DecidePriceManipulation;
-    act.exec = ai_Unk4a0040;
+    act.exec = ai_ExecutePriceManipulation;
     act.flags = 0x3;
     if (!am_RegisterMethod(&act, a))
         return 0;
@@ -9971,8 +9971,8 @@ int ai_RegisterBaseActions(int a)
     act.id = 0x37;
     strcpy(act.name, "Zunft Aufruhr");
     act.eval = ai_EvalMoodWeights;
-    act.decide = ai_Unk4a0090;
-    act.exec = ai_Unk4a01f0;
+    act.decide = ai_DecideGuildRiot;
+    act.exec = ai_ExecuteGuildRiot;
     act.flags = 0x43;
     if (!am_RegisterMethod(&act, a))
         return 0;
@@ -9980,26 +9980,26 @@ int ai_RegisterBaseActions(int a)
     act.id = 0x38;
     strcpy(act.name, "Zunft Level 3");
     act.eval = ai_EvalMoodWeights;
-    act.decide = ai_Unk4a0890;
-    act.exec = ai_Unk4a0940;
+    act.decide = ai_DecideGuildLevel3;
+    act.exec = ai_ExecuteGuildLevel3;
     act.flags = 0x4b;
     if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x39;
     strcpy(act.name, "Upgrade Zunft");
-    act.eval = ai_Unk4a0990;
+    act.eval = ai_EvalUpgradeGuild;
     act.decide = ai_DecideUpgradeGuild;
-    act.exec = ai_Unk4a0e60;
+    act.exec = ai_ExecuteUpgradeGuild;
     act.flags = 0x1b;
     if (!am_RegisterMethod(&act, a))
         return 0;
     AI_ZERO(&act, sizeof(act));
     act.id = 0x3a;
     strcpy(act.name, "Berufsausbildung");
-    act.eval = ai_Unk4a1000;
-    act.decide = ai_Unk4a1170;
-    act.exec = ai_Unk4a1360;
+    act.eval = ai_EvalApprenticeship;
+    act.decide = ai_DecideApprenticeship;
+    act.exec = ai_ExecuteApprenticeship;
     act.flags = 0x1f;
     if (!am_RegisterMethod(&act, a))
         return 0;
@@ -10007,7 +10007,7 @@ int ai_RegisterBaseActions(int a)
     act.id = 0x3b;
     strcpy(act.name, "Studium");
     act.eval = ai_EvalMoodWeights;
-    act.decide = ai_Unk4a13e0;
+    act.decide = ai_DecideStudy;
     act.exec = ai_ExecuteStudy;
     act.flags = 0x13;
     return am_RegisterMethod(&act, a) != 0;
@@ -11334,6 +11334,28 @@ int ai_SeanceDecide(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 /* unlinked: the "Use Seance" execute callback returns 0; LINK folds it (/OPT:ICF) into sv_ReturnZero, 0x52a040,
    which is where the original's reference in ai_RegisterGraveActions points */
 int ai_SeanceExec(G5CH *p, AIARG *s1, AIARG *s2)
+{
+    return 0;
+}
+/* unlinked: the "Objekt kaufen (AP)" decide callback returns 0; LINK folds it (/OPT:ICF) into sv_ReturnZero, 0x52a040;
+   two distinct symbols, as the original stores both callbacks as immediates (one symbol is loaded once into eax) */
+int ai_BuyObjectApDecide(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
+{
+    return 0;
+}
+/* unlinked: the "Objekt kaufen (AP)" execute callback returns 0; LINK folds it (/OPT:ICF) into sv_ReturnZero, 0x52a040 */
+int ai_BuyObjectApExec(G5CH *p, AIARG *s1, AIARG *s2)
+{
+    return 0;
+}
+/* unlinked: the "Betrieb upgraden (AP)" decide callback returns 0; LINK folds it (/OPT:ICF) into sv_ReturnZero, 0x52a040;
+   two distinct symbols, as the original stores both callbacks as immediates (one symbol is loaded once into eax) */
+int ai_UpgradeBusinessApDecide(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
+{
+    return 0;
+}
+/* unlinked: the "Betrieb upgraden (AP)" execute callback returns 0; LINK folds it (/OPT:ICF) into sv_ReturnZero, 0x52a040 */
+int ai_UpgradeBusinessApExec(G5CH *p, AIARG *s1, AIARG *s2)
 {
     return 0;
 }
