@@ -371,7 +371,7 @@ int gv_FreeCrimeSlot(void);                /* 0x4f36b0 */
 int gv_FindCrime(int id);              /* 0x4f36e0 */
 int gv_EvidenceSlot(int a, int b);        /* 0x4f3780 */
 
-int unk_Unk4f3910(int a, int b, int s, int m);  /* 0x4f3910 */
+int gv_HandOverCrimes(int owner, int culprit, int state, int hand);  /* 0x4f3910 */
 int gv_CountOwnedGraves(int c);               /* 0x4f39b0 */
 int unk_Unk4f39e0(int c);               /* 0x4f39e0 */
 

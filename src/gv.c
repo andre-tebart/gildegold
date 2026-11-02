@@ -3278,47 +3278,37 @@ int gv_EvidenceSlot(int a, int b)
     }
     return -2;
 }
-/* 0x4f3910, changes the state (int +0x25) of the 0x2d-byte records of 0x91f700: without mode m every record in state s is set to 1 (count returned); with m the records of the pairs (a, ..) of 0x91b6e0 that are in state 1 and belong
-   to the character b (+0x16) are set to s */
+/* 0x4f3910, message 0x3c: with hand, every open crime (state 1) against culprit that owner holds evidence of (ai_Evidence)
+   gets the state state (handed over); without, every crime in the state state is open again (1). Returns the count. */
 
-int unk_Unk4f3910(int a, int b, int s, int m)
+int gv_HandOverCrimes(int owner, int culprit, int state, int hand)
 {
-    int cnt, i;
-    int *p, *q;
+    int count, i, k;
 
-    cnt = 0;
-    if (m == 0) {
-        p = (int *)(gv_Graveyard + 0x25);
-        do {
-            if (*p == s) {
-                *p = 1;
-                cnt++;
-            }
-            p = (int *)((char *)p + 0x2d);
-        } while ((int)p < ((unsigned)&amt_Table + 0x5));
-        return cnt;
-    }
-    p = (int *)(unk_Tab91b6e0 + 4);
-    do {
-        if (p[-1] == a) {
-            i = 0;
-            q = (int *)gv_Graveyard;
-            do {
-                if (*q == *p) {
-                    if (*(int *)(gv_Graveyard + 0x25 + i * 0x2d) == 1 && *(int *)(gv_Graveyard + 0x16 + i * 0x2d) == b) {
-                        *(int *)(gv_Graveyard + 0x25 + i * 0x2d) = s;
-                        cnt++;
+    count = 0;
+    if (hand != 0) {
+        for (i = 0; i < 0x800; i++) {
+            if (ai_Evidence[i][0] == owner) {
+                for (k = 0; k < 0x200; k++) {
+                    if (gv_CrimesT[k].id == ai_Evidence[i][1]) {
+                        if (gv_CrimesT[k].state == 1 && gv_CrimesT[k].culprit == culprit) {
+                            gv_CrimesT[k].state = state;
+                            count++;
+                        }
+                        break;
                     }
-                    break;
                 }
-                q = (int *)((char *)q + 0x2d);
-                i++;
-            } while ((int)q < (unsigned)&gv_Cannon.bld);
+            }
         }
-        p += 2;
-        if ((int)p > ((unsigned)unk_Tab91b6e0 + 0x4003))
-            return cnt;
-    } while (1);
+    } else {
+        for (k = 0; k < 0x200; k++) {
+            if (gv_CrimesT[k].state == state) {
+                gv_CrimesT[k].state = 1;
+                count++;
+            }
+        }
+    }
+    return count;
 }
 /* 0x4f39b0, how many records of 0x91f700 belong to the character c (+0x16) and are in state 1 */
 
