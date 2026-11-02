@@ -167,9 +167,13 @@ work, however long.
   (`full_data_<addr>`; it keeps the full rebuild's data packed). An object you name gets its real type and one
   declaration, in its unit's header (section 2.5, gap data).
 - `@original why` / `@vc6 why` on a declaration line only with evidence (a byte-matched caller that needs it).
+  A caller at draft or shape is no such evidence. When the original's call disagrees with the prototype (an
+  extra argument, a float pushed by value), read the callee first: if its definition uses it, the prototype is
+  wrong, so fix it in the owner header (`dcp refs`, `dcp headers conflicts --trial`) instead of adding a
+  unit-local cast macro.
 
 ### 2.4 Commit
-One function, one commit: `<unit>: <name> shape + readable (match-base)` (`byte + readable` when it got there).
+One function, one commit, never two functions together, even small siblings: `<unit>: <name> shape + readable (match-base)` (`byte + readable` when it got there).
 `dcp build` exits 0 first.
 
 ### 2.5 Other units, headers, data
@@ -185,7 +189,9 @@ One function, one commit: `<unit>: <name> shape + readable (match-base)` (`byte 
   tells S.extent its size through `dcp decl add "0xADDR writes ptr=a0 size=a1*a2 -- why"`.
 - Gap data: the `full_data_<addr>` / `full_rdata_<addr>` blocks (defined in the gap block at the end of `src/main.c`,
   `extern GAPDATA` elsewhere) are bytes no symbol covers yet: name, type, extent and owner are all unknown, and
-  their place in main says nothing about ownership. When the function you raise shows what one is, settle all
+  their place in main says nothing about ownership. Never name one with a view macro
+  (`#define x (*(T *)&full_data_...)`): that hides the open question behind a name. When the function you raise
+  shows what one is, settle all
   four, in one commit of its own before the function: `<unit>: data <name> from the gap block (typing)`; it
   does not count toward the 8.
   - Name and type it from its users and its bytes (`dcp dump`, `dcp refs`; `{0,0,0,0,0,0,0xe0,0x3f}` is the
@@ -227,7 +233,13 @@ fall no debt item covers.
 ## 3. Escalation to the deep queue
 When only allocation or scheduling is left (`regs`, `slots`, `order` hunks the classes do not explain away, or
 the code is shape and only byte identity is missing), or a generated variant round would be needed:
-`dcp escalate NAME "why"`, build, commit `<unit>: <name> -> deep (match-base)`. The reason lists what was
+`dcp escalate NAME "why"`, build, commit `<unit>: <name> -> deep (match-base)`.
+Before escalating, look at `dcp diffclass NAME`'s summary line. `branch targets differ` means the statement
+structure differs (a condition, a loop form, a case order), and that is base work, never deep. Every remaining
+`code` hunk needs its own explanation: show it as a rotation with `asmdiff --regs`, as the same instructions
+reordered, or as a push/`add esp` placement. "Allocation" is a claim you prove hunk by hunk, not a label for
+a big diff. A small function whose whole body is one `code` hunk is not scheduling until you have compared
+the expression form first (struct assignment vs field copies, an index vs a pointer, a temporary vs none). The reason lists what was
 read and tried and the exact remaining hunk (`asmdiff` lines). `dcp escalate` refuses a reason that only names
 missing statements, and one that admits a part not read against the original yet (not reconciled / checked /
 compared / verified, hard to judge): reconstruction and reading the whole function are base work. It also
