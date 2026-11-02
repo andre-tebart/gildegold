@@ -3893,7 +3893,7 @@ exe	0x00572a50	he_Unk572a50	he	draft	draft
 exe	0x00572b90	he_Unk572b90	he	byte	draft		
 exe	0x00572bf0	he_Unk572bf0	he	draft	draft		
 exe	0x00572fd0	he_Unk572fd0	he	draft	draft		
-exe	0x00573200	he_Unk573200	he	draft	draft		
+exe	0x00573200	he_HasGraveWork	he	byte	draft		
 exe	0x00573260	ai_Unk573260	he	byte	draft		
 exe	0x00573280	he_Unk573280	he	byte	draft		
 exe	0x005732d0	he_Unk5732d0	he	byte	draft		
@@ -4043,15 +4043,15 @@ exe	0x00581950	ai_CabinetSpyByMoney	unk_575860	shape	readable
 exe	0x00581db0	ai_CabinetIntrigueWindow	unk_575860	draft	readable	deep	
 exe	0x005821d0	ai_AlchemistLabContact	unk_575860	byte	readable		
 exe	0x005823b0	ai_UnlockRoomWindow	unk_575860	byte	readable		
-exe	0x00582560	ai_Unk582560	unk_575860	draft	draft		
-exe	0x00582600	ai_Unk582600	unk_575860	draft	draft		
-exe	0x00582730	ai_Unk582730	unk_575860	draft	draft		
-exe	0x005828c0	ai_Unk5828c0	unk_575860	draft	draft		
-exe	0x00582b40	ai_Unk582b40	unk_575860	draft	draft		
-exe	0x005830f0	ai_Unk5830f0	unk_575860	byte	draft		
-exe	0x00583150	ai_Unk583150	unk_575860	draft	draft		
-exe	0x00583240	ai_Unk583240	unk_575860	draft	draft		
-exe	0x00583700	ai_Unk583700	unk_575860	draft	draft		
+exe	0x00582560	ai_CannonContact	unk_575860	byte	readable		
+exe	0x00582600	ai_CabinetContact	unk_575860	byte	readable		
+exe	0x00582730	ai_GraveSizeButtons	unk_575860	byte	readable		
+exe	0x005828c0	ai_GraveList	unk_575860	byte	readable		
+exe	0x00582b40	ai_GraveDetail	unk_575860	draft	readable	deep	
+exe	0x005830f0	ai_GraveDeadName	unk_575860	byte	draft		
+exe	0x00583150	ai_GraveDeadDescription	unk_575860	byte	readable		
+exe	0x00583240	ai_GraveWindow	unk_575860	draft	readable	deep	
+exe	0x00583700	ai_RentGraveDetail	unk_575860	draft	readable	deep	
 exe	0x00583b70	ai_Unk583b70	unk_575860	byte	draft		
 exe	0x00583c50	ai_Unk583c50	unk_575860	draft	draft		
 exe	0x00583de0	ai_Unk583de0	unk_575860	byte	draft		

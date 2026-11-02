@@ -4,7 +4,8 @@
    the chapter run-record builders (ai_TutorialChapterInit) with their step tables (TUTSTEP) and position-marker
    paths (TUTMARK), the marker update, the chapter chooser, then the location / contact / tooltip windows (the
    alchemist's candidates and hire from 0x57bf00 on), the cannon scene, the cabinet's spy windows (kabinett_spy /
-   kabinett, message 0x99) and the room contacts (ai_AlchemistLabContact). Start: he.c's last function 0x575710, its jump table and
+   kabinett, message 0x99), the room contacts (ai_AlchemistLabContact, ai_CannonContact, ai_CabinetContact) and the
+   graveyard windows (ai_GraveWindow with its size buttons, list and detail; the rent-a-grave detail). Start: he.c's last function 0x575710, its jump table and
    nop fill end at 0x575860; the unit's one .data block starts at 0x62918c (ai_TutorialChapterOn, then the "FT"
    state names) and its literals climb in function order to 0x62aa58; the network lobby (0x589f10) is a unit of
    its own. The original file name is unknown (no leaked tag). Names are ours.
@@ -17,7 +18,10 @@
    (ai_CannonBuildPanel through the cast macro d2_CreatePicObjS).
    Open: data: the unit's .rdata block 0x5eec60..0x5eed70 is typed up to ai_CannonZoomRange (0x5eec6c .. 0x5eecac:
    const data, the original loads it); 0x5eec64 / 0x5eec68 / 0x5eec8c / 0x5eec90 (0x54, the recoil time the code
-   uses as an immediate) / the floats 0x5eec9c .. 0x5eeca8 and the tables from 0x5eecb0 are not declared yet.
+   uses as an immediate) / the floats 0x5eec9c .. 0x5eeca8 and the tables from 0x5eecf0 are not declared yet (the
+   grave size tables 0x5eecb0 .. 0x5eecef are; declared before ai_TutorialInitChapter2 they flip its tie-break).
+   Open: GVGRAVE.v2c / v30 / nameId: gv.c stores small numbers there, ai_GraveDeadName / ai_GraveDeadDescription
+   (byte) read them as pointers to text records; which records is unknown.
    Open: sv_CheckGoodAmount's third parameter: the original's callers push the player byte unextended (a char
    parameter, kept as the cast macro sv_CheckGoodAmountB), sv.h / sv.c declare it unsigned and mask it.
    Open: ai_ClockMs is volatile in the original (ai_TutorialTick reloads it after every read, byte-matched through
