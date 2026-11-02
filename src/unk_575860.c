@@ -6962,7 +6962,7 @@ int ai_Unk583ef0(char *rec, int from, int unused, int *btns, int *sel)
     return r;
 }
 
-void unk_Unk4f0e80(int *g, int x, char *o, int v, char b, int y); int unk_Unk4f2330(); int gv_OrderReserveGrave(int *g, char *o, int v, short s, int x);
+void gv_OrderMoveGrave(int *c, int to, char *o, int from, int entry, int price); int unk_Unk4f2330(); int gv_OrderReserveGrave(int *g, char *o, int v, short s, int x);
 
 /* 0x584010, the graveyard rent confirmation (587 B): rec = the record (its +0x27 the grave's owner word), a / b
    the values passed on, idx = the grave index; the cost 16000 when the owner is not the player (0x6f25b8), else
@@ -7012,7 +7012,7 @@ int ai_Unk584010(char *rec, int a, unsigned char b, int idx)
                     if (sv_CheckGoodAmount((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, cost, *(unsigned char *)(unsigned)&ai_OwnPlayer) == 0)
                         goto pump;
                 }
-                h = ((int (*)(void *, int, int, int, int, int))unk_Unk4f0e80)((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, idx, rec, a, b, cost);
+                h = ((int (*)(void *, int, int, int, int, int))gv_OrderMoveGrave)((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, idx, rec, a, b, cost);
                 if (h != -1) {
                     while (cm_GetSlotState(h) == 0)
                         sv_RunFrame(0, 0x20007);

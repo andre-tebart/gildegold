@@ -2080,7 +2080,7 @@ void cm_SendGraveOrder(void *p)
 }
 /* 0x4c60f0, message 0x61 (0x19 bytes of p) */
 
-void ai_Unk4c60f0(void *p)
+void cm_SendGraveMove(void *p)
 {
     G17MSG m;
 

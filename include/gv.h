@@ -59,6 +59,15 @@ typedef struct GVORDER {                /* 0x1f bytes, a graveyard order: the da
     int objId;                          /* 0x17, ai_NextObjectId, filled by the handler when the game is networked */
     int seed;                           /* 0x1b, a rand() the handler fills otherwise */
 } GVORDER;
+typedef struct GVMOVE {                 /* 0x19 bytes, a grave move: the data of message 0x61 (cm_SendGraveMove), run by gv_MoveGrave */
+    int chr;                            /* 0x00, the paying character's netId (AICHAR.netId) */
+    int bld;                            /* 0x04, the graveyard building's id (AIBLD.id) */
+    int from;                           /* 0x08, the source grave size (GVYARD.lists index) */
+    unsigned char entry;                /* 0x0c, the entry of that list */
+    int to;                             /* 0x0d, the target grave size */
+    int price;                          /* 0x11, > 0: the character pays it */
+    int objId;                          /* 0x15, ai_NextObjectId when the game is networked */
+} GVMOVE;
 #pragma pack(pop)
 typedef struct GVCANNON {               /* 0x20 bytes, the state of the cannon scene (unk_575860 0x57e270 ..), saved with the effects */
     int bld;                            /* 0x00, the record id (rec + 1) the scene was last set up for, -1 after the reset */
@@ -290,7 +299,7 @@ int gv_OrderAdjustEntry(char *o, int v, int b, int x);  /* 0x4f0c20 */
 int gv_AdjustEntry(GVORDER *m);          /* 0x4f0c80 */
 int unk_Unk4f0d70(char *o, int x);      /* 0x4f0d70 */
 int unk_Unk4f0dd0(unsigned char *p);    /* 0x4f0dd0 */
-void unk_Unk4f0e80(int *g, int x, char *o, int v, char b, int y);  /* 0x4f0e80 */
+void gv_OrderMoveGrave(int *c, int to, char *o, int from, int entry, int price);  /* 0x4f0e80 */
 int unk_Unk4f0ed0(int *p);              /* 0x4f0ed0 */
 int unk_Unk4f1170(char *o, int v, int b, int x, int y);  /* 0x4f1170 */
 int gv_SendGrave(unsigned char *o);    /* 0x4f15e0 */

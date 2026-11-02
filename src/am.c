@@ -77,7 +77,7 @@ int ai_Unkf86900[73] = {0};  /* 0xf86900, the actions being evaluated */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define ai_TimeT (*(AITIME *)&ai_Time)  /* 0x770ae0, ai_Time (anm.c: char[14]) as the AITIME it is: this unit reads its fields */
-#define unk_Unk4f0e80I ((void (*)(AGCH *, int, void *, int, int, int))unk_Unk4f0e80)  /* 0x4f0e80 (gv.c: char b): @original the byte-matched ai_Unk490b90 loads s2->kind as a dword (8b 51 10, not 8a) */
+#define gv_OrderMoveGraveI ((void (*)(AGCH *, int, void *, int, int, int))gv_OrderMoveGrave)  /* 0x4f0e80 (gv.c: int *c, char *o): @original the byte-matched ai_Unk490b90 passes its AGCH record and s1 as they are */
 #define gm_Unk505e60S ((int (*)(unsigned short, int))gm_Unk505e60)  /* 0x505e60 (f3gm.c: unsigned id): @original this unit pushes the id as 16 bits (byte-matched ai_Unk494a30 / ai_Unk494ac0 / ai_Unk494d40) */
 #define cm_SendExSellObjectI ((void (*)(int, int, int, int, unsigned char, int))cm_SendExSellObject)  /* 0x4c4880 (cm.h: short c): @original this unit pushes the third argument as an int (byte-matched ai_MeisterBewaffnen / ai_Unk497c80 / ai_Unk49c880) */
 #define amt_GetKindB ((int (*)(unsigned char, void *))amt_GetKind)  /* 0x4e6f80 (amt.h: int k): @original ai_Unk4a05e0 passes (unsigned char)k without widening */
@@ -1299,7 +1299,7 @@ int ai_Unk490b90(AGCH *p, AGARG *s1, AGARG *s2)
             return 0x3e;
         }
         if (a->kind == 5) {
-            unk_Unk4f0e80I(p, a->unk04, s1, s2->unk04, s2->kind, a->unk08);
+            gv_OrderMoveGraveI(p, a->unk04, s1, s2->unk04, s2->kind, a->unk08);
             return 0x3e;
         }
     }

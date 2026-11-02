@@ -2156,19 +2156,20 @@ int unk_Unk4f0dd0(unsigned char *p)
     n = gv_BuryNewDead(o, *(int *)(p + 0x13));
     return (n > 0) - 1 & 0xfffffffc;
 }
-/* 0x4f0e80, the message 0x4c60f0 (g +4, o +1, v, byte b, int x at +0xd, int y at +0x11) */
+/* 0x4f0e80, sends a grave move (GVMOVE, message 0x61, cm_SendGraveMove): the character c (c[1]: its AICHAR.netId) moves the
+   entry `entry` of the size `from` of the graveyard building o to a free entry of the size `to` for the price `price` */
 
-void unk_Unk4f0e80(int *g, int x, char *o, int v, char b, int y)
+void gv_OrderMoveGrave(int *c, int to, char *o, int from, int entry, int price)
 {
-    char m[0x19];
+    GVMOVE m;
 
-    *(int *)m = g[1];
-    *(int *)(m + 4) = *(int *)(o + 1);
-    m[0xc] = b;
-    *(int *)(m + 8) = v;
-    *(int *)(m + 0xd) = x;
-    *(int *)(m + 0x11) = y;
-    ai_Unk4c60f0(m);
+    m.chr = c[1];
+    m.bld = ((AIBLD *)o)->id;
+    m.from = from;
+    m.entry = (unsigned char)entry;
+    m.to = to;
+    m.price = price;
+    cm_SendGraveMove(&m);
 }
 /* 0x4f0ed0, graveyard order type 1 (p: +0 a character id, +4 the object id, +8 the source list, +0xc the entry, +0xd the target list, +0x11 a price, +0x15 a counter): moves the grave of the entry (its 0x44-byte
    records, compacting the free ones) from the source list to the first free entry of the target list, copies the character id and short, time +10 + 0x770ae0, clears the source; with a price the owner's money changes;
