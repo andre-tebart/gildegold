@@ -239,7 +239,7 @@ extern GAPDATA full_data_62a310[];
 extern GAPDATA full_data_62a328[];
 extern GAPDATA full_data_62a340[];
 extern GAPDATA full_data_62a350[];
-extern GAPDATA full_data_6fa020[];
+extern GAPDATA full_data_6fa060[];
 extern int sv_PanelFlag;
 extern int sv_ViewRectBottom;
 extern int sv_ViewRectLeft;
@@ -678,7 +678,7 @@ extern char *txt_Ptrs[]; /* 0x143a1c0 */
 /* the state record is at 0x6fa060 (the 0x40 byte of main.c's 0x6fa020 block); 0x5eec60 is a const pointer to it
    in the original. A load through that pointer (not the fixed address) is what the unit's functions compile to,
    and the full link relocates the initializer, so the record is ours and no neighbour is touched. */
-TUTSTATE *const ai_Tutorial = (TUTSTATE *)(full_data_6fa020 + 0x40);  /* 0x5eec60, the pointer to the tutorial state record */
+TUTSTATE *const ai_Tutorial = (TUTSTATE *)full_data_6fa060;  /* 0x5eec60, the pointer to the tutorial state record */
 #define S (*(char **)(unsigned)&ai_Tutorial)  /* the tutorial state record (at 0x6fa060): the pointer ai_Tutorial holds */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define ai_TimeT (*(AITIME *)&ai_Time)  /* 0x770ae0, ai_Time (anm.c: char[14]) as the AITIME it is */
@@ -5331,10 +5331,11 @@ struct D3OBJECT;
 char d3if_Delete(struct D3OBJECT *obj);                 /* 0x447190, d3_interface.h */
 char d3if_Show(struct D3OBJECT *obj, char show);        /* 0x4471b0, d3_interface.h */
 void he_ShowObjectInfos(); void ai_CannonAxes(); void ai_CannonAim(char *sc, float dt); void ai_CannonCamera();
-void ai_CannonShotResults(); void ai_CannonSwitchAnim(char *rec, float *sc, char *run, float sel, int mask); int ai_CannonFireCheck(); void ai_CannonExplosion();
+void ai_CannonShotResults(); void ai_CannonSwitchAnim(char *rec, float *sc, char *run, int sel, int mask); int ai_CannonFireCheck(); void ai_CannonExplosion();
 void sv_SetStatusText(char *s); void d2_RemoveObj(); void sv_RedrawScreen();
 void d3if_Prerender(char map); 
 
+char ai_ShotCallbackArg[0x40] = { 0 };  /* 0x6fa020, the argument gv_SetEffectCallback stores with the shot callback ai_ShotTableStore (ai_CannonScene); never read by the code, its type is unknown; it runs to the tutorial state record at 0x6fa060 */
 #pragma pack(push, 1)
 typedef struct CANNONREC {   /* the tutorial's cannon record (ai_CannonScene's argument), read at its byte offsets */
     char pad0;
@@ -5366,6 +5367,9 @@ typedef struct CANNONSCENE { /* 0xe4 bytes, the scene struct of ai_CannonScene (
     char padd4[8];
     int maxSel;              /* +0xdc, the highest selectable object */
     int pade0;
+    D3VECTOR bmax;           /* +0xe4, not part of the cleared 0xe4 bytes: the bounds of the cannon object (d3t_GetObjectBounds) */
+    float padf0;
+    D3VECTOR bmin;           /* +0xf4 */
 } CANNONSCENE;
 
 /* 0x57e270, the tutorial's cannon scene (the record rec = the cannon): the run record gv_FindEffect (rec->id), else
@@ -5381,24 +5385,28 @@ typedef struct CANNONSCENE { /* 0xe4 bytes, the scene struct of ai_CannonScene (
    on the quit control sets sv_PopRequest. The teardown fades out again, closes the three windows, removes the two
    objects, deletes the 3D objects, re-enables the listed objects, restores viewport, clip rectangle, scene, sky and
    camera and releases the callback of the run record
-   @deep whole function read against the original and rewritten (typed scene/record structs, fade mask,
-   view/object scan as a do-while over an int address (signed jl), unsigned dt, d3_Origin/rot vector,
-   obj[5], literals); the statement structure now equals the original's (same calls, same order, loops of
-   the same form). What is left is allocation: the original pins rec in ebp and run in ebx across the main
-   loop (ours rec ebx, run spilled to [esp+0x38] and reloaded as 'mov ebp,[esp+0x18]'), keeps zero/-1 in
-   esi/edi as loop constants, keeps the flag object in a stack slot so the three stateFlags/objectFlags
-   byte updates reload it and are not merged (ours merges 'or 4' and 'or 0x40' into 'or 0x44'), copies
-   camTarget into the scene through integer registers where ours goes through the FPU (float[3]; typing it
-   as a GVVEC3 record flips the byte match of ai_TutorialInitChapter2 by the declaration set), frame 0x758
-   vs 0x750. remaining asmdiff hunks e.g. 0x57e2c1 'mov ebx,eax / add esp,4 / test ebx,ebx' vs ours 'add
-   esp,4 / mov [esp+0x10],eax / test eax,eax'; 0x57e700 'mov cl,[esi+0x212] / and cl,0xf7 / or cl,0x44' vs
-   the original's three separate read-modify-writes. */
+   @deep Read whole function against the original and rewritten (typed rec/scene structs, fade mask,
+   view/object scan as a do-while over an int address, unsigned dt via fild qword, obj[5], camTarget int[3]
+   copied by memcpy as ints, string literals, 6fa020 settled as ai_ShotCallbackArg). The mnemonic sequence
+   of ours and the original differ in 76 of 1328 lines, all of them mov/push/test-vs-cmp/or position; the
+   call, push-argument and branch sequences are identical once registers are normalised (normalised diff of
+   call/push/cmp/jcc lines shows only constants kept in registers: the original pushes/compares esi (=0)
+   and edi/ebp (=-1) where ours uses immediates 0 / -1, e.g. 'push edi' vs 'push 0' at the d2_StartFade and
+   sv_RunFrame calls, 'cmp eax, esi' vs 'test eax, eax' for the d3if_Delete checks). The 12 differing
+   branch targets are the same branches pointing at the same statements, shifted by the byte-size
+   difference (ours 2481 vs 2501) accumulated before them (e.g. the two early 'je' to the epilogue, the
+   d2_Objs scan jumps one instruction apart). Remaining hunks are regs/slots only: original pins rec=ebp,
+   run=ebx across the loop and keeps 0/-1 in esi/edi; ours has rec=ebx and reloads run from [esp+0x20]
+   (asmdiff 0x57e2c1 'mov ebx,eax / add esp,4 / test ebx,ebx' vs 'add esp,4 / mov [esp+0x18],eax / test
+   eax,eax'; 0x57e853 'mov eax,[ebx+4]' vs 'mov eax,[ebp+4]'); the flag object's byte updates (0x57e700
+   'mov cl,[esi+0x212] / and cl,0xf7 / or cl,0x44' vs three read-modify-writes reloading [esp+0x124])
+   follow from the same pressure; the remaining 5 instructions come from the constants-in-registers. */
 void ai_CannonScene(char *rec)
 {
+    GVEFFECT *run;
     CANNONSCENE sc;
-    D3VECTOR mx, mn;
     D3VECTOR rotv;
-    unsigned short list[0x2f8];
+    unsigned short list[0x2f2];
     D3OBJECT *obj[5];  /* 0 .. 2 the barrels, 3 the base, 4 the flag */
     int sel;
     int n;
@@ -5409,7 +5417,6 @@ void ai_CannonScene(char *rec)
     unsigned now;
     unsigned mask;
     float dt;
-    GVEFFECT *run;
     unsigned char *pb;
     D3VECTOR cam3;
     D3VECTOR save3;
@@ -5429,7 +5436,7 @@ void ai_CannonScene(char *rec)
         if (!run)
             return;
     }
-    gv_SetEffectCallback(CR->id, ai_ShotTableStore, full_data_6fa020);
+    gv_SetEffectCallback(CR->id, ai_ShotTableStore, ai_ShotCallbackArg);
     mask = (mask & 0xffffdef7) | 0x10000;
     cam3.x = CAM->pos.x;
     cam3.y = CAM->pos.y;
@@ -5484,21 +5491,17 @@ void ai_CannonScene(char *rec)
     d3if_SelectScene(0, 0);
     if (d3_Sky)
         d3sky_Init(d3_Sky, 1);
-    d3t_GetObjectBounds(&mn, &mx, CR->obj);
+    d3t_GetObjectBounds(&sc.bmin, &sc.bmax, CR->obj);
     if (gv_Cannon.bld != CR->id) {
         gv_Cannon.bld = CR->id;
         gv_Cannon.sliderA = 0;
         gv_Cannon.sliderB = 0;
         gv_Cannon.selected = 0;
-        gv_Cannon.camTarget[0] = save3.x;
-        gv_Cannon.camTarget[1] = save3.y;
-        gv_Cannon.camTarget[2] = save3.z;
+        memcpy(gv_Cannon.camTarget, &save3, sizeof(save3));
     }
     d3_PointToWorld(CR->obj, &CR->obj->pos, &sc.pos);
-    sc.rot.x = gv_Cannon.camTarget[0];
-    sc.rot.y = gv_Cannon.camTarget[1];
-    sc.rot.z = gv_Cannon.camTarget[2];
-    sc.pos.y = (mx.y - mn.y) * 0.8f + sc.pos.y;
+    memcpy(&sc.rot, gv_Cannon.camTarget, sizeof(sc.rot));
+    sc.pos.y = (sc.bmax.y - sc.bmin.y) * 0.8f + sc.pos.y;
     rotv.x = 0.0f;
     rotv.y = sc.rot.y;
     rotv.z = sc.rot.z;
@@ -6025,7 +6028,7 @@ float ai_Unk57fdb0(char *sc)
    off (0x471b0) and the selected one on, sc + 0x28 = the selection, sc + 0x1b = the clock */
 
 
-void ai_CannonSwitchAnim(char *rec, float *sc, char *run, float sel, int mask)
+void ai_CannonSwitchAnim(char *rec, float *sc, char *run, int sel, int mask)
 {
     float v[3];
     float w[3];
@@ -6035,7 +6038,7 @@ void ai_CannonSwitchAnim(char *rec, float *sc, char *run, float sel, int mask)
     int h;
 
     start = (float)U_I((unsigned)&ai_ClockMs);
-    if (sel != sc[0x28] && (int)sel <= (int)sc[0x37]) {
+    if (sel != ((int *)sc)[0x28] && sel <= ((int *)sc)[0x37]) {
         while ((h = sv_RunFrame(ai_CannonSwitchAnim, mask)) != 0) {
             ai_CannonPanel(rec, (char *)sc, run);
             if ((float)(unsigned int)(U_I((unsigned)&ai_ClockMs) - (int)start) <= 90.0f) {
@@ -6058,8 +6061,8 @@ void ai_CannonSwitchAnim(char *rec, float *sc, char *run, float sel, int mask)
         }
         for (i = 0; i < 3; i++)
             d3if_Show(*(struct D3OBJECT **)&sc[0x23 + i], 0);
-        d3if_Show(*(struct D3OBJECT **)&sc[0x23 + (int)sel], 1);
-        sc[0x28] = sel;
+        d3if_Show(*(struct D3OBJECT **)&sc[0x23 + sel], 1);
+        ((int *)sc)[0x28] = sel;
         start = (float)U_I((unsigned)&ai_ClockMs);
         while ((h = sv_RunFrame(ai_CannonSwitchAnim, mask)) != 0) {
             ai_CannonPanel(rec, (char *)sc, run);
