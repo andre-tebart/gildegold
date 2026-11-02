@@ -2698,7 +2698,7 @@ int unk_Unk4f22a0(char *o, unsigned char m)
 /* 0x4f2330, the cost of a character's action: x = 0x5085b0 (0x50a640 of the character id) clamped to 10000 .. 1000000, v = log10(x)^2 * 100 * (0.25, 0.5, 0.75 for kind 0, 1, 2); with flag 0 also times
    (0.3 + 0.7 * (a & 0xff) / 255) * 0.75; returns r = 0x5085f0 (v) and stores r * (0.8, 0.7, 0.6)[kind] in *out. ROUGH */
 
-int gv_LeasePrice(unsigned short *c, int a, int kind, int flag, int *out)
+int gv_LeasePrice(unsigned short *c, unsigned char a, int kind, int flag, int *out)
 {
     double x, v;
     int r;
@@ -4286,47 +4286,56 @@ int gv_Accuse(int i, int v, int a, int b, int obj)
     }
     return -1;
 }
-/* 0x4f1de0, the per-turn work of the graveyard object o (owner +0x27): walks the entries of the list 0xff that are in use (0x4ef7c0 with 0x4ef770); an entry whose character (+4) is gone (0x505df0) is cleared or written off
-   (0x4f0c20 / 0x4f0900 messages, at most 0x40 per round, then it waits for the answer 0x4c3ae0), a living one whose time (+10) is up is paid for / released (0x4f0700 / 0x4f0900 / message 0x92), its owner may lose
-   liking (0x4c4b00); at the end up to 4 graves are topped up (0x4f0d70 with 1 .. 2 new dead) and a player owner is told (0x5a9780 / 0x5a9690). ROUGH: the __ftol arguments and several constants are not read. */
+/* 0x4f1de0, the turn step of the graveyard building o (main.c): walks its used grave entries (gv_FindEntry with
+   gv_EntryIsUsed, all sizes); after 0x40 orders it waits for the last one's answer (cm_GetSlotState). An entry whose
+   holder is gone is freed (gv_OrderSetGraveHolder) when no dead lies in it, else its care b0c wears down by
+   b0c / 255 * gv_GraveWear[size] * (random + 1) / 2 (gv_OrderAdjustEntry, on every other turn by the entry's parity);
+   a held entry wears the same way. With an owner that is not the player: a holder other than the owner whose grave
+   is in bad care (below 0.66) loses relation to the owner (cm_SendRelations -5 .. -20, by the year and the holder's
+   netId); when the lease runs out (GVENTRY.until == the year) it is renewed for 10 years (gv_OrderExtendGrave): free
+   for the owner, offered to a player (message 0x92, AIMSG.lease), paid by a character with enough money (0.44 of
+   gm_CharCurrency above gv_LeasePrice), else the entry is freed. At the end the graveyard gets 1 .. 2 new dead while
+   fewer than 4 graves are in use (gv_OrderNewDead), and a player owner is told the paid leases (ai_TellGravesPaid)
+   and the angered holders (ai_TellGraveNeglect)
+   @deep read the whole function against the original 0x4f1de0..0x4f229b (the wait block, the gone-holder
+   search with gv_OrderSetGraveHolder / wear, the held-entry wear, the relations check, the lease end with
+   gv_LeasePrice / gv_OrderExtendGrave / the 0x92 offer (AIMSG.lease) / gm_CharCurrency * 0.44 / release,
+   the tail with gv_GravesInUse / gv_OrderNewDead / the two reports): every statement, callee, argument,
+   field and constant matches (fixed this pass: the sum += share of paid leases, the 0.44 money test, the
+   message layout +4 type / +8 to / +0xc from / +0x28 time / +0x36 flags 9 / +0x58.. the lease, the
+   0x5ee044 wear table, gv_LeasePrice's byte care argument, the c != 0 path's cached yard). Left
+   (diffclass: order 114, code 6): the original keeps the wait loop unrotated ('+ jmp 0x4f1e67' back to the
+   cm_GetSlotState test) where ours duplicates the test at the bottom ('- push edi / - call cm_GetSlotState
+   / - test eax,eax / - je'); tried while (== 0), while (!..), for(;;) with break, the reset inside the
+   break block and a goto loop: all rotate. The float wear product is scheduled b0c * (1/255) * table in
+   the original, ours b0c * table * f * (1/255) (VC6 moves the literal; written as / 255.0f and *
+   0.003921569f, grouped both ways: same) */
 
 void gv_GraveyardTurn(char *o)
 {
-    unsigned short ow;
-    int h, rounds;
-    int *e;
-    char *pl;
-    int paid, nrel, sum;
-    unsigned s;
-    int t, k, n;
-    char *c;
-    char m[0xf8];
-    int hv;
+    AIBLD *bld;
+    AICHAR *pl;
+    AICHAR *c;
+    GVENTRY *e;
+    GVGRAVE *g;
+    GVYARD *yard;
+    AIMSG m;
+    int h, rounds, nrel, paid, sum;
+    int k, t, size, price, share;
+    float f;
 
-    ow = *(unsigned short *)(o + 0x27);
+    bld = (AIBLD *)o;
     h = -1;
     pl = 0;
     rounds = 0;
     nrel = 0;
     paid = 0;
     sum = 0;
-    if (ow != 0xffff && ow != *(unsigned short *)ai_PlayerCharC)
-        pl = ai_Chars[ow];
-    e = (int *)gv_FindEntry(0, (unsigned char *)o, 0, gv_EntryIsUsed, 0xff);
-    do {
-        if (e == 0) {
-            n = gv_GravesInUse((unsigned char *)o);
-            if (n < 4)
-                gv_OrderNewDead(o, (util_RandomU(2) & 0xffff) + 1);
-            if (pl != 0 && (pl[2] == 6 || pl[2] == 7)) {
-                if (paid > 0)
-                    ai_TellGravesPaid(pl, o, paid, sum);
-                if (nrel != 0)
-                    ai_TellGraveNeglect(pl, o);
-            }
-            return;
-        }
-        if (rounds > 0x3f && h != -1) {
+    if (bld->owner != 0xffff && bld->owner != *ai_PlayerChar)
+        pl = &gv_CharsT[bld->owner];
+    e = (GVENTRY *)gv_FindEntry(0, (unsigned char *)bld, 0, gv_EntryIsUsed, 0xff);
+    while (e != 0) {
+        if (rounds >= 0x40 && h != -1) {
             while (cm_GetSlotState(h) == 0) {
                 cm_FlushSendQueue();
                 cm_ReceiveMessages();
@@ -4335,80 +4344,77 @@ void gv_GraveyardTurn(char *o)
             rounds = 0;
             h = -1;
         }
-        c = gm_FindChar(e[1]);
+        c = (AICHAR *)gm_FindChar(e->id);
         if (c == 0) {
-            t = e[0];
-            k = 0;
-            if (gv_EntryCounts[t] > 0) {
-                int *z = (int *)e[4];
-                do {
-                    if (*z != -1) {
-                        t = (int)util_RandomF();
-                        if (t < 1 || ((gv_EntryIndex(*(char **)(o + 0x65), e) ^ *(int *)ai_Time) & 1) != 0)
-                            goto next;
-                        h = gv_OrderAdjustEntry(o, e[0], gv_EntryIndex(*(char **)(o + 0x65), e), -t);
-                        goto counted;
-                    }
-                    k++;
-                    z += 0x11;
-                } while (k < gv_EntryCounts[t]);
+            size = e->size;
+            for (k = 0, g = e->grave; k < gv_EntryCounts[size]; k++, g++) {
+                if (g->id != -1) {
+                    f = (util_RandomF() + 1.0f) * 0.5f;
+                    t = (int)(f * ((float)e->b0c / 255.0f * gv_GraveWear[e->size]));
+                    if (t <= 0 || ((gv_EntryIndex((char *)bld->yard, (int *)e) ^ gv_TimeT.year) & 1) != 0)
+                        goto next;
+                    h = gv_OrderAdjustEntry(o, e->size, gv_EntryIndex((char *)bld->yard, (int *)e), -t);
+                    goto counted;
+                }
             }
-            h = gv_OrderSetGraveHolder(0, o, t, gv_EntryIndex(*(char **)(o + 0x65), e));
-        counted:
-            rounds++;
+            h = gv_OrderSetGraveHolder(0, o, size, gv_EntryIndex((char *)bld->yard, (int *)e));
         } else {
-            t = (int)util_RandomF();
-            if (t > 0) {
-                if (((gv_EntryIndex(*(char **)(o + 0x65), e) ^ *(int *)ai_Time) & 1) == 0) {
-                    h = gv_OrderAdjustEntry(o, e[0], gv_EntryIndex(*(char **)(o + 0x65), e), -t);
-                    rounds++;
-                }
+            f = (util_RandomF() + 1.0f) * 0.5f;
+            size = e->size;
+            t = (int)(f * ((float)e->b0c / 255.0f * gv_GraveWear[size]));
+            if (t > 0 && ((gv_EntryIndex((char *)(yard = bld->yard), (int *)e) ^ gv_TimeT.year) & 1) == 0) {
+                h = gv_OrderAdjustEntry(o, size, gv_EntryIndex((char *)yard, (int *)e), -t);
+                rounds++;
             }
-            if (pl != 0) {
-                if (c != pl) {
-                    s = *(int *)ai_Time & 3;
-                    if (s == (*(unsigned *)(c + 4) & 3) && (float)(unsigned char)e[3] * 0.003921569f < 0.66f) {
-                        h = ((int (*)(void *, void *, int))cm_SendRelations)(*(int *)(pl + 4), *(int *)(c + 4), -5 - (util_RandomU(0x10) & 0xffff));
-                        rounds++;
-                        nrel++;
-                    }
-                }
-                if (*(unsigned short *)((char *)e + 10) == *(unsigned short *)ai_Time) {
-                    h = gv_LeasePrice((unsigned short *)c, *((unsigned char *)e + 0xc), e[0], 0, &hv);
-                    if (c == pl) {
-                        h = gv_OrderExtendGrave((int *)c, o, e[0], gv_EntryIndex(*(char **)(o + 0x65), e), 10, 0);
-                    } else if (c[2] == 6 || c[2] == 7) {
-                        memset(m, 0, 0xf8);
-                        *(int *)(m + 4) = *(int *)(c + 4);
-                        *(int *)(m + 0x28) = *(int *)ai_Time;
-                        *(int *)(m + 0x2c) = *(int *)(ai_Time + 4);
-                        *(int *)(m + 0x30) = *(int *)(ai_Time + 8);
-                        *(short *)(m + 0x34) = *(short *)(ai_Time + 12);
-                        m[0x36] = 9;
-                        m[0] = (char)0x92;
-                        *(int *)(m + 0x58) = *(int *)(o + 1);
-                        *(int *)(m + 0x5c) = e[0];
-                        m[0xb0] = (char)gv_EntryIndex(*(char **)(o + 0x65), e);
-                        *(int *)(m + 0xb8) = 10;
-                        *(int *)(m + 0xb4) = h;
-                        h = cm_SendLongMessage(m);
-                    } else {
-                        k = (int)gm_CharCurrency(c, ai_OwnPlayer);
-                        if (h < k) {
-                            h = gv_OrderExtendGrave((int *)c, o, e[0], gv_EntryIndex(*(char **)(o + 0x65), e), 10, h);
-                            rounds++;
-                            paid++;
-                            goto next;
-                        }
-                        h = gv_OrderSetGraveHolder(0, o, e[0], gv_EntryIndex(*(char **)(o + 0x65), e));
-                    }
-                    rounds++;
-                }
+            if (pl == 0)
+                goto next;
+            if (c != pl && gv_TimeT.year % 4 == (int)(c->netId & 3)
+                && (float)e->b0c / 255.0f < 0.66f) {
+                h = cm_SendRelations(pl->netId, c->netId, -5 - util_RandomU(0x10), 1);
+                rounds++;
+                nrel++;
+            }
+            if (e->until != gv_TimeT.year)
+                goto next;
+            h = price = gv_LeasePrice(&c->id, e->b0c, e->size, 0, &share);
+            if (c == pl) {
+                h = gv_OrderExtendGrave((int *)c, o, e->size, gv_EntryIndex((char *)bld->yard, (int *)e), 10, 0);
+            } else if (c->kind == 6 || c->kind == 7) {
+                memset(&m, 0, sizeof(m));
+                m.to = c->netId;
+                m.fromId = bld->id;
+                m.time = gv_TimeT;
+                m.type = 0x92;
+                m.flags = 9;
+                m.lease.bld = bld->id;
+                m.lease.size = e->size;
+                m.lease.entry = (unsigned char)gv_EntryIndex((char *)bld->yard, (int *)e);
+                m.lease.price = price;
+                m.lease.years = 10;
+                h = cm_SendLongMessage((char *)&m);
+            } else if ((int)(gm_CharCurrency((char *)c, ai_OwnPlayer) * 0.44f) > price) {
+                h = gv_OrderExtendGrave((int *)c, o, e->size, gv_EntryIndex((char *)bld->yard, (int *)e), 10, price);
+                rounds++;
+                paid++;
+                sum += share;
+                goto next;
+            } else {
+                h = gv_OrderSetGraveHolder(0, o, e->size, gv_EntryIndex((char *)bld->yard, (int *)e));
             }
         }
+    counted:
+        rounds++;
     next:
-        e = (int *)gv_FindEntry(0, (unsigned char *)o, (unsigned)e, gv_EntryIsUsed, 0xff);
-    } while (1);
+        e = (GVENTRY *)gv_FindEntry(0, (unsigned char *)bld, (unsigned)e, gv_EntryIsUsed, 0xff);
+    }
+    if (gv_GravesInUse((unsigned char *)bld) < 4)
+        gv_OrderNewDead(o, util_RandomU(2) + 1);
+    if (pl != 0 && (pl->kind == 6 || pl->kind == 7)) {
+        if (paid > 0)
+            ai_TellGravesPaid((int)pl, (int)bld, paid, sum);
+        if (nrel != 0)
+            ai_TellGraveNeglect((int)pl, (int)bld);
+    }
 }
 
 extern float ord_RatingRate;

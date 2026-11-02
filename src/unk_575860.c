@@ -6962,7 +6962,7 @@ int ai_Unk583ef0(char *rec, int from, int unused, int *btns, int *sel)
     return r;
 }
 
-void gv_OrderMoveGrave(int *c, int to, char *o, int from, int entry, int price); int gv_LeasePrice(); int gv_OrderReserveGrave(int *g, char *o, int v, short s, int x);
+void gv_OrderMoveGrave(int *c, int to, char *o, int from, int entry, int price); int gv_OrderReserveGrave(int *g, char *o, int v, short s, int x);
 
 /* 0x584010, the graveyard rent confirmation (587 B): rec = the record (its +0x27 the grave's owner word), a / b
    the values passed on, idx = the grave index; the cost 16000 when the owner is not the player (0x6f25b8), else
