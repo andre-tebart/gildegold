@@ -6148,66 +6148,67 @@ int ai_Unk49ad80(G5CH *p, AIARG *s1, AIARG *s2)
     }
     return 0;
 }
-/* 0x49ae50, decide callback 0x1e: one of four goods (0x168, 0x16c, 0x297, 0x2b7) */
+/* 0x49ae50, decide callback of "UseObject (Bildung)" (0x1e), as ai_DecideUseReputationObject for the four goods
+   0x168, 0x16c, 0x297 and 0x2b7: with fewer than six goods and none usable, the sub-action 2 to get a random missing
+   one; else the action 0x1e on a random usable one (o1 kind 1, its inventory entry) */
 
-int ai_Unk49ae50(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
+int ai_DecideUseEducationObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 {
     int k, i, r;
     int st[3];
     AIARG s1;
     AIARG s2;
-    G8REC recs[4];
+    G9REC recs[4];
 
     k = a;
     if (a == 0)
         k = 0x1e;
-    if (f != 0)
-        return 0;
-    memset(recs, 0, sizeof(recs));
-    recs[0].item = 0x168;
-    recs[1].item = 0x16c;
-    recs[2].item = 0x297;
-    recs[3].item = 0x2b7;
-    ai_FindWantedItems(p, 4, (int *)recs, st);
-    if (st[0] == 6 && st[2] == 0)
-        return 0;
-    if (st[1] == 4)
-        return 0;
-    if (st[0] < 6) {
-        if (st[2] == 0) {
+    if (f == 0) {
+        memset(recs, 0, sizeof(recs));
+        recs[0].item = 0x168;
+        recs[1].item = 0x16c;
+        recs[2].item = 0x297;
+        recs[3].item = 0x2b7;
+        ai_FindWantedItems(p, 4, recs, st);
+        if ((st[0] != 6 || st[2] != 0) && st[1] != 4) {
+            if (st[0] < 6) {
+                if (st[2] == 0) {
+                    i = util_RandomU(4);
+                    while (recs[i].value != 0)
+                        i = (i + 1) % 4;
+                    s1.kind = 2;
+                    s1.ref = recs[i].item;
+                    s1.arg = 1;
+                    s2.arg = 1;
+                    s2.ref = p->netId;
+                    s1.fvalue = 0.05f;
+                    s2.kind = 7;
+                    r = ai_ChooseSubAction(k, p->id, 2, &s1, &s2);
+                    if (r == 0)
+                        return 0;
+                    *o1 = s1;
+                    *o2 = s2;
+                    return r;
+                }
+            } else if (st[2] == 0) {
+                return 0;
+            }
             i = util_RandomU(4);
-            while (recs[i].unk04 != 0)
+            while (recs[i].value < 1)
                 i = (i + 1) % 4;
-            s1.kind = 2;
-            s1.ref = recs[i].item;
+            s1.kind = 1;
+            s1.ref = recs[i].entryId;
             s1.arg = 1;
-            s2.arg = 1;
-            s2.ref = p->netId;
-            s1.fvalue = 0.05f;
-            s2.kind = 7;
-            r = ai_ChooseSubAction(k, p->id, 2, &s1, &s2);
-            if (r == 0)
-                return r;
             *o1 = s1;
+            s2.kind = 0;
+            s2.ref = -1;
+            s2.arg = -1;
+            s2.arg2 = 0x1e;
             *o2 = s2;
-            return r;
+            return 0x1e;
         }
-    } else if (st[2] == 0) {
-        return 0;
     }
-    i = util_RandomU(4);
-    while (recs[i].unk04 < 1)
-        i = (i + 1) % 4;
-    s1.kind = 1;
-    s1.arg = 1;
-    s1.ref = recs[i].unk08;
-    *o1 = s1;
-    s2.kind = 0;
-    s2.ref = -1;
-    s2.arg = -1;
-    s2.arg2 = 0x1e;
-    *o2 = s2;
-    return 0x1e;
+    return 0;
 }
 /* 0x49b050, execute callback 0x1e: uses the object s1->unk04 of the character's list */
 
@@ -9591,7 +9592,7 @@ int ai_RegisterBaseActions(int a)
     act.id = 0x1e;
     strcpy(act.name, "UseObject (Bildung)");
     act.eval = ai_EvalMoodWeights;
-    act.decide = ai_Unk49ae50;
+    act.decide = ai_DecideUseEducationObject;
     act.exec = ai_Unk49b050;
     act.flags = 0x3b;
     if (!am_RegisterMethod(&act, a))

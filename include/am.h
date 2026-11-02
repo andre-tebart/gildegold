@@ -851,7 +851,7 @@ int ai_DecideUseReputationObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);  
 int ai_Unk49aa80(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49aa80 */
 int ai_DecideUseApsObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49ab60 */
 int ai_Unk49ad80(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49ad80 */
-int ai_Unk49ae50(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49ae50 */
+int ai_DecideUseEducationObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49ae50 */
 int ai_Unk49b050(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49b050 */
 int ai_Unk49b120(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49b120 */
 int ai_Unk49b2b0(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49b2b0 */
