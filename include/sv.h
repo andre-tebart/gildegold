@@ -118,7 +118,7 @@ void sv_ReleaseBubble(int o);                                           /* 0x52c
 void sv_ShowBubble(struct CHARACTER *ch, int text, char *name);         /* 0x52c4e0, shows a speech bubble over the character ch */
 void sv_SpeakPicked(void);                                                /* 0x52c5c0 */
 void sv_DrawBubbles(void);                                                /* 0x52cef0 */
-void sv_Unk52d010(char *part);                                          /* 0x52d010 */
+void sv_DrawGateName(struct D3OBJECT *part);                               /* 0x52d010, draws a contact gate's name */
 void sv_Unk52d1e0(void);                                                /* 0x52d1e0 */
 void sv_Unk52d2a0(void);                                                /* 0x52d2a0 */
 void sv_Unk52d480(void);                                                /* 0x52d480 */

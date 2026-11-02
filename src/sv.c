@@ -5633,7 +5633,7 @@ void sv_Unk52d1e0(void)
         }
         p += 0x32;
     } while ((int)p < (unsigned)((unsigned)sv_NamePlates + 0x1900));
-    d3_ForEachObject2(ai_Unk5fb5b0, 0, 0x20, sv_Unk52d010);
+    d3_ForEachObject2(ai_Unk5fb5b0, 0, 0x20, sv_DrawGateName);
 }
 /* 0x52d2a0, draws the names of the items (0x4ffe90 lists of the shown building / group: the not-person items first, then the persons (class 6 / 2)) above their screen boxes */
 
@@ -5678,61 +5678,69 @@ void sv_Unk52d2a0(void)
         q = (unsigned short *)gm_QueryNext();
     }
 }
-/* 0x52d010, the callback of 0x52d1e0 over the scene objects of kind 0x20: for a "gate" part of the shown building (0x6f230c / 0x6f2308) it finds the item of that name (the contact gates "contact_gate_<name>")
-   in the building's lists (or the 0xfd item) and draws its name above the part's screen box; a missed start inside 0x52cef0 for Ghidra; ROUGH */
+/* 0x52d010, the d3_ForEachObject2 callback of 0x52d1e0 (scene objects of mask 0x20): for a "gate" part of the shown
+   building (ai_FallbackBuilding, else ai_PlayerBuilding) finds the item named by the part's name from +0x10
+   ("contact_gate_<item>") among the building's objects (kind 6 in a fallback building, else 2), else the room
+   object 0xfd of a fallback building, and draws its name above the part's screen box: the item's name with
+   txt_GateItemSuffix, for the room object the shown room's or the building kind's name with txt_GatePlaceSuffix
+   @deep read whole against the original: the building choice, strstr "gate", the item search over gm_Query
+   kind 6 / 2 with goto found onto the it == 0 test, the room object 0xfd of a fallback building, the three
+   cross-jumped sprintf "%s %s" (txt_ObjectNames / ai_BuildingNames[type*14-2] with txt_GatePlaceSuffix /
+   txt_GateItemSuffix), the screen box text (buf 0x100, frame equal 0x170); 148 vs 151 instructions. Left
+   is allocation: the building pointer stays in eax until after strstr in the original (mov edi,eax at
+   0x52d03c), ours loads edi directly; after the found label 'it' lives in eax in the original (stub
+   0x52d11f mov eax,esi; jmp 0x52d0e2), in esi in ours (no stub), which moves the three sprintf blocks (eax
+   vs esi / ecx vs edx); the goods name address lea edx,[eax+ecx+1] vs add eax,ecx; inc eax; the y /
+   d2_ScreenSurf / buf loads around DrawTextBox in other registers. d2_AddDirty is K&R in sv's head (Open:
+   d2.h unsettled), M7 stays open. */
 
-void sv_Unk52d010(char *part)
+void sv_DrawGateName(D3OBJECT *part)
 {
-    char *b;
+    AIBLD *b;
     unsigned short *it;
-    char name[0x60], buf[0x80];
-    int t[3], x, y, lst;
+    char name[0x60];
+    char buf[0x100];
+    D3RECT box;
+    int x, y;
 
-    b = SV_C((unsigned)&ai_FallbackBuilding);
+    b = (AIBLD *)ai_FallbackBuilding;
     if (b == 0) {
-        b = SV_C((unsigned)&ai_PlayerBuilding);
+        b = (AIBLD *)ai_PlayerBuilding;
         if (b == 0)
             return;
     }
-    if (strstr(part, (char *)(unsigned)"gate") == 0)
+    if (strstr(part->name, "gate") == 0)
         return;
-    strcpy(name, part + 0x10);
-    lst = SV_I((unsigned)&ai_FallbackBuilding) != 0 ? 6 : 2;
-    it = (unsigned short *)gm_Query(*(int *)(b + 0x5d), 1, 4, lst);
-    while (it != 0) {
-        if (_strcmpi(name, ai_Goods + *it * 0x41 + 1) == 0)
-            goto lfound;
-        it = (unsigned short *)gm_QueryNext();
+    strcpy(name, part->name + 0x10);
+    if (ai_FallbackBuilding != 0)
+        it = (unsigned short *)gm_Query((void *)b->objList, 1, 4, 6);
+    else
+        it = (unsigned short *)gm_Query((void *)b->objList, 1, 4, 2);
+    for (; it != 0; it = gm_QueryNext()) {
+        if (_strcmpi(name, ai_GoodsT[*it].name) == 0)
+            goto found;
     }
-    if (SV_I((unsigned)&ai_FallbackBuilding) == 0)
+    if (ai_FallbackBuilding == 0)
         return;
-    it = (unsigned short *)gm_Query(*(int *)(b + 0x5d), 1, 0, 0xfd);
-lfound:
+    it = (unsigned short *)gm_Query((void *)b->objList, 1, 0, 0xfd);
+found:
     if (it == 0)
         return;
     if (*it == 0xfd) {
-        if (SV_I((unsigned)&sv_PanelShown) != 0)
-            sprintf(buf, "%s %s", SV_I((unsigned)&txt_ObjectNames + *(unsigned short *)SV_I((unsigned)&sv_PanelShown) * 8), SV_I((unsigned)&full_data_143a3d0));
+        if (sv_PanelShown != 0)
+            sprintf(buf, "%s %s", (char *)txt_ObjectNames[*sv_PanelShown][0], txt_GatePlaceSuffix);
         else
-            sprintf(buf, "%s %s", SV_I((unsigned)&full_data_143b3f8 + *(unsigned char *)b * 0x38), SV_I((unsigned)&full_data_143a3d0));
-    } else
-        sprintf(buf, "%s %s", SV_I((unsigned)&txt_ObjectNames + *it * 8), SV_I((unsigned)&full_data_143a3cc));
-    if ((char)d3if_ScreenBox(part, t) != 0) {
-        x = (t[2] - t[0]) / 2 - 0x50 + t[0];
-        y = t[1];
+            sprintf(buf, "%s %s", (char *)ai_BuildingNames[b->type * 0xe - 2], txt_GatePlaceSuffix);
+    } else {
+        sprintf(buf, "%s %s", (char *)txt_ObjectNames[*it][0], txt_GateItemSuffix);
+    }
+    if (d3if_ScreenBox(part, &box) != 0) {
+        y = box.top;
+        x = (box.right - box.left) / 2 - 0x50 + box.left;
         d2_DrawTextBox(x, y, 0xa0, 0x60, d2_ScreenSurf, buf, 0x28);
-        d2_AddDirty(x, y, SV_I((unsigned)&d2_TextDrawnW), SV_I((unsigned)&d2_TextDrawnH));
+        d2_AddDirty(x, y, d2_TextDrawnW, d2_TextDrawnH);
     }
 }
-
-struct SBSAMPLE * sb_PlaySample();                     /* 0x426fa0 */
-int ai_ScriptQuery();                     /* 0x576340 */
-int ai_Unk575860();                     /* 0x575860 */
-void ai_Unk591170(void);                     /* 0x591170 */
-void anm_Update(void);                     /* 0x4bb860 */
-void sv_ReleaseNamePlates(void);                /* 0x52e190 */
-void gm_GetGebaeudeHauptraum(unsigned char *b);                     /* 0x501ce0 */
-
 /* 0x52d480, with the key flag 8 set and the camera rotated away from the stored views (0x5ebba4 zero vector, tolerance 0.2): draws the arrows (picture 0x52c, frames 0 .. 7) at the screen border that show
    the way back to the object's view: the pairs 0xfc2dec +0xe4 / +0xfc (position side) and +0xb4 / +0xcc (direction side) decide which of two arrows per side is shown; ROUGH */
 void sv_Unk52d480(void)
