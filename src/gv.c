@@ -3219,23 +3219,20 @@ int gv_AddEvidence(int crime, int owner)
     }
     return 0;
 }
-/* 0x4f36b0, the last free (int +0x25 = 0) record of the 512 at 0x91f700 (stops at the first one found), -1 when none */
+/* 0x4f36b0, the index of the first free crime record (state 0), -1 when none */
 
-int unk_Unk4f36b0(void)
+int gv_FreeCrimeSlot(void)
 {
-    int r, i, j;
+    int slot, i;
 
-    r = -1;
-    i = 0;
-    do {
-        j = i;
-        if (*(int *)(gv_Graveyard + 0x25 + i * 0x2d) == 0) {
-            j = 0x200;
-            r = i;
+    slot = -1;
+    for (i = 0; i < 0x200; i++) {
+        if (gv_CrimesT[i].state == 0) {
+            slot = i;
+            i = 0x200;
         }
-        i = j + 1;
-    } while (i < 0x200);
-    return r;
+    }
+    return slot;
 }
 /* 0x4f36e0, the index of the record with the id (+0) in 0x91f700 or -1 */
 

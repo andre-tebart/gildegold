@@ -3634,7 +3634,7 @@ int ai_Unk4c8e70(G17MSG *m, G17STAT *s)
         ai_NextCrimeId = G17_I(*m, 0);
     else
         ai_NextCrimeId = ai_NextCrimeId + 1;
-    slot = unk_Unk4f36b0();
+    slot = gv_FreeCrimeSlot();
     if (slot == -1)
         return -1;
     c = gm_FindChar(G17_I(*m, 0x16));

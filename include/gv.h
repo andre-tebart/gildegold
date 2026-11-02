@@ -367,7 +367,7 @@ int gv_TableRecordText(char *out, int i);    /* 0x4f2fe0 */
 
 int gv_FindCrimesByState(int state, int *out);    /* 0x4f3610 */
 int gv_AddEvidence(int crime, int owner);        /* 0x4f3640 */
-int unk_Unk4f36b0(void);                /* 0x4f36b0 */
+int gv_FreeCrimeSlot(void);                /* 0x4f36b0 */
 int unk_Unk4f36e0(int id);              /* 0x4f36e0 */
 int gv_EvidenceSlot(int a, int b);        /* 0x4f3780 */
 
