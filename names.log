@@ -955,3 +955,4 @@
 2026-11-02T11:02:44 0x0055ea60 func he_Unk55ea60 -> he_FigureContact by:main why:0x4c5150: message 0x2f with the arguments of cm_RequestChrMoveToUniverse (0x30; the receiver handles 0x2f and 0x30 in one case), the name a reasoned guess; 0x55ea60: he.c's reading, the contact id of the figure p or -1
 2026-11-02T11:05:20 0x00577290 func ai_Unk577290 -> ai_QueryChapter5Step2 by:main why:the query callback (+0x3c) of the run record FTInitChapter5Step2 (id c5s2)
 2026-11-02T11:05:58 0x005772d0 func ai_Unk5772d0 -> ai_MarkerChapter5Step2 by:main why:the marker step callback (+0x60, called by ai_TutorialMarkerUpdate) of the run record FTInitChapter5Step2 (id c5s2)
+2026-11-02T11:06:36 0x005773f0 func ai_Unk5773f0 -> ai_MarkerChapter3Step8 by:main why:the marker step callback (+0x60, called by ai_TutorialMarkerUpdate) of the run record FTInitChapter3Step8 (id c3s8)

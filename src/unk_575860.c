@@ -1810,26 +1810,30 @@ int ai_Unk577330(int *p)
         return 1;
     return 0;
 }
-/* 0x5773f0, the fight kind of the record 0x6f2310 (0x92 .. 0x97) merged with the flag S+0x38: -1 without a
-   record / outside the kinds; flag 0: 0 for 0x92, 3 else; flag 1: 1 for 0x95, 4 else; flag 2: 2 */
+/* 0x5773f0, the marker step callback of the run record FTInitChapter3Step8 (ai_TutorialMarkerUpdate): picks one
+   of its five marker entries by the shown panel room (0x92 .. 0x97) and the goal progress goalDone - 0: 0 for
+   the room 0x92, 3 for the others; 1: 1 for the room 0x95, 4 for the others; 2: 2; -1 (no marker) without a
+   shown panel, for other rooms or another goalDone */
 
-int ai_Unk5773f0(void)
+int ai_MarkerChapter3Step8(void)
 {
-    unsigned short w;
-    int v;
+    unsigned short room;
+    int r;
+    int done;
 
-    if (!U_I((unsigned)&sv_PanelShown))
-        return -1;
-    w = *(unsigned short *)U_I((unsigned)&sv_PanelShown);
-    v = w;
-    if (v < 0x92 || v > 0x97)
-        return -1;
-    if (U_I(S + 0x38) == 0)
-        return w == 0x92 ? 0 : 3;
-    if (U_I(S + 0x38) == 1)
-        return w == 0x95 ? 1 : 4;
-    if (U_I(S + 0x38) == 2)
-        return 2;
+    if (sv_PanelShown) {
+        room = *sv_PanelShown;
+        r = room;
+        if (r >= 0x92 && r <= 0x97) {
+            done = ai_Tutorial->goalDone;
+            if (done == 0)
+                return room == 0x92 ? 0 : 3;
+            if (done == 1)
+                return room == 0x95 ? 1 : 4;
+            if (done == 2)
+                return done;
+        }
+    }
     return -1;
 }
 /* 0x577450, a step predicate: 1 for the kind 0x26 with the step word 0x1d0 while the flag S+0x38 is not negative
@@ -3385,7 +3389,7 @@ int ai_Unk579570(void)
     U_I(r + 0x50) = 0x0;
     U_I(r + 0x54) = 0x0;
     U_I(r + 0x5c) = 0x5;
-    U_I(r + 0x60) = (unsigned)&ai_Unk5773f0;
+    U_I(r + 0x60) = (unsigned)&ai_MarkerChapter3Step8;
     U_I(r + 0x68) = 0x5837;
     U_I(r + 0x6c) = 0x1f70;
     /* FTInitAnimChapter3Step8: five animation entries */
