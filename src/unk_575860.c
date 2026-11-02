@@ -5371,7 +5371,7 @@ void ai_Unk57f690(char *sc)
     }
 }
 
-float gv_SalvoCharge(); void unk_Unk4ef170(char *o, unsigned *a, unsigned *b); int unk_Unk4ef090(); float ai_GetDefaultEffectScale();
+float gv_SalvoCharge(); void unk_Unk4ef170(char *o, unsigned *a, unsigned *b); int gv_CannonCost(); float ai_GetDefaultEffectScale();
 int _ftol(); float ai_Unk57fdb0(); int d2_CreateWinText(); void d2_SetObjFont();  /* @original: the call at 4110 passes 1 argument to d2.h's 4-parameter prototype */
 void txt_Format(char *out, int id0, ...); int gm_Unk509ee0(char *c, char p);
 
@@ -5417,7 +5417,7 @@ void ai_Unk57f890(char *rec, char *sc, char *run)
     *(int *)(U_I((unsigned)&d2_Objs) + 0x28 + *(int *)(sc + 0xc8) * 0x2ec) = *(int *)(sc + 0xa0) == 0;
     *(int *)(U_I((unsigned)&d2_Objs) + 0x28 + *(int *)(sc + 0xcc) * 0x2ec) = *(int *)(sc + 0xa0) == 1;
     *(int *)(U_I((unsigned)&d2_Objs) + 0x28 + *(int *)(sc + 0xd0) * 0x2ec) = *(int *)(sc + 0xa0) == 2;
-    m = unk_Unk4ef090((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, a, b, *(int *)(sc + 0xa0) + 1, &l1, &l2);
+    m = gv_CannonCost((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, a, b, *(int *)(sc + 0xa0) + 1, &l1, &l2);
     if (*(float *)(sc + 0x20) > 0.01f || m == 0 || *(float *)(run + 8 + *(int *)(sc + 0xa0) * 4) < (float)c || (*(unsigned char *)(run + 4) & 2) != 0)
         w = 0;
     else
@@ -5557,7 +5557,7 @@ void ai_Unk580160(char *sc, char *rec)
     v1 = d2_GetObjValue(*(int *)(sc + 0xb0));
     v2 = d2_GetObjValue(*(int *)(sc + 0xb4));
     sel = (int)*(float *)(sc + 0xa0);
-    h = unk_Unk4ef090((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, v1, v2, sel + 1, &a, &b);
+    h = gv_CannonCost((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, v1, v2, sel + 1, &a, &b);
     if (!h)
         return;
     unk_Unk4ef260(rec, &a, &b);

@@ -10777,7 +10777,7 @@ int ai_Unk4a67a0(AIPER *p, AIBLD *b, AIBLD *t)
     k = (int)((ang - rng[0]) * 100.0f / (rng[1] - rng[0]));
     if (gv_SalvoCharge(r, k, r2 + 1) > cn->charge[r2])
         return 0;
-    n = unk_Unk4ef090(p, r, k, r2 + 1, &x, &cost);
+    n = gv_CannonCost(p, r, k, r2 + 1, &x, &cost);
     if (n == 0)
         return 0;
     if ((int)(gm_SumListAmounts(*(int *)((unsigned char *)p + 0x178), ai_OwnPlayer) * 0.25f) < cost)

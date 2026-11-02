@@ -620,3 +620,4 @@
 2026-11-02T02:57:19 0x004eee00 data unk_Unk4eee00 -> gv_StartShot by:main why:receiver of message 0x67 (cm.c): starts the received SHOTREC as a free part of the effect slot (state 1 in flight)
 2026-11-02T02:59:09 0x004eef50 func unk_Unk4eef50 -> gv_SalvoCharge by:main why:am.c passes its result as the v of gv_FireShots for a salvo of 1 .. 3 balls (third argument); gv_StartShot takes v off the effect slot's charge
 2026-11-02T03:01:09 0x004ef000 func unk_Unk4ef000 -> gv_CannonKind by:main why:fills am.c's G9KIND for the cannon kind n (clamped 0 .. 4): the level a building needs (n + 2) and the per-salvo values; am.c 0x4a67a0 aims a cannon with it
+2026-11-02T03:04:05 0x004ef090 func unk_Unk4ef090 -> gv_CannonCost by:main why:am.c ai_Unk4a67a0: the cost of a cannon salvo (kind, strength, balls) checked against a quarter of the money; same clamps as gv_SalvoCharge
