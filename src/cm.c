@@ -3619,7 +3619,7 @@ int ai_Unk4c8de0(G17MSG *m, G17STAT *s)
         s->state = 1;
     return 0;
 }
-/* 0x4c8e70, handler of type 0x22, "cm_ExAddStraftat": a crime record (0x2d bytes) in ai_Unk91f700, the matching
+/* 0x4c8e70, handler of type 0x22, "cm_ExAddStraftat": a crime record (0x2d bytes) in ai_Crimes, the matching
    jobs are ended */
 
 int ai_Unk4c8e70(G17MSG *m, G17STAT *s)
@@ -3640,7 +3640,7 @@ int ai_Unk4c8e70(G17MSG *m, G17STAT *s)
     c = gm_FindChar(G17_I(*m, 0x16));
     if (c != 0 && c[2] == 6)
         ai_Unk4b44e0(c, 0x17);
-    rec = ai_Unk91f700 + slot * 0x2d;
+    rec = ai_Crimes + slot * 0x2d;
     memcpy(rec, &m->data[0], 0x2d);
     *(int *)rec = ai_NextCrimeId;
     sprintf(buf, "cm_ExAddStraftat(): Executed---- st_id = %i, taeter = %i, opfer = %i", ai_NextCrimeId,
@@ -3709,23 +3709,23 @@ int ai_Unk4c90d0(G17MSG *m, G17STAT *s)
 
     i = unk_Unk4f3780(G17_I(*m, 4), G17_I(*m, 0));
     if (i > -1) {
-        ai_Unk91b6e0[i][0] = G17_I(*m, 4);
-        ai_Unk91b6e0[i][1] = G17_I(*m, 0);
+        ai_Evidence[i][0] = G17_I(*m, 4);
+        ai_Evidence[i][1] = G17_I(*m, 0);
     }
     if (s != 0)
         s->state = 1;
     return 0;
 }
-/* 0x4c9110, handler of type 0x25: clears the entry (data[4], data[0]) of ai_Unk91b6e0 */
+/* 0x4c9110, handler of type 0x25: clears the entry (data[4], data[0]) of ai_Evidence */
 
 int ai_Unk4c9110(G17MSG *m, G17STAT *s)
 {
     int i;
 
     for (i = 0; i < 0x800; i++) {
-        if (ai_Unk91b6e0[i][0] == G17_I(*m, 4) && ai_Unk91b6e0[i][1] == G17_I(*m, 0)) {
-            ai_Unk91b6e0[i][0] = -1;
-            ai_Unk91b6e0[i][1] = -1;
+        if (ai_Evidence[i][0] == G17_I(*m, 4) && ai_Evidence[i][1] == G17_I(*m, 0)) {
+            ai_Evidence[i][0] = -1;
+            ai_Evidence[i][1] = -1;
             if (s != 0)
                 s->state = 1;
             return 0;
@@ -14919,8 +14919,8 @@ extern char cm_ChatLog[2048];
 extern int cm_SaveAcks[8][2];
 /* ai_Unk770b89: view of ai_Chars (tools/data_views.py) */
 /* ai_Unk770cec: view of ai_Chars (tools/data_views.py) */
-extern int ai_Unk91b6e0[0x800][2];
-extern char ai_Unk91f700[0x5a00];
+extern int ai_Evidence[0x800][2];
+extern char ai_Crimes[0x5a00];
 extern int ai_Unk925510;
 extern int ai_Unk92bca0;
 extern int ai_Unk92bca4;
@@ -15164,8 +15164,8 @@ char * sv_SelectedObject = 0;  /* 0x75ec60 */
 char cm_ChatLog[2048] = {0};  /* 0x75fba0 */
 int cm_SaveAcks[8][2] = {0};  /* 0x76fa20 */
 /* ai_Unk770d8c: view of ai_Chars (tools/data_views.py) */
-int ai_Unk91b6e0[0x800][2] = {0}; /* 0x91b6e0 */
-char ai_Unk91f700[0x5a00] = {0}; /* 0x91f700, the crime records (0x2d bytes each) up to 0x925100; f3gm's goods
+int ai_Evidence[0x800][2] = {0}; /* 0x91b6e0 */
+char ai_Crimes[0x5a00] = {0}; /* 0x91f700, the crime records (0x2d bytes each) up to 0x925100; f3gm's goods
                                     table ai_Unk91f716 is the same storage, a view at +0x16 */
 int ai_Unk925510 = 0;  /* 0x925510 */
 G28REC ai_Unk925520[96] = {0};  /* 0x925520 */

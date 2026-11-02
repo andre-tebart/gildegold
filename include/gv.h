@@ -353,9 +353,8 @@ int gv_GetTableRecord(int i, int *out);     /* 0x4f2720 */
 int gv_FindTableRecord(char *c, unsigned b, int *out);  /* 0x4f2870 */
 extern char unk_Tab611258[];            /* 0x611258, 0x1d records of 0x24 bytes */
 
-int gv_WriteGraveyard(void *f);             /* 0x4f28d0 */
+int gv_WriteCrimes(void *f);             /* 0x4f28d0 */
 float unk_Unk4f2da0(short *c);          /* 0x4f2da0 */
-extern char unk_Var6f1b88[];            /* 0x6f1b88 */
 extern char gv_Graveyard[];            /* 0x91f700 */
 extern char unk_Tab91b6e0[];            /* 0x91b6e0 */
 int gm_BuildingSkill();                     /* 0x5092e0 */

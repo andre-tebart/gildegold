@@ -101,8 +101,8 @@
 #define unk_Ptrfd7c50            (*(char **)((char *)&d3_Scenes + 0xb0))  /* 0xfd7c50 */
 #define init_SceneHeightMaps     (*(int (*)[202])((char *)&d3_Scenes + 0xb0))  /* 0xfd7c50 */
 
-/* ai_Unk91f700 */
-#define ai_Unk91f716             (*(char (*)[23018])((char *)&ai_Unk91f700 + 0x16))  /* 0x91f716 */
+/* ai_Crimes */
+#define ai_Unk91f716             (*(char (*)[23018])((char *)&ai_Crimes + 0x16))  /* 0x91f716 */
 
 /* ai_Unk61a686 */
 #define ai_Unk61a688             (*(char (*)[548])((char *)&ai_Unk61a686 + 0x2))  /* 0x61a688 */

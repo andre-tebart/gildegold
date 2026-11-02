@@ -884,7 +884,7 @@ extern GAPDATA full_data_62ccfc[];
 extern int ai_Unk5b3630();
 extern int ai_Unk5b3ad0();
 extern int ai_Unk5b3f30();
-extern char ai_Unk91f700[];
+extern char ai_Crimes[];
 extern GAPDATA full_data_62cd7c[];
 extern GAPDATA full_data_62cda8[];
 extern char * ai_PickedObject;
@@ -1061,7 +1061,7 @@ extern GAPDATA full_data_62d634[];
 extern GAPDATA full_data_62d64c[];
 extern GAPDATA full_data_62d660[];
 extern char * ai_BTypes;
-extern char ai_Unk91f700[];
+extern char ai_Crimes[];
 extern GAPDATA full_data_62d694[];
 
 extern int d2_PointerObj;
@@ -15642,7 +15642,7 @@ int ai_Unk5b4340(short *param_1, int param_2)
     if (n < 1)
         return 0;
     for (i = 0; i < n; i++)
-        memcpy(list + i * 0x2d, (void *)((unsigned)&ai_Unk91f700 + U_I((int)ids + i * 4) * 0x2d), 0x2d);
+        memcpy(list + i * 0x2d, (void *)((unsigned)&ai_Crimes + U_I((int)ids + i * 4) * 0x2d), 0x2d);
     unk_Unk4f4390(n, list);
     win = d2_OpenForm((char *)(unsigned)&full_data_62cd7c, 0, 0);
     d2_CentreViewWindows(win);
@@ -21696,7 +21696,7 @@ int ai_Unk5cdb90(int param_1, int *param_2, int param_3, int param_4)
         return 0x60;
     flag = 0;
     for (i = 0; i < count; i++) {
-        memcpy(recs + i * 0x2d, (char *)((unsigned)&ai_Unk91f700 + ids[i] * 0x2d), 0x2d);
+        memcpy(recs + i * 0x2d, (char *)((unsigned)&ai_Crimes + ids[i] * 0x2d), 0x2d);
         if (*(int *)(recs + i * 0x2d) == 1)
             flag = 1;
     }

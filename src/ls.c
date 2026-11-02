@@ -74,7 +74,7 @@ int ai_NextEventId = 0;  /* 0x6f2618 */
 int ai_Unk6f261c = 0;  /* 0x6f261c, the highest used index of he_Events (own object: ai_NextEventId is a 4-byte int) */
 extern int ai_NextCharNumber, ai_NextPlayerNumber;   /* 0x6f1bb8, 0x6f1bbc, 0x6f1bc0 */
 /* ls_RefTargets: view of cm_SendStates (tools/data_views.py) */
-int gv_WriteGraveyard();                     /* 0x4f28d0 */
+int gv_WriteCrimes();                     /* 0x4f28d0 */
 
 #define LS_W(p, sz) if (vfs_fwrite((p), (sz), 1, f) <= 0) return 0;
 #include "rd_types.h"                 /* G15BK */
@@ -214,7 +214,7 @@ int ls_SaveGame(int name, char *path, unsigned flags)
     LS_STEP(amt_SaveAemter)
     LS_STEP(ls_RelinkScene)
     if ((flags & 2) == 0) {
-        LS_STEP(gv_WriteGraveyard)
+        LS_STEP(gv_WriteCrimes)
         LS_STEP(ls_WriteRelations)
         LS_STEP(ls_WriteStatistics)
         LS_STEP(gv_WriteAvatars)

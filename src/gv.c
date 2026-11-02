@@ -38,6 +38,7 @@
 #define gv_PlayerAiChar (*(AICHAR **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) as the AICHAR it points to */
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define gv_Decisions (*(AIDEC (*)[0x1d])&unk_Tab611258)  /* 0x611258, the AI decision table (char initializer) as its 0x1d AIDEC records */
+#define gv_CrimesT (*(CRIME (*)[0x200])&ai_Crimes)  /* 0x91f700, ai_Crimes (cm.c: char[0x5a00]) as its 0x200 CRIME records */
 #define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
 #define GAPDATA __declspec(align(1)) unsigned char
 #define gv_EffectsT (*(GVEFFECT (*)[8])&gv_Effects)  /* 0x6f1008, gv_Effects (char[0xb80]) as the 8 GVEFFECT slots */
@@ -2837,77 +2838,71 @@ int gv_FindTableRecord(char *c, unsigned b, int *out)
     }
     return 0;
 }
-/* 0x4f28d0, writes the graveyard game state to the file f: the tag 0x1d, the ints +0x18 of the 0x1d table records (0x611270), 0x6f1b88, the counts of the used 0x2d-byte records at 0x91f700 (first int not -1) and of the used pairs at 0x91b6e0, then
-   the used records (fields 4, 0xe, 4, 4, 2, 1, 4, 4, 4 bytes) and the used pairs; 1 when all was written. ROUGH */
+/* 0x4f28d0, writes the crime state to the save file f: the tag 0x1d, the current values (AIDEC.cur) of the 0x1d AI
+   decision records, ai_NextCrimeId, the counts of the used crime records (ai_Crimes) and evidence pairs (ai_Evidence),
+   then each used crime record field by field and each used pair; 1 when all was written */
 
-int gv_WriteGraveyard(void *f)
+int gv_WriteCrimes(void *f)
 {
-    int tag, cnt, cnt2;
-    char *p;
-    int *q;
+    int tag, crimes, evidence;
+    int i;
 
     tag = 0x1d;
-    cnt = 0;
-    cnt2 = 0;
+    crimes = 0;
+    evidence = 0;
     if (f == 0)
         return 0;
-    if (UNK_FW(&tag, 4, 1, f) == 0)
+    if (vfs_fwrite(&tag, 4, 1, f) == 0)
         return 0;
-    for (p = unk_Tab611258 + 0x18; (int)p < ((unsigned)&unk_Tab611258 + 0x42c); p += 0x24) {
-        if (UNK_FW(p, 4, 1, f) == 0)
+    for (i = 0; i < 0x1d; i++) {
+        if (vfs_fwrite(&gv_Decisions[i].cur, 4, 1, f) == 0)
             return 0;
     }
-    if (UNK_FW(unk_Var6f1b88, 4, 1, f) == (unsigned)-1)
+    if (vfs_fwrite(&ai_NextCrimeId, 4, 1, f) == (unsigned)-1)
         return 0;
-    for (q = (int *)gv_Graveyard; (int)q < (int)(gv_Graveyard + 0x5a00); q = (int *)((char *)q + 0x2d)) {
-        if (*q != -1)
-            cnt++;
+    for (i = 0; i < 0x200; i++) {
+        if (gv_CrimesT[i].id != -1)
+            crimes++;
     }
-    for (q = (int *)(unk_Tab91b6e0 + 4); (int)q < ((unsigned)unk_Tab91b6e0 + 0x4004); q += 2) {
-        if (q[-1] != -1 && *q != -1)
-            cnt2++;
+    for (i = 0; i < 0x800; i++) {
+        if (ai_Evidence[i][0] != -1 && ai_Evidence[i][1] != -1)
+            evidence++;
     }
-    if (UNK_FW(&cnt, 4, 1, f) == (unsigned)-1)
+    if (vfs_fwrite(&crimes, 4, 1, f) == (unsigned)-1)
         return 0;
-    if (UNK_FW(&cnt2, 4, 1, f) == (unsigned)-1)
+    if (vfs_fwrite(&evidence, 4, 1, f) == (unsigned)-1)
         return 0;
-    for (q = (int *)gv_Graveyard; ; ) {
-        if (*q != -1) {
-            if (UNK_FW(q, 4, 1, f) == (unsigned)-1)
+    for (i = 0; i < 0x200; i++) {
+        if (gv_CrimesT[i].id != -1) {
+            if (vfs_fwrite(&gv_CrimesT[i].id, 4, 1, f) == (unsigned)-1)
                 return 0;
-            if (UNK_FW(q + 1, 0xe, 1, f) == (unsigned)-1)
+            if (vfs_fwrite(gv_CrimesT[i].b04, 0xe, 1, f) == (unsigned)-1)
                 return 0;
-            if (UNK_FW((char *)q + 0x12, 4, 1, f) == (unsigned)-1)
+            if (vfs_fwrite(&gv_CrimesT[i].victim, 4, 1, f) == (unsigned)-1)
                 return 0;
-            if (UNK_FW((char *)q + 0x16, 4, 1, f) == (unsigned)-1)
+            if (vfs_fwrite(&gv_CrimesT[i].culprit, 4, 1, f) == (unsigned)-1)
                 return 0;
-            if (UNK_FW((char *)q + 0x1a, 2, 1, f) == (unsigned)-1)
+            if (vfs_fwrite(&gv_CrimesT[i].count, 2, 1, f) == (unsigned)-1)
                 return 0;
-            if (UNK_FW(q + 7, 1, 1, f) == (unsigned)-1)
+            if (vfs_fwrite(&gv_CrimesT[i].law, 1, 1, f) == (unsigned)-1)
                 return 0;
-            if (UNK_FW((char *)q + 0x1d, 4, 1, f) == (unsigned)-1)
+            if (vfs_fwrite(&gv_CrimesT[i].v1d, 4, 1, f) == (unsigned)-1)
                 return 0;
-            if (UNK_FW((char *)q + 0x21, 4, 1, f) == (unsigned)-1)
+            if (vfs_fwrite(&gv_CrimesT[i].place, 4, 1, f) == (unsigned)-1)
                 return 0;
-            if (UNK_FW((char *)q + 0x25, 4, 1, f) == (unsigned)-1)
+            if (vfs_fwrite(&gv_CrimesT[i].state, 4, 1, f) == (unsigned)-1)
                 return 0;
         }
-        q = (int *)((char *)q + 0x2d);
-        if ((int)q > ((unsigned)&ai_Unk91f716 + 0x59e9)) {
-            q = (int *)(unk_Tab91b6e0 + 4);
-            do {
-                if (q[-1] != -1 && *q != -1) {
-                    if (UNK_FW(q - 1, 4, 1, f) == (unsigned)-1)
-                        return 0;
-                    if (UNK_FW(q, 4, 1, f) == (unsigned)-1)
-                        return 0;
-                }
-                q += 2;
-                if ((int)q > ((unsigned)unk_Tab91b6e0 + 0x4003))
-                    return 1;
-            } while (1);
+    }
+    for (i = 0; i < 0x800; i++) {
+        if (ai_Evidence[i][0] != -1 && ai_Evidence[i][1] != -1) {
+            if (vfs_fwrite(&ai_Evidence[i][0], 4, 1, f) == (unsigned)-1)
+                return 0;
+            if (vfs_fwrite(&ai_Evidence[i][1], 4, 1, f) == (unsigned)-1)
+                return 0;
         }
     }
+    return 1;
 }
 /* 0x4f2da0, the highest level (0x5092e0 (b, 10, 1)) among the school buildings (kind 7) of the character *c's, times 0.01; 0.75 when one has exactly 0x4b */
 
@@ -2954,7 +2949,7 @@ int unk_Unk4f2b30(void *f)
         if (UNK_FR(p, 4, 1, f) == 0)
             return 0;
     }
-    if (UNK_FR(unk_Var6f1b88, 4, 1, f) == 0)
+    if (UNK_FR(&ai_NextCrimeId, 4, 1, f) == 0)
         return 0;
     if (ls_Version > 0x10040) {
         if (UNK_FR(&n1, 4, 1, f) == 0)
@@ -3518,7 +3513,7 @@ void gv_ClearGraveyard(void)
     int *p;
 
     p = (int *)(gv_Graveyard + 0x12);
-    *(int *)unk_Var6f1b88 = 0;
+    ai_NextCrimeId = 0;
     do {
         p[1] = -1;
         p[0] = -1;

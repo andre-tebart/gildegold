@@ -31,7 +31,7 @@ extern D2VIEW d2_Views[];
 #include "di_input.h"
 #include "data_views.h"
 #include "amt.h"
-extern char ai_Unk91f700[];
+extern char ai_Crimes[];
 #define GAPDATA __declspec(align(1)) unsigned char
 extern char gm_StockBlocks[];                 /* 0x7d6a60, the five 0x2a90-byte stock blocks (one per player slot) */
 /* The stock area is ONE 0xd4d0-byte object at 0x7d6a60 (five blocks of 0x2a90: four header ints, then
@@ -5009,8 +5009,8 @@ void gm_ShowSlotObjects(int unused, int scene, int c)
 }
 
 /* ---- the character and building life cycle 0x502b60 .. 0x504510 (ROUGH drafts, written out of address order at the end of the file) ---- */
-/* ai_Unk91f716: view of ai_Unk91f700 (tools/data_views.py) */
-extern int ai_Unk91b6e0[0x800][2];              /* 0x91b6e0 .. 0x91f6e0: pairs of ints */
+/* ai_Unk91f716: view of ai_Crimes (tools/data_views.py) */
+extern int ai_Evidence[0x800][2];              /* 0x91b6e0 .. 0x91f6e0: pairs of ints */
 extern int ai_Unk770ae0_day;            /* the clock's day (0x770ae0) */
 #ifndef TIME_VIEW_H
 extern unsigned short ai_TimeHour;     /* 0x770ae4, the clock's hour (unaligned view) */
@@ -5638,7 +5638,7 @@ void unk_Unk503c60(int c, int mode)
         do {
             if (*q == *(int *)(ai_Chars[c] + 4)) {
                 k = *(int *)((char *)q - 0x16);
-                r = ai_Unk91b6e0;
+                r = ai_Evidence;
                 do {
                     if (r[1] == k) {
                         if (peer != 0 && *(int *)(peer + 4) == *r)
@@ -5647,7 +5647,7 @@ void unk_Unk503c60(int c, int mode)
                         *r = -1;
                     }
                     r += 2;
-                } while ((int)r < ((unsigned)ai_Unk91b6e0 + 0x4000));
+                } while ((int)r < ((unsigned)ai_Evidence + 0x4000));
                 q[-1] = -1;
                 *q = -1;
                 *(int *)((char *)q - 0x16) = -1;

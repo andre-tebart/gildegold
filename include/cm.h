@@ -41,6 +41,18 @@ typedef struct G17FIELDS {              /* 0x7c bytes, a field block (0xa68c20, 
     unsigned char n;                    /* 0x04, fields */
     unsigned char buf[0x77];            /* 0x05, size, count, offset (short), values */
 } G17FIELDS;
+typedef struct CRIME {                  /* 0x2d bytes, a crime record of ai_Crimes (message 0x22, "cm_ExAddStraftat"; saved by gv_WriteCrimes) */
+    int id;                             /* 0x00, ai_NextCrimeId at the record's creation, -1 when free */
+    char b04[0xe];                      /* 0x04 */
+    int victim;                         /* 0x12, the victim's netId ("opfer") */
+    int culprit;                        /* 0x16, the culprit's netId ("taeter"), -1 when free */
+    short count;                        /* 0x1a, counts down to the record's retirement (0x4f37e0) */
+    unsigned char law;                  /* 0x1c, the AI decision (law) record broken (gv_GetTableRecord) */
+    int v1d;                            /* 0x1d */
+    int place;                          /* 0x21, the object id of the scene (ord_AddGridAmount), -1 for none */
+    int state;                          /* 0x25, 0 free, 1 open, above 1 handed over */
+    int seed;                           /* 0x29, a random seed (util_Seed when there is no place) */
+} CRIME;
 #pragma pack(pop)
 
 typedef char ai_AssertG17MSG[sizeof(G17MSG) == 0x99 ? 1 : -1];
@@ -368,8 +380,8 @@ extern char cm_RequestedSaveName[];  /* 0x6f25d0 */
 extern unsigned int ai_MissionSeed;  /* 0x75e120, the random seed of the missions (as unk_4b39f0.h) */
 extern int ai_TimeCopy[4];  /* 0x75e130, the clock copy (14 bytes) */
 extern int cm_SaveAcks[][2];  /* 0x76fa20 */
-extern int ai_Unk91b6e0[0x800][2];  /* 0x91b6e0 */
-extern char ai_Unk91f700[];  /* 0x91f700 */
+extern int ai_Evidence[0x800][2];  /* 0x91b6e0, pairs (character netId, crime id): the character holds evidence of the crime (0x4f3640) */
+extern char ai_Crimes[];  /* 0x91f700 */
 extern char ai_Unk92cae0[16][0x35c];  /* 0x92cae0 */
 extern int cm_DayEndRequest;  /* 0xf31144 */
 extern int hst_SeedPending;  /* 0xf83650 */

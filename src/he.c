@@ -93,7 +93,7 @@ extern char * cm_FieldObject;
 extern GAPDATA full_data_5fe7d0[];
 extern signed char ai_Relations[768][768];
 extern const int ai_Unk5ed100[16];
-extern char ai_Unk91f700[];
+extern char ai_Crimes[];
 extern const int sv_PhaseMinutes[24];
 extern int ai_ClockMs;
 extern unsigned short * ai_PlayerChar;
@@ -6001,7 +6001,7 @@ void he_Unk54f160(int ev)
             w = U_I((unsigned)&ai_Unk5ed100 + (unsigned short)util_Random(8) * 4);
             n = 0;
             for (i = 0x200; i > 0 && n < cnt; i--) {
-                int e3 = (unsigned)&ai_Unk91f700 + idx * 0x2d;
+                int e3 = (unsigned)&ai_Crimes + idx * 0x2d;
 
                 if (*(int *)e3 != -1 && *(int *)(e3 + 0x25) == 1 && *(int *)(e3 + 0x16) != U_I((unsigned)&ai_CharInts + *(unsigned short *)(o + 0x27) * 0x21c)
                     && gm_CompareTime(ev + 0x44, e3 + 4) != 1)
