@@ -200,6 +200,12 @@ void ai_GraveCareContact(char *rec);       /* 0x587300, the graveyard contact GR
 void ai_GraveHelperContact(char *rec);     /* 0x587340, the graveyard contact GEHILFEN_ERSCHAFFEN */
 void ai_GraveInsuranceContact(struct AIBLD *rec);/* 0x587370, the graveyard contact VERSICHERUNG */
 void ai_GraveyardChatter(char *unused);    /* 0x587c90, the graveyard's idle-chatter tick */
+void ai_HandleItemDrag(void);  /* 0x587e00, the right-button tooltip handler */
+int ai_OpenBuildingTooltip(int idx);  /* 0x588160, opens the tooltip view of the building type idx */
+int ai_OpenItemTooltip(int idx);  /* 0x588310, opens the item tooltip view of the goods item idx */
+int ai_OpenUpgradeTooltip(int idx);  /* 0x588950, opens the upgrade tooltip view of the goods item idx */
+int ai_OpenHelpTooltip(char *s);  /* 0x588bb0, opens the help tooltip of the record named s */
+int ai_OpenCharTooltip(char *ch);  /* 0x588c60, opens the tooltip view of the character ch */
 
 int ai_SaveSlotTable(int fh);  /* 0x589aa0, writes the slot table 0x6f5ec0 */
 

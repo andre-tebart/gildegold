@@ -770,7 +770,7 @@ extern int d2_PointerObj;
 extern int ai_DragWindow;
 extern int ai_Unk62c26c;
 extern int ai_ClockMs;
-extern int d2_Unkf8aac8;
+extern int d2_RightHeldObj;
 extern D2VIEW d2_Views[];
 extern GAPDATA full_data_6f26c0[];
 #include "am_types.h"
@@ -13390,7 +13390,7 @@ void ai_Unk5a7cd0(int *m_)
         if (m_[0x9e7] != 0)
             m_[0x9e8] = *(int *)((unsigned)&ai_ClockMs);
     }
-    if (*(int *)((unsigned)&d2_Unkf8aac8) != -1 && m_[0x9e8] + 0x4b < *(int *)((unsigned)&ai_ClockMs) &&
+    if (*(int *)((unsigned)&d2_RightHeldObj) != -1 && m_[0x9e8] + 0x4b < *(int *)((unsigned)&ai_ClockMs) &&
         *(int *)(((unsigned)&dm_L + 0x28)) != 0 && *(int *)((unsigned)&ai_DragWindow) == -1 && m_[0x9e9] > 0) {
         i = 0;
         e = (int *)(p + 0xe0);

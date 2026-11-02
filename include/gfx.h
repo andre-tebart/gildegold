@@ -40,7 +40,7 @@ extern int d2_SavedMaxY;            /* 0xf8a664 */
 extern int d2_SavedMinY;            /* 0xf8a66c */
 extern D2SLOT d2_ItemListSurf256;         /* 0xf8aa90 */
 extern D2SLOT d2_ItemListSurf128[3];      /* 0xf8aaa0 */
-extern int d2_Unkf8aac8;            /* 0xf8aac8 */
+extern int d2_RightHeldObj;            /* 0xf8aac8 */
 extern int d2_Unkf8aacc;            /* 0xf8aacc */
 extern int d2_TextCursorX;            /* 0xf8aad4 */
 extern int d2_TextCursorY;            /* 0xf8aad8 */

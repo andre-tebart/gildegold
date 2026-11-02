@@ -581,7 +581,7 @@ extern int ai_DragWindow;
 extern short d2_MouseX;
 extern short d2_MouseY;
 extern struct D2OBJ *d2_Objs;
-extern int d2_Unkf8aac8;
+extern int d2_RightHeldObj;
 extern D2VIEW d2_Views[];
 extern int di_Absolute;
 extern int sv_HoverItem;  /* 0x6f22f0 (sv.c) */
@@ -3135,14 +3135,7 @@ fail:
    a step table ("FTInitScriptChapter3Step*"), the steps 2, 6, 8 and 10 the position marker's path
    ("FTInitAnimChapter3Step*"), whose points depend on the screen width (800, 1024, else). The voice bank
    "TUTORIAL_CHAPTER_3.sbf" is loaded into ai_TutorialBanks[3]. The first record, or 0 after a failed allocation
-   (the records built so far freed)
-   @deep read whole against the original: every record, step table and marker path stored at the original's
-   offsets with its values (asmdiff --symbols: no ! line, 1213 vs 1213 instructions, size 5377 = 5377).
-   Left: register choice for the repeated float constants of the marker paths, three hunks: 0x579df6 (step
-   6 path 0 wait/travel/rest: original ecx=0x420c0000 edi=0x430e0000 edx=0x428e0000, ours edi/ecx/edx),
-   0x579f27 (path 1 +0x4c/+0x50/+0x54 the same constants in ecx/edi/edx vs edi/ecx/edx) and 0x57a1b6 (step
-   8 path 0 +4/+8: the reload of marks and mov eax,0x43910000 scheduled one store apart), plus regs hunks
-   eax<->ecx at 0x57a110 / 0x57a168: allocation and scheduling only */
+   (the records built so far freed) */
 
 int ai_TutorialInitChapter3(void)
 {
@@ -9909,120 +9902,123 @@ void ai_ClearTurnTable(void)
     memset((char *)(unsigned)&full_data_6f5f60, 0, 0x4000);
 }
 
-int ai_Unk588310(); int ai_Unk588950(); int ai_Unk588160(); int ai_OpenHelpTooltip();
-int ai_Unk588c60(); void d2_RaiseViewWindows(int view);
-
-/* 0x587e00, the item drag-and-drop handler (863 B, ROUGH: the classification and every call are written, the
-   branch details around them come from the disassembly): src = 0xf8aac8 (the dragged object), win = 0x62a8cc
-   (the drag window). The release: (src == -1 and 0x62a8d0 != -1) or (0x6f266c != 0, 0x14673a8 == 0, win != -1)
-   -> 0x4758f0 (win), 0x6f266c = 0, the three 0x62a8cc / 0x62a8d4 / 0x62a8d0 = -1, 0x5f3240 = 1 and
-   0x4113f0 (word 0xf8a674, word 0xf8a676). The target 0x6f22e8 (not 0, not 0x6f266c, and 0x14673a8 != 0):
-   0x6f22f0's word, 0 -> the "other" record 0x6f22e8 kept; 0x6f266c = 0x6f22e8 and 0x62a8d0 = -1. The widget
-   under the pointer (0xf8f080 + U_I (0x5fe710) * 0x2ec + 0x2e8) classifies src: a character (0x770b80 ..
-   0x7d5f80, the word 0xffff = none), the goods table (0x889f74 + 0xa900: the byte 0 < 0x58), the buildings
-   (0x7e3f30 + 0xca78 = 0x58 records of 0x24d), the 0x7e3f34 table (+0x14f218: the word < 0x2dc), the item table
-   0x91aaf0 (+0xb9dc: / 0x41 < 0x2dc) or, without a user record, src itself in the ranges 0xdf .. 0x427 and
-   0x427 .. 0x47f. With nothing classified: the tail. Else 0x4758f0 (win) when win != -1 and the drag window
-   reset; the item 0x588310 (the kinds 0x17 / 0x20 / 0x25 / 0x27) or 0x588950, the goods 0x588160, the other
-   record 0x588bb0, the character 0x588c60 -> win = the new drag window 0x62a8cc = the result; 0x62a8d0 = src,
-   0x62a8d4 = 0xfb1024 + win * 0x2ac, 0x5f3240 = 0 when 0x14673a8 != 0. win != -1: 0x6ed9d4 = 1, 0x6f2670 = 1,
-   0x4741a0 (win); else the drag reset 0x62a8d0 = -1, 0x6f266c = 0 and 0x6ed9d4 / 0x6f2670 cleared */
+/* 0x587e00, the right-button tooltip handler: while the right button holds a d2 object (d2_RightHeldObj) it shows
+   the tooltip view ai_DragWindow for it. Releasing the button (or a picked object losing the right button) closes
+   the view and puts the pointer back in place. A newly picked world object (ai_PickedObject, with the right
+   button held) shows the hovered item (sv_HoverItem) or, without one, the object's help tooltip. A new held
+   object is classified by its user record (D2OBJ.user): a character (ai_Chars), a building (ai_Blds: its type),
+   a building type (ai_BTypes), an object (ai_Objects: its goods item) or a goods item (ai_Goods); without a user
+   record the object id itself, 0xdf .. 0x426 a goods item, 0x427 .. 0x47e a building type. The old view is
+   closed and the tooltip of the kind opened (items of the types 0x20 / 0x17 / 0x25 / 0x27 the item tooltip,
+   others the upgrade tooltip); while a view is up it is raised and d2_CutsceneActive is kept set
+   @deep read the whole body against 0x587e00..0x58815f: flow, conditions, stores, calls and the tooltip
+   classification match (branch targets equal, 251 vs 253 instructions). Remaining hunks: slots - sel and
+   ch have swapped frame slots ([esp+0x14] / [esp+0x18]; tried four init orders and the declaration order);
+   order 8 - the same cmp/jne of the item||bkind||sel||ch test reordered by that swap; code 8 at 0x588073 -
+   the AIGOOD.type load ai_Goods[item * 0x41]: ours folds item into the address mode (mov al, [edi + ebx]),
+   the original copies it first (mov eax, edi; add eax, ebx; mov al, [eax]) with ebx = ai_Goods + item<<6
+   the same on both sides; tried ((AIGOOD *)ai_Goods)[item].type, pointer form, *(unsigned char *)(ai_Goods
+   + item*0x41), item*0x40 + item, the expression repeated per compare, and char / int kind: unchanged or
+   worse. Allocation / address-mode choice */
 void ai_HandleItemDrag(void)
 {
-    char *src;
-    char *win;
-    char *p;
-    char *sel;
-    char *ch;
+    int bkind;
     int item;
+    char *sel;
+    AICHAR *ch;
+    void *user;
+    unsigned char kind;
 
-    src = *(char **)(unsigned)&d2_Unkf8aac8;
-    win = *(char **)(unsigned)&ai_DragWindow;
     item = 0;
+    bkind = 0;
     sel = 0;
     ch = 0;
-    if ((src == (char *)-1 && ai_DragObj != -1) ||
-        (*(int *)&ai_DragPicked != 0 && U_I(((unsigned)&dm_L + 0x28)) == 0 && win != (char *)-1)) {
-        d2_CloseView(win);
-        *(int *)&ai_DragPicked = 0;
-        U_I((unsigned)&ai_DragWindow) = -1;
+    if ((d2_RightHeldObj == -1 && ai_DragObj != -1) ||
+        (ai_DragPicked != 0 && dm_L.rhold == 0 && ai_DragWindow != -1)) {
+        d2_CloseView(ai_DragWindow);
+        ai_DragPicked = 0;
+        ai_DragWindow = -1;
         ai_DragViewWin = -1;
         ai_DragObj = -1;
         ch = 0;
-        U_I((unsigned)&di_Absolute) = 1;
-        di_SetMousePos(*(short *)(unsigned)&d2_MouseX, *(short *)(unsigned)&d2_MouseY);
-        src = *(char **)(unsigned)&d2_Unkf8aac8;
-        win = *(char **)(unsigned)&ai_DragWindow;
+        di_Absolute = 1;
+        di_SetMousePos(d2_MouseX, d2_MouseY);
     }
-    if (U_I((unsigned)&ai_PickedObject) != 0 && *(int *)&ai_DragPicked != U_I((unsigned)&ai_PickedObject) && U_I(((unsigned)&dm_L + 0x28)) != 0) {
-        if (sv_HoverItem == 0 || *(unsigned short *)sv_HoverItem == 0)
-            sel = (char *)U_I((unsigned)&ai_PickedObject);
-        *(int *)&ai_DragPicked = U_I((unsigned)&ai_PickedObject);
+    if (ai_PickedObject != 0 && ai_DragPicked != ai_PickedObject && dm_L.rhold != 0) {
+        item = sv_HoverItem != 0 ? ((AIOBJ *)sv_HoverItem)->id : 0;  /* reasoned: the hovered object record, its goods item first */
+        if (item == 0)
+            sel = ai_PickedObject;
+        ai_DragPicked = ai_PickedObject;
         ai_DragObj = -1;
     }
-    if (src != (char *)-1 && (char *)ai_DragObj != src) {
-        p = *(char **)(U_I((unsigned)&d2_Objs) + U_I((unsigned)&d2_PointerObj) * 0x2ec + 0x2e8);
-        if (p == 0) {
-            if (src >= (char *)0xdf && src < (char *)0x427)
-                item = (int)src - 0xdf;
-            else if (src >= (char *)0x427 && src < (char *)0x47f)
-                item = (int)src - 0x427;
-        } else if (p >= (char *)(unsigned)&ai_Chars && p < (char *)(unsigned)ai_Chars[768]) {  /* ai_Chars[768]: one past the table (0x7d5f80) */
-            ch = (*(unsigned short *)p != 0xffff) ? p : 0;
-        } else if (p >= (char *)U_I((unsigned)&ai_Blds) && p < (char *)U_I((unsigned)&ai_Blds) + 0xa900) {
-            item = *(unsigned char *)p;
-            if (item >= 0x58)
-                item = 0;
-        } else if (p >= (char *)U_I((unsigned)&ai_BTypes) && p < (char *)U_I((unsigned)&ai_BTypes) + 0xca78) {
-            item = (int)(p - (char *)U_I((unsigned)&ai_BTypes)) / 0x24d;
-        } else if (p >= (char *)U_I((unsigned)&ai_Objects) && p < (char *)U_I((unsigned)&ai_Objects) + 0x14f218) {
-            item = *(unsigned short *)p;
-            if (item >= 0x2dc)
-                item = 0;
-        } else if (p >= (char *)U_I((unsigned)&ai_Goods) && p < (char *)U_I((unsigned)&ai_Goods) + 0xb9dc) {
-            item = (int)(p - (char *)U_I((unsigned)&ai_Goods)) / 0x41;
+    if (d2_RightHeldObj != -1 && d2_RightHeldObj != ai_DragObj) {
+        user = d2_Objs[d2_PointerObj].user;
+        if (user != 0) {
+            if ((char *)user >= ai_Chars[0] && (char *)user < ai_Chars[768]) {  /* ai_Chars[768]: one past the table */
+                ch = (AICHAR *)user;
+                if (ch->id == 0xffff)
+                    ch = 0;
+            } else if ((char *)user >= ai_Blds && (char *)user < ai_Blds + 0xa900) {
+                bkind = ((AIBLD *)user)->type;
+                if (bkind >= 0x58)
+                    bkind = 0;
+            } else if ((char *)user >= ai_BTypes && (char *)user < ai_BTypes + 0x58 * 0x24d) {
+                bkind = ((char *)user - ai_BTypes) / 0x24d;
+            } else if ((char *)user >= (char *)ai_Objects && (char *)user < (char *)ai_Objects + 0x14f218) {
+                item = ((AIOBJ *)user)->id;
+                if (item >= 0x2dc)
+                    item = 0;
+            } else if ((char *)user >= ai_Goods && (char *)user < ai_Goods + 0x2dc * 0x41) {
+                item = ((char *)user - ai_Goods) / 0x41;
+            }
+        } else {
+            if (d2_RightHeldObj >= 0xdf && d2_RightHeldObj < 0x427)
+                item = d2_RightHeldObj - 0xdf;
+            else if (d2_RightHeldObj >= 0x427 && d2_RightHeldObj < 0x47f)
+                bkind = d2_RightHeldObj - 0x427;
         }
-        *(int *)&ai_DragPicked = 0;
+        ai_DragPicked = 0;
     }
-    if (item == 0 && sel == 0 && ch == 0)
-        goto tail;
-    if (win != (char *)-1) {
-        d2_CloseView(win);
-        src = *(char **)(unsigned)&d2_Unkf8aac8;
-        win = 0;
-        U_I((unsigned)&ai_DragWindow) = -1;
-        ai_DragViewWin = -1;
+    if (item != 0 || bkind != 0 || sel != 0 || ch != 0) {
+        if (ai_DragWindow != -1) {
+            d2_CloseView(ai_DragWindow);
+            ai_DragWindow = -1;
+            ai_DragViewWin = -1;
+        }
+        if (item != 0) {
+            kind = ai_Goods[item * 0x41];  /* AIGOOD.type */
+            if (kind == 0x20 || kind == 0x17 || kind == 0x25 || kind == 0x27)
+                ai_DragWindow = ai_OpenItemTooltip(item);
+            else
+                ai_DragWindow = ai_OpenUpgradeTooltip(item);
+        } else if (bkind != 0) {
+            ai_DragWindow = ai_OpenBuildingTooltip(bkind);
+        } else if (sel != 0) {
+            ai_DragWindow = ai_OpenHelpTooltip(sel);
+        } else if (ch != 0) {
+            ai_DragWindow = ai_OpenCharTooltip((char *)ch);
+        }
+        if (ai_DragWindow != -1) {
+            ai_DragObj = d2_RightHeldObj;
+            ai_DragViewWin = d2_Views[ai_DragWindow].wins[0];
+            if (dm_L.rhold != 0)
+                di_Absolute = 0;
+        } else {
+            ai_DragObj = -1;
+            ai_DragPicked = 0;
+            goto tail;
+        }
     }
-    if (item != 0) {
-        if (*(unsigned char *)(U_I((unsigned)&ai_Goods) + item * 0x41) == 0x20 ||
-            *(unsigned char *)(U_I((unsigned)&ai_Goods) + item * 0x41) == 0x17 ||
-            *(unsigned char *)(U_I((unsigned)&ai_Goods) + item * 0x41) == 0x25 ||
-            *(unsigned char *)(U_I((unsigned)&ai_Goods) + item * 0x41) == 0x27)
-            win = (char *)ai_Unk588310(item);
-        else
-            win = (char *)ai_Unk588950(item);
-    } else if (sel != 0) {
-        win = (char *)ai_OpenHelpTooltip(sel);
-    } else if (ch != 0) {
-        win = (char *)ai_Unk588c60(ch);
-    }
-    src = *(char **)(unsigned)&d2_Unkf8aac8;
-    U_I((unsigned)&ai_DragWindow) = (int)win;
-    if (win != (char *)-1) {
-        ai_DragObj = (int)src;
-        ai_DragViewWin = *(int *)(((unsigned)&d2_Views + 0x4) + (int)win * 0x2ac);
-        if (U_I(((unsigned)&dm_L + 0x28)) != 0)
-            U_I((unsigned)&di_Absolute) = 0;
-        U_I((unsigned)&d2_CutsceneActive) = 1;
+    if (ai_DragWindow != -1) {
+        d2_CutsceneActive = 1;
         ai_DragCutscene = 1;
-        d2_RaiseViewWindows(win);
+        d2_RaiseViewWindows(ai_DragWindow);
         return;
     }
-    ai_DragObj = -1;
-    *(int *)&ai_DragPicked = 0;
 tail:
-    if (ai_DragCutscene != 0) {
-        U_I((unsigned)&d2_CutsceneActive) = 0;
+    if (ai_DragCutscene != 0)
+    {
+        d2_CutsceneActive = 0;
         ai_DragCutscene = 0;
     }
 }
@@ -10037,7 +10033,7 @@ int gm_BuildingKindCost(int unused, int kind); char *_strupr(char *); int sprint
    (idx * 0xe + 0x48e); the section 2, 0x4731d0 (0, 0, idx + 0x427, U_I (0x6ed938)) and the text
    idx * 0xe + 0x48f; not the kind 0xa: the section 3, the texts 0x2a (the record at +0x18 + [bldg + 0x247] *
    4), 0x28 (0x509dc0 (the player's character, idx)) and 0x29 (bldg + 0x243); the window */
-int ai_Unk588160(int idx)
+int ai_OpenBuildingTooltip(int idx)
 {
     char d[0x1c];
     char *bldg;
@@ -10124,7 +10120,7 @@ float gm_GoodsPrice(unsigned id, unsigned char p);
    0x1ba / 0x1bb / 0x1bc / 0x1cd .. 0x1cf -> 0x1f, each 0x473350 (6, the slot * 0xa + 0x28, the value + 0x427,
    -2) and "%s$N"; the 0x1c1 .. 0x1c7 / 0x2af / 0x2b0 kinds with the item kinds 0x17 / 0x25: the extra slot 0x444
    / 0x624; nothing at all -> the text 0x602568; the window */
-int ai_Unk588310(int idx)
+int ai_OpenItemTooltip(int idx)
 {
     char *item;
     char *o;
@@ -10189,7 +10185,7 @@ int ai_Unk588310(int idx)
    item's word, the bytes +0x1a3 / +0x1e3, the text 0x24 and 0xf9e / 0xfe0 / the word + 0xf98 in 0x515960
    (0x62a978 / 0x62a96c / 0x62a960); the window */
 
-int ai_Unk588950(int idx)
+int ai_OpenUpgradeTooltip(int idx)
 {
     char *item;
     char *o;
@@ -10253,7 +10249,7 @@ float gm_CharAge(); int ai_AmountRowStatus(); int ai_Unk5be720(); short * gm_Fin
    0x5f + 0x130 + the byte), 0x2f / 0x30 / 0x31 / 0x32 / 0x33 / 0x34 / 0x35 (0x62a9e4) / 0x41, the kind lists
    0x53e400 / 0x53e300, 0x505df0 (ch) and 0x505df0 (ch + 0x68), 0x62a9d8, 0x62a9e4; the line 0x62a56c
    (0x5176d0), 0x473650, 0x52eb50 (0x64, 0x4df) and 0x576040; the sections via 0x475f70; the window */
-int ai_Unk588c60(char *ch)
+int ai_OpenCharTooltip(char *ch)
 {
     char line[0x100];
     char *w;
