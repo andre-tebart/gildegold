@@ -10336,7 +10336,7 @@ int gv_CountOwnedGraves(); int gv_CulpritGuilt(int c); int gm_GetWorth(unsigned 
 int ai_InventoryHas(void *ch, int id); int d2_OpenForm(); void d2_SetPointerSprite(int a, int pic); 
 int d2_SetForm(int view, int n); void sv_FitForm(int f); int io_PrintText(char *fmt, ...); int d2_GetWinObj();
 int sv_CheckGoodAmount(); void cm_BeginFieldBlock(char *o, int id); int cm_AddFieldValues(unsigned char size, unsigned char n, unsigned short field, void *v); void cm_SendFieldDeltas(void);
-int unk_Unk4f3a30(int p, int n); void cm_SendMoveGoods(int a, int b, unsigned char c, int d); void ai_Unk5a8b80(); int cm_GetSlotState();
+int gv_RetireCrimesOf(int p, int n); void cm_SendMoveGoods(int a, int b, unsigned char c, int d); void ai_Unk5a8b80(); int cm_GetSlotState();
 void sv_PumpNet(); int gm_Unk50b170(); void txt_Format(char *out, int id0, ...); int sv_MessageBox();
 int sv_RunFrame(int cb, unsigned mask); void d2_CloseView(int view); void sv_CameraFollow(); int _ftol();
 void ai_Top5Window();
@@ -10421,7 +10421,7 @@ void ai_IndulgenceWindow(int param_1, int param_2)
                 cm_BeginFieldBlock((char *)(unsigned)&ai_Chars + U_W((unsigned)&ai_PlayerId) * 0x21c, id);
                 cm_AddFieldValues(4, 1, 0x1ac, &v);
                 cm_SendFieldDeltas();
-                unk_Unk4f3a30(id, n2);
+                gv_RetireCrimesOf(id, n2);
                 owner = U_W(param_1 + 0x27);
                 if (owner != 0xffff && owner != U_W((unsigned)&ai_PlayerId)) {
                     d = (int)(w / log10((double)w));
@@ -10737,7 +10737,7 @@ void ai_Unk5a2b60(int param_1)
                                      (char *)(unsigned)&ai_Chars + U_W(param_1 + 0x27) * 0x21c,
                                      (char *)param_1);
                     }
-                    unk_Unk4f3a30(U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x21c), amount / 2);
+                    gv_RetireCrimesOf(U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x21c), amount / 2);
                     sv_MessageBox((char *)U_I((unsigned)&full_data_14407d0), 0);
                     U_I((unsigned)&sv_PopRequest) = 1;
                 }
@@ -21508,7 +21508,7 @@ int ai_EspionageAmountWindow(int param_1, int *param_2)  /* @original: the calle
         value = param_2[1];
         if (value < 1 || value > 9 || value > *(int *)(param_1 + 0x194))
             return 0x60;
-        unk_Unk4f3a30(*(int *)(param_1 + 4), value);
+        gv_RetireCrimesOf(*(int *)(param_1 + 4), value);
         cm_SendMoneyDelta(*(int *)(param_1 + 4), -value);
         if (*(char *)(param_1 + 2) != 6)
             return 0;
@@ -21529,7 +21529,7 @@ int ai_EspionageAmountWindow(int param_1, int *param_2)  /* @original: the calle
                 value = d2_GetObjValue(slider);
                 if (sv_CheckMoney(param_1, value) != 0) {
                     cm_SendMoneyDelta(*(int *)(param_1 + 4), -value);
-                    v = unk_Unk4f3a30(*(int *)(param_1 + 4), value);
+                    v = gv_RetireCrimesOf(*(int *)(param_1 + 4), value);
                     txt_Format(text, (char *)0x1deb, v);
                     sv_MessageBox(text, 0);
                     ret = 1;
