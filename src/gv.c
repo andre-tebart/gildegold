@@ -801,7 +801,9 @@ void unk_Unk4eea70(char *o)
     m[1] = *(int *)(o + 1);
     ai_Unk4c6230(m);
 }
-/* 0x4eeaa0, reserves the effect slot of the id: 1 when it has one already or a free one (id -1) is found (the first free one is taken); 0 for id -1 or no slot */
+/* 0x4eeaa0, reserves the effect slot of the id: 1 when it has one already or a free one (id -1) is found (the first free one is taken);
+   0 for id -1. The original tests first >= -1, so with no free slot it writes the id before slot 0 and returns 1 as well; the slots
+   are walked as ints compared signed (the original's jl) */
 
 int gv_ReserveEffect(int id)
 {
@@ -821,7 +823,7 @@ int gv_ReserveEffect(int id)
             p += 0x5c;
             i++;
         } while ((int)p < (int)(gv_Effects + 8 * 0x170));
-        if (first >= -2) {
+        if (first >= -1) {
             p = (int *)gv_Effects;
             p[first * 0x5c] = id;
             return 1;
