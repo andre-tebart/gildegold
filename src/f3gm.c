@@ -6210,31 +6210,24 @@ void gm_SetJob(int i, unsigned n)
     }
     ORD_CHARS[i].jobId = (unsigned char)n;
 }
-/* 0x504840, drops the character c one title rank (+0x165 - 1; 0xc for a master of kind 0x20, 0xb for kind 0x1f) and clears its int +0x174, both sent through 0x4c3d90. Returns -1 */
+/* 0x504840, drops the character c one title rank (title - 1; 0xc when its building is of type 0x20, 0xb for type 0x1f) and clears its jobDays, both sent as field values (cm_AddFieldValue). Returns -1 */
 
-int gm_DropRank(char *c)
+int gm_DropRank(ORDCHAR *c)
 {
-    char *m;
     int v;
 
-    m = *(char **)(c + 0x16c);
-    if (m != 0) {
-        if (*m == ' ') {
-            v = 0xc;
-            goto send;
-        }
-        if (m != 0 && *m == 0x1f) {
-            v = 0xb;
-            goto send;
-        }
-    }
-    v = (unsigned char)c[0x165] - 1;
-send:
-    cm_BeginFieldBlock(c, *(int *)(c + 4));
+    v = 0;
+    if (c->bld != 0 && c->bld->type == 0x20)
+        v = 0xc;
+    else if (c->bld != 0 && c->bld->type == 0x1f)
+        v = 0xb;
+    else
+        v = (unsigned char)c->title - 1;
+    cm_BeginFieldBlock((char *)c, c->netId);
     cm_AddFieldValue(1, 1, 0x165, &v);
     cm_SendFieldValues();
     v = 0;
-    cm_BeginFieldBlock(c, *(int *)(c + 4));
+    cm_BeginFieldBlock((char *)c, c->netId);
     cm_AddFieldValue(4, 1, 0x174, &v);
     cm_SendFieldValues();
     return -1;
