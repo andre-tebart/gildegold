@@ -3280,15 +3280,16 @@ void gm_ClockToDate(struct GCLOCK *c, unsigned char *out);                     /
 /* the goods record n (0x80 bytes) of the player p */
 #define GM_GOODS(p, n) (init_StockBlocks + (p) * 0x2a90 + (n) * 0x80)
 
-/* 0x4ff190, refreshes the goods lists of the player 0x6f1bc5 (only for the own player): clears the flag (+4) of the 0x55 goods records, marks the goods the buildings of the town (group (1, 6), not kind 10) hold in their stock (the object 0xff of each: 0x4ffe90 query) and the goods their prototypes need (the four words at +0x2e of the prototype), puts the goods that are marked on the market (+0x3c) but not yet in its stock there (0x500190), and counts the market objects 0x92 .. 0x97 / 0x2db: the byte +0x1c of the one of kind 0x11 gets the count. ROUGH */
+/* 0x4ff190, refreshes the goods lists of the own player p (as the first part of gm_SyncMarket): clears the amount flag of the 0x55 goods records, flags the goods a building of the town (group (1, 6), not kind 10) holds in its store (its 0xff object) and the goods those need (the four words at +0x2e of the ai_Goods record), creates the flagged goods missing in the store of their market object (marketKind) there (gm_CreateObject), and sets the level byte +0x1c of the kind 0x11 object of the market objects 0x92 .. 0x97 / 0x2db to their goods count */
 void gm_RefreshGoodsLists(unsigned p)
 {
     int list[8];
-    char *g, *g2;
+    GMSTOCK *stock, *g, *g2;
     unsigned char *b;
-    int o, o2, i, j, k, cnt;
+    ORDOBJ *o, *o2;
+    char *gp;
+    int i, j, k, cnt;
     int *lp;
-    unsigned short id;
 
     list[0] = 0x92;
     list[1] = 0x93;
@@ -3299,62 +3300,55 @@ void gm_RefreshGoodsLists(unsigned p)
     list[6] = 0x2db;
     list[7] = 0;
     ai_MarketBuilding = (struct AIBLD *)gm_BuildQuery(1, 5, 10);
-    if (ai_MarketBuilding != 0 && p == ai_OwnPlayer) {
-        for (i = 0; i < 0x55; i++)
-            *(int *)(GM_GOODS(p, i) + 4) = 0;
-        b = (unsigned char *)gm_BuildQuery(1, 6);
-        while (b != 0) {
-            if (ai_BTypes[*b * 0x24d] != 10) {
-                o = (int)gm_Query(*(int *)(b + 0x5d), 1, 0, 0xff);
-                if (o != 0) {
-                    for (i = 0; i < 0x55; i++) {
-                        g = GM_GOODS(p, i);
-                        id = *(unsigned short *)g;
-                        if (id != 0 && gm_Query(*(int *)(o + 0x14), 1, 0, id) != 0) {
-                            *(unsigned short *)(g + 4) = 1;
-                            *(unsigned short *)(g + 6) = 0;
-                            for (j = 0; j < 0x55; j++) {
-                                g2 = GM_GOODS(p, j);
-                                for (k = 0; k < 4; k++) {
-                                    if (*(unsigned short *)g2 == *(unsigned short *)(ai_Goods + id * 0x41 + 0x2e + k * 2)) {
-                                        *(unsigned short *)(g2 + 4) = 1;
-                                        *(unsigned short *)(g2 + 6) = 0;
-                                    }
-                                }
-                            }
-                        }
+    if (ai_MarketBuilding == 0)
+        return;
+    stock = (GMSTOCK *)(init_StockBlocks + p * 0x2a90);
+    if (p != ai_OwnPlayer)
+        return;
+    for (i = 0; i < 0x55; i++)
+        stock[i].amount = 0;
+    b = (unsigned char *)gm_BuildQuery(1, 6);
+    while (b != 0) {
+        if (ai_BTypes[*b * 0x24d] != 10) {
+            o = (ORDOBJ *)gm_Query(((ORDBLD *)b)->objList, 1, 0, 0xff);
+            for (i = 0; o != 0 && i < 0x55; i++) {
+                g = &stock[i];
+                if (g->item != 0 && gm_Query(o->list, 1, 0, g->item) != 0) {
+                    g->amount = 1;
+                    gp = ai_Goods + g->item * 0x41;
+                    for (j = 0; j < 0x55; j++) {
+                        g2 = &stock[j];
+                        for (k = 0; k < 4; k++)
+                            if (g2->item == ((unsigned short *)(gp + 0x2e))[k])
+                                g2->amount = 1;
                     }
                 }
             }
-            b = (unsigned char *)gm_BuildNext();
         }
-        for (i = 0; i < 0x55; i++) {
-            g = GM_GOODS(p, i);
-            o = (int)gm_Query(*(int *)((char *)ai_MarketBuilding + 0x5d), 1, 0, *(unsigned short *)(g + 0x3c));
-            if (o != 0) {
-                o = (int)gm_Query(*(int *)(o + 0x14), 1, 0, 0xff);
-                if (*(int *)(g + 4) != 0 && gm_Query(*(int *)(o + 0x14), 1, 0, *(unsigned short *)g) == 0)
-                    gm_CreateObject(*(int *)(o + 2), *(unsigned short *)g, 1);
-            }
+        b = (unsigned char *)gm_BuildNext();
+    }
+    for (i = 0; i < 0x55; i++) {
+        g = &stock[i];
+        o = (ORDOBJ *)gm_Query(((ORDBLD *)ai_MarketBuilding)->objList, 1, 0, g->marketKind);
+        if (o != 0) {
+            o = (ORDOBJ *)gm_Query(o->list, 1, 0, 0xff);
+            if (g->amount != 0 && gm_Query(o->list, 1, 0, g->item) == 0)
+                gm_CreateObject(o->objId, g->item, 1);
         }
-        lp = list;
-        k = 0x92;
-        do {
-            cnt = 0;
-            o = (int)gm_Query(*(int *)((char *)ai_MarketBuilding + 0x5d), 1, 0, k);
-            if (o != 0 && (o2 = (int)gm_Query(*(int *)(o + 0x14), 1, 0, 0xff)) != 0) {
-                o2 = (int)gm_Query(*(int *)(o2 + 0x14), 1, 5);
-                while (o2 != 0) {
-                    cnt++;
-                    o2 = (int)gm_QueryNext();
-                }
-                o = (int)gm_Query(*(int *)(o + 0x14), 1, 4, 0x11);
-                if (o != 0 && (unsigned char)*(char *)(o + 0x1c) != cnt)
-                    *(char *)(o + 0x1c) = (char)cnt;
+    }
+    for (lp = list; *lp != 0; lp++) {
+        cnt = 0;
+        o = (ORDOBJ *)gm_Query(((ORDBLD *)ai_MarketBuilding)->objList, 1, 0, *lp);
+        if (o != 0 && (o2 = (ORDOBJ *)gm_Query(o->list, 1, 0, 0xff)) != 0) {
+            o2 = (ORDOBJ *)gm_Query(o2->list, 1, 5);
+            while (o2 != 0) {
+                cnt++;
+                o2 = (ORDOBJ *)gm_QueryNext();
             }
-            k = lp[1];
-            lp++;
-        } while (k != 0);
+            o = (ORDOBJ *)gm_Query(o->list, 1, 4, 0x11);
+            if (o != 0 && o->lvl1c != cnt)
+                o->lvl1c = (unsigned char)cnt;
+        }
     }
 }
 
