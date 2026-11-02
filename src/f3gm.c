@@ -9,9 +9,10 @@
    Open: gm_GetWorth is int in every header now; the older callers still go through the K&R cast I50A640.
    Open: ai.h is not includable here, so the character / building / object records are read through gv.h's views
    ORDCHAR / ORDBLD / ORDOBJ, the job record through GMJOB (AIJOB, next to GCLOCK), the long message through
-   f3gm_types.h's GMMSG (AIMSG), the goods records of the
+   f3gm_types.h's GMMSG (AIMSG), the crime records through GM_CRIMES (cm_types.h CRIME over cm.c's char
+   ai_Crimes[]), the goods records of the
    stock blocks through GMBLOCK / GMSTOCK (f3gm_types.h, GM_BLOCK; f3init.c / hst.c hold their own copies
-   INIT_STOCK / G12STOCK), or by byte offset (the rest, GM_GOODS).
+   INIT_STOCK / G12STOCK), or by byte offset (the rest, GM_GOODS, the building type records of ai_BTypes).
    Open: data: gm_QueryKind (0x61a686) is defined as 550 bytes, but only its first byte is the query kind; the
    job table gm_JobTalents (0x61a688) is a view inside it.
    Open: gm_QueryNext returns unsigned short * in every header though the cursor is an ORDOBJ *.

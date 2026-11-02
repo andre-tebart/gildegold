@@ -3041,16 +3041,16 @@ exe	0x00502fd0	gm_SellBuilding	f3gm	byte	readable
 exe	0x005031b0	gm_AllocRaum	f3gm	byte	readable		
 exe	0x00503480	gm_RemoveObjectFromBuilding	f3gm	byte	readable		
 exe	0x005034b0	gm_Unk5034b0	f3gm	byte	draft		
-exe	0x00503530	gm_PermissionBits	f3gm	draft	draft		
-exe	0x00503c20	gm_Unk503c20	f3gm	draft	draft		
-exe	0x00503c60	unk_Unk503c60	f3gm	draft	draft		
-exe	0x00503e80	gm_ResetCharacters	f3gm	draft	draft		
+exe	0x00503530	gm_PermissionBits	f3gm	draft	readable	deep	
+exe	0x00503c20	gm_ReleaseCharacter	f3gm	byte	readable		
+exe	0x00503c60	gm_KillSpieler	f3gm	draft	readable	deep	
+exe	0x00503e80	gm_ResetCharacters	f3gm	byte	readable		
 exe	0x00503ee0	gm_GetJobTalents	f3gm	byte	readable		
 exe	0x00503f30	gm_SexForJob	f3gm	byte	readable		
-exe	0x00503f50	gm_SexForTitle	f3gm	draft	readable		
-exe	0x00503fa0	gm_BuildingTypeOfJob	f3gm	draft	draft		
-exe	0x00504050	gm_JobBuildingType	f3gm	draft	readable		
-exe	0x00504100	gm_JobSlots	f3gm	draft	readable		
+exe	0x00503f50	gm_SexForTitle	f3gm	byte	readable		
+exe	0x00503fa0	gm_BuildingTypeOfJob	f3gm	byte	readable		
+exe	0x00504050	gm_JobBuildingType	f3gm	byte	readable		
+exe	0x00504100	gm_JobSlots	f3gm	draft	readable	deep	
 exe	0x00504290	gm_FirstTitleNumber	f3gm	shape	readable		
 exe	0x00504350	gm_TitleNumberGroup	f3gm	draft	readable		
 exe	0x005043d0	gm_TitleNumber	f3gm	draft	readable		
@@ -3684,7 +3684,7 @@ exe	0x00552bc0	he_Unk552bc0	he	byte	draft
 exe	0x00552c30	he_Unk552c30	he	byte	draft		
 exe	0x00552ca0	he_Unk552ca0	he	draft	draft		
 exe	0x00553060	he_Unk553060	he	byte	draft		
-exe	0x005538b0	he_Unk5538b0	he	draft	draft		
+exe	0x005538b0	he_EndPersonEvents	he	draft	draft		
 exe	0x00553ae0	he_Unk553ae0	he	draft	draft		
 exe	0x00553cc0	he_Unk553cc0	he	byte	draft		
 exe	0x00553d10	he_NoEvent2ePair	he	byte	draft		
@@ -3809,7 +3809,7 @@ exe	0x00567f00	he_Unk567f00	he	byte	draft
 exe	0x00567f50	he_Unk567f50	he	draft	draft		
 exe	0x00568220	he_Unk568220	he	draft	draft		
 exe	0x00568310	he_Unk568310	he	byte	draft		
-exe	0x00568aa0	he_Unk568aa0	he	byte	draft		
+exe	0x00568aa0	he_EndKind23Events	he	byte	draft		
 exe	0x00568ae0	he_Unk568ae0	he	draft	draft		
 exe	0x00568be0	he_Unk568be0	he	draft	draft		
 exe	0x005690c0	he_Unk5690c0	he	draft	draft		
@@ -4087,7 +4087,7 @@ exe	0x005876a0	ai_Unk5876a0	unk_575860	byte	draft
 exe	0x00587700	ai_UpgradeWorkerSend	unk_575860	byte	readable		
 exe	0x00587810	ai_UpgradeWorkerWindow	unk_575860	byte	readable		
 exe	0x00587ad0	ai_Unk587ad0	unk_575860	byte	draft		
-exe	0x00587b70	ai_Unk587b70	unk_575860	shape	draft		
+exe	0x00587b70	ai_PermissionBits1d	unk_575860	shape	draft		
 exe	0x00587c40	ai_EndCharExtra	unk_575860	byte	readable		
 exe	0x00587c90	ai_GraveyardChatter	unk_575860	byte	readable		
 exe	0x00587de0	ai_ClearTurnTable	unk_575860	byte	draft		
