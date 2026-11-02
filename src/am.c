@@ -4528,9 +4528,19 @@ rate:
         v = (int)(v * o1->fvalue);
     return v < (int)gm_GoodsPrice(o1->ref, ai_OwnPlayer) ? 0 : 11;
 }
-/* 0x4979d0, execute of 0x497660: hands the good over (buys it for action 0x39) */
+/* 0x4979d0, execute of action 11 (ai_DecideProduceGood): orders the good from the object / building / character o2 names at its price (action 0x39: pays the object s1->ref2 first)
+   @deep read against 0x4979d0..0x497aed: every statement, call, argument and constant equal (the three o2
+   kinds, id == -1, s1->kind != 2, the 0x39 branch with gm_FindById / cm_SendMoveGoods /
+   cm_SendExSellObjectI, the plain order). The only hunks are the return-0 epilogues: the original
+   duplicates them at each return (without xor where eax already holds the null pointer), ours merges them
+   into one tail. Tried: function-scope bld / c (no change), return (int)o for the null case (no change).
+   Needs the epilogue-duplication / tail-merge variant rounds (the opposite case of ai_DecideProduceGood
+   0x497660). (size: 106 vs 127 instructions, explained: ours 106 vs 127: the 21 instructions are the
+   original's per-return epilogue copies (jne skip / pop edi / pop esi / [xor eax,eax] / pop ebx / ret at
+   0x4979ee, 0x497a0c, 0x497a2a, 0x497a36, 0x497a45, 0x497a86) where ours jumps to one shared block (je
+   0x497aeb: pop edi / pop esi / xor eax,eax / pop ebx / ret); every other instruction is equal) */
 
-int ai_Unk4979d0(AIPER *p, AIARG *s1, AIARG *s2)
+int ai_ExecuteProduceGood(AIPER *p, AIARG *s1, AIARG *s2)
 {
     AIOBJ *o, *it;
     int id, price;
@@ -9333,7 +9343,7 @@ int ai_RegisterBaseActions(int a)
     strcpy(act.name, "Objekt kaufen");
     act.eval = ai_EvalMoodWeights;
     act.decide = ai_DecideProduceGood;
-    act.exec = ai_Unk4979d0;
+    act.exec = ai_ExecuteProduceGood;
     act.flags = 0x1;
     if (!am_RegisterMethod(&act, a))
         return 0;
