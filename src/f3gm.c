@@ -869,8 +869,8 @@ void gm_ShiftLoyalty(void)
 extern unsigned gm_BoyHead[], gm_GirlHead[], gm_TitleHeadsMale[], gm_TitleHeadsFemale[], gm_JobHeadsMale[], gm_JobHeadsFemale[], gm_SpyHeads[], gm_OwnNameHeads[];  /* 0x6118a8, 0x6118f0, 0x611938, 0x612288, 0x612bd8, 0x614518, 0x617398, 0x91ac40 */
 int d3_CurrentScene = 0;  /* 0x633444 */
 char ai_Unk6f0454[3] = {0};  /* 0x6f0454 .. 0x6f0456 (unk_LoadIconNames writes [0..2]) */
-int ai_Unk6f1b90 = 0;  /* 0x6f1b90, the number of icon names */
-char * ai_Unk6f1b94 = 0;  /* 0x6f1b94, the icon names ( */
+int gm_IconNameCount = 0;  /* 0x6f1b90, the number of icon names */
+char * gm_IconNames = 0;  /* 0x6f1b94, the icon names ( */
 int gm_NetMsgCount = 0;  /* 0x6f1b98, the number of queued messages ( */
 ORDCHAR *gm_RichestChar = 0;  /* 0x6f1bac, the richest character of gm_FindRichest's last search, 0 = none */
 int gm_OwnNameHeadLast = 0;  /* 0x6f1bb0 */
@@ -1031,20 +1031,20 @@ void gm_ResolveHeadIcons(GMHEAD *rec)
     for (h = 0; h < 4; h++, out++) {
         sprintf(icon, "%s_HEAD%i_%s_ICON.bmp", name, h, suffix);
         *out = 0xff;
-        for (i = 0; i < ai_Unk6f1b90; i++) {
-            if (ai_Unk6f1b94[i * 0x30] == 0)
+        for (i = 0; i < gm_IconNameCount; i++) {
+            if (gm_IconNames[i * 0x30] == 0)
                 break;
-            if (_stricmp(icon, ai_Unk6f1b94 + i * 0x30) == 0) {
+            if (_stricmp(icon, gm_IconNames + i * 0x30) == 0) {
                 *out = i;
                 goto next;
             }
         }
         sprintf(icon, "%s_HEAD%i_ICON.bmp", name, h);
         *out = 0xff;
-        for (i = 0; i < ai_Unk6f1b90; i++) {
-            if (ai_Unk6f1b94[i * 0x30] == 0)
+        for (i = 0; i < gm_IconNameCount; i++) {
+            if (gm_IconNames[i * 0x30] == 0)
                 break;
-            if (_stricmp(icon, ai_Unk6f1b94 + i * 0x30) == 0) {
+            if (_stricmp(icon, gm_IconNames + i * 0x30) == 0) {
                 *out = i;
                 break;
             }
@@ -1052,39 +1052,41 @@ void gm_ResolveHeadIcons(GMHEAD *rec)
     next:;
     }
 }
-/* 0x4fb770, the number of the first head icon (of the heads 0 .. 3) that exists for the head name (split at the last '_' as in 0x4fb620; "zigeunermeister" uses the form without the suffix), 0 when none. ROUGH */
+/* 0x4fb770, the number of the first head icon (of the heads 0 .. 3) that exists for the head name (split at its
+   last '_' into name and suffix as in gm_ResolveHeadIcons; names with "zigeunermeister" use the form without the
+   suffix), 0 when none. */
 
 int gm_HeadIconNumber(char *name)
 {
-    char buf[128], suffix[128], icon[128];
+    char buf[128], icon[128], suffix[128];
     char *u;
     int h, i, r;
 
+    r = 0xff;
     strcpy(buf, name);
     u = strrchr(buf, '_');
     if (u != 0) {
         strcpy(suffix, u + 1);
         *u = 0;
     }
-    r = 0xff;
     for (h = 0; h < 4; h++) {
         if (r != 0xff)
-            return r;
+            break;
         sprintf(icon, "%s_HEAD%i_%s_ICON.bmp", buf, h, suffix);
         if (strstr(buf, "zigeunermeister") != 0)
             sprintf(icon, "%s_HEAD%i_ICON.bmp", buf, h);
-        for (i = 0; i < ai_Unk6f1b90; i++) {
-            if (ai_Unk6f1b94[i * 0x30] == 0)
+        for (i = 0; i < gm_IconNameCount; i++) {
+            if (gm_IconNames[i * 0x30] == 0)
                 break;
-            if (_stricmp(icon, ai_Unk6f1b94 + i * 0x30) == 0) {
+            if (_stricmp(icon, gm_IconNames + i * 0x30) == 0) {
                 r = i;
                 break;
             }
         }
     }
-    if (r != 0xff)
-        return r;
-    return 0;
+    if (r == 0xff)
+        return 0;
+    return r;
 }
 
 extern char * ai_PlayerBuilding;  /* 0x6f2308 */
@@ -1113,7 +1115,7 @@ int gm_ChooseHeadIcon(unsigned short *c)
     if (c == 0)
         return 0;
     m = *(int **)(c + 0xc2);
-    if (m == 0 || ai_Unk6f1b94 == 0) {
+    if (m == 0 || gm_IconNames == 0) {
         rec = gm_CharNameRecord(*c);
         if (rec[0xd] == 0xff) {
             strcpy(name, (char *)(rec + 1));
@@ -1129,10 +1131,10 @@ int gm_ChooseHeadIcon(unsigned short *c)
                 if (strstr(name, "zigeunermeister") != 0)
                     sprintf(icon, "%s_HEAD%i_ICON.bmp", name, h);
                 *q = 0xff;
-                for (j = 0; j < ai_Unk6f1b90; j++) {
-                    if (ai_Unk6f1b94[j * 0x30] == 0)
+                for (j = 0; j < gm_IconNameCount; j++) {
+                    if (gm_IconNames[j * 0x30] == 0)
                         break;
-                    if (_stricmp(icon, ai_Unk6f1b94 + j * 0x30) == 0) {
+                    if (_stricmp(icon, gm_IconNames + j * 0x30) == 0) {
                         *q = j;
                         break;
                     }
@@ -1160,10 +1162,10 @@ int gm_ChooseHeadIcon(unsigned short *c)
                 part = (char *)((n * stride + i) * 0x40 + *(int *)(cls + 0x204));
                 if (*part != 0 && (strstr(part, "kopf") != 0 || strstr(part, "KOPF") != 0 || strstr(part, "HEAD") != 0 || strstr(part, "head") != 0)) {
                     sprintf(icon, "%s_ICON.bmp", part);
-                    for (j = 0; j < ai_Unk6f1b90; j++) {
-                        if (ai_Unk6f1b94[j * 0x30] == 0)
+                    for (j = 0; j < gm_IconNameCount; j++) {
+                        if (gm_IconNames[j * 0x30] == 0)
                             break;
-                        if (_stricmp(icon, ai_Unk6f1b94 + j * 0x30) == 0) {
+                        if (_stricmp(icon, gm_IconNames + j * 0x30) == 0) {
                             found = 1;
                             *(int *)(c + 0xc6) = j + 0x639;
                             break;
@@ -2286,25 +2288,25 @@ void unk_LoadIconNames(void)
     ai_Unk6f0454[1] = (char)0xff;
     ai_Unk6f0454[0] = 0;
     ai_Unk6f0454[2] = 0;
-    ai_Unk6f1b90 = 0;
+    gm_IconNameCount = 0;
     sprintf(path, "%sCharacter_Names.dat", d2_GfxDir);
     f = fopen(path, "rb");
     if (f != 0) {
         do {
             fread(rec, 0x80, 1, f);
-            ai_Unk6f1b90++;
+            gm_IconNameCount++;
         } while ((f->_flag & 0x10) == 0);
         fclose(f);
     }
-    ai_Unk6f1b94 = (char *)mem_Alloc(ai_Unk6f1b90 * 0x30, &ai_Unk60c1ec);
-    ai_Unk6f1b90 = 0;
+    gm_IconNames = (char *)mem_Alloc(gm_IconNameCount * 0x30, &ai_Unk60c1ec);
+    gm_IconNameCount = 0;
     f = fopen(path, "rb");
     if (f != 0) {
         do {
             fread(rec, 0x80, 1, f);
             s = rec;
-            d = ai_Unk6f1b94 + ai_Unk6f1b90 * 0x30;
-            ai_Unk6f1b90++;
+            d = gm_IconNames + gm_IconNameCount * 0x30;
+            gm_IconNameCount++;
             do {
                 ch = *s++;
                 *d++ = ch;
@@ -2317,9 +2319,9 @@ void unk_LoadIconNames(void)
 
 void gm_FreeIconNames(void)
 {
-    if (ai_Unk6f1b94 != 0) {
-        mem_Free(ai_Unk6f1b94);
-        ai_Unk6f1b94 = 0;
+    if (gm_IconNames != 0) {
+        mem_Free(gm_IconNames);
+        gm_IconNames = 0;
     }
 }
 /* 0x4fdfd0, the character statistics (0x91b500, 0x68 bytes): [0] the number of active persons of kind < 10, a histogram of 0x505e30 (i) / 10 (clamped, [1 ..]), the float [9] the share of children below their lifetime (0x4fd7e0, in percent at the end), the sums of the healths 0x4fc820 / 0x4fc890 per kind ([10 ..] / [18 ..]) turned into averages. ROUGH */
