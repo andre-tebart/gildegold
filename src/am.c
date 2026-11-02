@@ -2334,7 +2334,7 @@ static const float ag_Chance[5][6] = {
     {0.1234f, 0.2998f, 0.4666f, 0.622f, 0.8111f, 1.0f}
 };
 const AIREC10 ai_Unk5ecfd8[7] = { { 0, 10, 20.0f, 40.0f }, { 1, 13, 40.0f, 60.0f }, { 2, 16, 60.0f, 80.0f }, { 3, 19, 80.0f, 100.0f }, { 4, 23, 100.0f, 120.0f }, { 5, 27, 120.0f, 140.0f }, { 6, 32, 140.0f, 160.0f } };  /* 0x5ecfd8 */
-const int ai_Unk5ed100[16] = { 1, 5, 7, 11, 13, 17, 19, 23, 745, 749, 751, 755, 757, 761, 763, 767 };  /* 0x5ed100, random steps */
+const int ai_CharWalkSteps[16] = { 1, 5, 7, 11, 13, 17, 19, 23, 745, 749, 751, 755, 757, 761, 763, 767 };  /* 0x5ed100, random steps */
 const int ai_RandomStrides[16] = { 1, 3, 5, 7, 11, 13, 17, 19, 237, 239, 243, 245, 249, 251, 253, 255 };  /* 0x5ed140, random steps */
 const int ai_RingStrides[11] = { 1, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31 };  /* 0x5ed180, the strides of the near ring cursor */
 G6CURSOR *const ai_NearRingCursor = &ai_NearRingCursorState;  /* 0x5ed1b0, the code reaches the cursor through this constant pointer (mov reg, [0x5ed1b0]) */
@@ -10833,7 +10833,7 @@ int ai_PickPartnerInRange(AIPER *p, unsigned int fl, int n, unsigned short *ids,
         k--;
     } while (1);
 }
-/* 0x4a5b50: as 0x4a58d0, but the partners come from a random walk over all 768 characters (steps 0x5ed100);
+/* 0x4a5b50: as ai_PickPartnerChain, but the partners come from a random walk over all 768 characters (ai_CharWalkSteps);
    the rating window [lo, hi] (0x50c550) only counts when it is narrower than 0..100 */
 
 int ai_FindPartnersRandomWalk(AIPER *p, unsigned int a, int *flags, float lo, float hi, unsigned short *id)
@@ -10843,7 +10843,7 @@ int ai_FindPartnersRandomWalk(AIPER *p, unsigned int a, int *flags, float lo, fl
     int step, n, found, win;
     float r;
 
-    step = ai_Unk5ed100[util_RandomU(0x10)];
+    step = ai_CharWalkSteps[util_RandomU(0x10)];
     i = 0;
     memset(q, 0, sizeof(q));
     win = 0;
@@ -10852,19 +10852,19 @@ int ai_FindPartnersRandomWalk(AIPER *p, unsigned int a, int *flags, float lo, fl
     if (ai_Partner != 0) {
         q[16] = 0;
         q[1] = flags[0];
-        if (ai_PassesPartnerFilter(*(unsigned short *)p, *(unsigned short *)ai_Partner, q, 0) != 0) {
+        if (ai_PassesPartnerFilter(p->id, AI_PARTNER->id, q, 0) != 0) {
             i = 1;
-            id[0] = *(unsigned short *)ai_Partner;
+            id[0] = AI_PARTNER->id;
         }
     }
-    if ((lo > 0.0f || hi < 100.0f) && lo < hi)
+    if ((lo > 0.0 || hi < 100.0) && lo < hi)
         win = 1;
     for (; i < a; i++) {
         q[1] = flags[i];
-        if (i == 0)
-            *(unsigned short *)&q[7] = *(unsigned short *)p;
-        else
+        if (i != 0)
             ((unsigned short *)&q[7])[i] = id[i - 1];
+        else
+            ((unsigned short *)&q[7])[0] = p->id;
         n = 0x300;
         found = 0;
         c = util_RandomU(0x300);
@@ -10874,8 +10874,8 @@ int ai_FindPartnersRandomWalk(AIPER *p, unsigned int a, int *flags, float lo, fl
                     return 0;
                 break;
             }
-            if (ai_PassesPartnerFilter(*(unsigned short *)p, (unsigned short)c, q, 0) != 0) {
-                if (!win || (r = gm_Liking(c, *(unsigned short *)p, 1), lo <= r && r <= hi)) {
+            if (ai_PassesPartnerFilter(p->id, (unsigned short)c, q, 0) != 0) {
+                if (!win || (r = gm_Liking(c, p->id, 1), !(r < lo) && !(r > hi))) {
                     found = 1;
                     id[i] = (unsigned short)c;
                 }
@@ -10895,7 +10895,7 @@ int ai_Unk4a5d30(AIPER *p, unsigned int fl, int n, unsigned short *ids, float lo
     int step, k, found, win;
     float r;
 
-    step = ai_Unk5ed100[util_RandomU(0x10)];
+    step = ai_CharWalkSteps[util_RandomU(0x10)];
     memset(q, 0, sizeof(q));
     win = 0;
     len = n * 2;
@@ -10948,7 +10948,7 @@ unsigned int ai_FindCandidates(AIPER *p, unsigned int n, unsigned int fl, float 
     char t;
     float r;
 
-    step = ai_Unk5ed100[util_RandomU(0x10)];
+    step = ai_CharWalkSteps[util_RandomU(0x10)];
     memset(q, 0, sizeof(q));
     memset(&q[7], 0xff, 8 * 4);
     win = 0;
@@ -11002,7 +11002,7 @@ unsigned int ai_PickPartnerChainLevel(AIPER *p, unsigned int a, unsigned int fl,
     int step, n, found, win, home;
     float r;
 
-    step = ai_Unk5ed100[util_RandomU(0x10)];
+    step = ai_CharWalkSteps[util_RandomU(0x10)];
     i = 0;
     memset(q, 0, sizeof(q));
     win = 0;

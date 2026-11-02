@@ -1031,7 +1031,7 @@ typedef struct G9DOMIZIL {              /* 0x1c bytes, an entry of the Domizil t
 void ai_FindWantedItems(struct G5CH *p, int n, struct G9REC *rec, int *st);                          /* 0x4a5760, declared int elsewhere */
 /* 0x4a58d0 ai_PickPartnerChain is declared in am.h */
 int ai_PickPartnerInRange(AIPER *p, unsigned int fl, int n, unsigned short *ids, float lo, float hi, unsigned short *id); /* 0x4a5a30 */
-extern const int ai_Unk5ed100[16];                                                    /* 0x5ed100, random steps */
+extern const int ai_CharWalkSteps[16];                                                    /* 0x5ed100, random steps */
 int ai_FindPartnersRandomWalk(AIPER *p, unsigned int a, int *flags, float lo, float hi, unsigned short *id); /* 0x4a5b50, unk_490830.h: other view */
 int ai_Unk4a5d30(AIPER *p, unsigned int fl, int n, unsigned short *ids, float lo, float hi, unsigned short *id); /* 0x4a5d30 */
 unsigned int ai_FindCandidates(AIPER *p, unsigned int n, unsigned int fl, float lo, float hi, unsigned short *out); /* 0x4a5ef0 */

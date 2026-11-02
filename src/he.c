@@ -67,7 +67,7 @@ extern unsigned char ai_OwnPlayer;
 extern const int sv_PhaseMinutes[24];
 extern char * cm_FieldObject;
 extern char *ai_Unk5fb5b0;
-extern const int ai_Unk5ed100[16];
+extern const int ai_CharWalkSteps[16];
 extern signed char ai_Relations[768][768];
 extern char ai_Unk625820[115][0x20];
 extern unsigned char ai_GameState;
@@ -92,7 +92,7 @@ extern char ai_PlayerSlots[4][0x2f4];
 extern char * cm_FieldObject;
 extern GAPDATA full_data_5fe7d0[];
 extern signed char ai_Relations[768][768];
-extern const int ai_Unk5ed100[16];
+extern const int ai_CharWalkSteps[16];
 extern char ai_Crimes[];
 extern const int sv_PhaseMinutes[24];
 extern int ai_ClockMs;
@@ -2512,7 +2512,7 @@ void he_Unk544070(int ev)
             t2 = -1;
         gv_Accuse(3, 1, U_I((unsigned)&ai_CharInts + idx), *(int *)(ev + 0xbc), t2);
         *(int *)(ev + 0xc4) = util_Random(0x300) & 0xffff;
-        *(int *)(ev + 0xc8) = U_I((unsigned)&ai_Unk5ed100 + (util_Random(0x10) & 0xffff) * 4);
+        *(int *)(ev + 0xc8) = U_I((unsigned)&ai_CharWalkSteps + (util_Random(0x10) & 0xffff) * 4);
         *(float *)(ev + 0xd0) = gm_GetSkill((unsigned)&ai_Chars + *(unsigned short *)(ev + 8) * 0x21c, 4);
         *(int *)(ev + 0xcc) = 0x300;
         if (ai_InventoryHas(pl, 0x15c) != 0) {
@@ -5998,7 +5998,7 @@ void he_Unk54f160(int ev)
         cnt = *(int *)(ev + 0xc0);
         if (cnt != 0) {
             idx = (unsigned short)util_Random(0x200);
-            w = U_I((unsigned)&ai_Unk5ed100 + (unsigned short)util_Random(8) * 4);
+            w = U_I((unsigned)&ai_CharWalkSteps + (unsigned short)util_Random(8) * 4);
             n = 0;
             for (i = 0x200; i > 0 && n < cnt; i--) {
                 int e3 = (unsigned)&ai_Crimes + idx * 0x2d;
