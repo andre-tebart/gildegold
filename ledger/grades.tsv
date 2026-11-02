@@ -4052,7 +4052,7 @@ exe	0x005830f0	ai_GraveDeadName	unk_575860	byte	draft
 exe	0x00583150	ai_GraveDeadDescription	unk_575860	byte	readable		
 exe	0x00583240	ai_GraveWindow	unk_575860	draft	readable	deep	
 exe	0x00583700	ai_RentGraveDetail	unk_575860	draft	readable	deep	
-exe	0x00583b70	ai_Unk583b70	unk_575860	byte	draft		
+exe	0x00583b70	ai_GraveDetailOpen	unk_575860	byte	draft		
 exe	0x00583c50	ai_GraveSizeButtonsAt	unk_575860	byte	readable		
 exe	0x00583de0	ai_GraveFreeConfirm	unk_575860	byte	draft		
 exe	0x00583ef0	ai_GraveSizeEnable	unk_575860	byte	readable		
@@ -4060,7 +4060,7 @@ exe	0x00584010	ai_GraveMoveConfirm	unk_575860	byte	readable
 exe	0x00584260	ai_GraveMoveWindow	unk_575860	byte	draft		
 exe	0x00584410	ai_GraveDetailButtons	unk_575860	byte	readable		
 exe	0x00584520	ai_GraveRentConfirm	unk_575860	byte	readable		
-exe	0x005847a0	ai_Unk5847a0	unk_575860	byte	draft		
+exe	0x005847a0	ai_RentGraveSelect	unk_575860	byte	draft		
 exe	0x00584900	ai_GraveCare	unk_575860	byte	readable		
 exe	0x00584b70	ai_GraveRaiseHelper	unk_575860	byte	readable		
 exe	0x00584d70	ai_GypsyHelperWindow	unk_575860	draft	draft	deep	
@@ -4072,24 +4072,24 @@ exe	0x00585cb0	ai_SeanceGhost	unk_575860	byte	readable
 exe	0x00585f30	ai_SeanceSacrifice	unk_575860	byte	readable		
 exe	0x00586200	ai_SeanceGift	unk_575860	byte	readable		
 exe	0x00586560	ai_SeancePick	unk_575860	byte	readable		
-exe	0x00586610	ai_Unk586610	unk_575860	draft	draft		
-exe	0x005867c0	ai_Unk5867c0	unk_575860	byte	draft		
-exe	0x00586840	ai_Unk586840	unk_575860	draft	draft		
-exe	0x00586ab0	ai_Unk586ab0	unk_575860	draft	draft		
-exe	0x00586e40	ai_Unk586e40	unk_575860	draft	draft		
-exe	0x005871c0	ai_Unk5871c0	unk_575860	byte	draft		
-exe	0x005871e0	ai_Unk5871e0	unk_575860	draft	draft		
-exe	0x00587300	ai_Unk587300	unk_575860	byte	draft		
-exe	0x00587340	ai_Unk587340	unk_575860	byte	draft		
-exe	0x00587370	ai_Unk587370	unk_575860	draft	draft		
+exe	0x00586610	ai_GraveSeance	unk_575860	byte	readable		
+exe	0x005867c0	ai_GraveyardSchlag	unk_575860	byte	draft		
+exe	0x00586840	ai_GraveyardContact	unk_575860	byte	readable		
+exe	0x00586ab0	ai_GraveHauntContact	unk_575860	shape	readable		
+exe	0x00586e40	ai_GraveAgeContact	unk_575860	shape	readable		
+exe	0x005871c0	ai_GravePlanContact	unk_575860	byte	draft		
+exe	0x005871e0	ai_GraveRentContact	unk_575860	byte	readable		
+exe	0x00587300	ai_GraveCareContact	unk_575860	byte	draft		
+exe	0x00587340	ai_GraveHelperContact	unk_575860	byte	draft		
+exe	0x00587370	ai_GraveInsuranceContact	unk_575860	byte	readable		
 exe	0x00587560	ai_Unk587560	unk_575860	byte	draft		
 exe	0x005876a0	ai_Unk5876a0	unk_575860	byte	draft		
-exe	0x00587700	ai_Unk587700	unk_575860	draft	draft		
-exe	0x00587810	ai_Unk587810	unk_575860	draft	draft		
+exe	0x00587700	ai_UpgradeWorkerSend	unk_575860	byte	readable		
+exe	0x00587810	ai_UpgradeWorkerWindow	unk_575860	byte	readable		
 exe	0x00587ad0	ai_Unk587ad0	unk_575860	byte	draft		
 exe	0x00587b70	ai_Unk587b70	unk_575860	shape	draft		
 exe	0x00587c40	ai_EndCharExtra	unk_575860	draft	draft		
-exe	0x00587c90	ai_Unk587c90	unk_575860	draft	draft		
+exe	0x00587c90	ai_GraveyardChatter	unk_575860	draft	draft		
 exe	0x00587de0	ai_ClearTurnTable	unk_575860	byte	draft		
 exe	0x00587e00	ai_HandleItemDrag	unk_575860	draft	draft		
 exe	0x00588160	ai_Unk588160	unk_575860	draft	draft		
