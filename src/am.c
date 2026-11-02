@@ -10744,8 +10744,8 @@ void ai_FindWantedItems(G5CH *p, int n, G9REC *rec, int *st)
     }
 }
 /* 0x4a58d0: picks a partner chain of a (< 4) characters for an action with the flags flags[i]: the leader
-   ai_Partner first when 0x5c33c0 accepts it, then for each further slot the next ring entry (0x4a3a90) whose
-   rating lies in [b, f] and that 0x5c33c0 accepts with the chain so far; ids into id[] */
+   ai_Partner first when ai_PassesPartnerFilter accepts it, then for each further slot the next near-ring entry whose
+   rating lies in [b, f] and that ai_PassesPartnerFilter accepts with the chain so far; ids into id[] */
 
 int ai_PickPartnerChain(AIPER *p, int a, int *flags, float b, float f, unsigned short *id)
 {
@@ -10755,28 +10755,28 @@ int ai_PickPartnerChain(AIPER *p, int a, int *flags, float b, float f, unsigned 
     int found, ret;
 
     ret = 0;
-    if ((unsigned int)a < 4) {
+    if ((unsigned int)a <= 3) {
         memset(q, 0, sizeof(q));
-        i = 0;
         memset(&q[7], 0xff, 8 * 4);
         q[5] = 2;
+        i = 0;
         if (ai_Partner != 0 && !(q[1] & 0x10000000)) {
             q[16] = 0;
             q[1] = flags[0];
-            if (ai_Unk5c33c0(*(unsigned short *)p, *(unsigned short *)ai_Partner, q, 0) != 0) {
+            if (ai_PassesPartnerFilter(p->id, AI_PARTNER->id, q, 0) != 0) {
                 i = 1;
-                id[0] = *(unsigned short *)ai_Partner;
+                id[0] = AI_PARTNER->id;
             }
         }
         for (; i < (unsigned int)a; i++) {
             q[1] = flags[i];
-            if (i == 0)
-                *(unsigned short *)&q[7] = *(unsigned short *)p;
-            else
+            if (i != 0)
                 ((unsigned short *)&q[7])[i] = id[i - 1];
+            else
+                ((unsigned short *)&q[7])[0] = p->id;
             found = 0;
-            e = ai_NextNearRingEntry();
-            for (n = ai_NearRingCount; !found; n--, e = ai_NextNearRingEntry()) {
+            n = ai_NearRingCount;
+            for (e = ai_NextNearRingEntry(); !found; n--, e = ai_NextNearRingEntry()) {
                 if (n == 0) {
                     if (!found)
                         return 0;
@@ -10784,10 +10784,10 @@ int ai_PickPartnerChain(AIPER *p, int a, int *flags, float b, float f, unsigned 
                 }
                 if (e->who == 0)
                     return 0;
-                if (b <= e->dist && e->dist <= f
-                    && ai_Unk5c33c0(*(unsigned short *)p, *(unsigned short *)e->who, q, 0) != 0) {
+                if (!(e->dist < b) && !(e->dist > f)
+                    && ai_PassesPartnerFilter(p->id, e->who->id, q, 0) != 0) {
                     found = 1;
-                    id[i] = *(unsigned short *)e->who;
+                    id[i] = e->who->id;
                 }
             }
         }
@@ -10814,7 +10814,7 @@ int ai_PickPartnerInRange(AIPER *p, unsigned int fl, int n, unsigned short *ids,
     if (ai_Partner != 0 && !(q[1] & 0x10000000)) {
         q[16] = 0;
         q[1] = fl;
-        if (ai_Unk5c33c0(*(unsigned short *)p, *(unsigned short *)ai_Partner, q, 0) != 0) {
+        if (ai_PassesPartnerFilter(*(unsigned short *)p, *(unsigned short *)ai_Partner, q, 0) != 0) {
             *id = *(unsigned short *)ai_Partner;
             return 1;
         }
@@ -10825,7 +10825,7 @@ int ai_PickPartnerInRange(AIPER *p, unsigned int fl, int n, unsigned short *ids,
         if (k == 0 || e->who == 0)
             break;
         if (lo <= e->dist && e->dist <= hi
-            && ai_Unk5c33c0(*(unsigned short *)p, *(unsigned short *)e->who, q, 0) != 0) {
+            && ai_PassesPartnerFilter(*(unsigned short *)p, *(unsigned short *)e->who, q, 0) != 0) {
             *id = *(unsigned short *)e->who;
             return 1;
         }
@@ -10851,7 +10851,7 @@ int ai_FindPartnersRandomWalk(AIPER *p, unsigned int a, int *flags, float lo, fl
     if (ai_Partner != 0) {
         q[16] = 0;
         q[1] = flags[0];
-        if (ai_Unk5c33c0(*(unsigned short *)p, *(unsigned short *)ai_Partner, q, 0) != 0) {
+        if (ai_PassesPartnerFilter(*(unsigned short *)p, *(unsigned short *)ai_Partner, q, 0) != 0) {
             i = 1;
             id[0] = *(unsigned short *)ai_Partner;
         }
@@ -10873,7 +10873,7 @@ int ai_FindPartnersRandomWalk(AIPER *p, unsigned int a, int *flags, float lo, fl
                     return 0;
                 break;
             }
-            if (ai_Unk5c33c0(*(unsigned short *)p, (unsigned short)c, q, 0) != 0) {
+            if (ai_PassesPartnerFilter(*(unsigned short *)p, (unsigned short)c, q, 0) != 0) {
                 if (!win || (r = gm_Liking(c, *(unsigned short *)p, 1), lo <= r && r <= hi)) {
                     found = 1;
                     id[i] = (unsigned short)c;
@@ -10905,7 +10905,7 @@ int ai_Unk4a5d30(AIPER *p, unsigned int fl, int n, unsigned short *ids, float lo
     if (ai_Partner != 0) {
         q[16] = 0;
         q[1] = fl;
-        if (ai_Unk5c33c0(*(unsigned short *)p, *(unsigned short *)ai_Partner, q, 0) != 0) {
+        if (ai_PassesPartnerFilter(*(unsigned short *)p, *(unsigned short *)ai_Partner, q, 0) != 0) {
             *id = *(unsigned short *)ai_Partner;
             return 1;
         }
@@ -10922,7 +10922,7 @@ int ai_Unk4a5d30(AIPER *p, unsigned int fl, int n, unsigned short *ids, float lo
                 return 1;
             return 0;
         }
-        if (ai_Unk5c33c0(*(unsigned short *)p, (unsigned short)c, q, 0) != 0) {
+        if (ai_PassesPartnerFilter(*(unsigned short *)p, (unsigned short)c, q, 0) != 0) {
             if (!win || (r = gm_Liking(c, *(unsigned short *)p, 1), lo <= r && r <= hi)) {
                 found = 1;
                 *id = (unsigned short)c;
@@ -10966,7 +10966,7 @@ unsigned int ai_FindCandidates(AIPER *p, unsigned int n, unsigned int fl, float 
             c = (unsigned char *)&ai_CharsT[i];
             t = c[2];
             if (t != 8 && t != 7 && t != 5 && t != 9 && t != 0x14 && c[0x164] != 0 && c[0x164] != 'R'
-                && ai_Unk5c33c0(*(unsigned short *)p, (unsigned short)i, q, 0) != 0
+                && ai_PassesPartnerFilter(*(unsigned short *)p, (unsigned short)i, q, 0) != 0
                 && abs(rank - gm_Unk505f30(i, 0)) < 6
                 && (!win || (r = gm_Liking(i, *(unsigned short *)p, 1), lo <= r && r <= hi))) {
                 cnt++;
@@ -10981,7 +10981,7 @@ unsigned int ai_FindCandidates(AIPER *p, unsigned int n, unsigned int fl, float 
         c = (unsigned char *)&ai_CharsT[i];
         t = c[2];
         if (t != 8 && t != 7 && t != 5 && t != 9 && t != 0x14 && c[0x164] == 0
-            && ai_Unk5c33c0(*(unsigned short *)p, (unsigned short)i, q, 0) != 0
+            && ai_PassesPartnerFilter(*(unsigned short *)p, (unsigned short)i, q, 0) != 0
             && abs(rank - gm_Unk505f30(i, 0)) < 6
             && (!win || (r = gm_Liking(i, *(unsigned short *)p, 1), lo <= r && r <= hi))) {
             cnt++;
@@ -11010,7 +11010,7 @@ unsigned int ai_PickPartnerChainLevel(AIPER *p, unsigned int a, unsigned int fl,
     if (ai_Partner != 0) {
         q[1] = fl;
         q[16] = 0;
-        if (ai_Unk5c33c0(*(unsigned short *)p, *(unsigned short *)ai_Partner, q, 0) != 0) {
+        if (ai_PassesPartnerFilter(*(unsigned short *)p, *(unsigned short *)ai_Partner, q, 0) != 0) {
             i = 1;
             id[0] = *(unsigned short *)ai_Partner;
         }
@@ -11033,7 +11033,7 @@ unsigned int ai_PickPartnerChainLevel(AIPER *p, unsigned int a, unsigned int fl,
                     return i;
                 break;
             }
-            if (ai_Unk5c33c0(*(unsigned short *)p, (unsigned short)c, q, 0) != 0
+            if (ai_PassesPartnerFilter(*(unsigned short *)p, (unsigned short)c, q, 0) != 0
                 && (!win || (r = gm_Liking(c, *(unsigned short *)p, 1), lo <= r && r <= hi))
                 && abs(home - amt_GetKindLevel(((unsigned char *)&ai_CharsT[c])[0x166])) <= d) {
                 found = 1;

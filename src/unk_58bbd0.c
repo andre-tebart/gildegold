@@ -16118,7 +16118,7 @@ int ai_Unk5bc9c0(void)
 
 void * d2_SetFont(int font); void d2_DrawTextBox(); void d2_FillPaintbox(int x, int y, int w, int h); int gv_GetTableRecord();
 int gm_EquipmentValue(); void d2_RadioSelect(int g, int sel);
-int ai_Unk5c33c0(unsigned short param_1, unsigned short param_2, unsigned int *param_3, int param_4);
+int ai_PassesPartnerFilter(unsigned short param_1, unsigned short param_2, unsigned int *param_3, int param_4);
 
 /* 0x5bcc70, the player stats panel ("Panel_player_stats" 0x62d134, 1000 B): the radio group 0x46c490 over
    the three entry controls of 0x5bc420 / 0x5bc6d0 / 0x5bc9c0, the record 0xfa5aa0 + id * 0x8c (the flags at
@@ -16505,7 +16505,7 @@ int ai_Unk5bd5e0(int param_1, int param_2, int param_3, int param_4, int *param_
                     d2_WinOpenPic(i + *(short *)(U_I((unsigned)&d2_Pics) + 0x1ebd8), y, 0x6d3, U_I((unsigned)&d2_LastWindow));
             }
             if (param_3 == 0 ||
-                ai_Unk5c33c0(U_W((unsigned)&ai_PlayerId), *(unsigned short *)chr, (unsigned int *)param_3, 0) != 0) {
+                ai_PassesPartnerFilter(U_W((unsigned)&ai_PlayerId), *(unsigned short *)chr, (unsigned int *)param_3, 0) != 0) {
                 U_I((unsigned)&d2_Objs + rec[1] * 0x2ec + 0x4c) = 1;
                 U_I((unsigned)&d2_Objs + rec[1] * 0x2ec + 0x1c0) = 3;
                 U_I((unsigned)&d2_Objs + rec[1] * 0x2ec + 0x2e8) = (int)chr;
@@ -16645,7 +16645,7 @@ int ai_Unk5bdb60(int param_1, int param_2, int param_3, int param_4, int param_5
                     d2_WinOpenPic(i + *(short *)(U_I((unsigned)&d2_Pics) + 0x1ebd8), y, 0x6d3, U_I((unsigned)&d2_LastWindow));
             }
             if (param_3 == 0 ||
-                ai_Unk5c33c0(U_W((unsigned)&ai_PlayerId), *(unsigned short *)chr, (unsigned int *)param_3, 0) != 0) {
+                ai_PassesPartnerFilter(U_W((unsigned)&ai_PlayerId), *(unsigned short *)chr, (unsigned int *)param_3, 0) != 0) {
                 U_I((unsigned)&d2_Objs + rec[1] * 0x2ec + 0x4c) = 1;
                 U_I((unsigned)&d2_Objs + rec[1] * 0x2ec + 0x1c0) = 3;
                 U_I((unsigned)&d2_Objs + rec[1] * 0x2ec + 0x2e8) = (int)chr;
@@ -16966,7 +16966,7 @@ unsigned int ai_Unk5bf0d0(short *param_1, unsigned int param_2, int *param_3, in
     rec = param_3;
     for (i = 0; i < (int)n; i++) {
         ai_AmountRowStatus(rec);
-        rec[0xc] = ai_Unk5c33c0(*(unsigned short *)param_1, *(unsigned short *)rec[0],
+        rec[0xc] = ai_PassesPartnerFilter(*(unsigned short *)param_1, *(unsigned short *)rec[0],
                                 (unsigned int *)param_4, 0);
         rec += 0xe;
     }
@@ -17037,7 +17037,7 @@ unsigned int ai_Unk5bf300(short *param_1, unsigned int param_2, int *param_3, in
     rec = param_3;
     for (i = 0; i < n; i++) {
         ai_AmountRowStatus(rec);
-        rec[0xc] = ai_Unk5c33c0(*(unsigned short *)param_1, *(unsigned short *)rec[0],
+        rec[0xc] = ai_PassesPartnerFilter(*(unsigned short *)param_1, *(unsigned short *)rec[0],
                                 (unsigned int *)param_4, 0);
         rec += 0xe;
     }
@@ -17114,7 +17114,7 @@ unsigned int ai_Unk5bf4f0(short *param_1, unsigned int param_2, int *param_3, in
     rec = param_3;
     for (i = 0; i < n; i++) {
         ai_AmountRowStatus(rec);
-        rec[0xc] = ai_Unk5c33c0(*(unsigned short *)param_1, *(unsigned short *)rec[0],
+        rec[0xc] = ai_PassesPartnerFilter(*(unsigned short *)param_1, *(unsigned short *)rec[0],
                                 (unsigned int *)param_4, 0);
         rec += 0xe;
     }
@@ -17151,7 +17151,7 @@ unsigned int ai_Unk5bf6f0(int param_1, unsigned int param_2, int *param_3, int p
         for (x = 0; x < (int)i; x++) {
             rec[0] = ids[x];
             ai_AmountRowStatus(rec);
-            rec[0xc] = ai_Unk5c33c0(*(unsigned short *)param_1, *(unsigned short *)rec[0],
+            rec[0xc] = ai_PassesPartnerFilter(*(unsigned short *)param_1, *(unsigned short *)rec[0],
                                     (unsigned int *)param_4, 0);
             rec += 0xe;
         }
@@ -18242,7 +18242,7 @@ int unk_Unk4fd7e0(); int ai_WorksForMaster();
    +0x5c handle over 0x505df0, 0x2000 the +0x184 int, 0x4000 the kinds 5 / 6 / 7, 0x8000 the same, 0x10000
    the +0x170 int, 0x20000 the +0x1c8 0x800000, 0x40000 the +0x1cc 0x3000, 0x100000 kinds 6 / 7, 0x200000
    kind 5, 0x400000 kind != 5 with 0x47dd70, 0x800000 kind 0 (one of the four must hold) */
-int ai_Unk5c33c0(unsigned short param_1, unsigned short param_2, unsigned int *param_3, int param_4)
+int ai_PassesPartnerFilter(unsigned short param_1, unsigned short param_2, unsigned int *param_3, int param_4)
 {
     char *rec;
     char *other;
@@ -18617,7 +18617,7 @@ void *ai_Unk5c3bb0(unsigned char *param_1, int *param_2, int param_3, void (*par
             for (i = 0; i < n; i++) {
                 v = 1;
                 if (param_2 != 0 && param_2[1] != 0) {
-                    v = ai_Unk5c33c0(U_W((unsigned)&ai_PlayerId), ids[i], param_2, param_1);
+                    v = ai_PassesPartnerFilter(U_W((unsigned)&ai_PlayerId), ids[i], param_2, param_1);
                     if (*param_2 == 0 && v == 0)
                         continue;   /* ROUGH: the hidden row builds no controls */
                 }
