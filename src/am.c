@@ -11107,14 +11107,23 @@ int ai_PickActionBuilding(AIPER *p, int a, __int64 mask, float lo, float hi, int
     }
     return 1;
 }
-/* 0x4a6570: as 0x4a63f0, but collects up to n buildings into out[]; returns the number */
+/* 0x4a6570: ai_PickActionBuilding collecting up to n buildings: a random walk over the 256 buildings, the ones
+   ai_PassesBuildingFilter accepts with the kind mask (bit 63 forced) and, when [lo, hi] is narrower than 0..100,
+   whose owner's liking equals the filter record's unset minimum (+0x44, both bounds, as in ai_PickActionBuilding);
+   ids into out[], returns the number
+   @deep read in full against the original: float lo/hi with double window constants, the filter record
+   q[0x14] whose float +0x44 both liking bounds are compared against (as in ai_PickActionBuilding), the
+   while (cnt < n && k != 0) loop with k-- before the step, int j, out[cnt] then cnt++. 111/113
+   instructions. Left: allocation only: ours packs win into the dead slot of a ('- mov dword ptr [esp +
+   0x6c], ebx' vs '+ mov dword ptr [esp + 0x10], ebx'), keeps k in ebp and n (zero-extended) in the lo
+   slot, the original keeps k in the lo slot ('+ mov dword ptr [esp + 0x80], 0x100', '+ dec ecx; mov [esp +
+   0x7c], ecx') and n in ebp ('+ and ebp, 0xff', '+ cmp ebx, ebp') */
 
-int ai_Unk4a6570(AIPER *p, int a, __int64 mask, float lo, float hi, unsigned char n, int *out)
+int ai_PickActionBuildings(AIPER *p, int a, __int64 mask, float lo, float hi, unsigned char n, int *out)
 {
-    unsigned int q[0x12];
+    unsigned int q[0x14];
     AIBLD *b;
-    int step, k, cnt, win;
-    unsigned int j;
+    int step, k, cnt, win, j;
     float r;
 
     step = ai_RandomStrides[util_RandomU(0x10)];
@@ -11124,23 +11133,19 @@ int ai_Unk4a6570(AIPER *p, int a, __int64 mask, float lo, float hi, unsigned cha
     win = 0;
     q[5] = 0;
     q[2] = (unsigned int)mask;
-    if ((lo > 0.0f || hi < 100.0f) && lo < hi)
+    if ((lo > 0.0 || hi < 100.0) && lo < hi)
         win = 1;
     k = 0x100;
     j = util_RandomU(0x100);
-    if (n != 0) {
-        do {
-            if (k == 0)
-                return cnt;
-            b = &ai_BldsT[j];
-            if (b->type != 0 && ai_PassesBuildingFilter(p, q, b) != 0
-                && (!win || (r = gm_Liking(b->owner, *(unsigned short *)p, 1), lo <= r && r <= hi))) {
-                out[cnt] = b->id;
-                cnt++;
-            }
-            k--;
-            j = (j + step) % 0x100;
-        } while (cnt < n);
+    while (cnt < n && k != 0) {
+        b = &ai_BldsT[j];
+        if (b->type != 0 && ai_PassesBuildingFilter(p, q, b) != 0
+            && (!win || (r = gm_Liking(b->owner, p->id, 1), !(r < ((float *)q)[0x11]) && !(r > ((float *)q)[0x11])))) {
+            out[cnt] = b->id;
+            cnt++;
+        }
+        k--;
+        j = (j + step) % 0x100;
     }
     return cnt;
 }

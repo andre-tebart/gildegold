@@ -1038,7 +1038,7 @@ unsigned int ai_FindCandidates(AIPER *p, unsigned int n, unsigned int fl, float 
 unsigned int ai_PickPartnerChainLevel(AIPER *p, unsigned int a, unsigned int fl, float lo, float hi, int d, unsigned short *id); /* 0x4a61d0 */
 extern const int ai_RandomStrides[16];                                                    /* 0x5ed140, random steps */
 /* 0x4a63f0 ai_PickActionBuilding is declared in am.h */
-int ai_Unk4a6570(AIPER *p, int a, __int64 mask, float lo, float hi, unsigned char n, int *out); /* 0x4a6570 */
+int ai_PickActionBuildings(AIPER *p, int a, __int64 mask, float lo, float hi, unsigned char n, int *out); /* 0x4a6570 */
 void d3t_GetObjectBounds(struct D3VECTOR *mn, struct D3VECTOR *mx, struct D3OBJECT *obj);             /* 0x413150, d3_tools.c */
 int ai_Unk4a66f0(AIBLD *x, float *a, AIBLD *y, float *b);                        /* 0x4a66f0 */
 typedef struct G9SHOT {                 /* 0x74 bytes, the AI's cannon shot at 0x6f0698 (0x4a67a0) */

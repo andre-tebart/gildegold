@@ -16286,7 +16286,7 @@ void he_Unk5702e0(int ev)
     }
 }
 
-int ai_Unk4a6570(struct AIPER *p, int a, __int64 mask, float lo, float hi, unsigned char n, int *out); /* 0x4a6570 */
+int ai_PickActionBuildings(struct AIPER *p, int a, __int64 mask, float lo, float hi, unsigned char n, int *out); /* 0x4a6570 */
 
 /* 0x5706e0, the alloc of the event 0x8a: paused -> nothing; 0x4a6570 (the record of the player +8, 5, 4, 0, 0, 0, 5, ev + 0xb4) -> 0 -> free; the slot +0xb4 of the found index (when < 5) cleared, +0xb0 = 0, due clock now + 1 hour, state 0 */
 void he_Unk5706e0(int ev)
@@ -16295,7 +16295,7 @@ void he_Unk5706e0(int ev)
 
     if (*(unsigned char *)(ev + 0x78) & 4)
         return;
-    r = ai_Unk4a6570((unsigned)&ai_Chars + *(unsigned short *)(ev + 8) * 0x21c, 5, 4, 0, 0, 5, ev + 0xb4);
+    r = ai_PickActionBuildings((unsigned)&ai_Chars + *(unsigned short *)(ev + 8) * 0x21c, 5, 4, 0, 0, 5, ev + 0xb4);
     if (r == 0) {
         he_FreeEvent((int *)ev);
         return;
