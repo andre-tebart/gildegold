@@ -10810,27 +10810,24 @@ void ai_SaveScreenshot(void)
     mem_Free(img);
     sv_SetStatusText(txt_Ptrs[0x42fd]);
 }
-/* 0x589c90, the slot keys each frame (86 B): U_B (0x1468410) set and U_I (0x75e8c0) not 1; the key 0x58 ->
-   0x589670 (); 0x5894d0 (); each slot 0x6f5ec0 + i * 0xc up to 0x6f5f44 whose byte 0 is the key, with
-   U_B (0x14681ea) set -> 0x589570 (i) */
+/* 0x589c90, the bookmark keys each frame: nothing on no key or while the panel flag is 1; F12 (0x58) opens the bookmark
+   window, a bare function key selects its bookmark (ai_SelectBookmark), shift + a function key stores the current
+   view in that bookmark (ai_SetBookmark) */
 
 void ai_SlotKeys(void)
 {
-    char *p;
     int i;
 
-    if (*(unsigned char *)(unsigned)&kb_Last == 0)
+    if (kb_Last == 0)
         return;
-    if (U_I((unsigned)&sv_PanelFlag) == 1)
+    if (sv_PanelFlag == 1)
         return;
-    if (*(unsigned char *)(unsigned)&kb_Last == 0x58)
+    if (kb_Last == 0x58)
         ai_BookmarkWindow();
     ai_SelectBookmark();
-    i = 0;
-    for (p = (char *)ai_Bookmarks; p < (char *)&ai_Bookmarks[11]; p += 0xc) {
-        if (*(unsigned char *)p == *(unsigned char *)(unsigned)&kb_Last && *(unsigned char *)((unsigned)&kb_Down + 0x2a) != 0)
+    for (i = 0; i < 11; i++) {
+        if (ai_Bookmarks[i].key == kb_Last && kb_Down[0x2a] != 0)
             ai_SetBookmark(i);
-        i++;
     }
 }
 
