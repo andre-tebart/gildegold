@@ -7723,10 +7723,11 @@ int ai_Unk49dd90(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     }
     return 0;
 }
-/* 0x49def0, decide callback 0x31 (characters with +0x166 == 0xf): for a building found by 0x4a63f0 (mask
-   0x8000): work on it (+0x5c low), sell its goods, or upgrade it (type 0x24 -> 0x25, 0x25 -> 0x26) */
+/* 0x49def0, decide callback of "Buergermeister Rathaus" (0x31, characters with +0x166 == 0xf): for the town
+   hall found by ai_PickActionBuilding (mask 0x8000): raise its level (when low), make and sell a good there,
+   or upgrade it (type 0x24 -> 0x25, 0x25 -> 0x26) when the statistic and the money in its object 0x115 allow */
 
-int ai_Unk49def0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
+int ai_DecideMayorTownHall(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 {
     AIARG s1;
     AIARG s2;
@@ -7737,19 +7738,19 @@ int ai_Unk49def0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     int x, w, z, r, money, act, v;
     char lvl;
 
+    m.LowPart = 0x8000;
+    m.HighPart = 0;
     if (f != 0 || ((unsigned char *)p)[0x166] != 0xf || o1->kind != 0)
         return 0;
     if (a != 0 && ((unsigned char *)p)[0x130] != 7 && ((unsigned char *)p)[0x130] != 6)
         return 0;
-    m.LowPart = 0x8000;
-    m.HighPart = 0;
     if (!ai_PickActionBuilding((AIPER *)p, 2, m.QuadPart, 0, 100.0f, &x))
         return 0;
     gm_FindById((int)&y, 0, 0, x);
     if (y == 0)
         return 0;
     o = gm_Query(y->objList, 2, 6, 0, 0x115);
-    money = gm_SumListAmounts(*(int *)((char *)o + 0x14), ai_OwnPlayer);
+    money = gm_SumListAmounts(o->list, ai_OwnPlayer);
     if (!(y->flags5a & 4) && y->level < util_RandomU(0x40) + 0x25) {
         s1.kind = 4;
         s1.ref = y->id;
@@ -7758,14 +7759,17 @@ int ai_Unk49def0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         if (lvl < 0x21)
             s1.arg2 = 0x32;
         else
-            s1.arg2 = lvl >= 0x42 ? 10 : 30;
+            s1.arg2 = lvl < 0x42 ? 30 : 10;
         s2.kind = 1;
-        s2.ref = *(int *)((char *)o + 2);
+        s2.ref = o->objId;
         s2.arg = money;
         s2.arg2 = 1;
         r = ai_ChooseSubAction(0xf, p->id, 0, &s1, &s2);
-        if (r != 0)
-            goto done;
+        if (r != 0) {
+            *o1 = s1;
+            *o2 = s2;
+            return r;
+        }
     }
     if (ai_FindGoodToMake(&w, &z, y, 0)) {
         s1.kind = 2;
@@ -7781,8 +7785,11 @@ int ai_Unk49def0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         s2.arg = 1;
         s2.fvalue = 0.44f;
         r = ai_ChooseSubAction(0x15, p->id, 1, &s1, &s2);
-        if (r != 0)
-            goto done;
+        if (r != 0) {
+            *o1 = s1;
+            *o2 = s2;
+            return r;
+        }
     }
     if (y->flags5a & 0x41)
         return 0;
@@ -7797,8 +7804,7 @@ int ai_Unk49def0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             return 0;
     } else
         return 0;
-    v = gm_BuildingKindValue(act);
-    if (money < v * 0.4f)
+    if (gm_BuildingKindValue(act) * 0.4f > money)
         return 0;
     o1->kind = 4;
     o1->ref = act;
@@ -7809,10 +7815,6 @@ int ai_Unk49def0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     o2->ref = y->id;
     o2->arg = 1;
     return 0x31;
-done:
-    *o1 = s1;
-    *o2 = s2;
-    return r;
 }
 /* 0x49e230, execute callback 0x31: upgrades the town hall ("upgr_rathaus"), paid to 0x504a80(1) */
 
@@ -9823,7 +9825,7 @@ int ai_RegisterBaseActions(int a)
     act.id = 0x31;
     strcpy(act.name, "Buergermeister Rathaus");
     act.eval = ai_EvalMoodWeights;
-    act.decide = ai_Unk49def0;
+    act.decide = ai_DecideMayorTownHall;
     act.exec = ai_Unk49e230;
     act.flags = 0x39;
     if (!am_RegisterMethod(&act, a))

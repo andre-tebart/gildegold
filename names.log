@@ -808,3 +808,4 @@
 2026-11-02T07:49:15 0x004a4ae0 func G8_4A4AE0 -> AI_EvalCurrentNeed7 by:main why:0x4a4ae0 sums only the weights of the current need (p->sel); AI_EvalCurrentNeed7 is its call with the eval callback's 7 arguments; 0x49d7f0 is the eval callback of action 0x2e "Buergermeister" (0x4a16f0)
 2026-11-02T07:49:15 0x0049d7f0 func ai_Unk49d7f0 -> ai_EvalMayor by:main why:0x4a4ae0 sums only the weights of the current need (p->sel); AI_EvalCurrentNeed7 is its call with the eval callback's 7 arguments; 0x49d7f0 is the eval callback of action 0x2e "Buergermeister" (0x4a16f0)
 2026-11-02T07:51:55 0x0049d8d0 func ai_Unk49d8d0 -> ai_DecideMayor by:main why:decide callback of action 0x2e registered as "Buergermeister" (0x4a16f0)
+2026-11-02T07:56:28 0x0049def0 func ai_Unk49def0 -> ai_DecideMayorTownHall by:main why:decide callback of action 0x31 'Buergermeister Rathaus' (registered in 0x4a16f0)

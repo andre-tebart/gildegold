@@ -914,7 +914,7 @@ int ai_DecideMayor(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                
 char * gm_PlayerSeat(int p);                                                      /* 0x504a80 */
 int ai_Unk49dc10(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49dc10 */
 int ai_Unk49dd90(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49dd90 */
-int ai_Unk49def0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49def0 */
+int ai_DecideMayorTownHall(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49def0 */
 int ai_Unk49e230(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49e230 */
 int ai_Unk49e350(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49e350 */
 int ai_Unk49e680(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49e680 */
