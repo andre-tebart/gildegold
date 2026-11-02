@@ -59,6 +59,14 @@ typedef struct GMSKILLEV {
     float bonus2;                       /* 0xb4, the bonus added for skill2 */
 } GMSKILLEV;
 
+/* a disease kind's record (12 bytes, ten of them at 0x617850, gm_GetDisease copies one out): kinds 1 .. 9 are the
+   bit fields of a character's word +0x2c (gm_CatchDisease) */
+typedef struct GMDISEASE {
+    int kind;                           /* 0x00, the record's own kind (0 .. 9) */
+    float cost;                         /* 0x04, the health a catch costs per point of severity */
+    int range;                          /* 0x08, the severity is util_Random(range) */
+} GMDISEASE;
+
 /* a player's goods record (0x80 bytes; 0x55 of them at 0x7d6a70 + player * 0x2a90, gm_StockBlocks + 0x10; the
    template gm_DefaultStock has the same layout): f3init.c's INIT_STOCK, hst.c's G12STOCK */
 typedef struct GMSTOCK {

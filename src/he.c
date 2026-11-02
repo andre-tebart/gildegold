@@ -5614,7 +5614,7 @@ void he_Unk54dec0(int ev)
 }
 
 int ai_InventoryHas(void *ch, int id);
-int gm_Unk505230();
+int gm_CatchDisease();
 float gm_CharacterHealth();
 
 /* 0x54e770, a Ghidra miss (disassembled): the allocation of the "Geliebte" (lover) event: the aggressor +0xac (ebx), the victim +0xb0 (edi): the clock now, posted at once; a gone victim or one with the flag 0x800000 (+0x1c8) ends it, else the flag is set (0x4c4a60), the relation of the aggressor falls by 0x32 (0x4c4b00) and the event goes to the state 2 (+0xb4 = 0, +0xb8 = 2, +0xbc = -1) (ROUGH) */
@@ -5772,7 +5772,7 @@ void he_Unk54ebd0(int ev)
             }
             chance = ai_InventoryHas(rec, 0x2b3) != 0 ? base * 0.75f : base;
             if (!(thr + 0.0f > chance)) {
-                if (gm_Unk505230(rec, &k1, &k2) != 0) {
+                if (gm_CatchDisease(rec, &k1, &k2) != 0) {
                     boss = *(int *)(rec + 0x16c);
                     if (boss != 0 && *(unsigned short *)(boss + 0x27) != 0xffff && (unsigned)&ai_Chars + *(unsigned short *)(boss + 0x27) * 0x21c != 0) {
                         he_Unk5417d0(ev, (unsigned short *)((unsigned)&ai_Chars + *(unsigned short *)(boss + 0x27) * 0x21c), boss, rec, k1, (float)k2);
@@ -16913,7 +16913,7 @@ void he_Unk571f60(int ev)
     HM_I(ev, 0x84) = cm_SendExSetHE(0, ev);
 }
 
-int gm_Unk5051d0();                 /* 0x5051d0 */
+int gm_GetDisease();                 /* 0x5051d0 */
 int cm_AddFieldDelta(int size, int n, short field, void *v);                 /* 0x4c3c00 */
 
 /* 0x5720f0, the skill lottery of the record rec (the field at +0x2c): the chance f must beat 0x42ec20 (), then the kind 2 / 1 / other picks the free bit range a or b (2 / 3, 4 / 5, 6 and 7 / 8 / 9 by 0x42ec00 (2) and the taken bits 0x1800000 / 0x700000); a when b is 0, else b by 0x42ec00 (2); 0 when none. 0x5051d0 (a, buf) gives the max (buf + 8) of 0x42ec00; n = that * f; the field gets (v << shift ^ field) & mask for a; 0x4c3ba0 (rec, +4), 0x4c3c00 (4, 1, 0x2c, &field), 0x4c49a0 (); 0x4fca40 (*rec, -n) into out; a */
@@ -16952,7 +16952,7 @@ int he_Unk5720f0(unsigned short *rec, float f, int kind, float *out)
     } else if (b != 0 && util_Random(2) == 0)
         a = b;
     field = *(unsigned int *)((char *)rec + 0x2c);
-    if (gm_Unk5051d0(a, buf) == 0)
+    if (gm_GetDisease(a, buf) == 0)
         return a;
     v = util_Random(*(int *)(buf + 8)) & 0xffff;
     n = (int)((float)v * f);
@@ -17674,7 +17674,7 @@ void he_Unk573760(char *pl, char *per)
     char t2[0x400];
     int a, b;
 
-    if (gm_Unk505230(per, &a, &b) == 0)
+    if (gm_CatchDisease(per, &a, &b) == 0)
         return;
     if (per == pl) {
         memcpy(name, (void *)(unsigned)&full_data_629038, 0x19);

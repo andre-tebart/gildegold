@@ -22564,9 +22564,9 @@ int ai_Unk5cfc00(int param_1, int *param_2)
     if (*(char *)(param_1 + 2) != 6) {
         if (ai_InventoryHas((char *)((unsigned)&ai_Chars + owner * 0x21c), 0x2c4) == 0 ||
             util_RandomF() > *(float *)(unsigned)&ai_Unk5eb94c)
-            gm_Unk505230((char *)((unsigned)&ai_Chars + owner * 0x21c), 0, 0);
+            gm_CatchDisease((char *)((unsigned)&ai_Chars + owner * 0x21c), 0, 0);
     } else {
-        gm_Unk505230((char *)((unsigned)&ai_Chars + owner * 0x21c), 0, 0);
+        gm_CatchDisease((char *)((unsigned)&ai_Chars + owner * 0x21c), 0, 0);
     }
     if (*(unsigned char *)(((unsigned)&ai_Chars + 0x2) + owner * 0x21c) == 6 ||
         *(unsigned char *)(((unsigned)&ai_Chars + 0x2) + owner * 0x21c) == 7) {
