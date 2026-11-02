@@ -4461,7 +4461,15 @@ void sv_ButtonRow(int f, int y, int *out, int n, ...); int sv_MessageBoxGreen();
    .. 0x4175), the texts 0x403f (attr[4]), 0x4040 (its ahm_StepValue) and 0x4041 (the object name of grid id),
    100 pixels apart; the buttons 0x4042 (hire: enabled while a candidate is selected) and 0x4043 (back). Hire
    hands the selected candidate to ai_AlchemistHire and closes the window when that succeeds; back or the right
-   mouse button close it. The camera follows again at the end */
+   mouse button close it. The camera follows again at the end
+   @deep read whole against the original and reconstructed (483 vs 489 instructions; asmdiff --symbols:
+   every call, argument, constant and text id in the original's order, no ! line but the reordered x / y
+   name loads). Left: allocation. The original keeps form in esi, the radio group in ebp then ebx =
+   group*0x23, ok in edi; ours form in ebp and -1 in esi (cmp [d2_Radios+8], esi vs cmp ..., -1). In the
+   candidate loop the original keeps i and a byte offset i*4 in slots (mov ebp,[esp+0x18] at the loop top,
+   [esp+ebp+0x64] / [esp+ebp+0x50], add edx,4 at the end) and computes &d2_Wins[win2].w after the name
+   text, ours keeps i in ebx (scaled [esp+ebx*4+..]) and hoists &d2_Wins[win2].w out of the loop; the
+   original saves edi only after the no-candidate return (push edi at 0x57bfaf); frame 0x55c vs 0x548 */
 void ai_AlchemistCandidates(unsigned char *obj)
 {
     int t;
