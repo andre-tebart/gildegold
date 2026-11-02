@@ -13,10 +13,11 @@
    entry points at its GVGRAVE records (a dead person). Graveyard orders are GVORDER records (message 0x60, sent by the
    gv_Order* senders through cm_SendGraveOrder, run by type: gv_BuryCharacter, gv_ReserveGrave, gv_ExtendGrave,
    gv_SetGraveHolder, gv_OpenSize, gv_AdjustEntry, ..); a grave move is GVMOVE (message 0x61, gv_OrderMoveGrave ->
-   gv_MoveGrave), a raising of a dead person GVRAISE (message 0x62, gv_OrderRaiseDead -> 0x4f1200).
+   gv_MoveGrave), a raising of a dead person GVRAISE (message 0x62, gv_OrderRaiseDead -> gv_RaiseDead): the raised dead are
+   kind 0x14 characters living at the graveyard (gv_RoomForRaised, decaying by gv_DecayRaisedDead); gv_GraveyardTurn is the
+   building's turn step (care wear, lease ends via gv_LeasePrice / gv_OrderExtendGrave, new dead).
    Open: the avatars, the effect slots and the graveyard may be several modules sharing one .data block.
-   Open: the functions past gv_OrderRaiseDead (0x4f1200 ..) still read GVRAISE / GVYARD / GVENTRY through
-   raw offsets, and some index ai_PlayerSlots with the stride 0x5e8 where gv_ReserveGrave shows 0x2f4 (gv_PlayerRecs);
+   Open: the functions from 0x4f2720 on still read GVYARD / GVENTRY through raw offsets, and some index ai_PlayerSlots with the stride 0x5e8 where gv_ReserveGrave shows 0x2f4 (gv_PlayerRecs);
    gv_FindEntry's callback is an unprototyped int (*)() (its callbacks take differing pointer types).
    Open: head: cm.h redeclares gv functions (gv_GrowGraveyard as struct GVYARD *); cm.c cannot include gv.h yet (two
    calls conflict: unk_Unk4f3580, unk_Unk4f4460).

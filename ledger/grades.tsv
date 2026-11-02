@@ -1453,7 +1453,7 @@ exe	0x0047dd70	ai_WorksForMaster	ai	byte	readable
 exe	0x0047dd90	ai_IsLocalMaster	ai	byte	readable		
 exe	0x0047ddf0	ai_FindPartner	ai	draft	draft	deep	
 exe	0x0047e360	ai_MasterUpdate	ai	draft	draft	deep	
-exe	0x0047e560	ai_UpdateCharacters	ai	byte	draft	deep	
+exe	0x0047e560	ai_UpdateCharacters	ai	byte	readable		
 exe	0x0047e7f0	ai_CanAct	ai	byte	readable		
 exe	0x0047e840	ai_IsLocalWorker	ai	byte	readable		
 exe	0x0047e8b0	ai_IsLocalJob	ai	byte	readable		
@@ -2191,7 +2191,7 @@ exe	0x004c49a0	cm_SendFieldDeltas	cm	byte	draft
 exe	0x004c49e0	cm_SendFieldValues	cm	byte	draft		
 exe	0x004c4a20	ai_Unk4c4a20	cm	byte	draft		
 exe	0x004c4a60	cm_SendSetField	cm	byte	draft		
-exe	0x004c4ac0	ai_Unk4c4ac0	cm	byte	draft		
+exe	0x004c4ac0	cm_SendFloatDelta	cm	byte	draft		
 exe	0x004c4b00	cm_SendRelations	cm	byte	draft		
 exe	0x004c4b70	cm_SendLongMessage	cm	byte	draft		
 exe	0x004c4bc0	ai_Unk4c4bc0	cm	byte	draft		
@@ -2751,12 +2751,12 @@ exe	0x004ef170	gv_BuildingCannon	gv	byte	readable
 exe	0x004ef260	gv_CannonScatter	gv	byte	readable		
 exe	0x004ef330	unk_Unk4ef330	gv	byte	draft		
 exe	0x004ef3c0	gv_GraveCount	gv	byte	readable		
-exe	0x004ef440	unk_Unk4ef440	gv	byte	draft		
+exe	0x004ef440	gv_GravesInUse	gv	byte	draft		
 exe	0x004ef470	gv_EntryCount	gv	byte	readable		
 exe	0x004ef4f0	gv_SizeOpen	gv	byte	draft		
 exe	0x004ef570	gv_ListEntry	gv	byte	readable		
 exe	0x004ef6b0	gv_EntryIndex	gv	byte	readable		
-exe	0x004ef710	unk_Unk4ef710	gv	byte	draft		
+exe	0x004ef710	gv_EntryHeldBy	gv	byte	draft		
 exe	0x004ef740	gv_EntrySameId	gv	byte	readable		
 exe	0x004ef760	gv_EntryIsFree	gv	byte	readable		
 exe	0x004ef770	gv_EntryIsUsed	gv	byte	readable		
@@ -2772,7 +2772,7 @@ exe	0x004f01d0	unk_Unk4f01d0	gv	shape	draft
 exe	0x004f0240	gv_BuryCharacter	gv	shape	readable		
 exe	0x004f0430	gv_OrderReserveGrave	gv	byte	readable		
 exe	0x004f0490	gv_ReserveGrave	gv	byte	readable		
-exe	0x004f0700	unk_Unk4f0700	gv	byte	draft		
+exe	0x004f0700	gv_OrderExtendGrave	gv	byte	draft		
 exe	0x004f0770	gv_ExtendGrave	gv	byte	readable		
 exe	0x004f0900	gv_OrderSetGraveHolder	gv	byte	readable		
 exe	0x004f0970	gv_SetGraveHolder	gv	byte	readable		
@@ -2780,25 +2780,25 @@ exe	0x004f0a90	gv_OrderOpenSize	gv	byte	readable
 exe	0x004f0af0	gv_OpenSize	gv	draft	readable	deep	
 exe	0x004f0c20	gv_OrderAdjustEntry	gv	byte	draft		
 exe	0x004f0c80	gv_AdjustEntry	gv	shape	readable		
-exe	0x004f0d70	unk_Unk4f0d70	gv	byte	draft		
-exe	0x004f0dd0	unk_Unk4f0dd0	gv	byte	draft		
+exe	0x004f0d70	gv_OrderNewDead	gv	byte	draft		
+exe	0x004f0dd0	gv_AddNewDead	gv	byte	draft		
 exe	0x004f0e80	gv_OrderMoveGrave	gv	byte	readable		
 exe	0x004f0ed0	gv_MoveGrave	gv	byte	readable		
 exe	0x004f1170	gv_OrderRaiseDead	gv	byte	readable		
-exe	0x004f1200	unk_Unk4f1200	gv	draft	draft		
+exe	0x004f1200	gv_RaiseDead	gv	draft	readable	deep	
 exe	0x004f15e0	gv_SendGrave	gv	byte	draft		
-exe	0x004f1660	unk_Unk4f1660	gv	draft	draft		
-exe	0x004f16f0	unk_Unk4f16f0	gv	byte	draft		
+exe	0x004f1660	gv_DecayRaisedDead	gv	byte	readable		
+exe	0x004f16f0	gv_PreserveRate	gv	byte	draft		
 exe	0x004f17f0	unk_Unk4f17f0	gv	byte	draft		
 exe	0x004f1aa0	gv_ReadGraveyard	gv	byte	draft		
-exe	0x004f1d50	unk_Unk4f1d50	gv	draft	draft		
-exe	0x004f1de0	unk_Unk4f1de0	gv	draft	draft		
+exe	0x004f1d50	gv_RoomForRaised	gv	byte	readable		
+exe	0x004f1de0	gv_GraveyardTurn	gv	draft	readable	deep	
 exe	0x004f22a0	unk_Unk4f22a0	gv	byte	draft		
-exe	0x004f2330	unk_Unk4f2330	gv	draft	draft		
+exe	0x004f2330	gv_LeasePrice	gv	byte	readable		
 exe	0x004f2440	unk_Unk4f2440	gv	byte	draft		
-exe	0x004f24a0	unk_Unk4f24a0	gv	draft	draft		
-exe	0x004f2540	unk_Unk4f2540	gv	draft	draft		
-exe	0x004f25d0	unk_Unk4f25d0	gv	draft	draft		
+exe	0x004f24a0	gv_ProtectionPrice	gv	byte	readable		
+exe	0x004f2540	gv_FindHeldEntry	gv	byte	readable		
+exe	0x004f25d0	gv_FindReservedEntry	gv	byte	readable		
 exe	0x004f2660	unk_Unk4f2660	gv	shape	draft		
 exe	0x004f2720	gv_GetTableRecord	gv	draft	draft		
 exe	0x004f2750	gv_SetTableRecord	gv	draft	draft		
@@ -3126,7 +3126,7 @@ exe	0x00509dc0	gm_Unk509dc0	f3gm	draft	draft
 exe	0x00509e30	gm_SumListAmounts	f3gm	byte	draft		
 exe	0x00509e60	gm_GetGoodsValue	f3gm	byte	draft		
 exe	0x00509eb0	gm_Unk509eb0	f3gm	byte	draft		
-exe	0x00509ee0	gm_Unk509ee0	f3gm	draft	draft		
+exe	0x00509ee0	gm_CharCurrency	f3gm	draft	draft		
 exe	0x00509f20	gm_Unk509f20	f3gm	draft	draft		
 exe	0x00509f80	gm_Unk509f80	f3gm	draft	draft		
 exe	0x00509ff0	gm_ObjectOwnerChar	f3gm	byte	draft		
@@ -4351,9 +4351,9 @@ exe	0x005a92b0	ai_Unk5a92b0	unk_58bbd0	draft	draft
 exe	0x005a9330	ai_SendSwapText	unk_58bbd0	byte	draft		
 exe	0x005a9430	ai_Unk5a9430	unk_58bbd0	byte	draft		
 exe	0x005a9470	ai_GypsyDeliveryText	unk_58bbd0	draft	draft		
-exe	0x005a9690	ai_Unk5a9690	unk_58bbd0	byte	draft		
+exe	0x005a9690	ai_TellGraveNeglect	unk_58bbd0	byte	draft		
 exe	0x005a96e0	ai_NotifySale	unk_58bbd0	draft	draft		
-exe	0x005a9780	ai_Unk5a9780	unk_58bbd0	byte	draft		
+exe	0x005a9780	ai_TellGravesPaid	unk_58bbd0	byte	draft		
 exe	0x005a97e0	ai_Unk5a97e0	unk_58bbd0	draft	draft		
 exe	0x005a9880	ai_Unk5a9880	unk_58bbd0	draft	draft		
 exe	0x005a9910	ai_Unk5a9910	unk_58bbd0	draft	draft		
