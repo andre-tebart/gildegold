@@ -531,3 +531,4 @@
 2026-11-02T01:23:01 0x005fe708 data ai_Unk5fe708 -> d2_ScreenScale by:main why:d2.h: d2_Open sets 0x5fe708 = screen width * 0.00125 (width / 800); the same float, two names
 2026-11-02T01:23:30 0x0052e0c0 func sv_Unk52e0c0 -> sv_DrawStatusText by:main why:draws sv_StatusText (sv_SetStatusText) and clears it 350 ms later
 2026-11-02T01:27:03 0x0052e4b0 func sv_Unk52e4b0 -> sv_TabButtonRow by:main why:sv_ButtonRow's twin with the font 0x54 / kind 0xc5; its one caller rt_EditCartRoute makes the route editor's 3 tab buttons with it (reasoned)
+2026-11-02T01:29:46 0x0052e6d0 func sv_Unk52e6d0 -> sv_OpenWindowFrame by:main why:puts the title / building kind pictures and the frame pictures into the building windows (ai_ProductionWindow, ai_TradeSearchWindow, ..) and sets the window paddings

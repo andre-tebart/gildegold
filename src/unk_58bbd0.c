@@ -1266,7 +1266,7 @@ void ai_Unk58bbd0(void)
 struct D3VECTOR; int d3_VecEqual(struct D3VECTOR *a, struct D3VECTOR *b, float eps); int sv_CheckCharacterFlag(); int d2_OpenForm(); void d2_CentreViewWindows(int view);
 float gm_GoodsPrice(unsigned id, unsigned char p);   /* 0x5089c0, the price (ai.h / cm.h / rt.h: float) */
 void gm_FormatAmount(int v, unsigned char k, char *out);  /* 0x508a80, above its first call (line 1119) */
-void sv_OpenPlayerBar(int a, char k); int d2_SetForm(int view, int n); int io_PrintText(char *fmt, ...); void sv_Unk52e6d0(int f, int b, int c);
+void sv_OpenPlayerBar(int a, char k); int d2_SetForm(int view, int n); int io_PrintText(char *fmt, ...); void sv_OpenWindowFrame(int f, int b, int c);
 int d2_GetViewWin(); int sv_CreateFormSlider(); void d2_SetPointerSprite(int a, int pic); char * gm_Query(void *list, int n, ...);
 int gm_FreeCapacity(); int sv_MessageBox(); char * he_FindEvent(int n, ...); char * he_NextEvent(void);
 int ai_ScriptQuery(); int cm_SendLongMessage(char *msg); int cm_GetSlotState(); int cm_GetSlotValue(int h);
@@ -1323,7 +1323,7 @@ int ai_ProductionWindow(unsigned char *param_1)
         n = 0x717;
     else if (kind == 0xd || kind == 0xc || kind == 0xb)
         n = 0x717;
-    sv_Unk52e6d0(U_I((unsigned)&d2_LastWindow), n, 0x742);
+    sv_OpenWindowFrame(U_I((unsigned)&d2_LastWindow), n, 0x742);
     id = d2_GetViewWin(win, 2, 0x78, (char *)&a, (char *)&b, (char *)&c);
     sv_CreateFormSlider(0x270, 0x15e, U_I((unsigned)&d2_LastWindow), id);
     *(short *)(U_I((unsigned)&d2_Objs) + 0x74 + c * 0x2ec) = 0x54;
@@ -3570,7 +3570,7 @@ int ai_Unk5923c0(int param_1)
         U_I(((unsigned)&ai_Unkf8f39c + 0x120) + n) = 0xe;
         U_I(((unsigned)&ai_Unkf8f39c + 0x124) + n) = 0xe;
         U_I(((unsigned)&ai_Unkf8f39c + 0x128) + n) = 0xe;
-        sv_Unk52e6d0(U_I((unsigned)&d2_LastWindow), 0x70b, 0x742);
+        sv_OpenWindowFrame(U_I((unsigned)&d2_LastWindow), 0x70b, 0x742);
         v = d2_GetViewWin(win, 2, 0x78, a, &a[1], &a[2]);
         sv_CreateFormSlider(0x270, 0x15e, U_I((unsigned)&d2_LastWindow), v);
         *(unsigned short *)(U_I((unsigned)&d2_Objs) + 0x74 + a[2] * 0x2ec) = 0x54;
@@ -3732,7 +3732,7 @@ int ai_Unk592b90(int param_1)
         U_I(((unsigned)&ai_Unkf8f39c + 0x120) + n) = 0xe;
         U_I(((unsigned)&ai_Unkf8f39c + 0x124) + n) = 0xe;
         U_I(((unsigned)&ai_Unkf8f39c + 0x128) + n) = 0xe;
-        sv_Unk52e6d0(U_I((unsigned)&d2_LastWindow), 0x70b, 0x742);
+        sv_OpenWindowFrame(U_I((unsigned)&d2_LastWindow), 0x70b, 0x742);
         v = d2_GetViewWin(win, 2, 0x78, a, &a[1], &a[2]);
         sv_CreateFormSlider(0x270, 0x15e, U_I((unsigned)&d2_LastWindow), v);
         *(unsigned short *)(U_I((unsigned)&d2_Objs) + 0x74 + a[2] * 0x2ec) = 0x54;
@@ -3865,7 +3865,7 @@ int ai_Unk593150(int param_1)
         U_I(((unsigned)&ai_Unkf8f39c + 0x120) + n) = 0xe;
         U_I(((unsigned)&ai_Unkf8f39c + 0x124) + n) = 0xe;
         U_I(((unsigned)&ai_Unkf8f39c + 0x128) + n) = 0xe;
-        sv_Unk52e6d0(U_I((unsigned)&d2_LastWindow), 0x70b, 0x742);
+        sv_OpenWindowFrame(U_I((unsigned)&d2_LastWindow), 0x70b, 0x742);
         v = d2_GetViewWin(win, 2, 0x78, a, &a[1], &a[2]);
         sv_CreateFormSlider(0x270, 0x15e, U_I((unsigned)&d2_LastWindow), v);
         *(unsigned short *)(U_I((unsigned)&d2_Objs) + 0x74 + a[2] * 0x2ec) = 0x54;
@@ -4865,7 +4865,7 @@ void ai_TradeSearchWindow(unsigned char *param_1, int param_2)
     win = d2_OpenForm(0, 0, "HANDEL\\HANDEL_SUCHEN");
     d2_CentreViewWindows(win);
     d2_SetForm(win, 0);
-    sv_Unk52e6d0(U_I((unsigned)&d2_LastWindow), 0x70f, 0x741);
+    sv_OpenWindowFrame(U_I((unsigned)&d2_LastWindow), 0x70f, 0x741);
     d2_SetForm(win, 3);
     io_PrintText(0x17fe);
     sv_OpenPlayerBar(param_1, 0);
@@ -5005,7 +5005,7 @@ void ai_AquariumSearchWindow(int param_1, int param_2)
     win = d2_OpenForm(0, 0, "HANDEL\\HANDEL_SUCHEN");
     d2_CentreViewWindows(win);
     d2_SetForm(win, 0);
-    sv_Unk52e6d0(U_I((unsigned)&d2_LastWindow), 0x70f, 0x741);
+    sv_OpenWindowFrame(U_I((unsigned)&d2_LastWindow), 0x70f, 0x741);
     d2_SetForm(win, 3);
     io_PrintText(0x1806);
     sv_OpenPlayerBar(param_1, 0);
@@ -7707,7 +7707,7 @@ void ai_Unk59bad0(int param_1)
     win = d2_OpenForm(0, 0, "locations\\geldleihe\\geldleihe_KreditGeber");
     d2_CentreViewWindows(win);
     d2_SetForm(win, 0);
-    sv_Unk52e6d0(U_I((unsigned)&d2_LastWindow), 0x73b, 0x73f);
+    sv_OpenWindowFrame(U_I((unsigned)&d2_LastWindow), 0x73b, 0x73f);
     v = d2_GetViewWin(win, 2, 0x78, &pos[0], &pos[1], &pos[2]);
     sv_CreateFormSlider(0x206, 0x167, U_I((unsigned)&d2_LastWindow), v);
     n = U_I((unsigned)&d2_LastWindow) * 0x3c4;
@@ -8071,7 +8071,7 @@ void ai_Unk59c700(int param_1)
     ctl[0] = d2_GetWinObj(win, 0, 0);
     ctl[4] = d2_GetWinObj(win, 0, 4);
     d2_SetForm(win, 0);
-    sv_Unk52e6d0(U_I((unsigned)&d2_LastWindow), 0x73b, 0x73f);
+    sv_OpenWindowFrame(U_I((unsigned)&d2_LastWindow), 0x73b, 0x73f);
     d2_SetForm(win, 0);
     /* ROUGH: the two header texts at the control rectangles (0x473650, +2 / +2) */
     d2_CreateWinText((short)(*(short *)(U_I((unsigned)&d2_Objs) + ctl[1] * 0x2ec + 0x10) -
@@ -8386,7 +8386,7 @@ void ai_Unk59d5e0(int param_1)
     win = d2_OpenForm(0, 0, "locations\\geldleihe\\geldleihe_Wechsel");
     d2_CentreViewWindows(win);
     d2_SetForm(win, 0);
-    sv_Unk52e6d0(U_I((unsigned)&d2_LastWindow), 0x73b, 0x73f);
+    sv_OpenWindowFrame(U_I((unsigned)&d2_LastWindow), 0x73b, 0x73f);
     ctl[2] = d2_GetWinObj(win, 0, 2);
     ctl[3] = d2_GetWinObj(win, 0, 3);
     ctl[1] = d2_GetWinObj(win, 0, 1);
@@ -15008,7 +15008,7 @@ void ai_Unk5ae240(int param_1)
     ids[1] = d2_GetWinObj(win, 1, 1);
     ids[2] = d2_GetWinObj(win, 1, 2);
     d2_SetForm(win, 0);
-    sv_Unk52e6d0(U_I((unsigned)&d2_LastWindow), 0x70b, 0x741);
+    sv_OpenWindowFrame(U_I((unsigned)&d2_LastWindow), 0x70b, 0x741);
     d2_SetForm(win, 3);
     ctrl = d2_GetWinObj(win, 3, io_PrintText(0xdb));
     list = d2_CreateRadioGroup(3, ids[0], ids[1], ids[2]);

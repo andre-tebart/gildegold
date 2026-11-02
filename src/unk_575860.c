@@ -7440,7 +7440,7 @@ int ai_Unk584b70(char *o, int *ev)
     return 0;
 }
 
-int sv_CheckCharacterFlag(); char * he_FindEvent(int n, ...); char * he_NextEvent(void); void sv_Unk52e6d0(int f, int b, int c); void d2_SetCaption();
+int sv_CheckCharacterFlag(); char * he_FindEvent(int n, ...); char * he_NextEvent(void); void sv_OpenWindowFrame(int f, int b, int c); void d2_SetCaption();
 void ai_Unk58bbd0(void); int ai_Unk58d720(); void ai_Unk58dd00(int param_1, int param_2, int param_3, int param_4);
 
 /* 0x584d70, the graveyard "create helpers" window (1549 B, ROUGH: the calls and the flow are complete): b = the
@@ -7515,7 +7515,7 @@ void ai_GypsyHelperWindow(char *b)
     win = d2_OpenForm(0, 0, (char *)(unsigned)"HANDEL\\HANDEL_SUCHEN");
     d2_CentreViewWindows(win);
     d2_SetForm(win, 0);
-    sv_Unk52e6d0(U_I((unsigned)&d2_LastWindow), 0x70f, 0x741);
+    sv_OpenWindowFrame(U_I((unsigned)&d2_LastWindow), 0x70f, 0x741);
     d2_SetForm(win, 3);
     if (*(unsigned char *)bldg == 0x1f)
         io_PrintText(0x421e);

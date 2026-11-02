@@ -6316,58 +6316,46 @@ void sv_DisableVisibleWidgets(int on)
     for (i = 0; i < sv_DisabledCount; i++)
         ((D2OBJ *)d2_Objs)[sv_DisabledWidgets[i]].disabled = 0;
 }
-/* 0x52e6d0, builds the picture frames of the dialog form f (0x4731d0 (x, y, picture, form)): the title bar 0x520 / 0x427 + the building kind, the corners; the picture b = 0x73b selects the
-   wide variant; sets the four borders of the form (+0x1fc .. 0x20c) to 0x18 */
+/* 0x52e6d0, puts the frame pictures into the building window f (ai_ProductionWindow, ai_TradeSearchWindow, ..): the
+   title c at (0xb, 9) (0: the current building's kind picture 0x427 + type, 0x520 without a building), the kind
+   picture at the right (0x444 without a building; the wide frame b = 0x73b puts the plain title 0x520 and the kind
+   picture at 0x1eb instead), then the frame: b, b + 1, b + 2, b + 3 (left, bottom, top, right) or the wide frame's
+   0x73b / 0x73d / 0x73e / 0x73c; the last window's paddings become 0x18 */
 
-void sv_Unk52e6d0(int f, int b, int c)
+void sv_OpenWindowFrame(int f, int b, int c)
 {
-    unsigned char *o;
-    int pic, x, y;
+    char *bld;
 
-    d2_WinOpenPic(599, 9, 0x520, f);
-    if (c == 0) {
-        o = (unsigned char *)SV_I((unsigned)&ai_PlayerBuilding);
-        if (o == 0 && (o = (unsigned char *)SV_I((unsigned)&ai_FallbackBuilding)) == 0)
-            c = 0x520;
-        else
-            c = *o + 0x427;
-    }
-    d2_WinOpenPic(0xb, 9, c, f);
-    o = (unsigned char *)SV_I((unsigned)&ai_PlayerBuilding);
-    if (o == 0 && (o = (unsigned char *)SV_I((unsigned)&ai_FallbackBuilding)) == 0) {
-        pic = 0x444;
-        goto l748;
+    d2_WinOpenPic(0x257, 9, 0x520, f);
+    if (c != 0)
+        d2_WinOpenPic(0xb, 9, c, f);
+    else if ((bld = ai_PlayerBuilding) == 0 && (bld = ai_FallbackBuilding) == 0)
+        d2_WinOpenPic(0xb, 9, 0x520, f);
+    else
+        d2_WinOpenPic(0xb, 9, ((AIBLD *)bld)->type + 0x427, f);
+    if ((bld = ai_PlayerBuilding) == 0 && (bld = ai_FallbackBuilding) == 0)
+        d2_WinOpenPic(0x257, 9, 0x444, f);
+    else if (b != 0x73b)
+        d2_WinOpenPic(0x257, 9, ((AIBLD *)bld)->type + 0x427, f);
+    else {
+        d2_WinOpenPic(0x1eb, 9, 0x520, f);
+        d2_WinOpenPic(0x1eb, 9, ((AIBLD *)bld)->type + 0x427, f);
     }
     if (b != 0x73b) {
-        pic = *o + 0x427;
-l748:
-        d2_WinOpenPic(599, 9, pic, f);
-        if (b != 0x73b) {
-            d2_WinOpenPic(0, 0, b, f);
-            d2_WinOpenPic(0, 400, b + 1, f);
-            d2_WinOpenPic(0, 0x4d, b + 2, f);
-            b = b + 3;
-            y = 0x4d;
-            x = 0x247;
-            goto l815;
-        }
+        d2_WinOpenPic(0, 0, b, f);
+        d2_WinOpenPic(0, 400, b + 1, f);
+        d2_WinOpenPic(0, 0x4d, b + 2, f);
+        d2_WinOpenPic(0x247, 0x4d, b + 3, f);
     } else {
-        d2_WinOpenPic(0x1eb, 9, 0x520, f);
-        d2_WinOpenPic(0x1eb, 9, *o + 0x427, f);
+        d2_WinOpenPic(0, 0, 0x73b, f);
+        d2_WinOpenPic(0, 0x43, 0x73d, f);
+        d2_WinOpenPic(0x1f7, 0x43, 0x73e, f);
+        d2_WinOpenPic(0, 0x1a8, 0x73c, f);
     }
-    d2_WinOpenPic(0, 0, 0x73b, f);
-    d2_WinOpenPic(0, 0x43, 0x73d, f);
-    d2_WinOpenPic(0x1f7, 0x43, 0x73e, f);
-    b = 0x73c;
-    y = 0x1a8;
-    x = 0;
-l815:
-    d2_WinOpenPic(x, y, b, f);
-    pic = SV_I((unsigned)&d2_LastWindow) * 0x3c4;
-    SV_I(((unsigned)&ai_Unkf8f39c + 0x11c) + pic) = 0x18;
-    SV_I(((unsigned)&ai_Unkf8f39c + 0x120) + pic) = 0x18;
-    SV_I(((unsigned)&ai_Unkf8f39c + 0x124) + pic) = 0x18;
-    SV_I(((unsigned)&ai_Unkf8f39c + 0x128) + pic) = 0x18;
+    d2_Wins[d2_LastWindow].padl = 0x18;
+    d2_Wins[d2_LastWindow].padt = 0x18;
+    d2_Wins[d2_LastWindow].padr = 0x18;
+    d2_Wins[d2_LastWindow].padb = 0x18;
 }
 /* 0x52e860, builds the slider of the form f at (x, y): the two bars (pictures 3 / 4, widgets *a / *b shown, kind 3, +0x1e0 = form index), the grip button (0x473650, picture 0x54) in *c; stores them in the form
    record (0xf8f4c8 ..) and the callback p5 in the form record of g (+0x384) */
