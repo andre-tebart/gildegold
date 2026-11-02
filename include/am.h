@@ -743,24 +743,6 @@ typedef struct G6RING {                 /* 12 bytes, the ring at 0xf83c20 (ai_Fi
     unsigned int flags;                 /* 0x8, why the character is listed */
 } G6RING;
 
-#pragma pack(push, 1)
-typedef struct G6MSG {                  /* 0xf8 bytes, am.h's AIXMSG with the time */
-    int unk00;                          /* 0x00 */
-    unsigned char type;                 /* 0x04 */
-    char pad05[3];
-    unsigned int unk08;                 /* 0x08 */
-    int unk0c;                          /* 0x0c */
-    char pad10[0x18];
-    AITIME time;                        /* 0x28 */
-    unsigned char unk36;                /* 0x36 */
-    char pad37[0x21];
-    int unk58;                          /* 0x58 */
-    char pad5c[0x9c];
-} G6MSG;
-#pragma pack(pop)
-
-typedef char ai_AssertG6MSG[sizeof(G6MSG) == 0xf8 ? 1 : -1];
-
 extern G6RING ai_Unkf83c20[];           /* 0xf83c20 */
 extern G6RING *ai_Unk60034c;            /* 0x60034c, the next entry */
 extern int ai_Unk600350;                /* 0x600350, the step */
@@ -778,7 +760,7 @@ int gm_BuildingKindCost(int unused, int kind);                                  
 int gm_BuildingKindValue(int k);                                                        /* 0x509d30 */
 int ai_DecideTakeCredit(int a, struct G5CH *p, int f, struct AIARG *o1, struct AIARG *o2);                  /* 0x49eec0 */
 #define G6_509EE0(p, k) ((float (*)(AIPER *, unsigned char))gm_CharCurrency)((AIPER *)(p), (k))  /* am.h: returns int */
-int ai_Unk498a80(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x498a80 */
+int ai_ExecuteBuildResidence(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x498a80 */
 int ai_Unk498b80(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x498b80 */
 int amt_GetColumnOfficesOwned(int col, int max, struct AMTREC *out);                                      /* 0x4e7040 */
 

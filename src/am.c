@@ -5064,23 +5064,24 @@ smaller:
     *o2 = s2;
     return 0x11;
 }
-/* 0x498a80, execute callback: upgrades a building (message "building_upgrade") */
+/* 0x498a80, execute callback of "Wohnsitz bauen" (0x11): pays 0.3 of the new type's value and sends the upgrade of the house (message group "building_upgrade"), or builds the new house (ai_ExecBuildBuilding) */
 
-int ai_Unk498a80(G5CH *p, AIARG *s1, AIARG *s2)
+int ai_ExecuteBuildResidence(G5CH *p, AIARG *s1, AIARG *s2)
 {
-    G6MSG m;
+    AIMSG m;
 
     if (s2->kind == 4) {
+        /* s2 is the house to upgrade (kind 4, its building id), s1 the new type */
         memset(&m, 0, sizeof(m));
-        m.unk08 = p->netId;
+        m.to = p->netId;
+        m.fromId = s2->ref;
         m.time = ai_TimeT;
         m.type = 0x1e;
-        m.unk0c = s2->ref;
-        m.unk36 = 1;
-        m.unk58 = s2->ref;
+        m.flags = 1;
+        m.arg[0] = s2->ref;
         cm_BeginGroup("building_upgrade");
         cm_SendMoveGoods(-1, p->netId, ai_OwnPlayer, (int)(gm_BuildingKindValue(s1->ref) * 0.3f));
-        cm_SendLongMessage((AIMSG *)&m);
+        cm_SendLongMessage(&m);
         cm_EndGroup("building_upgrade");
         return 0x11;
     }
@@ -9434,7 +9435,7 @@ int ai_RegisterBaseActions(int a)
     strcpy(act.name, "Wohnsitz bauen");
     act.eval = ai_EvalMoodWeights;
     act.decide = ai_DecideBuildResidence;
-    act.exec = ai_Unk498a80;
+    act.exec = ai_ExecuteBuildResidence;
     act.flags = 0x3;
     if (!am_RegisterMethod(&act, a))
         return 0;
