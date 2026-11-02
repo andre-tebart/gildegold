@@ -19,7 +19,7 @@ typedef struct TUTRUN {                 /* 0x74 bytes, a run (chapter) record of
     int mainText;                       /* 0x0c, the run window's text: control 1 shows it, control 2 mainText + 1 (ai_TutorialShowRunText) */
     char *mainVoice;                    /* 0x10, the voice played with it ("CHAPTER_5_C_MAIN") */
     int text1;                          /* 0x14, the first text window's text (ai_TutorialShowText) */
-    char pad18[4];
+    char *text1Voice;                   /* 0x18, the voice played with the first text window (ai_TutorialShowText) */
     int text2;                          /* 0x1c, the second text window's text (ai_TutorialShowText2) */
     char pad20[4];
     int statusText;                     /* 0x24, the d2_Strings line shown in the status bar by the states 0xa / 0xb */

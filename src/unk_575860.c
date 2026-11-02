@@ -2122,37 +2122,29 @@ answered:
 unanswered:
     return 0;
 }
-/* 0x577a90, no return value: nothing without the run record or its text +0x14; else the text window S+0x24 is
-   rewritten (0x52e330, control 0 with the text 0x602568 and the record text +0x14, control 1 with 0x475590) and,
-   when the record word +0x18 is set, the window S+0x14 recreated by 0x4c2760 (0xfffffff9, 0, +0x18, -1) after
-   releasing the previous one (0x426f20 / 0x427290) */
+/* 0x577a90, shows the run's first text window: nothing without a run record or its text1; else the status text
+   is cleared and the window text1Win rewritten with the run's text1 and enabled, and when the run has a
+   text1Voice, the playing voice is stopped and text1Voice played in its place */
 
 void ai_TutorialShowText(void)
 {
-    char *st;
-    char *r;
-
-    st = S;
-    r = *(char **)(st + 0x18);
-    if (!r)
+    if (!ai_Tutorial->run)
         return;
-    if (!*(int *)(r + 0x14))
+    if (!ai_Tutorial->run->text1)
         return;
-    sv_SetStatusText((char *)(unsigned)&ch_EmptyName);
-    d2_SetForm(U_I(S + 0x24), 0);
-    io_PrintText((char *)(unsigned)"$C");
-    io_PrintText(*(int *)(*(char **)(S + 0x18) + 0x14));
-    d2_SetViewEnabled(U_I(S + 0x24), 1);
-    st = S;
-    if (!*(int *)(*(char **)(st + 0x18) + 0x18))
+    sv_SetStatusText(ch_EmptyName);
+    d2_SetForm(ai_Tutorial->text1Win, 0);
+    io_PrintText("$C");
+    io_PrintText((char *)ai_Tutorial->run->text1);
+    d2_SetViewEnabled(ai_Tutorial->text1Win, 1);
+    if (!ai_Tutorial->run->text1Voice)
         return;
-    if (U_I(st + 0x14)) {
-        if (sb_IsPlaying(U_I(st + 0x14)))
-            sb_Stop(U_I(st + 0x14), 0);
-        U_I(st + 0x14) = 0;
+    if (ai_Tutorial->voice) {
+        if (sb_IsPlaying(ai_Tutorial->voice))
+            sb_Stop(ai_Tutorial->voice, 0);
+        ai_Tutorial->voice = 0;
     }
-    r = *(char **)(S + 0x18);
-    U_I(S + 0x14) = snd_PlayVoice(0xfffffff9, 0, *(int *)(r + 0x18), -1);
+    ai_Tutorial->voice = (struct SBSAMPLE *)snd_PlayVoice(-7, 0, ai_Tutorial->run->text1Voice, -1);
 }
 /* 0x577b60, clears the text window S+0x24: control 0 off (0x475f70), the text 0x602568 (0x515960), 0x475590
    (S+0x24, 0); no return value */
