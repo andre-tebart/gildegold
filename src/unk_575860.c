@@ -6416,100 +6416,103 @@ void ai_ShotTableReset(void)
 
 int d2_CreatePicObj(); void d2_MoveObj(short x, short y, int obj); int d2_WinOpenPic(short x, short y, int pic, int win);
 int d2_WinOpenSlider(); void d2_SetLabel(); void d2_SetList(int id, int n, ...);
+#define d2_CreatePicObjS ((int (*)(short, short, int))d2_CreatePicObj)  /* @original ai_CannonBuildPanel subtracts the picture height in 16 bits and pushes it unextended (0x580b18 sub cx / push ecx): a short y, as d2.c's callers (d2_WinOpenPic) */
 
-/* 0x580a90, builds the cannon control panel (1042 B, ROUGH: all the calls are written; the screen layout value
-   of 0x46cda0 (the CONCAT22 in the pseudocode) is a guess from the short 0xf8f124 + 0x6ed938 * 0x3c4): sc = the
-   scene struct. The bottom / top windows "Locations_domizil_cannon_bottom" (0x62a3cc) and "_top" (0x62a3ac)
-   with 0x475850 (1) / 0x475f70, the "res" window (0x62a38c) with 0x475850 (3) / 0x475590 (0); the two window
-   bases 0x46cd80 (the ids 0x7cb / 0x7cc / 0x7cd by the width 800 / 0x400 / other and the height, 0x6ed918 +
-   0x52 + the id * 0x54) into sc + 0xd4 / 0xd8; the four buttons 0x4731d0 (0x59 / 0x9b / 0x14 / 0x56 / 0x98, the
-   texts 0x7d5 / 0x7d4 / 0x7d3 / 0x7d1 / 0x7d2) into sc + 0xb8 / 0xbc / 0xc8 / 0xcc / 0xd0 with the window table
-   0xf8f080 +0x4c = 1 and +0x1c0 = 3; the two sliders 0x46a960 (4 / 100, the values 0x925114 / 0x925118) into
-   sc + 0xb0 / 0xb4 with 0x46bc70 / 0x46bca0; the three bars 0x46a960 (0x7d / 0x4c2) into sc + 0xa8 / 0xac /
-   0xc4 (0x5dbc20 and two __ftol 0x5de518 values) with 0x46bc70; sc + 0x70 = the clock 0x6333cc */
-void ai_CannonBuildPanel(char *sc)
+/* 0x580a90, builds the cannon control panel of the scene sc (run = its effect slot): the two edge pictures (by the
+   screen width 800 / 0x400 / other: 0x7cb / 0x7cc / 0x7cd at the top left, 0x7ce / 0x7cf / 0x7d0 at the bottom
+   left) into sc->picL / picR; the form "Locations\domizil\cannon_bottom" (sc->win_a4), its window moved 0x19 left
+   of the screen centre line, with the fire / quit buttons (texts 0x7d5 / 0x7d4), the kind slider (0 .. 4,
+   gv_Cannon.sliderA, labelled txt 0x4061 with the five kinds 0x4063 .. 0x4067) and the speed slider (0 .. 100,
+   gv_Cannon.sliderB, txt 0x4062), then the three barrel controls (0x7d3 / 0x7d1 / 0x7d2) into sc->selBtn; the form
+   "Locations\domizil\cannon_top" (sc->win_c0) 0x4b left of the line with the three bars (0 .. 100): the default
+   effect scale, the pitch bar (also from the effect scale) and the run's charge of the selected barrel (txt 0x405e
+   .. 0x4060); the form "Locations\domizil\cannon_res" (sc->win74) placed with 3 and disabled; sc->resultClock =
+   the clock. The buttons are interactive with the style 3
+   @deep Rewritten from the whole original 0x580a90..0x580fdd (typed: CANNONSCENE / GVEFFECT run, d2_Wins /
+   d2_Objs / d2_Pics fields, txt_Ptrs 0x405e..0x4067, the third bar run->charge[sc->selected] * 100, the
+   5-argument SetObjValue, the short y of d2_CreatePicObj); 388 vs 388 instructions, every call, argument
+   and constant equal. Left: the address selection of d2_MoveObj(d2_Wins[d2_LastWindow].x, ..,
+   d2_Wins[d2_LastWindow].parent): ours shl eax,2 / mov ecx,[eax+X] / mov dx,[eax+X], the original mov
+   edx,[ecx*4+0xf8f38c] / lea eax,[ecx*4+d2_Wins] / mov ax,[eax+4] (0x580b62, 0x580e44); the same C gives
+   the same difference in sv_UpdateCityPanel (0x523eb8, 0x523f26), (&d2_Wins[i])->x and a sized
+   d2_Wins[0x60] tried without change; the hunks after it are the register rotation it starts (ecx->eax,
+   eax->ecx, ecx->edx) and the push/load order around the bar SetObjValue calls (0x580ebe: push eax before
+   / after mov reg,[esi+0xa8], swapped between bar 1 and 2), and the push ebp placement of the second
+   button (0x580c45). */
+void ai_CannonBuildPanel(CANNONSCENE *sc, GVEFFECT *run)
 {
-    int x;
+    int h;
     int mid;
+    int pic;
+    int base;
     int id;
-    int v;
-    int w;
 
-    x = U_I((unsigned)&d2_ScreenH);
-    mid = (x + ((int)U_I((unsigned)&d2_ScreenW) >> 4) * -9) >> 1;
-    if (U_I((unsigned)&d2_ScreenW) == 800) {
-        v = 0x7cb;
-        w = 0x7ce;
-    } else if (U_I((unsigned)&d2_ScreenW) == 0x400) {
-        v = 0x7cc;
-        w = 1999;
+    h = d2_ScreenH;
+    mid = (h - (d2_ScreenW >> 4) * 9) >> 1;
+    h -= mid;
+    if (d2_ScreenW == 800) {
+        pic = 0x7cb;
+        base = 0x7ce;
+    } else if (d2_ScreenW == 0x400) {
+        pic = 0x7cc;
+        base = 0x7cf;
     } else {
-        v = 0x7cd;
-        w = 2000;
+        pic = 0x7cd;
+        base = 0x7d0;
     }
-    v = d2_CreatePicObj(0, 0, v);
-    *(int *)(sc + 0xd4) = v;
-    v = d2_CreatePicObj(0, U_I((unsigned)&d2_ScreenH) - *(short *)((unsigned)&d2_Pics + 0x52 + w * 0x54), w);
-    *(int *)(sc + 0xd8) = v;
-    v = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62a3cc);
-    *(int *)(sc + 0xa4) = v;
-    d2_PlaceMainWindowF(v, 1);
-    d2_SetForm(*(int *)(sc + 0xa4), 0);
-    d2_MoveObj(*(unsigned short *)(((unsigned)&d2_Wins + 0x4) + U_I((unsigned)&d2_LastWindow) * 0x3c4), (x - mid) - 0x19, *(int *)(((unsigned)&ai_Unkf8f13c + 0x250) + U_I((unsigned)&d2_LastWindow) * 0x3c4));
-    d2_SetForm(*(int *)(sc + 0xa4), 2);
-    id = d2_WinOpenPic(0x59, 0xf, 0x7d5, U_I((unsigned)&d2_LastWindow));
-    *(int *)(sc + 0xb8) = id;
-    *(int *)(U_I((unsigned)&d2_Objs) + 0x4c + id * 0x2ec) = 1;
-    *(int *)(U_I((unsigned)&d2_Objs) + 0x1c0 + *(int *)(sc + 0xb8) * 0x2ec) = 3;
-    id = d2_WinOpenPic(0x9b, 0xf, 0x7d4, U_I((unsigned)&d2_LastWindow));
-    *(int *)(sc + 0xbc) = id;
-    *(int *)(U_I((unsigned)&d2_Objs) + 0x4c + id * 0x2ec) = 1;
-    *(int *)(U_I((unsigned)&d2_Objs) + 0x1c0 + *(int *)(sc + 0xbc) * 0x2ec) = 3;
-    d2_SetForm(*(int *)(sc + 0xa4), 1);
-    v = d2_WinOpenSlider(0x140, 0x14, 100, 0, 100, 0x7b, 0x82, U_I((unsigned)&d2_LastWindow));
-    *(int *)(sc + 0xb0) = v;
-    d2_SetObjValue(v, 0, 4, U_I((unsigned)&gv_Cannon.sliderA), 1);
-    d2_SetLabel(*(int *)(sc + 0xb0), U_I((unsigned)&full_data_144a344));
-    d2_SetList(*(int *)(sc + 0xb0), 5, U_I((unsigned)&full_data_144a34c), U_I((unsigned)&full_data_144a350), U_I((unsigned)&full_data_144a354), U_I((unsigned)&full_data_144a358), U_I((unsigned)&full_data_144a35c));
-    v = d2_WinOpenSlider(0x140, 0x32, 100, 0, 100, 0x7b, 0x82, U_I((unsigned)&d2_LastWindow));
-    *(int *)(sc + 0xb4) = v;
-    d2_SetObjValue(v, 0, 100, U_I((unsigned)&gv_Cannon.sliderB), 1);
-    d2_SetLabel(*(int *)(sc + 0xb4), U_I((unsigned)&full_data_144a348));
-    id = d2_WinOpenPic(0x14, 0x17, 0x7d3, U_I((unsigned)&d2_LastWindow));
-    *(int *)(sc + 0xc8) = id;
-    *(int *)(U_I((unsigned)&d2_Objs) + 0x4c + id * 0x2ec) = 1;
-    *(int *)(U_I((unsigned)&d2_Objs) + 0x1c0 + *(int *)(sc + 0xc8) * 0x2ec) = 3;
-    id = d2_WinOpenPic(0x56, 0x17, 0x7d1, U_I((unsigned)&d2_LastWindow));
-    *(int *)(sc + 0xcc) = id;
-    *(int *)(U_I((unsigned)&d2_Objs) + 0x4c + id * 0x2ec) = 1;
-    *(int *)(U_I((unsigned)&d2_Objs) + 0x1c0 + *(int *)(sc + 0xcc) * 0x2ec) = 3;
-    id = d2_WinOpenPic(0x98, 0x17, 0x7d2, U_I((unsigned)&d2_LastWindow));
-    *(int *)(sc + 0xd0) = id;
-    *(int *)(U_I((unsigned)&d2_Objs) + 0x4c + id * 0x2ec) = 1;
-    *(int *)(U_I((unsigned)&d2_Objs) + 0x1c0 + *(int *)(sc + 0xd0) * 0x2ec) = 3;
-    v = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62a3ac);
-    *(int *)(sc + 0xc0) = v;
-    d2_PlaceMainWindowF(v, 1);
-    d2_SetForm(*(int *)(sc + 0xc0), 0);
-    d2_MoveObj(*(unsigned short *)(((unsigned)&d2_Wins + 0x4) + U_I((unsigned)&d2_LastWindow) * 0x3c4), mid - 0x4b, *(int *)(((unsigned)&ai_Unkf8f13c + 0x250) + U_I((unsigned)&d2_LastWindow) * 0x3c4));
-    d2_SetForm(*(int *)(sc + 0xc0), 1);
-    v = d2_WinOpenSlider(0x96, 0xb, 200, 0, 100, 0x75, 0x4c2, U_I((unsigned)&d2_LastWindow));
-    *(int *)(sc + 0xa8) = v;
-    d2_SetObjValue(v, 0, 100, (int)ai_GetDefaultEffectScale(1));
-    d2_SetLabel(*(int *)(sc + 0xa8), U_I((unsigned)&full_data_144a338));
-    v = d2_WinOpenSlider(0x96, 0x1f, 200, 0, 100, 0x75, 0x4c2, U_I((unsigned)&d2_LastWindow));
-    *(int *)(sc + 0xac) = v;
-    d2_SetObjValue(v, 0, 100, (int)ai_GetDefaultEffectScale(1));
-    d2_SetLabel(*(int *)(sc + 0xac), U_I((unsigned)&full_data_144a33c));
-    v = d2_WinOpenSlider(0x96, 0x33, 200, 0, 100, 0x75, 0x4c2, U_I((unsigned)&d2_LastWindow));
-    *(int *)(sc + 0xc4) = v;
-    d2_SetObjValue(v, 0, 100, (int)_ftol());
-    d2_SetLabel(*(int *)(sc + 0xc4), U_I((unsigned)&full_data_144a340));
-    v = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62a38c);
-    *(int *)(sc + 0x74) = v;
-    d2_PlaceMainWindowF(v, 3);
-    d2_SetViewEnabled(*(int *)(sc + 0x74), 0);
-    *(int *)(sc + 0x70) = U_I((unsigned)&ai_ClockMs);
+    sc->picL = d2_CreatePicObj(0, 0, pic);
+    sc->picR = d2_CreatePicObjS(0, d2_ScreenH - d2_Pics[base].h, base);
+    sc->win_a4 = d2_OpenForm(0, 0, "Locations\\domizil\\cannon_bottom");
+    d2_PlaceMainWindowF(sc->win_a4, 1);
+    d2_SetForm(sc->win_a4, 0);
+    d2_MoveObj(d2_Wins[d2_LastWindow].x, h - 0x19, d2_Wins[d2_LastWindow].parent);
+    d2_SetForm(sc->win_a4, 2);
+    id = d2_WinOpenPic(0x59, 0xf, 0x7d5, d2_LastWindow);
+    sc->fireBtn = id;
+    d2_Objs[id].interactive = 1;
+    d2_Objs[sc->fireBtn].style = 3;
+    id = d2_WinOpenPic(0x9b, 0xf, 0x7d4, d2_LastWindow);
+    sc->quitBtn = id;
+    d2_Objs[id].interactive = 1;
+    d2_Objs[sc->quitBtn].style = 3;
+    d2_SetForm(sc->win_a4, 1);
+    sc->kindSlider = d2_WinOpenSlider(0x140, 0x14, 100, 0, 100, 0x7b, 0x82, d2_LastWindow);
+    d2_SetObjValue(sc->kindSlider, 0, 4, gv_Cannon.sliderA, 1);
+    d2_SetLabel(sc->kindSlider, txt_Ptrs[0x4061]);
+    d2_SetList(sc->kindSlider, 5, txt_Ptrs[0x4063], txt_Ptrs[0x4064], txt_Ptrs[0x4065], txt_Ptrs[0x4066], txt_Ptrs[0x4067]);
+    sc->speedSlider = d2_WinOpenSlider(0x140, 0x32, 100, 0, 100, 0x7b, 0x82, d2_LastWindow);
+    d2_SetObjValue(sc->speedSlider, 0, 100, gv_Cannon.sliderB, 1);
+    d2_SetLabel(sc->speedSlider, txt_Ptrs[0x4062]);
+    id = d2_WinOpenPic(0x14, 0x17, 0x7d3, d2_LastWindow);
+    sc->selBtn[0] = id;
+    d2_Objs[id].interactive = 1;
+    d2_Objs[sc->selBtn[0]].style = 3;
+    id = d2_WinOpenPic(0x56, 0x17, 0x7d1, d2_LastWindow);
+    sc->selBtn[1] = id;
+    d2_Objs[id].interactive = 1;
+    d2_Objs[sc->selBtn[1]].style = 3;
+    id = d2_WinOpenPic(0x98, 0x17, 0x7d2, d2_LastWindow);
+    sc->selBtn[2] = id;
+    d2_Objs[id].interactive = 1;
+    d2_Objs[sc->selBtn[2]].style = 3;
+    sc->win_c0 = d2_OpenForm(0, 0, "Locations\\domizil\\cannon_top");
+    d2_PlaceMainWindowF(sc->win_c0, 1);
+    d2_SetForm(sc->win_c0, 0);
+    d2_MoveObj(d2_Wins[d2_LastWindow].x, mid - 0x4b, d2_Wins[d2_LastWindow].parent);
+    d2_SetForm(sc->win_c0, 1);
+    sc->scaleBar = d2_WinOpenSlider(0x96, 0xb, 200, 0, 100, 0x75, 0x4c2, d2_LastWindow);
+    d2_SetObjValue(sc->scaleBar, 0, 100, (int)(ai_GetDefaultEffectScale() * 100.0f), 1);
+    d2_SetLabel(sc->scaleBar, txt_Ptrs[0x405e]);
+    sc->pitchBar = d2_WinOpenSlider(0x96, 0x1f, 200, 0, 100, 0x75, 0x4c2, d2_LastWindow);
+    d2_SetObjValue(sc->pitchBar, 0, 100, (int)(ai_GetDefaultEffectScale() * 100.0f), 1);
+    d2_SetLabel(sc->pitchBar, txt_Ptrs[0x405f]);
+    sc->chargeBar = d2_WinOpenSlider(0x96, 0x33, 200, 0, 100, 0x75, 0x4c2, d2_LastWindow);
+    d2_SetObjValue(sc->chargeBar, 0, 100, (int)(run->charge[sc->selected] * 100.0f), 1);
+    d2_SetLabel(sc->chargeBar, txt_Ptrs[0x4060]);
+    sc->win74 = d2_OpenForm(0, 0, "Locations\\domizil\\cannon_res");
+    d2_PlaceMainWindowF(sc->win74, 3);
+    d2_SetViewEnabled(sc->win74, 0);
+    sc->resultClock = ai_ClockMs;
 }
 
 int he_Unk56f170(); int sv_MessageBox();
