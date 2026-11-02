@@ -10636,60 +10636,107 @@ void ai_SetBookmark(int idx)
 
 int d2_GetViewWin(); int sv_CreateScrollButtons(); void d2_RadioClear(int g); int d2_RemoveWindowObjects(); void d2_MenuNavigate(int g);
 
-/* 0x589670, the item-slot window (1066 B, ROUGH SKELETON: the window, every call and the widget ids are on the
-   disassembly; the slot grid arithmetic is summarised): 0x589450 () first; the window 0x62aa38 with 0x475600,
-   0x475f70 (win, 0), the sound 0x52ea30, 0x476f80 (0, 0), the section 2, the text 0x205b, the section 0; the
-   rectangles 0x475ff0 / 0x52e860 (0x214, 0x168, 0x38, ...) and the buttons 0x52e350 (0, 2, the list); 0x476b70 ();
-   the drag window 0xfa5aa8 in 0x46c600, 0x472d20 (U_I (0x6ed938), 1). The slots: 0x4731d0 (0x10, the slot + 4),
-   0x502020 (the id) / 0x4fe980, 0x4731d0 (0x60, i + 0x427), 0x473650 (0x9c, ...), 0x473650 (0x60, ...,
-   0x1442334), 0x4731d0 (0x128, ...), 0x473650 (0x164, ...), 0x589400 (the slot 0x6f5ec0 + i * 0xc). The pump
-   loop 0x5309a0 (this window, 0x657c7): 0x589570 (the selected slot) when 0xfa5aa8 is not -1, 0x46c6c0,
-   0x475e40 (the buttons), 0x5894d0 (); the exit 0x46c600 and 0x4758f0 (the window) */
-void ai_Unk589670(void)
+/* 0x589670, the bookmark window (1066 B): the form "special\geb_hotkeys" (ai_ValidateBookmarks first), the title
+   text 0x205b, the scroll buttons of section 1 and the button row of section 3 (texts 0x206b / 0x206a: set,
+   clear); section 1 is rebuilt whenever a bookmark changed: a radio group of the 11 key pictures (0x769 + i),
+   each bookmark's building (its picture 0x427 + type, "%2N8~ %1G" with its owner) or the text 0x205d, and its
+   room (picture 0xdf + id, its name) unless none or 0xfd. The right button, F12 (0x58) or escape close it; the
+   set button stores the current building in the selected bookmark (ai_SetBookmark), the clear button clears it;
+   the bookmark keys work while it is open (ai_SelectBookmark) */
+void ai_BookmarkWindow(void)
 {
     char line[0x100];
-    int win;
+    int buttons[2];
+    int scroll[3];
+    int view;
+    int group;
+    int sel;
+    int rebuild;
     int i;
-    int id;
-    int e;
-    int p;
+    int t;
+    AIBLD *b;
+    AIOBJ *o;
 
+    group = -1;
+    sel = -1;
+    rebuild = 1;
     ai_ValidateBookmarks();
-    win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62aa38);
-    d2_CentreViewWindows(win);
-    d2_SetForm(win, 0);
-    sv_FitForm(U_I((unsigned)&d2_LastWindow));
+    view = d2_OpenForm(0, 0, "special\\geb_hotkeys");
+    d2_CentreViewWindows(view);
+    d2_SetForm(view, 0);
+    sv_FitForm(d2_LastWindow);
     d2_SetPointerSprite(0, 0);
-    d2_SetForm(win, 2);
+    d2_SetForm(view, 2);
     io_PrintText(0x205b);
-    d2_SetForm(win, 0);
+    d2_SetForm(view, 0);
+    sv_CreateScrollButtons(0x214, 0x168, d2_LastWindow, d2_GetViewWin(view, 1), 0x38, &scroll[0], &scroll[1], &scroll[2]);
+    d2_SetForm(view, 3);
+    sv_ButtonRow(d2_LastWindow, 0, buttons, 2, txt_Ptrs[0x206b], txt_Ptrs[0x206a]);
     d2_ClearInput();
-    for (i = 0; i < 0xb; i++) {
-        p = d2_WinOpenPic(0x10, 0, (char *)(i + 4), U_I((unsigned)&d2_LastWindow));
-        id = ai_Bookmarks[i].building;
-        if (id != -1)
-            e = gm_FindBuildingById(id);
+    do {
+        if (rebuild) {
+            d2_SetForm(view, 1);
+            if (group != -1) {
+                sel = d2_Radios[group].sel;
+                d2_RadioClear(group);
+            }
+            d2_RemoveWindowObjects(d2_LastWindow, 1);
+            group = d2_CreateRadioGroup(0);
+            d2_Radios[group].flags = 1;
+            for (i = 0; i < 11; i++) {
+                b = 0;
+                o = 0;
+                d2_RadioAdd(group, d2_WinOpenPic(0x10, i * 0x38 + 4, i + 0x769, d2_LastWindow));
+                if (ai_Bookmarks[i].building != -1)
+                    b = (AIBLD *)gm_FindBuildingById(ai_Bookmarks[i].building);
+                if (ai_Bookmarks[i].object != -1)
+                    o = (AIOBJ *)gm_FindObjectInst(ai_Bookmarks[i].object);
+                if (b != 0) {
+                    d2_WinOpenPic(0x60, i * 0x38, b->type + 0x427, d2_LastWindow);
+                    txt_Format(line, (int)"%2N8~ %1G", b->owner, b);
+                    t = d2_CreateWinText(0x9c, i * 0x38 + 9, line, d2_LastWindow);
+                    d2_Objs[t].w = 0x80;
+                    d2_Objs[t].font = 0x54;
+                } else {
+                    t = d2_CreateWinText(0x60, i * 0x38 + 9, txt_Ptrs[0x205d], d2_LastWindow);
+                    d2_Objs[t].font = 0x53;
+                }
+                if (o != 0 && o->id != 0xfd) {
+                    d2_WinOpenPic(0x128, i * 0x38, o->id + 0xdf, d2_LastWindow);
+                    txt_Format(line, (int)"%1s", o->id * 2 + 0x9a8);
+                    t = d2_CreateWinText(0x164, i * 0x38 + 0x12, line, d2_LastWindow);
+                    d2_Objs[t].w = 0x80;
+                    d2_Objs[t].font = 0x54;
+                }
+            }
+            d2_RadioSelect(group, sel);
+            rebuild = 0;
+        }
+        if (dm_L.rup != 0 || kb_Last == 0x58 || kb_Last == 1)
+            sv_PopRequest = 1;
+        if (d2_ClickedId != -1) {
+            if (d2_PointerObj == buttons[1] && d2_Radios[group].sel != -1) {
+                ai_ClearBookmark(&ai_Bookmarks[d2_Radios[group].sel]);
+                rebuild = 1;
+            }
+            if (d2_PointerObj == buttons[0] && d2_Radios[group].sel != -1) {
+                ai_SetBookmark(d2_Radios[group].sel);
+                rebuild = 1;
+            }
+        }
+        d2_MenuNavigate(group);
+        if (d2_Radios[group].sel != -1 && ai_Bookmarks[d2_Radios[group].sel].building != -1)
+            d2_SetObjEnabled(buttons[1], 1);
         else
-            e = 0;
-        d2_WinOpenPic(0x60, ai_Bookmarks[i].key + 0x427, (char *)win, U_I((unsigned)&d2_LastWindow));
-        d2_CreateWinText(0x9c, i, line, U_I((unsigned)&txt_ObjectNames));
-        d2_CreateWinText(0x60, i, line, U_I((unsigned)&full_data_1442334));
-        d2_WinOpenPic(0x128, 0, (char *)(i + 0xdf), U_I((unsigned)&d2_LastWindow));
-        d2_CreateWinText(0x164, i, line, U_I((unsigned)&full_data_1442334));
-        (void)e;
-        (void)p;
-    }
-    while (sv_RunFrame(ai_Unk589670, 0x657c7) != 0) {
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0)
-            U_I((unsigned)&sv_PopRequest) = 1;
-        if (*(int *)((unsigned)&d2_RadioSel) != -1)
-            ai_SetBookmark(*(int *)((unsigned)&d2_RadioSel));
-        d2_MenuNavigate(0);
-        d2_SetObjEnabled(0, 0);
+            d2_SetObjEnabled(buttons[1], 0);
+        if (d2_Radios[group].sel == -1)
+            d2_SetObjEnabled(buttons[0], 0);
+        else
+            d2_SetObjEnabled(buttons[0], 1);
         ai_SelectBookmark();
-    }
-    d2_RadioClear(0);
-    d2_CloseView(win);
+    } while (sv_RunFrame((int)ai_BookmarkWindow, 0x657c7));
+    d2_RadioClear(group);
+    d2_CloseView(view);
 }
 
 unsigned vfs_fwrite(void *buf, int size, int n, struct VFSFILE *f);
@@ -10788,7 +10835,7 @@ void ai_SlotKeys(void)
     if (U_I((unsigned)&sv_PanelFlag) == 1)
         return;
     if (*(unsigned char *)(unsigned)&kb_Last == 0x58)
-        ai_Unk589670();
+        ai_BookmarkWindow();
     ai_SelectBookmark();
     i = 0;
     for (p = (char *)ai_Bookmarks; p < (char *)&ai_Bookmarks[11]; p += 0xc) {
