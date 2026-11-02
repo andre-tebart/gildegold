@@ -2263,7 +2263,7 @@ exe	0x004c6170	cm_SendCreateAlchemist	cm	byte	draft
 exe	0x004c61b0	cm_SendCommand	cm	byte	draft		
 exe	0x004c61f0	ai_Unk4c61f0	cm	byte	draft		
 exe	0x004c6230	ai_Unk4c6230	cm	byte	draft		
-exe	0x004c6260	ai_Unk4c6260	cm	byte	draft		
+exe	0x004c6260	cm_SendShots	cm	byte	draft		
 exe	0x004c62a0	ai_Unk4c62a0	cm	shape	draft		
 exe	0x004c6320	ai_Unk4c6320	cm	byte	draft		
 exe	0x004c6350	ai_Unk4c6350	cm	byte	draft		
@@ -2735,17 +2735,17 @@ exe	0x004eddf0	unk_ResetEffectSlots	gv	byte	readable
 exe	0x004ede70	gv_FreeEffectObjects	gv	byte	readable		
 exe	0x004eded0	gv_FindEffect	gv	byte	readable		
 exe	0x004edf10	gv_ReleaseEffect	gv	byte	readable		
-exe	0x004edf80	gv_UpdateEffects	gv	draft	draft		
-exe	0x004ee360	unk_Unk4ee360	gv	draft	draft		
+exe	0x004edf80	gv_UpdateEffects	gv	draft	readable	deep	
+exe	0x004ee360	gv_ExplodeShot	gv	draft	readable	deep	
 exe	0x004eea70	unk_Unk4eea70	gv	byte	draft		
-exe	0x004eeaa0	gv_ReserveEffect	gv	draft	readable		
-exe	0x004eeb00	unk_Unk4eeb00	gv	draft	draft		
-exe	0x004eeb70	unk_Unk4eeb70	gv	draft	draft		
-exe	0x004eedd0	unk_Unk4eedd0	gv	byte	draft		
-exe	0x004eee00	unk_Unk4eee00	gv	draft	draft		
+exe	0x004eeaa0	gv_ReserveEffect	gv	byte	readable		
+exe	0x004eeb00	gv_StopEffect	gv	byte	readable		
+exe	0x004eeb70	gv_FireShots	gv	draft	readable	deep	
+exe	0x004eedd0	gv_GetEffect	gv	byte	readable		
+exe	0x004eee00	gv_StartShot	gv	byte	readable		
 exe	0x004eeee0	unk_Unk4eeee0	gv	byte	draft		
-exe	0x004eef50	unk_Unk4eef50	gv	draft	draft		
-exe	0x004ef000	unk_Unk4ef000	gv	draft	draft		
+exe	0x004eef50	gv_SalvoCharge	gv	byte	readable		
+exe	0x004ef000	gv_CannonKind	gv	shape	readable		
 exe	0x004ef090	unk_Unk4ef090	gv	draft	draft		
 exe	0x004ef170	unk_Unk4ef170	gv	draft	draft		
 exe	0x004ef260	unk_Unk4ef260	gv	draft	draft		
@@ -2807,7 +2807,7 @@ exe	0x004f2870	gv_FindTableRecord	gv	draft	draft
 exe	0x004f28d0	gv_WriteGraveyard	gv	draft	draft		
 exe	0x004f2b30	unk_Unk4f2b30	gv	draft	draft		
 exe	0x004f2da0	unk_Unk4f2da0	gv	byte	draft		
-exe	0x004f2e30	unk_Unk4f2e30	gv	draft	draft		
+exe	0x004f2e30	gv_Accuse	gv	draft	draft		
 exe	0x004f2fe0	gv_TableRecordText	gv	draft	readable		
 exe	0x004f30a0	unk_Unk4f30a0	gv	draft	draft		
 exe	0x004f31d0	unk_Unk4f31d0	gv	draft	draft		

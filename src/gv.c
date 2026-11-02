@@ -4,10 +4,13 @@
    which begins the .data block after ahm.c's "ahm_AllocAhmInfo" 0x60f2f8; ends where ord.c's order handlers
    begin (their table 0x611768 follows gv's strings). The last functions of the file (0x4f2750 .. 0x4f1de0) are
    out of address order. Names are ours.
-   The effect slots are GVEFFECT records (three GVEFFPART parts each) read through the gv_EffectsT view; the save
-   game writes gv_LastTime, the cannon scene state gv_Cannon (cannon scene of unk_575860) and the slots field by field.
+   The effect slots are GVEFFECT records read through the gv_EffectsT view: a building's cannon salvos, three parts
+   each that are SHOTREC cannon balls (unk_5d33b0.h) fired with gv_FireShots (message 0x67, GVSHOTMSG), started by
+   gv_StartShot, moved by gv_UpdateEffects and exploded by gv_ExplodeShot; the save game writes gv_LastTime, the cannon
+   scene state gv_Cannon (cannon scene of unk_575860) and the slots field by field.
    Open: the avatars, the effect slots and the graveyard may be several modules sharing one .data block.
-   Open: not included yet (dcp headers conflicts gv HEADER): unk_5d33b0.h.
+   Open: GVEFFPART duplicates SHOTREC and UNKHITS-style copies remain (am.h G9KIND / G9CANNON view gv's records); gv.h
+   does not include unk_5d33b0.h, so the parts are cast to SHOTREC.
    unit of rea 8cef7d5b (src/game/gv.c); boundaries in decl/text.dcl */
 #include "txt_views.h"
 #include <windows.h>
