@@ -6471,29 +6471,20 @@ void sv_DrawBalanceBar(int x, int y, char *c, int skill, int k)
             d2_WinOpenPic(i * w + x, y, k + 1, d2_LastWindow);
     }
 }
-/* 0x52ee50, starts the rubber band selection (0x760440 = 1): both corners (0x760444 / 0x760448 and 0x76044c / 0x760450) are the mouse position clamped to the view rectangle 0xfc2930 .. 0xfc293c */
+/* 0x52ee50, starts the rubber band selection (sv_BandActive = 1): both corners of sv_Band are the mouse position
+   dm_L clamped to the view rectangle d3_Viewport (right / bottom exclusive). */
 
 void sv_StartBand(void)
 {
-    int mx, my, m;
+    int x, y;
 
-    mx = SV_S((unsigned)&dm_L);
-    m = SV_I((unsigned)&d3_Viewport);
-    if (m <= mx)
-        m = mx;
-    sv_Band.x0 = SV_I(((unsigned)&d3_Viewport + 0x8)) - 1;
-    if (m < SV_I(((unsigned)&d3_Viewport + 0x8)) - 1 && (sv_Band.x0 = mx, mx < SV_I((unsigned)&d3_Viewport)))
-        sv_Band.x0 = SV_I((unsigned)&d3_Viewport);
-    my = SV_S(((unsigned)&dm_L + 0x2));
-    m = SV_I(((unsigned)&d3_Viewport + 0x4));
-    if (m <= my)
-        m = my;
-    sv_Band.y0 = SV_I(((unsigned)&d3_Viewport + 0xc)) - 1;
-    if (m < sv_Band.y0 && (sv_Band.y0 = my, my < SV_I(((unsigned)&d3_Viewport + 0x4))))
-        sv_Band.y0 = SV_I(((unsigned)&d3_Viewport + 0x4));
-    sv_Band.x1 = sv_Band.x0;
-    SV_I((unsigned)&sv_BandActive) = 1;
-    sv_Band.y1 = sv_Band.y0;
+    x = min(max(d3_Viewport.left, dm_L.x), d3_Viewport.right - 1);
+    y = min(max(d3_Viewport.top, dm_L.y), d3_Viewport.bottom - 1);
+    sv_Band.x0 = x;
+    sv_Band.x1 = x;
+    sv_BandActive = 1;
+    sv_Band.y0 = y;
+    sv_Band.y1 = y;
 }
 /* 0x52eed0, ends the rubber band selection */
 
