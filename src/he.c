@@ -17446,17 +17446,18 @@ void he_Unk572fd0(int ev)
 free:
     he_FreeEvent((int *)ev);
 }
-/* 0x573200, 1 when an event of the type 0x8d exists whose +0x10 argument is the word after `a` (searched with 0x53e400 (2, 3, .., 0, 0x8d)) and whose +0xb0 is `a` and byte +0xb4 is `b` */
-
-int he_Unk573200(char *a, int b)
+/* 0x573200, 1 when a graveyard work is pending on a grave: an event of the type 0x8d (the work ai_StartBuildingWork
+   posts) of the building bld (its id, the word at +1, the event's search key) whose +0xb0 is the grave's size (list)
+   and whose byte +0xb4 is its index in that list */
+int he_HasGraveWork(char *bld, int size, int index)
 {
-    char *r;
+    char *ev;
 
-    r = he_FindEvent(2, 3, *(int *)(a + 1), 0, 0x8d);
-    while (r != 0) {
-        if (HM_I(r, 0xb0) == (int)a && HM_B(r, 0xb4) == b)
+    ev = he_FindEvent(2, 3, *(int *)(bld + 1), 0, 0x8d);
+    while (ev != 0) {
+        if (HM_I(ev, 0xb0) == size && HM_B(ev, 0xb4) == index)
             return 1;
-        r = he_NextEvent();
+        ev = he_NextEvent();
     }
     return 0;
 }

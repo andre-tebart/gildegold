@@ -1040,3 +1040,5 @@
 2026-11-02T15:39:13 0x00582560 func ai_Unk582560 -> ai_CannonContact by:main why:registers the contact_KANONE name plate and opens ai_CannonScene on its click
 2026-11-02T15:40:06 0x00582600 func ai_Unk582600 -> ai_CabinetContact by:main why:registers the cabinet's spy / intrigue name plates and opens the ai_Cabinet* windows on their clicks
 2026-11-02T15:44:38 0x00582730 func ai_Unk582730 -> ai_GraveSizeButtons by:main why:the four buttons of the graveyard contact window, one per grave size (GVYARD.open[1..3] enable sizes 1..3)
+2026-11-02T15:46:46 0x005828c0 func ai_Unk5828c0 -> ai_GraveList by:main why:lists the graves (GVENTRY) of the selected size w[0xc] of the graveyard contact window as buttons
+2026-11-02T15:48:00 0x00573200 func he_Unk573200 -> he_HasGraveWork by:main why:1 when an event 0x8d (the building work) of the building is pending on the grave (size, index); ai_GraveList marks those graves

@@ -7168,7 +7168,7 @@ void ai_CabinetContact(AIBLD *rec, AIOBJ *room)
    its size; the sizes 1 .. 3 are open while GVYARD.open[i] is set); only this unit reads them, they stay out of
    unk_575860.h: declared above ai_TutorialInitChapter2 they flip its register tie-break (byte -> shape) */
 const int ai_GravePics[4] = { 0x2d5, 0x2d8, 0x2dc, 0x2e0 };      /* 0x5eecb0, the buttons' pictures */
-const int ai_GravePicsAlt[4] = { 0x7da, 0x7db, 0x7dc, 0x7dd };   /* 0x5eecc0, the pictures ai_Unk5828c0 uses by the button */
+const int ai_GravePicsAlt[4] = { 0x7da, 0x7db, 0x7dc, 0x7dd };   /* 0x5eecc0, the pictures ai_GraveList uses by the button */
 const int ai_GraveNames[4] = { 0xd94, 0xd9a, 0xda2, 0xdaa };     /* 0x5eecd0, the texts of the sizes' names */
 const int ai_GraveGoods[4] = { 0x1f6, 0x1f9, 0x1fd, 0x201 };     /* 0x5eece0, the ai_Goods index whose record the button keeps */
 
@@ -7208,76 +7208,80 @@ void ai_GraveSizeButtons(AIBLD *rec, int *w)
     d2_Objs[w[w[12] + 8]].checked = 1;
 }
 
-int sv_CreateScrollButtons(); unsigned gv_FindEntry(void *a, unsigned char *o, unsigned after, int (*cb)(), int l); int gv_EntryIndex(char *r, int *e); int he_Unk573200();
+int sv_CreateScrollButtons(); unsigned gv_FindEntry(void *a, unsigned char *o, unsigned after, int (*cb)(), int l); int gv_EntryIndex(char *r, int *e);
 void d2_ScrollWindow();
 
-/* 0x5828c0, the contact list builder (635 B): rec = the record, w = the window list (0 the window, 2 the screen
-   part, 4 the parent, 5 the font, 0xc the selected button, 0xd the entries of 4 dwords each, 0x4d the selected
-   entry), sel = the newly clicked button (the current selection's entry 0xf8f368 + w[2] * 0x3c4 saved); 0x475f70
-   (the window, 2) and (4) with the text 0x602568; the scroll area 0x52e860 (0, 0, w[5], w[2], 0x35, two locals,
-   &sel); the entries 0x4ef7c0 (0, rec, the previous, 0, w[0xc]) each: +4 the entry, +8 its id, +0xc the byte
-   0x4ef6b0 (the record + 0x65, the entry), the button 0x4731d0 (1, n * 0x35 + 2, the text 0x5eecb0 / 0x5eecc0 by
-   the button, w[2]); the marker 0x4731d0 (0xf, n * 0x35 + 9, 0x7de) when 0x573200 (rec, the entry, the byte); the
-   window table 0xf8f080 +0x4c = 1 and +0x1c0 = 3; the selected entry 0x4d clamped to 0 and marked at +0x2c / +0x28;
-   the rest of the 0x10 entries filled (+0xd = -1, +0xe = 0, +0xf = 0xff, +0x10 = 0xff); the screen 0xf8f368 /
-   0xf8f384 (w[2] * 0x3c4) restored and 0x46f840 (w[2]) */
-void ai_Unk5828c0(char *rec, int *w, int sel)
+/* a row of the graveyard contact window's grave list (w + 0xd, 0x10 rows of 4 dwords; ai_GraveList fills them) */
+typedef struct GVROW {
+    int btn;                    /* 0x00, its button object, -1: an unused row */
+    GVENTRY *entry;             /* 0x04, the grave entry, 0: unused */
+    int size;                   /* 0x08, the entry's size (list), 0xff: unused */
+    unsigned char index;        /* 0x0c, the entry's index in its list (gv_EntryIndex), 0xff: unused */
+} GVROW;
+
+/* 0x5828c0, the grave list of the graveyard contact window: rec = the graveyard building, w = the window list (0 the
+   window, 2 the list's window, 5 its font, 0xc the selected grave size, 0xd the rows (GVROW), 0x4d the selected
+   row), sel = the size just clicked (-1: none; the list keeps its scroll position only when it is the selected
+   size). Sections 2 and 4 get "$C"; the scroll buttons (sv_CreateScrollButtons, step 0x35); each entry of the size
+   (gv_FindEntry) gets a row: the entry, its size and index, a button 0x35 apart with the size's picture
+   (ai_GravePics when the grave is free, else ai_GravePicsAlt), interactive, style 3, and the marker 0x7de when an
+   event of type 0x8d is pending for it (he_HasGraveWork). A selection past the rows falls back to row 0; it is
+   highlighted and checked; the unused rows are cleared; the scroll position is restored, the step set and the
+   window scrolled */
+void ai_GraveList(AIBLD *rec, int *w, int sel)
 {
     char a[4];
     char b[4];
-    int *e;
-    int *p;
+    GVENTRY *e;
+    GVROW *row;
     int saved;
     int n;
     int i;
-    int id;
 
     saved = 0;
     if (sel == w[0xc])
-        saved = U_I(((unsigned)&ai_Unkf8f13c + 0x22c) + w[2] * 0x3c4);
+        saved = d2_Wins[w[2]].scrollY;
     d2_SetForm(w[0], 2);
-    io_PrintText((char *)(unsigned)"$C");
+    io_PrintText("$C");
     d2_SetForm(w[0], 4);
-    io_PrintText((char *)(unsigned)"$C");
+    io_PrintText("$C");
     sv_CreateScrollButtons(0, 0, w[5], w[2], 0x35, a, b, &sel);
-    e = (int *)gv_FindEntry(0, rec, 0, 0, w[0xc]);
+    e = (GVENTRY *)gv_FindEntry(0, (unsigned char *)rec, 0, 0, w[0xc]);
     n = 0;
     if (e) {
-        p = w + 0xd;
+        row = (GVROW *)(w + 0xd);
         do {
-            p[1] = (int)e;
-            p[2] = *e;
-            *(char *)(p + 3) = gv_EntryIndex(U_I(rec + 0x65), e);
-            if (e[1] == -1)
-                id = d2_WinOpenPic(1, n * 0x35 + 2, (char *)U_I(((unsigned)&sv_PhaseMinutes + 0x1f8) + w[0xc] * 4), w[2]);
+            row->entry = e;
+            row->size = e->size;
+            row->index = gv_EntryIndex((char *)rec->yard, (int *)e);
+            if (e->id == -1)
+                row->btn = d2_WinOpenPic(1, n * 0x35 + 2, ai_GravePics[w[0xc]], w[2]);
             else
-                id = d2_WinOpenPic(1, n * 0x35 + 2, (char *)U_I(((unsigned)&sv_PhaseMinutes + 0x208) + w[0xc] * 4), w[2]);
-            *p = id;
-            if (he_Unk573200(rec, *e, (char)p[3]) != 0)
+                row->btn = d2_WinOpenPic(1, n * 0x35 + 2, ai_GravePicsAlt[w[0xc]], w[2]);
+            if (he_HasGraveWork((char *)rec, e->size, row->index) != 0)
                 d2_WinOpenPic(0xf, n * 0x35 + 9, 0x7de, w[2]);
-            *(int *)(U_I((unsigned)&d2_Objs) + 0x4c + *p * 0x2ec) = 1;
-            *(int *)(U_I((unsigned)&d2_Objs) + 0x1c0 + *p * 0x2ec) = 3;
-            e = (int *)gv_FindEntry(0, rec, e, 0, w[0xc]);
+            d2_Objs[row->btn].interactive = 1;
+            d2_Objs[row->btn].style = 3;
+            e = (GVENTRY *)gv_FindEntry(0, (unsigned char *)rec, (unsigned)e, 0, w[0xc]);
             n++;
-            p += 4;
+            row++;
         } while (e);
     }
-    if (n <= w[0x4d])
+    if (w[0x4d] >= n)
         w[0x4d] = 0;
-    *(int *)(U_I((unsigned)&d2_Objs) + 0x2c + w[0x4d] * 0x2ec) = 1;
-    *(int *)(U_I((unsigned)&d2_Objs) + 0x28 + w[w[0x4d] * 4 + 0xd] * 0x2ec) = 1;
+    d2_Objs[w[0x4d]].highlighted = 1;
+    d2_Objs[((GVROW *)(w + 0xd))[w[0x4d]].btn].checked = 1;
     if (n < 0x10) {
-        p = w + n * 4 + 0xf;
-        for (i = 0; i < 0x10 - n; i++) {
-            p[-2] = -1;
-            p[-1] = 0;
-            p[0] = 0xff;
-            *(unsigned char *)(p + 1) = 0xff;
-            p += 4;
+        row = (GVROW *)(w + 0xd);
+        for (i = n; i < 0x10; i++) {
+            row[i].entry = 0;
+            row[i].size = 0xff;
+            row[i].index = 0xff;
+            row[i].btn = -1;
         }
     }
-    U_I(((unsigned)&ai_Unkf8f13c + 0x22c) + w[2] * 0x3c4) = saved;
-    U_I(((unsigned)&ai_Unkf8f13c + 0x248) + w[2] * 0x3c4) = 0x35;
+    d2_Wins[w[2]].scrollY = saved;
+    d2_Wins[w[2]].visible = 0x35;
     d2_ScrollWindow(w[2]);
 }
 
@@ -7449,7 +7453,7 @@ void ai_Unk583240(int *out, char *rec, char *title, int flag, void (*cb)())
     sel = 0;
     entry = 0;
     ai_GraveSizeButtons(rec, w);
-    ai_Unk5828c0(rec, w, -1);
+    ai_GraveList(rec, w, -1);
     ai_Unk582b40(rec, w, -1, flag);
     U_I((unsigned)&d2_ClickedId) = -1;
     /* ROUGH: the click dispatch (the four buttons, the 16 entries and the detail) and the redraw flags are not
@@ -8062,7 +8066,7 @@ int ai_Unk584900(char *rec, char *ev)
     int h;
 
     r = 0;
-    if (he_Unk573200(rec, *(int *)(ev + 4), *(unsigned char *)(ev + 8)) != 0) {
+    if (he_HasGraveWork(rec, *(int *)(ev + 4), *(unsigned char *)(ev + 8)) != 0) {
         sv_MessageBoxGreen(U_I((unsigned)&full_data_144a638), U_I((unsigned)&full_data_144a63c), 0);
         return 0;
     }

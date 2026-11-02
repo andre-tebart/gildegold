@@ -4005,7 +4005,7 @@ exe	0x00578370	ai_TutorialStop	unk_575860	byte	draft
 exe	0x00578440	ai_TutorialFreeRuns	unk_575860	byte	draft		
 exe	0x005784a0	ai_TutorialInitMainIntro	unk_575860	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	unk_575860	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	byte	readable		
+exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	shape	readable		byte+readable -> shape+readable at e120fa8: he.h gains the prototype of he_HasGraveWork (0x573200, its definition fixed to the original's three arguments); the prototype replaces an unprototyped local declaration in unk_575860. ai_TutorialInitChapter2 calls nothing of it: its match flips eax/ecx (two regs hunks) on any added declaration before it (also seen with four unrelated const tables), a VC6 declaration-set tie-break, no evidence of the original's source [waits for: unk_575860's head settled (d2.h / sv.h included, the local prototypes gone), then re-search the tie-break]
 exe	0x00579570	ai_TutorialInitChapter3	unk_575860	draft	readable	deep	
 exe	0x0057aa80	ai_TutorialInitChapter4	unk_575860	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	unk_575860	byte	readable		
