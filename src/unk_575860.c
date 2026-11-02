@@ -5322,20 +5322,6 @@ int ai_ShotTableStore(SHOTREC *src)
     return 1;
 }
 
-char * gv_FindEffect(int id); int gv_RequestEffectLoad(char *o); int cm_GetSlotState(); void gv_SetEffectCallback();
-struct D2FADE *d2_StartFade(int x, int y, int w, int h, char *name, int dur, unsigned int flags); /* 0x4767d0, d2.h */
-void d3_SetViewport(float w, float h, float x, float y, float zn, float zf, float scale, int a, int b); void sv_SetPanelEnabled(); void d3sky_Init(struct D3SKY *s, char build);
-void d3t_GetObjectBounds(); 
-void ai_CannonBuildPanel(); void ai_CannonPanel(); char d3if_ShowTree(struct D3OBJECT *obj, char show);
-struct D3OBJECT;
-char d3if_Delete(struct D3OBJECT *obj);                 /* 0x447190, d3_interface.h */
-char d3if_Show(struct D3OBJECT *obj, char show);        /* 0x4471b0, d3_interface.h */
-void he_ShowObjectInfos(); void ai_CannonAxes(); void ai_CannonAim(char *sc, float dt); void ai_CannonCamera();
-void ai_CannonShotResults(); void ai_CannonSwitchAnim(char *rec, float *sc, char *run, int sel, int mask); int ai_CannonFireCheck(); void ai_CannonExplosion();
-void sv_SetStatusText(char *s); void d2_RemoveObj(); void sv_RedrawScreen();
-void d3if_Prerender(char map); 
-
-char ai_ShotCallbackArg[0x40] = { 0 };  /* 0x6fa020, the argument gv_SetEffectCallback stores with the shot callback ai_ShotTableStore (ai_CannonScene); never read by the code, its type is unknown; it runs to the tutorial state record at 0x6fa060 */
 #pragma pack(push, 1)
 typedef struct CANNONREC {   /* the tutorial's cannon record (ai_CannonScene's argument), read at its byte offsets */
     char pad0;
@@ -5349,12 +5335,22 @@ typedef struct CANNONREC {   /* the tutorial's cannon record (ai_CannonScene's a
 typedef struct CANNONSCENE { /* 0xe4 bytes, the scene struct of ai_CannonScene (the other cannon functions still address it by byte offset) */
     D3VECTOR pos;            /* +0x00, d3_PointToWorld of the cannon object; pos.y gets the height of its bounds * 0.8 */
     float pad0c;
-    D3VECTOR rot;            /* +0x10, the cannon's angles (GVCANNON.camTarget) */
+    D3VECTOR rot;            /* +0x10, rot.x the pitch, rot.y the yaw (the angles are GVCANNON.camTarget at the start) */
     float pad1c;
     float zoom;              /* +0x20, cleared here, moved by ai_CannonAim */
-    char pad24[0x50];
+    char pad24[0x30];
+    float yawSpeed;          /* +0x54, the horizontal turn speed ai_CannonAim steers (-1 .. 1) */
+    float pitchSpeed;        /* +0x58, the vertical one */
+    float yawDelta;          /* +0x5c, the yaw step of this frame (speed * dt * 1.5) */
+    float pitchDelta;        /* +0x60, the pitch step (speed * dt * 0.8) */
+    char pad64[0x10];
     int win74;               /* +0x74, closed at the end */
-    char pad78[0x28];
+    char pad78[4];
+    int fired;               /* +0x7c, set while the shot runs: ai_CannonAim then does nothing */
+    int dragX;               /* +0x80, the mouse position at the last drag step */
+    int dragY;               /* +0x84 */
+    int dragState;           /* +0x88, 0 = no drag, 1 = dragging */
+    char pad8c[0x14];
     int selected;            /* +0xa0, the selected object */
     int win_a4;              /* +0xa4, closed at the end */
     char pada8[0xc];
@@ -5371,6 +5367,20 @@ typedef struct CANNONSCENE { /* 0xe4 bytes, the scene struct of ai_CannonScene (
     float padf0;
     D3VECTOR bmin;           /* +0xf4 */
 } CANNONSCENE;
+char * gv_FindEffect(int id); int gv_RequestEffectLoad(char *o); int cm_GetSlotState(); void gv_SetEffectCallback();
+struct D2FADE *d2_StartFade(int x, int y, int w, int h, char *name, int dur, unsigned int flags); /* 0x4767d0, d2.h */
+void d3_SetViewport(float w, float h, float x, float y, float zn, float zf, float scale, int a, int b); void sv_SetPanelEnabled(); void d3sky_Init(struct D3SKY *s, char build);
+void d3t_GetObjectBounds(); 
+void ai_CannonBuildPanel(); void ai_CannonPanel(); char d3if_ShowTree(struct D3OBJECT *obj, char show);
+struct D3OBJECT;
+char d3if_Delete(struct D3OBJECT *obj);                 /* 0x447190, d3_interface.h */
+char d3if_Show(struct D3OBJECT *obj, char show);        /* 0x4471b0, d3_interface.h */
+void he_ShowObjectInfos(); void ai_CannonAxes(); void ai_CannonAim(CANNONSCENE *sc, float dt); void ai_CannonCamera();
+void ai_CannonShotResults(); void ai_CannonSwitchAnim(char *rec, float *sc, char *run, int sel, int mask); int ai_CannonFireCheck(); void ai_CannonExplosion();
+void sv_SetStatusText(char *s); void d2_RemoveObj(); void sv_RedrawScreen();
+void d3if_Prerender(char map); 
+
+char ai_ShotCallbackArg[0x40] = { 0 };  /* 0x6fa020, the argument gv_SetEffectCallback stores with the shot callback ai_ShotTableStore (ai_CannonScene); never read by the code, its type is unknown; it runs to the tutorial state record at 0x6fa060 */
 
 /* 0x57e270, the tutorial's cannon scene (the record rec = the cannon): the run record gv_FindEffect (rec->id), else
    loaded by gv_RequestEffectLoad (rec) and waited out (slot state, pump 0x20007), or returns; the clip rectangle,
@@ -5611,158 +5621,132 @@ void ai_CannonScene(char *rec)
 
 double _CIfmod();
 
-/* 0x57ec40, the cannon aiming update (1169 B): sc = the scene struct, dt = the frame time. Returns at once with
-   sc + 0x7c set; the zoom sc + 0x20 moves by -dt * 1.6 (or +dt * 0.8 with the byte 0x14681d8) and is clamped to
-   0 .. 1; the yaw sc + 0x14 and the pitch sc + 0x10 steer with the mouse: not dragging (0x1467390 = 0) -> the
-   keys (0x1468288 / 0x1468290 the yaw, 0x146828b / 0x146828d the pitch, the screen 0xfb9070 / 0xfb9072 as the
-   edges) drive the speeds sc + 0x54 / 0x58 (toward 0, or +/-1 at speed 0.25 / 0.8) into the deltas sc + 0x5c
-   (* 1.5) / sc + 0x60 (* 0.8); dragging (0x1467390): inside the middle of the screen (0x50 .. 0xfb9070 - 0x50)
-   the drag state sc + 0x88: 0 -> the start sc + 0x80 / sc + 0x84, the speeds zeroed; 1 -> the pitch -= (the
-   old mouse y - sc + 0x84) * 0.008333334, the yaw -= (the mouse x - sc + 0x80) * 0.011111111; outside, or with
-   the button released (the state 1 -> 0), the speeds fall toward 0. The pitch is clamped to -0.2617994 ..
-   0.7853982 (the speed sc + 0x58 zeroed at the stop) and the yaw set from 0x5de73a (float args lost by Ghidra;
-   the CRT atan-like helper) */
-void ai_CannonAim(char *sc, float dt)
+#include <math.h>
+#define FMIN(a, b) ((a) > (b) ? (b) : (a))
+#define FMAX(a, b) ((a) > (b) ? (a) : (b))
+#define AIM_PITCH_MIN (-0.2617994f)  /* -15 degrees */
+#define AIM_PITCH_MAX 0.7853982f     /* 45 degrees */
+/* 0x57ec40, the cannon aiming update (1169 B): sc = the scene, dt = the frame time. Does nothing while the shot
+   runs (sc->fired). The zoom moves by +dt * 0.8 (with the key kb_Down[0x18]) or -dt * 1.6 and is clamped to 0 .. 1.
+   The mouse pitches and yaws the cannon: with the left button held (dm_L.lhold) inside the middle of the screen
+   (0x50 from the top and bottom) the first step only remembers the mouse (dragState 0 -> 1, speeds cleared) and
+   the next ones turn the pitch by 0.008333334 and the yaw by 0.011111111 per mouse pixel; outside that zone the
+   drag ends. Without a drag (or after the button is let go) the keys kb_Down[0xc8 / 0xd0 / 0xcb / 0xcd] or the
+   mouse at the screen edges (5 pixels) give the directions a (vertical) and b (horizontal) in -1 .. 1; each
+   speed (pitchSpeed, yawSpeed) falls toward 0 without a direction and otherwise grows by dt * 0.8 (or * 0.25
+   when it runs against the direction) up to +-1, the frame deltas are speed * dt * 0.8 (pitch) and * 1.5 (yaw).
+   The pitch is kept within -15 .. 45 degrees (the pitch speed is cleared at a stop), the yaw within 0 .. 2 pi
+   @deep Rewritten from the original with the typed CANNONSCENE (pitch/yaw, speeds, deltas, drag state):
+   same statement structure as the original (drag zone check, init/step/release blocks, key directions a/b
+   with the <=5 / >=H-5 edges, speed decel/accel with the 0.25/0.8 factors and the clamps, delta only
+   computed on the decel/accel paths, pitch clamp, fmod of the yaw). The 12 differing branch targets are
+   the same branches landing a few bytes apart (e.g. jne +0x106 ours +0x16e vs +0x175, jle +0x25a ours
+   +0x294 vs +0x299); the one real layout difference is the shared 'state = ebx(0)' store that the original
+   reaches from both the y<0x50 and y>H-0x50 jumps (asmdiff 0x57ecf5). Remaining hunks are registers and
+   FPU scheduling: the original keeps 0 in ebx/ebp/edi so every zero compare is 'cmp edi, ebx' / 'cmp byte
+   [..], bl' where ours has 'test ebp, ebp' (asmdiff 0x57ee22, 0x57edb5); in the accel branches the
+   original loads dt before the speed compare ('fld [esp+0x18]' at 0x57ee9b) and stores then reloads the
+   speed before the clamp ('fstp [esi+0x54] / fld [esi+0x54] / fcomp' at 0x57eeb9..0x57eebf) where ours
+   keeps the value in the FPU ('fcom / fst'); the 'test ah,5 / jp' vs 'and eax,0x100 / jne' choices at
+   0x57eea3 and 0x57eec7 are the same comparisons with operands in the other order. */
+void ai_CannonAim(CANNONSCENE *sc, float dt)
 {
-    float f;
-    int a;
-    int b;
-    int m;
+    int a = 0;
+    int b = 0;
+    int dx;
+    int dy;
     short y;
 
-    if (*(int *)(sc + 0x7c))
+    if (sc->fired)
         return;
-    if (*(char *)((unsigned)&kb_Down + 0x18) == 0)
-        f = *(float *)(sc + 0x20) - dt * 1.6f;
+    if (kb_Down[0x18] != 0)
+        sc->zoom = dt * 0.8f + sc->zoom;
     else
-        f = dt * 0.8f + *(float *)(sc + 0x20);
-    *(float *)(sc + 0x20) = f;
-    if (1.0f < *(float *)(sc + 0x20) || 0.0f < *(float *)(sc + 0x20)) {
-        if (*(float *)(sc + 0x20) <= 1.0f)
-            f = *(float *)(sc + 0x20);
-        else
-            f = 1.0f;
-    } else {
-        f = 0.0f;
+        sc->zoom = sc->zoom - dt * 1.6f;
+    sc->zoom = FMAX(FMIN(sc->zoom, 1.0f), 0.0f);
+    y = dm_L.y;
+    if (dm_L.lhold != 0) {
+        if (y < 0x50 || y > d2_ScreenH - 0x50) {
+            sc->dragState = 0;
+            goto clamp;
+        }
+        if (sc->dragState == 0) {
+            sc->dragX = dm_L.x;
+            sc->dragY = dm_L.y;
+            sc->dragState = 1;
+            sc->pitchDelta = 0;
+            sc->yawDelta = 0;
+            sc->pitchSpeed = 0;
+            sc->yawSpeed = 0;
+            goto clamp;
+        }
+    } else if (sc->dragState == 1) {
+        sc->dragState = 0;
+        goto clamp;
     }
-    *(float *)(sc + 0x20) = f;
-    y = *(short *)((unsigned)&dm_L + 0x2);
-    if (*(int *)((unsigned)&dm_L + 0x10) == 0) {
-        if (*(int *)(sc + 0x88) == 1) {
-            *(int *)(sc + 0x88) = 0;
-            goto clamp;
-        }
-    } else {
-        if (y < 0x50 || (unsigned)&d2_ScreenH - 0x50 < y) {
-            *(int *)(sc + 0x88) = 0;
-            goto clamp;
-        }
-        if (*(int *)(sc + 0x88) == 0) {
-            *(int *)(sc + 0x80) = *(short *)(unsigned)&dm_L;
-            *(int *)(sc + 0x84) = y;
-            *(int *)(sc + 0x88) = 1;
-            *(float *)(sc + 0x60) = 0;
-            *(float *)(sc + 0x5c) = 0;
-            *(float *)(sc + 0x58) = 0;
-            *(float *)(sc + 0x54) = 0;
-            goto clamp;
-        }
-        if (*(int *)(sc + 0x88) != 1) {
-            a = 0;
-            b = 0;
-            goto steer;
-        }
-        a = *(short *)(unsigned)&dm_L;
-        b = *(int *)(sc + 0x80);
-        *(int *)(sc + 0x80) = a;
-        m = *(int *)(sc + 0x84);
-        y = *(short *)((unsigned)&dm_L + 0x2);
-        *(int *)(sc + 0x84) = y;
-        *(float *)(sc + 0x10) = *(float *)(sc + 0x10) - (float)(y - m) * 0.008333334f;
-        *(float *)(sc + 0x14) = *(float *)(sc + 0x14) - (float)(a - b) * 0.011111111f;
-        goto done;
+    if (dm_L.lhold != 0 && sc->dragState == 1) {
+        dx = dm_L.x - sc->dragX;
+        sc->dragX = dm_L.x;
+        dy = y - sc->dragY;
+        sc->dragY = dm_L.y;
+        sc->rot.x = sc->rot.x - dy * 0.008333334f;
+        sc->rot.y = sc->rot.y - dx * 0.011111111f;
+        goto clamp;
     }
-steer:
-    a = 0;
-    b = 0;
-    if (*(char *)((unsigned)&kb_Down + 0xc8) != 0 || y < 6)
+    if (kb_Down[0xc8] != 0 || y <= 5)
         a = 1;
-    if (*(char *)((unsigned)&kb_Down + 0xd0) != 0 || (int)y >= (unsigned)&d2_ScreenH - 5)
+    if (kb_Down[0xd0] != 0 || y >= d2_ScreenH - 5)
         a--;
-    if (*(char *)((unsigned)&kb_Down + 0xcb) != 0 || *(short *)(unsigned)&dm_L < 6)
+    if (kb_Down[0xcb] != 0 || dm_L.x <= 5)
         b = 1;
-    if (*(char *)((unsigned)&kb_Down + 0xcd) != 0 || (int)*(short *)(unsigned)&dm_L >= (unsigned)&d2_ScreenW - 10)
+    if (kb_Down[0xcd] != 0 || dm_L.x >= d2_ScreenW - 10)
         b--;
-    if (*(float *)(sc + 0x54) == 0.0f) {
-        if (b != 0)
-            goto pitch_speed;
-    } else if (b == 0) {
-        if (*(float *)(sc + 0x54) >= 0.0f) {
-            *(float *)(sc + 0x54) -= dt * 0.8f;
-            if (*(float *)(sc + 0x54) <= 0.0f)
-                *(float *)(sc + 0x54) = 0.0f;
+    if (sc->yawSpeed != 0.0f && b == 0) {
+        if (sc->yawSpeed < 0.0f) {
+            sc->yawSpeed = dt * 0.8f + sc->yawSpeed;
+            sc->yawSpeed = sc->yawSpeed < 0.0f ? sc->yawSpeed : 0.0f;
         } else {
-            *(float *)(sc + 0x54) += dt * 0.8f;
-            if (*(float *)(sc + 0x54) >= 0.0f)
-                *(float *)(sc + 0x54) = 0.0f;
+            sc->yawSpeed = sc->yawSpeed - dt * 0.8f;
+            sc->yawSpeed = sc->yawSpeed > 0.0f ? sc->yawSpeed : 0.0f;
         }
-    } else {
-pitch_speed:
-        if (b < 1) {
-            f = *(float *)(sc + 0x54) <= 0.0f ? 0.25f : 0.8f;
-            *(float *)(sc + 0x54) -= dt * f;
-            if (*(float *)(sc + 0x54) <= -1.0f)
-                *(float *)(sc + 0x54) = -1.0f;
+        sc->yawDelta = dt * sc->yawSpeed * 1.5f;
+    } else if (b != 0) {
+        if (b > 0) {
+            sc->yawSpeed = dt * (sc->yawSpeed >= 0.0f ? 0.25f : 0.8f) + sc->yawSpeed;
+            sc->yawSpeed = FMIN(sc->yawSpeed, 1.0f);
         } else {
-            f = *(float *)(sc + 0x54) >= 0.0f ? 0.25f : 0.8f;
-            *(float *)(sc + 0x54) += dt * f;
-            if (*(float *)(sc + 0x54) >= 1.0f)
-                *(float *)(sc + 0x54) = 1.0f;
+            sc->yawSpeed = sc->yawSpeed - dt * (sc->yawSpeed <= 0.0f ? 0.25f : 0.8f);
+            sc->yawSpeed = FMAX(sc->yawSpeed, -1.0f);
         }
+        sc->yawDelta = dt * sc->yawSpeed * 1.5f;
     }
-    *(float *)(sc + 0x5c) = dt * *(float *)(sc + 0x54) * 1.5f;
-    if (*(float *)(sc + 0x58) == 0.0f) {
-        if (a != 0)
-            goto yaw_speed;
-    } else if (a == 0) {
-        if (*(float *)(sc + 0x58) >= 0.0f) {
-            *(float *)(sc + 0x58) -= dt * 0.8f;
-            if (*(float *)(sc + 0x58) <= 0.0f)
-                *(float *)(sc + 0x58) = 0.0f;
+    if (sc->pitchSpeed != 0.0f && a == 0) {
+        if (sc->pitchSpeed < 0.0f) {
+            sc->pitchSpeed = dt * 0.8f + sc->pitchSpeed;
+            sc->pitchSpeed = sc->pitchSpeed < 0.0f ? sc->pitchSpeed : 0.0f;
         } else {
-            *(float *)(sc + 0x58) += dt * 0.8f;
-            if (*(float *)(sc + 0x58) >= 0.0f)
-                *(float *)(sc + 0x58) = 0.0f;
+            sc->pitchSpeed = sc->pitchSpeed - dt * 0.8f;
+            sc->pitchSpeed = sc->pitchSpeed > 0.0f ? sc->pitchSpeed : 0.0f;
         }
-    } else {
-yaw_speed:
-        if (a < 1) {
-            f = *(float *)(sc + 0x58) <= 0.0f ? 0.25f : 0.8f;
-            *(float *)(sc + 0x58) -= dt * f;
-            if (*(float *)(sc + 0x58) <= -1.0f)
-                *(float *)(sc + 0x58) = -1.0f;
+        sc->pitchDelta = dt * sc->pitchSpeed * 0.8f;
+    } else if (a != 0) {
+        if (a > 0) {
+            sc->pitchSpeed = dt * (sc->pitchSpeed >= 0.0f ? 0.25f : 0.8f) + sc->pitchSpeed;
+            sc->pitchSpeed = FMIN(sc->pitchSpeed, 1.0f);
         } else {
-            f = *(float *)(sc + 0x58) >= 0.0f ? 0.25f : 0.8f;
-            *(float *)(sc + 0x58) += dt * f;
-            if (*(float *)(sc + 0x58) >= 1.0f)
-                *(float *)(sc + 0x58) = 1.0f;
+            sc->pitchSpeed = sc->pitchSpeed - dt * (sc->pitchSpeed <= 0.0f ? 0.25f : 0.8f);
+            sc->pitchSpeed = FMAX(sc->pitchSpeed, -1.0f);
         }
+        sc->pitchDelta = dt * sc->pitchSpeed * 0.8f;
     }
-    *(float *)(sc + 0x10) += *(float *)(sc + 0x60);
-    *(float *)(sc + 0x14) += *(float *)(sc + 0x5c);
-done:
+    sc->rot.x = sc->pitchDelta + sc->rot.x;
+    sc->rot.y = sc->yawDelta + sc->rot.y;
 clamp:
-    if (*(float *)(sc + 0x10) < -0.2617994f || 0.7853982f < *(float *)(sc + 0x10)) {
-        if (*(float *)(sc + 0x10) < -0.2617994f)
-            f = -0.2617994f;
-        else
-            f = *(float *)(sc + 0x10);
-        if (f >= 0.7853982f)
-            f = 0.7853982f;
-        *(float *)(sc + 0x10) = f;
-        *(float *)(sc + 0x58) = 0;
+    if (sc->rot.x < AIM_PITCH_MIN || sc->rot.x > AIM_PITCH_MAX) {
+        sc->rot.x = FMIN(FMAX(sc->rot.x, AIM_PITCH_MIN), AIM_PITCH_MAX);
+        sc->pitchSpeed = 0;
     }
-    *(float *)(sc + 0x14) = (float)_CIfmod();
+    sc->rot.y = (float)fmod(sc->rot.y, 6.2831855f);
 }
 
 void d3_MatTranspose(); float d3_VecAngle2(); int ai_GetDefaultEffect();
