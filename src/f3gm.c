@@ -57,6 +57,9 @@ extern char gm_StockBlocks[];                 /* 0x7d6a60, the five 0x2a90-byte 
 #define ai_Unk7d6a94 (*(char (*)[12])((char *)init_StockBlocks + 0x24))     /* 0x7d6a94 */
 #define ai_Unk7d6aa0 (*(char (*)[8])((char *)init_StockBlocks + 0x30))      /* 0x7d6aa0 */
 #define ai_Unk7d6aa8 (*(char (*)[54408])((char *)init_StockBlocks + 0x38))  /* 0x7d6aa8 */
+#define GM_BLOCK(p) ((GMBLOCK *)gm_StockBlocks + (p))  /* the stock block of the player p */
+#define GM_TABLE_A(p) ((GMPOINT *)(ai_PlayerSlots[p] + 0x64))  /* the player slot's first yearly table */
+#define GM_TABLE_B(p) ((GMPOINT *)(ai_PlayerSlots[p] + 0xb4))  /* its second yearly table */
 
 #include "am_types.h"
 extern G7GRP gm_BuildingItemGroups[];           /* 0x61a348 */
@@ -3007,51 +3010,47 @@ extern int ai_Unk8753e0[20488];
 int gm_FindMarketObject(int id);                     /* 0x500ec0 */
 int gm_FindPlayerBuilding(int p);                   /* 0x501000 */
 
-/* 0x4ffa10, the price of the goods record n of the player p (0x80 bytes each from 0x7d6a70 + p * 0x2a90): the base price 0x5087f0 (id, 100) when the player has no market object (0x500ec0, or for another player the object of 0x501000 with the group (2, 0, 0x1db, 6)); else the market's stock (the int at +0xe of the goods object of the market object (+0x14 list, id)) against the record's wanted amount (+0x20) and mean (+0x24) gives a factor limited to 0.25 .. 5.0, the price moves 0.4 of the way from the stored price (+0x38) to base * factor and is at least 512.0 (or the base when that is above 512). ROUGH */
+/* 0x4ffa10, the price of the goods record n of the player p: the base price (gm_ItemPrice, 100) when no market object holds the good (gm_FindMarketObject, for another player the kind 0x1db object of its building, gm_FindPlayerBuilding); else a factor mean / demand, times demand / the market's count of the good (at least 1) when that count is above the demand and the good is not of the kind 0x17, clamped to 0.25 .. 5.0, and the price moves 0.4 of the way from the stored price to the base price times the factor; a record without a stored price (<= 0) gets the base price, at least 512
+   @deep read the whole function against 0x4ffa10..0x4ffbe6 and reconciled every statement (the market
+   lookup, the count, the mean/demand ratio kept in st, the ternary factor with the float-cast division by
+   max(count,1), the 0.25 / 5.0 clamps, the (float)f * base - cur step, the 512 floor). Tried: if-clamps,
+   nested min(max()) in one expression, the clamp on f itself (all worse), the 512 test as >= (worse), mk
+   == 0 nested or as an early return (same). Two hunks remain, both optimizer layout with equal meaning:
+   (1) ours threads the 0.25 path past the 5.0 compare ('fld 0.25; fstp qword [esp+0x14]; jmp', 0x4ffb3b)
+   where the original runs it through 'fcom 5.0' (0x4ffb3b); (2) ours cross-jumps the two identical 'push
+   0x64; push esi; call gm_ItemPrice; add esp,8; epilogue' tails into one, the original keeps them apart
+   (0x4ffbb8..0x4ffbc8, its third ret): together the 8 missing instructions */
 float gm_StockPrice(int p, int n)
 {
-    char *rec;
-    int off;
     unsigned id;
-    char *pr;
+    char *good;
     int mk;
-    int m2;
-    float stock, cur;
-    double f;
-    float r;
+    int b;
+    ORDOBJ *o;
+    float count, cur, ratio, r;
+    double f, t;
 
-    off = p * 0x2a90 + n * 0x80;
-    id = *(unsigned short *)(init_StockBlocks + n * 0x80 + p * 0x2a90);
-    pr = ai_Goods + id * 0x41;
+    id = GM_BLOCK(p)->goods[n].item;
+    good = ai_Goods + id * 0x41;
     mk = gm_FindMarketObject(id);
-    if (mk == 0 && p != ai_OwnPlayer && (m2 = gm_FindPlayerBuilding(p)) != 0)
-        mk = (int)gm_Query(*(int *)(m2 + 0x5d), 2, 0, 0x1db, 6);
-    stock = 0.0f;
-    if (mk == 0) {
-        r = gm_ItemPrice(id, 100);
-    } else {
-        m2 = (int)gm_Query(*(int *)(mk + 0x14), 1, 0, id);
-        if (m2 != 0)
-            stock = (float)*(int *)(m2 + 0xe);
-        cur = *(float *)(ai_Unk7d6aa8 + off);
-        if (stock <= *(float *)(ai_Unk7d6a90 + off) || *pr == 0x17)
-            f = 1.0;
-        else if (1.0 <= stock)
-            f = (double)*(float *)(ai_Unk7d6a90 + off) / (double)stock;
-        else
-            f = (double)*(float *)(ai_Unk7d6a90 + off) / 1.0;
-        f = f * ((double)*(float *)(ai_Unk7d6a94 + off) / (double)*(float *)(ai_Unk7d6a90 + off));
-        if (f <= 0.25)
-            f = 0.25;
-        if (5.0 <= f)
-            f = 5.0;
-        r = (float)(((float)f * gm_ItemPrice(id, 100) - cur) * 0.4 + *(float *)(ai_Unk7d6aa8 + off));
-        if (*(float *)(ai_Unk7d6aa8 + off) <= 0.0f) {
-            r = gm_ItemPrice(id, 100);
-            if (512.0 <= r)
-                return gm_ItemPrice(id, 100);
+    if (mk == 0 && p != ai_OwnPlayer && (b = gm_FindPlayerBuilding(p)) != 0)
+        mk = (int)gm_Query((void *)((ORDBLD *)b)->objList, 2, 0, 0x1db, 6);
+    count = 0.0f;
+    if (mk == 0)
+        return gm_ItemPrice(id, 100);
+    o = (ORDOBJ *)gm_Query((void *)((ORDOBJ *)mk)->list, 1, 0, id);
+    if (o != 0)
+        count = (float)o->count;
+    ratio = GM_BLOCK(p)->goods[n].mean / GM_BLOCK(p)->goods[n].demand;
+    cur = GM_BLOCK(p)->goods[n].price;
+    t = ratio * (count > GM_BLOCK(p)->goods[n].demand && *good != 0x17 ? (float)(GM_BLOCK(p)->goods[n].demand / (count < 1.0 ? 1.0 : count)) : 1.0f);
+    t = t > 0.25 ? t : 0.25;
+    f = t < 5.0 ? t : 5.0;
+    r = ((float)f * gm_ItemPrice(id, 100) - cur) * 0.4f + GM_BLOCK(p)->goods[n].price;
+    if (GM_BLOCK(p)->goods[n].price <= 0.0f) {
+        if (gm_ItemPrice(id, 100) < 512.0f)
             return 512.0f;
-        }
+        return gm_ItemPrice(id, 100);
     }
     return r;
 }
@@ -3359,9 +3358,6 @@ void gm_SyncMarket(unsigned p);
 int gm_GoodsDemand(int p, int i);
 int gm_GoodsStock(int p, int i);
 
-#define GM_BLOCK(p) ((GMBLOCK *)gm_StockBlocks + (p))  /* the stock block of the player p */
-#define GM_TABLE_A(p) ((GMPOINT *)(ai_PlayerSlots[p] + 0x64))  /* the player slot's first yearly table */
-#define GM_TABLE_B(p) ((GMPOINT *)(ai_PlayerSlots[p] + 0xb4))  /* its second yearly table */
 /* 0x4ff550, the daily price update of the player p at the clock t: the date's year and month are interpolated in the player slot's two yearly tables (GMPOINT, at +0x64 and +0xb4) into the block's two indices, each scaled by its factor / 1000; then for the 0x55 goods records the demand moves halfway to gm_GoodsDemand (not for the kinds 0x17 / 0x25), the stock is gm_GoodsStock for the own player and the base stock for the others, the price is gm_StockPrice, a record with the byte +0x40 set takes its stock as demand, and the four counters +0x10 .. +0x1c are cleared; without a network game the market syncs (gm_SyncMarket) and shakes (gm_RandomMarketShake)
    @deep read the whole function against the original 0x4ff550..0x4ff8b2 and reconciled every statement:
    date / yearly table interpolation of both GMPOINT tables, the block indices and factors (GMBLOCK), the
