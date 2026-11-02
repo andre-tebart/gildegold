@@ -7320,23 +7320,18 @@ int ai_Unk49d280(G5CH *p, AIARG *s1, AIARG *s2)
     }
     return 0;
 }
-/* 0x49d2d0, decide callback 0x2a: as 0x28 (house first), then what 0x4aa800 finds; flag 0x200 of +0x1e8
-   makes it rare */
+/* 0x49d2d0, decide callback 0x2a "Anschwaerzen": as 0x28 (house first), then the pair of characters
+   ai_DecideCharPair finds; flag 0x200 of flags1e8 makes it rare (1 in 8) */
 
-int ai_Unk49d2d0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
+int ai_DecideDenounce(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 {
-    unsigned char *h;
     AIARG s1;
     AIARG s2;
     int r;
 
-    if (f != 0)
-        return 0;
-    if ((*(int *)((char *)p + 0x1e8) & 0x200) && util_RandomU(8) != 0)
-        return 0;
-    h = *(unsigned char **)((char *)p + 0x170);
-    if (h == 0) {
-        if (((unsigned char *)p)[2] != 3) {
+    if (f == 0 && (!(p->flags1e8 & 0x200) || util_RandomU(8) == 0)) {
+        if (p->bld2 == 0 && p->kind != 3) {
+            /* no house: get one first */
             s1.arg = 1;
             s1.kind = 5;
             s1.ref = 4;
@@ -7344,38 +7339,39 @@ int ai_Unk49d2d0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             s2.ref = 0;
             s2.arg = 0;
             r = ai_ChooseSubAction(0x28, p->id, 1, &s1, &s2);
-            goto done;
+        } else {
+            if (p->kind == 3) {
+                /* kind 3 only with flag 4 */
+                if (!(p->flags1e8 & 4))
+                    return 0;
+            } else if (gm_Query(p->bld2->objList, 2, 6, 0, 0x15) == 0) {
+                /* a house without the good 0x15: buy it for the house */
+                s1.kind = 2;
+                s1.ref = 0x15;
+                s1.arg = 1;
+                s1.fvalue = 0.44f;
+                s2.kind = 4;
+                s2.ref = p->bld2->id;
+                s2.arg = 1;
+                r = ai_ChooseSubAction(0x28, p->id, 1, &s1, &s2);
+                goto done;
+            }
+            memset(&s1, 0, sizeof(s1));
+            memset(&s2, 0, sizeof(s2));
+            if (ai_DecideCharPair(p, &s1, &s2) == 0)
+                return 0;
+            *o1 = s1;
+            *o2 = s2;
+            return 0x2a;
         }
-    } else if (((unsigned char *)p)[2] != 3) {
-        if (gm_Query(*(int *)(h + 0x5d), 2, 6, 0, 0x15) == 0) {
-            s1.kind = 2;
-            s1.ref = 0x15;
-            s1.arg = 1;
-            s1.fvalue = 0.44f;
-            s2.kind = 4;
-            s2.ref = *(int *)(h + 1);
-            s2.arg = 1;
-            r = ai_ChooseSubAction(0x28, p->id, 1, &s1, &s2);
-            goto done;
-        }
-        goto find;
-    }
-    if (!(((unsigned char *)p)[0x1e8] & 4))
-        return 0;
-find:
-    memset(&s1, 0, sizeof(s1));
-    memset(&s2, 0, sizeof(s2));
-    if (ai_DecideCharPair(p, &s1, &s2) == 0)
-        return 0;
-    *o1 = s1;
-    *o2 = s2;
-    return 0x2a;
 done:
-    if (r == 0)
-        return r;
-    *o1 = s1;
-    *o2 = s2;
-    return r;
+        if (r != 0) {
+            *o1 = s1;
+            *o2 = s2;
+            return r;
+        }
+    }
+    return 0;
 }
 /* 0x49d460, execute callback 0x2a: sets flag 0x200 of +0x1e8 */
 
@@ -9752,7 +9748,7 @@ int ai_RegisterBaseActions(int a)
     act.id = 0x2a;
     strcpy(act.name, "Anschwaerzen");
     act.eval = ai_EvalMoodWeights;
-    act.decide = ai_Unk49d2d0;
+    act.decide = ai_DecideDenounce;
     act.exec = ai_Unk49d460;
     act.flags = 0x39;
     if (!am_RegisterMethod(&act, a))

@@ -803,3 +803,4 @@
 2026-11-02T07:46:18 0x0049ce50 func ai_Unk49ce50 -> ai_DecideThreaten by:main why:decide callback of action 0x28 registered as "Drohen" (0x4a16f0)
 2026-11-02T07:47:12 0x004aa580 data ai_Unk4aa580 -> ai_PickPamphletTarget by:main why:picks the character (kind 7) for action 0x29 "Pamphlete": its only caller is that action's decide callback 0x49d0f0
 2026-11-02T07:47:12 0x0049d0f0 func ai_Unk49d0f0 -> ai_DecidePamphlets by:main why:picks the character (kind 7) for action 0x29 "Pamphlete": its only caller is that action's decide callback 0x49d0f0
+2026-11-02T07:48:15 0x0049d2d0 func ai_Unk49d2d0 -> ai_DecideDenounce by:main why:decide callback of action 0x2a registered as "Anschwaerzen" (0x4a16f0)

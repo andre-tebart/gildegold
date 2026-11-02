@@ -896,7 +896,7 @@ int ai_Unk49d030(G5CH *p, AIARG *s1, AIARG *s2);                                
 int ai_Unk49d050(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2); /* 0x49d050 */
 int ai_DecidePamphlets(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49d0f0 */
 int ai_Unk49d280(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49d280 */
-int ai_Unk49d2d0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49d2d0 */
+int ai_DecideDenounce(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49d2d0 */
 int ai_Unk49d460(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49d460 */
 int ai_Unk49d4b0(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2); /* 0x49d4b0 */
 int ai_Unk49d550(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49d550 */
