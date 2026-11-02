@@ -1755,7 +1755,7 @@ void gv_FreeGraveyard(int *g)
 }
 /* 0x4f01d0, the message 0x4c60b0 type 0 (graveyard id +4 of g, object id +1 of o, value v, byte b); -1 when g or o is 0 or b is -1 */
 
-int unk_Unk4f01d0(int *g, char *o, int v, int b)
+int gv_OrderBury(int *g, char *o, int v, int b)
 {
     char m[0x1d];
 

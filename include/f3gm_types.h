@@ -35,7 +35,8 @@ typedef struct GMMSG {
     unsigned char flags;                /* 0x36 */
     char pad37[0x21];
     int arg0;                           /* 0x58, AIMSG.arg[0]: the character's netId again */
-    char pad5c[0x9c];
+    int arg1;                           /* 0x5c, AIMSG.arg[1] */
+    char pad60[0x98];
 } GMMSG;
 
 /* the character statistics gm_CharacterStatistics (0x91b500, 0x68 bytes) as gm_CountCharacters (0x4fdfd0) fills

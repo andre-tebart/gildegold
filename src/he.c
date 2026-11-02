@@ -12646,7 +12646,7 @@ void he_Unk565db0(int ev)
             *(int *)(ev + 0x70) = 5;
             return;
         }
-        gm_Unk506890(p, h);
+        gm_InheritEstate(p, h);
         kind = *(char *)(p + 2);
         if ((kind == 6 || kind == 7 || kind == 5) && *(unsigned char *)(p + 0xd) > *(unsigned char *)(h + 0xd)) {
             cm_BeginFieldBlock(h, *(int *)(h + 4));
@@ -12657,7 +12657,7 @@ void he_Unk565db0(int ev)
         he_FreeEvent((int *)ev);
         return;
     case 5:
-        gm_Unk506890(p, U_I((unsigned)&ai_PlayerChar));
+        gm_InheritEstate(p, U_I((unsigned)&ai_PlayerChar));
         cm_SendKillCharacter(*(int *)(p + 4), gm_MayRemoveChar(p));
         he_FreeEvent((int *)ev);
         return;

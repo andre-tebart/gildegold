@@ -149,6 +149,7 @@ void *ai_ProdSetting(int param_1);  /* 0x5a8560 */
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, ai_Unk4d88c0 0x4d88c0 move it as a word / movzx) */
 #define gm_AssignBuildingI ((void (*)(unsigned char *, int, int))gm_AssignBuilding)  /* @original 0x502b60 called with int place / own: gm_TakeOverCharacter zero-extends the word load once for both (as f3init's byte-matched init caller does, see its prototype) */
 #define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
+#define GM_PLAYERCH (*(ORDCHAR **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar as the character record it points to */
 /* 0x4f9e30, the statistics screen: opens the form "misc\statistics_taxes", prints one line per round
    ("Runde %i:   %T$N": the game time - 0x10 + i and the round's value of the income history, 17 of them),
    then waits in the sv_RunFrame loop until a mouse event pops the request */
@@ -7542,7 +7543,7 @@ unsigned gm_TakeOverCharacter(int a, int b)
 }
 
 int gm_EquipmentValue(unsigned char *b, int unused);                     /* 0x509b10 */
-int gm_Unk509eb0();                     /* 0x509eb0 */
+int gm_CharSumAmounts(char *c);                     /* 0x509eb0 */
 void ai_Unk4c5010(int a, int b, int c);                     /* 0x4c5010 */
 void cm_SendFloatDelta(int id, int field, float delta);                     /* 0x4c4ac0 */
 void cm_SendMoveGoods(int a, int b, unsigned char c, int d);                     /* 0x4c47e0 */
@@ -7552,109 +7553,109 @@ float util_RandomSq(void);                  /* 0x42ec40 */
 int he_ShowNews(int pid, int fl, char *text, int unused, int ev, char *text2);                     /* 0x53dda0 */
 int gm_BuildingClass();                     /* 0x501d80 */
 void cm_SendOwnership(int a, int b, int c);                     /* 0x4c54a0 */
-int gm_Unk509eb0();                     /* 0x509eb0 */
+int gm_CharSumAmounts(char *c);                     /* 0x509eb0 */
 void cm_SendMoveGoods(int a, int b, unsigned char c, int d);                     /* 0x4c47e0 */
 int cm_AddFieldValues(unsigned char size, unsigned char n, unsigned short field, void *v);                     /* 0x4c3d00 */
 unsigned char * gm_BuildNext(void);                     /* 0x501030 */
 
-/* 0x506890, the reaction to an order of the character a for the character b (the target): a's order record (0x4f2540) is answered (0x4f01d0; for b of the same group 0x4f0900); every object of a (0x501190 (1, 4, id) / 0x501030
-   iteration) is told to b (message 0x4c54a0; for the player's own character also a message 0x1b and 0x31 to the other players with an interest), the objects are collected (up to 0x240) and the result is put into the
-   player's text (0x1c4a .. 0x1c4e; a list of at most 6 objects plus "and n more" 0xb6) and sent (0x53dda0) to the player(s) concerned. ROUGH */
-void gm_Unk506890(char *a, char *b)
+/* 0x506890, the inheritance of the character dead by the heir heir (he.c's succession: the successor, or the player's
+   character when there is none): dead is buried in the grave entry it holds (gv_OrderBury) and a heir that is not the
+   player takes the entry over when it is dead's own (gv_OrderSetGraveHolder); every building of dead (gm_BuildQuery
+   (1, 4, id)) goes to the heir (cm_SendOwnership; class 2 to the player), and when the player inherits a building
+   (class not 2, flags5a bit 0 clear) the message 0x1b (its value gm_EquipmentValue) and to every character living
+   in it a message 0x31 are sent; a heir other than the player gets dead's money (gm_CharSumAmounts,
+   cm_SendMoveGoods), dead's worth in its field 0x1a8 and, for a building taken over and a heir of kind 3 / 8 / 9,
+   the kind 4 (5 when dead was of kind 5). The news: a heir that is not a player (kind 6 / 7) leads to news 0x1c4d
+   to every other player when dead was a player (or kind 5) and the player inherits, else news 0x1c4e to the first
+   player who has dead among its relatives; a player heir gets 0x1c4a with the list of the buildings (0x1c4b, at
+   most 6 named, "and n more" 0xb6) and the money (0x1c4c). Names: the caller (he.c) and the news (a reasoned
+   guess for "inheritance") */
+void gm_InheritEstate(ORDCHAR *dead, ORDCHAR *heir)
 {
-    char *objs[0x240];
+    ORDBLD *blds[0x80];
     char t1[0x800];
     char t2[0x1000];
-    char m[0xf8];
-    char *o;
-    int *e;
-    char *s;
-    char *pl;
-    int n, flag, k, i, j, v;
+    GMMSG m;
+    GVENTRY *e;
+    ORDBLD *s;                  /* the graves building, then the buildings of dead */
+    ORDCHAR *c;
+    int n, taken, k, i, j, kind;      /* k: the building's class, then the money and the worth handed on */
 
     n = 0;
-    flag = 0;
-    if (gv_FindHeldEntry(a, (unsigned char **)&o, (int *)&e) != 0) {
-        unk_Unk4f01d0((int *)a, o, e[0], gv_EntryIndex(*(char **)(o + 0x65), e));
-        if (b != 0 && b != ai_PlayerCharC && e[1] == *(int *)(a + 4))
-            gv_OrderSetGraveHolder((int *)b, o, e[0], gv_EntryIndex(*(char **)(o + 0x65), e));
+    taken = 0;
+    if (gv_FindHeldEntry(dead, (unsigned char **)&s, (int *)&e) != 0) {
+        gv_OrderBury((int *)dead, (char *)s, e->size, gv_EntryIndex((char *)s->block65, (int *)e));
+        if (heir != 0 && heir != GM_PLAYERCH && e->id == dead->netId)
+            gv_OrderSetGraveHolder((int *)heir, (char *)s, e->size, gv_EntryIndex((char *)s->block65, (int *)e));
     }
-    s = (char *)gm_BuildQuery(1, 4, *(unsigned short *)a);
-    pl = ai_PlayerCharC;
+    s = (ORDBLD *)gm_BuildQuery(1, 4, dead->id);
     while (s != 0) {
-        k = gm_BuildingClass((unsigned char)s[0]);
+        k = gm_BuildingClass(s->type);
         if (k == 2)
-            cm_SendOwnership(*(int *)(s + 1), *(int *)(pl + 4), *(int *)(pl + 4));
+            cm_SendOwnership(s->id, GM_PLAYERCH->netId, GM_PLAYERCH->netId);
         else {
-            cm_SendOwnership(*(int *)(s + 1), *(int *)(b + 4), *(int *)(b + 4));
-            flag = 1;
+            cm_SendOwnership(s->id, heir->netId, heir->netId);
+            taken = 1;
         }
-        pl = ai_PlayerCharC;
-        if (b == pl && k != 2 && (s[0x5a] & 1) == 0) {
-            memset(m, 0, 0xf8);
-            m[4] = 0x1b;
-            *(int *)(m + 8) = *(int *)(pl + 4);
-            *(int *)(m + 0xc) = -1;
-            m[0x36] = 2;
-            *(int *)(m + 0x58) = *(int *)(s + 1);
-            *(int *)(m + 0x5c) = gm_EquipmentValue(s, (char)s[0x5c]);
-            cm_SendLongMessage(m);
-            for (i = 0; (char *)((unsigned)&ai_CharInts + i * 0x21c) < (char *)((unsigned)&gm_PlayerRecordBytes + 0x2); i++) {
-                char *c = ai_Chars[i];
-                if (*(char **)(c + 0x168 + 4) == s && *(int *)(c + 4) != *(int *)(a + 4)) {
-                    memset(m, 0, 0xf8);
-                    m[4] = 0x31;
-                    *(int *)(m + 8) = *(int *)(pl + 4);
-                    *(int *)(m + 0xc) = *(int *)(s + 1);
-                    *(int *)(m + 0x28) = *(int *)ai_Time;
-                    *(int *)(m + 0x2c) = *(int *)(ai_Time + 4);
-                    *(int *)(m + 0x30) = *(int *)(ai_Time + 8);
-                    *(short *)(m + 0x34) = *(short *)(ai_Time + 12);
-                    m[0x36] = 1;
-                    *(int *)(m + 0x58) = *(int *)(c + 4);
-                    cm_SendLongMessage(m);
+        if (heir == GM_PLAYERCH && k != 2 && (s->flags5a & 1) == 0) {
+            m.type = 0x1b;
+            m.to = GM_PLAYERCH->netId;
+            m.fromId = -1;
+            m.flags = 2;
+            m.arg0 = s->id;
+            m.arg1 = gm_EquipmentValue((unsigned char *)s, s->level);
+            cm_SendLongMessage((char *)&m);
+            for (i = 0; i < 0x300; i++) {
+                c = &ORD_CHARS[i];
+                if (c->bld == s && c->netId != dead->netId) {
+                    memset(&m, 0, sizeof(m));
+                    m.type = 0x31;
+                    m.to = GM_PLAYERCH->netId;
+                    m.fromId = s->id;
+                    m.time = ai_TimeT;
+                    m.flags = 1;
+                    m.arg0 = c->netId;
+                    cm_SendLongMessage((char *)&m);
                 }
             }
-            pl = ai_PlayerCharC;
-        }
-        objs[n++] = s;
-        s = (char *)gm_BuildNext();
+            }
+        blds[n++] = s;
+        s = (ORDBLD *)gm_BuildNext();
     }
-    if (b != pl) {
-        v = gm_Unk509eb0(a);
-        cm_SendMoveGoods(*(int *)(b + 4), -1, ai_OwnPlayer, v);
-        v = gm_GetWorth(*(unsigned short *)a);
-        cm_BeginFieldBlock(b, *(int *)(b + 4));
-        ((int (*)(int, int, int))cm_AddFieldValues)(4, 1, (b - ai_Chars[0]) + 0x1a8);
-        if (flag && (b[2] == 3 || b[2] == 8 || b[2] == 9))
-            cm_AddFieldDelta(1, 1, (b - ai_Chars[0]) + 2, &v);
+    if (heir != GM_PLAYERCH) {
+        k = gm_CharSumAmounts((char *)dead);
+        kind = dead->kind == 5 ? 5 : 4;
+        cm_SendMoveGoods(heir->netId, -1, ai_OwnPlayer, k);
+        k = gm_GetWorth(dead->id);
+        cm_BeginFieldBlock((char *)heir, heir->netId);
+        cm_AddFieldValues(4, 1, (char *)&heir->v1a8 - cm_FieldObject, &k);
+        if (taken && (heir->kind == 3 || heir->kind == 8 || heir->kind == 9))
+            cm_AddFieldDelta(1, 1, (char *)&heir->kind - cm_FieldObject, &kind);
         cm_SendFieldDeltas();
-        pl = ai_PlayerCharC;
     }
-    if (b[2] != 6 && b[2] != 7) {
-        if ((a[2] == 6 || a[2] == 7 || a[2] == 5) && b == pl) {
+    if (heir->kind != 6 && heir->kind != 7) {
+        if ((dead->kind == 6 || dead->kind == 7 || dead->kind == 5) && heir == GM_PLAYERCH) {
             for (i = 0; i < 0x300; i++) {
-                char *c = ai_Chars[i];
-                if ((c[2] == 6 || c[2] == 7) && *(int *)(c + 4) != *(int *)(a + 4)) {
-                    txt_Format(t1, 0x1c4d, *(unsigned short *)a);
-                    he_ShowNews(*(int *)(c + 4), -1, t1, 0, 0x5fe, "_NACHRICHTEN_HS_67");
+                c = &ORD_CHARS[i];
+                if ((c->kind == 6 || c->kind == 7) && c->netId != dead->netId) {
+                    txt_Format(t1, 0x1c4d, dead->id);
+                    he_ShowNews(c->netId, -1, t1, 0, 0x5fe, "_NACHRICHTEN_HS_70");
                 }
             }
             return;
         }
         for (i = 0; i < 0x300; i++) {
             for (j = 0; j < 8; j++) {
-                char *c = ai_Chars[i];
-                if ((c[2] == 6 || c[2] == 7) && *(int *)(c + 0x58 + j * 4) == *(int *)(a + 4)) {
-                    txt_Format(t1, 0x1c4e, *(unsigned short *)a);
-                    he_ShowNews(*(int *)(c + 4), -1, t1, 0, 0x5f4, "_NACHRICHTEN_HS_67");
+                if ((ORD_CHARS[i].kind == 6 || ORD_CHARS[i].kind == 7) && ORD_CHARS[i].relatives[j] == dead->netId) {
+                    txt_Format(t1, 0x1c4e, dead->id);
+                    he_ShowNews(ORD_CHARS[i].netId, -1, t1, 0, 0x5f4, "_NACHRICHTEN_HS_63");
                     i = 0x300;
                 }
             }
         }
         return;
     }
-    txt_Format(t2, 0x1c4a, *(unsigned short *)a);
+    txt_Format(t2, 0x1c4a, dead->id);
     if (n != 0) {
         txt_Format(t1, 0x1c4b);
         strcat(t2, t1);
@@ -7666,14 +7667,14 @@ void gm_Unk506890(char *a, char *b)
                 }
                 break;
             }
-            if ((objs[i][0x5a] & 1) == 0)
-                txt_Format(t1, "%1G$A", objs[i]);
+            if ((blds[i]->flags5a & 1) == 0)
+                txt_Format(t1, "%1G$A", blds[i]);
             strcat(t2, t1);
         }
     }
-    txt_Format(t1, 0x1c4c, gm_Unk509eb0(a));
+    txt_Format(t1, 0x1c4c, gm_CharSumAmounts((char *)dead));
     strcat(t2, t1);
-    he_ShowNews(*(int *)(b + 4), -1, t2, 1, 0x5ff, "_NACHRICHTEN_HS_67");
+    he_ShowNews(heir->netId, -1, t2, 1, 0x5ff, "_NACHRICHTEN_HS_63");
 }
 /* 0x506e70, the inheritance of the dead character c (the heirs are the characters of the group (1, 3, id) i.e. buildings it owns: those of the kinds in the mask 0xe07d43b0 / the kind 0x20 go to the best claimant by 0x509b10, the others of kind 2 to everyone): messages 0x4c54a0 (hand over), the message 0x1b to the new owner and 0x31 to the tenants, the money (0x509eb0 of the dead goes to the player 0x6f1bf8), the objects of its list (+0x178) by 0x4c5010; when flag is set the character is reset to a new person (the fields +8 .. +0x1b0 are sent through 0x4c3c00 / 0x4c3d90: age 0x10, 0x100 = 100 .., health floats), and the text of the announcement is built into out from the formats 0x1c4f (name, money), "%1G %A" per heir and 0x1c50 / 0xb6 (the rest). ROUGH */
 
@@ -7758,7 +7759,7 @@ void gm_Unk506e70(unsigned short *c, char *out, int flag)
         }
         b = gm_BuildNext();
     }
-    money = gm_Unk509eb0(c);
+    money = gm_CharSumAmounts(c);
     cm_SendMoveGoods(*(int *)(ai_PlayerCharC + 4), -1, ai_OwnPlayer, money);
     k = (int)gm_Query(*(int *)(c + 0xbc), 1, 5);
     while (k != 0) {
@@ -8990,7 +8991,7 @@ int gm_GetGoodsValue(char *c)
 }
 /* 0x509eb0 */
 
-int gm_Unk509eb0(char *c)
+int gm_CharSumAmounts(char *c)
 {
     int s;
     char *o;
