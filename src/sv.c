@@ -140,7 +140,6 @@ extern GAPDATA full_data_75ec40[];
 extern char ai_Unk75fba0[2048];
 
 extern GAPDATA full_data_602568[];
-extern GAPDATA full_data_623ebc[];
 extern char ai_Unk75fba0[2048];
 extern unsigned char ai_TimeHour;
 extern char sv_SkyHeavy[];
@@ -7012,7 +7011,7 @@ int sv_Unk52fe10(void)
             ids[i] = w;
             SV_WI(w, 0x48) = 1;
             SV_WI(w, 0x2e8) = (int)(p - 0x15);
-            d2_SetObjValue(w, *(char *)((unsigned)&full_data_623ebc + i));
+            d2_SetObjValue(w, sv_ChatRecipients[i]);
             i++;
         }
         p += 0x87;
@@ -7027,7 +7026,7 @@ int sv_Unk52fe10(void)
         if (r == 0) {
             for (i = 0; i < 8; i++) {
                 if (ids[i] != -1)
-                    *(char *)((unsigned)&full_data_623ebc + i) = d2_GetObjValue(ids[i]);
+                    sv_ChatRecipients[i] = d2_GetObjValue(ids[i]);
             }
             d2_CloseView(f);
             *(char *)(unsigned)&kb_Last = 0;
@@ -7719,6 +7718,7 @@ int sv_PickY = -1;  /* 0x623e9c, the pointer y of the last hover pick */
 int ai_Unk623ea0 = -1;  /* 0x623ea0 */
 int ai_Unk623ea4 = -1;  /* 0x623ea4 */
 int ai_Unk623ea8 = -1;  /* 0x623ea8 */
+unsigned char sv_ChatRecipients[8] = { 1, 1, 1, 1, 1, 1, 1, 1 };  /* 0x623ebc, the chat console's recipient buttons, one per human player in ai_Chars order (1 = checked), kept between openings */
 int ai_Unk623ec4 = -1;  /* 0x623ec4 */
 int ai_Unk623ec8 = -1;  /* 0x623ec8 */
 int sv_ViewRectLeft = 0;  /* 0x6248a4 */

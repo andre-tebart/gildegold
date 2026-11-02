@@ -226,6 +226,7 @@ extern float sv_DayPhaseFrac;                                  /* 0x623e94 */
 extern int ai_Unk623ea0;                                    /* 0x623ea0 */
 extern int ai_Unk623ea4;                                    /* 0x623ea4 */
 extern int ai_Unk623ea8;                                    /* 0x623ea8 */
+extern unsigned char sv_ChatRecipients[8];                  /* 0x623ebc */
 extern int ai_Unk623ec4;                                    /* 0x623ec4 */
 extern int ai_Unk623ec8;                                    /* 0x623ec8 */
 extern int sv_ViewRectLeft;                                 /* 0x6248a4 */
