@@ -6517,7 +6517,7 @@ int he_Unk56f170(); int sv_MessageBox();
 
 /* 0x580fe0, a scene check (49 B): 0x56f170 (the record + 1); when it answers non-zero, 0x521150 (0x144a19c,
    0); 1 when 0x56f170 answered 0, else 0 */
-int ai_Unk580fe0(char *rec)
+int ai_CanSpyOn(char *rec)
 {
     int r;
 
@@ -6530,105 +6530,99 @@ int ai_Unk580fe0(char *rec)
 int gm_GetWorth(unsigned short id); int d2_WinOpenSlider(); int sv_CheckGoodAmount(); short * gm_PlayerRecord(char *c);
 void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d); int ai_PickActionBuilding(struct AIPER *p, int a, __int64 mask, float lo, float hi, int *out); int snd_PlayVoice(int id, int bank, char *text, int var); void sv_CameraFollow();
 
-/* 0x581020, the spy / comment window (981 B, ROUGH: the three amounts v[0..2] are three float -> int
-   conversions (0x5de518 = __ftol) whose FPU arguments Ghidra lost, they are 0 here): arg 1 = the record; the
-   window "Locations_Domizil_kabinett_spy" (0x62a3f8) with 0x476f80 (0, 0) / 0x475600, the sound 0x52ea30
-   (0x6ed938), a slider 0x46a960 (0x57, 0x14, 200, 0 .. 100, 0x7b, 2) with 0x46bca0 and 3 steps, the two entries
-   0x475b80 (window, 3, text 0x4024 / +1), 0xf8a668 = -1; the pump loop 0x5309a0 (this handler, 0x677c7): the
-   slider's step 0x475980, the texts 0x602568 / 0x401e / 0x401c / 0x401f, the click 0x14673a0 -> 0x6f22a0 = 1;
-   the first entry: 0x521040 (the character 0x770b80 + 0x6f25b8 * 0x21c, the amount, 0x6f1bc5), 0x580fe0 (rec),
-   0x506430 (the character) +0x28 += the amount, 0x4c4830 (-1, the character, 0x6f1bc5, the amount) and the
-   message 0xf8 bytes (type 0x99 at +4, 2 at +0x36, the character 0x770b84 at +8, the record + 1 at +0xc, the game
-   time 0x770ae0 at +0x28, -1 at +0x60 / +0x64, 3 at +0x68, the record + 1 at +0x5c, the amount at +0x6c, 0x4a63f0
-   (the character, 0, 0x7b4c4a0, 0, 0, 100.0, &the value at +0x58)) and 0x4c2760 (-7, 0, "KOMMENTARE" 0x62a3ec, 0)
-   then 0x6f22a0 = 1; the second entry -> 0x6f22a0 = 1; the pump 0 -> 0x4758f0 (window), 0x52d7a0 () */
-void ai_Unk581020(char *rec)
+/* 0x581020, the cabinet's spy window for the building rec: the form "Locations\Domizil\kabinett_spy" (centred,
+   fitted, the default pointer) with the title txt 0x4020 centred over the window's width in font 0x54, a slider of
+   three steps (txt 0x4021 .. 0x4023) choosing the payment: 1%, 1.5% or 2% of the player's worth (gm_GetWorth), and
+   the two buttons from the text 0x4024 on (pay / leave). Each frame prints the texts 0x401e / 0x401c and 0x401f
+   with the chosen amount; the right mouse button or the second button leaves (sv_PopRequest). Pay: when the player
+   has the money (sv_CheckGoodAmountB) and the building may be spied on (ai_CanSpyOn), the amount is added to the
+   player record's spyPaid and moved away from the player (cm_SendMoveGoodsUnchecked), the message 0x99 goes to the
+   building's owner (flags 2, the game time, the building id, the step and ai_PickActionBuilding's pick of the
+   player's character), its slot is waited for, the voice "KOMMENTARE" plays and the window leaves. At the end the
+   view is closed and the camera follows again */
+void ai_CabinetSpyWindow(AIBLD *rec)
 {
-    char msg[0xf8];
+    AIMSG msg;
     int v[3];
+    int worth;
     int win;
     int slider;
-    int id;
     int i;
-    int r;
-    int b1;
-    int b2;
-    int lv;
+    int amount;
+    int id;
+    int btnPay;
+    int btnLeave;
+    int pick;
+    LARGE_INTEGER mask;
 
-    gm_GetWorth(U_I((unsigned)&ai_PlayerId));
-    v[0] = 0;
-    v[1] = 0;
-    v[2] = 0;
-    win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62a3f8);
+    worth = gm_GetWorth(ai_PlayerId);
+    v[0] = (int)(worth * 0.01f);
+    v[1] = (int)(worth * 0.015f);
+    v[2] = (int)(worth * 0.02f);
+    win = d2_OpenForm(0, 0, "Locations\\Domizil\\kabinett_spy");
     d2_SetPointerSprite(0, 0);
     d2_CentreViewWindows(win);
     d2_SetForm(win, 0);
-    sv_FitForm(U_I((unsigned)&d2_LastWindow));
+    sv_FitForm(d2_LastWindow);
     d2_SetForm(win, 2);
-    id = d2_CreateWinText(0, 3, (char *)U_I((unsigned)&full_data_144a240), U_I((unsigned)&d2_LastWindow));
-    *(int *)(U_I((unsigned)&d2_Objs) + 0x5c + id * 0x2ec) = 1;
-    *(short *)(U_I((unsigned)&d2_Objs) + 0x14 + id * 0x2ec) = *(short *)((unsigned)&ai_Unkf8f128 + U_I((unsigned)&d2_LastWindow) * 0x3c4);
+    id = d2_CreateWinText(0, 3, txt_Ptrs[0x4020], d2_LastWindow);
+    d2_Objs[id].centred = 1;
+    d2_Objs[id].w = d2_Wins[d2_LastWindow].w;
     d2_SetObjFont(id, 0x54);
-    slider = d2_WinOpenSlider(0x57, 0x14, 200, 0, 100, 0x7b, 2, U_I((unsigned)&d2_LastWindow));
+    slider = d2_WinOpenSlider(0x57, 0x14, 200, 0, 100, 0x7b, 2, d2_LastWindow);
     d2_SetObjValue(slider, 0, 2, 0, 1);
-    d2_SetList(slider, 3, U_I((unsigned)&full_data_144a244), U_I((unsigned)&full_data_144a248), U_I((unsigned)&full_data_144a24c));
+    d2_SetList(slider, 3, txt_Ptrs[0x4021], txt_Ptrs[0x4022], txt_Ptrs[0x4023]);
     d2_SetForm(win, 3);
-    i = io_PrintText(0x4024);
-    b1 = d2_GetWinObj(win, 3, i);
-    b2 = d2_GetWinObj(win, 3, i + 1);
-    U_I((unsigned)&d2_ClickedId) = -1;
-    for (;;) {
+    i = io_PrintText((char *)0x4024);
+    btnPay = d2_GetWinObj(win, 3, i);
+    btnLeave = d2_GetWinObj(win, 3, i + 1);
+    d2_ClickedId = -1;
+    do {
         i = d2_GetObjValue(slider);
         d2_SetForm(win, 1);
-        io_PrintText((char *)(unsigned)"$C");
-        io_PrintText(0x401e, 0x401c);
-        id = v[i];
-        io_PrintText(0x401f, id);
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0) {
-            U_I((unsigned)&sv_PopRequest) = 1;
-        } else if (U_I((unsigned)&d2_ClickedId) != -1) {
-            if (U_I((unsigned)&d2_PointerObj) == b1) {
-                if (sv_CheckGoodAmount((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, id, *(unsigned char *)(unsigned)&ai_OwnPlayer) != 0) {
-                    if (ai_Unk580fe0(rec) != 0) {
-                        r = gm_PlayerRecord((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c);
-                        if (r != 0)
-                            *(int *)(r + 0x28) += id;
-                        cm_SendMoveGoodsUnchecked(-1, *(int *)((unsigned)&ai_CharInts + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c), *(unsigned char *)(unsigned)&ai_OwnPlayer, id);
-                        memset(msg, 0, 0xf8);
-                        *(unsigned char *)(msg + 0x04) = 0x99;
-                        *(unsigned char *)(msg + 0x36) = 2;
-                        *(int *)(msg + 0x60) = -1;
-                        *(int *)(msg + 0x64) = -1;
-                        *(int *)(msg + 0x68) = 3;
-                        *(int *)(msg + 0x08) = *(int *)((unsigned)&ai_CharInts + *(unsigned short *)(rec + 0x27) * 0x21c);
-                        *(int *)(msg + 0x0c) = U_I(rec + 1);
-                        *(int *)(msg + 0x2c) = U_I((unsigned)&ai_TimeHour);
-                        *(int *)(msg + 0x28) = U_I((unsigned)&ai_Time);
-                        *(unsigned short *)(msg + 0x34) = *(unsigned short *)((unsigned)&ai_Time + 0xc);
-                        *(int *)(msg + 0x30) = U_I(((unsigned)&ai_Time + 0x8));
-                        *(int *)(msg + 0x5c) = U_I(rec + 1);
-                        *(int *)(msg + 0x6c) = i;
-                        lv = -1;
-                        AI_4A63F0_7((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, 0, (char *)0x7b4c4a0, 0, 0, 100.0f, &lv);
-                        *(int *)(msg + 0x58) = lv;
-                        id = cm_SendLongMessage(msg);
-                        if (id != -1)
-                            while (cm_GetSlotState(id) == 0)
-                                sv_RunFrame(0, 0x20007);
-                        snd_PlayVoice(-7, 0, (char *)(unsigned)&full_data_62a3ec, 0);
-                        U_I((unsigned)&sv_PopRequest) = 1;
-                    }
+        io_PrintText("$C");
+        io_PrintText((char *)0x401e, 0x401c);
+        amount = v[i];
+        io_PrintText((char *)0x401f, amount);
+        if (dm_L.rup != 0) {
+            sv_PopRequest = 1;
+        } else if (d2_ClickedId != -1) {
+            if (d2_PointerObj == btnPay) {
+                if (sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], amount, ai_OwnPlayer) != 0 && ai_CanSpyOn((char *)rec) != 0) {
+                    AIFIN *fin = (AIFIN *)gm_PlayerRecord(ai_Chars[ai_PlayerId]);
+
+                    if (fin != 0)
+                        fin->spyPaid += amount;
+                    cm_SendMoveGoodsUnchecked(-1, ((AICHAR *)ai_Chars[ai_PlayerId])->netId, ai_OwnPlayer, amount);
+                    memset(&msg, 0, sizeof(msg));
+                    msg.type = 0x99;
+                    msg.flags = 2;
+                    msg.arg[2] = -1;
+                    msg.arg[3] = -1;
+                    msg.arg[4] = 3;
+                    msg.arg[5] = i;
+                    pick = -1;
+                    msg.to = ((AICHAR *)ai_Chars[rec->owner])->netId;
+                    msg.fromId = rec->id;
+                    msg.time = ai_TimeT;
+                    msg.arg[1] = rec->id;
+                    mask.LowPart = 0x7b4c4a0;
+                    mask.HighPart = 0;
+                    ai_PickActionBuilding((struct AIPER *)ai_Chars[ai_PlayerId], 0, mask.QuadPart, 0, 100.0f, &pick);
+                    msg.arg[0] = pick;
+                    id = cm_SendLongMessage((char *)&msg);
+                    while (id != -1 && cm_GetSlotState(id) == 0)
+                        sv_RunFrame(0, 0x20007);
+                    snd_PlayVoice(-7, 0, "KOMMENTARE", 0);
+                    sv_PopRequest = 1;
                 }
-            } else if (U_I((unsigned)&d2_PointerObj) == b2) {
-                U_I((unsigned)&sv_PopRequest) = 1;
+            } else if (d2_PointerObj == btnLeave) {
+                sv_PopRequest = 1;
             }
         }
-        if (sv_RunFrame(ai_Unk581020, 0x677c7) == 0) {
-            d2_CloseView(win);
-            sv_CameraFollow();
-            return;
-        }
-    }
+    } while (sv_RunFrame(ai_CabinetSpyWindow, 0x677c7) != 0);
+    d2_CloseView(win);
+    sv_CameraFollow();
 }
 
 int ai_AmountMenu(); int amt_GetKindLevel(int k); int sv_CheckMoney(); void cm_SendMoneyDelta(int a, int b);
@@ -6713,7 +6707,7 @@ void ai_Unk581400(char *rec)
             if (U_I((unsigned)&d2_PointerObj) == b1) {
                 if (sv_CheckGoodAmount((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, cost[i], *(unsigned char *)(unsigned)&ai_OwnPlayer) != 0 &&
                     sv_CheckMoney((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, amt[i]) == 1 &&
-                    ai_Unk580fe0(rec) != 0) {
+                    ai_CanSpyOn(rec) != 0) {
                     r = gm_PlayerRecord((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c);
                     if (r != 0)
                         *(int *)(r + 0x28) += cost[i];
@@ -6835,7 +6829,7 @@ void ai_Unk581950(char *rec)
         } else if (U_I((unsigned)&d2_ClickedId) != -1) {
             if (U_I((unsigned)&d2_PointerObj) == b1) {
                 if (sv_CheckMoney((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, amt[i]) == 1 &&
-                    ai_Unk580fe0(rec) != 0) {
+                    ai_CanSpyOn(rec) != 0) {
                     cm_SendMoneyDelta(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c), -amt[i]);
                     memset(msg, 0, 0xf8);
                     *(unsigned char *)(msg + 0x04) = 0x99;
@@ -6944,7 +6938,7 @@ void ai_Unk581db0(char *rec)
             if (U_I((unsigned)&d2_PointerObj) == b1) {
                 if (sv_CheckGoodAmount((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, amount, *(unsigned char *)(unsigned)&ai_OwnPlayer) != 0 &&
                     sv_CheckMoney((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, 0x10) == 1 &&
-                    ai_Unk580fe0(rec) != 0) {
+                    ai_CanSpyOn(rec) != 0) {
                     r = gm_PlayerRecord((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c);
                     if (r != 0)
                         *(int *)(r + 0x28) += amount;
@@ -7187,7 +7181,7 @@ void ai_Unk582600(char *rec, char *list)
                 if (U_I((unsigned)&ai_ClickedObject) == c1)
                     ai_Unk581950(rec);
                 else if (U_I((unsigned)&ai_ClickedObject) == c2)
-                    ai_Unk581020(rec);
+                    ai_CabinetSpyWindow(rec);
                 else if (U_I((unsigned)&ai_ClickedObject) == c3)
                     ai_Unk581db0(rec);
                 else if (U_I((unsigned)&ai_ClickedObject) == c4)
