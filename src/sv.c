@@ -5642,47 +5642,50 @@ void sv_DrawNamePlates(void)
     }
     d3_ForEachObject2(d3_DefaultScene, 0, 0x20, sv_DrawGateName);
 }
-/* 0x52d2a0, draws the names of the items (0x4ffe90 lists of the shown building / group: the not-person items first, then the persons (class 6 / 2)) above their screen boxes */
+/* 0x52d2a0, draws the names of the objects in the shown room (sv_PanelShown's list; without one the list of the room
+   object 0xfd of ai_FallbackBuilding, else the building's own) above their scene objects: first the things, then
+   the persons (goods types 6 / 2) */
 
-void sv_Unk52d2a0(void)
+void sv_DrawItemNames(void)
 {
-    int sub, t[3], x;
-    unsigned short *q;
-    char c;
+    int list, x, y;
+    AIGOOD *g;
+    AIOBJ *q;
+    D3RECT box;
 
-    if (SV_I((unsigned)&sv_PanelShown) == 0) {
-        if (SV_I((unsigned)&ai_FallbackBuilding) == 0)
+    if (sv_PanelShown != 0) {
+        list = ((AIOBJ *)sv_PanelShown)->list;
+    } else {
+        if (ai_FallbackBuilding == 0)
             return;
-        q = (unsigned short *)gm_Query(*(int *)(SV_I((unsigned)&ai_FallbackBuilding) + 0x5d), 1, 0, 0xfd);
-        if (q == 0)
-            sub = *(int *)(SV_I((unsigned)&ai_FallbackBuilding) + 0x5d);
+        q = (AIOBJ *)gm_Query((void *)((AIBLD *)ai_FallbackBuilding)->objList, 1, 0, 0xfd);
+        if (q != 0)
+            list = q->list;
         else
-            sub = *(int *)((char *)q + 0x14);
-    } else
-        sub = *(int *)(SV_I((unsigned)&sv_PanelShown) + 0x14 * 2);
-    d2_SetFont(0x54);
-    q = (unsigned short *)((char *(*)())gm_Query)(sub, 1, 5);
-    while (q != 0) {
-        if (*(int *)(q + 0xc) != 0 && (c = ai_Goods[*q * 0x41]) != 6 && c != 2 && (char)d3if_ScreenBox(*(int *)(q + 0xc), t) != 0) {
-            x = (t[2] - t[0]) / 2 - 0x50 + t[0];
-            d2_DrawTextBox(x, t[1], 0xa0, 0x60, d2_ScreenSurf, SV_I((unsigned)&txt_ObjectNames + *q * 8), 0x28);
-            d2_AddDirty(x, t[1], SV_I((unsigned)&d2_TextDrawnW), SV_I((unsigned)&d2_TextDrawnH));
-        }
-        q = (unsigned short *)gm_QueryNext();
+            list = ((AIBLD *)ai_FallbackBuilding)->objList;
     }
-    if (SV_I((unsigned)&sv_PanelShown) == 0) {
-        if (SV_I((unsigned)&ai_FallbackBuilding) != 0)
-            sub = *(int *)(SV_I((unsigned)&ai_FallbackBuilding) + 0x5d);
-    } else
-        sub = *(int *)(SV_I((unsigned)&sv_PanelShown) + 0x14 * 2);
-    q = (unsigned short *)gm_Query(sub, 2, 5, 6);
-    while (q != 0) {
-        if (*(int *)(q + 0xc) != 0 && ((c = ai_Goods[*q * 0x41]) == 6 || c == 2) && (char)d3if_ScreenBox(*(int *)(q + 0xc), t) != 0) {
-            x = (t[2] - t[0]) / 2 - 0x50 + t[0];
-            d2_DrawTextBox(x, t[1], 0xa0, 0x60, d2_ScreenSurf, SV_I((unsigned)&txt_ObjectNames + *q * 8), 0x28);
-            d2_AddDirty(x, t[1], SV_I((unsigned)&d2_TextDrawnW), SV_I((unsigned)&d2_TextDrawnH));
+    d2_SetFont(0x54);
+    for (q = (AIOBJ *)gm_Query((void *)list, 1, 5); q != 0; q = (AIOBJ *)gm_QueryNext()) {
+        g = &ai_GoodsT[q->id];
+        if (q->obj != 0 && g->type != 6 && g->type != 2 && d3if_ScreenBox(q->obj, &box) != 0) {
+            y = box.top;
+            x = (box.right - box.left) / 2 - 0x50 + box.left;
+            d2_DrawTextBox(x, y, 0xa0, 0x60, d2_ScreenSurf, (char *)txt_ObjectNames[q->id][0], 0x28);
+            d2_AddDirty(x, y, d2_TextDrawnW, d2_TextDrawnH);
         }
-        q = (unsigned short *)gm_QueryNext();
+    }
+    if (sv_PanelShown != 0)
+        list = ((AIOBJ *)sv_PanelShown)->list;
+    else if (ai_FallbackBuilding != 0)
+        list = ((AIBLD *)ai_FallbackBuilding)->objList;
+    for (q = (AIOBJ *)gm_Query((void *)list, 2, 5, 6); q != 0; q = (AIOBJ *)gm_QueryNext()) {
+        g = &ai_GoodsT[q->id];
+        if (q->obj != 0 && (g->type == 6 || g->type == 2) && d3if_ScreenBox(q->obj, &box) != 0) {
+            y = box.top;
+            x = (box.right - box.left) / 2 - 0x50 + box.left;
+            d2_DrawTextBox(x, y, 0xa0, 0x60, d2_ScreenSurf, (char *)txt_ObjectNames[q->id][0], 0x28);
+            d2_AddDirty(x, y, d2_TextDrawnW, d2_TextDrawnH);
+        }
     }
 }
 /* 0x52d010, the d3_ForEachObject2 callback of 0x52d1e0 (scene objects of mask 0x20): for a "gate" part of the shown
@@ -7548,7 +7551,7 @@ l2:
                 sv_DrawBubbles();
                 if (SV_B(((unsigned)&kb_Down + 0x1d)) == 0) {
                     if (SV_B(((unsigned)&kb_Down + 0x38)) != 0)
-                        sv_Unk52d2a0();
+                        sv_DrawItemNames();
                 } else
                     sv_DrawNamePlates();
             }

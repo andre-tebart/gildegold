@@ -514,3 +514,4 @@
 2026-11-02T00:57:51 0x0143a3d0 data full_data_143a3d0 -> txt_GatePlaceSuffix by:main why:text slots 0x83 / 0x84: sv_DrawGateNames appends them to the item name / to the room or building kind name of a contact gate ("%s %s"); the words are a guess from the use
 2026-11-02T00:58:34 0x0052d010 func sv_Unk52d010 -> sv_DrawGateName by:main why:d3_ForEachObject2 callback (scene objects of mask 0x20): draws the item / place name of a contact gate part above its screen box
 2026-11-02T01:01:19 0x0052d1e0 func sv_Unk52d1e0 -> sv_DrawNamePlates by:main why:draws the sv_NamePlates texts above their objects' screen boxes, then the contact gate names (sv_DrawGateName)
+2026-11-02T01:02:27 0x0052d2a0 func sv_Unk52d2a0 -> sv_DrawItemNames by:main why:draws the names of the objects of the shown room (or of the room object 0xfd / the fallback building) above their scene objects: the things first, then the persons (goods types 6 / 2)

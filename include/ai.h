@@ -79,7 +79,7 @@ typedef struct AIOBJ {                  /* 0x43 bytes, an object (table behind a
         int unk14;                      /* 0x14, the object list it holds */
         int list;                       /* 0x14 */
     };
-    char pad18[4];
+    struct D3OBJECT *obj;               /* 0x18, the scene object that shows it (sv_DrawItemNames draws its name above it) */
     union {
         int unk1c;                      /* 0x1c, a building id / a state / a count */
         int bldId;                      /* 0x1c, of a cart (gm_Query kind 0x1d): the id of its building (main_EndRound looks it up with gm_BuildQuery(1, 1, id)) */
