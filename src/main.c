@@ -5863,8 +5863,9 @@ GAPDATA full_data_6f25c0[4] = { 0 };  /* 0x6f25c0 */
 int main_UdpOpen = 0;  /* 0x6f25c4, the udp socket of the network game is open (udp_Init .. udp_Exit) */
 GAPDATA full_data_6f2624[4] = { 0 };  /* 0x6f2624 */
 GAPDATA full_data_6f2628[4] = { 0 };  /* 0x6f2628 */
-GAPDATA full_data_6f262c[4] = { 0 };  /* 0x6f262c */
-GAPDATA full_data_6f2630[4] = { 0 };  /* 0x6f2630 */
+HEEVSLOT *he_ActiveSlot = 0;  /* 0x6f262c, he.h; owner he or main (an open question of he.c) */
+unsigned char he_SlotConfirmed = 0;  /* 0x6f2630, he.h */
+GAPDATA full_data_6f2631[3] = { 0 };  /* 0x6f2631 */
 GAPDATA full_data_6f2634[4] = { 0 };  /* 0x6f2634 */
 GAPDATA full_data_6f2638[4] = { 0 };  /* 0x6f2638 */
 GAPDATA full_data_6f263c[4] = { 0 };  /* 0x6f263c */
@@ -5992,8 +5993,8 @@ GAPDATA full_data_6fa264[4] = { 0 };  /* 0x6fa264 */
 GAPDATA full_data_6fa268[4] = { 0 };  /* 0x6fa268 */
 GAPDATA full_data_6fa26c[2036] = { 0 };  /* 0x6fa26c */
 GAPDATA full_data_6faa60[32] = { 0 };  /* 0x6faa60 */
-GAPDATA full_data_6faa80[192] = { 0 };  /* 0x6faa80, the event bar's 16 slots of 12 bytes (owner record, window id, panel handle; he.c) */
-/* full_data_6faa84 / 6faa88 / 6faa90: views of full_data_6faa80 */
+HEEVSLOT he_EventSlots[16] = { 0 };  /* 0x6faa80, he.h: the event bar's 16 slots */
+/* full_data_6faa84 / 6faa88 / 6faa90: views of he_EventSlots */
 GAPDATA full_data_7585f4[12] = { 0 };  /* 0x7585f4 */
 GAPDATA full_data_75df20[512] = { 0 };  /* 0x75df20 */
 void * main_Instance = 0;  /* 0x75e140, its instance handle (HINSTANCE) */

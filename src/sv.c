@@ -119,9 +119,6 @@ extern int d2_HalfScreenH;
 extern int d2_HalfScreenW;
 extern void *d2_ScreenSurf;  /* 0x6ed924 */
 extern int ai_Unk6f2318;
-extern GAPDATA full_data_6f262c[];
-extern GAPDATA full_data_6f2630[];
-extern GAPDATA full_data_6faa80[];
 extern OPTIONBYTES ai_GameSwitches;
 extern char d2_CaptionCopy[0x80];
 extern short d2_MouseX;
@@ -184,7 +181,6 @@ extern GAPDATA full_data_6f23f1[];
 extern GAPDATA full_data_6f2580[];
 extern int main_Inactive;
 extern GAPDATA full_data_6f25a8[];
-extern GAPDATA full_data_6f262c[];
 extern int snd_MusicEnabled;
 extern int snd_SfxEnabled;
 extern void *d2_ScreenSurf;  /* 0x6ed924 */
@@ -5887,13 +5883,13 @@ void sv_Unk52d940(unsigned fl)
 
     if (SV_I(((unsigned)&dm_L + 0x20)) != 0 && (SV_I(((unsigned)&ai_Unk75f280 + 0x500) + SV_I((unsigned)&sv_FrameDepth) * 8) != (int)ai_GameFrame || SV_I((unsigned)&ai_SelectedCount) != 0 || SV_I((unsigned)&sv_SelectedItem) != 0 || SV_I((unsigned)&sv_SelectedChar) != 0 || SV_I((unsigned)&sv_SelectedObject) != 0))
         sb_PlaySample(SV_I((unsigned)&snd_SystemBank), "MausclickRechts_s_01", 1, 0x3f, 0x7f, 0, 0);
-    if (SV_I((unsigned)&full_data_6f262c) != 0) {
+    if (SV_I((unsigned)&he_ActiveSlot) != 0) {
         if (SV_I(((unsigned)&dm_L + 0x20)) == 0 && *(char *)(unsigned)&kb_Last != 0x1c)
             return;
-        if (*(char **)SV_I((unsigned)&full_data_6f262c) != 0) {
-            c = **(char **)SV_I((unsigned)&full_data_6f262c);
+        if (*(char **)SV_I((unsigned)&he_ActiveSlot) != 0) {
+            c = **(char **)SV_I((unsigned)&he_ActiveSlot);
             if (c == 0x11 || c == 0x26 || c == 0x69) {
-                SV_I((unsigned)&full_data_6f2630) = 1;
+                SV_I((unsigned)&he_SlotConfirmed) = 1;
                 goto l9f2;
             }
             if (c == (char)-0x79) {
@@ -5914,8 +5910,8 @@ l9f2:
         p = (int *)(unsigned)&full_data_6faa84;
         do {
             if (*p != -1 && p != (int *)4 && d2_PointerObj == *(int *)(SV_I((unsigned)&d2_Objs) + *p * 0x2ec)) {
-                *(int *)(SV_I((unsigned)&full_data_6faa80 + i * 12) + 0x70) = -1;
-                SV_I((unsigned)&full_data_6f2630) = 0;
+                *(int *)(SV_I((unsigned)&he_EventSlots + i * 12) + 0x70) = -1;
+                SV_I((unsigned)&he_SlotConfirmed) = 0;
                 di_ClearButtons();
                 break;
             }
@@ -7552,7 +7548,7 @@ l2:
         if (d2_LockSurface(d2_ScreenSurf) != 0) {
             if (SV_I((unsigned)&ai_Unk6f0da4) != 0)
                 ai_Unk4d8b50();
-            if ((mask & 0x1000) != 0 && SV_I((unsigned)&sv_FrameDepth) == SV_I((unsigned)&sv_FrameBase) && SV_I((unsigned)&full_data_6f262c) == 0) {
+            if ((mask & 0x1000) != 0 && SV_I((unsigned)&sv_FrameDepth) == SV_I((unsigned)&sv_FrameBase) && SV_I((unsigned)&he_ActiveSlot) == 0) {
                 sv_DrawBubbles();
                 if (SV_B(((unsigned)&kb_Down + 0x1d)) == 0) {
                     if (SV_B(((unsigned)&kb_Down + 0x38)) != 0)
@@ -7565,7 +7561,7 @@ l2:
                     sv_DrawBorderArrows();
             } else
                 ai_Unk4cf370();
-            if ((mask & 0x1000) != 0 && SV_I(((unsigned)&dm_L + 0x28)) == 0 && SV_I((unsigned)&sv_CameraScrolled) == 0 && SV_I((unsigned)&d3t_CamMove) == 0 && SV_I((unsigned)&sv_BandActive) == 0 && SV_I((unsigned)&d2_CutsceneActive) == 0 && SV_I((unsigned)&full_data_6f262c) == 0)
+            if ((mask & 0x1000) != 0 && SV_I(((unsigned)&dm_L + 0x28)) == 0 && SV_I((unsigned)&sv_CameraScrolled) == 0 && SV_I((unsigned)&d3t_CamMove) == 0 && SV_I((unsigned)&sv_BandActive) == 0 && SV_I((unsigned)&d2_CutsceneActive) == 0 && SV_I((unsigned)&he_ActiveSlot) == 0)
                 sv_Unk52e050();
             sv_Unk52e0c0();
             sv_DrawPanelPointer();

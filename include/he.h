@@ -17,6 +17,17 @@ void he_ShowEventBar(int pl);
 void he_Unk53dad0(int state);
 void he_Unk53daf0(void);
 void he_Unk53dcb0(int *sl);
+
+typedef struct HEEVSLOT {               /* 12 bytes, a slot of the event bar (he_EventSlots) */
+    struct AIJOB *ev;                   /* 0x00, the event record the slot shows (ai.h AIJOB: its kind at +0) */
+    int obj;                            /* 0x04, the slot's d2 object, -1 = the slot is free (0x53d6f0) */
+    int win;                            /* 0x08, the event window (0x53dcb0 enables / raises it) */
+} HEEVSLOT;
+extern HEEVSLOT he_EventSlots[16];      /* 0x6faa80 */
+extern HEEVSLOT *he_ActiveSlot;         /* 0x6f262c, the slot of the active event window (0x53dcb0, 0x53daf0), 0 = none */
+extern unsigned char he_SlotConfirmed;  /* 0x6f2630, set by a right click / Enter on the active window of the
+                                           ceremony kinds 0x11 / 0x26 / 0x69 (0x52d940); their run handlers
+                                           proceed on it and clear it */
 int he_ShowNews(int pid, int fl, char *text, int unused, int ev, char *text2);
 void he_MessageBoxQuickjump(int a1, int a2, char *text, char fl, int a5, int a6, int a7, char *jump, char *text2);
 

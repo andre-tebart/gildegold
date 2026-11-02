@@ -29,7 +29,6 @@ extern D2RADIO d2_Radios[];
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 extern const int sv_PhaseMinutes[24];
-extern GAPDATA full_data_6f262c[];
 extern GAPDATA full_data_6f265c[];
 extern GAPDATA full_data_6f2660[];
 extern int sv_PanelFlag;
@@ -760,14 +759,14 @@ int ai_Unk575860(void)
     /* 0x57589d .. 0x575915: the first-run / pause handling: the state 3 and the gate pairs 0x6310e4 / 0x75e8c0
        (0x476f80), the state record [st] = [st+4] when the progress word changed, [st+0x30] == 1 and [st] != 9
        resets the flag and calls 0x577c60 / 0x57b8a0(2) */
-    if (U_I((unsigned)&full_data_6f262c) == *(int *)(per + 0x74)) {
+    if (U_I((unsigned)&he_ActiveSlot) == *(int *)(per + 0x74)) {
         if (U_I(st) != 2 && !U_I((unsigned)&d3t_CamMoving) && !U_I((unsigned)&sv_PanelFlag)) {
             d2_SetPointerSprite(0, 0);
             *(int *)(S) = 3;
         }
     }
     st = S;
-    if (U_I((unsigned)&full_data_6f262c) != *(int *)(*(char **)(st + 0x1c) + 0x74)) {
+    if (U_I((unsigned)&he_ActiveSlot) != *(int *)(*(char **)(st + 0x1c) + 0x74)) {
         *(int *)st = *(int *)(st + 4);
         st = S;
     }
@@ -2164,9 +2163,9 @@ int ai_Unk577a00(void)
         return -4;
     if (!*(int *)(*(char **)(st + 0x1c) + 0x74))
         return -4;
-    if (!U_I((unsigned)&full_data_6f262c))
+    if (!U_I((unsigned)&he_ActiveSlot))
         return 0;
-    if (!*(char **)U_I((unsigned)&full_data_6f262c) || *(unsigned char *)*(char **)U_I((unsigned)&full_data_6f262c) != 0x87)
+    if (!*(char **)U_I((unsigned)&he_ActiveSlot) || *(unsigned char *)*(char **)U_I((unsigned)&he_ActiveSlot) != 0x87)
         return 0;
 #ifdef REA_START
     /* REA_START=tutorial (`uv run play|dbg --start tutorial`): accept the tutorial's intro message (the 0x87

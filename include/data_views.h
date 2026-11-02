@@ -155,10 +155,10 @@
 /* ai_Unk6f0454 */
 #define ai_Unk6f0455             (*(char (*)[2])((char *)&ai_Unk6f0454 + 0x1))  /* 0x6f0455 */
 
-/* full_data_6faa80 (the event bar's 16 slots of 12 bytes) */
-#define full_data_6faa84         (*(unsigned char (*)[188])((char *)&full_data_6faa80 + 0x4))  /* 0x6faa84 */
-#define full_data_6faa88         (*(unsigned char (*)[184])((char *)&full_data_6faa80 + 0x8))  /* 0x6faa88 */
-#define full_data_6faa90         (*(unsigned char (*)[176])((char *)&full_data_6faa80 + 0x10))  /* 0x6faa90 */
+/* he_EventSlots (the event bar's 16 slots of 12 bytes) */
+#define full_data_6faa84         (*(unsigned char (*)[188])((char *)&he_EventSlots + 0x4))  /* 0x6faa84 */
+#define full_data_6faa88         (*(unsigned char (*)[184])((char *)&he_EventSlots + 0x8))  /* 0x6faa88 */
+#define full_data_6faa90         (*(unsigned char (*)[176])((char *)&he_EventSlots + 0x10))  /* 0x6faa90 */
 
 /* sv_Bubbles */
 #define sv_BubbleObjects         (*(int (*)[4286])((char *)&sv_Bubbles + 0x8))  /* 0x761fc8 */

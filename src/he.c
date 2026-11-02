@@ -5,6 +5,8 @@
    main.c's INI strings); the tutorial / campaign block (.data 0x62918c) follows.
    (no @bytes: the block after he_Unk555b60's ret at 0x556055 is its int 3 error path, reached by the je at 0x555dd7)
    Open: the event record (0x14c B, also ai.h AIJOB) and the message record (0xf8 B) are untyped; handlers use raw offsets.
+   Open: data: 0x6faa80 he_EventSlots, 0x6f262c he_ActiveSlot, 0x6f2630 he_SlotConfirmed, owner he or main (typed
+   in place in main.c's gap block; he.c and sv.c use them, they lie among main.c's bss).
    Open: not included yet (dcp headers conflicts he HEADER): ahm.h ai.h am.h amt.h anm.h ch.h cm.h d3_tools.h
    f3gm.h f3snd.h gv.h hmt.h hst.h rt.h sblib.h sv.h unk_4b39f0.h unk_4b6480.h unk_5d33b0.h; held by own
    declarations that differ from the owner's: ai_Time, cm_SendExSetHE, ahm_SendSetShare; calls whose argument
@@ -43,10 +45,8 @@ extern int ai_TransportWindow();
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 extern void (*he_RunHandlers[5544])(unsigned char *);
 extern unsigned char ai_TimeHour;
-extern GAPDATA full_data_6faa80[];
 extern GAPDATA full_data_625718[];
 extern GAPDATA full_data_6faa60[];
-extern GAPDATA full_data_6f262c[];
 extern GAPDATA full_data_62571c[];
 extern int ai_GameFlags;
 extern GAPDATA full_data_625708[];
@@ -89,8 +89,6 @@ extern unsigned short ai_PlayerId;
 extern unsigned char ai_TimeHour;
 extern unsigned char ai_GameState;
 extern char ai_PlayerSlots[4][0x2f4];
-extern GAPDATA full_data_6f262c[];
-extern GAPDATA full_data_6f2630[];
 extern char * cm_FieldObject;
 extern GAPDATA full_data_5fe7d0[];
 extern signed char ai_Relations[768][768];
@@ -276,7 +274,7 @@ typedef struct HETIME {            /* the 14 byte game time (day, hour, minute, 
 } HETIME;
 #pragma pack(pop)
 extern HETIME ai_Time;                  /* 0x770ae0 (ai.h) */
-#define SLOT(i) ((int *)((unsigned)&full_data_6faa80 + (i) * 12))
+#define SLOT(i) ((int *)((unsigned)&he_EventSlots + (i) * 12))
 
 void d3io_NoopCallback(); int cm_AddFieldDelta(int size, int n, short field, void *v); void cm_BeginFieldBlock(char *o, int id); float gm_Mix(int a, int b, int c);
 int he_Unk553060(void);
@@ -418,7 +416,7 @@ int he_Unk53d630(void)
     clk[1] = U_I((unsigned)&ai_TimeHour);
     clk[2] = U_I(((unsigned)&ai_Time + 0x8));
     *(short *)(clk + 3) = *(short *)((unsigned)&ai_Time + 0xc);
-    p = (int *)(unsigned)&full_data_6faa80;
+    p = (int *)(unsigned)&he_EventSlots;
     do {
         if (p[0] != 0 && p[1] != -1) {
             if (gm_CompareTime(p[0] + 0x44, clk) < 0) {
@@ -432,7 +430,7 @@ int he_Unk53d630(void)
         }
         p += 3;
         i++;
-    } while ((int)p < (unsigned)((unsigned)full_data_6faa80 + 0xc0));
+    } while ((int)p < (unsigned)((unsigned)he_EventSlots + 0xc0));
     if (best != 0) {
         he_Unk53d800(best);
         he_FreeEvent(best);
@@ -513,8 +511,8 @@ void he_Unk53d800(int ev)
             d2_CloseView(i);
             sl[2] = -1;
         }
-        if (U_I((unsigned)&full_data_6f262c) == (int)sl)
-            U_I((unsigned)&full_data_6f262c) = 0;
+        if (U_I((unsigned)&he_ActiveSlot) == (int)sl)
+            U_I((unsigned)&he_ActiveSlot) = 0;
         *(int *)(ev + 0x74) = 0;
         i = 0;
         q = (int *)(unsigned)&full_data_6faa84;
@@ -580,7 +578,7 @@ void he_Unk53d930(void)
 
 void he_CloseEventSlots(void)
 {
-    int *p = (int *)(unsigned)&full_data_6faa80;
+    int *p = (int *)(unsigned)&he_EventSlots;
 
     do {
         if (p[1] != -1)
@@ -645,43 +643,43 @@ void he_Unk53daf0(void)
     int k;
 
     if (U_I((unsigned)&full_data_62571c) != -1) {
-        cur = (int *)U_I((unsigned)&full_data_6f262c);
+        cur = (int *)U_I((unsigned)&he_ActiveSlot);
         if (cur != 0 && cur[1] != -1 && U_I(U_I((unsigned)&d2_Objs) + 0x28 + cur[1] * 0x2ec) == 0) {
             if (cur[2] != 0)
                 d2_SetViewEnabled(cur[2], 0);
             r = (char *)*cur;
             if (HE_JUMP(r))
                 U_I((unsigned)&tb_Paused) = 0;
-            U_I((unsigned)&full_data_6f262c) = 0;
+            U_I((unsigned)&he_ActiveSlot) = 0;
         }
-        p = (int *)(unsigned)&full_data_6faa80;
-        cur = (int *)U_I((unsigned)&full_data_6f262c);
+        p = (int *)(unsigned)&he_EventSlots;
+        cur = (int *)U_I((unsigned)&he_ActiveSlot);
         do {
             if (p[1] != -1 && cur != p && U_I(U_I((unsigned)&d2_Objs) + 0x28 + p[1] * 0x2ec) != 0) {
                 if (cur != 0 && (k = cur[2]) != -1) {
                     if (k != 0) {
                         d2_SetViewEnabled(k, 0);
-                        cur = (int *)U_I((unsigned)&full_data_6f262c);
+                        cur = (int *)U_I((unsigned)&he_ActiveSlot);
                     }
                     if (cur[1] != -1) {
                         U_I(U_I((unsigned)&d2_Objs) + 0x28 + cur[1] * 0x2ec) = 0;
-                        U_I(U_I((unsigned)&d2_Objs) + 0x2c + ((int *)U_I((unsigned)&full_data_6f262c))[1] * 0x2ec) = 0;
-                        cur = (int *)U_I((unsigned)&full_data_6f262c);
+                        U_I(U_I((unsigned)&d2_Objs) + 0x2c + ((int *)U_I((unsigned)&he_ActiveSlot))[1] * 0x2ec) = 0;
+                        cur = (int *)U_I((unsigned)&he_ActiveSlot);
                     }
                     r = (char *)*cur;
                     if (HE_JUMP(r))
                         U_I((unsigned)&tb_Paused) = 0;
                 }
-                U_I((unsigned)&full_data_6f262c) = (int)p;
+                U_I((unsigned)&he_ActiveSlot) = (int)p;
                 d2_SetViewEnabled(p[2], 1);
-                d2_RaiseViewWindows(((int *)U_I((unsigned)&full_data_6f262c))[2]);
-                r = (char *)*(int *)U_I((unsigned)&full_data_6f262c);
-                cur = (int *)U_I((unsigned)&full_data_6f262c);
+                d2_RaiseViewWindows(((int *)U_I((unsigned)&he_ActiveSlot))[2]);
+                r = (char *)*(int *)U_I((unsigned)&he_ActiveSlot);
+                cur = (int *)U_I((unsigned)&he_ActiveSlot);
                 if (HE_JUMP(r))
                     U_I((unsigned)&tb_Paused) = 1;
             }
             p += 3;
-        } while ((int)p < (unsigned)((unsigned)full_data_6faa80 + 0xc0));
+        } while ((int)p < (unsigned)((unsigned)he_EventSlots + 0xc0));
     }
 }
 /* 0x53dcb0, makes the slot `sl` the active event window (0x6f262c), closing the previous one */
@@ -691,14 +689,14 @@ void he_Unk53dcb0(int *sl)
     char *r;
 
     if (U_I((unsigned)&full_data_62571c) != -1) {
-        if (U_I((unsigned)&full_data_6f262c) != 0) {
-            if (((int *)U_I((unsigned)&full_data_6f262c))[1] != -1)
-                d2_SetObjValue(((int *)U_I((unsigned)&full_data_6f262c))[1], 0);
-            d2_SetViewEnabled(((int *)U_I((unsigned)&full_data_6f262c))[2], 0);
-            r = (char *)*(int *)U_I((unsigned)&full_data_6f262c);
+        if (U_I((unsigned)&he_ActiveSlot) != 0) {
+            if (((int *)U_I((unsigned)&he_ActiveSlot))[1] != -1)
+                d2_SetObjValue(((int *)U_I((unsigned)&he_ActiveSlot))[1], 0);
+            d2_SetViewEnabled(((int *)U_I((unsigned)&he_ActiveSlot))[2], 0);
+            r = (char *)*(int *)U_I((unsigned)&he_ActiveSlot);
             if (HE_JUMP(r))
                 U_I((unsigned)&tb_Paused) = 0;
-            U_I((unsigned)&full_data_6f262c) = 0;
+            U_I((unsigned)&he_ActiveSlot) = 0;
         }
         if (sl != 0 && sl[2] != -1) {
             if (sl[1] != -1)
@@ -709,7 +707,7 @@ void he_Unk53dcb0(int *sl)
             if (HE_JUMP(r))
                 U_I((unsigned)&tb_Paused) = 1;
         }
-        U_I((unsigned)&full_data_6f262c) = (int)sl;
+        U_I((unsigned)&he_ActiveSlot) = (int)sl;
     }
 }
 
@@ -5140,18 +5138,18 @@ void he_Unk54cc50(int ev)
             *(int *)(ev + 0x70) = 0;
             return;
         }
-        if (U_I((unsigned)&d2_Unkf8aac4) != *(int *)(*(int *)(ev + 0x74) + 8) && *(unsigned char *)(unsigned)&full_data_6f2630 == 0)
+        if (U_I((unsigned)&d2_Unkf8aac4) != *(int *)(*(int *)(ev + 0x74) + 8) && *(unsigned char *)(unsigned)&he_SlotConfirmed == 0)
             return;
         if (U_I((unsigned)&d2_ClickedId) == 0) {
             he_Unk53d800(ev);
             he_FreeEvent((int *)ev);
             return;
         }
-        if (*(unsigned char *)(unsigned)&full_data_6f2630 == 0)
+        if (*(unsigned char *)(unsigned)&he_SlotConfirmed == 0)
             return;
-        if (U_I((unsigned)&full_data_6f262c) != *(int *)(ev + 0x74))
+        if (U_I((unsigned)&he_ActiveSlot) != *(int *)(ev + 0x74))
             return;
-        *(unsigned char *)(unsigned)&full_data_6f2630 = 0;
+        *(unsigned char *)(unsigned)&he_SlotConfirmed = 0;
         he_Unk53d800(ev);
         he_FreeEvent((int *)ev);
     }
@@ -5355,16 +5353,16 @@ void he_Unk54d7d0(int ev)
             return;
         }
         h = U_I((unsigned)&d2_ClickedId);
-        if (U_I((unsigned)&d2_Unkf8aac4) != *(int *)(*(int *)(ev + 0x74) + 8) && *(unsigned char *)(unsigned)&full_data_6f2630 == 0 && h == -1)
+        if (U_I((unsigned)&d2_Unkf8aac4) != *(int *)(*(int *)(ev + 0x74) + 8) && *(unsigned char *)(unsigned)&he_SlotConfirmed == 0 && h == -1)
             return;
         if (h == 0) {
             he_Unk53d800(ev);
             he_FreeEvent((int *)ev);
             return;
         }
-        if (*(unsigned char *)(unsigned)&full_data_6f2630 == 0 || U_I((unsigned)&full_data_6f262c) != *(int *)(ev + 0x74))
+        if (*(unsigned char *)(unsigned)&he_SlotConfirmed == 0 || U_I((unsigned)&he_ActiveSlot) != *(int *)(ev + 0x74))
             return;
-        *(unsigned char *)(unsigned)&full_data_6f2630 = 0;
+        *(unsigned char *)(unsigned)&he_SlotConfirmed = 0;
         he_Unk53d800(ev);
         he_FreeEvent((int *)ev);
     }
@@ -9024,7 +9022,7 @@ void he_Unk552ca0(int ev)
             *(int *)(ev + 0x70) = 0;
             return;
         }
-        cl = *(char *)(unsigned)&full_data_6f2630;
+        cl = *(char *)(unsigned)&he_SlotConfirmed;
         if (U_I((unsigned)&d2_Unkf8aac4) != *(int *)(*(int *)(ev + 0x74) + 8) && cl == 0)
             return;
         if (U_I((unsigned)&d2_ClickedId) == 0) {
@@ -9032,9 +9030,9 @@ void he_Unk552ca0(int ev)
             he_FreeEvent((int *)ev);
             return;
         }
-        if (cl == 0 || U_I((unsigned)&full_data_6f262c) != *(int *)(ev + 0x74))
+        if (cl == 0 || U_I((unsigned)&he_ActiveSlot) != *(int *)(ev + 0x74))
             return;
-        *(char *)(unsigned)&full_data_6f2630 = 0;
+        *(char *)(unsigned)&he_SlotConfirmed = 0;
         he_Unk53d800(ev);
         he_FreeEvent((int *)ev);
     }
