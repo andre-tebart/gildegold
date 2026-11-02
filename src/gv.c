@@ -1940,24 +1940,25 @@ int gv_ExtendGrave(GVORDER *m)
     }
     return 0;
 }
-/* 0x4f0900, the message 0x4c60b0 type 3 (graveyard id +4 of g or -1, object id +1 of o, value v, byte b); -1 when o is 0 or b is -1 */
+/* 0x4f0900, sends graveyard order type 3 (GVORDER, cm_SendGraveOrder): sets the holder of the entry `entry` of the size
+   `size` of the graveyard building o to the character c (c[1]: its AICHAR.netId), or frees the entry when c is 0 (netId
+   -1); returns the sender's result, -1 when o is 0 or entry is -1 */
 
-int unk_Unk4f0900(int *g, char *o, int v, int b)
+int gv_OrderSetGraveHolder(int *c, char *o, int size, int entry)
 {
-    char m[0x1d];
+    GVORDER m;
+    int chr;
 
-    if (o != 0 && b != -1) {
-        if (g == 0)
-            *(int *)(m + 4) = -1;
-        else
-            *(int *)(m + 4) = g[1];
-        *(int *)(m + 8) = *(int *)(o + 1);
-        *(int *)m = 3;
-        *(int *)(m + 0xc) = v;
-        m[0x10] = (char)b;
-        *(short *)(m + 0x11) = 0;
-        *(int *)(m + 0x13) = 0;
-        return ((int (*)(void *))cm_SendGraveOrder)(m);
+    if (o != 0 && entry != -1) {
+        chr = c == 0 ? -1 : c[1];
+        m.chr = chr;
+        m.bld = ((AIBLD *)o)->id;
+        m.type = 3;
+        m.size = size;
+        m.entry = (unsigned char)entry;
+        m.years = 0;
+        m.price = 0;
+        return ((int (*)(void *))cm_SendGraveOrder)(&m);
     }
     return -1;
 }
@@ -4318,7 +4319,7 @@ void unk_Unk4f1de0(char *o)
                     z += 0x11;
                 } while (k < gv_EntryCounts[t]);
             }
-            h = unk_Unk4f0900(0, o, t, gv_EntryIndex(*(char **)(o + 0x65), e));
+            h = gv_OrderSetGraveHolder(0, o, t, gv_EntryIndex(*(char **)(o + 0x65), e));
         counted:
             rounds++;
         } else {
@@ -4365,7 +4366,7 @@ void unk_Unk4f1de0(char *o)
                             paid++;
                             goto next;
                         }
-                        h = unk_Unk4f0900(0, o, e[0], gv_EntryIndex(*(char **)(o + 0x65), e));
+                        h = gv_OrderSetGraveHolder(0, o, e[0], gv_EntryIndex(*(char **)(o + 0x65), e));
                     }
                     rounds++;
                 }

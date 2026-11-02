@@ -2662,7 +2662,7 @@ void he_Unk544630(int ev)
 unsigned int ai_Unk5c6530(int param_1, int param_2);
 int unk_Unk4f25d0();
 int gv_EntryIndex(char *r, int *e);
-int unk_Unk4f0900();
+int gv_OrderSetGraveHolder();
 int ai_Unk4c4fa0(void *p);
 void cm_SendRelations(int a, int b, int c, int d);
 void ai_Unk4c4ac0(int a, int b, int c);
@@ -2827,7 +2827,7 @@ void he_Unk544840(int ev)
                 ai_Unk4c4ac0(*(int *)(who + 4), 0x7c, 1.1f - *(float *)(who + 0x7c));
             }
             if (unk_Unk4f25d0(b, &x1, &x2) != 0)
-                unk_Unk4f0900(0, x1, *(int *)x2, gv_EntryIndex(*(int *)(x1 + 0x65), x2));
+                gv_OrderSetGraveHolder(0, x1, *(int *)x2, gv_EntryIndex(*(int *)(x1 + 0x65), x2));
             memset(msg, 0, sizeof(msg));
             *(int *)(msg + 0x34) = *(int *)(ev + 4);
             *(int *)(msg + 0x38) = *(int *)(b + 4);
@@ -17145,7 +17145,7 @@ void he_Unk572860(int ev)
 void ai_Unk5a97e0(int param_1, unsigned short *param_2, int param_3, int param_4, int param_5, int param_6);                 /* 0x5a97e0 */
 void ai_Unk5a9880(int param_1, unsigned short *param_2, int param_3, int param_4);                 /* 0x5a9880 */
 int unk_Unk4f0700(int *g, char *o, int v, int b, short s, int x);                 /* 0x4f0700 */
-int unk_Unk4f0900();                 /* 0x4f0900 */
+int gv_OrderSetGraveHolder();                 /* 0x4f0900 */
 void he_Unk5728d0(int ev);          /* 0x5728d0 */
 void he_Unk5729c0(int ev);          /* 0x5729c0 */
 
@@ -17179,7 +17179,7 @@ void he_Unk5729c0(int ev)
 
     if (bld == 0 || *(char *)((unsigned)&ai_BTypes + *(unsigned char *)bld * 0x24d) != 0x1d)
         return;
-    unk_Unk4f0900(0, bld, HM_I(ev, 0xb0), HM_B(ev, 0xb4));
+    gv_OrderSetGraveHolder(0, bld, HM_I(ev, 0xb0), HM_B(ev, 0xb4));
     per = (char *)gm_FindChar(HM_I(ev, 0xc));
     if (per != 0)
         ai_Unk5a9880((unsigned)&ai_Chars + *(unsigned short *)(bld + 0x27) * 0x21c, per, bld, HM_I(ev, 0xb0));
