@@ -140,7 +140,7 @@ void sv_ValueBar(int x, int y, int value, int k);                      /* 0x52ea
 void sv_DrawBalanceBar(int x, int y, char *c, int skill, int k);              /* 0x52eb50 */
 void sv_StartBand(void);                                                /* 0x52ee50 */
 void sv_EndBand(void);                                                /* 0x52eed0 */
-void sv_Unk52eee0(void);                                                /* 0x52eee0 */
+void sv_UpdateBand(void);                                                /* 0x52eee0 */
 void sv_Unk52f0d0(void);                                                /* 0x52f0d0 */
 void sv_Unk52f2c0(void);                                                /* 0x52f2c0 */
 void sv_Unk52f340(int *book);                                           /* 0x52f340 */

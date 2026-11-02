@@ -211,7 +211,8 @@ typedef struct AITASK {                 /* the character's scene character (ch.h
     int scriptId;                       /* 0x28, the event script it runs, -1 = none (CHARACTER.scriptId) */
     int bldId;                          /* 0x2c, the building the character was sent to (f3gm.c 0x4fbd10; CHARACTER.group) */
     int scriptGroup;                    /* 0x30, the group of the script that created / moved it (CHARACTER.scriptGroup) */
-    char pad34[0x54];
+    struct D3OBJECT *body;              /* 0x34, its body object (CHARACTER.obj) */
+    char pad38[0x50];
     struct D3SCENE *scene;              /* 0x88, the scene it stands in (CHARACTER.scene) */
 } AITASK;
 

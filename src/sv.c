@@ -6492,56 +6492,60 @@ void sv_EndBand(void)
 {
     SV_I((unsigned)&sv_BandActive) = 0;
 }
-/* 0x52eee0, during the rubber band: moves the second corner with the mouse (clamped to the view) and flags (+0x188) the characters of the table 0x7603a0 whose screen position (three float conversions, the
-   operands are lost: placeholders) lies inside the band; ROUGH */
+/* 0x52eee0, during the rubber band: moves sv_Band's mouse corner (clamped to d3_Viewport like sv_StartBand) and
+   selects the characters of ai_SceneChars the band holds: a live character the player may select
+   (gm_PermissionBits 0x800) whose body stands in d3_DefaultScene and has mesh data; its screen position is the
+   centre of the body's first 8 transformed vertices (the bounding box corners, camera space) projected with
+   d3_ScaleX / d3_ScaleY around d3_CenterX / d3_CenterY (the 1 / z truncated to an int, as the original does).
+   @deep read whole against the original and reconstructed (band clamp via min/max, the per-character
+   permission / scene / info tests, the 8-vertex centre in a padded D3VECTOR4 (frame matches 0x20), the 1/z
+   projection); all hunks equal but the allocation of info vs. the loop counter: ours 'mov eax,
+   [eax+0x1cc]; test eax, eax ... mov ecx, 8', the original's 'mov ecx, [eax+0x1cc]; test ecx, ecx ... mov
+   eax, ecx; mov ecx, 8' (one extra move). Tried: info local, v set before the inits, an indexed loop
+   (worse). */
 
-void sv_Unk52eee0(void)
+void sv_UpdateBand(void)
 {
-    unsigned fl;
-    int mx, my, m, x0, x1, y0, y1, px, py, c, *p, g;
+    int left, right, top, bottom, i, n, iz, sx, sy;
+    unsigned bits;
+    D3VECTOR4 p;
+    AICHAR *c;
+    D3PVERT *v;
+    D3OBJINFO *info;
 
-    if (SV_I((unsigned)&sv_BandActive) != 0) {
-        mx = SV_S((unsigned)&dm_L);
-        m = SV_I((unsigned)&d3_Viewport);
-        if (m <= mx)
-            m = mx;
-        sv_Band.x1 = SV_I(((unsigned)&d3_Viewport + 0x8)) - 1;
-        if (m < SV_I(((unsigned)&d3_Viewport + 0x8)) - 1 && (sv_Band.x1 = mx, mx < SV_I((unsigned)&d3_Viewport)))
-            sv_Band.x1 = SV_I((unsigned)&d3_Viewport);
-        my = SV_S(((unsigned)&dm_L + 0x2));
-        m = SV_I(((unsigned)&d3_Viewport + 0x4));
-        if (m <= my)
-            m = my;
-        sv_Band.y1 = SV_I(((unsigned)&d3_Viewport + 0xc)) - 1;
-        if (m < SV_I(((unsigned)&d3_Viewport + 0xc)) - 1 && (sv_Band.y1 = SV_I(((unsigned)&d3_Viewport + 0x4)), SV_I(((unsigned)&d3_Viewport + 0x4)) <= my))
-            sv_Band.y1 = my;
-        x0 = sv_Band.x0;
-        if (sv_Band.x1 <= sv_Band.x0)
-            x0 = sv_Band.x1;
-        y0 = sv_Band.y0;
-        if (sv_Band.y1 <= sv_Band.y0)
-            y0 = sv_Band.y1;
-        x1 = sv_Band.x0;
-        if (sv_Band.x0 <= sv_Band.x1)
-            x1 = sv_Band.x1;
-        y1 = sv_Band.y0;
-        if (sv_Band.y0 <= sv_Band.y1)
-            y1 = sv_Band.y1;
-        p = (int *)(unsigned)&ai_SceneChars;
-        do {
-            c = *p;
-            if (c != 0 && *(char *)(c + 8) != 0) {
-                fl = gm_PermissionBits(ai_PlayerId, 0, 0, c);
-                *(char *)(c + 0x188) = 0;
-                if ((fl & 0x800) != 0 && (g = *(int *)(c + 0x184)) != 0 && *(char **)(g + 0x88) == ai_Unk5fb5b0 && *(int *)(*(int *)(g + 0x34) + 0x1cc) != 0) {
-                    px = (int)0.0f;             /* the screen position of the character (float operands lost) */
-                    py = (int)0.0f;
-                    if (x0 <= px && px <= x1 && y0 <= py && py <= y1)
-                        *(char *)(c + 0x188) = 1;
-                }
-            }
-            p++;
-        } while ((int)p < (unsigned)((unsigned)ai_SceneChars + 0x80));
+    if (sv_BandActive == 0)
+        return;
+    sv_Band.x1 = min(max(d3_Viewport.left, dm_L.x), d3_Viewport.right - 1);
+    sv_Band.y1 = min(max(d3_Viewport.top, dm_L.y), d3_Viewport.bottom - 1);
+    left = min(sv_Band.x0, sv_Band.x1);
+    top = min(sv_Band.y0, sv_Band.y1);
+    right = max(sv_Band.x0, sv_Band.x1);
+    bottom = max(sv_Band.y0, sv_Band.y1);
+    for (i = 0; i < 0x20; i++) {
+        c = (AICHAR *)ai_SceneChars[i];
+        if (c == 0 || c->health == 0)
+            continue;
+        bits = gm_PermissionBits(ai_PlayerId, 0, 0, (int)c);
+        c->selected = 0;
+        if ((bits & 0x800) == 0 || c->model == 0 || c->model->scene != d3_DefaultScene || (info = c->model->body->info) == 0)
+            continue;
+        p.x = 0.0f;
+        p.y = 0.0f;
+        p.z = 0.0f;
+        v = (D3PVERT *)info->keys;
+        for (n = 8; n != 0; n--, v++) {
+            p.x += v->x;
+            p.y += v->y;
+            p.z += v->z;
+        }
+        p.x *= 0.125;
+        p.y *= 0.125;
+        p.z *= 0.125;
+        iz = (int)(1.0 / p.z);
+        sx = (int)(d3_ScaleX * iz * p.x + d3_CenterX);
+        sy = (int)(d3_ScaleY * iz * p.y + d3_CenterY);
+        if (sx >= left && sx <= right && sy >= top && sy <= bottom)
+            c->selected = 1;
     }
 }
 /* 0x52f0d0, like 0x52eee0 (the flags come from 0x4ce170): moves the second corner with the mouse (clamped to the view) and flags (+0x188) the characters of the table 0x7603a0 whose screen position (three float conversions, the
@@ -7441,7 +7445,7 @@ l64:
         && ((SV_I((unsigned)&ai_Unk633738) == 0 || (mask & 0x4000) == 0 || (mask & 0x40) == 0 || (sv_Unk530670(), SV_I((unsigned)&ai_FrameWait) == 0))
             && ((mask & 0x10000) == 0 || SV_I((unsigned)&ai_Unk6f0dbc) == 0 || (d3t_DrawRain(SV_I((unsigned)&ai_Unk6f0dbc)), SV_I((unsigned)&ai_FrameWait) == 0)) && SV_I((unsigned)&sv_BandActive) != 0)) {
         if (u5 == 0)
-            sv_Unk52eee0();
+            sv_UpdateBand();
         else
             sv_Unk52f0d0();
         sv_Unk52f2c0();
