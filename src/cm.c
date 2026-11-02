@@ -2622,7 +2622,7 @@ int ai_Unk4c6ec0(G17MSG *m, G17STAT *s)
     } else {
         if (y != 0)
             return 1;
-        unk_Unk503c60(*(unsigned short *)z, 1);
+        gm_KillSpieler(*(unsigned short *)z, 1);
     }
     if (s != 0)
         s->state = 1;
@@ -3614,7 +3614,7 @@ int ai_Unk4c8de0(G17MSG *m, G17STAT *s)
         sv_MoveToGroup(0, 0, *(unsigned short *)c, 0);
         if (*(char **)(c + 0x184) != 0 && *(int *)(*(char **)(c + 0x184) + 0x28) != -1)
             evt_Stop(evt_FindById(*(int *)(*(char **)(c + 0x184) + 0x28)));
-        unk_Unk503c60(*(unsigned short *)c, G17_I(*m, 4));
+        gm_KillSpieler(*(unsigned short *)c, G17_I(*m, 4));
     }
     if (s != 0 && ok)
         s->state = 1;

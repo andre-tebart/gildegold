@@ -147,7 +147,7 @@ int gm_PlaceOnStage(int id, int a, int b, int *p4, int *p5);                    
 void gm_ChooseHeadIcon(unsigned short *c);                     /* 0x4fb890 */
 void gm_RefreshGoodsLists(unsigned p);                     /* 0x4ff190 */
 int gm_AddObjekt(int id, int proto, int n);                     /* 0x500970 */
-void unk_Unk503c60(int c, int mode);                     /* 0x503c60 */
+void gm_KillSpieler(int c, int mode);                     /* 0x503c60 */
 void cm_SendCommand(void *p);                     /* 0x4c61b0 */
 extern char ai_Chars[][0x21c];      /* 0x770b80, the characters */
 extern signed char ai_Relations[768][768];  /* 0x7e5360 */

@@ -4994,7 +4994,7 @@ void he_EndPersonEvents(unsigned short *p);                     /* 0x5538b0 */
 void he_EndKind23Events(int ev);                     /* 0x568aa0 */
 void d3io_NoopCallback();                     /* 0x44ee40 */
 int amt_ClearOffices();                     /* 0x4e6d80 */
-void unk_Unk503c60(int c, int mode);                     /* 0x503c60 */
+void gm_KillSpieler(int c, int mode);                     /* 0x503c60 */
 extern struct D3SCENE *d3_DefaultScene;  /* 0x5fb5b0 (as d3.h / anm.h) */
 
 /* 0x502570, the string-table number (0x60e + n) of the picture of the good o (an object of the kinds 2 / 6): the pairs (prototype number, n) of a local table (0x13 -> 1, 0x54 -> 2, 0x15 -> 4 ..), searched for the object's prototype number up to the 0 entry; -1 when it is not in it or the object is of another kind */
@@ -5069,7 +5069,7 @@ void gm_ShowSlotObjects(int unused, int scene, int c)
 }
 
 /* ---- the character and building life cycle 0x502b60 .. 0x504510 (ROUGH drafts, written out of address order at the end of the file) ---- */
-/* ai_Unk91f716: view of ai_Crimes (tools/data_views.py) */
+#define GM_CRIMES ((CRIME *)ai_Crimes)  /* 0x91f700, ai_Crimes (cm.c, char[]) as its 0x200 CRIME records */
 extern int ai_Evidence[0x800][2];              /* 0x91b6e0 .. 0x91f6e0: pairs of ints */
 extern int ai_Unk770ae0_day;            /* the clock's day (0x770ae0) */
 #ifndef TIME_VIEW_H
@@ -5668,93 +5668,97 @@ void gm_ReleaseCharacter(ORDCHAR *c)
         amt_ClearOffices(c);
     }
 }
-/* 0x503c60, "gm_KillSpieler": removes the character c: with mode 0 only its data is held (kind 0xf = dead; the clock stamped at +0x28 / +0x48; the party records / pairs of the player cleaned up), else it is removed for good (the slot freed, the number of living (0x6f1bc0) decremented, the references in the other characters' relative lists (+0x5c ..) cleared). ROUGH */
-
-void unk_Unk503c60(int c, int mode)
+/* 0x503c60, "gm_KillSpieler": kills the character c. Unless it is dead already (kind 0xf): its health is cleared,
+   the day stamped at +0x28, what hangs on it released (gm_ReleaseCharacter), its kind set to 0xf, and every crime
+   record it is the culprit of is freed together with the evidence pairs of that crime (when the player's character
+   held some, ai_ShowEvidenceVoidNews tells him). Then always: its inventory is freed, its model deleted, a home of
+   the class 1 loses an inhabitant, the two building links are cleared. mode 0 keeps the record ("holding data");
+   otherwise the record is removed for good: the count of the living (ai_CharCount) drops, its netId is cleared in
+   every relative list, the record zeroed and freed (id 0xffff, netId -1, no relatives); mode 1 logs "permanently"
+   @deep Read whole against the original 0x503c60..0x503e7b and rewritten (ORDCHAR / CRIME typed, the crime
+   and relative scans as index loops: the original's signed jl ends; mode != 0 first, the 'holding data'
+   log as the else). Structure equal, ours=165 original=166; the remaining hunks are allocation: (1) the
+   original spills ebp (c * 0x21c) to [esp+0x18] (frame 0x20c vs ours 0x208: the one extra instruction, mov
+   [esp+0x18],ebp, and its reload mov ebp,[esp+0x18] in the evidence loop) because it uses ebp for
+   peer->netId (mov ebp,[edi+4]; cmp ebp,[eax]) where ours takes ebx; (2) the original keeps ch->netId in
+   ebx across the crime loop (mov ebx,[esi+4]; cmp [ecx],ebx) where ours reloads it per record (mov
+   eax,[esi+4]; mov edx,[ecx]; cmp edx,eax); (3) cmp ebx,edi (edi = 0 cached) vs test ebx,ebx for mode; (4)
+   mov word [esi],0xffff scheduled after the second lea/mov ecx,8. Tried: ch->netId in a local before the
+   loop (VC6 propagates it back, 15 ins), netId (the stack local) as the compare (19). */
+void gm_KillSpieler(int c, int mode)
 {
     char buf[0x200];
-    char *p;
-    int id, i, cnt;
-    char *peer;
-    int *q, *r;
-    unsigned char *b;
-    int k;
+    ORDCHAR *ch;
+    ORDCHAR *peer;
+    int netId;
+    int crime;
+    int cnt;
+    int i;
+    int j;
 
-    id = *(int *)(ai_Chars[c] + 4);
-    p = ai_Chars[c];
-    if (p[2] != 0xf) {
-        *(int *)(p + 8) = 0;
-        *(unsigned short *)(p + 0x28) = *(unsigned short *)ai_Time;
-        gm_ReleaseCharacter((ORDCHAR *)p);
-        p[2] = 0xf;
+    ch = &ORD_CHARS[c];
+    netId = ORD_CHARS[c].netId;
+    if (ch->kind != 0xf) {
+        ch->health = 0;
+        ch->w028 = (short)GM_NOW.day;
+        gm_ReleaseCharacter(ch);
+        ch->kind = 0xf;
         peer = 0;
         cnt = 0;
         for (i = 0; i < 0x300; i++) {
-            if (ai_Chars[i][2] == 6) {
-                peer = ai_Chars[i];
+            if (ORD_CHARS[i].kind == 6) {
+                peer = &ORD_CHARS[i];
                 break;
             }
         }
-        q = (int *)(ai_Unk91f716);
-        do {
-            if (*q == *(int *)(ai_Chars[c] + 4)) {
-                k = *(int *)((char *)q - 0x16);
-                r = ai_Evidence;
-                do {
-                    if (r[1] == k) {
-                        if (peer != 0 && *(int *)(peer + 4) == *r)
+        for (i = 0; i < 0x200; i++) {
+            if (GM_CRIMES[i].culprit == ch->netId) {
+                crime = GM_CRIMES[i].id;
+                for (j = 0; j < 0x800; j++) {
+                    if (ai_Evidence[j][1] == crime) {
+                        if (peer != 0 && peer->netId == ai_Evidence[j][0])
                             cnt++;
-                        r[1] = -1;
-                        *r = -1;
+                        ai_Evidence[j][1] = -1;
+                        ai_Evidence[j][0] = -1;
                     }
-                    r += 2;
-                } while ((int)r < ((unsigned)ai_Evidence + 0x4000));
-                q[-1] = -1;
-                *q = -1;
-                *(int *)((char *)q - 0x16) = -1;
+                }
+                GM_CRIMES[i].victim = -1;
+                GM_CRIMES[i].culprit = -1;
+                GM_CRIMES[i].id = -1;
             }
-            q = (int *)((char *)q + 0x2d);
-        } while ((int)q < ((unsigned)((unsigned)ai_Unk91f716 + 0x59fe) + 0x2));
-        if (cnt != 0 && peer != 0 && peer != p)
-            ai_ShowEvidenceVoidNews(peer, p);
+        }
+        if (cnt != 0 && peer != 0 && peer != ch)
+            ai_ShowEvidenceVoidNews((int)peer, (unsigned short *)ch);
     }
-    gm_FreeList(ai_Chars[c] + 0x178);
-    if (*(int *)(ai_Chars[c] + 0x184) != 0) {
-        ch_Delete(*(int *)(ai_Chars[c] + 0x184));
-        *(int *)(ai_Chars[c] + 0x184) = 0;
+    gm_FreeList(&ch->inventory);
+    if (ch->model != 0) {
+        ch_Delete(ch->model);
+        ch->model = 0;
     }
-    b = *(unsigned char **)(ai_Chars[c] + 0x170);
-    if (b != 0) {
-        if (ai_BTypes[*b * 0x24d] == 1 && b[0x65] != 0)
-            b[0x65]--;
-        *(int *)(ai_Chars[c] + 0x170) = 0;
+    if (ch->bld2 != 0) {
+        if (ai_BTypes[ch->bld2->type * 0x24d] == 1 && ch->bld2->people > 0)
+            ch->bld2->people--;
+        ch->bld2 = 0;
     }
-    *(int *)(ai_Chars[c] + 0x16c) = 0;
-    if (mode == 0) {
-        sprintf(buf, "gm_KillSpieler: Killing Player <id = %i>, holding data", id);
-    } else {
-        if (*(short *)p != -1)
+    ch->bld = 0;
+    if (mode != 0) {
+        if (ch->id != 0xffff)
             ai_CharCount--;
-        q = (int *)(ai_Chars[0] + 0x5c);
-        do {
-            i = 8;
-            r = q;
-            do {
-                if (*r == *(int *)(ai_Chars[c] + 4))
-                    *r = -1;
-                r++;
-                i--;
-            } while (i != 0);
-            q += 0x87;
-        } while ((int)q < ((unsigned)((unsigned)ai_Chars + 0x65402) + 0x5a));
-        memset(p, 0, 0x21c);
-        *(short *)p = -1;
-        *(int *)(ai_Chars[c] + 4) = -1;
-        r = (int *)(ai_Chars[c] + 0x5c);
-        for (i = 8; i != 0; i--)
-            *r++ = -1;
+        for (j = 0; j < 0x300; j++) {
+            for (i = 0; i < 8; i++) {
+                if (ORD_CHARS[j].relatives[i] == ch->netId)
+                    ORD_CHARS[j].relatives[i] = -1;
+            }
+        }
+        memset(ch, 0, 0x21c);
+        ch->id = 0xffff;
+        ORD_CHARS[c].netId = -1;
+        for (i = 0; i < 8; i++)
+            ORD_CHARS[c].relatives[i] = -1;
         if (mode == 1)
-            sprintf(buf, "gm_KillSpieler: Killing Player <id = %i> permanently", id);
+            sprintf(buf, "gm_KillSpieler: Killing Player <id = %i> permanently", netId);
+    } else {
+        sprintf(buf, "gm_KillSpieler: Killing Player <id = %i>, holding data", netId);
     }
 }
 /* 0x503e80, resets the character state: 0x503c60 (i, 2) for all 0x300 characters, clears the 0x2b-int records from 0x7d5f80 to 0x7d6a40 (first word -1) and the three counters 0x6f1bc0 / 0x6f1bb8 / 0x6f1bbc */
@@ -5767,7 +5771,7 @@ void gm_ResetCharacters(void)
 
     i = 0;
     do {
-        unk_Unk503c60(i, 2);
+        gm_KillSpieler(i, 2);
         i++;
     } while (i < 0x300);
     p = gm_PlayerRecords;
@@ -7350,7 +7354,7 @@ unsigned gm_Unk5064d0(int a, int b)
     *(int *)(ai_Chars[0] + off + 0x1a8) = money;
     *(int *)(ai_Chars[0] + off + 0x194) = 4;
     *(int *)(ai_Chars[0] + off + 0x1c8) = 0;
-    unk_Unk503c60(sa, 0);
+    gm_KillSpieler(sa, 0);
     return sa;
 }
 

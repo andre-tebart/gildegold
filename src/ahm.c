@@ -1141,7 +1141,7 @@ int ahm_DeleteAlchemist(int unused, int *rec, unsigned char *o)
             q += 2;
         }
         memset(rec, 0, 0x3c);
-        unk_Unk503c60(*(unsigned short *)c, 1);
+        gm_KillSpieler(*(unsigned short *)c, 1);
         return 1;
     }
     return 0;

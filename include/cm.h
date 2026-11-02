@@ -132,7 +132,7 @@ int gv_FindHeldEntry(void *a, unsigned char **o, int *e);                       
 int gv_EntryIndex(char *r, int *e);                                       /* 0x4ef6b0 */
 int unk_Unk4f01d0(int *g, char *o, int v, int b);                     /* 0x4f01d0 */
 int gm_FreeBuilding(char *b);                                                       /* 0x5012e0 */
-void unk_Unk503c60(int c, int mode);                                     /* 0x503c60 */
+void gm_KillSpieler(int c, int mode);                                     /* 0x503c60 */
 int gm_TakeObjekt(int id, int good, int n);                                       /* 0x500a40 */
 int gm_AddObjekt(int id, int proto, int n);                                       /* 0x500970, hmt.h: void * n */
 int gm_AddNegative(int id, int good, int n);                                       /* 0x500ae0 */
