@@ -335,7 +335,7 @@ int unk_Unk4f22a0(char *o, unsigned char m);  /* 0x4f22a0 */
 
 int gv_FindHeldEntry(void *a, unsigned char **o, int *e);  /* 0x4f2540 */
 int gv_FindReservedEntry(void *a, unsigned char **o, int *e);  /* 0x4f25d0 */
-float unk_Unk4f2660(char *o);           /* 0x4f2660 */
+float gv_SeanceChance(char *o);           /* 0x4f2660 */
 typedef struct AIDEC {                  /* 0x24 bytes, a record of the AI decision table 0x611258 (29 records, gv_GetTableRecord copies one) */
     unsigned char id;                   /* 0x00, the record's own index 0 .. 0x1c (CRIME.law of a crime against it) */
     unsigned char valueText;            /* 0x01, how gv_TableRecordText shows cur: 0 the number, 1 / 2 / 3 a name of the texts 0x13dd / 0x13e6 / 0x13ec */

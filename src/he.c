@@ -787,7 +787,7 @@ void he_MessageBoxQuickjump(int a1, int a2, char *text, char fl, int a5, int a6,
 #include <math.h>
 void he_Unk55e3a0(int ev);
 void he_FindFigurePlace(int p);
-void he_Unk56fbc0(int rec, unsigned short num);
+void he_SetLifeByAge(int rec, unsigned short num);
 
 void d3t_SetColor(D3OBJECT *obj, unsigned char r, unsigned char g, unsigned char b);
 struct D3OBJECT;
@@ -15360,7 +15360,7 @@ void he_Unk56e070(char *c, int ev, unsigned char *b, int task)
         }
         break;
     case 3:
-        he_Unk56fbc0(c, (util_Random(3) & 0xffff) + 1);
+        he_SetLifeByAge(c, (util_Random(3) & 0xffff) + 1);
         ai_Unk5a9d00((void *)((unsigned)&ai_Chars + *(unsigned short *)(b + 0x27) * 0x21c), c, b);
         break;
     case 4:
@@ -15991,7 +15991,7 @@ int he_Unk56f980(void)
 }
 /* 0x56fbc0, the progress value of a building record (rec + 0x18 .. the value +0x1c, the steps +0x14, the start +0x20): num not above +0x20 -> 0x4c4ac0 (rec + 4, 0x1c, rec + 0x18 - rec + 0x1c); else (num - +0x20) steps of v = v - step + step / v from v = num - +0x20, then 0x4c4ac0 (rec + 4, 0x1c, v - rec + 0x1c) */
 
-void he_Unk56fbc0(int rec, unsigned short num)
+void he_SetLifeByAge(int rec, unsigned short num)
 {
     float f, v, fnum;
     int n;
@@ -16231,7 +16231,7 @@ void he_Unk5702e0(int ev)
                 if (1.0 < util_RandomF() + f) {
                     job = *(unsigned char **)(r + 0x16c);
                     HM_I(ev, 0xbc) = 1;
-                    he_Unk56fbc0(b2, (char)job[0x5c] / 0x32 + (util_Random(3) & 0xffff) + *(unsigned char *)((unsigned)&ai_BTypes + *job * 0x24d + 0x247) * 2);
+                    he_SetLifeByAge(b2, (char)job[0x5c] / 0x32 + (util_Random(3) & 0xffff) + *(unsigned char *)((unsigned)&ai_BTypes + *job * 0x24d + 0x247) * 2);
                     ai_Unk5a9990(b2);
                     HM_I(ev, 0x70) = HM_I(ev, 0x70) + 1;
                     return;

@@ -2811,7 +2811,7 @@ int gv_FindReservedEntry(void *a, unsigned char **o, int *e)
 }
 /* 0x4f2660, a rate of the object o: 30 (item 0x20f) + 10 (0x21f) + 15 (0x222) + 25 (0x223), times 0.0125 * 0.5 + 0.5 */
 
-float unk_Unk4f2660(char *o)
+float gv_SeanceChance(char *o)
 {
     float x;
 
@@ -3436,7 +3436,7 @@ int gv_HeldCrimeCount(int culprit, unsigned t)
 /* 0x4f41b0, the character with the most open crimes the character c holds no evidence of yet: goes over the open
    crimes (state > 0) of a living culprit other than c whose pair (c's netId, crime id) is not in ai_Evidence, counts
    them per culprit (up to 0x300 culprits) and returns the culprit with the most; ids[] gets the ids of its crimes (up
-   to max), *cnt their number; 0 when there is none (the seance's ghost: ai_Unk585cb0) */
+   to max), *cnt their number; 0 when there is none (the seance's ghost: ai_SeanceGhost) */
 
 char *gv_FindAccused(char *c, int max, int *ids, int *cnt)
 {

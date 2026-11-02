@@ -685,6 +685,7 @@ TUTSTATE *const ai_Tutorial = (TUTSTATE *)full_data_6fa060;  /* 0x5eec60, the po
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define ai_TimeT (*(AITIME *)&ai_Time)  /* 0x770ae0, ai_Time (anm.c: char[14]) as the AITIME it is */
 #define ai_TimeK (*(AHMCLOCK *)&ai_Time)  /* 0x770ae0, ai_Time as the messages here copy it: @original 3 ints and a short (ahm.h AHMCLOCK) */
+#define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original ai_SeanceGhost reads the 16-bit result (mov si, ax) */
 #define ai_ClockMsVolatile (*(volatile int *)&ai_ClockMs)  /* 0x6333cc, @original: the byte-matched ai_TutorialTick reloads the clock after every read (a timer-written int; its owner declares it plain int) */
 typedef struct SHOTENTRY {   /* 0x10 bytes */
     int obj;                 /* +0x0, -1 when empty */
@@ -8828,72 +8829,65 @@ void ai_SeanceRollFormulas(int n, int *ids, int *variants, int base)
     }
 }
 
-int snd_VoiceVariant(); char *gv_FindAccused(char *c, int max, int *ids, int *cnt); float unk_Unk4f2660(); float util_RandomF();
+int snd_VoiceVariant(); char *gv_FindAccused(char *c, int max, int *ids, int *cnt); float gv_SeanceChance(); float util_RandomF();
 void cm_SendProofExecuted(int a, int b); 
 
-/* 0x585cb0, the graveyard seance outcome (633 B): ch = the character, ev = the event record (+0x14 / +0x4c the
-   voice pair). 0x4c24e0 (ev + 0x14, ev + 0x4c) the voice variant, 0x5859c0 (ch, ev) the ritual (the script handle
-   kept), 0x4f41b0 (ch, 4, ids, &cnt) the ghost candidates; mode = (its result == 0), overridden to 2 when
-   0x42ec20 () + 0x4f2660 (ch) - 0.1f < 1.0f. The window "Locations_Friedhof_Friedhof" (0x62a5bc) with 0x476f80 /
-   0x475600, the sound 0x52ea30, 0xf8a668 = -1; 0x4c24e0 again (the voice handle). Mode 0 (a ghost found): the
-   records 0x4c4ed0 (the id, the character + 4), 0x56fbc0 (ch, 1), the text 0x40ef (0x40cc, the ghost's id word)
-   and the news 0x4c27d0 (the voice, 0, "GEIST_KOMMT" 0x62a70c, 0x42ec00 (8) & 0xffff, 0xfa). Mode 1:
-   0x42ec00 (0x200) & 0xffff + 0x200 times 0x20 as the amount, 0x4c47e0 (the character + 4, -1, 0x6f1bc5, the
-   amount), the text 0x40f0 (0x40cc, the amount) and the same news. Mode 2: the text 0x40d3 (0x40cc) and the
-   news "GEIST_KOMMT_NICHT" (0x62a6f8). The pump loop 0x5309a0 (this window, 0x777c7): the escape 0x14673a0 ->
-   0x6f22a0 = 1; the pump 0 -> 0x4758f0 (window), the script freed (0x429e90) */
-void ai_Unk585cb0(char *ch, char *ev)
+/* 0x585cb0, the seance kind 1, the ghost of the dead person (rec = the graveyard, ev = the seance window's
+   result): the dead person's voice (snd_VoiceVariant), the ritual (ai_SeanceRitual), then the outcome: the ghost
+   names the player's accusers (gv_FindAccused, up to 4: their proofs are dropped, cm_SendProofExecuted, the
+   player's life value is set back to the age 1, txt 0x40ef with the first accuser), or, with none, it gives
+   money ((0x200 .. 0x3ff) * 0x20, txt 0x40f0); when util_RandomF() + gv_SeanceChance (rec) - 0.1 < 1 it does not
+   come at all (txt 0x40d3). The form "Locations\Friedhof\Friedhof" shows the outcome with the voice
+   "GEIST_KOMMT" / "GEIST_KOMMT_NICHT"; it stays until a right click and pump end, then the script is stopped */
+void ai_SeanceGhost(AIBLD *rec, GVSEANCE *ev)
 {
     int ids[4];
     int cnt;
-    char *p;
+    AICHAR *accuser;
     float f;
     int win;
     int voice;
     int mode;
     int script;
     int i;
+    unsigned short r;
     int n;
 
-    snd_VoiceVariant(U_I(ev + 0x14), U_I(ev + 0x4c));
-    script = ai_SeanceRitual(ch, ev);
-    p = (char *)gv_FindAccused((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, 4, ids, &cnt);
-    mode = p == 0;
-    f = unk_Unk4f2660(ch);
-    if (util_RandomF() + f - (0.100000001f) < *(float *)(unsigned)&ai_Unk5eb780)
+    snd_VoiceVariant(ev->grave.id, ev->grave.sex);
+    script = ai_SeanceRitual((char *)rec, ev);
+    accuser = (AICHAR *)gv_FindAccused(ai_Chars[ai_PlayerId], 4, ids, &cnt);
+    mode = accuser == 0;
+    f = gv_SeanceChance((char *)rec);
+    if (util_RandomF() + f - 0.1f < 1.0f)
         mode = 2;
-    win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62a5bc);
+    win = d2_OpenForm(0, 0, "Locations\\Friedhof\\Friedhof");
     d2_SetPointerSprite(0, 0);
     d2_CentreViewWindows(win);
     d2_SetForm(win, 0);
-    sv_FitForm(U_I((unsigned)&d2_LastWindow));
-    U_I((unsigned)&d2_ClickedId) = -1;
+    sv_FitForm(d2_LastWindow);
+    d2_ClickedId = -1;
     d2_SetForm(win, 1);
-    voice = snd_VoiceVariant(U_I(ev + 0x14), U_I(ev + 0x4c));
+    voice = snd_VoiceVariant(ev->grave.id, ev->grave.sex);
     if (mode == 0) {
         for (i = 0; i < cnt; i++)
-            cm_SendProofExecuted(ids[i], *(int *)((unsigned)&ai_CharInts + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c));
-        he_Unk56fbc0((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, 1);
-        io_PrintText(0x40ef, 0x40cc, *(unsigned short *)p);
-        i = util_Random(8) & 0xffff;
-        snd_QueueVoice(voice, 0, (char *)(unsigned)&full_data_62a70c, i, 0xfa);
+            cm_SendProofExecuted(ids[i], ai_CharsT[ai_PlayerId].netId);
+        he_SetLifeByAge(ai_Chars[ai_PlayerId], 1);
+        io_PrintText(0x40ef, 0x40cc, accuser->id);
+        snd_QueueVoice(voice, 0, "GEIST_KOMMT", util_Random(8) & 0xffff, 0xfa);
     } else if (mode == 1) {
-        n = ((util_Random(0x200) & 0xffff) + 0x200) << 5;
-        cm_SendMoveGoods(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c), -1, *(unsigned char *)(unsigned)&ai_OwnPlayer, n);
+        r = util_RandomU(0x200);
+        n = (r + 0x200) << 5;
+        cm_SendMoveGoods(ai_CharsT[ai_PlayerId].netId, -1, ai_OwnPlayer, n);
         io_PrintText(0x40f0, 0x40cc, n);
-        i = util_Random(8) & 0xffff;
-        snd_QueueVoice(voice, 0, (char *)(unsigned)&full_data_62a70c, i, 0xfa);
+        snd_QueueVoice(voice, 0, "GEIST_KOMMT", util_Random(8) & 0xffff, 0xfa);
     } else {
         io_PrintText(0x40d3, 0x40cc);
-        i = util_Random(8) & 0xffff;
-        snd_QueueVoice(voice, 0, (char *)(unsigned)&full_data_62a6f8, i, 0xfa);
+        snd_QueueVoice(voice, 0, "GEIST_KOMMT_NICHT", util_Random(8) & 0xffff, 0xfa);
     }
-    for (;;) {
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0)
-            U_I((unsigned)&sv_PopRequest) = 1;
-        if (sv_RunFrame(ai_Unk585cb0, 0x777c7) == 0)
-            break;
-    }
+    do {
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
+    } while (sv_RunFrame(ai_SeanceGhost, 0x777c7) != 0);
     d2_CloseView(win);
     if (script != 0)
         evt_Stop((EVTSCRIPT *)script);
@@ -8923,7 +8917,7 @@ void ai_Unk585f30(char *ch, char *ev)
     script = ai_SeanceRitual(ch, ev);
     amount = 0;
     mode = 0;
-    if (util_RandomF() + unk_Unk4f2660(ch) - (0.400000006f) < *(float *)(unsigned)&ai_Unk5eb780) {
+    if (util_RandomF() + gv_SeanceChance(ch) - (0.400000006f) < *(float *)(unsigned)&ai_Unk5eb780) {
         mode = 2;
     } else {
         amount = (int)(gm_GetWorth(*(unsigned short *)(unsigned)&ai_PlayerId) * 0.25f);
@@ -8945,7 +8939,7 @@ void ai_Unk585f30(char *ch, char *ev)
         *(unsigned short *)(msg + 0x34) = *(unsigned short *)((unsigned)&ai_Time + 0xc);
         *(int *)(msg + 0x58) = amount;
         cm_SendLongMessage(msg);
-        he_Unk56fbc0((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, 3);
+        he_SetLifeByAge((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, 3);
     }
     win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62a5bc);
     d2_SetPointerSprite(0, 0);
@@ -9030,7 +9024,7 @@ void ai_Unk586200(char *ch, char *ev)
         mode = 0;
         item = rec[i][0];
     }
-    if (util_RandomF() + unk_Unk4f2660(ch) - 0.2f < *(float *)(unsigned)&ai_Unk5eb780)
+    if (util_RandomF() + gv_SeanceChance(ch) - 0.2f < *(float *)(unsigned)&ai_Unk5eb780)
         mode = 2;
     win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62a5bc);
     d2_SetPointerSprite(0, 0);
@@ -9041,7 +9035,7 @@ void ai_Unk586200(char *ch, char *ev)
     d2_SetForm(win, 1);
     if (mode == 0) {
         cm_SendExSellObject(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c), -1, item, 1, *(unsigned char *)(unsigned)&ai_OwnPlayer, 0);
-        he_Unk56fbc0((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, 2);
+        he_SetLifeByAge((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, 2);
         io_PrintText(0x40f2, 0x40cc, item * 2 + 0x9a8);
         snd_PlayVoice(voice, 0, (char *)(unsigned)&full_data_62a70c, util_Random(8) & 0xffff);
     } else if (mode == 1) {
@@ -9138,7 +9132,7 @@ void ai_Unk586610(char *rec)
         if (out[1] != 0)
             gm_SendMoneyDelta(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c), -out[1]);
         if (out[0] == 1)
-            ai_Unk585cb0(rec, (char *)out);
+            ai_SeanceGhost(rec, (char *)out);
         else if (out[0] == 2) {
             ai_Unk586200(rec, (char *)out);
             sv_CameraFollow();
