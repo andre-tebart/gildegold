@@ -4874,7 +4874,7 @@ void he_Unk54c4c0(int ev)
 }
 
 int ai_IsLocalWorker();
-float gm_AddHealth(unsigned id, int d);
+float gm_AddHealth(unsigned short id, int d);
 
 /* 0x54c510, a Ghidra miss: the test of a figure record for the accident simulation: alive (word 0 != 0xffff, +8 != 0), kind 0, with a boss (+0x16c) whose id (+1) is the one of its job record (+0x184 + 0x2c): then 0x47e840 (rec), else 0 */
 int he_Unk54c510(int rec)
@@ -5477,7 +5477,7 @@ void he_Unk54da80(int ev)
 float ord_GetStatistics(int *o);
 int ord_GetKindRecord();
 void cm_SendBoss(int a, int b);
-float gm_AddHealth(unsigned id, int d);
+float gm_AddHealth(unsigned short id, int d);
 
 /* 0x54de60, a Ghidra miss: the init of the brawl event: the due clock now, +0xac = +0xb0 = 0, posted (state 0) */
 void he_Unk54de60(int ev)
@@ -8612,7 +8612,7 @@ int cm_SendLongMessage(char *msg);
 float gm_GetSkill(char *c, int skill);
 int gm_GetWorth(unsigned short id);
 float gm_CharacterHealth();
-float gm_AddHealth(unsigned id, int d);
+float gm_AddHealth(unsigned short id, int d);
 void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d);
 
 /* 0x552200, the allocation handler of the 0x552270 event: state 0, due now, minute word 9 + random 0x42ec00(3), +0xb0 = 0 (no answer yet), +0x58 = random 0x42ec00(4) * 15 */

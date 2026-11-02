@@ -99,7 +99,7 @@ int gm_FreeBuilding(char *b);  /* 0x5012e0 */
 int gm_RemoveObjectFromBuilding(int b, int id);  /* 0x503480 */
 unsigned char *gm_CreateBuilding(unsigned char k, unsigned short own);  /* 0x501580 */
 extern int gm_AllowAll;  /* 0x6f2448 */
-float gm_AddHealth(unsigned id, int d);  /* 0x4fca40 */
+float gm_AddHealth(unsigned short id, int d);  /* 0x4fca40 */
 int gm_AddNegative(int id, int proto, int n);  /* 0x500ae0 */
 float gm_CharacterHealth(short *c);  /* 0x4fc820 */
 extern int ch_CurrentGroup;  /* 0x5f1294 */

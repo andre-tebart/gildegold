@@ -99,7 +99,7 @@ int gm_GetGoodsValue(char *c);              /* 0x509e60 */
 int gm_TitleGroup(int n);                /* 0x504ad0 */
 char * gm_PlayerSeat(int p);                     /* 0x504a80 */
 int gm_PlayerFactor(int a, unsigned char k);                     /* 0x5085f0 */
-int gm_IsUnderAge(unsigned id);         /* 0x4fd7e0 */
+int gm_IsUnderAge(unsigned short id);         /* 0x4fd7e0 */
 
 #define CH(i) (ai_Chars[(unsigned short)(i)])
 #define REC_RATE(rec) ((rec)[6])
@@ -418,7 +418,7 @@ int gm_CharacterIncomes(unsigned id, GMINCOME *out, unsigned char flags)
 }
 
 struct AMTKIND; int amt_GetKind(int k, struct AMTKIND *out);                   /* 0x4e6f80 */
-float gm_AddHealth(unsigned id, int d);  /* 0x4fca40 */
+float gm_AddHealth(unsigned short id, int d);  /* 0x4fca40 */
 float gm_GetSkill(char *c, int skill);                     /* 0x504ec0 */
 float gm_Mix(int a, int b, int c);                     /* 0x504e20 */
 void ai_BeginNeedBlock(char *p);                     /* 0x4c3e70 */
@@ -1714,14 +1714,14 @@ void gm_DailyCharacters(void)
    dead person (kind 0x14) has its life f01c moved by d; every other character has v024 moved by d, its life
    being f01c (or the line from f010 over the years up to f020) plus v024, not below 0 */
 
-float gm_AddHealth(unsigned id, int d)
+float gm_AddHealth(unsigned short id, int d)
 {
     GMMSG m;
     unsigned char b;
     ORDCHAR *c;
     float a, f;
 
-    c = &ORD_CHARS[id & 0xffff];
+    c = &ORD_CHARS[id];
     if (c->id == 0xffff || c->kind == 10 || c->health == 0)
         return -1.0f;
     if (c->kind != 0x14) {
@@ -1760,7 +1760,7 @@ float gm_AddHealth(unsigned id, int d)
     return f;
 }
 /* 0x4fd090, 1 when the character c may be removed: it is no player (kind 6 / 7), no other player has it as one
-   of the relatives[0..2] (the partner and the two before the children), and no other player with fewer than
+   of the relatives[0..2] (the partner and the parents), and no other player with fewer than
    5 children has it among the children (relatives[3..7]) */
 
 int gm_IsNoPlayerKin(ORDCHAR *c)
@@ -1798,7 +1798,7 @@ int cm_SendCreateCharacter(unsigned char a, int b, int c, unsigned short d, int 
 int cm_GetSlotState();                     /* 0x4c3ae0 */
 int cm_GetSlotValue(int h);                     /* 0x4c3b10 */
 int cm_SendNewParty(void *p);                     /* 0x4c4fa0 */
-int gm_TitleNumber();                     /* 0x5043d0 */
+int gm_TitleNumber(int group, int rank);                     /* 0x5043d0 */
 int ai_WorksForMaster(struct AICHAR *c);                     /* 0x47dd70 */
 
 /* 0x4fccc0, the birth step of the character c, a woman (sex 1, kind below 10, alive, b1b1 0, no flag 0x40000)
@@ -1924,111 +1924,100 @@ void gm_PartnerStep(ORDCHAR *c)
     cm_SendFloatDelta(c->netId, 0x7c, fv);
     gm_NetMsgCount++;
 }
-/* 0x4fd120, the yearly population step: counts the active characters (n); every kind 3 (child?) character that is old enough (age +10 at least 0x2c + random 4, or n >= 652.8) with no job / title bytes (+0x164, +0x166, +0x167) and removable (0x4fd090) is removed by 0x4fca40 (id, ..); the others (age above 1): kind 8 (no 0x4fd7e0, partners 0x5e / 0x62 gone) get the event messages 3 / 2 and a payment 0x4c4830 ((random + 0x800) * the mark * 0x20); the other aging characters 0x47dd70 (counted; relatives +0x1ee); then a random new arrival (0x4c4650 (0x10 ..) and a gift of (random + 10000) * 0x40) and, below 652.8 characters, up to (0x28 - the events) / 2 newcomers (0x4c4650 (3, .., 0x14 ..), random wage 0x400 .. + 0x400). ROUGH */
+/* 0x4fd120, the yearly population step. n counts the characters in use. A child (kind 3) without a profession or an
+   office applied for that gm_IsNoPlayerKin lets go is removed (its whole life taken) when it is old enough (44 + random 4
+   years) or when n has reached 652.8. Then, for every character with health above 1: over 652.8 characters a
+   kind 8 one whose parents (relatives[1], [2]) are gone (none or kind 0xf) is removed the same way; else a
+   grown-up (gm_IsUnderAge 0) kind 8 one with both parents gone becomes kind 3 with level 2 (if lower) and gets
+   (random 0x800 + 0x800) * 2 * 32; every other one that works for a master counts as settled (and in kids when
+   its v1f0 is set). Fewer than 6 of those: one time in 4 a newcomer of kind 0x10 arrives with
+   (random 0x2000 + 10000) * 64. Up to 652.8 characters, (40 - settled) / 2 (below 30 settled; below 40: 1 .. 2)
+   adults of kind 3 arrive with a random title, (random 0x400 + 0x400) * 64 and prevOffice 10 .. 21. */
 
 void gm_PopulationStep(void)
 {
-    int n, events, kids, i, t, m;
-    char *c;
-    char *a, *b;
-    int h, r, loc[2];
-    unsigned v;
+    ORDCHAR *c, *a, *b, *nc;
+    int settled, n, kids, i, t, h;
+    int v, level;
 
-    n = 0;
-    events = 0;
+    settled = 0;
     kids = 0;
+    n = 0;
     for (i = 0; i < 0x300; i++) {
-        c = ai_Chars[i];
-        if (*(short *)c != -1 && c[8] != 0)
+        c = &ORD_CHARS[i];
+        if (c->id != 0xffff && c->health != 0)
             n++;
     }
-    m = n;
     for (i = 0; i < 0x300; i++) {
-        c = ai_Chars[i];
-        if (*(short *)c != -1 && c[8] != 0 && c[2] == 3 && ((util_RandomU(4) & 0xffff) + 0x2c <= *(unsigned short *)(c + 10) || (float)m >= 652.80005f) && c[0x164] == 0 && c[0x166] == 0 && c[0x167] == 0 && gm_IsNoPlayerKin(ORD_CHAR(c)) != 0) {
-            gm_AddHealth(*(unsigned short *)c, (int)0);
+        c = &ORD_CHARS[i];
+        if (c->id != 0xffff && c->health != 0 && c->kind == 3
+            && (c->w00a >= util_RandomU(4) + 0x2c || !((float)n < 652.80005f))
+            && c->job == 0 && c->appliedOffice == 0 && c->job2 == 0 && gm_IsNoPlayerKin(c) != 0) {
+            gm_AddHealth(c->id, (int)-(c->f01c + 1.0f));
             n--;
-            m = n;
         }
     }
     for (i = 0; i < 0x300; i++) {
-        c = ai_Chars[i];
-        if (*(short *)c != -1 && (unsigned char)c[8] > 1) {
-            if ((float)m <= 652.80005f) {
-            L1:
-                if (c[2] == 8 && gm_IsUnderAge(*(unsigned short *)c) == 0) {
-                    a = gm_FindChar(*(int *)(c + 0x5e));
-                    b = gm_FindChar(*(int *)(c + 0x62));
-                    if ((a == 0 || a[2] == 0x0f) && (b == 0 || b[2] == 0x0f)) {
-                        loc[0] = 3;
-                        loc[1] = 2;
-                        cm_BeginFieldBlock(c, *(int *)(c + 4));
-                        cm_AddFieldValue(1, 1, c - cm_FieldObject + 2, &loc[0]);
-                        if ((unsigned char)c[0xd] < 2)
-                            cm_AddFieldValue(1, 1, c - cm_FieldObject + 0xd, &loc[1]);
-                        cm_SendFieldValues();
-                        v = util_RandomU(0x800);
-                        cm_SendMoveGoodsUnchecked(*(int *)(c + 4), -1, ai_OwnPlayer, ((v & 0xffff) + 0x800) * loc[1] * 0x20);
-                        events++;
-                    }
-                    continue;
+        c = &ORD_CHARS[i];
+        if (c->id == 0xffff || c->health <= 1)
+            continue;
+        if ((float)n > 652.80005f && c->kind == 8) {
+            a = ORD_CHAR(gm_FindChar(c->relatives[1]));
+            b = ORD_CHAR(gm_FindChar(c->relatives[2]));
+            if ((a == 0 || a->kind == 0xf) && (b == 0 || b->kind == 0xf)) {
+                if (gm_IsNoPlayerKin(c) != 0) {
+                    gm_AddHealth(c->id, (int)-(c->f01c + 1.0f));
+                    n--;
                 }
-            } else if (c[2] == 8) {
-                a = gm_FindChar(*(int *)(c + 0x5e));
-                b = gm_FindChar(*(int *)(c + 0x62));
-                if ((a == 0 || a[2] == 0x0f) && (b == 0 || b[2] == 0x0f)) {
-                    if (gm_IsNoPlayerKin(ORD_CHAR(c)) != 0) {
-                        gm_AddHealth(*(unsigned short *)c, 0);
-                        m--;
-                    }
-                    continue;
-                }
-                goto L1;
+                continue;
             }
-            if (ai_WorksForMaster(c) != 0) {
-                events++;
-                if (*(int *)(c + 0x1f0) != 0)
-                    kids++;
+        }
+        if (c->kind == 8 && gm_IsUnderAge(c->id) == 0) {
+            a = ORD_CHAR(gm_FindChar(c->relatives[1]));
+            b = ORD_CHAR(gm_FindChar(c->relatives[2]));
+            if ((a == 0 || a->kind == 0xf) && (b == 0 || b->kind == 0xf)) {
+                v = 3;
+                level = 2;
+                cm_BeginFieldBlock((char *)c, c->netId);
+                cm_AddFieldValue(1, 1, (char *)&c->kind - cm_FieldObject, &v);
+                if (c->level < 2)
+                    cm_AddFieldValue(1, 1, (char *)&c->level - cm_FieldObject, &level);
+                cm_SendFieldValues();
+                cm_SendMoveGoodsUnchecked(c->netId, -1, ai_OwnPlayer, (util_RandomU(0x800) + 0x800) * level * 0x20);
+                settled++;
             }
+            continue;
+        }
+        if (ai_WorksForMaster((struct AICHAR *)c) != 0) {
+            settled++;
+            if (c->v1f0 != 0)
+                kids++;
         }
     }
     if (kids < 6 && util_RandomU(4) == 0) {
-        h = ((int (*)(int, int, int, int))cm_SendCreateCharacter)(0x10, -1, -1, util_RandomU(4) + 0x10);
-        if (h != -1) {
-            while (cm_GetSlotState(h) == 0)
-                sv_PumpNet();
-        }
+        h = cm_SendCreateCharacter(0x10, -1, -1, util_Random(4) + 0x10, -1, 0, 0, 0);
+        while (h != -1 && cm_GetSlotState(h) == 0)
+            sv_PumpNet();
         if (cm_GetSlotState(h) == 1) {
-            events++;
-            c = (char *)cm_GetSlotValue(h);
-            r = ((util_RandomU(0x2000) & 0xffff) + 10000) * 0x40;
-            cm_SendMoveGoodsUnchecked(*(int *)(c + 4), -1, ai_OwnPlayer, r);
+            settled++;
+            nc = ORD_CHAR(cm_GetSlotValue(h));
+            cm_SendMoveGoodsUnchecked(nc->netId, -1, ai_OwnPlayer, (util_RandomU(0x2000) + 10000) * 0x40);
         }
     }
-    if ((float)m <= 652.80005f) {
-        if (events < 0x1e)
-            t = (0x28 - events) / 2;
-        else if (events < 0x28)
-            t = (util_RandomU(2) & 0xffff) + 1;
-        else
-            t = 0;
-        while (t > 0) {
-            v = util_RandomU(2);
-            v = util_RandomU((v & 0xffff) + 1);
-            h = ((int (*)(int, int, int, int, int, int))cm_SendCreateCharacter)(3, -1, -1, 0x14, -1, gm_TitleNumber((v & 0xffff) + 1));
-            if (h != -1) {
-                while (cm_GetSlotState(h) == 0)
-                    sv_PumpNet();
-            }
+    if (!((float)n > 652.80005f)) {
+        t = settled < 0x1e ? (0x28 - settled) / 2 : settled < 0x28 ? util_RandomU(2) + 1 : 0;
+        for (i = 0; i < t; i++) {
+            h = cm_SendCreateCharacter(3, -1, -1, 0x14, -1, gm_TitleNumber(util_RandomU(0xc) + 1, util_RandomU(2) + 1), 0, 2);
+            while (h != -1 && cm_GetSlotState(h) == 0)
+                sv_PumpNet();
             if (cm_GetSlotState(h) == 1) {
-                loc[0] = (util_RandomU(0xc) & 0xffff) + 10;
-                c = (char *)cm_GetSlotValue(h);
-                cm_SendMoveGoodsUnchecked(*(int *)(c + 4), -1, ai_OwnPlayer, ((util_RandomU(0x400) & 0xffff) + 0x400) * 0x40);
-                cm_BeginFieldBlock(c, *(int *)(c + 4));
-                cm_AddFieldValue(1, 1, c - cm_FieldObject + 0x167, &loc[0]);
+                v = util_RandomU(0xc) + 10;
+                nc = ORD_CHAR(cm_GetSlotValue(h));
+                cm_SendMoveGoodsUnchecked(nc->netId, -1, ai_OwnPlayer, (util_RandomU(0x400) + 0x400) * 0x40);
+                cm_BeginFieldBlock((char *)nc, nc->netId);
+                cm_AddFieldValue(1, 1, (char *)&nc->prevOffice - cm_FieldObject, &v);
                 cm_SendFieldValues();
             }
-            t--;
         }
     }
 }
@@ -2113,9 +2102,9 @@ unsigned unk_Unk4fd5c0(int param)
 }
 /* 0x4fd7e0, 1 when the character id is younger than its lifetime float (+0x20): age (+10) below it */
 
-int gm_IsUnderAge(unsigned id)
+int gm_IsUnderAge(unsigned short id)
 {
-    if ((float)*(unsigned short *)(ai_Chars[id & 0xffff] + 10) < *(float *)(ai_Chars[id & 0xffff] + 0x20))
+    if ((float)*(unsigned short *)(ai_Chars[id] + 10) < *(float *)(ai_Chars[id] + 0x20))
         return 1;
     return 0;
 }
@@ -6540,7 +6529,7 @@ float gm_Mix2(float u, float v)
 }
 
 int amt_GetKind(int k, struct AMTKIND *out);                     /* 0x4e6f80 */
-float gm_AddHealth(unsigned id, int d);                   /* 0x4fca40 */
+float gm_AddHealth(unsigned short id, int d);                   /* 0x4fca40 */
 void gm_ClockToDate(struct GCLOCK *c, unsigned char *out);                     /* 0x4fe2c0 */
 
 int ai_InventoryHas(void *ch, int id);                     /* 0x5ba6b0 */

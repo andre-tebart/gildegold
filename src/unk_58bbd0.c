@@ -5678,7 +5678,7 @@ void ai_Unk597380(void)
     sv_CameraFollow();
 }
 
-int gm_Unk506480(); float gm_AddHealth(unsigned id, int d); int ai_Unk578170(); int ai_Unk5b4590();
+int gm_Unk506480(); float gm_AddHealth(unsigned short id, int d); int ai_Unk578170(); int ai_Unk5b4590();
 
 /* 0x5973f0, the wine-cellar window "locations\wohnsitz\weinkeller" (272 B): 0x4741f0 / 0x475600, the texts
    0x515960 (0x42cf / 0x42d1), the pump 0x5309a0 (this, 0x677c7); the click 0 (0xf8a668) resolves the
@@ -18231,7 +18231,7 @@ void ai_MasterLetterWindow(unsigned char *param_1)
     sv_CameraFollow();
 }
 
-int gm_IsUnderAge(); int ai_WorksForMaster();
+int gm_IsUnderAge(unsigned short id); int ai_WorksForMaster();
 
 /* 0x5c33c0, the master letter eligibility test (992 B): 0 when param_2 (the index) is param_1, has no
    record, is the +0x1b1 flagged character, is the own character 0x6f1bf8 or leaves the filter record

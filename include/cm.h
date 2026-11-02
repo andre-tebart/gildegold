@@ -688,7 +688,7 @@ void ai_Unk4d0ca0();  /* 0x4d0ca0 */
 int ai_Unk4d0cd0(int *a);  /* 0x4d0cd0 */
 void ai_Unk4d0cf0(char *rec, unsigned char a);  /* 0x4d0cf0 */
 char ai_Unk4d0f80(char *o);  /* 0x4d0f80 */
-float gm_AddHealth(unsigned id, int d);  /* 0x4fca40 */
+float gm_AddHealth(unsigned short id, int d);  /* 0x4fca40 */
 
 void ai_Unk4d0fa0(char *rec);  /* 0x4d0fa0 */
 int snd_LoadVoiceBank();  /* 0x4c2830 */

@@ -125,8 +125,8 @@ typedef struct ORDCHAR {
     union {
         int partner;                /* 0x05c, the partner character id, -1 = none */
         int relatives[8];           /* 0x05c, the netIds of the relatives (ai.h AICHAR.relatives), -1 = none: [0] the
-                                       partner, [3..7] the children (reasoned guess: gm_PartnerStep counts them to
-                                       choose the chance of another birth) */
+                                       partner, [1] / [2] the parents (gm_PopulationStep), [3..7] the children
+                                       (reasoned guess: gm_PartnerStep counts them for the chance of another birth) */
     };
     float pregnancy;                /* 0x07c, above 1.0 the mother gives birth (gm_PartnerStep), set from the birth
                                        chance, reset below 0 after the birth (reasoned guess: the pregnancy) */
@@ -136,7 +136,8 @@ typedef struct ORDCHAR {
     unsigned char jobId;            /* 0x164, the title / job id gm_TitleGroup groups (ai.h AICHAR.jobId) */
     char title;                     /* 0x165, the title rank (ai.h AICHAR.title) */
     unsigned char job;              /* 0x166, the profession id the job orders test (text 0x253 + job) */
-    char pad167[2];
+    unsigned char prevOffice;       /* 0x167, ai.h AICHAR.prevOffice; gm_PopulationStep gives a newcomer 10 .. 21 */
+    unsigned char appliedOffice;    /* 0x168, ai.h AICHAR.appliedOffice, 0 = none */
     unsigned char job2;             /* 0x169, the second profession field, tested by the same orders */
     char pad16a[2];
     struct ORDBLD *bld;             /* 0x16c, the character's building (ai.h AICHAR.bld) */
@@ -160,7 +161,9 @@ typedef struct ORDCHAR {
     float loyalty;                  /* 0x1d0, 0 .. 1, starts at 0.25 .. 0.75; gm_ShiftLoyalty / gm_HandOutMoney move it (reasoned guess: the loyalty) */
     int worth[4];                   /* 0x1d4, the character's worth (gm_GetWorth) of the last rounds, worth[3] the newest (gm_UpdateWorthMood shifts it) */
     float mood3Rate;                /* 0x1e4, scales the base growth of mood need 3 (ai.h AICHAR.mood3Rate) */
-    char pad1e8[0xc];
+    char pad1e8[8];
+    int v1f0;                       /* 0x1f0, gm_PopulationStep counts the working characters with it set; below 6, a
+                                       newcomer of kind 0x10 may arrive */
     char ownName[0x1c];             /* 0x1f4, the character's own head name (ai.h AICHAR.ownName), empty: the job's / title's head record */
     char pad210[0xc];
 } ORDCHAR;
