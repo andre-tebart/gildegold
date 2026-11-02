@@ -396,9 +396,9 @@ struct AMTKIND; int amt_GetKind(int k, struct AMTKIND *out);                   /
 float gm_AddHealth();                  /* 0x4fca40 */
 float gm_GetSkill(char *c, int skill);                     /* 0x504ec0 */
 float gm_Mix(int a, int b, int c);                     /* 0x504e20 */
-void ai_Unk4c3e70(char *p);                     /* 0x4c3e70 */
-int ai_Unk4c3eb0(unsigned char k, float v);                     /* 0x4c3eb0 */
-void ai_Unk4c4a20(void);                     /* 0x4c4a20 */
+void ai_BeginNeedBlock(char *p);                     /* 0x4c3e70 */
+int ai_AddNeedDelta(int k, float v);                     /* 0x4c3eb0 */
+void ai_SendNeedBlock(void);                     /* 0x4c4a20 */
 void unk_Unk4fb0e0();                   /* 0x4fb0e0 */
 int gm_FindRichest(short *id, int *rate);
 #define I50A640 ((int (*)())gm_GetWorth)
@@ -573,9 +573,9 @@ void unk_Unk4faa00(void)
             ai_Unk6f1b98++;
             cm_SendFloatDelta(*(int *)(c + 4), 0x1e4, -(*(float *)(c + 0x1e4) - ((float)lim + q) * 0.5));
             q = -(*(float *)(c + 0xb4) - *(float *)(c + 0xb4) * 0.95);
-            ai_Unk4c3e70(c);
-            ai_Unk4c3eb0(3, q);
-            ai_Unk4c4a20();
+            ai_BeginNeedBlock(c);
+            ai_AddNeedDelta(3, q);
+            ai_SendNeedBlock();
             ai_Unk6f1b98++;
         }
     }

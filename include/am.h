@@ -727,9 +727,9 @@ int amt_ApplyForOffice(char *c, unsigned int kind);                             
 int ai_Unk498470(G5CH *p, AIARG *s1);                            /* 0x498470 */
 
 int ai_GetDesireByName(char *s);                                      /* 0x4a47c0, a need name -> index */
-void ai_Unk4c3e70(char *p);                                     /* 0x4c3e70 */
-int ai_Unk4c3eb0(unsigned char k, float v);                    /* 0x4c3eb0 */
-void ai_Unk4c4a20(void);                                        /* 0x4c4a20 */
+void ai_BeginNeedBlock(char *p);                                     /* 0x4c3e70 */
+int ai_AddNeedDelta(int k, float v);                    /* 0x4c3eb0 */
+void ai_SendNeedBlock(void);                                        /* 0x4c4a20 */
 int unk_Unk4fc7a0(char *c);                                      /* 0x4fc7a0 */
 int amt_GetOfficeCandidates(char *c, int n, struct AMTCAND *out);                     /* 0x4e7150 */
 /* ai_TimeHour (0x770ae4, the clock's hour) is no object: time_view.h views it in ai_Time + 4 */

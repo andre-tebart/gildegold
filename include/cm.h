@@ -175,8 +175,8 @@ void cm_BeginFieldBlock(char *o, int id);                                       
 int cm_AddFieldDelta(int size, int n, short field, void *v); /* 0x4c3c00 */
 int cm_AddFieldValues(unsigned char size, unsigned char n, unsigned short field, void *v); /* 0x4c3d00 */
 int cm_AddFieldValue(unsigned char size, unsigned char n, unsigned short field, void *v); /* 0x4c3d90 */
-void ai_Unk4c3e70(char *p);                                                      /* 0x4c3e70 */
-int ai_Unk4c3eb0(unsigned char k, float v);                                        /* 0x4c3eb0 */
+void ai_BeginNeedBlock(char *p);                                                      /* 0x4c3e70 */
+int ai_AddNeedDelta(int k, float v);                                        /* 0x4c3eb0 */
 void cm_SetSpeedLevel(unsigned int v);                                               /* 0x4c3ef0 */
 void ai_Unk4c3f20(void);                                                         /* 0x4c3f20 */
 void ai_Unk4c3f50(void);                                                         /* 0x4c3f50 */
@@ -207,7 +207,7 @@ void ai_Unk4c4920(int a, int b, int c);                                         
 void cm_SendRemoveGoods(int a, short b);                                               /* 0x4c4960 */
 void cm_SendFieldDeltas(void);                                                         /* 0x4c49a0 */
 void cm_SendFieldValues(void);                                                         /* 0x4c49e0 */
-void ai_Unk4c4a20(void);                                                         /* 0x4c4a20 */
+void ai_SendNeedBlock(void);                                                         /* 0x4c4a20 */
 void cm_SendSetField(int a, int b, int c, int d, int e);                            /* 0x4c4a60 */
 void cm_SendFloatDelta(int id, int field, float delta);                                          /* 0x4c4ac0 */
 int cm_SendRelations(int a, int b, int c, int d);                                   /* 0x4c4b00 */

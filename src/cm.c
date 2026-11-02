@@ -682,7 +682,7 @@ int cm_AddFieldValue(unsigned char size, unsigned char n, unsigned short field, 
 }
 /* 0x4c3e70, starts the second field block about p (its id at +4) */
 
-void ai_Unk4c3e70(char *p)
+void ai_BeginNeedBlock(char *p)
 {
     ai_Unka68ca0.id = *(int *)(p + 4);
     ai_Unka68ca0.n = 0;
@@ -692,7 +692,7 @@ void ai_Unk4c3e70(char *p)
 }
 /* 0x4c3eb0, adds the pair (k, v) to the second field block */
 
-int ai_Unk4c3eb0(unsigned char k, float v)
+int ai_AddNeedDelta(int k, float v)
 {
     unsigned char *p;
     int o;
@@ -1191,7 +1191,7 @@ void cm_SendFieldValues(void)
 }
 /* 0x4c4a20, message 0x18: the second field block */
 
-void ai_Unk4c4a20(void)
+void ai_SendNeedBlock(void)
 {
     G17MSG m;
 
