@@ -998,3 +998,6 @@
 2026-11-02T11:45:01 0x00577020 data ai_Unk577020 -> ai_QueryChapter4Step5 by:main why:their slots in the chapter 4 run records of ai_TutorialInitChapter4: hook (+0x34) of the three steps, query (+0x3c) and stepHook (+0x38) of 'c4s4', 'c4s2', 'c4s5'
 2026-11-02T11:45:01 0x00576ee0 func ai_Unk576ee0 -> ai_StepChapter4Step5 by:main why:their slots in the chapter 4 run records of ai_TutorialInitChapter4: hook (+0x34) of the three steps, query (+0x3c) and stepHook (+0x38) of 'c4s4', 'c4s2', 'c4s5'
 2026-11-02T11:45:14 0x0057aa80 data ai_Unk57aa80 -> ai_TutorialInitChapter4 by:main why:builds the chapter 4 run chain (FTInitChapter4* tags, CHAPTER_4_* voices, TUTORIAL_CHAPTER_4.sbf)
+2026-11-02T11:46:57 0x00577540 data ai_Unk577540 -> ai_HookChapter5Intro by:main why:the hook (+0x34) of the chapter 5 intro 'ntr5' and of its step 'c5s2' (ai_TutorialInitChapter5)
+2026-11-02T11:46:57 0x00577230 data ai_Unk577230 -> ai_HookChapter5Step2 by:main why:the hook (+0x34) of the chapter 5 intro 'ntr5' and of its step 'c5s2' (ai_TutorialInitChapter5)
+2026-11-02T11:47:20 0x0057aeb0 data ai_Unk57aeb0 -> ai_TutorialInitChapter5 by:main why:builds the chapter 5 run chain (FTInitChapter5* tags, CHAPTER_5_* voices, TUTORIAL_CHAPTER_5.sbf)

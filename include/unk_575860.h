@@ -135,7 +135,7 @@ int ai_QueryChapter4Step5(int *p);               /* 0x577020, step callback pred
 void ai_HookChapter4Step(int arg);             /* 0x5770a0, posts the message 0x2bc0 */
 void ai_HookChapter3Step2(int arg);             /* 0x577110, posts to the player's character record */
 int ai_QueryChapter3Step6(int *p);               /* 0x5771b0, transition callback */
-void ai_Unk577230(int arg);             /* 0x577230, posts messages */
+void ai_HookChapter5Step2(int arg);             /* 0x577230, posts messages */
 int ai_QueryChapter5Step2(int *p);               /* 0x577290, step predicate */
 int ai_MarkerChapter5Step2(void);                 /* 0x5772d0, the record fight kind */
 int ai_MarkerChapter3Step6(void);                 /* 0x577320, the flag S+0x38 */
@@ -144,7 +144,7 @@ int ai_MarkerChapter3Step8(void);                 /* 0x5773f0, fight kind + flag
 int ai_QueryChapter3Step10(int *p);               /* 0x577450, step predicate */
 int ai_StepShownChapter3Step4(void);                 /* 0x577490, releases the pending id S+0x50 */
 void ai_HookChapter3Intro(int arg);             /* 0x5774d0, posts a record message */
-void ai_Unk577540(int arg);             /* 0x577540, posts a record message */
+void ai_HookChapter5Intro(int arg);             /* 0x577540, posts a record message */
 void ai_HookChapter5Step4(int arg);             /* 0x5775c0, posts two character messages */
 void ai_HookChapter5Step5(int arg);             /* 0x577610, character record lookup + 0x4e6180 */
 void ai_HookChapter5Step6(int arg);             /* 0x577690, builds a save record (ROUGH) */
@@ -173,7 +173,7 @@ int ai_TutorialInitChapter1(void);      /* 0x578570, the chapter 1 chain */
 int ai_TutorialInitChapter2(void);      /* 0x578e40, the chapter 2 chain */
 int ai_TutorialInitChapter3(void);                 /* 0x579570, the chapter 3 chain */
 int ai_TutorialInitChapter4(void);                 /* 0x57aa80, the chapter 4 chain */
-int ai_Unk57aeb0(void);                 /* 0x57aeb0, the chapter 5 chain (ROUGH) */
+int ai_TutorialInitChapter5(void);                 /* 0x57aeb0, the chapter 5 chain */
 int ai_TutorialInitMainOutro(void);                 /* 0x57b750, the main-outro record */
 void ai_Unk57b810(float *a, float *b, float *c, float *d, float t, float *out);  /* 0x57b810, the Bezier */
 
