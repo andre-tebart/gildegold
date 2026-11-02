@@ -337,7 +337,7 @@ int gv_SendGrave(unsigned char *o);                     /* 0x4f15e0 */
 int cm_GetSlotState();                     /* 0x4c3ae0 */
 void cm_RequestChrMoveToUniverse(int a, int b, int c, const char *s);                     /* 0x4c51b0 */
 void d2_DrawAll(void);                      /* 0x46e150, d2.c */
-unsigned short *gm_CreateObject(int id, unsigned proto, int n);  /* 0x500190, f3gm.c: the new object instance */
+unsigned short *gm_CreateObject(int id, int proto, int n);  /* 0x500190, f3gm.c: the new object instance */
 int d2_SetForm(int view, int n);                     /* 0x475f70 */
 unsigned short * gm_QueryNext(void);                   /* 0x4ffcc0 */
 float gm_ItemPrice(int item, unsigned char n);

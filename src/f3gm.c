@@ -75,7 +75,7 @@ extern AISTORE gm_Offers[];            /* 0x7e4b20 */
 extern int gm_PlayerRecords[688];
 extern int ai_Unk7d6a40;
 void ch_PreloadAnims(struct CHARACTER *ch, int n, ...);
-unsigned short *gm_CreateObject(int id, unsigned proto, int n);
+unsigned short *gm_CreateObject(int id, int proto, int n);
 char *gm_FindCharacterByMaster(int m);
 void gm_FreeObjectExtra(unsigned short *o);
 void gm_ShowBuildingObjects(unsigned char *b);
@@ -4022,233 +4022,244 @@ void ch_SetVisible();                     /* 0x402480 */
 int gm_IsHomeType();                     /* 0x502520 */
 int init_BuildingSceneUniverse();                     /* 0x511e60 */
 
-/* 0x500190, creates an object instance of the prototype proto with the amount n in the list of the owner id (a building, an object or a character, found by 0x4fea50): appends it to the owner's list (the owner list head: +0x5d building, +0x14 object, +0x178 character), takes a free record (0x4fffc0), fills it (+0 prototype, +2 a new id, +6 the owner id, +0xa the owner's number, +0xe the amount, +0x12 0x64 = 100, +0x3f next 0) and counts it (0x6f1bdc); a few prototypes get their own start values (0xb8, 0x12c, 0x12d, 0x15e / 0x160, 0x174 / 0x176, 0x24b / 0x256 / 0x266) and the three transport carts 0x134 / 0x135 / 0x136 get a model (cart or horse, 0x403390 at the dummy "dummy_TRANSPORTER") with a load object (ob_KARREN_*). Returns the instance, 0 on failure. ROUGH */
-unsigned short *gm_CreateObject(int id, unsigned proto, int n)
+/* 0x500190, creates an object instance of the prototype proto with the amount n in the list of the holder id (a building, an object or a character, gm_FindById): takes a free record (gm_FindFreeObject) and appends it to the holder's list (ORDBLD.objList, ORDOBJ.list or the character's list at +0x178), fills it (the prototype, a new object id ai_NextObjectId, the holder id, the holder's own id, the amount, fill 100) and counts it (f3gm_ObjectCount); a few prototypes get their own start values (0xb8, 300, 0x12d, 0x15e / 0x160, 0x174 / 0x176, 0x24b / 0x256 / 0x266), the goods kinds 0x17 / 0x20 / 0x25 clear +0x1c, and the three carts 0x134 / 0x135 / 0x136 get the id of their building, a load object (prototype 0x1dd), a model (a cart man or the horse, ch_Create at the building's "dummy_TRANSPORTER") pulling the cart object ob_KARREN_klein / _mittel / _GROSS (textured by the owner character's v054). Returns the instance, 0 on failure
+   @deep read the whole function against 0x500190..0x5007a4 and reconciled every statement: the holder
+   lookup and its list (ORDBLD.objList / ORDOBJ.list / the character's +0x178), the tail walk, the record
+   fill in the original's order, the 0x1f-byte clear (rep stosd 7 + stosw + stosb, now equal), the one
+   switch on proto as an int (jg / the two byte tables equal), the case order 300 / 0x12d / 0xb8 / carts,
+   the cart branch (holder netId, the walk up to the building, the 0x1dd load object, the scene, the
+   dummy_TRANSPORTER position, the four ch_Create blocks, the three d3_CreateObject blocks, the texture set
+   from the owner character's v054, the group by the home building). Tried: a switch vs an if chain for the
+   random model (the if chain matches block for block), the home tail as if/else-if (matches block for
+   block), set as char / unsigned char / a cast sum, the dummy ternary with the cast outside. Left is
+   allocation: the original keeps ai_Goods cached in edi and the list in ebp, so last (and later the
+   texture set) lives in the stack slot [esp+0x1c] (0x50023f / 0x500259), ours keeps the list in edi and
+   last in a register - that is the frame 0x430 vs 0x434 and the 8-byte shift of the three jumps to the
+   ch_Create call (+0x24e vs +0x256); the pr computation 'add edi,ecx; add eax,edi' vs 'add eax,ebp; add
+   eax,ebx' and the sprintf argument loads are the same values in other registers (0x500276); the id / n
+   loads before the stores (0x5002e6), 'test ebp' vs 'mov ecx,[b]; test ecx' (0x500394) and 'mov edi, id'
+   vs 'mov edi, ebp' (0x5003de) follow from b and id in other registers; the texture byte: ours takes the
+   flags of 'add dl,0x67', the original adds 'test al,al' (0x5006a7); the rest diffclass explains (regs 80,
+   slots 44, frame 76, order 22) */
+unsigned short *gm_CreateObject(int id, int proto, int n)
 {
-    int b, o, c;
-    int it, it2;
+    ORDBLD *b;
+    ORDOBJ *o;
+    ORDCHAR *c;
+    ORDOBJ *last;
+    ORDOBJ *r;
     int *list;
-    int last;
-    unsigned short *r;
-    unsigned short *q;
     char *pr;
     char buf[1024];
-    int pos[3], zero3[3];
-    int saved, sc, m, ld;
+    float pos[4];
+    float rot[3];
+    ORDOBJ *it;
+    ORDOBJ *load;
+    unsigned char *home;
+    int scene, saved, holder;
+    D3OBJECT *dummy;
+    D3OBJECT *cart;
+    CHARACTER *model;
+    ORDCHAR *owner;
     char *name;
-    short s;
-    int *hd;
+    unsigned char set;
+    int found;
+    int group;
+    int pick;
 
     b = 0;
     o = 0;
     c = 0;
     last = 0;
     r = 0;
+    pos[0] = 0;
+    pos[1] = 0;
+    pos[2] = 0;
+    pos[3] = 0;
+    rot[0] = 0;
+    rot[1] = 0;
+    rot[2] = 0;
     pr = ai_Goods;
-    if (ai_Goods == 0)
+    if (ai_Goods == 0 || id == -1 || gm_FindById(&b, &o, &c, id) == 0)
         return 0;
-    if (id == -1)
+    if (b != 0)
+        list = &b->objList;
+    else if (o != 0)
+        list = &o->list;
+    else if (c != 0)
+        list = (int *)((char *)c + 0x178);
+    else
         return 0;
-    if (gm_FindById(&b, &o, &c, id) == 0)
-        return 0;
-    if (b == 0) {
-        if (o == 0) {
-            if (c == 0)
-                return 0;
-            list = (int *)(c + 0x178);
-        } else
-            list = (int *)(o + 0x14);
-    } else
-        list = (int *)(b + 0x5d);
     if (list != 0) {
-        it = *list;
-        if (*list == 0) {
-            r = (unsigned short *)gm_FindFreeObject();
+        it = (ORDOBJ *)*list;
+        if (it != 0) {
+            do {
+                last = it;
+                it = it->next;
+            } while (it != 0);
+            r = (ORDOBJ *)gm_FindFreeObject();
+            if (r == 0)
+                return 0;
+            last->next = r;
+        } else {
+            r = (ORDOBJ *)gm_FindFreeObject();
             if (r == 0)
                 return 0;
             *list = (int)r;
-            pr = ai_Goods;
-        } else {
-            do {
-                last = it;
-                it = *(int *)(last + 0x3f);
-            } while (*(int *)(last + 0x3f) != 0);
-            r = (unsigned short *)gm_FindFreeObject();
-            if (r == 0)
-                return 0;
-            *(unsigned short **)(last + 0x3f) = r;
-            pr = ai_Goods;
         }
+        pr = ai_Goods;
     }
     pr = pr + proto * 0x41;
-    *r = (unsigned short)proto;
-    sprintf(buf, "----> ObjID: %i ObjProt: %i", ai_NextObjectId, proto & 0xffff);
-    *(int *)(r + 1) = ai_NextObjectId;
+    r->type = (unsigned short)proto;
+    sprintf(buf, "----->ObjID= %i ObjProt= %i", ai_NextObjectId, proto & 0xffff);
+    r->objId = ai_NextObjectId;
     ai_NextObjectId++;
-    if (b == 0) {
-        if (o == 0) {
-            if (c != 0)
-                *(int *)(r + 5) = *(int *)(c + 4);
-        } else
-            *(int *)(r + 5) = *(int *)(o + 10);
-    } else
-        *(int *)(r + 5) = *(int *)(b + 1);
-    *(int *)(r + 3) = id;
-    *(int *)(r + 7) = n;
-    *(char *)(r + 9) = 'd';
-    *((char *)r + 0x13) = 0;
-    r[10] = 0;
-    r[0xb] = 0;
-    *(int *)((char *)r + 0x3f) = 0;
+    if (b != 0)
+        r->holderId = b->id;
+    else if (o != 0)
+        r->holderId = o->holderId;
+    else if (c != 0)
+        r->holderId = c->netId;
+    r->ownerId = id;
+    r->count = n;
+    r->fill = 100;
+    r->b13 = 0;
+    r->list = 0;
+    r->next = 0;
     f3gm_ObjectCount++;
-    memset(r + 0xe, 0, 0x1d);
-    if ((int)proto > 0x160) {
-        switch (proto) {
-        case 0x174:
-        case 0x176:
-            r[0x10] = 6;
-            r[0x11] = 0;
-            break;
-        case 0x24b:
-        case 0x256:
-        case 0x266:
-            r[0xe] = 0;
-            r[0xf] = 0;
-            r[0x10] = 0;
-            r[0x11] = 0;
+    memset(r->v1c, 0, 0x1f);
+    switch (proto) {
+    case 300:
+        r->v1c[0] = -1;
+        r->v1c[1] = -1;
+        r->v1c[2] = -1;
+        r->v1c[3] = ai_TimeT.year - 1;
+        break;
+    case 0x12d:
+        r->v1c[0] = -1;
+        r->v1c[1] = -1;
+        r->v1c[2] = -1;
+        r->v1c[3] = -1;
+        break;
+    case 0xb8:
+        r->lvl1c = 6;
+        break;
+    case 0x134:
+    case 0x135:
+    case 0x136:
+        if (b != 0)
+            r->holderId = ORD_CHARS[b->owner].netId;
+        else if (o != 0)
+            r->holderId = ((ORDCHAR *)gm_ObjectBuildingOwner((unsigned short *)o))->netId;
+        else if (c != 0)
+            r->holderId = c->netId;
+        holder = id;
+        found = gm_FindById(&b, &o, &c, holder);
+        while (found != 0 && b == 0) {
+            if (o != 0)
+                holder = o->ownerId;
+            found = gm_FindById(&b, &o, &c, holder);
         }
-    } else if (proto == 0x160 || proto == 0x15e) {
-        r[0x10] = 0xf;
-        r[0x11] = 0;
-    } else {
-        switch (proto) {
-        case 0xb8:
-            *(char *)(r + 0xe) = 6;
-            break;
-        case 300:
-            r[0xe] = 0xffff;
-            r[0xf] = 0xffff;
-            r[0x10] = 0xffff;
-            r[0x11] = 0xffff;
-            r[0x12] = 0xffff;
-            r[0x13] = 0xffff;
-            *(int *)(r + 0x14) = *(int *)ai_Time - 1;
-            break;
-        case 0x12d:
-            r[0xe] = 0xffff;
-            r[0xf] = 0xffff;
-            r[0x10] = 0xffff;
-            r[0x11] = 0xffff;
-            r[0x12] = 0xffff;
-            r[0x13] = 0xffff;
-            r[0x14] = 0xffff;
-            r[0x15] = 0xffff;
-            break;
-        case 0x134:
-        case 0x135:
-        case 0x136:
-            if (b == 0) {
-                if (o == 0) {
-                    if (c != 0)
-                        *(int *)(r + 5) = *(int *)(c + 4);
-                } else {
-                    it = gm_ObjectBuildingOwner(o);
-                    *(int *)(r + 5) = *(int *)(it + 4);
-                }
-            } else
-                *(int *)(r + 5) = *(int *)(ai_Chars[*(unsigned short *)(b + 0x27)] + 4);
-            m = gm_FindById(&b, &o, &c, id);
-            it = id;
-            while (m != 0 && b == 0) {
-                if (o != 0)
-                    it = *(int *)(o + 6);
-                m = gm_FindById(&b, &o, &c, it);
-            }
-            *(char *)(r + 0x14) = 0;
-            *((char *)r + 0x31) = 2;
-            if (b == 0) {
-                r[0xe] = 0xffff;
-                r[0xf] = 0xffff;
-            } else
-                *(int *)(r + 0xe) = *(int *)(b + 1);
-            it = (int)gm_CreateObject(*(int *)(r + 1), 0x1dd, 1);
-            *(unsigned *)(it + 0xe) = *r - 0x133;
-            *(char *)(it + 0x1c) = (char)*r - 0x33;
-            it = (int)gm_BuildQuery(1, 1, id);
-            ld = it;
-            sc = 0;
-            if (it != 0 && gm_IsHomeType(it) != 0)
-                sc = init_BuildingSceneUniverse(it);
-            saved = d3_CurrentScene;
-            d3if_SelectScene(sc, 1);
-            if (gm_IsHomeType(it) == 0)
-                sc = *(int *)(it + 0x61);
-            else
-                sc = 0;
-            m = d3_FindObject(sc, 0x100, 0, "dummy_TRANSPORTER");
-            if (m == 0) {
-                if (*(int *)(it + 0x61) == 0) {
-                    pos[0] = pos[1] = pos[2] = 0;
-                } else {
-                    pos[0] = *(int *)(*(int *)(it + 0x61) + 0x4c);
-                    pos[1] = *(int *)(*(int *)(it + 0x61) + 0x50);
-                    pos[2] = *(int *)(*(int *)(it + 0x61) + 0x54);
-                }
-            } else
-                d3_PointToWorld(m, m + 0x4c, pos);
-            if (proto == 0x136)
-                name = "pferd_PFERD";
-            else {
-                s = util_RandomU(3);
-                if (s == 0)
-                    name = "arbeiter_KARREN";
-                else if (s == 1)
-                    name = "holzfaeller_KARREN";
-                else
-                    name = "handwerker_KARREN";
-            }
-            it2 = ch_Create(name, pos);
-            *(int *)((char *)r + 0x3b) = it2;
-            ch_PreloadAnims(it2, 1, "bewegung/karren_ziehen");
-            init_HookObject(*(int *)(it2 + 0x34), r, 1);
-            sprintf((char *)*(int *)(it2 + 0x34), "sp_%i", *(int *)(r + 1));
-            if (proto == 0x134)
-                name = "ob_KARREN_klein";
-            else if (proto == 0x135)
-                name = "ob_KARREN_mittel";
-            else
-                name = "ob_KARREN_GROSS";
-            m = d3_CreateObject(0, pos, zero3, name);
-            if (m != 0) {
-                *(unsigned char *)(m + 0x212) = *(unsigned char *)(m + 0x212) & 0xf7 | 4;
-                *(unsigned char *)(m + 0x211) = *(unsigned char *)(m + 0x211) & 0xfd;
-                ch_AttachTransport(it2, m);
-                *(int *)(m + 0x224) = 1;
-                init_HookObject(m, r, 1);
-            }
-            if (ld == 0) {
-                *(int *)(it2 + 0x30) = -1;
-                sc = -1;
-            } else if (gm_IsHomeType(ld) == 0) {
-                ch_SetVisible(it2, 0);
-                *(int *)(it2 + 0x30) = -1;
-                sc = -1;
-            } else {
-                sc = *(int *)(ld + 1);
-                *(int *)(it2 + 0x30) = -1;
-            }
-            *(int *)(it2 + 0x2c) = sc;
-            r[0x12] = 0;
-            r[0x13] = 0;
-            d3if_SelectScene(saved, 1);
-            break;
+        r->cart28 = 0;
+        r->b31 = 2;
+        if (b != 0)
+            r->cartBld = b->id;
+        else
+            r->cartBld = -1;
+        load = (ORDOBJ *)gm_CreateObject(r->objId, 0x1dd, 1);
+        load->count = r->type - 0x133;
+        load->lvl1c = (unsigned char)r->type - 0x33;
+        home = gm_BuildQuery(1, 1, id);
+        scene = 0;
+        if (home != 0 && gm_IsHomeType(home) != 0)
+            scene = init_BuildingSceneUniverse(home);
+        saved = d3_CurrentScene;
+        d3if_SelectScene(scene, 1);
+        dummy = d3_FindObject(gm_IsHomeType(home) != 0 ? 0 : (int)((ORDBLD *)home)->object, 0x100, 0, "dummy_TRANSPORTER");
+        if (dummy != 0)
+            d3_PointToWorld(dummy, &dummy->pos, (D3VECTOR *)pos);
+        else if (((ORDBLD *)home)->object != 0) {
+            pos[0] = ((ORDBLD *)home)->object->pos.x;
+            pos[1] = ((ORDBLD *)home)->object->pos.y;
+            pos[2] = ((ORDBLD *)home)->object->pos.z;
+        } else {
+            pos[0] = 0;
+            pos[1] = 0;
+            pos[2] = 0;
         }
+        if (proto != 0x136) {
+            pick = util_RandomU(3) & 0xffff;
+            if (pick == 0)
+                model = ch_Create("arbeiter_KARREN", (D3VECTOR *)pos);
+            else if (pick == 1)
+                model = ch_Create("holzfaeller_KARREN", (D3VECTOR *)pos);
+            else
+                model = ch_Create("handwerker_KARREN", (D3VECTOR *)pos);
+        } else
+            model = ch_Create("pferd_PFERD", (D3VECTOR *)pos);
+        r->model = model;
+        ch_PreloadAnims(model, 1, "bewegung/karren_ziehen");
+        init_HookObject((char *)model->obj, (unsigned short *)r, 1);
+        sprintf(model->obj->name, "sp_%i", r->objId);
+        if (proto == 0x134)
+            cart = d3_CreateObject(0, (D3VECTOR *)pos, (D3VECTOR *)rot, "ob_KARREN_klein");
+        else if (proto == 0x135)
+            cart = d3_CreateObject(0, (D3VECTOR *)pos, (D3VECTOR *)rot, "ob_KARREN_mittel");
+        else if (proto == 0x136)
+            cart = d3_CreateObject(0, (D3VECTOR *)pos, (D3VECTOR *)rot, "ob_KARREN_GROSS");
+        else
+            cart = 0;
+        if (cart != 0) {
+            cart->stateFlags = cart->stateFlags & 0xf7 | 4;
+            cart->objectFlags = cart->objectFlags & 0xfd;
+            ch_AttachTransport(model, cart);
+            owner = c;
+            if (owner == 0 && b != 0 && b->owner != 0xffff)
+                owner = &ORD_CHARS[b->owner];
+            if (owner != 0 && owner->v054 != 0 && (owner->kind == 5 || owner->kind == 6 || owner->kind == 7)) {
+                set = (unsigned char)owner->v054 + 0x67;
+                if (set != 0)
+                    d3if_SelectTextureSet(cart, (struct D3SURF *)cart->info, set, 1);
+            }
+            cart->mask = 1;
+            init_HookObject((char *)cart, (unsigned short *)r, 1);
+        }
+        if (home == 0) {
+            model->scriptGroup = -1;
+            group = -1;
+        } else if (gm_IsHomeType(home) == 0) {
+            ch_SetVisible(model, 0);
+            model->scriptGroup = -1;
+            group = -1;
+        } else if (gm_IsHomeType(home) != 0) {
+            group = ((ORDBLD *)home)->id;
+            model->scriptGroup = -1;
+        } else {
+            model->scriptGroup = -1;
+            group = -1;
+        }
+        model->group = group;
+        r->cart24 = 0;
+        d3if_SelectScene(saved, 1);
+        break;
+    case 0x15e:
+    case 0x160:
+        r->v1c[1] = 0xf;
+        break;
+    case 0x174:
+    case 0x176:
+        r->v1c[1] = 6;
+        break;
+    case 0x24b:
+    case 0x256:
+    case 0x266:
+        r->v1c[0] = 0;
+        r->v1c[1] = 0;
+        break;
     }
-    if (*pr == 0x17 || *pr == ' ' || *pr == '%') {
-        r[0xe] = 0;
-        r[0xf] = 0;
-    }
-    return r;
+    if (*pr == 0x17 || *pr == ' ' || *pr == '%')
+        r->v1c[0] = 0;
+    return (unsigned short *)r;
 }
 /* 0x500ec0, the market object of the town market building (0x6f1bc5's market 0x6f1bc8) that holds the goods id: looks through its objects 0x92 .. 0x97 / 0x2db for one with the goods id (query (2, 6, 0, id)) and returns its 0x116 object, 0 when none */
 

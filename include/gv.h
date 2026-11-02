@@ -9,6 +9,7 @@ struct AICHAR;
 struct GVSHOTMSG;
 struct VFSFILE;
 struct D3OBJECT;
+struct CHARACTER;
 /* Declarations of gv.c (0x4ed170.., the avatar table 0x60f310 and the effect slots 0x6f1008). Names are ours. */
 #ifndef GV_H
 #define GV_H
@@ -121,7 +122,9 @@ typedef struct ORDCHAR {
     unsigned int v02c;              /* 0x02c, ai.h AICHAR.v02c: nine counters of 2 .. 4 bits (bits 0, 4, 8, 12, 14, 17, 20, 23, 25) the daily step halves */
     char first[0x10];               /* 0x030, the first name (ai.h AICHAR.first) */
     char family[0x10];              /* 0x040, the family name (ai.h AICHAR.family) */
-    char pad050[0xc];
+    char pad050[4];
+    int v054;                       /* 0x054, gm_CreateObject: nonzero for a character of the kinds 5 .. 7, its low byte + 0x67 is the texture set of the character's carts */
+    char pad058[4];
     union {
         int partner;                /* 0x05c, the partner character id, -1 = none */
         int relatives[8];           /* 0x05c, the netIds of the relatives (ai.h AICHAR.relatives), -1 = none: [0] the
@@ -234,13 +237,26 @@ typedef struct ORDOBJ {
     unsigned short type;            /* 0x00, the prototype id */
     int objId;                      /* 0x02, the object's own id (messages name the object by it) */
     int ownerId;                    /* 0x06, the id of the building / object / character holding it (gm_ClearObjects finds it by 0x4fea50) */
-    char pad0a[4];
+    int holderId;                   /* 0x0a, gm_CreateObject: the holder's building id, the holding object's holderId or the holding character's netId (a cart: its owner character's netId) */
     int count;                      /* 0x0e, the amount of goods it stands for (ai.h AIOBJ.count) */
-    char pad12[2];
+    unsigned char fill;             /* 0x12, how full a cart is in percent (ai.h AIOBJ.fill), 100 when created */
+    unsigned char b13;              /* 0x13 */
     int list;                       /* 0x14, the object list it holds (ai.h AIOBJ.list) */
-    char pad18[4];
-    unsigned char lvl1c;            /* 0x1c, a workshop's level (ai.h AIOBJ.lvl1c); gm_SyncMarket raises it to the market's goods count */
-    char pad1d[0x22];
+    struct D3OBJECT *obj;           /* 0x18, the scene object that shows it (ai.h AIOBJ.obj) */
+    union {                         /* 0x1c, gm_CreateObject clears 0x1f bytes from here (to 0x3b) and sets them per prototype */
+        unsigned char lvl1c;        /* 0x1c, a workshop's level (ai.h AIOBJ.lvl1c); gm_SyncMarket raises it to the market's goods count */
+        int v1c[4];                 /* 0x1c */
+        struct {
+            int cartBld;            /* 0x1c, of a cart: the id of its building, -1 = none */
+            int cart20;             /* 0x20 */
+            int cart24;             /* 0x24 */
+            unsigned char cart28;   /* 0x28 */
+        };
+    };
+    char pad2c[5];
+    unsigned char b31;              /* 0x31, a cart: 2 when created */
+    char pad32[9];
+    struct CHARACTER *model;        /* 0x3b, a cart's model (the cart or the horse, ch_Create) */
     struct ORDOBJ *next;            /* 0x3f, the next object of its list (ai.h AIOBJ.next) */
 } ORDOBJ;                           /* 0x43 bytes, the records of the instance table ai_Objects */
 #pragma pack(pop)
