@@ -22,11 +22,11 @@ typedef struct AITIME {                 /* 14 bytes: the game time ai_Time, the 
 
 typedef struct AISTORE {                /* 24 bytes, a stock list per building, gm_Offers[] */
     struct AIBLD *bld;                  /* 0x00 */
-    int unk04;                          /* 0x04 */
+    int market;                         /* 0x04, the market / stall object holding the goods (f3gm.c gm_CollectOffers) */
     int goodsObj;                       /* 0x08, the goods object of the offer (the f3gm.c note of 0x7e4b20) */
-    int count;                          /* 0x0c */
-    int unk10;                          /* 0x10 */
-    int unk14;                          /* 0x14 */
+    int count;                          /* 0x0c, the supply: the stall's amount less a quarter of its stock times the goods' +0x1c, not below 0 */
+    float price;                        /* 0x10, the goods price times the building's price factor; gm_CollectOffers sorts by it, highest first */
+    int stored;                         /* 0x14, 1 when the building's store object (0xff) holds the goods */
 } AISTORE;
 
 #endif

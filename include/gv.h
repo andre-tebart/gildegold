@@ -219,7 +219,8 @@ typedef struct ORDBLD {
     int id;                         /* 0x01, ai.h AIBLD.id */
     char pad05[0x22];
     unsigned short owner;           /* 0x27, index into ai_Chars, 0xffff = none */
-    char pad29[0x24];
+    char pad29[0x20];
+    float priceFactor;              /* 0x49, scales the goods price of the building's offers (f3gm.c gm_CollectOffers) */
     int roundSum;                   /* 0x4d, ai.h AIBLD.roundSums[0], cleared at the end of every day (gm_EndDayIncomes) */
     char pad51[9];
     unsigned char flags5a;          /* 0x5a, bit 0: takes no new inhabitants (gm_FindHome) */

@@ -4018,8 +4018,8 @@ int gm_FreeBuilding(char *b)
 }
 
 extern int gm_NOffers;
-int gm_ListStock();                     /* 0x50ab50 */
-int gm_ListAmount();                     /* 0x50aaf0 */
+int gm_ListStock(short *l, int id);     /* 0x50ab50 */
+int gm_ListAmount(short *l, char *o);   /* 0x50aaf0 */
 float gm_GoodsPrice(unsigned id, unsigned char p);                   /* 0x5089c0 */
 unsigned short * gm_ObjectBuildingOwner(unsigned short *p);                     /* 0x50a050 */
 void init_HookObject(char *o, unsigned short *p, int kind);                     /* 0x50d380 */
@@ -4295,85 +4295,76 @@ int gm_FindMarketObject(int id)
     }
     return 0;
 }
-/* 0x500c20, collects the offers for the goods id from all buildings (the first 0x58 of the table; each entry of 6 ints at 0x7e4b20: building, market object, goods object, the supply (0x50aaf0 minus a quarter of 0x50ab50 * the object's int +0x1c, not below 0), the price float, flag) and sorts them by price, highest first (the price = 0x5089c0 (goods, 0x6f1bc5) * the float at +0x49 of the building). Count in 0x7e3f3c. Returns 0, 1 without the tables. ROUGH */
+/* 0x500c20, collects the offers of the goods id from the 0x58 buildings into gm_Offers (count gm_NOffers): the market building offers what its market object (gm_FindMarketObject) holds, any other building flags the goods in its store object (0xff) and offers what its stall (0x2a) holds; the supply is the stall's amount (gm_ListAmount) less a quarter of its stock (gm_ListStock) times the goods' +0x1c, not below 0; each offer's price is gm_GoodsPrice(goods, ai_OwnPlayer) times the building's price factor, and the offers are sorted by price, highest first. Returns 0, 1 without the tables
+   @deep read against the original statement by statement: the building walk, the three row clears, the
+   market branch (gm_FindMarketObject, gm_Query of its list), the store-flag branch (0xff), the stall
+   branch (0x2a), the supply (gm_ListAmount - (unsigned)(gm_ListStock * o->v1c[0]) >> 2, clamped by the
+   sets/dec/and pair after a first store), the price loop and the selection sort with the struct swap all
+   match (equal call sequences, operands, constants and field offsets). What is left: VC6 cross-jumps the
+   identical supply tail of the two branches (push edi .. mov [gm_NOffers], edx) into the stall copy in the
+   original (the market copy ends 'push ecx; jmp 0x500d84') but into the market copy in ours (ours 'jmp
+   0x500cdb'); tried a goto into the stall copy, a shared tail after the if/else (both lay the market block
+   out of line: 199 ins) and the branches swapped (78 ins). The other hunks follow from it: the zero
+   register esi rematerialized at the loop end in the original (0x500de3 xor esi,esi) vs a jmp over it at
+   our loop head, stored = 1 as an immediate vs ebx, cmp edx,esi vs test edx,edx */
 
 int gm_CollectOffers(int goods)
 {
-    int n, k, i, j, cnt;
-    char *b;
-    int *e;
-    int mk, s, o, a, q, cc;
-    unsigned v;
-    int f;
-    unsigned id;
-    int tmp[6];
+    ORDBLD *b;
+    ORDOBJ *s, *mk, *o;
+    AISTORE tmp;
+    int k, i, j, f;
 
     if (ai_BTypes == 0)
         return 1;
-    n = 0;
     gm_NOffers = 0;
-    b = ai_Blds;
-    for (k = 0x58; k != 0; k--, b += 0xa9) {
-        if (*b != 0) {
-            f = 0;
-            e = ((int *)gm_Offers) + n * 6;
-            e[0] = 0;
-            e[2] = 0;
-            e[5] = 0;
-            if (b == (char *)ai_MarketBuilding) {
-                mk = gm_FindMarketObject(goods);
-                n = gm_NOffers;
-                if (mk != 0 && (o = (int)gm_Query(*(int *)(mk + 0x14), 1, 0, goods)) != 0) {
-                    e = ((int *)gm_Offers) + gm_NOffers * 6;
-                    e[0] = (int)b;
-                    e[1] = mk;
-                    e[2] = o;
-                    id = *(unsigned short *)o;
-                    goto add;
-                }
-            } else {
-                s = (int)gm_Query(*(int *)(b + 0x5d), 2, 6, 0, 0xff);
-                n = gm_NOffers;
-                if (s != 0 && (o = (int)gm_Query(*(int *)(s + 0x14), 1, 0, goods)) != 0) {
-                    f = 1;
-                    e = ((int *)gm_Offers) + gm_NOffers * 6;
-                    e[0] = (int)b;
-                    e[5] = 1;
-                }
-                mk = (int)gm_Query(*(int *)(b + 0x5d), 2, 6, 0, 0x2a);
-                n = gm_NOffers;
-                if (mk != 0 && (o = (int)gm_Query(*(int *)(mk + 0x14), 1, 0, goods)) != 0) {
-                    e = ((int *)gm_Offers) + gm_NOffers * 6;
-                    e[0] = (int)b;
-                    e[1] = mk;
-                    e[2] = o;
-                    id = *(unsigned short *)o;
-                add:
-                    a = gm_ListStock(mk, id);
-                    q = *(int *)(o + 0x1c);
-                    cc = gm_ListAmount(mk, o);
-                    v = cc - ((unsigned)(a * q) >> 2);
-                    ((int *)gm_Offers)[gm_NOffers * 6 + 3] = v;
-                    ((int *)gm_Offers)[gm_NOffers * 6 + 3] = v & ((int)v < 0) - 1;
-                    n = gm_NOffers + 1;
-                    gm_NOffers++;
-                } else if (f) {
-                    gm_NOffers++;
-                    n = gm_NOffers;
-                }
+    b = (ORDBLD *)ai_Blds;
+    for (k = 0x58; k != 0; k--, b++) {
+        if (b->type == 0)
+            continue;
+        f = 0;
+        gm_Offers[gm_NOffers].bld = 0;
+        gm_Offers[gm_NOffers].goodsObj = 0;
+        gm_Offers[gm_NOffers].stored = 0;
+        if (b == (ORDBLD *)ai_MarketBuilding) {
+            mk = (ORDOBJ *)gm_FindMarketObject(goods);
+            if (mk != 0 && (o = (ORDOBJ *)gm_Query((void *)mk->list, 1, 0, goods)) != 0) {
+                gm_Offers[gm_NOffers].bld = (struct AIBLD *)b;
+                gm_Offers[gm_NOffers].market = (int)mk;
+                gm_Offers[gm_NOffers].goodsObj = (int)o;
+                gm_Offers[gm_NOffers].count = gm_ListAmount((short *)mk, (char *)o)
+                    - ((unsigned)(gm_ListStock((short *)mk, o->type) * o->v1c[0]) >> 2);
+                gm_Offers[gm_NOffers].count = gm_Offers[gm_NOffers].count < 0 ? 0 : gm_Offers[gm_NOffers].count;
+                gm_NOffers++;
             }
+        } else {
+            s = (ORDOBJ *)gm_Query((void *)b->objList, 2, 6, 0, 0xff);
+            if (s != 0 && gm_Query((void *)s->list, 1, 0, goods) != 0) {
+                f = 1;
+                gm_Offers[gm_NOffers].bld = (struct AIBLD *)b;
+                gm_Offers[gm_NOffers].stored = 1;
+            }
+            mk = (ORDOBJ *)gm_Query((void *)b->objList, 2, 6, 0, 0x2a);
+            if (mk != 0 && (o = (ORDOBJ *)gm_Query((void *)mk->list, 1, 0, goods)) != 0) {
+                gm_Offers[gm_NOffers].bld = (struct AIBLD *)b;
+                gm_Offers[gm_NOffers].market = (int)mk;
+                gm_Offers[gm_NOffers].goodsObj = (int)o;
+                gm_Offers[gm_NOffers].count = gm_ListAmount((short *)mk, (char *)o)
+                    - ((unsigned)(gm_ListStock((short *)mk, o->type) * o->v1c[0]) >> 2);
+                gm_Offers[gm_NOffers].count = gm_Offers[gm_NOffers].count < 0 ? 0 : gm_Offers[gm_NOffers].count;
+                gm_NOffers++;
+            } else if (f)
+                gm_NOffers++;
         }
     }
-    cnt = n;
-    for (i = 0; i < cnt; i++)
-        *(float *)(((int *)gm_Offers) + i * 6 + 4) = (float)(gm_GoodsPrice(goods, ai_OwnPlayer) * *(float *)(((int *)gm_Offers)[i * 6] + 0x49));
-    cnt = gm_NOffers;
-    for (i = 1; i <= cnt; i++) {
-        for (j = i; j < cnt; j++) {
-            if (*(float *)(((int *)gm_Offers) + (i - 1) * 6 + 4) < *(float *)(((int *)gm_Offers) + j * 6 + 4)) {
-                memcpy(tmp, ((int *)gm_Offers) + (i - 1) * 6, 24);
-                memcpy(((int *)gm_Offers) + (i - 1) * 6, ((int *)gm_Offers) + j * 6, 24);
-                memcpy(((int *)gm_Offers) + j * 6, tmp, 24);
+    for (i = 0; i < gm_NOffers; i++)
+        gm_Offers[i].price = gm_GoodsPrice(goods, ai_OwnPlayer) * ((ORDBLD *)gm_Offers[i].bld)->priceFactor;
+    for (i = 0; i < gm_NOffers; i++) {
+        for (j = i + 1; j < gm_NOffers; j++) {
+            if (gm_Offers[j].price > gm_Offers[i].price) {
+                tmp = gm_Offers[i];
+                gm_Offers[i] = gm_Offers[j];
+                gm_Offers[j] = tmp;
             }
         }
     }
