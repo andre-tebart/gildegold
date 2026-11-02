@@ -4365,27 +4365,24 @@ int gm_IsHomeType(unsigned char *b);
 int gm_IsType10(unsigned char *b);
 int gm_BuildingClass(int kind);
 
-/* 0x501400, stocks a new building b with the objects its building kind needs (the table 0x61a348, one record of 0x15 bytes per kind: the kind byte and ten object numbers): the container object 0xff (query (2, 6, 0, 0xff), created by 0x500190 when missing) gets each listed object with the amount 2 when it has none */
-void gm_StockBuildingObjects(char *b)
+/* 0x501400, stocks a new building b with the objects its building kind needs (gm_BuildingItemGroups: the kind byte and ten object prototypes): the container object 0xff (query (2, 6, 0, 0xff), created by gm_CreateObject when missing) gets each listed object with the amount 2 when it has none */
+void gm_StockBuildingObjects(char *p)
 {
-    short *w;
-    int o, o2, k;
-    char *t;
+    ORDBLD *b = (ORDBLD *)p;
+    ORDOBJ *o;
+    int i, k;
 
-    w = (short *)gm_BuildingItemGroups[0].items;
-    do {
-        if (*b == *((char *)w - 1)) {
-            o = (int)gm_Query(*(int *)(b + 0x5d), 2, 6, 0, 0xff);
-            if (o != 0 || (o = gm_CreateObject(*(int *)(b + 1), 0xff, 1)) != 0) {
-                short *p = w;
-                for (k = 10; k != 0; k--, p++) {
-                    if (*p != 0 && gm_Query(*(int *)(o + 0x14), 1, 0, *p) == 0)
-                        gm_CreateObject(*(int *)(o + 2), *p, 2);
+    for (i = 0; i < 37; i++) {
+        if (b->type == gm_BuildingItemGroups[i].key) {
+            o = (ORDOBJ *)gm_Query((void *)b->objList, 2, 6, 0, 0xff);
+            if (o != 0 || (o = (ORDOBJ *)gm_CreateObject(b->id, 0xff, 1)) != 0) {
+                for (k = 0; k < 10; k++) {
+                    if (gm_BuildingItemGroups[i].items[k] != 0 && gm_Query((void *)o->list, 1, 0, gm_BuildingItemGroups[i].items[k]) == 0)
+                        gm_CreateObject(o->objId, gm_BuildingItemGroups[i].items[k], 2);
                 }
             }
         }
-        w = (short *)((char *)w + 0x15);
-    } while ((int)w < ((unsigned)&gm_BuildingItemGroups + 0x30a));
+    }
 }
 /* 0x5014b0, sets the capacity bytes of the building b objects from its kind record (+0x23d / +0x23e / +0x23f): the object 0x2a gets +0x1c = the first (at least 2) and +0x1d = the second (at least 2), or just the third when the first two are 0; the object 0x116 gets the third in +0x1c in that case */
 
