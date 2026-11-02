@@ -6123,15 +6123,14 @@ int gm_TitleNumber(int a, int r)
 
 int gm_TitleJob(int i, int p)
 {
-    int k, r;
+    unsigned char *rec;     /* the job record: a job byte per group from +0x74 */
 
-    k = gm_TitleGroup(ai_Chars[i][0x164]);
-    if (k == p)
-        return ai_Chars[i][0x164];
-    r = gm_PlayerRecord(ai_Chars[i]);
-    if (r == 0)
+    if (gm_TitleGroup((unsigned char)ai_Chars[i][0x164]) == p)
+        return (unsigned char)ai_Chars[i][0x164];
+    rec = (unsigned char *)gm_PlayerRecord(ai_Chars[i]);
+    if (rec == 0)
         return 0;
-    return *(unsigned char *)(r + 0x74 + p);
+    return rec[0x74 + p];
 }
 /* 0x504510, the date a character n (the player slot of 0x770b80) next gets its portion: from the character's kind (0x504ce0 must be 1 .. 5, 0x504ad0 gives a class 8 .. 12 mapped to 0 .. 4: 11 -> 2, 12 / 10 -> 3, 8 -> 0, 9 -> 4, else 1) 0x504ec0 gives a period; the date is computed from the clock 0x770ae0 (day, hour part 0x770ae4, with the fraction 6 .. 21 of the day: before 7 the hour + 6, above 21 the next day), compared with the character's own date +0xcf4 (0x4fe210), and when later it is written to out (3 words and a short, 0x4fe280 / 0x4fe140 add the fraction in ticks of 0x18 per day). Returns the fraction as a float (0.0 when the character has no portion kind, 1.0 when the date is not later). ROUGH: all float operands are lost in the pseudocode (the __ftol calls) */
 
