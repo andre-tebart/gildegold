@@ -7522,14 +7522,27 @@ int ai_EvalMayor(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2
     }
     return ai_EvalMoodWeights(a, b, i, (AIPER *)p, f, o1, o2);
 }
-/* 0x49d8d0, decide callback 0x2e (characters with +0x166 == 0xf): buy a building of kind 1 (type 2) or
-   kind 1 (type 3) when 0x4f9e00 is above the value +0x100, else work on the weakest building (+0x5c < 0x50) */
+/* 0x49d8d0, decide callback 0x2e "Buergermeister" (only for the holder of office 0xf), with the money of the
+   list in object 0x115 of the first building of kind 1: when statistic 3 of ord_GetStatistics is above
+   (mood[10][0] - 2) * 0.4, act on a free building of type 2 or 3 of building kind 1 (o1 kind 4, ref 2 / 3),
+   else build type 1 (ai_CanBuildType); otherwise renovate the lowest-level building of kind 1 (level < 0x50,
+   sub-action 0xf)
+   @deep read whole against the original (conditions, the 0x100-building loop, the type 2 / 3 /
+   build-type-1 branches with their money checks, the renovation sub-action with its 0x32/30/10 arg2, every
+   o1/o2/s1/s2 store): the meaning matches. Left: (1) the loop's inner '!(fl & 0x45)' tests: the original
+   loads 'mov cx, word ptr [edx+0x5a]' once and re-tests 'test cl, 0x45' in both count branches, VC6 drops
+   them on ours (tried fl local as *(unsigned short*), rec->flags5aw, the field read three times: same
+   object); with it the type k spills to a byte slot ('- mov byte ptr [esp+0x20], bl / mov eax, [esp+0x20]'
+   vs '+ mov eax, ebx'); (2) frame 0x6c vs 0x58: the original packs recA/recB/cntA/cntB into the s1/s2
+   slots (scope packing), ours keeps them apart; (3) the type 2 / 3 branches: the original converts each
+   gm_BuildingKindValue result (fild) before the shared money compare, ours shares the call ('- mov edi,
+   eax / mov [esp+0x90], eax' vs '+ mov [esp+0x7c], eax / fild'); (4) d[3] > x is 'fld [d3]; fcompp' on
+   ours, 'fcomp dword [d3]' on the original (fpu). 252 vs 258 instructions. */
 
-int ai_Unk49d8d0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
+int ai_DecideMayor(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 {
     AIBLD *best, *recA, *recB, *r, *b, *rec;
     AIOBJ *o;
-    unsigned short fl;
     unsigned char k;
     char lvl;
     int cntA, cntB, n, money, v;
@@ -7542,21 +7555,20 @@ int ai_Unk49d8d0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     recB = 0;
     cntA = 0;
     cntB = 0;
-    if (a != 0 || f != 0 || ((unsigned char *)p)[0x166] != 0xf)
+    if (a != 0 || f != 0 || p->officeKind != 0xf)
         return 0;
     b = gm_FirstBuilding(1);
     if (b == 0)
         return 0;
     o = gm_Query(b->objList, 2, 6, 0, 0x115);
-    money = gm_SumListAmounts(*(int *)((char *)o + 0x14), ai_OwnPlayer);
+    money = gm_SumListAmounts(o->list, ai_OwnPlayer);
     ord_GetStatistics(d);
     rec = ai_BldsT;
     for (n = 0x100; n != 0; n--, rec++) {
         k = rec->type;
         if (k == 0 || ai_BTypesT[k].kind != 1)
             continue;
-        fl = *(unsigned short *)&rec->flags5a;
-        if (fl & 0x45)
+        if (rec->flags5aw & 0x45)
             continue;
         lvl = rec->level;
         if (lvl < 0x50 && (best == 0 || best->level > lvl))
@@ -7565,15 +7577,15 @@ int ai_Unk49d8d0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             continue;
         if (k == 2) {
             cntB++;
-            if (!(fl & 0x45))
+            if (!(rec->flags5aw & 0x45))
                 recB = rec;
         } else {
             cntA++;
-            if (!(fl & 0x45))
+            if (!(rec->flags5aw & 0x45))
                 recA = rec;
         }
     }
-    if (d[3] > (*(float *)((char *)p + 0x100) - 2.0) * 0.4f) {
+    if (d[3] > (p->mood[10][0] - 2.0) * 0.4f) {
         if (cntA != 0 && recA != 0) {
             r = recA;
             o1->kind = 4;
@@ -7588,7 +7600,7 @@ int ai_Unk49d8d0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             s1.kind = 5;
             s1.ref = 1;
             v = gm_BuildingKindValue(1);
-            if (money < v * 1.2f)
+            if (v * 1.2f > money)
                 return 0;
             s1.arg = 1;
             s2.kind = 0;
@@ -7600,7 +7612,7 @@ int ai_Unk49d8d0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             *o2 = s2;
             return 0x2e;
         }
-        if (money < v * 0.4f)
+        if (v * 0.4f > money)
             return 0;
         o1->arg = 1;
         o2->kind = 4;
@@ -7620,7 +7632,7 @@ int ai_Unk49d8d0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         s1.arg2 = 0x32;
     else
         s1.arg2 = lvl >= 0x42 ? 10 : 30;
-    s2.ref = *(int *)((char *)o + 2);
+    s2.ref = o->objId;
     s2.arg = money;
     s2.arg2 = 1;
     s2.kind = 1;
@@ -9784,7 +9796,7 @@ int ai_RegisterBaseActions(int a)
     act.id = 0x2e;
     strcpy(act.name, "Buergermeister");
     act.eval = ai_EvalMayor;
-    act.decide = ai_Unk49d8d0;
+    act.decide = ai_DecideMayor;
     act.exec = ai_Unk49dc10;
     act.flags = 0x39;
     if (!am_RegisterMethod(&act, a))

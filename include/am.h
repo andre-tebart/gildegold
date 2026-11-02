@@ -910,7 +910,7 @@ float ord_GetStatistics(int *o);                                                
 int ai_EvalCurrentNeed(float *a, float *b, int i, AIPER *p);                          /* 0x4a4ae0, as in unk_4a3af0.h */
 #define AI_EvalCurrentNeed7(a, b, i, p, f, o1, o2) ((int (*)(float *, float *, int, G5CH *, int, AIARG *, AIARG *))ai_EvalCurrentNeed)(a, b, i, p, f, o1, o2)  /* declared with 4 parameters */
 int ai_EvalMayor(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2); /* 0x49d7f0 */
-int ai_Unk49d8d0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49d8d0 */
+int ai_DecideMayor(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49d8d0 */
 char * gm_PlayerSeat(int p);                                                      /* 0x504a80 */
 int ai_Unk49dc10(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49dc10 */
 int ai_Unk49dd90(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49dd90 */
