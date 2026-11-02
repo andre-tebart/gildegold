@@ -9,11 +9,17 @@ struct D3OBJECT;
 /* Declarations of gv.c (0x4ed170.., the avatar table 0x60f310 and the effect slots 0x6f1008). Names are ours. */
 #ifndef GV_H
 #define GV_H
+#include "ai_types.h"
 
 extern char unk_Avatars[0x20][0xf4];    /* 0x60f310 */
 extern char gv_Effects[];             /* 0x6f1008, 8 slots of 0x170 bytes */
-extern char ai_Unk6f0e38[], ai_Unk6f0e3c[], ai_Unk6f0e3e[], ai_Unk6f0e42[], ai_Unk6f0e48[];  /* 0x6f0e38, 0x6f0e3c, 0x6f0e3e, 0x6f0e42, 0x6f0e48 */
-extern char ai_Unk925100[], ai_Unk925104[], ai_Unk925108[], ai_Unk925114[], ai_Unk925118[], ai_Unk92511c[];  /* 0x925100, 0x925104, 0x925108, 0x925114, 0x925118, 0x92511c */
+typedef union GVTIME {                  /* 16 bytes: an AITIME copied as four ints */
+    AITIME t;
+    int raw[4];
+} GVTIME;
+extern GVTIME gv_LastTime;              /* 0x6f0e38, ai_Time at the last effect step */
+extern char ai_Unk6f0e48[];             /* 0x6f0e48 */
+extern char gv_CannonBld[], gv_CannonSpare[], gv_CannonCamTarget[], gv_CannonSliderA[], gv_CannonSliderB[], gv_CannonSelected[];  /* 0x925100, 0x925104, 0x925108, 0x925114, 0x925118, 0x92511c */
 extern char ai_Time[];             /* 0x770ae0 */
 extern int ai_TimeYear;            /* 0x770ae0, ai_Time's first int: the game year (AITIME.year in ai.h;
                                       the alias am.h / cm.h use for AITIME.hour is ai_TimeHour) */
@@ -124,7 +130,6 @@ extern char *ai_Blds;                   /* 0x889f74, 256 records of 0xa9 bytes *
 extern unsigned short *ai_PlayerChar;    /* 0x6f1bf8, the player's character (ai.c; this header's units add byte offsets through ai_PlayerCharC) */
 extern const float ai_Unk5ebba4[];          /* 0x5ebba4, d3_Origin (as cm.h) */
 extern const char ai_Unk5ebbb4[];                 /* 0x5ebbb4 */
-extern char ai_Unk6f0e40[], ai_Unk6f0e44[];  /* 0x6f0e40, 0x6f0e44 */
 
 char *gv_AllocAvatar(void);              /* 0x4ed170 */
 int gv_WriteAvatars(void *f);             /* 0x4ed1e0 */
