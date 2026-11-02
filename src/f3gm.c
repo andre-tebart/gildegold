@@ -6078,39 +6078,42 @@ int gm_TitleNumberGroup(int n)
 
 int gm_TitleNumber(int a, int r)
 {
+    /* the cases are in the order of their title numbers (the original's case bodies lie so) */
     if (a != 0) {
         r = r - 1;
         switch (a) {
+        case 0xb:
+            return 6 - r;
+        case 9:
+            return 0xc - r;
+        case 7:
+            return 0x12 - r;
+        case 6:
+            return 0x18 - r;
+        case 8:
+            return 0x1e - r;
+        case 5:
+            return 0x27 - r;
+        case 0xc:
+            return 0x2d - r;
         case 1:
             return 0x33 - r;
+        case 0xa:
+            return 0x39 - r;
         case 2:
             return 0x3f - r;
         case 3:
             return 0x45 - r;
         case 4:
             return 0x4b - r;
-        case 5:
-            return 0x27 - r;
-        case 6:
-            return 0x18 - r;
-        case 7:
-            return 0x12 - r;
-        case 8:
-            return 0x1e - r;
-        case 9:
-            return 0xc - r;
-        case 0xa:
-            return 0x39 - r;
-        case 0xb:
-            return 6 - r;
-        case 0xc:
-            return 0x2d - r;
         case 0xd:
             return 0x51 - r;
-        case 0xe:
-            return 0x58 - r;
         case 0xf:
             return 0x5e - r;
+        case 0xe:
+            return 0x58 - r;
+        case 0x10:
+            return 0;
         }
     }
     return 0;
