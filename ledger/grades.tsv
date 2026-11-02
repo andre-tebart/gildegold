@@ -3068,7 +3068,7 @@ exe	0x00504ce0	gm_TitlesLeft	f3gm	shape	readable
 exe	0x00504e00	gm_SkillPoints	f3gm	byte	readable		
 exe	0x00504e20	gm_Mix	f3gm	shape	readable		
 exe	0x00504e80	gm_Mix2	f3gm	shape	readable		
-exe	0x00504ec0	gm_GetSkill	f3gm	draft	draft		
+exe	0x00504ec0	gm_GetSkill	f3gm	byte	readable		
 exe	0x005051d0	gm_Unk5051d0	f3gm	shape	draft		
 exe	0x00505230	gm_Unk505230	f3gm	draft	draft		
 exe	0x00505440	gm_Unk505440	f3gm	draft	draft		
