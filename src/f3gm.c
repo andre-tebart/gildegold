@@ -2965,33 +2965,29 @@ int gm_RemoveObject(int *list, unsigned id)
     } while (cur != 0);
     return -2;
 }
-/* 0x4ff450, a random market shake: with chance 1 / 2, 0 .. 1 times (0x2 draws) a random goods record of the player 0x6f1bc5 (0x54 + 1 records) that is in use gets a copy (0x80 bytes) with the float at +0x20 copied to +0x24 halved or raised by 1.5 (and the value 0x5087f0 (id, 100) likewise at +0x38), handed to 0x4c5710 (copy, player). ROUGH */
+/* 0x4ff450, a random market shake: with chance 1 / 2, 0 .. 1 times (0x2 draws) a random goods record of the own player (of the first 0x54) that is in use and held gets a copy whose mean is the demand raised by 1.5 or halved, and whose price is the item's price (gm_ItemPrice, 100) scaled the same; the copy goes to cm_SendGoodsDelta for the own player */
 
 void gm_RandomMarketShake(void)
 {
-    int rec[0x20];
-    unsigned n, k;
-    int *g;
-    float v;
-    int i;
+    GMSTOCK rec;
+    int n;
+    unsigned k;
+    GMSTOCK *g;
 
     if (util_RandomU(2) != 0) {
-        n = util_RandomU(2) & 0xffff;
-        for (; n != 0; n--) {
+        for (n = util_RandomU(2) & 0xffff; n > 0; n--) {
             k = util_RandomU(0x54) & 0xffff;
-            g = (int *)(init_StockBlocks + ai_OwnPlayer * 0x2a90 + k * 0x80);
-            if (*(short *)g != 0 && g[1] != 0) {
-                for (i = 0; i < 0x20; i++)
-                    rec[i] = g[i];
-                if (util_RandomU(1) == 0) {
-                    *(float *)(rec + 9) = *(float *)(rec + 8) * 0.5f;
-                    v = (float)(gm_ItemPrice(*(short *)g, 100) * 0.5);
+            g = (GMSTOCK *)(init_StockBlocks + ai_OwnPlayer * 0x2a90) + k;
+            if (g->item != 0 && g->amount != 0) {
+                rec = *g;
+                if (util_RandomU(1) != 0) {
+                    rec.mean = (float)(rec.demand * 1.5);
+                    rec.price = (float)(gm_ItemPrice(g->item, 100) * 1.5);
                 } else {
-                    *(float *)(rec + 9) = *(float *)(rec + 8) * 1.5f;
-                    v = (float)(gm_ItemPrice(*(short *)g, 100) * 1.5);
+                    rec.mean = (float)(rec.demand * 0.5);
+                    rec.price = (float)(gm_ItemPrice(g->item, 100) * 0.5);
                 }
-                *(float *)(rec + 0xe) = v;
-                cm_SendGoodsDelta(rec, ai_OwnPlayer);
+                cm_SendGoodsDelta((char *)&rec, ai_OwnPlayer);
             }
         }
     }
