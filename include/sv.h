@@ -162,7 +162,7 @@ void sv_PumpNet(void);                                                  /* 0x52f
 void sv_ChatConsole(void);                                                /* 0x52fe10 */
 void sv_UpdateQuickChat(void);                                                /* 0x530100 */
 void sv_UpdateWeather(void);                                                /* 0x5301a0 */
-void sv_Unk530670(void);                                                /* 0x530670 */
+void sv_WeatherFrame(void);                                                /* 0x530670 */
 void sv_Unk5307f0(void);                                                /* 0x5307f0 */
 void sv_SetScreenCenter(unsigned fl);                                   /* 0x530900 */
 int sv_RunFrame(int cb, unsigned mask);                                 /* 0x5309a0 */
@@ -231,7 +231,7 @@ extern unsigned sv_ChatTime;                               /* 0x623ec4 */
 extern int sv_QuickChatForm;                                    /* 0x623ec8 */
 extern int sv_ViewRectLeft;                                 /* 0x6248a4 */
 extern int sv_ViewRectTop;                                  /* 0x6248a8 */
-extern unsigned ai_Unk623ecc;                               /* 0x623ecc */
+extern int sv_SunRaysHour;                                    /* 0x623ecc */
 extern int sv_ViewRectRight;                                /* 0x6248ac */
 extern int sv_ViewRectBottom;                               /* 0x6248b0 */
 extern int ai_DragWindow;                                    /* 0x62a8cc */

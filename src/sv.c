@@ -7091,7 +7091,7 @@ struct D3OBJECT *d3t_CreateSunRays();                     /* 0x417190 */
 void d3t_FadeOutSunRays();                     /* 0x417150 */
 int ai_RunAllows();                     /* 0x5763c0 */
 void ai_CampaignStep(int a, int b, int c, int d);                     /* 0x576040 */
-extern unsigned ai_Unk623ecc;
+extern int sv_SunRaysHour;  /* 0x623ecc */
 
 #define sv_SkyLayersT (*(D3SKYLAYER *(*)[6])&d3_SkyLayers)  /* 0x760620, d3_SkyLayers (int[6]) as the sky layers they point to */
 
@@ -7185,36 +7185,41 @@ void sv_UpdateWeather(void)
         d3sky_SetLayerSpeed(d3_Sky, sv_SkyLayersT[2], w * 1.5);
     }
 }
-/* 0x530670, the thunder / sun glow update of an hour: stops the emitters (0x414590 / 0x415380), a random thunder (sound "DonnerMittel_s", 0x760548 time, 0x76054c length) when the hour's flag 0x7604e8 is set, and
-   the light flash 0x417190 / 0x417150 around the hours 11 .. 17 when 0x633444 is 0; ROUGH */
+/* 0x530670, the weather of a frame (sv_RunFrame): draws the rain / snow emitters; in a stormy hour (sv_Weather.storm) a thunder now and then (1 in 300 frames, at storm 3
+   another 1 in 100: sv_Weather.thunderStart / thunderLen and the sample "DonnerMittel_s"); in the town (d3_CurrentScene 0), when the clouds clear in an hour from 11 to 17
+   o'clock past its 30th minute, the sun rays (3 in 8) and their hour sv_SunRaysHour; past the 30th minute of a later hour they fade out
+   @deep Read whole against 0x530670..0x5307eb and rewritten: rain/snow draw, the thunder roll (storm[h],
+   1/300 or storm 3 and 1/100, thunderStart/thunderLen, sb_PlaySample with the 7 arguments the original
+   pushes, volume init_SoundVolume*127.0f), the sun rays when clouds[h-1] != 0 and clouds[h] == 0 between
+   11 and 17 past minute 30 (ai_TimeT.min), sv_SunRaysHour int (the signed jle). Every statement matches;
+   diffclass: regs 8/4/20 (eax<->ecx: the original keeps ai_TimeHour in ecx and zero-extends into eax, ours
+   the reverse) and one code hunk at 0x530734 that is the same cascade: the reload of ai_TimeHour before
+   d3_CurrentScene (+ mov ecx,[ai_TimeHour] / mov eax,[d3_CurrentScene] vs ours mov eax,[ai_Time+4] / mov
+   ecx,[d3_CurrentScene]) and the clouds[h-1]/clouds[h] addressing (+ shl eax,2 / mov
+   edx,[eax+sv_Weather-4] / mov edx,[eax+sv_Weather] vs ours lea ecx,[edx*4+sv_Weather] / cmp [ecx],0).
+   Tried (&clouds[-1])[h] and clouds[(int)h-1]: same 47. Left: allocation / addressing selection. */
 
-void sv_Unk530670(void)
+void sv_WeatherFrame(void)
 {
-    unsigned short hh;
-    int v;
-
-    if (SV_I((unsigned)&d3t_Rain) != 0)
-        d3t_DrawRain(SV_I((unsigned)&d3t_Rain));
-    if (SV_I((unsigned)&d3t_Snow) != 0)
-        d3t_DrawSnow(SV_I((unsigned)&d3t_Snow));
-    hh = SV_US((unsigned)&ai_TimeHour);
-    if (((int *)sv_Weather.storm)[hh] != 0 && ((short)util_RandomU(300) == 0 || (((int *)sv_Weather.storm)[SV_US((unsigned)&ai_TimeHour)] == 3 && (short)util_RandomU(100) == 0))) {
-        sv_Weather.thunderStart = SV_I((unsigned)&ai_ClockMs);
-        sv_Weather.thunderLen = (util_RandomU(8) & 0xffff) + 8;
-        sb_PlaySample(snd_ThunderBank, "DonnerMittel_s", 1, 0x3f, (int)0.0f);
+    if (d3t_Rain != 0)
+        d3t_DrawRain(d3t_Rain);
+    if (d3t_Snow != 0)
+        d3t_DrawSnow(d3t_Snow);
+    if (sv_Weather.storm[ai_TimeHour] != 0 && (util_RandomU(300) == 0 || (sv_Weather.storm[ai_TimeHour] == 3 && util_RandomU(100) == 0))) {
+        sv_Weather.thunderStart = ai_ClockMs;
+        sv_Weather.thunderLen = util_RandomU(8) + 8;
+        sb_PlaySample(snd_ThunderBank, "DonnerMittel_s", 1, 0x3f, (int)(init_SoundVolume * 127.0f), 0, 0);
     }
-    if (SV_I((unsigned)&d3_CurrentScene) == 0) {
-        if (10 < SV_US((unsigned)&ai_TimeHour) && SV_US((unsigned)&ai_TimeHour) < 0x12 && *(int *)((unsigned)&sv_SeasonClimate + SV_US((unsigned)&ai_TimeHour) * 4) != 0
-            && ((int *)sv_Weather.clouds)[SV_US((unsigned)&ai_TimeHour)] == 0 && 0x1e < (int)((unsigned)SV_US(((unsigned)&ai_Time + 0x6)) | ((unsigned)SV_US(((unsigned)&ai_Time + 0x8)) << 16))) {
-            hh = (unsigned short)util_RandomU(0x80);
-            if (0x60 < hh && SV_I((unsigned)&d3t_SunRays) == 0)
+    if (d3_CurrentScene == 0) {
+        if (ai_TimeHour >= 11 && ai_TimeHour <= 17 && sv_Weather.clouds[ai_TimeHour - 1] != 0 && sv_Weather.clouds[ai_TimeHour] == 0 && ai_TimeT.min > 30) {
+            if (util_RandomU(0x80) > 0x60 && d3t_SunRays == 0)
                 d3t_CreateSunRays();
-            ai_Unk623ecc = SV_US((unsigned)&ai_TimeHour);
+            sv_SunRaysHour = ai_TimeHour;
         }
-        if (ai_Unk623ecc != 0xffffffff && (int)ai_Unk623ecc < (int)SV_US((unsigned)&ai_TimeHour) && 0x1e < (int)((unsigned)SV_US(((unsigned)&ai_Time + 0x6)) | ((unsigned)SV_US(((unsigned)&ai_Time + 0x8)) << 16))) {
-            if (SV_I((unsigned)&d3t_SunRays) != 0)
-                d3t_FadeOutSunRays(SV_I((unsigned)&d3t_SunRays), 1);
-            ai_Unk623ecc = 0xffffffff;
+        if (sv_SunRaysHour != -1 && ai_TimeHour > sv_SunRaysHour && ai_TimeT.min > 30) {
+            if (d3t_SunRays != 0)
+                d3t_FadeOutSunRays(d3t_SunRays, 1);
+            sv_SunRaysHour = -1;
         }
     }
 }
@@ -7409,7 +7414,7 @@ l64:
     if (SV_I((unsigned)&snd_MusicEnabled) != 0 && (mask & 0x40000) != 0)
         ai_Unk4c2000();
     if (SV_I((unsigned)&ai_FrameWait) == 0
-        && ((SV_I((unsigned)&ai_Unk633738) == 0 || (mask & 0x4000) == 0 || (mask & 0x40) == 0 || (sv_Unk530670(), SV_I((unsigned)&ai_FrameWait) == 0))
+        && ((SV_I((unsigned)&ai_Unk633738) == 0 || (mask & 0x4000) == 0 || (mask & 0x40) == 0 || (sv_WeatherFrame(), SV_I((unsigned)&ai_FrameWait) == 0))
             && ((mask & 0x10000) == 0 || SV_I((unsigned)&ai_Unk6f0dbc) == 0 || (d3t_DrawRain(SV_I((unsigned)&ai_Unk6f0dbc)), SV_I((unsigned)&ai_FrameWait) == 0)) && SV_I((unsigned)&sv_BandActive) != 0)) {
         if (u5 == 0)
             sv_UpdateBand();
@@ -7718,7 +7723,7 @@ unsigned sv_ChatTime = 0xffffffff;  /* 0x623ec4, d3_Time when the last chat line
 int sv_QuickChatForm = -1;  /* 0x623ec8 */
 int sv_ViewRectLeft = 0;  /* 0x6248a4 */
 int sv_ViewRectTop = 0;  /* 0x6248a8 */
-unsigned ai_Unk623ecc = 4294967295;  /* 0x623ecc */
+int sv_SunRaysHour = -1;  /* 0x623ecc, the hour the sun rays started (sv_WeatherFrame), -1: none */
 int sv_ViewRectRight = 694;  /* 0x6248ac */
 int sv_ViewRectBottom = 600;  /* 0x6248b0 */
 int ai_DragWindow = -1;  /* 0x62a8cc */
