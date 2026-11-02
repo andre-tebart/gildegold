@@ -1625,26 +1625,25 @@ int gm_ExpectedDeathAge(char *c)
         r = 0.0f;
     return (int)((float)(ch->w00a + n) + r);
 }
-/* 0x4fc820, the health of the character c now (-1 for a free slot or an inactive one): the +0x1c float when the age (+10) is above the lifetime float (+0x20), else the line from +0x10 to +0x1c over the lifetime, plus the int +0x24, not below 0 */
+/* 0x4fc820, the life of the character c now (-1 for a free slot or a dead one): f01c once its age w00a is
+   above f020, before that the line from f010 to f01c over the years up to f020; plus v024, not below 0 */
 
 float gm_CharacterHealth(short *c)
 {
-    float f;
-    float a;
+    ORDCHAR *ch = ORD_CHAR(c);
+    float a, f;
 
-    if (*c == -1)
+    if (ch->id == 0xffff)
         return -1.0f;
-    if (((char *)c)[8] == 0)
+    if (ch->health == 0)
         return -1.0f;
-    a = (float)*(unsigned short *)((char *)c + 10);
-    if (a > *(float *)((char *)c + 0x20))
-        f = *(float *)((char *)c + 0x1c);
+    a = (float)ch->w00a;
+    if (a <= ch->f020)
+        f = ((ch->f01c - ch->f010) / ch->f020) * a + ch->f010;
     else
-        f = ((*(float *)((char *)c + 0x1c) - *(float *)((char *)c + 0x10)) / *(float *)((char *)c + 0x20)) * a + *(float *)((char *)c + 0x10);
-    f = (float)(f + *(int *)((char *)c + 0x24));
-    if (f <= 0.0f)
-        f = 0.0f;
-    return f;
+        f = ch->f01c;
+    f = f + ch->v024;
+    return f > 0.0 ? f : 0.0;
 }
 /* 0x4fc890, the same without the int +0x24 and the floor */
 
