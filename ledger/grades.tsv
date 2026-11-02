@@ -1696,19 +1696,19 @@ exe	0x0049d7f0	ai_EvalMayor	am	shape	readable
 exe	0x0049d8d0	ai_DecideMayor	am	draft	readable	deep	
 exe	0x0049dc10	ai_Unk49dc10	am	byte	draft		
 exe	0x0049dd90	ai_Unk49dd90	am	byte	draft		
-exe	0x0049def0	ai_Unk49def0	am	draft	draft		
+exe	0x0049def0	ai_DecideMayorTownHall	am	byte	readable		
 exe	0x0049e230	ai_Unk49e230	am	byte	draft		
-exe	0x0049e350	ai_Unk49e350	am	draft	draft		
+exe	0x0049e350	ai_DecideMayorPrison	am	byte	readable		
 exe	0x0049e680	ai_Unk49e680	am	byte	draft		
-exe	0x0049e7a0	ai_Unk49e7a0	am	draft	draft		
-exe	0x0049ea90	ai_Unk49ea90	am	draft	draft		
-exe	0x0049ec10	ai_Unk49ec10	am	draft	draft		
+exe	0x0049e7a0	ai_DecideMasterBuilder	am	draft	readable	deep	
+exe	0x0049ea90	ai_ExecuteMasterBuilder	am	draft	readable	deep	
+exe	0x0049ec10	ai_EvalDarkCorner	am	byte	readable		
 exe	0x0049ed10	ai_Unk49ed10	am	byte	draft		
-exe	0x0049ee20	ai_Unk49ee20	am	draft	draft		
-exe	0x0049eec0	ai_DecideTakeCredit	am	draft	draft		
+exe	0x0049ee20	ai_ExecuteDarkCorner	am	byte	readable		
+exe	0x0049eec0	ai_DecideTakeCredit	am	byte	readable		
 exe	0x0049f370	ai_Unk49f370	am	byte	draft		
 exe	0x0049f4f0	ai_Unk49f4f0	am	byte	draft		
-exe	0x0049f5c0	ai_Unk49f5c0	am	draft	draft		
+exe	0x0049f5c0	ai_DecideChangeProfession	am	draft	readable	deep	
 exe	0x0049f7f0	ai_Unk49f7f0	am	draft	draft		
 exe	0x0049f850	ai_Unk49f850	am	draft	draft		
 exe	0x0049fb80	ai_Unk49fb80	am	draft	draft		
@@ -1810,7 +1810,7 @@ exe	0x004aaa10	ai_Unk4aaa10	unk_4a7140	byte	draft
 exe	0x004aaae0	aip_ExecAnschwaerzen	unk_4a7140	byte	readable		
 exe	0x004aab90	ai_TrustedOfTwo	unk_4a7140	draft	readable	deep	
 exe	0x004aad30	ai_TrustedOfFour	unk_4a7140	draft	readable	deep	
-exe	0x004aaef0	ai_Unk4aaef0	unk_4a7140	byte	draft		
+exe	0x004aaef0	ai_FindDarkCornerTarget	unk_4a7140	byte	draft		
 exe	0x004aafb0	ai_ExecMessage74	unk_4a7140	byte	readable		
 exe	0x004ab080	ai_DecideBuyDunkleEcke	unk_4a7140	byte	readable		
 exe	0x004ab2c0	ai_ExecBuyDunkleEcke	unk_4a7140	byte	readable		
@@ -3135,7 +3135,7 @@ exe	0x0050a0b0	gm_Unk50a0b0	f3gm	byte	draft
 exe	0x0050a0f0	gm_Unk50a0f0	f3gm	draft	draft		
 exe	0x0050a150	gm_Unk50a150	f3gm	byte	draft		
 exe	0x0050a1c0	gm_Unk50a1c0	f3gm	draft	draft		
-exe	0x0050a250	gm_Unk50a250	f3gm	draft	draft		
+exe	0x0050a250	gm_GetCreditOffers	f3gm	draft	draft		
 exe	0x0050a640	gm_GetWorth	f3gm	draft	draft		
 exe	0x0050a6c0	gm_IsBankrupt	f3gm	draft	draft		
 exe	0x0050a810	gm_FindCharacterByMaster	f3gm	draft	draft		
