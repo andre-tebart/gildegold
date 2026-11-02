@@ -119,14 +119,15 @@ typedef struct AIGOOD {                 /* 0x41 bytes, ai_Goods[] */
         char name[0x25];                /* 0x01 */
         struct {
             char padname[0x21];
-            unsigned int unk22;         /* 0x22 */
+            unsigned int workTime;      /* 0x22, reasoned: the production time of one unit (the item tooltip shows it, in a building divided by the staff factor; ai_CalcEntryCost divides the margin by it) */
         };
     };
     unsigned short need[4];             /* 0x26 */
     unsigned short in[4];               /* 0x2e, the goods it is made of */
     unsigned short batch;               /* 0x36, the amount one production run makes (the store needs room for
                                            it and the market that much plus the stock; he.c 0x5690c0 hands it out) */
-    char pad38[9];
+    char pad38[8];
+    unsigned char b40;                  /* 0x40, nonzero: shown in the item tooltip instead of the price (text 0x21, ai_OpenItemTooltip) */
 } AIGOOD;
 
 typedef struct AIBTYPE {                /* 0x24d bytes, ai_BTypes[] */
@@ -372,7 +373,7 @@ typedef struct AIENTRY {                /* 0x58 bytes, ai_Entries[32]: a good th
     float materialCost;                 /* 0x28, cost of the needed goods per unit: their slot prices * need / batch */
     float objectValue;                  /* 0x2c, gm_ObjectValue(item) */
     float price;                        /* 0x30, the good's sale price (gm_GoodsPrice) */
-    float margin;                       /* 0x34, sort key and profit per unit: (price - cost) / AIGOOD.unk22 */
+    float margin;                       /* 0x34, sort key and profit per unit: (price - cost) / AIGOOD.workTime */
     int pending;                        /* 0x38, the pieces in production: the running jobs (he_FindEvent 0xb) add
                                            their in / out amounts here while they add the same to AISLOT.pending */
     int amount;                         /* 0x3c, of the good in the workshop's store (gm_ListAmount 0x50aaf0,
@@ -724,7 +725,7 @@ void cm_SendExSellObject(int a, int b, short c, int d, unsigned char e, int f); 
 void cm_SendFieldDeltas(void);                                                 /* 0x4c49a0, sends the message */
 int cm_SendRelations(int a, int b, int c, int d);                  /* 0x4c4b00 */
 int cm_SendLongMessage(char *msg);                                           /* 0x4c4b70 */
-char * ai_Unk4cd9d0(int id);                                              /* 0x4cd9d0 */
+char * ai_FindWeaponRecord(int id);                                              /* 0x4cd9d0 */
 int gv_EntryIndex(char *r, int *e);                                        /* 0x4ef6b0 */
 int ord_GetGridCell(char *p, int *x, int *y);                               /* 0x4f8300 */
 void gm_AddTime(struct GCLOCK *c, int hours, int mins, int secs);                       /* 0x4fe140 */

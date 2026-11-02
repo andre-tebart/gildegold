@@ -644,6 +644,7 @@ extern char ai_Chars[768][0x21c];
 #define AI_4A63F0_7(p, a, fl, b, c, f, o) ((int (*)(void *, int, unsigned int, int, int, float, int *))ai_PickActionBuilding)(p, a, fl, b, c, f, o)
 
 #define U_I(a) (*(int *)(a))
+#define amt_PriceTable (*(AMTPRICEROW (*)[37])&amt_PriceRows)  /* 0x61a348, amt_PriceRows as its rows */
 
 void sv_CameraFollow();
 
@@ -10080,78 +10081,166 @@ int ai_OpenHelpTooltip(char *s)
 
 float gm_GoodsPrice(unsigned id, unsigned char p);
 
-/* 0x588310, the drag window of an item (1596 B, ROUGH SKELETON: the call order, the text ids and the case values
-   are complete; the widget layout arithmetic and the case split around the texts are summarised as comments):
-   idx = the item index, item = 0x91aaf0 + idx * 0x41, o = 0x4cd9d0 (idx). The window "ToolTip\ToolTip_Objekte_
-   Waffen" (0x62a940) when o and *o, else "ToolTip\ToolTip_Objekte_Handelsgut" (0x62a91c), 0x475600; the position
-   from the window record 0xfb1024 + win * 0x2ac (0x26c / +6) and the screen width 0xfb9072 in 0x46cda0; the
-   sections 2 / 1 / 3, 0x4731d0 (0, 0, idx + 0xdf) and the texts idx * 2 + 0x9a9 / idx * 2 + 0x9a8, 0x21 (the byte
-   o + 0x40) or 0x1f (0x5089c0 (idx, 0x6f1bc5, (int)0x5087f0 (idx, 0x64)) as float -> int); the section 4 and the
-   text 0x20 (o + 0x22) or, with 0x6f2308 / 0x6f230c / 0x75ec60 (the first non-0, 0 -> the text 0x20), the
-   characters 0x770b80 + i * 0x21c (+0x16c == that, 0x300 of them) collected in 0x50cdc0 (that, the count, the
-   list) -> float; the text 0x22 ((o + 0x22 + the character's byte +0x81 * 1 / 1008) * the float -> int); the
-   text 0x25 with the section 4 / 3; the lists 0x61a348 (15 entries of 0x15, the word 0x61a349 == the record's
-   word and != 0x1cd) 0x473350 (6, idx * 0xa + 0x28, the byte + 0x427, -2, U_I (0x6ed938)) and the text
-   "%s$N" (0x62a90c, the text (the byte * 7 + 0x48e)); the case values 0x225 / 0x226 / 0x227 / 0x293 / 0x294 /
-   0x295 -> the texts 0x48 / 0x49 / 0x4a or 0x4e / 0x4f / 0x50, 0x1c1 .. 0x1c3 -> 0x18 / 0x19, 0x1c4 .. 0x1c7 /
-   0x2af / 0x2b0 -> 0x1e, 0x1bd .. 0x1c0 / 0x1d0 .. 0x1d2 -> 0x20, 0x1b7 .. 0x1b9 / 0x1ca .. 0x1cc -> 0x1e,
-   0x1ba / 0x1bb / 0x1bc / 0x1cd .. 0x1cf -> 0x1f, each 0x473350 (6, the slot * 0xa + 0x28, the value + 0x427,
-   -2) and "%s$N"; the 0x1c1 .. 0x1c7 / 0x2af / 0x2b0 kinds with the item kinds 0x17 / 0x25: the extra slot 0x444
-   / 0x624; nothing at all -> the text 0x602568; the window */
+/* 0x588310, opens the item tooltip view of the goods item idx: the form "ToolTip\ToolTip_Objekte_Waffen" when
+   the item has a weapon record (ai_FindWeaponRecord) with a nonzero id, else "ToolTip\ToolTip_Objekte_Handelsgut",
+   centred and kept left of the screen's right edge; section 2 the item's picture (object id idx + 0xdf) and
+   its description (text idx * 2 + 0x9a9), section 1 its name (idx * 2 + 0x9a8), section 3 the byte +0x40
+   (text 0x21) or the player's price (text 0x1f); section 4 of the view the base price (text 0x20) or, in a
+   building (ai_PlayerBuilding, ai_FallbackBuilding, sv_SelectedObject), the price over the building's staff
+   factor (gm_StaffFactor of its workers other than the master, plus the master's skill byte / 1008, text 0x22);
+   then the list: the goods it is made of with their amounts (section 4, text 0x25), the guild-house buildings
+   that make it (amt_PriceRows, section 3, text 0x26), for the item types 0x17 / 0x25 the buildings that use the
+   item idx and the extra slot 0x444 (text 0x624); "$C" when the list stayed empty; returns the view
+   @deep reconstructed in full from 0x588310..0x58894b (453 vs 449 instructions): form choice, window
+   clamp, sections 1..4, the price texts 0x21 / 0x1f (io_PrintText's third word is (int)gm_ItemPrice,
+   gm_GoodsPrice takes two), the staff loop (ai_Chars bld == building, not the master, netIds) with
+   gm_StaffFactor and the work time / (master skill / 1008 + factor), the ingredient loop (AIGOOD in/need),
+   the amt_PriceRows rows, the building lists by item type 0x17/0x25 and the extra slot 0x444, every call
+   and constant compared. What remains needs a variant round: (1) the 0x225..0x295 / 0x1c1.. if-else chain:
+   the original lays the blocks inline after each test (0x5886df 0x48..0x4a, 0x588720 0x4e..0x50, 0x58875d
+   0x18/0x19) and re-tests 0x226/0x227 at 0x5886cf, our VC6 threads every test to blocks placed after the
+   chain (0x58881f, 0x5887e9) - tried no outer test, two ifs, ranges, rotated inner order, plain else:
+   worse or equal; this placement moves all later branch targets (the 12 differing targets are this shift
+   and the loop heads below); (2) slot * 0x16 + 0x28 is recomputed per call in the original (lea chains on
+   edi / esi), ours strength-reduces it into ebx / edi, which moves the loop counters into registers (the
+   original keeps them at [esp+0x10]); (3) fxch fxch at 0x58854a in the work-time division (tried operand
+   orders and casts: unchanged); (4) the prologue pushes ebx/ebp at entry vs after the form call (follows
+   from (2)) */
 int ai_OpenItemTooltip(int idx)
 {
-    char *item;
-    char *o;
-    int win;
     int n;
+    int slot;
+    int view;
+    AIGOOD *item;
+    float factor;
+    int list[32];
+    char *w;
+    char *bld;
+    AICHAR *c;
+    AICHAR *master;
+    D2WIN *win;
     int i;
-    int j;
+    int k;
+    int id;
+    int amount;
 
-    item = (char *)U_I((unsigned)&ai_Goods) + idx * 0x41;
-    o = (char *)ai_Unk4cd9d0(idx);
-    win = d2_OpenForm(0, 0, (char *)((o != 0 && *(int *)o != 0) ? (unsigned)&full_data_62a940 : (unsigned)&full_data_62a91c));
-    d2_CentreViewWindows(win);
+    w = ai_FindWeaponRecord(idx);
+    item = (AIGOOD *)ai_Goods + idx;
+    if (w != 0 && ((AIWEAPON *)w)->id != 0)
+        view = d2_OpenForm(0, 0, "ToolTip\\ToolTip_Objekte_Waffen");
+    else
+        view = d2_OpenForm(0, 0, "ToolTip\\ToolTip_Objekte_Handelsgut");
+    d2_CentreViewWindows(view);
+    win = &d2_Wins[d2_Views[view].wins[0]];
+    if (win->x + win->w > d2_ScreenW - 0x10)
+        d2_MoveObj(d2_ScreenW - win->w - 0x10, win->y, win->parent);
     d2_SetForm(0, 2);
-    d2_WinOpenPic(0, 0, (char *)(idx + 0xdf), U_I((unsigned)&d2_LastWindow));
+    d2_WinOpenPic(0, 0, idx + 0xdf, d2_LastWindow);
     io_PrintText(idx * 2 + 0x9a9);
     d2_SetForm(0, 1);
     io_PrintText(idx * 2 + 0x9a8);
     d2_SetForm(0, 3);
-    if (*(unsigned char *)(o + 0x40) != 0) {
-        io_PrintText(0x21, *(unsigned char *)(o + 0x40));
-    } else {
-        io_PrintText(0x1f, (int)((float (*)(int, int, int))gm_GoodsPrice)(idx, *(unsigned char *)(unsigned)&ai_OwnPlayer, (int)gm_ItemPrice(idx, 0x64)));
+    if (item->b40 != 0)
+        io_PrintText(0x21, item->b40);
+    else
+        io_PrintText(0x1f, (int)gm_GoodsPrice(idx, ai_OwnPlayer), (int)gm_ItemPrice(idx, 0x64));
+    bld = ai_PlayerBuilding;
+    if (bld == 0) {
+        bld = ai_FallbackBuilding;
+        if (bld == 0)
+            bld = sv_SelectedObject;
     }
-    n = U_I((unsigned)&ai_PlayerBuilding);
-    if (n == 0)
-        n = U_I((unsigned)&ai_FallbackBuilding);
-    if (n == 0)
-        n = U_I((unsigned)&sv_SelectedObject);
+    d2_SetForm(view, 4);
+    if (bld == 0) {
+        io_PrintText(0x20, item->workTime);
+    } else {
+        n = 0;
+        gm_BuildingSkill((unsigned char *)bld, 1, 1);
+        master = (AICHAR *)gm_FindCharacterByMaster((int)bld);
+        for (c = (AICHAR *)ai_Chars; c < (AICHAR *)ai_Chars[0x300]; c++) {
+            if ((char *)c->bld == bld && c != master)
+                list[n++] = c->netId;
+        }
+        factor = gm_StaffFactor((unsigned char *)bld, n, list);
+        c = (AICHAR *)gm_FindCharacterByMaster((int)bld);
+        if (c == 0)
+            c = (AICHAR *)ai_Chars[((AIBLD *)bld)->owner];
+        io_PrintText(0x22, (int)(item->workTime / (c->sk81 * (1.0 / 1008) + factor)), item->workTime);
+    }
     d2_SetForm(0, 4);
-    if (n == 0) {
-        io_PrintText(0x20, *(int *)(o + 0x22));
-    } else {
-        /* ROUGH: the characters of n (the +0x16c field) collected and 0x50cdc0 (n, the count, the list) */
-        gm_BuildingSkill(n, 1, 1);
-        gm_FindCharacterByMaster(n);
-        gm_Unk50cdc0(n, 0, 0);
-        gm_FindCharacterByMaster(n);
-        io_PrintText(0x22, (int)(*(float *)&U_I(((unsigned)&ai_Unk5ee160 + 0x7e8)) * (float)*(unsigned char *)(o + 0x81) * 0.5 +
-                                 (float)(int)*(float *)&U_I(((unsigned)&ai_Unk5ee160 + 0x7e8))));
-        io_PrintText(0x20, *(int *)(o + 0x22));
+    io_PrintText(0x25);
+    slot = 0;
+    for (k = 0; k < 4; k++) {
+        id = item->in[k];
+        amount = item->need[k];
+        if (id != 0) {
+            d2_WinOpenPicStyled(0, slot * 0x16 + 0x28, id + 0xdf, d2_LastWindow, -2);
+            io_PrintText("%i %s$N", amount, id * 2 + 0x9a8);
+            slot++;
+        }
     }
-    /* ROUGH: the 0x61a348 / 0x61a34a lists (the word == the record's word, != 0x1cd) with 0x473350 (6, ...) and
-       the text "%s$N" (0x62a90c); then the kind cases 0x225 .. 0x295 / 0x1b7 .. 0x2b0 with 0x473350 (6, ...) and
-       "%s$N"; the extra slot 0x444 / 0x624 for the kinds 0x1c1 .. 0x1c7 / 0x2af / 0x2b0 with the item kinds
-       0x17 / 0x25 */
-    i = 0;
-    j = 0;
-    (void)item;
-    (void)i;
-    (void)j;
-    if (win == 0)
-        io_PrintText((char *)(unsigned)"$C");
-    return win;
+    d2_SetForm(0, 3);
+    io_PrintText(0x26);
+    slot = 0;
+    for (i = 0; i < 37; i++) {
+        for (k = 0; k < 10; k++) {
+            if (amt_PriceTable[i].goods[k] == idx && idx != 0x1cd) {
+                d2_WinOpenPicStyled(6, slot * 0x16 + 0x28, amt_PriceTable[i].kind + 0x427, d2_LastWindow, -2);
+                io_PrintText("%s$N", amt_PriceTable[i].kind * 0xe + 0x48e);
+                slot++;
+            }
+        }
+    }
+    n = 0;
+    if (item->type == 0x17 || item->type == 0x25) {
+        if (idx == 0x225 || idx == 0x226 || idx == 0x227 || idx == 0x293 || idx == 0x294 || idx == 0x295) {
+            if (idx == 0x225 || idx == 0x226 || idx == 0x227) {
+                list[0] = 0x48;
+                list[1] = 0x49;
+                list[2] = 0x4a;
+                n = 3;
+            } else if (idx == 0x293 || idx == 0x294 || idx == 0x295) {
+                list[0] = 0x4e;
+                list[1] = 0x4f;
+                list[2] = 0x50;
+                n = 3;
+            }
+        } else if (idx == 0x1c1 || idx == 0x1c2 || idx == 0x1c3) {
+            list[0] = 0x18;
+            list[1] = 0x19;
+            n = 2;
+        } else if (idx != 0x1c7 && (idx == 0x1c4 || idx == 0x1c5 || idx == 0x1c6 || idx == 0x2af || idx == 0x2b0)) {
+            list[0] = 0x1e;
+            n = 1;
+        } else if ((idx >= 0x1d0 && idx <= 0x1d2) || (idx >= 0x1bd && idx <= 0x1c0)) {
+            list[0] = 0x20;
+            n = 1;
+        } else if ((idx >= 0x1b7 && idx <= 0x1b9) || (idx >= 0x1ca && idx <= 0x1cc)) {
+            list[0] = 0x1e;
+            n = 1;
+        } else if ((idx >= 0x1cd && idx <= 0x1cf) || idx == 0x1ba || (idx >= 0x1bb && idx <= 0x1bc)) {
+            list[0] = 0x1f;
+            n = 1;
+        }
+    }
+    for (k = 0; k < n; k++) {
+        id = list[k];
+        d2_WinOpenPicStyled(6, slot * 0x16 + 0x28, id + 0x427, d2_LastWindow, -2);
+        io_PrintText("%s$N", id * 0xe + 0x48e);
+        slot++;
+    }
+    if (!(idx == 0x1c1 || idx == 0x1c2 || idx == 0x1c3 ||
+          (idx != 0x1c7 && (idx == 0x1c4 || idx == 0x1c5 || idx == 0x1c6 || idx == 0x2af || idx == 0x2b0))) ||
+        idx == 0x1c7) {
+        if (item->type == 0x17 || item->type == 0x25) {
+            d2_WinOpenPicStyled(6, slot * 0x16 + 0x28, 0x444, d2_LastWindow, -2);
+            io_PrintText("%s$N", 0x624);
+            slot++;
+        }
+    }
+    if (slot == 0)
+        io_PrintText("$C");
+    return view;
 }
 /* 0x588950, the drag window of a goods item (598 B, ROUGH: a start Ghidra missed - 0x588970 is the body, the
    guard falls through): idx = the item index, item = 0x91aaf0 + idx * 0x41; the kind 0x1d -> -1. The window

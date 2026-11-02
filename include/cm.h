@@ -512,7 +512,7 @@ int cm_LobbyJoin(CMLOBBYPLAYER *p);  /* 0x4cd760 */
 int cm_LobbyUpdatePlayer(CMLOBBYPLAYER *p);  /* 0x4cd7c0 */
 void ai_Unk4cd820(int v);  /* 0x4cd820 */
 int ai_Unk4cd870(G17MSG *m, G17STAT *s);  /* 0x4cd870 */
-char *ai_Unk4cd9d0(int id);  /* 0x4cd9d0 */
+char *ai_FindWeaponRecord(int id);  /* 0x4cd9d0 */
 char *ai_Unk4cda00(char *c);  /* 0x4cda00 */
 char *ai_Unk4cda50(char *c);  /* 0x4cda50 */
 char *ai_Unk4cdac0(char *c);  /* 0x4cdac0 */
@@ -537,6 +537,10 @@ float gm_HealthRatio();  /* 0x4fc8e0 */
 float gm_GetSkill(char *c, int skill);  /* 0x504ec0 */
 int he_ShowNews(int pid, int fl, char *text, int unused, int ev, char *text2);  /* 0x53dda0 */
 extern int ai_Unk60c7b0[2];  /* 0x60c7b0 */
+typedef struct AIWEAPON {               /* 0x5c bytes, the 10 weapon records at ai_Unk60c7c0 (ai_FindWeaponRecord) */
+    int id;                             /* 0x00, the goods item */
+    char pad04[0x58];
+} AIWEAPON;
 extern char ai_Unk60c7c0[];  /* 0x60c7c0 */
 extern int ai_Unk6f0cd8;  /* 0x6f0cd8 */
 extern int ai_Unk6f0cdc;  /* 0x6f0cdc */

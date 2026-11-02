@@ -171,6 +171,12 @@ void cm_SendSetField(int a, int b, int c, int d, int e);                     /* 
 void cm_SendMoneyDelta(int a, int b);                     /* 0x4c5f60 */
 int sv_MessageBox(int text, unsigned flags); /* 0x521150, sv.c */
 extern int amt_Flip;                    /* 0x60f118, 2 at the start */
+#pragma pack(push, 1)
+typedef struct AMTPRICEROW {            /* 0x15 bytes, a row of amt_PriceRows */
+    unsigned char kind;                 /* 0x00, the building type */
+    unsigned short goods[10];           /* 0x01, the goods ids it makes */
+} AMTPRICEROW;
+#pragma pack(pop)
 extern unsigned char amt_PriceRows[];   /* 0x61a348, the guild-house price table: 37 rows of 0x15 bytes (the building kind, 10 goods ids) */
 #define AMT_CHARS_END (&ai_CharInts[0x300][0])  /* 0x7d5f84, the word past the last character record */
 int util_Random(unsigned short n);      /* 0x42ec00, tr.c; the callers that read a 16-bit result (ch_RandomNear, anm_Update, ai_Unk4d88c0 ..) call util_RandomU, a cast in their head */

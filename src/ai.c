@@ -3492,8 +3492,7 @@ void ai_BuildTradeOffers(AICHAR *ch, AIOBJ *store, int f)
    slot price (gm_GoodsPrice, 90% for a good the workshop produces itself - the slot has an entry) times the need
    amount, summed and divided by the good's batch = the material cost in AIENTRY.unk28; plus the object value
    (gm_ObjectValue) in AIENTRY.unk2c = the cost AIENTRY.unk24; the sale price (gm_GoodsPrice) in AIENTRY.unk30;
-   the margin per unit (price - cost) / AIGOOD.unk22 in AIENTRY.margin
-   @deep NAMES item (byte already, readability fails only Q2): the single remaining identifier is AIGOOD.unk22, the divisor of the margin formula (e->margin = (e->price - e->cost) / ai_Goods[e->item].unk22). Read: it is the dword at AIGOOD +0x22 (the tail of the 0x25-byte name field, ai.h) and this is its ONLY reader in src/ - no second use, no name anywhere, so no evidenced name exists. Q1 done this session (ai_CalcEntryCost -> ai_CalcEntryCost: it computes the material cost, object value, total cost, sale price and margin of an entry), Q6 done (description above the definition), Q2 done for the rest: gm_ObjectValue -> gm_ObjectValue, and the field renames AIENTRY.unk24 -> cost, unk28 -> materialCost, unk2c -> objectValue, unk30 -> price, unk34 -> margin, unk48 -> rank, AISLOT.unk1c -> price, unk30 -> rank, unk34 -> buyAmount (project-wide, byte-neutral). */
+   the margin per unit (price - cost) / AIGOOD.workTime in AIENTRY.margin */
 
 void ai_CalcEntryCost(AIENTRY *e0)
 {
@@ -3519,7 +3518,7 @@ void ai_CalcEntryCost(AIENTRY *e0)
         e->objectValue = gm_ObjectValue(e->item);
         e->cost = e->objectValue + e->materialCost;
         e->price = gm_GoodsPrice(e->item, ai_OwnPlayer);
-        e->margin = (e->price - e->cost) / ai_GoodsT[e->item].unk22;
+        e->margin = (e->price - e->cost) / ai_GoodsT[e->item].workTime;
     }
 }
 /* 0x487180, whether the workshop can get the materials of entry e, 1 when every needed good is covered: per
@@ -4679,7 +4678,7 @@ void ai_MeisterBewaffnen(AICHAR *ch, AIOBJ *b)
                     q++;
                 }
             }
-            if (sel && sel->amount && ai_Unk4cd9d0(sel->item) && ai_Unk5bb2d0(ch, sel->item)) {
+            if (sel && sel->amount && ai_FindWeaponRecord(sel->item) && ai_Unk5bb2d0(ch, sel->item)) {
                 sprintf(buf, "Meister %s bewaffnet %s mit %s", ch->name, c->name, ai_GoodsT[sel->item].name);
                 sprintf(buf, SELL_FMT, c->netId, b->objId, sel->item, 1, ai_OwnPlayer, 0);
                 cm_SendExSellObjectI(c->netId, b->objId, sel->item, 1, ai_OwnPlayer, 0);

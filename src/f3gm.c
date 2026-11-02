@@ -8767,7 +8767,7 @@ int gm_CharCurrency(char *c, char p)
 }
 
 /* ---- layout 2026-10-23: the character / building worth helpers 0x509f20 .. 0x50af00 (ROUGH drafts) ---- */
-char * ai_Unk4cd9d0(int id);                     /* 0x4cd9d0 */
+char * ai_FindWeaponRecord(int id);                     /* 0x4cd9d0 */
 int gm_EquipmentValue(unsigned char *b, int unused);
 int gm_GetWorth(unsigned short id);
 int gm_ListAmount(short *l, char *o);
@@ -9294,7 +9294,7 @@ int gm_Unk50ad70(char *c, int proto, int n)
         }
         u = *++t;
     } while (u != 0);
-    if (((c[2] == 6 || c[2] == 7) && ai_Unk4cd9d0(proto) != 0) || proto == 0x179 || proto == 0x17a || !found)
+    if (((c[2] == 6 || c[2] == 7) && ai_FindWeaponRecord(proto) != 0) || proto == 0x179 || proto == 0x17a || !found)
         return 0;
     o = gm_Query(*(void **)(c + 0x178), 1, 0, proto);
     if (o == 0) {
@@ -9314,7 +9314,7 @@ int gm_Unk50ad70(char *c, int proto, int n)
             v = n;
         return v < 0 ? 0 : v;
     } else {
-        ai_Unk4cd9d0(proto);
+        ai_FindWeaponRecord(proto);
         if (3 < *(int *)(o + 0xe) + n) {
             v = 3 - *(int *)(o + 0xe);
             return v < 0 ? 0 : v;
@@ -10241,7 +10241,7 @@ float gm_Unk50cd40(char *c, int k, int a, int b)
 }
 /* 0x50cdc0, the standing of the building b with the persons ids[0 .. n - 1]: the mean of their 0x4fc8e0 weights (+0.3 for those whose title matches the building's), added to the owner's factor. ROUGH */
 
-float gm_Unk50cdc0(unsigned char *b, int n, int *ids)
+float gm_StaffFactor(unsigned char *b, int n, int *ids)
 {
     char *p, *c;
     int i, cnt, id;
