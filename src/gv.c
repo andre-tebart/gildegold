@@ -1962,42 +1962,44 @@ int gv_OrderSetGraveHolder(int *c, char *o, int size, int entry)
     }
     return -1;
 }
-/* 0x4f0970, graveyard order type 3 (p: +4 a character id or -1, +8 the object id, +0xc the list, +0x10 the entry): sets the entry's id (+4) and short (+8) to the character's (-1 / 0xffff when none);
-   0 or a negative reason (as 0x4f0240). ROUGH */
+/* 0x4f0970, graveyard order type 3 (GVORDER m, sent by gv_OrderSetGraveHolder): makes the character m->chr the holder of
+   the entry m->entry of the size m->size of the graveyard building m->bld (GVENTRY.id its netId, GVENTRY.w08 its
+   AICHAR.w050), or frees the entry when m->chr is -1 (-1 / 0xffff). Returns 0, or a negative reason as gv_BuryCharacter
+   (-6 no such character, -7 no such entry) */
 
-int unk_Unk4f0970(unsigned char *p)
+int gv_SetGraveHolder(GVORDER *m)
 {
-    unsigned char *o;
-    int *c;
-    char *rec;
+    AIBLD *bld;
+    AICHAR *c;
+    GVYARD *g;
+    GVENTRY *e;
     int id;
-    short sh;
-    char *e;
+    unsigned short key;
 
     id = -1;
-    sh = (short)0xffff;
-    gm_FindById(&o, 0, 0, *(int *)(p + 8));
-    if (o == 0 || *(unsigned short *)(o + 0x27) == 0xffff || ai_Chars[*(unsigned short *)(o + 0x27)] == ai_PlayerCharC)
+    key = 0xffff;
+    gm_FindById((int *)&bld, 0, 0, m->bld);
+    if (bld == 0 || bld->owner == 0xffff || &gv_CharsT[bld->owner] == gv_PlayerAiChar)
         return -1;
-    if (ai_BTypes[o[0] * 0x24d] != 0x1d)
+    if (((AIBTYPE *)(ai_BTypes + bld->type * 0x24d))->kind != 0x1d)
         return -2;
-    rec = *(char **)(o + 0x65);
-    if (rec == 0)
+    g = bld->yard;
+    if (g == 0)
         return -3;
-    if (gv_SizeOpen(rec, *(int *)(p + 0xc)) == 0)
+    if (gv_SizeOpen((char *)g, m->size) == 0)
         return -4;
-    if (*(int *)(p + 4) != -1) {
-        gm_FindById(0, 0, &c, *(int *)(p + 4));
+    if (m->chr != -1) {
+        gm_FindById(0, 0, (int *)&c, m->chr);
         if (c == 0)
             return -6;
-        id = *(int *)(p + 4);
-        sh = *(short *)((char *)c + 0x50);
+        id = m->chr;
+        key = c->w050;
     }
-    e = (char *)gv_ListEntry(rec, *(int *)(p + 0xc), p[0x10]);
+    e = (GVENTRY *)gv_ListEntry((char *)g, m->size, m->entry);
     if (e == 0)
         return -7;
-    *(short *)(e + 8) = sh;
-    *(int *)(e + 4) = id;
+    e->w08 = key;
+    e->id = id;
     return 0;
 }
 /* 0x4f0a90, the message 0x4c60b0 type 4 (graveyard id +4 of g or -1, object id +1 of o, value v); -1 when o is 0 */

@@ -471,7 +471,7 @@ unsigned short ahm_CreateAlchemist(int *p);  /* 0x4ec500, ahm.c (cm.c reads it t
 int gv_BuryCharacter();  /* 0x4f0240 */
 int gv_ReserveGrave();  /* 0x4f0490 */
 int gv_ExtendGrave();  /* 0x4f0770 */
-int unk_Unk4f0970();  /* 0x4f0970 */
+int gv_SetGraveHolder();  /* 0x4f0970 */
 int unk_Unk4f0af0();  /* 0x4f0af0 */
 int unk_Unk4f0c80();  /* 0x4f0c80 */
 int unk_Unk4f0dd0();  /* 0x4f0dd0 */
