@@ -254,7 +254,7 @@ void ai_Unk4c5970(int a, int b, int c);                                         
 void ai_Unk4c59b0(int a, unsigned char b);                                       /* 0x4c59b0 */
 void ai_Unk4c59f0(unsigned char a, int b, int c, unsigned char d, unsigned char e, unsigned char f, const char *s); /* 0x4c59f0 */
 void ai_Unk4c5a70(int a);                                                        /* 0x4c5a70 */
-void ai_Unk4c5aa0(void *p);                                                      /* 0x4c5aa0 */
+void cm_SendChat(void *p);                                                      /* 0x4c5aa0 */
 int cm_RequestCreateGeb(int a, int k, float *pos, int *v);                              /* 0x4c5ae0, "cm_RequestCreateGeb" */
 void ai_Unk4c5b90(int a);                                                        /* 0x4c5b90 */
 void ai_Unk4c5bc0(const char *s, int a, int b, const char *s2);                  /* 0x4c5bc0 */
@@ -444,7 +444,7 @@ int ai_BuildingName();  /* 0x58f640 */
 int ai_VgFilter();  /* 0x58f920 */
 int lc_GetGebaeudeBauplatz();  /* 0x58fc40 (unk_58bbd0.c) */
 extern int ai_Unk5f8b10;  /* 0x5f8b10 */
-extern char ai_Unk75fba0[];  /* 0x75fba0 */
+extern char cm_ChatLog[];  /* 0x75fba0 */
 
 void ai_Unk4cc720(char *c, float *a, float *b, int x);                              /* 0x4cc720 */
 void he_Unk541b40();  /* 0x541b40 */

@@ -137,10 +137,10 @@ extern float d3s_QuadUV[6];
 extern struct D2PIC *d2_Pics;
 extern int ai_SceneChars[32];
 extern GAPDATA full_data_75ec40[];
-extern char ai_Unk75fba0[2048];
+extern char cm_ChatLog[2048];
 
 extern GAPDATA full_data_602568[];
-extern char ai_Unk75fba0[2048];
+extern char cm_ChatLog[2048];
 extern unsigned char ai_TimeHour;
 extern char sv_SkyHeavy[];
 extern int ai_OptionSpeed;
@@ -6905,7 +6905,7 @@ int sv_PumpMessages(void)
     return 1;
 }
 
-extern int ai_Unk623ec4, ai_Unk623ec8;  /* 0x623ec4, 0x623ec8 */
+extern int sv_ChatTime, ai_Unk623ec8;  /* 0x623ec4, 0x623ec8 */
 extern int ai_Unk60d360;  /* 0x60d360 */
 int cm_SendExSysMessage(unsigned char id, void *msg);                     /* 0x4c4db0 */
 int cm_GetSlotState();                     /* 0x4c3ae0 */
@@ -6921,8 +6921,8 @@ int d2_GetWinObj();                     /* 0x475b80 */
 void d2_SetObjMax();                     /* 0x475f40 */
 int d2_GetObjValue();                     /* 0x475980 */
 void d2_FocusInput();                     /* 0x478320 */
-void ai_Unk4c5aa0(void *p);                     /* 0x4c5aa0 */
-int sv_Unk52fe10(void);
+void cm_SendChat(void *p);                     /* 0x4c5aa0 */
+void sv_ChatConsole(void);
 
 /* 0x52fc10, the network sync wait screen: sends the "sv_NetworkSync" message (0x4c4db0 (0xe, text)) and runs the message loop (0x5309a0 (0, fl | 0x300000)) until the answer arrives (0x4c3ae0); after 1.5 s
    (0x5dc ms) it shows the waiting dialog (0x521900 (0x143a3a8 = the text)); fl is the key mask kept in 0x760638 */
@@ -6987,80 +6987,82 @@ void sv_PumpNet(void)
     cm_ReceiveMessages();
     cm_ExecCommands();
 }
-/* 0x52fe10, the chat console form "misc\chatconsole" (also the message loop callback of 0x5309a0 (0x52fe10, 0x657c7)): one button per human player (the characters 0x770bd4 stride 0x21c with kind 7 at -0x52;
-   the buttons remember their state in 0x623ebc), the input line (0x475b80 form text) with the "$<n>FF " colour prefix and the player's text, sent through 0x4c5aa0; ROUGH */
+typedef struct SVCHATMSG {              /* 0x80 bytes, the data of message 0x4b (cm_SendChat; cm.c's handler appends text to cm_ChatLog) */
+    int to[8];                          /* +0x00, the netIds of the checked recipients (AICHAR.netId) */
+    char text[0x60];                    /* +0x20, "$<colour>FF " + the typed line + "$A" */
+} SVCHATMSG;
 
-int sv_Unk52fe10(void)
+/* 0x52fe10, the chat console form "misc\chatconsole", also its own sv_RunFrame callback: one recipient button per human player (AICHAR.kind 7, the portrait ref54,
+   the state kept in sv_ChatRecipients), the chat log cm_ChatLog and an input line; Enter or the send button sends the line coloured by the player's ref54
+   to the checked players (cm_SendChat) and closes the form, the right button or Escape closes it */
+void sv_ChatConsole(void)
 {
-    int ids[16];
-    char line[0x60];
-    int i, f, ed, w, *p, r, k;
-    char *s;
+    int ids[8];
+    SVCHATMSG msg;
+    int i, k, f, ed, w;
 
-    for (i = 0; i < 8; i++)
-        ids[i] = -1;
-    ai_Unk623ec4 = 0;
+    ids[0] = -1;
+    ids[1] = -1;
+    ids[2] = -1;
+    ids[3] = -1;
+    ids[4] = -1;
+    ids[5] = -1;
+    ids[6] = -1;
+    ids[7] = -1;
+    sv_ChatTime = 0;
     f = d2_OpenForm(0, 0, "misc\\chatconsole");
     d2_PlaceMainWindow(f, 3);
     d2_SetForm(f, 3);
     i = 0;
-    p = (int *)((unsigned)&ai_Unk770b89 + 0x4b);
-    do {
-        if (*(char *)((int)p - 0x52) == 7) {
-            w = d2_WinOpenPic(i * 0x30 + 100, 4, *p, d2_LastWindow);
+    for (k = 0; k < 768; k++) {
+        if (ai_CharsT[k].kind == 7) {
+            w = d2_WinOpenPic(i * 0x30 + 100, 4, ai_CharsT[k].ref54, d2_LastWindow);
             ids[i] = w;
-            SV_WI(w, 0x48) = 1;
-            SV_WI(w, 0x2e8) = (int)(p - 0x15);
+            ((D2OBJ *)d2_Objs)[w].checkable = 1;
+            ((D2OBJ *)d2_Objs)[w].user = &ai_CharsT[k];
             d2_SetObjValue(w, sv_ChatRecipients[i]);
             i++;
         }
-        p += 0x87;
-    } while ((int)p < ((unsigned)((unsigned)ai_Unk770b89 + 0x653f9) + 0x52));
-    w = d2_WinCreateSlider(0, 0, 0xc5, SV_I((unsigned)&full_data_14414c8), d2_LastWindow);
+    }
+    w = d2_WinCreateSlider(0, 0, 0xc5, txt_ChatConsoleSlider, d2_LastWindow);
     d2_SetObjFont(w, 0x54);
     d2_SetForm(f, 2);
     ed = d2_GetWinObj(f, 2, io_PrintText(0x1cc3, ch_EmptyName));
     d2_SetObjMax(ed, 0x60);
-    r = sv_RunFrame(sv_Unk52fe10, 0x657c7);
-    do {
-        if (r == 0) {
-            for (i = 0; i < 8; i++) {
-                if (ids[i] != -1)
-                    sv_ChatRecipients[i] = d2_GetObjValue(ids[i]);
-            }
-            d2_CloseView(f);
-            *(char *)(unsigned)&kb_Last = 0;
-            return 0;
-        }
+    while (sv_RunFrame((int)sv_ChatConsole, 0x657c7) != 0) {
         d2_SetForm(f, 1);
-        io_PrintText((char *)(unsigned)"$C");
-        io_PrintText((char *)(unsigned)&ai_Unk75fba0);
-        if (SV_I(((unsigned)&dm_L + 0x20)) != 0 || *(char *)(unsigned)&kb_Last == 1)
-            SV_I((unsigned)&sv_PopRequest) = 1;
+        io_PrintText("$C");
+        io_PrintText(cm_ChatLog);
+        if (dm_L.rup != 0 || kb_Last == 1)
+            sv_PopRequest = 1;
         d2_FocusInput(ed);
-        if ((SV_I((unsigned)&d2_ClickedId) != -1 || *(char *)(unsigned)&kb_Last == 0x1c) && (d2_PointerObj == w || *(char *)(unsigned)&kb_Last == 0x1c)) {
-            for (k = 0; k < 8; k++) {
-                if (ids[k] != -1 && d2_GetObjValue(ids[k]) != 0)
-                    ids[k + 8] = *(int *)(*(int *)(SV_I((unsigned)&d2_Objs) + 0x2e8 + ids[k] * 0x2ec) + 4);
+        if ((d2_ClickedId != -1 || kb_Last == 0x1c) && (d2_PointerObj == w || kb_Last == 0x1c)) {
+            for (i = 0; i < 8; i++) {
+                if (ids[i] != -1 && d2_GetObjValue(ids[i]) != 0)
+                    msg.to[i] = ((AICHAR *)((D2OBJ *)d2_Objs)[ids[i]].user)->netId;
             }
-            sprintf(line, "$%iFF ", SV_I(((unsigned)&ai_Unk770b89 + 0x4b) + ai_PlayerId * 0x21c) - 0x59a);
-            s = (char *)d2_GetObjValue(ed);
-            strcat(line, s);
-            strcat(line, "$A");
+            sprintf(msg.text, "$%iFF ", ai_CharsT[ai_PlayerId].ref54 - 0x59a);
+            strcat(msg.text, (char *)d2_GetObjValue(ed));
+            strcat(msg.text, "$A");
             d2_SetObjValue(ed, ch_EmptyName);
-            ai_Unk4c5aa0(ids + 8);
-            SV_I((unsigned)&sv_PopRequest) = 1;
+            cm_SendChat(&msg);
+            sv_PopRequest = 1;
         }
-        r = sv_RunFrame(sv_Unk52fe10, 0x657c7);
-    } while (1);
+    }
+    for (i = 0; i < 8; i++) {
+        if (ids[i] != -1)
+            sv_ChatRecipients[i] = d2_GetObjValue(ids[i]);
+    }
+    d2_CloseView(f);
+    kb_Last = 0;
 }
 /* 0x530100, shows / hides the quick chat strip "misc\quickchat" (0x623ec8): visible while a chat line is fresh (0x623ec4 + 0x23a ms) and the console 0x52fe10 is not the top of the 0x75f780 stack */
 
 void sv_Unk530100(void)
 {
-    if (SV_I((unsigned)&ai_Unk75f280 + 0x500 + SV_I((unsigned)&sv_FrameDepth) * 8) == (int)sv_Unk52fe10
-            || SV_U((unsigned)&ai_Unk623ec4) <= SV_U((unsigned)&ai_ClockMs) - 0x23a
-            || SV_U((unsigned)&ai_Unk623ec4) == 0xffffffff) {
+    if (SV_I((unsigned)&ai_Unk75f280 + 0x500 + SV_I((unsigned)&sv_FrameDepth) * 8) == (int)sv_ChatConsole
+            || SV_U((unsigned)&sv_ChatTime) <= SV_U((unsigned)&ai_ClockMs) - 0x23a
+            || SV_U((unsigned)&sv_ChatTime) == 0xffffffff) {
         if (ai_Unk623ec8 != -1) {
             d2_CloseView(ai_Unk623ec8);
             ai_Unk623ec8 = -1;
@@ -7075,7 +7077,7 @@ void sv_Unk530100(void)
         }
         d2_SetForm(ai_Unk623ec8, 0);
         io_PrintText((char *)(unsigned)"$C");
-        io_PrintText((char *)(unsigned)&ai_Unk75fba0);
+        io_PrintText((char *)(unsigned)&cm_ChatLog);
     }
 }
 
@@ -7503,7 +7505,7 @@ l2:
     sv_Unk530100();
     if (SV_B((unsigned)&ai_GameState) != 0) {
         if ((SV_U((unsigned)&ai_GameFlags) & 4) != 0 && SV_I((unsigned)&d2_FocusedInput) == 0 && SV_B((unsigned)&kb_Last) == 0x1c && (mask & 0x2000) != 0)
-            sv_Unk52fe10();
+            sv_ChatConsole();
         if (SV_B((unsigned)&ai_GameState) != 0) {
             if ((SV_B((unsigned)&kb_Last) == 0xcf || (SV_I(((unsigned)&dm_L + 0xc)) != 0 && SV_I((unsigned)&d2_HitUnderPointer) == ai_Unk623850)) && (mask & 0x10000) == 0 && SV_B((unsigned)&full_data_6f22ac) == 0 && (SV_U((unsigned)&ai_GameFlags) & 4) == 0) {
                 if (SV_I((unsigned)&ai_Unk6f2448) == 0)
@@ -7719,7 +7721,7 @@ int ai_Unk623ea0 = -1;  /* 0x623ea0 */
 int ai_Unk623ea4 = -1;  /* 0x623ea4 */
 int ai_Unk623ea8 = -1;  /* 0x623ea8 */
 unsigned char sv_ChatRecipients[8] = { 1, 1, 1, 1, 1, 1, 1, 1 };  /* 0x623ebc, the chat console's recipient buttons, one per human player in ai_Chars order (1 = checked), kept between openings */
-int ai_Unk623ec4 = -1;  /* 0x623ec4 */
+int sv_ChatTime = -1;  /* 0x623ec4 */
 int ai_Unk623ec8 = -1;  /* 0x623ec8 */
 int sv_ViewRectLeft = 0;  /* 0x6248a4 */
 int sv_ViewRectTop = 0;  /* 0x6248a8 */

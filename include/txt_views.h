@@ -195,7 +195,7 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define full_data_14414b4                        (*(unsigned char (*)[4])((char *)txt_Ptrs + 0x072f4))  /* 0x14414b4 */
 #define full_data_14414b8                        (*(unsigned char (*)[4])((char *)txt_Ptrs + 0x072f8))  /* 0x14414b8 */
 #define full_data_14414bc                        (*(unsigned char (*)[12])((char *)txt_Ptrs + 0x072fc))  /* 0x14414bc */
-#define full_data_14414c8                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x07308))  /* 0x14414c8 */
+#define txt_ChatConsoleSlider                    (*(int *)((char *)txt_Ptrs + 0x07308))  /* 0x14414c8 */
 #define full_data_14414d0                        (*(unsigned char (*)[16])((char *)txt_Ptrs + 0x07310))  /* 0x14414d0 */
 #define ai_EmptySlotNameFormat                   (*(char * *)((char *)txt_Ptrs + 0x07320))  /* 0x14414e0 */
 #define ai_LoadGameConfirmText                   (*(char * *)((char *)txt_Ptrs + 0x07324))  /* 0x14414e4 */

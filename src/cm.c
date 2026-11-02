@@ -1826,7 +1826,7 @@ void ai_Unk4c5a70(int a)
 }
 /* 0x4c5aa0, message 0x4b (0x80 bytes of p) */
 
-void ai_Unk4c5aa0(void *p)
+void cm_SendChat(void *p)
 {
     G17MSG m;
 
@@ -5072,7 +5072,7 @@ int ai_Unk4cbb90(G17MSG *m, G17STAT *s)
     }
     return 0;
 }
-/* 0x4cbbd0, handler of type 0x4b: a chat text (data[0x20]) is appended to ai_Unk75fba0 (reset after 5 lines) when
+/* 0x4cbbd0, handler of type 0x4b: a chat text (data[0x20]) is appended to cm_ChatLog (reset after 5 lines) when
    it is for us (the player ids data[0..0x1f]) or sent by ourselves (s != 0) */
 
 int ai_Unk4cbbd0(G17MSG *m, G17STAT *s)
@@ -5082,7 +5082,7 @@ int ai_Unk4cbbd0(G17MSG *m, G17STAT *s)
     int found = 0;
     int i;
 
-    p = strstr(ai_Unk75fba0, "$A");
+    p = strstr(cm_ChatLog, "$A");
     if (p != 0) {
         do {
             p += 2;
@@ -5090,7 +5090,7 @@ int ai_Unk4cbbd0(G17MSG *m, G17STAT *s)
             p = strstr(p, "$A");
         } while (p != 0);
         if (n > 5)
-            ai_Unk75fba0[0] = 0;
+            cm_ChatLog[0] = 0;
     }
     for (i = 0; i < 8; i++) {
         if (*(int *)&m->data[i * 4] == ai_CharInts[ai_PlayerId][0]) {
@@ -5100,8 +5100,8 @@ int ai_Unk4cbbd0(G17MSG *m, G17STAT *s)
     }
     if (s == 0 && !found)
         return 0;
-    strcat(ai_Unk75fba0, (char *)&m->data[0x20]);
-    ai_Unk623ec4 = d3_Time;
+    strcat(cm_ChatLog, (char *)&m->data[0x20]);
+    sv_ChatTime = d3_Time;
     if (s != 0) {
         s->state = 1;
         s->unk01 = 0;
@@ -14928,7 +14928,7 @@ void ai_DebugDumpPerson(char *c)
 extern unsigned int ai_MissionSeed;
 extern int ai_TimeCopy[4];
 extern char * sv_SelectedObject;
-extern char ai_Unk75fba0[2048];
+extern char cm_ChatLog[2048];
 extern int cm_SaveAcks[8][2];
 /* ai_Unk770b89: view of ai_Chars (tools/data_views.py) */
 /* ai_Unk770cec: view of ai_Chars (tools/data_views.py) */
@@ -15174,7 +15174,7 @@ char cm_RequestedSaveName[72] = {0};  /* 0x6f25d0 */
 unsigned int ai_MissionSeed = 0;  /* 0x75e120, the random seed of the missions (as unk_4b39f0.h) */
 int ai_TimeCopy[4] = {0};  /* 0x75e130, the clock copy 0x75e130..0x75e13e (14 bytes, written whole by cm.c / sv.c): [0] the year; ai_Unk75e134 / 75e138 / 75e13c are views */
 char * sv_SelectedObject = 0;  /* 0x75ec60 */
-char ai_Unk75fba0[2048] = {0};  /* 0x75fba0 */
+char cm_ChatLog[2048] = {0};  /* 0x75fba0 */
 int cm_SaveAcks[8][2] = {0};  /* 0x76fa20 */
 /* ai_Unk770d8c: view of ai_Chars (tools/data_views.py) */
 int ai_Unk91b6e0[0x800][2] = {0}; /* 0x91b6e0 */
