@@ -315,113 +315,123 @@ int gv_WriteEffects(void *f)
     }
     return 1;
 }
-/* 0x4ed910, reads what 0x4ed480 wrote from the file f (version v: the saves before 0x10055 have no fields +0xc / +0x10, they are 1.0); sets the slots' pointer fields (the callback 0x4ed3f0 at +0x168, the slot's record at +0x16c) and the float fields +0x78 / +0xe0 / +0x148 from 0x6333cc; 1 when all was read */
-
+/* 0x4ed910, reads what gv_WriteEffects wrote from the save file f (version v: the saves before 0x10055 have no fields
+   f0c / f10, they are 1.0); sets each slot's callback to gv_EffectNotifyOwner with its gv_EffectArgs record and the
+   parts' time to ai_ClockMs; 1 when all was read
+   @deep Read in full against 0x4ed910..0x4ede42: the 10 global reads, per slot the 5 + 3x9 + 1 reads of
+   GVEFFECT in order, the v >= 0x10055 branch (else f0c = f10 = 1.0), the three parts' time = ai_ClockMs
+   and the arg / cb stores with q stepping through gv_EffectArgs all match (445 vs 446). The rest is the
+   slot pointer's bias, as in gv_WriteEffects: ours esi = slot + 0xc (- lea eax,[esi-0xc] ...), the
+   original's esi = slot + 0x38 (+ lea eax,[esi-0x38] ...), every displacement shifted by 0x2c; with its
+   bias the original loads 1.0 into eax once for the two stores (+ mov eax,0x3f800000 / mov [esi-0x2c],eax
+   / mov [esi-0x28],eax) where ours stores immediates. Induction choice: allocation. */
 
 int gv_ReadEffects(void *f, int v)
 {
-    char *e;
-    char *q;
+    int i;
+    GVEFFECT *e;
+    GVEFFARG *q;
 
-    if (UNK_FR(&gv_LastTime.t.year, 4, 1, f) == 0)
+    if (ls_Read(&gv_LastTime.t.year, 4, 1, (int)f) == 0)
         return 0;
-    if (UNK_FR(&gv_LastTime.t.hour, 2, 1, f) == 0)
+    if (ls_Read(&gv_LastTime.t.hour, 2, 1, (int)f) == 0)
         return 0;
-    if (UNK_FR(&gv_LastTime.t.min, 4, 1, f) == 0)
+    if (ls_Read(&gv_LastTime.t.min, 4, 1, (int)f) == 0)
         return 0;
-    if (UNK_FR(&gv_LastTime.t.xy, 4, 1, f) == 0)
+    if (ls_Read(&gv_LastTime.t.xy, 4, 1, (int)f) == 0)
         return 0;
-    if (UNK_FR(&gv_CannonBld, 4, 1, f) == 0)
+    if (ls_Read(&gv_CannonBld, 4, 1, (int)f) == 0)
         return 0;
-    if (UNK_FR(&gv_CannonSpare, 4, 1, f) == 0)
+    if (ls_Read(&gv_CannonSpare, 4, 1, (int)f) == 0)
         return 0;
-    if (UNK_FR(&gv_CannonCamTarget, 12, 1, f) == 0)
+    if (ls_Read(&gv_CannonCamTarget, 12, 1, (int)f) == 0)
         return 0;
-    if (UNK_FR(&gv_CannonSliderA, 4, 1, f) == 0)
+    if (ls_Read(&gv_CannonSliderA, 4, 1, (int)f) == 0)
         return 0;
-    if (UNK_FR(&gv_CannonSliderB, 4, 1, f) == 0)
+    if (ls_Read(&gv_CannonSliderB, 4, 1, (int)f) == 0)
         return 0;
-    if (UNK_FR(&gv_CannonSelected, 4, 1, f) == 0)
+    if (ls_Read(&gv_CannonSelected, 4, 1, (int)f) == 0)
         return 0;
-    q = (char *)gv_EffectArgs;
-    for (e = gv_Effects; e < gv_Effects + 8 * 0x170; e += 0x170) {
-        if (UNK_FR(e + 0x0, 4, 1, f) == 0)
+    q = gv_EffectArgs;
+    for (i = 0; i < 8; i++) {
+        e = &gv_EffectsT[i];
+        if (ls_Read(&e->id, 4, 1, (int)f) == 0)
             return 0;
-        if (UNK_FR(e + 0x8, 4, 1, f) == 0)
+        if (ls_Read(&e->f08, 4, 1, (int)f) == 0)
             return 0;
-        if (v < 0x10055) {
-            *(float *)(e + 0xc) = 1.0f;
-            *(float *)(e + 0x10) = 1.0f;
+        if (v >= 0x10055) {
+            if (ls_Read(&e->f0c, 4, 1, (int)f) == 0)
+                return 0;
+            if (ls_Read(&e->f10, 4, 1, (int)f) == 0)
+                return 0;
         } else {
-            if (UNK_FR(e + 0xc, 4, 1, f) == 0)
-                return 0;
-            if (UNK_FR(e + 0x10, 4, 1, f) == 0)
-                return 0;
+            e->f0c = 1.0f;
+            e->f10 = 1.0f;
         }
-        if (UNK_FR(e + 0x14, 4, 1, f) == 0)
+        if (ls_Read(&e->f14, 4, 1, (int)f) == 0)
             return 0;
-        if (UNK_FR(e + 0x18, 16, 1, f) == 0)
+        if (ls_Read(e->parts[0].v0, 16, 1, (int)f) == 0)
             return 0;
-        if (UNK_FR(e + 0x28, 16, 1, f) == 0)
+        if (ls_Read(e->parts[0].v1, 16, 1, (int)f) == 0)
             return 0;
-        if (UNK_FR(e + 0x38, 16, 1, f) == 0)
+        if (ls_Read(e->parts[0].v2, 16, 1, (int)f) == 0)
             return 0;
-        if (UNK_FR(e + 0x58, 16, 1, f) == 0)
+        if (ls_Read(e->parts[0].v4, 16, 1, (int)f) == 0)
             return 0;
-        if (UNK_FR(e + 0x68, 4, 1, f) == 0)
+        if (ls_Read(&e->parts[0].a, 4, 1, (int)f) == 0)
             return 0;
-        if (UNK_FR(e + 0x6c, 4, 1, f) == 0)
+        if (ls_Read(&e->parts[0].b, 4, 1, (int)f) == 0)
             return 0;
-        if (UNK_FR(e + 0x70, 4, 1, f) == 0)
+        if (ls_Read(&e->parts[0].c, 4, 1, (int)f) == 0)
             return 0;
-        if (UNK_FR(e + 0x74, 4, 1, f) == 0)
+        if (ls_Read(&e->parts[0].d, 4, 1, (int)f) == 0)
             return 0;
-        if (UNK_FR(e + 0x7c, 4, 1, f) == 0)
+        if (ls_Read(&e->parts[0].e, 4, 1, (int)f) == 0)
             return 0;
-        *(int *)(e + 0x78) = ai_ClockMs;
-        if (UNK_FR(e + 0x80, 16, 1, f) == 0)
+        e->parts[0].time = ai_ClockMs;
+        if (ls_Read(e->parts[1].v0, 16, 1, (int)f) == 0)
             return 0;
-        if (UNK_FR(e + 0x90, 16, 1, f) == 0)
+        if (ls_Read(e->parts[1].v1, 16, 1, (int)f) == 0)
             return 0;
-        if (UNK_FR(e + 0xa0, 16, 1, f) == 0)
+        if (ls_Read(e->parts[1].v2, 16, 1, (int)f) == 0)
             return 0;
-        if (UNK_FR(e + 0xc0, 16, 1, f) == 0)
+        if (ls_Read(e->parts[1].v4, 16, 1, (int)f) == 0)
             return 0;
-        if (UNK_FR(e + 0xd0, 4, 1, f) == 0)
+        if (ls_Read(&e->parts[1].a, 4, 1, (int)f) == 0)
             return 0;
-        if (UNK_FR(e + 0xd4, 4, 1, f) == 0)
+        if (ls_Read(&e->parts[1].b, 4, 1, (int)f) == 0)
             return 0;
-        if (UNK_FR(e + 0xd8, 4, 1, f) == 0)
+        if (ls_Read(&e->parts[1].c, 4, 1, (int)f) == 0)
             return 0;
-        if (UNK_FR(e + 0xdc, 4, 1, f) == 0)
+        if (ls_Read(&e->parts[1].d, 4, 1, (int)f) == 0)
             return 0;
-        if (UNK_FR(e + 0xe4, 4, 1, f) == 0)
+        if (ls_Read(&e->parts[1].e, 4, 1, (int)f) == 0)
             return 0;
-        *(int *)(e + 0xe0) = ai_ClockMs;
-        if (UNK_FR(e + 0xe8, 16, 1, f) == 0)
+        e->parts[1].time = ai_ClockMs;
+        if (ls_Read(e->parts[2].v0, 16, 1, (int)f) == 0)
             return 0;
-        if (UNK_FR(e + 0xf8, 16, 1, f) == 0)
+        if (ls_Read(e->parts[2].v1, 16, 1, (int)f) == 0)
             return 0;
-        if (UNK_FR(e + 0x108, 16, 1, f) == 0)
+        if (ls_Read(e->parts[2].v2, 16, 1, (int)f) == 0)
             return 0;
-        if (UNK_FR(e + 0x128, 16, 1, f) == 0)
+        if (ls_Read(e->parts[2].v4, 16, 1, (int)f) == 0)
             return 0;
-        if (UNK_FR(e + 0x138, 4, 1, f) == 0)
+        if (ls_Read(&e->parts[2].a, 4, 1, (int)f) == 0)
             return 0;
-        if (UNK_FR(e + 0x13c, 4, 1, f) == 0)
+        if (ls_Read(&e->parts[2].b, 4, 1, (int)f) == 0)
             return 0;
-        if (UNK_FR(e + 0x140, 4, 1, f) == 0)
+        if (ls_Read(&e->parts[2].c, 4, 1, (int)f) == 0)
             return 0;
-        if (UNK_FR(e + 0x144, 4, 1, f) == 0)
+        if (ls_Read(&e->parts[2].d, 4, 1, (int)f) == 0)
             return 0;
-        if (UNK_FR(e + 0x14c, 4, 1, f) == 0)
+        if (ls_Read(&e->parts[2].e, 4, 1, (int)f) == 0)
             return 0;
-        *(int *)(e + 0x148) = ai_ClockMs;
-        if (UNK_FR(e + 0x150, 12, 1, f) == 0)
+        e->parts[2].time = ai_ClockMs;
+        if (ls_Read(e->tail, 12, 1, (int)f) == 0)
             return 0;
-        *(char **)(e + 0x16c) = q;
-        *(void **)(e + 0x168) = gv_EffectNotifyOwner;
-        q += 0x38;
+        e->arg = q;
+        e->cb = gv_EffectNotifyOwner;
+        q++;
     }
     return 1;
 }
