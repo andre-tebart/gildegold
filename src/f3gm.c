@@ -1603,15 +1603,27 @@ void gm_AgeCharacter(char *c, unsigned short age)
         gm_NetMsgCount++;
     }
 }
-/* 0x4fc7a0, the age the character c dies at: the aging steps (v = (v - k) + k / v, k = +0x14) until its life value +0x1c falls to 1.0, added to max(+0x20, the age +0xa) (the draft below stops after the loop; the original counts the steps and adds them) */
+/* 0x4fc7a0, the age the character c dies at: its age w00a plus the number of aging steps
+   (v = f014 / v + (v - f014), as gm_AgeCharacter) its life f01c takes to fall to 1.0, plus the years it still
+   has below f020 (none when it is older). */
 
 int gm_ExpectedDeathAge(char *c)
 {
-    float v;
+    ORDCHAR *ch = ORD_CHAR(c);
+    float k, v, r;
+    int n;
 
-    for (v = *(float *)(c + 0x1c); 1.0 < v; v = (v - *(float *)(c + 0x14)) + *(float *)(c + 0x14) / v)
-        ;
-    return (int)v;
+    n = 0;
+    v = ch->f01c;
+    k = ch->f014;
+    while (v > 1.0f) {
+        v = k / v + (v - k);
+        n++;
+    }
+    r = ch->f020 - (float)ch->w00a;
+    if (!(r > 0.0f))
+        r = 0.0f;
+    return (int)((float)(ch->w00a + n) + r);
 }
 /* 0x4fc820, the health of the character c now (-1 for a free slot or an inactive one): the +0x1c float when the age (+10) is above the lifetime float (+0x20), else the line from +0x10 to +0x1c over the lifetime, plus the int +0x24, not below 0 */
 
