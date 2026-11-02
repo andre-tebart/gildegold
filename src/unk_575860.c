@@ -8810,21 +8810,20 @@ int ai_SeanceRitual(char *ch, GVSEANCE *ev)
     d2_CloseView(win);
     return script;
 }
-/* 0x585c40, fills the eight seance formulas (101 B): n / a / b the two arrays of ints, base = 0x40d7; each pair
-   i, i+1 gets the random 0x42ec00 (3) & 0xffff r: a[i] = base + r, a[i+1] = base + r + 3, b[i] = b[i+1] = r;
-   base += 6 per pair */
-
-void ai_SeanceRollFormulas(int n, int *a, int *b, int base)
+/* 0x585c40, rolls the seance formulas: n formula text ids into ids, in pairs from the text base on (6 texts per
+   pair); each pair gets a random variant r 0 .. 2 (util_Random), its first formula base + r, its second base + r
+   + 3, and variants[] gets r for both */
+void ai_SeanceRollFormulas(int n, int *ids, int *variants, int base)
 {
     int i;
     int r;
 
     for (i = 0; i < n; i += 2) {
         r = util_Random(3) & 0xffff;
-        b[i] = r;
-        b[i + 1] = r;
-        a[i] = base + r;
-        a[i + 1] = base + r + 3;
+        variants[i] = r;
+        variants[i + 1] = r;
+        ids[i] = base + r;
+        ids[i + 1] = variants[i] + base + 3;
         base += 6;
     }
 }
