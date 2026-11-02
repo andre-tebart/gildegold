@@ -421,7 +421,7 @@ unsigned int ai_MakeDuelOpponent(unsigned int k);                      /* 0x492f
 int ai_Unk493200(AGCH *p, AGDUEL *d, int k);                    /* 0x493200 */
 int ai_Unk493390(AGDUEL *d, AGCH *c, int k);                    /* 0x493390 */
 int ai_Unk4933d0(AGDUEL *d, AGCH *c, int k);                    /* 0x4933d0 */
-void ai_Unk493420(AGDUEL *d, AGCH *c, int k);                   /* 0x493420 */
+void ai_DuelThrow(AGDUEL *d, AGCH *c, int k);                   /* 0x493420 */
 int ai_Unk4937a0(AGDUEL *d, AGCH *c, int k);                    /* 0x4937a0 */
 int ai_Unk493890(AGDUEL *d, AGCH *c);                           /* 0x493890 */
 void ai_Unk493a40(AGDUEL *d);                                   /* 0x493a40 */

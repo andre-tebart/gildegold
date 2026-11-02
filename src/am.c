@@ -2501,25 +2501,35 @@ int ai_Unk4933d0(AGDUEL *d, AGCH *c, int k)
     *q = ag_Pairs[i][1];
     return 1;
 }
-/* 0x493420, one side gets a die (k == 0) or a roll of dice (k != 0) */
+/* 0x493420, a throw of the side c in the duel d: k != 0 throws three dice (faces from the ag_Chance row of skill 2, then a skill bonus of 0..3 pips added to one, the lowest or each die by a random way, unless all three are equal); k == 0 adds one die, its face from the row plus -1..1 by skill 0 and the sum so far, kept in 1..6
+   @deep read whole against the original and rebuilt its meaning: the side selection as if / else if /
+   else, the skill bonus as sv ? 2 : 3 / sv ? 1 : 2 / sv ? 0 : 1 with the 4 / 8 die as two calls, the
+   lowest-die search (m > t[i], best <= -1) before the random-die way, the k == 0 die chooser by f > 0.66 /
+   0.44 first, the face loop holding the store and the __max(__min(best + j + 1, 6), 1) clamp. All calls,
+   constants and stores agree. Left (328/320 instructions, all allocation): ours has a 4-byte frame (push
+   ecx and 6 pop ecx: lvl in its own local) where the original keeps lvl and a in d's dead slot [esp+0x10],
+   f in c's, h and r in k's, so every [esp+N] differs by 4 (slots); the third bonus picks 'test ax, ax;
+   sete cl; mov edi, ecx' where the original has 'mov di, ax; neg di; sbb edi, edi; inc edi' (sv ? 0 : 1, 1
+   - (sv != 0), !sv tried); the h == 0 loop and the sum loop have i and the temporary in eax/ecx swapped,
+   the 'lea eax, [ecx + edi]' adds are 'add', and the early returns jump to another of the merged
+   epilogues. */
 
-void ai_Unk493420(AGDUEL *d, AGCH *c, int k)
+void ai_DuelThrow(AGDUEL *d, AGCH *c, int k)
 {
     unsigned char *t, *n, lvl;
     float f, r;
-    int i, j, sum, w, best, a, b, g, extra;
-    short h, sv;
+    int i, j, sum, w, m, best, a, b, g, extra, h;
+    short sv;
 
     if (c == d->side1) {
         t = d->t1;
         n = &d->n1;
+    } else if (c == d->side2) {
+        t = d->t2;
+        n = &d->n2;
     } else {
         t = (unsigned char *)c;
         n = (unsigned char *)c;
-        if (c == d->side2) {
-            t = d->t2;
-            n = &d->n2;
-        }
     }
     f = gm_GetSkill(c, 2);
     lvl = (int)(f * 100.0f) / 20;
@@ -2530,13 +2540,16 @@ void ai_Unk493420(AGDUEL *d, AGCH *c, int k)
         *n = 3;
         if (f > 0.8888f) {
             sv = util_RandomU(0x10);
-            extra = 3 - (sv != 0);
+            extra = sv ? 2 : 3;
         } else if (f > 0.5555f) {
             sv = util_RandomU(0x10);
-            extra = 2 - (sv != 0);
+            extra = sv ? 1 : 2;
         } else {
-            sv = util_RandomU(f > 0.3333f ? 4 : 8);
-            extra = sv == 0;
+            if (f > 0.3333f)
+                sv = util_RandomU(4);
+            else
+                sv = util_RandomU(8);
+            extra = sv ? 0 : 1;
         }
         r = util_RandomF();
         for (i = 0; i < 6; i++) {
@@ -2578,28 +2591,28 @@ void ai_Unk493420(AGDUEL *d, AGCH *c, int k)
             }
             return;
         }
-        if (h != 1) {
-            j = util_RandomU(3);
-            w = t[j] + extra;
+        if (h == 1) {
+            best = -1;
+            m = 6;
+            for (i = 0; i < 3; i++) {
+                if (m > t[i]) {
+                    best = i;
+                    m = t[i];
+                }
+            }
+            if (best <= -1)
+                return;
+            w = t[best] + extra;
             if (w > 6)
                 w = 6;
-            t[j] = (unsigned char)w;
+            t[best] = (unsigned char)w;
             return;
         }
-        best = -1;
-        lvl = 6;
-        for (i = 0; i < 3; i++) {
-            if (t[i] < lvl) {
-                best = i;
-                lvl = t[i];
-            }
-        }
-        if (best < 0)
-            return;
-        w = t[best] + extra;
+        j = util_RandomU(3);
+        w = t[j] + extra;
         if (w > 6)
             w = 6;
-        t[best] = (unsigned char)w;
+        t[j] = (unsigned char)w;
         return;
     }
     f = gm_GetSkill(c, 0);
@@ -2607,53 +2620,35 @@ void ai_Unk493420(AGDUEL *d, AGCH *c, int k)
     sum = 0;
     for (i = 0; i < *n; i++)
         sum += t[i];
-    if (f <= 0.66) {
-        if (f <= 0.44) {
-            if (sum <= 0xe)
-                goto roll6;
+    if (f > 0.66) {
+        if (sum > 12)
             best = -1;
-        } else if (sum <= 0xd) {
-            goto roll5;
-        } else
+        else if (sum < 6)
+            best = 1;
+        else
+            best = util_RandomU(3) - 1;
+    } else if (f > 0.44) {
+        if (sum > 13)
             best = -1;
+        else if (sum < 5)
+            best = 1;
+        else
+            best = util_RandomU(3) - 1;
     } else {
-        if (sum <= 0xc)
-            goto roll4;
-        best = -1;
+        if (sum > 14)
+            best = -1;
+        else if (sum < 4)
+            best = 1;
+        else
+            best = util_RandomU(3) - 1;
     }
-    goto pick;
-roll4:
-    if (sum < 6)
-        best = 1;
-    else
-        best = util_RandomU(3) - 1;
-    goto pick;
-roll5:
-    if (sum < 5)
-        best = 1;
-    else
-        best = util_RandomU(3) - 1;
-    goto pick;
-roll6:
-    if (sum < 4)
-        best = 1;
-    else
-        best = util_RandomU(3) - 1;
-pick:
     for (j = 0; j < 6; j++) {
-        if (r <= ag_Chance[lvl][j])
-            break;
+        if (r <= ag_Chance[lvl][j]) {
+            t[*n] = (unsigned char)__max(__min(best + j + 1, 6), 1);
+            (*n)++;
+            return;
+        }
     }
-    if (j >= 6) {
-        t[*n] = (unsigned char)w;
-        (*n)++;
-        return;
-    }
-    w = best + 1 + j;
-    if (w >= 6)
-        w = 6;
-    else if (w < 2)
-        w = 1;
     t[*n] = (unsigned char)w;
     (*n)++;
 }
@@ -2668,14 +2663,14 @@ int ai_Unk4937a0(AGDUEL *d, AGCH *c, int k)
         if (c->kind == 6)
             cm_SendMoveGoodsUnchecked(-1, c->netId, 0, d->unk00);
         d->total += d->unk00;
-        ai_Unk493420(d, c, 1);
+        ai_DuelThrow(d, c, 1);
         ai_Unk4933d0(d, c, k);
         return 1;
     case 2:
         if (c->kind == 6)
             cm_SendMoveGoodsUnchecked(-1, c->netId, 0, d->unk04);
         d->total += d->unk04;
-        ai_Unk493420(d, c, 0);
+        ai_DuelThrow(d, c, 0);
         ai_Unk4933d0(d, c, k);
         return 1;
     case 3:
