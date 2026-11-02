@@ -916,7 +916,7 @@ int ai_Unk49dc10(G5CH *p, AIARG *s1, AIARG *s2);                                
 int ai_Unk49dd90(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49dd90 */
 int ai_DecideMayorTownHall(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49def0 */
 int ai_Unk49e230(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49e230 */
-int ai_Unk49e350(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49e350 */
+int ai_DecideMayorPrison(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49e350 */
 int ai_Unk49e680(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49e680 */
 int ai_Unk49e7a0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49e7a0 */
 int ai_Unk49ea90(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49ea90 */
