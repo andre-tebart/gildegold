@@ -6882,32 +6882,29 @@ int gm_CharLevel(unsigned short id, int again)
         return gm_CharLevel(*parent, 1);
     return level;
 }
-/* 0x505f30, gm_CharLevel for the previous office (+0x167): its level, raised to the master's when that is higher */
+/* 0x505f30, gm_CharLevel for the character's previous office (prevOffice +0x167): 0 for a free slot or a dead one,
+   1 when the office has no kind record, else its level + 1, raised to the parent's (relatives[1]) when that is not
+   lower (below the top level 10, unless again is set) */
 
 int gm_CharPrevLevel(unsigned short id, int again)
 {
-    int r, k, l2;
-    short *m;
-    int rec[4];
+    AMTKIND kind;
+    short *parent;
+    int level;
 
-    id &= 0xffff;
-    if (*(int *)(ai_Chars[id] + 4) == -1 || ai_Chars[id][8] == 0)
+    if (ORD_CHARS[id].netId == -1 || ORD_CHARS[id].health <= 0)
         return 0;
-    r = amt_GetKind(ai_Chars[id][0x167], rec);
-    if (r == 0)
+    if (amt_GetKind(ORD_CHARS[id].prevOffice, &kind) == 0)
         return 1;
-    k = (rec[2] & 0xff) + 1;
-    if ((char)rec[2] == 10)
-        return k;
+    level = kind.level + 1;
+    if (kind.level == 10)
+        return level;
     if (again != 0)
-        return k;
-    m = gm_FindChar(*(int *)(ai_Chars[id] + 0x60));
-    if (m != 0) {
-        l2 = gm_CharPrevLevel(*m, 1);
-        if (k <= l2)
-            return gm_CharPrevLevel(*m, 1);
-    }
-    return k;
+        return level;
+    parent = gm_FindChar(ORD_CHARS[id].relatives[1]);
+    if (parent != 0 && level <= gm_CharPrevLevel(*parent, 1))
+        return gm_CharPrevLevel(*parent, 1);
+    return level;
 }
 /* 0x506000, the birthday of the character c as a calendar record (month byte, day byte, year word) in out: the birth date (the clock minus the age +10, an inactive character from the word +0x28), the month = ((x >> 3) % 13 + the birth day % 11) % 12 + 1 and the day = (x >> 5) % 28 + 1 with x = the int +0x30 xor the year */
 
