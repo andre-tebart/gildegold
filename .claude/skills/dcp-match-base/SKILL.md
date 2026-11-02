@@ -1,11 +1,11 @@
 ---
 name: dcp-match-base
-description: Run one match-base session of a decompanion project - take the first function of the base queue (dcp next) and raise it to shape + readable by reading the original and fixing the C's meaning, or hand it to the deep queue with a reason (dcp escalate). A session is that one function, raised or escalated. Use when the user says "match-base", "/match-base", "dcp-match-base", "base pass" or "raise the base grades".
+description: Run one match-base session of a decompanion project - take functions from the base queue (dcp next) one at a time and raise each to shape + readable by reading the original and fixing the C's meaning, or hand it to the deep queue with a reason (dcp escalate). A session is 8 functions raised or escalated. Use when the user says "match-base", "/match-base", "dcp-match-base", "base pass" or "raise the base grades".
 ---
 
-# Match-base session: one function, the main checkout
+# Match-base session: 8 functions, the main checkout
 
-Goal: the item `dcp next` names to **shape + readable**: the code's instruction diff against the original
+Goal: every item of `dcp next` to **shape + readable**: the code's instruction diff against the original
 has only register / stack-slot / scheduling differences left (or it is byte-identical), and a reader can follow
 the C without the disassembly. You get there by reading the original and fixing what the C *means*. Byte
 identity is welcome when it comes, but allocation, scheduling and generated variant rounds are deep work (the
@@ -44,15 +44,15 @@ Hard rules
 1. `dcp session start --kind match-base`. It is the gate (no open toolchain or libs obligation, a clean
    working tree, every unit compiles, no error finding, the link ok). On `gate: FAIL` fix what it lists (or
    revert), commit, start again; an `obligation=toolchain.*` / `obligation=libs.archives` line is a human
-   decision: stop and hand it to the user. A match-base session is one function (section 4).
+   decision: stop and hand it to the user. A match-base session is counted in functions (section 4), not
+   minutes.
 2. `dcp next` - the base queue, first item first. Read the lead comment of its unit's `src/<unit>.c` (its
    `Open:` lines).
 
-## 2. Work: the first item, one function
+## 2. Work loop: one function at a time, always the first item
 
 `dcp next` -> read the function against the original -> fix the meaning -> `dcp build` ->
-`dcp grade NAME` -> commit -> wrap up (section 4). There is no skipping: a function you cannot raise is
-escalated (section 3).
+`dcp grade NAME` -> commit -> next. Never skip an item: one you cannot raise is escalated (section 3).
 
 The item line: `next=0xADDR name=... unit=... section=draft|read experiment=... readability=... gates=B3,Q2,...
 dist='N ins / M bytes, size ours vs original'`. `section=draft`: the experiment is below shape; `section=read`: the
@@ -62,23 +62,40 @@ experiment is shape or byte, only readability is missing. `gates=` names the fai
 - `dcp grade NAME` - the failing rules with their evidence (B1..B3: the experiment, byte / shape / draft; Q1..Q6, Q8:
   readability, kept apart), `dist`, and the calls without a prototype (`M7 consistency:`, the experiment's side).
 - `dcp asmdiff NAME` - our instructions against the original's, aligned; `--regs eax=ecx,esi=edi` renames
-  registers on our side. Run it first on every big `code` hunk: a pure register rotation reads as `code`.
+  registers on our side, `--regs auto` by the renaming most of the function agrees on (the head shows it:
+  `regs=...`). Views: `--changed` (only the differing lines, `--context N` around each), `--at 0xADDR` (a
+  window, `--context N` each way), `--side ours|original` (one side alone, in its own order); `returns=2/5` in
+  the head when the sides return from different numbers of places (merged or duplicated tails).
   `--symbols` prints the call targets, data and string literals by name instead of `X`; `!` marks an equal
   instruction that names another symbol or literal than the original's (a wrong callee, datum or string); `=`
   one that names the same address or literal by another name (an alias, `sym+off` for a bare address: no
   error; two source names of one datum are a `C.name.alias` warning of `dcp check --strict`). A compare against
   an address (`cmp ecx, 0xfb91e4 (or d2_Views+0x81c4)`) also names the array below it the function uses: a
-  loop's end pointer lies past the array's end, inside the next object.
+  loop's end pointer lies past the array's end, inside the next object. A `!` line ends with both addresses
+  (`0x770ae4 | 0x770ae0`); a floating constant shows its value on both sides; `calls differ: ours ... | the
+  original ...` lists the callees one side calls and the other does not, whatever the alignment (a wrong callee
+  in a hunk of other differences, or call sites merged on one side).
   Frames of other sizes are aligned as diffclass aligns them (`frame=0x3bc/0x3b8`): a line that differs only
   by the shift is equal (`~`), so only the real differences show; `--plain` diffs the texts as they are.
 - `dcp diffclass NAME` - the hunks and their classes: `fill`, `order`, `regs`, `slots`, `sib`, `fpu`,
-  `frame` (all explained: shape) and `code` (the rest: a meaning difference until shown otherwise). `frame`:
+  `frame`, `tail` (all explained: shape) and `code` (the rest: a meaning difference until shown otherwise).
+  `regs` / `slots` / `order`: the same code under a renaming of registers and stack offsets (a register reused
+  once its value is dead may map anew; another order with a renaming is `order`, the renaming in its note).
+  `tail`: one side jumps (or branches) to a block the other side has inline, the same code (VC6 merges
+  identical return tails and call sequences, or keeps a copy per path); `dcp escalate` counts its instructions
+  as explained. `frame`:
   the two frames differ in size (`frame: ours 0xcc, the original's 0xc8`) and these lines differ only by the
   shifted stack offsets; the `code` hunks left beside them are the real cause (often a variable in a register
   on one side, in a slot on the other). A switch's jump and index tables are data, not code: `tables=equal`
   (or `differ` with the entries that point elsewhere: a case body or the case order differs). grade, asmdiff
   and diffclass read the same extent, so `hunks=0` with equal tables is shape.
-- `dcp disasm 0xADDR` - the original code; `dcp dump 0xADDR [LEN]` - its constants and strings.
+  `proof:` (the last line) is the dataflow prover's reading of the whole function: `equal` means it showed both do
+  the same (the same stores and calls with the same arguments in the same order, the same branches and return
+  value, whatever registers, slots, instruction choice or block layout); `unknown:` names what stopped it and
+  where (an FPU instruction, a call or store that differs, ...): the first place to read. It is a report: the
+  grade does not read it yet.
+- `dcp disasm 0xADDR` - the original code (`--ours NAME`: ours from its object; `--no-bytes`, `--range +0x200..+0x400`);
+  `dcp dump 0xADDR [LEN]` - its constants and strings.
 - `dcp refs NAME|0xADDR` - every use and declaration: the callers say what a parameter means.
 - `dcp draft 0xADDR --show` - the analyzer's pseudocode, unchanged: a second reading, not the truth.
 - `dcp why 0xADDR|NAME` - everything the ledger knows about an address or a function / data name, by question (section,
@@ -105,8 +122,12 @@ experiment is shape or byte, only readability is missing. `gates=` names the fai
 Explain every `code` hunk from the evidence and fix the C's meaning: a wrong condition, operand or constant, a
 missing or extra statement, a wrong type (signed / unsigned compare, `char` vs `int` load, a struct field at the
 wrong offset), a call with the wrong arguments, a loop of another form. Stop when only `fill` / `order` / `regs`
-/ `slots` / `sib` / `fpu` / `frame` hunks remain: that is shape (B2). Reconstructing missing statements is always base
+/ `slots` / `sib` / `fpu` / `frame` / `tail` hunks remain: that is shape (B2). Reconstructing missing statements is always base
 work, however long.
+- Shape can also come from a proof: `B2 shape: the same behaviour, proved (N block pairs); the hunks: ...` means
+  the prover showed our code doing what the original does (the same calls, stores, branches and returns) although
+  `code` hunks remain. Such a function is done for the experiment; only readability may be left. `dcp diffclass
+  NAME` prints the prover's `proof:` line on any function (where it stops, when it does not show it).
 - Note `dist` before an edit; after `dcp build`, `dcp grade NAME`: when the distance grew and the
   edit corrected no meaning, revert it (Edit back, or `git checkout -- <file>`). A meaning fix that costs
   distance is kept: say why in the commit message.
@@ -151,8 +172,8 @@ work, however long.
   C2371 redefinition, C2198 too few parameters and the like), fix the head (`dcp headers conflicts UNIT HEADER`
   lists what is in the way): include the header, delete the local declarations it supersedes, correct the
   calls and accesses that only compiled against them. Commit
-  that on its own, before the function: `<unit>: head includes <x>.h (typing)`, and `dcp check` must show no M1
-  (a debt item, 2.6, is held at its declared grade and listed as `M1.debt`). A byte-matched
+  that on its own, before the function: `<unit>: head includes <x>.h (typing)`; it does not count toward the 8,
+  and `dcp check` must show no M1 (a debt item, 2.6, is held at its declared grade and listed as `M1.debt`). A byte-matched
   function is evidence of what the original declared: when a correction changes its bytes, the correction is
   wrong, not the match, unless the match is no evidence at all (2.6). Find which side is: fix the
   header when its signature or type is the guess, or keep the original's spelling with `@original why` (the
@@ -167,13 +188,9 @@ work, however long.
   (`full_data_<addr>`; it keeps the full rebuild's data packed). An object you name gets its real type and one
   declaration, in its unit's header (section 2.5, gap data).
 - `@original why` / `@vc6 why` on a declaration line only with evidence (a byte-matched caller that needs it).
-  A caller at draft or shape is no such evidence. When the original's call disagrees with the prototype (an
-  extra argument, a float pushed by value), read the callee first: if its definition uses it, the prototype is
-  wrong, so fix it in the owner header (`dcp refs`, `dcp headers conflicts --trial`) instead of adding a
-  unit-local cast macro.
 
 ### 2.4 Commit
-One function, one commit, never two functions together, even small siblings: `<unit>: <name> shape + readable (match-base)` (`byte + readable` when it got there).
+One function, one commit: `<unit>: <name> shape + readable (match-base)` (`byte + readable` when it got there).
 `dcp build` exits 0 first.
 
 ### 2.5 Other units, headers, data
@@ -189,10 +206,9 @@ One function, one commit, never two functions together, even small siblings: `<u
   tells S.extent its size through `dcp decl add "0xADDR writes ptr=a0 size=a1*a2 -- why"`.
 - Gap data: the `full_data_<addr>` / `full_rdata_<addr>` blocks (defined in the gap block at the end of `src/main.c`,
   `extern GAPDATA` elsewhere) are bytes no symbol covers yet: name, type, extent and owner are all unknown, and
-  their place in main says nothing about ownership. Never name one with a view macro
-  (`#define x (*(T *)&full_data_...)`): that hides the open question behind a name. When the function you raise
-  shows what one is, settle all
-  four, in one commit of its own before the function: `<unit>: data <name> from the gap block (typing)`.
+  their place in main says nothing about ownership. When the function you raise shows what one is, settle all
+  four, in one commit of its own before the function: `<unit>: data <name> from the gap block (typing)`; it
+  does not count toward the 8.
   - Name and type it from its users and its bytes (`dcp dump`, `dcp refs`; `{0,0,0,0,0,0,0xe0,0x3f}` is the
     double 0.5). The size is the object's, not the gap's: a gap runs to the next known address and may hold
     several objects; split it, the rest stays a `full_` block at its own address.
@@ -232,13 +248,7 @@ fall no debt item covers.
 ## 3. Escalation to the deep queue
 When only allocation or scheduling is left (`regs`, `slots`, `order` hunks the classes do not explain away, or
 the code is shape and only byte identity is missing), or a generated variant round would be needed:
-`dcp escalate NAME "why"`, build, commit `<unit>: <name> -> deep (match-base)`.
-Before escalating, look at `dcp diffclass NAME`'s summary line. `branch targets differ` means the statement
-structure differs (a condition, a loop form, a case order), and that is base work, never deep. Every remaining
-`code` hunk needs its own explanation: show it as a rotation with `asmdiff --regs`, as the same instructions
-reordered, or as a push/`add esp` placement. "Allocation" is a claim you prove hunk by hunk, not a label for
-a big diff. A small function whose whole body is one `code` hunk is not scheduling until you have compared
-the expression form first (struct assignment vs field copies, an index vs a pointer, a temporary vs none). The reason lists what was
+`dcp escalate NAME "why"`, build, commit `<unit>: <name> -> deep (match-base)`. The reason lists what was
 read and tried and the exact remaining hunk (`asmdiff` lines). `dcp escalate` refuses a reason that only names
 missing statements, and one that admits a part not read against the original yet (not reconciled / checked /
 compared / verified, hard to judge): reconstruction and reading the whole function are base work. It also
@@ -250,16 +260,15 @@ allocation really causes it (extra saved registers, spills you have read in the 
 stale `@deep` / `@stuck` tag: `dcp escalate NAME --clear`, build again.
 
 ## 4. When to stop
-A session is **one function**: the first item `dcp next` names, raised to shape + readable (or byte + readable)
-or escalated, then the wrap-up. One raise or one escalation is one commit, and the session ends when that
-commit stands (with the typing commits before it, when the work needed them: 2.3, 2.5). Never stop before it:
-a hard function is escalated, not a reason to end, and "it feels long" is no clock. A reconstruction of a big
-function (~1000 instructions, missing statements) may take most of a session; that is expected base work, not
-a reason to escalate it.
+A session is **8 functions** raised to shape + readable (or byte + readable) or escalated, then the wrap-up.
+Never stop early: a hard function is escalated, not a reason to end; a long queue is not a reason to end;
+"it feels long" is no clock. One raise or one escalation is one commit: count the commits and stop at 8
+(escalations count). A reconstruction of a big function (~1000 instructions, missing statements) may take most
+of a session; that is expected base work, not a reason to escalate it.
 
 ## 5. Wrap up
-1. The session's function is committed: keep it if it builds and nothing got worse (but by an accepted fall,
-   2.6), else revert it; `dcp build` exits 0.
+1. Keep the function in progress if it builds and nothing got worse (but by an accepted fall, 2.6), else
+   revert; `dcp build` exits 0.
 2. `dcp session wrap`: builds, links, checks every target, promotes the grade baseline and prints the
    computed report (errors, byte and readable counts before -> after, `grades changed` per function, renames,
    the next item). It must say `gate: ok`.

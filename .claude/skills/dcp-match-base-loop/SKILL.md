@@ -25,10 +25,10 @@ Locations
 2. **Wait** for its hand-back. Do not poll. Then branch:
 
    - **Critical dcp bug reported** → step 3.
-   - **Session finished** (its one function raised or escalated, `dcp session wrap` says `gate: ok`, wrap committed)
+   - **Session finished** (8 functions raised or escalated, `dcp session wrap` says `gate: ok`, wrap committed)
      → step 4.
    - **Stopped early without a bug** (e.g. it handed an item to a helper agent and returned before wrapping, or
-     left the tree uncommitted) → resume it with SendMessage: finish the function itself, run
+     left the tree uncommitted) → resume it with SendMessage: finish the remaining function(s) itself, run
      `dcp session wrap` (must say `gate: ok`), update the units' lead comments, commit the wrap, report
      back. Then wait again.
 
