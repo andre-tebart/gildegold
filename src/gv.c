@@ -1236,7 +1236,7 @@ int gv_EntryCount(unsigned char *o)
 }
 /* 0x4ef4f0, 1 unless the part i (0 .. 3) of the record r is missing (the pointer at +8 + 4 * i is 0 or the flag byte at +0x18 + i is 0) */
 
-int unk_Unk4ef4f0(char *r, int i)
+int gv_SizeOpen(char *r, int i)
 {
     if (i == 0) {
         if (*(int *)(r + 8) == 0 || r[0x18] == 0)
@@ -1251,37 +1251,61 @@ int unk_Unk4ef4f0(char *r, int i)
         return 0;
     return 1;
 }
-/* 0x4ef570, the entry n (0x14 bytes) of the list i (0 .. 3: the pointer at +8 + 4 * i of the record r) when the list exists (0x4ef4f0) and the level (+0x18 + i; here read from the flag byte, the original takes it from edx) allows
-   that many entries; 0 when r[1] is not 1 .. 3 or n is out of range. ROUGH */
+/* 0x4ef570, the entry n (0x14 bytes) of the list i (0 .. 3, the grave size) of the graveyard record r, when that size is open
+   (gv_SizeOpen) and n is below the size's entry count for the record's kind (list 0: 8 / 12 / 16, list 1: 4 / 6 / 8,
+   list 2: - / 2 / 4, list 3: - / - / 2 for kind 1 / 2 / 3); 0 when r->kind is not 1 .. 3 or n is out of range */
 
-int unk_Unk4ef570(char *r, int i, unsigned char n)
+int gv_ListEntry(char *r, int i, unsigned char n)
 {
-    int lv;
+    GVYARD *g = (GVYARD *)r;
+    int kind;
 
-    if (*(int *)(r + 4) > 0 && *(int *)(r + 4) < 4) {
-        if (i == 0) {
-            lv = r[0x18];
-            if (unk_Unk4ef4f0(r, 0) != 0) {
-                if ((lv != 1 || n < 8) && (lv != 2 || n < 0xc) && (lv != 3 || n < 0x10))
-                    return *(int *)(r + 8) + n * 0x14;
-            }
-        } else if (i == 1) {
-            lv = r[0x19];
-            if (unk_Unk4ef4f0(r, 1) != 0) {
-                if ((lv != 1 || n < 4) && (lv != 2 || n < 6) && (lv != 3 || n < 8))
-                    return *(int *)(r + 0xc) + n * 0x14;
-            }
-        } else if (i == 2) {
-            lv = r[0x1a];
-            if (unk_Unk4ef4f0(r, 2) != 0 && lv != 1) {
-                if ((lv != 2 || n < 2) && (lv != 3 || n < 4))
-                    return *(int *)(r + 0x10) + n * 0x14;
-            }
-        } else if (i == 3) {
-            lv = r[0x1b];
-            if (unk_Unk4ef4f0(r, 3) != 0 && lv != 1 && lv != 2 && (lv != 3 || n < 2))
-                return *(int *)(r + 0x14) + n * 0x14;
-        }
+    kind = g->kind;
+    if (kind < 1 || kind > 3)
+        return 0;
+    if (i == 0) {
+        if (gv_SizeOpen(r, i) == 0)
+            return 0;
+        if (kind == 1 && n >= 8)
+            return 0;
+        if (kind == 2 && n >= 0xc)
+            return 0;
+        if (kind == 3 && n >= 0x10)
+            return 0;
+        return (int)((char *)g->lists[0] + n * 0x14);
+    }
+    if (i == 1) {
+        if (gv_SizeOpen(r, i) == 0)
+            return 0;
+        if (kind == 1 && n >= 4)
+            return 0;
+        if (kind == 2 && n >= 6)
+            return 0;
+        if (kind == 3 && n >= 8)
+            return 0;
+        return (int)((char *)g->lists[1] + n * 0x14);
+    }
+    if (i == 2) {
+        if (gv_SizeOpen(r, i) == 0)
+            return 0;
+        if (kind == 1)
+            return 0;
+        if (kind == 2 && n >= 2)
+            return 0;
+        if (kind == 3 && n >= 4)
+            return 0;
+        return (int)((char *)g->lists[2] + n * 0x14);
+    }
+    if (i == 3) {
+        if (gv_SizeOpen(r, i) == 0)
+            return 0;
+        if (kind == 1)
+            return 0;
+        if (kind == 2)
+            return 0;
+        if (kind == 3 && n >= 2)
+            return 0;
+        return (int)((char *)g->lists[3] + n * 0x14);
     }
     return 0;
 }
@@ -1367,7 +1391,7 @@ unsigned gv_FindEntry(void *a, unsigned char *o, unsigned after, int (*cb)(), in
     b = ai_BTypes + o[0] * 0x24d;
     rec = *(char **)(o + 0x65);
     if (l != 0xff) {
-        if (unk_Unk4ef4f0(rec, l) == 0)
+        if (gv_SizeOpen(rec, l) == 0)
             return 0;
     }
     if (l == 0)
@@ -1712,13 +1736,13 @@ int unk_Unk4f0240(int *p)
     rec = *(int **)(o + 0x65);
     if (rec == 0)
         return -3;
-    if (unk_Unk4ef4f0((char *)rec, p[3]) == 0)
+    if (gv_SizeOpen((char *)rec, p[3]) == 0)
         return -4;
     gm_FindById(0, 0, &c, p[1]);
     if (c == 0)
         return -6;
     list = p[3];
-    e = (int *)unk_Unk4ef570((char *)rec, list, (unsigned char)p[4]);
+    e = (int *)gv_ListEntry((char *)rec, list, (unsigned char)p[4]);
     if (e == 0 || *(short *)((char *)e + 8) != *(short *)(c + 0x50))
         return -7;
     lst = (int *)e[4];
@@ -1800,7 +1824,7 @@ int unk_Unk4f0490(short *p)
         return -2;
     if (*(int *)(o + 0x65) == 0)
         return -3;
-    if (unk_Unk4ef4f0(*(char **)(o + 0x65), *(int *)(p + 6)) == 0)
+    if (gv_SizeOpen(*(char **)(o + 0x65), *(int *)(p + 6)) == 0)
         return -4;
     gm_FindById(0, 0, &c, *(int *)(p + 2));
     if (c == 0)
@@ -1871,12 +1895,12 @@ int unk_Unk4f0770(char *p)
     rec = *(char **)(o + 0x65);
     if (rec == 0)
         return -3;
-    if (unk_Unk4ef4f0(rec, *(int *)(p + 0xc)) == 0)
+    if (gv_SizeOpen(rec, *(int *)(p + 0xc)) == 0)
         return -4;
     gm_FindById(0, 0, &c, *(int *)(p + 4));
     if (c == 0)
         return -6;
-    e = (short *)unk_Unk4ef570(rec, *(int *)(p + 0xc), (unsigned char)p[0x10]);
+    e = (short *)gv_ListEntry(rec, *(int *)(p + 0xc), (unsigned char)p[0x10]);
     if (e == 0)
         return -7;
     e[5] = e[5] + *(short *)(p + 0x11);
@@ -1930,7 +1954,7 @@ int unk_Unk4f0970(unsigned char *p)
     rec = *(char **)(o + 0x65);
     if (rec == 0)
         return -3;
-    if (unk_Unk4ef4f0(rec, *(int *)(p + 0xc)) == 0)
+    if (gv_SizeOpen(rec, *(int *)(p + 0xc)) == 0)
         return -4;
     if (*(int *)(p + 4) != -1) {
         gm_FindById(0, 0, &c, *(int *)(p + 4));
@@ -1939,7 +1963,7 @@ int unk_Unk4f0970(unsigned char *p)
         id = *(int *)(p + 4);
         sh = *(short *)((char *)c + 0x50);
     }
-    e = (char *)unk_Unk4ef570(rec, *(int *)(p + 0xc), p[0x10]);
+    e = (char *)gv_ListEntry(rec, *(int *)(p + 0xc), p[0x10]);
     if (e == 0)
         return -7;
     *(short *)(e + 8) = sh;
@@ -2045,9 +2069,9 @@ int unk_Unk4f0c80(unsigned char *p)
     if (*(int *)(o + 0x65) == 0)
         return -3;
     l = *(int *)(p + 0xc);
-    if (unk_Unk4ef4f0(*(char **)(o + 0x65), l) == 0)
+    if (gv_SizeOpen(*(char **)(o + 0x65), l) == 0)
         return -4;
-    e = (char *)unk_Unk4ef570(*(char **)(o + 0x65), l, p[0x10]);
+    e = (char *)gv_ListEntry(*(char **)(o + 0x65), l, p[0x10]);
     if (e == 0)
         return -7;
     v = (unsigned char)e[0xc] + *(int *)(p + 0x13);
@@ -2130,9 +2154,9 @@ int unk_Unk4f0ed0(int *p)
     if (*(int *)(o + 0x65) == 0)
         return -3;
     list = p[2];
-    if (unk_Unk4ef4f0(*(char **)(o + 0x65), list) == 0)
+    if (gv_SizeOpen(*(char **)(o + 0x65), list) == 0)
         return -4;
-    src = (char *)unk_Unk4ef570(*(char **)(o + 0x65), list, *(unsigned char *)(p + 3));
+    src = (char *)gv_ListEntry(*(char **)(o + 0x65), list, *(unsigned char *)(p + 3));
     if (src != 0 && *(short *)(src + 8) == *(short *)((char *)c + 0x50)) {
         s = *(int **)(src + 0x10);
         n = gv_EntryCounts[list];
@@ -2392,9 +2416,9 @@ unsigned unk_Unk4f1200(char *p)
     if (*(int *)(o + 0x65) == 0)
         return (unsigned)-3;
     l = *(int *)(p + 0xc);
-    if (unk_Unk4ef4f0(*(char **)(o + 0x65), l) == 0)
+    if (gv_SizeOpen(*(char **)(o + 0x65), l) == 0)
         return (unsigned)-4;
-    e = (char *)unk_Unk4ef570(*(char **)(o + 0x65), l, (unsigned char)p[0x10]);
+    e = (char *)gv_ListEntry(*(char **)(o + 0x65), l, (unsigned char)p[0x10]);
     if (e == 0)
         return 0xffff;
     i = 0;

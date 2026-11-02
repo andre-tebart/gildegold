@@ -6878,7 +6878,7 @@ done:
     *(int *)(U_I((unsigned)&d2_Objs) + 0x28 + btns[*selp] * 0x2ec) = 1;
 }
 
-int unk_Unk4f0900(); int unk_Unk4ef4f0(); void sv_ButtonRow(int f, int y, int *out, int n, ...);
+int unk_Unk4f0900(); int gv_SizeOpen(); void sv_ButtonRow(int f, int y, int *out, int n, ...);
 
 /* 0x583de0, a graveyard confirmation window (272 B): rec / the two values passed on to 0x4f0900; the window
    "Locations_Friedhof_Friedhof" (0x62a5bc) with 0x476f80 / 0x475600, the sound 0x52ea30, the texts 0x410f /
@@ -6945,7 +6945,7 @@ int ai_Unk583ef0(char *rec, int from, int unused, int *btns, int *sel)
     }
     r = 0;
     for (i = from; i < 4; i++) {
-        if (unk_Unk4ef4f0(U_I(rec + 0x65), i) == 0) {
+        if (gv_SizeOpen(U_I(rec + 0x65), i) == 0) {
             d2_SetObjEnabled(btns[i], 0);
             *(int *)(U_I((unsigned)&d2_Objs) + 0x28 + btns[i] * 0x2ec) = 0;
         } else {

@@ -16518,7 +16518,7 @@ int gm_BuildingSkill();                 /* 0x5092e0 */
 int sv_UsedGroupSlots();                 /* 0x5241b0 */
 int gm_FreeCapacity();                 /* 0x50ab80 */
 char *gm_FindBuildingById(int id); /* 0x502020 */
-int unk_Unk4ef570(char *r, int i, unsigned char n);                 /* 0x4ef570 */
+int gv_ListEntry(char *r, int i, unsigned char n);                 /* 0x4ef570 */
 int unk_Unk4f0c20();                 /* 0x4f0c20 */
 int gm_Unk509ee0(char *c, char p);                 /* 0x509ee0 */
 void ai_Unk5a9910(unsigned short *param_1, int param_2, unsigned int param_3);                 /* 0x5a9910 */
@@ -16706,7 +16706,7 @@ void he_Unk571640(int ev)
     bld = (char *)gm_BuildQuery(1, 1, HM_I(ev, 0x10));
     if (bld == 0)
         HM_I(ev, 0x70) = -1;
-    r = (char *)unk_Unk4ef570(HM_I(bld, 0x65), HM_I(ev, 0xb0), HM_B(ev, 0xb4));
+    r = (char *)gv_ListEntry(HM_I(bld, 0x65), HM_I(ev, 0xb0), HM_B(ev, 0xb4));
     if (r == 0)
         HM_I(ev, 0x70) = -1;
     if (HM_I(ev, 0x70) == 0) {
