@@ -5621,14 +5621,24 @@ double _CIfmod();
 #define AIM_PITCH_MAX 0.7853982f     /* 45 degrees */
 /* 0x57ec40, the cannon aiming update (1169 B): sc = the scene, dt = the frame time. Does nothing while the shot
    runs (sc->fired). The zoom moves by +dt * 0.8 (with the key kb_Down[0x18]) or -dt * 1.6 and is clamped to 0 .. 1.
-   The mouse pitches and yaws the cannon: with the left button held (dm_L.lhold) inside the middle of the screen
+   The mouse pitches and yaws the cannon: with the left button held (dm_L.ldown) inside the middle of the screen
    (0x50 from the top and bottom) the first step only remembers the mouse (dragState 0 -> 1, speeds cleared) and
    the next ones turn the pitch by 0.008333334 and the yaw by 0.011111111 per mouse pixel; outside that zone the
    drag ends. Without a drag (or after the button is let go) the keys kb_Down[0xc8 / 0xd0 / 0xcb / 0xcd] or the
    mouse at the screen edges (5 pixels) give the directions a (vertical) and b (horizontal) in -1 .. 1; each
    speed (pitchSpeed, yawSpeed) falls toward 0 without a direction and otherwise grows by dt * 0.8 (or * 0.25
    when it runs against the direction) up to +-1, the frame deltas are speed * dt * 0.8 (pitch) and * 1.5 (yaw).
-   The pitch is kept within -15 .. 45 degrees (the pitch speed is cleared at a stop), the yaw within 0 .. 2 pi */
+   The pitch is kept within -15 .. 45 degrees (the pitch speed is cleared at a stop), the yaw within 0 .. 2 pi
+   @deep read the whole function against dcp disasm 0x57ec40 and dcp draft: fixed the real difference (the
+   drag test is dm_L.ldown, not lhold, and the drag block is a plain dragState == 1 check after the
+   else-if) which took dist 222->138 and code 234->99. The rest is FPU scheduling and instruction
+   selection: the original keeps dt in st(0) and multiplies by the factor memory operand where ours loads
+   the factor and fmuls dt (0x57ee9b fld [esp+0x18] vs fld 0.25; fmul [esp+0x18]), the comparison idioms
+   differ (test ah,5; jp vs and eax,0x100; jne at 0x57ee9f, 0x57f069), and the dragState = 0 block is
+   placed after the init block (0x57ed34) where the original has it inline at 0x57ecf5. Tried: FMIN/FMAX
+   with the constant on the left (dist 151), 0.0f <= x ? forms (dist 144, code 129), both reverted.
+   Statement logic, conditions, constants and calls all match. (size: 3 of the instruction difference are
+   shared / inline tails) */
 void ai_CannonAim(CANNONSCENE *sc, float dt)
 {
     int a = 0;
@@ -5645,7 +5655,7 @@ void ai_CannonAim(CANNONSCENE *sc, float dt)
         sc->zoom = sc->zoom - dt * 1.6f;
     sc->zoom = FMAX(FMIN(sc->zoom, 1.0f), 0.0f);
     y = dm_L.y;
-    if (dm_L.lhold != 0) {
+    if (dm_L.ldown != 0) {
         if (y < 0x50 || y > d2_ScreenH - 0x50) {
             sc->dragState = 0;
             goto clamp;
@@ -5664,7 +5674,7 @@ void ai_CannonAim(CANNONSCENE *sc, float dt)
         sc->dragState = 0;
         goto clamp;
     }
-    if (dm_L.lhold != 0 && sc->dragState == 1) {
+    if (sc->dragState == 1) {
         dx = dm_L.x - sc->dragX;
         sc->dragX = dm_L.x;
         dy = y - sc->dragY;
