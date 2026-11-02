@@ -8131,7 +8131,7 @@ int ai_GraveRentConfirm(AIBLD *rec, int size)
    confirm -> 0x475590 (window, 0), 0x584520 (rec, the selection) == 1 -> 0x6f22a0 = 1, 0x475590 (window, 1); a
    clicked button != the selection -> the selection, 0x583c50 again; the pump 0 -> 0x4758f0 (window) */
 
-void ai_Unk5847a0(char *rec)
+void ai_RentGraveSelect(char *rec)
 {
     int win;
     int btn;
@@ -8171,7 +8171,7 @@ void ai_Unk5847a0(char *rec)
                 }
             }
         }
-        if (sv_RunFrame(ai_Unk5847a0, 0x677c7) == 0) {
+        if (sv_RunFrame(ai_RentGraveSelect, 0x677c7) == 0) {
             d2_CloseView(win);
             return;
         }
@@ -9201,7 +9201,7 @@ void ai_GraveyardContact(char *rec)
                     ai_OpenTransport(rec);
             }
             if ((ai_BuildingPerms & 0x80) && ai_ClickedObject == c_mieten)
-                ai_GraveRentContact(rec);
+                ai_GraveRentContact((AIBLD *)rec);
         } else if (gm_AllowAll != 0) {
             if (kb_Last == 0x1e)
                 ai_GraveAgeContact((AIBLD *)rec);
@@ -9214,7 +9214,7 @@ void ai_GraveyardContact(char *rec)
             else if (kb_Last == 0x19)
                 ai_GraveCareContact(rec);
             else if (kb_Last == 0x16)
-                ai_GraveRentContact(rec);
+                ai_GraveRentContact((AIBLD *)rec);
             else if (kb_Last == 0x11)
                 ai_GraveHelperContact(rec);
         }
@@ -9456,40 +9456,37 @@ void ai_GravePlanContact(char *rec)
     sv_CameraFollow();
 }
 
-int gv_FindReservedEntry();
 
-/* 0x5871e0, the graveyard rent-a-grave handler (278 B): rec = the contact record (+0x65 the state record). The
-   entry of the player's character (0x770b80 + 0x6f25b8 * 0x21c, rec, 0, 0x4ef740, 0xff) through 0x4ef7c0;
-   without an entry: 0x4f25d0 (the character, &bld, &p) == 0 -> 0x5847a0 (rec) and 0x52d7a0 (), else 0x521150
-   (U_I (0x144ada0), 0). With the entry p: the window record w (+0x1c p, +0x20 *p, +0x24 the 0x4ef6b0 flag), the
-   line 0x4107 (the name 0x5eecd0[*p]); 0x583b70 (w, the line) -> 0: return; 0x584410 (rec, w), 0x4758f0 (w[0]),
-   0x52d7a0 () */
-void ai_GraveRentContact(char *rec)
+/* 0x5871e0, the graveyard contact GRAB_MIETEN (rent a grave) for the graveyard rec: the grave entry of the player's
+   character (gv_FindEntry with gv_EntrySameId). None: without a reserved entry elsewhere (gv_FindReservedEntry)
+   the rent-a-grave window (ai_RentGraveSelect) and the camera follows again, else the message box txt 0x42f8.
+   With the entry: the detail window record gets the entry, its size and its index in that list, the line txt
+   0x4107 (the size's name) is the detail window's title; opened, its two buttons run (ai_GraveDetailButtons),
+   it closes and the camera follows again */
+void ai_GraveRentContact(AIBLD *rec)
 {
-    int w[0x23];
+    GVENTRY *e;
+    unsigned char *bld;
+    GVDETAILWIN w;
     char line[0x100];
-    char *bld;
-    int *p;
 
-    p = (int *)gv_FindEntry((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, rec, 0, (char *)(unsigned)&gv_EntrySameId, 0xff);
-    if (p == 0) {
-        if (gv_FindReservedEntry((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, &bld, &p) == 0) {
-            ai_Unk5847a0(rec);
-            sv_CameraFollow();
+    e = (GVENTRY *)gv_FindEntry(ai_Chars[ai_PlayerId], (unsigned char *)rec, 0, gv_EntrySameId, 0xff);
+    if (e != 0) {
+        w.entry = e;
+        w.size = e->size;
+        w.index = gv_EntryIndex((char *)rec->yard, (int *)e);
+        txt_Format(line, 0x4107, ai_GraveNames[e->size]);
+        if (ai_GraveDetailOpen((int *)&w, line) == 0)
             return;
-        }
-        sv_MessageBox((char *)U_I(((unsigned)&ai_Unk144ad78 + 0x28)), 0);
-        return;
+        ai_GraveDetailButtons((char *)rec, (int *)&w);
+        d2_CloseView(w.win);
+        sv_CameraFollow();
+    } else if (gv_FindReservedEntry(ai_Chars[ai_PlayerId], &bld, (int *)&e) == 0) {
+        ai_RentGraveSelect((char *)rec);
+        sv_CameraFollow();
+    } else {
+        sv_MessageBox(txt_Ptrs[0x42f8], 0);
     }
-    w[7] = (int)p;
-    w[8] = *p;
-    *(unsigned char *)((char *)w + 0x24) = gv_EntryIndex(U_I(rec + 0x65), p);
-    txt_Format(line, (char *)0x4107, U_I(((unsigned)&sv_PhaseMinutes + 0x218) + *p * 4));
-    if (ai_GraveDetailOpen(w, line) == 0)
-        return;
-    ai_GraveDetailButtons(rec, w);
-    d2_CloseView(w[0]);
-    sv_CameraFollow();
 }
 /* 0x587300, the graveyard "GRAEBER_PFLEGEN" contact (50 B): 0x520fe0 (rec) == 0 -> the contact window 0x583240
    (0, rec, U_I (0x144a638), 1, 0x584900) and 0x52d7a0 () */
