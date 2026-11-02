@@ -574,7 +574,6 @@ extern GAPDATA full_data_62a870[];
 extern GAPDATA full_data_62a88c[];
 extern int gm_AllowAll;
 extern int ai_ClockMs;
-extern GAPDATA full_data_62a538[];
 extern GAPDATA full_data_62a8a8[];
 extern GAPDATA full_data_6f5f60[];
 extern char ai_Chars[768][0x21c];
@@ -710,6 +709,7 @@ typedef struct SHOTRESULT {     /* 0x38 bytes, three of them in ai_ShotTable: th
 #define gm_ConvertMoney3 ((int (*)(int, unsigned char, int))gm_ConvertMoney)  /* @original: the calls at 0x57df2c / 0x57df3d push a third word (the previous result) that f3gm.c:7921 never reads (it takes a, k); no byte-matched caller, the evidence is the pushes in the original (the same 3-push shape is noted at hst.c ai_SplitTokenFormat); header unchanged because every matched caller passes two words */
 int ai_TutorialChapterOn[5] = { 1, 1, 1, 1, 1 };  /* 0x62918c, per chapter 1 = played (the start window's check boxes, ai_TutorialWindow) */
 int (*ai_TutorialChapterInit[5])(void) = { ai_TutorialInitChapter1, ai_TutorialInitChapter2, ai_TutorialInitChapter3, ai_TutorialInitChapter4, ai_TutorialInitChapter5 };  /* 0x6291a0, the chapter chain builders the start appends for every chapter played */
+unsigned int ai_GraveChatterAt = 0xffffffff;  /* 0x62a538, ai_ClockMs at the last graveyard chatter tick (ai_GraveyardChatter runs every 0x1194 ms) */
 int ai_TutorialBanks[6] = { 0 };  /* 0x6f2640, the voice banks of the main intro / outro and the chapters 1 .. 5 (snd_LoadVoiceBank), unloaded by the stop */
 TUTRUN *ai_TutorialRuns = 0;  /* 0x6f2658, the chain of the tutorial's run records (built by its start 0x578180, freed by its stop 0x578370) */
 int ai_TutorialOn = 0;  /* 0x6f265c, the tutorial runs (set by its start 0x578180, cleared by its end) */
@@ -9863,9 +9863,9 @@ void ai_GraveyardChatter(char *unused)
     int i;
     int s;
 
-    if (U_I((unsigned)&ai_ClockMs) < U_I((unsigned)&full_data_62a538) + 0x1194)
+    if (U_I((unsigned)&ai_ClockMs) < ai_GraveChatterAt + 0x1194)
         return;
-    U_I((unsigned)&full_data_62a538) = U_I((unsigned)&ai_ClockMs);
+    ai_GraveChatterAt = U_I((unsigned)&ai_ClockMs);
     if (U_I((unsigned)&gm_AllowAll) == 0 && util_RandomF() < 0.9f)
         return;
     cnt = 0;

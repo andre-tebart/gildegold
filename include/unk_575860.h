@@ -96,6 +96,7 @@ typedef struct TUTSTATE {               /* the tutorial state record (0x6fa060, 
 void ai_GypsyHelperWindow(struct AIBLD *rec); /* 0x584d70, the helpers window of a building (HANDEL_SUCHEN form), opened by the gypsy production contact */
 extern int ai_TutorialChapterOn[5];     /* 0x62918c, per chapter 1 = played */
 extern int (*ai_TutorialChapterInit[5])(void);  /* 0x6291a0, the chapter chain builders */
+extern unsigned int ai_GraveChatterAt;  /* 0x62a538, ai_ClockMs at the last graveyard chatter tick */
 extern int ai_TutorialBanks[6];         /* 0x6f2640, the tutorial's voice banks */
 extern TUTRUN *ai_TutorialRuns;         /* 0x6f2658, the chain of the tutorial's run records */
 extern int ai_TutorialOn;               /* 0x6f265c, the tutorial runs */
