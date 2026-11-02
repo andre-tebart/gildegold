@@ -2990,22 +2990,22 @@ exe	0x004feb30	gm_UpdatePlayers	f3gm	byte	readable
 exe	0x004feb60	gm_InitPlayerRecord	f3gm	byte	readable		
 exe	0x004fec10	gm_SyncMarket	f3gm	shape	readable		
 exe	0x004ff190	gm_RefreshGoodsLists	f3gm	shape	readable		
-exe	0x004ff450	gm_RandomMarketShake	f3gm	draft	draft		
-exe	0x004ff550	gm_UpdatePrices	f3gm	draft	draft		
-exe	0x004ff8c0	gm_GoodsDemand	f3gm	draft	draft		
+exe	0x004ff450	gm_RandomMarketShake	f3gm	shape	readable		
+exe	0x004ff550	gm_UpdatePrices	f3gm	draft	readable	deep	
+exe	0x004ff8c0	gm_GoodsDemand	f3gm	byte	readable		
 exe	0x004ff950	gm_GoodsStock	f3gm	byte	draft		
-exe	0x004ffa10	gm_Unk4ffa10	f3gm	draft	draft		
-exe	0x004ffbf0	gm_GoodsValue	f3gm	byte	draft		
+exe	0x004ffa10	gm_StockPrice	f3gm	draft	readable	deep	
+exe	0x004ffbf0	gm_GoodsValue	f3gm	byte	readable		
 exe	0x004ffc40	gm_FindGoods	f3gm	byte	readable		
 exe	0x004ffc90	gm_MapDistance	f3gm	byte	readable		
-exe	0x004ffcc0	gm_QueryNext	f3gm	draft	draft		
-exe	0x004ffe90	gm_Query	f3gm	draft	draft		
-exe	0x004fffc0	gm_FindFreeObject	f3gm	draft	readable		
+exe	0x004ffcc0	gm_QueryNext	f3gm	draft	readable	deep	
+exe	0x004ffe90	gm_Query	f3gm	draft	readable	deep	
+exe	0x004fffc0	gm_FindFreeObject	f3gm	byte	readable		
 exe	0x004ffff0	gm_RemoveObject	f3gm	shape	draft		
 exe	0x00500080	gm_FreeObjectExtra	f3gm	byte	draft		
 exe	0x005000c0	gm_RemoveOwned	f3gm	shape	draft		
 exe	0x00500140	gm_FreeList	f3gm	byte	draft		
-exe	0x00500190	gm_CreateObject	f3gm	draft	draft		
+exe	0x00500190	gm_CreateObject	f3gm	draft	readable	deep	
 exe	0x00500970	gm_AddObjekt	f3gm	draft	draft		
 exe	0x00500a40	gm_TakeObjekt	f3gm	draft	draft		
 exe	0x00500ae0	gm_AddNegative	f3gm	draft	draft		
@@ -3131,7 +3131,7 @@ exe	0x00509f20	gm_Unk509f20	f3gm	draft	draft
 exe	0x00509f80	gm_Unk509f80	f3gm	draft	draft		
 exe	0x00509ff0	gm_ObjectOwnerChar	f3gm	byte	draft		
 exe	0x0050a050	gm_ObjectBuildingOwner	f3gm	byte	draft		
-exe	0x0050a0b0	gm_Unk50a0b0	f3gm	byte	draft		
+exe	0x0050a0b0	gm_ObjectOwnerNo	f3gm	byte	draft		
 exe	0x0050a0f0	gm_Unk50a0f0	f3gm	draft	draft		
 exe	0x0050a150	gm_Unk50a150	f3gm	byte	draft		
 exe	0x0050a1c0	gm_Unk50a1c0	f3gm	draft	draft		
@@ -4005,7 +4005,7 @@ exe	0x00578370	ai_TutorialStop	unk_575860	byte	draft
 exe	0x00578440	ai_TutorialFreeRuns	unk_575860	byte	draft		
 exe	0x005784a0	ai_TutorialInitMainIntro	unk_575860	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	unk_575860	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	shape	readable		byte+readable -> shape+readable at 39af7e7: gv.h ORDCHAR: the pads at 0x060 and 0x1b1 became the typed fields rel060 / children / pregnancy / b1b1 (same layout) for gm_PartnerStep; unk_575860 includes gv.h but never uses ORDCHAR, and the function flips eax/ecx in two hunks on the declaration set alone (verified: the old gv.h gives byte), so the match was a VC6 tie-break, no evidence [waits for: unk_575860's head and declaration set (its includes settled)]
+exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	byte	readable		
 exe	0x00579570	ai_TutorialInitChapter3	unk_575860	draft	readable	deep	
 exe	0x0057aa80	ai_TutorialInitChapter4	unk_575860	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	unk_575860	byte	readable		

@@ -9,8 +9,11 @@
    Open: gm_GetWorth is int in every header now; the older callers still go through the K&R cast I50A640.
    Open: ai.h is not includable here, so the character / building / object records are read through gv.h's views
    ORDCHAR / ORDBLD / ORDOBJ, the long message through f3gm_types.h's GMMSG (AIMSG), the goods records of the
-   stock blocks through GMSTOCK (f3gm_types.h; f3init.c / hst.c hold their own copies INIT_STOCK / G12STOCK), or
-   by byte offset (the rest, GM_GOODS).
+   stock blocks through GMBLOCK / GMSTOCK (f3gm_types.h, GM_BLOCK; f3init.c / hst.c hold their own copies
+   INIT_STOCK / G12STOCK), or by byte offset (the rest, GM_GOODS).
+   Open: data: gm_QueryKind (0x61a686) is defined as 550 bytes, but only its first byte is the query kind; the
+   job table gm_JobTalents (0x61a688) is a view inside it.
+   Open: gm_QueryNext returns unsigned short * in every header though the cursor is an ORDOBJ *.
    Open: data: gm_DefaultStock (0x6178c8) is defined as 12 ints and ai_Unk6178f8 follows it, but gm_LoadTables
    copies 0xaa0 ints and gm_InitPlayerRecord walks 0x55 GMSTOCK records from it: one 0x2a80-byte template.
    Open: head: cm_SendExSellObject returns its message's slot handle (gm_SyncMarket waits on it), cm.h declares
