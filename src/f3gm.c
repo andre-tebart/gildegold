@@ -6447,6 +6447,8 @@ int gm_TitleGroup(int n)
 int gm_TitleJobGroup(int n)
 {
     switch (n) {
+    case 0:
+        return 0;
     case 1:
     case 2:
         return 0xb;
@@ -6489,9 +6491,8 @@ int gm_TitleJobGroup(int n)
     case 0x21:
     case 0x22:
         return 0xf;
-    default:
-        return 0;
     }
+    return 0;
 }
 /* 0x504ce0, the number of titles left in the group of the title number n: the end of its group of six minus n (n in 1 .. 6: 7 - n, 7 .. 12: 13 - n, ..), 0 for others */
 
