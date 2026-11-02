@@ -55,9 +55,6 @@ extern char gm_StockBlocks[];                 /* 0x7d6a60, the five 0x2a90-byte 
 extern G7GRP gm_BuildingItemGroups[];           /* 0x61a348 */
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 #include "d3_types.h"
-extern D3SCENE d3_Scenes[];               /* 0xfd7ba0: ai_Unk5fb5b0 points at it */
-extern D3SCENE d3_Scenes[];               /* 0xfd7ba0: ai_Unk5fb5b0 points at it */
-extern D3SCENE d3_Scenes[];               /* 0xfd7ba0: ai_Unk5fb5b0 points at it */
 extern GAPDATA full_data_91f6e0[];
 extern unsigned char he_Events[339968];
 #include "amt_types.h"
@@ -124,6 +121,7 @@ int gm_IsUnderAge(unsigned id);         /* 0x4fd7e0 */
 #include "txt.h"
 #include "unk_575860.h"
 #include "unk_58bbd0.h"
+#include "d3_engine.h"
 void *ai_Unk5a8560(int param_1);  /* 0x5a8560 */
 #define ai_Unk5a8560K ((int (*)())ai_Unk5a8560)  /* 0x5a8560: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, ai_Unk4d88c0 0x4d88c0 move it as a word / movzx) */
@@ -5105,7 +5103,7 @@ void gm_AssignBuilding(unsigned char *b, unsigned short place, unsigned own)
     char *p;
     unsigned short o;
     char *bl;
-    int per, k;
+    int per;
     unsigned short *w;
     int cnt, scn, ob, owid;
     char t;
@@ -5155,8 +5153,7 @@ void gm_AssignBuilding(unsigned char *b, unsigned short place, unsigned own)
                     owid = 0;
                 else
                     owid = *(int *)(ai_Chars[own] + 0x54) - 0x599;
-                k = d3t_SceneIndex(*(int *)(ob + 0x88), 1);
-                d3if_SelectScene(k);
+                d3if_SelectScene(d3t_SceneIndex(*(int *)(ob + 0x88)), 1);
                 if (*(int *)(*(int *)(ob + 0x34) + 0x1cc) == 0)
                     ch_Unk402540(ob);
                 d3if_SelectTextureSet(**(int **)(ob + 0x124), *(int *)(**(int **)(ob + 0x124) + 0x1cc), owid, 1);
@@ -5396,7 +5393,7 @@ int gm_RemoveObjectFromBuilding(int b, int id)
 
 void gm_Unk5034b0(int o)
 {
-    int saved, r, m, sc;
+    int saved, r, m;
 
     saved = d3_CurrentScene;
     r = *(int *)(o + 0x24);
@@ -5404,8 +5401,7 @@ void gm_Unk5034b0(int o)
         *(int *)(r + 0x84) = ((int (*)(int, int))cm_SendExSetHE)(-1, r);
     m = *(int *)(o + 0x3b);
     if (m != 0) {
-        sc = d3t_SceneIndex(*(int *)(m + 0x88), 1);
-        d3if_SelectScene(sc);
+        d3if_SelectScene(d3t_SceneIndex(*(int *)(m + 0x88)), 1);
         ch_Delete(m);
         d3if_SelectScene(saved, 1);
     }
