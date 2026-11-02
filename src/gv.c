@@ -2824,7 +2824,7 @@ float gv_SeanceChance(char *o)
         x = x + 15.0f;
     if (gm_Query(*(int *)(o + 0x5d), 2, 6, 0, 0x223) != 0)
         x = x + 25.0f;
-    return x * 0.0125f * 0.5f + 0.5f;
+    return 0.5f * (x * 0.0125f) + 0.5f;  /* the original multiplies by 0.0125 and 0.5 apart (x * 0.0125f * 0.5f folds to 0.00625) */
 }
 /* 0x4f2720, copies the AI decision record i (0 .. 0x1c, an AIDEC of the table 0x611258) to out (a struct copy); 0 for i > 0x1c */
 
