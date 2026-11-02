@@ -36,6 +36,7 @@ unsigned char * he_Unk53e040(unsigned char *m);
 void he_FreeEvent(int *r);
 char *he_NextEvent(void);
 char *he_FindEvent(int n, ...);
+int he_NoEvent9bFor(int a);                     /* 0x56f3b0, 1 when no running type 0x9b event has +0xac == a + 4 */
 void he_ShowConstruction(int ev);               /* 0x56b780, the construction state of the building event ev */
 void he_Unk53e4e0(int obj);
 int he_Unk53e5f0(int e, int name, int obj);
