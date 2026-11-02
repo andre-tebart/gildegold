@@ -193,7 +193,7 @@ void ai_GravePlanContact(char *rec);       /* 0x5871c0, the graveyard contact LI
 void ai_GraveRentContact(struct AIBLD *rec);     /* 0x5871e0, the graveyard contact GRAB_MIETEN */
 void ai_GraveCareContact(char *rec);       /* 0x587300, the graveyard contact GRAEBER_PFLEGEN */
 void ai_GraveHelperContact(char *rec);     /* 0x587340, the graveyard contact GEHILFEN_ERSCHAFFEN */
-void ai_GraveInsuranceContact(char *rec);  /* 0x587370, the graveyard contact VERSICHERUNG */
+void ai_GraveInsuranceContact(struct AIBLD *rec);/* 0x587370, the graveyard contact VERSICHERUNG */
 void ai_GraveyardChatter(char *unused);    /* 0x587c90, the graveyard's idle-chatter tick */
 
 int ai_SaveSlotTable(int fh);  /* 0x589aa0, writes the slot table 0x6f5ec0 */

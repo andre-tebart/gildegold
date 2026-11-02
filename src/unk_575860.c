@@ -9194,7 +9194,7 @@ void ai_GraveyardContact(char *rec)
                 else if (ai_ClickedObject == c_gehilfen)
                     ai_GraveHelperContact(rec);
                 else if (ai_ClickedObject == c_vers)
-                    ai_GraveInsuranceContact(rec);
+                    ai_GraveInsuranceContact((AIBLD *)rec);
                 else if (ai_ClickedObject == c_liege)
                     ai_GravePlanContact(rec);
                 else if (ai_ClickedObject == c_trans)
@@ -9206,7 +9206,7 @@ void ai_GraveyardContact(char *rec)
             if (kb_Last == 0x1e)
                 ai_GraveAgeContact((AIBLD *)rec);
             else if (kb_Last == 0x2f)
-                ai_GraveInsuranceContact(rec);
+                ai_GraveInsuranceContact((AIBLD *)rec);
             else if (kb_Last == 0x22)
                 ai_GraveFogWindow((AIBLD *)rec);
             else if (kb_Last == 0x23)
@@ -9226,7 +9226,7 @@ int ai_AmountMenu(); int sv_CheckMoney();
 
 /* 0x586ab0, the graveyard contact HEIMSUCHUNG (the haunting) for the graveyard rec: the target is picked in the
    amount menu (AMOUNTCFG flags 1, mode 0x400, kind 6, no ids left out; title txt 0x4095), none -> the camera
-   follows again. The player bar, the form "Locations_Friedhof_Friedhof" with the text 0x4098 / 0x4097 (the
+   follows again. The player bar, the form "Locations\Friedhof\Friedhof" with the text 0x4098 / 0x4097 (the
    target's id twice) and its slider (4 .. 0xc, step 4), the two buttons from the text 0x4099 on (pay / leave).
    Pay: the slider's amount in money (sv_CheckMoney) and the first selected character (the one who haunts) are
    needed: none selected -> the message box txt 0x4093; else the message 0x88 goes to the graveyard's owner
@@ -9263,7 +9263,7 @@ void ai_GraveHauntContact(AIBLD *rec)
         return;
     }
     sv_OpenPlayerBar(rec, 0);
-    win = d2_OpenForm(0, 0, "Locations_Friedhof_Friedhof");
+    win = d2_OpenForm(0, 0, "Locations\\Friedhof\\Friedhof");
     d2_SetPointerSprite(0, 0);
     d2_CentreViewWindows(win);
     d2_SetForm(win, 0);
@@ -9340,7 +9340,7 @@ void ai_GraveHauntContact(AIBLD *rec)
 }
 /* 0x586e40, the graveyard contact ALTERN_LASSEN (let age), the sibling of ai_GraveHauntContact, for the graveyard
    rec: the target is picked in the amount menu (AMOUNTCFG flags 1, mode 0x400, kind 6, no ids left out; title txt
-   0x40a1), none -> the camera follows again. The player bar, the form "Locations_Friedhof_Friedhof" with the text
+   0x40a1), none -> the camera follows again. The player bar, the form "Locations\Friedhof\Friedhof" with the text
    0x40a4 / 0x40a3 (the target's id, the price 4), the two buttons from the text 0x40a5 on (pay / leave). Pay: 4
    in money (sv_CheckMoney) and the first selected character are needed: none selected -> the message box txt
    0x4093; else the message 0x89 goes to the graveyard's owner (flags 1, the game time, the selected character's
@@ -9374,7 +9374,7 @@ void ai_GraveAgeContact(AIBLD *rec)
         return;
     }
     sv_OpenPlayerBar(rec, 0);
-    win = d2_OpenForm(0, 0, "Locations_Friedhof_Friedhof");
+    win = d2_OpenForm(0, 0, "Locations\\Friedhof\\Friedhof");
     d2_SetPointerSprite(0, 0);
     d2_CentreViewWindows(win);
     d2_SetForm(win, 0);
@@ -9507,78 +9507,69 @@ void ai_GraveHelperContact(char *rec)
         ai_GraveWindow(0, rec, (char *)U_I((unsigned)&full_data_144a684), 0, (void (*)(AIBLD *, GVPICK *))ai_GraveRaiseHelper);
     sv_CameraFollow();
 }
-/* 0x587370, the graveyard "VERSICHERUNG" contact (485 B): rec = the contact record (+0x27 the owner word, +1 a
-   dword). 0x525220 (rec, 0), the window "Locations_Friedhof_Friedhof" (0x62a5bc) with 0x476f80 / 0x475600, the
-   sound 0x52ea30, the texts 0x40f6 / 0x40f5 (0x228) and 0x40f7 / 0x40f7 + 1 in 0x475b80 (window, 2, text),
-   0xf8a668 = -1; the pump loop 0x5309a0 (this window, 0x677c7): the escape 0x14673a0 -> 0x6f22a0 = 1; the first
-   entry: the first selected character (the byte +0x188 of 0x770b80 + i * 0x21c, i = 0 .. 0x2ff) or none ->
-   0x521150 (U_I (0x144a40c), 0); else the message (type 0x8a at +4, 1 at +0x36, the player's character word at
-   +8, rec + 1 at +0xc, the clock 0x770ae0 / 0x770ae4 / 0x770ae8 / word 0x770aec at +0x28, the found character +4
-   at +0x38 / +0x58) through 0x4c4b70 and 0x6f22a0 = 1; the second entry -> 0x6f22a0 = 1; the pump 0 ->
-   0x4758f0 (window), 0x525440 (), 0x52ae40 () */
-
-void ai_GraveInsuranceContact(char *rec)
+/* 0x587370, the graveyard contact VERSICHERUNG (the insurance) for the graveyard rec: the player bar, the form
+   "Locations\Friedhof\Friedhof" with the text 0x40f6 / 0x40f5 (the price 0x228), the two buttons from the text
+   0x40f7 on (take / leave). Take: the first selected character is needed: none -> the message box txt 0x4093;
+   else the message 0x8a goes to the graveyard's owner (flags 1, the game time, the character's netId) and the
+   window leaves. The right button or the second button leaves; then the player bar and the selection close and
+   the camera follows again */
+void ai_GraveInsuranceContact(AIBLD *rec)
 {
-    char msg[0xf8];
-    char *f;
+    AIMSG msg;
+    AICHAR *f;
     int win;
-    int b1;
-    int b2;
+    int btnTake;
+    int btnLeave;
     int i;
 
     sv_OpenPlayerBar(rec, 0);
-    win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62a5bc);
+    win = d2_OpenForm(0, 0, "Locations\\Friedhof\\Friedhof");
     d2_SetPointerSprite(0, 0);
     d2_CentreViewWindows(win);
     d2_SetForm(win, 0);
-    sv_FitForm(U_I((unsigned)&d2_LastWindow));
+    sv_FitForm(d2_LastWindow);
     d2_SetForm(win, 1);
-    io_PrintText(0x40f6, 0x40f5, 0x228);
+    io_PrintText((char *)0x40f6, 0x40f5, 0x228);
     d2_SetForm(win, 2);
-    i = io_PrintText(0x40f7);
-    b1 = d2_GetWinObj(win, 2, i);
-    b2 = d2_GetWinObj(win, 2, i + 1);
-    U_I((unsigned)&d2_ClickedId) = -1;
-    for (;;) {
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0) {
-            U_I((unsigned)&sv_PopRequest) = 1;
-        } else if (U_I((unsigned)&d2_ClickedId) != -1) {
-            if (U_I((unsigned)&d2_PointerObj) == b1) {
+    i = io_PrintText((char *)0x40f7);
+    btnTake = d2_GetWinObj(win, 2, i);
+    btnLeave = d2_GetWinObj(win, 2, i + 1);
+    d2_ClickedId = -1;
+    do {
+        if (dm_L.rup != 0) {
+            sv_PopRequest = 1;
+        } else if (d2_ClickedId != -1) {
+            if (d2_PointerObj == btnTake) {
                 f = 0;
                 for (i = 0; i < 0x300; i++) {
-                    if (*(char *)((unsigned)&ai_Chars + i * 0x21c + 0x188)) {
-                        f = (char *)((unsigned)&ai_Chars + i * 0x21c);
+                    if (ai_CharsT[i].selected) {
+                        f = &ai_CharsT[i];
                         break;
                     }
                 }
                 if (f == 0) {
-                    sv_MessageBox((char *)U_I((unsigned)&full_data_144a40c), 0);
+                    sv_MessageBox(txt_Ptrs[0x4093], 0);
                 } else {
-                    memset(msg, 0, 0xf8);
-                    *(unsigned char *)(msg + 0x04) = 0x8a;
-                    *(unsigned char *)(msg + 0x36) = 1;
-                    *(int *)(msg + 0x08) = *(int *)((unsigned)&ai_CharInts + *(unsigned short *)(rec + 0x27) * 0x21c);
-                    *(int *)(msg + 0x0c) = U_I(rec + 1);
-                    *(int *)(msg + 0x28) = U_I((unsigned)&ai_Time);
-                    *(int *)(msg + 0x2c) = U_I((unsigned)&ai_TimeHour);
-                    *(int *)(msg + 0x30) = U_I(((unsigned)&ai_Time + 0x8));
-                    *(unsigned short *)(msg + 0x34) = *(unsigned short *)((unsigned)&ai_Time + 0xc);
-                    *(int *)(msg + 0x38) = *(int *)(f + 4);
-                    *(int *)(msg + 0x58) = *(int *)(f + 4);
-                    cm_SendLongMessage(msg);
-                    U_I((unsigned)&sv_PopRequest) = 1;
+                    memset(&msg, 0, sizeof(msg));
+                    msg.type = 0x8a;
+                    msg.flags = 1;
+                    msg.to = ((AICHAR *)ai_Chars[rec->owner])->netId;
+                    msg.fromId = rec->id;
+                    msg.time = ai_TimeT;
+                    msg.arg[0] = f->netId;
+                    msg.ids[0] = f->netId;
+                    cm_SendLongMessage((char *)&msg);
+                    sv_PopRequest = 1;
                 }
-            } else if (U_I((unsigned)&d2_PointerObj) == b2) {
-                U_I((unsigned)&sv_PopRequest) = 1;
+            } else if (d2_PointerObj == btnLeave) {
+                sv_PopRequest = 1;
             }
         }
-        if (sv_RunFrame(ai_GraveInsuranceContact, 0x677c7) == 0) {
-            d2_CloseView(win);
-            sv_ClosePlayerBar();
-            sv_ClearSelection();
-            return;
-        }
-    }
+    } while (sv_RunFrame(ai_GraveInsuranceContact, 0x677c7) != 0);
+    d2_CloseView(win);
+    sv_ClosePlayerBar();
+    sv_ClearSelection();
+    sv_CameraFollow();
 }
 
 int ai_ProductionWindow(); int ai_OpenTransport(); void ai_MasterLetterWindow(); int ai_Unk5ad150(); int ai_StorageWindow();
