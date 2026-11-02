@@ -221,7 +221,7 @@ extern const int sv_PhaseMinutes[24];
 extern float gm_DayStartHours[];
 extern float gm_DayEndHours[];
 extern double ai_Unk5ece60;
-extern const float ai_Unk5ee160[476];
+extern const float gm_MoodRanges[476];
 extern char ch_EmptyName[1];
 extern char * cm_FieldObject;
 extern GAPDATA full_rdata_5eb8a8[];
@@ -16845,7 +16845,7 @@ void he_Unk571c30(int ev)
     n = gm_BuildingSkill(bld, 0xc, 1);
     f = (float)n;
     v = gm_Unk509400(ev + 0x60, &ai_Time, bld);
-    HM_B(per + HM_I(ev, 0xb0), 0x80) = (unsigned char)(int)((double)v * *(double *)((unsigned)&sv_PhaseMinutes + 0x158) * *(double *)((unsigned)&ai_Unk5ee160 + 0x7c8) * ((double)f * *(double *)(unsigned)&ai_Unk5ece60 + *(double *)(unsigned)&full_rdata_5eb8a8));
+    HM_B(per + HM_I(ev, 0xb0), 0x80) = (unsigned char)(int)((double)v * *(double *)((unsigned)&sv_PhaseMinutes + 0x158) * *(double *)((unsigned)&gm_MoodRanges + 0x7c8) * ((double)f * *(double *)(unsigned)&ai_Unk5ece60 + *(double *)(unsigned)&full_rdata_5eb8a8));
     cm_BeginFieldBlock(per, *(int *)(per + 4));
     cm_AddFieldValues(1, 1, per + (*(unsigned short *)(ev + 0xb0) - *(unsigned short *)(unsigned)&cm_FieldObject) + 0x80, &n);
     cm_SendFieldDeltas();

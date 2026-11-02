@@ -130,7 +130,9 @@ typedef struct ORDCHAR {
                                        gm_PlayerRecords slot in the low 4 bits (gm_PlayerRecord) */
     char pad052[2];
     int v054;                       /* 0x054, gm_CreateObject: nonzero for a character of the kinds 5 .. 7, its low byte + 0x67 is the texture set of the character's carts */
-    char pad058[4];
+    unsigned char generation;       /* 0x058, 1 for a character created without parents, else the parent's + 1
+                                       (gm_CreateCharacter; reasoned guess: the generation) */
+    char pad059[3];
     union {
         int partner;                /* 0x05c, the partner character id, -1 = none */
         int relatives[8];           /* 0x05c, the netIds of the relatives (ai.h AICHAR.relatives), -1 = none: [0] the
@@ -158,7 +160,7 @@ typedef struct ORDCHAR {
     struct CHARACTER *model;        /* 0x184, the character's model (ai.h AICHAR.model, ch.h CHARACTER) */
     char pad188[4];
     int picture;                    /* 0x18c, the portrait picture (ai.h AICHAR.picture), -1 = none */
-    char pad190[4];
+    int v190;                       /* 0x190, 4 at creation, 10 with gm_AllowAll (ai.h AICHAR.v190) */
     int v194;                       /* 0x194, gm_TakeOverCharacter sets it to 4 for the character that takes over */
     int v198;                       /* 0x198, cleared with wage at the end of every day (f3gm.c gm_EndDayIncomes) */
     int wage;                       /* 0x19c, the wage paid in the last round settlement (ai.h AICHAR.wage) */
@@ -176,12 +178,42 @@ typedef struct ORDCHAR {
     float loyalty;                  /* 0x1d0, 0 .. 1, starts at 0.25 .. 0.75; gm_ShiftLoyalty / gm_HandOutMoney move it (reasoned guess: the loyalty) */
     int worth[4];                   /* 0x1d4, the character's worth (gm_GetWorth) of the last rounds, worth[3] the newest (gm_UpdateWorthMood shifts it) */
     float mood3Rate;                /* 0x1e4, scales the base growth of mood need 3 (ai.h AICHAR.mood3Rate) */
-    char pad1e8[8];
+    int v1e8;                       /* 0x1e8, 1 at creation for the kinds 3 / 0x10 / 0x13 (gm_CreateCharacter) */
+    char pad1ec[4];
     int v1f0;                       /* 0x1f0, gm_PopulationStep counts the working characters with it set; below 6, a
                                        newcomer of kind 0x10 may arrive */
-    char ownName[0x1c];             /* 0x1f4, the character's own head name (ai.h AICHAR.ownName), empty: the job's / title's head record */
-    char pad210[0xc];
+    union {
+        char ownName[0x1c];         /* 0x1f4, the character's own head name (ai.h AICHAR.ownName), empty: the job's / title's head record */
+        struct {
+            char padOwnName[0x18];
+            int partyId;            /* 0x20c, the scene party (ai.h AICHAR.partyId), -1 at creation */
+        };
+    };
+    int v210;                       /* 0x210, ai.h AICHAR.partner, -1 at creation */
+    signed char unk214;             /* 0x214 */
+    unsigned char b215;             /* 0x215, ai.h AICHAR.b215, the partner search's step counter */
+    unsigned char b216;             /* 0x216, ai.h AICHAR.b216, the steps the partner search needs */
+    unsigned char b217;             /* 0x217, ai.h AICHAR.b217: one of 0x3c .. 0x5c (or 0xc2) by the kind, the title group and chance (gm_CreateCharacter), a child takes a parent's */
+    unsigned char mask;             /* 0x218, ai.h AICHAR.mask, 1 at creation */
+    char pad219[3];
 } ORDCHAR;
+typedef char gv_AssertORDCHAR[sizeof(ORDCHAR) == 0x21c ? 1 : -1];
+
+typedef struct GVAVATAR {               /* 0xf4 bytes, a record of the avatar table unk_Avatars (32) */
+    unsigned id;                        /* 0x00, four characters ("neVm"), the key of the save game's (id, used) pairs */
+    char name[0x10];                    /* 0x04, "Maven" (the read report prints it): the first name of the character made from it */
+    char title[0x10];                   /* 0x14, "of Reading": its family name */
+    unsigned char skills[5];            /* 0x24, the five skill bytes (ORDCHAR.skills) */
+    char pad29[3];
+    float mood[14][3];                  /* 0x2c, the mood triples (ORDCHAR.mood; gv_AllocAvatar sets the second of each to the first * 0.001) */
+    unsigned char jobId;                /* 0xd4, ORDCHAR.jobId */
+    unsigned char sex;                  /* 0xd5, ORDCHAR.textVariant */
+    unsigned char b00c;                 /* 0xd6, ORDCHAR.b00c */
+    char ownName[0x1b];                 /* 0xd7, ORDCHAR.ownName, the head name */
+    unsigned char used;                 /* 0xf2, 1 while the record is in use (gv_AllocAvatar), 0 free */
+    char padf3;
+} GVAVATAR;
+typedef char gv_AssertGVAVATAR[sizeof(GVAVATAR) == 0xf4 ? 1 : -1];
 #define ORD_CHARS ((ORDCHAR *)ai_Chars)
 #define ORD_CHAR(p) ((ORDCHAR *)(p))   /* a raw character record as the order handlers read it */
 

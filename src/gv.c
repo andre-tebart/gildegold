@@ -103,15 +103,6 @@ extern const float gv_GraveWear[];
 #define UNK_FW ((unsigned (*)())vfs_fwrite)
 #define UNK_FR ((unsigned (*)())ls_Read)
 
-typedef struct GVAVATAR {               /* 0xf4 bytes, a record of the avatar table unk_Avatars (32) */
-    unsigned id;                        /* 0x00, four characters ("neVm"), the key of the save game's (id, used) pairs */
-    char name[0x10];                    /* 0x04, "Maven" (the read report prints it) */
-    char title[0x10];                   /* 0x14, "of Reading" */
-    char pad24[0xce];
-    unsigned char used;                 /* 0xf2, 1 while the record is in use (gv_AllocAvatar), 0 free */
-    char padf3;
-} GVAVATAR;
-typedef char gv_AssertGVAVATAR[sizeof(GVAVATAR) == 0xf4 ? 1 : -1];
 #define gv_AvatarsT (*(GVAVATAR (*)[0x20])&unk_Avatars)  /* 0x60f310, unk_Avatars (char[0x20][0xf4]) as the GVAVATAR records they are */
 
 /* 0x4ed170, picks a free avatar record (byte +0xf2 = 0) starting at a random one of the 32 (cyclic), marks it used (+0xf2 = 1) after setting the 14 floats at +0x30, +0x3c .. to the floats before them (+0x2c ..)

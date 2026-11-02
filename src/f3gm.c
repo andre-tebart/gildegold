@@ -2053,7 +2053,7 @@ extern char d2_GfxDir[256];
 int gm_HomeSearchStart = 0;  /* 0x6f1bb4 */
 extern char gm_CharacterStatistics[128];
 char * ai_Unk60c1ec = (void *)((unsigned)&he_Events + 0xc234);  /* 0x60c1ec, the memory pool tag */
-unsigned short gm_CreateCharacter(int type, int a2, int a3, int a4, unsigned char *a5, unsigned a6, int a7, int a8);                     /* 0x507690 */
+unsigned short gm_CreateCharacter(int type, int a2, int a3, int a4, ORDBLD *a5, unsigned a6, int a7, int a8);                     /* 0x507690 */
 int gm_SexForJob(int x);                   /* 0x503f30 */
 int gm_SexForTitle(int x);                   /* 0x503f50 */
 int gm_Opinion(int a, int b);                     /* 0x50c520 */
@@ -7918,283 +7918,400 @@ int gm_SumListAmounts(void *list, unsigned char p);
 
 extern int ai_CharCount, ai_NextCharNumber, ai_NextPlayerNumber, gm_AllowAll, ai_NextObjectId;  /* 0x6f1bc0, 0x6f1bb8, 0x6f1bbc, 0x6f2448, 0x61a654 */
 
-extern char ai_Unk61a8c8[];  /* 0x61a8c8 */
-const float ai_Unk5ee160[476] = { 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 16.0f, 24.0f, 2.20000005f, 2.79999995f, 2.4000001f, 3.0f, 2.0f, 3.0f, 2.29999995f, 2.9000001f, 2.4000001f, 3.0f, 2.0f, 2.70000005f, 2.29999995f, 2.9000001f, 2.5f, 3.0f, 2.0999999f, 2.70000005f, 2.5f, 3.0f, 2.0f, 2.5999999f, 2.4000001f, 3.0f, 2.4000001f, 3.0f, 16.0f, 24.0f, 2.20000005f, 2.79999995f, 2.4000001f, 3.0f, 2.0f, 3.0f, 2.29999995f, 2.9000001f, 2.4000001f, 3.0f, 2.0f, 2.70000005f, 2.29999995f, 2.9000001f, 2.5f, 3.0f, 2.0999999f, 2.70000005f, 2.5f, 3.0f, 2.0f, 2.5999999f, 2.4000001f, 3.0f, 2.4000001f, 3.0f, 16.0f, 24.0f, 2.20000005f, 2.79999995f, 2.4000001f, 3.0f, 2.0f, 3.0f, 2.29999995f, 2.9000001f, 2.4000001f, 3.0f, 2.0f, 2.70000005f, 2.29999995f, 2.9000001f, 2.5f, 3.0f, 2.0999999f, 2.70000005f, 2.5f, 3.0f, 2.0f, 2.5999999f, 2.4000001f, 3.0f, 2.4000001f, 3.0f, 16.0f, 24.0f, 2.29999995f, 2.79999995f, 2.29999995f, 2.79999995f, 2.0f, 3.0f, 2.29999995f, 2.79999995f, 2.4000001f, 3.0f, 2.20000005f, 2.9000001f, 2.29999995f, 2.9000001f, 2.5f, 3.0f, 2.0f, 2.5999999f, 2.4000001f, 2.79999995f, 2.20000005f, 2.79999995f, 2.4000001f, 3.0f, 2.20000005f, 3.0f, 16.0f, 24.0f, 2.29999995f, 2.79999995f, 2.29999995f, 2.79999995f, 2.0f, 3.0f, 2.29999995f, 2.79999995f, 2.4000001f, 3.0f, 2.20000005f, 2.9000001f, 2.29999995f, 2.9000001f, 2.5f, 3.0f, 2.29999995f, 2.79999995f, 2.4000001f, 2.79999995f, 2.20000005f, 2.79999995f, 2.29999995f, 2.79999995f, 2.4000001f, 3.0f, 16.0f, 24.0f, 2.29999995f, 2.79999995f, 2.29999995f, 2.79999995f, 2.0f, 3.0f, 2.29999995f, 2.79999995f, 2.4000001f, 3.0f, 2.20000005f, 2.9000001f, 2.20000005f, 2.70000005f, 2.5f, 3.0f, 2.5f, 3.0f, 2.4000001f, 2.70000005f, 2.29999995f, 2.9000001f, 2.20000005f, 2.79999995f, 2.0f, 3.0f, 16.0f, 24.0f, 2.4000001f, 3.0f, 2.5f, 3.0f, 2.0f, 3.0f, 2.0999999f, 2.9000001f, 2.5f, 3.0f, 2.0f, 2.5f, 2.5f, 3.0f, 2.5f, 3.0f, 2.5f, 3.0f, 2.20000005f, 3.0f, 2.0f, 2.5999999f, 2.4000001f, 3.0f, 2.20000005f, 3.0f, 16.0f, 24.0f, 2.29999995f, 2.79999995f, 2.29999995f, 2.9000001f, 2.0f, 3.0f, 2.0999999f, 2.9000001f, 2.20000005f, 2.70000005f, 2.0f, 2.79999995f, 2.0999999f, 2.5999999f, 2.20000005f, 2.70000005f, 2.20000005f, 2.70000005f, 2.20000005f, 2.70000005f, 2.29999995f, 2.79999995f, 2.5f, 3.0f, 2.29999995f, 2.79999995f, 16.0f, 24.0f, 2.5f, 2.9000001f, 2.4000001f, 2.9000001f, 2.0f, 3.0f, 2.0999999f, 2.9000001f, 2.0f, 2.9000001f, 2.0f, 2.5999999f, 2.5999999f, 2.9000001f, 2.29999995f, 2.79999995f, 2.4000001f, 2.79999995f, 2.20000005f, 2.79999995f, 2.29999995f, 2.79999995f, 2.5f, 3.0f, 2.29999995f, 2.79999995f, 16.0f, 24.0f, 2.5f, 2.9000001f, 2.29999995f, 2.79999995f, 2.0f, 3.0f, 2.4000001f, 2.9000001f, 2.5f, 2.9000001f, 2.0999999f, 2.9000001f, 2.0999999f, 2.79999995f, 2.0999999f, 2.9000001f, 2.5f, 2.79999995f, 2.5999999f, 2.9000001f, 2.5f, 3.0f, 2.29999995f, 2.79999995f, 2.29999995f, 2.70000005f, 16.0f, 24.0f, 2.29999995f, 2.9000001f, 2.29999995f, 3.0f, 2.0f, 3.0f, 2.4000001f, 2.9000001f, 2.5f, 3.0f, 2.0999999f, 3.0f, 2.0f, 2.70000005f, 2.0f, 2.9000001f, 2.29999995f, 2.79999995f, 2.0f, 2.29999995f, 2.5999999f, 3.0f, 2.0f, 2.4000001f, 2.29999995f, 2.70000005f, 16.0f, 24.0f, 2.29999995f, 2.9000001f, 2.0999999f, 2.70000005f, 2.0f, 3.0f, 2.4000001f, 2.9000001f, 2.5f, 3.0f, 2.0999999f, 3.0f, 2.0f, 2.70000005f, 2.29999995f, 2.9000001f, 2.0f, 2.79999995f, 2.0999999f, 2.29999995f, 2.5999999f, 3.0f, 2.0f, 2.4000001f, 2.29999995f, 2.70000005f, 16.0f, 24.0f, 2.29999995f, 2.9000001f, 2.0999999f, 2.70000005f, 2.0f, 3.0f, 2.4000001f, 2.9000001f, 2.5f, 3.0f, 2.0999999f, 3.0f, 2.0f, 2.70000005f, 2.29999995f, 2.9000001f, 2.0f, 2.79999995f, 2.0999999f, 2.29999995f, 2.5999999f, 3.0f, 2.0f, 2.4000001f, 2.29999995f, 2.70000005f, 16.0f, 24.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 16.0f, 24.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };  /* 0x5ee160 */
+const float gm_MoodRanges[476] = { 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 16.0f, 24.0f, 2.20000005f, 2.79999995f, 2.4000001f, 3.0f, 2.0f, 3.0f, 2.29999995f, 2.9000001f, 2.4000001f, 3.0f, 2.0f, 2.70000005f, 2.29999995f, 2.9000001f, 2.5f, 3.0f, 2.0999999f, 2.70000005f, 2.5f, 3.0f, 2.0f, 2.5999999f, 2.4000001f, 3.0f, 2.4000001f, 3.0f, 16.0f, 24.0f, 2.20000005f, 2.79999995f, 2.4000001f, 3.0f, 2.0f, 3.0f, 2.29999995f, 2.9000001f, 2.4000001f, 3.0f, 2.0f, 2.70000005f, 2.29999995f, 2.9000001f, 2.5f, 3.0f, 2.0999999f, 2.70000005f, 2.5f, 3.0f, 2.0f, 2.5999999f, 2.4000001f, 3.0f, 2.4000001f, 3.0f, 16.0f, 24.0f, 2.20000005f, 2.79999995f, 2.4000001f, 3.0f, 2.0f, 3.0f, 2.29999995f, 2.9000001f, 2.4000001f, 3.0f, 2.0f, 2.70000005f, 2.29999995f, 2.9000001f, 2.5f, 3.0f, 2.0999999f, 2.70000005f, 2.5f, 3.0f, 2.0f, 2.5999999f, 2.4000001f, 3.0f, 2.4000001f, 3.0f, 16.0f, 24.0f, 2.29999995f, 2.79999995f, 2.29999995f, 2.79999995f, 2.0f, 3.0f, 2.29999995f, 2.79999995f, 2.4000001f, 3.0f, 2.20000005f, 2.9000001f, 2.29999995f, 2.9000001f, 2.5f, 3.0f, 2.0f, 2.5999999f, 2.4000001f, 2.79999995f, 2.20000005f, 2.79999995f, 2.4000001f, 3.0f, 2.20000005f, 3.0f, 16.0f, 24.0f, 2.29999995f, 2.79999995f, 2.29999995f, 2.79999995f, 2.0f, 3.0f, 2.29999995f, 2.79999995f, 2.4000001f, 3.0f, 2.20000005f, 2.9000001f, 2.29999995f, 2.9000001f, 2.5f, 3.0f, 2.29999995f, 2.79999995f, 2.4000001f, 2.79999995f, 2.20000005f, 2.79999995f, 2.29999995f, 2.79999995f, 2.4000001f, 3.0f, 16.0f, 24.0f, 2.29999995f, 2.79999995f, 2.29999995f, 2.79999995f, 2.0f, 3.0f, 2.29999995f, 2.79999995f, 2.4000001f, 3.0f, 2.20000005f, 2.9000001f, 2.20000005f, 2.70000005f, 2.5f, 3.0f, 2.5f, 3.0f, 2.4000001f, 2.70000005f, 2.29999995f, 2.9000001f, 2.20000005f, 2.79999995f, 2.0f, 3.0f, 16.0f, 24.0f, 2.4000001f, 3.0f, 2.5f, 3.0f, 2.0f, 3.0f, 2.0999999f, 2.9000001f, 2.5f, 3.0f, 2.0f, 2.5f, 2.5f, 3.0f, 2.5f, 3.0f, 2.5f, 3.0f, 2.20000005f, 3.0f, 2.0f, 2.5999999f, 2.4000001f, 3.0f, 2.20000005f, 3.0f, 16.0f, 24.0f, 2.29999995f, 2.79999995f, 2.29999995f, 2.9000001f, 2.0f, 3.0f, 2.0999999f, 2.9000001f, 2.20000005f, 2.70000005f, 2.0f, 2.79999995f, 2.0999999f, 2.5999999f, 2.20000005f, 2.70000005f, 2.20000005f, 2.70000005f, 2.20000005f, 2.70000005f, 2.29999995f, 2.79999995f, 2.5f, 3.0f, 2.29999995f, 2.79999995f, 16.0f, 24.0f, 2.5f, 2.9000001f, 2.4000001f, 2.9000001f, 2.0f, 3.0f, 2.0999999f, 2.9000001f, 2.0f, 2.9000001f, 2.0f, 2.5999999f, 2.5999999f, 2.9000001f, 2.29999995f, 2.79999995f, 2.4000001f, 2.79999995f, 2.20000005f, 2.79999995f, 2.29999995f, 2.79999995f, 2.5f, 3.0f, 2.29999995f, 2.79999995f, 16.0f, 24.0f, 2.5f, 2.9000001f, 2.29999995f, 2.79999995f, 2.0f, 3.0f, 2.4000001f, 2.9000001f, 2.5f, 2.9000001f, 2.0999999f, 2.9000001f, 2.0999999f, 2.79999995f, 2.0999999f, 2.9000001f, 2.5f, 2.79999995f, 2.5999999f, 2.9000001f, 2.5f, 3.0f, 2.29999995f, 2.79999995f, 2.29999995f, 2.70000005f, 16.0f, 24.0f, 2.29999995f, 2.9000001f, 2.29999995f, 3.0f, 2.0f, 3.0f, 2.4000001f, 2.9000001f, 2.5f, 3.0f, 2.0999999f, 3.0f, 2.0f, 2.70000005f, 2.0f, 2.9000001f, 2.29999995f, 2.79999995f, 2.0f, 2.29999995f, 2.5999999f, 3.0f, 2.0f, 2.4000001f, 2.29999995f, 2.70000005f, 16.0f, 24.0f, 2.29999995f, 2.9000001f, 2.0999999f, 2.70000005f, 2.0f, 3.0f, 2.4000001f, 2.9000001f, 2.5f, 3.0f, 2.0999999f, 3.0f, 2.0f, 2.70000005f, 2.29999995f, 2.9000001f, 2.0f, 2.79999995f, 2.0999999f, 2.29999995f, 2.5999999f, 3.0f, 2.0f, 2.4000001f, 2.29999995f, 2.70000005f, 16.0f, 24.0f, 2.29999995f, 2.9000001f, 2.0999999f, 2.70000005f, 2.0f, 3.0f, 2.4000001f, 2.9000001f, 2.5f, 3.0f, 2.0999999f, 3.0f, 2.0f, 2.70000005f, 2.29999995f, 2.9000001f, 2.0f, 2.79999995f, 2.0999999f, 2.29999995f, 2.5999999f, 3.0f, 2.0f, 2.4000001f, 2.29999995f, 2.70000005f, 16.0f, 24.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 2.0f, 3.0f, 16.0f, 24.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };  /* 0x5ee160, per title group (gm_TitleGroup) the (low, high) range of each of the 14 moods of a new character */
 void hmt_Create(int type, int unk, unsigned short v, struct AICHAR *c);                     /* 0x4adbb0 */
 void ai_ResetJob(struct AICHAR *c);                     /* 0x47e940 */
 int sprintf(char *buf, const char *fmt, ...);                     /* 0x5de652 */
 
-#define CF(o, T) (*(T *)(c + (o)))
+#define gm_TitleTalents (*(JOBTALENTS (*)[0x20])(ai_Unk61a8ac + 0x1c))  /* 0x61a8c8, the talents record per title (ORDCHAR.title) */
 
-/* 0x507690, creates a character of the type `type` (the slot is the first free one, id -1; with none left, the first of type 0xf is reused) and returns its id (0xffff when full): clears the record (0x21c bytes), sets
-   type / ids (+4 a running number 0x61a654) / defaults (+8 = 100, +0x1e4 = 1.0, +0x190 = 4), the kind byte +0x164 = a6 and +0x165 = a7, the age +0xa = a4, the player avatar for type 0x10 (0x4ed170: names, skills, floats
-   copied from the avatar record), the home objects (+0x16c / +0x170 from the building a5 by its class), and either rolls the 14 float skills (+0x88 + 12 * i: value, 0.001 * value, 900 + rand) from the table 0x5ee160
-   by the kind (0x504ad0), or inherits them from the two parents a2 / a3 (a random mix, the parents' child slots +0x5c ..) and picks names (0x143ac5c / 0x143af70 / 0x143b178, 0xf characters) and the portrait
-   (+0x50). ROUGH */
-unsigned short gm_CreateCharacter(int type, int a2, int a3, int a4, unsigned char *a5, unsigned a6, int a7, int a8)
+/* 0x507690, creates a character of the kind type in the first free slot (id 0xffff; with none, the first of kind 0xf
+   is reused) and returns its slot, 0xffff when there is none (or no player number is left for a player kind 5 / 6 /
+   7). The record is cleared and gets its id, netId (ai_NextObjectId), kind, job a6, title a7, age a4, health 100,
+   level 1 (2 for the kinds 3 / 0x10 / 0x13). Kind 0x10 takes a free avatar record (gv_AllocAvatar: names, skills,
+   moods, head) and becomes kind 3; the kinds 0x15 / 0x16 are made by hmt_Create. Else the building a5 becomes its
+   home (kind 1) or its workplace (bld), the sex is a8 (2: random) or what the job / title needs, and with both
+   parents a2 / a3 (netIds) found it inherits from them (b00c, loyalty, b217 from a player parent or the one of the
+   higher level, the moods mixed at random, the skills: half the parents' best, else half a random mix), is entered
+   as their child, takes the number, generation and v054 of a player mother a3 (else of a2) and that one's family
+   name; else the moods come from the title group's ranges (ai_Unk5ee160), the skills from the title's
+   (gm_TitleTalents, a7 without a6) or the job's talents (gm_JobTalents), it gets a player number (kinds 5 / 6 / 7:
+   also its player record and, for 5 / 7, the first free v054 0x59a .. 0x5a1) or a character number and a random
+   family name. Then a random first name by sex, the life values (f014 by chance or from the parents, f01c 1000 aged
+   down to its age), the head (gm_ChooseHeadIcon), the job reset (ai_ResetJob) and, for the kinds 2 / 3 / 4 / 0x13,
+   0x2a more of a random one of the skills 2 .. 4
+   @deep Reconstructed and read whole against the original (1103 vs 1102 ins, frame 0x428 equal): all paths
+   (slot search, record init, avatar kind 0x10, hmt kinds 0x15/0x16, home/workplace, sex, both-parents
+   inheritance with mood mix / best-skill halving / child places / relations, the no-parent path with b217
+   ternaries, mood ranges, title vs job talents (gm_TitleTalents), player numbers and the v054 search,
+   names, life ageing) match call for call, field for field, string for string; the rest is slots (184).
+   Left code hunks: (1) +0x88..+0x13a the init stores: ai_CharCount loaded before the memset's rep stosd
+   and stored after, 'mov [ebp+0x210], -1' as an immediate and the a6/a4/a7 loads after 'inc
+   [ai_NextObjectId]' (ours keep -1 in edi, load the params earlier); (2) fpu operand order of the mood /
+   skill mixes ('fld 1.0; fsub st,st(1); fmul [p2]' and 'fimul [tmp]' vs ours 'fld [p2]; fsubr 1.0; fmulp'
+   / 'fild; fmulp') at 0x507c47 / 0x507d59..0x507d89; (3) the two child-place stores of the p2 loop laid
+   out in the other order (0x507e63) and the parent's w050/generation/v054 copy in other registers
+   (0x507e8f); (4) order at 0x507f11. Tried: ai_CharCount++ before / after the memset, memset through
+   ORD_CHARS[idx], netId++ split, x float / direct stores / continue for the skill cases, both operand
+   orders of the mixes, float vs int vs unsigned short random terms (the inline call form fixed the f010
+   fild) */
+unsigned short gm_CreateCharacter(int type, int a2, int a3, int a4, struct ORDBLD *a5, unsigned a6, int a7, int a8)
 {
-    int idx, i, n, kind, w;
-    char *c;
-    unsigned short *p1;
-    unsigned short *p2;
-    char *av;
-    float f;
-    unsigned short r, rr;
+    int idx, i, k, w, r, n, mx1, mx2, v;
+    ORDCHAR *c;
+    ORDCHAR *p1;
+    ORDCHAR *p2;
+    GVAVATAR *av;
+    short *rec;
+    float f, a, l, life, rr, x;
+    unsigned char *t;
     char buf[0x400];
 
-    idx = 0;
-    while (*(short *)ai_Chars[idx] != -1) {
-        idx++;
-        if (idx >= 0x300)
+    for (idx = 0; idx < 0x300; idx++)
+        if (ORD_CHARS[idx].id == 0xffff)
             break;
-    }
-    if (idx == 0x300) {
-        idx = 0;
-        while (ai_Chars[idx][2] != 0xf) {
-            idx++;
-            if (idx >= 0x300)
+    if (idx == 0x300)
+        for (idx = 0; idx < 0x300; idx++)
+            if (ORD_CHARS[idx].kind == 0xf)
                 break;
-        }
-    }
-    c = ai_Chars[idx];
-    if (c[2] == 0xf)
+    if (ORD_CHARS[idx].kind == 0xf)
         ai_CharCount--;
     if (idx == 0x300)
         return 0xffff;
-    memset(c, 0, 0x21c);
+    c = &ORD_CHARS[idx];
     ai_CharCount++;
-    CF(4, int) = -1;
-    CF(0, unsigned short) = 0xffff;
-    for (i = 0; i < 8; i++)
-        CF(0x5c + i * 4, int) = -1;
-    CF(0, unsigned short) = (unsigned short)idx;
-    c[2] = (char)type;
-    CF(0x170, int) = 0;
-    CF(0x16c, int) = 0;
-    CF(0x1f0, int) = 0;
-    CF(0x210, int) = -1;
-    c[0x215] = 0;
-    c[0x216] = 0;
-    c[0x217] = 0;
-    c[0x218] = 1;
-    sprintf(buf, "-----> SpID = %i, playermode = %i", ai_NextObjectId, type);
-    CF(4, int) = ai_NextObjectId;
+    memset(&ORD_CHARS[idx], 0, sizeof(ORDCHAR));
+    ORD_CHARS[idx].netId = -1;
+    ORD_CHARS[idx].id = 0xffff;
+    memset(ORD_CHARS[idx].relatives, 0xff, sizeof(c->relatives));
+    c->id = (unsigned short)idx;
+    c->kind = (unsigned char)type;
+    c->bld2 = 0;
+    c->bld = 0;
+    c->v1f0 = 0;
+    c->v210 = -1;
+    c->b215 = 0;
+    c->b216 = 0;
+    c->b217 = 0;
+    c->mask = 1;
+    sprintf(buf, "----->SpID= %i playermode= %i", ai_NextObjectId, type);
+    c->netId = ai_NextObjectId;
     ai_NextObjectId++;
-    c[0x164] = (char)a6;
-    CF(0x18c, int) = -1;
-    CF(0x20c, int) = -1;
-    CF(0x1e4, float) = 1.0f;
-    c[8] = 100;
-    CF(0xa, unsigned short) = (unsigned short)a4;
-    c[0x166] = 0;
-    c[0x165] = (char)a7;
-    CF(0x1f4, char) = 0;
-    CF(0x190, int) = 4;
-    CF(0x194, int) = 0;
-    c[0xd] = 1;
-    kind = c[2];
-    if (kind == 3 || kind == 0x10 || kind == 0x13) {
-        CF(0x1e8, int) = 1;
-        c[0xd] = 2;
+    c->jobId = (unsigned char)a6;
+    c->picture = -1;
+    c->partyId = -1;
+    c->mood3Rate = 1.0f;
+    c->health = 100;
+    c->w00a = (unsigned short)a4;
+    c->job = 0;
+    c->title = (char)a7;
+    c->ownName[0] = 0;
+    c->v190 = 4;
+    c->v194 = 0;
+    c->level = 1;
+    if (c->kind == 3 || c->kind == 0x10 || c->kind == 0x13) {
+        c->v1e8 = 1;
+        c->level = 2;
     }
-    if (kind == 0x10) {
-        av = gv_AllocAvatar();
-        c[2] = 3;
+    if (c->kind == 0x10) {
+        av = (GVAVATAR *)gv_AllocAvatar();
+        c->kind = 3;
         if (av != 0) {
             r = util_RandomU(8);
-            CF(0x54, int) = 0x59a;
-            CF(0x1f0, int) = *(int *)av;
-            c[0x164] = av[0xd4];
-            c[9] = av[0xd5];
-            c[0xc] = av[0xd6];
-            strcpy(c + 0x30, av + 4);
-            strcpy(c + 0x40, av + 0x14);
-            strcpy(c + 0x1f4, av + 0xd7);
-            CF(0x80, int) = *(int *)(av + 0x24);
-            c[0x84] = av[0x28];
-            memcpy(c + 0x88, av + 0x2c, 0xa8);
-            CF(0x1d0, float) = util_RandomF() * 0.5f + 0.25f;
-            CF(0x18c, int) = gm_HeadIconNumber(av + 0xd7) + 0x639;
-            CF(0x1c, float) = 1000.0f;
-            CF(0x50, unsigned short) = (unsigned short)ai_NextCharNumber++;
-            CF(0x20, float) = 12.0f;
-            CF(0x14, float) = util_RandomSq() * 7.0f + 30.0f;
-            rr = util_RandomU((int)CF(0x14, float));
-            CF(0x18, float) = CF(0x1c, float);
-            CF(0x10, float) = (CF(0x1c, float) * 0.33f + rr) - CF(0x1c, float) * 0.1f;
+            c->v054 = 0x59a;
+            c->v1f0 = av->id;
+            c->jobId = av->jobId;
+            c->textVariant = av->sex;
+            c->b00c = av->b00c;
+            strcpy(c->first, av->name);
+            strcpy(c->family, av->title);
+            strcpy(c->ownName, av->ownName);
+            memcpy(c->skills, av->skills, sizeof(c->skills));
+            memcpy(c->mood, av->mood, sizeof(c->mood));
+            c->loyalty = util_RandomF() * 0.5f + 0.25f;
+            c->picture = gm_HeadIconNumber(av->ownName) + 0x639;
+            c->f01c = 1000.0f;
+            c->w050 = (unsigned short)ai_NextCharNumber++;
+            c->f014 = util_RandomSq() * 7.0f + 30.0f;
+            c->f020 = 12.0f;
+            c->f010 = util_RandomU((int)(c->f01c * 0.2)) + c->f01c * 0.33f - c->f01c * 0.1f;
+            c->f018 = c->f01c;
             if (r < 2)
-                c[0x217] = 0x58;
+                c->b217 = 0x58;
             else if (r < 4)
-                c[0x217] = 0x5c;
-            c[0x217] = (char)((((r > 5) - 1) & 0x86) + 0x3c);
-            if (CF(0x20, float) < (float)CF(0xa, unsigned short)) {
-                n = (int)CF(0x14, float);
-                f = CF(0x20, float);
-                for (; n > 0; n--)
-                    f = (f - CF(0x14, float)) + CF(0x14, float) / f;
-                if (f <= 1.0f)
-                    f = 1.0f;
-                CF(0x1c, float) = f;
-                return CF(0, unsigned short);
+                c->b217 = 0x5c;
+            c->b217 = r < 6 ? 0xc2 : 0x3c;     /* as the original: overrides the two above */
+            a = (float)c->w00a;
+            if (a > c->f020) {
+                l = c->f01c;
+                life = c->f014;
+                for (n = (int)(a - c->f020); n > 0; n--)
+                    l = life / l + (l - life);
+                if (!(l > 1.0f))
+                    l = 1.0f;
+                c->f01c = l;
             }
-            return CF(0, unsigned short);
+            return c->id;
         }
     }
-    if (c[2] == 0x15 || c[2] == 0x16) {
-        hmt_Create(c[2], a2, a4, c);
-        return CF(0, unsigned short);
+    if (c->kind == 0x15 || c->kind == 0x16) {
+        hmt_Create(c->kind, a2, (unsigned short)a4, (struct AICHAR *)c);
+        return c->id;
     }
     if (a5 != 0) {
-        kind = (unsigned char)ai_BTypes[a5[0] * 0x24d];
-        if (kind == 1)
-            CF(0x170, unsigned char *) = a5;
-        else if (kind > 3 && kind < 0x17 && kind != 10 && kind != 0xf && kind != 0x11)
-            CF(0x16c, unsigned char *) = a5;
-    }
-    c[0xd] = (c[0x166] != 0) + 1;
-    if (type != 6 && type != 7 && type < 10)
-        c[0x1b0] = (char)util_RandomU(8);
-    if (a8 == 2)
-        a8 = util_RandomU(2);
-    c[9] = (char)a8;
-    if (type < 4 || type == 0xb) {
-        if (a7 == 0) {
-            if (a6 == 0)
-                goto skip;
-            w = gm_SexForJob(a6);
+        t = (unsigned char *)ai_BTypes + a5->type * 0x24d;   /* the type record: its first byte is the kind */
+        if (*t != 1) {
+            if (*t > 3 && *t < 0x17 && *t != 10 && *t != 0xf && *t != 0x11)
+                c->bld = a5;
         } else
+            c->bld2 = a5;
+    }
+    c->level = (c->job != 0) + 1;
+    if (type != 6 && type != 7 && type < 10)
+        c->b1b0 = (unsigned char)util_Random(8);
+    if (a8 == 2)
+        a8 = util_Random(2);
+    c->textVariant = (unsigned char)a8;
+    if (type < 4 || type == 0xb) {
+        w = 2;
+        if (a7 != 0)
             w = gm_SexForTitle(a7);
+        else if (a6 != 0)
+            w = gm_SexForJob(a6);
         if (w != 2)
-            c[9] = (char)w;
+            c->textVariant = (unsigned char)w;
     }
-skip:
-    CF(0x54, int) = 0x59a;
+    c->v054 = 0x59a;
     if (gm_AllowAll != 0) {
-        CF(0x194, int) = 10;
-        CF(0x190, int) = 10;
+        c->v194 = 10;
+        c->v190 = 10;
     }
-    p1 = (unsigned short *)gm_FindChar(a2);
-    p2 = (unsigned short *)gm_FindChar(a3);
-    if (p1 == 0 || p2 == 0) {
-        c[0x164] = (char)a6;
-        c[0x166] = 0;
-        c[0x165] = (char)a7;
-        w = gm_TitleGroup(a6 & 0xff);
-        r = util_RandomU(8);
-        if (c[2] == 3) {
-            if (w == 0xb || w == 0xc) {
-                if (r > 2)
-                    c[0x217] = (char)(((r > 5) - 1 & 0x9a) - 0x3e);
-                else
-                    c[0x217] = 0x58;
-            } else if (r < 3)
-                c[0x217] = 0x3c;
-            else
-                c[0x217] = (char)((r < 6) * 4 + 0x58);
-        } else if (w == 0xb || w == 0xc)
-            c[0x217] = (char)((r > 3) * 8 + 0x4e);
-        else if (r < 3)
-            c[0x217] = 0x3e;
-        else
-            c[0x217] = (char)((r < 6) * 8 + 0x4e);
-        for (i = 0; i < 14; i++) {
-            float lo = ai_Unk5ee160[w * 0x1c + i * 2], hi = ai_Unk5ee160[w * 0x1c + i * 2 + 1];
-            CF(0x88 + i * 12, float) = (hi - lo) * util_RandomF() + lo;
-            rr = util_RandomU(10);
-            CF(0x90 + i * 12, float) = (float)rr + 900.0f;
-            CF(0x8c + i * 12, float) = CF(0x88 + i * 12, float) * 0.001f;
+    p1 = (ORDCHAR *)gm_FindChar(a2);
+    p2 = (ORDCHAR *)gm_FindChar(a3);
+    if (p1 != 0 && p2 != 0) {
+        c->level = 1;
+        if (p1->kind == 6 || p1->kind == 7 || p1->kind == 5) {
+            c->b00c = p1->b00c;
+            c->loyalty = p1->loyalty;
+            c->b217 = p1->b217;
+        } else if (p2->kind == 6 || p2->kind == 7 || p2->kind == 5) {
+            c->b00c = p2->b00c;
+            c->loyalty = p2->loyalty;
+            c->b217 = p2->b217;
+        } else if (p1->level >= p2->level) {
+            c->b00c = p1->b00c;
+            c->loyalty = p1->loyalty;
+            c->b217 = p1->b217;
+        } else {
+            c->b00c = p2->b00c;
+            c->loyalty = p2->loyalty;
+            c->b217 = p2->b217;
         }
-        f = (util_RandomF() + 2.0f) * 8.0f;
-        CF(0x124, float) = f;
-        CF(0x128, float) = f * 0.001f;
-        for (i = 0; i < 0x300; i++) {
-            ai_RelationMemory[i][CF(0, unsigned short)] = 0;
-            ai_Relations[i][CF(0, unsigned short)] = (char)(util_RandomU(0x40) - 0x20);
-            ai_Relations[CF(0, unsigned short)][i] = (char)(util_RandomU(0x40) - 0x20);
-            ai_RelationMemory[CF(0, unsigned short)][i] = 0;
-        }
-        c[0xc] = (char)util_RandomU(2);
-        CF(0x1d0, float) = util_RandomF() * 0.5f + 0.25f;
-        for (i = 0; i < 5; i++)
-            c[0x80 + i] = (char)gm_RandomAge(ai_Unk61a688[(unsigned char)c[0x164] * 6 + i]);
-        if (type != 6 && type != 7)
-            c[0xd] = ai_Unk61a688[(unsigned char)c[0x164] * 6 + 4];
-        for (i = 0; i < 8; i++)
-            CF(0x5c + i * 4, int) = -1;
-        CF(0x64, int) = a3;
-        c[0x58] = 1;
-        if (type == 6 || type == 7 || type == 5) {
-            if (ai_NextPlayerNumber > 0xf)
-                return 0xffff;
-            CF(0x50, unsigned short) = (unsigned short)ai_NextPlayerNumber | 0x8000;
-            ai_NextPlayerNumber++;
-        } else if (type < 10)
-            CF(0x50, unsigned short) = (unsigned short)ai_NextCharNumber++;
-        else
-            CF(0x50, unsigned short) = 0x7fff;
-        CF(0x1c, float) = 1000.0f;
-        CF(0x20, float) = 12.0f;
-        CF(0x14, float) = util_RandomSq() * 7.0f + 30.0f;
-        rr = util_RandomU((int)CF(0x14, float));
-        CF(0x18, float) = CF(0x1c, float);
-        CF(0x10, float) = (CF(0x1c, float) * 0.33f + rr) - CF(0x1c, float) * 0.1f;
-        strncpy(c + 0x40, txt_FamilyNames[util_RandomU(0x95)], 0xf);
-    } else {
-        c[0xc] = (char)p1[6];
-        CF(0x1d0, float) = *(float *)(p1 + 0xe8);
-        c[0x217] = *((char *)p1 + 0x217);
         for (i = 0; i < 14; i++) {
             f = util_RandomF();
-            CF(0x88 + i * 12, float) = f * *(float *)((char *)p1 + 0x88 + i * 12) + (1.0f - f) * *(float *)((char *)p2 + 0x88 + i * 12);
+            c->mood[i][0] = (1.0 - f) * p2->mood[i][0] + f * p1->mood[i][0];
             rr = util_RandomU(10);
-            CF(0x90 + i * 12, float) = (float)rr + 900.0f;
-            CF(0x8c + i * 12, float) = CF(0x88 + i * 12, float) * 0.001f;
+            c->mood[i][2] = rr + 900.0;
+            c->mood[i][1] = c->mood[i][0] * 0.001;
         }
-        f = (util_RandomF() + 2.0f) * 8.0f;
-        CF(0x124, float) = f;
-        CF(0x128, float) = f * 0.001f;
-        CF(0x60, int) = a2;
-        CF(0x64, int) = a3;
-        CF(0x68, int) = -1;
-        CF(0x6c, int) = -1;
-        CF(0x70, int) = -1;
-        CF(0x74, int) = -1;
-        CF(0x78, int) = -1;
-        CF(0x7c, int) = 0;
-        CF(0x50, unsigned short) = p1[0x28];
-        c[0x58] = (char)p1[0x2c] + 1;
-        CF(0x54, int) = *(int *)(p1 + 0x2a);
-        CF(0x1c, float) = 1000.0f;
-        CF(0x20, float) = 12.0f;
-        CF(0x14, float) = (*(float *)(p2 + 10) + *(float *)(p1 + 10)) * 0.2f + (util_RandomSq() * 7.0f + 30.0f) * 0.6f;
-        rr = util_RandomU((int)CF(0x14, float));
-        CF(0x18, float) = CF(0x1c, float);
-        CF(0x10, float) = (CF(0x1c, float) * 0.33f + rr) - CF(0x1c, float) * 0.1f;
-        strcpy(c + 0x40, (char *)(p1 + 0x20));
+        c->mood[13][0] = (util_RandomF() + 2.0) * 8.0;
+        c->mood[13][1] = c->mood[13][0] * 0.001;
+        /* the best skill of either parent */
+        mx1 = 0;
+        mx2 = 0;
+        for (k = 1; k < 5; k++) {
+            if (p1->skills[k] > p1->skills[mx1])
+                mx1 = k;
+            if (p2->skills[k] > p2->skills[mx2])
+                mx2 = k;
+        }
+        for (i = 0; i < 5; i++) {
+            f = util_RandomF();
+            if (i == mx2)
+                x = p2->skills[i];
+            else if (i == mx1) {
+                c->skills[i] = (unsigned char)(p1->skills[i] * 0.5f);
+                continue;
+            } else
+                x = (1.0 - f) * p2->skills[i] + p1->skills[i] * f;
+            c->skills[i] = (unsigned char)(x * 0.5f);
+        }
+        c->relatives[1] = a2;
+        c->relatives[2] = a3;
+        c->relatives[3] = -1;
+        c->relatives[4] = -1;
+        c->relatives[5] = -1;
+        c->relatives[6] = -1;
+        c->relatives[7] = -1;
+        /* entered as a child of both parents: the first free child place or one of a dead child (kind 0xf) */
+        for (k = 3; k < 8; k++) {
+            if (p1->relatives[k] == -1) {
+                p1->relatives[k] = c->netId;
+                break;
+            }
+            if (((ORDCHAR *)gm_FindChar(p1->relatives[k]))->kind == 0xf) {
+                p1->relatives[k] = c->netId;
+                break;
+            }
+        }
+        for (k = 3; k < 8; k++) {
+            if (p2->relatives[k] == -1) {
+                p2->relatives[k] = c->netId;
+                break;
+            }
+            if (((ORDCHAR *)gm_FindChar(p2->relatives[k]))->kind == 0xf) {
+                p2->relatives[k] = c->netId;
+                break;
+            }
+        }
+        c->pregnancy = 0;
+        if (p2->kind == 6 || p2->kind == 7 || p2->kind == 5) {
+            c->w050 = p2->w050;
+            c->generation = p2->generation + 1;
+            c->v054 = p2->v054;
+        } else {
+            c->w050 = p1->w050;
+            c->generation = p1->generation + 1;
+            c->v054 = p1->v054;
+        }
+        c->f01c = 1000.0f;
+        c->f014 = (util_RandomSq() * 7.0f + 30.0f) * 0.6f + (p2->f014 + p1->f014) * 0.2;
+        c->f020 = 12.0f;
+        c->f010 = util_RandomU((int)(c->f01c * 0.2)) + c->f01c * 0.33f - c->f01c * 0.1f;
+        c->f018 = c->f01c;
+        for (i = 0; i < 0x300; i++) {
+            ai_Relations[i][c->id] = (char)(util_Random(0x40) - 0x20);
+            ai_RelationMemory[i][c->id] = 0;
+            ai_Relations[c->id][i] = (char)(util_Random(0x40) - 0x20);
+            ai_RelationMemory[c->id][i] = 0;
+        }
+        ai_Relations[c->id][p1->id] = 0x7f - util_Random(0x20);
+        ai_Relations[p1->id][c->id] = 0x7f - util_Random(0x20);
+        ai_Relations[c->id][p2->id] = 0x7f - util_Random(0x20);
+        ai_Relations[p2->id][c->id] = 0x7f - util_Random(0x20);
+        if (p2->kind == 6 || p2->kind == 7 || p2->kind == 5)
+            strcpy(c->family, p2->family);
+        else
+            strcpy(c->family, p1->family);
+    } else {
+        c->jobId = (unsigned char)a6;
+        c->job = 0;
+        c->title = (char)a7;
+        w = gm_TitleGroup((unsigned char)a6);
+        r = util_RandomU(8);
+        if (c->kind != 3) {
+            if (w == 0xb || w == 0xc)
+                c->b217 = r >= 4 ? 0x56 : 0x4e;
+            else if (r < 3)
+                c->b217 = 0x3e;
+            else
+                c->b217 = r < 6 ? 0x56 : 0x4e;
+        } else if (w == 0xb || w == 0xc) {
+            if (r < 3)
+                c->b217 = 0x58;
+            else
+                c->b217 = r < 6 ? 0x5c : 0xc2;
+        } else if (r < 3)
+            c->b217 = 0x3c;
+        else
+            c->b217 = r < 6 ? 0x5c : 0x58;
+        for (i = 0; i < 14; i++) {
+            c->mood[i][0] = util_RandomF() * (gm_MoodRanges[w * 0x1c + i * 2 + 1] - gm_MoodRanges[w * 0x1c + i * 2])
+                + gm_MoodRanges[w * 0x1c + i * 2];
+            rr = util_RandomU(10);
+            c->mood[i][2] = rr + 900.0;
+            c->mood[i][1] = c->mood[i][0] * 0.001;
+        }
+        c->mood[13][0] = (util_RandomF() + 2.0) * 8.0;
+        c->mood[13][1] = c->mood[13][0] * 0.001;
+        for (i = 0; i < 0x300; i++) {
+            ai_Relations[i][c->id] = (char)(util_Random(0x40) - 0x20);
+            ai_RelationMemory[i][c->id] = 0;
+            ai_Relations[c->id][i] = (char)(util_Random(0x40) - 0x20);
+            ai_RelationMemory[c->id][i] = 0;
+        }
+        c->b00c = (unsigned char)util_Random(2);
+        c->loyalty = util_RandomF() * 0.5f + 0.25f;
+        if (a7 != 0 && a6 == 0) {
+            for (i = 0; i < 5; i++)
+                c->skills[i] = gm_RandomAge(gm_TitleTalents[(unsigned char)c->title].skills[i]);
+        } else {
+            for (i = 0; i < 5; i++)
+                c->skills[i] = gm_RandomAge(gm_JobTalents[c->jobId].skills[i]);
+        }
+        if (type != 6 && type != 7)
+            c->level = gm_JobTalents[c->jobId].rank;
+        memset(c->relatives, 0xff, sizeof(c->relatives));
+        c->relatives[2] = a3;
+        c->generation = 1;
+        if (p2 != 0) {
+            c->generation = p2->generation + 1;
+            for (k = 3; k < 8; k++) {
+                if (p2->relatives[k] == -1) {
+                    p2->relatives[k] = c->netId;
+                    break;
+                }
+            }
+        }
+        if (type != 6 && type != 7 && type != 5) {
+            if (type >= 10)
+                c->w050 = 0x7fff;
+            else
+                c->w050 = (unsigned short)ai_NextCharNumber++;
+        } else {
+            if (ai_NextPlayerNumber >= 0x10)
+                return 0xffff;
+            c->w050 = (unsigned short)ai_NextPlayerNumber | 0x8000;
+            rec = gm_PlayerRecord((char *)c);
+            if (rec != 0) {
+                ((float *)rec)[0x22] = -1.0f;   /* +0x88 */
+                rec[0] = c->w050;
+            }
+            if (type == 7 || type == 5) {
+                /* the first cart texture set 0x59a .. 0x5a1 no character uses */
+                for (v = 0x59a; v < 0x5a2; v++) {
+                    n = 0;
+                    for (i = 0; i < 0x300; i++) {
+                        if (ORD_CHARS[i].v054 == v) {
+                            n = 1;
+                            break;
+                        }
+                    }
+                    if (n == 0) {
+                        c->v054 = v;
+                        break;
+                    }
+                }
+            }
+            ai_NextPlayerNumber++;
+        }
+        c->f01c = 1000.0f;
+        c->f014 = util_RandomSq() * 7.0f + 30.0f;
+        c->f020 = 12.0f;
+        c->f010 = util_RandomU((int)(c->f01c * 0.2)) + c->f01c * 0.33f - c->f01c * 0.1f;
+        c->f018 = c->f01c;
+        strncpy(c->family, txt_FamilyNames[util_RandomU(0x95)], 0xf);
     }
-    if (c[9] == 0)
-        strncpy(c + 0x30, txt_MaleFirstNames[util_RandomU(0xbf)], 0xf);
+    if (c->textVariant == 0)
+        strncpy(c->first, txt_MaleFirstNames[util_RandomU(0xbf)], 0xf);
     else
-        strncpy(c + 0x30, txt_FemaleFirstNames[util_RandomU(0x70)], 0xf);
-    if (CF(0x20, float) < (float)CF(0xa, unsigned short)) {
-        n = (int)CF(0x14, float);
-        f = CF(0x20, float);
-        for (; n > 0; n--)
-            f = (f - CF(0x14, float)) + CF(0x14, float) / f;
-        if (f <= 1.0f)
-            f = 1.0f;
-        CF(0x1c, float) = f;
+        strncpy(c->first, txt_FemaleFirstNames[util_RandomU(0x70)], 0xf);
+    a = (float)c->w00a;
+    if (a > c->f020) {
+        l = c->f01c;
+        life = c->f014;
+        for (n = (int)(a - c->f020); n > 0; n--)
+            l = life / l + (l - life);
+        if (!(l > 1.0f))
+            l = 1.0f;
+        c->f01c = l;
     }
-    gm_ChooseHeadIcon(c);
-    CF(0x1b4, int) = 0;
-    CF(0x1b8, int) = 0;
-    CF(0x1bc, int) = 0;
-    CF(0x1c0, int) = 0;
-    ai_ResetJob(c);
-    kind = c[2];
-    if (kind == 3 || kind == 4 || kind == 2 || kind == 0x13)
-        c[0x82 + (util_RandomU(3) & 0xffff)] += 0x2a;
-    sprintf(buf, "-----> PlayerID = %i, PlayerName = %s", ai_NextObjectId, c + 0x30);
+    gm_ChooseHeadIcon((unsigned short *)c);
+    memset(&c->flags1b4, 0, 0x10);
+    ai_ResetJob((struct AICHAR *)c);
+    if (c->kind == 3 || c->kind == 4 || c->kind == 2 || c->kind == 0x13)
+        c->skills[2 + util_RandomU(3)] += 0x2a;
+    sprintf(buf, "----->PlayerID= %i PlayerName= %s", ai_NextObjectId, c->first);
     return (unsigned short)idx;
 }
 /* 0x5085b0, a / the divisor of the player slot k, rounded */

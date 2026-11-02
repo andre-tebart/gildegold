@@ -599,7 +599,7 @@ extern GAPDATA full_data_62a9a8[];
 extern GAPDATA full_data_62a9b4[];
 extern GAPDATA full_data_62a9cc[];
 extern unsigned char ai_OwnPlayer;
-extern const float ai_Unk5ee160[476];
+extern const float gm_MoodRanges[476];
 extern GAPDATA full_data_602568[];
 extern GAPDATA full_data_62a91c[];
 extern GAPDATA full_data_62a940[];

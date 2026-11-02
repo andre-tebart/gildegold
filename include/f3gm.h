@@ -89,7 +89,7 @@ int gm_SkillPoints(char *c, int skill);  /* 0x504e00 */
 int gm_Unk506480(char *c, int *n);  /* 0x506480 */
 unsigned gm_TakeOverCharacter(int a, int b);  /* 0x5064d0 */
 struct ORDCHAR; void gm_ForfeitEstate(struct ORDCHAR *c, char *out, int flag);  /* 0x506e70, the character c forfeits its estate after a lost fight; the announcement into out */
-unsigned short gm_CreateCharacter(int type, int a2, int a3, int a4, unsigned char *a5, unsigned a6, int a7, int a8);  /* 0x507690 */
+struct ORDBLD; unsigned short gm_CreateCharacter(int type, int a2, int a3, int a4, struct ORDBLD *a5, unsigned a6, int a7, int a8);  /* 0x507690 */
 unsigned short *gm_ObjectBuildingOwner(unsigned short *o);  /* 0x50a050 */
 int gm_ListObjectsAfter(unsigned char *b, unsigned short *proto, int *out);  /* 0x508cc0, counts (and with out lists) the objects b lists after proto */
 int gm_RemoveOwned(int *list, int id);  /* 0x5000c0 */
