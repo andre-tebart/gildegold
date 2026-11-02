@@ -6938,12 +6938,13 @@ void sv_NetworkSyncWait(unsigned fl)
     strcpy(msg, "sv_NetworkSync");
     m = ((int (*)(int, int))cm_SendExSysMessage)(0xe, msg);
     sv_FrameMask = fl;
-    dlg = sv_OpenMessageBox(ai_Unk143a3a8, 0);
+    fl |= 0x300000;
+    dlg = sv_OpenMessageBox(txt_NetworkSyncWait, 0);
     d2_SetViewEnabled(dlg, 0);
     while (cm_GetSlotState(m) == 0) {
-        if (t0 + 0x5dc < timeGetTime())
+        if (timeGetTime() > t0 + 0x5dc)
             d2_SetViewEnabled(dlg, 1);
-        sv_RunFrame(0, fl | 0x300000);
+        sv_RunFrame(0, fl);
     }
     d2_CloseView(dlg);
 }
@@ -7626,7 +7627,7 @@ extern int ai_Unkfb9064;
 extern int ai_Unkfb9068;
 extern int ai_Unkfb906c;
 extern int ai_Unkfba9c0[168];
-/* ai_Unk143a3a8: view of txt_Ptrs (build/mk_txt_views.py) */
+/* txt_NetworkSyncWait: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_PanelBtnBuild: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_PanelBtnOwn: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_PanelBtnKind1e: view of txt_Ptrs (build/mk_txt_views.py) */
