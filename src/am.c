@@ -35,7 +35,7 @@ G6CURSOR ai_NearRingCursorState = { ai_NearRing, 1 };  /* 0x60034c, the next ent
 int ai_Unk6f0470 = 0;  /* 0x6f0470, number of characters of kind 5, 6, 7 */
 AGCH ai_DuelOpponent = {0};  /* 0x6f0478 */
 G9SHOT ai_Unk6f0698 = {0};  /* 0x6f0698 */
-unsigned int ai_NearRingCount = 0;  /* 0x6f070c, the number of entries */
+int ai_NearRingCount = 0;  /* 0x6f070c, the number of entries */
 int ai_WriteActionTable = 0;  /* 0x6f2464, set: write the action table */
 char ai_DataPath[608] = {0};  /* 0x75dca0, the data path */
 /* ai_Unk7e3f80: view of ai_PlayerSlots (tools/data_views.py) */
@@ -2336,8 +2336,7 @@ static const float ag_Chance[5][6] = {
 const AIREC10 ai_Unk5ecfd8[7] = { { 0, 10, 20.0f, 40.0f }, { 1, 13, 40.0f, 60.0f }, { 2, 16, 60.0f, 80.0f }, { 3, 19, 80.0f, 100.0f }, { 4, 23, 100.0f, 120.0f }, { 5, 27, 120.0f, 140.0f }, { 6, 32, 140.0f, 160.0f } };  /* 0x5ecfd8 */
 const int ai_Unk5ed100[16] = { 1, 5, 7, 11, 13, 17, 19, 23, 745, 749, 751, 755, 757, 761, 763, 767 };  /* 0x5ed100, random steps */
 const int ai_RandomStrides[16] = { 1, 3, 5, 7, 11, 13, 17, 19, 237, 239, 243, 245, 249, 251, 253, 255 };  /* 0x5ed140, random steps */
-const int ai_Unk5ed180[] = { 1, 3, 5, 7, 11, 13, 17, 19, 23, 29 };  /* 0x5ed180, ring steps */
-const int ai_Unk5ed1a8 = 31;  /* 0x5ed1a8, the last of the ring sizes before it */
+const int ai_RingStrides[11] = { 1, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31 };  /* 0x5ed180, the strides of the near ring cursor */
 G6CURSOR *const ai_NearRingCursor = &ai_NearRingCursorState;  /* 0x5ed1b0, the code reaches the cursor through this constant pointer (mov reg, [0x5ed1b0]) */
 const G9BALL ai_Unk5edfe0[3] = { { 2000.0f, 3000.0f, 0.0599999987f }, { 2450.0f, 3850.0f, 0.0649999976f }, { 3600.0f, 5950.0f, 0.075000003f } };  /* 0x5edfe0 */
 const float ai_Unk5eee08 = 7874.0f;  /* 0x5eee08, 7874 */
@@ -10046,7 +10045,16 @@ G6RING *ai_NextNearRingEntry(void)
    columns (1), of the columns one level up or down (0x40 / 0x80, level within 1); then the applicants for the
    office p applies for (2), the other applicants (4) and, for a kind 5 character, the characters of kind 5..7 (1);
    kind 6 / 7 entries get (4 - difficulty) * 5 added to their liking; then sets the cursor to a random entry with
-   a random stride from ai_RingStrides that does not divide the count */
+   a random stride from ai_RingStrides below the count, changed by one when it divides the count
+   @deep read in full against the original (all 11 column loops, the applicants and the 768-character pass,
+   the difficulty bias, the cursor setup) and reconciled: AMTREC/AMTKIND buffers, ai_NearRing[cnt] stores,
+   unbounded no-office loops, abs(level-g) <= 1, if (cnt > 3) order, int count (idiv). Left is allocation:
+   o held in a stack slot instead of esi at 0x4a3b33 (- mov esi,[esp+0x30] / + mov [esp+0x10],eax; mov
+   esi,[esp+0x10]) and 0x4a3bbb (+ jmp; mov esi,[esp+0x10]); the constant 3 in ecx at 0x4a3d58/0x4a3d72 (+
+   mov ecx,3; cmp esi,ecx / - cmp esi,3); in the 768 pass the original walks &o->kind in [esp+0x10] and
+   keeps f in edx (0x4a4495..0x4a4567: + cmp word ptr [edi],0xffff; mov edx,1 / - mov dx,[edi]; cmp
+   dx,0xffff; mov [esp+0x10],1); 0x4a3f18 (-58) and 0x4a4393 (+65) are one loop copy the aligner pairs one
+   copy off (the 11 loops are identical up to slots); 12 branch targets differ by these size shifts */
 void ai_FillNearRing(AICHAR *c)
 {
     G5CH *p = (G5CH *)c;
@@ -10177,20 +10185,20 @@ void ai_FillNearRing(AICHAR *c)
             ai_NearRing[i].dist = (float)step + ai_NearRing[i].dist;
     }
     ai_NearRingCount = cnt;
-    if (cnt < 4) {
+    if (cnt > 3) {
+        g = 11;
+        for (sz = &ai_RingStrides[10]; g != 0; g--, sz--) {
+            if (*sz < cnt)
+                break;
+        }
+        ai_NearRingCursor->next = &ai_NearRing[util_RandomU(cnt)];
+        ai_NearRingCursor->step = ai_RingStrides[util_RandomU(g)];
+        if (ai_NearRingCursor->step > 1 && ai_NearRingCount % ai_NearRingCursor->step == 0)
+            ai_NearRingCursor->step += (util_RandomU(2) != 0 ? 2 : 0) - 1;
+    } else {
         ai_NearRingCursor->next = ai_NearRing;
         ai_NearRingCursor->step = 1;
-        return;
     }
-    g = 11;
-    for (sz = &ai_Unk5ed1a8; g != 0; sz--, g--) {
-        if (*sz < cnt)
-            break;
-    }
-    ai_NearRingCursor->next = &ai_NearRing[util_RandomU(cnt)];
-    ai_NearRingCursor->step = ai_Unk5ed180[util_RandomU(g)];
-    if (ai_NearRingCursor->step > 1 && ai_NearRingCount % ai_NearRingCursor->step == 0)
-        ai_NearRingCursor->step += (util_RandomU(2) != 0 ? 2 : 0) - 1;
 }
 /* 0x4a4680, the current prices of the items of group m->key against their base prices */
 

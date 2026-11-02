@@ -776,7 +776,7 @@ typedef struct G6CURSOR {               /* 8 bytes, the walk over ai_NearRing */
 } G6CURSOR;
 extern G6CURSOR ai_NearRingCursorState;          /* 0x60034c */
 extern G6CURSOR *const ai_NearRingCursor;        /* 0x5ed1b0, points to ai_NearRingCursorState */
-extern unsigned int ai_NearRingCount;       /* 0x6f070c, the number of entries */
+extern int ai_NearRingCount;                /* 0x6f070c, the number of entries */
 
 int ai_ExecuteDarkCorner(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49ee20 */
 G5CH *ai_PickLeastLikedRival(G5CH *p);                                                    /* 0x4a0240 */
@@ -1006,8 +1006,7 @@ void d3_PointToWorld(struct D3OBJECT *obj_, struct D3VECTOR *in, struct D3VECTOR
 #define G7_MASK(p) (((G5CH *)(p))->mask)
 
 int amt_GetKindLevel(int k);                                              /* 0x4e7c40 */
-extern const int ai_Unk5ed180[];              /* 0x5ed180, ring steps */
-extern const int ai_Unk5ed1a8;                /* 0x5ed1a8, the last of the ring sizes before it */
+extern const int ai_RingStrides[11];          /* 0x5ed180, the strides of the near ring cursor */
 int ai_EvalCurrentNeed(float *a, float *b, int i, AIPER *p);                          /* 0x4a4ae0 */
 
 char unk_Unk5020e0(int k, int c);                                      /* 0x5020e0 */
