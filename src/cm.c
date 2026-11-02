@@ -5812,7 +5812,7 @@ int ai_Unk4cce10(G17MSG *m, G17STAT *s)
         r = gv_ReserveGrave(&m->data[0]);
         break;
     case 2:
-        r = unk_Unk4f0770(&m->data[0]);
+        r = gv_ExtendGrave(&m->data[0]);
         break;
     case 3:
         r = unk_Unk4f0970(&m->data[0]);

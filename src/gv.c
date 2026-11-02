@@ -1899,38 +1899,39 @@ int unk_Unk4f0700(int *g, char *o, int v, int b, short s, int x)
     }
     return -1;
 }
-/* 0x4f0770, graveyard order type 2 (p: +4 a character id, +8 the object id, +0xc the list, +0x10 the entry, +0x11 a time to add, +0x13 a price): adds the time to the entry's short +10; with a price the
-   owner's money changes (0x500ae0 / 0x500970); 0 or a negative reason (as 0x4f0240). ROUGH */
+/* 0x4f0770, graveyard order type 2 (GVORDER m): extends the lease of the entry m->entry of the size m->size of the graveyard
+   building m->bld by m->years (GVENTRY.until); with a price the character m->chr pays it (gm_AddNegative) and the owner
+   gets the size's share of it (gv_SaleShares, gm_AddObjekt). Returns 0, or a negative reason as gv_BuryCharacter (-7 no
+   such entry) */
 
-int unk_Unk4f0770(char *p)
+int gv_ExtendGrave(GVORDER *m)
 {
-    unsigned char *o;
-    int *c;
-    char *rec;
-    short *e;
-    int ow;
+    AIBLD *bld;
+    AICHAR *c;
+    GVYARD *g;
+    GVENTRY *e;
 
-    gm_FindById(&o, 0, 0, *(int *)(p + 8));
-    if (o == 0 || *(unsigned short *)(o + 0x27) == 0xffff || ai_Chars[*(unsigned short *)(o + 0x27)] == ai_PlayerCharC)
+    gm_FindById((int *)&bld, 0, 0, m->bld);
+    if (bld == 0 || bld->owner == 0xffff || &gv_CharsT[bld->owner] == gv_PlayerAiChar)
         return -1;
-    if (ai_BTypes[o[0] * 0x24d] != 0x1d)
+    if (((AIBTYPE *)(ai_BTypes + bld->type * 0x24d))->kind != 0x1d)
         return -2;
-    rec = *(char **)(o + 0x65);
-    if (rec == 0)
+    g = bld->yard;
+    if (g == 0)
         return -3;
-    if (gv_SizeOpen(rec, *(int *)(p + 0xc)) == 0)
+    if (gv_SizeOpen((char *)g, m->size) == 0)
         return -4;
-    gm_FindById(0, 0, &c, *(int *)(p + 4));
+    gm_FindById(0, 0, (int *)&c, m->chr);
     if (c == 0)
         return -6;
-    e = (short *)gv_ListEntry(rec, *(int *)(p + 0xc), (unsigned char)p[0x10]);
+    e = (GVENTRY *)gv_ListEntry((char *)g, m->size, m->entry);
     if (e == 0)
         return -7;
-    e[5] = e[5] + *(short *)(p + 0x11);
-    if (*(int *)(p + 0x13) > 0) {
-        ow = *(int *)(ai_Unk7e3f94 + ai_OwnPlayer * 0x5e8);
-        gm_AddNegative(c[1], ow, *(int *)(p + 0x13));
-        gm_AddObjekt(*(int *)(ai_Chars[*(unsigned short *)(o + 0x27)] + 4), ow, 0);
+    e->until += m->years;
+    if (m->price > 0) {
+        gm_AddNegative(c->netId, gv_PlayerRecs[ai_OwnPlayer].currency, m->price);
+        gm_AddObjekt(gv_CharsT[bld->owner].netId, gv_PlayerRecs[ai_OwnPlayer].currency,
+                     (int)(m->price * gv_SaleShares[m->size]));
     }
     return 0;
 }
