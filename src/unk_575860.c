@@ -3125,15 +3125,7 @@ fail:
    a step table ("FTInitScriptChapter3Step*"), the steps 2, 6, 8 and 10 the position marker's path
    ("FTInitAnimChapter3Step*"), whose points depend on the screen width (800, 1024, else). The voice bank
    "TUTORIAL_CHAPTER_3.sbf" is loaded into ai_TutorialBanks[3]. The first record, or 0 after a failed allocation
-   (the records built so far freed)
-   @deep read against 0x579570..0x57aa80: equal size (5377 B, 1213 instructions both), branch targets
-   equal, every store's offset and value equal; regs 102 are rotations of the float-constant registers; the
-   four code hunks are the same constant stores with the constant in another register or as an immediate
-   and the loads scheduled around them: 0x579df9/0x579e14 (0x420c0000 / 0x428e0000 into edx/edi vs edi/edx,
-   [eax+0x28] stored from edi vs a fresh mov edx), 0x57a1b6 (the same three [esi+0x64] stores 0x43af0000 /
-   0x43cb0000 / 0x43910000, reloads interleaved in another order), 0x57a441 (0x44670000 / 0x447f0000 loaded
-   before vs after the cmp ax, 0x320). Constant-register allocation and scheduling, the same VC6 tie-break
-   family as ai_TutorialInitChapter2 */
+   (the records built so far freed) */
 
 int ai_TutorialInitChapter3(void)
 {

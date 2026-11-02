@@ -2647,8 +2647,8 @@ extern char ai_PlayerSlots[4][0x2f4];      /* 0x7e3f40, the player slots */
 int gm_FreeBuilding();                     /* 0x5012e0 */
 int gm_RemoveObject();                     /* 0x4ffff0 */
 int gm_FindById(int *bld, int *obj, int *chr, int id);
-int gm_Unk4ff950();                     /* 0x4ff950 */
-int gm_Unk4ff8c0();                     /* 0x4ff8c0 */
+int gm_GoodsStock(int p, int i);                   /* 0x4ff950 */
+int gm_GoodsDemand(int p, int i);                   /* 0x4ff8c0 */
 float gm_ItemPrice(int item, unsigned char n); /* 0x5087f0 */
 
 /* 0x4fe7f0, frees every building of the instance table (0x5012e0) and clears the table (0x100 records of 0xa9 bytes) */
@@ -2842,35 +2842,28 @@ void gm_UpdatePlayers(void)
         i++;
     } while ((int)p < (int)((unsigned)ai_PlayerSlots + 0xbd0));
 }
-/* 0x4feb60, resets the goods records of the player p (0x53 records of 0x80 bytes from 0x7d6aa0 + p * 0x2a90, the template 0x6178f8): copies the first int and the one 0x24 bytes before, then by the kind of its object prototype (+0x30 the prototype number): kinds 0x17 / 0x25 take 0x4ff950 (p, i), the others the float of 0x4ff8c0 (p, i); +8 = 0x5087f0 (prototype, 100); the float at -0x10 is copied to -0xc. ROUGH */
+/* 0x4feb60, resets the 0x55 goods records of the player p from the template gm_DefaultStock: copies v00c and the base stock, sets the stock (gm_GoodsStock) of the goods of the kinds 0x17 / 0x25 or else the demand (gm_GoodsDemand), the price (gm_ItemPrice of the item, 100), and the mean to the demand */
 
 void gm_InitPlayerRecord(int p)
 {
     int i;
-    char *rec;
-    int *src;
+    GMSTOCK *g;
+    GMSTOCK *t;
     char *pc;
-    float v;
 
-    i = 0;
-    src = ai_Unk6178f8;
-    rec = ai_Unk7d6aa0 + p * 0x2a90;
-    do {
-        pc = ai_Goods + *(unsigned short *)(rec - 0x30) * 0x41;
-        *(int *)(rec - 0x24) = src[-9];
-        *(int *)rec = src[0];
-        if (*pc == 0x17 || *pc == 0x25) {
-            *(int *)(rec + 4) = gm_Unk4ff950(p, i);
-        } else {
-            *(float *)(rec - 0x10) = (float)gm_Unk4ff8c0(p, i);
-        }
-        v = gm_ItemPrice(*(unsigned short *)(rec - 0x30), 100);
-        *(float *)(rec + 8) = v;
-        *(int *)(rec - 0xc) = *(int *)(rec - 0x10);
-        src += 0x20;
-        i++;
-        rec += 0x80;
-    } while ((int)src < ((unsigned)((unsigned)ai_Unk6178f8 + 0x2a50) + 0x30));
+    for (i = 0; i < 0x55; i++) {
+        g = (GMSTOCK *)(init_StockBlocks + p * 0x2a90) + i;
+        t = &((GMSTOCK *)gm_DefaultStock)[i];
+        pc = ai_Goods + g->item * 0x41;
+        g->v00c = t->v00c;
+        g->baseStock = t->baseStock;
+        if (*pc == 0x17 || *pc == 0x25)
+            g->stock = gm_GoodsStock(p, i);
+        else
+            g->demand = (float)gm_GoodsDemand(p, i);
+        g->price = gm_ItemPrice(g->item, 100);
+        g->mean = g->demand;
+    }
 }
 
 float gm_Unk4ffa10();                   /* 0x4ffa10 */
@@ -3366,8 +3359,8 @@ void gm_RefreshGoodsLists(unsigned p)
 }
 
 void gm_SyncMarket(unsigned p);
-int gm_Unk4ff8c0();
-int gm_Unk4ff950();
+int gm_GoodsDemand(int p, int i);
+int gm_GoodsStock(int p, int i);
 
 /* 0x4ff550, the daily price index update of the player p at the clock t: the calendar date of 0x4fe2c0 (year, month number) is looked up in the two piecewise linear tables of the player (9 points of (value, month) at +0x60 / +0x50 of the slot 0x7e3f40 + p * 0x2f4 each), interpolated into the indices [0] / [2] of the player's record (0x7d6a60, times the factor [1] / [3] / 1000); then the 0x55 goods records: the float +0x20 moves halfway to 0x4ff8c0, the own player gets 0x4ff950 into +0x34, others copy +0x30; +0x38 = the price 0x4ffa10; the counters +0x10 .. +0x1c are cleared; at the end of the calendar the market (0x4fec10, 0x4ff450) runs. ROUGH */
 void gm_UpdatePrices(unsigned p, void *t)
@@ -3428,11 +3421,11 @@ void gm_UpdatePrices(unsigned p, void *t)
     for (i = 0; i < 0x55; i++) {
         g = GM_GOODS(p, i);
         if (ai_Goods[*(unsigned short *)g * 0x41] != 0x17 && ai_Goods[*(unsigned short *)g * 0x41] != 0x25) {
-            a = gm_Unk4ff8c0(p, i);
+            a = gm_GoodsDemand(p, i);
             *(float *)(g + 0x20) = ((float)a - *(float *)(g + 0x20)) * 0.5f + *(float *)(g + 0x20);
         }
         if (p == ai_OwnPlayer)
-            *(int *)(g + 0x34) = gm_Unk4ff950(p, i);
+            *(int *)(g + 0x34) = gm_GoodsStock(p, i);
         else
             *(int *)(g + 0x34) = *(int *)(g + 0x30);
         f = gm_Unk4ffa10(p, i);
@@ -3578,7 +3571,7 @@ void gm_SyncMarket(unsigned p)
 }
 /* 0x4ff8c0, the amount of the goods record i (+8 a float rate) for the player p: 0 for the goods kinds 0x17 / 0x25; for player 0 the float 0x6f1b9c * the rate * 0.0025 + 0.5, for the others the player's first int (price index, 0x7d6a60) * the rate * 0.0005 */
 
-int gm_Unk4ff8c0(int p, int i)
+int gm_GoodsDemand(int p, int i)
 {
     char *g;
     char k;
@@ -3594,7 +3587,7 @@ int gm_Unk4ff8c0(int p, int i)
 }
 /* 0x4ff950, the stock of the goods record i of the player p: the sum over the four buildings (the group (1, 5, number) of the bytes at +0x40 + 8k, each with the float at +4 of its slot added once per match) times 0.5, scaled by the float +0x24 / +0x20 when +0x24 is not 0; 0 when the first building byte is 0. ROUGH */
 
-int gm_Unk4ff950(int p, int i)
+int gm_GoodsStock(int p, int i)
 {
     int sum;
     char *g;

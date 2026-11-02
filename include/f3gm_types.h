@@ -48,4 +48,22 @@ typedef struct GMCHARSTATS {
     float baseHealth[8];                /* 0x48, per age bucket: gm_CharacterBaseHealth summed, then the average */
 } GMCHARSTATS;
 
+/* a player's goods record (0x80 bytes; 0x55 of them at 0x7d6a70 + player * 0x2a90, gm_StockBlocks + 0x10; the
+   template gm_DefaultStock has the same layout): f3init.c's INIT_STOCK, hst.c's G12STOCK */
+typedef struct GMSTOCK {
+    unsigned short item;                /* 0x00, the goods prototype (an ai_Goods index) */
+    char pad02[2];
+    int amount;                         /* 0x04, the amount the player holds */
+    char pad08[4];
+    int v00c;                           /* 0x0c, copied from the template (gm_InitPlayerRecord); 0, 40, 80 or -1 there */
+    char pad10[0x10];
+    float demand;                       /* 0x20, the amount the market wants (gm_GoodsDemand) */
+    float mean;                         /* 0x24, the mean amount */
+    char pad28[8];
+    int baseStock;                      /* 0x30, the default stock (from the template; gm_UpdatePrices gives it to the players other than the own one as +0x34) */
+    int stock;                          /* 0x34, the stock of the kinds 0x17 / 0x25 (gm_GoodsStock) */
+    float price;                        /* 0x38, the stored price (gm_ItemPrice of the item, 100) */
+    char pad3c[0x44];
+} GMSTOCK;
+
 #endif
