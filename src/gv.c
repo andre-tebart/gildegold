@@ -3104,67 +3104,71 @@ int gv_CrimeTextLaw9to16(char *out, CRIME r, int mode)
     }
     return ok;
 }
-/* 0x4f3270, the text of a record with the type byte 0x11 .. 0x1c (texts 0x1455 + 5 * n, + 1 for mode < 2; the object name (0x4fea50 of the id at +0x21, default "Geb\xe4ude") goes in as "%1G" when found); returns 0 always. ROUGH */
+/* 0x4f3270, the text of a crime against the laws 0x11 .. 0x1c: the text 0x1455 + 5 * (law - 0x11) (+ 1 for mode <= 1)
+   with the crime's time and, by law, the victim's short id (0xfffe when not found); law 0x18 also names the place's
+   building ("%1G", "Geb\xe4ude" when there is none), its argument order by ls_GetLanguage. Returns 0. */
 
 int gv_CrimeTextLaw17to28(char *out, CRIME r, int mode)
 {
     char name[0x80] = "Geb\xe4ude";
-    int m, obj, k;
-    unsigned short *p;
-    unsigned id;
+    int text, bld;
+    unsigned short *victim;
+    unsigned short id;
 
-    m = mode < 2;
-    gm_FindById(&obj, 0, 0, r.place);
-    if (obj != 0)
-        txt_Format(name, "%1G", obj);
-    p = (unsigned short *)gm_FindChar(r.victim);
-    if (p == 0)
-        id = 0xfffe;
+    text = mode <= 1;
+    gm_FindById(&bld, 0, 0, r.place);
+    if (bld != 0)
+        txt_Format(name, "%1G", bld);
+    victim = (unsigned short *)gm_FindChar(r.victim);
+    if (victim != 0)
+        id = *victim;
     else
-        id = *p;
+        id = 0xfffe;
     switch (r.law) {
     case 0x11:
-        txt_Format(out, m + 0x1455, &r.time);
-        return 0;
+        txt_Format(out, text + 0x1455, &r.time);
+        break;
     case 0x12:
-        txt_Format(out, m + 0x145a, &r.time);
-        return 0;
+        txt_Format(out, text + 0x145a, &r.time);
+        break;
     case 0x13:
-        txt_Format(out, m + 0x145f, id, &r.time);
-        return 0;
+        txt_Format(out, text + 0x145f, id, &r.time);
+        break;
     case 0x14:
-        txt_Format(out, m + 0x1464, &r.time, id);
-        return 0;
+        txt_Format(out, text + 0x1464, &r.time, id);
+        break;
     case 0x15:
-        txt_Format(out, m + 0x1469, &r.time, id);
-        return 0;
+        txt_Format(out, text + 0x1469, &r.time, id);
+        break;
     case 0x16:
-        txt_Format(out, m + 0x146e, id, &r.time);
-        return 0;
+        txt_Format(out, text + 0x146e, id, &r.time);
+        break;
     case 0x17:
-        txt_Format(out, m + 0x1473, &r.time, id);
-        return 0;
+        txt_Format(out, text + 0x1473, &r.time, id);
+        break;
     case 0x18:
-        k = ls_GetLanguage();
-        if (k < 0)
-            return 0;
-        if (k < 2)
-            txt_Format(out, m + 0x1478, &r.time, id, name);
-        else if (k == 2)
-            txt_Format(out, m + 0x1478, &r.time, name, id);
-        return 0;
+        switch (ls_GetLanguage()) {
+        case 0:
+        case 1:
+            txt_Format(out, text + 0x1478, &r.time, id, name);
+            break;
+        case 2:
+            txt_Format(out, text + 0x1478, &r.time, name, id);
+            break;
+        }
+        break;
     case 0x19:
-        txt_Format(out, m + 0x147d, &r.time, id);
-        return 0;
+        txt_Format(out, text + 0x147d, id, &r.time);
+        break;
     case 0x1a:
-        txt_Format(out, m + 0x1482, &r.time, id);
-        return 0;
+        txt_Format(out, text + 0x1482, &r.time, id);
+        break;
     case 0x1b:
-        txt_Format(out, m + 0x1487, &r.time);
-        return 0;
+        txt_Format(out, text + 0x1487, &r.time);
+        break;
     case 0x1c:
-        txt_Format(out, m + 0x148c, &r.time, id);
-        return 0;
+        txt_Format(out, text + 0x148c, &r.time, id);
+        break;
     }
     return 0;
 }
