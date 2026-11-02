@@ -81,7 +81,7 @@ extern int gm_AllowAll;
 extern GAPDATA full_data_5f320c[];
 extern char * ai_BTypes;
 extern char * ai_Blds;
-extern const int ai_Unk5ed140[16];
+extern const int ai_RandomStrides[16];
 extern int gm_PlayerRecords[688];
 extern unsigned char ai_OwnPlayer;
 extern int d2_Unkf8aac4;
@@ -3999,7 +3999,7 @@ void he_Unk549ce0(int ev)
         b = U_I((unsigned)&ai_Blds) + idx * 0xa9;
         if (*(char *)(*(unsigned char *)b * 0x24d + U_I((unsigned)&ai_BTypes)) == 7) {
             *(int *)(ev + 0xb0) = (unsigned short)util_Random(0x100);
-            *(int *)(ev + 0xb4) = U_I((unsigned)&ai_Unk5ed140 + (unsigned short)util_Random(0x10) * 4);
+            *(int *)(ev + 0xb4) = U_I((unsigned)&ai_RandomStrides + (unsigned short)util_Random(0x10) * 4);
             memset(msg, 0, sizeof(msg));
             *(int *)(msg + 0x58) = *(int *)(b + 1);
             *(int *)(msg + 0x5c) = *(int *)(b + 1);
@@ -5815,7 +5815,7 @@ void he_Unk54ef70(int ev)
         return;
     *(int *)(ev + 0xac) = -1;
     *(int *)(ev + 0xc4) = (unsigned short)util_Random(0x100);
-    *(int *)(ev + 0xc8) = U_I((unsigned)&ai_Unk5ed140 + (unsigned short)util_Random(0x10) * 4);
+    *(int *)(ev + 0xc8) = U_I((unsigned)&ai_RandomStrides + (unsigned short)util_Random(0x10) * 4);
     *(int *)(ev + 0xc0) = 0;
     *(int *)(ev + 0xb8) = -1;
     *(int *)(ev + 0xbc) = (unsigned short)util_Random(4) + 5;
@@ -8252,7 +8252,7 @@ int he_Unk551440(unsigned char *slot, int n, int m)
     slot[9] = 9;
     if (*(int *)(ch + 0x1f0) != 0)
         slot[9] = 0x29;
-    slot[10] = *(unsigned char *)((unsigned)&ai_Unk5ed140 + (unsigned short)util_Random(0x10) * 4);
+    slot[10] = *(unsigned char *)((unsigned)&ai_RandomStrides + (unsigned short)util_Random(0x10) * 4);
     slot[11] = (unsigned char)bld;
     slot[12] = 0xff;
     ai_Unk4c52a0(*(int *)(ch + 4), tgt, -1);

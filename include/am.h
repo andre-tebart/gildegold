@@ -922,8 +922,8 @@ int ai_DecideMasterBuilder(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);        
 int ai_ExecuteMasterBuilder(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49ea90 */
 int ai_EvalDarkCorner(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2); /* 0x49ec10 */
 int ai_Unk49ed10(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49ed10 */
-extern const int ai_Unk5ed140[16];                                                   /* 0x5ed140, random steps */
-int gm_Unk50a250(int b, unsigned short *p, unsigned cnt, int *out);                       /* 0x50a250 */
+extern const int ai_RandomStrides[16];                                                   /* 0x5ed140, random steps */
+int gm_GetCreditOffers(int b, unsigned short *p, unsigned cnt, int *out);                       /* 0x50a250 */
 int ai_DecideTakeCredit(int a, struct G5CH *p, int f, struct AIARG *o1, struct AIARG *o2);                  /* 0x49eec0 */
 int ai_Unk49f370(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49f370 */
 int ai_Unk49f4f0(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2); /* 0x49f4f0 */
@@ -1012,7 +1012,7 @@ int ai_FindPartnersRandomWalk(AIPER *p, unsigned int a, int *flags, float lo, fl
 int ai_Unk4a5d30(AIPER *p, unsigned int fl, int n, unsigned short *ids, float lo, float hi, unsigned short *id); /* 0x4a5d30 */
 unsigned int ai_FindCandidates(AIPER *p, unsigned int n, unsigned int fl, float lo, float hi, unsigned short *out); /* 0x4a5ef0 */
 unsigned int ai_PickPartnerChainLevel(AIPER *p, unsigned int a, unsigned int fl, float lo, float hi, int d, unsigned short *id); /* 0x4a61d0 */
-extern const int ai_Unk5ed140[16];                                                    /* 0x5ed140, random steps */
+extern const int ai_RandomStrides[16];                                                    /* 0x5ed140, random steps */
 /* 0x4a63f0 ai_PickActionBuilding is declared in am.h */
 int ai_Unk4a6570(AIPER *p, int a, __int64 mask, float lo, float hi, unsigned char n, int *out); /* 0x4a6570 */
 void d3t_GetObjectBounds(struct D3VECTOR *mn, struct D3VECTOR *mx, struct D3OBJECT *obj);             /* 0x413150, d3_tools.c */

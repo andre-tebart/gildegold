@@ -2334,7 +2334,7 @@ static const float ag_Chance[5][6] = {
 };
 const AIREC10 ai_Unk5ecfd8[7] = { { 0, 10, 20.0f, 40.0f }, { 1, 13, 40.0f, 60.0f }, { 2, 16, 60.0f, 80.0f }, { 3, 19, 80.0f, 100.0f }, { 4, 23, 100.0f, 120.0f }, { 5, 27, 120.0f, 140.0f }, { 6, 32, 140.0f, 160.0f } };  /* 0x5ecfd8 */
 const int ai_Unk5ed100[16] = { 1, 5, 7, 11, 13, 17, 19, 23, 745, 749, 751, 755, 757, 761, 763, 767 };  /* 0x5ed100, random steps */
-const int ai_Unk5ed140[16] = { 1, 3, 5, 7, 11, 13, 17, 19, 237, 239, 243, 245, 249, 251, 253, 255 };  /* 0x5ed140, random steps */
+const int ai_RandomStrides[16] = { 1, 3, 5, 7, 11, 13, 17, 19, 237, 239, 243, 245, 249, 251, 253, 255 };  /* 0x5ed140, random steps */
 const int ai_Unk5ed180[] = { 1, 3, 5, 7, 11, 13, 17, 19, 23, 29 };  /* 0x5ed180, ring steps */
 const int ai_Unk5ed1a8 = 31;  /* 0x5ed1a8, the last of the ring sizes before it */
 const G9BALL ai_Unk5edfe0[3] = { { 2000.0f, 3000.0f, 0.0599999987f }, { 2450.0f, 3850.0f, 0.0649999976f }, { 3600.0f, 5950.0f, 0.075000003f } };  /* 0x5edfe0 */
@@ -8193,9 +8193,11 @@ int ai_ExecuteDarkCorner(G5CH *p, AIARG *s1, AIARG *s2)
     }
     return 0;
 }
-/* 0x49eec0, decide callback 0x33 (also for 0x13 / 0x10 / 0x11): when fewer jobs (0x53e400 key 0x23) run than a
-   random 0..9, picks one of the character's own buildings below its stock limit (hour-based) and a kind-5
-   building of someone else, then the best of three offers of 0x50a250 */
+#define AI_CREDIT_KINDS 0x7d4390  /* mask of the building kinds (1 << kind) a credit is taken for: 4, 7, 8, 9, 14, 16, 18..22 */
+/* 0x49eec0, decide callback of "Kredit Nehmen" (0x33; also asked by 0x13 / 0x10 / 0x11 with o1 kind 0x12, the sum
+   needed): unless the character already runs more credits (events 0x23) than a random 0..9, picks one of its own
+   buildings of the kinds AI_CREDIT_KINDS whose budget is below the hour-based limit of its class (for 0x33 only)
+   and a kind-5 building of someone else, then the best of that building's three gm_GetCreditOffers */
 
 int ai_DecideTakeCredit(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 {
@@ -8203,11 +8205,10 @@ int ai_DecideTakeCredit(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     G8OFFER rec[3];
     AIDEC d;
     AIBLD *own, *b;
-    unsigned char k;
     int i, n, h, j, best;
     float m;
 
-    lim[0] = ai_Unk5ed140[util_RandomU(0x10)];
+    lim[0] = ai_RandomStrides[util_RandomU(0x10)];
     if (((unsigned char *)p)[2] == 3)
         return 0;
     if (a != 0x33 && a != 0x13 && a != 0x10 && a != 0x11)
@@ -8221,43 +8222,41 @@ int ai_DecideTakeCredit(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     if (util_RandomU(10) < n + 1)
         return 0;
     if (a == 0x33) {
-        h = ai_TimeT.hour - 8;
-        if (h <= 0 || h >= 10)
-            h = h > 0 ? 10 : 0;
+        h = min(max(ai_TimeT.hour - 8, 0), 10);
         m = (10 - h) * 0.1f;
         m = m * m;
         lim[1] = (int)(m * 6400.0f);
         lim[2] = (int)(m * 12800.0f);
         lim[3] = (int)(m * 25600.0f);
+        i = 0x100;
         j = util_RandomU(0x100);
-        for (i = 0x100;; ) {
+        for (;;) {
             own = &ai_BldsT[j];
-            k = own->type;
-            if (k != 0 && own->owner == p->id && ((1 << ai_BTypesT[k].kind) & ((unsigned)&ai_Unk770d8c + 0x63604))
-                && own->budget < lim[ai_BTypesT[k].cap247])
+            if (own->type != 0 && own->owner == p->id && ((1 << ai_BTypesT[own->type].kind) & AI_CREDIT_KINDS)
+                && own->budget < lim[ai_BTypesT[own->type].cap247])
                 break;
             i--;
             j = (j + lim[0]) % 0x100;
             if (i == 0)
                 return 0;
         }
+        i = 0x100;
         j = util_RandomU(0x100);
-        for (i = 0x100;; ) {
+        for (;;) {
             b = &ai_BldsT[j];
-            k = b->type;
-            if (k != 0 && b->owner != p->id && ai_BTypesT[k].kind == 5)
+            if (b->type != 0 && b->owner != p->id && ai_BTypesT[b->type].kind == 5)
                 break;
             i--;
             j = (j + lim[0]) % 0x100;
             if (i == 0)
                 return 0;
         }
-        n = gm_Unk50a250(b, p, 3, rec);
+        n = gm_GetCreditOffers(b, p, 3, rec);
         if (n <= 0)
             return 0;
         gv_GetTableRecord(0xe, &d);
         for (i = 0; i < n; i++)
-            ((float *)lim)[i + 1] = rec[i].b * 0.14285715f * ((float)(d.cur - 2) / rec[i].c) * rec[i].a;
+            ((float *)lim)[i + 1] = (float)(d.cur - 2) / rec[i].c * (rec[i].b * 0.14285715f) * rec[i].a;
         m = 0.0f;
         best = -1;
         for (i = 0; i < n; i++) {
@@ -8279,27 +8278,24 @@ int ai_DecideTakeCredit(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     }
     if (o1->kind != 0x12)
         return 0;
+    i = 0x100;
     j = util_RandomU(0x100);
-    for (i = 0x100;; ) {
+    for (;;) {
         b = &ai_BldsT[j];
-        k = b->type;
-        if (k != 0 && b->owner != p->id && ai_BTypesT[k].kind == 5)
+        if (b->type != 0 && b->owner != p->id && ai_BTypesT[b->type].kind == 5)
             break;
         i--;
         j = (j + lim[0]) % 0x100;
         if (i == 0)
             return 0;
     }
-    n = gm_Unk50a250(b, p, 3, rec);
+    n = gm_GetCreditOffers(b, p, 3, rec);
     if (n <= 0)
         return 0;
     gv_GetTableRecord(0xe, &d);
-    for (i = 0; i < n; i++) {
-        if (o1->arg < (unsigned int)rec[i].a)
-            ((float *)lim)[i + 1] = (float)(d.cur - 2) / rec[i].c * (rec[i].b * 0.14285715f) * rec[i].a;
-        else
-            ((float *)lim)[i + 1] = -1.0f;
-    }
+    for (i = 0; i < n; i++)
+        ((float *)lim)[i + 1] = (unsigned int)rec[i].a > o1->arg
+            ? (float)(d.cur - 2) / rec[i].c * (rec[i].b * 0.14285715f) * rec[i].a : -1.0f;
     m = 0.0f;
     best = -1;
     for (i = 0; i < n; i++) {
@@ -8476,7 +8472,7 @@ int ai_Unk49f850(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     float sum;
 
     found = -1;
-    step = ai_Unk5ed140[util_RandomU(0x10)];
+    step = ai_RandomStrides[util_RandomU(0x10)];
     if (*(int *)((unsigned char *)p + 0x1c8) & 0x2000000)
         return 0;
     if (a != 0)
@@ -10964,7 +10960,7 @@ int ai_PickActionBuilding(AIPER *p, int a, __int64 mask, int c, float f, int *ou
     unsigned int j;
     float r;
 
-    step = ai_Unk5ed140[util_RandomU(0x10)];
+    step = ai_RandomStrides[util_RandomU(0x10)];
     q[2] = (unsigned int)mask;
     q[4] = a;
     found = 0;
@@ -11003,7 +10999,7 @@ int ai_Unk4a6570(AIPER *p, int a, __int64 mask, float lo, float hi, unsigned cha
     unsigned int j;
     float r;
 
-    step = ai_Unk5ed140[util_RandomU(0x10)];
+    step = ai_RandomStrides[util_RandomU(0x10)];
     cnt = 0;
     q[4] = a;
     q[3] = (unsigned int)(mask >> 32) | 0x80000000;

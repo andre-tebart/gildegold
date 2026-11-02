@@ -8912,7 +8912,7 @@ int gm_Unk50a1c0(unsigned o, int b, int c, int *out)
 }
 /* 0x50a250, hands the owner of the building b the person p's wage entries: up to `cnt` triples (value, kind 2 .. 7, amount) written to out (0x0 means the building has no owner / p is no person / cnt is 0; the first 3 triples of a kind 6 person's own record +0x71 are reused when they are still valid below the owner's budget 0x508660, else the whole table is built anew: from the random numbers (0x42ec00(0x1e), (6)) and the per-class tables 0x4f81c0 (0xf / 0xb) and the wage 0x50a640; a kind 6 person's table is stored back at +0x71, a kind 6 / 7 person employed by a non-6 / 7 owner is rated with 0x50c550). Returns 3 when written, 0 else. ROUGH: the float operands (the __ftol calls) are lost */
 
-int gm_Unk50a250(int b, unsigned short *p, unsigned cnt, int *out)
+int gm_GetCreditOffers(int b, unsigned short *p, unsigned cnt, int *out)
 {
     int budget, i, r, t, v;
     int *src, *dst;

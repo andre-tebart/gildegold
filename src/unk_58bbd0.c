@@ -6718,7 +6718,7 @@ void ai_Unk599aa0(int param_1, int param_2)
 
 void sv_ReleaseNamePlates(void); int d3t_PlaceAtObject(); void d2_SetBackgroundTexture(); 
 void sv_ClearNamePlates(void); struct D3OBJECT * d3if_Pick(float x, float y, int flags, int mask); int gm_GetGoodsValue(); int gm_SumListAmounts(void *list, unsigned char p);
-int gm_PlayerFactor(int a, unsigned char k); int gm_Unk50a250(); int gm_Unk50a150(); void d2_EnableViewObjects();
+int gm_PlayerFactor(int a, unsigned char k); int gm_GetCreditOffers(); int gm_Unk50a150(); void d2_EnableViewObjects();
 void he_MessageBoxQuickjump(int a1, int a2, char *text, char fl, int a5, int a6, int a7, char *jump, char *text2); void he_FreeEvent(); void d2_RadioClear(int g); int d2_CreateRadioGroup(int n, ...);
 int ai_PersonnelBook(); int ai_StorageWindow(); void ai_MasterLetterWindow(); int ai_OpenTransport();
 int ai_Unk5b5a20(); int ai_Unk5b5690(); int ai_AmountRowStatus(); int ai_AmountRow();
@@ -7282,7 +7282,7 @@ void ai_Unk59ad60(int param_1)
 
     for (i = 0; i < 15; i++)
         offers[i] = 0;
-    gm_Unk50a250(param_1, (char *)(unsigned)&ai_Chars + U_W((unsigned)&ai_PlayerId) * 0x21c, 3, found);
+    gm_GetCreditOffers(param_1, (char *)(unsigned)&ai_Chars + U_W((unsigned)&ai_PlayerId) * 0x21c, 3, found);
     n = 0;
     for (i = 0; i < 3; i++) {
         if (found[i * 3] > 0) {
