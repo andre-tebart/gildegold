@@ -16655,7 +16655,7 @@ int ai_Unk5bdb60(int param_1, int param_2, int param_3, int param_4, int param_5
     return 0;
 }
 
-int unk_Unk4f4130(); float gm_CharacterHealth(); int amt_HasColumn7Holder(); int d2_WinCreateSlider();
+int gv_HeldCrimeCount(); float gm_CharacterHealth(); int amt_HasColumn7Holder(); int d2_WinCreateSlider();
 void d2_SetObjWidth(int obj, short w); int ai_Unk4e70f0(); int amt_GetColumnOffices(int col, int max, struct AMTREC *out);
 
 /* 0x5be1d0, the status of a special-amount record (100 B): the record id +4, the kind +0xc, the +0x1c8
@@ -16686,7 +16686,7 @@ int ai_AmountRowStatus(int *param_1)
         }
     }
     param_1[9] = 0;
-    if (unk_Unk4f4130(U_I(chr + 4), U_W((unsigned)&ai_PlayerId)) < 1) {
+    if (gv_HeldCrimeCount(U_I(chr + 4), U_W((unsigned)&ai_PlayerId)) < 1) {
         car = he_FindEvent(1, 0, 0x18);
         while (car != 0) {
             if (U_W(car + 8) == U_W((unsigned)&ai_PlayerId) && U_I(chr + 4) == U_I(car + 0xc4)) {

@@ -3401,27 +3401,31 @@ int gv_HeldCrimeIdsOf(int culprit, int *out, unsigned t)
     }
     return n;
 }
-/* 0x4f4130, the count of 0x4f3fe0 without the lists (stops at 0x21) */
+/* 0x4f4130, the count of gv_HeldCrimesOf without the list: how many crimes of the culprit the character t (low word)
+   holds evidence of, stopping past 0x20; 0 when the culprit does not exist */
 
-int unk_Unk4f4130(int p, unsigned t)
+int gv_HeldCrimeCount(int culprit, unsigned t)
 {
-    int n, k, id;
-    int *q;
+    int n, i, k;
+    ORDCHAR *ch;
 
     n = 0;
-    if (gm_FindChar(p) == 0)
+    if (gm_FindChar(culprit) == 0)
         return 0;
-    if ((t & 0xffff) * 0x21c != -(unsigned)&ai_Chars) {
-        id = *(int *)(ai_Chars[t & 0xffff] + 4);
-        q = (int *)(unk_Tab91b6e0 + 4);
-        while (q[-1] != id || (k = gv_FindCrime(*q)) == -1 || *(int *)(gv_Graveyard + 0x16 + k * 0x2d) != p || (n++, n < 0x21)) {
-            q += 2;
-            if ((int)q > ((unsigned)unk_Tab91b6e0 + 0x4003))
-                return n;
+    ch = &ORD_CHARS[(unsigned short)t];
+    if (ch == 0)
+        return 0;
+    for (i = 0; i < 0x800; i++) {
+        if (ai_Evidence[i][0] == ch->netId) {
+            k = gv_FindCrime(ai_Evidence[i][1]);
+            if (k != -1 && gv_CrimesT[k].culprit == culprit) {
+                n++;
+                if (n > 0x20)
+                    break;
+            }
         }
-        return n;
     }
-    return 0;
+    return n;
 }
 /* 0x4f41b0, for the character c: goes over the 512 records of 0x91f700 (0x2d bytes; int +0x25 != 0, int +0x16 = the accused character id != c's) whose pair (c's id, record id) is not yet in the table 0x91b6e0, counts them per accused
    character (up to 0x300), and returns the character with the most records; ids[] gets the ids (+0) of its records (up to max), *cnt their number; 0 when there is none. ROUGH */
