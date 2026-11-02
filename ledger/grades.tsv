@@ -1469,7 +1469,7 @@ exe	0x004817a0	ai_CalcAngriff	ai	draft	draft	deep
 exe	0x00481ef0	ai_CalcMeisterDiebe	ai	draft	draft	deep	
 exe	0x00482f00	ai_CalcMeisterRaeuber	ai	draft	readable	deep	
 exe	0x004836a0	ai_CalcMeisterBank	ai	byte	draft	deep	
-exe	0x00483a60	ai_Unk483a60	ai	shape	draft	deep	byte+draft -> shape+draft at e0d2830: ai.h: AIJOB 0xb4..0xe7 became a union of its words and the kind-specific AITIME views (end6c / end8f / start61 / end48) that sv_RefreshPanel reads, instead of (AITIME *) casts of int fields; truer layout. ai_Unk483a60 reads only AIJOB.unkac, and the fall is a pure stack-slot swap of two spilled registers ([esp+0x10] <-> [esp+0x18]), a VC6 declaration-set tie-break: the match was no evidence of its source
+exe	0x00483a60	ai_Unk483a60	ai	byte	draft	deep	
 exe	0x00483d30	ai_StartBuildingWork	ai	shape	draft	deep	
 exe	0x00483ee0	ai_EndWorkerPose	ai	byte	readable		
 exe	0x00483fc0	ai_Unk483fc0	ai	draft	draft	deep	
@@ -2746,22 +2746,22 @@ exe	0x004eee00	gv_StartShot	gv	byte	readable
 exe	0x004eeee0	unk_Unk4eeee0	gv	byte	draft		
 exe	0x004eef50	gv_SalvoCharge	gv	byte	readable		
 exe	0x004ef000	gv_CannonKind	gv	shape	readable		
-exe	0x004ef090	unk_Unk4ef090	gv	draft	draft		
-exe	0x004ef170	unk_Unk4ef170	gv	draft	draft		
-exe	0x004ef260	unk_Unk4ef260	gv	draft	draft		
+exe	0x004ef090	gv_CannonCost	gv	byte	readable		
+exe	0x004ef170	gv_BuildingCannon	gv	byte	readable		
+exe	0x004ef260	gv_CannonScatter	gv	byte	readable		
 exe	0x004ef330	unk_Unk4ef330	gv	byte	draft		
-exe	0x004ef3c0	unk_Unk4ef3c0	gv	draft	draft		
+exe	0x004ef3c0	gv_GraveCount	gv	byte	readable		
 exe	0x004ef440	unk_Unk4ef440	gv	byte	draft		
-exe	0x004ef470	unk_Unk4ef470	gv	draft	draft		
-exe	0x004ef4f0	unk_Unk4ef4f0	gv	byte	draft		
-exe	0x004ef570	unk_Unk4ef570	gv	draft	draft		
-exe	0x004ef6b0	gv_EntryIndex	gv	draft	draft		
+exe	0x004ef470	gv_EntryCount	gv	byte	readable		
+exe	0x004ef4f0	gv_SizeOpen	gv	byte	draft		
+exe	0x004ef570	gv_ListEntry	gv	byte	readable		
+exe	0x004ef6b0	gv_EntryIndex	gv	byte	readable		
 exe	0x004ef710	unk_Unk4ef710	gv	byte	draft		
 exe	0x004ef740	gv_EntrySameId	gv	byte	readable		
 exe	0x004ef760	gv_EntryIsFree	gv	byte	readable		
 exe	0x004ef770	gv_EntryIsUsed	gv	byte	readable		
 exe	0x004ef780	gv_EntryHasId	gv	byte	readable		
-exe	0x004ef7c0	gv_FindEntry	gv	draft	draft		
+exe	0x004ef7c0	gv_FindEntry	gv	byte	readable		
 exe	0x004ef900	gv_LoadGraveyard	gv	byte	readable		
 exe	0x004ef930	unk_Unk4ef930	gv	draft	draft		
 exe	0x004ef9c0	unk_Unk4ef9c0	gv	draft	draft		

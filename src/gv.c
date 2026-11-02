@@ -8,7 +8,11 @@
    each that are SHOTREC cannon balls (unk_5d33b0.h) fired with gv_FireShots (message 0x67, GVSHOTMSG), started by
    gv_StartShot, moved by gv_UpdateEffects and exploded by gv_ExplodeShot; the save game writes gv_LastTime, the cannon
    scene state gv_Cannon (cannon scene of unk_575860) and the slots field by field.
+   A graveyard building (kind 0x1d) holds a GVYARD (AIBLD.yard): four grave sizes, each a list of GVENTRY entries opened by
+   GVYARD.open, counted per type level by gv_ListEntries / gv_EntryCount / gv_GraveCount and walked by gv_FindEntry.
    Open: the avatars, the effect slots and the graveyard may be several modules sharing one .data block.
+   Open: the graveyard functions past gv_FindEntry still read GVYARD / GVENTRY through raw offsets; gv_FindEntry's
+   callback is an unprototyped int (*)() (its callbacks take differing pointer types).
    Open: GVEFFPART duplicates SHOTREC and UNKHITS-style copies remain (am.h G9KIND / G9CANNON view gv's records); gv.h
    does not include unk_5d33b0.h, so the parts are cast to SHOTREC.
    unit of rea 8cef7d5b (src/game/gv.c); boundaries in decl/text.dcl */
