@@ -2737,13 +2737,13 @@ exe	0x004eded0	gv_FindEffect	gv	byte	readable
 exe	0x004edf10	gv_ReleaseEffect	gv	byte	readable		
 exe	0x004edf80	gv_UpdateEffects	gv	draft	readable	deep	
 exe	0x004ee360	gv_ExplodeShot	gv	draft	readable	deep	
-exe	0x004eea70	unk_Unk4eea70	gv	byte	draft		
+exe	0x004eea70	gv_RequestEffectLoad	gv	byte	draft		
 exe	0x004eeaa0	gv_ReserveEffect	gv	byte	readable		
 exe	0x004eeb00	gv_StopEffect	gv	byte	readable		
 exe	0x004eeb70	gv_FireShots	gv	shape	readable	deep	
 exe	0x004eedd0	gv_GetEffect	gv	byte	readable		
 exe	0x004eee00	gv_StartShot	gv	byte	readable		
-exe	0x004eeee0	unk_Unk4eeee0	gv	byte	draft		
+exe	0x004eeee0	gv_SetEffectCallback	gv	byte	draft		
 exe	0x004eef50	gv_SalvoCharge	gv	byte	readable		
 exe	0x004ef000	gv_CannonKind	gv	shape	readable		
 exe	0x004ef090	gv_CannonCost	gv	byte	readable		
@@ -3515,7 +3515,7 @@ exe	0x0053e840	he_Unk53e840	he	shape	draft
 exe	0x0053e8b0	he_Unk53e8b0	he	draft	draft		
 exe	0x0053eba0	he_Unk53eba0	he	byte	draft		
 exe	0x0053ebe0	he_RemoveGfxInfos	he	byte	draft		
-exe	0x0053ec10	he_Unk53ec10	he	byte	draft		
+exe	0x0053ec10	he_ShowObjectInfos	he	byte	readable		
 exe	0x0053ec40	he_Unk53ec40	he	byte	draft		
 exe	0x0053ed40	he_Unk53ed40	he	byte	draft		
 exe	0x0053ed70	he_Unk53ed70	he	byte	draft		
@@ -4024,18 +4024,18 @@ exe	0x0057dc50	ai_AlchemistTrainShareWindow	unk_575860	draft	readable	deep
 exe	0x0057de60	ai_AlchemistFundWindow	unk_575860	draft	readable	deep	
 exe	0x0057e0e0	ai_AlchemistRescheduleWindow	unk_575860	byte	readable		
 exe	0x0057e230	ai_ShotTableStore	unk_575860	byte	readable		
-exe	0x0057e270	ai_Unk57e270	unk_575860	draft	draft		
-exe	0x0057ec40	ai_Unk57ec40	unk_575860	draft	draft		
-exe	0x0057f0e0	ai_Unk57f0e0	unk_575860	draft	draft		
-exe	0x0057f5d0	ai_Unk57f5d0	unk_575860	byte	draft		
-exe	0x0057f620	ai_Unk57f620	unk_575860	draft	draft		
-exe	0x0057f690	ai_Unk57f690	unk_575860	draft	draft		
-exe	0x0057f890	ai_Unk57f890	unk_575860	draft	draft		
+exe	0x0057e270	ai_CannonScene	unk_575860	draft	draft	deep	
+exe	0x0057ec40	ai_CannonAim	unk_575860	draft	draft		
+exe	0x0057f0e0	ai_CannonCamera	unk_575860	draft	draft		
+exe	0x0057f5d0	ai_CannonAxes	unk_575860	byte	draft		
+exe	0x0057f620	ai_CannonFireCheck	unk_575860	draft	draft		
+exe	0x0057f690	ai_CannonShotResults	unk_575860	draft	draft		
+exe	0x0057f890	ai_CannonPanel	unk_575860	draft	draft		
 exe	0x0057fdb0	ai_Unk57fdb0	unk_575860	shape	draft		
-exe	0x0057fdd0	ai_Unk57fdd0	unk_575860	draft	draft		
-exe	0x00580160	ai_Unk580160	unk_575860	draft	draft		
+exe	0x0057fdd0	ai_CannonSwitchAnim	unk_575860	draft	draft		
+exe	0x00580160	ai_CannonExplosion	unk_575860	draft	draft		
 exe	0x00580a50	ai_Unk580a50	unk_575860	byte	draft		
-exe	0x00580a90	ai_Unk580a90	unk_575860	draft	draft		
+exe	0x00580a90	ai_CannonBuildPanel	unk_575860	draft	draft		
 exe	0x00580fe0	ai_Unk580fe0	unk_575860	byte	draft		
 exe	0x00581020	ai_Unk581020	unk_575860	draft	draft		
 exe	0x00581400	ai_Unk581400	unk_575860	draft	draft		

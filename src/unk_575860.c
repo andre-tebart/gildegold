@@ -9,7 +9,8 @@
    its own. The original file name is unknown (no leaked tag). Names are ours.
    Open: type debt - TUTSTATE / TUTRUN / TUTSTEP / TUTMARK are typed in unk_575860.h and the tutorial code up
    to ai_TutorialWindow uses them; the later functions still reach the state record through the S / U_I
-   byte-offset macros; the message (AIMSG) and contact-list records are still accessed by byte offset.
+   byte-offset macros; the message (AIMSG) and contact-list records are still accessed by byte offset; the cannon scene
+   struct (CANNONSCENE, CANNONREC) is typed in ai_CannonScene only, the other ai_Cannon* functions address it by byte offset.
    Open: sv_CheckGoodAmount's third parameter: the original's callers push the player byte unextended (a char
    parameter, kept as the cast macro sv_CheckGoodAmountB), sv.h / sv.c declare it unsigned and mask it.
    Open: ai_ClockMs is volatile in the original (ai_TutorialTick reloads it after every read, byte-matched through
