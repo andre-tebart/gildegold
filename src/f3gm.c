@@ -427,6 +427,7 @@ void ai_SendNeedBlock(void);                     /* 0x4c4a20 */
 void unk_Unk4fb0e0();                   /* 0x4fb0e0 */
 int gm_FindRichest(short *id, int *rate);
 #define I50A640 ((int (*)())gm_GetWorth)
+extern char * cm_FieldObject;                /* 0xa68d2c */
 
 /* 0x4fa580, the upkeep of the characters: rate = gm_PlayerFactor (0xe - the decision 5's value, the own player); for
    every character in use of the kind 0 with a home (bld2): in debt (gm_GetGoodsValue negative), one without a
@@ -575,55 +576,52 @@ void unk_Unk4fa9b0(void)
     }
     gm_NetMsgCount = 0;
 }
-/* 0x4faa00, for each active character: the three ints at +0x1d8 .. summed with the 0x50a640 value of the character (the best one is found by 0x4fad60), written through 0x4c3c00 (4, 1, ..) to +0x1d4 .. and +0x1e0, and the float messages 0x4c4ac0 (0x1e4) / 0x4c3eb0. ROUGH, the float code is far off */
+/* 0x4faa00, the worth mood of the characters: for every character in use (kind below 10, alive) shifts the worth
+   history down (worth[0 .. 2] = worth[1 .. 3]) and stores the current worth (gm_GetWorth) in worth[3], as one field
+   block; moves mood3Rate halfway to the mean of min (the history's average / the worth, 1) and 1 - the worth / the
+   richest character's (gm_FindRichest); lowers the mood 3 value by 5 percent. Pumps the net after every 0x40
+   messages */
 
-void unk_Unk4faa00(void)
+void gm_UpdateWorthMood(void)
 {
     short id;
     int top;
-    char *c;
-    int i, sum, a, loc;
-    float cnt, fv, q;
-    double lim;
-    int *pi;
+    ORDCHAR *c;
+    int i, k, sum, cnt, avg, a, v;
+    float q, lim;
 
     gm_FindRichest(&id, &top);
     gm_NetMsgCount = 0;
-    for (c = ai_Chars[0]; (int)c < (unsigned)((unsigned)ai_Chars + 0x65400); c += 0x21c) {
+    for (i = 0; i < 0x300; i++) {
+        c = &ORD_CHARS[i];
         if (gm_NetMsgCount > 0x40) {
             sv_PumpNet();
             gm_NetMsgCount = 0;
         }
-        if (*(short *)c != -1 && (unsigned char)c[2] < 10 && c[8] != 0) {
-            sum = 0;
-            cnt = 0.0f;
-            a = I50A640(*(short *)c);
-            cm_BeginFieldBlock(c, *(int *)(c + 4));
-            pi = (int *)(c + 0x1d8);
-            for (i = 0; i < 3; i++) {
-                loc = *pi;
-                sum += loc;
-                cnt = (float)((int)cnt + (loc != 0));
-                cm_AddFieldDelta(4, 1, 0x1d4 + i * 4 + (int)c, &loc);
-                pi++;
-            }
-            cnt = (float)((a + sum) / ((int)cnt + 1));
-            cm_AddFieldDelta(4, 1, 0x1e0 + (int)c, &a);
-            fv = (float)(int)cnt / (float)a;
-            if (fv >= 1.0f)
-                lim = 1.0;
-            else
-                lim = (double)fv;
-            q = 1.0f - (float)a / (float)top;
-            cm_SendFieldDeltas();
-            gm_NetMsgCount++;
-            cm_SendFloatDelta(*(int *)(c + 4), 0x1e4, -(*(float *)(c + 0x1e4) - ((float)lim + q) * 0.5));
-            q = -(*(float *)(c + 0xb4) - *(float *)(c + 0xb4) * 0.95);
-            ai_BeginNeedBlock(c);
-            ai_AddNeedDelta(3, q);
-            ai_SendNeedBlock();
-            gm_NetMsgCount++;
+        if (c->id == 0xffff || c->kind >= 10 || !(c->health > 0))
+            continue;
+        sum = 0;
+        cnt = 0;
+        a = gm_GetWorth(c->id);
+        cm_BeginFieldBlock((char *)c, c->netId);
+        for (k = 0; k < 3; k++) {
+            v = c->worth[k + 1];
+            sum += v;
+            cnt += v != 0;
+            cm_AddFieldDelta(4, 1, (short)((char *)&c->worth[k] - cm_FieldObject), &v);
         }
+        avg = (a + sum) / (cnt + 1);
+        cm_AddFieldDelta(4, 1, (short)((char *)&c->worth[3] - cm_FieldObject), &a);
+        lim = (float)avg / (float)a < 1.0 ? (float)avg / (float)a : 1.0;
+        q = 1.0f - (float)a / top;
+        cm_SendFieldDeltas();
+        gm_NetMsgCount++;
+        cm_SendFloatDelta(c->netId, 0x1e4, -(c->mood3Rate - (float)((lim + q) * 0.5)));
+        q = -(c->mood[3][2] - c->mood[3][2] * 0.95);
+        ai_BeginNeedBlock((char *)c);
+        ai_AddNeedDelta(3, q);
+        ai_SendNeedBlock();
+        gm_NetMsgCount++;
     }
     gm_NetMsgCount = 0;
 }
@@ -1282,7 +1280,6 @@ go:
     return *(int *)(c + 0x184);
 }
 
-extern char * cm_FieldObject;                /* 0xa68d2c */
 extern char ch_EmptyName[];             /* 0x631090 */
 int gm_Unk5075c0();                     /* 0x5075c0 */
 void cm_SendKillCharacter(int a, int b);                     /* 0x4c4e00 */
@@ -3170,7 +3167,6 @@ char *gm_Query(void *list, int n, ...)
 }
 
 extern struct AIBLD *ai_MarketBuilding;                /* 0x6f1bc8, the market building (group 1, 5, 10) */
-extern char * cm_FieldObject;                /* 0xa68d2c */
 int cm_AddFieldValues(unsigned char size, unsigned char n, unsigned short field, void *v);                     /* 0x4c3d00 */
 extern char gm_StockBlocks[0xd4d0];
 unsigned ai_Unk6118a8[] = { 0, 1735292266, 1430937445, 4540238, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 0 };  /* 0x6118a8 */

@@ -65,7 +65,7 @@ void gm_DailyCharacters(void);  /* 0x4fc920, the daily step of all characters */
 void gm_UpdatePlayers(void);  /* 0x4feb30 */
 void gm_CharacterUpkeep(void);  /* 0x4fa580, the daily upkeep of the characters */
 void unk_Unk4fa9b0(void);  /* 0x4fa9b0 */
-void unk_Unk4faa00(void);  /* 0x4faa00 */
+void gm_UpdateWorthMood(void);  /* 0x4faa00 */
 float gm_JobWage(char *c, int k, int a, int b);  /* 0x508740, the wage of a job (a) or title (b) of the building kind k for the character c */
 int gm_BuildingBalance(unsigned char *b, unsigned id, int *out);  /* 0x508d80, the income / cost summary of the building b for the owner id */
 unsigned *gm_NameRecord(int kind, int id);  /* 0x4fb330, the name record (0x44 bytes, the name at +4) with the id in the table of the sex kind (0 / 1), or the first free one */

@@ -4194,7 +4194,7 @@ void main_BeginPlayerRound(void)
         gm_DailyCharacters();
         sv_PumpNet();
         Sleep(100);
-        unk_Unk4faa00();
+        gm_UpdateWorthMood();
         sv_PumpNet();
         Sleep(100);
         gm_EndDayIncomes(3);

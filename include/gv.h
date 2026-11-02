@@ -110,7 +110,9 @@ typedef struct ORDCHAR {
     unsigned char level;            /* 0x00d, the level the level orders test */
     char pad00e[0x4e];
     int partner;                    /* 0x05c, the partner character id, -1 = none */
-    char pad060[0x104];
+    char pad060[0x28];
+    float mood[14][3];              /* 0x088, the mood triples (a, b, value) (ai.h AICHAR.mood) */
+    char pad130[0x34];
     unsigned char jobId;            /* 0x164, the title / job id gm_TitleGroup groups (ai.h AICHAR.jobId) */
     char title;                     /* 0x165, the title rank (ai.h AICHAR.title) */
     unsigned char job;              /* 0x166, the profession id the job orders test (text 0x253 + job) */
@@ -126,7 +128,10 @@ typedef struct ORDCHAR {
     char pad1ac[0x1c];
     int flags1c8;                   /* 0x1c8, order flags: 0x100 answer, 0x200 / 0x80000 / 0x100000 / 0x200000 / 0x400000 */
     int flags1cc;                   /* 0x1cc, privilege flags: 0xe00 */
-    char pad1d0[0x21c - 0x1d0];
+    char pad1d0[4];
+    int worth[4];                   /* 0x1d4, the character's worth (gm_GetWorth) of the last rounds, worth[3] the newest (gm_UpdateWorthMood shifts it) */
+    float mood3Rate;                /* 0x1e4, scales the base growth of mood need 3 (ai.h AICHAR.mood3Rate) */
+    char pad1e8[0x21c - 0x1e8];
 } ORDCHAR;
 #define ORD_CHARS ((ORDCHAR *)ai_Chars)
 #define ORD_CHAR(p) ((ORDCHAR *)(p))   /* a raw character record as the order handlers read it */
