@@ -57,7 +57,7 @@ typedef struct TUTSTATE {               /* the tutorial state record (0x6fa060, 
     struct SBSAMPLE *voice;             /* 0x14, the playing voice */
     TUTRUN *run;                        /* 0x18, the current run record */
     TUTHOST *host;                      /* 0x1c */
-    int unk20;                          /* 0x20 */
+    int continueObj;                    /* 0x20, the intro window's control 3 text object (0x577740; text 0x7d): a click on it answers the intro (ai_TutorialIntroAnswered), -1 = none */
     int text1Win;                       /* 0x24, the first text window */
     int text1Shown;                     /* 0x28 */
     int statusShown;                    /* 0x2c, the status text of the states 0xa / 0xb is shown */

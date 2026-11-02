@@ -2074,51 +2074,53 @@ int ai_TutorialShowRunText(void)
     }
     return 0;
 }
-/* 0x577a00, the tutorial's escape check: -4 without a player / run record; 0 while the scene 0x6f262c is not a
-   record of the type byte 0x87, while the window / object is not the one in S+0x20 (or, with 0xf8a668 == -1, while
-   the last key is not 0x1c); else the window S+0x14 is released (0x426f20 / 0x427290) and 1 answers */
+/* 0x577a00, asks whether the player answered the tutorial's intro message: -4 without the host's event slot; 0
+   while the active event window does not show an event of the kind 0x87 (the intro) or it is not answered yet;
+   answered by a click on its continue object (continueObj) or, without a click, by the key 0x1c (Return) - then
+   the voice still playing is stopped and 1 answers
+   @deep read against the original in full and rewritten on TUTSTATE / HEEVSLOT / AIJOB (no null check of
+   he_ActiveSlot itself, as the original; the shared return 0 through a label gives the original's jmp into
+   the common jne). Only allocation is left: at 0x577a4f the voice pointer is loaded into eax (ours: mov
+   eax, [ecx+0x14]; test eax, eax; push eax) where the original reuses ecx (mov ecx, [ecx+0x14]; test ecx,
+   ecx; push ecx); diffclass calls the first two lines code only because the destination register is also
+   the base register on the original's side, 45 vs 45 instructions, 3 bytes differ */
 
 int ai_TutorialIntroAnswered(void)
 {
-    char *st;
-
-    st = S;
-    if (!*(int *)(st + 0x1c))
+    if (!ai_Tutorial->host)
         return -4;
-    if (!*(int *)(*(char **)(st + 0x1c) + 0x74))
+    if (!ai_Tutorial->host->slot)
         return -4;
-    if (!U_I((unsigned)&he_ActiveSlot))
-        return 0;
-    if (!*(char **)U_I((unsigned)&he_ActiveSlot) || *(unsigned char *)*(char **)U_I((unsigned)&he_ActiveSlot) != 0x87)
-        return 0;
+    if (he_ActiveSlot->ev && he_ActiveSlot->ev->kind == (char)0x87) {
 #ifdef REA_START
-    /* REA_START=tutorial (`uv run play|dbg --start tutorial`): accept the tutorial's intro message (the 0x87
-       event, whose "Weiter" text object 0x577740 stores in S+0x20) without a mouse click, so a run without GUI
-       automation gets past it. Jump straight to the answer like the keyboard arm does - forging a click in
-       d2_ClickedId / d2_PointerObj would leak the phantom click into the rest of the frame. Without the flag
-       the message waits for the real click / Return. */
-    {
-        char *rea = getenv("REA_START");
-        if (rea != 0 && strcmp(rea, "tutorial") == 0)
-            goto answered;
-    }
+        /* REA_START=tutorial (`uv run play|dbg --start tutorial`): accept the tutorial's intro message (the 0x87
+           event, whose "Weiter" text object 0x577740 stores in S+0x20) without a mouse click, so a run without GUI
+           automation gets past it. Jump straight to the answer like the keyboard arm does - forging a click in
+           d2_ClickedId / d2_PointerObj would leak the phantom click into the rest of the frame. Without the flag
+           the message waits for the real click / Return. */
+        {
+            char *rea = getenv("REA_START");
+            if (rea != 0 && strcmp(rea, "tutorial") == 0)
+                goto answered;
+        }
 #endif
-    if (U_I((unsigned)&d2_ClickedId) != -1) {
-        if (U_I((unsigned)&d2_PointerObj) != *(int *)(st + 0x20))
-            return 0;
-    } else {
-        if (*(unsigned char *)(unsigned)&kb_Last != 0x1c)
-            return 0;
-    }
+        if (d2_ClickedId != -1) {
+            if (d2_PointerObj != ai_Tutorial->continueObj)
+                goto unanswered;
+        } else if (kb_Last != 0x1c)
+            goto unanswered;
 #ifdef REA_START
 answered:
 #endif
-    if (U_I(st + 0x14)) {
-        if (sb_IsPlaying(U_I(st + 0x14)))
-            sb_Stop(U_I(st + 0x14), 0);
-        U_I(st + 0x14) = 0;
+        if (ai_Tutorial->voice) {
+            if (sb_IsPlaying(ai_Tutorial->voice))
+                sb_Stop(ai_Tutorial->voice, 0);
+            ai_Tutorial->voice = 0;
+        }
+        return 1;
     }
-    return 1;
+unanswered:
+    return 0;
 }
 /* 0x577a90, no return value: nothing without the run record or its text +0x14; else the text window S+0x24 is
    rewritten (0x52e330, control 0 with the text 0x602568 and the record text +0x14, control 1 with 0x475590) and,
