@@ -772,7 +772,7 @@ exe	0x0043ce10	d3_InitSurf	d3_engine	byte	readable
 exe	0x0043ce60	d3_InitObject	d3_engine	shape	draft	deep	
 exe	0x0043cfb0	d3_AddObjectDrawData	d3_engine	byte	readable		
 exe	0x0043d0e0	d3_Unlink	d3_engine	byte	readable		
-exe	0x0043d180	d3_CloneObject	d3_engine	shape	draft	deep	byte+draft -> shape+draft at 5aad3a2: AIBTYPE (ai.h) gained its evidenced field maxLevel at 0x248 in place of padding (ai_DecideUpgradeGuild reads it, no raw byte access); d3_engine includes ai.h and VC6 /O2 reorders 8 instructions of d3_CloneObject (order hunk only) on that declaration-set change alone, with pad248 restored it is byte again: a tie-break, no evidence of the original's source [waits for: the d3_engine head's declaration set (which headers d3_engine really includes)]
+exe	0x0043d180	d3_CloneObject	d3_engine	byte	draft	deep	
 exe	0x0043d430	d3_SetObjectAlpha	d3_engine	shape	readable	deep	
 exe	0x0043d630	d3_SetAlphaCB	d3_engine	byte	readable		
 exe	0x0043d690	d3_SetAlpha	d3_engine	byte	readable		
@@ -1709,35 +1709,35 @@ exe	0x0049eec0	ai_DecideTakeCredit	am	byte	readable
 exe	0x0049f370	ai_Unk49f370	am	byte	draft		
 exe	0x0049f4f0	ai_Unk49f4f0	am	byte	draft		
 exe	0x0049f5c0	ai_DecideChangeProfession	am	draft	readable	deep	
-exe	0x0049f7f0	ai_Unk49f7f0	am	draft	draft		
-exe	0x0049f850	ai_Unk49f850	am	draft	draft		
-exe	0x0049fb80	ai_Unk49fb80	am	draft	draft		
-exe	0x0049fc90	ai_Unk49fc90	am	draft	draft		
+exe	0x0049f7f0	ai_ExecuteChangeProfession	am	byte	readable		
+exe	0x0049f850	ai_DecideStammtisch	am	draft	readable	deep	
+exe	0x0049fb80	ai_ExecuteStammtisch	am	byte	readable		
+exe	0x0049fc90	ai_DecidePriceManipulation	am	draft	readable	deep	
 exe	0x004a0040	ai_Unk4a0040	am	byte	draft		
 exe	0x004a0090	ai_Unk4a0090	am	byte	draft		
 exe	0x004a01f0	ai_Unk4a01f0	am	byte	draft		
-exe	0x004a0240	ai_Unk4a0240	am	draft	draft		
-exe	0x004a0410	ai_Unk4a0410	am	draft	draft		
+exe	0x004a0240	ai_PickLeastLikedRival	am	draft	readable	deep	
+exe	0x004a0410	ai_PickDislikedColumn	am	byte	readable		
 exe	0x004a05e0	ai_Unk4a05e0	am	byte	draft		
 exe	0x004a0890	ai_Unk4a0890	am	byte	draft		
 exe	0x004a0940	ai_Unk4a0940	am	byte	draft		
 exe	0x004a0990	ai_Unk4a0990	am	byte	draft		
-exe	0x004a0a70	ai_Unk4a0a70	am	draft	draft		
+exe	0x004a0a70	ai_DecideUpgradeGuild	am	draft	readable	deep	
 exe	0x004a0e60	ai_Unk4a0e60	am	byte	draft		
 exe	0x004a1000	ai_Unk4a1000	am	byte	draft		
 exe	0x004a1170	ai_Unk4a1170	am	shape	draft		
 exe	0x004a1360	ai_Unk4a1360	am	byte	draft		
 exe	0x004a13e0	ai_Unk4a13e0	am	shape	draft		
-exe	0x004a1640	ai_Unk4a1640	am	draft	draft		
+exe	0x004a1640	ai_ExecuteStudy	am	byte	readable		
 exe	0x004a16f0	ai_RegisterBaseActions	am	draft	draft		
 exe	0x004a3a90	ai_Unk4a3a90	am	draft	draft		
 exe	0x004a3af0	ai_FillNearRing	am	draft	draft		
-exe	0x004a4680	ai_Unk4a4680	am	draft	draft		
+exe	0x004a4680	ai_GroupPrices	am	draft	draft		
 exe	0x004a47c0	ai_GetDesireByName	am	byte	readable		
 exe	0x004a49a0	ai_EvalMoodWeights	am	draft	readable		
 exe	0x004a4ae0	ai_EvalCurrentNeed	am	draft	readable		
 exe	0x004a4c10	ai_EvalGuiltWeights	am	draft	readable		
-exe	0x004a4e30	ai_Unk4a4e30	am	byte	draft		
+exe	0x004a4e30	ai_RepairCost	am	byte	readable		
 exe	0x004a4e70	ai_Unk4a4e70	am	draft	draft		
 exe	0x004a5140	ai_CanBuildType	am	draft	draft		
 exe	0x004a5320	ai_ExecBuildBuilding	am	draft	draft		
@@ -2234,7 +2234,7 @@ exe	0x004c58a0	cm_SendApplication	cm	byte	draft
 exe	0x004c58e0	cm_SendOfficeRecord	cm	byte	draft		
 exe	0x004c5930	cm_SendDecisionValue	cm	byte	draft		
 exe	0x004c5970	ai_Unk4c5970	cm	byte	draft		
-exe	0x004c59b0	ai_Unk4c59b0	cm	byte	draft		
+exe	0x004c59b0	cm_SendSetJob	cm	byte	draft		
 exe	0x004c59f0	ai_Unk4c59f0	cm	draft	draft		
 exe	0x004c5a70	ai_Unk4c5a70	cm	byte	draft		
 exe	0x004c5aa0	cm_SendChat	cm	byte	draft		
@@ -2245,7 +2245,7 @@ exe	0x004c5c40	ai_Unk4c5c40	cm	draft	draft
 exe	0x004c5ca0	ai_Unk4c5ca0	cm	draft	draft		
 exe	0x004c5d00	ai_Unk4c5d00	cm	byte	draft		
 exe	0x004c5d40	cm_SendScriptMessage	cm	byte	draft		
-exe	0x004c5d80	ai_Unk4c5d80	cm	byte	draft		
+exe	0x004c5d80	cm_SendTableRequest	cm	byte	draft		
 exe	0x004c5dc0	ai_Unk4c5dc0	cm	draft	draft		
 exe	0x004c5e80	cm_SendMessage56	cm	byte	draft		
 exe	0x004c5ec0	ai_Unk4c5ec0	cm	byte	draft		
@@ -2666,7 +2666,7 @@ exe	0x004e8c20	amt_ElectKind22	amt	byte	readable
 exe	0x004e8dc0	amt_CalcZuenfte	amt	draft	draft	deep	
 exe	0x004e9260	amt_CheckOffices	amt	byte	readable		
 exe	0x004e9400	amt_HasTownObject	amt	byte	readable		
-exe	0x004e94a0	amt_Unk4e94a0	amt	byte	draft		
+exe	0x004e94a0	amt_MayorBonusStep	amt	byte	draft		
 exe	0x004e94e0	amt_CanUseMayorPower2	amt	byte	readable		
 exe	0x004e95a0	amt_CanUseMayorPower3	amt	byte	readable		
 exe	0x004e9660	amt_ExecutePriceMessage	amt	draft	readable	deep	
