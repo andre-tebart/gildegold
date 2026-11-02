@@ -187,7 +187,7 @@ void ai_SetupTutorialPlayer(void);  /* 0x57bc30, sets up the tutorial player's p
 int ai_TutorialWindow(void);  /* 0x57bce0, the tutorial chooser window: 1 starts the tutorial, 0 is the back */
 
 void ai_GraveyardContact(char *rec);       /* 0x586840, the graveyard's contact dispatcher */
-void ai_GraveHauntContact(char *rec);      /* 0x586ab0, the graveyard contact HEIMSUCHUNG */
+void ai_GraveHauntContact(struct AIBLD *rec);    /* 0x586ab0, the graveyard contact HEIMSUCHUNG */
 void ai_GraveAgeContact(char *rec);        /* 0x586e40, the graveyard contact ALTERN_LASSEN */
 void ai_GravePlanContact(char *rec);       /* 0x5871c0, the graveyard contact LIEGEPLAN */
 void ai_GraveRentContact(char *rec);       /* 0x5871e0, the graveyard contact GRAB_MIETEN */
