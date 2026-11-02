@@ -2719,12 +2719,12 @@ int gm_FindObjectProto(char *name)
 
 int gm_IsBuildingKind(int n)
 {
-    char k;
+    char *g;
 
-    k = *(char *)(ai_Goods + n * 0x40 + n);
-    if (k != 1 && k != 0x1a && k != 0x0b && k != 0x1c && k != 0x1b && k != 3 && k != 4)
-        return 0;
-    return 1;
+    g = ai_Goods + n * 0x41;
+    if (*g == 1 || *g == 0x1a || *g == 0x0b || *g == 0x1c || *g == 0x1b || *g == 3 || *g == 4)
+        return 1;
+    return 0;
 }
 /* 0x4fe980, the object instance with the id (int at +2) in the instance table, 0 when none */
 
