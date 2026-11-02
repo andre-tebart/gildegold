@@ -1664,25 +1664,25 @@ exe	0x0049bd90	ai_DecideUseSafetyObject	am	draft	readable	deep
 exe	0x0049c000	ai_Unk49c000	am	shape	draft		
 exe	0x0049c0d0	ai_Unk49c0d0	am	byte	draft		
 exe	0x0049c170	ai_Unk49c170	am	byte	draft		
-exe	0x0049c190	ai_Unk49c190	am	draft	draft		
+exe	0x0049c190	ai_ExecuteUsePerfume	am	shape	readable		
 exe	0x0049c320	ai_Unk49c320	am	byte	draft		
 exe	0x0049c3c0	ai_Unk49c3c0	am	byte	draft		
-exe	0x0049c3e0	ai_Unk49c3e0	am	draft	draft		
-exe	0x0049c570	ai_Unk49c570	am	draft	draft		
+exe	0x0049c3e0	ai_ExecuteUseTrank	am	shape	readable		
+exe	0x0049c570	ai_DecideSpy	am	byte	readable		
 exe	0x0049c700	ai_Unk49c700	am	byte	draft		
 exe	0x0049c790	ai_Unk49c790	am	byte	draft		
 exe	0x0049c880	ai_Unk49c880	am	byte	draft		
-exe	0x0049c8e0	ai_Unk49c8e0	am	draft	draft		
+exe	0x0049c8e0	ai_DecideBuyIndulgence	am	shape	readable		
 exe	0x0049cb60	ai_Unk49cb60	am	shape	draft		
 exe	0x0049cd30	ai_Unk49cd30	am	byte	draft		
 exe	0x0049cdb0	ai_Unk49cdb0	am	byte	draft		
 exe	0x0049cdd0	ai_Unk49cdd0	am	byte	draft		
-exe	0x0049ce50	ai_Unk49ce50	am	draft	draft		
+exe	0x0049ce50	ai_DecideThreaten	am	draft	readable	deep	
 exe	0x0049d030	ai_Unk49d030	am	byte	draft		
 exe	0x0049d050	ai_Unk49d050	am	byte	draft		
-exe	0x0049d0f0	ai_Unk49d0f0	am	draft	draft		
+exe	0x0049d0f0	ai_DecidePamphlets	am	shape	readable		
 exe	0x0049d280	ai_Unk49d280	am	byte	draft		
-exe	0x0049d2d0	ai_Unk49d2d0	am	draft	draft		
+exe	0x0049d2d0	ai_DecideDenounce	am	shape	readable		
 exe	0x0049d460	ai_Unk49d460	am	byte	draft		
 exe	0x0049d4b0	ai_Unk49d4b0	am	byte	draft		
 exe	0x0049d550	ai_Unk49d550	am	byte	draft		
@@ -1692,8 +1692,8 @@ exe	0x0049d6a0	ai_Unk49d6a0	am	byte	draft
 exe	0x0049d730	ai_Unk49d730	am	byte	draft		
 exe	0x0049d750	ai_Unk49d750	am	byte	draft		
 exe	0x0049d7d0	ai_Unk49d7d0	am	byte	draft		
-exe	0x0049d7f0	ai_Unk49d7f0	am	draft	draft		
-exe	0x0049d8d0	ai_Unk49d8d0	am	draft	draft		
+exe	0x0049d7f0	ai_EvalMayor	am	shape	readable		
+exe	0x0049d8d0	ai_DecideMayor	am	draft	readable	deep	
 exe	0x0049dc10	ai_Unk49dc10	am	byte	draft		
 exe	0x0049dd90	ai_Unk49dd90	am	byte	draft		
 exe	0x0049def0	ai_Unk49def0	am	draft	draft		
@@ -1735,7 +1735,7 @@ exe	0x004a3af0	ai_FillNearRing	am	draft	draft
 exe	0x004a4680	ai_Unk4a4680	am	draft	draft		
 exe	0x004a47c0	ai_GetDesireByName	am	byte	readable		
 exe	0x004a49a0	ai_EvalMoodWeights	am	draft	readable		
-exe	0x004a4ae0	ai_Unk4a4ae0	am	draft	draft		
+exe	0x004a4ae0	ai_EvalCurrentNeed	am	draft	readable		
 exe	0x004a4c10	ai_EvalGuiltWeights	am	draft	readable		
 exe	0x004a4e30	ai_Unk4a4e30	am	byte	draft		
 exe	0x004a4e70	ai_Unk4a4e70	am	draft	draft		
@@ -1802,7 +1802,7 @@ exe	0x004a9a00	ai_DecideLeisureAction	unk_4a7140	draft	readable	deep
 exe	0x004a9fa0	ai_CheckLeisureAction	unk_4a7140	byte	readable		
 exe	0x004aa120	ai_DecideVisitAction	unk_4a7140	draft	readable	deep	
 exe	0x004aa430	ai_CheckVisitAction	unk_4a7140	draft	readable	deep	
-exe	0x004aa580	ai_Unk4aa580	unk_4a7140	byte	draft		
+exe	0x004aa580	ai_PickPamphletTarget	unk_4a7140	byte	draft		
 exe	0x004aa6a0	ai_DecideLittleKnownChar	unk_4a7140	byte	readable		
 exe	0x004aa800	ai_DecideCharPair	unk_4a7140	byte	readable		
 exe	0x004aa940	aip_ExecPamphlet	unk_4a7140	byte	readable		
