@@ -689,6 +689,7 @@ TUTSTATE *const ai_Tutorial = (TUTSTATE *)(full_data_6fa020 + 0x40);  /* 0x5eec6
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define ai_TimeT (*(AITIME *)&ai_Time)  /* 0x770ae0, ai_Time (anm.c: char[14]) as the AITIME it is */
 #define ai_ClockMsVolatile (*(volatile int *)&ai_ClockMs)  /* 0x6333cc, @original: the byte-matched ai_TutorialTick reloads the clock after every read (a timer-written int; its owner declares it plain int) */
+#define sv_CheckGoodAmountB ((int (*)(char *, int, unsigned char))sv_CheckGoodAmount)  /* @original: ai_AlchemistHire pushes the player byte unextended (mov al, ai_OwnPlayer / push eax), a char third parameter; sv_CheckGoodAmount itself masks it (t & 0xff) */
 int ai_TutorialChapterOn[5] = { 1, 1, 1, 1, 1 };  /* 0x62918c, per chapter 1 = played (the start window's check boxes, ai_TutorialWindow) */
 int (*ai_TutorialChapterInit[5])(void) = { ai_TutorialInitChapter1, ai_TutorialInitChapter2, ai_TutorialInitChapter3, ai_TutorialInitChapter4, ai_TutorialInitChapter5 };  /* 0x6291a0, the chapter chain builders the start appends for every chapter played */
 int ai_TutorialBanks[6] = { 0 };  /* 0x6f2640, the voice banks of the main intro / outro and the chapters 1 .. 5 (snd_LoadVoiceBank), unloaded by the stop */
@@ -4594,28 +4595,36 @@ int sv_MessageBox();
 void txt_Format(char *out, int id0, ...);
 int ahm_SendCreateAlchemist();
 
-/* 0x57c560, the tutorial result string writer (301 B, ROUGH SKELETON): p = 0x4eaa50 (arg 1) (the record looked
-   up); 0x521040 (the player user record 0x770b80 + U16(0x6f25b8) * 0x21c, arg 3, the byte 0x6f1bc5): when true
-   and p is set, the global text U_I(0x144a2e0) is written (0x521150 (text, 0x100)) and 0 answers; else the
-   string built by 0x5176d0 (the 0x200 buffer, 0x4044, the tables 0x144a7a8[arg2->0x10] / 0x144a80c[arg2->0x14])
-   and written by 0x521150 (buffer, 1), then 0x4ec490 (arg 1, arg 2) and the rest (the tail is not written yet,
-   see build/dis57c560.txt) */
+/* 0x57c560, hires the alchemist candidate step for the alchemist object obj at the price value: 0 when the
+   player cannot pay it (sv_CheckGoodAmount), when the object already has an owner (the message text 0x4048)
+   or when the confirmation (text 0x4044 with the candidate's first and last name) is declined. Else the
+   creation is posted (ahm_SendCreateAlchemist) and its slot awaited (the frame pump while cm_GetSlotState
+   is 0); a slot that did not end in state 1 answers 0. On success the step is cleared, the price moved from
+   the player (cm_SendMoveGoods) and 1 answered */
 int ai_AlchemistHire(unsigned char *obj, AHMSTEP *step, int value)
 {
-    char buf[0x200];
-    char *p;
+    char text[0x200];
+    char *owner;
+    int slot;
 
-    p = (char *)ahm_OwnerChar(obj);
-    if (sv_CheckGoodAmount((char *)((unsigned)&ai_Chars + (unsigned short)U_I((unsigned)&ai_PlayerId) * 0x21c), value, *(unsigned char *)(unsigned)&ai_OwnPlayer)) {
-        if (p)
-            sv_MessageBox(U_I((unsigned)&full_data_144a2e0), 0x100);
-        return 0;
+    owner = ahm_OwnerChar(obj);
+    if (sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], value, ai_OwnPlayer)) {
+        if (owner) {
+            sv_MessageBox((int)txt_Ptrs[0x4048], 0x100);
+        } else {
+            txt_Format(text, 0x4044, txt_Ptrs[0x417a + step->x], txt_Ptrs[0x4193 + step->y]);
+            if (sv_MessageBox((int)text, 1)) {
+                slot = ahm_SendCreateAlchemist(obj, step);
+                while (slot != -1 && !cm_GetSlotState(slot))
+                    sv_RunFrame(0, 0x20007);
+                if (cm_GetSlotState(slot) == 1) {
+                    ahm_ClearStep(step);
+                    cm_SendMoveGoods(-1, ai_CharInts[ai_PlayerId][0], ai_OwnPlayer, value);
+                    return 1;
+                }
+            }
+        }
     }
-    txt_Format(buf, 0x4044, U_I((unsigned)&ai_Unk144a7a8 + step->x * 4),
-                 U_I((unsigned)&ai_Unk144a80c + step->y * 4));
-    if (!sv_MessageBox(buf, 1))
-        return 0;
-    /* ROUGH: 0x4ec490 (arg 1, arg 2) and the tail are not written yet */
     return 0;
 }
 
