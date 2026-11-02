@@ -2994,35 +2994,37 @@ int gv_ReadCrimes(int f)
     }
     return 1;
 }
-/* 0x4f2fe0, the text of the table record i into out (0x5176d0 with the texts 0x13fe + 5 * (b0) / 0x13fd + ..): by the second byte of the record 0: 0 as is, 1 / 2 / 3 add 0x13dd / 0x13e6 / 0x13ec to the last field; 0 for another value or no record */
+/* 0x4f2fe0, the text of the AI decision record i into out (txt_Format with the texts 0x13fe + 5 * id / 0x13fd + 5 * id):
+   its current value as a number or, by AIDEC.valueText 1 / 2 / 3, as the name 0x13dd / 0x13e6 / 0x13ec + cur;
+   0 for another valueText or no record */
 
 int gv_TableRecordText(char *out, int i)
 {
-    unsigned rec[9];
-    int b;
+    AIDEC rec;
+    int r;
+    int t;
 
-    if (gv_GetTableRecord(i, (int *)rec) != 0) {
-        b = (rec[0] & 0xff) * 5;
-        switch ((rec[0] >> 8) & 0xff) {
-        case 0:
-            txt_Format(out, b + 0x13fe, b + 0x13fd, rec[8]);
-            return 1;
-        case 1:
-            rec[8] = rec[8] + 0x13dd;
-            break;
-        case 2:
-            rec[8] = rec[8] + 0x13e6;
-            break;
-        case 3:
-            rec[8] = rec[8] + 0x13ec;
-            break;
-        default:
-            return 0;
-        }
-        txt_Format(out, b + 0x13fe, b + 0x13fd, rec[8]);
-        return 1;
+    r = 1;
+    if (gv_GetTableRecord(i, (int *)&rec) == 0)
+        return 0;
+    t = rec.id * 5 + 0x13fd;
+    switch (rec.valueText) {
+    case 0:
+        txt_Format(out, t + 1, t, rec.cur);
+        break;
+    case 1:
+        txt_Format(out, t + 1, t, rec.cur + 0x13dd);
+        break;
+    case 2:
+        txt_Format(out, t + 1, t, rec.cur + 0x13e6);
+        break;
+    case 3:
+        txt_Format(out, t + 1, t, rec.cur + 0x13ec);
+        break;
+    default:
+        r = 0;
     }
-    return 0;
+    return r;
 }
 
 #define R4(r, o) (*(int *)((r).b + (o)))
