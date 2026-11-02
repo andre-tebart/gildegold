@@ -1342,7 +1342,7 @@ int gm_PlaceOnStage(int id, int a, int b, int *p, int *ori)
 }
 
 extern char ch_EmptyName[];             /* 0x631090 */
-int gm_MayRemoveChar(char *c);                     /* 0x5075c0 */
+int gm_MayRemoveChar(ORDCHAR *c);                     /* 0x5075c0 */
 void cm_SendKillCharacter(int a, int b);                     /* 0x4c4e00 */
 int gv_DecayRaisedDead();                     /* 0x4f1660 */
 int cm_AddFieldValue(unsigned char size, unsigned char n, unsigned short field, void *v);                     /* 0x4c3d90 */
@@ -1403,7 +1403,7 @@ float gm_DailyCharacterStep(unsigned short *id)
     if (c->id == 0xffff)
         return -1.0f;
     if (c->kind == 0x0f) {
-        if (gm_MayRemoveChar((char *)c) != 0) {
+        if (gm_MayRemoveChar(c) != 0) {
             cm_SendKillCharacter(c->netId, 1);
             gm_NetMsgCount++;
         }
@@ -7850,30 +7850,34 @@ void gm_ForfeitEstate(ORDCHAR *c, char *out, int flag)
         }
     }
 }
-/* 0x5075c0, 1 when the character c (not a player of kind 6 / 7) may be given up for the party table: like 0x4fd090 (no player has it as a direct relation or among a full set of five), then, when fewer than 0x20 character slots are free (0x300 - 0x6f1bc0), the table at 0x91f725 (records of 0x2d bytes, the id at -0x13) must not hold it as an active entry; 0 otherwise */
+/* 0x5075c0, 1 when the character c (not a player of kind 6 / 7) may be given up: no player (kind 6 / 7) has it as its
+   partner or parent (relatives[0..2]) or among its children (relatives[3..7]) unless all five child places are used;
+   then, when fewer than 0x20 character slots are free (0x300 - ai_CharCount), no open crime record (state != 0) may
+   name it as the victim; 0 otherwise */
 
-int gm_MayRemoveChar(char *c)
+int gm_MayRemoveChar(ORDCHAR *c)
 {
-    int id, n, found, k;
-    char *p;
+    int id, n, found, k, i;
+    ORDCHAR *p;
     int *q;
 
-    if (c[2] != 6 && c[2] != 7) {
-        id = *(int *)(c + 4);
-        for (p = ai_Chars[0] + 2; (int)p < (unsigned)((unsigned)ai_Chars + 0x65402); p += 0x21c) {
+    if (c->kind != 6 && c->kind != 7) {
+        id = c->netId;
+        for (i = 0; i < 0x300; i++) {
+            p = &ORD_CHARS[i];
             found = 0;
             n = 0;
-            if (*(int *)(p + 2) != id && (*p == 6 || *p == 7)) {
-                if (*(int *)(p + 0x5a) == id)
+            if (p->netId != id && (p->kind == 6 || p->kind == 7)) {
+                if (p->relatives[0] == id)
                     return 0;
-                if (*(int *)(p + 0x5e) == id)
+                if (p->relatives[1] == id)
                     return 0;
-                if (*(int *)(p + 0x62) == id)
+                if (p->relatives[2] == id)
                     return 0;
-                q = (int *)(p + 0x66);
+                q = &p->relatives[3];
                 for (k = 5; k != 0; k--, q++) {
                     if (*q == id) {
-                        found = 1;
+                        found |= 1;
                         n++;
                     } else if (*q != -1)
                         n++;
@@ -7884,12 +7888,11 @@ int gm_MayRemoveChar(char *c)
         }
         if (0x300 - ai_CharCount < 0x20)
             return 1;
-        p = (char *)((unsigned)&ai_Unk91f716 + 0xf);
-        while (*(int *)(p - 0x13) != id || *(int *)p == 0) {
-            p += 0x2d;
-            if ((int)p > ((unsigned)((unsigned)ai_Unk91f716 + 0x5a0a) + 0x4))
-                return 1;
+        for (i = 0; i < 0x200; i++) {
+            if (GM_CRIMES[i].victim == id && GM_CRIMES[i].state != 0)
+                return 0;
         }
+        return 1;
     }
     return 0;
 }
