@@ -3241,11 +3241,11 @@ int gm_DefaultStock[] = { 468, 0, 1084227584, 0, 0, 0, 0, 0, 0, 0, 0, 0 };  /* 0
 int ai_Unk6178f8[] = { 15, 0, 0, 146, 18, 1094713344, 21, 1094713344, 7, 1086324736, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 341, 0, 1086324736, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 146, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 342, 0, 1077936128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 146, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 343, 0, 1073741824, 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 146, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 344, 0, 1069547520, 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 146, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 345, 0, 1067030938, 80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 146, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 346, 0, 1065353216, 80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 146, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 469, 0, 1101004800, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 0, 0, 146, 21, 0, 14, 1086324736, 8, 1094713344, 22, 1086324736, 0, 0, 0, 0, 0, 0, 0, 0, 347, 0, 1086324736, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 146, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 348, 0, 1077936128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 146, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 349, 0, 1073741824, 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 146, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 350, 0, 1069547520, 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 146, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 351, 0, 1067030938, 80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 146, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 352, 0, 1065353216, 80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 146, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 470, 0, 1092616192, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 0, 0, 147, 18, 1086324736, 21, 1086324736, 20, 1086324736, 7, 1086324736, 0, 0, 0, 0, 0, 0, 0, 0, 353, 0, 1086324736, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 147, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 354, 0, 1077936128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 147, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 355, 0, 1073741824, 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 147, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 356, 0, 1069547520, 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 147, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 357, 0, 1067030938, 80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 147, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 358, 0, 1065353216, 80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 147, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 471, 0, 1101004800, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 0, 0, 148, 18, 1086324736, 21, 1086324736, 20, 1086324736, 7, 1086324736, 0, 0, 0, 0, 0, 0, 0, 0, 365, 0, 1086324736, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 148, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 366, 0, 1077936128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 148, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 367, 0, 1073741824, 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 148, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 368, 0, 1069547520, 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 148, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 369, 0, 1067030938, 80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 148, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 370, 0, 1065353216, 80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 148, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 472, 0, 1092616192, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 0, 0, 148, 18, 1088421888, 20, 1086324736, 7, 1084227584, 14, 1086324736, 0, 0, 0, 0, 0, 0, 0, 0, 371, 0, 1086324736, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 148, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 372, 0, 1077936128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 148, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 373, 0, 1073741824, 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 148, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 374, 0, 1069547520, 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 148, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 375, 0, 1067030938, 80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 148, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 376, 0, 1065353216, 80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 148, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 473, 0, 1092616192, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 0, 0, 147, 14, 1088421888, 8, 1088421888, 22, 1088421888, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 377, 0, 1094713344, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 147, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 378, 0, 1086324736, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 147, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 379, 0, 1073741824, 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 147, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 380, 0, 1069547520, 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 147, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 381, 0, 1067030938, 80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 147, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 382, 0, 1065353216, 80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 147, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 464, 0, 1112014848, -1, 0, 0, 0, 0, 0, 0, 0, 0, 15, 0, 0, 149, 18, 1104150528, 21, 1090519040, 14, 1082130432, 8, 1086324736, 0, 0, 0, 0, 0, 0, 0, 0, 465, 0, 1106247680, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 0, 0, 149, 18, 1092616192, 21, 1092616192, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 466, 0, 1101004800, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 0, 0, 149, 18, 1073741824, 21, 1073741824, 20, 1090519040, 7, 1082130432, 0, 0, 0, 0, 0, 0, 0, 0, 467, 0, 1101004800, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 0, 0, 149, 18, 1073741824, 20, 1073741824, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 458, 0, 1101004800, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 0, 0, 149, 21, 1104150528, 7, 1108869120, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 459, 0, 1097859072, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 0, 0, 149, 21, 1105199104, 7, 1104150528, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 460, 0, 1101004800, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 0, 0, 149, 18, 1090519040, 21, 1101004800, 20, 1082130432, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 461, 0, 1112014848, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 0, 0, 149, 20, 1099956224, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 462, 0, 1109393408, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 0, 0, 149, 20, 1105199104, 8, 1073741824, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 463, 0, 1103626240, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 0, 0, 149, 20, 1090519040, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 474, 0, 1112014848, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 0, 0, 151, 7, 1094713344, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 359, 0, 1086324736, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 151, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 360, 0, 1077936128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 151, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 361, 0, 1073741824, 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 151, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 362, 0, 1069547520, 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 151, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 363, 0, 1067030938, 80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 151, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 364, 0, 1065353216, 80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 151, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 455, 0, 1112014848, 0, 0, 0, 0, 0, 0, 0, 0, 0, 40, 0, 0, 150, 14, 1095761920, 8, 1095761920, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 456, 0, 1092616192, 0, 0, 0, 0, 0, 0, 0, 0, 0, 30, 0, 0, 150, 22, 1110966272, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 457, 0, 1092616192, 0, 0, 0, 0, 0, 0, 0, 0, 0, 30, 0, 0, 150, 22, 1112014848, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 686, 0, 1092616192, 0, 0, 0, 0, 0, 0, 0, 0, 0, 30, 0, 0, 150, 32, 1114636288, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1103626240, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 0, 0, 0, 0, 1090519040, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 552, 0, 1112014848, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 0, 0, 731, 29, 1094713344, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 553, 0, 1086324736, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 731, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 554, 0, 1077936128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 731, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 555, 0, 1073741824, 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 731, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 556, 0, 1069547520, 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 731, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 557, 0, 1067030938, 80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 731, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 558, 0, 1065353216, 80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 731, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 689, 0, 1112014848, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 0, 0, 150, 32, 1094713344, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 690, 0, 1086324736, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 150, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 691, 0, 1077936128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 150, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 692, 0, 1073741824, 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 150, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 693, 0, 1069547520, 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 150, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 694, 0, 1067030938, 80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 150, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 695, 0, 1065353216, 80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 150, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 662, 0, 1112014848, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 0, 0, 731, 32, 1094713344, 31, 1094713344, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 663, 0, 1086324736, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 731, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 664, 0, 1077936128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 731, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 665, 0, 1073741824, 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 731, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 666, 0, 1069547520, 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 731, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 667, 0, 1067030938, 80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 731, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 668, 0, 1065353216, 80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 731, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };  /* 0x6178f8 */
 G7GRP gm_BuildingItemGroups[37] = { { 41, { 0, 0, 468, 341, 342, 0, 0, 0, 0, 0 } }, { 42, { 0, 0, 468, 341, 342, 344, 343, 0, 0, 0 } }, { 43, { 0, 0, 468, 0, 341, 342, 344, 343, 345, 346 } }, { 50, { 469, 0, 0, 347, 348, 0, 0, 0, 0, 0 } }, { 51, { 469, 0, 347, 348, 349, 350, 0, 0, 0, 0 } }, { 52, { 469, 0, 347, 348, 349, 350, 352, 351, 0, 0 } }, { 33, { 471, 0, 0, 0, 365, 366, 0, 0, 0, 0 } }, { 34, { 471, 0, 0, 0, 365, 366, 367, 368, 0, 0 } }, { 35, { 471, 0, 0, 0, 365, 366, 367, 368, 369, 370 } }, { 23, { 472, 0, 0, 371, 372, 0, 0, 0, 0, 0 } }, { 24, { 472, 0, 0, 371, 372, 373, 375, 0, 0, 0 } }, { 25, { 472, 0, 0, 371, 372, 373, 375, 376, 374, 0 } }, { 47, { 470, 0, 0, 353, 354, 0, 0, 0, 0, 0 } }, { 48, { 470, 0, 0, 353, 354, 355, 356, 0, 0, 0 } }, { 49, { 470, 0, 0, 353, 354, 355, 356, 357, 358, 0 } }, { 53, { 0, 0, 0, 0, 473, 377, 378, 0, 0, 0 } }, { 54, { 0, 0, 0, 473, 377, 378, 379, 380, 0, 0 } }, { 55, { 0, 0, 0, 473, 377, 378, 379, 380, 381, 382 } }, { 20, { 474, 0, 0, 0, 359, 360, 0, 0, 0, 0 } }, { 21, { 474, 0, 0, 0, 359, 360, 361, 362, 0, 0 } }, { 22, { 474, 0, 0, 0, 359, 360, 361, 362, 363, 364 } }, { 72, { 552, 0, 0, 0, 553, 554, 0, 0, 0, 0 } }, { 73, { 552, 0, 0, 0, 553, 554, 555, 556, 0, 0 } }, { 74, { 552, 0, 0, 0, 553, 554, 555, 556, 557, 558 } }, { 31, { 463, 461, 462, 0, 0, 0, 0, 0, 0, 0 } }, { 75, { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }, { 76, { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }, { 77, { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }, { 81, { 689, 0, 0, 0, 690, 691, 0, 0, 0, 0 } }, { 82, { 689, 0, 0, 0, 690, 691, 692, 693, 0, 0 } }, { 83, { 689, 0, 0, 0, 690, 691, 692, 693, 694, 695 } }, { 78, { 662, 663, 664, 0, 0, 0, 0, 0, 0, 0 } }, { 79, { 662, 663, 664, 665, 666, 0, 0, 0, 0, 0 } }, { 80, { 662, 663, 664, 665, 666, 667, 668, 0, 0, 0 } }, { 32, { 464, 465, 466, 467, 0, 0, 0, 0, 0, 0 } }, { 30, { 458, 459, 460, 0, 0, 0, 0, 0, 0, 0 } }, { 0, { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } } };  /* 0x61a348, 37 item groups: a building kind and up to ten object prototypes */
 int ai_NextObjectId = 1;  /* 0x61a654, the next object id */
-unsigned char ai_Unk61a66c = 0xff;  /* 0x61a66c, the building query: kind class number ( */
-int ai_Unk61a670 = -1;  /* 0x61a670, the query: id (-1 = any) */
-short ai_Unk61a674 = 32767;  /* 0x61a674 / */
-short ai_Unk61a676 = 32767;  /* 0x61a676, the query: the words + */
-char ai_Unk61a678 = -1;  /* 0x61a678, the query: building type (-1 = any) */
+unsigned char gm_BQType = 0xff;  /* 0x61a66c, the building query: the building type (ORDBLD.type, 0xff = any) */
+int gm_BQId = -1;  /* 0x61a670, the query: id (-1 = any) */
+unsigned short gm_BQMaster = 32767;  /* 0x61a674, the query: the master id (ORDBLD.masterId, 0x7fff = any) */
+unsigned short gm_BQOwner = 32767;  /* 0x61a676, the query: the owner (ORDBLD.owner, 0x7fff = any) */
+char gm_BQClass = -1;  /* 0x61a678, the query: the class of the type (the first byte of its ai_BTypes record, -1 = any) */
 int gm_QueryType = 32767;  /* 0x61a67c, the query: object prototype ( */
 int gm_QueryOwner = -1;  /* 0x61a680, the query: owner id (-1 = any) */
 unsigned short gm_QueryOwnerNo = 0xffff;  /* 0x61a684, the query: the owner character number gm_ObjectOwnerNo must give (0xffff = any) */
@@ -3261,9 +3261,9 @@ int ai_NextCharNumber = 0;  /* 0x6f1bb8 */
 int ai_NextPlayerNumber = 0;  /* 0x6f1bbc */
 int ai_CharCount = 0;  /* 0x6f1bc0 */
 char * ai_Unk6f1bd0 = 0;  /* 0x6f1bd0 */
-char ai_Unk6f1bd4 = 0;  /* 0x6f1bd4 */
-char ai_Unk6f1bd5 = 0;  /* 0x6f1bd5, stop at the first, first call */
-int ai_Unk6f1bd8 = 0;  /* 0x6f1bd8, the number of records tested */
+char gm_BQStopFirst = 0;  /* 0x6f1bd4 */
+char gm_BQFirstCall = 0;  /* 0x6f1bd5, stop at the first, first call */
+int gm_BQTested = 0;  /* 0x6f1bd8, the number of records tested */
 int f3gm_ObjectCount = 0;  /* 0x6f1bdc, the number of object instances in use */
 char gm_QueryFirst = 0;  /* 0x6f1be0 */
 int gm_QueryScanned = 0;  /* 0x6f1be4, the number of records scanned */
@@ -3607,9 +3607,9 @@ int gm_GoodsStock(int p, int i)
     return sum;
 }
 
-extern short ai_Unk61a674, ai_Unk61a676;/* 0x61a674 / 0x61a676, the query: the words +0x25 / +0x27 (0x7fff = any) */
-extern char ai_Unk6f1bd4, ai_Unk6f1bd5; /* 0x6f1bd4, 0x6f1bd5, stop at the first, first call */
-char * ai_Unk6f1bf0 = 0;  /* 0x6f1bf0, the current building */
+extern unsigned short gm_BQMaster, gm_BQOwner;  /* 0x61a674 / 0x61a676 */
+extern char gm_BQStopFirst, gm_BQFirstCall; /* 0x6f1bd4, 0x6f1bd5, stop at the first, first call */
+ORDBLD *gm_BQCursor = 0;  /* 0x6f1bf0, the current building of the query */
 extern unsigned gm_KindObjs[732];
 extern unsigned short gm_KindObjCount;
 void rt_FreePoints();                     /* 0x4bd9e0 */
@@ -3811,87 +3811,83 @@ int gm_FindPlayerBuilding(int p)
     }
     return 0;
 }
-/* 0x501030, the next building matching the query of 0x501190 (type 0x61a66c, id 0x61a670, words +0x25 / +0x27, building type 0x61a678; the flag 0x6f1bd4 stops at the first match), walking the building table from 0x6f1bf0; 0 when done */
+/* 0x501030, the next building of the query gm_BuildQuery (0x501190) started: walks the cursor gm_BQCursor over the used records of ai_Blds and returns the first that matches every set criterion (type, id, master, owner, the class of its type; gm_BQStopFirst takes any); 0 when the table ends (the cursor is cleared) or more than 0x100 records were tested
+   @deep read against the original statement by statement: the two early returns, the first-call /
+   next-record walks of the cursor, the criteria chain (type, id, masterId +0x25, owner +0x27, the class
+   byte of ai_BTypes, sete), the tested counter, the advance and the end / match returns all match (equal
+   compares, operands and loop-invariant loads into edi / bp / bl). Left: the original saves ebx / ebp /
+   edi only before the criteria loop (0x5010a4 push ebx .. push edi; the early returns pop esi only, the
+   first-call walk jumps to the shared end check 0x50109c), ours pushes all four in the prolog and so
+   duplicates every early return with four pops; and the 'm = 0' block (xor cl,cl; jmp) sits after the
+   match return in the original, inline in ours. Tried the criteria as a goto chain, as an if/else with the
+   no label in the else, with the no block after the loop's continue, and as nested ifs with separate m = 0
+   (56 ins, worse): VC6 lays the first three out identically, so the block placement follows from the late
+   register saves, not from the statements (size: 2 of the instruction difference are shared / inline
+   tails) */
 
 unsigned char *gm_BuildNext(void)
 {
-    int m;
-    unsigned char *end, *p;
+    char m;
+    ORDBLD *end;
 
     m = 0;
-    end = (unsigned char *)ai_Blds + 0xa900;
+    end = (ORDBLD *)ai_Blds + 0x100;
     if (ai_BTypes == 0)
         return 0;
-    if (ai_Unk6f1bd8 > 0x100)
+    if (gm_BQTested > 0x100)
         return 0;
-    if (ai_Unk6f1bd5 == 0) {
-        do {
-            ai_Unk6f1bf0 += 0xa9;
-            if ((unsigned char *)ai_Unk6f1bf0 >= end)
-                return 0;
-        } while (*ai_Unk6f1bf0 == 0);
+    if (gm_BQFirstCall) {
+        gm_BQFirstCall = 0;
+        while (gm_BQCursor < end && gm_BQCursor->type == 0)
+            gm_BQCursor++;
     } else {
-        ai_Unk6f1bd5 = 0;
-        if ((unsigned char *)ai_Unk6f1bf0 >= end) {
-            ai_Unk6f1bd5 = 0;
-            return 0;
-        }
-        do {
-            if (*ai_Unk6f1bf0 != 0)
-                break;
-            ai_Unk6f1bf0 += 0xa9;
-        } while ((unsigned char *)ai_Unk6f1bf0 < end);
+        do
+            gm_BQCursor++;
+        while (gm_BQCursor < end && gm_BQCursor->type == 0);
     }
-    p = (unsigned char *)ai_Unk6f1bf0;
-    if (p >= end)
+    if (gm_BQCursor >= end)
         return 0;
-    do {
-        if (ai_Unk6f1bd4 != 0)
+    for (;;) {
+        if (gm_BQStopFirst)
             m = 1;
-        if (ai_Unk61a66c == 0xff || *p == ai_Unk61a66c) {
-            if (ai_Unk61a66c != 0xff)
+        if (gm_BQType == 0xff || gm_BQCursor->type == gm_BQType) {
+            if (gm_BQType != 0xff)
                 m = 1;
-            if (ai_Unk61a670 != -1) {
-                if (*(int *)(p + 1) != ai_Unk61a670)
+            if (gm_BQId != -1) {
+                if (gm_BQCursor->id != gm_BQId)
                     goto no;
                 m = 1;
             }
-            if (ai_Unk61a674 != 0x7fff) {
-                if (*(short *)(p + 0x25) != ai_Unk61a674)
+            if (gm_BQMaster != 0x7fff) {
+                if (gm_BQCursor->masterId != gm_BQMaster)
                     goto no;
                 m = 1;
             }
-            if (ai_Unk61a676 != 0x7fff) {
-                if (*(short *)(p + 0x27) != ai_Unk61a676)
+            if (gm_BQOwner != 0x7fff) {
+                if (gm_BQCursor->owner != gm_BQOwner)
                     goto no;
                 m = 1;
             }
-            if (ai_Unk61a678 != -1)
-                m = ai_BTypes[*p * 0x24d] == ai_Unk61a678;
+            if (gm_BQClass != (char)0xff)
+                m = ai_BTypes[gm_BQCursor->type * 0x24d] == gm_BQClass;
         } else {
         no:
             m = 0;
         }
-        ai_Unk6f1bd8++;
+        gm_BQTested++;
         if (!m) {
-            do {
-                p += 0xa9;
-                if (p >= end)
-                    goto done;
-                ai_Unk6f1bf0 = (char *)p;
-            } while (*p == 0);
+            do
+                gm_BQCursor++;
+            while (gm_BQCursor < end && gm_BQCursor->type == 0);
         }
-        if (p >= end) {
-            if (!m) {
-            done:
-                p = 0;
-                ai_Unk6f1bf0 = 0;
-            }
-            return p;
+        if (gm_BQCursor >= end) {
+            if (!m)
+                gm_BQCursor = 0;
+            return (unsigned char *)gm_BQCursor;
         }
         if (m)
-            return p;
-    } while (1);
+            return (unsigned char *)gm_BQCursor;
+    }
 }
 /* 0x501190, starts a building query and returns the first match (0x501030): n criteria follow as (kind, value) pairs: 0 = type class (byte, 0x61a66c), 1 = id, 2 = a string (copied to *0x6f1bd0, unused), 3 / 4 = the words +0x25 / +0x27, 5 = the building type, 6 = stop at the first (no value). Used all over the exe as gm_BuildQuery (1, 5, 10) .. */
 
@@ -3903,25 +3899,25 @@ unsigned char *gm_BuildQuery(int n, ...)
     char c;
 
     if (ai_BTypes != 0) {
-        ai_Unk61a66c = 0xff;
-        ai_Unk61a678 = (char)0xff;
-        ai_Unk61a670 = -1;
+        gm_BQType = 0xff;
+        gm_BQClass = (char)0xff;
+        gm_BQId = -1;
         ai_Unk6f1bd0 = 0;
-        ai_Unk61a674 = 0x7fff;
-        ai_Unk61a676 = 0x7fff;
-        ai_Unk6f1bd5 = 1;
-        ai_Unk6f1bd8 = 0;
-        ai_Unk6f1bd4 = 0;
+        gm_BQMaster = 0x7fff;
+        gm_BQOwner = 0x7fff;
+        gm_BQFirstCall = 1;
+        gm_BQTested = 0;
+        gm_BQStopFirst = 0;
         if (n > 0) {
             ap = &n;
             for (i = n; i != 0; i--) {
                 switch ((char)ap[1]) {
                 case 0:
-                    ai_Unk61a66c = (unsigned char)ap[2];
+                    gm_BQType = (unsigned char)ap[2];
                     ap += 2;
                     break;
                 case 1:
-                    ai_Unk61a670 = ap[2];
+                    gm_BQId = ap[2];
                     ap += 2;
                     break;
                 case 2:
@@ -3934,19 +3930,19 @@ unsigned char *gm_BuildQuery(int n, ...)
                     } while (c != 0);
                     break;
                 case 3:
-                    ai_Unk61a674 = (short)ap[2];
+                    gm_BQMaster = (short)ap[2];
                     ap += 2;
                     break;
                 case 4:
-                    ai_Unk61a676 = (short)ap[2];
+                    gm_BQOwner = (short)ap[2];
                     ap += 2;
                     break;
                 case 5:
-                    ai_Unk61a678 = (char)ap[2];
+                    gm_BQClass = (char)ap[2];
                     ap += 2;
                     break;
                 case 6:
-                    ai_Unk6f1bd4 = 1;
+                    gm_BQStopFirst = 1;
                     ap += 1;
                     break;
                 default:
@@ -3954,7 +3950,7 @@ unsigned char *gm_BuildQuery(int n, ...)
                 }
             }
         }
-        ai_Unk6f1bf0 = ai_Blds;
+        gm_BQCursor = (ORDBLD *)ai_Blds;
         return gm_BuildNext();
     }
     return 0;

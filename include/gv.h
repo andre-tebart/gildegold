@@ -217,7 +217,8 @@ typedef struct ORDCELL {
 typedef struct ORDBLD {
     unsigned char type;             /* 0x00, index into ai_BTypes */
     int id;                         /* 0x01, ai.h AIBLD.id */
-    char pad05[0x22];
+    char pad05[0x20];
+    unsigned short masterId;        /* 0x25, the character id of the building's master (ai.h AIBLD.masterId) */
     unsigned short owner;           /* 0x27, index into ai_Chars, 0xffff = none */
     char pad29[0x20];
     float priceFactor;              /* 0x49, scales the goods price of the building's offers (f3gm.c gm_CollectOffers) */
