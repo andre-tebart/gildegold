@@ -4323,7 +4323,7 @@ void main_SettleRound(unsigned short pl)
                     while (o != 0) {
                         cnt++;
                         if (o->unk37 <= 5)
-                            ai_Unk4c5010(c->id, -1, o->objId);
+                            cm_SendMoveObject(c->id, -1, o->objId);
                         else {
                             unsigned char *t = (unsigned char *)gm_FindBuildingById(o->unk2a);
 

@@ -1405,7 +1405,7 @@ void ai_Unk4c4fd0(int a, int b)
 }
 /* 0x4c5010, message 0x2b */
 
-void ai_Unk4c5010(int a, int b, int c)
+void cm_SendMoveObject(int a, int b, int c)
 {
     G17MSG m;
 
@@ -13024,7 +13024,7 @@ int ai_Unk4e1250(char *m)
             ai_Unk4e5470(buf, 0);
             sv_PopTo((unsigned)&main_GameLoop);
         } else {
-            gm_Unk506e70(a, big, 1);
+            gm_ForfeitEstate(a, big, 1);
             ai_Unk4e5470(big, 0x10);
         }
     }
@@ -13108,7 +13108,7 @@ int ai_Unk4e1700(char *m)
         sv_PopTo((unsigned)&main_GameLoop);
         return 0;
     }
-    gm_Unk506e70(a, big, 0);
+    gm_ForfeitEstate(a, big, 0);
     return 0;
 }
 /* 0x4e19a0, tells the party m (+0x30 count, +0x34 ids) about the thing +0x7c / +0x80 (text 0x3fd9, then 0x143e8c0 / 0x143e8bc by the flag

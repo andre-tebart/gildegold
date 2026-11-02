@@ -11482,7 +11482,7 @@ void ai_Unk5a44e0(unsigned char *param_1)
 }
 
 unsigned char * gm_BuildQuery(int n, ...); int gm_Unk5091a0(); int d2_CreateRadioGroup(int n, ...); void d2_RadioAdd(int g, int obj);
-void d2_RadioClear(int g); int d2_RadioGetSel(); void ai_Unk4c5010(int a, int b, int c); void ai_Unk4c47b0(short a);
+void d2_RadioClear(int g); int d2_RadioGetSel(); void cm_SendMoveObject(int a, int b, int c); void ai_Unk4c47b0(short a);
 int d2_GetViewWin(); void d2_CreateScrollButtons(); void d2_ClearInput(void); void sv_PumpNet();
 
 /* 0x5a45c0, the spy ring window "locations\diebesgilde\diebesgilde_spionagering" (1540 B, ROUGH SKELETON):
@@ -11575,7 +11575,7 @@ void ai_Unk5a45c0(int param_1)
         }
         if (U_I((unsigned)&d2_ClickedId) != -1 && U_I((unsigned)&d2_PointerObj) == h && idx != -1 &&
             (i = d2_RadioGetSel(idx)) > -1) {
-            v = ((int (*)(int, int, int))ai_Unk4c5010)(U_I(param_1 + 1), -1, U_I(rows[i] + 2));
+            v = ((int (*)(int, int, int))cm_SendMoveObject)(U_I(param_1 + 1), -1, U_I(rows[i] + 2));
             while (cm_GetSlotState(v) == 0)
                 sv_PumpNet();
             rebuild = 1;

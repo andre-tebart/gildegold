@@ -7544,7 +7544,9 @@ unsigned gm_TakeOverCharacter(int a, int b)
 
 int gm_EquipmentValue(unsigned char *b, int unused);                     /* 0x509b10 */
 int gm_CharSumAmounts(char *c);                     /* 0x509eb0 */
-void ai_Unk4c5010(int a, int b, int c);                     /* 0x4c5010 */
+void cm_SendMoveObject(int a, int b, int c);                     /* 0x4c5010 */
+#define ORD_F1C8_ANEW 0x800000  /* flags1c8 bit 23, set for a character that starts anew (gm_ForfeitEstate) */
+extern const unsigned int ai_BuildingTypeMasks[4];  /* 0x5eed70 (ai.h, not includable here): [2..3] the 64-bit mask of the house-owner building kinds */
 void cm_SendFloatDelta(int id, int field, float delta);                     /* 0x4c4ac0 */
 void cm_SendMoveGoods(int a, int b, unsigned char c, int d);                     /* 0x4c47e0 */
 int gm_PlayerFactor(int a, unsigned char k);                     /* 0x5085f0 */
@@ -7676,126 +7678,154 @@ void gm_InheritEstate(ORDCHAR *dead, ORDCHAR *heir)
     strcat(t2, t1);
     he_ShowNews(heir->netId, -1, t2, 1, 0x5ff, "_NACHRICHTEN_HS_63");
 }
-/* 0x506e70, the inheritance of the dead character c (the heirs are the characters of the group (1, 3, id) i.e. buildings it owns: those of the kinds in the mask 0xe07d43b0 / the kind 0x20 go to the best claimant by 0x509b10, the others of kind 2 to everyone): messages 0x4c54a0 (hand over), the message 0x1b to the new owner and 0x31 to the tenants, the money (0x509eb0 of the dead goes to the player 0x6f1bf8), the objects of its list (+0x178) by 0x4c5010; when flag is set the character is reset to a new person (the fields +8 .. +0x1b0 are sent through 0x4c3c00 / 0x4c3d90: age 0x10, 0x100 = 100 .., health floats), and the text of the announcement is built into out from the formats 0x1c4f (name, money), "%1G %A" per heir and 0x1c50 / 0xb6 (the rest). ROUGH */
-
-void gm_Unk506e70(unsigned short *c, char *out, int flag)
+/* 0x506e70, the character c forfeits its estate after a lost fight (cm.c 0x4e1250 / 0x4e1700; the name is a reasoned
+   guess): of the buildings c is master of (gm_BuildQuery (1, 3, id)) it keeps its home (bld2) and the most valuable one
+   (gm_EquipmentValue) of the house-owner kinds (ai_BuildingTypeMasks[2..3]); every other building of those kinds and
+   every other home (kind 2) goes to the player (cm_SendOwnership, the message 0x1b with its value, a message 0x31 to
+   every other character living in it). c's money (gm_CharSumAmounts) goes to the player, the objects of its
+   inventory are dropped (cm_SendMoveObject) and it gets the start money (gm_PlayerFactor (0x5dc)). With flag set c
+   starts anew: health 100, age 16, v194 3, the sums and counters 0, no relatives, its pregnancy, life values and
+   skills reset. The announcement goes into out: 0x1c4f (name, start money), the kept buildings, 0x1c50 and at most
+   6 of the buildings lost ("and n more" 0xb6)
+   @deep Read whole against the original (595 vs 595 ins, frame 0xb30 equal): every call, argument, field
+   (the 13 field deltas, 0x800000 flags1c8, the relatives loop, the float deltas, the 5 skill values),
+   string and branch condition matches. Left: block placement of the house-owner branch: the original lays
+   the masked block (gm_EquipmentValue, best/bestv, heirs) inline after 'test [ai_BuildingTypeMasks+0xc],
+   eax; je ELSE' (0x506f07), ours emits 'jne' and puts the same 20 instructions at +0x66b (the 'code' hunks
+   at 0x506f0a / 0x5074cb, ours jle/jmp back into the same targets); plus order hunks in the 0x1b / 0x31
+   message stores and the prologue. Tried: if/else in both orders, (A)==0 && (B)==0, != 0 forms, v <= bestv
+   first, goto-based shared take/hand tails, for loop with h = 0 in the increment, h = 0 at the bottom:
+   none keeps the masked block inline */
+void gm_ForfeitEstate(ORDCHAR *c, char *out, int flag)
 {
-    unsigned char *own;
-    unsigned char *best, *second;
-    unsigned char *heirs[0x80];
-    int n, bestv, v, i, k;
-    unsigned char *b;
-    unsigned mask, mask2;
-    unsigned char kind;
-    int *q;
-    int money;
-    char buf[2048];
-    int msg[0x3e];
-    int tmp[0x10];
+    ORDBLD *heirs[0x80];
+    char buf[0x800];
+    GMMSG m;
+    ORDCHAR *pl;
+    ORDBLD *own, *best, *b, *h;
+    ORDOBJ *o;
+    ORDCHAR *t;
+    unsigned char *kind;
+    unsigned lo, hi;
+    int n, bestv, v, i;
 
-    own = *(unsigned char **)(c + 0xb8);
+    pl = GM_PLAYERCH;
+    own = c->bld2;
     n = 0;
     best = 0;
     bestv = 0;
-    b = (unsigned char *)gm_BuildQuery(1, 3, *c);
+    h = 0;
+    b = (ORDBLD *)gm_BuildQuery(1, 3, c->id);
     while (b != 0) {
-        mask = 0;
-        mask2 = 0;
-        kind = ai_BTypes[*b * 0x24d];
-        if (kind < 0x20)
-            mask = 1 << (kind & 0x1f);
+        h = 0;
+        kind = (unsigned char *)ai_BTypes + b->type * 0x24d;   /* the type record: its first byte is the kind */
+        lo = 0;
+        hi = 0;
+        if (*kind > 0x1f)
+            hi = 1 << (*kind - 0x20);
         else
-            mask2 = 1 << ((kind - 0x20) & 0x1f);
-        if ((mask & 0xe07d43b0) == 0 && (mask2 & 1) == 0) {
-            if (b != own && mask == 4) {
-            take:
-                heirs[n] = b;
-                n++;
-                second = b;
-                b = best;
-                goto next;
+            lo = 1 << *kind;
+        if ((lo & ai_BuildingTypeMasks[2]) || (hi & ai_BuildingTypeMasks[3])) {
+            v = gm_EquipmentValue((unsigned char *)b, b->level);
+            if (v > bestv) {
+                /* the most valuable so far: c keeps it, the player takes the one it kept before */
+                if (best != 0) {
+                    heirs[n++] = best;
+                    h = best;
+                }
+                best = b;
+                bestv = v;
+            } else {
+                heirs[n++] = b;
+                h = b;
             }
-        } else {
-            v = gm_EquipmentValue(b, (int)(char)b[0x5c]);
-            if (v <= bestv)
-                goto take;
-            second = 0;
-            bestv = v;
-            if (best != 0) {
-                heirs[n] = best;
-                n++;
-                second = best;
-            }
-        next:
-            best = b;
-            if (second != 0) {
-                cm_SendOwnership(*(int *)(second + 1), *(int *)(ai_PlayerCharC + 4), *(int *)(ai_PlayerCharC + 4));
-                memset(msg, 0, sizeof(msg));
-                ((char *)msg)[4] = 0x1b;
-                msg[2] = *(int *)(ai_PlayerCharC + 4);
-                msg[3] = -1;
-                ((char *)msg)[0x36] = 2;
-                msg[0x58 / 4] = *(int *)(second + 1);
-                msg[0x5c / 4] = gm_EquipmentValue(second, (int)(char)second[0x5c]);
-                cm_SendLongMessage(msg);
-                q = (int *)(ai_Chars[0] + 4);
-                do {
-                    if (q[0x5a] == (int)second && *q != *(int *)(c + 2)) {
-                        memset(msg, 0, sizeof(msg));
-                        ((char *)msg)[4] = 0x31;
-                        msg[2] = *(int *)(ai_PlayerCharC + 4);
-                        msg[3] = *(int *)(second + 1);
-                        msg[0x28 / 4] = *(int *)ai_Time;
-                        msg[0x30 / 4] = *(int *)(ai_Time + 8);
-                        msg[0x2c / 4] = *(int *)(ai_Time + 4);
-                        ((char *)msg)[0x36] = 1;
-                        *(short *)((char *)msg + 0x34) = *(short *)(ai_Time + 0xc);
-                        msg[0x58 / 4] = *q;
-                        cm_SendLongMessage(msg);
-                    }
-                    q += 0x87;
-                } while ((int)q < ((unsigned)((unsigned)ai_Chars + 0x65402) + 0x2));
+        } else if (b != own && lo == 4) {
+            heirs[n++] = b;     /* a home other than its own */
+            h = b;
+        }
+        if (h != 0) {
+            cm_SendOwnership(h->id, pl->netId, pl->netId);
+            m.type = 0x1b;
+            m.to = GM_PLAYERCH->netId;
+            m.fromId = -1;
+            m.flags = 2;
+            m.arg0 = h->id;
+            m.arg1 = gm_EquipmentValue((unsigned char *)h, h->level);
+            cm_SendLongMessage((char *)&m);
+            for (i = 0; i < 0x300; i++) {
+                t = &ORD_CHARS[i];
+                if (t->bld == h && t->netId != c->netId) {
+                    memset(&m, 0, sizeof(m));
+                    m.type = 0x31;
+                    m.to = GM_PLAYERCH->netId;
+                    m.fromId = h->id;
+                    m.time = ai_TimeT;
+                    m.flags = 1;
+                    m.arg0 = t->netId;
+                    cm_SendLongMessage((char *)&m);
+                }
             }
         }
-        b = gm_BuildNext();
+        b = (ORDBLD *)gm_BuildNext();
     }
-    money = gm_CharSumAmounts(c);
-    cm_SendMoveGoods(*(int *)(ai_PlayerCharC + 4), -1, ai_OwnPlayer, money);
-    k = (int)gm_Query(*(int *)(c + 0xbc), 1, 5);
-    while (k != 0) {
-        ai_Unk4c5010(*(int *)(c + 2), -1, *(int *)(k + 2));
-        k = (int)gm_QueryNext();
+    cm_SendMoveGoods(pl->netId, -1, ai_OwnPlayer, gm_CharSumAmounts((char *)c));
+    o = (ORDOBJ *)gm_Query((void *)c->inventory, 1, 5);
+    while (o != 0) {
+        cm_SendMoveObject(c->netId, -1, o->objId);
+        o = (ORDOBJ *)gm_QueryNext();
     }
-    cm_SendMoveGoods(*(int *)(c + 2), -1, ai_OwnPlayer, gm_PlayerFactor(0x5dc, ai_OwnPlayer));
+    cm_SendMoveGoods(c->netId, -1, ai_OwnPlayer, gm_PlayerFactor(0x5dc, ai_OwnPlayer));
     if (flag != 0) {
-        char z2, z3;
-        int age, st;
+        char health, skill, b1b0, b1b1;
+        int none, age, v194, v198, wage, v1a0, v1a4, v1a8, v024, w028;
 
-        z2 = 100;
+        health = 100;
         age = 0x10;
-        st = 3;
-        cm_BeginFieldBlock(c, *(int *)(c + 2));
-        cm_AddFieldDelta(1, 1, (char *)c - cm_FieldObject + 8, &z2);
-        cm_AddFieldDelta(2, 1, (char *)c - cm_FieldObject + 10, &age);
-        cm_AddFieldDelta(4, 1, (char *)c - cm_FieldObject + 0x194, &st);
-        z3 = 0;
-        cm_AddFieldDelta(1, 1, (char *)c - cm_FieldObject + 0x1b0, &z3);
-        cm_AddFieldDelta(1, 1, (char *)c - cm_FieldObject + 0x1b1, &z3);
-        cm_SendSetField(*(int *)(c + 2), 0x1c8, 4, ((unsigned)&ai_Relations + 0x1aca0), 0);
+        v194 = 3;
+        v198 = 0;
+        wage = 0;
+        v1a0 = 0;
+        v1a4 = 0;
+        v1a8 = 0;
+        b1b0 = 0;
+        b1b1 = 0;
+        none = -1;
+        v024 = 0;
+        w028 = 0;
+        cm_BeginFieldBlock((char *)c, c->netId);
+        cm_AddFieldDelta(1, 1, (char *)&c->health - cm_FieldObject, &health);
+        cm_AddFieldDelta(2, 1, (char *)&c->w00a - cm_FieldObject, &age);
+        cm_AddFieldDelta(4, 1, (char *)&c->v194 - cm_FieldObject, &v194);
+        cm_AddFieldDelta(4, 1, (char *)&c->v198 - cm_FieldObject, &v198);
+        cm_AddFieldDelta(4, 1, (char *)&c->wage - cm_FieldObject, &wage);
+        cm_AddFieldDelta(4, 1, (char *)&c->v1a0 - cm_FieldObject, &v1a0);
+        cm_AddFieldDelta(4, 1, (char *)&c->v1a4 - cm_FieldObject, &v1a4);
+        cm_AddFieldDelta(4, 1, (char *)&c->v1a8 - cm_FieldObject, &v1a8);
+        cm_AddFieldDelta(1, 1, (char *)&c->b1b0 - cm_FieldObject, &b1b0);
+        cm_AddFieldDelta(1, 1, (char *)&c->b1b1 - cm_FieldObject, &b1b1);
+        cm_SendSetField(c->netId, 0x1c8, 4, ORD_F1C8_ANEW, 0);
         cm_SendFieldDeltas();
-        cm_SendFloatDelta(*(int *)(c + 2), 0x7c, -*(float *)(c + 0x3e));
-        cm_SendFloatDelta(*(int *)(c + 2), 0x14, (float)(util_RandomSq() * 7.0 + 30.0 - *(float *)(c + 10)));
-        cm_SendFloatDelta(*(int *)(c + 2), 0x1c, 1000.0f - *(float *)(c + 0xe));
-        cm_SendFloatDelta(*(int *)(c + 2), 0x18, 1000.0f - *(float *)(c + 0xc));
-        cm_SendFloatDelta(*(int *)(c + 2), 0x20, 12.0f - *(float *)(c + 0x10));
-        cm_BeginFieldBlock(c, *(int *)(c + 2));
+        cm_BeginFieldBlock((char *)c, c->netId);
+        for (i = 0; i < 8; i++)
+            cm_AddFieldDelta(4, 1, (char *)&c->relatives[i] - cm_FieldObject, &none);
+        cm_AddFieldDelta(4, 1, (char *)&c->v024 - cm_FieldObject, &v024);
+        none = 0;
+        cm_AddFieldDelta(4, 1, (char *)&c->v02c - cm_FieldObject, &none);
+        cm_AddFieldDelta(2, 1, (char *)&c->w028 - cm_FieldObject, &w028);
+        cm_SendFieldDeltas();
+        cm_SendFloatDelta(c->netId, 0x7c, -c->pregnancy);
+        cm_SendFloatDelta(c->netId, 0x14, util_RandomSq() * 7.0f + 30.0f - c->f014);
+        cm_SendFloatDelta(c->netId, 0x1c, 1000.0f - c->f01c);
+        cm_SendFloatDelta(c->netId, 0x18, 1000.0f - c->f018);
+        cm_SendFloatDelta(c->netId, 0x20, 12.0f - c->f020);
+        cm_BeginFieldBlock((char *)c, c->netId);
         for (i = 0; i < 5; i++) {
-            z3 = 0;
-            cm_AddFieldValue(1, 1, (char *)c + i - cm_FieldObject + 0x80, &z3);
+            skill = 0;
+            cm_AddFieldValue(1, 1, (char *)&c->skills[i] - cm_FieldObject, &skill);
         }
         cm_SendFieldValues();
     }
-    txt_Format(out, 0x1c4f, *c, gm_PlayerFactor(0x5dc, ai_OwnPlayer));
+    txt_Format(out, 0x1c4f, c->id, gm_PlayerFactor(0x5dc, ai_OwnPlayer));
     if (best != 0) {
         txt_Format(buf, "%1G$A", best);   /* 0x61ac98: the pooled format literal */
         strcat(out, buf);
@@ -7807,19 +7837,16 @@ void gm_Unk506e70(unsigned short *c, char *out, int flag)
     if (n != 0) {
         txt_Format(buf, 0x1c50);
         strcat(out, buf);
-        i = 0;
-        if (0 < n) {
-            while (i < 6) {
-                txt_Format(buf, "%1G$A", heirs[i]);
-                strcat(out, buf);
-                i++;
-                if (n <= i)
-                    return;
+        for (i = 0; i < n; i++) {
+            if (i >= 6) {
+                if (i < n) {
+                    txt_Format(buf, 0xb6, n - i);
+                    strcat(out, buf);
+                }
+                break;
             }
-            if (i < n) {
-                txt_Format(buf, 0xb6, n - i);
-                strcat(out, buf);
-            }
+            txt_Format(buf, "%1G$A", heirs[i]);
+            strcat(out, buf);
         }
     }
 }

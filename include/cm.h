@@ -224,7 +224,7 @@ void ai_Unk4c4f10(int a, int b, int c);                                         
 void ai_Unk4c4f50(int id, int b);                                                /* 0x4c4f50, "cm_RequestSendCutInfo" */
 int cm_SendNewParty(void *p);                                                      /* 0x4c4fa0 */
 void ai_Unk4c4fd0(int a, int b);                                                 /* 0x4c4fd0 */
-void ai_Unk4c5010(int a, int b, int c);                                          /* 0x4c5010 */
+void cm_SendMoveObject(int a, int b, int c);                                          /* 0x4c5010 */
 void cm_SetPlant(int a, unsigned char b, unsigned char c, short d, unsigned char e, int f); /* 0x4c5050 */
 void ai_Unk4c50b0(int a, int b, short c);                                        /* 0x4c50b0 */
 void cm_SendChrWalkTo(int a, int b, int c, int d);                                   /* 0x4c5100 */
@@ -1002,7 +1002,7 @@ int ai_Unk4e0f70(char *m);  /* 0x4e0f70 */
 int ai_Unk4e1220(char *m);  /* 0x4e1220 */
 float gm_CharacterHealth();  /* 0x4fc820 */
 int gm_Unk506480();  /* 0x506480 */
-void gm_Unk506e70(unsigned short *c, char *out, int flag);  /* 0x506e70 */
+struct ORDCHAR; void gm_ForfeitEstate(struct ORDCHAR *c, char *out, int flag);  /* 0x506e70, the character c forfeits its estate after a lost fight; the announcement into out */
 void ai_FamilyTreeWindow(int param_1, unsigned char param_2, int param_3, int param_4);  /* 0x5c4150 */
 int ai_Unk4e1250(char *m);  /* 0x4e1250 */
 /* ai_TimeHour (0x770ae4, the clock's hour) is no object: time_view.h views it in ai_Time + 4 */
