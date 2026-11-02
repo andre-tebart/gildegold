@@ -4005,7 +4005,7 @@ exe	0x00578370	ai_TutorialStop	unk_575860	byte	draft
 exe	0x00578440	ai_TutorialFreeRuns	unk_575860	byte	draft		
 exe	0x005784a0	ai_TutorialInitMainIntro	unk_575860	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	unk_575860	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	byte	readable		
+exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	shape	readable		byte+readable -> shape+readable at 6a2ad59: gv.h's ORDCHAR got the field inventory (+0x178, ai.h AICHAR.inventory) for f3gm's gm_AddObjekt (byte with it): a truer record. ai_TutorialInitChapter2 never uses ORDCHAR; the change only alters the declaration set of unk_575860 and flips a VC6 register tie-break (regs 30 hunks, 6 bytes), so the byte match was no evidence of the original's source [waits for: unk_575860's head settling (ai.h and gv.h both included; its declaration set)]
 exe	0x00579570	ai_TutorialInitChapter3	unk_575860	draft	readable	deep	
 exe	0x0057aa80	ai_TutorialInitChapter4	unk_575860	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	unk_575860	byte	readable		
