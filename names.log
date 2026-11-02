@@ -1042,3 +1042,6 @@
 2026-11-02T15:44:38 0x00582730 func ai_Unk582730 -> ai_GraveSizeButtons by:main why:the four buttons of the graveyard contact window, one per grave size (GVYARD.open[1..3] enable sizes 1..3)
 2026-11-02T15:46:46 0x005828c0 func ai_Unk5828c0 -> ai_GraveList by:main why:lists the graves (GVENTRY) of the selected size w[0xc] of the graveyard contact window as buttons
 2026-11-02T15:48:00 0x00573200 func he_Unk573200 -> he_HasGraveWork by:main why:1 when an event 0x8d (the building work) of the building is pending on the grave (size, index); ai_GraveList marks those graves
+2026-11-02T15:51:58 0x00582b40 func ai_Unk582b40 -> ai_GraveDetail by:main why:the graveyard contact window's detail of the selected grave: the dead (GVGRAVE) in it with their five traits, its holder, year and state
+2026-11-02T15:55:52 0x005830f0 func ai_Unk5830f0 -> ai_GraveDeadName by:main why:the name line (title by sex, first and family name) / the second line (the two texts +0x30 / +0x34 by sex) of a dead person (GVGRAVE) in ai_GraveDetail
+2026-11-02T15:55:52 0x00583150 func ai_Unk583150 -> ai_GraveDeadDescription by:main why:the name line (title by sex, first and family name) / the second line (the two texts +0x30 / +0x34 by sex) of a dead person (GVGRAVE) in ai_GraveDetail
