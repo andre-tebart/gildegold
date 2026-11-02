@@ -390,7 +390,7 @@ float gm_Liking();                   /* 0x50c550 */
 
 void gv_SendCrimes(void);               /* 0x4f3700 */
 int gv_RetireCrime(int id, int m);       /* 0x4f37e0 */
-void unk_Unk4f4390(int n, char *r);     /* 0x4f4390 */
+void gv_SortCrimesByLaw(int n, CRIME *r);     /* 0x4f4390 */
 char * he_FindEvent(int n, ...);         /* 0x53e400, as he.h */
 int cm_GetSlotState();                     /* 0x4c3ae0 */
 void sv_PumpNet();                    /* 0x52fe00 */

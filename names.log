@@ -703,3 +703,4 @@
 2026-11-02T05:09:29 0x004f4080 data unk_Unk4f4080 -> gv_HeldCrimeIdsOf by:main why:as gv_HeldCrimesOf but stores the crimes' ids (CRIME.id)
 2026-11-02T05:10:20 0x004f4130 func unk_Unk4f4130 -> gv_HeldCrimeCount by:main why:counts the crimes of the culprit the character holds evidence of (gv_HeldCrimesOf without the list)
 2026-11-02T05:16:18 0x004f4350 func gv_ClearGraveyard -> gv_ClearCrimes by:main why:0x4f4350 frees every CRIME record of ai_Crimes and every ai_Evidence pair, resets ai_NextCrimeId; no graveyard state
+2026-11-02T05:17:08 0x004f4390 func unk_Unk4f4390 -> gv_SortCrimesByLaw by:main why:0x4f4390 sorts n 0x2d-byte CRIME records ascending by +0x1c (CRIME.law); its callers pass copies of ai_Crimes records from gv_HeldCrimesOf

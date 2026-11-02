@@ -15643,7 +15643,7 @@ int ai_Unk5b4340(short *param_1, int param_2)
         return 0;
     for (i = 0; i < n; i++)
         memcpy(list + i * 0x2d, (void *)((unsigned)&ai_Crimes + U_I((int)ids + i * 4) * 0x2d), 0x2d);
-    unk_Unk4f4390(n, list);
+    gv_SortCrimesByLaw(n, (CRIME *)list);
     win = d2_OpenForm((char *)(unsigned)&full_data_62cd7c, 0, 0);
     d2_CentreViewWindows(win);
     d2_SetForm(win, 2);
@@ -21702,7 +21702,7 @@ int ai_Unk5cdb90(int param_1, int *param_2, int param_3, int param_4)
     }
     if (param_3 == param_4)
         flag = 0;
-    unk_Unk4f4390(count, out);
+    gv_SortCrimesByLaw(count, (CRIME *)out);
     /* ROUGH SKELETON: the window 0x62cd7c, the list and the pump 0x5309a0 are not written yet */
     return flag;
 }

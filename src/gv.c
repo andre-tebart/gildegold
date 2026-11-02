@@ -3651,31 +3651,22 @@ int gv_RetireCrime(int id, int force)
     gv_CrimesT[k].id = -1;
     return 0;
 }
-/* 0x4f4390, sorts n records of 0x2d bytes at r by the byte +0x1c, descending (a bubble sort with whole-record swaps) */
+/* 0x4f4390, sorts the n crime records at r by the law broken (CRIME.law), ascending: an exchange sort with whole-record
+   swaps (the crime list windows ai_Unk5b4340 / ai_Unk5cdb90 sort their copies of the records held) */
 
-void unk_Unk4f4390(int n, char *r)
+void gv_SortCrimesByLaw(int n, CRIME *r)
 {
     int i, j;
-    char *q;
-    char tmp[0x2d];
+    CRIME tmp;
 
-    if (n != 1 && n - 1 >= 0) {
-        i = 1;
-        do {
-            if (i < n) {
-                q = r + 0x2d;
-                for (j = n - i; j != 0; j--) {
-                    if ((unsigned char)q[0x1c] < (unsigned char)r[0x1c]) {
-                        memcpy(tmp, r, 0x2d);
-                        memcpy(r, q, 0x2d);
-                        memcpy(q, tmp, 0x2d);
-                    }
-                    q += 0x2d;
-                }
+    for (i = 0; i < n - 1; i++) {
+        for (j = i + 1; j < n; j++) {
+            if (r[i].law > r[j].law) {
+                tmp = r[i];
+                r[i] = r[j];
+                r[j] = tmp;
             }
-            r += 0x2d;
-            i++;
-        } while (i - 1 < n - 1);
+        }
     }
 }
 /* 0x4f3a30, retires (cm_SendRetireCrime) up to n open crimes (state 1) of the culprit; every other player character
