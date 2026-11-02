@@ -2404,6 +2404,17 @@ typedef struct GCLOCK {                 /* the 14-byte game clock (0x770ae0) */
     int sec;
 } GCLOCK;
 #pragma pack(pop)
+#define GM_NOW (*(GCLOCK *)&ai_Time)  /* 0x770ae0, the game clock ai_Time as a GCLOCK */
+
+/* a job record (ai.h AIJOB, he_NextEvent's list) as gm_SellBuilding stamps it */
+#pragma pack(push, 1)
+typedef struct GMJOB {
+    char pad00[0x52];
+    GCLOCK end;                         /* 0x52, the end time (ai.h AIJOB.end) */
+    char pad60[0x24];
+    int msgSlot;                        /* 0x84, the slot handle of its HE message (cm_SendExSetHE) */
+} GMJOB;
+#pragma pack(pop)
 
 extern int gm_ClassBuilding[32];
 extern int gm_GoodBuilding[732];
@@ -5231,49 +5242,40 @@ int gm_ListWorkers(unsigned char *b, int *out)
     out[0] = n;
     return n;
 }
-/* 0x502fd0, the sale of the building with the id a to the player b for the price c (the sale record d, flag e): marks "buy building" in the message log (0x4c4540 .. 0x4c4580), pays the former owner (a message 0x17e6 with "_NACHRICHTEN_HS_30", 0x4c4830 the price) or the bank (0x4c47e0), hands the ownership over (0x4c54a0, and for the type 2 with e the 0x4c5540), stamps the sale record d one hour ahead (0x4fe140 +1 second, 0x4c4c60) and sets the building's owner field (0x4c4a60 (id, 0x5a, 2, 0, 2)). ROUGH */
-
-void gm_SellBuilding(int a, int b, int c, int d, int e)
+/* 0x502fd0, the sale of the building with the id id to the character with the netId buyer for price (the job record job, the building offer, may be 0; boss: also make the buyer the boss of a home): in the message group "buy_building" the buyer pays the master of the building (a message 0x17e6 "_NACHRICHTEN_HS_30" to the master, cm_SendMoveGoodsUnchecked) or, without a master, the bank (cm_SendMoveGoods), the ownership goes to the buyer (cm_SendOwnership) and for a home (type 2) with boss set the boss too (cm_SendBoss); the job's end is stamped now + 1 second and its HE message sent (cm_SendExSetHE, the slot kept in the job), and the building's field 0x5a set (cm_SendSetField (id, 0x5a, 2, 0, 2)) */
+void gm_SellBuilding(int id, int buyer, int price, int job, int boss)
 {
-    unsigned char *bl;
-    short *ch;
-    char *k;
+    ORDBLD *bl;
+    ORDCHAR *ch;
+    unsigned char *k;
+    GMJOB *j;
     char buf[256];
-    int u4, u5;
 
-    bl = (unsigned char *)gm_BuildQuery(1, 1, a);
-    ch = (short *)gm_FindChar(b);
-    k = ai_BTypes + *bl * 0x24d;
-    cm_BeginGroup("buy building");
-    if (*(short *)(bl + 0x25) == -1) {
-        cm_SendMoveGoods(-1, b, ai_OwnPlayer, c);
-        cm_SendOwnership(*(int *)(bl + 1), *(int *)(ch + 2), *(int *)(ch + 2));
-        if (e == 0 || *k != 2)
-            goto L1;
-        u4 = *(int *)(bl + 1);
-        u5 = *(int *)(ch + 2);
+    bl = (ORDBLD *)gm_BuildQuery(1, 1, id);
+    ch = (ORDCHAR *)gm_FindChar(buyer);
+    k = (unsigned char *)ai_BTypes + bl->type * 0x24d;
+    cm_BeginGroup("buy_building");
+    if (bl->masterId != 0xffff) {
+        txt_Format(buf, 0x17e6, bl, ch->id, price);
+        he_MessageBoxQuickjump(ORD_CHARS[bl->masterId].netId, -1, buf, 0, 0x5ff, bl->id, -1, 0, "_NACHRICHTEN_HS_30");
+        cm_SendMoveGoodsUnchecked(ORD_CHARS[bl->masterId].netId, buyer, ai_OwnPlayer, price);
+        cm_SendOwnership(bl->id, ch->netId, ch->netId);
+        if (boss != 0 && *k == 2)
+            cm_SendBoss(ch->netId, bl->id);
     } else {
-        txt_Format(buf, 0x17e6, bl, *ch, c);
-        he_MessageBoxQuickjump(*(int *)(ai_Chars[*(unsigned short *)(bl + 0x25)] + 4), -1, buf, 0, 0x5ff, *(int *)(bl + 1), -1, 0, "_NACHRICHTEN_HS_30");
-        cm_SendMoveGoodsUnchecked(*(int *)(ai_Chars[*(unsigned short *)(bl + 0x25)] + 4), b, ai_OwnPlayer, c);
-        cm_SendOwnership(*(int *)(bl + 1), *(int *)(ch + 2), *(int *)(ch + 2));
-        if (e == 0 || *k != 2)
-            goto L1;
-        u4 = *(int *)(bl + 1);
-        u5 = *(int *)(ch + 2);
+        cm_SendMoveGoods(-1, buyer, ai_OwnPlayer, price);
+        cm_SendOwnership(bl->id, ch->netId, ch->netId);
+        if (boss != 0 && *k == 2)
+            cm_SendBoss(ch->netId, bl->id);
     }
-    cm_SendBoss(u5, u4);
-L1:
-    if (d != 0) {
-        *(int *)(d + 0x52) = *(int *)ai_Time;
-        *(int *)(d + 0x56) = *(int *)(ai_Time + 4);
-        *(int *)(d + 0x5a) = *(int *)(ai_Time + 8);
-        *(short *)(d + 0x5e) = *(short *)(ai_Time + 0xc);
-        gm_AddTime((GCLOCK *)(d + 0x52), 0, 0, 1);
-        *(int *)(d + 0x84) = ((int (*)(int, int))cm_SendExSetHE)(-1, d);
+    j = (GMJOB *)job;
+    if (j != 0) {
+        j->end = GM_NOW;
+        gm_AddTime(&j->end, 0, 0, 1);
+        j->msgSlot = ((int (*)(int, int))cm_SendExSetHE)(-1, job);
     }
-    cm_SendSetField(*(int *)(bl + 1), 0x5a, 2, 0, 2);
-    cm_EndGroup("buy building");
+    cm_SendSetField(bl->id, 0x5a, 2, 0, 2);
+    cm_EndGroup("buy_building");
 }
 /* 0x5031b0, "gm_AllocRaum": creates the building b's (kind) object n with all its sub-objects (the object words after it up to the next kind 2 / 6 object that are marked negative), sets the counts of its first kind 0x2a / 0x116 objects (the bytes at +0x23d / +0x23e / +0x23f of the building prototype, at least 2 / 6), and for the market stalls 0x92 .. 0x97 / 0x2db the store room ob_LAGERFLAECHE_ALLGEMEIN with the player's goods. ROUGH */
 
