@@ -218,7 +218,7 @@ int cm_SendTime(char *t);                                                       
 int cm_SendExSysMessage(unsigned char id, void *msg);                               /* 0x4c4db0 */
 void cm_SendKillCharacter(int a, int b);                                                 /* 0x4c4e00 */
 int cm_SendCrime(void *p);                                                       /* 0x4c4e40 */
-void ai_Unk4c4e90(int a, int b);                                                 /* 0x4c4e90 */
+int cm_SendRetireCrime(int a, int b);                                                  /* 0x4c4e90 */
 void cm_SendProofExecuted(int a, int b);                                                 /* 0x4c4ed0 */
 void ai_Unk4c4f10(int a, int b, int c);                                          /* 0x4c4f10 */
 void ai_Unk4c4f50(int id, int b);                                                /* 0x4c4f50, "cm_RequestSendCutInfo" */

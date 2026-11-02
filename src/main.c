@@ -4182,7 +4182,7 @@ void main_BeginPlayerRound(void)
     if ((cm_NetFlags & 8) == 0 && ai_Unk1460ae0 != -1)
         gm_EndDayIncomes(2);
     else {
-        unk_Unk4f3700();
+        gv_SendCrimes();
         sv_PumpNet();
         Sleep(100);
         for (i = 0; i < 0x300; i++) {

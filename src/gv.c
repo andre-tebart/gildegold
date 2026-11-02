@@ -3590,44 +3590,40 @@ int gv_GetGraveInfo(int id, short *a, int *v, short *c, unsigned *k)
     }
     return 0;
 }
-/* 0x4f3700, for each of the 512 records of 0x91f700 by its state (int +0x25): state 1 sends 0x4c4e90 (id at +0, 0); a state above 1 whose 0x53e400 (1, 1, state) lookup fails sends 0x4c4e90 (id, 1); after 32 sends it waits for the last one (0x4c3ae0 / 0x52fe00). ROUGH */
+/* 0x4f3700, sends every crime record with message 0x23 (cm_SendRetireCrime (id, flag)): an open one (state 1) with flag 0, a
+   handed-over one (state above 1: a job id) whose job he_FindEvent (1, 1, state) no longer finds with flag 1; after 32
+   sends it pumps the net until the last send's slot is done (cm_GetSlotState).
+   @deep read in full against the original (states, he_FindEvent check, cm_SendRetireCrime calls, the
+   32-send wait loop as while (slot != -1 && cm_GetSlotState(slot) == 0)): every instruction pairs; the
+   only remaining difference is the strength-reduced base of the index loop over gv_CrimesT: ours walks
+   &gv_CrimesT[i] (mov esi, ai_Crimes; mov eax, [esi + 0x25]; mov ecx, [esi]; cmp esi, ai_Crimes+0x5a00),
+   the original &gv_CrimesT[i].state (mov esi, 0x91f725; mov eax, [esi]; mov ecx, [esi - 0x25]; cmp esi,
+   0x925125). Tried: state read in the condition, for(;;) wait loop. An induction-variable choice, not
+   meaning. */
 
-void unk_Unk4f3700(void)
+void gv_SendCrimes(void)
 {
-    int h, n, k;
-    unsigned s;
-    unsigned *p;
-    int id, flag;
+    int slot, sent, i;
+    unsigned state;
 
-    h = -1;
-    n = 0;
-    p = (unsigned *)(gv_Graveyard + 0x25);
-    do {
-        s = *p;
-        if (s == 1) {
-            id = *(int *)((char *)p - 0x25);
-            flag = 0;
-            h = ((int (*)(int, int))ai_Unk4c4e90)(id, flag);
-            n++;
-        } else if (s > 1) {
-            k = (int)he_FindEvent(1, 1, s);
-            if (k == 0) {
-                id = *(int *)((char *)p - 0x25);
-                flag = 1;
-                h = ((int (*)(int, int))ai_Unk4c4e90)(id, flag);
-                n++;
-            }
+    slot = -1;
+    sent = 0;
+    for (i = 0; i < 0x200; i++) {
+        state = gv_CrimesT[i].state;
+        if (state == 1) {
+            slot = cm_SendRetireCrime(gv_CrimesT[i].id, 0);
+            sent++;
+        } else if (state > 1 && he_FindEvent(1, 1, state) == 0) {
+            slot = cm_SendRetireCrime(gv_CrimesT[i].id, 1);
+            sent++;
         }
-        if (n > 0x1f) {
-            if (h != -1) {
-                while (cm_GetSlotState(h) == 0)
-                    sv_PumpNet();
-            }
-            h = -1;
-            n = 0;
+        if (sent >= 0x20) {
+            while (slot != -1 && cm_GetSlotState(slot) == 0)
+                sv_PumpNet();
+            slot = -1;
+            sent = 0;
         }
-        p = (unsigned *)((char *)p + 0x2d);
-    } while ((int)p < ((unsigned)&amt_Table + 0x5));
+    }
 }
 /* 0x4f37e0, retires the record of the id (0x4f36e0): its counter (short +0x1a) counts down, with mode m = 0 it stays while the counter is not 0, states other than 1 stay unless m forces it; the owner (0x505df0 of +0x16)
    is told (0x5a9430) when the player's pair is removed; the pairs of the id are cleared and the record freed (state 0, ids -1). 3 no record, 2 counting, 1 kept, 0 done */
@@ -3744,7 +3740,7 @@ int unk_Unk4f3a30(int p, int n)
                 }
                 k += 8;
             } while (k < 0x4000);
-            ai_Unk4c4e90(*(int *)(gv_Graveyard + off), 1);
+            cm_SendRetireCrime(*(int *)(gv_Graveyard + off), 1);
             cnt++;
         }
         off += 0x2d;
@@ -3809,7 +3805,7 @@ int unk_Unk4f3b40(int p, int n, int *ids)
                 }
                 k += 8;
             } while (k < 0x4000);
-            ai_Unk4c4e90(id, 1);
+            cm_SendRetireCrime(id, 1);
             cnt++;
         next:
             i++;

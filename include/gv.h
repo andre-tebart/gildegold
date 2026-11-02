@@ -388,7 +388,7 @@ void unk_Unk4f4970(unsigned i);              /* 0x4f4970 */
 int gm_Unk505e60(unsigned id, int again);                     /* 0x505e60 */
 float gm_Liking();                   /* 0x50c550 */
 
-void unk_Unk4f3700(void);               /* 0x4f3700 */
+void gv_SendCrimes(void);               /* 0x4f3700 */
 int unk_Unk4f37e0(int id, int m);       /* 0x4f37e0 */
 void unk_Unk4f4390(int n, char *r);     /* 0x4f4390 */
 char * he_FindEvent(int n, ...);         /* 0x53e400, as he.h */

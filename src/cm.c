@@ -1335,16 +1335,16 @@ int cm_SendCrime(void *p)
     G17_I(m, 0x29) = rand();
     return ai_Unk4c39c0(&m);
 }
-/* 0x4c4e90, message 0x23 */
+/* 0x4c4e90, sends message 0x23 (crime id a, force b: retire the crime record, ai_Unk4c9090); the send slot of ai_Unk4c39c0 */
 
-void ai_Unk4c4e90(int a, int b)
+int cm_SendRetireCrime(int a, int b)
 {
     G17MSG m;
 
     m.type = 0x23;
     G17_I(m, 0) = a;
     G17_I(m, 4) = b;
-    ai_Unk4c39c0(&m);
+    return ai_Unk4c39c0(&m);
 }
 /* 0x4c4ed0, message 0x24 */
 
