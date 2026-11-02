@@ -250,7 +250,7 @@ GVGRAVE *gv_RandomGrave(unsigned char *o);/* 0x4ef930 */
 extern const int gv_EntryCounts[];             /* 0x5ee054, entries per kind */
 extern const int gv_ListEntries[4][4];         /* 0x5ee084 */
 int gv_BuryNewDead(unsigned char *o, int n);  /* 0x4ef9c0 */
-int *gv_AllocGraveyard(unsigned char *o);   /* 0x4efc10, allocates the graveyard record of the building o ("gv_AllocGraveyardField", at +0x65 of o) */
+GVYARD *gv_AllocGraveyard(unsigned char *o);  /* 0x4efc10, allocates the graveyard record of the building o ("gv_AllocGraveyardField", at +0x65 of o) */
 extern const int gv_EntryTotals[];             /* 0x5ee064 */
 extern const int gv_GraveTotals[];             /* 0x5ee074 */
 extern int ai_NextObjectId;                /* 0x61a654 */

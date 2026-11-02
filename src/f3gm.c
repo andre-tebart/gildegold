@@ -4509,7 +4509,7 @@ unsigned char *gm_CreateBuilding(unsigned char k, unsigned short own)
     case 0x48:
     case 0x49:
     case 0x4a:
-        *(int *)(b + 0x65) = gv_AllocGraveyard(b);
+        *(int *)(b + 0x65) = (int)gv_AllocGraveyard(b);
         gv_BuryNewDead(b, 3);
         break;
     case 0x4b:
