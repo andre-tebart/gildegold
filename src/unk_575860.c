@@ -1216,20 +1216,15 @@ int ai_QueryBuilding0f(int *args)
     }
     return args[0] != 0x1b;
 }
-/* 0x576590, the kind 0x19 with a building whose table byte is 0xf and the step word p[3] 0x110 */
+/* 0x576590, the query callback of the run record FTInitChapter2Step3: allows only the event 0x19 on a building
+   of the type kind 0xf with the argument 0x110, refuses everything else */
 
-int ai_Unk576590(int *p)
+int ai_QueryChapter2Step3(int *args)
 {
-    int kind;
-
-    if (p[0] != 0x19 || !p[1])
-        return 0;
-    kind = *(unsigned char *)p[1];
-    if (*(unsigned char *)(*(char **)(unsigned)&ai_BTypes + kind * 0x24d) != 0xf)
-        return 0;
-    if (p[3] != 0x110)
-        return 0;
-    return 1;
+    if (args[0] == 0x19 && args[1]
+            && ((AIBTYPE *)ai_BTypes)[((AIBLD *)args[1])->type].kind == 0xf && args[3] == 0x110)
+        return 1;
+    return 0;
 }
 /* 0x5765e0, 1 for the kind 0x1a with a record */
 
@@ -2913,7 +2908,7 @@ int ai_Unk578e40(void)
     U_I(r + 0x2c) = 0x429;
     U_I(r + 0x30) = 0x8e;
     U_I(r + 0x38) = (unsigned)&ai_Unk576920;
-    U_I(r + 0x3c) = (unsigned)&ai_Unk576590;
+    U_I(r + 0x3c) = (unsigned)&ai_QueryChapter2Step3;
     U_I(r + 0x44) = 0x2148;
     U_I(r + 0x48) = 0xa;
     U_I(r + 0x68) = 0x5837;
