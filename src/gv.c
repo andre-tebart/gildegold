@@ -3430,69 +3430,72 @@ int gv_HeldCrimeCount(int culprit, unsigned t)
     }
     return n;
 }
-/* 0x4f41b0, for the character c: goes over the 512 records of 0x91f700 (0x2d bytes; int +0x25 != 0, int +0x16 = the accused character id != c's) whose pair (c's id, record id) is not yet in the table 0x91b6e0, counts them per accused
-   character (up to 0x300), and returns the character with the most records; ids[] gets the ids (+0) of its records (up to max), *cnt their number; 0 when there is none. ROUGH */
+/* 0x4f41b0, the character with the most open crimes the character c holds no evidence of yet: goes over the open
+   crimes (state > 0) of a living culprit other than c whose pair (c's netId, crime id) is not in ai_Evidence, counts
+   them per culprit (up to 0x300 culprits) and returns the culprit with the most; ids[] gets the ids of its crimes (up
+   to max), *cnt their number; 0 when there is none (the seance's ghost: ai_Unk585cb0) */
 
 char *gv_FindAccused(char *c, int max, int *ids, int *cnt)
 {
-    char *who[0x300];
     int count[0x300];
-    char *rec[0x600];
-    int i, j, n, nw, nr, best, bestn;
-    char *o;
-    int *q;
+    AICHAR *who[0x300];
+    CRIME *rec[0x200];
+    int i, j, k, n, nw, nr, bestn;
+    AICHAR *ch, *o, *best;
 
+    ch = (AICHAR *)c;
     *cnt = 0;
     memset(who, 0, sizeof(who));
     memset(count, 0, sizeof(count));
-    nr = 0;
+    best = 0;
+    bestn = 0;
     n = 0;
+    nr = 0;
     nw = 1;
-    for (i = 0; i < 0x5a00; i += 0x2d) {
-        if (*(int *)(gv_Graveyard + i + 0x25) == 0 || *(int *)(gv_Graveyard + i + 0x16) == *(int *)(c + 4))
-            continue;
-        o = gm_FindChar(*(int *)(gv_Graveyard + i + 0x16));
-        if (o == 0)
-            continue;
-        for (q = (int *)(unk_Tab91b6e0 + 4); (int)q < ((unsigned)unk_Tab91b6e0 + 0x4004); q += 2)
-            if (q[-1] == *(int *)(c + 4) && *q == *(int *)(gv_Graveyard + i))
-                break;
-        if ((int)q < ((unsigned)unk_Tab91b6e0 + 0x4004))
-            continue;
-        rec[nr++] = gv_Graveyard + i;
-        for (j = 0; nw > 0 && j < 0x300; j++) {
-            if (who[j] == 0) {
-                who[j] = o;
-                count[j]++;
-                n = nw++;
-                break;
+    for (i = 0; i < 0x200; i++) {
+        if (gv_CrimesT[i].state > 0 && gv_CrimesT[i].culprit != ch->netId) {
+            o = (AICHAR *)gm_FindChar(gv_CrimesT[i].culprit);
+            if (o != 0) {
+                for (k = 0; k < 0x800; k++)
+                    if (ai_Evidence[k][0] == ch->netId && ai_Evidence[k][1] == gv_CrimesT[i].id)
+                        goto next;      /* c holds evidence of it already */
+                rec[nr++] = &gv_CrimesT[i];
+                for (j = 0; j < nw; j++) {
+                    if (j >= 0x300)
+                        break;
+                    if (who[j] == 0) {
+                        who[j] = o;
+                        n = nw;
+                        count[j]++;
+                        nw++;
+                        break;
+                    }
+                    if (who[j]->netId == o->netId) {
+                        count[j]++;
+                        break;
+                    }
+                }
             }
-            if (*(int *)(who[j] + 4) == *(int *)(o + 4)) {
-                count[j]++;
-                break;
-            }
-            if (j + 1 >= nw)
-                break;
         }
+next:;
     }
     if (nr == 0 || n == 0)
         return 0;
-    o = who[0];
-    best = 0;
-    bestn = 0;
     for (j = 0; j < n; j++) {
         if (count[j] > bestn) {
-            o = who[j];
+            best = who[j];
             bestn = count[j];
         }
     }
-    j = 0;
-    for (i = 0; i < nr && j < max; i++) {
-        if (*(int *)(rec[i] + 0x16) == *(int *)(o + 4))
-            ids[j++] = *(int *)rec[i];
+    k = 0;
+    for (i = 0; i < nr; i++) {
+        if (k >= max)
+            break;
+        if (rec[i]->culprit == best->netId)
+            ids[k++] = rec[i]->id;
     }
-    *cnt = j;
-    return o;
+    *cnt = k;
+    return (char *)best;
 }
 /* 0x4f4350, clears the graveyard game state: 0x6f1b88 = 0, the 512 records of 0x91f700 (ids -1, +0x16 = -1, int +0x25 = 0 ..), the 2048 pairs -1 */
 

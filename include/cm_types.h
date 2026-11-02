@@ -94,7 +94,7 @@ typedef struct CRIME {                  /* 0x2d bytes, a crime record of ai_Crim
     unsigned char law;                  /* 0x1c, the AI decision (law) record broken (gv_GetTableRecord) */
     int v1d;                            /* 0x1d */
     int place;                          /* 0x21, the object id of the scene (ord_AddGridAmount), -1 for none */
-    int state;                          /* 0x25, 0 free, 1 open, above 1 handed over */
+    unsigned int state;                 /* 0x25, 0 free, 1 open, above 1 handed over (a job id; unsigned: gv_SendCrimes, gv_FindAccused) */
     int seed;                           /* 0x29, a random seed (util_Seed when there is no place) */
 } CRIME;
 #pragma pack(pop)
