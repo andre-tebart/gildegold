@@ -3776,9 +3776,18 @@ int ai_Unk4960a0(AIPER *p, AIARG *s1, AIARG *s2)
 {
     return 3;
 }
-/* 0x4960b0, decide: one of five needs (action 4) */
+/* 0x4960b0, decide of action 4: a random affordable skill below 252 to train (o1 kind 0xe, ref the skill, arg2 the price), else first the building it needs
+   @deep read against 0x4960b0..0x4965a6: same statements, calls, arguments, constants and branch
+   conditions (v < money signed / n[i] > money unsigned, 252.0f compares, building ids 0x15/0x17/0x14, the
+   two ChooseSubAction blocks). Remaining is allocation only: ours keeps a function-wide ebx=1 and p in
+   ebp, so the skill byte c spills to [esp+0x14] (mov byte ptr [esp+0x14], al / mov edx,[esp+0x14]; and
+   edx,0xff); the original keeps p in ebx, c in bl, loads 1 locally (mov edi,1 / mov eax,1 / mov ebp,1) and
+   strength-reduces the 5-skill loop to a pointer ebp=&p->skills[0] plus esi=i*4 (i rebuilt as edx+ebp for
+   ord_GetRatingByte, loop end cmp eax,5 jb) where ours indexes [esi+ebp+0x80] / [esp+esi*4+..]; the
+   60-byte size difference and the 12 branch-target shifts are those encodings. Needs allocation-driven
+   variant rounds. */
 
-int ai_Unk4960b0(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
+int ai_DecideTrainSkill(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
 {
     int q[0x88];
     float w[5];
@@ -3821,7 +3830,7 @@ int ai_Unk4960b0(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
         memset(q, 0, sizeof(q));
         q[0] = 1;
         f = (ord_DispatchOrder(ids[k], p, q) & 2) ? -1.0f : 0.0f;
-        c = p->unk080[k];
+        c = p->skills[k];
         if (c < 42)
             v = 1;
         else if (c < 84)
@@ -3850,7 +3859,7 @@ int ai_Unk4960b0(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
         if (!cnt[i])
             cnt[i] = 252;
         f = (ord_DispatchOrder(ids[i], p, q) & 2) ? -1.0f : 0.0f;
-        c = p->unk080[i];
+        c = p->skills[i];
         if (c < 42)
             n[i] = 1;
         else if (c < 84)
@@ -4014,7 +4023,7 @@ int ai_Unk496610(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
         if (!cnt[i])
             cnt[i] = 252;
         f = (ord_DispatchOrder(ids[i], p, q) & 2) ? -1.0f : 0.0f;
-        c = p->unk080[i];
+        c = p->skills[i];
         if (c < 42)
             n[i] = 1;
         else if (c < 84)
@@ -9228,7 +9237,7 @@ int ai_RegisterBaseActions(int a)
     act.id = 0x4;
     strcpy(act.name, "Bildung");
     act.eval = ai_Unk4a49a0;
-    act.decide = ai_Unk4960b0;
+    act.decide = ai_DecideTrainSkill;
     act.exec = ai_Unk4965b0;
     act.flags = 0x1;
     if (!am_RegisterMethod(&act, a))

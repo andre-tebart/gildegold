@@ -34,7 +34,7 @@ typedef struct AIPER {                  /* a character, 0x21c bytes (ai_Chars[76
     char pad00e[0xe];
     float unk01c;                       /* 0x01c */
     char pad020[0x60];
-    unsigned char unk080[8];            /* 0x080, one byte per action kind */
+    unsigned char skills[8];            /* 0x080, the five skill bytes (0..252; ord.c ORDCHAR stats, ord_RatingBytes their maxima) */
     float mood[14][3];                  /* 0x088, (a, b, value) */
     unsigned char sel;                  /* 0x130 */
     char pad131[0x33];
@@ -206,7 +206,7 @@ int ai_Unk496050(int a, AIPER *p, int b, AIARG *o1, AIARG *o2);                 
 int ai_Unk496070(AIPER *p, AIARG *s1, AIARG *s2);                               /* 0x496070 */
 int ai_Unk496080(int a, AIPER *p, int b, AIARG *o1, AIARG *o2);                 /* 0x496080 */
 int ai_Unk4960a0(AIPER *p, AIARG *s1, AIARG *s2);                               /* 0x4960a0 */
-int ai_Unk4960b0(int a, AIPER *p, int b, AIARG *o1, AIARG *o2);                 /* 0x4960b0 */
+int ai_DecideTrainSkill(int a, AIPER *p, int b, AIARG *o1, AIARG *o2);                 /* 0x4960b0 */
 int ai_Unk4965b0(AIPER *p, AIARG *s1, AIARG *s2);                               /* 0x4965b0 */
 int ai_Unk496610(int a, AIPER *p, int b, AIARG *o1, AIARG *o2);                 /* 0x496610 */
 int ai_Unk496ab0(AIPER *p, AIARG *s1, AIARG *s2);                               /* 0x496ab0 */
