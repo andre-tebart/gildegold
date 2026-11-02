@@ -6612,7 +6612,7 @@ void d2_ClearViewTextures(int view);                      /* 0x474d10 */
 void d2_EnableViewObjects();                     /* 0x4754d0 */
 void d3d_SetWBuffer(char w);                     /* 0x437060 */
 char *util_BaseName();                   /* 0x401040 */
-int sv_Unk52f710(int *book, char dir);
+#define SV_ANIMCTL(o) ((D3ANIMCTL *)(o)->material->animCtl)  /* the animation control of an object's material (D3MATERIAL.animCtl at 0xf4) */
 
 /* 0x52f2c0, draws the rubber band rectangle (0x41e8f0, colour -1) between the corners 0x760444 / 0x760448 and 0x76044c / 0x760450 while 0x760440 is set */
 void sv_Unk52f2c0(void)
@@ -6624,16 +6624,16 @@ void sv_Unk52f2c0(void)
         dd_Line(sv_Band.x0, sv_Band.y1, sv_Band.x0, sv_Band.y0, -1);
     }
 }
-/* 0x52f340, the page keys of the book: the button 0x767 turns forward (0x52f9f0), 0x768 backward (0x52fa00) */
+/* 0x52f340, the page keys of the book: the button 0x767 turns forward (sv_BookForward), 0x768 backward (sv_BookBack) */
 
-void sv_Unk52f340(int *book)
+void sv_BookKeys(SVBOOK *bk)
 {
     if (SV_I((unsigned)&d2_ClickedId) == 0x767) {
-        sv_BookForward((SVBOOK *)book);
+        sv_BookForward(bk);
         return;
     }
     if (SV_I((unsigned)&d2_ClickedId) == 0x768)
-        sv_BookBack((SVBOOK *)book);
+        sv_BookBack(bk);
 }
 /* 0x52f360, opens a book: the model named model (d3t_FindObject), or, given the scene object name at, a copy of it
    created there (the model hidden until the close); n page views follow as variable arguments (the d2_LoadView
@@ -6756,79 +6756,67 @@ void sv_UpdateBook(SVBOOK *bk)
     }
     sv_BookPhase ^= 1;
 }
-/* 0x52f710, turns the book bk by dir pages (2 forward / -2 backward): checks the limits and that the page animations of the book model (+0x1ec) are finished ("buch\Buch_vorblaettern.baf" /
-   "buch\Buch_zurueckblaettern.baf"), sets the page pictures of the n page widgets, starts the animation, advances the first page (+0x270), plays "Umblaettern_s"; returns 1 when turned; ROUGH */
+/* 0x52f710, turns the book bk by dir pages (2 forward / -2 backward): within the pages, and only when the page
+   animations of the book model (the three slots of its material's D3ANIMCTL) have finished (a finished turn
+   animation is released); sets the page textures of the views around the new pair ("Buch_Seite<n>_oben_ns_nm" /
+   "_unten_ns_nm", n = page % 4 + 1, the others emptied and disabled), plays the turn animation, moves the page,
+   runs sv_BookKeys and plays "Umblaettern_s". Returns 1 when turned. */
 
-int sv_Unk52f710(int *bk, char dir)
+int sv_TurnBook(SVBOOK *bk, char dir)
 {
-    char *s, *anim;
-    int off, a, i, rec, *p, pg, lim;
-    char fwd[0x1c], back[0x1c];
-    char top[0x40], bottom[0x40];
+    char top[0x40], bottom[0x40], path[0x200];
+    char *name;
+    int i, pg, a;
+    D3ANIMSLOT *slot;
 
     if (bk == 0)
         return 0;
-    if (dir < 0) {
-        if ((char)bk[0x9c] - 2 < 0)
+    if (dir >= 0) {
+        if (bk->page + 2 >= bk->npages)
             return 0;
-    } else if ((int)*((char *)bk + 0x271) <= (char)bk[0x9c] + 2)
+    } else if (bk->page - 2 < 0) {
         return 0;
-    off = 0;
-    do {
-        strcpy(fwd, "buch\\Buch_vorblaettern.baf");
-        s = util_BaseName(fwd);
-        anim = *(char **)(*(int *)(bk[0] + 0x1ec) + 0x178 + off);
-        rec = *(int *)(bk[0] + 0x1ec) + 0x110 + off;
-        if (anim != 0 && _strcmpi(anim, s) == 0 && dir > 0) {
-            if ((*(unsigned char *)(rec + 0x6d) & 0x20) == 0)
-                return 0;
-            d3_ReleaseTexture(*(int *)(bk[0] + 0x1ec) + 0xf4, *(int *)(off + 0x178 + *(int *)(bk[0] + 0x1ec)));
-        }
-        strcpy(back, "buch\\Buch_zurueckblaettern.baf");
-        s = util_BaseName(back);
-        if (*(char **)(rec + 0x68) != 0 && _strcmpi(*(char **)(rec + 0x68), s) == 0) {
-            if ((*(unsigned char *)(rec + 0x6d) & 0x20) == 0 && dir > 0)
-                return 0;
-            d3_ReleaseTexture(*(int *)(bk[0] + 0x1ec) + 0xf4, *(int *)(off + 0x178 + *(int *)(bk[0] + 0x1ec)));
-        }
-        off += 0x7c;
-    } while (off < 0x174);
-    i = 0;
-    s = (char *)(*(int *)(bk[0] + 0x1ec) + 0x17d);
-    do {
-        if (*(int *)(s - 5) != 0 && (*(unsigned char *)s & 0x20) == 0)
-            return 0;
-        i++;
-        s += 0x7c;
-    } while (i < 3);
-    pg = 0;
-    if (*((char *)bk + 0x271) > 0) {
-        p = bk + 0x8a;
-        do {
-            a = (int)(char)bk[0x9c];
-            lim = a;
-            if (dir <= 0)
-                lim = a - 2;
-            if (pg < lim || (dir <= 0 ? a + 2 : a + 4) < pg) {
-                d2_SetViewTextures(*p, ch_EmptyName, ch_EmptyName);
-                d2_EnableViewObjects(*p, 0);
-            } else {
-                lim = (pg & 3) + 1;
-                sprintf(top, "Buch_Seite%i_oben_ns_nm", lim);
-                sprintf(bottom, "Buch_Seite%i_unten_ns_nm", lim);
-                d2_SetViewTextures(*p, top, bottom);
-                d2_EnableViewObjects(*p, 1);
-            }
-            pg++;
-            p++;
-        } while (pg < (int)*((char *)bk + 0x271));
     }
-    if (dir <= 0)
-        d3t_PlayAnim(bk[0], "buch\\Buch_zurueckblaettern.baf", 0x12);
+    for (i = 0; i < 3; i++) {
+        strcpy(path, "buch\\Buch_vorblaettern.baf");
+        name = util_BaseName(path);
+        slot = &SV_ANIMCTL(bk->obj)->slots[i];
+        if (slot->data != 0 && _strcmpi(slot->data->name, name) == 0 && dir > 0) {
+            if ((slot->flags.b[1] & 0x20) == 0)
+                return 0;
+            d3_ReleaseTexture(SV_ANIMCTL(bk->obj), SV_ANIMCTL(bk->obj)->slots[i].data->name);
+        }
+        strcpy(path, "buch\\Buch_zurueckblaettern.baf");
+        name = util_BaseName(path);
+        if (slot->data != 0 && _strcmpi(slot->data->name, name) == 0) {
+            if ((slot->flags.b[1] & 0x20) == 0 && dir > 0)
+                return 0;
+            d3_ReleaseTexture(SV_ANIMCTL(bk->obj), SV_ANIMCTL(bk->obj)->slots[i].data->name);
+        }
+    }
+    for (i = 0; i < 3; i++) {
+        slot = &SV_ANIMCTL(bk->obj)->slots[i];
+        if (slot->data != 0 && (slot->flags.b[1] & 0x20) == 0)
+            return 0;
+    }
+    for (pg = 0; pg < bk->npages; pg++) {
+        a = bk->page;
+        if (pg >= (dir > 0 ? a : a - 2) && pg <= (dir > 0 ? a + 4 : a + 2)) {
+            sprintf(top, "Buch_Seite%i_oben_ns_nm", (pg & 3) + 1);
+            sprintf(bottom, "Buch_Seite%i_unten_ns_nm", (pg & 3) + 1);
+            d2_SetViewTextures(bk->views[pg], top, bottom);
+            d2_EnableViewObjects(bk->views[pg], 1);
+        } else {
+            d2_SetViewTextures(bk->views[pg], ch_EmptyName, ch_EmptyName);
+            d2_EnableViewObjects(bk->views[pg], 0);
+        }
+    }
+    if (dir > 0)
+        d3t_PlayAnim(bk->obj, "buch\\Buch_vorblaettern.baf", 0x12);
     else
-        d3t_PlayAnim(bk[0], "buch\\Buch_vorblaettern.baf", 0x12);
-    *(char *)(bk + 0x9c) = (char)bk[0x9c] + dir;
-    sv_Unk52f340(bk);
+        d3t_PlayAnim(bk->obj, "buch\\Buch_zurueckblaettern.baf", 0x12);
+    bk->page += dir;
+    sv_BookKeys(bk);
     sb_PlaySample(snd_BookBank, "Umblaettern_s", 1, 0x3f, 0x7f, 0, 0);
     return 1;
 }
@@ -6836,13 +6824,13 @@ int sv_Unk52f710(int *bk, char dir)
 
 void sv_BookForward(SVBOOK *bk)
 {
-    sv_Unk52f710((int *)bk, 2);
+    sv_TurnBook(bk, 2);
 }
 /* 0x52fa00, turns the book backward by two pages */
 
 void sv_BookBack(SVBOOK *bk)
 {
-    sv_Unk52f710((int *)bk, -2);
+    sv_TurnBook(bk, -2);
 }
 
 extern int ai_Unk623ea0, ai_Unk623ea4, ai_Unk623ea8;  /* 0x623ea0, 0x623ea4, 0x623ea8 */

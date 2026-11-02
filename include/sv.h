@@ -143,11 +143,11 @@ void sv_EndBand(void);                                                /* 0x52eed
 void sv_UpdateBand(void);                                                /* 0x52eee0 */
 void sv_UpdateBandLed(void);                                                /* 0x52f0d0 */
 void sv_Unk52f2c0(void);                                                /* 0x52f2c0 */
-void sv_Unk52f340(int *book);                                           /* 0x52f340 */
+void sv_BookKeys(SVBOOK *bk);                                           /* 0x52f340 */
 SVBOOK *sv_OpenBook(char *model, char *at, char n, ...);                         /* 0x52f360 */
 void sv_Unk52f530(int *bk);                                             /* 0x52f530 */
 void sv_UpdateBook(SVBOOK *bk);                                           /* 0x52f600 */
-int sv_Unk52f710(int *bk, char dir);                                    /* 0x52f710 */
+int sv_TurnBook(SVBOOK *bk, char dir);                                  /* 0x52f710 */
 void sv_BookForward(SVBOOK *bk);                                           /* 0x52f9f0 */
 void sv_BookBack(SVBOOK *bk);                                           /* 0x52fa00 */
 int sv_CreateScrollForm(void);                                                 /* 0x52fa10 */
