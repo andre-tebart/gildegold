@@ -233,6 +233,7 @@ typedef struct ORDBLD {
 typedef struct ORDOBJ {
     unsigned short type;            /* 0x00, the prototype id */
     int objId;                      /* 0x02, the object's own id (messages name the object by it) */
+    int ownerId;                    /* 0x06, the id of the building / object / character holding it (gm_ClearObjects finds it by 0x4fea50) */
 } ORDOBJ;
 #pragma pack(pop)
 

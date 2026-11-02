@@ -2664,45 +2664,40 @@ void gm_ClearBuildings(void)
     } while (i < 0xa900);
     memset(ai_Blds, 0, 0xa900);
 }
-/* 0x4fe830, runs through the object instances (0x5008 records of 0x43 bytes: word +0 the prototype, int +6 the owner id): the owner (found by 0x4fea50 as a building / object / character) gets the instance back (0x4ffff0 on its list at +0x5d / +0x14 / +0x178), an instance without a live owner is freed (0x500080); then the table is cleared */
+/* 0x4fe830, runs through the object instances (0x5008 records of 0x43 bytes: word +0 the prototype, int +6 the owner id): the owner (found by 0x4fea50 as a building / object / character) gets the instance back (0x4ffff0 on its list at +0x5d / +0x14 / +0x178), an instance without a live owner is freed (0x500080); then the table is cleared
+   @deep read whole against the original: the loop is for (i = 0; i < 0x5008*0x43; i += 0x43) (jl
+   0x14f218), the owner list is b+0x5d / o+0x14 / c+0x178 in that order, the id is passed unsigned
+   (ORDOBJ.type, gv.h, now with ownerId +6). Branch structure equal. Left: register allocation only:
+   rotations eax<->esi, edx<->esi (base/index swaps), and the free call's argument: ours add eax, esi; push
+   eax, the original lea ecx, [esi + eax]; push ecx (same value in another register; ecx->edx follows at
+   the reload). Tried i + (char *)ai_Objects, &->type, an int cast: unchanged. */
 
 void gm_ClearObjects(void)
 {
-    int i, t;
+    int i, list;
     int b, o, c;
 
-    i = 0;
-    do {
-        if (*(short *)((char *)ai_Objects + i) != 0) {
-            gm_FindById(&b, &o, &c, *(int *)((char *)ai_Objects + i + 6));
-            if (b == 0) {
-                if (o != 0) {
-                    t = o + 0x14;
-                    goto have;
-                }
-                if (c != 0) {
-                    t = c + 0x178;
-                    goto have;
-                }
+    for (i = 0; i < 0x5008 * 0x43; i += 0x43) {
+        if (((ORDOBJ *)((char *)ai_Objects + i))->type != 0) {
+            gm_FindById(&b, &o, &c, ((ORDOBJ *)((char *)ai_Objects + i))->ownerId);
+            if (b != 0)
+                list = b + 0x5d;
+            else if (o != 0)
+                list = o + 0x14;
+            else if (c != 0)
+                list = c + 0x178;
+            else
+                list = 0;
+            if (list != 0) {
+                gm_RemoveObject(list, ((ORDOBJ *)((char *)ai_Objects + i))->type);
             } else {
-                t = b + 0x5d;
-            have:
-                if (t != 0) {
-                    gm_RemoveObject(t, *(short *)((char *)ai_Objects + i));
-                    goto next;
-                }
+                gm_FreeObjectExtra((unsigned short *)((char *)ai_Objects + i));
+                ((ORDOBJ *)((char *)ai_Objects + i))->type = 0;
+                f3gm_ObjectCount--;
             }
-            gm_FreeObjectExtra((char *)ai_Objects + i);
-            *(short *)((char *)ai_Objects + i) = 0;
-            f3gm_ObjectCount--;
         }
-    next:
-        i += 0x43;
-        if (i > 0x14f217) {
-            memset(ai_Objects, 0, 0x14f218);
-            return;
-        }
-    } while (1);
+    }
+    memset(ai_Objects, 0, 0x14f218);
 }
 /* 0x4fe900, the number of the object prototype with the given name (case-insensitive; the name is at +1 of each 0x41-byte record), 0 when none */
 
