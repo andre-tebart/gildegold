@@ -6238,41 +6238,51 @@ void sv_ButtonRow(int f, int y, int *out, int n, ...)
         x += step;
     }
 }
-/* 0x52e4b0, like 0x52e350 with the picture 0x54 / widget kind 0xc5 and the label width measured with the font 0x54 */
+/* 0x52e4b0, sv_ButtonRow with the font 0x54 and the button kind 0xc5 (rt_EditCartRoute's tab row): n buttons in a
+   row in the window f at the height y, labelled with the n string arguments, as wide as the widest label + 0x20,
+   spread evenly or put side by side 8 apart and centred; the ids go to out[]
+   @deep Read whole against the original 0x52e4b0..0x52e5fc and rewritten as sv_ButtonRow's twin: D2WIN
+   *win (w +8), the va_arg label loop with the inline strcpy, d2_TextWidth(s, 0x54) + 0x20, one widest
+   width wmax (a slot, as the original), the spread / side-by-side branch with the if/else difference, the
+   slider x as x - wmax / 2, D2OBJ.font = 0x54, kind 0xc5. Same size (333 = 333); the whole diff is the
+   ebx/edi rotation: with --regs ebx=edi,edi=ebx only the prologue's push order / the load of n (ours mov
+   edi,[esp+0x81c] before push ebp, the original after push edi), the reload of n after the label loop
+   scheduled one line later, the 'add ebx,ebp' line order and the pop order remain. */
 
-void sv_Unk52e4b0(int f, int y, int *out, int n, ...)
+void sv_TabButtonRow(int f, int y, int *out, int n, ...)
 {
     char labels[0x20][0x40];
-    int wmax, w, step, x, i, id;
+    D2WIN *win;
+    int wmax, w, step, x, i, id, row;
     char *s;
     va_list ap;
 
     wmax = 0;
+    win = &d2_Wins[f];
     va_start(ap, n);
     for (i = 0; i < n; i++) {
         s = va_arg(ap, char *);
         strcpy(labels[i], s);
-        w = d2_TextWidth(s, 0x54);
-        if (wmax < w + 0x20)
-            wmax = w + 0x20;
+        w = d2_TextWidth(s, 0x54) + 0x20;
+        if (w > wmax)
+            wmax = w;
     }
-    w = *(short *)((unsigned)&ai_Unkf8f128 + f * 0x3c4);
-    step = w / (n + 1);
-    x = step;
-    if (step < wmax) {
+    va_end(ap);
+    w = win->w;
+    x = w / (n + 1);
+    if (wmax > x) {
         step = wmax + 8;
-        x = step * n;
-        if (x - w == 0 || x < w)
-            x = w - x;
+        row = step * n;
+        if (row > w)
+            x = (row - w) / 2 + step / 2;
         else
-            x = x - w;
-        x = x / 2 + step / 2;
-    }
-    x -= wmax / 2;
+            x = (w - row) / 2 + step / 2;
+    } else
+        step = x;
     for (i = 0; i < n; i++) {
-        id = d2_WinCreateSlider(x, y, 0xc5, labels[i], f);
+        id = d2_WinCreateSlider(x - wmax / 2, y, 0xc5, labels[i], f);
         out[i] = id;
-        SV_WS(id, 0x74) = 0x54;
+        ((D2OBJ *)d2_Objs)[id].font = 0x54;
         d2_SetObjWidth(id, wmax);
         x += step;
     }

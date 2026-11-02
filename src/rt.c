@@ -930,7 +930,7 @@ void rt_EditCartRoute(char *c)
             rt_Unk4bdb30((char *)m, (int)c, rt_EditRoute, q);
     }
     d2_SetForm(m[0], 2);
-    sv_Unk52e4b0(d2_LastWindow, 5, btns, 3, ai_Unk144ad30, ai_Unk144ad34, ai_Unk144ad38);
+    sv_TabButtonRow(d2_LastWindow, 5, btns, 3, ai_Unk144ad30, ai_Unk144ad34, ai_Unk144ad38);
     while (sv_RunFrame(rt_EditCartRoute, 0x657c7)) {
         if (dm_L.rup != 0)
             sv_PopRequest = 1;
