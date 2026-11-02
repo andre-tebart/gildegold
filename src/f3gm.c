@@ -5930,59 +5930,82 @@ short * gm_PlayerRecord(char *c);                     /* 0x506430 */
 int cm_AddFieldValue(unsigned char size, unsigned char n, unsigned short field, void *v);                     /* 0x4c3d90 */
 
 
-/* 0x504100, the two small numbers a / b of a job number (the job tables of the characters): 2 -> 1, 0; 4 -> 1, 2; 5 -> 1, 0; 6 -> 0, 1; 7 -> 4, 1; 8 -> 0, 3; 9 -> 0, 4; 10 -> 3, 2; 11 -> 2, 3; 12 -> 3, 2; 13 -> 2, 0; others 1, 0. Returns 1 */
+/* 0x504100, the two small numbers a / b of the job group job (the job tables of the characters; reasoned guess: two
+   staff counts of its building, the cases are listed by the building type as in gm_JobBuildingType): 2 -> 1, 0;
+   4 -> 1, 2; 5 -> 1, 0; 6 -> 0, 1; 7 -> 4, 1; 8 -> 0, 3; 9 -> 0, 4; 10 -> 3, 2; 11 -> 2, 3; 12 -> 3, 2; 13 -> 2, 0;
+   1, 3, 0xe .. 0x10 and any other 1, 0. Returns 1
+   @deep Read whole against the original 0x504100..0x50424c: one switch over the job groups 1 .. 0x10
+   (table of 16), the case bodies in the original's order (11, 9, 7, 6, 8, 5, 12, 10, 2, 4, 13, as
+   gm_JobBuildingType: by building type), the groups 1, 3, 0xe .. 0x10 as explicit cases on the default
+   body (the table runs to 0x10); every body's values checked against the original's stores. What remains
+   is VC6's merging of identical case blocks, decided on the final code: the original gives each case its
+   own block with its own registers and scheduling (job 2: eax/ecx, stores then mov eax,1; job 5: ecx/edx,
+   mov eax,1 first; job 10: ecx/edx, mov eax,1 first; job 12: eax/ecx, mov eax,1 last), so none are
+   identical and none merge; ours gives job 10 the same registers as job 12 and the jobs 2 / 5 the same as
+   the 1, 0 block, so they are cross-jumped (the table entries +0x4, +0x10, +0x24 point to the shared copy;
+   ours=71 vs 77 instructions: the missing copies, 6 ins each). Tried: every case as break with one return
+   1 after the switch (same merge), the default first (44 ins). */
 int gm_JobSlots(int job, int *a, int *b)
 {
     switch (job) {
-    default:
-        *a = 1;
-        *b = 0;
-        return 1;
-    case 2:
-        *a = 1;
-        *b = 0;
-        return 1;
-    case 4:
-        *a = 1;
-        *b = 2;
-        return 1;
-    case 5:
-        *a = 1;
-        *b = 0;
-        return 1;
-    case 6:
-        *a = 0;
-        *b = 1;
-        return 1;
-    case 7:
-        *a = 4;
-        *b = 1;
-        return 1;
-    case 8:
-        *a = 0;
-        *b = 3;
-        return 1;
-    case 9:
-        *a = 0;
-        *b = 4;
-        return 1;
-    case 0xa:
-        *a = 3;
-        *b = 2;
-        return 1;
     case 0xb:
         *a = 2;
         *b = 3;
-        return 1;
+        break;
+    case 9:
+        *a = 0;
+        *b = 4;
+        break;
+    case 7:
+        *a = 4;
+        *b = 1;
+        break;
+    case 6:
+        *a = 0;
+        *b = 1;
+        break;
+    case 8:
+        *a = 0;
+        *b = 3;
+        break;
+    case 5:
+        *a = 1;
+        *b = 0;
+        break;
     case 0xc:
         *a = 3;
         *b = 2;
-        return 1;
+        break;
+    case 0xa:
+        *a = 3;
+        *b = 2;
+        break;
+    case 2:
+        *a = 1;
+        *b = 0;
+        break;
+    case 4:
+        *a = 1;
+        *b = 2;
+        break;
     case 0xd:
         *a = 2;
         *b = 0;
-        return 1;
+        break;
+    case 1:
+    case 3:
+    case 0xe:
+    case 0xf:
+    case 0x10:
+        *a = 1;
+        *b = 0;
+        break;
+    default:
+        *a = 1;
+        *b = 0;
+        break;
     }
+    return 1;
 }
 /* 0x504290, the first title number of the job group that 0x504ad0 gives for x (1 -> 0x29, 2 -> 0x2f, 3 -> 0x32 .. 0xf -> 0x51), 0 for none */
 
