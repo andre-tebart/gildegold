@@ -1122,13 +1122,21 @@ int ai_Unk4902b0(AIPX *p, AIBLD *b, int unused, AIARG *o)
     cm_SendLongMessage(&msg);
     return 0x3d;
 }
-/* 0x490350, decide of method 0x89 */
+/* 0x490350, way 2 of the "Graveyard Owner" decide (ai_Unk490690): with a 0x204 object in the graveyard and no event 0x89 of it pending, picks one of its characters and a partner chain for message 0x89 and a building of the partner (else one of the player's, mask 0x7b4c4a0)
+   @deep read whole against the original and fixed the meaning (partner flags 0xf00500 for the stray
+   cm_SendRing+0x4973c0 address, the bld2/bld/player-pick tail as in way 0 with the __int64 mask);
+   instruction counts equal (131/131), all calls, constants and branches agree. Left is stack-slot
+   allocation only: ours 'sub esp, 8' (flags in o1's slot, id and the fild temp in two locals) where the
+   original has 'push ecx' / 'pop ecx' (flags in the one local, id in b's dead slot [esp+0x14], the fild
+   temp and x in o1's slot [esp+0x18]); every other hunk is the shifted [esp+N] offsets and 'add esp, 8' vs
+   'pop ecx' at the returns. Declaration order variants tried without effect. */
 
-int ai_Unk490350(AIPX *p, AIBLD *b, AIARG *o1, AIARG *o2)
+int ai_DecideGraveyardOwner2(AIPX *p, AIBLD *b, AIARG *o1, AIARG *o2)
 {
+    union { struct { unsigned int lo, hi; } s; __int64 q; } m;
     AIPX *c, *q;
-    unsigned short id;
     int flags, x;
+    unsigned short id;
 
     o1->arg2 = 2;
     o1->ref2 = b->id;
@@ -1140,25 +1148,26 @@ int ai_Unk490350(AIPX *p, AIBLD *b, AIARG *o1, AIARG *o2)
         return 0;
     if (he_FindEvent(2, 0, 0x89, 3, b->id))
         return 0;
-    flags = ((unsigned)&cm_SendRing + 0x4973c0);
+    flags = (0xf << 20) | (5 << 8);  /* the partner flags 0xf00500, as in way 0 */
     if (!ai_PickPartnerChain((AIPER *)p, 1, &flags, 0, util_RandomU(0x20) + 32.0f, &id))
         return 0;
     q = &AIC[id];
     o2->ref2 = q->netId;
     o2->ref = c->netId;
     o2->arg2 = 4;
-    if (q->bld2) {
+    if (q->bld2)
         o2->arg = q->bld2->id;
-        return 1;
-    }
-    if (q->bld == 0) {
+    else if (q->bld)
+        o2->arg = q->bld->id;
+    else {
         x = -1;
-        AI_4A63F0_7(&AIC[ai_PlayerId], 0, 0x7b4c4a0, 0, 0, 100.0f, &x);
+        m.s.lo = 0x7b4c4a0;
+        m.s.hi = 0;
+        ai_PickActionBuilding((AIPER *)&AIC[ai_PlayerId], 0, m.q, 0, 100.0f, &x);
         if (x == -1)
             return 0;
-    } else
-        x = q->bld->id;
-    o2->arg = x;
+        o2->arg = x;
+    }
     return 1;
 }
 /* 0x4904c0, execute of method 0x89 */
@@ -1239,7 +1248,7 @@ int ai_Unk490690(int a, AIPX *p, int b, AIARG *o1, AIARG *o2)
         return 0;
     r[0] = ai_DecideGraveyardOwner0(p, (AIBLD *)v, &s1[0], &s2[0]);
     r[1] = ai_DecideGraveyardOwner1(p, (AIBLD *)v, &s1[1], &s2[1]);
-    r[2] = ai_Unk490350(p, (AIBLD *)v, &s1[2], &s2[2]);
+    r[2] = ai_DecideGraveyardOwner2(p, (AIBLD *)v, &s1[2], &s2[2]);
     r[3] = ai_Unk490570(p, (AIBLD *)v, &s1[3], &s2[3]);
     i = util_RandomU(4);
     for (n = 4; n; n--) {
