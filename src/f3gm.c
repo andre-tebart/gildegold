@@ -2390,8 +2390,8 @@ typedef struct GCLOCK {                 /* the 14-byte game clock (0x770ae0) */
 } GCLOCK;
 #pragma pack(pop)
 
-extern int ai_Unk875360[32];
-extern int ai_Unk919f80[732];
+extern int gm_ClassBuilding[32];
+extern int gm_GoodBuilding[732];
 extern char * ai_Goods;
 extern unsigned gm_OwnNameHeads[136];
 extern struct AIOBJ *ai_Objects;
@@ -2495,68 +2495,71 @@ int gm_ClockSeason(GCLOCK *c)
 {
     return c->day % 4;
 }
-/* 0x4fe370, builds the building lookup tables: 0x875360 (the first building of the object classes 6 .. 16, fixed numbers) and 0x919f80 (for every object: the building of its class that follows from the kind runs: the first building of the class plus (the class length * the position of this building in its run of equal kinds / the run length)); objects without a building get the first building of their class. ROUGH */
+/* 0x4fe370, builds the building lookup tables: gm_ClassBuilding (the first building type of the goods classes 6 .. 16, fixed numbers) and gm_GoodBuilding (for every good in a building type's slot list: the first building type of its class plus the class run length * the position of this building type in its run of equal kinds / that run's length, the smallest such); goods in no slot list get the first building type of their class
+   @deep read against the original 0x4fe370 and reconciled: the two fills, the fixed class entries, cur as
+   an int starting at 0x58, the kind runs (kind != cur first, run++ in the else), the slot loop with the
+   goods class lookup, the class run count and the min store, the final pointer loop (equal). The
+   frame-shifted branch targets are the same statements at moved offsets. What remains is allocation: the
+   original keeps 0 in edx for the run / len / k stores (ours edi), holds p in edi and i in ebp with stack
+   copies [esp+0x18] / [esp+0x24] (the extra 4-byte frame slot, frame 0x1c vs 0x18), and strength-reduces
+   the slot index to a pointer in ebx ('+ lea ebx, [edi + 0x23]' / '+ add ebx, 2'; ours 'mov ax, [ebx +
+   eax*2 + 0x23]'), which also moves the base + cnt*run/len sum to ecx. Tried: a slot pointer stepped in
+   the for (worse, 137 differing), the index form (119) */
 
 void gm_InitBuildingTables(void)
 {
-    int run, len, i, j, k, w, u, base, cnt, v;
-    char cur, kind;
-    char *p, *q;
-    unsigned short *wp;
+    int run, len, i, j, k, u, base, cnt, v;
+    int cur, kind, kind2;
+    unsigned char *p, *q;
+    unsigned short *slots;
 
-    memset(ai_Unk875360, 0, 0x64);
+    memset(gm_ClassBuilding, 0, 0x64);
     for (i = 0; i < 0x2dc; i++)
-        ai_Unk919f80[i] = 0x58;
+        gm_GoodBuilding[i] = 0x58;
     run = 0;
     len = 0;
-    ai_Unk875360[8] = 0x2f;
-    ai_Unk875360[7] = 0x32;
-    ai_Unk875360[6] = 0x29;
-    ai_Unk875360[10] = 0x21;
-    ai_Unk875360[14] = 0x1e;
-    ai_Unk875360[15] = 0x1f;
-    ai_Unk875360[16] = 0x20;
-    ai_Unk875360[11] = 0x17;
-    ai_Unk875360[12] = 0x35;
-    ai_Unk875360[9] = 0x14;
-    cur = 'X';
-    p = ai_BTypes;
+    gm_ClassBuilding[8] = 0x2f;
+    gm_ClassBuilding[7] = 0x32;
+    gm_ClassBuilding[6] = 0x29;
+    gm_ClassBuilding[10] = 0x21;
+    gm_ClassBuilding[14] = 0x1e;
+    gm_ClassBuilding[15] = 0x1f;
+    gm_ClassBuilding[16] = 0x20;
+    gm_ClassBuilding[11] = 0x17;
+    gm_ClassBuilding[12] = 0x35;
+    gm_ClassBuilding[9] = 0x14;
+    cur = 0x58;
+    p = (unsigned char *)ai_BTypes;
     for (i = 0; i < 0x58; i++, p += 0x24d) {
         kind = *p;
-        if (kind == cur) {
-            run++;
-        } else {
+        if (kind != cur) {
             run = 0;
+            cur = kind;
             len = 0;
-            j = i;
-            for (q = p; (cur = kind, j < 0x58 && *q == kind); q += 0x24d) {
+            for (j = i, q = p; j < 0x58 && *q == kind; j++, q += 0x24d)
                 len++;
-                j++;
-            }
+        } else {
+            run++;
         }
-        if (p[0x22] != 0) {
-            wp = (unsigned short *)(p + 0x23);
-            for (k = 0; k < (unsigned char)p[0x22]; k++, wp++) {
-                if (*wp != 0xffff) {
-                    u = *wp & 0x7fff;
-                    base = ai_Unk875360[(unsigned char)ai_Goods[u * 0x41 + 0x21]];
-                    q = ai_BTypes + base * 0x24d;
-                    kind = *q;
-                    cnt = 0;
-                    for (j = base; j < 0x58 && *q == kind; q += 0x24d) {
-                        cnt++;
-                        j++;
-                    }
-                    v = base + (cnt * run) / len;
-                    if (v < ai_Unk919f80[u])
-                        ai_Unk919f80[u] = v;
-                }
+        slots = (unsigned short *)(p + 0x23);
+        for (k = 0; k < p[0x22]; k++) {
+            if (slots[k] != 0xffff) {
+                u = slots[k] & 0x7fff;
+                base = gm_ClassBuilding[(unsigned char)ai_Goods[u * 0x41 + 0x21]];
+                q = (unsigned char *)ai_BTypes + base * 0x24d;
+                kind2 = *q;
+                cnt = 0;
+                for (j = base; j < 0x58 && *q == kind2; j++, q += 0x24d)
+                    cnt++;
+                v = base + cnt * run / len;
+                if (v < gm_GoodBuilding[u])
+                    gm_GoodBuilding[u] = v;
             }
         }
     }
     for (i = 0; i < 0x2dc; i++) {
-        if (ai_Unk919f80[i] == 0x58)
-            ai_Unk919f80[i] = ai_Unk875360[(unsigned char)ai_Goods[0x21 + i * 0x41]];
+        if (gm_GoodBuilding[i] == 0x58)
+            gm_GoodBuilding[i] = gm_ClassBuilding[(unsigned char)ai_Goods[i * 0x41 + 0x21]];
     }
 }
 /* 0x4fe570, loads the building and object tables of the data path root: resets the player records at 0x7d6a64 (stride 0xaa4 ints, each gets the 0xaa0 ints 0x6178c8), allocates the building prototypes (0xca78 = 0x58 * 0x24d, "f3_gm:lpGebaeudePROT") and instances (0xa900, "..INST"), reads "<root>A_Geb.dat" (0x58 records of 0x24d bytes), the object prototypes (0xb9dc = 0x2dc * 0x41, "..PROT"), instances (0x14f218) and "<root>A_Obj.dat"; builds the lookup tables (0x4fe370, 0x503e80) and adds the count of the flagged (bit 15) objects of the kinds 2 / 6 (except 0xfd) to each building's byte +0x21. Returns 0, or -1 .. -6 for the failed step. ROUGH */
@@ -8060,7 +8063,7 @@ float gm_ObjectValue(int n)
     f = 0.0f;
     i = 0;
     do {
-        f += (unsigned char)(ai_BTypes + ai_Unk919f80[n] * 0x24d)[0x233 + i] * 896.0f * 0.0013888888888888887;
+        f += (unsigned char)(ai_BTypes + gm_GoodBuilding[n] * 0x24d)[0x233 + i] * 896.0f * 0.0013888888888888887;
         i++;
     } while (i < 2);
     p = OPROTO(n);
@@ -8097,10 +8100,10 @@ float gm_ItemPrice(int item, unsigned char n)
 
     p = OPROTO(item);
     if (*(int *)(p + 0x38) == 0) {
-        if (ai_Unk919f80[item] == 0)
+        if (gm_GoodBuilding[item] == 0)
             f = 4.0f;
         else {
-            bp = (unsigned char *)(ai_BTypes + ai_Unk919f80[item] * 0x24d);
+            bp = (unsigned char *)(ai_BTypes + gm_GoodBuilding[item] * 0x24d);
             f = 0.0f;
             i = 0;
             do {
@@ -10053,12 +10056,12 @@ struct AIOBJ *ai_Objects = 0;  /* 0x7e3f34, the object instances (AIOBJ, ai.h) *
 int ai_Unk7e3f38 = 0;  /* 0x7e3f38, the depth of the child stack */
 int gm_NOffers = 0;  /* 0x7e3f3c, the number of offers */
 AISTORE gm_Offers[88] = {0};  /* 0x7e4b20, the offers (ai.h's AISTORE rows of 6 ints: building, market, goods object, supply, price float, flag) */
-int ai_Unk875360[32] = {0};  /* 0x875360 */
+int gm_ClassBuilding[32] = {0};  /* 0x875360 */
 int ai_Unk8753e0[20488] = {0};  /* 0x8753e0, the child stack (the first word of */
 unsigned ai_Unk889400[732] = {0};  /* 0x889400 */
 int ai_Unk889f70 = 0;  /* 0x889f70 */
 char * ai_Blds = 0;  /* 0x889f74, the buildings ( */
-int ai_Unk919f80[732] = {0};  /* 0x919f80 */
+int gm_GoodBuilding[732] = {0};  /* 0x919f80 */
 char * ai_Goods = 0;  /* 0x91aaf0, the object prototypes ( */
 unsigned gm_OwnNameHeads[136] = {0};  /* 0x91ac40 */
 char gm_CharacterStatistics[128] = {0};  /* 0x91b500, the character statistics ( */
