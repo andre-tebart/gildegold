@@ -7164,57 +7164,48 @@ void ai_CabinetContact(AIBLD *rec, AIOBJ *room)
             ai_CabinetSpyOnCharacter(rec);
     }
 }
-/* the four grave kinds of the graveyard windows (ai_Unk583c50, ai_Unk584010 name the grave by its index; the kinds
-   themselves are a reasoned guess from the four buttons 0 .. 3, kinds 1 .. 3 enabled by the state record's bytes); only this unit reads them, they stay out of unk_575860.h: declared above
-   ai_TutorialInitChapter2 they flip its register tie-break (byte -> shape) */
+/* the four grave sizes of the graveyard windows (ai_GraveSizeButtons, ai_Unk583c50; ai_Unk584010 names the grave by
+   its size; the sizes 1 .. 3 are open while GVYARD.open[i] is set); only this unit reads them, they stay out of
+   unk_575860.h: declared above ai_TutorialInitChapter2 they flip its register tie-break (byte -> shape) */
 const int ai_GravePics[4] = { 0x2d5, 0x2d8, 0x2dc, 0x2e0 };      /* 0x5eecb0, the buttons' pictures */
 const int ai_GravePicsAlt[4] = { 0x7da, 0x7db, 0x7dc, 0x7dd };   /* 0x5eecc0, the pictures ai_Unk5828c0 uses by the button */
-const int ai_GraveNames[4] = { 0xd94, 0xd9a, 0xda2, 0xdaa };     /* 0x5eecd0, the texts of the kinds' names */
+const int ai_GraveNames[4] = { 0xd94, 0xd9a, 0xda2, 0xdaa };     /* 0x5eecd0, the texts of the sizes' names */
 const int ai_GraveGoods[4] = { 0x1f6, 0x1f9, 0x1fd, 0x201 };     /* 0x5eece0, the ai_Goods index whose record the button keeps */
 
-/* 0x582730, the four contact buttons (399 B): arg 1 = the record (its +0x65 the entries' state record), arg 2 =
-   the window list (0 the window, 4 the parent, 8 .. 0xb the buttons, 0xc the selected button). 0x475f70 (the
-   window, 6) and the text 0x602568; the four buttons 0x4731d0 (i * 0x6c + 6, 0, the text 0x5eecb0[i], the parent)
-   into the list 8 .. 0xb with the window table 0xf8f080 +0x4c = 1, +0x1c0 = 3 and the icon 0x91aaf0 + the table
-   0x5eece0[i] * 0x41 at +0x2e8; the buttons enabled by the state bytes +0x19 / 0x1a / 0x1b; the selected 0xc:
-   3 / 2 / 1 with its byte 1 -> that button marked at +0x2c, else the first button marked and 0xc = 0; the
-   selected one marked at +0x28 */
-
-void ai_Unk582730(char *rec, int *w)
+/* 0x582730, the four grave size buttons of the graveyard contact window: rec = the graveyard building (its yard),
+   w = the window list (0 the window, 4 the parent, 8 .. 0xb the buttons, 0xc the selected size). Section 6 gets
+   "$C" and the four picture buttons (ai_GravePics, 0x6c apart), interactive, style 3, each keeping its goods
+   record (ai_GraveGoods); the sizes 1 .. 3 are enabled while the yard has them open. The selected size stays
+   highlighted when it is open, else the first button is highlighted and the selection falls back to 0; the
+   selected button is checked */
+void ai_GraveSizeButtons(AIBLD *rec, int *w)
 {
-    char *r;
+    GVYARD *yard;
     int i;
-    int id;
-    int sel;
 
-    r = (char *)U_I(rec + 0x65);
+    yard = rec->yard;
     d2_SetForm(w[0], 6);
-    io_PrintText((char *)(unsigned)"$C");
+    io_PrintText("$C");
     for (i = 0; i < 4; i++) {
-        id = d2_WinOpenPic(i * 0x6c + 6, 0, (char *)U_I(((unsigned)&sv_PhaseMinutes + 0x1f8) + i * 4), w[4]);
-        w[8 + i] = id;
-        *(int *)(U_I((unsigned)&d2_Objs) + 0x4c + id * 0x2ec) = 1;
-        *(int *)(U_I((unsigned)&d2_Objs) + 0x1c0 + id * 0x2ec) = 3;
-        *(int *)(U_I((unsigned)&d2_Objs) + 0x2e8 + id * 0x2ec) = U_I((unsigned)&ai_Goods) + U_I(((unsigned)&sv_PhaseMinutes + 0x228) + i * 4) * 0x41;
+        w[8 + i] = d2_WinOpenPic(i * 0x6c + 6, 0, ai_GravePics[i], w[4]);
+        d2_Objs[w[8 + i]].interactive = 1;
+        d2_Objs[w[8 + i]].style = 3;
+        d2_Objs[w[8 + i]].user = ai_Goods + ai_GraveGoods[i] * 0x41;
     }
-    d2_SetObjEnabled(w[9], *(unsigned char *)(r + 0x19));
-    d2_SetObjEnabled(w[10], *(unsigned char *)(r + 0x1a));
-    d2_SetObjEnabled(w[0xb], *(unsigned char *)(r + 0x1b));
-    sel = w[0xc];
-    if (sel == 3 && *(char *)(r + 0x1b) == 1) {
-        id = w[0xb];
-    } else if (sel == 2 && *(char *)(r + 0x1a) == 1) {
-        id = w[10];
-    } else if (sel == 1 && *(char *)(r + 0x19) == 1) {
-        id = w[9];
-    } else {
-        *(int *)(U_I((unsigned)&d2_Objs) + 0x2c + w[8] * 0x2ec) = 1;
-        w[0xc] = 0;
-        goto done;
+    d2_SetObjEnabled(w[9], yard->open[1]);
+    d2_SetObjEnabled(w[10], yard->open[2]);
+    d2_SetObjEnabled(w[11], yard->open[3]);
+    if (w[12] == 3 && yard->open[3] == 1)
+        d2_Objs[w[11]].highlighted = 1;
+    else if (w[12] == 2 && yard->open[2] == 1)
+        d2_Objs[w[10]].highlighted = 1;
+    else if (w[12] == 1 && yard->open[1] == 1)
+        d2_Objs[w[9]].highlighted = 1;
+    else {
+        d2_Objs[w[8]].highlighted = 1;
+        w[12] = 0;
     }
-    *(int *)(U_I((unsigned)&d2_Objs) + 0x2c + id * 0x2ec) = 1;
-done:
-    *(int *)(U_I((unsigned)&d2_Objs) + 0x28 + w[w[0xc] + 8] * 0x2ec) = 1;
+    d2_Objs[w[w[12] + 8]].checked = 1;
 }
 
 int sv_CreateScrollButtons(); unsigned gv_FindEntry(void *a, unsigned char *o, unsigned after, int (*cb)(), int l); int gv_EntryIndex(char *r, int *e); int he_Unk573200();
@@ -7457,7 +7448,7 @@ void ai_Unk583240(int *out, char *rec, char *title, int flag, void (*cb)())
     d2_SetForm(win, 7);
     sel = 0;
     entry = 0;
-    ai_Unk582730(rec, w);
+    ai_GraveSizeButtons(rec, w);
     ai_Unk5828c0(rec, w, -1);
     ai_Unk582b40(rec, w, -1, flag);
     U_I((unsigned)&d2_ClickedId) = -1;
