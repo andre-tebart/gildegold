@@ -5383,250 +5383,276 @@ void gm_Unk5034b0(int o)
         gm_RemoveOwned((int *)(r + 0x5d), *(int *)(o + 2));
 }
 
-int ai_Unk587b70();                     /* 0x587b70 */
+int ai_PermissionBits1d();                     /* 0x587b70 */
 extern int gm_AllowAll;                /* 0x6f2448 */
 int gm_BuildingJob();                     /* 0x5048e0 */
 int gm_TitleGroup(int n);                /* 0x504ad0 */
 
-/* 0x503530, the permission bits of the character p1 in the building b (or, without a building, in the object o / the character c): a bit set of what he may do there (0x1 enter, 0x4 .. 0x30 use, 0x40 .., 0x800 .., 0x2000 .., 0x4000, 0x5000 ..: the exact meaning of each bit is open) by the building type: a case per type, owner (+0x27) and place (+0x25) words compared with p1, the job list (six bytes at +0x223) searched for the job number of the character (0x5044b0). With the flag 0x6f2448 everything is allowed (-1, -2 for the types 3 / 0x21). ROUGH */
-unsigned gm_PermissionBits(unsigned p1, unsigned char *b, unsigned short *o, int c)
+/* 0x503530, the permission bits of the character p in the building b (or, without a building, for the object o or the character c): what he may do there, by the class byte of the building's type record (a case per class: the master (+0x25) and the owner (+0x27) compared with p, the six job bytes at +0x223 of the type record searched for the job of p in the type (gm_TitleJob); class 0x1d is ai_PermissionBits1d). Bits seen: 0x1 enter, 0x800 led by p (c's building is owned by p), 0x4000 / 0x5000 / 0x2200 granted per object and job; the exact meaning of each bit is open. With gm_AllowAll everything is allowed (-1, -2 for the classes 3 / 0x21); a building without owner (0xffff) allows nothing
+   @deep Read whole against the original 0x503530..0x503bbf and rewritten (ORDBLD / ORDOBJ / ORDCHAR typed;
+   switch on *btype in the original's case order 0x21, 2/0x1e, 9, 4, 5.., 0x17.., 0xb.., 0x10, 1/3/f, 0x13,
+   6, 0x1c->10, 0x1b/0x1d, 7; the job scans as index loops btype[0x223 + i] (the original's lea
+   ecx,[edx+esi] test is VC6's replacement of i); job2 (+0x169) for the 0x17 .. 0x1a classes; the char
+   pointer ch for 1/3/f, 6, 0x1c). Tables equal, ours=491=original's, every instruction matched: the 2
+   remaining hunks are two blocks placed elsewhere, nothing else. (1) the join block 'mov ebx,[esp+0x1c]' +
+   the object test (0x5039ee..0x503a2f, 17 ins) is the allocator's reload of b (ebx is the switch index):
+   VC6 places it after the 0x17 case (ours +0x289) where the original has it after case 10 (+0x4be). (2)
+   the cross-jumped tail 'or ebp,0x2200; jmp' shared by the cases 9/4/0x13/7: the original keeps the copy
+   of 0x13 (+0x427), ours that of case 7 (its last user). Tried: case 7 as a goto block after the join (38 ins,
+   the same two placements move elsewhere), the 0x17 test as an else-if chain (60), cls as a char local
+   (45). */
+unsigned gm_PermissionBits(unsigned p, unsigned char *b, unsigned short *o, int c)
 {
-    char *p;
-    unsigned v, jn, w;
-    char t, cc;
-    int r, jb;
-    unsigned char *q;
-    unsigned short ob;
+    ORDBLD *bld = (ORDBLD *)b;
+    ORDOBJ *obj = (ORDOBJ *)o;
+    unsigned char *btype;
+    int i;
+    unsigned v;
+    unsigned short ot;
+    int job;
+    unsigned char prof;
+    ORDCHAR *ch;
 
     v = 0;
-    p = 0;
-    if (b == 0) {
-        if (c == 0) {
-            if (o == 0)
-                goto fin;
-            ob = *o;
-            if (ai_Goods[ob * 0x41] == 6) {
-                if (ob < 0x91 || ob > 0x97)
-                    v = 0xffffffff;
-                else
-                    v = 0x4001;
-            } else if (ob < 0x91 || ob > 0x97)
-                v = (-(unsigned)(ob != 0xfd) & 0xffffbffe) + 0x4001;
-            else
-                v = 1;
-        } else if (*(int *)(c + 0x16c) != 0 && *(unsigned short *)(*(int *)(c + 0x16c) + 0x27) == p1)
-            v = 0x800;
-        goto dflt;
-    }
-    p = ai_BTypes + (unsigned)*b * 0x24d;
-    jb = gm_BuildingJob(*p);
-    jn = gm_TitleJob(p1, jb);
-    t = *p;
-    if (t == 0x1d)
-        return ai_Unk587b70(ai_Chars[p1], b, o);
-    switch (t) {
-    case 1:
-    case 3:
-    case 0xf:
-        if (t != 3)
-            v = 0x5081;
-        cc = ai_Chars[p1][0x166];
-        if (cc == 0xf || cc == 0xe || cc == 0xd)
-            v |= 0x502;
-        if (cc == 0xf || cc == 0xe || cc == 0xd)
-            v |= 0x200;
-        if (t == 3)
-            r = cc == 10;
-        else
-            r = cc == 0xf;
-        if (r)
-            v |= 0x30;
-        if (o == 0)
-            goto fin;
-        if (*o == 0x114 && cc == 0)
-            v &= 0xffffbffe;
-    case 0x1b:
-    case 0x1d:
-        break;
-    case 2:
-    case 0x1e:
-        if (*(unsigned short *)(b + 0x25) == p1)
-            v = 0x3c;
-        if (*(unsigned short *)(b + 0x27) == p1)
-            v |= 0x5661;
-        break;
-    case 4:
-    case 0x13:
-        if (*(unsigned short *)(b + 0x25) == p1)
-            v = 0x50bd;
-        if (*(unsigned short *)(b + 0x27) == p1) {
-            v |= 0x44e1;
-            q = (unsigned char *)(p + 0x223);
-            do {
-                if (*q == 0)
-                    break;
-                if (jn == *q) {
-                    v |= 0x2200;
-                    goto dflt;
-                }
-                q++;
-            } while ((int)(q - ((unsigned char *)p + 0x223)) < 6);
-        }
-        break;
-    case 5:
-    case 8:
-    case 0xe:
-    case 0x12:
-    case 0x14:
-    case 0x15:
-    case 0x16:
-    case 0x20:
-        v = 0x81;
-        if (*(unsigned short *)(b + 0x25) == p1)
-            v = 0x10bd;
-        if (*(unsigned short *)(b + 0x27) == p1) {
-            w = v | 0x460;
-            q = (unsigned char *)(p + 0x223);
-            do {
-                if (*q == 0) {
-                set:
-                    v = w | 0x4000;
-                    goto dflt;
-                }
-                if (jn == *q) {
-                    w = v | 0x2660;
-                    goto set;
-                }
-                q++;
-            } while ((int)(q - ((unsigned char *)p + 0x223)) < 6);
-            v |= 0x4460;
-        }
-        break;
-    case 6:
-        v = 0x5001;
-        if (*(unsigned short *)(b + 0x25) == p1)
-            v = 0x503d;
-        if (*(unsigned short *)(b + 0x27) == p1)
-            v |= 0x5660;
-        if (ai_Chars[p1][0x166] == 0xf)
-            v |= 0x30;
-        break;
-    case 7:
-        v = 1;
-        if (o != 0 && (*o == 0xe6 || *o == 0xe5))
-            v = 0x1001;
-        if (*(unsigned short *)(b + 0x25) == p1)
-            v |= 0x103c;
-        if (*(unsigned short *)(b + 0x27) == p1) {
-            v |= 0x4460;
-            q = (unsigned char *)(p + 0x223);
-            do {
-                if (*q == 0)
-                    break;
-                if (jn == *q) {
-                    v |= 0x2200;
-                    goto dflt;
-                }
-                q++;
-            } while ((int)(q - ((unsigned char *)p + 0x223)) < 6);
-        } else {
-            if (o == 0)
-                goto fin;
-            if (*o != 0xf3)
-                v |= 0x5000;
-        }
-        break;
-    case 9:
-        v = 1;
-        if (*(unsigned short *)(b + 0x25) == p1)
-            v = 0x403d;
-        if (*(unsigned short *)(b + 0x27) == p1) {
-            v |= 0x54e1;
-            q = (unsigned char *)(p + 0x223);
-            do {
-                if (*q == 0)
-                    break;
-                if (jn == *q) {
-                    v |= 0x2200;
-                    goto dflt;
-                }
-                q++;
-            } while ((int)(q - ((unsigned char *)p + 0x223)) < 6);
-        }
-        break;
-    case 10:
-        v = 1;
-        break;
-    case 0xb:
-    case 0xc:
-    case 0xd:
-    case 0x11:
-    case 0x1f:
-        if (o == 0 || *(unsigned short *)(b + 0x27) == p1)
-            v = 0x81;
-        if (*(unsigned short *)(b + 0x25) == p1)
-            v |= 0x403c;
-        if (*(unsigned short *)(b + 0x27) == p1)
-            v |= 0x5670;
-        if (o == 0)
-            goto fin;
-        if (*o == 0xfd)
-            v |= 0x4001;
-        break;
-    case 0x10:
-        if (*(unsigned short *)(b + 0x27) == p1) {
-            v = 0x54e1;
-            q = (unsigned char *)(p + 0x223);
-            do {
-                if (*q == 0)
-                    break;
-                if (jn == *q) {
-                    v = 0x76e1;
-                    break;
-                }
-                q++;
-            } while ((int)(q - ((unsigned char *)p + 0x223)) < 6);
-        }
-        if (*(unsigned short *)(b + 0x25) == p1)
-            v |= 0x3c;
-        break;
-    case 0x17:
-    case 0x18:
-    case 0x19:
-    case 0x1a:
-        v = 0x5081;
-        if ((t == 0x17 && ai_Chars[p1][9] == 0x1e) || (t == 0x18 && ai_Chars[p1][9] == 0x1f) ||
-            (t == 0x19 && ai_Chars[p1][9] == 0x20) || (t == 0x1a && ai_Chars[p1][9] == 0x21))
-            v = 0x52f1;
-        break;
-    case 0x1c:
-        r = gm_TitleGroup(*(int *)(ai_Chars[p1] + 0x164));
-        if (r == 8 || gm_BuildQuery(2, 5, 9, 4, *(short *)ai_Chars[p1]) != 0)
+    btype = 0;
+    if (bld != 0) {
+        btype = (unsigned char *)ai_BTypes + bld->type * 0x24d;
+        job = gm_TitleJob(p, gm_BuildingJob(*btype));
+        if (*btype == 0x1d)
+            return ai_PermissionBits1d(ai_Chars[p], (char *)bld, (char *)obj);
+        switch (*btype) {
+        case 0x21:
+            if (bld->masterId == p)
+                v = 0x3c;
+            if (bld->owner == p)
+                v |= 0x620;
+            break;
+        case 2:
+        case 0x1e:
+            if (bld->masterId == p)
+                v = 0x3c;
+            if (bld->owner == p)
+                v |= 0x5661;
+            break;
+        case 9:
             v = 1;
-        break;
-    case 0x21:
-        if (*(unsigned short *)(b + 0x25) == p1)
-            v = 0x3c;
-        if (*(unsigned short *)(b + 0x27) == p1)
-            v |= 0x620;
+            if (bld->masterId == p)
+                v = 0x403d;
+            if (bld->owner == p) {
+                v |= 0x54e1;
+                i = 0;
+                do {
+                    if (btype[0x223 + i] == 0)
+                        break;
+                    if (job == btype[0x223 + i]) {
+                        v |= 0x2200;
+                        break;
+                    }
+                    i++;
+                } while (i < 6);
+            }
+            break;
+        case 4:
+            if (bld->masterId == p)
+                v = 0x50bd;
+            if (bld->owner == p) {
+                v |= 0x44e1;
+                i = 0;
+                do {
+                    if (btype[0x223 + i] == 0)
+                        break;
+                    if (job == btype[0x223 + i]) {
+                        v |= 0x2200;
+                        break;
+                    }
+                    i++;
+                } while (i < 6);
+            }
+            break;
+        case 5:
+        case 8:
+        case 0xe:
+        case 0x12:
+        case 0x14:
+        case 0x15:
+        case 0x16:
+        case 0x20:
+            v = 0x81;
+            if (bld->masterId == p)
+                v = 0x10bd;
+            if (bld->owner == p) {
+                v |= 0x460;
+                i = 0;
+                do {
+                    if (btype[0x223 + i] == 0)
+                        break;
+                    if (job == btype[0x223 + i]) {
+                        v |= 0x2200;
+                        break;
+                    }
+                    i++;
+                } while (i < 6);
+                v |= 0x4000;
+            }
+            break;
+        case 0x17:
+        case 0x18:
+        case 0x19:
+        case 0x1a:
+            v = 0x5081;
+            if ((*btype == 0x17 && ORD_CHARS[p].job2 == 0x1e) || (*btype == 0x18 && ORD_CHARS[p].job2 == 0x1f) ||
+                (*btype == 0x19 && ORD_CHARS[p].job2 == 0x20) || (*btype == 0x1a && ORD_CHARS[p].job2 == 0x21))
+                v = 0x52f1;
+            break;
+        case 0xb:
+        case 0xc:
+        case 0xd:
+        case 0x11:
+        case 0x1f:
+            if (obj == 0 || bld->owner == p)
+                v = 0x81;
+            if (bld->masterId == p)
+                v |= 0x403c;
+            if (bld->owner == p)
+                v |= 0x5670;
+            if (obj == 0)
+                goto fin;
+            if (obj->type == 0xfd)
+                v |= 0x4001;
+            break;
+        case 0x10:
+            if (bld->owner == p) {
+                v = 0x54e1;
+                i = 0;
+                do {
+                    if (btype[0x223 + i] == 0)
+                        break;
+                    if (job == btype[0x223 + i]) {
+                        v = 0x76e1;
+                        break;
+                    }
+                    i++;
+                } while (i < 6);
+            }
+            if (bld->masterId == p)
+                v |= 0x3c;
+            break;
+        case 1:
+        case 3:
+        case 0xf:
+            ch = &ORD_CHARS[p];
+            if (*btype != 3)
+                v = 0x5081;
+            prof = ch->job;
+            if (prof == 0xf || prof == 0xe || prof == 0xd)
+                v |= 0x502;
+            if (prof == 0xf || prof == 0xe || prof == 0xd)
+                v |= 0x200;
+            if (*btype == 3) {
+                if (prof == 10)
+                    v |= 0x30;
+            } else if (prof == 0xf)
+                v |= 0x30;
+            if (obj == 0)
+                goto fin;
+            if (obj->type == 0x114 && prof == 0)
+                v &= 0xffffbffe;
+            break;
+        case 0x13:
+            if (bld->masterId == p)
+                v = 0x50bd;
+            if (bld->owner == p) {
+                v |= 0x44e1;
+                i = 0;
+                do {
+                    if (btype[0x223 + i] == 0)
+                        break;
+                    if (job == btype[0x223 + i]) {
+                        v |= 0x2200;
+                        break;
+                    }
+                    i++;
+                } while (i < 6);
+            }
+            break;
+        case 6:
+            ch = &ORD_CHARS[p];
+            v = 0x5001;
+            if (bld->masterId == p)
+                v = 0x503d;
+            if (bld->owner == p)
+                v |= 0x5660;
+            if (ch->job == 0xf)
+                v |= 0x30;
+            break;
+        case 0x1c:
+            ch = &ORD_CHARS[p];
+            if (gm_TitleGroup(ch->jobId) != 8 && gm_BuildQuery(2, 5, 9, 4, ch->id) == 0)
+                break;
+        case 10:
+            v = 1;
+            break;
+        case 0x1b:
+        case 0x1d:
+            break;
+        case 7:
+            v = 1;
+            if (obj != 0 && (obj->type == 0xe6 || obj->type == 0xe5))
+                v = 0x1001;
+            if (bld->masterId == p)
+                v |= 0x103c;
+            if (bld->owner == p) {
+                v |= 0x4460;
+                i = 0;
+                do {
+                    if (btype[0x223 + i] == 0)
+                        break;
+                    if (job == btype[0x223 + i]) {
+                        v |= 0x2200;
+                        break;
+                    }
+                    i++;
+                } while (i < 6);
+            } else {
+                if (obj == 0)
+                    goto fin;
+                if (obj->type != 0xf3)
+                    v |= 0x5000;
+            }
+            break;
+        }
+    } else if (c != 0) {
+        if (((ORDCHAR *)c)->bld != 0 && ((ORDCHAR *)c)->bld->owner == p)
+            v = 0x800;
+    } else {
+        if (obj == 0)
+            goto fin;
+        ot = obj->type;
+        if (ai_Goods[ot * 0x41] == 6) {
+            if (ot >= 0x91 && ot <= 0x97)
+                v = 1;
+            else
+                v = 0xffffffff;
+            v |= 0x4000;
+        } else if (ot >= 0x91 && ot <= 0x97)
+            v = 1;
+        else
+            v = ot == 0xfd ? 0x4001 : 0xffffffff;
     }
-dflt:
-    if (o != 0) {
-        ob = *o;
-        if (ob == 0x27f || ob == 0x21b || ob == 0x28a || ob == 0x120)
+    if (obj != 0) {
+        ot = obj->type;
+        if (ot == 0x27f || ot == 0x21b || ot == 0x28a || ot == 0x120)
             v |= 0x5000;
-        if (ob == 0x12e)
+        if (ot == 0x12e)
             v |= 0x4000;
     }
 fin:
     if (gm_AllowAll != 0) {
         v = 0xffffffff;
-        if (b == 0)
-            return 0xffffffff;
-        if (*p == 3 || *p == 0x21)
+        if (bld != 0 && (*btype == 3 || *btype == 0x21))
             v = 0xfffffffe;
     }
-    if (b != 0 && *(short *)(b + 0x27) == -1)
+    if (bld != 0 && bld->owner == 0xffff)
         v = 0;
     return v;
 }

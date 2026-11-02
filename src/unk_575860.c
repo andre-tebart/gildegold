@@ -716,7 +716,7 @@ SHOTRESULT ai_ShotTable[3] = { 0 };  /* 0x6f9f60, the cannon scene's shot result
 #include "anm.h"
 #include "bmp.h"
 #include "f3gm.h"
-#define gm_TitleJobI ((int (*)(int, int))gm_TitleJob)  /* 0x5044b0 (f3gm.h: unsigned char): @original the byte-matched callers here read the result as an int (no `and eax,0xff` after the call): ai_Unk587b70 0x587b70 (shape) */
+#define gm_TitleJobI ((int (*)(int, int))gm_TitleJob)  /* 0x5044b0 (f3gm.h: unsigned char): @original the byte-matched callers here read the result as an int (no `and eax,0xff` after the call): ai_PermissionBits1d 0x587b70 (shape) */
 #include "f3snd.h"
 #include "gv.h"
 #include "he.h"
@@ -9780,7 +9780,7 @@ int gm_BuildingJob();
    bit 0 cleared. When the building's +0x27 is the character's word: 0x4461 set and, when one of the six bytes at
    bldg + 0x223 is v (a 0 byte ends the scan), 0x2200; x with the word 0x21b -> 0x5000; U_I (0x6f2448) != 0 ->
    -1 */
-int ai_Unk587b70(char *ch, char *b, char *x)
+int ai_PermissionBits1d(char *ch, char *b, char *x)
 {
     char *bldg;
     int kind;

@@ -195,6 +195,7 @@ void ai_AlchemistCandidates(unsigned char *obj);  /* 0x57bf00, the alchemist's c
 int ai_AlchemistHire(unsigned char *obj, struct AHMSTEP *step, int value);  /* 0x57c560, hires the candidate step (ROUGH) */
 
 /* declared in other units' headers before (moved to the owner) */
+int ai_PermissionBits1d(char *ch, char *b, char *x);  /* 0x587b70, the permission bits of the character ch in the building b of the type class 0x1d (gm_PermissionBits) */
 void ai_EndCharExtra(char *ch, int f);  /* 0x587c40 */
 void ai_SetupTutorialPlayer(void);  /* 0x57bc30, sets up the tutorial player's profile */
 int ai_TutorialWindow(void);  /* 0x57bce0, the tutorial chooser window: 1 starts the tutorial, 0 is the back */
