@@ -10,11 +10,13 @@
    Open: ai.h is not includable here, so the character / building / object records are read through gv.h's views
    ORDCHAR / ORDBLD / ORDOBJ, the job record through GMJOB (AIJOB, next to GCLOCK), the long message through
    f3gm_types.h's GMMSG (AIMSG), the crime records through GM_CRIMES (cm_types.h CRIME over cm.c's char
-   ai_Crimes[]), the goods records of the
+   ai_Crimes[]), the goods prototypes through GMGOOD (AIGOOD, GM_GOOD), the goods records of the
    stock blocks through GMBLOCK / GMSTOCK (f3gm_types.h, GM_BLOCK; f3init.c / hst.c hold their own copies
    INIT_STOCK / G12STOCK), or by byte offset (the rest, GM_GOODS, the building type records of ai_BTypes).
    Open: data: gm_QueryKind (0x61a686) is defined as 550 bytes, but only its first byte is the query kind; the
-   job table gm_JobTalents (0x61a688) is a view inside it.
+   job table gm_JobTalents (0x61a688) is a view inside it, and its last 0x1c bytes, the title table
+   gm_TitleTalents (0x61a8c8) and the player-slot factor ints (indexed from 0x61a8ac) are one 0x140-byte block
+   ai_Unk61a8ac: the objects and their bounds are unsettled.
    Open: gm_QueryNext returns unsigned short * in every header though the cursor is an ORDOBJ *.
    Open: data: gm_DefaultStock (0x6178c8) is defined as 12 ints and ai_Unk6178f8 follows it, but gm_LoadTables
    copies 0xaa0 ints and gm_InitPlayerRecord walks 0x55 GMSTOCK records from it: one 0x2a80-byte template.

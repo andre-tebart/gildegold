@@ -790,7 +790,7 @@ exe	0x0043e110	d3_ToggleRLightCB	d3_engine	byte	readable
 exe	0x0043e180	d3_SetRLights	d3_engine	byte	readable		
 exe	0x0043e1b0	d3_EndFrame	d3_engine	byte	readable		
 exe	0x0043e200	d3_Render	d3_engine	byte	draft	deep	
-exe	0x0043e4d0	d3_Animate	d3_engine	draft	readable	deep	
+exe	0x0043e4d0	d3_Animate	d3_engine	shape	readable	deep	
 exe	0x0043e680	d3_Frame	d3_engine	byte	draft		byte+readable -> byte+draft at f274727: Q6: the description came from a foreign declaration copy or a file name only (decompanion 399f0a8); the definition has none
 exe	0x0043e6b0	d3e_DefaultResolve	d3_engine	byte	readable		
 exe	0x0043e6c0	d3e_EventId	d3_engine	byte	readable		
@@ -870,7 +870,7 @@ exe	0x004486e0	d3if_ScreenBox	d3_interface	shape	readable
 exe	0x00448910	d3if_CreateCameras	d3_interface	byte	draft	deep	
 exe	0x00448a50	d3if_ClearView	d3_interface	byte	readable		
 exe	0x00448ac0	d3_YawTo	d3_interface	shape	readable		
-exe	0x00448c20	d3_CornerCB	d3_interface	draft	readable	deep	
+exe	0x00448c20	d3_CornerCB	d3_interface	shape	readable	deep	
 exe	0x00448e60	d3_ScreenToUV	d3_interface	draft	readable	deep	
 exe	0x004495f0	d3_FindObjectCB	d3_interface	byte	readable		
 exe	0x00449690	d3_FindObject	d3_interface	byte	readable		
@@ -1597,7 +1597,7 @@ exe	0x00495790	ai_PopAction	am	byte	draft
 exe	0x004957a0	ai_ActionOnStack	am	byte	draft		
 exe	0x004957d0	ai_ChooseAction	am	draft	readable	deep	
 exe	0x00495a50	ai_ChooseSubAction	am	shape	readable		
-exe	0x00495ce0	ai_ExecuteAction	am	draft	readable	deep	
+exe	0x00495ce0	ai_ExecuteAction	am	shape	readable	deep	
 exe	0x00495ee0	ai_Unk495ee0	am	byte	draft		
 exe	0x00495fa0	ai_DecideDummyRighteousness	am	byte	draft		
 exe	0x00495fc0	ai_ExecuteDummyRighteousness	am	byte	draft		
@@ -2206,7 +2206,7 @@ exe	0x004c4f10	ai_Unk4c4f10	cm	byte	draft
 exe	0x004c4f50	ai_Unk4c4f50	cm	byte	draft		
 exe	0x004c4fa0	cm_SendNewParty	cm	byte	draft		
 exe	0x004c4fd0	ai_Unk4c4fd0	cm	byte	draft		
-exe	0x004c5010	ai_Unk4c5010	cm	byte	draft		
+exe	0x004c5010	cm_SendMoveObject	cm	byte	draft		
 exe	0x004c5050	cm_SetPlant	cm	byte	draft		
 exe	0x004c50b0	ai_Unk4c50b0	cm	draft	draft		
 exe	0x004c5100	cm_SendChrWalkTo	cm	byte	draft		
@@ -2319,7 +2319,7 @@ exe	0x004c9520	ai_Unk4c9520	cm	draft	draft
 exe	0x004c9740	ai_Unk4c9740	cm	byte	draft		
 exe	0x004c97c0	ai_Unk4c97c0	cm	byte	draft		
 exe	0x004c9830	ai_Unk4c9830	cm	shape	draft		
-exe	0x004c99b0	ai_Unk4c99b0	cm	draft	draft		
+exe	0x004c99b0	ai_Unk4c99b0	cm	shape	draft		
 exe	0x004c9c10	ai_Unk4c9c10	cm	byte	draft		
 exe	0x004c9c80	ai_Unk4c9c80	cm	byte	draft		
 exe	0x004c9d00	ai_Unk4c9d00	cm	byte	draft		
@@ -2617,7 +2617,7 @@ exe	0x004e5b50	ai_Unk4e5b50	cm	byte	draft
 exe	0x004e5bf0	ai_DebugDumpPerson	cm	byte	draft		
 exe	0x004e5cd0	amt_InitTable	amt	byte	readable		
 exe	0x004e5e50	amt_Rating	amt	draft	readable	deep	
-exe	0x004e6030	amt_FindOffice	amt	draft	readable	deep	
+exe	0x004e6030	amt_FindOffice	amt	shape	readable	deep	
 exe	0x004e60b0	amt_GetOfficeRate	amt	byte	readable		
 exe	0x004e6180	amt_ApplyForOffice	amt	draft	readable	deep	
 exe	0x004e6360	amt_CheckApplication	amt	byte	readable		
@@ -2765,10 +2765,10 @@ exe	0x004ef7c0	gv_FindEntry	gv	byte	readable
 exe	0x004ef900	gv_LoadGraveyard	gv	byte	readable		
 exe	0x004ef930	gv_RandomGrave	gv	byte	readable		
 exe	0x004ef9c0	gv_BuryNewDead	gv	shape	readable	deep	
-exe	0x004efc10	gv_AllocGraveyard	gv	draft	readable	deep	
+exe	0x004efc10	gv_AllocGraveyard	gv	shape	readable	deep	
 exe	0x004eff50	gv_GrowGraveyard	gv	draft	readable	deep	
 exe	0x004f0180	gv_FreeGraveyard	gv	byte	readable		
-exe	0x004f01d0	unk_Unk4f01d0	gv	shape	draft		
+exe	0x004f01d0	gv_OrderBury	gv	shape	draft		
 exe	0x004f0240	gv_BuryCharacter	gv	shape	readable		
 exe	0x004f0430	gv_OrderReserveGrave	gv	byte	readable		
 exe	0x004f0490	gv_ReserveGrave	gv	byte	readable		
@@ -2936,7 +2936,7 @@ exe	0x004fa700	gm_CharacterWages	f3gm	shape	readable	deep
 exe	0x004fa9b0	unk_Unk4fa9b0	f3gm	byte	draft		
 exe	0x004faa00	gm_UpdateWorthMood	f3gm	byte	readable		
 exe	0x004fabe0	gm_EndDayIncomes	f3gm	draft	readable	deep	
-exe	0x004fad60	gm_FindRichest	f3gm	draft	readable	deep	
+exe	0x004fad60	gm_FindRichest	f3gm	shape	readable	deep	
 exe	0x004fae50	gm_HandOutMoney	f3gm	byte	readable		
 exe	0x004fb0e0	gm_ShiftLoyalty	f3gm	byte	readable		
 exe	0x004fb330	gm_NameRecord	f3gm	byte	readable		
@@ -2945,7 +2945,7 @@ exe	0x004fb5a0	gm_SelectModelVariant	f3gm	shape	readable
 exe	0x004fb620	gm_ResolveHeadIcons	f3gm	shape	readable		
 exe	0x004fb770	gm_HeadIconNumber	f3gm	byte	readable		
 exe	0x004fb890	gm_ChooseHeadIcon	f3gm	byte	readable		
-exe	0x004fbb80	gm_CreateCharModel	f3gm	draft	readable	deep	
+exe	0x004fbb80	gm_CreateCharModel	f3gm	shape	readable	deep	
 exe	0x004fbd10	gm_PlaceOnStage	f3gm	byte	readable		
 exe	0x004fbe90	gm_DailyCharacterStep	f3gm	draft	readable	deep	
 exe	0x004fc6f0	gm_AgeCharacter	f3gm	shape	readable		
@@ -3091,22 +3091,22 @@ exe	0x00506180	gm_RankPlayers	f3gm	shape	readable
 exe	0x00506430	gm_PlayerRecord	f3gm	shape	readable		
 exe	0x00506480	gm_Unk506480	f3gm	shape	draft		
 exe	0x005064d0	gm_TakeOverCharacter	f3gm	draft	readable	deep	
-exe	0x00506890	gm_Unk506890	f3gm	draft	draft		
-exe	0x00506e70	gm_Unk506e70	f3gm	draft	draft		
-exe	0x005075c0	gm_MayRemoveChar	f3gm	draft	draft		
-exe	0x00507690	gm_CreateCharacter	f3gm	draft	draft		
+exe	0x00506890	gm_InheritEstate	f3gm	shape	readable		
+exe	0x00506e70	gm_ForfeitEstate	f3gm	draft	readable	deep	
+exe	0x005075c0	gm_MayRemoveChar	f3gm	byte	readable		
+exe	0x00507690	gm_CreateCharacter	f3gm	draft	readable	deep	
 exe	0x005085b0	gm_ConvertMoney	f3gm	byte	draft		
 exe	0x005085f0	gm_PlayerFactor	f3gm	byte	draft		
 exe	0x00508620	gm_Unk508620	f3gm	byte	draft		
 exe	0x00508640	gm_Unk508640	f3gm	byte	draft		
 exe	0x00508660	gm_SumSlotAmounts	f3gm	byte	draft		
-exe	0x005086b0	gm_ObjectValue	f3gm	draft	draft		
+exe	0x005086b0	gm_ObjectValue	f3gm	shape	readable		
 exe	0x00508740	gm_JobWage	f3gm	shape	readable		
-exe	0x005087f0	gm_ItemPrice	f3gm	draft	draft		
+exe	0x005087f0	gm_ItemPrice	f3gm	byte	readable		
 exe	0x005089c0	gm_GoodsPrice	f3gm	byte	draft		
 exe	0x00508a20	gm_HealthFactor	f3gm	byte	readable		
-exe	0x00508a80	gm_FormatAmount	f3gm	draft	draft		
-exe	0x00508cc0	gm_ListObjectsAfter	f3gm	draft	readable		
+exe	0x00508a80	gm_FormatAmount	f3gm	shape	readable		
+exe	0x00508cc0	gm_ListObjectsAfter	f3gm	draft	readable	deep	
 exe	0x00508d70	gm_BuildingLevel	f3gm	byte	draft		
 exe	0x00508d80	gm_BuildingBalance	f3gm	draft	draft		
 exe	0x00509060	gm_Unk509060	f3gm	byte	draft		
@@ -3125,7 +3125,7 @@ exe	0x00509d30	gm_BuildingKindValue	f3gm	draft	readable
 exe	0x00509dc0	gm_BuildingKindCost	f3gm	draft	draft		
 exe	0x00509e30	gm_SumListAmounts	f3gm	byte	draft		
 exe	0x00509e60	gm_GetGoodsValue	f3gm	byte	draft		
-exe	0x00509eb0	gm_Unk509eb0	f3gm	byte	draft		
+exe	0x00509eb0	gm_CharSumAmounts	f3gm	byte	draft		
 exe	0x00509ee0	gm_CharCurrency	f3gm	draft	draft		
 exe	0x00509f20	gm_Unk509f20	f3gm	shape	draft		
 exe	0x00509f80	gm_Unk509f80	f3gm	draft	draft		
@@ -3158,7 +3158,7 @@ exe	0x0050b2f0	gm_Unk50b2f0	f3gm	shape	draft
 exe	0x0050b3a0	gm_Unk50b3a0	f3gm	draft	draft		
 exe	0x0050b9f0	gm_Unk50b9f0	f3gm	draft	draft		
 exe	0x0050c310	gm_Unk50c310	f3gm	byte	draft		
-exe	0x0050c340	gm_Unk50c340	f3gm	draft	draft		
+exe	0x0050c340	gm_Unk50c340	f3gm	shape	draft		
 exe	0x0050c4d0	gm_Unk50c4d0	f3gm	byte	draft		
 exe	0x0050c4e0	gm_Unk50c4e0	f3gm	byte	draft		
 exe	0x0050c520	gm_Opinion	f3gm	byte	readable		
@@ -3193,7 +3193,7 @@ exe	0x0050e330	init_CreateOpponents	f3init	draft	draft	deep
 exe	0x0050e5a0	init_PlaceOffices	f3init	shape	readable	deep	
 exe	0x0050e690	init_CreateStartCharacters	f3init	draft	readable	deep	
 exe	0x0050f0b0	init_CreateOpeningObjects	f3init	byte	readable		
-exe	0x0050f340	init_StockMarketStalls	f3init	draft	readable	deep	
+exe	0x0050f340	init_StockMarketStalls	f3init	shape	readable	deep	
 exe	0x0050f570	init_Betrieb	f3init	draft	readable	deep	
 exe	0x0050f750	init_OpenBuilding	f3init	shape	readable	deep	
 exe	0x0050f910	init_OpenTown	f3init	draft	readable	deep	
@@ -3228,9 +3228,9 @@ exe	0x00512840	init_PlayGraveyardSound	f3init	byte	draft
 exe	0x00512890	unk_Unk512890	f3init	byte	draft		
 exe	0x005128d0	init_SetSeasonTextures	f3init	shape	readable		
 exe	0x00512de0	init_PlantTextureSetHook	f3init	byte	draft		
-exe	0x00512e40	init_TextureSetHook	f3init	draft	readable	deep	
+exe	0x00512e40	init_TextureSetHook	f3init	shape	readable	deep	
 exe	0x00512e80	init_BuildingTextureSetHook	f3init	shape	draft		
-exe	0x00512f30	init_SetCharacterAnimations	f3init	draft	readable	deep	
+exe	0x00512f30	init_SetCharacterAnimations	f3init	shape	readable	deep	
 exe	0x00513050	init_ShowBuildingScene	f3init	draft	readable	deep	
 exe	0x00513400	init_FinishBuildingScene	f3init	byte	readable		
 exe	0x00513590	init_SetDetailLevel	f3init	draft	readable	deep	
@@ -3874,11 +3874,11 @@ exe	0x00570cc0	he_Unk570cc0	he	draft	draft
 exe	0x00570ea0	he_Unk570ea0	he	byte	draft		
 exe	0x00570ef0	he_Unk570ef0	he	shape	draft		
 exe	0x00571000	he_Unk571000	he	draft	draft		
-exe	0x00571550	he_Unk571550	he	draft	draft		
+exe	0x00571550	he_Unk571550	he	shape	draft		
 exe	0x00571640	he_Unk571640	he	draft	draft		
 exe	0x00571990	he_Unk571990	he	byte	draft		
 exe	0x005719e0	he_Unk5719e0	he	draft	draft		
-exe	0x00571ac0	he_Unk571ac0	he	draft	draft		
+exe	0x00571ac0	he_Unk571ac0	he	shape	draft		
 exe	0x00571c30	he_Unk571c30	he	draft	draft		
 exe	0x00571f60	he_Unk571f60	he	draft	draft		
 exe	0x005720f0	he_Unk5720f0	he	draft	draft		
@@ -4272,7 +4272,7 @@ exe	0x005a2b60	ai_Unk5a2b60	unk_58bbd0	draft	draft
 exe	0x005a2de0	ai_Unk5a2de0	unk_58bbd0	byte	draft		
 exe	0x005a2e60	ai_Unk5a2e60	unk_58bbd0	draft	draft		
 exe	0x005a36c0	ai_Unk5a36c0	unk_58bbd0	shape	draft		
-exe	0x005a3810	ai_Unk5a3810	unk_58bbd0	draft	draft		
+exe	0x005a3810	ai_Unk5a3810	unk_58bbd0	shape	draft		
 exe	0x005a39b0	ai_ChurchContact	unk_58bbd0	byte	readable		
 exe	0x005a3a40	ai_DungeonPlanWindow	unk_58bbd0	draft	draft		
 exe	0x005a3b20	ai_DungeonContact	unk_58bbd0	byte	readable		
