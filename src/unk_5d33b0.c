@@ -1750,7 +1750,7 @@ void ai_OptionsMenu(void)
 /* 0x5d45d0, the save window (839 B): the twin of ai_LoadGameWindow (the same form "menu\loadgame_new",
    the view placement, the fitted form, the pointer sprite, the caption 0x1c58, the slider 0x214 x 0x168
    of the list control, ai_FillSaveSlots (win, 1, "gamedata/saves", mode 0)), but the two autosave /
-   quicksave slots (0 / 1) are disabled (d2_EnableObject 0) and only the slots 2 .. 15 are clickable.
+   quicksave slots (0 / 1) are disabled (d2_SetObjEnabled 0) and only the slots 2 .. 15 are clickable.
    The pump sv_RunFrame runs with this function and the frame's mask; a mouse event asks the screen to
    pop and, when dm_L.lclick is set and the list is not scrolling (the window's scrollRemY is 0), the
    slots 2 .. 15 are walked with the hit test of ai_LoadGameWindow. A hit disables the slot object and
@@ -1792,8 +1792,8 @@ int ai_SaveOptionWindow(int image)
     ((int (*)(int, int, int, int))sv_CreateScrollButtons)(0x214, 0x168, d2_LastWindow, obj); /* @original:
         the original pushes four of the eight arguments of sv.c's slider builder */
     ai_FillSaveSlots(win, 1, slots, list, "gamedata/saves", 0);
-    d2_EnableObject(slots[0].obj, 0);
-    d2_EnableObject(slots[1].obj, 0);
+    d2_SetObjEnabled(slots[0].obj, 0);
+    d2_SetObjEnabled(slots[1].obj, 0);
     obj = d2_GetViewWin(win, 1);
     while (sv_RunFrame((int)ai_SaveOptionWindow, mask) != 0) {
         if (dm_L.rup != 0)
@@ -1873,7 +1873,7 @@ int ai_SaveNameWindow(int image)
     ((int (*)(int, int, int, int))sv_CreateScrollButtons)(0x214, 0x168, d2_LastWindow, obj); /* @original:
         the original pushes four of the eight arguments of sv.c's slider builder */
     ai_FillSaveSlots(win, 1, slots, list, "gamedata/network", 1);
-    d2_EnableObject(slots[0].obj, 0);
+    d2_SetObjEnabled(slots[0].obj, 0);
     obj = d2_GetViewWin(win, 1);
     while (sv_RunFrame((int)ai_SaveNameWindow, mask) != 0) {
         if (dm_L.rup != 0)
