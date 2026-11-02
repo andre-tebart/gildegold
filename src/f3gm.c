@@ -2437,8 +2437,8 @@ void gm_AddTime(GCLOCK *c, int hours, int mins, int secs)
 
 void gm_SetTime(GCLOCK *c, unsigned char hour, unsigned min, unsigned sec)
 {
-    c->hour = hour;
     c->sec = sec & 0xff;
+    c->hour = hour;
     c->min = min & 0xff;
 }
 /* 0x4fe210, compares two clocks: -1 when a is earlier, 1 when later, 0 when equal */
