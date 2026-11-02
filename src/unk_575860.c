@@ -783,7 +783,7 @@ int ai_TutorialTick(void)
         }
         if (ai_Tutorial->run->mode == 2)
             ai_Tutorial->phase = 1;
-        if (ai_Tutorial->run->campaign)
+        if (ai_Tutorial->run->stepHook)
             ai_CampaignStep(2, 0, 0, 0);
         ai_Tutorial->stepArg = 0;
         if (!ai_Tutorial->run->marker)
@@ -814,7 +814,7 @@ int ai_TutorialTick(void)
         he_ActivateSlot(0);
         return 0;
     case 4:                     /* the timed first text window */
-        if (ai_Tutorial->run->startMode == 3) {
+        if (ai_Tutorial->run->goal == 3) {
             ai_CampaignStep(0, 0, 0, 0);
             return 0;
         }
@@ -871,7 +871,7 @@ int ai_TutorialTick(void)
         ai_Tutorial->stepArg = 0;
         ai_TutorialStepForm();
         tb_Paused = 0;
-        if (ai_Tutorial->run->toText2) {
+        if (ai_Tutorial->run->text2Goal) {
             ai_Tutorial->state = 9;
             ai_Tutorial->next = 9;
             return 0;
@@ -981,134 +981,125 @@ void unk_SetEndGameGate(void)
 {
     ai_TutorialRunning = 1;
 }
-/* 0x576040, one step of the campaign state machine (763 B): `a` is the expected index, `b` and `c` the event
-   kind / result, `d` is only handed to the callback. The record 0x5eec60: +0 the state, +4 the pending state,
-   +0xc the time of the step (0x6333cc), +0x10 the step counter, +0x18 the run record; the run record holds the
-   callback +0x38 (called with the four arguments as an int[4]), +0x3c the mode (1 / 3), +0x40 the expected index,
-   +0x44 / +0x48 the transition times, +0x4c an index, +0x50 a stored value. Every path ends with the step
-   counter +0x10 incremented; the failed gates at the top return without it. */
+/* 0x576040, one event of the tutorial run (a the event index, b / c its kind / result, d only for the hook): the
+   run's stepHook gets all four as an int[4] when it has one; else, for a run of mode 2, the event that meets the
+   run's goal (or the second text window's text2Goal) moves the states 4 / 9 / 0xa on (phase 1: next 5 or back to 4;
+   phase 3: 4 -> 9, 9 -> 0xa or back to 4, 0xa -> 0xb); for the other modes the goal event in the states 4 / 0xa
+   switches to goalState (c == 0) or 0xb, and a timed goal (3) to goalState once tailTime has passed. Counts the
+   handled events in campaignSteps
+   @deep read in full against the original (0x576040..0x57633a) and rewritten on the typed TUTSTATE /
+   TUTRUN: the mode 2 / other split, the stepHook calls, the timed goal, the phase 1 / phase 3 transitions
+   with the shared 'started' (stepAt = clock) / 'count' tails the original jumps to (0x57631d / 0x576330),
+   the volatile clock reads; 238/238 instructions, the rest regs / order. Left: one allocation hunk in
+   phase 1, c == 0: ours keeps the record pointer in edx and the clock in ecx and reloads the pointer into
+   eax before 'test ebx, ebx' ('- mov edx,[ai_Tutorial]; mov ecx,[clock]; mov [edx+0xc],ecx; mov
+   eax,[ai_Tutorial]'), the original keeps it in eax across the store ('+ mov eax,[ai_Tutorial]; mov
+   edx,[clock]; test ebx,ebx; mov [eax+0xc],edx') and so its b == 0 jump lands on the reload before the
+   shared tail (je +0x1ca vs ours +0x1cf) */
 
 void ai_CampaignStep(int a, int b, int c, int d)
 {
     int p[4];
-    int (*cb)(int *);
-    char *r;
 
     if (!ai_TutorialOn)
         return;
-    if (!*(int *)(S + 0x18))
+    if (!ai_Tutorial->run)
         return;
     p[0] = a;
     p[1] = b;
     p[2] = c;
     p[3] = d;
-    r = *(char **)(S + 0x18);
-    if (*(int *)(r + 8) == 2)
-        goto st2;
-    if (U_I(S + 4) != 4 && U_I(S + 4) != 0xa)
-        return;
-    /* 0x5760a4 */
-    cb = *(int (**)(int *))(r + 0x38);
-    if (cb) {
-        cb(p);
-        U_I(S + 0x10)++;
-        return;
-    }
-    if (*(int *)(r + 0x40) == 3) {
-        if (U_I((unsigned)&ai_ClockMs) > *(int *)(r + 0x44) + U_I(S + 0xc)) {
-            U_I(S) = *(int *)(r + 0x48);
-            r = *(char **)(S + 0x18);
-            U_I(S + 4) = *(int *)(r + 0x48);
-            U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
-            U_I(S + 0x2c) = 1;
-        }
-        return;
-    }
-    if (*(int *)(r + 0x40) != a)
-        goto inc;
-    if (c == 0) {
-        U_I(S) = *(int *)(r + 0x48);
-        U_I(S + 4) = U_I(S);
-    } else {
-        U_I(S) = 0xb;
-        U_I(S + 4) = U_I(S);
-    }
-    goto clocked;
-
-st2:
-    if (U_I(S + 4) != 4 && U_I(S + 4) != 9 && U_I(S + 4) != 0xa)
-        return;
-    cb = *(int (**)(int *))(r + 0x38);
-    if (cb) {
-        cb(p);
-        return;
-    }
-    if (U_I(S + 0x3c) == 1) {
-        if (c != 0) {
-            if (c != 1 || *(int *)(r + 0x40) != a)
-                goto apply;
-            U_I(S + 4) = 4;
-            U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
-            U_I(S + 0x30) = 0;
-            ai_TutorialHideText2();
-            ai_TutorialMarkerUpdate(2);
-            goto apply;
-        }
-        if (*(int *)(r + 0x40) != a)
-            goto apply;
-        U_I(S + 4) = 5;
-        U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
-        if (b)
-            U_I(S + 0x50) = b;
-        goto apply;
-    }
-    if (U_I(S + 0x3c) != 3)
-        goto inc;
-    if (U_I(S + 4) == 9) {
-        if (*(int *)(r + 0x4c) && *(int *)(r + 0x4c) == a) {
-            U_I(S) = 0xa;
-            U_I(S + 4) = 0xa;
-            U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
-            U_I(S + 0x10)++;
+    if (ai_Tutorial->run->mode != 2) {
+        if (ai_Tutorial->next != 4 && ai_Tutorial->next != 0xa)
+            return;
+        if (ai_Tutorial->run->stepHook) {
+            ai_Tutorial->run->stepHook(p);
+            ai_Tutorial->campaignSteps++;
             return;
         }
-        if (*(int *)(r + 0x40) != a || c != 1)
-            goto inc;
-        U_I(S) = 4;
-        U_I(S + 4) = 4;
-        U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
-        U_I(S + 0x30) = 0;
-        ai_TutorialHideText2();
-        ai_TutorialMarkerUpdate(2);
-        U_I(S + 0x10)++;
+        if (ai_Tutorial->run->goal == 3) {
+            if (ai_ClockMsVolatile > ai_Tutorial->run->tailTime + ai_Tutorial->stepAt) {
+                ai_Tutorial->state = ai_Tutorial->run->goalState;
+                ai_Tutorial->next = ai_Tutorial->run->goalState;
+                ai_Tutorial->stepAt = ai_ClockMsVolatile;
+                ai_Tutorial->statusShown = 1;
+            }
+            return;
+        }
+        if (ai_Tutorial->run->goal != a)
+            goto count;
+        if (c == 0) {
+            ai_Tutorial->state = ai_Tutorial->run->goalState;
+            ai_Tutorial->next = ai_Tutorial->state;
+        } else {
+            ai_Tutorial->state = 0xb;
+            ai_Tutorial->next = ai_Tutorial->state;
+        }
+        goto started;
+    }
+    if (ai_Tutorial->next != 4 && ai_Tutorial->next != 9 && ai_Tutorial->next != 0xa)
+        return;
+    if (ai_Tutorial->run->stepHook) {
+        ai_Tutorial->run->stepHook(p);
         return;
     }
-    if (U_I(S + 4) == 0xa) {
-        if (*(int *)(r + 0x40) != a || c != 1)
-            goto inc;
-        U_I(S) = 0xb;
-        U_I(S + 4) = 0xb;
-        goto clocked;
+    if (ai_Tutorial->phase == 1) {
+        if (c == 0) {
+            if (ai_Tutorial->run->goal == a) {
+                ai_Tutorial->next = 5;
+                ai_Tutorial->stepAt = ai_ClockMsVolatile;
+                if (b)
+                    ai_Tutorial->stepArg = b;
+            }
+        } else if (c == 1 && ai_Tutorial->run->goal == a) {
+            ai_Tutorial->next = 4;
+            ai_Tutorial->stepAt = ai_ClockMsVolatile;
+            ai_Tutorial->text2Shown = 0;
+            ai_TutorialHideText2();
+            ai_TutorialMarkerUpdate(2);
+        }
+        ai_Tutorial->state = ai_Tutorial->next;
+        ai_Tutorial->campaignSteps++;
+        return;
     }
-    if (U_I(S + 4) == 4) {
-        if (*(int *)(r + 0x40) != a || c != 0)
-            goto inc;
-        U_I(S) = 9;
-        U_I(S + 4) = 9;
-        goto clocked;
+    if (ai_Tutorial->phase == 3) {
+        if (ai_Tutorial->next == 9) {
+            if (ai_Tutorial->run->text2Goal && ai_Tutorial->run->text2Goal == a) {
+                ai_Tutorial->state = 0xa;
+                ai_Tutorial->next = 0xa;
+                ai_Tutorial->stepAt = ai_ClockMsVolatile;
+                ai_Tutorial->campaignSteps++;
+                return;
+            }
+            if (ai_Tutorial->run->goal == a && c == 1) {
+                ai_Tutorial->state = 4;
+                ai_Tutorial->next = 4;
+                ai_Tutorial->stepAt = ai_ClockMsVolatile;
+                ai_Tutorial->text2Shown = 0;
+                ai_TutorialHideText2();
+                ai_TutorialMarkerUpdate(2);
+                ai_Tutorial->campaignSteps++;
+                return;
+            }
+        } else if (ai_Tutorial->next == 0xa) {
+            if (ai_Tutorial->run->goal == a && c == 1) {
+                ai_Tutorial->state = 0xb;
+                ai_Tutorial->next = 0xb;
+                goto started;
+            }
+        } else if (ai_Tutorial->next == 4) {
+            if (ai_Tutorial->run->goal == a && c == 0) {
+                ai_Tutorial->state = 9;
+                ai_Tutorial->next = 9;
+                goto started;
+            }
+        }
     }
-    goto inc;
-
-apply:
-    U_I(S) = U_I(S + 4);
-    U_I(S + 0x10)++;
-    return;
-clocked:
-    U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
-    U_I(S + 0x10)++;
-    return;
-inc:
-    U_I(S + 0x10)++;
+    goto count;
+started:
+    ai_Tutorial->stepAt = ai_ClockMsVolatile;
+count:
+    ai_Tutorial->campaignSteps++;
 }
 /* 0x576340, calls the run record's callback +0x3c with the four arguments as an int[4] and returns its result;
    1 when a gate fails (0x6f265c, the run record, [r+0x3c]), 0 while 0x6333e0 is set (a transition in progress) */

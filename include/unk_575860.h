@@ -26,12 +26,12 @@ typedef struct TUTRUN {                 /* 0x74 bytes, a run (chapter) record of
     unsigned int text1Time;             /* 0x2c, ms the first text window waits before it shows */
     unsigned int tail2Time;             /* 0x30, the length of the state 0xb */
     void (*hook)(int end);              /* 0x34, called with 0 when the run starts, 1 when it ends */
-    int campaign;                       /* 0x38, set: the start takes a campaign step (ai_CampaignStep 2) */
+    int (*stepHook)(int *args);         /* 0x38, ai_CampaignStep hands its four arguments to it; set: the start takes a campaign step */
     int (*query)(int *args);            /* 0x3c, ai_ScriptQuery's callback */
-    int startMode;                      /* 0x40, 3: the state 4 only takes a campaign step */
-    unsigned int tailTime;              /* 0x44, the length of the state 0xa */
-    char pad48[4];
-    int toText2;                        /* 0x4c, set: the chain ends in the state 9 (second text window), else 0xa */
+    int goal;                           /* 0x40, the event index a that completes the run's goal (ai_CampaignStep); 3: timed */
+    unsigned int tailTime;              /* 0x44, the length of the state 0xa and of a timed goal */
+    int goalState;                      /* 0x48, the state a completed goal switches to */
+    int text2Goal;                      /* 0x4c, the event index that ends the second text window; set: the chain ends in the state 9, else 0xa */
     unsigned int stepCount;             /* 0x50 */
     char pad54[4];
     TUTSTEP *steps;                     /* 0x58 */
