@@ -424,7 +424,7 @@ int ai_Unk4933d0(AGDUEL *d, AGCH *c, int k);                    /* 0x4933d0 */
 void ai_DuelThrow(AGDUEL *d, AGCH *c, int k);                   /* 0x493420 */
 int ai_Unk4937a0(AGDUEL *d, AGCH *c, int k);                    /* 0x4937a0 */
 int ai_DuelOpponentAction(AGDUEL *d, AGCH *c);                           /* 0x493890 */
-void ai_Unk493a40(AGDUEL *d);                                   /* 0x493a40 */
+void ai_DuelNextPhase(AGDUEL *d);                                   /* 0x493a40 */
 int ai_Unk493be0(AGCH *p, AIOBJ *o);                            /* 0x493be0 */
 AGCH *ai_Unk493ea0(AGCH *p);                                    /* 0x493ea0 */
 

@@ -2743,18 +2743,24 @@ int ai_DuelOpponentAction(AGDUEL *d, AGCH *c)
     }
     return 0;
 }
-/* 0x493a40, the next phase of the duel */
+/* 0x493a40, advances the duel to its next phase: phase 2 compares the sides' triples, phases 3 and 4 the dice sums (over 17 or kind 4 ends the side's turn)
+   @deep read the whole function against the original: control flow, conditions (sum > 17 / kind 4 -> phase
+   6 / 5), the triple compare and both sum loops match instruction for instruction. Left is allocation
+   only: the original spills sum1 to a push-ecx frame slot ([esp+0x10], reloaded at
+   0x493b14/0x493b4c/0x493ba8) and keeps s1 in ebp; ours keeps sum1 in edx and spills s1 to the argument
+   slot [esp+0x14] (mov edi,[esp+0x14] + jmp at +0x98), which also shifts the 'jg/je -> phase 6' targets.
+   Tried reordering the initializers/declarations: no change to the spill choice. */
 
-void ai_Unk493a40(AGDUEL *d)
+void ai_DuelNextPhase(AGDUEL *d)
 {
-    int ph, i, n, sum1, sum2, s1, s2;
+    int ph = d->phase;
+    int i = 0;
+    int s1 = 0;
+    int s2 = 0;
+    int sum1 = 0;
+    int sum2 = 0;
+    int n;
 
-    ph = d->phase;
-    i = 0;
-    s1 = 0;
-    s2 = 0;
-    sum2 = 0;
-    sum1 = 0;
     if (ph == 1) {
         d->phase = 2;
         return;
@@ -2793,20 +2799,20 @@ void ai_Unk493a40(AGDUEL *d)
             } while (i < n);
         }
         if (ph == 3) {
-            if (sum1 < 0x12 && d->kind1 != 4) {
-                if (d->kind1 == 3 && d->kind2 == 3) {
-                    d->phase = (sum1 <= sum2) + 5;
-                    return;
-                }
-                d->phase = 4;
+            if (sum1 > 17 || d->kind1 == 4) {
+                d->phase = 6;
                 return;
             }
-            d->phase = 6;
+            if (d->kind1 == 3 && d->kind2 == 3) {
+                d->phase = (sum1 <= sum2) + 5;
+                return;
+            }
+            d->phase = 4;
             return;
         }
         if (ph != 4)
             return;
-        if (sum2 < 0x12 && d->kind2 != 4) {
+        if (sum2 <= 17 && d->kind2 != 4) {
             if (d->kind1 == 3 && d->kind2 == 3) {
                 d->phase = (sum1 <= sum2) + 5;
                 return;

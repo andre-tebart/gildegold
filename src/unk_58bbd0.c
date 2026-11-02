@@ -6094,7 +6094,7 @@ void ai_Unk597e70(int param_1, int win)
 }
 
 int gm_GetWorth(unsigned short id); int gm_ConvertMoney(int a, unsigned char k); short * gm_PlayerRecord(char *c); int ai_Unk493200();
-int ai_Unk4937a0(); void ai_Unk493a40(struct AGDUEL *d); int ai_DuelOpponentAction(); int ai_Unk493390();
+int ai_Unk4937a0(); void ai_DuelNextPhase(struct AGDUEL *d); int ai_DuelOpponentAction(); int ai_Unk493390();
 
 /* 0x598170, the tavern dice game window (2566 B, ROUGH SKELETON from the Ghidra pseudocode): the player's
    record 0x770b80 + player * 0x21c, the dice state local_378[0x15]; the money 0x50a640 / 0x5085b0, the
@@ -6217,11 +6217,11 @@ void ai_Unk598170(int param_1)
             ai_Unk597a10(state, (int *)sets, 1, win, 2, 0x96, 0);
             if (*(char *)(((unsigned)&ai_CharInts + 0x4) + player * 0x21c) != 0) {
                 ai_Unk4937a0(state, sets[0], 1);
-                ai_Unk493a40(state);
+                ai_DuelNextPhase(state);
                 ai_Unk597a10(state, (int *)sets, 1, win, 2, 0x14, 1);
                 ai_Unk597a10(state, (int *)sets, 1, win, 3, 0x96, 0);
                 ai_Unk4937a0(state, sets[0], 1);
-                ai_Unk493a40(state);
+                ai_DuelNextPhase(state);
                 ai_Unk597a10(state, (int *)sets, 1, win, 3, 0x14, 1);
                 ai_Unk597e70(state, win);
                 cm_SendMoveGoodsUnchecked(U_I((unsigned)&ai_CharInts + player * 0x87), 0xffffffff, 0, 0);
