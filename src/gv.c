@@ -3074,30 +3074,35 @@ int gv_CrimeTextLaw2to8(char *out, CRIME r, int mode)
     }
     return ok;
 }
-/* 0x4f31d0, the text of a record with the type byte 0xe / 0x10 (texts 0x1446 / 0x1450, + 1 for mode < 2); anything else the fixed text; 1 when a text was built. */
+/* 0x4f31d0, the text of a crime against the laws 0xe / 0x10: the texts 0x1446 / 0x1450 (+ 1 for mode <= 1) with the
+   crime's time and the victim's short id (0xfffe when not found); any other law the fixed text and 0, else 1. */
 
 int gv_CrimeTextLaw9to16(char *out, CRIME r, int mode)
 {
-    int m;
-    unsigned short *p;
+    int ok;
+    int text;
+    unsigned short *victim;
     unsigned short id;
 
-    m = mode < 2;
-    p = (unsigned short *)gm_FindChar(r.victim);
-    if (p == 0)
-        id = 0xfffe;
+    ok = 1;
+    text = mode <= 1;
+    victim = (unsigned short *)gm_FindChar(r.victim);
+    if (victim != 0)
+        id = *victim;
     else
-        id = *p;
-    if (r.law != 0xe) {
-        if (r.law != 0x10) {
-            strcpy(out, "Hm, das ist doch nicht verboten");
-            return 0;
-        }
-        txt_Format(out, m + 0x1450, id, &r.time);
-        return 1;
+        id = 0xfffe;
+    switch (r.law) {
+    case 0xe:
+        txt_Format(out, text + 0x1446, &r.time, id);
+        break;
+    case 0x10:
+        txt_Format(out, text + 0x1450, id, &r.time);
+        break;
+    default:
+        strcpy(out, "Hm, das ist doch nicht verboten");
+        ok = 0;
     }
-    txt_Format(out, m + 0x1446, &r.time, id);
-    return 1;
+    return ok;
 }
 /* 0x4f3270, the text of a record with the type byte 0x11 .. 0x1c (texts 0x1455 + 5 * n, + 1 for mode < 2; the object name (0x4fea50 of the id at +0x21, default "Geb\xe4ude") goes in as "%1G" when found); returns 0 always. ROUGH */
 
