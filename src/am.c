@@ -11001,8 +11001,10 @@ unsigned int ai_FindCandidates(AIPER *p, unsigned int n, unsigned int fl, float 
     }
     return cnt;
 }
-/* 0x4a61d0: as 0x4a5b50 with one flag set fl for every slot, and the partners' quarter (0x166, 0x4e7c40) at most
-   d away from p's; returns the number found */
+/* 0x4a61d0: a partner chain of up to a characters for an action with the flags fl: the leader ai_Partner first,
+   then for each slot a random walk over the 768 characters for one ai_PassesPartnerFilter accepts with the chain so
+   far, with a liking in [lo, hi] when that window is narrower than 0..100 and an office level (officeKind,
+   amt_GetKindLevel) at most d away from p's; ids into id[], returns the number found */
 
 unsigned int ai_PickPartnerChainLevel(AIPER *p, unsigned int a, unsigned int fl, float lo, float hi, int d, unsigned short *id)
 {
@@ -11020,20 +11022,20 @@ unsigned int ai_PickPartnerChainLevel(AIPER *p, unsigned int a, unsigned int fl,
     if (ai_Partner != 0) {
         q[1] = fl;
         q[16] = 0;
-        if (ai_PassesPartnerFilter(*(unsigned short *)p, *(unsigned short *)ai_Partner, q, 0) != 0) {
+        if (ai_PassesPartnerFilter(p->id, ai_Partner->id, q, 0) != 0) {
             i = 1;
-            id[0] = *(unsigned short *)ai_Partner;
+            id[0] = ai_Partner->id;
         }
     }
-    if ((lo > 0.0f || hi < 100.0f) && lo < hi)
+    if ((lo > 0.0 || hi < 100.0) && lo < hi)
         win = 1;
-    home = amt_GetKindLevel(((unsigned char *)p)[0x166]);
+    home = amt_GetKindLevel(p->officeKind);
     for (; i < a; i++) {
         q[1] = fl;
-        if (i == 0)
-            *(unsigned short *)&q[7] = *(unsigned short *)p;
-        else
+        if (i != 0)
             ((unsigned short *)&q[7])[i] = id[i - 1];
+        else
+            ((unsigned short *)&q[7])[0] = p->id;
         n = 0x300;
         found = 0;
         c = util_RandomU(0x300);
@@ -11043,9 +11045,9 @@ unsigned int ai_PickPartnerChainLevel(AIPER *p, unsigned int a, unsigned int fl,
                     return i;
                 break;
             }
-            if (ai_PassesPartnerFilter(*(unsigned short *)p, (unsigned short)c, q, 0) != 0
-                && (!win || (r = gm_Liking(c, *(unsigned short *)p, 1), lo <= r && r <= hi))
-                && abs(home - amt_GetKindLevel(((unsigned char *)&ai_CharsT[c])[0x166])) <= d) {
+            if (ai_PassesPartnerFilter(p->id, (unsigned short)c, q, 0) != 0
+                && (!win || (r = gm_Liking(c, p->id, 1), !(r < lo) && !(r > hi)))
+                && abs(home - amt_GetKindLevel(ai_CharsT[c].officeKind)) <= d) {
                 found = 1;
                 id[i] = (unsigned short)c;
             }
