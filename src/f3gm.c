@@ -1662,15 +1662,18 @@ float gm_CharacterBaseHealth(short *c)
         return ((ch->f01c - ch->f010) / ch->f020) * a + ch->f010;
     return ch->f01c;
 }
-/* 0x4fc8e0, health now / health of the character c without the extra (0 for a free slot or an inactive one) */
+/* 0x4fc8e0, the share of its life the character c has now: gm_CharacterHealth / gm_CharacterBaseHealth (0 for a
+   free slot or a dead one) */
 
 float gm_HealthRatio(short *c)
 {
-    if (*c == -1)
+    ORDCHAR *ch = ORD_CHAR(c);
+
+    if (ch->id == 0xffff)
         return 0.0f;
-    if (((char *)c)[8] == 0)
+    if (ch->health == 0)
         return 0.0f;
-    return (float)(gm_CharacterHealth(c) / gm_CharacterBaseHealth(c));
+    return gm_CharacterHealth(c) / gm_CharacterBaseHealth(c);
 }
 /* 0x4fc920, the daily step of all characters: the kind 0x12 ones get the byte 8 at +2 (0x4c3c00 (1, 1, 2)); every character of kind < 10 or 0x14 that is active runs 0x4fbe90 and, when the lifetime float (+0x20) - 1 equals the age and it has a model (+0x184), the call 0x4c5690 (id, "stallbursche_MANN" / "magd_FRAU" by the byte +9); then 0x4fd120 */
 
