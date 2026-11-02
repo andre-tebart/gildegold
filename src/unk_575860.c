@@ -44,7 +44,6 @@ extern GAPDATA full_data_5f1890[];
 extern GAPDATA full_data_624204[];
 extern GAPDATA full_data_629304[];
 extern GAPDATA full_data_602568[];
-extern int d2_PointerObj;
 extern unsigned char kb_Last;
 extern GAPDATA full_data_629314[];
 extern GAPDATA full_data_629328[];
@@ -222,7 +221,6 @@ extern GAPDATA full_data_62a284[];
 extern GAPDATA full_data_62a2a4[];
 extern unsigned char ai_TimeHour;
 extern int d2_PointerObj;
-extern int d2_LastWindow;
 extern GAPDATA full_data_62a2c4[];
 extern const int sv_PhaseMinutes[24];
 extern int d2_DirtyRectLeft;
@@ -275,7 +273,6 @@ extern GAPDATA full_data_62a3cc[];
 
 extern unsigned char ai_TimeHour;
 extern int d2_PointerObj;
-extern int d2_ClickedId;
 extern int d2_LastWindow;
 extern struct D2OBJ *d2_Objs;
 
@@ -388,7 +385,6 @@ extern GAPDATA full_data_62a5d8[];
 
 extern int sv_PopRequest;
 extern char ai_Chars[768][0x21c];
-extern unsigned char ai_OwnPlayer;
 extern unsigned short ai_PlayerId;
 extern const int sv_PhaseMinutes[24];
 extern int d2_PointerObj;
@@ -639,7 +635,6 @@ extern GAPDATA full_data_6f5ec0[];
 extern GAPDATA full_data_6f5f44[];
 extern unsigned char kb_Last;
 extern int sv_PanelFlag;
-extern int ai_OptionSpeed;
 
 extern unsigned char kb_Last;
 extern int sv_FrameMask;
@@ -659,7 +654,6 @@ void ai_TutorialProgressSlider();
 int ai_TutorialShowRunText();
 int ai_TutorialIntroAnswered();
 int ai_TutorialStepForm();
-void d2_SetObjEnabled();
 int ai_TutorialStepClicked();
 void ai_TutorialShowText2();
 void sv_CameraFollow();
@@ -667,7 +661,6 @@ void sv_SetStatusText(char *s);
 void sv_SelectPanelObject(unsigned char *o, int b, char *c);
 void sv_BookForward();
 void sv_BookBack();
-void sv_FitForm(int f);
 void ai_TutorialShowText();
 void ai_TutorialHideText();
 struct SBSAMPLE;
@@ -693,11 +686,11 @@ typedef struct SHOTENTRY {   /* 0x10 bytes */
     };
 } SHOTENTRY;
 
-typedef struct SHOTREC {     /* 0x38 bytes, three of them in ai_ShotTable: the cannon scene's shot results */
+typedef struct SHOTRESULT {     /* 0x38 bytes, three of them in ai_ShotTable: the cannon scene's shot results */
     int id;                  /* +0x0, the record index, -1 when empty */
     int unk4;                /* +0x4 */
     SHOTENTRY e[3];          /* +0x8 */
-} SHOTREC;
+} SHOTRESULT;
 #define sv_CheckGoodAmountB ((int (*)(char *, int, unsigned char))sv_CheckGoodAmount)  /* @original: ai_AlchemistHire pushes the player byte unextended (mov al, ai_OwnPlayer / push eax), a char third parameter; sv_CheckGoodAmount itself masks it (t & 0xff) */
 #define gm_ConvertMoney3 ((int (*)(int, unsigned char, int))gm_ConvertMoney)  /* @original: the calls at 0x57df2c / 0x57df3d push a third word (the previous result) that f3gm.c:7921 never reads (it takes a, k); no byte-matched caller, the evidence is the pushes in the original (the same 3-push shape is noted at hst.c ai_SplitTokenFormat); header unchanged because every matched caller passes two words */
 int ai_TutorialChapterOn[5] = { 1, 1, 1, 1, 1 };  /* 0x62918c, per chapter 1 = played (the start window's check boxes, ai_TutorialWindow) */
@@ -707,7 +700,7 @@ TUTRUN *ai_TutorialRuns = 0;  /* 0x6f2658, the chain of the tutorial's run recor
 int ai_TutorialOn = 0;  /* 0x6f265c, the tutorial runs (set by its start 0x578180, cleared by its end) */
 int ai_TutorialRunning = 0;  /* 0x6f2660, the tutorial's state machine advances (unk_SetEndGameGate / unk_ClearEndGameGate) */
 int ai_ShotDirty = 0;  /* 0x6f2664, set when ai_ShotTableStore stored a record, cleared by the scene (ai_CannonShotResults) */
-SHOTREC ai_ShotTable[3] = { 0 };  /* 0x6f9f60, the cannon scene's shot results (the callback ai_ShotTableStore fills it, ai_Unk580a50 resets it) */
+SHOTRESULT ai_ShotTable[3] = { 0 };  /* 0x6f9f60, the cannon scene's shot results (the callback ai_ShotTableStore fills it, ai_Unk580a50 resets it) */
 
 #include "time_view.h"
 #include "ls.h"
@@ -753,6 +746,8 @@ const float ai_CannonSwitchDist = 100.0f;  /* 0x5eec98, how far the cannon sinks
 const float ai_CannonZoomRange = 1450.0f;  /* 0x5eecac, the distance the zoom moves the camera out (scaled by the pitch and the speed) */
 #include "unk_458810.h"
 #include "dd_vesa.h"
+#include "unk_5d33b0.h"
+#define d2_PlaceMainWindowF ((void (*)(int, int))d2_PlaceMainWindow)  /* 0x475850 (d2.c: int view): @original the callers pass the placement flags too, which the original's tail jump leaves on the stack for d2_PlaceWindowScaled */
 #define sv_SelectPanelObjectK ((int (*)())sv_SelectPanelObject)  /* 0x52c4c0?: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
 /* 0x575860, the tutorial's tick: nothing (-4) without the tutorial, its run record or its event slot; puts the
    tutorial's own event window back to the state 3 (or its state to next when another window is active), then, while
@@ -2019,7 +2014,7 @@ int ai_Unk577740(void)
     he_Unk53d6f0(per, 0, 0, (char *)(unsigned)&full_data_629304, 0x5ec);
     if (!*(int *)(*(char **)(S + 0x1c) + 0x74))
         return -1;
-    d2_PlaceMainWindow(R8, 3);
+    d2_PlaceMainWindowF(R8, 3);
     d2_CentreViewWindows(R8);
     d2_SetForm(R8, 0);
     sv_FitForm(U_I((unsigned)&d2_LastWindow));
@@ -2221,7 +2216,7 @@ void ai_TutorialOpenProgress(void)
     int i;
 
     U_I(S + 0x68) = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_629314);
-    d2_PlaceMainWindow(U_I(S + 0x68), 3);
+    d2_PlaceMainWindowF(U_I(S + 0x68), 3);
     d2_SetForm(U_I(S + 0x68), 0);
     i = U_I((unsigned)&d2_LastWindow);
     U_I(S + 0x6c) = d2_WinOpenSlider(*(short *)((unsigned)&ai_Unkf8f128 + i * 0x3c4) / 2 - 0xc8, 5, 0x190, 0, 0x190,
@@ -2323,7 +2318,7 @@ int ai_TutorialStepForm(void)
         case 2: ai_Tutorial->stepForm = d2_OpenForm(0, 0, "tutorial\\top_form"); break;
         case 3: ai_Tutorial->stepForm = d2_OpenForm(0, 0, "tutorial\\bottom_form"); break;
         }
-        d2_PlaceMainWindow(ai_Tutorial->stepForm, 3);
+        d2_PlaceMainWindowF(ai_Tutorial->stepForm, 3);
         ai_Tutorial->stepKind = ai_Tutorial->run->steps[ai_Tutorial->step].kind;
     }
     d2_SetForm(ai_Tutorial->stepForm, 1);
@@ -2440,13 +2435,13 @@ int ai_TutorialStart(void)
     ai_Tutorial->continueObj = -1;
     ai_Tutorial->text1Win = d2_OpenForm(0, 0, "tutorial\\inline_form");
     d2_SetViewEnabled(ai_Tutorial->text1Win, 0);
-    d2_PlaceMainWindow(ai_Tutorial->text1Win, 3);
+    d2_PlaceMainWindowF(ai_Tutorial->text1Win, 3);
     ai_Tutorial->text1Shown = 0;
     ai_Tutorial->statusShown = 0;
     ai_Tutorial->text2Shown = 0;
     ai_Tutorial->text2Win = d2_OpenForm(0, 0, "tutorial\\aux_form");
     d2_SetViewEnabled(ai_Tutorial->text2Win, 0);
-    d2_PlaceMainWindow(ai_Tutorial->text2Win, 3);
+    d2_PlaceMainWindowF(ai_Tutorial->text2Win, 3);
     ai_Tutorial->phase = 0;
     ai_Tutorial->step = 0;
     ai_Tutorial->markerPhase = 0;
@@ -5316,7 +5311,7 @@ int ai_AlchemistRescheduleWindow(unsigned char *obj, AHMREC *rec)
 /* 0x57e230, the table callback of the cannon scene: stores the shot record src (its index 0 .. 2 in src->id)
    in the table ai_ShotTable at that index and marks the table as changed (ai_ShotDirty); answers 1, else 0 for
    no record or an index out of range */
-int ai_ShotTableStore(SHOTREC *src)
+int ai_ShotTableStore(SHOTRESULT *src)
 {
     if (!src || src->id < 0 || src->id >= 3)
         return 0;
@@ -6252,7 +6247,7 @@ void ai_Unk580a50(void)
     }
 }
 
-int d2_CreatePicObj(); void d2_MoveObj(short x, short y, int obj); void d2_PlaceMainWindow(); int d2_WinOpenPic(short x, short y, int pic, int win);
+int d2_CreatePicObj(); void d2_MoveObj(short x, short y, int obj); int d2_WinOpenPic(short x, short y, int pic, int win);
 int d2_WinOpenSlider(); void d2_SetLabel(); void d2_SetList(int id, int n, ...);
 
 /* 0x580a90, builds the cannon control panel (1042 B, ROUGH: all the calls are written; the screen layout value
@@ -6291,7 +6286,7 @@ void ai_CannonBuildPanel(char *sc)
     *(int *)(sc + 0xd8) = v;
     v = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62a3cc);
     *(int *)(sc + 0xa4) = v;
-    d2_PlaceMainWindow(v, 1);
+    d2_PlaceMainWindowF(v, 1);
     d2_SetForm(*(int *)(sc + 0xa4), 0);
     d2_MoveObj(*(unsigned short *)(((unsigned)&d2_Wins + 0x4) + U_I((unsigned)&d2_LastWindow) * 0x3c4), (x - mid) - 0x19, *(int *)(((unsigned)&ai_Unkf8f13c + 0x250) + U_I((unsigned)&d2_LastWindow) * 0x3c4));
     d2_SetForm(*(int *)(sc + 0xa4), 2);
@@ -6327,7 +6322,7 @@ void ai_CannonBuildPanel(char *sc)
     *(int *)(U_I((unsigned)&d2_Objs) + 0x1c0 + *(int *)(sc + 0xd0) * 0x2ec) = 3;
     v = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62a3ac);
     *(int *)(sc + 0xc0) = v;
-    d2_PlaceMainWindow(v, 1);
+    d2_PlaceMainWindowF(v, 1);
     d2_SetForm(*(int *)(sc + 0xc0), 0);
     d2_MoveObj(*(unsigned short *)(((unsigned)&d2_Wins + 0x4) + U_I((unsigned)&d2_LastWindow) * 0x3c4), mid - 0x4b, *(int *)(((unsigned)&ai_Unkf8f13c + 0x250) + U_I((unsigned)&d2_LastWindow) * 0x3c4));
     d2_SetForm(*(int *)(sc + 0xc0), 1);
@@ -6345,7 +6340,7 @@ void ai_CannonBuildPanel(char *sc)
     d2_SetLabel(*(int *)(sc + 0xc4), U_I((unsigned)&full_data_144a340));
     v = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62a38c);
     *(int *)(sc + 0x74) = v;
-    d2_PlaceMainWindow(v, 3);
+    d2_PlaceMainWindowF(v, 3);
     d2_SetViewEnabled(*(int *)(sc + 0x74), 0);
     *(int *)(sc + 0x70) = U_I((unsigned)&ai_ClockMs);
 }
