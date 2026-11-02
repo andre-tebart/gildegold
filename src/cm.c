@@ -2078,15 +2078,15 @@ void cm_SendGraveOrder(void *p)
     memcpy(m.data, p, 0x1f);
     ai_Unk4c39c0(&m);
 }
-/* 0x4c60f0, message 0x61 (0x19 bytes of p) */
+/* 0x4c60f0, message 0x61 (0x19 bytes of p), the slot handle ai_Unk4c39c0 returns */
 
-void cm_SendGraveMove(void *p)
+int cm_SendGraveMove(void *p)
 {
     G17MSG m;
 
     m.type = 0x61;
     memcpy(m.data, p, 0x19);
-    ai_Unk4c39c0(&m);
+    return ai_Unk4c39c0(&m);
 }
 /* 0x4c6130, message 0x62 (0x19 bytes of p) */
 

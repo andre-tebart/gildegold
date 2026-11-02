@@ -314,7 +314,7 @@ int gv_OrderAdjustEntry(char *o, int v, int b, int x);  /* 0x4f0c20 */
 int gv_AdjustEntry(GVORDER *m);          /* 0x4f0c80 */
 int gv_OrderNewDead(char *o, int x);      /* 0x4f0d70 */
 int gv_AddNewDead(unsigned char *p);    /* 0x4f0dd0 */
-void gv_OrderMoveGrave(int *c, int to, char *o, int from, int entry, int price);  /* 0x4f0e80 */
+int gv_OrderMoveGrave(int *c, int to, char *o, int from, int entry, int price);  /* 0x4f0e80 */
 int gv_MoveGrave(GVMOVE *m);           /* 0x4f0ed0 */
 int gv_OrderRaiseDead(char *o, int size, int entry, int grave, int kind);  /* 0x4f1170 */
 int gv_SendGrave(unsigned char *o);    /* 0x4f15e0 */

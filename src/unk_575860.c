@@ -7168,7 +7168,7 @@ void ai_CabinetContact(AIBLD *rec, AIOBJ *room)
             ai_CabinetSpyOnCharacter(rec);
     }
 }
-/* the four grave sizes of the graveyard windows (ai_GraveSizeButtons, ai_GraveSizeButtonsAt; ai_Unk584010 names the grave by
+/* the four grave sizes of the graveyard windows (ai_GraveSizeButtons, ai_GraveSizeButtonsAt; ai_GraveMoveConfirm names the grave by
    its size; the sizes 1 .. 3 are open while GVYARD.open[i] is set); only this unit reads them, they stay out of
    unk_575860.h: declared above ai_TutorialInitChapter2 they flip its register tie-break (byte -> shape) */
 const int ai_GravePics[4] = { 0x2d5, 0x2d8, 0x2dc, 0x2e0 };      /* 0x5eecb0, the buttons' pictures */
@@ -7896,79 +7896,67 @@ int ai_GraveSizeEnable(AIBLD *rec, int from, int unused, int *btns, int *selp)
     return any;
 }
 
-void gv_OrderMoveGrave(int *c, int to, char *o, int from, int entry, int price); int gv_OrderReserveGrave(int *g, char *o, int v, short s, int x);
+int gv_OrderReserveGrave(int *g, char *o, int v, short s, int x);
 
-/* 0x584010, the graveyard rent confirmation (587 B): rec = the record (its +0x27 the grave's owner word), a / b
-   the values passed on, idx = the grave index; the cost 16000 when the owner is not the player (0x6f25b8), else
-   0; the window "Locations_Friedhof_Friedhof" (0x62a5bc) with 0x476f80 / 0x475600, the sound 0x52ea30, the text
-   0x4115 / 0x4114 (0x4112, the name 0x5eecd0[idx], the cost), the entries 0x4116 / +1 in 0x475b80 (window, 2,
-   text), 0xf8a668 = -1; the pump loop 0x5309a0 (this window, 0x677c7): the click 0x14673a0 -> 0x6f22a0 = 1; the
-   first entry: with a cost, 0x521040 (the character 0x770b80 + 0x6f25b8 * 0x21c, the cost, 0x6f1bc5) 0 -> the
-   pump; 0x4f0e80 (the character, idx, rec, a, b, the cost) and its answer waited on 0x4c3ae0 (pump 0x20007),
-   0x760638 = 0x677c7; the answer 2 -> the text 0x411b (0x4112, the name) through 0x5176d0 and 0x521150
-   (0x100), else 0x6f22a0 = 1 and 1; the second entry -> 0x6f22a0 = 1; the pump 0 -> 0x4758f0 (window), the
-   result */
-int ai_Unk584010(char *rec, int a, unsigned char b, int idx)
+/* 0x584010, confirms moving a grave to another size: rec = the graveyard building, from / entry = the grave's
+   size and entry, to = the new size. The move costs 16000 unless the player owns the graveyard. The form
+   "Locations\Friedhof\Friedhof" shows the question (txt 0x4115 with the building for the owner, else 0x4114 with
+   the price) and the yes / no entries (txt 0x4116 and the next one); a right click or no closes it. Yes, when the
+   player has the money: gv_OrderMoveGrave and its answer waited for; refused (slot state 2) -> the message 0x411b
+   and the form stays, else the form closes with 1. Returns 1 when the move was made, else 0 */
+int ai_GraveMoveConfirm(AIBLD *rec, int from, unsigned char entry, int to)
 {
     char buf[0x200];
     int win;
-    int b1;
-    int b2;
+    int yes;
+    int no;
     int v;
     int r;
     int h;
-    unsigned int cost;
+    int cost;
 
     r = 0;
-    cost = -(unsigned int)(*(unsigned short *)(rec + 0x27) != *(unsigned short *)(unsigned)&ai_PlayerId) & 16000;
-    win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62a5bc);
+    cost = rec->owner != ai_PlayerId ? 16000 : 0;
+    win = d2_OpenForm(0, 0, "Locations\\Friedhof\\Friedhof");
     d2_SetPointerSprite(0, 0);
     d2_CentreViewWindows(win);
     d2_SetForm(win, 0);
-    sv_FitForm(U_I((unsigned)&d2_LastWindow));
+    sv_FitForm(d2_LastWindow);
     d2_SetForm(win, 1);
-    if (*(unsigned short *)(rec + 0x27) == *(unsigned short *)(unsigned)&ai_PlayerId) {
-        io_PrintText(0x4115, 0x4112, (int)rec, U_I(((unsigned)&sv_PhaseMinutes + 0x218) + idx * 4));
-    } else {
-        io_PrintText(0x4114, 0x4112, U_I(((unsigned)&sv_PhaseMinutes + 0x218) + idx * 4), cost);
-    }
+    if (rec->owner == ai_PlayerId)
+        io_PrintText(0x4115, 0x4112, rec, ai_GraveNames[to]);
+    else
+        io_PrintText(0x4114, 0x4112, ai_GraveNames[to], cost);
     d2_SetForm(win, 2);
     v = io_PrintText(0x4116);
-    b1 = d2_GetWinObj(win, 2, v);
-    b2 = d2_GetWinObj(win, 2, v + 1);
-    U_I((unsigned)&d2_ClickedId) = -1;
-    for (;;) {
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0) {
-            U_I((unsigned)&sv_PopRequest) = 1;
-        } else if (U_I((unsigned)&d2_ClickedId) != -1) {
-            if (U_I((unsigned)&d2_PointerObj) == b1) {
-                if (cost != 0) {
-                    if (sv_CheckGoodAmount((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, cost, *(unsigned char *)(unsigned)&ai_OwnPlayer) == 0)
-                        goto pump;
-                }
-                h = ((int (*)(void *, int, int, int, int, int))gv_OrderMoveGrave)((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, idx, rec, a, b, cost);
-                if (h != -1) {
-                    while (cm_GetSlotState(h) == 0)
+    yes = d2_GetWinObj(win, 2, v);
+    no = d2_GetWinObj(win, 2, v + 1);
+    d2_ClickedId = -1;
+    do {
+        if (dm_L.rup != 0) {
+            sv_PopRequest = 1;
+        } else if (d2_ClickedId != -1) {
+            if (d2_PointerObj == yes) {
+                if (cost == 0 || sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], cost, ai_OwnPlayer)) {
+                    h = gv_OrderMoveGrave((int *)ai_Chars[ai_PlayerId], to, (char *)rec, from, entry, cost);
+                    while (h != -1 && cm_GetSlotState(h) == 0)
                         sv_RunFrame(0, 0x20007);
+                    sv_FrameMask = 0x677c7;
+                    if (cm_GetSlotState(h) == 2) {
+                        txt_Format(buf, 0x411b, 0x4112, ai_GraveNames[to]);
+                        sv_MessageBox((int)buf, 0x100);
+                    } else {
+                        sv_PopRequest = 1;
+                        r = 1;
+                    }
                 }
-                U_I((unsigned)&sv_FrameMask) = 0x677c7;
-                if (cm_GetSlotState(h) == 2) {
-                    txt_Format(buf, (char *)0x411b, 0x4112, U_I(((unsigned)&sv_PhaseMinutes + 0x218) + idx * 4));
-                    sv_MessageBox(buf, 0x100);
-                } else {
-                    U_I((unsigned)&sv_PopRequest) = 1;
-                    r = 1;
-                }
-            } else if (U_I((unsigned)&d2_PointerObj) == b2) {
-                U_I((unsigned)&sv_PopRequest) = 1;
+            } else if (d2_PointerObj == no) {
+                sv_PopRequest = 1;
             }
         }
-pump:
-        if (sv_RunFrame(ai_Unk584010, 0x677c7) == 0) {
-            d2_CloseView(win);
-            return r;
-        }
-    }
+    } while (sv_RunFrame((int)ai_GraveMoveConfirm, 0x677c7));
+    d2_CloseView(win);
+    return r;
 }
 /* 0x584260, the rent-a-grave window (427 B): rec = the record, a / b the values passed on; the window
    "Locations_Friedhof_RentAGrave" (0x62a5d8) with 0x476f80 / 0x475600, the sound 0x52ea30, the texts 0x4113
@@ -8009,7 +7997,7 @@ int ai_Unk584260(char *rec, int a, int b)
         } else if (U_I((unsigned)&d2_ClickedId) != -1) {
             if (U_I((unsigned)&d2_PointerObj) == btn) {
                 d2_SetViewEnabled(win, 0);
-                if (ai_Unk584010(rec, a, b, sel) == 1) {
+                if (ai_GraveMoveConfirm((AIBLD *)rec, a, b, sel) == 1) {
                     r = 1;
                     U_I((unsigned)&sv_PopRequest) = 1;
                 }
@@ -8272,10 +8260,8 @@ int ai_Unk584900(char *rec, char *ev)
                     *(int *)(msg + 0x5c) = *(int *)(ev + 4);
                     *(unsigned char *)(msg + 0x60) = *(unsigned char *)(ev + 8);
                     h = cm_SendLongMessage(msg);
-                    if (h != -1) {
-                        while (cm_GetSlotState(h) == 0)
-                            sv_RunFrame(0, 0x20007);
-                    }
+                    while (h != -1 && cm_GetSlotState(h) == 0)
+                        sv_RunFrame(0, 0x20007);
                     r = 1;
                     U_I((unsigned)&sv_PopRequest) = 1;
                 }
@@ -8544,10 +8530,8 @@ void ai_GypsyHelperWindow(char *b)
                     sv_ClearSelection();
                 } else {
                     h = cm_SendLongMessage(msg);
-                    if (h != -1) {
-                        while (cm_GetSlotState(h) == 0)
-                            sv_RunFrame(0, 0x20007);
-                    }
+                    while (h != -1 && cm_GetSlotState(h) == 0)
+                        sv_RunFrame(0, 0x20007);
                     U_I((unsigned)&sv_FrameMask) = 0x677c7;
                     sv_ClearSelection();
                 }
@@ -9383,10 +9367,8 @@ void ai_Unk586ab0(char *rec)
                     }
                     *(int *)(msg + 0x58) = lv;
                     h = cm_SendLongMessage(msg);
-                    if (h != -1) {
-                        while (cm_GetSlotState(h) == 0)
-                            sv_RunFrame(0, 0x20007);
-                    }
+                    while (h != -1 && cm_GetSlotState(h) == 0)
+                        sv_RunFrame(0, 0x20007);
                     U_I((unsigned)&sv_FrameMask) = 0x677c7;
                     U_I((unsigned)&sv_PopRequest) = 1;
                     sv_MessageBox((char *)U_I((unsigned)&full_data_144a428), 0);

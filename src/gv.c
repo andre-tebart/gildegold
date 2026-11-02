@@ -2180,9 +2180,9 @@ int gv_AddNewDead(unsigned char *p)
     return (n > 0) - 1 & 0xfffffffc;
 }
 /* 0x4f0e80, sends a grave move (GVMOVE, message 0x61, cm_SendGraveMove): the character c (c[1]: its AICHAR.netId) moves the
-   entry `entry` of the size `from` of the graveyard building o to a free entry of the size `to` for the price `price` */
+   entry `entry` of the size `from` of the graveyard building o to a free entry of the size `to` for the price `price`; returns the message's slot handle (cm_GetSlotState), -1 when it was not sent */
 
-void gv_OrderMoveGrave(int *c, int to, char *o, int from, int entry, int price)
+int gv_OrderMoveGrave(int *c, int to, char *o, int from, int entry, int price)
 {
     GVMOVE m;
 
@@ -2192,7 +2192,7 @@ void gv_OrderMoveGrave(int *c, int to, char *o, int from, int entry, int price)
     m.entry = (unsigned char)entry;
     m.to = to;
     m.price = price;
-    cm_SendGraveMove(&m);
+    return cm_SendGraveMove(&m);
 }
 /* 0x4f0ed0, runs a grave move (GVMOVE m, message 0x61, sent by gv_OrderMoveGrave): the entry m->entry of the size m->from
    of the graveyard building m->bld, held by the character m->chr (GVENTRY.w08 == AICHAR.w050), moves to the first free
