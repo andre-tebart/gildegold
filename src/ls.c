@@ -114,7 +114,7 @@ extern char hst_Key[];                 /* 0xf83520, the history key ("G12", 0x20
 #include "dd_vesa.h"
 #include "hmt.h"
 int ai_LoadWind();                     /* 0x5dc0c0 */
-int unk_Unk4ed910();                     /* 0x4ed910 */
+int gv_ReadEffects();                     /* 0x4ed910 */
 
 /* ai_Unk6f261c: view of ai_NextEventId (tools/data_views.py) */
 int ai_Unk6f2620 = 0;  /* 0x6f2620 / */
@@ -1339,7 +1339,7 @@ int ls_WriteMessageQueues(int f)
     LS_W(&cm_LastBuildingId, 4)
     return vfs_fwrite(&cm_LastObjectId, 4, 1, f) > 0;
 }
-/* 0x51c870, the table 0x7604e8 (three words per entry at +0x18 words apart; the last entry is followed by the two further blocks 0x5dbfc0 and 0x4ed480) @deep B3 code hunks 50 after the LS_W restructure (the draft mixed if(fwrite!=0) and direct calls; the original is the LS_W macro for all five writes): the rest is VC6's induction-variable base - the original keeps esi at the entry pointer 0x7604e8 (lea [esi-0x60]/[esi]/[esi+0x68]/[esi+0xc8], add esi,4, cmp 0x760548) while ours bases esi at 0x760550 (the +0x68 word) with offsets -0xc8/-0x68/0/+0x60, same addresses, and VC6 then merges the loop's return-0 blocks to the function end where the original reuses the first check's inline epilogue at 0x51c88c. Read the whole function (24 entries of four words, then 0x5dbfc0 and 0x4ed480); tried do-while and while spellings. Q1/Q2/Q3/Q5 open (0x7604e8 table unnamed, callees ai_SaveWind/unk_Unk4ed480 undeclared here) */
+/* 0x51c870, the table 0x7604e8 (three words per entry at +0x18 words apart; the last entry is followed by the two further blocks 0x5dbfc0 and 0x4ed480) @deep B3 code hunks 50 after the LS_W restructure (the draft mixed if(fwrite!=0) and direct calls; the original is the LS_W macro for all five writes): the rest is VC6's induction-variable base - the original keeps esi at the entry pointer 0x7604e8 (lea [esi-0x60]/[esi]/[esi+0x68]/[esi+0xc8], add esi,4, cmp 0x760548) while ours bases esi at 0x760550 (the +0x68 word) with offsets -0xc8/-0x68/0/+0x60, same addresses, and VC6 then merges the loop's return-0 blocks to the function end where the original reuses the first check's inline epilogue at 0x51c88c. Read the whole function (24 entries of four words, then 0x5dbfc0 and 0x4ed480); tried do-while and while spellings. Q1/Q2/Q3/Q5 open (0x7604e8 table unnamed, callees ai_SaveWind/gv_WriteEffects undeclared here) */
 
 
 int ls_WriteEnvironment(int f)
@@ -1356,7 +1356,7 @@ int ls_WriteEnvironment(int f)
         p = p + 1;
     } while ((int)p < (unsigned)((unsigned)sv_Weather.storm + 0x60));
     if (ai_SaveWind(f) != 0)
-        return unk_Unk4ed480(f) != 0;
+        return gv_WriteEffects(f) != 0;
     return 0;
 }
 /* 0x51c920, reads count items of size bytes into buf (vfs_fread, 0x430bd0, the counterpart of vfs_fwrite):
@@ -2623,7 +2623,7 @@ int unk_Unk520310(int f)
     LS_R((unsigned)&cm_LastBuildingId, 4)
     return ls_Read((int)(unsigned)&cm_LastObjectId, 4, 1, f) != 0;
 }
-/* 0x5205f0, reads the table 0x7604e8 (the counterpart of 0x51c870): the count 0x760610 and the entries; from 0x10050 the two further blocks 0x5dc0c0 and 0x4ed910. Returns 1 @deep read against the original 0x5205f0..0x5206af: meaning verified - the 0x760610 count, the entry loop p = 0x7604e8 with the reads at p-0x60 / p / p+0x68 / p+0xc8 (our int offsets -0x18 / 0 / +0x1a / +0x32 are the same addresses) to p < 0x760548 (24 entries), then the version gate (our > 0x1004f is the original's jl 0x10050) and the two calls 0x5dc0c0(f) / 0x4ed910(f, ls_Version). Left is codegen: VC6 re-bases our loop pointer to p+0x68 (reads [esi-0xc8] / [esi-0x68] / [esi+0x60], condition lea eax,[esi-0x68]) where the original keeps esi = 0x7604e8 and reads [esi-0x60] / [esi] / [esi+0x68] / [esi+0xc8], plus the f register (edi in the original). Readability: Q1, Q2 (ai_LoadWind / unk_Unk4ed910), Q3 (0x760610, 0x7604e8, 0x760548). */
+/* 0x5205f0, reads the table 0x7604e8 (the counterpart of 0x51c870): the count 0x760610 and the entries; from 0x10050 the two further blocks 0x5dc0c0 and 0x4ed910. Returns 1 @deep read against the original 0x5205f0..0x5206af: meaning verified - the 0x760610 count, the entry loop p = 0x7604e8 with the reads at p-0x60 / p / p+0x68 / p+0xc8 (our int offsets -0x18 / 0 / +0x1a / +0x32 are the same addresses) to p < 0x760548 (24 entries), then the version gate (our > 0x1004f is the original's jl 0x10050) and the two calls 0x5dc0c0(f) / 0x4ed910(f, ls_Version). Left is codegen: VC6 re-bases our loop pointer to p+0x68 (reads [esi-0xc8] / [esi-0x68] / [esi+0x60], condition lea eax,[esi-0x68]) where the original keeps esi = 0x7604e8 and reads [esi-0x60] / [esi] / [esi+0x68] / [esi+0xc8], plus the f register (edi in the original). Readability: Q1, Q2 (ai_LoadWind / gv_ReadEffects), Q3 (0x760610, 0x7604e8, 0x760548). */
 
 
 int unk_Unk5205f0(int f)
@@ -2640,7 +2640,7 @@ int unk_Unk5205f0(int f)
         LS_R(p + 0x32, 4)
         p++;
     } while ((int)p < (unsigned)((unsigned)sv_Weather.storm + 0x60));
-    if (ls_Version > 0x1004f && ai_LoadWind(f) != 0 && unk_Unk4ed910(f, ls_Version) != 0)
+    if (ls_Version > 0x1004f && ai_LoadWind(f) != 0 && gv_ReadEffects(f, ls_Version) != 0)
         return 1;
     return 0;
 }

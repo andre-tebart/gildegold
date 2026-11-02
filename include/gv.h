@@ -134,6 +134,28 @@ extern const char ai_Unk5ebbb4[];                 /* 0x5ebbb4 */
 char *gv_AllocAvatar(void);              /* 0x4ed170 */
 int gv_WriteAvatars(void *f);             /* 0x4ed1e0 */
 int gv_ReadAvatars(void *f);             /* 0x4ed270 */
+typedef struct GVEFFPART {              /* 0x68 bytes, one of an effect slot's three parts (saved field by field) */
+    float v0[4];                        /* 0x00 */
+    float v1[4];                        /* 0x10 */
+    float v2[4];                        /* 0x20 */
+    float v3[4];                        /* 0x30, not saved */
+    float v4[4];                        /* 0x40 */
+    int a, b, c, d;                     /* 0x50 */
+    int time;                           /* 0x60, not saved: the reader sets it to ai_ClockMs */
+    int e;                              /* 0x64 */
+} GVEFFPART;
+typedef struct GVEFFECT {               /* 0x170 bytes, an effect slot of gv_Effects (8) */
+    int id;                             /* 0x000, -1: free */
+    int pad04;
+    float f08, f0c, f10;                /* 0x008, 1.0 after the reset; the per-frame step adds dt up to 1.0 */
+    int f14;                            /* 0x014 */
+    GVEFFPART parts[3];                 /* 0x018 */
+    int tail[3];                        /* 0x150 */
+    char pad15c[0xc];
+    void *cb;                           /* 0x168, the slot's callback (gv_EffectNotifyOwner by default) */
+    void *arg;                          /* 0x16c, its argument */
+} GVEFFECT;
+typedef char gv_AssertGVEFFECT[sizeof(GVEFFECT) == 0x170 ? 1 : -1];
 typedef struct GVEFFREC {               /* 16 bytes, a record of an effect slot's argument */
     int bldId;                          /* 0x00, a building id (gm_BuildQuery(1, 1, id)) */
     int unk04;
@@ -146,8 +168,8 @@ typedef struct GVEFFARG {               /* 0x38 bytes, the argument of an effect
     GVEFFREC recs[3];                   /* 0x08 */
 } GVEFFARG;
 int gv_EffectNotifyOwner(GVEFFARG *a);  /* 0x4ed3f0, the default effect slot callback: tells the owner of the current record's building */
-int unk_Unk4ed480(void *f);             /* 0x4ed480 */
-int unk_Unk4ed910(void *f, int v);      /* 0x4ed910 */
+int gv_WriteEffects(void *f);             /* 0x4ed480 */
+int gv_ReadEffects(void *f, int v);      /* 0x4ed910 */
 void unk_ResetEffectSlots(void);               /* 0x4eddf0 */
 void gv_FreeEffectObjects(void);               /* 0x4ede70 */
 char *gv_FindEffect(int id);            /* 0x4eded0 */
