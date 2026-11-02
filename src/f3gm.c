@@ -1327,7 +1327,7 @@ int cm_SendLongMessage(char *msg);                     /* 0x4c4b70 */
 void txt_Format(char *out, int id0, ...);  /* 0x5176d0 */
 int he_ShowNews(int pid, int fl, char *text, int unused, int ev, char *text2);                     /* 0x53dda0 */
 void cm_SendSetField(int a, int b, int c, int d, int e);                     /* 0x4c4a60 */
-void gm_PartnerStep(char *c);                   /* 0x4fccc0 */
+void gm_PartnerStep(ORDCHAR *c);                 /* 0x4fccc0 */
 
 #define ai_TimeT (*(AITIME *)&ai_Time)  /* 0x770ae0, ai_Time (gv.h: char[]) as the AITIME it is */
 /* sends the message 0x72 (the character c died) in the GMMSG m */
@@ -1540,7 +1540,7 @@ float gm_DailyCharacterStep(unsigned short *id)
         }
         return 0.0f;
     }
-    gm_PartnerStep((char *)c);
+    gm_PartnerStep(c);
     if (fl > 0.0)
         d = (double)fl;
     else
@@ -1797,7 +1797,7 @@ int unk_Unk4fd090(char *c)
     return 1;
 }
 
-extern float ai_Unk617734[6];
+extern float gm_BirthChance[6];
 void gm_AddTime(struct GCLOCK *c, int hours, int mins, int secs);                     /* 0x4fe140 */
 int cm_SendCreateCharacter(unsigned char a, int b, int c, unsigned short d, int e, unsigned char f, unsigned char g, unsigned char h);                     /* 0x4c4650 */
 int cm_GetSlotState();                     /* 0x4c3ae0 */
@@ -1806,138 +1806,128 @@ int cm_SendNewParty(void *p);                     /* 0x4c4fa0 */
 int gm_TitleNumber();                     /* 0x5043d0 */
 int ai_WorksForMaster(struct AICHAR *c);                     /* 0x47dd70 */
 
-/* 0x4fccc0, the yearly love / marriage step of the character c (kind < 10, active, byte +9 = 1, +0x1b1 = 0, +0x1c8 bit 0x40000 clear; its partner o = 0x505df0 (+0x5c)): a float +0x7c above 1.0 is pulled down by 0x4c4ac0 (-0.5 * random - the value) and the pair gets the event 0x4c4650 (8, ..) with a message 7 (0x4c4fa0, text number 0x12 ..); otherwise (the partner active, the age +10 below 0x27) the number of the relatives at +0x68 .. (4 .. 8; a player (6 / 7) or a priest (5) among them ends it) sets the float +0x7c to (random + 1) * the table value 0x617734 [count]. ROUGH */
-void gm_PartnerStep(char *c)
+/* 0x4fccc0, the birth step of the character c, a woman (sex 1, kind below 10, alive, b1b1 0, no flag 0x40000)
+   with the partner o: a pregnancy above 1.0 is reset below 0 and, with the partner there, a child (kind 8) of
+   the two is created at the house of the father or the mother; when one of the parents is a player (kind 6 / 7)
+   the child is made kind 0x12 and gets a baptism party (kind 7, at 8 .. 11 o'clock the next 8 hours on) held
+   by that parent. Otherwise, the partner alive and c at most 38 years old, a new pregnancy value is drawn from
+   gm_BirthChance by the number of c's children, unless a child is a player or a kind 5 character, c has 4
+   children or the player partner has 5
+   @deep read in full against the original and reconstructed (relatives[3..7] indexing, the party G28REC,
+   util_RandomF, b1b1 > 0, w00a > 0x26, the member forwarded from party.members[1]); statement structure
+   and branch targets equal, size 971 = 971. Left: (1) frame 0x12c vs 0x128: the original packs the spill
+   of the child count n (ebx, stored at +0x2e1 / reloaded at +0x372) and the float temp of the last
+   cm_SendFloatDelta into the slot of the address-taken arg ([esp+0x10]); ours gives arg its own slot
+   [esp+0x14] (tried: n as arg itself, fv inlined, a separate delta variable: all worse); (2) regs:
+   c/o/mate rotate ebp<->ebx through the whole function (original keeps 0 in ebx as mate's start and c in
+   edi, reloading c from the parameter in the second part); (3) the party fill hunk at +0x23f: the same 13
+   stores, the time words 8/0xc and host/members[0] scheduled around the two pushes (tried 11 statement
+   orders, this is the closest) */
+void gm_PartnerStep(ORDCHAR *c)
 {
-    int clk[4];
-    int msg[0x45];
-    char *o, *q2, *mate, *p;
-    int *q;
-    int arg, t, cnt, cnt2, k, h, n, bld;
+    G28REC party;
+    AITIME clk;
+    ORDCHAR *o, *mate, *child;
+    int arg, t, kids, n, m, k, h;
     float fv;
     char kind;
 
-    if ((unsigned char)c[2] > 9)
+    if (c->kind >= 10 || c->health == 0 || c->textVariant != 1 || c->b1b1 > 0 || (c->flags1c8 & 0x40000) != 0)
         return;
-    if (c[8] == 0)
-        return;
-    if (c[9] != 1)
-        return;
-    if (c[0x1b1] != 0)
-        return;
-    if ((*(unsigned *)(c + 0x1c8) & 0x40000) != 0)
-        return;
-    o = gm_FindChar(*(int *)(c + 0x5c));
-    if (1.0 < *(float *)(c + 0x7c)) {
-        cm_SendFloatDelta(*(int *)(c + 4), 0x7c, (float)(util_RandomF2() * -0.5 - *(float *)(c + 0x7c)));
+    o = ORD_CHAR(gm_FindChar(c->partner));
+    if (c->pregnancy > 1.0f) {
+        cm_SendFloatDelta(c->netId, 0x7c, util_RandomF() * -0.5f - c->pregnancy);
         gm_NetMsgCount++;
+        mate = 0;
         if (o == 0)
             return;
-        memcpy(clk, ai_Time, 14);
+        clk = ai_TimeT;
         arg = 2;
-        gm_AddTime(clk, 8, 0, 0);
-        *(short *)(clk + 1) = util_RandomU(4) + 8;
-        bld = *(int *)(c + 0x170);
-        *(short *)((char *)clk + 6) = 0;
-        *(short *)(clk + 2) = 0;
-        t = bld == 0 ? -1 : *(int *)(bld + 1);
-        mate = 0;
-        if (o[2] == 6 || o[2] == 7) {
-            cnt = 0;
-            q = (int *)(o + 0x68);
-            for (k = 4; k != 0; k--, q++)
-                if (*q != -1)
-                    cnt++;
-            if (cnt == 0)
-                arg = (unsigned char)o[9];
-            mate = o;
-            if (*(int *)(o + 0x170) == 0)
-                t = bld == 0 ? -1 : *(int *)(bld + 1);
+        gm_AddTime((struct GCLOCK *)&clk, 8, 0, 0);
+        clk.hour = util_Random(4) + 8;
+        clk.min = 0;
+        t = c->bld2 != 0 ? c->bld2->id : -1;
+        if (o->kind == 6 || o->kind == 7) {
+            kids = 0;
+            for (k = 3; k < 7; k++)
+                if (o->relatives[k] != -1)
+                    kids++;
+            if (kids == 0)
+                arg = o->textVariant;
+            if (o->bld2 != 0)
+                t = o->bld2->id;
             else
-                t = *(int *)(*(int *)(o + 0x170) + 1);
-        } else if (c[2] == 6 || c[2] == 7) {
-            cnt = 0;
-            q = (int *)(c + 0x68);
-            for (k = 4; k != 0; k--, q++)
-                if (*q != -1)
-                    cnt++;
-            if (cnt == 0)
-                arg = (unsigned char)c[9];
+                t = c->bld2 != 0 ? c->bld2->id : -1;
+            mate = o;
+        } else if (c->kind == 6 || c->kind == 7) {
+            kids = 0;
+            for (k = 3; k < 7; k++)
+                if (c->relatives[k] != -1)
+                    kids++;
+            if (kids == 0)
+                arg = c->textVariant;
+            if (c->bld2 != 0)
+                t = c->bld2->id;
+            else
+                t = o->bld2 != 0 ? o->bld2->id : -1;
             mate = c;
-            if (bld == 0) {
-                if (*(int *)(o + 0x170) == 0)
-                    t = -1;
-                else
-                    t = *(int *)(*(int *)(o + 0x170) + 1);
-            } else
-                t = *(int *)(bld + 1);
         }
-        h = ((int (*)(int, void *, void *, int, int, int, int, int))cm_SendCreateCharacter)(8, *(int *)(o + 4), *(int *)(c + 4), 0, t, 0, 0, arg);
-        n = cm_GetSlotState(h);
-        while (n == 0) {
+        h = cm_SendCreateCharacter(8, o->netId, c->netId, 0, t, 0, 0, arg);
+        while (cm_GetSlotState(h) == 0)
             sv_PumpNet();
-            n = cm_GetSlotState(h);
-        }
         if (cm_GetSlotState(h) == 2)
             return;
-        p = (char *)cm_GetSlotValue(h);
+        child = ORD_CHAR(cm_GetSlotValue(h));
         if (mate != 0) {
+            memset(&party, 0, sizeof(party));
             arg = 0x12;
-            memset(msg, 0, sizeof(msg));
-            ((char *)msg)[8] = 7;
-            msg[3] = *(int *)(mate + 4);
-            msg[5] = -1;
-            msg[6] = clk[0];
-            msg[7] = *(int *)((char *)clk + 4);
-            msg[8] = *(int *)((char *)clk + 8);
-            *(short *)(msg + 9) = *(short *)((char *)clk + 12);
-            ((char *)msg)[0x26] = (char)0xa0;
-            ((char *)msg)[0x30] = 2;
-            msg[0xd] = msg[3];
-            msg[0xe] = *(int *)(p + 4);
-            cm_BeginFieldBlock(p, msg[0xe]);
+            party.host = mate->netId;
+            party.time = clk;
+            party.members[0] = party.host;
+            party.members[1] = child->netId;
+            party.kind = 7;
+            party.flags = 0xa0;
+            party.thing = -1;
+            party.used = 2;
+            cm_BeginFieldBlock((char *)child, party.members[1]);
             cm_AddFieldDelta(1, 1, 2, &arg);
             cm_SendFieldDeltas();
-            cm_SendNewParty(msg);
+            cm_SendNewParty(&party);
             gm_NetMsgCount++;
             return;
         }
     }
-    if (o != 0 && o[8] != 0 && *(unsigned short *)(c + 10) < 0x27) {
-        cnt = 0;
-        q = (int *)(c + 0x68);
-        for (k = 3; k < 8; k++, q++) {
-            if (*q != -1) {
-                q2 = gm_FindChar(*q);
-                kind = q2[2];
-                if (kind == 6 || kind == 7 || kind == 5)
-                    return;
-                if (kind != 0x0f)
-                    cnt++;
-            }
-        }
-        if (cnt != 4) {
-            if (o[2] == 6 || o[2] == 7) {
-                cnt2 = 0;
-                q = (int *)(o + 0x68);
-                for (k = 3; k < 8; k++, q++) {
-                    if (*q != -1) {
-                        q2 = gm_FindChar(*q);
-                        kind = q2[2];
-                        if (kind == 6 || kind == 7 || kind == 5)
-                            return;
-                        if (kind != 0x0f)
-                            cnt2++;
-                    }
-                }
-                if (cnt2 == 5)
-                    return;
-            }
-            fv = (float)((util_RandomF2() + 1.0) * ai_Unk617734[cnt]);
-            cm_SendFloatDelta(*(int *)(c + 4), 0x7c, fv);
-            gm_NetMsgCount++;
+    if (o == 0 || o->health == 0 || c->w00a > 0x26)
+        return;
+    n = 0;
+    for (k = 3; k < 8; k++) {
+        if (c->relatives[k] != -1) {
+            kind = ORD_CHAR(gm_FindChar(c->relatives[k]))->kind;
+            if (kind == 6 || kind == 7 || kind == 5)
+                return;
+            if (kind != 0xf)
+                n++;
         }
     }
+    if (n == 4)
+        return;
+    if (o->kind == 6 || o->kind == 7) {
+        m = 0;
+        for (k = 3; k < 8; k++) {
+            if (o->relatives[k] != -1) {
+                kind = ORD_CHAR(gm_FindChar(o->relatives[k]))->kind;
+                if (kind == 6 || kind == 7 || kind == 5)
+                    return;
+                if (kind != 0xf)
+                    m++;
+            }
+        }
+        if (m == 5)
+            return;
+    }
+    fv = (util_RandomF() + 1.0f) * gm_BirthChance[n];
+    cm_SendFloatDelta(c->netId, 0x7c, fv);
+    gm_NetMsgCount++;
 }
 /* 0x4fd120, the yearly population step: counts the active characters (n); every kind 3 (child?) character that is old enough (age +10 at least 0x2c + random 4, or n >= 652.8) with no job / title bytes (+0x164, +0x166, +0x167) and removable (0x4fd090) is removed by 0x4fca40 (id, ..); the others (age above 1): kind 8 (no 0x4fd7e0, partners 0x5e / 0x62 gone) get the event messages 3 / 2 and a payment 0x4c4830 ((random + 0x800) * the mark * 0x20); the other aging characters 0x47dd70 (counted; relatives +0x1ee); then a random new arrival (0x4c4650 (0x10 ..) and a gift of (random + 10000) * 0x40) and, below 652.8 characters, up to (0x28 - the events) / 2 newcomers (0x4c4650 (3, .., 0x14 ..), random wage 0x400 .. + 0x400). ROUGH */
 
@@ -3253,7 +3243,7 @@ unsigned gm_JobHeadsFemale[] = { 33, 1684825446, 1700950625, 1919251561, 1180659
 unsigned gm_SpyHeads[] = { 0, 1869181043, 1162698606, 1297434948, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 0, 1869181043, 1298084462, 1430864965, 77, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 0, 1869181043, 1298084462, 1430864965, 77, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 0 };  /* 0x617398 */
 int gm_RichestYear = -1;  /* 0x61772c, the game year (ai_TimeYear) of gm_FindRichest's last search */
 int gm_RichestWorth = -1000000;  /* 0x617730, the worth of gm_RichestChar (0xc80 when none was found) */
-float ai_Unk617734[6] = { 0.240015402f, 0.222200006f, 0.125f, 0.0555500016f, 0.0138499998f, 0.0f };  /* 0x617734, a float per number of children / relatives */
+float gm_BirthChance[6] = { 0.240015402f, 0.222200006f, 0.125f, 0.0555500016f, 0.0138499998f, 0.0f };  /* 0x617734, a float per number of children / relatives */
 float gm_DayStartHours[] = { 8.0f, 7.0f, 8.0f, 9.0f };  /* 0x617830 / */
 float gm_DayEndHours[] = { 20.0f, 21.0f, 20.0f, 19.0f };  /* 0x617840 */
 int ai_Unk617850[] = { 0, 0, 1, 1, 1109393408, 16, 2, 1097859072, 16, 3, 1101004800, 16, 4, 1092616192, 4, 5, 0, 8, 6, 1090519040, 8, 7, 1084227584, 8, 8, 1077936128, 4, 9, 1094713344, 16 };  /* 0x617850, records of 3 ints ( */
