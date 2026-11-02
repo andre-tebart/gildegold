@@ -1739,14 +1739,14 @@ exe	0x004a4ae0	ai_EvalCurrentNeed	am	byte	readable
 exe	0x004a4c10	ai_EvalGuiltWeights	am	draft	readable	deep	
 exe	0x004a4e30	ai_RepairCost	am	byte	readable		
 exe	0x004a4e70	ai_PickBuildSite	am	draft	readable	deep	
-exe	0x004a5140	ai_CanBuildType	am	draft	draft		
-exe	0x004a5320	ai_ExecBuildBuilding	am	draft	draft		
-exe	0x004a5540	ai_FindGoodToMake	am	draft	draft		
-exe	0x004a5760	ai_FindWantedItems	am	draft	draft		
-exe	0x004a58d0	ai_PickPartnerChain	am	draft	draft		
-exe	0x004a5a30	ai_PickPartnerInRange	am	draft	draft		
-exe	0x004a5b50	ai_FindPartnersRandomWalk	am	draft	draft		
-exe	0x004a5d30	ai_Unk4a5d30	am	draft	draft		
+exe	0x004a5140	ai_CanBuildType	am	byte	readable		
+exe	0x004a5320	ai_ExecBuildBuilding	am	draft	readable	deep	
+exe	0x004a5540	ai_FindGoodToMake	am	draft	readable	deep	
+exe	0x004a5760	ai_FindWantedItems	am	byte	readable		
+exe	0x004a58d0	ai_PickPartnerChain	am	shape	readable		
+exe	0x004a5a30	ai_PickPartnerInRange	am	byte	readable		
+exe	0x004a5b50	ai_FindPartnersRandomWalk	am	byte	readable		
+exe	0x004a5d30	ai_PickPartnerRandomWalk	am	draft	readable	deep	
 exe	0x004a5ef0	ai_FindCandidates	am	draft	draft		
 exe	0x004a61d0	ai_PickPartnerChainLevel	am	draft	draft		
 exe	0x004a63f0	ai_PickActionBuilding	am	draft	draft		
@@ -3028,7 +3028,7 @@ exe	0x00501f60	gm_NearestFreeBuilding	f3gm	draft	draft
 exe	0x00502020	gm_FindBuildingById	f3gm	byte	draft		
 exe	0x00502060	gm_FindBuildingKind	f3gm	shape	readable		
 exe	0x005020a0	gm_ListBuildingsOfType	f3gm	shape	readable		
-exe	0x005020e0	unk_Unk5020e0	f3gm	draft	draft		
+exe	0x005020e0	gm_MayTakeJob	f3gm	draft	readable		
 exe	0x005024f0	gm_IsType10	f3gm	byte	readable		
 exe	0x00502520	gm_IsHomeType	f3gm	draft	draft		
 exe	0x00502570	gm_GoodPicture	f3gm	draft	draft		
@@ -4501,7 +4501,7 @@ exe	0x005c27b0	ai_Unk5c27b0	unk_58bbd0	draft	draft
 exe	0x005c2a10	ai_Unk5c2a10	unk_58bbd0	draft	draft		
 exe	0x005c2b90	ai_Unk5c2b90	unk_58bbd0	draft	draft		
 exe	0x005c3200	ai_MasterLetterWindow	unk_58bbd0	draft	draft		
-exe	0x005c33c0	ai_Unk5c33c0	unk_58bbd0	draft	draft		
+exe	0x005c33c0	ai_PassesPartnerFilter	unk_58bbd0	draft	draft		
 exe	0x005c37a0	ai_Unk5c37a0	unk_58bbd0	draft	draft		
 exe	0x005c39a0	ai_Unk5c39a0	unk_58bbd0	draft	draft		
 exe	0x005c3bb0	ai_Unk5c3bb0	unk_58bbd0	draft	draft		
