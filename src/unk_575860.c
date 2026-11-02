@@ -1758,25 +1758,22 @@ int ai_QueryChapter5Step2(int *args)
     }
     return 1;
 }
-/* 0x5772d0, the fight kind of the record 0x6f2310: -1 without a record, for the kinds outside 0x92 .. 0x97 /
-   0x2db, and while the flag S+0x38 is set; else 0 for the kind 0x92, 1 for the other kinds */
+/* 0x5772d0, the marker step callback of the run record FTInitChapter5Step2 (ai_TutorialMarkerUpdate): picks the
+   marker entry for the shown panel room - 0 for the room 0x92, 1 for 0x93 .. 0x97 and 0x2db - while the goal is
+   not done; -1 (no marker) without a shown panel, for other rooms or once goalDone is set */
 
-int ai_Unk5772d0(void)
+int ai_MarkerChapter5Step2(void)
 {
-    unsigned short w;
-    int v;
+    unsigned short room;
+    int r;
 
-    if (!U_I((unsigned)&sv_PanelShown))
-        return -1;
-    w = *(unsigned short *)U_I((unsigned)&sv_PanelShown);
-    v = w;
-    if (v < 0x92)
-        return -1;
-    if (v > 0x97 && v != 0x2db)
-        return -1;
-    if (U_I(S + 0x38))
-        return -1;
-    return w != 0x92;
+    if (sv_PanelShown) {
+        room = *sv_PanelShown;
+        r = room;
+        if (r >= 0x92 && (r <= 0x97 || r == 0x2db) && !ai_Tutorial->goalDone)
+            return room != 0x92;
+    }
+    return -1;
 }
 /* 0x577320, the flag S+0x38 */
 
@@ -3906,7 +3903,7 @@ int ai_Unk57aeb0(void)
     U_I(r + 0x50) = 0x0;
     U_I(r + 0x54) = 0x0;
     U_I(r + 0x5c) = 0x2;
-    U_I(r + 0x60) = (unsigned)&ai_Unk5772d0;
+    U_I(r + 0x60) = (unsigned)&ai_MarkerChapter5Step2;
     U_I(r + 0x68) = 0x1877;
     U_I(r + 0x6c) = 0x1f78;
     /* FTInitAnimChapter5Step2: two animation entries */

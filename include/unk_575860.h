@@ -117,7 +117,7 @@ void ai_HookChapter3Step2(int arg);             /* 0x577110, posts to the player
 int ai_Unk5771b0(int *p);               /* 0x5771b0, transition callback */
 void ai_Unk577230(int arg);             /* 0x577230, posts messages */
 int ai_QueryChapter5Step2(int *p);               /* 0x577290, step predicate */
-int ai_Unk5772d0(void);                 /* 0x5772d0, the record fight kind */
+int ai_MarkerChapter5Step2(void);                 /* 0x5772d0, the record fight kind */
 int ai_Unk577320(void);                 /* 0x577320, the flag S+0x38 */
 int ai_Unk577330(int *p);               /* 0x577330, transition callback */
 int ai_Unk5773f0(void);                 /* 0x5773f0, fight kind + flag */
