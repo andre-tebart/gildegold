@@ -7896,7 +7896,6 @@ int ai_GraveSizeEnable(AIBLD *rec, int from, unsigned char entry, int *btns, int
     return any;
 }
 
-int gv_OrderReserveGrave(int *g, char *o, int v, short s, int x);
 
 /* 0x584010, confirms moving a grave to another size: rec = the graveyard building, from / entry = the grave's
    size and entry, to = the new size. The move costs 16000 unless the player owns the graveyard. The form
@@ -8054,82 +8053,69 @@ void ai_GraveDetailButtons(char *rec, int *w)
         }
     } while (sv_RunFrame((int)ai_GraveDetailButtons, 0x677c7));
 }
-/* 0x584520, the graveyard grave action (632 B): rec / idx the grave index. The cost when the grave's owner
-   (+0x27) is not the player (0x6f25b8): 0x4f2330 (the character, 0xff, idx, 1, &out), else 0; the window
-   "Locations_Friedhof_Friedhof" (0x62a5bc) with 0x476f80 / 0x475600, the sound 0x52ea30, the text 0x410c /
-   0x4109 (rec, the name 0x5eecd0[idx]) for the player's own grave or 0x410b / 0x4108 (the cost, the name), the
-   entries 0x410d / +1 in 0x475b80 (window, 2, text), 0xf8a668 = -1; the pump loop 0x5309a0 (this window,
-   0x677c7): the escape 0x14673a0 -> 0x6f22a0 = 1; the first entry: with a cost, 0x521040 (the character, the
-   cost, 0x6f1bc5) 0 -> the pump; 0x4f0430 (the character, rec, idx, 10, the cost) and its answer waited on
-   0x4c3ae0 (pump 0x20007), 0x760638 = 0x677c7; the answer 2 -> 0x5176d0 (buf, 0x411b, (the owner is the player)
-   + 0x4108, the name) and 0x521150 (buf, 0x100), else 0x6f22a0 = 1 and 1; the second entry -> 0x6f22a0 = 1;
-   the pump 0 -> 0x4758f0 (window), the result */
-
-int ai_Unk584520(char *rec, int idx)
+/* 0x584520, confirms renting a grave: rec = the graveyard building, size = the grave size. The lease costs
+   gv_LeasePrice of the player's character (full care) unless the player owns the graveyard. The form
+   "Locations\Friedhof\Friedhof" shows the question (txt 0x410c with the building for the owner, else 0x410b with
+   the price) and the yes / no entries (txt 0x410d and the next one); a right click or no closes it. Yes, when the
+   player has the money: gv_OrderReserveGrave for 10 years and its answer waited for; refused (slot state 2) ->
+   the message 0x411b and the form stays, else the form closes with 1. Returns 1 when the grave was rented */
+int ai_GraveRentConfirm(AIBLD *rec, int size)
 {
     char buf[0x200];
-    int out;
+    int share;
     int win;
-    int b1;
-    int b2;
+    int yes;
+    int no;
     int v;
     int r;
     int h;
     int cost;
 
     r = 0;
-    if (*(unsigned short *)(rec + 0x27) == *(unsigned short *)(unsigned)&ai_PlayerId)
+    if (rec->owner == ai_PlayerId)
         cost = 0;
     else
-        cost = gv_LeasePrice((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, 0xff, idx, 1, &out);
-    win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62a5bc);
+        cost = gv_LeasePrice((unsigned short *)ai_Chars[ai_PlayerId], 0xff, size, 1, &share);
+    win = d2_OpenForm(0, 0, "Locations\\Friedhof\\Friedhof");
     d2_SetPointerSprite(0, 0);
     d2_CentreViewWindows(win);
     d2_SetForm(win, 0);
-    sv_FitForm(U_I((unsigned)&d2_LastWindow));
+    sv_FitForm(d2_LastWindow);
     d2_SetForm(win, 1);
-    if (*(unsigned short *)(rec + 0x27) == *(unsigned short *)(unsigned)&ai_PlayerId) {
-        io_PrintText(0x410c, 0x4109, (int)rec, U_I(((unsigned)&sv_PhaseMinutes + 0x218) + idx * 4));
-    } else {
-        io_PrintText(0x410b, 0x4108, U_I(((unsigned)&sv_PhaseMinutes + 0x218) + idx * 4), cost);
-    }
+    if (rec->owner == ai_PlayerId)
+        io_PrintText(0x410c, 0x4109, rec, ai_GraveNames[size]);
+    else
+        io_PrintText(0x410b, 0x4108, ai_GraveNames[size], cost);
     d2_SetForm(win, 2);
     v = io_PrintText(0x410d);
-    b1 = d2_GetWinObj(win, 2, v);
-    b2 = d2_GetWinObj(win, 2, v + 1);
-    U_I((unsigned)&d2_ClickedId) = -1;
-    for (;;) {
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0) {
-            U_I((unsigned)&sv_PopRequest) = 1;
-        } else if (U_I((unsigned)&d2_ClickedId) != -1) {
-            if (U_I((unsigned)&d2_PointerObj) == b1) {
-                if (cost != 0) {
-                    if (sv_CheckGoodAmount((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, cost, *(unsigned char *)(unsigned)&ai_OwnPlayer) == 0)
-                        goto pump;
-                }
-                h = gv_OrderReserveGrave((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, rec, idx, 10, cost);
-                if (h != -1) {
-                    while (cm_GetSlotState(h) == 0)
+    yes = d2_GetWinObj(win, 2, v);
+    no = d2_GetWinObj(win, 2, v + 1);
+    d2_ClickedId = -1;
+    do {
+        if (dm_L.rup != 0) {
+            sv_PopRequest = 1;
+        } else if (d2_ClickedId != -1) {
+            if (d2_PointerObj == yes) {
+                if (cost == 0 || sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], cost, ai_OwnPlayer)) {
+                    h = gv_OrderReserveGrave((int *)ai_Chars[ai_PlayerId], (char *)rec, size, 10, cost);
+                    while (h != -1 && cm_GetSlotState(h) == 0)
                         sv_RunFrame(0, 0x20007);
+                    sv_FrameMask = 0x677c7;
+                    if (cm_GetSlotState(h) == 2) {
+                        txt_Format(buf, 0x411b, (rec->owner == ai_PlayerId) + 0x4108, ai_GraveNames[size]);
+                        sv_MessageBox((int)buf, 0x100);
+                    } else {
+                        sv_PopRequest = 1;
+                        r = 1;
+                    }
                 }
-                U_I((unsigned)&sv_FrameMask) = 0x677c7;
-                if (cm_GetSlotState(h) == 2) {
-                    txt_Format(buf, (char *)0x411b, (*(unsigned short *)(rec + 0x27) == *(unsigned short *)(unsigned)&ai_PlayerId) + 0x4108, U_I(((unsigned)&sv_PhaseMinutes + 0x218) + idx * 4));
-                    sv_MessageBox(buf, 0x100);
-                } else {
-                    U_I((unsigned)&sv_PopRequest) = 1;
-                    r = 1;
-                }
-            } else if (U_I((unsigned)&d2_PointerObj) == b2) {
-                U_I((unsigned)&sv_PopRequest) = 1;
+            } else if (d2_PointerObj == no) {
+                sv_PopRequest = 1;
             }
         }
-pump:
-        if (sv_RunFrame(ai_Unk584520, 0x677c7) == 0) {
-            d2_CloseView(win);
-            return r;
-        }
-    }
+    } while (sv_RunFrame((int)ai_GraveRentConfirm, 0x677c7));
+    d2_CloseView(win);
+    return r;
 }
 /* 0x5847a0, the rent-a-grave selection window (340 B): rec; the window "Locations_Friedhof_RentAGrave"
    (0x62a5d8) with 0x476f80 / 0x475600, the sound 0x52ea30, the texts 0x410a / 0x4108 and 0x625150 (0x4117) in
@@ -8165,7 +8151,7 @@ void ai_Unk5847a0(char *rec)
         } else if (U_I((unsigned)&d2_ClickedId) != -1) {
             if (U_I((unsigned)&d2_PointerObj) == btn) {
                 d2_SetViewEnabled(win, 0);
-                if (ai_Unk584520(rec, sel) == 1)
+                if (ai_GraveRentConfirm((AIBLD *)rec, sel) == 1)
                     U_I((unsigned)&sv_PopRequest) = 1;
                 d2_SetViewEnabled(win, 1);
             } else {
