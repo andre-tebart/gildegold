@@ -405,7 +405,7 @@ int ai_Unk48eab0(AIPX *p, AIARGX *s1, AIARGX *s2)
 {
     switch (s1->arg2) {
     case 0:
-        return ai_Unk48eb50(p, s1, s2) ? 0x41 : 0;
+        return ai_ExecSecretRoom0(p, s1, s2) ? 0x41 : 0;
     case 1:
         return ai_Unk48ec90(p, s1, s2) ? 0x41 : 0;
     case 2:
@@ -415,14 +415,21 @@ int ai_Unk48eab0(AIPX *p, AIARGX *s1, AIARGX *s2)
     }
     return 0;
 }
-/* 0x48eb50, execute, way 0: pays 16 and the amount of s2, message 0x99 to the character of s1 */
+/* 0x48eb50, execute of "UseSecretRoom" (0x41), way 0: pays 16 and the amount of s2, message 0x99 to the character of s1
+   @deep read the whole function against the original: same statements, calls and arguments; restructured
+   the building choice as the original's flow (bld170 stores directly; bld16c or the ai_PickActionBuilding
+   result merged into one msg.car store). Left: allocation and scheduling only: the ai_Time copy is
+   scheduled ecx/edx/ecx/dx (ours edx/ecx/eax/cx, msg.type store moved), msg.ch is stored from ecx before
+   add esp 0x18 (ours edx after), bld170->id goes through edx and is stored in the branch where ours loads
+   eax and jumps to the shared store (jmp +0xdf: ours to +0x116, the original's to +0x122); the ternary
+   form was worse (56 ins), reverted. */
 
-int ai_Unk48eb50(AIPX *p, AIARGX *s1, AIARGX *s2)
+int ai_ExecSecretRoom0(AIPX *p, AIARGX *s1, AIARGX *s2)
 {
     union { struct { unsigned int lo, hi; } s; __int64 q; } m;
     AIMSG msg;
     AIPX *c;
-    int v;
+    int v, car;
 
     c = (AIPX *)gm_FindChar(s1->ref2);
     if (!c)
@@ -431,7 +438,7 @@ int ai_Unk48eb50(AIPX *p, AIARGX *s1, AIARGX *s2)
     gm_SendMoneyDelta(p->netId, -16);
     memset(&msg, 0, sizeof(msg));
     msg.to = p->netId;
-    TMX(msg) = NOWX;
+    msg.time = ai_TimeT;
     msg.fromId = s1->ref2;
     msg.type = 0x99;
     msg.flags = 2;
@@ -442,14 +449,17 @@ int ai_Unk48eb50(AIPX *p, AIARGX *s1, AIARGX *s2)
     msg.dst[2] = 0;
     if (c->bld170)
         msg.car = c->bld170->id;
-    else if (c->bld16c)
-        msg.car = c->bld16c->id;
     else {
-        v = -1;
-        m.s.lo = 0x7b4c4a0;
-        m.s.hi = 0;
-        ((int (*)(AIPX *, int, __int64, int, float, int *))ai_PickActionBuilding)(c, 0, m.q, 0, 100.0f, &v);
-        msg.car = v;
+        if (c->bld16c)
+            car = c->bld16c->id;
+        else {
+            v = -1;
+            m.s.lo = 0x7b4c4a0;
+            m.s.hi = 0;
+            ((int (*)(AIPX *, int, __int64, int, float, int *))ai_PickActionBuilding)(c, 0, m.q, 0, 100.0f, &v);
+            car = v;
+        }
+        msg.car = car;
     }
     cm_SendLongMessage(&msg);
     return 1;

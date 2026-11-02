@@ -715,3 +715,4 @@
 2026-11-02T05:28:37 0x00505e60 func gm_Unk505e60S -> gm_CharLevelS by:main why:view of gm_CharLevel (0x505e60)
 2026-11-02T05:33:28 0x0048e370 func ai_Unk48e370 -> ai_ExecBuildDomizil by:main why:48e370 is the exec of action 0x40 'Build Domizil' (ai_Unk48fb70); 4a5320's own error text names it amt_ExecGebaeudeBauen (build a building type on a plot)
 2026-11-02T05:33:28 0x004a5320 func ai_Unk4a5320 -> ai_ExecBuildBuilding by:main why:48e370 is the exec of action 0x40 'Build Domizil' (ai_Unk48fb70); 4a5320's own error text names it amt_ExecGebaeudeBauen (build a building type on a plot)
+2026-11-02T05:35:27 0x0048eb50 func ai_Unk48eb50 -> ai_ExecSecretRoom0 by:main why:case 0 of ai_Unk48eab0, the exec of action 0x41 'UseSecretRoom' (ai_Unk48fb70)
