@@ -253,7 +253,8 @@ stale `@deep` / `@stuck` tag: `dcp escalate NAME --clear`, build again.
 ## 4. When to stop
 A session is **8 functions** raised to shape + readable (or byte + readable) or escalated, then the wrap-up.
 Never stop early: a hard function is escalated, not a reason to end; a long queue is not a reason to end;
-"it feels long" is no clock. One raise or one escalation is one commit: count the commits and stop at 8
+"it feels long" is no clock, nor is "budget" or the size of your context: one function finished with a wrap
+is a failed session, not a short one. One raise or one escalation is one commit: count the commits and stop at 8
 (escalations count). A reconstruction of a big function (~1000 instructions, missing statements) may take most
 of a session; that is expected base work, not a reason to escalate it.
 
