@@ -144,7 +144,6 @@ extern char cm_ChatLog[2048];
 extern unsigned char ai_TimeHour;
 extern char sv_SkyHeavy[];
 extern int ai_OptionSpeed;
-extern GAPDATA full_data_6f22ac[];
 extern int d2_HalfScreenH;
 extern int d2_HalfScreenW;
 
@@ -168,7 +167,6 @@ extern GAPDATA full_data_623eac[];
 extern GAPDATA full_data_623eb0[];
 extern GAPDATA full_data_623eb4[];
 extern GAPDATA full_data_62457c[];
-extern GAPDATA full_data_6f22ac[];
 extern GAPDATA full_data_6f23f1[];
 extern GAPDATA full_data_6f2580[];
 extern int main_Inactive;
@@ -7236,7 +7234,7 @@ void sv_Unk5307f0(void)
     if (ai_RunAllows(8) != 0) {
         ai_CampaignStep(0xb, 0, 0, 0);
         mask = mask & 0xffffc3e7 | 0xc0;
-        SV_I((unsigned)&full_data_6f22ac) = 1;
+        sv_Advancing = 1;
         SV_I((unsigned)&ai_OptionSpeed) = 0x2ee;
         *(float *)(unsigned)&ch_Unk5f1290 = 4.9375f;
         f = d2_OpenForm(0, 0, "misc\\advancegame");
@@ -7248,7 +7246,7 @@ void sv_Unk5307f0(void)
                 SV_I((unsigned)&sv_PopRequest) = 1;
             r = sv_RunFrame(sv_Unk5307f0, mask);
         }
-        SV_I((unsigned)&full_data_6f22ac) = 0;
+        sv_Advancing = 0;
         *(float *)(unsigned)&ch_Unk5f1290 = (float)sp * 0.00625f + 0.25f;
         SV_I((unsigned)&ai_OptionSpeed) = sp;
         d2_CloseView(f);
@@ -7360,7 +7358,7 @@ l64:
         he_Unk53edf0();
         if (SV_I((unsigned)&ai_Unk1460ae0) == -1 && SV_I((unsigned)&ai_Unka687e4) < SV_I((unsigned)&ai_ClockMs) && SV_B((unsigned)&ai_GameState) != 0)
             ai_Unk4c4d40((unsigned)&ai_TimeCopy);
-        if ((mask & 0x10000) == 0 && SV_B((unsigned)&ai_GameState) != 0 && SV_I((unsigned)&sv_PanelFlag) == 0 && ai_Unk4e4cc0() != 0 && SV_B((unsigned)&full_data_6f22ac) != 0)
+        if ((mask & 0x10000) == 0 && SV_B((unsigned)&ai_GameState) != 0 && SV_I((unsigned)&sv_PanelFlag) == 0 && ai_Unk4e4cc0() != 0 && sv_Advancing != 0)
             SV_I((unsigned)&sv_PopRequest) = 1;
     }
     if ((mask & 0x20000) != 0 && SV_I((unsigned)&ai_Unka687e4) < SV_I((unsigned)&ai_ClockMs)) {
@@ -7505,7 +7503,7 @@ l2:
         if ((SV_U((unsigned)&ai_GameFlags) & 4) != 0 && SV_I((unsigned)&d2_FocusedInput) == 0 && SV_B((unsigned)&kb_Last) == 0x1c && (mask & 0x2000) != 0)
             sv_ChatConsole();
         if (SV_B((unsigned)&ai_GameState) != 0) {
-            if ((SV_B((unsigned)&kb_Last) == 0xcf || (SV_I(((unsigned)&dm_L + 0xc)) != 0 && SV_I((unsigned)&d2_HitUnderPointer) == ai_Unk623850)) && (mask & 0x10000) == 0 && SV_B((unsigned)&full_data_6f22ac) == 0 && (SV_U((unsigned)&ai_GameFlags) & 4) == 0) {
+            if ((SV_B((unsigned)&kb_Last) == 0xcf || (SV_I(((unsigned)&dm_L + 0xc)) != 0 && SV_I((unsigned)&d2_HitUnderPointer) == ai_Unk623850)) && (mask & 0x10000) == 0 && sv_Advancing == 0 && (SV_U((unsigned)&ai_GameFlags) & 4) == 0) {
                 if (SV_I((unsigned)&ai_Unk6f2448) == 0)
                     sv_Unk5307f0();
                 else {
@@ -7747,6 +7745,7 @@ int sv_FrameDepth = 0;  /* 0x6f229c, the depth of the frame callback stack */
 int sv_PopRequest = 0;  /* 0x6f22a0 */
 int sv_FrameBase = 0;  /* 0x6f22a4, the depth a screen was entered at (the base of the pop count) */
 int sv_FocusDepth = 0;  /* 0x6f22a8, sv_FrameDepth when sv_FocusObject was focused (sv_HandleObjects); the camera code releases the focus when the frame stack drops below it */
+unsigned char sv_Advancing = 0;  /* 0x6f22ac, nonzero while the advance game screen runs (0x5307f0, form "misc\advancegame"); sv_RunFrame tests it */
 int sv_CameraScrolled = 0;  /* 0x6f22b4 */
 int ai_Unk6f22c0 = 0;  /* 0x6f22c0 */
 struct D2SURF *sv_GroundplanSurf = 0;  /* 0x6f22c4, the groundplan bitmap while sv_LoadGroundplan reads it */

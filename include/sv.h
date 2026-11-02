@@ -252,6 +252,7 @@ extern int sv_FrameDepth;                                   /* 0x6f229c */
 extern int sv_PopRequest;                                   /* 0x6f22a0 */
 extern int sv_FrameBase;                                    /* 0x6f22a4 */
 extern int sv_FocusDepth;                                    /* 0x6f22a8 */
+extern unsigned char sv_Advancing;                           /* 0x6f22ac */
 extern int sv_CameraScrolled;                                    /* 0x6f22b4 */
 extern int ai_Unk6f22c0;                                    /* 0x6f22c0 */
 extern struct D2SURF *sv_GroundplanSurf;                                   /* 0x6f22c4 */
