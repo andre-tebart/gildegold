@@ -8,7 +8,8 @@
    costs gm_Unk4fa4b0 a byte).
    Open: gm_GetWorth is int in every header now; the older callers still go through the K&R cast I50A640.
    Open: ai.h is not includable here, so the character / building / object records are read through gv.h's views
-   ORDCHAR / ORDBLD / ORDOBJ (the income, upkeep, wage and worth code) or by byte offset (the rest).
+   ORDCHAR / ORDBLD / ORDOBJ, the long message through f3gm_types.h's GMMSG (AIMSG), or by byte offset (the rest;
+   G_MSG72 still fills the message 0x72 by offset for 0x4fca40).
    Open: gm_GetGebaeudeHauptraum (0x501ce0) is drafted void, but its callers use the result as a pointer.
    Open: the head tables (gm_BoyHead .. gm_SpyHeads, gm_OwnNameHeads) are GMHEAD records but still defined as
    unsigned arrays; their readers cast them.

@@ -2945,17 +2945,17 @@ exe	0x004fb5a0	gm_SelectModelVariant	f3gm	shape	readable
 exe	0x004fb620	gm_ResolveHeadIcons	f3gm	shape	readable		
 exe	0x004fb770	gm_HeadIconNumber	f3gm	byte	readable		
 exe	0x004fb890	gm_ChooseHeadIcon	f3gm	byte	readable		
-exe	0x004fbb80	unk_Unk4fbb80	f3gm	draft	draft		
-exe	0x004fbd10	gm_PlaceOnStage	f3gm	draft	draft		
-exe	0x004fbe90	unk_Unk4fbe90	f3gm	draft	draft		
-exe	0x004fc6f0	gm_AgeCharacter	f3gm	draft	draft		
-exe	0x004fc7a0	gm_ExpectedDeathAge	f3gm	draft	draft		
-exe	0x004fc820	gm_CharacterHealth	f3gm	draft	draft		
-exe	0x004fc890	unk_Unk4fc890	f3gm	draft	draft		
-exe	0x004fc8e0	gm_HealthRatio	f3gm	draft	draft		
+exe	0x004fbb80	gm_CreateCharModel	f3gm	draft	readable	deep	
+exe	0x004fbd10	gm_PlaceOnStage	f3gm	byte	readable		
+exe	0x004fbe90	gm_DailyCharacterStep	f3gm	draft	readable	deep	
+exe	0x004fc6f0	gm_AgeCharacter	f3gm	shape	readable		
+exe	0x004fc7a0	gm_ExpectedDeathAge	f3gm	shape	readable		
+exe	0x004fc820	gm_CharacterHealth	f3gm	byte	readable		
+exe	0x004fc890	gm_CharacterBaseHealth	f3gm	byte	readable		
+exe	0x004fc8e0	gm_HealthRatio	f3gm	byte	readable		
 exe	0x004fc920	gm_DailyCharacters	f3gm	draft	draft		
 exe	0x004fca40	gm_AddHealth	f3gm	draft	draft		
-exe	0x004fccc0	unk_Unk4fccc0	f3gm	draft	draft		
+exe	0x004fccc0	gm_PartnerStep	f3gm	draft	draft		
 exe	0x004fd090	unk_Unk4fd090	f3gm	draft	draft		
 exe	0x004fd120	unk_Unk4fd120	f3gm	draft	draft		
 exe	0x004fd5c0	unk_Unk4fd5c0	f3gm	draft	draft		
@@ -3093,7 +3093,7 @@ exe	0x00506480	gm_Unk506480	f3gm	draft	draft
 exe	0x005064d0	gm_Unk5064d0	f3gm	draft	draft		
 exe	0x00506890	gm_Unk506890	f3gm	draft	draft		
 exe	0x00506e70	gm_Unk506e70	f3gm	draft	draft		
-exe	0x005075c0	gm_Unk5075c0	f3gm	draft	draft		
+exe	0x005075c0	gm_MayRemoveChar	f3gm	draft	draft		
 exe	0x00507690	gm_Unk507690	f3gm	draft	draft		
 exe	0x005085b0	gm_ConvertMoney	f3gm	byte	draft		
 exe	0x005085f0	gm_PlayerFactor	f3gm	byte	draft		
@@ -4005,7 +4005,7 @@ exe	0x00578370	ai_TutorialStop	unk_575860	byte	draft
 exe	0x00578440	ai_TutorialFreeRuns	unk_575860	byte	draft		
 exe	0x005784a0	ai_TutorialInitMainIntro	unk_575860	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	unk_575860	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	shape	readable		byte+readable -> shape+readable at 82b1f11: gv.h's ORDCHAR gains the field v1a8 (0x1a8, split from pad174) and gv.h the object head ORDOBJ, which f3gm.c's gm_IncomeKind3 reads instead of raw offsets; unk_575860 uses neither type, the fall is the VC6 declaration-set tie-break its lead comment records for this function (any gv.h layout-neutral change flips it, tested with the field split alone), so its byte match was no evidence of the original's declarations [waits for: unk_575860's declaration set (its head includes) settling; then a variant round on ai_TutorialInitChapter2]
+exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	byte	readable		
 exe	0x00579570	ai_TutorialInitChapter3	unk_575860	draft	readable	deep	
 exe	0x0057aa80	ai_TutorialInitChapter4	unk_575860	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	unk_575860	byte	readable		
