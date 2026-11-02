@@ -151,7 +151,7 @@ int gm_EquipmentValue(unsigned char *b, int unused);  /* 0x509b10 */
 char *gm_FindGoods(int p, unsigned id);  /* 0x4ffc40 */
 int gm_FindMarketObject(int id);  /* 0x500ec0 */
 int gm_FreeCapacity(short *l, int id, int n);  /* 0x50ab80 */
-void gm_GetGebaeudeHauptraum(unsigned char *b);  /* 0x501ce0 */
+void *gm_GetGebaeudeHauptraum(unsigned char *b);  /* 0x501ce0 */
 int gm_GetGoodsValue(char *c);  /* 0x509e60 */
 float gm_GoodsPrice(unsigned id, unsigned char p);  /* 0x5089c0 */
 float gm_ItemPrice(int item, unsigned char n);  /* 0x5087f0 */

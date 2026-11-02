@@ -1545,7 +1545,7 @@ int cm_SendChrGotoBuilding(int id, int bld, int c, const char *s, int f, const c
         b = gm_FindBuildingById(bld);
         if (b != 0) {
             if (gm_IsHomeType(b) == 0)
-                o = ((void *(*)(unsigned char *))gm_GetGebaeudeHauptraum)(b);
+                o = gm_GetGebaeudeHauptraum(b);
             else
                 o = gm_Query(*(int *)(b + 0x5d), 1, 0, 0xfd);
         }
@@ -14327,7 +14327,7 @@ void ai_Unk4e48b0(int *a, char *b, char *text, char *extra)
         o = (char *)gm_FindBuildingById(*(int *)(b + 0x14));
         if (o != 0) {
             if (gm_IsHomeType(o) == 0) {
-                p = (char *)((void *(*)(unsigned char *))gm_GetGebaeudeHauptraum)(o);
+                p = (char *)gm_GetGebaeudeHauptraum(o);
                 if (p != 0)
                     *(int *)(buf + 0x60) = *(int *)(p + 2);
             } else {

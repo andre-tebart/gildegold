@@ -1504,7 +1504,7 @@ check:
             msg.flags = 1;
             msg.arg[1] = sel->id;
             msg.arg[2] = ch->bld->id;
-            o = ((void *(*)(unsigned char *))gm_GetGebaeudeHauptraum)(ch->bld);
+            o = gm_GetGebaeudeHauptraum(ch->bld);
             if (!o)
                 goto failed;
             msg.arg[3] = o->objId;
@@ -1544,7 +1544,7 @@ umland:
     r = util_RandomU(8);
     strcpy((char *)&msg.arg[0], ai_AmbushSpots[r]);
     msg.arg[8] = ch->bld->id;
-    o = ((void *(*)(unsigned char *))gm_GetGebaeudeHauptraum)(ch->bld);
+    o = gm_GetGebaeudeHauptraum(ch->bld);
     if (!o) {
 failed:
         sprintf(buf, "ai_CalcMeisterWache() : gm_GetGebaeudeHauptraum() failed !!!");
@@ -2114,7 +2114,7 @@ attack:
             msg.arg[0] = -1;
             msg.arg[1] = best->id;
             msg.arg[4] = ch->bld->id;
-            room = ((void *(*)(unsigned char *))gm_GetGebaeudeHauptraum)(ch->bld);
+            room = gm_GetGebaeudeHauptraum(ch->bld);
             if (!room) {
                 sprintf(buf, "ai_CalcMeisterWache() : gm_GetGebaeudeHauptraum() failed !!!");
                 return;

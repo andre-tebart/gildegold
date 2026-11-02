@@ -6003,7 +6003,7 @@ void sv_HandleRightClick(unsigned fl)
                         rb = ai_FallbackBuilding;
                 }
                 if (rb != 0 && *sv_PanelShown == 0xf2)
-                    room = (unsigned short *)((void *(*)(unsigned char *))gm_GetGebaeudeHauptraum)((unsigned char *)rb);
+                    room = (unsigned short *)gm_GetGebaeudeHauptraum((unsigned char *)rb);
                 if (ai_PlayerBuilding == 0 || room == 0 || room == sv_PanelShown)
                     sv_PanelShown = 0;
                 else

@@ -10893,7 +10893,7 @@ void ai_SpeedKeys(void)
     }
 }
 
-int gm_BuildingMainObject(unsigned char *b); void gm_GetGebaeudeHauptraum(unsigned char *b);
+int gm_BuildingMainObject(unsigned char *b); void *gm_GetGebaeudeHauptraum(unsigned char *b);
 
 /* 0x589e00, fills slot i of the table 0x6f5ec0 from the building b (79 B): the building's byte +0 is its kind, its
    id at +1 -> the slot's +4; the main object of the building (0x501b50, else 0x501ce0; none for the kind 0x1d)
@@ -10907,7 +10907,7 @@ void ai_BookmarkSetBuilding(int i, char *b)
     if (*(unsigned char *)b != 0x1d) {
         o = (char *)gm_BuildingMainObject(b);
         if (o == 0)
-            o = (char *)((void *(*)(unsigned char *))gm_GetGebaeudeHauptraum)(b);
+            o = (char *)gm_GetGebaeudeHauptraum(b);
     }
     off = i * 0xc;
     *(int *)((char *)&ai_Bookmarks[0].building + off) = *(int *)(b + 1);

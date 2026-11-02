@@ -103,7 +103,7 @@ short * gm_FindChar(int id);                                                    
 int gm_CompareTime(char *t, char *now);                                            /* 0x4fe210, AITIME * */
 char *gm_FindBuildingById(int id);                                                      /* 0x502020, ai.h: AIBLD * */
 int gm_IsHomeType(unsigned char *bld);                                                     /* 0x502520 */
-void gm_GetGebaeudeHauptraum(unsigned char *bld);                                                   /* 0x501ce0, ai.h: AIOBJ * */
+void *gm_GetGebaeudeHauptraum(unsigned char *bld);                                                   /* 0x501ce0, ai.h: AIOBJ * */
 char * gm_Query(void *list, int n, ...);                                        /* 0x4ffe90, ai.h: AIOBJ * */
 struct ORDCHAR; struct ORDBLD; struct ORDCHAR *gm_FindApplicant(struct ORDBLD *o, unsigned title, unsigned job);                             /* 0x4fda70 */
 struct ORDBLD; struct ORDBLD *gm_FindHome(int unused, struct ORDBLD *o);                                   /* 0x4fd820 */

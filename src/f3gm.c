@@ -18,7 +18,6 @@
    copies 0xaa0 ints and gm_InitPlayerRecord walks 0x55 GMSTOCK records from it: one 0x2a80-byte template.
    Open: head: cm_SendExSellObject returns its message's slot handle (gm_SyncMarket waits on it), cm.h declares
    it void; this unit calls it through the cast cm_SendExSellObjectH.
-   Open: gm_GetGebaeudeHauptraum (0x501ce0) is drafted void, but its callers use the result as a pointer.
    Open: the head tables (gm_BoyHead .. gm_SpyHeads, gm_OwnNameHeads) are GMHEAD records but still defined as
    unsigned arrays; their readers cast them.
    Open: not included yet (dcp headers conflicts f3gm HEADER): ai.h anm.h cm.h d2.h d3_interface.h d3_tools.h
@@ -4409,7 +4408,7 @@ void gm_SetCapacities(unsigned char *p)
 }
 
 int gv_BuryNewDead();                     /* 0x4ef9c0 */
-void gm_GetGebaeudeHauptraum(unsigned char *b);                     /* 0x501ce0 */
+void *gm_GetGebaeudeHauptraum(unsigned char *b);                     /* 0x501ce0 */
 int gm_BuildingClass();                     /* 0x501d80 */
 /* ai_BuildingNames: view of txt_Ptrs (build/mk_txt_views.py) */
 extern char ai_Time[];             /* 0x770ae0 */
@@ -4530,7 +4529,7 @@ unsigned char *gm_CreateBuilding(unsigned char k, unsigned short own)
         }
         s = (unsigned short *)gm_QueryNext();
     }
-    s = (unsigned short *)((void *(*)(unsigned char *))gm_GetGebaeudeHauptraum)((unsigned char *)b);
+    s = (unsigned short *)gm_GetGebaeudeHauptraum((unsigned char *)b);
     if (s != 0)
         b->mainRoom = *s;
     if (gm_IsHomeType((unsigned char *)b) != 0)
@@ -4671,26 +4670,24 @@ int gm_BuildingMainObject(unsigned char *p)
     }
     return (int)o;
 }
-/* 0x501ce0, queries the main object of the building b for the side effect (the object 0xfd of a home, the 0x54 of a type 4 building, else walks the kind 2 objects while they are 0xfd) */
+/* 0x501ce0, the main room of the building b ("gm_GetGebaeudeHauptraum", ai.c's error texts): the object 0xfd of a home (gm_IsHomeType), the 0x54 of a kind-type 4 building, else the first object of the goods class 2 in its list that is not the 0xfd; 0 when there is none */
 
-void gm_GetGebaeudeHauptraum(unsigned char *b)
+void *gm_GetGebaeudeHauptraum(unsigned char *p)
 {
-    char *k;
-    short *s;
+    ORDBLD *b = (ORDBLD *)p;
+    unsigned char *k;
+    unsigned short *o;
 
-    gm_BuildingClass(*b);
-    k = ai_BTypes + *b * 0x24d;
-    if (gm_IsHomeType(b) != 0) {
-        gm_Query(*(int *)(b + 0x5d), 1, 0, 0xfd);
-        return;
-    }
-    if (*k != 4) {
-        s = (short *)gm_Query(*(int *)(b + 0x5d), 1, 4, 2);
-        while (s != 0 && *s == 0xfd)
-            s = (short *)gm_QueryNext();
-        return;
-    }
-    gm_Query(*(int *)(b + 0x5d), 1, 0, 0x54);
+    gm_BuildingClass(b->type);
+    k = (unsigned char *)ai_BTypes + b->type * 0x24d;
+    if (gm_IsHomeType((unsigned char *)b) != 0)
+        return gm_Query((void *)b->objList, 1, 0, 0xfd);
+    if (*k == 4)
+        return gm_Query((void *)b->objList, 1, 0, 0x54);
+    o = (unsigned short *)gm_Query((void *)b->objList, 1, 4, 2);
+    while (o != 0 && *o == 0xfd)
+        o = gm_QueryNext();
+    return o;
 }
 /* 0x501d80, the class of a building kind (the type byte of the kind record): 3 for 1 / 3 / 6 / 0xf, 6 for 2 / 0x1e, 8 for 4 / 5 / 9, 4 for 7, 1 for 8 / 0xe / 0x12 / 0x14 .. 0x16 / 0x1d / 0x1f / 0x20, 2 for 0xb .. 0xd, 7 for 0x13, 5 for 0x17 .. 0x1a, 9 for 0x21, else 0 */
 

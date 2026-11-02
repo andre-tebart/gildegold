@@ -4265,7 +4265,7 @@ void he_Unk54a6f0(int ev)
 }
 
 int gm_GetGoodsValue();
-void gm_GetGebaeudeHauptraum(unsigned char *b);
+void *gm_GetGebaeudeHauptraum(unsigned char *b);
 
 /* 0x54a7b0, a Ghidra miss (disassembled; 1648 B): the run handler of the raid of a gang ("Taschendieb": the six figures +0x8c .. are the gang, +0xd2 the one handled next, +0xd4 its leader, +0xac .. the buildings they are sent to, +0x10 the home building, +0xc4 the start clock, +0xd8 the number of steals left): state 0 sends the figure that is idle (+0x128 of its job record 0) to a random building of the kinds 5 / 7 / 0x16 / 0xf / 0xa (0x501190, 0x4c52e0 with 0x626b6c) after a theft from a random figure of 0x300 (a roll of 0x7e against the strength difference: the news 0x19f3, else the loot 0x4c4830 and the news 0x19f2); state 1 (also entered when the leader is gone or after 0x1e0 time units) collects the gang (0x4c52e0), pays the sum rolled from their abilities (0x5085f0 * (1 + 0.xx * 0x5092e0)) to the leader, adds it to the building (+0x4d), and shows the news 0x19f4  (ROUGH) */
 void he_Unk54a7b0(int ev)
@@ -4305,7 +4305,7 @@ void he_Unk54a7b0(int ev)
     if (st == 1) {
         s = gm_BuildQuery(1, 1, *(int *)(ev + 0x10));
         if (s != 0 && ebp != 0) {
-            o = ((void *(*)(unsigned char *))gm_GetGebaeudeHauptraum)(s);
+            o = gm_GetGebaeudeHauptraum(s);
             for (i = 0; i < 6; i++) {
                 p = gm_FindChar(*(int *)(ev + 0x8c + i * 4));
                 if (p != 0) {
@@ -7399,7 +7399,7 @@ int ai_Unk4d3d10();
 int ai_Unk4d4050();
 int cm_PartyById();
 int cm_GetSlotValue(int h);
-void gm_GetGebaeudeHauptraum(unsigned char *b);
+void *gm_GetGebaeudeHauptraum(unsigned char *b);
 unsigned short *gm_QueryNext(void);
 int gm_BuildingSkill();
 
@@ -7430,7 +7430,7 @@ void he_Unk5461c0(int ev)
     case -1:
         if ((*(unsigned char *)(ev + 0x78) & 2) != 0) {
             t = gm_BuildQuery(1, 1, *(int *)(ev + 0xb0));
-            o = ((void *(*)(unsigned char *))gm_GetGebaeudeHauptraum)(t);
+            o = gm_GetGebaeudeHauptraum(t);
             for (i = 0; i < 8; i++) {
                 g = *(int *)(ev + 0x8c + i * 4);
                 if (g != -1 && (p = gm_FindChar(g)) != 0) {
@@ -10617,7 +10617,7 @@ void he_Unk558550(int ev)
 
 void ai_Unk4c59f0(unsigned char a, int b, int c, unsigned char d, unsigned char e, unsigned char f, const char *s);
 int gm_Unk509400();
-void gm_GetGebaeudeHauptraum(unsigned char *b);
+void *gm_GetGebaeudeHauptraum(unsigned char *b);
 
 /* 0x5588c0, the allocation handler of the sabotage event (ROUGH): the saboteur +0xb0 (0x505df0; gone or with a job of the kind 0x16 at +0x17c: free) and the building +0x10 are looked up (+0xb4 optionally the target figure 0x4ffe90 (.., 2, 6, 1, id)); the start / due clocks are now, the saboteur is stored for the group (0x524260 (building, target, id, ev)), +0x60 = now, posted 0x1e later, +0xb8 = the due clock + 6 units, and the word +0xbc is set to 0x1d + (+0xbc - the minute word) when it is below 6 */
 void he_Unk5588c0(int ev)
@@ -11777,7 +11777,7 @@ float ai_Unk4ffa10();
 int gm_ListAmount();
 int gm_CharCurrency(char *c, char p);
 void cm_SendMoveGoods(int a, int b, unsigned char c, int d);
-void gm_GetGebaeudeHauptraum(unsigned char *b);
+void *gm_GetGebaeudeHauptraum(unsigned char *b);
 
 /* 0x55ee40, a Ghidra start: the chance of a figure to be seen at its place (ROUGH): for a figure with the flag 1 of +0x5a and objects (+0x61 / the target's +0x170 +0x61) the 3D distance of the two objects scales a factor against 0x5eb780 (1.0), 0x5edbb8 and the building value (0x5092e0 (.., 9, 1)); a nearby contact (0x4ffe90 (.., 1, 0, 0x120)) with an object returns 1, else 0 */
 int he_Unk55ee40(int p)
@@ -12829,7 +12829,7 @@ void he_Unk566830(int ev)
     case -1:
         b = gm_BuildQuery(1, 1, *(int *)(ev + 0xb0));
         if (b != 0)
-            lead = ((void *(*)(unsigned char *))gm_GetGebaeudeHauptraum)(b);
+            lead = gm_GetGebaeudeHauptraum(b);
         for (i = 0, slot = (int *)(ev + 0x8c); i < 8; i++, slot++) {
             if (*slot == -1)
                 continue;
@@ -12960,7 +12960,7 @@ void he_Unk566830(int ev)
             he_FreeEvent((int *)ev);
             return;
         }
-        lead = ((void *(*)(unsigned char *))gm_GetGebaeudeHauptraum)(b);
+        lead = gm_GetGebaeudeHauptraum(b);
         for (i = 0, slot = (int *)(ev + 0x8c); i < 8; i++, slot++) {
             if (*slot != -1) {
                 cm_SendChrStop(*slot);
@@ -13228,7 +13228,7 @@ void he_Unk567d60(int ev)
         if ((unsigned short)util_Random(4) != 0 && pick != U_I((unsigned)&ai_MarketBuilding)) {
             r = gm_BuildingMainObject(pick);
             if (r == 0)
-                r = ((void *(*)(unsigned char *))gm_GetGebaeudeHauptraum)(pick);
+                r = gm_GetGebaeudeHauptraum(pick);
             if (r != 0)
                 sv_SelectPanelObjectK(pick, *(int *)(r + 2), (unsigned)&ch_EmptyName);
             else
@@ -16863,7 +16863,7 @@ release:
         goto released;
     grp = gm_Query(HM_I(bld, 0x5d), 1, 1, HM_I(ev, 0xb4));
     if (grp == 0) {
-        grp = ((void *(*)(unsigned char *))gm_GetGebaeudeHauptraum)(bld);
+        grp = gm_GetGebaeudeHauptraum(bld);
         if (grp == 0)
             goto released;
     }
@@ -18193,7 +18193,7 @@ void he_Unk5746b0(int ev)
     he_ShowNews(HM_I(per, 4), -1, text2, 0, 0x5ff, 0);
 }
 
-void gm_GetGebaeudeHauptraum(unsigned char *b); /* 0x501ce0 */
+void *gm_GetGebaeudeHauptraum(unsigned char *b); /* 0x501ce0 */
 void sv_MoveToGroup(unsigned char *o, short *it, int c, char *g); /* 0x524260, the group register */
 void cm_SendChrStop(int a); /* 0x4c5230 */
 int cm_SendChrGotoBuilding();                 /* 0x4c52e0 */
@@ -18234,7 +18234,7 @@ void he_Unk5748d0(int ev)
         } else {
             bld = 0;
             gm_FindById(&bld, 0, 0, HM_I(ev, 0x10));
-            if (bld != 0 && ((void *(*)(unsigned char *))gm_GetGebaeudeHauptraum)(bld) != 0) {
+            if (bld != 0 && gm_GetGebaeudeHauptraum(bld) != 0) {
                 sv_MoveToGroup(pers[0], bld, 0x1f, ev);
                 ((void (*)(int, int))cm_SendChrStop)(HM_I(pers[0], 4), HM_I(ev, 0xb4));
                 cm_SendChrGotoBuilding(HM_I(pers[0], 4), pers[1], 0, 0, 0, (char *)(unsigned)&full_data_629070);
