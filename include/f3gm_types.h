@@ -54,7 +54,7 @@ typedef struct GMSTOCK {
     unsigned short item;                /* 0x00, the goods prototype (an ai_Goods index) */
     char pad02[2];
     int amount;                         /* 0x04, the amount the player holds */
-    char pad08[4];
+    float rate;                         /* 0x08, the demand per unit of the rating (player 0) or of the block's demand index (gm_GoodsDemand) */
     int v00c;                           /* 0x0c, copied from the template (gm_InitPlayerRecord); 0, 40, 80 or -1 there */
     int daily[4];                       /* 0x10, four counters gm_UpdatePrices clears every day */
     float demand;                       /* 0x20, the amount the market wants (gm_GoodsDemand) */
