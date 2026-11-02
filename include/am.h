@@ -666,7 +666,8 @@ int ai_Unk494d90(AIC4 *a, AIC4 *b, int *out);                   /* 0x494d90 */
 #pragma pack(push, 1)
 typedef struct G5CH {                   /* a character, 0x21c bytes (ai_Chars[768] at 0x770b80) */
     unsigned short id;                  /* 0x000 */
-    char pad002[2];
+    unsigned char kind;                 /* 0x002, (AIPER.kind) */
+    char pad003;
     unsigned int netId;                /* 0x004 */
     char pad008;
     unsigned char sex;                  /* 0x009, 0 male / 1 female */
@@ -691,11 +692,15 @@ typedef struct G5CH {                   /* a character, 0x21c bytes (ai_Chars[76
     unsigned char officeKind;           /* 0x166, the kind of the office held, 0 = none */
     char pad167;
     unsigned char appliedOffice;        /* 0x168, the office kind applied for, 0 = none (ai.h AICHAR) */
-    char pad169[0xf];
+    char pad169[0x7];
+    AIBLDX *bld2;                       /* 0x170, its house (AIPER.bld2) */
+    char pad174[4];
     int inventory;                      /* 0x178, the goods inventory (AICHAR.inventory, a G8 object list) */
     char pad17c[0x18];
     int money;                          /* 0x194, (AIPER.money) */
-    char pad198[0x78];
+    char pad198[0x50];
+    unsigned int flags1e8;              /* 0x1e8, (AIPER.flags1e8) */
+    char pad1ec[0x24];
     int partner;                        /* 0x210 */
     char pad214[4];
     unsigned char mask;                 /* 0x218, the action groups it may use */
@@ -886,7 +891,7 @@ int ai_Unk49cb60(G5CH *p, AIARG *s1, AIARG *s2);                                
 int ai_Unk49cd30(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49cd30 */
 int ai_Unk49cdb0(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49cdb0 */
 int ai_Unk49cdd0(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2); /* 0x49cdd0 */
-int ai_Unk49ce50(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49ce50 */
+int ai_DecideThreaten(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49ce50 */
 int ai_Unk49d030(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49d030 */
 int ai_Unk49d050(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2); /* 0x49d050 */
 int ai_Unk49d0f0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49d0f0 */

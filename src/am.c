@@ -7152,22 +7152,31 @@ int ai_Unk49cdd0(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2
         return ai_EvalGuiltWeights(a, b, i, (AIPER *)p, &d);
     return ai_EvalMoodWeights(a, b, i, (AIPER *)p, f, o1, o2);
 }
-/* 0x49ce50, decide callback 0x28: get a house (kind 5) or the good 0x15 for it, else what 0x4aa6a0 finds,
-   if the other character (0x504e20) is willing */
+/* 0x49ce50, decide callback 0x28 "Drohen": first a house (sub-action kind 5) or the good 0x15 for it,
+   else threaten a little-known character (ai_DecideLittleKnownChar): directly when random + gm_Mix >= 1,
+   else through the sub-action (kind 4, ref 3) first
+   @deep read whole against the original: the conditions, the three sub-action paths, the little-known path
+   and the return blocks all match the original's block layout now (house/flag/query/find order, the shared
+   return-0 epilogue, the 0x28 block last). Left: the three ai_ChooseSubAction calls are cross-jumped
+   differently: the original's A path pushes 1 and then stores s2 = {0,0,0} before jumping to the shared
+   'push 0x28; call' (+0x179), B jumps to 'xor edx,edx; mov dx,[esi]; push edx' (+0x173); ours merges A's
+   s2 stores with the sub-action path's ('- xor eax,eax / mov [esp+0x38],ebx / mov ax,[esi] / mov
+   [esp+0x34],ebx / push eax / mov byte [esp+0x34],bl' vs '+ mov byte [esp+0x2c],bl / mov [esp+0x30],ebx /
+   mov [esp+0x34],ebx / ... push edx') and B pushes p->id itself: store scheduling deciding the tail merge
+   (tried store orders in A, no change). 144 vs 147 instructions. */
 
-int ai_Unk49ce50(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
+int ai_DecideThreaten(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 {
-    unsigned char *h;
     AIARG s1;
     AIARG s2;
     float g;
     int r;
+    unsigned char kind;
 
-    if (f != 0)
-        return 0;
-    h = *(unsigned char **)((char *)p + 0x170);
-    if (h == 0) {
-        if (((unsigned char *)p)[2] != 3) {
+    if (f == 0) {
+        kind = p->kind;
+        if (p->bld2 == 0 && kind != 3) {
+            /* no house: get one first */
             s1.arg = 1;
             s1.kind = 5;
             s1.ref = 4;
@@ -7175,50 +7184,52 @@ int ai_Unk49ce50(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             s2.ref = 0;
             s2.arg = 0;
             r = ai_ChooseSubAction(0x28, p->id, 1, &s1, &s2);
-            goto done;
+        } else {
+            if (kind == 3) {
+                /* kind 3 threatens only with flag 4 */
+                if (!(p->flags1e8 & 4))
+                    return 0;
+            } else if (gm_Query(p->bld2->objList, 2, 6, 0, 0x15) == 0) {
+                /* a house without the good 0x15: buy it for the house */
+                s1.kind = 2;
+                s1.ref = 0x15;
+                s1.arg = 1;
+                s1.fvalue = 0.44f;
+                s2.kind = 4;
+                s2.ref = p->bld2->id;
+                s2.arg = 1;
+                r = ai_ChooseSubAction(0x28, p->id, 1, &s1, &s2);
+                goto done;
+            }
+            /* threaten a little-known character, unless it is willing enough */
+            memset(&s1, 0, sizeof(s1));
+            memset(&s2, 0, sizeof(s2));
+            if (ai_DecideLittleKnownChar(p, &s1, &s2) == 0)
+                return 0;
+            g = gm_Mix((AIPER *)p, (AIPER *)&ai_CharsT[s2.arg2], 4);
+            if (!(util_RandomF() + g >= 1.0f)) {
+                s1.kind = 4;
+                s1.ref = 3;
+                s1.arg = 1;
+                s1.fvalue = 0.0f;
+                s2.kind = 0;
+                s2.ref = 0;
+                s2.arg = 0;
+                r = ai_ChooseSubAction(0x28, p->id, 0, &s1, &s2);
+            } else {
+                *o1 = s1;
+                *o2 = s2;
+                return 0x28;
+            }
         }
-    } else if (((unsigned char *)p)[2] != 3) {
-        if (gm_Query(*(int *)(h + 0x5d), 2, 6, 0, 0x15) == 0) {
-            s1.kind = 2;
-            s1.ref = 0x15;
-            s1.arg = 1;
-            s1.fvalue = 0.44f;
-            s2.kind = 4;
-            s2.ref = *(int *)(h + 1);
-            s2.arg = 1;
-            r = ai_ChooseSubAction(0x28, p->id, 1, &s1, &s2);
-            goto done;
-        }
-        goto find;
-    }
-    if (!(((unsigned char *)p)[0x1e8] & 4))
-        return 0;
-find:
-    memset(&s1, 0, sizeof(s1));
-    memset(&s2, 0, sizeof(s2));
-    if (ai_DecideLittleKnownChar(p, &s1, &s2) == 0)
-        return 0;
-    g = gm_Mix((AIPER *)p, (AIPER *)&ai_CharsT[s2.arg2], 4);
-    if (util_RandomF() + g < 1.0f) {
-        s1.kind = 4;
-        s1.ref = 3;
-        s1.arg = 1;
-        s1.fvalue = 0.0f;
-        s2.kind = 0;
-        s2.ref = 0;
-        s2.arg = 0;
-        r = ai_ChooseSubAction(0x28, p->id, 0, &s1, &s2);
-        goto done;
-    }
-    *o1 = s1;
-    *o2 = s2;
-    return 0x28;
 done:
-    if (r == 0)
-        return r;
-    *o1 = s1;
-    *o2 = s2;
-    return r;
+        if (r != 0) {
+            *o1 = s1;
+            *o2 = s2;
+            return r;
+        }
+    }
+    return 0;
 }
 /* 0x49d030, execute callback 0x28 */
 
@@ -9727,7 +9738,7 @@ int ai_RegisterBaseActions(int a)
     act.id = 0x28;
     strcpy(act.name, "Drohen");
     act.eval = ai_Unk49cdd0;
-    act.decide = ai_Unk49ce50;
+    act.decide = ai_DecideThreaten;
     act.exec = ai_Unk49d030;
     act.flags = 0x5d;
     if (!am_RegisterMethod(&act, a))

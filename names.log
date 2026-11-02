@@ -800,3 +800,4 @@
 2026-11-02T07:36:37 0x0049c3e0 func ai_Unk49c3e0 -> ai_ExecuteUseTrank by:main why:execute callback of action 0x24 registered as "Use Trank" (0x4a16f0)
 2026-11-02T07:38:30 0x0049c570 data ai_Unk49c570 -> ai_DecideSpy by:main why:decide callback of action 0x25 registered as "Spionage" (0x4a16f0)
 2026-11-02T07:40:07 0x0049c8e0 func ai_Unk49c8e0 -> ai_DecideBuyIndulgence by:main why:decide callback of action 0x26 registered as "Ablass Kaufen" (0x4a16f0); reads gv_CulpritGuilt
+2026-11-02T07:46:18 0x0049ce50 func ai_Unk49ce50 -> ai_DecideThreaten by:main why:decide callback of action 0x28 registered as "Drohen" (0x4a16f0)
