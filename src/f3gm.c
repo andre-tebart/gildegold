@@ -6445,7 +6445,7 @@ float gm_AddHealth(unsigned id, int d);                   /* 0x4fca40 */
 void gm_ClockToDate(struct GCLOCK *c, unsigned char *out);                     /* 0x4fe2c0 */
 
 int ai_InventoryHas(void *ch, int id);                     /* 0x5ba6b0 */
-int he_Unk56f3b0();                     /* 0x56f3b0 */
+int he_NoEvent9bFor();                     /* 0x56f3b0 */
 
 /* 0x504ec0, the skill value (0 .. 1) of the character c for the skill number 0 .. 4 (-1 when there is none): the base byte (+0x80 + skill) / 252, plus the bonuses of the character's items (the group (2, 2) records 0x53e400: float +0xb0 when the first skill byte (+0xac) is the skill, +0xb4 for the second (+0xad); halved when 0x5ba6b0 (c, 0x2c4) is 1), plus 0x5ba6b0 (c, 0x15a) / 6 for the skill 3, minus a penalty from the bit fields of the word +0x2c (a jump table over the skills: fields at bits 4 / 8 / 12 / 17 / 20 / 25 times 0.0333 / 0.0555 / 0.1667), plus 0.5 when the skill's flag (+0x1cd: bit 2 / 3 / 4 for the skills 2 / 3 / 4) is set; clamped to 0 .. 1 and scaled by 0.5 (0.75) when the character is no ruler (0x56f3b0) and 0x5ba6b0 (c, 0x2c4) is 0 (else). ROUGH */
 float gm_GetSkill(char *c, int skill)
@@ -6506,7 +6506,7 @@ after:
             s = 0.0f;
     } else
         s = 1.0f;
-    if (he_Unk56f3b0(c) == 0) {
+    if (he_NoEvent9bFor(c) == 0) {
         v = ai_InventoryHas(c, 0x2c4);
         if (v == 0)
             return s * 0.5f;

@@ -6875,117 +6875,120 @@ void ai_CabinetSpyByMoney(AIBLD *rec)
     sv_CameraFollow();
 }
 
-int he_Unk56f3b0(); void txt_Format(char *out, int id0, ...); int sv_MessageBox();
+int he_NoEvent9bFor(); void txt_Format(char *out, int id0, ...); int sv_MessageBox();
 
-/* 0x581db0, the cabinet spy window (1047 B, ROUGH: the amount is one float -> int conversion (0x5de518) whose
-   argument Ghidra lost): arg 1 = the record; the target picked by 0x5c1130 (the 0x50-byte query, 0x144a270);
-   0x56f3b0 (target) 0 -> the text 0x4030 through 0x5176d0 (the target's word) and 0x521150 (text, 0); else the
-   skill points 0x50a640 (0x6f25b8) + 0x50a640 (the target's word) and the amount; the window
-   "Locations_Domizil_kabinett" (0x62a418) with 0x476f80 / 0x475600, the sound 0x52ea30, the texts 0x602568 /
-   0x402e / 0x402b (the amount, the target's word) and the entries 0x402f / +1 in 0x475b80 (window, 2, text); the
-   pump loop 0x5309a0 (this handler, 0x677c7): the escape 0x14673a0 -> 0x6f22a0 = 1; the first entry: 0x521040
-   (the character 0x770b80 + 0x6f25b8 * 0x21c, the amount, 0x6f1bc5), 0x520f90 (the character, 0x10) == 1,
-   0x580fe0 (rec) -> 0x506430 (the character) +0x28 += the amount, 0x4c4830 (-1, the character, 0x6f1bc5, the
-   amount), 0x4c5f60 (the character, -0x10), the message (type 0x99, 2 at +0x36, -1 at +0x64, 4 at +0x68, 0 at
-   +0x6c, the target's word at +0x60, the time, the value at +0x58) and 0x4c2760 (-7, 0, "KOMMENTARE", -1) then
-   0x6f22a0 = 1; the second entry -> 0x6f22a0 = 1; the pump 0 -> 0x4758f0 (window), 0x52d7a0 () */
-void ai_Unk581db0(char *rec)
+/* 0x581db0, the cabinet's window on a character for the building rec, message kind 4 (the name is a reasoned guess:
+   the form "Locations\Domizil\kabinett" without the slider of the kabinett_spy windows): the target is picked in
+   the amount menu (AMOUNTCFG flags 1, mode 0x400, kind 6, no ids left out; title txt 0x402c); a target he_NoEvent9bFor
+   refuses gets the message box of the text 0x4030 (the target) and return, none -> return. The price is 2% of
+   the worth of the player and the target together (gm_GetWorth) plus 0x10 in money; the texts 0x402e / 0x402b
+   (the price, the target) and the two buttons from the text 0x402f on (pay / leave). Pay: when the player has both
+   (sv_CheckGoodAmountB, sv_CheckMoney 0x10) and the building may be spied on (ai_CanSpyOn), the price is added to
+   the player record's spyPaid and moved away (cm_SendMoveGoodsUnchecked), 0x10 taken off (gm_SendMoneyDelta), the
+   message 0x99 goes to the building's owner (flags 2, the game time, the target's netId, 4, the target's own
+   building / building, else ai_PickActionBuilding's pick), its slot is waited for, the voice "KOMMENTARE" plays
+   (variation -1) and the window leaves; the right button or the second button leaves too
+   @deep Rewritten from the whole original 0x581db0..0x5821c7 (AMOUNTCFG, AICHAR target, the
+   he_NoEvent9bFor refusal with txt_Format 0x4030 into a 0x400 text buffer, the price (worth + target's
+   worth) * 0.02 plus 0x10 money, AIMSG kind 4, LARGE_INTEGER mask, the block-scoped pick that shares its
+   slot with the spilled slot handle as in the original's frame 0x558); 290 vs 290 instructions, frame
+   equal, no branch-target difference. Left: the scheduling of the message stores after the memset: the
+   original hoists p->netId (mov edx,[esi+4]) and the time words before the type / flags stores and places
+   add esp,0x18 earlier (0x582049, 22 ins), and loads bld2 before zeroing ecx for arg[5] (0x5820af).
+   Sixteen orders of the ten stores tried (the best kept: arg[5] last, 22 ins). */
+void ai_CabinetIntrigueWindow(AIBLD *rec)
 {
-    char msg[0xf8];
-    char q[0x50];
-    char *p;
+    AIMSG msg;
+    AMOUNTCFG q;
+    char text[0x400];
+    AICHAR *p;
+    int worth;
+    int price;
     int win;
-    int b1;
-    int b2;
-    int total;
-    int amount;
-    int i;
-    int r;
-    int lv;
+    int btnPay;
+    int btnLeave;
+    int k;
+    int id;
+    LARGE_INTEGER mask;
 
-    total = gm_GetWorth(U_I((unsigned)&ai_PlayerId));
-    memset(q, 0, 0x50);
-    *(int *)(q + 0x00) = 1;
-    *(int *)(q + 0x04) = 0x400;
-    *(int *)(q + 0x10) = 6;
-    p = (char *)ai_AmountMenu(q, (char *)U_I((unsigned)&full_data_144a270), 0, 0);
-    if (!he_Unk56f3b0(p)) {
-        txt_Format(msg, (char *)0x4030, *(unsigned short *)p);
-        sv_MessageBox(msg, 0);
+    worth = gm_GetWorth(ai_PlayerId);
+    memset(&q, 0, sizeof(q));
+    memset(q.ids, 0xff, sizeof(q.ids));
+    q.flags = 1;
+    q.mode = 0x400;
+    q.kind = 6;
+    p = (AICHAR *)ai_AmountMenu(&q, txt_Ptrs[0x402c], 0, 0);
+    if (!he_NoEvent9bFor(p)) {
+        txt_Format(text, 0x4030, p->id);
+        sv_MessageBox(text, 0);
         return;
     }
     if (!p)
         return;
-    total += gm_GetWorth(*(unsigned short *)p);
-    amount = 0;   /* ROUGH: the 0x5de518 conversion's argument is lost */
-    win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62a418);
+    price = (int)((worth + gm_GetWorth(p->id)) * 0.02f);
+    win = d2_OpenForm(0, 0, "Locations\\Domizil\\kabinett");
     d2_SetPointerSprite(0, 0);
     d2_CentreViewWindows(win);
     d2_SetForm(win, 0);
-    sv_FitForm(U_I((unsigned)&d2_LastWindow));
+    sv_FitForm(d2_LastWindow);
     d2_SetForm(win, 1);
-    io_PrintText((char *)(unsigned)"$C");
-    io_PrintText(0x402e, 0x402b, amount, *(unsigned short *)p);
+    io_PrintText("$C");
+    io_PrintText((char *)0x402e, 0x402b, price, p->id);
     d2_SetForm(win, 2);
-    i = io_PrintText(0x402f);
-    b1 = d2_GetWinObj(win, 2, i);
-    b2 = d2_GetWinObj(win, 2, i + 1);
-    U_I((unsigned)&d2_ClickedId) = -1;
-    for (;;) {
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0) {
-            U_I((unsigned)&sv_PopRequest) = 1;
-        } else if (U_I((unsigned)&d2_ClickedId) != -1) {
-            if (U_I((unsigned)&d2_PointerObj) == b1) {
-                if (sv_CheckGoodAmount((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, amount, *(unsigned char *)(unsigned)&ai_OwnPlayer) != 0 &&
-                    sv_CheckMoney((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, 0x10) == 1 &&
-                    ai_CanSpyOn(rec) != 0) {
-                    r = gm_PlayerRecord((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c);
-                    if (r != 0)
-                        *(int *)(r + 0x28) += amount;
-                    cm_SendMoveGoodsUnchecked(-1, *(int *)((unsigned)&ai_CharInts + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c), *(unsigned char *)(unsigned)&ai_OwnPlayer, amount);
-                    cm_SendMoneyDelta(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c), -0x10);
-                    memset(msg, 0, 0xf8);
-                    *(unsigned char *)(msg + 0x04) = 0x99;
-                    *(unsigned char *)(msg + 0x36) = 2;
-                    *(int *)(msg + 0x64) = -1;
-                    *(int *)(msg + 0x68) = 4;
-                    *(int *)(msg + 0x6c) = 0;
-                    *(int *)(msg + 0x08) = *(int *)((unsigned)&ai_CharInts + *(unsigned short *)(rec + 0x27) * 0x21c);
-                    *(int *)(msg + 0x0c) = U_I(rec + 1);
-                    *(int *)(msg + 0x28) = U_I((unsigned)&ai_Time);
-                    *(int *)(msg + 0x2c) = U_I((unsigned)&ai_TimeHour);
-                    *(int *)(msg + 0x30) = U_I(((unsigned)&ai_Time + 0x8));
-                    *(unsigned short *)(msg + 0x34) = *(unsigned short *)((unsigned)&ai_Time + 0xc);
-                    *(int *)(msg + 0x60) = *(int *)(p + 4);
-                    *(int *)(msg + 0x5c) = U_I(rec + 1);
-                    lv = -1;
-                    if (*(int *)(p + 0x170) == 0) {
-                        if (*(int *)(p + 0x16c) == 0)
-                            AI_4A63F0_7((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, 0, (char *)0x7b4c4a0, 0, 0, 100.0f, &lv);
-                        else
-                            lv = *(int *)(*(int *)(p + 0x16c) + 1);
-                    } else {
-                        lv = *(int *)(*(int *)(p + 0x170) + 1);
+    k = io_PrintText((char *)0x402f);
+    btnPay = d2_GetWinObj(win, 2, k);
+    btnLeave = d2_GetWinObj(win, 2, k + 1);
+    d2_ClickedId = -1;
+    do {
+        if (dm_L.rup != 0) {
+            sv_PopRequest = 1;
+        } else if (d2_ClickedId != -1) {
+            if (d2_PointerObj == btnPay) {
+                if (sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], price, ai_OwnPlayer) != 0 &&
+                    sv_CheckMoney(ai_Chars[ai_PlayerId], 0x10) == 1 && ai_CanSpyOn((char *)rec) != 0) {
+                    AIFIN *fin = (AIFIN *)gm_PlayerRecord(ai_Chars[ai_PlayerId]);
+
+                    if (fin != 0)
+                        fin->spyPaid += price;
+                    cm_SendMoveGoodsUnchecked(-1, ((AICHAR *)ai_Chars[ai_PlayerId])->netId, ai_OwnPlayer, price);
+                    gm_SendMoneyDelta(((AICHAR *)ai_Chars[ai_PlayerId])->netId, -0x10);
+                    memset(&msg, 0, sizeof(msg));
+                    msg.type = 0x99;
+                    msg.flags = 2;
+                    msg.arg[3] = -1;
+                    msg.arg[4] = 4;
+                    msg.to = ((AICHAR *)ai_Chars[rec->owner])->netId;
+                    msg.fromId = rec->id;
+                    msg.time = ai_TimeT;
+                    msg.arg[2] = p->netId;
+                    msg.arg[1] = rec->id;
+                    msg.arg[5] = 0;
+                    if (p->bld2 != 0)
+                        msg.arg[0] = p->bld2->id;
+                    else if (p->bld != 0)
+                        msg.arg[0] = p->bld->id;
+                    else {
+                        int pick;
+
+                        mask.LowPart = 0x7b4c4a0;
+                        mask.HighPart = 0;
+                        pick = -1;
+                        ai_PickActionBuilding((struct AIPER *)ai_Chars[ai_PlayerId], 0, mask.QuadPart, 0, 100.0f, &pick);
+                        msg.arg[0] = pick;
                     }
-                    *(int *)(msg + 0x58) = lv;
-                    i = cm_SendLongMessage(msg);
-                    if (i != -1) {
-                        while (cm_GetSlotState(i) == 0)
-                            sv_RunFrame(0, 0x20007);
-                    }
-                    snd_PlayVoice(-7, 0, (char *)(unsigned)&full_data_62a3ec, -1);
-                    U_I((unsigned)&sv_PopRequest) = 1;
+                    id = cm_SendLongMessage((char *)&msg);
+                    while (id != -1 && cm_GetSlotState(id) == 0)
+                        sv_RunFrame(0, 0x20007);
+                    snd_PlayVoice(-7, 0, "KOMMENTARE", -1);
+                    sv_PopRequest = 1;
                 }
-            } else if (U_I((unsigned)&d2_PointerObj) == b2) {
-                U_I((unsigned)&sv_PopRequest) = 1;
+            } else if (d2_PointerObj == btnLeave) {
+                sv_PopRequest = 1;
             }
         }
-        if (sv_RunFrame(ai_Unk581db0, 0x677c7) == 0) {
-            d2_CloseView(win);
-            sv_CameraFollow();
-            return;
-        }
-    }
+    } while (sv_RunFrame(ai_CabinetIntrigueWindow, 0x677c7) != 0);
+    d2_CloseView(win);
+    sv_CameraFollow();
 }
 
 void sv_ReleaseNamePlates(void); int sv_RegisterNamePlate(); int ai_OpenTransport(); int ai_StorageWindow();
@@ -7183,7 +7186,7 @@ void ai_Unk582600(char *rec, char *list)
                 else if (U_I((unsigned)&ai_ClickedObject) == c2)
                     ai_CabinetSpyWindow(rec);
                 else if (U_I((unsigned)&ai_ClickedObject) == c3)
-                    ai_Unk581db0(rec);
+                    ai_CabinetIntrigueWindow(rec);
                 else if (U_I((unsigned)&ai_ClickedObject) == c4)
                     ai_CabinetSpyOnCharacter(rec);
             } else {

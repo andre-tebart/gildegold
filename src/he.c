@@ -15437,7 +15437,7 @@ int he_Unk56f260();                 /* 0x56f260 */
 int gv_GetTableRecord(int i, int *out);                 /* 0x4f2720 (the record of a meeting slot) */
 int he_Unk56f2e0();                 /* 0x56f2e0 */
 int he_Unk56f360();                 /* 0x56f360 */
-int he_Unk56f3b0();                 /* 0x56f3b0 */
+int he_NoEvent9bFor();                 /* 0x56f3b0 */
 int he_Unk56f3f0();                 /* 0x56f3f0 */
 int he_Unk56f3f0();                 /* 0x56f3f0 */
 int he_Unk56f600();                 /* 0x56f600 */
@@ -15790,7 +15790,7 @@ int he_Unk56f360(int a, int b)
 }
 /* 0x56f3b0, 1 when no running event of the type 0x9b has +0xac == the dword at a + 4; 0 when one does */
 
-int he_Unk56f3b0(int a)
+int he_NoEvent9bFor(int a)
 {
     int r;
 
@@ -15809,7 +15809,7 @@ int he_Unk56f3f0(int a, unsigned short *b)
     int bld, p;
     float f1, f2, f3;
 
-    if (he_Unk56f3b0((int)b) != 0) {
+    if (he_NoEvent9bFor((int)b) != 0) {
         bld = gm_BuildQuery(1, 1, a);
         if (bld != 0) {
             p = *(unsigned short *)(bld + 0x27);
