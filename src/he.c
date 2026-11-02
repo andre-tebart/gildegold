@@ -16309,7 +16309,7 @@ void he_Unk5706e0(int ev)
 }
 
 int ai_Unk4a5d30(struct AIPER *p, unsigned int fl, int n, unsigned short *ids, float lo, float hi, unsigned short *id); /* 0x4a5d30 */
-int unk_Unk4f24a0();                 /* 0x4f24a0 */
+int gv_ProtectionPrice();                 /* 0x4f24a0 */
 int gm_GetWorth(unsigned short id);                 /* 0x50a640 */
 int gm_ConvertMoney(int a, unsigned char k); /* 0x5085b0 */
 void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d); /* 0x4c4830 */
@@ -16368,7 +16368,7 @@ void he_Unk5707a0(int ev)
             return;
         }
         id = idx;
-        best = unk_Unk4f24a0((unsigned)&ai_Chars + id * 0x21c);
+        best = gv_ProtectionPrice((unsigned)&ai_Chars + id * 0x21c);
         n = ((int (*)(int))gm_ConvertMoney)(gm_GetWorth(id));
         *(unsigned short *)(ev + 0xc8 + HM_I(ev, 0xb0) * 2) = idx;
         if (n > best) {
@@ -16505,7 +16505,7 @@ void he_Unk570cc0(int ev)
 }
 
 int ai_Unk4a5d30(struct AIPER *p, unsigned int fl, int n, unsigned short *ids, float lo, float hi, unsigned short *id); /* 0x4a5d30 */
-int unk_Unk4f24a0();                 /* 0x4f24a0 */
+int gv_ProtectionPrice();                 /* 0x4f24a0 */
 int gm_GetWorth(unsigned short id);                 /* 0x50a640 */
 int gm_ConvertMoney(int a, unsigned char k); /* 0x5085b0 */
 void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d); /* 0x4c4830 */

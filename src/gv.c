@@ -2733,18 +2733,16 @@ int unk_Unk4f2440(unsigned short *c, int k1, int k2, int *out)
     *out = (int)(d * gv_SaleShares[k2]);
     return d;
 }
-/* 0x4f24a0, calls 0x5085f0 with 0.1 * x / (log10(x) + 1) where x = 0x5085b0 (0x50a640 of the character id) clamped to 10000 .. 100000. ROUGH */
+/* 0x4f24a0, the price the plunder event 0x8a (he.c 0x5707a0) demands from the character c (its id): its worth in the player's
+   money (gm_GetWorth, gm_ConvertMoney) clamped to 10000 .. 100000, x / (log10 x + 1) * 0.1, in the player's terms
+   (gm_PlayerFactor) */
 
-int unk_Unk4f24a0(unsigned short *c)
+int gv_ProtectionPrice(unsigned short *c)
 {
     double x;
 
     x = (double)gm_ConvertMoney(gm_GetWorth(*c), ai_OwnPlayer);
-    if (x <= 100000.0) {
-        if (x <= 10000.0)
-            x = 10000.0;
-    } else
-        x = 100000.0;
+    x = max(min(100000.0, x), 10000.0);
     return gm_PlayerFactor((int)(x / (log10(x) + 1.0) * 0.1f), ai_OwnPlayer);
 }
 /* 0x4f2540, finds the first graveyard (building kind 0x1d) of the 256 buildings whose list 0xff (0x4ef7c0) has an entry matching `a` by 0x4ef710; *o = the building, *e = the entry; 1 when found */

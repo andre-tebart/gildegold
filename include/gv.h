@@ -396,7 +396,7 @@ void gm_AddTime(struct GCLOCK *c, int hours, int mins, int secs);               
 typedef struct { char b[0x2d]; } UNKREC;      /* a 0x2d-byte record of 0x91f700, passed by value */
 int gv_CannonCost(char *o, int a, int b, int d, int *n, int *price);  /* 0x4ef090 */
 int unk_Unk4f2440(unsigned short *c, int k1, int k2, int *out);  /* 0x4f2440 */
-int unk_Unk4f24a0(unsigned short *c);  /* 0x4f24a0, returns gm_PlayerFactor's value (0x4f2532 ret after the 0x5085f0 call) */
+int gv_ProtectionPrice(unsigned short *c);  /* 0x4f24a0, returns gm_PlayerFactor's value (0x4f2532 ret after the 0x5085f0 call) */
 int unk_Unk4f30a0(char *out, UNKREC r, int mode);  /* 0x4f30a0 */
 int unk_Unk4f31d0(char *out, UNKREC r, int mode);  /* 0x4f31d0 */
 int unk_Unk4f3270(char *out, UNKREC r, int mode);  /* 0x4f3270 */
