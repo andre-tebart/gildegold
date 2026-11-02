@@ -4005,7 +4005,7 @@ exe	0x00578370	ai_TutorialStop	unk_575860	byte	draft
 exe	0x00578440	ai_TutorialFreeRuns	unk_575860	byte	draft		
 exe	0x005784a0	ai_TutorialInitMainIntro	unk_575860	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	unk_575860	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	shape	readable		byte+readable -> shape+readable at b35c069: ai.h AIBTYPE gets the field v243 at 0x243 (split out of pad242[5]) for ai_OpenBuildingTooltip's text 0x29: a truer type with no code change of its own; ai_TutorialInitChapter2 never reads AIBTYPE, its fall is a pure eax/ecx swap of the constants 1 / 0x429 (a VC6 declaration-set tie-break, the same one the grave size tables flip), so the match was no evidence of its source [waits for: the unit's declaration set settling (its .rdata block 0x5eec60.. typed, the head conflicts settled)]
+exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	byte	readable		
 exe	0x00579570	ai_TutorialInitChapter3	unk_575860	draft	readable	deep	
 exe	0x0057aa80	ai_TutorialInitChapter4	unk_575860	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	unk_575860	byte	readable		
@@ -4097,16 +4097,16 @@ exe	0x00588310	ai_OpenItemTooltip	unk_575860	draft	readable	deep
 exe	0x00588950	ai_OpenUpgradeTooltip	unk_575860	shape	readable		
 exe	0x00588bb0	ai_OpenHelpTooltip	unk_575860	byte	readable		
 exe	0x00588c60	ai_OpenCharTooltip	unk_575860	byte	readable		
-exe	0x005890c0	ai_Unk5890c0	unk_575860	draft	draft		
-exe	0x00589400	ai_Unk589400	unk_575860	byte	draft		
+exe	0x005890c0	ai_CharInfoWindow	unk_575860	byte	readable		
+exe	0x00589400	ai_ClearBookmark	unk_575860	byte	readable		
 exe	0x00589410	ai_Unk589410	unk_575860	byte	draft		
-exe	0x00589450	ai_Unk589450	unk_575860	draft	draft		
-exe	0x005894d0	ai_Unk5894d0	unk_575860	draft	draft		
-exe	0x00589570	ai_Unk589570	unk_575860	draft	draft		
-exe	0x00589670	ai_Unk589670	unk_575860	draft	draft		
-exe	0x00589aa0	ai_SaveSlotTable	unk_575860	draft	draft		
-exe	0x00589b30	ai_Unk589b30	unk_575860	draft	draft		
-exe	0x00589bc0	ai_Unk589bc0	unk_575860	draft	draft		
+exe	0x00589450	ai_ValidateBookmarks	unk_575860	byte	readable		
+exe	0x005894d0	ai_SelectBookmark	unk_575860	byte	readable		
+exe	0x00589570	ai_SetBookmark	unk_575860	draft	readable	deep	
+exe	0x00589670	ai_BookmarkWindow	unk_575860	shape	readable		
+exe	0x00589aa0	ai_SaveBookmarks	unk_575860	byte	readable		
+exe	0x00589b30	ai_LoadBookmarks	unk_575860	byte	readable		
+exe	0x00589bc0	ai_SaveScreenshot	unk_575860	byte	readable		
 exe	0x00589c90	ai_SlotKeys	unk_575860	draft	draft		
 exe	0x00589cf0	ai_SpeedKeys	unk_575860	byte	draft		
 exe	0x00589e00	ai_Unk589e00	unk_575860	byte	draft		
