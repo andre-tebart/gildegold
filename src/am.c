@@ -4880,24 +4880,39 @@ int ai_ExecuteBuyBuilding(G5CH *p, AIARG *s1)
     }
     return 0;
 }
-/* 0x4984d0, decide callback: buy or upgrade a house (called directly by 0x498c70) */
+/* 0x4984d0, decide callback: buy or upgrade the character's house (a building of kind 2) when it owns a building
+   of the house-owner kinds (ai_BuildingTypeMasks[2..3]); short of money below a quarter of the price it decides
+   to take a credit instead (called directly by 0x498c70)
+   @deep read whole against the original and rewritten: the currency * 0.66 limit,
+   ai_BuildingTypeMasks[2..3] (0x5eed78) for the owned-building test, the unsigned id to he_FindEvent, the
+   0.3 factor on gm_BuildingKindValue for the upgrade, the h!=0 branch first, the < 0.25 compare forms
+   (test ah,5 / jp), the goto smaller into the type 4 try; ours 463 vs 470 instructions. Left: VC6 tail
+   merging of the take copies (*o1 = s1; *o2 = s2; return 0x11): the original keeps two copies (0x4987bf
+   for the level-up and type 6 paths, 0x498a4d at the end shared by type 4 / upgrade / buy) and cross-jumps
+   the level-up credit into the type 6 one (jmp 0x4986fe); ours merges differently (tried all inline, all
+   goto, mixed: 163..202 differing). Allocation: the loop keeps the building pointer in p's arg slot
+   [esp+0x5c] and i in [esp+0x10] (ours swapped), money in edi + [esp+0x5c] (ours a slot only, reloaded
+   into edx), the upgrade's house type in bl (ours spilled through [esp+0x10]), f reloaded into ecx (ours
+   held in edi). */
 
-int ai_Unk4984d0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
+int ai_DecideBuildResidence(int a, AIPER *p, int f, AIARG *o1, AIARG *o2)
 {
-    unsigned int up[5];
+    int i;
+    int levels[4];
     AIARG s1;
     AIARG s2;
-    unsigned char *b;
-    unsigned char *h;
-    unsigned int lo32, hi32;
+    AIBLD *b;
+    AIBLD *h;
+    AIBTYPE *bt;
+    unsigned int lo, hi;
     int money, cost, j;
     unsigned char t;
 
-    up[1] = 7;
-    up[2] = 6;
-    up[3] = 5;
-    up[4] = 4;
-    if (((unsigned char *)p)[2] == 3)
+    levels[0] = 7;
+    levels[1] = 6;
+    levels[2] = 5;
+    levels[3] = 4;
+    if (p->kind == 3)
         return 0;
     if (f == 0) {
         if (o1->kind != 0)
@@ -4905,138 +4920,149 @@ int ai_Unk4984d0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     } else if (f == 1 && o1->kind != 5 && o1->kind != 4) {
         return 0;
     }
-    if (he_FindEvent(2, 0, 0xd, 2, (int)(short)p->id) != 0)
+    if (he_FindEvent(2, 0, 0xd, 2, p->id) != 0)
         return 0;
-    b = (unsigned char *)ai_BldsT;
-    for (up[0] = 0; ; ) {
-        if (b[0] != 0) {
-            t = ((unsigned char *)ai_BTypesT)[b[0] * 0x24d];
-            lo32 = 0;
-            hi32 = 0;
-            if (t < 0x20)
-                lo32 = 1 << t;
+    b = ai_BldsT;
+    for (i = 0; i < 0x100; i++, b++) {
+        if (b->type != 0) {
+            lo = 0;
+            hi = 0;
+            bt = &ai_BTypesT[b->type];
+            if ((unsigned char)bt->kind > 0x1f)
+                hi = 1 << ((unsigned char)bt->kind - 0x20);
             else
-                hi32 = 1 << (t - 0x20);
-            if (*(short *)(b + 0x27) == (short)p->id && ((lo32 & 0xe07d43b0) != 0 || (hi32 & 1) != 0)) {
-                money = (int)G6_509EE0(p, ai_OwnPlayer);
-                s2.kind = 0;
-                s2.ref = 0;
-                s2.arg = 0;
-                if (o1->kind == 0) {
-                    h = *(unsigned char **)((char *)p + 0x170);
-                    if (h != 0 && ((unsigned char *)ai_BTypesT)[h[0] * 0x24d] == 2 && (h[0x5a] & 0x41) == 0) {
-                        t = ((unsigned char *)ai_BTypesT)[h[0] * 0x24d + 0x247];
-                        if (t < 2 || t == 3) {
-                            s1.kind = 5;
-                            j = 0;
-                            if (h[0] != 7) {
-                                do
-                                    j++;
-                                while (up[j + 1] != h[0]);
-                            }
-                            s1.ref = up[j];
-                            s1.arg = 1;
-                            s2.kind = 4;
-                            s2.ref = *(int *)(h + 1);
-                            s2.arg = 1;
-                            if (ai_CanBuildType(a, p, f, &s1, &s2, 0) == 0)
-                                return 0;
-                            cost = gm_BuildingKindCost(p, s1.ref);
-                            if (cost <= money)
-                                goto take;
-                            if ((float)(cost - money) / (float)cost >= 0.25f)
-                                return 0;
-                            o1->arg = cost - money;
-                            o1->kind = 0x12;
-                            return ai_DecideTakeCredit(0x11, p, f, o1, o2);
-                        }
-                        if (t == 5)
-                            return 0;
-                    }
-                    s1.kind = 5;
-                    s1.ref = 6;
-                    s1.arg = 1;
-                    if (ai_CanBuildType(a, p, f, &s1, &s2, 1) != 0) {
-                        cost = gm_BuildingKindCost(p, s1.ref);
-                        if (cost <= money)
-                            goto take;
-                        if ((float)(cost - money) / (float)cost < 0.25f) {
-                            o1->arg = cost - money;
-                            o1->kind = 0x12;
-                            return ai_DecideTakeCredit(0x11, p, f, o1, o2);
-                        }
-                    }
-                    s1.kind = 5;
-                    s1.ref = 4;
-                    s1.arg = 1;
-                    if (ai_CanBuildType(a, p, f, &s1, &s2, 1) == 0)
-                        return 0;
-                    cost = gm_BuildingKindCost(p, s1.ref);
-                    if (money < cost) {
-                        if ((float)(cost - money) / (float)cost >= 0.25f)
-                            return 0;
-                        o1->arg = cost - money;
-                        o1->kind = 0x12;
-                        return ai_DecideTakeCredit(0x11, p, f, o1, o2);
-                    }
-                } else {
-                    if (o1->kind != 5)
-                        return 0;
-                    h = *(unsigned char **)((char *)p + 0x170);
-                    s1 = *o1;
-                    if (h == 0) {
-                        if (((unsigned char *)ai_BTypesT)[o1->ref * 0x24d] != 2)
-                            return 0;
-                        if (ai_CanBuildType(a, p, f, &s1, &s2, 1) == 0)
-                            return 0;
-                        if (((unsigned char *)p)[2] != 5)
-                            return 0;
-                        cost = gm_BuildingKindCost(p, s1.ref);
-                        if (money < cost) {
-                            if ((float)(cost - money) / (float)cost >= 0.25f)
-                                return 0;
-                            o1->kind = 0x12;
-                            o1->arg = cost - money;
-                            return ai_DecideTakeCredit(0x11, p, f, o1, o2);
-                        }
-                    } else {
-                        t = h[0];
-                        if (((unsigned char *)ai_BTypesT)[t * 0x24d] != 2)
-                            return 0;
-                        s1.ref = o1->ref;
-                        if (s1.ref - t != 1)
-                            return 0;
-                        if (t == 5)
-                            return 0;
-                        if (t == 7)
-                            return 0;
-                        s1.arg = 1;
-                        s2.kind = 4;
-                        s2.ref = *(int *)(h + 1);
-                        s2.arg = 1;
-                        cost = (int)gm_BuildingKindValue(s1.ref);
-                        if (ai_CanBuildType(a, p, f, &s1, &s2, 0) == 0)
-                            return 0;
-                        if (money < cost) {
-                            if ((float)(cost - money) / (float)cost >= 0.25f)
-                                return 0;
-                            o1->kind = 0x12;
-                            o1->arg = cost - money;
-                            return ai_DecideTakeCredit(0x11, p, f, o1, o2);
-                        }
-                    }
+                lo = 1 << (unsigned char)bt->kind;
+            if (b->owner == p->id && ((lo & ai_BuildingTypeMasks[2]) || (hi & ai_BuildingTypeMasks[3])))
+                goto found;
+        }
+    }
+    return 0;
+found:
+    money = (int)(gm_CharCurrency((char *)p, ai_OwnPlayer) * 0.66f);
+    s2.kind = 0;
+    s2.ref = 0;
+    s2.arg = 0;
+    if (o1->kind == 0) {
+        h = p->bld2;
+        if (h != 0 && ai_BTypesT[h->type].kind == 2 && (h->flags5a & 0x41) == 0) {
+            t = ai_BTypesT[h->type].cap247;
+            if (t < 2 || t == 3) {
+                /* the next level of the house: levels[] runs from the top (7) down, so the type one above
+                   is the entry before the house's (for type 7 the original reads the slot below the array) */
+                s1.kind = 5;
+                for (j = 0; levels[j] != h->type; j++)
+                    ;
+                s1.ref = levels[j - 1];
+                s1.arg = 1;
+                s2.kind = 4;
+                s2.ref = h->id;
+                s2.arg = 1;
+                if (ai_CanBuildType(a, p, f, &s1, &s2, 0) == 0)
+                    return 0;
+                cost = gm_BuildingKindCost((int)p, s1.ref);
+                if (money >= cost) {
+                    *o1 = s1;
+                    *o2 = s2;
+                    return 0x11;
                 }
-take:
+                if ((float)(cost - money) / cost < 0.25f) {
+                    o1->arg = cost - money;
+                    o1->kind = 0x12;
+                    return ai_DecideTakeCredit(0x11, p, f, o1, o2);
+                }
+                return 0;
+            }
+            if (t == 5)
+                return 0;
+        }
+        s1.kind = 5;
+        s1.ref = 6;
+        s1.arg = 1;
+        if (ai_CanBuildType(a, p, f, &s1, &s2, 1) != 0) {
+            cost = gm_BuildingKindCost((int)p, s1.ref);
+            if (money >= cost) {
                 *o1 = s1;
                 *o2 = s2;
                 return 0x11;
             }
+            if ((float)(cost - money) / cost >= 0.25f)
+                goto smaller;
+            o1->arg = cost - money;
+            o1->kind = 0x12;
+            return ai_DecideTakeCredit(0x11, p, f, o1, o2);
         }
-        up[0]++;
-        b += 0xa9;
-        if ((int)up[0] > 0xff)
+smaller:
+        /* no house of level 6 within reach: the smallest one (type 4) */
+        s1.kind = 5;
+        s1.ref = 4;
+        s1.arg = 1;
+        if (ai_CanBuildType(a, p, f, &s1, &s2, 1) == 0)
             return 0;
+        cost = gm_BuildingKindCost((int)p, s1.ref);
+        if (money >= cost) {
+            *o1 = s1;
+            *o2 = s2;
+            return 0x11;
+        }
+        if ((float)(cost - money) / cost < 0.25f) {
+            o1->arg = cost - money;
+            o1->kind = 0x12;
+            return ai_DecideTakeCredit(0x11, p, f, o1, o2);
+        }
+        return 0;
+    } else {
+        if (o1->kind != 5)
+            return 0;
+        h = p->bld2;
+        s1 = *o1;
+        if (h != 0) {
+            t = h->type;
+            if (ai_BTypesT[t].kind != 2)
+                return 0;
+            if (o1->ref - t != 1)
+                return 0;
+            if (t == 5 || t == 7)
+                return 0;
+            s1.ref = o1->ref;
+            s1.arg = 1;
+            s2.kind = 4;
+            s2.ref = h->id;
+            s2.arg = 1;
+            cost = (int)(gm_BuildingKindValue(s1.ref) * 0.3f);
+            if (ai_CanBuildType(a, p, f, &s1, &s2, 0) == 0)
+                return 0;
+            if (money >= cost) {
+                *o1 = s1;
+                *o2 = s2;
+                return 0x11;
+            }
+            if ((float)(cost - money) / cost < 0.25f) {
+                o1->kind = 0x12;
+                o1->arg = cost - money;
+                return ai_DecideTakeCredit(0x11, p, f, o1, o2);
+            }
+            return 0;
+        } else {
+            if (ai_BTypesT[o1->ref].kind != 2)
+                return 0;
+            if (ai_CanBuildType(a, p, f, &s1, &s2, 1) == 0)
+                return 0;
+            if (p->kind != 5)
+                return 0;
+            cost = gm_BuildingKindCost((int)p, s1.ref);
+            if (money < cost) {
+                if ((float)(cost - money) / cost < 0.25f) {
+                    o1->kind = 0x12;
+                    o1->arg = cost - money;
+                    return ai_DecideTakeCredit(0x11, p, f, o1, o2);
+                }
+                return 0;
+            }
+        }
     }
+    *o1 = s1;
+    *o2 = s2;
+    return 0x11;
 }
 /* 0x498a80, execute callback: upgrades a building (message "building_upgrade") */
 
@@ -5139,7 +5165,7 @@ int ai_Unk498c70(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
             && (float)(AI_BTX[p->bld2->type].unk247 - AI_BTX[4].unk247 + 1) / tot < 0.33f))) {
         AI_ZERO(&t1, sizeof(t1));
         AI_ZERO(&t1, sizeof(t1));
-        r = ai_Unk4984d0(0x13, p, 0, &t1, &t2);
+        r = ai_DecideBuildResidence(0x13, p, 0, &t1, &t2);
         if (r) {
             *o1 = t1;
             *o2 = t2;
@@ -9407,7 +9433,7 @@ int ai_RegisterBaseActions(int a)
     act.id = 0x11;
     strcpy(act.name, "Wohnsitz bauen");
     act.eval = ai_EvalMoodWeights;
-    act.decide = ai_Unk4984d0;
+    act.decide = ai_DecideBuildResidence;
     act.exec = ai_Unk498a80;
     act.flags = 0x3;
     if (!am_RegisterMethod(&act, a))

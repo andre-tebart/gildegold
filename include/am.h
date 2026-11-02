@@ -306,7 +306,7 @@ int ai_Unk497c80(AIPER *p, AIARG *s1, AIARG *s2);                               
 int ai_Unk497cf0(int a, AIPER *p, int b, AIARG *o1, AIARG *o2);                 /* 0x497cf0 */
 int ai_Unk497ee0(AIPER *p, AIARG *s1, AIARG *s2);                               /* 0x497ee0 */
 int ai_DecideBuyBuilding(int a, AIPER *p, int b, AIARG *o1, AIARG *o2);                 /* 0x497fa0 */
-int ai_Unk4984d0(int a, struct G5CH *p, int f, struct AIARG *o1, struct AIARG *o2);                 /* 0x4984d0 */
+int ai_DecideBuildResidence(int a, struct AIPER *p, int f, struct AIARG *o1, struct AIARG *o2);                 /* 0x4984d0 */
 int ai_Unk498c70(int a, AIPER *p, int b, AIARG *o1, AIARG *o2);                 /* 0x498c70 */
 int ai_Unk499290(AIPER *p, AIARG *s1, AIARG *s2);                               /* 0x499290 */
 int ai_Unk499400(int a, AIPER *p, int b, AIARG *o1, AIARG *o2);                 /* 0x499400 */
@@ -772,7 +772,7 @@ G6RING *ai_Unk4a3a90(void);                                                     
 int ai_Unk4a0410(G5CH *p);                                                      /* 0x4a0410 */
 int ai_Unk49fc90(int a, G5CH *p, int f, AIARG *o1);                             /* 0x49fc90 */
 int amt_Unk4e94a0(char *c);                                                      /* 0x4e94a0 */
-int ai_Unk4984d0(int a, struct G5CH *p, int f, struct AIARG *o1, struct AIARG *o2);                 /* 0x4984d0 */
+int ai_DecideBuildResidence(int a, struct AIPER *p, int f, struct AIARG *o1, struct AIARG *o2);                 /* 0x4984d0 */
 int ai_CanBuildType(int a, struct AIPER *p, int b, struct AIARG *s1, struct AIARG *s2, int f);           /* 0x4a5140 */
 int gm_BuildingKindCost(int unused, int kind);                                               /* 0x509dc0 */
 int gm_BuildingKindValue(int k);                                                        /* 0x509d30 */
