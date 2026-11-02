@@ -107,6 +107,20 @@ typedef struct GMPOINT {
     int value;
 } GMPOINT;
 
+/* a player's line of the ranking gm_RankPlayers fills (0x24 bytes; the names from its log format 0x61ac40) */
+typedef struct GMRANK {
+    unsigned short id;                  /* 0x00, the character index */
+    short pad02;
+    int worth;                          /* 0x04, "vermoegen": gm_GetWorth, at least 1 */
+    float worthShare;                   /* 0x08, "vermoegen_trend": worth / the highest worth of the ranked */
+    float title;                        /* 0x0c, the character's level / 9 */
+    float office;                       /* 0x10, "amt": the kind levels of its two jobs / 13 */
+    float reputation;                   /* 0x14, "ansehen": the mean liking of the other players and townsmen / 100 */
+    float talents;                      /* 0x18, "talente": the sum of the five skills / 1260 */
+    float sum;                          /* 0x1c, the weighted sum of the five values */
+    int points;                         /* 0x20, sum * the highest worth / 10000 */
+} GMRANK;
+
 /* the calendar record gm_ClockToDate fills (10 bytes) */
 typedef struct GMDATE {
     unsigned char one;                  /* 0x0, always 1 */

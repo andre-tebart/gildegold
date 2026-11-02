@@ -8063,7 +8063,7 @@ void he_Unk550ea0(int ev)
     *(int *)(ev + 0x58) = 0;
 }
 
-void gm_Unk506180();
+void gm_RankPlayers();
 int gm_ConvertMoney(int a, unsigned char k);
 void udp_Send(char *buf, int len);
 
@@ -8088,7 +8088,7 @@ void he_Unk550ee0(int ev)
     }
     if (st != 0)
         return;
-    gm_Unk506180(&cnt, recs);
+    gm_RankPlayers(&cnt, recs);
     *(unsigned short *)(head + 0) = 1;
     *(unsigned short *)(head + 2) = 3;
     *(unsigned short *)(head + 4) = 0xcf;

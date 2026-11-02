@@ -19657,7 +19657,6 @@ void ai_CityStatsPanel(void)
     ai_CampaignStep(0xc, 0, 1, 0);
 }
 
-void gm_Unk506180(int *count, unsigned short *out);   /* 0x506180 (defined in f3gm.c) */
 
 /* 0x5c82f0, the player comparison panel (837 B): the ranking 0x506180 (up to 8 records of 0x24 bytes, the
    character index first, the score at +0x20), the two captions "panel_pcompare4plus6" 0x62d468 (count < 7) /
@@ -19691,7 +19690,7 @@ void ai_PlayerComparePanel(void)
     pos[5] = 0xad;
     pos[6] = 0xb3;
     pos[7] = 0xb9;
-    gm_Unk506180(&count, list);
+    gm_RankPlayers(&count, (struct GMRANK *)list);
     if (count == 0 || ai_RunAllows(4) == 0)
         return;
     ai_CampaignStep(10, 0, 0, 0);
