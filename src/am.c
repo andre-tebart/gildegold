@@ -5087,40 +5087,43 @@ int ai_ExecuteBuildResidence(G5CH *p, AIARG *s1, AIARG *s2)
     }
     return ai_ExecBuildBuilding((AIPER *)p, s1, s2) ? 0x11 : 0;
 }
-/* 0x498b80, decide callback: upgrade the character's building */
+/* 0x498b80, decide callback of "Wohnsitz upgraden (Credits)" (0x12): when the character's house can make a
+   good it does not hold yet (ai_FindGoodToMake), chooses the sub-action 0x15 for it (s1: the good, s2: the cart
+   that carries it or the house itself, weight 0.44) */
 
-int ai_Unk498b80(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
+int ai_DecideUpgradeResidence(int a, AIPER *p, int f, AIARG *o1, AIARG *o2)
 {
     AIARG s1;
     AIARG s2;
-    int item, obj;
-    AIBLD *b;
+    int item, cart;
     int r;
 
-    if (((unsigned char *)p)[2] != 3 && (f != 0 || o1->kind == 0)) {
-        b = *(AIBLD **)((char *)p + 0x170);
-        if (b != 0 && o1->kind == 0 && ai_Unk4a5540(&item, &obj, b, 0) != 0) {
-            s1.kind = 2;
-            s1.ref = item;
-            s1.arg = 1;
-            if (obj != -1) {
-                s2.kind = 1;
-                s2.ref = obj;
-            } else {
-                s2.kind = 4;
-                s2.ref = *(int *)((char *)b + 1);
-            }
-            s2.arg = 1;
-            s2.fvalue = 0.44f;
-            r = ai_ChooseSubAction(0x15, p->id, 1, &s1, &s2);
-            if (r != 0) {
-                *o1 = s1;
-                *o2 = s2;
-                return r;
-            }
-        }
+    if (p->kind == 3)
+        return 0;
+    if (f == 0 && o1->kind != 0)
+        return 0;
+    if (p->bld2 == 0 || o1->kind != 0)
+        return 0;
+    if (ai_FindGoodToMake(&item, &cart, p->bld2, 0) == 0)
+        return 0;
+    s1.kind = 2;
+    s1.ref = item;
+    s1.arg = 1;
+    if (cart != -1) {
+        s2.kind = 1;
+        s2.ref = cart;
+    } else {
+        s2.kind = 4;
+        s2.ref = p->bld2->id;
     }
-    return 0;
+    s2.arg = 1;
+    s2.fvalue = 0.44f;
+    r = ai_ChooseSubAction(0x15, p->id, 1, &s1, &s2);
+    if (r == 0)
+        return 0;
+    *o1 = s1;
+    *o2 = s2;
+    return r;
 }
 /* 0x498c70, decide: build up the character's workshops (action 0x13) */
 
@@ -5343,7 +5346,7 @@ int ai_Unk499400(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
     if (!ai_PickActionBuilding(p, 4, m.QuadPart, 0, 100.0f, &x))
         return 0;
     gm_FindById((int)&y, 0, 0, x);
-    if (!ai_Unk4a5540(&w, &z, y, 0))
+    if (!ai_FindGoodToMake(&w, &z, y, 0))
         return 0;
     s1.kind = 2;
     s1.ref = w;
@@ -7608,7 +7611,7 @@ int ai_Unk49dd90(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         gm_FindById((int)&y, 0, 0, x);
         if (y == 0)
             continue;
-        if (!ai_Unk4a5540(&w, &z, y, 0))
+        if (!ai_FindGoodToMake(&w, &z, y, 0))
             continue;
         s1.kind = 2;
         s1.ref = w;
@@ -7675,7 +7678,7 @@ int ai_Unk49def0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         if (r != 0)
             goto done;
     }
-    if (ai_Unk4a5540(&w, &z, y, 0)) {
+    if (ai_FindGoodToMake(&w, &z, y, 0)) {
         s1.kind = 2;
         s1.ref = w;
         s1.arg = 1;
@@ -7796,7 +7799,7 @@ int ai_Unk49e350(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         if (r != 0)
             goto done;
     }
-    if (ai_Unk4a5540(&w, &z, y, 0)) {
+    if (ai_FindGoodToMake(&w, &z, y, 0)) {
         s1.kind = 2;
         s1.ref = w;
         s1.arg = 1;
@@ -8971,7 +8974,7 @@ int ai_Unk4a0a70(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             goto credit;
         }
     }
-    if (ai_Unk4a5540(&f, &a, bl, 0) != 0) {
+    if (ai_FindGoodToMake(&f, &a, bl, 0) != 0) {
         s1.kind = 2;
         s1.ref = f;
         s1.arg = 1;
@@ -9443,7 +9446,7 @@ int ai_RegisterBaseActions(int a)
     act.id = 0x12;
     strcpy(act.name, "Wohnsitz upgraden (Credits)");
     act.eval = ai_EvalMoodWeights;
-    act.decide = ai_Unk498b80;
+    act.decide = ai_DecideUpgradeResidence;
     act.exec = sv_ReturnZero;
     act.flags = 0x3;
     if (!am_RegisterMethod(&act, a))
@@ -10411,7 +10414,7 @@ int ai_ExecBuildBuilding(AIPER *p, AIARG *s1, AIARG *s2)
    two ingredients (slot 0x40 + 2i, 0x41 + 2i); goods of kind 2 / 6 need a free cart (list 4) or one carrying it.
    *item gets the good, *obj the cart's id (-1 for none) */
 
-int ai_Unk4a5540(int *item, int *obj, AIBLD *b, int f)
+int ai_FindGoodToMake(int *item, int *obj, AIBLD *b, int f)
 {
     AIBTYPE *t;
     unsigned short *s;
