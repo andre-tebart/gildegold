@@ -411,7 +411,7 @@ int ai_Unk48eab0(AIPX *p, AIARGX *s1, AIARGX *s2)
     case 2:
         return ai_ExecSecretRoom2(p, s1, s2) ? 0x41 : 0;
     case 3:
-        return ai_Unk48ef10(p, s1, s2) ? 0x41 : 0;
+        return ai_ExecSecretRoom3(p, s1, s2) ? 0x41 : 0;
     }
     return 0;
 }
@@ -554,9 +554,15 @@ int ai_ExecSecretRoom2(AIPX *p, AIARGX *s1, AIARGX *s2)
     cm_SendLongMessage(&msg);
     return 1;
 }
-/* 0x48ef10, execute, way 3: pays the amount of s2, message to nobody */
+/* 0x48ef10, execute of "UseSecretRoom" (0x41), way 3: pays the goods amount of s2, message 0x99 to no character (ch -1), building by ai_PickActionBuilding
+   @deep read the whole function against the original: same statements, calls and arguments, the 30
+   instructions after the message fill equal. The one remaining hunk (0x48ef3d, 26 lines) is the scheduling
+   of the message fill: the original loads time+0 into edx before the memset and interleaves the ai_Time
+   words (0,4,8,c) with the s1->ref2 / s2->arg2 loads through ecx/edx, ours loads time+4 first and stores
+   in another order. Tried the field order of ai_ExecSecretRoom1/2 (type, fromId, flags, ch, n, dst): worse
+   (22 ins), reverted. */
 
-int ai_Unk48ef10(AIPX *p, AIARGX *s1, AIARGX *s2)
+int ai_ExecSecretRoom3(AIPX *p, AIARGX *s1, AIARGX *s2)
 {
     union { struct { unsigned int lo, hi; } s; __int64 q; } m;
     AIMSG msg;
@@ -565,7 +571,7 @@ int ai_Unk48ef10(AIPX *p, AIARGX *s1, AIARGX *s2)
     cm_SendMoveGoodsUnchecked(-1, p->netId, ai_OwnPlayer, s2->arg);
     memset(&msg, 0, sizeof(msg));
     msg.to = p->netId;
-    TMX(msg) = NOWX;
+    msg.time = ai_TimeT;
     msg.fromId = s1->ref2;
     msg.dst[2] = s2->arg2;
     msg.type = 0x99;
@@ -576,8 +582,8 @@ int ai_Unk48ef10(AIPX *p, AIARGX *s1, AIARGX *s2)
     v = -1;
     msg.n = msg.fromId;
     m.s.lo = 0x7b4c4a0;
-        m.s.hi = 0;
-        ((int (*)(AIPX *, int, __int64, int, float, int *))ai_PickActionBuilding)(p, 0, m.q, 0, 100.0f, &v);
+    m.s.hi = 0;
+    ((int (*)(AIPX *, int, __int64, int, float, int *))ai_PickActionBuilding)(p, 0, m.q, 0, 100.0f, &v);
     msg.car = v;
     cm_SendLongMessage(&msg);
     return 1;

@@ -718,3 +718,4 @@
 2026-11-02T05:35:27 0x0048eb50 func ai_Unk48eb50 -> ai_ExecSecretRoom0 by:main why:case 0 of ai_Unk48eab0, the exec of action 0x41 'UseSecretRoom' (ai_Unk48fb70)
 2026-11-02T05:36:17 0x0048ec90 func ai_Unk48ec90 -> ai_ExecSecretRoom1 by:main why:case 1 of ai_Unk48eab0, the exec of action 0x41 'UseSecretRoom' (ai_Unk48fb70)
 2026-11-02T05:37:04 0x0048edc0 func ai_Unk48edc0 -> ai_ExecSecretRoom2 by:main why:case 2 of ai_Unk48eab0, the exec of action 0x41 'UseSecretRoom' (ai_Unk48fb70)
+2026-11-02T05:37:47 0x0048ef10 func ai_Unk48ef10 -> ai_ExecSecretRoom3 by:main why:case 3 of ai_Unk48eab0, the exec of action 0x41 'UseSecretRoom' (ai_Unk48fb70)
