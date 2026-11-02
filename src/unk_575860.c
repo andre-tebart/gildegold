@@ -4199,38 +4199,39 @@ fail:
     ai_TutorialFreeRuns((char *)head);
     return 0;
 }
-/* 0x57b750, the tutorial's main-outro record (186 B): mem_Alloc (0x74, "FTInitMainOutro" 0x62a238), 0 when it
-   fails (0x578440 (0)); memset 0x74; +0x14 .. +0x20 / +0x30 / +0x34 / +0x38 / +0x40 / +0x44 / +0x70 = 0, then
-   +0 = 7, +4 = the magic "RTUO" 0x4f555452, +8 = 5, +0xc = 0x3f27, +0x10 = the text "TUTORIAL_MAIN_OUTRO"
-   0x62a224, +0x2c = -1, +0x48 = 0xb, +0x68 = -9; the record */
+/* 0x57b750, allocates the run record of the tutorial's main outro ("FTInitMainOutro"): 0 when that fails (the
+   chain freed: nothing); else the zeroed record as the run 7 'OUTR' of the mode 5 with the text 0x3f27 and the
+   voice "TUTORIAL_MAIN_OUTRO", no text windows, no tail, the goal state 0xb and every action but the bit 3
+   allowed; the record (its voices are in the main intro's bank) */
+
 int ai_TutorialInitMainOutro(void)
 {
-    char *rec;
+    TUTRUN *rec;
 
-    rec = (char *)mem_Alloc(0x74, (char *)(unsigned)&full_data_62a238);
+    rec = (TUTRUN *)mem_Alloc(sizeof(TUTRUN), "FTInitMainOutro");
     if (!rec) {
         ai_TutorialFreeRuns(0);
         return 0;
     }
-    memset(rec, 0, 0x74);
-    U_I(rec + 0x14) = 0;
-    U_I(rec + 0x18) = 0;
-    U_I(rec + 0x1c) = 0;
-    U_I(rec + 0x20) = 0;
-    U_I(rec + 0x30) = 0;
-    U_I(rec + 0x34) = 0;
-    U_I(rec + 0x38) = 0;
-    U_I(rec + 0x40) = 0;
-    U_I(rec + 0x44) = 0;
-    U_I(rec + 0x70) = 0;
-    U_I(rec) = 7;
-    U_I(rec + 4) = 0x4f555452;
-    U_I(rec + 8) = 5;
-    U_I(rec + 0xc) = 0x3f27;
-    U_I(rec + 0x10) = (unsigned)&full_data_62a224;
-    U_I(rec + 0x2c) = -1;
-    U_I(rec + 0x48) = 0xb;
-    U_I(rec + 0x68) = -9;
+    AI_ZERO_AT(rec, sizeof(TUTRUN));
+    rec->id = 7;
+    rec->tag = 'OUTR';
+    rec->mode = 5;
+    rec->mainText = 0x3f27;
+    rec->mainVoice = "TUTORIAL_MAIN_OUTRO";
+    rec->text1 = 0;
+    rec->text1Voice = 0;
+    rec->text2 = 0;
+    rec->text2Voice = 0;
+    rec->text1Time = -1;
+    rec->tail2Time = 0;
+    rec->hook = 0;
+    rec->stepHook = 0;
+    rec->goal = 0;
+    rec->tailTime = 0;
+    rec->goalState = 0xb;
+    rec->allowMask = ~8;
+    rec->next = 0;
     return (int)rec;
 }
 /* 0x57b810, a cubic Bezier of two floats (134 B): u = 1.0f (0x5eb780) - t, out[0] / out[1] =
