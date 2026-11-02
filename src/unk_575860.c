@@ -5346,7 +5346,8 @@ typedef struct CANNONSCENE { /* 0xe4 bytes, the scene struct of ai_CannonScene (
     float pitchSpeed;        /* +0x58, the vertical one */
     float yawDelta;          /* +0x5c, the yaw step of this frame (speed * dt * 1.5) */
     float pitchDelta;        /* +0x60, the pitch step (speed * dt * 0.8) */
-    char pad64[8];
+    char pad64[4];
+    unsigned last;           /* +0x68, the clock of the last frame (ai_CannonScene's dt) */
     unsigned now;            /* +0x6c, the clock of this frame (ai_CannonCamera's recoil timer) */
     char pad70[4];
     int win74;               /* +0x74, closed at the end */
@@ -5361,13 +5362,14 @@ typedef struct CANNONSCENE { /* 0xe4 bytes, the scene struct of ai_CannonScene (
     int selected;            /* +0xa0, the selected object */
     int win_a4;              /* +0xa4, closed at the end */
     char pada8[0xc];
-    int obj_b4;              /* +0xb4, removed at the end */
-    int fireBtn;             /* +0xb8, removed at the end (ai_CannonFireCheck reads it as the fire button) */
+    int speedSlider;         /* +0xb4, the slider whose value * 0.01 is the shot speed (ai_CannonBuildPanel) */
+    int fireBtn;             /* +0xb8, ai_CannonFireCheck reads it as the fire button */
     int quitBtn;             /* +0xbc, a click on it leaves the scene */
     int win_c0;              /* +0xc0, closed at the end */
     int padc4;
     int selBtn[3];           /* +0xc8, the controls of the three cannon objects (ai_CannonSwitchAnim 0 .. 2) */
-    char padd4[8];
+    int picL;                /* +0xd4, the two picture objects of ai_CannonBuildPanel (d2_CreatePicObj), removed at the end */
+    int picR;                /* +0xd8 */
     int maxSel;              /* +0xdc, the highest selectable object */
     int pade0;
     D3VECTOR bmax;           /* +0xe4, not part of the cleared 0xe4 bytes: the bounds of the cannon object (d3t_GetObjectBounds) */
@@ -5401,22 +5403,32 @@ char ai_ShotCallbackArg[0x40] = { 0 };  /* 0x6fa020, the argument gv_SetEffectCa
    ai_CannonSwitchAnim (0 .. 2) and a fire (ai_CannonFireCheck) ai_CannonExplosion; a right button release or a click
    on the quit control sets sv_PopRequest. The teardown fades out again, closes the three windows, removes the two
    objects, deletes the 3D objects, re-enables the listed objects, restores viewport, clip rectangle, scene, sky and
-   camera and releases the callback of the run record */
+   camera and releases the callback of the run record
+   @deep read whole against the original (667 = 667 ins). Fixed meaning: the 3D objects and the selection
+   are CANNONSCENE fields (obj8c[3]/obj98/obj9c/selected at +0x8c..+0xa0, the original reloads them from
+   sc+0x98 etc. and does the wimpel stateFlags as 3 RMWs), last/now are sc+0x68/+0x6c (loop end sc.last =
+   sc.now), the teardown removes the pic objects +0xd4/+0xd8 (not +0xb4/+0xb8), the rect save reads Right,
+   Left, Top, Bottom, the view walk is an int-typed address (signed jl). Remaining code hunks, each
+   allocation: +0x336/+0x38c the mask copy in edi (or edi,0x100 hoisted) vs ours in esi; +0x3e3 (113) the
+   view/object loop: the original keeps pb in esi and the zero in edi, so pv and n live in
+   [esp+0x14]/[esp+0x20] and pv-0x1a0 is rebuilt in ecx per object (base &enabled), ours holds pv in esi
+   and n in a slot; +0x4be / +0x77b / +0x7de / +0x800 / +0x817 the zero register (edi vs esi), pb in esi vs
+   our slot [esp+0x64] (push esi vs mov edx,[esp+0x64]; push edx), m starting from the edi that already
+   holds 0 (no xor); +0xa0b / +0xa3f aligner artifacts of the same 3 d2_CloseView + 2 d2_RemoveObj with
+   shifted slots. The 12 differing branch targets are all inside these hunks (+0x17f..+0x217 the view loop,
+   +0x565/+0x585 the m loop, +0x785 the fade wait) and differ by 1..9 bytes from the reg vs slot encodings,
+   the statement structure is the same. Frame 0x734 vs 0x750: the original's extra 0x1c are temp slots
+   (int->float conversions, the qword at 0x14 shared with pv) */
 void ai_CannonScene(char *rec)
 {
     GVEFFECT *run;
     CANNONSCENE sc;
     D3VECTOR rotv;
     unsigned short list[0x2f2];
-    D3OBJECT *obj[4];  /* 0 .. 2 the barrels, 3 the base */
-    D3OBJECT *flag;    /* the wimpel object, a child of the base */
-    int sel;
     int n;
     int m;
     int rect[4];
     int scene;
-    unsigned last;
-    unsigned now;
     unsigned mask;
     float dt;
     unsigned char *pb;
@@ -5425,7 +5437,7 @@ void ai_CannonScene(char *rec)
 
     kb_Down[0x2f] = 0;
     memset(&sc, 0, 0xe4);
-    last = ai_ClockMs;
+    sc.last = ai_ClockMs;
     mask = sv_FrameMask | 0x80;
     if (!CR->obj)
         return;
@@ -5446,9 +5458,9 @@ void ai_CannonScene(char *rec)
     save3.x = CAM->rotation.x;
     save3.y = CAM->rotation.y;
     save3.z = CAM->rotation.z;
+    rect[2] = d2_DirtyRectRight;
     rect[0] = d2_DirtyRectLeft;
     rect[1] = d2_DirtyRectTop;
-    rect[2] = d2_DirtyRectRight;
     rect[3] = d2_DirtyRectBottom;
     scene = d3_CurrentScene;
     d2_SetPointerSprite(0, 0);
@@ -5463,20 +5475,18 @@ void ai_CannonScene(char *rec)
     n = 0;
     {
         int i;
-        int pv;
+        int v;  /* the view's address, walked as an int (the original's compare is signed) */
 
-        pv = (int)&d2_Views[0].enabled;
-        do {
-            if (((D2VIEW *)(pv - 0x1a0))->active != 0 && ((D2VIEW *)(pv - 0x1a0))->enabled != 0) {
+        for (v = (int)d2_Views; v < (int)&d2_Views[0x30]; v += sizeof(D2VIEW)) {
+            if (((D2VIEW *)v)->active != 0 && ((D2VIEW *)v)->enabled != 0) {
                 for (i = 0; i < 0x300; i++) {
-                    if (d2_Objs[i].type != 0 && (int)d2_Objs[i].buf == pv - 0x1a0 && d2_Objs[i].disabled == 0) {
+                    if (d2_Objs[i].type != 0 && (int)d2_Objs[i].buf == v && d2_Objs[i].disabled == 0) {
                         d2_Objs[i].disabled = 1;
                         list[n++] = i;
                     }
                 }
             }
-            pv += sizeof(D2VIEW);
-        } while (pv < (int)d3s_QuadUV);
+        }
     }
     d3_SetViewport((float)d2_ScreenW, (float)d2_ScreenH - 150.0f, 0.0f, 75.0f, d3_ZNear, d3_ZFar, d3_ScaleX, d2_ScreenW, d2_ScreenH);
     d2_DirtyRectRight = 0;
@@ -5507,19 +5517,19 @@ void ai_CannonScene(char *rec)
     rotv.x = 0.0f;
     rotv.y = sc.rot.y;
     rotv.z = sc.rot.z;
-    obj[3] = d3_CreateObject(0, &d3_Origin, &rotv, "KANONE_UNTERBAU_Aa");
-    obj[0] = d3_CreateObject(obj[3], &d3_Origin, (D3VECTOR *)ai_ZeroRot, "KANONE_ROHR_Aa");
-    obj[1] = d3_CreateObject(obj[3], &d3_Origin, (D3VECTOR *)ai_ZeroRot, "KANONE_DOPPEL_ROHR_Aa");
-    obj[2] = d3_CreateObject(obj[3], &d3_Origin, (D3VECTOR *)ai_ZeroRot, "KANONE_DREIFACH_ROHR_Aa");
-    sel = gv_Cannon.selected;
+    sc.obj98 = d3_CreateObject(0, &d3_Origin, &rotv, "KANONE_UNTERBAU_Aa");
+    sc.obj8c[0] = d3_CreateObject(sc.obj98, &d3_Origin, (D3VECTOR *)ai_ZeroRot, "KANONE_ROHR_Aa");
+    sc.obj8c[1] = d3_CreateObject(sc.obj98, &d3_Origin, (D3VECTOR *)ai_ZeroRot, "KANONE_DOPPEL_ROHR_Aa");
+    sc.obj8c[2] = d3_CreateObject(sc.obj98, &d3_Origin, (D3VECTOR *)ai_ZeroRot, "KANONE_DREIFACH_ROHR_Aa");
+    sc.selected = gv_Cannon.selected;
     sc.zoom = 0.0f;
-    d3_SetObjectPos(obj[3], &sc.pos);
-    d3_SetObjectRot(obj[3], (D3VECTOR *)&sc.rot);
-    flag = d3_CreateObject(obj[3], (D3VECTOR *)((unsigned)&sv_PhaseMinutes + 0x1c8), (D3VECTOR *)ai_ZeroRot, "AO_KANONE_WIMPEL_Aa");
-    d3t_PlayAnim(flag, "_ADDON\\AO_KANONE_WIMPEL_Aa.baf", 1);
-    flag->stateFlags = (flag->stateFlags & 0xf7) | 4;
-    flag->stateFlags |= 0x40;
-    flag->objectFlags &= 0xfd;
+    d3_SetObjectPos(sc.obj98, &sc.pos);
+    d3_SetObjectRot(sc.obj98, (D3VECTOR *)&sc.rot);
+    sc.obj9c = d3_CreateObject(sc.obj98, (D3VECTOR *)((unsigned)&sv_PhaseMinutes + 0x1c8), (D3VECTOR *)ai_ZeroRot, "AO_KANONE_WIMPEL_Aa");
+    d3t_PlayAnim(sc.obj9c, "_ADDON\\AO_KANONE_WIMPEL_Aa.baf", 1);
+    sc.obj9c->stateFlags = (sc.obj9c->stateFlags & 0xf7) | 4;
+    sc.obj9c->stateFlags |= 0x40;
+    sc.obj9c->objectFlags &= 0xfd;
     d2_ClearSurface(d2_ScreenSurf);
     sv_RunFrame(0, 0x86);
     d2_ClearSurface(d2_ScreenSurf);
@@ -5527,11 +5537,11 @@ void ai_CannonScene(char *rec)
     d2_StartFade(0, 0, d2_ScreenW, d2_ScreenH, "BLACK", 0x5a, 10);
     ai_CannonBuildPanel(&sc, run);
     ai_CannonPanel(rec, &sc, run);
-    if (sel > sc.maxSel)
-        sel = sc.maxSel;
+    if (sc.selected > sc.maxSel)
+        sc.selected = sc.maxSel;
     for (m = 0; m < 3; m++)
-        d3if_Show(obj[m], 0);
-    d3if_Show(obj[sel], 1);
+        d3if_Show(sc.obj8c[m], 0);
+    d3if_Show(sc.obj8c[sc.selected], 1);
     d3if_ShowTree(CR->obj, 0);
     he_ShowObjectInfos((int)CR->obj, 0);
     d2_ClickedId = -1;
@@ -5541,8 +5551,8 @@ void ai_CannonScene(char *rec)
     ai_ShotTable[0].id = -1;
     while (sv_RunFrame((int)ai_CannonScene, 0x2656c7) != 0) {
         sv_SetPanelEnabled(0);
-        now = ai_ClockMs;
-        dt = (float)(now - last) * 0.013513514f;
+        sc.now = ai_ClockMs;
+        dt = (float)(sc.now - sc.last) * 0.013513514f;
         if (run->flags == 0 && (dm_L.rup != 0 || (d2_ClickedId != -1 && d2_PointerObj == sc.quitBtn))) {
             sv_PopRequest = 1;
         } else {
@@ -5567,7 +5577,7 @@ void ai_CannonScene(char *rec)
                 }
             }
         }
-        last = now;
+        sc.last = sc.now;
     }
     sv_SetStatusText(ch_EmptyName);
     pb = (unsigned char *)d2_StartFade(0, 0, d2_ScreenW, d2_ScreenH, "BLACK", 0x5a, 1);
@@ -5576,18 +5586,18 @@ void ai_CannonScene(char *rec)
     d2_CloseView(sc.win_a4);
     d2_CloseView(sc.win_c0);
     d2_CloseView(sc.win74);
-    d2_RemoveObj(sc.obj_b4);
-    d2_RemoveObj(sc.fireBtn);
-    if (obj[0])
-        d3if_Delete(obj[0]);
-    if (obj[1])
-        d3if_Delete(obj[1]);
-    if (obj[2])
-        d3if_Delete(obj[2]);
-    if (flag)
-        d3if_Delete(flag);
-    if (obj[3])
-        d3if_Delete(obj[3]);
+    d2_RemoveObj(sc.picL);
+    d2_RemoveObj(sc.picR);
+    if (sc.obj8c[0])
+        d3if_Delete(sc.obj8c[0]);
+    if (sc.obj8c[1])
+        d3if_Delete(sc.obj8c[1]);
+    if (sc.obj8c[2])
+        d3if_Delete(sc.obj8c[2]);
+    if (sc.obj9c)
+        d3if_Delete(sc.obj9c);
+    if (sc.obj98)
+        d3if_Delete(sc.obj98);
     d3if_ShowTree(CR->obj, 1);
     he_ShowObjectInfos((int)CR->obj, 1);
     for (m = 0; m < n; m++)
@@ -5737,7 +5747,7 @@ void d3_MatTranspose(); float d3_VecAngle2(); int ai_GetDefaultEffect();
    (d3_VecAngle2 - 1.5707964 - sc->rot.y) and the ai_CannonAxes directions (recomputed while no shot runs) turn
    the aim axis of the cannon object's matrix (sc->obj98->matrix) into the direction v, normalized; the camera
    starts 30 units back from the scene position (y + 20) and is placed / rotated through d3_Camera, the mouse
-   value (sc->obj_b4) * 0.01 as the speed, the pitch ratio (sc->rot.x + 0.2617994) / 1.0471976 the angle and the
+   value (sc->speedSlider) * 0.01 as the speed, the pitch ratio (sc->rot.x + 0.2617994) / 1.0471976 the angle and the
    zoom the distance. The recoil (sc->recoilStart + 0x54 > sc->now): the fade from the elapsed clock (0.25 per
    ms during the first 4, then (1 - (elapsed - 4) * 0.0125)^2) times 50 pushes the camera back along the aim
    direction and the wimpel to -70 / -50 / 120; after it the wimpel is set back and the cannon object placed at
@@ -5785,7 +5795,7 @@ void ai_CannonCamera(CANNONSCENE *sc)
     pos.z = sc->pos.z - v.z * 30.0f;
     ratio = (sc->rot.x - -0.61086524f) / 1.3962634f;
     ratio2 = (sc->rot.x - -0.2617994f) / 1.0471976f;
-    def = d2_GetObjValue(sc->obj_b4);
+    def = d2_GetObjValue(sc->speedSlider);
     speed = (float)def * 0.01f;
     ang.y = sc->rot.y;
     ang.z = sc->rot.z;
