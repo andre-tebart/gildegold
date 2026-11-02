@@ -3949,18 +3949,16 @@ unsigned char *gm_BuildQuery(int n, ...)
 
 char *gm_FindFreeBuilding(void)
 {
-    char *end, *p;
+    ORDBLD *end, *b;
 
-    end = ai_Blds + 0xa900;
-    p = ai_Blds;
-    if (p < end) {
-        do {
-            if (*p == 0)
-                return p;
-            p += 0xa9;
-        } while (p < end);
+    end = (ORDBLD *)ai_Blds + 0x100;
+    for (b = (ORDBLD *)ai_Blds; b < end; b++) {
+        if (b->type == 0)
+            break;
     }
-    return 0;
+    if (b >= end)
+        return 0;
+    return (char *)b;
 }
 /* 0x5012e0, frees the building b: a player's building (+0x27 a character of kind 6) tells 0x5a86c0 (its id); by building type: 0x1e frees the block at +0x71, 0x48 .. 0x4a the block at +0x65 through 0x4f0180, 0x4b .. 0x4d through the heap free (0x422620) and clears +0x65; the characters (0x770cec / 0x770cf0 per record) that point at it are cleared; its list at +0x5d is freed (0x500140) and the building type byte set to 0. Returns 0, -1 / -2 for no building / a free one. ROUGH */
 
