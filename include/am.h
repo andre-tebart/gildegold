@@ -324,7 +324,7 @@ int ai_Unk49a020(int a, AIPER *p, int b, AIARG *o1, AIARG *o2);                 
 int ai_Unk49eec0(int a, struct G5CH *p, int f, struct AIARG *o1, struct AIARG *o2);             /* 0x49eec0 */
 int ai_Unk4a4e30(struct AIBLD *b, int k);                                           /* 0x4a4e30 */
 int ai_Unk4a5140(int a, struct AIPER *p, int b, struct AIARG *s1, struct AIARG *s2, int f);         /* 0x4a5140 */
-int ai_Unk4a5320(struct AIPER *p, struct AIARG *s1, struct AIARG *s2);                               /* 0x4a5320 */
+int ai_ExecBuildBuilding(struct AIPER *p, struct AIARG *s1, struct AIARG *s2);                               /* 0x4a5320 */
 int ai_Unk4a5540(int *item, int *obj, AIBLD *bld, int f);                       /* 0x4a5540 */
 int ai_PickActionBuilding(struct AIPER *p, int a, __int64 mask, int c, float f, int *out);    /* 0x4a63f0 */
 void gm_Unk502fd0(int a, int b, int c, int d, int e);                     /* 0x502fd0 */
@@ -516,7 +516,7 @@ void gm_SendMoneyDelta(int a, int b);                                        /* 
 /* this unit, in address order */
 int ai_Unk48e070(AIPX *p, int *out);                                     /* 0x48e070 */
 int ai_Unk48e120(int a, AIPX *p, int b, AIARGX *o1, AIARGX *o2);         /* 0x48e120 */
-int ai_Unk48e370(AIPX *p, AIARGX *s1, AIARGX *s2);                       /* 0x48e370 */
+int ai_ExecBuildDomizil(AIPX *p, AIARGX *s1, AIARGX *s2);                       /* 0x48e370 */
 int ai_Unk48e470(int a, AIPX *p, int b, AIARGX *o1, AIARGX *o2);         /* 0x48e470 */
 int ai_Unk48e620(AIPX *p, AIARGX *s1, AIARGX *s2);                       /* 0x48e620 */
 int ai_Unk48e730(AIPX *p, AIARGX *s1, AIARGX *s2);                       /* 0x48e730 */
@@ -555,7 +555,7 @@ int ai_Unk490690(int a, AIPX *p, int b, AIARG *o1, AIARG *o2);                  
 
 /* callees outside this file */
 int ai_Unk4a5140(int a, struct AIPER *p, int b, struct AIARG *s1, struct AIARG *s2, int f);           /* 0x4a5140 */
-int ai_Unk4a5320(struct AIPER *p, struct AIARG *s1, struct AIARG *s2);                                /* 0x4a5320 */
+int ai_ExecBuildBuilding(struct AIPER *p, struct AIARG *s1, struct AIARG *s2);                                /* 0x4a5320 */
 void ai_Unk4a5760(struct G5CH *p, int n, struct G9REC *rec, int *st);                         /* 0x4a5760 */
 /* am.h declares 0x4a63f0 with an __int64 mask; 0x48ff50..0x490350 pass it as two ints */
 /* am.h: id is an int; 0x490690 passes an unsigned short */
@@ -1000,7 +1000,7 @@ int ai_Unk4a4ae0(float *a, float *b, int i, AIPER *p);                          
 char unk_Unk5020e0(int k, int c);                                      /* 0x5020e0 */
 /* 0x4a5140 ai_Unk4a5140 is declared in am.h */
 extern char ai_DataPath[];                                                      /* 0x75dca0, the data path */
-/* 0x4a5320 ai_Unk4a5320 is declared in am.h */
+/* 0x4a5320 ai_ExecBuildBuilding is declared in am.h */
 typedef struct G9REC {                  /* 16 bytes, filled by 0x4a5760 (unk_49a0a0.h G8REC, unk_48e070.h AIRECX) */
     int item;                           /* 0x0 */
     int unk04;                          /* 0x4 */

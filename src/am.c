@@ -181,9 +181,14 @@ int ai_Unk48e120(int a, AIPX *p, int b, AIARGX *o1, AIARGX *o2)
 ok:
     return 0x40;
 }
-/* 0x48e370, execute of 0x48e120: pays for the upgrade, with a message to the player */
+/* 0x48e370, execute of action 0x40 "Build Domizil": on a building (kind 4) pays 0.3 of its value for the upgrade with message 0x1e, else builds (ai_ExecBuildBuilding)
+   @deep read the whole function against the original: equal instruction count (66/66), same statements,
+   calls, arguments and branch layout; the remaining hunks are allocation only: the original keeps p in esi
+   and s2 in edx (loaded before sub esp, reused in the else branch push edx, reloaded from [esp+0x110] for
+   gm_BuildingKindValue), ours keeps s2 in esi and p in edi; the ai_Time copy is scheduled ecx/edx/ecx/dx
+   vs ours ecx/edx/eax/cx. Tried the early-return form (if kind != 4 return ...): 56 ins worse, reverted. */
 
-int ai_Unk48e370(AIPX *p, AIARGX *s1, AIARGX *s2)
+int ai_ExecBuildDomizil(AIPX *p, AIARGX *s1, AIARGX *s2)
 {
     AIMSG msg;
     int cost;
@@ -191,7 +196,7 @@ int ai_Unk48e370(AIPX *p, AIARGX *s1, AIARGX *s2)
     if (s2->kind == 4) {
         memset(&msg, 0, sizeof(msg));
         msg.to = p->netId;
-        TMX(msg) = NOWX;
+        msg.time = ai_TimeT;
         msg.type = 0x1e;
         msg.fromId = s2->ref;
         msg.flags = 1;
@@ -203,7 +208,7 @@ int ai_Unk48e370(AIPX *p, AIARGX *s1, AIARGX *s2)
         cm_EndGroup("building_upgrade");
         return 0x40;
     }
-    return ai_Unk4a5320(p, s1, s2) ? 0x40 : 0;
+    return ai_ExecBuildBuilding(p, s1, s2) ? 0x40 : 0;
 }
 /* 0x48e470, decide kind 0x41: a master without a workshop level object wants one built, otherwise one of the
    four ways to pay (0x48e620 .. 0x48e9f0) */
@@ -721,7 +726,7 @@ int ai_Unk48f500(AIPX *p, AIARG *s1, AIARG *s2)
         cm_EndGroup("building_upgrade");
         return 0x43;
     }
-    return ai_Unk4a5320(p, s1, s2) ? 0x43 : 0;
+    return ai_ExecBuildBuilding(p, s1, s2) ? 0x43 : 0;
 }
 /* 0x48f600, decide of action 0x48 */
 
@@ -891,7 +896,7 @@ int ai_Unk48fb70(int a)
     strcpy(act.name, "Build Domizil");
     act.eval = ai_Unk4a49a0;
     act.decide = ai_Unk48e120;
-    act.exec = ai_Unk48e370;
+    act.exec = ai_ExecBuildDomizil;
     act.flags = 0x1c3;
     if (!ai_Unk495520(&act, a))
         return 0;
@@ -4886,7 +4891,7 @@ int ai_Unk498a80(G5CH *p, AIARG *s1, AIARG *s2)
         cm_EndGroup("building_upgrade");
         return 0x11;
     }
-    return ai_Unk4a5320((AIPER *)p, s1, s2) ? 0x11 : 0;
+    return ai_ExecBuildBuilding((AIPER *)p, s1, s2) ? 0x11 : 0;
 }
 /* 0x498b80, decide callback: upgrade the character's building */
 
@@ -5113,7 +5118,7 @@ int ai_Unk499290(AIPER *p, AIARG *s1, AIARG *s2)
         cm_EndGroup("building_upgrade");
         return 0x13;
     }
-    if (ai_Unk4a5320(p, s1, s2)) {
+    if (ai_ExecBuildBuilding(p, s1, s2)) {
         cm_SendSetField(p->netId, 0x1c8, 4, 0x1000000, 0);
         return 0x13;
     }
@@ -7378,7 +7383,7 @@ int ai_Unk49dc10(G5CH *p, AIARG *s1, AIARG *s2)
         return 0x2e;
     }
     cm_BeginGroup("bau_arbeiter_unterk");
-    if (ai_Unk4a5320((AIPER *)ai_PlayerChar, s1, s2) != 0) {
+    if (ai_ExecBuildBuilding((AIPER *)ai_PlayerChar, s1, s2) != 0) {
         cm_SendMoveGoods(-1, *(int *)(c + 2), ai_OwnPlayer, gm_BuildingKindValue(s1->ref));
         cm_EndGroup("bau_arbeiter_unterk");
         return 0x2e;
@@ -7791,7 +7796,7 @@ int ai_Unk49ea90(G5CH *p, AIARG *s1, AIARG *s2)
         cm_EndGroup("upgr_brunnen");
     } else {
         cm_BeginGroup("bau_brunnen");
-        if (ai_Unk4a5320((AIPER *)ai_PlayerChar, s1, s2) == 0) {
+        if (ai_ExecBuildBuilding((AIPER *)ai_PlayerChar, s1, s2) == 0) {
             cm_EndGroup("bau_brunnen");
             return 0;
         }
@@ -8142,7 +8147,7 @@ int ai_Unk49f5c0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 
 int ai_Unk49f7f0(G5CH *p, AIARG *s1, AIARG *s2)
 {
-    if (ai_Unk4a5320((AIPER *)p, s1, s2) == 0)
+    if (ai_ExecBuildBuilding((AIPER *)p, s1, s2) == 0)
         return 0;
     cm_SendSetField(p->netId, 0x1c8, 4, 0x1000000, 0);
     ai_Unk4c59b0(p->netId, s1->arg2);
@@ -10164,7 +10169,7 @@ int ai_Unk4a5140(int a, AIPER *p, int b, AIARG *s1, AIARG *s2, int f)
 /* 0x4a5320, amt_ExecGebaeudeBauen: builds the building type s1->unk04 (kind 5) on the plot s2->unk04 (kind 0xc):
    finds its model group "gb_<NAME>" (with a "_A" variant), message 0xd with the price, place and group path */
 
-int ai_Unk4a5320(AIPER *p, AIARG *s1, AIARG *s2)
+int ai_ExecBuildBuilding(AIPER *p, AIARG *s1, AIARG *s2)
 {
     AIMSG m;
     char name[0x104];
