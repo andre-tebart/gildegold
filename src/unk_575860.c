@@ -7164,6 +7164,14 @@ void ai_CabinetContact(AIBLD *rec, AIOBJ *room)
             ai_CabinetSpyOnCharacter(rec);
     }
 }
+/* the four grave kinds of the graveyard windows (ai_Unk583c50, ai_Unk584010 name the grave by its index; the kinds
+   themselves are a reasoned guess from the four buttons 0 .. 3, kinds 1 .. 3 enabled by the state record's bytes); only this unit reads them, they stay out of unk_575860.h: declared above
+   ai_TutorialInitChapter2 they flip its register tie-break (byte -> shape) */
+const int ai_GravePics[4] = { 0x2d5, 0x2d8, 0x2dc, 0x2e0 };      /* 0x5eecb0, the buttons' pictures */
+const int ai_GravePicsAlt[4] = { 0x7da, 0x7db, 0x7dc, 0x7dd };   /* 0x5eecc0, the pictures ai_Unk5828c0 uses by the button */
+const int ai_GraveNames[4] = { 0xd94, 0xd9a, 0xda2, 0xdaa };     /* 0x5eecd0, the texts of the kinds' names */
+const int ai_GraveGoods[4] = { 0x1f6, 0x1f9, 0x1fd, 0x201 };     /* 0x5eece0, the ai_Goods index whose record the button keeps */
+
 /* 0x582730, the four contact buttons (399 B): arg 1 = the record (its +0x65 the entries' state record), arg 2 =
    the window list (0 the window, 4 the parent, 8 .. 0xb the buttons, 0xc the selected button). 0x475f70 (the
    window, 6) and the text 0x602568; the four buttons 0x4731d0 (i * 0x6c + 6, 0, the text 0x5eecb0[i], the parent)
