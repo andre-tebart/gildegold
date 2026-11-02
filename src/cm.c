@@ -1653,10 +1653,10 @@ int cm_SendMessage3d(char *p, unsigned char b, int c, int d)
     G17_I(m, 0) = *(int *)(p + 1);
     if (q == 0) {
         G17_I(m, 9) = -1;
-        r = unk_Unk4fd820(0xffff, p);
+        r = (char *)gm_FindHome(0xffff, (struct ORDBLD *)p);
     } else {
         G17_I(m, 9) = *(int *)&q[2];
-        r = *(int *)&q[0xb8] == 0 ? unk_Unk4fd820(q[0], p) : 0;
+        r = *(int *)&q[0xb8] == 0 ? (char *)gm_FindHome(q[0], (struct ORDBLD *)p) : 0;
     }
     if (r != 0)
         G17_I(m, 4) = *(int *)(r + 1);

@@ -216,11 +216,15 @@ typedef struct ORDBLD {
     unsigned short owner;           /* 0x27, index into ai_Chars, 0xffff = none */
     char pad29[0x24];
     int roundSum;                   /* 0x4d, ai.h AIBLD.roundSums[0], cleared at the end of every day (gm_EndDayIncomes) */
-    char pad51[0xb];
+    char pad51[9];
+    unsigned char flags5a;          /* 0x5a, bit 0: takes no new inhabitants (gm_FindHome) */
+    char pad5b;
     char level;                     /* 0x5c, the building's level 0 .. 100 */
     int objList;                    /* 0x5d */
-    char *object;                   /* 0x61, its object in the scene */
-    char pad65[4];
+    struct D3OBJECT *object;        /* 0x61, its object in the scene */
+    unsigned char people;           /* 0x65, the number of its inhabitants, below the kind's capacity
+                                       (ord_GetKindRecord [0]) while it has room (gm_FindHome) */
+    char pad66[3];
     int daySum;                     /* 0x69, ai.h AIBLD.unk69, cleared for the kinds 11 .. 13 at the end of every day (reasoned guess: a per-day sum, as roundSum) */
     char pad6d[0x3c];
 } ORDBLD;

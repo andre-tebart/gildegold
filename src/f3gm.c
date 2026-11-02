@@ -2090,65 +2090,71 @@ int gm_IsUnderAge(unsigned short id)
         return 1;
     return 0;
 }
-/* 0x4fd820, finds a free home among the buildings of the group (1, 5, 1) (kind capacity 0x4f8890 above the occupancy byte +0x65, flag +0x5a bit 0 clear): the nearest to the building of the object o (+0x61) when both have one, else the one with the lowest occupancy ratio; none: a random one of the group (1, 5, 0x16) with the flag clear. ROUGH */
+/* 0x4fd820, finds a home with room for the building o's people: among the buildings of the query (1, 5, 1) with
+   fewer people (+0x65) than their kind's capacity (ord_GetKindRecord [0]) and the flag 0x5a bit 0 clear, the
+   nearest to o when o and the building both have a scene object, else the least full one (people / capacity);
+   none: a random one of the first 16 of the query (1, 5, 0x16) with the flag clear. The first parameter is
+   not read
+   @deep read in full against the original and reconstructed (ORDBLD people 0x65 / flags5a / object as
+   D3OBJECT, the 16-byte D3VECTOR4 positions subtracted in place and summed z, y, x, the ratio compare, the
+   fallback list of 16 under if (pick == 0) as the original's block order shows); same statements, branch
+   targets and calls, 160 = 160 instructions. Left is allocation: the original keeps the pick in ebp, the
+   pick's capacity (pickKind[0]) promoted to ebx and the kind's capacity in edi, rereads o from the
+   parameter, and overlaps the int-to-float conversion temp with pickKind[0]'s slot (frame 0x74); ours
+   keeps the constant 1 in ebx and o in ebp, pickKind in memory and the temp in its own slot (frame 0x78),
+   so every code / regs / slots hunk is one of these registers or slots (tried: pickKind as an 8-byte
+   struct copy instead of the array: identical code; o as a local copy of a char * parameter: identical) */
 
-char *unk_Unk4fd820(int unused, char *o)
+ORDBLD *gm_FindHome(int unused, ORDBLD *o)
 {
-    float best, d, dx, dy, dz;
-    char *b, *pick;
-    unsigned cap, pickcap, c2;
-    int pos[3], pos2[3];
-    int list[16];
-    int n, k;
-    int s[4], s2[4];
-    float v1[3], v2[3];
+    float best, d;
+    ORDBLD *b, *pick;
+    int pickKind[2], kind[2];
+    D3VECTOR4 v1, v2;                   /* the engine's 16-byte vectors */
+    ORDBLD *list[16];
+    int n;
 
     pick = 0;
     best = 1e+08f;
-    ord_GetKindRecord(1, (int *)&cap);
-    pickcap = cap;
-    b = (char *)gm_BuildQuery(1, 5, 1);
+    ord_GetKindRecord(1, pickKind);
+    b = (ORDBLD *)gm_BuildQuery(1, 5, 1);
     if (b != 0) {
         do {
-            ord_GetKindRecord(*(unsigned char *)b, (int *)s);
-            c2 = s[0];
-            if ((unsigned short)(unsigned char)b[0x65] < (unsigned short)c2 && (b[0x5a] & 1) == 0) {
-                if (o == 0 || *(int *)(o + 0x61) == 0 || *(int *)(b + 0x61) == 0) {
-                    if (pick == 0) {
-                        pickcap = c2;
-                        pick = b;
-                    } else {
-                        cap = pickcap & 0xffff;
-                        if ((float)(unsigned char)b[0x65] / (float)(c2 & 0xffff) < (float)(unsigned char)pick[0x65] / (float)cap)
-                            pick = b;
-                    }
-                } else {
-                    d3_PointToWorld(*(int *)(b + 0x61), *(int *)(b + 0x61) + 0x4c, v1);
-                    d3_PointToWorld(*(int *)(o + 0x61), *(int *)(o + 0x61) + 0x4c, v2);
-                    dx = v1[0] - v2[0];
-                    dy = v1[1] - v2[1];
-                    dz = v1[2] - v2[2];
-                    d = (float)sqrt(dx * dx + dy * dy + dz * dz);
+            ord_GetKindRecord(b->type, kind);
+            if ((unsigned short)b->people < (unsigned short)kind[0] && (b->flags5a & 1) == 0) {
+                if (o != 0 && o->object != 0 && b->object != 0) {
+                    d3_PointToWorld(b->object, &b->object->pos, (D3VECTOR *)&v1);
+                    d3_PointToWorld(o->object, &o->object->pos, (D3VECTOR *)&v2);
+                    v1.x -= v2.x;
+                    v1.y -= v2.y;
+                    v1.z -= v2.z;
+                    d = (float)sqrt(v1.z * v1.z + v1.y * v1.y + v1.x * v1.x);
                     if (d < best) {
-                        pickcap = c2;
+                        pickKind[0] = kind[0];
+                        pickKind[1] = kind[1];
                         pick = b;
                         best = d;
                     }
-                }
+                } else if (pick == 0) {
+                    pickKind[0] = kind[0];
+                    pickKind[1] = kind[1];
+                    pick = b;
+                } else if ((float)b->people / (unsigned short)kind[0] < (float)pick->people / (unsigned short)pickKind[0])
+                    pick = b;
             }
-            b = (char *)gm_BuildNext();
+            b = (ORDBLD *)gm_BuildNext();
         } while (b != 0);
-        if (pick != 0)
-            return pick;
     }
-    b = (char *)gm_BuildQuery(1, 5, 0x16);
-    n = 0;
-    memset(list, 0, sizeof(list));
-    for (; b != 0 && (b[0x5a] & 1) == 0 && n < 0x10; n++) {
-        list[n] = (int)b;
-        b = (char *)gm_BuildNext();
+    if (pick == 0) {
+        b = (ORDBLD *)gm_BuildQuery(1, 5, 0x16);
+        memset(list, 0, sizeof(list));
+        for (n = 0; b != 0 && (b->flags5a & 1) == 0 && n < 0x10; n++) {
+            list[n] = b;
+            b = (ORDBLD *)gm_BuildNext();
+        }
+        return list[util_RandomU(n)];
     }
-    return (char *)list[util_RandomU(n) & 0xffff];
+    return pick;
 }
 /* 0x4fda10, moves the character c into the building b (+0x170) when b (+0x65 its occupancy) has room (0x4f8890 capacity): the old building loses one */
 

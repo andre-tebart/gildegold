@@ -72,7 +72,7 @@ unsigned *gm_NameRecord(int kind, int id);  /* 0x4fb330, the name record (0x44 b
 unsigned *gm_CharNameRecord(int id);  /* 0x4fb390 */
 int gm_CreateCharModel(unsigned short *c, int scene, int *p, int *ori, int obj, char *dummy);  /* 0x4fbb80 */
 float gm_HealthRatio(short *c);  /* 0x4fc8e0 */
-char *unk_Unk4fd820(int unused, char *o);  /* 0x4fd820 */
+struct ORDBLD; struct ORDBLD *gm_FindHome(int unused, struct ORDBLD *o);  /* 0x4fd820, a home with room for the building o (the nearest or least full) */
 void unk_Unk4fda10(char *c, char *b);  /* 0x4fda10 */
 short *unk_Unk4fda70(char *o, unsigned a, unsigned b);  /* 0x4fda70 */
 char *unk_Unk4fdc10(unsigned char *b);  /* 0x4fdc10 */
