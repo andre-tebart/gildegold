@@ -1046,3 +1046,4 @@
 2026-11-02T15:55:52 0x005830f0 func ai_Unk5830f0 -> ai_GraveDeadName by:main why:the name line (title by sex, first and family name) / the second line (the two texts +0x30 / +0x34 by sex) of a dead person (GVGRAVE) in ai_GraveDetail
 2026-11-02T15:55:52 0x00583150 func ai_Unk583150 -> ai_GraveDeadDescription by:main why:the name line (title by sex, first and family name) / the second line (the two texts +0x30 / +0x34 by sex) of a dead person (GVGRAVE) in ai_GraveDetail
 2026-11-02T15:59:22 0x00583240 func ai_Unk583240 -> ai_GraveWindow by:main why:the graveyard window Locations\Friedhof\Graves: the size buttons, the grave list and its detail; returns / passes the picked grave
+2026-11-02T16:01:54 0x00583700 func ai_Unk583700 -> ai_RentGraveDetail by:main why:the detail of the grave in the rent-a-grave window (Locations_Friedhof_RentAGrave2, ai_Unk583b70): its dead persons, the player as holder, the year and the care
