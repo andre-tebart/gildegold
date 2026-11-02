@@ -7861,42 +7861,39 @@ int ai_Unk583de0(char *rec, int a, unsigned char b)
         }
     }
 }
-/* 0x583ef0, enables the graveyard buttons by the state record (277 B): rec = the record (its +0x65 the state
-   record), from = the last drawn index, btns = the four button ids, sel = the selected one. The buttons 0 ..
-   from disabled (0x475e40 (the button, 0) and the window table +0x28 = 0); the buttons from .. 3: 0x4ef4f0 (the
-   state record, i) -> 0 enabled / 0 (0x475e40 (the button, 0) and +0x28 = 0), else enabled and the first one
-   kept; with the selected button marked in the table (+0x3c) and some button enabled, the first enabled
-   becomes the selection and is marked at +0x28; 1 when any button is enabled, else 0 */
-
-int ai_Unk583ef0(char *rec, int from, int unused, int *btns, int *sel)
+/* 0x583ef0, enables the grave size buttons the yard has open from a minimum size on: rec = the graveyard
+   building (its yard), from = the largest size that is too small, btns = the four button ids, selp = the selected
+   size. The sizes 0 .. from are disabled and unchecked, so are the sizes after it the yard has not open; the open
+   ones are enabled. When the selected button is not clickable any more, the first open size becomes the selection
+   and is checked; 1 when any size is open, else 0 */
+int ai_GraveSizeEnable(AIBLD *rec, int from, int unused, int *btns, int *selp)
 {
     int i;
+    int first;
     int any;
-    int r;
 
-    from++;
-    any = -1;
-    for (i = 0; i < from; i++) {
+    any = 0;
+    first = -1;
+    for (i = 0; i < from + 1; i++) {
         d2_SetObjEnabled(btns[i], 0);
-        *(int *)(U_I((unsigned)&d2_Objs) + 0x28 + btns[i] * 0x2ec) = 0;
+        d2_Objs[btns[i]].checked = 0;
     }
-    r = 0;
-    for (i = from; i < 4; i++) {
-        if (gv_SizeOpen(U_I(rec + 0x65), i) == 0) {
-            d2_SetObjEnabled(btns[i], 0);
-            *(int *)(U_I((unsigned)&d2_Objs) + 0x28 + btns[i] * 0x2ec) = 0;
-        } else {
-            r = 1;
+    for (i = from + 1; i < 4; i++) {
+        if (gv_SizeOpen((char *)rec->yard, i)) {
+            any = 1;
             d2_SetObjEnabled(btns[i], 1);
-            if (any == -1)
-                any = i;
+            if (first == -1)
+                first = i;
+        } else {
+            d2_SetObjEnabled(btns[i], 0);
+            d2_Objs[btns[i]].checked = 0;
         }
     }
-    if (*(int *)(U_I((unsigned)&d2_Objs) + 0x3c + btns[*sel] * 0x2ec) != 0 && any != -1) {
-        *sel = any;
-        *(int *)(U_I((unsigned)&d2_Objs) + 0x28 + btns[any] * 0x2ec) = 1;
+    if (d2_Objs[btns[*selp]].clickDisabled && first != -1) {
+        *selp = first;
+        d2_Objs[btns[first]].checked = 1;
     }
-    return r;
+    return any;
 }
 
 void gv_OrderMoveGrave(int *c, int to, char *o, int from, int entry, int price); int gv_OrderReserveGrave(int *g, char *o, int v, short s, int x);
@@ -8004,7 +8001,7 @@ int ai_Unk584260(char *rec, int a, int b)
     d2_SetForm(win, 3);
     i = io_PrintText((char *)(unsigned)&full_data_625150, 0x4119);
     btn = d2_GetWinObj(win, 3, i);
-    d2_SetObjEnabled(btn, ai_Unk583ef0(rec, a, b, btns, &sel));
+    d2_SetObjEnabled(btn, ai_GraveSizeEnable((AIBLD *)rec, a, b, btns, &sel));
     U_I((unsigned)&d2_ClickedId) = -1;
     for (;;) {
         if (U_I(((unsigned)&dm_L + 0x20)) != 0) {
@@ -8022,7 +8019,7 @@ int ai_Unk584260(char *rec, int a, int b)
                     if (U_I((unsigned)&d2_PointerObj) == btns[i] && i != sel) {
                         sel = i;
                         ai_GraveSizeButtonsAt((AIBLD *)rec, win, 2, btns, &sel);
-                        d2_SetObjEnabled(btn, ai_Unk583ef0(rec, a, b, btns, &sel));
+                        d2_SetObjEnabled(btn, ai_GraveSizeEnable((AIBLD *)rec, a, b, btns, &sel));
                         break;
                     }
                 }

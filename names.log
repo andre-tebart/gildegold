@@ -1048,3 +1048,4 @@
 2026-11-02T15:59:22 0x00583240 func ai_Unk583240 -> ai_GraveWindow by:main why:the graveyard window Locations\Friedhof\Graves: the size buttons, the grave list and its detail; returns / passes the picked grave
 2026-11-02T16:01:54 0x00583700 func ai_Unk583700 -> ai_RentGraveDetail by:main why:the detail of the grave in the rent-a-grave window (Locations_Friedhof_RentAGrave2, ai_Unk583b70): its dead persons, the player as holder, the year and the care
 2026-11-02T16:12:04 0x00583c50 func ai_Unk583c50 -> ai_GraveSizeButtonsAt by:main why:the ai_GraveSizeButtons (0x582730) body with the window, section and button/selection storage passed in; called by the grave windows 0x584260 / 0x5847a0 with section 2
+2026-11-02T16:13:02 0x00583ef0 func ai_Unk583ef0 -> ai_GraveSizeEnable by:main why:enables the grave size buttons (ai_GraveSizeButtonsAt's) by gv_SizeOpen of the yard from a minimum size on, returns whether any is open
