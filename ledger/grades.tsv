@@ -3052,17 +3052,17 @@ exe	0x00503fa0	gm_BuildingTypeOfJob	f3gm	byte	readable
 exe	0x00504050	gm_JobBuildingType	f3gm	byte	readable		
 exe	0x00504100	gm_JobSlots	f3gm	draft	readable	deep	
 exe	0x00504290	gm_FirstTitleNumber	f3gm	shape	readable		
-exe	0x00504350	gm_TitleNumberGroup	f3gm	draft	readable		
-exe	0x005043d0	gm_TitleNumber	f3gm	draft	readable		
-exe	0x005044b0	gm_TitleJob	f3gm	draft	draft		
-exe	0x00504510	gm_Unk504510	f3gm	draft	draft		
-exe	0x00504790	gm_SetJob	f3gm	draft	draft		
-exe	0x00504840	gm_DropRank	f3gm	draft	draft		
+exe	0x00504350	gm_TitleNumberGroup	f3gm	byte	readable		
+exe	0x005043d0	gm_TitleNumber	f3gm	byte	readable		
+exe	0x005044b0	gm_TitleJob	f3gm	byte	readable		
+exe	0x00504510	gm_TitlePeriodServed	f3gm	shape	readable		
+exe	0x00504790	gm_SetJob	f3gm	byte	readable		
+exe	0x00504840	gm_DropRank	f3gm	byte	readable		
 exe	0x005048e0	gm_BuildingJob	f3gm	byte	readable		
 exe	0x005049c0	gm_HasBuilding	f3gm	byte	readable		
-exe	0x005049e0	gm_Unk5049e0	f3gm	draft	draft		
+exe	0x005049e0	gm_ClassTreasury	f3gm	byte	readable		
 exe	0x00504a80	gm_PlayerSeat	f3gm	byte	draft		
-exe	0x00504ad0	gm_TitleGroup	f3gm	draft	readable		
+exe	0x00504ad0	gm_TitleGroup	f3gm	byte	readable		
 exe	0x00504c00	gm_TitleJobGroup	f3gm	draft	readable		
 exe	0x00504ce0	gm_TitlesLeft	f3gm	draft	readable		
 exe	0x00504e00	gm_SkillPoints	f3gm	byte	readable		
