@@ -5709,47 +5709,57 @@ int ai_Unk49a020(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
     }
     return 0;
 }
-/* 0x49a0a0, execute callback: a public announcement, every councillor (kind 6 / 7) is told */
+/* 0x49a0a0, execute callback of "Buergerrecht" (0x19): pays 16000 to the object 0x115 of the building of kind 0xf,
+   raises the character to rank 2 (field 0xd) with flag 0x4000, and a character of kind 5 tells every councillor
+   (kind 6 / 7) about it with a rank message 0x69 dated 1..4 hours (and 0..49 minutes) ahead
+   @deep read whole against the original and rewritten: the building of kind 0xf and its object 0x115
+   (o->objId), the 16000 payment, rank field 0xd = 2 and flag 0x4000, the time + 1..4 h, the councillor
+   loop as an int index over ai_CharsT (jl against the end address, was a pointer loop with jb), the rank
+   message 0x69 as AIMSG (to, fromId -1, flags 9, rankUp.rank 2, rankUp.ch). Left: the callee-saved pushes:
+   the original shrink-wraps them (push ebx / esi / edi at 0x49a0e8 after the two early returns, which exit
+   with mov esp,ebp / pop ebp / ret only), ours pushes in the prologue and pops on both early exits (the
+   only code hunks: 0x49a0a9 push x3, 0x49a0c5 / 0x49a0e7 pop x3); plus the m.time word store scheduled
+   after the flags (order). Tried: the early exits as goto none to one return 0 (21 differing), the body
+   nested in if (b != 0) / if (o != 0) (29); the AI_ZERO inline asm (ebx / edi) forces the saves. */
 
-int ai_Unk49a0a0(G5CH *p)
+int ai_ExecuteCitizenship(G5CH *p)
 {
-    G8MSG m;
+    AIMSG m;
     AIBLD *b;
     AIOBJ *o;
-    unsigned char *c;
     AITIME t;
-    int n;
-    int v;
+    int i, n;
+    int rank;
 
-    b = gm_BuildQuery(1, 5, 0xf);
-    v = 2;
+    b = (AIBLD *)gm_BuildQuery(1, 5, 0xf);
+    rank = 2;
     if (b == 0)
         return 0;
-    o = gm_Query(*(int *)((char *)b + 0x5d), 2, 6, 0, 0x115);
+    o = gm_Query(b->objList, 2, 6, 0, 0x115);
     if (o == 0)
         return 0;
-    G8_4C4830I(*(int *)((char *)o + 2), p->netId, 0, 16000);
+    G8_4C4830I(o->objId, p->netId, 0, 16000);
     cm_BeginFieldBlock((AIPER *)p, p->netId);
-    cm_AddFieldDelta(1, 1, 0xd, &v);
+    cm_AddFieldDelta(1, 1, 0xd, &rank);
     cm_SendFieldDeltas();
     cm_SendSetField(p->netId, 0x1c8, 4, 0, 0x4000);
     t = ai_TimeT;
     gm_AddTime(&t, util_RandomU(4) + 1, util_RandomU(8) * 7, 0);
-    if (((unsigned char *)p)[2] == 5) {
+    if (((AIPER *)p)->kind == 5) {
         n = 0;
-        for (c = (unsigned char *)ai_CharsT + 2; c < (unsigned char *)(ai_CharsT + 768) + 2; c += 0x21c) {
+        for (i = 0; i < 768; i++) {
             if (n >= (int)ai_NumPlayers)
                 return 0x19;
-            if (c[0] == 6 || c[0] == 7) {
+            if (ai_CharsT[i].kind == 6 || ai_CharsT[i].kind == 7) {
                 AI_ZERO(&m, 0xf8);
-                m.to = *(unsigned int *)(c + 2);
-                m.time = t;
-                m.from = p->netId;
+                m.to = ai_CharsT[i].netId;
                 m.type = 0x69;
-                m.unk0c = -1;
-                m.unk36 = 9;
-                m.unk58 = 2;
-                cm_SendLongMessage((AIMSG *)&m);
+                m.time = t;
+                m.fromId = -1;
+                m.flags = 9;
+                m.rankUp.rank = 2;
+                m.rankUp.ch = p->netId;
+                cm_SendLongMessage(&m);
                 n++;
             }
         }
@@ -9526,7 +9536,7 @@ int ai_RegisterBaseActions(int a)
     strcpy(act.name, "Buergerrecht");
     act.eval = ai_EvalMoodWeights;
     act.decide = ai_Unk49a020;
-    act.exec = ai_Unk49a0a0;
+    act.exec = ai_ExecuteCitizenship;
     act.flags = 0x1b;
     if (!am_RegisterMethod(&act, a))
         return 0;

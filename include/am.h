@@ -834,7 +834,7 @@ typedef struct G8REC {                  /* 16 bytes, filled by 0x4a5760 (unk_48e
 } G8REC;
 
 
-int ai_Unk49a0a0(G5CH *p);                                                      /* 0x49a0a0 */
+int ai_ExecuteCitizenship(G5CH *p);                                                      /* 0x49a0a0 */
 int ai_Unk49a290(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49a290 */
 int ai_Unk49a380(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49a380 */
 int ai_Unk49a390(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49a390 */
