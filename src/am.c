@@ -6050,72 +6050,73 @@ int ai_Unk49aa80(G5CH *p, AIARG *s1, AIARG *s2)
     }
     return 0;
 }
-/* 0x49ab60, decide callback 0x1d: one of two goods (0x173, 0x15b) */
+/* 0x49ab60, decide callback of "UseObject (APS)" (0x1d), as ai_DecideUseReputationObject for the two goods 0x173
+   and 0x15b: with fewer than six goods and neither usable, the sub-action 2 to get a random missing one; else the
+   action 0x1d on a random usable one (o1 kind 1, its inventory entry), good 0x173 through the sub-action 4 */
 
-int ai_Unk49ab60(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
+int ai_DecideUseApsObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 {
     int k, i, r;
     int st[3];
     AIARG s1;
     AIARG s2;
-    G8REC recs[2];
+    G9REC recs[2];
 
     k = a;
     if (a == 0)
         k = 0x1d;
-    if (f != 0)
-        return 0;
-    memset(recs, 0, sizeof(recs));
-    recs[0].item = 0x173;
-    recs[1].item = 0x15b;
-    ai_FindWantedItems(p, 2, (int *)recs, st);
-    if (st[0] == 6 && st[2] == 0)
-        return 0;
-    if (st[1] == 2)
-        return 0;
-    if (st[0] < 6) {
-        if (st[2] == 0) {
+    if (f == 0) {
+        memset(recs, 0, sizeof(recs));
+        recs[0].item = 0x173;
+        recs[1].item = 0x15b;
+        ai_FindWantedItems(p, 2, recs, st);
+        if ((st[0] != 6 || st[2] != 0) && st[1] != 2) {
+            if (st[0] < 6) {
+                if (st[2] == 0) {
+                    i = util_RandomU(2);
+                    while (recs[i].value != 0)
+                        i = (i + 1) % 2;
+                    s1.kind = 2;
+                    s1.ref = recs[i].item;
+                    s1.arg = 1;
+                    s2.arg = 1;
+                    s2.ref = p->netId;
+                    s1.fvalue = 0.05f;
+                    s2.kind = 7;
+                    r = ai_ChooseSubAction(k, p->id, 2, &s1, &s2);
+                    if (r == 0)
+                        return 0;
+                    *o1 = s1;
+                    *o2 = s2;
+                    return r;
+                }
+            } else if (st[2] == 0) {
+                return 0;
+            }
             i = util_RandomU(2);
-            while (recs[i].unk04 != 0)
+            while (recs[i].value < 1)
                 i = (i + 1) % 2;
-            s1.kind = 2;
-            s1.ref = recs[i].item;
-            s1.arg = 1;
+            s2.kind = 1;
+            s2.ref = recs[i].entryId;
             s2.arg = 1;
-            s2.ref = p->netId;
-            s1.fvalue = 0.05f;
-            s2.kind = 7;
-            r = ai_ChooseSubAction(k, p->id, 2, &s1, &s2);
-            if (r == 0)
+            s1.kind = 0;
+            s1.ref = -1;
+            s1.arg = -1;
+            s1.arg2 = 0x1d;
+            if (i == 0) {
+                r = ai_ChooseSubAction(k, p->id, 4, &s2, &s1);
+                if (r == 0)
+                    return 0;
+                *o1 = s2;
+                *o2 = s1;
                 return r;
-            *o1 = s1;
-            *o2 = s2;
-            return r;
+            }
+            *o1 = s2;
+            *o2 = s1;
+            return 0x1d;
         }
-    } else if (st[2] == 0) {
-        return 0;
     }
-    i = util_RandomU(2);
-    while (recs[i].unk04 < 1)
-        i = (i + 1) % 2;
-    s2.kind = 1;
-    s2.arg = 1;
-    s2.ref = recs[i].unk08;
-    s1.kind = 0;
-    s1.ref = -1;
-    s1.arg = -1;
-    s1.arg2 = 0x1d;
-    if (i == 0) {
-        r = ai_ChooseSubAction(k, p->id, 4, &s2, &s1);
-        if (r == 0)
-            return r;
-        *o1 = s2;
-        *o2 = s1;
-        return r;
-    }
-    *o1 = s2;
-    *o2 = s1;
-    return 0x1d;
+    return 0;
 }
 /* 0x49ad80, execute callback 0x1d: uses the object s1->unk04 of the character's list */
 
@@ -9581,7 +9582,7 @@ int ai_RegisterBaseActions(int a)
     act.id = 0x1d;
     strcpy(act.name, "UseObject (APS)");
     act.eval = ai_EvalMoodWeights;
-    act.decide = ai_Unk49ab60;
+    act.decide = ai_DecideUseApsObject;
     act.exec = ai_Unk49ad80;
     act.flags = 0x39;
     if (!am_RegisterMethod(&act, a))
