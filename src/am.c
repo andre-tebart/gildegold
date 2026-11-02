@@ -7499,14 +7499,14 @@ int ai_Unk49d7d0(G5CH *p, AIARG *s1, AIARG *s2)
 {
     return ai_CheckVisitAction(p, s1, s2) ? 0x2d : 0;
 }
-/* 0x49d7f0, eval callback (characters with +0x166 == 0xf): rated three times higher when 0x4f9e00 is above
-   the character's value +0x100 */
+/* 0x49d7f0, eval callback 0x2e "Buergermeister" (only for the holder of office 0xf): rated on the current need
+   and three times higher when statistic 3 of ord_GetStatistics is above (mood[10][0] - 2) * 0.4 */
 
-int ai_Unk49d7f0(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2)
+int ai_EvalMayor(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2)
 {
     float d[10];
 
-    if (((unsigned char *)p)[0x166] != 0xf) {
+    if (p->officeKind != 0xf) {
         *a = -1e30f;
         *b = -1e30f;
         return 0;
@@ -7514,8 +7514,8 @@ int ai_Unk49d7f0(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2
     *a = 0.0f;
     *b = 0.0f;
     ord_GetStatistics(d);
-    if ((*(float *)((char *)p + 0x100) - 2.0) * 0.4f < d[3]) {
-        G8_4A4AE0(a, b, i, p, f, o1, o2);
+    if (d[3] > (p->mood[10][0] - 2.0) * 0.4f) {
+        AI_EvalCurrentNeed7(a, b, i, p, f, o1, o2);
         *a *= 3.0f;
         *b *= 3.0f;
         return 1;
@@ -7573,7 +7573,7 @@ int ai_Unk49d8d0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
                 recA = rec;
         }
     }
-    if ((*(float *)((char *)p + 0x100) - 2.0) * 0.4f < d[3]) {
+    if (d[3] > (*(float *)((char *)p + 0x100) - 2.0) * 0.4f) {
         if (cntA != 0 && recA != 0) {
             r = recA;
             o1->kind = 4;
@@ -8099,7 +8099,7 @@ int ai_Unk49ec10(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2
     if (q != 0 && gm_TitlesLeft(q) > 2) {
         if (ai_Unk4aaef0(p, &s1, &s2) == 0)
             return 0;
-        G8_4A4AE0(a, b, i, p, 0, o1, o2);
+        AI_EvalCurrentNeed7(a, b, i, p, 0, o1, o2);
         *o1 = s1;
         *o2 = s2;
         *a *= 6.0f;
@@ -8350,7 +8350,7 @@ int ai_Unk49f4f0(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2
             return 0;
         return ai_EvalMoodWeights(a, b, i, (AIPER *)p, 0, o1, o2);
     }
-    G8_4A4AE0(a, b, i, p, 0, o1, o2);
+    AI_EvalCurrentNeed7(a, b, i, p, 0, o1, o2);
     *a += *a;
     *b *= 3.0f;
     return 1;
@@ -8985,7 +8985,7 @@ int ai_Unk4a0990(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2
     if (bl == 0)
         return 0;
     if (bl->level < util_RandomU(0x10) + 0x32) {
-        G8_4A4AE0(a, b, i, p, f, o1, o2);
+        AI_EvalCurrentNeed7(a, b, i, p, f, o1, o2);
         *a *= 3.0f;
         *b *= 3.0f;
         return 1;
@@ -9783,7 +9783,7 @@ int ai_RegisterBaseActions(int a)
     AI_ZERO(&act, sizeof(act));
     act.id = 0x2e;
     strcpy(act.name, "Buergermeister");
-    act.eval = ai_Unk49d7f0;
+    act.eval = ai_EvalMayor;
     act.decide = ai_Unk49d8d0;
     act.exec = ai_Unk49dc10;
     act.flags = 0x39;
@@ -10211,7 +10211,7 @@ int ai_EvalMoodWeights(float *a, float *b, int i, AIPER *p, int f, void *x, void
 }
 /* 0x4a4ae0, eval callback: only the weights of the current need count */
 
-int ai_Unk4a4ae0(float *a, float *b, int i, AIPER *p)
+int ai_EvalCurrentNeed(float *a, float *b, int i, AIPER *p)
 {
     G5ACT *act = &G5_ACTS[i];
     float d1;
