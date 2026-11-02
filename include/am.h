@@ -835,7 +835,7 @@ typedef struct G8REC {                  /* 16 bytes, filled by 0x4a5760 (unk_48e
 
 
 int ai_ExecuteCitizenship(G5CH *p);                                                      /* 0x49a0a0 */
-int ai_Unk49a290(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49a290 */
+int ai_DecideSaveAps(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49a290 */
 int ai_Unk49a380(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49a380 */
 int ai_Unk49a390(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49a390 */
 /* unk_48e070.h declares ai_FindWantedItems with its AIPX / AIRECX views (unify at the join) */

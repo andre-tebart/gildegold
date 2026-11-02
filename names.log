@@ -783,3 +783,4 @@
 2026-11-02T07:08:21 0x00499c10 func ai_Unk499c10 -> ai_DecideBeatUp by:main why:ai_Unk499c10: registered as the decide callback of action 0x18 "Verpruegeln" (0x4a16f0); he_Unk553d60: returns 0 while an event 0x4b pairs b (+0xb0) with a (+0xac), else 1, as he_NoEvent2ePair does for 0x2e
 2026-11-02T07:08:21 0x00553d60 data he_Unk553d60 -> he_NoEvent4bPair by:main why:ai_Unk499c10: registered as the decide callback of action 0x18 "Verpruegeln" (0x4a16f0); he_Unk553d60: returns 0 while an event 0x4b pairs b (+0xb0) with a (+0xac), else 1, as he_NoEvent2ePair does for 0x2e
 2026-11-02T07:10:58 0x0049a0a0 func ai_Unk49a0a0 -> ai_ExecuteCitizenship by:main why:registered as the execute callback of action 0x19 "Buergerrecht" (0x4a16f0): pays 16000 and raises the character to rank 2
+2026-11-02T07:12:09 0x0049a290 data ai_Unk49a290 -> ai_DecideSaveAps by:main why:registered as the decide callback of action 0x1a "ApsSparen" (0x4a16f0); Aps kept as the original spells it

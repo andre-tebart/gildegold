@@ -5766,9 +5766,11 @@ int ai_ExecuteCitizenship(G5CH *p)
     }
     return 0x19;
 }
-/* 0x49a290, decide callback 0x1a: only actions that do not raise need 0 (APS) */
+/* 0x49a290, decide callback of "ApsSparen" (0x1a): the sub-action 0x1a choice is taken unless it lowers a need
+   (a weight of kind 0 below 0 in its short- or long-term block); without a choice, or when refused, it returns 0x1a
+   with o1 / o2 untouched */
 
-int ai_Unk49a290(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
+int ai_DecideSaveAps(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 {
     AIARG s1;
     AIARG s2;
@@ -5785,19 +5787,21 @@ int ai_Unk49a290(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     s2.ref = 0;
     r = ai_ChooseSubAction(0x1a, p->id, 0, &s1, &s2);
     if (r == 0)
-        return 0;
+        goto refuse;
     act = &G5_ACTS[r];
     for (k = 0; k < 4; k++) {
-        if (act->w1[k].k == 0 && act->w1[k].w > 0.0f)
-            return 0;
+        if (act->w1[k].k == 0 && act->w1[k].w < 0.0f)
+            goto refuse;
     }
     for (k = 0; k < 4; k++) {
-        if (act->w2[k].k == 0 && act->w2[k].w > 0.0f)
-            return 0;
+        if (act->w2[k].k == 0 && act->w2[k].w < 0.0f)
+            goto refuse;
     }
     *o1 = s1;
     *o2 = s2;
     return r;
+refuse:
+    return 0x1a;
 }
 /* 0x49a380, execute callback 0x1a */
 
@@ -9544,7 +9548,7 @@ int ai_RegisterBaseActions(int a)
     act.id = 0x1a;
     strcpy(act.name, "ApsSparen");
     act.eval = ai_EvalMoodWeights;
-    act.decide = ai_Unk49a290;
+    act.decide = ai_DecideSaveAps;
     act.exec = ai_Unk49a380;
     act.flags = 0x1;
     if (!am_RegisterMethod(&act, a))
