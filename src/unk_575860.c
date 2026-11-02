@@ -9662,86 +9662,92 @@ int ai_UpgradeWorkerSend(AIBLD *rec, AICHAR *ch, int sel)
 
 float gm_GetSkill(char *c, int skill); int gm_ClockSeason(); char * he_FindEvent(int n, ...); void d2_SetObjEnabled();
 
-/* 0x587810, the graveyard grave-detail window (692 B): rec = the record (+1 a dword). n = 0x4fe350 (0x770ae0);
-   0x520fe0 (rec) != 0 -> return. U_I (0x6f2448) == 0 and n != 2 -> the line 0x413b, 0x5176d0 / 0x521150 (the
-   line, 4), 0x52d7a0 (); else when a running 0x8f event exists (0x53e400 (2, 0, 0x8f, 3, rec + 1)) -> the line
-   0x413c, 0x5176d0 / 0x521150 (the line, 4), 0x52d7a0 (). Otherwise the window 0x62a84c with 0x476f80 / 0x475600,
-   the sound 0x52ea30, the sections 0 / 1 / 3, the text 0x4138, 0x4139 (0x228) and 0x4139 + 1 / + 2 in 0x475b80
-   (window, 3, text) = the three buttons, 0x525220 (rec, 0); the pump loop 0x5309a0 (this window, 0x677c7): the
-   escape 0x14673a0 -> 0x6f22a0 = 1; the first selected character (the byte +0x188, i = 0 .. 0x2ff): the three
-   buttons by 0x504ec0 (the character, 1 / 2 / 4) < 1.0 in 0x475e40 (the button, the flag); a click on one ->
-   sel 1 / 2 / 4: without a character 0x521150 (U_I (0x144a40c), 0), else 0x587700 (rec, the character, sel) != 0
-   -> 0x6f22a0 = 1; the pump 0 -> 0x4758f0 (window), 0x525440 (), 0x52ae40 (), 0x52d7a0 () */
-void ai_UpgradeWorkerWindow(char *rec)
+/* 0x587810, the graveyard's worker upgrade window for the graveyard rec (the contact of ai_Unk587ad0): nothing
+   while sv_CheckCharacterFlag (rec) holds. Outside the season 2 of the game clock (gm_ClockSeason) and without
+   gm_AllowAll the message box txt 0x413b; with an upgrade already running (an event 0x8f of the building,
+   he_FindEvent) the message box txt 0x413c; both: the camera follows again. Else the form
+   "Locations\Friedhof\UpgradeWorker" with the title txt 0x4138, the three buttons from the text 0x4139 (0x228)
+   on, and the player bar; each frame the first selected character (kept from the frame before when none is
+   selected) enables the buttons of its skills 1 / 2 / 4 below 1.0 (gm_GetSkill); a click on one: without a
+   character the message box txt 0x4093, else the confirm (ai_UpgradeWorkerSend) leaves the window. Then the
+   player bar and the selection close and the camera follows again */
+void ai_UpgradeWorkerWindow(AIBLD *rec)
 {
-    char buf[0x400];
-    char *f;
+    char line[0x400];
+    AICHAR *f;
     int win;
-    int b1;
-    int b2;
-    int b3;
+    int btn1;
+    int btn2;
+    int btn4;
     int n;
     int i;
     int sel;
 
-    n = gm_ClockSeason((char *)(unsigned)&ai_Time);
+    f = 0;
+    n = gm_ClockSeason(ai_Time);
     if (sv_CheckCharacterFlag(rec) != 0)
         return;
-    if (U_I((unsigned)&gm_AllowAll) != 0 || n == 2) {
-        if (he_FindEvent(2, 0, 0x8f, 3, rec + 1) != 0) {
-            txt_Format(buf, (char *)0x413c);
-            sv_MessageBox(buf, 4);
-            sv_CameraFollow();
-            return;
-        }
-    } else {
-        txt_Format(buf, (char *)0x413b);
-        sv_MessageBox(buf, 4);
+    if (gm_AllowAll == 0 && n != 2) {
+        txt_Format(line, 0x413b);
+        sv_MessageBox(line, 4);
         sv_CameraFollow();
         return;
     }
-    win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62a84c);
+    if (he_FindEvent(2, 0, 0x8f, 3, rec->id) != 0) {
+        txt_Format(line, 0x413c);
+        sv_MessageBox(line, 4);
+        sv_CameraFollow();
+        return;
+    }
+    win = d2_OpenForm(0, 0, "Locations\\Friedhof\\UpgradeWorker");
     d2_SetPointerSprite(0, 0);
     d2_CentreViewWindows(win);
     d2_SetForm(win, 0);
-    sv_FitForm(U_I((unsigned)&d2_LastWindow));
+    sv_FitForm(d2_LastWindow);
     d2_SetForm(win, 1);
-    io_PrintText(0x4138);
+    io_PrintText((char *)0x4138);
     d2_SetForm(win, 3);
-    n = io_PrintText(0x4139, 0x228);
-    b1 = d2_GetWinObj(win, 3, n);
-    b2 = d2_GetWinObj(win, 3, n + 1);
-    b3 = d2_GetWinObj(win, 3, n + 2);
+    n = io_PrintText((char *)0x4139, 0x228);
+    btn1 = d2_GetWinObj(win, 3, n);
+    btn2 = d2_GetWinObj(win, 3, n + 1);
+    btn4 = d2_GetWinObj(win, 3, n + 2);
     sv_OpenPlayerBar(rec, 0);
     while (sv_RunFrame(ai_UpgradeWorkerWindow, 0x677c7) != 0) {
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0)
-            U_I((unsigned)&sv_PopRequest) = 1;
-        f = 0;
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
         for (i = 0; i < 0x300; i++) {
-            if (*(char *)((unsigned)&ai_Chars + i * 0x21c + 0x188)) {
-                f = (char *)((unsigned)&ai_Chars + i * 0x21c);
+            if (ai_CharsT[i].selected) {
+                f = &ai_CharsT[i];
                 break;
             }
         }
         if (f != 0) {
-            d2_SetObjEnabled(b1, gm_GetSkill(f, 1) < 1.0);
-            d2_SetObjEnabled(b2, gm_GetSkill(f, 2) < 1.0);
-            d2_SetObjEnabled(b3, gm_GetSkill(f, 4) < 1.0);
+            if (gm_GetSkill((char *)f, 1) >= 1.0)
+                d2_SetObjEnabled(btn1, 0);
+            else
+                d2_SetObjEnabled(btn1, 1);
+            if (gm_GetSkill((char *)f, 2) >= 1.0)
+                d2_SetObjEnabled(btn2, 0);
+            else
+                d2_SetObjEnabled(btn2, 1);
+            if (gm_GetSkill((char *)f, 4) >= 1.0)
+                d2_SetObjEnabled(btn4, 0);
+            else
+                d2_SetObjEnabled(btn4, 1);
         }
-        if (U_I((unsigned)&d2_ClickedId) != -1) {
-            if (U_I((unsigned)&d2_PointerObj) == b1)
+        if (d2_ClickedId != -1) {
+            if (d2_PointerObj == btn1)
                 sel = 1;
-            else if (U_I((unsigned)&d2_PointerObj) == b2)
+            else if (d2_PointerObj == btn2)
                 sel = 2;
-            else if (U_I((unsigned)&d2_PointerObj) == b3)
+            else if (d2_PointerObj == btn4)
                 sel = 4;
             else
                 continue;
-            if (f == 0) {
-                sv_MessageBox((char *)U_I((unsigned)&full_data_144a40c), 0);
-            } else if (ai_UpgradeWorkerSend((AIBLD *)rec, (AICHAR *)f, sel) != 0) {
-                U_I((unsigned)&sv_PopRequest) = 1;
-            }
+            if (f == 0)
+                sv_MessageBox(txt_Ptrs[0x4093], 0);
+            else if (ai_UpgradeWorkerSend(rec, f, sel) != 0)
+                sv_PopRequest = 1;
         }
     }
     d2_CloseView(win);
@@ -9768,7 +9774,7 @@ void ai_Unk587ad0(char *rec)
         }
         if (U_I((unsigned)&ai_ClickedObject) != 0) {
             if (U_I((unsigned)&ai_ClickedObject) == c0)
-                ai_UpgradeWorkerWindow(rec);
+                ai_UpgradeWorkerWindow((AIBLD *)rec);
             else if (U_I((unsigned)&ai_ClickedObject) == c1)
                 ai_GraveFogWindow(rec);
         }
