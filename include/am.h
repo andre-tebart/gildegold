@@ -235,7 +235,7 @@ int amt_GetOfficeApplicants(int k, int n, char **out);                          
 int ord_DispatchOrder(int id, char *c, int *m);                                     /* 0x4f81c0 */
 unsigned *gm_Unk503ee0(unsigned *out, int n);                                            /* 0x503ee0, 6 bytes returned through out */
 #define gm_FindPer(id) ((AIPER *)gm_FindChar(id))  /* ai.h: returns AICHAR * */
-int gm_Unk509ee0(char *c, char p);                                    /* 0x509ee0 */
+int gm_CharCurrency(char *c, char p);                                    /* 0x509ee0 */
 int gm_GetWorth(unsigned short id);                                            /* 0x50a640 */
 /* ai.h declares he_FindEvent with five arguments; 0x496b10 calls it with three */
 #define AI_53E400_3(a, b, k) ((AIJOBX *(*)(int, int, int, ...))he_FindEvent)(a, b, k)
@@ -439,7 +439,7 @@ void ai_Unk493a40(AGDUEL *d);                                   /* 0x493a40 */
 int ai_Unk493be0(AGCH *p, AIOBJ *o);                            /* 0x493be0 */
 AGCH *ai_Unk493ea0(AGCH *p);                                    /* 0x493ea0 */
 
-int gm_Unk509ee0(char *c, char p);                     /* 0x509ee0 */
+int gm_CharCurrency(char *c, char p);                     /* 0x509ee0 */
 int gm_GetWorth(unsigned short id);                            /* 0x50a640 */
 int gm_ConvertMoney(int a, unsigned char k);                       /* 0x5085b0 */
 int gm_PlayerFactor(int a, unsigned char k);                       /* 0x5085f0 */
@@ -790,7 +790,7 @@ int ai_Unk4a5140(int a, struct AIPER *p, int b, struct AIARG *s1, struct AIARG *
 int gm_Unk509dc0(int unused, int kind);                                               /* 0x509dc0 */
 int gm_BuildingKindValue(int k);                                                        /* 0x509d30 */
 int ai_Unk49eec0(int a, struct G5CH *p, int f, struct AIARG *o1, struct AIARG *o2);                  /* 0x49eec0 */
-#define G6_509EE0(p, k) ((float (*)(AIPER *, unsigned char))gm_Unk509ee0)((AIPER *)(p), (k))  /* am.h: returns int */
+#define G6_509EE0(p, k) ((float (*)(AIPER *, unsigned char))gm_CharCurrency)((AIPER *)(p), (k))  /* am.h: returns int */
 int ai_Unk498a80(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x498a80 */
 int ai_Unk498b80(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x498b80 */
 int amt_GetColumnOfficesOwned(int col, int max, struct AMTREC *out);                                      /* 0x4e7040 */

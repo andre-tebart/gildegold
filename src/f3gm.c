@@ -8759,7 +8759,7 @@ int gm_Unk509eb0(char *c)
 }
 /* 0x509ee0, the amount of the character c's object of the prototype word of the player p */
 
-int gm_Unk509ee0(char *c, char p)
+int gm_CharCurrency(char *c, char p)
 {
     char *o;
 

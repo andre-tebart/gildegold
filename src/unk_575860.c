@@ -5373,7 +5373,7 @@ void ai_Unk57f690(char *sc)
 
 float gv_SalvoCharge(); void gv_BuildingCannon(char *o, unsigned *a, unsigned *b); int gv_CannonCost(); float ai_GetDefaultEffectScale();
 int _ftol(); float ai_Unk57fdb0(); int d2_CreateWinText(); void d2_SetObjFont();  /* @original: the call at 4110 passes 1 argument to d2.h's 4-parameter prototype */
-void txt_Format(char *out, int id0, ...); int gm_Unk509ee0(char *c, char p);
+void txt_Format(char *out, int id0, ...); int gm_CharCurrency(char *c, char p);
 
 /* 0x57f890, the cannon control panel (383 B, ROUGH: the calls and the window-table stores are written; the three
    float -> int conversions (0x5de518 = __ftol) lost their arguments in the pseudocode): rec, sc = the scene
@@ -5443,7 +5443,7 @@ void ai_Unk57f890(char *rec, char *sc, char *run)
     *(int *)(U_I((unsigned)&d2_Objs) + 0x5c + m * 0x2ec) = 1;
     *(short *)(U_I((unsigned)&d2_Objs) + 0x14 + m * 0x2ec) = *(short *)((unsigned)&ai_Unkf8f128 + U_I((unsigned)&d2_LastWindow) * 0x3c4) / 2;
     d2_SetObjFont(m, 0x54);
-    d = gm_Unk509ee0((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, *(unsigned char *)(unsigned)&ai_OwnPlayer);
+    d = gm_CharCurrency((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, *(unsigned char *)(unsigned)&ai_OwnPlayer);
     txt_Format(buf, (char *)(unsigned)&full_data_62a364, d, *(int *)(((unsigned)&ai_Selected + 0xc) + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c));
     m = d2_CreateWinText(*(short *)((unsigned)&ai_Unkf8f128 + U_I((unsigned)&d2_LastWindow) * 0x3c4) / 2, 0x23, buf, U_I((unsigned)&d2_LastWindow));
     *(int *)(U_I((unsigned)&d2_Objs) + 0x5c + m * 0x2ec) = 1;
@@ -6962,7 +6962,7 @@ int ai_Unk583ef0(char *rec, int from, int unused, int *btns, int *sel)
     return r;
 }
 
-void gv_OrderMoveGrave(int *c, int to, char *o, int from, int entry, int price); int unk_Unk4f2330(); int gv_OrderReserveGrave(int *g, char *o, int v, short s, int x);
+void gv_OrderMoveGrave(int *c, int to, char *o, int from, int entry, int price); int gv_LeasePrice(); int gv_OrderReserveGrave(int *g, char *o, int v, short s, int x);
 
 /* 0x584010, the graveyard rent confirmation (587 B): rec = the record (its +0x27 the grave's owner word), a / b
    the values passed on, idx = the grave index; the cost 16000 when the owner is not the player (0x6f25b8), else
@@ -7161,7 +7161,7 @@ int ai_Unk584520(char *rec, int idx)
     if (*(unsigned short *)(rec + 0x27) == *(unsigned short *)(unsigned)&ai_PlayerId)
         cost = 0;
     else
-        cost = unk_Unk4f2330((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, 0xff, idx, 1, &out);
+        cost = gv_LeasePrice((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, 0xff, idx, 1, &out);
     win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62a5bc);
     d2_SetPointerSprite(0, 0);
     d2_CentreViewWindows(win);
@@ -8245,7 +8245,7 @@ void ai_Unk586610(char *rec)
     sv_CameraFollow();
 }
 
-void ai_EndCharExtra(char *ch, int f); void cm_SendRelations(int a, int b, int c, int d); int sv_Unk52b490();
+void ai_EndCharExtra(char *ch, int f); int cm_SendRelations(int a, int b, int c, int d); int sv_Unk52b490();
 
 /* 0x5867c0, the graveyard "Schlag" action (114 B): when the grave object 0x6f22f8 exists with the flag +0x1b4
    bit 0 and U_I (0x146738c) is set: 0x587c40 (the object, 0), 0x4c4b00 (the character + 4, the object's +4, -5,

@@ -264,7 +264,7 @@ void gv_BuildingCannon(char *o, unsigned *balls, unsigned *kind);  /* 0x4ef170 *
 void gv_CannonScatter(char *o, float *spread, float *speedSpread);  /* 0x4ef260 */
 float unk_Unk4ef330(char *o);           /* 0x4ef330 */
 int gv_GraveCount(unsigned char *o);    /* 0x4ef3c0 */
-int unk_Unk4ef440(unsigned char *o);    /* 0x4ef440 */
+int gv_GravesInUse(unsigned char *o);    /* 0x4ef440 */
 int gv_EntryCount(unsigned char *o);    /* 0x4ef470 */
 int gv_SizeOpen(char *r, int i);      /* 0x4ef4f0 */
 extern char *ai_BTypes;              /* 0x7e3f30 */
@@ -296,7 +296,7 @@ int unk_Unk4f01d0(int *g, char *o, int v, int b);  /* 0x4f01d0 */
 int gv_BuryCharacter(int *p);              /* 0x4f0240 */
 int gv_OrderReserveGrave(int *c, char *o, int size, short years, int price);  /* 0x4f0430 */
 int gv_ReserveGrave(GVORDER *m);          /* 0x4f0490 */
-int unk_Unk4f0700(int *g, char *o, int v, int b, short s, int x);  /* 0x4f0700 */
+int gv_OrderExtendGrave(int *g, char *o, int v, int b, short s, int x);  /* 0x4f0700 */
 int gv_ExtendGrave(GVORDER *m);           /* 0x4f0770 */
 int gv_OrderSetGraveHolder(int *c, char *o, int size, int entry);  /* 0x4f0900 */
 int gv_SetGraveHolder(GVORDER *m);         /* 0x4f0970 */
@@ -306,8 +306,8 @@ int gm_AddObjekt(int id, int proto, int n);                     /* 0x500970 */
 int gv_OpenSize(GVORDER *m);           /* 0x4f0af0 */
 int gv_OrderAdjustEntry(char *o, int v, int b, int x);  /* 0x4f0c20 */
 int gv_AdjustEntry(GVORDER *m);          /* 0x4f0c80 */
-int unk_Unk4f0d70(char *o, int x);      /* 0x4f0d70 */
-int unk_Unk4f0dd0(unsigned char *p);    /* 0x4f0dd0 */
+int gv_OrderNewDead(char *o, int x);      /* 0x4f0d70 */
+int gv_AddNewDead(unsigned char *p);    /* 0x4f0dd0 */
 void gv_OrderMoveGrave(int *c, int to, char *o, int from, int entry, int price);  /* 0x4f0e80 */
 int gv_MoveGrave(GVMOVE *m);           /* 0x4f0ed0 */
 int gv_OrderRaiseDead(char *o, int size, int entry, int grave, int kind);  /* 0x4f1170 */
@@ -418,13 +418,13 @@ int unk_Unk4f27d0(int *p);              /* 0x4f27d0 */
 int gv_Accuse(int i, int v, int a, int b, int obj);  /* 0x4f2e30 */
 float util_RandomF(void);               /* 0x42ec20 */
 
-void unk_Unk4f1de0(char *o);            /* 0x4f1de0 */
-int unk_Unk4f2330(unsigned short *c, int a, int kind, int flag, int *out);  /* 0x4f2330 */
+void gv_GraveyardTurn(char *o);            /* 0x4f1de0 */
+int gv_LeasePrice(unsigned short *c, int a, int kind, int flag, int *out);  /* 0x4f2330 */
 int cm_FlushSendQueue();                     /* 0x4c3680 */
 int cm_ReceiveMessages();                     /* 0x4c3fd0 */
 int cm_ExecCommands();                     /* 0x4c4190 */
-void cm_SendRelations(int a, int b, int c, int d);                     /* 0x4c4b00 */
-int gm_Unk509ee0(char *c, char p);                   /* 0x509ee0 */
+int cm_SendRelations(int a, int b, int c, int d);                     /* 0x4c4b00 */
+int gm_CharCurrency(char *c, char p);                   /* 0x509ee0 */
 
 int unk_Unk4f5070(char *c, int *m);     /* 0x4f5070 */
 

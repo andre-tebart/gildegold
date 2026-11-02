@@ -1250,7 +1250,7 @@ int ai_Unk4908d0(int a, AGCH *p, int b, AGARG *o1, AGARG *o2)
             r2 = gv_FindEntry(0, bld, 0, gv_EntryIsFree, k);
             if (r2 != 0) {
                 v = unk_Unk4f2440(p, *r, *r2, &i);
-                m = gm_Unk509ee0(p, ai_OwnPlayer);
+                m = gm_CharCurrency(p, ai_OwnPlayer);
                 if ((int)(m * 0.22f) <= v)
                     return 0;
                 o1->kind = 5;
@@ -1275,8 +1275,8 @@ int ai_Unk4908d0(int a, AGCH *p, int b, AGARG *o1, AGARG *o2)
     {
         int t3;
 
-        v = unk_Unk4f2330(p, 0xff, *r2, 1, &t3);
-        m = gm_Unk509ee0(p, ai_OwnPlayer);
+        v = gv_LeasePrice(p, 0xff, *r2, 1, &t3);
+        m = gm_CharCurrency(p, ai_OwnPlayer);
     }
     if ((int)(m * 0.22f) < v)
         return 0;
@@ -4129,7 +4129,7 @@ int ai_Unk496e40(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
         }
         return r;
     }
-    m = gm_Unk509ee0(p, ai_OwnPlayer);
+    m = gm_CharCurrency(p, ai_OwnPlayer);
     lim = (int)(m * 0.33f);
     if (o1->kind == 0) {
         if (p->unk168) {
@@ -4366,7 +4366,7 @@ rate:
                 return 0;
             if (!c)
                 return 0;
-            v = gm_Unk509ee0(c, ai_OwnPlayer);
+            v = gm_CharCurrency(c, ai_OwnPlayer);
             o1->arg2 = 0;
         } else {
             v = o2->arg2;
@@ -4445,7 +4445,7 @@ int ai_Unk497af0(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
     if (bld->owner == 0xffff)
         return 0;
     c = (AIPER *)&ai_CharsT[bld->owner];
-    v = gm_Unk509ee0(c, ai_OwnPlayer);
+    v = gm_CharCurrency(c, ai_OwnPlayer);
     if (o1->unk14 > 0.0f && o1->unk14 < 1.0f)
         v = (int)(v * o1->unk14);
     if (v < (int)gm_GoodsPrice(o1->ref, ai_OwnPlayer))
@@ -4496,7 +4496,7 @@ int ai_Unk497cf0(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
         }
         if (!best)
             return 0;
-        lim = gm_Unk509ee0(p, ai_OwnPlayer) * 0.95f;
+        lim = gm_CharCurrency(p, ai_OwnPlayer) * 0.95f;
         v = d < 0x32 ? 50 : 30;
         f = ai_Unk4a4e30(best, v);
         if (f == 0.0f || f > lim)
@@ -4592,7 +4592,7 @@ int ai_Unk497fa0(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
     }
     return 0;
 found:
-    lim = (int)(gm_Unk509ee0(p, ai_OwnPlayer) * 0.66f);
+    lim = (int)(gm_CharCurrency(p, ai_OwnPlayer) * 0.66f);
     r = ord_DispatchOrder(1, p, buf);
     if (r == 2 || r == 4)
         ok[0] = 1;
@@ -4939,7 +4939,7 @@ int ai_Unk498c70(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
             return 0;
     } else if (b == 1 && o1->kind != 5)
         return 0;
-    lim = (int)(gm_Unk509ee0(p, ai_OwnPlayer) * 0.66f);
+    lim = (int)(gm_CharCurrency(p, ai_OwnPlayer) * 0.66f);
     s2.kind = 0;
     s2.ref = 0;
     s2.arg = 0;
@@ -5206,7 +5206,7 @@ int ai_Unk499660(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
     float g;
     int m, x, v, r;
 
-    m = gm_Unk509ee0(p, ai_OwnPlayer);
+    m = gm_CharCurrency(p, ai_OwnPlayer);
     if (!b) {
         if (p->bld2 == 0 && p->kind != 3) {
             s1.kind = 0;
@@ -5347,7 +5347,7 @@ int ai_Unk499c10(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
     float g, t;
     int m, flags, v, r;
 
-    m = gm_Unk509ee0(p, ai_OwnPlayer);
+    m = gm_CharCurrency(p, ai_OwnPlayer);
     if (!b) {
         memset(buf, 0, sizeof(buf));
         buf[0] = 1;
@@ -5472,7 +5472,7 @@ int ai_Unk49a020(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
         return 0;
     {
         if (p->unk00d < 2 && (p->flags1c8 & 0x4000)) {
-            m = gm_Unk509ee0(p, ai_OwnPlayer);
+            m = gm_CharCurrency(p, ai_OwnPlayer);
             if (m >= 0 && !(m * 0.44f < 16000.0f)) {
                 o1->kind = 0xd;
                 o1->ref = 2;
@@ -6639,7 +6639,7 @@ int ai_Unk49c570(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 
     flags = ((unsigned)&cm_SendRing + 0x4973c0);
     r = util_RandomU(3);
-    money = gm_Unk509ee0((AIPER *)p, ai_OwnPlayer);
+    money = gm_CharCurrency((AIPER *)p, ai_OwnPlayer);
     if (f != 0)
         return 0;
     if (ai_PickPartnerChain((AIPER *)p, 1, (int *)&flags, 0, (float)util_RandomU(0x19) + 10.0, &id) == 0)
@@ -6699,7 +6699,7 @@ int ai_Unk49c790(int a, G5CH *p, int f, AIARG *s1, AIARG *o)
         if (bld != 0) {
             obj = gm_Query(*(int *)(bld + 0x14), 1, 0, s1->ref);
             if (obj != 0 && gm_ListAmount(bld, obj) >= 1) {
-                money = gm_Unk509ee0((AIPER *)p, ai_OwnPlayer);
+                money = gm_CharCurrency((AIPER *)p, ai_OwnPlayer);
                 if (s1->unk14 > 0.0f && s1->unk14 < 1.0f)
                     money = (int)(money * s1->unk14);
                 if (money >= (int)gm_GoodsPrice(s1->ref, ai_OwnPlayer)) {
@@ -6753,7 +6753,7 @@ int ai_Unk49c8e0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         return 0;
     b = list[util_RandomU(i)];
     if (*(int *)((char *)p + 0x194) < 4) {
-        money = gm_Unk509ee0((AIPER *)p, ai_OwnPlayer);
+        money = gm_CharCurrency((AIPER *)p, ai_OwnPlayer);
         x = gm_GetWorth(p->id) * 0.005f;
         w = (int)((200.0f - gm_Liking(p->id, *(unsigned short *)(b + 0x27), 1)) * 0.01f * n1 * x);
         t = w * 0.01;
@@ -8085,7 +8085,7 @@ int ai_Unk49f5c0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     q = (unsigned char *)gm_PlayerRecord((AICHAR *)p);
     if (((unsigned char *)p)[2] != 5 || *(int *)((unsigned char *)p + 0x194) < 4 || q == 0)
         return 0;
-    money = gm_Unk509ee0((AIPER *)p, ai_OwnPlayer);
+    money = gm_CharCurrency((AIPER *)p, ai_OwnPlayer);
     if (money / 32 < 5000)
         return 0;
     for (j = he_FindEvent(1, 0, 0x24); j != 0; j = he_NextEvent()) {
@@ -8399,7 +8399,7 @@ int ai_Unk4a0090(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     if (amt_CanUseMayorPower2(p) != 1)
         return 0;
     v = (int)max(gm_GetWorth(p->id) * 0.01f, 160.0f);
-    if (v > (int)(gm_Unk509ee0((AIPER *)p, ai_OwnPlayer) * 0.22f))
+    if (v > (int)(gm_CharCurrency((AIPER *)p, ai_OwnPlayer) * 0.22f))
         return 0;
     m.LowPart = 0x807d4190;
     m.HighPart = 1;
@@ -8784,7 +8784,7 @@ int ai_Unk4a0a70(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         c = 1;
         if (amt < money) {
 credit:
-            m = gm_Unk509ee0((AIPER *)p, ai_OwnPlayer);
+            m = gm_CharCurrency((AIPER *)p, ai_OwnPlayer);
             if (m < 80000)
                 return 0;
             amt += 0x20;
@@ -8821,7 +8821,7 @@ credit:
         o2->arg = 1;
         return 0x39;
     }
-    m = gm_Unk509ee0((AIPER *)p, ai_OwnPlayer);
+    m = gm_CharCurrency((AIPER *)p, ai_OwnPlayer);
     if (m < 80000)
         return 0;
     amt += 0x20;
@@ -8950,7 +8950,7 @@ int ai_Unk4a1170(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     if (best == 0)
         return 0;
     price = (int)(gm_GetWorth(p->id) * 0.015f);
-    if (gm_Unk509ee0((AIPER *)p, ai_OwnPlayer) < price * 6)
+    if (gm_CharCurrency((AIPER *)p, ai_OwnPlayer) < price * 6)
         return 0;
     q = util_RandomU(0xf) + 1;
     if (((unsigned char *)p)[2] == 5) {
@@ -9047,7 +9047,7 @@ int ai_Unk4a13e0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         if (!(s[m] < s[2]))
             m = 2;
     }
-    if (gm_Unk509ee0((AIPER *)p, ai_OwnPlayer) < rec[m].a * 10)
+    if (gm_CharCurrency((AIPER *)p, ai_OwnPlayer) < rec[m].a * 10)
         return 0;
     o1->kind = 7;
     o1->ref = best->netId;

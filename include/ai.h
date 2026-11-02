@@ -434,6 +434,14 @@ typedef struct AIMSG {                  /* 0xf8 bytes, given to cm_SendLongMessa
             char pad6c;
             unsigned char variant;      /* 0x6d, a random text variant 0..0x1c */
         } pamphlet;
+        struct {                        /* the grave lease offer 0x92 to a player (gv_GraveyardTurn; he_Unk5728d0 answers it with gv_OrderExtendGrave) */
+            int bld;                    /* 0x58, the graveyard building's id */
+            int size;                   /* 0x5c, the grave size */
+            unsigned char entry;        /* 0x60, the entry of that size */
+            char pad61[3];
+            int price;                  /* 0x64, the lease price (gv_LeasePrice) */
+            int years;                  /* 0x68, the years the lease is extended by (10) */
+        } lease;
     };
     union {
         int amount[3];                  /* 0x88, of the bought goods */
@@ -683,7 +691,7 @@ void cm_EndGroup(const char *s);                                        /* 0x4c4
 void cm_SendMoveGoods(int a, int b, unsigned char c, int d);                 /* 0x4c47e0 */
 void cm_SendExSellObject(int a, int b, short c, int d, unsigned char e, int f);         /* 0x4c4880, cm.c */
 void cm_SendFieldDeltas(void);                                                 /* 0x4c49a0, sends the message */
-void cm_SendRelations(int a, int b, int c, int d);                  /* 0x4c4b00 */
+int cm_SendRelations(int a, int b, int c, int d);                  /* 0x4c4b00 */
 int cm_SendLongMessage(char *msg);                                           /* 0x4c4b70 */
 char * ai_Unk4cd9d0(int id);                                              /* 0x4cd9d0 */
 int gv_EntryIndex(char *r, int *e);                                        /* 0x4ef6b0 */

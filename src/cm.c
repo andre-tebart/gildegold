@@ -1225,9 +1225,9 @@ void cm_SendFloatDelta(int id, int field, float delta)
     *(float *)&m.data[8] = delta;
     ai_Unk4c39c0(&m);
 }
-/* 0x4c4b00, message 0x1b */
+/* 0x4c4b00, sends message 0x1b: the relation of the character a to b changes by c (d: 0 / 1 / 2, the callers' kind of change), with the difficulty values; returns the send slot (ai_Unk4c39c0) */
 
-void cm_SendRelations(int a, int b, int c, int d)
+int cm_SendRelations(int a, int b, int c, int d)
 {
     G17MSG m;
 
@@ -1238,7 +1238,7 @@ void cm_SendRelations(int a, int b, int c, int d)
     G17_I(m, 0xc) = d;
     *(float *)&m.data[0x10] = ai_DifficultyScale;
     G17_I(m, 0x14) = (int)ai_DifficultyValue;
-    ai_Unk4c39c0(&m);
+    return ai_Unk4c39c0(&m);
 }
 /* 0x4c4b70, message 0x1c: msg (0xf8 bytes, AIMSG) as a long message; zeros at 0x38..0x57 become -1 */
 
@@ -5824,7 +5824,7 @@ int ai_Unk4cce10(G17MSG *m, G17STAT *s)
         r = gv_AdjustEntry(&m->data[0]);
         break;
     case 6:
-        r = unk_Unk4f0dd0(&m->data[0]);
+        r = gv_AddNewDead(&m->data[0]);
         break;
     default:
         return -1;

@@ -105,7 +105,7 @@ float gm_GoodsValue(int p, unsigned id);  /* 0x4ffbf0 */
 void gm_Shuffled(unsigned char n, int *out);  /* 0x505ca0 */
 int gm_Unk509dc0(int unused, int kind);  /* 0x509dc0 */
 int gm_SumListAmounts(void *list, unsigned char p);  /* 0x509e30 */
-int gm_Unk509ee0(char *c, char p);  /* 0x509ee0 */
+int gm_CharCurrency(char *c, char p);  /* 0x509ee0 */
 unsigned short *gm_ObjectOwnerChar(unsigned short *o);  /* 0x509ff0 */
 int gm_Unk50a250(int b, unsigned short *p, unsigned cnt, int *out);  /* 0x50a250 */
 int unk_Unk4fc7a0(char *c);  /* 0x4fc7a0 */

@@ -210,7 +210,7 @@ void cm_SendFieldValues(void);                                                  
 void ai_Unk4c4a20(void);                                                         /* 0x4c4a20 */
 void cm_SendSetField(int a, int b, int c, int d, int e);                            /* 0x4c4a60 */
 void cm_SendFloatDelta(int id, int field, float delta);                                          /* 0x4c4ac0 */
-void cm_SendRelations(int a, int b, int c, int d);                                   /* 0x4c4b00 */
+int cm_SendRelations(int a, int b, int c, int d);                                   /* 0x4c4b00 */
 int cm_SendLongMessage(char *msg);                                                    /* 0x4c4b70, AIMSG (am.h, 0xf8 bytes) */
 int ai_Unk4c4bc0(char *msg, unsigned int len, void *extra);                      /* 0x4c4bc0 */
 void cm_SendExSetHE(unsigned char k, char *p);                                     /* 0x4c4c60 */
@@ -475,7 +475,7 @@ int gv_ExtendGrave();  /* 0x4f0770 */
 int gv_SetGraveHolder();  /* 0x4f0970 */
 int gv_OpenSize();  /* 0x4f0af0 */
 int gv_AdjustEntry();  /* 0x4f0c80 */
-int unk_Unk4f0dd0();  /* 0x4f0dd0 */
+int gv_AddNewDead();  /* 0x4f0dd0 */
 int gv_MoveGrave();  /* 0x4f0ed0 */
 unsigned gv_RaiseDead(struct GVRAISE *m);  /* 0x4f1200 */
 

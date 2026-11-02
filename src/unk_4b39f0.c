@@ -498,7 +498,7 @@ int ai_Unk4b45f0(AICHAR *c, G13TYPE *t)
 
 int ai_Unk4b4630(AICHAR *c, G13TYPE *t)
 {
-    return gm_ConvertMoney(gm_Unk509ee0((void *)c, ai_OwnPlayer), ai_OwnPlayer) >= t->goal;
+    return gm_ConvertMoney(gm_CharCurrency((void *)c, ai_OwnPlayer), ai_OwnPlayer) >= t->goal;
 }
 /* 0x4b4670, mission condition: at least t->goal of c's five values (bytes 0x80..0x84, / 42) reach t->unk18 */
 

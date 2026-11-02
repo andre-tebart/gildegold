@@ -2957,7 +2957,7 @@ int d2_WinOpenPic(short x, short y, int pic, int win); int d2_CreateWinText(); v
 void d2_SetViewEnabled(); void d2_CloseView(int view); int cm_SendLongMessage(char *msg);
 int sv_CheckGoodAmount(); int sv_CheckStock(); void txt_Format(char *out, int id0, ...); int sv_MessageBox();
 int d3sm_GetVertex();  /* @original: the original callers read an int result (gv.h declares it int) */
-int sv_UpdateCamera(); int gm_Unk509ee0(char *c, char p); int gm_BuildingClass(); char unk_Unk5020e0(int k, int c);
+int sv_UpdateCamera(); int gm_CharCurrency(char *c, char p); int gm_BuildingClass(); char unk_Unk5020e0(int k, int c);
 
 /* 0x5909a0, the construction window "BAUEN_GEB_BAUEN" (1988 B, ROUGH SKELETON from the Ghidra pseudocode): the
    window (0x5763c0 (0x40), the event 0x576040, the controls 0x4731d0 for the kinds 1 .. 9, the frames
@@ -5369,7 +5369,7 @@ void ai_Unk5965f0(int param_1, int param_2)
 
 int ai_Unk5b5e80(); int ai_Unk5b5010(); void sv_FitForm(int f); void sv_ButtonRow(int f, int y, int *out, int n, ...);
 int ai_AmountRowStatus(); int ai_AmountRow(); short * gm_FindChar(int id); int sv_CheckMoney();
-int cm_SendExSetHE(); /* @original: the callers here push the key as an int and read the return (byte-matched ai_Unk5ae870), against cm.h's void (unsigned char, char *) view */ void cm_SendRelations(int a, int b, int c, int d); void cm_SendMoneyDelta(int a, int b); void d2_SetObjEnabled();
+int cm_SendExSetHE(); /* @original: the callers here push the key as an int and read the return (byte-matched ai_Unk5ae870), against cm.h's void (unsigned char, char *) view */ int cm_SendRelations(int a, int b, int c, int d); void cm_SendMoneyDelta(int a, int b); void d2_SetObjEnabled();
 
 /* 0x5966f0, the arrest / fight / denunciation listener (199 B): 0x52e190, the pump 0x5309a0 (this, 0x67fff);
    FESTGEBEN (0x143ff58, 0x16) -> 0x5b5e80 (param_1, param_2); KAMPF (0x143fc78, 0xc) -> 0x5b3130 (param_1,
@@ -10222,7 +10222,7 @@ char * gm_Query(void *list, int n, ...); int gm_GetWorth(unsigned short id); int
 int d2_OpenForm(); void d2_SetPointerSprite(int a, int pic); int d2_SetForm(int view, int n);
 void sv_FitForm(int f); int io_PrintText(char *fmt, ...); int d2_GetWinObj(); void d2_SetObjValue();
 int gm_ConvertMoney(int a, unsigned char k); int d2_GetObjValue(); int gm_PlayerFactor(int a, unsigned char k); int sv_CheckGoodAmount();
-void cm_SendMoveGoods(int a, int b, unsigned char c, int d); void cm_SendRelations(int a, int b, int c, int d); void txt_Format(char *out, int id0, ...); int sv_MessageBox();
+void cm_SendMoveGoods(int a, int b, unsigned char c, int d); int cm_SendRelations(int a, int b, int c, int d); void txt_Format(char *out, int id0, ...); int sv_MessageBox();
 int sv_RunFrame(int cb, unsigned mask); void d2_CloseView(int view); void sv_CameraFollow(); int _ftol();
 
 /* 0x5a1af0, the church donation window "Locations\Kirche\Spenden" (1141 B): param_1 is the building record (+0x27
@@ -14248,7 +14248,7 @@ void ai_GypsyDeliveryText(unsigned short *param_1, int param_2, int *param_3)
 /* 0x5a9690, a message (69 B): the text 0x4154 with param_2 to a character of the kind 6 / 7 (+2), the +4 id
    (0x5fc) */
 
-void ai_Unk5a9690(int param_1, int param_2)
+void ai_TellGraveNeglect(int param_1, int param_2)
 {
     if (*(char *)(param_1 + 2) == 6 || *(char *)(param_1 + 2) == 7) {
         txt_Format((char *)(unsigned)&full_data_6f26c8, 0x4154, param_2);
@@ -14292,7 +14292,7 @@ send:
 /* 0x5a9780, a graveyard message (94 B): for a character of the kind 6 / 7 (+2) the text 0x4151 (0x4152 when
    param_3 != 1) with param_2, param_3, the text and param_4, the +4 id (0x5fc) */
 
-void ai_Unk5a9780(int param_1, int param_2, int param_3, int param_4)
+void ai_TellGravesPaid(int param_1, int param_2, int param_3, int param_4)
 {
     if (*(char *)(param_1 + 2) == 6 || *(char *)(param_1 + 2) == 7) {
         txt_Format((char *)(unsigned)&full_data_6f26c8, 0x4151, param_2, param_3, (param_3 != 1) + 0x4152, param_4);

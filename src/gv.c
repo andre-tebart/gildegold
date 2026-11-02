@@ -1199,7 +1199,7 @@ int gv_GraveCount(unsigned char *o)
 }
 /* 0x4ef440, how many of the slots (0x4ef3c0 of them, 0x44 bytes each from the table at +0x20 of the record) are in use (first word not -1) */
 
-int unk_Unk4ef440(unsigned char *o)
+int gv_GravesInUse(unsigned char *o)
 {
     int n, cnt;
     int *p;
@@ -1892,7 +1892,7 @@ int gv_ReserveGrave(GVORDER *m)
 }
 /* 0x4f0700, the message 0x4c60b0 type 2 (graveyard id +4 of g, object id +1 of o, value v, byte b, short s, int x); -1 when g or o is 0 or b is -1 */
 
-int unk_Unk4f0700(int *g, char *o, int v, int b, short s, int x)
+int gv_OrderExtendGrave(int *g, char *o, int v, int b, short s, int x)
 {
     char m[0x1d];
 
@@ -2128,7 +2128,7 @@ int gv_AdjustEntry(GVORDER *m)
 }
 /* 0x4f0d70, the message 0x4c60b0 type 6 (graveyard id -1, object id +1 of o, value x at +0x13); -1 when o is 0 */
 
-int unk_Unk4f0d70(char *o, int x)
+int gv_OrderNewDead(char *o, int x)
 {
     char m[0x1d];
 
@@ -2145,7 +2145,7 @@ int unk_Unk4f0d70(char *o, int x)
 }
 /* 0x4f0dd0, graveyard order type 6 (p: +8 the object id, +0x13 the number): makes that many new dead (0x4ef9c0); 0 when some were made, else -4 */
 
-int unk_Unk4f0dd0(unsigned char *p)
+int gv_AddNewDead(unsigned char *p)
 {
     unsigned char *o;
     int n;
@@ -2698,7 +2698,7 @@ int unk_Unk4f22a0(char *o, unsigned char m)
 /* 0x4f2330, the cost of a character's action: x = 0x5085b0 (0x50a640 of the character id) clamped to 10000 .. 1000000, v = log10(x)^2 * 100 * (0.25, 0.5, 0.75 for kind 0, 1, 2); with flag 0 also times
    (0.3 + 0.7 * (a & 0xff) / 255) * 0.75; returns r = 0x5085f0 (v) and stores r * (0.8, 0.7, 0.6)[kind] in *out. ROUGH */
 
-int unk_Unk4f2330(unsigned short *c, int a, int kind, int flag, int *out)
+int gv_LeasePrice(unsigned short *c, int a, int kind, int flag, int *out)
 {
     double x, v;
     int r;
@@ -2729,8 +2729,8 @@ int unk_Unk4f2440(unsigned short *c, int k1, int k2, int *out)
 {
     int a, b, d;
 
-    a = unk_Unk4f2330(c, 100, k1, 1, &d);
-    b = unk_Unk4f2330(c, 100, k2, 1, &d);
+    a = gv_LeasePrice(c, 100, k1, 1, &d);
+    b = gv_LeasePrice(c, 100, k2, 1, &d);
     d = b - a / 2;
     *out = (int)(d * gv_SaleShares[k2]);
     return d;
@@ -4290,7 +4290,7 @@ int gv_Accuse(int i, int v, int a, int b, int obj)
    (0x4f0c20 / 0x4f0900 messages, at most 0x40 per round, then it waits for the answer 0x4c3ae0), a living one whose time (+10) is up is paid for / released (0x4f0700 / 0x4f0900 / message 0x92), its owner may lose
    liking (0x4c4b00); at the end up to 4 graves are topped up (0x4f0d70 with 1 .. 2 new dead) and a player owner is told (0x5a9780 / 0x5a9690). ROUGH: the __ftol arguments and several constants are not read. */
 
-void unk_Unk4f1de0(char *o)
+void gv_GraveyardTurn(char *o)
 {
     unsigned short ow;
     int h, rounds;
@@ -4315,14 +4315,14 @@ void unk_Unk4f1de0(char *o)
     e = (int *)gv_FindEntry(0, (unsigned char *)o, 0, gv_EntryIsUsed, 0xff);
     do {
         if (e == 0) {
-            n = unk_Unk4ef440((unsigned char *)o);
+            n = gv_GravesInUse((unsigned char *)o);
             if (n < 4)
-                unk_Unk4f0d70(o, (util_RandomU(2) & 0xffff) + 1);
+                gv_OrderNewDead(o, (util_RandomU(2) & 0xffff) + 1);
             if (pl != 0 && (pl[2] == 6 || pl[2] == 7)) {
                 if (paid > 0)
-                    ai_Unk5a9780(pl, o, paid, sum);
+                    ai_TellGravesPaid(pl, o, paid, sum);
                 if (nrel != 0)
-                    ai_Unk5a9690(pl, o);
+                    ai_TellGraveNeglect(pl, o);
             }
             return;
         }
@@ -4374,9 +4374,9 @@ void unk_Unk4f1de0(char *o)
                     }
                 }
                 if (*(unsigned short *)((char *)e + 10) == *(unsigned short *)ai_Time) {
-                    h = unk_Unk4f2330((unsigned short *)c, *((unsigned char *)e + 0xc), e[0], 0, &hv);
+                    h = gv_LeasePrice((unsigned short *)c, *((unsigned char *)e + 0xc), e[0], 0, &hv);
                     if (c == pl) {
-                        h = unk_Unk4f0700((int *)c, o, e[0], gv_EntryIndex(*(char **)(o + 0x65), e), 10, 0);
+                        h = gv_OrderExtendGrave((int *)c, o, e[0], gv_EntryIndex(*(char **)(o + 0x65), e), 10, 0);
                     } else if (c[2] == 6 || c[2] == 7) {
                         memset(m, 0, 0xf8);
                         *(int *)(m + 4) = *(int *)(c + 4);
@@ -4393,9 +4393,9 @@ void unk_Unk4f1de0(char *o)
                         *(int *)(m + 0xb4) = h;
                         h = cm_SendLongMessage(m);
                     } else {
-                        k = (int)gm_Unk509ee0(c, ai_OwnPlayer);
+                        k = (int)gm_CharCurrency(c, ai_OwnPlayer);
                         if (h < k) {
-                            h = unk_Unk4f0700((int *)c, o, e[0], gv_EntryIndex(*(char **)(o + 0x65), e), 10, h);
+                            h = gv_OrderExtendGrave((int *)c, o, e[0], gv_EntryIndex(*(char **)(o + 0x65), e), 10, h);
                             rounds++;
                             paid++;
                             goto next;

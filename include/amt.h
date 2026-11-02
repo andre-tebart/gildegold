@@ -179,7 +179,7 @@ extern unsigned char ai_OwnPlayer;      /* 0x6f1bc5 */
 void cm_BeginFieldBlock(char *o, int id);     /* 0x4c3ba0 */
 int cm_AddFieldDelta(int size, int n, short field, void *v);  /* 0x4c3c00 */
 void cm_SendFieldDeltas(void);                /* 0x4c49a0 */
-void cm_SendRelations(int a, int b, int c, int d);                     /* 0x4c4b00 */
+int cm_SendRelations(int a, int b, int c, int d);                     /* 0x4c4b00 */
 int cm_GetSlotState(int h);                     /* 0x4c3ae0 */
 /* ai_TimeHour (0x770ae4, the clock's hour) is no object: time_view.h views it in ai_Time + 4 */
 int amt_ApplyForOffice(char *c, unsigned int kind);  /* 0x4e6180 */

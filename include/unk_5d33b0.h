@@ -182,7 +182,7 @@ void sv_DestroyScreen(void);        /* 0x5223c0, sv.c: destroys the screen's wid
 int sv_PanelImage(void);            /* 0x522040, sv.c: the panel image number of the player's group */
 void sv_BuildScreenLayout(int s);   /* 0x521e70, sv.c: builds the main screen layout for the panel image s */
 /* The gypsy windows' callees (the special-amount list of unk_58bbd0.c, the money / relation messages). */
-void cm_SendRelations(int a, int b, int c, int d);   /* 0x4c4b00, cm.c: message 0x1b, the relation of a to b changes by c */
+int cm_SendRelations(int a, int b, int c, int d);   /* 0x4c4b00, cm.c: message 0x1b, the relation of a to b changes by c */
 float gm_Mix(int a, int b, int c);                   /* 0x504e20, f3gm.c: the mix of two relation values */
 int sv_MessageBoxGreen(int a, int b, unsigned flags); /* 0x521410, sv.c: the green message box with the title text a and the text b */
 struct AIBLD;

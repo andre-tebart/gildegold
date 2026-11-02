@@ -999,7 +999,7 @@ void rt_EditCartRoute(char *c)
 /* 0x4bfa40, cart c unloads at its current route point (c->unk2d): the goods of the point's unloadSlots slots go from the
    cart into the building's stock (market 0x1c: its stock 0x1db, warehouse 10: 0x500ec0), bought by player pl at
    the building's price when it is not the cart owner's
-   @deep readability only, byte now: Q4 (10 raw accesses - AIBLD +0x27/+0x49/+0x5d/+0x65, AIOBJ +0x14, RTINV stock, d2_Objs view need typed fields; rt.h's views and the ai.h AIBLD pads) and Q2 (gm_Query/4ffcc0 stock lists, gm_ObjectBuildingOwner/50aa00/50ab80/50aaf0 stock and cart accessors, gm_GoodsPrice price, gm_Unk509ee0 money, cm_SendExSellObject transfer) - the stock/cart API needs names first */
+   @deep readability only, byte now: Q4 (10 raw accesses - AIBLD +0x27/+0x49/+0x5d/+0x65, AIOBJ +0x14, RTINV stock, d2_Objs view need typed fields; rt.h's views and the ai.h AIBLD pads) and Q2 (gm_Query/4ffcc0 stock lists, gm_ObjectBuildingOwner/50aa00/50ab80/50aaf0 stock and cart accessors, gm_GoodsPrice price, gm_CharCurrency money, cm_SendExSellObject transfer) - the stock/cart API needs names first */
 
 void rt_UnloadAtPoint(char *c, int pl)
 {
@@ -1051,7 +1051,7 @@ void rt_UnloadAtPoint(char *c, int pl)
                         else
                             price = (int)(gm_GoodsPrice(*g, ai_OwnPlayer) * *(float *)(b + 0x49));
                     }
-                    if (gm_Unk509ee0(o, pl) >= price * n)
+                    if (gm_CharCurrency(o, pl) >= price * n)
                         cm_SendExSellObjectI(*(int *)(st + 2), *(int *)(ci.stock + 2), s[0], n, pl, price);
                 }
             }
@@ -1117,7 +1117,7 @@ void rt_Unk4bfc60(char *c, char pl)
                         price = (int)(gm_GoodsPrice(*g, ai_OwnPlayer) * *(float *)(b + 0x49));
                 }
                 if (n > 0) {
-                    if (gm_Unk509ee0(o, pl) < n * price) {
+                    if (gm_CharCurrency(o, pl) < n * price) {
                         io_TownDisplayName((char *)ai_PlayerSlots + pl * 0x2f4, name);
                         txt_Format(buf, 0x42f0, name, 0xc14, name, pl);
                         he_ShowNews(*(int *)(o + 2), -1, buf, 0, 0x5ef, ch_EmptyName);

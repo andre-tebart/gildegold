@@ -255,7 +255,7 @@ struct AIPER; struct AMTREC; struct CHARACTER; struct CHACTION; struct EVTSCRIPT
 void cm_SendProofExecuted(int a, int b);
 void cm_SendChrStop(int a);
 void cm_SendFieldDeltas(void);
-void cm_SendRelations(int a, int b, int c, int d);
+int cm_SendRelations(int a, int b, int c, int d);
 int util_Random(unsigned short n);      /* 0x42ec00, tr.c's definition: this TU's callers were compiled against the 16-bit parameter and result */
 
 int gm_PlayerFactor(int a, unsigned char k);
@@ -2664,7 +2664,7 @@ int unk_Unk4f25d0();
 int gv_EntryIndex(char *r, int *e);
 int gv_OrderSetGraveHolder();
 int ai_Unk4c4fa0(void *p);
-void cm_SendRelations(int a, int b, int c, int d);
+int cm_SendRelations(int a, int b, int c, int d);
 void cm_SendFloatDelta(int id, int field, float delta);
 
 #define HE_W(p) (*(unsigned short *)(p))
@@ -8487,7 +8487,7 @@ void he_Unk551d00(int ev)
 int amt_GetColumnOffices(int col, int max, struct AMTREC *out);
 int amt_GetKind(int k, struct AMTKIND *out);
 int amt_SendOfficeMessage(unsigned char a, char *b, char *c, unsigned char d, unsigned char e);
-void cm_SendRelations(int a, int b, int c, int d);
+int cm_SendRelations(int a, int b, int c, int d);
 
 /* 0x551d70 (the Ghidra start; ROUGH), the run handler of the event 0x551d00 (six figure groups at +0xb0, state 0xc = the announcement): state 0xc tells every player character (kind 6 / 7: 0x53dda0 (id, -1, text 0x10bc / 0x10be by +0xac, 0x20, 0x600, 0x631090)) and goes to state 0; states 0 .. 5 take the group +0xb0 + state * 4: for every member (0x4e6fc0, 0x18-byte records) that has a person (0x505df0) and a job (0x4e6f80) a random roll may raise its mood (0x4e6680), unless the person has kind 3 every other character in the same building (+0x168 / +0x27) gets a random opinion change (0x4c4b00), and a player character gets the message 0x10bd / 0x10bf (0x5fd); the state is then incremented and the event posted 1 later; other states free the record */
 void he_Unk551d70(int ev)
@@ -11775,7 +11775,7 @@ void cm_RequestChrMoveToUniverse(int a, int b, int c, const char *s);
 void cm_SendGoodsDelta(char *p, unsigned char k);
 float ai_Unk4ffa10();
 int gm_ListAmount();
-int gm_Unk509ee0(char *c, char p);
+int gm_CharCurrency(char *c, char p);
 void cm_SendMoveGoods(int a, int b, unsigned char c, int d);
 void gm_GetGebaeudeHauptraum(unsigned char *b);
 
@@ -11842,7 +11842,7 @@ void he_Unk55fa90(int ev)
         he_FreeEvent((int *)ev);
         return;
     }
-    if (gm_Unk509ee0(*(char **)(unsigned)&ai_PlayerChar, *(unsigned char *)(unsigned)&ai_OwnPlayer) == 0) {
+    if (gm_CharCurrency(*(char **)(unsigned)&ai_PlayerChar, *(unsigned char *)(unsigned)&ai_OwnPlayer) == 0) {
         sprintf(text, "he_RunMarktSupervisor(): Could not find markt-lager:%s", "");
         he_FreeEvent((int *)ev);
         return;
@@ -13686,7 +13686,7 @@ void ai_Unk4c48e0(int a, short b, int c);
 void sv_CountGroupMembers(char *g);
 int ai_Unk5740f0();
 int ai_Unk5ba700();
-void cm_SendRelations(int a, int b, int c, int d);
+int cm_SendRelations(int a, int b, int c, int d);
 int gm_FreeCapacity();
 int gm_ListAmount();
 int gm_BuildingMainObject(unsigned char *b);
@@ -14229,7 +14229,7 @@ int ai_Unk5ae8e0();
 int gm_FindMarketObject(int id);
 float gm_GoodsPrice(unsigned id, unsigned char p);
 int gm_ListStock();
-int gm_Unk509ee0(char *c, char p);
+int gm_CharCurrency(char *c, char p);
 
 /* 0x56a960, the run handler of the trade event (ROUGH, a skeleton from the disassembly; the two slot loops are simplified): +0xb0 / +0xb4 / +0xac the buildings and the good looked up (0x4fea50 A / C / B),
    +0xd0 (3 good ids, short) and +0xd6 (3 short) with the owners +0xb8 / +0xc4 are the sell / buy slots, +0xe8 / +0xec the transport / message handles, +0xf0 / +0xf1 flags; state -2 resets the
@@ -14327,7 +14327,7 @@ void he_Unk56a960(int ev)
         }
     }
     if (C != 0 && *(int *)(C + 0x16c) != 0)
-        left = gm_Unk509ee0((unsigned)&ai_Chars + *(unsigned short *)(*(int *)(C + 0x16c) + 0x27) * 0x21c, *(unsigned char *)(unsigned)&ai_OwnPlayer);
+        left = gm_CharCurrency((unsigned)&ai_Chars + *(unsigned short *)(*(int *)(C + 0x16c) + 0x27) * 0x21c, *(unsigned char *)(unsigned)&ai_OwnPlayer);
     if (left > *(int *)(C + 0x1b8))
         left = *(int *)(C + 0x1b8);
     for (sl = (unsigned short *)(ev + 0xd6), i = 0; i < s; i++, sl++) {
@@ -16520,7 +16520,7 @@ int gm_FreeCapacity();                 /* 0x50ab80 */
 char *gm_FindBuildingById(int id); /* 0x502020 */
 int gv_ListEntry(char *r, int i, unsigned char n);                 /* 0x4ef570 */
 int gv_OrderAdjustEntry();                 /* 0x4f0c20 */
-int gm_Unk509ee0(char *c, char p);                 /* 0x509ee0 */
+int gm_CharCurrency(char *c, char p);                 /* 0x509ee0 */
 void ai_Unk5a9910(unsigned short *param_1, int param_2, unsigned int param_3);                 /* 0x5a9910 */
 
 /* 0x570ea0, 1 when no running event 0x88 has the player +8 == b + 4 and the building +0xb0 == a + 4; 0 when one does */
@@ -16763,7 +16763,7 @@ void he_Unk5719e0(int ev)
         return;
     per = (char *)gm_FindChar(HM_I(ev, 0xc));
     if (per != 0) {
-        n = ((int (*)(char *, char))gm_Unk509ee0)(per, *(char *)(unsigned)&ai_OwnPlayer);
+        n = ((int (*)(char *, char))gm_CharCurrency)(per, *(char *)(unsigned)&ai_OwnPlayer);
         if (HM_I(ev, 0xac) < n) {
             cm_SendMoveGoods(-1, *(int *)(per + 4), *(unsigned char *)(unsigned)&ai_OwnPlayer, HM_I(ev, 0xac));
             he_FreeEvent((int *)ev);
@@ -17144,7 +17144,7 @@ void he_Unk572860(int ev)
 
 void ai_Unk5a97e0(int param_1, unsigned short *param_2, int param_3, int param_4, int param_5, int param_6);                 /* 0x5a97e0 */
 void ai_Unk5a9880(int param_1, unsigned short *param_2, int param_3, int param_4);                 /* 0x5a9880 */
-int unk_Unk4f0700(int *g, char *o, int v, int b, short s, int x);                 /* 0x4f0700 */
+int gv_OrderExtendGrave(int *g, char *o, int v, int b, short s, int x);                 /* 0x4f0700 */
 int gv_OrderSetGraveHolder();                 /* 0x4f0900 */
 void he_Unk5728d0(int ev);          /* 0x5728d0 */
 void he_Unk5729c0(int ev);          /* 0x5729c0 */
@@ -17161,7 +17161,7 @@ void he_Unk5728d0(int ev)
     per = (char *)gm_FindChar(HM_I(ev, 0xc));
     if (per == 0)
         return;
-    unk_Unk4f0700(per, bld, HM_I(ev, 0xb0), HM_B(ev, 0xb4), *(unsigned short *)(ev + 0xbc), HM_I(ev, 0xb8));
+    gv_OrderExtendGrave(per, bld, HM_I(ev, 0xb0), HM_B(ev, 0xb4), *(unsigned short *)(ev + 0xbc), HM_I(ev, 0xb8));
     own = (char *)((unsigned)&ai_Chars + *(unsigned short *)(bld + 0x27) * 0x21c);
     if (per == own)
         return;
