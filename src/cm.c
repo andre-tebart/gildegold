@@ -5980,7 +5980,7 @@ int ai_Unk4cd180(G17MSG *m, G17STAT *s)
     if (G17_I(*m, 0) == 0x6154436e)
         r = gv_ReserveEffect(G17_I(*m, 4));
     else if (G17_I(*m, 0) == 0x6454436e)
-        r = unk_Unk4eeb00(G17_I(*m, 4));
+        r = gv_StopEffect(G17_I(*m, 4));
     else
         return -1;
     if (s != 0 && r != 0)

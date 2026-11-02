@@ -488,7 +488,7 @@ int ahm_SetPlaceValue();  /* 0x4ecd10 */
 int ahm_AddValue();  /* 0x4ecdb0 */
 int ahm_DeleteAlchemist();  /* 0x4ece60 */
 int gv_ReserveEffect();  /* 0x4eeaa0 */
-int unk_Unk4eeb00();  /* 0x4eeb00 */
+int gv_StopEffect();  /* 0x4eeb00 */
 int unk_Unk4eee00();  /* 0x4eee00 */
 
 char *ai_Unk4cd350();  /* 0x4cd350 */

@@ -831,36 +831,29 @@ int gv_ReserveEffect(int id)
     }
     return 0;
 }
-/* 0x4eeb00, sets the flags of the slot of the id to 4 (to be released) and releases it (id -1, flags 0) when none of its 3 parts is in use; 1 when the slot exists */
+/* 0x4eeb00, stops the effect slot of the id (a server message, cm.c): sets its flags to 4 (to be released) and frees it (id -1,
+   flags 0) when none of its 3 parts is active (state 0); 1 when the slot exists, 0 otherwise */
 
-int unk_Unk4eeb00(int id)
+int gv_StopEffect(int id)
 {
-    int *p;
-    int i, j;
+    int i, n;
 
     if (id != -1) {
-        i = 0;
-        p = (int *)gv_Effects;
-        do {
-            if (*p == id) {
-                j = 0;
-                *(int *)(gv_Effects + 4 + i * 0x170) = 4;
-                p = (int *)(gv_Effects + 0x74 + i * 0x170);
-                do {
-                    if (*p != 0)
-                        return 1;
-                    j++;
-                    p += 0x1a;
-                } while (j < 3);
-                *(int *)(gv_Effects + i * 0x170) = -1;
-                *(int *)(gv_Effects + 4 + i * 0x170) = 0;
-                return 1;
-            }
-            p += 0x5c;
-            i++;
-        } while ((int)p < (unsigned)((unsigned)gv_Effects + 0xb80));
+        for (i = 0; i < 8; i++) {
+            if (gv_EffectsT[i].id == id)
+                goto found;
+        }
     }
     return 0;
+found:
+    gv_EffectsT[i].flags = 4;
+    for (n = 0; n < 3; n++) {
+        if (gv_EffectsT[i].parts[n].flags != 0)
+            return 1;
+    }
+    gv_EffectsT[i].id = -1;
+    gv_EffectsT[i].flags = 0;
+    return 1;
 }
 /* 0x4eeb70, sends the explosion parts (a, b, d: 0x68-byte records, any may be 0) of the object o to the server: the message 0x4c6260 (id +1 of o, v, mode 1 / 2, the record); before the first one
    the charge is taken (0x4f2e30 (8, 1, c[1], -1, -1), 0x4c5f60 (c[1], -n), 0x4c4830 (-1, c[1], player, x)); returns the answer or -1. ROUGH */

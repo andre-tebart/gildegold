@@ -181,7 +181,7 @@ void gv_ExplodeShot(int damage, int effectId, struct SHOTREC *shot, GVEFFARG *ou
 void gv_UpdateEffects(void);               /* 0x4edf80 */
 void unk_Unk4eea70(char *o);             /* 0x4eea70 */
 int gv_ReserveEffect(int id);              /* 0x4eeaa0 */
-int unk_Unk4eeb00(int id);              /* 0x4eeb00 */
+int gv_StopEffect(int id);              /* 0x4eeb00 */
 int unk_Unk4eeb70(char *o, int *c, int *a, int *b, int *d, float v, int n, int x);  /* 0x4eeb70 */
 char *unk_Unk4eedd0(int id);            /* 0x4eedd0 */
 int unk_Unk4eee00(int *p, int w);       /* 0x4eee00 */

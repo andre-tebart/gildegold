@@ -612,3 +612,4 @@
 2026-11-02T02:36:41 0x004edf10 func unk_Unk4edf10 -> gv_ReleaseEffect by:main why:0x4edf10 marks the effect slot of the id (flags 4) and frees it (id -1) when no part is in use; gv_UpdateEffects calls it
 2026-11-02T02:41:51 0x005ebbb4 data ai_Unk5ebbb4 -> ai_ZeroRot by:main why:12 zero bytes at 0x5ebbb4 after d3_Origin; passed as the rot (third) argument of d3_CreateObject in gv_UpdateEffects and unk_575860
 2026-11-02T02:42:45 0x004ee360 func unk_Unk4ee360 -> gv_ExplodeShot by:main why:called by gv_UpdateEffects for a cannon ball that landed (SHOTREC.state 2) with the part as SHOTREC; finds the buildings near the position, starts explosion/smoke/earth effects and the sound "Explosion", damages the owners
+2026-11-02T02:52:21 0x004eeb00 data unk_Unk4eeb00 -> gv_StopEffect by:main why:marks the effect slot of the id to be released (flags 4) and frees it when no part is active; called from a server message handler in cm.c
