@@ -13703,7 +13703,7 @@ void *ai_Unk5a8560(int param_1)
 /* 0x5a86c0, the setting removed by the good (75 B): the list 0x6f26c0 is relinked and the record 0x422620
    freed; -1 when the good is not in the list */
 
-int ai_Unk5a86c0(int param_1)
+int ai_UnlistPlayerBuilding(int param_1)
 {
     int *prev;
     int *p;

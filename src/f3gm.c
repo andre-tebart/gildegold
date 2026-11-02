@@ -3616,7 +3616,6 @@ extern unsigned gm_KindObjs[732];
 extern unsigned short gm_KindObjCount;
 void rt_FreePoints();                     /* 0x4bd9e0 */
 /* 0x500190 */
-int ai_Unk5a86c0();                     /* 0x5a86c0 */
 
 /* 0x500080, an object instance of the prototype kind 0x1d frees the record at +0x29 (0x4bd9e0) */
 void gm_FreeObjectExtra(unsigned short *o)
@@ -3974,7 +3973,7 @@ int gm_FreeBuilding(char *b)
     if (*b == 0)
         return -2;
     if (*(unsigned short *)(b + 0x27) != 0xffff && ai_Chars[*(unsigned short *)(b + 0x27)][2] == 6)
-        ai_Unk5a86c0(*(int *)(b + 1));
+        ai_UnlistPlayerBuilding(*(int *)(b + 1));
     k = *b;
     if (k == 0x1e) {
         if (*(int *)(b + 0x71) != 0) {
@@ -5098,7 +5097,6 @@ extern int ai_Unk770ae0_day;            /* the clock's day (0x770ae0) */
 extern unsigned short ai_TimeHour;     /* 0x770ae4, the clock's hour (unaligned view) */
 #endif
 extern char ai_Unk770ce4[];             /* 0x770ce4: the field +0x164 of the character records (stride 0x21c) */
-int ai_Unk5a86c0();                     /* 0x5a86c0 */
 void sv_Unk5286a0(char *b);                     /* 0x5286a0 */
 void sv_Unk5282f0(char *b);                     /* 0x5282f0 */
 void ch_Unk402540();                     /* 0x402540 */
@@ -5132,7 +5130,7 @@ void gm_AssignBuilding(unsigned char *b, unsigned short place, unsigned own)
         o = *(unsigned short *)(b + 0x27);
         if (o != own) {
             if (o != 0xffff && ai_Chars[o][2] == 6)
-                ai_Unk5a86c0(*(int *)(b + 1));
+                ai_UnlistPlayerBuilding(*(int *)(b + 1));
             if (ai_Chars[own][2] == 6)
                 ai_Unk5a8560K(b);
         }
