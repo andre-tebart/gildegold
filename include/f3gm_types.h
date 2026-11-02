@@ -8,4 +8,11 @@ typedef struct JOBTALENTS {             /* 6 bytes, one per job at 0x61a688 */
     unsigned char rank;                 /* 0x5, 1..4 in the table: a guess from the values and the rank byte +0xd */
 } JOBTALENTS;
 
+typedef struct GMINCOME {               /* 0x38 bytes, a character's incomes (0x4fa4b0 clears it, the kind functions fill the first free entry) */
+    unsigned char kind[6];              /* 0x00, the income kind of each entry (1 .. 5), 0 = free */
+    char pad06[2];
+    int amount[6];                      /* 0x08, the amount */
+    int rate[6];                        /* 0x20, the rate in percent it was computed with (AIDEC.cur) */
+} GMINCOME;
+
 #endif

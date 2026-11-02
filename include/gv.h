@@ -117,7 +117,9 @@ typedef struct ORDCHAR {
     char pad16a[2];
     struct ORDBLD *bld;             /* 0x16c, the character's building (ai.h AICHAR.bld) */
     struct ORDBLD *bld2;            /* 0x170, the character's own building (its home), 0 when none */
-    char pad174[0x54];
+    char pad174[0x34];
+    int v1a8;                       /* 0x1a8, an amount the income kind 3 (f3gm.c gm_IncomeKind3) taxes at the decision 0xd's rate and clears once paid */
+    char pad1ac[0x1c];
     int flags1c8;                   /* 0x1c8, order flags: 0x100 answer, 0x200 / 0x80000 / 0x100000 / 0x200000 / 0x400000 */
     int flags1cc;                   /* 0x1cc, privilege flags: 0xe00 */
     char pad1d0[0x21c - 0x1d0];
@@ -174,6 +176,12 @@ typedef struct ORDBLD {
     char *object;                   /* 0x61, its object in the scene */
     char pad65[0x44];
 } ORDBLD;
+
+/* the head of an object record ai.h's AIOBJ, as gm_Query returns it (gv.h and ai.h cannot be in one TU) */
+typedef struct ORDOBJ {
+    unsigned short type;            /* 0x00, the prototype id */
+    int objId;                      /* 0x02, the object's own id (messages name the object by it) */
+} ORDOBJ;
 #pragma pack(pop)
 
 /* a record of the event list (he_FindEvent / he_NextEvent) as the order handlers read it */

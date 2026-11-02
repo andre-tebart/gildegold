@@ -96,8 +96,9 @@ extern short * ai_Unk6f1bac;
 #define ai_Unk91b648 (gm_IncomeHistory + 0xc8)   /* 0x91b648, row 2 */
 #define ai_Unk91b68c (gm_IncomeHistory + 0x10c)  /* 0x91b68c, row 3 */
 #define ai_Unk91b6d0 (gm_IncomeHistory + 0x150)  /* 0x91b6d0, row 4 */
+#define gm_IncomeRows (*(int (*)[5][17])&gm_IncomeHistory)  /* 0x91b580, the five rows of 17 ints; [row][16] is the current sum */
 
-int gm_GetGoodsValue();                     /* 0x509e60 */
+int gm_GetGoodsValue(char *c);              /* 0x509e60 */
 int gm_TitleGroup();                     /* 0x504ad0 */
 char * gm_PlayerSeat(int p);                     /* 0x504a80 */
 int gm_PlayerFactor(int a, unsigned char k);                     /* 0x5085f0 */
@@ -249,48 +250,53 @@ int unk_Unk4fa060(unsigned id, char *out, unsigned char flags)
     }
     return 0;
 }
-/* 0x4fa160, income kind 3 (the record 0xd, the int at +0x1a8, which is cleared when flag 2 is set; the amount goes to the player only when it does not exceed 0x509e60 of the character; sum 0x91b648). ROUGH */
+/* 0x4fa160, the income kind 3 of the character id: the rate of the decision 0xd percent of the character's v1a8
+   into the first free entry of out (0 when out is full; no entry, but 1, when v1a8 is not positive); flags 1 moves
+   the amount from the character to the player's object of the first building when the character's goods are
+   worth it, flags 2 clears v1a8 and adds the amount to the income sum of row 2 */
 
-int unk_Unk4fa160(unsigned id, char *out, unsigned char flags)
+int gm_IncomeKind3(unsigned id, GMINCOME *out, unsigned char flags)
 {
-    int rec[9];
-    int k, n, cnt;
+    int rate;
+    AIDEC rec;
+    int k, n, base;
     float x;
-    char *c;
+    ORDBLD *b;
+    ORDOBJ *o;
 
-    gv_GetTableRecord(0xd, rec);
-    gm_Query(*(int *)((char *)gm_FirstBuilding(1) + 0x5d), 2, 6, 0, 0x115);
+    gv_GetTableRecord(0xd, (int *)&rec);
+    rate = rec.cur;
+    b = (ORDBLD *)gm_FirstBuilding(1);
+    gm_Query((void *)b->objList, 2, 6, 0, 0x115);
     for (k = 0; k < 6; k++) {
-        if (out[k] == 0) {
-            if (k >= 6)
-                return 0;
-            id &= 0xffff;
-            c = CH(id);
-            cnt = *(int *)(c + 0x1a8);
-            x = (float)(rec[6] * 0.01f);
-            x = (float)(x * cnt);
-            if (!(x > 0))
-                x = 0;
-            n = (int)x;
-            if (cnt > 0) {
-                out[k] = 3;
-                *(int *)(out + 8 + k * 4) = n;
-                *(int *)(out + 0x20 + k * 4) = rec[6];
-                if (flags & 1) {
-                    char *o, *b = (char *)gm_FirstBuilding(1);
-                    o = (char *)gm_Query(*(int *)(b + 0x5d), 2, 6, 0, 0x115);
-                    if (n <= gm_GetGoodsValue(c))
-                        cm_SendMoveGoodsUnchecked(*(int *)(o + 2), *(int *)(c + 4), ai_OwnPlayer, n);
-                }
-                if (flags & 2) {
-                    *(int *)(c + 0x1a8) = 0;
-                    *(int *)ai_Unk91b648 += n;
-                }
-            }
-            return 1;
+        if (out->kind[k] == 0)
+            break;
+    }
+    if (k >= 6)
+        return 0;
+    id &= 0xffff;
+    base = ORD_CHARS[id].v1a8;
+    x = (float)(rate * 0.01f);
+    x = (float)(x * base);
+    if (!(x > 0))
+        x = 0;
+    n = (int)x;
+    if (base > 0) {
+        out->kind[k] = 3;
+        out->amount[k] = n;
+        out->rate[k] = rate;
+        if (flags & 1) {
+            b = (ORDBLD *)gm_FirstBuilding(1);
+            o = (ORDOBJ *)gm_Query((void *)b->objList, 2, 6, 0, 0x115);
+            if (gm_GetGoodsValue((char *)&ORD_CHARS[id]) >= n)
+                cm_SendMoveGoodsUnchecked(o->objId, ORD_CHARS[id].netId, ai_OwnPlayer, n);
+        }
+        if (flags & 2) {
+            ORD_CHARS[id].v1a8 = 0;
+            gm_IncomeRows[2][16] += n;
         }
     }
-    return 0;
+    return 1;
 }
 /* 0x4fa2a0, income kind 4 (the record 0xc, the sum of the ints at +0x1a0 and +0x1a4; sum 0x91b68c). ROUGH */
 
@@ -388,7 +394,7 @@ int unk_Unk4fa4b0(unsigned id, int *out, unsigned char flags)
         unk_Unk4fa060(id, (char *)out, flags);
     unk_Unk4fa3d0(id, (char *)out, flags);
     if (*(int *)(c + 0x1a8) > 0)
-        unk_Unk4fa160(id, (char *)out, flags);
+        gm_IncomeKind3(id, (GMINCOME *)out, flags);
     unk_Unk4fa2a0(id, (char *)out, flags);
     return 1;
 }
