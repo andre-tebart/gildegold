@@ -18,7 +18,6 @@ typedef union GVTIME {                  /* 16 bytes: an AITIME copied as four in
     int raw[4];
 } GVTIME;
 extern GVTIME gv_LastTime;              /* 0x6f0e38, ai_Time at the last effect step */
-extern char ai_Unk6f0e48[];             /* 0x6f0e48 */
 extern char gv_CannonBld[], gv_CannonSpare[], gv_CannonCamTarget[], gv_CannonSliderA[], gv_CannonSliderB[], gv_CannonSelected[];  /* 0x925100, 0x925104, 0x925108, 0x925114, 0x925118, 0x92511c */
 extern char ai_Time[];             /* 0x770ae0 */
 extern int ai_TimeYear;            /* 0x770ae0, ai_Time's first int: the game year (AITIME.year in ai.h;
@@ -162,11 +161,12 @@ typedef struct GVEFFREC {               /* 16 bytes, a record of an effect slot'
     int mode;                           /* 0x08, 1: the message depends on value */
     float value;                        /* 0x0c, compared with 25 */
 } GVEFFREC;
-typedef struct GVEFFARG {               /* 0x38 bytes, the argument of an effect slot's default callback (ai_Unk6f0e48, one per slot) */
+typedef struct GVEFFARG {               /* 0x38 bytes, the argument of an effect slot's default callback (gv_EffectArgs, one per slot) */
     int cur;                            /* 0x00, the record at hand (0 .. 2) */
     int unk04;
     GVEFFREC recs[3];                   /* 0x08 */
 } GVEFFARG;
+extern GVEFFARG gv_EffectArgs[8];      /* 0x6f0e48, one per effect slot */
 int gv_EffectNotifyOwner(GVEFFARG *a);  /* 0x4ed3f0, the default effect slot callback: tells the owner of the current record's building */
 int gv_WriteEffects(void *f);             /* 0x4ed480 */
 int gv_ReadEffects(void *f, int v);      /* 0x4ed910 */
