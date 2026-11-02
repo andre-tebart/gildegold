@@ -986,27 +986,29 @@ unsigned *gm_CharNameRecord(int id)
     }
     return (unsigned *)p;
 }
-/* 0x4fb5a0, picks the variant of the object o (+0x184 its model record): byte +0x23a of the model = the id of o (+4) modulo the variant count of the model class (+0x1e4, or & 3 when 5 or more) unless the model is the shared one 0xfd7ba0; when the class is the current one (0x5f1294) 0x446f30 refreshes it. ROUGH */
+/* 0x4fb5a0, picks the texture set of the character o's model: its id modulo the set count of the body mesh (or
+   id & 3 when there are 5 or more), unless the model is in the first scene (d3_Scenes[0]); when the model belongs to
+   the current group (ch_CurrentGroup) the set is selected on the body at once. */
 
 void gm_SelectModelVariant(char *o)
 {
-    unsigned v;
-    char *m;
-    int cls;
+    unsigned v, n;
+    CHARACTER *m;
+    D3SURF *surf;
 
     v = 0;
-    if (o != 0 && (m = *(char **)(o + 0x184)) != 0) {
-        cls = *(int *)(*(int *)(m + 0x34) + 0x1ec);
-        if (*(char **)(m + 0x88) != (char *)(unsigned)&d3_Scenes) {
-            v = *(unsigned *)(*(int *)(cls + 0x104) + 0x1e4);
-            if ((int)v < 5)
-                v = *(unsigned *)(o + 4) % v;
+    if (o != 0 && (m = ORD_CHAR(o)->model) != 0) {
+        surf = (D3SURF *)m->obj->material->animCtl;
+        n = ((D3OPS *)surf->info.mesh)->nsets;
+        if (m->scene != d3_Scenes) {
+            if ((int)n <= 4)
+                v = ORD_CHAR(o)->netId % n;
             else
-                v = *(unsigned *)(o + 4) & 3;
-            m[0x23a] = (char)v;
+                v = ORD_CHAR(o)->netId & 3;
+            m->texSet = (unsigned char)v;
         }
-        if (ch_CurrentGroup == *(int *)(m + 0x2c))
-            d3if_SelectTextureSet(*(int *)(m + 0x34), cls + 0xf4, v, 1);
+        if (ch_CurrentGroup == m->group)
+            d3if_SelectTextureSet(m->obj, surf, (unsigned char)v, 1);
     }
 }
 /* 0x4fb620, fills the four head numbers (+0x34 .. +0x40) of a head table record whose first is still 0xff: from the name (+4) split at the last '_' into name and suffix, the icon "%s_HEAD%i_%s_ICON.bmp" (or "%s_HEAD%i_ICON.bmp") is looked up in the icon names 0x6f1b94 (0x30 bytes each, 0x6f1b90 of them) for head 0 .. 3 */

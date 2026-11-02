@@ -2192,7 +2192,7 @@ void ch_ActMove2Universe(CHACTION *a)
     if (!a->args[0] && ch_CurrentGroup == ch->group)
         d3if_SelectTextureSet(ch->obj, ch->obj->material->animCtl, 0, 0);
     else if (ch_CurrentGroup == ch->group)
-        d3if_SelectTextureSet(ch->obj, ch->obj->material->animCtl, CH_UNK23A(ch), 1);
+        d3if_SelectTextureSet(ch->obj, ch->obj->material->animCtl, ch->texSet, 1);
     ch_ReleaseSit(ch);
     if (CHACT_HASPOS(a))
         ch_SetPos(ch, CHACT_POS(a), 0);

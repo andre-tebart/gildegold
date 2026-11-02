@@ -95,7 +95,10 @@ typedef struct CHARACTER {         /* 0x244 bytes */
     char sitAnim[0x40];             /* 0x1e8, the sit animation (ch_SetSitAnim on load, cut at its last '_') */
     void (*onDelete)(struct CHARACTER *ch); /* 0x228, called by ch_Delete (sv_ShowBubble sets sv_ReleaseBubble) */
     D3OBJECT *lowPolyBody;          /* 0x22c, low-poly body */
-    char lowname[0x10];             /* 0x230 */
+    char lowname[0xa];              /* 0x230 */
+    unsigned char texSet;           /* 0x23a, the body's texture set (gm_SelectModelVariant: the owner's id modulo the
+                                       mesh's set count), selected again when the character changes scene */
+    char pad23b[0x5];
     unsigned char pathType;         /* 0x240, the path_Find unit type (selects the terrain cost table
                                        path_Terrain[type] for this character; all three readers pass it
                                        straight to path_Find's type argument) */
@@ -430,7 +433,6 @@ typedef struct CHWALKDEF {
 int ch_ThinPath(CHARACTER *ch, CHPATH *path, CHPATHPT *out, CHWALKDEF *w);              /* 0x406bc0 */
 void ch_SetHandObject(CHARACTER *ch, int hand, char *name);                             /* 0x406c60, 1 left, 2 right, 3 head */
 
-#define CH_UNK23A(ch)   (*(char *)((char *)(ch) + 0x23a))
 #define CH_UNK038(ch)   ((int *)((char *)(ch) + 0x38))
 #define CH_HAND(ch, off) ((D3OBJECT **)((char *)(ch) + (off)))                     /* 0x64 right, 0x68 left, 0x6c head */
 #define CHACT_HASPOS(a) (*(char *)((char *)(a) + 0x17c))

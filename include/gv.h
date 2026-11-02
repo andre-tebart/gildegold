@@ -124,7 +124,9 @@ typedef struct ORDCHAR {
     char pad16a[2];
     struct ORDBLD *bld;             /* 0x16c, the character's building (ai.h AICHAR.bld) */
     struct ORDBLD *bld2;            /* 0x170, the character's own building (its home), 0 when none */
-    char pad174[0x18];
+    char pad174[0x10];
+    struct CHARACTER *model;        /* 0x184, the character's model (ai.h AICHAR.model, ch.h CHARACTER) */
+    char pad188[4];
     int picture;                    /* 0x18c, the portrait picture (ai.h AICHAR.picture), -1 = none */
     char pad190[8];
     int v198;                       /* 0x198, cleared with wage at the end of every day (f3gm.c gm_EndDayIncomes) */
