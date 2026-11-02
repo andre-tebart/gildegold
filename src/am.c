@@ -2973,9 +2973,9 @@ int ai_Unk494020(AIPLAN *q)
     unsigned int n;
     float lim, x, d, sum, rank;
 
-    if (q->unk04 <= 3.0f)
+    if (q->score <= 3.0f)
         return 0;
-    if (q->unk04 >= 18.0f)
+    if (q->score >= 18.0f)
         return 1;
     n = ai_Unk4942a0(q);
     a = AI_C4(q->c18);
@@ -3033,7 +3033,7 @@ int ai_Unk4941e0(AIPLAN *q)
 
 int ai_Unk4942a0(AIPLAN *q)
 {
-    return (int)min(max(q->unk04 * 0.25f, 2.0f), 6.0f);
+    return (int)min(max(q->score * 0.25f, 2.0f), 6.0f);
 }
 /* 0x494300, rolls the plan's tries: sets unk48 on success, unk4c to the negated sum */
 
@@ -3093,7 +3093,7 @@ int ai_Unk494410(AIC4 *ch, AIPLAN *q)
         y = min(max(0.0f, y), 1.0f);
         c = gm_Mix(a, ch, 4);
         d = gm_Mix(b, ch, 4);
-        d = d + q->unk04 * q->unk04 * 0.0025f;
+        d = d + q->score * q->score * 0.0025f;
         if (q->unk44) {
             x = x * 1.1f;
             y = y * 0.9f;
@@ -3103,17 +3103,21 @@ int ai_Unk494410(AIC4 *ch, AIPLAN *q)
     }
     return 0;
 }
-/* 0x4945c0, the rank (0..7) of the score: 4..5 -> 1, 6..7 -> 2 .. 14..16 -> 6, more -> 7; one less
-   for a character with flag 0x22e */
+/* 0x4945c0, the rank (0..7) of the plan's score rounded minus one: 4..5 -> 1, 6..7 -> 2 .. 14..16 -> 6, more -> 7; one less
+   for a character with flag 0x22e
+   @deep read against the original: same statements, same switch (tables equal), same calls and constants;
+   renamed AIPLAN.unk04 to score. Left is allocation: esi/edi swapped (original q in edi, n in esi; ours q
+   in esi, n in edi) which moves 'mov reg,[esp+arg]' after 'push edi' in the original, plus the fstp
+   [esp+0x20] scheduled after 'push edx' (0x4945f3..0x4945f7). Same instruction count. */
 
-int ai_Unk4945c0(AIPLAN *q)
+int ai_PlanRank(AIPLAN *q)
 {
     int n, r;
     float fl;
     AIC4 *c;
 
-    n = (int)(q->unk04 - 1.0f);
-    fl = (float)(q->unk04 - floor(q->unk04));
+    n = (int)(q->score - 1.0f);
+    fl = (float)(q->score - floor(q->score));
     c = AI_C4(q->c18);
     if (fl >= 0.5f)
         n++;
@@ -3164,7 +3168,7 @@ int ai_Unk4946c0(AIC4 *ch, AIPLAN *q)
     AIPOS pos;
     AIC4 *c;
 
-    n = ai_Unk4945c0(q);
+    n = ai_PlanRank(q);
     gv_GetTableRecord(0, &pos);
     k = (5.0f - (float)pos.unk18) * 0.1f + 0.7f;
     c = AI_C4(q->c18);

@@ -588,7 +588,7 @@ typedef struct AIC4 {                   /* 0x21c bytes, ai_Chars[] with the fiel
 
 typedef struct AIPLAN {                 /* a plan record the callbacks 0x494020 .. 0x494410 look at */
     char pad00[4];
-    float unk04;                        /* 0x04, a score */
+    float score;                        /* 0x04, the plan's score (rated 3..18 by 0x494020, ranked by 0x4945c0) */
     int unk08;                          /* 0x08 */
     float unk0c;                        /* 0x0c */
     char pad10[4];
@@ -652,7 +652,7 @@ int ai_Unk4941e0(AIPLAN *q);                                    /* 0x4941e0 */
 int ai_Unk4942a0(AIPLAN *q);                                    /* 0x4942a0 */
 int ai_Unk494300(AIPLAN *q);                                    /* 0x494300 */
 int ai_Unk494410(AIC4 *ch, AIPLAN *q);                          /* 0x494410 */
-int ai_Unk4945c0(AIPLAN *q);                                    /* 0x4945c0 */
+int ai_PlanRank(AIPLAN *q);                                    /* 0x4945c0 */
 int ai_Unk4946c0(AIC4 *ch, AIPLAN *q);                          /* 0x4946c0 */
 int ai_Unk4947a0(AIC4 *a, AIC4 *b);                             /* 0x4947a0 */
 int ai_Unk494830(AIC4 *a, AIC4 *b);                             /* 0x494830 */

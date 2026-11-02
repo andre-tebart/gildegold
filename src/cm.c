@@ -11934,7 +11934,7 @@ void ai_Unk4dd960(char *r, int *m)
         if (*(int *)(r + 0x10) != m[7])
             return;
         sel[0] = sel[1] = sel[2] = -1;
-        n = ai_Unk4945c0(0);
+        n = ai_PlanRank(0);
         v = d2_OpenForm(0, 0, "cutscenes\\prozess");
         ((void (*)(int, int))d2_PlaceMainWindow)(v, 3);
         d2_SetForm(v, 0);

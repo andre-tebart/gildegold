@@ -1012,7 +1012,7 @@ int ai_Unk4941e0();  /* 0x4941e0 */
 int ai_Unk494410();  /* 0x494410 */
 int ai_Unk4946c0();  /* 0x4946c0 */
 int gm_GetWorth(unsigned short id);  /* 0x50a640 */
-int ai_Unk4945c0();  /* 0x4945c0 */
+int ai_PlanRank();  /* 0x4945c0 */
 int gv_CheckSentence();  /* 0x4f4420 */
 void d2_SetObjEnabled(int obj, int on);  /* 0x475e40 */
 extern char *ai_Unk6332b4;  /* 0x6332b4 */

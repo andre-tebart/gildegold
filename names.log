@@ -743,3 +743,4 @@
 2026-11-02T06:08:12 0x00493a40 func ai_Unk493a40 -> ai_DuelNextPhase by:main why:advances AGDUEL.phase: 1->2, triples compared in phase 2, dice sums against 17 in phases 3/4 (0x493a40)
 2026-11-02T06:12:19 0x00493be0 func ai_Unk493be0 -> ai_ChooseObjectTarget by:main why:0x493be0 sets object o's target field 0x1e to a disliked office colleague (sel 7) or a partner found by 0x4a5b50 (sel 10), else -1; 0x4a5b50 finds a partners by a random walk over the 768 characters (as 0x4a58d0)
 2026-11-02T06:12:19 0x004a5b50 func ai_Unk4a5b50 -> ai_FindPartnersRandomWalk by:main why:0x493be0 sets object o's target field 0x1e to a disliked office colleague (sel 7) or a partner found by 0x4a5b50 (sel 10), else -1; 0x4a5b50 finds a partners by a random walk over the 768 characters (as 0x4a58d0)
+2026-11-02T06:13:33 0x004945c0 func ai_Unk4945c0 -> ai_PlanRank by:main why:0x4945c0 ranks AIPLAN.score (rounded, minus 1) into 0..7, one less with item 0x22e
