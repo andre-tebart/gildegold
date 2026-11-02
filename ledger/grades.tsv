@@ -2224,7 +2224,7 @@ exe	0x004c5510	ai_Unk4c5510	cm	byte	draft
 exe	0x004c5540	cm_SendBoss	cm	byte	draft		
 exe	0x004c5580	ai_Unk4c5580	cm	byte	draft		
 exe	0x004c55d0	cm_SendMessage3d	cm	draft	draft		
-exe	0x004c5690	ai_Unk4c5690	cm	byte	draft		
+exe	0x004c5690	cm_SendCharModel	cm	byte	draft		
 exe	0x004c56d0	ai_Unk4c56d0	cm	byte	draft		
 exe	0x004c5710	cm_SendGoodsDelta	cm	draft	draft		
 exe	0x004c5800	cm_SendMessage41	cm	byte	draft		
@@ -2953,16 +2953,16 @@ exe	0x004fc7a0	gm_ExpectedDeathAge	f3gm	shape	readable
 exe	0x004fc820	gm_CharacterHealth	f3gm	byte	readable		
 exe	0x004fc890	gm_CharacterBaseHealth	f3gm	byte	readable		
 exe	0x004fc8e0	gm_HealthRatio	f3gm	byte	readable		
-exe	0x004fc920	gm_DailyCharacters	f3gm	draft	draft		
-exe	0x004fca40	gm_AddHealth	f3gm	draft	draft		
-exe	0x004fccc0	gm_PartnerStep	f3gm	draft	draft		
-exe	0x004fd090	unk_Unk4fd090	f3gm	draft	draft		
-exe	0x004fd120	unk_Unk4fd120	f3gm	draft	draft		
-exe	0x004fd5c0	unk_Unk4fd5c0	f3gm	draft	draft		
+exe	0x004fc920	gm_DailyCharacters	f3gm	byte	readable		
+exe	0x004fca40	gm_AddHealth	f3gm	shape	readable		
+exe	0x004fccc0	gm_PartnerStep	f3gm	draft	readable	deep	
+exe	0x004fd090	gm_IsNoPlayerKin	f3gm	byte	readable		
+exe	0x004fd120	gm_PopulationStep	f3gm	shape	readable		
+exe	0x004fd5c0	gm_CreateRandomChild	f3gm	byte	readable		
 exe	0x004fd7e0	gm_IsUnderAge	f3gm	byte	draft		
-exe	0x004fd820	unk_Unk4fd820	f3gm	draft	draft		
+exe	0x004fd820	gm_FindHome	f3gm	draft	readable	deep	
 exe	0x004fda10	unk_Unk4fda10	f3gm	byte	draft		
-exe	0x004fda70	unk_Unk4fda70	f3gm	draft	draft		
+exe	0x004fda70	gm_FindApplicant	f3gm	byte	readable		
 exe	0x004fdc10	unk_Unk4fdc10	f3gm	draft	draft		
 exe	0x004fdcb0	unk_Unk4fdcb0	f3gm	draft	draft		
 exe	0x004fddb0	unk_Unk4fddb0	f3gm	draft	draft		
@@ -3046,8 +3046,8 @@ exe	0x00503c20	gm_Unk503c20	f3gm	draft	draft
 exe	0x00503c60	unk_Unk503c60	f3gm	draft	draft		
 exe	0x00503e80	gm_ResetCharacters	f3gm	draft	draft		
 exe	0x00503ee0	gm_GetJobTalents	f3gm	byte	readable		
-exe	0x00503f30	gm_Unk503f30	f3gm	byte	draft		
-exe	0x00503f50	gm_Unk503f50	f3gm	draft	draft		
+exe	0x00503f30	gm_SexForJob	f3gm	byte	readable		
+exe	0x00503f50	gm_SexForTitle	f3gm	draft	readable		
 exe	0x00503fa0	gm_BuildingTypeOfJob	f3gm	draft	draft		
 exe	0x00504050	gm_JobBuildingType	f3gm	draft	readable		
 exe	0x00504100	gm_JobSlots	f3gm	draft	readable		
@@ -3094,7 +3094,7 @@ exe	0x005064d0	gm_Unk5064d0	f3gm	draft	draft
 exe	0x00506890	gm_Unk506890	f3gm	draft	draft		
 exe	0x00506e70	gm_Unk506e70	f3gm	draft	draft		
 exe	0x005075c0	gm_MayRemoveChar	f3gm	draft	draft		
-exe	0x00507690	gm_Unk507690	f3gm	draft	draft		
+exe	0x00507690	gm_CreateCharacter	f3gm	draft	draft		
 exe	0x005085b0	gm_ConvertMoney	f3gm	byte	draft		
 exe	0x005085f0	gm_PlayerFactor	f3gm	byte	draft		
 exe	0x00508620	gm_Unk508620	f3gm	byte	draft		
@@ -3786,7 +3786,7 @@ exe	0x005649b0	he_Unk5649b0	he	draft	draft
 exe	0x005652b0	he_Unk5652b0	he	draft	draft		
 exe	0x00565410	he_Unk565410	he	draft	draft		
 exe	0x00565500	he_Unk565500	he	byte	draft		
-exe	0x00565620	he_Unk565620	he	draft	draft		
+exe	0x00565620	he_Unk565620	he	shape	draft		
 exe	0x00565850	he_Unk565850	he	draft	draft		
 exe	0x00565940	he_Unk565940	he	draft	draft		
 exe	0x00565b00	he_Unk565b00	he	byte	draft		

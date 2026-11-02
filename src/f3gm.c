@@ -15,7 +15,7 @@
    Open: not included yet (dcp headers conflicts f3gm HEADER): ai.h anm.h cm.h d2.h d3_interface.h d3_tools.h
    gfx.h hmt.h hst.h rt.h unk_458810.h unk_4b39f0.h; held by own declarations that differ from the owner's:
    d2_Objs, gm_MinutesBetween, gm_ClockSeason, gm_CompareTime; calls whose argument count differs from the
-   definition (read the original's pushes): gm_Liking, gm_TitleNumber.
+   definition (read the original's pushes): gm_Liking.
    unit of rea 8cef7d5b (src/game/f3gm.c); boundaries in decl/text.dcl */
 struct CHARACTER;
 struct CHTRANSPORT;
