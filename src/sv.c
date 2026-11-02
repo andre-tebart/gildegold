@@ -6958,9 +6958,10 @@ void sv_BroadcastText(unsigned fl, char *t)
     memset(msg, 0, sizeof(msg));
     strcpy(msg, t);
     m = ((int (*)(int, int))cm_SendExSysMessage)(0xe, msg);
+    fl |= 0x300000;
     while (cm_GetSlotState(m) == 0) {
         sv_SetStatusText(t);
-        sv_RunFrame(0, fl | 0x300000);
+        sv_RunFrame(0, fl);
     }
     sv_SetStatusText(ch_EmptyName);
 }
