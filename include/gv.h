@@ -17,6 +17,14 @@ struct D3OBJECT;
 extern char unk_Avatars[0x20][0xf4];    /* 0x60f310 */
 extern char gv_Effects[];             /* 0x6f1008, 8 slots of 0x170 bytes */
 extern AITIME gv_LastTime;              /* 0x6f0e38, ai_Time at the last effect step (struct copies of it) */
+typedef struct GVYARD {                 /* 0x24 bytes, the graveyard record of a kind 0x1d building (AIBLD.yard; gv_AllocGraveyard) */
+    int id;                             /* 0x00, the building's id */
+    int kind;                           /* 0x04, 1 .. 3, the building type's level when allocated */
+    int *lists[4];                      /* 0x08, the entries (0x14 bytes) of the four grave sizes (0x44 << i bytes each) */
+    unsigned char open[4];              /* 0x18, the size i is in use (open[0] is set at allocation; 0x19 .. 0x1b by expansion) */
+    int *entries;                       /* 0x1c, all entries ("gv_Alloc:_all_graves") */
+    int *graves;                        /* 0x20, the grave records, 0x44 bytes each, first word -1 when free ("gv_Alloc:_all_zombies") */
+} GVYARD;
 typedef struct GVCANNON {               /* 0x20 bytes, the state of the cannon scene (unk_575860 0x57e270 ..), saved with the effects */
     int bld;                            /* 0x00, the record id (rec + 1) the scene was last set up for, -1 after the reset */
     int spare;                          /* 0x04, no reader besides the save game */
@@ -202,7 +210,7 @@ extern unsigned char ai_OwnPlayer;      /* 0x6f1bc5 */
 void gv_BuildingCannon(char *o, unsigned *balls, unsigned *kind);  /* 0x4ef170 */
 void gv_CannonScatter(char *o, float *spread, float *speedSpread);  /* 0x4ef260 */
 float unk_Unk4ef330(char *o);           /* 0x4ef330 */
-int unk_Unk4ef3c0(unsigned char *o);    /* 0x4ef3c0 */
+int gv_GraveCount(unsigned char *o);    /* 0x4ef3c0 */
 int unk_Unk4ef440(unsigned char *o);    /* 0x4ef440 */
 int unk_Unk4ef470(unsigned char *o);    /* 0x4ef470 */
 int unk_Unk4ef4f0(char *r, int i);      /* 0x4ef4f0 */

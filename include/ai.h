@@ -49,6 +49,7 @@ typedef struct AIBLD {                  /* 0xa9 bytes, ai_Blds[256] */
     union {
         int unk65;                      /* 0x65, moved by +-1 per event towards AIPOS.unk18 (ai.c 0x4836a0) */
         int playerSlot;                 /* 0x65, of a kind 0x47 building: its ai_PlayerSlots index (sv_OpenBuildingPanel) */
+        struct GVYARD *yard;            /* 0x65, of a kind 0x1d building: its graveyard record (gv.h, gv_AllocGraveyard) */
     };
     int unk69;                          /* 0x69, cleared for the kind 7 buildings at every round start (main.c 0x53b2e0) */
     char pad6d[4];

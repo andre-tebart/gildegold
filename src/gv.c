@@ -1144,36 +1144,36 @@ float unk_Unk4ef330(char *o)
         return x + 0.05f;
     return x;
 }
-/* 0x4ef3c0, the number of slots of the object o by its record (+0x65, flags +0x19 / +0x1a / +0x1b) and the kind byte +0x247 of its building (1: 8, 16 with +0x19; 2: 12 / 24 with +0x19, + 8 with +0x1a; else 16 / 32 + 16 with +0x1a, + 8 with +0x1b) */
+/* 0x4ef3c0, the number of small (0x44-byte) graves of the graveyard building o by its type's level (AIBTYPE +0x247) and the
+   sizes in use (GVYARD.open): level 1: 8, 16 with open[1]; level 2: 12 / 24 with open[1], + 8 with open[2]; else 16 / 32 with
+   open[1], + 16 with open[2], + 8 with open[3] */
 
-int unk_Unk4ef3c0(unsigned char *o)
+int gv_GraveCount(unsigned char *o)
 {
-    char *rec;
-    char k, f;
+    AIBLD *bld = (AIBLD *)o;
+    char *bt;
+    GVYARD *g;
     int n;
 
-    rec = *(char **)(o + 0x65);
-    f = rec[0x19];
-    k = ai_BTypes[o[0] * 0x24d + 0x247];
-    if (k == 1) {
+    bt = ai_BTypes + bld->type + bld->type * 0x24c;
+    g = bld->yard;
+    if (((AIBTYPE *)bt)->level == 1) {
         n = 8;
-        if (f == 1)
+        if (g->open[1] == 1)
             return 0x10;
+    } else if (((AIBTYPE *)bt)->level == 2) {
+        n = 0xc;
+        if (g->open[1] == 1)
+            n = 0x18;
+        if (g->open[2] == 1)
+            n = n + 8;
     } else {
-        if (k == 2) {
-            n = 0xc;
-            if (f == 1)
-                n = 0x18;
-            f = rec[0x1a];
-        } else {
-            n = 0x10;
-            if (f == 1)
-                n = 0x20;
-            if (rec[0x1a] == 1)
-                n = n + 0x10;
-            f = rec[0x1b];
-        }
-        if (f == 1)
+        n = 0x10;
+        if (g->open[1] == 1)
+            n = 0x20;
+        if (g->open[2] == 1)
+            n = n + 0x10;
+        if (g->open[3] == 1)
             n = n + 8;
     }
     return n;
@@ -1185,7 +1185,7 @@ int unk_Unk4ef440(unsigned char *o)
     int n, cnt;
     int *p;
 
-    n = unk_Unk4ef3c0(o);
+    n = gv_GraveCount(o);
     cnt = 0;
     if (n == 0)
         return 0;
@@ -1426,7 +1426,7 @@ int unk_Unk4ef930(unsigned char *o)
     rec = *(char **)(o + 0x65);
     b = ai_BTypes + o[0] + o[0] * 0x24c;
     if (b[0] == 0x1d && (unsigned char)b[0x247] != 0 && (unsigned char)b[0x247] < 4) {
-        n = unk_Unk4ef3c0(o);
+        n = gv_GraveCount(o);
         i = util_RandomU(n) & 0xffff;
         if (n != 0) {
             k = n;
