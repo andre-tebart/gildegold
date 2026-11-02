@@ -272,7 +272,7 @@ int d3anim_StartAnim(void *list, char *name, D3ANIMFLAGS f);                    
 struct D3IOPATH *d3_LoadObjectAnim(char *file, struct D3IOOBJ *obj, char reload);                                 /* 0x44e2e0 */
 extern char *d3_AnimPath;                   /* 0xfba940 */
 char *util_BaseName(char *path);            /* 0x401040, strips the extension in place, returns the file name */
-extern D3VECTOR d3_Unk1466620;             /* 0x1466620, camera target position */
+extern D3VECTOR d3t_PlaceTarget;             /* 0x1466620, camera target position */
 extern D3VECTOR d3_Unk1466630;              /* 0x1466630, camera target angles */
 void d3anim_FreePath(D3OBJECT *obj);                                                       /* 0x433b10 */
 char d3if_Delete(D3OBJECT *obj);                                                       /* 0x447190, d3_interface.h */

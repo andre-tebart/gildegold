@@ -59,7 +59,7 @@ static int d3t_SunFade = 0;              /* 0x631124, 1 fading in, -1 fading out
 static int d3t_Unk631128 = 0;            /* 0x631128 */
 int d3t_SunFadeStart = -1;  /* 0x5f345c, initialized to -1; TODO define here once .data is matched */
 
-/* 0x411680, starts an animation that moves the object to pos and turns it to dir (angles). @deep B: read the whole 137-line asmdiff against 0x411680..0x411860: the same statements with another register allocation and scheduling - the three af flag byte updates (|= 0x14, &= ~8, |= 2) are interleaved differently, the d3_UnwrapAngles argument setup and the D3ANIMKEY copies use other registers/slots (key[0].time and the two vec copies swapped), the FPU projection/relative-vector sequence has another stack order; no different constant, callee, condition or field. Readability Q2 d3_Unk1466620/d3_Unk1466630 (globals) and d3anim_CreatePath (the animation creator) is deep work. Needs vargen/try.py */
+/* 0x411680, starts an animation that moves the object to pos and turns it to dir (angles). @deep B: read the whole 137-line asmdiff against 0x411680..0x411860: the same statements with another register allocation and scheduling - the three af flag byte updates (|= 0x14, &= ~8, |= 2) are interleaved differently, the d3_UnwrapAngles argument setup and the D3ANIMKEY copies use other registers/slots (key[0].time and the two vec copies swapped), the FPU projection/relative-vector sequence has another stack order; no different constant, callee, condition or field. Readability Q2 d3t_PlaceTarget/d3_Unk1466630 (globals) and d3anim_CreatePath (the animation creator) is deep work. Needs vargen/try.py */
 int d3t_PlaceObject(D3OBJECT *camera, float px, float py, float pz,
                     float dx, float dy, float dz, int unk, char flags)
 {
@@ -91,9 +91,9 @@ int d3t_PlaceObject(D3OBJECT *camera, float px, float py, float pz,
     }
     if (camera == d3_Camera) {
         d3_Unk1466630 = dir;
-        d3_Unk1466620.x = px;
-        d3_Unk1466620.y = py;
-        d3_Unk1466620.z = pz;
+        d3t_PlaceTarget.x = px;
+        d3t_PlaceTarget.y = py;
+        d3t_PlaceTarget.z = pz;
     }
     rel.x = px - camera->pos.x;
     rel.y = py - camera->pos.y;
@@ -2232,7 +2232,7 @@ D3PARTSYS *d3t_CreateEarth(void *parent, D3VECTOR *pos, int count, float size, f
    d3t_CreateSnowMipmaps and freed by d3t_FreeSnowMipmaps. */
 D3RECT d3_Viewport = {0};  /* 0xfc2930 */
 DDSURFACEDESC2 d3t_SnowMip8[9] = {0};       /* 0x14661c0, 8-bit palettized */
-D3VECTOR d3_Unk1466620 = {0};  /* 0x1466620, camera target position */
+D3VECTOR d3t_PlaceTarget = {0};  /* 0x1466620, camera target position */
 D3VECTOR d3_Unk1466630 = {0};  /* 0x1466630, camera target angles */
 DDSURFACEDESC2 d3t_SnowDither[9] = {0};     /* 0x1466640, 8-bit blurred noise */
 DDSURFACEDESC2 d3t_SnowMip16[9] = {0};      /* 0x1466aa0 */

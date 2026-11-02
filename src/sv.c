@@ -3230,7 +3230,7 @@ void sv_FlyCameraToModel(int m)
 }
 /* 0x528140, moves the camera (0x411680) to the stored view (0x75fb80 position, 0x75fb90 direction) with the step 0x623814 / 8 */
 
-void sv_Unk528140(void)
+void sv_MoveCameraToView(void)
 {
     d3t_PlaceObject(sv_CameraObj, *(float *)&sv_ViewPosX, *(float *)&sv_ViewPosY, *(float *)&sv_ViewPosZ, *(float *)&sv_ViewRotX, *(float *)&sv_ViewRotY, *(float *)&sv_ViewRotZ, ai_CameraStep, 8);
 }
@@ -5824,52 +5824,57 @@ void sv_DrawBorderArrows(void)
     else if (top == 1)
         d2_DrawShape(d2_HalfScreenW - 0x10, 0x38, d2_ScreenSurf, pic, 7);
 }
-/* 0x52d7a0, per-frame camera follow of the stored view (0x75fb80 / 0x75fb90): when the camera shows a different view than the stored one it is reset (0x433b10) or moved (0x528140); ends the highlight
-   (0x6f22ec, via its +0x18c callback) and clears the selection (0x52adb0) when a group is selected */
+/* 0x52d7a0, per frame: ends a running camera placement (d3t_CamMove), the camera put straight onto the stored view
+   (sv_ViewPos / sv_ViewRot) when the placement was heading there; outside a nested frame (or after that) a camera
+   off the stored view is moved back to it (sv_MoveCameraToView) and the focus object released (its event 3); in a
+   nested frame the camera returns once the frame depth reaches sv_FocusDepth again, which releases the focus
+   object too; then the selection is reset when an item is selected */
 
 void sv_CameraFollow(void)
 {
-    int fl, n;
+    int placed;
+    D3EVENT *ev;
 
-    fl = 0;
-    if (SV_I((unsigned)&d3t_CamMove) != 0) {
-        if (d3_VecEqual((char *)(unsigned)&d3_Unk1466620, (char *)(unsigned)&sv_ViewPosX, 0.1f) == 0) {
-            d3anim_FreePath(sv_CameraObj);
-            SV_I((unsigned)&d3t_CamMove) = 0;
-            SV_I((unsigned)&d3t_CamMoving) = 0;
+    placed = 0;
+    if (d3t_CamMove != 0) {
+        if (d3_VecEqual(&d3t_PlaceTarget, (D3VECTOR *)sv_ViewPos, 0.1f) != 0) {
+            d3anim_FreePath(d3_Camera);
+            d3t_CamMove = 0;
+            d3t_CamMoving = 0;
+            placed = 1;
+            d3_SetObjectPos(d3_Camera, (D3VECTOR *)sv_ViewPos);
+            d3_SetObjectRot(d3_Camera, (D3VECTOR *)sv_ViewRot);
         } else {
-            d3anim_FreePath(sv_CameraObj);
-            SV_I((unsigned)&d3t_CamMove) = 0;
-            SV_I((unsigned)&d3t_CamMoving) = 0;
-            fl = 1;
-            d3_SetObjectPos(sv_CameraObj, (unsigned)&sv_ViewPosX);
-            d3_SetObjectRot(sv_CameraObj, (unsigned)&sv_ViewRotX);
+            d3anim_FreePath(d3_Camera);
+            d3t_CamMove = 0;
+            d3t_CamMoving = 0;
         }
     }
-    if (SV_I((unsigned)&sv_FrameDepth) <= SV_I((unsigned)&sv_FrameBase) || fl) {
-        if ((d3_VecEqual(sv_CameraObj + 0x84, (char *)(unsigned)&sv_ViewRotX, 0.1f) == 0 || d3_VecEqual(sv_CameraObj + 0x4c, (char *)(unsigned)&sv_ViewPosX, 0.1f) == 0)
-            && (!fl && (sv_Unk528140(), SV_I((unsigned)&sv_FocusObject) != 0))) {
-            n = *(int *)(SV_I((unsigned)&sv_FocusObject) + 0x1d4);
-            if (n != 0 && *(int *)(n + 0x18c) != 0)
-                ((int (*)())*(int *)(n + 0x18c))(SV_I((unsigned)&sv_FocusObject), 3, n + 400, 0);
-            SV_I((unsigned)&sv_FocusObject) = 0;
+    if (sv_FrameDepth <= sv_FrameBase || placed) {
+        if ((d3_VecEqual(&d3_Camera->rotation, (D3VECTOR *)sv_ViewRot, 0.1f) == 0 || d3_VecEqual(&d3_Camera->pos, (D3VECTOR *)sv_ViewPos, 0.1f) == 0)
+            && !placed) {
+            sv_MoveCameraToView();
+            if (sv_FocusObject != 0) {
+                ev = ((D3OBJECT *)sv_FocusObject)->events;
+                if (ev != 0 && ev[3].fn != 0)
+                    ev[3].fn(sv_FocusObject, 3, ev[3].name, 0);
+                sv_FocusObject = 0;
+            }
         }
-    } else if (SV_I((unsigned)&sv_FrameDepth) - SV_I((unsigned)&sv_PopRequest) <= SV_I((unsigned)&sv_FocusDepth)) {
-        sv_Unk528140();
-        SV_I((unsigned)&sv_FocusDepth) = SV_I((unsigned)&sv_FrameDepth) - SV_I((unsigned)&sv_PopRequest);
-        if (SV_I((unsigned)&sv_FocusObject) != 0) {
-            n = *(int *)(SV_I((unsigned)&sv_FocusObject) + 0x1d4);
-            if (n != 0 && *(int *)(n + 0x18c) != 0)
-                ((int (*)())*(int *)(n + 0x18c))(SV_I((unsigned)&sv_FocusObject), 3, n + 400, 0);
-            SV_I((unsigned)&sv_FocusObject) = 0;
+    } else if (sv_FocusDepth >= sv_FrameDepth - sv_PopRequest) {
+        sv_MoveCameraToView();
+        sv_FocusDepth = sv_FrameDepth - sv_PopRequest;
+        if (sv_FocusObject != 0) {
+            ev = ((D3OBJECT *)sv_FocusObject)->events;
+            if (ev != 0 && ev[3].fn != 0)
+                ev[3].fn(sv_FocusObject, 3, ev[3].name, 0);
+            sv_FocusObject = 0;
         }
-        if (SV_I((unsigned)&sv_SelectedItem) == 0)
-            return;
+        if (sv_SelectedItem != 0)
+            sv_ResetSelection();
+    }
+    if (sv_SelectedItem != 0)
         sv_ResetSelection();
-    }
-    if (SV_I((unsigned)&sv_SelectedItem) == 0)
-        return;
-    sv_ResetSelection();
 }
 /* 0x52d940, the mouse click handler of the game screen (fl: 0x800 right button, 0x100 left button, 8 = key flag): plays "MausclickRechts_s_01" for a right click that changes something, closes a
    dialog (0x6f262c: the kinds 0x11 / 0x26 / 0x69 set 0x6f2630, 0x89 goes to 0x575860, the others to 0x53dcb0), routes a click on a shown widget (0x6faa84 table of 3 ints: widget, +0x70 of the object),
@@ -5958,7 +5963,7 @@ lbb6:
     if (SV_I((unsigned)&d3t_CamMove) != 0) {
         if (SV_I((unsigned)&ai_PlayerBuilding) == 0 && SV_I((unsigned)&ai_FallbackBuilding) == 0)
             goto l72;
-        if (d3_VecEqual((char *)(unsigned)&d3_Unk1466620, (char *)(unsigned)&sv_ViewPosX, 0.1f) == 0) {
+        if (d3_VecEqual((char *)(unsigned)&d3t_PlaceTarget, (char *)(unsigned)&sv_ViewPosX, 0.1f) == 0) {
             d3anim_FreePath(sv_CameraObj);
             SV_I((unsigned)&d3t_CamMove) = 0;
             SV_I((unsigned)&d3t_CamMoving) = 0;
@@ -6019,13 +6024,13 @@ l1a:
             goto l72;
         }
         if (SV_I((unsigned)&ai_PlayerBuilding) != 0 || SV_I((unsigned)&ai_FallbackBuilding) != 0)
-            sv_Unk528140();
+            sv_MoveCameraToView();
     } else {
         SV_I((unsigned)&sv_PopRequest) = 1;
         if (SV_I((unsigned)&sv_FocusDepth) < SV_I((unsigned)&sv_FrameDepth) - 1)
             goto l72;
         if (SV_I((unsigned)&ai_PlayerBuilding) != 0 || SV_I((unsigned)&ai_FallbackBuilding) != 0)
-            sv_Unk528140();
+            sv_MoveCameraToView();
         SV_I((unsigned)&sv_FocusDepth) = SV_I((unsigned)&sv_FrameDepth) - SV_I((unsigned)&sv_PopRequest);
     }
     if (SV_I((unsigned)&sv_FocusObject) != 0) {
