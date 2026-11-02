@@ -2343,39 +2343,42 @@ void gm_FreeIconNames(void)
         gm_IconNames = 0;
     }
 }
-/* 0x4fdfd0, the character statistics (0x91b500, 0x68 bytes): [0] the number of active persons of kind < 10, a histogram of 0x505e30 (i) / 10 (clamped, [1 ..]), the float [9] the share of children below their lifetime (0x4fd7e0, in percent at the end), the sums of the healths 0x4fc820 / 0x4fc890 per kind ([10 ..] / [18 ..]) turned into averages. ROUGH */
+#define GM_MIN(a, b) ((a) < (b) ? (a) : (b))
+#define GM_MAX(a, b) ((a) > (b) ? (a) : (b))
 
-void unk_Unk4fdfd0(void)
+/* 0x4fdfd0, fills the character statistics gm_CharacterStatistics: the living persons of kind < 10, per age bucket (gm_CharAge / 10, clamped to 0 .. 7) their count, health in percent of the base health and average base health, and the share under age in percent
+   @deep whole function read against the original 0x4fdfd0 and reconciled (the [0, 7] clamp of
+   gm_CharAge*0.1 as MAX(MIN(..)) with its four calls, the per-age-bucket health / base health sums indexed
+   by the bucket, the averaging loop, the index loop strength-reduced to the original's pointer + jl); the
+   one remaining hunk is the addressing of baseHealth[k]: the original reuses k's dead register, '+ lea
+   edx, [edx*4 + 0x91b548]' before the call then 'fadd/fstp dword ptr [edx]', ours keeps 'fadd/fstp dword
+   ptr [edx*4 + X]' (same memory, 3 bytes). Tried: += vs x = f() + x, a pointer temporary, (&health[k])[8],
+   k unsigned / char (worse) */
+
+void gm_CountCharacters(void)
 {
-    int *s = (int *)gm_CharacterStatistics;
-    float *f = (float *)gm_CharacterStatistics;
-    float v;
+    GMCHARSTATS *st = (GMCHARSTATS *)gm_CharacterStatistics;
+    ORDCHAR *c;
     int i, k;
-    char *c;
 
-    memset(gm_CharacterStatistics, 0, 0x68);
+    memset(gm_CharacterStatistics, 0, sizeof(GMCHARSTATS));
     for (i = 0; i < 0x300; i++) {
-        c = ai_Chars[i];
-        if (*(short *)c != -1 && c[8] != 0 && (unsigned char)c[2] < 10) {
-            s[0]++;
-            v = gm_CharAge(i) * 0.1f;
-            if (v >= 7.0f)
-                v = 6.0f;
-            if (v < 0.0f)
-                v = 0.0f;
-            k = (int)v;
-            s[1 + k]++;
+        c = &ORD_CHARS[i];
+        if (c->id != 0xffff && c->health > 0 && c->kind < 10) {
+            st->count++;
+            k = (int)GM_MAX(GM_MIN(gm_CharAge(i) * 0.1f, 7.0f), 0.0f);
+            st->ageCount[k]++;
             if (gm_IsUnderAge(i) != 0)
-                f[9] += 1.0f;
-            f[10 + (unsigned char)c[2]] = gm_CharacterHealth((short *)c) + f[10 + (unsigned char)c[2]];
-            f[18 + (unsigned char)c[2]] = gm_CharacterBaseHealth((short *)c) + f[18 + (unsigned char)c[2]];
+                st->underAge += 1.0f;
+            st->health[k] += gm_CharacterHealth((short *)c);
+            st->baseHealth[k] += gm_CharacterBaseHealth((short *)c);
         }
     }
-    for (i = 18; i < 26; i++) {
-        f[i - 8] = (f[i - 8] / f[i]) * 100.0f;
-        f[i] = f[i] / (float)s[i - 17];
+    for (k = 0; k < 8; k++) {
+        st->health[k] = st->health[k] / st->baseHealth[k] * 100.0f;
+        st->baseHealth[k] = st->baseHealth[k] / (float)st->ageCount[k];
     }
-    f[9] = (f[9] / (float)s[0]) * 100.0f;
+    st->underAge = st->underAge / (float)st->count * 100.0f;
 }
 
 #pragma pack(push, 1)

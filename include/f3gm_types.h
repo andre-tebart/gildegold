@@ -38,4 +38,14 @@ typedef struct GMMSG {
     char pad5c[0x9c];
 } GMMSG;
 
+/* the character statistics gm_CharacterStatistics (0x91b500, 0x68 bytes) as gm_CountCharacters (0x4fdfd0) fills
+   them: per age bucket (gm_CharAge / 10, clamped to 0 .. 7) the count and the average health / base health */
+typedef struct GMCHARSTATS {
+    int count;                          /* 0x00, the living persons of kind < 10 */
+    int ageCount[8];                    /* 0x04, the persons per age bucket */
+    float underAge;                     /* 0x24, the share of the persons under age (gm_IsUnderAge), in percent */
+    float health[8];                    /* 0x28, per age bucket: gm_CharacterHealth summed, then in percent of baseHealth */
+    float baseHealth[8];                /* 0x48, per age bucket: gm_CharacterBaseHealth summed, then the average */
+} GMCHARSTATS;
+
 #endif

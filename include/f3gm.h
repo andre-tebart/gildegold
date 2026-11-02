@@ -77,7 +77,7 @@ void unk_Unk4fda10(char *c, char *b);  /* 0x4fda10 */
 struct ORDCHAR; struct ORDBLD; struct ORDCHAR *gm_FindApplicant(struct ORDBLD *o, unsigned title, unsigned job);  /* 0x4fda70 */
 char *gm_HomeObject(unsigned char *b);  /* 0x4fdc10 */
 short *gm_SpawnCharacter(unsigned char flags, int p2, int p3, unsigned char p4, unsigned char p5, char *p6);  /* 0x4fddb0 */
-void unk_Unk4fdfd0(void);  /* 0x4fdfd0 */
+void gm_CountCharacters(void);  /* 0x4fdfd0 */
 unsigned short *unk_Unk5031b0(unsigned char *b, unsigned n);  /* 0x5031b0 */
 int gm_Unk5099e0(char *b, unsigned *out, int kind);  /* 0x5099e0 */
 extern char gm_CharacterStatistics[128];  /* 0x91b500 */

@@ -3427,7 +3427,7 @@ int ai_Unk4c88a0(G17MSG *m, G17STAT *s)
         if (ai_Unk624574) {
             ord_AdvanceRatingBase();
             if (*(int *)&ai_Time[6] % 6 == 0)
-                unk_Unk4fdfd0();
+                gm_CountCharacters();
         }
         if (ai_Unk624570)
             ai_UpdateNeeds();

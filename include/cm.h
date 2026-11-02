@@ -342,7 +342,7 @@ int gv_RetireCrime();  /* 0x4f37e0 */
 void ord_AddGridAmount();  /* 0x4f8460 */
 int unk_Unk4f86a0();  /* 0x4f86a0 */
 void ord_AdvanceRatingBase(void);  /* 0x4f9c00, ord.c */
-void unk_Unk4fdfd0(void);  /* 0x4fdfd0 */
+void gm_CountCharacters(void);  /* 0x4fdfd0 */
 char * he_NextEvent(void);  /* 0x53e300 */
 void he_Unk53ed70();  /* 0x53ed70 */
 void ai_Unk5a9170(unsigned short *param_1, int param_2);  /* 0x5a9170 */
