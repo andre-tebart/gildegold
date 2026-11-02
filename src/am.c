@@ -6679,83 +6679,91 @@ int ai_Unk49bc50(G5CH *p, AIARG *s1, AIARG *s2)
     }
     return 0;
 }
-/* 0x49bd90, decide callback 0x22: one of ten goods (0x17c..0x2b3) */
+/* 0x49bd90, decide callback of "UseObject (Sicherheit)" (0x22), as ai_DecideUseReputationObject for ten goods
+   (0x17c..0x2b3): with fewer than six goods and none usable, the sub-action 2 to get a random missing one (weight
+   0.05; o2 the character itself); else the action 0x22 on a random usable one (o1 kind 1, its inventory entry),
+   good 0x17c through the sub-action 4, 0x171 / 0x16f / 0x15c through the sub-action 3
+   @deep read the whole function against the original and reconciled: the ten goods, the sub-action 2 path,
+   the usable-good pick, the sub-action 4 (good 0) / 3 (goods 1..3) calls sharing one call site as the
+   original (goto done), the direct 0x22 copy. Left is allocation and frame layout: s1 / s2 trade slots
+   (the original's s1 at [esp+0x24], s2 at [esp+0xc]; ours the other way: every lea / store of them differs
+   by the swap, the declaration order and the names do not move them), and in the sub-action 2 path ours
+   loads p->id into ecx before the jump (xor ecx,ecx / mov cx,[esi] / push ecx at +0x147) where the
+   original jumps to the shared xor edx,edx / mov dx,[esi] / push edx at +0x1e3, so the cross-jump starts 3
+   instructions later (172 vs 169); the rest is the scheduling of the s1 / s2 stores around it (order
+   hunks) */
 
-int ai_Unk49bd90(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
+int ai_DecideUseSafetyObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 {
     int k, i, r;
-    AIARG s1;
     AIARG s2;
     int st[3];
-    G8REC recs[10];
+    AIARG s1;
+    G9REC recs[10];
 
     k = a;
     if (a == 0)
         k = 0x22;
-    if (f != 0 || a != 0)
-        return 0;
-    memset(recs, 0, sizeof(recs));
-    recs[0].item = 0x17c;
-    recs[1].item = 0x171;
-    recs[2].item = 0x16f;
-    recs[3].item = 0x15c;
-    recs[4].item = 0x15a;
-    recs[5].item = 0x22e;
-    recs[6].item = 0x22a;
-    recs[7].item = 0x2b4;
-    recs[8].item = 0x2b5;
-    recs[9].item = 0x2b3;
-    ai_FindWantedItems(p, 10, (int *)recs, st);
-    if (st[0] == 6 && st[2] == 0)
-        return 0;
-    if (st[1] == 10)
-        return 0;
-    if (st[0] < 6) {
-        if (st[2] == 0) {
+    if (f == 0 && a == 0) {
+        memset(recs, 0, sizeof(recs));
+        recs[0].item = 0x17c;
+        recs[1].item = 0x171;
+        recs[2].item = 0x16f;
+        recs[3].item = 0x15c;
+        recs[4].item = 0x15a;
+        recs[5].item = 0x22e;
+        recs[6].item = 0x22a;
+        recs[7].item = 0x2b4;
+        recs[8].item = 0x2b5;
+        recs[9].item = 0x2b3;
+        ai_FindWantedItems(p, 10, recs, st);
+        if ((st[0] != 6 || st[2] != 0) && st[1] != 10) {
+            if (st[0] < 6) {
+                if (st[2] == 0) {
+                    i = util_RandomU(10);
+                    while (recs[i].value != 0)
+                        i = (i + 1) % 10;
+                    s1.ref = recs[i].item;
+                    s1.arg = 1;
+                    s2.arg = 1;
+                    s1.kind = 2;
+                    s1.fvalue = 0.05f;
+                    s2.kind = 7;
+                    s2.ref = p->netId;
+                    r = ai_ChooseSubAction(k, p->id, 2, &s1, &s2);
+                    goto done;
+                }
+            } else if (st[2] == 0) {
+                return 0;
+            }
             i = util_RandomU(10);
-            while (recs[i].unk04 != 0)
+            while (recs[i].value < 1)
                 i = (i + 1) % 10;
-            s1.ref = recs[i].item;
+            s1.kind = 1;
             s1.arg = 1;
-            s2.arg = 1;
-            s1.kind = 2;
-            s1.fvalue = 0.05f;
-            s2.kind = 7;
-            s2.ref = p->netId;
-            r = ai_ChooseSubAction(k, p->id, 2, &s1, &s2);
+            s2.kind = 0;
+            s1.ref = recs[i].entryId;
+            s2.ref = -1;
+            s2.arg = -1;
+            s2.arg2 = 0x22;
+            if (i == 0) {
+                r = ai_ChooseSubAction(k, p->id, 4, &s1, &s2);
+            } else if (i < 4) {
+                r = ai_ChooseSubAction(k, p->id, 3, &s1, &s2);
+            } else {
+                *o1 = s1;
+                *o2 = s2;
+                return 0x22;
+            }
+done:
             if (r == 0)
-                return r;
+                return 0;
             *o1 = s1;
             *o2 = s2;
             return r;
         }
-    } else if (st[2] == 0) {
-        return 0;
     }
-    i = util_RandomU(10);
-    while (recs[i].unk04 < 1)
-        i = (i + 1) % 10;
-    s1.kind = 1;
-    s1.arg = 1;
-    s2.kind = 0;
-    s1.ref = recs[i].unk08;
-    s2.ref = -1;
-    s2.arg = -1;
-    s2.arg2 = 0x22;
-    if (i == 0) {
-        r = ai_ChooseSubAction(k, p->id, 4, &s1, &s2);
-    } else if (i < 4) {
-        r = ai_ChooseSubAction(k, p->id, 3, &s1, &s2);
-    } else {
-        *o1 = s1;
-        *o2 = s2;
-        return 0x22;
-    }
-    if (r == 0)
-        return r;
-    *o1 = s1;
-    *o2 = s2;
-    return r;
+    return 0;
 }
 /* 0x49c000, execute callback 0x22: uses the object s1->unk04 of the character's list */
 
@@ -9655,7 +9663,7 @@ int ai_RegisterBaseActions(int a)
     act.id = 0x22;
     strcpy(act.name, "UseObject (Sicherheit)");
     act.eval = ai_EvalMoodWeights;
-    act.decide = ai_Unk49bd90;
+    act.decide = ai_DecideUseSafetyObject;
     act.exec = ai_Unk49c000;
     act.flags = 0x39;
     if (!am_RegisterMethod(&act, a))
