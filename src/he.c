@@ -12332,7 +12332,7 @@ void he_Unk565620(int ev)
             return;
         }
         d = gm_MinutesBetween(ev + 0x60, (unsigned)&ai_Time);
-        step = (float)d * 0.1f * 5.0f;
+        step = 5.0f * ((float)d * 0.1f);
         v = gm_HealthRatio(p) * 100.0;
         if (*(unsigned *)(ev + 0xb0) > 0 && step + v < 100.0) {
             gm_AddHealth(*(unsigned short *)p, (int)step);
