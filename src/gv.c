@@ -3184,26 +3184,23 @@ int gv_CrimeText(char *out, CRIME r, int mode)
         return gv_CrimeTextLaw17to28(out, r, mode);
     return 0;
 }
-/* 0x4f3610, fills out[] with the indexes of the (up to 32) 0x2d-byte records of 0x91f700 whose int at +0x25 equals v */
+/* 0x4f3610, fills out[] with the indexes of the (up to 32) crime records whose state is state; returns their count
+   (eax: ai_Unk4db700 keeps it) */
 
-void unk_Unk4f3610(int v, int *out)
+int gv_FindCrimesByState(int state, int *out)
 {
     int n, i;
-    int *p;
 
     n = 0;
-    i = 0;
-    p = (int *)(gv_Graveyard + 0x25);
-    do {
-        if (n > 0x1f)
-            return;
-        if (*p == v) {
+    for (i = 0; i < 0x200; i++) {
+        if (n >= 0x20)
+            break;
+        if (gv_CrimesT[i].state == state) {
             out[n] = i;
             n++;
         }
-        p = (int *)((char *)p + 0x2d);
-        i++;
-    } while ((int)p < ((unsigned)&amt_Table + 0x5));
+    }
+    return n;
 }
 /* 0x4f3640, stores the pair (a, b) in the free slot (0x4f3780 (a, b)) of the table 0x91b6e0 ("gs_AddBeweis: Executed .." is printed); 1 when stored */
 

@@ -365,7 +365,7 @@ int gm_BuildingSkill();                     /* 0x5092e0 */
 int gv_ReadCrimes(int f);             /* 0x4f2b30 */
 int gv_TableRecordText(char *out, int i);    /* 0x4f2fe0 */
 
-void unk_Unk4f3610(int v, int *out);    /* 0x4f3610 */
+int gv_FindCrimesByState(int state, int *out);    /* 0x4f3610 */
 int unk_Unk4f3640(int b, int a);        /* 0x4f3640 */
 int unk_Unk4f36b0(void);                /* 0x4f36b0 */
 int unk_Unk4f36e0(int id);              /* 0x4f36e0 */
