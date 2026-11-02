@@ -2927,84 +2927,70 @@ float unk_Unk4f2da0(short *c)
     } while (i < 0x100);
     return (float)best * 0.01f;
 }
-/* 0x4f2b30, reads what 0x4f28d0 wrote from the file f (the tag must be 0x1d; saves after 0x10040 carry the counts 0x80 / 0x200 first, older ones assume them): the table ints, 0x6f1b88, the used 0x2d-byte records (the rest are set to -1 fields)
-   and the pairs (the table 0x91b6e0 starts as all -1); 1 when all was read. ROUGH */
+/* 0x4f2b30, reads the crime state gv_WriteCrimes wrote from the save file f (the tag must be 0x1d): the AIDEC.cur values,
+   ai_NextCrimeId, the counts (only saves of version 0x10041 on carry them; older ones hold 0x80 records and 0x200
+   pairs), the crime records (the rest of ai_Crimes are made free) and the evidence pairs (ai_Evidence starts as all
+   -1); 1 when all was read */
 
-int unk_Unk4f2b30(void *f)
+int gv_ReadCrimes(int f)
 {
-    unsigned n1, n2, i;
+    unsigned crimes, evidence;
     int tag;
-    char *p;
-    int *q;
+    int i;
 
-    n1 = 0x80;
-    n2 = 0x200;
+    crimes = 0x80;
+    evidence = 0x200;
     if (f == 0)
         return 0;
-    if (UNK_FR(&tag, 4, 1, f) == 0)
+    if (ls_Read(&tag, 4, 1, f) == 0)
         return 0;
     if (tag != 0x1d)
         return 0;
-    for (p = unk_Tab611258 + 0x18; (int)p < ((unsigned)&unk_Tab611258 + 0x42c); p += 0x24) {
-        if (UNK_FR(p, 4, 1, f) == 0)
+    for (i = 0; i < 0x1d; i++) {
+        if (ls_Read(&gv_Decisions[i].cur, 4, 1, f) == 0)
             return 0;
     }
-    if (UNK_FR(&ai_NextCrimeId, 4, 1, f) == 0)
+    if (ls_Read(&ai_NextCrimeId, 4, 1, f) == 0)
         return 0;
-    if (ls_Version > 0x10040) {
-        if (UNK_FR(&n1, 4, 1, f) == 0)
+    if (ls_Version >= 0x10041) {
+        if (ls_Read(&crimes, 4, 1, f) == 0)
             return 0;
-        if (UNK_FR(&n2, 4, 1, f) == 0)
+        if (ls_Read(&evidence, 4, 1, f) == 0)
             return 0;
     }
-    i = 0;
-    if (n1 != 0) {
-        p = gv_Graveyard + 4;
-        do {
-            if (UNK_FR(p - 4, 4, 1, f) == 0)
-                return 0;
-            if (UNK_FR(p, 0xe, 1, f) == 0)
-                return 0;
-            if (UNK_FR(p + 0xe, 4, 1, f) == 0)
-                return 0;
-            if (UNK_FR(p + 0x12, 4, 1, f) == 0)
-                return 0;
-            if (UNK_FR(p + 0x16, 2, 1, f) == 0)
-                return 0;
-            if (UNK_FR(p + 0x18, 1, 1, f) == 0)
-                return 0;
-            if (UNK_FR(p + 0x19, 4, 1, f) == 0)
-                return 0;
-            if (UNK_FR(p + 0x1d, 4, 1, f) == 0)
-                return 0;
-            if (UNK_FR(p + 0x21, 4, 1, f) == 0)
-                return 0;
-            i++;
-            p += 0x2d;
-        } while (i < n1);
-        if ((int)i > 0x1ff)
-            goto pairs;
+    for (i = 0; i < crimes; i++) {
+        if (ls_Read(&gv_CrimesT[i].id, 4, 1, f) == 0)
+            return 0;
+        if (ls_Read(gv_CrimesT[i].b04, 0xe, 1, f) == 0)
+            return 0;
+        if (ls_Read(&gv_CrimesT[i].victim, 4, 1, f) == 0)
+            return 0;
+        if (ls_Read(&gv_CrimesT[i].culprit, 4, 1, f) == 0)
+            return 0;
+        if (ls_Read(&gv_CrimesT[i].count, 2, 1, f) == 0)
+            return 0;
+        if (ls_Read(&gv_CrimesT[i].law, 1, 1, f) == 0)
+            return 0;
+        if (ls_Read(&gv_CrimesT[i].v1d, 4, 1, f) == 0)
+            return 0;
+        if (ls_Read(&gv_CrimesT[i].place, 4, 1, f) == 0)
+            return 0;
+        if (ls_Read(&gv_CrimesT[i].state, 4, 1, f) == 0)
+            return 0;
     }
-    for (q = (int *)(gv_Graveyard + 0x12 + i * 0x2d); (int)q < (int)(gv_Graveyard + 0x5a12); q = (int *)((char *)q + 0x2d)) {
-        *(int *)((char *)q - 0x12) = -1;
-        q[0] = -1;
-        q[1] = -1;
-        *(short *)(q + 2) = 0;
-        *(int *)((char *)q + 0x13) = 0;
+    for (; i < 0x200; i++) {
+        gv_CrimesT[i].id = -1;
+        gv_CrimesT[i].victim = -1;
+        gv_CrimesT[i].culprit = -1;
+        gv_CrimesT[i].count = 0;
+        gv_CrimesT[i].state = 0;
     }
-pairs:
-    memset(unk_Tab91b6e0, 0xff, 0x4000);
-    i = 0;
-    if (n2 != 0) {
-        q = (int *)(unk_Tab91b6e0 + 4);
-        do {
-            if (UNK_FR(q - 1, 4, 1, f) == 0)
-                return 0;
-            if (UNK_FR(q, 4, 1, f) == 0)
-                return 0;
-            i++;
-            q += 2;
-        } while (i < n2);
+    memset(ai_Evidence, 0xff, sizeof(ai_Evidence));
+    for (i = 0; i < evidence; i++) {
+        if (ls_Read(&ai_Evidence[i][0], 4, 1, f) == 0)
+            return 0;
+        if (ls_Read(&ai_Evidence[i][1], 4, 1, f) == 0)
+            return 0;
     }
     return 1;
 }

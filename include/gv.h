@@ -359,7 +359,7 @@ extern char gv_Graveyard[];            /* 0x91f700 */
 extern char unk_Tab91b6e0[];            /* 0x91b6e0 */
 int gm_BuildingSkill();                     /* 0x5092e0 */
 
-int unk_Unk4f2b30(void *f);             /* 0x4f2b30 */
+int gv_ReadCrimes(int f);             /* 0x4f2b30 */
 int gv_TableRecordText(char *out, int i);    /* 0x4f2fe0 */
 
 void unk_Unk4f3610(int v, int *out);    /* 0x4f3610 */

@@ -1425,7 +1425,7 @@ int ls_LoadGame(int name, int kind)
             goto close;                     /* the original closes the file a second time on this path */
         return 1;
     }
-    if ((ls_Version < 0x10045 && amt_LoadAemter(h, ls_Version) == 0) || unk_Unk4f2b30(h) == 0
+    if ((ls_Version < 0x10045 && amt_LoadAemter(h, ls_Version) == 0) || gv_ReadCrimes(h) == 0
         || (ls_Version >= 0x10016 && ls_ReadRelations(h) == 0) || ls_ReadStatistics(h) == 0
         || (ls_Version >= 0x1002a && ls_ReadAvatars((void *)h) == 0) || unk_Unk51fb90(h) == 0
         || unk_Unk520000(h) == 0 || unk_Unk520200(h) == 0)
