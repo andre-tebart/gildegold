@@ -4983,7 +4983,7 @@ void he_Unk568aa0(int ev);                     /* 0x568aa0 */
 void d3io_NoopCallback();                     /* 0x44ee40 */
 int amt_ClearOffices();                     /* 0x4e6d80 */
 void unk_Unk503c60(int c, int mode);                     /* 0x503c60 */
-extern char *ai_Unk5fb5b0;  /* 0x5fb5b0 (d3_DefaultScene, now defined in d3_engine.c) */
+extern struct D3SCENE *d3_DefaultScene;  /* 0x5fb5b0 (as d3.h / anm.h) */
 
 /* 0x502570, the string-table number (0x60e + n) of the picture of the good o (an object of the kinds 2 / 6): the pairs (prototype number, n) of a local table (0x13 -> 1, 0x54 -> 2, 0x15 -> 4 ..), searched for the object's prototype number up to the 0 entry; -1 when it is not in it or the object is of another kind */
 int gm_GoodPicture(unsigned short *o)
@@ -5017,7 +5017,7 @@ int gm_GoodPicture(unsigned short *o)
 /* 0x5029f0, callback of 0x438d40 for 0x502a60: collects the objects whose prototype (low 24 bits of +0x48) is of the kind 0x21 and has
    its top byte 1 into list (0x40 objects, then their keys, then the count); true while there is room */
 
-char gm_Unk5029f0(char *o, int *list)
+char gm_CollectSlotObject(char *o, int *list)
 {
     int key;
 
@@ -5029,33 +5029,25 @@ char gm_Unk5029f0(char *o, int *list)
     }
     return list[0x80] < 0x40;
 }
-/* 0x502a60, for the building object o of the player in the building b with the character c at the scene 0x6f2310: the five slots of the character (bytes +0x80 .. of the record 0x770c00 + c * 0x21c) give the numbers 0x17f + (the scaled value) + 6k, 0 for an empty slot; the scene's objects (0x438d40 with the callback 0x5029f0 into a 0x40-entry list) whose key matches one of them are switched on (0x447300 (obj, 1)), the others off. ROUGH */
-
+/* 0x502a60, when the panel shown (sv_PanelShown) is the scene: the five slot bytes of the character c (+0x80 of its record) give the wanted keys 0x17f + 6 k + (int)(slot / 42 - 0.5), 0 for an empty slot; the default scene's objects of goods kind 0x21 (gm_CollectSlotObject) are switched off (d3if_ShowTree (obj, 0)) and those whose key is wanted on again */
 void gm_ShowSlotObjects(int unused, int scene, int c)
 {
     int want[5];
     int list[0x40 * 2 + 1];
-    int i, k, n, v;
-    char *s;
+    int i, k, v;
+    unsigned char *s;
 
     if (sv_PanelShown == scene) {
-        k = 0;
-        s = ai_Chars[c] + 0x80;
-        i = 0;
-        do {
-            v = (int)(float)0;
-            v = v + 0x17f + k;
+        s = (unsigned char *)ai_Chars[c] + 0x80;
+        for (k = 0, i = 0; k < 0x1e; k += 6, s++, i++) {
+            v = (int)((float)(*s / 42.0f) - 0.5f) + 0x17f + k;
             if (*s == 0)
                 v = 0;
             want[i] = v;
-            k += 6;
-            s++;
-            i++;
-        } while (k < 0x1e);
+        }
         memset(list, 0, sizeof(list));
-        d3_ForEachObject(ai_Unk5fb5b0, 0, 0xc0, gm_Unk5029f0, list);
-        n = list[0x40 * 2];
-        for (i = 0; i < n; i++) {
+        d3_ForEachObject(d3_DefaultScene, 0, 0xc0, gm_CollectSlotObject, list);
+        for (i = 0; i < list[0x40 * 2]; i++) {
             d3if_ShowTree(list[i], 0);
             for (k = 0; k < 5; k++)
                 if (list[i + 0x40] == want[k])
