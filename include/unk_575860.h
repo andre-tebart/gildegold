@@ -3,8 +3,83 @@
 #ifndef UNK_575860_H
 #define UNK_575860_H
 
+struct HEEVSLOT;
+struct SBSAMPLE;
+
+typedef struct TUTSTEP {                /* 0x10 bytes, a step of a run record's chain (TUTRUN.steps) */
+    unsigned int delay;                 /* 0x00, ms after the step started until its control is enabled */
+    int kind;                           /* 0x04, the chapter kind 0 .. 3 (ai_TutorialStepForm) */
+    int text;                           /* 0x08 */
+    int unk0c;                          /* 0x0c */
+} TUTSTEP;
+
+typedef struct TUTRUN {                 /* 0x74 bytes, a run (chapter) record of the tutorial, chained by next */
+    char pad00[8];
+    int mode;                           /* 0x08, 1 / 2 start with the timed first text window (state 4), else state 0xb */
+    char pad0c[8];
+    int text1;                          /* 0x14, the first text window's text (ai_TutorialShowText) */
+    char pad18[4];
+    int text2;                          /* 0x1c, the second text window's text (ai_TutorialShowText2) */
+    char pad20[4];
+    int statusText;                     /* 0x24, the d2_Strings line shown in the status bar by the states 0xa / 0xb */
+    char *voice;                        /* 0x28, the voice played with it (snd_PlayVoice) */
+    unsigned int text1Time;             /* 0x2c, ms the first text window waits before it shows */
+    unsigned int tail2Time;             /* 0x30, the length of the state 0xb */
+    void (*hook)(int end);              /* 0x34, called with 0 when the run starts, 1 when it ends */
+    int campaign;                       /* 0x38, set: the start takes a campaign step (ai_CampaignStep 2) */
+    int (*query)(int *args);            /* 0x3c, ai_ScriptQuery's callback */
+    int startMode;                      /* 0x40, 3: the state 4 only takes a campaign step */
+    unsigned int tailTime;              /* 0x44, the length of the state 0xa */
+    char pad48[4];
+    int toText2;                        /* 0x4c, set: the chain ends in the state 9 (second text window), else 0xa */
+    unsigned int stepCount;             /* 0x50 */
+    char pad54[4];
+    TUTSTEP *steps;                     /* 0x58 */
+    char pad5c[8];
+    int marker;                         /* 0x64, set: the position marker runs (ai_TutorialMarkerUpdate) */
+    int allowMask;                      /* 0x68, ai_RunAllows */
+    int allowMask2;                     /* 0x6c */
+    struct TUTRUN *next;                /* 0x70, the next run record */
+} TUTRUN;
+
+typedef struct TUTHOST {                /* the record at TUTSTATE.host; only its event slot is known */
+    char pad00[0x74];
+    struct HEEVSLOT *slot;              /* 0x74, the event bar slot of the tutorial's window */
+} TUTHOST;
+
+typedef struct TUTSTATE {               /* the tutorial state record (0x6fa060, ai_Tutorial points to it) */
+    int state;                          /* 0x00, 1 .. 0xc (ai_TutorialTick) */
+    int next;                           /* 0x04, the state to return to */
+    unsigned int textAt;                /* 0x08, ai_ClockMs when the first text window last changed */
+    unsigned int stepAt;                /* 0x0c, ai_ClockMs when the step / tail started */
+    int unk10;                          /* 0x10 */
+    struct SBSAMPLE *voice;             /* 0x14, the playing voice */
+    TUTRUN *run;                        /* 0x18, the current run record */
+    TUTHOST *host;                      /* 0x1c */
+    int unk20;                          /* 0x20 */
+    int text1Win;                       /* 0x24, the first text window */
+    int text1Shown;                     /* 0x28 */
+    int statusShown;                    /* 0x2c, the status text of the states 0xa / 0xb is shown */
+    int text2Shown;                     /* 0x30 */
+    int text2Win;                       /* 0x34, the second text window */
+    int unk38;                          /* 0x38 */
+    int phase;                          /* 0x3c, 0 .. 3 */
+    unsigned int step;                  /* 0x40, the step of the run's chain */
+    int unk44;                          /* 0x44 */
+    int stepForm;                       /* 0x48, ai_TutorialStepForm's form */
+    int stepControl;                    /* 0x4c, its control, -1 = none */
+    int unk50;                          /* 0x50 */
+    int markerStep;                     /* 0x54 */
+    int markerPhase;                    /* 0x58 */
+    int markerAt;                       /* 0x5c */
+    int markerObj;                      /* 0x60, -1 = none */
+} TUTSTATE;
+
 void ai_GypsyHelperWindow(char *b);     /* 0x584d70, the helpers window of a building (HANDEL_SUCHEN form), opened by the gypsy production contact */
-int ai_TutorialTick(void);                 /* 0x575860, the end-of-game tick (ROUGH skeleton) */
+extern int ai_TutorialOn;               /* 0x6f265c, the tutorial runs */
+extern int ai_TutorialRunning;          /* 0x6f2660, its state machine advances */
+int ai_TutorialTick(void);                 /* 0x575860, the tutorial's tick: runs its state machine */
+void ai_TutorialMarkerUpdate(int arg);  /* 0x57b8a0, moves the tutorial's position marker */
 void unk_ClearEndGameGate(void);                /* 0x576020, clears the gate 0x6f2660 */
 void unk_SetEndGameGate(void);                /* 0x576030, sets the gate 0x6f2660 */
 void ai_CampaignStep(int a, int b, int c, int d);  /* 0x576040, one step of the campaign state machine */
@@ -56,17 +131,17 @@ void ai_Unk577690(int arg);             /* 0x577690, builds a save record (ROUGH
 int ai_Unk577740(void);                 /* 0x577740, the tutorial start ("tutorial\main") */
 int ai_Unk577820(void);                 /* 0x577820, 0x53d800 (player) */
 int ai_Unk577850(void);                 /* 0x577850, run window controls 1 / 2 */
-int ai_Unk5778b0(void);                 /* 0x5778b0, the run window's text tick */
-int ai_Unk577a00(void);                 /* 0x577a00, the tutorial's escape check */
-void ai_Unk577a90(void);                /* 0x577a90, rewrites the text window */
-void ai_Unk577b60(void);                /* 0x577b60, clears the text window */
-void ai_Unk577b90(void);                /* 0x577b90, rewrites the second text window */
-void ai_Unk577c60(void);                /* 0x577c60, clears the second text window */
+int ai_TutorialShowRunText(void);                 /* 0x5778b0, the run window's text tick */
+int ai_TutorialIntroAnswered(void);                 /* 0x577a00, the tutorial's escape check */
+void ai_TutorialShowText(void);                /* 0x577a90, rewrites the text window */
+void ai_TutorialHideText(void);                /* 0x577b60, clears the text window */
+void ai_TutorialShowText2(void);                /* 0x577b90, rewrites the second text window */
+void ai_TutorialHideText2(void);                /* 0x577c60, clears the second text window */
 void ai_Unk577cd0(void);                /* 0x577cd0, creates the progress form "tutorial\progress" */
 void ai_Unk577d60(void);                /* 0x577d60, releases the progress form */
-void ai_Unk577d90(void);                /* 0x577d90, the progress slider (state 0xa) */
-int ai_Unk577e50(void);                 /* 0x577e50, the tutorial chapter form */
-int ai_Unk5780e0(void);                 /* 0x5780e0, the control predicate on S+0x4c */
+void ai_TutorialProgressSlider(void);                /* 0x577d90, the progress slider (state 0xa) */
+int ai_TutorialStepForm(void);                 /* 0x577e50, the tutorial chapter form */
+int ai_TutorialStepClicked(void);                 /* 0x5780e0, the control predicate on S+0x4c */
 int ai_Unk578120(char *per);            /* 0x578120, sets the player S+0x1c */
 void ai_Unk578150(void);                /* 0x578150, clears the player S+0x1c */
 int ai_Unk578170(void);                 /* 0x578170, the gate predicate */

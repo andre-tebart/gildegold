@@ -29,8 +29,6 @@ extern D2RADIO d2_Radios[];
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 extern const int sv_PhaseMinutes[24];
-extern GAPDATA full_data_6f265c[];
-extern GAPDATA full_data_6f2660[];
 extern int sv_PanelFlag;
 extern GAPDATA full_data_5f1890[];
 extern GAPDATA full_data_624204[];
@@ -669,15 +667,14 @@ extern char ai_Chars[768][0x21c];
 
 void sv_CameraFollow();
 
-void ai_Unk577c60();
-void ai_Unk57b8a0();
-void ai_Unk577d90();
-int ai_Unk5778b0();
-int ai_Unk577a00();
-int ai_Unk577e50();
+void ai_TutorialHideText2();
+void ai_TutorialProgressSlider();
+int ai_TutorialShowRunText();
+int ai_TutorialIntroAnswered();
+int ai_TutorialStepForm();
 void d2_SetObjEnabled();
-int ai_Unk5780e0();
-void ai_Unk577b90();
+int ai_TutorialStepClicked();
+void ai_TutorialShowText2();
 void sv_CameraFollow();
 void sv_SetStatusText(char *s);
 void sv_SelectPanelObject(unsigned char *o, int b, char *c);
@@ -685,8 +682,8 @@ int he_Unk55ea60();
 void sv_BookForward();
 void sv_BookBack();
 void sv_FitForm(int f);
-void ai_Unk577a90();
-void ai_Unk577b60();
+void ai_TutorialShowText();
+void ai_TutorialHideText();
 struct SBSAMPLE;
 extern int sv_FrameBase; /* 0x6f22a4 */
 extern char *txt_Ptrs[]; /* 0x143a1c0 */
@@ -694,8 +691,10 @@ extern char *txt_Ptrs[]; /* 0x143a1c0 */
 /* the state record is at 0x6fa060 (the 0x40 byte of main.c's 0x6fa020 block); 0x5eec60 is a const pointer to it
    in the original. A load through that pointer (not the fixed address) is what the unit's functions compile to,
    and the full link relocates the initializer, so the record is ours and no neighbour is touched. */
-char *const ai_Unk5eec60 = (char *)full_data_6fa020 + 0x40;  /* 0x5eec60, the pointer to the tutorial state record */
-#define S (*(char **)(unsigned)&ai_Unk5eec60)  /* the tutorial state record (at 0x6fa060): the pointer ai_Unk5eec60 holds */
+TUTSTATE *const ai_Tutorial = (TUTSTATE *)(full_data_6fa020 + 0x40);  /* 0x5eec60, the pointer to the tutorial state record */
+#define S (*(char **)(unsigned)&ai_Tutorial)  /* the tutorial state record (at 0x6fa060): the pointer ai_Tutorial holds */
+int ai_TutorialOn = 0;  /* 0x6f265c, the tutorial runs (set by its start 0x578180, cleared by its end) */
+int ai_TutorialRunning = 0;  /* 0x6f2660, the tutorial's state machine advances (unk_SetEndGameGate / unk_ClearEndGameGate) */
 
 #include "time_view.h"
 #include "ls.h"
@@ -744,7 +743,7 @@ int ai_TutorialTick(void)
     char *st;
     char *per;
 
-    if (!U_I((unsigned)&full_data_6f265c))
+    if (!ai_TutorialOn)
         return -4;
     st = S;
     if (!st)
@@ -770,12 +769,12 @@ int ai_TutorialTick(void)
     }
     if (*(int *)(st + 0x30) == 1 && U_I(st) != 9) {
         *(int *)(st + 0x30) = 0;
-        ai_Unk577c60();
-        ai_Unk57b8a0(2);
+        ai_TutorialHideText2();
+        ai_TutorialMarkerUpdate(2);
     }
-    if (!U_I((unsigned)&full_data_6f2660))
+    if (!ai_TutorialRunning)
         goto end;
-    ai_Unk577d90();
+    ai_TutorialProgressSlider();
     if (U_I((unsigned)&d3t_CamMoving) || U_I((unsigned)&sv_PanelFlag))
         goto end;
     st = S;
@@ -783,7 +782,7 @@ int ai_TutorialTick(void)
     case 0:                     /* state 1, 0x57595a: show the main-intro text and start the step chain */
         if (d3t_CamMove != 0)
             break;
-        if (ai_Unk5778b0() != 0)
+        if (ai_TutorialShowRunText() != 0)
             return -4;
         U_I(S + 0x38) = 0;
         U_I(S + 0x3c) = 0;
@@ -812,7 +811,7 @@ int ai_TutorialTick(void)
         d2_SetPointerSprite(0, 0);
         break;
     case 1:                     /* state 2, 0x575a69: the intro is answered, close the window and continue */
-        if (ai_Unk577a00() != 1)
+        if (ai_TutorialIntroAnswered() != 1)
             break;
         U_I(S) = U_I(S + 4);
         U_I(S + 8) = U_I((unsigned)&ai_ClockMs);
@@ -821,7 +820,7 @@ int ai_TutorialTick(void)
         he_ActivateSlot(0);
         break;
     case 2:                     /* state 3, 0x575ab5: the same without the clocks */
-        if (ai_Unk577a00() != 1)
+        if (ai_TutorialIntroAnswered() != 1)
             break;
         U_I(S) = U_I(S + 4);
         he_ActivateSlot(0);
@@ -837,14 +836,14 @@ int ai_TutorialTick(void)
             U_I(st + 8) = U_I((unsigned)&ai_ClockMs);
             if (U_I(st + 0x28) == 0 && *(int *)(per + 0x14) != 0) {
                 U_I(st + 0x28) = 1;
-                ai_Unk577a90();
+                ai_TutorialShowText();
             }
         } else if (U_I((unsigned)&ai_ClockMs) > U_I(st + 8) + 0x238) {
             if (U_I(st + 0x28) != 1)
                 break;
             U_I(st + 8) = U_I((unsigned)&ai_ClockMs);
             U_I(st + 0x28) = 0;
-            ai_Unk577b60();
+            ai_TutorialHideText();
         }
         if (U_I(st + 0x28) == 1)
             d2_RaiseViewWindows(U_I(st + 0x24));
@@ -852,7 +851,7 @@ int ai_TutorialTick(void)
     case 4:                     /* state 5, 0x575b82: drop the intro window and open the first step */
         U_I(S + 8) = U_I((unsigned)&ai_ClockMs);
         U_I(S + 0x28) = 0;
-        ai_Unk577b60();
+        ai_TutorialHideText();
         U_I(S + 0x3c) = 2;
         st = S;
         per = *(char **)(st + 0x18);
@@ -864,14 +863,14 @@ int ai_TutorialTick(void)
         U_I(S + 0x40) = 0;
         U_I(S) = 6;
         U_I(S + 4) = 6;
-        ai_Unk577e50();
+        ai_TutorialStepForm();
         break;
     case 5:                     /* state 6, 0x575bdc: one step of the chapter chain */
         st = S;
         per = *(char **)(st + 0x18);
         U_I((unsigned)&tb_Paused) = U_I((unsigned)&ai_ClockMs) >= *(int *)(*(int *)(per + 0x58) + U_I(st + 0x40) * 0x10) + U_I(st + 0xc);
         d2_SetObjEnabled(U_I(st + 0x4c), U_I((unsigned)&tb_Paused));
-        if (ai_Unk5780e0() != 1)
+        if (ai_TutorialStepClicked() != 1)
             break;
         U_I(S + 0x40)++;
         U_I(S + 8) = U_I((unsigned)&ai_ClockMs);
@@ -879,7 +878,7 @@ int ai_TutorialTick(void)
         per = *(char **)(st + 0x18);
         if (U_I(st + 0x40) < *(int *)(per + 0x50)) {
             U_I(st + 0xc) = U_I((unsigned)&ai_ClockMs);
-            ai_Unk577e50();
+            ai_TutorialStepForm();
             break;
         }
         U_I(S) = 7;
@@ -889,7 +888,7 @@ int ai_TutorialTick(void)
         U_I(S + 0x3c) = 3;
         U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
         U_I(S + 0x50) = 0;
-        ai_Unk577e50();
+        ai_TutorialStepForm();
         U_I((unsigned)&tb_Paused) = 0;
         st = S;
         per = *(char **)(st + 0x18);
@@ -908,24 +907,24 @@ int ai_TutorialTick(void)
         if (U_I(S + 0x28) == 1) {
             U_I(S + 8) = U_I((unsigned)&ai_ClockMs);
             U_I(S + 0x28) = 0;
-            ai_Unk577b60();
+            ai_TutorialHideText();
         }
         st = S;
         per = *(char **)(st + 0x18);
         if (U_I(st + 0x30) == 0 && *(int *)(per + 0x1c) != 0) {
             U_I(st + 0x30) = 1;
-            ai_Unk577b90();
-            ai_Unk57b8a0(0);
+            ai_TutorialShowText2();
+            ai_TutorialMarkerUpdate(0);
         }
         if (U_I(S + 0x30) == 1)
             d2_RaiseViewWindows(U_I(S + 0x34));
-        ai_Unk57b8a0(1);
+        ai_TutorialMarkerUpdate(1);
         break;
     case 9:                     /* state 10, 0x575d57: the chapter's timed tail */
         if (U_I(S + 0x28) == 1) {
             U_I(S + 8) = U_I((unsigned)&ai_ClockMs);
             U_I(S + 0x28) = 0;
-            ai_Unk577b60();
+            ai_TutorialHideText();
         }
         st = S;
         per = *(char **)(st + 0x18);
@@ -952,13 +951,13 @@ int ai_TutorialTick(void)
             U_I(S + 0x14) = snd_PlayVoice(0xfffffff9, 0, (char *)U_I(per + 0x28), -1);
         }
         U_I(S + 0x2c) = 1;
-        ai_Unk5778b0();
+        ai_TutorialShowRunText();
         break;
     case 10:                    /* state 11, 0x575e68: the same with the second window's timing */
         if (U_I(S + 0x28) == 1) {
             U_I(S + 8) = U_I((unsigned)&ai_ClockMs);
             U_I(S + 0x28) = 0;
-            ai_Unk577b60();
+            ai_TutorialHideText();
         }
         st = S;
         per = *(char **)(st + 0x18);
@@ -985,13 +984,13 @@ int ai_TutorialTick(void)
             U_I(S + 0x14) = snd_PlayVoice(0xfffffff9, 0, (char *)U_I(per + 0x28), -1);
         }
         U_I(S + 0x2c) = 1;
-        ai_Unk5778b0();
+        ai_TutorialShowRunText();
         break;
     case 11:                    /* state 12, 0x575f80: next chapter record */
         if (U_I(S + 0x28) == 1) {
             U_I(S + 8) = U_I((unsigned)&ai_ClockMs);
             U_I(S + 0x28) = 0;
-            ai_Unk577b60();
+            ai_TutorialHideText();
         }
         st = S;
         per = *(char **)(st + 0x18);
@@ -1012,13 +1011,13 @@ end:
 
 void unk_ClearEndGameGate(void)
 {
-    U_I((unsigned)&full_data_6f2660) = 0;
+    ai_TutorialRunning = 0;
 }
 /* 0x576030, sets the end-of-game gate 0x6f2660 (the setter counterpart of 0x576020) */
 
 void unk_SetEndGameGate(void)
 {
-    U_I((unsigned)&full_data_6f2660) = 1;
+    ai_TutorialRunning = 1;
 }
 /* 0x576040, one step of the campaign state machine (763 B): `a` is the expected index, `b` and `c` the event
    kind / result, `d` is only handed to the callback. The record 0x5eec60: +0 the state, +4 the pending state,
@@ -1033,7 +1032,7 @@ void ai_CampaignStep(int a, int b, int c, int d)
     int (*cb)(int *);
     char *r;
 
-    if (!U_I((unsigned)&full_data_6f265c))
+    if (!ai_TutorialOn)
         return;
     if (!*(int *)(S + 0x18))
         return;
@@ -1089,8 +1088,8 @@ st2:
             U_I(S + 4) = 4;
             U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
             U_I(S + 0x30) = 0;
-            ai_Unk577c60();
-            ai_Unk57b8a0(2);
+            ai_TutorialHideText2();
+            ai_TutorialMarkerUpdate(2);
             goto apply;
         }
         if (*(int *)(r + 0x40) != a)
@@ -1117,8 +1116,8 @@ st2:
         U_I(S + 4) = 4;
         U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
         U_I(S + 0x30) = 0;
-        ai_Unk577c60();
-        ai_Unk57b8a0(2);
+        ai_TutorialHideText2();
+        ai_TutorialMarkerUpdate(2);
         U_I(S + 0x10)++;
         return;
     }
@@ -1157,7 +1156,7 @@ int ai_ScriptQuery(int a, int b, int c, int d)
     int p[4];
     char *r;
 
-    if (!U_I((unsigned)&full_data_6f265c))
+    if (!ai_TutorialOn)
         return 1;
     if (!*(int *)(S + 0x18))
         return 1;
@@ -1179,7 +1178,7 @@ int ai_RunAllows(int mask)
 {
     char *st;
 
-    if (!U_I((unsigned)&full_data_6f265c))
+    if (!ai_TutorialOn)
         return 1;
     st = S;
     if (*(int *)(st + 0x3c) == 2 || U_I(st) == 5)
@@ -1196,7 +1195,7 @@ int ai_Unk576410(int mask)
 {
     char *st;
 
-    if (!U_I((unsigned)&full_data_6f265c))
+    if (!ai_TutorialOn)
         return 1;
     st = S;
     if (*(int *)(st + 0x3c) == 2 || U_I(st) == 5)
@@ -1213,7 +1212,7 @@ int ai_Unk576460(void)
 {
     char *st;
 
-    if (!U_I((unsigned)&full_data_6f265c))
+    if (!ai_TutorialOn)
         return 1;
     st = S;
     if (*(int *)(st + 0x3c) == 2 || U_I(st) == 5)
@@ -2114,7 +2113,7 @@ int ai_Unk577850(void)
    and, when the record word +0x10 is set, the window S+0x14 recreated by 0x4c2760 (0xfffffff9, 0, +0x10, -1)
    after releasing the previous one (0x426f20 / 0x427290); 0 */
 
-int ai_Unk5778b0(void)
+int ai_TutorialShowRunText(void)
 {
     char *st;
     char *r;
@@ -2152,7 +2151,7 @@ int ai_Unk5778b0(void)
    record of the type byte 0x87, while the window / object is not the one in S+0x20 (or, with 0xf8a668 == -1, while
    the last key is not 0x1c); else the window S+0x14 is released (0x426f20 / 0x427290) and 1 answers */
 
-int ai_Unk577a00(void)
+int ai_TutorialIntroAnswered(void)
 {
     char *st;
 
@@ -2199,7 +2198,7 @@ answered:
    when the record word +0x18 is set, the window S+0x14 recreated by 0x4c2760 (0xfffffff9, 0, +0x18, -1) after
    releasing the previous one (0x426f20 / 0x427290) */
 
-void ai_Unk577a90(void)
+void ai_TutorialShowText(void)
 {
     char *st;
     char *r;
@@ -2229,7 +2228,7 @@ void ai_Unk577a90(void)
 /* 0x577b60, clears the text window S+0x24: control 0 off (0x475f70), the text 0x602568 (0x515960), 0x475590
    (S+0x24, 0); no return value */
 
-void ai_Unk577b60(void)
+void ai_TutorialHideText(void)
 {
     d2_SetForm(U_I(S + 0x24), 0);
     io_PrintText((char *)(unsigned)"$C");
@@ -2240,7 +2239,7 @@ void ai_Unk577b60(void)
    the record text +0x1c, 0x475590 control 1) and, when the record word +0x20 is set, the window S+0x14 recreated
    by 0x4c2760 (0xfffffff9, 0, +0x20, -1) after releasing the previous one (0x426f20 / 0x427290) */
 
-void ai_Unk577b90(void)
+void ai_TutorialShowText2(void)
 {
     char *r;
 
@@ -2266,7 +2265,7 @@ void ai_Unk577b90(void)
 /* 0x577c60, clears the second text window S+0x34 (106 B): control 0 off (0x475f70), the text 0x602568
    (0x515960), 0x475590 (S+0x34, 0); then the window S+0x14 is released (0x426f20 / 0x427290) and cleared */
 
-void ai_Unk577c60(void)
+void ai_TutorialHideText2(void)
 {
     d2_SetForm(U_I(S + 0x34), 0);
     io_PrintText((char *)(unsigned)"$C");
@@ -2310,7 +2309,7 @@ void ai_Unk577d60(void)
 /* 0x577d90, the tutorial progress slider (179 B, the state 0xa only): the state record, else 0x577d60 (the form
    released); the progress form created when S+0x68 is -1 (0x577cd0); the slider S+0x6c set by 0x475cb0 (id, 0,
    400, value) with value = (total - min(total, the clock 0x6333cc - S+0xc)) / total * 400.0f */
-void ai_Unk577d90(void)
+void ai_TutorialProgressSlider(void)
 {
     char *st;
     char *r;
@@ -2342,7 +2341,7 @@ void ai_Unk577d90(void)
    text) into S+0x4c, the window S+0x14 = 0x4c2760 (0xfffffff9, 0, the step's +0xc, -1) when that is set, the
    callback r+0x54, 0 */
 
-int ai_Unk577e50(void)
+int ai_TutorialStepForm(void)
 {
     char *st;
     char *r;
@@ -2414,9 +2413,9 @@ int ai_Unk577e50(void)
 /* 0x5780e0, predicate (49 B): -4 without the gate 0x6f265c; 0 while the input is idle (0xf8a668 == -1) or the
    current window 0x5fe710 is not the control S+0x4c; 1 when it is (the 0x577a00 shape on S+0x4c) */
 
-int ai_Unk5780e0(void)
+int ai_TutorialStepClicked(void)
 {
-    if (!U_I((unsigned)&full_data_6f265c))
+    if (!ai_TutorialOn)
         return -4;
     if (U_I((unsigned)&d2_ClickedId) != -1 && U_I((unsigned)&d2_PointerObj) == U_I(S + 0x4c))
         return 1;
@@ -2427,7 +2426,7 @@ int ai_Unk5780e0(void)
 
 int ai_Unk578120(char *per)
 {
-    if (!U_I((unsigned)&full_data_6f265c))
+    if (!ai_TutorialOn)
         return -4;
     *(char **)(S + 0x1c) = per;
     U_I(S + 0x20) = -1;
@@ -2444,7 +2443,7 @@ void ai_Unk578150(void)
 
 int ai_Unk578170(void)
 {
-    return !U_I((unsigned)&full_data_6f265c);
+    return !ai_TutorialOn;
 }
 
 int ai_Unk5784a0();
@@ -2473,7 +2472,7 @@ int ai_Unk578180(void)
     int cnt;
     int i;
 
-    if (U_I((unsigned)&full_data_6f265c) != 0)
+    if (ai_TutorialOn != 0)
         return -3;
     cnt = 0;
     for (p = (char *)(unsigned)&full_data_62918c; p < (char *)(unsigned)((unsigned)full_data_62918c + 0x14); p += 4) {
@@ -2530,8 +2529,8 @@ int ai_Unk578180(void)
     U_I(S + 0x60) = -1;
     U_I(S + 0x68) = -1;
     U_I(S + 0x6c) = -1;
-    U_I((unsigned)&full_data_6f265c) = 1;
-    U_I((unsigned)&full_data_6f2660) = 1;
+    ai_TutorialOn = 1;
+    ai_TutorialRunning = 1;
     return 0;
 fail:
     ai_Unk578370();
@@ -2565,8 +2564,8 @@ void ai_Unk578370(void)
     d2_CloseView(U_I(S + 0x34));
     U_I(S + 0x34) = -1;
     U_I(S + 0x14) = 0;
-    U_I((unsigned)&full_data_6f265c) = 0;
-    U_I((unsigned)&full_data_6f2660) = 0;
+    ai_TutorialOn = 0;
+    ai_TutorialRunning = 0;
 }
 /* 0x578440, frees the tutorial record chain (82 B, recursive): nothing for a null record; else its +0x70 next
    record, its +0x58 and +0x64 tables (mem_Free, both cleared) and then the record itself */
@@ -3867,7 +3866,7 @@ fail:
    chapters 1 .. 4 plus one step record with an animation table: eight 0x74-byte records (mem_Alloc (0x74, name)
    + memset 0x74), +0 = 5 (the last one 6), +4 the magic "5rtn" 0x6e747235 / 0x633573xx, +0xc the text id, +0x10
    the text key (CHAPTER_5_*), +0x2c = -1, +0x30, +0x3c, +0x48, +0x68, linked through +0x70. FTInitChapter5Step2
-   carries the animation table at +0x64 (0x58 B = two 0x2c entries, see ai_Unk577e50 / 0x57b8a0), its entry count
+   carries the animation table at +0x64 (0x58 B = two 0x2c entries, see ai_TutorialStepForm / 0x57b8a0), its entry count
    +0x5c = 2 and the step callback +0x60 = 0x5772d0; the screen width d2_ScreenW picks the floats. The sample
    bank "TUTORIAL_CHAPTER_5.sbf" 0x629fd4 into 0x6f2654 (0x4c2830 (name, 0)); the first record, or 0x578440
    (the chain) and 0 after a failed alloc */
@@ -4214,7 +4213,7 @@ void d2_RemoveObj();
    e+0x18, t = (clock - S+0x5c) / e+0x24, the local vector) into 0x46cda0 (x, y, S+0x60) and return), 4 (the clock
    past S+0x5c + e+0x28 -> 2, then 0x46cda0 ((int) e[0], (int) e[1], S+0x60)); 2 -> 0x46e710 (S+0x60), S+0x60 = -1,
    S+0x58 = 1 */
-void ai_Unk57b8a0(int arg)
+void ai_TutorialMarkerUpdate(int arg)
 {
     char *st;
     char *r;
@@ -4223,7 +4222,7 @@ void ai_Unk57b8a0(int arg)
     int x;
     int y;
 
-    if (!U_I((unsigned)&full_data_6f265c))
+    if (!ai_TutorialOn)
         return;
     st = S;
     r = *(char **)(st + 0x18);
