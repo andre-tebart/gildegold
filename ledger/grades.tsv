@@ -1500,7 +1500,7 @@ exe	0x0048bc80	ai_MeisterTradeAllgemein	ai	draft	draft	deep
 exe	0x0048d010	ai_MeisterTradeFernEinkauf	ai	draft	draft	deep	
 exe	0x0048d810	ai_MeisterTradeFernEinkauf2	ai	draft	draft	deep	
 exe	0x0048e070	ai_Unk48e070	am	byte	draft		
-exe	0x0048e120	ai_Unk48e120	am	draft	draft		
+exe	0x0048e120	ai_Unk48e120	am	draft	draft	deep	
 exe	0x0048e370	ai_Unk48e370	am	draft	draft		
 exe	0x0048e470	ai_Unk48e470	am	byte	draft		
 exe	0x0048e620	ai_Unk48e620	am	byte	draft		
@@ -2204,7 +2204,7 @@ exe	0x004c4e90	cm_SendRetireCrime	cm	byte	draft
 exe	0x004c4ed0	cm_SendProofExecuted	cm	byte	draft		
 exe	0x004c4f10	ai_Unk4c4f10	cm	byte	draft		
 exe	0x004c4f50	ai_Unk4c4f50	cm	byte	draft		
-exe	0x004c4fa0	ai_Unk4c4fa0	cm	byte	draft		
+exe	0x004c4fa0	cm_SendNewParty	cm	byte	draft		
 exe	0x004c4fd0	ai_Unk4c4fd0	cm	byte	draft		
 exe	0x004c5010	ai_Unk4c5010	cm	byte	draft		
 exe	0x004c5050	cm_SetPlant	cm	byte	draft		
@@ -2252,7 +2252,7 @@ exe	0x004c5ec0	ai_Unk4c5ec0	cm	byte	draft
 exe	0x004c5ef0	ai_Unk4c5ef0	cm	byte	draft		
 exe	0x004c5f20	ai_Unk4c5f20	cm	byte	draft		
 exe	0x004c5f60	cm_SendMoneyDelta	cm	byte	draft		
-exe	0x004c5fa0	ai_Unk4c5fa0	cm	byte	draft		
+exe	0x004c5fa0	cm_SendMessage5b	cm	byte	draft		
 exe	0x004c5fe0	cm_SendTradeMessage	cm	byte	draft		
 exe	0x004c6020	ai_Unk4c6020	cm	byte	draft		
 exe	0x004c6060	ai_Unk4c6060	cm	byte	draft		
@@ -2830,15 +2830,15 @@ exe	0x004f3dd0	gv_RankCulpritsAll	gv	draft	readable	deep
 exe	0x004f3fe0	gv_HeldCrimesOf	gv	byte	readable		
 exe	0x004f4080	gv_HeldCrimeIdsOf	gv	byte	readable		
 exe	0x004f4130	gv_HeldCrimeCount	gv	byte	readable		
-exe	0x004f41b0	gv_FindAccused	gv	draft	draft		
-exe	0x004f4350	gv_ClearGraveyard	gv	draft	draft		
-exe	0x004f4390	unk_Unk4f4390	gv	draft	draft		
-exe	0x004f4420	unk_Unk4f4420	gv	draft	draft		
-exe	0x004f4460	unk_Unk4f4460	gv	draft	draft		
+exe	0x004f41b0	gv_FindAccused	gv	byte	readable		
+exe	0x004f4350	gv_ClearCrimes	gv	byte	readable		
+exe	0x004f4390	gv_SortCrimesByLaw	gv	byte	readable		
+exe	0x004f4420	gv_CheckSentence	gv	byte	readable		
+exe	0x004f4460	gv_PassSentence	gv	byte	readable		
 exe	0x004f48f0	unk_Unk4f48f0	gv	byte	draft		
-exe	0x004f4970	unk_Unk4f4970	gv	draft	draft		
+exe	0x004f4970	gv_CheckRankUp	gv	shape	readable		
 exe	0x004f4d10	unk_Unk4f4d10	gv	byte	draft		
-exe	0x004f4d30	gv_GetGraveInfo	gv	draft	draft		
+exe	0x004f4d30	gv_EvidencePrice	gv	byte	readable		
 exe	0x004f4e20	ord_ApplyForOffice	ord	draft	readable	deep	
 exe	0x004f4f20	ord_LevelOrder	ord	draft	readable	deep	
 exe	0x004f4ff0	ord_EspionageResultOrder	ord	byte	readable		
@@ -3083,7 +3083,7 @@ exe	0x00505d30	gm_Shuffle	f3gm	byte	readable
 exe	0x00505da0	gm_RandomAge	f3gm	draft	readable		
 exe	0x00505df0	gm_FindChar	f3gm	draft	readable		
 exe	0x00505e30	gm_CharAge	f3gm	byte	draft		
-exe	0x00505e60	gm_Unk505e60	f3gm	draft	draft		
+exe	0x00505e60	gm_CharLevel	f3gm	draft	draft		
 exe	0x00505f30	gm_Unk505f30	f3gm	draft	draft		
 exe	0x00506000	gm_BirthDate	f3gm	draft	draft		
 exe	0x005060d0	gm_BirthDate2	f3gm	draft	draft		

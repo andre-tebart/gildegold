@@ -26,10 +26,13 @@
    pairs; gv_CulpritGuilt sums AIDEC.guilt of a culprit's open crimes; gv_RetireCrimesOf / gv_RetireCrimeIds retire them
    and tell the evidence holders; gv_HeldCrimesOf / gv_HeldCrimeIdsOf / gv_HeldCrimeCount and gv_RankCulprits /
    gv_RankCulpritsAll read what a character holds evidence of; gv_CrimeText (by law: gv_CrimeTextLaw2to8 / 9to16 /
-   17to28) words a crime.
+   17to28) words a crime; gv_FindAccused / gv_EvidencePrice / gv_SortCrimesByLaw / gv_ClearCrimes serve the crime windows
+   and the evidence trade. A trial's sentence 0 .. 9 is checked by gv_CheckSentence and carried out by gv_PassSentence;
+   gv_CheckRankUp raises a character's rank (AICHAR.b00d) by his worth (gv_RankWorth).
    Open: gv_Graveyard (0x91f700) and unk_Tab91b6e0 are second names of ai_Crimes / ai_Evidence (the crime records, not
-   graves); the functions from 0x4f41b0 on still read them through raw offsets; unk_Tab611258's initializer holds the
-   callbacks (AIDEC.fn) as raw original addresses.
+   graves); gv_FindCrime, gv_EvidenceSlot and gv_CountOwnedGraves still read them through raw offsets; unk_Tab611258's initializer holds the callbacks (AIDEC.fn) as raw original addresses.
+   Open: data: gv_RankWorth (0x5ee0f8) is declared with 7 entries, gv_CheckRankUp reads 11 (the last 4 lie under
+   hmt_Unk5ee114 ..).
    Open: some functions index ai_PlayerSlots with the stride 0x5e8 where gv_ReserveGrave shows 0x2f4 (gv_PlayerRecs);
    gv_FindEntry's callback is an unprototyped int (*)() (its callbacks take differing pointer types).
    Open: head: cm.h redeclares gv functions (gv_GrowGraveyard as struct GVYARD *); cm.c cannot include gv.h yet (two
