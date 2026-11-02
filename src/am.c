@@ -11057,39 +11057,48 @@ unsigned int ai_PickPartnerChainLevel(AIPER *p, unsigned int a, unsigned int fl,
     }
     return i;
 }
-/* 0x4a63f0: a building for p's action a: a random walk over the 256 buildings for one that 0x5c37a0 accepts
-   with the class mask (bit 63 forced) and, when the window is narrower than 0..100, whose owner p rates
-   (0x50c550) in [lo, hi]; its id into *out (-1 for none). am.h declares lo as int (c) */
+/* 0x4a63f0: a building for p's action a: a random walk over the 256 buildings for one that ai_PassesBuildingFilter
+   accepts with the kind mask (bit 63 forced: no dead or homeless buildings) and, when [lo, hi] is narrower than
+   0..100, whose owner's liking (gm_Liking) equals the filter record's liking minimum (+0x44, as ai_PassesPartnerFilter
+   reads it): the original compares both bounds against that float, which it never sets (lo and hi only switch the
+   test on); its id into *out (-1 for none), returns 1 when found
+   @deep read in full against the original: lo/hi are float parameters (prototypes changed from int c,
+   float f in am.h, he.c, unk_575860.c, unk_58bbd0.c; callers pass 0 either way), double window constants,
+   the filter record q[0x14] (frame 0x58 = win, step, q) whose float +0x44 the original compares both
+   liking bounds against, the unsigned hi mask word, the found/break exit, int j. 118/118 instructions.
+   Left: allocation only: ours packs win into the dead parameter slot of a ('- mov dword ptr [esp + 0x6c],
+   ebx' / '+ mov dword ptr [esp + 0x10], ebx'; frame 0x54 vs 0x58) and schedules the mask high word into
+   eax ('- or eax, 0x80000000' vs '+ or edx, 0x80000000'); declaration order and moving q[4] = a do not
+   change it */
 
-int ai_PickActionBuilding(AIPER *p, int a, __int64 mask, int c, float f, int *out)
+int ai_PickActionBuilding(AIPER *p, int a, __int64 mask, float lo, float hi, int *out)
 {
-    unsigned int q[0x12];
+    unsigned int q[0x14];
     AIBLD *b;
-    int step, n, found, win;
-    unsigned int j;
+    int step, n, found, win, j;
     float r;
 
     step = ai_RandomStrides[util_RandomU(0x10)];
     q[2] = (unsigned int)mask;
     q[4] = a;
     found = 0;
-    q[3] = (unsigned int)(mask >> 32) | 0x80000000;
+    q[3] = (unsigned int)((unsigned __int64)mask >> 32) | 0x80000000;
     win = 0;
     q[5] = 0;
     *out = -1;
-    if ((*(float *)&c > 0.0f || f < 100.0f) && *(float *)&c < f)
+    if ((lo > 0.0 || hi < 100.0) && lo < hi)
         win = 1;
     n = 0x100;
     j = util_RandomU(0x100);
     while (!found) {
         if (n == 0) {
-            if (found)
-                return 1;
-            return 0;
+            if (!found)
+                return 0;
+            break;
         }
         b = &ai_BldsT[j];
-        if (b->type != 0 && ai_Unk5c37a0(p, q, b) != 0
-            && (!win || (r = gm_Liking(b->owner, *(unsigned short *)p, 1), *(float *)&c <= r && r <= f))) {
+        if (b->type != 0 && ai_PassesBuildingFilter(p, q, b) != 0
+            && (!win || (r = gm_Liking(b->owner, p->id, 1), !(r < ((float *)q)[0x11]) && !(r > ((float *)q)[0x11])))) {
             found = 1;
             *out = b->id;
         }
@@ -11111,7 +11120,7 @@ int ai_Unk4a6570(AIPER *p, int a, __int64 mask, float lo, float hi, unsigned cha
     step = ai_RandomStrides[util_RandomU(0x10)];
     cnt = 0;
     q[4] = a;
-    q[3] = (unsigned int)(mask >> 32) | 0x80000000;
+    q[3] = (unsigned int)((unsigned __int64)mask >> 32) | 0x80000000;
     win = 0;
     q[5] = 0;
     q[2] = (unsigned int)mask;
@@ -11124,7 +11133,7 @@ int ai_Unk4a6570(AIPER *p, int a, __int64 mask, float lo, float hi, unsigned cha
             if (k == 0)
                 return cnt;
             b = &ai_BldsT[j];
-            if (b->type != 0 && ai_Unk5c37a0(p, q, b) != 0
+            if (b->type != 0 && ai_PassesBuildingFilter(p, q, b) != 0
                 && (!win || (r = gm_Liking(b->owner, *(unsigned short *)p, 1), lo <= r && r <= hi))) {
                 out[cnt] = b->id;
                 cnt++;

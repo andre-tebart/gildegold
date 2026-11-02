@@ -11913,7 +11913,7 @@ void ai_Unk5a5080(int param_1)
     } while (sv_RunFrame(ai_Unk5a5080, 0x67fff) != 0);
 }
 
-int ai_PickActionBuilding(struct AIPER *p, int a, __int64 mask, int c, float f, int *out); int gv_Accuse();
+int ai_PickActionBuilding(struct AIPER *p, int a, __int64 mask, float lo, float hi, int *out); int gv_Accuse();
 
 /* 0x5a5120, the kidnapping window "locations\diebesgilde\diebesgilde_entfuehrung" (698 B): param_1 the building
    (byte +0x1b1 a running attempt -> the text 0x19ba), the live character 0x520f90 (3, 0x770b80 + slot * 0x21c),
@@ -18368,7 +18368,7 @@ int gm_ResearchClass(); int sv_ReturnZero(); void *ai_Unk5c3bb0();
    ids), param_3 = the building record (+0 the kind, +0x27 the owner word, +0x5a bit 1 the dead flag,
    +0x61 the home), param_1 = the comparing character (+0x27 against the own character 0x6f1bf8 for
    case 7). 1 = accepted */
-int ai_Unk5c37a0(short *param_1, char *param_2, unsigned char *param_3)
+int ai_PassesBuildingFilter(short *param_1, char *param_2, unsigned char *param_3)
 {
     unsigned char kind;
     unsigned int blo;

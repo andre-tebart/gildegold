@@ -5719,7 +5719,7 @@ int ai_Unk580fe0(char *rec)
 }
 
 int gm_GetWorth(unsigned short id); int d2_WinOpenSlider(); int sv_CheckGoodAmount(); short * gm_PlayerRecord(char *c);
-void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d); int ai_PickActionBuilding(struct AIPER *p, int a, __int64 mask, int c, float f, int *out); int snd_PlayVoice(int id, int bank, char *text, int var); void sv_CameraFollow();
+void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d); int ai_PickActionBuilding(struct AIPER *p, int a, __int64 mask, float lo, float hi, int *out); int snd_PlayVoice(int id, int bank, char *text, int var); void sv_CameraFollow();
 
 /* 0x581020, the spy / comment window (981 B, ROUGH: the three amounts v[0..2] are three float -> int
    conversions (0x5de518 = __ftol) whose FPU arguments Ghidra lost, they are 0 here): arg 1 = the record; the

@@ -327,7 +327,7 @@ int ai_RepairCost(struct AIBLD *b, int k);                                      
 int ai_CanBuildType(int a, struct AIPER *p, int b, struct AIARG *s1, struct AIARG *s2, int f);         /* 0x4a5140 */
 int ai_ExecBuildBuilding(struct AIPER *p, struct AIARG *s1, struct AIARG *s2);                               /* 0x4a5320 */
 int ai_FindGoodToMake(int *item, int *obj, AIBLD *bld, int f);                       /* 0x4a5540 */
-int ai_PickActionBuilding(struct AIPER *p, int a, __int64 mask, int c, float f, int *out);    /* 0x4a63f0 */
+int ai_PickActionBuilding(struct AIPER *p, int a, __int64 mask, float lo, float hi, int *out);    /* 0x4a63f0 */
 void gm_SellBuilding(int a, int b, int c, int d, int e);                     /* 0x502fd0 */
 int gm_JobBuildingType(int k);                                                        /* 0x504050 */
 int gm_FirstTitleNumber(int k);                                                        /* 0x504290 */

@@ -3237,7 +3237,7 @@ void ai_Unk4c5870(int a);
 void ai_Unk4c59f0(unsigned char a, int b, int c, unsigned char d, unsigned char e, unsigned char f, const char *s);
 void ai_Unk5a91c0(void);
 void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d);
-int ai_PickActionBuilding(struct AIPER *p, int a, __int64 mask, int c, float f, int *out);
+int ai_PickActionBuilding(struct AIPER *p, int a, __int64 mask, float lo, float hi, int *out);
 void amt_ChangeDistrictOpinion();
 
 int gm_BuildingClass();
@@ -8205,7 +8205,7 @@ int he_Unk551340(int *s)
 }
 
 int ai_FindPartnersRandomWalk(struct AIPER *p, unsigned int a, int *flags, float lo, float hi, unsigned short *id);
-int ai_PickActionBuilding(struct AIPER *p, int a, __int64 mask, int c, float f, int *out);
+int ai_PickActionBuilding(struct AIPER *p, int a, __int64 mask, float lo, float hi, int *out);
 float util_RandomF();
 
 void ai_Unk4c52a0(int a, int b, int c);
@@ -15431,7 +15431,7 @@ taken:
 int gm_MinutesBetween();                 /* 0x4fe280 */
 void cm_SendKillCharacter(int a, int b); /* 0x4c4e00 */
 void cm_SendChrStop(int a); /* 0x4c5230 */
-int ai_PickActionBuilding(struct AIPER *p, int a, __int64 mask, int c, float f, int *out);   /* 0x4a63f0 (am.h); the 7-dword callers go through AI_4A63F0_7 */
+int ai_PickActionBuilding(struct AIPER *p, int a, __int64 mask, float lo, float hi, int *out);   /* 0x4a63f0 (am.h); the 7-dword callers go through AI_4A63F0_7 */
 int he_Unk56f1b0();                 /* 0x56f1b0 */
 int he_Unk56f260();                 /* 0x56f260 */
 int gv_GetTableRecord(int i, int *out);                 /* 0x4f2720 (the record of a meeting slot) */
