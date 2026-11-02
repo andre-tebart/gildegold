@@ -229,11 +229,16 @@ typedef struct ORDBLD {
     char level;                     /* 0x5c, the building's level 0 .. 100 */
     int objList;                    /* 0x5d */
     struct D3OBJECT *object;        /* 0x61, its object in the scene */
-    unsigned char people;           /* 0x65, the number of its inhabitants, below the kind's capacity
+    union {
+        unsigned char people;       /* 0x65, the number of its inhabitants, below the kind's capacity
                                        (ord_GetKindRecord [0]) while it has room (gm_FindHome) */
-    char pad66[3];
+        int block65;                /* 0x65, of the kinds 0x48 .. 0x4a a graveyard record (gv_FreeGraveyard), of
+                                       0x4b .. 0x4d a heap block (gm_FreeBuilding frees both; ai.h AIBLD.yard) */
+    };
     int daySum;                     /* 0x69, ai.h AIBLD.unk69, cleared for the kinds 11 .. 13 at the end of every day (reasoned guess: a per-day sum, as roundSum) */
-    char pad6d[0x3c];
+    char pad6d[4];
+    int plants;                     /* 0x71, of a kind 0x1e building its plant records (ai.h AIBLD.plants), freed by gm_FreeBuilding */
+    char pad75[0x34];
 } ORDBLD;
 
 /* the head of an object record ai.h's AIOBJ, as gm_Query returns it (gv.h and ai.h cannot be in one TU) */

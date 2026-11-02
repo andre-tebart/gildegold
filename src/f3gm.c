@@ -3961,44 +3961,49 @@ char *gm_FindFreeBuilding(void)
         return 0;
     return (char *)b;
 }
-/* 0x5012e0, frees the building b: a player's building (+0x27 a character of kind 6) tells 0x5a86c0 (its id); by building type: 0x1e frees the block at +0x71, 0x48 .. 0x4a the block at +0x65 through 0x4f0180, 0x4b .. 0x4d through the heap free (0x422620) and clears +0x65; the characters (0x770cec / 0x770cf0 per record) that point at it are cleared; its list at +0x5d is freed (0x500140) and the building type byte set to 0. Returns 0, -1 / -2 for no building / a free one. ROUGH */
+/* 0x5012e0, frees the building b: a player's building (its owner a character of kind 6) is taken off the player's building list (ai_UnlistPlayerBuilding); by type, 0x1e frees its plant records, 0x48 .. 0x4a its graveyard record, 0x4b .. 0x4d its heap block; every character living or working in it loses it, its object list is freed and the type set to 0 (free). Returns 0, -1 for no building, -2 for one already free */
 
-int gm_FreeBuilding(char *b)
+int gm_FreeBuilding(char *p)
 {
-    int *q;
-    char k;
+    ORDBLD *b = (ORDBLD *)p;
+    int i;
 
     if (b == 0)
         return -1;
-    if (*b == 0)
+    if (b->type == 0)
         return -2;
-    if (*(unsigned short *)(b + 0x27) != 0xffff && ai_Chars[*(unsigned short *)(b + 0x27)][2] == 6)
-        ai_UnlistPlayerBuilding(*(int *)(b + 1));
-    k = *b;
-    if (k == 0x1e) {
-        if (*(int *)(b + 0x71) != 0) {
-            mem_Free(*(int *)(b + 0x71));
-            *(int *)(b + 0x71) = 0;
+    if (b->owner != 0xffff && ORD_CHARS[b->owner].kind == 6)
+        ai_UnlistPlayerBuilding(b->id);
+    switch (b->type) {
+    case 0x1e:
+        if (b->plants != 0) {
+            mem_Free(b->plants);
+            b->plants = 0;
         }
-        *(int *)(b + 0x71) = 0;
-    } else if (k == 'H' || k == 'I' || k == 'J') {
-        gv_FreeGraveyard(*(int *)(b + 0x65));
-        *(int *)(b + 0x65) = 0;
-    } else if (k == 'K' || k == 'L' || k == 'M') {
-        mem_Free(*(int *)(b + 0x65));
-        *(int *)(b + 0x65) = 0;
+        b->plants = 0;
+        break;
+    case 0x48:
+    case 0x49:
+    case 0x4a:
+        gv_FreeGraveyard((int *)b->block65);
+        b->block65 = 0;
+        break;
+    case 0x4b:
+    case 0x4c:
+    case 0x4d:
+        mem_Free(b->block65);
+        b->block65 = 0;
+        break;
     }
-    q = (int *)(ai_Chars[0] + 0x16c);
-    do {
-        if ((char *)q[1] == b)
-            q[1] = 0;
-        if ((char *)q[0] == b)
-            q[0] = 0;
-        q += 0x87;
-    } while ((int)q < ((unsigned)((unsigned)ai_Chars + 0x65402) + 0x16a));
-    if (*(int *)(b + 0x5d) != 0)
-        gm_FreeList((int *)(b + 0x5d));
-    *b = 0;
+    for (i = 0; i < 0x300; i++) {
+        if (ORD_CHARS[i].bld2 == b)
+            ORD_CHARS[i].bld2 = 0;
+        if (ORD_CHARS[i].bld == b)
+            ORD_CHARS[i].bld = 0;
+    }
+    if (b->objList != 0)
+        gm_FreeList(&b->objList);
+    b->type = 0;
     return 0;
 }
 
