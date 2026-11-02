@@ -748,6 +748,8 @@ const float ai_CameraPitchMin = -0.61086524f;  /* 0x5eec74, -35 degrees: the low
 const float ai_CameraPitchMax = 0.7853982f;    /* 0x5eec78, 45 degrees: its high end */
 const float ai_CameraPitchZero = 0.0f;         /* 0x5eec7c, the level camera: (zero - min) is the range the camera pitch moves in */
 const struct D3VECTOR ai_WimpelPos = { -70.0f, -50.0f, 120.0f };  /* 0x5eec80, the wimpel's place on the cannon base */
+const float ai_CannonSwitchMs = 90.0f;     /* 0x5eec94, the length of each half of the barrel switch (ms, ai_CannonSwitchAnim) */
+const float ai_CannonSwitchDist = 100.0f;  /* 0x5eec98, how far the cannon sinks back while the barrel switches */
 const float ai_CannonZoomRange = 1450.0f;  /* 0x5eecac, the distance the zoom moves the camera out (scaled by the pitch and the speed) */
 #include "unk_458810.h"
 #include "dd_vesa.h"
@@ -3124,14 +3126,7 @@ fail:
    a step table ("FTInitScriptChapter3Step*"), the steps 2, 6, 8 and 10 the position marker's path
    ("FTInitAnimChapter3Step*"), whose points depend on the screen width (800, 1024, else). The voice bank
    "TUTORIAL_CHAPTER_3.sbf" is loaded into ai_TutorialBanks[3]. The first record, or 0 after a failed allocation
-   (the records built so far freed)
-   @deep read whole against the original: every record, step table and marker path stored at the original's
-   offsets with its values (asmdiff --symbols: no ! line, 1213 vs 1213 instructions, size 5377 = 5377).
-   Left: register choice for the repeated float constants of the marker paths, three hunks: 0x579df6 (step
-   6 path 0 wait/travel/rest: original ecx=0x420c0000 edi=0x430e0000 edx=0x428e0000, ours edi/ecx/edx),
-   0x579f27 (path 1 +0x4c/+0x50/+0x54 the same constants in ecx/edi/edx vs edi/ecx/edx) and 0x57a1b6 (step
-   8 path 0 +4/+8: the reload of marks and mov eax,0x43910000 scheduled one store apart), plus regs hunks
-   eax<->ecx at 0x57a110 / 0x57a168: allocation and scheduling only */
+   (the records built so far freed) */
 
 int ai_TutorialInitChapter3(void)
 {
@@ -5395,7 +5390,7 @@ struct D3OBJECT;
 char d3if_Delete(struct D3OBJECT *obj);                 /* 0x447190, d3_interface.h */
 char d3if_Show(struct D3OBJECT *obj, char show);        /* 0x4471b0, d3_interface.h */
 void he_ShowObjectInfos(); void ai_CannonAxes(); void ai_CannonAim(CANNONSCENE *sc, float dt); void ai_CannonCamera();
-void ai_CannonShotResults(CANNONSCENE *sc); void ai_CannonSwitchAnim(char *rec, float *sc, char *run, int sel, int mask); int ai_CannonFireCheck(CANNONSCENE *sc); void ai_CannonExplosion();
+void ai_CannonShotResults(CANNONSCENE *sc); void ai_CannonSwitchAnim(char *rec, CANNONSCENE *sc, GVEFFECT *run, int sel, int mask); int ai_CannonFireCheck(CANNONSCENE *sc); void ai_CannonExplosion();
 void sv_SetStatusText(char *s); void d2_RemoveObj(); void sv_RedrawScreen();
 void d3if_Prerender(char map); 
 
@@ -6092,73 +6087,102 @@ float ai_CannonPitchRatio(char *sc)
 {
     return (*(float *)(sc + 0x10) - -0.2617994f) / (0.7853982f - -0.2617994f);
 }
-/* 0x57fdd0, the shot animation (587 B): rec, sc = the scene struct, run = the tutorial step, sel = the object
-   (0 .. 2), mask = the pump mask; an unchanged selection (sc + 0x28) or out of range answers at once; two
-   90-tick phases, each pumping 0x5309a0 (this function, mask) and calling 0x57f890 (rec, sc, run): the camera
-   sc + 0x26 pushed back by the object's direction sc + 0x24 (0x454560) * 100 * the phase (the clock - the
-   start) / 90 and the wimpel sc + 0x27 to -70 / -50 / 100 * the phase + 120 (0x43b790), the second phase with
-   1 - the time, the clock 0x6333cc reset after each; then the three objects sc + 0x8c / 0x90 / 0x94 switched
-   off (0x471b0) and the selected one on, sc + 0x28 = the selection, sc + 0x1b = the clock */
-
-
-void ai_CannonSwitchAnim(char *rec, float *sc, char *run, int sel, int mask)
+/* 0x57fdd0, the barrel switch: rec = the building record, sc = the scene, run = its effect slot, sel = the barrel
+   (0 .. 2), mask = the pump mask; nothing for the selected barrel or one above sc->maxSel. Two halves of
+   ai_CannonSwitchMs each, every frame pumping sv_RunFrame (this function, mask) and updating the panel
+   (ai_CannonPanel); past the half's time sv_PopRequest ends it. The cannon object sinks back along the level aim
+   direction by ai_CannonSwitchDist * f and the wimpel moves from ai_WimpelPos along CAM_AXIS by as much, f going
+   0 -> 1 in the first half and 1 -> 0 in the second; between them the barrels are switched (only sel shown) and
+   sc->selected = sel; at the end sc->now = the clock
+   @deep read whole against the original (241 vs 247 ins). Fixed meaning: the two halves were written with
+   the wrong offsets; now the scene's fields (dirX / dirZ, pos, obj98 / obj9c, obj8c, selected, maxSel,
+   now), the half's time and the sink distance are the const data ai_CannonSwitchMs / ai_CannonSwitchDist
+   (0x5eec94 / 98: the original divides by it, a literal would be a multiply), the clock is read through
+   ai_ClockMsVolatile (the original reloads it for the compare and for f), past the time sv_PopRequest, v =
+   dist * f * v then pos - v, the wimpel ai_WimpelPos + (dist * f) * CAM_AXIS. Remaining, each allocation:
+   +0x98 / +0x253 code 22 / 25: the same sub / mov / fild of the elapsed time with eax/ecx/edx rotated and
+   the dirX / dirZ copies scheduled around the fild; the frame 0x28 vs 0x30: the original keeps the
+   compare's and f's qword temps apart (0x10 and 0x18), ours shares one; +0x14c / +0x30e fpu 12: the wimpel
+   products, the original keeps dist * f on the FPU stack after fst f (fmul st, st(2) and a reload) where
+   ours pops it and multiplies from memory (the 3 instructions per half: the count difference); tried the
+   folded w = W + f * axis form: worse (106) */
+void ai_CannonSwitchAnim(char *rec, CANNONSCENE *sc, GVEFFECT *run, int sel, int mask)
 {
-    float v[3];
-    float w[3];
+    D3VECTOR v;
+    D3VECTOR w;
+    unsigned start;
     float f;
-    float start;
     int i;
-    int h;
 
-    start = (float)U_I((unsigned)&ai_ClockMs);
-    if (sel != ((int *)sc)[0x28] && sel <= ((int *)sc)[0x37]) {
-        while ((h = sv_RunFrame(ai_CannonSwitchAnim, mask)) != 0) {
-            ai_CannonPanel(rec, (char *)sc, run);
-            if ((float)(unsigned int)(U_I((unsigned)&ai_ClockMs) - (int)start) <= 90.0f) {
-                v[0] = sc[9];
-                v[2] = sc[0xb];
-                f = (float)(unsigned int)(U_I((unsigned)&ai_ClockMs) - (int)start) / 90.0f;
-                v[1] = 0;
-                d3_Normalize((char *)v);
-                w[0] = -70.0f;
-                w[1] = -50.0f;
-                w[2] = f * 100.0f + 120.0f;
-                v[0] = *sc - v[0] * (f * 100.0f);
-                v[1] = sc[1] - (f * 100.0f) * v[1];
-                v[2] = sc[2] - (f * 100.0f) * v[2];
-                d3_SetObjectPos(*(int *)&sc[0x26], (char *)v);
-                d3_SetObjectPos(*(int *)&sc[0x27], (char *)w);
-            } else {
-                U_I((unsigned)&sv_PopRequest) = 1;
-            }
+    start = ai_ClockMs;
+    if (sel == sc->selected || sel > sc->maxSel)
+        return;
+    while (sv_RunFrame((int)ai_CannonSwitchAnim, mask) != 0) {
+        ai_CannonPanel(rec, sc, run);
+        if ((float)(ai_ClockMsVolatile - start) > ai_CannonSwitchMs) {
+            sv_PopRequest = 1;
+        } else {
+            v.x = sc->dirX;
+            v.y = 0;
+            v.z = sc->dirZ;
+            f = (float)(ai_ClockMsVolatile - start) / ai_CannonSwitchMs;
+            d3_Normalize((char *)&v);
+            v.x = ai_CannonSwitchDist * f * v.x;
+            v.y = ai_CannonSwitchDist * f * v.y;
+            v.z = ai_CannonSwitchDist * f * v.z;
+            v.x = sc->pos.x - v.x;
+            v.y = sc->pos.y - v.y;
+            v.z = sc->pos.z - v.z;
+            d3_SetObjectPos(sc->obj98, (char *)&v);
+            w.x = CAM_AXIS.x;
+            w.y = CAM_AXIS.y;
+            w.z = CAM_AXIS.z;
+            f = ai_CannonSwitchDist * f;
+            w.x = f * w.x;
+            w.y = f * w.y;
+            w.z = f * w.z;
+            w.x = ai_WimpelPos.x + w.x;
+            w.y = ai_WimpelPos.y + w.y;
+            w.z = ai_WimpelPos.z + w.z;
+            d3_SetObjectPos(sc->obj9c, (char *)&w);
         }
-        for (i = 0; i < 3; i++)
-            d3if_Show(*(struct D3OBJECT **)&sc[0x23 + i], 0);
-        d3if_Show(*(struct D3OBJECT **)&sc[0x23 + sel], 1);
-        ((int *)sc)[0x28] = sel;
-        start = (float)U_I((unsigned)&ai_ClockMs);
-        while ((h = sv_RunFrame(ai_CannonSwitchAnim, mask)) != 0) {
-            ai_CannonPanel(rec, (char *)sc, run);
-            if ((float)(unsigned int)(U_I((unsigned)&ai_ClockMs) - (int)start) <= 90.0f) {
-                v[0] = sc[9];
-                v[2] = sc[0xb];
-                v[1] = 0;
-                f = 1.0f - (float)(unsigned int)(U_I((unsigned)&ai_ClockMs) - (int)start) / 90.0f;
-                d3_Normalize((char *)v);
-                w[0] = -70.0f;
-                w[1] = -50.0f;
-                w[2] = f * 100.0f + 120.0f;
-                v[0] = *sc - v[0] * (f * 100.0f);
-                v[1] = sc[1] - (f * 100.0f) * v[1];
-                v[2] = sc[2] - (f * 100.0f) * v[2];
-                d3_SetObjectPos(*(int *)&sc[0x26], (char *)v);
-                d3_SetObjectPos(*(int *)&sc[0x27], (char *)w);
-            } else {
-                U_I((unsigned)&sv_PopRequest) = 1;
-            }
-        }
-        *(int *)((char *)sc + 0x6c) = U_I((unsigned)&ai_ClockMs);
     }
+    for (i = 0; i < 3; i++)
+        d3if_Show(sc->obj8c[i], 0);
+    d3if_Show(sc->obj8c[sel], 1);
+    sc->selected = sel;
+    start = ai_ClockMs;
+    while (sv_RunFrame((int)ai_CannonSwitchAnim, mask) != 0) {
+        ai_CannonPanel(rec, sc, run);
+        if ((float)(ai_ClockMsVolatile - start) > ai_CannonSwitchMs) {
+            sv_PopRequest = 1;
+        } else {
+            v.x = sc->dirX;
+            v.y = 0;
+            v.z = sc->dirZ;
+            f = 1.0f - (float)(ai_ClockMsVolatile - start) / ai_CannonSwitchMs;
+            d3_Normalize((char *)&v);
+            v.x = ai_CannonSwitchDist * f * v.x;
+            v.y = ai_CannonSwitchDist * f * v.y;
+            v.z = ai_CannonSwitchDist * f * v.z;
+            v.x = sc->pos.x - v.x;
+            v.y = sc->pos.y - v.y;
+            v.z = sc->pos.z - v.z;
+            d3_SetObjectPos(sc->obj98, (char *)&v);
+            w.x = CAM_AXIS.x;
+            w.y = CAM_AXIS.y;
+            w.z = CAM_AXIS.z;
+            f = ai_CannonSwitchDist * f;
+            w.x = f * w.x;
+            w.y = f * w.y;
+            w.z = f * w.z;
+            w.x = ai_WimpelPos.x + w.x;
+            w.y = ai_WimpelPos.y + w.y;
+            w.z = ai_WimpelPos.z + w.z;
+            d3_SetObjectPos(sc->obj9c, (char *)&w);
+        }
+    }
+    sc->now = ai_ClockMs;
 }
 
 void gv_CannonScatter(char *o, float *a, float *b); float gv_CannonItemFactor(); void ai_Unk580a50(); int ai_InitShot(struct SHOTREC *shot, struct D3VECTOR *pos, struct D3VECTOR *dir, float charge, float size, float density);

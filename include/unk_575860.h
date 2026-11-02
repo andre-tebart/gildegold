@@ -193,5 +193,7 @@ extern const float ai_CameraPitchMin;   /* 0x5eec74, -35 degrees: the low end of
 extern const float ai_CameraPitchMax;   /* 0x5eec78, 45 degrees: its high end */
 extern const float ai_CameraPitchZero;  /* 0x5eec7c, the level camera */
 extern const struct D3VECTOR ai_WimpelPos;  /* 0x5eec80, the wimpel's place on the cannon base */
+extern const float ai_CannonSwitchMs;    /* 0x5eec94, the length of each half of the barrel switch (ms) */
+extern const float ai_CannonSwitchDist;  /* 0x5eec98, how far the cannon sinks back while the barrel switches */
 extern const float ai_CannonZoomRange;  /* 0x5eecac, the distance the zoom moves the camera out */
 #endif
