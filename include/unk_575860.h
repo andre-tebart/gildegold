@@ -186,6 +186,16 @@ void ai_EndCharExtra(char *ch, int f);  /* 0x587c40 */
 void ai_SetupTutorialPlayer(void);  /* 0x57bc30, sets up the tutorial player's profile */
 int ai_TutorialWindow(void);  /* 0x57bce0, the tutorial chooser window: 1 starts the tutorial, 0 is the back */
 
+void ai_GraveyardContact(char *rec);       /* 0x586840, the graveyard's contact dispatcher */
+void ai_GraveHauntContact(char *rec);      /* 0x586ab0, the graveyard contact HEIMSUCHUNG */
+void ai_GraveAgeContact(char *rec);        /* 0x586e40, the graveyard contact ALTERN_LASSEN */
+void ai_GravePlanContact(char *rec);       /* 0x5871c0, the graveyard contact LIEGEPLAN */
+void ai_GraveRentContact(char *rec);       /* 0x5871e0, the graveyard contact GRAB_MIETEN */
+void ai_GraveCareContact(char *rec);       /* 0x587300, the graveyard contact GRAEBER_PFLEGEN */
+void ai_GraveHelperContact(char *rec);     /* 0x587340, the graveyard contact GEHILFEN_ERSCHAFFEN */
+void ai_GraveInsuranceContact(char *rec);  /* 0x587370, the graveyard contact VERSICHERUNG */
+void ai_GraveyardChatter(char *unused);    /* 0x587c90, the graveyard's idle-chatter tick */
+
 int ai_SaveSlotTable(int fh);  /* 0x589aa0, writes the slot table 0x6f5ec0 */
 
 extern const float ai_CannonPitchMax;   /* 0x5eec6c, 45 degrees: the highest pitch of the cannon */

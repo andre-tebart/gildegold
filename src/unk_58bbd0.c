@@ -8973,7 +8973,7 @@ void ai_Unk59e420(unsigned char *param_1, int param_2)
 }
 
 int init_BuildingSceneUniverse(); void init_LoadBuildingScene(int k); void d3fl_SetDetail(unsigned int n); void veg_HidePlants();
-void ai_Unk586840(char *rec); void ai_GypsyProductionContact(int building); void ai_Unk587ad0(char *rec);
+void ai_GraveyardContact(char *rec); void ai_GypsyProductionContact(int building); void ai_Unk587ad0(char *rec);
 void ai_Unk5876a0(char *rec); void ai_GypsyContact(int building); void ai_TheatreContact(int building); void ai_CurseContact(int buildingArg);
 void ai_Unk587560(char *rec);
 
@@ -9088,7 +9088,7 @@ void ai_Unk59ee40(unsigned char *param_1)
     case 0x48:
     case 0x49:
     case 0x4a:
-        ai_Unk586840(U_I((unsigned)&ai_FallbackBuilding));
+        ai_GraveyardContact(U_I((unsigned)&ai_FallbackBuilding));
         break;
     case 0x4e:
     case 0x4f:

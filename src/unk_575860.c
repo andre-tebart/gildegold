@@ -9131,7 +9131,7 @@ void ai_EndCharExtra(char *ch, int f); int cm_SendRelations(int a, int b, int c,
 /* 0x5867c0, the graveyard "Schlag" action (114 B): when the grave object 0x6f22f8 exists with the flag +0x1b4
    bit 0 and U_I (0x146738c) is set: 0x587c40 (the object, 0), 0x4c4b00 (the character + 4, the object's +4, -5,
    0), then 0x52b490 (the object, "locations/friedhof/schlag_FRIEDHOF.esc" 0x62a718) +0xc8c = 1 */
-void ai_Unk5867c0(char *unused)
+void ai_GraveyardSchlag(char *unused)
 {
     char *p;
 
@@ -9146,83 +9146,77 @@ void ai_Unk5867c0(char *unused)
     }
 }
 
-void sv_ReleaseNamePlates(void); void ai_Unk587c90(); int sv_RegisterNamePlate(); void ai_TradeContactChecks(void);
-void ai_Unk586e40(); void ai_Unk587370(); void ai_Unk586ab0(); void ai_Unk587300();
-void ai_Unk5871e0(); void ai_Unk587340(); void ai_Unk5871c0();
+void sv_ReleaseNamePlates(void); void ai_TradeContactChecks(void);
 
-/* 0x586840, the graveyard contact dispatcher (611 B): the contact list 0x52e190 (), the pump loop 0x5309a0 (this
-   dispatcher, 0x67fff): each frame 0x587c90 (rec); with the filter 0x6f231c bit 0x200 the contacts
-   "contact_ALTERN_LASSEN" (0x62a7e0, 0x2f), "contact_HEIMSUCHUNG" (0x62a7cc, 0x29), "contact_ZUTATEN_SUCHEN"
-   (0x62a7b4, 0x13), "contact_GRAEBER_PFLEGEN" (0x62a79c, 0x2a), "contact_GEHILFEN_ERSCHAFFEN" (0x62a780,
-   0x28), "contact_VERSICHERUNG" (0x62a768, 0x2b), "contact_LIEGEPLAN" (0x62a754, 0x13) and "contact_TRANSPORT"
-   (0x62a450, 0x15) via 0x52e1c0 (name, the text U_I (0x144a440 / 410 / 65c / 634 / 680 / 590 / 5d0 / 1441fa0),
-   the kind); always "contact_GRAB_MIETEN" (0x62a740, U_I (0x144a5d4), 0x16). No clicked contact 0x6f22e4: the
-   gate 0x6f2448 and the key 0x1468410 -> 0x1e 0x586e40, 0x2f 0x587370, 0x22 0x585380, 0x23 0x586ab0, 0x19
-   0x587300, 0x16 0x5871e0, 0x11 0x587340. Else: with the bit 0x200, 0x5867c0 (rec) first, then the matching
-   contact: ALTERN -> 0x586e40, HEIMSUCHUNG -> 0x586ab0, ZUTATEN -> 0x584d70, GRAEBER -> 0x587300, GEHILFEN ->
-   0x587340, VERSICHERUNG -> 0x587370, LIEGEPLAN -> 0x5871c0, TRANSPORT -> 0x5af1a0; with the byte 0x6f231c
-   negative and GRAB_MIETEN clicked -> 0x5871e0 (rec); 0x5912c0 () each frame */
-void ai_Unk586840(char *rec)
+/* 0x586840, the graveyard contact dispatcher: rec = the graveyard. Each frame (pump 0x67fff) the idle chatter
+   (ai_GraveyardChatter); with the building permission 0x200 the contacts ALTERN_LASSEN, HEIMSUCHUNG,
+   ZUTATEN_SUCHEN, GRAEBER_PFLEGEN, GEHILFEN_ERSCHAFFEN, VERSICHERUNG, LIEGEPLAN and TRANSPORT, always GRAB_MIETEN.
+   A clicked contact: with 0x200 the "Schlag" script (ai_GraveyardSchlag) first, then that contact's handler;
+   GRAB_MIETEN needs the permission bit 0x80. No click: with gm_AllowAll the keys 0x1e / 0x2f / 0x22 / 0x23 /
+   0x19 / 0x16 / 0x11 open the handlers directly (a cheat path, a reasoned guess) */
+void ai_GraveyardContact(char *rec)
 {
     int c_altern, c_heim, c_zut, c_graeber, c_gehilfen, c_vers, c_liege, c_trans, c_mieten;
 
     c_altern = 0;
     c_heim = 0;
-    c_zut = 0;
-    c_graeber = 0;
-    c_gehilfen = 0;
-    c_vers = 0;
     c_liege = 0;
+    c_zut = 0;
+    c_gehilfen = 0;
+    c_graeber = 0;
+    c_vers = 0;
     c_trans = 0;
-    c_mieten = 0;
     sv_ReleaseNamePlates();
-    while (sv_RunFrame(ai_Unk586840, 0x67fff) != 0) {
-        ai_Unk587c90(rec);
-        if (U_I((unsigned)&ai_BuildingPerms) & 0x200) {
-            c_altern = sv_RegisterNamePlate((char *)(unsigned)&full_data_62a7e0, U_I((unsigned)&full_data_144a440), 0x2f);
-            c_heim = sv_RegisterNamePlate((char *)(unsigned)&full_data_62a7cc, U_I((unsigned)&full_data_144a410), 0x29);
-            c_zut = sv_RegisterNamePlate((char *)(unsigned)&full_data_62a7b4, U_I((unsigned)&full_data_144a65c), 0x13);
-            c_graeber = sv_RegisterNamePlate((char *)(unsigned)&full_data_62a79c, U_I((unsigned)&full_data_144a634), 0x2a);
-            c_gehilfen = sv_RegisterNamePlate((char *)(unsigned)&full_data_62a780, U_I((unsigned)&full_data_144a680), 0x28);
-            c_vers = sv_RegisterNamePlate((char *)(unsigned)&full_data_62a768, U_I((unsigned)&full_data_144a590), 0x2b);
-            c_liege = sv_RegisterNamePlate((char *)(unsigned)&full_data_62a754, U_I((unsigned)&full_data_144a5d0), 0x13);
-            c_trans = sv_RegisterNamePlate((char *)(unsigned)"contact_TRANSPORT", U_I((unsigned)&ai_ContactTextTransport), 0x15);
+    while (sv_RunFrame(ai_GraveyardContact, 0x67fff) != 0) {
+        ai_GraveyardChatter(rec);
+        if (ai_BuildingPerms & 0x200) {
+            c_altern = sv_RegisterNamePlate("contact_ALTERN_LASSEN", txt_Ptrs[0x40a0], 0x2f);
+            c_heim = sv_RegisterNamePlate("contact_HEIMSUCHUNG", txt_Ptrs[0x4094], 0x29);
+            c_zut = sv_RegisterNamePlate("contact_ZUTATEN_SUCHEN", txt_Ptrs[0x4127], 0x13);
+            c_graeber = sv_RegisterNamePlate("contact_GRAEBER_PFLEGEN", txt_Ptrs[0x411d], 0x2a);
+            c_gehilfen = sv_RegisterNamePlate("contact_GEHILFEN_ERSCHAFFEN", txt_Ptrs[0x4130], 0x28);
+            c_vers = sv_RegisterNamePlate("contact_VERSICHERUNG", txt_Ptrs[0x40f4], 0x2b);
+            c_liege = sv_RegisterNamePlate("contact_LIEGEPLAN", txt_Ptrs[0x4104], 0x13);
+            c_trans = sv_RegisterNamePlate("contact_TRANSPORT", ai_ContactTextTransport, 0x15);
         }
-        c_mieten = sv_RegisterNamePlate((char *)(unsigned)&full_data_62a740, U_I((unsigned)&full_data_144a5d4), 0x16);
-        if (U_I((unsigned)&ai_ClickedObject) == 0) {
-            if (U_I((unsigned)&gm_AllowAll) != 0) {
-                switch (U_I((unsigned)&kb_Last)) {
-                case 0x1e: ai_Unk586e40(rec); break;
-                case 0x2f: ai_Unk587370(rec); break;
-                case 0x22: ai_GraveFogWindow(rec); break;
-                case 0x23: ai_Unk586ab0(rec); break;
-                case 0x19: ai_Unk587300(rec); break;
-                case 0x16: ai_Unk5871e0(rec); break;
-                case 0x11: ai_Unk587340(rec); break;
-                }
-            }
-        } else {
-            if (U_I((unsigned)&ai_BuildingPerms) & 0x200) {
-                ai_Unk5867c0(rec);
-                if (U_I((unsigned)&ai_ClickedObject) == c_altern)
-                    ai_Unk586e40(rec);
-                else if (U_I((unsigned)&ai_ClickedObject) == c_heim)
-                    ai_Unk586ab0(rec);
-                else if (U_I((unsigned)&ai_ClickedObject) == c_zut)
+        c_mieten = sv_RegisterNamePlate("contact_GRAB_MIETEN", txt_Ptrs[0x4105], 0x16);
+        if (ai_ClickedObject != 0) {
+            if (ai_BuildingPerms & 0x200) {
+                ai_GraveyardSchlag(rec);
+                if (ai_ClickedObject == c_altern)
+                    ai_GraveAgeContact(rec);
+                else if (ai_ClickedObject == c_heim)
+                    ai_GraveHauntContact(rec);
+                else if (ai_ClickedObject == c_zut)
                     ai_GypsyHelperWindow((AIBLD *)rec);
-                else if (U_I((unsigned)&ai_ClickedObject) == c_graeber)
-                    ai_Unk587300(rec);
-                else if (U_I((unsigned)&ai_ClickedObject) == c_gehilfen)
-                    ai_Unk587340(rec);
-                else if (U_I((unsigned)&ai_ClickedObject) == c_vers)
-                    ai_Unk587370(rec);
-                else if (U_I((unsigned)&ai_ClickedObject) == c_liege)
-                    ai_Unk5871c0(rec);
-                else if (U_I((unsigned)&ai_ClickedObject) == c_trans)
+                else if (ai_ClickedObject == c_graeber)
+                    ai_GraveCareContact(rec);
+                else if (ai_ClickedObject == c_gehilfen)
+                    ai_GraveHelperContact(rec);
+                else if (ai_ClickedObject == c_vers)
+                    ai_GraveInsuranceContact(rec);
+                else if (ai_ClickedObject == c_liege)
+                    ai_GravePlanContact(rec);
+                else if (ai_ClickedObject == c_trans)
                     ai_OpenTransport(rec);
             }
-            if ((char)U_I((unsigned)&ai_BuildingPerms) < 0 && U_I((unsigned)&ai_ClickedObject) == c_mieten)
-                ai_Unk5871e0(rec);
+            if ((ai_BuildingPerms & 0x80) && ai_ClickedObject == c_mieten)
+                ai_GraveRentContact(rec);
+        } else if (gm_AllowAll != 0) {
+            if (kb_Last == 0x1e)
+                ai_GraveAgeContact(rec);
+            else if (kb_Last == 0x2f)
+                ai_GraveInsuranceContact(rec);
+            else if (kb_Last == 0x22)
+                ai_GraveFogWindow((AIBLD *)rec);
+            else if (kb_Last == 0x23)
+                ai_GraveHauntContact(rec);
+            else if (kb_Last == 0x19)
+                ai_GraveCareContact(rec);
+            else if (kb_Last == 0x16)
+                ai_GraveRentContact(rec);
+            else if (kb_Last == 0x11)
+                ai_GraveHelperContact(rec);
         }
         ai_TradeContactChecks();
     }
@@ -9245,7 +9239,7 @@ int ai_AmountMenu(); int sv_CheckMoney();
    0x4c4b70, its answer waited on 0x4c3ae0 (pump 0x20007), 0x760638 = 0x677c7, 0x6f22a0 = 1, 0x521150
    (U_I (0x144a428), 0); the second entry -> 0x6f22a0 = 1; the pump 0 -> 0x4758f0 (window), 0x525440 (),
    0x52ae40 () */
-void ai_Unk586ab0(char *rec)
+void ai_GraveHauntContact(char *rec)
 {
     char msg[0xf8];
     char q[0x50];
@@ -9340,7 +9334,7 @@ void ai_Unk586ab0(char *rec)
                 U_I((unsigned)&sv_PopRequest) = 1;
             }
         }
-        if (sv_RunFrame(ai_Unk586ab0, 0x677c7) == 0) {
+        if (sv_RunFrame(ai_GraveHauntContact, 0x677c7) == 0) {
             d2_CloseView(win);
             sv_ClosePlayerBar();
             sv_ClearSelection();
@@ -9363,7 +9357,7 @@ void ai_Unk586ab0(char *rec)
    line 0x40a7 (the found character's word) in 0x5176d0 and 0x521150 (the line, 0), 0x6f22a0 = 1; the second
    entry -> 0x6f22a0 = 1; the pump 0 -> 0x4758f0 (window), 0x525440 (), 0x52ae40 () */
 
-void ai_Unk586e40(char *rec)
+void ai_GraveAgeContact(char *rec)
 {
     char msg[0xf8];
     char buf[0x200];
@@ -9459,7 +9453,7 @@ void ai_Unk586e40(char *rec)
                 U_I((unsigned)&sv_PopRequest) = 1;
             }
         }
-        if (sv_RunFrame(ai_Unk586e40, 0x677c7) == 0) {
+        if (sv_RunFrame(ai_GraveAgeContact, 0x677c7) == 0) {
             d2_CloseView(win);
             sv_ClosePlayerBar();
             sv_ClearSelection();
@@ -9470,7 +9464,7 @@ void ai_Unk586e40(char *rec)
 /* 0x5871c0, the graveyard "GRAB_MIETEN" contact (30 B): the contact window 0x583240 (0, rec,
    U_I (0x144a5d0), 0, 0), then 0x52d7a0 () */
 
-void ai_Unk5871c0(char *rec)
+void ai_GravePlanContact(char *rec)
 {
     ai_GraveWindow(0, rec, (char *)U_I((unsigned)&full_data_144a5d0), 0, 0);
     sv_CameraFollow();
@@ -9484,7 +9478,7 @@ int gv_FindReservedEntry();
    (U_I (0x144ada0), 0). With the entry p: the window record w (+0x1c p, +0x20 *p, +0x24 the 0x4ef6b0 flag), the
    line 0x4107 (the name 0x5eecd0[*p]); 0x583b70 (w, the line) -> 0: return; 0x584410 (rec, w), 0x4758f0 (w[0]),
    0x52d7a0 () */
-void ai_Unk5871e0(char *rec)
+void ai_GraveRentContact(char *rec)
 {
     int w[0x23];
     char line[0x100];
@@ -9514,7 +9508,7 @@ void ai_Unk5871e0(char *rec)
 /* 0x587300, the graveyard "GRAEBER_PFLEGEN" contact (50 B): 0x520fe0 (rec) == 0 -> the contact window 0x583240
    (0, rec, U_I (0x144a638), 1, 0x584900) and 0x52d7a0 () */
 
-void ai_Unk587300(char *rec)
+void ai_GraveCareContact(char *rec)
 {
     if (sv_CheckCharacterFlag(rec) != 0)
         return;
@@ -9524,7 +9518,7 @@ void ai_Unk587300(char *rec)
 /* 0x587340, the graveyard "GEHILFEN_ERSCHAFFEN" contact (47 B): 0x520fe0 (rec) == 0 -> the contact window
    0x583240 (0, rec, U_I (0x144a684), 0, 0x584b70) and 0x52d7a0 () */
 
-void ai_Unk587340(char *rec)
+void ai_GraveHelperContact(char *rec)
 {
     if (sv_CheckCharacterFlag(rec) == 0)
         ai_GraveWindow(0, rec, (char *)U_I((unsigned)&full_data_144a684), 0, (void (*)(AIBLD *, GVPICK *))ai_GraveRaiseHelper);
@@ -9540,7 +9534,7 @@ void ai_Unk587340(char *rec)
    at +0x38 / +0x58) through 0x4c4b70 and 0x6f22a0 = 1; the second entry -> 0x6f22a0 = 1; the pump 0 ->
    0x4758f0 (window), 0x525440 (), 0x52ae40 () */
 
-void ai_Unk587370(char *rec)
+void ai_GraveInsuranceContact(char *rec)
 {
     char msg[0xf8];
     char *f;
@@ -9595,7 +9589,7 @@ void ai_Unk587370(char *rec)
                 U_I((unsigned)&sv_PopRequest) = 1;
             }
         }
-        if (sv_RunFrame(ai_Unk587370, 0x677c7) == 0) {
+        if (sv_RunFrame(ai_GraveInsuranceContact, 0x677c7) == 0) {
             d2_CloseView(win);
             sv_ClosePlayerBar();
             sv_ClearSelection();
@@ -9624,14 +9618,14 @@ void ai_Unk587560(char *rec)
     c4 = 0;
     sv_ReleaseNamePlates();
     while (sv_RunFrame(ai_Unk587560, 0x67fff) != 0) {
-        ai_Unk587c90(rec);
+        ai_GraveyardChatter(rec);
         if (U_I((unsigned)&ai_BuildingPerms) & 0x200) {
             c0 = sv_RegisterNamePlate((char *)(unsigned)&full_data_62a818, U_I((unsigned)&full_data_144a714), 0x13);
             c1 = sv_RegisterNamePlate((char *)(unsigned)"contact_TRANSPORT", U_I((unsigned)&ai_ContactTextTransport), 0x15);
             c2 = sv_RegisterNamePlate((char *)(unsigned)&full_data_62a808, U_I((unsigned)&ai_ContactTextMasterLetter), 0xc);
             c3 = sv_RegisterNamePlate((char *)(unsigned)&full_data_62a7f8, U_I((unsigned)&ai_ContactTextPersonnelBook), 0xc);
             c4 = sv_RegisterNamePlate((char *)(unsigned)"contact_LAGER", U_I((unsigned)&ai_ContactTextStorage), 0xe);
-            ai_Unk5867c0(rec);
+            ai_GraveyardSchlag(rec);
         }
         if (U_I((unsigned)&ai_ClickedObject) != 0) {
             if (U_I((unsigned)&ai_ClickedObject) == c0)
@@ -9879,7 +9873,7 @@ void ai_EndCharExtra(char *ch, int f)
    script "locations\friedhof\gespraeche.esc" (0x62a8a8) -> 0x4287b0 and 0x429ab0 (the script, 3,
    x's building + 0x184, a, b) */
 
-void ai_Unk587c90(char *unused)
+void ai_GraveyardChatter(char *unused)
 {
     int list[0x20];
     int cnt;
