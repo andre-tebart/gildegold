@@ -451,6 +451,13 @@ typedef struct AIMSG {                  /* 0xf8 bytes, given to cm_SendLongMessa
             int price;                  /* 0x64, the lease price (gv_LeasePrice) */
             int years;                  /* 0x68, the years the lease is extended by (10) */
         } lease;
+        struct {                        /* the study message 0x5f ("Studium", ai_ExecuteStudy) */
+            int ch;                     /* 0x58, the netId of the character who pays */
+            int pad5c;
+            int child;                  /* 0x60, the child's value from the decide callback (s1->arg2) */
+            unsigned char subject;      /* 0x64, the offer chosen (s2->ref) */
+            unsigned char level;        /* 0x65, the offer's second value (s2->arg2) */
+        } study;
     };
     union {
         int amount[3];                  /* 0x88, of the bought goods */

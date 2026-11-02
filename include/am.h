@@ -963,7 +963,7 @@ int ai_Unk4a1360(G5CH *p, AIARG *s1, AIARG *s2);                                
 void ai_Unk4948f0(struct AIC4 *ch, int *out);                                         /* 0x4948f0, unk_494020.h: AIC4 * */
 #define G8_4948F0(p, r) ai_Unk4948f0((p), (int *)(r))
 int ai_Unk4a13e0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x4a13e0 */
-int ai_Unk4a1640(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x4a1640 */
+int ai_ExecuteStudy(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x4a1640 */
 int ai_SeanceDecide(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);    /* unlinked: LINK folds it (/OPT:ICF) into sv_ReturnZero */
 int ai_SeanceExec(G5CH *p, AIARG *s1, AIARG *s2);                   /* unlinked: LINK folds it (/OPT:ICF) into sv_ReturnZero */
 int ai_RegisterBaseActions(int a);                                                        /* 0x4a16f0 */

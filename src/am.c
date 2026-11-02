@@ -9439,12 +9439,14 @@ int ai_Unk4a13e0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     o2->arg2 = rec[m].c;
     return 0x3b;
 }
-/* 0x4a1640, execute callback 0x3b: message 0x5f about the offer s2 (kind 0xe) for the child s1 (kind 7), to
-   character 0; sets flag 0x10000 of its field 0x1c8 */
+/* 0x4a1640, execute callback of "Studium" (0x3b): sends the study message 0x5f (AIMSG.study: the offer s2,
+   kind 0xe, for the child s1, kind 7, paid by p) to the character gm_FindChar(0) finds and sets flag 0x10000 of
+   that character's field 0x1c8 (the decide callback skips a child that has it; the original passes 0, not the
+   child) */
 
-int ai_Unk4a1640(G5CH *p, AIARG *s1, AIARG *s2)
+int ai_ExecuteStudy(G5CH *p, AIARG *s1, AIARG *s2)
 {
-    G8MSG m;
+    AIMSG m;
     AICHAR *c;
 
     if (s1->kind != 7 || s2->kind != 0xe)
@@ -9452,16 +9454,16 @@ int ai_Unk4a1640(G5CH *p, AIARG *s1, AIARG *s2)
     c = gm_FindChar(0);
     if (c == 0)
         return 0;
-    m.unk36 = 0x12;
+    m.flags = 0x12;
     m.type = 0x5f;
-    m.to = ((G5CH *)c)->netId;
-    ((unsigned char *)&m)[0x64] = (unsigned char)s2->ref;
-    *(int *)&m.unk58 = p->netId;
-    m.unk0c = -1;
-    ((unsigned char *)&m)[0x65] = (unsigned char)s2->arg2;
-    m.unk60 = s1->arg2;
-    cm_SendLongMessage((AIMSG *)&m);
-    cm_SendSetField(((G5CH *)c)->netId, 0x1c8, 4, 0x10000, 0);
+    m.to = c->netId;
+    m.study.ch = p->netId;
+    m.study.subject = (unsigned char)s2->ref;
+    m.fromId = -1;
+    m.study.level = (unsigned char)s2->arg2;
+    m.study.child = s1->arg2;
+    cm_SendLongMessage(&m);
+    cm_SendSetField(c->netId, 0x1c8, 4, 0x10000, 0);
     return 0x3b;
 }
 /* 0x4a16f0, registers the actions 0x01..0x3b (eval / decide / execute callbacks of this run and of am.c) */
@@ -10006,7 +10008,7 @@ int ai_RegisterBaseActions(int a)
     strcpy(act.name, "Studium");
     act.eval = ai_EvalMoodWeights;
     act.decide = ai_Unk4a13e0;
-    act.exec = ai_Unk4a1640;
+    act.exec = ai_ExecuteStudy;
     act.flags = 0x13;
     return am_RegisterMethod(&act, a) != 0;
 }
