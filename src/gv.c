@@ -1075,29 +1075,33 @@ int gv_CannonCost(char *o, int a, int b, int d, int *n, int *price)
         return 1;
     return 0;
 }
-/* 0x4ef170, two levels of the object o by the items in its list (0x4ffe90 (+0x5d, 2, 6, 0, id)): *a = 2 with item 0x265, else 1 with 0x263, else 0; *b = 4 with 0x264, 3 with 0x262, 2 with 0x25e, 1 with 0x25a, else 0 */
+/* 0x4ef170, the cannon the building o has by the items in its object list (gm_Query(objList, 2, 6, 0, id)): *balls = 2 with item
+   0x265, else 1 with 0x263, else 0 (the salvo has *balls + 1 balls, am.c 0x4a67a0); *kind = 4 with 0x264, 3 with 0x262, 2 with
+   0x25e, 1 with 0x25a, else 0 (the cannon kind of gv_CannonKind / gv_CannonCost) */
 
-void unk_Unk4ef170(char *o, unsigned *a, unsigned *b)
+void gv_BuildingCannon(char *o, unsigned *balls, unsigned *kind)
 {
-    *b = 0;
-    *a = 0;
-    if (gm_Query(*(int *)(o + 0x5d), 2, 6, 0, 0x265) == 0)
-        *a = (gm_Query(*(int *)(o + 0x5d), 2, 6, 0, 0x263) != 0);
+    AIBLD *bld = (AIBLD *)o;
+
+    *kind = 0;
+    *balls = 0;
+    if (gm_Query(bld->objList, 2, 6, 0, 0x265) != 0)
+        *balls = 2;
     else
-        *a = 2;
-    if (gm_Query(*(int *)(o + 0x5d), 2, 6, 0, 0x264) != 0) {
-        *b = 4;
+        *balls = (gm_Query(bld->objList, 2, 6, 0, 0x263) != 0);
+    if (gm_Query(bld->objList, 2, 6, 0, 0x264) != 0) {
+        *kind = 4;
         return;
     }
-    if (gm_Query(*(int *)(o + 0x5d), 2, 6, 0, 0x262) != 0) {
-        *b = 3;
+    if (gm_Query(bld->objList, 2, 6, 0, 0x262) != 0) {
+        *kind = 3;
         return;
     }
-    if (gm_Query(*(int *)(o + 0x5d), 2, 6, 0, 0x25e) != 0) {
-        *b = 2;
+    if (gm_Query(bld->objList, 2, 6, 0, 0x25e) != 0) {
+        *kind = 2;
         return;
     }
-    *b = (gm_Query(*(int *)(o + 0x5d), 2, 6, 0, 0x25a) != 0);
+    *kind = (gm_Query(bld->objList, 2, 6, 0, 0x25a) != 0);
 }
 /* 0x4ef260, two rates of the object o: 0.02 / 0.2 (0.017 / 0.17 with item 0x25c), minus 0.003 / 0.03 with item 0x25f and minus 0.004 / 0.04 with item 0x260 */
 

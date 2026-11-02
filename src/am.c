@@ -10759,7 +10759,7 @@ int ai_Unk4a67a0(AIPER *p, AIBLD *b, AIBLD *t)
         return 0;
     if (ai_Unk4a66f0(b, pa, t, pb) != 0)
         return 0;
-    unk_Unk4ef170(b, &r2, &r);
+    gv_BuildingCannon(b, &r2, &r);
     r = util_RandomU(r + 1);
     gv_CannonKind(r, &kind);
     if (*(int *)((unsigned char *)p + 0x194) < kind.level)
