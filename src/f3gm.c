@@ -1759,36 +1759,31 @@ float gm_AddHealth(unsigned id, int d)
     cm_SendFloatDelta(c->netId, 0x1c, a);
     return f;
 }
-/* 0x4fd090, 1 when the character c (not a player, kind 6 / 7) may be removed: no other player (kind 6 / 7) has it as one of the three direct relations (+0x5a, +0x5e, +0x62) and, when the five slots from +0x66 hold it, they are all filled */
+/* 0x4fd090, 1 when the character c may be removed: it is no player (kind 6 / 7), no other player has it as one
+   of the relatives[0..2] (the partner and the two before the children), and no other player with fewer than
+   5 children has it among the children (relatives[3..7]) */
 
-int unk_Unk4fd090(char *c)
+int gm_IsNoPlayerKin(ORDCHAR *c)
 {
-    int id, n, found;
-    char *p;
-    int *q;
-    int k;
+    ORDCHAR *p;
+    int id, i, k, n, found;
 
-    if (c[2] == 6 || c[2] == 7)
+    if (c->kind == 6 || c->kind == 7)
         return 0;
-    id = *(int *)(c + 4);
-    for (p = ai_Chars[0] + 2; (int)p < (unsigned)((unsigned)ai_Chars + 0x65402); p += 0x21c) {
+    id = c->netId;
+    for (i = 0; i < 0x300; i++) {
+        p = &ORD_CHARS[i];
         found = 0;
         n = 0;
-        if (*(int *)(p + 2) != id && (*p == 6 || *p == 7)) {
-            if (*(int *)(p + 0x5a) == id)
+        if (p->netId != id && (p->kind == 6 || p->kind == 7)) {
+            if (p->relatives[0] == id || p->relatives[1] == id || p->relatives[2] == id)
                 return 0;
-            if (*(int *)(p + 0x5e) == id)
-                return 0;
-            if (*(int *)(p + 0x62) == id)
-                return 0;
-            q = (int *)(p + 0x66);
-            for (k = 5; k != 0; k--) {
-                if (*q == id) {
-                    found = 1;
+            for (k = 3; k < 8; k++) {
+                if (p->relatives[k] == id) {
+                    found |= 1;
                     n++;
-                } else if (*q != -1)
+                } else if (p->relatives[k] != -1)
                     n++;
-                q++;
             }
             if (found && n < 5)
                 return 0;
@@ -1950,7 +1945,7 @@ void gm_PopulationStep(void)
     m = n;
     for (i = 0; i < 0x300; i++) {
         c = ai_Chars[i];
-        if (*(short *)c != -1 && c[8] != 0 && c[2] == 3 && ((util_RandomU(4) & 0xffff) + 0x2c <= *(unsigned short *)(c + 10) || (float)m >= 652.80005f) && c[0x164] == 0 && c[0x166] == 0 && c[0x167] == 0 && unk_Unk4fd090(c) != 0) {
+        if (*(short *)c != -1 && c[8] != 0 && c[2] == 3 && ((util_RandomU(4) & 0xffff) + 0x2c <= *(unsigned short *)(c + 10) || (float)m >= 652.80005f) && c[0x164] == 0 && c[0x166] == 0 && c[0x167] == 0 && gm_IsNoPlayerKin(ORD_CHAR(c)) != 0) {
             gm_AddHealth(*(unsigned short *)c, (int)0);
             n--;
             m = n;
@@ -1982,7 +1977,7 @@ void gm_PopulationStep(void)
                 a = gm_FindChar(*(int *)(c + 0x5e));
                 b = gm_FindChar(*(int *)(c + 0x62));
                 if ((a == 0 || a[2] == 0x0f) && (b == 0 || b[2] == 0x0f)) {
-                    if (unk_Unk4fd090(c) != 0) {
+                    if (gm_IsNoPlayerKin(ORD_CHAR(c)) != 0) {
                         gm_AddHealth(*(unsigned short *)c, 0);
                         m--;
                     }
