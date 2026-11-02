@@ -8066,38 +8066,46 @@ int ai_DecideMasterBuilder(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     *o2 = s2;
     return 0x2f;
 }
-/* 0x49ea90, execute callback 0x2f: upgrades ("upgr_brunnen", s2->kind 4) or builds ("bau_brunnen"), paid to
-   0x504a80(1); doubles need s1->unk10 (1..3) */
+/* 0x49ea90, execute callback of "Baumeister" (0x2f): upgrades the well ("upgr_brunnen", s2->kind 4: pays 0.3
+   of the new type's value, sends the upgrade message 0x1e) or builds it ("bau_brunnen"), paid from the seat
+   object of player 1; then doubles weight s1->arg2 (1..3) of the action's second weight set
+   @deep read whole against the original: the guards, the upgrade message (AIMSG fromId / flags / arg[0]),
+   both payment paths, the failure path placed last (if (build) {...} else {end group; return 0}) and the
+   weight doubling all match, 105/105 instructions. Left is one register choice: n = s1->arg2 goes to esi
+   (s1's register, dead) in ours, to eax in the original: '- mov esi, dword ptr [esi + 0x10] / test esi,
+   esi / cmp esi, 4 / fstp [esi*8 + X]' vs '+ mov eax, dword ptr [esi + 0x10] / test eax, eax / cmp eax, 4
+   / fstp [eax*8 + X]'; reading s1->arg2 without a local gives the same code. */
 
-int ai_Unk49ea90(G5CH *p, AIARG *s1, AIARG *s2)
+int ai_ExecuteMasterBuilder(G5CH *p, AIARG *s1, AIARG *s2)
 {
-    G8MSG m;
-    unsigned char *c;
+    AIMSG m;
+    AIOBJ *c;
     int n;
 
-    c = (unsigned char *)gm_PlayerSeat(1);
+    c = (AIOBJ *)gm_PlayerSeat(1);
     if (c == 0 || ((unsigned char *)p)[0x166] != 0xa)
         return 0;
     if (s2->kind == 4) {
         memset(&m, 0, sizeof(m));
         m.type = 0x1e;
         m.to = p->netId;
-        m.unk0c = s2->ref;
-        m.unk36 = 1;
+        m.fromId = s2->ref;
+        m.flags = 1;
         m.time = ai_TimeT;
-        *(int *)&m.unk58 = s2->ref;
+        m.arg[0] = s2->ref;
         cm_BeginGroup("upgr_brunnen");
-        cm_SendMoveGoods(-1, *(int *)(c + 2), ai_OwnPlayer, (int)(gm_BuildingKindValue(s1->ref) * 0.3f));
-        cm_SendLongMessage((AIMSG *)&m);
+        cm_SendMoveGoods(-1, c->objId, ai_OwnPlayer, (int)(gm_BuildingKindValue(s1->ref) * 0.3f));
+        cm_SendLongMessage(&m);
         cm_EndGroup("upgr_brunnen");
     } else {
         cm_BeginGroup("bau_brunnen");
-        if (ai_ExecBuildBuilding((AIPER *)ai_PlayerChar, s1, s2) == 0) {
+        if (ai_ExecBuildBuilding((AIPER *)ai_PlayerChar, s1, s2) != 0) {
+            cm_SendMoveGoods(-1, c->objId, ai_OwnPlayer, gm_BuildingKindValue(s1->ref));
+            cm_EndGroup("bau_brunnen");
+        } else {
             cm_EndGroup("bau_brunnen");
             return 0;
         }
-        cm_SendMoveGoods(-1, *(int *)(c + 2), ai_OwnPlayer, gm_BuildingKindValue(s1->ref));
-        cm_EndGroup("bau_brunnen");
     }
     n = s1->arg2;
     if (n > 0 && n < 4)
@@ -9816,7 +9824,7 @@ int ai_RegisterBaseActions(int a)
     strcpy(act.name, "Baumeister");
     act.eval = ai_EvalMoodWeights;
     act.decide = ai_DecideMasterBuilder;
-    act.exec = ai_Unk49ea90;
+    act.exec = ai_ExecuteMasterBuilder;
     act.flags = 0x3b;
     if (!am_RegisterMethod(&act, a))
         return 0;
