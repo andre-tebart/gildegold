@@ -2488,42 +2488,41 @@ void ai_TutorialFreeRuns(char *rec)
     }
     mem_Free(rec);
 }
-/* 0x5784a0, allocates the tutorial's main-intro record (204 B): mem_Alloc (0x74, "FTInitMainIntro" 0x6293d8),
-   0 while it fails (0x578440 (0)); the record zeroed (memset 0x74) and its fields set: +0 = 0, +4 = the magic
-   "RTNI" 0x494e5452, +8 = 4, +0xc = 0x3f24, +0x10 = the text key "TUTORIAL_MAIN_INTRO" 0x6293a8, +0x14 ..
-   +0x20 = 0, +0x2c = -1, +0x30 = 0x8e, +0x34 / +0x38 = 0, +0x40 / +0x44 = 0, +0x48 = 0xb, +0x68 / +0x6c /
-   +0x70 = 0; the sample bank handle 0x6f2640 = 0x4c2830 ("TUTORIAL_INTRO_OUTRO.sbf" 0x6293bc, 0); the record */
+/* 0x5784a0, allocates the run record of the tutorial's main intro ("FTInitMainIntro"): 0 when that fails (the
+   chain freed: nothing); else the zeroed record as the run 0 'INTR' of the mode 4 with the text 0x3f24 and the
+   voice "TUTORIAL_MAIN_INTRO", no text windows, the tail of 0x8e ms and the goal state 0xb; its voice bank
+   "TUTORIAL_INTRO_OUTRO.sbf" is loaded into ai_TutorialBanks[0]; the record */
 
 int ai_TutorialInitMainIntro(void)
 {
-    char *rec;
+    TUTRUN *rec;
 
-    rec = (char *)mem_Alloc(0x74, (char *)(unsigned)&full_data_6293d8);
+    rec = (TUTRUN *)mem_Alloc(sizeof(TUTRUN), "FTInitMainIntro");
     if (!rec) {
         ai_TutorialFreeRuns(0);
         return 0;
     }
-    memset(rec, 0, 0x74);
-    U_I(rec) = 0;
-    U_I(rec + 4) = 0x494e5452;
-    U_I(rec + 8) = 4;
-    U_I(rec + 0xc) = 0x3f24;
-    U_I(rec + 0x10) = (unsigned)&full_data_6293a8;
-    U_I(rec + 0x14) = 0;
-    U_I(rec + 0x18) = 0;
-    U_I(rec + 0x1c) = 0;
-    U_I(rec + 0x20) = 0;
-    U_I(rec + 0x2c) = -1;
-    U_I(rec + 0x30) = 0x8e;
-    U_I(rec + 0x34) = 0;
-    U_I(rec + 0x38) = 0;
-    U_I(rec + 0x40) = 0;
-    U_I(rec + 0x44) = 0;
-    U_I(rec + 0x48) = 0xb;
-    U_I(rec + 0x68) = 0;
-    U_I(rec + 0x6c) = 0;
-    U_I(rec + 0x70) = 0;
-    ai_TutorialBanks[0] = snd_LoadVoiceBank((char *)(unsigned)&full_data_6293bc, 0);
+    AI_ZERO_AT(rec, sizeof(TUTRUN));
+    rec->id = 0;
+    rec->tag = 'INTR';
+    rec->mode = 4;
+    rec->mainText = 0x3f24;
+    rec->mainVoice = "TUTORIAL_MAIN_INTRO";
+    rec->text1 = 0;
+    rec->text1Voice = 0;
+    rec->text2 = 0;
+    rec->text2Voice = 0;
+    rec->text1Time = -1;
+    rec->tail2Time = 0x8e;
+    rec->hook = 0;
+    rec->stepHook = 0;
+    rec->goal = 0;
+    rec->tailTime = 0;
+    rec->goalState = 0xb;
+    rec->allowMask = 0;
+    rec->allowMask2 = 0;
+    rec->next = 0;
+    ai_TutorialBanks[0] = snd_LoadVoiceBank("TUTORIAL_INTRO_OUTRO.sbf", 0);
     return (int)rec;
 }
 /* 0x578570, the tutorial chapter 1 chain (2254 B, ROUGH from the disassembly): eleven 0x74-byte step records,

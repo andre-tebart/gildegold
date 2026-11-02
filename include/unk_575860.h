@@ -14,7 +14,8 @@ typedef struct TUTSTEP {                /* 0x10 bytes, a step of a run record's 
 } TUTSTEP;
 
 typedef struct TUTRUN {                 /* 0x74 bytes, a run (chapter) record of the tutorial, chained by next */
-    char pad00[8];
+    int id;                             /* 0x00, the run's number (the main intro 0, the outro 7) */
+    int tag;                            /* 0x04, a four-character tag ('INTR' main intro, 'OUTR' outro) */
     int mode;                           /* 0x08, 1 / 2 start with the timed first text window (state 4), else state 0xb */
     int mainText;                       /* 0x0c, the run window's text: control 1 shows it, control 2 mainText + 1 (ai_TutorialShowRunText) */
     char *mainVoice;                    /* 0x10, the voice played with it ("CHAPTER_5_C_MAIN") */
