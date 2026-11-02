@@ -4845,128 +4845,102 @@ int gm_ListBuildingsOfType(unsigned t, int *out)
     return n;
 }
 
-int gm_BuildingJob();                     /* 0x5048e0 */
+int gm_BuildingJob(int t);                   /* 0x5048e0 */
 int gm_ListBuildingsOfType();                     /* 0x5020a0 */
 extern int gm_AllowAll;
 
-/* 0x5020e0, whether the character c may take the job of the building kind k: 0 no, 1 yes, 2 yes in a neighbouring building of the same type (0x5020a0 lists them) ; by the building's class (0x501d80): 1 / 7 / 8 the jobs of the kind (the six bytes at +0x223) match the character's job number (0x5044b0), 2 never, 3 by the character's kind (0xf: kinds 1 / 0xf / 6, 0xa: kind 3), 4 own list only, 6 by the rank byte at +0x9 of the character (limits 0 / 3 / 4 / 5 by the kind) giving 1 or 2. With the flag 0x6f2448 every person (kind 6 / 7) may. ROUGH */
-#define JOB_FIND(t0, base, v, code)                                                  \
-    do {                                                                             \
-        t = (unsigned char *)(base) + 0x223;                                         \
-        do {                                                                         \
-            if (*t == 0)                                                             \
-                break;                                                               \
-            if ((v) == *t)                                                           \
-                return code;                                                         \
-            t++;                                                                     \
-        } while ((int)(t - ((unsigned char *)(base) + 0x223)) < 6);                  \
-    } while (0)
+/* the job list of a building kind record (the six job numbers at +0x223, 0-terminated): returns code from the
+   caller when the job number v is in it */
+#define JOB_FIND(rec, v, code)                                                       \
+    for (j = 0; j < 6; j++) {                                                        \
+        if ((rec)[0x223 + j] == 0)                                                   \
+            break;                                                                   \
+        if ((v) == (rec)[0x223 + j])                                                 \
+            return code;                                                             \
+    }
 
-/* 0x5020e0, whether character c may take the job of building type k: 0 no, 1 yes, 2 yes in a neighbouring building of that type */
+/* 0x5020e0, whether the character c may take a job in the building kind k: 0 no, 1 yes, 2 yes in another building of the same type (gm_ListBuildingsOfType); by the kind's class (gm_BuildingClass): 1 / 7 (type 0x13 only) / 8 the job number of c for the kind (gm_TitleJob) is in the kind's job list, 2 never, 3 by the character's profession (0xf: types 1 / 0xf / 6, 0xa: type 3), 4 the kind's own list only, 6 by the character's level against a limit per kind (1 / 3 / 4 / 5), giving 1 or 2; with gm_AllowAll every person (kind 6 / 7) may */
 int gm_MayTakeJob(int k, int c)
 {
-    int cls, i, n;
-    char *p, *ch;
-    int job;
-    unsigned v;
-    unsigned char *t;
+    int cls, i, j, n;
+    unsigned char *p, *q;
+    ORDCHAR *ch;
+    int v;
     int list[8];
-    unsigned char lim;
+    int lim;
 
     cls = gm_BuildingClass(k);
-    p = ai_BTypes + k + k * 0x24c;
-    job = gm_BuildingJob(*p);
-    v = gm_TitleJob(c, job);
+    p = (unsigned char *)ai_BTypes + k * 0x24d;
+    v = gm_TitleJob(c, gm_BuildingJob(*p));
     if (c == 0xffff)
         return 0;
-    ch = ai_Chars[c];
-    if (gm_AllowAll != 0 && (ch[2] == 6 || ch[2] == 7))
+    ch = &ORD_CHARS[c];
+    if (gm_AllowAll != 0 && (ch->kind == 6 || ch->kind == 7))
         return 1;
     if (cls == 1) {
-        JOB_FIND(t, p, v, 1);
+        JOB_FIND(p, v, 1);
         n = gm_ListBuildingsOfType(*p, list);
-        i = 0;
-        if (0 < n) {
-            do {
-                JOB_FIND(t, ai_BTypes + list[i] * 0x24d, v, 2);
-                i++;
-                if (n <= i)
-                    return 0;
-            } while (1);
+        for (i = 0; i < n; i++) {
+            q = (unsigned char *)ai_BTypes + list[i] * 0x24d;
+            JOB_FIND(q, v, 2);
         }
-    } else {
-        if (cls == 2)
-            return 0;
-        if (cls == 3) {
-            if (ch[2] == 0xf) {
-                if (*p == 1)
-                    return 1;
-                if (*p == 0xf)
-                    return 1;
-                if (*p == 6)
-                    return 1;
-            }
-            if (ch[2] == 10 && *p == 3)
-                return 1;
-            return 0;
-        }
-        if (cls == 7) {
-            if (*p == 0x13) {
-                JOB_FIND(t, p, v, 1);
-                n = gm_ListBuildingsOfType(0x13, list);
-                i = 0;
-                if (0 < n) {
-                    do {
-                        JOB_FIND(t, ai_BTypes + list[i] * 0x24d, v, 2);
-                        i++;
-                        if (n <= i)
-                            return 0;
-                    } while (1);
-                }
-            }
-        } else if (cls == 4) {
-            t = (unsigned char *)(p + 0x223);
-            do {
-                if (*t == 0)
-                    return 0;
-                if (v == *t)
-                    return 1;
-                t++;
-            } while ((int)(t - (unsigned char *)(p + 0x223)) < 6);
-        } else {
-            if (cls == 6) {
-                lim = 0;
-                switch (k) {
-                case 4:
-                    return ((unsigned char)ch[9] == 0) + 1;
-                case 5:
-                    return ((unsigned char)ch[9] < 3) + 1;
-                case 6:
-                case 0x4b:
-                case 0x4c:
-                case 0x4d:
-                    return ((unsigned char)ch[9] < 4) + 1;
-                case 7:
-                    lim = 5;
-                }
-                return ((unsigned char)ch[9] < lim) + 1;
-            }
-            if (cls != 8)
-                return 1;
-            JOB_FIND(t, p, v, 1);
-            n = gm_ListBuildingsOfType(*p, list);
-            i = 0;
-            if (0 < n) {
-                do {
-                    JOB_FIND(t, ai_BTypes + list[i] * 0x24d, v, 2);
-                    i++;
-                    if (n <= i)
-                        return 0;
-                } while (1);
-            }
-        }
+        return 0;
     }
-    return 0;
+    if (cls == 2)
+        return 0;
+    if (cls == 3) {
+        if (ch->job == 0xf && (*p == 1 || *p == 0xf || *p == 6))
+            return 1;
+        if (ch->job == 10 && *p == 3)
+            return 1;
+        return 0;
+    }
+    if (cls == 7) {
+        if (*p != 0x13)
+            return 0;
+        JOB_FIND(p, v, 1);
+        n = gm_ListBuildingsOfType(0x13, list);
+        for (i = 0; i < n; i++) {
+            q = (unsigned char *)ai_BTypes + list[i] * 0x24d;
+            JOB_FIND(q, v, 2);
+        }
+        return 0;
+    }
+    if (cls == 4) {
+        JOB_FIND(p, v, 1);
+        return 0;
+    }
+    if (cls == 6) {
+        lim = 0;
+        switch (k) {
+        case 4:
+            lim = 1;
+            break;
+        case 5:
+            lim = 3;
+            break;
+        case 6:
+        case 0x4b:
+        case 0x4c:
+        case 0x4d:
+            lim = 4;
+            break;
+        case 7:
+            lim = 5;
+            break;
+        }
+        return (ch->level < lim) + 1;
+    }
+    if (cls == 8) {
+        JOB_FIND(p, v, 1);
+        n = gm_ListBuildingsOfType(*p, list);
+        for (i = 0; i < n; i++) {
+            q = (unsigned char *)ai_BTypes + list[i] * 0x24d;
+            JOB_FIND(q, v, 2);
+        }
+        return 0;
+    }
+    return 1;
 }
 /* 0x5024f0, 1 when the building b is of the type 10 (the town market) */
 
