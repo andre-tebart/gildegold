@@ -5277,107 +5277,79 @@ void gm_SellBuilding(int id, int buyer, int price, int job, int boss)
     cm_SendSetField(bl->id, 0x5a, 2, 0, 2);
     cm_EndGroup("buy_building");
 }
-/* 0x5031b0, "gm_AllocRaum": creates the building b's (kind) object n with all its sub-objects (the object words after it up to the next kind 2 / 6 object that are marked negative), sets the counts of its first kind 0x2a / 0x116 objects (the bytes at +0x23d / +0x23e / +0x23f of the building prototype, at least 2 / 6), and for the market stalls 0x92 .. 0x97 / 0x2db the store room ob_LAGERFLAECHE_ALLGEMEIN with the player's goods. ROUGH */
-
+/* 0x5031b0, "gm_AllocRaum": creates the room object n of the building b with its sub-objects: the object list of the building kind (the words at +0x23, 0x40 of them) after n, up to the next room (goods kind 2 / 6) or the 0 end, the words with the top bit set; the room's first object 0x2a gets the count 2, the building as owner and the capacities +0x23d / +0x23e of the kind (at least 2; the kind's +0x23f alone when only it is set), its object 0x116 (kind 6) the same with the room as owner and at least 6; a market stall (0x92 .. 0x97, 0x2db) also makes its store room ob_LAGERFLAECHE_ALLGEMEIN (capacity 0xc, count 3) and an object 0xff holding up to 0x10 goods of the template gm_DefaultStock that the own player's stock records give to this stall kind. Returns the room, 0 without tables or room for 0x40 more objects */
 unsigned short *gm_AllocRaum(unsigned char *b, unsigned n)
 {
-    unsigned short *o, *s;
-    int i, bi, k, pl, cap;
-    char *bp;
+    ORDOBJ *o, *g;
+    unsigned short *bi;
+    unsigned char *bp;
+    unsigned short *q;
+    char *k;
     unsigned short w;
-    char cl;
-    char *g;
-    int *gp;
-    unsigned char c1, c2;
-    int *goods;
-    int *tab;
+    GMSTOCK *s, *t;
+    int i, j, cnt;
 
-    if (ai_Goods == 0 || ai_BTypes == 0 || f3gm_ObjectCount + 0x40 > 0x5007)
+    if (ai_Goods == 0 || ai_BTypes == 0 || f3gm_ObjectCount + 0x40 >= 0x5008)
         return 0;
-    o = (unsigned short *)gm_CreateObject(*(int *)(b + 1), n, 1);
+    o = (ORDOBJ *)gm_CreateObject(((ORDBLD *)b)->id, n, 1);
+    bp = (unsigned char *)ai_BTypes + *b * 0x24d;
     i = 0;
-    bp = ai_BTypes + (unsigned)*b * 0x24d;
-    k = (int)(bp + 0x23);
-    w = *(unsigned short *)(bp + 0x23);
-    while ((w & 0x7fff) != n) {
-        k += 2;
+    for (q = (unsigned short *)(bp + 0x23); (*q & 0x7fff) != n; q++)
         i++;
-        w = *(unsigned short *)k;
-    }
-    while (i++, i < 0x40) {
-        w = *(unsigned short *)(bp + 0x23 + i * 2);
+    for (i++; i < 0x40; i++) {
+        w = ((unsigned short *)(bp + 0x23))[i];
         if (w == 0)
             break;
         if (w != 0xffff) {
-            cl = ai_Goods[(w & 0x7fff) * 0x41];
-            if (cl == 2 || cl == 6)
+            k = ai_Goods + (w & 0x7fff) * 0x41;
+            if (*k == 2 || *k == 6)
                 i = 0x40;
-            else if ((short)w < 0)
-                gm_CreateObject(*(int *)(o + 1), w & 0x7fff, 1);
+            else if (w & 0x8000)
+                gm_CreateObject(o->objId, w & 0x7fff, 1);
         }
     }
-    g = gm_Query(*(int *)(o + 10), 1, 0, 0x2a);
+    g = (ORDOBJ *)gm_Query((void *)o->list, 1, 0, 0x2a);
     if (g != 0) {
-        *(int *)(g + 0xe) = 2;
-        *(int *)(g + 6) = *(int *)(b + 1);
-        c1 = (unsigned char)bp[0x23d];
-        if (c1 == 0 && bp[0x23e] == 0 && bp[0x23f] != 0)
-            g[0x1c] = bp[0x23f];
+        g->ownerId = ((ORDBLD *)b)->id;
+        g->count = 2;
+        if (bp[0x23d] == 0 && bp[0x23e] == 0 && bp[0x23f] != 0)
+            g->cap[0] = bp[0x23f];
         else {
-            if (c1 < 2)
-                c1 = 2;
-            g[0x1c] = c1;
-            c2 = (unsigned char)bp[0x23e];
-            if (c2 < 2)
-                c2 = 2;
-            g[0x1d] = c2;
+            g->cap[0] = bp[0x23d] < 2 ? 2 : bp[0x23d];
+            g->cap[1] = bp[0x23e] < 2 ? 2 : bp[0x23e];
         }
     }
-    g = gm_Query(*(int *)(o + 10), 2, 0, 0x116, 6);
+    g = (ORDOBJ *)gm_Query((void *)o->list, 2, 0, 0x116, 6);
     if (g != 0) {
-        *(int *)(g + 0xe) = 2;
-        *(int *)(g + 6) = *(int *)(o + 1);
-        c1 = (unsigned char)bp[0x23d];
-        if (c1 == 0 && bp[0x23e] == 0 && (c2 = (unsigned char)bp[0x23f]) != 0) {
-            if (c2 < 6)
-                g[0x1c] = 6;
-            else
-                g[0x1c] = c2;
-        } else {
-            if (c1 < 6)
-                c1 = 6;
-            g[0x1c] = c1;
-            c2 = (unsigned char)bp[0x23e];
-            if (c2 < 6)
-                c2 = 6;
-            g[0x1d] = c2;
+        g->ownerId = o->objId;
+        g->count = 2;
+        if (bp[0x23d] == 0 && bp[0x23e] == 0 && bp[0x23f] != 0)
+            g->cap[0] = bp[0x23f] < 6 ? 6 : bp[0x23f];
+        else {
+            g->cap[0] = bp[0x23d] < 6 ? 6 : bp[0x23d];
+            g->cap[1] = bp[0x23e] < 6 ? 6 : bp[0x23e];
         }
     }
-    w = *o;
-    if ((0x91 < w && w < 0x98) || w == 0x2db) {
-        pl = ai_OwnPlayer;
-        g = gm_Query(*(int *)(o + 10), 1, 0, 0x116);
-        if (g == 0)
+    if ((o->type >= 0x92 && o->type <= 0x97) || o->type == 0x2db) {
+        s = (GMSTOCK *)(init_StockBlocks + ai_OwnPlayer * 0x2a90);
+        g = (ORDOBJ *)gm_Query((void *)o->list, 1, 0, 0x116);
+        if (g != 0) {
+            g->cap[0] = 0xc;
+            g->cap[1] = 0;
+            g->count = 3;
+        } else
             err_Message("gm_AllocRaum(): ob_LAGERFLAECHE_ALLGEMEIN is missing in ob_MARKTSTAND!");
-        else {
-            g[0x1c] = 0xc;
-            g[0x1d] = 0;
-            *(int *)(g + 0xe) = 3;
-        }
-        bi = gm_CreateObject(*(int *)(o + 1), 0xff, 1);
-        cap = 0;
-        goods = gm_DefaultStock;
-        gp = (int *)(init_StockBlocks + 4 + pl * 0x2a90);
-        do {
-            if (*(unsigned short *)(gp + 0xe) == *o && *gp != 0 && cap < 0x10) {
-                gm_CreateObject(*(int *)(bi + 2), *(unsigned short *)goods, 1);
-                cap++;
+        bi = gm_CreateObject(o->objId, 0xff, 1);
+        cnt = 0;
+        t = (GMSTOCK *)gm_DefaultStock;
+        for (j = 0; j < 0x55; j++) {
+            if (s[j].marketKind == o->type && s[j].amount != 0 && cnt < 0x10) {
+                gm_CreateObject(((ORDOBJ *)bi)->objId, t[j].item, 1);
+                cnt++;
             }
-            goods += 0x10;
-            gp += 0x20;
-        } while ((int)goods < (unsigned)((unsigned)gm_DefaultStock + 0x2a80));
+        }
     }
-    return o;
+    return (unsigned short *)o;
 }
 /* 0x503480, removes the object instance with the id from the list of the building b (0x4ffff0): 0 when it was there, -3 otherwise */
 
