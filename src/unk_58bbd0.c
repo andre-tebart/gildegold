@@ -17630,7 +17630,7 @@ int ai_Unk5c1e10(int param_1)
     return 0;
 }
 
-int *sv_Unk52f360(int a, int b, char n, ...); void sv_Unk52f600(int bk); void sv_Unk52f530(int *bk); int gv_TableRecordText();
+struct SVBOOK *sv_OpenBook(char *model, char *at, char n, ...); void sv_Unk52f600(int bk); void sv_Unk52f530(int *bk); int gv_TableRecordText();
 void ai_Unk5c2410();
 
 /* 0x5c2160, the law book listener (657 B): the pages 0x111 (Strafrecht), 0x112 (Steuern) and 0x113
@@ -17653,21 +17653,21 @@ int ai_Unk5c2160(int param_1)
     char pos[0x24];
 
     if (param_1 == 0x111) {
-        win = sv_Unk52f360((char *)(unsigned)"ob_GESETZBUCH_STRAFRECHT", (char *)(unsigned)"Buch", 2, (char *)(unsigned)&full_data_62d294, (char *)(unsigned)&full_data_62d294);
+        win = sv_OpenBook((char *)(unsigned)"ob_GESETZBUCH_STRAFRECHT", (char *)(unsigned)"Buch", 2, (char *)(unsigned)&full_data_62d294, (char *)(unsigned)&full_data_62d294);
         start = 0x11;
         end = 0x1d;
         base = 0x1452;
         text = 0x13f8;
         brk = 6;
     } else if (param_1 == 0x112) {
-        win = sv_Unk52f360((char *)(unsigned)"ob_GESETZBUCH_STEUERN", (char *)(unsigned)"Buch", 2, (char *)(unsigned)&full_data_62d294, (char *)(unsigned)&full_data_62d294);
+        win = sv_OpenBook((char *)(unsigned)"ob_GESETZBUCH_STEUERN", (char *)(unsigned)"Buch", 2, (char *)(unsigned)&full_data_62d294, (char *)(unsigned)&full_data_62d294);
         start = 9;
         end = 0x11;
         base = 0x142a;
         text = 0x13f7;
         brk = 4;
     } else if (param_1 == 0x113) {
-        win = sv_Unk52f360((char *)(unsigned)"ob_GESETZBUCH_VERFASSUNG", (char *)(unsigned)"Buch", 2, (char *)(unsigned)&full_data_62d294, (char *)(unsigned)&full_data_62d294);
+        win = sv_OpenBook((char *)(unsigned)"ob_GESETZBUCH_VERFASSUNG", (char *)(unsigned)"Buch", 2, (char *)(unsigned)&full_data_62d294, (char *)(unsigned)&full_data_62d294);
         start = 0;
         end = 9;
         base = 0x13fd;

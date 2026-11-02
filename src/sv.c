@@ -6638,63 +6638,64 @@ void sv_Unk52f340(int *book)
     if (SV_I((unsigned)&d2_ClickedId) == 0x768)
         sv_Unk52fa00(book);
 }
-/* 0x52f360, opens a book ("f3_sv:OpenBook", 0x274 bytes: +0 the book object, +4 its parent, +0x228 the page widgets (n of them, +0x271), +0x270 the first shown page, +0x268 / +0x26c the page button ids, +0x272 the
-   saved 0x63342d): the book model a (0x411900), optionally put at the scene object b (0x446e10); n page widgets (0x474b30 (0, 0, text)) with the "Buch_Seite<i>_oben / unten_ns_nm" pictures; the n texts follow
-   as variable arguments; plays "Aufklappen_s"; ROUGH */
+/* 0x52f360, opens a book: the model named model (d3t_FindObject), or, given the scene object name at, a copy of it
+   created there (the model hidden until the close); n page views follow as variable arguments (the d2_LoadView
+   names), each with the textures "Buch_Seite<i>_oben_ns_nm" / "Buch_Seite<i>_unten_ns_nm", the pages past the
+   first pair disabled; the w-buffer is switched off while the book is open; plays "Aufklappen_s". Returns the
+   record, 0 when the model or a view is missing.
+   @deep read whole against the original and reconstructed (SVBOOK record, the copy at the scene object,
+   the va_arg page views, the w-buffer save, the sound); every hunk is equal or regs but the read of
+   d3d_ZEnabled: ours 'mov ax, word ptr [d3_MipSkip]; test ah, ah; mov [esi+0x272], ah', the original's
+   'mov al, byte ptr [0x63342d]; test al, al; mov [esi+0x272], al'. d3d_ZEnabled is the data_views.h view
+   (*(char *)((char *)&d3_MipSkip + 1)) of the 1-byte d3_MipSkip (ts_texture.c, C.name.alias with
+   d3d_TexShift): VC6 folds the +1 byte into a word load. It needs the datum declared as its own char (a
+   data / owner question for d3_d3d / ts_texture), not a change in this function. */
 
-int *sv_Unk52f360(int a, int b, char n, ...)
+SVBOOK *sv_OpenBook(char *model, char *at, char n, ...)
 {
-    int *bk;
-    int i, w, *p;
+    SVBOOK *bk;
+    int i, count;
     char top[0x60], bottom[0x60];
-    int *arg;
+    va_list ap;
 
-    bk = (int *)mem_Alloc(0x274, "f3_sv:OpenBook");
+    bk = (SVBOOK *)mem_Alloc(sizeof(SVBOOK), "f3_sv:OpenBook");
     if (bk == 0)
         return 0;
-    w = d3t_FindObject(a, 1);
-    bk[0] = w;
-    if (w == 0) {
-lfail:
+    bk->obj = d3t_FindObject(model, 1);
+    if (bk->obj == 0) {
         mem_Free(bk);
         return 0;
     }
-    if (b == 0) {
-        bk[1] = 0;
+    if (at != 0) {
+        d3if_Show(bk->obj, 0);
+        bk->hidden = bk->obj;
+        bk->obj = d3_CreateObject((int)bk->obj->parent, &bk->obj->pos, &bk->obj->rotation, at);
     } else {
-        d3if_Show(w, 0);
-        w = bk[0];
-        bk[1] = w;
-        w = d3_CreateObject(*(int *)(w + 0x1f8), w + 0x4c, w + 0x84, b);
-        bk[0] = w;
+        bk->hidden = 0;
     }
-    *(unsigned char *)(bk[0] + 0x210) &= 0xdf;
-    d3_RelightObject(bk[0]);
-    *((char *)bk + 0x271) = n;
-    w = (int)n;
-    *((char *)(bk + 0x9c)) = 0;
-    bk[0x9a] = -1;
-    bk[0x9b] = -1;
-    if (0 < w) {
-        arg = (int *)(&n + 4);
-        p = bk + 0x8a;
-        i = 0;
-        do {
-            *p = d2_LoadView(0, 0, *arg++);
-            if (*p == 0)
-                goto lfail;
-            sprintf(top, "Buch_Seite%i_oben_ns_nm", i + 1);
-            sprintf(bottom, "Buch_Seite%i_unten_ns_nm", i + 1);
-            d2_FillViewTextures(*p, top, bottom);
-            d2_RedrawView(*p);
-            if (2 < i)
-                d2_EnableViewObjects(*p, 0);
-            p++;
-            i++;
-        } while (i < w);
+    bk->obj->state &= ~0x20;
+    d3_RelightObject(bk->obj);
+    bk->npages = n;
+    bk->page = 0;
+    bk->btnNext = -1;
+    bk->btnPrev = -1;
+    count = n;
+    va_start(ap, n);
+    for (i = 0; i < count; i++) {
+        bk->views[i] = d2_LoadView(0, 0, va_arg(ap, char *));
+        if (bk->views[i] == 0) {
+            mem_Free(bk);
+            return 0;
+        }
+        sprintf(top, "Buch_Seite%i_oben_ns_nm", i + 1);
+        sprintf(bottom, "Buch_Seite%i_unten_ns_nm", i + 1);
+        d2_FillViewTextures(bk->views[i], top, bottom);
+        d2_RedrawView(bk->views[i]);
+        if (i > 2)
+            d2_EnableViewObjects(bk->views[i], 0);
     }
-    if (SV_B((unsigned)&d3d_ZEnabled) != 0) {
-        *((char *)bk + 0x272) = SV_B((unsigned)&d3d_ZEnabled);
+    if (d3d_ZEnabled != 0) {
+        bk->zbuffer = d3d_ZEnabled;
         d3d_SetWBuffer(0);
     }
     sb_PlaySample(snd_BookBank, "Aufklappen_s", 1, 0x3f, 0x7f, 0, 0);
