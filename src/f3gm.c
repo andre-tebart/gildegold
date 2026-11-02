@@ -6279,35 +6279,34 @@ int gm_HasBuilding(int p)
 {
     return gm_FirstBuilding(p) != 0;
 }
-/* 0x5049e0, the seat object of the building class: class 5 by the byte +9 of the selected character (0x1e .. 0x21 -> the buildings 2 .. 5, the object 0x142); class 3 the object 0x115 of the building 1. 0 else */
+/* 0x5049e0, the treasury object of the building b's class: class 5 the object 0x142 (the treasury) of the building 2 .. 5 chosen by the player's job2 (0x1e .. 0x21), class 3 the object 0x115 of the building 1; 0 else */
 
-int gm_Unk5049e0(char *b)
+char *gm_ClassTreasury(ORDBLD *b)
 {
-    int cls, p;
-    char k;
+    int cls;
+    char *r;
+    ORDBLD *h;
 
-    cls = gm_BuildingClass((unsigned char)*b);
+    r = 0;
+    cls = gm_BuildingClass(b->type);
     if (cls == 5) {
-        k = ai_Chars[ai_PlayerId][9];
-        if (k == 0x1e)
-            p = 2;
-        else if (k == 0x1f)
-            p = 3;
-        else if (k == ' ')
-            p = 4;
-        else {
-            if (k != '!')
-                return 0;
-            p = 5;
-        }
-        cls = (int)gm_FirstBuilding(p);
-        if (cls != 0)
-            return (int)gm_Query(*(int *)(cls + 0x5d), 2, 6, 0, 0x142);
+        if (ORD_CHARS[ai_PlayerId].job2 == 0x1e)
+            h = (ORDBLD *)gm_FirstBuilding(2);
+        else if (ORD_CHARS[ai_PlayerId].job2 == 0x1f)
+            h = (ORDBLD *)gm_FirstBuilding(3);
+        else if (ORD_CHARS[ai_PlayerId].job2 == 0x20)
+            h = (ORDBLD *)gm_FirstBuilding(4);
+        else if (ORD_CHARS[ai_PlayerId].job2 == 0x21)
+            h = (ORDBLD *)gm_FirstBuilding(5);
+        else
+            h = 0;
+        if (h != 0)
+            r = gm_Query((void *)h->objList, 2, 6, 0, 0x142);
     } else if (cls == 3) {
-        cls = (int)gm_FirstBuilding(1);
-        return (int)gm_Query(*(int *)(cls + 0x5d), 2, 6, 0, 0x115);
+        h = (ORDBLD *)gm_FirstBuilding(1);
+        r = gm_Query((void *)h->objList, 2, 6, 0, 0x115);
     }
-    return 0;
+    return r;
 }
 /* 0x504a80, the object 0x115 (player 1) or 0x142 (the others) of the building of the player p */
 
