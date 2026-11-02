@@ -508,7 +508,7 @@ typedef struct AITIMEX {                /* AITIME as 3 ints and a short (the ori
 extern int ai_Unk5ffd1c;                /* 0x5ffd1c, the game day the count below was made on (-1 at start) */
 extern int ai_Unk6f0470;                /* 0x6f0470, number of characters of kind 5, 6, 7 */
 
-int ai_Unk4a67a0(struct AIPER *p, struct AIBLD *b, struct AIBLD *t);                        /* 0x4a67a0 */
+int ai_AimCannon(struct AIPER *p, struct AIBLD *b, struct AIBLD *t);                        /* 0x4a67a0 */
 int ai_Unk4a6ae0(struct AIPER *p, struct AIBLD *b);                                    /* 0x4a6ae0 */
 void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d);                 /* 0x4c4830 */
 int amt_GetKindLevel(int v);                                                 /* 0x4e7c40 */
@@ -1040,7 +1040,7 @@ extern const int ai_RandomStrides[16];                                          
 /* 0x4a63f0 ai_PickActionBuilding is declared in am.h */
 int ai_PickActionBuildings(AIPER *p, int a, __int64 mask, float lo, float hi, unsigned char n, int *out); /* 0x4a6570 */
 void d3t_GetObjectBounds(struct D3VECTOR *mn, struct D3VECTOR *mx, struct D3OBJECT *obj);             /* 0x413150, d3_tools.c */
-int ai_Unk4a66f0(AIBLD *x, float *a, AIBLD *y, float *b);                        /* 0x4a66f0 */
+int ai_BuildingAimPoints(AIBLD *x, float *a, AIBLD *y, float *b);                        /* 0x4a66f0 */
 typedef struct G9SHOT {                 /* 0x74 bytes, the AI's cannon shot at 0x6f0698 (0x4a67a0) */
     int who;                            /* 0x00, the shooter's id */
     int bld;                            /* 0x04, the cannon building's id */
@@ -1070,13 +1070,13 @@ typedef struct G9KIND {                 /* filled by 0x4ef000 */
     int level;                          /* 0x4 */
     int unk08[6];
 } G9KIND;
-extern G9SHOT ai_Unk6f0698;                                                      /* 0x6f0698 */
-extern const G9BALL ai_Unk5edfe0[3];                                                   /* 0x5edfe0 */
-extern const float ai_Unk5eee08;                                                       /* 0x5eee08, 7874 */
+extern G9SHOT ai_CannonShot;                                                      /* 0x6f0698 */
+extern const G9BALL ai_CannonBalls[3];                                                   /* 0x5edfe0 */
+extern const float ai_IronDensity;                                                       /* 0x5eee08, 7874 */
 int ai_SphereVolume(float radius, float size, float *out);                                   /* 0x5dc1a0 */
 struct SPHEREVOLUME; void ai_PositionShare(float a, float b, struct SPHEREVOLUME *rec, float *out);                        /* 0x5dc210 */
 int ai_SolveCannonAim(float *a, float *b, float *rng, float *x, float *y, float *ang, float *vb, float *vc, float *vd); /* 0x5dd100 */
-int ai_Unk4a67a0(struct AIPER *p, struct AIBLD *b, struct AIBLD *t);                                  /* 0x4a67a0 */
+int ai_AimCannon(struct AIPER *p, struct AIBLD *b, struct AIBLD *t);                                  /* 0x4a67a0 */
 int ai_InitShot(struct SHOTREC *shot, struct D3VECTOR *pos, struct D3VECTOR *dir, float charge, float size, float density); /* 0x5dc240 */
 int ai_ScatterShot(struct SHOTREC *shot, float sideSpread, struct D3VECTOR *side, float otherSpread, struct D3VECTOR *other, float speedSpread);    /* 0x5dc3a0 */
 int ai_Unk4a6ae0(struct AIPER *p, struct AIBLD *b);                                            /* 0x4a6ae0 */

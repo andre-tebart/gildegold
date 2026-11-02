@@ -268,7 +268,7 @@ void cm_SendMoneyDelta(int a, int b);                     /* 0x4c5f60 */
 extern unsigned char ai_OwnPlayer;      /* 0x6f1bc5 */
 void gv_BuildingCannon(char *o, unsigned *balls, unsigned *kind);  /* 0x4ef170 */
 void gv_CannonScatter(char *o, float *spread, float *speedSpread);  /* 0x4ef260 */
-float unk_Unk4ef330(char *o);           /* 0x4ef330 */
+float gv_CannonItemFactor(char *o);           /* 0x4ef330 */
 int gv_GraveCount(unsigned char *o);    /* 0x4ef3c0 */
 int gv_GravesInUse(unsigned char *o);    /* 0x4ef440 */
 int gv_EntryCount(unsigned char *o);    /* 0x4ef470 */

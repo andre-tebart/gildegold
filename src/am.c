@@ -34,7 +34,7 @@ int ai_Unk5ffd1c = -1;                  /* 0x5ffd1c */
 G6CURSOR ai_NearRingCursorState = { ai_NearRing, 1 };  /* 0x60034c, the next entry of ai_NearRing and the stride */
 int ai_Unk6f0470 = 0;  /* 0x6f0470, number of characters of kind 5, 6, 7 */
 AGCH ai_DuelOpponent = {0};  /* 0x6f0478 */
-G9SHOT ai_Unk6f0698 = {0};  /* 0x6f0698 */
+G9SHOT ai_CannonShot = {0};  /* 0x6f0698 */
 int ai_NearRingCount = 0;  /* 0x6f070c, the number of entries */
 int ai_WriteActionTable = 0;  /* 0x6f2464, set: write the action table */
 char ai_DataPath[608] = {0};  /* 0x75dca0, the data path */
@@ -639,7 +639,7 @@ int ai_Unk48f010(int a, AIPX *p, int b, AIARGX *o1, AIARGX *o2)
     gm_FindById((int)&b2, 0, 0, v);
     if (!b2)
         return 0;
-    if (!ai_Unk4a67a0(p, bld, b2))
+    if (!ai_AimCannon(p, bld, b2))
         return 0;
     o1->kind = 4;
     o1->ref = bld->id;
@@ -2338,8 +2338,8 @@ const int ai_CharWalkSteps[16] = { 1, 5, 7, 11, 13, 17, 19, 23, 745, 749, 751, 7
 const int ai_RandomStrides[16] = { 1, 3, 5, 7, 11, 13, 17, 19, 237, 239, 243, 245, 249, 251, 253, 255 };  /* 0x5ed140, random steps */
 const int ai_RingStrides[11] = { 1, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31 };  /* 0x5ed180, the strides of the near ring cursor */
 G6CURSOR *const ai_NearRingCursor = &ai_NearRingCursorState;  /* 0x5ed1b0, the code reaches the cursor through this constant pointer (mov reg, [0x5ed1b0]) */
-const G9BALL ai_Unk5edfe0[3] = { { 2000.0f, 3000.0f, 0.0599999987f }, { 2450.0f, 3850.0f, 0.0649999976f }, { 3600.0f, 5950.0f, 0.075000003f } };  /* 0x5edfe0 */
-const float ai_Unk5eee08 = 7874.0f;  /* 0x5eee08, 7874 */
+const G9BALL ai_CannonBalls[3] = { { 2000.0f, 3000.0f, 0.0599999987f }, { 2450.0f, 3850.0f, 0.0649999976f }, { 3600.0f, 5950.0f, 0.075000003f } };  /* 0x5edfe0 */
+const float ai_IronDensity = 7874.0f;  /* 0x5eee08, 7874 */
 
 /* 0x492fd0, makes the random duel opponent ai_DuelOpponent for the duel kind k (1, 2, 4): draws a class 1..5 from the cumulative table row of k and a second class from a row near it, gives the opponent a random sex and first name and five stats in the range of the first class; returns (second class << 8) | first class
    @deep read whole against the original: fixed the second-row draw (util_RandomU(2) called in each branch,
@@ -11152,7 +11152,7 @@ int ai_PickActionBuildings(AIPER *p, int a, __int64 mask, float lo, float hi, un
 /* 0x4a66f0: the positions of two buildings' models (0x61) in scene 0: a (raised by 0.8 of its height), b; -1
    when one is missing or they are the same */
 
-int ai_Unk4a66f0(AIBLD *x, float *a, AIBLD *y, float *b)
+int ai_BuildingAimPoints(AIBLD *x, float *a, AIBLD *y, float *b)
 {
     int scene = d3_CurrentScene;
     float mn[4];
@@ -11169,12 +11169,12 @@ int ai_Unk4a66f0(AIBLD *x, float *a, AIBLD *y, float *b)
     }
     return -1;
 }
-/* 0x4a67a0: aims p's cannon in building b at building t: the cannon type r (0x4ef170 / 0x4ef000, p's 0x194 must
-   reach its level), a ballistic solution (0x5dc1a0 / 0x5dc210 / 0x5dd100) within -15..45 degrees, its strength
-   (0x4eef50) within the charge limit of the cannon and its cost (0x4ef090) within a quarter of the money; the
-   shot goes into ai_Unk6f0698 */
+/* 0x4a67a0: aims p's cannon in building b at building t: a random cannon type r (gv_BuildingCannon / gv_CannonKind,
+   p's money must reach its level), a ballistic solution (ai_SphereVolume of the iron ball, ai_PositionShare,
+   ai_SolveCannonAim) within -15..45 degrees, its charge (gv_SalvoCharge) within the cannon's limit and its cost
+   (gv_CannonCost) within a quarter of p's goods; the shot goes into ai_CannonShot, 1 when aimed */
 
-int ai_Unk4a67a0(AIPER *p, AIBLD *b, AIBLD *t)
+int ai_AimCannon(AIPER *p, AIBLD *b, AIBLD *t)
 {
     G9CANNON *cn;
     G9KIND kind;
@@ -11190,22 +11190,22 @@ int ai_Unk4a67a0(AIPER *p, AIBLD *b, AIBLD *t)
     int r, r2, n, cost, x, k;
     float f, ang;
 
-    ai_Unk6f0698.who = -1;
-    ai_Unk6f0698.bld = -1;
+    ai_CannonShot.who = -1;
+    ai_CannonShot.bld = -1;
     cn = gv_FindEffect(b->id);
     if (cn == 0)
         return 0;
-    if (ai_Unk4a66f0(b, pa, t, pb) != 0)
+    if (ai_BuildingAimPoints(b, pa, t, pb) != 0)
         return 0;
     gv_BuildingCannon(b, &r2, &r);
     r = util_RandomU(r + 1);
     gv_CannonKind(r, &kind);
-    if (*(int *)((unsigned char *)p + 0x194) < kind.level)
+    if (p->money < kind.level)
         return 0;
-    f = unk_Unk4ef330(b);
+    f = gv_CannonItemFactor(b);
     r2 = util_RandomU(r2 + 1);
-    ai_SphereVolume(ai_Unk5eee08, ai_Unk5edfe0[r].c, par);
-    ai_PositionShare(ai_Unk5edfe0[r].a, f * ai_Unk5edfe0[r].b, par, v94);
+    ai_SphereVolume(ai_IronDensity, ai_CannonBalls[r].c, par);
+    ai_PositionShare(ai_CannonBalls[r].a, f * ai_CannonBalls[r].b, par, v94);
     rng[0] = v94[0];
     rng[1] = v94[1];
     rng[2] = -0.2617994f;
@@ -11218,33 +11218,33 @@ int ai_Unk4a67a0(AIPER *p, AIBLD *b, AIBLD *t)
     n = gv_CannonCost(p, r, k, r2 + 1, &x, &cost);
     if (n == 0)
         return 0;
-    if ((int)(gm_SumListAmounts(*(int *)((unsigned char *)p + 0x178), ai_OwnPlayer) * 0.25f) < cost)
+    if ((int)(gm_SumListAmounts(p->inventory, ai_OwnPlayer) * 0.25f) < cost)
         return 0;
-    ai_Unk6f0698.a[0] = pa[0];
-    ai_Unk6f0698.a[1] = pa[1];
-    ai_Unk6f0698.a[2] = pa[2];
-    ai_Unk6f0698.b[0] = vb[0];
-    ai_Unk6f0698.b[1] = vb[1];
-    ai_Unk6f0698.b[2] = vb[2];
-    ai_Unk6f0698.c[0] = vc[0];
-    ai_Unk6f0698.c[1] = vc[1];
-    ai_Unk6f0698.c[2] = vc[2];
-    ai_Unk6f0698.d[0] = vd[0];
-    ai_Unk6f0698.d[1] = vd[1];
-    ai_Unk6f0698.d[2] = vd[2];
-    ai_Unk6f0698.who = *(int *)((unsigned char *)p + 4);
-    ai_Unk6f0698.bld = b->id;
-    ai_Unk6f0698.cost = cost;
-    ai_Unk6f0698.charge = r2 + 1;
-    ai_Unk6f0698.x = x;
-    ai_Unk6f0698.ang = ang;
-    ai_Unk6f0698.kind = r;
-    ai_Unk6f0698.k = k;
-    memcpy(ai_Unk6f0698.par, par, sizeof(par));
+    ai_CannonShot.a[0] = pa[0];
+    ai_CannonShot.a[1] = pa[1];
+    ai_CannonShot.a[2] = pa[2];
+    ai_CannonShot.b[0] = vb[0];
+    ai_CannonShot.b[1] = vb[1];
+    ai_CannonShot.b[2] = vb[2];
+    ai_CannonShot.c[0] = vc[0];
+    ai_CannonShot.c[1] = vc[1];
+    ai_CannonShot.c[2] = vc[2];
+    ai_CannonShot.d[0] = vd[0];
+    ai_CannonShot.d[1] = vd[1];
+    ai_CannonShot.d[2] = vd[2];
+    ai_CannonShot.who = p->netId;
+    ai_CannonShot.cost = cost;
+    ai_CannonShot.bld = b->id;
+    ai_CannonShot.x = x;
+    ai_CannonShot.charge = r2 + 1;
+    ai_CannonShot.k = k;
+    ai_CannonShot.ang = ang;
+    ai_CannonShot.kind = r;
+    memcpy(ai_CannonShot.par, par, sizeof(par));
     return 1;
 }
 /* 0x4a6ae0, execute callback of the cannon shot: fires the 1..3 balls the decide callback 0x4a67a0 planned
-   into ai_Unk6f0698 (one ball from 50 units along the barrel, two or three side by side from 40) */
+   into ai_CannonShot (one ball from 50 units along the barrel, two or three side by side from 40) */
 
 int ai_Unk4a6ae0(AIPER *p, AIBLD *b)
 {
@@ -11255,61 +11255,61 @@ int ai_Unk4a6ae0(AIPER *p, AIBLD *b)
     char s1[104], s2[104], s3[104];
     int cost, x;
 
-    if (ai_Unk6f0698.who == *(int *)((unsigned char *)p + 4) && ai_Unk6f0698.bld == b->id) {
+    if (ai_CannonShot.who == *(int *)((unsigned char *)p + 4) && ai_CannonShot.bld == b->id) {
         gv_CannonScatter(b, &u, &v);
-        g = unk_Unk4ef330(b);
-        cost = ai_Unk6f0698.cost;
-        x = ai_Unk6f0698.x;
-        c = ai_Unk5edfe0[ai_Unk6f0698.kind].c;
-        f = ai_Unk6f0698.k * 0.01f * (g * ai_Unk5edfe0[ai_Unk6f0698.kind].b - ai_Unk5edfe0[ai_Unk6f0698.kind].a)
-            + ai_Unk5edfe0[ai_Unk6f0698.kind].a;
-        if (ai_Unk6f0698.charge == 1) {
-            pa[0] = ai_Unk6f0698.a[0] + ai_Unk6f0698.b[0] * 50.0f;
-            pa[1] = ai_Unk6f0698.a[1] + ai_Unk6f0698.b[1] * 50.0f;
-            pa[2] = ai_Unk6f0698.a[2] + ai_Unk6f0698.b[2] * 50.0f;
-            ai_InitShot(s1, pa, ai_Unk6f0698.b, f, c, ai_Unk5eee08);
-            ai_ScatterShot(s1, u, ai_Unk6f0698.d, u, ai_Unk6f0698.c, v);
-            gv_FireShots(b, p, s1, 0, 0, gv_SalvoCharge(ai_Unk6f0698.kind, ai_Unk6f0698.k, 1), x, cost);
+        g = gv_CannonItemFactor(b);
+        cost = ai_CannonShot.cost;
+        x = ai_CannonShot.x;
+        c = ai_CannonBalls[ai_CannonShot.kind].c;
+        f = ai_CannonShot.k * 0.01f * (g * ai_CannonBalls[ai_CannonShot.kind].b - ai_CannonBalls[ai_CannonShot.kind].a)
+            + ai_CannonBalls[ai_CannonShot.kind].a;
+        if (ai_CannonShot.charge == 1) {
+            pa[0] = ai_CannonShot.a[0] + ai_CannonShot.b[0] * 50.0f;
+            pa[1] = ai_CannonShot.a[1] + ai_CannonShot.b[1] * 50.0f;
+            pa[2] = ai_CannonShot.a[2] + ai_CannonShot.b[2] * 50.0f;
+            ai_InitShot(s1, pa, ai_CannonShot.b, f, c, ai_IronDensity);
+            ai_ScatterShot(s1, u, ai_CannonShot.d, u, ai_CannonShot.c, v);
+            gv_FireShots(b, p, s1, 0, 0, gv_SalvoCharge(ai_CannonShot.kind, ai_CannonShot.k, 1), x, cost);
             return 1;
         }
-        if (ai_Unk6f0698.charge == 2) {
-            x0 = ai_Unk6f0698.b[0] * 40.0f + ai_Unk6f0698.a[0];
-            x1 = ai_Unk6f0698.a[1] + ai_Unk6f0698.b[1] * 40.0f;
-            x2 = ai_Unk6f0698.b[2] * 40.0f + ai_Unk6f0698.a[2];
-            pa[0] = ai_Unk6f0698.d[0] * 5.0f + x0;
-            pa[1] = ai_Unk6f0698.d[1] * 5.0f + x1;
-            pa[2] = ai_Unk6f0698.d[2] * 5.0f + x2;
-            pb[0] = ai_Unk6f0698.d[0] * -5.0f + x0;
-            pb[1] = ai_Unk6f0698.d[1] * -5.0f + x1;
-            pb[2] = ai_Unk6f0698.d[2] * -5.0f + x2;
-            ai_InitShot(s2, pa, ai_Unk6f0698.b, f, c, ai_Unk5eee08);
-            ai_InitShot(s1, pb, ai_Unk6f0698.b, f, c, ai_Unk5eee08);
-            ai_ScatterShot(s2, u, ai_Unk6f0698.d, u, ai_Unk6f0698.c, v);
-            ai_ScatterShot(s1, u, ai_Unk6f0698.d, u, ai_Unk6f0698.c, v);
-            gv_FireShots(b, p, s2, s1, 0, gv_SalvoCharge(ai_Unk6f0698.kind, ai_Unk6f0698.k, 2), x, cost);
+        if (ai_CannonShot.charge == 2) {
+            x0 = ai_CannonShot.b[0] * 40.0f + ai_CannonShot.a[0];
+            x1 = ai_CannonShot.a[1] + ai_CannonShot.b[1] * 40.0f;
+            x2 = ai_CannonShot.b[2] * 40.0f + ai_CannonShot.a[2];
+            pa[0] = ai_CannonShot.d[0] * 5.0f + x0;
+            pa[1] = ai_CannonShot.d[1] * 5.0f + x1;
+            pa[2] = ai_CannonShot.d[2] * 5.0f + x2;
+            pb[0] = ai_CannonShot.d[0] * -5.0f + x0;
+            pb[1] = ai_CannonShot.d[1] * -5.0f + x1;
+            pb[2] = ai_CannonShot.d[2] * -5.0f + x2;
+            ai_InitShot(s2, pa, ai_CannonShot.b, f, c, ai_IronDensity);
+            ai_InitShot(s1, pb, ai_CannonShot.b, f, c, ai_IronDensity);
+            ai_ScatterShot(s2, u, ai_CannonShot.d, u, ai_CannonShot.c, v);
+            ai_ScatterShot(s1, u, ai_CannonShot.d, u, ai_CannonShot.c, v);
+            gv_FireShots(b, p, s2, s1, 0, gv_SalvoCharge(ai_CannonShot.kind, ai_CannonShot.k, 2), x, cost);
             return 1;
         }
-        if (ai_Unk6f0698.charge == 3) {
-            x0 = ai_Unk6f0698.b[0] * 40.0f + ai_Unk6f0698.a[0];
-            x1 = ai_Unk6f0698.b[1] * 40.0f + ai_Unk6f0698.a[1];
-            x2 = ai_Unk6f0698.b[2] * 40.0f + ai_Unk6f0698.a[2];
-            pc[0] = ai_Unk6f0698.c[0] * 5.0f + x0;
-            pc[1] = ai_Unk6f0698.c[1] * 5.0f + x1;
-            pc[2] = ai_Unk6f0698.c[2] * 5.0f + x2;
-            s = ai_Unk6f0698.c[0] * -3.0f;
-            pa[0] = ai_Unk6f0698.d[0] * 5.0f + x0 + s;
-            pa[1] = ai_Unk6f0698.d[1] * 5.0f + ai_Unk6f0698.c[1] * -3.0f + x1;
-            pa[2] = ai_Unk6f0698.d[2] * 5.0f + ai_Unk6f0698.c[2] * -3.0f + x2;
-            pb[0] = ai_Unk6f0698.d[0] * -5.0f + s + x0;
-            pb[1] = ai_Unk6f0698.d[1] * -5.0f + ai_Unk6f0698.c[1] * -3.0f + x1;
-            pb[2] = ai_Unk6f0698.d[2] * -5.0f + ai_Unk6f0698.c[2] * -3.0f + x2;
-            ai_InitShot(s3, pa, ai_Unk6f0698.b, f, c, ai_Unk5eee08);
-            ai_InitShot(s1, pb, ai_Unk6f0698.b, f, c, ai_Unk5eee08);
-            ai_InitShot(s2, pc, ai_Unk6f0698.b, f, c, ai_Unk5eee08);
-            ai_ScatterShot(s3, u, ai_Unk6f0698.d, u, ai_Unk6f0698.c, v);
-            ai_ScatterShot(s1, u, ai_Unk6f0698.d, u, ai_Unk6f0698.c, v);
-            ai_ScatterShot(s2, u, ai_Unk6f0698.d, u, ai_Unk6f0698.c, v);
-            gv_FireShots(b, p, s3, s1, s2, gv_SalvoCharge(ai_Unk6f0698.kind, ai_Unk6f0698.k, 3), x, cost);
+        if (ai_CannonShot.charge == 3) {
+            x0 = ai_CannonShot.b[0] * 40.0f + ai_CannonShot.a[0];
+            x1 = ai_CannonShot.b[1] * 40.0f + ai_CannonShot.a[1];
+            x2 = ai_CannonShot.b[2] * 40.0f + ai_CannonShot.a[2];
+            pc[0] = ai_CannonShot.c[0] * 5.0f + x0;
+            pc[1] = ai_CannonShot.c[1] * 5.0f + x1;
+            pc[2] = ai_CannonShot.c[2] * 5.0f + x2;
+            s = ai_CannonShot.c[0] * -3.0f;
+            pa[0] = ai_CannonShot.d[0] * 5.0f + x0 + s;
+            pa[1] = ai_CannonShot.d[1] * 5.0f + ai_CannonShot.c[1] * -3.0f + x1;
+            pa[2] = ai_CannonShot.d[2] * 5.0f + ai_CannonShot.c[2] * -3.0f + x2;
+            pb[0] = ai_CannonShot.d[0] * -5.0f + s + x0;
+            pb[1] = ai_CannonShot.d[1] * -5.0f + ai_CannonShot.c[1] * -3.0f + x1;
+            pb[2] = ai_CannonShot.d[2] * -5.0f + ai_CannonShot.c[2] * -3.0f + x2;
+            ai_InitShot(s3, pa, ai_CannonShot.b, f, c, ai_IronDensity);
+            ai_InitShot(s1, pb, ai_CannonShot.b, f, c, ai_IronDensity);
+            ai_InitShot(s2, pc, ai_CannonShot.b, f, c, ai_IronDensity);
+            ai_ScatterShot(s3, u, ai_CannonShot.d, u, ai_CannonShot.c, v);
+            ai_ScatterShot(s1, u, ai_CannonShot.d, u, ai_CannonShot.c, v);
+            ai_ScatterShot(s2, u, ai_CannonShot.d, u, ai_CannonShot.c, v);
+            gv_FireShots(b, p, s3, s1, s2, gv_SalvoCharge(ai_CannonShot.kind, ai_CannonShot.k, 3), x, cost);
             return 1;
         }
     }

@@ -1169,7 +1169,7 @@ void gv_CannonScatter(char *o, float *spread, float *speedSpread)
 }
 /* 0x4ef330, a factor of the object o: 1.0 (1.05 with item 0x259), plus 0.05 with item 0x25b and plus 0.05 with item 0x261 */
 
-float unk_Unk4ef330(char *o)
+float gv_CannonItemFactor(char *o)
 {
     float x;
 
