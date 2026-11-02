@@ -6325,6 +6325,8 @@ char *gm_PlayerSeat(int p)
 int gm_TitleGroup(int n)
 {
     switch (n) {
+    case 0:
+        return 0;
     case 1:
     case 2:
     case 3:
@@ -6420,13 +6422,6 @@ int gm_TitleGroup(int n)
     case 0x50:
     case 0x51:
         return 0xd;
-    case 0x53:
-    case 0x54:
-    case 0x55:
-    case 0x56:
-    case 0x57:
-    case 0x58:
-        return 0xe;
     case 0x59:
     case 0x5a:
     case 0x5b:
@@ -6434,9 +6429,15 @@ int gm_TitleGroup(int n)
     case 0x5d:
     case 0x5e:
         return 0xf;
-    default:
-        return 0;
+    case 0x53:
+    case 0x54:
+    case 0x55:
+    case 0x56:
+    case 0x57:
+    case 0x58:
+        return 0xe;
     }
+    return 0;
 }
 /* 0x504c00, the job group of a job-pair number n (two numbers per group: 1 .. 2 -> 0xb, 3 .. 4 -> 7, ..) */
 
