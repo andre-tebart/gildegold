@@ -3078,19 +3078,19 @@ exe	0x00505840	gm_CureDisease	f3gm	byte	readable
 exe	0x005059d0	gm_CureMinorDisease	f3gm	byte	readable		
 exe	0x00505ad0	gm_CureUpperDisease	f3gm	byte	readable		
 exe	0x00505be0	gm_ShuffledBytes	f3gm	byte	readable		
-exe	0x00505ca0	gm_Shuffled	f3gm	draft	readable		
+exe	0x00505ca0	gm_Shuffled	f3gm	shape	readable		
 exe	0x00505d30	gm_Shuffle	f3gm	byte	readable		
-exe	0x00505da0	gm_RandomAge	f3gm	draft	readable		
+exe	0x00505da0	gm_RandomAge	f3gm	shape	readable		
 exe	0x00505df0	gm_FindChar	f3gm	shape	readable		
 exe	0x00505e30	gm_CharAge	f3gm	byte	draft		
-exe	0x00505e60	gm_CharLevel	f3gm	draft	draft		
-exe	0x00505f30	gm_CharPrevLevel	f3gm	draft	draft		
-exe	0x00506000	gm_BirthDate	f3gm	draft	draft		
-exe	0x005060d0	gm_BirthDate2	f3gm	draft	draft		
-exe	0x00506180	gm_Unk506180	f3gm	draft	draft		
-exe	0x00506430	gm_PlayerRecord	f3gm	draft	draft		
+exe	0x00505e60	gm_CharLevel	f3gm	shape	readable		
+exe	0x00505f30	gm_CharPrevLevel	f3gm	shape	readable		
+exe	0x00506000	gm_BirthDate	f3gm	shape	readable		
+exe	0x005060d0	gm_DeathDate	f3gm	shape	readable		
+exe	0x00506180	gm_RankPlayers	f3gm	shape	readable		
+exe	0x00506430	gm_PlayerRecord	f3gm	shape	readable		
 exe	0x00506480	gm_Unk506480	f3gm	shape	draft		
-exe	0x005064d0	gm_Unk5064d0	f3gm	draft	draft		
+exe	0x005064d0	gm_TakeOverCharacter	f3gm	draft	readable	deep	
 exe	0x00506890	gm_Unk506890	f3gm	draft	draft		
 exe	0x00506e70	gm_Unk506e70	f3gm	draft	draft		
 exe	0x005075c0	gm_MayRemoveChar	f3gm	draft	draft		
@@ -3517,7 +3517,7 @@ exe	0x0053eba0	he_Unk53eba0	he	byte	draft
 exe	0x0053ebe0	he_RemoveGfxInfos	he	byte	draft		
 exe	0x0053ec10	he_ShowObjectInfos	he	byte	readable		
 exe	0x0053ec40	he_Unk53ec40	he	byte	draft		
-exe	0x0053ed40	he_Unk53ed40	he	byte	draft		
+exe	0x0053ed40	he_RecheckPersonEvents	he	byte	draft		
 exe	0x0053ed70	he_Unk53ed70	he	byte	draft		
 exe	0x0053edf0	he_RunQuickList	he	shape	draft		
 exe	0x0053ee40	he_Unk53ee40	he	byte	draft		
@@ -4006,7 +4006,7 @@ exe	0x00578440	ai_TutorialFreeRuns	unk_575860	byte	draft
 exe	0x005784a0	ai_TutorialInitMainIntro	unk_575860	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	unk_575860	byte	readable		
 exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	shape	readable		byte+readable -> shape+readable at 6a2ad59: gv.h's ORDCHAR got the field inventory (+0x178, ai.h AICHAR.inventory) for f3gm's gm_AddObjekt (byte with it): a truer record. ai_TutorialInitChapter2 never uses ORDCHAR; the change only alters the declaration set of unk_575860 and flips a VC6 register tie-break (regs 30 hunks, 6 bytes), so the byte match was no evidence of the original's source [waits for: unk_575860's head settling (ai.h and gv.h both included; its declaration set)]
-exe	0x00579570	ai_TutorialInitChapter3	unk_575860	draft	readable	deep	
+exe	0x00579570	ai_TutorialInitChapter3	unk_575860	shape	readable	deep	
 exe	0x0057aa80	ai_TutorialInitChapter4	unk_575860	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	unk_575860	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	unk_575860	byte	readable		

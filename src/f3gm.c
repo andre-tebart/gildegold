@@ -28,6 +28,9 @@
    definition (read the original's pushes): gm_Liking.
    Open: data: gm_KindObjCount (0x76fdc4) is defined '= 0' as D5 asks, but gm_BuildKindObjects is byte-identical
    only with a tentative definition (or none in this TU): its definition form / owner is unsettled.
+   Open: gm_AssignBuilding is defined with unsigned short master / unsigned own, but its callers' pushes (f3init's
+   init caller, gm_TakeOverCharacter) zero-extend one word for both: int parameters; this unit calls it through the
+   cast gm_AssignBuildingI until the definition and headers are settled.
    Open: gm_TitlePeriodServed writes a GCLOCK through its int *out (he.c, main.c, unk_58bbd0.c declare it so in
    their own prototypes); the typed parameter waits for those units to include f3gm.h.
    unit of rea 8cef7d5b (src/game/f3gm.c); boundaries in decl/text.dcl */
