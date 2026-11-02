@@ -4432,13 +4432,27 @@ int ai_Unk497630(G5CH *p, AIARG *s1)
         return 0;
     return amt_ApplyForOffice(p, s1->ref) ? 10 : 0;
 }
-/* 0x497660, decide: whether a good (o1, kind 2) can be made from what o2 holds (action 11) */
+/* 0x497660, decide of action 11: whether the good o1 (kind 2) can be made where o2 points (a store object, a building by its type's recipe list, or a character) and its owner can pay gm_GoodsPrice (11, else 0)
+   @deep read against 0x497660..0x4979cc: same checks, calls, arguments and constants for the three o2
+   kinds and the rate block. Fixed this session: the rate block's owner is its own variable (original:
+   result in eax, c stays in [esp+0x10]), the duplicate c test dropped, success paths goto rate and fails
+   fall to the one return 0 (330 -> 315 instructions). Tried and reverted: flat early returns (325/334),
+   kind 1's type block with its own return 0 (321), the outer test as an early return (320), the loop as
+   for (..; i < n && k != id; i++) (no change). Left: the return block layout and tail duplication
+   explained in size, the esi zero register, the ebp reload placement; Q2 evidence gaps AIOBJ.unk06 (a link
+   id with three meanings, see ai.c 0x4890..), AIGOODX.unk40 (a goods flag only tested here). (size: 315 vs
+   296 instructions, explained: ours 315 vs 296: three extra copies of the 6-instruction return-0 epilogue
+   (xor eax,eax / pop edi..ecx / ret at ours 0x49776e, 0x49779f, 0x497889) where the original reaches its
+   one block 0x4978ca by conditional jumps; VC6 duplicated the tail at our loop exits because ours reloads
+   obj (mov ebp,[esp+0x20]) only on the found path while the original reloads it at the loop merge point
+   (0x497771 / 0x4977a6 / 0x497873), plus ours caches 0 in esi (xor esi,esi / push esi) where the original
+   pushes 0) */
 
-int ai_Unk497660(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
+int ai_DecideProduceGood(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
 {
     AIOBJ *obj;
     AIBLD *bld;
-    AIPER *c;
+    AIPER *c, *owner;
     AIBTX *t;
     int i, n, v;
     unsigned short k;
@@ -4451,25 +4465,24 @@ int ai_Unk497660(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
             obj = (AIOBJ *)gm_FindObjectInst(o2->ref);
             if (!obj)
                 return 0;
-            if (AI_GOODX[obj->id].type == 2 || AI_GOODX[obj->id].type == 6) {
-                if (!gm_Query(obj->unk14, 1, 0, o1->ref) && (bld = gm_FindBuildingById(obj->unk06)) != 0) {
-                    t = &AI_BTX[bld->type];
-                    n = t->n;
-                    for (i = 0; i < n; i++)
-                        if ((t->k[i] & 0x7fff) == obj->id)
+            if (AI_GOODX[obj->id].type != 2 && AI_GOODX[obj->id].type != 6)
+                goto rate;
+            if (!gm_Query(obj->list, 1, 0, o1->ref) && (bld = gm_FindBuildingById(obj->unk06)) != 0) {
+                t = &AI_BTX[bld->type];
+                n = t->n;
+                for (i = 0; i < n; i++)
+                    if ((t->k[i] & 0x7fff) == obj->id)
+                        break;
+                if (i < n) {
+                    for (i++; i < n; i++)
+                        if ((t->k[i] & 0x7fff) == o1->ref)
                             break;
-                    if (i < n) {
-                        for (i++; i < n; i++)
-                            if ((t->k[i] & 0x7fff) == o1->ref)
-                                break;
-                        if (i < n && (!t->p[i].a || gm_Query(obj->unk14, 1, 0, t->p[i].a))) {
-                            k = t->p[i].b;
-                            if (!k || gm_Query(obj->unk14, 1, 0, k))
-                                goto rate;
-                        }
+                    if (i < n && (!t->p[i].a || gm_Query(obj->list, 1, 0, t->p[i].a))) {
+                        k = t->p[i].b;
+                        if (!k || gm_Query(obj->list, 1, 0, k))
+                            goto rate;
                     }
                 }
-                return 0;
             }
         } else if (o2->kind == 4) {
             bld = gm_FindBuildingById(o2->ref);
@@ -4485,36 +4498,35 @@ int ai_Unk497660(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
                         goto rate;
                 }
             }
-            return 0;
         } else if (o2->kind == 7) {
             c = gm_FindPer(o2->ref);
             if (!c)
                 return 0;
-        } else
-            return 0;
-rate:
-        if (a != 0x39) {
-            if (obj)
-                c = gm_ObjectOwnerChar(obj);
-            else if (bld) {
-                if (bld->owner == 0xffff)
-                    return 0;
-                c = (AIPER *)&ai_CharsT[bld->owner];
-            } else if (!c)
-                return 0;
-            if (!c)
-                return 0;
-            v = gm_CharCurrency(c, ai_OwnPlayer);
-            o1->arg2 = 0;
-        } else {
-            v = o2->arg2;
-            o1->arg2 = 0x39;
+            goto rate;
         }
-        if (o1->fvalue > 0.0f && o1->fvalue < 1.0f)
-            v = (int)(v * o1->fvalue);
-        return v < (int)gm_GoodsPrice(o1->ref, ai_OwnPlayer) ? 0 : 11;
     }
     return 0;
+rate:
+    if (a != 0x39) {
+        if (obj)
+            owner = gm_ObjectOwnerChar(obj);
+        else if (bld) {
+            if (bld->owner == 0xffff)
+                return 0;
+            owner = (AIPER *)&ai_CharsT[bld->owner];
+        } else
+            owner = c;
+        if (!owner)
+            return 0;
+        v = gm_CharCurrency(owner, ai_OwnPlayer);
+        o1->arg2 = 0;
+    } else {
+        v = o2->arg2;
+        o1->arg2 = 0x39;
+    }
+    if (o1->fvalue > 0.0f && o1->fvalue < 1.0f)
+        v = (int)(v * o1->fvalue);
+    return v < (int)gm_GoodsPrice(o1->ref, ai_OwnPlayer) ? 0 : 11;
 }
 /* 0x4979d0, execute of 0x497660: hands the good over (buys it for action 0x39) */
 
@@ -9320,7 +9332,7 @@ int ai_RegisterBaseActions(int a)
     act.id = 0xb;
     strcpy(act.name, "Objekt kaufen");
     act.eval = ai_EvalMoodWeights;
-    act.decide = ai_Unk497660;
+    act.decide = ai_DecideProduceGood;
     act.exec = ai_Unk4979d0;
     act.flags = 0x1;
     if (!am_RegisterMethod(&act, a))

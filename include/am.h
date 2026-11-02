@@ -296,7 +296,7 @@ extern float ai_Unkf84cf4[8];           /* 0xf84cf4, the same scaled by 0x499f20
 #define AI_JOBS1B() ((AIJOBX *)he_FindEvent(1, 0, 0x1b))
 #define AI_JOBNEXT() ((AIJOBX *)he_NextEvent())
 
-int ai_Unk497660(int a, AIPER *p, int b, AIARG *o1, AIARG *o2);                 /* 0x497660 */
+int ai_DecideProduceGood(int a, AIPER *p, int b, AIARG *o1, AIARG *o2);                 /* 0x497660 */
 int ai_Unk4979d0(AIPER *p, AIARG *s1, AIARG *s2);                               /* 0x4979d0 */
 int ai_Unk497af0(int a, AIPER *p, int b, AIARG *o1, AIARG *o2);                 /* 0x497af0 */
 int ai_Unk497c80(AIPER *p, AIARG *s1, AIARG *s2);                               /* 0x497c80 */
