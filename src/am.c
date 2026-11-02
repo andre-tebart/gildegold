@@ -10568,7 +10568,14 @@ int ai_CanBuildType(int a, AIPER *p, int b, AIARG *s1, AIARG *s2, int f)
     return 1;
 }
 /* 0x4a5320, amt_ExecGebaeudeBauen: builds the building type s1->unk04 (kind 5) on the plot s2->unk04 (kind 0xc):
-   finds its model group "gb_<NAME>" (with a "_A" variant), message 0xd with the price, place and group path */
+   finds its model group "gb_<NAME>" (with a "_A" variant), message 0xd with the price, place and group path
+   @deep read against the original: checks, name build, both group-path variants, the found/not-found flow,
+   message fields (to/fromId/arg0 = p->netId, type 0xd, arg1 = s1->ref, flags 2, arg2 = cost),
+   position/angle/path match; fixed the %c char cast, netId field, field order. Left: the original
+   duplicates the epilogue at both early returns (je over pop ebp/xor eax,eax/pop ebx/add esp,0x400/ret at
+   +0x10 and +0x27, ours jne to the shared one), and schedules the ai_Time struct copy with an early add
+   esp,0xc of sprintf's args (ours defers it to add esp,0x28); tried success-block-inside-loop layout,
+   assignment orders, TMX/NOWX copy: no change */
 
 int ai_ExecBuildBuilding(AIPER *p, AIARG *s1, AIARG *s2)
 {
@@ -10589,30 +10596,30 @@ int ai_ExecBuildBuilding(AIPER *p, AIARG *s1, AIARG *s2)
     alt = 0;
     for (;;) {
         if (alt)
-            sprintf(path, "%sgebaeude/*%s_%c.ogr", ai_DataPath, name, alt + '@');
+            sprintf(path, "%sgebaeude/*%s_%c.ogr", ai_DataPath, name, (char)(alt + '@'));
         else
             sprintf(path, "%sgebaeude/*%s.ogr", ai_DataPath, name);
-        if (vfs_GetPath(path, vfs_Root, vfs_Root, found) != 0)
-            break;
-        if (alt) {
-            sprintf(name, "amt_ExecGebaeudeBauen(): Keine Group f\xfcr %s gefunden", ai_BTypesT[s1->ref].pad001);
-            return 0;
+        if (vfs_GetPath(path, vfs_Root, vfs_Root, found) != 0) {
+            sprintf((char *)&m + 0x9c, "%s", path);
+            m.time = ai_TimeT;
+            m.to = p->netId;
+            m.fromId = p->netId;
+            m.arg[0] = p->netId;
+            m.type = 0xd;
+            m.arg[1] = s1->ref;
+            m.flags = 2;
+            m.arg[2] = gm_BuildingKindCost(p, s1->ref);
+            ai_ObjectPosition((char *)&m + 0x80, plot);
+            ai_ObjectAngle((char *)&m + 0x90, plot);
+            cm_SendLongMessage(&m);
+            return 1;
         }
+        if (alt)
+            break;
         alt = 1;
     }
-    sprintf((char *)&m + 0x9c, "%s", path);
-    m.time = ai_TimeT;
-    m.to = *(int *)((unsigned char *)p + 4);
-    m.arg[1] = s1->ref;
-    m.type = 0xd;
-    m.flags = 2;
-    m.fromId = m.to;
-    m.arg[0] = m.to;
-    m.arg[2] = gm_BuildingKindCost(p, m.arg[1]);
-    ai_ObjectPosition((char *)&m + 0x80, plot);
-    ai_ObjectAngle((char *)&m + 0x90, plot);
-    cm_SendLongMessage(&m);
-    return 1;
+    sprintf(name, "amt_ExecGebaeudeBauen(): Keine Group f\xfcr %s gefunden", ai_BTypesT[s1->ref].pad001);
+    return 0;
 }
 /* 0x4a5540: the first good of building type b->type that b's store does not hold yet while it holds both of its
    two ingredients (slot 0x40 + 2i, 0x41 + 2i); goods of kind 2 / 6 need a free cart (list 4) or one carrying it.
