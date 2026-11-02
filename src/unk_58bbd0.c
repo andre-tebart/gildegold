@@ -10604,7 +10604,7 @@ void ai_Unk5a23a0(int param_1, int param_2)
     sv_MessageBox(buf, 0);
 }
 
-void gm_Unk50b1e0(unsigned *ids, int *sc); int ai_AmountRowStatus(); int ai_Unk5be720(); void ai_Unk5bd1f0();
+void gm_Unk50b1e0(unsigned *ids, int *sc); int ai_AmountRowStatus(); int ai_DrawAmountRow(); void ai_Unk5bd1f0();
 int d2_RemoveWindowObjects();
 
 /* 0x5a28f0, the church top-5 window "Locations\Kirche\Top5" (620 B, Ghidra-missed start: the tail call of
@@ -10659,7 +10659,7 @@ void ai_Top5Window(void)
             y = 0x34;
             for (i = 0; i < 5; i++, y += 0x4c) {
                 ai_AmountRowStatus((int *)&rec[i]);
-                ai_Unk5be720(half - w - 0x87, y - 8, U_I((unsigned)&d2_LastWindow), (int *)&rec[i]);
+                ai_DrawAmountRow(half - w - 0x87, y - 8, U_I((unsigned)&d2_LastWindow), (int *)&rec[i]);
                 if (rec[i] == 0)
                     strcpy(buf, (char *)U_I((unsigned)&txt_NoRelative));
                 else
@@ -16792,7 +16792,7 @@ int ai_AmountRow(int param_1, int param_2, int param_3, int param_4, int *param_
    four texts, the 0x46a960 slider (0x442) with 0x50c550, the 0x6d3 page mark of the winner +0x210, the
    window list +0x4c / +0x1c0 / +0x2e8 and the icon 0x54 of the kinds 5 / 6 / 7 at x - 0x20 */
 
-int ai_Unk5be720(int param_1, int param_2, int param_3, int *param_4)
+int ai_DrawAmountRow(int param_1, int param_2, int param_3, int *param_4)
 {
     int ix, kind;
     char *chr;
@@ -18763,7 +18763,7 @@ void ai_FamilyTreeWindow(int param_1, unsigned char param_2, int param_3, int pa
     ai_CampaignStep(6, 0, 1, 0);
 }
 
-void gm_BirthDate(char *c, unsigned *out); int gm_BirthDate2(); float gm_CharAge(); int gm_GetGoodsValue();
+void gm_BirthDate(char *c, unsigned *out); int gm_BirthDate2(); int gm_GetGoodsValue();
 void ai_ShowMissions(int owner); int ai_Unk5cf260(); int ai_Unk5cf4f0(); int ai_Unk5c6050();
 
 /* 0x5c5310, the player info panel "panel_info_spieler" 0x62d3e0 (4544 B, ROUGH SKELETON): the window

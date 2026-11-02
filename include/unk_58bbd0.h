@@ -126,6 +126,7 @@ void ai_FamilyTreeWindow(int param_1, unsigned char param_2, int param_3, int pa
 void ai_Unk5a8cb0(unsigned short *param_1, char *param_2);  /* 0x5a8cb0 */
 int ai_AmountRow(int param_1, int param_2, int param_3, int param_4, int *param_5, int param_6);  /* 0x5be3b0 */
 int ai_AmountRowStatus(int *param_1);  /* 0x5be1d0 */
+int ai_DrawAmountRow(int x, int y, int win, int *row);  /* 0x5be720, draws the amount row row at (x, y) of the window win */
 void ai_GameFrame(void);  /* 0x591520 */
 void ai_Unk58feb0(int obj, int target);  /* 0x58feb0 */
 void ai_Unk5a8c50(unsigned short *param_1, char *param_2, int param_3, int param_4);  /* 0x5a8c50 */

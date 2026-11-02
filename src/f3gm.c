@@ -1942,7 +1942,7 @@ unsigned short gm_Unk507690(int type, int a2, int a3, int a4, unsigned char *a5,
 int gm_Unk503f30();                     /* 0x503f30 */
 int gm_Unk503f50();                     /* 0x503f50 */
 int gm_Opinion(int a, int b);                     /* 0x50c520 */
-float gm_CharAge();                   /* 0x505e30 */
+float gm_CharAge(unsigned short id);  /* 0x505e30 */
 void * mem_Alloc(int size, char *tag);                   /* 0x4223c0 */
 void mem_Free(void *p);                    /* 0x422620 */
 
@@ -6719,9 +6719,9 @@ short *gm_FindChar(int id)
 }
 /* 0x505e30, the age (word +10) of the character with the number id as a float */
 
-float gm_CharAge(unsigned id)
+float gm_CharAge(unsigned short id)
 {
-    return (float)*(unsigned short *)(ai_Chars[id & 0xffff] + 10);
+    return (float)*(unsigned short *)(ai_Chars[id] + 10);
 }
 /* 0x505e60, the level of the character id (0 for a free slot or an inactive one, 1 when 0x4e6f80 has no entry for its job byte +0x166): the record's byte + 1; below the maximum 10 and with no flag it is raised to the level of the master (+0x1a0, 0x505df0, once) when that is higher */
 

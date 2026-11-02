@@ -2892,7 +2892,7 @@ void he_Unk5471e0(int ev, unsigned short *p2, unsigned short *p3)
 void amt_ChangeDistrictOpinion();
 int amt_FindOffice();
 int ai_AmountRowStatus();
-int ai_Unk5be720();
+int ai_DrawAmountRow();
 struct SBSAMPLE * sb_PlaySample();
 int gm_FindById();
 int cm_SendMessage3d(char *p, unsigned char b, int c, int d);
@@ -2966,7 +2966,7 @@ void he_Unk547430(int ev)
         d2_SetForm(*(int *)(*(int *)(ev + 0x74) + 8), 2);
         arg = ebx;
         if (ai_AmountRowStatus(&arg) != 0) {
-            ai_Unk5be720(*(short *)(U_I((unsigned)&d2_LastWindowPtr) + 8) / 2 - 0x28, 0, U_I((unsigned)&d2_LastWindow), out);
+            ai_DrawAmountRow(*(short *)(U_I((unsigned)&d2_LastWindowPtr) + 8) / 2 - 0x28, 0, U_I((unsigned)&d2_LastWindow), out);
             id = out[1];
             *(int *)(U_I((unsigned)&d2_Objs) + id * 0x2ec + 0x4c) = 1;
             *(int *)(U_I((unsigned)&d2_Objs) + id * 0x2ec + 0x1c0) = 3;

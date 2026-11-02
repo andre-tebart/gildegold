@@ -10314,60 +10314,119 @@ int ai_OpenUpgradeTooltip(int idx)
     return view;
 }
 
-float gm_CharAge(); int ai_AmountRowStatus(); int ai_Unk5be720(); short * gm_FindChar(int id); int gm_TitlesLeft();
+int ai_AmountRowStatus(); int ai_DrawAmountRow(); short * gm_FindChar(int id); int gm_TitlesLeft();
 
-/* 0x588c60, the drag window of a character (1111 B, ROUGH SKELETON: the window, every call and the text ids are
-   on the disassembly; the branch details around them are summarised): ch = the character record (+0 the word,
-   +2 the kind, +0xd a byte, +0x164 / +0x166 / +0x169 bytes). The window 0x62a9f8 with 0x475600, the section 1,
-   the text 0x62a9ec (the word), the section 4, the record {ch} in 0x5be1d0 and, when it answers, 0x5be720 (0xa6,
-   5, U_I (0x6ed938), the line); the section 2, the kind != 0x14 -> 0x505e30 (the word) -> int in 0x515960
-   (0x2b). The flags: the word 0x3000 (ebx), the bytes +0x164 / +0x166 / +0x169, the texts 0x2d / 0x2c (the mask
-   0x5f + 0x130 + the byte), 0x2f / 0x30 / 0x31 / 0x32 / 0x33 / 0x34 / 0x35 (0x62a9e4) / 0x41, the kind lists
-   0x53e400 / 0x53e300, 0x505df0 (ch) and 0x505df0 (ch + 0x68), 0x62a9d8, 0x62a9e4; the line 0x62a56c
-   (0x5176d0), 0x473650, 0x52eb50 (0x64, 0x4df) and 0x576040; the sections via 0x475f70; the window */
+/* 0x588c60, opens the tooltip view of the character ch: the form "ToolTip\ToolTip_Personen", centred; section 1
+   the name, section 4 the character's amount row (ai_AmountRowStatus, drawn by ai_DrawAmountRow when it
+   answers), section 2 the age (not for the kind 0x14), the title (text 0x2c with gm_TitlesLeft) and the rank /
+   offices (text 0x2d: the rank of the status bits 0x200 .. 0x2000 of +0x1cc, the offices officeKind /
+   secondOffice), the bits 0x3000 clear: the line 0x37 (+0x00d) and the partner (text 0x2f: the spouse
+   relatives[0] alive 0x30, a pair event 0x41 for it 0x31, else 0x32); the worth (0x2e), the byte +0x00c
+   (text 0x33), the bits 0x3000 clear: the children relatives[3 .. 7] (text 0x34, none 0x35); section 3 the
+   five skill bars (sv_DrawBalanceBar, texts 0x16b7 ..); then ai_CampaignStep (7, ch); returns the view */
 int ai_OpenCharTooltip(char *ch)
 {
+    int view;
+    int row[14];                        /* an amount row (unk_5d33b0.c GYPSYROW): row[0] the character */
     char line[0x100];
-    char *w;
-    int win;
-    int v;
+    AICHAR *c;
+    AICHAR *p;
+    AIJOB *ev;
+    int rank;
+    int any;
+    int i;
 
-    win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62a9f8);
-    w = (char *)win;
-    d2_CentreViewWindows(win);
+    c = (AICHAR *)ch;
+    view = d2_OpenForm(0, 0, "ToolTip\\ToolTip_Personen");
+    d2_CentreViewWindows(view);
     d2_SetForm(0, 1);
-    io_PrintText((unsigned)&full_data_62a9ec, *(unsigned short *)ch);
+    io_PrintText("$Z$[%1N3$]", c->id);
     d2_SetForm(0, 4);
-    *(char **)line = ch;
-    if (ai_AmountRowStatus(line) != 0)
-        ai_Unk5be720(0xa6, 5, U_I((unsigned)&d2_LastWindow), line);
+    row[0] = (int)c;
+    if (ai_AmountRowStatus(row) != 0)
+        ai_DrawAmountRow(0xa6, 5, d2_LastWindow, row);
     d2_SetForm(0, 2);
-    if (*(unsigned char *)(ch + 2) != 0x14)
-        io_PrintText(0x2b, (int)*(float *)&U_I(((unsigned)&ai_Unk5ee160 + 0x7e8)));
-    /* ROUGH: the flags ebx = 0x3000, the bytes +0x164 / +0x166 / +0x169 and the texts 0x2d (the mask 0x5f + 0x130
-       + the byte +0x164), 0x2c (both branches), 0x2f / 0x30 / 0x31 (0x505df0 (ch) on the byte), 0x32 / 0x41
-       (0x53e400 / 0x53e300), 0x33 / 0x34 / 0x35 (0x62a9e4) / 0x62a9d8 (0x505df0 (ch + 0x68)) */
-    io_PrintText(0x2d);
-    io_PrintText(0x2c, 0);
-    if (gm_FindChar(ch) != 0)
-        io_PrintText(0x2f);
-    else
-        io_PrintText(0x32);
-    io_PrintText(0x33);
-    io_PrintText(0x34);
-    io_PrintText(0x35, (char *)(unsigned)&full_data_62a9e4);
-    if (he_FindEvent(2, 0, 0x41) != 0) {
-        while (he_NextEvent() != 0)
-            ;
+    if (c->kind != 0x14)
+        io_PrintText(0x2b, (int)gm_CharAge(c->id));
+    if (c->officeKind == 0 && c->secondOffice == 0 && (c->flags1cc & 0xe00) == 0) {
+        if ((c->flags1cc & 0x3000) != 0) {
+            if (c->flags1cc & 0x1000)
+                rank = 0x26;
+            else if (c->flags1cc & 0x2000)
+                rank = 0x27;
+            else if (c->flags1cc & 0x800)
+                rank = 0x25;
+            else if (c->flags1cc & 0x400)
+                rank = 0x24;
+            else
+                rank = (c->flags1cc & 0x200) ? 0x23 : 0;
+            io_PrintText(0x2d);
+            io_PrintText("$3>%s$A", (c->sex ? 0x27b : 0x253) + rank);
+            io_PrintText(cm_TextNewline);
+        } else {
+            io_PrintText(0x2c, (c->sex ? 0x18f : 0x130) + c->jobId, gm_TitlesLeft(c->jobId));
+        }
+    } else {
+        if (c->flags1cc & 0x1000)
+            rank = 0x26;
+        else if (c->flags1cc & 0x2000)
+            rank = 0x27;
+        else if (c->flags1cc & 0x800)
+            rank = 0x25;
+        else if (c->flags1cc & 0x400)
+            rank = 0x24;
+        else
+            rank = (c->flags1cc & 0x200) ? 0x23 : 0;
+        io_PrintText(0x2c, (c->sex ? 0x18f : 0x130) + c->jobId, gm_TitlesLeft(c->jobId));
+        io_PrintText(0x2d);
+        if (c->flags1cc & 0xe00)
+            io_PrintText("$3>%s$A", (c->sex ? 0x27b : 0x253) + rank);
+        if (c->officeKind != 0)
+            io_PrintText("$3>%s$A", (c->sex ? 0x27b : 0x253) + c->officeKind);
+        if (c->secondOffice != 0)
+            io_PrintText("$3>%s$A", (c->sex ? 0x27b : 0x253) + c->secondOffice);
     }
-    txt_Format(line, (char *)(unsigned)&full_data_62a56c, 0);
-    d2_CreateWinText(0, 0, line, U_I((unsigned)&d2_LastWindow));
-    sv_DrawBalanceBar(0x64, 0x4df);
-    ai_CampaignStep(7, ch, 0, 0);
+    if ((c->flags1cc & 0x3000) == 0)
+        io_PrintText(0x37, (c->sex ? 0x11e : 0x114) + c->b00d);
+    io_PrintText(0x2e, gm_GetWorth(c->id));
+    if ((c->flags1cc & 0x3000) == 0) {
+        io_PrintText(0x2f);
+        p = (AICHAR *)gm_FindChar(c->relatives[0]);
+        if (p != 0 && p->health > 0) {
+            io_PrintText(0x30, p->id);
+        } else {
+            for (ev = (AIJOB *)he_FindEvent(1, 0, 0x41); ev != 0; ev = (AIJOB *)he_NextEvent()) {
+                if (ev->partner1 == c->netId)
+                    break;
+            }
+            if (ev != 0 && (p = (AICHAR *)gm_FindChar(ev->partner2)) != 0)
+                io_PrintText(0x31, p->id);
+            else
+                io_PrintText(0x32);
+        }
+    }
+    io_PrintText(0x33, c->b00c + 0x486);
+    if ((c->flags1cc & 0x3000) == 0) {
+        any = 0;
+        io_PrintText(0x34);
+        for (i = 0; i < 5; i++) {
+            p = (AICHAR *)gm_FindChar(c->relatives[3 + i]);
+            if (p != 0) {
+                io_PrintText("$3>%1N1$A", p->id);
+                any = 1;
+            }
+        }
+        if (any == 0)
+            io_PrintText("$3>%s$A", 0x35);
+    }
     d2_SetForm(0, 3);
-    (void)w;
-    (void)v;
-    return win;
+    for (i = 0; i < 5; i++) {
+        txt_Format(line, (int)"%s:", i + 0x16b7);
+        d2_CreateWinText(0, i * 15, line, d2_LastWindow);
+        sv_DrawBalanceBar(0x64, i * 15 + 2, ch, i, 0x4df);
+    }
+    ai_CampaignStep(7, (int)ch, 0, 0);
+    return view;
 }
 /* 0x5890c0, the drag window of a character of a lower kind (823 B, ROUGH SKELETON: the window, every call and
    the text ids are on the disassembly, the branch details around them are summarised): ch = the character
@@ -10399,7 +10458,7 @@ int ai_Unk5890c0(char *ch)
     memset(rec, 0, 0x38);
     *(char **)rec = ch;
     if (ai_AmountRowStatus(rec) != 0)
-        ai_Unk5be720(0xa6, 5, U_I((unsigned)&d2_LastWindow), line);
+        ai_DrawAmountRow(0xa6, 5, U_I((unsigned)&d2_LastWindow), line);
     d2_SetForm(0, 2);
     if (*(unsigned char *)(ch + 2) != 0x14)
         io_PrintText(0x2b, (int)*(float *)&U_I(((unsigned)&ai_Unk5ee160 + 0x7e8)));

@@ -244,7 +244,7 @@ typedef struct AICHAR {                 /* 0x21c bytes, ai_Chars[768] */
     unsigned char health;               /* 0x008, 100 at creation (ahm.c), > 0 = alive (0x4adff0 'lives') */
     unsigned char sex;                  /* 0x009, 0 / non-0 (reasoned: 0x4a8ad0 asks the partner search for flags 0xf00502 / 0xf00501 by it, the other sex) */
     unsigned short w00a;                /* 0x00a, 0x10 for a raised dead person (gv_RaiseDead), a value of the order for the alchemist (ahm_CreateAlchemist) */
-    char pad00c;
+    unsigned char b00c;                 /* 0x00c, a kind the person tooltip names (text 0x486 + it, ai_OpenCharTooltip) */
     unsigned char b00d;                 /* 0x00d, 1 .. 2 (gv: kept in a grave as GVGRAVE.v30) */
     char pad00e[2];
     float f010;                         /* 0x010, start values set by the character creators (ahm_CreateAlchemist, gv_RaiseDead) */
