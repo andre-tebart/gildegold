@@ -8568,7 +8568,7 @@ void ai_GraveFogWindow(AIBLD *rec)
     cfg.option4c = 0x727;
     target = (AIBLD *)ai_MapPick(1, &cfg, txt_Ptrs[0x40b6], 0, 0);
     if (target != 0) {
-        win = d2_OpenForm(0, 0, "Locations\Friedhof\Fog");
+        win = d2_OpenForm(0, 0, "Locations\\Friedhof\\Fog");
         d2_SetPointerSprite(0, 0);
         d2_CentreViewWindows(win);
         d2_SetForm(win, 0);
