@@ -1198,27 +1198,23 @@ int ai_QueryDefault(int *args)
         return 0;
     return 1;
 }
-/* 0x576500, a callback predicate: the kinds 0x19 / 0x1a with a building whose table byte is 0xf; the kind 0x19
-   matches when the step word p[3] is 0x10e, the kind 0x1a when the building word 0x6f2310 is 0x10e; a missing
-   pointer or another kind answers p[0] != 0x1b. 0x576583 nop, the next start at 0x576590 */
+/* 0x576500, a run record's query callback for the building type kind 0xf: the event 0x19 on such a building is
+   allowed only with the argument 0x10e, the event 0x1a on it is refused while the panel shows the room 0x10e;
+   the event 0x1b is refused, everything else allowed */
 
-int ai_Unk576500(int *p)
+int ai_QueryBuilding0f(int *args)
 {
-    int kind;
-
-    if (p[0] == 0x19 && p[1]) {
-        kind = *(unsigned char *)p[1];
-        if (*(unsigned char *)(*(char **)(unsigned)&ai_BTypes + kind * 0x24d) != 0xf)
-            return 0;
-        return p[3] == 0x10e;
-    }
-    if (p[0] == 0x1a && p[1]) {
-        kind = *(unsigned char *)p[1];
-        if (*(unsigned char *)(*(char **)(unsigned)&ai_BTypes + kind * 0x24d) != 0xf)
+    if (args[0] == 0x19 && args[1]) {
+        if (((AIBTYPE *)ai_BTypes)[((AIBLD *)args[1])->type].kind == 0xf && args[3] == 0x10e)
             return 1;
-        return *(unsigned short *)(unsigned)&sv_PanelShown != 0x10e;
+        return 0;
     }
-    return p[0] != 0x1b;
+    if (args[0] == 0x1a && args[1]) {
+        if (((AIBTYPE *)ai_BTypes)[((AIBLD *)args[1])->type].kind == 0xf && *sv_PanelShown == 0x10e)
+            return 0;
+        return 1;
+    }
+    return args[0] != 0x1b;
 }
 /* 0x576590, the kind 0x19 with a building whose table byte is 0xf and the step word p[3] 0x110 */
 
@@ -2896,7 +2892,7 @@ int ai_Unk578e40(void)
     U_I(r + 0x30) = 0xd5;
     U_I(r + 0x34) = (unsigned)&ai_Unk5768a0;
     U_I(r + 0x38) = (unsigned)&ai_Unk5768d0;
-    U_I(r + 0x3c) = (unsigned)&ai_Unk576500;
+    U_I(r + 0x3c) = (unsigned)&ai_QueryBuilding0f;
     U_I(r + 0x44) = 0x2148;
     U_I(r + 0x48) = 0xb;
     U_I(r + 0x68) = 0x5837;

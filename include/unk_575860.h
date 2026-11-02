@@ -89,7 +89,7 @@ int ai_Unk576410(int mask);             /* 0x576410, run mask +0x6c */
 int ai_Unk576460(void);                 /* 0x576460, mode 2 / state 5 query */
 int ai_Unk576490(int *p);               /* 0x576490, step callback predicate */
 int ai_QueryDefault(int *p);               /* 0x5764b0, step callback predicate */
-int ai_Unk576500(int *p);               /* 0x576500, step callback predicate */
+int ai_QueryBuilding0f(int *p);               /* 0x576500, step callback predicate */
 int ai_Unk576590(int *p);               /* 0x576590, step callback predicate */
 int ai_Unk5765e0(int *p);               /* 0x5765e0, step callback predicate */
 int ai_Unk576600(int *p);               /* 0x576600, step callback predicate */
