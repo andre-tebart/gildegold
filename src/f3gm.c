@@ -6057,19 +6057,19 @@ int gm_FirstTitleNumber(int x)
 
 int gm_TitleNumberGroup(int n)
 {
-    if (0 < n && n < 7)
+    if (n >= 1 && n <= 6)
         return 7;
-    if (0x27 < n && n < 0x2e)
+    if (n >= 0x28 && n <= 0x2d)
         return 7;
-    if (0x22 < n && n < 0x28)
+    if (n >= 0x23 && n <= 0x27)
         return 2;
-    if (0x2d < n && n < 0x34)
+    if (n >= 0x2e && n <= 0x33)
         return 3;
-    if (0x39 < n && n < 0x40)
+    if (n >= 0x3a && n <= 0x3f)
         return 4;
-    if (0x3f < n && n < 0x46)
+    if (n >= 0x40 && n <= 0x45)
         return 5;
-    if (0xc < n && n < 7)
+    if (n >= 0xd && n <= 6)     /* never true: the original's range is empty */
         return 6;
     return 0;
 }
