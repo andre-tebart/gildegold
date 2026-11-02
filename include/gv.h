@@ -399,7 +399,7 @@ extern unsigned short ai_PlayerId;     /* 0x6f25b8 */
 int gv_RetireCrimesOf(int p, int n);        /* 0x4f3a30 */
 int gv_RetireCrimeIds(int p, int n, int *ids);  /* 0x4f3b40 */
 
-int gv_RankRecordOwners(int *ids, int *cnt, unsigned short t);/* 0x4f3c50 */
+int gv_RankCulprits(int *ids, int *cnt, unsigned short t);/* 0x4f3c50 */
 
 int unk_Unk4f3dd0(int *ids, int *c1, int *c2, unsigned t);  /* 0x4f3dd0 */
 

@@ -697,3 +697,4 @@
 2026-11-02T05:04:10 0x004f39e0 func unk_Unk4f39e0 -> gv_CulpritGuilt by:main why:sums AIDEC.+0xc of the laws broken by c's open crimes; the indulgence window (ai_IndulgenceWindow) prices with it
 2026-11-02T05:04:52 0x004f3a30 func unk_Unk4f3a30 -> gv_RetireCrimesOf by:main why:retires up to n open crimes of the culprit via cm_SendRetireCrime and tells the evidence holders
 2026-11-02T05:05:18 0x004f3b40 data unk_Unk4f3b40 -> gv_RetireCrimeIds by:main why:as gv_RetireCrimesOf for a list of crime ids (cm_SendRetireCrime each)
+2026-11-02T05:06:43 0x004f3c50 func gv_RankRecordOwners -> gv_RankCulprits by:main why:ranks the culprits of the open crimes the character holds evidence of (ai_Evidence)

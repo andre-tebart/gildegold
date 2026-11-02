@@ -3772,68 +3772,64 @@ int gv_RetireCrimeIds(int culprit, int n, int *ids)
     }
     return cnt;
 }
-/* 0x4f3c50, the owners of the records that the character slot t holds (pairs in 0x91b6e0, record in state 1): counts how often each owner (+0x16) occurs and keeps the 32 best in ids[] / cnt[] sorted by count (descending, one
-   insertion pass per owner); ids is first -1, cnt 0; returns the number of different owners (at most 0x20). ROUGH */
+/* 0x4f3c50, the culprits of the open crimes (state 1) the character t holds evidence of (ai_Evidence): counts the crimes
+   per culprit and keeps the 32 most frequent in ids[] / cnt[], sorted by count (descending, one insertion pass per
+   culprit); ids is first -1, cnt 0; returns the number of different culprits (at most 0x20)
+   @deep read whole function against the original: all statements reconciled (init, memset of the culprit
+   list, evidence walk with gv_FindCrime, count + insertion pass); only the register of n++ differs: ours
+   'mov ecx,[esp+0x10]; inc ecx; mov [esp+0x10],ecx' before 'mov ecx,1' (c), the original's uses ebp and
+   stores after 'mov ecx,1' (0x4f3d15..0x4f3d27); statement orders tried (n++ before/after culprits[i]=-1 /
+   c=1), this one is closest */
 
-int gv_RankRecordOwners(int *ids, int *cnt, unsigned short t)
+int gv_RankCulprits(int *ids, int *cnt, unsigned short t)
 {
-    int local[512];
-    int n, i, k, c, j, own, id, x;
-    int *q, *w, *p;
+    int culprits[0x200];
+    int n, m, i, k, c, own, hi, x;
+    ORDCHAR *ch;
 
     n = 0;
     for (i = 0; i < 0x20; i++) {
         ids[i] = -1;
         cnt[i] = 0;
     }
-    for (i = 0; i < 0x200; i++)
-        local[i] = -1;
-    q = (int *)(unk_Tab91b6e0 + 4);
-    w = local;
-    id = *(int *)(ai_Chars[t & 0xffff] + 4);
-    do {
-        if (q[-1] == id) {
-            k = gv_FindCrime(*q);
-            if (k != -1 && *(int *)(gv_Graveyard + 0x25 + k * 0x2d) == 1) {
-                *w = *(int *)(gv_Graveyard + 0x16 + k * 0x2d);
-                w++;
-            }
+    memset(culprits, 0xff, sizeof(culprits));
+    m = 0;
+    ch = &ORD_CHARS[t];
+    for (i = 0; i < 0x800; i++) {
+        if (ai_Evidence[i][0] == ch->netId) {
+            k = gv_FindCrime(ai_Evidence[i][1]);
+            if (k != -1 && gv_CrimesT[k].state == 1)
+                culprits[m++] = gv_CrimesT[k].culprit;
         }
-        q += 2;
-    } while ((int)q < ((unsigned)unk_Tab91b6e0 + 0x4004));
-    p = local;
-    j = 1;
-    do {
-        own = *p;
+    }
+    for (i = 0; i < 0x200; i++) {
+        own = culprits[i];
         if (own != -1) {
-            *p = -1;
             n++;
+            culprits[i] = -1;
             c = 1;
-            for (i = j; i < 0x200; i++) {
-                if (local[i] == own) {
+            for (k = i + 1; k < 0x200; k++) {
+                if (culprits[k] == own) {
                     c++;
-                    local[i] = -1;
+                    culprits[k] = -1;
                 }
             }
-            if (cnt[0x1f] < c) {
+            if (c > cnt[0x1f]) {
                 cnt[0x1f] = c;
                 ids[0x1f] = own;
             }
-            for (i = 0x1f, q = cnt + 0x1e; i > 0; i--, q--) {
-                x = q[1];
-                if (*q < x) {
-                    k = ids[i];
-                    ids[i] = ids[i - 1];
-                    q[1] = *q;
-                    ids[i - 1] = k;
-                    *q = x;
+            for (k = 0x1f; k > 0; k--) {
+                hi = cnt[k];
+                if (hi > cnt[k - 1]) {
+                    x = ids[k];
+                    ids[k] = ids[k - 1];
+                    cnt[k] = cnt[k - 1];
+                    ids[k - 1] = x;
+                    cnt[k - 1] = hi;
                 }
             }
         }
-        p++;
-        i = j < 0x200;
-        j++;
-    } while (i);
+    }
     if (n > 0x20)
         n = 0x20;
     return n;

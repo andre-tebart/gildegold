@@ -1206,7 +1206,7 @@ int ai_EvalGraveCount(int a, AIPER *p, int c, AIARG *m)
     m->arg2 = k;
     return 1;
 }
-/* 0x4a9080, decide callback: one of the owners p counts most often (gv_RankRecordOwners, at least 2..5 times),
+/* 0x4a9080, decide callback: one of the owners p counts most often (gv_RankCulprits, at least 2..5 times),
    walked from the first, that is a living character (not of kind 15) and holds none of the office kinds
    13 / 27 / 15 / 21, into m (kind 7, its netId); none when p itself holds office kind 13 */
 
@@ -1220,7 +1220,7 @@ int ai_DecideAcquaintance(int a, AICHAR *p, int c, int d, AIARG *m)
 
     lim = util_RandomU(4) + 2;
     if (p->officeKind != 13) {
-        n = gv_RankRecordOwners(ids, cnt, p->id);
+        n = gv_RankCulprits(ids, cnt, p->id);
         if (n != 0) {
             i = 0;
             j = n;
@@ -1289,7 +1289,7 @@ int ai_DecideCloseAcquaintance(int a, AICHAR *p, int c, int d, AIARG *m)
 
     lim = util_RandomU(8) + 5;
     if (p->officeKind != 13) {
-        n = gv_RankRecordOwners(ids, cnt, p->id);
+        n = gv_RankCulprits(ids, cnt, p->id);
         if (n > 0) {
             i = 0;
             j = n;
@@ -1313,7 +1313,7 @@ int ai_DecideCloseAcquaintance(int a, AICHAR *p, int c, int d, AIARG *m)
     return 0;
 }
 /* 0x4a9350, decide callback: p (money >= 2, not flagged 0x100) picks an owner it counts at least 4 times
-   (gv_RankRecordOwners) not flagged 0x200 whose office kind has a level of 4 or more, into m (kind 7) */
+   (gv_RankCulprits) not flagged 0x200 whose office kind has a level of 4 or more, into m (kind 7) */
 
 int ai_DecideOfficeAcquaintance(int a, AICHAR *p, int c, int d, AIARG *m)
 {
@@ -1324,7 +1324,7 @@ int ai_DecideOfficeAcquaintance(int a, AICHAR *p, int c, int d, AIARG *m)
     AICHAR *o;
 
     if (p->money >= 2 && (p->flags1c8 & 0x100) == 0) {
-        n = gv_RankRecordOwners(ids, cnt, p->id);
+        n = gv_RankCulprits(ids, cnt, p->id);
         if (n > 0) {
             i = 0;
             j = n;
@@ -1907,7 +1907,7 @@ int ai_DecideLittleKnownChar(AICHAR *p, AIARG *in, AIARG *m)
     unsigned int i;
     AICHAR *o;
 
-    if (p->money >= 2 && (n = gv_RankRecordOwners(ids, cnt, p->id)) != 0) {
+    if (p->money >= 2 && (n = gv_RankCulprits(ids, cnt, p->id)) != 0) {
         i = util_RandomU(n);
         j = n;
         do {
