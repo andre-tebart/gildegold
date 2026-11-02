@@ -136,7 +136,7 @@ extern unsigned char ai_TimeHour;
 #include "sv_types.h"
 extern SVWEATHER sv_Weather;  /* 0x760488, sv.c (he.c does not include sv.h yet) */
 extern GAPDATA full_data_627b0c[];
-extern char ai_Unk61aa38[24];
+extern char gm_TagGebaeudePROT[24];
 extern GAPDATA full_data_627b20[];
 extern char ch_EmptyName[1];
 extern float gm_DayStartHours[];
@@ -12433,7 +12433,7 @@ void he_Unk565940(int ev)
             if (own != 0) {
                 if (*(char *)(own + 2) == 6 || *(char *)(own + 2) == 7) {
                     txt_Format(text, 0x17e6, o, *(unsigned short *)r);
-                    he_MessageBoxQuickjump(*(int *)(own + 4), -1, text, 0, 0x5ec, *(int *)(o + 1), -1, 0, ((unsigned)&ai_Unk61aa38 + 0x12c));
+                    he_MessageBoxQuickjump(*(int *)(own + 4), -1, text, 0, 0x5ec, *(int *)(o + 1), -1, 0, ((unsigned)&gm_TagGebaeudePROT + 0x12c));
                 }
                 cm_SendMoveGoods(*(int *)(own + 4), -1, U_I((unsigned)&ai_OwnPlayer), *(int *)(ev + 0xbc));
             }
