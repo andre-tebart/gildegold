@@ -6413,23 +6413,15 @@ void sv_FitForm(int f)
 
 void sv_ValueBar(int x, int y, int value, int k)
 {
-    unsigned n, odd;
-    int w, i;
+    int n, odd, w, i;
 
-    w = *(short *)(SV_I((unsigned)&d2_Pics) + 0x50 + k * 0x54) + 2;
+    w = d2_Pics[k].w + 2;
     n = (int)(value / 21.0f);
-    odd = n & 0x80000001;
-    if ((int)odd < 0)
-        odd = (odd - 1 | 0xfffffffe) + 1;
-    i = 0;
-    if (0 < (int)n / 2) {
-        do {
-            d2_WinOpenPic(w * i + x, y, k, SV_I((unsigned)&d2_LastWindow));
-            i++;
-        } while (i < (int)n / 2);
-    }
+    odd = n % 2;
+    for (i = 0; i < n / 2; i++)
+        d2_WinOpenPic(i * w + x, y, k, d2_LastWindow);
     if (odd != 0)
-        d2_WinOpenPic(w * i + x, y, k + 1, SV_I((unsigned)&d2_LastWindow));
+        d2_WinOpenPic(i * w + x, y, k + 1, d2_LastWindow);
 }
 /* 0x52eb50, draws the two-sided bar (current value 0x504e00 (a, b) against the byte at b + 0x80 + a): equal (within 1 %) a single bar, the picture k (+1 for an odd tile), smaller / larger the base bar
    in k and the difference in k + 2 / k + 3 or k + 4 / k + 5 (the float operands deciding the tile counts are lost in the pseudocode: n = placeholders); ROUGH */
