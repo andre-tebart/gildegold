@@ -961,3 +961,5 @@
 2026-11-02T11:08:31 0x004eaa00 data amt_Unk4eaa00 -> amt_AnnounceOfficeFree by:main why:finds the office of the kind k in amt_Table and sends amt_SendOfficeMessage (idx, 0, 0, 3, 0xff): its own comment, announces the office as free
 2026-11-02T11:09:43 0x00577690 func ai_Unk577690 -> ai_HookChapter5Step6 by:main why:the run hook (+0x34) of the run record FTInitChapter5Step6 (id c5s6)
 2026-11-02T11:11:01 0x00577850 func ai_Unk577850 -> ai_TutorialClearRunWindow by:main why:prints $C (clear) into the controls 1 and 2 of the run window (the tutorial host's event slot window); -4 without it
+2026-11-02T11:18:39 0x00577cd0 func ai_Unk577cd0 -> ai_TutorialOpenProgress by:main why:0x577cd0 opens the 'tutorial\progress' form and its 400 wide slider into the state record +0x68/+0x6c; 0x577d60 closes that form and resets +0x68 to -1; ai_TutorialProgressSlider calls them
+2026-11-02T11:18:39 0x00577d60 func ai_Unk577d60 -> ai_TutorialCloseProgress by:main why:0x577cd0 opens the 'tutorial\progress' form and its 400 wide slider into the state record +0x68/+0x6c; 0x577d60 closes that form and resets +0x68 to -1; ai_TutorialProgressSlider calls them

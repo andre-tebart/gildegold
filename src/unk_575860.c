@@ -2198,7 +2198,7 @@ void ai_TutorialHideText2(void)
    S+0x6c = 0x46a960 (x, 5, 400, 0, 400, 0x75, 0x42, d2_LastWindow), x = the short +0 of the window record
    0xf8f128 + i * 0x3c4 (i = d2_LastWindow) / 2 - 200 (centered on the 400 wide slider) */
 
-void ai_Unk577cd0(void)
+void ai_TutorialOpenProgress(void)
 {
     int i;
 
@@ -2212,7 +2212,7 @@ void ai_Unk577cd0(void)
 /* 0x577d60, releases the tutorial progress form S+0x68 (36 B, a Ghidra-missed start after 0x577cd0's nop fill):
    nothing while the id is -1; else 0x4758f0 (id) and the id reset to -1 */
 
-void ai_Unk577d60(void)
+void ai_TutorialCloseProgress(void)
 {
     if (U_I(S + 0x68) != -1) {
         d2_CloseView(U_I(S + 0x68));
@@ -2220,32 +2220,37 @@ void ai_Unk577d60(void)
     }
 }
 
-#define TDIFF (U_I((unsigned)&ai_ClockMs) - *(int *)(st + 0xc))
-#define MINU(a, b) ((unsigned)(a) < (unsigned)(b) ? (a) : (b))
 
-/* 0x577d90, the tutorial progress slider (179 B, the state 0xa only): the state record, else 0x577d60 (the form
-   released); the progress form created when S+0x68 is -1 (0x577cd0); the slider S+0x6c set by 0x475cb0 (id, 0,
-   400, value) with value = (total - min(total, the clock 0x6333cc - S+0xc)) / total * 400.0f */
+#define TUT_SINCE(at) (ai_ClockMsVolatile - (at) ? ai_ClockMsVolatile - (at) : 0)
+#define MINU(a, b) ((a) < (b) ? (a) : (b))
+/* 0x577d90, updates the tutorial progress slider of the state 0xa: without a run record or in another state the
+   progress form is released (ai_TutorialCloseProgress); else the form is opened when it is not, and its slider set to the
+   part of the run's tailTime still left since stepAt, scaled to 0 .. 400
+   @deep read whole function against 0x577d90..0x577e43: calls, constants (400, 1, 0/0x190), the
+   double-evaluated TUT_SINCE/MINU macros with the volatile clock and the signed fild/fidiv all match.
+   Left: eax/ecx swapped (--regs eax=ecx,ecx=eax clears it) and the slot use at the float conversion: the
+   original stores a dead 0 to [esp+8] (577dfa mov dword ptr [esp+8],0), then reuses one slot for left and
+   total (577e06 mov [esp+8],edx; fild; 577e0e mov [esp+8],ecx; fidiv [esp+8]), ours keeps two slots (mov
+   [esp+8],ecx / mov [esp+4],ecx; fidiv [esp+0xc]). Tried: (float)(int)(__int64), __int64 local, unsigned
+   total, (float)total, multiply-first, inline expression: the dead store never appears (qword forms grow
+   the frame to 0xc) */
+
 void ai_TutorialProgressSlider(void)
 {
-    char *st;
-    char *r;
+    unsigned int t;
     int total;
-    int t;
+    int left;
 
-    st = S;
-    r = *(char **)(st + 0x18);
-    if (!r || U_I(st) != 0xa) {
-        ai_Unk577d60();
+    if (!ai_Tutorial->run || ai_Tutorial->state != 0xa) {
+        ai_TutorialCloseProgress();
         return;
     }
-    if (U_I(st + 0x68) == -1) {
-        ai_Unk577cd0();
-        st = S;
-    }
-    total = *(int *)(*(char **)(st + 0x18) + 0x44);
-    t = MINU(TDIFF ? TDIFF : 0, total);
-    d2_SetObjValue(U_I(st + 0x6c), 0, 0x190, (int)((float)(total - t) / (float)total * 400.0f));
+    if (ai_Tutorial->progressForm == -1)
+        ai_TutorialOpenProgress();
+    t = MINU(TUT_SINCE(ai_Tutorial->stepAt), ai_Tutorial->run->tailTime);
+    total = ai_Tutorial->run->tailTime;
+    left = total - t;
+    d2_SetObjValue(ai_Tutorial->progressSlider, 0, 400, (int)((float)left / total * 400.0f), 1);
 }
 /* 0x577e50, the tutorial chapter form (632 B): r = S+0x18; -4 without it; the step S+0x40 against the step
    count r+0x50 (unsigned): done -> the callback r+0x54, the form S+0x48 released (0x4758f0), S+0x4c = -1,

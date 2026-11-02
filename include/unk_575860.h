@@ -74,6 +74,9 @@ typedef struct TUTSTATE {               /* the tutorial state record (0x6fa060, 
     int markerPhase;                    /* 0x58 */
     int markerAt;                       /* 0x5c */
     int markerObj;                      /* 0x60, -1 = none */
+    int unk64;                          /* 0x64 */
+    int progressForm;                   /* 0x68, the progress form of the state 0xa (ai_TutorialOpenProgress), -1 = none */
+    int progressSlider;                 /* 0x6c, its slider */
 } TUTSTATE;
 
 void ai_GypsyHelperWindow(char *b);     /* 0x584d70, the helpers window of a building (HANDEL_SUCHEN form), opened by the gypsy production contact */
@@ -138,8 +141,8 @@ void ai_TutorialShowText(void);                /* 0x577a90, rewrites the text wi
 void ai_TutorialHideText(void);                /* 0x577b60, clears the text window */
 void ai_TutorialShowText2(void);                /* 0x577b90, rewrites the second text window */
 void ai_TutorialHideText2(void);                /* 0x577c60, clears the second text window */
-void ai_Unk577cd0(void);                /* 0x577cd0, creates the progress form "tutorial\progress" */
-void ai_Unk577d60(void);                /* 0x577d60, releases the progress form */
+void ai_TutorialOpenProgress(void);                /* 0x577cd0, creates the progress form "tutorial\progress" */
+void ai_TutorialCloseProgress(void);                /* 0x577d60, releases the progress form */
 void ai_TutorialProgressSlider(void);                /* 0x577d90, the progress slider (state 0xa) */
 int ai_TutorialStepForm(void);                 /* 0x577e50, the tutorial chapter form */
 int ai_TutorialStepClicked(void);                 /* 0x5780e0, the control predicate on S+0x4c */
