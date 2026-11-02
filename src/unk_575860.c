@@ -31,8 +31,8 @@
    Open: the alchemist windows ai_AlchemistWindow / ai_AlchemistResearchWindow are @deep (allocation); their buttons call
    ai_AlchemistFundWindow / ai_AlchemistRescheduleWindow with (obj, record), the record parameter unread.
    Open: type debt - the graveyard detail window record GVDETAILWIN and the seance result GVSEANCE (0x58 bytes)
-   are typed in the seance functions (ai_SeanceWindow .. ai_SeancePick); ai_Unk583b70 / ai_RentGraveDetail /
-   ai_Unk586610 still take int *w, and ai_Unk586610 declares its out as int[2] although ai_SeanceWindow writes
+   are typed in the seance functions (ai_SeanceWindow .. ai_SeancePick); ai_GraveDetailOpen / ai_RentGraveDetail /
+   ai_GraveSeance still take int *w, and ai_GraveSeance declares its out as int[2] although ai_SeanceWindow writes
    the whole GVSEANCE into it (the original's object is 0x58 bytes).
    Open: not included yet (dcp headers conflicts unk_575860 HEADER): d2.h gfx.h sv.h; held by own declarations that
    differ from the owner's: d2_CreateWinText; calls whose argument count differs from the definition (read the
@@ -7651,7 +7651,7 @@ void ai_GraveWindow(GVPICK *out, AIBLD *rec, char *title, int flag, void (*cb)(A
     } while (sv_RunFrame(ai_GraveWindow, 0x677c7) != 0);
     d2_CloseView(w[0]);
 }
-/* 0x583700, the detail of the grave in the rent-a-grave window (ai_Unk583b70): w = its window list (0 the window,
+/* 0x583700, the detail of the grave in the rent-a-grave window (ai_GraveDetailOpen): w = its window list (0 the window,
    2 the detail list's window, 4 its font, 7 .. 9 the grave (entry, size, index as in GVPICK), 0xa the items
    (GVITEM)). As ai_GraveDetail without the selection: the used graves of the entry become the items, the rest
    is cleared; sections 2 / 3 / 5 get "$C" and the scroll buttons; per item, one window height apart, the frame
@@ -7760,7 +7760,7 @@ void ai_RentGraveDetail(int *w)
    (0, 0) / 0x475600, the sound 0x52ea30, the texts 0x62a578 ("%C Z %s", title) and 0x602568, the sections
    1 / 2 / 3 / 5 / 4 (0x6ed938 kept in w[1] / w[2] / w[4] / w[5] / w[6]), then 0x583700 (w); 1 */
 
-int ai_Unk583b70(int *w, char *title)
+int ai_GraveDetailOpen(int *w, char *title)
 {
     int win;
 
@@ -8025,7 +8025,7 @@ int ai_GraveMoveWindow(char *rec, int a, unsigned char b)
         }
     }
 }
-/* 0x584410, the two buttons of the grave detail window (ai_Unk583b70 fills w: 0 the window, 6 the button
+/* 0x584410, the two buttons of the grave detail window (ai_GraveDetailOpen fills w: 0 the window, 6 the button
    section, 7 the selected entry record, 8 / 9 the grave's size and entry) and its pump: the buttons txt 0x4118
    (ai_GraveFreeConfirm on the grave) and 0x4119 (ai_GraveMoveWindow, the move to another size; disabled when the entry is
    already of size 3), each run with the window disabled and closing it when it answers 1; a right click
@@ -8627,7 +8627,7 @@ void ai_GraveFogWindow(AIBLD *rec)
     }
     sv_CameraFollow();
 }
-/* the window record of the graveyard detail windows (ai_Unk583b70, ai_RentGraveDetail, ai_SeancePick: int[0x23]) */
+/* the window record of the graveyard detail windows (ai_GraveDetailOpen, ai_RentGraveDetail, ai_SeancePick: int[0x23]) */
 typedef struct GVDETAILWIN {
     int win;                    /* 0x00, the form */
     int sections[6];            /* 0x04, the d2_LastWindow of its sections */
@@ -9077,52 +9077,53 @@ int ai_SeancePick(char *rec, GVDETAILWIN *w, GVSEANCE *out)
 
 void gm_SendMoneyDelta(int a, int b);
 
-/* 0x586610, the graveyard seance (419 B): rec = the record (+0x65 the state record). 0x4ef7c0 (the character,
-   rec, 0, 0x4ef740, 0xff) the grave entry -> none: 0x521150 (U_I (0x144a514), 0) and out. The window record w:
-   its +0x1c the entry, +0x20 its id, +0x24 the 0x4ef6b0 flag, the text 0x4107 (the name 0x5eecd0[id]);
-   0x583b70 (w, U_I (0x144a4f0)) opens the detail window -> 0: 0x52d7a0 (). 0x586560 (rec, w, out) the selection;
-   0x4758f0 (w[0]). When a choice: 0x4c4a60 (the character + 4, 0x1cc, 4, 0x800000, 0); out[1] -> 0x50cc50 (the
-   character, -out[1]); out[0] 1 -> 0x585cb0 (rec, out), 2 -> 0x586200 (rec, out), 3 -> 0x585f30 (rec, out);
-   0x52d7a0 () */
-void ai_Unk586610(char *rec)
+#define SEANCE_HELD 0x800000  /* the bit of AICHAR flags1cc a seance sets (cm_SendSetField(id, 0x1cc, 4, bit, 0)); the name is a reasoned guess */
+/* 0x586610, the graveyard seance (the contact ai_Unk5876a0): rec = the graveyard. The player's character's grave
+   entry (gv_FindEntry with gv_EntrySameId); none: the message box txt 0x40d5 and out. Else the detail window
+   record gets the entry, its size and its index in that list, the line txt 0x4107 (the size's name; formatted,
+   not shown) and the detail window opens with the title txt 0x40cc; the pick of the dead person
+   (ai_SeancePick) fills the seance choice. A seance chosen: the player's character gets the flag 0x800000 of
+   flags1cc (cm_SendSetField), its price is taken off (gm_SendMoneyDelta), then the kind runs: 1 the ghost, 2 the
+   gift, 3 the sacrifice. The camera follows again */
+void ai_GraveSeance(AIBLD *rec)
 {
-    int w[0x23];
-    int out[2];
+    GVSEANCE out;
+    GVDETAILWIN w;
     char line[0x100];
-    int *p;
+    GVENTRY *e;
 
-    p = (int *)gv_FindEntry((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, rec, 0, (char *)(unsigned)&gv_EntrySameId, 0xff);
-    if (p == 0) {
-        sv_MessageBox((char *)U_I((unsigned)&full_data_144a514), 0);
-        return;
-    }
-    w[7] = (int)p;
-    w[8] = *p;
-    *(unsigned char *)((char *)w + 0x24) = gv_EntryIndex(U_I(rec + 0x65), p);
-    txt_Format(line, (char *)0x4107, U_I(((unsigned)&sv_PhaseMinutes + 0x218) + *p * 4));
-    if (ai_Unk583b70(w, (char *)U_I((unsigned)&full_data_144a4f0)) == 0) {
-        sv_CameraFollow();
-        return;
-    }
-    p = (int *)ai_SeancePick(rec, w, out);
-    d2_CloseView(w[0]);
-    if (p != 0) {
-        cm_SendSetField(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c), 0x1cc, 4, ((unsigned)&ai_Relations + 0x1aca0), 0);
-        if (out[1] != 0)
-            gm_SendMoneyDelta(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c), -out[1]);
-        if (out[0] == 1)
-            ai_SeanceGhost(rec, (char *)out);
-        else if (out[0] == 2) {
-            ai_SeanceGift(rec, (char *)out);
-            sv_CameraFollow();
-            return;
-        } else if (out[0] == 3) {
-            ai_SeanceSacrifice(rec, (char *)out);
+    e = (GVENTRY *)gv_FindEntry(ai_Chars[ai_PlayerId], (unsigned char *)rec, 0, gv_EntrySameId, 0xff);
+    if (e != 0) {
+        w.entry = e;
+        w.size = e->size;
+        w.index = gv_EntryIndex((char *)rec->yard, (int *)e);
+        txt_Format(line, 0x4107, ai_GraveNames[e->size]);
+        if (ai_GraveDetailOpen((int *)&w, txt_Ptrs[0x40cc]) == 0) {
             sv_CameraFollow();
             return;
         }
+        e = (GVENTRY *)ai_SeancePick((char *)rec, &w, &out);
+        d2_CloseView(w.win);
+        if (e != 0) {
+            cm_SendSetField(((AICHAR *)ai_Chars[ai_PlayerId])->netId, 0x1cc, 4, SEANCE_HELD, 0);
+            if (out.cost != 0)
+                gm_SendMoneyDelta(((AICHAR *)ai_Chars[ai_PlayerId])->netId, -out.cost);
+            switch (out.kind) {
+            case 1:
+                ai_SeanceGhost(rec, &out);
+                break;
+            case 2:
+                ai_SeanceGift(rec, &out);
+                break;
+            case 3:
+                ai_SeanceSacrifice(rec, &out);
+                break;
+            }
+        }
+        sv_CameraFollow();
+    } else {
+        sv_MessageBox(txt_Ptrs[0x40d5], 0);
     }
-    sv_CameraFollow();
 }
 
 void ai_EndCharExtra(char *ch, int f); int cm_SendRelations(int a, int b, int c, int d); int sv_Unk52b490();
@@ -9504,7 +9505,7 @@ void ai_Unk5871e0(char *rec)
     w[8] = *p;
     *(unsigned char *)((char *)w + 0x24) = gv_EntryIndex(U_I(rec + 0x65), p);
     txt_Format(line, (char *)0x4107, U_I(((unsigned)&sv_PhaseMinutes + 0x218) + *p * 4));
-    if (ai_Unk583b70(w, line) == 0)
+    if (ai_GraveDetailOpen(w, line) == 0)
         return;
     ai_GraveDetailButtons(rec, w);
     d2_CloseView(w[0]);
@@ -9657,7 +9658,7 @@ void ai_Unk5876a0(char *rec)
     while (sv_RunFrame(ai_Unk5876a0, 0x67fff) != 0) {
         c = sv_RegisterNamePlate((char *)(unsigned)&full_data_62a83c, U_I((unsigned)&full_data_144a764), 0x16);
         if (U_I((unsigned)&ai_ClickedObject) != 0 && U_I((unsigned)&ai_ClickedObject) == c)
-            ai_Unk586610(rec);
+            ai_GraveSeance((AIBLD *)rec);
     }
 }
 /* 0x587700, the graveyard grave-detail message (269 B): rec / ch the character / sel the picked line (1 / 2 / 4).
