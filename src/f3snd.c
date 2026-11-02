@@ -1138,7 +1138,7 @@ void snd_PlayFavourComment(void)
     snd_PlayVoice(-5, snd_VoiceBankOrders, "MITTLERE_GUNST", -1);
 }
 /* 0x4c2f30, a comment about the player's favour from the selected character of the party record a (a random
-   variation r, 3 when the first check is clear): "SCHLECHTE_GUNST" / "MITTLERE_GUNST" / "GUTE_GUNST" by
+   variation r, 3 when the first check is clear): "_SCHLECHTE_GUNST" / "_MITTLERE_GUNST" / "_GUTE_GUNST" by
    favour / 33. x is volatile because the original reloads it from its slot before every use (matching trick,
    do not clean).
    @deep 14 code hunks, one scheduling cluster only: the whole original 0x4c2f30..0x4c30df read against the source; ours differs only in the position of the pop esi (ours right after the two out calls, the original after the level test at 0x4c2fea), which shifts the esp offsets of out[1] and x by 4 in that one block; the next 102 instructions are equal. Meaning fixes done in this session: out is a 0xb8-byte unsigned array (the 0xbc frame: x at R-0xbc, out at R-0xb8), r is a 32-bit unsigned (the original's mov bp,ax + and ebp,0xffff), x is volatile (the original stores it to its slot and reloads it at every use - a matching trick, not cleaned), and the special-kind / generic calls are one ternary so that the compiler emits the original's single shared test tail. Readability debt: Q1 name, Q2 gm_BuildingGoodsList / gm_Unk5099e0 / gm_Liking, Q4 the four raw casts (the party record +0x34 / +0x200 and the character +0x16c). */
@@ -1167,19 +1167,19 @@ void ai_FavourComment(char *a)
     }
     if (level == 0) {
         if (x)
-            snd_PlayVoice((unsigned short)*c, snd_VoiceBankGreeting, "SCHLECHTE_GUNST", 3);
+            snd_PlayVoice((unsigned short)*c, snd_VoiceBankGreeting, "_SCHLECHTE_GUNST", 3);
         else
-            snd_PlayVoice((unsigned short)*c, snd_VoiceBankGreeting, "SCHLECHTE_GUNST", r);
+            snd_PlayVoice((unsigned short)*c, snd_VoiceBankGreeting, "_SCHLECHTE_GUNST", r);
     } else if (level == 1) {
         if (x)
-            snd_PlayVoice((unsigned short)*c, snd_VoiceBankGreeting, "MITTLERE_GUNST", 3);
+            snd_PlayVoice((unsigned short)*c, snd_VoiceBankGreeting, "_MITTLERE_GUNST", 3);
         else
-            snd_PlayVoice((unsigned short)*c, snd_VoiceBankGreeting, "MITTLERE_GUNST", r);
+            snd_PlayVoice((unsigned short)*c, snd_VoiceBankGreeting, "_MITTLERE_GUNST", r);
     } else if (level >= 2) {
         if (x)
-            snd_PlayVoice((unsigned short)*c, snd_VoiceBankGreeting, "GUTE_GUNST", 3);
+            snd_PlayVoice((unsigned short)*c, snd_VoiceBankGreeting, "_GUTE_GUNST", 3);
         else
-            snd_PlayVoice((unsigned short)*c, snd_VoiceBankGreeting, "GUTE_GUNST", r);
+            snd_PlayVoice((unsigned short)*c, snd_VoiceBankGreeting, "_GUTE_GUNST", r);
     }
 }
 /* 0x4c30e0, starts the market ambience ("Athmo_Marktplatz_Mono_4Bit") at the market building's object:
