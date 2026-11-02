@@ -1,4 +1,4 @@
-/* The weather record of sv.c (SVWEATHER, sv_Weather) and the speech bubble record (SVBUBBLE) for the units that declare it without the rest of sv.h:
+/* The weather record of sv.c (SVWEATHER, sv_Weather), the rubber band (SVBAND) and the speech bubble record (SVBUBBLE) for the units that declare it without the rest of sv.h:
    types only. sv.h includes it. */
 #ifndef SV_TYPES_H
 #define SV_TYPES_H
@@ -14,6 +14,11 @@ typedef struct SVWEATHER {              /* 0x188 bytes at 0x760488: the day's we
     float windX[24];                    /* +0x0c8, the wind direction of the hour: sin of the angle */
     float windY[24];                    /* +0x128, cos of the angle */
 } SVWEATHER;
+
+typedef struct SVBAND {                 /* 0x10 bytes at 0x760444: the rubber band selection (sv_StartBand / sv_UpdateBand) */
+    int x0, y0;                         /* +0x00, the corner where the band started (the mouse at the start, clamped to d3_Viewport) */
+    int x1, y1;                         /* +0x08, the corner at the mouse (not ordered against x0 / y0) */
+} SVBAND;
 
 typedef struct SVBUBBLE {               /* 0x10c bytes, a speech bubble over a character (sv_Bubbles) */
     int text;                           /* +0x000, the d2_Strings id shown when name is empty */

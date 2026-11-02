@@ -333,6 +333,7 @@ extern float sv_ViewPos[4];                                 /* 0x75fb80, the sto
 extern float sv_ViewRot[4];                                 /* 0x75fb90, its rotation */
 extern float sv_SkyScale;                                  /* 0x760420 */
 extern int sv_BandActive;                                    /* 0x760440 */
+extern SVBAND sv_Band;                                       /* 0x760444 */
 extern int sv_ClickedBuilding;                               /* 0x760458 */
 extern int sv_ClickedItem;                                   /* 0x76045c */
 extern int sv_ClickedChar;                                   /* 0x760460 */

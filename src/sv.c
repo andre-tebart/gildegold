@@ -135,10 +135,6 @@ extern int d2_TextDrawnW;
 extern void *d2_ScreenSurf;  /* 0x6ed924 */
 extern float d3s_QuadUV[6];
 extern struct D2PIC *d2_Pics;
-extern GAPDATA full_data_760444[];
-extern GAPDATA full_data_760448[];
-extern GAPDATA full_data_76044c[];
-extern GAPDATA full_data_760450[];
 extern int ai_SceneChars[32];
 extern GAPDATA full_data_6f23f0[];
 extern GAPDATA full_data_75ec40[];
@@ -6485,19 +6481,19 @@ void sv_StartBand(void)
     m = SV_I((unsigned)&d3_Viewport);
     if (m <= mx)
         m = mx;
-    SV_I((unsigned)&full_data_760444) = SV_I(((unsigned)&d3_Viewport + 0x8)) - 1;
-    if (m < SV_I(((unsigned)&d3_Viewport + 0x8)) - 1 && (SV_I((unsigned)&full_data_760444) = mx, mx < SV_I((unsigned)&d3_Viewport)))
-        SV_I((unsigned)&full_data_760444) = SV_I((unsigned)&d3_Viewport);
+    sv_Band.x0 = SV_I(((unsigned)&d3_Viewport + 0x8)) - 1;
+    if (m < SV_I(((unsigned)&d3_Viewport + 0x8)) - 1 && (sv_Band.x0 = mx, mx < SV_I((unsigned)&d3_Viewport)))
+        sv_Band.x0 = SV_I((unsigned)&d3_Viewport);
     my = SV_S(((unsigned)&dm_L + 0x2));
     m = SV_I(((unsigned)&d3_Viewport + 0x4));
     if (m <= my)
         m = my;
-    SV_I((unsigned)&full_data_760448) = SV_I(((unsigned)&d3_Viewport + 0xc)) - 1;
-    if (m < SV_I((unsigned)&full_data_760448) && (SV_I((unsigned)&full_data_760448) = my, my < SV_I(((unsigned)&d3_Viewport + 0x4))))
-        SV_I((unsigned)&full_data_760448) = SV_I(((unsigned)&d3_Viewport + 0x4));
-    SV_I((unsigned)&full_data_76044c) = SV_I((unsigned)&full_data_760444);
+    sv_Band.y0 = SV_I(((unsigned)&d3_Viewport + 0xc)) - 1;
+    if (m < sv_Band.y0 && (sv_Band.y0 = my, my < SV_I(((unsigned)&d3_Viewport + 0x4))))
+        sv_Band.y0 = SV_I(((unsigned)&d3_Viewport + 0x4));
+    sv_Band.x1 = sv_Band.x0;
     SV_I((unsigned)&sv_BandActive) = 1;
-    SV_I((unsigned)&full_data_760450) = SV_I((unsigned)&full_data_760448);
+    sv_Band.y1 = sv_Band.y0;
 }
 /* 0x52eed0, ends the rubber band selection */
 
@@ -6518,28 +6514,28 @@ void sv_Unk52eee0(void)
         m = SV_I((unsigned)&d3_Viewport);
         if (m <= mx)
             m = mx;
-        SV_I((unsigned)&full_data_76044c) = SV_I(((unsigned)&d3_Viewport + 0x8)) - 1;
-        if (m < SV_I(((unsigned)&d3_Viewport + 0x8)) - 1 && (SV_I((unsigned)&full_data_76044c) = mx, mx < SV_I((unsigned)&d3_Viewport)))
-            SV_I((unsigned)&full_data_76044c) = SV_I((unsigned)&d3_Viewport);
+        sv_Band.x1 = SV_I(((unsigned)&d3_Viewport + 0x8)) - 1;
+        if (m < SV_I(((unsigned)&d3_Viewport + 0x8)) - 1 && (sv_Band.x1 = mx, mx < SV_I((unsigned)&d3_Viewport)))
+            sv_Band.x1 = SV_I((unsigned)&d3_Viewport);
         my = SV_S(((unsigned)&dm_L + 0x2));
         m = SV_I(((unsigned)&d3_Viewport + 0x4));
         if (m <= my)
             m = my;
-        SV_I((unsigned)&full_data_760450) = SV_I(((unsigned)&d3_Viewport + 0xc)) - 1;
-        if (m < SV_I(((unsigned)&d3_Viewport + 0xc)) - 1 && (SV_I((unsigned)&full_data_760450) = SV_I(((unsigned)&d3_Viewport + 0x4)), SV_I(((unsigned)&d3_Viewport + 0x4)) <= my))
-            SV_I((unsigned)&full_data_760450) = my;
-        x0 = SV_I((unsigned)&full_data_760444);
-        if (SV_I((unsigned)&full_data_76044c) <= SV_I((unsigned)&full_data_760444))
-            x0 = SV_I((unsigned)&full_data_76044c);
-        y0 = SV_I((unsigned)&full_data_760448);
-        if (SV_I((unsigned)&full_data_760450) <= SV_I((unsigned)&full_data_760448))
-            y0 = SV_I((unsigned)&full_data_760450);
-        x1 = SV_I((unsigned)&full_data_760444);
-        if (SV_I((unsigned)&full_data_760444) <= SV_I((unsigned)&full_data_76044c))
-            x1 = SV_I((unsigned)&full_data_76044c);
-        y1 = SV_I((unsigned)&full_data_760448);
-        if (SV_I((unsigned)&full_data_760448) <= SV_I((unsigned)&full_data_760450))
-            y1 = SV_I((unsigned)&full_data_760450);
+        sv_Band.y1 = SV_I(((unsigned)&d3_Viewport + 0xc)) - 1;
+        if (m < SV_I(((unsigned)&d3_Viewport + 0xc)) - 1 && (sv_Band.y1 = SV_I(((unsigned)&d3_Viewport + 0x4)), SV_I(((unsigned)&d3_Viewport + 0x4)) <= my))
+            sv_Band.y1 = my;
+        x0 = sv_Band.x0;
+        if (sv_Band.x1 <= sv_Band.x0)
+            x0 = sv_Band.x1;
+        y0 = sv_Band.y0;
+        if (sv_Band.y1 <= sv_Band.y0)
+            y0 = sv_Band.y1;
+        x1 = sv_Band.x0;
+        if (sv_Band.x0 <= sv_Band.x1)
+            x1 = sv_Band.x1;
+        y1 = sv_Band.y0;
+        if (sv_Band.y0 <= sv_Band.y1)
+            y1 = sv_Band.y1;
         p = (int *)(unsigned)&ai_SceneChars;
         do {
             c = *p;
@@ -6570,28 +6566,28 @@ void sv_Unk52f0d0(void)
         m = SV_I((unsigned)&d3_Viewport);
         if (m <= mx)
             m = mx;
-        SV_I((unsigned)&full_data_76044c) = SV_I(((unsigned)&d3_Viewport + 0x8)) - 1;
-        if (m < SV_I(((unsigned)&d3_Viewport + 0x8)) - 1 && (SV_I((unsigned)&full_data_76044c) = mx, mx < SV_I((unsigned)&d3_Viewport)))
-            SV_I((unsigned)&full_data_76044c) = SV_I((unsigned)&d3_Viewport);
+        sv_Band.x1 = SV_I(((unsigned)&d3_Viewport + 0x8)) - 1;
+        if (m < SV_I(((unsigned)&d3_Viewport + 0x8)) - 1 && (sv_Band.x1 = mx, mx < SV_I((unsigned)&d3_Viewport)))
+            sv_Band.x1 = SV_I((unsigned)&d3_Viewport);
         my = SV_S(((unsigned)&dm_L + 0x2));
         m = SV_I(((unsigned)&d3_Viewport + 0x4));
         if (m <= my)
             m = my;
-        SV_I((unsigned)&full_data_760450) = SV_I(((unsigned)&d3_Viewport + 0xc)) - 1;
-        if (m < SV_I(((unsigned)&d3_Viewport + 0xc)) - 1 && (SV_I((unsigned)&full_data_760450) = SV_I(((unsigned)&d3_Viewport + 0x4)), SV_I(((unsigned)&d3_Viewport + 0x4)) <= my))
-            SV_I((unsigned)&full_data_760450) = my;
-        x0 = SV_I((unsigned)&full_data_760444);
-        if (SV_I((unsigned)&full_data_76044c) <= SV_I((unsigned)&full_data_760444))
-            x0 = SV_I((unsigned)&full_data_76044c);
-        y0 = SV_I((unsigned)&full_data_760448);
-        if (SV_I((unsigned)&full_data_760450) <= SV_I((unsigned)&full_data_760448))
-            y0 = SV_I((unsigned)&full_data_760450);
-        x1 = SV_I((unsigned)&full_data_760444);
-        if (SV_I((unsigned)&full_data_760444) <= SV_I((unsigned)&full_data_76044c))
-            x1 = SV_I((unsigned)&full_data_76044c);
-        y1 = SV_I((unsigned)&full_data_760448);
-        if (SV_I((unsigned)&full_data_760448) <= SV_I((unsigned)&full_data_760450))
-            y1 = SV_I((unsigned)&full_data_760450);
+        sv_Band.y1 = SV_I(((unsigned)&d3_Viewport + 0xc)) - 1;
+        if (m < SV_I(((unsigned)&d3_Viewport + 0xc)) - 1 && (sv_Band.y1 = SV_I(((unsigned)&d3_Viewport + 0x4)), SV_I(((unsigned)&d3_Viewport + 0x4)) <= my))
+            sv_Band.y1 = my;
+        x0 = sv_Band.x0;
+        if (sv_Band.x1 <= sv_Band.x0)
+            x0 = sv_Band.x1;
+        y0 = sv_Band.y0;
+        if (sv_Band.y1 <= sv_Band.y0)
+            y0 = sv_Band.y1;
+        x1 = sv_Band.x0;
+        if (sv_Band.x0 <= sv_Band.x1)
+            x1 = sv_Band.x1;
+        y1 = sv_Band.y0;
+        if (sv_Band.y0 <= sv_Band.y1)
+            y1 = sv_Band.y1;
         p = (int *)(unsigned)&ai_SceneChars;
         do {
             c = *p;
@@ -6631,10 +6627,10 @@ void sv_Unk52fa00(int *book);
 void sv_Unk52f2c0(void)
 {
     if (SV_I((unsigned)&sv_BandActive) != 0) {
-        dd_Line(SV_I((unsigned)&full_data_760444), SV_I((unsigned)&full_data_760448), SV_I((unsigned)&full_data_76044c), SV_I((unsigned)&full_data_760448), -1);
-        dd_Line(SV_I((unsigned)&full_data_76044c), SV_I((unsigned)&full_data_760448), SV_I((unsigned)&full_data_76044c), SV_I((unsigned)&full_data_760450) + 1, -1);
-        dd_Line(SV_I((unsigned)&full_data_76044c), SV_I((unsigned)&full_data_760450), SV_I((unsigned)&full_data_760444), SV_I((unsigned)&full_data_760450), -1);
-        dd_Line(SV_I((unsigned)&full_data_760444), SV_I((unsigned)&full_data_760450), SV_I((unsigned)&full_data_760444), SV_I((unsigned)&full_data_760448), -1);
+        dd_Line(sv_Band.x0, sv_Band.y0, sv_Band.x1, sv_Band.y0, -1);
+        dd_Line(sv_Band.x1, sv_Band.y0, sv_Band.x1, sv_Band.y1 + 1, -1);
+        dd_Line(sv_Band.x1, sv_Band.y1, sv_Band.x0, sv_Band.y1, -1);
+        dd_Line(sv_Band.x0, sv_Band.y1, sv_Band.x0, sv_Band.y0, -1);
     }
 }
 /* 0x52f340, the page keys of the book: the button 0x767 turns forward (0x52f9f0), 0x768 backward (0x52fa00) */
@@ -7860,6 +7856,7 @@ float sv_ViewPos[4] = {0};  /* 0x75fb80, the stored camera position (a padded ve
 float sv_ViewRot[4] = {0};  /* 0x75fb90, its rotation (D3OBJECT.rotation) */
 float sv_SkyScale = 0;  /* 0x760420 */
 int sv_BandActive = 0;  /* 0x760440 */
+SVBAND sv_Band = {0};  /* 0x760444, the rubber band's corners */
 int sv_ClickedBuilding = 0;  /* 0x760458, sv_HoverBuilding at the last click (sv_HandleObjects) */
 int sv_ClickedItem = 0;  /* 0x76045c, sv_HoverItem at the last click */
 int sv_ClickedChar = 0;  /* 0x760460, ai_PickedChar at the last click */
