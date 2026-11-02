@@ -1001,3 +1001,4 @@
 2026-11-02T11:46:57 0x00577540 data ai_Unk577540 -> ai_HookChapter5Intro by:main why:the hook (+0x34) of the chapter 5 intro 'ntr5' and of its step 'c5s2' (ai_TutorialInitChapter5)
 2026-11-02T11:46:57 0x00577230 data ai_Unk577230 -> ai_HookChapter5Step2 by:main why:the hook (+0x34) of the chapter 5 intro 'ntr5' and of its step 'c5s2' (ai_TutorialInitChapter5)
 2026-11-02T11:47:20 0x0057aeb0 data ai_Unk57aeb0 -> ai_TutorialInitChapter5 by:main why:builds the chapter 5 run chain (FTInitChapter5* tags, CHAPTER_5_* voices, TUTORIAL_CHAPTER_5.sbf)
+2026-11-02T11:50:03 0x0057b810 func ai_Unk57b810 -> ai_TutorialBezier by:main why:a cubic Bezier of 2D points; the position marker's move (ai_TutorialMarkerUpdate phase 3) evaluates its path with it

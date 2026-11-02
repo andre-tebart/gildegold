@@ -1757,7 +1757,7 @@ int ai_QueryChapter5Step2(int *args)
    marker entry for the shown panel room - 0 for the room 0x92, 1 for 0x93 .. 0x97 and 0x2db - while the goal is
    not done; -1 (no marker) without a shown panel, for other rooms or once goalDone is set */
 
-int ai_MarkerChapter5Step2(void)
+int ai_MarkerChapter5Step2(int mode)
 {
     unsigned short room;
     int r;
@@ -1772,7 +1772,7 @@ int ai_MarkerChapter5Step2(void)
 }
 /* 0x577320, the flag S+0x38 */
 
-int ai_MarkerChapter3Step6(void)
+int ai_MarkerChapter3Step6(int mode)
 {
     return U_I(S + 0x38);
 }
@@ -1810,7 +1810,7 @@ int ai_QueryChapter3Step8(int *p)
    the room 0x92, 3 for the others; 1: 1 for the room 0x95, 4 for the others; 2: 2; -1 (no marker) without a
    shown panel, for other rooms or another goalDone */
 
-int ai_MarkerChapter3Step8(void)
+int ai_MarkerChapter3Step8(int mode)
 {
     unsigned short room;
     int r;
@@ -4239,7 +4239,7 @@ int ai_TutorialInitMainOutro(void)
    `t` is the fifth argument (a float on the stack), `out` the sixth. The term nesting is the original's FP stack
    (u * b + t * c scaled by 3 * u * t) */
 
-void ai_Unk57b810(float *a, float *b, float *c, float *d, float t, float *out)
+void ai_TutorialBezier(float *a, float *b, float *c, float *d, float t, float *out)
 {
     float u;
 
@@ -4254,93 +4254,87 @@ int d2_CreatePicObj();
 struct G5CH; struct G9REC; struct VFSFILE; void d2_MoveObj(short x, short y, int obj);
 void d2_RemoveObj();
 
-/* 0x57b8a0, the tutorial per-frame update (910 B, ROUGH from the disassembly): - nothing without the gate
-   0x6f265c, the step table r+0x64 (r = S+0x18) or its count r+0x5c < 1. The step callback r+0x60 called with
-   `arg` answers v (edi): -1 and below -> 2, else a step index 0 .. r+0x5c-1 that differs from S+0x54 switches to
-   the phase S+0x58 = 2, S+0x5c = the clock 0x6333cc, S+0x54 = v. Then S+0x60 (the position object, -1 = none) is
-   0x472f50 (S+0x60) and 0x475aa0 (S+0x60, 1 when S+0x64 == 0x6f229c, else 0). By v: 0 -> S+0x64 = 0x6f229c,
-   S+0x5c = clock, S+0x58 = 2, the object created by 0x46cd80 ((int) e[0], (int) e[1], 0x1d) when S+0x60 is -1
-   (e = the step entry, 0x2c B) and 0x46cda0 ((int) e[0], (int) e[1], S+0x60); 1 -> the phases S+0x58:
-   2 (wait: the clock past S+0x5c + e+0x20 -> 3, S+0x5c = clock), 3 (the Bezier 0x57b810 (e+0, e+8, e+0x10,
-   e+0x18, t = (clock - S+0x5c) / e+0x24, the local vector) into 0x46cda0 (x, y, S+0x60) and return), 4 (the clock
-   past S+0x5c + e+0x28 -> 2, then 0x46cda0 ((int) e[0], (int) e[1], S+0x60)); 2 -> 0x46e710 (S+0x60), S+0x60 = -1,
-   S+0x58 = 1 */
-void ai_TutorialMarkerUpdate(int arg)
+/* 0x57b8a0, moves the tutorial's position marker along the run's paths (TUTRUN.marks), once per frame: nothing
+   while the tutorial is off or the run has no paths. `mode` is the caller's; the run's markPick (when set)
+   answers the path for it: -1 and below hides the marker (mode 2), another valid path than the current one
+   restarts the marker on it (phase 2). The shown marker is raised and enabled while its frame depth is the
+   current one. Mode 0 places it at the path's start (created as the picture 0x1d when there is none) and waits
+   (phase 2); mode 1 runs the phases: 2 waits `wait` ms at the start, 3 moves along the Bezier for `travel` ms,
+   4 rests `rest` ms at the end and starts over; mode 2 removes it (phase 1) */
+
+void ai_TutorialMarkerUpdate(int mode)
 {
-    char *st;
-    char *r;
-    char *e;
-    float v[2];
-    int x;
-    int y;
+    int pick;
+    TUTMARK *m;
+    float t;
+    float pos[2];
 
     if (!ai_TutorialOn)
         return;
-    st = S;
-    r = *(char **)(st + 0x18);
-    if (!*(int *)(r + 0x64))
+    if (!ai_Tutorial->run->marks)
         return;
-    if (*(int *)(r + 0x5c) < 1)
+    if (ai_Tutorial->run->markCount < 1)
         return;
-    x = 0;
-    if (*(int *)(r + 0x60)) {
-        x = ((int (*)()) * (int *)(r + 0x60))(arg);
-        st = S;
-        if (x <= -1) {
-            x = 2;
-        } else if (x >= 0 && x < *(int *)(*(char **)(st + 0x18) + 0x5c) && x != U_I(st + 0x54)) {
-            U_I(st + 0x58) = 2;
-            U_I(st + 0x5c) = U_I((unsigned)&ai_ClockMs);
-            U_I(st + 0x54) = x;
-            st = S;
+    if (ai_Tutorial->run->markPick) {
+        pick = ai_Tutorial->run->markPick(mode);
+        if (pick <= -1) {
+            mode = 2;
+        } else if (pick >= 0 && pick < ai_Tutorial->run->markCount && pick != ai_Tutorial->markerStep) {
+            ai_Tutorial->markerPhase = 2;
+            ai_Tutorial->markerAt = ai_ClockMs;
+            ai_Tutorial->markerStep = pick;
         }
     }
-    if (U_I(st + 0x60) != -1) {
-        d2_RaiseObject(U_I(st + 0x60));
-        if (U_I(S + 0x64) == U_I((unsigned)&sv_FrameDepth))
-            d2_EnableObject(U_I(S + 0x60), 1);
+    if (ai_Tutorial->markerObj != -1) {
+        d2_RaiseObject(ai_Tutorial->markerObj);
+        if (ai_Tutorial->markerDepth != sv_FrameDepth)
+            d2_EnableObject(ai_Tutorial->markerObj, 0);
         else
-            d2_EnableObject(U_I(S + 0x60), 0);
-        st = S;
+            d2_EnableObject(ai_Tutorial->markerObj, 1);
     }
-    e = (char *)(*(int *)(*(char **)(st + 0x18) + 0x64) + U_I(st + 0x54) * 0x2c);
-    if (x == 0) {
-        U_I(st + 0x64) = U_I((unsigned)&sv_FrameDepth);
-        U_I(st + 0x5c) = U_I((unsigned)&ai_ClockMs);
-        U_I(st + 0x58) = 2;
-        if (U_I(S + 0x60) == -1)
-            U_I(S + 0x60) = d2_CreatePicObj((int)*(float *)e, (int)*(float *)(e + 4), 0x1d);
-        d2_MoveObj((int)*(float *)e, (int)*(float *)(e + 4), U_I(S + 0x60));
-        return;
-    }
-    if (x == 1) {
-        if (U_I(st + 0x58) == 2) {
-            if (!((float)U_I((unsigned)&ai_ClockMs) > (float)U_I(st + 0x5c) + *(float *)(e + 0x20)))
+    if (mode == 0) {
+        ai_Tutorial->markerDepth = sv_FrameDepth;
+        ai_Tutorial->markerAt = ai_ClockMs;
+        ai_Tutorial->markerPhase = 2;
+        if (ai_Tutorial->markerObj == -1) {
+            m = &ai_Tutorial->run->marks[ai_Tutorial->markerStep];
+            ai_Tutorial->markerObj = d2_CreatePicObj((int)m->from[0], (int)m->from[1], 0x1d);
+        }
+        m = &ai_Tutorial->run->marks[ai_Tutorial->markerStep];
+        d2_MoveObj((int)m->from[0], (int)m->from[1], ai_Tutorial->markerObj);
+    } else if (mode == 1) {
+        if (ai_Tutorial->markerPhase == 2) {
+            if ((float)ai_Tutorial->markerAt + ai_Tutorial->run->marks[ai_Tutorial->markerStep].wait > (float)(unsigned)ai_ClockMs)
                 return;
-            U_I(st + 0x58) = 3;
-            U_I(st + 0x5c) = U_I((unsigned)&ai_ClockMs);
-            st = S;
+            ai_Tutorial->markerPhase = 3;
+            ai_Tutorial->markerAt = ai_ClockMs;
         }
-        if (U_I(st + 0x58) == 3) {
-            ai_Unk57b810((float *)e, (float *)(e + 8), (float *)(e + 0x10), (float *)(e + 0x18),
-                         ((float)U_I((unsigned)&ai_ClockMs) - (float)U_I(st + 0x5c)) / *(float *)(e + 0x24), v);
-            d2_MoveObj((int)v[0], (int)v[1], U_I(S + 0x60));
-            return;
-        }
-        if (U_I(st + 0x58) == 4) {
-            if (!((float)U_I((unsigned)&ai_ClockMs) > (float)U_I(st + 0x5c) + *(float *)(e + 0x28)))
+        if (ai_Tutorial->markerPhase == 3) {
+            m = &ai_Tutorial->run->marks[ai_Tutorial->markerStep];
+            if ((float)ai_Tutorial->markerAt + m->travel > (float)(unsigned)ai_ClockMsVolatile) {
+                t = (float)(ai_ClockMsVolatile - ai_Tutorial->markerAt) / m->travel;
+                ai_TutorialBezier(m->from, m->ctrl1, m->ctrl2, m->to, t, pos);
+                d2_MoveObj((int)pos[0], (int)pos[1], ai_Tutorial->markerObj);
                 return;
-            U_I(st + 0x58) = 2;
-            U_I(st + 0x5c) = U_I((unsigned)&ai_ClockMs);
-            d2_MoveObj((int)*(float *)e, (int)*(float *)(e + 4), U_I(S + 0x60));
+            }
+            ai_Tutorial->markerPhase = 4;
+            ai_Tutorial->markerAt = ai_ClockMs;
+            m = &ai_Tutorial->run->marks[ai_Tutorial->markerStep];
+            d2_MoveObj((int)m->to[0], (int)m->to[1], ai_Tutorial->markerObj);
         }
-        return;
-    }
-    if (x == 2) {
-        if (U_I(S + 0x60) != -1)
-            d2_RemoveObj(U_I(S + 0x60));
-        U_I(S + 0x60) = -1;
-        U_I(S + 0x58) = 1;
+        if (ai_Tutorial->markerPhase == 4) {
+            if ((float)ai_Tutorial->markerAt + ai_Tutorial->run->marks[ai_Tutorial->markerStep].rest > (float)(unsigned)ai_ClockMs)
+                return;
+            ai_Tutorial->markerPhase = 2;
+            ai_Tutorial->markerAt = ai_ClockMs;
+            m = &ai_Tutorial->run->marks[ai_Tutorial->markerStep];
+            d2_MoveObj((int)m->from[0], (int)m->from[1], ai_Tutorial->markerObj);
+        }
+    } else if (mode == 2) {
+        if (ai_Tutorial->markerObj != -1)
+            d2_RemoveObj(ai_Tutorial->markerObj);
+        ai_Tutorial->markerObj = -1;
+        ai_Tutorial->markerPhase = 1;
     }
 }
 

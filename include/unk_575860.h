@@ -48,7 +48,7 @@ typedef struct TUTRUN {                 /* 0x74 bytes, a run (chapter) record of
     void (*stepShown)(void);            /* 0x54, called after every step form is shown and when the chain is done (ai_TutorialStepForm) */
     TUTSTEP *steps;                     /* 0x58 */
     int markCount;                      /* 0x5c, the entries of marks */
-    int (*markPick)();                  /* 0x60, called with the marker update's argument: the entry of marks to run, -1 and below hides the marker */
+    int (*markPick)(int mode);          /* 0x60, called with the marker update's argument: the entry of marks to run, -1 and below hides the marker */
     TUTMARK *marks;                     /* 0x64, set: the position marker runs (ai_TutorialMarkerUpdate) */
     int allowMask;                      /* 0x68, ai_RunAllows */
     int allowMask2;                     /* 0x6c */
@@ -82,11 +82,11 @@ typedef struct TUTSTATE {               /* the tutorial state record (0x6fa060, 
     int stepForm;                       /* 0x48, ai_TutorialStepForm's form */
     int stepControl;                    /* 0x4c, its control, -1 = none */
     int stepArg;                        /* 0x50, ai_CampaignStep's argument b of the step that ended the chain */
-    int markerStep;                     /* 0x54 */
-    int markerPhase;                    /* 0x58 */
-    int markerAt;                       /* 0x5c */
-    int markerObj;                      /* 0x60, -1 = none */
-    int unk64;                          /* 0x64 */
+    int markerStep;                     /* 0x54, the marker's path (TUTRUN.marks) */
+    int markerPhase;                    /* 0x58, 1 hidden, 2 waiting at the start, 3 moving, 4 resting at the end */
+    unsigned int markerAt;              /* 0x5c, ai_ClockMs when the marker's phase started */
+    int markerObj;                      /* 0x60, the marker's picture object, -1 = none */
+    int markerDepth;                    /* 0x64, sv_FrameDepth when the marker was placed: it is enabled only while that is current */
     int progressForm;                   /* 0x68, the progress form of the state 0xa (ai_TutorialOpenProgress), -1 = none */
     int progressSlider;                 /* 0x6c, its slider */
 } TUTSTATE;
@@ -99,7 +99,7 @@ extern TUTRUN *ai_TutorialRuns;         /* 0x6f2658, the chain of the tutorial's
 extern int ai_TutorialOn;               /* 0x6f265c, the tutorial runs */
 extern int ai_TutorialRunning;          /* 0x6f2660, its state machine advances */
 int ai_TutorialTick(void);                 /* 0x575860, the tutorial's tick: runs its state machine */
-void ai_TutorialMarkerUpdate(int arg);  /* 0x57b8a0, moves the tutorial's position marker */
+void ai_TutorialMarkerUpdate(int mode);  /* 0x57b8a0, moves the tutorial's position marker */
 void unk_ClearEndGameGate(void);                /* 0x576020, clears the gate 0x6f2660 */
 void unk_SetEndGameGate(void);                /* 0x576030, sets the gate 0x6f2660 */
 void ai_CampaignStep(int a, int b, int c, int d);  /* 0x576040, one step of the campaign state machine */
@@ -137,10 +137,10 @@ void ai_HookChapter3Step2(int arg);             /* 0x577110, posts to the player
 int ai_QueryChapter3Step6(int *p);               /* 0x5771b0, transition callback */
 void ai_HookChapter5Step2(int arg);             /* 0x577230, posts messages */
 int ai_QueryChapter5Step2(int *p);               /* 0x577290, step predicate */
-int ai_MarkerChapter5Step2(void);                 /* 0x5772d0, the record fight kind */
-int ai_MarkerChapter3Step6(void);                 /* 0x577320, the flag S+0x38 */
+int ai_MarkerChapter5Step2(int mode);                /* 0x5772d0, the record fight kind */
+int ai_MarkerChapter3Step6(int mode);                /* 0x577320, the flag S+0x38 */
 int ai_QueryChapter3Step8(int *p);               /* 0x577330, transition callback */
-int ai_MarkerChapter3Step8(void);                 /* 0x5773f0, fight kind + flag */
+int ai_MarkerChapter3Step8(int mode);                /* 0x5773f0, fight kind + flag */
 int ai_QueryChapter3Step10(int *p);               /* 0x577450, step predicate */
 int ai_StepShownChapter3Step4(void);                 /* 0x577490, releases the pending id S+0x50 */
 void ai_HookChapter3Intro(int arg);             /* 0x5774d0, posts a record message */
@@ -175,7 +175,7 @@ int ai_TutorialInitChapter3(void);                 /* 0x579570, the chapter 3 ch
 int ai_TutorialInitChapter4(void);                 /* 0x57aa80, the chapter 4 chain */
 int ai_TutorialInitChapter5(void);                 /* 0x57aeb0, the chapter 5 chain */
 int ai_TutorialInitMainOutro(void);                 /* 0x57b750, the main-outro record */
-void ai_Unk57b810(float *a, float *b, float *c, float *d, float t, float *out);  /* 0x57b810, the Bezier */
+void ai_TutorialBezier(float *a, float *b, float *c, float *d, float t, float *out);  /* 0x57b810, the Bezier */
 
 /* declared in other units' headers before (moved to the owner) */
 void ai_EndCharExtra(char *ch, int f);  /* 0x587c40 */
