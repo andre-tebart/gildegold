@@ -1568,7 +1568,7 @@ float gm_DailyCharacterStep(unsigned short *id)
 void ai_Unk4c5690(int a, const char *s);                     /* 0x4c5690 */
 int cm_AddFieldValues(unsigned char size, unsigned char n, unsigned short field, void *v);                     /* 0x4c3d00 */
 float gm_CharacterHealth(short *c);
-float unk_Unk4fc890(short *c);
+float gm_CharacterBaseHealth(short *c);
 void unk_Unk4fd120(void);
 
 /* 0x4fc6f0, ages the character c to the age: its life f01c becomes f018 when the age is not above its f020,
@@ -1645,20 +1645,22 @@ float gm_CharacterHealth(short *c)
     f = f + ch->v024;
     return f > 0.0 ? f : 0.0;
 }
-/* 0x4fc890, the same without the int +0x24 and the floor */
+/* 0x4fc890, the life of the character c by its age alone: gm_CharacterHealth without v024 and the floor (-1 for
+   a free slot or a dead one) */
 
-float unk_Unk4fc890(short *c)
+float gm_CharacterBaseHealth(short *c)
 {
+    ORDCHAR *ch = ORD_CHAR(c);
     float a;
 
-    if (*c == -1)
+    if (ch->id == 0xffff)
         return -1.0f;
-    if (((char *)c)[8] == 0)
+    if (ch->health == 0)
         return -1.0f;
-    a = (float)*(unsigned short *)((char *)c + 10);
-    if (a <= *(float *)((char *)c + 0x20))
-        return ((*(float *)((char *)c + 0x1c) - *(float *)((char *)c + 0x10)) / *(float *)((char *)c + 0x20)) * a + *(float *)((char *)c + 0x10);
-    return *(float *)((char *)c + 0x1c);
+    a = (float)ch->w00a;
+    if (a <= ch->f020)
+        return ((ch->f01c - ch->f010) / ch->f020) * a + ch->f010;
+    return ch->f01c;
 }
 /* 0x4fc8e0, health now / health of the character c without the extra (0 for a free slot or an inactive one) */
 
@@ -1668,7 +1670,7 @@ float gm_HealthRatio(short *c)
         return 0.0f;
     if (((char *)c)[8] == 0)
         return 0.0f;
-    return (float)(gm_CharacterHealth(c) / unk_Unk4fc890(c));
+    return (float)(gm_CharacterHealth(c) / gm_CharacterBaseHealth(c));
 }
 /* 0x4fc920, the daily step of all characters: the kind 0x12 ones get the byte 8 at +2 (0x4c3c00 (1, 1, 2)); every character of kind < 10 or 0x14 that is active runs 0x4fbe90 and, when the lifetime float (+0x20) - 1 equals the age and it has a model (+0x184), the call 0x4c5690 (id, "stallbursche_MANN" / "magd_FRAU" by the byte +9); then 0x4fd120 */
 
@@ -2407,7 +2409,7 @@ void unk_Unk4fdfd0(void)
             if (gm_IsUnderAge(i) != 0)
                 f[9] += 1.0f;
             f[10 + (unsigned char)c[2]] = gm_CharacterHealth((short *)c) + f[10 + (unsigned char)c[2]];
-            f[18 + (unsigned char)c[2]] = unk_Unk4fc890((short *)c) + f[18 + (unsigned char)c[2]];
+            f[18 + (unsigned char)c[2]] = gm_CharacterBaseHealth((short *)c) + f[18 + (unsigned char)c[2]];
         }
     }
     for (i = 18; i < 26; i++) {

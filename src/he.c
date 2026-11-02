@@ -2271,7 +2271,7 @@ void he_Unk541250(int r, int pl)
     *(int *)(r + 0xc) = -1;
 }
 
-float unk_Unk4fc890();
+float gm_CharacterBaseHealth();
 int rd_PointsNear();
 char d3_GetHeightAt(struct D3SM *h, struct D3VECTOR *pos, int *px, int *pz, float *py);
 struct CHACTION * ch_AddAction(struct CHARACTER *ch, unsigned int type, ...);
@@ -2334,7 +2334,7 @@ void he_Unk5414a0(int p1, unsigned short *p2, int p3, int p4, float p5, int p6)
     char *t;
 
     if (p5 > 0.0f) {
-        if ((float)p5 < unk_Unk4fc890(p2) * 0.5 && ((int (*)(int, int *, int *, int))he_FindFigurePlace)(p2, &l900, &l8fc, 0) != 0 && *(int *)(p2 + 0xc2) != 0) {
+        if ((float)p5 < gm_CharacterBaseHealth(p2) * 0.5 && ((int (*)(int, int *, int *, int))he_FindFigurePlace)(p2, &l900, &l8fc, 0) != 0 && *(int *)(p2 + 0xc2) != 0) {
             sv_MoveToGroup(0, 0, *p2, 0);
             if (*(int *)(*(int *)(p2 + 0xc2) + 0x28) != -1) {
                 u1 = (int)evt_FindById(*(int *)(*(int *)(p2 + 0xc2) + 0x28));
@@ -2423,7 +2423,7 @@ void he_Unk5417d0(int p1, unsigned short *p2, int p3, int p4, int p5, float p6)
         cm_SendLongMessage(ev);
         return;
     }
-    if (p6 >= unk_Unk4fc890(p2) * 0.5 || ((int (*)(int, int *, int *, int))he_FindFigurePlace)(p2, &l900, &l8fc, 0) == 0 || *(int *)(p2 + 0xc2) == 0) {
+    if (p6 >= gm_CharacterBaseHealth(p2) * 0.5 || ((int (*)(int, int *, int *, int))he_FindFigurePlace)(p2, &l900, &l8fc, 0) == 0 || *(int *)(p2 + 0xc2) == 0) {
         if (*(char *)(p3 + 2) != 6 && *(char *)(p3 + 2) != 7)
             return;
         news = 0x1630;
