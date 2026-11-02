@@ -249,7 +249,6 @@ extern GAPDATA full_data_602568[];
 
 
 extern GAPDATA full_data_602568[];
-extern GAPDATA full_data_62a364[];
 extern int ai_ClockMs;
 extern int sv_PopRequest;
 extern GAPDATA full_data_5f36e0[];
@@ -5370,17 +5369,19 @@ typedef struct CANNONSCENE { /* 0xe4 bytes, the scene struct of ai_CannonScene (
     D3OBJECT *obj9c;         /* +0x9c, the wimpel object */
     int selected;            /* +0xa0, the selected object */
     int win_a4;              /* +0xa4, closed at the end */
-    char pada8[0xc];
+    int scaleBar;            /* +0xa8, the bar of ai_GetDefaultEffectScale (0 .. 100, ai_CannonPanel) */
+    int pitchBar;            /* +0xac, the bar of the pitch (ai_CannonPitchRatio, 0 .. 100) */
+    int kindSlider;          /* +0xb0, the first slider (0 .. kind): GVCANNON.sliderA */
     int speedSlider;         /* +0xb4, the slider whose value * 0.01 is the shot speed (ai_CannonBuildPanel) */
     int fireBtn;             /* +0xb8, ai_CannonFireCheck reads it as the fire button */
     int quitBtn;             /* +0xbc, a click on it leaves the scene */
     int win_c0;              /* +0xc0, closed at the end */
-    int padc4;
+    int chargeBar;           /* +0xc4, the bar of the run's charge of the selected barrel (0 .. 100) */
     int selBtn[3];           /* +0xc8, the controls of the three cannon objects (ai_CannonSwitchAnim 0 .. 2) */
     int picL;                /* +0xd4, the two picture objects of ai_CannonBuildPanel (d2_CreatePicObj), removed at the end */
     int picR;                /* +0xd8 */
-    int maxSel;              /* +0xdc, the highest selectable object */
-    int pade0;
+    int maxSel;              /* +0xdc, the highest selectable object: gv_BuildingCannon's balls (0 .. 2) */
+    int kind;                /* +0xe0, the cannon kind (gv_BuildingCannon, 0 .. 4): the top of kindSlider */
     D3VECTOR bmax;           /* +0xe4, not part of the cleared 0xe4 bytes: the bounds of the cannon object (d3t_GetObjectBounds) */
     float padf0;
     D3VECTOR bmin;           /* +0xf4 */
@@ -6008,93 +6009,86 @@ void ai_CannonShotResults(CANNONSCENE *sc)
 }
 
 float gv_SalvoCharge(); void gv_BuildingCannon(char *o, unsigned *a, unsigned *b); int gv_CannonCost(); float ai_GetDefaultEffectScale();
-int _ftol(); float ai_Unk57fdb0(); int d2_CreateWinText(); void d2_SetObjFont();  /* @original: the call at 4110 passes 1 argument to d2.h's 4-parameter prototype */
+int _ftol(); float ai_CannonPitchRatio(); int d2_CreateWinText(); void d2_SetObjFont();  /* @original: the call at 4110 passes 1 argument to d2.h's 4-parameter prototype */
 void txt_Format(char *out, int id0, ...); int gm_CharCurrency(char *c, char p);
 
-/* 0x57f890, the cannon control panel (383 B, ROUGH: the calls and the window-table stores are written; the three
-   float -> int conversions (0x5de518 = __ftol) lost their arguments in the pseudocode): rec, sc = the scene
-   struct, run = the tutorial step. The two fields sc + 0xb0 / 0xb4 read by 0x475980; the max 0x4eef50 (a, b, 1);
-   the selection 0x4ef170 (rec, &sc + 0xdc, &sc + 0xe0), sc + 0xb0 set to (sc + 0xe0, MIN (the value, a)); the
-   controls sc + 0xcc / 0xd0 enabled by the selection > 0 / > 1; the selected object (sc + 0xa0) checked in the
-   window table 0xf8f080 (+0x2c and +0x28 = 1 for the selected id sc + 0xc8 / 0xcc / 0xd0, 0 for the others);
-   0x4ef090 (the character 0x770b80 + 0x6f25b8 * 0x21c, the two values, sc + 0xa0 + 1, &l1, &l2); the fire control
-   sc + 0xb8 enabled by the zoom sc + 0x20 = 0.01, 0x4ef090 and the run's cost sc + 8 + sc + 0xa0 * 4 against
-   0x4eef50 and the run's flag +4 & 2; sc + 0xbc enabled by the run's flag +4 bit 1 inverted; the three bars
-   sc + 0xa8 / 0xac / 0xc4 (0x475cb0, 0 .. 100, 0x5dbc20 / 0x57fdb0 / 1 through 0x5de518) and sc + 0xc0 (2);
-   0x515960 (0x602568); the four windows 0x473650 (0x4144a360 / 0x4144a364 texts, the "__T__a" 0x62a364 format
-   through 0x5176d0 and 0x509ee0, the screen width 0xf8f128 + 0x6ed938 * 0x3c4 / 2) placed with +0x5c = 1 and
-   +0x14 = the width / 2, 0x4760b0 (0x54); the globals 0x925114 / 18 / 1c / 08 / 0c / 10 updated */
-void ai_CannonPanel(char *rec, char *sc, char *run)
+/* 0x57f890, the cannon control panel: rec = the building record, sc = the scene, run = its effect slot. The two
+   sliders (sc->kindSlider, clamped to the cannon kind of gv_BuildingCannon, and sc->speedSlider) give the salvo's
+   charge (gv_SalvoCharge); the barrel controls 1 / 2 are enabled by the balls (sc->maxSel), the selected one
+   (sc->selected) is highlighted and checked; gv_CannonCost of the player's character gives the count and price; the
+   fire button is enabled at the zoom 0 (<= 0.01) with a cost, the run's charge of the barrel at least the salvo's
+   and the run not busy (flags & 2), the quit button while not busy; the bars show ai_GetDefaultEffectScale, the
+   pitch (ai_CannonPitchRatio) and the run's charge (* 100); the window sc->win_c0 gets the texts 0x4068 / 0x4069 with
+   the count and price and the character's currency and money ("%T %a"), each centred at half the window's width
+   in font 0x54; the slider values, the barrel and the aim go back to gv_Cannon */
+void ai_CannonPanel(char *rec, CANNONSCENE *sc, GVEFFECT *run)
 {
     char buf[0x40];
     int a;
     int b;
-    int c;
+    float c;
     int m;
     int n;
     int l1;
     int l2;
-    int d;
     int w;
 
-    a = d2_GetObjValue(*(int *)(sc + 0xb0));
-    b = d2_GetObjValue(*(int *)(sc + 0xb4));
-    c = (int)gv_SalvoCharge(a, b, 1);
-    gv_BuildingCannon(rec, (int *)(sc + 0xdc), (int *)(sc + 0xe0));
-    n = *(int *)(sc + 0xe0);
+    a = d2_GetObjValue(sc->kindSlider);
+    b = d2_GetObjValue(sc->speedSlider);
+    c = gv_SalvoCharge(a, b, 1);
+    gv_BuildingCannon(rec, (unsigned *)&sc->maxSel, (unsigned *)&sc->kind);
+    n = sc->kind;
     if (n < a)
         a = n;
-    d2_SetObjValue(*(int *)(sc + 0xb0), 0, n, a);
-    d2_SetObjEnabled(*(int *)(sc + 0xcc), 0 < *(int *)(sc + 0xdc));
-    d2_SetObjEnabled(*(int *)(sc + 0xd0), 1 < *(int *)(sc + 0xdc));
-    *(int *)(U_I((unsigned)&d2_Objs) + 0x2c + *(int *)(sc + 0xc8) * 0x2ec) = *(int *)(sc + 0xa0) == 0;
-    *(int *)(U_I((unsigned)&d2_Objs) + 0x2c + *(int *)(sc + 0xcc) * 0x2ec) = *(int *)(sc + 0xa0) == 1;
-    *(int *)(U_I((unsigned)&d2_Objs) + 0x2c + *(int *)(sc + 0xd0) * 0x2ec) = *(int *)(sc + 0xa0) == 2;
-    *(int *)(U_I((unsigned)&d2_Objs) + 0x28 + *(int *)(sc + 0xc8) * 0x2ec) = *(int *)(sc + 0xa0) == 0;
-    *(int *)(U_I((unsigned)&d2_Objs) + 0x28 + *(int *)(sc + 0xcc) * 0x2ec) = *(int *)(sc + 0xa0) == 1;
-    *(int *)(U_I((unsigned)&d2_Objs) + 0x28 + *(int *)(sc + 0xd0) * 0x2ec) = *(int *)(sc + 0xa0) == 2;
-    m = gv_CannonCost((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, a, b, *(int *)(sc + 0xa0) + 1, &l1, &l2);
-    if (*(float *)(sc + 0x20) > 0.01f || m == 0 || *(float *)(run + 8 + *(int *)(sc + 0xa0) * 4) < (float)c || (*(unsigned char *)(run + 4) & 2) != 0)
-        w = 0;
-    else
+    d2_SetObjValue(sc->kindSlider, 0, n, a);
+    d2_SetObjEnabled(sc->selBtn[1], sc->maxSel >= 1);
+    d2_SetObjEnabled(sc->selBtn[2], sc->maxSel >= 2);
+    d2_Objs[sc->selBtn[0]].highlighted = sc->selected == 0;
+    d2_Objs[sc->selBtn[1]].highlighted = sc->selected == 1;
+    d2_Objs[sc->selBtn[2]].highlighted = sc->selected == 2;
+    d2_Objs[sc->selBtn[0]].checked = sc->selected == 0;
+    d2_Objs[sc->selBtn[1]].checked = sc->selected == 1;
+    d2_Objs[sc->selBtn[2]].checked = sc->selected == 2;
+    m = gv_CannonCost(ai_Chars[ai_PlayerId], a, b, sc->selected + 1, &l1, &l2);
+    if (sc->zoom <= 0.01f && m != 0 && run->charge[sc->selected] >= c && (run->flags & 2) == 0)
         w = 1;
-    d2_SetObjEnabled(*(int *)(sc + 0xb8), w);
-    d2_SetObjEnabled(*(int *)(sc + 0xbc), (~*(unsigned int *)(run + 4) >> 1) & 1);
-    d2_SetObjValue(*(int *)(sc + 0xa8), 0, 100, (int)ai_GetDefaultEffectScale(1));
-    ai_Unk57fdb0(sc, 1);
-    d2_SetObjValue(*(int *)(sc + 0xac), 0, 100, (int)_ftol());
-    d2_SetObjValue(*(int *)(sc + 0xc4), 0, 100, (int)_ftol());
-    d2_SetForm(*(int *)(sc + 0xc0), 2);
-    io_PrintText((char *)(unsigned)"$C");
-    m = d2_CreateWinText(0, 0xf, (char *)U_I((unsigned)&full_data_144a360), U_I((unsigned)&d2_LastWindow));
-    *(int *)(U_I((unsigned)&d2_Objs) + 0x5c + m * 0x2ec) = 1;
-    *(short *)(U_I((unsigned)&d2_Objs) + 0x14 + m * 0x2ec) = *(short *)((unsigned)&ai_Unkf8f128 + U_I((unsigned)&d2_LastWindow) * 0x3c4) / 2;
+    else
+        w = 0;
+    d2_SetObjEnabled(sc->fireBtn, w);
+    d2_SetObjEnabled(sc->quitBtn, (~(unsigned)run->flags >> 1) & 1);
+    d2_SetObjValue(sc->scaleBar, 0, 100, (int)(ai_GetDefaultEffectScale() * 100.0f), 1);
+    d2_SetObjValue(sc->pitchBar, 0, 100, (int)(ai_CannonPitchRatio(sc) * 100.0f), 1);
+    d2_SetObjValue(sc->chargeBar, 0, 100, (int)(run->charge[sc->selected] * 100.0f), 1);
+    d2_SetForm(sc->win_c0, 2);
+    io_PrintText("$C");
+    m = d2_CreateWinText(0, 0xf, txt_Ptrs[0x4068], d2_LastWindow);
+    d2_Objs[m].centred = 1;
+    d2_Objs[m].w = d2_Wins[d2_LastWindow].w / 2;
     d2_SetObjFont(m, 0x54);
-    txt_Format(buf, (char *)(unsigned)&full_data_62a364, l2, l1);
-    m = d2_CreateWinText(0, 0x23, buf, U_I((unsigned)&d2_LastWindow));
-    *(int *)(U_I((unsigned)&d2_Objs) + 0x5c + m * 0x2ec) = 1;
-    *(short *)(U_I((unsigned)&d2_Objs) + 0x14 + m * 0x2ec) = *(short *)((unsigned)&ai_Unkf8f128 + U_I((unsigned)&d2_LastWindow) * 0x3c4) / 2;
+    txt_Format(buf, (int)"%T %a", l2, l1);
+    m = d2_CreateWinText(0, 0x23, buf, d2_LastWindow);
+    d2_Objs[m].centred = 1;
+    d2_Objs[m].w = d2_Wins[d2_LastWindow].w / 2;
     d2_SetObjFont(m, 0x54);
-    m = d2_CreateWinText(*(short *)((unsigned)&ai_Unkf8f128 + U_I((unsigned)&d2_LastWindow) * 0x3c4) / 2, 0xf, (char *)U_I((unsigned)&full_data_144a364), U_I((unsigned)&d2_LastWindow));
-    *(int *)(U_I((unsigned)&d2_Objs) + 0x5c + m * 0x2ec) = 1;
-    *(short *)(U_I((unsigned)&d2_Objs) + 0x14 + m * 0x2ec) = *(short *)((unsigned)&ai_Unkf8f128 + U_I((unsigned)&d2_LastWindow) * 0x3c4) / 2;
+    m = d2_CreateWinText(d2_Wins[d2_LastWindow].w / 2, 0xf, txt_Ptrs[0x4069], d2_LastWindow);
+    d2_Objs[m].centred = 1;
+    d2_Objs[m].w = d2_Wins[d2_LastWindow].w / 2;
     d2_SetObjFont(m, 0x54);
-    d = gm_CharCurrency((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, *(unsigned char *)(unsigned)&ai_OwnPlayer);
-    txt_Format(buf, (char *)(unsigned)&full_data_62a364, d, *(int *)(((unsigned)&ai_Selected + 0xc) + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c));
-    m = d2_CreateWinText(*(short *)((unsigned)&ai_Unkf8f128 + U_I((unsigned)&d2_LastWindow) * 0x3c4) / 2, 0x23, buf, U_I((unsigned)&d2_LastWindow));
-    *(int *)(U_I((unsigned)&d2_Objs) + 0x5c + m * 0x2ec) = 1;
-    *(short *)(U_I((unsigned)&d2_Objs) + 0x14 + m * 0x2ec) = *(short *)((unsigned)&ai_Unkf8f128 + U_I((unsigned)&d2_LastWindow) * 0x3c4) / 2;
+    txt_Format(buf, (int)"%T %a", gm_CharCurrency(ai_Chars[ai_PlayerId], ai_OwnPlayer), ((AICHAR *)ai_Chars[ai_PlayerId])->money);
+    m = d2_CreateWinText(d2_Wins[d2_LastWindow].w / 2, 0x23, buf, d2_LastWindow);
+    d2_Objs[m].centred = 1;
+    d2_Objs[m].w = d2_Wins[d2_LastWindow].w / 2;
     d2_SetObjFont(m, 0x54);
-    U_I((unsigned)&gv_Cannon.sliderA) = a;
-    U_I((unsigned)&gv_Cannon.sliderB) = b;
-    U_I((unsigned)&gv_Cannon.selected) = *(int *)(sc + 0xa0);
-    U_I((unsigned)&gv_Cannon.camTarget) = *(int *)(sc + 0x10);
-    U_I(((unsigned)&gv_Cannon.camTarget + 0x4)) = *(int *)(sc + 0x14);
-    U_I(((unsigned)&gv_Cannon.camTarget + 0x8)) = *(int *)(sc + 0x18);
+    gv_Cannon.sliderA = a;
+    gv_Cannon.sliderB = b;
+    gv_Cannon.selected = sc->selected;
+    gv_Cannon.camTarget[0] = sc->rot.x;
+    gv_Cannon.camTarget[1] = sc->rot.y;
+    gv_Cannon.camTarget[2] = sc->rot.z;
 }
 /* 0x57fdb0, the cannon's pitch as 0 .. 1 (28 B): (sc + 0x10 + 0.2617994) / (0.7853982 + 0.2617994) */
 
-float ai_Unk57fdb0(char *sc)
+float ai_CannonPitchRatio(char *sc)
 {
     return (*(float *)(sc + 0x10) - -0.2617994f) / (0.7853982f - -0.2617994f);
 }
