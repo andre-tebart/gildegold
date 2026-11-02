@@ -5827,7 +5827,6 @@ GAPDATA full_data_6f2314[4] = { 0 };  /* 0x6f2314 */
 GAPDATA full_data_6f2330[4] = { 0 };  /* 0x6f2330 */
 GAPDATA full_data_6f2354[4] = { 0 };  /* 0x6f2354 */
 GAPDATA full_data_6f2364[4] = { 0 };  /* 0x6f2364 */
-GAPDATA full_data_6f23f0[1] = { 0 };  /* 0x6f23f0 */
 GAPDATA full_data_6f23f1[7] = { 0 };  /* 0x6f23f1 */
 int snd_SystemBank = 0;  /* 0x6f2400, the handle of the system sample bank system.sbf (main_ 0x532160 loads it) */
 int snd_ThunderBank = 0;  /* 0x6f2408 */

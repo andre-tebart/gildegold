@@ -309,6 +309,7 @@ extern char *sv_PermsBuilding;  /* 0x6f23e4, the building ai_BuildingPerms was l
 extern unsigned short *sv_PermsRoom;  /* 0x6f23e8, its room */
 extern unsigned short sv_DisabledWidgets[0x300];  /* 0x6f1c90 */
 extern int sv_DisabledCount;  /* 0x6f23ec */
+extern unsigned char sv_BookPhase;  /* 0x6f23f0 */
 extern unsigned char sv_OtherSelected;  /* 0x6f2338 */
 extern int sv_ShownBuilding;  /* 0x6f23bc */
 extern int sv_ShownFallback;  /* 0x6f23c0 */

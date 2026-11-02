@@ -136,7 +136,6 @@ extern void *d2_ScreenSurf;  /* 0x6ed924 */
 extern float d3s_QuadUV[6];
 extern struct D2PIC *d2_Pics;
 extern int ai_SceneChars[32];
-extern GAPDATA full_data_6f23f0[];
 extern GAPDATA full_data_75ec40[];
 extern char ai_Unk75fba0[2048];
 
@@ -6756,18 +6755,18 @@ void sv_Unk52f600(int bk)
             sv_Unk52fa00((int *)bk);
         if (*(int *)(bk + 0x268) != -1 && d2_PointerObj == *(int *)(bk + 0x268) && SV_I(((unsigned)&dm_L + 0xc)) != 0)
             sv_Unk52f9f0((int *)bk);
-        i = (int)*(char *)(bk + 0x270) + SV_B((unsigned)&full_data_6f23f0);
+        i = (int)*(char *)(bk + 0x270) + sv_BookPhase;
         if (i < *(char *)(bk + 0x271)) {
             p = (int *)(bk + 0x228 + i * 4);
             do {
-                if ((int)*(char *)(bk + 0x270) + SV_B((unsigned)&full_data_6f23f0) < i)
+                if ((int)*(char *)(bk + 0x270) + sv_BookPhase < i)
                     break;
                 d2_RedrawView(*p);
                 i++;
                 p++;
             } while (i < *(char *)(bk + 0x271));
         }
-        SV_I((unsigned)&full_data_6f23f0) ^= 1;
+        sv_BookPhase ^= 1;
     }
 }
 /* 0x52f710, turns the book bk by dir pages (2 forward / -2 backward): checks the limits and that the page animations of the book model (+0x1ec) are finished ("buch\Buch_vorblaettern.baf" /
@@ -7836,6 +7835,7 @@ char * sv_LastPicked = 0;  /* 0x6f23e0, ai_PickedObject at the last click (sv_Ha
 char *sv_PermsBuilding = 0;  /* 0x6f23e4, the building ai_BuildingPerms was last computed for (the right-click handler 0x52d940) */
 unsigned short *sv_PermsRoom = 0;  /* 0x6f23e8, the room (sv_PanelShown) it was computed for */
 int sv_DisabledCount = 0;  /* 0x6f23ec, the entries of sv_DisabledWidgets */
+unsigned char sv_BookPhase = 0;  /* 0x6f23f0, toggled 0 / 1 each frame by the open book's update: which page of the shown pair is redrawn this frame */
 unsigned char ai_GameState = 0;  /* 0x6f25ac */
 int ai_OptionScrollSpeed = 0;  /* 0x6f3614 */
 int sv_PanelFlag = 0;  /* 0x75e8c0, 1 when the panel is up (an int; cm.h / f3init.c) */
