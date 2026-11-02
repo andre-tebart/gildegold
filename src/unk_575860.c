@@ -741,6 +741,14 @@ SHOTREC ai_ShotTable[3] = { 0 };  /* 0x6f9f60, the cannon scene's shot results (
 #include "d3_tools.h"
 #include "d3_vec.h"
 #include "d3s.h"
+/* the cannon scene's limits (const data, not literals: the original loads them, computes (x - min) / (max - min)
+   at run time and keeps two copies of 45 degrees) */
+const float ai_CannonPitchMax = 0.7853982f;    /* 0x5eec6c, 45 degrees: the highest pitch of the cannon (ai_CannonAim) */
+const float ai_CannonPitchMin = -0.2617994f;   /* 0x5eec70, -15 degrees: the lowest pitch */
+const float ai_CameraPitchMin = -0.61086524f;  /* 0x5eec74, -35 degrees: the low end of the camera's pitch range (ai_CannonCamera) */
+const float ai_CameraPitchMax = 0.7853982f;    /* 0x5eec78, 45 degrees: its high end */
+const float ai_CameraPitchZero = 0.0f;         /* 0x5eec7c, the level camera: (zero - min) is the range the camera pitch moves in */
+const struct D3VECTOR ai_WimpelPos = { -70.0f, -50.0f, 120.0f };  /* 0x5eec80, the wimpel's place on the cannon base */
 #include "unk_458810.h"
 #include "dd_vesa.h"
 #define sv_SelectPanelObjectK ((int (*)())sv_SelectPanelObject)  /* 0x52c4c0?: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
@@ -5525,7 +5533,7 @@ void ai_CannonScene(char *rec)
     sc.zoom = 0.0f;
     d3_SetObjectPos(sc.obj98, &sc.pos);
     d3_SetObjectRot(sc.obj98, (D3VECTOR *)&sc.rot);
-    sc.obj9c = d3_CreateObject(sc.obj98, (D3VECTOR *)((unsigned)&sv_PhaseMinutes + 0x1c8), (D3VECTOR *)ai_ZeroRot, "AO_KANONE_WIMPEL_Aa");
+    sc.obj9c = d3_CreateObject(sc.obj98, (D3VECTOR *)&ai_WimpelPos, (D3VECTOR *)ai_ZeroRot, "AO_KANONE_WIMPEL_Aa");
     d3t_PlayAnim(sc.obj9c, "_ADDON\\AO_KANONE_WIMPEL_Aa.baf", 1);
     sc.obj9c->stateFlags = (sc.obj9c->stateFlags & 0xf7) | 4;
     sc.obj9c->stateFlags |= 0x40;
@@ -5626,8 +5634,6 @@ double _CIfmod();
 #include <math.h>
 #define FMIN(a, b) ((a) > (b) ? (b) : (a))
 #define FMAX(a, b) ((a) > (b) ? (a) : (b))
-#define AIM_PITCH_MIN (-0.2617994f)  /* -15 degrees */
-#define AIM_PITCH_MAX 0.7853982f     /* 45 degrees */
 /* 0x57ec40, the cannon aiming update (1169 B): sc = the scene, dt = the frame time. Does nothing while the shot
    runs (sc->fired). The zoom moves by +dt * 0.8 (with the key kb_Down[0x18]) or -dt * 1.6 and is clamped to 0 .. 1.
    The mouse pitches and yaws the cannon: with the left button held (dm_L.ldown) inside the middle of the screen
@@ -5753,9 +5759,9 @@ void ai_CannonAim(CANNONSCENE *sc, float dt)
     sc->rot.x = sc->pitchDelta + sc->rot.x;
     sc->rot.y = sc->yawDelta + sc->rot.y;
 clamp:
-    if (sc->rot.x < AIM_PITCH_MIN || sc->rot.x > AIM_PITCH_MAX) {
-        sc->rot.x = (sc->rot.x < AIM_PITCH_MIN ? AIM_PITCH_MIN : sc->rot.x) < AIM_PITCH_MAX
-                        ? (sc->rot.x < AIM_PITCH_MIN ? AIM_PITCH_MIN : sc->rot.x) : AIM_PITCH_MAX;
+    if (sc->rot.x < ai_CannonPitchMin || sc->rot.x > ai_CannonPitchMax) {
+        sc->rot.x = (sc->rot.x < ai_CannonPitchMin ? ai_CannonPitchMin : sc->rot.x) < ai_CannonPitchMax
+                        ? (sc->rot.x < ai_CannonPitchMin ? ai_CannonPitchMin : sc->rot.x) : ai_CannonPitchMax;
         sc->pitchSpeed = 0;
     }
     sc->rot.y = (float)fmod(sc->rot.y, 6.2831855f);
@@ -5861,7 +5867,7 @@ void ai_CannonCamera(CANNONSCENE *sc)
     }
     sc->fired = 0;
     sc->recoilStart = 0;
-    d3_SetObjectPos(sc->obj9c, (char *)((unsigned)&sv_PhaseMinutes + 0x1c8));
+    d3_SetObjectPos(sc->obj9c, (char *)&ai_WimpelPos);
 done:
     d3_SetObjectPos(sc->obj98, (char *)sc);
 }

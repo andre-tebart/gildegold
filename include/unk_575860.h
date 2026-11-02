@@ -186,4 +186,11 @@ void ai_SetupTutorialPlayer(void);  /* 0x57bc30, sets up the tutorial player's p
 int ai_TutorialWindow(void);  /* 0x57bce0, the tutorial chooser window: 1 starts the tutorial, 0 is the back */
 
 int ai_SaveSlotTable(int fh);  /* 0x589aa0, writes the slot table 0x6f5ec0 */
+
+extern const float ai_CannonPitchMax;   /* 0x5eec6c, 45 degrees: the highest pitch of the cannon */
+extern const float ai_CannonPitchMin;   /* 0x5eec70, -15 degrees: the lowest pitch */
+extern const float ai_CameraPitchMin;   /* 0x5eec74, -35 degrees: the low end of the cannon camera's pitch range */
+extern const float ai_CameraPitchMax;   /* 0x5eec78, 45 degrees: its high end */
+extern const float ai_CameraPitchZero;  /* 0x5eec7c, the level camera */
+extern const struct D3VECTOR ai_WimpelPos;  /* 0x5eec80, the wimpel's place on the cannon base */
 #endif
