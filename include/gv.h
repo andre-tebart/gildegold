@@ -134,7 +134,8 @@ typedef struct ORDCHAR {
     };
     float pregnancy;                /* 0x07c, above 1.0 the mother gives birth (gm_PartnerStep), set from the birth
                                        chance, reset below 0 after the birth (reasoned guess: the pregnancy) */
-    char pad080[8];
+    unsigned char skills[5];        /* 0x080, the five skill bytes (ai.h AICHAR.skills; gm_GetSkill reads them as the base value) */
+    char pad085[3];
     float mood[14][3];              /* 0x088, the mood triples (a, b, value) (ai.h AICHAR.mood) */
     char pad130[0x34];
     unsigned char jobId;            /* 0x164, the title / job id gm_TitleGroup groups (ai.h AICHAR.jobId) */

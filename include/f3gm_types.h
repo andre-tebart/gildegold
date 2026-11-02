@@ -48,6 +48,17 @@ typedef struct GMCHARSTATS {
     float baseHealth[8];                /* 0x48, per age bucket: gm_CharacterBaseHealth summed, then the average */
 } GMCHARSTATS;
 
+/* the payload of a character's skill-bonus event (he_FindEvent (2, 2, character, 0, 0x82)): the two skill
+   numbers of the event and the two float bonuses gm_GetSkill adds for them */
+typedef struct GMSKILLEV {
+    char pad00[0xac];
+    unsigned char skill1;               /* 0xac, the first skill number (0 .. 4) */
+    unsigned char skill2;               /* 0xad, the second skill number */
+    char pad0ae[2];
+    float bonus1;                       /* 0xb0, the bonus added for skill1 */
+    float bonus2;                       /* 0xb4, the bonus added for skill2 */
+} GMSKILLEV;
+
 /* a player's goods record (0x80 bytes; 0x55 of them at 0x7d6a70 + player * 0x2a90, gm_StockBlocks + 0x10; the
    template gm_DefaultStock has the same layout): f3init.c's INIT_STOCK, hst.c's G12STOCK */
 typedef struct GMSTOCK {
