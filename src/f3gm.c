@@ -741,60 +741,59 @@ none:
     *worth = gm_RichestWorth;
     return 0;
 }
-/* 0x4fae50, a leader (the record b, its character at +0x27) takes a share from the other characters: with the chance 0.25 * the other character's byte +0x1b0 * (1 + 0.0125 * the 0x5092e0 skill of b) (times 0.8 / 0.7 / 0.6 when the groups differ, byte +0xc against the record 2's rate), the other pays 0x4c4830 (-1, .., about the 0x50a640 value * 160 / the best value): the loyalty float at +0x1d0 moves by 0.05 (same group) or -0.05 (0x4c4ac0), the master gets 0x4c4b00. out[0] = the number of payers, out[1] = the sum; out[2] = an object of the leader. Returns 1, or 0 when b has no character. ROUGH, the amount (the lost __ftol argument) is a guess */
+/* 0x4fae50, the owner of the building b hands out money to the other characters (in use, of kind < 10 but not 6 / 7 / 8,
+   not the owner): each one with the chance b1b0 * 0.25 * (1 + 0.0125 * the building's skill 9), times 0.8 / 0.7 / 0.6
+   when its b00c differs from the owner's (the decision 2's value 2 / equal to the owner's / else), gets
+   (max(its worth / the richest worth * 160, 0) + 160) * that chance; its loyalty moves by +0.05 (same b00c) or -0.05
+   while inside 0.05 .. 0.95, and with a partner in out[2] the relation is sent too. out[0] = the number of characters
+   paid, out[1] = the sum (the caller takes it from the owner). Returns 1, or 0 when b has no owner.
+   out[2] is read past the caller's two ints (he_Unk542590 declares int out[2]), as the original does. */
 
-int unk_Unk4fae50(char *b, int *out)
+int gm_HandOutMoney(ORDBLD *b, int *out)
 {
     int n, sum, i, a, v, top;
     short id;
-    int r[9];
-    char *c;
-    char *u;
+    AIDEC rec;
+    ORDCHAR *c;
+    ORDCHAR *u;
     float f, p, lo;
-    unsigned uid;
 
     sum = 0;
     n = 0;
     gm_FindRichest(&id, &top);
-    if (*(unsigned short *)(b + 0x27) == 0xffff)
+    if (b->owner == 0xffff)
         return 0;
-    uid = *(unsigned short *)(b + 0x27);
-    gm_GetSkill(ai_Chars[uid], 4);
-    gv_GetTableRecord(2, r);
-    f = (float)gm_BuildingSkill(b, 9, 1) * 0.0125f + 1.0f;
-    u = ai_Chars[uid];
+    u = &ORD_CHARS[b->owner];
+    gm_GetSkill((char *)u, 4);
+    gv_GetTableRecord(2, (int *)&rec);
+    f = (float)gm_BuildingSkill((unsigned char *)b, 9, 1) * 0.0125f + 1.0f;
     for (i = 0; i < 0x300; i++) {
-        c = ai_Chars[i];
-        if (*(short *)c != -1 && (unsigned char)c[2] != 6 && (unsigned char)c[2] != 7 && (unsigned char)c[2] != 8 && (unsigned char)c[2] < 10 && *(int *)(c + 4) != *(int *)(u + 4)) {
-            if (c[0xc] == u[0xc]) {
-                p = (float)(unsigned char)c[0x1b0] * 0.25f * f;
+        c = &ORD_CHARS[i];
+        if (c->id != 0xffff && c->kind != 6 && c->kind != 7 && c->kind != 8 && c->kind < 10 && c->netId != u->netId) {
+            p = (float)c->b1b0 * 0.25f;
+            if (c->b00c == u->b00c) {
+                p *= f;
                 lo = 0.05f;
             } else {
-                p = (float)(unsigned char)c[0x1b0] * 0.25f * f;
-                if (r[6] == 2)
-                    p = (float)(p * 0.8);
-                else if ((unsigned char)u[0xc] == r[6])
-                    p = (float)(p * 0.7);
+                if (rec.cur == 2)
+                    p = (float)((double)p * f * 0.8);
+                else if (u->b00c == rec.cur)
+                    p = (float)((double)p * f * 0.7);
                 else
-                    p = (float)(p * 0.6);
+                    p = (float)((double)p * f * 0.6);
                 lo = -0.05f;
             }
-            {
-                float x = util_RandomF2();
-                if (x + x <= p) {
-                    a = I50A640(*(short *)c);
-                    if (0.0 < ((float)a / (float)top) * 160.0)
-                        a = I50A640(*(short *)c);
-                    v = (int)(((float)a / (float)top) * 160.0);
-                    sum += v;
-                    cm_SendMoveGoodsUnchecked(-1, *(int *)(c + 4), ai_OwnPlayer, v);
-                    n++;
-                    if (*(float *)(c + 0x1d0) < 0.95 && 0.05 < *(float *)(c + 0x1d0))
-                        cm_SendFloatDelta(*(int *)(c + 4), 0x1d0, lo);
-                    if (out[2] != 0) {
-                        gm_Mix(u, c, 4);
-                        cm_SendRelations(*(int *)(out[2] + 4), *(int *)(c + 4), (int)lo, 1);
-                    }
+            if (util_RandomF() * 2.0f <= p) {
+                v = (int)((((float)gm_GetWorth(c->id) / (float)top * 160.0f > 0.0f
+                            ? (float)gm_GetWorth(c->id) / (float)top * 160.0f : 0.0f) + 160.0f) * p);
+                sum += v;
+                cm_SendMoveGoodsUnchecked(-1, c->netId, ai_OwnPlayer, v);
+                n++;
+                if (c->loyalty < 0.95f && c->loyalty > 0.05f)
+                    cm_SendFloatDelta(c->netId, 0x1d0, lo);
+                if (out[2] != 0) {
+                    a = (int)(gm_Mix((int)u, (int)c, 4) * 10.0f + 1.0f);
+                    cm_SendRelations(((ORDCHAR *)out[2])->netId, c->netId, a, 1);
                 }
             }
         }

@@ -106,7 +106,8 @@ typedef struct ORDCHAR {
     unsigned int netId;             /* 0x004, the id the order events carry */
     unsigned char health;           /* 0x008, > 0 = the record is in use */
     unsigned char textVariant;      /* 0x009, nonzero: the alternate text block (level texts +10, job texts +0x28) */
-    char pad00a[3];
+    char pad00a[2];
+    unsigned char b00c;             /* 0x00c, a kind (ai.h AICHAR.b00c); gm_HandOutMoney compares it between two characters and with the decision 2's value (reasoned guess: the faith) */
     unsigned char level;            /* 0x00d, the level the level orders test */
     char pad00e[0x4e];
     int partner;                    /* 0x05c, the partner character id, -1 = none */
@@ -127,10 +128,12 @@ typedef struct ORDCHAR {
     int v1a0;                       /* 0x1a0, a trade sum cm.c's goods move adds to (price x amount) for an object of the type 0x1dc (seller) / 0x1db (buyer); the income kind 4 taxes v1a0 + v1a4 */
     int v1a4;                       /* 0x1a4, the same for the types 0x1db (seller) / 0x1dc (buyer) */
     int v1a8;                       /* 0x1a8, an amount the income kind 3 (f3gm.c gm_IncomeKind3) taxes at the decision 0xd's rate and clears once paid */
-    char pad1ac[0x1c];
+    char pad1ac[4];
+    unsigned char b1b0;             /* 0x1b0, scales the chance that gm_HandOutMoney takes money from the character (x 0.25) */
+    char pad1b1[0x17];
     int flags1c8;                   /* 0x1c8, order flags: 0x100 answer, 0x200 / 0x80000 / 0x100000 / 0x200000 / 0x400000 */
     int flags1cc;                   /* 0x1cc, privilege flags: 0xe00 */
-    char pad1d0[4];
+    float loyalty;                  /* 0x1d0, 0 .. 1, starts at 0.25 .. 0.75; gm_ShiftLoyalty / gm_HandOutMoney move it (reasoned guess: the loyalty) */
     int worth[4];                   /* 0x1d4, the character's worth (gm_GetWorth) of the last rounds, worth[3] the newest (gm_UpdateWorthMood shifts it) */
     float mood3Rate;                /* 0x1e4, scales the base growth of mood need 3 (ai.h AICHAR.mood3Rate) */
     char pad1e8[0x21c - 0x1e8];
