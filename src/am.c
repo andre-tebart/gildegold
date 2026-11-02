@@ -7811,8 +7811,8 @@ int ai_DecideMayorTownHall(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     o1->arg = 1;
     o1->arg2 = 0;
     o2->kind = 4;
-    o2->arg2 = 0;
     o2->ref = y->id;
+    o2->arg2 = 0;
     o2->arg = 1;
     return 0x31;
 }
