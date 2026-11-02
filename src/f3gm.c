@@ -1093,7 +1093,7 @@ int gm_HeadIconNumber(char *name)
 extern char * ai_PlayerBuilding;  /* 0x6f2308 */
 extern char * ai_FallbackBuilding;  /* 0x6f230c */
 struct CHARACTER * ch_Create();                     /* 0x403390 */
-int gm_IsHomeType();                     /* 0x502520 */
+int gm_IsHomeType(unsigned char *b);                     /* 0x502520 */
 int init_ObjectSceneUniverse();                     /* 0x511dc0 */
 int init_BuildingSceneUniverse();                     /* 0x511e60 */
 void ch_PreloadAnims(struct CHARACTER *ch, int n, ...);                     /* 0x404200 */
@@ -1256,69 +1256,64 @@ done:
     d3if_SelectScene(saved, 1);
     return (int)ORD_CHAR(c)->model;
 }
-/* 0x4fbd10, puts the character id (0x505df0, it must have no model yet) on the stage at the object of the group (1, 1, a) of its building (the group of the mission object when b is -1): its scene (0x502520 / 0x511dc0 / 0x511e60), the dummy "dummy_TUER" (or the object own dummy 0x406790, else "dummy_EINGANG"), the model by 0x4fbb80, the animation "bewegung/gehen"; stores the building (+0x2c) and b (+0x30) in the model and hides it (0x402480) when the shown building (0x6f2308 / 0x6f230c) is another. Returns the model or 0. ROUGH */
+/* 0x4fbd10, puts the character id (it must have no model yet) on the stage of its building, the building of
+   the query (1, 1, a): with b != -1 at the object of the query (1, 1, b) over the building's object list,
+   in the building's scene (a home type) or the object's (else the scene 0). The model (gm_CreateCharModel)
+   stands at the dummy "dummy_TUER" of the building's object, or at the object's own dummy (ch_FindDummy,
+   else "dummy_EINGANG") at p turned to ori; it preloads "bewegung/gehen", gets a and b as its group and
+   script group, and is hidden when the shown building (ai_PlayerBuilding / ai_FallbackBuilding) is another.
+   Returns the model or 0. */
 
-int gm_PlaceOnStage(int id, int a, int b, int *p4, int *p5)
+int gm_PlaceOnStage(int id, int a, int b, int *p, int *ori)
 {
     int saved;
-    char *c;
-    int o, o2, sc;
-    char *dummy;
-    int uVar7;
+    ORDCHAR *c;
+    ORDBLD *o;
+    unsigned short *o2;
+    int sc;
+    D3OBJECT *d;
 
-    saved = d3_CurrentScene;
     o2 = 0;
-    c = gm_FindChar(id);
-    if (c == 0)
-        return 0;
-    if (*(int *)(c + 0x184) != 0)
-        return 0;
-    o = gm_BuildQuery(1, 1, a);
-    if (o == 0)
-        return 0;
-    if (b != -1) {
-        o2 = (int)gm_Query(*(int *)(o + 0x5d), 1, 1, b);
-        if (o2 == 0)
-            return 0;
-    }
-    sc = gm_IsHomeType(o);
-    if (sc == 0) {
-        if (o2 == 0) {
-            sc = 0;
-            goto go;
+    saved = d3_CurrentScene;
+    c = ORD_CHAR(gm_FindChar(id));
+    if (c != 0 && c->model == 0) {
+        o = (ORDBLD *)gm_BuildQuery(1, 1, a);
+        if (o != 0) {
+            if (b != -1) {
+                o2 = (unsigned short *)gm_Query((void *)o->objList, 1, 1, b);
+                if (o2 == 0)
+                    return 0;
+            }
+            if (gm_IsHomeType((unsigned char *)o))
+                sc = init_BuildingSceneUniverse((unsigned char *)o);
+            else if (o2 != 0)
+                sc = init_ObjectSceneUniverse(o2);
+            else
+                sc = 0;
+            if (sc >= 0) {
+                d3if_SelectScene(sc, 1);
+                if (o2 != 0) {
+                    if ((d = ch_FindDummy()) != 0)
+                        gm_CreateCharModel((unsigned short *)c, sc, p, ori, 0, d->name);
+                    else
+                        gm_CreateCharModel((unsigned short *)c, sc, p, ori, 0, "dummy_EINGANG");
+                } else
+                    gm_CreateCharModel((unsigned short *)c, sc, 0, 0, (int)o->object, "dummy_TUER");
+                if (c->model != 0)
+                    ch_PreloadAnims(c->model, 1, "bewegung/gehen");
+                d3if_SelectScene(saved, 1);
+                if (c->model != 0) {
+                    c->model->group = a;
+                    c->model->scriptGroup = b;
+                    if ((ai_PlayerBuilding != 0 && ai_PlayerBuilding != (char *)o)
+                        || (ai_FallbackBuilding != 0 && ai_FallbackBuilding != (char *)o))
+                        ch_SetVisible(c->model, 0);
+                    return (int)c->model;
+                }
+            }
         }
-        sc = init_ObjectSceneUniverse(o2);
-    } else
-        sc = init_BuildingSceneUniverse(o);
-    if (sc < 0)
-        return 0;
-go:
-    d3if_SelectScene(sc, 1);
-    if (o2 == 0) {
-        uVar7 = *(int *)(o + 0x61);
-        dummy = "dummy_TUER";
-        p5 = 0;
-        p4 = 0;
-    } else {
-        dummy = (char *)ch_FindDummy();
-        if (dummy == 0) {
-            dummy = "dummy_EINGANG";
-            uVar7 = 0;
-        } else {
-            uVar7 = 0;
-        }
     }
-    gm_CreateCharModel((unsigned short *)c, sc, p4, p5, uVar7, dummy);
-    if (*(int *)(c + 0x184) != 0)
-        ch_PreloadAnims(*(int *)(c + 0x184), 1, "bewegung/gehen");
-    d3if_SelectScene(saved, 1);
-    if (*(int *)(c + 0x184) == 0)
-        return 0;
-    *(int *)(*(int *)(c + 0x184) + 0x2c) = a;
-    *(int *)(*(int *)(c + 0x184) + 0x30) = b;
-    if ((ai_PlayerBuilding != 0 && ai_PlayerBuilding != o) || (ai_FallbackBuilding != 0 && ai_FallbackBuilding != o))
-        ch_SetVisible(*(int *)(c + 0x184), 0);
-    return *(int *)(c + 0x184);
+    return 0;
 }
 
 extern char ch_EmptyName[];             /* 0x631090 */
