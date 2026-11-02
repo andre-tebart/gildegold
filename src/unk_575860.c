@@ -4631,30 +4631,172 @@ int ai_AlchemistHire(unsigned char *obj, AHMSTEP *step, int value)
     return 0;
 }
 
-int ahm_ResearchState();
+int ai_AlchemistSendRecipeResearch(); int ai_AlchemistSendResearchStart(); int ahm_ResearchState(); char * ahm_OwnerChar(); AHMGRID * ahm_RandomRecipe();
+int d2_WinOpenSlider(); void d2_SetObjValue(); void d2_MenuNavigate(int group);
 
-/* 0x57c690, the tutorial selection handler (1871 B, ROUGH SKELETON): arg 1 = the record; the lookup 0x4eaa50
-   (record), the dword record +0x65, 0x4eb180 (record, &local, &local2, 0), the clock 0x6333cc into a local,
-   0xf8a668 = -1, the window 0x4741f0 (0, 0, 0x62a284), 0x476f80 (0, 0) and 0x475600 (the window). The rest of
-   the body (the selection entries, the pump and the tail) is not written yet, see build/dis57c690.txt */
-int ai_Unk57c690(char *rec)
+/* the recipe places of the record rec as selectable pictures (a good's picture 0xdf + id, its name text
+   0x9a8 + id * 2 and a bar of its value v * 252), two to a row (240 pixels apart, 80 pixels per row), each
+   added to the radio group; pics gets the picture objects. Answers how many places are in use */
+static __inline int ai_ResearchSlots(AHMREC *rec, int group, int win, int *pics)
 {
-    char *r;
-    int a;
-    int b;
-    int l1;
-    int l2;
+    AHMSLOT *slot;
+    int *pic;
+    char line[0x100];
+    int k;
+    int i;
+    int x;
+    int y;
+    int t;
 
-    r = (char *)ahm_OwnerChar(rec);
-    a = U_I(rec + 0x65);
-    b = ahm_ResearchState(rec, &l1, &l2, 0);
-    l1 = U_I((unsigned)&ai_ClockMs);
-    U_I((unsigned)&d2_ClickedId) = -1;
-    r = (char *)d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62a284);
+    i = 0;
+    pic = pics;
+    slot = rec->slots;
+    for (k = 0; k < 6; k++, slot++) {
+        if (slot->id == 0)
+            continue;
+        x = (i & 1) * 240 + 10;
+        y = i / 2 * 80 + 10;
+        *pic = d2_WinOpenPic(x, y, slot->id + 0xdf, win);
+        d2_Objs[*pic].interactive = 1;
+        d2_Objs[*pic].user = ai_Goods + slot->id * 0x41;
+        d2_RadioAdd(group, *pic);
+        txt_Format(line, (int)"%s", slot->id * 2 + 0x9a8);
+        t = d2_CreateWinText(x + 0x3c, y + 5, line, win);
+        d2_Objs[t].w = d2_Wins[win].w / 2 - 10;
+        d2_SetObjFont(t, 0x54);
+        sv_ValueBar(x + 0x3c, y + 0x19, (int)(slot->v * 252.0f), 0x4df);
+        i++;
+        pic++;
+    }
+    return i;
+}
+
+/* 0x57c690, the alchemist's research window of the alchemist object obj ("Locations\Domizil\Alchemistry2"):
+   without an owning character only the text 0x4051 (0x182); else the places of the record at +0x65 as
+   selectable pictures (ai_ResearchSlots; rebuilt, keeping the selection, when the research state changed or
+   0x32 ms passed), a progress slider and a text for the running research (ahm_ResearchState 1: text 0x404b,
+   2: 0x404c with the recipe's name, 3: 0x404d with the share's name), and two buttons (texts 0x4053, 0x4054).
+   The first is enabled while a place is selected and no research runs; it hands the selected place to
+   ai_AlchemistSendRecipeResearch when ahm_RandomRecipe gives the owner a recipe, else the message 0x41b0. The second is enabled
+   while no research runs and calls ai_AlchemistSendResearchStart. The right mouse button closes the window; the camera follows
+   again at the end
+   @deep reconstructed whole (544 vs 563 instructions; asmdiff --symbols: every call, argument, constant,
+   text id and branch in the original's order, the unsigned clock compare (jbe) and the buttons copied out
+   of the ButtonRow array into locals matched; the slot loop is a static __inline helper expanded twice, as
+   in the original's two radio-rebuild blocks). Left: allocation only. The original keeps owner in edi and
+   the record in ebp (ours swapped), win2 spilled to [esp+0x40] and reloaded after each text (ours keeps it
+   in ebx), the slot pointer / picture pointer / counter in slots [esp+0x14] / [esp+0x10] / [esp+0x1c] with
+   i in edi (ours i in a slot, slot pointer in edi), d2_LastWindow loaded before d2_LastWindowPtr in the
+   slider call; frame 0x264 vs 0x25c */
+void ai_AlchemistResearchWindow(unsigned char *obj)
+{
+    char msg[0x100];
+    char line[0x100];
+    int pics[6];
+    int row[2];
+    int start;
+    int other;
+    AHMREC *rec;
+    char *owner;
+    int state;
+    int lastState;
+    unsigned lastClock;
+    int sel;
+    int a;
+    float f;
+    int form;
+    int win2;
+    int win3;
+    int group;
+    int slider;
+    int t;
+    int n;
+    int j;
+
+    owner = ahm_OwnerChar(obj);
+    rec = ((AHMOBJ *)obj)->rec;
+    lastState = ahm_ResearchState(obj, &a, &f, 0);
+    lastClock = ai_ClockMs;
+    d2_ClickedId = -1;
+    form = d2_OpenForm(0, 0, "Locations\Domizil\Alchemistry2");
     d2_SetPointerSprite(0, 0);
-    d2_CentreViewWindows(r);
-    /* ROUGH: the rest is not written yet */
-    return 0;
+    d2_CentreViewWindows(form);
+    d2_SetForm(form, 0);
+    sv_FitForm(d2_LastWindow);
+    d2_SetForm(form, 2);
+    win2 = d2_LastWindow;
+    d2_SetForm(form, 1);
+    io_PrintText(0x404f);
+    if (owner == 0) {
+        d2_SetForm(form, 2);
+        io_PrintText(0x4051, 0x182);
+        do {
+            if (dm_L.rup != 0)
+                sv_PopRequest = 1;
+        } while (sv_RunFrame((int)ai_AlchemistResearchWindow, 0x677c7));
+        d2_CloseView(form);
+        return;
+    }
+    d2_SetForm(form, 3);
+    sv_ButtonRow(d2_LastWindow, 0, row, 2, txt_Ptrs[0x4053], txt_Ptrs[0x4054]);
+    start = row[0];
+    other = row[1];
+    d2_SetForm(form, 2);
+    io_PrintText("$C");
+    group = d2_CreateRadioGroup(0);
+    n = ai_ResearchSlots(rec, group, win2, pics);
+    do {
+        state = ahm_ResearchState(obj, &a, &f, 0);
+        d2_SetForm(form, 4);
+        io_PrintText("$C");
+        if (state != 0) {
+            slider = d2_WinOpenSlider((d2_LastWindowPtr->w - 300) / 2, 0x12, 300, 0, 100, 0x75, 0x42, d2_LastWindow);
+            if (state == 1)
+                txt_Format(msg, 0x404b);
+            else if (state == 2)
+                txt_Format(msg, 0x404c, a * 2 + 0x9a8);
+            else if (state == 3)
+                txt_Format(msg, 0x404d, a + 0x4172);
+            t = d2_CreateWinText(0, 0, msg, d2_LastWindow);
+            d2_Objs[t].w = d2_LastWindowPtr->w;
+            d2_Objs[t].centred = 1;
+            d2_SetObjFont(t, 0x54);
+            d2_SetObjValue(slider, 0, 100, (int)(f * 100.0f));
+        }
+        d2_SetObjEnabled(start, d2_Radios[group].sel != -1 && n != 0 && state == 0 ? 1 : 0);
+        d2_SetObjEnabled(other, state == 0);
+        if (state != lastState || ai_ClockMs > lastClock + 0x32) {
+            lastClock = ai_ClockMs;
+            lastState = state;
+            sel = d2_Radios[group].sel;
+            d2_RadioClear(group);
+            d2_SetForm(form, 2);
+            io_PrintText("$C");
+            group = d2_CreateRadioGroup(0);
+            n = ai_ResearchSlots(rec, group, win2, pics);
+            d2_Radios[group].sel = sel;
+            d2_MenuNavigate(group);
+        }
+        if (dm_L.rup != 0) {
+            sv_PopRequest = 1;
+        } else if (d2_ClickedId != -1) {
+            if (d2_PointerObj == start) {
+                for (j = 0; j < 6; j++) {
+                    if (d2_Radios[group].sel == j) {
+                        if (ahm_RandomRecipe(owner))
+                            ai_AlchemistSendRecipeResearch(obj, rec, j);
+                        else
+                            sv_MessageBox(txt_Ptrs[0x41b0], 0);
+                    }
+                }
+            } else if (d2_PointerObj == other) {
+                ai_AlchemistSendResearchStart(obj, rec);
+            }
+        }
+    } while (sv_RunFrame((int)ai_AlchemistResearchWindow, 0x677c7));
+    d2_RadioClear(group);
+    d2_CloseView(form);
+    sv_CameraFollow();
 }
 /* 0x57cde0, a tutorial message builder (227 B, ROUGH SKELETON): a 0x100-byte frame; 0x4eb180 (arg 1, &local,
    &local2, 0) - non-zero answers 0 at once; the 0xf8-byte struct zeroed (rep stos 0x3e dwords) and filled from
@@ -4662,7 +4804,7 @@ int ai_Unk57c690(char *rec)
    character record 0x770b84 + the word * 0x21c, the random 0x42ec00 (0x5a0); then the message from the locals
    and the record (the rest is not written yet, see the disassembly) */
 
-int ai_Unk57cde0(char *rec)
+int ai_AlchemistSendRecipeResearch(char *rec)
 {
     char buf[0x100];
     int a;
@@ -4679,7 +4821,7 @@ int ai_Unk57cde0(char *rec)
    record (+1 dword, the word +0x27), the clock globals 0x770ae0 / 0x770ae4 / 0x770ae8 / 0x770aec, the character
    record 0x770b84 + the word * 0x21c, the byte 0x95 at +4 and 1 at +0x3a, 0x4c4b70 (the local); 1 */
 
-int ai_Unk57ced0(char *rec)
+int ai_AlchemistSendResearchStart(char *rec)
 {
     char buf[0x100];
     int a;
@@ -6346,7 +6488,7 @@ void ai_Unk581db0(char *rec)
 }
 
 void sv_ReleaseNamePlates(void); int sv_RegisterNamePlate(); int ai_OpenTransport(); int ai_StorageWindow();
-int ai_ProductionWindow(); void ai_Unk5823b0(); int ai_Unk57c690(); int ai_Unk57cf90();
+int ai_ProductionWindow(); void ai_Unk5823b0(); void ai_AlchemistResearchWindow(); int ai_Unk57cf90();
 
 /* 0x5821d0, the contact dispatcher (467 B): arg 1 = the record, arg 2 = the window's entry list. 0x52e190 once,
    then the pump loop 0x5309a0 (this dispatcher, 0x67fff): the escape 0x14673a0 -> 0x6f22a0 = 1; the contact
@@ -6403,7 +6545,7 @@ void ai_Unk5821d0(char *rec, char *list)
                     else
                         sv_MessageBox(U_I(((unsigned)&ai_Unk144a80c + 0x64) + i * 4), 0x100);
                 } else if (U_I((unsigned)&ai_ClickedObject) == c6) {
-                    ai_Unk57c690(rec);
+                    ai_AlchemistResearchWindow(rec);
                 } else if (U_I((unsigned)&ai_ClickedObject) == c4) {
                     ai_Unk57cf90(rec);
                 } else if (U_I((unsigned)&ai_ClickedObject) == c1) {
