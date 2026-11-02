@@ -1095,7 +1095,7 @@ extern int ai_Unk6f0d78;  /* 0x6f0d78 */
 extern int ai_Unk92c504[];  /* 0x92c504, the scene kind table (5 ints per kind) */
 extern int ai_Unk92c508[];  /* 0x92c508 */
 extern char ai_Unk92c50c[];  /* 0x92c50c */
-extern char ai_Unk60c6c0[];  /* 0x60c6c0 */
+extern char cm_TextNewline[];  /* 0x60c6c0 */
 
 
 void ai_Unk4e4060();  /* 0x4e4060 */

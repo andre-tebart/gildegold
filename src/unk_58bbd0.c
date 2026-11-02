@@ -1021,7 +1021,7 @@ extern GAPDATA full_data_62d458[];
 extern GAPDATA full_data_62d468[];
 
 extern int d2_PointerObj;
-extern char ai_Unk60c6c0[4];
+extern char cm_TextNewline[4];
 extern int ai_ClockMs;
 extern int d2_ClickedId;
 extern int d2_LastWindow;
@@ -19853,14 +19853,14 @@ found:
                     cur[i] = v;
                     if (v == page) {
                         if (selected != 0)
-                            io_PrintText((char *)(unsigned)&ai_Unk60c6c0);
+                            io_PrintText((char *)(unsigned)&cm_TextNewline);
                         v = io_PrintText(&save0, title);
                         k = d2_GetWinObj(win, 2, v);
                         ids[i] = k;
                         selected++;
                     } else if (page == 2 && v == 9) {
                         if (selected != 0)
-                            io_PrintText((char *)(unsigned)&ai_Unk60c6c0);
+                            io_PrintText((char *)(unsigned)&cm_TextNewline);
                         v = io_PrintText(&save0, title);
                         k = d2_GetWinObj(win, 2, v);
                         ids[i] = -1;

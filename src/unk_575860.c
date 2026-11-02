@@ -5358,7 +5358,7 @@ typedef struct CANNONSCENE { /* 0xe4 bytes, the scene struct of ai_CannonScene (
     char pad64[4];
     unsigned last;           /* +0x68, the clock of the last frame (ai_CannonScene's dt) */
     unsigned now;            /* +0x6c, the clock of this frame (ai_CannonCamera's recoil timer) */
-    char pad70[4];
+    unsigned resultClock;    /* +0x70, the clock of the last shot result update (ai_CannonShotResults, every 0x15e ms) */
     int win74;               /* +0x74, closed at the end */
     int recoilStart;         /* +0x78, the clock of the shot (ai_CannonCamera's recoil timer) */
     int fired;               /* +0x7c, set while the shot runs: ai_CannonAim then does nothing */
@@ -5394,7 +5394,7 @@ struct D3OBJECT;
 char d3if_Delete(struct D3OBJECT *obj);                 /* 0x447190, d3_interface.h */
 char d3if_Show(struct D3OBJECT *obj, char show);        /* 0x4471b0, d3_interface.h */
 void he_ShowObjectInfos(); void ai_CannonAxes(); void ai_CannonAim(CANNONSCENE *sc, float dt); void ai_CannonCamera();
-void ai_CannonShotResults(); void ai_CannonSwitchAnim(char *rec, float *sc, char *run, int sel, int mask); int ai_CannonFireCheck(CANNONSCENE *sc); void ai_CannonExplosion();
+void ai_CannonShotResults(CANNONSCENE *sc); void ai_CannonSwitchAnim(char *rec, float *sc, char *run, int sel, int mask); int ai_CannonFireCheck(CANNONSCENE *sc); void ai_CannonExplosion();
 void sv_SetStatusText(char *s); void d2_RemoveObj(); void sv_RedrawScreen();
 void d3if_Prerender(char map); 
 
@@ -5943,67 +5943,66 @@ int ai_CannonFireCheck(CANNONSCENE *sc)
     }
     return 0;
 }
-/* 0x57f690, the shot result table (260 B): every 0x15e ticks (0x6333cc vs sc + 0x70) the three 0x38-byte records
-   of 0x6f9f60 (rec 0 .. 2, the record index in the first dword; three 0x10-byte entries each: the object 0x4fea50
-   (0, 0, the id), the flag +8, the value +0xc) are turned into the texts 0x406c / 0x406d (the character word +0x27
-   of the object, 0xffff / 0x6f1bf8 = the playerless case) with 0x4071 / 0x4072 (<= 25) / 0x4073 and the name block
-   0x602568 / 0x60c6c0; the first record with any entry: 0x6f2664 = 0, its index = -1, 0x475590 (sc + 0x74, 1);
-   with 0x6f2664 set but no entry: the texts 0x602568 / 0x406e, the same; none at all: 0x475590 (sc + 0x74, 0) and
-   0x6f2664 = 0 */
+/* 0x57f690, the shot results: every 0x15e ms (sc->resultClock) the result view sc->win74 is cleared and the first
+   of the three ai_ShotTable records whose id is its index is printed (ai_ShotDirty set): each entry's building
+   (gm_FindById of e[i].obj, the list ends at a missing one) as the text 0x406c (no owner or the player's) or 0x406d
+   (with its owner), the hit 0x4071 / 0x4073 (e[i].a == 1, more than 25 away) / 0x4072 (within 25); "$C" starts the
+   text, cm_TextNewline separates the entries. A record with entries, or with none while ai_ShotDirty is still set
+   (then the text 0x406e), is consumed (id = -1, ai_ShotDirty = 0) and shows the view; without any the view is
+   hidden and ai_ShotDirty cleared */
 
-void ai_CannonShotResults(char *sc)
+void ai_CannonShotResults(CANNONSCENE *sc)
 {
     int n;
     int rec;
     int i;
-    int h;
+    AIBLD *bld;
     int v;
     unsigned short w;
 
     n = 0;
-    if ((unsigned int)(*(int *)(sc + 0x70) + 0x15e) <= (unsigned int)U_I((unsigned)&ai_ClockMs)) {
-        *(int *)(sc + 0x70) = U_I((unsigned)&ai_ClockMs);
-        d2_SetForm(*(int *)(sc + 0x74), 0);
+    if (sc->resultClock + 0x15e <= (unsigned)ai_ClockMsVolatile) {
+        sc->resultClock = ai_ClockMsVolatile;
+        d2_SetForm(sc->win74, 0);
         for (rec = 0; rec < 3; rec++) {
             i = 0;
             if (ai_ShotTable[rec].id == rec) {
                 ai_ShotDirty = 1;
                 for (i = 0; i < 3; i++) {
-                    h = 0;
-                    gm_FindById(&h, 0, 0, ai_ShotTable[rec].e[i].obj);
-                    if (h == 0)
+                    gm_FindById((int *)&bld, 0, 0, ai_ShotTable[rec].e[i].obj);
+                    if (bld == 0)
                         break;
                     v = 0x4071;
-                    if (ai_ShotTable[rec].e[i].a == 1) {
-                        v = 0x4073;
-                        if (ai_ShotTable[rec].e[i].bf <= 25.0f)
-                            v = 0x4072;
-                    }
-                    io_PrintText(i == 0 ? (char *)(unsigned)"$C" : (char *)(unsigned)&ai_Unk60c6c0);
-                    w = *(unsigned short *)(h + 0x27);
-                    if (w == 0xffff || (char *)(unsigned)&ai_Chars + w * 0x21c == (char *)U_I((unsigned)&ai_PlayerChar))
-                        io_PrintText(0x406c, h, v);
+                    if (ai_ShotTable[rec].e[i].a == 1)
+                        v = ai_ShotTable[rec].e[i].bf > 25.0f ? 0x4073 : 0x4072;
+                    if (i != 0)
+                        io_PrintText(cm_TextNewline);
                     else
-                        io_PrintText(0x406d, (int)w, h, v);
+                        io_PrintText("$C");
+                    w = bld->owner;
+                    if (w == 0xffff || (void *)&ai_CharsT[w] == (void *)ai_PlayerChar)
+                        io_PrintText(0x406c, bld, v);
+                    else
+                        io_PrintText(0x406d, (int)w, bld, v);
                     n++;
                 }
                 if (n != 0) {
                     ai_ShotDirty = 0;
                     ai_ShotTable[rec].id = -1;
-                    d2_SetViewEnabled(*(int *)(sc + 0x74), 1);
+                    d2_SetViewEnabled(sc->win74, 1);
                     return;
                 }
                 if (ai_ShotDirty != 0) {
                     ai_ShotDirty = 0;
                     ai_ShotTable[rec].id = -1;
-                    io_PrintText((char *)(unsigned)"$C");
+                    io_PrintText("$C");
                     io_PrintText(0x406e);
-                    d2_SetViewEnabled(*(int *)(sc + 0x74), 1);
+                    d2_SetViewEnabled(sc->win74, 1);
                     return;
                 }
             }
         }
-        d2_SetViewEnabled(*(int *)(sc + 0x74), 0);
+        d2_SetViewEnabled(sc->win74, 0);
         ai_ShotDirty = 0;
     }
 }
