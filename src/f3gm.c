@@ -2446,17 +2446,16 @@ void gm_SetTime(GCLOCK *c, unsigned char hour, unsigned min, unsigned sec)
 int gm_CompareTime(GCLOCK *a, GCLOCK *b)
 {
     int x, y;
-    int da = a->day, db = b->day;
 
-    if (da < db)
+    if (a->day < b->day)
         return -1;
-    if (db < da)
+    if (a->day > b->day)
         return 1;
-    x = a->sec + (a->min + a->hour * 0x3c) * 0x3c;
-    y = b->sec + (b->min + b->hour * 0x3c) * 0x3c;
+    x = a->sec + (a->min + a->hour * 60) * 60;
+    y = b->sec + (b->min + b->hour * 60) * 60;
     if (x < y)
         return -1;
-    return y < x;
+    return x > y;
 }
 /* 0x4fe280, the minutes from clock a to clock b (days, hours and minutes; the seconds are not used) */
 
