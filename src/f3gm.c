@@ -6195,25 +6195,20 @@ float gm_TitlePeriodServed(int n, int *out)
 
 void gm_SetJob(int i, unsigned n)
 {
-    char *c;
-    int r, g;
-    unsigned char b;
-    char k;
+    unsigned char *rec;     /* the job record: a job byte per group from +0x74 */
+    int k;
 
-    c = ai_Chars[i];
-    if (n != (unsigned char)c[0x164])
-        *(int *)(c + 0x174) = 0;
-    r = gm_PlayerRecord(c);
-    if (r != 0 && ((k = c[2], k == 6 || k == 7) || k == 5)) {
-        g = gm_TitleGroup((unsigned char)c[0x164]);
-        *(char *)(g + 0x74 + r) = c[0x164];
-        g = gm_TitleGroup(n);
-        b = *(unsigned char *)(g + 0x74 + r);
-        if ((int)n < (int)b || b == 0)
-            *(char *)(g + 0x74 + r) = (char)n;
+    if (n != ORD_CHARS[i].jobId)
+        ORD_CHARS[i].jobDays = 0;
+    rec = (unsigned char *)gm_PlayerRecord(ai_Chars[i]);
+    if (rec != 0 && (ORD_CHARS[i].kind == 6 || ORD_CHARS[i].kind == 7 || ORD_CHARS[i].kind == 5)) {
+        rec[0x74 + gm_TitleGroup(ORD_CHARS[i].jobId)] = ORD_CHARS[i].jobId;
+        k = gm_TitleGroup(n);
+        if ((int)n < rec[0x74 + k] || rec[0x74 + k] == 0)
+            rec[0x74 + k] = (unsigned char)n;
         ai_PermsDirty = 1;
     }
-    c[0x164] = (char)n;
+    ORD_CHARS[i].jobId = (unsigned char)n;
 }
 /* 0x504840, drops the character c one title rank (+0x165 - 1; 0xc for a master of kind 0x20, 0xb for kind 0x1f) and clears its int +0x174, both sent through 0x4c3d90. Returns -1 */
 
