@@ -8597,7 +8597,7 @@ void ai_Unk5871c0(char *rec)
     sv_CameraFollow();
 }
 
-int unk_Unk4f25d0();
+int gv_FindReservedEntry();
 
 /* 0x5871e0, the graveyard rent-a-grave handler (278 B): rec = the contact record (+0x65 the state record). The
    entry of the player's character (0x770b80 + 0x6f25b8 * 0x21c, rec, 0, 0x4ef740, 0xff) through 0x4ef7c0;
@@ -8614,7 +8614,7 @@ void ai_Unk5871e0(char *rec)
 
     p = (int *)gv_FindEntry((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, rec, 0, (char *)(unsigned)&gv_EntrySameId, 0xff);
     if (p == 0) {
-        if (unk_Unk4f25d0((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, &bld, &p) == 0) {
+        if (gv_FindReservedEntry((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, &bld, &p) == 0) {
             ai_Unk5847a0(rec);
             sv_CameraFollow();
             return;

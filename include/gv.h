@@ -328,7 +328,7 @@ int gm_ChooseHeadIcon(unsigned short *c);                     /* 0x4fb890 */
 int unk_Unk4f22a0(char *o, unsigned char m);  /* 0x4f22a0 */
 
 int gv_FindHeldEntry(void *a, unsigned char **o, int *e);  /* 0x4f2540 */
-int unk_Unk4f25d0(void *a, unsigned char **o, int *e);  /* 0x4f25d0 */
+int gv_FindReservedEntry(void *a, unsigned char **o, int *e);  /* 0x4f25d0 */
 float unk_Unk4f2660(char *o);           /* 0x4f2660 */
 int gv_GetTableRecord(int i, int *out);     /* 0x4f2720 */
 int gv_FindTableRecord(char *c, unsigned b, int *out);  /* 0x4f2870 */

@@ -2660,7 +2660,7 @@ void he_Unk544630(int ev)
 }
 
 unsigned int ai_Unk5c6530(int param_1, int param_2);
-int unk_Unk4f25d0();
+int gv_FindReservedEntry();
 int gv_EntryIndex(char *r, int *e);
 int gv_OrderSetGraveHolder();
 int ai_Unk4c4fa0(void *p);
@@ -2826,7 +2826,7 @@ void he_Unk544840(int ev)
                 he_ShowNews(*(int *)(a + 4), *(int *)(a + 4), buf3, 0, 0x5f4, (char *)0);
                 cm_SendFloatDelta(*(int *)(who + 4), 0x7c, 1.1f - *(float *)(who + 0x7c));
             }
-            if (unk_Unk4f25d0(b, &x1, &x2) != 0)
+            if (gv_FindReservedEntry(b, &x1, &x2) != 0)
                 gv_OrderSetGraveHolder(0, x1, *(int *)x2, gv_EntryIndex(*(int *)(x1 + 0x65), x2));
             memset(msg, 0, sizeof(msg));
             *(int *)(msg + 0x34) = *(int *)(ev + 4);
