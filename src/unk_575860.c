@@ -5394,7 +5394,7 @@ struct D3OBJECT;
 char d3if_Delete(struct D3OBJECT *obj);                 /* 0x447190, d3_interface.h */
 char d3if_Show(struct D3OBJECT *obj, char show);        /* 0x4471b0, d3_interface.h */
 void he_ShowObjectInfos(); void ai_CannonAxes(); void ai_CannonAim(CANNONSCENE *sc, float dt); void ai_CannonCamera();
-void ai_CannonShotResults(); void ai_CannonSwitchAnim(char *rec, float *sc, char *run, int sel, int mask); int ai_CannonFireCheck(); void ai_CannonExplosion();
+void ai_CannonShotResults(); void ai_CannonSwitchAnim(char *rec, float *sc, char *run, int sel, int mask); int ai_CannonFireCheck(CANNONSCENE *sc); void ai_CannonExplosion();
 void sv_SetStatusText(char *s); void d2_RemoveObj(); void sv_RedrawScreen();
 void d3if_Prerender(char map); 
 
@@ -5921,25 +5921,25 @@ void ai_CannonAxes(char *sc)
     d3_DirToWorld(*(int *)(sc + 0x8c), (char *)(unsigned)&d3_YAxis, sc + 0x44);
     d3_DirToWorld(*(int *)(sc + 0x8c), (char *)((unsigned)&ai_AxisPair + 0x10), sc + 0x34);
 }
-/* 0x57f620, the fire check (74 B): sc + 0x7c clear and the zoom sc + 0x20 <= 0.01: the fire button sc + 0xb8
-   clicked (0xf8a668 / 0x5fe710) or the shot pending 0x14681f2 -> 0x14681f2 = 0, the timer sc + 0x78 = sc + 0x6c,
-   the recoil sc + 0x7c = 1; 1, else 0 */
+/* 0x57f620, the fire check: nothing (0) while a shot runs (sc->fired) or the zoom is above 0.01; a click on the
+   fire button (sc->fireBtn) or the key kb_Down[0x32] (DIK_M) fires: the key is cleared, the recoil clock starts
+   (sc->recoilStart = sc->now) and sc->fired is set; 1 */
 
-int ai_CannonFireCheck(char *sc)
+int ai_CannonFireCheck(CANNONSCENE *sc)
 {
-    if (*(int *)(sc + 0x7c) == 0 && *(float *)(sc + 0x20) <= 0.01f) {
-        if (U_I((unsigned)&d2_ClickedId) != -1 && U_I((unsigned)&d2_PointerObj) == *(int *)(sc + 0xb8)) {
-            *(char *)((unsigned)&kb_Down + 0x32) = 0;
-            *(int *)(sc + 0x78) = *(int *)(sc + 0x6c);
-            *(int *)(sc + 0x7c) = 1;
-            return 1;
-        }
-        if (*(char *)((unsigned)&kb_Down + 0x32) != 0) {
-            *(char *)((unsigned)&kb_Down + 0x32) = 0;
-            *(int *)(sc + 0x78) = *(int *)(sc + 0x6c);
-            *(int *)(sc + 0x7c) = 1;
-            return 1;
-        }
+    if (sc->fired != 0 || sc->zoom > 0.01f)
+        return 0;
+    if (d2_ClickedId != -1 && d2_PointerObj == sc->fireBtn) {
+        kb_Down[0x32] = 0;
+        sc->recoilStart = sc->now;
+        sc->fired = 1;
+        return 1;
+    }
+    if (kb_Down[0x32] != 0) {
+        kb_Down[0x32] = 0;
+        sc->recoilStart = sc->now;
+        sc->fired = 1;
+        return 1;
     }
     return 0;
 }
