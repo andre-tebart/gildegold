@@ -693,6 +693,12 @@ TUTSTATE *const ai_Tutorial = (TUTSTATE *)(full_data_6fa020 + 0x40);  /* 0x5eec6
 #define ai_TimeT (*(AITIME *)&ai_Time)  /* 0x770ae0, ai_Time (anm.c: char[14]) as the AITIME it is */
 #define ai_TimeK (*(AHMCLOCK *)&ai_Time)  /* 0x770ae0, ai_Time as the messages here copy it: @original 3 ints and a short (ahm.h AHMCLOCK) */
 #define ai_ClockMsVolatile (*(volatile int *)&ai_ClockMs)  /* 0x6333cc, @original: the byte-matched ai_TutorialTick reloads the clock after every read (a timer-written int; its owner declares it plain int) */
+typedef struct SHOTSLOT {  /* 0x38 bytes, a record of the cannon scene's shot table (ai_ShotTable, 3 of them): the record index, then the entries ai_Unk57f690 reads (three 0x10-byte entries from +0x8 on) */
+    int index;
+    int body[13];
+} SHOTSLOT;
+#define ai_ShotTable (*(SHOTSLOT (*)[3])&full_data_6f9f60)  /* 0x6f9f60, the cannon scene's shot table (main.c gap block) */
+#define ai_ShotDirty (*(int *)&full_data_6f2664)  /* 0x6f2664, set when ai_ShotTableStore stored a record, cleared by the scene (ai_Unk57f690) */
 #define sv_CheckGoodAmountB ((int (*)(char *, int, unsigned char))sv_CheckGoodAmount)  /* @original: ai_AlchemistHire pushes the player byte unextended (mov al, ai_OwnPlayer / push eax), a char third parameter; sv_CheckGoodAmount itself masks it (t & 0xff) */
 #define gm_ConvertMoney3 ((int (*)(int, unsigned char, int))gm_ConvertMoney)  /* @original: ai_AlchemistFundWindow passes a third word (the previous result) to the second and third call */
 #define ahm_SendAddValueF ((int (*)(char *, float))ahm_SendAddValue)  /* @original: ai_AlchemistFundWindow passes the float by value (ahm_SendAddValue takes the bits of a float) */
@@ -5290,18 +5296,15 @@ int ai_AlchemistRescheduleWindow(unsigned char *obj, AHMREC *rec)
     d2_CloseView(win);
     return done;
 }
-/* 0x57e230, stores one 0x38-byte record of a 3-entry table (61 B): src (0 .. 2 in src[0]) copied 0xe dwords
-   into 0x6f9f60 + src[0] * 0xe and 0x6f2664 = 1; 1, else 0 */
-
-int ai_Unk57e230(int *src)
+/* 0x57e230, the table callback of the cannon scene: stores the shot record src (its index 0 .. 2 in src->index)
+   in the table ai_ShotTable at that index and marks the table as changed (ai_ShotDirty); answers 1, else 0 for
+   no record or an index out of range */
+int ai_ShotTableStore(SHOTSLOT *src)
 {
-    int i;
-
-    if (!src || src[0] < 0 || src[0] >= 3)
+    if (!src || src->index < 0 || src->index >= 3)
         return 0;
-    for (i = 0; i < 0xe; i++)
-        ((int *)(unsigned)&full_data_6f9f60)[src[0] * 0xe + i] = src[i];
-    U_I((unsigned)&full_data_6f2664) = 1;
+    ai_ShotTable[src->index] = *src;
+    ai_ShotDirty = 1;
     return 1;
 }
 
@@ -5386,7 +5389,7 @@ void ai_Unk57e270(char *rec)
         if (!run)
             return;
     }
-    unk_Unk4eeee0(U_I(rec + 1), ai_Unk57e230, (char *)(unsigned)&full_data_6fa020);
+    unk_Unk4eeee0(U_I(rec + 1), ai_ShotTableStore, (char *)(unsigned)&full_data_6fa020);
     cam = (char *)U_I((unsigned)&sv_CameraObj);
     cam3[0] = U_I(cam + 0x4c);
     cam3[1] = U_I(cam + 0x50);
