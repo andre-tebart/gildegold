@@ -3516,29 +3516,27 @@ void gv_ClearCrimes(void)
         ai_Evidence[i][1] = -1;
     }
 }
-/* 0x4f4420, a check of the character c for the order kind k: -1 without c, -3 for k >= 10, 0 for other kinds than 5 / 7, else -4 when the byte (+0x166 for 5, +0xd for 7) is 0 */
+/* 0x4f4420, whether the sentence k (0 .. 9, the trial's punishment choices of cm.c's "cutscenes\prozess") can be passed on
+   the character c: 0 yes, -1 without c, -3 for k >= 10, -4 when c lacks what it takes (5: an office, AICHAR.officeKind;
+   7: AICHAR.b00d). The name is a reasoned guess from the trial window. */
 
-int unk_Unk4f4420(char *c, unsigned k)
+int gv_CheckSentence(AICHAR *c, unsigned k)
 {
     int r;
-    char b;
 
     r = 0;
     if (c == 0)
         return -1;
-    if (k < 10) {
-        if (k == 5)
-            b = c[0x166];
-        else {
-            if (k != 7)
-                return 0;
-            b = c[0xd];
-        }
-        if (b == 0)
+    if (k >= 10)
+        return -3;
+    if (k == 5) {
+        if (c->officeKind == 0)
             r = -4;
-        return r;
+    } else if (k == 7) {
+        if (c->b00d == 0)
+            r = -4;
     }
-    return -3;
+    return r;
 }
 /* 0x4f4d10, runs 0x4f4970 for each of the 768 characters */
 

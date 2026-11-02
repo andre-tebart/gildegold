@@ -11699,7 +11699,7 @@ void ai_Unk4db700(char *m)
         ai_Unk4e32d0(0x64, 0, "_PROZESS_7_SCHULDIG", 0, 0);
         ai_Unk4e32d0(0xfa, 2, "_PROZESS_7_SCHULDIG", 0, 0);
         ai_Unk4e3420(3);
-        unk_Unk4f4420(mode, 0);
+        gv_CheckSentence(mode, 0);
         unk_Unk4f48f0(0, mode, 0);
         ai_Unk4e32d0(0x64, mode, "_PROZESS_7_STRAFEN", 0, 0);
         ai_Unk4e32d0(0xc8, 0, "_PROZESS_8", 0, 0);
@@ -11942,7 +11942,7 @@ void ai_Unk4dd960(char *r, int *m)
         for (i = 0; i < 3; i++) {
             t = io_PrintText(0x1533, n * 3 + 0x1534 + i * 3);
             sel[i] = d2_GetWinObj(v, 0, t);
-            if (unk_Unk4f4420(di, i + n) != 0)
+            if (gv_CheckSentence(di, i + n) != 0)
                 d2_SetObjEnabled(sel[i], 0);
         }
         if (sel[0] != -1)
