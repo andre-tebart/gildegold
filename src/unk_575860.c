@@ -1,14 +1,14 @@
 /* unk_575860.c -- the tutorial module ("FT*" record names, tutorial\* forms, TUTORIAL_* texts), 0x575860..0x589f10:
-   the tutorial state machine (state record S = the pointer 0x5eec60, states 1 .. 0xc, the jump table 0x575fe8;
-   0x578180 initializes it, the tick 0x575860 runs it), the chapter record chains and their step / animation
-   tables, and the tutorial's location / contact / tooltip windows. Start: he.c's last function 0x575710, its
-   jump table and nop fill end at 0x575860; the unit's one .data block starts at 0x62918c (the "FT" state names)
-   and its literals climb in function order to 0x62aa58; the network lobby (0x589f10) is a unit of its own.
+   the tutorial state machine (state record ai_Tutorial = the pointer 0x5eec60, states 1 .. 0xc, the jump table
+   0x575fe8; ai_TutorialStart builds the run chain ai_TutorialRuns and initializes it, the tick 0x575860 runs it),
+   the chapter run-record builders (ai_TutorialChapterInit) and their step / animation tables, and the tutorial's
+   location / contact / tooltip windows. Start: he.c's last function 0x575710, its jump table and nop fill end at
+   0x575860; the unit's one .data block starts at 0x62918c (ai_TutorialChapterOn, then the "FT" state names) and
+   its literals climb in function order to 0x62aa58; the network lobby (0x589f10) is a unit of its own.
    The original file name is unknown (no leaked tag). Names are ours.
-   Open: type debt - the state record (TUTSTATE, ai_Tutorial) and the run records (TUTRUN) are typed in
-   unk_575860.h and the run callbacks (hook / stepHook / query, 0x576340 ..) use them, but the chapter builders
-   and later functions still reach them through the S / U_I byte-offset macros; the message (AIMSG) and
-   contact-list records are still accessed by byte offset.
+   Open: type debt - the state record (TUTSTATE) and the run records (TUTRUN) are typed in unk_575860.h; the
+   chapter 3 .. 5 builders and the later functions still reach them through the S / U_I byte-offset macros; the
+   message (AIMSG) and contact-list records are still accessed by byte offset.
    Open: ai_ClockMs is volatile in the original (ai_TutorialTick reloads it after every read, byte-matched through
    the unit's view ai_ClockMsVolatile); its owner and the other units declare it plain int.
    Open: not included yet (dcp headers conflicts unk_575860 HEADER): d2.h gfx.h sv.h unk_5d33b0.h; held by own
