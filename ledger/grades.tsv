@@ -2822,14 +2822,14 @@ exe	0x004f3780	gv_EvidenceSlot	gv	byte	draft
 exe	0x004f37e0	gv_RetireCrime	gv	byte	readable		
 exe	0x004f3910	gv_HandOverCrimes	gv	byte	readable		
 exe	0x004f39b0	gv_CountOwnedGraves	gv	byte	draft		
-exe	0x004f39e0	unk_Unk4f39e0	gv	draft	draft		
-exe	0x004f3a30	unk_Unk4f3a30	gv	draft	draft		
-exe	0x004f3b40	unk_Unk4f3b40	gv	draft	draft		
-exe	0x004f3c50	gv_RankRecordOwners	gv	draft	draft		
-exe	0x004f3dd0	unk_Unk4f3dd0	gv	draft	draft		
-exe	0x004f3fe0	unk_Unk4f3fe0	gv	draft	draft		
-exe	0x004f4080	unk_Unk4f4080	gv	draft	draft		
-exe	0x004f4130	unk_Unk4f4130	gv	draft	draft		
+exe	0x004f39e0	gv_CulpritGuilt	gv	byte	readable		
+exe	0x004f3a30	gv_RetireCrimesOf	gv	byte	readable		
+exe	0x004f3b40	gv_RetireCrimeIds	gv	byte	readable		
+exe	0x004f3c50	gv_RankCulprits	gv	draft	readable	deep	
+exe	0x004f3dd0	gv_RankCulpritsAll	gv	draft	readable	deep	
+exe	0x004f3fe0	gv_HeldCrimesOf	gv	byte	readable		
+exe	0x004f4080	gv_HeldCrimeIdsOf	gv	byte	readable		
+exe	0x004f4130	gv_HeldCrimeCount	gv	byte	readable		
 exe	0x004f41b0	gv_FindAccused	gv	draft	draft		
 exe	0x004f4350	gv_ClearGraveyard	gv	draft	draft		
 exe	0x004f4390	unk_Unk4f4390	gv	draft	draft		

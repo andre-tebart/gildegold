@@ -23,9 +23,12 @@
    Open: the avatars, the effect slots, the graveyard and the crimes may be several modules sharing one .data block.
    The crime records' life: gv_FreeCrimeSlot / gv_FindCrime find them, gv_HandOverCrimes (message 0x3c) hands them over,
    gv_RetireCrime (message 0x23, sent by gv_SendCrimes) frees them; gv_AddEvidence / gv_EvidenceSlot keep the evidence
-   pairs; gv_CrimeText (by law: gv_CrimeTextLaw2to8 / 9to16 / 17to28) words a crime.
+   pairs; gv_CulpritGuilt sums AIDEC.guilt of a culprit's open crimes; gv_RetireCrimesOf / gv_RetireCrimeIds retire them
+   and tell the evidence holders; gv_HeldCrimesOf / gv_HeldCrimeIdsOf / gv_HeldCrimeCount and gv_RankCulprits /
+   gv_RankCulpritsAll read what a character holds evidence of; gv_CrimeText (by law: gv_CrimeTextLaw2to8 / 9to16 /
+   17to28) words a crime.
    Open: gv_Graveyard (0x91f700) and unk_Tab91b6e0 are second names of ai_Crimes / ai_Evidence (the crime records, not
-   graves); the functions from 0x4f39e0 on still read them through raw offsets; unk_Tab611258's initializer holds the
+   graves); the functions from 0x4f41b0 on still read them through raw offsets; unk_Tab611258's initializer holds the
    callbacks (AIDEC.fn) as raw original addresses.
    Open: some functions index ai_PlayerSlots with the stride 0x5e8 where gv_ReserveGrave shows 0x2f4 (gv_PlayerRecs);
    gv_FindEntry's callback is an unprototyped int (*)() (its callbacks take differing pointer types).
