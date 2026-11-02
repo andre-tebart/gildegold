@@ -7,12 +7,15 @@
    This blocks Q4 / Q7 of every function that touches widgets or calls a K&R d2 / gfx prototype.
    Open: head: include/gfx.h, include/d2.h unsettled (d2_Objs / d2_LastWindowPtr char *, d2_AddHitRect and
    d2_BlitPartMode K&R; 39 K&R d2 prototypes whose calls need a re-grade); also not included: cm.h (the same
-   d2_Objs / d2_LastWindowPtr clash; the cm_SendChr* / cm_GetSlotState calls stay without a prototype), f3snd.h rt.h sblib.h
-   unk_5d33b0.h (d2_Wins is declared in the head as D2WIN[], the D2OBJ fields through ((D2OBJ *)d2_Objs)[i]).
+   d2_Objs / d2_LastWindowPtr clash; the cm_SendChr* / cm_PartyById calls stay without a prototype), f3snd.h rt.h sblib.h
+   (d2_Wins is declared in the head as D2WIN[], the D2OBJ fields through ((D2OBJ *)d2_Objs)[i]).
    Calls whose argument count differs from the definition (read the original's pushes): sb_PlaySample (sblib.h:
-   6 calls to re-grade), d2_SetObjValue, d2_PlaceMainWindow. The
+   6 calls to re-grade), d2_SetObjValue. The
    @original cast macros (d2_PutPixelRGBc, d2_CreatePicObjS, d2_WinOpenPicStyledS, d2_OpenFormS, d2_SetObjValue4,
-   ai_SwitchRoomI, cm_SendExSetHEI) record the parameter types the original's calls show.
+   ai_SwitchRoomI, cm_SendExSetHEI, d2_PlaceMainWindowF) record the parameter types the original's calls show.
+   Open: data: 0x6f23f1 sv_InMissionComplete, owner sv (only sv_RunFrame uses it; it follows sv_BookPhase) but kept
+   typed in main.c's gap block: defining it in sv's bss moves ai_GameState's neighbour and the sv_MenuOpen view
+   (ai_GameState + 2) fails D7 until ai_GameState is declared at its real size.
    Open: data: 0x623ac0 sv_SkyHeavy, owner sv or cm (defined in cm.c as char[], lies in sv's data block between
    sv_SkyMedium and sv_DayTables; sv reads it through the SVSKYREC view sv_SkyHeavyT, cm by byte offsets).
    Open: the camera 0xfc2dec has two names: sv_CameraObj (char *, read by raw offsets in the older functions) and

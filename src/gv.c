@@ -4,6 +4,8 @@
    which begins the .data block after ahm.c's "ahm_AllocAhmInfo" 0x60f2f8; ends where ord.c's order handlers
    begin (their table 0x611768 follows gv's strings). The last functions of the file (0x4f2750 .. 0x4f1de0) are
    out of address order. Names are ours.
+   The effect slots are GVEFFECT records (three GVEFFPART parts each) read through the gv_EffectsT view; the save
+   game writes gv_LastTime, the cannon scene state gv_Cannon (cannon scene of unk_575860) and the slots field by field.
    Open: the avatars, the effect slots and the graveyard may be several modules sharing one .data block.
    Open: not included yet (dcp headers conflicts gv HEADER): unk_5d33b0.h.
    unit of rea 8cef7d5b (src/game/gv.c); boundaries in decl/text.dcl */
