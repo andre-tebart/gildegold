@@ -236,7 +236,7 @@ int ai_Unk48e470(int a, AIPX *p, int b, AIARGX *o1, AIARGX *o2)
         s2.kind = 4;
         s2.ref = bld->id;
         s2.arg = 1;
-        r = ai_Unk495a50(0x41, p->id, 1, &s1, &s2);
+        r = ai_ChooseSubAction(0x41, p->id, 1, &s1, &s2);
         if (r) {
             *o1 = s1;
             *o2 = s2;
@@ -613,7 +613,7 @@ int ai_Unk48f010(int a, AIPX *p, int b, AIARGX *o1, AIARGX *o2)
         s2.kind = 4;
         s2.ref = bld->id;
         s2.arg = 1;
-        r = ai_Unk495a50(0x42, p->id, 1, &s1, &s2);
+        r = ai_ChooseSubAction(0x42, p->id, 1, &s1, &s2);
         if (r) {
             *o1 = s1;
             *o2 = s2;
@@ -3528,20 +3528,20 @@ int am_RegisterMethod(AIACT *a, int ini)
 }
 /* 0x495770, pushes an action onto the evaluation stack */
 
-void ai_Unk495770(int k)
+void ai_PushAction(int k)
 {
     ai_Unkf86900[ai_Unkf83ea4] = k;
     ai_Unkf83ea4++;
 }
 /* 0x495790, pops the evaluation stack */
 
-void ai_Unk495790(void)
+void ai_PopAction(void)
 {
     ai_Unkf83ea4--;
 }
 /* 0x4957a0, whether an action is on the evaluation stack */
 
-int ai_Unk4957a0(int k)
+int ai_ActionOnStack(int k)
 {
     int i;
 
@@ -3804,7 +3804,7 @@ int ai_Unk4960b0(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
         s2.kind = 0;
         s2.ref = 0;
         s2.arg = 0;
-        r = ai_Unk495a50(4, p->id, 1, &s1, &s2);
+        r = ai_ChooseSubAction(4, p->id, 1, &s1, &s2);
         if (r) {
             *o1 = s1;
             *o2 = s2;
@@ -3902,7 +3902,7 @@ int ai_Unk4960b0(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
             s2.kind = 4;
             s2.ref = p->bld2->id;
             s2.arg = 1;
-            r = ai_Unk495a50(4, p->id, 1, &s1, &s2);
+            r = ai_ChooseSubAction(4, p->id, 1, &s1, &s2);
             if (r) {
                 *o1 = s1;
                 *o2 = s2;
@@ -3962,7 +3962,7 @@ int ai_Unk496610(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
         s1.arg = 0;
         s2.ref = 0;
         s2.arg = 0;
-        r = ai_Unk495a50(5, p->id, 0, &s1, &s2);
+        r = ai_ChooseSubAction(5, p->id, 0, &s1, &s2);
         if (r) {
             *o1 = s1;
             *o2 = s2;
@@ -3980,7 +3980,7 @@ int ai_Unk496610(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
         s2.kind = 0;
         s2.ref = 0;
         s2.arg = 0;
-        r = ai_Unk495a50(4, p->id, 1, &s1, &s2);
+        r = ai_ChooseSubAction(4, p->id, 1, &s1, &s2);
         if (r) {
             *o1 = s1;
             *o2 = s2;
@@ -4045,7 +4045,7 @@ int ai_Unk496610(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
         s2.kind = 0;
         s2.ref = 0;
         s2.arg = 0;
-        r = ai_Unk495a50(5, p->id, 0, &s1, &s2);
+        r = ai_ChooseSubAction(5, p->id, 0, &s1, &s2);
         if (r) {
             *o1 = s1;
             *o2 = s2;
@@ -4081,7 +4081,7 @@ int ai_Unk496610(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
             s2.kind = 4;
             s2.ref = p->bld2->id;
             s2.arg = 1;
-            r = ai_Unk495a50(5, p->id, 1, &s1, &s2);
+            r = ai_ChooseSubAction(5, p->id, 1, &s1, &s2);
             if (r) {
                 *o1 = s1;
                 *o2 = s2;
@@ -4206,7 +4206,7 @@ int ai_Unk496e40(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
         s2.kind = 0;
         s2.ref = 0;
         s2.arg = 0;
-        r = ai_Unk495a50(9, p->id, 1, &s1, &s2);
+        r = ai_ChooseSubAction(9, p->id, 1, &s1, &s2);
         if (r) {
             *o1 = s1;
             *o2 = s2;
@@ -4228,7 +4228,7 @@ int ai_Unk496e40(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
         s2.kind = 4;
         s2.ref = p->bld2->id;
         s2.arg = 1;
-        r = ai_Unk495a50(9, p->id, 1, &s1, &s2);
+        r = ai_ChooseSubAction(9, p->id, 1, &s1, &s2);
         if (r) {
             *o1 = s1;
             *o2 = s2;
@@ -4361,7 +4361,7 @@ int ai_Unk497490(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             s1.arg = 1;
             s1.fvalue = 0.44f;
             memset(&s2, 0, sizeof(s2));
-            r = ai_Unk495a50(10, p->id, 1, &s1, &s2);
+            r = ai_ChooseSubAction(10, p->id, 1, &s1, &s2);
             if (r != 0) {
                 *o1 = s1;
                 *o2 = s2;
@@ -5011,7 +5011,7 @@ int ai_Unk498b80(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             }
             s2.arg = 1;
             s2.fvalue = 0.44f;
-            r = ai_Unk495a50(0x15, p->id, 1, &s1, &s2);
+            r = ai_ChooseSubAction(0x15, p->id, 1, &s1, &s2);
             if (r != 0) {
                 *o1 = s1;
                 *o2 = s2;
@@ -5257,7 +5257,7 @@ int ai_Unk499400(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
     }
     s2.arg = 1;
     s2.fvalue = 0.44f;
-    r = ai_Unk495a50(0x15, p->id, 1, &s1, &s2);
+    r = ai_ChooseSubAction(0x15, p->id, 1, &s1, &s2);
     if (!r)
         return 0;
     *o1 = s1;
@@ -5321,7 +5321,7 @@ int ai_Unk499660(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
             s2.kind = 0;
             s2.ref = 0;
             s2.arg = 0;
-            r = ai_Unk495a50(0x17, p->id, 1, &s1, &s2);
+            r = ai_ChooseSubAction(0x17, p->id, 1, &s1, &s2);
             if (r) {
                 *o1 = s1;
                 *o2 = s2;
@@ -5339,7 +5339,7 @@ int ai_Unk499660(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
             s2.kind = 4;
             s2.ref = p->bld2->id;
             s2.arg = 1;
-            r = ai_Unk495a50(0x17, p->id, 1, &s1, &s2);
+            r = ai_ChooseSubAction(0x17, p->id, 1, &s1, &s2);
             if (r) {
                 *o1 = s1;
                 *o2 = s2;
@@ -5373,7 +5373,7 @@ int ai_Unk499660(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
                             s2.kind = 0;
                             s2.ref = 0;
                             s2.arg = 0;
-                            r = ai_Unk495a50(0x17, p->id, 0, &s1, &s2);
+                            r = ai_ChooseSubAction(0x17, p->id, 0, &s1, &s2);
                             if (r) {
                                 *o1 = s1;
                                 *o2 = s2;
@@ -5468,7 +5468,7 @@ int ai_Unk499c10(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
                 s2.kind = 0;
                 s2.ref = 0;
                 s2.arg = 0;
-                r = ai_Unk495a50(0x18, p->id, 1, &s1, &s2);
+                r = ai_ChooseSubAction(0x18, p->id, 1, &s1, &s2);
                 if (r) {
                     *o1 = s1;
                     *o2 = s2;
@@ -5486,7 +5486,7 @@ int ai_Unk499c10(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
                 s2.kind = 4;
                 s2.ref = p->bld2->id;
                 s2.arg = 1;
-                r = ai_Unk495a50(0x18, p->id, 1, &s1, &s2);
+                r = ai_ChooseSubAction(0x18, p->id, 1, &s1, &s2);
                 if (r) {
                     *o1 = s1;
                     *o2 = s2;
@@ -5510,7 +5510,7 @@ int ai_Unk499c10(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
                                 s2.kind = 0;
                                 s2.ref = 0;
                                 s2.arg = 0;
-                                r = ai_Unk495a50(0x18, p->id, 0, &s1, &s2);
+                                r = ai_ChooseSubAction(0x18, p->id, 0, &s1, &s2);
                                 if (r) {
                                     *o1 = s1;
                                     *o2 = s2;
@@ -5653,7 +5653,7 @@ int ai_Unk49a290(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     s1.ref = 0;
     s2.kind = 0;
     s2.ref = 0;
-    r = ai_Unk495a50(0x1a, p->id, 0, &s1, &s2);
+    r = ai_ChooseSubAction(0x1a, p->id, 0, &s1, &s2);
     if (r == 0)
         return 0;
     act = &G5_ACTS[r];
@@ -5730,7 +5730,7 @@ int ai_Unk49a390(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             s1.fvalue = 0.05f;
             s2.kind = 7;
             s2.arg = 1;
-            r = ai_Unk495a50(k, p->id, 2, &s1, &s2);
+            r = ai_ChooseSubAction(k, p->id, 2, &s1, &s2);
             if (r == 0)
                 return 0;
             *o1 = s1;
@@ -5834,7 +5834,7 @@ int ai_Unk49a690(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             s1.fvalue = 0.05f;
             s2.kind = 7;
             s2.arg = 1;
-            r = ai_Unk495a50(k, p->id, 2, &s1, &s2);
+            r = ai_ChooseSubAction(k, p->id, 2, &s1, &s2);
             if (r == 0)
                 return r;
             *o1 = s1;
@@ -5869,7 +5869,7 @@ int ai_Unk49a690(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         s1.ref = ai_CharsT[id].netId;
         s1.arg = -1;
     } else if (i == 8) {
-        r = ai_Unk495a50(k, p->id, 3, &s2, &s1);
+        r = ai_ChooseSubAction(k, p->id, 3, &s2, &s1);
         if (r == 0)
             return r;
         *o1 = s2;
@@ -5945,7 +5945,7 @@ int ai_Unk49ab60(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             s2.ref = p->netId;
             s1.fvalue = 0.05f;
             s2.kind = 7;
-            r = ai_Unk495a50(k, p->id, 2, &s1, &s2);
+            r = ai_ChooseSubAction(k, p->id, 2, &s1, &s2);
             if (r == 0)
                 return r;
             *o1 = s1;
@@ -5966,7 +5966,7 @@ int ai_Unk49ab60(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     s1.arg = -1;
     s1.arg2 = 0x1d;
     if (i == 0) {
-        r = ai_Unk495a50(k, p->id, 4, &s2, &s1);
+        r = ai_ChooseSubAction(k, p->id, 4, &s2, &s1);
         if (r == 0)
             return r;
         *o1 = s2;
@@ -6044,7 +6044,7 @@ int ai_Unk49ae50(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             s2.ref = p->netId;
             s1.fvalue = 0.05f;
             s2.kind = 7;
-            r = ai_Unk495a50(k, p->id, 2, &s1, &s2);
+            r = ai_ChooseSubAction(k, p->id, 2, &s1, &s2);
             if (r == 0)
                 return r;
             *o1 = s1;
@@ -6137,7 +6137,7 @@ int ai_Unk49b120(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             s1.fvalue = 0.05f;
             s2.kind = 7;
             s2.arg = 1;
-            r = ai_Unk495a50(k, p->id, 2, &s1, &s2);
+            r = ai_ChooseSubAction(k, p->id, 2, &s1, &s2);
             if (r == 0)
                 return r;
             *o1 = s1;
@@ -6154,7 +6154,7 @@ int ai_Unk49b120(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     s2.arg = 1;
     s1.kind = 0;
     s1.arg2 = 0x1f;
-    r = ai_Unk495a50(k, p->id, 4, &s2, &s1);
+    r = ai_ChooseSubAction(k, p->id, 4, &s2, &s1);
     if (r == 0)
         return r;
     *o1 = s2;
@@ -6264,7 +6264,7 @@ int ai_Unk49b380(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             s2.fvalue = 0.05f;
             s1.kind = 7;
             s1.arg = 1;
-            r = ai_Unk495a50(k, p->id, 2, &s2, &s1);
+            r = ai_ChooseSubAction(k, p->id, 2, &s2, &s1);
             goto done;
         }
     } else if (st[2] == 0) {
@@ -6304,7 +6304,7 @@ int ai_Unk49b380(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         *o2 = s1;
         return 0x20;
     }
-    r = ai_Unk495a50(k, p->id, 3, &s2, &s1);
+    r = ai_ChooseSubAction(k, p->id, 3, &s2, &s1);
 done:
     if (r == 0)
         return r;
@@ -6391,7 +6391,7 @@ int ai_Unk49b7c0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             s1.fvalue = 0.05f;
             s2.kind = 7;
             s2.arg = 1;
-            r = ai_Unk495a50(k, p->id, 2, &s1, &s2);
+            r = ai_ChooseSubAction(k, p->id, 2, &s1, &s2);
             if (r == 0)
                 return r;
             *o1 = s1;
@@ -6467,7 +6467,7 @@ int ai_Unk49b7c0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     s2.arg2 = 0x21;
     r = 0x21;
     if (i > 1) {
-        r = ai_Unk495a50(k, p->id, 4, &s1, &s2);
+        r = ai_ChooseSubAction(k, p->id, 4, &s1, &s2);
         if (r == 0)
             return r;
     }
@@ -6553,7 +6553,7 @@ int ai_Unk49bd90(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             s1.fvalue = 0.05f;
             s2.kind = 7;
             s2.ref = p->netId;
-            r = ai_Unk495a50(k, p->id, 2, &s1, &s2);
+            r = ai_ChooseSubAction(k, p->id, 2, &s1, &s2);
             if (r == 0)
                 return r;
             *o1 = s1;
@@ -6574,9 +6574,9 @@ int ai_Unk49bd90(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     s2.arg = -1;
     s2.arg2 = 0x22;
     if (i == 0) {
-        r = ai_Unk495a50(k, p->id, 4, &s1, &s2);
+        r = ai_ChooseSubAction(k, p->id, 4, &s1, &s2);
     } else if (i < 4) {
-        r = ai_Unk495a50(k, p->id, 3, &s1, &s2);
+        r = ai_ChooseSubAction(k, p->id, 3, &s1, &s2);
     } else {
         *o1 = s1;
         *o2 = s2;
@@ -6996,7 +6996,7 @@ int ai_Unk49ce50(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             s2.kind = 0;
             s2.ref = 0;
             s2.arg = 0;
-            r = ai_Unk495a50(0x28, p->id, 1, &s1, &s2);
+            r = ai_ChooseSubAction(0x28, p->id, 1, &s1, &s2);
             goto done;
         }
     } else if (((unsigned char *)p)[2] != 3) {
@@ -7008,7 +7008,7 @@ int ai_Unk49ce50(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             s2.kind = 4;
             s2.ref = *(int *)(h + 1);
             s2.arg = 1;
-            r = ai_Unk495a50(0x28, p->id, 1, &s1, &s2);
+            r = ai_ChooseSubAction(0x28, p->id, 1, &s1, &s2);
             goto done;
         }
         goto find;
@@ -7029,7 +7029,7 @@ find:
         s2.kind = 0;
         s2.ref = 0;
         s2.arg = 0;
-        r = ai_Unk495a50(0x28, p->id, 0, &s1, &s2);
+        r = ai_ChooseSubAction(0x28, p->id, 0, &s1, &s2);
         goto done;
     }
     *o1 = s1;
@@ -7091,7 +7091,7 @@ int ai_Unk49d0f0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             s2.kind = 0;
             s2.ref = 0;
             s2.arg = 0;
-            r = ai_Unk495a50(0x28, p->id, 1, &s1, &s2);
+            r = ai_ChooseSubAction(0x28, p->id, 1, &s1, &s2);
             goto done;
         }
     } else if (((unsigned char *)p)[2] != 3) {
@@ -7103,7 +7103,7 @@ int ai_Unk49d0f0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             s2.kind = 4;
             s2.ref = *(int *)(h + 1);
             s2.arg = 1;
-            r = ai_Unk495a50(0x29, p->id, 1, &s1, &s2);
+            r = ai_ChooseSubAction(0x29, p->id, 1, &s1, &s2);
             goto done;
         }
         goto find;
@@ -7158,7 +7158,7 @@ int ai_Unk49d2d0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             s2.kind = 0;
             s2.ref = 0;
             s2.arg = 0;
-            r = ai_Unk495a50(0x28, p->id, 1, &s1, &s2);
+            r = ai_ChooseSubAction(0x28, p->id, 1, &s1, &s2);
             goto done;
         }
     } else if (((unsigned char *)p)[2] != 3) {
@@ -7170,7 +7170,7 @@ int ai_Unk49d2d0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             s2.kind = 4;
             s2.ref = *(int *)(h + 1);
             s2.arg = 1;
-            r = ai_Unk495a50(0x28, p->id, 1, &s1, &s2);
+            r = ai_ChooseSubAction(0x28, p->id, 1, &s1, &s2);
             goto done;
         }
         goto find;
@@ -7443,7 +7443,7 @@ int ai_Unk49d8d0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     s2.arg = money;
     s2.arg2 = 1;
     s2.kind = 1;
-    v = ai_Unk495a50(0xf, p->id, 0, &s1, &s2);
+    v = ai_ChooseSubAction(0xf, p->id, 0, &s1, &s2);
     if (v == 0)
         return 0;
     *o1 = s1;
@@ -7521,7 +7521,7 @@ int ai_Unk49dd90(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         }
         s2.arg = 1;
         s2.fvalue = 0.44f;
-        r = ai_Unk495a50(0x15, p->id, 1, &s1, &s2);
+        r = ai_ChooseSubAction(0x15, p->id, 1, &s1, &s2);
         if (r != 0) {
             *o1 = s1;
             *o2 = s2;
@@ -7570,7 +7570,7 @@ int ai_Unk49def0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         s2.ref = *(int *)((char *)o + 2);
         s2.arg = money;
         s2.arg2 = 1;
-        r = ai_Unk495a50(0xf, p->id, 0, &s1, &s2);
+        r = ai_ChooseSubAction(0xf, p->id, 0, &s1, &s2);
         if (r != 0)
             goto done;
     }
@@ -7587,7 +7587,7 @@ int ai_Unk49def0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         }
         s2.arg = 1;
         s2.fvalue = 0.44f;
-        r = ai_Unk495a50(0x15, p->id, 1, &s1, &s2);
+        r = ai_ChooseSubAction(0x15, p->id, 1, &s1, &s2);
         if (r != 0)
             goto done;
     }
@@ -7691,7 +7691,7 @@ int ai_Unk49e350(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         s2.ref = *(int *)(o + 2);
         s2.arg = money;
         s2.arg2 = 1;
-        r = ai_Unk495a50(0xf, p->id, 0, &s1, &s2);
+        r = ai_ChooseSubAction(0xf, p->id, 0, &s1, &s2);
         if (r != 0)
             goto done;
     }
@@ -7708,7 +7708,7 @@ int ai_Unk49e350(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         }
         s2.arg = 1;
         s2.fvalue = 0.44f;
-        r = ai_Unk495a50(0x15, p->id, 1, &s1, &s2);
+        r = ai_ChooseSubAction(0x15, p->id, 1, &s1, &s2);
         if (r != 0)
             goto done;
     }
@@ -7813,7 +7813,7 @@ int ai_Unk49e7a0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             s2.ref = *(int *)(o + 2);
             s2.kind = 1;
             s2.arg2 = 1;
-            r = ai_Unk495a50(0xf, p->id, 0, &s1, &s2);
+            r = ai_ChooseSubAction(0xf, p->id, 0, &s1, &s2);
             if (r != 0) {
                 *o1 = s1;
                 *o2 = s2;
@@ -8857,7 +8857,7 @@ int ai_Unk4a0a70(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         s1.arg2 = need;
         s2.kind = 1;
         s2.arg = money;
-        n = ai_Unk495a50(0xf, p->id, 0, &s1, &s2);
+        n = ai_ChooseSubAction(0xf, p->id, 0, &s1, &s2);
         if (n != 0) {
             *o1 = s1;
             *o2 = s2;
@@ -8903,7 +8903,7 @@ credit:
             o2->kind = 0x12;
             return 0x39;
         }
-        n = ai_Unk495a50(0x39, p->id, 1, &s1, &s2);
+        n = ai_ChooseSubAction(0x39, p->id, 1, &s1, &s2);
         if (n == 0)
             return 0;
         *o1 = s1;
@@ -10989,7 +10989,7 @@ int ai_Unk4a6ae0(AIPER *p, AIBLD *b)
    matches (layout 2026-10-22). ---- */
 
 /* 0x495a50, rates the actions that lead to action kind for character id (recursion guarded by the stack) */
-int ai_Unk495a50(int kind, int id, int c, AIARG *o1, AIARG *o2)
+int ai_ChooseSubAction(int kind, int id, int c, AIARG *o1, AIARG *o2)
 {
     float best1, best2, a, b;
     int k, r, r1, r2;
@@ -11006,28 +11006,28 @@ int ai_Unk495a50(int kind, int id, int c, AIARG *o1, AIARG *o2)
     b1s2.kind = 0;
     b2s2.kind = 0;
     p = &G5_CHARS[id];
-    if (ai_Unk4957a0(kind) != 0)
+    if (ai_ActionOnStack(kind) != 0)
         return 0;
     if (p->mask == 0)
         p->mask = 1;
-    k = 0;
-    for (act = G5_ACTS; act < G5_ACTS + 0x49; act++, k++) {
-        if (act->id != 0 && act->id != p->act && ai_Unk4957a0(act->id) == 0) {
-            ai_Unk495770(act->id);
+    for (k = 0; k < 0x49; k++) {
+        act = &G5_ACTS[k];
+        if (act->id != 0 && act->id != p->act && ai_ActionOnStack(act->id) == 0) {
+            ai_PushAction(G5_ACTS[k].id);
             s1 = *o1;
             s2 = *o2;
             if (act->eval != 0)
                 act->eval(&a, &b, k, p, c, &s1, &s2);
-            if ((best1 <= a || best2 <= b) && act->decide != 0) {
+            if ((a >= best1 || b >= best2) && act->decide != 0) {
                 r = act->decide(kind, p, c, &s1, &s2);
                 if (r != 0) {
-                    if (best1 <= a) {
+                    if (a >= best1) {
                         b1s1 = s1;
                         best1 = a;
                         b1s2 = s2;
                         r1 = r;
                     }
-                    if (best2 <= b) {
+                    if (b >= best2) {
                         best2 = b;
                         b2s1 = s1;
                         b2s2 = s2;
@@ -11035,17 +11035,17 @@ int ai_Unk495a50(int kind, int id, int c, AIARG *o1, AIARG *o2)
                     }
                 }
             }
-            ai_Unk495790();
+            ai_PopAction();
         }
     }
-    if (best1 == 0.0f || best1 < best2) {
-        *o1 = b2s1;
-        *o2 = b2s2;
-        return r2;
+    if (best1 != 0.0f && best1 >= best2) {
+        *o1 = b1s1;
+        *o2 = b1s2;
+        return r1;
     }
-    *o1 = b1s1;
-    *o2 = b1s2;
-    return r1;
+    *o1 = b2s1;
+    *o2 = b2s2;
+    return r2;
 }
 /* unlinked: the "Use Seance" decide callback returns 0; LINK folds it (/OPT:ICF) into sv_ReturnZero, 0x52a040,
    which is where the original's reference in ai_RegisterGraveActions points */

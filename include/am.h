@@ -215,7 +215,7 @@ int ai_Unk496e40(int a, AIPER *p, int b, AIARG *o1, AIARG *o2);                 
 int ai_Unk4972d0(AIPER *p, AIARG *s1, AIARG *s2);                               /* 0x4972d0 */
 int ai_Unk4973f0(float *a, float *b, int i, AIPER *p, int f, AIARG *o1, AIARG *o2); /* 0x4973f0 */
 
-int ai_Unk495a50(int kind, int id, int c, AIARG *s1, AIARG *s2);                /* 0x495a50 */
+int ai_ChooseSubAction(int kind, int id, int c, AIARG *s1, AIARG *s2);                /* 0x495a50 */
 int ai_Unk4a4c10(float *a, float *b, int i, AIPER *p, struct AIDEC *d);                /* 0x4a4c10 */
 int ai_PickPartnerChain(AIPER *p, int a, int *flags, int b, float f, unsigned short *id); /* 0x4a58d0 */
 void cm_SendSetField(int a, int b, int c, int d, int e);                   /* 0x4c4a60 */
@@ -717,9 +717,9 @@ extern int ai_WriteActionTable;               /* 0x6f2464, set: write the action
 
 int ai_LoadActionTable(void);                                         /* 0x494e70 */
 /* 0x495520 am_RegisterMethod is declared in am.h */
-void ai_Unk495770(int k);                                       /* 0x495770 */
-void ai_Unk495790(void);                                        /* 0x495790 */
-int ai_Unk4957a0(int k);                                        /* 0x4957a0 */
+void ai_PushAction(int k);                                       /* 0x495770 */
+void ai_PopAction(void);                                        /* 0x495790 */
+int ai_ActionOnStack(int k);                                        /* 0x4957a0 */
 /* ai_ExecuteAction: ai.h */                                         /* 0x495ce0 */
 int ai_Unk497490(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);  /* 0x497490 */
 int ai_Unk497630(G5CH *p, AIARG *s1);                            /* 0x497630 */
