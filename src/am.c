@@ -4711,9 +4711,21 @@ int ai_Unk497ee0(AIPER *p, AIARG *s1, AIARG *s2)
         fin->renovationSpent = (int)(fin->renovationSpent + s1->fvalue);
     return 15;
 }
-/* 0x497fa0, decide: pay off a building's job when it is cheap enough (action 16) */
+/* 0x497fa0, decide of action 16: buy an offered building (event 0x1b, kinds 4..7 as its orders allow, o1 kind 0 or kind 5 naming the kind) when two thirds of the money cover the price (o1 kind 4, 16), else a credit for the difference (ai_DecideTakeCredit) when the price is low against the equipment value
+   @deep read against 0x497fa0..0x49846f: same statements, calls, arguments, constants and conditions (the
+   owner / type-mask search, the four ord_DispatchOrder answers, bld2's level clearing ok[], the kind 0 and
+   kind 5 walks over the 0x1b offers with u.id / price, the credit test, the return 16 / 0 tails). Tried:
+   one shared return 16 at the end (113 ins but 1027 bytes, reverted). Left: the unmerged credit tail
+   (size), the found-loop's lea/mov scheduling (lea edx,[eax+eax*2] / mov cl,[eax+edx*4] vs add ecx,edi /
+   lea / mov cl,[eax]), the lim slot ([esp+0x18] vs [esp+0x24]) and the v / r slot rotation in both credit
+   computations. Q2: AIBTX.unk247 (a per-type level count, 0x248 its maximum) has no evidenced name yet.
+   (size: 432 vs 409 instructions, explained: ours 432 vs 409: the 23 instructions are our second copy of
+   the credit tail (fmul -0.5 / fadd 0.25 / fcompp / fnstsw / and / jne / the ai_DecideTakeCredit call /
+   epilogue, ours 0x498452..0x4984a0): the original computes the kind 5 quotients and jumps into the kind 0
+   copy (jmp 0x4982c7), VC6 cross-jumped them there; ours has both tails instruction-identical but not
+   merged) */
 
-int ai_Unk497fa0(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
+int ai_DecideBuyBuilding(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
 {
     int buf[0x88];
     int ok[4];
@@ -4779,13 +4791,13 @@ found:
             ok[i] = 0;
     }
     if (o1->kind == 0) {
-        for (bl = AI_501190_2(1, 6); o1->kind == 0 && bl; bl = AI_501030()) {
+        for (bl = AI_501190_2(1, 6); o1->kind == 0 && bl; bl = AI_BUILDNEXT()) {
             if (ai_BTypesT[bl->type].kind == 2 && (bl->flags5a & 2)
                 && ((bl->type == 4 && ok[0]) || (bl->type == 5 && ok[1]) || (bl->type == 6 && ok[2])
                     || (bl->type == 7 && ok[3]))) {
                 for (j = he_FindEvent(1, 0, 0x1b); j; j = he_NextEvent()) {
-                    if (j->unkac == bl->id) {
-                        v = ((AIJOBX *)j)->unkb0;
+                    if (j->u.id == bl->id) {
+                        v = ((AIJOBX *)j)->price;
                         if (lim < v) {
                             r = gm_EquipmentValue(bl, bl->level);
                             if ((float)(v - lim) / v < (float)((float)(v - r) / r * -0.5f) + 0.25f) {
@@ -4816,11 +4828,11 @@ found:
             return 0;
         if (o1->ref == 7 && !ok[3])
             return 0;
-        for (bl = AI_501190_2(1, 6); o1->kind == 5 && bl; bl = AI_501030()) {
+        for (bl = AI_501190_2(1, 6); o1->kind == 5 && bl; bl = AI_BUILDNEXT()) {
             if ((unsigned char)ai_BTypesT[bl->type].kind == o1->ref) {
                 for (j = he_FindEvent(1, 0, 0x1b); j; j = he_NextEvent()) {
-                    if (j->unkac == bl->id) {
-                        v = ((AIJOBX *)j)->unkb0;
+                    if (j->u.id == bl->id) {
+                        v = ((AIJOBX *)j)->price;
                         if (lim < v) {
                             r = gm_EquipmentValue(bl, bl->level);
                             if ((float)(v - lim) / v < (float)((float)(v - r) / r * -0.5f) + 0.25f) {
@@ -5205,7 +5217,7 @@ int ai_Unk498c70(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
             h = 3;
         s1.kind = 0;
         s2.kind = 0;
-        for (bl = AI_501190_3(1, 5, k); s1.kind == 0 && bl; bl = AI_501030()) {
+        for (bl = AI_501190_3(1, 5, k); s1.kind == 0 && bl; bl = AI_BUILDNEXT()) {
             if (AI_BTX[bl->type].unk247 <= h && (bl->flags5a & 2)) {
                 for (j = AI_JOBS1B(); j; j = AI_JOBNEXT()) {
                     if (j->unkac == bl->id) {
@@ -9378,7 +9390,7 @@ int ai_RegisterBaseActions(int a)
     act.id = 0x10;
     strcpy(act.name, "Wohnsitz kaufen");
     act.eval = ai_EvalMoodWeights;
-    act.decide = ai_Unk497fa0;
+    act.decide = ai_DecideBuyBuilding;
     act.exec = ai_Unk498470;
     act.flags = 0x3;
     if (!am_RegisterMethod(&act, a))

@@ -165,7 +165,10 @@ typedef struct AIJOBX {                 /* a job (0x53e400 / 0x53e300 list) */
     int unk04;                          /* 0x04 */
     char pad08[0xa4];
     int unkac;                          /* 0xac, a building id */
-    int unkb0;                          /* 0xb0 */
+    union {
+        int unkb0;                      /* 0xb0 */
+        int price;                      /* 0xb0, of a building offer (kind 0x1b, +0xac the building) the asking price (0x497fa0 sets it against two thirds of the buyer's money) */
+    };
     int unkb4;                          /* 0xb4 */
     int unkb8;                          /* 0xb8 */
     int unkbc;                          /* 0xbc */
@@ -291,7 +294,7 @@ extern float ai_Unkf84cf4[8];           /* 0xf84cf4, the same scaled by 0x499f20
 #define AI_BLDX ((AIBLDX *)ai_Blds)
 /* ai.h declares gm_BuildQuery with two arguments, am.h above with three */
 #define AI_501190_2(a, b) ((AIBLDX *(*)(int, int))gm_BuildQuery)(a, b)
-#define AI_501030() ((AIBLDX *)gm_BuildNext())
+#define AI_BUILDNEXT() ((AIBLDX *)gm_BuildNext())
 #define AI_501190_3(a, b, c) ((AIBLDX *)gm_BuildQuery(a, b, c))
 #define AI_JOBS1B() ((AIJOBX *)he_FindEvent(1, 0, 0x1b))
 #define AI_JOBNEXT() ((AIJOBX *)he_NextEvent())
@@ -302,7 +305,7 @@ int ai_Unk497af0(int a, AIPER *p, int b, AIARG *o1, AIARG *o2);                 
 int ai_Unk497c80(AIPER *p, AIARG *s1, AIARG *s2);                               /* 0x497c80 */
 int ai_Unk497cf0(int a, AIPER *p, int b, AIARG *o1, AIARG *o2);                 /* 0x497cf0 */
 int ai_Unk497ee0(AIPER *p, AIARG *s1, AIARG *s2);                               /* 0x497ee0 */
-int ai_Unk497fa0(int a, AIPER *p, int b, AIARG *o1, AIARG *o2);                 /* 0x497fa0 */
+int ai_DecideBuyBuilding(int a, AIPER *p, int b, AIARG *o1, AIARG *o2);                 /* 0x497fa0 */
 int ai_Unk4984d0(int a, struct G5CH *p, int f, struct AIARG *o1, struct AIARG *o2);                 /* 0x4984d0 */
 int ai_Unk498c70(int a, AIPER *p, int b, AIARG *o1, AIARG *o2);                 /* 0x498c70 */
 int ai_Unk499290(AIPER *p, AIARG *s1, AIARG *s2);                               /* 0x499290 */
