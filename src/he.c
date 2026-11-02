@@ -16308,7 +16308,7 @@ void he_Unk5706e0(int ev)
     HM_I(ev, 0x84) = cm_SendExSetHE(0, ev);
 }
 
-int ai_Unk4a5d30(struct AIPER *p, unsigned int fl, int n, unsigned short *ids, float lo, float hi, unsigned short *id); /* 0x4a5d30 */
+int ai_PickPartnerRandomWalk(struct AIPER *p, unsigned int fl, int n, unsigned short *ids, float lo, float hi, unsigned short *id); /* 0x4a5d30 */
 int gv_ProtectionPrice();                 /* 0x4f24a0 */
 int gm_GetWorth(unsigned short id);                 /* 0x50a640 */
 int gm_ConvertMoney(int a, unsigned char k); /* 0x5085b0 */
@@ -16363,7 +16363,7 @@ void he_Unk5707a0(int ev)
             gm_AddTime(ev + 0x52, 0, 0xa, 0);
             return;
         }
-        if (ai_Unk4a5d30((unsigned)&ai_Chars + *(unsigned short *)(ev + 8) * 0x21c, ((unsigned)&he_Events + 0x58c8), 4, ev + 0xc8, 0, 100.0f, (int *)&idx) == 0) {
+        if (ai_PickPartnerRandomWalk((unsigned)&ai_Chars + *(unsigned short *)(ev + 8) * 0x21c, ((unsigned)&he_Events + 0x58c8), 4, ev + 0xc8, 0, 100.0f, (int *)&idx) == 0) {
             HM_I(ev, 0x70) = -1;
             return;
         }
@@ -16504,7 +16504,7 @@ void he_Unk570cc0(int ev)
     he_FreeEvent((int *)ev);
 }
 
-int ai_Unk4a5d30(struct AIPER *p, unsigned int fl, int n, unsigned short *ids, float lo, float hi, unsigned short *id); /* 0x4a5d30 */
+int ai_PickPartnerRandomWalk(struct AIPER *p, unsigned int fl, int n, unsigned short *ids, float lo, float hi, unsigned short *id); /* 0x4a5d30 */
 int gv_ProtectionPrice();                 /* 0x4f24a0 */
 int gm_GetWorth(unsigned short id);                 /* 0x50a640 */
 int gm_ConvertMoney(int a, unsigned char k); /* 0x5085b0 */

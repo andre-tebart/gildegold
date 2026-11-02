@@ -10886,9 +10886,18 @@ int ai_FindPartnersRandomWalk(AIPER *p, unsigned int a, int *flags, float lo, fl
     }
     return 1;
 }
-/* 0x4a5d30: as 0x4a5a30, but the partner comes from a random walk over all 768 characters (as 0x4a5b50) */
+/* 0x4a5d30: as ai_PickPartnerInRange, but the partner comes from a random walk over all 768 characters (as
+   ai_FindPartnersRandomWalk)
+   @deep read against the original: the step pick, the filter record (zeroed, the chain ids copied up to
+   0x20 bytes, kind 2), the ai_Partner try, the rating window (double 0.0 / 100.0), the walk over 0x300
+   characters with the !(r < lo) && !(r > hi) test and the found/return flow all match (fixed: double
+   constants, NaN-tolerant window test, the !found return 0 / break exit). Left: allocation only: the
+   original keeps the constant 0 in ebx (xor ebx,ebx at +0x26, then win / q[16] stores and push ebx for the
+   filter's 4th argument) where ours uses edx and pushes it earlier, and the len = n*2 copy count lives in
+   eax/edx (lea eax,[ecx+ecx]; mov ecx,eax; mov edx,ecx) where ours uses ecx/eax; tried moving win = 0
+   before the memset: no change */
 
-int ai_Unk4a5d30(AIPER *p, unsigned int fl, int n, unsigned short *ids, float lo, float hi, unsigned short *id)
+int ai_PickPartnerRandomWalk(AIPER *p, unsigned int fl, int n, unsigned short *ids, float lo, float hi, unsigned short *id)
 {
     unsigned int q[0x14];
     unsigned int len, c;
@@ -10906,25 +10915,25 @@ int ai_Unk4a5d30(AIPER *p, unsigned int fl, int n, unsigned short *ids, float lo
     if (ai_Partner != 0) {
         q[16] = 0;
         q[1] = fl;
-        if (ai_PassesPartnerFilter(*(unsigned short *)p, *(unsigned short *)ai_Partner, q, 0) != 0) {
-            *id = *(unsigned short *)ai_Partner;
+        if (ai_PassesPartnerFilter(p->id, AI_PARTNER->id, q, 0) != 0) {
+            *id = AI_PARTNER->id;
             return 1;
         }
     }
     q[1] = fl;
-    if ((lo > 0.0f || hi < 100.0f) && lo < hi)
+    if ((lo > 0.0 || hi < 100.0) && lo < hi)
         win = 1;
     k = 0x300;
     found = 0;
     c = util_RandomU(0x300);
     while (!found) {
         if (k == 0) {
-            if (found)
-                return 1;
-            return 0;
+            if (!found)
+                return 0;
+            break;
         }
-        if (ai_PassesPartnerFilter(*(unsigned short *)p, (unsigned short)c, q, 0) != 0) {
-            if (!win || (r = gm_Liking(c, *(unsigned short *)p, 1), lo <= r && r <= hi)) {
+        if (ai_PassesPartnerFilter(p->id, (unsigned short)c, q, 0) != 0) {
+            if (!win || (r = gm_Liking(c, p->id, 1), !(r < lo) && !(r > hi))) {
                 found = 1;
                 *id = (unsigned short)c;
             }
