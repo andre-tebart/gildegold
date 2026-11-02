@@ -3016,15 +3016,15 @@ exe	0x00501000	gm_FindPlayerBuilding	f3gm	byte	draft
 exe	0x00501030	gm_BuildNext	f3gm	draft	readable	deep	
 exe	0x00501190	gm_BuildQuery	f3gm	draft	readable	deep	
 exe	0x005012b0	gm_FindFreeBuilding	f3gm	byte	readable		
-exe	0x005012e0	gm_FreeBuilding	f3gm	draft	draft		
-exe	0x00501400	gm_StockBuildingObjects	f3gm	draft	draft		
-exe	0x005014b0	gm_SetCapacities	f3gm	draft	draft		
-exe	0x00501580	gm_CreateBuilding	f3gm	draft	draft		
-exe	0x00501b50	gm_BuildingMainObject	f3gm	draft	draft		
-exe	0x00501ce0	gm_GetGebaeudeHauptraum	f3gm	draft	draft		
-exe	0x00501d80	gm_BuildingClass	f3gm	draft	readable		
+exe	0x005012e0	gm_FreeBuilding	f3gm	byte	readable		
+exe	0x00501400	gm_StockBuildingObjects	f3gm	byte	readable		
+exe	0x005014b0	gm_SetCapacities	f3gm	byte	readable		
+exe	0x00501580	gm_CreateBuilding	f3gm	draft	readable	deep	
+exe	0x00501b50	gm_BuildingMainObject	f3gm	draft	readable	deep	
+exe	0x00501ce0	gm_GetGebaeudeHauptraum	f3gm	byte	readable		
+exe	0x00501d80	gm_BuildingClass	f3gm	byte	readable		
 exe	0x00501e40	gm_NearestBuilding	f3gm	shape	draft		
-exe	0x00501f60	gm_NearestFreeBuilding	f3gm	draft	draft		
+exe	0x00501f60	gm_NearestFreeBuilding	f3gm	byte	readable		
 exe	0x00502020	gm_FindBuildingById	f3gm	byte	draft		
 exe	0x00502060	gm_FindBuildingKind	f3gm	shape	readable		
 exe	0x005020a0	gm_ListBuildingsOfType	f3gm	shape	readable		
@@ -3038,7 +3038,7 @@ exe	0x00502b60	gm_AssignBuilding	f3gm	draft	draft
 exe	0x00502e30	gm_ShowBuildingObjects	f3gm	byte	draft		
 exe	0x00502eb0	gm_ListWorkers	f3gm	draft	draft		
 exe	0x00502fd0	gm_SellBuilding	f3gm	draft	draft		
-exe	0x005031b0	unk_Unk5031b0	f3gm	draft	draft		
+exe	0x005031b0	gm_AllocRaum	f3gm	draft	draft		
 exe	0x00503480	gm_RemoveObjectFromBuilding	f3gm	byte	readable		
 exe	0x005034b0	gm_Unk5034b0	f3gm	byte	draft		
 exe	0x00503530	gm_PermissionBits	f3gm	draft	draft		
@@ -4322,8 +4322,8 @@ exe	0x005a83b0	ai_Unk5a83b0	unk_58bbd0	draft	draft
 exe	0x005a84b0	ai_Unk5a84b0	unk_58bbd0	byte	draft		
 exe	0x005a84d0	ai_Unk5a84d0	unk_58bbd0	byte	draft		
 exe	0x005a8540	ai_Unk5a8540	unk_58bbd0	byte	draft		
-exe	0x005a8560	ai_Unk5a8560	unk_58bbd0	draft	draft		
-exe	0x005a86c0	ai_Unk5a86c0	unk_58bbd0	byte	draft		
+exe	0x005a8560	ai_ProdSetting	unk_58bbd0	draft	draft		
+exe	0x005a86c0	ai_FreeProdSetting	unk_58bbd0	byte	draft		
 exe	0x005a8710	ai_Unk5a8710	unk_58bbd0	draft	draft		
 exe	0x005a8850	ai_Unk5a8850	unk_58bbd0	byte	draft		
 exe	0x005a8870	ai_DrawSettingGood	unk_58bbd0	draft	draft		
