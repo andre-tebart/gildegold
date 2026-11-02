@@ -5394,14 +5394,23 @@ char ai_ShotCallbackArg[0x40] = { 0 };  /* 0x6fa020, the argument gv_SetEffectCa
    ai_CannonSwitchAnim (0 .. 2) and a fire (ai_CannonFireCheck) ai_CannonExplosion; a right button release or a click
    on the quit control sets sv_PopRequest. The teardown fades out again, closes the three windows, removes the two
    objects, deletes the 3D objects, re-enables the listed objects, restores viewport, clip rectangle, scene, sky and
-   camera and releases the callback of the run record */
+   camera and releases the callback of the run record
+   @deep read the whole function against dcp disasm 0x57e270 and dcp draft: every statement, condition and
+   call matches; the 321 code hunks are register and stack allocation. rec lives in ebp and run in ebx in
+   the original, rec in ebx and run in a slot here (0x57e277 mov ebx,[esp+0x754] vs push ebp; mov
+   ebp,[esp+0x75c], and 0x57e2bd mov [esp+0x18],eax vs mov ebx,eax). sel is [esp+0xfc] in the original and
+   ebp here; the flag object is reloaded from a slot in the original and kept in edi here; sc sits at +0x5c
+   in the original and +0x74 here (frame 0x74c vs 0x750). Tried with identical bytes: int* pv view loop,
+   CANNONREC *cr alias. Tried and reverted for worse bytes: sc fields for sel/last/now. Kept obj[4]+flag:
+   code 350->321, slots 264->154. */
 void ai_CannonScene(char *rec)
 {
     GVEFFECT *run;
     CANNONSCENE sc;
     D3VECTOR rotv;
     unsigned short list[0x2f2];
-    D3OBJECT *obj[5];  /* 0 .. 2 the barrels, 3 the base, 4 the flag */
+    D3OBJECT *obj[4];  /* 0 .. 2 the barrels, 3 the base */
+    D3OBJECT *flag;    /* the wimpel object, a child of the base */
     int sel;
     int n;
     int m;
@@ -5507,11 +5516,11 @@ void ai_CannonScene(char *rec)
     sc.zoom = 0.0f;
     d3_SetObjectPos(obj[3], &sc.pos);
     d3_SetObjectRot(obj[3], (D3VECTOR *)&sc.rot);
-    obj[4] = d3_CreateObject(obj[3], (D3VECTOR *)((unsigned)&sv_PhaseMinutes + 0x1c8), (D3VECTOR *)ai_ZeroRot, "AO_KANONE_WIMPEL_Aa");
-    d3t_PlayAnim(obj[4], "_ADDON\\AO_KANONE_WIMPEL_Aa.baf", 1);
-    obj[4]->stateFlags = (obj[4]->stateFlags & 0xf7) | 4;
-    obj[4]->stateFlags |= 0x40;
-    obj[4]->objectFlags &= 0xfd;
+    flag = d3_CreateObject(obj[3], (D3VECTOR *)((unsigned)&sv_PhaseMinutes + 0x1c8), (D3VECTOR *)ai_ZeroRot, "AO_KANONE_WIMPEL_Aa");
+    d3t_PlayAnim(flag, "_ADDON\\AO_KANONE_WIMPEL_Aa.baf", 1);
+    flag->stateFlags = (flag->stateFlags & 0xf7) | 4;
+    flag->stateFlags |= 0x40;
+    flag->objectFlags &= 0xfd;
     d2_ClearSurface(d2_ScreenSurf);
     sv_RunFrame(0, 0x86);
     d2_ClearSurface(d2_ScreenSurf);
@@ -5576,8 +5585,8 @@ void ai_CannonScene(char *rec)
         d3if_Delete(obj[1]);
     if (obj[2])
         d3if_Delete(obj[2]);
-    if (obj[4])
-        d3if_Delete(obj[4]);
+    if (flag)
+        d3if_Delete(flag);
     if (obj[3])
         d3if_Delete(obj[3]);
     d3if_ShowTree(CR->obj, 1);
