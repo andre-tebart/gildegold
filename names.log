@@ -947,3 +947,4 @@
 2026-11-02T10:57:43 0x00576500 data ai_Unk576500 -> ai_QueryBuilding0f by:main why:a TUTRUN.query callback (0x3c) that tests the events 0x19 / 0x1a on a building of type kind 0xf
 2026-11-02T10:58:14 0x00576590 data ai_Unk576590 -> ai_QueryChapter2Step3 by:main why:the TUTRUN.query callback (0x3c) of the run record FTInitChapter2Step3
 2026-11-02T10:58:50 0x00576600 data ai_Unk576600 -> ai_QueryChapter2Step5 by:main why:the TUTRUN.query callback (0x3c) of the run record FTInitChapter2Step5
+2026-11-02T10:59:18 0x00576640 func ai_Unk576640 -> ai_QueryChapter2Step6 by:main why:the TUTRUN.query callback (0x3c) of the run record FTInitChapter2Step6

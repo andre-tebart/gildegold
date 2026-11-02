@@ -1244,20 +1244,19 @@ int ai_QueryChapter2Step5(int *args)
         return 0;
     return 1;
 }
-/* 0x576640, 1 for the kind 0x19 with a table byte 0xf or 2 (a missing record / kind answers 1) */
+/* 0x576640, the query callback of the run record FTInitChapter2Step6: refuses the event 0x19 on a building of
+   another type kind than 0xf or 2, allows everything else */
 
-int ai_Unk576640(int *p)
+int ai_QueryChapter2Step6(int *args)
 {
-    int kind;
-    unsigned char c;
+    AIBTYPE *type;
 
-    if (p[0] != 0x19 || !p[1])
-        return 1;
-    kind = *(unsigned char *)p[1];
-    c = *(unsigned char *)(*(char **)(unsigned)&ai_BTypes + kind * 0x24d);
-    if (c == 0xf || c == 2)
-        return 1;
-    return 0;
+    if (args[0] == 0x19 && args[1]) {
+        type = &((AIBTYPE *)ai_BTypes)[((AIBLD *)args[1])->type];
+        if (type->kind != 0xf && type->kind != 2)
+            return 0;
+    }
+    return 1;
 }
 /* 0x576680, the same as 0x576640 for the table bytes 0xf / 2 / 0x12 */
 
@@ -2973,7 +2972,7 @@ int ai_Unk578e40(void)
     U_I(r + 0x30) = 0x8e;
     U_I(r + 0x34) = (unsigned)&ai_Unk576a80;
     U_I(r + 0x38) = (unsigned)&ai_Unk576ab0;
-    U_I(r + 0x3c) = (unsigned)&ai_Unk576640;
+    U_I(r + 0x3c) = (unsigned)&ai_QueryChapter2Step6;
     U_I(r + 0x44) = 0x2148;
     U_I(r + 0x48) = 0xa;
     U_I(r + 0x68) = 0x5837;
