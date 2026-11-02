@@ -167,7 +167,7 @@ extern int ai_Difficulty;  /* 0x6f23fc */
 extern int ai_CharCount;  /* 0x6f1bc0 */
 extern int ai_NextObjectId;  /* 0x61a654 */
 int gm_AddObjekt(int id, int proto, int n);  /* 0x500970 */
-int gm_ChooseHeadIcon(unsigned short *c);  /* 0x4fb890 */
+void gm_ChooseHeadIcon(unsigned short *c);  /* 0x4fb890 */
 int gm_PlaceOnStage(int id, int a, int b, int *p4, int *p5);  /* 0x4fbd10 */
 char *gm_Query(void *list, int n, ...);  /* 0x4ffe90 */
 void gm_RefreshGoodsLists(unsigned p);  /* 0x4ff190 */

@@ -1099,88 +1099,92 @@ void ch_PreloadAnims(struct CHARACTER *ch, int n, ...);                     /* 0
 void ch_SetVisible();                     /* 0x402480 */
 unsigned *gm_CharNameRecord(int id);
 
-/* 0x4fb890, chooses the head icon number of the character c (+0x18c = icon index + 0x639; id at +0, number at +4). Without a model (+0x184) or icon names: the head numbers of the name record (0x4fb390, filled as 0x4fb620 does, "zigeunermeister" without the suffix), the character takes number (its id % count of the valid ones); returns id / count. With a model: the first model part name (0x40 bytes each, the count at +0x1e0 of its class) containing "kopf" / "KOPF" / "HEAD" / "head" whose icon "%s_ICON.bmp" exists. Otherwise +0x18c = 0x639. ROUGH */
-int gm_ChooseHeadIcon(unsigned short *c)
+/* 0x4fb890, chooses the portrait of the character c (its picture = the icon index + 0x639). With a model outside the
+   first scene and the icon names loaded: the first texture name of the body's current texture set containing
+   "kopf" / "KOPF" / "HEAD" / "head" whose "%s_ICON.bmp" is an icon. Without them: one of the head icons of its head
+   record (resolved as gm_ResolveHeadIcons does, "zigeunermeister" without the suffix), picked by its id modulo the
+   number of resolved heads. Else the picture 0x639. */
+
+void gm_ChooseHeadIcon(unsigned short *c)
 {
-    char name[128], suffix[128], icon[128];
+    char name[128], icon[128], suffix[128];
     char *u, *part;
-    unsigned *rec;
-    int *m;
-    int *q;
-    int i, j, h, n, found, cls, cnt, stride;
-    unsigned k;
+    GMHEAD *rec;
+    CHARACTER *m;
+    D3SURF *surf;
+    D3OPS *ops;
+    int i, j, h, k, found, set;
 
     found = 0;
     i = 0;
     if (c == 0)
-        return 0;
-    m = *(int **)(c + 0xc2);
-    if (m == 0 || gm_IconNames == 0) {
-        rec = gm_CharNameRecord(*c);
-        if (rec[0xd] == 0xff) {
-            strcpy(name, (char *)(rec + 1));
-            u = strrchr(name, '_');
-            if (u != 0) {
-                strcpy(suffix, u + 1);
-                *u = 0;
-            }
-            q = (int *)(rec + 0xd);
-            *q = 0;
-            for (h = 0; h < 4; h++, q++) {
-                sprintf(icon, "%s_HEAD%i_%s_ICON.bmp", name, h, suffix);
-                if (strstr(name, "zigeunermeister") != 0)
-                    sprintf(icon, "%s_HEAD%i_ICON.bmp", name, h);
-                *q = 0xff;
-                for (j = 0; j < gm_IconNameCount; j++) {
-                    if (gm_IconNames[j * 0x30] == 0)
-                        break;
-                    if (_stricmp(icon, gm_IconNames + j * 0x30) == 0) {
-                        *q = j;
-                        break;
-                    }
-                }
-            }
-        }
-        for (k = 0; k < 4; k++) {
-            if (rec[0xd + k] == 0xff)
-                break;
-        }
-        if (k != 0) {
-            *(int *)(c + 0xc6) = rec[0xd + *(unsigned *)(c + 2) % k] + 0x639;
-            return *(unsigned *)(c + 2) / k;
-        }
-    } else {
-        if ((char *)m[0x22] == (char *)(unsigned)&d3_Scenes)
-            return (int)m;
-        cls = *(int *)(*(int *)(m[0xd] + 0x1ec) + 0x104);
-        stride = *(unsigned char *)(*(int *)(m[0xd] + 0x1ec) + 0x289);
-        n = *(int *)(cls + 0x1e0);
-        if (n > 0) {
+        return;
+    m = ORD_CHAR(c)->model;
+    if (m != 0 && gm_IconNames != 0) {
+        if (m->scene == d3_Scenes)
+            return;
+        surf = (D3SURF *)m->obj->material->animCtl;
+        ops = (D3OPS *)surf->info.mesh;
+        set = surf->texSet;
+        if (ops->count > 0) {
             do {
                 if (found != 0)
-                    return found;
-                part = (char *)((n * stride + i) * 0x40 + *(int *)(cls + 0x204));
-                if (*part != 0 && (strstr(part, "kopf") != 0 || strstr(part, "KOPF") != 0 || strstr(part, "HEAD") != 0 || strstr(part, "head") != 0)) {
+                    return;
+                part = ops->texnames + (ops->count * set + i) * 0x40;
+                if (*part != 0 && (strstr(part, "kopf") != 0 || strstr(part, "KOPF") != 0
+                                   || strstr(part, "HEAD") != 0 || strstr(part, "head") != 0)) {
                     sprintf(icon, "%s_ICON.bmp", part);
                     for (j = 0; j < gm_IconNameCount; j++) {
                         if (gm_IconNames[j * 0x30] == 0)
                             break;
                         if (_stricmp(icon, gm_IconNames + j * 0x30) == 0) {
                             found = 1;
-                            *(int *)(c + 0xc6) = j + 0x639;
+                            ORD_CHAR(c)->picture = j + 0x639;
                             break;
                         }
                     }
                 }
-                n = *(int *)(cls + 0x1e0);
                 i++;
-            } while (i < n);
+            } while (i < ops->count);
             if (found != 0)
-                return found;
+                return;
+        }
+    } else {
+        rec = (GMHEAD *)gm_CharNameRecord(*c);
+        k = 0;
+        if (rec->heads[0] == 0xff) {
+            strcpy(name, rec->name);
+            u = strrchr(name, '_');
+            if (u != 0) {
+                strcpy(suffix, u + 1);
+                *u = 0;
+            }
+            rec->heads[0] = 0;
+            for (h = 0; h < 4; h++) {
+                sprintf(icon, "%s_HEAD%i_%s_ICON.bmp", name, h, suffix);
+                if (strstr(name, "zigeunermeister") != 0)
+                    sprintf(icon, "%s_HEAD%i_ICON.bmp", name, h);
+                rec->heads[h] = 0xff;
+                for (j = 0; j < gm_IconNameCount; j++) {
+                    if (gm_IconNames[j * 0x30] == 0)
+                        break;
+                    if (_stricmp(icon, gm_IconNames + j * 0x30) == 0) {
+                        rec->heads[h] = j;
+                        break;
+                    }
+                }
+            }
+        }
+        for (; k < 4; k++) {
+            if (rec->heads[k] == 0xff)
+                break;
+        }
+        if (k != 0) {
+            ORD_CHAR(c)->picture = rec->heads[ORD_CHAR(c)->netId % k] + 0x639;
+            return;
         }
     }
-    *(int *)(c + 0xc6) = 0x639;
-    return 0;
+    ORD_CHAR(c)->picture = 0x639;
 }
 /* 0x4fbb80, creates the model of the character c (+0x184) in the scene model: at the position p (0x403390 with the name of the head record 0x4fb390 (c), 0x20-byte zero vector when p is 0), named "sp_<number>", linked back to c (+0x200 of its object, +0x48 = id | 0x3000000), copies the name to c + 500 and chooses the head (0x4fb5a0 / 0x4fb890); the position comes from the dummy of the object obj when a dummy name is given (0x449690 / 0x458a20); scene 0x633444 is selected again at the end. Returns the model. ROUGH */
 
