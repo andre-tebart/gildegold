@@ -610,11 +610,7 @@ extern GAPDATA full_data_62a9e4[];
 extern GAPDATA full_data_62a9ec[];
 extern GAPDATA full_data_62a9f8[];
 extern int sv_PopRequest;
-extern GAPDATA full_data_6f5ec0[];
-extern GAPDATA full_data_6f5f38[];
-extern GAPDATA full_data_6f5ec8[];
 extern GAPDATA full_data_6f5f4c[];
-extern GAPDATA full_data_6f5ec4[];
 extern GAPDATA full_data_6f5f48[];
 extern unsigned char kb_Last;
 extern GAPDATA full_data_62aa14[];
@@ -624,8 +620,6 @@ extern unsigned short * sv_PanelShown;
 extern int d2_LastWindow;
 
 extern GAPDATA full_data_62aa38[];
-extern GAPDATA full_data_6f5ec0[];
-extern GAPDATA full_data_6f5ec4[];
 extern int sv_PopRequest;
 extern short d2_ScreenH;
 extern short d2_ScreenW;
@@ -634,7 +628,6 @@ extern GAPDATA full_data_62aa4c[];
 extern GAPDATA full_data_62aa58[];
 extern GAPDATA full_data_6f2674[];
 extern int sv_FrameMask;
-extern GAPDATA full_data_6f5ec0[];
 extern GAPDATA full_data_6f5f44[];
 extern unsigned char kb_Last;
 extern int sv_PanelFlag;
@@ -642,8 +635,6 @@ extern int sv_PanelFlag;
 extern unsigned char kb_Last;
 extern int sv_FrameMask;
 extern int sv_PanelFlag;
-extern GAPDATA full_data_6f5ec4[];
-extern GAPDATA full_data_6f5ec8[];
 extern char ai_Chars[768][0x21c];
 
 #define AI_4A63F0_7(p, a, fl, b, c, f, o) ((int (*)(void *, int, unsigned int, int, int, float, int *))ai_PickActionBuilding)(p, a, fl, b, c, f, o)
@@ -710,6 +701,7 @@ int ai_TutorialRunning = 0;  /* 0x6f2660, the tutorial's state machine advances 
 int ai_ShotDirty = 0;  /* 0x6f2664, set when ai_ShotTableStore stored a record, cleared by the scene (ai_CannonShotResults) */
 char *ai_DragPicked = 0;  /* 0x6f266c, the picked object (ai_PickedObject) the tooltip was last opened for, 0 = none */
 int ai_DragCutscene = 0;  /* 0x6f2670, 1 while the tooltip view holds d2_CutsceneActive set */
+AIBOOKMARK ai_Bookmarks[11] = { 0 };  /* 0x6f5ec0, the function-key building bookmarks (ai_BookmarksInit sets the keys F1 .. F11) */
 SHOTRESULT ai_ShotTable[3] = { 0 };  /* 0x6f9f60, the cannon scene's shot results (the callback ai_ShotTableStore fills it, ai_ShotTableReset resets it) */
 
 #include "time_view.h"
@@ -10531,12 +10523,12 @@ void ai_Unk589410(void)
     char *p;
     int i;
 
-    memset((char *)(unsigned)&full_data_6f5ec0, 0, 0x84);
+    memset(ai_Bookmarks, 0, sizeof(ai_Bookmarks));
     for (i = 0; i < 0xb; i++) {
-        p = (char *)((unsigned)&full_data_6f5ec0 + i * 0xc);
+        p = (char *)&ai_Bookmarks[i];
         *(unsigned char *)p = (unsigned char)(i + 0x3b);
         if (i == 0xa)
-            *(unsigned char *)(unsigned)&full_data_6f5f38 = 0x57;
+            ai_Bookmarks[10].key = 0x57;
         ai_Unk589400((int *)p);
     }
 }
@@ -10552,7 +10544,7 @@ void ai_Unk589450(void)
     int id;
     int e;
 
-    for (p = (char *)(unsigned)&full_data_6f5ec8; p < (char *)(unsigned)((unsigned)full_data_6f5ec8 + 0x84); p += 0xc) {
+    for (p = (char *)&ai_Bookmarks[0].object; p < (char *)&ai_Bookmarks[11].object; p += 0xc) {
         if (*(int *)(p - 4) == -1)
             continue;
         id = gm_FindBuildingById(*(int *)(p - 4));
@@ -10585,7 +10577,7 @@ void ai_Unk5894d0(void)
         return;
     if (*(unsigned char *)((unsigned)&kb_Down + 0x2a) != 0)
         return;
-    for (p = (char *)(unsigned)&full_data_6f5ec4; p < (char *)(unsigned)((unsigned)full_data_6f5ec4 + 0x84); p += 0xc) {
+    for (p = (char *)&ai_Bookmarks[0].building; p < (char *)&ai_Bookmarks[11].building; p += 0xc) {
         if (*(unsigned char *)(p - 4) != *(unsigned char *)(unsigned)&kb_Last)
             continue;
         if (*(unsigned char *)((unsigned)&kb_Down + 0x2a) != 0)
@@ -10594,7 +10586,7 @@ void ai_Unk5894d0(void)
         if (*(int *)p != -1)
             break;
     }
-    if (p >= (char *)(unsigned)((unsigned)full_data_6f5ec4 + 0x84))
+    if (p >= (char *)&ai_Bookmarks[11].building)
         return;
     id = gm_FindBuildingById(*(int *)p);
     e = (char *)gm_FindObjectInst(*(int *)(p + 4));
@@ -10631,12 +10623,12 @@ void ai_Unk589570(int idx)
                 a = *(char **)(unsigned)&ai_MarketBuilding;
         }
     }
-    *(int *)((unsigned)&full_data_6f5ec4 + idx * 0xc) = *(int *)(a + 1);
+    ai_Bookmarks[idx].building = *(int *)(a + 1);
     if (b == 0 || *(unsigned short *)b == 0xfd) {
-        *(int *)((unsigned)&full_data_6f5ec8 + idx * 0xc) = -1;
+        ai_Bookmarks[idx].object = -1;
         txt_Format(buf, (char *)(unsigned)&full_data_62aa20, (char *)(idx + 0x205e), a);
     } else {
-        *(int *)((unsigned)&full_data_6f5ec8 + idx * 0xc) = *(int *)(b + 2);
+        ai_Bookmarks[idx].object = *(int *)(b + 2);
         txt_Format(buf, (char *)(unsigned)&full_data_62aa14, (char *)(idx + 0x205e), a, *(unsigned short *)b * 2 + 0x9a8);
     }
     sv_SetStatusText(buf);
@@ -10674,12 +10666,12 @@ void ai_Unk589670(void)
     d2_ClearInput();
     for (i = 0; i < 0xb; i++) {
         p = d2_WinOpenPic(0x10, 0, (char *)(i + 4), U_I((unsigned)&d2_LastWindow));
-        id = *(int *)((unsigned)&full_data_6f5ec4 + i * 0xc);
+        id = ai_Bookmarks[i].building;
         if (id != -1)
             e = gm_FindBuildingById(id);
         else
             e = 0;
-        d2_WinOpenPic(0x60, *(unsigned char *)((unsigned)&full_data_6f5ec0 + i * 0xc) + 0x427, (char *)win, U_I((unsigned)&d2_LastWindow));
+        d2_WinOpenPic(0x60, ai_Bookmarks[i].key + 0x427, (char *)win, U_I((unsigned)&d2_LastWindow));
         d2_CreateWinText(0x9c, i, line, U_I((unsigned)&txt_ObjectNames));
         d2_CreateWinText(0x60, i, line, U_I((unsigned)&full_data_1442334));
         d2_WinOpenPic(0x128, 0, (char *)(i + 0xdf), U_I((unsigned)&d2_LastWindow));
@@ -10714,7 +10706,7 @@ int ai_SaveSlotTable(int fh)
     if (vfs_fwrite(&n, 4, 1, fh) == 0)
         return 0;
     i = 0;
-    p = (char *)(unsigned)&full_data_6f5ec4;
+    p = (char *)&ai_Bookmarks[0].building;
     while (i < n) {
         if (vfs_fwrite(p - 4, 1, 1, fh) == 0)
             return 0;
@@ -10742,7 +10734,7 @@ int ai_Unk589b30(int fh)
     if (ls_Read(&n, 4, 1, fh) == 0)
         return 0;
     i = 0;
-    p = (char *)(unsigned)&full_data_6f5ec4;
+    p = (char *)&ai_Bookmarks[0].building;
     while (i < n) {
         if (ls_Read(p - 4, 1, 1, fh) == 0)
             return 0;
@@ -10799,7 +10791,7 @@ void ai_SlotKeys(void)
         ai_Unk589670();
     ai_Unk5894d0();
     i = 0;
-    for (p = (char *)(unsigned)&full_data_6f5ec0; p < (char *)(unsigned)((unsigned)full_data_6f5ec0 + 0x84); p += 0xc) {
+    for (p = (char *)ai_Bookmarks; p < (char *)&ai_Bookmarks[11]; p += 0xc) {
         if (*(unsigned char *)p == *(unsigned char *)(unsigned)&kb_Last && *(unsigned char *)((unsigned)&kb_Down + 0x2a) != 0)
             ai_Unk589570(i);
         i++;
@@ -10885,11 +10877,11 @@ void ai_Unk589e00(int i, char *b)
             o = (char *)((void *(*)(unsigned char *))gm_GetGebaeudeHauptraum)(b);
     }
     off = i * 0xc;
-    *(int *)((unsigned)&full_data_6f5ec4 + off) = *(int *)(b + 1);
+    *(int *)((char *)&ai_Bookmarks[0].building + off) = *(int *)(b + 1);
     if (o != 0)
-        *(int *)((unsigned)&full_data_6f5ec8 + off) = *(int *)(o + 2);
+        *(int *)((char *)&ai_Bookmarks[0].object + off) = *(int *)(o + 2);
     else
-        *(int *)((unsigned)&full_data_6f5ec8 + off) = -1;
+        *(int *)((char *)&ai_Bookmarks[0].object + off) = -1;
 }
 
 unsigned char * gm_BuildNext(void); unsigned char * gm_BuildQuery(int n, ...);

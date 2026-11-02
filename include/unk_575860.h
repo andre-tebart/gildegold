@@ -93,6 +93,12 @@ typedef struct TUTSTATE {               /* the tutorial state record (0x6fa060, 
     int progressSlider;                 /* 0x6c, its slider */
 } TUTSTATE;
 
+typedef struct AIBOOKMARK {             /* 0xc bytes, a building bookmark on a function key (ai_Bookmarks) */
+    unsigned char key;                  /* 0x0, the key code kb_Last answers (0x3b + i: F1 .. F10, 0x57: F11) */
+    int building;                       /* 0x4, the building id (its +1), -1 = none */
+    int object;                         /* 0x8, the id of the building's main object (its +2), -1 = none */
+} AIBOOKMARK;
+
 void ai_GypsyHelperWindow(struct AIBLD *rec); /* 0x584d70, the helpers window of a building (HANDEL_SUCHEN form), opened by the gypsy production contact */
 extern int ai_TutorialChapterOn[5];     /* 0x62918c, per chapter 1 = played */
 extern int (*ai_TutorialChapterInit[5])(void);  /* 0x6291a0, the chapter chain builders */
@@ -100,6 +106,7 @@ extern int ai_DragObj;  /* 0x62a8d0, the right-held d2 object whose tooltip ai_D
 extern int ai_DragViewWin;  /* 0x62a8d4, the first window of the tooltip view */
 extern char *ai_DragPicked;  /* 0x6f266c, the picked object the tooltip was last opened for */
 extern int ai_DragCutscene;  /* 0x6f2670, 1 while the tooltip view holds d2_CutsceneActive set */
+extern AIBOOKMARK ai_Bookmarks[11];  /* 0x6f5ec0, the function-key building bookmarks */
 extern unsigned int ai_GraveChatterAt;  /* 0x62a538, ai_ClockMs at the last graveyard chatter tick */
 extern int ai_TutorialBanks[6];         /* 0x6f2640, the tutorial's voice banks */
 extern TUTRUN *ai_TutorialRuns;         /* 0x6f2658, the chain of the tutorial's run records */
