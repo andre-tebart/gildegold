@@ -6289,44 +6289,32 @@ void sv_TabButtonRow(int f, int y, int *out, int n, ...)
 int gm_Unk504e00();                     /* 0x504e00 */
 int ai_Unk4ce170();                     /* 0x4ce170 */
 
-/* 0x52e600, a != 0: collects the widgets (0x2ec records of the table 0xf8f080) whose +0x40 points into a visible form record of 0xfb1158 (stride 0x2ac) and that are not yet flagged +0x38, flags them and
-   remembers their index (0x6f1c90, count 0x6f23ec); a == 0: clears the flags again */
-void sv_DisableVisibleWidgets(int a)
+/* 0x52e600, on != 0: disables (D2OBJ.disabled) every used d2 object that draws into an active, enabled view (d2_Views)
+   and is not disabled yet, remembering it in sv_DisabledWidgets; on == 0: enables the remembered objects again */
+void sv_DisableVisibleWidgets(int on)
 {
-    int i, n, *p, w;
-    short idx;
+    D2VIEW *v;
+    D2OBJ *o;
+    int i, k;
 
-    if (a != 0) {
+    if (on != 0) {
         sv_DisabledCount = 0;
-        p = (int *)((unsigned)&ai_Unkfb1030 + 0x190);
-        w = SV_I((unsigned)&d2_Objs);
-        do {
-            if (p[-4] != 0 && *p != 0) {
-                idx = 0;
-                n = 0;
-                do {
-                    if (*(int *)(n + 0x18 + w) != 0 && *(int **)(n + 0x40 + w) == p - 0x68 && *(int *)(n + 0x38 + w) == 0) {
-                        sv_DisabledWidgets[sv_DisabledCount] = idx;
-                        sv_DisabledCount++;
-                        *(int *)(n + 0x38 + w) = 1;
-                        w = SV_I((unsigned)&d2_Objs);
+        for (k = 0; k < 0x30; k++) {
+            v = &d2_Views[k];
+            if (v->active != 0 && v->enabled != 0) {
+                for (i = 0; i < 0x300; i++) {
+                    o = &((D2OBJ *)d2_Objs)[i];
+                    if (o->type != 0 && o->buf == (D2CTRL *)v && o->disabled == 0) {
+                        sv_DisabledWidgets[sv_DisabledCount++] = i;
+                        o->disabled = 1;
                     }
-                    n += 0x2ec;
-                    idx++;
-                } while (n < 0x8c400);
+                }
             }
-            p += 0xab;
-        } while ((int)p < (unsigned)((unsigned)ai_Unkfb1030 + 0x81d0));
+        }
         return;
     }
-    i = 0;
-    if (0 < sv_DisabledCount) {
-        do {
-            n = sv_DisabledWidgets[i];
-            i++;
-            *(int *)(SV_I((unsigned)&d2_Objs) + 0x38 + n * 0x2ec) = 0;
-        } while (i < sv_DisabledCount);
-    }
+    for (i = 0; i < sv_DisabledCount; i++)
+        ((D2OBJ *)d2_Objs)[sv_DisabledWidgets[i]].disabled = 0;
 }
 /* 0x52e6d0, builds the picture frames of the dialog form f (0x4731d0 (x, y, picture, form)): the title bar 0x520 / 0x427 + the building kind, the corners; the picture b = 0x73b selects the
    wide variant; sets the four borders of the form (+0x1fc .. 0x20c) to 0x18 */
