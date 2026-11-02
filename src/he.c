@@ -6032,7 +6032,7 @@ void he_Unk54f160(int ev)
     }
 }
 
-int ai_Unk5ba620(int param_1);
+int ai_FindUsableGood(int param_1);
 D3PARTSYS *d3t_CreateEmitter(D3OBJECT *obj, char *tex, char flag, unsigned long color, D3VECTOR *pos, int count, int unused, float size, float a, float b, float c, float d);
 int mem_IsValid();
 void par_Delete();
@@ -6047,7 +6047,7 @@ void he_Unk54fb50(int ev)
     int o = 0, r;
 
     gm_FindById(&o, 0, 0, *(int *)(ev + 0xac));
-    if (o != 0 && *(int *)(o + 0x61) != 0 && (r = ai_Unk5ba620(*(unsigned short *)(ev + 0xc2))) != 0 && *(int *)(r + 4) != 0) {
+    if (o != 0 && *(int *)(o + 0x61) != 0 && (r = ai_FindUsableGood(*(unsigned short *)(ev + 0xc2))) != 0 && *(int *)(r + 4) != 0) {
         *(HETIME *)(ev + 0xb4) = ai_Time;
         gm_AddTime(ev + 0xb4, 0, *(int *)(r + 4), 0);
         *(int *)(ev + 0xb0) = 0;
@@ -6149,7 +6149,7 @@ void he_Unk54fe80(int ev)
     int r;
 
     *(HETIME *)(ev + 0x52) = ai_Time;
-    r = ai_Unk5ba620(0x178);
+    r = ai_FindUsableGood(0x178);
     if (r != 0 && *(int *)(r + 4) != 0) {
         *(HETIME *)(ev + 0xb0) = ai_Time;
         gm_AddTime(ev + 0xb0, 0, *(int *)(r + 4), 0);

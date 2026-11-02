@@ -15934,7 +15934,7 @@ void ai_Unk5ba600(void)
 /* 0x5ba620, the Domizil table lookup (64 B): walks the 0x1c-byte entries of 0x62c420 while the id at +0 is not
    0; returns the entry of the id, 0 when absent */
 
-int ai_Unk5ba620(int param_1)
+int ai_FindUsableGood(int param_1)
 {
     int i;
 
@@ -15968,7 +15968,7 @@ int ai_InventoryHas(void *ch, int id)
     G8INVOBJ *o;
 
     o = (G8INVOBJ *)gm_Query((void *)((G8INVCHAR *)ch)->inventory, 1, 0, id);
-    if (o != 0 && ai_Unk5ba620(o->id) != 0 && o->unk21 != 0)
+    if (o != 0 && ai_FindUsableGood(o->id) != 0 && o->unk21 != 0)
         return 1;
     return 0;
 }
@@ -22404,7 +22404,7 @@ int ai_Unk5cf820(int param_1)
    0x5176d0 (0xfe8, the record +0x18 + 1) through the panel 0x5cf820. ROUGH: the 0x4c3c00 field block
    is transcribed from Ghidra (the CONCAT22 sums are the object's +0x1c .. +0x37 fields). */
 
-int ai_Unk5cf8a0(int param_1, int *param_2)
+int ai_UseGood(int param_1, int *param_2)
 {
     char buf[0x800];
     int out;
@@ -22424,7 +22424,7 @@ int ai_Unk5cf8a0(int param_1, int *param_2)
     param_2[4] = 0;
     if (*param_2 == 0)
         return -3;
-    rec = ai_Unk5ba620(*(unsigned short *)*param_2);
+    rec = ai_FindUsableGood(*(unsigned short *)*param_2);
     if (rec == 0)
         return -4;
     if ((*(unsigned int *)(rec + 0x10) & *(unsigned int *)(param_1 + 0x1ec)) != 0)

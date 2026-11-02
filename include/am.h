@@ -475,10 +475,10 @@ typedef struct AIRECX {                  /* 16 bytes, filled by 0x4a5760 */
 
 typedef struct AIUSE {                  /* 20 bytes, given to 0x5cf8a0 */
     AIOBJ *obj;                         /* 0x00 */
-    int unk04;                          /* 0x04 */
-    int unk08;                          /* 0x08 */
-    int unk0c;                          /* 0x0c, set by the callee */
-    int unk10;                          /* 0x10 */
+    int target;                         /* 0x04, the target for the good's use callback (the table +0x14): a reference of the action's second argument */
+    int arg;                            /* 0x08, a value for the use callback, -1 none */
+    int effect;                         /* 0x0c, set by the callee: 1 the use took effect (0x175 only one time in three), 0 not; the use callback may set -1 (backfired) */
+    int handled;                        /* 0x10, 0 by the callee, set by a use callback that reported the use itself (no text then) */
 } AIUSE;
 #pragma pack(pop)
 
@@ -562,7 +562,7 @@ void ai_FindWantedItems(struct G5CH *p, int n, struct G9REC *rec, int *st);     
 int ai_DecideTakeCredit(int a, struct G5CH *p, int f, struct AIARG *o1, struct AIARG *o2);                  /* 0x49eec0 */
 int gm_BuildingKindValue(int a);                                                        /* 0x509d30 */
 int gm_BuildingKindCost(int unused, int kind);                                               /* 0x509dc0 */
-int ai_Unk5ba620(int param_1);                                         /* 0x5ba620 */
+int ai_FindUsableGood(int param_1);                                         /* 0x5ba620 */
 
 /* ---- 0x494020..0x494e70 (was unk_494020.h) ---- */
 #pragma pack(push, 1)
@@ -691,7 +691,9 @@ typedef struct G5CH {                   /* a character, 0x21c bytes (ai_Chars[76
     unsigned char officeKind;           /* 0x166, the kind of the office held, 0 = none */
     char pad167;
     unsigned char appliedOffice;        /* 0x168, the office kind applied for, 0 = none (ai.h AICHAR) */
-    char pad169[0xa7];
+    char pad169[0xf];
+    int inventory;                      /* 0x178, the goods inventory (AICHAR.inventory, a G8 object list) */
+    char pad17c[0x94];
     int partner;                        /* 0x210 */
     char pad214[4];
     unsigned char mask;                 /* 0x218, the action groups it may use */
@@ -803,10 +805,10 @@ typedef char ai_AssertG8MSG[sizeof(G8MSG) == 0xf8 ? 1 : -1];
 
 typedef struct G8USE {                  /* 20 bytes, given to 0x5cf8a0 (unk_48e070.h: AIUSE) */
     AIOBJ *obj;                         /* 0x00 */
-    int unk04;                          /* 0x04 */
-    int unk08;                          /* 0x08 */
-    int unk0c;                          /* 0x0c, set by the callee */
-    int unk10;                          /* 0x10 */
+    int target;                         /* 0x04, the target for the good's use callback (the table +0x14): a reference of the action's second argument */
+    int arg;                            /* 0x08, a value for the use callback, -1 none */
+    int effect;                         /* 0x0c, set by the callee: 1 the use took effect (0x175 only one time in three), 0 not; the use callback may set -1 (backfired) */
+    int handled;                        /* 0x10, 0 by the callee, set by a use callback that reported the use itself (no text then) */
 } G8USE;
 
 typedef struct G8OFFER {                /* 12 bytes, filled by 0x50a250 */
@@ -852,7 +854,7 @@ void ai_FindWantedItems(struct G5CH *p, int n, struct G9REC *rec, int *st);     
 #define G8_4FEA50(a, b, c, d) ((int (*)(int *, int, int, int))gm_FindById)(a, b, c, d)  /* ai.h: other types */
 int ai_Unk49a5b0(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49a5b0 */
 /* 0x5ba620 with an int id (the callers here zero-extend; unk_48e070.h: unsigned short) */
-#define G8_5BA620(id) ((void *(*)(int))ai_Unk5ba620)(id)
+#define ai_FindUsableGoodP(id) ((void *(*)(int))ai_FindUsableGood)(id)
 int ai_DecideUseReputationObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49a690 */
 int ai_Unk49aa80(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49aa80 */
 int ai_DecideUseApsObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49ab60 */
@@ -862,7 +864,7 @@ int ai_Unk49b050(G5CH *p, AIARG *s1, AIARG *s2);                                
 int ai_DecideUseHealthObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49b120 */
 int ai_Unk49b2b0(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49b2b0 */
 int ai_DecideUseDynastyObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49b380 */
-int ai_Unk49b6f0(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49b6f0 */
+int ai_ExecuteUseDynastyObject(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49b6f0 */
 int ai_Unk49b7c0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49b7c0 */
 int ai_Unk49bc50(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49bc50 */
 int ai_Unk49bd90(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49bd90 */
