@@ -52,7 +52,7 @@ typedef struct TUTSTATE {               /* the tutorial state record (0x6fa060, 
     int next;                           /* 0x04, the state to return to */
     unsigned int textAt;                /* 0x08, ai_ClockMs when the first text window last changed */
     unsigned int stepAt;                /* 0x0c, ai_ClockMs when the step / tail started */
-    int unk10;                          /* 0x10 */
+    int campaignSteps;                  /* 0x10, counts ai_CampaignStep's handled steps, 0 when a run starts */
     struct SBSAMPLE *voice;             /* 0x14, the playing voice */
     TUTRUN *run;                        /* 0x18, the current run record */
     TUTHOST *host;                      /* 0x1c */
@@ -62,13 +62,13 @@ typedef struct TUTSTATE {               /* the tutorial state record (0x6fa060, 
     int statusShown;                    /* 0x2c, the status text of the states 0xa / 0xb is shown */
     int text2Shown;                     /* 0x30 */
     int text2Win;                       /* 0x34, the second text window */
-    int unk38;                          /* 0x38 */
+    int goalDone;                       /* 0x38, set by the run's step callbacks when their goal is met, 0 when a run starts */
     int phase;                          /* 0x3c, 0 .. 3 */
     unsigned int step;                  /* 0x40, the step of the run's chain */
     int unk44;                          /* 0x44 */
     int stepForm;                       /* 0x48, ai_TutorialStepForm's form */
     int stepControl;                    /* 0x4c, its control, -1 = none */
-    int unk50;                          /* 0x50 */
+    int stepArg;                        /* 0x50, ai_CampaignStep's argument b of the step that ended the chain */
     int markerStep;                     /* 0x54 */
     int markerPhase;                    /* 0x58 */
     int markerAt;                       /* 0x5c */

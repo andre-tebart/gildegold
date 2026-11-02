@@ -693,6 +693,7 @@ extern char *txt_Ptrs[]; /* 0x143a1c0 */
    and the full link relocates the initializer, so the record is ours and no neighbour is touched. */
 TUTSTATE *const ai_Tutorial = (TUTSTATE *)(full_data_6fa020 + 0x40);  /* 0x5eec60, the pointer to the tutorial state record */
 #define S (*(char **)(unsigned)&ai_Tutorial)  /* the tutorial state record (at 0x6fa060): the pointer ai_Tutorial holds */
+#define ai_ClockMsVolatile (*(volatile int *)&ai_ClockMs)  /* 0x6333cc, @original: the byte-matched ai_TutorialTick reloads the clock after every read (a timer-written int; its owner declares it plain int) */
 int ai_TutorialOn = 0;  /* 0x6f265c, the tutorial runs (set by its start 0x578180, cleared by its end) */
 int ai_TutorialRunning = 0;  /* 0x6f2660, the tutorial's state machine advances (unk_SetEndGameGate / unk_ClearEndGameGate) */
 
@@ -730,281 +731,242 @@ int ai_TutorialRunning = 0;  /* 0x6f2660, the tutorial's state machine advances 
 #include "unk_458810.h"
 #include "dd_vesa.h"
 #define sv_SelectPanelObjectK ((int (*)())sv_SelectPanelObject)  /* 0x52c4c0?: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
-/* 0x575860, the end-of-game tick (1984 B, ROUGH SKELETON): validates the end-of-game gates and the state record,
-   then runs the state machine on *(int *)0x5eec60 - 1 (12 states, jump table 0x575fe8, the states 1 .. 0xc). The
-   case bodies are not written yet: their helper calls, in address order, are 0x476f80, 0x577c60, 0x57b8a0,
-   0x577d90, 0x5778b0, 0x576040 (the state transition), the state record writes, 0x53dcb0 (the end-of-game
-   message), 0x577a00, 0x577a90, 0x577b60 (the clock writers 0x6333cc / 0x6333e0), 0x4741a0, 0x577e50,
-   0x475e40, 0x5780e0, 0x577b90, 0x52d7a0, 0x52e330, 0x426f20, 0x427290, 0x4c2760; the exit is -4 (0xfffffffc)
-   on a failed gate. Ends at 0x575fe2 (a shared return), the jump table 0x575fe8 .. 0x576017, nop fill to 0x576020. */
+/* 0x575860, the tutorial's tick: nothing (-4) without the tutorial, its run record or its event slot; puts the
+   tutorial's own event window back to the state 3 (or its state to next when another window is active), then, while
+   ai_TutorialRunning and no camera move / panel is busy, runs the state machine on ai_Tutorial->state: 1 starts a run
+   record, 2 / 3 wait for the intro window, 4 the timed first text window, 5 / 6 / 7 the chapter's step chain, 9 the
+   second text window, 0xa / 0xb the timed tails with their status text and voice, 0xc the next run record */
 
 int ai_TutorialTick(void)
 {
-    char *st;
-    char *per;
-
     if (!ai_TutorialOn)
         return -4;
-    st = S;
-    if (!st)
+    if (!ai_Tutorial->run)
         return -4;
-    if (!*(int *)(st + 0x18))
+    if (!ai_Tutorial->host->slot)
         return -4;
-    per = *(char **)(st + 0x1c);
-    if (!*(int *)(per + 0x74))
-        return -4;
-    /* 0x57589d .. 0x575915: the first-run / pause handling: the state 3 and the gate pairs 0x6310e4 / 0x75e8c0
-       (0x476f80), the state record [st] = [st+4] when the progress word changed, [st+0x30] == 1 and [st] != 9
-       resets the flag and calls 0x577c60 / 0x57b8a0(2) */
-    if (U_I((unsigned)&he_ActiveSlot) == *(int *)(per + 0x74)) {
-        if (U_I(st) != 2 && !U_I((unsigned)&d3t_CamMoving) && !U_I((unsigned)&sv_PanelFlag)) {
-            d2_SetPointerSprite(0, 0);
-            *(int *)(S) = 3;
+    if (he_ActiveSlot == ai_Tutorial->host->slot && ai_Tutorial->state != 2) {
+        if (d3t_CamMoving || sv_PanelFlag) {
+            he_ActivateSlot(0);
+            return 0;
         }
+        d2_SetPointerSprite(0, 0);
+        ai_Tutorial->state = 3;
     }
-    st = S;
-    if (U_I((unsigned)&he_ActiveSlot) != *(int *)(*(char **)(st + 0x1c) + 0x74)) {
-        *(int *)st = *(int *)(st + 4);
-        st = S;
-    }
-    if (*(int *)(st + 0x30) == 1 && U_I(st) != 9) {
-        *(int *)(st + 0x30) = 0;
+    if (he_ActiveSlot != ai_Tutorial->host->slot)
+        ai_Tutorial->state = ai_Tutorial->next;
+    if (ai_Tutorial->text2Shown == 1 && ai_Tutorial->state != 9) {
+        ai_Tutorial->text2Shown = 0;
         ai_TutorialHideText2();
         ai_TutorialMarkerUpdate(2);
     }
     if (!ai_TutorialRunning)
-        goto end;
+        return 0;
     ai_TutorialProgressSlider();
-    if (U_I((unsigned)&d3t_CamMoving) || U_I((unsigned)&sv_PanelFlag))
-        goto end;
-    st = S;
-    switch (U_I(st) - 1) {
-    case 0:                     /* state 1, 0x57595a: show the main-intro text and start the step chain */
-        if (d3t_CamMove != 0)
-            break;
-        if (ai_TutorialShowRunText() != 0)
+    if (d3t_CamMoving || sv_PanelFlag)
+        return 0;
+    switch (ai_Tutorial->state) {
+    case 1:                     /* start the run record */
+        if (d3t_CamMove)
+            return 0;
+        if (ai_TutorialShowRunText())
             return -4;
-        U_I(S + 0x38) = 0;
-        U_I(S + 0x3c) = 0;
-        U_I(S) = 2;
-        st = S;
-        per = *(char **)(st + 0x18);
-        if (*(int *)(per + 8) == 1 || *(int *)(per + 8) == 2) {
-            U_I(S + 4) = 4;
-            U_I(S + 0x2c) = 0;
+        ai_Tutorial->goalDone = 0;
+        ai_Tutorial->phase = 0;
+        ai_Tutorial->state = 2;
+        if (ai_Tutorial->run->mode != 1 && ai_Tutorial->run->mode != 2) {
+            ai_Tutorial->next = 0xb;
+            ai_Tutorial->statusShown = 1;
         } else {
-            U_I(S + 4) = 0xb;
-            U_I(S + 0x2c) = 1;
+            ai_Tutorial->next = 4;
+            ai_Tutorial->statusShown = 0;
         }
-        if (*(int *)(per + 8) == 2)
-            U_I(S + 0x3c) = 1;
-        if (*(int *)(per + 0x38))
+        if (ai_Tutorial->run->mode == 2)
+            ai_Tutorial->phase = 1;
+        if (ai_Tutorial->run->campaign)
             ai_CampaignStep(2, 0, 0, 0);
-        U_I(S + 0x50) = 0;
-        U_I(S + 0x58) = *(int *)(per + 0x64) != 0;
-        U_I(S + 0x54) = 0;
-        U_I(S + 0x5c) = 0;
-        U_I(S + 0x60) = -1;
-        if (*(int *)(per + 0x34))
-            ((void (*)(int))*(int *)(per + 0x34))(0);
-        he_ActivateSlot(*(int **)(*(char **)(S + 0x1c) + 0x74));
+        ai_Tutorial->stepArg = 0;
+        if (!ai_Tutorial->run->marker)
+            ai_Tutorial->markerPhase = 0;
+        else
+            ai_Tutorial->markerPhase = 1;
+        ai_Tutorial->markerStep = 0;
+        ai_Tutorial->markerAt = 0;
+        ai_Tutorial->markerObj = -1;
+        if (ai_Tutorial->run->hook)
+            ai_Tutorial->run->hook(0);
+        he_ActivateSlot((int *)ai_Tutorial->host->slot);
         d2_SetPointerSprite(0, 0);
-        break;
-    case 1:                     /* state 2, 0x575a69: the intro is answered, close the window and continue */
+        return 0;
+    case 2:                     /* the intro window is answered: continue with the clocks reset */
         if (ai_TutorialIntroAnswered() != 1)
-            break;
-        U_I(S) = U_I(S + 4);
-        U_I(S + 8) = U_I((unsigned)&ai_ClockMs);
-        U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
-        U_I(S + 0x10) = 0;
+            return 0;
+        ai_Tutorial->state = ai_Tutorial->next;
+        ai_Tutorial->textAt = ai_ClockMsVolatile;
+        ai_Tutorial->stepAt = ai_ClockMsVolatile;
+        ai_Tutorial->campaignSteps = 0;
         he_ActivateSlot(0);
-        break;
-    case 2:                     /* state 3, 0x575ab5: the same without the clocks */
+        return 0;
+    case 3:                     /* the same without the clocks */
         if (ai_TutorialIntroAnswered() != 1)
-            break;
-        U_I(S) = U_I(S + 4);
+            return 0;
+        ai_Tutorial->state = ai_Tutorial->next;
         he_ActivateSlot(0);
-        break;
-    case 3:                     /* state 4, 0x575adc: the timed first text window */
-        st = S;
-        per = *(char **)(st + 0x18);
-        if (*(int *)(per + 0x40) == 3) {
+        return 0;
+    case 4:                     /* the timed first text window */
+        if (ai_Tutorial->run->startMode == 3) {
             ai_CampaignStep(0, 0, 0, 0);
-            break;
+            return 0;
         }
-        if (U_I((unsigned)&ai_ClockMs) > U_I(st + 8) + *(int *)(per + 0x2c)) {
-            U_I(st + 8) = U_I((unsigned)&ai_ClockMs);
-            if (U_I(st + 0x28) == 0 && *(int *)(per + 0x14) != 0) {
-                U_I(st + 0x28) = 1;
+        if (ai_ClockMsVolatile > ai_Tutorial->textAt + ai_Tutorial->run->text1Time) {
+            ai_Tutorial->textAt = ai_ClockMsVolatile;
+            if (ai_Tutorial->text1Shown == 0 && ai_Tutorial->run->text1) {
+                ai_Tutorial->text1Shown = 1;
                 ai_TutorialShowText();
             }
-        } else if (U_I((unsigned)&ai_ClockMs) > U_I(st + 8) + 0x238) {
-            if (U_I(st + 0x28) != 1)
-                break;
-            U_I(st + 8) = U_I((unsigned)&ai_ClockMs);
-            U_I(st + 0x28) = 0;
+        } else if (ai_ClockMsVolatile > ai_Tutorial->textAt + 0x238) {
+            if (ai_Tutorial->text1Shown != 1)
+                return 0;
+            ai_Tutorial->textAt = ai_ClockMsVolatile;
+            ai_Tutorial->text1Shown = 0;
             ai_TutorialHideText();
         }
-        if (U_I(st + 0x28) == 1)
-            d2_RaiseViewWindows(U_I(st + 0x24));
-        break;
-    case 4:                     /* state 5, 0x575b82: drop the intro window and open the first step */
-        U_I(S + 8) = U_I((unsigned)&ai_ClockMs);
-        U_I(S + 0x28) = 0;
+        if (ai_Tutorial->text1Shown != 1)
+            return 0;
+        d2_RaiseViewWindows(ai_Tutorial->text1Win);
+        return 0;
+    case 5:                     /* drop the first text window, open the first step */
+        ai_Tutorial->textAt = ai_ClockMsVolatile;
+        ai_Tutorial->text1Shown = 0;
         ai_TutorialHideText();
-        U_I(S + 0x3c) = 2;
-        st = S;
-        per = *(char **)(st + 0x18);
-        if (*(int *)(per + 0x50) == 0) {
-            U_I(S) = 7;
-            U_I(S + 4) = 7;
-            break;
-        }
-        U_I(S + 0x40) = 0;
-        U_I(S) = 6;
-        U_I(S + 4) = 6;
-        ai_TutorialStepForm();
-        break;
-    case 5:                     /* state 6, 0x575bdc: one step of the chapter chain */
-        st = S;
-        per = *(char **)(st + 0x18);
-        U_I((unsigned)&tb_Paused) = U_I((unsigned)&ai_ClockMs) >= *(int *)(*(int *)(per + 0x58) + U_I(st + 0x40) * 0x10) + U_I(st + 0xc);
-        d2_SetObjEnabled(U_I(st + 0x4c), U_I((unsigned)&tb_Paused));
-        if (ai_TutorialStepClicked() != 1)
-            break;
-        U_I(S + 0x40)++;
-        U_I(S + 8) = U_I((unsigned)&ai_ClockMs);
-        st = S;
-        per = *(char **)(st + 0x18);
-        if (U_I(st + 0x40) < *(int *)(per + 0x50)) {
-            U_I(st + 0xc) = U_I((unsigned)&ai_ClockMs);
+        ai_Tutorial->phase = 2;
+        if (ai_Tutorial->run->stepCount > 0) {
+            ai_Tutorial->step = 0;
+            ai_Tutorial->state = 6;
+            ai_Tutorial->next = 6;
             ai_TutorialStepForm();
-            break;
+            return 0;
         }
-        U_I(S) = 7;
-        U_I(S + 4) = 7;
-        break;
-    case 6:                     /* state 7, 0x575c74: the chapter is done, pick the next state */
-        U_I(S + 0x3c) = 3;
-        U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
-        U_I(S + 0x50) = 0;
+        ai_Tutorial->state = 7;
+        ai_Tutorial->next = 7;
+        return 0;
+    case 6:                     /* one step of the chain: its control is enabled after the step's delay */
+        tb_Paused = ai_ClockMsVolatile >= ai_Tutorial->run->steps[ai_Tutorial->step].delay + ai_Tutorial->stepAt;
+        d2_SetObjEnabled(ai_Tutorial->stepControl, tb_Paused);
+        if (ai_TutorialStepClicked() != 1)
+            return 0;
+        ai_Tutorial->step++;
+        ai_Tutorial->textAt = ai_ClockMsVolatile;
+        if (ai_Tutorial->step < ai_Tutorial->run->stepCount) {
+            ai_Tutorial->stepAt = ai_ClockMsVolatile;
+            ai_TutorialStepForm();
+            return 0;
+        }
+        ai_Tutorial->state = 7;
+        ai_Tutorial->next = 7;
+        return 0;
+    case 7:                     /* the chain is done: the second text window or the tail */
+        ai_Tutorial->phase = 3;
+        ai_Tutorial->stepAt = ai_ClockMsVolatile;
+        ai_Tutorial->stepArg = 0;
         ai_TutorialStepForm();
-        U_I((unsigned)&tb_Paused) = 0;
-        st = S;
-        per = *(char **)(st + 0x18);
-        if (*(int *)(per + 0x4c) == 0) {
-            U_I(S) = 9;
-            U_I(S + 4) = 9;
-        } else {
-            U_I(S) = 0xa;
-            U_I(S + 4) = 0xa;
-            U_I(S + 0x2c) = *(int *)(per + 0x24) == 0;
+        tb_Paused = 0;
+        if (ai_Tutorial->run->toText2) {
+            ai_Tutorial->state = 9;
+            ai_Tutorial->next = 9;
+            return 0;
         }
-        break;
-    case 7:                     /* state 8, 0x575fe2: nothing */
-        break;
-    case 8:                     /* state 9, 0x575cec: the second text window and the run update */
-        if (U_I(S + 0x28) == 1) {
-            U_I(S + 8) = U_I((unsigned)&ai_ClockMs);
-            U_I(S + 0x28) = 0;
+        ai_Tutorial->state = 0xa;
+        ai_Tutorial->next = 0xa;
+        ai_Tutorial->statusShown = ai_Tutorial->run->statusText == 0;
+        return 0;
+    case 9:                     /* the second text window and the marker */
+        if (ai_Tutorial->text1Shown == 1) {
+            ai_Tutorial->textAt = ai_ClockMsVolatile;
+            ai_Tutorial->text1Shown = 0;
             ai_TutorialHideText();
         }
-        st = S;
-        per = *(char **)(st + 0x18);
-        if (U_I(st + 0x30) == 0 && *(int *)(per + 0x1c) != 0) {
-            U_I(st + 0x30) = 1;
+        if (ai_Tutorial->text2Shown == 0 && ai_Tutorial->run->text2) {
+            ai_Tutorial->text2Shown = 1;
             ai_TutorialShowText2();
             ai_TutorialMarkerUpdate(0);
         }
-        if (U_I(S + 0x30) == 1)
-            d2_RaiseViewWindows(U_I(S + 0x34));
+        if (ai_Tutorial->text2Shown == 1)
+            d2_RaiseViewWindows(ai_Tutorial->text2Win);
         ai_TutorialMarkerUpdate(1);
-        break;
-    case 9:                     /* state 10, 0x575d57: the chapter's timed tail */
-        if (U_I(S + 0x28) == 1) {
-            U_I(S + 8) = U_I((unsigned)&ai_ClockMs);
-            U_I(S + 0x28) = 0;
+        return 0;
+    case 0xa:                   /* the tail: after tailTime the camera returns and the state 0xb follows */
+        if (ai_Tutorial->text1Shown == 1) {
+            ai_Tutorial->textAt = ai_ClockMsVolatile;
+            ai_Tutorial->text1Shown = 0;
             ai_TutorialHideText();
         }
-        st = S;
-        per = *(char **)(st + 0x18);
-        if (U_I((unsigned)&ai_ClockMs) > U_I(st + 0xc) + *(int *)(per + 0x44)) {
+        if (ai_ClockMsVolatile > ai_Tutorial->run->tailTime + ai_Tutorial->stepAt) {
             sv_CameraFollow();
-            U_I((unsigned)&sv_PopRequest) = U_I((unsigned)&sv_FrameDepth) - U_I((unsigned)&sv_FrameBase);
-            U_I(S) = 1;
-            U_I(S + 4) = 1;
-            U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
+            sv_PopRequest = sv_FrameDepth - sv_FrameBase;
+            ai_Tutorial->state = 0xb;
+            ai_Tutorial->next = 0xb;
+            ai_Tutorial->stepAt = ai_ClockMsVolatile;
         }
-        st = S;
-        if (U_I(st + 0x2c) != 0)
-            break;
-        per = *(char **)(st + 0x18);
-        if (*(int *)(per + 0x24) == 0)
-            break;
-        sv_SetStatusText(txt_Ptrs[*(int *)(per + 0x24)]);
-        if (*(int *)(per + 0x28) != 0) {
-            if (U_I(S + 0x14)) {
-                if (sb_IsPlaying((struct SBSAMPLE *)U_I(S + 0x14)))
-                    sb_Stop((struct SBSAMPLE *)U_I(S + 0x14), 0);
-                U_I(S + 0x14) = 0;
+        if (ai_Tutorial->statusShown)
+            return 0;
+        if (!ai_Tutorial->run->statusText)
+            return 0;
+        sv_SetStatusText(txt_Ptrs[ai_Tutorial->run->statusText]);
+        if (ai_Tutorial->run->voice) {
+            if (ai_Tutorial->voice) {
+                if (sb_IsPlaying(ai_Tutorial->voice))
+                    sb_Stop(ai_Tutorial->voice, 0);
+                ai_Tutorial->voice = 0;
             }
-            U_I(S + 0x14) = snd_PlayVoice(0xfffffff9, 0, (char *)U_I(per + 0x28), -1);
+            ai_Tutorial->voice = (struct SBSAMPLE *)snd_PlayVoice(-7, 0, ai_Tutorial->run->voice, -1);
         }
-        U_I(S + 0x2c) = 1;
+        ai_Tutorial->statusShown = 1;
         ai_TutorialShowRunText();
-        break;
-    case 10:                    /* state 11, 0x575e68: the same with the second window's timing */
-        if (U_I(S + 0x28) == 1) {
-            U_I(S + 8) = U_I((unsigned)&ai_ClockMs);
-            U_I(S + 0x28) = 0;
+        return 0;
+    case 0xb:                   /* the second tail: after tail2Time the state 0xc */
+        if (ai_Tutorial->text1Shown == 1) {
+            ai_Tutorial->textAt = ai_ClockMsVolatile;
+            ai_Tutorial->text1Shown = 0;
             ai_TutorialHideText();
         }
-        st = S;
-        per = *(char **)(st + 0x18);
-        if (U_I((unsigned)&ai_ClockMs) > U_I(st + 0xc) + *(int *)(per + 0x30)) {
+        if (ai_ClockMsVolatile > ai_Tutorial->run->tail2Time + ai_Tutorial->stepAt) {
             sv_CameraFollow();
-            U_I((unsigned)&sv_PopRequest) = U_I((unsigned)&sv_FrameDepth) - U_I((unsigned)&sv_FrameBase);
-            U_I(S) = 0xc;
-            U_I(S + 4) = 0xc;
-            U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
+            sv_PopRequest = sv_FrameDepth - sv_FrameBase;
+            ai_Tutorial->state = 0xc;
+            ai_Tutorial->next = 0xc;
+            ai_Tutorial->stepAt = ai_ClockMsVolatile;
         }
-        st = S;
-        if (U_I(st + 0x2c) != 0)
-            break;
-        per = *(char **)(st + 0x18);
-        if (*(int *)(per + 0x24) == 0)
-            break;
-        sv_SetStatusText(txt_Ptrs[*(int *)(per + 0x24)]);
-        if (*(int *)(per + 0x28) != 0) {
-            if (U_I(S + 0x14)) {
-                if (sb_IsPlaying((struct SBSAMPLE *)U_I(S + 0x14)))
-                    sb_Stop((struct SBSAMPLE *)U_I(S + 0x14), 0);
-                U_I(S + 0x14) = 0;
+        if (ai_Tutorial->statusShown)
+            return 0;
+        if (!ai_Tutorial->run->statusText)
+            return 0;
+        sv_SetStatusText(txt_Ptrs[ai_Tutorial->run->statusText]);
+        if (ai_Tutorial->run->voice) {
+            if (ai_Tutorial->voice) {
+                if (sb_IsPlaying(ai_Tutorial->voice))
+                    sb_Stop(ai_Tutorial->voice, 0);
+                ai_Tutorial->voice = 0;
             }
-            U_I(S + 0x14) = snd_PlayVoice(0xfffffff9, 0, (char *)U_I(per + 0x28), -1);
+            ai_Tutorial->voice = (struct SBSAMPLE *)snd_PlayVoice(-7, 0, ai_Tutorial->run->voice, -1);
         }
-        U_I(S + 0x2c) = 1;
+        ai_Tutorial->statusShown = 1;
         ai_TutorialShowRunText();
-        break;
-    case 11:                    /* state 12, 0x575f80: next chapter record */
-        if (U_I(S + 0x28) == 1) {
-            U_I(S + 8) = U_I((unsigned)&ai_ClockMs);
-            U_I(S + 0x28) = 0;
+        return 0;
+    case 0xc:                   /* the run is over: the next run record */
+        if (ai_Tutorial->text1Shown == 1) {
+            ai_Tutorial->textAt = ai_ClockMsVolatile;
+            ai_Tutorial->text1Shown = 0;
             ai_TutorialHideText();
         }
-        st = S;
-        per = *(char **)(st + 0x18);
-        if (*(int *)(per + 0x34))
-            ((void (*)(int))*(int *)(per + 0x34))(1);
-        st = S;
-        per = *(char **)(st + 0x18);
-        *(char **)(st + 0x18) = *(char **)(per + 0x70);
-        U_I(S) = 1;
-        U_I(S + 4) = 1;
-        sv_SetStatusText((char *)(unsigned)&ch_EmptyName);
-        break;
+        if (ai_Tutorial->run->hook)
+            ai_Tutorial->run->hook(1);
+        ai_Tutorial->run = ai_Tutorial->run->next;
+        ai_Tutorial->state = 1;
+        ai_Tutorial->next = 1;
+        sv_SetStatusText(ch_EmptyName);
+        return 0;
     }
-end:
     return 0;
 }
 /* 0x576020, clears the end-of-game gate 0x6f2660 (checked by the tick 0x575860 at 0x575915) */
