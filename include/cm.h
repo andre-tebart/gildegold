@@ -469,7 +469,7 @@ void ai_GameFrame(void);  /* 0x591520 */
 int amt_ExecuteSwapMessage();  /* 0x4e6c50 */
 unsigned short ahm_CreateAlchemist(int *p);  /* 0x4ec500, ahm.c (cm.c reads it through ahm_CreateAlchemistI) */
 int gv_BuryCharacter();  /* 0x4f0240 */
-int unk_Unk4f0490();  /* 0x4f0490 */
+int gv_ReserveGrave();  /* 0x4f0490 */
 int unk_Unk4f0770();  /* 0x4f0770 */
 int unk_Unk4f0970();  /* 0x4f0970 */
 int unk_Unk4f0af0();  /* 0x4f0af0 */

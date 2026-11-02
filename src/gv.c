@@ -34,6 +34,12 @@
 #define gv_EffectsT (*(GVEFFECT (*)[8])&gv_Effects)  /* 0x6f1008, gv_Effects (char[0xb80]) as the 8 GVEFFECT slots */
 #define gv_TimeT (*(AITIME *)&ai_Time)  /* 0x770ae0, ai_Time (anm.c: char[14]) as the AITIME it is */
 #define gv_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
+typedef struct GVPLAYERREC {           /* 0x2f4 bytes, a player's slot record (ai_PlayerSlots, indexed by ai_OwnPlayer) */
+    char pad00[0x54];
+    unsigned short currency;            /* 0x54, the currency good, as gm_AddNegative / gm_AddObjekt take it */
+    char pad56[0x29e];
+} GVPLAYERREC;
+#define gv_PlayerRecs (*(GVPLAYERREC (*)[4])&ai_PlayerSlots)  /* 0x7e3f40, ai_PlayerSlots (char[4][0x2f4]) as the player records */
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 extern GAPDATA full_data_91f6e3[];
@@ -64,7 +70,7 @@ extern GAPDATA full_data_91f6e4[];
 #include "unk_5d33b0.h"
 extern int gm_PlayerRecords[688];
 
-extern const float unk_Tab5ee034[];
+extern const float gv_SaleShares[];
 
 #define UNK_FW ((unsigned (*)())vfs_fwrite)
 #define UNK_FR ((unsigned (*)())ls_Read)
@@ -1826,55 +1832,50 @@ int gv_OrderReserveGrave(int *c, char *o, int size, short years, int price)
     }
     return -1;
 }
-/* 0x4f0490, graveyard order type 0 (p: +8 the object id, +0xc the list, +0x10 / +0x11 / +0x13 values): the first free entry (+4 = -1) of the list gets the character p[+4]'s id, its short +0x50 and the time
-   +0x11 + 0x770ae0; its record is cleared (ids -1); with a price (+0x13 > 0) the owner's money changes (0x500ae0 / 0x500970) and a player character (kind 6) is told (0x5a96e0). The result 0, or a negative reason
-   (as 0x4f0240; -7 no free entry, -5 list out of range). ROUGH (the floats of the __ftol calls are lost) */
+/* 0x4f0490, graveyard order type 1 (GVORDER m, sent by gv_OrderReserveGrave): reserves the first free entry of the size
+   m->size of the graveyard building m->bld for the living character m->chr: the entry gets the character's netId and w050,
+   runs until ai_Time.year + m->years, its graves are freed; with a price the buyer pays it (gm_AddNegative), the owner gets
+   the size's share of it (gv_SaleShares, gm_AddObjekt) and an owner that is a player character (kind 6) other than the
+   buyer is told (ai_NotifySale). Returns 0, or a negative reason as gv_BuryCharacter (-5 the size is out of range, -7 no
+   free entry) */
 
-int unk_Unk4f0490(short *p)
+int gv_ReserveGrave(GVORDER *m)
 {
-    unsigned char *o;
-    char *c;
-    int *e;
-    int i, n;
-    int ow;
-    unsigned short ch;
+    AIBLD *bld;
+    AICHAR *c, *owner;
+    GVENTRY *e;
+    int i;
 
-    gm_FindById(&o, 0, 0, *(int *)(p + 4));
-    if (o == 0 || *(unsigned short *)(o + 0x27) == 0xffff || ai_Chars[*(unsigned short *)(o + 0x27)] == ai_PlayerCharC)
+    gm_FindById((int *)&bld, 0, 0, m->bld);
+    if (bld == 0 || bld->owner == 0xffff || &gv_CharsT[bld->owner] == gv_PlayerAiChar)
         return -1;
-    if (ai_BTypes[o[0] * 0x24d] != 0x1d)
+    if (((AIBTYPE *)(ai_BTypes + bld->type * 0x24d))->kind != 0x1d)
         return -2;
-    if (*(int *)(o + 0x65) == 0)
+    if (bld->yard == 0)
         return -3;
-    if (gv_SizeOpen(*(char **)(o + 0x65), *(int *)(p + 6)) == 0)
+    if (gv_SizeOpen((char *)bld->yard, m->size) == 0)
         return -4;
-    gm_FindById(0, 0, &c, *(int *)(p + 2));
+    gm_FindById(0, 0, (int *)&c, m->chr);
     if (c == 0)
         return -6;
-    if (*(int *)(p + 6) >= 0 && *(int *)(p + 6) < 4) {
-        e = (int *)gv_FindEntry(c, o, 0, gv_EntryIsFree, *(int *)(p + 6));
+    if (m->size >= 0 && m->size <= 3) {
+        e = (GVENTRY *)gv_FindEntry(c, (unsigned char *)bld, 0, gv_EntryIsFree, m->size);
         if (e == 0)
             return -7;
-        e[1] = *(int *)(c + 4);
-        *(short *)(e + 2) = *(short *)(c + 0x50);
-        *(short *)((char *)e + 10) = *(short *)((char *)p + 0x11) + (short)*(int *)ai_Time;
-        *((char *)e + 0xc) = (char)0xff;
-        i = 0;
-        if (gv_EntryCounts[*(int *)(p + 6)] > 0) {
-            n = 0;
-            do {
-                i++;
-                *(int *)(n + e[4]) = -1;
-                n += 0x44;
-            } while (i < gv_EntryCounts[*(int *)(p + 6)]);
-        }
-        if (*(int *)((char *)p + 0x13) > 0) {
-            ow = *(int *)(ai_Unk7e3f94 + ai_OwnPlayer * 0x5e8);
-            gm_AddNegative(*(int *)(c + 4), ow, *(int *)((char *)p + 0x13));
-            gm_AddObjekt(*(int *)(ai_Chars[*(unsigned short *)(o + 0x27)] + 4), ow, 0);
-            ch = *(unsigned short *)(o + 0x27);
-            if (c != ai_Chars[ch] && ai_Chars[ch][2] == 6)
-                ai_Unk5a96e0(ai_Chars[ch], c, o, *(int *)(p + 6), *(int *)((char *)p + 0x13), 0);
+        e->id = c->netId;
+        e->w08 = c->w050;
+        e->until = m->years + (unsigned short)gv_TimeT.year;
+        e->b0c = 0xff;
+        for (i = 0; i < gv_EntryCounts[m->size]; i++)
+            e->grave[i].id = -1;
+        if (m->price > 0) {
+            gm_AddNegative(c->netId, gv_PlayerRecs[ai_OwnPlayer].currency, m->price);
+            gm_AddObjekt(gv_CharsT[bld->owner].netId, gv_PlayerRecs[ai_OwnPlayer].currency,
+                         (int)(m->price * gv_SaleShares[m->size]));
+            owner = &gv_CharsT[bld->owner];
+            if (c != owner && gv_CharsT[bld->owner].kind == 6)
+                ai_NotifySale((int)owner, (unsigned short *)c, (int)bld, m->size, m->price,
+                              (int)(m->price * gv_SaleShares[m->size]));
         }
         return 0;
     }
@@ -2678,7 +2679,7 @@ int unk_Unk4f2330(unsigned short *c, int a, int kind, int flag, int *out)
     if (flag == 0)
         v = ((a & 0xff) * 0.00392156862745098 * 0.7f + 0.3f) * (v * 0.75);
     r = gm_PlayerFactor((int)v, ai_OwnPlayer);
-    *out = (int)(r * unk_Tab5ee034[kind]);
+    *out = (int)(r * gv_SaleShares[kind]);
     return r;
 }
 /* 0x4f2440, the cost difference of two kinds: 0x4f2330 (c, 100, k1, 1) minus half of the one of k2; *out the difference times the factor of k2 */
@@ -2690,7 +2691,7 @@ int unk_Unk4f2440(unsigned short *c, int k1, int k2, int *out)
     a = unk_Unk4f2330(c, 100, k1, 1, &d);
     b = unk_Unk4f2330(c, 100, k2, 1, &d);
     d = b - a / 2;
-    *out = (int)(d * unk_Tab5ee034[k2]);
+    *out = (int)(d * gv_SaleShares[k2]);
     return d;
 }
 /* 0x4f24a0, calls 0x5085f0 with 0.1 * x / (log10(x) + 1) where x = 0x5085b0 (0x50a640 of the character id) clamped to 10000 .. 100000. ROUGH */
@@ -4374,7 +4375,7 @@ extern char ord_StatisticsHistory[320];
 extern char ord_RatingBytes[16];
 extern char ord_MessageRecord[0x24];
 const char ai_ZeroRot[12] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };  /* 0x5ebbb4 */
-const float unk_Tab5ee034[] = { 0.800000012f, 0.699999988f, 0.600000024f, 0.5f, 15.0f, 12.5f, 10.0f, 7.5f };  /* 0x5ee034 */
+const float gv_SaleShares[] = { 0.800000012f, 0.699999988f, 0.600000024f, 0.5f, 15.0f, 12.5f, 10.0f, 7.5f };  /* 0x5ee034 */
 const int gv_EntryCounts[] = { 1, 2, 4, 8 };  /* 0x5ee054, entries per kind */
 const int gv_EntryTotals[] = { 0, 12, 20, 30 };  /* 0x5ee064 */
 const int gv_GraveTotals[] = { 0, 16, 32, 64 };  /* 0x5ee074 */

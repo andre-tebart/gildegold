@@ -14260,7 +14260,7 @@ void ai_Unk5a9690(int param_1, int param_2)
    0x5190a0 (0: param_3 then the table, 1: the table then param_3, 2: as 0; other none), sent with the +4 id
    (0x5fc, the key 0x62c32c) */
 
-void ai_Unk5a96e0(int param_1, unsigned short *param_2, int param_3, int param_4, int param_5, int param_6)
+void ai_NotifySale(int param_1, unsigned short *param_2, int param_3, int param_4, int param_5, int param_6)
 {
     unsigned short v;
     int a;

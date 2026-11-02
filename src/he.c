@@ -230,7 +230,7 @@ extern unsigned short * ai_PlayerChar;
 extern GAPDATA full_data_628f3c[];
 extern GAPDATA full_data_628f74[];
 extern GAPDATA full_data_628fac[];
-extern const float unk_Tab5ee034[];
+extern const float gv_SaleShares[];
 extern GAPDATA full_data_628fe4[];
 extern float ai_Unk5eb94c;
 extern GAPDATA full_data_629000[];
@@ -17167,7 +17167,7 @@ void he_Unk5728d0(int ev)
         return;
     if (HM_B(own, 2) != 6 && HM_B(own, 2) != 7)
         return;
-    n = (int)((float)HM_I(ev, 0xb8) * *(float *)((unsigned)&unk_Tab5ee034 + HM_I(ev, 0xb0) * 4));
+    n = (int)((float)HM_I(ev, 0xb8) * *(float *)((unsigned)&gv_SaleShares + HM_I(ev, 0xb0) * 4));
     ai_Unk5a97e0(own, per, bld, HM_I(ev, 0xb0), HM_I(ev, 0xb8), n);
 }
 /* 0x5729c0, the exam cancelled: the building 0x501190 (1, 1, +0xac) of the kind 0x1d and the character +0xc: 0x4f0900 (0, building, +0xb0, +0xb4) and 0x5a9880 (the owner record, character, building, +0xb0) */

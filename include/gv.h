@@ -277,7 +277,7 @@ void gv_FreeGraveyard(int *g);             /* 0x4f0180 */
 int unk_Unk4f01d0(int *g, char *o, int v, int b);  /* 0x4f01d0 */
 int gv_BuryCharacter(int *p);              /* 0x4f0240 */
 int gv_OrderReserveGrave(int *c, char *o, int size, short years, int price);  /* 0x4f0430 */
-int unk_Unk4f0490(short *p);            /* 0x4f0490 */
+int gv_ReserveGrave(GVORDER *m);          /* 0x4f0490 */
 int unk_Unk4f0700(int *g, char *o, int v, int b, short s, int x);  /* 0x4f0700 */
 int unk_Unk4f0770(char *p);             /* 0x4f0770 */
 int unk_Unk4f0900(int *g, char *o, int v, int b);  /* 0x4f0900 */

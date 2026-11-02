@@ -5809,7 +5809,7 @@ int ai_Unk4cce10(G17MSG *m, G17STAT *s)
         r = gv_BuryCharacter(&m->data[0]);
         break;
     case 1:
-        r = unk_Unk4f0490(&m->data[0]);
+        r = gv_ReserveGrave(&m->data[0]);
         break;
     case 2:
         r = unk_Unk4f0770(&m->data[0]);
