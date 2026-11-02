@@ -9629,39 +9629,35 @@ void ai_Unk5876a0(char *rec)
             ai_GraveSeance((AIBLD *)rec);
     }
 }
-/* 0x587700, the graveyard grave-detail message (269 B): rec / ch the character / sel the picked line (1 / 2 / 4).
-   The line 0x413a (the grave's word) through 0x5176d0 and 0x521150 (the line, 1) == 0 -> 0; 0x4ffe90
-   (rec + 0x5d, 1, 0, 0x211); the message (type 0x8f at +4, 1 at +0x36, the player's character word at +8, rec + 1
-   at +0xc, the clock 0x770ae0 / 0x770ae4 / 0x770ae8 / word 0x770aec at +0x28, the 0x4ffe90 answer's +2 (or -1)
-   at +0x60, the character +4 at +0x58, sel at +0x5c) through 0x4c4b70; 1 */
-
-int ai_Unk587700(char *rec, char *ch, int sel)
+/* 0x587700, the confirm of the graveyard's worker upgrade (ai_UpgradeWorkerWindow) for the graveyard rec, the
+   selected character ch and the skill sel (1 / 2 / 4): the question txt 0x413a (ch's id) in a yes / no message box;
+   no -> 0. Yes: the message 0x8f from the player (flags 1, the game time, ch's netId, sel, the objId of the
+   object gm_Query (rec->objList, 1, 0, 0x211) finds, a reasoned guess: the kind 0x211; -1 without one); 1 */
+int ai_UpgradeWorkerSend(AIBLD *rec, AICHAR *ch, int sel)
 {
-    char msg[0xf8];
-    char buf[0x400];
-    int r;
+    AIMSG msg;
+    char line[0x400];
+    AIOBJ *obj;
 
-    txt_Format(buf, (char *)0x413a, *(unsigned short *)rec);
-    if (sv_MessageBox(buf, 1) == 0)
-        return 0;
-    r = gm_Query(rec + 0x5d, 1, 0, 0x211);
-    memset(msg, 0, 0xf8);
-    *(unsigned char *)(msg + 0x04) = 0x8f;
-    *(unsigned char *)(msg + 0x36) = 1;
-    *(int *)(msg + 0x08) = *(int *)((unsigned)&ai_CharInts + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c);
-    *(int *)(msg + 0x0c) = U_I(rec + 1);
-    *(int *)(msg + 0x28) = U_I((unsigned)&ai_Time);
-    *(int *)(msg + 0x2c) = U_I((unsigned)&ai_TimeHour);
-    *(int *)(msg + 0x30) = U_I(((unsigned)&ai_Time + 0x8));
-    *(unsigned short *)(msg + 0x34) = *(unsigned short *)((unsigned)&ai_Time + 0xc);
-    if (r != 0)
-        *(int *)(msg + 0x60) = *(int *)(r + 2);
-    else
-        *(int *)(msg + 0x60) = -1;
-    *(int *)(msg + 0x58) = *(int *)(ch + 4);
-    *(int *)(msg + 0x5c) = sel;
-    cm_SendLongMessage(msg);
-    return 1;
+    txt_Format(line, 0x413a, ch->id);
+    if (sv_MessageBox(line, 1) != 0) {
+        obj = (AIOBJ *)gm_Query((void *)rec->objList, 1, 0, 0x211);
+        memset(&msg, 0, sizeof(msg));
+        msg.type = 0x8f;
+        msg.flags = 1;
+        msg.to = ((AICHAR *)ai_Chars[ai_PlayerId])->netId;
+        msg.fromId = rec->id;
+        msg.time = ai_TimeT;
+        if (obj != 0)
+            msg.arg[2] = obj->objId;
+        else
+            msg.arg[2] = -1;
+        msg.arg[0] = ch->netId;
+        msg.arg[1] = sel;
+        cm_SendLongMessage((char *)&msg);
+        return 1;
+    }
+    return 0;
 }
 
 float gm_GetSkill(char *c, int skill); int gm_ClockSeason(); char * he_FindEvent(int n, ...); void d2_SetObjEnabled();
@@ -9676,7 +9672,7 @@ float gm_GetSkill(char *c, int skill); int gm_ClockSeason(); char * he_FindEvent
    buttons by 0x504ec0 (the character, 1 / 2 / 4) < 1.0 in 0x475e40 (the button, the flag); a click on one ->
    sel 1 / 2 / 4: without a character 0x521150 (U_I (0x144a40c), 0), else 0x587700 (rec, the character, sel) != 0
    -> 0x6f22a0 = 1; the pump 0 -> 0x4758f0 (window), 0x525440 (), 0x52ae40 (), 0x52d7a0 () */
-void ai_Unk587810(char *rec)
+void ai_UpgradeWorkerWindow(char *rec)
 {
     char buf[0x400];
     char *f;
@@ -9717,7 +9713,7 @@ void ai_Unk587810(char *rec)
     b2 = d2_GetWinObj(win, 3, n + 1);
     b3 = d2_GetWinObj(win, 3, n + 2);
     sv_OpenPlayerBar(rec, 0);
-    while (sv_RunFrame(ai_Unk587810, 0x677c7) != 0) {
+    while (sv_RunFrame(ai_UpgradeWorkerWindow, 0x677c7) != 0) {
         if (U_I(((unsigned)&dm_L + 0x20)) != 0)
             U_I((unsigned)&sv_PopRequest) = 1;
         f = 0;
@@ -9743,7 +9739,7 @@ void ai_Unk587810(char *rec)
                 continue;
             if (f == 0) {
                 sv_MessageBox((char *)U_I((unsigned)&full_data_144a40c), 0);
-            } else if (ai_Unk587700(rec, f, sel) != 0) {
+            } else if (ai_UpgradeWorkerSend((AIBLD *)rec, (AICHAR *)f, sel) != 0) {
                 U_I((unsigned)&sv_PopRequest) = 1;
             }
         }
@@ -9772,7 +9768,7 @@ void ai_Unk587ad0(char *rec)
         }
         if (U_I((unsigned)&ai_ClickedObject) != 0) {
             if (U_I((unsigned)&ai_ClickedObject) == c0)
-                ai_Unk587810(rec);
+                ai_UpgradeWorkerWindow(rec);
             else if (U_I((unsigned)&ai_ClickedObject) == c1)
                 ai_GraveFogWindow(rec);
         }
