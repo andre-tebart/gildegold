@@ -59,6 +59,17 @@ extern const float unk_Tab5ee034[];
 #define UNK_FW ((unsigned (*)())vfs_fwrite)
 #define UNK_FR ((unsigned (*)())ls_Read)
 
+typedef struct GVAVATAR {               /* 0xf4 bytes, a record of the avatar table unk_Avatars (32) */
+    unsigned id;                        /* 0x00, four characters ("neVm"), the key of the save game's (id, used) pairs */
+    char name[0x10];                    /* 0x04, "Maven" (the read report prints it) */
+    char title[0x10];                   /* 0x14, "of Reading" */
+    char pad24[0xce];
+    unsigned char used;                 /* 0xf2, 1 while the record is in use (gv_AllocAvatar), 0 free */
+    char padf3;
+} GVAVATAR;
+typedef char gv_AssertGVAVATAR[sizeof(GVAVATAR) == 0xf4 ? 1 : -1];
+#define gv_AvatarsT (*(GVAVATAR (*)[0x20])&unk_Avatars)  /* 0x60f310, unk_Avatars (char[0x20][0xf4]) as the GVAVATAR records they are */
+
 /* 0x4ed170, picks a free avatar record (byte +0xf2 = 0) starting at a random one of the 32 (cyclic), marks it used (+0xf2 = 1) after setting the 14 floats at +0x30, +0x3c .. to the floats before them (+0x2c ..)
    times 0.001, and returns it; 0 when all are in use */
 
@@ -115,53 +126,52 @@ int gv_WriteAvatars(void *f)
     return 1;
 }
 /* 0x4ed270, reads the avatar table of 0x4ed1e0 from the file f: the used bytes are first all 0xff, then each saved (id, used) pair sets the record of that id; an unknown id and a record without a pair
-   are reported (0x5de652, "Avatar >%s< not found in savegame, initializing to >unused<") and the count must be 0x20 ("Inconsisten Avatar count"); 1 when all was read. ROUGH */
+   are reported (0x5de652, "Avatar >%s< not found in savegame, initializing to >unused<") and the count must be 0x20 ("Inconsisten Avatar count"); 1 when all was read. The reports are only
+   formatted into a local buffer, never shown. */
 
 int gv_ReadAvatars(void *f)
 {
-    unsigned n, i, k;
-    int id;
-    char used;
-    char name[5];
+    unsigned n, i, j;
+    unsigned id;
+    unsigned char used;
     char buf[256];
 
     if (f == 0)
         return 0;
-    if (UNK_FR(&n, 4, 1, f) == 0)
+    if (ls_Read(&n, 4, 1, (int)f) == 0)
         return 0;
     if (n != 0x20)
         sprintf(buf, "Inconsisten Avatar count: <Expected: %i> <Found: %i>", 0x20, n);
-    for (i = 0; i < 0x1e80; i += 0xf4)
-        unk_Avatars[0][i + 0xf2] = (char)0xff;
-    i = 0;
-    if (n != 0) {
-        do {
-            if (UNK_FR(&id, 4, 1, f) == 0)
-                return 0;
-            if (UNK_FR(&used, 1, 1, f) == 0)
-                return 0;
-            k = 0;
-            while (k < 0x1e80) {
-                if (*(int *)&unk_Avatars[0][k] == id) {
-                    unk_Avatars[0][k + 0xf2] = used;
-                    goto next;
-                }
-                k += 0xf4;
+    for (i = 0; i < 0x20; i++)
+        gv_AvatarsT[i].used = 0xff;
+    for (i = 0; i < n; i++) {
+        if (ls_Read(&id, 4, 1, (int)f) == 0)
+            return 0;
+        if (ls_Read(&used, 1, 1, (int)f) == 0)
+            return 0;
+        for (j = 0; j < 0x20; j++) {
+            if (gv_AvatarsT[j].id == id) {
+                gv_AvatarsT[j].used = used;
+                goto next;
             }
-            name[0] = (char)(id >> 24);
-            name[1] = (char)(id >> 16);
-            name[2] = (char)(id >> 8);
+        }
+        {
+            char name[5] = {0};
+
             name[3] = (char)id;
+            name[2] = (char)(id >> 8);
+            name[1] = (char)(id >> 16);
+            name[0] = (char)(id >> 24);
             name[4] = 0;
             sprintf(buf, "Avatar >%s< not found in savegame, initializing to >unused<", name);
-        next:
-            i++;
-        } while (i < n);
+        }
+    next:
+        ;
     }
-    for (i = 0; i < 0x1e80; i += 0xf4) {
-        if (unk_Avatars[0][i + 0xf2] == (char)0xff) {
-            sprintf(buf, "Avatar >%s< not found in savegame, initializing to >unused<", &unk_Avatars[0][i + 4]);
-            unk_Avatars[0][i + 0xf2] = 0;
+    for (i = 0; i < 0x20; i++) {
+        if (gv_AvatarsT[i].used == 0xff) {
+            sprintf(buf, "Avatar >%s< not found in savegame, initializing to >unused<", gv_AvatarsT[i].name);
+            gv_AvatarsT[i].used = 0;
         }
     }
     return 1;
