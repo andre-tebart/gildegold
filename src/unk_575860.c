@@ -4719,7 +4719,7 @@ void ai_AlchemistResearchWindow(unsigned char *obj)
     lastState = ahm_ResearchState(obj, &a, &f, 0);
     lastClock = ai_ClockMs;
     d2_ClickedId = -1;
-    form = d2_OpenForm(0, 0, "Locations\Domizil\Alchemistry2");
+    form = d2_OpenForm(0, 0, "Locations\\Domizil\\Alchemistry2");
     d2_SetPointerSprite(0, 0);
     d2_CentreViewWindows(form);
     d2_SetForm(form, 0);
@@ -5107,7 +5107,7 @@ int ai_AlchemistTrainShareWindow(unsigned char *obj, AHMREC *rec, int idx)
         ok = 0;
     if (idx == 3)
         ok = 0;
-    win = d2_OpenForm(0, 0, "Locations\Domizil\skill");
+    win = d2_OpenForm(0, 0, "Locations\\Domizil\\skill");
     d2_SetPointerSprite(0, 0);
     d2_CentreViewWindows(win);
     d2_SetForm(win, 0);
