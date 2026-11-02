@@ -202,7 +202,7 @@ int ai_IsLocalMaster(AICHAR *c)
     return 1;
 }
 /* 0x47ddf0, looks for a partner (a character that suits this one) and sends the messages about it; returns
-   the partner when the two have met enough, else 0 @deep read the whole function against the original 0x47ddf0..0x47e356 (the partner search over ai_CharsT with gm_Unk505e60 / ai_RelationMemory / gm_Liking, the warning message block with the clamp, the four partner states and the reset block); fixed: the scan ends at the array end (cmp ebp, &ai_CharsT[768].kind, signed: (int)o < (int)(ai_CharsT + 768)), the clamp bounds written inline (max(min(a, diff * 2 + 0x23), diff * 2 + 0xf), the original keeps no k / k2). Every statement, callee, field offset and constant matches. Left: block layout and allocation: the original returns through 7 duplicated epilogues and lays the state blocks a = 1 (0x47e2ba) and a = unk216 + 1 (0x47e307) out of line after the reset block, its zero returns as xor edi,edi / mov eax,edi (p = 0); ours keeps them inline with 3 epilogues ('- cmp al,dl / - ja 0x47e15e' vs '+ cmp dl,al / + jae 0x47e2ba'); tried a single-exit form with p = 0 assignments (else-if chain): 408 -> 463 differing, the blocks still inline, reverted. The loop keeps i * 0x300 in the dead parameter slot [esp+0x28] (ours a register), frame 0x14 vs 0x1c. (size: 419 vs 445 instructions, explained: the 26 missing instructions are epilogues: the original has 7 return paths each with its own pop edi/esi/ebp/ebx, add esp, ret (6 instructions), ours 3) */
+   the partner when the two have met enough, else 0 @deep read the whole function against the original 0x47ddf0..0x47e356 (the partner search over ai_CharsT with gm_Unk505e60 / ai_RelationMemory / gm_Liking, the warning message block with the clamp, the four partner states and the reset block); fixed: the scan ends at the array end (cmp ebp, &ai_CharsT[768].kind, signed: (int)o < (int)(ai_CharsT + 768)), the clamp bounds written inline (max(min(a, diff * 2 + 0x23), diff * 2 + 0xf), the original keeps no k / k2). Every statement, callee, field offset and constant matches. Left: block layout and allocation: the original returns through 7 duplicated epilogues and lays the state blocks a = 1 (0x47e2ba) and a = b216 + 1 (0x47e307) out of line after the reset block, its zero returns as xor edi,edi / mov eax,edi (p = 0); ours keeps them inline with 3 epilogues ('- cmp al,dl / - ja 0x47e15e' vs '+ cmp dl,al / + jae 0x47e2ba'); tried a single-exit form with p = 0 assignments (else-if chain): 408 -> 463 differing, the blocks still inline, reverted. The loop keeps i * 0x300 in the dead parameter slot [esp+0x28] (ours a register), frame 0x14 vs 0x1c. (size: 419 vs 445 instructions, explained: the 26 missing instructions are epilogues: the original has 7 return paths each with its own pop edi/esi/ebp/ebx, add esp, ret (6 instructions), ours 3) */
 
 AICHAR *ai_FindPartner(AICHAR *c)
 {
@@ -256,8 +256,8 @@ AICHAR *ai_FindPartner(AICHAR *c)
     p = gm_FindChar(c->partner);
     if ((c->officeKind || c->secondOffice || c->kind == 5) && p &&
         (p->secondOffice || p->officeKind || p->kind == 6 || p->kind == 7 || p->kind == 5)) {
-        if (c->unk215 <= c->unk216 + 5) {
-            if (c->unk216 <= c->unk215) {
+        if (c->b215 <= c->b216 + 5) {
+            if (c->b216 <= c->b215) {
                 a = 1;
                 cm_BeginFieldBlock(c, c->netId);
                 cm_AddFieldValues(1, 1, 0x215, &a);
@@ -267,7 +267,7 @@ AICHAR *ai_FindPartner(AICHAR *c)
                 return 0;
             }
             if (ai_RelationMemory[p->id][c->id] + c->unk214 > 0) {
-                a = c->unk216 + 1;
+                a = c->b216 + 1;
                 cm_BeginFieldBlock(c, c->netId);
                 cm_AddFieldDelta(1, 1, 0x215, &a);
                 a = 1;
@@ -275,15 +275,15 @@ AICHAR *ai_FindPartner(AICHAR *c)
                 cm_SendFieldDeltas();
                 return 0;
             }
-            if (c->unk215 > 3)
+            if (c->b215 > 3)
                 return p;
             a = util_RandomU(2) + 1;
             cm_BeginFieldBlock(c, c->netId);
             cm_AddFieldValues(1, 1, 0x215, &a);
-            if (c->unk215 + a > 3)
-                cm_AddFieldDelta(1, 1, 0x218, &c->unk217);
+            if (c->b215 + a > 3)
+                cm_AddFieldDelta(1, 1, 0x218, &c->b217);
             cm_SendFieldDeltas();
-            if (c->unk215 + a < 4)
+            if (c->b215 + a < 4)
                 return 0;
             ai_Unk5a9050(c, p);
             return p;
@@ -364,8 +364,7 @@ void ai_MasterUpdate(AICHAR *c)
     }
 }
 /* 0x47e560, the per-frame loop: runs the update of a share of the 768 characters (a count that follows from
-   the game time passed since the last run)
-   @deep byte; readability left: Q2 AICHAR.unk024 (int at 0x24; read as the ai.c per-frame decayed value sent as message field 0x24 ('whole = c->unk024; whole = -whole - (int)(whole * -0.89f)') and in am.c 0x494020 as 'sum = a->unk024 + a->unk01c' compared with an n * 70..190 limit, i.e. some accumulating score; no German string, text id, message comment or caller names it). Everything else named this session: ai_Unk47e560 -> ai_UpdateCharacters, ai_Unk47e360 -> ai_MasterUpdate, ai_Unk47e7f0 -> ai_CanAct, ai_Unk48a380 -> ai_UnloadCarts, ai_Unk4fe280 -> gm_MinutesBetween, ai_Unk5fef04 / 5fef08 -> ai_DifficultyValue / ai_DifficultyScale (the float copy of ai_Difficulty and its * 0.0625 + 0.5, both sent by cm_SendRelations). */
+   the game time passed since the last run) */
 
 void ai_UpdateCharacters(void)
 {
@@ -407,8 +406,8 @@ void ai_UpdateCharacters(void)
                 if (ai_TimeT.hour > 6 && ai_TimeT.hour < 0x16 && !(ai_GameFlags & 0x80) &&
                     (c->kind == 5 || (((unsigned char)c->id ^ (unsigned char)ai_TimeT.hour) & 1) == 0))
                     ai_MasterUpdate(c);
-                if ((ai_CanAct(c) && c->unk024 != 0) || (c->flags1cc & 0x3000) != 0) {
-                    whole = c->unk024;
+                if ((ai_CanAct(c) && c->v024 != 0) || (c->flags1cc & 0x3000) != 0) {
+                    whole = c->v024;
                     whole = -whole - (int)(whole * -0.89f);
                     cm_BeginFieldBlock(c, c->netId);
                     cm_AddFieldValues(4, 1, 0x24, &whole);

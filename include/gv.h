@@ -68,7 +68,7 @@ typedef struct GVMOVE {                 /* 0x19 bytes, a grave move: the data of
     int price;                          /* 0x11, > 0: the character pays it */
     int objId;                          /* 0x15, ai_NextObjectId when the game is networked */
 } GVMOVE;
-typedef struct GVRAISE {                /* 0x19 bytes, a raising of a dead person: the data of message 0x62 (cm_SendRaiseDead), run by unk_Unk4f1200 */
+typedef struct GVRAISE {                /* 0x19 bytes, a raising of a dead person: the data of message 0x62 (cm_SendRaiseDead), run by gv_RaiseDead */
     int seed;                           /* 0x00, a rand() the handler 0x4ccf10 fills (util_Seed) */
     int objId;                          /* 0x04, ai_NextObjectId when the game is networked */
     int bld;                            /* 0x08, the graveyard building's id (AIBLD.id) */
@@ -319,7 +319,7 @@ void ai_Unk4c4ac0(int a, int b, int c);                     /* 0x4c4ac0 */
 extern int ai_Unk1460ae0;               /* 0x1460ae0 */
 int unk_Unk4f17f0(void *f, unsigned char *o);  /* 0x4f17f0 */
 char * gm_Query(void *list, int n, ...);                   /* 0x4ffe90 */
-unsigned unk_Unk4f1200(char *p);        /* 0x4f1200 */
+unsigned gv_RaiseDead(GVRAISE *m);     /* 0x4f1200 */
 int gv_ReadGraveyard(void *f, unsigned char *o);  /* 0x4f1aa0, reads the graveyard record of o from the file f (allocated by 0x4efc10) */
 float util_RandomF(void);               /* 0x42ec20 */
 extern int ai_CharCount;                /* 0x6f1bc0, the number of characters in use (of ai_Chars[0x300]) */

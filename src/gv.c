@@ -2440,146 +2440,159 @@ int unk_Unk4f1d50(unsigned char *o, int *n)
         *n = cnt;
     return cnt < (int)(lim1 + lim2);
 }
-/* 0x4f1200, raises the dead character (kind 0x14) of the graveyard entry p[+0x11] (list +0xc, entry +0x10 of the object +8) as a living one: the first free character slot (as 0x4ec500), skills = record bytes
-   +0x24 >> 1, names from the record (+4 / +0x14), a random float 1000 / (rand * 4 + 8), relations random -0x20 .. 0x1f; the entry is cleared, and the first other used entry becomes the list's current one; returns
-   the character id or 0xffff / a negative reason (as 0x4f0240). ROUGH */
+/* 0x4f1200, runs a raising of a dead person (GVRAISE m, message 0x62, sent by gv_OrderRaiseDead): the dead GVGRAVE m->grave
+   of the entry m->entry of the size m->size of the graveyard building m->bld becomes a living character of kind 0x14 in
+   the first free ai_Chars slot (or one of kind 0xf, as ahm_CreateAlchemist): the building is its home, its title m->kind,
+   its skills half the grave's traits, its names and sex the grave's, f014 = 1000 / (random * 4 + 8), its relations to
+   all others random -0x20 .. 0x1f; it is placed at the building. The grave record is cleared; when the entry's id was
+   this dead person's, it passes to the first other dead of the entry (none: the entry is freed). Returns the new
+   character's id, 0xffff (no such entry or grave, no free slot) or a negative reason as gv_BuryCharacter (-6 another
+   kind, -1 no owner or the player's own building, -2 not a graveyard, -3 no GVYARD, -4 the size not open)
+   @deep read the whole function against the original (checks, entry/grave search, slot search, character
+   init, name copies, start values, relation loop, place/icon, entry handover, grave clear): every
+   statement, field offset, constant and callee matches; fixed this pass: byte jobId/officeKind stores (not
+   a short at 0x164), the id = 0xffff store written through gv_CharsT[slot] (the original keeps it, a store
+   through c is dropped as dead), the relation loop as ai_Relations[j][id] / [id][j] (now equal), store
+   order of 0x18c/0x20c/title, f01c after util_RandomF. Left: allocation/IV choice only - the name copies:
+   the original merges the two pointers into one IV with the d - s offset ('+ mov ecx,esi / + sub ecx,eax /
+   + mov byte ptr [edx+eax],cl'), ours keeps two ('- lea edx,[esi+0x30] / - inc edx'), tried
+   for/(c->first[j]=q->first[j]), do-while with ch, do-while with re-read: none gives the merged IV; the
+   traits loop reloads q from [esp+0x10] in the original (ours keeps it in ecx); the ai_CharCount++ /
+   ai_NextObjectId schedule ('+ mov ecx,[ai_CharCount] / + inc ecx' before the netId load, ours interleaved
+   in edi) and the relatives memset pointer via edx ('+ lea edx,[edx+0x770bdc] / + mov edi,edx' vs '- lea
+   edi,[edx+ai_Chars+0x5c]') */
 
-unsigned unk_Unk4f1200(char *p)
+unsigned gv_RaiseDead(GVRAISE *m)
 {
-    unsigned char *o;
-    char *rec, *e, *c;
-    int *z, *z2, *q;
-    int l, n, i, j, k, slot;
+    AIBLD *bld;
+    GVENTRY *e;
+    GVGRAVE *g, *q, *z;
+    AICHAR *c;
+    int size, i, j, n, slot;
+    char ch;
     float r;
 
-    if (*(int *)(p + 0x15) != 0x1b && *(int *)(p + 0x15) != 0x1c)
+    if (m->kind != 0x1b && m->kind != 0x1c)
         return (unsigned)-6;
-    gm_FindById(&o, 0, 0, *(int *)(p + 8));
-    if (o == 0 || *(unsigned short *)(o + 0x27) == 0xffff || ai_Chars[*(unsigned short *)(o + 0x27)] == ai_PlayerCharC)
+    gm_FindById((int *)&bld, 0, 0, m->bld);
+    if (bld == 0 || bld->owner == 0xffff || &gv_CharsT[bld->owner] == gv_PlayerAiChar)
         return (unsigned)-1;
-    if (ai_BTypes[o[0] * 0x24d] != 0x1d)
+    if (((AIBTYPE *)(ai_BTypes + bld->type * 0x24d))->kind != 0x1d)
         return (unsigned)-2;
-    if (*(int *)(o + 0x65) == 0)
+    if (bld->yard == 0)
         return (unsigned)-3;
-    l = *(int *)(p + 0xc);
-    if (gv_SizeOpen(*(char **)(o + 0x65), l) == 0)
+    size = m->size;
+    if (gv_SizeOpen((char *)bld->yard, size) == 0)
         return (unsigned)-4;
-    e = (char *)gv_ListEntry(*(char **)(o + 0x65), l, (unsigned char)p[0x10]);
+    e = (GVENTRY *)gv_ListEntry((char *)bld->yard, size, m->entry);
     if (e == 0)
         return 0xffff;
     i = 0;
-    if (gv_EntryCounts[l] > 0) {
-        z = *(int **)(e + 0x10);
+    if (gv_EntryCounts[size] > 0) {
+        g = e->grave;
         do {
-            q = z;
-            if (*q == *(int *)(p + 0x11))
+            q = g;
+            if (q->id == m->grave)
                 break;
             i++;
-            z = q + 0x11;
-        } while (i < gv_EntryCounts[l]);
-        if (*q == *(int *)(p + 0x11)) {
+            g = q + 1;
+        } while (i < gv_EntryCounts[size]);
+        if (q->id == m->grave) {
             for (slot = 0; slot < 0x300; slot++)
-                if (*(short *)ai_Chars[slot] == -1)
+                if (gv_CharsT[slot].id == 0xffff)
                     break;
             if (slot == 0x300) {
                 for (slot = 0; slot < 0x300; slot++)
-                    if (ai_Chars[slot][2] == 0x0f)
+                    if (gv_CharsT[slot].kind == 0x0f)
                         break;
                 if (slot == 0x300)
                     return 0xffff;
             }
-            if (ai_Chars[slot][2] == 0x0f)
+            if (gv_CharsT[slot].kind == 0x0f)
                 ai_CharCount--;
-            c = ai_Chars[slot];
-            memset(c, 0, 0x21c);
-            *(int *)(c + 4) = -1;
-            *(unsigned short *)c = 0xffff;
-            memset(c + 0x5c, 0xff, 0x20);
+            c = &gv_CharsT[slot];
+            memset(c, 0, sizeof(AICHAR));
+            gv_CharsT[slot].netId = -1;
+            gv_CharsT[slot].id = 0xffff;
+            memset(gv_CharsT[slot].relatives, 0xff, sizeof(gv_CharsT[slot].relatives));
             ai_CharCount++;
-            *(int *)(c + 4) = ai_NextObjectId;
+            c->netId = ai_NextObjectId;
             ai_NextObjectId++;
-            *(unsigned short *)c = (unsigned short)slot;
-            c[2] = 0x14;
-            *(unsigned char **)(c + 0x170) = o;
-            *(unsigned char **)(c + 0x16c) = o;
-            *(int *)(c + 0x1f0) = 0;
-            *(int *)(c + 0x210) = -1;
-            c[0x215] = 0;
-            c[0x216] = 0;
-            c[0x217] = 0;
-            c[0x218] = 1;
-            *(float *)(c + 0x1e4) = 1.0f;
-            c[8] = 100;
-            *(short *)(c + 0xa) = 0x10;
-            *(short *)(c + 0x164) = 0;
-            c[0x165] = p[0x15];
-            c[0x166] = 0;
-            *(int *)(c + 0x18c) = -1;
-            *(int *)(c + 0x20c) = -1;
-            c[0x1f4] = 0;
-            *(int *)(c + 0x190) = 4;
-            *(int *)(c + 0x194) = 0;
-            c[0xd] = 1;
-            *(short *)(c + 0x50) = 0x7fff;
+            c->id = (unsigned short)slot;
+            c->kind = 0x14;
+            c->bld2 = bld;
+            c->bld = bld;
+            c->v1f0 = 0;
+            c->partner = -1;
+            c->b215 = 0;
+            c->b216 = 0;
+            c->b217 = 0;
+            c->mask = 1;
+            c->mood3Rate = 1.0f;
+            c->health = 100;
+            c->w00a = 0x10;
+            c->jobId = 0;
+            c->officeKind = 0;
+            c->picture = -1;
+            c->partyId = -1;
+            c->title = (char)m->kind;
+            c->ownName[0] = 0;
+            c->v190 = 4;
+            c->money = 0;
+            c->b00d = 1;
+            c->w050 = 0x7fff;
             for (j = 0; j < 5; j++)
-                c[0x80 + j] = (char)((unsigned char)((char *)q)[0x24 + j] >> 1);
-            c[9] = (char)q[0xe];
-            {
-                char *s = (char *)(q + 1);
-                char *d = c + 0x30;
-                char ch;
-                do {
-                    ch = *s++;
-                    *d++ = ch;
-                } while (ch != 0);
-                s = (char *)(q + 5);
-                d = c + 0x40;
-                do {
-                    ch = *s++;
-                    *d++ = ch;
-                } while (ch != 0);
-            }
-            *(int *)(c + 0x10) = 0;
+                c->skills[j] = q->traits[j] >> 1;
+            c->sex = (unsigned char)q->sex;
+            j = 0;
+            do {
+                ch = q->first[j];
+                c->first[j] = ch;
+                j++;
+            } while (ch != 0);
+            j = 0;
+            do {
+                ch = q->family[j];
+                c->family[j] = ch;
+                j++;
+            } while (ch != 0);
+            c->f010 = 0;
             r = util_RandomF();
-            *(int *)(c + 0x18) = 0;
-            *(float *)(c + 0x1c) = 1000.0f;
-            *(int *)(c + 0x20) = 0;
-            *(int *)(c + 0x24) = 0;
-            *(short *)(c + 0x28) = 0;
-            *(int *)(c + 0x2c) = 0;
-            k = 0;
-            *(float *)(c + 0x14) = 1000.0f / (r * 4.0f + 8.0f);
-            for (i = 0, j = 0; i < 0x90000; i += 0x300, j++) {
-                ai_RelationMemory[0][*(unsigned short *)c + i] = 0;
-                ai_Relations[0][*(unsigned short *)c + i] = (signed char)util_RandomU(0x40) - 0x20;
-                ai_Relations[0][*(unsigned short *)c * 0x300 + j] = (signed char)util_RandomU(0x40) - 0x20;
-                ai_RelationMemory[0][*(unsigned short *)c * 0x300 + j] = 0;
+            c->f018 = 0;
+            c->f01c = 1000.0f;
+            c->f020 = 0;
+            c->v024 = 0;
+            c->w028 = 0;
+            c->v02c = 0;
+            c->f014 = 1000.0f / (r * 4.0f + 8.0f);
+            for (j = 0; j < 0x300; j++) {
+                ai_Relations[j][c->id] = (signed char)util_RandomU(0x40) - 0x20;
+                ai_RelationMemory[j][c->id] = 0;
+                ai_Relations[c->id][j] = (signed char)util_RandomU(0x40) - 0x20;
+                ai_RelationMemory[c->id][j] = 0;
             }
-            gm_PlaceOnStage(*(int *)(c + 4), *(int *)(o + 1), -1, 0, 0);
-            gm_ChooseHeadIcon(c);
-            rec = *(char **)(o + 0x65);
-            if (*q == *(int *)(e + 4)) {
+            gm_PlaceOnStage(c->netId, bld->id, -1, 0, 0);
+            gm_ChooseHeadIcon(&c->id);
+            if (q->id == e->id) {
                 n = 0;
-                if (gv_EntryCounts[*(int *)(p + 0xc)] > 0) {
-                    z2 = *(int **)(e + 0x10);
+                if (gv_EntryCounts[m->size] > 0) {
+                    z = e->grave;
                     do {
-                        if (*z2 != -1 && *z2 != *q) {
-                            *(int *)(e + 4) = *z2;
+                        if (z->id != -1 && z->id != q->id) {
+                            e->id = z->id;
                             goto cleared;
                         }
                         n++;
-                        z2 += 0x11;
-                    } while (n < gv_EntryCounts[*(int *)(p + 0xc)]);
+                        z++;
+                    } while (n < gv_EntryCounts[m->size]);
                 }
-                *(int *)(e + 4) = -1;
-                *(short *)(e + 8) = (short)0xffff;
+                e->id = -1;
+                e->w08 = 0xffff;
             }
         cleared:
-            z2 = q;
-            for (n = 0x11; n != 0; n--)
-                *z2++ = 0;
-            *q = -1;
-            return *(unsigned short *)c;
+            memset(q, 0, sizeof(GVGRAVE));
+            q->id = -1;
+            return c->id;
         }
     }
     return 0xffff;

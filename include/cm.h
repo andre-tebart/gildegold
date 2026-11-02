@@ -1,3 +1,4 @@
+struct GVRAISE;
 struct D3PARTSYS;
 struct D3COLOR;
 struct D3TERRAIN;
@@ -476,7 +477,7 @@ int gv_OpenSize();  /* 0x4f0af0 */
 int gv_AdjustEntry();  /* 0x4f0c80 */
 int unk_Unk4f0dd0();  /* 0x4f0dd0 */
 int gv_MoveGrave();  /* 0x4f0ed0 */
-unsigned unk_Unk4f1200(char *p);  /* 0x4f1200 */
+unsigned gv_RaiseDead(struct GVRAISE *m);  /* 0x4f1200 */
 
 void rt_FreePoints();  /* 0x4bd9e0 */
 struct RTPOINT * rt_CopyPoints();  /* 0x4bda00 */

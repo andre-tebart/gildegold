@@ -5865,7 +5865,7 @@ int ai_Unk4ccf10(G17MSG *m, G17STAT *s)
     else
         G17_I(*m, 0) = rand();
     util_Seed(G17_I(*m, 0));
-    id = unk_Unk4f1200(&m->data[0]);
+    id = gv_RaiseDead((struct GVRAISE *)&m->data[0]);
     if (id == 0xffff)
         return -1;
     if (s != 0) {

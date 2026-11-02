@@ -224,11 +224,19 @@ typedef struct AICHAR {                 /* 0x21c bytes, ai_Chars[768] */
     unsigned int netId;                /* 0x004 */
     unsigned char health;               /* 0x008, 100 at creation (ahm.c), > 0 = alive (0x4adff0 'lives') */
     unsigned char sex;                  /* 0x009, 0 / non-0 (reasoned: 0x4a8ad0 asks the partner search for flags 0xf00502 / 0xf00501 by it, the other sex) */
-    char pad00a[3];
+    unsigned short w00a;                /* 0x00a, 0x10 for a raised dead person (gv_RaiseDead), a value of the order for the alchemist (ahm_CreateAlchemist) */
+    char pad00c;
     unsigned char b00d;                 /* 0x00d, 1 .. 2 (gv: kept in a grave as GVGRAVE.v30) */
-    char pad00e[0x16];
-    int unk024;                         /* 0x024 */
-    char pad028[0x8];
+    char pad00e[2];
+    float f010;                         /* 0x010, start values set by the character creators (ahm_CreateAlchemist, gv_RaiseDead) */
+    float f014;                         /* 0x014 */
+    float f018;                         /* 0x018 */
+    float f01c;                         /* 0x01c, 1000.0 at creation */
+    float f020;                         /* 0x020 */
+    int v024;                           /* 0x024, a value ai.c decays every frame (sent as message field 0x24), 0 at creation */
+    short w028;                         /* 0x028, 0 at creation */
+    char pad02a[2];
+    int v02c;                         /* 0x02c, 0 at creation */
     union {
         char name[0x58];                /* 0x030 */
         struct {
@@ -287,7 +295,7 @@ typedef struct AICHAR {                 /* 0x21c bytes, ai_Chars[768] */
     unsigned char selected;             /* 0x188, nonzero: the character is in the player's selection (sv_ClearSelection clears it, sv_HandleObjects sets it) */
     char pad189[3];
     int picture;                        /* 0x18c, the portrait picture (sv.c: the person panel, the member list) */
-    int unk190;                         /* 0x190, a sum the round change prints on the player's balance page (text 0x1eff, main.c 0x5384e0) */
+    int v190;                         /* 0x190, a sum the round change prints on the player's balance page (text 0x1eff, main.c 0x5384e0) */
     int money;                          /* 0x194, the character's money (amt.c) */
     char pad198[4];
     int wage;                           /* 0x19c, the wage the character was paid in the last round settlement (main_SettleRound sends it as a field delta) */
@@ -314,7 +322,7 @@ typedef struct AICHAR {                 /* 0x21c bytes, ai_Chars[768] */
     float mood3Rate;                    /* 0x1e4, scales the base growth of mood need 3; message 0x1a keeps it in sync */
     char pad1e8[4];
     int unk1ec;                         /* 0x1ec, cleared for every character at the round start (main.c 0x53b2e0) */
-    char pad1f0[4];
+    int v1f0;                         /* 0x1f0, 0 at creation */
     union {
         char ownName[0x1c];             /* 0x1f4, the character's own name, empty: the job's name record
                                            (gm_CharNameRecord) */
@@ -326,9 +334,9 @@ typedef struct AICHAR {                 /* 0x21c bytes, ai_Chars[768] */
     };
     int partner;                        /* 0x210 */
     signed char unk214;                 /* 0x214 */
-    unsigned char unk215;               /* 0x215 */
-    unsigned char unk216;               /* 0x216 */
-    unsigned char unk217;               /* 0x217 */
+    unsigned char b215;                 /* 0x215, a step counter of the partner search (ai_FindPartner: 0 when a partner is picked, advanced towards b216); reasoned */
+    unsigned char b216;                 /* 0x216, the steps the partner search needs (ai_FindPartner: from the liking, clamped by ai_Difficulty); reasoned */
+    unsigned char b217;                 /* 0x217, sent as field 0x218 when the partner search is done (ai_FindPartner) */
     unsigned char mask;                 /* 0x218, the action groups it may use */
     char pad219[3];
 } AICHAR;

@@ -3406,7 +3406,7 @@ void main_EndRound(void)
         d2_SetForm(win, 1);
         io_PrintText(0x2051, &clk, (int)gm_DayStartHours[season], (int)gm_DayEndHours[season] % 0xc);
         io_PrintText(0x1ef9);
-        io_PrintText(0x1eff, ai_CharsT[MAIN_PLAYER].unk190);
+        io_PrintText(0x1eff, ai_CharsT[MAIN_PLAYER].v190);
         k = 0;
         do {
             if ((main_ApEvents[k].income != 0 || main_ApEvents[k].cost != 0 || main_ApEvents[k].name[0] != 0) && main_ApEvents[k].key == MAIN_PLAYER) {
