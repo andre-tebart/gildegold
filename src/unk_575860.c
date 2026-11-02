@@ -1104,28 +1104,27 @@ started:
 count:
     ai_Tutorial->campaignSteps++;
 }
-/* 0x576340, calls the run record's callback +0x3c with the four arguments as an int[4] and returns its result;
-   1 when a gate fails (0x6f265c, the run record, [r+0x3c]), 0 while 0x6333e0 is set (a transition in progress) */
+/* 0x576340, asks the current run record's query callback: hands it the four arguments as an int[4] and returns
+   its answer; 1 (no objection) while the tutorial is off, no run is current or the run has no callback, 0 while
+   tb_Paused is set */
 
 int ai_ScriptQuery(int a, int b, int c, int d)
 {
-    int p[4];
-    char *r;
+    int args[4];
 
     if (!ai_TutorialOn)
         return 1;
-    if (!*(int *)(S + 0x18))
+    if (!ai_Tutorial->run)
         return 1;
-    if (U_I((unsigned)&tb_Paused))
+    if (tb_Paused)
         return 0;
-    r = *(char **)(S + 0x18);
-    if (!*(int *)(r + 0x3c))
+    if (!ai_Tutorial->run->query)
         return 1;
-    p[0] = a;
-    p[1] = b;
-    p[2] = c;
-    p[3] = d;
-    return ((int (*)(int *))*(int *)(r + 0x3c))(p);
+    args[0] = a;
+    args[1] = b;
+    args[2] = c;
+    args[3] = d;
+    return ai_Tutorial->run->query(args);
 }
 /* 0x5763c0, 1 when the run record's word +0x68 has a bit of `mask` (the run mask), else 0; 1 while 0x6f265c is 0
    and when there is no run record, 0 in the mode 2 / state 5 and while a transition 0x6333e0 is pending */
