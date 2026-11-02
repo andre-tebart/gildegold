@@ -10024,149 +10024,156 @@ G6RING *ai_NextNearRingEntry(void)
     return r;
 }
 
-/* one district's characters into the ring: the list of district k, entries passing cond, with flags f */
-#define G7_ADD(k, f, cond)                                                          \
-    n = amt_GetColumnOfficesOwned((k), 6, &info);                                                \
+/* the office holders of column col into the ring: each holder (not p) that passes cond, listed with flags f;
+   G7_ADD_ANY fills without a bound (at most 3 * 6 entries), G7_ADD stops when the ring is full */
+#define G7_ADD_BODY(col, f, cond, guard)                                            \
+    n = amt_GetColumnOfficesOwned((col), 6, list);                                  \
     for (j = 0; j < n; j++) {                                                       \
-        if (r > ai_NearRing + 31)                                                  \
-            break;                                                                  \
-        if ((cond) && (o = (G5CH *)gm_FindChar(info.e[j].id)) != 0 && o != p) {    \
-            r->flags = (f);                                                         \
-            r->dist = gm_Liking(o->id, p->id, 1);                                \
-            r->who = o;                                                             \
+        guard                                                                       \
+        if ((cond) && (o = (G5CH *)gm_FindChar(list[j].owner)) != 0 && o != p) {   \
+            ai_NearRing[cnt].flags = (f);                                           \
+            ai_NearRing[cnt].dist = gm_Liking(o->id, p->id, 1);                     \
+            ai_NearRing[cnt].who = o;                                               \
             cnt++;                                                                  \
-            r++;                                                                    \
         }                                                                           \
     }
+#define G7_ADD_ANY(col, f, cond) G7_ADD_BODY(col, f, cond, ;)
+#define G7_ADD(col, f, cond) G7_ADD_BODY(col, f, cond, if (cnt >= 32) break;)
+#define G7_LEVEL_NEAR (abs(amt_GetKindLevel(list[j].kind) - g) <= 1)
 
-/* 0x4a3af0, fills the ring 0xf83c20 with the characters near character p (district, family, same group) */
+/* 0x4a3af0, fills the ring ai_NearRing with the characters near character p: without an office the holders of
+   low offices (level < 3) of columns 1..3; with one the holders of its own column (0x10), of the neighbour
+   columns (1), of the columns one level up or down (0x40 / 0x80, level within 1); then the applicants for the
+   office p applies for (2), the other applicants (4) and, for a kind 5 character, the characters of kind 5..7 (1);
+   kind 6 / 7 entries get (4 - difficulty) * 5 added to their liking; then sets the cursor to a random entry with
+   a random stride from ai_RingStrides that does not divide the count */
 void ai_FillNearRing(AICHAR *c)
 {
     G5CH *p = (G5CH *)c;
-    struct { int unk00; struct { int id; unsigned char k; char pad[19]; } e[6]; } info;
-    int kind[2];
-    int dist[3];
-    int k2, k3, k4;
-    unsigned char k1;
+    AMTKIND kind;
+    AMTREC list[6];
     int cnt, n, j, i, g, step;
     unsigned int f;
+    unsigned char k;
     G5CH *o;
-    AIPER *fam[6];
-    G6RING *r;
-    int *sz;
+    const int *sz;
 
     cnt = 0;
     ai_NearRingCount = 0;
     memset(ai_NearRing, 0, 32 * sizeof(G6RING));
-    r = ai_NearRing;
-    if (((unsigned char *)p)[0x166] == 0) {
-        G7_ADD(1, 0x40, amt_GetKindLevel(info.e[j].k) < 3)
-        G7_ADD(2, 0x40, amt_GetKindLevel(info.e[j].k) < 3)
-        G7_ADD(3, 0x40, amt_GetKindLevel(info.e[j].k) < 3)
+    if (p->officeKind == 0) {
+        G7_ADD_ANY(1, 0x40, amt_GetKindLevel(list[j].kind) < 3)
+        G7_ADD_ANY(2, 0x40, amt_GetKindLevel(list[j].kind) < 3)
+        G7_ADD_ANY(3, 0x40, amt_GetKindLevel(list[j].kind) < 3)
     } else {
-        k1 = 0;
-        k2 = 0;
-        k3 = 0;
-        k4 = 0;
-        dist[0] = 0;
-        dist[1] = 0;
-        dist[2] = 0;
-        g = amt_GetKindLevel(((unsigned char *)p)[0x166]);
-        amt_GetKindB(((unsigned char *)p)[0x166], kind);
-        if (kind[1] >= 1 && kind[1] <= 3) {
-            k2 = 3;
-            if (kind[1] == 1) {
-                k1 = 2;
+        int side1, side2;               /* the neighbour columns */
+        int up1, up2;                   /* the columns of the level above (levels 3 and 6) */
+        int down[3];                    /* the columns of the level below (levels 4 and 7) */
+
+        side1 = 0;
+        side2 = 0;
+        up1 = 0;
+        up2 = 0;
+        down[0] = 0;
+        down[1] = 0;
+        down[2] = 0;
+        g = amt_GetKindLevel(p->officeKind);
+        amt_GetKind(p->officeKind, &kind);
+        if (kind.col > 0 && kind.col < 4) {
+            side2 = 3;
+            if (kind.col == 1) {
+                side1 = 2;
             } else {
-                k1 = 1;
-                if (kind[1] != 2)
-                    k2 = 2;
+                side1 = 1;
+                if (kind.col != 2)
+                    side2 = 2;
             }
             if (g == 3) {
-                k3 = 4;
-                k4 = 5;
+                up1 = 4;
+                up2 = 5;
             }
-        } else if (kind[1] >= 4 && kind[1] <= 5) {
-            k1 = (kind[1] == 4) + 4;
+        } else if (kind.col > 3 && kind.col < 6) {
+            side1 = (kind.col == 4) + 4;
             if (g == 6) {
-                k3 = 6;
+                up1 = 6;
             } else if (g == 4) {
-                dist[0] = 1;
-                dist[1] = 2;
-                dist[2] = 3;
+                down[0] = 1;
+                down[1] = 2;
+                down[2] = 3;
             }
         } else if (g == 7) {
-            dist[0] = 4;
-            dist[1] = 5;
+            down[0] = 4;
+            down[1] = 5;
         }
-        G7_ADD(kind[1], 0x10, 1)
-        G7_ADD(k1, 1, 1)
-        G7_ADD(k2, 1, 1)
+        G7_ADD(kind.col, 0x10, 1)
+        G7_ADD(side1, 1, 1)
+        G7_ADD(side2, 1, 1)
         if (g == 3 || g == 6) {
-            G7_ADD(k3, 0x40, abs(amt_GetKindLevel(info.e[j].k) - g) < 2)
-            G7_ADD(k4, 0x40, abs(amt_GetKindLevel(info.e[j].k) - g) < 2)
+            G7_ADD(up1, 0x40, G7_LEVEL_NEAR)
+            G7_ADD(up2, 0x40, G7_LEVEL_NEAR)
         }
         if (g == 4 || g == 7) {
-            G7_ADD(dist[0], 0x80, abs(amt_GetKindLevel(info.e[j].k) - g) < 2)
-            G7_ADD(dist[1], 0x80, abs(amt_GetKindLevel(info.e[j].k) - g) < 2)
-            G7_ADD(dist[2], 0x80, abs(amt_GetKindLevel(info.e[j].k) - g) < 2)
+            G7_ADD(down[0], 0x80, G7_LEVEL_NEAR)
+            G7_ADD(down[1], 0x80, G7_LEVEL_NEAR)
+            G7_ADD(down[2], 0x80, G7_LEVEL_NEAR)
         }
     }
     if (p->appliedOffice != 0) {
-        n = amt_GetOfficeApplicants((char)p->appliedOffice, 6, fam);
+        char *rivals[6];
+
+        n = amt_GetOfficeApplicants(p->appliedOffice, 6, rivals);
         for (j = 0; j < n; j++) {
-            if ((G5CH *)fam[j] != p) {
-                for (i = 0; i < cnt; i++) {
-                    if (ai_NearRing[i].who == (G5CH *)fam[j]) {
-                        ai_NearRing[i].flags |= 2;
-                        break;
-                    }
+            if ((G5CH *)rivals[j] == p)
+                continue;
+            for (i = 0; i < cnt; i++) {
+                if (ai_NearRing[i].who == (G5CH *)rivals[j]) {
+                    ai_NearRing[i].flags |= 2;
+                    break;
                 }
-                if (i < cnt)
-                    continue;
-                if (r <= ai_NearRing + 31) {
-                    r->flags = 2;
-                    r->dist = gm_Liking(o->id, p->id, 1);
-                    cnt++;
-                    r->who = (G5CH *)fam[j];
-                    r++;
-                }
+            }
+            if (i < cnt)
+                continue;
+            if (cnt < 32) {
+                ai_NearRing[cnt].flags = 2;
+                /* the original reads o, the last holder found above, not the applicant */
+                ai_NearRing[cnt].dist = gm_Liking(o->id, p->id, 1);
+                ai_NearRing[cnt].who = (G5CH *)rivals[j];
+                cnt++;
             }
         }
     }
-    if (p->appliedOffice != 0 || ((unsigned char *)p)[2] == 5) {
+    if (p->appliedOffice != 0 || p->kind == 5) {
         for (o = G5_CHARS; o < G5_CHARS + 768; o++) {
             f = 0;
-            if (o != p && o->id != 0xffff) {
-                k1 = ((unsigned char *)o)[2];
-                if ((k1 == 6 || k1 == 7 || k1 == 5) && ((unsigned char *)p)[2] == 5)
-                    f = 1;
-                if (((unsigned char *)o)[0x168] == p->appliedOffice)
-                    f |= 4;
-                if (f != 0) {
-                    for (i = 0; i < cnt; i++) {
-                        if (ai_NearRing[i].who == o) {
-                            ai_NearRing[i].flags |= f;
-                            break;
-                        }
-                    }
-                    if (i < cnt)
-                        continue;
-                    if (r <= ai_NearRing + 31) {
-                        r->flags = f;
-                        r->dist = gm_Liking(o->id, p->id, 1);
-                        r->who = o;
-                        cnt++;
-                        r++;
-                    }
+            if (o == p || o->id == 0xffff)
+                continue;
+            k = o->kind;
+            if ((k == 6 || k == 7 || k == 5) && p->kind == 5)
+                f = 1;
+            if (o->appliedOffice == p->appliedOffice)
+                f |= 4;
+            if (f == 0)
+                continue;
+            for (i = 0; i < cnt; i++) {
+                if (ai_NearRing[i].who == o) {
+                    ai_NearRing[i].flags |= f;
+                    break;
                 }
+            }
+            if (i < cnt)
+                continue;
+            if (cnt < 32) {
+                ai_NearRing[cnt].flags = f;
+                ai_NearRing[cnt].dist = gm_Liking(o->id, p->id, 1);
+                ai_NearRing[cnt].who = o;
+                cnt++;
             }
         }
     }
     step = (4 - ai_Difficulty) * 5;
     for (i = 0; i < cnt; i++) {
-        k1 = ((unsigned char *)ai_NearRing[i].who)[2];
-        if (k1 == 6 || k1 == 7)
+        k = ai_NearRing[i].who->kind;
+        if (k == 6 || k == 7)
             ai_NearRing[i].dist = (float)step + ai_NearRing[i].dist;
     }
     ai_NearRingCount = cnt;
