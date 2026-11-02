@@ -4856,17 +4856,23 @@ found:
     }
     return 0;
 }
-/* 0x498470, execute callback: hands the job s1->unk04 over */
+/* 0x498470, execute of action 16 (ai_DecideBuyBuilding): buys the building s1->ref at the price of its offer (event 0x1b) through gm_SellBuilding, 16; 0 without an offer
+   @deep read against 0x498470..0x4984ce: same statements, calls and arguments (he_FindEvent(1, 0, 0x1b) /
+   he_NextEvent walk, u.id == s1->ref, gm_SellBuilding(ref, netId, price, offer, 1), 16). The one code hunk
+   is the s1->kind != 4 return: the original gives it its own epilogue copy (je 0x49847e / xor eax,eax /
+   pop esi / ret at 0x49847a), ours jumps to the shared return-0 tail (jne 0x4984a2), which shifts the rest
+   by 4 bytes. Tried: the kind test as if (s1->kind == 4) { .. } (no change). Same epilogue-duplication
+   case as ai_ExecuteProduceGood 0x4979d0; needs the variant rounds. */
 
-int ai_Unk498470(G5CH *p, AIARG *s1)
+int ai_ExecuteBuyBuilding(G5CH *p, AIARG *s1)
 {
     AIJOB *j;
 
     if (s1->kind != 4)
         return 0;
     for (j = he_FindEvent(1, 0, 0x1b); j != 0; j = he_NextEvent()) {
-        if (((int *)j)[0xac / 4] == s1->ref) {
-            gm_Unk502fd0(s1->ref, p->netId, ((int *)j)[0xb0 / 4], (AIJOBX *)j, 1);
+        if (j->u.id == s1->ref) {
+            gm_SellBuilding(s1->ref, p->netId, ((AIJOBX *)j)->price, (AIJOBX *)j, 1);
             return 0x10;
         }
     }
@@ -5260,7 +5266,7 @@ int ai_Unk499290(AIPER *p, AIARG *s1, AIARG *s2)
         j = (AIJOBX *)he_FindEvent(1, 1, s2->ref);
         if (!j)
             return 0;
-        gm_Unk502fd0(s1->ref, p->netId, j->unkb0, j, 1);
+        gm_SellBuilding(s1->ref, p->netId, j->unkb0, j, 1);
         return 0x13;
     }
     if (s2->kind == 4) {
@@ -9391,7 +9397,7 @@ int ai_RegisterBaseActions(int a)
     strcpy(act.name, "Wohnsitz kaufen");
     act.eval = ai_EvalMoodWeights;
     act.decide = ai_DecideBuyBuilding;
-    act.exec = ai_Unk498470;
+    act.exec = ai_ExecuteBuyBuilding;
     act.flags = 0x3;
     if (!am_RegisterMethod(&act, a))
         return 0;

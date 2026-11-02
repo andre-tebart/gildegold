@@ -5173,7 +5173,7 @@ int gm_ListWorkers(unsigned char *b, int *out)
 }
 /* 0x502fd0, the sale of the building with the id a to the player b for the price c (the sale record d, flag e): marks "buy building" in the message log (0x4c4540 .. 0x4c4580), pays the former owner (a message 0x17e6 with "_NACHRICHTEN_HS_30", 0x4c4830 the price) or the bank (0x4c47e0), hands the ownership over (0x4c54a0, and for the type 2 with e the 0x4c5540), stamps the sale record d one hour ahead (0x4fe140 +1 second, 0x4c4c60) and sets the building's owner field (0x4c4a60 (id, 0x5a, 2, 0, 2)). ROUGH */
 
-void gm_Unk502fd0(int a, int b, int c, int d, int e)
+void gm_SellBuilding(int a, int b, int c, int d, int e)
 {
     unsigned char *bl;
     short *ch;

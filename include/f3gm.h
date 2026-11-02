@@ -112,7 +112,7 @@ unsigned short *gm_ObjectOwnerChar(unsigned short *o);  /* 0x509ff0 */
 int gm_Unk50a250(int b, unsigned short *p, unsigned cnt, int *out);  /* 0x50a250 */
 int gm_ExpectedDeathAge(char *c);  /* 0x4fc7a0 */
 char unk_Unk5020e0(int k, int c);  /* 0x5020e0 */
-void gm_Unk502fd0(int a, int b, int c, int d, int e);  /* 0x502fd0 */
+void gm_SellBuilding(int a, int b, int c, int d, int e);  /* 0x502fd0 */
 char *gm_PlayerSeat(int p);  /* 0x504a80 */
 void gm_SendMoneyDelta(int a, int b);  /* 0x50cc50 */
 int gm_JobBuildingType(int x);  /* 0x504050 */

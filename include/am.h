@@ -326,7 +326,7 @@ int ai_CanBuildType(int a, struct AIPER *p, int b, struct AIARG *s1, struct AIAR
 int ai_ExecBuildBuilding(struct AIPER *p, struct AIARG *s1, struct AIARG *s2);                               /* 0x4a5320 */
 int ai_Unk4a5540(int *item, int *obj, AIBLD *bld, int f);                       /* 0x4a5540 */
 int ai_PickActionBuilding(struct AIPER *p, int a, __int64 mask, int c, float f, int *out);    /* 0x4a63f0 */
-void gm_Unk502fd0(int a, int b, int c, int d, int e);                     /* 0x502fd0 */
+void gm_SellBuilding(int a, int b, int c, int d, int e);                     /* 0x502fd0 */
 int gm_JobBuildingType(int k);                                                        /* 0x504050 */
 int gm_FirstTitleNumber(int k);                                                        /* 0x504290 */
 /* 0x5044b0 */
@@ -723,7 +723,7 @@ int ai_ActionOnStack(int k);                                        /* 0x4957a0 
 int ai_DecideApplyForOffice(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);  /* 0x497490 */
 int ai_Unk497630(G5CH *p, AIARG *s1);                            /* 0x497630 */
 int amt_ApplyForOffice(char *c, unsigned int kind);                                /* 0x4e6180 */
-int ai_Unk498470(G5CH *p, AIARG *s1);                            /* 0x498470 */
+int ai_ExecuteBuyBuilding(G5CH *p, AIARG *s1);                            /* 0x498470 */
 
 int ai_GetDesireByName(char *s);                                      /* 0x4a47c0, a need name -> index */
 void ai_BeginNeedBlock(char *p);                                     /* 0x4c3e70 */
