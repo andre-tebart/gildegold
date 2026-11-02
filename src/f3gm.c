@@ -5761,28 +5761,19 @@ void gm_KillSpieler(int c, int mode)
         sprintf(buf, "gm_KillSpieler: Killing Player <id = %i>, holding data", netId);
     }
 }
-/* 0x503e80, resets the character state: 0x503c60 (i, 2) for all 0x300 characters, clears the 0x2b-int records from 0x7d5f80 to 0x7d6a40 (first word -1) and the three counters 0x6f1bc0 / 0x6f1bb8 / 0x6f1bbc */
-
-
+/* 0x503e80, resets the character state: kills every one of the 0x300 characters for good (gm_KillSpieler mode 2), clears the 16 player records gm_PlayerRecords (0x2b ints each, the first word -1: free) and the three counters ai_CharCount / ai_NextCharNumber / ai_NextPlayerNumber */
 void gm_ResetCharacters(void)
 {
     int i;
-    int *p, *p2, *q;
+    short *rec;
 
-    i = 0;
-    do {
+    for (i = 0; i < 0x300; i++)
         gm_KillSpieler(i, 2);
-        i++;
-    } while (i < 0x300);
-    p = gm_PlayerRecords;
-    do {
-        p2 = p + 0x2b;
-        q = p;
-        for (i = 0x2b; i != 0; i--)
-            *q++ = 0;
-        *(short *)p = (short)0xffff;
-        p = p2;
-    } while ((int)p2 < (unsigned)((unsigned)gm_PlayerRecords + 0xac0));
+    for (i = 0; i < 0x10; i++) {
+        rec = (short *)&gm_PlayerRecords[i * 0x2b];
+        memset(rec, 0, 0x2b * sizeof(int));
+        rec[0] = -1;
+    }
     ai_CharCount = 0;
     ai_NextCharNumber = 0;
     ai_NextPlayerNumber = 0;
