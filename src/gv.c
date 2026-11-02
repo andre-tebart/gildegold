@@ -79,6 +79,7 @@ extern GAPDATA full_data_91f6e4[];
 extern int gm_PlayerRecords[688];
 
 extern const float gv_SaleShares[];
+extern const float gv_GraveWear[];
 
 #define UNK_FW ((unsigned (*)())vfs_fwrite)
 #define UNK_FR ((unsigned (*)())ls_Read)
@@ -4415,7 +4416,8 @@ extern char ord_StatisticsHistory[320];
 extern char ord_RatingBytes[16];
 extern char ord_MessageRecord[0x24];
 const char ai_ZeroRot[12] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };  /* 0x5ebbb4 */
-const float gv_SaleShares[] = { 0.800000012f, 0.699999988f, 0.600000024f, 0.5f, 15.0f, 12.5f, 10.0f, 7.5f };  /* 0x5ee034 */
+const float gv_SaleShares[] = { 0.800000012f, 0.699999988f, 0.600000024f, 0.5f };  /* 0x5ee034, the owner's share of a grave sale per size */
+const float gv_GraveWear[] = { 15.0f, 12.5f, 10.0f, 7.5f };  /* 0x5ee044, the care a grave entry of each size loses per step (gv_GraveyardTurn: times (random + 1) / 2 and the care / 255) */
 const int gv_EntryCounts[] = { 1, 2, 4, 8 };  /* 0x5ee054, entries per kind */
 const int gv_EntryTotals[] = { 0, 12, 20, 30 };  /* 0x5ee064 */
 const int gv_GraveTotals[] = { 0, 16, 32, 64 };  /* 0x5ee074 */
