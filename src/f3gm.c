@@ -802,28 +802,32 @@ int gm_HandOutMoney(ORDBLD *b, int *out)
     out[1] = sum;
     return 1;
 }
-/* 0x4fb0e0, every fourth day (the clock int % 4 == 0): by the record 2 (rate 2: a random loyalty shift for the characters above 0xb, 0x4c3c00 (1, 1, 0xc, ..); other rates: 0x4f2e30 (2, ..) and a loyalty drop of 0.1) over the characters of kinds 1 .. 9 except 6 / 7 / 8. ROUGH */
+/* 0x4fb0e0, every fourth year (ai_TimeYear % 4 == 0), over the characters in use of kind 1 .. 9 but not 6 / 7 / 8 and
+   w00a >= 12: when the decision 2's value is 2, each whose loyalty is below a random 0 .. 0.2 flips its b00c and gets
+   0.25 .. 0.75 added to the loyalty; else each whose b00c differs from (value != 0) is accused (gv_Accuse 2) and
+   loses 0.1 loyalty while above 0.1. Pumps the net every 0x40 messages. */
 
 void gm_ShiftLoyalty(void)
 {
-    int r[9];
-    int i, t, m;
-    char *c;
-    unsigned loc;
+    AIDEC rec;
+    int t, m, i, faith, other;
+    ORDCHAR *c;
+    unsigned flip;
 
-    if (*(int *)ai_Time % 4 != 0)
+    if (ai_TimeYear % 4 != 0)
         return;
-    gv_GetTableRecord(2, r);
-    if (r[6] == 2) {
+    gv_GetTableRecord(2, (int *)&rec);
+    if (rec.cur == 2) {
         gm_NetMsgCount = 0;
         for (i = 0; i < 0x300; i++) {
-            c = ai_Chars[i];
-            if (*(short *)c != -1 && (unsigned char)c[2] < 10 && c[2] != 0 && c[2] != 6 && c[2] != 7 && c[2] != 8 && *(unsigned short *)(c + 10) > 0xb && *(float *)(c + 0x1d0) < util_RandomF2() * 0.2) {
-                loc = c[0xc] == 0;
-                cm_SendFloatDelta(*(int *)(c + 4), 0x1d0, (float)(util_RandomF2() * 0.5 + 0.25));
+            c = &ORD_CHARS[i];
+            if (c->id != 0xffff && c->kind < 10 && c->kind > 0 && c->kind != 6 && c->kind != 7 && c->kind != 8
+                && c->w00a >= 12 && util_RandomF() * 0.2f > c->loyalty) {
+                flip = c->b00c == 0;
+                cm_SendFloatDelta(c->netId, 0x1d0, util_RandomF() * 0.5f + 0.25f);
                 gm_NetMsgCount++;
-                cm_BeginFieldBlock(c, *(int *)(c + 4));
-                cm_AddFieldDelta(1, 1, 0xc, &loc);
+                cm_BeginFieldBlock((char *)c, c->netId);
+                cm_AddFieldDelta(1, 1, 0xc, &flip);
                 cm_SendFieldDeltas();
                 gm_NetMsgCount++;
                 if (gm_NetMsgCount > 0x40) {
@@ -835,18 +839,26 @@ void gm_ShiftLoyalty(void)
         gm_NetMsgCount = 0;
         return;
     }
+    if (rec.cur == 0) {
+        faith = 0;
+        other = 1;
+    } else {
+        faith = 1;
+        other = 0;
+    }
     gm_NetMsgCount = 0;
     for (i = 0; i < 0x300; i++) {
-        c = ai_Chars[i];
-        if (*(short *)c != -1 && (unsigned char)c[2] < 10 && c[2] != 0 && c[2] != 6 && c[2] != 7 && c[2] != 8 && *(unsigned short *)(c + 10) > 0xb && (c[0xc] != 0) != (r[6] != 0)) {
+        c = &ORD_CHARS[i];
+        if (c->id != 0xffff && c->kind < 10 && c->kind > 0 && c->kind != 6 && c->kind != 7 && c->kind != 8
+            && c->w00a >= 12 && c->b00c != faith) {
             t = -1;
-            if (*(int *)(c + 0x170) != 0)
-                t = *(int *)(*(int *)(c + 0x170) + 1);
-            m = gv_Accuse(2, r[6] == 0, *(int *)(c + 4), -1, t);
+            if (c->bld2 != 0)
+                t = c->bld2->id;
+            m = gv_Accuse(2, other, c->netId, -1, t);
             if (m != -1)
                 gm_NetMsgCount++;
-            if (*(float *)(c + 0x1d0) > 0.1)
-                cm_SendFloatDelta(*(int *)(c + 4), 0x1d0, -0.1f);
+            if (c->loyalty > 0.1f)
+                cm_SendFloatDelta(c->netId, 0x1d0, -0.1f);
             gm_NetMsgCount++;
             if (gm_NetMsgCount > 0x40) {
                 sv_PumpNet();

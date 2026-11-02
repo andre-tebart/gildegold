@@ -106,7 +106,7 @@ typedef struct ORDCHAR {
     unsigned int netId;             /* 0x004, the id the order events carry */
     unsigned char health;           /* 0x008, > 0 = the record is in use */
     unsigned char textVariant;      /* 0x009, nonzero: the alternate text block (level texts +10, job texts +0x28) */
-    char pad00a[2];
+    unsigned short w00a;            /* 0x00a, ai.h AICHAR.w00a; gm_ShiftLoyalty and gm_HandOutMoney skip the characters below 12 (reasoned guess: the age) */
     unsigned char b00c;             /* 0x00c, a kind (ai.h AICHAR.b00c); gm_HandOutMoney compares it between two characters and with the decision 2's value (reasoned guess: the faith) */
     unsigned char level;            /* 0x00d, the level the level orders test */
     char pad00e[0x4e];
@@ -182,7 +182,8 @@ typedef struct ORDCELL {
    ai_Time / ai_Chars / ai_BTypes); the object list of gm_BuildQuery's records */
 typedef struct ORDBLD {
     unsigned char type;             /* 0x00, index into ai_BTypes */
-    char pad01[0x26];
+    int id;                         /* 0x01, ai.h AIBLD.id */
+    char pad05[0x22];
     unsigned short owner;           /* 0x27, index into ai_Chars, 0xffff = none */
     char pad29[0x24];
     int roundSum;                   /* 0x4d, ai.h AIBLD.roundSums[0], cleared at the end of every day (gm_EndDayIncomes) */
