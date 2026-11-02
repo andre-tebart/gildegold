@@ -7378,16 +7378,21 @@ void gm_RankPlayers(int *count, GMRANK *out)
                 (double)r->reputation, (double)r->talents, (double)r->office);
     }
 }
-/* 0x506430, the record (0x56 words each, 0x7d5f80 ..) of a player-like character c (kinds 5 / 6 / 7 whose word +0x50 has the top bit set; the low 4 bits give the slot), 0 else */
+/* 0x506430, the player record (gm_PlayerRecords, 0x2b ints each) of the character c: for the kinds 5 / 6 / 7 whose
+   w050 has the top bit set its low 4 bits are the slot; 0 for any other character */
 
 short *gm_PlayerRecord(char *c)
 {
-    char k;
-    int u;
+    ORDCHAR *ch = ORD_CHAR(c);
+    int slot;
 
-    k = c[2];
-    if ((k == 6 || k == 7 || k == 5) && (short)*(unsigned short *)(c + 0x50) < 0 && (u = *(unsigned short *)(c + 0x50) & 0xf, u < 0x10))
-        return (short *)gm_PlayerRecords + u * 0x56;
+    if (ch->kind == 6 || ch->kind == 7 || ch->kind == 5) {
+        if (ch->w050 & 0x8000) {
+            slot = ch->w050 & 0xf;
+            if (slot >= 0 && slot < 0x10)
+                return (short *)&gm_PlayerRecords[slot * 0x2b];
+        }
+    }
     return 0;
 }
 /* 0x506480, counts the active relatives (the five ids from +0x68, 0x505df0, +8 set) of the character c into *n and returns 1 when one of them is older than 0xb */
