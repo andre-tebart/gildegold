@@ -6906,29 +6906,28 @@ int gm_CharPrevLevel(unsigned short id, int again)
         return gm_CharPrevLevel(*parent, 1);
     return level;
 }
-/* 0x506000, the birthday of the character c as a calendar record (month byte, day byte, year word) in out: the birth date (the clock minus the age +10, an inactive character from the word +0x28), the month = ((x >> 3) % 13 + the birth day % 11) % 12 + 1 and the day = (x >> 5) % 28 + 1 with x = the int +0x30 xor the year */
+/* 0x506000, the birthday of the character c as a calendar record in out: the birth year is the clock's year (a dead
+   character's: w028) minus the age w00a, the month ((x >> 3) % 13 + year % 11) % 12 + 1 and the day (x >> 5) % 28 + 1
+   with x = the first name's first four bytes xor the calendar year, so it stays the same from year to year */
 
-void gm_BirthDate(char *c, unsigned *out)
+void gm_BirthDate(ORDCHAR *c, GMDATE *out)
 {
-    int clk[4];
-    unsigned char d[16];
-    int day;
+    GCLOCK clk;
+    GMDATE d;
+    int year;
     unsigned x;
 
-    ((int *)clk)[1] = *(int *)(ai_Time + 4);
-    ((int *)clk)[2] = *(int *)(ai_Time + 8);
-    day = *(int *)ai_Time;
-    if (c[8] == 0)
-        day = *(short *)(c + 0x28);
-    day = day - *(unsigned short *)(c + 10);
-    clk[0] = day;
-    gm_ClockToDate(clk, d);
-    x = *(unsigned *)(c + 0x30) ^ *(unsigned short *)(d + 2);
-    d[1] = (char)(((x >> 3) % 0xd + day % 0xb) % 0xc) + 1;
-    d[0] = (char)((x >> 5) % 0x1c) + 1;
-    out[0] = *(unsigned *)d;
-    out[1] = *(unsigned *)(d + 4);
-    *(short *)(out + 2) = *(short *)(d + 8);
+    clk = GM_NOW;
+    year = GM_NOW.day;
+    if (c->health == 0)
+        year = c->w028;
+    year -= c->w00a;
+    clk.day = year;
+    gm_ClockToDate(&clk, (unsigned char *)&d);
+    x = c->nameKey ^ d.year;
+    d.month = (char)(((x >> 3) % 13 + year % 11) % 12) + 1;
+    d.one = (unsigned char)((x >> 5) % 28) + 1;
+    *out = d;
 }
 /* 0x5060d0, the birthday of an inactive character c (word +0x28 the birth day) into out; 0 for an active one, 1 else (month = ((x >> 3) % 7 + day % 19) % 12 + 1) */
 

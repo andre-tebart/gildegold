@@ -121,7 +121,10 @@ typedef struct ORDCHAR {
     short w028;                     /* 0x028, ai.h AICHAR.w028 */
     char pad02a[2];
     unsigned int v02c;              /* 0x02c, ai.h AICHAR.v02c: nine counters of 2 .. 4 bits (bits 0, 4, 8, 12, 14, 17, 20, 23, 25) the daily step halves */
-    char first[0x10];               /* 0x030, the first name (ai.h AICHAR.first) */
+    union {
+        char first[0x10];           /* 0x030, the first name (ai.h AICHAR.first) */
+        unsigned int nameKey;       /* 0x030, its first four bytes as one number: gm_BirthDate's seed for the birthday */
+    };
     char family[0x10];              /* 0x040, the family name (ai.h AICHAR.family) */
     char pad050[4];
     int v054;                       /* 0x054, gm_CreateObject: nonzero for a character of the kinds 5 .. 7, its low byte + 0x67 is the texture set of the character's carts */

@@ -18763,7 +18763,7 @@ void ai_FamilyTreeWindow(int param_1, unsigned char param_2, int param_3, int pa
     ai_CampaignStep(6, 0, 1, 0);
 }
 
-void gm_BirthDate(char *c, unsigned *out); int gm_BirthDate2(); int gm_GetGoodsValue();
+int gm_BirthDate2(); int gm_GetGoodsValue();
 void ai_ShowMissions(int owner); int ai_Unk5cf260(); int ai_Unk5cf4f0(); int ai_Unk5c6050();
 
 /* 0x5c5310, the player info panel "panel_info_spieler" 0x62d3e0 (4544 B, ROUGH SKELETON): the window
