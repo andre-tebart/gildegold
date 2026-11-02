@@ -772,7 +772,7 @@ exe	0x0043ce10	d3_InitSurf	d3_engine	byte	readable
 exe	0x0043ce60	d3_InitObject	d3_engine	shape	draft	deep	
 exe	0x0043cfb0	d3_AddObjectDrawData	d3_engine	byte	readable		
 exe	0x0043d0e0	d3_Unlink	d3_engine	byte	readable		
-exe	0x0043d180	d3_CloneObject	d3_engine	shape	draft	deep	byte+draft -> shape+draft at d494b4a: d3_sm.h now declares its d3sm_Pick (char, the owner's prototype; sv_HandleSelectionMouse tests its al result and had no prototype); d3_engine.c includes d3_sm.h but never calls d3sm_Pick, and d3_CloneObject falls by 4 swapped instructions (order) wherever in d3_sm.h the prototype stands: a VC6 declaration-set tie-break, no evidence of the original's source [waits for: d3_engine.c's declaration set (its head and includes) settling, then a re-grade]
+exe	0x0043d180	d3_CloneObject	d3_engine	byte	draft	deep	
 exe	0x0043d430	d3_SetObjectAlpha	d3_engine	shape	readable	deep	
 exe	0x0043d630	d3_SetAlphaCB	d3_engine	byte	readable		
 exe	0x0043d690	d3_SetAlpha	d3_engine	byte	readable		
@@ -2922,7 +2922,7 @@ exe	0x004f9850	ord_ReportStatistics	ord	shape	readable
 exe	0x004f9c00	ord_AdvanceRatingBase	ord	byte	readable		
 exe	0x004f9ce0	ord_StatisticsRating	ord	byte	readable		
 exe	0x004f9d40	ord_WeightedRecordSum	ord	draft	readable	deep	
-exe	0x004f9e00	unk_Unk4f9e00	ord	byte	draft		
+exe	0x004f9e00	ord_GetStatistics	ord	byte	draft		
 exe	0x004f9e30	gm_StatisticsScreen	f3gm	byte	readable		
 exe	0x004f9ec0	gm_IncomeRating	f3gm	draft	draft	deep	
 exe	0x004f9f60	unk_Unk4f9f60	f3gm	draft	draft		
@@ -3344,7 +3344,7 @@ exe	0x00527640	sv_UpdateCamera	sv	byte	readable
 exe	0x00527840	sv_FlyCameraToObject	sv	shape	readable		
 exe	0x00527bb0	sv_CameraToObject	sv	shape	readable		
 exe	0x00527e90	sv_FlyCameraToModel	sv	draft	readable	deep	
-exe	0x00528140	sv_Unk528140	sv	byte	draft		
+exe	0x00528140	sv_MoveCameraToView	sv	byte	draft		
 exe	0x00528180	sv_CreateBannerCB	sv	byte	readable		
 exe	0x00528290	sv_ColourBannerCB	sv	byte	draft		
 exe	0x005282f0	sv_Unk5282f0	sv	byte	draft		
@@ -3377,14 +3377,14 @@ exe	0x0052bbc0	sv_SendSelectedToBuilding	sv	draft	readable	deep
 exe	0x0052bec0	sv_HandleSelectionMouse	sv	draft	readable	deep	
 exe	0x0052c420	sv_Unk52c420	sv	byte	draft		
 exe	0x0052c4a0	sv_ReleaseBubble	sv	byte	readable		
-exe	0x0052c4e0	sv_Unk52c4e0	sv	draft	draft		
-exe	0x0052c5c0	sv_Unk52c5c0	sv	draft	draft		
-exe	0x0052cef0	sv_Unk52cef0	sv	draft	draft		
-exe	0x0052d010	sv_Unk52d010	sv	draft	draft		
-exe	0x0052d1e0	sv_Unk52d1e0	sv	draft	draft		
-exe	0x0052d2a0	sv_Unk52d2a0	sv	draft	draft		
-exe	0x0052d480	sv_Unk52d480	sv	draft	draft		
-exe	0x0052d7a0	sv_CameraFollow	sv	draft	draft		
+exe	0x0052c4e0	sv_ShowBubble	sv	draft	readable	deep	
+exe	0x0052c5c0	sv_SpeakPicked	sv	draft	readable	deep	
+exe	0x0052cef0	sv_DrawBubbles	sv	draft	readable	deep	
+exe	0x0052d010	sv_DrawGateName	sv	draft	readable	deep	
+exe	0x0052d1e0	sv_DrawNamePlates	sv	draft	readable	deep	
+exe	0x0052d2a0	sv_DrawItemNames	sv	byte	readable		
+exe	0x0052d480	sv_DrawBorderArrows	sv	byte	readable		
+exe	0x0052d7a0	sv_CameraFollow	sv	byte	readable		
 exe	0x0052d940	sv_Unk52d940	sv	draft	draft		
 exe	0x0052e050	sv_Unk52e050	sv	byte	draft		
 exe	0x0052e0c0	sv_Unk52e0c0	sv	draft	draft		
