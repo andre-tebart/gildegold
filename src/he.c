@@ -16519,7 +16519,7 @@ int sv_UsedGroupSlots();                 /* 0x5241b0 */
 int gm_FreeCapacity();                 /* 0x50ab80 */
 char *gm_FindBuildingById(int id); /* 0x502020 */
 int gv_ListEntry(char *r, int i, unsigned char n);                 /* 0x4ef570 */
-int unk_Unk4f0c20();                 /* 0x4f0c20 */
+int gv_OrderAdjustEntry();                 /* 0x4f0c20 */
 int gm_Unk509ee0(char *c, char p);                 /* 0x509ee0 */
 void ai_Unk5a9910(unsigned short *param_1, int param_2, unsigned int param_3);                 /* 0x5a9910 */
 
@@ -16730,7 +16730,7 @@ void he_Unk571640(int ev)
         return;
     n = (int)*(float *)(ev + 0xac);
     if (per != 0 && n > 0)
-        unk_Unk4f0c20(per, HM_I(ev, 0xb0), HM_B(ev, 0xb4), n);
+        gv_OrderAdjustEntry(per, HM_I(ev, 0xb0), HM_B(ev, 0xb4), n);
     if (per != 0) {
         r = (char *)gm_FindCharacterByMaster(per);
         txt_Format(name, 0x411e, 0x4126, *(unsigned short *)per);

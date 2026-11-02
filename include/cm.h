@@ -473,7 +473,7 @@ int gv_ReserveGrave();  /* 0x4f0490 */
 int gv_ExtendGrave();  /* 0x4f0770 */
 int gv_SetGraveHolder();  /* 0x4f0970 */
 int gv_OpenSize();  /* 0x4f0af0 */
-int unk_Unk4f0c80();  /* 0x4f0c80 */
+int gv_AdjustEntry();  /* 0x4f0c80 */
 int unk_Unk4f0dd0();  /* 0x4f0dd0 */
 int unk_Unk4f0ed0();  /* 0x4f0ed0 */
 unsigned unk_Unk4f1200(char *p);  /* 0x4f1200 */

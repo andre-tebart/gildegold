@@ -645,3 +645,5 @@
 2026-11-02T04:02:42 0x004f0970 func unk_Unk4f0970 -> gv_SetGraveHolder by:main why:graveyard order type 3 handler: sets GVENTRY.id / w08 to the order's character or -1 / 0xffff (sent by gv_OrderSetGraveHolder)
 2026-11-02T04:03:14 0x004f0a90 func unk_Unk4f0a90 -> gv_OrderOpenSize by:main why:sends graveyard order type 4 (GVORDER, cm_SendGraveOrder); its handler 0x4f0af0 sets GVYARD.open for the sizes up to GVORDER.size
 2026-11-02T04:03:44 0x004f0af0 func unk_Unk4f0af0 -> gv_OpenSize by:main why:graveyard order type 4 handler: sets GVYARD.open[1..size] (sent by gv_OrderOpenSize)
+2026-11-02T04:05:11 0x004f0c80 func unk_Unk4f0c80 -> gv_AdjustEntry by:main why:graveyard order type 5: the handler 0x4f0c80 adds the order's +0x13 delta to GVENTRY.b0c clamped to 0..0xff; 0x4f0c20 sends it (GVORDER, cm_SendGraveOrder)
+2026-11-02T04:05:11 0x004f0c20 func unk_Unk4f0c20 -> gv_OrderAdjustEntry by:main why:graveyard order type 5: the handler 0x4f0c80 adds the order's +0x13 delta to GVENTRY.b0c clamped to 0..0xff; 0x4f0c20 sends it (GVORDER, cm_SendGraveOrder)

@@ -2075,7 +2075,7 @@ int gv_OpenSize(GVORDER *m)
 }
 /* 0x4f0c20, the message 0x4c60b0 type 5 (graveyard id -1, object id +1 of o, value v, byte b, int x); -1 when o is 0 or b is -1 */
 
-int unk_Unk4f0c20(char *o, int v, int b, int x)
+int gv_OrderAdjustEntry(char *o, int v, int b, int x)
 {
     char m[0x1d];
 
@@ -2091,33 +2091,35 @@ int unk_Unk4f0c20(char *o, int v, int b, int x)
     }
     return -1;
 }
-/* 0x4f0c80, graveyard order type 5 (p: +8 the object id, +0xc the list, +0x10 the entry, +0x13 a delta): adds the delta to the byte +0xc of the entry, clamped to 0 .. 255; 0 or a negative reason (as 0x4f0240) */
+/* 0x4f0c80, graveyard order type 5 (GVORDER m, sent by gv_OrderAdjustEntry): adds m->price (here a signed delta) to the
+   byte GVENTRY.b0c of the entry m->entry of the size m->size of the graveyard building m->bld, clamped to 0 .. 0xff.
+   Returns 0, or a negative reason as gv_BuryCharacter (-7 no such entry) */
 
-int unk_Unk4f0c80(unsigned char *p)
+int gv_AdjustEntry(GVORDER *m)
 {
-    unsigned char *o;
-    int l, v;
-    char *e;
+    AIBLD *bld;
+    GVENTRY *e;
+    int size;
+    int v;
 
-    gm_FindById(&o, 0, 0, *(int *)(p + 8));
-    if (o == 0 || *(unsigned short *)(o + 0x27) == 0xffff || ai_Chars[*(unsigned short *)(o + 0x27)] == ai_PlayerCharC)
+    gm_FindById((int *)&bld, 0, 0, m->bld);
+    if (bld == 0 || bld->owner == 0xffff || &gv_CharsT[bld->owner] == gv_PlayerAiChar)
         return -1;
-    if (ai_BTypes[o[0] * 0x24d] != 0x1d)
+    if (((AIBTYPE *)(ai_BTypes + bld->type * 0x24d))->kind != 0x1d)
         return -2;
-    if (*(int *)(o + 0x65) == 0)
+    if (bld->yard == 0)
         return -3;
-    l = *(int *)(p + 0xc);
-    if (gv_SizeOpen(*(char **)(o + 0x65), l) == 0)
+    size = m->size;
+    if (gv_SizeOpen((char *)bld->yard, size) == 0)
         return -4;
-    e = (char *)gv_ListEntry(*(char **)(o + 0x65), l, p[0x10]);
+    e = (GVENTRY *)gv_ListEntry((char *)bld->yard, size, m->entry);
     if (e == 0)
         return -7;
-    v = (unsigned char)e[0xc] + *(int *)(p + 0x13);
-    if (v < 1)
-        v = 0;
-    if (v > 0xfe)
+    v = e->b0c + m->price;
+    v = v <= 0 ? 0 : v;
+    if (v >= 0xff)
         v = 0xff;
-    e[0xc] = (char)v;
+    e->b0c = (unsigned char)v;
     return 0;
 }
 /* 0x4f0d70, the message 0x4c60b0 type 6 (graveyard id -1, object id +1 of o, value x at +0x13); -1 when o is 0 */
@@ -4320,7 +4322,7 @@ void unk_Unk4f1de0(char *o)
                         t = (int)util_RandomF();
                         if (t < 1 || ((gv_EntryIndex(*(char **)(o + 0x65), e) ^ *(int *)ai_Time) & 1) != 0)
                             goto next;
-                        h = unk_Unk4f0c20(o, e[0], gv_EntryIndex(*(char **)(o + 0x65), e), -t);
+                        h = gv_OrderAdjustEntry(o, e[0], gv_EntryIndex(*(char **)(o + 0x65), e), -t);
                         goto counted;
                     }
                     k++;
@@ -4334,7 +4336,7 @@ void unk_Unk4f1de0(char *o)
             t = (int)util_RandomF();
             if (t > 0) {
                 if (((gv_EntryIndex(*(char **)(o + 0x65), e) ^ *(int *)ai_Time) & 1) == 0) {
-                    h = unk_Unk4f0c20(o, e[0], gv_EntryIndex(*(char **)(o + 0x65), e), -t);
+                    h = gv_OrderAdjustEntry(o, e[0], gv_EntryIndex(*(char **)(o + 0x65), e), -t);
                     rounds++;
                 }
             }
