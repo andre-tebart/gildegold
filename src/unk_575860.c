@@ -2026,7 +2026,7 @@ int ai_Unk577820(void)
 /* 0x577850, -4 without a player / run record, else the run window's controls 1 and 2 (0x475f70) with the text
    0x602568 (0x515960) and 0 */
 
-int ai_Unk577850(void)
+int ai_TutorialClearRunWindow(void)
 {
     char *per;
 
@@ -2041,42 +2041,36 @@ int ai_Unk577850(void)
     io_PrintText((char *)(unsigned)"$C");
     return 0;
 }
-/* 0x5778b0, the run window's text tick: -4 without the run record / when 0x577850 fails, else the controls 1 / 2
-   with the texts of the record +0xc / +0xc + 1 (or 0x3fd3 / 0x3fd4 in the states 0xa / 0xb of the modes 1 / 2)
-   and, when the record word +0x10 is set, the window S+0x14 recreated by 0x4c2760 (0xfffffff9, 0, +0x10, -1)
-   after releasing the previous one (0x426f20 / 0x427290); 0 */
+/* 0x5778b0, shows the current run's texts in the run window (the tutorial host's event slot window): clears it
+   (ai_TutorialClearRunWindow), then control 1 / 2 get the run's mainText / mainText + 1 and its mainVoice is played
+   (stopping the voice still playing); in the tails (states 0xa / 0xb) of the runs of the modes 1 / 2 the texts
+   0x3fd3 / 0x3fd4 instead, without a voice. -4 without a run or a window, else 0 */
 
 int ai_TutorialShowRunText(void)
 {
-    char *st;
-    char *r;
-
-    if (!*(int *)(S + 0x18))
+    if (!ai_Tutorial->run)
         return -4;
-    if (ai_Unk577850() == -4)
+    if (ai_TutorialClearRunWindow() == -4)
         return -4;
-    st = S;
-    r = *(char **)(st + 0x18);
-    if ((*(int *)(r + 8) == 1 || *(int *)(r + 8) == 2)
-            && (*(int *)(st + 4) == 0xa || *(int *)(st + 4) == 0xb)) {
-        d2_SetForm(R8, 1);
+    if ((ai_Tutorial->run->mode == 1 || ai_Tutorial->run->mode == 2)
+            && (ai_Tutorial->next == 0xa || ai_Tutorial->next == 0xb)) {
+        d2_SetForm(ai_Tutorial->host->slot->win, 1);
         io_PrintText(0x3fd3);
-        d2_SetForm(R8, 2);
+        d2_SetForm(ai_Tutorial->host->slot->win, 2);
         io_PrintText(0x3fd4);
         return 0;
     }
-    d2_SetForm(R8, 1);
-    io_PrintText(*(int *)(*(char **)(S + 0x18) + 0xc));
-    d2_SetForm(R8, 2);
-    io_PrintText(*(int *)(*(char **)(S + 0x18) + 0xc) + 1);
-    r = *(char **)(S + 0x18);
-    if (*(int *)(r + 0x10)) {
-        if (U_I(S + 0x14)) {
-            if (sb_IsPlaying(U_I(S + 0x14)))
-                sb_Stop(U_I(S + 0x14), 0);
-            U_I(S + 0x14) = 0;
+    d2_SetForm(ai_Tutorial->host->slot->win, 1);
+    io_PrintText(ai_Tutorial->run->mainText);
+    d2_SetForm(ai_Tutorial->host->slot->win, 2);
+    io_PrintText(ai_Tutorial->run->mainText + 1);
+    if (ai_Tutorial->run->mainVoice) {
+        if (ai_Tutorial->voice) {
+            if (sb_IsPlaying(ai_Tutorial->voice))
+                sb_Stop(ai_Tutorial->voice, 0);
+            ai_Tutorial->voice = 0;
         }
-        U_I(S + 0x14) = snd_PlayVoice(0xfffffff9, 0, *(int *)(r + 0x10), -1);
+        ai_Tutorial->voice = (struct SBSAMPLE *)snd_PlayVoice(-7, 0, ai_Tutorial->run->mainVoice, -1);
     }
     return 0;
 }

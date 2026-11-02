@@ -16,7 +16,8 @@ typedef struct TUTSTEP {                /* 0x10 bytes, a step of a run record's 
 typedef struct TUTRUN {                 /* 0x74 bytes, a run (chapter) record of the tutorial, chained by next */
     char pad00[8];
     int mode;                           /* 0x08, 1 / 2 start with the timed first text window (state 4), else state 0xb */
-    char pad0c[8];
+    int mainText;                       /* 0x0c, the run window's text: control 1 shows it, control 2 mainText + 1 (ai_TutorialShowRunText) */
+    char *mainVoice;                    /* 0x10, the voice played with it ("CHAPTER_5_C_MAIN") */
     int text1;                          /* 0x14, the first text window's text (ai_TutorialShowText) */
     char pad18[4];
     int text2;                          /* 0x1c, the second text window's text (ai_TutorialShowText2) */
@@ -130,7 +131,7 @@ void ai_HookChapter5Step5(int arg);             /* 0x577610, character record lo
 void ai_HookChapter5Step6(int arg);             /* 0x577690, builds a save record (ROUGH) */
 int ai_Unk577740(void);                 /* 0x577740, the tutorial start ("tutorial\main") */
 int ai_Unk577820(void);                 /* 0x577820, 0x53d800 (player) */
-int ai_Unk577850(void);                 /* 0x577850, run window controls 1 / 2 */
+int ai_TutorialClearRunWindow(void);                 /* 0x577850, run window controls 1 / 2 */
 int ai_TutorialShowRunText(void);                 /* 0x5778b0, the run window's text tick */
 int ai_TutorialIntroAnswered(void);                 /* 0x577a00, the tutorial's escape check */
 void ai_TutorialShowText(void);                /* 0x577a90, rewrites the text window */
