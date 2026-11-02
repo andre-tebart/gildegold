@@ -8045,7 +8045,7 @@ void ai_Unk4d0fa0(char *rec)
     if (ai_Unk633738 != 0) {
         *(int *)(ai_Unkfd7c50 + d3_CurrentScene * 0x3e0 + 8) = *(int *)(ai_Unkfd7c50 + 8);
         ai_Unk633dd4 = *(int *)(ai_Unkfd7c50 + 8);
-        sv_Unk5301a0();
+        sv_UpdateWeather();
         d3sky_Init(ai_Unk633dd4, 1);
     }
     memset(ai_Unk935d20, -1, 0x80);
@@ -8342,7 +8342,7 @@ void ai_Unk4d1e00()
             snd_PlaySpecialTrack("cd2\\AmKuehlenGrabe.mp3");
     }
     sv_FrameMask = 0x7d6c6;
-    sv_Unk5301a0();
+    sv_UpdateWeather();
     sv_UpdateSkyPhase(ai_Time);
     s = (char *)evt_Load("cutscenes\\kampf\\Kampf_Intro_Fluege.esc");
     if (s != 0) {

@@ -176,7 +176,7 @@ typedef struct D3TEXTURE {          /* 0x80 bytes, d3_TexCount of them at d3_Tex
 } D3TEXTURE;
 
 typedef struct D3TEXHANDLE {        /* returned by tex_Load */
-    char pad00[0x60];
+    char name[0x60];                /* 0x00, the texture's name (sv_UpdateWeather compares a sky layer's with the sky records' names) */
     struct IDirectDrawSurface4 *surf;   /* 0x60 */
     union {                         /* 0x64, the original calls it surftext (D3DCHECK texts) */
         struct IDirect3DTexture2 *d3dtex;
