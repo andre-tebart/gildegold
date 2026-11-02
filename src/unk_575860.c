@@ -691,6 +691,7 @@ TUTSTATE *const ai_Tutorial = (TUTSTATE *)(full_data_6fa020 + 0x40);  /* 0x5eec6
 #define S (*(char **)(unsigned)&ai_Tutorial)  /* the tutorial state record (at 0x6fa060): the pointer ai_Tutorial holds */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define ai_TimeT (*(AITIME *)&ai_Time)  /* 0x770ae0, ai_Time (anm.c: char[14]) as the AITIME it is */
+#define ai_TimeK (*(AHMCLOCK *)&ai_Time)  /* 0x770ae0, ai_Time as the messages here copy it: @original 3 ints and a short (ahm.h AHMCLOCK) */
 #define ai_ClockMsVolatile (*(volatile int *)&ai_ClockMs)  /* 0x6333cc, @original: the byte-matched ai_TutorialTick reloads the clock after every read (a timer-written int; its owner declares it plain int) */
 #define sv_CheckGoodAmountB ((int (*)(char *, int, unsigned char))sv_CheckGoodAmount)  /* @original: ai_AlchemistHire pushes the player byte unextended (mov al, ai_OwnPlayer / push eax), a char third parameter; sv_CheckGoodAmount itself masks it (t & 0xff) */
 int ai_TutorialChapterOn[5] = { 1, 1, 1, 1, 1 };  /* 0x62918c, per chapter 1 = played (the start window's check boxes, ai_TutorialWindow) */
@@ -4798,40 +4799,74 @@ void ai_AlchemistResearchWindow(unsigned char *obj)
     d2_CloseView(form);
     sv_CameraFollow();
 }
-/* 0x57cde0, a tutorial message builder (227 B, ROUGH SKELETON): a 0x100-byte frame; 0x4eb180 (arg 1, &local,
-   &local2, 0) - non-zero answers 0 at once; the 0xf8-byte struct zeroed (rep stos 0x3e dwords) and filled from
-   the record (+1 dword, the word +0x27), the clock globals 0x770ae0 / 0x770ae4 / 0x770ae8 / 0x770aec, the
-   character record 0x770b84 + the word * 0x21c, the random 0x42ec00 (0x5a0); then the message from the locals
-   and the record (the rest is not written yet, see the disassembly) */
-
-int ai_AlchemistSendRecipeResearch(char *rec)
+/* 0x57cde0, starts the research of the place slot of the alchemist object obj (record rec) with the message 0x96
+   (cm_SendLongMessage; from the building, to the owner character's netId, the game clock, flags 1, arg[0] the
+   record's id, arg[1] the place's id, arg[4] a random duration 1000 .. 66535); 0 when a research already runs
+   (ahm_ResearchState), else 1
+   @deep read whole against the original and reconstructed (AIMSG zeroed, fromId = building id, type 0x96,
+   flags 1, to = the owner character's netId, time copied as 3 ints and a short, arg[0] = rec id, arg[1] =
+   slot id, arg[4] = (util_Random(0x5a0) & 0xffff) + 1000; 228 vs 227 instructions; asmdiff --symbols:
+   every load, store, constant and call of the original is present). Left: scheduling only: the original
+   pushes &msg (lea ecx,[esp+0x10]; push ecx) before the flags / to / time stores, interleaves the clock
+   loads with them (ae8 first into [esp+0x40], then to, hour, year, the word at +0x34), ours loads the
+   clock words first and pushes the pointer last; tried a struct copy, a field-wise copy (a,b,c,d) and the
+   original's store order, all give the same schedule */
+int ai_AlchemistSendRecipeResearch(unsigned char *obj, AHMREC *rec, int slot)
 {
-    char buf[0x100];
+    AIMSG msg;
+    AHMCLOCK *clk;
     int a;
-    int b;
+    float f;
 
-    if (ahm_ResearchState(rec, &a, &b, 0) != 0)
+    if (ahm_ResearchState(obj, &a, &f, 0) != 0)
         return 0;
-    memset(buf, 0, 0xf8);
-    /* ROUGH: the fields and the message are not written yet */
-    return 0;
+    memset(&msg, 0, sizeof(msg));
+    clk = (AHMCLOCK *)&msg.time;
+    msg.fromId = ((AIBLD *)obj)->id;
+    clk->c = ai_TimeK.c;
+    msg.type = 0x96;
+    msg.flags = 1;
+    msg.to = ai_CharsT[((AIBLD *)obj)->owner].netId;
+    clk->b = ai_TimeK.b;
+    clk->a = ai_TimeK.a;
+    clk->d = ai_TimeK.d;
+    msg.arg[0] = rec->id;
+    msg.arg[1] = rec->slots[slot].id;
+    msg.arg[4] = (util_Random(0x5a0) & 0xffff) + 1000;
+    cm_SendLongMessage((char *)&msg);
+    return 1;
 }
-/* 0x57ced0, a second tutorial message builder (189 B, ROUGH SKELETON, the 0x57cde0 shape): a 0x100-byte frame;
-   0x4eb180 (arg 1, &local, &local2, 0) - non-zero answers 0; the 0xf8-byte struct zeroed and filled from the
-   record (+1 dword, the word +0x27), the clock globals 0x770ae0 / 0x770ae4 / 0x770ae8 / 0x770aec, the character
-   record 0x770b84 + the word * 0x21c, the byte 0x95 at +4 and 1 at +0x3a, 0x4c4b70 (the local); 1 */
-
-int ai_AlchemistSendResearchStart(char *rec)
+/* 0x57ced0, starts the alchemist object obj's own research (record rec) with the message 0x95 (cm_SendLongMessage;
+   the 0x57cde0 shape without a place: arg[0] and arg[3] the record's id, no random duration); 0 when a research
+   already runs (ahm_ResearchState), else 1
+   @deep read whole against the original and reconstructed (the 0x57cde0 shape: type 0x95, flags 1, arg[0]
+   and arg[3] = rec id, no duration; 190 vs 189 instructions; asmdiff --symbols: every load, store,
+   constant and call is present). Left: scheduling only: the original pushes &msg (lea ecx,[esp+0x10]; push
+   ecx) between the type and flags stores and interleaves the clock loads (ae8 into [esp+0x40] first, year
+   / hour / the word after the to load), ours loads the clock first and pushes the pointer last; a struct
+   copy, a field-wise copy and the original's store order give the same schedule */
+int ai_AlchemistSendResearchStart(unsigned char *obj, AHMREC *rec)
 {
-    char buf[0x100];
+    AIMSG msg;
+    AHMCLOCK *clk;
     int a;
-    int b;
+    float f;
 
-    if (ahm_ResearchState(rec, &a, &b, 0) != 0)
+    if (ahm_ResearchState(obj, &a, &f, 0) != 0)
         return 0;
-    memset(buf, 0, 0xf8);
-    /* ROUGH: the fields and the message are not written yet */
-    cm_SendLongMessage(buf + 0x10);
+    memset(&msg, 0, sizeof(msg));
+    clk = (AHMCLOCK *)&msg.time;
+    msg.fromId = ((AIBLD *)obj)->id;
+    clk->c = ai_TimeK.c;
+    msg.type = 0x95;
+    msg.flags = 1;
+    msg.to = ai_CharsT[((AIBLD *)obj)->owner].netId;
+    clk->b = ai_TimeK.b;
+    clk->a = ai_TimeK.a;
+    clk->d = ai_TimeK.d;
+    msg.arg[0] = rec->id;
+    msg.arg[3] = rec->id;
+    cm_SendLongMessage((char *)&msg);
     return 1;
 }
 /* 0x57cf90, the tutorial window handler (3264 B, ROUGH SKELETON - the 0x57c690 shape): arg 1 = the record; the
