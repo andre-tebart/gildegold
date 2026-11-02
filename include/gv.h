@@ -419,7 +419,7 @@ int gv_Accuse(int i, int v, int a, int b, int obj);  /* 0x4f2e30 */
 float util_RandomF(void);               /* 0x42ec20 */
 
 void gv_GraveyardTurn(char *o);            /* 0x4f1de0 */
-int gv_LeasePrice(unsigned short *c, unsigned char a, int kind, int flag, int *out);  /* 0x4f2330 */
+int gv_LeasePrice(unsigned short *c, unsigned char care, int kind, int flag, int *out);  /* 0x4f2330 */
 int cm_FlushSendQueue();                     /* 0x4c3680 */
 int cm_ReceiveMessages();                     /* 0x4c3fd0 */
 int cm_ExecCommands();                     /* 0x4c4190 */
