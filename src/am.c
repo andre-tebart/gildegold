@@ -6880,37 +6880,38 @@ int ai_Unk49c3c0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 }
 /* 0x49c3e0, execute callback 0x24: uses the object, the needs of action s2->unk10 scale those of 0x24 */
 
-int ai_Unk49c3e0(G5CH *p, AIARG *s1, AIARG *s2)
+int ai_ExecuteUseTrank(G5CH *p, AIARG *s1, AIARG *s2)
 {
     G8USE u;
     AIOBJ *o;
     float *g;
 
-    o = gm_Query(*(int *)((char *)p + 0x178), 1, 1, s1->ref);
-    if (o == 0)
-        return 0;
-    g = (float *)ai_FindUsableGoodP(o->id);
-    if (g == 0)
-        return 0;
-    u.obj = o;
-    u.target = s2->ref;
-    u.arg = s2->arg;
-    if (ai_UseGood(p, &u) != 1)
-        return 0;
-    if (u.effect == 1) {
-        G5_ACTS[0x24].w3[0].w = G5_ACTS[s2->arg2].w1[0].w * g[3];
-        G5_ACTS[0x24].w3[1].w = G5_ACTS[s2->arg2].w1[1].w * g[3];
-        G5_ACTS[0x24].w3[2].w = G5_ACTS[s2->arg2].w1[2].w * g[3];
-        G5_ACTS[0x24].w3[3].w = G5_ACTS[s2->arg2].w1[3].w * g[3];
-        return 0x24;
+    o = gm_Query(p->inventory, 1, 1, s1->ref);
+    if (o != 0) {
+        g = (float *)ai_FindUsableGoodP(o->id);
+        if (g != 0) {
+            u.obj = o;
+            u.target = s2->ref;
+            u.arg = s2->arg;
+            if (ai_UseGood(p, &u) == 1) {
+                if (u.effect == 1) {
+                    G5_ACTS[0x24].w3[0].w = G5_ACTS[s2->arg2].w1[0].w * g[3];
+                    G5_ACTS[0x24].w3[1].w = G5_ACTS[s2->arg2].w1[1].w * g[3];
+                    G5_ACTS[0x24].w3[2].w = G5_ACTS[s2->arg2].w1[2].w * g[3];
+                    G5_ACTS[0x24].w3[3].w = G5_ACTS[s2->arg2].w1[3].w * g[3];
+                    return 0x24;
+                }
+                if (u.effect == -1) {
+                    G5_ACTS[0x24].w3[0].w = -(G5_ACTS[s2->arg2].w1[0].w * g[3] * 0.5f);
+                    G5_ACTS[0x24].w3[1].w = -(G5_ACTS[s2->arg2].w1[1].w * g[3] * 0.5f);
+                    G5_ACTS[0x24].w3[2].w = -(G5_ACTS[s2->arg2].w1[2].w * g[3] * 0.5f);
+                    G5_ACTS[0x24].w3[3].w = -(G5_ACTS[s2->arg2].w1[3].w * g[3] * 0.5f);
+                }
+                return 0x24;
+            }
+        }
     }
-    if (u.effect == -1) {
-        G5_ACTS[0x24].w3[0].w = -(G5_ACTS[s2->arg2].w1[0].w * g[3] * 0.5f);
-        G5_ACTS[0x24].w3[1].w = -(G5_ACTS[s2->arg2].w1[1].w * g[3] * 0.5f);
-        G5_ACTS[0x24].w3[2].w = -(G5_ACTS[s2->arg2].w1[2].w * g[3] * 0.5f);
-        G5_ACTS[0x24].w3[3].w = -(G5_ACTS[s2->arg2].w1[3].w * g[3] * 0.5f);
-    }
-    return 0x24;
+    return 0;
 }
 /* 0x49c570, decide callback 0x25: spying on a character (0x49c700 sends "spionage"), if the character can pay for it */
 
@@ -9683,7 +9684,7 @@ int ai_RegisterBaseActions(int a)
     strcpy(act.name, "Use Trank");
     act.eval = ai_Unk49c320;
     act.decide = ai_Unk49c3c0;
-    act.exec = ai_Unk49c3e0;
+    act.exec = ai_ExecuteUseTrank;
     act.flags = 0xff;
     if (!am_RegisterMethod(&act, a))
         return 0;

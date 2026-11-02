@@ -797,3 +797,4 @@
 2026-11-02T07:29:17 0x0049b7c0 func ai_Unk49b7c0 -> ai_DecideUseMeanObject by:main why:registered as the decide callback of action 0x21 "UseObject (Gemeinheit)" (0x4a16f0)
 2026-11-02T07:31:42 0x0049bd90 func ai_Unk49bd90 -> ai_DecideUseSafetyObject by:main why:registered as the decide callback of action 0x22 "UseObject (Sicherheit)" (0x4a16f0)
 2026-11-02T07:36:04 0x0049c190 func ai_Unk49c190 -> ai_ExecuteUsePerfume by:main why:execute callback of action 0x23 registered as "Use Parfuem" (0x4a16f0)
+2026-11-02T07:36:37 0x0049c3e0 func ai_Unk49c3e0 -> ai_ExecuteUseTrank by:main why:execute callback of action 0x24 registered as "Use Trank" (0x4a16f0)
