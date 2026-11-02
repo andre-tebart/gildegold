@@ -8864,14 +8864,16 @@ G5CH *ai_PickLeastLikedRival(G5CH *p)
         return &G5_CHARS[id];
     return best;
 }
-/* 0x4a0410, a district for character p: few neighbours closer than 66 */
+/* 0x4a0410, an office column (1..6) whose three or more holders p likes on average below 66, else 0: the order
+   runs up (level 1..3 of p's applied / held / previous office kind), from 5 (4..6) or down (7..9), then each
+   half is shuffled six times */
 
-int ai_Unk4a0410(G5CH *p)
+int ai_PickDislikedColumn(G5CH *p)
 {
     int order[6];
     unsigned int k;
-    struct { char pad[8]; unsigned int kind; char pad2[12]; } info;
-    struct { int unk00; int id; char pad[16]; } list[6];
+    AMTKIND kind;
+    AMTREC list[6];
     float sum;
     int i, n, t, a, b;
 
@@ -8879,14 +8881,14 @@ int ai_Unk4a0410(G5CH *p)
         order[i] = i + 1;
     if (p->appliedOffice != 0)
         k = p->appliedOffice;
-    else if (((unsigned char *)p)[0x166] != 0)
-        k = ((unsigned char *)p)[0x166];
-    else if (((unsigned char *)p)[0x167] != 0)
-        k = ((unsigned char *)p)[0x167];
+    else if (p->officeKind != 0)
+        k = p->officeKind;
+    else if (p->prevOffice != 0)
+        k = p->prevOffice;
     if (k != 0) {
-        if (amt_GetKindB((unsigned char)k, &info) == 0)
+        if (amt_GetKindB((unsigned char)k, &kind) == 0)
             return 0;
-        i = ((int)(info.kind & 0xff) - 1) / 3;
+        i = ((int)kind.level - 1) / 3;
         if (i == 1) {
             for (i = 0; i < 6; i++)
                 order[i] = (i + 4) % 6 + 1;
@@ -8901,18 +8903,18 @@ int ai_Unk4a0410(G5CH *p)
         t = order[a];
         order[a] = order[b];
         order[b] = t;
-        a = util_RandomU(3);
+        a = util_RandomU(3) + 3;
         b = util_RandomU(3) + 3;
-        t = order[a + 3];
-        order[a + 3] = order[b];
+        t = order[a];
+        order[a] = order[b];
         order[b] = t;
     }
-    for (i = 0; i <= 4; i++) {
+    for (i = 0; i < 5; i++) {
         n = amt_GetColumnOfficesOwned(order[i], 6, list);
-        if (n > 2) {
+        if (n >= 3) {
             sum = 0.0f;
             for (t = 0; t < n; t++)
-                sum += gm_Liking(p->id, ((AICHAR *)gm_FindChar(list[t].id))->id, 1);
+                sum += gm_Liking(p->id, ((AICHAR *)gm_FindChar(list[t].owner))->id, 1);
             if (sum / (float)n < 66.0f)
                 return order[i];
         }
@@ -9017,7 +9019,7 @@ int ai_Unk4a0890(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         return 0x38;
     }
     if (k == 0x20)
-        n = ai_Unk4a0410(p);
+        n = ai_PickDislikedColumn(p);
     else if (k == 0x1f || k == 0x21)
         n = ai_Unk4a05e0(p);
     else

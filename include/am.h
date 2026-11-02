@@ -776,7 +776,7 @@ extern unsigned int ai_Unk6f070c;       /* 0x6f070c, the number of entries */
 int ai_ExecuteDarkCorner(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49ee20 */
 G5CH *ai_PickLeastLikedRival(G5CH *p);                                                    /* 0x4a0240 */
 G6RING *ai_Unk4a3a90(void);                                                     /* 0x4a3a90 */
-int ai_Unk4a0410(G5CH *p);                                                      /* 0x4a0410 */
+int ai_PickDislikedColumn(G5CH *p);                                                      /* 0x4a0410 */
 int ai_DecidePriceManipulation(int a, G5CH *p, int f, AIARG *o1);                             /* 0x49fc90 */
 int amt_MayorBonusStep(char *c);                                                      /* 0x4e94a0 */
 int ai_DecideBuildResidence(int a, struct AIPER *p, int f, struct AIARG *o1, struct AIARG *o2);                 /* 0x4984d0 */
