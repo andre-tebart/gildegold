@@ -548,7 +548,7 @@ int ai_ExecGraveyardOwner0(AIPX *p, AIBLD *b, int unused, AIARG *o);            
 int ai_DecideGraveyardOwner1(AIPX *p, AIBLD *b, AIARG *o1, AIARG *o2);                      /* 0x490170 */
 int ai_Unk4902b0(AIPX *p, AIBLD *b, int unused, AIARG *o);                      /* 0x4902b0 */
 int ai_DecideGraveyardOwner2(AIPX *p, AIBLD *b, AIARG *o1, AIARG *o2);                      /* 0x490350 */
-int ai_Unk4904c0(AIPX *p, AIBLD *b, int unused, AIARG *o);                      /* 0x4904c0 */
+int ai_ExecGraveyardOwner2(AIPX *p, AIBLD *b, int unused, AIARG *o);                      /* 0x4904c0 */
 int ai_Unk490570(AIPX *p, AIBLD *b, AIARG *o1, AIARG *o2);                      /* 0x490570 */
 int ai_Unk490600(AIPX *p, AIBLD *b, int unused, AIARG *o);                      /* 0x490600 */
 int ai_Unk490690(int a, AIPX *p, int b, AIARG *o1, AIARG *o2);                  /* 0x490690 */

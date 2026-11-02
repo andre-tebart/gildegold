@@ -733,3 +733,4 @@
 2026-11-02T05:48:53 0x004900c0 data ai_Unk4900c0 -> ai_ExecGraveyardOwner0 by:main why:way 0 of the Graveyard Owner execute (0x490830 calls it for way 0); sends message 0x88 built from ai_DecideGraveyardOwner0's AIARG
 2026-11-02T05:51:16 0x00490170 data ai_Unk490170 -> ai_DecideGraveyardOwner1 by:main why:way 1 of the Graveyard Owner decide ai_Unk490690 (r[1]); its event 0x90 is executed by way 1 ai_Unk4902b0
 2026-11-02T05:52:50 0x00490350 func ai_Unk490350 -> ai_DecideGraveyardOwner2 by:main why:way 2 of the Graveyard Owner decide ai_Unk490690 (r[2]); its event 0x89 is sent by way 2 of the execute, ai_Unk4904c0
+2026-11-02T05:53:26 0x004904c0 data ai_Unk4904c0 -> ai_ExecGraveyardOwner2 by:main why:way 2 of the Graveyard Owner execute ai_Unk490830 (case 2); sends message 0x89 built from ai_DecideGraveyardOwner2's AIARG
