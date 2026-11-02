@@ -4036,7 +4036,7 @@ void he_Unk549ce0(int ev)
 int sv_IsAtDoor();
 void cm_SendKillCharacter(int a, int b);
 void ai_Unk5a9240(int param_1);
-float gm_Unk505440();
+float gm_CatchPlague();
 float util_RandomF2();
 
 /* 0x549f70, a Ghidra miss: the start of the plague event ("Pest"): unless a running event of the type 0x59 exists the clock is copied from the start (+0x44), the state 5 is set and the event is posted (0x4c4c60 (5, ev)); else it is posted as failed */
@@ -4181,15 +4181,15 @@ void he_Unk54a020(int ev)
                 a *= (float)cnt;
                 m = (int)(a < 1.0f ? 1.0f : a);
                 for (j = 0; j < m; j++) {
-                    strength[j] = gm_Unk505440((unsigned)&ai_Chars + ids[j] * 0x21c);
+                    strength[j] = gm_CatchPlague((unsigned)&ai_Chars + ids[j] * 0x21c);
                     any = 1;
                 }
                 if (first != 0 && (short)util_Random(8) == 0) {
-                    strength[0] = gm_Unk505440(first);
+                    strength[0] = gm_CatchPlague(first);
                     any = 1;
                 }
                 if ((short)util_Random(0x100) == 0)
-                    gm_Unk505440(0);
+                    gm_CatchPlague(0);
                 if (any)
                     ai_Unk5a9240K(0, o);
                 for (j = 0; j < m; j++)

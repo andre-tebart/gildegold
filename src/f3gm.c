@@ -6744,28 +6744,30 @@ int gm_CatchDisease(ORDCHAR *c, int *kind, float *health)
         *health = h;
     return 1;
 }
-/* 0x505440, lets the character c (when the low 4 bits of +0x2c are 0) get a random first field value (record 1 of 0x5051d0), sent as in 0x505230, and pays its cost (0x4fca40). Returns the new health or 0. ROUGH */
+/* 0x505440, the character c catches the disease 1 (the low 4 bits of its word +0x2c; he.c's plague event ("Pest", 0x54a020)
+   calls it for the figures of the struck building: the plague) unless it has it already: the
+   severity is util_Random(the record's range) of gm_GetDisease (1), written into the field and sent, and the health
+   drops by severity * the record's cost (gm_AddHealth). Returns the new health, 0 when nothing was caught */
 
-float gm_Unk505440(short *c)
+float gm_CatchPlague(ORDCHAR *c)
 {
-    unsigned w, v, nw;
-    int rec[3];
-    int cost;
+    unsigned w, nw;
+    int v;
+    GMDISEASE rec;
 
-    w = *(unsigned *)(c + 0x16);
+    w = c->v02c;
     if ((w & 0xf) != 0)
         return 0.0f;
-    if (gm_GetDisease(1, rec) == 0)
+    if (gm_GetDisease(1, (int *)&rec) == 0)
         return 0.0f;
-    v = util_RandomU(rec[2]);
-    if ((v & 0xffff) == 0)
+    v = util_RandomU(rec.range);
+    if (v == 0)
         return 0.0f;
-    nw = ((v & 0xffff) ^ w) & 0xf ^ w;
-    cm_BeginFieldBlock(c, *(int *)(c + 2));
-    cm_AddFieldDelta(4, 1, 0x2c, &nw);
+    nw = ((v ^ w) & 0xf) ^ w;
+    cm_BeginFieldBlock((char *)c, c->netId);
+    cm_AddFieldDelta(4, 1, 0x2c, &nw);  /* 0x2c: v02c */
     cm_SendFieldDeltas();
-    cost = (int)(float)rec[0];
-    return gm_AddHealth(*c, -cost);
+    return gm_AddHealth(c->id, -(int)(v * rec.cost));
 }
 /* 0x505ca0, fills out[0 .. n-1] with 0 .. n-1 and shuffles it with (n / 2 + max (1, n / 4)) random swaps of different places (n > 1) */
 
