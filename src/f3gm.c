@@ -3710,29 +3710,29 @@ int gm_AddObjekt(int id, int proto, int n)
 
 int gm_TakeObjekt(int id, int proto, int n)
 {
-    int b, o, c, r, left;
+    ORDBLD *b;
+    ORDOBJ *o;
+    ORDCHAR *c;
     int *list;
+    ORDOBJ *r;
 
-    if (gm_FindById(&b, &o, &c, id) != 0) {
-        if (b == 0) {
-            if (o == 0) {
-                if (c == 0)
-                    return 0;
-                list = (int *)(c + 0x178);
-            } else
-                list = (int *)(o + 0x14);
-        } else
-            list = (int *)(b + 0x5d);
-        r = (int)gm_Query(*list, 1, 0, proto);
-        if (r != 0 && n <= *(int *)(r + 0xe)) {
-            left = *(int *)(r + 0xe) - n;
-            *(int *)(r + 0xe) = left;
-            if (left < 1)
-                gm_RemoveObject(list, proto);
-            return 1;
-        }
-    }
-    return 0;
+    if (gm_FindById((int *)&b, (int *)&o, (int *)&c, id) == 0)
+        return 0;
+    if (b != 0)
+        list = &b->objList;
+    else if (o != 0)
+        list = &o->list;
+    else if (c != 0)
+        list = &c->inventory;
+    else
+        return 0;
+    r = (ORDOBJ *)gm_Query((void *)*list, 1, 0, proto);
+    if (r == 0 || r->count < n)
+        return 0;
+    r->count -= n;
+    if (r->count <= 0)
+        gm_RemoveObject(list, proto);
+    return 1;
 }
 /* 0x500ae0, like 0x500a40 but creates a missing instance with 0 first and removes it when the amount is exactly 0 (a negative stock is possible) */
 
