@@ -172,7 +172,7 @@ int he_ShowNews(int pid, int fl, char *text, int unused, int ev, char *text2); /
 void d2_SetObjValue(); int d2_GetObjValue(int obj); int d2_CreateWinText(short x, short y, char *text, int win); void d2_SetObjText(int obj, char *text);
 char *_itoa(int, char *, int); void d2_SetObjFont(int obj, int font); int sv_RunFrame(int cb, unsigned mask);
 
-/* 0x5d34b0, the file selector window "s_menu_fileselector": lists the files of dir with the extension ext
+/* 0x5d34b0, the file selector window "menu\fileselector": lists the files of dir with the extension ext
    (ai_ListFiles, up to 32) under the caption, with their count. With bit 0 of flags a click on a file writes
    "<dir>\<name><ext>" into out and returns 1; without it the click puts the name into the name input
    (preset txt_DefaultFileName) and the button 0x1ccc writes the input's name into out and returns 1. A right
@@ -197,7 +197,7 @@ int ai_FilePickWindow(unsigned mask, int flags, char *caption, char *dir, char *
     input = -1;
     count = -1;
     okBtn = -1;
-    win = d2_OpenForm(0, 0, "s_menu_fileselector");
+    win = d2_OpenForm(0, 0, "menu\\fileselector");
     d2_CentreViewWindows(win);
     d2_SetPointerSprite(0, 0);
     d2_SetForm(win, 2);
