@@ -14,8 +14,6 @@
    parameter, kept as the cast macro sv_CheckGoodAmountB), sv.h / sv.c declare it unsigned and mask it.
    Open: ai_ClockMs is volatile in the original (ai_TutorialTick reloads it after every read, byte-matched through
    the unit's view ai_ClockMsVolatile); its owner and the other units declare it plain int.
-   Open: data: 0x6f9f60 ai_ShotTable (3 SHOTSLOT of 0x38 bytes, the cannon scene's shot results) and 0x6f2664
-   ai_ShotDirty are views of main.c's gap blocks (the table runs on to 0x6fa020 over full_data_6f9f68 .. 6f9fd0); owner unit and extent unsettled.
    Open: the alchemist windows ai_AlchemistWindow / ai_AlchemistResearchWindow are @deep (allocation); their buttons call
    ai_AlchemistFundWindow / ai_AlchemistRescheduleWindow with (obj, record), the record parameter unread.
    Open: not included yet (dcp headers conflicts unk_575860 HEADER): d2.h gfx.h sv.h unk_5d33b0.h; held by own
@@ -225,8 +223,6 @@ extern unsigned char ai_TimeHour;
 extern int d2_PointerObj;
 extern int d2_LastWindow;
 extern GAPDATA full_data_62a2c4[];
-extern GAPDATA full_data_6f2664[];
-extern GAPDATA full_data_6f9f60[];
 extern const int sv_PhaseMinutes[24];
 extern int ai_Unkfb9060;
 extern int ai_Unkfb9064;
@@ -242,8 +238,6 @@ extern GAPDATA full_data_62a310[];
 extern GAPDATA full_data_62a328[];
 extern GAPDATA full_data_62a340[];
 extern GAPDATA full_data_62a350[];
-extern GAPDATA full_data_6f9f98[];
-extern GAPDATA full_data_6f9fd0[];
 extern GAPDATA full_data_6fa020[];
 extern int sv_PanelFlag;
 extern int sv_ViewRectBottom;
@@ -251,9 +245,6 @@ extern int sv_ViewRectLeft;
 extern int sv_ViewRectRight;
 extern int sv_ViewRectTop;
 extern GAPDATA full_data_602568[];
-extern GAPDATA full_data_6f9f68[];
-extern GAPDATA full_data_6f9f70[];
-extern GAPDATA full_data_6f9f74[];
 
 
 extern GAPDATA full_data_602568[];
@@ -262,11 +253,6 @@ extern int ai_ClockMs;
 extern int sv_PopRequest;
 extern GAPDATA full_data_5f36e0[];
 extern GAPDATA full_data_62a36c[];
-extern GAPDATA full_data_6f9f60[];
-extern GAPDATA full_data_6f9f68[];
-extern GAPDATA full_data_6f9f6c[];
-extern GAPDATA full_data_6f9f70[];
-extern GAPDATA full_data_6f9f74[];
 extern int d2_LastWindow;
 extern struct D2OBJ *d2_Objs;
 extern struct D2PIC *d2_Pics;
@@ -697,20 +683,31 @@ TUTSTATE *const ai_Tutorial = (TUTSTATE *)(full_data_6fa020 + 0x40);  /* 0x5eec6
 #define ai_TimeT (*(AITIME *)&ai_Time)  /* 0x770ae0, ai_Time (anm.c: char[14]) as the AITIME it is */
 #define ai_TimeK (*(AHMCLOCK *)&ai_Time)  /* 0x770ae0, ai_Time as the messages here copy it: @original 3 ints and a short (ahm.h AHMCLOCK) */
 #define ai_ClockMsVolatile (*(volatile int *)&ai_ClockMs)  /* 0x6333cc, @original: the byte-matched ai_TutorialTick reloads the clock after every read (a timer-written int; its owner declares it plain int) */
-typedef struct SHOTSLOT {  /* 0x38 bytes, a record of the cannon scene's shot table (ai_ShotTable, 3 of them): the record index, then the entries ai_Unk57f690 reads (three 0x10-byte entries from +0x8 on) */
-    int index;
-    int body[13];
-} SHOTSLOT;
-#define ai_ShotTable (*(SHOTSLOT (*)[3])&full_data_6f9f60)  /* 0x6f9f60, the cannon scene's shot table (main.c gap block) */
-#define ai_ShotDirty (*(int *)&full_data_6f2664)  /* 0x6f2664, set when ai_ShotTableStore stored a record, cleared by the scene (ai_Unk57f690) */
+typedef struct SHOTENTRY {   /* 0x10 bytes */
+    int obj;                 /* +0x0, -1 when empty */
+    float dist;              /* +0x4 */
+    int a;                   /* +0x8 */
+    union {
+        int b;               /* +0xc */
+        float bf;            /* +0xc, read as a float by ai_Unk57f690 (<= 25.0) */
+    };
+} SHOTENTRY;
+
+typedef struct SHOTREC {     /* 0x38 bytes, three of them in ai_ShotTable: the cannon scene's shot results */
+    int id;                  /* +0x0, the record index, -1 when empty */
+    int unk4;                /* +0x4 */
+    SHOTENTRY e[3];          /* +0x8 */
+} SHOTREC;
 #define sv_CheckGoodAmountB ((int (*)(char *, int, unsigned char))sv_CheckGoodAmount)  /* @original: ai_AlchemistHire pushes the player byte unextended (mov al, ai_OwnPlayer / push eax), a char third parameter; sv_CheckGoodAmount itself masks it (t & 0xff) */
-#define gm_ConvertMoney3 ((int (*)(int, unsigned char, int))gm_ConvertMoney)  /* @original: ai_AlchemistFundWindow passes a third word (the previous result) to the second and third call */
+#define gm_ConvertMoney3 ((int (*)(int, unsigned char, int))gm_ConvertMoney)  /* @original: the calls at 0x57df2c / 0x57df3d push a third word (the previous result) that f3gm.c:7921 never reads (it takes a, k); no byte-matched caller, the evidence is the pushes in the original (the same 3-push shape is noted at hst.c ai_SplitTokenFormat); header unchanged because every matched caller passes two words */
 int ai_TutorialChapterOn[5] = { 1, 1, 1, 1, 1 };  /* 0x62918c, per chapter 1 = played (the start window's check boxes, ai_TutorialWindow) */
 int (*ai_TutorialChapterInit[5])(void) = { ai_TutorialInitChapter1, ai_TutorialInitChapter2, ai_TutorialInitChapter3, ai_TutorialInitChapter4, ai_TutorialInitChapter5 };  /* 0x6291a0, the chapter chain builders the start appends for every chapter played */
 int ai_TutorialBanks[6] = { 0 };  /* 0x6f2640, the voice banks of the main intro / outro and the chapters 1 .. 5 (snd_LoadVoiceBank), unloaded by the stop */
 TUTRUN *ai_TutorialRuns = 0;  /* 0x6f2658, the chain of the tutorial's run records (built by its start 0x578180, freed by its stop 0x578370) */
 int ai_TutorialOn = 0;  /* 0x6f265c, the tutorial runs (set by its start 0x578180, cleared by its end) */
 int ai_TutorialRunning = 0;  /* 0x6f2660, the tutorial's state machine advances (unk_SetEndGameGate / unk_ClearEndGameGate) */
+int ai_ShotDirty = 0;  /* 0x6f2664, set when ai_ShotTableStore stored a record, cleared by the scene (ai_Unk57f690) */
+SHOTREC ai_ShotTable[3] = { 0 };  /* 0x6f9f60, the cannon scene's shot results (the callback ai_ShotTableStore fills it, ai_Unk580a50 resets it) */
 
 #include "time_view.h"
 #include "ls.h"
@@ -5312,14 +5309,14 @@ int ai_AlchemistRescheduleWindow(unsigned char *obj, AHMREC *rec)
     d2_CloseView(win);
     return done;
 }
-/* 0x57e230, the table callback of the cannon scene: stores the shot record src (its index 0 .. 2 in src->index)
+/* 0x57e230, the table callback of the cannon scene: stores the shot record src (its index 0 .. 2 in src->id)
    in the table ai_ShotTable at that index and marks the table as changed (ai_ShotDirty); answers 1, else 0 for
    no record or an index out of range */
-int ai_ShotTableStore(SHOTSLOT *src)
+int ai_ShotTableStore(SHOTREC *src)
 {
-    if (!src || src->index < 0 || src->index >= 3)
+    if (!src || src->id < 0 || src->id >= 3)
         return 0;
-    ai_ShotTable[src->index] = *src;
+    ai_ShotTable[src->id] = *src;
     ai_ShotDirty = 1;
     return 1;
 }
@@ -5505,9 +5502,9 @@ void ai_Unk57e270(char *rec)
     he_Unk53ec10(U_I(rec + 0x61), 0);
     U_I((unsigned)&d2_ClickedId) = -1;
     ai_Unk57f5d0((float *)sc);
-    U_I((unsigned)&full_data_6f9fd0) = -1;
-    U_I((unsigned)&full_data_6f9f98) = -1;
-    U_I((unsigned)&full_data_6f9f60) = -1;
+    ai_ShotTable[2].id = -1;
+    ai_ShotTable[1].id = -1;
+    ai_ShotTable[0].id = -1;
     while (sv_RunFrame(ai_Unk57e270, 0x2656c7) != 0) {
         sv_SetPanelEnabled(0);
         now = U_I((unsigned)&ai_ClockMs);
@@ -5530,9 +5527,9 @@ void ai_Unk57e270(char *rec)
                 }
                 if (U_I(run + 4) == 0 && ai_Unk57f620((float *)sc) != 0) {
                     ai_Unk580160((float *)sc, rec);
-                    U_I((unsigned)&full_data_6f9fd0) = -1;
-                    U_I((unsigned)&full_data_6f9f98) = -1;
-                    U_I((unsigned)&full_data_6f9f60) = -1;
+                    ai_ShotTable[2].id = -1;
+                    ai_ShotTable[1].id = -1;
+                    ai_ShotTable[0].id = -1;
                 }
             }
         }
@@ -5852,17 +5849,17 @@ void ai_Unk57f690(char *sc)
         d2_SetForm(*(int *)(sc + 0x74), 0);
         for (rec = 0; rec < 3; rec++) {
             i = 0;
-            if (*(int *)((unsigned)&full_data_6f9f60 + rec * 0x38) == rec) {
-                U_I((unsigned)&full_data_6f2664) = 1;
+            if (ai_ShotTable[rec].id == rec) {
+                ai_ShotDirty = 1;
                 for (i = 0; i < 3; i++) {
                     h = 0;
-                    gm_FindById(&h, 0, 0, *(int *)((unsigned)&full_data_6f9f68 + rec * 0x38 + i * 0x10));
+                    gm_FindById(&h, 0, 0, ai_ShotTable[rec].e[i].obj);
                     if (h == 0)
                         break;
                     v = 0x4071;
-                    if (*(int *)((unsigned)&full_data_6f9f70 + rec * 0x38 + i * 0x10) == 1) {
+                    if (ai_ShotTable[rec].e[i].a == 1) {
                         v = 0x4073;
-                        if (*(float *)((unsigned)&full_data_6f9f74 + rec * 0x38 + i * 0x10) <= 25.0f)
+                        if (ai_ShotTable[rec].e[i].bf <= 25.0f)
                             v = 0x4072;
                     }
                     io_PrintText(i == 0 ? (char *)(unsigned)"$C" : (char *)(unsigned)&ai_Unk60c6c0);
@@ -5874,14 +5871,14 @@ void ai_Unk57f690(char *sc)
                     n++;
                 }
                 if (n != 0) {
-                    U_I((unsigned)&full_data_6f2664) = 0;
-                    *(int *)((unsigned)&full_data_6f9f60 + rec * 0x38) = -1;
+                    ai_ShotDirty = 0;
+                    ai_ShotTable[rec].id = -1;
                     d2_SetViewEnabled(*(int *)(sc + 0x74), 1);
                     return;
                 }
-                if (U_I((unsigned)&full_data_6f2664) != 0) {
-                    U_I((unsigned)&full_data_6f2664) = 0;
-                    *(int *)((unsigned)&full_data_6f9f60 + rec * 0x38) = -1;
+                if (ai_ShotDirty != 0) {
+                    ai_ShotDirty = 0;
+                    ai_ShotTable[rec].id = -1;
                     io_PrintText((char *)(unsigned)"$C");
                     io_PrintText(0x406e);
                     d2_SetViewEnabled(*(int *)(sc + 0x74), 1);
@@ -5890,7 +5887,7 @@ void ai_Unk57f690(char *sc)
             }
         }
         d2_SetViewEnabled(*(int *)(sc + 0x74), 0);
-        U_I((unsigned)&full_data_6f2664) = 0;
+        ai_ShotDirty = 0;
     }
 }
 
@@ -6102,18 +6099,6 @@ void ai_Unk580160(char *sc, char *rec)
     sb_PlayVariation(0, (char *)(unsigned)"Explosion", sel + 1, 1, 0x3f, 0x7f, 0);
 }
 
-typedef struct SHOTENTRY {   /* 0x10 bytes */
-    int obj;                 /* +0x0, -1 when empty */
-    float dist;              /* +0x4 */
-    int a;                   /* +0x8 */
-    int b;                   /* +0xc */
-} SHOTENTRY;
-
-typedef struct SHOTREC {     /* 0x38 bytes, three of them at 0x6f9f60 (full_data_6f9f60) */
-    int id;                  /* +0x0, -1 when empty */
-    int unk4;                /* +0x4 */
-    SHOTENTRY e[3];          /* +0x8 */
-} SHOTREC;
 
 /* 0x580a50, resets the three 0x38-byte shot records of 0x6f9f60 (57 B): each record: +0 = -1 and its three
    0x10-byte entries: +8 = -1, +0xc = 100000.0, +0x10 = 0, +0x14 = 0 */
@@ -6123,12 +6108,12 @@ void ai_Unk580a50(void)
     int j;
 
     for (i = 0; i < 3; i++) {
-        ((SHOTREC *)&full_data_6f9f60)[i].id = -1;
+        ai_ShotTable[i].id = -1;
         for (j = 0; j < 3; j++) {
-            ((SHOTREC *)&full_data_6f9f60)[i].e[j].obj = -1;
-            ((SHOTREC *)&full_data_6f9f60)[i].e[j].dist = 100000.0f;
-            ((SHOTREC *)&full_data_6f9f60)[i].e[j].a = 0;
-            ((SHOTREC *)&full_data_6f9f60)[i].e[j].b = 0;
+            ai_ShotTable[i].e[j].obj = -1;
+            ai_ShotTable[i].e[j].dist = 100000.0f;
+            ai_ShotTable[i].e[j].a = 0;
+            ai_ShotTable[i].e[j].b = 0;
         }
     }
 }
