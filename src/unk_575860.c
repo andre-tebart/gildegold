@@ -3,15 +3,18 @@
    0x575fe8; ai_TutorialStart builds the run chain ai_TutorialRuns and initializes it, the tick 0x575860 runs it),
    the chapter run-record builders (ai_TutorialChapterInit) with their step tables (TUTSTEP) and position-marker
    paths (TUTMARK), the marker update, the chapter chooser, then the location / contact / tooltip windows (the
-   alchemist's candidates and hire from 0x57bf00 on). Start: he.c's last function 0x575710, its jump table and
+   alchemist's candidates and hire from 0x57bf00 on), the cannon scene, the cabinet's spy windows (kabinett_spy /
+   kabinett, message 0x99) and the room contacts (ai_AlchemistLabContact). Start: he.c's last function 0x575710, its jump table and
    nop fill end at 0x575860; the unit's one .data block starts at 0x62918c (ai_TutorialChapterOn, then the "FT"
    state names) and its literals climb in function order to 0x62aa58; the network lobby (0x589f10) is a unit of
    its own. The original file name is unknown (no leaked tag). Names are ours.
    Open: type debt - TUTSTATE / TUTRUN / TUTSTEP / TUTMARK are typed in unk_575860.h and the tutorial code up
    to ai_TutorialWindow uses them; the later functions still reach the state record through the S / U_I
-   byte-offset macros; the message (AIMSG) and contact-list records are still accessed by byte offset; the cannon scene
-   struct (CANNONSCENE, CANNONREC) is typed from ai_CannonScene to ai_CannonExplosion, ai_CannonAxes /
-   ai_CannonPitchRatio / ai_CannonBuildPanel still address it by byte offset.
+   byte-offset macros; the message (AIMSG, ai.h) is typed from ai_CabinetSpyWindow on, earlier senders and the
+   contact-list records still use byte offsets; the cannon scene struct (CANNONSCENE, CANNONREC) is typed from
+   ai_CannonScene to ai_CannonBuildPanel, ai_CannonAxes / ai_CannonPitchRatio still address it by byte offset.
+   Open: d2_CreatePicObj: d2.h declares int parameters, the original's callers here (and d2.c's) pass a short y
+   (ai_CannonBuildPanel through the cast macro d2_CreatePicObjS).
    Open: data: the unit's .rdata block 0x5eec60..0x5eed70 is typed up to ai_CannonZoomRange (0x5eec6c .. 0x5eecac:
    const data, the original loads it); 0x5eec64 / 0x5eec68 / 0x5eec8c / 0x5eec90 (0x54, the recoil time the code
    uses as an immediate) / the floats 0x5eec9c .. 0x5eeca8 and the tables from 0x5eecb0 are not declared yet.

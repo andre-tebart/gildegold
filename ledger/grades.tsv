@@ -3856,7 +3856,7 @@ exe	0x0056f1b0	he_Unk56f1b0	he	byte	draft
 exe	0x0056f260	he_Unk56f260	he	draft	draft		
 exe	0x0056f2e0	he_Unk56f2e0	he	byte	draft		
 exe	0x0056f360	he_Unk56f360	he	byte	draft		
-exe	0x0056f3b0	he_Unk56f3b0	he	byte	draft		
+exe	0x0056f3b0	he_NoEvent9bFor	he	byte	draft		
 exe	0x0056f3f0	he_Unk56f3f0	he	draft	draft		
 exe	0x0056f600	he_Unk56f600	he	draft	draft		
 exe	0x0056f740	he_Unk56f740	he	draft	draft		
@@ -4005,7 +4005,7 @@ exe	0x00578370	ai_TutorialStop	unk_575860	byte	draft
 exe	0x00578440	ai_TutorialFreeRuns	unk_575860	byte	draft		
 exe	0x005784a0	ai_TutorialInitMainIntro	unk_575860	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	unk_575860	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	shape	readable		byte+readable -> shape+readable at 4b2f8e2: the cannon scene's const data (ai_CannonPitchMax .. ai_WimpelPos at 0x5eec6c..0x5eec8c) defined in the unit; the match flips on any declaration added to the unit (an unused typedef ai_DummyT alone drops it the same way: eax/ecx swapped for the constants 1 / 0x429), a VC6 declaration-set tie-break, no evidence of the original's source [waits for: the unit's declaration set (its head includes and the rest of its const data at 0x5eec64..0x5eed70)]
+exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	byte	readable		
 exe	0x00579570	ai_TutorialInitChapter3	unk_575860	draft	readable	deep	
 exe	0x0057aa80	ai_TutorialInitChapter4	unk_575860	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	unk_575860	byte	readable		
@@ -4033,16 +4033,16 @@ exe	0x0057f690	ai_CannonShotResults	unk_575860	byte	readable
 exe	0x0057f890	ai_CannonPanel	unk_575860	byte	readable		
 exe	0x0057fdb0	ai_CannonPitchRatio	unk_575860	shape	draft		
 exe	0x0057fdd0	ai_CannonSwitchAnim	unk_575860	draft	readable	deep	
-exe	0x00580160	ai_CannonExplosion	unk_575860	draft	readable		
+exe	0x00580160	ai_CannonExplosion	unk_575860	draft	readable	deep	
 exe	0x00580a50	ai_ShotTableReset	unk_575860	byte	readable		
-exe	0x00580a90	ai_CannonBuildPanel	unk_575860	draft	draft		
-exe	0x00580fe0	ai_Unk580fe0	unk_575860	byte	draft		
-exe	0x00581020	ai_Unk581020	unk_575860	draft	draft		
-exe	0x00581400	ai_Unk581400	unk_575860	draft	draft		
-exe	0x00581950	ai_Unk581950	unk_575860	draft	draft		
-exe	0x00581db0	ai_Unk581db0	unk_575860	draft	draft		
-exe	0x005821d0	ai_Unk5821d0	unk_575860	draft	draft		
-exe	0x005823b0	ai_Unk5823b0	unk_575860	draft	draft		
+exe	0x00580a90	ai_CannonBuildPanel	unk_575860	draft	readable	deep	
+exe	0x00580fe0	ai_CanSpyOn	unk_575860	byte	draft		
+exe	0x00581020	ai_CabinetSpyWindow	unk_575860	shape	readable		
+exe	0x00581400	ai_CabinetSpyOnCharacter	unk_575860	shape	readable		
+exe	0x00581950	ai_CabinetSpyByMoney	unk_575860	shape	readable		
+exe	0x00581db0	ai_CabinetIntrigueWindow	unk_575860	draft	readable	deep	
+exe	0x005821d0	ai_AlchemistLabContact	unk_575860	byte	readable		
+exe	0x005823b0	ai_UnlockRoomWindow	unk_575860	byte	readable		
 exe	0x00582560	ai_Unk582560	unk_575860	draft	draft		
 exe	0x00582600	ai_Unk582600	unk_575860	draft	draft		
 exe	0x00582730	ai_Unk582730	unk_575860	draft	draft		
