@@ -6309,7 +6309,7 @@ void ai_Unk598b80(int param_1, int param_2)
     } while (sv_RunFrame(ai_Unk598b80, 0x677c7) != 0);
     d2_CloseView(win);
 }
-void ai_Unk4c5d80(int *p); void cm_BeginGroup(const char *s); void cm_EndGroup(const char *s); unsigned char * gm_BuildQuery(int n, ...);
+void cm_SendTableRequest(int *p); void cm_BeginGroup(const char *s); void cm_EndGroup(const char *s); unsigned char * gm_BuildQuery(int n, ...);
 unsigned char * gm_BuildNext(void);
 
 
@@ -6428,7 +6428,7 @@ void ai_Unk598dc0(int param_1, int param_2)
                     msg[1] = U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x87);
                     msg[2] = U_I(param_1 + 1);
                     cm_BeginGroup("stammtisch_join_H_Plr");
-                    h = ((int (*)(int))ai_Unk4c5d80)(msg);
+                    h = ((int (*)(int))cm_SendTableRequest)(msg);
                     cm_EndGroup("stammtisch_join_H_Plr");
                     b = cm_GetSlotState(h);
                     while (b == 0) {

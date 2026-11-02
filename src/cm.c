@@ -1936,7 +1936,7 @@ void cm_SendScriptMessage(void *p)
 }
 /* 0x4c5d80, message 0x54 (three ints of p) */
 
-void ai_Unk4c5d80(int *p)
+void cm_SendTableRequest(int *p)
 {
     G17MSG m;
 

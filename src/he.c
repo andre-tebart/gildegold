@@ -806,7 +806,7 @@ void cm_SendMoveGoods(int a, int b, unsigned char c, int d);
 char *gm_Query(void *list, int n, ...);
 void cm_BeginGroup(const char *s);
 void cm_EndGroup(const char *s);
-void ai_Unk4c5d80(int *p);
+void cm_SendTableRequest(int *p);
 void cm_SendScriptMessage(void *p);
 int sprintf(char *buf, const char *fmt, ...);
 void mem_Free(void *p);
@@ -1661,7 +1661,7 @@ void he_Unk53f430(void)
                     arg[1] = *p;
                     arg[0] = 0x6c656176;
                     cm_BeginGroup("stammtisch supervisor");
-                    ai_Unk4c5d80(arg);
+                    cm_SendTableRequest(arg);
                     cm_EndGroup("stammtisch supervisor");
                 }
                 p++;
@@ -6455,7 +6455,7 @@ void he_Unk542100(int ev)
             cmd[1] = -1;
             cmd[2] = *(int *)(bld + 1);
             cm_BeginGroup("stammtisch clear HE");
-            ai_Unk4c5d80(cmd);
+            cm_SendTableRequest(cmd);
             cm_EndGroup("stammtisch clear HE");
             *(int *)(ev + 0xc0) = *(int *)(ev + 0xc0) + 1;
         }

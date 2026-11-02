@@ -263,7 +263,7 @@ void ai_Unk4c5c40(int a, void *p);                                              
 void ai_Unk4c5ca0(int a, void *p);                                               /* 0x4c5ca0 */
 void ai_Unk4c5d00(int a, int b, int c);                                          /* 0x4c5d00 */
 void cm_SendScriptMessage(void *p);                                                      /* 0x4c5d40 */
-void ai_Unk4c5d80(int *p);                                                       /* 0x4c5d80 */
+void cm_SendTableRequest(int *p);                                                       /* 0x4c5d80 */
 void ai_Unk4c5dc0(char *o, int k, void *p);                                      /* 0x4c5dc0 */
 void cm_SendMessage56(void *p);                                                      /* 0x4c5e80 */
 void ai_Unk4c5ec0(int a);                                                        /* 0x4c5ec0 */

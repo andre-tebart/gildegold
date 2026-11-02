@@ -88,6 +88,7 @@ int ai_Unkf86900[73] = {0};  /* 0xf86900, the actions being evaluated */
 #define AI_CHAIN_MEAN 0xf00500  /* the partner-chain flags of action 0x21 "UseObject (Gemeinheit)" (ai_DecideUseMeanObject; | 0x800 for the good 0x29a, | 0x10000 for 0x177), as AI_CHAIN_BEATUP */
 #define AI_CHAIN_SPY 0xf00500  /* the partner-chain flags of action 0x25 (spying, 0x49c570), as AI_CHAIN_BEATUP */
 #define AI_CHF_BUILT 0x1000000  /* flags1c8 bit an execute callback sets after it built a building (ai_ExecBuildBuilding); ai_Unk498c70 tests it */
+#define AI_CHF_STAMMTISCH 0x2000000  /* flags1c8 bit ai_ExecuteStammtisch sets after a regulars' table decision; ai_DecideStammtisch skips a character that has it */
 /* 0x48e070, the building of a master (kind != 3) in *out; 2: has one, 1: has a good one, 0: none */
 
 int ai_Unk48e070(AIPX *p, int *out)
@@ -8495,7 +8496,7 @@ int ai_DecideStammtisch(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 
     found = -1;
     step = ai_RandomStrides[util_RandomU(0x10)];
-    if (p->flags1c8 & 0x2000000)
+    if (p->flags1c8 & AI_CHF_STAMMTISCH)
         return 0;
     if (a != 0)
         return 0;
@@ -8585,35 +8586,35 @@ noop:
     o1->arg = 'noop';
     return 0x35;
 }
-/* 0x49fb80, execute callback 0x35: sends the join / leave request of 0x49f850 (0x4c5d80) and sets flag 0x2000000
-   of the character's field 0x1c8 ('noop' only sets the flag) */
+/* 0x49fb80, execute callback of "Stammtisch" (0x35): sends the 'join' / 'leav' request ai_DecideStammtisch chose
+   (cm_SendTableRequest) and marks the character AI_CHF_STAMMTISCH ('noop' only marks it) */
 
-int ai_Unk49fb80(G5CH *p, AIARG *s1, AIARG *s2)
+int ai_ExecuteStammtisch(G5CH *p, AIARG *s1, AIARG *s2)
 {
     G8TABLE r;
 
     if (s1->arg == 'join') {
         r.tag = s1->arg;
-        r.bld = s1->ref;
         r.ch = p->netId;
+        r.bld = s1->ref;
         cm_BeginGroup("stammtisch join AI-Plr");
-        ai_Unk4c5d80(&r);
-        cm_SendSetField(p->netId, 0x1c8, 4, 0x2000000, 0);
+        cm_SendTableRequest(&r);
+        cm_SendSetField(p->netId, 0x1c8, 4, AI_CHF_STAMMTISCH, 0);
         cm_EndGroup("stammtisch join AI-Plr");
         return 0x35;
     }
     if (s1->arg == 'leav') {
         r.tag = s1->arg;
-        r.bld = s1->ref;
         r.ch = p->netId;
+        r.bld = s1->ref;
         cm_BeginGroup("stammtisch leave AI-Plr");
-        ai_Unk4c5d80(&r);
-        cm_SendSetField(p->netId, 0x1c8, 4, 0x2000000, 0);
+        cm_SendTableRequest(&r);
+        cm_SendSetField(p->netId, 0x1c8, 4, AI_CHF_STAMMTISCH, 0);
         cm_EndGroup("stammtisch leave AI-Plr");
         return 0x35;
     }
     if (s1->arg == 'noop') {
-        cm_SendSetField(p->netId, 0x1c8, 4, 0x2000000, 0);
+        cm_SendSetField(p->netId, 0x1c8, 4, AI_CHF_STAMMTISCH, 0);
         return 0x35;
     }
     return 0;
@@ -9911,7 +9912,7 @@ int ai_RegisterBaseActions(int a)
     strcpy(act.name, "Stammtisch");
     act.eval = ai_EvalMoodWeights;
     act.decide = ai_DecideStammtisch;
-    act.exec = ai_Unk49fb80;
+    act.exec = ai_ExecuteStammtisch;
     act.flags = 0x19;
     if (!am_RegisterMethod(&act, a))
         return 0;
