@@ -1872,7 +1872,7 @@ found:
 /* 0x4aa580, decide callback: p (money >= 1) picks a character within 0..63 units that 0x553db0 / 0x570ea0
    accept, with fewer than 4 (0x553db0's count, by chance), into m (kind 7) */
 
-int ai_Unk4aa580(AIPER *p, int c, unsigned char *m)
+int ai_PickPamphletTarget(AIPER *p, int c, unsigned char *m)
 {
     int k;
     int flags;

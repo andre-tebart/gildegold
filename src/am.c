@@ -7255,25 +7255,20 @@ int ai_Unk49d050(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2
         return ai_EvalGuiltWeights(a, b, i, (AIPER *)p, &d);
     return ai_EvalMoodWeights(a, b, i, (AIPER *)p, 0, o1, o2);
 }
-/* 0x49d0f0, decide callback 0x29: as 0x28 (house first), then what 0x4aa580 finds; flag 0x100 of +0x1e8
-   makes it rare */
+/* 0x49d0f0, decide callback 0x29 "Pamphlete": as 0x28 (house first), then the character
+   ai_PickPamphletTarget finds; flag 0x100 of flags1e8 makes it rare (1 in 4) */
 
-int ai_Unk49d0f0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
+int ai_DecidePamphlets(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 {
-    unsigned char *h;
     AIARG s1;
     AIARG s2;
     AIARG t1;
     AIARG t2;
     int r;
 
-    if (f != 0)
-        return 0;
-    if ((*(int *)((char *)p + 0x1e8) & 0x100) && util_RandomU(4) != 0)
-        return 0;
-    h = *(unsigned char **)((char *)p + 0x170);
-    if (h == 0) {
-        if (((unsigned char *)p)[2] != 3) {
+    if (f == 0 && (!(p->flags1e8 & 0x100) || util_RandomU(4) == 0)) {
+        if (p->bld2 == 0 && p->kind != 3) {
+            /* no house: get one first */
             s1.arg = 1;
             s1.kind = 5;
             s1.ref = 4;
@@ -7281,38 +7276,39 @@ int ai_Unk49d0f0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             s2.ref = 0;
             s2.arg = 0;
             r = ai_ChooseSubAction(0x28, p->id, 1, &s1, &s2);
-            goto done;
+        } else {
+            if (p->kind == 3) {
+                /* kind 3 only with flag 4 */
+                if (!(p->flags1e8 & 4))
+                    return 0;
+            } else if (gm_Query(p->bld2->objList, 2, 6, 0, 0x15) == 0) {
+                /* a house without the good 0x15: buy it for the house */
+                s1.kind = 2;
+                s1.ref = 0x15;
+                s1.arg = 1;
+                s1.fvalue = 0.44f;
+                s2.kind = 4;
+                s2.ref = p->bld2->id;
+                s2.arg = 1;
+                r = ai_ChooseSubAction(0x29, p->id, 1, &s1, &s2);
+                goto done;
+            }
+            memset(&t1, 0, sizeof(t1));
+            memset(&t2, 0, sizeof(t2));
+            if (ai_PickPamphletTarget(p, &t1, &t2) == 0)
+                return 0;
+            *o1 = t1;
+            *o2 = t2;
+            return 0x29;
         }
-    } else if (((unsigned char *)p)[2] != 3) {
-        if (gm_Query(*(int *)(h + 0x5d), 2, 6, 0, 0x15) == 0) {
-            s1.kind = 2;
-            s1.ref = 0x15;
-            s1.arg = 1;
-            s1.fvalue = 0.44f;
-            s2.kind = 4;
-            s2.ref = *(int *)(h + 1);
-            s2.arg = 1;
-            r = ai_ChooseSubAction(0x29, p->id, 1, &s1, &s2);
-            goto done;
-        }
-        goto find;
-    }
-    if (!(((unsigned char *)p)[0x1e8] & 4))
-        return 0;
-find:
-    memset(&t1, 0, sizeof(t1));
-    memset(&t2, 0, sizeof(t2));
-    if (ai_Unk4aa580(p, &t1, &t2) == 0)
-        return 0;
-    *o1 = t1;
-    *o2 = t2;
-    return 0x29;
 done:
-    if (r == 0)
-        return r;
-    *o1 = s1;
-    *o2 = s2;
-    return r;
+        if (r != 0) {
+            *o1 = s1;
+            *o2 = s2;
+            return r;
+        }
+    }
+    return 0;
 }
 /* 0x49d280, execute callback 0x29: sets flag 0x100 of +0x1e8 */
 
@@ -9747,7 +9743,7 @@ int ai_RegisterBaseActions(int a)
     act.id = 0x29;
     strcpy(act.name, "Pamphlete");
     act.eval = ai_Unk49d050;
-    act.decide = ai_Unk49d0f0;
+    act.decide = ai_DecidePamphlets;
     act.exec = ai_Unk49d280;
     act.flags = 0x5d;
     if (!am_RegisterMethod(&act, a))
