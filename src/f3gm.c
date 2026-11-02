@@ -25,6 +25,8 @@
    gfx.h hmt.h hst.h rt.h unk_458810.h unk_4b39f0.h; held by own declarations that differ from the owner's:
    d2_Objs, gm_MinutesBetween, gm_ClockSeason, gm_CompareTime; calls whose argument count differs from the
    definition (read the original's pushes): gm_Liking.
+   Open: data: gm_KindObjCount (0x76fdc4) is defined '= 0' as D5 asks, but gm_BuildKindObjects is byte-identical
+   only with a tentative definition (or none in this TU): its definition form / owner is unsettled.
    unit of rea 8cef7d5b (src/game/f3gm.c); boundaries in decl/text.dcl */
 struct CHARACTER;
 struct CHTRANSPORT;

@@ -3006,16 +3006,16 @@ exe	0x00500080	gm_FreeObjectExtra	f3gm	byte	draft
 exe	0x005000c0	gm_RemoveOwned	f3gm	shape	draft		
 exe	0x00500140	gm_FreeList	f3gm	byte	draft		
 exe	0x00500190	gm_CreateObject	f3gm	draft	readable	deep	
-exe	0x00500970	gm_AddObjekt	f3gm	draft	draft		
-exe	0x00500a40	gm_TakeObjekt	f3gm	draft	draft		
-exe	0x00500ae0	gm_AddNegative	f3gm	draft	draft		
-exe	0x00500b90	gm_BuildKindObjects	f3gm	draft	draft		
-exe	0x00500c20	gm_CollectOffers	f3gm	draft	draft		
+exe	0x00500970	gm_AddObjekt	f3gm	byte	readable		
+exe	0x00500a40	gm_TakeObjekt	f3gm	byte	readable		
+exe	0x00500ae0	gm_AddNegative	f3gm	byte	readable		
+exe	0x00500b90	gm_BuildKindObjects	f3gm	draft	readable	deep	
+exe	0x00500c20	gm_CollectOffers	f3gm	draft	readable	deep	
 exe	0x00500ec0	gm_FindMarketObject	f3gm	shape	draft		
 exe	0x00501000	gm_FindPlayerBuilding	f3gm	byte	draft		
-exe	0x00501030	gm_BuildNext	f3gm	draft	draft		
-exe	0x00501190	gm_BuildQuery	f3gm	draft	draft		
-exe	0x005012b0	gm_FindFreeBuilding	f3gm	draft	readable		
+exe	0x00501030	gm_BuildNext	f3gm	draft	readable	deep	
+exe	0x00501190	gm_BuildQuery	f3gm	draft	readable	deep	
+exe	0x005012b0	gm_FindFreeBuilding	f3gm	byte	readable		
 exe	0x005012e0	gm_FreeBuilding	f3gm	draft	draft		
 exe	0x00501400	gm_StockBuildingObjects	f3gm	draft	draft		
 exe	0x005014b0	gm_SetCapacities	f3gm	draft	draft		
