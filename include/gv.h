@@ -397,7 +397,7 @@ void sv_PumpNet();                    /* 0x52fe00 */
 extern unsigned short ai_PlayerId;     /* 0x6f25b8 */
 
 int gv_RetireCrimesOf(int p, int n);        /* 0x4f3a30 */
-int unk_Unk4f3b40(int p, int n, int *ids);  /* 0x4f3b40 */
+int gv_RetireCrimeIds(int p, int n, int *ids);  /* 0x4f3b40 */
 
 int gv_RankRecordOwners(int *ids, int *cnt, unsigned short t);/* 0x4f3c50 */
 

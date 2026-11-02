@@ -3726,69 +3726,49 @@ int gv_RetireCrimesOf(int culprit, int n)
     }
     return cnt;
 }
-/* 0x4f3b40, as 0x4f3a30 for the n record ids listed in ids[] (the records that exist in 0x91f700); returns how many were retired */
+/* 0x4f3b40, as gv_RetireCrimesOf for the n crimes whose ids are listed in ids[] (those that exist in ai_Crimes); returns
+   how many were retired */
 
-int unk_Unk4f3b40(int p, int n, int *ids)
+int gv_RetireCrimeIds(int culprit, int n, int *ids)
 {
-    int cnt, m, i, k, j, id, t;
-    char *c;
-    int flag[8];
-    int *who[8];
-    char *q;
-    int *r;
+    int cnt, i, k, e, j, m, id;
+    short *c;
+    int told[8];
+    ORDCHAR *who[8];
 
     cnt = 0;
-    i = 0;
-    c = gm_FindChar(p);
+    c = gm_FindChar(culprit);
     m = 0;
     if (c != 0) {
-        q = &ai_Chars[0][2];
-        do {
-            if (m > 7)
+        for (i = 0; i < 0x300; i++) {
+            if (m >= 8)
                 break;
-            if ((*q == 6 || *q == 7) && *(int *)(q + 2) != p) {
-                flag[m] = 0;
-                who[m] = (int *)(q - 2);
+            if ((ORD_CHARS[i].kind == 6 || ORD_CHARS[i].kind == 7) && ORD_CHARS[i].netId != culprit) {
+                told[m] = 0;
+                who[m] = &ORD_CHARS[i];
                 m++;
             }
-            q += 0x21c;
-        } while ((int)q < (unsigned)((unsigned)ai_Chars + 0x65402));
+        }
     }
-    if (n >= 1) {
-        do {
-            id = ids[i];
-            r = (int *)gv_Graveyard;
-            while (*r != id) {
-                r = (int *)((char *)r + 0x2d);
-                if ((int)r > ((unsigned)&ai_Unk91f716 + 0x59e9))
-                    goto next;
-            }
-            k = 0;
-            do {
-                j = 0;
-                if (m > 0) {
-                    t = *(int *)(unk_Tab91b6e0 + k);
-                    do {
-                        if (t == who[j][1] && *(int *)(unk_Tab91b6e0 + 4 + k) == id)
-                            flag[j] = 1;
-                        j++;
-                    } while (j < m);
+    for (i = 0; i < n; i++) {
+        id = ids[i];
+        for (k = 0; k < 0x200; k++) {
+            if (gv_CrimesT[k].id == id) {
+                for (e = 0; e < 0x800; e++) {
+                    for (j = 0; j < m; j++) {
+                        if (ai_Evidence[e][0] == who[j]->netId && ai_Evidence[e][1] == id)
+                            told[j] = 1;
+                    }
                 }
-                k += 8;
-            } while (k < 0x4000);
-            cm_SendRetireCrime(id, 1);
-            cnt++;
-        next:
-            i++;
-        } while (i < n);
+                cm_SendRetireCrime(id, 1);
+                cnt++;
+                break;
+            }
+        }
     }
-    i = 0;
-    if (m > 0) {
-        do {
-            if (flag[i] != 0)
-                ai_ShowEvidenceVoidNews(who[i], c);
-            i++;
-        } while (i < m);
+    for (i = 0; i < m; i++) {
+        if (told[i] != 0)
+            ai_ShowEvidenceVoidNews((int)who[i], (unsigned short *)c);
     }
     return cnt;
 }

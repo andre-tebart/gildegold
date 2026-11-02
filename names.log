@@ -696,3 +696,4 @@
 2026-11-02T05:01:15 0x004f3910 func unk_Unk4f3910 -> gv_HandOverCrimes by:main why:message 0x3c (ai_Unk4cb210): with hand set, the crimes the owner holds evidence of (ai_Evidence) that are open (CRIME.state 1) against the culprit get the state (handed over); without, every crime in that state goes back to open (1); returns the count
 2026-11-02T05:04:10 0x004f39e0 func unk_Unk4f39e0 -> gv_CulpritGuilt by:main why:sums AIDEC.+0xc of the laws broken by c's open crimes; the indulgence window (ai_IndulgenceWindow) prices with it
 2026-11-02T05:04:52 0x004f3a30 func unk_Unk4f3a30 -> gv_RetireCrimesOf by:main why:retires up to n open crimes of the culprit via cm_SendRetireCrime and tells the evidence holders
+2026-11-02T05:05:18 0x004f3b40 data unk_Unk4f3b40 -> gv_RetireCrimeIds by:main why:as gv_RetireCrimesOf for a list of crime ids (cm_SendRetireCrime each)
