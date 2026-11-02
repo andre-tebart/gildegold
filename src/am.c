@@ -5321,9 +5321,21 @@ int ai_Unk499290(AIPER *p, AIARG *s1, AIARG *s2)
     }
     return 0;
 }
-/* 0x499400, decide: find a good to sell (action 0x15) */
+/* 0x499400, decide callback of "Betrieb upgraden (Credits)" (0x15): picks one of the character's businesses
+   (ai_PickActionBuilding, building kinds of the 64 bit mask 0x1a07d7bb0) that can make a good it does not hold yet
+   (ai_FindGoodToMake) and chooses the sub-action 0x15 for it (s1: the good, s2: its cart or the building)
+   @deep read whole against the original: conditions, the ai_PickActionBuilding mask (lo 0xa07d7bb0, hi 1)
+   and arguments, gm_FindById into y, ai_FindGoodToMake, s1/s2 fields and the sub-action call are equal (96
+   vs 101 instructions). Left is constant materialisation: the original keeps the constant 1 in ebx for the
+   whole function (mov ebx,1 / mov ecx,ebx for the mask's high half, s1.arg / s2.arg = ebx, s2.kind = bl,
+   push ebx for ai_ChooseSubAction: one more saved register, the +4 arg offsets) and stores the two fvalue
+   0.44 through the FPU (fld [0x5ecef0] / fst s1.fvalue before the branch / fstp s2.fvalue after it) where
+   ours writes immediates. Tried: a __int64 literal for the mask (89 differing, worse), a float local for
+   the weight, s2.fvalue = s1.fvalue, a chained s1.fvalue = s2.fvalue = 0.44f (all 65, VC6 propagates
+   them). Needs a variant round on how the 1 / 0.44 are spelled (an inline setter, a variable VC6 does not
+   propagate). */
 
-int ai_Unk499400(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
+int ai_DecideUpgradeBusiness(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
 {
     AIARG s1, s2;
     AIBLD *y;
@@ -9473,7 +9485,7 @@ int ai_RegisterBaseActions(int a)
     act.id = 0x15;
     strcpy(act.name, "Betrieb upgraden (Credits)");
     act.eval = ai_EvalMoodWeights;
-    act.decide = ai_Unk499400;
+    act.decide = ai_DecideUpgradeBusiness;
     act.exec = sv_ReturnZero;
     act.flags = 0x3;
     if (!am_RegisterMethod(&act, a))

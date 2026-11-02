@@ -309,7 +309,7 @@ int ai_DecideBuyBuilding(int a, AIPER *p, int b, AIARG *o1, AIARG *o2);         
 int ai_DecideBuildResidence(int a, struct AIPER *p, int f, struct AIARG *o1, struct AIARG *o2);                 /* 0x4984d0 */
 int ai_Unk498c70(int a, AIPER *p, int b, AIARG *o1, AIARG *o2);                 /* 0x498c70 */
 int ai_Unk499290(AIPER *p, AIARG *s1, AIARG *s2);                               /* 0x499290 */
-int ai_Unk499400(int a, AIPER *p, int b, AIARG *o1, AIARG *o2);                 /* 0x499400 */
+int ai_DecideUpgradeBusiness(int a, AIPER *p, int b, AIARG *o1, AIARG *o2);                 /* 0x499400 */
 int ai_Unk499520(int a, AIPER *p, int b, AIARG *o1, AIARG *o2);                 /* 0x499520 */
 int ai_Unk499580(AIPER *p, AIARG *s1, AIARG *s2);                               /* 0x499580 */
 int ai_Unk4995d0(float *a, float *b, int i, AIPER *p, int f, AIARG *o1, AIARG *o2); /* 0x4995d0 */
