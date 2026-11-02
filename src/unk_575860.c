@@ -700,7 +700,7 @@ int ai_TutorialRunning = 0;  /* 0x6f2660, the tutorial's state machine advances 
 int ai_ShotDirty = 0;  /* 0x6f2664, set when ai_ShotTableStore stored a record, cleared by the scene (ai_CannonShotResults) */
 char *ai_DragPicked = 0;  /* 0x6f266c, the picked object (ai_PickedObject) the tooltip was last opened for, 0 = none */
 int ai_DragCutscene = 0;  /* 0x6f2670, 1 while the tooltip view holds d2_CutsceneActive set */
-int ai_ScreenshotCount = 0;  /* 0x6f2674, the number of the next screenshot (gamedata/screenshots/gilde%04i.bmp, ai_Screenshot) */
+int ai_ScreenshotCount = 0;  /* 0x6f2674, the number of the next screenshot (gamedata/screenshots/gilde%04i.bmp, ai_SaveScreenshot) */
 AIBOOKMARK ai_Bookmarks[11] = { 0 };  /* 0x6f5ec0, the function-key building bookmarks (ai_BookmarksInit sets the keys F1 .. F11) */
 SHOTRESULT ai_ShotTable[3] = { 0 };  /* 0x6f9f60, the cannon scene's shot results (the callback ai_ShotTableStore fills it, ai_ShotTableReset resets it) */
 
@@ -10787,29 +10787,26 @@ int ai_LoadBookmarks(int fh)
 
 void * mem_Alloc(int size, char *tag); char dd_Lock(void); void d2_Convert16ToRgb(); void dd_Unlock(); unsigned char bmp_Save24(char *path, int w, int h, unsigned char *data); void mem_Free(void *p);
 
-/* 0x589bc0, a screenshot to disk (198 B): 0x52e330 (0x631090) and the pump 0x5309a0 (0, U_I (0x760638)); the
-   name 0x62aa58 with the counter 0x6f2674 (incremented) in 0x5de652; the image 0x4223c0 (the screen 0xfb9072 *
-   0xfb9070 * 3, 0x62aa4c), 0x41dec0 (), 0x478c50 (0, 0, 0xfb9072, 0xfb9070, U_I (0x1463590), 0, 0, the image),
-   0x41e050 (), 0x401b90 (the name, 0xfb9072, 0xfb9070, the image), 0x422620 (the image) and 0x52e330
-   (U_I (0x144adb4)) */
-void ai_Unk589bc0(void)
+/* 0x589bc0, takes a screenshot (198 B): clears the status line and draws a frame (sv_RunFrame with no handler),
+   then copies the screen surface (dd_Lock, d2_Convert16ToRgb) into a 24-bit image and saves it as
+   gamedata/screenshots/gilde%04i.bmp with the next number of ai_ScreenshotCount; the status line text 0x42fd */
+void ai_SaveScreenshot(void)
 {
-    char name[0x40];
-    char *img;
+    char name[0x80];
+    unsigned char *img;
     int n;
 
-    sv_SetStatusText((char *)(unsigned)&ch_EmptyName);
-    sv_RunFrame(0, U_I((unsigned)&sv_FrameMask));
-    n = ai_ScreenshotCount;
-    ai_ScreenshotCount = n + 1;
-    sprintf(name, (char *)(unsigned)&full_data_62aa58, n);
-    img = (char *)mem_Alloc(*(short *)(unsigned)&d2_ScreenW * *(short *)(unsigned)&d2_ScreenH * 3, (char *)(unsigned)&full_data_62aa4c);
+    sv_SetStatusText(ch_EmptyName);
+    sv_RunFrame(0, sv_FrameMask);
+    n = ai_ScreenshotCount++;
+    sprintf(name, "gamedata/screenshots/gilde%04i.bmp", n);
+    img = (unsigned char *)mem_Alloc(d2_ScreenW * d2_ScreenH * 3, "f3_sv_t:d");
     dd_Lock();
-    d2_Convert16ToRgb(0, 0, *(short *)(unsigned)&d2_ScreenW, *(short *)(unsigned)&d2_ScreenH, U_I((unsigned)&dd_Surface), 0, 0, img);
+    d2_Convert16ToRgb(0, 0, d2_ScreenW, d2_ScreenH, dd_Surface, 0, 0, img);
     dd_Unlock();
-    bmp_Save24(name, *(short *)(unsigned)&d2_ScreenW, *(short *)(unsigned)&d2_ScreenH, img);
+    bmp_Save24(name, d2_ScreenW, d2_ScreenH, img);
     mem_Free(img);
-    sv_SetStatusText((char *)U_I((unsigned)&full_data_144adb4));
+    sv_SetStatusText(txt_Ptrs[0x42fd]);
 }
 /* 0x589c90, the slot keys each frame (86 B): U_B (0x1468410) set and U_I (0x75e8c0) not 1; the key 0x58 ->
    0x589670 (); 0x5894d0 (); each slot 0x6f5ec0 + i * 0xc up to 0x6f5f44 whose byte 0 is the key, with
@@ -10856,7 +10853,7 @@ void ai_SpeedKeys(void)
     if (U_I((unsigned)&sv_PanelFlag) == 1)
         return;
     if (key == 0x1f) {
-        ai_Unk589bc0();
+        ai_SaveScreenshot();
         key = *(unsigned char *)(unsigned)&kb_Last;
     }
     if (key == 0x10 && U_I((unsigned)&d2_FocusedInput) == 0 && (U_I((unsigned)&sv_FrameMask) & 0x10000) == 0) {
