@@ -4,7 +4,7 @@ exe	0x00401040	util_BaseName	bio	byte	readable
 exe	0x00401090	file_Exists	bio	byte	readable		
 exe	0x004010b0	util_ReadLine	bio	byte	readable		
 exe	0x00401180	bio_rd_c	bio	byte	readable		
-exe	0x004011a0	bio_rd_s	bio	draft	readable	deep	
+exe	0x004011a0	bio_rd_s	bio	shape	readable	deep	
 exe	0x004011d0	bio_rd_i	bio	byte	readable		
 exe	0x004011f0	bio_wr_c	bio	byte	readable		
 exe	0x00401210	bio_wr_s	bio	byte	readable		
@@ -53,7 +53,7 @@ exe	0x00403c10	ch_StopAnim	ch	byte	readable
 exe	0x00403d60	ch_ReleaseMorph	ch	byte	draft		
 exe	0x00403dc0	ch_CheckAniMorph	ch	draft	draft	deep	
 exe	0x00404200	ch_PreloadAnims	ch	byte	readable		
-exe	0x00404360	ch_LoadLowAnims	ch	draft	readable	deep	
+exe	0x00404360	ch_LoadLowAnims	ch	shape	readable	deep	
 exe	0x004044a0	ch_AttachAni	ch	draft	readable	deep	
 exe	0x00404640	ch_ActAnim	ch	byte	draft		
 exe	0x00404760	ch_GetFreeQueueEntry	ch	byte	draft		
@@ -376,7 +376,7 @@ exe	0x0041be00	dd_Exit	dd_vesa	byte	readable
 exe	0x0041bf80	dd_EnumDriverCallback	dd_vesa	byte	readable		
 exe	0x0041c080	d3d_GetDeviceInfo	dd_vesa	byte	readable		
 exe	0x0041c420	dd_BppToDDBD	dd_vesa	byte	readable		
-exe	0x0041c460	d3d_EnumDeviceCallback	dd_vesa	draft	readable	deep	
+exe	0x0041c460	d3d_EnumDeviceCallback	dd_vesa	shape	readable	deep	
 exe	0x0041c6f0	dd_GuidToString	dd_vesa	byte	readable		
 exe	0x0041c760	dd_StringToGuid	dd_vesa	byte	draft		byte+readable -> byte+draft at f274727: Q6: the description came from a foreign declaration copy or a file name only (decompanion 399f0a8); the definition has none
 exe	0x0041c830	dd_DlgProc	dd_vesa	byte	readable		
@@ -526,7 +526,7 @@ exe	0x004273c0	sb_IsInit	sblib	byte	draft		byte+readable -> byte+draft at f27472
 exe	0x004273d0	evt_Error	evt	byte	readable		
 exe	0x00427570	evt_AddGlobal	evt	byte	readable		
 exe	0x004276a0	evt_AddLocal	evt	byte	readable		
-exe	0x004277c0	evt_DeclareLocal	evt	draft	readable	deep	
+exe	0x004277c0	evt_DeclareLocal	evt	shape	readable	deep	
 exe	0x004278d0	evt_FindVar	evt	byte	readable		
 exe	0x00427a20	evt_FindInclude	evt	byte	readable		
 exe	0x00427a90	evt_FindFunc	evt	byte	readable		
@@ -690,7 +690,7 @@ exe	0x00432530	d3path_Tangents	d3_anim	byte	readable
 exe	0x00432750	d3anim_StepObject	d3_anim	draft	draft	deep	
 exe	0x00433b10	d3anim_FreePath	d3_anim	byte	draft	deep	
 exe	0x00433b50	d3path_Init	d3_anim	shape	readable	deep	
-exe	0x00433d70	d3anim_CreatePath	d3_anim	draft	draft	deep	
+exe	0x00433d70	d3anim_CreatePath	d3_anim	shape	draft	deep	
 exe	0x00433f40	d3_FindAnim	d3_anim	byte	readable		
 exe	0x00433f80	d3anim_CreateMorphAnim	d3_anim	draft	readable	deep	
 exe	0x00434a80	d3anim_GetSize	d3_anim	byte	readable		
@@ -762,7 +762,7 @@ exe	0x0043c670	d3_FreeObjectData	d3_engine	byte	readable
 exe	0x0043c7a0	d3_DisposeObject	d3_engine	byte	readable		
 exe	0x0043ca20	d3_LinkTop	d3_engine	byte	readable		
 exe	0x0043cab0	d3_UnlinkTop	d3_engine	byte	readable		
-exe	0x0043cb20	d3_AppendSibling	d3_engine	draft	readable	deep	
+exe	0x0043cb20	d3_AppendSibling	d3_engine	shape	readable	deep	
 exe	0x0043cb80	d3_AddChild	d3_engine	byte	draft		byte+readable -> byte+draft at f274727: Q6: the description came from a foreign declaration copy or a file name only (decompanion 399f0a8); the definition has none
 exe	0x0043cbe0	d3_SetCamera	d3_engine	byte	readable		
 exe	0x0043cc10	d3_AllocObjectPolys	d3_engine	byte	readable		
@@ -840,7 +840,7 @@ exe	0x00442ed0	d3fl_UpdateWater	d3_fl	shape	readable
 exe	0x004430c0	d3fl_DrawWater	d3_fl	draft	readable	deep	
 exe	0x004437f0	d3fl_UpdateTiles	d3_fl	draft	readable	deep	
 exe	0x004439e0	d3fl_Draw	d3_fl	draft	draft	deep	
-exe	0x00446180	d3fl_Prerender	d3_fl	draft	draft	deep	
+exe	0x00446180	d3fl_Prerender	d3_fl	shape	draft	deep	
 exe	0x004463b0	map_Pick	d3_fl	draft	readable	deep	
 exe	0x00446750	map_PickScreen	d3_fl	draft	readable	deep	
 exe	0x00446910	map_Region	d3_fl	byte	readable		
@@ -1098,7 +1098,7 @@ exe	0x0045db40	d3sm_GetGround	d3_sm	byte	readable
 exe	0x0045dc00	d3sm_Sample	d3_sm	draft	readable	deep	
 exe	0x0045e180	d3sm_BoundsCB	d3_sm	byte	readable		
 exe	0x0045e210	d3sm_ShadowCB	d3_sm	draft	readable	deep	
-exe	0x0045e560	d3sm_Replace	d3_sm	draft	readable	deep	
+exe	0x0045e560	d3sm_Replace	d3_sm	shape	readable	deep	
 exe	0x0045e620	d3sm_Build	d3_sm	draft	draft	deep	
 exe	0x0045eeb0	d3sm_Create	d3_sm	byte	readable		
 exe	0x0045ef60	d3sm_Destroy	d3_sm	byte	readable		
@@ -1124,7 +1124,7 @@ exe	0x0045fe10	ts_AddColor	ts_texture	byte	readable
 exe	0x0045ff70	ts_GetHiColTab	ts_texture	byte	readable		
 exe	0x00460130	ts_AllocSlot	ts_texture	byte	readable		
 exe	0x004601b0	tex_AddRef	ts_texture	byte	draft		byte+readable -> byte+draft at f274727: Q6: the description came from a foreign declaration copy or a file name only (decompanion 399f0a8); the definition has none
-exe	0x00460220	ts_LoadSoft	ts_texture	draft	readable	deep	
+exe	0x00460220	ts_LoadSoft	ts_texture	shape	readable	deep	
 exe	0x00460380	ts_LoadAnim	ts_texture	byte	readable		
 exe	0x004605c0	tex_Load	ts_texture	byte	draft		
 exe	0x00460aa0	tex_GetParams	ts_texture	byte	readable		
@@ -1256,8 +1256,8 @@ exe	0x0046bd30	d2_ListCopyItem	d2	byte	readable
 exe	0x0046bdd0	d2_SetSliderFlags	d2	byte	readable		
 exe	0x0046be00	d2_CreateSlider	d2	byte	readable		
 exe	0x0046bf10	d2_WinCreateSlider	d2	byte	readable		
-exe	0x0046bf60	d2_DrawButton	d2	draft	readable	deep	
-exe	0x0046c1d0	d2_CenterObj	d2	draft	readable	deep	
+exe	0x0046bf60	d2_DrawButton	d2	shape	readable	deep	
+exe	0x0046c1d0	d2_CenterObj	d2	shape	readable	deep	
 exe	0x0046c260	d2_SetObjWidth	d2	byte	readable		
 exe	0x0046c290	d2_OpenRaw	d2	byte	readable		
 exe	0x0046c390	d2_WinOpenRaw	d2	byte	readable		
@@ -1383,7 +1383,7 @@ exe	0x00478960	d2_SetColour	gfx	byte	readable
 exe	0x00478980	d2_GetBmpSize	gfx	byte	readable		
 exe	0x00478a00	d2_ReadBmpPixels	gfx	draft	readable	deep	
 exe	0x00478b50	d2_LoadBmpSurface	gfx	byte	readable		
-exe	0x00478bd0	d2_ConvertRgbTo16	gfx	draft	readable	deep	
+exe	0x00478bd0	d2_ConvertRgbTo16	gfx	shape	readable	deep	
 exe	0x00478c50	d2_Convert16ToRgb	gfx	draft	readable	deep	
 exe	0x00478cc0	d2_MakeSurface	gfx	draft	readable	deep	
 exe	0x00478fc0	d2_FreeSurface	gfx	byte	readable		
@@ -1738,7 +1738,7 @@ exe	0x004a49a0	ai_EvalMoodWeights	am	draft	readable	deep
 exe	0x004a4ae0	ai_EvalCurrentNeed	am	byte	readable		
 exe	0x004a4c10	ai_EvalGuiltWeights	am	draft	readable	deep	
 exe	0x004a4e30	ai_RepairCost	am	byte	readable		
-exe	0x004a4e70	ai_PickBuildSite	am	draft	readable	deep	
+exe	0x004a4e70	ai_PickBuildSite	am	shape	readable	deep	
 exe	0x004a5140	ai_CanBuildType	am	byte	readable		
 exe	0x004a5320	ai_ExecBuildBuilding	am	draft	readable	deep	
 exe	0x004a5540	ai_FindGoodToMake	am	draft	readable	deep	
@@ -1747,7 +1747,7 @@ exe	0x004a58d0	ai_PickPartnerChain	am	shape	readable
 exe	0x004a5a30	ai_PickPartnerInRange	am	byte	readable		
 exe	0x004a5b50	ai_FindPartnersRandomWalk	am	byte	readable		
 exe	0x004a5d30	ai_PickPartnerRandomWalk	am	draft	readable	deep	
-exe	0x004a5ef0	ai_FindCandidates	am	draft	readable	deep	
+exe	0x004a5ef0	ai_FindCandidates	am	shape	readable	deep	
 exe	0x004a61d0	ai_PickPartnerChainLevel	am	byte	readable		
 exe	0x004a63f0	ai_PickActionBuilding	am	draft	readable	deep	
 exe	0x004a6570	ai_PickActionBuildings	am	draft	readable	deep	
@@ -1814,7 +1814,7 @@ exe	0x004aaef0	ai_FindDarkCornerTarget	unk_4a7140	byte	draft
 exe	0x004aafb0	ai_ExecMessage74	unk_4a7140	byte	readable		
 exe	0x004ab080	ai_DecideBuyDunkleEcke	unk_4a7140	byte	readable		
 exe	0x004ab2c0	ai_ExecBuyDunkleEcke	unk_4a7140	byte	readable		
-exe	0x004ab3e0	ai_DecideBlutrache	unk_4a7140	draft	readable	deep	
+exe	0x004ab3e0	ai_DecideBlutrache	unk_4a7140	shape	readable	deep	
 exe	0x004ab6b0	ai_ExecBlutrache	unk_4a7140	byte	readable		
 exe	0x004ab7f0	ai_Unk4ab7f0	unk_4a7140	byte	draft		
 exe	0x004ab9f0	ai_Unk4ab9f0	unk_4a7140	byte	draft		
@@ -1826,7 +1826,7 @@ exe	0x004abed0	ai_RegisterSocialActions	unk_4a7140	byte	draft
 exe	0x004ac140	hmt_RecordCount	hmt	byte	readable		
 exe	0x004ac150	hmt_RandomRecord	hmt	byte	readable		
 exe	0x004ac170	hmt_RandomTextOffset	hmt	draft	readable	deep	
-exe	0x004ac1a0	hmt_RecordTextId	hmt	draft	readable	deep	
+exe	0x004ac1a0	hmt_RecordTextId	hmt	shape	readable	deep	
 exe	0x004ac1e0	hmt_GetRecord	hmt	byte	readable		
 exe	0x004ac200	hmt_GetPrice	hmt	byte	readable		
 exe	0x004ac2f0	hmt_ApplyRecord	hmt	byte	readable		
@@ -1847,7 +1847,7 @@ exe	0x004ad3e0	hmt_Score	hmt	shape	draft	deep
 exe	0x004ad510	hmt_ClearOffices	hmt	shape	readable	deep	
 exe	0x004ad580	hmt_Unk4ad580	hmt	draft	draft	deep	
 exe	0x004ad7a0	hmt_Unk4ad7a0	hmt	draft	draft	deep	
-exe	0x004ada80	hmt_Load	hmt	draft	readable	deep	
+exe	0x004ada80	hmt_Load	hmt	shape	readable	deep	
 exe	0x004adb20	hmt_Save	hmt	byte	readable		
 exe	0x004adbb0	hmt_Create	hmt	draft	draft	deep	
 exe	0x004ade60	hmt_NextEvent	hmt	byte	readable		
@@ -1881,7 +1881,7 @@ exe	0x004aff30	ai_Unk4aff30	hst	shape	draft
 exe	0x004affc0	ai_CommandFire	hst	byte	draft	deep	
 exe	0x004b0050	ai_CommandTornado	hst	byte	draft	deep	
 exe	0x004b00e0	ai_CommandCityTreasury	hst	shape	draft	deep	
-exe	0x004b02a0	ai_CommandWealthTax	hst	draft	readable	deep	
+exe	0x004b02a0	ai_CommandWealthTax	hst	shape	readable	deep	
 exe	0x004b0360	ai_CommandWealth	hst	byte	readable		
 exe	0x004b04a0	ai_CommandOfficeStanding	hst	byte	readable		
 exe	0x004b05e0	ai_CommandKillPlayer	hst	byte	readable		
@@ -1927,7 +1927,7 @@ exe	0x004b3a90	ai_RestartMission	unk_4b39f0	byte	draft
 exe	0x004b3ae0	ai_GetMissionType	unk_4b39f0	byte	readable		
 exe	0x004b3b10	ai_HasMission	unk_4b39f0	byte	readable		
 exe	0x004b3b40	ai_CountMissionTypes	unk_4b39f0	byte	readable		
-exe	0x004b3b70	ai_FindMissionType	unk_4b39f0	draft	readable	deep	
+exe	0x004b3b70	ai_FindMissionType	unk_4b39f0	shape	readable	deep	
 exe	0x004b3bd0	ai_Unk4b3bd0	unk_4b39f0	byte	draft		
 exe	0x004b3c10	ai_NewRandomMission	unk_4b39f0	byte	readable		
 exe	0x004b3c40	ai_RandomMissionType	unk_4b39f0	byte	readable		
@@ -1966,8 +1966,8 @@ exe	0x004b51f0	ai_CharBuildingShare	unk_4b39f0	byte	draft
 exe	0x004b5270	ai_PlayerShare	unk_4b39f0	byte	draft		
 exe	0x004b5310	ai_ShowMissions	unk_4b39f0	byte	readable		
 exe	0x004b5360	ai_MissionInfoDialog	unk_4b39f0	byte	draft		
-exe	0x004b5460	ai_MissionSuccessDialog	unk_4b39f0	draft	readable	deep	
-exe	0x004b58b0	ai_MissionEndDialog	unk_4b39f0	draft	readable	deep	
+exe	0x004b5460	ai_MissionSuccessDialog	unk_4b39f0	shape	readable	deep	
+exe	0x004b58b0	ai_MissionEndDialog	unk_4b39f0	shape	readable	deep	
 exe	0x004b5950	ai_QuitGame	unk_4b39f0	byte	readable		
 exe	0x004b5970	ai_MissionCompleteDialog	unk_4b39f0	draft	readable	deep	
 exe	0x004b5c20	ai_MissionNextDialog	unk_4b39f0	byte	readable		
@@ -2094,7 +2094,7 @@ exe	0x004bdb30	rt_Unk4bdb30	rt	draft	draft	deep
 exe	0x004bdc90	rt_MarkValue	rt	byte	readable		
 exe	0x004bdca0	rt_ReadMarkValues	rt	byte	readable		
 exe	0x004bdcd0	rt_Unk4bdcd0	rt	draft	draft	deep	
-exe	0x004be180	rt_Unk4be180	rt	draft	draft	deep	
+exe	0x004be180	rt_Unk4be180	rt	shape	draft	deep	
 exe	0x004be3b0	rt_Unk4be3b0	rt	draft	draft	deep	
 exe	0x004be790	rt_Unk4be790	rt	draft	draft	deep	
 exe	0x004be8e0	rt_RemoveControls	rt	byte	readable		
@@ -2144,7 +2144,7 @@ exe	0x004c3560	ai_ResetMessages	cm	draft	draft
 exe	0x004c3600	ai_Unk4c3600	cm	byte	draft		
 exe	0x004c3630	ai_Unk4c3630	cm	byte	draft		
 exe	0x004c3680	cm_FlushSendQueue	cm	draft	draft		
-exe	0x004c3720	ai_Unk4c3720	cm	draft	draft		
+exe	0x004c3720	ai_Unk4c3720	cm	shape	draft		
 exe	0x004c3850	ai_Unk4c3850	cm	draft	draft		
 exe	0x004c38e0	ai_Unk4c38e0	cm	draft	draft		
 exe	0x004c39c0	ai_Unk4c39c0	cm	draft	draft		
@@ -2241,8 +2241,8 @@ exe	0x004c5aa0	cm_SendChat	cm	byte	draft
 exe	0x004c5ae0	cm_RequestCreateGeb	cm	draft	draft		
 exe	0x004c5b90	ai_Unk4c5b90	cm	byte	draft		
 exe	0x004c5bc0	ai_Unk4c5bc0	cm	byte	draft		
-exe	0x004c5c40	ai_Unk4c5c40	cm	draft	draft		
-exe	0x004c5ca0	ai_Unk4c5ca0	cm	draft	draft		
+exe	0x004c5c40	ai_Unk4c5c40	cm	shape	draft		
+exe	0x004c5ca0	ai_Unk4c5ca0	cm	shape	draft		
 exe	0x004c5d00	ai_Unk4c5d00	cm	byte	draft		
 exe	0x004c5d40	cm_SendScriptMessage	cm	byte	draft		
 exe	0x004c5d80	cm_SendTableRequest	cm	byte	draft		
@@ -2268,14 +2268,14 @@ exe	0x004c62a0	ai_Unk4c62a0	cm	shape	draft
 exe	0x004c6320	ai_Unk4c6320	cm	byte	draft		
 exe	0x004c6350	ai_Unk4c6350	cm	byte	draft		
 exe	0x004c63e0	ai_Unk4c63e0	cm	shape	draft		
-exe	0x004c65b0	ai_Unk4c65b0	cm	draft	draft		
+exe	0x004c65b0	ai_Unk4c65b0	cm	shape	draft		
 exe	0x004c66c0	ai_Unk4c66c0	cm	shape	draft		
 exe	0x004c6750	ai_Unk4c6750	cm	byte	draft		
 exe	0x004c6780	ai_Unk4c6780	cm	byte	draft		
 exe	0x004c67a0	ai_Unk4c67a0	cm	byte	draft		
 exe	0x004c67c0	ai_Unk4c67c0	cm	byte	draft		
 exe	0x004c6870	ai_Unk4c6870	cm	draft	draft		
-exe	0x004c69c0	ai_Unk4c69c0	cm	draft	draft		
+exe	0x004c69c0	ai_Unk4c69c0	cm	shape	draft		
 exe	0x004c6a20	ai_Unk4c6a20	cm	byte	draft		
 exe	0x004c6a50	ai_Unk4c6a50	cm	byte	draft		
 exe	0x004c6a60	ai_Unk4c6a60	cm	byte	draft		
@@ -2341,7 +2341,7 @@ exe	0x004cb7f0	ai_Unk4cb7f0	cm	byte	draft
 exe	0x004cb850	ai_Unk4cb850	cm	byte	draft		
 exe	0x004cb890	ai_Unk4cb890	cm	byte	draft		
 exe	0x004cb8d0	ai_Unk4cb8d0	cm	byte	draft		
-exe	0x004cb910	ai_Unk4cb910	cm	draft	draft		
+exe	0x004cb910	ai_Unk4cb910	cm	shape	draft		
 exe	0x004cb940	ai_Unk4cb940	cm	byte	draft		
 exe	0x004cb9b0	ai_Unk4cb9b0	cm	byte	draft		
 exe	0x004cba10	ai_Unk4cba10	cm	draft	draft		
@@ -2349,8 +2349,8 @@ exe	0x004cbb90	ai_Unk4cbb90	cm	byte	draft
 exe	0x004cbbd0	ai_Unk4cbbd0	cm	draft	draft		
 exe	0x004cbca0	ai_Unk4cbca0	cm	draft	draft		
 exe	0x004cbff0	ai_Unk4cbff0	cm	byte	draft		
-exe	0x004cc050	ai_Unk4cc050	cm	draft	draft		
-exe	0x004cc110	ai_Unk4cc110	cm	draft	draft		
+exe	0x004cc050	ai_Unk4cc050	cm	shape	draft		
+exe	0x004cc110	ai_Unk4cc110	cm	shape	draft		
 exe	0x004cc1b0	ai_Unk4cc1b0	cm	draft	draft		
 exe	0x004cc270	ai_Unk4cc270	cm	draft	draft		
 exe	0x004cc330	ai_Unk4cc330	cm	byte	draft		
@@ -2363,8 +2363,8 @@ exe	0x004cc920	ai_Unk4cc920	cm	byte	draft
 exe	0x004cc980	ai_Unk4cc980	cm	byte	draft		
 exe	0x004cca10	ai_Unk4cca10	cm	byte	draft		
 exe	0x004ccaa0	ai_Unk4ccaa0	cm	byte	draft		
-exe	0x004ccb10	ai_Unk4ccb10	cm	draft	draft		
-exe	0x004ccbd0	ai_Unk4ccbd0	cm	draft	draft		
+exe	0x004ccb10	ai_Unk4ccb10	cm	shape	draft		
+exe	0x004ccbd0	ai_Unk4ccbd0	cm	shape	draft		
 exe	0x004ccc20	ai_Unk4ccc20	cm	draft	draft		
 exe	0x004ccce0	ai_Unk4ccce0	cm	byte	draft		
 exe	0x004cce00	ai_Unk4cce00	cm	byte	draft		
@@ -2381,17 +2381,17 @@ exe	0x004cd2f0	ai_Unk4cd2f0	cm	byte	draft
 exe	0x004cd350	ai_Unk4cd350	cm	byte	draft		
 exe	0x004cd380	ai_Unk4cd380	cm	byte	draft		
 exe	0x004cd3c0	ai_Unk4cd3c0	cm	draft	draft		
-exe	0x004cd480	ai_Unk4cd480	cm	draft	draft		
+exe	0x004cd480	ai_Unk4cd480	cm	shape	draft		
 exe	0x004cd4c0	ai_Unk4cd4c0	cm	byte	draft		
 exe	0x004cd500	cm_LobbyClearChat	cm	byte	draft		
-exe	0x004cd510	cm_LobbyAllReady	cm	draft	draft		
+exe	0x004cd510	cm_LobbyAllReady	cm	shape	draft		
 exe	0x004cd580	ai_Unk4cd580	cm	byte	draft		
 exe	0x004cd5d0	cm_LobbyPlayerList	cm	byte	draft		
 exe	0x004cd5e0	cm_LobbyFindPlayer	cm	byte	draft		
 exe	0x004cd5f0	cm_LobbyMyPlayer	cm	byte	draft		
 exe	0x004cd600	cm_LobbyState	cm	byte	draft		
 exe	0x004cd610	cm_LobbyRequestList	cm	byte	draft		
-exe	0x004cd650	cm_LobbySetReady	cm	draft	draft		
+exe	0x004cd650	cm_LobbySetReady	cm	shape	draft		
 exe	0x004cd6a0	cm_LobbyLeave	cm	byte	draft		
 exe	0x004cd6e0	cm_LobbySendChat	cm	shape	draft		
 exe	0x004cd760	cm_LobbyJoin	cm	byte	draft		
@@ -2420,7 +2420,7 @@ exe	0x004ce300	ai_Unk4ce300	cm	draft	draft
 exe	0x004ce5d0	ai_Unk4ce5d0	cm	draft	draft		
 exe	0x004ce830	ai_Unk4ce830	cm	draft	draft		
 exe	0x004ceb70	ai_Unk4ceb70	cm	byte	draft		
-exe	0x004ceb80	ai_Unk4ceb80	cm	draft	draft		
+exe	0x004ceb80	ai_Unk4ceb80	cm	shape	draft		
 exe	0x004cec00	ai_Unk4cec00	cm	byte	draft		
 exe	0x004cec30	ai_Unk4cec30	cm	draft	draft		
 exe	0x004ced80	ai_Unk4ced80	cm	byte	draft		
@@ -2482,7 +2482,7 @@ exe	0x004d3ae0	ai_Unk4d3ae0	cm	shape	draft
 exe	0x004d3b30	ai_Unk4d3b30	cm	draft	draft		
 exe	0x004d3d10	ai_Unk4d3d10	cm	byte	draft		
 exe	0x004d3ea0	ai_Unk4d3ea0	cm	byte	draft		
-exe	0x004d4050	ai_Unk4d4050	cm	draft	draft		
+exe	0x004d4050	ai_Unk4d4050	cm	shape	draft		
 exe	0x004d4090	ai_Unk4d4090	cm	shape	draft		
 exe	0x004d4340	ai_Unk4d4340	cm	byte	draft		
 exe	0x004d4540	ai_Unk4d4540	cm	draft	draft		
@@ -2557,7 +2557,7 @@ exe	0x004e2d40	ai_Unk4e2d40	cm	byte	draft
 exe	0x004e2d90	ai_Unk4e2d90	cm	byte	draft		
 exe	0x004e2dc0	ai_Unk4e2dc0	cm	byte	draft		
 exe	0x004e2e00	ai_Unk4e2e00	cm	draft	draft		
-exe	0x004e2e60	ai_Unk4e2e60	cm	draft	draft		
+exe	0x004e2e60	ai_Unk4e2e60	cm	shape	draft		
 exe	0x004e3060	ai_Unk4e3060	cm	byte	draft		
 exe	0x004e30c0	ai_Unk4e30c0	cm	shape	draft		
 exe	0x004e3210	ai_Unk4e3210	cm	byte	draft		
@@ -2608,7 +2608,7 @@ exe	0x004e53e0	ai_Unk4e53e0	cm	byte	draft
 exe	0x004e5470	ai_Unk4e5470	cm	draft	draft		
 exe	0x004e5730	ai_Unk4e5730	cm	byte	draft		
 exe	0x004e5770	ai_Unk4e5770	cm	byte	draft		
-exe	0x004e58e0	ai_Unk4e58e0	cm	draft	draft		
+exe	0x004e58e0	ai_Unk4e58e0	cm	shape	draft		
 exe	0x004e5980	ai_Unk4e5980	cm	byte	draft		
 exe	0x004e5a40	ai_Unk4e5a40	cm	byte	draft		
 exe	0x004e5a90	ai_Unk4e5a90	cm	byte	draft		
@@ -2621,7 +2621,7 @@ exe	0x004e6030	amt_FindOffice	amt	draft	readable	deep
 exe	0x004e60b0	amt_GetOfficeRate	amt	byte	readable		
 exe	0x004e6180	amt_ApplyForOffice	amt	draft	readable	deep	
 exe	0x004e6360	amt_CheckApplication	amt	byte	readable		
-exe	0x004e6430	amt_AcceptApplication	amt	draft	readable	deep	
+exe	0x004e6430	amt_AcceptApplication	amt	shape	readable	deep	
 exe	0x004e65e0	amt_SendOfficeFree	amt	byte	readable		
 exe	0x004e6600	amt_SendOfficeCandidates	amt	byte	readable		
 exe	0x004e6650	amt_SendOfficeOwner	amt	byte	readable		
@@ -2669,7 +2669,7 @@ exe	0x004e9400	amt_HasTownObject	amt	byte	readable
 exe	0x004e94a0	amt_MayorBonusStep	amt	byte	draft		
 exe	0x004e94e0	amt_CanUseMayorPower2	amt	byte	readable		
 exe	0x004e95a0	amt_CanUseMayorPower3	amt	byte	readable		
-exe	0x004e9660	amt_ExecutePriceMessage	amt	draft	readable	deep	
+exe	0x004e9660	amt_ExecutePriceMessage	amt	shape	readable	deep	
 exe	0x004e9a00	amt_ExecuteShareMessage	amt	byte	readable		
 exe	0x004e9ce0	amt_ExecuteMayorPowerMessage	amt	draft	readable	deep	
 exe	0x004ea550	amt_ChangeDistrictOpinion	amt	byte	readable		
@@ -2712,12 +2712,12 @@ exe	0x004ec320	ahm_StepValue	ahm	draft	readable	deep
 exe	0x004ec3d0	ahm_ObjectValue	ahm	byte	readable		
 exe	0x004ec490	ahm_SendCreateAlchemist	ahm	byte	readable		
 exe	0x004ec500	ahm_CreateAlchemist	ahm	draft	draft	deep	
-exe	0x004ec940	ahm_SendSetShare	ahm	draft	readable	deep	
+exe	0x004ec940	ahm_SendSetShare	ahm	shape	readable	deep	
 exe	0x004eca00	ahm_SetShare	ahm	byte	readable		
 exe	0x004ecaa0	ahm_SendAddPlace	ahm	byte	readable		
 exe	0x004ecb30	ahm_AddPlace	ahm	byte	readable		
 exe	0x004ecbc0	ahm_RemovePlace	ahm	byte	readable		
-exe	0x004ecc30	ahm_SendSetPlaceValue	ahm	draft	readable	deep	
+exe	0x004ecc30	ahm_SendSetPlaceValue	ahm	shape	readable	deep	
 exe	0x004ecd10	ahm_SetPlaceValue	ahm	byte	readable		
 exe	0x004ecd50	ahm_SendAddValue	ahm	byte	readable		
 exe	0x004ecdb0	ahm_AddValue	ahm	draft	readable	deep	
@@ -2764,7 +2764,7 @@ exe	0x004ef780	gv_EntryHasId	gv	byte	readable
 exe	0x004ef7c0	gv_FindEntry	gv	byte	readable		
 exe	0x004ef900	gv_LoadGraveyard	gv	byte	readable		
 exe	0x004ef930	gv_RandomGrave	gv	byte	readable		
-exe	0x004ef9c0	gv_BuryNewDead	gv	draft	readable	deep	
+exe	0x004ef9c0	gv_BuryNewDead	gv	shape	readable	deep	
 exe	0x004efc10	gv_AllocGraveyard	gv	draft	readable	deep	
 exe	0x004eff50	gv_GrowGraveyard	gv	draft	readable	deep	
 exe	0x004f0180	gv_FreeGraveyard	gv	byte	readable		
@@ -2825,7 +2825,7 @@ exe	0x004f39b0	gv_CountOwnedGraves	gv	byte	draft
 exe	0x004f39e0	gv_CulpritGuilt	gv	byte	readable		
 exe	0x004f3a30	gv_RetireCrimesOf	gv	byte	readable		
 exe	0x004f3b40	gv_RetireCrimeIds	gv	byte	readable		
-exe	0x004f3c50	gv_RankCulprits	gv	draft	readable	deep	
+exe	0x004f3c50	gv_RankCulprits	gv	shape	readable	deep	
 exe	0x004f3dd0	gv_RankCulpritsAll	gv	shape	readable	deep	
 exe	0x004f3fe0	gv_HeldCrimesOf	gv	byte	readable		
 exe	0x004f4080	gv_HeldCrimeIdsOf	gv	byte	readable		
@@ -2839,8 +2839,8 @@ exe	0x004f48f0	unk_Unk4f48f0	gv	byte	draft
 exe	0x004f4970	gv_CheckRankUp	gv	shape	readable		
 exe	0x004f4d10	unk_Unk4f4d10	gv	byte	draft		
 exe	0x004f4d30	gv_EvidencePrice	gv	byte	readable		
-exe	0x004f4e20	ord_ApplyForOffice	ord	draft	readable	deep	
-exe	0x004f4f20	ord_LevelOrder	ord	draft	readable	deep	
+exe	0x004f4e20	ord_ApplyForOffice	ord	shape	readable	deep	
+exe	0x004f4f20	ord_LevelOrder	ord	shape	readable	deep	
 exe	0x004f4ff0	ord_EspionageResultOrder	ord	byte	readable		
 exe	0x004f5070	unk_Unk4f5070	ord	byte	draft		
 exe	0x004f50f0	ord_SpyTargetOrder	ord	byte	readable		
@@ -2930,9 +2930,9 @@ exe	0x004fa060	gm_IncomeKind2	f3gm	shape	draft
 exe	0x004fa160	gm_IncomeKind3	f3gm	shape	readable		
 exe	0x004fa2a0	gm_IncomeKind4	f3gm	byte	readable		
 exe	0x004fa3d0	gm_IncomeKind5	f3gm	shape	draft		
-exe	0x004fa4b0	gm_CharacterIncomes	f3gm	draft	readable	deep	
+exe	0x004fa4b0	gm_CharacterIncomes	f3gm	shape	readable	deep	
 exe	0x004fa580	gm_CharacterUpkeep	f3gm	shape	readable		
-exe	0x004fa700	gm_CharacterWages	f3gm	draft	readable	deep	
+exe	0x004fa700	gm_CharacterWages	f3gm	shape	readable	deep	
 exe	0x004fa9b0	unk_Unk4fa9b0	f3gm	byte	draft		
 exe	0x004faa00	gm_UpdateWorthMood	f3gm	byte	readable		
 exe	0x004fabe0	gm_EndDayIncomes	f3gm	draft	readable	deep	
@@ -2980,7 +2980,7 @@ exe	0x004fe350	gm_ClockSeason	f3gm	byte	readable
 exe	0x004fe370	gm_InitBuildingTables	f3gm	draft	readable	deep	
 exe	0x004fe570	gm_LoadTables	f3gm	draft	readable	deep	
 exe	0x004fe7f0	gm_ClearBuildings	f3gm	byte	readable		
-exe	0x004fe830	gm_ClearObjects	f3gm	draft	readable	deep	
+exe	0x004fe830	gm_ClearObjects	f3gm	shape	readable	deep	
 exe	0x004fe900	gm_FindObjectProto	f3gm	shape	readable		
 exe	0x004fe940	gm_IsBuildingKind	f3gm	byte	readable		
 exe	0x004fe980	gm_FindObjectInst	f3gm	byte	draft		
@@ -3064,12 +3064,12 @@ exe	0x005049e0	gm_ClassTreasury	f3gm	byte	readable
 exe	0x00504a80	gm_PlayerSeat	f3gm	byte	draft		
 exe	0x00504ad0	gm_TitleGroup	f3gm	byte	readable		
 exe	0x00504c00	gm_TitleJobGroup	f3gm	draft	readable		
-exe	0x00504ce0	gm_TitlesLeft	f3gm	draft	readable		
+exe	0x00504ce0	gm_TitlesLeft	f3gm	shape	readable		
 exe	0x00504e00	gm_SkillPoints	f3gm	byte	readable		
 exe	0x00504e20	gm_Mix	f3gm	shape	readable		
 exe	0x00504e80	gm_Mix2	f3gm	shape	readable		
 exe	0x00504ec0	gm_GetSkill	f3gm	draft	draft		
-exe	0x005051d0	gm_Unk5051d0	f3gm	draft	draft		
+exe	0x005051d0	gm_Unk5051d0	f3gm	shape	draft		
 exe	0x00505230	gm_Unk505230	f3gm	draft	draft		
 exe	0x00505440	gm_Unk505440	f3gm	draft	draft		
 exe	0x005054f0	gm_Unk5054f0	f3gm	draft	draft		
@@ -3081,7 +3081,7 @@ exe	0x00505be0	gm_ShuffledBytes	f3gm	draft	readable
 exe	0x00505ca0	gm_Shuffled	f3gm	draft	readable		
 exe	0x00505d30	gm_Shuffle	f3gm	byte	readable		
 exe	0x00505da0	gm_RandomAge	f3gm	draft	readable		
-exe	0x00505df0	gm_FindChar	f3gm	draft	readable		
+exe	0x00505df0	gm_FindChar	f3gm	shape	readable		
 exe	0x00505e30	gm_CharAge	f3gm	byte	draft		
 exe	0x00505e60	gm_CharLevel	f3gm	draft	draft		
 exe	0x00505f30	gm_CharPrevLevel	f3gm	draft	draft		
@@ -3089,7 +3089,7 @@ exe	0x00506000	gm_BirthDate	f3gm	draft	draft
 exe	0x005060d0	gm_BirthDate2	f3gm	draft	draft		
 exe	0x00506180	gm_Unk506180	f3gm	draft	draft		
 exe	0x00506430	gm_PlayerRecord	f3gm	draft	draft		
-exe	0x00506480	gm_Unk506480	f3gm	draft	draft		
+exe	0x00506480	gm_Unk506480	f3gm	shape	draft		
 exe	0x005064d0	gm_Unk5064d0	f3gm	draft	draft		
 exe	0x00506890	gm_Unk506890	f3gm	draft	draft		
 exe	0x00506e70	gm_Unk506e70	f3gm	draft	draft		
@@ -3101,7 +3101,7 @@ exe	0x00508620	gm_Unk508620	f3gm	byte	draft
 exe	0x00508640	gm_Unk508640	f3gm	byte	draft		
 exe	0x00508660	gm_SumSlotAmounts	f3gm	byte	draft		
 exe	0x005086b0	gm_ObjectValue	f3gm	draft	draft		
-exe	0x00508740	gm_JobWage	f3gm	draft	readable		
+exe	0x00508740	gm_JobWage	f3gm	shape	readable		
 exe	0x005087f0	gm_ItemPrice	f3gm	draft	draft		
 exe	0x005089c0	gm_GoodsPrice	f3gm	byte	draft		
 exe	0x00508a20	gm_HealthFactor	f3gm	byte	readable		
@@ -3111,7 +3111,7 @@ exe	0x00508d70	gm_BuildingLevel	f3gm	byte	draft
 exe	0x00508d80	gm_BuildingBalance	f3gm	draft	draft		
 exe	0x00509060	gm_Unk509060	f3gm	byte	draft		
 exe	0x005090b0	gm_BuildingRank	f3gm	draft	readable		
-exe	0x00509120	gm_Unk509120	f3gm	draft	draft		
+exe	0x00509120	gm_Unk509120	f3gm	shape	draft		
 exe	0x005091a0	gm_Unk5091a0	f3gm	draft	draft		
 exe	0x005092e0	gm_BuildingSkill	f3gm	draft	draft		
 exe	0x005093a0	gm_Unk5093a0	f3gm	byte	draft		
@@ -3127,7 +3127,7 @@ exe	0x00509e30	gm_SumListAmounts	f3gm	byte	draft
 exe	0x00509e60	gm_GetGoodsValue	f3gm	byte	draft		
 exe	0x00509eb0	gm_Unk509eb0	f3gm	byte	draft		
 exe	0x00509ee0	gm_CharCurrency	f3gm	draft	draft		
-exe	0x00509f20	gm_Unk509f20	f3gm	draft	draft		
+exe	0x00509f20	gm_Unk509f20	f3gm	shape	draft		
 exe	0x00509f80	gm_Unk509f80	f3gm	draft	draft		
 exe	0x00509ff0	gm_ObjectOwnerChar	f3gm	byte	draft		
 exe	0x0050a050	gm_ObjectBuildingOwner	f3gm	byte	draft		
@@ -3144,7 +3144,7 @@ exe	0x0050a970	gm_Unk50a970	f3gm	draft	draft
 exe	0x0050aa00	gm_StallGoodsList	f3gm	draft	draft		
 exe	0x0050aaf0	gm_ListAmount	f3gm	byte	draft		
 exe	0x0050ab20	gm_ListAmountById	f3gm	byte	draft		
-exe	0x0050ab50	gm_ListStock	f3gm	draft	draft		
+exe	0x0050ab50	gm_ListStock	f3gm	shape	draft		
 exe	0x0050ab80	gm_FreeCapacity	f3gm	draft	draft		
 exe	0x0050acf0	gm_Unk50acf0	f3gm	draft	draft		
 exe	0x0050ad70	gm_Unk50ad70	f3gm	draft	draft		
@@ -3169,7 +3169,7 @@ exe	0x0050ca50	gm_Unk50ca50	f3gm	byte	draft
 exe	0x0050cad0	gm_ChangeBuildingState	f3gm	draft	draft		
 exe	0x0050cc50	gm_SendMoneyDelta	f3gm	byte	readable		
 exe	0x0050cc60	gm_ResetStock	f3gm	byte	draft		
-exe	0x0050ccd0	gm_Unk50ccd0	f3gm	draft	draft		
+exe	0x0050ccd0	gm_Unk50ccd0	f3gm	shape	draft		
 exe	0x0050cd40	gm_Unk50cd40	f3gm	byte	draft		
 exe	0x0050cdc0	gm_StaffFactor	f3gm	draft	draft		
 exe	0x0050cf60	gm_BathObjectCount	f3gm	byte	draft		
@@ -3190,12 +3190,12 @@ exe	0x0050dba0	init_BuildingKindName	f3init	draft	readable	deep
 exe	0x0050dc30	init_LoadBuildingScene	f3init	draft	readable	deep	
 exe	0x0050e0d0	init_StartNewGame	f3init	draft	readable	deep	
 exe	0x0050e330	init_CreateOpponents	f3init	draft	draft	deep	
-exe	0x0050e5a0	init_PlaceOffices	f3init	draft	readable	deep	shape+readable -> draft+readable at 6520924: promote --accept-falls
+exe	0x0050e5a0	init_PlaceOffices	f3init	shape	readable	deep	
 exe	0x0050e690	init_CreateStartCharacters	f3init	draft	readable	deep	
 exe	0x0050f0b0	init_CreateOpeningObjects	f3init	byte	readable		
 exe	0x0050f340	init_StockMarketStalls	f3init	draft	readable	deep	
 exe	0x0050f570	init_Betrieb	f3init	draft	readable	deep	
-exe	0x0050f750	init_OpenBuilding	f3init	draft	readable	deep	
+exe	0x0050f750	init_OpenBuilding	f3init	shape	readable	deep	
 exe	0x0050f910	init_OpenTown	f3init	draft	readable	deep	
 exe	0x00510730	init_CollectSiteObject	f3init	byte	readable		
 exe	0x00510770	init_LoadSiteScene	f3init	shape	draft		shape+readable -> shape+draft at f274727: Q6: the description came from a foreign declaration copy or a file name only (decompanion 399f0a8); the definition has none
@@ -3259,7 +3259,7 @@ exe	0x0051ad30	ls_ActionIndex	ls	byte	readable
 exe	0x0051ad60	ls_ActionAt	ls	byte	readable		
 exe	0x0051ad80	unk_Unk51ad80	ls	draft	draft	deep	
 exe	0x0051aff0	ls_WriteSceneRecords	ls	draft	draft	deep	
-exe	0x0051b340	ls_WritePlayerSlots	ls	draft	readable	deep	
+exe	0x0051b340	ls_WritePlayerSlots	ls	shape	readable	deep	
 exe	0x0051b890	ls_WriteRelations	ls	shape	readable		
 exe	0x0051b910	ls_WriteStatistics	ls	draft	draft	deep	
 exe	0x0051bdb0	ls_WriteAvatars	ls	byte	readable		
@@ -3280,7 +3280,7 @@ exe	0x0051db00	ls_ReadPlayerRecords	ls	draft	draft	deep
 exe	0x0051de70	ls_ReadCharacters	ls	draft	draft	deep	
 exe	0x0051e750	ls_ReadCharacter	ls	shape	readable		
 exe	0x0051e900	ls_ReadSceneRecords	ls	draft	readable	deep	
-exe	0x0051f080	ls_ReadPlayerSlots	ls	draft	readable	deep	
+exe	0x0051f080	ls_ReadPlayerSlots	ls	shape	readable	deep	
 exe	0x0051f650	ls_ReadRelations	ls	shape	readable		
 exe	0x0051f720	ls_ReadStatistics	ls	byte	readable		
 exe	0x0051fb80	ls_ReadAvatars	ls	byte	readable		
@@ -3305,7 +3305,7 @@ exe	0x00521410	sv_MessageBoxGreen	sv	draft	draft	deep
 exe	0x005216a0	sv_MessageBoxYesNo	sv	draft	draft	deep	
 exe	0x00521900	sv_OpenMessageBox	sv	byte	readable		
 exe	0x00521960	sv_SelectPanelObject	sv	draft	readable	deep	
-exe	0x00521ba0	sv_DrawPanelPointer	sv	draft	readable	deep	
+exe	0x00521ba0	sv_DrawPanelPointer	sv	shape	readable	deep	
 exe	0x00521c10	sv_SceneLoadProgress	sv	shape	draft		
 exe	0x00521e70	sv_BuildScreenLayout	sv	shape	draft		
 exe	0x00522040	sv_PanelImage	sv	byte	readable		
@@ -3318,7 +3318,7 @@ exe	0x00522ec0	sv_SetResearchClass	sv	byte	readable
 exe	0x00522f10	sv_UpdateCityPanel	sv	draft	draft	deep	
 exe	0x00524010	sv_RedrawScreen	sv	byte	draft		
 exe	0x00524100	sv_AddGroupMember	sv	byte	readable		
-exe	0x00524160	sv_RemoveGroupMember	sv	draft	readable	deep	
+exe	0x00524160	sv_RemoveGroupMember	sv	shape	readable	deep	
 exe	0x005241b0	sv_UsedGroupSlots	sv	byte	readable		
 exe	0x005241d0	sv_CountGroupMembers	sv	byte	draft		
 exe	0x00524260	sv_MoveToGroup	sv	draft	readable	deep	
@@ -3392,7 +3392,7 @@ exe	0x0052e170	sv_ClearNamePlates	sv	byte	readable
 exe	0x0052e190	sv_ReleaseNamePlates	sv	byte	readable		
 exe	0x0052e1c0	sv_RegisterNamePlate	sv	byte	readable		
 exe	0x0052e330	sv_SetStatusText	sv	byte	readable		
-exe	0x0052e350	sv_ButtonRow	sv	draft	readable	deep	
+exe	0x0052e350	sv_ButtonRow	sv	shape	readable	deep	
 exe	0x0052e4b0	sv_TabButtonRow	sv	shape	readable	deep	
 exe	0x0052e600	sv_DisableVisibleWidgets	sv	shape	readable		
 exe	0x0052e6d0	sv_OpenWindowFrame	sv	byte	readable		
@@ -3519,7 +3519,7 @@ exe	0x0053ec10	he_ShowObjectInfos	he	byte	readable
 exe	0x0053ec40	he_Unk53ec40	he	byte	draft		
 exe	0x0053ed40	he_Unk53ed40	he	byte	draft		
 exe	0x0053ed70	he_Unk53ed70	he	byte	draft		
-exe	0x0053edf0	he_RunQuickList	he	draft	draft		
+exe	0x0053edf0	he_RunQuickList	he	shape	draft		
 exe	0x0053ee40	he_Unk53ee40	he	byte	draft		
 exe	0x0053eea0	he_Unk53eea0	he	draft	draft		
 exe	0x0053eec0	he_AddApEvent	he	draft	draft		
@@ -3581,12 +3581,12 @@ exe	0x005472d0	he_Unk5472d0	he	draft	draft
 exe	0x00547430	he_Unk547430	he	draft	draft		
 exe	0x00547750	he_Unk547750	he	draft	draft		
 exe	0x00547ba0	he_Unk547ba0	he	draft	draft		
-exe	0x00547ee0	he_Unk547ee0	he	draft	draft		
+exe	0x00547ee0	he_Unk547ee0	he	shape	draft		
 exe	0x00547f90	he_Unk547f90	he	draft	draft		
 exe	0x00548110	he_Unk548110	he	byte	draft		
 exe	0x00548230	he_Unk548230	he	draft	draft		
 exe	0x005482c0	he_Unk5482c0	he	byte	draft		
-exe	0x00548300	he_Unk548300	he	draft	draft		
+exe	0x00548300	he_Unk548300	he	shape	draft		
 exe	0x00548330	he_Unk548330	he	byte	draft		
 exe	0x00548380	he_Unk548380	he	byte	draft		
 exe	0x005483a0	he_Unk5483a0	he	byte	draft		
@@ -3660,12 +3660,12 @@ exe	0x005509f0	he_Unk5509f0	he	draft	draft
 exe	0x00550b60	he_Unk550b60	he	draft	draft		
 exe	0x00550ea0	he_Unk550ea0	he	byte	draft		
 exe	0x00550ee0	he_Unk550ee0	he	draft	draft		
-exe	0x005512c0	he_Unk5512c0	he	draft	draft		
+exe	0x005512c0	he_Unk5512c0	he	shape	draft		
 exe	0x00551340	he_Unk551340	he	draft	draft		
 exe	0x00551440	he_Unk551440	he	draft	draft		
 exe	0x005516a0	he_Unk5516a0	he	byte	draft		
 exe	0x00551780	he_Unk551780	he	draft	draft		
-exe	0x00551b70	he_Unk551b70	he	draft	draft		
+exe	0x00551b70	he_Unk551b70	he	shape	draft		
 exe	0x00551d00	he_Unk551d00	he	draft	draft		
 exe	0x00551d70	he_Unk551d70	he	draft	draft		
 exe	0x00552040	he_Unk552040	he	byte	draft		
@@ -3735,7 +3735,7 @@ exe	0x0055ba00	he_Unk55ba00	he	draft	draft
 exe	0x0055bad0	he_Unk55bad0	he	draft	draft		
 exe	0x0055bd20	he_Unk55bd20	he	byte	draft		
 exe	0x0055bd80	he_Unk55bd80	he	draft	draft		
-exe	0x0055bf50	he_Unk55bf50	he	draft	draft		
+exe	0x0055bf50	he_Unk55bf50	he	shape	draft		
 exe	0x0055bfd0	he_Unk55bfd0	he	draft	draft		
 exe	0x0055c540	he_Unk55c540	he	draft	draft		
 exe	0x0055c700	he_Unk55c700	he	draft	draft		
@@ -3834,13 +3834,13 @@ exe	0x0056cdd0	he_Unk56cdd0	he	byte	draft
 exe	0x0056ce40	he_Unk56ce40	he	draft	draft		
 exe	0x0056d050	ai_Unk56d050	he	byte	draft		
 exe	0x0056d220	ai_Unk56d220	he	byte	draft		
-exe	0x0056d2d0	he_Unk56d2d0	he	draft	draft		
+exe	0x0056d2d0	he_Unk56d2d0	he	shape	draft		
 exe	0x0056d3d0	he_Unk56d3d0	he	draft	draft		
 exe	0x0056d610	he_Unk56d610	he	draft	draft		
 exe	0x0056d730	he_Unk56d730	he	draft	draft		
 exe	0x0056d990	he_Unk56d990	he	draft	draft		
 exe	0x0056daa0	he_Unk56daa0	he	draft	draft		
-exe	0x0056dd20	he_Unk56dd20	he	draft	draft		
+exe	0x0056dd20	he_Unk56dd20	he	shape	draft		
 exe	0x0056ddc0	he_Unk56ddc0	he	draft	draft		
 exe	0x0056de10	he_Unk56de10	he	draft	draft		
 exe	0x0056e070	he_Unk56e070	he	draft	draft		
@@ -3853,7 +3853,7 @@ exe	0x0056f050	he_Unk56f050	he	byte	draft
 exe	0x0056f0b0	he_Unk56f0b0	he	draft	draft		
 exe	0x0056f170	he_Unk56f170	he	byte	draft		
 exe	0x0056f1b0	he_Unk56f1b0	he	byte	draft		
-exe	0x0056f260	he_Unk56f260	he	draft	draft		
+exe	0x0056f260	he_Unk56f260	he	shape	draft		
 exe	0x0056f2e0	he_Unk56f2e0	he	byte	draft		
 exe	0x0056f360	he_Unk56f360	he	byte	draft		
 exe	0x0056f3b0	he_NoEvent9bFor	he	byte	draft		
@@ -3872,7 +3872,7 @@ exe	0x00570bf0	he_Unk570bf0	he	byte	draft
 exe	0x00570c70	he_Unk570c70	he	byte	draft		
 exe	0x00570cc0	he_Unk570cc0	he	draft	draft		
 exe	0x00570ea0	he_Unk570ea0	he	byte	draft		
-exe	0x00570ef0	he_Unk570ef0	he	draft	draft		
+exe	0x00570ef0	he_Unk570ef0	he	shape	draft		
 exe	0x00571000	he_Unk571000	he	draft	draft		
 exe	0x00571550	he_Unk571550	he	draft	draft		
 exe	0x00571640	he_Unk571640	he	draft	draft		
@@ -3994,7 +3994,7 @@ exe	0x00577b90	ai_TutorialShowText2	unk_575860	byte	readable
 exe	0x00577c60	ai_TutorialHideText2	unk_575860	byte	draft		
 exe	0x00577cd0	ai_TutorialOpenProgress	unk_575860	byte	draft		
 exe	0x00577d60	ai_TutorialCloseProgress	unk_575860	byte	draft		
-exe	0x00577d90	ai_TutorialProgressSlider	unk_575860	draft	readable	deep	
+exe	0x00577d90	ai_TutorialProgressSlider	unk_575860	shape	readable	deep	
 exe	0x00577e50	ai_TutorialStepForm	unk_575860	draft	readable	deep	
 exe	0x005780e0	ai_TutorialStepClicked	unk_575860	byte	draft		
 exe	0x00578120	ai_Unk578120	unk_575860	byte	draft		
@@ -4013,7 +4013,7 @@ exe	0x0057b750	ai_TutorialInitMainOutro	unk_575860	byte	readable
 exe	0x0057b810	ai_TutorialBezier	unk_575860	shape	readable		
 exe	0x0057b8a0	ai_TutorialMarkerUpdate	unk_575860	shape	readable		
 exe	0x0057bc30	ai_SetupTutorialPlayer	unk_575860	shape	draft		
-exe	0x0057bce0	ai_TutorialWindow	unk_575860	draft	readable	deep	
+exe	0x0057bce0	ai_TutorialWindow	unk_575860	shape	readable	deep	
 exe	0x0057bf00	ai_AlchemistCandidates	unk_575860	draft	readable	deep	
 exe	0x0057c560	ai_AlchemistHire	unk_575860	byte	readable		
 exe	0x0057c690	ai_AlchemistResearchWindow	unk_575860	draft	readable	deep	
@@ -4021,7 +4021,7 @@ exe	0x0057cde0	ai_AlchemistSendRecipeResearch	unk_575860	draft	readable	deep
 exe	0x0057ced0	ai_AlchemistSendResearchStart	unk_575860	draft	readable	deep	
 exe	0x0057cf90	ai_AlchemistWindow	unk_575860	draft	readable	deep	
 exe	0x0057dc50	ai_AlchemistTrainShareWindow	unk_575860	draft	readable	deep	
-exe	0x0057de60	ai_AlchemistFundWindow	unk_575860	draft	readable	deep	
+exe	0x0057de60	ai_AlchemistFundWindow	unk_575860	shape	readable	deep	
 exe	0x0057e0e0	ai_AlchemistRescheduleWindow	unk_575860	byte	readable		
 exe	0x0057e230	ai_ShotTableStore	unk_575860	byte	readable		
 exe	0x0057e270	ai_CannonScene	unk_575860	draft	readable	deep	
@@ -4064,9 +4064,9 @@ exe	0x005847a0	ai_RentGraveSelect	unk_575860	byte	draft
 exe	0x00584900	ai_GraveCare	unk_575860	byte	readable		
 exe	0x00584b70	ai_GraveRaiseHelper	unk_575860	byte	readable		
 exe	0x00584d70	ai_GypsyHelperWindow	unk_575860	draft	draft	deep	
-exe	0x00585380	ai_GraveFogWindow	unk_575860	draft	readable	deep	
+exe	0x00585380	ai_GraveFogWindow	unk_575860	shape	readable	deep	
 exe	0x00585750	ai_SeanceWindow	unk_575860	byte	readable		
-exe	0x005859c0	ai_SeanceRitual	unk_575860	draft	readable	deep	
+exe	0x005859c0	ai_SeanceRitual	unk_575860	shape	readable	deep	
 exe	0x00585c40	ai_SeanceRollFormulas	unk_575860	byte	readable		
 exe	0x00585cb0	ai_SeanceGhost	unk_575860	byte	readable		
 exe	0x00585f30	ai_SeanceSacrifice	unk_575860	byte	readable		
@@ -4134,7 +4134,7 @@ exe	0x0058ee30	ai_Unk58ee30	unk_58bbd0	draft	draft	deep
 exe	0x0058f290	ai_Unk58f290	unk_58bbd0	draft	draft		
 exe	0x0058f510	ai_MarketContact	unk_58bbd0	byte	readable		
 exe	0x0058f620	ai_PumpFrames	unk_58bbd0	byte	readable		
-exe	0x0058f640	ai_BuildingName	unk_58bbd0	draft	readable	deep	
+exe	0x0058f640	ai_BuildingName	unk_58bbd0	shape	readable	deep	
 exe	0x0058f6a0	ai_BauplatzFilter	unk_58bbd0	draft	readable	deep	
 exe	0x0058f7a0	ai_FindBauplaetze	unk_58bbd0	draft	draft	deep	
 exe	0x0058f920	ai_VgFilter	unk_58bbd0	byte	readable		
@@ -4295,7 +4295,7 @@ exe	0x005a5120	ai_Unk5a5120	unk_58bbd0	draft	draft
 exe	0x005a53e0	ai_Unk5a53e0	unk_58bbd0	draft	draft		
 exe	0x005a5530	ai_Unk5a5530	unk_58bbd0	draft	draft		
 exe	0x005a5910	ai_Unk5a5910	unk_58bbd0	draft	draft		
-exe	0x005a5bc0	ai_Unk5a5bc0	unk_58bbd0	draft	draft		
+exe	0x005a5bc0	ai_Unk5a5bc0	unk_58bbd0	shape	draft		
 exe	0x005a5d70	ai_Unk5a5d70	unk_58bbd0	draft	draft		
 exe	0x005a5f60	ai_Unk5a5f60	unk_58bbd0	byte	draft		
 exe	0x005a5fd0	ai_Unk5a5fd0	unk_58bbd0	draft	draft		
@@ -4304,7 +4304,7 @@ exe	0x005a6270	ai_Unk5a6270	unk_58bbd0	draft	draft
 exe	0x005a6480	ai_Unk5a6480	unk_58bbd0	byte	draft		
 exe	0x005a64d0	ai_Unk5a64d0	unk_58bbd0	draft	draft		
 exe	0x005a6720	ai_Unk5a6720	unk_58bbd0	byte	draft		
-exe	0x005a67a0	ai_Unk5a67a0	unk_58bbd0	draft	draft		
+exe	0x005a67a0	ai_Unk5a67a0	unk_58bbd0	shape	draft		
 exe	0x005a6920	ai_Unk5a6920	unk_58bbd0	shape	draft		
 exe	0x005a6a90	ai_Unk5a6a90	unk_58bbd0	draft	draft		
 exe	0x005a6b50	ai_FormatCityName	unk_58bbd0	byte	readable		
@@ -4340,12 +4340,12 @@ exe	0x005a8d00	ai_Unk5a8d00	unk_58bbd0	byte	draft
 exe	0x005a8d40	ai_Unk5a8d40	unk_58bbd0	byte	draft		
 exe	0x005a8d80	ai_Unk5a8d80	unk_58bbd0	byte	draft		
 exe	0x005a8e10	ai_Unk5a8e10	unk_58bbd0	byte	draft		
-exe	0x005a8ee0	ai_Unk5a8ee0	unk_58bbd0	draft	draft		
-exe	0x005a8f90	ai_Unk5a8f90	unk_58bbd0	draft	draft		
-exe	0x005a9050	ai_Unk5a9050	unk_58bbd0	draft	draft		
+exe	0x005a8ee0	ai_Unk5a8ee0	unk_58bbd0	shape	draft		
+exe	0x005a8f90	ai_Unk5a8f90	unk_58bbd0	shape	draft		
+exe	0x005a9050	ai_Unk5a9050	unk_58bbd0	shape	draft		
 exe	0x005a9110	ai_ShowCharacterNews	unk_58bbd0	byte	draft		
 exe	0x005a9170	ai_Unk5a9170	unk_58bbd0	byte	draft		
-exe	0x005a91c0	ai_Unk5a91c0	unk_58bbd0	draft	draft		shape+draft -> draft+draft at 6520924: promote --accept-falls
+exe	0x005a91c0	ai_Unk5a91c0	unk_58bbd0	shape	draft		
 exe	0x005a9240	ai_Unk5a9240	unk_58bbd0	draft	draft		
 exe	0x005a92b0	ai_Unk5a92b0	unk_58bbd0	draft	draft		
 exe	0x005a9330	ai_SendSwapText	unk_58bbd0	byte	draft		
@@ -4664,6 +4664,6 @@ exe	0x005dc4a0	ai_StepShot	unk_5d33b0	draft	readable	deep
 exe	0x005dc9d0	ai_StepShotSlow	unk_5d33b0	draft	readable	deep	
 exe	0x005dcf00	ai_ShotHitsGround	unk_5d33b0	draft	readable	deep	
 exe	0x005dd090	ai_NormalizeEffectScale	unk_5d33b0	draft	readable	deep	
-exe	0x005dd100	ai_SolveCannonAim	unk_5d33b0	draft	readable	deep	
+exe	0x005dd100	ai_SolveCannonAim	unk_5d33b0	shape	readable	deep	
 exe	0x005de460	MSS_auto_cleanup	mss32lib	byte	readable		
 exe	0x005de470	mss_AutoCleanupExit	mss32lib	byte	readable		
