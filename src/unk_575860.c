@@ -584,11 +584,7 @@ extern struct D2OBJ *d2_Objs;
 extern int d2_Unkf8aac8;
 extern D2VIEW d2_Views[];
 extern int di_Absolute;
-extern GAPDATA full_data_62a8d0[];
-extern GAPDATA full_data_62a8d4[];
 extern int sv_HoverItem;  /* 0x6f22f0 (sv.c) */
-extern GAPDATA full_data_6f266c[];
-extern GAPDATA full_data_6f2670[];
 extern int gm_PlayerRecords[688];
 extern unsigned short ai_PlayerId;
 extern int d2_LastWindow;
@@ -709,11 +705,15 @@ typedef struct SHOTRESULT {     /* 0x38 bytes, three of them in ai_ShotTable: th
 int ai_TutorialChapterOn[5] = { 1, 1, 1, 1, 1 };  /* 0x62918c, per chapter 1 = played (the start window's check boxes, ai_TutorialWindow) */
 int (*ai_TutorialChapterInit[5])(void) = { ai_TutorialInitChapter1, ai_TutorialInitChapter2, ai_TutorialInitChapter3, ai_TutorialInitChapter4, ai_TutorialInitChapter5 };  /* 0x6291a0, the chapter chain builders the start appends for every chapter played */
 unsigned int ai_GraveChatterAt = 0xffffffff;  /* 0x62a538, ai_ClockMs at the last graveyard chatter tick (ai_GraveyardChatter runs every 0x1194 ms) */
+int ai_DragObj = -1;  /* 0x62a8d0, the right-held d2 object (d2_RightHeldObj) whose tooltip ai_DragWindow shows, -1 = none */
+int ai_DragViewWin = -1;  /* 0x62a8d4, the first window of the tooltip view ai_DragWindow (d2_Views[].wins[0]), -1 = none */
 int ai_TutorialBanks[6] = { 0 };  /* 0x6f2640, the voice banks of the main intro / outro and the chapters 1 .. 5 (snd_LoadVoiceBank), unloaded by the stop */
 TUTRUN *ai_TutorialRuns = 0;  /* 0x6f2658, the chain of the tutorial's run records (built by its start 0x578180, freed by its stop 0x578370) */
 int ai_TutorialOn = 0;  /* 0x6f265c, the tutorial runs (set by its start 0x578180, cleared by its end) */
 int ai_TutorialRunning = 0;  /* 0x6f2660, the tutorial's state machine advances (unk_SetEndGameGate / unk_ClearEndGameGate) */
 int ai_ShotDirty = 0;  /* 0x6f2664, set when ai_ShotTableStore stored a record, cleared by the scene (ai_CannonShotResults) */
+char *ai_DragPicked = 0;  /* 0x6f266c, the picked object (ai_PickedObject) the tooltip was last opened for, 0 = none */
+int ai_DragCutscene = 0;  /* 0x6f2670, 1 while the tooltip view holds d2_CutsceneActive set */
 SHOTRESULT ai_ShotTable[3] = { 0 };  /* 0x6f9f60, the cannon scene's shot results (the callback ai_ShotTableStore fills it, ai_ShotTableReset resets it) */
 
 #include "time_view.h"
@@ -9941,26 +9941,26 @@ void ai_HandleItemDrag(void)
     item = 0;
     sel = 0;
     ch = 0;
-    if ((src == (char *)-1 && U_I((unsigned)&full_data_62a8d0) != -1) ||
-        (U_I((unsigned)&full_data_6f266c) != 0 && U_I(((unsigned)&dm_L + 0x28)) == 0 && win != (char *)-1)) {
+    if ((src == (char *)-1 && ai_DragObj != -1) ||
+        (*(int *)&ai_DragPicked != 0 && U_I(((unsigned)&dm_L + 0x28)) == 0 && win != (char *)-1)) {
         d2_CloseView(win);
-        U_I((unsigned)&full_data_6f266c) = 0;
+        *(int *)&ai_DragPicked = 0;
         U_I((unsigned)&ai_DragWindow) = -1;
-        U_I((unsigned)&full_data_62a8d4) = -1;
-        U_I((unsigned)&full_data_62a8d0) = -1;
+        ai_DragViewWin = -1;
+        ai_DragObj = -1;
         ch = 0;
         U_I((unsigned)&di_Absolute) = 1;
         di_SetMousePos(*(short *)(unsigned)&d2_MouseX, *(short *)(unsigned)&d2_MouseY);
         src = *(char **)(unsigned)&d2_Unkf8aac8;
         win = *(char **)(unsigned)&ai_DragWindow;
     }
-    if (U_I((unsigned)&ai_PickedObject) != 0 && U_I((unsigned)&full_data_6f266c) != U_I((unsigned)&ai_PickedObject) && U_I(((unsigned)&dm_L + 0x28)) != 0) {
+    if (U_I((unsigned)&ai_PickedObject) != 0 && *(int *)&ai_DragPicked != U_I((unsigned)&ai_PickedObject) && U_I(((unsigned)&dm_L + 0x28)) != 0) {
         if (sv_HoverItem == 0 || *(unsigned short *)sv_HoverItem == 0)
             sel = (char *)U_I((unsigned)&ai_PickedObject);
-        U_I((unsigned)&full_data_6f266c) = U_I((unsigned)&ai_PickedObject);
-        U_I((unsigned)&full_data_62a8d0) = -1;
+        *(int *)&ai_DragPicked = U_I((unsigned)&ai_PickedObject);
+        ai_DragObj = -1;
     }
-    if (src != (char *)-1 && (char *)U_I((unsigned)&full_data_62a8d0) != src) {
+    if (src != (char *)-1 && (char *)ai_DragObj != src) {
         p = *(char **)(U_I((unsigned)&d2_Objs) + U_I((unsigned)&d2_PointerObj) * 0x2ec + 0x2e8);
         if (p == 0) {
             if (src >= (char *)0xdf && src < (char *)0x427)
@@ -9982,7 +9982,7 @@ void ai_HandleItemDrag(void)
         } else if (p >= (char *)U_I((unsigned)&ai_Goods) && p < (char *)U_I((unsigned)&ai_Goods) + 0xb9dc) {
             item = (int)(p - (char *)U_I((unsigned)&ai_Goods)) / 0x41;
         }
-        U_I((unsigned)&full_data_6f266c) = 0;
+        *(int *)&ai_DragPicked = 0;
     }
     if (item == 0 && sel == 0 && ch == 0)
         goto tail;
@@ -9991,7 +9991,7 @@ void ai_HandleItemDrag(void)
         src = *(char **)(unsigned)&d2_Unkf8aac8;
         win = 0;
         U_I((unsigned)&ai_DragWindow) = -1;
-        U_I((unsigned)&full_data_62a8d4) = -1;
+        ai_DragViewWin = -1;
     }
     if (item != 0) {
         if (*(unsigned char *)(U_I((unsigned)&ai_Goods) + item * 0x41) == 0x20 ||
@@ -10009,21 +10009,21 @@ void ai_HandleItemDrag(void)
     src = *(char **)(unsigned)&d2_Unkf8aac8;
     U_I((unsigned)&ai_DragWindow) = (int)win;
     if (win != (char *)-1) {
-        U_I((unsigned)&full_data_62a8d0) = (int)src;
-        U_I((unsigned)&full_data_62a8d4) = *(int *)(((unsigned)&d2_Views + 0x4) + (int)win * 0x2ac);
+        ai_DragObj = (int)src;
+        ai_DragViewWin = *(int *)(((unsigned)&d2_Views + 0x4) + (int)win * 0x2ac);
         if (U_I(((unsigned)&dm_L + 0x28)) != 0)
             U_I((unsigned)&di_Absolute) = 0;
         U_I((unsigned)&d2_CutsceneActive) = 1;
-        U_I((unsigned)&full_data_6f2670) = 1;
+        ai_DragCutscene = 1;
         d2_RaiseViewWindows(win);
         return;
     }
-    U_I((unsigned)&full_data_62a8d0) = -1;
-    U_I((unsigned)&full_data_6f266c) = 0;
+    ai_DragObj = -1;
+    *(int *)&ai_DragPicked = 0;
 tail:
-    if (U_I((unsigned)&full_data_6f2670) != 0) {
+    if (ai_DragCutscene != 0) {
         U_I((unsigned)&d2_CutsceneActive) = 0;
-        U_I((unsigned)&full_data_6f2670) = 0;
+        ai_DragCutscene = 0;
     }
 }
 
