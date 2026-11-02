@@ -6824,18 +6824,16 @@ void gm_Shuffle(unsigned n, int *out)
 
 char gm_RandomAge(unsigned char n)
 {
-    char c;
-    int u;
+    char r;
 
     if (n == 0) {
-        c = (char)util_RandomU(0x2a);
-        return c + 0x15;
+        r = (char)util_RandomU(0x2a);
+        r += 0x15;
+        return r;
     }
-    u = 0xb;
-    if ((float)n < 42.0f)
-        u = 6;
-    c = (char)util_RandomU(u);
-    return n + c;
+    r = (char)util_RandomU((float)n >= 42.0f ? 0xb : 6);
+    n += r;
+    return n;
 }
 /* 0x505df0, the character with the id (int +4) in the character table, 0 when none */
 
