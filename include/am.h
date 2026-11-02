@@ -321,7 +321,7 @@ int ai_Unk499f20(AIPER *p, AIARG *s1, AIARG *s2);                               
 int ai_Unk49a020(int a, AIPER *p, int b, AIARG *o1, AIARG *o2);                 /* 0x49a020 */
 
 int ai_DecideTakeCredit(int a, struct G5CH *p, int f, struct AIARG *o1, struct AIARG *o2);             /* 0x49eec0 */
-int ai_Unk4a4e30(struct AIBLD *b, int k);                                           /* 0x4a4e30 */
+int ai_RepairCost(struct AIBLD *b, int k);                                           /* 0x4a4e30 */
 int ai_CanBuildType(int a, struct AIPER *p, int b, struct AIARG *s1, struct AIARG *s2, int f);         /* 0x4a5140 */
 int ai_ExecBuildBuilding(struct AIPER *p, struct AIARG *s1, struct AIARG *s2);                               /* 0x4a5320 */
 int ai_FindGoodToMake(int *item, int *obj, AIBLD *bld, int f);                       /* 0x4a5540 */
@@ -692,7 +692,8 @@ typedef struct G5CH {                   /* a character, 0x21c bytes (ai_Chars[76
     unsigned char officeKind;           /* 0x166, the kind of the office held, 0 = none */
     unsigned char prevOffice;           /* 0x167, the office kind held before the current one (ai.h AICHAR) */
     unsigned char appliedOffice;        /* 0x168, the office kind applied for, 0 = none (ai.h AICHAR) */
-    char pad169[0x7];
+    unsigned char secondOffice;         /* 0x169, the second office kind (ai.h AICHAR): 0x1e .. 0x21 the mayor's powers */
+    char pad16a[0x6];
     AIBLDX *bld2;                       /* 0x170, its house (AIPER.bld2) */
     char pad174[4];
     int inventory;                      /* 0x178, the goods inventory (AICHAR.inventory, a G8 object list) */
@@ -954,7 +955,7 @@ int ai_Unk4a0890(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  
 int amt_ExecuteMayorPowerMessage(char *c, int *m);                                           /* 0x4e9ce0 */
 int ai_Unk4a0940(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x4a0940 */
 int ai_Unk4a0990(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2); /* 0x4a0990 */
-int ai_Unk4a0a70(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x4a0a70 */
+int ai_DecideUpgradeGuild(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x4a0a70 */
 int ai_Unk4a0e60(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x4a0e60 */
 int ai_Unk4a1000(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2); /* 0x4a1000 */
 int ai_Unk4a1170(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x4a1170 */
@@ -988,7 +989,7 @@ typedef struct G7MKT {                  /* 0xb4 bytes, the prices of an item gro
 extern G7GRP ai_Unk61a348[];            /* 0x61a348 */
 
 int ai_GroupPrices(G7MKT *m);
-int ai_Unk4a4e30(struct AIBLD *b, int k);                                              /* 0x4a4e30 */
+int ai_RepairCost(struct AIBLD *b, int k);                                              /* 0x4a4e30 */
 int ai_Unk4a4e70(AIPER *p, int name);                                           /* 0x4a4e70 */
 extern int d3_CurrentScene;             /* 0x633444 */
 char d3if_SelectScene(int index, char keep);                                        /* 0x4478e0 */

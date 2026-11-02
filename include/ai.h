@@ -146,7 +146,8 @@ typedef struct AIBTYPE {                /* 0x24d bytes, ai_BTypes[] */
         char level;                     /* 0x247, the type's level 1 .. 3 (am.h AIBTYPEX: a count (level)); main_EndRound weighs a building's budget share 2 / 4 / 8 by it */
         unsigned char cap247;           /* 0x247, read as unsigned (0x489cb0) */
     };
-    char pad248[5];
+    unsigned char maxLevel;             /* 0x248, the highest level of the type's line (reasoned: ai_DecideUpgradeGuild builds the next type only while cap247 is below it) */
+    char pad249[4];
 } AIBTYPE;
 #pragma pack(pop)
 

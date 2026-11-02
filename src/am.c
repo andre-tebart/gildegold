@@ -4666,7 +4666,7 @@ int ai_Unk497cf0(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
             return 0;
         lim = gm_CharCurrency(p, ai_OwnPlayer) * 0.95f;
         v = d < 0x32 ? 50 : 30;
-        f = ai_Unk4a4e30(best, v);
+        f = ai_RepairCost(best, v);
         if (f == 0.0f || f > lim)
             return 0;
         o1->kind = 4;
@@ -4686,7 +4686,7 @@ int ai_Unk497cf0(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
             if (bl->type && bl->id == o1->ref) {
                 if (bl->flags5a & 5)
                     return 0;
-                f = ai_Unk4a4e30(bl, o1->arg2);
+                f = ai_RepairCost(bl, o1->arg2);
                 if (f == 0.0f || f > o2->arg)
                     return 0;
                 o1->fvalue = f;
@@ -9077,24 +9077,37 @@ int ai_Unk4a0990(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2
     }
     return ai_EvalMoodWeights(a, b, i, (AIPER *)p, f, o1, o2);
 }
-/* 0x4a0a70, decide callback 0x39: the office building (kind 0x17..0x1a by the office 0x169): upgrade it (0x495a50
-   kind 0xf), buy an item for it (0x4a5540) or build the next type; when the treasury (object 0x142) cannot pay,
-   a credit (o1 kind 1, o2 kind 0x12) from the character's money over 80000 */
+/* 0x4a0a70, decide callback of "Upgrade Zunft" (0x39) for a mayor (second office 0x1e..0x21, the guild hall
+   building 0x17..0x1a): repair a run-down hall (sub-action 0xf, 50 / 30 / 10 points), else make a good for it
+   (ai_FindGoodToMake, sub-action 0x39), else build the next type of its line; when the treasury (object 0x142)
+   cannot pay, a credit to it (o1 kind 1, o2 kind 0x12) from the character's money above 80000 (a quarter, half
+   for the new type)
+   @deep read in full against the original and reconciled: four AIARG locals (repair s1/s2, good b1/b2:
+   frame 0x64 holds all four), the need ternary, c left unset on the good path (its register holds 1
+   there), AIOBJ objId/list, AIBTYPE.maxLevel, G5CH.secondOffice; 312 vs 306 instructions, the 6 extra are
+   allocation: money spilled to [esp+0x10] in the repair path (orig. edi), amt in ebx and n in a slot in
+   the new-type path (orig. n in ebx, amt in [esp+0x10] sharing the BuildingKindValue slot), each spill /
+   reload a mov. Left: that allocation plus block layout: the original places the credit block (0.25) right
+   after the repair block and the good path jumps back to it ('jl 0x4a0be8'), ours places it after the good
+   path's price test (0x4a0c8f 'jge'); tried nested-if and goto-buy forms of the repair exit: identical
+   code */
 
-int ai_Unk4a0a70(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
+int ai_DecideUpgradeGuild(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 {
     AIARG s1;
     AIARG s2;
+    AIARG b1;
+    AIARG b2;
     AIBLD *bl;
     AIBTYPE *t;
-    unsigned char *o;
+    AIOBJ *o;
     unsigned char k;
     char lvl;
     int money, need, amt, n, m, c;
 
     if (f != 0 || o1->kind != 0 || a != 0)
         return 0;
-    k = ((unsigned char *)p)[0x169];
+    k = p->secondOffice;
     if (k < 0x1e && k > 0x21)
         return 0;
     if (k == 0x1e)
@@ -9107,8 +9120,8 @@ int ai_Unk4a0a70(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         bl = gm_BuildQuery(1, 5, 0x1a);
     if (bl == 0)
         return 0;
-    o = (unsigned char *)gm_Query(bl->objList, 2, 6, 0, 0x142);
-    money = gm_SumListAmounts(*(int *)(o + 0x14), ai_OwnPlayer);
+    o = (AIOBJ *)gm_Query(bl->objList, 2, 6, 0, 0x142);
+    money = gm_SumListAmounts((void *)o->list, ai_OwnPlayer);
     lvl = bl->level;
     if (lvl < util_RandomU(0x10) + 0x32 && !(bl->flags5a & 4)) {
         s1.kind = 4;
@@ -9117,8 +9130,8 @@ int ai_Unk4a0a70(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         if (lvl < 0x21)
             need = 0x32;
         else
-            need = lvl >= 0x42 ? 10 : 30;
-        s2.ref = *(int *)(o + 2);
+            need = lvl < 0x42 ? 30 : 10;
+        s2.ref = o->objId;
         s2.arg2 = 1;
         s1.arg2 = need;
         s2.kind = 1;
@@ -9129,32 +9142,9 @@ int ai_Unk4a0a70(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             *o2 = s2;
             return n;
         }
-        n = ai_Unk4a4e30((AIBLDX *)bl, need);
-        if (n > money) {
-            amt = n;
+        amt = ai_RepairCost(bl, need);
+        if (amt > money) {
             c = 1;
-            goto credit;
-        }
-    }
-    if (ai_FindGoodToMake(&f, &a, bl, 0) != 0) {
-        s1.kind = 2;
-        s1.ref = f;
-        s1.arg = 1;
-        s1.ref2 = *(int *)(o + 2);
-        s1.arg2 = 0x39;
-        s2.arg2 = money;
-        if (a != -1) {
-            s2.kind = 1;
-            s2.ref = a;
-        } else {
-            s2.kind = 4;
-            s2.ref = bl->id;
-        }
-        s2.arg = 1;
-        *(int *)&s2.fvalue = 0;
-        amt = (int)gm_GoodsPrice(f, ai_OwnPlayer);
-        c = 1;
-        if (amt < money) {
 credit:
             m = gm_CharCurrency((AIPER *)p, ai_OwnPlayer);
             if (m < 80000)
@@ -9163,23 +9153,43 @@ credit:
             if ((int)((m - 80000) * 0.25f) < amt)
                 return 0;
             o1->kind = 1;
-            o1->ref = *(int *)(o + 2);
+            o1->ref = o->objId;
             o1->arg2 = c;
             o2->arg = amt;
             o2->kind = 0x12;
             return 0x39;
         }
-        n = ai_ChooseSubAction(0x39, p->id, 1, &s1, &s2);
+    }
+    if (ai_FindGoodToMake(&f, &a, bl, 0) != 0) {
+        b1.kind = 2;
+        b1.ref = f;
+        b1.arg = 1;
+        b1.ref2 = o->objId;
+        b1.arg2 = 0x39;
+        b2.arg2 = money;
+        if (a != -1) {
+            b2.kind = 1;
+            b2.ref = a;
+        } else {
+            b2.kind = 4;
+            b2.ref = bl->id;
+        }
+        b2.arg = 1;
+        b2.fvalue = 0.0f;
+        amt = (int)gm_GoodsPrice(f, ai_OwnPlayer);
+        if (amt < money)
+            goto credit;        /* c is not set on this path in the original either (its register holds 1 here) */
+        n = ai_ChooseSubAction(0x39, p->id, 1, &b1, &b2);
         if (n == 0)
             return 0;
-        *o1 = s1;
-        *o2 = s2;
+        *o1 = b1;
+        *o2 = b2;
         return n;
     }
     t = &ai_BTypesT[bl->type];
     if (bl->flags5a & 0x45)
         return 0;
-    if (t->cap247 >= ((unsigned char *)t)[0x248])
+    if (t->cap247 >= t->maxLevel)
         return 0;
     n = bl->type + 1;
     amt = (int)(gm_BuildingKindValue(n) * 0.4f);
@@ -9189,7 +9199,7 @@ credit:
         o1->arg = 1;
         o1->ref2 = bl->id;
         o2->kind = 1;
-        o2->ref = *(int *)(o + 2);
+        o2->ref = o->objId;
         o2->arg = 1;
         return 0x39;
     }
@@ -9200,7 +9210,7 @@ credit:
     if ((int)((m - 80000) * 0.5f) < amt)
         return 0;
     o1->kind = 1;
-    o1->ref = *(int *)(o + 2);
+    o1->ref = o->objId;
     o1->arg2 = 1;
     o2->arg = amt;
     o2->kind = 0x12;
@@ -9977,7 +9987,7 @@ int ai_RegisterBaseActions(int a)
     act.id = 0x39;
     strcpy(act.name, "Upgrade Zunft");
     act.eval = ai_Unk4a0990;
-    act.decide = ai_Unk4a0a70;
+    act.decide = ai_DecideUpgradeGuild;
     act.exec = ai_Unk4a0e60;
     act.flags = 0x1b;
     if (!am_RegisterMethod(&act, a))
@@ -10391,7 +10401,7 @@ int ai_EvalGuiltWeights(float *a, float *b, int i, AIPER *p, AIDEC *dec)
 }
 /* 0x4a4e30, a building's value for a stake of k (10 / 30 / 50) */
 
-int ai_Unk4a4e30(AIBLD *b, int k)
+int ai_RepairCost(AIBLD *b, int k)
 {
     int v = (int)(gm_EquipmentValue(b, 100) * 0.005f);
 
