@@ -144,6 +144,7 @@ int gm_IsUnderAge(unsigned short id);         /* 0x4fd7e0 */
 void *ai_ProdSetting(int param_1);  /* 0x5a8560 */
 #define ai_ProdSettingK ((int (*)())ai_ProdSetting)  /* 0x5a8560: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, ai_Unk4d88c0 0x4d88c0 move it as a word / movzx) */
+#define gm_AssignBuildingI ((void (*)(unsigned char *, int, int))gm_AssignBuilding)  /* @original 0x502b60 called with int place / own: gm_TakeOverCharacter zero-extends the word load once for both (as f3init's byte-matched init caller does, see its prototype) */
 #define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
 /* 0x4f9e30, the statistics screen: opens the form "misc\statistics_taxes", prints one line per round
    ("Runde %i:   %T$N": the game time - 0x10 + i and the round's value of the income history, 17 of them),
@@ -7310,7 +7311,7 @@ void gm_ShuffledBytes(unsigned char n, unsigned char *out)
 
 float gm_Liking();                     /* 0x50c550 */
 void ai_RestartMission(struct G13MIS *m);                     /* 0x4b3a90 */
-void he_Unk53ed40();                     /* 0x53ed40 */
+void he_RecheckPersonEvents();                     /* 0x53ed40 */
 char gm_RankLogFormat[] = "player %i: sum:%f points:%i verm\366gen:%i vermoegen_trend:%f ansehen:%f talente:%f amt:%f";  /* 0x61ac40, a log format */
 
 /* 0x506180, the ranking of the players: the up to 8 characters of the kinds 5 / 6 / 7 into out (*count of them),
@@ -7415,71 +7416,125 @@ int gm_Unk506480(char *c, int *n)
         *n = cnt;
     return r;
 }
-/* 0x5064d0, swaps the two characters a and b (0x505df0): runs 0x4b3a90 for a, clears the scene links (0x502b60 for the buildings of class 2 owned by a), swaps the 0x21c-byte records (a keeping its slot number, the byte at +9 of the first, the job bytes fixed up with the job tables 0x504ad0 / 0x5044b0 / 0x504ce0, the name copied or the icon looked up 0x4fb330), re-points the object lists (+0x178) at the new ids, swaps all references to a / b in the relation ids (+0x5c .. +0x7c of every character), adds the kind 9 objects of a's list to a's id (0x500970), restores the money (+0x1a8) and the state words and re-registers (0x503c60 (id, 0)). Returns a's slot or -1 / -2 when a / b is unknown. ROUGH */
+/* 0x5064d0, the character a (netId) takes over the character b: a's buildings of class 2 go to the player's
+   character, a's events are rechecked and ended (he_RecheckPersonEvents, he_EndPersonEvents for both) and its offices are given up; a's slot gets
+   b's record under a's id, netId, kind, level and home (the title kept when b's title group has room, else a's; the
+   head name and picture copied from a when the sex is the same, else looked up for b's sex and title), b's slot
+   gets a's old record under b's id and netId as a kind 9 character. The inventories are re-pointed at the new
+   netIds, a and b are swapped in every character's relatives, the kind 9 goods of a's old inventory are added to
+   a, a's worth is put into v1a8 and b's slot is removed (gm_KillSpieler). Returns a's slot, -1 / -2 when a / b
+   is unknown
+   @deep Reconstructed and read against the whole original 0x5064d0..0x506889 (282 ins, ours 281): every
+   statement is there in the original's order - gm_FindChar a / -1, ai_RestartMission, the 0x100 buildings
+   of class 2 owned by a handed to *ai_PlayerChar (through gm_AssignBuildingI: the original zero-extends
+   the word once for both int arguments), worth, gm_FindChar b / -2, he_RecheckPersonEvents +
+   he_EndPersonEvents x2, the w050 copy, amt_ClearOffices, newA = *cb with a's kind / netId / id / level /
+   bld2, the title-group branch (gm_TitleGroup, gm_PlayerRecord, gm_TitleJob, the two gm_TitlesLeft,
+   rec[0x74 + group]), the ownName / picture branch (strcpy or gm_NameRecord + heads[0] + 0x639), oldA =
+   *ca with b's netId / id and kind 9, the two record copies, the two inventory re-points, the 0x300 x 8
+   relatives swap, the kind 9 gm_AddObjekt walk over oldA.inventory, v1a8 / v194 / flags1c8 and
+   gm_KillSpieler(oldA.id, 0). Left: (1) the induction form of the building loop and the relatives' outer
+   loop: the original counts down a separate counter (mov ebx, 0x100 ... dec ebx / jne; [esp+0x10] = 0x300
+   ... dec / jne), ours compares the derived offset (cmp edi, 0xa900 / jb; cmp edi, end / jl) - tried int /
+   unsigned i, the array and the byte-offset spelling of the building; (2) the original spills rec
+   (gm_PlayerRecord) to [esp+0x20] and keeps group in edi, ours keeps rec in edi: the 4-byte frame
+   difference 0x448 vs 0x44c (frame 54, slots 8) and the scheduling of the record field loads around the
+   two rep movsd (code hunks at +0xf0 .. +0x120 and +0x232 .. +0x258, the same loads and stores in another
+   order). Tried the store orders of newA / oldA fields (kind, netId, id, level first: 71 -> 61 code hunks)
+   and the branch order of group != 0 (145 -> 121). */
 
-unsigned gm_Unk5064d0(int a, int b)
+unsigned gm_TakeOverCharacter(int a, int b)
 {
-    unsigned short *ca, *cb;
-    char tmpa[0x21c];
-    char tmpb[0x21c];
-    unsigned sa, sb;
-    int money, i, k, off;
-    int *q;
-    unsigned short *o;
+    ORDCHAR *ca, *cb;
+    ORDCHAR newA, oldA;
+    unsigned short sa, sb;
+    int worth, group, job, left;
+    unsigned i, k;
+    unsigned char *rec;
+    unsigned *head;
+    ORDBLD *bl;
+    ORDOBJ *o;
 
-    ca = (unsigned short *)gm_FindChar(a);
+    ca = ORD_CHAR(gm_FindChar(a));
     if (ca == 0)
         return -1;
-    ai_RestartMission(ca);
+    ai_RestartMission((struct G13MIS *)ca);
     for (i = 0; i < 0x100; i++) {
-        char *bl = ai_Blds + i * 0xa9;
-        if (*bl != 0 && gm_BuildingClass((unsigned char)*bl) == 2 && *(unsigned short *)(bl + 0x27) == *ca)
-            gm_AssignBuilding((int)bl, *(unsigned short *)ai_PlayerCharC, *(unsigned short *)ai_PlayerCharC);
+        bl = &((ORDBLD *)ai_Blds)[i];
+        if (bl->type != 0 && gm_BuildingClass(bl->type) == 2 && bl->owner == ca->id)
+            gm_AssignBuildingI((unsigned char *)bl, *ai_PlayerChar, *ai_PlayerChar);
     }
-    sa = *ca;
-    money = (int)gm_GetWorth(sa);
-    cb = (unsigned short *)gm_FindChar(b);
+    sa = ca->id;
+    worth = gm_GetWorth(sa);
+    cb = ORD_CHAR(gm_FindChar(b));
     if (cb == 0)
         return -2;
-    he_Unk53ed40(ca);
-    he_EndPersonEvents(ca);
-    he_EndPersonEvents(cb);
-    sb = *cb;
-    if (ca[0x28] != cb[0x28])
-        cb[0x28] = ca[0x28];
-    amt_ClearOffices(ca);
-    memcpy(tmpb, cb, 0x21c);
-    *(unsigned short *)tmpb = (unsigned short)sa;
-    *(int *)(tmpb + 4) = *(int *)(ca + 2);
-    *(int *)(tmpb + 0x170) = *(int *)(ca + 0xb8);
-    memcpy(tmpa, ca, 0x21c);
-    *(unsigned short *)tmpa = *cb;
-    *(int *)(tmpa + 4) = *(int *)(cb + 2);
-    ai_Chars[sa][0] = tmpb[0];
-    memcpy(ai_Chars[sa], tmpb, 0x21c);
-    memcpy(ai_Chars[sb], tmpa, 0x21c);
-    for (o = *(unsigned short **)(ai_Chars[sa] + 0x178); o != 0; o = *(unsigned short **)((char *)o + 0x3f))
-        *(int *)((char *)o + 6) = *(int *)(ai_Chars[sa] + 4);
-    for (o = *(unsigned short **)(ai_Chars[sb] + 0x178); o != 0; o = *(unsigned short **)((char *)o + 0x3f))
-        *(int *)((char *)o + 6) = *(int *)(ai_Chars[sb] + 4);
-    for (k = 0; k < 0x300; k++) {
-        q = (int *)(ai_Chars[k] + 0x5c);
-        for (i = 0; i < 8; i++) {
-            if (q[i] == a)
-                q[i] = b;
-            else if (q[i] == b)
-                q[i] = a;
+    he_RecheckPersonEvents(&ca->id);
+    he_EndPersonEvents(&ca->id);
+    he_EndPersonEvents(&cb->id);
+    sb = cb->id;
+    if (ca->w050 != cb->w050)
+        cb->w050 = ca->w050;
+    amt_ClearOffices((char *)ca);
+    newA = *cb;
+    newA.kind = ca->kind;
+    newA.netId = ca->netId;
+    newA.id = ca->id;
+    newA.level = ca->level;
+    newA.bld2 = ca->bld2;
+    group = gm_TitleGroup(cb->jobId);
+    if (group != 0) {
+        rec = (unsigned char *)gm_PlayerRecord((char *)ca);
+        if (rec != 0) {
+            job = gm_TitleJob(sa, group);
+            if (job != 0) {
+                left = gm_TitlesLeft(cb->jobId);
+                if (gm_TitlesLeft(job) < left)
+                    rec[0x74 + group] = cb->jobId;      /* the player record's title byte of the group */
+                else
+                    newA.jobId = ca->jobId;
+            }
+        }
+    } else {
+        newA.jobId = ca->jobId;
+    }
+    if (ca->textVariant == newA.textVariant) {
+        strcpy(newA.ownName, ca->ownName);
+        newA.picture = ca->picture;
+    } else {
+        newA.ownName[0] = 0;
+        head = gm_NameRecord(newA.textVariant, newA.jobId);
+        if (head != 0) {
+            strcpy(newA.ownName, ((GMHEAD *)head)->name);
+            newA.picture = ((GMHEAD *)head)->heads[0] + 0x639;
         }
     }
-    for (o = *(unsigned short **)(ai_Chars[sa] + 0x178); o != 0; o = *(unsigned short **)((char *)o + 0x3f)) {
-        if (*o != 0 && ai_Goods[*o * 0x41] == 9)
-            gm_AddObjekt(*(int *)(ai_Chars[sa] + 4), *o, *(int *)((char *)o + 0xe));
+    oldA = *ca;
+    oldA.netId = cb->netId;
+    oldA.id = cb->id;
+    oldA.kind = 9;
+    ORD_CHARS[sa] = newA;
+    ORD_CHARS[sb] = oldA;
+    for (o = (ORDOBJ *)ORD_CHARS[sa].inventory; o != 0; o = o->next)
+        o->ownerId = ORD_CHARS[sa].netId;
+    for (o = (ORDOBJ *)ORD_CHARS[sb].inventory; o != 0; o = o->next)
+        o->ownerId = ORD_CHARS[sb].netId;
+    for (k = 0; k < 0x300; k++) {
+        for (i = 0; i < 8; i++) {
+            if (ORD_CHARS[k].relatives[i] == a)
+                ORD_CHARS[k].relatives[i] = b;
+            else if (ORD_CHARS[k].relatives[i] == b)
+                ORD_CHARS[k].relatives[i] = a;
+        }
     }
-    off = sa * 0x21c;
-    *(int *)(ai_Chars[0] + off + 0x1a8) = money;
-    *(int *)(ai_Chars[0] + off + 0x194) = 4;
-    *(int *)(ai_Chars[0] + off + 0x1c8) = 0;
-    gm_KillSpieler(sa, 0);
+    for (o = (ORDOBJ *)oldA.inventory; o != 0; o = o->next) {
+        if (o->type != 0 && ai_Goods[o->type * 0x41] == 9)
+            gm_AddObjekt(newA.netId, o->type, o->count);
+    }
+    ORD_CHARS[sa].v1a8 = worth;
+    ORD_CHARS[sa].v194 = 4;
+    ORD_CHARS[sa].flags1c8 = 0;
+    gm_KillSpieler(oldA.id, 0);
     return sa;
 }
 

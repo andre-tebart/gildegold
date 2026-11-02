@@ -127,7 +127,7 @@ extern int ai_NextObjectId;                /* 0x61a654 */
 unsigned char * gm_CreateBuilding(unsigned char kind, unsigned short owner);                    /* 0x501580 */
 unsigned short gm_CreateCharacter(int type, int a2, int a3, int a4, unsigned char *a5, unsigned a6, int a7, int a8); /* 0x507690 */
 short * gm_PlayerRecord(char *ch);                                                    /* 0x506430, ai.h: AIFIN *(AICHAR *) */
-unsigned gm_Unk5064d0(int a, int b);                                                  /* 0x5064d0 */
+unsigned gm_TakeOverCharacter(int a, int b);                                                  /* 0x5064d0 */
 int gv_FindHeldEntry(void *a, unsigned char **o, int *e);                                    /* 0x4f2540 */
 int gv_EntryIndex(char *r, int *e);                                       /* 0x4ef6b0 */
 int unk_Unk4f01d0(int *g, char *o, int v, int b);                     /* 0x4f01d0 */

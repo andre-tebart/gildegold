@@ -47,7 +47,7 @@ void he_Unk53eba0(void);
 void he_RemoveGfxInfos(int obj);
 void he_ShowObjectInfos(int obj, int a);
 void he_Unk53ec40(unsigned char *r);
-void he_Unk53ed40(unsigned short *pl);
+void he_RecheckPersonEvents(unsigned short *pl);
 void he_Unk53ed70(void);
 void he_RunQuickList(void);
 void he_Unk53ee40(void);

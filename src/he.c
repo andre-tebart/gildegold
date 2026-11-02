@@ -1346,7 +1346,7 @@ L_reset:
 }
 /* 0x53ed40, runs 0x53ec40 on every record of the player *pl (type 2 filter) */
 
-void he_Unk53ed40(unsigned short *pl)
+void he_RecheckPersonEvents(unsigned short *pl)
 {
     int iv = (int)he_FindEvent(1, 2, *pl);
 

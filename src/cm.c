@@ -2591,7 +2591,7 @@ int ai_Unk4c6e10(G17MSG *m, G17STAT *s)
     int *x;
     int k;
 
-    k = gm_Unk5064d0(*(int *)&m->data[0], *(int *)&m->data[4]);
+    k = gm_TakeOverCharacter(*(int *)&m->data[0], *(int *)&m->data[4]);
     if (s != 0) {
         s->state = 1;
         if (k >= 0) {

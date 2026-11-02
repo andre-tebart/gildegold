@@ -158,7 +158,8 @@ typedef struct ORDCHAR {
     struct CHARACTER *model;        /* 0x184, the character's model (ai.h AICHAR.model, ch.h CHARACTER) */
     char pad188[4];
     int picture;                    /* 0x18c, the portrait picture (ai.h AICHAR.picture), -1 = none */
-    char pad190[8];
+    char pad190[4];
+    int v194;                       /* 0x194, gm_TakeOverCharacter sets it to 4 for the character that takes over */
     int v198;                       /* 0x198, cleared with wage at the end of every day (f3gm.c gm_EndDayIncomes) */
     int wage;                       /* 0x19c, the wage paid in the last round settlement (ai.h AICHAR.wage) */
     int v1a0;                       /* 0x1a0, a trade sum cm.c's goods move adds to (price x amount) for an object of the type 0x1dc (seller) / 0x1db (buyer); the income kind 4 taxes v1a0 + v1a4 */
