@@ -47,7 +47,6 @@ extern GAPDATA full_data_629354[];
 extern GAPDATA full_data_629368[];
 extern GAPDATA full_data_62937c[];
 extern GAPDATA full_data_629390[];
-extern GAPDATA full_data_6f2640[];
 extern GAPDATA full_data_6293a8[];
 extern GAPDATA full_data_6293bc[];
 extern GAPDATA full_data_6293d8[];
@@ -85,7 +84,6 @@ extern GAPDATA full_data_6296d8[];
 extern GAPDATA full_data_6296ec[];
 extern GAPDATA full_data_6296fc[];
 extern GAPDATA full_data_629710[];
-extern GAPDATA full_data_6f2644[];
 extern GAPDATA full_data_629724[];
 extern GAPDATA full_data_629734[];
 extern GAPDATA full_data_62974c[];
@@ -112,7 +110,6 @@ extern GAPDATA full_data_629954[];
 extern GAPDATA full_data_629968[];
 extern GAPDATA full_data_629978[];
 extern GAPDATA full_data_62998c[];
-extern GAPDATA full_data_6f2648[];
 extern GAPDATA full_data_6299a0[];
 extern GAPDATA full_data_6299b0[];
 extern GAPDATA full_data_6299c8[];
@@ -161,7 +158,6 @@ extern GAPDATA full_data_629dec[];
 extern GAPDATA full_data_629e00[];
 extern GAPDATA full_data_629e1c[];
 extern GAPDATA full_data_629e2c[];
-extern GAPDATA full_data_6f264c[];
 extern GAPDATA full_data_629e40[];
 extern GAPDATA full_data_629e50[];
 extern GAPDATA full_data_629e7c[];
@@ -179,7 +175,6 @@ extern GAPDATA full_data_629f74[];
 extern GAPDATA full_data_629f88[];
 extern GAPDATA full_data_629f98[];
 extern GAPDATA full_data_629fac[];
-extern GAPDATA full_data_6f2650[];
 extern GAPDATA full_data_629fc0[];
 extern GAPDATA full_data_629fd4[];
 extern GAPDATA full_data_62a000[];
@@ -204,7 +199,6 @@ extern GAPDATA full_data_62a1d8[];
 extern GAPDATA full_data_62a1ec[];
 extern GAPDATA full_data_62a1fc[];
 extern GAPDATA full_data_62a210[];
-extern GAPDATA full_data_6f2654[];
 extern GAPDATA full_data_62a224[];
 extern GAPDATA full_data_62a238[];
 extern int sv_FrameDepth;
@@ -697,6 +691,7 @@ TUTSTATE *const ai_Tutorial = (TUTSTATE *)(full_data_6fa020 + 0x40);  /* 0x5eec6
 #define ai_ClockMsVolatile (*(volatile int *)&ai_ClockMs)  /* 0x6333cc, @original: the byte-matched ai_TutorialTick reloads the clock after every read (a timer-written int; its owner declares it plain int) */
 int ai_TutorialChapterOn[5] = { 1, 1, 1, 1, 1 };  /* 0x62918c, per chapter 1 = played (the start window's check boxes, ai_TutorialWindow) */
 int (*ai_TutorialChapterInit[5])(void) = { ai_Unk578570, ai_Unk578e40, ai_Unk579570, ai_Unk57aa80, ai_Unk57aeb0 };  /* 0x6291a0, the chapter chain builders the start appends for every chapter played */
+int ai_TutorialBanks[6] = { 0 };  /* 0x6f2640, the voice banks of the main intro / outro and the chapters 1 .. 5 (snd_LoadVoiceBank), unloaded by the stop */
 TUTRUN *ai_TutorialRuns = 0;  /* 0x6f2658, the chain of the tutorial's run records (built by its start 0x578180, freed by its stop 0x578370) */
 int ai_TutorialOn = 0;  /* 0x6f265c, the tutorial runs (set by its start 0x578180, cleared by its end) */
 int ai_TutorialRunning = 0;  /* 0x6f2660, the tutorial's state machine advances (unk_SetEndGameGate / unk_ClearEndGameGate) */
@@ -2452,9 +2447,9 @@ void ai_TutorialStop(void)
 {
     int i;
 
-    for (i = (unsigned)&full_data_6f2640; i < (int)((unsigned)&full_data_6f2640 + 0x18); i += 4) {
-        if (U_I(i))
-            sb_UnloadSampleBank(U_I(i));
+    for (i = 0; i < 6; i++) {
+        if (ai_TutorialBanks[i])
+            sb_UnloadSampleBank(ai_TutorialBanks[i]);
     }
     ai_TutorialFreeRuns((char *)ai_TutorialRuns);
     ai_TutorialRuns = 0;
@@ -2528,7 +2523,7 @@ int ai_TutorialInitMainIntro(void)
     U_I(rec + 0x68) = 0;
     U_I(rec + 0x6c) = 0;
     U_I(rec + 0x70) = 0;
-    U_I((unsigned)&full_data_6f2640) = snd_LoadVoiceBank((char *)(unsigned)&full_data_6293bc, 0);
+    ai_TutorialBanks[0] = snd_LoadVoiceBank((char *)(unsigned)&full_data_6293bc, 0);
     return (int)rec;
 }
 /* 0x578570, the tutorial chapter 1 chain (2254 B, ROUGH from the disassembly): eleven 0x74-byte step records,
@@ -2776,7 +2771,7 @@ int ai_Unk578570(void)
     U_I(r + 0x48) = 0xb;
     U_I(r + 0x68) = 0x1837;
     prev = r;
-    U_I((unsigned)&full_data_6f2644) = snd_LoadVoiceBank((char *)(unsigned)&full_data_6293f8, 0);
+    ai_TutorialBanks[1] = snd_LoadVoiceBank((char *)(unsigned)&full_data_6293f8, 0);
     return (int)rec;
 fail:
     ai_TutorialFreeRuns(rec);
@@ -2983,7 +2978,7 @@ int ai_Unk578e40(void)
     U_I(r + 0x68) = 0x5837;
     U_I(r + 0x6c) = 0x1e00;
     prev = r;
-    U_I((unsigned)&full_data_6f2648) = snd_LoadVoiceBank((char *)(unsigned)&full_data_629734, 0);
+    ai_TutorialBanks[2] = snd_LoadVoiceBank((char *)(unsigned)&full_data_629734, 0);
     return (int)rec;
 fail:
     ai_TutorialFreeRuns(rec);
@@ -3625,7 +3620,7 @@ int ai_Unk579570(void)
     U_I(r + 0x68) = 0x5837;
     U_I(r + 0x6c) = 0x1f70;
     prev = r;
-    U_I((unsigned)&full_data_6f264c) = snd_LoadVoiceBank((char *)(unsigned)&full_data_6299b0, 0);
+    ai_TutorialBanks[3] = snd_LoadVoiceBank((char *)(unsigned)&full_data_6299b0, 0);
     return (int)rec;
 fail:
     ai_TutorialFreeRuns(rec);
@@ -3763,7 +3758,7 @@ int ai_Unk57aa80(void)
     U_I(r + 0x68) = 0x1837;
     U_I(r + 0x6c) = 0x1f70;
     prev = r;
-    U_I((unsigned)&full_data_6f2650) = snd_LoadVoiceBank((char *)(unsigned)&full_data_629e50, 0);
+    ai_TutorialBanks[4] = snd_LoadVoiceBank((char *)(unsigned)&full_data_629e50, 0);
     return (int)rec;
 fail:
     ai_TutorialFreeRuns(rec);
@@ -4045,7 +4040,7 @@ int ai_Unk57aeb0(void)
     U_I(r + 0x68) = 0x18f7;
     U_I(r + 0x6c) = 0xbf78;
     prev = r;
-    U_I((unsigned)&full_data_6f2654) = snd_LoadVoiceBank((char *)(unsigned)&full_data_629fd4, 0);
+    ai_TutorialBanks[5] = snd_LoadVoiceBank((char *)(unsigned)&full_data_629fd4, 0);
     return (int)rec;
 fail:
     ai_TutorialFreeRuns(rec);
