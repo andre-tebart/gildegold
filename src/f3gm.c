@@ -5800,8 +5800,9 @@ int gm_SexForJob(int x)
         return 0;
     return 2;
 }
-/* 0x503f50, the sex the title x needs: 0 for the titles 1 .. 4, 7 .. 0xc and 0xf .. 0x18, else 2 = either
-   (reasoned guess, as gm_SexForJob) */
+/* 0x503f50, the sex the title x needs: 0 for the titles 1 .. 4, 7 .. 0xc and 0xf .. 0x18, 2 = either for the
+   titles 5, 6, 0xd, 0xe, 0x19, 0x1a (named in the switch: its table runs to 0x1a) and any other (reasoned guess:
+   0 men only, as gm_SexForJob) */
 
 int gm_SexForTitle(int x)
 {
@@ -5827,9 +5828,15 @@ int gm_SexForTitle(int x)
     case 0x17:
     case 0x18:
         return 0;
-    default:
+    case 5:
+    case 6:
+    case 0xd:
+    case 0xe:
+    case 0x19:
+    case 0x1a:
         return 2;
     }
+    return 2;
 }
 /* 0x503fa0, the building type of the job of the character kind x (0x504ad0 maps x to the job number first; 0 for none) */
 
