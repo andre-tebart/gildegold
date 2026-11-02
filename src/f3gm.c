@@ -2030,8 +2030,8 @@ int ai_Unk6f1bb4 = 0;  /* 0x6f1bb4 */
 extern char gm_CharacterStatistics[128];
 char * ai_Unk60c1ec = (void *)((unsigned)&he_Events + 0xc234);  /* 0x60c1ec, the memory pool tag */
 unsigned short gm_CreateCharacter(int type, int a2, int a3, int a4, unsigned char *a5, unsigned a6, int a7, int a8);                     /* 0x507690 */
-int gm_Unk503f30();                     /* 0x503f30 */
-int gm_Unk503f50();                     /* 0x503f50 */
+int gm_SexForJob(int x);                   /* 0x503f30 */
+int gm_SexForTitle(int x);                   /* 0x503f50 */
 int gm_Opinion(int a, int b);                     /* 0x50c520 */
 float gm_CharAge(unsigned short id);  /* 0x505e30 */
 void * mem_Alloc(int size, char *tag);                   /* 0x4223c0 */
@@ -2172,48 +2172,41 @@ void unk_Unk4fda10(char *c, char *b)
         b[0x65]++;
     }
 }
-/* 0x4fda70, finds a free grown character (not flagged 0x2000 at +0x1cc, kind < 2, not married (+0x5e..), by job (+0x164 = param_3) and, with param_2 = 0, the group of 0x503f30 (param_3); with param_2: the title byte +0x165 = param_2 or 0, the age float (+0x1c) not above the age, 0x503f50) whom the master (the record at +0x27 of o = param_1, or none) is not in debt with (0x50c520 > -0x1e), flags it 0x2000 and returns it. ROUGH */
+/* 0x4fda70, finds the applicant the building o hires for the job (and, when title is not 0, the title): a
+   character in use, not yet taken (flags1c8 0x2000), of kind 0 / 1, with the job, no building, of the sex the
+   job / title needs (gm_SexForJob / gm_SexForTitle, 2 = either), with the title or none and grown up (w00a
+   not below f020) when a title is asked for, and one the master of o (its owner, 0xffff = none) does not
+   dislike (gm_Opinion above -30); marks it taken and returns it, 0 when there is none (or neither title nor
+   job is given) */
 
-short *unk_Unk4fda70(char *o, unsigned a, unsigned b)
+ORDCHAR *gm_FindApplicant(ORDBLD *o, unsigned title, unsigned job)
 {
-    int i, g;
-    char *c;
+    int i, sex;
 
-    if (a == 0) {
-        if (b != 0) {
-            g = gm_Unk503f30(b & 0xff);
-            for (i = 0; i < 0x300; i++) {
-                c = ai_Chars[i];
-                if (*(short *)c != -1 && (*(unsigned *)(c + 0x1c8) & 0x2000) == 0 && (unsigned char)c[2] < 2) {
-                    if ((unsigned char)c[0x164] == b && *(int *)(c + 0x16c) == 0 && (g == 2 || (unsigned char)c[9] == g)) {
-                        if (*(short *)(o + 0x27) == -1 || gm_Opinion(*(short *)(o + 0x27), i) > -0x1e) {
-                            *(unsigned *)(c + 0x1c8) |= 0x2000;
-                            return (short *)c;
-                        }
-                    }
-                }
-            }
-            return 0;
-        }
-    } else {
+    if (title != 0) {
         for (i = 0; i < 0x300; i++) {
-            c = ai_Chars[i];
-            if (*(short *)c != -1 && (*(unsigned *)(c + 0x1c8) & 0x2000) == 0 && (unsigned char)c[2] < 2) {
-                if (((unsigned char)c[0x165] == a || c[0x165] == 0) && *(int *)(c + 0x16c) == 0) {
-                    if (*(float *)(c + 0x20) <= (float)*(unsigned short *)(c + 10) && (unsigned char)c[0x164] == b) {
-                        g = gm_Unk503f50(a);
-                        if (g == 2 || (unsigned char)c[9] == g) {
-                            if (*(short *)(o + 0x27) == -1 || gm_Opinion(*(short *)(o + 0x27), i) > -0x1e) {
-                                *(unsigned *)(c + 0x1c8) |= 0x2000;
-                                return (short *)c;
-                            }
-                        }
-                    }
-                }
+            if (ORD_CHARS[i].id != 0xffff && (ORD_CHARS[i].flags1c8 & 0x2000) == 0 && ORD_CHARS[i].kind <= 1
+                && ((unsigned char)ORD_CHARS[i].title == title || ORD_CHARS[i].title == 0) && ORD_CHARS[i].bld == 0
+                && (float)ORD_CHARS[i].w00a >= ORD_CHARS[i].f020 && ORD_CHARS[i].jobId == job) {
+                sex = gm_SexForTitle(title);
+                if ((sex == 2 || ORD_CHARS[i].textVariant == sex)
+                    && (o->owner == 0xffff || gm_Opinion(o->owner, i) > -0x1e))
+                    goto found;
             }
+        }
+    } else if (job != 0) {
+        sex = gm_SexForJob((unsigned char)job);
+        for (i = 0; i < 0x300; i++) {
+            if (ORD_CHARS[i].id != 0xffff && (ORD_CHARS[i].flags1c8 & 0x2000) == 0 && ORD_CHARS[i].kind <= 1 && ORD_CHARS[i].jobId == job && ORD_CHARS[i].bld == 0
+                && (sex == 2 || ORD_CHARS[i].textVariant == sex)
+                && (o->owner == 0xffff || gm_Opinion(o->owner, i) > -0x1e))
+                goto found;
         }
     }
     return 0;
+found:
+    ORD_CHARS[i].flags1c8 |= 0x2000;
+    return &ORD_CHARS[i];
 }
 /* 0x4fdc10, the object of the group a building kind supplies for the building record b (kind 1: 0x12, 2: 0x13, 0x1d: 0xfd, 0x16: 0x120), through 0x4ffe90 (its object id, 1, 0, n) */
 
@@ -5809,9 +5802,10 @@ JOBTALENTS gm_GetJobTalents(int job)
         return gm_JobTalents[0];
     return gm_JobTalents[job];
 }
-/* 0x503f30, 0 when the kind number of 0x504ad0 (x) is 10 .. 14, else 2 */
+/* 0x503f30, the sex the job x needs: 0 when its group (gm_TitleGroup) is 10 .. 14, else 2 = either (reasoned
+   guess: 0 men only; gm_FindApplicant compares it with the sex byte) */
 
-int gm_Unk503f30(int x)
+int gm_SexForJob(int x)
 {
     int k;
 
@@ -5820,9 +5814,10 @@ int gm_Unk503f30(int x)
         return 0;
     return 2;
 }
-/* 0x503f50, 0 for the kind numbers 1 .. 4, 7 .. 0xc and 0xf .. 0x18, else 2 */
+/* 0x503f50, the sex the title x needs: 0 for the titles 1 .. 4, 7 .. 0xc and 0xf .. 0x18, else 2 = either
+   (reasoned guess, as gm_SexForJob) */
 
-int gm_Unk503f50(int x)
+int gm_SexForTitle(int x)
 {
     switch (x) {
     case 1:
@@ -7856,9 +7851,9 @@ unsigned short gm_CreateCharacter(int type, int a2, int a3, int a4, unsigned cha
         if (a7 == 0) {
             if (a6 == 0)
                 goto skip;
-            w = gm_Unk503f30(a6);
+            w = gm_SexForJob(a6);
         } else
-            w = gm_Unk503f50(a7);
+            w = gm_SexForTitle(a7);
         if (w != 2)
             c[9] = (char)w;
     }

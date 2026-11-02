@@ -48,7 +48,7 @@ unsigned gm_Unk5054f0(short *c);  /* 0x5054f0 */
 int gm_HeadIconNumber(char *name);  /* 0x4fb770 */
 int gm_FindRichest(short *id, int *rate);  /* 0x4fad60 */
 void gm_Shuffle(unsigned n, int *out);  /* 0x505d30 */
-int gm_Unk503f30(int x);  /* 0x503f30 */
+int gm_SexForJob(int x);  /* 0x503f30 */
 extern unsigned short ai_Unk76fdc4;  /* 0x76fdc4 */
 extern unsigned ai_Unk889400[732];  /* 0x889400 */
 int gm_BuildKindObjects(char *b);  /* 0x500b90 */
@@ -74,7 +74,7 @@ int gm_CreateCharModel(unsigned short *c, int scene, int *p, int *ori, int obj, 
 float gm_HealthRatio(short *c);  /* 0x4fc8e0 */
 struct ORDBLD; struct ORDBLD *gm_FindHome(int unused, struct ORDBLD *o);  /* 0x4fd820, a home with room for the building o (the nearest or least full) */
 void unk_Unk4fda10(char *c, char *b);  /* 0x4fda10 */
-short *unk_Unk4fda70(char *o, unsigned a, unsigned b);  /* 0x4fda70 */
+struct ORDCHAR; struct ORDBLD; struct ORDCHAR *gm_FindApplicant(struct ORDBLD *o, unsigned title, unsigned job);  /* 0x4fda70 */
 char *unk_Unk4fdc10(unsigned char *b);  /* 0x4fdc10 */
 short *unk_Unk4fddb0(unsigned char flags, int p2, int p3, unsigned char p4, unsigned char p5, char *p6);  /* 0x4fddb0 */
 void unk_Unk4fdfd0(void);  /* 0x4fdfd0 */

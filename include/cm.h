@@ -105,7 +105,7 @@ char *gm_FindBuildingById(int id);                                              
 int gm_IsHomeType(unsigned char *bld);                                                     /* 0x502520 */
 void gm_GetGebaeudeHauptraum(unsigned char *bld);                                                   /* 0x501ce0, ai.h: AIOBJ * */
 char * gm_Query(void *list, int n, ...);                                        /* 0x4ffe90, ai.h: AIOBJ * */
-short *unk_Unk4fda70(char *o, unsigned a, unsigned b);                             /* 0x4fda70 */
+struct ORDCHAR; struct ORDBLD; struct ORDCHAR *gm_FindApplicant(struct ORDBLD *o, unsigned title, unsigned job);                             /* 0x4fda70 */
 struct ORDBLD; struct ORDBLD *gm_FindHome(int unused, struct ORDBLD *o);                                   /* 0x4fd820 */
 char * gm_FindGoods(int p, unsigned id);                                            /* 0x4ffc40, ai.h: int * */
 extern int *ai_Unk6f0d90;               /* 0x6f0d90 */

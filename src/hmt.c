@@ -743,7 +743,7 @@ void hmt_Unk4ad7a0(void)
     for (i = 0; i < 3; i++) {
         for (n = (int)cnt[i]; n < 2; n++) {
             id = gm_TitleNumber(ids[k++], util_RandomU(3) + 4);
-            h = ((int (*)(int, int, int, int, int, int, int, int))cm_SendCreateCharacter)(3, -1, -1, util_RandomU(8) + 0x19, -1, id, 0, gm_Unk503f30(id));
+            h = ((int (*)(int, int, int, int, int, int, int, int))cm_SendCreateCharacter)(3, -1, -1, util_RandomU(8) + 0x19, -1, id, 0, gm_SexForJob(id));
             if (h != -1) {
                 while (!cm_GetSlotState(h))
                     sv_PumpNet();

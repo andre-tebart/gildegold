@@ -1649,7 +1649,7 @@ int cm_SendMessage3d(char *p, unsigned char b, int c, int d)
     m.type = 0x3d;
     if (p == 0)
         return -1;
-    q = unk_Unk4fda70(p, c, d);
+    q = (unsigned short *)gm_FindApplicant((struct ORDBLD *)p, c, d);
     G17_I(m, 0) = *(int *)(p + 1);
     if (q == 0) {
         G17_I(m, 9) = -1;
