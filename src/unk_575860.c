@@ -7122,48 +7122,46 @@ void ai_CannonContact(AIBLD *rec, AIOBJ *room)
             ai_CannonScene((char *)rec);
     }
 }
-/* 0x582600, the spy contact dispatcher (289 B): arg 1 = the record, arg 2 = the entry list. 0x52e190 once, then
-   the pump loop 0x5309a0 (this dispatcher, 0x67fff): the contact flags 0x6f231c bit 0x400 -> the ids 0x52e1c0
-   ("contact_VERGIFTEN" 0x62a524 / "contact_SPIONE_AUSSCHALTEN" 0x62a508 / "contact_SCHLEICHENDE_LAEHMUNG"
-   0x62a4e8 / "contact_BEWEISE_FAELSCHEN" 0x62a4cc, the texts 0x144a1a8 / 0x144a22c / 0x144a268 / 0x144a1ec,
-   0x16); the escape 0x14673a0 -> 0x6f22a0 = 1; the clicked contact 0x6f22e4, with the list +0x1c clear:
-   0x581950 / 0x581020 / 0x581db0 / 0x581400 (the record); with the list set -> 0x5823b0 (the record, the list) */
-
-void ai_Unk582600(char *rec, char *list)
+/* 0x582600, the contacts of the cabinet (kabinett, the room kind 0x266 of the enter-building driver ai_Unk59e420):
+   rec = the building, room = the room object. The name plates are released once, then each frame (pump 0x67fff,
+   the right button leaves): with the building permission 0x400 the plates "contact_VERGIFTEN" (txt 0x3ffa),
+   "contact_SPIONE_AUSSCHALTEN" (txt 0x401b), "contact_SCHLEICHENDE_LAEHMUNG" (txt 0x402a) and
+   "contact_BEWEISE_FAELSCHEN" (txt 0x400b, all 0x16) are registered; any click in a locked room opens
+   ai_UnlockRoomWindow, else the clicked plate opens ai_CabinetSpyByMoney / ai_CabinetSpyWindow /
+   ai_CabinetIntrigueWindow / ai_CabinetSpyOnCharacter */
+void ai_CabinetContact(AIBLD *rec, AIOBJ *room)
 {
-    int c1;
-    int c2;
-    int c3;
-    int c4;
+    int poison;
+    int removeSpies;
+    int paralysis;
+    int forgeEvidence;
 
-    c1 = 0;
-    c2 = 0;
-    c3 = 0;
-    c4 = 0;
+    poison = 0;
+    removeSpies = 0;
+    paralysis = 0;
+    forgeEvidence = 0;
     sv_ReleaseNamePlates();
-    while (sv_RunFrame(ai_Unk582600, 0x67fff) != 0) {
-        if (U_I((unsigned)&ai_BuildingPerms) & 0x400) {
-            c1 = sv_RegisterNamePlate((char *)(unsigned)&full_data_62a524, (char *)U_I((unsigned)&full_data_144a1a8), 0x16);
-            c2 = sv_RegisterNamePlate((char *)(unsigned)&full_data_62a508, (char *)U_I((unsigned)&full_data_144a22c), 0x16);
-            c3 = sv_RegisterNamePlate((char *)(unsigned)&full_data_62a4e8, (char *)U_I((unsigned)&full_data_144a268), 0x16);
-            c4 = sv_RegisterNamePlate((char *)(unsigned)&full_data_62a4cc, (char *)U_I((unsigned)&full_data_144a1ec), 0x16);
+    while (sv_RunFrame(ai_CabinetContact, 0x67fff) != 0) {
+        if (ai_BuildingPerms & 0x400) {
+            poison = sv_RegisterNamePlate("contact_VERGIFTEN", txt_Ptrs[0x3ffa], 0x16);
+            removeSpies = sv_RegisterNamePlate("contact_SPIONE_AUSSCHALTEN", txt_Ptrs[0x401b], 0x16);
+            paralysis = sv_RegisterNamePlate("contact_SCHLEICHENDE_LAEHMUNG", txt_Ptrs[0x402a], 0x16);
+            forgeEvidence = sv_RegisterNamePlate("contact_BEWEISE_FAELSCHEN", txt_Ptrs[0x400b], 0x16);
         }
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0)
-            U_I((unsigned)&sv_PopRequest) = 1;
-        if (U_I((unsigned)&ai_ClickedObject) != 0) {
-            if (U_I(list + 0x1c) == 0) {
-                if (U_I((unsigned)&ai_ClickedObject) == c1)
-                    ai_CabinetSpyByMoney(rec);
-                else if (U_I((unsigned)&ai_ClickedObject) == c2)
-                    ai_CabinetSpyWindow(rec);
-                else if (U_I((unsigned)&ai_ClickedObject) == c3)
-                    ai_CabinetIntrigueWindow(rec);
-                else if (U_I((unsigned)&ai_ClickedObject) == c4)
-                    ai_CabinetSpyOnCharacter(rec);
-            } else {
-                ai_UnlockRoomWindow(rec, list);
-            }
-        }
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
+        if (ai_ClickedObject == 0)
+            continue;
+        if (room->locked != 0)
+            ai_UnlockRoomWindow(rec, room);
+        else if (ai_ClickedObject == poison)
+            ai_CabinetSpyByMoney(rec);
+        else if (ai_ClickedObject == removeSpies)
+            ai_CabinetSpyWindow(rec);
+        else if (ai_ClickedObject == paralysis)
+            ai_CabinetIntrigueWindow(rec);
+        else if (ai_ClickedObject == forgeEvidence)
+            ai_CabinetSpyOnCharacter(rec);
     }
 }
 /* 0x582730, the four contact buttons (399 B): arg 1 = the record (its +0x65 the entries' state record), arg 2 =
