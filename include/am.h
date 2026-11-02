@@ -524,7 +524,7 @@ int ai_Unk48e830(AIPX *p, AIARGX *s1, AIARGX *s2);                       /* 0x48
 int ai_Unk48e9f0(AIPX *p, AIARGX *s1, AIARGX *s2);                       /* 0x48e9f0 */
 int ai_Unk48eab0(AIPX *p, AIARGX *s1, AIARGX *s2);                       /* 0x48eab0 */
 int ai_ExecSecretRoom0(AIPX *p, AIARGX *s1, AIARGX *s2);                       /* 0x48eb50 */
-int ai_Unk48ec90(AIPX *p, AIARGX *s1, AIARGX *s2);                       /* 0x48ec90 */
+int ai_ExecSecretRoom1(AIPX *p, AIARGX *s1, AIARGX *s2);                       /* 0x48ec90 */
 int ai_Unk48edc0(AIPX *p, AIARGX *s1, AIARGX *s2);                       /* 0x48edc0 */
 int ai_Unk48ef10(AIPX *p, AIARGX *s1, AIARGX *s2);                       /* 0x48ef10 */
 int ai_Unk48f010(int a, AIPX *p, int b, AIARGX *o1, AIARGX *o2);         /* 0x48f010 */
