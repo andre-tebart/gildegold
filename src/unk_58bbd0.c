@@ -19911,8 +19911,6 @@ found:
     ai_CampaignStep(8, 0, 1, 0);
 }
 
-int gm_Unk505840(char *c);   /* 0x505840 (defined in f3gm.c) */
-
 /* 0x5c8bc0, the medicus privilege handler (803 B, ROUGH): a message record (param_1, the AIMSG by word
    offsets: +0 the id, +2 the type, +4 the handle, +0x24 the amount, +0x194 the choice count). Types 6 / 7
    open the window "privillegien_medicus" 0x62d494 with the two buttons 0x515960 (0x1d3b, 2, the price
@@ -19947,7 +19945,7 @@ int ai_Unk5c8bc0(unsigned short *param_1, void *unused)
             if (util_Random(2) != 0) {
                 cm_SendMoveGoods(0xffffffff, *(int *)((char *)param_1 + 4), *(int *)(unsigned)&ai_OwnPlayer, (int)f);
                 gm_AddHealth(*param_1, absv / 2);
-                gm_Unk505840((char *)param_1);
+                gm_CureDisease((char *)param_1);
             }
             return 0x11;
         }
@@ -19977,7 +19975,7 @@ int ai_Unk5c8bc0(unsigned short *param_1, void *unused)
                         strcpy(text, buf);
                         cm_SendMoveGoods(0xffffffff, *(int *)((char *)param_1 + 4), *(int *)(unsigned)&ai_OwnPlayer,
                                      (int)f);
-                        gm_Unk505840((char *)param_1);
+                        gm_CureDisease((char *)param_1);
                     }
                     btn1 = -1;
                     btn2 = -1;

@@ -7108,65 +7108,85 @@ int gm_CatchUpperDisease(ORDCHAR *c)
     gm_AddHealth(c->id, -cost);
     return disease;
 }
-/* 0x505840, clears one set field of the word +0x2c of the character c (a random start field of 8, the first that is not 0) and sends the word; returns the record number (2 .. 9) or 0 */
+/* 0x505840, cures one disease of the character c: from a random start the first of the eight disease fields 2 .. 9 of
+   its word +0x2c that is set is cleared and the word sent. Returns the disease kind, 0 when it had none */
 
-int gm_Unk505840(char *c)
+int gm_CureDisease(ORDCHAR *c)
 {
-    unsigned w, f;
-    int tab[8];
-    int i, r;
+    int held[8];
+    unsigned w, sent;
+    int f, found, n, disease;
 
-    r = 0;
-    w = *(unsigned *)(c + 0x2c);
-    tab[0] = (w & 0xf0) != 0;
-    tab[1] = (w & 0xf00) != 0;
-    tab[2] = (w & 0x3000) != 0;
-    tab[3] = (w & 0x1c000) != 0;
-    tab[4] = (w & 0xe0000) != 0;
-    tab[5] = (w & ((unsigned)&he_Events + 0x54c0)) != 0;
-    tab[6] = (w & 0x1800000) != 0;
-    tab[7] = (w & 0x1e000000) != 0;
-    f = util_RandomU(8) & 0xffff;
-    i = 8;
+    disease = 0;
+    w = c->v02c;
+    held[0] = 0;
+    held[1] = 0;
+    held[2] = 0;
+    held[3] = 0;
+    held[4] = 0;
+    held[5] = 0;
+    held[6] = 0;
+    held[7] = 0;
+    if ((w & (0xf << 4)) > 0)
+        held[0] = 1;
+    if ((w & (0xf << 8)) > 0)
+        held[1] = 1;
+    if ((w & (3 << 12)) > 0)
+        held[2] = 1;
+    if ((w & (7 << 14)) > 0)
+        held[3] = 1;
+    if ((w & (7 << 17)) > 0)
+        held[4] = 1;
+    if ((w & (7 << 20)) > 0)
+        held[5] = 1;
+    if ((w & (3 << 23)) > 0)
+        held[6] = 1;
+    if ((w & (0xf << 25)) > 0)
+        held[7] = 1;
+    found = -1;
+    f = util_RandomU(8);
+    n = 8;
     do {
-        if (tab[f] == 1) {
-            if (f == 0xffffffff)
-                return 0;
-            w = *(unsigned *)(c + 0x2c);
-            if (f == 0) {
-                w &= 0xffffff0f;
-                r = 2;
-            } else if (f == 1) {
-                w &= 0xfffff0ff;
-                r = 3;
-            } else if (f == 2) {
-                w &= 0xffffcfff;
-                r = 4;
-            } else if (f == 3) {
-                w &= 0xfffe3fff;
-                r = 5;
-            } else if (f == 4) {
-                w &= 0xfff1ffff;
-                r = 6;
-            } else if (f == 5) {
-                w &= 0xff8fffff;
-                r = 7;
-            } else if (f == 6) {
-                w &= 0xfe7fffff;
-                r = 8;
-            } else if (f == 7) {
-                w &= 0xe1ffffff;
-                r = 9;
-            }
-            cm_BeginFieldBlock(c, *(int *)(c + 4));
-            cm_AddFieldDelta(4, 1, 0x2c, &w);
-            cm_SendFieldDeltas();
-            return r;
+        if (held[f] == 1) {
+            found = f;
+            break;
         }
-        i--;
+        n--;
         f = (f + 1) % 8;
-    } while (i != 0);
-    return 0;
+    } while (n != 0);
+    if (found == -1)
+        return 0;
+    w = c->v02c;
+    if (found == 0) {
+        w &= ~(0xf << 4);
+        disease = 2;
+    } else if (found == 1) {
+        w &= ~(0xf << 8);
+        disease = 3;
+    } else if (found == 2) {
+        w &= ~(3 << 12);
+        disease = 4;
+    } else if (found == 3) {
+        w &= ~(7 << 14);
+        disease = 5;
+    } else if (found == 4) {
+        w &= ~(7 << 17);
+        disease = 6;
+    } else if (found == 5) {
+        w &= ~(7 << 20);
+        disease = 7;
+    } else if (found == 6) {
+        w &= ~(3 << 23);
+        disease = 8;
+    } else if (found == 7) {
+        w &= ~(0xf << 25);
+        disease = 9;
+    }
+    sent = w;
+    cm_BeginFieldBlock((char *)c, c->netId);
+    cm_AddFieldDelta(4, 1, 0x2c, &sent);  /* 0x2c: v02c */
+    cm_SendFieldDeltas();
+    return disease;
 }
 /* 0x5059d0, clears one set field of the first four (a random start field of 4); returns the record number (2 .. 5) or 0 */
 

@@ -1207,3 +1207,4 @@
 2026-11-02T23:37:25 0x00505440 data gm_Unk505440 -> gm_CatchPlague by:main why:he_Unk54a020, the run handler of the plague event ("Pest"), calls it for the figures of the target building and passes its result as the infection strength
 2026-11-02T23:38:11 0x005054f0 data gm_Unk5054f0 -> gm_CatchMinorDisease by:main why:it picks one of the diseases 2 .. 5 (gm_GetDisease records) the character has not caught, at half the record's severity range; the message handler ai_Unk4bb330 (not with the item 0x290) calls it
 2026-11-02T23:39:20 0x005056a0 data gm_Unk5056a0 -> gm_CatchUpperDisease by:main why:the twin of gm_CatchMinorDisease for the disease records 5 .. 8 (gm_GetDisease); the message handler ai_Unk4bb430 (not with the item 0x290) calls it
+2026-11-02T23:39:52 0x00505840 data gm_Unk505840 -> gm_CureDisease by:main why:it clears one set disease field (2 .. 9, the gm_CatchDisease fields of the word +0x2c) of the character and sends the word
