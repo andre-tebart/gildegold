@@ -6,7 +6,9 @@
    helpers are one unit.
    Open: many callees are still declared K&R in this file (amt_HasTownObject must stay K&R: the typed prototype
    costs gm_Unk4fa4b0 a byte).
-   Open: gm_GetWorth is a float in gv.h, the unit reads it as an int (I50A640).
+   Open: gm_GetWorth is int in every header now; the older callers still go through the K&R cast I50A640.
+   Open: ai.h is not includable here, so the character / building / object records are read through gv.h's views
+   ORDCHAR / ORDBLD / ORDOBJ (the income, upkeep, wage and worth code) or by byte offset (the rest).
    Open: gm_GetGebaeudeHauptraum (0x501ce0) is drafted void, but its callers use the result as a pointer.
    Open: not included yet (dcp headers conflicts f3gm HEADER): ai.h anm.h ch.h cm.h d2.h d3_engine.h
    d3_interface.h d3_tools.h gfx.h hmt.h hst.h rt.h unk_458810.h unk_4b39f0.h; held by own declarations that

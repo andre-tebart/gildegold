@@ -2925,16 +2925,16 @@ exe	0x004f9d40	ord_WeightedRecordSum	ord	draft	readable	deep
 exe	0x004f9e00	ord_GetStatistics	ord	byte	draft		
 exe	0x004f9e30	gm_StatisticsScreen	f3gm	byte	readable		
 exe	0x004f9ec0	gm_IncomeRating	f3gm	draft	draft	deep	
-exe	0x004f9f60	unk_Unk4f9f60	f3gm	shape	draft		
-exe	0x004fa060	unk_Unk4fa060	f3gm	shape	draft		
-exe	0x004fa160	unk_Unk4fa160	f3gm	draft	draft		
-exe	0x004fa2a0	unk_Unk4fa2a0	f3gm	draft	draft		
-exe	0x004fa3d0	unk_Unk4fa3d0	f3gm	shape	draft		
-exe	0x004fa4b0	unk_Unk4fa4b0	f3gm	draft	draft		
-exe	0x004fa580	unk_Unk4fa580	f3gm	draft	draft		
-exe	0x004fa700	gm_CharacterWages	f3gm	draft	draft		
+exe	0x004f9f60	gm_IncomeKind1	f3gm	shape	draft		
+exe	0x004fa060	gm_IncomeKind2	f3gm	shape	draft		
+exe	0x004fa160	gm_IncomeKind3	f3gm	shape	readable		
+exe	0x004fa2a0	gm_IncomeKind4	f3gm	byte	readable		
+exe	0x004fa3d0	gm_IncomeKind5	f3gm	shape	draft		
+exe	0x004fa4b0	gm_CharacterIncomes	f3gm	draft	readable	deep	
+exe	0x004fa580	gm_CharacterUpkeep	f3gm	shape	readable		
+exe	0x004fa700	gm_CharacterWages	f3gm	draft	readable	deep	
 exe	0x004fa9b0	unk_Unk4fa9b0	f3gm	byte	draft		
-exe	0x004faa00	unk_Unk4faa00	f3gm	draft	draft		
+exe	0x004faa00	gm_UpdateWorthMood	f3gm	byte	readable		
 exe	0x004fabe0	gm_EndDayIncomes	f3gm	draft	draft		
 exe	0x004fad60	gm_FindRichest	f3gm	draft	draft		
 exe	0x004fae50	unk_Unk4fae50	f3gm	draft	draft		
@@ -2959,7 +2959,7 @@ exe	0x004fccc0	unk_Unk4fccc0	f3gm	draft	draft
 exe	0x004fd090	unk_Unk4fd090	f3gm	draft	draft		
 exe	0x004fd120	unk_Unk4fd120	f3gm	draft	draft		
 exe	0x004fd5c0	unk_Unk4fd5c0	f3gm	draft	draft		
-exe	0x004fd7e0	unk_Unk4fd7e0	f3gm	byte	draft		
+exe	0x004fd7e0	gm_IsUnderAge	f3gm	byte	draft		
 exe	0x004fd820	unk_Unk4fd820	f3gm	draft	draft		
 exe	0x004fda10	unk_Unk4fda10	f3gm	byte	draft		
 exe	0x004fda70	unk_Unk4fda70	f3gm	draft	draft		
@@ -4107,10 +4107,10 @@ exe	0x00589670	ai_BookmarkWindow	unk_575860	shape	readable
 exe	0x00589aa0	ai_SaveBookmarks	unk_575860	byte	readable		
 exe	0x00589b30	ai_LoadBookmarks	unk_575860	byte	readable		
 exe	0x00589bc0	ai_SaveScreenshot	unk_575860	byte	readable		
-exe	0x00589c90	ai_SlotKeys	unk_575860	draft	draft		
+exe	0x00589c90	ai_SlotKeys	unk_575860	byte	readable		
 exe	0x00589cf0	ai_SpeedKeys	unk_575860	byte	draft		
-exe	0x00589e00	ai_Unk589e00	unk_575860	byte	draft		
-exe	0x00589e50	ai_Unk589e50	unk_575860	draft	draft		
+exe	0x00589e00	ai_BookmarkSetBuilding	unk_575860	byte	draft		
+exe	0x00589e50	ai_BookmarksPreset	unk_575860	byte	readable		
 exe	0x00589f10	lobby_Screen	unk_589f10	draft	readable	deep	
 exe	0x0058a940	lobby_AddButtons	unk_589f10	byte	draft	deep	
 exe	0x0058a9d0	lobby_AddChatScroll	unk_589f10	byte	draft	deep	
