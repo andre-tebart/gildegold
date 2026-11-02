@@ -273,7 +273,7 @@ void ai_Unk4c5fa0(int a, int b, int c);                                         
 void cm_SendTradeMessage(char *p);                                                      /* 0x4c5fe0 */
 void ai_Unk4c6020(int a, int b, int c);                                          /* 0x4c6020 */
 void ai_Unk4c6060(char *o, void *p);                                             /* 0x4c6060 */
-void ai_Unk4c60b0(void *p);                                                      /* 0x4c60b0 */
+void cm_SendGraveOrder(void *p);                                                      /* 0x4c60b0 */
 void ai_Unk4c60f0(void *p);                                                      /* 0x4c60f0 */
 void ai_Unk4c6130(void *p);                                                      /* 0x4c6130 */
 void cm_SendCreateAlchemist(void *p);                                                      /* 0x4c6170 */

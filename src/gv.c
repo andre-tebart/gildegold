@@ -1733,7 +1733,7 @@ int unk_Unk4f01d0(int *g, char *o, int v, int b)
         *(int *)(m + 0xc) = v;
         *(short *)(m + 0x11) = 0;
         *(int *)(m + 0x13) = 0;
-        return ((int (*)(void *))ai_Unk4c60b0)(m);
+        return ((int (*)(void *))cm_SendGraveOrder)(m);
     }
     return -1;
 }
@@ -1806,21 +1806,23 @@ int gv_BuryCharacter(int *p)
     best->icon = c->picture;
     return 0;
 }
-/* 0x4f0430, the message 0x4c60b0 type 1 (graveyard id +4 of g, object id +1 of o, value v, short s, int x, byte 0xff); -1 when g or o is 0 */
+/* 0x4f0430, sends graveyard order type 1 (GVORDER, cm_SendGraveOrder): reserve a grave of the size `size` of the graveyard
+   building o for the living character c (c[1]: its AICHAR.netId; the entry is left to the handler, 0xff) for `years` years at
+   the price `price`; returns the sender's result, -1 when c or o is 0 */
 
-int unk_Unk4f0430(int *g, char *o, int v, short s, int x)
+int gv_OrderReserveGrave(int *c, char *o, int size, short years, int price)
 {
-    char m[0x1d];
+    GVORDER m;
 
-    if (g != 0 && o != 0) {
-        *(int *)(m + 4) = g[1];
-        *(int *)(m + 0xc) = v;
-        *(int *)(m + 8) = *(int *)(o + 1);
-        *(int *)m = 1;
-        m[0x10] = (char)0xff;
-        *(short *)(m + 0x11) = s;
-        *(int *)(m + 0x13) = x;
-        return ((int (*)(void *))ai_Unk4c60b0)(m);
+    if (c != 0 && o != 0) {
+        m.chr = c[1];
+        m.bld = ((AIBLD *)o)->id;
+        m.size = size;
+        m.type = 1;
+        m.entry = 0xff;
+        m.years = years;
+        m.price = price;
+        return ((int (*)(void *))cm_SendGraveOrder)(&m);
     }
     return -1;
 }
@@ -1892,7 +1894,7 @@ int unk_Unk4f0700(int *g, char *o, int v, int b, short s, int x)
         *(int *)m = 2;
         *(short *)(m + 0x11) = s;
         *(int *)(m + 0x13) = x;
-        return ((int (*)(void *))ai_Unk4c60b0)(m);
+        return ((int (*)(void *))cm_SendGraveOrder)(m);
     }
     return -1;
 }
@@ -1948,7 +1950,7 @@ int unk_Unk4f0900(int *g, char *o, int v, int b)
         m[0x10] = (char)b;
         *(short *)(m + 0x11) = 0;
         *(int *)(m + 0x13) = 0;
-        return ((int (*)(void *))ai_Unk4c60b0)(m);
+        return ((int (*)(void *))cm_SendGraveOrder)(m);
     }
     return -1;
 }
@@ -2008,7 +2010,7 @@ int unk_Unk4f0a90(int *g, char *o, int v)
     m[0x10] = 0;
     *(short *)(m + 0x11) = 0;
     *(int *)(m + 0x13) = 0;
-    return ((int (*)(void *))ai_Unk4c60b0)(m);
+    return ((int (*)(void *))cm_SendGraveOrder)(m);
 }
 /* 0x4f0af0, graveyard order type 4 (p: +4 a character id, +8 the object id, +0xc the list 1 .. 3): switches on the list for the record rec (flags +0x19 / +0x1a / +0x1b = 1 for the lists up to it); 0 or a negative reason
    (-8 other list, -7 the list is missing or the kind too small, as 0x4f0240 otherwise) */
@@ -2069,7 +2071,7 @@ int unk_Unk4f0c20(char *o, int v, int b, int x)
         *(int *)(m + 0xc) = v;
         *(short *)(m + 0x11) = 0;
         *(int *)(m + 0x13) = x;
-        return ((int (*)(void *))ai_Unk4c60b0)(m);
+        return ((int (*)(void *))cm_SendGraveOrder)(m);
     }
     return -1;
 }
@@ -2117,7 +2119,7 @@ int unk_Unk4f0d70(char *o, int x)
     *(int *)(m + 4) = -1;
     *(int *)(m + 8) = *(int *)(o + 1);
     *(int *)(m + 0x13) = x;
-    return ((int (*)(void *))ai_Unk4c60b0)(m);
+    return ((int (*)(void *))cm_SendGraveOrder)(m);
 }
 /* 0x4f0dd0, graveyard order type 6 (p: +8 the object id, +0x13 the number): makes that many new dead (0x4ef9c0); 0 when some were made, else -4 */
 

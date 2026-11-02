@@ -2070,7 +2070,7 @@ void ai_Unk4c6060(char *o, void *p)
 }
 /* 0x4c60b0, message 0x60 (0x1f bytes of p) */
 
-void ai_Unk4c60b0(void *p)
+void cm_SendGraveOrder(void *p)
 {
     G17MSG m;
 

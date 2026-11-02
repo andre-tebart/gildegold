@@ -1295,7 +1295,7 @@ int ai_Unk490b90(AGCH *p, AGARG *s1, AGARG *s2)
     gm_FindById((int)&s1, 0, 0, a->unk0c);
     if (s1 != 0) {
         if (a->kind == 4) {
-            unk_Unk4f0430(p, s1, a->unk04, 10, a->unk08);
+            gv_OrderReserveGrave(p, s1, a->unk04, 10, a->unk08);
             return 0x3e;
         }
         if (a->kind == 5) {

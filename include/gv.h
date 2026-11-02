@@ -47,6 +47,19 @@ typedef struct GVYARD {                 /* 0x24 bytes, the graveyard record of a
     GVENTRY *entries;                   /* 0x1c, all entries ("gv_Alloc:_all_graves") */
     GVGRAVE *graves;                    /* 0x20, the grave records, first word -1 when free ("gv_Alloc:_all_zombies") */
 } GVYARD;
+#pragma pack(push, 1)
+typedef struct GVORDER {                /* 0x1f bytes, a graveyard order: the data of message 0x60 (cm_SendGraveOrder), executed by type in cm.c's handler 0x4cce10 */
+    int type;                           /* 0x00, 0 .. 6 (0 gv_BuryCharacter, 1 a grave reserved for a living character 0x4f0490, ..) */
+    int chr;                            /* 0x04, the character's netId (AICHAR.netId), -1 for none */
+    int bld;                            /* 0x08, the graveyard building's id (AIBLD.id) */
+    int size;                           /* 0x0c, the grave size (GVYARD.lists index) */
+    unsigned char entry;                /* 0x10, the entry of that list, 0xff for none */
+    short years;                        /* 0x11, type 1: years added to ai_Time.year for the entry's GVENTRY.until */
+    int price;                          /* 0x13, type 1: the price (> 0: the owner's money changes) */
+    int objId;                          /* 0x17, ai_NextObjectId, filled by the handler when the game is networked */
+    int seed;                           /* 0x1b, a rand() the handler fills otherwise */
+} GVORDER;
+#pragma pack(pop)
 typedef struct GVCANNON {               /* 0x20 bytes, the state of the cannon scene (unk_575860 0x57e270 ..), saved with the effects */
     int bld;                            /* 0x00, the record id (rec + 1) the scene was last set up for, -1 after the reset */
     int spare;                          /* 0x04, no reader besides the save game */
@@ -263,7 +276,7 @@ GVYARD *gv_GrowGraveyard(unsigned char *o);  /* 0x4eff50 */
 void gv_FreeGraveyard(int *g);             /* 0x4f0180 */
 int unk_Unk4f01d0(int *g, char *o, int v, int b);  /* 0x4f01d0 */
 int gv_BuryCharacter(int *p);              /* 0x4f0240 */
-int unk_Unk4f0430(int *g, char *o, int v, short s, int x);  /* 0x4f0430 */
+int gv_OrderReserveGrave(int *c, char *o, int size, short years, int price);  /* 0x4f0430 */
 int unk_Unk4f0490(short *p);            /* 0x4f0490 */
 int unk_Unk4f0700(int *g, char *o, int v, int b, short s, int x);  /* 0x4f0700 */
 int unk_Unk4f0770(char *p);             /* 0x4f0770 */
