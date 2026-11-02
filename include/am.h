@@ -865,7 +865,7 @@ int ai_DecideUseHealthObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);      
 int ai_Unk49b2b0(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49b2b0 */
 int ai_DecideUseDynastyObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49b380 */
 int ai_ExecuteUseDynastyObject(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49b6f0 */
-int ai_Unk49b7c0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49b7c0 */
+int ai_DecideUseMeanObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49b7c0 */
 int ai_Unk49bc50(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49bc50 */
 int ai_Unk49bd90(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49bd90 */
 int ai_Unk49c170(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49c170 */

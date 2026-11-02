@@ -85,6 +85,7 @@ int ai_Unkf86900[73] = {0};  /* 0xf86900, the actions being evaluated */
 #define amt_GetKindB ((int (*)(unsigned char, void *))amt_GetKind)  /* 0x4e6f80 (amt.h: int k): @original ai_Unk4a05e0 passes (unsigned char)k without widening */
 #define AI_CHAIN_BEATUP 0xf00500  /* the partner-chain flags (ai_PickPartnerChain) of action 0x18 "Verpruegeln" (ai_DecideBeatUp); the bits are not named yet */
 #define AI_CHAIN_USEREPUTATION 0xf00500  /* the partner-chain flags of action 0x1c "UseObject (Ansehen)" (ai_DecideUseReputationObject), as AI_CHAIN_BEATUP; the bits are not named yet */
+#define AI_CHAIN_MEAN 0xf00500  /* the partner-chain flags of action 0x21 "UseObject (Gemeinheit)" (ai_DecideUseMeanObject; | 0x800 for the good 0x29a, | 0x10000 for 0x177), as AI_CHAIN_BEATUP */
 /* 0x48e070, the building of a master (kind != 3) in *out; 2: has one, 1: has a good one, 0: none */
 
 int ai_Unk48e070(AIPX *p, int *out)
@@ -6496,139 +6497,152 @@ int ai_ExecuteUseDynastyObject(G5CH *p, AIARG *s1, AIARG *s2)
     }
     return 0;
 }
-/* 0x49b7c0, decide callback 0x21: one of twelve goods (0x169..0x29c), some given to one or two characters */
+/* 0x49b7c0, decide callback of "UseObject (Gemeinheit)" (0x21): of twelve mean goods (0x169..0x29c), with fewer than
+   six goods and none usable, the sub-action 2 to get a random missing one (weight 0.05; o2 the character itself;
+   k is 0x1c, not 0x21, as in the original); else a random usable one (o1 kind 1, its inventory entry) against
+   partners (ai_PickPartnerChain): 0x169 / 0x16d two characters (o2 kind 7, both netIds), 0x177 the building of
+   one (kind 4), 0x178 a building of the leader or the character (ai_PickActionBuilding, kind 4), the others one
+   character (kind 7); all but the first two goods go through the sub-action 4
+   @deep read the whole function against the original and reconciled: the twelve goods, the sub-action 2
+   path (shared ChooseSubAction call as the original), the partner flags (written per branch with n = 1 in
+   both arms: the if-converted sbb form is gone, the branches match), the 0x178 building pick, the switch
+   (tables equal: 5 entries, 16 index bytes) and the i > 1 sub-action 4. Left is allocation and frame
+   layout: the original keeps p in edi across the partner pick (it reloads mov edi,[esp+0x134] on the 0x178
+   path at +0x2f0 and pushes edi to ai_PickPartnerChain; ours reloads p from its slot at each use), so the
+   pick-fail exit keeps its own epilogue there (original +0x2e5 jne / pop..ret) and the k / flags / rp / s1
+   / s2 slots shift (diffclass slots: k [esp+0xc]->[esp+4], flags 0x3c->0x1c, rp 0x5c->0x44, s1 0x44->0x48,
+   s2 0x20->0x2c); 303 vs 306 instructions. k = 0x1c (not 0x21) is the original's */
 
-int ai_Unk49b7c0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
+int ai_DecideUseMeanObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 {
     int k, i, n, r;
     unsigned int flags[2];
     unsigned short id[2];
     int v;
     LARGE_INTEGER mask;
-    G8REC *rp;
+    G9REC *rp;
     AIARG s1;
     AIARG s2;
     int st[3];
-    G8REC recs[12];
+    G9REC recs[12];
 
     k = a;
     if (a == 0)
         k = 0x1c;
-    if (f != 0 || a != 0)
-        return 0;
-    memset(recs, 0, sizeof(recs));
-    recs[0].item = 0x169;
-    recs[1].item = 0x16a;
-    recs[2].item = 0x177;
-    recs[3].item = 0x178;
-    recs[4].item = 0x17d;
-    recs[5].item = 0x16d;
-    recs[6].item = 0x17b;
-    recs[7].item = 0x22c;
-    recs[8].item = 0x22b;
-    recs[9].item = 0x22d;
-    recs[10].item = 0x29a;
-    recs[11].item = 0x29c;
-    ai_FindWantedItems(p, 12, (int *)recs, st);
-    if (st[0] == 6 && st[2] == 0)
-        return 0;
-    if (st[1] == 12)
-        return 0;
-    if (st[0] < 6) {
-        if (st[2] == 0) {
+    if (f == 0 && a == 0) {
+        memset(recs, 0, sizeof(recs));
+        recs[0].item = 0x169;
+        recs[1].item = 0x16a;
+        recs[2].item = 0x177;
+        recs[3].item = 0x178;
+        recs[4].item = 0x17d;
+        recs[5].item = 0x16d;
+        recs[6].item = 0x17b;
+        recs[7].item = 0x22c;
+        recs[8].item = 0x22b;
+        recs[9].item = 0x22d;
+        recs[10].item = 0x29a;
+        recs[11].item = 0x29c;
+        ai_FindWantedItems(p, 12, recs, st);
+        if ((st[0] != 6 || st[2] != 0) && st[1] != 12) {
+            if (st[0] < 6) {
+                if (st[2] == 0) {
+                    i = util_RandomU(12);
+                    while (recs[i].value != 0)
+                        i = (i + 1) % 12;
+                    s1.ref = recs[i].item;
+                    s2.ref = p->netId;
+                    s1.kind = 2;
+                    s1.arg = 1;
+                    s1.fvalue = 0.05f;
+                    s2.kind = 7;
+                    s2.arg = 1;
+                    r = ai_ChooseSubAction(k, p->id, 2, &s1, &s2);
+                    if (r == 0)
+                        return 0;
+                    *o1 = s1;
+                    *o2 = s2;
+                    return r;
+                }
+            } else if (st[2] == 0) {
+                return 0;
+            }
             i = util_RandomU(12);
-            while (recs[i].unk04 != 0)
+            while (recs[i].value < 1)
                 i = (i + 1) % 12;
-            s1.ref = recs[i].item;
-            s2.ref = p->netId;
-            s1.kind = 2;
+            s1.kind = 1;
             s1.arg = 1;
             s1.fvalue = 0.05f;
-            s2.kind = 7;
-            s2.arg = 1;
-            r = ai_ChooseSubAction(k, p->id, 2, &s1, &s2);
-            if (r == 0)
-                return r;
+            rp = &recs[i];
+            s1.ref = recs[i].entryId;
+            if (rp->item == 0x169 || rp->item == 0x16d) {
+                flags[0] = AI_CHAIN_MEAN;
+                flags[1] = AI_CHAIN_MEAN;
+                n = 2;
+            } else if (rp->item == 0x29a) {
+                flags[0] = AI_CHAIN_MEAN | 0x800;
+                n = 1;
+            } else {
+                flags[0] = AI_CHAIN_MEAN;
+                n = 1;
+            }
+            if (rp->item == 0x177)
+                flags[0] |= 0x10000;
+            if (rp->item == 0x178) {
+                mask.LowPart = 0xa07c4390;
+                mask.HighPart = 1;
+                v = -1;
+                if (!(ai_Partner && (ai_PickActionBuilding((AIPER *)ai_Partner, 4, mask.QuadPart, 0, 100.0f, &v), v != -1))
+                    && !ai_PickActionBuilding((AIPER *)p, 6, mask.QuadPart, 0, (float)util_RandomU(0x40), &v))
+                    return 0;
+            } else if (ai_PickPartnerChain((AIPER *)p, n, (int *)flags, 0.0f, (float)util_RandomU(0x40), id) == 0) {
+                return 0;
+            }
+            switch (rp->item) {
+            case 0x169:
+            case 0x16d:
+                s2.ref = ai_CharsT[id[0]].netId;
+                s2.arg = ai_CharsT[id[1]].netId;
+                s2.kind = 7;
+                break;
+            case 0x177:
+                s2.kind = 4;
+                s2.ref = ai_CharsT[id[0]].bld2->id;
+                s2.arg = -1;
+                break;
+            case 0x178:
+                s2.kind = 4;
+                s2.ref = v;
+                s2.arg = -1;
+                break;
+            case 0x16a:
+            case 0x17b:
+            case 0x17d:
+            case 0x22b:
+            case 0x22c:
+            case 0x22d:
+            case 0x29a:
+            case 0x29c:
+                s2.arg = -1;
+                s2.ref = ai_CharsT[id[0]].netId;
+                s2.kind = 7;
+                break;
+            default:
+                return 0;
+            }
+            s2.arg2 = 0x21;
+            r = 0x21;
+            if (i > 1) {
+                r = ai_ChooseSubAction(k, p->id, 4, &s1, &s2);
+                if (r == 0)
+                    return 0;
+            }
             *o1 = s1;
             *o2 = s2;
             return r;
         }
-    } else if (st[2] == 0) {
-        return 0;
     }
-    i = util_RandomU(12);
-    while (recs[i].unk04 < 1)
-        i = (i + 1) % 12;
-    s1.kind = 1;
-    s1.arg = 1;
-    s1.fvalue = 0.05f;
-    rp = &recs[i];
-    s1.ref = recs[i].unk08;
-    if (rp->item == 0x169 || rp->item == 0x16d) {
-        flags[0] = ((unsigned)&cm_SendRing + 0x4973c0);
-        flags[1] = ((unsigned)&cm_SendRing + 0x4973c0);
-        n = 2;
-    } else {
-        n = 1;
-        if (rp->item == 0x29a)
-            flags[0] = ((unsigned)&cm_SendRing + 0x497bc0);
-        else
-            flags[0] = ((unsigned)&cm_SendRing + 0x4973c0);
-    }
-    if (rp->item == 0x177)
-        flags[0] |= 0x10000;
-    if (rp->item == 0x178) {
-        mask.LowPart = 0xa07c4390;
-        mask.HighPart = 1;
-        v = -1;
-        if (!(ai_Partner && (ai_PickActionBuilding((AIPER *)ai_Partner, 4, mask.QuadPart, 0, 100.0f, &v), v != -1))
-            && !ai_PickActionBuilding((AIPER *)p, 6, mask.QuadPart, 0, (float)util_RandomU(0x40), &v))
-            return 0;
-    } else if (ai_PickPartnerChain((AIPER *)p, n, (int *)flags, 0.0f, (float)util_RandomU(0x40), id) == 0) {
-        return 0;
-    }
-    switch (rp->item) {
-    case 0x169:
-    case 0x16d:
-        s2.ref = ai_CharsT[id[0]].netId;
-        s2.arg = ai_CharsT[id[1]].netId;
-        s2.kind = 7;
-        break;
-    case 0x177:
-        s2.kind = 4;
-        s2.ref = *(int *)((char *)ai_CharsT[id[0]].bld2 + 1);
-        s2.arg = -1;
-        break;
-    case 0x178:
-        s2.kind = 4;
-        s2.ref = v;
-        s2.arg = -1;
-        break;
-    case 0x16a:
-    case 0x17b:
-    case 0x17d:
-    case 0x22b:
-    case 0x22c:
-    case 0x22d:
-    case 0x29a:
-    case 0x29c:
-        s2.arg = -1;
-        s2.ref = ai_CharsT[id[0]].netId;
-        s2.kind = 7;
-        break;
-    default:
-        return 0;
-    }
-    s2.arg2 = 0x21;
-    r = 0x21;
-    if (i > 1) {
-        r = ai_ChooseSubAction(k, p->id, 4, &s1, &s2);
-        if (r == 0)
-            return r;
-    }
-    *o1 = s1;
-    *o2 = s2;
-    return r;
+    return 0;
 }
 /* 0x49bc50, execute callback 0x21: uses the object s1->unk04 of the character's list, scales four needs */
 
@@ -9632,7 +9646,7 @@ int ai_RegisterBaseActions(int a)
     act.id = 0x21;
     strcpy(act.name, "UseObject (Gemeinheit)");
     act.eval = ai_EvalMoodWeights;
-    act.decide = ai_Unk49b7c0;
+    act.decide = ai_DecideUseMeanObject;
     act.exec = ai_Unk49bc50;
     act.flags = 0xc9;
     if (!am_RegisterMethod(&act, a))
