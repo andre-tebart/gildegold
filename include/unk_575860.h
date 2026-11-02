@@ -116,7 +116,7 @@ void ai_Unk5770a0(int arg);             /* 0x5770a0, posts the message 0x2bc0 */
 void ai_HookChapter3Step2(int arg);             /* 0x577110, posts to the player's character record */
 int ai_Unk5771b0(int *p);               /* 0x5771b0, transition callback */
 void ai_Unk577230(int arg);             /* 0x577230, posts messages */
-int ai_Unk577290(int *p);               /* 0x577290, step predicate */
+int ai_QueryChapter5Step2(int *p);               /* 0x577290, step predicate */
 int ai_Unk5772d0(void);                 /* 0x5772d0, the record fight kind */
 int ai_Unk577320(void);                 /* 0x577320, the flag S+0x38 */
 int ai_Unk577330(int *p);               /* 0x577330, transition callback */

@@ -953,3 +953,4 @@
 2026-11-02T11:02:12 0x00577110 func ai_Unk577110 -> ai_HookChapter3Step2 by:main why:the TUTRUN.hook callback (0x34) of the run record FTInitChapter3Step2
 2026-11-02T11:02:44 0x004c5150 data ai_Unk4c5150 -> cm_RequestChrMove by:main why:0x4c5150: message 0x2f with the arguments of cm_RequestChrMoveToUniverse (0x30; the receiver handles 0x2f and 0x30 in one case), the name a reasoned guess; 0x55ea60: he.c's reading, the contact id of the figure p or -1
 2026-11-02T11:02:44 0x0055ea60 func he_Unk55ea60 -> he_FigureContact by:main why:0x4c5150: message 0x2f with the arguments of cm_RequestChrMoveToUniverse (0x30; the receiver handles 0x2f and 0x30 in one case), the name a reasoned guess; 0x55ea60: he.c's reading, the contact id of the figure p or -1
+2026-11-02T11:05:20 0x00577290 func ai_Unk577290 -> ai_QueryChapter5Step2 by:main why:the query callback (+0x3c) of the run record FTInitChapter5Step2 (id c5s2)

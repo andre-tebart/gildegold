@@ -1743,18 +1743,20 @@ void ai_Unk577230(int arg)
     cm_SendMoveGoodsUnchecked(id, -1, 0, 0x2bc0);
     cm_SendExSellObject(*(int *)(r + 2), -1, 0x155, 3, *(unsigned char *)(unsigned)&ai_OwnPlayer, 0);
 }
-/* 0x577290, 1 while the flag S+0x38 is not positive, and for the kind 0x29 with the step word 0x155 (which sets
-   the flag to 1); else 0 */
+/* 0x577290, the query callback of the run record FTInitChapter5Step2: once its goal is done (goalDone > 0) it
+   allows only the event 0x29 on the market object 0x155 (and sets goalDone back to 1), refusing everything else;
+   before that it allows everything */
 
-int ai_Unk577290(int *p)
+int ai_QueryChapter5Step2(int *args)
 {
-    if (U_I(S + 0x38) <= 0)
-        return 1;
-    if (p[0] == 0x29 && p[3] == 0x155) {
-        U_I(S + 0x38) = 1;
-        return 1;
+    if (ai_Tutorial->goalDone > 0) {
+        if (args[0] == 0x29 && args[3] == 0x155) {
+            ai_Tutorial->goalDone = 1;
+            return 1;
+        }
+        return 0;
     }
-    return 0;
+    return 1;
 }
 /* 0x5772d0, the fight kind of the record 0x6f2310: -1 without a record, for the kinds outside 0x92 .. 0x97 /
    0x2db, and while the flag S+0x38 is set; else 0 for the kind 0x92, 1 for the other kinds */
@@ -3896,7 +3898,7 @@ int ai_Unk57aeb0(void)
     U_I(r + 0x2c) = 0x429;
     U_I(r + 0x30) = 0xd5;
     U_I(r + 0x34) = (unsigned)&ai_Unk577230;
-    U_I(r + 0x3c) = (unsigned)&ai_Unk577290;
+    U_I(r + 0x3c) = (unsigned)&ai_QueryChapter5Step2;
     U_I(r + 0x40) = 0x17;
     U_I(r + 0x44) = 0x58c;
     U_I(r + 0x48) = 0x9;
