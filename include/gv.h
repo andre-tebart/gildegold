@@ -270,7 +270,7 @@ int gv_SizeOpen(char *r, int i);      /* 0x4ef4f0 */
 extern char *ai_BTypes;              /* 0x7e3f30 */
 int gv_ListEntry(char *r, int i, unsigned char n);  /* 0x4ef570 */
 int gv_EntryIndex(char *r, int *e);     /* 0x4ef6b0 */
-int unk_Unk4ef710(char *a, char *b);    /* 0x4ef710 */
+int gv_EntryHeldBy(char *a, char *b);    /* 0x4ef710 */
 int gv_EntrySameId(int *a, int *b);      /* 0x4ef740 */
 int gv_EntryIsFree(int *a, int *b);      /* 0x4ef760 */
 int gv_EntryIsUsed(int *a, int *b);      /* 0x4ef770 */
@@ -327,7 +327,7 @@ int gm_PlaceOnStage(int id, int a, int b, int *p4, int *p5);                    
 int gm_ChooseHeadIcon(unsigned short *c);                     /* 0x4fb890 */
 int unk_Unk4f22a0(char *o, unsigned char m);  /* 0x4f22a0 */
 
-int unk_Unk4f2540(void *a, unsigned char **o, int *e);  /* 0x4f2540 */
+int gv_FindHeldEntry(void *a, unsigned char **o, int *e);  /* 0x4f2540 */
 int unk_Unk4f25d0(void *a, unsigned char **o, int *e);  /* 0x4f25d0 */
 float unk_Unk4f2660(char *o);           /* 0x4f2660 */
 int gv_GetTableRecord(int i, int *out);     /* 0x4f2720 */

@@ -1347,7 +1347,7 @@ int gv_EntryIndex(char *r, int *e)
 }
 /* 0x4ef710, 1 when the +8 word of b is the +0x50 word of a and not 0x7fff */
 
-int unk_Unk4ef710(char *a, char *b)
+int gv_EntryHeldBy(char *a, char *b)
 {
     short v;
 
@@ -2745,29 +2745,26 @@ int gv_ProtectionPrice(unsigned short *c)
     x = max(min(100000.0, x), 10000.0);
     return gm_PlayerFactor((int)(x / (log10(x) + 1.0) * 0.1f), ai_OwnPlayer);
 }
-/* 0x4f2540, finds the first graveyard (building kind 0x1d) of the 256 buildings whose list 0xff (0x4ef7c0) has an entry matching `a` by 0x4ef710; *o = the building, *e = the entry; 1 when found */
+/* 0x4f2540, finds the grave entry held by the character a (gv_EntryHeldBy, any size) in the first graveyard building
+   (kind 0x1d) of the 256 that has one: *o = the building, *e = the entry, 1; 0 (both 0) when none has */
 
-int unk_Unk4f2540(void *a, unsigned char **o, int *e)
+int gv_FindHeldEntry(void *a, unsigned char **o, int *e)
 {
     int i, r;
-    unsigned char *b;
+    AIBLD *b;
 
-    i = 0;
     *o = 0;
     *e = 0;
-    b = (unsigned char *)ai_Blds;
-    do {
-        if (*b != 0 && ai_BTypes[*b * 0x24d] == 0x1d) {
-            r = gv_FindEntry(a, b, 0, unk_Unk4ef710, 0xff);
+    for (i = 0, b = ai_BldsT; i < 0x100; i++, b++) {
+        if (b->type != 0 && ((AIBTYPE *)(ai_BTypes + b->type * 0x24d))->kind == 0x1d) {
+            r = gv_FindEntry(a, (unsigned char *)b, 0, gv_EntryHeldBy, 0xff);
             if (r != 0) {
-                *o = b;
+                *o = (unsigned char *)b;
                 *e = r;
                 return 1;
             }
         }
-        i++;
-        b += 0xa9;
-    } while (i < 0x100);
+    }
     return 0;
 }
 /* 0x4f25d0, as 0x4f2540 with the match 0x4ef740 */

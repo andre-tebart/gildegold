@@ -2595,7 +2595,7 @@ int ai_Unk4c6e10(G17MSG *m, G17STAT *s)
         s->state = 1;
         if (k >= 0) {
             c = gm_FindChar(*(int *)&m->data[4]);
-            if (unk_Unk4f2540(c, &y, &x) != 0)
+            if (gv_FindHeldEntry(c, &y, &x) != 0)
                 unk_Unk4f01d0(c, y, *x, gv_EntryIndex(*(int *)(y + 0x65), x));
             s->unk01 = 1;
             s->value = (int)ai_Chars[k];

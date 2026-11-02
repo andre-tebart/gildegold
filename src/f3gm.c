@@ -7328,7 +7328,7 @@ void gm_Unk506890(char *a, char *b)
 
     n = 0;
     flag = 0;
-    if (unk_Unk4f2540(a, (unsigned char **)&o, (int *)&e) != 0) {
+    if (gv_FindHeldEntry(a, (unsigned char **)&o, (int *)&e) != 0) {
         unk_Unk4f01d0((int *)a, o, e[0], gv_EntryIndex(*(char **)(o + 0x65), e));
         if (b != 0 && b != ai_PlayerCharC && e[1] == *(int *)(a + 4))
             gv_OrderSetGraveHolder((int *)b, o, e[0], gv_EntryIndex(*(char **)(o + 0x65), e));
