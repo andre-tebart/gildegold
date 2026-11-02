@@ -8471,35 +8471,43 @@ int ai_ExecuteChangeProfession(G5CH *p, AIARG *s1, AIARG *s2)
     }
     return 0;
 }
-/* 0x49f850, decide callback 0x35, the regulars' table ("stammtisch"): up to four kind-0x37 buildings of other
-   owners with a table object 0x12d; a member leaves ('leav') when it likes the others too little, else joins
-   ('join') a table with a free seat; 'noop' (kind 0) otherwise */
+/* 0x49f850, decide callback of "Stammtisch" (0x35), the regulars' table: finds up to four kind-0x37 buildings
+   of other owners with a table object 0x12d (G5STAMM). A member of one ('leav' it): alone there 1 in 4, else
+   when its mean liking of the others / 100 is above 0.666 and a random + 1/6 stays below it; not a member:
+   'join' a table with a free seat 1 in 4 (o2 = its owner); 'noop' (kind 0) otherwise
+   @deep read in full against the original: every statement, constant (0.33, 0.666, 1/6, 0.75) and branch
+   sense reconciled; ours=original=285 instructions, 812 bytes; only scheduling left: the original hoists
+   'mov eax, [esp+0x58]' (o1) above 'jp' at 0x49fa92 so the leav path's jp lands at noop+4 (0x49fb5e)
+   instead of 0x49fb5a, plus order hunks at 0x49f859 (found=-1 store vs call), 0x49fa8e (leav stores),
+   0x49fb60 (noop pops). Tried: leav store order kind/ref/arg (merges both leav tails, worse), negated goto
+   form (same) */
 
-int ai_Unk49f850(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
+int ai_DecideStammtisch(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 {
     AIBLD *bl[4];
-    unsigned char *ob[4];
+    G5STAMM *ob[4];
     int free[4];
     AIBLD *b;
-    unsigned char *o;
+    G5STAMM *o;
     AICHAR *c;
     int found, step, i, j, n, k, m, v;
     float sum;
 
     found = -1;
     step = ai_RandomStrides[util_RandomU(0x10)];
-    if (*(int *)((unsigned char *)p + 0x1c8) & 0x2000000)
+    if (p->flags1c8 & 0x2000000)
         return 0;
     if (a != 0)
         return 0;
     if (f != 0)
         return 0;
     n = 0;
-    j = util_RandomU(0x100);
-    for (i = 0x100; i != 0; ) {
+    i = 0x100;
+    j = util_RandomU(i);
+    while (n < 4 && i != 0) {
         b = &ai_BldsT[j];
         if (b->type == 0x37 && b->owner != 0xffff && b->owner != p->id) {
-            o = (unsigned char *)gm_Query(b->objList, 2, 6, 0, 0x12d);
+            o = (G5STAMM *)gm_Query(b->objList, 2, 6, 0, 0x12d);
             if (o != 0) {
                 bl[n] = b;
                 ob[n] = o;
@@ -8508,8 +8516,6 @@ int ai_Unk49f850(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         }
         i--;
         j = (j + step) % 0x100;
-        if (n >= 4)
-            break;
     }
     if (n == 0) {
         if (util_RandomF() > 0.33f)
@@ -8519,20 +8525,20 @@ int ai_Unk49f850(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     for (k = 0; k < n; k++) {
         free[k] = 0;
         for (m = 0; m < 4; m++) {
-            v = ((int *)(ob[k] + 0x1c))[m];
+            v = ob[k]->member[m];
             free[k] |= v == -1;
             if (found == -1)
                 found = v == (int)p->netId ? k : -1;
         }
     }
     if (found != -1) {
-        k = 0;
         sum = 0.0f;
+        k = 0;
         for (m = 0; m < 4; m++) {
-            c = gm_FindChar(((int *)(ob[found] + 0x1c))[m]);
+            c = gm_FindChar(ob[found]->member[m]);
             if (c != 0 && c != (AICHAR *)p) {
                 k++;
-                sum = gm_Liking(p->id, *(unsigned short *)c, 1) + sum;
+                sum = gm_Liking(p->id, c->id, 1) + sum;
             }
         }
         if (k == 0 && util_RandomU(4) == 0) {
@@ -8542,32 +8548,37 @@ int ai_Unk49f850(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             return 0x35;
         }
         sum = sum / (k * 100);
-        if (sum <= 0.666f)
-            return 0;
-        if (util_RandomF() + 0.166667f > sum)
+        if (sum > 0.666f) {
+            if (util_RandomF() + 0.166667f < sum) {
+                o1->kind = 4;
+                o1->arg = 'leav';
+                o1->ref = bl[found]->id;
+                return 0x35;
+            }
             goto noop;
-        o1->kind = 4;
-        o1->ref = bl[found]->id;
-        o1->arg = 'leav';
-        return 0x35;
+        }
+        return 0;
     }
     j = util_RandomU(n);
-    for (i = n; i != 0; i--) {
-        if (free[j] == 1)
+    for (i = n; i != 0; ) {
+        if (free[j] == 1) {
+            found = j;
             break;
+        }
+        i--;
         j = (j + 1) % n;
     }
-    if (i == 0 || j == -1)
+    if (found == -1)
         return 0;
-    if (util_RandomF() > 0.75f)
-        goto noop;
-    o1->kind = 4;
-    o1->ref = bl[j]->id;
-    o1->arg = 'join';
-    o2->kind = 0x12;
-    o2->ref = ai_CharsT[bl[j]->owner].netId;
-    o2->arg = 0;
-    return 0x35;
+    if (util_RandomF() > 0.75f) {
+        o1->kind = 4;
+        o1->ref = bl[found]->id;
+        o1->arg = 'join';
+        o2->kind = 0x12;
+        o2->ref = ai_CharsT[bl[found]->owner].netId;
+        o2->arg = 0;
+        return 0x35;
+    }
 noop:
     o1->kind = 0;
     o1->ref = -1;
@@ -9899,7 +9910,7 @@ int ai_RegisterBaseActions(int a)
     act.id = 0x35;
     strcpy(act.name, "Stammtisch");
     act.eval = ai_EvalMoodWeights;
-    act.decide = ai_Unk49f850;
+    act.decide = ai_DecideStammtisch;
     act.exec = ai_Unk49fb80;
     act.flags = 0x19;
     if (!am_RegisterMethod(&act, a))

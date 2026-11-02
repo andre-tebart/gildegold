@@ -698,7 +698,9 @@ typedef struct G5CH {                   /* a character, 0x21c bytes (ai_Chars[76
     int inventory;                      /* 0x178, the goods inventory (AICHAR.inventory, a G8 object list) */
     char pad17c[0x18];
     int money;                          /* 0x194, (AIPER.money) */
-    char pad198[0x50];
+    char pad198[0x30];
+    unsigned int flags1c8;              /* 0x1c8, (AIPER.flags1c8): 0x2000000 keeps it from the regulars' table (ai_DecideStammtisch) */
+    char pad1cc[0x1c];
     unsigned int flags1e8;              /* 0x1e8, (AIPER.flags1e8) */
     char pad1ec[0x24];
     int partner;                        /* 0x210 */
@@ -706,6 +708,11 @@ typedef struct G5CH {                   /* a character, 0x21c bytes (ai_Chars[76
     unsigned char mask;                 /* 0x218, the action groups it may use */
     char pad219[3];
 } G5CH;
+
+typedef struct G5STAMM {                /* the regulars' table, the object 0x12d of a kind-0x37 building (ai_DecideStammtisch) */
+    char pad00[0x1c];
+    int member[4];                      /* 0x1c, the members' netIds, -1 = a free seat */
+} G5STAMM;
 
 typedef struct G5ACT {                  /* 0x94 bytes, am.h's AIACT with the third weight block */
     unsigned char id;                   /* 0x00 */
@@ -932,7 +939,7 @@ int ai_DecideChangeProfession(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);     
 void cm_SendSetJob(int id, int job);                                      /* 0x4c59b0 */
 void gm_SendMoneyDelta(int a, int b);                                      /* 0x50cc50, unk_48e070.h: int id */
 int ai_ExecuteChangeProfession(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49f7f0 */
-int ai_Unk49f850(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49f850 */
+int ai_DecideStammtisch(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49f850 */
 void ai_Unk4c5d80(int *p);                                                  /* 0x4c5d80 */
 int ai_Unk49fb80(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49fb80 */
 int amt_ExecutePriceMessage(char *c, int *m);                                           /* 0x4e9660 */
