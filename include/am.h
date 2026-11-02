@@ -545,7 +545,7 @@ int ai_Unk48fb70(int a);                                                        
 AIPX *ai_PickRandomBuildingChar(AIBLD *b);                                                   /* 0x48feb0 */
 int ai_DecideGraveyardOwner0(AIPX *p, AIBLD *b, AIARG *o1, AIARG *o2);                      /* 0x48ff50 */
 int ai_ExecGraveyardOwner0(AIPX *p, AIBLD *b, int unused, AIARG *o);                      /* 0x4900c0 */
-int ai_Unk490170(AIPX *p, AIBLD *b, AIARG *o1, AIARG *o2);                      /* 0x490170 */
+int ai_DecideGraveyardOwner1(AIPX *p, AIBLD *b, AIARG *o1, AIARG *o2);                      /* 0x490170 */
 int ai_Unk4902b0(AIPX *p, AIBLD *b, int unused, AIARG *o);                      /* 0x4902b0 */
 int ai_Unk490350(AIPX *p, AIBLD *b, AIARG *o1, AIARG *o2);                      /* 0x490350 */
 int ai_Unk4904c0(AIPX *p, AIBLD *b, int unused, AIARG *o);                      /* 0x4904c0 */

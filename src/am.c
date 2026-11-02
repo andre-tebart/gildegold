@@ -1068,13 +1068,14 @@ int ai_ExecGraveyardOwner0(AIPX *p, AIBLD *b, int unused, AIARG *o)
     cm_SendLongMessage(&msg);
     return 0x3d;
 }
-/* 0x490170, decide of method 0x90 */
+/* 0x490170, way 1 of the "Graveyard Owner" decide (ai_Unk490690): two random factors 2..4 whose product the money must cover, a 0x211 object in the graveyard and no event 0x90 of it pending; picks a building (mask 0x1a07c43b4) of the partner, else of its own; o2 = the two factors (arg, ref) and the building (ref2) */
 
-int ai_Unk490170(AIPX *p, AIBLD *b, AIARG *o1, AIARG *o2)
+int ai_DecideGraveyardOwner1(AIPX *p, AIBLD *b, AIARG *o1, AIARG *o2)
 {
-    unsigned short u1, u2;
+    unsigned int u1, u2;
     unsigned int n;
     int x;
+    LARGE_INTEGER mask;
 
     u1 = util_RandomU(3);
     u2 = util_RandomU(3);
@@ -1088,12 +1089,14 @@ int ai_Unk490170(AIPX *p, AIBLD *b, AIARG *o1, AIARG *o2)
     if (he_FindEvent(2, 0, 0x90, 3, b->id))
         return 0;
     x = -1;
+    mask.LowPart = 0xa07c43b4;
+    mask.HighPart = 1;
     if (ai_Partner) {
-        AI_4A63F0_7(ai_Partner, 4, 0xa07c43b4, 1, 0, 100.0f, &x);
+        ai_PickActionBuilding((AIPER *)ai_Partner, 4, mask.QuadPart, 0, 100.0f, &x);
         if (x != -1)
             goto done;
     }
-    if (!AI_4A63F0_7(p, 6, 0xa07c43b4, 1, 0, util_RandomU(0x20) + 19.0f, &x))
+    if (!ai_PickActionBuilding((AIPER *)p, 6, mask.QuadPart, 0, util_RandomU(0x20) + 19.0f, &x))
         return 0;
 done:
     o2->arg = u2;
@@ -1235,7 +1238,7 @@ int ai_Unk490690(int a, AIPX *p, int b, AIARG *o1, AIARG *o2)
     if (!v)
         return 0;
     r[0] = ai_DecideGraveyardOwner0(p, (AIBLD *)v, &s1[0], &s2[0]);
-    r[1] = ai_Unk490170(p, (AIBLD *)v, &s1[1], &s2[1]);
+    r[1] = ai_DecideGraveyardOwner1(p, (AIBLD *)v, &s1[1], &s2[1]);
     r[2] = ai_Unk490350(p, (AIBLD *)v, &s1[2], &s2[2]);
     r[3] = ai_Unk490570(p, (AIBLD *)v, &s1[3], &s2[3]);
     i = util_RandomU(4);
