@@ -7451,41 +7451,30 @@ void ai_GraveDeadName(char *e, char *out)
     }
     txt_Format(out, (char *)(unsigned)"%s %s", e + 4, e + 0x14);
 }
-/* 0x583150, a contact entry's second line (108 B): the texts +0x30 / +0x34 (the German +0x114 / the English
-   +0x11e and +0x130 / +399 by the flag +0x38): both ("%s - %s" 0x62a570), one ("%s" 0x5f8318), or empty */
-
-void ai_GraveDeadDescription(char *e, char *out)
+/* 0x583150, the second line of a dead person in a grave (ai_GraveDetail): the two texts the record points to at
+   +0x30 / +0x34 (their male +0x114 / +0x130 or female +0x11e / +0x18f forms by g->sex), both as "%s, %s", one
+   alone, or an empty line. Here GVGRAVE.v30 / nameId are read as pointers to those records (gv.c stores small
+   numbers there): which records they are is open */
+void ai_GraveDeadDescription(GVGRAVE *g, char *out)
 {
-    char *a;
-    char *b;
-
-    a = (char *)U_I(e + 0x30);
-    if (a) {
-        b = (char *)U_I(e + 0x34);
-        if (b) {
-            if (U_I(e + 0x38) == 0)
-                txt_Format(out, (char *)(unsigned)&full_data_62a570, a + 0x114, b + 0x130);
-            else
-                txt_Format(out, (char *)(unsigned)&full_data_62a570, a + 0x11e, b + 399);
-            return;
-        }
-        if (U_I(e + 0x38) == 0) {
-            txt_Format(out, "%s", a + 0x114);
-            return;
-        }
-        txt_Format(out, "%s", a + 0x11e);
-        return;
-    }
-    b = (char *)U_I(e + 0x34);
-    if (!b) {
+    if (g->v30 && g->nameId) {
+        if (g->sex == 0)
+            txt_Format(out, "%s, %s", (char *)g->v30 + 0x114, (char *)g->nameId + 0x130);
+        else
+            txt_Format(out, "%s, %s", (char *)g->v30 + 0x11e, (char *)g->nameId + 0x18f);
+    } else if (g->v30) {
+        if (g->sex == 0)
+            txt_Format(out, "%s", (char *)g->v30 + 0x114);
+        else
+            txt_Format(out, "%s", (char *)g->v30 + 0x11e);
+    } else if (g->nameId) {
+        if (g->sex == 0)
+            txt_Format(out, "%s", (char *)g->nameId + 0x130);
+        else
+            txt_Format(out, "%s", (char *)g->nameId + 0x18f);
+    } else {
         *out = 0;
-        return;
     }
-    if (U_I(e + 0x38) == 0) {
-        txt_Format(out, "%s", b + 0x130);
-        return;
-    }
-    txt_Format(out, "%s", b + 399);
 }
 
 void d2_SetViewEnabled(int view, int on);
