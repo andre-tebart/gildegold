@@ -3313,7 +3313,7 @@ exe	0x00522100	sv_SetPanelEnabled	sv	byte	draft
 exe	0x00522280	sv_Unk522280	sv	byte	draft		
 exe	0x005223c0	sv_DestroyScreen	sv	byte	draft		
 exe	0x005224a0	sv_LoadGroundplan	sv	draft	readable	deep	
-exe	0x005229b0	sv_UpdateGroundplan	sv	draft	draft	deep	
+exe	0x005229b0	sv_UpdateGroundplan	sv	draft	readable	deep	
 exe	0x00522ec0	sv_SetResearchClass	sv	byte	readable		
 exe	0x00522f10	sv_UpdateCityPanel	sv	draft	draft	deep	
 exe	0x00524010	sv_RedrawScreen	sv	byte	draft		
@@ -3385,18 +3385,18 @@ exe	0x0052d1e0	sv_DrawNamePlates	sv	draft	readable	deep
 exe	0x0052d2a0	sv_DrawItemNames	sv	byte	readable		
 exe	0x0052d480	sv_DrawBorderArrows	sv	byte	readable		
 exe	0x0052d7a0	sv_CameraFollow	sv	byte	readable		
-exe	0x0052d940	sv_Unk52d940	sv	draft	draft		
+exe	0x0052d940	sv_HandleRightClick	sv	draft	readable	deep	
 exe	0x0052e050	sv_Unk52e050	sv	byte	draft		
-exe	0x0052e0c0	sv_Unk52e0c0	sv	draft	draft		
+exe	0x0052e0c0	sv_DrawStatusText	sv	byte	readable		
 exe	0x0052e170	sv_ClearNamePlates	sv	byte	readable		
 exe	0x0052e190	sv_ReleaseNamePlates	sv	byte	readable		
-exe	0x0052e1c0	sv_RegisterNamePlate	sv	draft	draft		
+exe	0x0052e1c0	sv_RegisterNamePlate	sv	byte	readable		
 exe	0x0052e330	sv_SetStatusText	sv	byte	readable		
-exe	0x0052e350	sv_ButtonRow	sv	draft	draft		
-exe	0x0052e4b0	sv_Unk52e4b0	sv	draft	draft		
-exe	0x0052e600	sv_DisableVisibleWidgets	sv	draft	draft		
-exe	0x0052e6d0	sv_Unk52e6d0	sv	draft	draft		
-exe	0x0052e860	sv_CreateFormSlider	sv	draft	draft		
+exe	0x0052e350	sv_ButtonRow	sv	draft	readable	deep	
+exe	0x0052e4b0	sv_TabButtonRow	sv	draft	readable	deep	
+exe	0x0052e600	sv_DisableVisibleWidgets	sv	shape	readable		
+exe	0x0052e6d0	sv_OpenWindowFrame	sv	byte	readable		
+exe	0x0052e860	sv_CreateScrollButtons	sv	byte	readable		
 exe	0x0052ea30	sv_FitForm	sv	byte	draft		
 exe	0x0052eaa0	sv_ValueBar	sv	draft	draft		
 exe	0x0052eb50	sv_DrawBalanceBar	sv	draft	draft		
@@ -3501,7 +3501,7 @@ exe	0x0053d9b0	he_CloseEventSlots	he	byte	draft
 exe	0x0053d9f0	he_ShowEventBar	he	draft	draft		
 exe	0x0053dad0	he_Unk53dad0	he	byte	draft		
 exe	0x0053daf0	he_Unk53daf0	he	draft	draft		
-exe	0x0053dcb0	he_Unk53dcb0	he	byte	draft		
+exe	0x0053dcb0	he_ActivateSlot	he	byte	draft		
 exe	0x0053dda0	he_ShowNews	he	draft	draft		
 exe	0x0053dee0	he_MessageBoxQuickjump	he	draft	draft		
 exe	0x0053e040	he_Unk53e040	he	draft	draft		
@@ -3933,7 +3933,7 @@ exe	0x005755c0	he_Unk5755c0	he	byte	draft
 exe	0x00575600	he_SaveMessageFilter	he	byte	draft		
 exe	0x00575640	he_IsMessageKindFiltered	he	draft	draft		
 exe	0x00575710	he_SetMessageKindFiltered	he	byte	draft		
-exe	0x00575860	ai_Unk575860	unk_575860	draft	draft		
+exe	0x00575860	ai_TutorialTick	unk_575860	draft	draft		
 exe	0x00576020	unk_ClearEndGameGate	unk_575860	byte	draft		
 exe	0x00576030	unk_SetEndGameGate	unk_575860	byte	draft		
 exe	0x00576040	ai_CampaignStep	unk_575860	draft	draft		
@@ -4149,7 +4149,7 @@ exe	0x0058fe10	ai_FindNearestObject	unk_58bbd0	shape	readable
 exe	0x0058feb0	ai_Unk58feb0	unk_58bbd0	byte	draft		
 exe	0x0058ff00	ai_Unk58ff00	unk_58bbd0	draft	draft		
 exe	0x005909a0	ai_Unk5909a0	unk_58bbd0	draft	draft		
-exe	0x00591170	ai_Unk591170	unk_58bbd0	draft	draft		
+exe	0x00591170	ai_HandleMapKey	unk_58bbd0	draft	draft		
 exe	0x005912c0	ai_TradeContactChecks	unk_58bbd0	draft	draft		
 exe	0x00591480	ai_Unk591480	unk_58bbd0	draft	draft		
 exe	0x00591520	ai_GameFrame	unk_58bbd0	draft	draft		
