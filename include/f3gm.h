@@ -126,7 +126,7 @@ int gm_ConvertMoney(int a, unsigned char k);  /* 0x5085b0 */
 int gm_BuildingJob(int t);  /* 0x5048e0 */
 int gm_StallGoodsList(char *c, unsigned *out);  /* 0x50aa00 */
 int gm_SumSlotAmounts(void *list, unsigned char p);  /* 0x508660 */
-int gm_Unk505e60(unsigned id, int again);  /* 0x505e60 */
+int gm_CharLevel(unsigned short id, int again);  /* 0x505e60 */
 float gm_Unk50cd40(char *c, int k, int a, int b);  /* 0x50cd40 */
 unsigned short *gm_QueryNext(void);  /* 0x4ffcc0 */
 int gm_OwnerWorth(char *b, int flag);  /* 0x509c80 */

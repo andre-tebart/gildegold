@@ -6472,7 +6472,7 @@ void ai_Unk599240(int param_1, int param_2)
     sv_CameraFollow();
 }
 
-int gv_GetGraveInfo(); void ai_Unk5bd1f0(); void cm_SendScriptMessage(void *p); void cm_SendProofExecuted(int a, int b);
+int gv_EvidencePrice(); void ai_Unk5bd1f0(); void cm_SendScriptMessage(void *p); void cm_SendProofExecuted(int a, int b);
 
 /* 0x5992c0, the dark-corner menu of the player's own table (1008 B, ROUGH SKELETON from the Ghidra pseudocode):
    the window "locations\Wirtshaus_DUNKLEECKE" (0x4741f0 / 0x475600 / 0x475f70 (0) / 0x52ea30 / 0x476f80); the
@@ -6516,7 +6516,7 @@ void ai_Unk5992c0(int param_1, int param_2, int param_3)
     ctl = -1;
     while (sv_RunFrame(ai_Unk5992c0, 0x677c7) != 0) {
         for (i = 0; i < 3; i++) {
-            r = gv_GetGraveInfo(*(int *)(param_3 + 0x1c + i * 4),
+            r = gv_EvidencePrice(*(int *)(param_3 + 0x1c + i * 4),
                              (void *)((unsigned)&ai_Chars + *(unsigned short *)(param_1 + 0x27) * 0x21c),
                              &vals[i], &x, &y);
             if (r == 0) {
@@ -6629,7 +6629,7 @@ void ai_Unk5996b0(int param_1, int param_2)
     changed = 1;
     while (sv_RunFrame(ai_Unk5992c0, 0x677c7) != 0) {
         for (i = 0; i < 3; i++) {
-            r = gv_GetGraveInfo(*(int *)(param_2 + 0x1c + i * 4),
+            r = gv_EvidencePrice(*(int *)(param_2 + 0x1c + i * 4),
                              (void *)((unsigned)&ai_Chars + *(unsigned short *)(param_1 + 0x27) * 0x21c),
                              &vals[i], &x, &y);
             if (r == 0) {
@@ -18966,7 +18966,7 @@ int ai_Unk5c6050(char *param_1, short *param_2)
 }
 
 struct AIPER;
-int gm_Unk505e60(unsigned id, int again); int ord_DispatchOrder();
+int gm_CharLevel(unsigned short id, int again); int ord_DispatchOrder();
 unsigned int ai_FindCandidates(struct AIPER *p, unsigned int n, unsigned int fl, float lo, float hi, unsigned short *out);
 
 /* 0x5c64c0, the candidate list of a type 9 search (100 B): 0x4a5ef0 (param_1, 9, 0xc0540a - the +9
@@ -19012,8 +19012,8 @@ unsigned int ai_Unk5c6530(int param_1, int param_2)
         return 0xfffffbfb;
     if (b[0x1b1] != 0)
         return 0xfffffbfa;
-    i = gm_Unk505e60(*(unsigned short *)a, 0);
-    j = gm_Unk505e60(*(unsigned short *)b, 0);
+    i = gm_CharLevel(*(unsigned short *)a, 0);
+    j = gm_CharLevel(*(unsigned short *)b, 0);
     d = i - j;
     return (unsigned int)((d < 0 ? -d : d) < 6);
 }

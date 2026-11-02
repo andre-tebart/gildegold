@@ -3550,31 +3550,33 @@ void unk_Unk4f4d10(void)
         i++;
     } while (i < 0x300);
 }
-/* 0x4f4d30, the record id of the 0x91f700 entry (0x4f36e0) into: *c = the character's slot, *v = its liking (0x50c550 (c, *a, 1)) as an int, *k = the table record's low byte; 1 when the record exists and its table record has
-   +0x18 set and the owner character is alive. ROUGH */
+/* 0x4f4d30, the price of the evidence of the crime id offered by the character seller (the 'dunkle ecke' shops,
+   ai_DecideBuyDunkleEcke): (liking of the culprit for the seller * 0.005 + 0.5) * (the culprit's level gm_CharLevel + the
+   law's AIDEC.guilt) * 1600 into *price, the culprit's id into *culprit, the law into *law; 1 when the crime exists, its
+   law carries guilt and the culprit exists, else 0 */
 
-int gv_GetGraveInfo(int id, short *a, int *v, short *c, unsigned *k)
+int gv_EvidencePrice(int id, AICHAR *seller, int *price, short *culprit, unsigned *law)
 {
     int i;
-    short *ch;
-    int rec[9];
+    AICHAR *ch;
+    AIDEC rec;
+    int level;
 
-    if (id != -1) {
-        i = gv_FindCrime(id);
-        if (i != -1) {
-            if (gv_GetTableRecord(*(unsigned char *)(gv_Graveyard + 0x1c + i * 0x2d), rec) != 0 && rec[8] != 0) {
-                ch = (short *)gm_FindChar(*(int *)(gv_Graveyard + 0x16 + i * 0x2d));
-                if (ch != 0) {
-                    *c = *ch;
-                    gm_Unk505e60(*ch, 1);
-                    *v = (int)gm_Liking(*ch, *a, 1);
-                    *k = rec[0] & 0xff;
-                    return 1;
-                }
-            }
-        }
-    }
-    return 0;
+    if (id == -1)
+        return 0;
+    i = gv_FindCrime(id);
+    if (i == -1)
+        return 0;
+    if (gv_GetTableRecord(gv_CrimesT[i].law, (int *)&rec) == 0 || rec.guilt == 0)
+        return 0;
+    ch = (AICHAR *)gm_FindChar(gv_CrimesT[i].culprit);
+    if (ch == 0)
+        return 0;
+    *culprit = ch->id;
+    level = gm_CharLevel(ch->id, 1);
+    *price = (int)((gm_Liking(ch->id, seller->id, 1) * 0.005f + 0.5f) * (level + rec.guilt) * 1600.0f);
+    *law = rec.id;
+    return 1;
 }
 /* 0x4f3700, sends every crime record with message 0x23 (cm_SendRetireCrime (id, flag)): an open one (state 1) with flag 0, a
    handed-over one (state above 1: a job id) whose job he_FindEvent (1, 1, state) no longer finds with flag 1; after 32

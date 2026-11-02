@@ -97,7 +97,7 @@ typedef struct AIOBJ {                  /* 0x43 bytes, an object (table behind a
             int pad1c24[2];
             struct AIJOB *job24;        /* 0x24, of a cart: a job whose cartBld names a building (sv_RefreshPanel prints that building's kind; reasoned: the job the cart runs) */
         };
-        int recs[3];                    /* 0x1c..0x27, of a gm_Query kind 300 object in a shop: three record ids for gv_GetGraveInfo (0x4ab080 tries them in turn) */
+        int recs[3];                    /* 0x1c..0x27, of a gm_Query kind 300 object in a shop: three record ids for gv_EvidencePrice (0x4ab080 tries them in turn) */
     };
     char pad28[2];
     int unk2a;                          /* 0x2a */
@@ -714,7 +714,7 @@ unsigned char * gm_BuildQuery(int n, ...);                                      
 int gm_BuildingClass(int type);    /* 0x501d80, the class 0 .. 9 of ai_BTypes[type].kind: kinds 1 .. 0x20 index the byte table 0x501e14 and jump through 0x501dec (1..9), anything else is 0; ai.c dispatches its master / workshop logic on it, f3init.c's init_Betrieb stocks the classes 1 / 4 */
 char * gm_FindBuildingById(int id);                                             /* 0x502020 */
 short * gm_FindChar(int id);                                            /* 0x505df0 */
-int gm_Unk505e60(unsigned id, int again);                              /* 0x505e60, f3gm.c */
+int gm_CharLevel(unsigned short id, int again);                              /* 0x505e60, f3gm.c */
 short * gm_PlayerRecord(char *ch);                                         /* 0x506430 */
 float gm_ItemPrice(int item, unsigned char n);                           /* 0x5087f0 */
 float gm_GoodsPrice(unsigned id, unsigned char p);                           /* 0x5089c0, a price */

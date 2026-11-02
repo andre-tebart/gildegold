@@ -2531,7 +2531,7 @@ void he_Unk544070(int ev)
 int ai_InventoryHas(void *ch, int id);
 float gm_GetSkill(char *c, int skill);
 float gm_Mix2(float u, float v);          /* 0x504e80, f3gm.h */
-int gm_Unk505e60(unsigned id, int again);
+int gm_CharLevel(unsigned short id, int again);
 int gm_GetWorth(unsigned short id);
 void gm_Shuffle(unsigned n, int *out);
 int ai_Unk5c6620();
@@ -2590,7 +2590,7 @@ void he_Unk544550(int ev, unsigned short *p2, unsigned short *p3)
     int base, i, w2, w3;
     int *pw;
 
-    base = gm_Unk505e60(*p2, 0);
+    base = gm_CharLevel(*p2, 0);
     w2 = gm_GetWorth(*p2) > 32000 ? gm_GetWorth(*p2) : 32000;
     w3 = gm_GetWorth(*p3) > 32000 ? gm_GetWorth(*p3) : 32000;
     for (i = 0; i < 0xc; i++)

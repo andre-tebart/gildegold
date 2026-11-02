@@ -30,7 +30,7 @@ typedef unsigned int SOCKET;
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define ai_TimeT (*(AITIME *)&ai_Time)  /* 0x770ae0, ai_Time (anm.c: char[14]) as the AITIME it is: this unit reads its fields */
 #define he_MessageBoxQuickjumpI ((void (*)(int, int, char *, int, int, int, int, int, int))he_MessageBoxQuickjump)  /* 0x53dee0 (he.c: char fl): @original this unit builds the flag as an int (byte-matched ai_Unk4baa80 / ai_Unk4baba0) */
-#define gm_Unk505e60S ((int (*)(unsigned short, int))gm_Unk505e60)  /* 0x505e60 (f3gm.c: unsigned id): @original this unit pushes the id as 16 bits (byte-matched ai_Unk494a30 / ai_Unk494ac0 / ai_Unk494d40) */
+#define gm_CharLevelS ((int (*)(unsigned short, int))gm_CharLevel)  /* 0x505e60 (f3gm.c: unsigned short id, so the cast is now the prototype itself): @original this unit pushes the id as 16 bits (byte-matched ai_Unk494a30 / ai_Unk494ac0 / ai_Unk494d40) */
 #define cm_SendRemoveGoodsI ((void (*)(int, int))cm_SendRemoveGoods)  /* 0x4c4960 (cm.h: short b): @original ai.c pushes the second argument as an int (byte-matched ai_SendRemoveEmptyGoods) */
 #define cm_SendExSellObjectI ((void (*)(int, int, int, int, unsigned char, int))cm_SendExSellObject)  /* 0x4c4880 (cm.h: short c): @original this unit pushes the third argument as an int (byte-matched ai_MeisterBewaffnen / ai_Unk497c80 / ai_Unk49c880) */
 #include "d3_types.h"
@@ -202,7 +202,7 @@ int ai_IsLocalMaster(AICHAR *c)
     return 1;
 }
 /* 0x47ddf0, looks for a partner (a character that suits this one) and sends the messages about it; returns
-   the partner when the two have met enough, else 0 @deep read the whole function against the original 0x47ddf0..0x47e356 (the partner search over ai_CharsT with gm_Unk505e60 / ai_RelationMemory / gm_Liking, the warning message block with the clamp, the four partner states and the reset block); fixed: the scan ends at the array end (cmp ebp, &ai_CharsT[768].kind, signed: (int)o < (int)(ai_CharsT + 768)), the clamp bounds written inline (max(min(a, diff * 2 + 0x23), diff * 2 + 0xf), the original keeps no k / k2). Every statement, callee, field offset and constant matches. Left: block layout and allocation: the original returns through 7 duplicated epilogues and lays the state blocks a = 1 (0x47e2ba) and a = b216 + 1 (0x47e307) out of line after the reset block, its zero returns as xor edi,edi / mov eax,edi (p = 0); ours keeps them inline with 3 epilogues ('- cmp al,dl / - ja 0x47e15e' vs '+ cmp dl,al / + jae 0x47e2ba'); tried a single-exit form with p = 0 assignments (else-if chain): 408 -> 463 differing, the blocks still inline, reverted. The loop keeps i * 0x300 in the dead parameter slot [esp+0x28] (ours a register), frame 0x14 vs 0x1c. (size: 419 vs 445 instructions, explained: the 26 missing instructions are epilogues: the original has 7 return paths each with its own pop edi/esi/ebp/ebx, add esp, ret (6 instructions), ours 3) */
+   the partner when the two have met enough, else 0 @deep read the whole function against the original 0x47ddf0..0x47e356 (the partner search over ai_CharsT with gm_CharLevel / ai_RelationMemory / gm_Liking, the warning message block with the clamp, the four partner states and the reset block); fixed: the scan ends at the array end (cmp ebp, &ai_CharsT[768].kind, signed: (int)o < (int)(ai_CharsT + 768)), the clamp bounds written inline (max(min(a, diff * 2 + 0x23), diff * 2 + 0xf), the original keeps no k / k2). Every statement, callee, field offset and constant matches. Left: block layout and allocation: the original returns through 7 duplicated epilogues and lays the state blocks a = 1 (0x47e2ba) and a = b216 + 1 (0x47e307) out of line after the reset block, its zero returns as xor edi,edi / mov eax,edi (p = 0); ours keeps them inline with 3 epilogues ('- cmp al,dl / - ja 0x47e15e' vs '+ cmp dl,al / + jae 0x47e2ba'); tried a single-exit form with p = 0 assignments (else-if chain): 408 -> 463 differing, the blocks still inline, reverted. The loop keeps i * 0x300 in the dead parameter slot [esp+0x28] (ours a register), frame 0x14 vs 0x1c. (size: 419 vs 445 instructions, explained: the 26 missing instructions are epilogues: the original has 7 return paths each with its own pop edi/esi/ebp/ebx, add esp, ret (6 instructions), ours 3) */
 
 AICHAR *ai_FindPartner(AICHAR *c)
 {
@@ -223,8 +223,8 @@ AICHAR *ai_FindPartner(AICHAR *c)
         do {
             id = c->id;
             if (i != id && o->kind == 6 || o->kind == 7 || ai_WorksForMaster(o) && (o->jobId || o->prevOffice)) {
-                d = gm_Unk505e60S(i, 0);
-                d = d - gm_Unk505e60S(id, 0);
+                d = gm_CharLevelS(i, 0);
+                d = d - gm_CharLevelS(id, 0);
                 d = abs(d);
                 f = (10.0f - (float)d * 0.5f) * 0.1f;
                 if (ai_RelationMemory[i][c->id] * f < bestf && gm_Liking(i, c->id, 1) < 34.0f) {

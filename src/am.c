@@ -78,7 +78,7 @@ int ai_Unkf86900[73] = {0};  /* 0xf86900, the actions being evaluated */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define ai_TimeT (*(AITIME *)&ai_Time)  /* 0x770ae0, ai_Time (anm.c: char[14]) as the AITIME it is: this unit reads its fields */
 #define gv_OrderMoveGraveI ((void (*)(AGCH *, int, void *, int, int, int))gv_OrderMoveGrave)  /* 0x4f0e80 (gv.c: int *c, char *o): @original the byte-matched ai_Unk490b90 passes its AGCH record and s1 as they are */
-#define gm_Unk505e60S ((int (*)(unsigned short, int))gm_Unk505e60)  /* 0x505e60 (f3gm.c: unsigned id): @original this unit pushes the id as 16 bits (byte-matched ai_Unk494a30 / ai_Unk494ac0 / ai_Unk494d40) */
+#define gm_CharLevelS ((int (*)(unsigned short, int))gm_CharLevel)  /* 0x505e60 (f3gm.c: unsigned short id, so the cast is now the prototype itself): @original this unit pushes the id as 16 bits (byte-matched ai_Unk494a30 / ai_Unk494ac0 / ai_Unk494d40) */
 #define cm_SendExSellObjectI ((void (*)(int, int, int, int, unsigned char, int))cm_SendExSellObject)  /* 0x4c4880 (cm.h: short c): @original this unit pushes the third argument as an int (byte-matched ai_MeisterBewaffnen / ai_Unk497c80 / ai_Unk49c880) */
 #define amt_GetKindB ((int (*)(unsigned char, void *))amt_GetKind)  /* 0x4e6f80 (amt.h: int k): @original ai_Unk4a05e0 passes (unsigned char)k without widening */
 /* 0x48e070, the building of a master (kind != 3) in *out; 2: has one, 1: has a good one, 0: none */
@@ -3181,8 +3181,8 @@ int ai_Unk494a30(AIC4 *a, AIC4 *b)
 
     if (a->netId == (unsigned int)b->partner)
         return 0;
-    x = gm_Unk505e60S(a->id, 0);
-    y = gm_Unk505e60S(b->id, 0);
+    x = gm_CharLevelS(a->id, 0);
+    y = gm_CharLevelS(b->id, 0);
     t = (float)(y - x) * 2.5f;
     s = gm_Liking(a->id, b->id, 1) + t;
     if (s < util_RandomF() * 75.0f)
@@ -3209,12 +3209,12 @@ int ai_Unk494ac0(AIGRP *g, int send)
         return -5;
     r = 5 - g->unk28;
     p = 5 - g->unk24;
-    lv = gm_Unk505e60S(g->leader->id, 0);
+    lv = gm_CharLevelS(g->leader->id, 0);
     base = lv - lv / 3 - lv / 4 + p + r;
     for (i = 0; i < g->n; i++) {
         if (!g->mem[i].ch)
             return -6;
-        d = gm_Unk505e60S(g->mem[i].ch->id, 0);
+        d = gm_CharLevelS(g->mem[i].ch->id, 0);
         g->mem[i].d = max(min(base - d, 2), -2);
     }
     for (i = 0; i < g->n; i++) {
@@ -3249,8 +3249,8 @@ int ai_Unk494d40(AIC4 *a, AIC4 *b, int n)
 {
     int x, y;
 
-    x = gm_Unk505e60S(a->id, 0);
-    y = gm_Unk505e60S(b->id, 0);
+    x = gm_CharLevelS(a->id, 0);
+    y = gm_CharLevelS(b->id, 0);
     return (int)((float)((x - y + 10) * n * 3) * 0.33333334f);
 }
 /* 0x494d90, whether a character takes a risk: closeness plus a roll plus a bonus from two flags

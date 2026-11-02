@@ -6728,7 +6728,7 @@ float gm_CharAge(unsigned id)
 }
 /* 0x505e60, the level of the character id (0 for a free slot or an inactive one, 1 when 0x4e6f80 has no entry for its job byte +0x166): the record's byte + 1; below the maximum 10 and with no flag it is raised to the level of the master (+0x1a0, 0x505df0, once) when that is higher */
 
-int gm_Unk505e60(unsigned id, int again)
+int gm_CharLevel(unsigned short id, int again)
 {
     int r, k, l2;
     short *m;
@@ -6747,9 +6747,9 @@ int gm_Unk505e60(unsigned id, int again)
         return k;
     m = gm_FindChar(*(int *)(ai_Chars[id] + 0x60));
     if (m != 0) {
-        l2 = gm_Unk505e60(*m, 1);
+        l2 = gm_CharLevel(*m, 1);
         if (k <= l2)
-            return gm_Unk505e60(*m, 1);
+            return gm_CharLevel(*m, 1);
     }
     return k;
 }

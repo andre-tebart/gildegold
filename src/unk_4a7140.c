@@ -2178,7 +2178,7 @@ int ai_ExecMessage74(AIPER *p, AIARG *a, AIARG *b)
 }
 /* 0x4ab080, decide callback of 'buy dunkle ecke' (0x4ab2c0): from hour 21, when hour % 3 == netId % 3, p (not
    flagged 0x2000000) takes a random other owner's shop (type cap > 1, objects 0x120 / 300) and tries its three
-   records from a random one: the first whose value (gv_GetGraveInfo) is at most 5 percent of p's goods value
+   records from a random one: the first whose value (gv_EvidencePrice) is at most 5 percent of p's goods value
    goes into a (kind 0x13: record, price) and b (kind 4: the building); none when random(12) exceeds the office
    level of the record's character; half of the time it only looks (a and b cleared, still 1) */
 
@@ -2221,7 +2221,7 @@ int ai_DecideBuyDunkleEcke(AIPER *p, AIARG *a, AIARG *b)
                 o = s->obj;
                 tries = 3;
                 do {
-                    if (gv_GetGraveInfo(o->recs[k], (short *)&ai_CharsT[bld->owner], &price, &who, &x) != 0
+                    if (gv_EvidencePrice(o->recs[k], &ai_CharsT[bld->owner], &price, &who, &x) != 0
                         && !(money * 0.05f < price)) {
                         amt_GetKind(ai_CharsT[(unsigned short)who].officeKind, &kind);
                         if (util_RandomU(12) > kind.level)
