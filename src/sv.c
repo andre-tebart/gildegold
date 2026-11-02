@@ -6905,7 +6905,8 @@ int sv_PumpMessages(void)
     return 1;
 }
 
-extern int sv_ChatTime, ai_Unk623ec8;  /* 0x623ec4, 0x623ec8 */
+extern unsigned sv_ChatTime;  /* 0x623ec4 */
+extern int sv_QuickChatForm;  /* 0x623ec8 */
 extern int ai_Unk60d360;  /* 0x60d360 */
 int cm_SendExSysMessage(unsigned char id, void *msg);                     /* 0x4c4db0 */
 int cm_GetSlotState();                     /* 0x4c3ae0 */
@@ -7056,28 +7057,26 @@ void sv_ChatConsole(void)
     d2_CloseView(f);
     kb_Last = 0;
 }
-/* 0x530100, shows / hides the quick chat strip "misc\quickchat" (0x623ec8): visible while a chat line is fresh (0x623ec4 + 0x23a ms) and the console 0x52fe10 is not the top of the 0x75f780 stack */
+/* 0x530100, shows / hides the quick chat strip "misc\quickchat" (sv_QuickChatForm) with the chat log: visible while a chat line is fresh (sv_ChatTime + 0x23a ms)
+   and the chat console sv_ChatConsole is not the top frame */
 
-void sv_Unk530100(void)
+void sv_UpdateQuickChat(void)
 {
-    if (SV_I((unsigned)&ai_Unk75f280 + 0x500 + SV_I((unsigned)&sv_FrameDepth) * 8) == (int)sv_ChatConsole
-            || SV_U((unsigned)&sv_ChatTime) <= SV_U((unsigned)&ai_ClockMs) - 0x23a
-            || SV_U((unsigned)&sv_ChatTime) == 0xffffffff) {
-        if (ai_Unk623ec8 != -1) {
-            d2_CloseView(ai_Unk623ec8);
-            ai_Unk623ec8 = -1;
-            return;
+    if (sv_Frames[sv_FrameDepth].cb == (int)sv_ChatConsole || sv_ChatTime <= d3_Time - 0x23a || sv_ChatTime == 0xffffffff) {
+        if (sv_QuickChatForm != -1) {
+            d2_CloseView(sv_QuickChatForm);
+            sv_QuickChatForm = -1;
         }
     } else {
-        if (ai_Unk623ec8 == -1) {
-            ai_Unk623ec8 = d2_OpenForm(0, 0, "misc\\quickchat");
-            d2_PlaceMainWindow(ai_Unk623ec8, 3);
-            if (ai_Unk623ec8 == -1)
+        if (sv_QuickChatForm == -1) {
+            sv_QuickChatForm = d2_OpenForm(0, 0, "misc\\quickchat");
+            d2_PlaceMainWindow(sv_QuickChatForm, 3);
+            if (sv_QuickChatForm == -1)
                 return;
         }
-        d2_SetForm(ai_Unk623ec8, 0);
-        io_PrintText((char *)(unsigned)"$C");
-        io_PrintText((char *)(unsigned)&cm_ChatLog);
+        d2_SetForm(sv_QuickChatForm, 0);
+        io_PrintText("$C");
+        io_PrintText(cm_ChatLog);
     }
 }
 
@@ -7502,7 +7501,7 @@ l2:
         msx_SetVolume((int)0.0f);
         sb_SetMasterVolume((int)0.0f);
     }
-    sv_Unk530100();
+    sv_UpdateQuickChat();
     if (SV_B((unsigned)&ai_GameState) != 0) {
         if ((SV_U((unsigned)&ai_GameFlags) & 4) != 0 && SV_I((unsigned)&d2_FocusedInput) == 0 && SV_B((unsigned)&kb_Last) == 0x1c && (mask & 0x2000) != 0)
             sv_ChatConsole();
@@ -7721,8 +7720,8 @@ int ai_Unk623ea0 = -1;  /* 0x623ea0 */
 int ai_Unk623ea4 = -1;  /* 0x623ea4 */
 int ai_Unk623ea8 = -1;  /* 0x623ea8 */
 unsigned char sv_ChatRecipients[8] = { 1, 1, 1, 1, 1, 1, 1, 1 };  /* 0x623ebc, the chat console's recipient buttons, one per human player in ai_Chars order (1 = checked), kept between openings */
-int sv_ChatTime = -1;  /* 0x623ec4 */
-int ai_Unk623ec8 = -1;  /* 0x623ec8 */
+unsigned sv_ChatTime = 0xffffffff;  /* 0x623ec4, d3_Time when the last chat line arrived (cm.c's 0x4b handler), 0 / -1: none */
+int sv_QuickChatForm = -1;  /* 0x623ec8 */
 int sv_ViewRectLeft = 0;  /* 0x6248a4 */
 int sv_ViewRectTop = 0;  /* 0x6248a8 */
 unsigned ai_Unk623ecc = 4294967295;  /* 0x623ecc */

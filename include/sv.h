@@ -160,7 +160,7 @@ void sv_BroadcastText(unsigned fl, char *t);                            /* 0x52f
 void sv_Unk52fd80(char *t);                                             /* 0x52fd80 */
 void sv_PumpNet(void);                                                  /* 0x52fe00 */
 void sv_ChatConsole(void);                                                /* 0x52fe10 */
-void sv_Unk530100(void);                                                /* 0x530100 */
+void sv_UpdateQuickChat(void);                                                /* 0x530100 */
 void sv_Unk5301a0(void);                                                /* 0x5301a0 */
 void sv_Unk530670(void);                                                /* 0x530670 */
 void sv_Unk5307f0(void);                                                /* 0x5307f0 */
@@ -227,8 +227,8 @@ extern int ai_Unk623ea0;                                    /* 0x623ea0 */
 extern int ai_Unk623ea4;                                    /* 0x623ea4 */
 extern int ai_Unk623ea8;                                    /* 0x623ea8 */
 extern unsigned char sv_ChatRecipients[8];                  /* 0x623ebc */
-extern int sv_ChatTime;                                    /* 0x623ec4 */
-extern int ai_Unk623ec8;                                    /* 0x623ec8 */
+extern unsigned sv_ChatTime;                               /* 0x623ec4 */
+extern int sv_QuickChatForm;                                    /* 0x623ec8 */
 extern int sv_ViewRectLeft;                                 /* 0x6248a4 */
 extern int sv_ViewRectTop;                                  /* 0x6248a8 */
 extern unsigned ai_Unk623ecc;                               /* 0x623ecc */
