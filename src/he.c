@@ -6037,7 +6037,7 @@ D3PARTSYS *d3t_CreateEmitter(D3OBJECT *obj, char *tex, char flag, unsigned long 
 int mem_IsValid();
 void par_Delete();
 char *gm_FindBuildingById(int id);
-char *unk_Unk4fdc10(unsigned char *b);
+char *gm_HomeObject(unsigned char *b);
 void ai_Unk4c5970(int a, int b, int c);
 void ai_Unk4c5b90(int a);
 
@@ -6180,7 +6180,7 @@ void he_Unk54ff20(int ev)
     for (esi = (unsigned)&ai_CharInts; esi < ((unsigned)((unsigned)ai_CharInts + 0x653fe) + 0x2); esi += 0x21c) {
         if (*(unsigned char *)(esi + 4) > 0 && *(int *)(esi + 0x180) != 0 && *(int *)(esi + 0x168) == ebp && *(int *)(esi + 0x16c) != 0
             && !(util_RandomF() >= 0.5) && *(int *)(*(int *)(esi + 0x180) + 0x2c) == *(int *)(ev + 0xac)) {
-            o = unk_Unk4fdc10(*(int *)(esi + 0x16c));
+            o = gm_HomeObject(*(int *)(esi + 0x16c));
             ai_Unk4c5970(*(int *)esi, 0, 0);
             ai_Unk4c5b90(*(int *)esi);
             if (o != 0)

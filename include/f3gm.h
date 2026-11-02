@@ -75,7 +75,7 @@ float gm_HealthRatio(short *c);  /* 0x4fc8e0 */
 struct ORDBLD; struct ORDBLD *gm_FindHome(int unused, struct ORDBLD *o);  /* 0x4fd820, a home with room for the building o (the nearest or least full) */
 void unk_Unk4fda10(char *c, char *b);  /* 0x4fda10 */
 struct ORDCHAR; struct ORDBLD; struct ORDCHAR *gm_FindApplicant(struct ORDBLD *o, unsigned title, unsigned job);  /* 0x4fda70 */
-char *unk_Unk4fdc10(unsigned char *b);  /* 0x4fdc10 */
+char *gm_HomeObject(unsigned char *b);  /* 0x4fdc10 */
 short *unk_Unk4fddb0(unsigned char flags, int p2, int p3, unsigned char p4, unsigned char p5, char *p6);  /* 0x4fddb0 */
 void unk_Unk4fdfd0(void);  /* 0x4fdfd0 */
 unsigned short *unk_Unk5031b0(unsigned char *b, unsigned n);  /* 0x5031b0 */

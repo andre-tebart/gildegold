@@ -2208,22 +2208,24 @@ found:
     ORD_CHARS[i].flags1c8 |= 0x2000;
     return &ORD_CHARS[i];
 }
-/* 0x4fdc10, the object of the group a building kind supplies for the building record b (kind 1: 0x12, 2: 0x13, 0x1d: 0xfd, 0x16: 0x120), through 0x4ffe90 (its object id, 1, 0, n) */
+/* 0x4fdc10, the object of the home building b where an inhabitant is placed on stage (reasoned: the callers place characters there): by the kind (kind 1: 0x12, 2: 0x13, 0x1d: 0xfd, 0x16: 0x120), through 0x4ffe90 (its object id, 1, 0, n) */
 
-char *unk_Unk4fdc10(unsigned char *b)
+char *gm_HomeObject(unsigned char *b)
 {
-    char k;
+    ORDBLD *bld = (ORDBLD *)b;
+    char *o = 0;
+    char *type;
 
-    k = ai_BTypes[*b * 0x24d];
-    if (k == 1)
-        return gm_Query(*(int *)(b + 0x5d), 1, 0, 0x12);
-    if (k == 2)
-        return gm_Query(*(int *)(b + 0x5d), 1, 0, 0x13);
-    if (k == 0x1d)
-        return gm_Query(*(int *)(b + 0x5d), 1, 0, 0xfd);
-    if (k == 0x16)
-        return gm_Query(*(int *)(b + 0x5d), 1, 0, 0x120);
-    return 0;
+    type = ai_BTypes + bld->type * 0x24d;
+    if (*type == 1)
+        o = gm_Query((void *)bld->objList, 1, o, 0x12);
+    else if (*type == 2)
+        o = gm_Query((void *)bld->objList, 1, 0, 0x13);
+    else if (*type == 0x1d)
+        o = gm_Query((void *)bld->objList, 1, 0, 0xfd);
+    else if (*type == 0x16)
+        o = gm_Query((void *)bld->objList, 1, 0, 0x120);
+    return o;
 }
 /* 0x4fdcb0, the home of the character c: its building (+0x170) with the object of 0x4fdc10 (out3 = its id, -1 without) and out2 = the building id (+1); without one the next building (starting at 0x6f1bb4, 256 records of 0xa9 bytes) of kind 3 / 0x16 / 0x0f. Returns the building, 0 when none */
 
@@ -2236,7 +2238,7 @@ char *unk_Unk4fdcb0(char *c, int *out2, int *out3)
 
     i = ai_Unk6f1bb4;
     if (*(int *)(c + 0x170) != 0) {
-        o = unk_Unk4fdc10(*(unsigned char **)(c + 0x170));
+        o = gm_HomeObject(*(unsigned char **)(c + 0x170));
         if (o == 0)
             *out3 = -1;
         else
@@ -2278,7 +2280,7 @@ short *unk_Unk4fddb0(unsigned char flags, int p2, int p3, unsigned char p4, unsi
     }
     if (id == 0xffff)
         return 0;
-    if ((flags & 4) != 0 && p6 != 0 && (o = unk_Unk4fdc10((unsigned char *)p6)) != 0)
+    if ((flags & 4) != 0 && p6 != 0 && (o = gm_HomeObject((unsigned char *)p6)) != 0)
         gm_PlaceOnStage(*(int *)(ai_Chars[id] + 4), *(int *)(p6 + 1), *(int *)(o + 2), 0, 0);
     return (short *)ai_Chars[id];
 }

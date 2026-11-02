@@ -4752,7 +4752,7 @@ int ai_Unk4cb250(G17MSG *m, G17STAT *s)
     c[2] = m->data[8];
     if (*(int *)(c + 0x184) == 0) {
         if (bo != 0) {
-            t = unk_Unk4fdc10(bo);
+            t = gm_HomeObject(bo);
             if (t != 0 && *(int *)(t + 2) != -1)
                 gm_PlaceOnStage(*(int *)(c + 4), *(int *)(bo + 1), *(int *)(t + 2), 0, 0);
         } else {
