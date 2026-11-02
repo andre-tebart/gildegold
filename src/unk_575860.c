@@ -7822,7 +7822,7 @@ int gv_OrderSetGraveHolder(); int gv_SizeOpen();
    0x410e and the entries 0x4111 / +1 in 0x475b80 (window, 2, text), 0xf8a668 = -1; the pump loop 0x5309a0
    (this window, 0x677c7): the click 0x14673a0 -> 0x6f22a0 = 1; the first entry -> 0x4f0900 (0, rec, the two
    values), 1; the second -> 0x6f22a0 = 1; the pump 0 -> 0x4758f0 (window), the result */
-int ai_Unk583de0(char *rec, int a, unsigned char b)
+int ai_GraveFreeConfirm(char *rec, int a, unsigned char b)
 {
     int win;
     int b1;
@@ -7855,18 +7855,18 @@ int ai_Unk583de0(char *rec, int a, unsigned char b)
                 U_I((unsigned)&sv_PopRequest) = 1;
             }
         }
-        if (sv_RunFrame(ai_Unk583de0, 0x677c7) == 0) {
+        if (sv_RunFrame(ai_GraveFreeConfirm, 0x677c7) == 0) {
             d2_CloseView(win);
             return done;
         }
     }
 }
 /* 0x583ef0, enables the grave size buttons the yard has open from a minimum size on: rec = the graveyard
-   building (its yard), from = the largest size that is too small, btns = the four button ids, selp = the selected
+   building (its yard), from = the largest size that is too small, entry (the grave's entry, not read), btns = the four button ids, selp = the selected
    size. The sizes 0 .. from are disabled and unchecked, so are the sizes after it the yard has not open; the open
    ones are enabled. When the selected button is not clickable any more, the first open size becomes the selection
    and is checked; 1 when any size is open, else 0 */
-int ai_GraveSizeEnable(AIBLD *rec, int from, int unused, int *btns, int *selp)
+int ai_GraveSizeEnable(AIBLD *rec, int from, unsigned char entry, int *btns, int *selp)
 {
     int i;
     int first;
@@ -7967,7 +7967,7 @@ int ai_GraveMoveConfirm(AIBLD *rec, int from, unsigned char entry, int to)
    0x475590 (window, 1); a clicked button != the selection -> the selection, 0x583c50 again and 0x583ef0 again;
    the pump 0 -> 0x4758f0 (window), the result */
 
-int ai_Unk584260(char *rec, int a, int b)
+int ai_GraveMoveWindow(char *rec, int a, unsigned char b)
 {
     int win;
     int btn;
@@ -8013,48 +8013,46 @@ int ai_Unk584260(char *rec, int a, int b)
                 }
             }
         }
-        if (sv_RunFrame(ai_Unk584260, 0x677c7) == 0) {
+        if (sv_RunFrame(ai_GraveMoveWindow, 0x677c7) == 0) {
             d2_CloseView(win);
             return r;
         }
     }
 }
-/* 0x584410, the graveyard confirmation with two buttons (264 B): rec / w the window record (its +0 the window
-   handle, +0x18 the form, +0x1c the state object, +0x20 the value passed on, +0x24 the byte passed on). Two
-   buttons via 0x52e350 in the form w[6] at height 0, their labels U_I (0x144a620) / U_I (0x144a624); when the
-   state object's [0] == 3 the second button is disabled (0x475e40 (the button, 0)); 0xf8a668 = -1; the pump loop
-   0x5309a0 (this window, 0x677c7): the escape 0x14673a0 -> 0x6f22a0 = 1; the first button -> 0x475590 (the
-   window, 0), 0x583de0 (rec, w[8], w+0x24) == 1 -> 0x6f22a0 = 1, 0x475590 (the window, 1); the second button ->
-   the same through 0x584260 (the rent-a-grave window); the window is released by the caller, the pump 0
-   returns. Caller: the graveyard handler 0x5871e0 after 0x583b70 (which fills the record w). */
-
-void ai_Unk584410(char *rec, int *w)
+/* 0x584410, the two buttons of the grave detail window (ai_Unk583b70 fills w: 0 the window, 6 the button
+   section, 7 the selected entry record, 8 / 9 the grave's size and entry) and its pump: the buttons txt 0x4118
+   (ai_GraveFreeConfirm on the grave) and 0x4119 (ai_GraveMoveWindow, the move to another size; disabled when the entry is
+   already of size 3), each run with the window disabled and closing it when it answers 1; a right click
+   closes it */
+void ai_GraveDetailButtons(char *rec, int *w)
 {
     int btns[2];
+    int first;
+    int move;
 
-    sv_ButtonRow(w[6], 0, btns, 2, U_I((unsigned)&full_data_144a620), U_I((unsigned)&full_data_144a624));
-    if (*(int *)w[7] == 3)
-        d2_SetObjEnabled(btns[1], 0);
-    U_I((unsigned)&d2_ClickedId) = -1;
-    for (;;) {
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0) {
-            U_I((unsigned)&sv_PopRequest) = 1;
-        } else if (U_I((unsigned)&d2_ClickedId) != -1) {
-            if (U_I((unsigned)&d2_PointerObj) == btns[0]) {
+    sv_ButtonRow(w[6], 0, btns, 2, txt_Ptrs[0x4118], txt_Ptrs[0x4119]);
+    first = btns[0];
+    move = btns[1];
+    if (((GVENTRY *)w[7])->size == 3)
+        d2_SetObjEnabled(move, 0);
+    d2_ClickedId = -1;
+    do {
+        if (dm_L.rup != 0) {
+            sv_PopRequest = 1;
+        } else if (d2_ClickedId != -1) {
+            if (d2_PointerObj == first) {
                 d2_SetViewEnabled(w[0], 0);
-                if (ai_Unk583de0(rec, w[8], *(unsigned char *)((char *)w + 0x24)) == 1)
-                    U_I((unsigned)&sv_PopRequest) = 1;
+                if (ai_GraveFreeConfirm(rec, w[8], w[9]) == 1)
+                    sv_PopRequest = 1;
                 d2_SetViewEnabled(w[0], 1);
-            } else if (U_I((unsigned)&d2_PointerObj) == btns[1]) {
+            } else if (d2_PointerObj == move) {
                 d2_SetViewEnabled(w[0], 0);
-                if (ai_Unk584260(rec, w[8], *(unsigned char *)((char *)w + 0x24)) == 1)
-                    U_I((unsigned)&sv_PopRequest) = 1;
+                if (ai_GraveMoveWindow(rec, w[8], w[9]) == 1)
+                    sv_PopRequest = 1;
                 d2_SetViewEnabled(w[0], 1);
             }
         }
-        if (sv_RunFrame(ai_Unk584410, 0x677c7) == 0)
-            return;
-    }
+    } while (sv_RunFrame((int)ai_GraveDetailButtons, 0x677c7));
 }
 /* 0x584520, the graveyard grave action (632 B): rec / idx the grave index. The cost when the grave's owner
    (+0x27) is not the player (0x6f25b8): 0x4f2330 (the character, 0xff, idx, 1, &out), else 0; the window
@@ -9544,7 +9542,7 @@ void ai_Unk5871e0(char *rec)
     txt_Format(line, (char *)0x4107, U_I(((unsigned)&sv_PhaseMinutes + 0x218) + *p * 4));
     if (ai_Unk583b70(w, line) == 0)
         return;
-    ai_Unk584410(rec, w);
+    ai_GraveDetailButtons(rec, w);
     d2_CloseView(w[0]);
     sv_CameraFollow();
 }
