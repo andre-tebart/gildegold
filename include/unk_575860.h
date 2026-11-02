@@ -80,6 +80,7 @@ typedef struct TUTSTATE {               /* the tutorial state record (0x6fa060, 
 } TUTSTATE;
 
 void ai_GypsyHelperWindow(char *b);     /* 0x584d70, the helpers window of a building (HANDEL_SUCHEN form), opened by the gypsy production contact */
+extern TUTRUN *ai_TutorialRuns;         /* 0x6f2658, the chain of the tutorial's run records */
 extern int ai_TutorialOn;               /* 0x6f265c, the tutorial runs */
 extern int ai_TutorialRunning;          /* 0x6f2660, its state machine advances */
 int ai_TutorialTick(void);                 /* 0x575860, the tutorial's tick: runs its state machine */

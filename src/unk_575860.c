@@ -49,7 +49,6 @@ extern GAPDATA full_data_62918c[];
 extern int full_data_6291a0[5];
 extern GAPDATA full_data_62937c[];
 extern GAPDATA full_data_629390[];
-extern GAPDATA full_data_6f2658[];
 extern GAPDATA full_data_6f2640[];
 extern GAPDATA full_data_6293a8[];
 extern GAPDATA full_data_6293bc[];
@@ -699,6 +698,7 @@ TUTSTATE *const ai_Tutorial = (TUTSTATE *)(full_data_6fa020 + 0x40);  /* 0x5eec6
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define ai_TimeT (*(AITIME *)&ai_Time)  /* 0x770ae0, ai_Time (anm.c: char[14]) as the AITIME it is */
 #define ai_ClockMsVolatile (*(volatile int *)&ai_ClockMs)  /* 0x6333cc, @original: the byte-matched ai_TutorialTick reloads the clock after every read (a timer-written int; its owner declares it plain int) */
+TUTRUN *ai_TutorialRuns = 0;  /* 0x6f2658, the chain of the tutorial's run records (built by its start 0x578180, freed by its stop 0x578370) */
 int ai_TutorialOn = 0;  /* 0x6f265c, the tutorial runs (set by its start 0x578180, cleared by its end) */
 int ai_TutorialRunning = 0;  /* 0x6f2660, the tutorial's state machine advances (unk_SetEndGameGate / unk_ClearEndGameGate) */
 
@@ -2396,7 +2396,7 @@ int ai_Unk578180(void)
     if (!cnt)
         return -2;
     rec = (char *)ai_Unk5784a0();
-    *(char **)(unsigned)&full_data_6f2658 = rec;
+    ai_TutorialRuns = (TUTRUN *)rec;
     if (!rec)
         goto fail;
     tail = rec;
@@ -2423,7 +2423,7 @@ int ai_Unk578180(void)
     U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
     U_I(S + 0x10) = 0;
     U_I(S + 0x14) = 0;
-    *(char **)(S + 0x18) = *(char **)(unsigned)&full_data_6f2658;
+    *(char **)(S + 0x18) = (char *)ai_TutorialRuns;
     U_I(S + 0x1c) = 0;
     U_I(S + 0x20) = -1;
     U_I(S + 0x24) = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_629390);
@@ -2463,8 +2463,8 @@ void ai_Unk578370(void)
         if (U_I(i))
             sb_UnloadSampleBank(U_I(i));
     }
-    ai_Unk578440(U_I((unsigned)&full_data_6f2658));
-    U_I((unsigned)&full_data_6f2658) = 0;
+    ai_Unk578440((char *)ai_TutorialRuns);
+    ai_TutorialRuns = 0;
     U_I(S) = 0;
     U_I(S + 8) = 0;
     U_I(S + 0xc) = 0;
