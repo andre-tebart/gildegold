@@ -1648,19 +1648,19 @@ exe	0x0049a290	ai_DecideSaveAps	am	byte	readable
 exe	0x0049a380	ai_Unk49a380	am	byte	draft		
 exe	0x0049a390	ai_DecideUseMilitaryObject	am	shape	readable		
 exe	0x0049a5b0	ai_Unk49a5b0	am	shape	draft		
-exe	0x0049a690	ai_Unk49a690	am	draft	draft		
+exe	0x0049a690	ai_DecideUseReputationObject	am	shape	readable		
 exe	0x0049aa80	ai_Unk49aa80	am	shape	draft		
-exe	0x0049ab60	ai_Unk49ab60	am	draft	draft		
+exe	0x0049ab60	ai_DecideUseApsObject	am	shape	readable		
 exe	0x0049ad80	ai_Unk49ad80	am	shape	draft		
-exe	0x0049ae50	ai_Unk49ae50	am	draft	draft		
+exe	0x0049ae50	ai_DecideUseEducationObject	am	shape	readable		
 exe	0x0049b050	ai_Unk49b050	am	shape	draft		
-exe	0x0049b120	ai_Unk49b120	am	draft	draft		
+exe	0x0049b120	ai_DecideUseHealthObject	am	shape	readable		
 exe	0x0049b2b0	ai_Unk49b2b0	am	shape	draft		
-exe	0x0049b380	ai_Unk49b380	am	draft	draft		
-exe	0x0049b6f0	ai_Unk49b6f0	am	draft	draft		
-exe	0x0049b7c0	ai_Unk49b7c0	am	draft	draft		
+exe	0x0049b380	ai_DecideUseDynastyObject	am	draft	readable	deep	
+exe	0x0049b6f0	ai_ExecuteUseDynastyObject	am	shape	readable		
+exe	0x0049b7c0	ai_DecideUseMeanObject	am	draft	readable	deep	
 exe	0x0049bc50	ai_Unk49bc50	am	shape	draft		
-exe	0x0049bd90	ai_Unk49bd90	am	draft	draft		
+exe	0x0049bd90	ai_DecideUseSafetyObject	am	draft	readable	deep	
 exe	0x0049c000	ai_Unk49c000	am	shape	draft		
 exe	0x0049c0d0	ai_Unk49c0d0	am	byte	draft		
 exe	0x0049c170	ai_Unk49c170	am	byte	draft		
@@ -4430,7 +4430,7 @@ exe	0x005b9f30	ai_Unk5b9f30	unk_58bbd0	draft	draft
 exe	0x005ba1c0	ai_Unk5ba1c0	unk_58bbd0	draft	draft		
 exe	0x005ba290	ai_Unk5ba290	unk_58bbd0	draft	draft		
 exe	0x005ba600	ai_Unk5ba600	unk_58bbd0	byte	draft		
-exe	0x005ba620	ai_Unk5ba620	unk_58bbd0	byte	draft		
+exe	0x005ba620	ai_FindUsableGood	unk_58bbd0	byte	draft		
 exe	0x005ba660	ai_Unk5ba660	unk_58bbd0	byte	draft		
 exe	0x005ba6b0	ai_InventoryHas	unk_58bbd0	byte	draft		
 exe	0x005ba700	ai_Unk5ba700	unk_58bbd0	draft	draft		
@@ -4563,7 +4563,7 @@ exe	0x005cf020	ai_InterrogationWindow2	unk_58bbd0	draft	draft
 exe	0x005cf260	ai_Unk5cf260	unk_58bbd0	draft	draft		
 exe	0x005cf4f0	ai_Unk5cf4f0	unk_58bbd0	draft	draft		
 exe	0x005cf820	ai_Unk5cf820	unk_58bbd0	draft	draft		
-exe	0x005cf8a0	ai_Unk5cf8a0	unk_58bbd0	draft	draft		
+exe	0x005cf8a0	ai_UseGood	unk_58bbd0	draft	draft		
 exe	0x005cfb60	ai_Unk5cfb60	unk_58bbd0	byte	draft		
 exe	0x005cfb80	ai_Unk5cfb80	unk_58bbd0	byte	draft		
 exe	0x005cfc00	ai_Unk5cfc00	unk_58bbd0	draft	draft		
