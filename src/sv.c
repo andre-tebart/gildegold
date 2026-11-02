@@ -6183,43 +6183,58 @@ void sv_SetStatusText(char *s)
     strcpy(sv_StatusText, s);
     sv_StatusTime = d3_Time;
 }
-/* 0x52e350, creates n buttons (widget kind 0xbf, picture 0x53) in a row in the form f at height y, the labels are the n string arguments; the widths are the widest label + 0x20, ids returned in out[];
-   the row is centred (or the labels' width is used as the step when the form is too narrow) */
+/* 0x52e350, creates n buttons (d2_WinCreateSlider kind 0xbf, font 0x53) in a row in the window f at the height y, the
+   labels are the n string arguments; every button is as wide as the widest label + 0x20, the ids go to out[]. The
+   buttons are spread evenly over the window's width, or, when they do not fit, put side by side 8 apart and centred
+   @deep Read whole against the original 0x52e350..0x52e4af and rewritten: D2WIN *win = &d2_Wins[f] (font
+   +0x27c, w +8), the va_arg label loop with the inline strcpy, two copies of the widest width (wmax in a
+   register for the step / centring, bw in a slot for d2_SetObjWidth, as the original keeps it), the spread
+   / side-by-side branch with its if/else difference and the shared halving, the slider x as x - wmax / 2
+   (VC6's induction variable in the preheader), D2OBJ.font = 0x53. Same size (352 = 352), 122 = 122
+   instructions; diffclass: slots 26, regs 34, order 6 and one 'code' hunk at the prologue (0x52e35f) that
+   is the same rotation: with --regs edi=ebx,ebx=edi it is the push order (push ebx/ebp/esi/edi vs ours
+   edi/ebp/esi/ebx), the zero test of n (the original 'test eax,eax', ours 'cmp eax,ebx' against the zero
+   wmax register) and the slot swap win [esp+0x18] / count [esp+0x14] / bw [esp+0x10] (ours win 0x10, count
+   0x18, bw 0x14). Declaration orders tried (bw first, win last, i with bw): no change. */
 
 void sv_ButtonRow(int f, int y, int *out, int n, ...)
 {
     char labels[0x20][0x40];
-    int wmax, w, step, x, i, id;
+    D2WIN *win;
+    int wmax, bw, w, step, x, i, id, row;
     char *s;
     va_list ap;
 
     wmax = 0;
+    bw = 0;
+    win = &d2_Wins[f];
     va_start(ap, n);
     for (i = 0; i < n; i++) {
         s = va_arg(ap, char *);
         strcpy(labels[i], s);
-        w = d2_TextWidth(s, (int)*(short *)((unsigned)&ai_Unkf8f39c + f * 0x3c4)) + 0x20;
-        if (wmax < w)
+        w = d2_TextWidth(s, win->font) + 0x20;
+        if (w > wmax) {
+            bw = w;
             wmax = w;
+        }
     }
-    w = *(short *)((unsigned)&ai_Unkf8f128 + f * 0x3c4);
-    step = w / (n + 1);
-    x = step;
-    if (step < wmax) {
+    va_end(ap);
+    w = win->w;
+    x = w / (n + 1);
+    if (wmax > x) {
         step = wmax + 8;
-        x = step * n;
-        if (x - w == 0 || x < w)
-            x = w - x;
+        row = step * n;
+        if (row > w)
+            x = (row - w) / 2 + step / 2;
         else
-            x = x - w;
-        x = x / 2 + step / 2;
-    }
-    x -= wmax / 2;
+            x = (w - row) / 2 + step / 2;
+    } else
+        step = x;
     for (i = 0; i < n; i++) {
-        id = d2_WinCreateSlider(x, y, 0xbf, labels[i], f);
+        id = d2_WinCreateSlider(x - wmax / 2, y, 0xbf, labels[i], f);
         out[i] = id;
-        SV_WS(id, 0x74) = 0x53;
-        d2_SetObjWidth(id, wmax);
+        ((D2OBJ *)d2_Objs)[id].font = 0x53;
+        d2_SetObjWidth(id, bw);
         x += step;
     }
 }
