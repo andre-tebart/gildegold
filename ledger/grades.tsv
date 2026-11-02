@@ -1610,24 +1610,24 @@ exe	0x00496050	ai_Unk496050	am	byte	draft
 exe	0x00496070	ai_Unk496070	am	byte	draft		
 exe	0x00496080	ai_Unk496080	am	byte	draft		
 exe	0x004960a0	ai_Unk4960a0	am	byte	draft		
-exe	0x004960b0	ai_Unk4960b0	am	draft	draft		
+exe	0x004960b0	ai_DecideTrainSkill	am	draft	readable	deep	
 exe	0x004965b0	ai_Unk4965b0	am	byte	draft		
-exe	0x00496610	ai_Unk496610	am	draft	draft		
+exe	0x00496610	ai_DecideTrainJobSkill	am	draft	readable	deep	
 exe	0x00496ab0	ai_Unk496ab0	am	byte	draft		
-exe	0x00496b10	ai_Unk496b10	am	draft	draft		
+exe	0x00496b10	ai_EvalLeastLikedOfEvent	am	draft	draft	deep	
 exe	0x00496e40	ai_Unk496e40	am	byte	draft		
 exe	0x004972d0	ai_Unk4972d0	am	byte	draft		
 exe	0x004973f0	ai_Unk4973f0	am	byte	draft		
-exe	0x00497490	ai_Unk497490	am	draft	draft		
+exe	0x00497490	ai_DecideApplyForOffice	am	shape	readable		
 exe	0x00497630	ai_Unk497630	am	byte	draft		
-exe	0x00497660	ai_Unk497660	am	draft	draft		
-exe	0x004979d0	ai_Unk4979d0	am	draft	draft		
+exe	0x00497660	ai_DecideProduceGood	am	draft	draft	deep	
+exe	0x004979d0	ai_ExecuteProduceGood	am	draft	readable	deep	
 exe	0x00497af0	ai_Unk497af0	am	byte	draft		
 exe	0x00497c80	ai_Unk497c80	am	byte	draft		
 exe	0x00497cf0	ai_Unk497cf0	am	byte	draft		
 exe	0x00497ee0	ai_Unk497ee0	am	byte	draft		
-exe	0x00497fa0	ai_Unk497fa0	am	draft	draft		
-exe	0x00498470	ai_Unk498470	am	draft	draft		
+exe	0x00497fa0	ai_DecideBuyBuilding	am	draft	draft	deep	
+exe	0x00498470	ai_ExecuteBuyBuilding	am	draft	readable	deep	
 exe	0x004984d0	ai_Unk4984d0	am	draft	draft		
 exe	0x00498a80	ai_Unk498a80	am	draft	draft		
 exe	0x00498b80	ai_Unk498b80	am	draft	draft		
@@ -1727,16 +1727,16 @@ exe	0x004a0e60	ai_Unk4a0e60	am	byte	draft
 exe	0x004a1000	ai_Unk4a1000	am	byte	draft		
 exe	0x004a1170	ai_Unk4a1170	am	shape	draft		
 exe	0x004a1360	ai_Unk4a1360	am	byte	draft		
-exe	0x004a13e0	ai_Unk4a13e0	am	draft	draft		
+exe	0x004a13e0	ai_Unk4a13e0	am	shape	draft		
 exe	0x004a1640	ai_Unk4a1640	am	draft	draft		
 exe	0x004a16f0	ai_RegisterBaseActions	am	draft	draft		
 exe	0x004a3a90	ai_Unk4a3a90	am	draft	draft		
 exe	0x004a3af0	ai_FillNearRing	am	draft	draft		
 exe	0x004a4680	ai_Unk4a4680	am	draft	draft		
 exe	0x004a47c0	ai_GetDesireByName	am	byte	readable		
-exe	0x004a49a0	ai_Unk4a49a0	am	draft	draft		
+exe	0x004a49a0	ai_EvalMoodWeights	am	draft	readable		
 exe	0x004a4ae0	ai_Unk4a4ae0	am	draft	draft		
-exe	0x004a4c10	ai_Unk4a4c10	am	draft	draft		
+exe	0x004a4c10	ai_EvalGuiltWeights	am	draft	readable		
 exe	0x004a4e30	ai_Unk4a4e30	am	byte	draft		
 exe	0x004a4e70	ai_Unk4a4e70	am	draft	draft		
 exe	0x004a5140	ai_CanBuildType	am	draft	draft		
@@ -2949,7 +2949,7 @@ exe	0x004fbb80	unk_Unk4fbb80	f3gm	draft	draft
 exe	0x004fbd10	gm_PlaceOnStage	f3gm	draft	draft		
 exe	0x004fbe90	unk_Unk4fbe90	f3gm	draft	draft		
 exe	0x004fc6f0	gm_AgeCharacter	f3gm	draft	draft		
-exe	0x004fc7a0	unk_Unk4fc7a0	f3gm	draft	draft		
+exe	0x004fc7a0	gm_ExpectedDeathAge	f3gm	draft	draft		
 exe	0x004fc820	gm_CharacterHealth	f3gm	draft	draft		
 exe	0x004fc890	unk_Unk4fc890	f3gm	draft	draft		
 exe	0x004fc8e0	gm_HealthRatio	f3gm	draft	draft		
@@ -3037,7 +3037,7 @@ exe	0x00502a60	gm_ShowSlotObjects	f3gm	draft	draft
 exe	0x00502b60	gm_AssignBuilding	f3gm	draft	draft		
 exe	0x00502e30	gm_ShowBuildingObjects	f3gm	byte	draft		
 exe	0x00502eb0	gm_ListWorkers	f3gm	draft	draft		
-exe	0x00502fd0	gm_Unk502fd0	f3gm	draft	draft		
+exe	0x00502fd0	gm_SellBuilding	f3gm	draft	draft		
 exe	0x005031b0	unk_Unk5031b0	f3gm	draft	draft		
 exe	0x00503480	gm_RemoveObjectFromBuilding	f3gm	byte	readable		
 exe	0x005034b0	gm_Unk5034b0	f3gm	draft	draft		
@@ -3045,7 +3045,7 @@ exe	0x00503530	gm_PermissionBits	f3gm	draft	draft
 exe	0x00503c20	gm_Unk503c20	f3gm	draft	draft		
 exe	0x00503c60	unk_Unk503c60	f3gm	draft	draft		
 exe	0x00503e80	gm_ResetCharacters	f3gm	draft	draft		
-exe	0x00503ee0	gm_Unk503ee0	f3gm	draft	draft		
+exe	0x00503ee0	gm_GetJobTalents	f3gm	byte	readable		
 exe	0x00503f30	gm_Unk503f30	f3gm	byte	draft		
 exe	0x00503f50	gm_Unk503f50	f3gm	draft	draft		
 exe	0x00503fa0	gm_BuildingTypeOfJob	f3gm	draft	draft		
@@ -4012,7 +4012,7 @@ exe	0x0057aeb0	ai_Unk57aeb0	unk_575860	draft	draft
 exe	0x0057b750	ai_Unk57b750	unk_575860	draft	draft		
 exe	0x0057b810	ai_Unk57b810	unk_575860	shape	draft		
 exe	0x0057b8a0	ai_Unk57b8a0	unk_575860	draft	draft		
-exe	0x0057bc30	ai_SetupTutorialPlayer	unk_575860	draft	draft		
+exe	0x0057bc30	ai_SetupTutorialPlayer	unk_575860	shape	draft		
 exe	0x0057bce0	ai_TutorialWindow	unk_575860	draft	draft		
 exe	0x0057bf00	ai_Unk57bf00	unk_575860	draft	draft		
 exe	0x0057c560	ai_Unk57c560	unk_575860	draft	draft		
