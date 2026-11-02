@@ -2873,7 +2873,7 @@ void gm_InitPlayerRecord(int p)
     }
 }
 
-float gm_Unk4ffa10();                   /* 0x4ffa10 */
+float gm_StockPrice();                   /* 0x4ffa10 */
 int gm_FreeList();                     /* 0x500140 */
 void cm_SendGoodsDelta(char *p, unsigned char k);                     /* 0x4c5710 */
 
@@ -2887,7 +2887,7 @@ float gm_GoodsValue(int p, unsigned id)
     q = (unsigned short *)(init_StockBlocks + p * 0x2a90);
     do {
         if (*q == id)
-            return gm_Unk4ffa10(p, i);
+            return gm_StockPrice(p, i);
         i++;
         q += 0x40;
     } while (i < 0x55);
@@ -2968,7 +2968,7 @@ int gm_RemoveObject(int *list, unsigned id)
 }
 /* 0x4ff450, a random market shake: with chance 1 / 2, 0 .. 1 times (0x2 draws) a random goods record of the own player (of the first 0x54) that is in use and held gets a copy whose mean is the demand raised by 1.5 or halved, and whose price is the item's price (gm_ItemPrice, 100) scaled the same; the copy goes to cm_SendGoodsDelta for the own player */
 
-void gm_RandomMarketShake(void)
+void gm_RandomMarketShake(int unused)
 {
     GMSTOCK rec;
     int n;
@@ -3008,7 +3008,7 @@ int gm_FindMarketObject(int id);                     /* 0x500ec0 */
 int gm_FindPlayerBuilding(int p);                   /* 0x501000 */
 
 /* 0x4ffa10, the price of the goods record n of the player p (0x80 bytes each from 0x7d6a70 + p * 0x2a90): the base price 0x5087f0 (id, 100) when the player has no market object (0x500ec0, or for another player the object of 0x501000 with the group (2, 0, 0x1db, 6)); else the market's stock (the int at +0xe of the goods object of the market object (+0x14 list, id)) against the record's wanted amount (+0x20) and mean (+0x24) gives a factor limited to 0.25 .. 5.0, the price moves 0.4 of the way from the stored price (+0x38) to base * factor and is at least 512.0 (or the base when that is above 512). ROUGH */
-float gm_Unk4ffa10(int p, int n)
+float gm_StockPrice(int p, int n)
 {
     char *rec;
     int off;
@@ -3359,84 +3359,87 @@ void gm_SyncMarket(unsigned p);
 int gm_GoodsDemand(int p, int i);
 int gm_GoodsStock(int p, int i);
 
-/* 0x4ff550, the daily price index update of the player p at the clock t: the calendar date of 0x4fe2c0 (year, month number) is looked up in the two piecewise linear tables of the player (9 points of (value, month) at +0x60 / +0x50 of the slot 0x7e3f40 + p * 0x2f4 each), interpolated into the indices [0] / [2] of the player's record (0x7d6a60, times the factor [1] / [3] / 1000); then the 0x55 goods records: the float +0x20 moves halfway to 0x4ff8c0, the own player gets 0x4ff950 into +0x34, others copy +0x30; +0x38 = the price 0x4ffa10; the counters +0x10 .. +0x1c are cleared; at the end of the calendar the market (0x4fec10, 0x4ff450) runs. ROUGH */
+#define GM_BLOCK(p) ((GMBLOCK *)gm_StockBlocks + (p))  /* the stock block of the player p */
+#define GM_TABLE_A(p) ((GMPOINT *)(ai_PlayerSlots[p] + 0x64))  /* the player slot's first yearly table */
+#define GM_TABLE_B(p) ((GMPOINT *)(ai_PlayerSlots[p] + 0xb4))  /* its second yearly table */
+/* 0x4ff550, the daily price update of the player p at the clock t: the date's year and month are interpolated in the player slot's two yearly tables (GMPOINT, at +0x64 and +0xb4) into the block's two indices, each scaled by its factor / 1000; then for the 0x55 goods records the demand moves halfway to gm_GoodsDemand (not for the kinds 0x17 / 0x25), the stock is gm_GoodsStock for the own player and the base stock for the others, the price is gm_StockPrice, a record with the byte +0x40 set takes its stock as demand, and the four counters +0x10 .. +0x1c are cleared; without a network game the market syncs (gm_SyncMarket) and shakes (gm_RandomMarketShake)
+   @deep read the whole function against the original 0x4ff550..0x4ff8b2 and reconciled every statement:
+   date / yearly table interpolation of both GMPOINT tables, the block indices and factors (GMBLOCK), the
+   goods loop (demand, stock, price, demandIsStock, the daily counters), the net_Conn.s gate. Tried:
+   else-if chain (kept), the inner three cases nested under if (k < n - 1) (worse, 64 ins), a temporary for
+   table A like table B (worse, 245 ins). What remains is CSE placement in table A: the original computes
+   p*17 (mov eax,ebp; shl eax,4; add eax,ebp) once before 'cmp ebx,edi; jne' and reuses it in all three
+   inner cases, ours recomputes it in the k>0 case (0x4ff660..0x4ff665) and in the k<=0 case
+   (0x4ff6b1..0x4ff6bc): those 6 instructions are the whole size difference; the rest is ebx/ebp rotation
+   and the [esp+0x10]/[esp+0x24] slot swap (diffclass: slots), plus the folded 'mov al,[eax+edx]' vs 'add
+   eax,edx; mov al,[eax]' of the ai_Goods kind byte */
 void gm_UpdatePrices(unsigned p, void *t)
 {
-    unsigned char d[10];   /* gm_ClockToDate writes 10 bytes: out[0..5] and the int at +6 */
-    int month, n, k, a, x0, x1;
-    int *pl = (int *)ai_PlayerSlots[p];
-    int *rec = gm_StockBlocks + p * 0xaa4;
+    GMDATE d;
+    int year, n, k, a;
     int i;
-    char *g;
-    float f;
+    char kind;
 
-    gm_ClockToDate(t, d);
-    month = *(short *)(d + 2);
+    gm_ClockToDate(t, (unsigned char *)&d);
+    year = d.year;
     for (n = 0; n < 9; n++)
-        if (pl[0x64 / 4 + 2 * n + 2] <= pl[0x64 / 4 + 2 * n])
+        if (GM_TABLE_A(p)[n].year >= GM_TABLE_A(p)[n + 1].year)
             break;
     if (n >= 9)
         n = 9;
     for (k = 0; k < n; k++)
-        if (month <= pl[0x64 / 4 + 2 * k])
+        if (GM_TABLE_A(p)[k].year >= year)
             break;
-    if (k < n - 1) {
-        x0 = pl[0x64 / 4 + 2 * k];
-        if (month == x0)
-            rec[0] = (((int)(char)d[1] + (month - x0) * 0xc) * (pl[0x70 / 4 + 2 * k] - pl[0x68 / 4 + 2 * k])) / ((pl[0x6c / 4 + 2 * k] - x0) * 0xc) + pl[0x68 / 4 + 2 * k];
-        else if (k < 1)
-            rec[0] = pl[0x68 / 4];
-        else {
-            x1 = pl[0x5c / 4 + 2 * k];
-            rec[0] = (((int)(char)d[1] + (month - x1) * 0xc) * (pl[0x68 / 4 + 2 * k] - pl[0x60 / 4 + 2 * k])) / ((x0 - x1) * 0xc) + pl[0x60 / 4 + 2 * k];
-        }
-    } else
-        rec[0] = pl[0x60 / 4 + 2 * n];
-    rec[0] = (rec[1] * rec[0]) / 1000;
+    if (k >= n - 1)
+        GM_BLOCK(p)->demandIndex = GM_TABLE_A(p)[n - 1].value;
+    else if (year == GM_TABLE_A(p)[k].year)
+        GM_BLOCK(p)->demandIndex = (d.month + (year - GM_TABLE_A(p)[k].year) * 12) * (GM_TABLE_A(p)[k + 1].value - GM_TABLE_A(p)[k].value) / ((GM_TABLE_A(p)[k + 1].year - GM_TABLE_A(p)[k].year) * 12) + GM_TABLE_A(p)[k].value;
+    else if (k > 0)
+        GM_BLOCK(p)->demandIndex = (d.month + (year - GM_TABLE_A(p)[k - 1].year) * 12) * (GM_TABLE_A(p)[k].value - GM_TABLE_A(p)[k - 1].value) / ((GM_TABLE_A(p)[k].year - GM_TABLE_A(p)[k - 1].year) * 12) + GM_TABLE_A(p)[k - 1].value;
+    else
+        GM_BLOCK(p)->demandIndex = GM_TABLE_A(p)[0].value;
+    GM_BLOCK(p)->demandIndex = GM_BLOCK(p)->demandFactor * GM_BLOCK(p)->demandIndex / 1000;
     for (n = 0; n < 9; n++)
-        if (pl[0xb4 / 4 + 2 * n + 2] <= pl[0xb4 / 4 + 2 * n])
+        if (GM_TABLE_B(p)[n].year >= GM_TABLE_B(p)[n + 1].year)
             break;
     if (n >= 9)
         n = 9;
     for (k = 0; k < n; k++)
-        if (month <= pl[0xb4 / 4 + 2 * k])
+        if (GM_TABLE_B(p)[k].year >= year)
             break;
-    if (k < n - 1) {
-        x0 = pl[0xb4 / 4 + 2 * k];
-        if (month == x0)
-            a = (((int)(char)d[1] + (month - x0) * 0xc) * (pl[0xc0 / 4 + 2 * k] - pl[0xb8 / 4 + 2 * k])) / ((pl[0xbc / 4 + 2 * k] - x0) * 0xc) + pl[0xb8 / 4 + 2 * k];
-        else if (k < 1)
-            a = pl[0xb8 / 4];
-        else {
-            x1 = pl[0xac / 4 + 2 * k];
-            a = (((int)(char)d[1] + (month - x1) * 0xc) * (pl[0xb8 / 4 + 2 * k] - pl[0xb0 / 4 + 2 * k])) / ((x0 - x1) * 0xc) + pl[0xb0 / 4 + 2 * k];
-        }
-        rec[2] = a;
-    } else
-        rec[2] = pl[0xb0 / 4 + 2 * n];
-    rec[2] = (rec[3] * rec[2]) / 1000;
+    if (k >= n - 1)
+        GM_BLOCK(p)->indexB = GM_TABLE_B(p)[n - 1].value;
+    else {
+        if (year == GM_TABLE_B(p)[k].year)
+            a = (d.month + (year - GM_TABLE_B(p)[k].year) * 12) * (GM_TABLE_B(p)[k + 1].value - GM_TABLE_B(p)[k].value) / ((GM_TABLE_B(p)[k + 1].year - GM_TABLE_B(p)[k].year) * 12) + GM_TABLE_B(p)[k].value;
+        else if (k > 0)
+            a = (d.month + (year - GM_TABLE_B(p)[k - 1].year) * 12) * (GM_TABLE_B(p)[k].value - GM_TABLE_B(p)[k - 1].value) / ((GM_TABLE_B(p)[k].year - GM_TABLE_B(p)[k - 1].year) * 12) + GM_TABLE_B(p)[k - 1].value;
+        else
+            a = GM_TABLE_B(p)[0].value;
+        GM_BLOCK(p)->indexB = a;
+    }
+    GM_BLOCK(p)->indexB = GM_BLOCK(p)->factorB * GM_BLOCK(p)->indexB / 1000;
     for (i = 0; i < 0x55; i++) {
-        g = GM_GOODS(p, i);
-        if (ai_Goods[*(unsigned short *)g * 0x41] != 0x17 && ai_Goods[*(unsigned short *)g * 0x41] != 0x25) {
+        kind = ai_Goods[GM_BLOCK(p)->goods[i].item * 0x41];
+        if (kind != 0x17 && kind != 0x25) {
             a = gm_GoodsDemand(p, i);
-            *(float *)(g + 0x20) = ((float)a - *(float *)(g + 0x20)) * 0.5f + *(float *)(g + 0x20);
+            GM_BLOCK(p)->goods[i].demand = (float)(((float)a - GM_BLOCK(p)->goods[i].demand) * 0.5 + GM_BLOCK(p)->goods[i].demand);
         }
         if (p == ai_OwnPlayer)
-            *(int *)(g + 0x34) = gm_GoodsStock(p, i);
+            GM_BLOCK(p)->goods[i].stock = gm_GoodsStock(p, i);
         else
-            *(int *)(g + 0x34) = *(int *)(g + 0x30);
-        f = gm_Unk4ffa10(p, i);
-        *(float *)(g + 0x38) = f;
-        if (g[0x40] != 0)
-            *(float *)(g + 0x20) = (float)*(int *)(g + 0x34);
-        *(int *)(g + 0x10) = 0;
-        *(int *)(g + 0x14) = 0;
-        *(int *)(g + 0x1c) = 0;
-        *(int *)(g + 0x18) = 0;
+            GM_BLOCK(p)->goods[i].stock = GM_BLOCK(p)->goods[i].baseStock;
+        GM_BLOCK(p)->goods[i].price = gm_StockPrice(p, i);
+        if (GM_BLOCK(p)->goods[i].demandIsStock != 0)
+            GM_BLOCK(p)->goods[i].demand = (float)GM_BLOCK(p)->goods[i].stock;
+        GM_BLOCK(p)->goods[i].daily[0] = 0;
+        GM_BLOCK(p)->goods[i].daily[1] = 0;
+        GM_BLOCK(p)->goods[i].daily[3] = 0;
+        GM_BLOCK(p)->goods[i].daily[2] = 0;
     }
-    if (ai_Unk1460ae0 == -1) {
+    if ((int)net_Conn.s == -1) {
         gm_SyncMarket(p);
-        gm_RandomMarketShake();
+        gm_RandomMarketShake(p);
     }
 }
 

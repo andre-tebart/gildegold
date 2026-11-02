@@ -1159,3 +1159,4 @@
 2026-11-02T20:24:00 0x004ff8c0 func gm_Unk4ff8c0 -> gm_GoodsDemand by:main why:gm_InitPlayerRecord / gm_UpdatePrices store 0x4ff8c0's result in the goods record's demand float +0x20 and 0x4ff950's (the sum of the producing buildings' amounts) in the stock int +0x34
 2026-11-02T20:24:00 0x004ff950 func gm_Unk4ff950 -> gm_GoodsStock by:main why:gm_InitPlayerRecord / gm_UpdatePrices store 0x4ff8c0's result in the goods record's demand float +0x20 and 0x4ff950's (the sum of the producing buildings' amounts) in the stock int +0x34
 2026-11-02T20:30:37 0x004c56d0 func ai_Unk4c56d0 -> cm_SendGoodsRecord by:main why:0x4c56d0 sends message 0x3f with the player k and the 0x80-byte goods record p (cm.c); gm_SyncMarket and hst.c send the GMSTOCK / G12STOCK records with it
+2026-11-02T20:40:48 0x004ffa10 func gm_Unk4ffa10 -> gm_StockPrice by:main why:0x4ffa10 computes the price of the goods record n of the player p; gm_UpdatePrices stores it as GMSTOCK.price (+0x38)

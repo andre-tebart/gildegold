@@ -56,7 +56,7 @@ typedef struct GMSTOCK {
     int amount;                         /* 0x04, the amount the player holds */
     char pad08[4];
     int v00c;                           /* 0x0c, copied from the template (gm_InitPlayerRecord); 0, 40, 80 or -1 there */
-    char pad10[0x10];
+    int daily[4];                       /* 0x10, four counters gm_UpdatePrices clears every day */
     float demand;                       /* 0x20, the amount the market wants (gm_GoodsDemand) */
     float mean;                         /* 0x24, the mean amount */
     unsigned char offer;                /* 0x28, another player's offer counter: random 0 .. 0xff, then + 0x18 .. 0x1f per market sync; up to 0x80 the good is offered (gm_SyncMarket) */
@@ -65,7 +65,37 @@ typedef struct GMSTOCK {
     int stock;                          /* 0x34, the stock of the kinds 0x17 / 0x25 (gm_GoodsStock) */
     float price;                        /* 0x38, the stored price (gm_ItemPrice of the item, 100) */
     unsigned short marketKind;          /* 0x3c, the kind of the market object (0x92 .. 0x97, 0x2db) that holds the good (gm_SyncMarket) */
-    char pad3e[0x42];
+    char pad3e[2];
+    unsigned char demandIsStock;        /* 0x40, set: gm_UpdatePrices takes the stock as the demand */
+    char pad41[0x3f];
 } GMSTOCK;
+
+/* a player's stock block (0x2a90 bytes, five of them at gm_StockBlocks 0x7d6a60): two seasonal indices in
+   permille (gm_UpdatePrices interpolates them from the player slot's tables and scales them by their factors),
+   then the goods records */
+typedef struct GMBLOCK {
+    int demandIndex;                    /* 0x00, the demand index (gm_GoodsDemand scales the demand by it) */
+    int demandFactor;                   /* 0x04, its factor in permille */
+    int indexB;                         /* 0x08, the index of the second table (no other reader known) */
+    int factorB;                        /* 0x0c, its factor in permille */
+    GMSTOCK goods[0x55];                /* 0x10 */
+} GMBLOCK;
+
+/* a point of a player slot's yearly tables (ten of them at ai_PlayerSlots[p] + 0x64 and + 0xb4, increasing
+   years until the first that is not; gm_UpdatePrices interpolates between them by month) */
+typedef struct GMPOINT {
+    int year;
+    int value;
+} GMPOINT;
+
+/* the calendar record gm_ClockToDate fills (10 bytes) */
+typedef struct GMDATE {
+    unsigned char one;                  /* 0x0, always 1 */
+    char month;                         /* 0x1, the first month of the season: season * 3 + 1 */
+    short year;                         /* 0x2, day + 0x578 */
+    unsigned char hour;                 /* 0x4 */
+    unsigned char min;                  /* 0x5 */
+    unsigned char sec[4];               /* 0x6, the clock's seconds field (an unaligned int) */
+} GMDATE;
 
 #endif

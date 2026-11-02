@@ -296,7 +296,7 @@ int tb_SetFunctionOff(void (*proc)(void), int off);                             
 void d2_ClearScreen(void);                                                       /* 0x46e990, d2.h */
 void d2_ShowPicture(int pic);                                                    /* 0x46cfd0, d2.c */
 int d2_ClearSurface(struct D2SURF *surf);                                        /* 0x4796c0, gfx.c */
-void gm_RandomMarketShake(int unk);                                             /* 0x4ff450, f3gm.c */  /* @original: the original pushes one argument at both call sites; f3gm.c defines no parameter */
+void gm_RandomMarketShake(int unk);                                             /* 0x4ff450, f3gm.c */  /* the original pushes the player at both call sites; the function does not use it */
 extern short d2_ScreenW;  /* 0xfb9072, d2.h */
 extern short d2_ScreenH;  /* 0xfb9070 */
 void sv_SceneLoadProgress(int kind, int cur, int total);                         /* 0x521c10, sv.c */
