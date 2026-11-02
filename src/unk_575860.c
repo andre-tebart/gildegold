@@ -10508,12 +10508,12 @@ void ai_CharInfoWindow(char *ch)
     sv_ResetScreenClip();
     d2_CloseView(view);
 }
-/* 0x589400, clears one 12-byte slot of the table 0x6f5ec0 (14 B): its +4 / +8 = -1 */
+/* 0x589400, clears the bookmark b (14 B): its building and object = -1 */
 
-void ai_Unk589400(int *p)
+void ai_ClearBookmark(AIBOOKMARK *b)
 {
-    p[1] = -1;
-    p[2] = -1;
+    b->building = -1;
+    b->object = -1;
 }
 /* 0x589410, the init of the 12-byte slot table 0x6f5ec0 (63 B, 0xb slots up to 0x6f5f43): cleared, then each
    slot's byte 0 = i + 0x3b (0x57 for the last one, 0x6f5f38) and 0x589400 (the slot) */
@@ -10529,36 +10529,34 @@ void ai_Unk589410(void)
         *(unsigned char *)p = (unsigned char)(i + 0x3b);
         if (i == 0xa)
             ai_Bookmarks[10].key = 0x57;
-        ai_Unk589400((int *)p);
+        ai_ClearBookmark((AIBOOKMARK *)p);
     }
 }
 
 char * gm_FindBuildingById(int id); int gm_FindObjectInst(int id); unsigned gm_PermissionBits(unsigned p1, unsigned char *b, unsigned short *o, int c);
 
-/* 0x589450, validates the 12-byte slots 0x6f5ec4 .. 0x6f5f4c (113 B): a slot's +0 (not -1) through
-   0x502020 (id): 0 -> 0x589400 (the slot); else the +4 value through 0x4fe980: 0 while +4 is not -1 ->
-   0x589400, else 0x503530 (the player word, id, that, 0) without bit 0 -> 0x589400 */
-void ai_Unk589450(void)
+/* 0x589450, drops the stale bookmarks (113 B): every set one (building not -1) whose building is gone
+   (gm_FindBuildingById), whose object is set but gone (gm_FindObjectInst) or whose permission for the own player
+   lacks bit 1 (gm_PermissionBits) is cleared (ai_ClearBookmark) */
+void ai_ValidateBookmarks(void)
 {
-    char *p;
-    int id;
+    char *b;
     int e;
+    int i;
 
-    for (p = (char *)&ai_Bookmarks[0].object; p < (char *)&ai_Bookmarks[11].object; p += 0xc) {
-        if (*(int *)(p - 4) == -1)
+    for (i = 0; i < 11; i++) {
+        if (ai_Bookmarks[i].building == -1)
             continue;
-        id = gm_FindBuildingById(*(int *)(p - 4));
-        if (id == 0) {
-            ai_Unk589400((int *)(p - 8));
-            continue;
+        b = gm_FindBuildingById(ai_Bookmarks[i].building);
+        if (b == 0) {
+            ai_ClearBookmark(&ai_Bookmarks[i]);
+        } else {
+            e = gm_FindObjectInst(ai_Bookmarks[i].object);
+            if (e == 0 && ai_Bookmarks[i].object != -1)
+                ai_ClearBookmark(&ai_Bookmarks[i]);
+            else if ((gm_PermissionBits(ai_PlayerId, (unsigned char *)b, (unsigned short *)e, 0) & 1) == 0)
+                ai_ClearBookmark(&ai_Bookmarks[i]);
         }
-        e = gm_FindObjectInst(*(int *)p);
-        if (e == 0 && *(int *)p != -1) {
-            ai_Unk589400((int *)(p - 8));
-            continue;
-        }
-        if ((gm_PermissionBits(*(unsigned short *)(unsigned)&ai_PlayerId, id, e, 0) & 1) == 0)
-            ai_Unk589400((int *)(p - 8));
     }
 }
 
@@ -10582,7 +10580,7 @@ void ai_Unk5894d0(void)
             continue;
         if (*(unsigned char *)((unsigned)&kb_Down + 0x2a) != 0)
             continue;
-        ai_Unk589450();
+        ai_ValidateBookmarks();
         if (*(int *)p != -1)
             break;
     }
@@ -10654,7 +10652,7 @@ void ai_Unk589670(void)
     int e;
     int p;
 
-    ai_Unk589450();
+    ai_ValidateBookmarks();
     win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62aa38);
     d2_CentreViewWindows(win);
     d2_SetForm(win, 0);
