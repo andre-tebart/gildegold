@@ -210,7 +210,7 @@ void d3_MatInverse(D3MATRIX *src, D3MATRIX *dst)
     float det;
 
     det = (src->_22 * (src->_33 * src->_44 - src->_43 * src->_34) - src->_32 * (m[6] * src->_44 - src->_43 * m[7]) + m[13] * (m[6] * src->_34 - m[7] * src->_33)) * src->_11 - (m[1] * (src->_33 * src->_44 - src->_43 * src->_34) - src->_32 * (src->_44 * src->_13 - src->_43 * m[3]) + m[13] * (src->_34 * src->_13 - m[3] * src->_33)) * src->_21 + (m[1] * (m[6] * src->_44 - src->_43 * m[7]) - src->_22 * (src->_44 * src->_13 - src->_43 * m[3]) + m[13] * (m[7] * src->_13 - m[3] * m[6])) * src->_31 - (m[1] * (m[6] * src->_34 - m[7] * src->_33) - src->_22 * (src->_34 * src->_13 - m[3] * src->_33) + src->_32 * (m[7] * src->_13 - m[3] * m[6])) * src->_41;
-    if (fabs(det) < 1e-07) {
+    if (fabs(det) < 1e-07f) {
         d3_MatTranspose(src, dst);
         return;
     }
