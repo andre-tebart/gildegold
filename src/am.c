@@ -10324,27 +10324,28 @@ int ai_EvalMoodWeights(float *a, float *b, int i, AIPER *p, int f, void *x, void
 
 int ai_EvalCurrentNeed(float *a, float *b, int i, AIPER *p)
 {
-    G5ACT *act = &G5_ACTS[i];
+    G5ACT *act;
     float d1;
     int k, found;
 
     *a = 0.0f;
     *b = 0.0f;
-    if ((act->flags & G7_MASK(p)) == 0) {
-        d1 = 50.0f;
-        found = 0;
-    } else {
+    act = &G5_ACTS[i];
+    if (act->flags & G7_MASK(p)) {
         d1 = 40.0f;
         found = 1;
+    } else {
+        d1 = 50.0f;
+        found = 0;
     }
     for (k = 0; !found; k++) {
-        if (k > 3)
+        if (k >= 4)
             break;
         if (act->w1[k].k == p->sel && act->w1[k].w > 0.0f)
             found = 1;
     }
     for (k = 0; !found; k++) {
-        if (k > 3)
+        if (k >= 4)
             break;
         if (act->w2[k].k == p->sel && act->w2[k].w > 0.0f)
             found = 1;
