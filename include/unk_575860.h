@@ -126,13 +126,13 @@ int ai_StepChapter2Step5(int *p);               /* 0x5769c0, transition callback
 void ai_HookChapter2Step5(int arg);             /* 0x576a80, record lookup + 0x521960 */
 int ai_StepChapter2Step6(int *p);               /* 0x576ab0, transition callback */
 int ai_StepChapter2Step7(int *p);               /* 0x576b50, transition callback */
-int ai_Unk576ba0(int *p);               /* 0x576ba0, transition callback */
-int ai_Unk576cd0(int *p);               /* 0x576cd0, step callback predicate */
-int ai_Unk576d40(int *p);               /* 0x576d40, transition callback */
-int ai_Unk576e70(int *p);               /* 0x576e70, step callback predicate */
-int ai_Unk576ee0(int *p);               /* 0x576ee0, transition callback */
-int ai_Unk577020(int *p);               /* 0x577020, step callback predicate */
-void ai_Unk5770a0(int arg);             /* 0x5770a0, posts the message 0x2bc0 */
+int ai_StepChapter4Step2(int *p);               /* 0x576ba0, transition callback */
+int ai_QueryChapter4Step2(int *p);               /* 0x576cd0, step callback predicate */
+int ai_StepChapter4Step4(int *p);               /* 0x576d40, transition callback */
+int ai_QueryChapter4Step4(int *p);               /* 0x576e70, step callback predicate */
+int ai_StepChapter4Step5(int *p);               /* 0x576ee0, transition callback */
+int ai_QueryChapter4Step5(int *p);               /* 0x577020, step callback predicate */
+void ai_HookChapter4Step(int arg);             /* 0x5770a0, posts the message 0x2bc0 */
 void ai_HookChapter3Step2(int arg);             /* 0x577110, posts to the player's character record */
 int ai_QueryChapter3Step6(int *p);               /* 0x5771b0, transition callback */
 void ai_Unk577230(int arg);             /* 0x577230, posts messages */
@@ -172,7 +172,7 @@ int ai_TutorialInitMainIntro(void);                 /* 0x5784a0, allocates the m
 int ai_TutorialInitChapter1(void);      /* 0x578570, the chapter 1 chain */
 int ai_TutorialInitChapter2(void);      /* 0x578e40, the chapter 2 chain */
 int ai_TutorialInitChapter3(void);                 /* 0x579570, the chapter 3 chain */
-int ai_Unk57aa80(void);                 /* 0x57aa80, the chapter 4 chain (ROUGH) */
+int ai_TutorialInitChapter4(void);                 /* 0x57aa80, the chapter 4 chain */
 int ai_Unk57aeb0(void);                 /* 0x57aeb0, the chapter 5 chain (ROUGH) */
 int ai_TutorialInitMainOutro(void);                 /* 0x57b750, the main-outro record */
 void ai_Unk57b810(float *a, float *b, float *c, float *d, float t, float *out);  /* 0x57b810, the Bezier */
