@@ -271,7 +271,7 @@ int gv_WriteEffects(void *f)
             return 0;
         if (vfs_fwrite(&e->parts[0].c, 4, 1, (struct VFSFILE *)f) <= 0)
             return 0;
-        if (vfs_fwrite(&e->parts[0].d, 4, 1, (struct VFSFILE *)f) <= 0)
+        if (vfs_fwrite(&e->parts[0].flags, 4, 1, (struct VFSFILE *)f) <= 0)
             return 0;
         if (vfs_fwrite(&e->parts[0].e, 4, 1, (struct VFSFILE *)f) <= 0)
             return 0;
@@ -289,7 +289,7 @@ int gv_WriteEffects(void *f)
             return 0;
         if (vfs_fwrite(&e->parts[1].c, 4, 1, (struct VFSFILE *)f) <= 0)
             return 0;
-        if (vfs_fwrite(&e->parts[1].d, 4, 1, (struct VFSFILE *)f) <= 0)
+        if (vfs_fwrite(&e->parts[1].flags, 4, 1, (struct VFSFILE *)f) <= 0)
             return 0;
         if (vfs_fwrite(&e->parts[1].e, 4, 1, (struct VFSFILE *)f) <= 0)
             return 0;
@@ -307,7 +307,7 @@ int gv_WriteEffects(void *f)
             return 0;
         if (vfs_fwrite(&e->parts[2].c, 4, 1, (struct VFSFILE *)f) <= 0)
             return 0;
-        if (vfs_fwrite(&e->parts[2].d, 4, 1, (struct VFSFILE *)f) <= 0)
+        if (vfs_fwrite(&e->parts[2].flags, 4, 1, (struct VFSFILE *)f) <= 0)
             return 0;
         if (vfs_fwrite(&e->parts[2].e, 4, 1, (struct VFSFILE *)f) <= 0)
             return 0;
@@ -385,7 +385,7 @@ int gv_ReadEffects(void *f, int v)
             return 0;
         if (ls_Read(&e->parts[0].c, 4, 1, (int)f) == 0)
             return 0;
-        if (ls_Read(&e->parts[0].d, 4, 1, (int)f) == 0)
+        if (ls_Read(&e->parts[0].flags, 4, 1, (int)f) == 0)
             return 0;
         if (ls_Read(&e->parts[0].e, 4, 1, (int)f) == 0)
             return 0;
@@ -404,7 +404,7 @@ int gv_ReadEffects(void *f, int v)
             return 0;
         if (ls_Read(&e->parts[1].c, 4, 1, (int)f) == 0)
             return 0;
-        if (ls_Read(&e->parts[1].d, 4, 1, (int)f) == 0)
+        if (ls_Read(&e->parts[1].flags, 4, 1, (int)f) == 0)
             return 0;
         if (ls_Read(&e->parts[1].e, 4, 1, (int)f) == 0)
             return 0;
@@ -423,7 +423,7 @@ int gv_ReadEffects(void *f, int v)
             return 0;
         if (ls_Read(&e->parts[2].c, 4, 1, (int)f) == 0)
             return 0;
-        if (ls_Read(&e->parts[2].d, 4, 1, (int)f) == 0)
+        if (ls_Read(&e->parts[2].flags, 4, 1, (int)f) == 0)
             return 0;
         if (ls_Read(&e->parts[2].e, 4, 1, (int)f) == 0)
             return 0;
@@ -499,34 +499,27 @@ char *gv_FindEffect(int id)
     }
     return 0;
 }
-/* 0x4edf10, marks the slot of the id as to be released (flag 4 of +4) and releases it (id -1, flags 0) when none of its 3 parts (+0x74 + 0x68 * n, flag 2) is in use */
+/* 0x4edf10, releases the effect slot of the id: marks it (flags 4) and frees it (id -1, flags 0) unless one of its 3
+   parts is still in use (part flags 2) */
 
-void unk_Unk4edf10(int id)
+void gv_ReleaseEffect(int id)
 {
-    int *p;
-    int i, j;
-    unsigned char *q;
+    int i, n;
 
     if (id != -1) {
-        i = 0;
-        p = (int *)gv_Effects;
-        while (*p != id) {
-            p += 0x5c;
-            i++;
-            if ((int)p > ((unsigned)&gv_Effects + 0xb7f))
+        for (i = 0; i < 8; i++) {
+            if (gv_EffectsT[i].id == id)
+                goto found;
+        }
+        return;
+found:
+        gv_EffectsT[i].flags |= 4;
+        for (n = 0; n < 3; n++) {
+            if ((gv_EffectsT[i].parts[n].flags & 2) != 0)
                 return;
         }
-        q = (unsigned char *)gv_Effects + 0x74 + i * 0x170;
-        *(int *)(gv_Effects + 4 + i * 0x170) |= 4;
-        j = 0;
-        do {
-            if ((*q & 2) != 0)
-                return;
-            j++;
-            q += 0x68;
-        } while (j < 3);
-        *(int *)(gv_Effects + i * 0x170) = -1;
-        *(int *)(gv_Effects + 4 + i * 0x170) = 0;
+        gv_EffectsT[i].id = -1;
+        gv_EffectsT[i].flags = 0;
     }
 }
 
@@ -743,7 +736,7 @@ void gv_UpdateEffects(void)
             *(float *)(e + 0x10) = c;
             if ((*(unsigned *)(e + 4) & 2) == 0) {
                 if ((*(unsigned *)(e + 4) & 4) != 0)
-                    unk_Unk4edf10(id);
+                    gv_ReleaseEffect(id);
             } else {
                 j = 0;
                 off16 = 0;
@@ -755,7 +748,7 @@ void gv_UpdateEffects(void)
                             fl = *(unsigned *)(e + 4);
                             *(unsigned *)(e + 4) = fl & 0xfffffffc;
                             if ((fl & 4) != 0)
-                                unk_Unk4edf10(*(int *)e);
+                                gv_ReleaseEffect(*(int *)e);
                         }
                     } else if (*st == 1) {
                         if (*(int *)(e + 0x14) == 0)
@@ -810,7 +803,7 @@ void gv_UpdateEffects(void)
                     fl = *(unsigned *)(e + 4);
                     *(unsigned *)(e + 4) = fl & 0xfffffffc;
                     if ((fl & 4) != 0)
-                        unk_Unk4edf10(*(int *)e);
+                        gv_ReleaseEffect(*(int *)e);
                 }
             }
         }

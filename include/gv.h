@@ -143,13 +143,14 @@ typedef struct GVEFFPART {              /* 0x68 bytes, one of an effect slot's t
     float v2[4];                        /* 0x20 */
     float v3[4];                        /* 0x30, not saved */
     float v4[4];                        /* 0x40 */
-    int a, b, c, d;                     /* 0x50 */
+    int a, b, c;                        /* 0x50 */
+    int flags;                          /* 0x5c, 2: in use (gv_ReleaseEffect keeps the slot while a part has it) */
     int time;                           /* 0x60, not saved: the reader sets it to ai_ClockMs */
     int e;                              /* 0x64 */
 } GVEFFPART;
 typedef struct GVEFFECT {               /* 0x170 bytes, an effect slot of gv_Effects (8) */
     int id;                             /* 0x000, -1: free */
-    int pad04;
+    int flags;                          /* 0x004, 4: to be released (gv_ReleaseEffect) */
     float f08, f0c, f10;                /* 0x008, 1.0 after the reset; the per-frame step adds dt up to 1.0 */
     int f14;                            /* 0x014 */
     GVEFFPART parts[3];                 /* 0x018 */
@@ -177,7 +178,7 @@ int gv_ReadEffects(void *f, int v);      /* 0x4ed910 */
 void unk_ResetEffectSlots(void);               /* 0x4eddf0 */
 void gv_FreeEffectObjects(void);               /* 0x4ede70 */
 char *gv_FindEffect(int id);            /* 0x4eded0 */
-void unk_Unk4edf10(int id);             /* 0x4edf10 */
+void gv_ReleaseEffect(int id);             /* 0x4edf10 */
 void unk_Unk4ee360(int w, int sub, char *p, struct UNKHITS *out);  /* 0x4ee360 */
 void gv_UpdateEffects(void);               /* 0x4edf80 */
 void unk_Unk4eea70(char *o);             /* 0x4eea70 */

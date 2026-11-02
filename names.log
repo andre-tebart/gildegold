@@ -609,3 +609,4 @@
 2026-11-02T02:31:39 0x004ed480 func unk_Unk4ed480 -> gv_WriteEffects by:main why:0x4ed480 writes gv_LastTime, the cannon state and the fields of the 8 effect slots to the save file; 0x4ed910 reads the same back (version-dependent)
 2026-11-02T02:31:39 0x004ed910 func unk_Unk4ed910 -> gv_ReadEffects by:main why:0x4ed480 writes gv_LastTime, the cannon state and the fields of the 8 effect slots to the save file; 0x4ed910 reads the same back (version-dependent)
 2026-11-02T02:33:39 0x006f0e48 data ai_Unk6f0e48 -> gv_EffectArgs by:main why:0x6f0e48: 8 records of 0x38 bytes, the argument of each effect slot's default callback gv_EffectNotifyOwner (gv_ReadEffects / 0x4eeee0 store gv_EffectArgs + slot * 0x38 at +0x16c)
+2026-11-02T02:36:41 0x004edf10 func unk_Unk4edf10 -> gv_ReleaseEffect by:main why:0x4edf10 marks the effect slot of the id (flags 4) and frees it (id -1) when no part is in use; gv_UpdateEffects calls it
