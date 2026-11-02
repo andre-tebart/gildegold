@@ -45,8 +45,6 @@ extern GAPDATA full_data_629328[];
 extern GAPDATA full_data_629340[];
 extern GAPDATA full_data_629354[];
 extern GAPDATA full_data_629368[];
-extern GAPDATA full_data_62918c[];
-extern int full_data_6291a0[5];
 extern GAPDATA full_data_62937c[];
 extern GAPDATA full_data_629390[];
 extern GAPDATA full_data_6f2640[];
@@ -216,7 +214,6 @@ extern GAPDATA full_data_624ee0[];
 #include "f3init_types.h"
 extern GAPDATA full_data_6024f8[];
 extern GAPDATA full_data_624204[];
-extern GAPDATA full_data_62918c[];
 extern GAPDATA full_data_62a248[];
 
 
@@ -698,6 +695,8 @@ TUTSTATE *const ai_Tutorial = (TUTSTATE *)(full_data_6fa020 + 0x40);  /* 0x5eec6
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define ai_TimeT (*(AITIME *)&ai_Time)  /* 0x770ae0, ai_Time (anm.c: char[14]) as the AITIME it is */
 #define ai_ClockMsVolatile (*(volatile int *)&ai_ClockMs)  /* 0x6333cc, @original: the byte-matched ai_TutorialTick reloads the clock after every read (a timer-written int; its owner declares it plain int) */
+int ai_TutorialChapterOn[5] = { 1, 1, 1, 1, 1 };  /* 0x62918c, per chapter 1 = played (the start window's check boxes, ai_TutorialWindow) */
+int (*ai_TutorialChapterInit[5])(void) = { ai_Unk578570, ai_Unk578e40, ai_Unk579570, ai_Unk57aa80, ai_Unk57aeb0 };  /* 0x6291a0, the chapter chain builders the start appends for every chapter played */
 TUTRUN *ai_TutorialRuns = 0;  /* 0x6f2658, the chain of the tutorial's run records (built by its start 0x578180, freed by its stop 0x578370) */
 int ai_TutorialOn = 0;  /* 0x6f265c, the tutorial runs (set by its start 0x578180, cleared by its end) */
 int ai_TutorialRunning = 0;  /* 0x6f2660, the tutorial's state machine advances (unk_SetEndGameGate / unk_ClearEndGameGate) */
@@ -2389,8 +2388,8 @@ int ai_Unk578180(void)
     if (ai_TutorialOn != 0)
         return -3;
     cnt = 0;
-    for (p = (char *)(unsigned)&full_data_62918c; p < (char *)(unsigned)((unsigned)full_data_62918c + 0x14); p += 4) {
-        if (U_I(p) == 1)
+    for (i = 0; i < 5; i++) {
+        if (ai_TutorialChapterOn[i] == 1)
             cnt++;
     }
     if (!cnt)
@@ -2402,9 +2401,9 @@ int ai_Unk578180(void)
     tail = rec;
     while (*(char **)(tail + 0x70))
         tail = *(char **)(tail + 0x70);
-    for (i = 0; i < 0x14; i += 4) {
-        if (U_I((unsigned)&full_data_62918c + i) == 1) {
-            r = (char *)((int (*)())U_I((unsigned)&full_data_6291a0 + i))();
+    for (i = 0; i < 5; i++) {
+        if (ai_TutorialChapterOn[i] == 1) {
+            r = (char *)ai_TutorialChapterInit[i]();
             *(char **)(tail + 0x70) = r;
             if (!r)
                 goto fail;
@@ -4265,7 +4264,7 @@ int ai_TutorialWindow(void)
     for (i = 0; i < 5; i++) {
         ids[i] = d2_GetWinObj(id, 2, io_PrintText((char *)(unsigned)"%ia[%s]$N", 0x3f1b + i));
         U_I(U_I((unsigned)&d2_Objs) + ids[i] * 0x2ec + 0x48) = 1;
-        U_I(U_I((unsigned)&d2_Objs) + ids[i] * 0x2ec + 0x28) = U_I((unsigned)&full_data_62918c + i * 4);
+        U_I(U_I((unsigned)&d2_Objs) + ids[i] * 0x2ec + 0x28) = ai_TutorialChapterOn[i];
         U_I(U_I((unsigned)&d2_Objs) + ids[i] * 0x2ec + 0x1c0) &= -3;
     }
     start = d2_GetWinObj(id, 2, io_PrintText((char *)(unsigned)"%ia[%s]$N", 0x3f20));
@@ -4306,9 +4305,9 @@ int ai_TutorialWindow(void)
                 for (i = 0; i < 5; i++) {
                     if (U_I((char *)(U_I((unsigned)&d2_Objs) + ids[i] * 0x2ec) + 0x28) != 0) {
                         n++;
-                        U_I((unsigned)&full_data_62918c + i * 4) = 1;
+                        ai_TutorialChapterOn[i] = 1;
                     } else {
-                        U_I((unsigned)&full_data_62918c + i * 4) = 0;
+                        ai_TutorialChapterOn[i] = 0;
                     }
                 }
                 if (n != 0)
