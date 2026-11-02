@@ -7966,14 +7966,21 @@ int ai_Unk49e680(G5CH *p, AIARG *s1, AIARG *s2)
     cm_EndGroup("upgr_kerker");
     return 0x3c;
 }
-/* 0x49e7a0, decide callback 0x2f (characters with +0x166 == 0xa, from day 4 on, rich enough): work
-   on a building of kind 3, else build type 9 / 10 (1 in 8), else what 0x4a5140 finds */
+/* 0x49e7a0, decide callback of "Baumeister" (0x2f, characters with +0x166 == 0xa, from year 4 on, when the
+   object 0x115 of building 1 holds (rand(3000) + 1000) * 32): raise the level of a building of kind 3; else
+   (1 in 8) upgrade a free building of kind 3 to type 9, one of type 9 to type 10, or build type 8
+   @deep read whole against the original: conditions, ternary (lvl < 0x42 ? 30 : 10), the kind lookup
+   through rec->type (no spilled local) and all stores match; same instruction count (236/236). Left is
+   slot allocation: the original keeps o (gm_Query result) in the dead parameter a's slot ([esp+0x60]) and
+   money in a local ([esp+0x10]), ours the reverse (mov ecx,[esp+0x58] / mov edx,[esp+0x20] vs mov
+   ecx,[esp+0x60] / mov eax,[esp+0x10]), which reorders the s2 setup before ai_ChooseSubAction; and the
+   original's frame is 0x4c with two unused 4-byte holes (0x1c, 0x28) vs our 0x44. Declaration order tried,
+   no change. */
 
-int ai_Unk49e7a0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
+int ai_DecideMasterBuilder(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 {
     AIBLD *recA, *recB, *b, *rec;
-    unsigned char *o;
-    unsigned char k;
+    AIOBJ *o;
     char lvl;
     int cntA, cntB, i, money, r;
     AIARG s1;
@@ -7988,14 +7995,13 @@ int ai_Unk49e7a0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     b = gm_FirstBuilding(1);
     if (b == 0)
         return 0;
-    o = (unsigned char *)gm_Query(b->objList, 2, 6, 0, 0x115);
-    money = gm_SumListAmounts(*(int *)(o + 0x14), ai_OwnPlayer);
+    o = (AIOBJ *)gm_Query(b->objList, 2, 6, 0, 0x115);
+    money = gm_SumListAmounts(o->list, ai_OwnPlayer);
     if (money < (util_RandomU(3000) + 1000) * 32)
         return 0;
     rec = ai_BldsT;
     for (i = 0; i < 0x100; i++, rec++) {
-        k = rec->type;
-        if (k == 0 || ai_BTypesT[k].kind != 3 || (rec->flags5a & 4))
+        if (rec->type == 0 || ai_BTypesT[rec->type].kind != 3 || (rec->flags5a & 4))
             continue;
         lvl = rec->level;
         if (lvl < util_RandomU(0x40) + 0x25) {
@@ -8005,9 +8011,9 @@ int ai_Unk49e7a0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             if (lvl < 0x21)
                 s1.arg2 = 0x32;
             else
-                s1.arg2 = lvl >= 0x42 ? 10 : 30;
+                s1.arg2 = lvl < 0x42 ? 30 : 10;
             s2.arg = money;
-            s2.ref = *(int *)(o + 2);
+            s2.ref = o->objId;
             s2.kind = 1;
             s2.arg2 = 1;
             r = ai_ChooseSubAction(0xf, p->id, 0, &s1, &s2);
@@ -9809,7 +9815,7 @@ int ai_RegisterBaseActions(int a)
     act.id = 0x2f;
     strcpy(act.name, "Baumeister");
     act.eval = ai_EvalMoodWeights;
-    act.decide = ai_Unk49e7a0;
+    act.decide = ai_DecideMasterBuilder;
     act.exec = ai_Unk49ea90;
     act.flags = 0x3b;
     if (!am_RegisterMethod(&act, a))

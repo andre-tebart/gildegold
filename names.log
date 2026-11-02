@@ -810,3 +810,4 @@
 2026-11-02T07:51:55 0x0049d8d0 func ai_Unk49d8d0 -> ai_DecideMayor by:main why:decide callback of action 0x2e registered as "Buergermeister" (0x4a16f0)
 2026-11-02T07:56:28 0x0049def0 func ai_Unk49def0 -> ai_DecideMayorTownHall by:main why:decide callback of action 0x31 'Buergermeister Rathaus' (registered in 0x4a16f0)
 2026-11-02T07:57:47 0x0049e350 data ai_Unk49e350 -> ai_DecideMayorPrison by:main why:decide callback of action 0x3c 'Buergermeister Kerker' (registered in 0x4a16f0)
+2026-11-02T07:59:24 0x0049e7a0 func ai_Unk49e7a0 -> ai_DecideMasterBuilder by:main why:decide callback of action 0x2f 'Baumeister' (registered in 0x4a16f0)
