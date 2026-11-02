@@ -5,7 +5,9 @@
    paths (TUTMARK), the marker update, the chapter chooser, then the location / contact / tooltip windows (the
    alchemist's candidates and hire from 0x57bf00 on), the cannon scene, the cabinet's spy windows (kabinett_spy /
    kabinett, message 0x99), the room contacts (ai_AlchemistLabContact, ai_CannonContact, ai_CabinetContact) and the
-   graveyard windows (ai_GraveWindow with its size buttons, list and detail; the rent-a-grave detail). Start: he.c's last function 0x575710, its jump table and
+   graveyard windows (ai_GraveWindow with its size buttons, list and detail; the rent-a-grave detail; the move /
+   rent / free confirmation forms and the GRAEBER_PFLEGEN / GEHILFEN_ERSCHAFFEN callbacks ai_GraveCare /
+   ai_GraveRaiseHelper), the helpers window ai_GypsyHelperWindow. Start: he.c's last function 0x575710, its jump table and
    nop fill end at 0x575860; the unit's one .data block starts at 0x62918c (ai_TutorialChapterOn, then the "FT"
    state names) and its literals climb in function order to 0x62aa58; the network lobby (0x589f10) is a unit of
    its own. The original file name is unknown (no leaked tag). Names are ours.

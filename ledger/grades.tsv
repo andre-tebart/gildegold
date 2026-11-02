@@ -772,7 +772,7 @@ exe	0x0043ce10	d3_InitSurf	d3_engine	byte	readable
 exe	0x0043ce60	d3_InitObject	d3_engine	shape	draft	deep	
 exe	0x0043cfb0	d3_AddObjectDrawData	d3_engine	byte	readable		
 exe	0x0043d0e0	d3_Unlink	d3_engine	byte	readable		
-exe	0x0043d180	d3_CloneObject	d3_engine	shape	draft	deep	byte+draft -> shape+draft at 16bd236: ai.h AIOBJ gained the room fields locked / unlockPrice (anonymous struct in the 0x1c union) for ai_AlchemistLabContact (byte) and ai_UnlockRoomWindow: truer types than the byte offsets; d3_CloneObject uses no AIOBJ, it only sees ai.h through d3_engine's includes and flips byte -> shape (order 8) on the declaration set alone (any form of the member tried: named, anonymous, other position), so the match was no evidence [waits for: d3_engine's include set settling (VC6 /O2 declaration-set tie-break)]
+exe	0x0043d180	d3_CloneObject	d3_engine	byte	draft	deep	
 exe	0x0043d430	d3_SetObjectAlpha	d3_engine	shape	readable	deep	
 exe	0x0043d630	d3_SetAlphaCB	d3_engine	byte	readable		
 exe	0x0043d690	d3_SetAlpha	d3_engine	byte	readable		
@@ -4053,17 +4053,17 @@ exe	0x00583150	ai_GraveDeadDescription	unk_575860	byte	readable
 exe	0x00583240	ai_GraveWindow	unk_575860	draft	readable	deep	
 exe	0x00583700	ai_RentGraveDetail	unk_575860	draft	readable	deep	
 exe	0x00583b70	ai_Unk583b70	unk_575860	byte	draft		
-exe	0x00583c50	ai_Unk583c50	unk_575860	draft	draft		
-exe	0x00583de0	ai_Unk583de0	unk_575860	byte	draft		
-exe	0x00583ef0	ai_Unk583ef0	unk_575860	draft	draft		
-exe	0x00584010	ai_Unk584010	unk_575860	draft	draft		
-exe	0x00584260	ai_Unk584260	unk_575860	byte	draft		
-exe	0x00584410	ai_Unk584410	unk_575860	draft	draft		
-exe	0x00584520	ai_Unk584520	unk_575860	draft	draft		
+exe	0x00583c50	ai_GraveSizeButtonsAt	unk_575860	byte	readable		
+exe	0x00583de0	ai_GraveFreeConfirm	unk_575860	byte	draft		
+exe	0x00583ef0	ai_GraveSizeEnable	unk_575860	byte	readable		
+exe	0x00584010	ai_GraveMoveConfirm	unk_575860	byte	readable		
+exe	0x00584260	ai_GraveMoveWindow	unk_575860	byte	draft		
+exe	0x00584410	ai_GraveDetailButtons	unk_575860	byte	readable		
+exe	0x00584520	ai_GraveRentConfirm	unk_575860	byte	readable		
 exe	0x005847a0	ai_Unk5847a0	unk_575860	byte	draft		
-exe	0x00584900	ai_Unk584900	unk_575860	draft	draft		
-exe	0x00584b70	ai_Unk584b70	unk_575860	draft	draft		
-exe	0x00584d70	ai_GypsyHelperWindow	unk_575860	draft	draft		
+exe	0x00584900	ai_GraveCare	unk_575860	byte	readable		
+exe	0x00584b70	ai_GraveRaiseHelper	unk_575860	byte	readable		
+exe	0x00584d70	ai_GypsyHelperWindow	unk_575860	draft	draft	deep	
 exe	0x00585380	ai_Unk585380	unk_575860	draft	draft		
 exe	0x00585750	ai_Unk585750	unk_575860	draft	draft		
 exe	0x005859c0	ai_Unk5859c0	unk_575860	draft	draft		
