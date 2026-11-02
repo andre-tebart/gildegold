@@ -14,6 +14,10 @@
    parameter, kept as the cast macro sv_CheckGoodAmountB), sv.h / sv.c declare it unsigned and mask it.
    Open: ai_ClockMs is volatile in the original (ai_TutorialTick reloads it after every read, byte-matched through
    the unit's view ai_ClockMsVolatile); its owner and the other units declare it plain int.
+   Open: data: 0x6f9f60 ai_ShotTable (3 SHOTSLOT of 0x38 bytes, the cannon scene's shot results) and 0x6f2664
+   ai_ShotDirty are views of main.c's gap blocks (the table runs on to 0x6fa020 over full_data_6f9f68 .. 6f9fd0); owner unit and extent unsettled.
+   Open: the alchemist windows ai_AlchemistWindow / ai_AlchemistResearchWindow are @deep (allocation); their buttons call
+   ai_AlchemistFundWindow / ai_AlchemistRescheduleWindow with (obj, record), the record parameter unread.
    Open: not included yet (dcp headers conflicts unk_575860 HEADER): d2.h gfx.h sv.h unk_5d33b0.h; held by own
    declarations that differ from the owner's: d2_CreateWinText, SHOTREC; calls whose argument count differs from
    the definition (read the original's pushes): d2_GetObjValue, d2_PlaceMainWindow, sv_DrawBalanceBar.

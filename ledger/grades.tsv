@@ -4016,14 +4016,14 @@ exe	0x0057bc30	ai_SetupTutorialPlayer	unk_575860	shape	draft
 exe	0x0057bce0	ai_TutorialWindow	unk_575860	draft	readable	deep	
 exe	0x0057bf00	ai_AlchemistCandidates	unk_575860	draft	readable	deep	
 exe	0x0057c560	ai_AlchemistHire	unk_575860	byte	readable		
-exe	0x0057c690	ai_Unk57c690	unk_575860	draft	draft		
-exe	0x0057cde0	ai_Unk57cde0	unk_575860	draft	draft		
-exe	0x0057ced0	ai_Unk57ced0	unk_575860	draft	draft		
-exe	0x0057cf90	ai_Unk57cf90	unk_575860	draft	draft		
-exe	0x0057dc50	ai_Unk57dc50	unk_575860	draft	draft		
-exe	0x0057de60	ai_Unk57de60	unk_575860	draft	draft		
-exe	0x0057e0e0	ai_Unk57e0e0	unk_575860	draft	draft		
-exe	0x0057e230	ai_Unk57e230	unk_575860	draft	draft		
+exe	0x0057c690	ai_AlchemistResearchWindow	unk_575860	draft	readable	deep	
+exe	0x0057cde0	ai_AlchemistSendRecipeResearch	unk_575860	draft	readable	deep	
+exe	0x0057ced0	ai_AlchemistSendResearchStart	unk_575860	draft	readable	deep	
+exe	0x0057cf90	ai_AlchemistWindow	unk_575860	draft	readable	deep	
+exe	0x0057dc50	ai_AlchemistTrainShareWindow	unk_575860	draft	readable	deep	
+exe	0x0057de60	ai_AlchemistFundWindow	unk_575860	draft	readable	deep	
+exe	0x0057e0e0	ai_AlchemistRescheduleWindow	unk_575860	byte	readable		
+exe	0x0057e230	ai_ShotTableStore	unk_575860	byte	readable		
 exe	0x0057e270	ai_Unk57e270	unk_575860	draft	draft		
 exe	0x0057ec40	ai_Unk57ec40	unk_575860	draft	draft		
 exe	0x0057f0e0	ai_Unk57f0e0	unk_575860	draft	draft		
