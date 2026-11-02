@@ -10562,36 +10562,31 @@ void ai_ValidateBookmarks(void)
 
 void sv_SelectPanelObject(unsigned char *o, int b, char *c);
 
-/* 0x5894d0, the key-triggered slot selection (151 B): with U_B (0x1468410) set and U_B (0x14681ea) clear, the
-   slots 0x6f5ec4 .. 0x6f5f48 whose byte +0 is that key (0x589450 first): the first valid one (+0 not -1):
-   0x502020 (its +0) and 0x4fe980 (its +4) -> 0x521960 (the first, the second's +2 or -1, 0x631090) */
-void ai_Unk5894d0(void)
+/* 0x5894d0, the bookmark keys (151 B): on a key (kb_Last) without the left shift held (kb_Down[0x2a]), the
+   first bookmark of that key still set after ai_ValidateBookmarks selects its building and object (or -1) in
+   the panel (sv_SelectPanelObject) */
+void ai_SelectBookmark(void)
 {
-    char *p;
-    int id;
-    char *e;
+    char *b;
+    AIOBJ *o;
+    int i;
 
-    if (*(unsigned char *)(unsigned)&kb_Last == 0)
+    if (kb_Last == 0 || kb_Down[0x2a] != 0)
         return;
-    if (*(unsigned char *)((unsigned)&kb_Down + 0x2a) != 0)
-        return;
-    for (p = (char *)&ai_Bookmarks[0].building; p < (char *)&ai_Bookmarks[11].building; p += 0xc) {
-        if (*(unsigned char *)(p - 4) != *(unsigned char *)(unsigned)&kb_Last)
-            continue;
-        if (*(unsigned char *)((unsigned)&kb_Down + 0x2a) != 0)
-            continue;
-        ai_ValidateBookmarks();
-        if (*(int *)p != -1)
-            break;
+    for (i = 0; i < 11; i++) {
+        if (ai_Bookmarks[i].key == kb_Last && kb_Down[0x2a] == 0) {
+            ai_ValidateBookmarks();
+            if (ai_Bookmarks[i].building != -1) {
+                b = gm_FindBuildingById(ai_Bookmarks[i].building);
+                o = (AIOBJ *)gm_FindObjectInst(ai_Bookmarks[i].object);
+                if (o != 0)
+                    sv_SelectPanelObjectK(b, o->objId, ch_EmptyName);
+                else
+                    sv_SelectPanelObjectK(b, -1, ch_EmptyName);
+                return;
+            }
+        }
     }
-    if (p >= (char *)&ai_Bookmarks[11].building)
-        return;
-    id = gm_FindBuildingById(*(int *)p);
-    e = (char *)gm_FindObjectInst(*(int *)(p + 4));
-    if (e != 0)
-        sv_SelectPanelObjectK(id, *(int *)(e + 2), (char *)(unsigned)&ch_EmptyName);
-    else
-        sv_SelectPanelObjectK(id, -1, (char *)(unsigned)&ch_EmptyName);
 }
 /* 0x589570, the tooltip line of the slot idx (256 B): a = U_I (0x6f2308) (else U_I (0x6f230c) -> its
    0x4ffe90 (a + 0x5d, 2, 6, 0, 0xfd) when U_I (0x6f2310) is 0, else U_I (0x75ec60) or U_I (0x6f1bc8)),
@@ -10684,7 +10679,7 @@ void ai_Unk589670(void)
             ai_Unk589570(*(int *)((unsigned)&d2_RadioSel));
         d2_MenuNavigate(0);
         d2_SetObjEnabled(0, 0);
-        ai_Unk5894d0();
+        ai_SelectBookmark();
     }
     d2_RadioClear(0);
     d2_CloseView(win);
@@ -10787,7 +10782,7 @@ void ai_SlotKeys(void)
         return;
     if (*(unsigned char *)(unsigned)&kb_Last == 0x58)
         ai_Unk589670();
-    ai_Unk5894d0();
+    ai_SelectBookmark();
     i = 0;
     for (p = (char *)ai_Bookmarks; p < (char *)&ai_Bookmarks[11]; p += 0xc) {
         if (*(unsigned char *)p == *(unsigned char *)(unsigned)&kb_Last && *(unsigned char *)((unsigned)&kb_Down + 0x2a) != 0)
