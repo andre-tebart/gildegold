@@ -1234,16 +1234,13 @@ int ai_Unk5765e0(int *p)
         return 1;
     return 0;
 }
-/* 0x576600, 1 unless the kind 0x19 has a building whose table byte is not 0xf */
+/* 0x576600, the query callback of the run record FTInitChapter2Step5: refuses the event 0x19 on a building of
+   another type kind than 0xf, allows everything else */
 
-int ai_Unk576600(int *p)
+int ai_QueryChapter2Step5(int *args)
 {
-    int kind;
-
-    if (p[0] != 0x19 || !p[1])
-        return 1;
-    kind = *(unsigned char *)p[1];
-    if (*(unsigned char *)(*(char **)(unsigned)&ai_BTypes + kind * 0x24d) != 0xf)
+    if (args[0] == 0x19 && args[1]
+            && ((AIBTYPE *)ai_BTypes)[((AIBLD *)args[1])->type].kind != 0xf)
         return 0;
     return 1;
 }
@@ -2953,7 +2950,7 @@ int ai_Unk578e40(void)
     U_I(r + 0x30) = 0x8e;
     U_I(r + 0x34) = (unsigned)&ai_Unk576a80;
     U_I(r + 0x38) = (unsigned)&ai_Unk5769c0;
-    U_I(r + 0x3c) = (unsigned)&ai_Unk576600;
+    U_I(r + 0x3c) = (unsigned)&ai_QueryChapter2Step5;
     U_I(r + 0x44) = 0x2148;
     U_I(r + 0x48) = 0xa;
     U_I(r + 0x68) = 0x5837;
