@@ -6858,32 +6858,29 @@ float gm_CharAge(unsigned short id)
 {
     return (float)*(unsigned short *)(ai_Chars[id] + 10);
 }
-/* 0x505e60, the level of the character id (0 for a free slot or an inactive one, 1 when 0x4e6f80 has no entry for its job byte +0x166): the record's byte + 1; below the maximum 10 and with no flag it is raised to the level of the master (+0x1a0, 0x505df0, once) when that is higher */
+/* 0x505e60, the level of the character id: 0 for a free slot or a dead one, 1 when its job has no kind record
+   (amt_GetKind), else the kind's level + 1; below the top level 10 and unless again is set, the level of its
+   parent (relatives[1]) when that is not lower */
 
 int gm_CharLevel(unsigned short id, int again)
 {
-    int r, k, l2;
-    short *m;
-    int rec[4];
+    AMTKIND kind;
+    short *parent;
+    int level;
 
-    id &= 0xffff;
-    if (*(int *)(ai_Chars[id] + 4) == -1 || ai_Chars[id][8] == 0)
+    if (ORD_CHARS[id].netId == -1 || ORD_CHARS[id].health <= 0)
         return 0;
-    r = amt_GetKind(ai_Chars[id][0x166], rec);
-    if (r == 0)
+    if (amt_GetKind(ORD_CHARS[id].job, &kind) == 0)
         return 1;
-    k = (rec[2] & 0xff) + 1;
-    if ((char)rec[2] == 10)
-        return k;
+    level = kind.level + 1;
+    if (kind.level == 10)
+        return level;
     if (again != 0)
-        return k;
-    m = gm_FindChar(*(int *)(ai_Chars[id] + 0x60));
-    if (m != 0) {
-        l2 = gm_CharLevel(*m, 1);
-        if (k <= l2)
-            return gm_CharLevel(*m, 1);
-    }
-    return k;
+        return level;
+    parent = gm_FindChar(ORD_CHARS[id].relatives[1]);
+    if (parent != 0 && level <= gm_CharLevel(*parent, 1))
+        return gm_CharLevel(*parent, 1);
+    return level;
 }
 /* 0x505f30, gm_CharLevel for the previous office (+0x167): its level, raised to the master's when that is higher */
 
