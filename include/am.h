@@ -321,9 +321,9 @@ int ai_Unk499c10(int a, AIPER *p, int b, AIARG *o1, AIARG *o2);                 
 int ai_Unk499f20(AIPER *p, AIARG *s1, AIARG *s2);                               /* 0x499f20 */
 int ai_Unk49a020(int a, AIPER *p, int b, AIARG *o1, AIARG *o2);                 /* 0x49a020 */
 
-int ai_Unk49eec0(int a, struct G5CH *p, int f, struct AIARG *o1, struct AIARG *o2);             /* 0x49eec0 */
+int ai_DecideTakeCredit(int a, struct G5CH *p, int f, struct AIARG *o1, struct AIARG *o2);             /* 0x49eec0 */
 int ai_Unk4a4e30(struct AIBLD *b, int k);                                           /* 0x4a4e30 */
-int ai_Unk4a5140(int a, struct AIPER *p, int b, struct AIARG *s1, struct AIARG *s2, int f);         /* 0x4a5140 */
+int ai_CanBuildType(int a, struct AIPER *p, int b, struct AIARG *s1, struct AIARG *s2, int f);         /* 0x4a5140 */
 int ai_ExecBuildBuilding(struct AIPER *p, struct AIARG *s1, struct AIARG *s2);                               /* 0x4a5320 */
 int ai_Unk4a5540(int *item, int *obj, AIBLD *bld, int f);                       /* 0x4a5540 */
 int ai_PickActionBuilding(struct AIPER *p, int a, __int64 mask, int c, float f, int *out);    /* 0x4a63f0 */
@@ -335,7 +335,7 @@ int gm_BuildingJob(int k);                                                      
 int gm_TitlesLeft(int k);                                                        /* 0x504ce0 */
 float gm_Mix(int a, int b, int c);                                  /* 0x504e20 */
 int gm_BuildingKindValue(int k);                                                        /* 0x509d30 */
-int gm_Unk509dc0(int unused, int kind);                                              /* 0x509dc0 */
+int gm_BuildingKindCost(int unused, int kind);                                              /* 0x509dc0 */
 int unk_Unk4f8700(char *c);                                                     /* 0x4f8700 */
 unsigned short *gm_ObjectOwnerChar(unsigned short *o);                                                  /* 0x509ff0 */
 
@@ -536,9 +536,9 @@ extern float ai_Unkf86894;              /* 0xf86894 */
 extern float ai_Unkf868b4;              /* 0xf868b4 */
 #endif
 
-int ai_Unk48f250(AIPX *p, AIBLD **out);                                         /* 0x48f250 */
-int ai_Unk48f2b0(int a, AIPX *p, int b, AIARG *o1, AIARG *o2);                  /* 0x48f2b0 */
-int ai_Unk48f500(AIPX *p, AIARG *s1, AIARG *s2);                                /* 0x48f500 */
+int ai_FindOwnBuilding(AIPX *p, AIBLD **out);                                         /* 0x48f250 */
+int ai_DecideBuildSculpture(int a, AIPX *p, int b, AIARG *o1, AIARG *o2);                  /* 0x48f2b0 */
+int ai_ExecBuildSculpture(AIPX *p, AIARG *s1, AIARG *s2);                                /* 0x48f500 */
 int ai_Unk48f600(int a, AIPX *p, int b, AIARG *o1, AIARG *o2);                  /* 0x48f600 */
 int ai_Unk48f990(AIPX *p, AIARG *s1, AIARG *s2);                                /* 0x48f990 */
 int ai_Unk48fb70(int a);                                                        /* 0x48fb70 */
@@ -554,16 +554,16 @@ int ai_Unk490600(AIPX *p, AIBLD *b, int unused, AIARG *o);                      
 int ai_Unk490690(int a, AIPX *p, int b, AIARG *o1, AIARG *o2);                  /* 0x490690 */
 
 /* callees outside this file */
-int ai_Unk4a5140(int a, struct AIPER *p, int b, struct AIARG *s1, struct AIARG *s2, int f);           /* 0x4a5140 */
+int ai_CanBuildType(int a, struct AIPER *p, int b, struct AIARG *s1, struct AIARG *s2, int f);           /* 0x4a5140 */
 int ai_ExecBuildBuilding(struct AIPER *p, struct AIARG *s1, struct AIARG *s2);                                /* 0x4a5320 */
 void ai_Unk4a5760(struct G5CH *p, int n, struct G9REC *rec, int *st);                         /* 0x4a5760 */
 /* am.h declares 0x4a63f0 with an __int64 mask; 0x48ff50..0x490350 pass it as two ints */
 /* am.h: id is an int; 0x490690 passes an unsigned short */
 #define AI_5044B0_US(id, a) ((int (*)(unsigned short, int))gm_TitleJob)(id, a)
 #define AI_4A63F0_7(p, a, fl, b, c, f, o) ((int (*)(void *, int, unsigned int, int, int, float, int *))ai_PickActionBuilding)(p, a, fl, b, c, f, o)
-int ai_Unk49eec0(int a, struct G5CH *p, int f, struct AIARG *o1, struct AIARG *o2);                  /* 0x49eec0 */
+int ai_DecideTakeCredit(int a, struct G5CH *p, int f, struct AIARG *o1, struct AIARG *o2);                  /* 0x49eec0 */
 int gm_BuildingKindValue(int a);                                                        /* 0x509d30 */
-int gm_Unk509dc0(int unused, int kind);                                               /* 0x509dc0 */
+int gm_BuildingKindCost(int unused, int kind);                                               /* 0x509dc0 */
 int ai_Unk5ba620(int param_1);                                         /* 0x5ba620 */
 
 /* ---- 0x494020..0x494e70 (was unk_494020.h) ---- */
@@ -775,10 +775,10 @@ int ai_Unk4a0410(G5CH *p);                                                      
 int ai_Unk49fc90(int a, G5CH *p, int f, AIARG *o1);                             /* 0x49fc90 */
 int amt_Unk4e94a0(char *c);                                                      /* 0x4e94a0 */
 int ai_Unk4984d0(int a, struct G5CH *p, int f, struct AIARG *o1, struct AIARG *o2);                 /* 0x4984d0 */
-int ai_Unk4a5140(int a, struct AIPER *p, int b, struct AIARG *s1, struct AIARG *s2, int f);           /* 0x4a5140 */
-int gm_Unk509dc0(int unused, int kind);                                               /* 0x509dc0 */
+int ai_CanBuildType(int a, struct AIPER *p, int b, struct AIARG *s1, struct AIARG *s2, int f);           /* 0x4a5140 */
+int gm_BuildingKindCost(int unused, int kind);                                               /* 0x509dc0 */
 int gm_BuildingKindValue(int k);                                                        /* 0x509d30 */
-int ai_Unk49eec0(int a, struct G5CH *p, int f, struct AIARG *o1, struct AIARG *o2);                  /* 0x49eec0 */
+int ai_DecideTakeCredit(int a, struct G5CH *p, int f, struct AIARG *o1, struct AIARG *o2);                  /* 0x49eec0 */
 #define G6_509EE0(p, k) ((float (*)(AIPER *, unsigned char))gm_CharCurrency)((AIPER *)(p), (k))  /* am.h: returns int */
 int ai_Unk498a80(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x498a80 */
 int ai_Unk498b80(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x498b80 */
@@ -927,7 +927,7 @@ int ai_Unk49ec10(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2
 int ai_Unk49ed10(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49ed10 */
 extern const int ai_Unk5ed140[16];                                                   /* 0x5ed140, random steps */
 int gm_Unk50a250(int b, unsigned short *p, unsigned cnt, int *out);                       /* 0x50a250 */
-int ai_Unk49eec0(int a, struct G5CH *p, int f, struct AIARG *o1, struct AIARG *o2);                  /* 0x49eec0 */
+int ai_DecideTakeCredit(int a, struct G5CH *p, int f, struct AIARG *o1, struct AIARG *o2);                  /* 0x49eec0 */
 int ai_Unk49f370(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49f370 */
 int ai_Unk49f4f0(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2); /* 0x49f4f0 */
 int gm_TitleNumber(int r, int n);                                                 /* 0x5043d0 */
@@ -998,7 +998,7 @@ extern const int ai_Unk5ed1a8;                /* 0x5ed1a8, the last of the ring 
 int ai_Unk4a4ae0(float *a, float *b, int i, AIPER *p);                          /* 0x4a4ae0 */
 
 char unk_Unk5020e0(int k, int c);                                      /* 0x5020e0 */
-/* 0x4a5140 ai_Unk4a5140 is declared in am.h */
+/* 0x4a5140 ai_CanBuildType is declared in am.h */
 extern char ai_DataPath[];                                                      /* 0x75dca0, the data path */
 /* 0x4a5320 ai_ExecBuildBuilding is declared in am.h */
 typedef struct G9REC {                  /* 16 bytes, filled by 0x4a5760 (unk_49a0a0.h G8REC, unk_48e070.h AIRECX) */

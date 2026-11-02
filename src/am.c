@@ -113,9 +113,9 @@ int ai_Unk48e070(AIPX *p, int *out)
 /* 0x48e120, decide kind 0x40: the master's building needs an upgrade he can nearly pay
    @deep read in full against the original 0x48e120..0x48e368: every statement, callee, constant (0.3f,
    0.95f, 0.25f) and field matches (93 + 47 + 20 equal instructions). Left: the original cross-jumps the
-   two 'borrow' tails: the else branch (gm_Unk509dc0 cost) computes need in ecx (mov ecx, edi / sub ecx,
+   two 'borrow' tails: the else branch (gm_BuildingKindCost cost) computes need in ecx (mov ecx, edi / sub ecx,
    eax), stores o1->arg and jumps (jmp 0x48e264) into the first branch's tail (mov ecx, [esp+0x50] / mov
-   byte [eax], 0x12 / push .. / call ai_Unk49eec0); ours keeps both tails inline with the o1 stores after
+   byte [eax], 0x12 / push .. / call ai_DecideTakeCredit); ours keeps both tails inline with the o1 stores after
    the pushes ('- mov dword ptr [eax + 8], edi / - mov byte ptr [eax], 0x12' after 'push 0x40'). Tried:
    kind before arg (no change), a shared goto label for kind + call (100 ins differ), for arg + kind + call
    (62 ins differ, both tails fully merged): reverted. Block layout / tail merging, not meaning. */
@@ -139,7 +139,7 @@ int ai_Unk48e120(int a, AIPX *p, int b, AIARGX *o1, AIARGX *o2)
             s1.ref = bld->id;
             s1.arg = 1;
             cost = (int)(gm_BuildingKindValue(t + 1) * 0.3f);
-            if (!ai_Unk4a5140(a, p, 0, &s2, &s1, 0))
+            if (!ai_CanBuildType(a, p, 0, &s2, &s1, 0))
                 return 0;
             m = gm_SumListAmounts(p->inventory, ai_OwnPlayer);
             lim = (int)(m * 0.95f);
@@ -148,7 +148,7 @@ int ai_Unk48e120(int a, AIPX *p, int b, AIARGX *o1, AIARGX *o2)
                 if ((float)need / cost < 0.25f) {
                     o1->arg = need;
                     o1->kind = 0x12;
-                    return ai_Unk49eec0(0x40, p, 0, o1, o2);
+                    return ai_DecideTakeCredit(0x40, p, 0, o1, o2);
                 }
                 return 0;
             }
@@ -159,9 +159,9 @@ int ai_Unk48e120(int a, AIPX *p, int b, AIARGX *o1, AIARGX *o2)
         s1.kind = 5;
         s1.ref = 0x4b;
         s1.arg = 1;
-        if (!ai_Unk4a5140(a, p, 0, &s1, &s2, 1))
+        if (!ai_CanBuildType(a, p, 0, &s1, &s2, 1))
             return 0;
-        cost = gm_Unk509dc0(p, s1.ref);
+        cost = gm_BuildingKindCost(p, s1.ref);
         m = gm_SumListAmounts(p->inventory, ai_OwnPlayer);
         lim = (int)(m * 0.95f);
         if (lim < cost) {
@@ -169,7 +169,7 @@ int ai_Unk48e120(int a, AIPX *p, int b, AIARGX *o1, AIARGX *o2)
             if ((float)need / cost < 0.25f) {
                 o1->arg = need;
                 o1->kind = 0x12;
-                return ai_Unk49eec0(0x40, p, 0, o1, o2);
+                return ai_DecideTakeCredit(0x40, p, 0, o1, o2);
             }
             return 0;
         }
@@ -658,7 +658,7 @@ int ai_Unk48f1e0(AIPX *p, AIARGX *s1, AIARGX *s2)
 }
 /* 0x48f250, finds the building of a character: 2 found, 1 it has none but needs one, 0 nothing to do */
 
-int ai_Unk48f250(AIPX *p, AIBLD **out)
+int ai_FindOwnBuilding(AIPX *p, AIBLD **out)
 {
     AIBLD *b;
 
@@ -675,15 +675,22 @@ int ai_Unk48f250(AIPX *p, AIBLD **out)
     }
     return 0;
 }
-/* 0x48f2b0, decide of action 0x43 */
+/* 0x48f2b0, decide of action 0x43 "BuildSculpture": upgrades the own building (type + 1, level below 3) or builds type 0x54 on a plot; short of money (below half the inventory) by less than a quarter, it takes a credit (ai_DecideTakeCredit)
+   @deep read the whole function against the original; fixed the else branch's meaning (type 0x54 goes in
+   the first argument of ai_CanBuildType, the plot comes back in the second, as the original's slots show).
+   Left: the original cross-jumps the second 'o1->kind = 0x12; return ai_DecideTakeCredit(...)' tail into
+   the first branch's copy (0x48f4c0 jmp 0x48f3f4) with d in ecx (mov ecx,edi; sub ecx,eax) and the arg
+   store before the pushes; ours keeps d in edi (sub edi,eax), schedules the store between the pushes and
+   so does not merge the tail (13 instructions: 193 vs 181). Tried a separate variable for the second d (50
+   ins, worse) and a goto to one shared tail (102 ins, worse); both reverted. */
 
-int ai_Unk48f2b0(int a, AIPX *p, int b, AIARG *o1, AIARG *o2)
+int ai_DecideBuildSculpture(int a, AIPX *p, int b, AIARG *o1, AIARG *o2)
 {
     struct { AIARG s1, s2; } L;
     AIBLD *bl;
     int v, lim, d, t;
 
-    if (!ai_Unk48f250(p, &bl) || b)
+    if (!ai_FindOwnBuilding(p, &bl) || b)
         return 0;
     if (a != 0x43 && a != 0)
         return 0;
@@ -699,7 +706,7 @@ int ai_Unk48f2b0(int a, AIPX *p, int b, AIARG *o1, AIARG *o2)
         L.s1.ref = bl->id;
         L.s1.arg = 1;
         v = (int)(gm_BuildingKindValue(t) * 0.3f);
-        if (!ai_Unk4a5140(a, p, 0, &L.s2, &L.s1, 0))
+        if (!ai_CanBuildType(a, p, 0, &L.s2, &L.s1, 0))
             return 0;
         lim = (int)(gm_SumListAmounts(p->inventory, ai_OwnPlayer) * 0.5f);
         if (lim < v) {
@@ -708,17 +715,17 @@ int ai_Unk48f2b0(int a, AIPX *p, int b, AIARG *o1, AIARG *o2)
                 return 0;
             o1->arg = d;
             o1->kind = 0x12;
-            return ai_Unk49eec0(0x43, p, 0, o1, o2);
+            return ai_DecideTakeCredit(0x43, p, 0, o1, o2);
         }
         *o1 = L.s2;
         *o2 = L.s1;
     } else {
-        L.s2.kind = 5;
-        L.s2.ref = 0x54;
-        L.s2.arg = 1;
-        if (!ai_Unk4a5140(a, p, 0, &L.s1, &L.s2, 1))
+        L.s1.kind = 5;
+        L.s1.ref = 0x54;
+        L.s1.arg = 1;
+        if (!ai_CanBuildType(a, p, 0, &L.s1, &L.s2, 1))
             return 0;
-        v = gm_Unk509dc0(p, L.s1.ref);
+        v = gm_BuildingKindCost(p, L.s1.ref);
         lim = (int)(gm_SumListAmounts(p->inventory, ai_OwnPlayer) * 0.5f);
         if (lim < v) {
             d = v - lim;
@@ -726,7 +733,7 @@ int ai_Unk48f2b0(int a, AIPX *p, int b, AIARG *o1, AIARG *o2)
                 return 0;
             o1->arg = d;
             o1->kind = 0x12;
-            return ai_Unk49eec0(0x43, p, 0, o1, o2);
+            return ai_DecideTakeCredit(0x43, p, 0, o1, o2);
         }
         *o1 = L.s1;
         *o2 = L.s2;
@@ -735,7 +742,7 @@ int ai_Unk48f2b0(int a, AIPX *p, int b, AIARG *o1, AIARG *o2)
 }
 /* 0x48f500, execute of action 0x43 */
 
-int ai_Unk48f500(AIPX *p, AIARG *s1, AIARG *s2)
+int ai_ExecBuildSculpture(AIPX *p, AIARG *s1, AIARG *s2)
 {
     AIMSG msg;
     int v;
@@ -951,8 +958,8 @@ int ai_Unk48fb70(int a)
     act.id = 0x43;
     strcpy(act.name, "BuildSculpture");
     act.eval = ai_Unk4a49a0;
-    act.decide = ai_Unk48f2b0;
-    act.exec = ai_Unk48f500;
+    act.decide = ai_DecideBuildSculpture;
+    act.exec = ai_ExecBuildSculpture;
     act.flags = 3;
     if (!ai_Unk495520(&act, a))
         return 0;
@@ -4673,7 +4680,7 @@ found:
                             if ((float)(v - lim) / v < (float)((float)(v - r) / r * -0.5f) + 0.25f) {
                                 o1->kind = 0x12;
                                 o1->arg = v - lim;
-                                return ai_Unk49eec0(0x10, p, b, o1, o2);
+                                return ai_DecideTakeCredit(0x10, p, b, o1, o2);
                             }
                             return 0;
                         }
@@ -4708,7 +4715,7 @@ found:
                             if ((float)(v - lim) / v < (float)((float)(v - r) / r * -0.5f) + 0.25f) {
                                 o1->kind = 0x12;
                                 o1->arg = v - lim;
-                                return ai_Unk49eec0(0x10, p, b, o1, o2);
+                                return ai_DecideTakeCredit(0x10, p, b, o1, o2);
                             }
                             return 0;
                         }
@@ -4801,16 +4808,16 @@ int ai_Unk4984d0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
                             s2.kind = 4;
                             s2.ref = *(int *)(h + 1);
                             s2.arg = 1;
-                            if (ai_Unk4a5140(a, p, f, &s1, &s2, 0) == 0)
+                            if (ai_CanBuildType(a, p, f, &s1, &s2, 0) == 0)
                                 return 0;
-                            cost = gm_Unk509dc0(p, s1.ref);
+                            cost = gm_BuildingKindCost(p, s1.ref);
                             if (cost <= money)
                                 goto take;
                             if ((float)(cost - money) / (float)cost >= 0.25f)
                                 return 0;
                             o1->arg = cost - money;
                             o1->kind = 0x12;
-                            return ai_Unk49eec0(0x11, p, f, o1, o2);
+                            return ai_DecideTakeCredit(0x11, p, f, o1, o2);
                         }
                         if (t == 5)
                             return 0;
@@ -4818,28 +4825,28 @@ int ai_Unk4984d0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
                     s1.kind = 5;
                     s1.ref = 6;
                     s1.arg = 1;
-                    if (ai_Unk4a5140(a, p, f, &s1, &s2, 1) != 0) {
-                        cost = gm_Unk509dc0(p, s1.ref);
+                    if (ai_CanBuildType(a, p, f, &s1, &s2, 1) != 0) {
+                        cost = gm_BuildingKindCost(p, s1.ref);
                         if (cost <= money)
                             goto take;
                         if ((float)(cost - money) / (float)cost < 0.25f) {
                             o1->arg = cost - money;
                             o1->kind = 0x12;
-                            return ai_Unk49eec0(0x11, p, f, o1, o2);
+                            return ai_DecideTakeCredit(0x11, p, f, o1, o2);
                         }
                     }
                     s1.kind = 5;
                     s1.ref = 4;
                     s1.arg = 1;
-                    if (ai_Unk4a5140(a, p, f, &s1, &s2, 1) == 0)
+                    if (ai_CanBuildType(a, p, f, &s1, &s2, 1) == 0)
                         return 0;
-                    cost = gm_Unk509dc0(p, s1.ref);
+                    cost = gm_BuildingKindCost(p, s1.ref);
                     if (money < cost) {
                         if ((float)(cost - money) / (float)cost >= 0.25f)
                             return 0;
                         o1->arg = cost - money;
                         o1->kind = 0x12;
-                        return ai_Unk49eec0(0x11, p, f, o1, o2);
+                        return ai_DecideTakeCredit(0x11, p, f, o1, o2);
                     }
                 } else {
                     if (o1->kind != 5)
@@ -4849,17 +4856,17 @@ int ai_Unk4984d0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
                     if (h == 0) {
                         if (((unsigned char *)ai_BTypesT)[o1->ref * 0x24d] != 2)
                             return 0;
-                        if (ai_Unk4a5140(a, p, f, &s1, &s2, 1) == 0)
+                        if (ai_CanBuildType(a, p, f, &s1, &s2, 1) == 0)
                             return 0;
                         if (((unsigned char *)p)[2] != 5)
                             return 0;
-                        cost = gm_Unk509dc0(p, s1.ref);
+                        cost = gm_BuildingKindCost(p, s1.ref);
                         if (money < cost) {
                             if ((float)(cost - money) / (float)cost >= 0.25f)
                                 return 0;
                             o1->kind = 0x12;
                             o1->arg = cost - money;
-                            return ai_Unk49eec0(0x11, p, f, o1, o2);
+                            return ai_DecideTakeCredit(0x11, p, f, o1, o2);
                         }
                     } else {
                         t = h[0];
@@ -4877,14 +4884,14 @@ int ai_Unk4984d0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
                         s2.ref = *(int *)(h + 1);
                         s2.arg = 1;
                         cost = (int)gm_BuildingKindValue(s1.ref);
-                        if (ai_Unk4a5140(a, p, f, &s1, &s2, 0) == 0)
+                        if (ai_CanBuildType(a, p, f, &s1, &s2, 0) == 0)
                             return 0;
                         if (money < cost) {
                             if ((float)(cost - money) / (float)cost >= 0.25f)
                                 return 0;
                             o1->kind = 0x12;
                             o1->arg = cost - money;
-                            return ai_Unk49eec0(0x11, p, f, o1, o2);
+                            return ai_DecideTakeCredit(0x11, p, f, o1, o2);
                         }
                     }
                 }
@@ -5028,7 +5035,7 @@ int ai_Unk498c70(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
                             if ((float)(v1 - lim) / v1 < 0.25f) {
                                 o1->kind = 0x12;
                                 o1->arg = v1 - lim;
-                                return ai_Unk49eec0(0x13, p, b, o1, o2);
+                                return ai_DecideTakeCredit(0x13, p, b, o1, o2);
                             }
                             return 0;
                         }
@@ -5067,15 +5074,15 @@ int ai_Unk498c70(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
     s2.kind = 0;
     s2.ref = 0;
     s2.arg = 0;
-    if (ai_Unk4a5140(0, p, b, &s1, &s2, 1)) {
+    if (ai_CanBuildType(0, p, b, &s1, &s2, 1)) {
         int v2, d2;
 
-        v2 = gm_Unk509dc0(p, s1.ref);
+        v2 = gm_BuildingKindCost(p, s1.ref);
         if (lim < v2) {
             if ((float)(v2 - lim) / v2 < 0.25f) {
                 o1->kind = 0x12;
                 o1->arg = v2 - lim;
-                return ai_Unk49eec0(0, p, b, o1, o2);
+                return ai_DecideTakeCredit(0, p, b, o1, o2);
             }
             return 0;
         }
@@ -5098,7 +5105,7 @@ int ai_Unk498c70(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
                             if ((float)lim / v < (float)((float)(v - r) / r * -0.5f) + 0.25f) {
                                 o1->kind = 0x12;
                                 o1->arg = lim;
-                                return ai_Unk49eec0(0x13, p, b, o1, o2);
+                                return ai_DecideTakeCredit(0x13, p, b, o1, o2);
                             }
                             return 0;
                         }
@@ -7349,7 +7356,7 @@ int ai_Unk49d8d0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             s2.kind = 0;
             s2.ref = 0;
             s2.arg = 0;
-            if (ai_Unk4a5140(0, (AIPER *)p, 1, &s1, &s2, 1) == 0)
+            if (ai_CanBuildType(0, (AIPER *)p, 1, &s1, &s2, 1) == 0)
                 return 0;
             *o1 = s1;
             *o2 = s2;
@@ -7793,7 +7800,7 @@ int ai_Unk49e7a0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     s2.kind = 0;
     s2.ref = 0;
     s2.arg = 0;
-    if (ai_Unk4a5140(0, (AIPER *)p, 1, &s1, &s2, 1) == 0)
+    if (ai_CanBuildType(0, (AIPER *)p, 1, &s1, &s2, 1) == 0)
         return 0;
     *o1 = s1;
     *o2 = s2;
@@ -7920,7 +7927,7 @@ int ai_Unk49ee20(G5CH *p, AIARG *s1, AIARG *s2)
    random 0..9, picks one of the character's own buildings below its stock limit (hour-based) and a kind-5
    building of someone else, then the best of three offers of 0x50a250 */
 
-int ai_Unk49eec0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
+int ai_DecideTakeCredit(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 {
     int lim[4];
     G8OFFER rec[3];
@@ -8162,7 +8169,7 @@ int ai_Unk49f5c0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     s2.kind = 0;
     s2.ref = 0;
     s2.arg = 0;
-    if (ai_Unk4a5140(a, p, f, &s1, &s2, 1) == 0)
+    if (ai_CanBuildType(a, p, f, &s1, &s2, 1) == 0)
         return 0;
     if (money < gm_BuildingKindValue(s1.ref))
         return 0;
@@ -9593,7 +9600,7 @@ int ai_Unk4a16f0(int a)
     act.id = 0x33;
     strcpy(act.name, "Kredit Nehmen");
     act.eval = ai_Unk4a49a0;
-    act.decide = ai_Unk49eec0;
+    act.decide = ai_DecideTakeCredit;
     act.exec = ai_Unk49f370;
     act.flags = 0x7;
     if (!ai_Unk495520(&act, a))
@@ -10150,7 +10157,7 @@ int ai_Unk4a4e70(AIPER *p, int name)
    the one it has (0x170) and pass 0x4f81c0 (2 or 4) for types 4..7; other types ask 0x5020e0. With f, s2 becomes
    the plot (kind 0xc) that 0x4a4e70 finds */
 
-int ai_Unk4a5140(int a, AIPER *p, int b, AIARG *s1, AIARG *s2, int f)
+int ai_CanBuildType(int a, AIPER *p, int b, AIARG *s1, AIARG *s2, int f)
 {
     int q[0x88];
     unsigned char *h;
@@ -10236,7 +10243,7 @@ int ai_ExecBuildBuilding(AIPER *p, AIARG *s1, AIARG *s2)
     m.flags = 2;
     m.fromId = m.to;
     m.arg[0] = m.to;
-    m.arg[2] = gm_Unk509dc0(p, m.arg[1]);
+    m.arg[2] = gm_BuildingKindCost(p, m.arg[1]);
     ai_ObjectPosition((char *)&m + 0x80, plot);
     ai_ObjectAngle((char *)&m + 0x90, plot);
     cm_SendLongMessage(&m);

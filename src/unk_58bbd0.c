@@ -2841,7 +2841,7 @@ struct D3OBJECT * d3_LoadGroup(); void d3t_InflateObjectTree(D3OBJECT *obj); int
 int ai_Unk527e90();
 struct D3OBJECT;
 char d3if_Delete(struct D3OBJECT *obj);  /* 0x447190, d3_interface.h */
-int gm_Unk509dc0(int unused, int kind); void txt_Format(char *out, int id0, ...); int sv_UpdateCamera();
+int gm_BuildingKindCost(int unused, int kind); void txt_Format(char *out, int id0, ...); int sv_UpdateCamera();
 int d3sm_GetVertex();  /* @original: the original callers read an int result (gv.h declares it int) */
 
 #define B_REC(k) (U_I((unsigned)&ai_BTypes) + (k) * 0x24d)

@@ -8703,7 +8703,7 @@ int gm_BuildingKindValue(int kind)
 }
 /* 0x509dc0 */
 
-int gm_Unk509dc0(int unused, int kind)
+int gm_BuildingKindCost(int unused, int kind)
 {
     char buf[0x24];
     int v;

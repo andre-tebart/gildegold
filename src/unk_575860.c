@@ -9181,7 +9181,7 @@ tail:
     }
 }
 
-int gm_Unk509dc0(int unused, int kind); char *_strupr(char *); int sprintf(char *buf, const char *fmt, ...);
+int gm_BuildingKindCost(int unused, int kind); char *_strupr(char *); int sprintf(char *buf, const char *fmt, ...);
 
 /* 0x588160, the drag window of a goods item (419 B, ROUGH: the calls and the text ids are written, the 0x1c-byte
    record at the frame start is assembled field by field from the globals 0x62a8f4 .. 0x62a908 (the words), the
@@ -9228,7 +9228,7 @@ int ai_Unk588160(int idx)
     if (*(unsigned char *)bldg != 0xa) {
         d2_SetForm(0, 3);
         io_PrintText(0x2a, d + 0x18 + *(unsigned char *)(bldg + 0x247) * 4);
-        io_PrintText(0x28, gm_Unk509dc0((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, idx));
+        io_PrintText(0x28, gm_BuildingKindCost((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, idx));
         io_PrintText(0x29, *(int *)(bldg + 0x243));
     }
     return win;
