@@ -987,7 +987,7 @@ int ai_Unk48fb70(int a)
 }
 /* 0x48feb0, a random character of the building (kind 0x14, not busy with a grave action) */
 
-AIPX *ai_Unk48feb0(AIBLD *b)
+AIPX *ai_PickRandomBuildingChar(AIBLD *b)
 {
     unsigned short list[8];
     int n, i;
@@ -1005,10 +1005,11 @@ AIPX *ai_Unk48feb0(AIBLD *b)
         return 0;
     return &AIC[list[util_RandomU(n)]];
 }
-/* 0x48ff50, decide of method 0x88 */
+/* 0x48ff50, way 0 of the "Graveyard Owner" decide (ai_Unk490690): with money and a 0x1fc object in the graveyard, picks one of its characters and a partner chain for message 0x88 and a building of the partner */
 
-int ai_Unk48ff50(AIPX *p, AIBLD *b, AIARG *o1, AIARG *o2)
+int ai_DecideGraveyardOwner0(AIPX *p, AIBLD *b, AIARG *o1, AIARG *o2)
 {
+    union { struct { unsigned int lo, hi; } s; __int64 q; } m;
     AIPX *c, *q;
     unsigned short id;
     int flags, x;
@@ -1020,12 +1021,12 @@ int ai_Unk48ff50(AIPX *p, AIBLD *b, AIARG *o1, AIARG *o2)
         return 0;
     if (!gm_Query(b->objList, 2, 0, 0x1fc, 6))
         return 0;
-    c = ai_Unk48feb0(b);
+    c = ai_PickRandomBuildingChar(b);
     if (!c)
         return 0;
     if (he_FindEvent(2, 0, 0x88, 3, b->id))
         return 0;
-    flags = ((unsigned)&cm_SendRing + 0x4973c0);
+    flags = (0xf << 20) | (5 << 8);  /* the partner flags 0xf00500 (bits 8, 10, 20..23) */
     if (!ai_PickPartnerChain((AIPER *)p, 1, &flags, 0, util_RandomU(0x20) + 32.0f, &id))
         return 0;
     q = &AIC[id];
@@ -1035,7 +1036,9 @@ int ai_Unk48ff50(AIPX *p, AIBLD *b, AIARG *o1, AIARG *o2)
         o2->arg = q->bld->id;
     else {
         x = -1;
-        AI_4A63F0_7(p, 0, 0x7b4c4a0, 0, 0, 100.0f, &x);
+        m.s.lo = 0x7b4c4a0;
+        m.s.hi = 0;
+        ai_PickActionBuilding((AIPER *)p, 0, m.q, 0, 100.0f, &x);
         if (x == -1)
             return 0;
         o2->arg = x;
@@ -1129,7 +1132,7 @@ int ai_Unk490350(AIPX *p, AIBLD *b, AIARG *o1, AIARG *o2)
     flags = 0;
     if (!gm_Query(b->objList, 2, 0, 0x204, 6))
         return 0;
-    c = ai_Unk48feb0(b);
+    c = ai_PickRandomBuildingChar(b);
     if (!c)
         return 0;
     if (he_FindEvent(2, 0, 0x89, 3, b->id))
@@ -1185,7 +1188,7 @@ int ai_Unk490570(AIPX *p, AIBLD *b, AIARG *o1, AIARG *o2)
     o1->ref2 = b->id;
     if (!gm_Query(b->objList, 2, 0, 0x1fb, 6))
         return 0;
-    c = ai_Unk48feb0(b);
+    c = ai_PickRandomBuildingChar(b);
     if (!c)
         return 0;
     if (he_FindEvent(2, 0, 0x8a, 3, b->id))
@@ -1231,7 +1234,7 @@ int ai_Unk490690(int a, AIPX *p, int b, AIARG *o1, AIARG *o2)
     AI_4FEA50_4(&v, 0, 0, x);
     if (!v)
         return 0;
-    r[0] = ai_Unk48ff50(p, (AIBLD *)v, &s1[0], &s2[0]);
+    r[0] = ai_DecideGraveyardOwner0(p, (AIBLD *)v, &s1[0], &s2[0]);
     r[1] = ai_Unk490170(p, (AIBLD *)v, &s1[1], &s2[1]);
     r[2] = ai_Unk490350(p, (AIBLD *)v, &s1[2], &s2[2]);
     r[3] = ai_Unk490570(p, (AIBLD *)v, &s1[3], &s2[3]);

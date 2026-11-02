@@ -728,3 +728,5 @@
 2026-11-02T05:43:51 0x004a5760 func ai_Unk4a5760 -> ai_FindWantedItems by:main why:its own comment: finds the n wanted items rec[i].item in the character's inventory list and counts entries, unusable and usable ones
 2026-11-02T05:44:20 0x0048f600 func ai_Unk48f600 -> ai_DecideUseAlchemyItems by:main why:decide / exec of action 0x48 'UseAlchemistryItems' (ai_Unk48fb70)
 2026-11-02T05:44:20 0x0048f990 data ai_Unk48f990 -> ai_ExecUseAlchemyItems by:main why:decide / exec of action 0x48 'UseAlchemistryItems' (ai_Unk48fb70)
+2026-11-02T05:45:27 0x0048ff50 func ai_Unk48ff50 -> ai_DecideGraveyardOwner0 by:main why:48ff50 is the first of the four ways ai_Unk490690 (decide of 'Graveyard Owner' 0x3d) tries (message 0x88); 48feb0 returns a random character of kind 0x14 at the building (at least two)
+2026-11-02T05:45:27 0x0048feb0 data ai_Unk48feb0 -> ai_PickRandomBuildingChar by:main why:48ff50 is the first of the four ways ai_Unk490690 (decide of 'Graveyard Owner' 0x3d) tries (message 0x88); 48feb0 returns a random character of kind 0x14 at the building (at least two)
