@@ -105,11 +105,13 @@ typedef struct ORDCHAR {
     char pad003;
     unsigned int netId;             /* 0x004, the id the order events carry */
     unsigned char health;           /* 0x008, > 0 = the record is in use */
-    unsigned char textVariant;      /* 0x009, nonzero: the alternate text block (level texts +10, job texts +0x28) */
+    unsigned char textVariant;      /* 0x009, the sex (ai.h AICHAR.sex: 0 male, 1 female); nonzero: the alternate text block (level texts +10, job texts +0x28) */
     unsigned short w00a;            /* 0x00a, ai.h AICHAR.w00a; gm_ShiftLoyalty and gm_HandOutMoney skip the characters below 12 (reasoned guess: the age) */
     unsigned char b00c;             /* 0x00c, a kind (ai.h AICHAR.b00c); gm_HandOutMoney compares it between two characters and with the decision 2's value (reasoned guess: the faith) */
     unsigned char level;            /* 0x00d, the level the level orders test */
-    char pad00e[0x4e];
+    char pad00e[0x12];
+    float f020;                     /* 0x020, ai.h AICHAR.f020; a child (jobId 0) whose w00a is below it gets the child head (gm_CharNameRecord) */
+    char pad024[0x38];
     int partner;                    /* 0x05c, the partner character id, -1 = none */
     char pad060[0x28];
     float mood[14][3];              /* 0x088, the mood triples (a, b, value) (ai.h AICHAR.mood) */
@@ -122,7 +124,9 @@ typedef struct ORDCHAR {
     char pad16a[2];
     struct ORDBLD *bld;             /* 0x16c, the character's building (ai.h AICHAR.bld) */
     struct ORDBLD *bld2;            /* 0x170, the character's own building (its home), 0 when none */
-    char pad174[0x24];
+    char pad174[0x18];
+    int picture;                    /* 0x18c, the portrait picture (ai.h AICHAR.picture), -1 = none */
+    char pad190[8];
     int v198;                       /* 0x198, cleared with wage at the end of every day (f3gm.c gm_EndDayIncomes) */
     int wage;                       /* 0x19c, the wage paid in the last round settlement (ai.h AICHAR.wage) */
     int v1a0;                       /* 0x1a0, a trade sum cm.c's goods move adds to (price x amount) for an object of the type 0x1dc (seller) / 0x1db (buyer); the income kind 4 taxes v1a0 + v1a4 */
@@ -136,7 +140,9 @@ typedef struct ORDCHAR {
     float loyalty;                  /* 0x1d0, 0 .. 1, starts at 0.25 .. 0.75; gm_ShiftLoyalty / gm_HandOutMoney move it (reasoned guess: the loyalty) */
     int worth[4];                   /* 0x1d4, the character's worth (gm_GetWorth) of the last rounds, worth[3] the newest (gm_UpdateWorthMood shifts it) */
     float mood3Rate;                /* 0x1e4, scales the base growth of mood need 3 (ai.h AICHAR.mood3Rate) */
-    char pad1e8[0x21c - 0x1e8];
+    char pad1e8[0xc];
+    char ownName[0x1c];             /* 0x1f4, the character's own head name (ai.h AICHAR.ownName), empty: the job's / title's head record */
+    char pad210[0xc];
 } ORDCHAR;
 #define ORD_CHARS ((ORDCHAR *)ai_Chars)
 #define ORD_CHAR(p) ((ORDCHAR *)(p))   /* a raw character record as the order handlers read it */

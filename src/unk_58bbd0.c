@@ -1005,7 +1005,7 @@ extern GAPDATA full_data_62d3fc[];
 extern unsigned char ai_TimeHour;
 extern GAPDATA full_data_62d40c[];
 extern GAPDATA full_data_62d424[];
-extern unsigned ai_Unk91ac40[136];
+extern unsigned gm_OwnNameHeads[136];
 extern char ord_StatisticsHistory[320];
 extern float ai_Unk5eb81c;
 extern float ai_Unk5eb988;
@@ -19401,7 +19401,7 @@ void ai_Unk5c7560(int param_1, int param_2, int param_3, int param_4, int param_
         d2_PlotLine(x, (int)*(float *)((char *)p - 4));
         x += scale;
     }
-    d2_PlotLine((scale * 3 + 9) * 5, (int)*(float *)((char *)(unsigned)&ai_Unk91ac40 - 4));
+    d2_PlotLine((scale * 3 + 9) * 5, (int)*(float *)((char *)(unsigned)&gm_OwnNameHeads - 4));
 }
 /* 0x5c76b0, a bar chart of the 0x91ab08 / 0x91ab1c float pairs (325 B): the rectangles 0x4764f0 (x, y1,
    x + scale, y2, 0xee, 0x10, 0xee) between the consecutive floats 0x91ab08 + i * 0x14 and

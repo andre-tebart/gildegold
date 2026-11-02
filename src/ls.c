@@ -47,7 +47,7 @@ typedef struct GMSTOCKBLOCK {       /* 0x2a90 bytes, one of the five blocks of g
     GMSTOCKREC recs[0x55];          /* 0x10 */
 } GMSTOCKBLOCK;
 #define gm_StockBlocksT ((GMSTOCKBLOCK *)gm_StockBlocks)  /* 0x7d6a60, gm_StockBlocks (f3gm.c: char[]) as its five blocks */
-extern unsigned ai_Unk91ac40[136];
+extern unsigned gm_OwnNameHeads[136];
 extern unsigned char ord_Statistics;
 extern unsigned char ord_StatisticsClock;
 extern GAPDATA full_data_92bcb3[];

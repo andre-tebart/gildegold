@@ -8,6 +8,12 @@ typedef struct JOBTALENTS {             /* 6 bytes, one per job at 0x61a688 */
     unsigned char rank;                 /* 0x5, 1..4 in the table: a guess from the values and the rank byte +0xd */
 } JOBTALENTS;
 
+typedef struct GMHEAD {                 /* 0x44 bytes, a head record (gm_CharNameRecord's tables 0x6118a8 .. 0x617398) */
+    int key;                            /* 0x00, the job / title id the record belongs to, 0 = the end of a table */
+    char name[0x30];                    /* 0x04, the model name, "<name>_<suffix>" (bergmann3_MANN) */
+    int heads[4];                       /* 0x34, the icon numbers of the four heads, 0xff = not resolved yet (gm_ResolveHeadIcons) */
+} GMHEAD;
+
 typedef struct GMINCOME {               /* 0x38 bytes, a character's incomes (0x4fa4b0 clears it, the kind functions fill the first free entry) */
     unsigned char kind[6];              /* 0x00, the income kind of each entry (1 .. 5), 0 = free */
     char pad06[2];
