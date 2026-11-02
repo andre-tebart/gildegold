@@ -6874,20 +6874,17 @@ void sv_Unk52fad0(void)
         SV_WI(SV_I((unsigned)&ai_Unk623ea8), 0x78) = f;
     }
 }
-/* 0x52fb50, sets 0x6f22a0 to the distance (from the top of the 0x75f780 stack of 8-byte records, 0x6f229c = top) to the record whose first word is v */
+/* 0x52fb50, requests popping the frame stack down to the frame whose callback is cb: sets sv_PopRequest to its distance from the top sv_FrameDepth (nothing when cb is not on the stack) */
 
-void sv_PopTo(int v)
+void sv_PopTo(int cb)
 {
     int i;
 
-    i = sv_FrameDepth;
-    if (sv_FrameDepth >= 0) {
-        while (SV_I(((unsigned)&ai_Unk75f280 + 0x500) + i * 8) != v) {
-            i--;
-            if (i < 0)
-                return;
+    for (i = sv_FrameDepth; i >= 0; i--) {
+        if (sv_Frames[i].cb == cb) {
+            sv_PopRequest = sv_FrameDepth - i;
+            return;
         }
-        sv_PopRequest = sv_FrameDepth - i;
     }
 }
 /* 0x52fb80, pumps the window messages of 0x6f2588 (the message struct 0x75ec40); WM_QUIT sets 0x6f25b4; returns 1 */
