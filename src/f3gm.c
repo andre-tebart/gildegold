@@ -2026,7 +2026,7 @@ extern char d2_GfxDir[256];
 /* txt_MaleFirstNames: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_FemaleFirstNames: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_FamilyNames: view of txt_Ptrs (build/mk_txt_views.py) */
-int ai_Unk6f1bb4 = 0;  /* 0x6f1bb4 */
+int gm_HomeSearchStart = 0;  /* 0x6f1bb4 */
 extern char gm_CharacterStatistics[128];
 char * ai_Unk60c1ec = (void *)((unsigned)&he_Events + 0xc234);  /* 0x60c1ec, the memory pool tag */
 unsigned short gm_CreateCharacter(int type, int a2, int a3, int a4, unsigned char *a5, unsigned a6, int a7, int a8);                     /* 0x507690 */
@@ -2227,32 +2227,36 @@ char *gm_HomeObject(unsigned char *b)
         o = gm_Query((void *)bld->objList, 1, 0, 0x120);
     return o;
 }
-/* 0x4fdcb0, the home of the character c: its building (+0x170) with the object of 0x4fdc10 (out3 = its id, -1 without) and out2 = the building id (+1); without one the next building (starting at 0x6f1bb4, 256 records of 0xa9 bytes) of kind 3 / 0x16 / 0x0f. Returns the building, 0 when none */
+/* 0x4fdcb0, the home of the character c: its own building bld2 with the object of gm_HomeObject (out3 = its id, -1 without) and out2 = the building id; without one the next building of ai_Blds (round-robin from gm_HomeSearchStart) of kind 3 / 0x16 / 0x0f. Returns the building, 0 when none */
 
-char *unk_Unk4fdcb0(char *c, int *out2, int *out3)
+char *gm_CharacterHome(char *c, int *out2, int *out3)
 {
-    unsigned i;
-    unsigned char k;
-    char *o;
+    ORDCHAR *ch = (ORDCHAR *)c;
+    ORDOBJ *o;
+    char *type;
+    int i;
     int n;
 
-    i = ai_Unk6f1bb4;
-    if (*(int *)(c + 0x170) != 0) {
-        o = gm_HomeObject(*(unsigned char **)(c + 0x170));
-        if (o == 0)
-            *out3 = -1;
+    n = 0xff;
+    if (ch->bld2 != 0) {
+        o = (ORDOBJ *)gm_HomeObject((unsigned char *)ch->bld2);
+        if (o != 0)
+            *out3 = o->objId;
         else
-            *out3 = *(int *)(o + 2);
-        *out2 = *(int *)(*(int *)(c + 0x170) + 1);
-        return *(char **)(c + 0x170);
-    }
-    for (n = 0xff; n != 0; n--) {
-        k = ai_Blds[i * 0xa9];
-        if (k != 0 && (ai_BTypes[k * 0x24d] == 3 || ai_BTypes[k * 0x24d] == 0x16 || ai_BTypes[k * 0x24d] == 0x0f)) {
-            ai_Unk6f1bb4 = i + 1;
             *out3 = -1;
-            *out2 = *(int *)(ai_Blds + i * 0xa9 + 1);
-            return ai_Blds + i * 0xa9;
+        *out2 = ch->bld2->id;
+        return (char *)ch->bld2;
+    }
+    i = gm_HomeSearchStart;
+    for (; n != 0; n--) {
+        if (((ORDBLD *)ai_Blds)[i].type != 0) {
+            type = ai_BTypes + ((ORDBLD *)ai_Blds)[i].type * 0x24d;
+            if (*type == 3 || *type == 0x16 || *type == 0x0f) {
+                gm_HomeSearchStart = i + 1;
+                *out3 = -1;
+                *out2 = ((ORDBLD *)ai_Blds)[i].id;
+                return (char *)&((ORDBLD *)ai_Blds)[i];
+            }
         }
         i = (i + 1) % 256;
     }
