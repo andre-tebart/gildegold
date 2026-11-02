@@ -2210,7 +2210,7 @@ exe	0x004c5010	ai_Unk4c5010	cm	byte	draft
 exe	0x004c5050	cm_SetPlant	cm	byte	draft		
 exe	0x004c50b0	ai_Unk4c50b0	cm	draft	draft		
 exe	0x004c5100	cm_SendChrWalkTo	cm	byte	draft		
-exe	0x004c5150	ai_Unk4c5150	cm	byte	draft		
+exe	0x004c5150	cm_RequestChrMove	cm	byte	draft		
 exe	0x004c51b0	cm_RequestChrMoveToUniverse	cm	byte	draft		
 exe	0x004c5230	cm_SendChrStop	cm	byte	draft		
 exe	0x004c5260	ai_Unk4c5260	cm	byte	draft		
@@ -3759,7 +3759,7 @@ exe	0x0055e5c0	he_Unk55e5c0	he	byte	draft
 exe	0x0055e600	he_Unk55e600	he	draft	draft		
 exe	0x0055e730	he_Unk55e730	he	draft	draft		
 exe	0x0055e9d0	he_Unk55e9d0	he	draft	draft		
-exe	0x0055ea60	he_Unk55ea60	he	draft	draft		
+exe	0x0055ea60	he_FigureContact	he	draft	draft		
 exe	0x0055eba0	he_FindFigurePlace	he	draft	draft		
 exe	0x0055ee40	he_Unk55ee40	he	draft	draft		
 exe	0x0055efc0	he_Unk55efc0	he	draft	draft		
@@ -3937,19 +3937,19 @@ exe	0x00575860	ai_TutorialTick	unk_575860	byte	readable
 exe	0x00576020	unk_ClearEndGameGate	unk_575860	byte	readable		
 exe	0x00576030	unk_SetEndGameGate	unk_575860	byte	readable		
 exe	0x00576040	ai_CampaignStep	unk_575860	draft	readable	deep	
-exe	0x00576340	ai_ScriptQuery	unk_575860	draft	draft		
+exe	0x00576340	ai_ScriptQuery	unk_575860	byte	readable		
 exe	0x005763c0	ai_RunAllows	unk_575860	byte	draft		
 exe	0x00576410	ai_Unk576410	unk_575860	byte	draft		
 exe	0x00576460	ai_Unk576460	unk_575860	byte	draft		
 exe	0x00576490	ai_Unk576490	unk_575860	byte	draft		
-exe	0x005764b0	ai_Unk5764b0	unk_575860	draft	draft		
-exe	0x00576500	ai_Unk576500	unk_575860	draft	draft		
-exe	0x00576590	ai_Unk576590	unk_575860	draft	draft		
+exe	0x005764b0	ai_QueryDefault	unk_575860	byte	readable		
+exe	0x00576500	ai_QueryBuilding0f	unk_575860	byte	readable		
+exe	0x00576590	ai_QueryChapter2Step3	unk_575860	byte	readable		
 exe	0x005765e0	ai_Unk5765e0	unk_575860	byte	draft		
-exe	0x00576600	ai_Unk576600	unk_575860	draft	draft		
-exe	0x00576640	ai_Unk576640	unk_575860	draft	draft		
-exe	0x00576680	ai_Unk576680	unk_575860	draft	draft		
-exe	0x005766d0	ai_Unk5766d0	unk_575860	draft	draft		
+exe	0x00576600	ai_QueryChapter2Step5	unk_575860	byte	readable		
+exe	0x00576640	ai_QueryChapter2Step6	unk_575860	byte	readable		
+exe	0x00576680	ai_QueryChapter2Step7	unk_575860	byte	readable		
+exe	0x005766d0	ai_StepChapter1Step5	unk_575860	byte	readable		
 exe	0x005767d0	ai_Unk5767d0	unk_575860	shape	draft		
 exe	0x00576830	ai_Unk576830	unk_575860	shape	draft		
 exe	0x005768a0	ai_Unk5768a0	unk_575860	byte	draft		
@@ -3968,7 +3968,7 @@ exe	0x00576ee0	ai_Unk576ee0	unk_575860	shape	draft
 exe	0x00577020	ai_Unk577020	unk_575860	byte	draft		
 exe	0x005770a0	ai_Unk5770a0	unk_575860	byte	draft		
 exe	0x005770e0	ai_Unk5770e0	unk_575860	byte	draft		
-exe	0x00577110	ai_Unk577110	unk_575860	draft	draft		
+exe	0x00577110	ai_HookChapter3Step2	unk_575860	byte	readable		
 exe	0x005771b0	ai_Unk5771b0	unk_575860	byte	draft		
 exe	0x00577230	ai_Unk577230	unk_575860	byte	draft		
 exe	0x00577290	ai_Unk577290	unk_575860	draft	draft		

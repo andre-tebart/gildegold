@@ -6,8 +6,9 @@
    and its literals climb in function order to 0x62aa58; the network lobby (0x589f10) is a unit of its own.
    The original file name is unknown (no leaked tag). Names are ours.
    Open: type debt - the state record (TUTSTATE, ai_Tutorial) and the run records (TUTRUN) are typed in
-   unk_575860.h, but most functions still reach them through the S / U_I byte-offset macros; the message (AIMSG)
-   and contact-list records are still accessed by byte offset.
+   unk_575860.h and the run callbacks (hook / stepHook / query, 0x576340 ..) use them, but the chapter builders
+   and later functions still reach them through the S / U_I byte-offset macros; the message (AIMSG) and
+   contact-list records are still accessed by byte offset.
    Open: ai_ClockMs is volatile in the original (ai_TutorialTick reloads it after every read, byte-matched through
    the unit's view ai_ClockMsVolatile); its owner and the other units declare it plain int.
    Open: not included yet (dcp headers conflicts unk_575860 HEADER): d2.h gfx.h sv.h unk_5d33b0.h; held by own
