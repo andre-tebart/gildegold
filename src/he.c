@@ -11710,7 +11710,7 @@ void he_Unk55e9d0(int ev)
 }
 /* 0x55ea60, the id of the contact (the person to talk to at the place) of the figure `p`, or -1 (ROUGH): -1 for no figure, the kinds 0xd / 0xe, no current building (+0x16c) or object (+0x184) and for a busy job code (+0x180: 0x3f, 0x40, 0x48, 0x3c, 0x49, 0x44, 0x62, 0x61, 0x65, 0x64, 0x14, 0x75, 0x1a, 0x18, 0xa1); a building that 0x502520 knows takes the owner contact (0x4ffe90 (building object +0x5d, 1, 0, 0xfd) or the type 0x37 for the job codes 3 / 8 / 9) and gives its +2 id when the target of the figure (+0x184 +0x2c / +0x30) is not it (0x501b50 as the fallback) */
 
-int he_Unk55ea60(int p)
+int he_FigureContact(int p)
 {
     int code, b, o;
 
@@ -11770,7 +11770,7 @@ void he_FindFigurePlace(int p)
 }
 
 void gm_SetTime(struct GCLOCK *c, unsigned char hour, unsigned min, unsigned sec);
-void ai_Unk4c5150(int a, int b, int c, const char *s);
+void cm_RequestChrMove(int a, int b, int c, const char *s);
 void cm_RequestChrMoveToUniverse(int a, int b, int c, const char *s);
 void cm_SendGoodsDelta(char *p, unsigned char k);
 float ai_Unk4ffa10();
@@ -11814,7 +11814,7 @@ void he_Unk55efc0(int ev)
         he_FreeEvent((int *)ev);
         return;
     }
-    c = he_Unk55ea60(p);
+    c = he_FigureContact(p);
     ai_Unk4c5b90(*(int *)(p + 4));
     cm_SendChrGotoBuilding(*(int *)(p + 4), c, -1, 0, 0, "Go to work");
     cm_RequestChrMoveToUniverse(*(int *)(p + 4), -1, c, "dummy_EINGANG");
@@ -12440,7 +12440,7 @@ void he_Unk565940(int ev)
             cm_SendOwnership(*(int *)(o + 1), *(int *)(r + 4), *(int *)(r + 4));
             /* the original caller pushes 3 arguments (0x565ab5 push ecx, 0x565ab6 push edx, 0x565ab7 push edi) to the
                1-argument 0x55ea60, which reads only [esp+8] (0x55ea61); the extra pushes are the original bytes */
-            if (he_Unk55ea60(r, &v[0], &v[1]) != 0)    /* @original: 3 args to the 1-arg 0x55ea60 (see above) */
+            if (he_FigureContact(r, &v[0], &v[1]) != 0)    /* @original: 3 args to the 1-arg 0x55ea60 (see above) */
                 cm_SendChrGotoBuilding(*(int *)(r + 4), v[0], v[1], 0, 0, (unsigned)&full_data_627b20);
         }
     }

@@ -7,6 +7,7 @@ void he_Unk53d470(unsigned char *ev);
 int he_Unk53d4b0(void);
 void he_FreeEvents(void);
 int he_ReleaseEvents(void);
+int he_FigureContact(int p);                 /* 0x55ea60, the contact id of the figure p, or -1 */
 int he_Unk53d600(int type, void *alloc, void *run);
 int he_Unk53d630(void);
 int he_Unk53d6f0(int ev, int b, int c, int d, int e);

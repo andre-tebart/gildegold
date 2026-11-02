@@ -1457,7 +1457,7 @@ void cm_SendChrWalkTo(int a, int b, int c, int d)
 }
 /* 0x4c5150, message 0x2f with a name */
 
-void ai_Unk4c5150(int a, int b, int c, const char *s)
+void cm_RequestChrMove(int a, int b, int c, const char *s)
 {
     G17MSG m;
 

@@ -113,7 +113,7 @@ int ai_Unk576e70(int *p);               /* 0x576e70, step callback predicate */
 int ai_Unk576ee0(int *p);               /* 0x576ee0, transition callback */
 int ai_Unk577020(int *p);               /* 0x577020, step callback predicate */
 void ai_Unk5770a0(int arg);             /* 0x5770a0, posts the message 0x2bc0 */
-void ai_Unk577110(int arg);             /* 0x577110, posts to the player's character record */
+void ai_HookChapter3Step2(int arg);             /* 0x577110, posts to the player's character record */
 int ai_Unk5771b0(int *p);               /* 0x5771b0, transition callback */
 void ai_Unk577230(int arg);             /* 0x577230, posts messages */
 int ai_Unk577290(int *p);               /* 0x577290, step predicate */

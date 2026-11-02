@@ -228,7 +228,7 @@ void ai_Unk4c5010(int a, int b, int c);                                         
 void cm_SetPlant(int a, unsigned char b, unsigned char c, short d, unsigned char e, int f); /* 0x4c5050 */
 void ai_Unk4c50b0(int a, int b, short c);                                        /* 0x4c50b0 */
 void cm_SendChrWalkTo(int a, int b, int c, int d);                                   /* 0x4c5100 */
-void ai_Unk4c5150(int a, int b, int c, const char *s);                           /* 0x4c5150 */
+void cm_RequestChrMove(int a, int b, int c, const char *s);                           /* 0x4c5150 */
 void cm_RequestChrMoveToUniverse(int a, int b, int c, const char *s);                           /* 0x4c51b0, "cm_RequestChrMoveToUniverse" */
 void cm_SendChrStop(int a);                                                        /* 0x4c5230 */
 void ai_Unk4c5260(int a, int b);                                                 /* 0x4c5260 */

@@ -681,7 +681,6 @@ void ai_TutorialShowText2();
 void sv_CameraFollow();
 void sv_SetStatusText(char *s);
 void sv_SelectPanelObject(unsigned char *o, int b, char *c);
-int he_Unk55ea60();
 void sv_BookForward();
 void sv_BookBack();
 void sv_FitForm(int f);
@@ -696,6 +695,7 @@ extern char *txt_Ptrs[]; /* 0x143a1c0 */
    and the full link relocates the initializer, so the record is ours and no neighbour is touched. */
 TUTSTATE *const ai_Tutorial = (TUTSTATE *)(full_data_6fa020 + 0x40);  /* 0x5eec60, the pointer to the tutorial state record */
 #define S (*(char **)(unsigned)&ai_Tutorial)  /* the tutorial state record (at 0x6fa060): the pointer ai_Tutorial holds */
+#define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define ai_ClockMsVolatile (*(volatile int *)&ai_ClockMs)  /* 0x6333cc, @original: the byte-matched ai_TutorialTick reloads the clock after every read (a timer-written int; its owner declares it plain int) */
 int ai_TutorialOn = 0;  /* 0x6f265c, the tutorial runs (set by its start 0x578180, cleared by its end) */
 int ai_TutorialRunning = 0;  /* 0x6f2660, the tutorial's state machine advances (unk_SetEndGameGate / unk_ClearEndGameGate) */
@@ -1678,30 +1678,32 @@ int ai_Unk5770e0(int *p)
     }
     return ai_QueryDefault(p);
 }
-/* 0x577110, when `arg` is 0: finds the character record 0x770b80 + i * 0x21c whose owner (the pointer at
-   0x770cec + i * 0x21c, +0x21c per record) has the player word 0x6f25b8 at +0x27, asks 0x55ea60 for two values and
-   posts both (0x4c51b0 with 0x5f1890, 0x4c5150 with 0x631090) on the record's id +4; no return value */
+/* 0x577110, the run hook of the run record FTInitChapter3Step2: at the run's start (end 0) finds the first
+   character whose current building belongs to the player and, when 0x55ea60 answers for it, sends it to the
+   entrance dummy ("dummy_EINGANG", message 0x30) and posts the message 0x2f with the same values */
 
-void ai_Unk577110(int arg)
+void ai_HookChapter3Step2(int end)
 {
-    char *rec;
-    int a, b;
-    int p, i;
+    AICHAR *chr;
+    int x, y;
+    int i;
 
-    if (arg)
+    if (end)
         return;
-    for (p = (unsigned)&ai_Unk770cec, i = 0; p < ((unsigned)((unsigned)ai_Unk770cec + 0x65296) + 0x16a); p += 0x21c, i++) {
-        rec = *(char **)p;
-        if (rec && *(unsigned short *)(rec + 0x27) == *(unsigned short *)(unsigned)&ai_PlayerId)
-            break;
+    for (i = 0; i < 768; i++) {
+        if (ai_CharsT[i].bld && ai_CharsT[i].bld->owner == ai_PlayerId) {
+            chr = &ai_CharsT[i];
+            if (!chr)
+                return;
+            /* x / y are never written: the original pushes three arguments to the one-argument 0x55ea60, as he.c
+               0x565940 does */
+            if (!he_FigureContact((int)chr, &x, &y))    /* @original: 3 args to the 1-arg 0x55ea60 (see above) */
+                return;
+            cm_RequestChrMoveToUniverse(chr->netId, x, y, "dummy_EINGANG");
+            cm_RequestChrMove(chr->netId, x, y, (char *)(unsigned)&ch_EmptyName);
+            return;
+        }
     }
-    if (p >= ((unsigned)((unsigned)ai_Unk770cec + 0x65296) + 0x16a))
-        return;
-    rec = (char *)((unsigned)&ai_Chars + i * 0x21c);
-    if (!he_Unk55ea60(rec, &a, &b))
-        return;
-    cm_RequestChrMoveToUniverse(*(int *)(rec + 4), a, b, (char *)(unsigned)"dummy_EINGANG");
-    ai_Unk4c5150(*(int *)(rec + 4), a, b, (char *)(unsigned)&ch_EmptyName);
 }
 /* 0x5771b0, a transition callback on the flag S+0x38: it is raised to 1 by the kind 0x25 with the step word
    0x155, and to 2 by the kind 0x24 on a building with the table byte 0xa (1); else 0, and the answer of 0x5764b0
@@ -3115,7 +3117,7 @@ int ai_Unk579570(void)
     U_I(r + 0x28) = (unsigned)(full_data_629ce0 + 0x18);
     U_I(r + 0x2c) = 0x429;
     U_I(r + 0x30) = 0xd5;
-    U_I(r + 0x34) = (unsigned)&ai_Unk577110;
+    U_I(r + 0x34) = (unsigned)&ai_HookChapter3Step2;
     U_I(r + 0x3c) = (unsigned)&ai_Unk5770e0;
     U_I(r + 0x40) = 0x1f;
     U_I(r + 0x44) = 0x58c;
