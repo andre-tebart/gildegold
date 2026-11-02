@@ -152,16 +152,16 @@ int ai_TutorialStepClicked(void);                 /* 0x5780e0, the control predi
 int ai_Unk578120(char *per);            /* 0x578120, sets the player S+0x1c */
 void ai_Unk578150(void);                /* 0x578150, clears the player S+0x1c */
 int ai_Unk578170(void);                 /* 0x578170, the gate predicate */
-int ai_Unk578180(void);                 /* 0x578180, the tutorial start / record reset */
-void ai_Unk578370(void);                /* 0x578370, the tutorial stop (handle + chain reset) */
-void ai_Unk578440(char *rec);           /* 0x578440, frees the tutorial record chain */
-int ai_Unk5784a0(void);                 /* 0x5784a0, allocates the main-intro record */
+int ai_TutorialStart(void);                 /* 0x578180, the tutorial start / record reset */
+void ai_TutorialStop(void);                /* 0x578370, the tutorial stop (handle + chain reset) */
+void ai_TutorialFreeRuns(char *rec);           /* 0x578440, frees the tutorial record chain */
+int ai_TutorialInitMainIntro(void);                 /* 0x5784a0, allocates the main-intro record */
 int ai_Unk578570(void);                 /* 0x578570, the chapter 1 chain (ROUGH) */
 int ai_Unk578e40(void);                 /* 0x578e40, the chapter 2 chain (ROUGH) */
 int ai_Unk579570(void);                 /* 0x579570, the chapter 3 chain (ROUGH) */
 int ai_Unk57aa80(void);                 /* 0x57aa80, the chapter 4 chain (ROUGH) */
 int ai_Unk57aeb0(void);                 /* 0x57aeb0, the chapter 5 chain (ROUGH) */
-int ai_Unk57b750(void);                 /* 0x57b750, the main-outro record */
+int ai_TutorialInitMainOutro(void);                 /* 0x57b750, the main-outro record */
 void ai_Unk57b810(float *a, float *b, float *c, float *d, float t, float *out);  /* 0x57b810, the Bezier */
 
 /* declared in other units' headers before (moved to the owner) */

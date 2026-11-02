@@ -4857,7 +4857,7 @@ void main_GameLoop(int ctl)
     for (us = ai_PlayerId; us < 0x300 && ai_GameOver == 0 && ai_CharsT[MAIN_PLAYER].kind != 6; ai_PlayerId = us)
         us++;
     if ((ai_GameFlags & 0x80) != 0) {
-        ai_Unk578180();
+        ai_TutorialStart();
         memset(cl, 0, 0xf8);
         /* `cl` is an int array, so the byte offsets must not pick up the int scaling of MSG_B / MSG_I. */
         MSG_B((char *)cl, 4) = 0x87;
@@ -5056,7 +5056,7 @@ L_next:
     }
 L_end:
     if ((ai_GameFlags & 0x80) != 0)
-        ai_Unk578370();
+        ai_TutorialStop();
     main_EndGame();
 }
 /* 0x53c9b0, plays the logo movies jowood / 4head / intro / intro_addon (<movie path>*.mpg, window 10,10,0xdc,0xdc; handle 0x6f241c) */

@@ -2299,10 +2299,10 @@ int ai_TutorialStepForm(void)
         if (ai_Tutorial->run->steps[ai_Tutorial->step].kind >= 4)
             return -4;
         switch (ai_Tutorial->run->steps[ai_Tutorial->step].kind) {
-        case 0: ai_Tutorial->stepForm = d2_OpenForm(0, 0, "tutorial\left_form"); break;
-        case 1: ai_Tutorial->stepForm = d2_OpenForm(0, 0, "tutorial\right_form"); break;
-        case 2: ai_Tutorial->stepForm = d2_OpenForm(0, 0, "tutorial\top_form"); break;
-        case 3: ai_Tutorial->stepForm = d2_OpenForm(0, 0, "tutorial\bottom_form"); break;
+        case 0: ai_Tutorial->stepForm = d2_OpenForm(0, 0, "tutorial\\left_form"); break;
+        case 1: ai_Tutorial->stepForm = d2_OpenForm(0, 0, "tutorial\\right_form"); break;
+        case 2: ai_Tutorial->stepForm = d2_OpenForm(0, 0, "tutorial\\top_form"); break;
+        case 3: ai_Tutorial->stepForm = d2_OpenForm(0, 0, "tutorial\\bottom_form"); break;
         }
         d2_PlaceMainWindow(ai_Tutorial->stepForm, 3);
         ai_Tutorial->stepKind = ai_Tutorial->run->steps[ai_Tutorial->step].kind;
@@ -2359,29 +2359,25 @@ int ai_Unk578170(void)
     return !ai_TutorialOn;
 }
 
-int ai_Unk5784a0();
-int ai_Unk57b750();
-void ai_Unk578370();
+int ai_TutorialInitMainIntro();
+int ai_TutorialInitMainOutro();
+void ai_TutorialStop();
 int sb_UnloadSampleBank();
 int snd_LoadVoiceBank();
 void * mem_Alloc(int size, char *tag);
-void ai_Unk578440();
+void ai_TutorialFreeRuns();
 
-/* 0x578180, the tutorial start (493 B, called from 0x53bb20): -3 while the gate 0x6f265c is set; the table
-   0x62918c (5 ints, counted to 0x6291a0) must hold at least one 1 (else -2); the record chain built:
-   0x5784a0 () into 0x6f2658, its +0x70 tail; for every i whose 0x62918c[i] is 1 the callback 0x6291a0[i] ()
-   appended at the tail (its own tail walked), then 0x57b750 (); failures go to 0x578370 () and -1. Then the
-   state record 0x5eec60 is reset: +0 / +4 = 1, +8 / +0xc = the clock 0x6333cc, +0x10 / +0x14 = 0,
-   +0x18 = 0x6f2658, +0x1c = 0, +0x20 = -1, the form +0x24 = 0x4741f0 (0, 0, "tutorial\inline_form"
-   0x629390) (0x475590 (id, 0), 0x475850 (id, 3)), +0x28 / +0x2c / +0x30 = 0, the form +0x34 =
-   0x4741f0 (0, 0, "tutorial\aux_form" 0x62937c) (0x475590 (id, 0), 0x475850 (id, 3)), +0x3c / +0x40 /
-   +0x54 / +0x58 / +0x5c = 0, +0x60 / +0x68 / +0x6c = -1, the gates 0x6f265c / 0x6f2660 = 1, 0 */
-int ai_Unk578180(void)
+/* 0x578180, starts the tutorial (called from 0x53bb20): -3 while it runs, -2 when no chapter is played; the run
+   chain ai_TutorialRuns is built from the main intro, the chain of every chapter played (ai_TutorialChapterOn /
+   ai_TutorialChapterInit, each appended at the tail of the chain) and the main outro; a failed builder stops the
+   tutorial again (ai_TutorialStop) and gives -1. Then the state record is reset to the state 1 with the first run,
+   both text windows opened hidden ("tutorial\inline_form", "tutorial\aux_form"), the progress form closed, and
+   the tutorial set running; 0 */
+
+int ai_TutorialStart(void)
 {
-    char *p;
-    char *rec;
-    char *tail;
-    char *r;
+    TUTRUN *tail;
+    TUTRUN *r;
     int cnt;
     int i;
 
@@ -2394,59 +2390,57 @@ int ai_Unk578180(void)
     }
     if (!cnt)
         return -2;
-    rec = (char *)ai_Unk5784a0();
-    ai_TutorialRuns = (TUTRUN *)rec;
-    if (!rec)
+    ai_TutorialRuns = (TUTRUN *)ai_TutorialInitMainIntro();
+    if (!ai_TutorialRuns)
         goto fail;
-    tail = rec;
-    while (*(char **)(tail + 0x70))
-        tail = *(char **)(tail + 0x70);
+    for (tail = ai_TutorialRuns; tail->next; tail = tail->next)
+        ;
     for (i = 0; i < 5; i++) {
         if (ai_TutorialChapterOn[i] == 1) {
-            r = (char *)ai_TutorialChapterInit[i]();
-            *(char **)(tail + 0x70) = r;
+            r = (TUTRUN *)ai_TutorialChapterInit[i]();
+            tail->next = r;
             if (!r)
                 goto fail;
-            tail = r;
-            while (*(char **)(tail + 0x70))
-                tail = *(char **)(tail + 0x70);
+            while (tail->next)
+                tail = tail->next;
         }
     }
-    r = (char *)ai_Unk57b750();
-    *(char **)(tail + 0x70) = r;
+    r = (TUTRUN *)ai_TutorialInitMainOutro();
+    tail->next = r;
     if (!r)
         goto fail;
-    U_I(S) = 1;
-    U_I(S + 4) = 1;
-    U_I(S + 8) = U_I((unsigned)&ai_ClockMs);
-    U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
-    U_I(S + 0x10) = 0;
-    U_I(S + 0x14) = 0;
-    *(char **)(S + 0x18) = (char *)ai_TutorialRuns;
-    U_I(S + 0x1c) = 0;
-    U_I(S + 0x20) = -1;
-    U_I(S + 0x24) = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_629390);
-    d2_SetViewEnabled(U_I(S + 0x24), 0);
-    d2_PlaceMainWindow(U_I(S + 0x24), 3);
-    U_I(S + 0x28) = 0;
-    U_I(S + 0x2c) = 0;
-    U_I(S + 0x30) = 0;
-    U_I(S + 0x34) = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62937c);
-    d2_SetViewEnabled(U_I(S + 0x34), 0);
-    d2_PlaceMainWindow(U_I(S + 0x34), 3);
-    U_I(S + 0x3c) = 0;
-    U_I(S + 0x40) = 0;
-    U_I(S + 0x54) = 0;
-    U_I(S + 0x58) = 0;
-    U_I(S + 0x5c) = 0;
-    U_I(S + 0x60) = -1;
-    U_I(S + 0x68) = -1;
-    U_I(S + 0x6c) = -1;
+    ai_Tutorial->state = 1;
+    ai_Tutorial->next = 1;
+    ai_Tutorial->textAt = ai_ClockMsVolatile;
+    ai_Tutorial->stepAt = ai_ClockMsVolatile;
+    ai_Tutorial->campaignSteps = 0;
+    ai_Tutorial->voice = 0;
+    ai_Tutorial->run = ai_TutorialRuns;
+    ai_Tutorial->voice = 0;
+    ai_Tutorial->host = 0;
+    ai_Tutorial->continueObj = -1;
+    ai_Tutorial->text1Win = d2_OpenForm(0, 0, "tutorial\\inline_form");
+    d2_SetViewEnabled(ai_Tutorial->text1Win, 0);
+    d2_PlaceMainWindow(ai_Tutorial->text1Win, 3);
+    ai_Tutorial->text1Shown = 0;
+    ai_Tutorial->statusShown = 0;
+    ai_Tutorial->text2Shown = 0;
+    ai_Tutorial->text2Win = d2_OpenForm(0, 0, "tutorial\\aux_form");
+    d2_SetViewEnabled(ai_Tutorial->text2Win, 0);
+    d2_PlaceMainWindow(ai_Tutorial->text2Win, 3);
+    ai_Tutorial->phase = 0;
+    ai_Tutorial->step = 0;
+    ai_Tutorial->markerPhase = 0;
+    ai_Tutorial->markerStep = 0;
+    ai_Tutorial->markerAt = 0;
+    ai_Tutorial->markerObj = -1;
+    ai_Tutorial->progressForm = -1;
+    ai_Tutorial->progressSlider = -1;
     ai_TutorialOn = 1;
     ai_TutorialRunning = 1;
     return 0;
 fail:
-    ai_Unk578370();
+    ai_TutorialStop();
     return -1;
 }
 /* 0x578370, the tutorial stop (196 B): the six handles 0x6f2640 .. 0x6f2658 unloaded when set (0x426ba0), the
@@ -2454,7 +2448,7 @@ fail:
    +0x14, +0x18, +0x1c = 0, +0x20 = -1, the forms +0x24 / +0x34 released (0x4758f0) and -1, +0x14 = 0 again),
    the gates 0x6f265c / 0x6f2660 = 0; no return value */
 
-void ai_Unk578370(void)
+void ai_TutorialStop(void)
 {
     int i;
 
@@ -2462,7 +2456,7 @@ void ai_Unk578370(void)
         if (U_I(i))
             sb_UnloadSampleBank(U_I(i));
     }
-    ai_Unk578440((char *)ai_TutorialRuns);
+    ai_TutorialFreeRuns((char *)ai_TutorialRuns);
     ai_TutorialRuns = 0;
     U_I(S) = 0;
     U_I(S + 8) = 0;
@@ -2483,12 +2477,12 @@ void ai_Unk578370(void)
 /* 0x578440, frees the tutorial record chain (82 B, recursive): nothing for a null record; else its +0x70 next
    record, its +0x58 and +0x64 tables (mem_Free, both cleared) and then the record itself */
 
-void ai_Unk578440(char *rec)
+void ai_TutorialFreeRuns(char *rec)
 {
     if (!rec)
         return;
     if (*(char **)(rec + 0x70))
-        ai_Unk578440(*(char **)(rec + 0x70));
+        ai_TutorialFreeRuns(*(char **)(rec + 0x70));
     if (*(int *)(rec + 0x58)) {
         mem_Free(*(int *)(rec + 0x58));
         *(int *)(rec + 0x58) = 0;
@@ -2505,13 +2499,13 @@ void ai_Unk578440(char *rec)
    +0x20 = 0, +0x2c = -1, +0x30 = 0x8e, +0x34 / +0x38 = 0, +0x40 / +0x44 = 0, +0x48 = 0xb, +0x68 / +0x6c /
    +0x70 = 0; the sample bank handle 0x6f2640 = 0x4c2830 ("TUTORIAL_INTRO_OUTRO.sbf" 0x6293bc, 0); the record */
 
-int ai_Unk5784a0(void)
+int ai_TutorialInitMainIntro(void)
 {
     char *rec;
 
     rec = (char *)mem_Alloc(0x74, (char *)(unsigned)&full_data_6293d8);
     if (!rec) {
-        ai_Unk578440(0);
+        ai_TutorialFreeRuns(0);
         return 0;
     }
     memset(rec, 0, 0x74);
@@ -2785,7 +2779,7 @@ int ai_Unk578570(void)
     U_I((unsigned)&full_data_6f2644) = snd_LoadVoiceBank((char *)(unsigned)&full_data_6293f8, 0);
     return (int)rec;
 fail:
-    ai_Unk578440(rec);
+    ai_TutorialFreeRuns(rec);
     return 0;
 }
 /* 0x578e40, the tutorial chapter 2 chain (1839 B, ROUGH from the disassembly, the same shape as 0x578570): nine
@@ -2992,7 +2986,7 @@ int ai_Unk578e40(void)
     U_I((unsigned)&full_data_6f2648) = snd_LoadVoiceBank((char *)(unsigned)&full_data_629734, 0);
     return (int)rec;
 fail:
-    ai_Unk578440(rec);
+    ai_TutorialFreeRuns(rec);
     return 0;
 }
 
@@ -3634,7 +3628,7 @@ int ai_Unk579570(void)
     U_I((unsigned)&full_data_6f264c) = snd_LoadVoiceBank((char *)(unsigned)&full_data_6299b0, 0);
     return (int)rec;
 fail:
-    ai_Unk578440(rec);
+    ai_TutorialFreeRuns(rec);
     return 0;
 }
 /* 0x57aa80, the tutorial chapter 4 chain (1072 B, ROUGH from the disassembly, the same shape as the chapters 1 ..
@@ -3772,7 +3766,7 @@ int ai_Unk57aa80(void)
     U_I((unsigned)&full_data_6f2650) = snd_LoadVoiceBank((char *)(unsigned)&full_data_629e50, 0);
     return (int)rec;
 fail:
-    ai_Unk578440(rec);
+    ai_TutorialFreeRuns(rec);
     return 0;
 }
 /* 0x57aeb0, the tutorial chapter 5 chain (2207 B, ROUGH from the disassembly, the same record shape as the
@@ -4054,7 +4048,7 @@ int ai_Unk57aeb0(void)
     U_I((unsigned)&full_data_6f2654) = snd_LoadVoiceBank((char *)(unsigned)&full_data_629fd4, 0);
     return (int)rec;
 fail:
-    ai_Unk578440(rec);
+    ai_TutorialFreeRuns(rec);
     return 0;
 }
 
@@ -4065,13 +4059,13 @@ fail:
    fails (0x578440 (0)); memset 0x74; +0x14 .. +0x20 / +0x30 / +0x34 / +0x38 / +0x40 / +0x44 / +0x70 = 0, then
    +0 = 7, +4 = the magic "RTUO" 0x4f555452, +8 = 5, +0xc = 0x3f27, +0x10 = the text "TUTORIAL_MAIN_OUTRO"
    0x62a224, +0x2c = -1, +0x48 = 0xb, +0x68 = -9; the record */
-int ai_Unk57b750(void)
+int ai_TutorialInitMainOutro(void)
 {
     char *rec;
 
     rec = (char *)mem_Alloc(0x74, (char *)(unsigned)&full_data_62a238);
     if (!rec) {
-        ai_Unk578440(0);
+        ai_TutorialFreeRuns(0);
         return 0;
     }
     memset(rec, 0, 0x74);
