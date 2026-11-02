@@ -690,7 +690,7 @@ TUTSTATE *const ai_Tutorial = (TUTSTATE *)(full_data_6fa020 + 0x40);  /* 0x5eec6
 #define ai_TimeT (*(AITIME *)&ai_Time)  /* 0x770ae0, ai_Time (anm.c: char[14]) as the AITIME it is */
 #define ai_ClockMsVolatile (*(volatile int *)&ai_ClockMs)  /* 0x6333cc, @original: the byte-matched ai_TutorialTick reloads the clock after every read (a timer-written int; its owner declares it plain int) */
 int ai_TutorialChapterOn[5] = { 1, 1, 1, 1, 1 };  /* 0x62918c, per chapter 1 = played (the start window's check boxes, ai_TutorialWindow) */
-int (*ai_TutorialChapterInit[5])(void) = { ai_TutorialInitChapter1, ai_TutorialInitChapter2, ai_Unk579570, ai_Unk57aa80, ai_Unk57aeb0 };  /* 0x6291a0, the chapter chain builders the start appends for every chapter played */
+int (*ai_TutorialChapterInit[5])(void) = { ai_TutorialInitChapter1, ai_TutorialInitChapter2, ai_TutorialInitChapter3, ai_Unk57aa80, ai_Unk57aeb0 };  /* 0x6291a0, the chapter chain builders the start appends for every chapter played */
 int ai_TutorialBanks[6] = { 0 };  /* 0x6f2640, the voice banks of the main intro / outro and the chapters 1 .. 5 (snd_LoadVoiceBank), unloaded by the stop */
 TUTRUN *ai_TutorialRuns = 0;  /* 0x6f2658, the chain of the tutorial's run records (built by its start 0x578180, freed by its stop 0x578370) */
 int ai_TutorialOn = 0;  /* 0x6f265c, the tutorial runs (set by its start 0x578180, cleared by its end) */
@@ -785,7 +785,7 @@ int ai_TutorialTick(void)
         if (ai_Tutorial->run->stepHook)
             ai_CampaignStep(2, 0, 0, 0);
         ai_Tutorial->stepArg = 0;
-        if (!ai_Tutorial->run->marker)
+        if (!ai_Tutorial->run->marks)
             ai_Tutorial->markerPhase = 0;
         else
             ai_Tutorial->markerPhase = 1;
@@ -1665,7 +1665,7 @@ void ai_Unk5770a0(int arg)
    runs to 0x57710f): for the event kind 0x20 with the step p[3] 0x155 it answers 1 while the state record's +0x3c
    is 3, else 0; every other event goes on to 0x5764b0 */
 
-int ai_Unk5770e0(int *p)
+int ai_QueryChapter3Step2(int *p)
 {
     if (p[0] == 0x20) {
         if (p[3] == 0x155 && U_I(S + 0x3c) == 3)
@@ -1705,7 +1705,7 @@ void ai_HookChapter3Step2(int end)
    0x155, and to 2 by the kind 0x24 on a building with the table byte 0xa (1); else 0, and the answer of 0x5764b0
    when the flag is below the needed value or no record is given */
 
-int ai_Unk5771b0(int *p)
+int ai_QueryChapter3Step6(int *p)
 {
     int kind;
 
@@ -1772,7 +1772,7 @@ int ai_MarkerChapter5Step2(void)
 }
 /* 0x577320, the flag S+0x38 */
 
-int ai_Unk577320(void)
+int ai_MarkerChapter3Step6(void)
 {
     return U_I(S + 0x38);
 }
@@ -1781,7 +1781,7 @@ int ai_Unk577320(void)
    0x6f25b8), each when the flag already reaches the previous level (1) and the step fits; the kinds 0x1a / 0x1c
    answer 1, everything else 0 */
 
-int ai_Unk577330(int *p)
+int ai_QueryChapter3Step8(int *p)
 {
     int kind;
 
@@ -1834,7 +1834,7 @@ int ai_MarkerChapter3Step8(void)
 /* 0x577450, a step predicate: 1 for the kind 0x26 with the step word 0x1d0 while the flag S+0x38 is not negative
    (which sets the flag to 1), and for the kinds 0x1a / 0x1c; else 0 */
 
-int ai_Unk577450(int *p)
+int ai_QueryChapter3Step10(int *p)
 {
     if (U_I(S + 0x38) >= 0 && p[0] == 0x26 && p[3] == 0x1d0) {
         U_I(S + 0x38) = 1;
@@ -1847,7 +1847,7 @@ int ai_Unk577450(int *p)
 /* 0x577490, releases the pending id S+0x50: with the kind S+0x40 2 through 0x52f9f0, with the kind 3 through
    0x52fa00; returns 0 */
 
-int ai_Unk577490(void)
+int ai_StepShownChapter3Step4(void)
 {
     char *st;
 
@@ -1861,7 +1861,7 @@ int ai_Unk577490(void)
 /* 0x5774d0, when `arg` is 0 and the building 0x6f2308 is not already of the table byte 0x12: finds a record
    (0x501190 (1, 5, 0x12)), picks 0x4ffe90 (r+0x5d, 1, 0, 0x74) and passes it (0x521960 (r, q+2, 0x631090)) */
 
-void ai_Unk5774d0(int arg)
+void ai_HookChapter3Intro(int arg)
 {
     char *r;
     char *q;
@@ -3100,640 +3100,656 @@ fail:
 #define CHSTEP(o) U_I((char *)U_I(r + 0x58) + (o))
 #define CHANIM(o) U_I((char *)U_I(r + 0x64) + (o))
 
-/* 0x579570, the tutorial chapter 3 chain (5377 B, ROUGH from the disassembly, the same record shape as 0x578570
-   / 0x578e40 plus the two sub tables of a step record: +0x50 the step count and +0x58 the step table (0x10 B
-   per step: +0 the voice argument 0x2c6, +4 the chapter form kind, +8 the text id, +0xc a window / voice
-   value), +0x5c the animation entry count, +0x60 the animation step callback and +0x64 the animation table
-   (0x2c B per entry: +0 / +4 the position, +8 / +0xc / +0x10 / +0x14 / +0x18 / +0x1c the Bezier points and
-   +0x20 / +0x24 / +0x28 the timings, read by 0x57b8a0). Ten 0x74-byte step records (mem_Alloc (0x74, name) +
-   memset 0x74): +0 = 3, +4 the magic "3rtn" 0x6e747233 / 0x633373xx / 0x75747233, +0xc the text id, +0x10 the
-   text key (CHAPTER_3_*), +0x2c = -1, +0x30, +0x3c, +0x48, +0x68, linked through +0x70. Every sub table has
-   its own mem_Alloc and a failed alloc tears the whole chain down too. The screen width d2_ScreenW picks the
-   animation floats (0x320 / 0x400 / else). The sample bank "TUTORIAL_CHAPTER_3.sbf" 0x6299b0 into 0x6f264c
-   (0x4c2830 (name, 0)); the first record, or 0x578440 (the chain) and 0 after a failed alloc */
-int ai_Unk579570(void)
+/* 0x579570, builds the run chain of the tutorial's chapter 3 (ai_TutorialChapterInit[2]): ten run records (the
+   intro 'ntr3', the steps 'c3s1' .. 'c3sA', the outro 'utr3'), each allocated under its "FTInitChapter3*" tag
+   (the intro under the copy-pasted "FTInitChapter2Intro"), zeroed and filled with its texts / voices
+   ("CHAPTER_3_*"), times, callbacks, goal and allow masks, and linked through next. The steps 1, 2, 4 and 6 get
+   a step table ("FTInitScriptChapter3Step*"), the steps 2, 6, 8 and 10 the position marker's path
+   ("FTInitAnimChapter3Step*"), whose points depend on the screen width (800, 1024, else). The voice bank
+   "TUTORIAL_CHAPTER_3.sbf" is loaded into ai_TutorialBanks[3]. The first record, or 0 after a failed allocation
+   (the records built so far freed) */
+
+int ai_TutorialInitChapter3(void)
 {
-    char *rec;
-    char *prev;
-    char *r;
+    TUTRUN *head;
+    TUTRUN *r;
 
-    /* FTInitChapter2Intro (the original's copy-paste name for the chapter 3 intro) */
-    rec = (char *)mem_Alloc(0x74, (char *)(unsigned)&full_data_62998c);
-    if (!rec)
-        goto fail;
-    memset(rec, 0, 0x74);
-    U_I(rec) = 0x3;
-    U_I(rec + 0x4) = 0x6e747233;
-    U_I(rec + 0xc) = 0x3f72;
-    U_I(rec + 0x10) = (unsigned)&full_data_629e1c;
-    U_I(rec + 0x2c) = 0xffffffff;
-    U_I(rec + 0x30) = 0x8e;
-    U_I(rec + 0x34) = (unsigned)&ai_Unk5774d0;
-    U_I(rec + 0x48) = 0xb;
-    U_I(rec + 0x68) = 0x5837;
-    U_I(rec + 0x6c) = 0x1e00;
-    prev = rec;
-
-    /* FTInitChapter3Step1 */
-    r = (char *)mem_Alloc(0x74, (char *)(unsigned)&full_data_629e2c);
-    *(char **)(prev + 0x70) = r;
+    head = 0;
+    r = (TUTRUN *)mem_Alloc(sizeof(TUTRUN), "FTInitChapter2Intro");
     if (!r)
         goto fail;
-    memset(r, 0, 0x74);
-    U_I(r) = 0x3;
-    U_I(r + 0x4) = 0x63337331;
-    U_I(r + 0x8) = 0x2;
-    U_I(r + 0xc) = 0x3f74;
-    U_I(r + 0x10) = (unsigned)&full_data_629dec;
-    U_I(r + 0x14) = 0x3f7a;
-    U_I(r + 0x18) = (unsigned)&full_data_629dd8;
-    U_I(r + 0x24) = 0x3f79;
-    U_I(r + 0x28) = (unsigned)(full_data_629db0 + 0x14);
-    U_I(r + 0x2c) = 0x429;
-    U_I(r + 0x30) = 0xd5;
-    U_I(r + 0x3c) = (unsigned)&ai_QueryDefault;
-    U_I(r + 0x40) = 0x1d;
-    U_I(r + 0x44) = 0x58c;
-    U_I(r + 0x48) = 0xb;
-    U_I(r + 0x50) = 0x3;
-    U_I(r + 0x54) = 0x0;
-    U_I(r + 0x68) = 0x5837;
-    U_I(r + 0x6c) = 0x1e10;
-    /* FTInitScriptChapter3Step1: three steps */
-    U_I(r + 0x58) = (unsigned)mem_Alloc(0x30, (char *)(unsigned)&full_data_629e00);
-    if (!U_I(r + 0x58))
+    AI_ZERO_AT(r, sizeof(TUTRUN));
+    r->id = 3;
+    r->tag = 'ntr3';
+    r->mode = 0;
+    r->mainText = 0x3f72;
+    r->mainVoice = "CHAPTER_3_INTRO";
+    r->text1 = 0;
+    r->text1Voice = 0;
+    r->text2 = 0;
+    r->text2Voice = 0;
+    r->text1Time = -1;
+    r->tail2Time = 0x8e;
+    r->hook = ai_HookChapter3Intro;
+    r->stepHook = 0;
+    r->goal = 0;
+    r->tailTime = 0;
+    r->goalState = 0xb;
+    r->allowMask = 0x5837;
+    r->allowMask2 = 0x1e00;
+    r->next = 0;
+    head = r;
+    r->next = (TUTRUN *)mem_Alloc(sizeof(TUTRUN), "FTInitChapter3Step1");
+    if (!r->next)
         goto fail;
-    CHSTEP(0x0) = 0x2c6;
-    CHSTEP(0x4) = 0x1;
-    CHSTEP(0x8) = 0x3f76;
-    CHSTEP(0xc) = (unsigned)&full_data_629d98;
-    CHSTEP(0x10) = 0x2c6;
-    CHSTEP(0x14) = 0x0;
-    CHSTEP(0x18) = 0x3f77;
-    CHSTEP(0x1c) = (unsigned)&full_data_629d80;
-    CHSTEP(0x20) = 0x2c6;
-    CHSTEP(0x24) = 0x2;
-    CHSTEP(0x28) = 0x3f78;
-    CHSTEP(0x2c) = (unsigned)&full_data_629d68;
-    prev = r;
-
-    /* FTInitChapter3Step2 */
-    r = (char *)mem_Alloc(0x74, (char *)(unsigned)&full_data_629db0);
-    *(char **)(prev + 0x70) = r;
-    if (!r)
+    r = r->next;
+    AI_ZERO_AT(r, sizeof(TUTRUN));
+    r->id = 3;
+    r->tag = 'c3s1';
+    r->mode = 2;
+    r->mainText = 0x3f74;
+    r->mainVoice = "CHAPTER_3_A_MAIN";
+    r->text1 = 0x3f7a;
+    r->text1Voice = "CHAPTER_3_A_REMIND";
+    r->statusText = 0x3f79;
+    r->voice = "CHAPTER_3_A_DONE";
+    r->text2 = 0;
+    r->text2Voice = 0;
+    r->text1Time = 0x429;
+    r->tail2Time = 0xd5;
+    r->query = ai_QueryDefault;
+    r->hook = 0;
+    r->stepHook = 0;
+    r->goal = 0x1d;
+    r->tailTime = 0x58c;
+    r->goalState = 0xb;
+    r->allowMask = 0x5837;
+    r->allowMask2 = 0x1e10;
+    r->text2Goal = 0;
+    r->stepCount = 3;
+    r->stepShown = 0;
+    r->steps = (TUTSTEP *)mem_Alloc(3 * sizeof(TUTSTEP), "FTInitScriptChapter3Step1");
+    if (!r->steps)
         goto fail;
-    memset(r, 0, 0x74);
-    U_I(r) = 0x3;
-    U_I(r + 0x4) = 0x63337332;
-    U_I(r + 0x8) = 0x2;
-    U_I(r + 0xc) = 0x3f7b;
-    U_I(r + 0x10) = (unsigned)&full_data_629d38;
-    U_I(r + 0x14) = 0x3f80;
-    U_I(r + 0x18) = (unsigned)&full_data_629d24;
-    U_I(r + 0x1c) = 0x3f7f;
-    U_I(r + 0x20) = (unsigned)&full_data_629d0c;
-    U_I(r + 0x24) = 0x3f81;
-    U_I(r + 0x28) = (unsigned)(full_data_629ce0 + 0x18);
-    U_I(r + 0x2c) = 0x429;
-    U_I(r + 0x30) = 0xd5;
-    U_I(r + 0x34) = (unsigned)&ai_HookChapter3Step2;
-    U_I(r + 0x3c) = (unsigned)&ai_Unk5770e0;
-    U_I(r + 0x40) = 0x1f;
-    U_I(r + 0x44) = 0x58c;
-    U_I(r + 0x48) = 0x9;
-    U_I(r + 0x4c) = 0x20;
-    U_I(r + 0x50) = 0x2;
-    U_I(r + 0x54) = 0x0;
-    U_I(r + 0x5c) = 0x1;
-    U_I(r + 0x68) = 0x5837;
-    U_I(r + 0x6c) = 0x1e30;
-    /* FTInitScriptChapter3Step2: two steps */
-    U_I(r + 0x58) = (unsigned)mem_Alloc(0x20, (char *)(unsigned)&full_data_629d4c);
-    if (!U_I(r + 0x58))
+    r->steps[0].delay = 0x2c6;
+    r->steps[0].kind = 1;
+    r->steps[0].text = 0x3f76;
+    r->steps[0].voice = "CHAPTER_3_A_STEP_RIGHT";
+    r->steps[1].delay = 0x2c6;
+    r->steps[1].kind = 0;
+    r->steps[1].text = 0x3f77;
+    r->steps[1].voice = "CHAPTER_3_A_STEP_LEFT";
+    r->steps[2].delay = 0x2c6;
+    r->steps[2].kind = 2;
+    r->steps[2].text = 0x3f78;
+    r->steps[2].voice = "CHAPTER_3_A_STEP_TOP";
+    r->next = 0;
+    r->next = (TUTRUN *)mem_Alloc(sizeof(TUTRUN), "FTInitChapter3Step2");
+    if (!r->next)
         goto fail;
-    CHSTEP(0x0) = 0x2c6;
-    CHSTEP(0x4) = 0x1;
-    CHSTEP(0x8) = 0x3f7d;
-    CHSTEP(0xc) = (unsigned)&full_data_629cc8;
-    CHSTEP(0x10) = 0x2c6;
-    CHSTEP(0x14) = 0x0;
-    CHSTEP(0x18) = 0x3f7e;
-    CHSTEP(0x1c) = (unsigned)&full_data_629cb0;
-    /* FTInitAnimChapter3Step2: one animation entry */
-    U_I(r + 0x64) = (unsigned)mem_Alloc(0x2c, (char *)(unsigned)&full_data_629ce0);
-    if (!U_I(r + 0x64))
+    r = r->next;
+    AI_ZERO_AT(r, sizeof(TUTRUN));
+    r->id = 3;
+    r->tag = 'c3s2';
+    r->mode = 2;
+    r->mainText = 0x3f7b;
+    r->mainVoice = "CHAPTER_3_B_MAIN";
+    r->text1 = 0x3f80;
+    r->text1Voice = "CHAPTER_3_B_REMIND";
+    r->text2 = 0x3f7f;
+    r->text2Voice = "Chapter_3_B_Step_Aux";
+    r->statusText = 0x3f81;
+    r->voice = "CHAPTER_3_B_DONE";
+    r->text1Time = 0x429;
+    r->tail2Time = 0xd5;
+    r->hook = ai_HookChapter3Step2;
+    r->stepHook = 0;
+    r->query = ai_QueryChapter3Step2;
+    r->goal = 0x1f;
+    r->tailTime = 0x58c;
+    r->goalState = 9;
+    r->allowMask = 0x5837;
+    r->allowMask2 = 0x1e30;
+    r->text2Goal = 0x20;
+    r->stepCount = 2;
+    r->stepShown = 0;
+    r->steps = (TUTSTEP *)mem_Alloc(2 * sizeof(TUTSTEP), "FTInitScriptChapter3Step2");
+    if (!r->steps)
         goto fail;
-    if (d2_ScreenW == 0x320) {
-        CHANIM(0x0) = 0x442dc000;
-        CHANIM(0x4) = 0x43960000;
-        CHANIM(0x8) = 0x441c8000;
-        CHANIM(0xc) = 0x43c80000;
-        CHANIM(0x10) = 0x43b70000;
-        CHANIM(0x14) = 0x43be0000;
-        CHANIM(0x18) = 0x43bc0000;
-        CHANIM(0x1c) = 0x43908000;
-    } else if (d2_ScreenW == 0x400) {
-        CHANIM(0x0) = 0x44660000;
-        CHANIM(0x4) = 0x43960000;
-        CHANIM(0x8) = 0x44538000;
-        CHANIM(0xc) = 0x43dc0000;
-        CHANIM(0x10) = 0x44010000;
-        CHANIM(0x14) = 0x43e10000;
-        CHANIM(0x18) = 0x43f00000;
-        CHANIM(0x1c) = 0x43bb8000;
-    } else {
-        CHANIM(0x0) = 0x44804000;
-        CHANIM(0x4) = 0x43a00000;
-        CHANIM(0x8) = 0x44768000;
-        CHANIM(0xc) = 0x43dc0000;
-        CHANIM(0x10) = 0x44240000;
-        CHANIM(0x14) = 0x44160000;
-        CHANIM(0x18) = 0x44038000;
-        CHANIM(0x1c) = 0x43dc0000;
-    }
-    CHANIM(0x20) = 0x420c0000;
-    CHANIM(0x24) = 0x430e0000;
-    CHANIM(0x28) = 0x428e0000;
-    prev = r;
-
-    /* FTInitChapter3Step4 */
-    r = (char *)mem_Alloc(0x74, (char *)(unsigned)&full_data_629c9c);
-    *(char **)(prev + 0x70) = r;
-    if (!r)
-        goto fail;
-    memset(r, 0, 0x74);
-    U_I(r) = 0x3;
-    U_I(r + 0x4) = 0x63337334;
-    U_I(r + 0x8) = 0x2;
-    U_I(r + 0xc) = 0x3f82;
-    U_I(r + 0x10) = (unsigned)&full_data_629c6c;
-    U_I(r + 0x14) = 0x3f88;
-    U_I(r + 0x18) = (unsigned)&full_data_629c58;
-    U_I(r + 0x1c) = 0x3f87;
-    U_I(r + 0x20) = (unsigned)&full_data_629c48;
-    U_I(r + 0x24) = 0x3f89;
-    U_I(r + 0x28) = (unsigned)(full_data_629c20 + 0x14);
-    U_I(r + 0x2c) = 0x429;
-    U_I(r + 0x30) = 0x8e;
-    U_I(r + 0x3c) = (unsigned)&ai_QueryDefault;
-    U_I(r + 0x40) = 0x21;
-    U_I(r + 0x44) = 0x58c;
-    U_I(r + 0x48) = 0xa;
-    U_I(r + 0x4c) = 0x22;
-    U_I(r + 0x50) = 0x3;
-    U_I(r + 0x54) = (unsigned)&ai_Unk577490;
-    U_I(r + 0x68) = 0x5837;
-    U_I(r + 0x6c) = 0x1e70;
-    /* FTInitScriptChapter3Step4: three steps */
-    U_I(r + 0x58) = (unsigned)mem_Alloc(0x30, (char *)(unsigned)&full_data_629c80);
-    if (!U_I(r + 0x58))
-        goto fail;
-    CHSTEP(0x0) = 0x2c6;
-    CHSTEP(0x4) = 0x1;
-    CHSTEP(0x8) = 0x3f84;
-    CHSTEP(0xc) = (unsigned)&full_data_629c08;
-    CHSTEP(0x10) = 0x2c6;
-    CHSTEP(0x14) = 0x0;
-    CHSTEP(0x18) = 0x3f85;
-    CHSTEP(0x1c) = (unsigned)&full_data_629bf0;
-    CHSTEP(0x20) = 0x2c6;
-    CHSTEP(0x24) = 0x0;
-    CHSTEP(0x28) = 0x3f86;
-    CHSTEP(0x2c) = (unsigned)&full_data_629bd4;
-    prev = r;
-
-    /* FTInitChapter3Step6 */
-    r = (char *)mem_Alloc(0x74, (char *)(unsigned)&full_data_629c20);
-    *(char **)(prev + 0x70) = r;
-    if (!r)
-        goto fail;
-    memset(r, 0, 0x74);
-    U_I(r) = 0x3;
-    U_I(r + 0x4) = 0x63337336;
-    U_I(r + 0x8) = 0x2;
-    U_I(r + 0xc) = 0x3f8a;
-    U_I(r + 0x10) = (unsigned)&full_data_629ba4;
-    U_I(r + 0x14) = 0x3f90;
-    U_I(r + 0x18) = (unsigned)&full_data_629b90;
-    U_I(r + 0x1c) = 0x3f8f;
-    U_I(r + 0x20) = (unsigned)&full_data_629b78;
-    U_I(r + 0x24) = 0x3f91;
-    U_I(r + 0x28) = (unsigned)(full_data_629b4c + 0x18);
-    U_I(r + 0x2c) = 0x58c;
-    U_I(r + 0x30) = 0xd5;
-    U_I(r + 0x3c) = (unsigned)&ai_Unk5771b0;
-    U_I(r + 0x40) = 0x23;
-    U_I(r + 0x44) = 0x58c;
-    U_I(r + 0x48) = 0x9;
-    U_I(r + 0x4c) = 0x24;
-    U_I(r + 0x50) = 0x3;
-    U_I(r + 0x54) = 0x0;
-    U_I(r + 0x5c) = 0x2;
-    U_I(r + 0x60) = (unsigned)&ai_Unk577320;
-    U_I(r + 0x68) = 0x5837;
-    U_I(r + 0x6c) = 0x1f70;
-    /* FTInitScriptChapter3Step6: three steps */
-    U_I(r + 0x58) = (unsigned)mem_Alloc(0x30, (char *)(unsigned)&full_data_629bb8);
-    if (!U_I(r + 0x58))
-        goto fail;
-    CHSTEP(0x0) = 0x2c6;
-    CHSTEP(0x4) = 0x1;
-    CHSTEP(0x8) = 0x3f8c;
-    CHSTEP(0xc) = (unsigned)&full_data_629b34;
-    CHSTEP(0x10) = 0x2c6;
-    CHSTEP(0x14) = 0x0;
-    CHSTEP(0x18) = 0x3f8d;
-    CHSTEP(0x1c) = (unsigned)&full_data_629b1c;
-    CHSTEP(0x20) = 0x2c6;
-    CHSTEP(0x24) = 0x0;
-    CHSTEP(0x28) = 0x3f8e;
-    CHSTEP(0x2c) = (unsigned)&full_data_629b04;
-    /* FTInitAnimChapter3Step6: two animation entries */
-    U_I(r + 0x64) = (unsigned)mem_Alloc(0x58, (char *)(unsigned)&full_data_629b4c);
-    if (!U_I(r + 0x64))
+    r->steps[0].delay = 0x2c6;
+    r->steps[0].kind = 1;
+    r->steps[0].text = 0x3f7d;
+    r->steps[0].voice = "CHAPTER_3_B_STEP_RIGHT";
+    r->steps[1].delay = 0x2c6;
+    r->steps[1].kind = 0;
+    r->steps[1].text = 0x3f7e;
+    r->steps[1].voice = "CHAPTER_3_B_STEP_LEFT";
+    r->markCount = 1;
+    r->marks = (TUTMARK *)mem_Alloc(1 * sizeof(TUTMARK), "FTInitAnimChapter3Step2");
+    if (!r->marks)
         goto fail;
     if (d2_ScreenW == 0x320) {
-        CHANIM(0x0) = 0x43080000;
-        CHANIM(0x4) = 0x43d70000;
-        CHANIM(0x8) = 0x43a80000;
-        CHANIM(0xc) = 0x43e10000;
-        CHANIM(0x10) = 0x43e90000;
-        CHANIM(0x14) = 0x43870000;
-        CHANIM(0x18) = 0x43e88000;
-        CHANIM(0x1c) = 0x43430000;
+        r->marks[0].from[0] = 695.0f;
+        r->marks[0].from[1] = 300.0f;
+        r->marks[0].ctrl1[0] = 626.0f;
+        r->marks[0].ctrl1[1] = 400.0f;
+        r->marks[0].ctrl2[0] = 366.0f;
+        r->marks[0].ctrl2[1] = 380.0f;
+        r->marks[0].to[0] = 376.0f;
+        r->marks[0].to[1] = 289.0f;
     } else if (d2_ScreenW == 0x400) {
-        CHANIM(0x0) = 0x437a0000;
-        CHANIM(0x4) = 0x4400c000;
-        CHANIM(0x8) = 0x43e90000;
-        CHANIM(0xc) = 0x44070000;
-        CHANIM(0x10) = 0x440d8000;
-        CHANIM(0x14) = 0x43be0000;
-        CHANIM(0x18) = 0x440fc000;
-        CHANIM(0x1c) = 0x43898000;
+        r->marks[0].from[0] = 920.0f;
+        r->marks[0].from[1] = 300.0f;
+        r->marks[0].ctrl1[0] = 846.0f;
+        r->marks[0].ctrl1[1] = 440.0f;
+        r->marks[0].ctrl2[0] = 516.0f;
+        r->marks[0].ctrl2[1] = 450.0f;
+        r->marks[0].to[0] = 480.0f;
+        r->marks[0].to[1] = 375.0f;
     } else {
-        CHANIM(0x0) = 0x43990000;
-        CHANIM(0x4) = 0x44110000;
-        CHANIM(0x8) = 0x43e40000;
-        CHANIM(0xc) = 0x44160000;
-        CHANIM(0x10) = 0x441a0000;
-        CHANIM(0x14) = 0x44020000;
-        CHANIM(0x18) = 0x441c8000;
-        CHANIM(0x1c) = 0x43af0000;
+        r->marks[0].from[0] = 1026.0f;
+        r->marks[0].from[1] = 320.0f;
+        r->marks[0].ctrl1[0] = 986.0f;
+        r->marks[0].ctrl1[1] = 440.0f;
+        r->marks[0].ctrl2[0] = 656.0f;
+        r->marks[0].ctrl2[1] = 600.0f;
+        r->marks[0].to[0] = 526.0f;
+        r->marks[0].to[1] = 440.0f;
     }
-    CHANIM(0x20) = 0x420c0000;
-    CHANIM(0x24) = 0x430e0000;
-    CHANIM(0x28) = 0x428e0000;
-    if (d2_ScreenW == 0x320) {
-        CHANIM(0x2c) = 0x43e88000;
-        CHANIM(0x30) = 0x43430000;
-        CHANIM(0x34) = 0x438f0000;
-        CHANIM(0x38) = 0x43910000;
-        CHANIM(0x3c) = 0x43cb0000;
-        CHANIM(0x40) = 0x44048000;
-        CHANIM(0x44) = 0x42e60000;
-        CHANIM(0x48) = 0x43ff0000;
-    } else if (d2_ScreenW == 0x400) {
-        CHANIM(0x2c) = 0x440fc000;
-        CHANIM(0x30) = 0x43898000;
-        CHANIM(0x34) = 0x43da0000;
-        CHANIM(0x38) = 0x43aa0000;
-        CHANIM(0x3c) = 0x44060000;
-        CHANIM(0x40) = 0x441b0000;
-        CHANIM(0x44) = 0x43620000;
-        CHANIM(0x48) = 0x44148000;
-    } else {
-        CHANIM(0x2c) = 0x441c8000;
-        CHANIM(0x30) = 0x43af0000;
-        CHANIM(0x34) = 0x43ee0000;
-        CHANIM(0x38) = 0x43c30000;
-        CHANIM(0x3c) = 0x44150000;
-        CHANIM(0x40) = 0x44250000;
-        CHANIM(0x44) = 0x438f0000;
-        CHANIM(0x48) = 0x44228000;
-    }
-    CHANIM(0x4c) = 0x420c0000;
-    CHANIM(0x50) = 0x430e0000;
-    CHANIM(0x54) = 0x428e0000;
-    prev = r;
-
-    /* FTInitChapter3Step7 */
-    r = (char *)mem_Alloc(0x74, (char *)(unsigned)&full_data_629af0);
-    *(char **)(prev + 0x70) = r;
-    if (!r)
+    r->marks[0].wait = 35.0f;
+    r->marks[0].travel = 142.0f;
+    r->marks[0].rest = 71.0f;
+    r->next = 0;
+    r->next = (TUTRUN *)mem_Alloc(sizeof(TUTRUN), "FTInitChapter3Step4");
+    if (!r->next)
         goto fail;
-    memset(r, 0, 0x74);
-    U_I(r) = 0x3;
-    U_I(r + 0x4) = 0x63337337;
-    U_I(r + 0x8) = 0x1;
-    U_I(r + 0xc) = 0x3f92;
-    U_I(r + 0x10) = (unsigned)&full_data_629ac8;
-    U_I(r + 0x2c) = 0x58c;
-    U_I(r + 0x30) = 0x47;
-    U_I(r + 0x3c) = (unsigned)&ai_QueryDefault;
-    U_I(r + 0x40) = 0x3;
-    U_I(r + 0x44) = 0x1aa;
-    U_I(r + 0x48) = 0xb;
-    U_I(r + 0x68) = 0x5837;
-    U_I(r + 0x6c) = 0x1f70;
-    prev = r;
-
-    /* FTInitChapter3Step8 */
-    r = (char *)mem_Alloc(0x74, (char *)(unsigned)&full_data_629adc);
-    *(char **)(prev + 0x70) = r;
-    if (!r)
+    r = r->next;
+    AI_ZERO_AT(r, sizeof(TUTRUN));
+    r->id = 3;
+    r->tag = 'c3s4';
+    r->mode = 2;
+    r->mainText = 0x3f82;
+    r->mainVoice = "CHAPTER_3_D_MAIN";
+    r->text1 = 0x3f88;
+    r->text1Voice = "CHAPTER_3_D_REMIND";
+    r->text2 = 0x3f87;
+    r->text2Voice = "Chapter_3_D_Aux";
+    r->statusText = 0x3f89;
+    r->voice = "CHAPTER_3_D_DONE";
+    r->text1Time = 0x429;
+    r->tail2Time = 0x8e;
+    r->query = ai_QueryDefault;
+    r->hook = 0;
+    r->stepHook = 0;
+    r->goal = 0x21;
+    r->tailTime = 0x58c;
+    r->goalState = 0xa;
+    r->allowMask = 0x5837;
+    r->allowMask2 = 0x1e70;
+    r->text2Goal = 0x22;
+    r->stepCount = 3;
+    r->stepShown = ai_StepShownChapter3Step4;
+    r->steps = (TUTSTEP *)mem_Alloc(3 * sizeof(TUTSTEP), "FTInitScriptChapter3Step4");
+    if (!r->steps)
         goto fail;
-    memset(r, 0, 0x74);
-    U_I(r) = 0x3;
-    U_I(r + 0x4) = 0x63337338;
-    U_I(r + 0x8) = 0x2;
-    U_I(r + 0xc) = 0x3f94;
-    U_I(r + 0x10) = (unsigned)&full_data_629a9c;
-    U_I(r + 0x14) = 0x3f97;
-    U_I(r + 0x18) = (unsigned)&full_data_629a88;
-    U_I(r + 0x1c) = 0x3f96;
-    U_I(r + 0x20) = (unsigned)&full_data_629a70;
-    U_I(r + 0x24) = 0x3f98;
-    U_I(r + 0x28) = (unsigned)(full_data_629a48 + 0x14);
-    U_I(r + 0x2c) = 0x429;
-    U_I(r + 0x30) = 0xd5;
-    U_I(r + 0x3c) = (unsigned)&ai_Unk577330;
-    U_I(r + 0x40) = 0x17;
-    U_I(r + 0x44) = 0x58c;
-    U_I(r + 0x48) = 0x9;
-    U_I(r + 0x4c) = 0x24;
-    U_I(r + 0x50) = 0x0;
-    U_I(r + 0x54) = 0x0;
-    U_I(r + 0x5c) = 0x5;
-    U_I(r + 0x60) = (unsigned)&ai_MarkerChapter3Step8;
-    U_I(r + 0x68) = 0x5837;
-    U_I(r + 0x6c) = 0x1f70;
-    /* FTInitAnimChapter3Step8: five animation entries */
-    U_I(r + 0x64) = (unsigned)mem_Alloc(0xdc, (char *)(unsigned)&full_data_629ab0);
-    if (!U_I(r + 0x64))
+    r->steps[0].delay = 0x2c6;
+    r->steps[0].kind = 1;
+    r->steps[0].text = 0x3f84;
+    r->steps[0].voice = "CHAPTER_3_D_STEP_RIGHT";
+    r->steps[1].delay = 0x2c6;
+    r->steps[1].kind = 0;
+    r->steps[1].text = 0x3f85;
+    r->steps[1].voice = "CHAPTER_3_D_STEP_LEFT";
+    r->steps[2].delay = 0x2c6;
+    r->steps[2].kind = 0;
+    r->steps[2].text = 0x3f86;
+    r->steps[2].voice = "CHAPTER_3_D_STEP_NEXT_LEFT";
+    r->next = 0;
+    r->next = (TUTRUN *)mem_Alloc(sizeof(TUTRUN), "FTInitChapter3Step6");
+    if (!r->next)
         goto fail;
-    if (d2_ScreenW == 0x320) {
-        CHANIM(0x0) = 0x43e88000;
-        CHANIM(0x4) = 0x43430000;
-        CHANIM(0x8) = 0x44060000;
-        CHANIM(0xc) = 0x43dc0000;
-        CHANIM(0x10) = 0x43b20000;
-        CHANIM(0x14) = 0x43d20000;
-        CHANIM(0x18) = 0x430c0000;
-        CHANIM(0x1c) = 0x432a0000;
-    } else if (d2_ScreenW == 0x400) {
-        CHANIM(0x0) = 0x440fc000;
-        CHANIM(0x4) = 0x43898000;
-        CHANIM(0x8) = 0x43f30000;
-        CHANIM(0xc) = 0x43c30000;
-        CHANIM(0x10) = 0x43f80000;
-        CHANIM(0x14) = 0x440c0000;
-        CHANIM(0x18) = 0x43750000;
-        CHANIM(0x1c) = 0x437f0000;
-    } else {
-        CHANIM(0x0) = 0x441c8000;
-        CHANIM(0x4) = 0x43af0000;
-        CHANIM(0x8) = 0x43cb0000;
-        CHANIM(0xc) = 0x43910000;
-        CHANIM(0x10) = 0x43300000;
-        CHANIM(0x14) = 0x43910000;
-        CHANIM(0x18) = 0x42fc0000;
-        CHANIM(0x1c) = 0x43340000;
-    }
-    CHANIM(0x20) = 0x420c0000;
-    CHANIM(0x24) = 0x430e0000;
-    CHANIM(0x28) = 0x428e0000;
-    if (d2_ScreenW == 0x320) {
-        CHANIM(0x2c) = 0x42960000;
-        CHANIM(0x30) = 0x432a0000;
-        CHANIM(0x34) = 0x434e0000;
-        CHANIM(0x38) = 0x43960000;
-        CHANIM(0x3c) = 0x43d50000;
-        CHANIM(0x40) = 0x43820000;
-        CHANIM(0x44) = 0x43e88000;
-        CHANIM(0x48) = 0x43430000;
-    } else if (d2_ScreenW == 0x400) {
-        CHANIM(0x2c) = 0x43340000;
-        CHANIM(0x30) = 0x437f0000;
-        CHANIM(0x34) = 0x43620000;
-        CHANIM(0x38) = 0x43c30000;
-        CHANIM(0x3c) = 0x440d8000;
-        CHANIM(0x40) = 0x43be0000;
-        CHANIM(0x44) = 0x440fc000;
-        CHANIM(0x48) = 0x43898000;
-    } else {
-        CHANIM(0x2c) = 0x43620000;
-        CHANIM(0x30) = 0x43a00000;
-        CHANIM(0x34) = 0x438a0000;
-        CHANIM(0x38) = 0x43cd0000;
-        CHANIM(0x3c) = 0x441c8000;
-        CHANIM(0x40) = 0x43e10000;
-        CHANIM(0x44) = 0x441c8000;
-        CHANIM(0x48) = 0x43aa0000;
-    }
-    CHANIM(0x4c) = 0x420c0000;
-    CHANIM(0x50) = 0x430e0000;
-    CHANIM(0x54) = 0x428e0000;
-    if (d2_ScreenW == 0x320) {
-        CHANIM(0x58) = 0x43e88000;
-        CHANIM(0x5c) = 0x43430000;
-        CHANIM(0x60) = 0x438f0000;
-        CHANIM(0x64) = 0x43910000;
-        CHANIM(0x68) = 0x43cb0000;
-        CHANIM(0x6c) = 0x44048000;
-        CHANIM(0x70) = 0x42e60000;
-        CHANIM(0x74) = 0x43ff0000;
-    } else if (d2_ScreenW == 0x400) {
-        CHANIM(0x58) = 0x440fc000;
-        CHANIM(0x5c) = 0x43898000;
-        CHANIM(0x60) = 0x43da0000;
-        CHANIM(0x64) = 0x43aa0000;
-        CHANIM(0x68) = 0x44060000;
-        CHANIM(0x6c) = 0x441b0000;
-        CHANIM(0x70) = 0x43620000;
-        CHANIM(0x74) = 0x44148000;
-    } else {
-        CHANIM(0x58) = 0x441c8000;
-        CHANIM(0x5c) = 0x43af0000;
-        CHANIM(0x60) = 0x43ee0000;
-        CHANIM(0x64) = 0x43c30000;
-        CHANIM(0x68) = 0x44150000;
-        CHANIM(0x6c) = 0x44250000;
-        CHANIM(0x70) = 0x438f0000;
-        CHANIM(0x74) = 0x44228000;
-    }
-    CHANIM(0x78) = 0x420c0000;
-    CHANIM(0x7c) = 0x430e0000;
-    CHANIM(0x80) = 0x428e0000;
-    if (d2_ScreenW == 0x320) {
-        CHANIM(0x84) = 0x442f0000;
-        CHANIM(0x88) = 0x439b0000;
-        CHANIM(0x8c) = 0x442f0000;
-        CHANIM(0x90) = 0x439b0000;
-        CHANIM(0x94) = 0x442f0000;
-        CHANIM(0x98) = 0x439b0000;
-        CHANIM(0x9c) = 0x442f0000;
-        CHANIM(0xa0) = 0x439b0000;
-    } else if (d2_ScreenW == 0x400) {
-        CHANIM(0x84) = 0x44670000;
-        CHANIM(0x88) = 0x439b0000;
-        CHANIM(0x8c) = 0x44670000;
-        CHANIM(0x90) = 0x439b0000;
-        CHANIM(0x94) = 0x44670000;
-        CHANIM(0x98) = 0x439b0000;
-        CHANIM(0x9c) = 0x44670000;
-        CHANIM(0xa0) = 0x439b0000;
-    } else {
-        CHANIM(0x84) = 0x440c0000;
-        CHANIM(0x88) = 0x43d20000;
-        CHANIM(0x8c) = 0x44318000;
-        CHANIM(0x90) = 0x43b90000;
-        CHANIM(0x94) = 0x44570000;
-        CHANIM(0x98) = 0x43a00000;
-        CHANIM(0x9c) = 0x447f0000;
-        CHANIM(0xa0) = 0x439b0000;
-    }
-    CHANIM(0xa4) = 0x0;
-    CHANIM(0xa8) = 0x40e00000;
-    CHANIM(0xac) = 0x41a80000;
-    if (d2_ScreenW == 0x320) {
-        CHANIM(0xb0) = 0x442f0000;
-        CHANIM(0xb4) = 0x438c0000;
-        CHANIM(0xb8) = 0x442f0000;
-        CHANIM(0xbc) = 0x438c0000;
-        CHANIM(0xc0) = 0x442f0000;
-        CHANIM(0xc4) = 0x438c0000;
-        CHANIM(0xc8) = 0x442f0000;
-        CHANIM(0xcc) = 0x438c0000;
-    } else if (d2_ScreenW == 0x400) {
-        CHANIM(0xb0) = 0x44670000;
-        CHANIM(0xb4) = 0x438c0000;
-        CHANIM(0xb8) = 0x44670000;
-        CHANIM(0xbc) = 0x438c0000;
-        CHANIM(0xc0) = 0x44670000;
-        CHANIM(0xc4) = 0x438c0000;
-        CHANIM(0xc8) = 0x44670000;
-        CHANIM(0xcc) = 0x438c0000;
-    } else {
-        CHANIM(0xb0) = 0x440c0000;
-        CHANIM(0xb4) = 0x43d20000;
-        CHANIM(0xb8) = 0x44318000;
-        CHANIM(0xbc) = 0x43b90000;
-        CHANIM(0xc0) = 0x44570000;
-        CHANIM(0xc4) = 0x43a00000;
-        CHANIM(0xc8) = 0x447f0000;
-        CHANIM(0xcc) = 0x438c0000;
-    }
-    CHANIM(0xd0) = 0x0;
-    CHANIM(0xd4) = 0x40e00000;
-    CHANIM(0xd8) = 0x41a80000;
-    prev = r;
-
-    /* FTInitChapter3Step9 */
-    r = (char *)mem_Alloc(0x74, (char *)(unsigned)&full_data_629a48);
-    *(char **)(prev + 0x70) = r;
-    if (!r)
+    r = r->next;
+    AI_ZERO_AT(r, sizeof(TUTRUN));
+    r->id = 3;
+    r->tag = 'c3s6';
+    r->mode = 2;
+    r->mainText = 0x3f8a;
+    r->mainVoice = "CHAPTER_3_E_MAIN";
+    r->text1 = 0x3f90;
+    r->text1Voice = "CHAPTER_3_E_REMIND";
+    r->text2 = 0x3f8f;
+    r->text2Voice = "Chapter_3_E_Step_Aux";
+    r->statusText = 0x3f91;
+    r->voice = "CHAPTER_3_E_DONE";
+    r->text1Time = 0x58c;
+    r->tail2Time = 0xd5;
+    r->hook = 0;
+    r->stepHook = 0;
+    r->query = ai_QueryChapter3Step6;
+    r->goal = 0x23;
+    r->tailTime = 0x58c;
+    r->goalState = 9;
+    r->allowMask = 0x5837;
+    r->allowMask2 = 0x1f70;
+    r->text2Goal = 0x24;
+    r->stepCount = 3;
+    r->stepShown = 0;
+    r->steps = (TUTSTEP *)mem_Alloc(3 * sizeof(TUTSTEP), "FTInitScriptChapter3Step6");
+    if (!r->steps)
         goto fail;
-    memset(r, 0, 0x74);
-    U_I(r) = 0x3;
-    U_I(r + 0x4) = 0x63337339;
-    U_I(r + 0x8) = 0x1;
-    U_I(r + 0xc) = 0x3f99;
-    U_I(r + 0x10) = (unsigned)&full_data_629a1c;
-    U_I(r + 0x2c) = 0x429;
-    U_I(r + 0x30) = 0x47;
-    U_I(r + 0x3c) = (unsigned)&ai_TutorialQueryDefault;
-    U_I(r + 0x40) = 0x3;
-    U_I(r + 0x44) = 0x163;
-    U_I(r + 0x48) = 0xb;
-    U_I(r + 0x68) = 0x5837;
-    U_I(r + 0x6c) = 0x1f70;
-    prev = r;
-
-    /* FTInitChapter3Step10 */
-    r = (char *)mem_Alloc(0x74, (char *)(unsigned)&full_data_629a30);
-    *(char **)(prev + 0x70) = r;
-    if (!r)
-        goto fail;
-    memset(r, 0, 0x74);
-    U_I(r) = 0x3;
-    U_I(r + 0x4) = 0x63337341;
-    U_I(r + 0x8) = 0x2;
-    U_I(r + 0xc) = 0x3f9b;
-    U_I(r + 0x10) = (unsigned)&full_data_629a08;
-    U_I(r + 0x1c) = 0x3f9d;
-    U_I(r + 0x20) = (unsigned)&full_data_6299f0;
-    U_I(r + 0x24) = 0x3f9f;
-    U_I(r + 0x28) = (unsigned)(full_data_6299c8 + 0x14);
-    U_I(r + 0x2c) = 0x429;
-    U_I(r + 0x30) = 0xd5;
-    U_I(r + 0x3c) = (unsigned)&ai_Unk577450;
-    U_I(r + 0x40) = 0x12;
-    U_I(r + 0x44) = 0x58c;
-    U_I(r + 0x48) = 0x9;
-    U_I(r + 0x4c) = 0x26;
-    U_I(r + 0x50) = 0x0;
-    U_I(r + 0x54) = 0x0;
-    U_I(r + 0x5c) = 0x1;
-    U_I(r + 0x68) = 0x5c37;
-    U_I(r + 0x6c) = 0x1e70;
-    /* FTInitAnimChapter3Step8 (the copy-paste name again): one animation entry */
-    U_I(r + 0x64) = (unsigned)mem_Alloc(0x2c, (char *)(unsigned)&full_data_629ab0);
-    if (!U_I(r + 0x64))
+    r->steps[0].delay = 0x2c6;
+    r->steps[0].kind = 1;
+    r->steps[0].text = 0x3f8c;
+    r->steps[0].voice = "CHAPTER_3_E_STEP_RIGHT";
+    r->steps[1].delay = 0x2c6;
+    r->steps[1].kind = 0;
+    r->steps[1].text = 0x3f8d;
+    r->steps[1].voice = "CHAPTER_3_E_STEP_LEFT";
+    r->steps[2].delay = 0x2c6;
+    r->steps[2].kind = 0;
+    r->steps[2].text = 0x3f8e;
+    r->steps[2].voice = "CHAPTER_3_E_STEP_TOP";
+    r->markCount = 2;
+    r->markPick = ai_MarkerChapter3Step6;
+    r->marks = (TUTMARK *)mem_Alloc(2 * sizeof(TUTMARK), "FTInitAnimChapter3Step6");
+    if (!r->marks)
         goto fail;
     if (d2_ScreenW == 0x320) {
-        CHANIM(0x0) = 0x43e88000;
-        CHANIM(0x4) = 0x43430000;
-        CHANIM(0x8) = 0x43e40000;
-        CHANIM(0xc) = 0x43960000;
-        CHANIM(0x10) = 0x43580000;
-        CHANIM(0x14) = 0x438c0000;
-        CHANIM(0x18) = 0x43260000;
-        CHANIM(0x1c) = 0x432a0000;
+        r->marks[0].from[0] = 136.0f;
+        r->marks[0].from[1] = 430.0f;
+        r->marks[0].ctrl1[0] = 336.0f;
+        r->marks[0].ctrl1[1] = 450.0f;
+        r->marks[0].ctrl2[0] = 466.0f;
+        r->marks[0].ctrl2[1] = 270.0f;
+        r->marks[0].to[0] = 465.0f;
+        r->marks[0].to[1] = 195.0f;
     } else if (d2_ScreenW == 0x400) {
-        CHANIM(0x0) = 0x440fc000;
-        CHANIM(0x4) = 0x43898000;
-        CHANIM(0x8) = 0x440d8000;
-        CHANIM(0xc) = 0x43b90000;
-        CHANIM(0x10) = 0x43ad0000;
-        CHANIM(0x14) = 0x43cd0000;
-        CHANIM(0x18) = 0x438c0000;
-        CHANIM(0x1c) = 0x437f0000;
+        r->marks[0].from[0] = 250.0f;
+        r->marks[0].from[1] = 515.0f;
+        r->marks[0].ctrl1[0] = 466.0f;
+        r->marks[0].ctrl1[1] = 540.0f;
+        r->marks[0].ctrl2[0] = 566.0f;
+        r->marks[0].ctrl2[1] = 380.0f;
+        r->marks[0].to[0] = 575.0f;
+        r->marks[0].to[1] = 275.0f;
     } else {
-        CHANIM(0x0) = 0x441c8000;
-        CHANIM(0x4) = 0x43af0000;
-        CHANIM(0x8) = 0x441f0000;
-        CHANIM(0xc) = 0x43d70000;
-        CHANIM(0x10) = 0x43bc0000;
-        CHANIM(0x14) = 0x43dc0000;
-        CHANIM(0x18) = 0x43a80000;
-        CHANIM(0x1c) = 0x43a00000;
+        r->marks[0].from[0] = 306.0f;
+        r->marks[0].from[1] = 580.0f;
+        r->marks[0].ctrl1[0] = 456.0f;
+        r->marks[0].ctrl1[1] = 600.0f;
+        r->marks[0].ctrl2[0] = 616.0f;
+        r->marks[0].ctrl2[1] = 520.0f;
+        r->marks[0].to[0] = 626.0f;
+        r->marks[0].to[1] = 350.0f;
     }
-    CHANIM(0x20) = 0x420c0000;
-    CHANIM(0x24) = 0x432a0000;
-    CHANIM(0x28) = 0x42d40000;
-    prev = r;
-
-    /* FTInitChapter3Outro */
-    r = (char *)mem_Alloc(0x74, (char *)(unsigned)&full_data_6299c8);
-    *(char **)(prev + 0x70) = r;
-    if (!r)
+    r->marks[0].wait = 35.0f;
+    r->marks[0].travel = 142.0f;
+    r->marks[0].rest = 71.0f;
+    if (d2_ScreenW == 0x320) {
+        r->marks[1].from[0] = 465.0f;
+        r->marks[1].from[1] = 195.0f;
+        r->marks[1].ctrl1[0] = 286.0f;
+        r->marks[1].ctrl1[1] = 290.0f;
+        r->marks[1].ctrl2[0] = 406.0f;
+        r->marks[1].ctrl2[1] = 530.0f;
+        r->marks[1].to[0] = 115.0f;
+        r->marks[1].to[1] = 510.0f;
+    } else if (d2_ScreenW == 0x400) {
+        r->marks[1].from[0] = 575.0f;
+        r->marks[1].from[1] = 275.0f;
+        r->marks[1].ctrl1[0] = 436.0f;
+        r->marks[1].ctrl1[1] = 340.0f;
+        r->marks[1].ctrl2[0] = 536.0f;
+        r->marks[1].ctrl2[1] = 620.0f;
+        r->marks[1].to[0] = 226.0f;
+        r->marks[1].to[1] = 594.0f;
+    } else {
+        r->marks[1].from[0] = 626.0f;
+        r->marks[1].from[1] = 350.0f;
+        r->marks[1].ctrl1[0] = 476.0f;
+        r->marks[1].ctrl1[1] = 390.0f;
+        r->marks[1].ctrl2[0] = 596.0f;
+        r->marks[1].ctrl2[1] = 660.0f;
+        r->marks[1].to[0] = 286.0f;
+        r->marks[1].to[1] = 650.0f;
+    }
+    r->marks[1].wait = 35.0f;
+    r->marks[1].travel = 142.0f;
+    r->marks[1].rest = 71.0f;
+    r->next = 0;
+    r->next = (TUTRUN *)mem_Alloc(sizeof(TUTRUN), "FTInitChapter3Step7");
+    if (!r->next)
         goto fail;
-    memset(r, 0, 0x74);
-    U_I(r) = 0x3;
-    U_I(r + 0x4) = 0x75747233;
-    U_I(r + 0x8) = 0x3;
-    U_I(r + 0xc) = 0x3fa0;
-    U_I(r + 0x10) = (unsigned)&full_data_6299a0;
-    U_I(r + 0x2c) = 0xffffffff;
-    U_I(r + 0x30) = 0x163;
-    U_I(r + 0x48) = 0xb;
-    U_I(r + 0x68) = 0x5837;
-    U_I(r + 0x6c) = 0x1f70;
-    prev = r;
-    ai_TutorialBanks[3] = snd_LoadVoiceBank((char *)(unsigned)&full_data_6299b0, 0);
-    return (int)rec;
+    r = r->next;
+    AI_ZERO_AT(r, sizeof(TUTRUN));
+    r->id = 3;
+    r->tag = 'c3s7';
+    r->mode = 1;
+    r->mainText = 0x3f92;
+    r->mainVoice = "CHAPTER_3_F_MAIN";
+    r->text1 = 0;
+    r->text1Voice = 0;
+    r->text2 = 0;
+    r->text2Voice = 0;
+    r->text1Time = 0x58c;
+    r->tail2Time = 0x47;
+    r->query = ai_QueryDefault;
+    r->hook = 0;
+    r->stepHook = 0;
+    r->goal = 3;
+    r->tailTime = 0x1aa;
+    r->goalState = 0xb;
+    r->allowMask = 0x5837;
+    r->allowMask2 = 0x1f70;
+    r->next = 0;
+    r->next = (TUTRUN *)mem_Alloc(sizeof(TUTRUN), "FTInitChapter3Step8");
+    if (!r->next)
+        goto fail;
+    r = r->next;
+    AI_ZERO_AT(r, sizeof(TUTRUN));
+    r->id = 3;
+    r->tag = 'c3s8';
+    r->mode = 2;
+    r->mainText = 0x3f94;
+    r->mainVoice = "CHAPTER_3_G_MAIN";
+    r->text1 = 0x3f97;
+    r->text1Voice = "CHAPTER_3_G_REMIND";
+    r->text2 = 0x3f96;
+    r->text2Voice = "Chapter_3_G_Step_Aux";
+    r->statusText = 0x3f98;
+    r->voice = "CHAPTER_3_G_DONE";
+    r->text1Time = 0x429;
+    r->tail2Time = 0xd5;
+    r->hook = 0;
+    r->stepHook = 0;
+    r->query = ai_QueryChapter3Step8;
+    r->goal = 0x17;
+    r->tailTime = 0x58c;
+    r->goalState = 9;
+    r->allowMask = 0x5837;
+    r->allowMask2 = 0x1f70;
+    r->text2Goal = 0x24;
+    r->stepCount = 0;
+    r->stepShown = 0;
+    r->markCount = 5;
+    r->markPick = ai_MarkerChapter3Step8;
+    r->marks = (TUTMARK *)mem_Alloc(5 * sizeof(TUTMARK), "FTInitAnimChapter3Step8");
+    if (!r->marks)
+        goto fail;
+    if (d2_ScreenW == 0x320) {
+        r->marks[0].from[0] = 465.0f;
+        r->marks[0].from[1] = 195.0f;
+        r->marks[0].ctrl1[0] = 536.0f;
+        r->marks[0].ctrl1[1] = 440.0f;
+        r->marks[0].ctrl2[0] = 356.0f;
+        r->marks[0].ctrl2[1] = 420.0f;
+        r->marks[0].to[0] = 140.0f;
+        r->marks[0].to[1] = 170.0f;
+    } else if (d2_ScreenW == 0x400) {
+        r->marks[0].from[0] = 575.0f;
+        r->marks[0].from[1] = 275.0f;
+        r->marks[0].ctrl1[0] = 486.0f;
+        r->marks[0].ctrl1[1] = 390.0f;
+        r->marks[0].ctrl2[0] = 496.0f;
+        r->marks[0].ctrl2[1] = 560.0f;
+        r->marks[0].to[0] = 245.0f;
+        r->marks[0].to[1] = 255.0f;
+    } else {
+        r->marks[0].from[0] = 626.0f;
+        r->marks[0].from[1] = 350.0f;
+        r->marks[0].ctrl1[0] = 406.0f;
+        r->marks[0].ctrl1[1] = 290.0f;
+        r->marks[0].ctrl2[0] = 176.0f;
+        r->marks[0].ctrl2[1] = 290.0f;
+        r->marks[0].to[0] = 126.0f;
+        r->marks[0].to[1] = 180.0f;
+    }
+    r->marks[0].wait = 35.0f;
+    r->marks[0].travel = 142.0f;
+    r->marks[0].rest = 71.0f;
+    if (d2_ScreenW == 0x320) {
+        r->marks[1].from[0] = 75.0f;
+        r->marks[1].from[1] = 170.0f;
+        r->marks[1].ctrl1[0] = 206.0f;
+        r->marks[1].ctrl1[1] = 300.0f;
+        r->marks[1].ctrl2[0] = 426.0f;
+        r->marks[1].ctrl2[1] = 260.0f;
+        r->marks[1].to[0] = 465.0f;
+        r->marks[1].to[1] = 195.0f;
+    } else if (d2_ScreenW == 0x400) {
+        r->marks[1].from[0] = 180.0f;
+        r->marks[1].from[1] = 255.0f;
+        r->marks[1].ctrl1[0] = 226.0f;
+        r->marks[1].ctrl1[1] = 390.0f;
+        r->marks[1].ctrl2[0] = 566.0f;
+        r->marks[1].ctrl2[1] = 380.0f;
+        r->marks[1].to[0] = 575.0f;
+        r->marks[1].to[1] = 275.0f;
+    } else {
+        r->marks[1].from[0] = 226.0f;
+        r->marks[1].from[1] = 320.0f;
+        r->marks[1].ctrl1[0] = 276.0f;
+        r->marks[1].ctrl1[1] = 410.0f;
+        r->marks[1].ctrl2[0] = 626.0f;
+        r->marks[1].ctrl2[1] = 450.0f;
+        r->marks[1].to[0] = 626.0f;
+        r->marks[1].to[1] = 340.0f;
+    }
+    r->marks[1].wait = 35.0f;
+    r->marks[1].travel = 142.0f;
+    r->marks[1].rest = 71.0f;
+    if (d2_ScreenW == 0x320) {
+        r->marks[2].from[0] = 465.0f;
+        r->marks[2].from[1] = 195.0f;
+        r->marks[2].ctrl1[0] = 286.0f;
+        r->marks[2].ctrl1[1] = 290.0f;
+        r->marks[2].ctrl2[0] = 406.0f;
+        r->marks[2].ctrl2[1] = 530.0f;
+        r->marks[2].to[0] = 115.0f;
+        r->marks[2].to[1] = 510.0f;
+    } else if (d2_ScreenW == 0x400) {
+        r->marks[2].from[0] = 575.0f;
+        r->marks[2].from[1] = 275.0f;
+        r->marks[2].ctrl1[0] = 436.0f;
+        r->marks[2].ctrl1[1] = 340.0f;
+        r->marks[2].ctrl2[0] = 536.0f;
+        r->marks[2].ctrl2[1] = 620.0f;
+        r->marks[2].to[0] = 226.0f;
+        r->marks[2].to[1] = 594.0f;
+    } else {
+        r->marks[2].from[0] = 626.0f;
+        r->marks[2].from[1] = 350.0f;
+        r->marks[2].ctrl1[0] = 476.0f;
+        r->marks[2].ctrl1[1] = 390.0f;
+        r->marks[2].ctrl2[0] = 596.0f;
+        r->marks[2].ctrl2[1] = 660.0f;
+        r->marks[2].to[0] = 286.0f;
+        r->marks[2].to[1] = 650.0f;
+    }
+    r->marks[2].wait = 35.0f;
+    r->marks[2].travel = 142.0f;
+    r->marks[2].rest = 71.0f;
+    if (d2_ScreenW == 0x320) {
+        r->marks[3].from[0] = 700.0f;
+        r->marks[3].from[1] = 310.0f;
+        r->marks[3].ctrl1[0] = 700.0f;
+        r->marks[3].ctrl1[1] = 310.0f;
+        r->marks[3].ctrl2[0] = 700.0f;
+        r->marks[3].ctrl2[1] = 310.0f;
+        r->marks[3].to[0] = 700.0f;
+        r->marks[3].to[1] = 310.0f;
+    } else if (d2_ScreenW == 0x400) {
+        r->marks[3].from[0] = 924.0f;
+        r->marks[3].from[1] = 310.0f;
+        r->marks[3].ctrl1[0] = 924.0f;
+        r->marks[3].ctrl1[1] = 310.0f;
+        r->marks[3].ctrl2[0] = 924.0f;
+        r->marks[3].ctrl2[1] = 310.0f;
+        r->marks[3].to[0] = 924.0f;
+        r->marks[3].to[1] = 310.0f;
+    } else {
+        r->marks[3].from[0] = 560.0f;
+        r->marks[3].from[1] = 420.0f;
+        r->marks[3].ctrl1[0] = 710.0f;
+        r->marks[3].ctrl1[1] = 370.0f;
+        r->marks[3].ctrl2[0] = 860.0f;
+        r->marks[3].ctrl2[1] = 320.0f;
+        r->marks[3].to[0] = 1020.0f;
+        r->marks[3].to[1] = 310.0f;
+    }
+    r->marks[3].wait = 0.0f;
+    r->marks[3].travel = 7.0f;
+    r->marks[3].rest = 21.0f;
+    if (d2_ScreenW == 0x320) {
+        r->marks[4].from[0] = 700.0f;
+        r->marks[4].from[1] = 280.0f;
+        r->marks[4].ctrl1[0] = 700.0f;
+        r->marks[4].ctrl1[1] = 280.0f;
+        r->marks[4].ctrl2[0] = 700.0f;
+        r->marks[4].ctrl2[1] = 280.0f;
+        r->marks[4].to[0] = 700.0f;
+        r->marks[4].to[1] = 280.0f;
+    } else if (d2_ScreenW == 0x400) {
+        r->marks[4].from[0] = 924.0f;
+        r->marks[4].from[1] = 280.0f;
+        r->marks[4].ctrl1[0] = 924.0f;
+        r->marks[4].ctrl1[1] = 280.0f;
+        r->marks[4].ctrl2[0] = 924.0f;
+        r->marks[4].ctrl2[1] = 280.0f;
+        r->marks[4].to[0] = 924.0f;
+        r->marks[4].to[1] = 280.0f;
+    } else {
+        r->marks[4].from[0] = 560.0f;
+        r->marks[4].from[1] = 420.0f;
+        r->marks[4].ctrl1[0] = 710.0f;
+        r->marks[4].ctrl1[1] = 370.0f;
+        r->marks[4].ctrl2[0] = 860.0f;
+        r->marks[4].ctrl2[1] = 320.0f;
+        r->marks[4].to[0] = 1020.0f;
+        r->marks[4].to[1] = 280.0f;
+    }
+    r->marks[4].wait = 0.0f;
+    r->marks[4].travel = 7.0f;
+    r->marks[4].rest = 21.0f;
+    r->next = 0;
+    r->next = (TUTRUN *)mem_Alloc(sizeof(TUTRUN), "FTInitChapter3Step9");
+    if (!r->next)
+        goto fail;
+    r = r->next;
+    AI_ZERO_AT(r, sizeof(TUTRUN));
+    r->id = 3;
+    r->tag = 'c3s9';
+    r->mode = 1;
+    r->mainText = 0x3f99;
+    r->mainVoice = "CHAPTER_3_H_MAIN";
+    r->text1 = 0;
+    r->text1Voice = 0;
+    r->text2 = 0;
+    r->text2Voice = 0;
+    r->query = ai_TutorialQueryDefault;
+    r->text1Time = 0x429;
+    r->tail2Time = 0x47;
+    r->hook = 0;
+    r->stepHook = 0;
+    r->goal = 3;
+    r->tailTime = 0x163;
+    r->goalState = 0xb;
+    r->allowMask = 0x5837;
+    r->allowMask2 = 0x1f70;
+    r->next = 0;
+    r->next = (TUTRUN *)mem_Alloc(sizeof(TUTRUN), "FTInitChapter3Step10");
+    if (!r->next)
+        goto fail;
+    r = r->next;
+    AI_ZERO_AT(r, sizeof(TUTRUN));
+    r->id = 3;
+    r->tag = 'c3sA';
+    r->mode = 2;
+    r->mainText = 0x3f9b;
+    r->mainVoice = "CHAPTER_3_I_MAIN";
+    r->text1 = 0;
+    r->text1Voice = 0;
+    r->text2 = 0x3f9d;
+    r->text2Voice = "Chapter_3_I_Step_Aux";
+    r->statusText = 0x3f9f;
+    r->voice = "CHAPTER_3_I_DONE";
+    r->text1Time = 0x429;
+    r->tail2Time = 0xd5;
+    r->hook = 0;
+    r->stepHook = 0;
+    r->query = ai_QueryChapter3Step10;
+    r->goal = 0x12;
+    r->tailTime = 0x58c;
+    r->goalState = 9;
+    r->allowMask = 0x5c37;
+    r->allowMask2 = 0x1e70;
+    r->text2Goal = 0x26;
+    r->stepCount = 0;
+    r->stepShown = 0;
+    r->markCount = 1;
+    r->marks = (TUTMARK *)mem_Alloc(1 * sizeof(TUTMARK), "FTInitAnimChapter3Step8");
+    if (!r->marks)
+        goto fail;
+    if (d2_ScreenW == 0x320) {
+        r->marks[0].from[0] = 465.0f;
+        r->marks[0].from[1] = 195.0f;
+        r->marks[0].ctrl1[0] = 456.0f;
+        r->marks[0].ctrl1[1] = 300.0f;
+        r->marks[0].ctrl2[0] = 216.0f;
+        r->marks[0].ctrl2[1] = 280.0f;
+        r->marks[0].to[0] = 166.0f;
+        r->marks[0].to[1] = 170.0f;
+    } else if (d2_ScreenW == 0x400) {
+        r->marks[0].from[0] = 575.0f;
+        r->marks[0].from[1] = 275.0f;
+        r->marks[0].ctrl1[0] = 566.0f;
+        r->marks[0].ctrl1[1] = 370.0f;
+        r->marks[0].ctrl2[0] = 346.0f;
+        r->marks[0].ctrl2[1] = 410.0f;
+        r->marks[0].to[0] = 280.0f;
+        r->marks[0].to[1] = 255.0f;
+    } else {
+        r->marks[0].from[0] = 626.0f;
+        r->marks[0].from[1] = 350.0f;
+        r->marks[0].ctrl1[0] = 636.0f;
+        r->marks[0].ctrl1[1] = 430.0f;
+        r->marks[0].ctrl2[0] = 376.0f;
+        r->marks[0].ctrl2[1] = 440.0f;
+        r->marks[0].to[0] = 336.0f;
+        r->marks[0].to[1] = 320.0f;
+    }
+    r->marks[0].wait = 35.0f;
+    r->marks[0].travel = 170.0f;
+    r->marks[0].rest = 106.0f;
+    r->next = 0;
+    r->next = (TUTRUN *)mem_Alloc(sizeof(TUTRUN), "FTInitChapter3Outro");
+    if (!r->next)
+        goto fail;
+    r = r->next;
+    AI_ZERO_AT(r, sizeof(TUTRUN));
+    r->id = 3;
+    r->tag = 'utr3';
+    r->mode = 3;
+    r->mainText = 0x3fa0;
+    r->mainVoice = "CHAPTER_3_OUTRO";
+    r->text1 = 0;
+    r->text1Voice = 0;
+    r->text2 = 0;
+    r->text2Voice = 0;
+    r->text1Time = -1;
+    r->tail2Time = 0x163;
+    r->hook = 0;
+    r->stepHook = 0;
+    r->goal = 0;
+    r->tailTime = 0;
+    r->goalState = 0xb;
+    r->allowMask = 0x5837;
+    r->allowMask2 = 0x1f70;
+    r->next = 0;
+    ai_TutorialBanks[3] = snd_LoadVoiceBank("TUTORIAL_CHAPTER_3.sbf", 0);
+    return (int)head;
 fail:
-    ai_TutorialFreeRuns(rec);
+    ai_TutorialFreeRuns((char *)head);
     return 0;
 }
 /* 0x57aa80, the tutorial chapter 4 chain (1072 B, ROUGH from the disassembly, the same shape as the chapters 1 ..
@@ -3761,7 +3777,7 @@ int ai_Unk57aa80(void)
     U_I(rec + 0x10) = (unsigned)&full_data_629f88;
     U_I(rec + 0x2c) = 0xffffffff;
     U_I(rec + 0x30) = 0x8e;
-    U_I(rec + 0x34) = (unsigned)&ai_Unk5774d0;
+    U_I(rec + 0x34) = (unsigned)&ai_HookChapter3Intro;
     U_I(rec + 0x48) = 0xb;
     U_I(rec + 0x68) = 0x5837;
     U_I(rec + 0x6c) = 0x1f70;

@@ -317,7 +317,7 @@ void main_SettleRound(unsigned short pl);
 void main_PlayOutro(void);
 
 extern unsigned int d3anim_CacheMax;   /* 0x5f927c, d3_anim.h */
-void ai_ClearTurnTable(void);           /* 0x587de0, unk_575860.c: not in unk_575860.h (adding it there moves unk_575860's drafts ai_Unk579570 / ai_Unk57aeb0) */
+void ai_ClearTurnTable(void);           /* 0x587de0, unk_575860.c: not in unk_575860.h (adding it there moves unk_575860's drafts ai_TutorialInitChapter3 / ai_Unk57aeb0) */
 int main_PreloadSound(char *f);         /* 0x537c70 */
 #define d2_MoveObjS ((void (*)(short, short, int))d2_MoveObj)  /* 0x46cda0 as its definition reads it (d2.c f_46cda0.c: short x, short y): this unit's callers push the short sums untruncated (0x532212 `sub dx, [..]; sub edx, 0x30; push edx`); d2.h keeps int for d2_CreatePicObj (@original) */
 #define util_RandomInt ((int (*)(unsigned short))util_Random)  /* 0x42ec00 as tr.c defines it: @original this unit reads the full int result (0x53b8c9 util_Random(4) + 0x20 pushed without the 16-bit mask ai.h's unsigned short prototype adds) */

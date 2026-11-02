@@ -13,6 +13,16 @@ typedef struct TUTSTEP {                /* 0x10 bytes, a step of a run record's 
     char *voice;                        /* 0x0c, the voice played with it, 0 = none */
 } TUTSTEP;
 
+typedef struct TUTMARK {                /* 0x2c bytes, a path of the position marker (TUTRUN.marks, ai_TutorialMarkerUpdate) */
+    float from[2];                      /* 0x00, the start point x, y: the marker is placed there */
+    float ctrl1[2];                     /* 0x08, the first Bezier control point */
+    float ctrl2[2];                     /* 0x10, the second Bezier control point */
+    float to[2];                        /* 0x18, the end point */
+    float wait;                         /* 0x20, ms at the start before the move */
+    float travel;                       /* 0x24, ms the move takes (the Bezier's t = elapsed / travel) */
+    float rest;                         /* 0x28, ms at the end before it starts over */
+} TUTMARK;
+
 typedef struct TUTRUN {                 /* 0x74 bytes, a run (chapter) record of the tutorial, chained by next */
     int id;                             /* 0x00, the run's number (the main intro 0, the outro 7) */
     int tag;                            /* 0x04, a four-character tag ('INTR' main intro, 'OUTR' outro) */
@@ -37,8 +47,9 @@ typedef struct TUTRUN {                 /* 0x74 bytes, a run (chapter) record of
     unsigned int stepCount;             /* 0x50 */
     void (*stepShown)(void);            /* 0x54, called after every step form is shown and when the chain is done (ai_TutorialStepForm) */
     TUTSTEP *steps;                     /* 0x58 */
-    char pad5c[8];
-    int marker;                         /* 0x64, set: the position marker runs (ai_TutorialMarkerUpdate) */
+    int markCount;                      /* 0x5c, the entries of marks */
+    int (*markPick)();                  /* 0x60, called with the marker update's argument: the entry of marks to run, -1 and below hides the marker */
+    TUTMARK *marks;                     /* 0x64, set: the position marker runs (ai_TutorialMarkerUpdate) */
     int allowMask;                      /* 0x68, ai_RunAllows */
     int allowMask2;                     /* 0x6c */
     struct TUTRUN *next;                /* 0x70, the next run record */
@@ -123,16 +134,16 @@ int ai_Unk576ee0(int *p);               /* 0x576ee0, transition callback */
 int ai_Unk577020(int *p);               /* 0x577020, step callback predicate */
 void ai_Unk5770a0(int arg);             /* 0x5770a0, posts the message 0x2bc0 */
 void ai_HookChapter3Step2(int arg);             /* 0x577110, posts to the player's character record */
-int ai_Unk5771b0(int *p);               /* 0x5771b0, transition callback */
+int ai_QueryChapter3Step6(int *p);               /* 0x5771b0, transition callback */
 void ai_Unk577230(int arg);             /* 0x577230, posts messages */
 int ai_QueryChapter5Step2(int *p);               /* 0x577290, step predicate */
 int ai_MarkerChapter5Step2(void);                 /* 0x5772d0, the record fight kind */
-int ai_Unk577320(void);                 /* 0x577320, the flag S+0x38 */
-int ai_Unk577330(int *p);               /* 0x577330, transition callback */
+int ai_MarkerChapter3Step6(void);                 /* 0x577320, the flag S+0x38 */
+int ai_QueryChapter3Step8(int *p);               /* 0x577330, transition callback */
 int ai_MarkerChapter3Step8(void);                 /* 0x5773f0, fight kind + flag */
-int ai_Unk577450(int *p);               /* 0x577450, step predicate */
-int ai_Unk577490(void);                 /* 0x577490, releases the pending id S+0x50 */
-void ai_Unk5774d0(int arg);             /* 0x5774d0, posts a record message */
+int ai_QueryChapter3Step10(int *p);               /* 0x577450, step predicate */
+int ai_StepShownChapter3Step4(void);                 /* 0x577490, releases the pending id S+0x50 */
+void ai_HookChapter3Intro(int arg);             /* 0x5774d0, posts a record message */
 void ai_Unk577540(int arg);             /* 0x577540, posts a record message */
 void ai_HookChapter5Step4(int arg);             /* 0x5775c0, posts two character messages */
 void ai_HookChapter5Step5(int arg);             /* 0x577610, character record lookup + 0x4e6180 */
@@ -160,7 +171,7 @@ void ai_TutorialFreeRuns(char *rec);           /* 0x578440, frees the tutorial r
 int ai_TutorialInitMainIntro(void);                 /* 0x5784a0, allocates the main-intro record */
 int ai_TutorialInitChapter1(void);      /* 0x578570, the chapter 1 chain */
 int ai_TutorialInitChapter2(void);      /* 0x578e40, the chapter 2 chain */
-int ai_Unk579570(void);                 /* 0x579570, the chapter 3 chain (ROUGH) */
+int ai_TutorialInitChapter3(void);                 /* 0x579570, the chapter 3 chain */
 int ai_Unk57aa80(void);                 /* 0x57aa80, the chapter 4 chain (ROUGH) */
 int ai_Unk57aeb0(void);                 /* 0x57aeb0, the chapter 5 chain (ROUGH) */
 int ai_TutorialInitMainOutro(void);                 /* 0x57b750, the main-outro record */
