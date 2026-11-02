@@ -547,7 +547,7 @@ typedef struct UNKHITS {                /* 0x38 bytes, the slot's record at +0x1
    whose box the point lies in (state 1, weight 1 / (1 + 0.005 d)) or near (state 2, weight 1 / (1 + (0.0002 d + 0.005) d)), keeps those with the largest strength * weight > 100, starts the particle effects
    (0x416340 / 0x4168e0 / 0x416040) and the sound "Explosion" (0x426030), and when w is set damages the buildings' owners (state 1: message 0x4f via 0x4c4b70; state 2: skill 0x5c -= value); the hits go to *out (0xe ints).
    ROUGH, the floats of the box tests and the argument values of the effect calls are as read from the disassembly. */
-void unk_Unk4ee360(int w, int sub, char *p, UNKHITS *out)
+void gv_ExplodeShot(int w, int sub, char *p, UNKHITS *out)
 {
     UNKHITS h;
     float pos[3], half[3], mn[3], hi[3], lo[3];
@@ -690,130 +690,105 @@ void unk_Unk4ee360(int w, int sub, char *p, UNKHITS *out)
     if (out != 0)
         memcpy(out, &h, 0x38);
 }
-/* 0x4edf80, the per-frame update of the effect slots: the time step dt (0x4fe280 between the old time 0x6f0e38 .. and the clock 0x770ae0, * 1/60 * 0.1) is added to the three floats +8 / +0xc / +0x10 (up to 1.0), and each
-   of the 3 parts of a used slot (state at +0x74 + 0x68 * j: 0 idle, 1 running, 2 / 3 done) is advanced: running parts create / move their "kugel" object (0x446e10 / 0x43b790), finished ones release the object,
-   report to the slot's counter (+0x16c) and callback (+0x168); a slot whose parts are all idle (3) loses flags 1 / 2 and is released (0x4edf10) when flag 4 is set. ROUGH */
+/* 0x4edf80, the per-frame update of the effect slots (the cannon balls in flight): the minutes since gv_LastTime (* 1/60 * 0.1) are added
+   to the three fade values of every used slot (up to 1.0); each part in flight (state 1) moves one step (ai_StepShot, ai_StepShotSlow
+   when the slot's f14 is set) and gets its "kugel" object placed at the ball; a ball that left the map (3) or landed (2: the explosion
+   gv_ExplodeShot) loses its object and is reported to the slot's callback (arg->cur = the part); a slot with three idle parts loses flags
+   1 / 2 and is released when flag 4 is set, as is a slot without flag 2
+   @deep read the whole function against the original (slot loop, fade clamps, the three part states,
+   StepShot/StepShotSlow with the part as SHOTREC, kugel object create/place/delete, callback reporting,
+   gv_ExplodeShot); 256 vs 260 instructions, frame 0x18 vs 0x1c. Left: the original keeps the first fade
+   sum a in a stack slot ([esp+0x20]: fst then fld/fcomp/jp/fld) where ours keeps it in st0 (fcom/jnp/fstp
+   st(0)) - FPU allocation, the extra frame slot; the fmul by 0.1 is scheduled before the AITIME copy in
+   the original (order); the shot pointer in ebp (lea ecx,[ebp+0x30]) vs ours from the state pointer (lea
+   ecx,[ebx-0x2c]); eax/edx swap at the recs[j].bldId store. Tried a = field = sum (worse, 42 code hunks). */
 
 void gv_UpdateEffects(void)
 {
     int dt;
-    int sc;
+    int scene;
     float step;
-    int off, idx;
-    int id;
-    char *e;
-    int *st;
-    int j, off16, idle;
-    int k;
-    unsigned fl;
     float a, b, c;
+    int i, j;
+    int idle;
+    SHOTREC *shot;
 
-    dt = gm_MinutesBetween((char *)&gv_LastTime, ai_Time);
-    sc = d3_CurrentScene;
+    dt = gm_MinutesBetween(&gv_LastTime, &ai_Time);
     if (dt < 0)
         dt = 0;
     gv_LastTime = gv_TimeT;
+    scene = d3_CurrentScene;
     step = (float)dt * 0.016666668f * 0.1f;
     d3if_SelectScene(0, 1);
-    off = 0;
-    idx = 0;
-    do {
-        e = gv_Effects + off;
-        id = *(int *)e;
-        if (id != -1) {
-            a = step + *(float *)(e + 8);
-            idle = 0;
-            *(float *)(e + 8) = a;
-            b = step + *(float *)(e + 0xc);
-            *(float *)(e + 0xc) = b;
-            c = step + *(float *)(e + 0x10);
-            *(float *)(e + 0x10) = c;
-            if (1.0f <= a)
-                a = 1.0f;
-            *(float *)(e + 8) = a;
-            if (1.0f <= b)
-                b = 1.0f;
-            *(float *)(e + 0xc) = b;
-            if (1.0f <= c)
-                c = 1.0f;
-            *(float *)(e + 0x10) = c;
-            if ((*(unsigned *)(e + 4) & 2) == 0) {
-                if ((*(unsigned *)(e + 4) & 4) != 0)
-                    gv_ReleaseEffect(id);
-            } else {
-                j = 0;
-                off16 = 0;
-                st = (int *)(e + 0x74);
-                do {
-                    if (*st == 0) {
-                        idle++;
-                        if (idle > 2) {
-                            fl = *(unsigned *)(e + 4);
-                            *(unsigned *)(e + 4) = fl & 0xfffffffc;
-                            if ((fl & 4) != 0)
-                                gv_ReleaseEffect(*(int *)e);
-                        }
-                    } else if (*st == 1) {
-                        if (*(int *)(e + 0x14) == 0)
-                            k = ai_StepShot((SHOTREC *)(st - 0x17));
-                        else
-                            k = ai_StepShotSlow((SHOTREC *)(st - 0x17));
-                        if (k != 0) {
-                            k = idx + j;
-                            if (*(int *)(gv_Effects + 0x15c + k * 4) == 0) {
-                                *(int *)(gv_Effects + 0x15c + k * 4) = d3_CreateObject(0, ai_Unk5ebba4, ai_Unk5ebbb4, "kugel");
-                                *(unsigned char *)(*(int *)(gv_Effects + 0x15c + k * 4) + 0x211) |= 4;
-                                *(unsigned char *)(*(int *)(gv_Effects + 0x15c + k * 4) + 0x212) |= 0xc;
-                                *(unsigned char *)(*(int *)(gv_Effects + 0x15c + k * 4) + 0x211) &= 0xf7;
-                            }
-                            d3_SetObjectPos(*(int *)(gv_Effects + 0x15c + k * 4), st - 0xb);
-                        }
-                        if (*st == 3) {
-                            k = idx + j;
-                            if (*(int *)(gv_Effects + 0x15c + k * 4) != 0) {
-                                d3if_Delete((struct D3OBJECT *)*(int *)(gv_Effects + 0x15c + k * 4));
-                                *(int *)(gv_Effects + 0x15c + k * 4) = 0;
-                            }
-                            if (*(int **)(e + 0x16c) != 0)
-                                **(int **)(e + 0x16c) = j;
-                            *(int *)(off16 + 8 + *(int *)(e + 0x16c)) = -1;
-                            if (*(void (**)())(e + 0x168) != 0)
-                                (**(void (**)())(e + 0x168))(*(int *)(e + 0x16c));
-                            *st = 0;
-                            *(int *)(gv_Effects + 0x150 + k * 4) = 0;
-                        } else if (*st == 2) {
-                            k = idx + j;
-                            idle++;
-                            if (*(int *)(gv_Effects + 0x15c + k * 4) != 0) {
-                                d3if_Delete((struct D3OBJECT *)*(int *)(gv_Effects + 0x15c + k * 4));
-                                *(int *)(gv_Effects + 0x15c + k * 4) = 0;
-                            }
-                            unk_Unk4ee360(*(unsigned *)(e + 4) & 1, *(int *)e, (char *)(st - 0x17), *(UNKHITS **)(e + 0x16c));
-                            if (*(int **)(e + 0x16c) != 0)
-                                **(int **)(e + 0x16c) = j;
-                            if (*(void (**)())(e + 0x168) != 0)
-                                (**(void (**)())(e + 0x168))(*(int *)(e + 0x16c));
-                            *st = 0;
-                            *(int *)(gv_Effects + 0x150 + k * 4) = 0;
-                            **(int **)(e + 0x16c) = -1;
-                        }
+    for (i = 0; i < 8; i++) {
+        if (gv_EffectsT[i].id == -1)
+            continue;
+        idle = 0;
+        gv_EffectsT[i].f08 = a = step + gv_EffectsT[i].f08;
+        gv_EffectsT[i].f0c = b = step + gv_EffectsT[i].f0c;
+        gv_EffectsT[i].f10 = c = step + gv_EffectsT[i].f10;
+        gv_EffectsT[i].f08 = a < 1.0f ? a : 1.0f;
+        gv_EffectsT[i].f0c = b < 1.0f ? b : 1.0f;
+        gv_EffectsT[i].f10 = c < 1.0f ? c : 1.0f;
+        if ((gv_EffectsT[i].flags & 2) == 0) {
+            if (gv_EffectsT[i].flags & 4)
+                gv_ReleaseEffect(gv_EffectsT[i].id);
+            continue;
+        }
+        for (j = 0; j < 3; j++) {
+            shot = (SHOTREC *)&gv_EffectsT[i].parts[j];
+            if (shot->state == 0) {
+                if (++idle >= 3) {
+                    gv_EffectsT[i].flags &= ~3;
+                    if (gv_EffectsT[i].flags & 4)
+                        gv_ReleaseEffect(gv_EffectsT[i].id);
+                }
+            } else if (shot->state == 1) {
+                if (gv_EffectsT[i].f14 == 0 ? ai_StepShot(shot) : ai_StepShotSlow(shot)) {
+                    if (gv_EffectsT[i].objs[j] == 0) {
+                        gv_EffectsT[i].objs[j] = d3_CreateObject(0, &d3_Origin, (D3VECTOR *)ai_ZeroRot, "kugel");
+                        gv_EffectsT[i].objs[j]->objectFlags |= 4;
+                        gv_EffectsT[i].objs[j]->stateFlags |= 0xc;
+                        gv_EffectsT[i].objs[j]->objectFlags &= ~8;
                     }
-                    st += 0x1a;
-                    j++;
-                    off16 += 0x10;
-                } while (off16 < 0x30);
-                if (idle > 2) {
-                    fl = *(unsigned *)(e + 4);
-                    *(unsigned *)(e + 4) = fl & 0xfffffffc;
-                    if ((fl & 4) != 0)
-                        gv_ReleaseEffect(*(int *)e);
+                    d3_SetObjectPos(gv_EffectsT[i].objs[j], &shot->pos);
+                }
+                if (shot->state == 3) {
+                    if (gv_EffectsT[i].objs[j] != 0) {
+                        d3if_Delete(gv_EffectsT[i].objs[j]);
+                        gv_EffectsT[i].objs[j] = 0;
+                    }
+                    if (gv_EffectsT[i].arg != 0)
+                        gv_EffectsT[i].arg->cur = j;
+                    gv_EffectsT[i].arg->recs[j].bldId = -1;
+                    if (gv_EffectsT[i].cb != 0)
+                        gv_EffectsT[i].cb(gv_EffectsT[i].arg);
+                    shot->state = 0;
+                    gv_EffectsT[i].tail[j] = 0;
+                } else if (shot->state == 2) {
+                    idle++;
+                    if (gv_EffectsT[i].objs[j] != 0) {
+                        d3if_Delete(gv_EffectsT[i].objs[j]);
+                        gv_EffectsT[i].objs[j] = 0;
+                    }
+                    gv_ExplodeShot(gv_EffectsT[i].flags & 1, gv_EffectsT[i].id, (char *)shot, (struct UNKHITS *)gv_EffectsT[i].arg);
+                    if (gv_EffectsT[i].arg != 0)
+                        gv_EffectsT[i].arg->cur = j;
+                    if (gv_EffectsT[i].cb != 0)
+                        gv_EffectsT[i].cb(gv_EffectsT[i].arg);
+                    shot->state = 0;
+                    gv_EffectsT[i].tail[j] = 0;
+                    gv_EffectsT[i].arg->cur = -1;
                 }
             }
         }
-        idx += 0x5c;
-        off += 0x170;
-    } while (idx < 0x2e0);
-    d3if_SelectScene(sc, 1);
+        if (idle >= 3) {
+            gv_EffectsT[i].flags &= ~3;
+            if (gv_EffectsT[i].flags & 4)
+                gv_ReleaseEffect(gv_EffectsT[i].id);
+        }
+    }
+    d3if_SelectScene(scene, 1);
 }
 /* 0x4eea70, the message 'nCTa' (0x4c6230) with the id at +1 of the object o */
 
@@ -4369,7 +4344,7 @@ extern float ord_RatingRate;
 extern char ord_StatisticsHistory[320];
 extern char ord_RatingBytes[16];
 extern char ord_MessageRecord[0x24];
-const char ai_Unk5ebbb4[12] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };  /* 0x5ebbb4 */
+const char ai_ZeroRot[12] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };  /* 0x5ebbb4 */
 const float unk_Tab5ee034[] = { 0.800000012f, 0.699999988f, 0.600000024f, 0.5f, 15.0f, 12.5f, 10.0f, 7.5f };  /* 0x5ee034 */
 const int gv_EntryCounts[] = { 1, 2, 4, 8 };  /* 0x5ee054, entries per kind */
 const int unk_Tab5ee064[] = { 0, 12, 20, 30 };  /* 0x5ee064 */

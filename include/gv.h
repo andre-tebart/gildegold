@@ -130,7 +130,7 @@ void cm_SendFieldDeltas(void);                     /* 0x4c49a0 */
 extern char *ai_Blds;                   /* 0x889f74, 256 records of 0xa9 bytes */
 extern unsigned short *ai_PlayerChar;    /* 0x6f1bf8, the player's character (ai.c; this header's units add byte offsets through ai_PlayerCharC) */
 extern const float ai_Unk5ebba4[];          /* 0x5ebba4, d3_Origin (as cm.h) */
-extern const char ai_Unk5ebbb4[];                 /* 0x5ebbb4 */
+extern const char ai_ZeroRot[];                 /* 0x5ebbb4 */
 
 char *gv_AllocAvatar(void);              /* 0x4ed170 */
 int gv_WriteAvatars(void *f);             /* 0x4ed1e0 */
@@ -142,22 +142,10 @@ typedef struct GVEFFPART {              /* 0x68 bytes, one of an effect slot's t
     float v3[4];                        /* 0x30, not saved */
     float v4[4];                        /* 0x40 */
     int a, b, c;                        /* 0x50 */
-    int flags;                          /* 0x5c, 2: in use (gv_ReleaseEffect keeps the slot while a part has it) */
+    int flags;                          /* 0x5c, the part is a SHOTREC (unk_5d33b0.h): this is its state, 0 idle, 1 in flight, 2 landed, 3 left the map (gv_UpdateEffects) */
     int time;                           /* 0x60, not saved: the reader sets it to ai_ClockMs */
     int e;                              /* 0x64 */
 } GVEFFPART;
-typedef struct GVEFFECT {               /* 0x170 bytes, an effect slot of gv_Effects (8) */
-    int id;                             /* 0x000, -1: free */
-    int flags;                          /* 0x004, 4: to be released (gv_ReleaseEffect) */
-    float f08, f0c, f10;                /* 0x008, 1.0 after the reset; the per-frame step adds dt up to 1.0 */
-    int f14;                            /* 0x014 */
-    GVEFFPART parts[3];                 /* 0x018 */
-    int tail[3];                        /* 0x150 */
-    char pad15c[0xc];
-    void *cb;                           /* 0x168, the slot's callback (gv_EffectNotifyOwner by default) */
-    void *arg;                          /* 0x16c, its argument */
-} GVEFFECT;
-typedef char gv_AssertGVEFFECT[sizeof(GVEFFECT) == 0x170 ? 1 : -1];
 typedef struct GVEFFREC {               /* 16 bytes, a record of an effect slot's argument */
     int bldId;                          /* 0x00, a building id (gm_BuildQuery(1, 1, id)) */
     int unk04;
@@ -169,6 +157,18 @@ typedef struct GVEFFARG {               /* 0x38 bytes, the argument of an effect
     int unk04;
     GVEFFREC recs[3];                   /* 0x08 */
 } GVEFFARG;
+typedef struct GVEFFECT {               /* 0x170 bytes, an effect slot of gv_Effects (8) */
+    int id;                             /* 0x000, -1: free */
+    int flags;                          /* 0x004, 4: to be released (gv_ReleaseEffect) */
+    float f08, f0c, f10;                /* 0x008, 1.0 after the reset; the per-frame step adds dt up to 1.0 */
+    int f14;                            /* 0x014 */
+    GVEFFPART parts[3];                 /* 0x018 */
+    int tail[3];                        /* 0x150, 0: the part is free (gv_UpdateEffects clears it when the part ends) */
+    struct D3OBJECT *objs[3];           /* 0x15c, the parts' "kugel" objects (gv_UpdateEffects creates them, gv_FreeEffectObjects frees them) */
+    int (*cb)(GVEFFARG *arg);           /* 0x168, the slot's callback (gv_EffectNotifyOwner by default), called when a part ends */
+    GVEFFARG *arg;                      /* 0x16c, its argument: cur = the part that ended */
+} GVEFFECT;
+typedef char gv_AssertGVEFFECT[sizeof(GVEFFECT) == 0x170 ? 1 : -1];
 extern GVEFFARG gv_EffectArgs[8];      /* 0x6f0e48, one per effect slot */
 int gv_EffectNotifyOwner(GVEFFARG *a);  /* 0x4ed3f0, the default effect slot callback: tells the owner of the current record's building */
 int gv_WriteEffects(void *f);             /* 0x4ed480 */
@@ -177,7 +177,7 @@ void unk_ResetEffectSlots(void);               /* 0x4eddf0 */
 void gv_FreeEffectObjects(void);               /* 0x4ede70 */
 char *gv_FindEffect(int id);            /* 0x4eded0 */
 void gv_ReleaseEffect(int id);             /* 0x4edf10 */
-void unk_Unk4ee360(int w, int sub, char *p, struct UNKHITS *out);  /* 0x4ee360 */
+void gv_ExplodeShot(int w, int sub, char *p, struct UNKHITS *out);  /* 0x4ee360 */
 void gv_UpdateEffects(void);               /* 0x4edf80 */
 void unk_Unk4eea70(char *o);             /* 0x4eea70 */
 int gv_ReserveEffect(int id);              /* 0x4eeaa0 */

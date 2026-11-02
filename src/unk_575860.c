@@ -4954,14 +4954,14 @@ void ai_Unk57e270(char *rec)
     *(float *)(sc + 4) = (*(float *)(sc + 0xe8) - *(float *)(sc + 0xf8)) * 0.8f + *(float *)(sc + 4);
     pp = 0;
     obj[3] = d3_CreateObject(0, (char *)(unsigned)&ai_Unk5ebba4, (char *)&pp, (char *)(unsigned)&full_data_62a350);
-    obj[0] = d3_CreateObject(obj[3], (char *)(unsigned)&ai_Unk5ebba4, (char *)(unsigned)&ai_Unk5ebbb4, (char *)(unsigned)&full_data_62a340);
-    obj[1] = d3_CreateObject(obj[3], (char *)(unsigned)&ai_Unk5ebba4, (char *)(unsigned)&ai_Unk5ebbb4, (char *)(unsigned)&full_data_62a328);
-    obj[2] = d3_CreateObject(obj[3], (char *)(unsigned)&ai_Unk5ebba4, (char *)(unsigned)&ai_Unk5ebbb4, (char *)(unsigned)&full_data_62a310);
+    obj[0] = d3_CreateObject(obj[3], (char *)(unsigned)&ai_Unk5ebba4, (char *)(unsigned)&ai_ZeroRot, (char *)(unsigned)&full_data_62a340);
+    obj[1] = d3_CreateObject(obj[3], (char *)(unsigned)&ai_Unk5ebba4, (char *)(unsigned)&ai_ZeroRot, (char *)(unsigned)&full_data_62a328);
+    obj[2] = d3_CreateObject(obj[3], (char *)(unsigned)&ai_Unk5ebba4, (char *)(unsigned)&ai_ZeroRot, (char *)(unsigned)&full_data_62a310);
     sel = U_I((unsigned)&gv_Cannon.selected);
     *(int *)(sc + 0x20) = 0;
     d3_SetObjectPos(obj[3], (float *)sc);
     d3_SetObjectRot(obj[3], sc + 0x10);
-    item = d3_CreateObject(obj[3], (char *)((unsigned)&sv_PhaseMinutes + 0x1c8), (char *)(unsigned)&ai_Unk5ebbb4, (char *)(unsigned)&full_data_62a2fc);
+    item = d3_CreateObject(obj[3], (char *)((unsigned)&sv_PhaseMinutes + 0x1c8), (char *)(unsigned)&ai_ZeroRot, (char *)(unsigned)&full_data_62a2fc);
     d3t_PlayAnim(item, (char *)(unsigned)&full_data_62a2dc, 1);
     *(unsigned char *)(item + 0x212) = (*(unsigned char *)(item + 0x212) & 0xf7) | 4;
     *(unsigned char *)(item + 0x212) |= 0x40;
