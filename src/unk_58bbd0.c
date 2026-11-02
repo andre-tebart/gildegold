@@ -774,7 +774,7 @@ extern int d2_Unkf8aac8;
 extern D2VIEW d2_Views[];
 extern GAPDATA full_data_6f26c0[];
 #include "am_types.h"
-extern G7GRP ai_Unk61a348[];           /* 0x61a348 */
+extern G7GRP gm_BuildingItemGroups[];           /* 0x61a348 */
 extern GAPDATA full_rdata_5eed94[];
 extern GAPDATA full_rdata_5eedd3[];
 extern GAPDATA full_data_62c284[];
@@ -13633,9 +13633,9 @@ unsigned char *ai_Unk5a84d0(char *param_1)
                 return (unsigned char *)(unsigned)&full_rdata_5eed94 + i * 0x15;
     }
     i = 0;
-    for (q = (unsigned char *)(unsigned)&ai_Unk61a348; (int)q < (int)((unsigned)&ai_Unk61a348 + 0x309); q += 0x15, i++)
+    for (q = (unsigned char *)(unsigned)&gm_BuildingItemGroups; (int)q < (int)((unsigned)&gm_BuildingItemGroups + 0x309); q += 0x15, i++)
         if ((char)*q == c)
-            return (unsigned char *)(unsigned)&ai_Unk61a348 + i * 0x15;
+            return (unsigned char *)(unsigned)&gm_BuildingItemGroups + i * 0x15;
     return 0;
 }
 

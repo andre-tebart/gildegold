@@ -994,7 +994,7 @@ typedef struct G7MKT {                  /* 0xb4 bytes, the prices of an item gro
     int lo;                             /* 0xb0 */
 } G7MKT;
 
-extern G7GRP ai_Unk61a348[];            /* 0x61a348 */
+extern G7GRP gm_BuildingItemGroups[];            /* 0x61a348 */
 
 int ai_GroupPrices(G7MKT *m);
 int ai_RepairCost(struct AIBLD *b, int k);                                              /* 0x4a4e30 */

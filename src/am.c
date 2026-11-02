@@ -10204,22 +10204,19 @@ void ai_FillNearRing(AICHAR *c)
 
 int ai_GroupPrices(G7MKT *m)
 {
-    G7GRP *g;
     int i, k, n;
     float sum, r;
 
-    i = 0;
-    for (g = ai_Unk61a348; g->key != m->key; g++) {
-        i++;
-        if (g + 1 > ai_Unk61a348 + 0x25)
-            return 0;
+    for (i = 0; i < 0x25; i++) {
+        if (gm_BuildingItemGroups[i].key == m->key)
+            break;
     }
-    if (i > 0x24)
+    if (i >= 0x25)
         return 0;
     n = 0;
     for (k = 0; k < 10; k++) {
-        if (ai_Unk61a348[i].items[k] != 0)
-            m->items[n++] = ai_Unk61a348[i].items[k];
+        if (gm_BuildingItemGroups[i].items[k] != 0)
+            m->items[n++] = gm_BuildingItemGroups[i].items[k];
     }
     m->n = n;
     if (n == 0)
