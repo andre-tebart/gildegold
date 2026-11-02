@@ -4,7 +4,7 @@
 #define UNK_575860_H
 
 void ai_GypsyHelperWindow(char *b);     /* 0x584d70, the helpers window of a building (HANDEL_SUCHEN form), opened by the gypsy production contact */
-int ai_Unk575860(void);                 /* 0x575860, the end-of-game tick (ROUGH skeleton) */
+int ai_TutorialTick(void);                 /* 0x575860, the end-of-game tick (ROUGH skeleton) */
 void unk_ClearEndGameGate(void);                /* 0x576020, clears the gate 0x6f2660 */
 void unk_SetEndGameGate(void);                /* 0x576030, sets the gate 0x6f2660 */
 void ai_CampaignStep(int a, int b, int c, int d);  /* 0x576040, one step of the campaign state machine */

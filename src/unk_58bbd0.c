@@ -366,7 +366,7 @@ extern char * ai_PickedObject;
 
 extern struct AIBLD *ai_MarketBuilding;
 extern int sv_SelectedModel;
-extern int ai_Unk6f2318;
+extern int ai_PermsDirty;
 extern char * sv_SelectedObject;
 extern int sv_PanelForm;
 extern unsigned short * sv_PanelShown;
@@ -3069,7 +3069,7 @@ void ai_Unk591ad0(void);
    +0x13 = 0x71f, 0, 0, 0) is resolved: the pending contact 0x6f230c (when set) gets 0x521960 (text 0xfd / -1);
    else 0x502520 and the 'G' kind get 0x521960 (0xfd), the other kinds 0x527840 (the plain open) or 0x521960
    (the record's +0x29 text) */
-void ai_Unk591170(void)
+void ai_HandleMapKey(void)
 {
     int msg[0x14];
     char *p;
@@ -7097,14 +7097,14 @@ void ai_Unk59a710(int param_1, int param_2)
     U_I((unsigned)&sv_SelectedModel) = 0;
     sv_ClosePanel();
     sv_ClearSelection();
-    U_I((unsigned)&ai_Unk6f2318) = 1;
+    U_I((unsigned)&ai_PermsDirty) = 1;
     if (U_I((unsigned)&sv_PanelForm) != -1)
         d2_SetViewEnabled(U_I((unsigned)&sv_PanelForm), 0);
     U_I((unsigned)&sv_PanelShown) = gm_Query(U_I(U_I((unsigned)&ai_MarketBuilding) + 0x5d), 1, 0, param_2);
     if (U_I((unsigned)&sv_PanelShown) != 0) {
         ai_CampaignStep(0x17, U_I((unsigned)&sv_PanelShown), 0, param_2);
         while (U_I((unsigned)&sv_PanelShown) != 0) {
-            U_I((unsigned)&ai_Unk6f2318) = 1;
+            U_I((unsigned)&ai_PermsDirty) = 1;
             ai_TransportWindow(param_1, 9);
         }
     }

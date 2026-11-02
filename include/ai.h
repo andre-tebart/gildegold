@@ -279,7 +279,10 @@ typedef struct AICHAR {                 /* 0x21c bytes, ai_Chars[768] */
     char pad198[4];
     int wage;                           /* 0x19c, the wage the character was paid in the last round settlement (main_SettleRound sends it as a field delta) */
     char pad1a0[0x11];
-    unsigned char unk1b1;               /* 0x1b1 */
+    unsigned char heldRounds;           /* 0x1b1, rounds the character is held: message 0x5b (cm.c 0x4ccb10) adds to it, each
+                                           round adds 0xff (main.c); nonzero: the AI chooses no new action (ai.c
+                                           0x47e360), the character takes no office (amt.c), the player's room click
+                                           does not switch rooms (sv.c); reasoned (a jail term or the like) */
     char pad1b2[2];
     unsigned int flags1b4;              /* 0x1b4 */
     int budget;                         /* 0x1b8, money */

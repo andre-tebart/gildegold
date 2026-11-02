@@ -5826,7 +5826,7 @@ int gm_JobBuildingType(int x)
 
 
 unsigned short * ai_Unk6f1bf4 = 0;  /* 0x6f1bf4, the current record */
-int ai_Unk6f2318 = 0;  /* 0x6f2318 */
+int ai_PermsDirty = 0;  /* 0x6f2318 */
 unsigned char * gm_FirstBuilding(int n);                   /* 0x50b010 */
 short * gm_PlayerRecord(char *c);                     /* 0x506430 */
 int cm_AddFieldValue(unsigned char size, unsigned char n, unsigned short field, void *v);                     /* 0x4c3d90 */
@@ -6087,7 +6087,7 @@ void gm_SetJob(int i, unsigned n)
         b = *(unsigned char *)(g + 0x74 + r);
         if ((int)n < (int)b || b == 0)
             *(char *)(g + 0x74 + r) = (char)n;
-        ai_Unk6f2318 = 1;
+        ai_PermsDirty = 1;
     }
     c[0x164] = (char)n;
 }

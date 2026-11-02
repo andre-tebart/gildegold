@@ -1911,7 +1911,7 @@ int ai_Unk4bb630(G14MSG *m)
     he_ShowNews(c->netId, c->netId, buf, strlen(buf) > 0x100, 0x603, 0);
     return 0;
 }
-/* 0x4bb6c0, sends message m (from the 8th day on): -1 without m, 0x400 without its character or with unk1b1 set,
+/* 0x4bb6c0, sends message m (from the 8th day on): -1 without m, 0x400 without its character or with heldRounds set,
    -2 for an unknown type */
 
 int ai_Unk4bb6c0(G14MSG *m)
@@ -1923,7 +1923,7 @@ int ai_Unk4bb6c0(G14MSG *m)
     if (m == 0)
         return -1;
     c = gm_FindChar(m->id);
-    if (c == 0 || c->unk1b1 > 0)
+    if (c == 0 || c->heldRounds > 0)
         return 0x400;
     if (m->type < 0x45)
         return ai_Unk602570[m->type](m);

@@ -16,7 +16,7 @@ void he_CloseEventSlots(void);
 void he_ShowEventBar(int pl);
 void he_Unk53dad0(int state);
 void he_Unk53daf0(void);
-void he_Unk53dcb0(int *sl);
+void he_ActivateSlot(int *sl);
 
 typedef struct HEEVSLOT {               /* 12 bytes, a slot of the event bar (he_EventSlots) */
     struct AIJOB *ev;                   /* 0x00, the event record the slot shows (ai.h AIJOB: its kind at +0) */

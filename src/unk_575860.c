@@ -741,7 +741,7 @@ char *const ai_Unk5eec60 = (char *)full_data_6fa020 + 0x40;  /* 0x5eec60, the po
    0x475e40, 0x5780e0, 0x577b90, 0x52d7a0, 0x52e330, 0x426f20, 0x427290, 0x4c2760; the exit is -4 (0xfffffffc)
    on a failed gate. Ends at 0x575fe2 (a shared return), the jump table 0x575fe8 .. 0x576017, nop fill to 0x576020. */
 
-int ai_Unk575860(void)
+int ai_TutorialTick(void)
 {
     char *st;
     char *per;
@@ -810,7 +810,7 @@ int ai_Unk575860(void)
         U_I(S + 0x60) = -1;
         if (*(int *)(per + 0x34))
             ((void (*)(int))*(int *)(per + 0x34))(0);
-        he_Unk53dcb0(*(int **)(*(char **)(S + 0x1c) + 0x74));
+        he_ActivateSlot(*(int **)(*(char **)(S + 0x1c) + 0x74));
         d2_SetPointerSprite(0, 0);
         break;
     case 1:                     /* state 2, 0x575a69: the intro is answered, close the window and continue */
@@ -820,13 +820,13 @@ int ai_Unk575860(void)
         U_I(S + 8) = U_I((unsigned)&ai_ClockMs);
         U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
         U_I(S + 0x10) = 0;
-        he_Unk53dcb0(0);
+        he_ActivateSlot(0);
         break;
     case 2:                     /* state 3, 0x575ab5: the same without the clocks */
         if (ai_Unk577a00() != 1)
             break;
         U_I(S) = U_I(S + 4);
-        he_Unk53dcb0(0);
+        he_ActivateSlot(0);
         break;
     case 3:                     /* state 4, 0x575adc: the timed first text window */
         st = S;

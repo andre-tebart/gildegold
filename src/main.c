@@ -3994,10 +3994,10 @@ void main_UpdateFigures(void)
                     main_AddHealthS(ch->id, k);
                 }
             }
-            if (ch->unk1b1 > 0) {
+            if (ch->heldRounds > 0) {
                 on = 0xff;
                 cm_BeginFieldBlock((char *)ch, ch->netId);
-                cm_AddFieldValues(1, 1, (int)((char *)&ch->unk1b1 - cm_FieldObject), &on);
+                cm_AddFieldValues(1, 1, (int)((char *)&ch->heldRounds - cm_FieldObject), &on);
                 cm_SendFieldDeltas();
             }
         }

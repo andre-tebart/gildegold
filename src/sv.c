@@ -118,7 +118,7 @@ extern void *d2_ScreenSurf;  /* 0x6ed924 */
 extern int d2_HalfScreenH;
 extern int d2_HalfScreenW;
 extern void *d2_ScreenSurf;  /* 0x6ed924 */
-extern int ai_Unk6f2318;
+extern int ai_PermsDirty;
 extern OPTIONBYTES ai_GameSwitches;
 extern char d2_CaptionCopy[0x80];
 extern short d2_MouseX;
@@ -1377,7 +1377,7 @@ void sv_UpdateGroundplan(unsigned flags)
                         }
                         if (dm_L.lclick != 0 && obj != 0 && obj->id != *sv_PanelShown
                             && ai_ScriptQuery(0x19, (int)ai_PlayerBuilding, 0, obj->id) == 1
-                            && !(ai_CharsT[ai_PlayerId].unk1b1 > 0)) {
+                            && !(ai_CharsT[ai_PlayerId].heldRounds > 0)) {
                             if (gm_PermissionBits(ai_PlayerId, (unsigned char *)ai_PlayerBuilding, &obj->id, 0) & 0x4000)
                                 ai_SwitchRoomI(-1, obj->id);
                         } else if (obj != 0)
@@ -1403,7 +1403,7 @@ void sv_UpdateGroundplan(unsigned flags)
                         }
                         if (dm_L.lclick != 0 && obj != 0
                             && (sv_PanelShown == 0 || (obj->id != *sv_PanelShown && ai_ScriptQuery(0x19, (int)ai_FallbackBuilding, 0, obj->id) == 1))
-                            && !(ai_CharsT[ai_PlayerId].unk1b1 > 0)) {
+                            && !(ai_CharsT[ai_PlayerId].heldRounds > 0)) {
                             if (gm_PermissionBits(ai_PlayerId, (unsigned char *)ai_FallbackBuilding, &obj->id, 0) & 0x4000)
                                 sv_SelectPanelObject((unsigned char *)ai_FallbackBuilding, obj->objId, ch_EmptyName);
                         } else if (obj != 0)
@@ -5870,190 +5870,206 @@ void sv_CameraFollow(void)
     if (sv_SelectedItem != 0)
         sv_ResetSelection();
 }
-/* 0x52d940, the mouse click handler of the game screen (fl: 0x800 right button, 0x100 left button, 8 = key flag): plays "MausclickRechts_s_01" for a right click that changes something, closes a
-   dialog (0x6f262c: the kinds 0x11 / 0x26 / 0x69 set 0x6f2630, 0x89 goes to 0x575860, the others to 0x53dcb0), routes a click on a shown widget (0x6faa84 table of 3 ints: widget, +0x70 of the object),
-   and for the right button resets the selection / the view to the stored one (the "RaumWechseln_s" sound when a room is entered through the 0xfd item); the left button hands over to 0x52a050
-   and updates the shown subject (0x6f23e4 / 0x6f23e8) through 0x52e190; ROUGH */
+typedef struct SVFRAME {                /* 8 bytes, an entry of the frame stack sv_Frames (sv_RunFrame: "MASTER()") */
+    int cb;                             /* 0x00, the frame callback registered at this depth (sv_RunFrame's cb) */
+    char pad04[4];
+} SVFRAME;
+#define sv_Frames (*(SVFRAME (*)[0x80])((char *)&ai_Unk75f280 + 0x500))  /* 0x75f780, the frame stack, indexed by sv_FrameDepth (sv_RunFrame pushes and pops it) */
 
-void sv_Unk52d940(unsigned fl)
+/* 0x52d940, the per-frame input step of the game screen (sv_RunFrame, mask 0x100; fl is the frame mask): a right
+   click (dm_L.rup) that has something to undo clicks ("MausclickRechts_s_01"); while an event window is active
+   (he_ActiveSlot) only a right click or Enter acts on it: the ceremony kinds 0x11 / 0x26 / 0x69 are confirmed
+   (he_SlotConfirmed), the tutorial's 0x87 ticks, the others close; a right click on an event bar button resets
+   its event's stage. Mask 0x800: the map key, the animals, then the right click leaves the current view step by
+   step: the selection, a room entered through a contact ("RaumWechseln_s", the contact becomes the building's
+   main room), a running camera placement, a nested frame, the room (back to the main room 0xf2 or out of the
+   building), and puts the camera back on the stored view. Mask 0x100: the panel update; mask 8: the border
+   camera of an own (or 0x1000-permitted) building. The building permissions are recomputed when the building or
+   room changed (sv_PermsBuilding / sv_PermsRoom) or ai_PermsDirty is set
+   @deep Rewritten whole against the original 0x52d940..0x52e049 (every block read and reconciled: the
+   event-window close, the event bar loop, the 0x800 right-click cascade, the camera / frame / room exit,
+   the 0x100 / 8 tails and the permission refresh); 353 -> 3 differing instructions, ours 503 vs the
+   original's 506. The one hunk left: the original tests the slot address inside the event bar loop, 'lea
+   eax,[edx-4]; test eax,eax; je' at 0x52da38 (edx = &he_EventSlots[i].obj, the null test of
+   &he_EventSlots[i]); our source has the test (s != 0) but VC6 folds it in every spelling tried: s =
+   &he_EventSlots[i], a pointer walk s++ with an unsigned and a signed (int) end compare, (int)s != 0, char
+   * / unsigned address arithmetic, &s->ev != 0, &s->obj - 1, s != he_ActiveSlot (0 there), s != the zero
+   local bld, he.h's array without its size. A variant round has to find the spelling (an inline helper,
+   another declaration of the table) that keeps the test. */
+
+void sv_HandleRightClick(unsigned fl)
 {
-    char c;
-    int ok, i, *p, v, who;
-    short *it;
+    char *bld;
+    int placed, i;
+    AIJOB *job;
+    HEEVSLOT *s;
+    char *rb;
+    unsigned short *room;
+    D3EVENT *ev;
 
-    if (SV_I(((unsigned)&dm_L + 0x20)) != 0 && (SV_I(((unsigned)&ai_Unk75f280 + 0x500) + SV_I((unsigned)&sv_FrameDepth) * 8) != (int)ai_GameFrame || SV_I((unsigned)&ai_SelectedCount) != 0 || SV_I((unsigned)&sv_SelectedItem) != 0 || SV_I((unsigned)&sv_SelectedChar) != 0 || SV_I((unsigned)&sv_SelectedObject) != 0))
-        sb_PlaySample(SV_I((unsigned)&snd_SystemBank), "MausclickRechts_s_01", 1, 0x3f, 0x7f, 0, 0);
-    if (SV_I((unsigned)&he_ActiveSlot) != 0) {
-        if (SV_I(((unsigned)&dm_L + 0x20)) == 0 && *(char *)(unsigned)&kb_Last != 0x1c)
+    bld = 0;
+    if (dm_L.rup != 0 && (sv_Frames[sv_FrameDepth].cb != (int)ai_GameFrame || ai_SelectedCount != 0 || sv_SelectedItem != 0 || sv_SelectedChar != 0 || sv_SelectedObject != 0))
+        sb_PlaySample(snd_SystemBank, "MausclickRechts_s_01", 1, 0x3f, 0x7f, 0, 0);
+    if (he_ActiveSlot != 0) {
+        if (dm_L.rup == 0 && kb_Last != 0x1c)
             return;
-        if (*(char **)SV_I((unsigned)&he_ActiveSlot) != 0) {
-            c = **(char **)SV_I((unsigned)&he_ActiveSlot);
-            if (c == 0x11 || c == 0x26 || c == 0x69) {
-                SV_I((unsigned)&he_SlotConfirmed) = 1;
-                goto l9f2;
-            }
-            if (c == (char)-0x79) {
-                ai_Unk575860();
-                goto l9f2;
-            }
-        }
-        he_Unk53dcb0(0);
-l9f2:
+        job = he_ActiveSlot->ev;
+        if (job != 0 && (job->kind == 0x11 || job->kind == 0x26 || job->kind == 0x69))
+            he_SlotConfirmed = 1;
+        else if (job != 0 && job->kind == (char)0x87)
+            ai_TutorialTick();
+        else
+            he_ActivateSlot(0);
         di_ClearEvents(0x10);
-        if (*(char *)(unsigned)&kb_Last != 0x1c)
-            return;
-        *(char *)(unsigned)&kb_Last = 0;
+        if (kb_Last == 0x1c)
+            kb_Last = 0;
         return;
     }
-    if (SV_I(((unsigned)&dm_L + 0x20)) != 0 && d2_PointerObj != -1) {
-        i = 0;
-        p = (int *)(unsigned)&full_data_6faa84;
-        do {
-            if (*p != -1 && p != (int *)4 && d2_PointerObj == *(int *)(SV_I((unsigned)&d2_Objs) + *p * 0x2ec)) {
-                *(int *)(SV_I((unsigned)&he_EventSlots + i * 12) + 0x70) = -1;
-                SV_I((unsigned)&he_SlotConfirmed) = 0;
+    if (dm_L.rup != 0 && d2_PointerObj != -1) {
+        for (i = 0; i < 16; i++) {
+            s = &he_EventSlots[i];
+            if (s->obj != -1 && s != 0 && d2_PointerObj == ((D2OBJ *)d2_Objs)[s->obj].id) {
+                he_EventSlots[i].ev->stage = -1;
+                he_SlotConfirmed = 0;
                 di_ClearButtons();
                 break;
             }
-            p += 3;
-            i++;
-        } while ((int)p < ((unsigned)((unsigned)full_data_6faa84 + 0xbc) + 0x4));
+        }
     }
     if ((fl & 0x800) == 0)
-        goto l72;
-    ai_Unk591170();
+        goto done;
+    ai_HandleMapKey();
     anm_Update();
-    if (SV_I(((unsigned)&dm_L + 0x20)) != 0 && SV_I((unsigned)&sv_SelectedObject) != 0 && SV_I(((unsigned)&ai_Unk75f280 + 0x500) + SV_I((unsigned)&sv_FrameDepth) * 8) == (int)ai_GameFrame) {
+    if (dm_L.rup != 0 && sv_SelectedObject != 0 && sv_Frames[sv_FrameDepth].cb == (int)ai_GameFrame)
         sv_ResetSelection();
-        goto l72;
-    }
-    if (SV_I((unsigned)&ai_PlayerBuilding) == 0) {
-        if (SV_I((unsigned)&ai_FallbackBuilding) != 0 && SV_I((unsigned)&sv_PanelShown) != 0 && SV_I((unsigned)&sv_ClickedContact) != 0 && SV_I((unsigned)&ai_SelectedCount) == 0 && sv_OtherSelected == 0) {
-            SV_I((unsigned)&sv_PopRequest) = SV_I((unsigned)&sv_FrameDepth) - SV_I((unsigned)&sv_FrameBase) + 1;
-            d3_SetObjectPos(sv_CameraObj, (unsigned)&sv_ViewPosX);
-            d3_SetObjectRot(sv_CameraObj, (unsigned)&sv_ViewRotX);
-            goto lbb6;
-        }
-    } else if (SV_I((unsigned)&sv_ClickedContact) != 0 && SV_I((unsigned)&ai_SelectedCount) == 0 && sv_OtherSelected == 0) {
-        sb_PlaySample(snd_RoomBank, "RaumWechseln_s", 1, 0x3f, 0x7f, 0, 0);
-        *(short *)(SV_I((unsigned)&ai_PlayerBuilding) + 0x29) = *(short *)SV_I((unsigned)&sv_ClickedContact);
-        SV_I((unsigned)&sv_PopRequest) = SV_I((unsigned)&sv_FrameDepth) - SV_I((unsigned)&sv_FrameBase) + 1;
-        d3_SetObjectPos(sv_CameraObj, (unsigned)&sv_ViewPosX);
-        d3_SetObjectRot(sv_CameraObj, (unsigned)&sv_ViewRotX);
-lbb6:
-        SV_I((unsigned)&sv_BorderViewX) = 0;
-        SV_I((unsigned)&sv_BorderViewY) = 0;
-    }
-    if (SV_I(((unsigned)&dm_L + 0x20)) != 0 && (sv_OtherSelected != 0 || (SV_I((unsigned)&sv_SelectedItem) != 0 && ai_Goods[*(unsigned short *)SV_I((unsigned)&sv_SelectedItem) * 0x41] == 0x1d))) {
-        sv_ResetSelection();
-        di_ClearEvents(0x10);
-    }
-    if ((SV_I((unsigned)&ai_PlayerBuilding) != 0 && ai_ScriptQuery(0x1a, SV_I((unsigned)&ai_PlayerBuilding), 0, *(unsigned short *)SV_I((unsigned)&sv_PanelShown)) == 0)
-        || (SV_I((unsigned)&ai_FallbackBuilding) != 0 && ai_ScriptQuery(0x1c, SV_I((unsigned)&ai_FallbackBuilding), 0, 0) == 0))
-        di_ClearAxes();
-    if (SV_I((unsigned)&ai_SelectedCount) != 0 || sv_OtherSelected != 0 || SV_I(((unsigned)&dm_L + 0x20)) == 0)
-        goto l72;
-    ok = 0;
-    if (SV_I((unsigned)&d3t_CamMove) != 0) {
-        if (SV_I((unsigned)&ai_PlayerBuilding) == 0 && SV_I((unsigned)&ai_FallbackBuilding) == 0)
-            goto l72;
-        if (d3_VecEqual((char *)(unsigned)&d3t_PlaceTarget, (char *)(unsigned)&sv_ViewPosX, 0.1f) == 0) {
-            d3anim_FreePath(sv_CameraObj);
-            SV_I((unsigned)&d3t_CamMove) = 0;
-            SV_I((unsigned)&d3t_CamMoving) = 0;
-        } else {
-            d3anim_FreePath(sv_CameraObj);
-            SV_I((unsigned)&d3t_CamMove) = 0;
-            SV_I((unsigned)&d3t_CamMoving) = 0;
-            ok = 1;
-            d3_SetObjectPos(sv_CameraObj, (unsigned)&sv_ViewPosX);
-            d3_SetObjectRot(sv_CameraObj, (unsigned)&sv_ViewRotX);
-        }
-    }
-    if (SV_I((unsigned)&sv_FrameDepth) <= SV_I((unsigned)&sv_FrameBase) || ok) {
-        if (d3_VecEqual(sv_CameraObj + 0x84, (char *)(unsigned)&sv_ViewRotX, 0.1f) != 0 || d3_VecEqual(sv_CameraObj + 0x4c, (char *)(unsigned)&sv_ViewPosX, 0.1f) != 0 || ok) {
-            if (SV_I((unsigned)&ai_PlayerBuilding) == 0 && SV_I((unsigned)&ai_FallbackBuilding) == 0 && SV_I((unsigned)&sv_PanelShown) == 0) {
-                if (SV_I((unsigned)&sv_FrameDepth) == SV_I((unsigned)&sv_FrameBase) && SV_I((unsigned)&sv_SelectedItem) != 0)
-                    sv_ResetSelection();
-                goto l72;
+    else {
+        if (ai_PlayerBuilding != 0) {
+            if (sv_ClickedContact != 0 && ai_SelectedCount == 0 && sv_OtherSelected == 0) {
+                sb_PlaySample(snd_RoomBank, "RaumWechseln_s", 1, 0x3f, 0x7f, 0, 0);
+                ((AIBLD *)ai_PlayerBuilding)->mainRoom = ((AIOBJ *)sv_ClickedContact)->id;
+                sv_PopRequest = sv_FrameDepth - sv_FrameBase + 1;
+                d3_SetObjectPos(d3_Camera, (D3VECTOR *)sv_ViewPos);
+                d3_SetObjectRot(d3_Camera, (D3VECTOR *)sv_ViewRot);
+                sv_BorderViewX = 0;
+                sv_BorderViewY = 0;
             }
-            it = 0;
-            if (SV_I((unsigned)&sv_PanelShown) == 0) {
-                if (SV_I((unsigned)&ai_FallbackBuilding) != 0 || SV_I((unsigned)&ai_PlayerBuilding) != 0) {
-                    SV_I((unsigned)&ai_FallbackBuilding) = 0;
-                    SV_I((unsigned)&ai_PlayerBuilding) = 0;
-                    goto l1a;
-                }
+        } else if (ai_FallbackBuilding != 0 && sv_PanelShown != 0 && sv_ClickedContact != 0 && ai_SelectedCount == 0 && sv_OtherSelected == 0) {
+            sv_PopRequest = sv_FrameDepth - sv_FrameBase + 1;
+            d3_SetObjectPos(d3_Camera, (D3VECTOR *)sv_ViewPos);
+            d3_SetObjectRot(d3_Camera, (D3VECTOR *)sv_ViewRot);
+            sv_BorderViewX = 0;
+            sv_BorderViewY = 0;
+        }
+        if (dm_L.rup != 0 && (sv_OtherSelected != 0 || (sv_SelectedItem != 0 && ai_GoodsT[*sv_SelectedItem].type == 0x1d))) {
+            sv_ResetSelection();
+            di_ClearEvents(0x10);
+        }
+        if ((ai_PlayerBuilding != 0 && ai_ScriptQuery(0x1a, (int)ai_PlayerBuilding, 0, *sv_PanelShown) == 0)
+            || (ai_FallbackBuilding != 0 && ai_ScriptQuery(0x1c, (int)ai_FallbackBuilding, 0, 0) == 0))
+            di_ClearAxes();
+        if (ai_SelectedCount != 0 || sv_OtherSelected != 0 || dm_L.rup == 0)
+            goto done;
+        placed = 0;
+        if (d3t_CamMove != 0) {
+            if (ai_PlayerBuilding == 0 && ai_FallbackBuilding == 0)
+                goto done;
+            if (d3_VecEqual(&d3t_PlaceTarget, (D3VECTOR *)sv_ViewPos, 0.1f) != 0) {
+                d3anim_FreePath(d3_Camera);
+                d3t_CamMove = 0;
+                d3t_CamMoving = 0;
+                placed = 1;
+                d3_SetObjectPos(d3_Camera, (D3VECTOR *)sv_ViewPos);
+                d3_SetObjectRot(d3_Camera, (D3VECTOR *)sv_ViewRot);
             } else {
-                if (SV_I((unsigned)&ai_PlayerBuilding) == 0) {
-                    if (SV_I((unsigned)&ai_FallbackBuilding) == 0)
-                        goto l1a;
-                    if (ai_ScriptQuery(0x1c, SV_I((unsigned)&ai_FallbackBuilding), 0, 0) == 1) {
-                        c = SV_C(((unsigned)&ai_Selected + 0x29))[ai_PlayerId * 0x21c];
-                        v = SV_I((unsigned)&ai_FallbackBuilding);
-                        goto lbd;
-                    }
-                } else {
-                    if (ai_ScriptQuery(0x1a, SV_I((unsigned)&ai_PlayerBuilding), 0, *(unsigned short *)SV_I((unsigned)&sv_PanelShown)) == 1) {
-                        c = SV_C(((unsigned)&ai_Selected + 0x29))[ai_PlayerId * 0x21c];
-                        v = SV_I((unsigned)&ai_PlayerBuilding);
-lbd:
-                        if (c == 0 && v != 0 && *(unsigned short *)SV_I((unsigned)&sv_PanelShown) == 0xf2)
-                            it = (short *)((void *(*)(unsigned char *))gm_GetGebaeudeHauptraum)(v);
-                    }
-                }
-                if (SV_I((unsigned)&ai_PlayerBuilding) == 0 || it == 0 || (int)it == SV_I((unsigned)&sv_PanelShown)) {
-l1a:
-                    SV_I((unsigned)&sv_PanelShown) = 0;
-                } else
-                    ai_SwitchRoom(-1, *it);
+                d3anim_FreePath(d3_Camera);
+                d3t_CamMove = 0;
+                d3t_CamMoving = 0;
             }
-            SV_I((unsigned)&sv_PopRequest) = 1;
-            if (SV_I((unsigned)&ai_PlayerBuilding) != 0 && SV_I((unsigned)&sv_PanelShown) == 0)
-                SV_I((unsigned)&ai_PlayerBuilding) = 0;
-            d3_SetObjectPos(sv_CameraObj, (unsigned)&sv_ViewPosX);
-            d3_SetObjectRot(sv_CameraObj, (unsigned)&sv_ViewRotX);
-            SV_I((unsigned)&sv_BorderViewX) = 0;
-            SV_I((unsigned)&sv_BorderViewY) = 0;
-            goto l72;
         }
-        if (SV_I((unsigned)&ai_PlayerBuilding) != 0 || SV_I((unsigned)&ai_FallbackBuilding) != 0)
-            sv_MoveCameraToView();
-    } else {
-        SV_I((unsigned)&sv_PopRequest) = 1;
-        if (SV_I((unsigned)&sv_FocusDepth) < SV_I((unsigned)&sv_FrameDepth) - 1)
-            goto l72;
-        if (SV_I((unsigned)&ai_PlayerBuilding) != 0 || SV_I((unsigned)&ai_FallbackBuilding) != 0)
-            sv_MoveCameraToView();
-        SV_I((unsigned)&sv_FocusDepth) = SV_I((unsigned)&sv_FrameDepth) - SV_I((unsigned)&sv_PopRequest);
+        if (sv_FrameDepth > sv_FrameBase && !placed) {
+            /* a nested frame: pop it, the camera returns once the depth is back at sv_FocusDepth */
+            sv_PopRequest = 1;
+            if (sv_FocusDepth < sv_FrameDepth - 1)
+                goto done;
+            if (ai_PlayerBuilding != 0 || ai_FallbackBuilding != 0)
+                sv_MoveCameraToView();
+            sv_FocusDepth = sv_FrameDepth - sv_PopRequest;
+            if (sv_FocusObject != 0) {
+                ev = ((D3OBJECT *)sv_FocusObject)->events;
+                if (ev != 0 && ev[3].fn != 0)
+                    ev[3].fn(sv_FocusObject, 3, ev[3].name, 0);
+                sv_FocusObject = 0;
+            }
+            sv_ResetSelection();
+        } else if (d3_VecEqual(&d3_Camera->rotation, (D3VECTOR *)sv_ViewRot, 0.1f) == 0 && d3_VecEqual(&d3_Camera->pos, (D3VECTOR *)sv_ViewPos, 0.1f) == 0 && !placed) {
+            /* the camera is off the stored view: back to it */
+            if (ai_PlayerBuilding != 0 || ai_FallbackBuilding != 0)
+                sv_MoveCameraToView();
+            if (sv_FocusObject != 0) {
+                ev = ((D3OBJECT *)sv_FocusObject)->events;
+                if (ev != 0 && ev[3].fn != 0)
+                    ev[3].fn(sv_FocusObject, 3, ev[3].name, 0);
+                sv_FocusObject = 0;
+            }
+            sv_ResetSelection();
+        } else {
+            /* the camera is at the stored view: leave the room, or the building */
+            if (ai_PlayerBuilding == 0 && ai_FallbackBuilding == 0 && sv_PanelShown == 0) {
+                if (sv_FrameDepth == sv_FrameBase && sv_SelectedItem != 0)
+                    sv_ResetSelection();
+                goto done;
+            }
+            room = 0;
+            if (sv_PanelShown != 0) {
+                rb = 0;
+                if (ai_PlayerBuilding != 0) {
+                    if (ai_ScriptQuery(0x1a, (int)ai_PlayerBuilding, 0, *sv_PanelShown) == 1 && !(ai_CharsT[ai_PlayerId].heldRounds > 0))
+                        rb = ai_PlayerBuilding;
+                } else if (ai_FallbackBuilding != 0) {
+                    if (ai_ScriptQuery(0x1c, (int)ai_FallbackBuilding, 0, 0) == 1 && !(ai_CharsT[ai_PlayerId].heldRounds > 0))
+                        rb = ai_FallbackBuilding;
+                }
+                if (rb != 0 && *sv_PanelShown == 0xf2)
+                    room = (unsigned short *)((void *(*)(unsigned char *))gm_GetGebaeudeHauptraum)((unsigned char *)rb);
+                if (ai_PlayerBuilding == 0 || room == 0 || room == sv_PanelShown)
+                    sv_PanelShown = 0;
+                else
+                    ai_SwitchRoomI(-1, *room);
+            } else if (ai_FallbackBuilding != 0 || ai_PlayerBuilding != 0) {
+                ai_FallbackBuilding = 0;
+                ai_PlayerBuilding = 0;
+                sv_PanelShown = 0;
+            }
+            sv_PopRequest = 1;
+            if (ai_PlayerBuilding != 0 && sv_PanelShown == 0)
+                ai_PlayerBuilding = 0;
+            d3_SetObjectPos(d3_Camera, (D3VECTOR *)sv_ViewPos);
+            d3_SetObjectRot(d3_Camera, (D3VECTOR *)sv_ViewRot);
+            sv_BorderViewX = 0;
+            sv_BorderViewY = 0;
+        }
     }
-    if (SV_I((unsigned)&sv_FocusObject) != 0) {
-        v = *(int *)(SV_I((unsigned)&sv_FocusObject) + 0x1d4);
-        if (v != 0 && *(int *)(v + 0x18c) != 0)
-            ((int (*)())*(int *)(v + 0x18c))(SV_I((unsigned)&sv_FocusObject), 3, v + 400, 0);
-        SV_I((unsigned)&sv_FocusObject) = 0;
-    }
-    sv_ResetSelection();
-l72:
+done:
     if ((fl & 0x100) != 0)
         sv_UpdatePanel();
-    who = SV_I((unsigned)&ai_PlayerBuilding);
-    if (who == 0 && (who = SV_I((unsigned)&ai_FallbackBuilding)) == 0)
-        who = 0;
-    if ((fl & 8) != 0 && who != 0) {
-        it = (short *)SV_I((unsigned)&sv_PanelShown);
-        if (it == 0)
-            it = 0;
-        sv_PanelPerms = gm_PermissionBits(ai_PlayerId, who, it, 0);
-        if (*(unsigned short *)(who + 0x27) == ai_PlayerId || (sv_PanelPerms & 0x1000) != 0)
+    if (ai_PlayerBuilding != 0)
+        bld = ai_PlayerBuilding;
+    else if (ai_FallbackBuilding != 0)
+        bld = ai_FallbackBuilding;
+    if ((fl & 8) != 0 && bld != 0) {
+        if (sv_PanelShown != 0)
+            sv_PanelPerms = gm_PermissionBits(ai_PlayerId, (unsigned char *)bld, sv_PanelShown, 0);
+        else
+            sv_PanelPerms = gm_PermissionBits(ai_PlayerId, (unsigned char *)bld, 0, 0);
+        if (((AIBLD *)bld)->owner == ai_PlayerId || (sv_PanelPerms & 0x1000) != 0)
             sv_BorderCameraView();
     }
-    if (SV_I((unsigned)&sv_PermsBuilding) != who || SV_I((unsigned)&sv_PermsRoom) != SV_I((unsigned)&sv_PanelShown) || SV_I((unsigned)&ai_Unk6f2318) != 0) {
-        SV_I((unsigned)&ai_BuildingPerms) = gm_PermissionBits(ai_PlayerId, who, SV_I((unsigned)&sv_PanelShown), 0);
+    if (sv_PermsBuilding != bld || sv_PermsRoom != sv_PanelShown || ai_PermsDirty != 0) {
+        ai_BuildingPerms = gm_PermissionBits(ai_PlayerId, (unsigned char *)bld, sv_PanelShown, 0);
         sv_ReleaseNamePlates();
-        SV_I((unsigned)&sv_PermsRoom) = SV_I((unsigned)&sv_PanelShown);
-        SV_I((unsigned)&ai_Unk6f2318) = 0;
-        SV_I((unsigned)&sv_PermsBuilding) = who;
+        sv_PermsBuilding = bld;
+        sv_PermsRoom = sv_PanelShown;
+        ai_PermsDirty = 0;
     }
 }
 
@@ -7396,7 +7412,7 @@ int sv_RunFrame(int cb, unsigned mask)
     if ((mask & 4) != 0 && (d2_MouseUpdate(), SV_I((unsigned)&main_Inactive) != 0))
         SV_I((unsigned)&ai_FrameWait) = 1;
     if (SV_I((unsigned)&sv_PopRequest) == 0 && (mask & 0x100) != 0 && (mask & 0x100000) == 0)
-        sv_Unk52d940(mask);
+        sv_HandleRightClick(mask);
     if (cb == 0) {
         r = 1;
     } else {

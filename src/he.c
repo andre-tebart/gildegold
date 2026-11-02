@@ -108,7 +108,7 @@ extern int d3t_Snow;
 extern int ai_GameOver;
 extern char * ai_Goods;
 extern GAPDATA full_data_5f1890[];
-extern int ai_Unk6f2318;
+extern int ai_PermsDirty;
 extern char *ai_Unk5fb5b0;
 extern char * ai_PlayerBuilding;
 extern int ai_Unk75f280[576];
@@ -684,7 +684,7 @@ void he_Unk53daf0(void)
 }
 /* 0x53dcb0, makes the slot `sl` the active event window (0x6f262c), closing the previous one */
 
-void he_Unk53dcb0(int *sl)
+void he_ActivateSlot(int *sl)
 {
     char *r;
 
@@ -8886,7 +8886,7 @@ reset:
 
 int ai_Unk578120();
 int ai_Unk577740();
-int ai_Unk575860();
+int ai_TutorialTick();
 int ai_Unk577820();
 void ai_Unk578150(void);
 void sv_PopTo(int v);
@@ -8912,7 +8912,7 @@ void he_Unk552bc0(int ev)
         *(int *)(ev + 0x70) = (ai_Unk577740() != 0) + 1;
         break;
     case 1:
-        if (ai_Unk575860() != 0)
+        if (ai_TutorialTick() != 0)
             *(int *)(ev + 0x70) = 2;
         break;
     case 2:
@@ -9670,7 +9670,7 @@ void he_Unk554860(int ev)
             he_FreeEvent((int *)ev);
             return;
         }
-        U_I((unsigned)&ai_Unk6f2318) = 1;
+        U_I((unsigned)&ai_PermsDirty) = 1;
         *(int *)(ev + 0xbc) = *(int *)(p + 4);
         b = gm_BuildQuery(1, 1, *(int *)(ev + 0x10));
         if (b == 0) {
@@ -10321,7 +10321,7 @@ void he_Unk557190(int ev)
         if (*(unsigned char *)(unsigned)&ai_GameState != 2)
             sb_PlaySample(U_I((unsigned)&snd_SystemBank), "NeueMessage_s_01", 1, 0x3f, 0x7f, 0, 0);
         if ((fl & 8) != 0)
-            he_Unk53dcb0(*(int *)(ev + 0x74));
+            he_ActivateSlot(*(int *)(ev + 0x74));
         if ((fl & 0x10) != 0) {
             strcpy(speak, (char *)(*(int *)(ev + 0x7c) + strlen((char *)*(int *)(ev + 0x7c)) + 1));
             *(int *)(ev + 0xec) = snd_QueueVoice(-7, 0, speak, 0, 0x7d0);
