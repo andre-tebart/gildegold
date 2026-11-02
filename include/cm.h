@@ -338,7 +338,7 @@ int ai_Unk4e5210();  /* 0x4e5210 */
 int gv_AddEvidence();  /* 0x4f3640 */
 int gv_FreeCrimeSlot();  /* 0x4f36b0 */
 int gv_EvidenceSlot();  /* 0x4f3780 */
-int unk_Unk4f37e0();  /* 0x4f37e0 */
+int gv_RetireCrime();  /* 0x4f37e0 */
 void ord_AddGridAmount();  /* 0x4f8460 */
 int unk_Unk4f86a0();  /* 0x4f86a0 */
 void ord_AdvanceRatingBase(void);  /* 0x4f9c00, ord.c */

@@ -5021,7 +5021,7 @@ void sv_Unk5286a0(char *b);                     /* 0x5286a0 */
 void sv_Unk5282f0(char *b);                     /* 0x5282f0 */
 void ch_Unk402540();                     /* 0x402540 */
 int ch_Delete();                     /* 0x4028a0 */
-void ai_Unk5a9430(int param_1, unsigned short *param_2);                     /* 0x5a9430 */
+void ai_ShowEvidenceVoidNews(int param_1, unsigned short *param_2);                     /* 0x5a9430 */
 int gm_FreeList();                     /* 0x500140 */
 int gm_TitlesLeft();                     /* 0x504ce0 */
 float gm_GetSkill(char *c, int skill);                     /* 0x504ec0 */
@@ -5655,7 +5655,7 @@ void unk_Unk503c60(int c, int mode)
             q = (int *)((char *)q + 0x2d);
         } while ((int)q < ((unsigned)((unsigned)ai_Unk91f716 + 0x59fe) + 0x2));
         if (cnt != 0 && peer != 0 && peer != p)
-            ai_Unk5a9430(peer, p);
+            ai_ShowEvidenceVoidNews(peer, p);
     }
     gm_FreeList(ai_Chars[c] + 0x178);
     if (*(int *)(ai_Chars[c] + 0x184) != 0) {

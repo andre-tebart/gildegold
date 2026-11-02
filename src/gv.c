@@ -3236,7 +3236,7 @@ int gv_FreeCrimeSlot(void)
 }
 /* 0x4f36e0, the index of the record with the id (+0) in 0x91f700 or -1 */
 
-int unk_Unk4f36e0(int id)
+int gv_FindCrime(int id)
 {
     int i;
     int *p;
@@ -3374,7 +3374,7 @@ int unk_Unk4f3fe0(int p, int *out, unsigned t)
             *o++ = -1;
         do {
             if (q[-1] == *(int *)(ai_Chars[t & 0xffff] + 4)) {
-                k = unk_Unk4f36e0(*q);
+                k = gv_FindCrime(*q);
                 if (k != -1 && *(int *)(gv_Graveyard + 0x16 + k * 0x2d) == p) {
                     out[n] = k;
                     n++;
@@ -3406,7 +3406,7 @@ int unk_Unk4f4080(int p, int *out, unsigned t)
             *o++ = -1;
         do {
             if (q[-1] == *(int *)(ai_Chars[t & 0xffff] + 4)) {
-                k = unk_Unk4f36e0(*q);
+                k = gv_FindCrime(*q);
                 if (k != -1 && *(int *)(gv_Graveyard + 0x16 + k * 0x2d) == p) {
                     out[n] = *(int *)(gv_Graveyard + k * 0x2d);
                     n++;
@@ -3433,7 +3433,7 @@ int unk_Unk4f4130(int p, unsigned t)
     if ((t & 0xffff) * 0x21c != -(unsigned)&ai_Chars) {
         id = *(int *)(ai_Chars[t & 0xffff] + 4);
         q = (int *)(unk_Tab91b6e0 + 4);
-        while (q[-1] != id || (k = unk_Unk4f36e0(*q)) == -1 || *(int *)(gv_Graveyard + 0x16 + k * 0x2d) != p || (n++, n < 0x21)) {
+        while (q[-1] != id || (k = gv_FindCrime(*q)) == -1 || *(int *)(gv_Graveyard + 0x16 + k * 0x2d) != p || (n++, n < 0x21)) {
             q += 2;
             if ((int)q > ((unsigned)unk_Tab91b6e0 + 0x4003))
                 return n;
@@ -3574,7 +3574,7 @@ int gv_GetGraveInfo(int id, short *a, int *v, short *c, unsigned *k)
     int rec[9];
 
     if (id != -1) {
-        i = unk_Unk4f36e0(id);
+        i = gv_FindCrime(id);
         if (i != -1) {
             if (gv_GetTableRecord(*(unsigned char *)(gv_Graveyard + 0x1c + i * 0x2d), rec) != 0 && rec[8] != 0) {
                 ch = (short *)gm_FindChar(*(int *)(gv_Graveyard + 0x16 + i * 0x2d));
@@ -3625,46 +3625,42 @@ void gv_SendCrimes(void)
         }
     }
 }
-/* 0x4f37e0, retires the record of the id (0x4f36e0): its counter (short +0x1a) counts down, with mode m = 0 it stays while the counter is not 0, states other than 1 stay unless m forces it; the owner (0x505df0 of +0x16)
-   is told (0x5a9430) when the player's pair is removed; the pairs of the id are cleared and the record freed (state 0, ids -1). 3 no record, 2 counting, 1 kept, 0 done */
+/* 0x4f37e0, retires the crime record of id (message 0x23): its count counts down; it stays (2) while the count is not 0
+   unless force, and (1) while it is handed over (state above 1) without force or free. Else the scene's grid amount of the
+   law is taken back (ord_SubGridAmount), every evidence pair of the crime is cleared (telling the player whose pair it
+   was, ai_ShowEvidenceVoidNews, without force) and the record freed (state 0, culprit and id -1): 0. 3 when there is no
+   record of id. */
 
-int unk_Unk4f37e0(int id, int m)
+int gv_RetireCrime(int id, int force)
 {
-    int k, st;
-    short cnt;
-    int *q;
-    int *o;
-    unsigned short pl;
+    int k, i;
+    short count;
+    short *culprit;
 
-    k = unk_Unk4f36e0(id);
+    k = gv_FindCrime(id);
     if (k == -1)
         return 3;
-    cnt = *(short *)(gv_Graveyard + 0x1a + k * 0x2d);
-    if (cnt > 0)
-        *(short *)(gv_Graveyard + 0x1a + k * 0x2d) = cnt - 1;
-    if (*(short *)(gv_Graveyard + 0x1a + k * 0x2d) != 0 && m == 0)
+    count = gv_CrimesT[k].count;
+    if (count > 0)
+        gv_CrimesT[k].count = count - 1;
+    if (gv_CrimesT[k].count != 0 && force == 0)
         return 2;
-    st = *(int *)(gv_Graveyard + 0x25 + k * 0x2d);
-    if (st != 1 && (m == 0 || st == 0))
+    if (gv_CrimesT[k].state != 1 && (force == 0 || gv_CrimesT[k].state == 0))
         return 1;
-    o = (int *)gm_FindChar(*(int *)(gv_Graveyard + 0x16 + k * 0x2d));
-    ord_SubGridAmount(*(int *)(gv_Graveyard + 0x21 + k * 0x2d), *(int *)(gv_Graveyard + 0x1c + k * 0x2d));
-    q = (int *)(unk_Tab91b6e0 + 4);
-    pl = ai_PlayerId;
-    do {
-        if (id == *q) {
-            if (pl != 0xffff && q[-1] == *(int *)(ai_Chars[pl] + 4) && o != 0 && m == 0) {
-                ai_Unk5a9430(ai_Chars[pl], o);
-                pl = ai_PlayerId;
-            }
-            q[-1] = -1;
-            *q = -1;
+    culprit = gm_FindChar(gv_CrimesT[k].culprit);
+    ord_SubGridAmount(gv_CrimesT[k].place, gv_CrimesT[k].law);
+    for (i = 0; i < 0x800; i++) {
+        if (id == ai_Evidence[i][1]) {
+            if (ai_PlayerId != 0xffff && ai_Evidence[i][0] == gv_CharsT[ai_PlayerId].netId && culprit != 0 && force == 0) {
+                ai_ShowEvidenceVoidNews((int)&gv_CharsT[ai_PlayerId], (unsigned short *)culprit);
+                        }
+            ai_Evidence[i][0] = -1;
+            ai_Evidence[i][1] = -1;
         }
-        q += 2;
-    } while ((int)q < ((unsigned)unk_Tab91b6e0 + 0x4004));
-    *(int *)(gv_Graveyard + 0x25 + k * 0x2d) = 0;
-    *(int *)(gv_Graveyard + 0x16 + k * 0x2d) = -1;
-    *(int *)(gv_Graveyard + k * 0x2d) = -1;
+    }
+    gv_CrimesT[k].state = 0;
+    gv_CrimesT[k].culprit = -1;
+    gv_CrimesT[k].id = -1;
     return 0;
 }
 /* 0x4f4390, sorts n records of 0x2d bytes at r by the byte +0x1c, descending (a bubble sort with whole-record swaps) */
@@ -3749,7 +3745,7 @@ int unk_Unk4f3a30(int p, int n)
     if (m > 0) {
         do {
             if (flag[j] != 0)
-                ai_Unk5a9430(who[j], c);
+                ai_ShowEvidenceVoidNews(who[j], c);
             j++;
         } while (j < m);
     }
@@ -3815,7 +3811,7 @@ int unk_Unk4f3b40(int p, int n, int *ids)
     if (m > 0) {
         do {
             if (flag[i] != 0)
-                ai_Unk5a9430(who[i], c);
+                ai_ShowEvidenceVoidNews(who[i], c);
             i++;
         } while (i < m);
     }
@@ -3842,7 +3838,7 @@ int gv_RankRecordOwners(int *ids, int *cnt, unsigned short t)
     id = *(int *)(ai_Chars[t & 0xffff] + 4);
     do {
         if (q[-1] == id) {
-            k = unk_Unk4f36e0(*q);
+            k = gv_FindCrime(*q);
             if (k != -1 && *(int *)(gv_Graveyard + 0x25 + k * 0x2d) == 1) {
                 *w = *(int *)(gv_Graveyard + 0x16 + k * 0x2d);
                 w++;
@@ -3912,7 +3908,7 @@ int unk_Unk4f3dd0(int *ids, int *c1, int *c2, unsigned t)
     id = *(int *)(ai_Chars[t & 0xffff] + 4);
     do {
         if (q[-1] == id) {
-            k = unk_Unk4f36e0(*q);
+            k = gv_FindCrime(*q);
             if (k != -1 && *(int *)(gv_Graveyard + 0x25 + k * 0x2d) != 0) {
                 rec[m] = gv_Graveyard + k * 0x2d;
                 m++;

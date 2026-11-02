@@ -3689,7 +3689,7 @@ int ai_Unk4c8e70(G17MSG *m, G17STAT *s)
 
 int ai_Unk4c9090(G17MSG *m, G17STAT *s)
 {
-    switch (unk_Unk4f37e0(G17_I(*m, 0), G17_I(*m, 4))) {
+    switch (gv_RetireCrime(G17_I(*m, 0), G17_I(*m, 4))) {
     case 1:
         return 1;
     case 2:

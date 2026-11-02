@@ -368,7 +368,7 @@ int gv_TableRecordText(char *out, int i);    /* 0x4f2fe0 */
 int gv_FindCrimesByState(int state, int *out);    /* 0x4f3610 */
 int gv_AddEvidence(int crime, int owner);        /* 0x4f3640 */
 int gv_FreeCrimeSlot(void);                /* 0x4f36b0 */
-int unk_Unk4f36e0(int id);              /* 0x4f36e0 */
+int gv_FindCrime(int id);              /* 0x4f36e0 */
 int gv_EvidenceSlot(int a, int b);        /* 0x4f3780 */
 
 int unk_Unk4f3910(int a, int b, int s, int m);  /* 0x4f3910 */
@@ -389,7 +389,7 @@ int gm_Unk505e60(unsigned id, int again);                     /* 0x505e60 */
 float gm_Liking();                   /* 0x50c550 */
 
 void gv_SendCrimes(void);               /* 0x4f3700 */
-int unk_Unk4f37e0(int id, int m);       /* 0x4f37e0 */
+int gv_RetireCrime(int id, int m);       /* 0x4f37e0 */
 void unk_Unk4f4390(int n, char *r);     /* 0x4f4390 */
 char * he_FindEvent(int n, ...);         /* 0x53e400, as he.h */
 int cm_GetSlotState();                     /* 0x4c3ae0 */
@@ -554,7 +554,7 @@ int unk_Unk4f86a0(int x, int y, int z);  /* 0x4f86a0 */
 int ord_GetKindRecord(int i, int *out);     /* 0x4f8890 */
 
 void ord_AddGridAmount(int who, int kind, int *px, int *py);  /* 0x4f8460 */
-void ord_SubGridAmount(int who, int kind);  /* 0x4f8590 */
+void ord_SubGridAmount(int who, unsigned char kind);  /* 0x4f8590 */
 
 int unk_Unk4f8700(char *c);             /* 0x4f8700 */
 
