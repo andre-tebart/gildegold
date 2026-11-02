@@ -254,9 +254,9 @@ typedef struct SVOBJREC {
 } SVOBJREC;
 typedef struct SVPLATE {                /* 200 bytes, a name plate record: the object it belongs to */
     char *obj;                          /* +0x00, the object that shows the plate, 0 = free */
-    char pad04[0x40];
-    short look;                         /* +0x44, the pointer look while the object is hovered (sv_HoverPick) */
-    short pad46;
+    char name[0x40];                    /* +0x04, the object's name (sv_RegisterNamePlate finds the plate by it) */
+    int look;                           /* +0x44, the pointer look while the object is hovered (sv_HoverPick reads its
+                                           low word; sv_RegisterNamePlate stores it whole) */
     char text[0x80];                    /* +0x48, the plate's text, the hover caption (sv_HoverPick) */
 } SVPLATE;
 typedef struct SVPLATEOBJ {             /* the 3D object fields the plate code clears */
@@ -6139,50 +6139,42 @@ void sv_ReleaseNamePlates(void)
         p++;
     } while ((int)p < (int)(sv_NamePlates + 0x20));
 }
-/* 0x52e1c0, registers (or finds) the plate for the object called name (entry: +0 the object, +4 its name, +0x44 b, +0x48 the text, 200 bytes each); returns the object or 0 */
+/* 0x52e1c0, registers the name plate of the object called name (sv_NamePlates, 0x20 records): an existing plate of that
+   name is kept, else the first free record gets the object (d3t_FindObject), the pointer look and the text; the
+   object becomes pickable (mask 1). Returns the object, 0 when it is not found or all records are used (the
+   "RegisterStatusText()" message is formatted but not shown) */
 
-int sv_RegisterNamePlate(char *name, char *text, int b)
+int sv_RegisterNamePlate(char *name, char *text, int look)
 {
-    int i, o;
-    char *e;
+    int i;
     char msg[0x100];
 
-    i = 0;
-    e = (char *)((unsigned)&sv_NamePlates + 0x4);
-    do {
-        if (*(int *)(e - 4) != 0 && strcmp(e, name) == 0) {
-            *(int *)(SV_I((unsigned)&sv_NamePlates + i * 200) + 0x224) = 1;
-            return SV_I((unsigned)&sv_NamePlates + i * 200);
+    for (i = 0; i < 0x20; i++) {
+        if (sv_NamePlates[i].obj != 0 && strcmp(sv_NamePlates[i].name, name) == 0) {
+            ((D3OBJECT *)sv_NamePlates[i].obj)->mask = 1;
+            return (int)sv_NamePlates[i].obj;
         }
-        e += 200;
-        i++;
-    } while ((int)e < ((unsigned)((unsigned)sv_NamePlates + 0x1900) + 0x4));
-    i = 0;
-    e = (char *)(unsigned)&sv_NamePlates;
-    do {
-        if (*(int *)e == 0) {
-            if (i < 0x20) {
-                o = d3t_FindObject(name, 2);
-                SV_I((unsigned)&sv_NamePlates + i * 200) = o;
-                if (o != 0) {
-                    SV_I(((unsigned)&sv_NamePlates + 0x44) + i * 200) = b;
-                    strncpy((char *)(((unsigned)&sv_NamePlates + 0x48) + i * 200), text, 0x80);
-                    strncpy((char *)(((unsigned)&sv_NamePlates + 0x4) + i * 200), name, 0x40);
-                    *(char *)(((unsigned)&sv_NamePlates + 0xc7) + i * 200) = 0;
-                    *(char *)(((unsigned)&sv_NamePlates + 0x43) + i * 200) = 0;
-                    *(int *)(SV_I((unsigned)&sv_NamePlates + i * 200) + 0x224) = 1;
-                    return SV_I((unsigned)&sv_NamePlates + i * 200);
-                }
-                sprintf(msg, "RegisterStatusText(): Object not found: %s", name);
-                return 0;
-            }
+    }
+    for (i = 0; i < 0x20; i++) {
+        if (sv_NamePlates[i].obj == 0)
             break;
-        }
-        e += 200;
-        i++;
-    } while ((int)e < (unsigned)((unsigned)sv_NamePlates + 0x1900));
-    sprintf(msg, "RegisterStatusText(): Too many Objects: %s", name);
-    return 0;
+    }
+    if (i >= 0x20) {
+        sprintf(msg, "RegisterStatusText(): Too many Objects:%s", name);
+        return 0;
+    }
+    sv_NamePlates[i].obj = (char *)d3t_FindObject(name, 2);
+    if (sv_NamePlates[i].obj == 0) {
+        sprintf(msg, "RegisterStatusText(): Object not found: %s", name);
+        return 0;
+    }
+    sv_NamePlates[i].look = look;
+    strncpy(sv_NamePlates[i].text, text, 0x80);
+    strncpy(sv_NamePlates[i].name, name, 0x40);
+    sv_NamePlates[i].text[0x7f] = 0;
+    sv_NamePlates[i].name[0x3f] = 0;
+    ((D3OBJECT *)sv_NamePlates[i].obj)->mask = 1;
+    return (int)sv_NamePlates[i].obj;
 }
 /* 0x52e330, sets the status line text sv_StatusText and its time stamp sv_StatusTime (d3_Time) */
 
