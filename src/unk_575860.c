@@ -4451,37 +4451,133 @@ int ai_TutorialWindow(void)
     return result;
 }
 
-struct AHMSTEP * ahm_WalkStep();
-int ahm_StepValue();
-int ai_Unk57c560();
+void sv_ButtonRow(int f, int y, int *out, int n, ...); int sv_MessageBoxGreen(); void sv_ValueBar();
 
-/* 0x57bf00, the tutorial results window (1629 B, ROUGH SKELETON): a 0x55c-byte local frame; 0x4fb330 (0, 0x52);
-   the three player records collected (0x4ec2d0 (i) when non-null, then 0x4ec320 (p) - the names -, i = 0 .. 2);
-   when no player was found the byte 0x6f1bc5 seeds a fallback list (the [esp+0x168] buffer). Then the window
-   0x4741f0 and its controls / texts (0x475f70, 0x473650 x8, 0x4760b0 x5, 0x5176d0 x9, 0x52eaa0 x4, 0x521410,
-   0x52e350, 0x52ea30), 0x57c560 (the results list), the release 0x4758f0, 0x4731d0 x2, 0x476f80, 0x475e40,
-   0x475600 and the pump 0x5309a0 (0x86, ...); the rest of the body is not written yet (see the disassembly
-   build/dis57bf00.txt) */
-int ai_Unk57bf00(void *rec)
+/* 0x57bf00, the alchemist's candidates window of the alchemist object obj ("Locations\Domizil\Alchemistry1"):
+   the walk steps in use (ahm_WalkStep 0 .. 2) are the candidates; none: the green message box (title text
+   0x4039) with the text 0x404a about the own player. Else per candidate a selectable portrait (a radio group;
+   the portrait picture 0x639 + one of the two picture words +0x34 / +0x38 of the name record 0x52, alternating)
+   with its name (the first and last name texts 0x417a + x / 0x4193 + y), its four attribute bars (labels 0x4172
+   .. 0x4175), the texts 0x403f (attr[4]), 0x4040 (its ahm_StepValue) and 0x4041 (the object name of grid id),
+   100 pixels apart; the buttons 0x4042 (hire: enabled while a candidate is selected) and 0x4043 (back). Hire
+   hands the selected candidate to ai_AlchemistHire and closes the window when that succeeds; back or the right
+   mouse button close it. The camera follows again at the end */
+void ai_AlchemistCandidates(unsigned char *obj)
 {
-    char *per[3];
-    char *nm[3];
-    char *v;
-    int n;
+    int t;
     int i;
+    int n;
+    unsigned *rec;
+    int buttons[2];
+    AHMSTEP *step;
+    AHMSTEP *steps[3];
+    int form;
+    int win2;
+    int win3;
+    int group;
+    int portraits[3];
+    int values[3];
+    char line[0x100];
+    char msg[0x400];
+    int y;
+    int j;
 
-    v = (char *)gm_NameRecord(0, 0x52);
     n = 0;
+    steps[0] = 0;
+    steps[1] = 0;
+    steps[2] = 0;
+    rec = gm_NameRecord(0, 0x52);
     for (i = 0; i < 3; i++) {
-        per[n] = (char *)ahm_WalkStep(i);
-        if (*(int *)per[n]) {
-            nm[n] = (char *)ahm_StepValue(per[n]);
+        step = ahm_WalkStep(i);
+        if (step->on != 0) {
+            steps[n] = step;
+            values[n] = ahm_StepValue((char *)step);
             n++;
         }
     }
-    /* ROUGH: the n == 0 fallback (the byte 0x6f1bc5, the local buffer at +0x168), the window and its controls,
-       the results built by 0x57c560, the pump 0x5309a0 (0x86) and the tail are not written yet */
-    return (int)v;
+    if (n == 0) {
+        txt_Format(msg, 0x404a, ai_PlayerSlots[ai_OwnPlayer]);
+        sv_MessageBoxGreen((int)txt_Ptrs[0x4039], (int)msg, 0);
+        sv_CameraFollow();
+        return;
+    }
+    form = d2_OpenForm(0, 0, "Locations\\Domizil\\Alchemistry1");
+    d2_SetPointerSprite(0, 0);
+    d2_CentreViewWindows(form);
+    d2_SetForm(form, 0);
+    sv_FitForm(d2_LastWindow);
+    d2_SetForm(form, 1);
+    d2_SetForm(form, 2);
+    win2 = d2_LastWindow;
+    d2_SetForm(form, 3);
+    win3 = d2_LastWindow;
+    d2_SetForm(form, 1);
+    io_PrintText(0x4039);
+    d2_SetForm(form, 2);
+    group = d2_CreateRadioGroup(0);
+    y = 0x31;
+    for (i = 0; i < n; i++) {
+        portraits[i] = d2_WinOpenPic(5, y - 0x19, 0x6c7, win2);
+        portraits[i] = d2_WinOpenPic(7, y - 0x17, rec[0xd + i % 2] + 0x639, win2);
+        d2_Objs[portraits[i]].interactive = 1;
+        d2_RadioAdd(group, portraits[i]);
+        step = steps[i];
+        txt_Format(line, (int)"%s %s", txt_Ptrs[0x417a + step->x], txt_Ptrs[0x4193 + step->y]);
+        t = d2_CreateWinText(0, y - 0x30, line, win2);
+        d2_Objs[t].w = d2_Wins[win2].w;
+        d2_Objs[t].centred = 1;
+        d2_SetObjFont(t, 0x54);
+        txt_Format(line, (int)"%s", txt_Ptrs[0x4172]);
+        t = d2_CreateWinText(0x50, y - 0x1a, line, win2);
+        d2_Objs[t].w = d2_Wins[win2].w - 0x50;
+        d2_SetObjFont(t, 0x54);
+        sv_ValueBar(0x8c, y - 0x1a, step->grid.plr.attr[0], 0x4df);
+        txt_Format(line, (int)"%s", txt_Ptrs[0x4173]);
+        t = d2_CreateWinText(0x50, y - 0xd, line, win2);
+        d2_Objs[t].w = d2_Wins[win2].w - 0x50;
+        d2_SetObjFont(t, 0x54);
+        sv_ValueBar(0x8c, y - 0xd, step->grid.plr.attr[1], 0x4df);
+        txt_Format(line, (int)"%s", txt_Ptrs[0x4174]);
+        t = d2_CreateWinText(0x50, y, line, win2);
+        d2_Objs[t].w = d2_Wins[win2].w - 0x50;
+        d2_SetObjFont(t, 0x54);
+        sv_ValueBar(0x8c, y, step->grid.plr.attr[2], 0x4df);
+        txt_Format(line, (int)"%s", txt_Ptrs[0x4175]);
+        t = d2_CreateWinText(0x50, y + 0xd, line, win2);
+        d2_Objs[t].w = d2_Wins[win2].w - 0x50;
+        d2_SetObjFont(t, 0x54);
+        sv_ValueBar(0x8c, y + 0xd, step->grid.plr.attr[3], 0x4df);
+        txt_Format(line, 0x403f, step->grid.plr.attr[4]);
+        t = d2_CreateWinText(0xfa, y - 0x1b, line, win2);
+        d2_Objs[t].w = d2_Wins[win2].w - 0xfa;
+        txt_Format(line, 0x4040, ahm_StepValue((char *)step));
+        t = d2_CreateWinText(0xfa, y - 0xe, line, win2);
+        d2_Objs[t].w = d2_Wins[win2].w - 0xfa;
+        txt_Format(line, 0x4041, step->grid.plr.id * 2 + 0x9a8);
+        t = d2_CreateWinText(0xfa, y - 1, line, win2);
+        d2_Objs[t].w = d2_Wins[win2].w - 0xfa;
+        y += 0x64;
+    }
+    d2_SetForm(form, 3);
+    sv_ButtonRow(win3, 0, buttons, 2, txt_Ptrs[0x4042], txt_Ptrs[0x4043]);
+    d2_ClickedId = -1;
+    do {
+        d2_SetObjEnabled(buttons[0], d2_Radios[group].sel != -1 && i != 0 ? 1 : 0);
+        if (dm_L.rup != 0) {
+            sv_PopRequest = 1;
+        } else if (d2_ClickedId != -1) {
+            if (d2_PointerObj == buttons[0]) {
+                for (j = 0; j < 3; j++)
+                    if (d2_Radios[group].sel == j && ai_AlchemistHire(obj, steps[j], values[j]))
+                        sv_PopRequest = 1;
+            } else if (d2_PointerObj == buttons[1]) {
+                sv_PopRequest = 1;
+            }
+        }
+    } while (sv_RunFrame((int)ai_AlchemistCandidates, 0x677c7));
+    d2_RadioClear(group);
+    d2_CloseView(form);
+    sv_CameraFollow();
 }
 
 char * ahm_OwnerChar();
@@ -4496,19 +4592,19 @@ int ahm_SendCreateAlchemist();
    string built by 0x5176d0 (the 0x200 buffer, 0x4044, the tables 0x144a7a8[arg2->0x10] / 0x144a80c[arg2->0x14])
    and written by 0x521150 (buffer, 1), then 0x4ec490 (arg 1, arg 2) and the rest (the tail is not written yet,
    see build/dis57c560.txt) */
-int ai_Unk57c560(int a, char *rec, int c)
+int ai_AlchemistHire(unsigned char *obj, AHMSTEP *step, int value)
 {
     char buf[0x200];
     char *p;
 
-    p = (char *)ahm_OwnerChar(a);
-    if (sv_CheckGoodAmount((char *)((unsigned)&ai_Chars + (unsigned short)U_I((unsigned)&ai_PlayerId) * 0x21c), c, *(unsigned char *)(unsigned)&ai_OwnPlayer)) {
+    p = (char *)ahm_OwnerChar(obj);
+    if (sv_CheckGoodAmount((char *)((unsigned)&ai_Chars + (unsigned short)U_I((unsigned)&ai_PlayerId) * 0x21c), value, *(unsigned char *)(unsigned)&ai_OwnPlayer)) {
         if (p)
             sv_MessageBox(U_I((unsigned)&full_data_144a2e0), 0x100);
         return 0;
     }
-    txt_Format(buf, 0x4044, U_I((unsigned)&ai_Unk144a7a8 + *(int *)(rec + 0x10) * 4),
-                 U_I((unsigned)&ai_Unk144a80c + *(int *)(rec + 0x14) * 4));
+    txt_Format(buf, 0x4044, U_I((unsigned)&ai_Unk144a7a8 + step->x * 4),
+                 U_I((unsigned)&ai_Unk144a80c + step->y * 4));
     if (!sv_MessageBox(buf, 1))
         return 0;
     /* ROUGH: 0x4ec490 (arg 1, arg 2) and the tail are not written yet */
@@ -6231,7 +6327,6 @@ void ai_Unk581db0(char *rec)
 
 void sv_ReleaseNamePlates(void); int sv_RegisterNamePlate(); int ai_OpenTransport(); int ai_StorageWindow();
 int ai_ProductionWindow(); void ai_Unk5823b0(); int ai_Unk57c690(); int ai_Unk57cf90();
-int ai_Unk57bf00(void *rec);
 
 /* 0x5821d0, the contact dispatcher (467 B): arg 1 = the record, arg 2 = the window's entry list. 0x52e190 once,
    then the pump loop 0x5309a0 (this dispatcher, 0x67fff): the escape 0x14673a0 -> 0x6f22a0 = 1; the contact
@@ -6292,7 +6387,7 @@ void ai_Unk5821d0(char *rec, char *list)
                 } else if (U_I((unsigned)&ai_ClickedObject) == c4) {
                     ai_Unk57cf90(rec);
                 } else if (U_I((unsigned)&ai_ClickedObject) == c1) {
-                    ai_Unk57bf00(rec);
+                    ai_AlchemistCandidates(rec);
                 }
             } else {
                 ai_Unk5823b0(rec, list);
@@ -6918,7 +7013,7 @@ done:
     *(int *)(U_I((unsigned)&d2_Objs) + 0x28 + btns[*selp] * 0x2ec) = 1;
 }
 
-int gv_OrderSetGraveHolder(); int gv_SizeOpen(); void sv_ButtonRow(int f, int y, int *out, int n, ...);
+int gv_OrderSetGraveHolder(); int gv_SizeOpen();
 
 /* 0x583de0, a graveyard confirmation window (272 B): rec / the two values passed on to 0x4f0900; the window
    "Locations_Friedhof_Friedhof" (0x62a5bc) with 0x476f80 / 0x475600, the sound 0x52ea30, the texts 0x410f /

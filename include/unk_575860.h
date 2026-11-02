@@ -5,6 +5,7 @@
 
 struct HEEVSLOT;
 struct SBSAMPLE;
+struct AHMSTEP;
 
 typedef struct TUTSTEP {                /* 0x10 bytes, a step of a run record's chain (TUTRUN.steps) */
     unsigned int delay;                 /* 0x00, ms after the step started until its control is enabled */
@@ -176,6 +177,8 @@ int ai_TutorialInitChapter4(void);                 /* 0x57aa80, the chapter 4 ch
 int ai_TutorialInitChapter5(void);                 /* 0x57aeb0, the chapter 5 chain */
 int ai_TutorialInitMainOutro(void);                 /* 0x57b750, the main-outro record */
 void ai_TutorialBezier(float *a, float *b, float *c, float *d, float t, float *out);  /* 0x57b810, the Bezier */
+void ai_AlchemistCandidates(unsigned char *obj);  /* 0x57bf00, the alchemist's candidates window: hires one of the walk steps */
+int ai_AlchemistHire(unsigned char *obj, struct AHMSTEP *step, int value);  /* 0x57c560, hires the candidate step (ROUGH) */
 
 /* declared in other units' headers before (moved to the owner) */
 void ai_EndCharExtra(char *ch, int f);  /* 0x587c40 */
