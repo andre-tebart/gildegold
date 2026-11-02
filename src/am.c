@@ -10437,18 +10437,26 @@ int ai_RepairCost(AIBLD *b, int k)
         v = 0;
     return v;
 }
-/* 0x4a4e70, picks one of the scene objects listed under name: the nearest (with noise) to the character's
-   building or the current object, else a random one */
+/* 0x4a4e70, picks one of the build-site objects (ai_FindBauplaetze) of building kind name: the nearest (with noise) to the character's
+   house (2 of 3 times) or to the market building, else a random one; 0 when none
+   @deep read in full against the original and reconciled (both nearest-site loops, the random fallback,
+   the scene save/restore); the vectors are 16-byte float[4] slots as in the original's frame (q at 0x28, o
+   at 0x38, buf at 0x48). Left is the frame and allocation: the original gives the (float)sqrt spill its
+   own slot (fst [esp+0x24]) where ours reuses dz's [esp+0x10] and swaps best/dz (slots 0x10<->0x14), so
+   the frame is 0x478 vs ours 0x470 and every list[] access shifts by 8 (code hunks at 0x4a4f37, 0x4a4fc0,
+   0x4a502a, 0x4a50b3, 0x4a50f3, 0x4a5129: [esp+esi*4+0x88] vs ours +0x80); the fallback counter is ebx in
+   the original, ecx in ours (0x4a50e0: + mov ebx,edi before the call / - mov ecx,edi after it) */
 
-int ai_Unk4a4e70(AIPER *p, int name)
+int ai_PickBuildSite(AIPER *p, int name)
 {
     int scene = d3_CurrentScene;
     char buf[64];
     int list[256];
-    float o[6];
-    float q[6];
+    float o[4];                         /* the positions d3_PointToWorld writes: 16-byte slots in the original's frame */
+    float q[4];
     float dx, dy, dz, d, best;
-    int n, i, r, obj;
+    struct D3OBJECT *obj;
+    int n, i, r;
     unsigned int k;
 
     d3if_SelectScene(0, 1);
@@ -10456,14 +10464,14 @@ int ai_Unk4a4e70(AIPER *p, int name)
         memset(list, 0, sizeof(list));
         n = ai_FindBauplaetze(buf, list);
         if (n != 0) {
-            if (p->bld2 != 0 && *(int *)((char *)p->bld2 + 0x61) != 0 && util_RandomU(3) != 0) {
-                obj = *(int *)((char *)p->bld2 + 0x61);
-                d3_PointToWorld((void *)obj, (char *)obj + 0x4c, o);
+            if (p->bld2 != 0 && AI_BX(p->bld2)->object != 0 && util_RandomU(3) != 0) {
+                obj = AI_BX(p->bld2)->object;
+                d3_PointToWorld(obj, &obj->pos, (D3VECTOR *)o);
                 r = 0;
                 best = 1e21f;
                 for (i = 0; i < n; i++) {
                     if (list[i] != 0) {
-                        d3_PointToWorld((void *)list[i], (char *)list[i] + 0x4c, q);
+                        d3_PointToWorld((D3OBJECT *)list[i], &((D3OBJECT *)list[i])->pos, (D3VECTOR *)q);
                         dx = q[0] - o[0];
                         dy = q[1] - o[1];
                         dz = q[2] - o[2];
@@ -10477,13 +10485,13 @@ int ai_Unk4a4e70(AIPER *p, int name)
                 d3if_SelectScene(scene, 1);
                 return r;
             }
-            if (ai_MarketBuilding != 0 && (obj = *(int *)((char *)ai_MarketBuilding + 0x61)) != 0) {
-                d3_PointToWorld((void *)obj, (char *)obj + 0x4c, o);
+            if (ai_MarketBuilding != 0 && (obj = AI_BX(ai_MarketBuilding)->object) != 0) {
+                d3_PointToWorld(obj, &obj->pos, (D3VECTOR *)o);
                 r = 0;
                 best = 1e21f;
                 for (i = 0; i < n; i++) {
                     if (list[i] != 0) {
-                        d3_PointToWorld((void *)list[i], (char *)list[i] + 0x4c, q);
+                        d3_PointToWorld((D3OBJECT *)list[i], &((D3OBJECT *)list[i])->pos, (D3VECTOR *)q);
                         dx = q[0] - o[0];
                         dy = q[1] - o[1];
                         dz = q[2] - o[2];
@@ -10551,7 +10559,7 @@ int ai_CanBuildType(int a, AIPER *p, int b, AIARG *s1, AIARG *s2, int f)
     }
     if (f == 0)
         return 1;
-    r = ai_Unk4a4e70(p, s1->ref);
+    r = ai_PickBuildSite(p, s1->ref);
     if (r == 0)
         return 0;
     s2->ref = r;

@@ -257,8 +257,10 @@ typedef struct AIBLDX {                 /* 0xa9 bytes, an AIBLD (ai.h) as these 
     char pad5b;
     signed char level;                  /* 0x5c */
     int objList;                        /* 0x5d, an AIBLD's object-instance list */
-    char pad61[0x48];
+    struct D3OBJECT *object;            /* 0x61, its 3D object in scene 0 (ai.h AIBLD.object) */
+    char pad65[0x44];
 } AIBLDX;
+#define AI_BX(b) ((AIBLDX *)(b))        /* an AIBLD * (incomplete here) read as its AIBLDX view */
 
 typedef struct AIFINX {                 /* what gm_PlayerRecord finds for a character (ai.h AIFIN) */
     char pad00[0x44];
@@ -998,7 +1000,7 @@ extern G7GRP gm_BuildingItemGroups[];            /* 0x61a348 */
 
 int ai_GroupPrices(G7MKT *m);
 int ai_RepairCost(struct AIBLD *b, int k);                                              /* 0x4a4e30 */
-int ai_Unk4a4e70(AIPER *p, int name);                                           /* 0x4a4e70 */
+int ai_PickBuildSite(AIPER *p, int name);                                           /* 0x4a4e70 */
 extern int d3_CurrentScene;             /* 0x633444 */
 char d3if_SelectScene(int index, char keep);                                        /* 0x4478e0 */
 void d3_PointToWorld(struct D3OBJECT *obj_, struct D3VECTOR *in, struct D3VECTOR *out);                              /* 0x458a20 */                                                     /* 0x4a4680 */
