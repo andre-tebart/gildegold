@@ -1359,7 +1359,7 @@ int ai_DecideAcceptedChar(int a, AIPER *p, int c, int d, unsigned char *m)
     flags = PARTNER_FLAGS_ANY;
     if (ai_PickPartnerChain(p, 1, &flags, 0, (float)util_RandomU(0x20) + 40.0f, &id) == 0)
         return 0;
-    if (he_Unk553d60(p, &((AIPER *)ai_CharsT)[id]) == 0)
+    if (he_NoEvent4bPair(p, &((AIPER *)ai_CharsT)[id]) == 0)
         return 0;
     m[0] = 7;
     *(int *)(m + 4) = ((AIPER *)ai_CharsT)[id].netId;

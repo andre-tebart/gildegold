@@ -9350,7 +9350,7 @@ int he_NoEvent2ePair(int a, int b)
 }
 /* 0x553d60, 1 unless a record of type 0x4b with +0xb0 = the id (+4) of b and +0xac = the id of a is running (then 0) */
 
-int he_Unk553d60(int a, int b)
+int he_NoEvent4bPair(int a, int b)
 {
     char *e;
 

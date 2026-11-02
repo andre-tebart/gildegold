@@ -83,6 +83,7 @@ int ai_Unkf86900[73] = {0};  /* 0xf86900, the actions being evaluated */
 #define gm_CharLevelS ((int (*)(unsigned short, int))gm_CharLevel)  /* 0x505e60 (f3gm.c: unsigned short id, so the cast is now the prototype itself): @original this unit pushes the id as 16 bits (byte-matched ai_Unk494a30 / ai_Unk494ac0 / ai_Unk494d40) */
 #define cm_SendExSellObjectI ((void (*)(int, int, int, int, unsigned char, int))cm_SendExSellObject)  /* 0x4c4880 (cm.h: short c): @original this unit pushes the third argument as an int (byte-matched ai_MeisterBewaffnen / ai_Unk497c80 / ai_Unk49c880) */
 #define amt_GetKindB ((int (*)(unsigned char, void *))amt_GetKind)  /* 0x4e6f80 (amt.h: int k): @original ai_Unk4a05e0 passes (unsigned char)k without widening */
+#define AI_CHAIN_BEATUP 0xf00500  /* the partner-chain flags (ai_PickPartnerChain) of action 0x18 "Verpruegeln" (ai_DecideBeatUp); the bits are not named yet */
 /* 0x48e070, the building of a master (kind != 3) in *out; 2: has one, 1: has a good one, 0: none */
 
 int ai_Unk48e070(AIPX *p, int *out)
@@ -5496,7 +5497,7 @@ int ai_Unk499660(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
                             }
                             return r;
                         }
-                        if (he_Unk553d60((AIPER *)&ai_CharsT[y->owner], p)
+                        if (he_NoEvent4bPair((AIPER *)&ai_CharsT[y->owner], p)
                             && he_NoEvent2ePair((AIPER *)&ai_CharsT[y->owner], p) && he_Unk553cc0((AIBLD *)y)
                             && he_Unk570ea0((AIPER *)&ai_CharsT[y->owner], p)) {
                             o1->kind = 4;
@@ -5557,9 +5558,12 @@ int ai_Unk499b80(float *a, float *b, int i, AIPER *p, int f, AIARG *o1, AIARG *o
         return ai_EvalGuiltWeights(a, b, i, p, &d);
     return ai_EvalMoodWeights(a, b, i, p, f, o1, o2);
 }
-/* 0x499c10, decide: beat up a character (action 0x18) */
+/* 0x499c10, decide callback of "Verpruegeln" (0x18): when the character can afford it (currency * 0.22 above
+   0.0085 of its worth, halved by order 0x1b), first a house (sub-action 0x18 with type 4) or a good 0x14 in it,
+   then a partner (ai_PickPartnerChain) with money whom the mix roll lets it beat up (o1 kind 7, its netId) or
+   else the sub-action 0x18 with kind 0xe */
 
-int ai_Unk499c10(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
+int ai_DecideBeatUp(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
 {
     int buf[0x88];
     AIDEC d;
@@ -5612,7 +5616,7 @@ int ai_Unk499c10(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
             gv_GetTableRecord(0x15, &d);
             if (!d.cur || util_RandomU(3) || ai_Partner) {
                 if (o1->kind == 0) {
-                    flags = 0xf00500;
+                    flags = AI_CHAIN_BEATUP;
                     t = util_RandomU(0x20) + 32.0f;
                     if (ai_PickPartnerChain(p, 1, &flags, 0, t, &cid)) {
                         c = (AIPER *)&ai_CharsT[cid];
@@ -5633,12 +5637,12 @@ int ai_Unk499c10(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
                                 }
                                 return r;
                             }
-                            if (he_Unk553d60(c, p) && he_NoEvent2ePair(c, p)) {
+                            if (he_NoEvent4bPair(c, p) && he_NoEvent2ePair(c, p)) {
                                 o1->kind = 7;
                                 o1->ref = c->netId;
                                 o1->arg = 1;
-                                o1->arg2 = v;
                                 o1->fvalue = (float)(d.cur * 2 + 1);
+                                o1->arg2 = v;
                                 return 0x18;
                             }
                         }
@@ -9512,7 +9516,7 @@ int ai_RegisterBaseActions(int a)
     act.id = 0x18;
     strcpy(act.name, "Verpruegeln");
     act.eval = ai_Unk499b80;
-    act.decide = ai_Unk499c10;
+    act.decide = ai_DecideBeatUp;
     act.exec = ai_Unk499f20;
     act.flags = 0x1c9;
     if (!am_RegisterMethod(&act, a))

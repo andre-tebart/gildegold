@@ -316,7 +316,7 @@ int ai_Unk4995d0(float *a, float *b, int i, AIPER *p, int f, AIARG *o1, AIARG *o
 int ai_Unk499660(int a, AIPER *p, int b, AIARG *o1, AIARG *o2);                 /* 0x499660 */
 int ai_Unk499a90(AIPER *p, AIARG *s1, AIARG *s2);                               /* 0x499a90 */
 int ai_Unk499b80(float *a, float *b, int i, AIPER *p, int f, AIARG *o1, AIARG *o2); /* 0x499b80 */
-int ai_Unk499c10(int a, AIPER *p, int b, AIARG *o1, AIARG *o2);                 /* 0x499c10 */
+int ai_DecideBeatUp(int a, AIPER *p, int b, AIARG *o1, AIARG *o2);                 /* 0x499c10 */
 int ai_Unk499f20(AIPER *p, AIARG *s1, AIARG *s2);                               /* 0x499f20 */
 int ai_Unk49a020(int a, AIPER *p, int b, AIARG *o1, AIARG *o2);                 /* 0x49a020 */
 
