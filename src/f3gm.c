@@ -3738,28 +3738,29 @@ int gm_TakeObjekt(int id, int proto, int n)
 
 int gm_AddNegative(int id, int proto, int n)
 {
-    int b, o, c, r, left;
+    ORDBLD *b;
+    ORDOBJ *o;
+    ORDCHAR *c;
     int *list;
+    ORDOBJ *r;
 
-    if (gm_FindById(&b, &o, &c, id) == 0)
+    if (gm_FindById((int *)&b, (int *)&o, (int *)&c, id) == 0)
         return 0;
-    if (b == 0) {
-        if (o == 0) {
-            if (c == 0)
-                return 0;
-            list = (int *)(c + 0x178);
-        } else
-            list = (int *)(o + 0x14);
-    } else
-        list = (int *)(b + 0x5d);
-    r = (int)gm_Query(*list, 1, 0, proto);
+    if (b != 0)
+        list = &b->objList;
+    else if (o != 0)
+        list = &o->list;
+    else if (c != 0)
+        list = &c->inventory;
+    else
+        return 0;
+    r = (ORDOBJ *)gm_Query((void *)*list, 1, 0, proto);
     if (r == 0) {
-        r = gm_CreateObject(id, proto, 1);
-        *(int *)(r + 0xe) = 0;
+        r = (ORDOBJ *)gm_CreateObject(id, proto, 1);
+        r->count = 0;
     }
-    left = *(int *)(r + 0xe) - n;
-    *(int *)(r + 0xe) = left;
-    if (left == 0)
+    r->count -= n;
+    if (r->count == 0)
         gm_RemoveObject(list, proto);
     return 1;
 }
