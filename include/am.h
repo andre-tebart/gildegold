@@ -42,7 +42,7 @@ typedef struct AIPER {                  /* a character, 0x21c bytes (ai_Chars[76
     char pad165[0x1];
     unsigned char officeKind;           /* 0x166, the kind of the office held, 0 = none (ai.h AICHAR) */
     unsigned char unk167;               /* 0x167 */
-    unsigned char unk168;               /* 0x168 */
+    unsigned char appliedOffice;        /* 0x168, the office kind applied for, 0 = none (ai.h AICHAR) */
     char pad169[0x7];
     AIBLD *bld2;                        /* 0x170 */
     char pad174[4];
@@ -137,7 +137,7 @@ int ai_Unk492d50(AIPER *p, int a, int *out);                    /* 0x492d50, dec
 int ai_Unk492e90(AIPER *p, int a, int *out);                    /* 0x492e90, decision 28 */
 
 int am_RegisterMethod(AIACT *act, int a);                            /* 0x495520, registers an action */
-int ai_Unk4a49a0(float *a, float *b, int i, AIPER *p, int f, void *x, void *y);  /* 0x4a49a0 */
+int ai_EvalMoodWeights(float *a, float *b, int i, AIPER *p, int f, void *x, void *y);  /* 0x4a49a0 */
 char * amt_GetOfficeHolder(int k);                            /* 0x4e7510 */
 int amt_GetOwnedOfficePay(void);                                         /* 0x4ea990 */
 unsigned char ord_GetRatingByte(int k);                              /* 0x4f97a0 */
@@ -189,7 +189,7 @@ typedef struct AIXMSG {                 /* 0xf8 bytes, an AIMSG (ai.h) as these 
 typedef char ai_AssertAIXMSG[sizeof(AIXMSG) == 0xf8 ? 1 : -1];
 
 extern AIACT ai_Actions[];            /* 0xf83ec0, the registered actions */
-#define AI_6F0468 ((AIPER *)ai_Partner)  /* ai.h declares it AICHAR * */
+#define AI_PARTNER ((AIPER *)ai_Partner)  /* ai.h declares it AICHAR * */
 
 void ai_Unk495ee0(void);                                                        /* 0x495ee0 */
 int ai_Unk495fa0(int a, AIPER *p, int b, AIARG *o1, AIARG *o2);                 /* 0x495fa0 */
@@ -207,13 +207,13 @@ int ai_DecideTrainSkill(int a, AIPER *p, int b, AIARG *o1, AIARG *o2);          
 int ai_Unk4965b0(AIPER *p, AIARG *s1, AIARG *s2);                               /* 0x4965b0 */
 int ai_DecideTrainJobSkill(int a, AIPER *p, int b, AIARG *o1, AIARG *o2);                 /* 0x496610 */
 int ai_Unk496ab0(AIPER *p, AIARG *s1, AIARG *s2);                               /* 0x496ab0 */
-int ai_Unk496b10(float *a, float *b, int i, AIPER *p, int f, AIARG *o1, AIARG *o2); /* 0x496b10 */
+int ai_EvalLeastLikedOfEvent(float *a, float *b, int i, AIPER *p, int f, AIARG *o1, AIARG *o2); /* 0x496b10 */
 int ai_Unk496e40(int a, AIPER *p, int b, AIARG *o1, AIARG *o2);                 /* 0x496e40 */
 int ai_Unk4972d0(AIPER *p, AIARG *s1, AIARG *s2);                               /* 0x4972d0 */
 int ai_Unk4973f0(float *a, float *b, int i, AIPER *p, int f, AIARG *o1, AIARG *o2); /* 0x4973f0 */
 
 int ai_ChooseSubAction(int kind, int id, int c, AIARG *s1, AIARG *s2);                /* 0x495a50 */
-int ai_Unk4a4c10(float *a, float *b, int i, AIPER *p, struct AIDEC *d);                /* 0x4a4c10 */
+int ai_EvalGuiltWeights(float *a, float *b, int i, AIPER *p, struct AIDEC *d);                /* 0x4a4c10 */
 int ai_PickPartnerChain(AIPER *p, int a, int *flags, int b, float f, unsigned short *id); /* 0x4a58d0 */
 void cm_SendSetField(int a, int b, int c, int d, int e);                   /* 0x4c4a60 */
 void cm_SendMoneyDelta(int a, int b);                                               /* 0x4c5f60 */
@@ -678,7 +678,7 @@ typedef struct G5CH {                   /* a character, 0x21c bytes (ai_Chars[76
     AIARG arg1;                         /* 0x134 */
     AIARG arg2;                         /* 0x14c */
     char pad164[4];
-    unsigned char unk168;               /* 0x168 */
+    unsigned char appliedOffice;        /* 0x168, the office kind applied for, 0 = none (ai.h AICHAR) */
     char pad169[0xa7];
     int partner;                        /* 0x210 */
     char pad214[4];
