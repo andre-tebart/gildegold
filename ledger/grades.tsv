@@ -2935,16 +2935,16 @@ exe	0x004fa580	gm_CharacterUpkeep	f3gm	shape	readable
 exe	0x004fa700	gm_CharacterWages	f3gm	draft	readable	deep	
 exe	0x004fa9b0	unk_Unk4fa9b0	f3gm	byte	draft		
 exe	0x004faa00	gm_UpdateWorthMood	f3gm	byte	readable		
-exe	0x004fabe0	gm_EndDayIncomes	f3gm	draft	draft		
-exe	0x004fad60	gm_FindRichest	f3gm	draft	draft		
-exe	0x004fae50	unk_Unk4fae50	f3gm	draft	draft		
-exe	0x004fb0e0	unk_Unk4fb0e0	f3gm	draft	draft		
-exe	0x004fb330	gm_NameRecord	f3gm	byte	draft		
-exe	0x004fb390	gm_CharNameRecord	f3gm	draft	draft		
-exe	0x004fb5a0	gm_SelectModelVariant	f3gm	draft	draft		
-exe	0x004fb620	unk_Unk4fb620	f3gm	shape	draft		
-exe	0x004fb770	gm_HeadIconNumber	f3gm	draft	draft		
-exe	0x004fb890	gm_ChooseHeadIcon	f3gm	draft	draft		
+exe	0x004fabe0	gm_EndDayIncomes	f3gm	draft	readable	deep	
+exe	0x004fad60	gm_FindRichest	f3gm	draft	readable	deep	
+exe	0x004fae50	gm_HandOutMoney	f3gm	byte	readable		
+exe	0x004fb0e0	gm_ShiftLoyalty	f3gm	byte	readable		
+exe	0x004fb330	gm_NameRecord	f3gm	byte	readable		
+exe	0x004fb390	gm_CharNameRecord	f3gm	draft	readable	deep	
+exe	0x004fb5a0	gm_SelectModelVariant	f3gm	shape	readable		
+exe	0x004fb620	gm_ResolveHeadIcons	f3gm	shape	readable		
+exe	0x004fb770	gm_HeadIconNumber	f3gm	byte	readable		
+exe	0x004fb890	gm_ChooseHeadIcon	f3gm	byte	readable		
 exe	0x004fbb80	unk_Unk4fbb80	f3gm	draft	draft		
 exe	0x004fbd10	gm_PlaceOnStage	f3gm	draft	draft		
 exe	0x004fbe90	unk_Unk4fbe90	f3gm	draft	draft		
@@ -2967,7 +2967,7 @@ exe	0x004fdc10	unk_Unk4fdc10	f3gm	draft	draft
 exe	0x004fdcb0	unk_Unk4fdcb0	f3gm	draft	draft		
 exe	0x004fddb0	unk_Unk4fddb0	f3gm	draft	draft		
 exe	0x004fde90	unk_LoadIconNames	f3gm	byte	draft		
-exe	0x004fdfb0	gm_FreeIconNames	f3gm	byte	draft		
+exe	0x004fdfb0	gm_FreeIconNames	f3gm	byte	readable		
 exe	0x004fdfd0	unk_Unk4fdfd0	f3gm	draft	draft		
 exe	0x004fe140	gm_AddTime	f3gm	draft	readable		
 exe	0x004fe1e0	gm_SetTime	f3gm	draft	readable		
@@ -3040,7 +3040,7 @@ exe	0x00502eb0	gm_ListWorkers	f3gm	draft	draft
 exe	0x00502fd0	gm_SellBuilding	f3gm	draft	draft		
 exe	0x005031b0	unk_Unk5031b0	f3gm	draft	draft		
 exe	0x00503480	gm_RemoveObjectFromBuilding	f3gm	byte	readable		
-exe	0x005034b0	gm_Unk5034b0	f3gm	draft	draft		
+exe	0x005034b0	gm_Unk5034b0	f3gm	byte	draft		
 exe	0x00503530	gm_PermissionBits	f3gm	draft	draft		
 exe	0x00503c20	gm_Unk503c20	f3gm	draft	draft		
 exe	0x00503c60	unk_Unk503c60	f3gm	draft	draft		
