@@ -255,6 +255,7 @@ typedef struct ORDOBJ {
     union {                         /* 0x1c, gm_CreateObject clears 0x1f bytes from here (to 0x3b) and sets them per prototype */
         unsigned char lvl1c;        /* 0x1c, a workshop's level (ai.h AIOBJ.lvl1c); gm_SyncMarket raises it to the market's goods count */
         int v1c[4];                 /* 0x1c */
+        unsigned char cap[2];       /* 0x1c, of the objects 0x2a / 0x116 two capacities from the building kind (gm_SetCapacities) */
         struct {
             int cartBld;            /* 0x1c, of a cart: the id of its building, -1 = none */
             int cart20;             /* 0x20 */

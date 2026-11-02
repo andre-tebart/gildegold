@@ -4384,33 +4384,27 @@ void gm_StockBuildingObjects(char *p)
         }
     }
 }
-/* 0x5014b0, sets the capacity bytes of the building b objects from its kind record (+0x23d / +0x23e / +0x23f): the object 0x2a gets +0x1c = the first (at least 2) and +0x1d = the second (at least 2), or just the third when the first two are 0; the object 0x116 gets the third in +0x1c in that case */
+/* 0x5014b0, sets the capacities of the objects of building b from its kind record (bytes +0x23d / +0x23e / +0x23f): the object 0x2a gets cap[0] = the first, cap[1] = the second (each at least 2), or cap[0] = the third when the first two are 0; the object 0x116 gets the third in cap[0] in that case */
 
-void gm_SetCapacities(unsigned char *b)
+void gm_SetCapacities(unsigned char *p)
 {
-    char *k;
-    int o;
-    unsigned char c;
+    ORDBLD *b = (ORDBLD *)p;
+    unsigned char *k;
+    ORDOBJ *o;
 
-    k = ai_BTypes + *b * 0x24d;
-    o = (int)gm_Query(*(int *)(b + 0x5d), 2, 0, 0x2a, 6);
+    k = (unsigned char *)ai_BTypes + b->type * 0x24d;
+    o = (ORDOBJ *)gm_Query((void *)b->objList, 2, 0, 0x2a, 6);
     if (o != 0) {
-        c = k[0x23d];
-        if (c == 0 && k[0x23e] == 0 && k[0x23f] != 0) {
-            *(char *)(o + 0x1c) = k[0x23f];
+        if (k[0x23d] == 0 && k[0x23e] == 0 && k[0x23f] != 0) {
+            o->cap[0] = k[0x23f];
         } else {
-            if (c < 2)
-                c = 2;
-            *(unsigned char *)(o + 0x1c) = c;
-            c = k[0x23e];
-            if (c < 2)
-                c = 2;
-            *(unsigned char *)(o + 0x1d) = c;
+            o->cap[0] = k[0x23d] < 2 ? 2 : k[0x23d];
+            o->cap[1] = k[0x23e] < 2 ? 2 : k[0x23e];
         }
     }
-    o = (int)gm_Query(*(int *)(b + 0x5d), 2, 0, 0x116, 6);
+    o = (ORDOBJ *)gm_Query((void *)b->objList, 2, 0, 0x116, 6);
     if (o != 0 && k[0x23d] == 0 && k[0x23e] == 0 && k[0x23f] != 0)
-        *(char *)(o + 0x1c) = k[0x23f];
+        o->cap[0] = k[0x23f];
 }
 
 int gv_BuryNewDead();                     /* 0x4ef9c0 */
