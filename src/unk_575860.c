@@ -5236,63 +5236,59 @@ int ai_AlchemistFundWindow(unsigned char *obj, AHMREC *rec)
     d2_CloseView(win);
     return done;
 }
-/* 0x57e0e0, the tutorial skill "use" window (336 B, the 0x57de60 sibling): the run record 0x4eaa50 (record),
-   0 for none -> 0; the window "Locations_Domizil_skill" (0x62a2c4) with 0x476f80 (0, 0) / 0x475600, the sound
-   0x52ea30 (0x6ed938), the text 0x403d (0x182) and the entries 0x403e / +1 via 0x475b80 (window, 2, text),
-   0xf8a668 = -1; the pump loop 0x5309a0 (this handler, 0x677c7): 0x4eaa50 (record) 0 -> 0x6f22a0 = 1, the pump
-   0x20007, 0x4758f0 (window), 0; the click 0x14673a0 -> 0x6f22a0 = 1; the first entry -> the result 1,
-   0x4eb410 (record) and 0x4ece10 (the run record), 0x6f22a0 = 1; the second entry -> 0x6f22a0 = 1; the pump 0 ->
-   0x4758f0 (window), the result */
-int ai_AlchemistRescheduleWindow(char *rec)
+/* 0x57e0e0, the dismissal window of the alchemist object obj ("Locations\\Domizil\\skill"; rec is not read): no
+   owning character answers 0 at once; else the question 0x403d and the answers 0x403e. The first answer reschedules
+   the object's research (ahm_RescheduleResearch) and deletes the alchemist (ahm_SendDelete) and closes the window
+   with the answer 1; the second answer and the right mouse button close it. The window closes with 0 when the
+   owner is gone */
+int ai_AlchemistRescheduleWindow(unsigned char *obj, AHMREC *rec)
 {
-    char *rr;
-    char *win;
-    int b1;
-    int b2;
+    char *owner;
+    int win;
+    int ok;
+    int cancel;
     int v;
     int done;
 
     done = 0;
-    rr = (char *)ahm_OwnerChar(rec);
-    if (!rr)
+    owner = ahm_OwnerChar(obj);
+    if (!owner)
         return 0;
-    win = (char *)d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62a2c4);
+    win = d2_OpenForm(0, 0, "Locations\\Domizil\\skill");
     d2_SetPointerSprite(0, 0);
     d2_CentreViewWindows(win);
     d2_SetForm(win, 0);
-    sv_FitForm(U_I((unsigned)&d2_LastWindow));
+    sv_FitForm(d2_LastWindow);
     d2_SetForm(win, 1);
     io_PrintText(0x403d, 0x182);
     d2_SetForm(win, 2);
     v = io_PrintText(0x403e);
-    b1 = d2_GetWinObj(win, 2, v);
-    b2 = d2_GetWinObj(win, 2, v + 1);
-    U_I((unsigned)&d2_ClickedId) = -1;
-    for (;;) {
-        rr = (char *)ahm_OwnerChar(rec);
-        if (!rr) {
-            U_I((unsigned)&sv_PopRequest) = 1;
-            sv_RunFrame(ai_AlchemistRescheduleWindow, 0x20007);
+    ok = d2_GetWinObj(win, 2, v);
+    cancel = d2_GetWinObj(win, 2, v + 1);
+    d2_ClickedId = -1;
+    do {
+        owner = ahm_OwnerChar(obj);
+        if (!owner) {
+            sv_PopRequest = 1;
+            sv_RunFrame((int)ai_AlchemistRescheduleWindow, 0x20007);
             d2_CloseView(win);
             return 0;
         }
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0) {
-            U_I((unsigned)&sv_PopRequest) = 1;
-        } else if (U_I((unsigned)&d2_ClickedId) != -1) {
-            if (U_I((unsigned)&d2_PointerObj) == b1) {
+        if (dm_L.rup != 0) {
+            sv_PopRequest = 1;
+        } else if (d2_ClickedId != -1) {
+            if (d2_PointerObj == ok) {
                 done = 1;
-                ahm_RescheduleResearch(rec);
-                ahm_SendDelete(rr);
-                U_I((unsigned)&sv_PopRequest) = 1;
-            } else if (U_I((unsigned)&d2_PointerObj) == b2) {
-                U_I((unsigned)&sv_PopRequest) = 1;
+                ahm_RescheduleResearch(obj);
+                ahm_SendDelete(owner);
+                sv_PopRequest = 1;
+            } else if (d2_PointerObj == cancel) {
+                sv_PopRequest = 1;
             }
         }
-        if (sv_RunFrame(ai_AlchemistRescheduleWindow, 0x677c7) == 0) {
-            d2_CloseView(win);
-            return done;
-        }
-    }
+    } while (sv_RunFrame((int)ai_AlchemistRescheduleWindow, 0x677c7));
+    d2_CloseView(win);
+    return done;
 }
 /* 0x57e230, stores one 0x38-byte record of a 3-entry table (61 B): src (0 .. 2 in src[0]) copied 0xe dwords
    into 0x6f9f60 + src[0] * 0xe and 0x6f2664 = 1; 1, else 0 */
