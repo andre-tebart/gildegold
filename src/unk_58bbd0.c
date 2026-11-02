@@ -15638,7 +15638,7 @@ int ai_Unk5b4340(short *param_1, int param_2)
 
     if (*param_1 == -1)
         return 0;
-    n = unk_Unk4f3fe0(*(int *)(param_2 + 4), ids, *param_1);
+    n = gv_HeldCrimesOf(*(int *)(param_2 + 4), ids, *param_1);
     if (n < 1)
         return 0;
     for (i = 0; i < n; i++)
@@ -21691,7 +21691,7 @@ int ai_Unk5cdb90(int param_1, int *param_2, int param_3, int param_4)
 
     if (*(unsigned short *)param_2 == 0xffff)
         return 0;
-    count = unk_Unk4f3fe0(*(int *)((char *)param_2 + 4), ids, *(unsigned short *)param_1);
+    count = gv_HeldCrimesOf(*(int *)((char *)param_2 + 4), ids, *(unsigned short *)param_1);
     if (count < 1)
         return 0x60;
     flag = 0;
@@ -21727,7 +21727,7 @@ int ai_SpyTargetHandler(int param_1, int *param_2)  /* @original: the callers pu
             return 0x60;
         if (*(unsigned char *)(target + 0x166) == 0xd)
             return 0x60;
-        n = unk_Unk4f3fe0(param_2[0x214], ids, *(unsigned short *)param_1);
+        n = gv_HeldCrimesOf(param_2[0x214], ids, *(unsigned short *)param_1);
         if (n == 0)
             return 0x60;
         return ai_Unk5cd8c0(param_1, (int *)target, n, 0);
@@ -21756,7 +21756,7 @@ int ai_SpyTargetFlagHandler(int param_1, int *param_2)  /* @original: the caller
             return 0x60;
         if (*(unsigned char *)(target + 0x166) == 0xd)
             return 0x60;
-        n = unk_Unk4f3fe0(param_2[0x214], ids, *(unsigned short *)param_1);
+        n = gv_HeldCrimesOf(param_2[0x214], ids, *(unsigned short *)param_1);
         if (n == 0)
             return 0x60;
         return ai_Unk5cd8c0(param_1, (int *)target, n, 1);

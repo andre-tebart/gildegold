@@ -699,3 +699,4 @@
 2026-11-02T05:05:18 0x004f3b40 data unk_Unk4f3b40 -> gv_RetireCrimeIds by:main why:as gv_RetireCrimesOf for a list of crime ids (cm_SendRetireCrime each)
 2026-11-02T05:06:43 0x004f3c50 func gv_RankRecordOwners -> gv_RankCulprits by:main why:ranks the culprits of the open crimes the character holds evidence of (ai_Evidence)
 2026-11-02T05:07:54 0x004f3dd0 func unk_Unk4f3dd0 -> gv_RankCulpritsAll by:main why:as gv_RankCulprits over all the crimes (any state), counting total and open per culprit
+2026-11-02T05:09:00 0x004f3fe0 func unk_Unk4f3fe0 -> gv_HeldCrimesOf by:main why:lists the crimes of the culprit that the character t holds evidence of (ai_Evidence)

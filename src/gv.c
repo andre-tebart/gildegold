@@ -3346,38 +3346,33 @@ int gv_CulpritGuilt(int c)
     }
     return sum;
 }
-/* 0x4f3fe0, fills out[0x20] (-1 first) with the indexes of the records of 0x91f700 that the character with the slot c (low word of t) owns of the graveyard player p: pairs (character id, record id) of 0x91b6e0 whose record belongs
-   (+0x16) to p; returns the count (up to 0x21); 0 for no character or the slot 0 */
+/* 0x4f3fe0, fills out[0x20] (-1 first) with the indexes (of ai_Crimes) of the crimes of the culprit that the character t
+   holds evidence of (ai_Evidence); returns the count; 0 when the culprit does not exist. A 33rd crime is still written
+   (out[0x20]) before the walk stops, as in the original. */
 
-int unk_Unk4f3fe0(int p, int *out, unsigned t)
+int gv_HeldCrimesOf(int culprit, int *out, unsigned short t)
 {
-    int n, k, i;
-    int *q;
-    int *o;
+    int n, i, k;
+    ORDCHAR *ch;
 
     n = 0;
-    if (gm_FindChar(p) == 0)
+    if (gm_FindChar(culprit) == 0)
         return 0;
-    if ((t & 0xffff) * 0x21c != -(unsigned)&ai_Chars) {
-        q = (int *)(unk_Tab91b6e0 + 4);
-        o = out;
-        for (i = 0x20; i != 0; i--)
-            *o++ = -1;
-        do {
-            if (q[-1] == *(int *)(ai_Chars[t & 0xffff] + 4)) {
-                k = gv_FindCrime(*q);
-                if (k != -1 && *(int *)(gv_Graveyard + 0x16 + k * 0x2d) == p) {
-                    out[n] = k;
-                    n++;
-                    if (n > 0x20)
-                        return n;
-                }
+    ch = &ORD_CHARS[t];
+    if (ch == 0)
+        return 0;
+    memset(out, 0xff, 0x20 * sizeof(int));
+    for (i = 0; i < 0x800; i++) {
+        if (ai_Evidence[i][0] == ch->netId) {
+            k = gv_FindCrime(ai_Evidence[i][1]);
+            if (k != -1 && gv_CrimesT[k].culprit == culprit) {
+                out[n++] = k;
+                if (n > 0x20)
+                    break;
             }
-            q += 2;
-        } while ((int)q < ((unsigned)unk_Tab91b6e0 + 0x4004));
-        return n;
+        }
     }
-    return 0;
+    return n;
 }
 /* 0x4f4080, as 0x4f3fe0 but the records' ids (+0) are stored */
 
