@@ -6750,9 +6750,9 @@ int gm_CharLevel(unsigned short id, int again)
     }
     return k;
 }
-/* 0x505f30, the same for the byte +0x167 */
+/* 0x505f30, gm_CharLevel for the previous office (+0x167): its level, raised to the master's when that is higher */
 
-int gm_Unk505f30(unsigned id, int again)
+int gm_CharPrevLevel(unsigned short id, int again)
 {
     int r, k, l2;
     short *m;
@@ -6771,9 +6771,9 @@ int gm_Unk505f30(unsigned id, int again)
         return k;
     m = gm_FindChar(*(int *)(ai_Chars[id] + 0x60));
     if (m != 0) {
-        l2 = gm_Unk505f30(*m, 1);
+        l2 = gm_CharPrevLevel(*m, 1);
         if (k <= l2)
-            return gm_Unk505f30(*m, 1);
+            return gm_CharPrevLevel(*m, 1);
     }
     return k;
 }

@@ -10944,60 +10944,60 @@ int ai_PickPartnerRandomWalk(AIPER *p, unsigned int fl, int n, unsigned short *i
     return 1;
 }
 /* 0x4a5ef0: up to n candidates for an action with the flags fl, from two random walks over all 768 characters
-   (no kinds 8 / 7 / 5 / 9 / 0x14; first the married ones (0x164 set, not 'R'), then the unmarried), accepted by
-   0x5c33c0, of a rank (0x505f30) within 5 of p's and, when the window is narrower than 0..100, rated in
-   [lo, hi]; ids into out[], returns the number */
+   (no kinds 8 / 7 / 5 / 9 / 0x14; first the ones with a jobId (+0x164) other than 'R', then those without),
+   accepted by ai_PassesPartnerFilter, with a previous-office level (gm_CharPrevLevel) within 5 of p's and, when
+   the window is narrower than 0..100, a liking in [lo, hi]; ids into out[], returns the number
+   @deep read in full against the original: double constants 0.0/100.0, gm_CharPrevLevel prototyped
+   (unsigned short id), AICHAR fields, !(r < lo) && !(r > hi), out[cnt++], k-- before the step; instruction
+   count equal (224/224). Left: allocation of the constant 0 only: ours zeroes edi (cnt = 0) before the
+   window test and stores win = 0 / pushes the 0 argument of gm_CharPrevLevel from edi ('- xor edi, edi; -
+   mov [esp+0x10], edi; - push edi'), the original stores immediates ('+ mov dword ptr [esp + 0x10], 0; +
+   push 0') and zeroes edi after push ebx ('+ xor edi, edi'); moving cnt = 0 after the util_Random call or
+   retyping cnt int/unsigned does not change it */
 
 unsigned int ai_FindCandidates(AIPER *p, unsigned int n, unsigned int fl, float lo, float hi, unsigned short *out)
 {
     unsigned int q[0x14];
-    unsigned char *c;
-    unsigned int cnt, i;
-    int step, k, rank, win;
-    char t;
+    unsigned int cnt;
+    int i, step, k, rank, win;
+    unsigned char t;
     float r;
 
     step = ai_CharWalkSteps[util_RandomU(0x10)];
     memset(q, 0, sizeof(q));
     memset(&q[7], 0xff, 8 * 4);
     win = 0;
-    if ((lo > 0.0f || hi < 100.0f) && lo < hi)
+    if ((lo > 0.0 || hi < 100.0) && lo < hi)
         win = 1;
     q[5] = 2;
     q[1] = fl;
-    rank = gm_Unk505f30(*(unsigned short *)p, 0);
+    rank = gm_CharPrevLevel(p->id, 0);
     k = 0x300;
+    i = util_RandomU(0x300);
     cnt = 0;
-    i = util_RandomU(0x300);
-    if (n != 0) {
-        do {
-            if (k == 0)
-                break;
-            c = (unsigned char *)&ai_CharsT[i];
-            t = c[2];
-            if (t != 8 && t != 7 && t != 5 && t != 9 && t != 0x14 && c[0x164] != 0 && c[0x164] != 'R'
-                && ai_PassesPartnerFilter(*(unsigned short *)p, (unsigned short)i, q, 0) != 0
-                && abs(rank - gm_Unk505f30(i, 0)) < 6
-                && (!win || (r = gm_Liking(i, *(unsigned short *)p, 1), lo <= r && r <= hi))) {
-                cnt++;
-                out[cnt - 1] = (unsigned short)i;
-            }
-            k--;
-            i = (int)(i + step) % 0x300;
-        } while (cnt < n);
-    }
-    i = util_RandomU(0x300);
-    for (k = 0x300; cnt < n && k != 0; k--) {
-        c = (unsigned char *)&ai_CharsT[i];
-        t = c[2];
-        if (t != 8 && t != 7 && t != 5 && t != 9 && t != 0x14 && c[0x164] == 0
-            && ai_PassesPartnerFilter(*(unsigned short *)p, (unsigned short)i, q, 0) != 0
-            && abs(rank - gm_Unk505f30(i, 0)) < 6
-            && (!win || (r = gm_Liking(i, *(unsigned short *)p, 1), lo <= r && r <= hi))) {
-            cnt++;
-            out[cnt - 1] = (unsigned short)i;
+    while (cnt < n && k != 0) {
+        t = ai_CharsT[i].kind;
+        if (t != 8 && t != 7 && t != 5 && t != 9 && t != 0x14 && ai_CharsT[i].jobId != 0 && ai_CharsT[i].jobId != 'R'
+            && ai_PassesPartnerFilter(p->id, (unsigned short)i, q, 0) != 0
+            && abs(rank - gm_CharPrevLevel((unsigned short)i, 0)) < 6
+            && (!win || (r = gm_Liking(i, p->id, 1), !(r < lo) && !(r > hi)))) {
+            out[cnt++] = (unsigned short)i;
         }
-        i = (int)(step + i) % 0x300;
+        k--;
+        i = (i + step) % 0x300;
+    }
+    k = 0x300;
+    i = util_RandomU(0x300);
+    while (cnt < n && k != 0) {
+        t = ai_CharsT[i].kind;
+        if (t != 8 && t != 7 && t != 5 && t != 9 && t != 0x14 && ai_CharsT[i].jobId == 0
+            && ai_PassesPartnerFilter(p->id, (unsigned short)i, q, 0) != 0
+            && abs(rank - gm_CharPrevLevel((unsigned short)i, 0)) < 6
+            && (!win || (r = gm_Liking(i, p->id, 1), !(r < lo) && !(r > hi)))) {
+            out[cnt++] = (unsigned short)i;
+        }
+        k--;
+        i = (step + i) % 0x300;
     }
     return cnt;
 }
