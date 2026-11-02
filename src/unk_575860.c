@@ -8622,92 +8622,99 @@ void ai_GraveFogWindow(AIBLD *rec)
     }
     sv_CameraFollow();
 }
-/* 0x585750, the graveyard "Seance" window (613 B): the first argument is unused, ev the event record, out the
-   result record. out[0] / out[1] = 0, out+8 = ev+0x20, out+0xc = ev+0x24, out+0x10 = **(int **)(ev + 0x2c +
-   *(int *)(ev + 0x88) * 0xc) and its 0x11 dwords copied to out+0x14; when the player's character byte +0x1cc
-   has bit 8 -> the message box 0x521410 (U_I (0x144a4f0), U_I (0x144a4f4), 0) and 0. Else the window
-   "Locations_Friedhof_Seance" (0x62a680) with 0x476f80 / 0x475600, the sound 0x52ea30, the text 0x40ce
-   (0x40cc), the four entries 0x40cf (4) / 0x40d0 (6) / 0x40d1 (8) / 0x40d2 (cancel) in 0x475b80 (window, 2,
-   text), 0xf8a668 = -1; the pump loop 0x5309a0 (this window, 0x677c7): the escape 0x14673a0 -> 0x6f22a0 = 1;
-   the cancel -> 0x6f22a0 = 1; the first entry -> 0x520f90 (the character, 4) * 1, the second -> * 2, the third
-   -> * 3; a non-zero result -> out[0] = the index, out[1] = 4 / 6 / 8, 0x6f22a0 = 1 and 1; the pump 0 ->
-   0x4758f0 (window), the result */
+/* the window record of the graveyard detail windows (ai_Unk583b70, ai_RentGraveDetail, ai_Unk586560: int[0x23]) */
+typedef struct GVDETAILWIN {
+    int win;                    /* 0x00, the form */
+    int sections[6];            /* 0x04, the d2_LastWindow of its sections */
+    GVENTRY *entry;             /* 0x1c, the grave entry shown */
+    int size;                   /* 0x20, its size (list) */
+    unsigned char index;        /* 0x24, its index in that list (gv_EntryIndex) */
+    char pad25[3];
+    GVITEM items[8];            /* 0x28, the dead persons of the grave */
+    int selected;               /* 0x88, the item clicked (ai_Unk586560) */
+} GVDETAILWIN;
 
-int ai_Unk585750(char *unused, char *ev, int *out)
+/* the result of the seance window (ai_SeanceWindow), read by the seance kinds 0x585cb0 / 0x586200 / 0x585f30 */
+typedef struct GVSEANCE {
+    int kind;                   /* 0x00, the seance chosen: 1 .. 3, 0 none */
+    int cost;                   /* 0x04, its price: 4 / 6 / 8 */
+    int size;                   /* 0x08, the grave's size (list) */
+    unsigned char index;        /* 0x0c, the grave's index in that list */
+    char pad0d[3];
+    int graveId;                /* 0x10, the dead person's GVGRAVE.id */
+    GVGRAVE grave;              /* 0x14, a copy of the dead person */
+} GVSEANCE;
+
+/* 0x585750, the graveyard's seance window "Locations\Friedhof\Seance" for the dead person w->items[w->selected] of
+   the detail window w (the first argument is unused): out gets the grave and a copy of the dead person, kind and
+   cost 0. When the player's character has the flag 8 of flags1cc (a seance already held, a reasoned guess), the
+   green message box txt 0x40cc / 0x40cd and 0. Else the title txt 0x40ce (0x40cc), the entries 0x40cf .. 0x40d1
+   (the prices 4 / 6 / 8) and the cancel entry 0x40d2; a right click or cancel closes it; an entry the player can
+   pay (sv_CheckMoney) sets out->kind (1 .. 3) and out->cost and closes it with 1 */
+int ai_SeanceWindow(char *unused, GVDETAILWIN *w, GVSEANCE *out)
 {
-    int amt[4];
-    int *p;
-    int *q;
+    int cost[3];
     int win;
-    int b1;
-    int b2;
-    int b3;
-    int b4;
-    int v;
-    int i;
+    int btn1;
+    int btn2;
+    int btn3;
+    int btnCancel;
+    int kind;
     int r;
 
     r = 0;
-    out[1] = 0;
-    out[0] = 0;
-    *(int *)((char *)out + 0x08) = *(int *)(ev + 0x20);
-    *(unsigned char *)((char *)out + 0x0c) = *(unsigned char *)(ev + 0x24);
-    amt[0] = 0;
-    amt[1] = 4;
-    amt[2] = 6;
-    amt[3] = 8;
-    p = *(int **)(ev + 0x2c + *(int *)(ev + 0x88) * 0xc);
-    *(int *)((char *)out + 0x10) = *p;
-    q = (int *)((char *)out + 0x14);
-    for (i = 0; i < 0x11; i++)
-        q[i] = p[i];
-    if (*(unsigned char *)((unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c + 0x1cc) & 8) {
-        sv_MessageBoxGreen(U_I((unsigned)&full_data_144a4f0), U_I((unsigned)&full_data_144a4f4), 0);
+    out->cost = 0;
+    out->kind = 0;
+    out->size = w->size;
+    out->index = w->index;
+    cost[0] = 4;
+    cost[1] = 6;
+    cost[2] = 8;
+    out->graveId = w->items[w->selected].grave->id;
+    out->grave = *w->items[w->selected].grave;
+    if (ai_CharsT[ai_PlayerId].flags1cc & 8) {
+        sv_MessageBoxGreen(txt_Ptrs[0x40cc], txt_Ptrs[0x40cd], 0);
         return 0;
     }
-    win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62a680);
+    win = d2_OpenForm(0, 0, "Locations\\Friedhof\\Seance");
     d2_SetPointerSprite(0, 0);
     d2_CentreViewWindows(win);
     d2_SetForm(win, 0);
-    sv_FitForm(U_I((unsigned)&d2_LastWindow));
+    sv_FitForm(d2_LastWindow);
     d2_SetForm(win, 1);
     io_PrintText(0x40ce, 0x40cc);
     d2_SetForm(win, 2);
-    b1 = d2_GetWinObj(win, 2, io_PrintText(0x40cf, 4));
-    b2 = d2_GetWinObj(win, 2, io_PrintText(0x40d0, 6));
-    b3 = d2_GetWinObj(win, 2, io_PrintText(0x40d1, 8));
-    b4 = d2_GetWinObj(win, 2, io_PrintText(0x40d2));
-    U_I((unsigned)&d2_ClickedId) = -1;
-    for (;;) {
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0) {
-            U_I((unsigned)&sv_PopRequest) = 1;
-        } else if (U_I((unsigned)&d2_ClickedId) != -1) {
-            if (U_I((unsigned)&d2_PointerObj) == b4) {
-                U_I((unsigned)&sv_PopRequest) = 1;
+    btn1 = d2_GetWinObj(win, 2, io_PrintText(0x40cf, 4));
+    btn2 = d2_GetWinObj(win, 2, io_PrintText(0x40d0, 6));
+    btn3 = d2_GetWinObj(win, 2, io_PrintText(0x40d1, 8));
+    btnCancel = d2_GetWinObj(win, 2, io_PrintText(0x40d2));
+    d2_ClickedId = -1;
+    do {
+        if (dm_L.rup != 0) {
+            sv_PopRequest = 1;
+        } else if (d2_ClickedId != -1) {
+            if (d2_PointerObj == btnCancel) {
+                sv_PopRequest = 1;
             } else {
-                if (U_I((unsigned)&d2_PointerObj) == b1) {
-                    v = sv_CheckMoney((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, 4);
-                } else if (U_I((unsigned)&d2_PointerObj) == b2) {
-                    v = sv_CheckMoney((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, 6) * 2;
-                } else if (U_I((unsigned)&d2_PointerObj) == b3) {
-                    v = sv_CheckMoney((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, 8) * 3;
-                } else {
-                    goto pump;
-                }
-                if (v != 0) {
-                    out[0] = v;
-                    out[1] = amt[v];
+                if (d2_PointerObj == btn1)
+                    kind = sv_CheckMoney(ai_Chars[ai_PlayerId], 4);
+                else if (d2_PointerObj == btn2)
+                    kind = sv_CheckMoney(ai_Chars[ai_PlayerId], 6) * 2;
+                else if (d2_PointerObj == btn3)
+                    kind = sv_CheckMoney(ai_Chars[ai_PlayerId], 8) * 3;
+                else
+                    continue;
+                if (kind != 0) {
+                    out->kind = kind;
+                    out->cost = cost[kind - 1];
                     r = 1;
-                    U_I((unsigned)&sv_PopRequest) = 1;
+                    sv_PopRequest = 1;
                 }
             }
         }
-pump:
-        if (sv_RunFrame(ai_Unk585750, 0x677c7) == 0) {
-            d2_CloseView(win);
-            return r;
-        }
-    }
+    } while (sv_RunFrame(ai_SeanceWindow, 0x677c7) != 0);
+    d2_CloseView(win);
+    return r;
 }
 
 void ai_Unk585c40(); int sb_IsInit(); void d2_PlaceViewWindows(int view, unsigned char flags);
@@ -9068,7 +9075,7 @@ int ai_Unk586560(char *a, int *w, int *out)
                     if (U_I((unsigned)&d2_PointerObj) == w[10 + i * 3]) {
                         w[0x22] = i;
                         d2_SetViewEnabled(w[0], 0);
-                        r = ai_Unk585750(a, (char *)w, out);
+                        r = ai_SeanceWindow(a, (char *)w, out);
                         d2_SetViewEnabled(w[0], 1);
                         break;
                     }
