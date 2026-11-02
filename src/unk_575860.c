@@ -5338,19 +5338,26 @@ typedef struct CANNONSCENE { /* 0xe4 bytes, the scene struct of ai_CannonScene (
     D3VECTOR rot;            /* +0x10, rot.x the pitch, rot.y the yaw (the angles are GVCANNON.camTarget at the start) */
     float pad1c;
     float zoom;              /* +0x20, cleared here, moved by ai_CannonAim */
-    char pad24[0x30];
+    float dirX;              /* +0x24, the aim direction (ai_CannonCamera) */
+    float dirY;              /* +0x28 */
+    float dirZ;              /* +0x2c */
+    char pad30[0x24];
     float yawSpeed;          /* +0x54, the horizontal turn speed ai_CannonAim steers (-1 .. 1) */
     float pitchSpeed;        /* +0x58, the vertical one */
     float yawDelta;          /* +0x5c, the yaw step of this frame (speed * dt * 1.5) */
     float pitchDelta;        /* +0x60, the pitch step (speed * dt * 0.8) */
-    char pad64[0x10];
+    char pad64[8];
+    unsigned now;            /* +0x6c, the clock of this frame (ai_CannonCamera's recoil timer) */
+    char pad70[4];
     int win74;               /* +0x74, closed at the end */
-    char pad78[4];
+    int recoilStart;         /* +0x78, the clock of the shot (ai_CannonCamera's recoil timer) */
     int fired;               /* +0x7c, set while the shot runs: ai_CannonAim then does nothing */
     int dragX;               /* +0x80, the mouse position at the last drag step */
     int dragY;               /* +0x84 */
     int dragState;           /* +0x88, 0 = no drag, 1 = dragging */
-    char pad8c[0x14];
+    D3OBJECT *obj8c[3];      /* +0x8c, 0x90, 0x94: the three barrels ai_CannonCamera turns */
+    D3OBJECT *obj98;         /* +0x98, the cannon object whose matrix holds the aim */
+    D3OBJECT *obj9c;         /* +0x9c, the wimpel object */
     int selected;            /* +0xa0, the selected object */
     int win_a4;              /* +0xa4, closed at the end */
     char pada8[0xc];
@@ -5741,67 +5748,121 @@ clamp:
 
 void d3_MatTranspose(); float d3_VecAngle2(); int ai_GetDefaultEffect();
 
-/* 0x57f0e0, the cannon camera update (947 B, ROUGH: the placement calls and the aiming / recoil maths are
-   written, the matrix details are comments): sc = the scene struct; the camera position sc + 0x90 / the object
-   sc + 0x98 / the wimpel sc + 0x9c handles; the screen 0xfb9070 / 0xfb9072; the view 0xfc2dec. The three object
-   handles sc + 0x8c / 0x90 / 0x94 get their positions through 0x43b860 (0x54560 the rotation); the mouse
-   0x475980 (sc + 0xb4) * 0.01 as the speed; the target position from the object matrix (the 0x18c / 0x194 /
-   entries * 30), 0x54560; the camera placement 0x43b790 (0xfc2dec, the position) / 0x43b860 (0xfc2dec, the
-   angle); the recoil sc + 0x78 / sc + 0x7c timer with the fade 0x54560 and the wimpel at -70 / -50 / 120;
-   0x43b790 (sc + 0x98, sc) as the default */
-void ai_CannonCamera(char *sc)
-{
-    float pos[3];
-    float ang[3];
-    float t[16];   /* t is a D3MATRIX: d3_MatTranspose writes 0x40 bytes */
-    float f1;
-    float f2;
-    int m;
-    int i;
-    int h;
+#define CAM_AXIS (*(D3VECTOR4 *)&ai_AxisPair)   /* 0x5ebb74, the (0, 0, 1) axis (the (0, 1, 0) one follows it) */
 
-    pos[0] = 0;
-    pos[1] = 0;
-    pos[2] = 0;
-    d3_SetObjectRot(*(int *)(sc + 0x98), (char *)pos);
-    pos[0] = *(float *)(sc + 0x10);
-    pos[1] = 0;
-    pos[2] = 0;
+/* 0x57f0e0, the cannon camera update (1254 B): sc = the scene struct. The cannon object (sc->obj98) and the
+   three barrels (sc->obj8c) get their rotation reset, the wimpel (sc->obj9c) is turned from the aim axis
+   (d3_VecAngle2 - 1.5707964 - sc->rot.y) and the ai_CannonAxes directions (recomputed while no shot runs) turn
+   the aim axis of the cannon object's matrix (sc->obj98->matrix) into the direction v, normalized; the camera
+   starts 30 units back from the scene position (y + 20) and is placed / rotated through d3_Camera, the mouse
+   value (sc->obj_b4) * 0.01 as the speed, the pitch ratio (sc->rot.x + 0.2617994) / 1.0471976 the angle and the
+   zoom the distance. The recoil (sc->recoilStart + 0x54 > sc->now): the fade from the elapsed clock (0.25 per
+   ms during the first 4, then (1 - (elapsed - 4) * 0.0125)^2) times 50 pushes the camera back along the aim
+   direction and the wimpel to -70 / -50 / 120; after it the wimpel is set back and the cannon object placed at
+   the scene position
+   @deep read the whole function against dcp disasm 0x57f0e0 and dcp draft and rebuilt it from the stub
+   (402 -> 1146 bytes, all statements present: the object rotation resets, the matrix axis transform and
+   normalize, the 30 unit camera offset with the zoom/speed ratios, the d3_Camera placement and rotation,
+   the recoil fade, the push back and the wimpel -70/-50/120, the reset and the final placement). What
+   remains is x87 stack scheduling and instruction selection: the original keeps the intermediate FPU
+   values on the stack (fxch/fstp/fld at 0x57f38f..0x57f3ee and 0x57f555..0x57f5b7) where ours reloads from
+   slots, and the original divides by the memory constant 0x5eec78 (fdiv) where ours folds 1/0.7853982 into
+   a multiply (0x57f4f2 fdiv vs 0x57f47a fmul 1.2732395), likewise the two pitch ratios (/1.3962634 and
+   /1.0471976 fold to multiplies where the original does fld/fsub/fdivp at 0x57f2c8..0x57f2fa). FMIN/FMAX
+   forms tried and reverted. Function is readable (Q4 view macro CAM_AXIS, d3_Camera, typed CANNONSCENE
+   fields). (size: 294 vs 334 instructions, explained: the 42 fewer instructions are the x87 stack reuses
+   and the folded constant divides: the original keeps f4 and the pos components on the stack with
+   fxch/fstp (0x57f38f..0x57f3ee), ours reloads them from the same slots (0x57f4a1..0x57f54c), no statement
+   is missing) */
+void ai_CannonCamera(CANNONSCENE *sc)
+{
+    D3VECTOR4 pos;    /* the rotations, then the camera position */
+    D3VECTOR ang;     /* the camera rotation */
+    D3MATRIX t;       /* the transpose of sc->obj98->matrix */
+    D3VECTOR v;       /* the aim direction */
+    float ratio;
+    float ratio2;
+    float speed;
+    float fade;
+    int def;
+    int i;
+
+    pos.x = 0;
+    pos.y = sc->rot.y;
+    pos.z = 0;
+    d3_SetObjectRot(sc->obj98, (char *)&pos);
+    pos.x = sc->rot.x;
+    pos.y = 0;
+    pos.z = 0;
     for (i = 0; i < 3; i++)
-        d3_SetObjectRot(*(int *)(sc + 0x8c + i * 4), (char *)pos);
-    pos[0] = 0;
-    pos[1] = 0;
-    pos[2] = 0;
-    t[3] = 0;
-    h = ai_GetDefaultEffect();
-    d3_MatTranspose(*(int *)(sc + 0x98) + 0x18c, (char *)t);
-    ang[0] = 0;
-    ang[1] = 0;
-    ang[2] = (float)(d3_VecAngle2((char *)(unsigned)&ai_AxisPair, h) - 1.5707964f) - *(float *)(sc + 0x14);
-    d3_SetObjectRot(*(int *)(sc + 0x9c), (char *)ang);
-    if (*(float *)(sc + 0x7c) == 0.0f)
-        ai_CannonAxes(sc);
-    /* the object's forward vector (the matrix +0x18c / +0x19c / +0x1ac, +0x194 / +0x1a0 / +0x1b0, +0x194 /
-       +0x1a4 / +0x1b4 at * 30) -> 0x54560 -> the camera offset from sc + 0x10 / 0x14 / 0x18, the mouse x *
-       0.01 as the speed and the pitch sc + 0x10 scaled */
-    f1 = *(float *)(sc + 0x10);
-    f2 = (f1 - -0.2617994f) / 1.0471976f;
-    m = d2_GetObjValue(*(int *)(sc + 0xb4));
-    d3_SetObjectPos(U_I((unsigned)&sv_CameraObj), (char *)pos);
-    d3_SetObjectRot(U_I((unsigned)&sv_CameraObj), (char *)ang);
-    /* the recoil: sc + 0x78 (timer) / sc + 0x7c (active): the fade 0x54560, the camera pushed back by the
-       object direction * 50 * the fade, the wimpel to -70 / -50 / 120, else reset and 0x43b790 (sc + 0x9c,
-       0x5eec80) / 0x43b790 (sc + 0x98, sc) */
-    if (*(float *)(sc + 0x7c) != 0.0f) {
-        if (*(float *)(sc + 0x78) < *(float *)(sc + 0x6c) + 0x54) {
-            *(float *)(sc + 0x7c) = 0;
-        } else {
-            *(float *)(sc + 0x7c) = 0;
-            *(float *)(sc + 0x78) = 0;
-            d3_SetObjectPos(*(int *)(sc + 0x9c), (char *)((unsigned)&sv_PhaseMinutes + 0x1c8));
-        }
+        d3_SetObjectRot(sc->obj8c[i], (char *)&pos);
+    pos.x = 0;
+    pos.y = 0;
+    pos.z = 0;
+    pos.w = 0;
+    def = ai_GetDefaultEffect();
+    d3_MatTranspose(&sc->obj98->matrix, (char *)&t);
+    pos.x = 0;
+    pos.y = 0;
+    pos.z = (float)(d3_VecAngle2((char *)(unsigned)&ai_AxisPair, def) - 1.5707964f) - sc->rot.y;
+    d3_SetObjectRot(sc->obj9c, (char *)&pos);
+    if (sc->fired == 0)
+        ai_CannonAxes((char *)sc);
+    v.x = CAM_AXIS.x * sc->obj98->matrix._11 + CAM_AXIS.y * sc->obj98->matrix._21 + CAM_AXIS.z * sc->obj98->matrix._31;
+    v.y = CAM_AXIS.x * sc->obj98->matrix._12 + CAM_AXIS.y * sc->obj98->matrix._22 + CAM_AXIS.z * sc->obj98->matrix._32;
+    v.z = CAM_AXIS.x * sc->obj98->matrix._13 + CAM_AXIS.y * sc->obj98->matrix._23 + CAM_AXIS.z * sc->obj98->matrix._33;
+    d3_Normalize((char *)&v);
+    pos.x = sc->pos.x - v.x * 30.0f;
+    pos.y = sc->pos.y - v.y * 30.0f + 20.0f;
+    pos.z = sc->pos.z - v.z * 30.0f;
+    ratio = (sc->rot.x - -0.61086524f) / 1.3962634f;
+    ratio2 = (sc->rot.x - -0.2617994f) / 1.0471976f;
+    def = d2_GetObjValue(sc->obj_b4);
+    speed = (float)def * 0.01f;
+    ang.y = sc->rot.y;
+    ang.z = sc->rot.z;
+    ang.x = (speed * sc->zoom * 0.5f + (1.0f - sc->zoom) * 0.7f + (float)sqrt(1.0f - sc->zoom) * 0.3f) * 0.61086524f * ratio2 - 0.61086524f;
+    pos.y = ((0.5f - speed * 0.25f) * ratio2 * sc->zoom + ratio) * 30.0f + pos.y;
+    fade = ((speed * ratio2 * 0.5f + 1.0f) * 1450.0f * ratio2 + 50.0f) * sc->zoom;
+    pos.x += fade * sc->dirX;
+    pos.y += fade * sc->dirY;
+    pos.z += fade * sc->dirZ;
+    d3_SetObjectPos(d3_Camera, (char *)&pos);
+    d3_SetObjectRot(d3_Camera, (char *)&ang);
+    if (sc->fired == 0) {
+        ai_CannonAxes((char *)sc);
+        if (sc->fired == 0)
+            goto done;
     }
-    d3_SetObjectPos(*(int *)(sc + 0x98), sc);
+    if (sc->recoilStart + 0x54 > sc->now) {
+        if (sc->now < sc->recoilStart + 4)
+            fade = (float)(sc->now - sc->recoilStart) * 0.25f;
+        else {
+            fade = 1.0f - (float)(sc->now - sc->recoilStart - 4) * 0.0125f;
+            fade = fade * fade;
+        }
+        v.x = sc->dirX;
+        v.y = 0;
+        v.z = sc->dirZ;
+        d3_Normalize((char *)&v);
+        if (sc->rot.x > 0.0f)
+            fade = (1.0f - sc->rot.x / 0.7853982f) * fade;
+        fade = fade * 50.0f;
+        pos.x = sc->pos.x - fade * v.x;
+        pos.y = sc->pos.y - fade * v.y;
+        pos.z = sc->pos.z - fade * v.z;
+        d3_SetObjectPos(sc->obj98, (char *)&pos);
+        pos.x = fade * CAM_AXIS.x - 70.0f;
+        pos.y = fade * CAM_AXIS.y - 50.0f;
+        pos.z = fade * CAM_AXIS.z + 120.0f;
+        d3_SetObjectPos(sc->obj9c, (char *)&pos);
+        return;
+    }
+    sc->fired = 0;
+    sc->recoilStart = 0;
+    d3_SetObjectPos(sc->obj9c, (char *)((unsigned)&sv_PhaseMinutes + 0x1c8));
+done:
+    d3_SetObjectPos(sc->obj98, (char *)sc);
 }
 
 void d3_DirToWorld();
