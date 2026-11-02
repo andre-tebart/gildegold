@@ -5401,15 +5401,7 @@ char ai_ShotCallbackArg[0x40] = { 0 };  /* 0x6fa020, the argument gv_SetEffectCa
    ai_CannonSwitchAnim (0 .. 2) and a fire (ai_CannonFireCheck) ai_CannonExplosion; a right button release or a click
    on the quit control sets sv_PopRequest. The teardown fades out again, closes the three windows, removes the two
    objects, deletes the 3D objects, re-enables the listed objects, restores viewport, clip rectangle, scene, sky and
-   camera and releases the callback of the run record
-   @deep read the whole function against dcp disasm 0x57e270 and dcp draft: every statement, condition and
-   call matches; the 321 code hunks are register and stack allocation. rec lives in ebp and run in ebx in
-   the original, rec in ebx and run in a slot here (0x57e277 mov ebx,[esp+0x754] vs push ebp; mov
-   ebp,[esp+0x75c], and 0x57e2bd mov [esp+0x18],eax vs mov ebx,eax). sel is [esp+0xfc] in the original and
-   ebp here; the flag object is reloaded from a slot in the original and kept in edi here; sc sits at +0x5c
-   in the original and +0x74 here (frame 0x74c vs 0x750). Tried with identical bytes: int* pv view loop,
-   CANNONREC *cr alias. Tried and reverted for worse bytes: sc fields for sel/last/now. Kept obj[4]+flag:
-   code 350->321, slots 264->154. */
+   camera and releases the callback of the run record */
 void ai_CannonScene(char *rec)
 {
     GVEFFECT *run;
@@ -5635,17 +5627,7 @@ double _CIfmod();
    mouse at the screen edges (5 pixels) give the directions a (vertical) and b (horizontal) in -1 .. 1; each
    speed (pitchSpeed, yawSpeed) falls toward 0 without a direction and otherwise grows by dt * 0.8 (or * 0.25
    when it runs against the direction) up to +-1, the frame deltas are speed * dt * 0.8 (pitch) and * 1.5 (yaw).
-   The pitch is kept within -15 .. 45 degrees (the pitch speed is cleared at a stop), the yaw within 0 .. 2 pi
-   @deep read the whole function against dcp disasm 0x57ec40 and dcp draft: fixed the real difference (the
-   drag test is dm_L.ldown, not lhold, and the drag block is a plain dragState == 1 check after the
-   else-if) which took dist 222->138 and code 234->99. The rest is FPU scheduling and instruction
-   selection: the original keeps dt in st(0) and multiplies by the factor memory operand where ours loads
-   the factor and fmuls dt (0x57ee9b fld [esp+0x18] vs fld 0.25; fmul [esp+0x18]), the comparison idioms
-   differ (test ah,5; jp vs and eax,0x100; jne at 0x57ee9f, 0x57f069), and the dragState = 0 block is
-   placed after the init block (0x57ed34) where the original has it inline at 0x57ecf5. Tried: FMIN/FMAX
-   with the constant on the left (dist 151), 0.0f <= x ? forms (dist 144, code 129), both reverted.
-   Statement logic, conditions, constants and calls all match. (size: 3 of the instruction difference are
-   shared / inline tails) */
+   The pitch is kept within -15 .. 45 degrees (the pitch speed is cleared at a stop), the yaw within 0 .. 2 pi */
 void ai_CannonAim(CANNONSCENE *sc, float dt)
 {
     int a = 0;
@@ -5759,21 +5741,7 @@ void d3_MatTranspose(); float d3_VecAngle2(); int ai_GetDefaultEffect();
    zoom the distance. The recoil (sc->recoilStart + 0x54 > sc->now): the fade from the elapsed clock (0.25 per
    ms during the first 4, then (1 - (elapsed - 4) * 0.0125)^2) times 50 pushes the camera back along the aim
    direction and the wimpel to -70 / -50 / 120; after it the wimpel is set back and the cannon object placed at
-   the scene position
-   @deep read the whole function against dcp disasm 0x57f0e0 and dcp draft and rebuilt it from the stub
-   (402 -> 1146 bytes, all statements present: the object rotation resets, the matrix axis transform and
-   normalize, the 30 unit camera offset with the zoom/speed ratios, the d3_Camera placement and rotation,
-   the recoil fade, the push back and the wimpel -70/-50/120, the reset and the final placement). What
-   remains is x87 stack scheduling and instruction selection: the original keeps the intermediate FPU
-   values on the stack (fxch/fstp/fld at 0x57f38f..0x57f3ee and 0x57f555..0x57f5b7) where ours reloads from
-   slots, and the original divides by the memory constant 0x5eec78 (fdiv) where ours folds 1/0.7853982 into
-   a multiply (0x57f4f2 fdiv vs 0x57f47a fmul 1.2732395), likewise the two pitch ratios (/1.3962634 and
-   /1.0471976 fold to multiplies where the original does fld/fsub/fdivp at 0x57f2c8..0x57f2fa). FMIN/FMAX
-   forms tried and reverted. Function is readable (Q4 view macro CAM_AXIS, d3_Camera, typed CANNONSCENE
-   fields). (size: 294 vs 334 instructions, explained: the 42 fewer instructions are the x87 stack reuses
-   and the folded constant divides: the original keeps f4 and the pos components on the stack with
-   fxch/fstp (0x57f38f..0x57f3ee), ours reloads them from the same slots (0x57f4a1..0x57f54c), no statement
-   is missing) */
+   the scene position */
 void ai_CannonCamera(CANNONSCENE *sc)
 {
     D3VECTOR4 pos;    /* the rotations, then the camera position */
