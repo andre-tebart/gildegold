@@ -7305,36 +7305,27 @@ int gm_CureUpperDisease(ORDCHAR *c)
 
 void gm_ShuffledBytes(unsigned char n, unsigned char *out)
 {
-    unsigned char i, cnt, swaps, a, b, t, m;
-    unsigned char *p;
+    unsigned char i, swaps, cnt, a, b, t;
+    int m;
 
-    i = 0;
-    p = out;
-    if (n != 0) {
-        do {
-            *p = i;
-            i++;
-            p++;
-        } while (i < n);
-    }
-    if (1 < n) {
-        if ((n & 0xfc) < 5)
-            m = 1;
-        else
+    for (i = 0; i < n; i++)
+        out[i] = i;
+    if (n >= 2) {
+        if ((n & 0xfc) > 4)
             m = n >> 2;
+        else
+            m = 1;
         swaps = 0;
         cnt = (n >> 1) + m;
-        if (cnt != 0) {
-            do {
-                a = (unsigned char)util_RandomU(n);
-                b = (unsigned char)util_RandomU(n);
-                if (a != b) {
-                    t = out[a];
-                    out[a] = out[b];
-                    swaps++;
-                    out[b] = t;
-                }
-            } while (swaps < cnt);
+        while (swaps < cnt) {
+            a = (unsigned char)util_Random(n);
+            b = (unsigned char)util_Random(n);
+            if (a != b) {
+                t = out[a];
+                out[a] = out[b];
+                swaps++;
+                out[b] = t;
+            }
         }
     }
 }
