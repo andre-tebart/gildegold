@@ -705,7 +705,6 @@ typedef struct SHOTSLOT {  /* 0x38 bytes, a record of the cannon scene's shot ta
 #define ai_ShotDirty (*(int *)&full_data_6f2664)  /* 0x6f2664, set when ai_ShotTableStore stored a record, cleared by the scene (ai_Unk57f690) */
 #define sv_CheckGoodAmountB ((int (*)(char *, int, unsigned char))sv_CheckGoodAmount)  /* @original: ai_AlchemistHire pushes the player byte unextended (mov al, ai_OwnPlayer / push eax), a char third parameter; sv_CheckGoodAmount itself masks it (t & 0xff) */
 #define gm_ConvertMoney3 ((int (*)(int, unsigned char, int))gm_ConvertMoney)  /* @original: ai_AlchemistFundWindow passes a third word (the previous result) to the second and third call */
-#define ahm_SendAddValueF ((int (*)(char *, float))ahm_SendAddValue)  /* @original: ai_AlchemistFundWindow passes the float by value (ahm_SendAddValue takes the bits of a float) */
 int ai_TutorialChapterOn[5] = { 1, 1, 1, 1, 1 };  /* 0x62918c, per chapter 1 = played (the start window's check boxes, ai_TutorialWindow) */
 int (*ai_TutorialChapterInit[5])(void) = { ai_TutorialInitChapter1, ai_TutorialInitChapter2, ai_TutorialInitChapter3, ai_TutorialInitChapter4, ai_TutorialInitChapter5 };  /* 0x6291a0, the chapter chain builders the start appends for every chapter played */
 int ai_TutorialBanks[6] = { 0 };  /* 0x6f2640, the voice banks of the main intro / outro and the chapters 1 .. 5 (snd_LoadVoiceBank), unloaded by the stop */
@@ -5246,7 +5245,7 @@ int ai_AlchemistFundWindow(unsigned char *obj, AHMREC *rec)
             if (d2_PointerObj == ok) {
                 v = gm_PlayerFactor(d2_GetObjValue(field), ai_OwnPlayer);
                 if (sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], v, ai_OwnPlayer)) {
-                    ahm_SendAddValueF(owner, (float)v / (float)points * share * 0.75f);
+                    ahm_SendAddValue(owner, (float)v / (float)points * share * 0.75f);
                     done = 1;
                     sv_PopRequest = 1;
                     cm_SendMoveGoods(((AICHAR *)owner)->netId, ai_CharInts[ai_PlayerId][0], ai_OwnPlayer, v);

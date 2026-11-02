@@ -174,7 +174,7 @@ int ahm_AddPlace(int *p, char *rec, unsigned char *o);  /* 0x4ecb30 */
 int ahm_RemovePlace(int *p, char *rec, unsigned char *o);  /* 0x4ecbc0 */
 int ahm_SendSetPlaceValue(char *c, int id, float v);  /* 0x4ecc30 */
 int ahm_SetPlaceValue(int *p, char *rec);   /* 0x4ecd10 */
-int ahm_SendAddValue(char *c, int v);      /* 0x4ecd50 */
+int ahm_SendAddValue(char *c, float v);      /* 0x4ecd50 */
 int ahm_AddValue(int *p, char *rec);   /* 0x4ecdb0 */
 int ahm_SendDelete(char *c);             /* 0x4ece10 */
 int ahm_WriteRecord(void *f, unsigned char *o);  /* 0x4ecf10 */

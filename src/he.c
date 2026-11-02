@@ -15217,7 +15217,7 @@ int he_Unk56ddc0(int b, int kind)
 }
 
 int ahm_ResearchState();
-int ahm_SendAddValue();
+int ahm_SendAddValue(char *c, float v);
 float util_RandomF();
 void he_Unk56e070();
 
