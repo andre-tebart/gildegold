@@ -12246,7 +12246,7 @@ void ai_Unk5a5910(int param_1)
     sv_CameraFollow();
 }
 
-int unk_Unk4fbb80(); void cm_RequestChrMoveToUniverse(int a, int b, int c, const char *s); int ch_Delete();
+int gm_CreateCharModel(); void cm_RequestChrMoveToUniverse(int a, int b, int c, const char *s); int ch_Delete();
 
 /* 0x5a5bc0, the kidnapping contact listener (694 B, room 0x65 of the building driver 0x59e420): the victim
    0x505df0 (param_1 + 0x65): without a cell record 0x4fbb80 (the victim, 0x633444, 0, 0, 0, "dummy_EINGANG_ZELLE")
@@ -12268,7 +12268,7 @@ void ai_Unk5a5bc0(int param_1, int param_2)
         ch = gm_FindChar(U_I(param_1 + 0x65));
         if (ch != 0) {
             if (U_I(ch + 0x184) == 0 && *(char *)(ch + 2) != 6 && *(char *)(ch + 2) != 7)
-                cell = unk_Unk4fbb80(ch, U_I((unsigned)&d3_CurrentScene), 0, 0, 0, "dummy_EINGANG_ZELLE");
+                cell = gm_CreateCharModel(ch, U_I((unsigned)&d3_CurrentScene), 0, 0, 0, "dummy_EINGANG_ZELLE");
             if (U_I(ch + 0x184) != 0 && U_I(U_I(ch + 0x184) + 0x30) != U_I(param_2 + 2))
                 cm_RequestChrMoveToUniverse(U_I(ch + 4), U_I(param_1 + 1), U_I(param_2 + 2), "dummy_EINGANG_ZELLE");
         }

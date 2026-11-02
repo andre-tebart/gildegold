@@ -676,7 +676,7 @@ extern int ai_Unk6f0d38;  /* 0x6f0d38 */
 
 void ai_Unk4d08c0();  /* 0x4d08c0 */
 char *ai_Unk4d0920(char *c, int a);  /* 0x4d0920 */
-int unk_Unk4fbb80();  /* 0x4fbb80 */
+int gm_CreateCharModel();  /* 0x4fbb80 */
 extern const double ai_Unk5eb9b8;  /* 0x5eb9b8 */
 
 void ai_Unk4d0a30();  /* 0x4d0a30 */

@@ -1187,62 +1187,74 @@ void gm_ChooseHeadIcon(unsigned short *c)
     }
     ORD_CHAR(c)->picture = 0x639;
 }
-/* 0x4fbb80, creates the model of the character c (+0x184) in the scene model: at the position p (0x403390 with the name of the head record 0x4fb390 (c), 0x20-byte zero vector when p is 0), named "sp_<number>", linked back to c (+0x200 of its object, +0x48 = id | 0x3000000), copies the name to c + 500 and chooses the head (0x4fb5a0 / 0x4fb890); the position comes from the dummy of the object obj when a dummy name is given (0x449690 / 0x458a20); scene 0x633444 is selected again at the end. Returns the model. ROUGH */
+/* 0x4fbb80, creates the model of the character c (its model, ch_Create with the model name of its head record)
+   in the scene scene: at the dummy named dummy of the object group obj when there is one (in world
+   coordinates), else at p (the zero vector when p is 0; no model at all when p and ori are both 0), named
+   "sp_<netId>", its body linked back to c (owner, pickId = id | 0x3000000) and turned to ori when given; copies
+   the model name to c's own head name and chooses the variant and the head icon. The current scene is selected
+   again at the end. Returns the model (0 when scene is negative).
+   @deep Read whole against the original and Ghidra; meaning matches (same 130 instructions, calls, args,
+   fields, loop). Left: (1) allocation: ours keeps ori in its arg slot ([esp+0x44] reload at +0x91) and
+   caches 0 in ebx (xor ebx,ebx; cmp reg,ebx / push ebx / mov [zero],ebx), the original keeps p'=edi,
+   o'=ebx, ori=ebp, c=esi and so uses test reg,reg / push 0 / mov [..],0 immediates - every code hunk but
+   one is that substitution (cmp eax,ebx vs test eax,eax; ebp->ebx, eax->ebp regs). Tried o = ori ternary
+   vs if, rot/o naming, declaration order. (2) block layout: the original places the d3_PointToWorld block
+   after the epilogue (jne +0x8b to +0x174, jmp back to +0xb1), ours inline; tried if/else both polarities,
+   else-if chain, nested if with goto placed, goto world label after the return - VC6 emits the identical
+   layout (dist 62 ins every time), so it is not reachable from the statement structure tried. */
 
-int unk_Unk4fbb80(unsigned short *c, int scene, int *p, int *ori, int obj, char *dummy)
+int gm_CreateCharModel(unsigned short *c, int scene, int *p, int *ori, int obj, char *dummy)
 {
     int saved;
     int zero[4];
-    int pos[3];
-    int it;
-    char *name;
-    char *s;
-    int *m;
-    int *ori0;
+    int pos[4];
+    int *o;
+    D3OBJECT *it;
+    GMHEAD *rec;
+    char *name, *s, *d;
+    CHARACTER *m;
 
     saved = d3_CurrentScene;
-    ori0 = ori;
     zero[0] = 0;
     zero[1] = 0;
     zero[2] = 0;
     zero[3] = 0;
     if (p == 0)
         p = zero;
-    if (ori == 0)
-        ori = zero;
+    o = ori != 0 ? ori : zero;
     if (scene < 0)
         return 0;
     d3if_SelectScene(scene, 1);
-    if (dummy != 0 && (it = d3_FindObject(obj, 0x100, 0, dummy)) != 0) {
-        d3_PointToWorld(it, it + 0x4c, pos);
-    } else {
+    if (dummy != 0 && (it = d3_FindObject(obj, 0x100, 0, dummy)) != 0)
+        d3_PointToWorld(it, &it->pos, (D3VECTOR *)pos);
+    else if (p != 0 || o != 0) {
         pos[0] = p[0];
         pos[1] = p[1];
         pos[2] = p[2];
-    }
-    {
-        unsigned *rec = gm_CharNameRecord(*c);
-        if (rec != 0) {
-            name = (char *)(rec + 1);
+    } else
+        goto done;
+    rec = (GMHEAD *)gm_CharNameRecord(*c);
+    if (rec != 0) {
+        name = rec->name;
+        m = ch_Create(name, (D3VECTOR *)pos);
+        ORD_CHAR(c)->model = m;
+        if (m != 0) {
+            sprintf(m->obj->name, "sp_%i", ORD_CHAR(c)->netId);
+            ORD_CHAR(c)->model->obj->owner = c;
+            ORD_CHAR(c)->model->obj->pickId = *c | 0x3000000;
+            if (ori != 0)
+                d3_SetObjectRot(ORD_CHAR(c)->model->obj, (D3VECTOR *)ori);
             s = name;
-            m = (int *)ch_Create(name, pos);
-            *(int **)(c + 0xc2) = m;
-            if (m != 0) {
-                sprintf((char *)m[0xd], "sp_%i", *(int *)(c + 2));
-                *(unsigned short **)(*(int *)(*(int *)(c + 0xc2) + 0x34) + 0x200) = c;
-                *(unsigned *)(*(int *)(*(int *)(c + 0xc2) + 0x34) + 0x48) = *c | 0x3000000;
-                if (ori0 != 0)
-                    d3_SetObjectRot(*(int *)(*(int *)(c + 0xc2) + 0x34), ori0);
-                do {
-                    *((char *)c + 500 + (s - name)) = *s;
-                } while (*s++ != 0);
-                gm_SelectModelVariant((char *)c);
-                gm_ChooseHeadIcon(c);
-            }
+            d = ORD_CHAR(c)->ownName;
+            while ((*d++ = *s++) != 0)
+                ;
+            gm_SelectModelVariant((char *)c);
+            gm_ChooseHeadIcon(c);
         }
     }
+done:
     d3if_SelectScene(saved, 1);
-    return *(int *)(c + 0xc2);
+    return (int)ORD_CHAR(c)->model;
 }
 /* 0x4fbd10, puts the character id (0x505df0, it must have no model yet) on the stage at the object of the group (1, 1, a) of its building (the group of the mission object when b is -1): its scene (0x502520 / 0x511dc0 / 0x511e60), the dummy "dummy_TUER" (or the object own dummy 0x406790, else "dummy_EINGANG"), the model by 0x4fbb80, the animation "bewegung/gehen"; stores the building (+0x2c) and b (+0x30) in the model and hides it (0x402480) when the shown building (0x6f2308 / 0x6f230c) is another. Returns the model or 0. ROUGH */
 
@@ -1296,7 +1308,7 @@ go:
             uVar7 = 0;
         }
     }
-    unk_Unk4fbb80((unsigned short *)c, sc, p4, p5, uVar7, dummy);
+    gm_CreateCharModel((unsigned short *)c, sc, p4, p5, uVar7, dummy);
     if (*(int *)(c + 0x184) != 0)
         ch_PreloadAnims(*(int *)(c + 0x184), 1, "bewegung/gehen");
     d3if_SelectScene(saved, 1);

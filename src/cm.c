@@ -7832,7 +7832,7 @@ char *ai_Unk4d0920(char *c, int a)
     memcpy(r, t, 0x21c);
     *(int *)(r + 0x1ac) = 0;
     *(int *)(r + 0x184) = 0;
-    unk_Unk4fbb80(r, d3_CurrentScene, 0, 0, 0, a);
+    gm_CreateCharModel(r, d3_CurrentScene, 0, 0, 0, a);
     *(char *)(*(char **)(r + 0x184) + 0x240) = 4;
     *(char *)(*(char **)(r + 0x184) + 0x8d) |= 0x80;
     cm_UpdateHandObject(r);
@@ -12306,8 +12306,8 @@ void ai_Unk4ded10(char *m)
     ai_Unk92bca0 = (int)cb;
     ai_Unk6f0da8[0] = 0;
     ai_Unk6f0da8[1] = 0;
-    unk_Unk4fbb80(ca + 0x10, d3_CurrentScene, 0, 0, 0, "dummy_DUELLANT_A_ENTRY");
-    unk_Unk4fbb80(cb + 0x10, d3_CurrentScene, 0, 0, 0, "dummy_DUELLANT_B_ENTRY");
+    gm_CreateCharModel(ca + 0x10, d3_CurrentScene, 0, 0, 0, "dummy_DUELLANT_A_ENTRY");
+    gm_CreateCharModel(cb + 0x10, d3_CurrentScene, 0, 0, 0, "dummy_DUELLANT_B_ENTRY");
     oa = *(char **)(ca + 0x1b4 - 0x10 + 0x10);
     ob = *(char **)(cb + 0x1b4 - 0x10 + 0x10);
     if (oa == 0 || ob == 0) {
