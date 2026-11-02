@@ -1571,29 +1571,33 @@ float gm_CharacterHealth(short *c);
 float unk_Unk4fc890(short *c);
 void unk_Unk4fd120(void);
 
-/* 0x4fc6f0, ages the health float (+0x1c) of the character c to the age (+10 = age): above the lifetime float (+0x20) by an iteration of v = (v - k) + k / v with k = +0x14 (as many times as the years over), otherwise towards the float +0x18; the change goes to 0x4c4ac0 (id, 0x1c, ..), the age to the character through 0x4c3c00 (2, 1, 10, &age). ROUGH, the number of iterations is a guess */
+/* 0x4fc6f0, ages the character c to the age: its life f01c becomes f018 when the age is not above its f020,
+   else f018 run through v = f014 / v + (v - f014) once per year above f020; the change goes out as a float
+   delta of the field 0x1c, the age as the delta of w00a (0xa). */
 void gm_AgeCharacter(char *c, unsigned short age)
 {
-    float k, v, d;
+    ORDCHAR *ch;
+    float a, k, v;
     int n;
 
-    if (c != 0) {
-        if ((float)(age & 0xffff) > *(float *)(c + 0x20)) {
-            k = *(float *)(c + 0x14);
-            v = *(float *)(c + 0x1c);
-            n = (int)((float)(age & 0xffff) - *(float *)(c + 0x20));
+    ch = ORD_CHAR(c);
+    if (ch != 0) {
+        a = (float)age;
+        v = ch->f018;
+        if (a <= ch->f020) {
+            cm_SendFloatDelta(ch->netId, 0x1c, v - ch->f01c);
+        } else {
+            k = ch->f014;
+            n = (int)(a - ch->f020);
             if (n > 0) {
                 do {
                     n--;
-                    v = (v - k) + k / v;
+                    v = k / v + (v - k);
                 } while (n != 0);
             }
-            d = v - *(float *)(c + 0x1c);
-        } else {
-            d = *(float *)(c + 0x18) - *(float *)(c + 0x1c);
+            cm_SendFloatDelta(ch->netId, 0x1c, v - ch->f01c);
         }
-        cm_SendFloatDelta(*(int *)(c + 4), 0x1c, d);
-        cm_BeginFieldBlock(c, *(int *)(c + 4));
+        cm_BeginFieldBlock(c, ch->netId);
         cm_AddFieldDelta(2, 1, 10, &age);
         cm_SendFieldDeltas();
         gm_NetMsgCount++;

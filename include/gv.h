@@ -112,7 +112,7 @@ typedef struct ORDCHAR {
     char pad00e[2];
     float f010;                     /* 0x010, ai.h AICHAR.f010; the life value the daily step moves f01c toward while w00a is below f020 */
     float f014;                     /* 0x014, ai.h AICHAR.f014; the base of the daily life loss beyond f020 */
-    float f018;                     /* 0x018, ai.h AICHAR.f018 */
+    float f018;                     /* 0x018, ai.h AICHAR.f018; gm_AgeCharacter ages the life from it */
     float f01c;                     /* 0x01c, ai.h AICHAR.f01c, the life value: the character dies when f01c + v024 is used up (gm_DailyCharacterStep) */
     float f020;                     /* 0x020, ai.h AICHAR.f020; a child (jobId 0) whose w00a is below it gets the child head (gm_CharNameRecord) */
     int v024;                       /* 0x024, ai.h AICHAR.v024, added to f01c by the daily step's death test */
