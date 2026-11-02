@@ -3067,7 +3067,7 @@ void main_Unk537de0(void)
     tb_OpenFunction(sv_UpdateClock, 0x47);
     tb_SetFunctionOff(sv_UpdateClock, 1);
     he_Unk53eea0();
-    gv_ClearGraveyard();
+    gv_ClearCrimes();
     ord_ResetStatistics();
     main_BookObject = d3io_LoadObjectRef("Buch", "Buch");
     if (snd_SfxEnabled != 0) {

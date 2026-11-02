@@ -3497,27 +3497,24 @@ next:;
     *cnt = k;
     return (char *)best;
 }
-/* 0x4f4350, clears the graveyard game state: 0x6f1b88 = 0, the 512 records of 0x91f700 (ids -1, +0x16 = -1, int +0x25 = 0 ..), the 2048 pairs -1 */
+/* 0x4f4350, clears the crimes: ai_NextCrimeId = 0, every CRIME record free (culprit, victim and id -1, state 0) and
+   every evidence pair (-1, -1) */
 
-void gv_ClearGraveyard(void)
+void gv_ClearCrimes(void)
 {
-    int *p;
+    int i;
 
-    p = (int *)(gv_Graveyard + 0x12);
     ai_NextCrimeId = 0;
-    do {
-        p[1] = -1;
-        p[0] = -1;
-        *(int *)((char *)p - 0x12) = -1;
-        *(int *)((char *)p + 0x13) = 0;
-        p = (int *)((char *)p + 0x2d);
-    } while ((int)p < (int)(gv_Graveyard + 0x5a12));
-    p = (int *)(unk_Tab91b6e0 + 4);
-    do {
-        p[-1] = -1;
-        p[0] = -1;
-        p += 2;
-    } while ((int)p < ((unsigned)unk_Tab91b6e0 + 0x4004));
+    for (i = 0; i < 0x200; i++) {
+        gv_CrimesT[i].culprit = -1;
+        gv_CrimesT[i].victim = -1;
+        gv_CrimesT[i].id = -1;
+        gv_CrimesT[i].state = 0;
+    }
+    for (i = 0; i < 0x800; i++) {
+        ai_Evidence[i][0] = -1;
+        ai_Evidence[i][1] = -1;
+    }
 }
 /* 0x4f4420, a check of the character c for the order kind k: -1 without c, -3 for k >= 10, 0 for other kinds than 5 / 7, else -4 when the byte (+0x166 for 5, +0xd for 7) is 0 */
 

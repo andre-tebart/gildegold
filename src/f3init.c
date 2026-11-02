@@ -449,7 +449,7 @@ int ai_Unk454510();                     /* 0x454510 */
 int ai_Unk43c570();                     /* 0x43c570 */
 int ai_Unk43ca20();                     /* 0x43ca20 */
 void amt_InitTable(void);               /* 0x4e5cd0, amt.h */
-void gv_ClearGraveyard(void);           /* 0x4f4350, gv.c */
+void gv_ClearCrimes(void);           /* 0x4f4350, gv.c */
 int cm_SendMessage10(unsigned char n, int b, void *p, short d);  /* 0x4c45c0, cm.h */
 void gm_AssignBuilding(unsigned char *b, int place, int own);  /* 0x502b60, f3gm.c */  /* @original: f3gm.c defines `unsigned short place, unsigned own`; the caller below zero-extends the word load (xor/mov cx, no and mask) */
 void gm_SyncMarket(unsigned p);         /* 0x4fec10, f3gm.c */
@@ -2137,7 +2137,7 @@ place:
 }
 /* 0x510ad0, initialises the town of the city file `city` (the start of a game): reads the city INI into the
    player slot table (init_LoadCityINI), loads the town scene "scenes/*stadt_%s.ed3" (init_LoadTownScene) and
-   returns 1 when it does not exist, empties the offices (amt_InitTable) and the graveyard (gv_ClearGraveyard),
+   returns 1 when it does not exist, empties the offices (amt_InitTable) and the crimes (gv_ClearCrimes),
    allocates the buildings and the site names of the scene objects (init_AllocSceneBuilding /
    init_SceneNameToPrototype), inherits the owners (init_InheritOwner) and merges the 16 building site groups
    (init_LoadSiteScene). Then it creates the bank (character kind 10, named "STADT", 200000000 for every player
@@ -2164,7 +2164,7 @@ int init_InitTown(char *city)
     if (ok == 0)
         return 1;
     amt_InitTable();
-    gv_ClearGraveyard();
+    gv_ClearCrimes();
     d3_ForEachObject2(d3_DefaultScene, 0, 0x140, init_AllocSceneBuilding);
     d3_ForEachObject2(d3_DefaultScene, 0, 0x40, init_SceneNameToPrototype);
     d3_ForEachObject2(d3_DefaultScene, 0, 0x20, init_InheritOwner);
