@@ -3374,37 +3374,32 @@ int gv_HeldCrimesOf(int culprit, int *out, unsigned short t)
     }
     return n;
 }
-/* 0x4f4080, as 0x4f3fe0 but the records' ids (+0) are stored */
+/* 0x4f4080, as gv_HeldCrimesOf, but the crimes' ids (CRIME.id) are stored; t is a character index in its low word
+   (unsigned here: he.c and unk_58bbd0.c declare the function without a prototype) */
 
-int unk_Unk4f4080(int p, int *out, unsigned t)
+int gv_HeldCrimeIdsOf(int culprit, int *out, unsigned t)
 {
-    int n, k, i;
-    int *q;
-    int *o;
+    int n, i, k;
+    ORDCHAR *ch;
 
     n = 0;
-    if (gm_FindChar(p) == 0)
+    if (gm_FindChar(culprit) == 0)
         return 0;
-    if ((t & 0xffff) * 0x21c != -(unsigned)&ai_Chars) {
-        q = (int *)(unk_Tab91b6e0 + 4);
-        o = out;
-        for (i = 0x20; i != 0; i--)
-            *o++ = -1;
-        do {
-            if (q[-1] == *(int *)(ai_Chars[t & 0xffff] + 4)) {
-                k = gv_FindCrime(*q);
-                if (k != -1 && *(int *)(gv_Graveyard + 0x16 + k * 0x2d) == p) {
-                    out[n] = *(int *)(gv_Graveyard + k * 0x2d);
-                    n++;
-                    if (n > 0x20)
-                        return n;
-                }
+    ch = &ORD_CHARS[(unsigned short)t];
+    if (ch == 0)
+        return 0;
+    memset(out, 0xff, 0x20 * sizeof(int));
+    for (i = 0; i < 0x800; i++) {
+        if (ai_Evidence[i][0] == ch->netId) {
+            k = gv_FindCrime(ai_Evidence[i][1]);
+            if (k != -1 && gv_CrimesT[k].culprit == culprit) {
+                out[n++] = gv_CrimesT[k].id;
+                if (n > 0x20)
+                    break;
             }
-            q += 2;
-        } while ((int)q < ((unsigned)unk_Tab91b6e0 + 0x4004));
-        return n;
+        }
     }
-    return 0;
+    return n;
 }
 /* 0x4f4130, the count of 0x4f3fe0 without the lists (stops at 0x21) */
 

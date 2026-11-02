@@ -7374,7 +7374,7 @@ void he_Unk545840(int ev)
 }
 
 int gv_Accuse();
-int unk_Unk4f4080();
+int gv_HeldCrimeIdsOf();
 void gm_Shuffled(unsigned char n, int *out);
 void ai_Unk4c4f10(int a, int b, int c);
 int ai_Unk4b44e0();
@@ -7673,7 +7673,7 @@ void he_Unk546c40(int ev)
             x = *(int *)(r + 1);
         gv_Accuse(0x16, 1, *(int *)(a + 4), *(int *)(b + 4), x);
         cm_SendRelations(*(int *)(a + 4), *(int *)(b + 4), 0x34, 1);
-        n = unk_Unk4f4080(*(int *)(b + 4), arr, *(unsigned short *)a);
+        n = gv_HeldCrimeIdsOf(*(int *)(b + 4), arr, *(unsigned short *)a);
         gm_Shuffled(n < 0x10 ? n : 0x10, sel);
         i = 0;
         while (n != 0) {

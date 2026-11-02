@@ -20101,7 +20101,7 @@ int ai_Unk5c8ef0(unsigned short *param_1, void *unused)
     return 0x11;
 }
 
-int unk_Unk4f4080();
+int gv_HeldCrimeIdsOf();
 
 /* 0x5c9290, the blackmail privilege handler "privillegien_erpressung2" 0x62d4c4 (695 B, ROUGH): two
    records param_1 (the AIMSG: +0 the id, +2 the type, +4 the handle, +0x1c8 the flags) and param_2 (the
@@ -20129,7 +20129,7 @@ int ai_Unk5c9290(unsigned short *param_1, unsigned short *param_2)
         return 0;
     if (*(char *)((char *)param_1 + 2) != 6 && *(char *)((char *)param_1 + 2) != 7)
         return 0;
-    rank = unk_Unk4f4080(*(int *)((char *)param_2 + 4), name, *param_1);
+    rank = gv_HeldCrimeIdsOf(*(int *)((char *)param_2 + 4), name, *param_1);
     win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62d4c4);
     d2_SetPointerSprite(0, 0);
     d2_CentreViewWindows(win);
@@ -20241,7 +20241,7 @@ int ai_BlackmailBuildingListener(unsigned short *param_1, int param_2)  /* @orig
         target = (int)gm_FindChar(*(int *)((char *)param_2 + 0x214));
         if (target == 0)
             return 0x60;
-        ids[0] = unk_Unk4f4080(*(int *)(target + 4), names, *param_1);
+        ids[0] = gv_HeldCrimeIdsOf(*(int *)(target + 4), names, *param_1);
         r = util_Random(8) & 0xffff;
         if (ids[0] < (int)r) {
             cm_SendRelations(*(int *)((char *)param_1 + 4), *(int *)(target + 4), 0xffffffe6, 1);
