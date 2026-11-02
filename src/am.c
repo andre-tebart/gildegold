@@ -6240,68 +6240,67 @@ int ai_Unk49b050(G5CH *p, AIARG *s1, AIARG *s2)
     }
     return 0;
 }
-/* 0x49b120, decide callback 0x1f: good 0x17e (or now and then 0x175) */
+/* 0x49b120, decide callback of "UseObject (Unversehrtheit)" (0x1f): the good 0x17e while the character has an
+   ailment, else (one time in three) the good 0x175; with fewer than six goods and it not usable, the sub-action 2
+   to get it (weight 0.05; o2 the character itself), else with it usable the sub-action 4 on it (o1 kind 1, its
+   inventory entry) */
 
-int ai_Unk49b120(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
+int ai_DecideUseHealthObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 {
     int k, r;
     int st[3];
-    G8REC rec;
+    G9REC rec;
     AIARG s1;
     AIARG s2;
 
     k = a;
     if (a == 0)
         k = 0x1f;
-    if (f != 0)
-        return 0;
-    rec.item = 0;
-    rec.unk04 = 0;
-    rec.unk08 = 0;
-    rec.unk0c = 0;
-    if (*(int *)((char *)p + 0x2c) != 0)
-        rec.item = 0x17e;
-    else if (util_RandomU(3) != 0)
-        return 0;
-    else
-        rec.item = 0x175;
-    ai_FindWantedItems(p, 1, (int *)&rec, st);
-    if (st[0] == 6 && st[2] == 0)
-        return 0;
-    if (st[1] == 1)
-        return 0;
-    if (st[0] < 6) {
-        if (st[2] == 0) {
-            s1.ref = rec.item;
-            s2.ref = p->netId;
-            s1.kind = 2;
-            s1.arg = 1;
-            s1.fvalue = 0.05f;
-            s2.kind = 7;
+    if (f == 0) {
+        memset(&rec, 0, sizeof(rec));
+        if (p->ailments != 0)
+            rec.item = 0x17e;
+        else if (util_RandomU(3) != 0)
+            return 0;
+        else
+            rec.item = 0x175;
+        ai_FindWantedItems(p, 1, &rec, st);
+        if ((st[0] != 6 || st[2] != 0) && st[1] != 1) {
+            if (st[0] < 6) {
+                if (st[2] == 0) {
+                    s1.ref = rec.item;
+                    s2.ref = p->netId;
+                    s1.kind = 2;
+                    s1.arg = 1;
+                    s1.fvalue = 0.05f;
+                    s2.kind = 7;
+                    s2.arg = 1;
+                    r = ai_ChooseSubAction(k, p->id, 2, &s1, &s2);
+                    if (r == 0)
+                        return 0;
+                    *o1 = s1;
+                    *o2 = s2;
+                    return r;
+                }
+            } else if (st[2] == 0) {
+                return 0;
+            }
+            s1.ref = -1;
+            s1.arg = -1;
+            s2.ref = rec.entryId;
+            s2.kind = 1;
             s2.arg = 1;
-            r = ai_ChooseSubAction(k, p->id, 2, &s1, &s2);
+            s1.kind = 0;
+            s1.arg2 = 0x1f;
+            r = ai_ChooseSubAction(k, p->id, 4, &s2, &s1);
             if (r == 0)
-                return r;
-            *o1 = s1;
-            *o2 = s2;
+                return 0;
+            *o1 = s2;
+            *o2 = s1;
             return r;
         }
-    } else if (st[2] == 0) {
-        return 0;
     }
-    s1.ref = -1;
-    s1.arg = -1;
-    s2.ref = rec.unk08;
-    s2.kind = 1;
-    s2.arg = 1;
-    s1.kind = 0;
-    s1.arg2 = 0x1f;
-    r = ai_ChooseSubAction(k, p->id, 4, &s2, &s1);
-    if (r == 0)
-        return r;
-    *o1 = s2;
-    *o2 = s1;
-    return r;
+    return 0;
 }
 /* 0x49b2b0, execute callback 0x1f: uses the object s1->unk04 of the character's list */
 
@@ -9601,7 +9600,7 @@ int ai_RegisterBaseActions(int a)
     act.id = 0x1f;
     strcpy(act.name, "UseObject (Unversehrtheit)");
     act.eval = ai_EvalMoodWeights;
-    act.decide = ai_Unk49b120;
+    act.decide = ai_DecideUseHealthObject;
     act.exec = ai_Unk49b2b0;
     act.flags = 0x3f;
     if (!am_RegisterMethod(&act, a))

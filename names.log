@@ -788,3 +788,4 @@
 2026-11-02T07:19:08 0x0049a690 func ai_Unk49a690 -> ai_DecideUseReputationObject by:main why:registered as the decide callback of action 0x1c "UseObject (Ansehen)" (0x4a16f0)
 2026-11-02T07:21:22 0x0049ab60 func ai_Unk49ab60 -> ai_DecideUseApsObject by:main why:registered as the decide callback of action 0x1d "UseObject (APS)" (0x4a16f0)
 2026-11-02T07:21:47 0x0049ae50 func ai_Unk49ae50 -> ai_DecideUseEducationObject by:main why:registered as the decide callback of action 0x1e "UseObject (Bildung)" (0x4a16f0)
+2026-11-02T07:22:48 0x0049b120 func ai_Unk49b120 -> ai_DecideUseHealthObject by:main why:registered as the decide callback of action 0x1f "UseObject (Unversehrtheit)" (0x4a16f0)
