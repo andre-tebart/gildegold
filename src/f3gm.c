@@ -6774,35 +6774,22 @@ float gm_CatchPlague(ORDCHAR *c)
 void gm_Shuffled(unsigned char n, int *out)
 {
     int i, cnt, swaps;
-    unsigned a, b;
+    int a, b;
     int t;
-    unsigned m;
 
-    i = 0;
-    if (n != 0) {
-        do {
-            out[i] = i;
-            i++;
-        } while (i < (int)n);
-    }
-    if (1 < n) {
-        if ((n & 0xfc) < 5)
-            m = 1;
-        else
-            m = n >> 2;
-        cnt = (n >> 1) + m;
-        swaps = 0;
-        if (cnt != 0) {
-            do {
-                a = util_RandomU(n);
-                b = util_RandomU(n) & 0xffff;
-                if (a != b) {
-                    t = out[a];
-                    out[a] = out[b];
-                    out[b] = t;
-                    swaps++;
-                }
-            } while (swaps < cnt);
+    for (i = 0; i < n; i++)
+        out[i] = i;
+    if (n >= 2) {
+        cnt = n / 2 + (n / 4 > 1 ? n / 4 : 1);
+        for (swaps = 0; swaps < cnt; ) {
+            a = (unsigned short)util_Random(n);
+            b = (unsigned short)util_Random(n);
+            if (a != b) {
+                t = out[a];
+                out[a] = out[b];
+                out[b] = t;
+                swaps++;
+            }
         }
     }
 }
