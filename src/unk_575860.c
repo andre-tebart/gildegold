@@ -9825,21 +9825,22 @@ int ai_Unk587b70(char *ch, char *b, char *x)
 }
 /* 0x587c40, ends the character ch's extra -- the "sp_<id>" role pose script that sv.c 0x52b490 / 0x52b500
    links back at the model +0x28 (the model at +0x184) / +0xc94 -- when one runs (0x4284a0 evt_FindById,
-   0x429e90 evt_Stop), then toggles the at-work flag bit 0 of +0x1b4 by f's bit 0 (f = 0: ends the pose only,
+   0x429e90 evt_Stop), then sets the at-work flag bit 0 of +0x1b4 to f's bit 0 (f = 0: ends the pose only,
    the form the AI (ai_EndWorkerPose) and the graveyard "Schlag" action (0x5867c0, then 0x52b490 with the new
    pose) use) */
 
 
 void ai_EndCharExtra(char *ch, int f)
 {
-    int h;
+    AICHAR *c = (AICHAR *)ch;
+    EVTSCRIPT *script;
 
-    if (*(int *)(*(int *)(ch + 0x184) + 0x28) != -1) {
-        h = (int)evt_FindById(*(int *)(*(int *)(ch + 0x184) + 0x28));
-        if (h != 0)
-            evt_Stop((EVTSCRIPT *)h);
+    if (c->model->scriptId != -1) {
+        script = evt_FindById(c->model->scriptId);
+        if (script != 0)
+            evt_Stop(script);
     }
-    *(int *)(ch + 0x1b4) ^= f & 1;
+    c->flags1b4 ^= (c->flags1b4 ^ f) & 1;    /* bit 0 = f's bit 0 */
 }
 /* 0x587c90, the graveyard idle-chatter tick (329 B, the argument is not used): only every 0x1194 units of the
    clock 0x6333cc (0x62a538 the last run); with U_I (0x6f2448) == 0 and 0x42ec20 () < 0.9f no chatter. The scene's
