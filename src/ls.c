@@ -169,7 +169,7 @@ int ls_GetLanguage(void)
    the draft called it without an argument through a cast (that kept the blocks apart, 72 differing, but it
    was not the original's call); the step order, the fixed globals and their sizes are equal. Readability:
    the 23 placeholders named (ls_RefsToIds / ls_IdsToRefs, the writers, the id counters), the rough-draft marker dropped,
-   the prototypes of ai_SaveMissions / ai_SaveSlotTable / ai_SaveSettings in their owners' headers and
+   the prototypes of ai_SaveMissions / ai_SaveBookmarks / ai_SaveSettings in their owners' headers and
    hmt.h included (typing commit). Left: block layout - the original keeps one failure block per step (call
    vfs_fclose; add esp,4; call ls_IdsToRefs; pop esi; xor eax,eax; pop ebx; ret, at 0x5191e1, 0x519200,
    ...) and returns the f == 0 case inline (jne; pop esi; pop ebx; ret at 0x5190ce), ours cross-jumps all
@@ -225,7 +225,7 @@ int ls_SaveGame(int name, char *path, unsigned flags)
         LS_STEP(ls_WriteEnvironment)
         LS_STEP(ls_WriteSceneRecords)
         LS_STEP(ai_SaveMissions)
-        LS_STEP(ai_SaveSlotTable)
+        LS_STEP(ai_SaveBookmarks)
         LS_STEP(ai_SaveSettings)
         LS_STEP(ahm_SaveWalk)
         LS_STEP(hmt_Save)

@@ -10741,28 +10741,23 @@ void ai_BookmarkWindow(void)
 
 unsigned vfs_fwrite(void *buf, int size, int n, struct VFSFILE *f);
 
-/* 0x589aa0, loads the 12-byte slot table 0x6f5ec0 from a file (142 B): n = 0xb read through 0x430e30 (&n, 4, 1,
-   fh), then each slot (the byte +0, the dword +4, the dword +8); 0 on a short read, 1 */
-int ai_SaveSlotTable(int fh)
+/* 0x589aa0, the save game's bookmarks step (142 B): writes the count 0xb, then each bookmark's key (1 byte),
+   building and object (4 bytes each); 0 on a failed write, 1 */
+int ai_SaveBookmarks(int fh)
 {
     int n;
     int i;
-    char *p;
 
     n = 0xb;
-    if (vfs_fwrite(&n, 4, 1, fh) == 0)
+    if (vfs_fwrite(&n, 4, 1, fh) <= 0)
         return 0;
-    i = 0;
-    p = (char *)&ai_Bookmarks[0].building;
-    while (i < n) {
-        if (vfs_fwrite(p - 4, 1, 1, fh) == 0)
+    for (i = 0; i < n; i++) {
+        if (vfs_fwrite(&ai_Bookmarks[i].key, 1, 1, fh) <= 0)
             return 0;
-        if (vfs_fwrite(p, 4, 1, fh) == 0)
+        if (vfs_fwrite(&ai_Bookmarks[i].building, 4, 1, fh) <= 0)
             return 0;
-        if (vfs_fwrite(p + 4, 4, 1, fh) == 0)
+        if (vfs_fwrite(&ai_Bookmarks[i].object, 4, 1, fh) <= 0)
             return 0;
-        i++;
-        p += 0xc;
     }
     return 1;
 }
