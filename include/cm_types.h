@@ -1,8 +1,9 @@
 /* The message records of cm's rings cm_SendRing / cm_RecvPool (G17MSG) and cm_SendStates (G17STAT) and the
-   network game record cm_NetGame (CMNETGAME), for the units that declare them without the rest of cm.h:
+   network game record cm_NetGame (CMNETGAME) and the crime record CRIME (ai_Crimes), for the units that declare them without the rest of cm.h:
    types only. cm.h includes it. */
 #ifndef CM_TYPES_H
 #define CM_TYPES_H
+#include "ai_types.h"                /* AITIME, for CRIME */
 
 #pragma pack(push, 1)
 typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head is net.h's NETPKT) */
@@ -82,5 +83,21 @@ typedef struct G28REC {
     char pad31[0x114 - 0x31];
 } G28REC;
 typedef char cm_AssertG28REC[sizeof(G28REC) == 0x114 ? 1 : -1];
+
+#pragma pack(push, 1)
+typedef struct CRIME {                  /* 0x2d bytes, a crime record of ai_Crimes (message 0x22, "cm_ExAddStraftat"; saved by gv_WriteCrimes) */
+    int id;                             /* 0x00, ai_NextCrimeId at the record's creation, -1 when free */
+    AITIME time;                        /* 0x04, the game time of the crime (ai_Time) */
+    int victim;                         /* 0x12, the victim's netId ("opfer") */
+    int culprit;                        /* 0x16, the culprit's netId ("taeter"), -1 when free */
+    short count;                        /* 0x1a, counts down to the record's retirement (0x4f37e0) */
+    unsigned char law;                  /* 0x1c, the AI decision (law) record broken (gv_GetTableRecord) */
+    int v1d;                            /* 0x1d */
+    int place;                          /* 0x21, the object id of the scene (ord_AddGridAmount), -1 for none */
+    int state;                          /* 0x25, 0 free, 1 open, above 1 handed over */
+    int seed;                           /* 0x29, a random seed (util_Seed when there is no place) */
+} CRIME;
+#pragma pack(pop)
+typedef char cm_AssertCRIME[sizeof(CRIME) == 0x2d ? 1 : -1];
 
 #endif

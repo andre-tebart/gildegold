@@ -13,6 +13,7 @@ struct D3OBJECT;
 #ifndef GV_H
 #define GV_H
 #include "ai_types.h"
+#include "cm_types.h"                /* CRIME */
 
 extern char unk_Avatars[0x20][0xf4];    /* 0x60f310 */
 extern char gv_Effects[];             /* 0x6f1008, 8 slots of 0x170 bytes */
@@ -413,14 +414,13 @@ void cm_SendFieldDeltas(void);                     /* 0x4c49a0 */
 struct GCLOCK;  /* f3gm.h typedef (gm_AddTime); file-scope so the gm_AddTime prototype below is stable */
 void gm_AddTime(struct GCLOCK *c, int hours, int mins, int secs);                     /* 0x4fe140 */
 
-typedef struct { char b[0x2d]; } UNKREC;      /* a 0x2d-byte record of 0x91f700, passed by value */
 int gv_CannonCost(char *o, int a, int b, int d, int *n, int *price);  /* 0x4ef090 */
 int unk_Unk4f2440(unsigned short *c, int k1, int k2, int *out);  /* 0x4f2440 */
 int gv_ProtectionPrice(unsigned short *c);  /* 0x4f24a0, returns gm_PlayerFactor's value (0x4f2532 ret after the 0x5085f0 call) */
-int unk_Unk4f30a0(char *out, UNKREC r, int mode);  /* 0x4f30a0 */
-int unk_Unk4f31d0(char *out, UNKREC r, int mode);  /* 0x4f31d0 */
-int unk_Unk4f3270(char *out, UNKREC r, int mode);  /* 0x4f3270 */
-int unk_Unk4f3580(char *out, UNKREC r, int mode);  /* 0x4f3580 */
+int unk_Unk4f30a0(char *out, CRIME r, int mode);  /* 0x4f30a0 */
+int unk_Unk4f31d0(char *out, CRIME r, int mode);  /* 0x4f31d0 */
+int unk_Unk4f3270(char *out, CRIME r, int mode);  /* 0x4f3270 */
+int unk_Unk4f3580(char *out, CRIME r, int mode);  /* 0x4f3580 */
 char *gv_FindAccused(char *c, int max, int *ids, int *cnt);  /* 0x4f41b0 */
 void unk_Unk4f4460(unsigned short *c, int a);  /* 0x4f4460 */
 void unk_Unk4f48f0(unsigned short *c, int a, char *out);  /* 0x4f48f0 */

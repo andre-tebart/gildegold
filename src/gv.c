@@ -3034,73 +3034,71 @@ int gv_TableRecordText(char *out, int i)
     return r;
 }
 
-#define R4(r, o) (*(int *)((r).b + (o)))
-
 /* 0x4f30a0, the text of a record with the type byte (+0x1c) 2 .. 8: types 2 / 3 / 4 / 8 pick the text numbers 0x140a / 0x140f / 0x1414 / 0x1428 (+ 1 for mode < 2); anything else the fixed text; 1 when a text was built.
    +4 the int value (shown by address), +0x12 the character id (its short id or 0xfffe). */
-int unk_Unk4f30a0(char *out, UNKREC r, int mode)
+int unk_Unk4f30a0(char *out, CRIME r, int mode)
 {
     int m;
     unsigned short *p;
     unsigned short id;
 
     m = mode < 2;
-    p = (unsigned short *)gm_FindChar(R4(r, 0x12));
+    p = (unsigned short *)gm_FindChar(r.victim);
     if (p == 0)
         id = 0xfffe;
     else
         id = *p;
-    switch ((unsigned char)r.b[0x1c]) {
+    switch (r.law) {
     case 2:
         break;
     case 3:
-        txt_Format(out, m + 0x140f, r.b + 4);
+        txt_Format(out, m + 0x140f, &r.time);
         return 1;
     case 4:
-        txt_Format(out, m + 0x1414, r.b + 4, id);
+        txt_Format(out, m + 0x1414, &r.time, id);
         return 1;
     default:
         strcpy(out, "Hm, das ist doch nicht verboten");
         return 0;
     case 8:
-        txt_Format(out, m + 0x1428, r.b + 4);
+        txt_Format(out, m + 0x1428, &r.time);
         return 1;
     }
-    if (R4(r, 4) < 0x75) {
-        txt_Format(out, m + 0x140a, r.b + 4, R4(r, 0x1d) + 0x13f9);
+    if (r.time.year < 0x75) {
+        txt_Format(out, m + 0x140a, &r.time, r.v1d + 0x13f9);
         return 1;
     }
-    txt_Format(out, m + 0x140a, r.b + 4, R4(r, 0x1d) + 0x13fb);
+    txt_Format(out, m + 0x140a, &r.time, r.v1d + 0x13fb);
     return 1;
 }
 /* 0x4f31d0, the text of a record with the type byte 0xe / 0x10 (texts 0x1446 / 0x1450, + 1 for mode < 2); anything else the fixed text; 1 when a text was built. */
 
-int unk_Unk4f31d0(char *out, UNKREC r, int mode)
+int unk_Unk4f31d0(char *out, CRIME r, int mode)
 {
     int m;
     unsigned short *p;
     unsigned short id;
 
     m = mode < 2;
-    p = (unsigned short *)gm_FindChar(R4(r, 0x12));
+    p = (unsigned short *)gm_FindChar(r.victim);
     if (p == 0)
         id = 0xfffe;
     else
         id = *p;
-    if ((unsigned char)r.b[0x1c] != 0xe) {
-        if ((unsigned char)r.b[0x1c] != 0x10) {
+    if (r.law != 0xe) {
+        if (r.law != 0x10) {
             strcpy(out, "Hm, das ist doch nicht verboten");
             return 0;
         }
-        txt_Format(out, m + 0x1450, id, r.b + 4);
+        txt_Format(out, m + 0x1450, id, &r.time);
         return 1;
     }
-    txt_Format(out, m + 0x1446, r.b + 4, id);
+    txt_Format(out, m + 0x1446, &r.time, id);
     return 1;
 }
 /* 0x4f3270, the text of a record with the type byte 0x11 .. 0x1c (texts 0x1455 + 5 * n, + 1 for mode < 2; the object name (0x4fea50 of the id at +0x21, default "Geb\xe4ude") goes in as "%1G" when found); returns 0 always. ROUGH */
 
-int unk_Unk4f3270(char *out, UNKREC r, int mode)
+int unk_Unk4f3270(char *out, CRIME r, int mode)
 {
     char name[0x80] = "Geb\xe4ude";
     int m, obj, k;
@@ -3108,69 +3106,69 @@ int unk_Unk4f3270(char *out, UNKREC r, int mode)
     unsigned id;
 
     m = mode < 2;
-    gm_FindById(&obj, 0, 0, R4(r, 0x21));
+    gm_FindById(&obj, 0, 0, r.place);
     if (obj != 0)
         txt_Format(name, "%1G", obj);
-    p = (unsigned short *)gm_FindChar(R4(r, 0x12));
+    p = (unsigned short *)gm_FindChar(r.victim);
     if (p == 0)
         id = 0xfffe;
     else
         id = *p;
-    switch ((unsigned char)r.b[0x1c]) {
+    switch (r.law) {
     case 0x11:
-        txt_Format(out, m + 0x1455, r.b + 4);
+        txt_Format(out, m + 0x1455, &r.time);
         return 0;
     case 0x12:
-        txt_Format(out, m + 0x145a, r.b + 4);
+        txt_Format(out, m + 0x145a, &r.time);
         return 0;
     case 0x13:
-        txt_Format(out, m + 0x145f, id, r.b + 4);
+        txt_Format(out, m + 0x145f, id, &r.time);
         return 0;
     case 0x14:
-        txt_Format(out, m + 0x1464, r.b + 4, id);
+        txt_Format(out, m + 0x1464, &r.time, id);
         return 0;
     case 0x15:
-        txt_Format(out, m + 0x1469, r.b + 4, id);
+        txt_Format(out, m + 0x1469, &r.time, id);
         return 0;
     case 0x16:
-        txt_Format(out, m + 0x146e, id, r.b + 4);
+        txt_Format(out, m + 0x146e, id, &r.time);
         return 0;
     case 0x17:
-        txt_Format(out, m + 0x1473, r.b + 4, id);
+        txt_Format(out, m + 0x1473, &r.time, id);
         return 0;
     case 0x18:
         k = ls_GetLanguage();
         if (k < 0)
             return 0;
         if (k < 2)
-            txt_Format(out, m + 0x1478, r.b + 4, id, name);
+            txt_Format(out, m + 0x1478, &r.time, id, name);
         else if (k == 2)
-            txt_Format(out, m + 0x1478, r.b + 4, name, id);
+            txt_Format(out, m + 0x1478, &r.time, name, id);
         return 0;
     case 0x19:
-        txt_Format(out, m + 0x147d, r.b + 4, id);
+        txt_Format(out, m + 0x147d, &r.time, id);
         return 0;
     case 0x1a:
-        txt_Format(out, m + 0x1482, r.b + 4, id);
+        txt_Format(out, m + 0x1482, &r.time, id);
         return 0;
     case 0x1b:
-        txt_Format(out, m + 0x1487, r.b + 4);
+        txt_Format(out, m + 0x1487, &r.time);
         return 0;
     case 0x1c:
-        txt_Format(out, m + 0x148c, r.b + 4, id);
+        txt_Format(out, m + 0x148c, &r.time, id);
         return 0;
     }
     return 0;
 }
 /* 0x4f3580, picks the text builder by the type byte (+0x1c) of the record: below 9 0x4f30a0, below 0x11 0x4f31d0, below 0x1d 0x4f3270; 0 otherwise */
 
-int unk_Unk4f3580(char *out, UNKREC r, int mode)
+int unk_Unk4f3580(char *out, CRIME r, int mode)
 {
-    if ((unsigned char)r.b[0x1c] < 9)
+    if (r.law < 9)
         return unk_Unk4f30a0(out, r, mode);
-    if ((unsigned char)r.b[0x1c] < 0x11)
+    if (r.law < 0x11)
         return unk_Unk4f31d0(out, r, mode);
-    if ((unsigned char)r.b[0x1c] < 0x1d)
+    if (r.law < 0x1d)
         return unk_Unk4f3270(out, r, mode);
     return 0;
 }

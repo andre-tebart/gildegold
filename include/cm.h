@@ -34,26 +34,13 @@ struct D3FLMAP;
 typedef struct G18POP { float t; int v; int h; char *c; int kind; } G18POP;      /* 0x14 bytes, a floating number */
 typedef struct G18LOG { char text[0x40]; char name[0x24]; int x; int id; } G18LOG;      /* 0x6c bytes, a chat line */
 
-#include "ai_types.h"                /* AITIME, for CRIME */
 #pragma pack(push, 1)
-#include "cm_types.h"                /* G17MSG, G17STAT */
+#include "cm_types.h"                /* G17MSG, G17STAT, CRIME */
 typedef struct G17FIELDS {              /* 0x7c bytes, a field block (0xa68c20, 0xa68ca0) */
     int id;                             /* 0x00 */
     unsigned char n;                    /* 0x04, fields */
     unsigned char buf[0x77];            /* 0x05, size, count, offset (short), values */
 } G17FIELDS;
-typedef struct CRIME {                  /* 0x2d bytes, a crime record of ai_Crimes (message 0x22, "cm_ExAddStraftat"; saved by gv_WriteCrimes) */
-    int id;                             /* 0x00, ai_NextCrimeId at the record's creation, -1 when free */
-    AITIME time;                        /* 0x04, the game time of the crime (ai_Time) */
-    int victim;                         /* 0x12, the victim's netId ("opfer") */
-    int culprit;                        /* 0x16, the culprit's netId ("taeter"), -1 when free */
-    short count;                        /* 0x1a, counts down to the record's retirement (0x4f37e0) */
-    unsigned char law;                  /* 0x1c, the AI decision (law) record broken (gv_GetTableRecord) */
-    int v1d;                            /* 0x1d */
-    int place;                          /* 0x21, the object id of the scene (ord_AddGridAmount), -1 for none */
-    int state;                          /* 0x25, 0 free, 1 open, above 1 handed over */
-    int seed;                           /* 0x29, a random seed (util_Seed when there is no place) */
-} CRIME;
 #pragma pack(pop)
 
 typedef char ai_AssertG17MSG[sizeof(G17MSG) == 0x99 ? 1 : -1];
