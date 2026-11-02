@@ -109,9 +109,19 @@ typedef struct ORDCHAR {
     unsigned short w00a;            /* 0x00a, ai.h AICHAR.w00a; gm_ShiftLoyalty and gm_HandOutMoney skip the characters below 12 (reasoned guess: the age) */
     unsigned char b00c;             /* 0x00c, a kind (ai.h AICHAR.b00c); gm_HandOutMoney compares it between two characters and with the decision 2's value (reasoned guess: the faith) */
     unsigned char level;            /* 0x00d, the level the level orders test */
-    char pad00e[0x12];
+    char pad00e[2];
+    float f010;                     /* 0x010, ai.h AICHAR.f010; the life value the daily step moves f01c toward while w00a is below f020 */
+    float f014;                     /* 0x014, ai.h AICHAR.f014; the base of the daily life loss beyond f020 */
+    float f018;                     /* 0x018, ai.h AICHAR.f018 */
+    float f01c;                     /* 0x01c, ai.h AICHAR.f01c, the life value: the character dies when f01c + v024 is used up (gm_DailyCharacterStep) */
     float f020;                     /* 0x020, ai.h AICHAR.f020; a child (jobId 0) whose w00a is below it gets the child head (gm_CharNameRecord) */
-    char pad024[0x38];
+    int v024;                       /* 0x024, ai.h AICHAR.v024, added to f01c by the daily step's death test */
+    short w028;                     /* 0x028, ai.h AICHAR.w028 */
+    char pad02a[2];
+    unsigned int v02c;              /* 0x02c, ai.h AICHAR.v02c: nine counters of 2 .. 4 bits (bits 0, 4, 8, 12, 14, 17, 20, 23, 25) the daily step halves */
+    char first[0x10];               /* 0x030, the first name (ai.h AICHAR.first) */
+    char family[0x10];              /* 0x040, the family name (ai.h AICHAR.family) */
+    char pad050[0xc];
     int partner;                    /* 0x05c, the partner character id, -1 = none */
     char pad060[0x28];
     float mood[14][3];              /* 0x088, the mood triples (a, b, value) (ai.h AICHAR.mood) */

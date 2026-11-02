@@ -21,4 +21,21 @@ typedef struct GMINCOME {               /* 0x38 bytes, a character's incomes (0x
     int rate[6];                        /* 0x20, the rate in percent it was computed with (AIDEC.cur) */
 } GMINCOME;
 
+#include "ai_types.h"
+
+/* the long message (ai.h AIMSG, 0xf8 bytes, cm_SendLongMessage) as this unit fills it: ai.h is not includable here */
+typedef struct GMMSG {
+    int unk00;                          /* 0x00 */
+    unsigned char type;                 /* 0x04, 0x72: a character died */
+    char pad05[3];
+    int to;                             /* 0x08, the netId the message is about (AIMSG.to) */
+    int fromId;                         /* 0x0c, -1: no building */
+    char pad10[0x18];
+    AITIME time;                        /* 0x28, the game time */
+    unsigned char flags;                /* 0x36 */
+    char pad37[0x21];
+    int arg0;                           /* 0x58, AIMSG.arg[0]: the character's netId again */
+    char pad5c[0x9c];
+} GMMSG;
+
 #endif

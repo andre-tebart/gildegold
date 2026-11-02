@@ -12653,12 +12653,12 @@ void he_Unk565db0(int ev)
             cm_AddFieldDelta(1, 1, 0xd, p + 0xd);
             cm_SendFieldDeltas();
         }
-        cm_SendKillCharacter(*(int *)(p + 4), gm_Unk5075c0(p));
+        cm_SendKillCharacter(*(int *)(p + 4), gm_MayRemoveChar(p));
         he_FreeEvent((int *)ev);
         return;
     case 5:
         gm_Unk506890(p, U_I((unsigned)&ai_PlayerChar));
-        cm_SendKillCharacter(*(int *)(p + 4), gm_Unk5075c0(p));
+        cm_SendKillCharacter(*(int *)(p + 4), gm_MayRemoveChar(p));
         he_FreeEvent((int *)ev);
         return;
     case 6:

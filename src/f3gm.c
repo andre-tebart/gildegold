@@ -1317,7 +1317,7 @@ int gm_PlaceOnStage(int id, int a, int b, int *p, int *ori)
 }
 
 extern char ch_EmptyName[];             /* 0x631090 */
-int gm_Unk5075c0();                     /* 0x5075c0 */
+int gm_MayRemoveChar(char *c);                     /* 0x5075c0 */
 void cm_SendKillCharacter(int a, int b);                     /* 0x4c4e00 */
 int gv_DecayRaisedDead();                     /* 0x4f1660 */
 int cm_AddFieldValue(unsigned char size, unsigned char n, unsigned short field, void *v);                     /* 0x4c3d90 */
@@ -1326,7 +1326,7 @@ int cm_SendLongMessage(char *msg);                     /* 0x4c4b70 */
 void txt_Format(char *out, int id0, ...);  /* 0x5176d0 */
 int he_ShowNews(int pid, int fl, char *text, int unused, int ev, char *text2);                     /* 0x53dda0 */
 void cm_SendSetField(int a, int b, int c, int d, int e);                     /* 0x4c4a60 */
-void unk_Unk4fccc0();                   /* 0x4fccc0 */
+void gm_PartnerStep(char *c);                   /* 0x4fccc0 */
 
 /* the 0xf8-byte message 0x72 (kind at +4, the character id at +8 and +0x58, -1 at +0xc, the clock 0x770ae0 at +0x28 .. +0x34, 2 at +0x36) of 0x4fbe90 */
 #define G_MSG72(m, c)                                                  \
@@ -1341,46 +1341,78 @@ void unk_Unk4fccc0();                   /* 0x4fccc0 */
     *(short *)((m) + 0x34) = *(short *)(ai_Time + 0xc);           \
     *(int *)((m) + 0x58) = *(int *)((m) + 8);                          \
     cm_SendLongMessage(m)
+#define ai_TimeT (*(AITIME *)&ai_Time)  /* 0x770ae0, ai_Time (gv.h: char[]) as the AITIME it is */
+/* sends the message 0x72 (the character c died) in the GMMSG m */
+#define GM_SENDDEATH(m, c)                                             \
+    memset(&(m), 0, sizeof(m));                                        \
+    (m).to = (c)->netId;                                               \
+    (m).time = ai_TimeT;                                               \
+    (m).type = 0x72;                                                   \
+    (m).fromId = -1;                                                   \
+    (m).flags = 2;                                                     \
+    (m).arg0 = (m).to;                                                 \
+    cm_SendLongMessage((char *)&(m))
+int gm_BuildingSkill(unsigned char *b, unsigned k, int flag);  /* 0x5092e0 */
 
-/* 0x4fbe90, one daily step of the character c (the value is the new health, -1 for no step): free slots (id -1) -1; the kind 0xf (0x5075c0 true: message 0x4c4e00 (id, 1)); kind 0x14 (0x4f1660 == 1: removed through the message 0x72, the message 0x414a to the master player); then the flags word +0x2c is compacted (each field of 1 .. 4 bits is halved: 1 -> 0, n -> n | n >> 1 of the field's upper bits) and sent (0x4c4a60 (id, 0x2c, 4, flags, -1)); a character with flag 2 (+0x1cc) loses 0x11 + random 0x10 of its float +0x1c and dies (message 0x72) below 0; otherwise the health float +0x1c moves toward +0x10 (a share of +0x20 by the age (+10) / the 0x5092e0 skill of the master's building, +0x14 as the target) and when it plus the int +0x24 falls below 0 the character dies (a master gets the message 0x1c51 / 0x4080 with "NACHRICHTEN\DOMIZIL_05"; with flag 1 and kinds other than 6 / 7 it is reset to 100 and the 0x1cc flags = 2); else 0x4fccc0 and the age (+10) + 1 is stored. ROUGH, the float code is guessed */
-float unk_Unk4fbe90(unsigned short *c)
+/* 0x4fbe90, the daily step of the character c; returns its new life value (-1 for no step). A free slot and a
+   character of kind 0xf take no step (the latter is killed when gm_MayRemoveChar lets it go); a raised dead
+   person (kind 0x14) decays (gv_DecayRaisedDead) and, used up, dies: the message 0x72, and the news 0x414a to
+   the master of its building when that is a player (kind 6 / 7). Every other character halves the counters of
+   v02c, then: one marked to die (flags1cc bit 2) loses 0x11 + random 0x10 of its life f01c and dies below 0
+   (news 0x1c51); else its life moves toward f010 while it is younger (w00a) than f020, beyond that it loses f014
+   less 3.75 % per point of the building skill 8 of its home, and when f01c + v024 is used up it dies (news
+   0x1c51, or 0x4080 with its name and age for a flags1cc bit 4 one) - unless flags1cc bit 1 saves it (not a
+   player): life 100, v024 0, flags1cc 2. A survivor runs gm_PartnerStep and ages by one.
+   @deep Reconstructed and read whole against the original (633 vs 634 ins, all
+   calls/fields/branches/strings matched: message 0x72 fill, nine counter halvings, the kind 0x14 /
+   flags1cc bit 2 / life paths, the 0x414a / 0x1c51 / 0x4080 news, the double 0.0 compares, short age with
+   its top init). Left: (1) fpu at +0x533..+0x552: the original computes skill*0.0125f, fmul -3.0f (literal
+   0x5ed1b4), fadd [lo], fld st(0) and keeps lo's copy (fstp st(0) after); our VC6 turns the same
+   expression into fmul 3.0 / fsubr [lo] / fxch - tried x*0.0125f*-3.0f+lo (folds to 0.0375), lo += ..., lo
+   + ..., -3.0f*(...), a float k=-3.0f, (float)(x*0.0125f) casts, lo - ...*3.0f: none keeps fmul -3 + fadd;
+   (2) order hunks +0xf3 / +0x3f9 / +0x6a0: the AITIME struct copy of the message (time+8 / time+0xc stored
+   before vs after type/fromId/flags) and the counter halving's and/or order. The one 'branch targets
+   differ' is the je at +0x514 whose target is +0x53d on both sides (the join after the skill block, inside
+   the fpu hunk). */
+
+float gm_DailyCharacterStep(unsigned short *id)
 {
-    char m[0xf8];
+    GMMSG m;
     char buf[512];
     unsigned f, g;
     char b;
     float h, lo, t, fl;
     double d;
-    int a;
-    char *p = (char *)c;
-    char *mst;
-    int k;
+    short age;
+    ORDCHAR *c = ORD_CHAR(id);
+    ORDBLD *mst;
 
-    if (*c == 0xffff)
+    age = 0;
+    if (c->id == 0xffff)
         return -1.0f;
-    if (p[2] == 0x0f) {
-        if (gm_Unk5075c0(c) != 0) {
-            cm_SendKillCharacter(*(int *)(p + 4), 1);
+    if (c->kind == 0x0f) {
+        if (gm_MayRemoveChar((char *)c) != 0) {
+            cm_SendKillCharacter(c->netId, 1);
             gm_NetMsgCount++;
         }
         return -1.0f;
     }
-    if (p[2] == 0x14) {
-        if (gv_DecayRaisedDead(c) == 1) {
+    if (c->kind == 0x14) {
+        if (gv_DecayRaisedDead((struct AICHAR *)c) == 1) {
             b = 0;
-            cm_BeginFieldBlock(c, *(int *)(p + 4));
-            cm_AddFieldValue(1, 1, (char *)p - cm_FieldObject + 8, &b);
+            cm_BeginFieldBlock((char *)c, c->netId);
+            cm_AddFieldValue(1, 1, (char *)&c->health - cm_FieldObject, &b);
             cm_SendFieldValues();
-            G_MSG72(m, p);
-            mst = *(char **)(p + 0x16c);
-            if (mst != 0 && *(unsigned short *)(mst + 0x27) != 0xffff && (ai_Chars[*(unsigned short *)(mst + 0x27)][2] == 6 || ai_Chars[*(unsigned short *)(mst + 0x27)][2] == 7)) {
-                txt_Format(buf, 0x414a, *c, mst);
-                he_ShowNews(*(int *)(ai_Chars[*(unsigned short *)(*(int *)(p + 0x16c) + 0x27)] + 4), -1, buf, 0, 0x60a, ch_EmptyName);
+            GM_SENDDEATH(m, c);
+            mst = c->bld;
+            if (mst != 0 && mst->owner != 0xffff && (ORD_CHARS[mst->owner].kind == 6 || ORD_CHARS[mst->owner].kind == 7)) {
+                txt_Format(buf, 0x414a, c->id, mst);
+                he_ShowNews(ORD_CHARS[c->bld->owner].netId, -1, buf, 0, 0x60a, ch_EmptyName);
             }
         }
         return 0.0f;
     }
-    f = *(unsigned *)(p + 0x2c);
+    f = c->v02c;
     if (f != 0) {
         if ((f & 0xf) != 0) {
             if ((f & 0xf) == 1)
@@ -1435,7 +1467,7 @@ float unk_Unk4fbe90(unsigned short *c)
             if (g == 1)
                 f &= 0xfe7fffff;
             else
-                f = (f & 0xfe7fffff) | ((f >> 1) & ((unsigned)&ai_Relations + 0x1aca0));
+                f = (f & 0xfe7fffff) | ((f >> 1) & (1 << 23));
         }
         g = (f >> 0x19) & 0xf;
         if (g != 0) {
@@ -1444,91 +1476,90 @@ float unk_Unk4fbe90(unsigned short *c)
             else
                 f = (f & 0xe1ffffff) | ((f >> 1) & 0xe000000);
         }
-        cm_SendSetField(*(int *)(p + 4), 0x2c, 4, f, -1);
+        cm_SendSetField(c->netId, 0x2c, 4, f, -1);
         gm_NetMsgCount++;
     }
-    if (p[0x1cc] & 2) {
-        fl = (float)((util_RandomU(0x10) & 0xffff) + 0x11);
-        t = *(float *)(p + 0x1c) - (float)(int)fl;
-        cm_BeginFieldBlock(c, *(int *)(p + 4));
+    if (c->flags1cc & 2) {
+        t = c->f01c - ((util_RandomU(0x10) & 0xffff) + 0x11);
+        cm_BeginFieldBlock((char *)c, c->netId);
         cm_AddFieldDelta(4, 1, 0x1c, &t);
         cm_SendFieldDeltas();
         gm_NetMsgCount++;
         if (t <= 0.0f) {
             b = 0;
-            cm_BeginFieldBlock(c, *(int *)(p + 4));
-            cm_AddFieldValue(1, 1, (char *)p - cm_FieldObject + 8, &b);
+            cm_BeginFieldBlock((char *)c, c->netId);
+            cm_AddFieldValue(1, 1, (char *)&c->health - cm_FieldObject, &b);
             cm_SendFieldValues();
             gm_NetMsgCount++;
-            G_MSG72(m, p);
+            GM_SENDDEATH(m, c);
             gm_NetMsgCount++;
-            mst = *(char **)(p + 0x16c);
-            if (mst != 0 && *(unsigned short *)(mst + 0x27) != 0xffff && (ai_Chars[*(unsigned short *)(mst + 0x27)][2] == 6 || ai_Chars[*(unsigned short *)(mst + 0x27)][2] == 7)) {
-                txt_Format(buf, 0x1c51, mst, *c);
-                he_ShowNews(*(int *)(ai_Chars[*(unsigned short *)(*(int *)(p + 0x16c) + 0x27)] + 4), -1, buf, 0, 0x60a, ch_EmptyName);
+            mst = c->bld;
+            if (mst != 0 && mst->owner != 0xffff && (ORD_CHARS[mst->owner].kind == 6 || ORD_CHARS[mst->owner].kind == 7)) {
+                txt_Format(buf, 0x1c51, mst, c->id);
+                he_ShowNews(ORD_CHARS[c->bld->owner].netId, -1, buf, 0, 0x60a, ch_EmptyName);
                 gm_NetMsgCount++;
             }
         }
         return t;
     }
-    fl = (float)*(unsigned short *)(p + 10);
+    fl = (float)c->w00a;
     h = fl;
-    if (h > *(float *)(p + 0x20)) {
-        lo = *(float *)(p + 0x14);
-        if (*(int *)(p + 0x170) != 0) {
-            a = gm_BuildingSkill(*(int *)(p + 0x170), 8, 1);
-            lo = (float)a * 0.0125f * -3.0f + lo;
-        }
-        t = (*(float *)(p + 0x1c) - lo) + lo / *(float *)(p + 0x1c);
-        cm_BeginFieldBlock(c, *(int *)(p + 4));
+    if (h <= c->f020) {
+        t = ((c->f01c - c->f010) / c->f020) * h + c->f010;
+    } else {
+        lo = c->f014;
+        if (c->bld2 != 0)
+            lo = (gm_BuildingSkill((unsigned char *)c->bld2, 8, 1) * 0.0125f) * -3.0f + lo;
+        t = lo / c->f01c + (c->f01c - lo);
+        cm_BeginFieldBlock((char *)c, c->netId);
         cm_AddFieldDelta(4, 1, 0x1c, &t);
         cm_SendFieldDeltas();
         gm_NetMsgCount++;
-    } else {
-        t = ((*(float *)(p + 0x1c) - *(float *)(p + 0x10)) / *(float *)(p + 0x20)) * h + *(float *)(p + 0x10);
     }
-    fl = (float)*(int *)(p + 0x24) + t;
-    if (fl <= 0.0f) {
+    fl = (float)c->v024 + t;
+    if (fl <= 0.0) {
         b = 0;
-        if ((p[0x1cc] & 1) != 0 && p[2] != 6 && p[2] != 7) {
-            d = 0.0;
+        if ((c->flags1cc & 1) != 0 && c->kind != 6 && c->kind != 7) {
+            int zero = 0;
+
+
             t = 100.0f;
-            cm_BeginFieldBlock(c, *(int *)(p + 4));
+            cm_BeginFieldBlock((char *)c, c->netId);
             cm_AddFieldDelta(4, 1, 0x1c, &t);
-            cm_AddFieldDelta(4, 1, 0x24, &d);
+            cm_AddFieldDelta(4, 1, 0x24, &zero);
             cm_SendFieldDeltas();
             gm_NetMsgCount++;
-            cm_SendSetField(*(int *)(p + 4), 0x1cc, 4, 2, 0);
+            cm_SendSetField(c->netId, 0x1cc, 4, 2, 0);
             gm_NetMsgCount++;
             return t;
         }
-        cm_BeginFieldBlock(c, *(int *)(p + 4));
-        cm_AddFieldValue(1, 1, (char *)p - cm_FieldObject + 8, &b);
+        cm_BeginFieldBlock((char *)c, c->netId);
+        cm_AddFieldValue(1, 1, (char *)&c->health - cm_FieldObject, &b);
         cm_SendFieldValues();
         gm_NetMsgCount++;
-        G_MSG72(m, p);
+        GM_SENDDEATH(m, c);
         gm_NetMsgCount++;
-        mst = *(char **)(p + 0x16c);
-        if (mst != 0 && *(unsigned short *)(mst + 0x27) != 0xffff && (ai_Chars[*(unsigned short *)(mst + 0x27)][2] == 6 || ai_Chars[*(unsigned short *)(mst + 0x27)][2] == 7)) {
-            if ((p[0x1cc] & 4) == 0) {
-                txt_Format(buf, 0x1c51, mst, *c);
-                he_ShowNews(*(int *)(ai_Chars[*(unsigned short *)(*(int *)(p + 0x16c) + 0x27)] + 4), -1, buf, 0, 0x60a, ch_EmptyName);
+        mst = c->bld;
+        if (mst != 0 && mst->owner != 0xffff && (ORD_CHARS[mst->owner].kind == 6 || ORD_CHARS[mst->owner].kind == 7)) {
+            if (c->flags1cc & 4) {
+                txt_Format(buf, 0x4080, c->first, c->family, c->w00a);
+                he_ShowNews(ORD_CHARS[c->bld->owner].netId, -1, buf, 0, 0x60a, "_NACHRICHTEN_DOMIZIL_05");
             } else {
-                txt_Format(buf, 0x4080, p + 0x30, p + 0x40, *(unsigned short *)(p + 10));
-                he_ShowNews(*(int *)(ai_Chars[*(unsigned short *)(*(int *)(p + 0x16c) + 0x27)] + 4), -1, buf, 0, 0x60a, "_NACHRICHTEN_DOMIZIL_05");
+                txt_Format(buf, 0x1c51, mst, c->id);
+                he_ShowNews(ORD_CHARS[c->bld->owner].netId, -1, buf, 0, 0x60a, ch_EmptyName);
             }
             gm_NetMsgCount++;
         }
         return 0.0f;
     }
-    unk_Unk4fccc0(c);
-    if (fl <= 0.0f)
-        d = 0.0;
-    else
+    gm_PartnerStep((char *)c);
+    if (fl > 0.0)
         d = (double)fl;
-    k = *(unsigned short *)(p + 10) + 1;
-    cm_BeginFieldBlock(c, *(int *)(p + 4));
-    cm_AddFieldDelta(2, 1, 10, &k);
+    else
+        d = 0.0;
+    age = c->w00a + 1;
+    cm_BeginFieldBlock((char *)c, c->netId);
+    cm_AddFieldDelta(2, 1, 10, &age);
     cm_SendFieldDeltas();
     gm_NetMsgCount++;
     return (float)d;
@@ -1654,7 +1685,7 @@ void gm_DailyCharacters(void)
             gm_NetMsgCount = 0;
         }
         if (((unsigned char)c[2] < 10 || c[2] == 0x14) && c[8] != 0) {
-            unk_Unk4fbe90((unsigned short *)c);
+            gm_DailyCharacterStep((unsigned short *)c);
             loc = *(unsigned short *)(c + 10);
             if (*(float *)(c + 0x20) - 1.0 == (float)loc && *(int *)(c + 0x184) != 0) {
                 char *name;
@@ -1768,7 +1799,7 @@ int gm_TitleNumber();                     /* 0x5043d0 */
 int ai_WorksForMaster(struct AICHAR *c);                     /* 0x47dd70 */
 
 /* 0x4fccc0, the yearly love / marriage step of the character c (kind < 10, active, byte +9 = 1, +0x1b1 = 0, +0x1c8 bit 0x40000 clear; its partner o = 0x505df0 (+0x5c)): a float +0x7c above 1.0 is pulled down by 0x4c4ac0 (-0.5 * random - the value) and the pair gets the event 0x4c4650 (8, ..) with a message 7 (0x4c4fa0, text number 0x12 ..); otherwise (the partner active, the age +10 below 0x27) the number of the relatives at +0x68 .. (4 .. 8; a player (6 / 7) or a priest (5) among them ends it) sets the float +0x7c to (random + 1) * the table value 0x617734 [count]. ROUGH */
-void unk_Unk4fccc0(char *c)
+void gm_PartnerStep(char *c)
 {
     int clk[4];
     int msg[0x45];
@@ -7650,7 +7681,7 @@ void gm_Unk506e70(unsigned short *c, char *out, int flag)
 }
 /* 0x5075c0, 1 when the character c (not a player of kind 6 / 7) may be given up for the party table: like 0x4fd090 (no player has it as a direct relation or among a full set of five), then, when fewer than 0x20 character slots are free (0x300 - 0x6f1bc0), the table at 0x91f725 (records of 0x2d bytes, the id at -0x13) must not hold it as an active entry; 0 otherwise */
 
-int gm_Unk5075c0(char *c)
+int gm_MayRemoveChar(char *c)
 {
     int id, n, found, k;
     char *p;
