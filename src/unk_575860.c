@@ -10,16 +10,20 @@
    Open: type debt - TUTSTATE / TUTRUN / TUTSTEP / TUTMARK are typed in unk_575860.h and the tutorial code up
    to ai_TutorialWindow uses them; the later functions still reach the state record through the S / U_I
    byte-offset macros; the message (AIMSG) and contact-list records are still accessed by byte offset; the cannon scene
-   struct (CANNONSCENE, CANNONREC) is typed in ai_CannonScene only, the other ai_Cannon* functions address it by byte offset.
+   struct (CANNONSCENE, CANNONREC) is typed from ai_CannonScene to ai_CannonExplosion, ai_CannonAxes /
+   ai_CannonPitchRatio / ai_CannonBuildPanel still address it by byte offset.
+   Open: data: the unit's .rdata block 0x5eec60..0x5eed70 is typed up to ai_CannonZoomRange (0x5eec6c .. 0x5eecac:
+   const data, the original loads it); 0x5eec64 / 0x5eec68 / 0x5eec8c / 0x5eec90 (0x54, the recoil time the code
+   uses as an immediate) / the floats 0x5eec9c .. 0x5eeca8 and the tables from 0x5eecb0 are not declared yet.
    Open: sv_CheckGoodAmount's third parameter: the original's callers push the player byte unextended (a char
    parameter, kept as the cast macro sv_CheckGoodAmountB), sv.h / sv.c declare it unsigned and mask it.
    Open: ai_ClockMs is volatile in the original (ai_TutorialTick reloads it after every read, byte-matched through
    the unit's view ai_ClockMsVolatile); its owner and the other units declare it plain int.
    Open: the alchemist windows ai_AlchemistWindow / ai_AlchemistResearchWindow are @deep (allocation); their buttons call
    ai_AlchemistFundWindow / ai_AlchemistRescheduleWindow with (obj, record), the record parameter unread.
-   Open: not included yet (dcp headers conflicts unk_575860 HEADER): d2.h gfx.h sv.h unk_5d33b0.h; held by own
-   declarations that differ from the owner's: d2_CreateWinText, SHOTREC; calls whose argument count differs from
-   the definition (read the original's pushes): d2_GetObjValue, d2_PlaceMainWindow, sv_DrawBalanceBar.
+   Open: not included yet (dcp headers conflicts unk_575860 HEADER): d2.h gfx.h sv.h; held by own declarations that
+   differ from the owner's: d2_CreateWinText; calls whose argument count differs from the definition (read the
+   original's pushes): d2_GetObjValue, sv_DrawBalanceBar (d2_PlaceMainWindow goes through d2_PlaceMainWindowF).
    unit of rea 8cef7d5b (src/game/unk_575860.c); boundaries in decl/text.dcl */
 struct AHMSTEP;
 struct D3SKY;
@@ -250,7 +254,6 @@ extern GAPDATA full_data_602568[];
 extern int ai_ClockMs;
 extern int sv_PopRequest;
 extern GAPDATA full_data_5f36e0[];
-extern GAPDATA full_data_62a36c[];
 extern int d2_LastWindow;
 extern struct D2OBJ *d2_Objs;
 extern struct D2PIC *d2_Pics;
@@ -700,7 +703,7 @@ TUTRUN *ai_TutorialRuns = 0;  /* 0x6f2658, the chain of the tutorial's run recor
 int ai_TutorialOn = 0;  /* 0x6f265c, the tutorial runs (set by its start 0x578180, cleared by its end) */
 int ai_TutorialRunning = 0;  /* 0x6f2660, the tutorial's state machine advances (unk_SetEndGameGate / unk_ClearEndGameGate) */
 int ai_ShotDirty = 0;  /* 0x6f2664, set when ai_ShotTableStore stored a record, cleared by the scene (ai_CannonShotResults) */
-SHOTRESULT ai_ShotTable[3] = { 0 };  /* 0x6f9f60, the cannon scene's shot results (the callback ai_ShotTableStore fills it, ai_Unk580a50 resets it) */
+SHOTRESULT ai_ShotTable[3] = { 0 };  /* 0x6f9f60, the cannon scene's shot results (the callback ai_ShotTableStore fills it, ai_ShotTableReset resets it) */
 
 #include "time_view.h"
 #include "ls.h"
@@ -3121,7 +3124,14 @@ fail:
    a step table ("FTInitScriptChapter3Step*"), the steps 2, 6, 8 and 10 the position marker's path
    ("FTInitAnimChapter3Step*"), whose points depend on the screen width (800, 1024, else). The voice bank
    "TUTORIAL_CHAPTER_3.sbf" is loaded into ai_TutorialBanks[3]. The first record, or 0 after a failed allocation
-   (the records built so far freed) */
+   (the records built so far freed)
+   @deep read whole against the original: every record, step table and marker path stored at the original's
+   offsets with its values (asmdiff --symbols: no ! line, 1213 vs 1213 instructions, size 5377 = 5377).
+   Left: register choice for the repeated float constants of the marker paths, three hunks: 0x579df6 (step
+   6 path 0 wait/travel/rest: original ecx=0x420c0000 edi=0x430e0000 edx=0x428e0000, ours edi/ecx/edx),
+   0x579f27 (path 1 +0x4c/+0x50/+0x54 the same constants in ecx/edi/edx vs edi/ecx/edx) and 0x57a1b6 (step
+   8 path 0 +4/+8: the reload of marks and mov eax,0x43910000 scheduled one store apart), plus regs hunks
+   eax<->ecx at 0x57a110 / 0x57a168: allocation and scheduling only */
 
 int ai_TutorialInitChapter3(void)
 {
@@ -5336,10 +5346,19 @@ typedef struct CANNONSCENE { /* 0xe4 bytes, the scene struct of ai_CannonScene (
     D3VECTOR rot;            /* +0x10, rot.x the pitch, rot.y the yaw (the angles are GVCANNON.camTarget at the start) */
     float pad1c;
     float zoom;              /* +0x20, cleared here, moved by ai_CannonAim */
-    float dirX;              /* +0x24, the aim direction (ai_CannonCamera) */
-    float dirY;              /* +0x28 */
-    float dirZ;              /* +0x2c */
-    char pad30[0x24];
+    union {
+        struct {
+            float dirX;      /* +0x24, the aim direction (ai_CannonCamera): the barrel's z axis in the world (ai_CannonAxes) */
+            float dirY;      /* +0x28 */
+            float dirZ;      /* +0x2c */
+        };
+        D3VECTOR dir;        /* +0x24, the three as one vector */
+    };
+    float pad30;
+    D3VECTOR side;           /* +0x34, the barrel's x axis in the world (ai_CannonAxes): the shots of a salvo are set apart along it */
+    float pad40;
+    D3VECTOR up;             /* +0x44, the barrel's y axis in the world (ai_CannonAxes) */
+    float pad50;
     float yawSpeed;          /* +0x54, the horizontal turn speed ai_CannonAim steers (-1 .. 1) */
     float pitchSpeed;        /* +0x58, the vertical one */
     float yawDelta;          /* +0x5c, the yaw step of this frame (speed * dt * 1.5) */
@@ -5385,7 +5404,7 @@ struct D3OBJECT;
 char d3if_Delete(struct D3OBJECT *obj);                 /* 0x447190, d3_interface.h */
 char d3if_Show(struct D3OBJECT *obj, char show);        /* 0x4471b0, d3_interface.h */
 void he_ShowObjectInfos(); void ai_CannonAxes(); void ai_CannonAim(CANNONSCENE *sc, float dt); void ai_CannonCamera();
-void ai_CannonShotResults(CANNONSCENE *sc); void ai_CannonSwitchAnim(char *rec, CANNONSCENE *sc, GVEFFECT *run, int sel, int mask); int ai_CannonFireCheck(CANNONSCENE *sc); void ai_CannonExplosion();
+void ai_CannonShotResults(CANNONSCENE *sc); void ai_CannonSwitchAnim(char *rec, CANNONSCENE *sc, GVEFFECT *run, int sel, int mask); int ai_CannonFireCheck(CANNONSCENE *sc); void ai_CannonExplosion(CANNONSCENE *sc, char *rec);
 void sv_SetStatusText(char *s); void d2_RemoveObj(); void sv_RedrawScreen();
 void d3if_Prerender(char map); 
 
@@ -6180,58 +6199,195 @@ void ai_CannonSwitchAnim(char *rec, CANNONSCENE *sc, GVEFFECT *run, int sel, int
     sc->now = ai_ClockMs;
 }
 
-void gv_CannonScatter(char *o, float *a, float *b); float gv_CannonItemFactor(); void ai_Unk580a50(); int ai_InitShot(struct SHOTREC *shot, struct D3VECTOR *pos, struct D3VECTOR *dir, float charge, float size, float density);
+void gv_CannonScatter(char *o, float *a, float *b); float gv_CannonItemFactor(); void ai_ShotTableReset(); int ai_InitShot(struct SHOTREC *shot, struct D3VECTOR *pos, struct D3VECTOR *dir, float charge, float size, float density);
 int ai_ScatterShot(struct SHOTREC *shot, float sideSpread, struct D3VECTOR *side, float otherSpread, struct D3VECTOR *other, float speedSpread); int gv_FireShots(struct AIBLD *bld, struct AICHAR *ch, struct SHOTREC *a, struct SHOTREC *b, struct SHOTREC *d, float v, int cost, int x); struct SBBANK; struct SBSAMPLE *sb_PlayVariation(struct SBBANK *bank, char *name, int idx, int loops, int pan, int volume, int fade); void ai_CannonBuildPanel();
 
-/* 0x580160, the cannon's explosion spawn (1173 B, ROUGH: the branch structure and the effect calls are written,
-   the matrix arithmetic is a comment): sc = the scene struct, rec = the record. The two fields sc + 0xb0 / 0xb4
-   through 0x475980 and the selected object (sc + 0xa0) + 1 checked by 0x4ef090 (the character 0x770b80 +
-   0x6f25b8 * 0x21c); 0x4ef260 (rec) / 0x4ef330 (rec) and the per-object table 0x5edfe0 / 0x5edfe4 / 0x5edfe8
-   + the field * 0xc give the arc; three explosion records (by the selection 0, 1, 2): one (0x5dc240 / 0x5dc3a0
-   matrices, 0x4eeb70 the objects, 1 record), two (two records) or three (local_68 / local_d0 / local_138, three
-   records), 0x4eef50 the data; the run waited out on 0x4c3ae0 (pump 0x20007); then 0x4287b0 ("LOCATIONS_
-   DOMIZIL_KANONE1_esc" 0x62a36c) and 0x429ab0 (4, the counts, the offsets, the wimpel hand sc + 0x23 / 0x24 /
-   0x25) for each record and the effect 0x427050 (0, "Explosion" 0x5f36e0, the record count, 1, 0x3f, 0x7f, 0) */
-void ai_CannonExplosion(char *sc, char *rec)
+/* 0x580160, fires the cannon: sc = the scene, rec = the building record. The two sliders give the cannon kind a
+   and the speed b; gv_CannonCost of the player's character for sel + 1 balls (sc->selected) gives the cost, none ->
+   nothing. The charge of a ball is b% of the way from ai_CannonBalls[a].a to ai_CannonItemFactor * .b, its size
+   ai_CannonBalls[a].c, its density ai_IronDensity; the shot table is reset (ai_ShotTableReset). Barrel 0 fires one ball
+   from 50 ahead along sc->dir, barrel 1 two from 40 ahead 5 to either side (sc->side), barrel 2 three: two of them
+   3 below (sc->up) and 5 to either side, one 5 above; each ball is built (ai_InitShot) and scattered by the
+   building's spreads (gv_CannonScatter, ai_ScatterShot along side / up), the salvo fired (gv_FireShots with
+   gv_SalvoCharge) and its slot awaited (pump 0x20007). Then one LOCATIONS\DOMIZIL\KANONE1.esc script per ball
+   runs at the barrel's object (sc->obj8c[sel]) with its offset (x, y, z) and the "Explosion" sound plays (the
+   variation 3 for one ball, 2 for two, 1 for three) */
+void ai_CannonExplosion(CANNONSCENE *sc, char *rec)
 {
-    int v1;
-    int v2;
-    int sel;
-    int i;
-    int h;
+    SHOTREC shotA;
+    SHOTREC shotB;
+    SHOTREC shotC;
+    D3VECTOR fwd;
+    D3VECTOR side;
+    D3VECTOR up;
+    D3VECTOR t;
+    D3VECTOR p1;
+    D3VECTOR p2;
+    D3VECTOR p3;
     int a;
     int b;
-    int c;
+    int cost;
+    int x;
+    int h;
+    int n;
+    float spread;
+    float speedSpread;
+    float charge;
+    float size;
+    EVTSCRIPT *e1;
+    EVTSCRIPT *e2;
+    EVTSCRIPT *e3;
+    int x1, y1, z1;
+    int x2 = 0, y2 = 0, z2 = 0;
+    int y3 = 0, z3 = 0;
 
-    v1 = d2_GetObjValue(*(int *)(sc + 0xb0));
-    v2 = d2_GetObjValue(*(int *)(sc + 0xb4));
-    sel = (int)*(float *)(sc + 0xa0);
-    h = gv_CannonCost((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, v1, v2, sel + 1, &a, &b);
-    if (!h)
+    a = d2_GetObjValue(sc->kindSlider);
+    b = d2_GetObjValue(sc->speedSlider);
+    if (gv_CannonCost(ai_Chars[ai_PlayerId], a, b, sc->selected + 1, &cost, &x) == 0)
         return;
-    gv_CannonScatter(rec, &a, &b);
-    c = (int)gv_CannonItemFactor(rec);
-    ai_Unk580a50();
-    /* the per-selection explosion records: 1 (selection 0), 2 (selection 1: local_d0 + local_138) or 3
-       (selection 2: local_68 + local_d0 + local_138) of 0x68-byte matrices from 0x5dc240 (the corner positions
-       of the selected gun, the arc fVar4 from the table 0x5edfe0 + v1 * 0xc) and 0x5dc3a0 (the placement); the
-       object list 0x770b80 + 0x6f25b8 * 0x21c through 0x4eeb70 with the 0x4eef50 value; the run waited out on
-       0x4c3ae0 (pump 0x20007). The three spawns: 0x4287b0 ("LOCATIONS_DOMIZIL_KANONE1_esc"), 0x429ab0 (4, the
-       offsets 0 / 0x28 / 0x28, the wimpel hand sc + 0x23 + sel) and 0x427050 (0, "Explosion", the record
-       count, 1, 0x3f, 0x7f, 0) */
-    /* ROUGH: the three branch bodies (the 1 / 2 / 3 explosion records through 0x5dc240 / 0x5dc3a0 / 0x4eeb70
-       and the run wait 0x4c3ae0 / 0x20007) are not written yet; only the last spawn (selection 0) is below */
-    {
-        int u10 = (int)evt_Load((char *)(unsigned)&full_data_62a36c);
-        evt_RunScriptArgs((EVTSCRIPT *)u10, 4, 0, 0, 0x28, *(int *)(sc + 0x8c + (sel + 1) * 4));
+    gv_CannonScatter(rec, &spread, &speedSpread);
+    charge = (gv_CannonItemFactor(rec) * ai_CannonBalls[a].b - ai_CannonBalls[a].a) * ((float)b * 0.01f) + ai_CannonBalls[a].a;
+    size = ai_CannonBalls[a].c;
+    ai_ShotTableReset();
+    fwd.x = sc->dir.x;
+    fwd.y = sc->dir.y;
+    fwd.z = sc->dir.z;
+    side.x = sc->side.x;
+    side.y = sc->side.y;
+    side.z = sc->side.z;
+    up.x = sc->up.x;
+    up.y = sc->up.y;
+    up.z = sc->up.z;
+    if (sc->selected == 0) {
+        t.x = fwd.x * 50.0f;
+        t.y = fwd.y * 50.0f;
+        t.z = fwd.z * 50.0f;
+        p1.x = t.x + sc->pos.x;
+        p1.y = t.y + sc->pos.y;
+        p1.z = t.z + sc->pos.z;
+        ai_InitShot(&shotA, &p1, &sc->dir, charge, size, ai_IronDensity);
+        ai_ScatterShot(&shotA, spread, &sc->side, spread, &sc->up, speedSpread);
+        h = gv_FireShots((AIBLD *)rec, (AICHAR *)ai_Chars[ai_PlayerId], &shotA, 0, 0, gv_SalvoCharge(a, b, 1), cost, x);
+        x1 = 0;
+        y1 = 0;
+        z1 = 50;
+        n = 1;
+    } else if (sc->selected == 1) {
+        t.x = fwd.x * 40.0f;
+        t.y = fwd.y * 40.0f;
+        t.z = fwd.z * 40.0f;
+        p1.x = p2.x = t.x + sc->pos.x;
+        p1.y = p2.y = t.y + sc->pos.y;
+        p1.z = p2.z = t.z + sc->pos.z;
+        t.x = side.x * 5.0f;
+        t.y = side.y * 5.0f;
+        t.z = side.z * 5.0f;
+        p1.x = t.x + p1.x;
+        p1.y = t.y + p1.y;
+        p1.z = t.z + p1.z;
+        t.x = side.x * -5.0f;
+        t.y = side.y * -5.0f;
+        t.z = side.z * -5.0f;
+        p2.x = t.x + p2.x;
+        p2.y = t.y + p2.y;
+        p2.z = t.z + p2.z;
+        ai_InitShot(&shotB, &p1, &sc->dir, charge, size, ai_IronDensity);
+        ai_InitShot(&shotA, &p2, &sc->dir, charge, size, ai_IronDensity);
+        ai_ScatterShot(&shotB, spread, &sc->side, spread, &sc->up, speedSpread);
+        ai_ScatterShot(&shotA, spread, &sc->side, spread, &sc->up, speedSpread);
+        h = gv_FireShots((AIBLD *)rec, (AICHAR *)ai_Chars[ai_PlayerId], &shotB, &shotA, 0, gv_SalvoCharge(a, b, 1), cost, x);
+        x1 = 5;
+        y1 = 0;
+        z1 = 40;
+        x2 = -5;
+        y2 = 0;
+        z2 = 40;
+        n = 2;
+    } else if (sc->selected == 2) {
+        t.x = fwd.x * 40.0f;
+        t.y = fwd.y * 40.0f;
+        t.z = fwd.z * 40.0f;
+        p1.x = p2.x = p3.x = t.x + sc->pos.x;
+        p1.y = p2.y = p3.y = t.y + sc->pos.y;
+        p1.z = p2.z = p3.z = t.z + sc->pos.z;
+        t.x = up.x * 5.0f;
+        t.y = up.y * 5.0f;
+        t.z = up.z * 5.0f;
+        p3.x = t.x + p3.x;
+        p3.y = t.y + p3.y;
+        p3.z = t.z + p3.z;
+        t.x = up.x * -3.0f;
+        t.y = up.y * -3.0f;
+        t.z = up.z * -3.0f;
+        p1.x = t.x + p1.x;
+        p1.y = t.y + p1.y;
+        p1.z = t.z + p1.z;
+        p2.x = t.x + p2.x;
+        p2.y = t.y + p2.y;
+        p2.z = t.z + p2.z;
+        t.x = side.x * 5.0f;
+        t.y = side.y * 5.0f;
+        t.z = side.z * 5.0f;
+        p1.x = t.x + p1.x;
+        p1.y = t.y + p1.y;
+        p1.z = t.z + p1.z;
+        t.x = side.x * -5.0f;
+        t.y = side.y * -5.0f;
+        t.z = side.z * -5.0f;
+        p2.x = t.x + p2.x;
+        p2.y = t.y + p2.y;
+        p2.z = t.z + p2.z;
+        ai_InitShot(&shotC, &p1, &sc->dir, charge, size, ai_IronDensity);
+        ai_InitShot(&shotA, &p2, &sc->dir, charge, size, ai_IronDensity);
+        ai_InitShot(&shotB, &p3, &sc->dir, charge, size, ai_IronDensity);
+        ai_ScatterShot(&shotC, spread, &sc->side, spread, &sc->up, speedSpread);
+        ai_ScatterShot(&shotA, spread, &sc->side, spread, &sc->up, speedSpread);
+        ai_ScatterShot(&shotB, spread, &sc->side, spread, &sc->up, speedSpread);
+        h = gv_FireShots((AIBLD *)rec, (AICHAR *)ai_Chars[ai_PlayerId], &shotC, &shotA, &shotB, gv_SalvoCharge(a, b, 1), cost, x);
+        x1 = 5;
+        y1 = -3;
+        z1 = 40;
+        x2 = -5;
+        y2 = -3;
+        z2 = 40;
+        y3 = 5;
+        z3 = 40;
+        n = 3;
+    } else
+        return;
+    if (h != -1) {
+        while (cm_GetSlotState(h) == 0)
+            sv_RunFrame(0, 0x20007);
     }
-    sb_PlayVariation(0, (char *)(unsigned)"Explosion", sel + 1, 1, 0x3f, 0x7f, 0);
+    if (n == 0)
+        return;
+    if (n == 3) {
+        e1 = evt_Load("LOCATIONS\\DOMIZIL\\KANONE1.esc");
+        e2 = evt_Load("LOCATIONS\\DOMIZIL\\KANONE1.esc");
+        e3 = evt_Load("LOCATIONS\\DOMIZIL\\KANONE1.esc");
+        evt_RunScriptArgs(e1, 4, x1, y1, z1, sc->obj8c[2]);
+        evt_RunScriptArgs(e2, 4, x2, y2, z2, sc->obj8c[2]);
+        evt_RunScriptArgs(e3, 4, 0, y3, z3, sc->obj8c[2]);
+        sb_PlayVariation(0, "Explosion", 1, 1, 0x3f, 0x7f, 0);
+        return;
+    }
+    if (n == 2) {
+        e1 = evt_Load("LOCATIONS\\DOMIZIL\\KANONE1.esc");
+        e2 = evt_Load("LOCATIONS\\DOMIZIL\\KANONE1.esc");
+        evt_RunScriptArgs(e1, 4, x1, y1, z1, sc->obj8c[1]);
+        evt_RunScriptArgs(e2, 4, x2, y2, z2, sc->obj8c[1]);
+        sb_PlayVariation(0, "Explosion", 2, 1, 0x3f, 0x7f, 0);
+        return;
+    }
+    e1 = evt_Load("LOCATIONS\\DOMIZIL\\KANONE1.esc");
+    evt_RunScriptArgs(e1, 4, x1, y1, z1, sc->obj8c[0]);
+    sb_PlayVariation(0, "Explosion", 3, 1, 0x3f, 0x7f, 0);
 }
 
 
 /* 0x580a50, resets the three 0x38-byte shot records of 0x6f9f60 (57 B): each record: +0 = -1 and its three
    0x10-byte entries: +8 = -1, +0xc = 100000.0, +0x10 = 0, +0x14 = 0 */
-void ai_Unk580a50(void)
+void ai_ShotTableReset(void)
 {
     int i;
     int j;

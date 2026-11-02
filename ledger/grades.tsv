@@ -4026,15 +4026,15 @@ exe	0x0057e0e0	ai_AlchemistRescheduleWindow	unk_575860	byte	readable
 exe	0x0057e230	ai_ShotTableStore	unk_575860	byte	readable		
 exe	0x0057e270	ai_CannonScene	unk_575860	draft	readable	deep	
 exe	0x0057ec40	ai_CannonAim	unk_575860	draft	readable	deep	
-exe	0x0057f0e0	ai_CannonCamera	unk_575860	draft	draft		
+exe	0x0057f0e0	ai_CannonCamera	unk_575860	draft	readable	deep	
 exe	0x0057f5d0	ai_CannonAxes	unk_575860	byte	draft		
-exe	0x0057f620	ai_CannonFireCheck	unk_575860	draft	draft		
-exe	0x0057f690	ai_CannonShotResults	unk_575860	draft	draft		
-exe	0x0057f890	ai_CannonPanel	unk_575860	draft	draft		
-exe	0x0057fdb0	ai_Unk57fdb0	unk_575860	shape	draft		
-exe	0x0057fdd0	ai_CannonSwitchAnim	unk_575860	draft	draft		
-exe	0x00580160	ai_CannonExplosion	unk_575860	draft	draft		
-exe	0x00580a50	ai_Unk580a50	unk_575860	byte	draft		
+exe	0x0057f620	ai_CannonFireCheck	unk_575860	byte	readable		
+exe	0x0057f690	ai_CannonShotResults	unk_575860	byte	readable		
+exe	0x0057f890	ai_CannonPanel	unk_575860	byte	readable		
+exe	0x0057fdb0	ai_CannonPitchRatio	unk_575860	shape	draft		
+exe	0x0057fdd0	ai_CannonSwitchAnim	unk_575860	draft	readable	deep	
+exe	0x00580160	ai_CannonExplosion	unk_575860	draft	readable		
+exe	0x00580a50	ai_ShotTableReset	unk_575860	byte	readable		
 exe	0x00580a90	ai_CannonBuildPanel	unk_575860	draft	draft		
 exe	0x00580fe0	ai_Unk580fe0	unk_575860	byte	draft		
 exe	0x00581020	ai_Unk581020	unk_575860	draft	draft		
