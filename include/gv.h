@@ -200,7 +200,7 @@ int gv_Accuse();                     /* 0x4f2e30 */
 void cm_SendMoneyDelta(int a, int b);                     /* 0x4c5f60 */
 extern unsigned char ai_OwnPlayer;      /* 0x6f1bc5 */
 void gv_BuildingCannon(char *o, unsigned *balls, unsigned *kind);  /* 0x4ef170 */
-void unk_Unk4ef260(char *o, float *a, float *b);  /* 0x4ef260 */
+void gv_CannonScatter(char *o, float *spread, float *speedSpread);  /* 0x4ef260 */
 float unk_Unk4ef330(char *o);           /* 0x4ef330 */
 int unk_Unk4ef3c0(unsigned char *o);    /* 0x4ef3c0 */
 int unk_Unk4ef440(unsigned char *o);    /* 0x4ef440 */

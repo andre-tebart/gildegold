@@ -622,3 +622,4 @@
 2026-11-02T03:01:09 0x004ef000 func unk_Unk4ef000 -> gv_CannonKind by:main why:fills am.c's G9KIND for the cannon kind n (clamped 0 .. 4): the level a building needs (n + 2) and the per-salvo values; am.c 0x4a67a0 aims a cannon with it
 2026-11-02T03:04:05 0x004ef090 func unk_Unk4ef090 -> gv_CannonCost by:main why:am.c ai_Unk4a67a0: the cost of a cannon salvo (kind, strength, balls) checked against a quarter of the money; same clamps as gv_SalvoCharge
 2026-11-02T03:04:50 0x004ef170 func unk_Unk4ef170 -> gv_BuildingCannon by:main why:am.c ai_Unk4a67a0: gives the cannon kind and salvo ball level of building b from the cannon items in its object list
+2026-11-02T03:05:31 0x004ef260 func unk_Unk4ef260 -> gv_CannonScatter by:main why:am.c ai_Unk4a6ae0 passes its two results to ai_ScatterShot as the side and speed spreads of the cannon balls

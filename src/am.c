@@ -10818,7 +10818,7 @@ int ai_Unk4a6ae0(AIPER *p, AIBLD *b)
     int cost, x;
 
     if (ai_Unk6f0698.who == *(int *)((unsigned char *)p + 4) && ai_Unk6f0698.bld == b->id) {
-        unk_Unk4ef260(b, &u, &v);
+        gv_CannonScatter(b, &u, &v);
         g = unk_Unk4ef330(b);
         cost = ai_Unk6f0698.cost;
         x = ai_Unk6f0698.x;
