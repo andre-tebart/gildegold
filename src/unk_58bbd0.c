@@ -2835,7 +2835,7 @@ void ai_Unk58feb0(int obj, int target)
         d3_SetObjectPos(obj, target);
 }
 
-unsigned char * gm_BuildQuery(int n, ...); unsigned char * gm_BuildNext(void); char unk_Unk5020e0(int k, int c);
+unsigned char * gm_BuildQuery(int n, ...); unsigned char * gm_BuildNext(void); int gm_MayTakeJob(int k, int c);
 int sv_MessageBox(); char *_strupr(char *); int sprintf(char *buf, const char *fmt, ...); char * vfs_GetPath();
 struct D3OBJECT * d3_LoadGroup(); void d3t_InflateObjectTree(D3OBJECT *obj); int d3t_DropObject();
 int ai_Unk527e90();
@@ -2957,7 +2957,7 @@ int d2_WinOpenPic(short x, short y, int pic, int win); int d2_CreateWinText(); v
 void d2_SetViewEnabled(); void d2_CloseView(int view); int cm_SendLongMessage(char *msg);
 int sv_CheckGoodAmount(); int sv_CheckStock(); void txt_Format(char *out, int id0, ...); int sv_MessageBox();
 int d3sm_GetVertex();  /* @original: the original callers read an int result (gv.h declares it int) */
-int sv_UpdateCamera(); int gm_CharCurrency(char *c, char p); int gm_BuildingClass(); char unk_Unk5020e0(int k, int c);
+int sv_UpdateCamera(); int gm_CharCurrency(char *c, char p); int gm_BuildingClass(); int gm_MayTakeJob(int k, int c);
 
 /* 0x5909a0, the construction window "BAUEN_GEB_BAUEN" (1988 B, ROUGH SKELETON from the Ghidra pseudocode): the
    window (0x5763c0 (0x40), the event 0x576040, the controls 0x4731d0 for the kinds 1 .. 9, the frames

@@ -1011,7 +1011,7 @@ int amt_GetKindLevel(int k);                                              /* 0x4
 extern const int ai_RingStrides[11];          /* 0x5ed180, the strides of the near ring cursor */
 int ai_EvalCurrentNeed(float *a, float *b, int i, AIPER *p);                          /* 0x4a4ae0 */
 
-char unk_Unk5020e0(int k, int c);                                      /* 0x5020e0 */
+int gm_MayTakeJob(int k, int c);                                      /* 0x5020e0 */
 /* 0x4a5140 ai_CanBuildType is declared in am.h */
 extern char ai_DataPath[];                                                      /* 0x75dca0, the data path */
 /* 0x4a5320 ai_ExecBuildBuilding is declared in am.h */

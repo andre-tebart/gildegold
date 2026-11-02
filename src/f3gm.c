@@ -4789,8 +4789,8 @@ extern int gm_AllowAll;
         } while ((int)(t - ((unsigned char *)(base) + 0x223)) < 6);                  \
     } while (0)
 
-/* 0x5020e0 */
-char unk_Unk5020e0(int k, int c)
+/* 0x5020e0, whether character c may take the job of building type k: 0 no, 1 yes, 2 yes in a neighbouring building of that type */
+int gm_MayTakeJob(int k, int c)
 {
     int cls, i, n;
     char *p, *ch;
