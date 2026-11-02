@@ -7244,49 +7244,62 @@ int gm_CureMinorDisease(ORDCHAR *c)
     cm_SendFieldDeltas();
     return disease;
 }
-/* 0x505ad0, clears one set field of the fields 4 / 5 / 6 / 1 (a random start of 4); returns the record number (6 / 7 / 8 / 3) or 0 */
+/* 0x505ad0, gm_CureDisease for the diseases 6, 7, 8 and 3 (the fields of the word +0x2c at bits 17, 20, 23 and 8):
+   from a random start the first one the character c has is cleared and the word sent. Returns the disease kind, 0
+   when it had none */
 
-int gm_Unk505ad0(char *c)
+int gm_CureUpperDisease(ORDCHAR *c)
 {
-    unsigned w, f;
-    int tab[4];
-    int i, r;
+    int held[4];
+    unsigned w, sent;
+    int f, found, n, disease;
 
-    r = 0;
-    w = *(unsigned *)(c + 0x2c);
-    tab[0] = (w & 0xe0000) != 0;
-    tab[1] = (w & ((unsigned)&he_Events + 0x54c0)) != 0;
-    tab[2] = (w & 0x1800000) != 0;
-    tab[3] = (w & 0xf00) != 0;
-    f = util_RandomU(4) & 0xffff;
-    i = 4;
+    disease = 0;
+    w = c->v02c;
+    held[0] = 0;
+    held[1] = 0;
+    held[2] = 0;
+    held[3] = 0;
+    if ((w & (7 << 17)) > 0)
+        held[0] = 1;
+    if ((w & (7 << 20)) > 0)
+        held[1] = 1;
+    if ((w & (3 << 23)) > 0)
+        held[2] = 1;
+    if ((w & (0xf << 8)) > 0)
+        held[3] = 1;
+    found = -1;
+    f = util_RandomU(4);
+    n = 4;
     do {
-        if (tab[f] == 1) {
-            if (f == 0xffffffff)
-                return 0;
-            w = *(unsigned *)(c + 0x2c);
-            if (f == 0) {
-                w &= 0xfff1ffff;
-                r = 6;
-            } else if (f == 1) {
-                w &= 0xff8fffff;
-                r = 7;
-            } else if (f == 2) {
-                w &= 0xfe7fffff;
-                r = 8;
-            } else if (f == 3) {
-                w &= 0xfffff0ff;
-                r = 3;
-            }
-            cm_BeginFieldBlock(c, *(int *)(c + 4));
-            cm_AddFieldDelta(4, 1, 0x2c, &w);
-            cm_SendFieldDeltas();
-            return r;
+        if (held[f] == 1) {
+            found = f;
+            break;
         }
-        i--;
+        n--;
         f = (f + 1) % 4;
-    } while (i != 0);
-    return 0;
+    } while (n != 0);
+    if (found == -1)
+        return 0;
+    w = c->v02c;
+    if (found == 0) {
+        w &= ~(7 << 17);
+        disease = 6;
+    } else if (found == 1) {
+        w &= ~(7 << 20);
+        disease = 7;
+    } else if (found == 2) {
+        w &= ~(3 << 23);
+        disease = 8;
+    } else if (found == 3) {
+        w &= ~(0xf << 8);
+        disease = 3;
+    }
+    sent = w;
+    cm_BeginFieldBlock((char *)c, c->netId);
+    cm_AddFieldDelta(4, 1, 0x2c, &sent);  /* 0x2c: v02c */
+    cm_SendFieldDeltas();
+    return disease;
 }
 /* 0x505be0, fills the bytes out[0 .. n-1] with 0 .. n-1 and shuffles them (as 0x505ca0 for bytes) */
 
