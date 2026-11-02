@@ -2815,7 +2815,7 @@ money:
         } else if (ai_Goods[*(unsigned short *)&m->data[8] * 0x41] == 2 || ai_Goods[*(unsigned short *)&m->data[8] * 0x41] == 6) {
             if (x2 == 0)
                 return 1;
-            o2 = unk_Unk5031b0(x2, *(unsigned short *)&m->data[8]);
+            o2 = gm_AllocRaum(x2, *(unsigned short *)&m->data[8]);
             if (o2 == 0)
                 return 1;
         } else {

@@ -26,7 +26,7 @@ int ai_ManagedBuildingWindow(int building);              /* 0x5b8fc0, its varian
 int ai_AmountMenu(int cfg, int title, int text, int check);  /* 0x5c1130, the special-amount menu (cfg: an AMOUNTCFG, unk_5d33b0.h) */
 int ai_PersonnelBook(int building, char *text);         /* 0x5aab80, the personnel book */
 void ai_MasterLetterWindow(unsigned char *building);    /* 0x5c3200, the master letter window */
-int ai_UnlistPlayerBuilding(int id);                     /* 0x5a86c0, unlinks the record of the building id from a player's building list 0x6f26c0, -1 when it is not listed */
+int ai_FreeProdSetting(int id);                     /* 0x5a86c0, unlinks and frees the production setting of the building id (ai_ProdSetting), -1 when it has none */
 
 /* the placement-candidate list of the build screen (ai_BauplatzFilter / ai_FindBauplaetze) */
 extern int *ai_BauplatzList;            /* 0x6f5308 */

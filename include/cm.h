@@ -143,7 +143,7 @@ int gm_ListAmount(short *l, char *o);                                           
 int gm_ListStock(short *l, int item);                                             /* 0x50ab50 */
 int gm_RemoveObject(int *list, unsigned item);                                          /* 0x4ffff0 */
 int gm_RemoveObjectFromBuilding(int b, int id);                                            /* 0x503480 */
-unsigned short * unk_Unk5031b0(unsigned char *b, unsigned n);                                           /* 0x5031b0 */
+unsigned short * gm_AllocRaum(unsigned char *b, unsigned n);                                           /* 0x5031b0 */
 /* 0x500190 */
 void txt_Format(char *buf, int id, ...);                                       /* 0x5176d0 */
 struct SBSAMPLE *sb_PlaySample(struct SBBANK *bank, char *name, int loops, int pan, int volume, int fade, int delay); /* 0x426fa0, sblib.c (this header's units: sb_PlaySampleI) */

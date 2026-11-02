@@ -137,8 +137,9 @@ int gm_IsUnderAge(unsigned short id);         /* 0x4fd7e0 */
 #include "ch.h"
 #include "cm_types.h"
 #include "net.h"
-void *ai_Unk5a8560(int param_1);  /* 0x5a8560 */
-#define ai_Unk5a8560K ((int (*)())ai_Unk5a8560)  /* 0x5a8560: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
+#include "rd.h"
+void *ai_ProdSetting(int param_1);  /* 0x5a8560 */
+#define ai_ProdSettingK ((int (*)())ai_ProdSetting)  /* 0x5a8560: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, ai_Unk4d88c0 0x4d88c0 move it as a word / movzx) */
 #define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
 /* 0x4f9e30, the statistics screen: opens the form "misc\statistics_taxes", prints one line per round
@@ -3961,7 +3962,7 @@ char *gm_FindFreeBuilding(void)
         return 0;
     return (char *)b;
 }
-/* 0x5012e0, frees the building b: a player's building (its owner a character of kind 6) is taken off the player's building list (ai_UnlistPlayerBuilding); by type, 0x1e frees its plant records, 0x48 .. 0x4a its graveyard record, 0x4b .. 0x4d its heap block; every character living or working in it loses it, its object list is freed and the type set to 0 (free). Returns 0, -1 for no building, -2 for one already free */
+/* 0x5012e0, frees the building b: a player's building (its owner a character of kind 6) frees its production setting (ai_FreeProdSetting); by type, 0x1e frees its plant records, 0x48 .. 0x4a its graveyard record, 0x4b .. 0x4d its heap block; every character living or working in it loses it, its object list is freed and the type set to 0 (free). Returns 0, -1 for no building, -2 for one already free */
 
 int gm_FreeBuilding(char *p)
 {
@@ -3973,7 +3974,7 @@ int gm_FreeBuilding(char *p)
     if (b->type == 0)
         return -2;
     if (b->owner != 0xffff && ORD_CHARS[b->owner].kind == 6)
-        ai_UnlistPlayerBuilding(b->id);
+        ai_FreeProdSetting(b->id);
     switch (b->type) {
     case 0x1e:
         if (b->plants != 0) {
@@ -4413,7 +4414,7 @@ int gm_BuildingClass();                     /* 0x501d80 */
 /* ai_BuildingNames: view of txt_Ptrs (build/mk_txt_views.py) */
 extern char ai_Time[];             /* 0x770ae0 */
 void * mem_Alloc(int size, char *tag);                   /* 0x4223c0 */
-unsigned short * unk_Unk5031b0(unsigned char *b, unsigned n);
+unsigned short * gm_AllocRaum(unsigned char *b, unsigned n);
 
 /* 0x501580, creates a building of the type k for the owner o (the next free instance, 0x5012b0): the id (0x61a654 counter), the owner / place words, the default values (rank 100, 0x7d00 ..), a name from the names of its type that no building has yet (up to 12 candidates of 0x20 characters: "Building name too long: %s" is the error text), the objects of its prototype (0x500190 / 0x5031b0 for the kinds 2 / 6), the main object (0x501ce0) and the per-type extras: dates (the clock at +0x69 .. +0x75) for the types 4 .. 7, an empty owner for 0xb .. 0xd, the counters of 0xe .. 0x10, the object 0x1b5 for 0x14 .. 0x16, the "f3_gm:PlantMap" of 0x1e (0x600 bytes of 0x18-byte cells), 0x4efc10 / 0x4ef9c0 for 0x48 .. 0x4a, "AHM_INFO" (0x3c bytes) for 0x4b .. 0x4d. ROUGH */
 unsigned char *gm_CreateBuilding(unsigned char k, unsigned short own)
@@ -4461,7 +4462,7 @@ unsigned char *gm_CreateBuilding(unsigned char k, unsigned short own)
     b[0x5c] = 100;
     *(int *)(b + 0x95) = -1;
     if (own != 0xffff && ai_Chars[own][2] == 6)
-        ai_Unk5a8560K(b);
+        ai_ProdSettingK(b);
     *(unsigned *)(b + 0x99) = 0;
     for (i = 0x9d; i <= 0xa8; i++)
         b[i] = 0;
@@ -4507,7 +4508,7 @@ unsigned char *gm_CreateBuilding(unsigned char k, unsigned short own)
             if ((short)*w < 0) {
                 if (c == 2 || c == 6) {
                     any = 1;
-                    unk_Unk5031b0(b, *w & 0x7fff);
+                    gm_AllocRaum(b, *w & 0x7fff);
                 } else if (any == 0)
                     gm_CreateObject(*(int *)(b + 1), *w & 0x7fff, 1);
             }
@@ -5126,9 +5127,9 @@ void gm_AssignBuilding(unsigned char *b, unsigned short place, unsigned own)
         o = *(unsigned short *)(b + 0x27);
         if (o != own) {
             if (o != 0xffff && ai_Chars[o][2] == 6)
-                ai_UnlistPlayerBuilding(*(int *)(b + 1));
+                ai_FreeProdSetting(*(int *)(b + 1));
             if (ai_Chars[own][2] == 6)
-                ai_Unk5a8560K(b);
+                ai_ProdSettingK(b);
         }
         o = *(unsigned short *)(b + 0x27);
         if (o != 0xffff && *(unsigned char **)(ai_Chars[o] + 0x170) == b)
@@ -5291,7 +5292,7 @@ L1:
 }
 /* 0x5031b0, "gm_AllocRaum": creates the building b's (kind) object n with all its sub-objects (the object words after it up to the next kind 2 / 6 object that are marked negative), sets the counts of its first kind 0x2a / 0x116 objects (the bytes at +0x23d / +0x23e / +0x23f of the building prototype, at least 2 / 6), and for the market stalls 0x92 .. 0x97 / 0x2db the store room ob_LAGERFLAECHE_ALLGEMEIN with the player's goods. ROUGH */
 
-unsigned short *unk_Unk5031b0(unsigned char *b, unsigned n)
+unsigned short *gm_AllocRaum(unsigned char *b, unsigned n)
 {
     unsigned short *o, *s;
     int i, bi, k, pl, cap;

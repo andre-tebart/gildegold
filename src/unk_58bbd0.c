@@ -13664,7 +13664,7 @@ int *ai_Unk5a8540(int param_1)
    later one by 0x5a8540; the 0x4c bytes from 0x4223c0 ("hp_AddProdSetting") are zeroed, the good +4 of
    param_1 at +0, 0x5de634 at +4, 1.0f at +0x44 and the weights by 0x5a83b0 */
 
-void *ai_Unk5a8560(int param_1)
+void *ai_ProdSetting(int param_1)
 {
     char *rec;
     void *found;
@@ -13703,7 +13703,7 @@ void *ai_Unk5a8560(int param_1)
 /* 0x5a86c0, the setting removed by the good (75 B): the list 0x6f26c0 is relinked and the record 0x422620
    freed; -1 when the good is not in the list */
 
-int ai_UnlistPlayerBuilding(int param_1)
+int ai_FreeProdSetting(int param_1)
 {
     int *prev;
     int *p;
@@ -18022,7 +18022,7 @@ void ai_Unk5c2b90(char *param_1, short *param_2)
     recs = (char *)ai_Unk5a8540(*(int *)(param_1 + 1));
     for (i = 0; i < 7; i++)
         pics[i] = -1;
-    if (recs == 0 && (recs = (char *)ai_Unk5a8560(param_1)) == 0) {
+    if (recs == 0 && (recs = (char *)ai_ProdSetting(param_1)) == 0) {
         mode = -1;
         U_I((unsigned)&full_data_6f2f90) = 0;
     } else {
