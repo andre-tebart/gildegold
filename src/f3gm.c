@@ -4952,14 +4952,14 @@ int gm_IsType10(unsigned char *b)
 
 int gm_IsHomeType(unsigned char *b)
 {
-    char k;
+    char *k;
 
     if (b == 0)
         return 0;
-    k = *(char *)(ai_BTypes + (unsigned)*b * 0x24d);
-    if (k != 0x0b && k != 0x0d && k != 0x0c && k != 0x10 && k != 0x1c && k != 0x1d && k != 0x1f)
-        return 0;
-    return 1;
+    k = ai_BTypes + *b * 0x24d;
+    if (*k == 0x0b || *k == 0x0d || *k == 0x0c || *k == 0x10 || *k == 0x1c || *k == 0x1d || *k == 0x1f)
+        return 1;
+    return 0;
 }
 
 int gm_JobBuildingType(int x);
