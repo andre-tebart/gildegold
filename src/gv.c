@@ -2292,24 +2292,27 @@ int gv_SendGrave(unsigned char *o)
         return -1;
     return gv_OrderRaiseDead((char *)o, *e, k, *z, 0x1c);
 }
-/* 0x4f1660, 1 while the character c (kind 0x14 at +2, +8 set) still owes its grave payment: with an object (+0x16c, not the player's) the owed amount (+0x14 - 50 * 0x4f16f0 (object)) is set (0x4c4ac0 (id, 0x1c, -owed))
-   and the character is done when +0x1c does not exceed it; without one the amount is -1000.0; 0 for other characters */
+/* 0x4f1660, the daily decay of a raised dead person c (kind 0x14, gv_RaiseDead; the daily character step of f3gm.c
+   0x4fbe90 removes it when this returns 1): its life value f01c loses f014 less 50 * gv_PreserveRate of its graveyard
+   (cm_SendFloatDelta), all of it (-1000) when the graveyard is gone, has no owner or is the player's own. Returns 1
+   when the life value is used up, 0 while some is left and for other or dead characters */
 
-int unk_Unk4f1660(char *c)
+int gv_DecayRaisedDead(AICHAR *c)
 {
-    char *o;
-    float owed, rest;
+    AIBLD *bld;
+    float loss, rest;
 
-    if (c != 0 && c[2] == 0x14 && c[8] != 0) {
-        o = *(char **)(c + 0x16c);
-        if (o == 0 || *(short *)(o + 0x27) == -1 || *(unsigned short *)(o + 0x27) == *(unsigned short *)ai_PlayerCharC) {
-            cm_SendFloatDelta(*(int *)(c + 4), 0x1c, -1000.0f);
+    if (c != 0 && c->kind == 0x14 && c->health != 0) {
+        bld = c->bld;
+        if (bld == 0 || bld->owner == 0xffff || bld->owner == *ai_PlayerChar) {
+            cm_SendFloatDelta(c->netId, 0x1c, -1000.0f);
         } else {
-            owed = *(float *)(c + 0x14) - unk_Unk4f16f0(o) * 50.0f;
-            rest = *(float *)(c + 0x1c) - owed;
-            cm_SendFloatDelta(*(int *)(c + 4), 0x1c, -owed);
-            if (rest > 0.0f)
-                return 0;
+            loss = c->f014 - gv_PreserveRate((char *)bld) * 50.0f;
+            rest = c->f01c - loss;
+            cm_SendFloatDelta(c->netId, 0x1c, -loss);
+            if (rest <= 0.0f)
+                return 1;
+            return 0;
         }
         return 1;
     }
@@ -2317,7 +2320,7 @@ int unk_Unk4f1660(char *c)
 }
 /* 0x4f16f0, a rate of the object o: the sum of 10 / 10 / 10 / 15 / 10 / 10 / 15 for the items 0x1ff, 0x202, 0x208, 0x20d, 0x214, 0x216, 0x219 in its list, times 0.0125 */
 
-float unk_Unk4f16f0(char *o)
+float gv_PreserveRate(char *o)
 {
     int sum;
 

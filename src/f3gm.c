@@ -1240,7 +1240,7 @@ extern char * cm_FieldObject;                /* 0xa68d2c */
 extern char ch_EmptyName[];             /* 0x631090 */
 int gm_Unk5075c0();                     /* 0x5075c0 */
 void cm_SendKillCharacter(int a, int b);                     /* 0x4c4e00 */
-int unk_Unk4f1660();                     /* 0x4f1660 */
+int gv_DecayRaisedDead();                     /* 0x4f1660 */
 int cm_AddFieldValue(unsigned char size, unsigned char n, unsigned short field, void *v);                     /* 0x4c3d90 */
 void cm_SendFieldValues(void);                     /* 0x4c49e0 */
 int cm_SendLongMessage(char *msg);                     /* 0x4c4b70 */
@@ -1287,7 +1287,7 @@ float unk_Unk4fbe90(unsigned short *c)
         return -1.0f;
     }
     if (p[2] == 0x14) {
-        if (unk_Unk4f1660(c) == 1) {
+        if (gv_DecayRaisedDead(c) == 1) {
             b = 0;
             cm_BeginFieldBlock(c, *(int *)(p + 4));
             cm_AddFieldValue(1, 1, (char *)p - cm_FieldObject + 8, &b);

@@ -312,9 +312,9 @@ void gv_OrderMoveGrave(int *c, int to, char *o, int from, int entry, int price);
 int gv_MoveGrave(GVMOVE *m);           /* 0x4f0ed0 */
 int gv_OrderRaiseDead(char *o, int size, int entry, int grave, int kind);  /* 0x4f1170 */
 int gv_SendGrave(unsigned char *o);    /* 0x4f15e0 */
-int unk_Unk4f1660(char *c);             /* 0x4f1660 */
+int gv_DecayRaisedDead(struct AICHAR *c);  /* 0x4f1660 */
 int unk_Unk4f1d50(unsigned char *o, int *n);  /* 0x4f1d50 */
-float unk_Unk4f16f0(char *o);           /* 0x4f16f0 */
+float gv_PreserveRate(char *o);           /* 0x4f16f0 */
 void cm_SendFloatDelta(int id, int field, float delta);  /* 0x4c4ac0 */
 extern int ai_Unk1460ae0;               /* 0x1460ae0 */
 int unk_Unk4f17f0(void *f, unsigned char *o);  /* 0x4f17f0 */

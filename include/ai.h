@@ -229,9 +229,9 @@ typedef struct AICHAR {                 /* 0x21c bytes, ai_Chars[768] */
     unsigned char b00d;                 /* 0x00d, 1 .. 2 (gv: kept in a grave as GVGRAVE.v30) */
     char pad00e[2];
     float f010;                         /* 0x010, start values set by the character creators (ahm_CreateAlchemist, gv_RaiseDead) */
-    float f014;                         /* 0x014 */
+    float f014;                         /* 0x014, the step gm_AgeCharacter ages f01c by; a raised dead person loses it daily (gv_DecayRaisedDead) */
     float f018;                         /* 0x018 */
-    float f01c;                         /* 0x01c, 1000.0 at creation */
+    float f01c;                         /* 0x01c, a life value: 1000.0 at creation, aged by gm_AgeCharacter, the character dies when it is used up (f3gm.c 0x4fbe90, gv_DecayRaisedDead) */
     float f020;                         /* 0x020 */
     int v024;                           /* 0x024, a value ai.c decays every frame (sent as message field 0x24), 0 at creation */
     short w028;                         /* 0x028, 0 at creation */
