@@ -1,11 +1,11 @@
 ---
 name: dcp-match-base
-description: Run one match-base session of a decompanion project - take functions from the base queue (dcp next) one at a time and raise each to shape + readable by reading the original and fixing the C's meaning, or hand it to the deep queue with a reason (dcp escalate). A session is 8 functions raised or escalated. Use when the user says "match-base", "/match-base", "dcp-match-base", "base pass" or "raise the base grades".
+description: Run one match-base session of a decompanion project - take the first function of the base queue (dcp next) and raise it to shape + readable by reading the original and fixing the C's meaning, or hand it to the deep queue with a reason (dcp escalate). A session is that one function, raised or escalated. Use when the user says "match-base", "/match-base", "dcp-match-base", "base pass" or "raise the base grades".
 ---
 
-# Match-base session: 8 functions, the main checkout
+# Match-base session: one function, the main checkout
 
-Goal: every item of `dcp next` to **shape + readable**: the code's instruction diff against the original
+Goal: the item `dcp next` names to **shape + readable**: the code's instruction diff against the original
 has only register / stack-slot / scheduling differences left (or it is byte-identical), and a reader can follow
 the C without the disassembly. You get there by reading the original and fixing what the C *means*. Byte
 identity is welcome when it comes, but allocation, scheduling and generated variant rounds are deep work (the
@@ -44,15 +44,15 @@ Hard rules
 1. `dcp session start --kind match-base`. It is the gate (no open toolchain or libs obligation, a clean
    working tree, every unit compiles, no error finding, the link ok). On `gate: FAIL` fix what it lists (or
    revert), commit, start again; an `obligation=toolchain.*` / `obligation=libs.archives` line is a human
-   decision: stop and hand it to the user. A match-base session is counted in functions (section 4), not
-   minutes.
+   decision: stop and hand it to the user. A match-base session is one function (section 4).
 2. `dcp next` - the base queue, first item first. Read the lead comment of its unit's `src/<unit>.c` (its
    `Open:` lines).
 
-## 2. Work loop: one function at a time, always the first item
+## 2. Work: the first item, one function
 
 `dcp next` -> read the function against the original -> fix the meaning -> `dcp build` ->
-`dcp grade NAME` -> commit -> next. Never skip an item: one you cannot raise is escalated (section 3).
+`dcp grade NAME` -> commit -> wrap up (section 4). There is no skipping: a function you cannot raise is
+escalated (section 3).
 
 The item line: `next=0xADDR name=... unit=... section=draft|read experiment=... readability=... gates=B3,Q2,...
 dist='N ins / M bytes, size ours vs original'`. `section=draft`: the experiment is below shape; `section=read`: the
@@ -151,8 +151,8 @@ work, however long.
   C2371 redefinition, C2198 too few parameters and the like), fix the head (`dcp headers conflicts UNIT HEADER`
   lists what is in the way): include the header, delete the local declarations it supersedes, correct the
   calls and accesses that only compiled against them. Commit
-  that on its own, before the function: `<unit>: head includes <x>.h (typing)`; it does not count toward the 8,
-  and `dcp check` must show no M1 (a debt item, 2.6, is held at its declared grade and listed as `M1.debt`). A byte-matched
+  that on its own, before the function: `<unit>: head includes <x>.h (typing)`, and `dcp check` must show no M1
+  (a debt item, 2.6, is held at its declared grade and listed as `M1.debt`). A byte-matched
   function is evidence of what the original declared: when a correction changes its bytes, the correction is
   wrong, not the match, unless the match is no evidence at all (2.6). Find which side is: fix the
   header when its signature or type is the guess, or keep the original's spelling with `@original why` (the
@@ -192,8 +192,7 @@ One function, one commit, never two functions together, even small siblings: `<u
   their place in main says nothing about ownership. Never name one with a view macro
   (`#define x (*(T *)&full_data_...)`): that hides the open question behind a name. When the function you raise
   shows what one is, settle all
-  four, in one commit of its own before the function: `<unit>: data <name> from the gap block (typing)`; it
-  does not count toward the 8.
+  four, in one commit of its own before the function: `<unit>: data <name> from the gap block (typing)`.
   - Name and type it from its users and its bytes (`dcp dump`, `dcp refs`; `{0,0,0,0,0,0,0xe0,0x3f}` is the
     double 0.5). The size is the object's, not the gap's: a gap runs to the next known address and may hold
     several objects; split it, the rest stays a `full_` block at its own address.
@@ -251,16 +250,16 @@ allocation really causes it (extra saved registers, spills you have read in the 
 stale `@deep` / `@stuck` tag: `dcp escalate NAME --clear`, build again.
 
 ## 4. When to stop
-A session is **8 functions** raised to shape + readable (or byte + readable) or escalated, then the wrap-up.
-Never stop early: a hard function is escalated, not a reason to end; a long queue is not a reason to end;
-"it feels long" is no clock, nor is "budget" or the size of your context: one function finished with a wrap
-is a failed session, not a short one. One raise or one escalation is one commit: count the commits and stop at 8
-(escalations count). A reconstruction of a big function (~1000 instructions, missing statements) may take most
-of a session; that is expected base work, not a reason to escalate it.
+A session is **one function**: the first item `dcp next` names, raised to shape + readable (or byte + readable)
+or escalated, then the wrap-up. One raise or one escalation is one commit, and the session ends when that
+commit stands (with the typing commits before it, when the work needed them: 2.3, 2.5). Never stop before it:
+a hard function is escalated, not a reason to end, and "it feels long" is no clock. A reconstruction of a big
+function (~1000 instructions, missing statements) may take most of a session; that is expected base work, not
+a reason to escalate it.
 
 ## 5. Wrap up
-1. Keep the function in progress if it builds and nothing got worse (but by an accepted fall, 2.6), else
-   revert; `dcp build` exits 0.
+1. The session's function is committed: keep it if it builds and nothing got worse (but by an accepted fall,
+   2.6), else revert it; `dcp build` exits 0.
 2. `dcp session wrap`: builds, links, checks every target, promotes the grade baseline and prints the
    computed report (errors, byte and readable counts before -> after, `grades changed` per function, renames,
    the next item). It must say `gate: ok`.
