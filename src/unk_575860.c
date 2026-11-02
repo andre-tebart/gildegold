@@ -10588,42 +10588,49 @@ void ai_SelectBookmark(void)
         }
     }
 }
-/* 0x589570, the tooltip line of the slot idx (256 B): a = U_I (0x6f2308) (else U_I (0x6f230c) -> its
-   0x4ffe90 (a + 0x5d, 2, 6, 0, 0xfd) when U_I (0x6f2310) is 0, else U_I (0x75ec60) or U_I (0x6f1bc8)),
-   b = U_I (0x6f2310). The slot 0x6f5ec4 + idx * 0xc = a + 1, 0x6f5ec8 = b + 2, or -1 without b or with b's word
-   0xfd; the line "%s = %G, %s" (0x62aa14: idx + 0x205e, a, b's word * 2 + 0x9a8) or "%s = %G" (0x62aa20) in
-   0x5176d0, then 0x52e330 (the line) */
-
-void ai_Unk589570(int idx)
+/* 0x589570, sets the bookmark idx (256 B): the building the player is in (ai_PlayerBuilding, else
+   ai_FallbackBuilding with its shown room or the first room gm_Query finds, else the selected object or the
+   market) and the room object shown (sv_PanelShown); the status bar line "%s = %G, %s" (the key's text idx +
+   0x205e, the building, the room's text) or, without a room or for the room 0xfd, "%s = %G"
+   @deep read against the original instruction by instruction: every statement, operand and branch target
+   equal (diffclass: one hunk, branch targets equal); the only hunk is a duplicated 'test eax, eax / je' at
+   0x58958a: the original's player-building path tests o and then falls into a second copy of the same test
+   (the join with the gm_Query path), ours threads both paths into one test. Tried: else-if chain,
+   assignment-in-condition for the query, ternary / inverted if for the stores, a dummy re-test in the
+   player branch: all equal or worse. A block-layout / jump-threading difference of VC6, not a statement */
+void ai_SetBookmark(int idx)
 {
     char buf[0x100];
-    char *a;
-    char *b;
+    AIBLD *a;
+    AIOBJ *o;
 
-    a = *(char **)(unsigned)&ai_PlayerBuilding;
-    b = 0;
+    a = (AIBLD *)ai_PlayerBuilding;
     if (a != 0) {
-        b = *(char **)(unsigned)&sv_PanelShown;
+        o = (AIOBJ *)sv_PanelShown;
     } else {
-        a = *(char **)(unsigned)&ai_FallbackBuilding;
+        a = (AIBLD *)ai_FallbackBuilding;
         if (a != 0) {
-            b = *(char **)(unsigned)&sv_PanelShown;
-            if (b == 0)
-                gm_Query(a + 0x5d, 2, 6, 0, 0xfd);
+            o = (AIOBJ *)sv_PanelShown;
+            if (o == 0)
+                o = (AIOBJ *)gm_Query((void *)a->objList, 2, 6, 0, 0xfd);
         } else {
-            a = *(char **)(unsigned)&sv_SelectedObject;
+            a = (AIBLD *)sv_SelectedObject;
             if (a == 0)
-                a = *(char **)(unsigned)&ai_MarketBuilding;
+                a = ai_MarketBuilding;
+            o = 0;
         }
     }
-    ai_Bookmarks[idx].building = *(int *)(a + 1);
-    if (b == 0 || *(unsigned short *)b == 0xfd) {
-        ai_Bookmarks[idx].object = -1;
-        txt_Format(buf, (char *)(unsigned)&full_data_62aa20, (char *)(idx + 0x205e), a);
+    if (o != 0) {
+        ai_Bookmarks[idx].building = a->id;
+        ai_Bookmarks[idx].object = o->objId;
     } else {
-        ai_Bookmarks[idx].object = *(int *)(b + 2);
-        txt_Format(buf, (char *)(unsigned)&full_data_62aa14, (char *)(idx + 0x205e), a, *(unsigned short *)b * 2 + 0x9a8);
+        ai_Bookmarks[idx].building = a->id;
+        ai_Bookmarks[idx].object = -1;
     }
+    if (o != 0 && o->id != 0xfd)
+        txt_Format(buf, (int)"%s = %G, %s", idx + 0x205e, a, o->id * 2 + 0x9a8);
+    else
+        txt_Format(buf, (int)"%s = %G", idx + 0x205e, a);
     sv_SetStatusText(buf);
 }
 
@@ -10676,7 +10683,7 @@ void ai_Unk589670(void)
         if (U_I(((unsigned)&dm_L + 0x20)) != 0)
             U_I((unsigned)&sv_PopRequest) = 1;
         if (*(int *)((unsigned)&d2_RadioSel) != -1)
-            ai_Unk589570(*(int *)((unsigned)&d2_RadioSel));
+            ai_SetBookmark(*(int *)((unsigned)&d2_RadioSel));
         d2_MenuNavigate(0);
         d2_SetObjEnabled(0, 0);
         ai_SelectBookmark();
@@ -10786,7 +10793,7 @@ void ai_SlotKeys(void)
     i = 0;
     for (p = (char *)ai_Bookmarks; p < (char *)&ai_Bookmarks[11]; p += 0xc) {
         if (*(unsigned char *)p == *(unsigned char *)(unsigned)&kb_Last && *(unsigned char *)((unsigned)&kb_Down + 0x2a) != 0)
-            ai_Unk589570(i);
+            ai_SetBookmark(i);
         i++;
     }
 }
