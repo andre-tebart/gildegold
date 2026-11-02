@@ -145,7 +145,8 @@ typedef struct AIBTYPE {                /* 0x24d bytes, ai_BTypes[] */
     char pad233[0xd];
     unsigned char min0;                 /* 0x240 */
     unsigned char min1;                 /* 0x241 */
-    char pad242[5];
+    char pad242;
+    int v243;                           /* 0x243, a value the type's tooltip shows (ai_OpenBuildingTooltip, text 0x29) */
     union {
         char level;                     /* 0x247, the type's level 1 .. 3 (am.h AIBTYPEX: a count (level)); main_EndRound weighs a building's budget share 2 / 4 / 8 by it */
         unsigned char cap247;           /* 0x247, read as unsigned (0x489cb0) */

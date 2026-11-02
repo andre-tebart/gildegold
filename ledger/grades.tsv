@@ -4005,7 +4005,7 @@ exe	0x00578370	ai_TutorialStop	unk_575860	byte	draft
 exe	0x00578440	ai_TutorialFreeRuns	unk_575860	byte	draft		
 exe	0x005784a0	ai_TutorialInitMainIntro	unk_575860	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	unk_575860	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	byte	readable		
+exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	shape	readable		byte+readable -> shape+readable at b35c069: ai.h AIBTYPE gets the field v243 at 0x243 (split out of pad242[5]) for ai_OpenBuildingTooltip's text 0x29: a truer type with no code change of its own; ai_TutorialInitChapter2 never reads AIBTYPE, its fall is a pure eax/ecx swap of the constants 1 / 0x429 (a VC6 declaration-set tie-break, the same one the grave size tables flip), so the match was no evidence of its source [waits for: the unit's declaration set settling (its .rdata block 0x5eec60.. typed, the head conflicts settled)]
 exe	0x00579570	ai_TutorialInitChapter3	unk_575860	draft	readable	deep	
 exe	0x0057aa80	ai_TutorialInitChapter4	unk_575860	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	unk_575860	byte	readable		

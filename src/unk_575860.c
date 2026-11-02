@@ -588,16 +588,6 @@ extern int sv_HoverItem;  /* 0x6f22f0 (sv.c) */
 extern int gm_PlayerRecords[688];
 extern unsigned short ai_PlayerId;
 extern int d2_LastWindow;
-extern GAPDATA full_data_62a8d8[];
-extern GAPDATA full_data_62a8f4[];
-extern GAPDATA full_data_62a8f8[];
-extern GAPDATA full_data_62a8fc[];
-extern GAPDATA full_data_62a8fe[];
-extern GAPDATA full_data_62a900[];
-extern GAPDATA full_data_62a902[];
-extern GAPDATA full_data_62a904[];
-extern GAPDATA full_data_62a906[];
-extern GAPDATA full_data_62a908[];
 extern GAPDATA full_data_62a9a8[];
 extern GAPDATA full_data_62a9b4[];
 extern GAPDATA full_data_62a9cc[];
@@ -10025,55 +10015,35 @@ tail:
 
 int gm_BuildingKindCost(int unused, int kind); char *_strupr(char *); int sprintf(char *buf, const char *fmt, ...);
 
-/* 0x588160, the drag window of a goods item (419 B, ROUGH: the calls and the text ids are written, the 0x1c-byte
-   record at the frame start is assembled field by field from the globals 0x62a8f4 .. 0x62a908 (the words), the
-   bytes 0x62a902 / 0x62a906 / 0x62a8fe and 0x631090, restored by the disassembly): idx = the building index
-   (0x7e3f30 + idx * 0x24d). The window 0x62a8d8 with 0x475600, the section 1; the building kind (byte 0) not
-   0xa: the text 0x27 (idx * 0xe + 0x48e, the record word at +0x10 + [bldg + 0x247] * 4), else 0x515960
-   (idx * 0xe + 0x48e); the section 2, 0x4731d0 (0, 0, idx + 0x427, U_I (0x6ed938)) and the text
-   idx * 0xe + 0x48f; not the kind 0xa: the section 3, the texts 0x2a (the record at +0x18 + [bldg + 0x247] *
-   4), 0x28 (0x509dc0 (the player's character, idx)) and 0x29 (bldg + 0x243); the window */
+/* 0x588160, opens the tooltip view of the building type idx (ai_BTypes): the form "ToolTip\ToolTip_Gebaeude",
+   centred; section 1 the type's name (text idx * 0xe + 0x48e), for a kind other than 0xa through the text 0x27
+   with the type's level as a roman numeral; section 2 the type's picture (object id idx + 0x427) and the text
+   idx * 0xe + 0x48f; for a kind other than 0xa section 3 the level (text 0x2a), the cost for the player's
+   character (gm_BuildingKindCost, text 0x28) and the value +0x243 (text 0x29); returns the view */
 int ai_OpenBuildingTooltip(int idx)
 {
-    char d[0x1c];
-    char *bldg;
-    int win;
+    char roman[7][4] = { "", "I", "II", "III", "IV", "V", "VI" };
+    AIBTYPE *bt;
+    int view;
 
-    *(unsigned char *)(d + 0x00) = *(unsigned char *)(unsigned)&ch_EmptyName;
-    *(unsigned short *)(d + 0x01) = 0;
-    *(unsigned char *)(d + 0x03) = 0;
-    *(unsigned short *)(d + 0x04) = *(unsigned short *)(unsigned)&full_data_62a908;
-    *(unsigned short *)(d + 0x06) = 0;
-    *(unsigned short *)(d + 0x08) = *(unsigned short *)(unsigned)&full_data_62a904;
-    *(unsigned char *)(d + 0x0a) = *(unsigned char *)(unsigned)&full_data_62a906;
-    *(unsigned char *)(d + 0x0b) = 0;
-    *(int *)(d + 0x0c) = U_I((unsigned)&full_data_62a8f8);
-    *(unsigned short *)(d + 0x10) = *(unsigned short *)(unsigned)&full_data_62a900;
-    *(unsigned char *)(d + 0x12) = *(unsigned char *)(unsigned)&full_data_62a902;
-    *(unsigned char *)(d + 0x13) = 0;
-    *(unsigned short *)(d + 0x14) = *(unsigned short *)(unsigned)&full_data_62a8f4;
-    *(unsigned short *)(d + 0x16) = 0;
-    *(unsigned short *)(d + 0x18) = *(unsigned short *)(unsigned)&full_data_62a8fc;
-    *(unsigned char *)(d + 0x1a) = *(unsigned char *)(unsigned)&full_data_62a8fe;
-    *(unsigned char *)(d + 0x1b) = 0;
-    bldg = (char *)U_I((unsigned)&ai_BTypes) + idx * 0x24d;
-    win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62a8d8);
-    d2_CentreViewWindows(win);
+    bt = (AIBTYPE *)ai_BTypes + idx;
+    view = d2_OpenForm(0, 0, "ToolTip\\ToolTip_Gebaeude");
+    d2_CentreViewWindows(view);
     d2_SetForm(0, 1);
-    if (*(unsigned char *)bldg != 0xa)
-        io_PrintText(0x27, idx * 0xe + 0x48e, d + 0x10 + *(unsigned char *)(bldg + 0x247) * 4);
+    if (bt->kind != 0xa)
+        io_PrintText(0x27, idx * 0xe + 0x48e, roman[bt->cap247]);
     else
         io_PrintText(idx * 0xe + 0x48e);
     d2_SetForm(0, 2);
-    d2_WinOpenPic(0, 0, (char *)(idx + 0x427), U_I((unsigned)&d2_LastWindow));
+    d2_WinOpenPic(0, 0, idx + 0x427, d2_LastWindow);
     io_PrintText(idx * 0xe + 0x48f);
-    if (*(unsigned char *)bldg != 0xa) {
+    if (bt->kind != 0xa) {
         d2_SetForm(0, 3);
-        io_PrintText(0x2a, d + 0x18 + *(unsigned char *)(bldg + 0x247) * 4);
-        io_PrintText(0x28, gm_BuildingKindCost((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, idx));
-        io_PrintText(0x29, *(int *)(bldg + 0x243));
+        io_PrintText(0x2a, roman[bt->cap247]);
+        io_PrintText(0x28, gm_BuildingKindCost((int)ai_Chars[ai_PlayerId], idx));
+        io_PrintText(0x29, bt->v243);
     }
-    return win;
+    return view;
 }
 /* 0x588bb0, opens the help tooltip of the record named s: the key "_HILFE_<S>+0" (the name upper-cased) is
    looked up in the texts; without it -1 (no window). Else the form "ToolTip\ToolTip_Contact", centred, its
