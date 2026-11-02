@@ -349,7 +349,7 @@ typedef struct AGCH {                   /* a character, 0x21c bytes */
     char pad003;
     unsigned int netId;                /* 0x004, the id */
     unsigned char unk008;               /* 0x008 */
-    unsigned char unk009;               /* 0x009 */
+    unsigned char sex;                  /* 0x009, 0 male / 1 female (0x492fd0 picks the first-name list by it) */
     unsigned short unk00a;              /* 0x00a */
     char pad00c[0x24];
     char name[0x20];                    /* 0x030 */
@@ -410,14 +410,14 @@ typedef struct AGFIN {                  /* what 0x506430 finds for a character *
 typedef char ai_AssertAGCH[sizeof(AGCH) == 0x21c ? 1 : -1];
 typedef char ai_AssertAGDUEL[sizeof(AGDUEL) == 0x58 ? 1 : -1];
 
-extern AGCH ai_Unk6f0478;               /* 0x6f0478 */
+extern AGCH ai_DuelOpponent;               /* 0x6f0478 */
 
 
 
 int ai_Unk490830(AGCH *p, AGARG *s1, AGARG *s2);                /* 0x490830 */
 int ai_Unk4908d0(int a, AGCH *p, int b, AGARG *o1, AGARG *o2);  /* 0x4908d0 */
 int ai_Unk490b90(AGCH *p, AGARG *s1, AGARG *s2);                /* 0x490b90 */
-unsigned int ai_Unk492fd0(unsigned int k);                      /* 0x492fd0 */
+unsigned int ai_MakeDuelOpponent(unsigned int k);                      /* 0x492fd0 */
 int ai_Unk493200(AGCH *p, AGDUEL *d, int k);                    /* 0x493200 */
 int ai_Unk493390(AGDUEL *d, AGCH *c, int k);                    /* 0x493390 */
 int ai_Unk4933d0(AGDUEL *d, AGCH *c, int k);                    /* 0x4933d0 */

@@ -32,7 +32,7 @@ int ai_Unk5ffd1c = -1;                  /* 0x5ffd1c */
 G6RING * ai_Unk60034c = ai_Unkf83c20;  /* 0x60034c, the next entry */
 int ai_Unk600350 = 1;  /* 0x600350, the step */
 int ai_Unk6f0470 = 0;  /* 0x6f0470, number of characters of kind 5, 6, 7 */
-AGCH ai_Unk6f0478 = {0};  /* 0x6f0478 */
+AGCH ai_DuelOpponent = {0};  /* 0x6f0478 */
 G9SHOT ai_Unk6f0698 = {0};  /* 0x6f0698 */
 unsigned int ai_Unk6f070c = 0;  /* 0x6f070c, the number of entries */
 int ai_Unk6f2464 = 0;  /* 0x6f2464, set: write the action table */
@@ -1309,7 +1309,7 @@ int ai_Unk4908d0(int a, AGCH *p, int b, AGARG *o1, AGARG *o2)
         if (q != 0) {
             if (q->kind == 5)
                 return 0;
-            if (q->unk009 == 0 && ai_WorksForMaster((AICHAR *)q) != 0)
+            if (q->sex == 0 && ai_WorksForMaster((AICHAR *)q) != 0)
                 return 0;
         }
     }
@@ -2334,8 +2334,15 @@ const int ai_Unk5ed1a8 = 31;  /* 0x5ed1a8, the last of the ring sizes before it 
 const G9BALL ai_Unk5edfe0[3] = { { 2000.0f, 3000.0f, 0.0599999987f }, { 2450.0f, 3850.0f, 0.0649999976f }, { 3600.0f, 5950.0f, 0.075000003f } };  /* 0x5edfe0 */
 const float ai_Unk5eee08 = 7874.0f;  /* 0x5eee08, 7874 */
 
-/* 0x492fd0, makes a random character in ai_Unk6f0478 from kind k, returns its stats | k */
-unsigned int ai_Unk492fd0(unsigned int k)
+/* 0x492fd0, makes the random duel opponent ai_DuelOpponent for the duel kind k (1, 2, 4): draws a class 1..5 from the cumulative table row of k and a second class from a row near it, gives the opponent a random sex and first name and five stats in the range of the first class; returns (second class << 8) | first class
+   @deep read whole against the original: fixed the second-row draw (util_RandomU(2) called in each branch,
+   v = r or idx - r, as the original's two zero-extensions show) and the switch default (base = k only).
+   Calls, constants, tables (switch tables equal) and branches agree, 150/151 instructions. Left is
+   register allocation of k: ours keeps k in ebx (mov ebx, [esp+0x54]; cmp ebx, 1; mov ebx, ecx; mov ebp,
+   ebx; lea eax, [ebx-1]) where the original keeps it in its parameter slot (cmp eax, 1 / mov ebp,
+   [esp+0x54] / mov eax, [esp+0x60]; dec eax) and loads only its low byte in the default (mov bl, byte ptr
+   [esp+0x54]), and idx in edi/esi rotated; tried a char base and a ushort temporary, both worse. */
+unsigned int ai_MakeDuelOpponent(unsigned int k)
 {
     float t[15] = {0.2f, 0.55f, 0.85f, 0.95f, 1.0f, 0.1f, 0.4f, 0.7f, 0.9f, 1.0f, 0.05f, 0.25f, 0.55f, 0.8f, 1.0f};
     float r;
@@ -2357,11 +2364,10 @@ unsigned int ai_Unk492fd0(unsigned int k)
     if (idx == 1)
         v = util_RandomU(3);
     else {
-        v = util_RandomU(2);
         if (idx == 0)
-            v = v & 0xffff;
+            v = util_RandomU(2);
         else
-            v = idx - (v & 0xffff);
+            v = idx - util_RandomU(2);
     }
     r = util_RandomF();
     ret = k;
@@ -2371,12 +2377,12 @@ unsigned int ai_Unk492fd0(unsigned int k)
             break;
         }
     }
-    memset(&ai_Unk6f0478, 0, sizeof(ai_Unk6f0478));
-    ai_Unk6f0478.unk009 = (unsigned char)util_RandomU(2);
-    if (ai_Unk6f0478.unk009 == 0)
-        strncpy(ai_Unk6f0478.name, txt_MaleFirstNames[util_RandomU(0xbf)], 15);
+    memset(&ai_DuelOpponent, 0, sizeof(ai_DuelOpponent));
+    ai_DuelOpponent.sex = (unsigned char)util_RandomU(2);
+    if (ai_DuelOpponent.sex == 0)
+        strncpy(ai_DuelOpponent.name, txt_MaleFirstNames[util_RandomU(0xbf)], 15);
     else
-        strncpy(ai_Unk6f0478.name, txt_FemaleFirstNames[util_RandomU(0x70)], 15);
+        strncpy(ai_DuelOpponent.name, txt_FemaleFirstNames[util_RandomU(0x70)], 15);
     switch (k) {
     case 1:
         base = 0x15;
@@ -2400,13 +2406,12 @@ unsigned int ai_Unk492fd0(unsigned int k)
         break;
     default:
         base = k;
-        mul = k;
     }
     for (i = 0; i < 5; i++) {
         c = (char)util_RandomU(mul);
-        ai_Unk6f0478.stat[i] = c + (char)base + 1;
+        ai_DuelOpponent.stat[i] = c + (char)base + 1;
     }
-    ai_Unk6f0478.kind = 10;
+    ai_DuelOpponent.kind = 10;
     return ret | k;
 }
 /* 0x493200, starts a duel between p and a fresh opponent of kind k (1, 2 or 4) */
@@ -2423,7 +2428,7 @@ int ai_Unk493200(AGCH *p, AGDUEL *d, int k)
     if (p == 0 || p->kind != 6 || d == 0 || (k != 1 && k != 2 && k != 4))
         return 0;
     d->unk00 = 0;
-    stats = ai_Unk492fd0(k);
+    stats = ai_MakeDuelOpponent(k);
     d->total = 0;
     m = gm_ConvertMoney(gm_GetWorth(p->id), ai_OwnPlayer);
     x = m;
@@ -2439,13 +2444,13 @@ int ai_Unk493200(AGCH *p, AGDUEL *d, int k)
     if (fin->unk58 < util_RandomF()) {
         d->side1 = p;
         d->unk14 = 0xffff;
-        d->side2 = &ai_Unk6f0478;
+        d->side2 = &ai_DuelOpponent;
         d->unk38 = stats;
         fin->unk58 = util_RandomF() * 0.11f + fin->unk58 + 0.2f;
     } else {
     d->side2 = p;
     d->unk38 = 0xffff;
-    d->side1 = &ai_Unk6f0478;
+    d->side1 = &ai_DuelOpponent;
     d->unk14 = stats;
     old = fin->unk58;
     fin->unk58 = (old - 0.2f) - util_RandomF() * 0.11f;
