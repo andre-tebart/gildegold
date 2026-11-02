@@ -1840,7 +1840,7 @@ int ai_Unk4bb330(G14MSG *m)
         return 1;
     if (ai_InventoryHas(c, 0x290))
         return 0x400;
-    if (!gm_Unk5054f0(c))
+    if (!gm_CatchMinorDisease(c))
         return 0x400;
     txt_Format(buf, m->type + 0x12e7, v);
     he_ShowNews(c->netId, c->netId, buf, strlen(buf) > 0x100, 0x603, 0);
