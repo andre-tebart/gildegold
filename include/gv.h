@@ -119,8 +119,6 @@ int util_Random(unsigned short n);      /* 0x42ec00, tr.c; the callers that read
 unsigned char * gm_BuildQuery(int n, ...);                     /* 0x501190 */
 char d3if_Delete(struct D3OBJECT *obj);  /* 0x447190, d3_interface.h */
 int gm_MinutesBetween();                     /* 0x4fe280 */
-int ai_StepShot();                     /* 0x5dc4a0 */
-int ai_StepShotSlow();                     /* 0x5dc9d0 */
 struct D3PARTSYS *d3t_CreateExplosion(void *parent, struct D3VECTOR *pos, int count, float radius, float height, float z, float size, unsigned int duration); /* 0x416040, d3_tools.c */
 struct SBSAMPLE; struct SBBANK;
 struct SBSAMPLE * sb_GetSample(struct SBBANK *bank, char *name);   /* 0x426030 */

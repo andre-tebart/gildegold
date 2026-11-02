@@ -56,6 +56,7 @@ extern GAPDATA full_data_91f6e4[];
 #include "d3_interface.h"
 #include "unk_458810.h"
 #include "d3_engine.h"
+#include "unk_5d33b0.h"
 extern int gm_PlayerRecords[688];
 
 extern const float unk_Tab5ee034[];
@@ -754,9 +755,9 @@ void gv_UpdateEffects(void)
                         }
                     } else if (*st == 1) {
                         if (*(int *)(e + 0x14) == 0)
-                            k = ai_StepShot();
+                            k = ai_StepShot((SHOTREC *)(st - 0x17));
                         else
-                            k = ai_StepShotSlow(st - 0x17);
+                            k = ai_StepShotSlow((SHOTREC *)(st - 0x17));
                         if (k != 0) {
                             k = idx + j;
                             if (*(int *)(gv_Effects + 0x15c + k * 4) == 0) {
