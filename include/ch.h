@@ -514,7 +514,7 @@ void ch_WalkSound(CHACTION *a, int ground);                                     
 int ch_StartWalkAnim(CHACTION *a, D3SM *h);                                             /* 0x408cb0 */
 int ch_NextWaypoint(CHACTION *a, D3SM *h);                                              /* 0x408e60 */
 void ch_WalkRotate(CHACTION *a);                                                        /* 0x4093d0 */
-extern float ch_Unk5f1290;          /* 0x5f1290, 1.0 */
+extern float cm_SpeedFactor;          /* 0x5f1290, 1.0 */
 void ch_ActWalk(CHACTION *a);                                                           /* 0x4097d0, action 0x2d */
 void ch_ActWalkCells(CHACTION *a);                                                      /* 0x409bd0, action 0x3a */
 

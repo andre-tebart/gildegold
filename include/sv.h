@@ -163,7 +163,7 @@ void sv_ChatConsole(void);                                                /* 0x5
 void sv_UpdateQuickChat(void);                                                /* 0x530100 */
 void sv_UpdateWeather(void);                                                /* 0x5301a0 */
 void sv_WeatherFrame(void);                                                /* 0x530670 */
-void sv_Unk5307f0(void);                                                /* 0x5307f0 */
+void sv_AdvanceGame(void);                                                /* 0x5307f0 */
 void sv_SetScreenCenter(unsigned fl);                                   /* 0x530900 */
 int sv_RunFrame(int cb, unsigned mask);                                 /* 0x5309a0 */
 void sv_UpdateClock(void);                                              /* 0x5315c0 */

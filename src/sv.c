@@ -7221,34 +7221,33 @@ void sv_WeatherFrame(void)
         }
     }
 }
-/* 0x5307f0, the "advance game" callback / screen (form "misc\advancegame", 0x6f3608 = 0x2ee, 0x5f1290 = 4.9375 the game speed): runs the message loop 0x5309a0 (0x5307f0, mask) while it returns non zero and
-   restores the speed (0x6f3608 * 0.00625 + 0.25) afterwards */
+/* 0x5307f0, the advance game screen, also its own sv_RunFrame callback: when ai_RunAllows(8), the form "misc\advancegame" with text 0x82 while the game runs at
+   option speed 0x2ee (cm_SpeedFactor 4.9375) with the frame mask's bits 3, 4 and 10..13 cleared and 6, 7 set, until a key or a mouse button; then the speed option
+   and its factor (speed * 0.00625 + 0.25) come back; ai_CampaignStep(0xb, ..) brackets it */
 
-void sv_Unk5307f0(void)
+void sv_AdvanceGame(void)
 {
     unsigned mask;
-    int sp, r, f;
+    int sp, f;
 
-    mask = SV_U((unsigned)&sv_FrameMask);
-    sp = SV_I((unsigned)&ai_OptionSpeed);
+    mask = sv_FrameMask;
+    sp = ai_OptionSpeed;
     if (ai_RunAllows(8) != 0) {
         ai_CampaignStep(0xb, 0, 0, 0);
         mask = mask & 0xffffc3e7 | 0xc0;
         sv_Advancing = 1;
-        SV_I((unsigned)&ai_OptionSpeed) = 0x2ee;
-        *(float *)(unsigned)&ch_Unk5f1290 = 4.9375f;
+        ai_OptionSpeed = 0x2ee;
+        cm_SpeedFactor = 4.9375f;
         f = d2_OpenForm(0, 0, "misc\\advancegame");
         d2_CentreViewWindows(f);
         io_PrintText(0x82);
-        r = sv_RunFrame(sv_Unk5307f0, mask);
-        while (r != 0) {
-            if (*(char *)(unsigned)&kb_Last != 0 || SV_I(((unsigned)&dm_L + 0xc)) != 0 || SV_I(((unsigned)&dm_L + 0x20)) != 0)
-                SV_I((unsigned)&sv_PopRequest) = 1;
-            r = sv_RunFrame(sv_Unk5307f0, mask);
+        while (sv_RunFrame((int)sv_AdvanceGame, mask) != 0) {
+            if (kb_Last != 0 || dm_L.lup != 0 || dm_L.rup != 0)
+                sv_PopRequest = 1;
         }
         sv_Advancing = 0;
-        *(float *)(unsigned)&ch_Unk5f1290 = (float)sp * 0.00625f + 0.25f;
-        SV_I((unsigned)&ai_OptionSpeed) = sp;
+        cm_SpeedFactor = (float)(sp * 0.00625f + 0.25);
+        ai_OptionSpeed = sp;
         d2_CloseView(f);
         ai_CampaignStep(0xb, 0, 1, 0);
     }
@@ -7505,7 +7504,7 @@ l2:
         if (SV_B((unsigned)&ai_GameState) != 0) {
             if ((SV_B((unsigned)&kb_Last) == 0xcf || (SV_I(((unsigned)&dm_L + 0xc)) != 0 && SV_I((unsigned)&d2_HitUnderPointer) == ai_Unk623850)) && (mask & 0x10000) == 0 && sv_Advancing == 0 && (SV_U((unsigned)&ai_GameFlags) & 4) == 0) {
                 if (SV_I((unsigned)&ai_Unk6f2448) == 0)
-                    sv_Unk5307f0();
+                    sv_AdvanceGame();
                 else {
                     SV_I((unsigned)&full_data_6f25a8) = 1;
                     sv_PopTo((int)main_GameLoop);

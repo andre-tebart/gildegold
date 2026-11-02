@@ -5,7 +5,7 @@
    Open: no evidenced role / type yet for fields and globals the action and walk code share: CH_UNK080
    (D3ANIMDATA *next, but ch_TakingObject prints it with %s), CH_ACTOBJ.unk170 / unk174 (a room id or an
    animation, per action), u.walk.unk0fc (written -1, never read), CHARACTER.unk1a0, ch_Unk631058 /
-   ch_Unk631060, ch_Unk5f1290, ch_Unk402540.
+   ch_Unk631060, cm_SpeedFactor, ch_Unk402540.
    Open: D3OBJ_UNK200 reads D3OBJECT.owner (d3.h, the game record of the object) as the int d3_WriteObject
    saves and rd_object restores (the item pointer of the sprite spawners).
    Open: not included yet (dcp headers conflicts ch HEADER): sv.h; held by calls whose argument count differs
@@ -51,7 +51,7 @@
 char ch_AnimPath[0x100] = "x:\\gfx\\engine\\animations\\character";  /* 0x5f1120 */
 int ch_LastUpdate = -1;  /* 0x5f1224 */
 char ch_ShadowEnabled = 1;  /* 0x5f122c */
-float ch_Unk5f1290 = 1.0f;  /* 0x5f1290, 1.0 */
+float cm_SpeedFactor = 1.0f;  /* 0x5f1290, 1.0 */
 int ch_CurrentScriptGroup = -1;  /* 0x5f1298, the script group that goes with it; -1 = none */
 int ch_MorphTimeout = -1;  /* 0x5f129c (-1), the D3ANIMSLOT.timeout of morphs in scene != 0 */
 int ch_MotionTimeout = 2;  /* 0x5f12a0 (2), the same for motions */
@@ -3394,7 +3394,7 @@ void ch_WalkRotate(CHACTION *a)
         }
     }
 }
-/* 0x4097d0, action callback 0x2d: walks along the path to the cell args[0], args[1] in scene args[2] @deep B3 draft, 440/1024 bytes, 8 differing instructions of 323: exactly one redundant test is missing - the original tests ch->slot a third time after the f6d_20 bit test (4099c4 mov eax,[edi+0x70]; cmp eax,ebx; je start; test [eax+0x6d],0x20; jne start; cmp eax,ebx; jne skip), ours drops that last cmp/jne; the other hunk is the 409bcc alignment fill. The source condition is 'if (!a->u.walk.started && (!ch->slot || CH_XSLOT(ch)->f6d_20 || !ch->slot))' and VC6 propagates the value in eax across the three terms. spell: 4099cf has no menu rule (meaning check: the third term is the same load), 409bcc dup-tail is the fill. Earlier attempts (== 0 / == NULL / CH_XSLOT spellings, a->ch for one term -> reloads, ternary, !(slot && !f6d_20 && slot), nested ifs, else-if with the call duplicated, goto, call folded into the condition, a static __inline helper, f6d_20 == 1/!= 0, a raw byte test); this session only re-read the original flow (the same shape is kept correctly in the following block, where the original re-tests started at 4099fc and our build reproduces it). Q2 gaps: ch_Unk5f1290 (0x5f1290 = 1.0f, read only here as the speed factor of a group -1 object with D3OBJ_UNK200 set; no other reader or data alias), ch_Unk631058 (0x631058, read-only in ch.c, never written anywhere), CHARACTER.unk1a0 (a speed factor multiplied into CH_XSLOT.playSpeed, only reads in any source). Q4 gap: D3OBJ_UNK200 is D3OBJECT.pad200[0] (0x200); its role is evidenced (the per-object int d3_WriteObject saves and rd_object restores, the item pointer the sprite spawners store), so a typed d3.h field is the next step, but d3.h is shared and was not touched in this session. Readability advanced: CHSLOT.unk60 -> playSpeed (0x60, the playback speed the walk code sets from ground type x speedScale). */
+/* 0x4097d0, action callback 0x2d: walks along the path to the cell args[0], args[1] in scene args[2] @deep B3 draft, 440/1024 bytes, 8 differing instructions of 323: exactly one redundant test is missing - the original tests ch->slot a third time after the f6d_20 bit test (4099c4 mov eax,[edi+0x70]; cmp eax,ebx; je start; test [eax+0x6d],0x20; jne start; cmp eax,ebx; jne skip), ours drops that last cmp/jne; the other hunk is the 409bcc alignment fill. The source condition is 'if (!a->u.walk.started && (!ch->slot || CH_XSLOT(ch)->f6d_20 || !ch->slot))' and VC6 propagates the value in eax across the three terms. spell: 4099cf has no menu rule (meaning check: the third term is the same load), 409bcc dup-tail is the fill. Earlier attempts (== 0 / == NULL / CH_XSLOT spellings, a->ch for one term -> reloads, ternary, !(slot && !f6d_20 && slot), nested ifs, else-if with the call duplicated, goto, call folded into the condition, a static __inline helper, f6d_20 == 1/!= 0, a raw byte test); this session only re-read the original flow (the same shape is kept correctly in the following block, where the original re-tests started at 4099fc and our build reproduces it). Q2 gaps: cm_SpeedFactor (0x5f1290 = 1.0f, read only here as the speed factor of a group -1 object with D3OBJ_UNK200 set; no other reader or data alias), ch_Unk631058 (0x631058, read-only in ch.c, never written anywhere), CHARACTER.unk1a0 (a speed factor multiplied into CH_XSLOT.playSpeed, only reads in any source). Q4 gap: D3OBJ_UNK200 is D3OBJECT.pad200[0] (0x200); its role is evidenced (the per-object int d3_WriteObject saves and rd_object restores, the item pointer the sprite spawners store), so a typed d3.h field is the next step, but d3.h is shared and was not touched in this session. Readability advanced: CHSLOT.unk60 -> playSpeed (0x60, the playback speed the walk code sets from ground type x speedScale). */
 
 void ch_ActWalk(CHACTION *a)
 {
@@ -3490,7 +3490,7 @@ void ch_ActWalk(CHACTION *a)
     if (ground && ground != 13 && ch->slot) {
         f = 0.7f;
         if (ch->group == -1 && D3OBJ_UNK200(ch->obj))
-            f = ch_Unk5f1290;
+            f = cm_SpeedFactor;
         if (ch->kind & 8) {
             if (ground == 11 || ground == 6)
                 CH_XSLOT(ch)->playSpeed = ch->unk1a0 * ch->speedScale * f * 1.9f;
@@ -3506,7 +3506,7 @@ void ch_ActWalk(CHACTION *a)
 }
 /* 0x409bd0, action callback 0x3a: walks along the cells of a->u.walk.path (0x100 cells, filled by the caller;
    empty cells are skipped) to the cell args[0], args[1] in scene args[2]
-   @deep B3 far draft, 2130/3376 bytes, 138 differing instructions of 971 (ours 969, two fewer - the same redundant ch->slot test as ch_ActWalk: the source writes '!ch->slot || CH_XSLOT(ch)->f6d_20 || !ch->slot' and VC6 propagates the slot value, see ch_ActWalk's @deep for the exhaustive spelling list). All other code hunks were read against the original (the function is the inline copy of ch_InitWalk/ch_StartWalkAnim/ch_WalkSound/ch_NextWaypoint/ch_WalkRotate; the noted sign bug of the original's right turn - the 2.0943952f branch subtracting, step*0.32f - is already reproduced) and are allocation: 104 slots hunks, the frame 4 bytes larger (n in a stack slot) and the cell-skip loop bound min(0x100, n+32) hoisted (the 'n = cur + 1; for (i = n; ...)' form reproduces the original loop but moves ground into edi and spills the constant 0 - tried and reverted). Readability: no gap left beyond the unit-wide ones in the lead comment (CH_UNK080, D3OBJ_UNK200, ch_Unk402540, ch_Unk5f1290, ch_Unk631058/60, u.walk.unk0fc, CHARACTER.unk1a0). */
+   @deep B3 far draft, 2130/3376 bytes, 138 differing instructions of 971 (ours 969, two fewer - the same redundant ch->slot test as ch_ActWalk: the source writes '!ch->slot || CH_XSLOT(ch)->f6d_20 || !ch->slot' and VC6 propagates the slot value, see ch_ActWalk's @deep for the exhaustive spelling list). All other code hunks were read against the original (the function is the inline copy of ch_InitWalk/ch_StartWalkAnim/ch_WalkSound/ch_NextWaypoint/ch_WalkRotate; the noted sign bug of the original's right turn - the 2.0943952f branch subtracting, step*0.32f - is already reproduced) and are allocation: 104 slots hunks, the frame 4 bytes larger (n in a stack slot) and the cell-skip loop bound min(0x100, n+32) hoisted (the 'n = cur + 1; for (i = n; ...)' form reproduces the original loop but moves ground into edi and spills the constant 0 - tried and reverted). Readability: no gap left beyond the unit-wide ones in the lead comment (CH_UNK080, D3OBJ_UNK200, ch_Unk402540, cm_SpeedFactor, ch_Unk631058/60, u.walk.unk0fc, CHARACTER.unk1a0). */
 
 void ch_ActWalkCells(CHACTION *a)
 {
@@ -3820,7 +3820,7 @@ next:
     if (ground && ground != 13 && ch->slot) {
         f = 0.7f;
         if (ch->group == -1 && D3OBJ_UNK200(ch->obj)) {
-            f = ch_Unk5f1290;
+            f = cm_SpeedFactor;
             if (!ch->transport)
                 f += 0.2f;
         }
