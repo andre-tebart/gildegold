@@ -4371,7 +4371,12 @@ int sv_RunFrame(int cb, unsigned mask);
    checked as ai_TutorialChapterOn says, then the buttons start (0x3f20) and back (0x3f21). The frame pump runs
    it (mask 0x86): start is enabled only while a chapter is checked; the right mouse button, the escape key or
    the control 1 close the window; back closes it, start closes it and stores the checkboxes into
-   ai_TutorialChapterOn. 1 when start was clicked with a chapter checked (the tutorial starts), else 0 */
+   ai_TutorialChapterOn. 1 when start was clicked with a chapter checked (the tutorial starts), else 0
+   @deep read whole against the original (167 instructions, ours 165, every call, field and constant
+   equal). Left: the scan loop of the frame pump keeps two counters in the original (edx the index i, esi
+   the count n: xor edx,edx / inc esi / inc edx / cmp edx,5, then cmp esi,5), ours merges them into esi
+   (cmp esi,5 as the loop test). Tried: for (i = 0, n = 0; ...; i++, n++), n unsigned, else { n++; }, n
+   declared before i: all merge the same; a VC6 induction-variable decision, not a statement difference */
 int ai_TutorialWindow(void)
 {
     int start;
