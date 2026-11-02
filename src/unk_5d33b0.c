@@ -10,7 +10,7 @@
    records through local views (D2INPUTVIEW, D2FADEVIEW, D2SURFVIEW ...).
    Open: ai_SaveOptionWindow / ai_SaveNameWindow / ai_LoadGameWindow / ai_JoinGameWindow still cast
    d2_GetViewWin to six arguments; as in ai_FilePickWindow the original likely nests d2_GetViewWin (win, 1)
-   in the 8-argument sv_CreateFormSlider call (their @deep "cleanup split" notes).
+   in the 8-argument sv_CreateScrollButtons call (their @deep "cleanup split" notes).
    Open: not included yet (dcp headers conflicts unk_5d33b0 HEADER): ch.h cm.h d2.h d3_int_io.h gfx.h; held by
    own declarations that differ from the owner's: d2_StartFade, d2_ReleaseFade, d2_WinOpenPic, d2_ScreenSurf,
    d2_Inputs, d2_LockSurface, d2_UnlockSurface, ch_List, d3io_Lod.
@@ -155,7 +155,7 @@ int ai_ListFiles(char *dirPath, const char *ext, char *records)
 void d2_CentreViewWindows(int view); void d2_SetPointerSprite(int a, int pic); int d2_SetForm(int view, int n);
 void d2_CloseView(int view);
 int io_PrintText(char *fmt, ...); int d2_GetWinObj(int view, int idx, int k);
-int sv_CreateFormSlider(int x, int y, int f, int g, int p5, int *b, int *a, int *c); /* 0x52e860, sv.c:
+int sv_CreateScrollButtons(int x, int y, int f, int g, int p5, int *b, int *a, int *c); /* 0x52e860, sv.c:
                                            the slider of the form f at (x, y) */
 /* Callees whose units have no header here (type debt: the canonical prototypes live in d2.h, f3gm.c,
    gv.h, cm.h and he.h; the pointer views follow this TU's declarations). */
@@ -203,7 +203,7 @@ int ai_FilePickWindow(unsigned mask, int flags, char *caption, char *dir, char *
     d2_SetForm(win, 2);
     io_PrintText(caption);
     d2_SetForm(win, 0);
-    sv_CreateFormSlider(0x140, 0x100, d2_LastWindow, d2_GetViewWin(win, 1), 0x18, &slidA, &slidB, &count);
+    sv_CreateScrollButtons(0x140, 0x100, d2_LastWindow, d2_GetViewWin(win, 1), 0x18, &slidA, &slidB, &count);
     memset(recs, 0, sizeof(recs));
     n = ai_ListFiles(dir, ext, (char *)recs);
     direct = flags & 1;
@@ -655,7 +655,7 @@ void ai_FillSaveSlots(int view, int form, SAVESLOTVIEW *slots, char *files, char
 /* 0x5d4080, the load-game window (558 B): opens the form "menu\loadgame_new" (d2_OpenForm), places
    its views (d2_PlaceViewWindows 1 / d2_PlaceMainWindow 2), fits the form (sv_FitForm), sets the
    pointer sprite (d2_SetPointerSprite 0, 0), prints the caption 0x1c57 and builds the slider
-   (sv_CreateFormSlider 0x214 x 0x168) of the list control d2_GetViewWin (win, 1, 0x82); then
+   (sv_CreateScrollButtons 0x214 x 0x168) of the list control d2_GetViewWin (win, 1, 0x82); then
    ai_FillSaveSlots (win, 1) fills the 16 slots from "gamedata/saves". The pump sv_RunFrame
    (0x5309a0) runs with this function and the mask of the frame; per frame a mouse event asks the
    screen to pop and, when dm_L.lclick is set, the 16 slots are walked: the slot is hit when the click
@@ -691,7 +691,7 @@ int ai_LoadGameWindow(void)
                                                                       &x18); /* @original: the original pushes six
         arguments (win, 1, 0x82, &x1c, &x14, &x18) to the two-parameter 0x475ff0; the K&R
         declaration at the top of the file keeps those pushes */
-    ((int (*)(int, int, int, int))sv_CreateFormSlider)(0x214, 0x168, d2_LastWindow, ctrl); /* @original:
+    ((int (*)(int, int, int, int))sv_CreateScrollButtons)(0x214, 0x168, d2_LastWindow, ctrl); /* @original:
         the original pushes four of the eight arguments of sv.c's slider builder */
     ai_FillSaveSlots(win, 1, slots, list, "gamedata/saves", 0); /* @original: the original call pushes
         a sixth argument 0 that 0x5d3ab0 never reads */
@@ -755,7 +755,7 @@ int ai_JoinGameWindow(void)
                                                                       &x18); /* @original: the original pushes six
         arguments (win, 1, 0x82, &x1c, &x14, &x18) to the two-parameter 0x475ff0; the K&R
         declaration at the top of the file keeps those pushes */
-    ((int (*)(int, int, int, int))sv_CreateFormSlider)(0x214, 0x168, d2_LastWindow, ctrl); /* @original:
+    ((int (*)(int, int, int, int))sv_CreateScrollButtons)(0x214, 0x168, d2_LastWindow, ctrl); /* @original:
         the original pushes four of the eight arguments of sv.c's slider builder */
     ai_FillSaveSlots(win, 1, slots, list, "gamedata/network", 1);
     while (sv_RunFrame((int)ai_JoinGameWindow, mask) != 0) {
@@ -1789,7 +1789,7 @@ int ai_SaveOptionWindow(int image)
                                                                      &x24); /* @original: the original pushes six
         arguments (win, 1, 0x82, &x20, &x1c, &x24) to the two-parameter 0x475ff0; the K&R
         declaration at the top of the file keeps those pushes */
-    ((int (*)(int, int, int, int))sv_CreateFormSlider)(0x214, 0x168, d2_LastWindow, obj); /* @original:
+    ((int (*)(int, int, int, int))sv_CreateScrollButtons)(0x214, 0x168, d2_LastWindow, obj); /* @original:
         the original pushes four of the eight arguments of sv.c's slider builder */
     ai_FillSaveSlots(win, 1, slots, list, "gamedata/saves", 0);
     d2_EnableObject(slots[0].obj, 0);
@@ -1870,7 +1870,7 @@ int ai_SaveNameWindow(int image)
                                                                      &x24); /* @original: the original pushes six
         arguments (win, 1, 0x82, &x20, &x1c, &x24) to the two-parameter 0x475ff0; the K&R
         declaration at the top of the file keeps those pushes */
-    ((int (*)(int, int, int, int))sv_CreateFormSlider)(0x214, 0x168, d2_LastWindow, obj); /* @original:
+    ((int (*)(int, int, int, int))sv_CreateScrollButtons)(0x214, 0x168, d2_LastWindow, obj); /* @original:
         the original pushes four of the eight arguments of sv.c's slider builder */
     ai_FillSaveSlots(win, 1, slots, list, "gamedata/network", 1);
     d2_EnableObject(slots[0].obj, 0);
@@ -3686,7 +3686,7 @@ void ai_PokerSeatPanel(int seat, int n, int *cards)
 /* 0x5db110, the second poker window "Locations\\zigeuner\\poker2" (the poker hands table, opened by the fifth button of the poker
    table 0x5da030 with its view disabled; 2806 B of straight-line picture rows). Opens the form (-1: nothing), clears
    the pointer sprite, centres the view and shows the title text 0x423e; the form 3 gets a button row of one (the text
-   0x4249) whose id ends the window; the form 4 gets a slider (sv_CreateFormSlider, 0x35) in the form 2 window. In the form 2 the
+   0x4249) whose id ends the window; the form 4 gets a slider (sv_CreateScrollButtons, 0x35) in the form 2 window. In the form 2 the
    texts 0x4247 / 0x4248 are printed and the table of the eight poker hands (the texts 0x423f .. 0x4246, the hand names
    "Paar" .. "Royal Flush") is built straight-line: row i at y = 0xa0 + 0x6d * i has five card pictures 0x20 apart (x = 5,
    0x25, 0x45, 0x65, 0x85; the pictures 0x775 + n: the ones that make the hand are highlighted, the others greyed) and the
@@ -3715,7 +3715,7 @@ void ai_PokerWindow2(void)
     win = d2_LastWindow;
     w = d2_Wins[d2_LastWindow].w - 0xd2;
     d2_SetForm(form, 4);
-    sv_CreateFormSlider(0, 0, d2_LastWindow, win, 0x35, &c, &b, &a);
+    sv_CreateScrollButtons(0, 0, d2_LastWindow, win, 0x35, &c, &b, &a);
     d2_SetForm(form, 2);
     io_PrintText((char *)0x4247);
     io_PrintText((char *)0x4248);

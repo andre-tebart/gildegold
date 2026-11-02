@@ -7,7 +7,7 @@
    cm_SendExSetHE, ai_VgFilter, d3sm_Pick; calls whose argument count differs from the definition (read the
    original's pushes): vfs_GetPath, d2_SetViewEnabled, d2_GetWinObj, d2_CreateWinText, d2_GetObjValue,
    d3_LoadGroup, d2_GetViewWin, sv_MessageBox, d2_CreateScrollButtons, d2_PlotLine, sv_CheckGoodAmount,
-   d2_SetObjValue, d2_PlaceMainWindow, d3t_PlayAnim, d3t_SetTreeColor, sv_CreateFormSlider.
+   d2_SetObjValue, d2_PlaceMainWindow, d3t_PlayAnim, d3t_SetTreeColor, sv_CreateScrollButtons.
    unit of rea 8cef7d5b (src/game/unk_58bbd0.c); boundaries in decl/text.dcl */
 #define GAPDATA __declspec(align(1)) unsigned char
 #define unk_Unk5136b0K ((int (*)())unk_Unk5136b0)  /* 0x5136b0 (f3init.c, void): @original the call passes more arguments than the draft definition names, compiled without a prototype (as before the definition's spelling reached this unit) */
@@ -1267,7 +1267,7 @@ struct D3VECTOR; int d3_VecEqual(struct D3VECTOR *a, struct D3VECTOR *b, float e
 float gm_GoodsPrice(unsigned id, unsigned char p);   /* 0x5089c0, the price (ai.h / cm.h / rt.h: float) */
 void gm_FormatAmount(int v, unsigned char k, char *out);  /* 0x508a80, above its first call (line 1119) */
 void sv_OpenPlayerBar(int a, char k); int d2_SetForm(int view, int n); int io_PrintText(char *fmt, ...); void sv_OpenWindowFrame(int f, int b, int c);
-int d2_GetViewWin(); int sv_CreateFormSlider(); void d2_SetPointerSprite(int a, int pic); char * gm_Query(void *list, int n, ...);
+int d2_GetViewWin(); int sv_CreateScrollButtons(); void d2_SetPointerSprite(int a, int pic); char * gm_Query(void *list, int n, ...);
 int gm_FreeCapacity(); int sv_MessageBox(); char * he_FindEvent(int n, ...); char * he_NextEvent(void);
 int ai_ScriptQuery(); int cm_SendLongMessage(char *msg); int cm_GetSlotState(); int cm_GetSlotValue(int h);
 void snd_PlayFavourComment(void); void sv_MoveToGroup(unsigned char *o, short *it, int c, char *g); int sv_RunFrame(int cb, unsigned mask); void d2_CloseView(int view);
@@ -1325,7 +1325,7 @@ int ai_ProductionWindow(unsigned char *param_1)
         n = 0x717;
     sv_OpenWindowFrame(U_I((unsigned)&d2_LastWindow), n, 0x742);
     id = d2_GetViewWin(win, 2, 0x78, (char *)&a, (char *)&b, (char *)&c);
-    sv_CreateFormSlider(0x270, 0x15e, U_I((unsigned)&d2_LastWindow), id);
+    sv_CreateScrollButtons(0x270, 0x15e, U_I((unsigned)&d2_LastWindow), id);
     *(short *)(U_I((unsigned)&d2_Objs) + 0x74 + c * 0x2ec) = 0x54;
     d2_SetPointerSprite(0, 0);
     while (1) {
@@ -2952,7 +2952,7 @@ int ai_Unk58ff00(int kind, char *out)
 }
 
 int ai_RunAllows(); int d2_OpenForm();
-int d2_SetForm(int view, int n); int d2_GetViewWin(); int sv_CreateFormSlider(); int io_PrintText(char *fmt, ...);
+int d2_SetForm(int view, int n); int d2_GetViewWin(); int sv_CreateScrollButtons(); int io_PrintText(char *fmt, ...);
 int d2_WinOpenPic(short x, short y, int pic, int win); int d2_CreateWinText(); void d2_SetObjFont(); void d2_SetObjText();  /* @original: the calls at 18534 (2), 18620 (3) and 6884 (3) pass fewer arguments than d2.h's 4-parameter prototype */
 void d2_SetViewEnabled(); void d2_CloseView(int view); int cm_SendLongMessage(char *msg);
 int sv_CheckGoodAmount(); int sv_CheckStock(); void txt_Format(char *out, int id0, ...); int sv_MessageBox();
@@ -3001,7 +3001,7 @@ void ai_Unk5909a0(void)
     U_I(((unsigned)&ai_Unkf8f39c + 0x124) + n) = 0x18;
     U_I(((unsigned)&ai_Unkf8f39c + 0x128) + n) = 0x18;
     v = d2_GetViewWin(k, 3, 0x5a, a, b, &a[2]);
-    sv_CreateFormSlider(0x20c, 0x168, U_I((unsigned)&d2_LastWindow), v);
+    sv_CreateScrollButtons(0x20c, 0x168, U_I((unsigned)&d2_LastWindow), v);
     d2_SetForm(k, 1);
     io_PrintText(0x17eb);
     d2_SetForm(k, 2);
@@ -3572,7 +3572,7 @@ int ai_Unk5923c0(int param_1)
         U_I(((unsigned)&ai_Unkf8f39c + 0x128) + n) = 0xe;
         sv_OpenWindowFrame(U_I((unsigned)&d2_LastWindow), 0x70b, 0x742);
         v = d2_GetViewWin(win, 2, 0x78, a, &a[1], &a[2]);
-        sv_CreateFormSlider(0x270, 0x15e, U_I((unsigned)&d2_LastWindow), v);
+        sv_CreateScrollButtons(0x270, 0x15e, U_I((unsigned)&d2_LastWindow), v);
         *(unsigned short *)(U_I((unsigned)&d2_Objs) + 0x74 + a[2] * 0x2ec) = 0x54;
         d2_SetPointerSprite(0, 0);
         do {
@@ -3734,7 +3734,7 @@ int ai_Unk592b90(int param_1)
         U_I(((unsigned)&ai_Unkf8f39c + 0x128) + n) = 0xe;
         sv_OpenWindowFrame(U_I((unsigned)&d2_LastWindow), 0x70b, 0x742);
         v = d2_GetViewWin(win, 2, 0x78, a, &a[1], &a[2]);
-        sv_CreateFormSlider(0x270, 0x15e, U_I((unsigned)&d2_LastWindow), v);
+        sv_CreateScrollButtons(0x270, 0x15e, U_I((unsigned)&d2_LastWindow), v);
         *(unsigned short *)(U_I((unsigned)&d2_Objs) + 0x74 + a[2] * 0x2ec) = 0x54;
         do {
             d2_SetForm(win, 2);
@@ -3867,7 +3867,7 @@ int ai_Unk593150(int param_1)
         U_I(((unsigned)&ai_Unkf8f39c + 0x128) + n) = 0xe;
         sv_OpenWindowFrame(U_I((unsigned)&d2_LastWindow), 0x70b, 0x742);
         v = d2_GetViewWin(win, 2, 0x78, a, &a[1], &a[2]);
-        sv_CreateFormSlider(0x270, 0x15e, U_I((unsigned)&d2_LastWindow), v);
+        sv_CreateScrollButtons(0x270, 0x15e, U_I((unsigned)&d2_LastWindow), v);
         *(unsigned short *)(U_I((unsigned)&d2_Objs) + 0x74 + a[2] * 0x2ec) = 0x54;
         do {
             d2_SetForm(win, 2);
@@ -7709,7 +7709,7 @@ void ai_Unk59bad0(int param_1)
     d2_SetForm(win, 0);
     sv_OpenWindowFrame(U_I((unsigned)&d2_LastWindow), 0x73b, 0x73f);
     v = d2_GetViewWin(win, 2, 0x78, &pos[0], &pos[1], &pos[2]);
-    sv_CreateFormSlider(0x206, 0x167, U_I((unsigned)&d2_LastWindow), v);
+    sv_CreateScrollButtons(0x206, 0x167, U_I((unsigned)&d2_LastWindow), v);
     n = U_I((unsigned)&d2_LastWindow) * 0x3c4;
     U_I(((unsigned)&ai_Unkf8f39c + 0x11c) + n) = 0xe;
     U_I(((unsigned)&ai_Unkf8f39c + 0x120) + n) = 0x18;
@@ -8551,7 +8551,7 @@ void ai_Unk59dc00(unsigned short *param_1)
     ctl2 = d2_GetWinObj(win, 5, io_PrintText(0x18f1));
     d2_SetForm(win, 0);
     i = d2_GetViewWin(win, 2, 0x100, &a, &b, &c);
-    sv_CreateFormSlider(0x206, 0x167, U_I((unsigned)&d2_LastWindow), i);
+    sv_CreateScrollButtons(0x206, 0x167, U_I((unsigned)&d2_LastWindow), i);
     d2_CentreViewWindows(win);
     U_I((unsigned)&d2_ClickedId) = -1;
     U_I((unsigned)&d2_PointerObj) = -1;

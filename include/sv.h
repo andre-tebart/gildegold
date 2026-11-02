@@ -134,7 +134,7 @@ void sv_ButtonRow(int f, int y, int *out, int n, ...);                  /* 0x52e
 void sv_TabButtonRow(int f, int y, int *out, int n, ...);                  /* 0x52e4b0 */
 void sv_DisableVisibleWidgets(int a);                                   /* 0x52e600 */
 void sv_OpenWindowFrame(int f, int b, int c);                                 /* 0x52e6d0 */
-int sv_CreateFormSlider(int x, int y, int f, int g, int p5, int *b, int *a, int *c); /* 0x52e860 */
+int sv_CreateScrollButtons(int x, int y, int f, int g, int p5, int *b, int *a, int *c); /* 0x52e860 */
 void sv_FitForm(int f);                                                 /* 0x52ea30 */
 void sv_ValueBar(int x, int y, int value, int k);                      /* 0x52eaa0, value / 21 half tiles of the picture k */
 void sv_DrawBalanceBar(int x, int y, int a, int b, unsigned k);              /* 0x52eb50 */

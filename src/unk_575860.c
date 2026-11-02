@@ -6441,7 +6441,7 @@ done:
     *(int *)(U_I((unsigned)&d2_Objs) + 0x28 + w[w[0xc] + 8] * 0x2ec) = 1;
 }
 
-int sv_CreateFormSlider(); unsigned gv_FindEntry(void *a, unsigned char *o, unsigned after, int (*cb)(), int l); int gv_EntryIndex(char *r, int *e); int he_Unk573200();
+int sv_CreateScrollButtons(); unsigned gv_FindEntry(void *a, unsigned char *o, unsigned after, int (*cb)(), int l); int gv_EntryIndex(char *r, int *e); int he_Unk573200();
 void d2_ScrollWindow();
 
 /* 0x5828c0, the contact list builder (635 B): rec = the record, w = the window list (0 the window, 2 the screen
@@ -6472,7 +6472,7 @@ void ai_Unk5828c0(char *rec, int *w, int sel)
     io_PrintText((char *)(unsigned)"$C");
     d2_SetForm(w[0], 4);
     io_PrintText((char *)(unsigned)"$C");
-    sv_CreateFormSlider(0, 0, w[5], w[2], 0x35, a, b, &sel);
+    sv_CreateScrollButtons(0, 0, w[5], w[2], 0x35, a, b, &sel);
     e = (int *)gv_FindEntry(0, rec, 0, 0, w[0xc]);
     n = 0;
     if (e) {
@@ -6575,7 +6575,7 @@ void ai_Unk582b40(char *rec, int *w, int clicked, int flag)
     io_PrintText((char *)(unsigned)"$C");
     d2_SetForm(w[0], 7);
     io_PrintText((char *)(unsigned)"$C");
-    sv_CreateFormSlider(0, 0, w[6], w[3], *(short *)(((unsigned)&ai_Unkf8f128 + 0x2) + w[3] * 0x3c4), buf2, buf1, &clicked);
+    sv_CreateScrollButtons(0, 0, w[6], w[3], *(short *)(((unsigned)&ai_Unkf8f128 + 0x2) + w[3] * 0x3c4), buf2, buf1, &clicked);
     d2_SetForm(w[0], 3);
     /* ROUGH: the per-item widgets (0x4731d0 / 0x473650 / 0x5830f0 / 0x583150 / 0x52eaa0, see above) and the
        detail texts are not written yet */
@@ -6762,7 +6762,7 @@ void ai_Unk583700(int *w)
     io_PrintText((char *)(unsigned)"$C");
     d2_SetForm(w[0], 5);
     io_PrintText((char *)(unsigned)"$C");
-    sv_CreateFormSlider(0, 0, w[4], w[2], *(short *)(((unsigned)&ai_Unkf8f128 + 0x2) + w[2] * 0x3c4), b, a, c);
+    sv_CreateScrollButtons(0, 0, w[4], w[2], *(short *)(((unsigned)&ai_Unkf8f128 + 0x2) + w[2] * 0x3c4), b, a, c);
     d2_SetForm(w[0], 2);
     for (k = 0; k < n; k++) {
         x = *(short *)((unsigned)&ai_Unkf8f128 + w[2] * 0x3c4) - *(short *)((unsigned)&d2_Pics + 0x2399c);
@@ -9638,7 +9638,7 @@ void ai_Unk589570(int idx)
     sv_SetStatusText(buf);
 }
 
-int d2_GetViewWin(); int sv_CreateFormSlider(); void d2_RadioClear(int g); int d2_RemoveWindowObjects(); void d2_MenuNavigate(int g);
+int d2_GetViewWin(); int sv_CreateScrollButtons(); void d2_RadioClear(int g); int d2_RemoveWindowObjects(); void d2_MenuNavigate(int g);
 
 /* 0x589670, the item-slot window (1066 B, ROUGH SKELETON: the window, every call and the widget ids are on the
    disassembly; the slot grid arithmetic is summarised): 0x589450 () first; the window 0x62aa38 with 0x475600,
