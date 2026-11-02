@@ -288,7 +288,7 @@ int ch_CountAt(int scene, int all, D3VECTOR *pos, float eps)
 }
 /* 0x4027b0 */
 
-void ch_Unk4027b0(void)
+void ch_SyncObjectOffsets(void)
 {
     int i;
     CHARACTER *ch;

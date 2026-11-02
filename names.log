@@ -563,3 +563,38 @@
 2026-11-02T02:16:12 0x006f2580 data full_data_6f2580 -> main_WeatherSound by:main why:sv_RunFrame: 0x623eac gates ch_UpdatePositions/ch_Update/ch_Unk4027b0, 0x623eb0 the sky/quad/camera/clear-view steps (mask 0x40), 0x6f23f1 guards ai_MissionCompleteSequence against re-entry, 0x62457c gates d2_DrawObjects, 0x6f2580 is the Sound/weather ini key (WinMain) gating snd_UpdateRain/d3sndw_Update, 0x6f25a8 is set when the day ends (hour 23 or the end request) before the pop to main_GameLoop, which clears it
 2026-11-02T02:16:12 0x006f25a8 data full_data_6f25a8 -> main_DayEnding by:main why:sv_RunFrame: 0x623eac gates ch_UpdatePositions/ch_Update/ch_Unk4027b0, 0x623eb0 the sky/quad/camera/clear-view steps (mask 0x40), 0x6f23f1 guards ai_MissionCompleteSequence against re-entry, 0x62457c gates d2_DrawObjects, 0x6f2580 is the Sound/weather ini key (WinMain) gating snd_UpdateRain/d3sndw_Update, 0x6f25a8 is set when the day ends (hour 23 or the end request) before the pop to main_GameLoop, which clears it
 2026-11-02T02:16:20 0x00623eb4 data full_data_623eb4 -> sv_CityPanelOn by:main why:sv_RunFrame: gates sv_UpdateCityPanel(2, mask) (initially 1); the gap's second dword 0x623eb8 is another object
+2026-11-02T02:24:56 0x004c0e60 func ai_Unk4c0e60 -> snd_UpdateAnimals by:main why:0x4c0e60's comment: the animal ambience by season (birds, crickets); called each frame by sv_RunFrame
+2026-11-02T02:24:56 0x004c2000 func ai_Unk4c2000 -> snd_UpdateMusic by:main why:0x4c2000's comment: the music step (season tracks, pauses); sv_RunFrame calls it with the music on and mask 0x40000
+2026-11-02T02:24:56 0x004c4d40 func ai_Unk4c4d40 -> cm_SendTime by:main why:0x4c4d40's comment: sends message 0x1e with the time t (sv_RunFrame passes ai_TimeCopy)
+2026-11-02T02:24:56 0x004cf370 func ai_Unk4cf370 -> cm_DrawScrollArrows by:main why:0x4cf370's comment: draws the scroll arrows (sprite sheet 0x52c); sv_RunFrame's mask 0x80000 arm
+2026-11-02T02:24:56 0x004d8b50 func ai_Unk4d8b50 -> cm_DrawFightTime by:main why:0x4d8b50's comment: shows the fight time d3_Time - 0x6f0da4 as mm : ss : ms
+2026-11-02T02:24:56 0x004e4cc0 func ai_Unk4e4cc0 -> cm_UpdateParties by:main why:0x4e4cc0's comment: the per-frame update of the scene parties (the 0x114-byte records)
+2026-11-02T02:24:56 0x00587e00 func ai_Unk587e00 -> ai_HandleItemDrag by:main why:0x587e00's comment: the item drag-and-drop handler; sv_RunFrame's mask 0x400
+2026-11-02T02:24:56 0x00589c90 func ai_Unk589c90 -> ai_SlotKeys by:main why:0x589c90's comment: the slot keys each frame
+2026-11-02T02:24:56 0x00589cf0 func ai_Unk589cf0 -> ai_SpeedKeys by:main why:0x589cf0's comment: the game speed keys each frame
+2026-11-02T02:24:56 0x005bac10 func ai_Unk5bac10 -> ai_InventoryPanel by:main why:0x5bac10 opens the form "panel\inventory_2" (0x62d020) and runs its own sv_RunFrame loop
+2026-11-02T02:24:56 0x005bcc70 func ai_Unk5bcc70 -> ai_PlayerStatsPanel by:main why:0x5bcc70's comment: the player stats panel "Panel_player_stats"
+2026-11-02T02:24:56 0x005c4150 func ai_Unk5c4150 -> ai_FamilyTreeWindow by:main why:0x5c4150's comment: the family tree window "Special_Stammbaum"
+2026-11-02T02:24:56 0x005c7f00 func ai_Unk5c7f00 -> ai_CityStatsPanel by:main why:0x5c7f00's comment: the statistics panel "panel_statistik_stadt"
+2026-11-02T02:24:56 0x005c82f0 func ai_Unk5c82f0 -> ai_PlayerComparePanel by:main why:0x5c82f0's comment: the player comparison panel (the ranking 0x506180)
+2026-11-02T02:24:56 0x005c8640 func ai_Unk5c8640 -> ai_PrivilegesPanel by:main why:0x5c8640's comment: the privileges panel "panel_privilegien"
+2026-11-02T02:24:56 0x004027b0 func ch_Unk4027b0 -> ch_SyncObjectOffsets by:main why:0x4027b0 sets the 3D object offset (d3_SetObject078) of every dirty character in the default scene
+2026-11-02T02:24:56 0x0053daf0 func he_Unk53daf0 -> he_PickActiveEvent by:main why:0x53daf0's comment: picks the active event window
+2026-11-02T02:24:56 0x0053edf0 func he_Unk53edf0 -> he_RunQuickList by:main why:0x53edf0's comment: runs the run handler of the quick list records
+2026-11-02T02:24:56 0x0052e050 func sv_Unk52e050 -> sv_DrawHint by:main why:0x52e050's comment: draws the hint text at the mouse position
+2026-11-02T02:24:56 0x0052f2c0 func sv_Unk52f2c0 -> sv_DrawRubberBand by:main why:0x52f2c0's comment: draws the rubber band rectangle while dragging
+2026-11-02T02:24:56 0x004edf80 func unk_Unk4edf80 -> gv_UpdateEffects by:main why:0x4edf80's comment: the per-frame update of the effect slots (gv unit)
+2026-11-02T02:24:56 0x00623820 data ai_Unk623820 -> sv_ButtonFamilyTree by:main why:sv_RunFrame: a click on it opens ai_FamilyTreeWindow
+2026-11-02T02:24:56 0x00623824 data ai_Unk623824 -> sv_ButtonCompare by:main why:sv_RunFrame: a click on it opens ai_PlayerComparePanel
+2026-11-02T02:24:56 0x00623828 data ai_Unk623828 -> sv_ButtonCityStats by:main why:sv_RunFrame: a click on it opens ai_CityStatsPanel
+2026-11-02T02:24:56 0x0062382c data ai_Unk62382c -> sv_ButtonInventory by:main why:sv_RunFrame: a click on it opens ai_InventoryPanel
+2026-11-02T02:24:56 0x00623830 data ai_Unk623830 -> sv_ButtonPlayerStats by:main why:sv_RunFrame: a click on it opens ai_PlayerStatsPanel
+2026-11-02T02:24:56 0x00623834 data ai_Unk623834 -> sv_ButtonMessages by:main why:sv_RunFrame: a click on it opens ai_MessageFilterScreen
+2026-11-02T02:24:56 0x00623848 data ai_Unk623848 -> sv_ButtonPrivileges by:main why:sv_RunFrame: a click on it opens ai_PrivilegesPanel
+2026-11-02T02:24:56 0x00623850 data ai_Unk623850 -> sv_AdvanceHit by:main why:the hit rect of sv_BuildScreenLayout (top right, 0x30 x 0x30); a left click on it (like the End key) runs sv_AdvanceGame in sv_RunFrame
+2026-11-02T02:24:56 0x006f0cd4 data ai_Unk6f0cd4 -> cm_NoticeCount by:main why:cm.c's message 17 counts it up, sv_RunFrame shows txt 0x1cb2 (sv_BroadcastText) once per count
+2026-11-02T02:24:56 0x006f0da4 data ai_Unk6f0da4 -> cm_FightStart by:main why:0x4d8b50 shows d3_Time minus it as the fight time; sv_RunFrame draws that while it is nonzero
+2026-11-02T02:24:56 0x006f0dbc data ai_Unk6f0dbc -> cm_SceneRain by:main why:0x4e33d0 stores d3t_CreateRain's result in it; sv_RunFrame draws it (d3t_DrawRain) while paused
+2026-11-02T02:24:56 0x00a687e4 data ai_Unka687e4 -> cm_NextNetStep by:main why:sv_RunFrame runs the network step (flush / receive / exec) when ai_ClockMs passes it and sets it to ai_ClockMs + 7
+2026-11-02T02:24:56 0x00f31144 data ai_Unkf31144 -> cm_DayEndRequest by:main why:cm.c's message sub 2 sets it; sv_RunFrame then ends the day, main_GameLoop clears it
+2026-11-02T02:25:06 0x006f2448 data ai_Unk6f2448 -> gm_AllowAll by:main why:reasoned: gm_PermissionBits returns all bits (-1) and ai_LedSelectBits 0x800 while it is set; sv_RunFrame's advance button then ends the day directly instead of sv_AdvanceGame (a test / debug mode switch)

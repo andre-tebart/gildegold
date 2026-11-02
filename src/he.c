@@ -77,7 +77,7 @@ extern GAPDATA full_data_602568[];
 extern GAPDATA full_data_5ff710[];
 
 extern char ai_Chars[768][0x21c];
-extern int ai_Unk6f2448;
+extern int gm_AllowAll;
 extern GAPDATA full_data_5f320c[];
 extern char * ai_BTypes;
 extern char * ai_Blds;
@@ -240,7 +240,7 @@ extern GAPDATA full_data_62901c[];
 extern GAPDATA full_data_629038[];
 extern unsigned char ai_TimeHour;
 extern GAPDATA full_data_629054[];
-extern int ai_Unk6f2448;
+extern int gm_AllowAll;
 extern GAPDATA full_data_629070[];
 extern float ai_Unk5eb780;
 extern double ai_Unk5ebbe8;
@@ -635,7 +635,7 @@ void he_Unk53dad0(int state)
 #define HE_JUMP(r) ((r) != 0 && ((*(char *)(r) == 0x11 && (*(unsigned char *)((r) + 0xf0) & 0x40) != 0) || *(char *)(r) == -0x79) && (U_I((unsigned)&ai_GameFlags) & 4) == 0)
 
 /* 0x53daf0, picks the active event window (0x6f262c): drops it when its window is closed, activates the first used slot whose window is open (ROUGH) */
-void he_Unk53daf0(void)
+void he_PickActiveEvent(void)
 {
     int *cur;
     int *p;
@@ -1384,7 +1384,7 @@ void he_Unk53ed70(void)
 }
 /* 0x53edf0, runs the run handler of the quick list records (0x74db40) */
 
-void he_Unk53edf0(void)
+void he_RunQuickList(void)
 {
     unsigned char *pb;
     int i = 0;
@@ -3939,7 +3939,7 @@ void he_Unk549970(int ev)
     *(unsigned char *)(ev + 0xad) = (unsigned char)(((int)((float)a * 0.5f + 1.0f) + 2) * 2);
     *(int *)(ev + 0x70) = 0;
     *(HETIME *)(ev + 0x52) = ai_Time;
-    if (U_I((unsigned)&ai_Unk6f2448) != 0)
+    if (U_I((unsigned)&gm_AllowAll) != 0)
         gm_AddTime(ev + 0x52, 0, 0, 1);
     else
         gm_AddTime(ev + 0x52, 5, 0, 0);
@@ -7530,7 +7530,7 @@ void he_Unk5461c0(int ev)
             if (o != 0)
                 prob = (float)(((double)*(unsigned char *)(o + 0x37) + 100.0) * 0.01);
         }
-        if (U_I((unsigned)&ai_Unk6f2448) != 0)
+        if (U_I((unsigned)&gm_AllowAll) != 0)
             prob = 5.0f;
         rr = (unsigned short)util_Random(0x4b);
         if ((float)rr + prob * 100.0f > mult * 125.0f) {
@@ -9383,7 +9383,7 @@ void he_Unk553e10(int ev)
     char *rec = (char *)U_I((unsigned)&ai_Goods) + *(unsigned short *)(ev + 0xac) * 0x41;
 
     *(HETIME *)(ev + 0x52) = ai_Time;
-    if (U_I((unsigned)&ai_Unk6f2448) != 0)
+    if (U_I((unsigned)&gm_AllowAll) != 0)
         gm_AddTime(ev + 0x52, 0, 0, 1);
     else
         gm_AddTime(ev + 0x52, 0, *(int *)(rec + 0x22), 0);
@@ -17962,7 +17962,7 @@ void he_Unk574120(int ev)
         return;
     *(HETIME *)(ev + 0x44) = ai_Time;
     *(HETIME *)(ev + 0x52) = ai_Time;
-    if (U_I((unsigned)&ai_Unk6f2448) != 0) {
+    if (U_I((unsigned)&gm_AllowAll) != 0) {
         gm_AddTime(ev + 0x52, 1, 0, 0);
     } else {
         gm_AddTime(ev + 0x52, 0x18, 0, 0);

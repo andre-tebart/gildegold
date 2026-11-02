@@ -4962,7 +4962,7 @@ void main_GameLoop(int ctl)
                 }
             }
             he_ShowEventBar(U_I((unsigned)&ai_PlayerId) & 0xffff);
-            U_I((unsigned)&ai_Unkf31144) = 0;
+            U_I((unsigned)&cm_DayEndRequest) = 0;
             main_DayEnding = 0;
             ai_GameFrame();
             if (U_I((unsigned)&ai_GameOver) == 0) {
@@ -4971,7 +4971,7 @@ void main_GameLoop(int ctl)
                     ck = main_Now;
                     while ((unsigned short)ck.b < 0x17) {
                         gm_AddTime((struct GCLOCK *)&ck, 0, 0x1e, 0);
-                        w = ai_Unk4c4d40(&ck);
+                        w = cm_SendTime(&ck);
                         while (cm_GetSlotState(w) == 0)
                             sv_PumpNet();
                     }
@@ -4992,13 +4992,13 @@ L_next:
                 ck = main_Now;
                 while ((unsigned short)ck.b < 0x17) {
                     gm_AddTime((struct GCLOCK *)&ck, 0, 0x1e, 0);
-                    w = ai_Unk4c4d40(&ck);
+                    w = cm_SendTime(&ck);
                     while (cm_GetSlotState(w) == 0)
                         sv_PumpNet();
                 }
                 gm_AddTime((struct GCLOCK *)&ck, 0x18, 0, 0);
                 gm_SetTime((struct GCLOCK *)&ck, 6, 0, 0);
-                ai_Unk4c4d40(&ck);
+                cm_SendTime(&ck);
                 tb_SetFunctionOff((unsigned)&sv_UpdateClock, 0);
             }
             if ((U_I((unsigned)&cm_NetFlags) & 8) != 0 || U_I((unsigned)&ai_Unk1460ae0) == -1) {

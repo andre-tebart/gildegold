@@ -292,7 +292,7 @@ void ai_InitStates(void)
     ai_Unk4c3600();
     if (ai_Unk4c3630() != 0)
         net_Close();
-    ai_Unka687e4 = d3_Time;
+    cm_NextNetStep = d3_Time;
 }
 /* 0x4c3560, as 0x4c3480 without the start */
 
@@ -1289,7 +1289,7 @@ void cm_SendExSetHE(unsigned char k, char *p)
 }
 /* 0x4c4d40, message 0x1e with the time t; -1: t is not valid (0x4fe210) */
 
-int ai_Unk4c4d40(char *t)
+int cm_SendTime(char *t)
 {
     G17MSG m;
 
@@ -3478,7 +3478,7 @@ int ai_Unk4c89b0(G17MSG *m, G17STAT *s)
         sv_SetupWeather(t, 1);
         break;
     case 2:
-        ai_Unkf31144 = 1;
+        cm_DayEndRequest = 1;
         if (G17_I(msg, 1) != 0)
             cm_NetFlags = (cm_NetFlags & ~0x10) | 8;
         else
@@ -3570,7 +3570,7 @@ int ai_Unk4c89b0(G17MSG *m, G17STAT *s)
     case 17:
         if (ai_PlayerId != 0xffff) {
             if (ai_CharInts[ai_PlayerId][0x82] != G17_I(msg, 1) || G17_I(msg, 1) == -1)
-                ai_Unk6f0cd4++;
+                cm_NoticeCount++;
         }
         break;
     case 18:
@@ -6648,7 +6648,7 @@ int ai_LedSelectBits(int idx, char *c)
 
     if (*(char **)(c + 0x16c) == ai_Chars[idx])
         r = 0x800;
-    if (ai_Unk6f2448 != 0)
+    if (gm_AllowAll != 0)
         r = 0x800;
     return r;
 }
@@ -7205,7 +7205,7 @@ next:
 /* 0x4cf370, draws the scroll arrows (sprite ids 0 .. 7 of the sheet d2_GetPic(0x52c)): the mouse hit tests against
    the boxes at sv_CameraObj + 0xb4 / 0xcc / 0xe4 / 0xfc pick the pressed (2) or the free (1) look. Rough draft. */
 
-void ai_Unk4cf370()
+void cm_DrawScrollArrows()
 {
     int e = 0, up = 0, a = 0, b = 0;
     int t;
@@ -11055,13 +11055,13 @@ void ai_Unk4d8b30()
 }
 /* 0x4d8b50, shows the fight time (d3_Time minus the start 0x6f0da4, 14 ms per tick) as "mm : ss : ms ms" in a box at the top */
 
-void ai_Unk4d8b50()
+void cm_DrawFightTime()
 {
     char buf[128];
 
     d2_SetFont(0x54);
-    sprintf(buf, "%2i : %2i : %3i ms", (d3_Time * 14 - ai_Unk6f0da4 * 14) / 60000, (d3_Time * 14 - ai_Unk6f0da4 * 14) / 1000 % 60,
-            (d3_Time * 14 - ai_Unk6f0da4 * 14) % 1000);
+    sprintf(buf, "%2i : %2i : %3i ms", (d3_Time * 14 - cm_FightStart * 14) / 60000, (d3_Time * 14 - cm_FightStart * 14) / 1000 % 60,
+            (d3_Time * 14 - cm_FightStart * 14) % 1000);
     d2_DrawTextBox(0, 10, 200, 24, d2_ScreenSurf, buf, 0x30);
     d2_AddDirty(0, 10, d2_TextDrawnW, d2_TextDrawnH);
 }
@@ -12661,7 +12661,7 @@ void ai_Unk4e01e0(char *m)
     if (v != 0)
         ai_Unk4e33f0();
     ai_Unk4e3390();
-    ai_Unk6f0da4 = 0;
+    cm_FightStart = 0;
     ai_Unk4e30c0();
     d2_CutsceneActive = 0;
     ai_Unk4e3640();
@@ -12722,7 +12722,7 @@ int ai_Unk4e06d0(int *s)
     ai_Unk4e2c70(s[0]);
     s[0] = -1;
     s[1] = -1;
-    ai_Unk6f0da4 = 0;
+    cm_FightStart = 0;
     ai_Unk4e30c0();
     ai_Unk4e3640();
     d2_CutsceneActive = 0;
@@ -12920,7 +12920,7 @@ int ai_Unk4e0f70(char *m)
     ai_Unk4e2c70(sc);
     snd_ClearQueue();
     ai_Unk4e3290(snd);
-    ai_Unk6f0da4 = 0;
+    cm_FightStart = 0;
     ai_Unk4e30c0();
     ai_Unk4e3640();
     d2_CutsceneActive = 0;
@@ -12992,7 +12992,7 @@ int ai_Unk4e1250(char *m)
         if ((*(unsigned int *)(a + 0x1cc) & 1) != 0 && (*(unsigned int *)(a + 0x1cc) & 2) == 0) {
             txt_Format(buf, 0x40fb, 0x40f5, *(unsigned short *)a);
             if (ai_Unk4e5470(buf, 0x10) == 0)
-                ai_Unk5c4150(ai_CharInts[ai_PlayerId][0], 0xa, ai_Unk1440c88, ai_Unk60d360);
+                ai_FamilyTreeWindow(ai_CharInts[ai_PlayerId][0], 0xa, ai_Unk1440c88, ai_Unk60d360);
             else {
                 v[2] = 100.0f;
                 cm_BeginFieldBlock(a, *(int *)(a + 4));
@@ -13002,7 +13002,7 @@ int ai_Unk4e1250(char *m)
                 cm_SendSetField(*(int *)(a + 4), 0x1cc, 4, 2, 0);
             }
         } else
-            ai_Unk5c4150(ai_CharInts[ai_PlayerId][0], 0xa, ai_Unk1440c88, ai_Unk60d360);
+            ai_FamilyTreeWindow(ai_CharInts[ai_PlayerId][0], 0xa, ai_Unk1440c88, ai_Unk60d360);
     } else {
         if ((*(unsigned int *)(a + 0x1cc) & 1) != 0 && (*(unsigned int *)(a + 0x1cc) & 2) == 0) {
             txt_Format(buf, 0x40fc, 0x40f5, *(unsigned short *)a);
@@ -13034,7 +13034,7 @@ int ai_Unk4e1250(char *m)
     snd_ClearQueue();
     sb_UnloadSampleBank(snd);
     ai_Unk4e3640();
-    ai_Unk6f0da4 = 0;
+    cm_FightStart = 0;
     return 0;
 }
 /* 0x4e1700, a bankruptcy (the message m: +0x34 the person): the scene "Pleite.ed3" with "cutscenes\\pleite\\enter_Pleite.esc", a sky by the age
@@ -13099,7 +13099,7 @@ int ai_Unk4e1700(char *m)
     snd_ClearQueue();
     sb_UnloadSampleBank(snd);
     ai_Unk4e3640();
-    ai_Unk6f0da4 = 0;
+    cm_FightStart = 0;
     if ((ai_GameFlags & 8) != 0) {
         a[8] = 0;
         ai_GameOver = 1;
@@ -13814,15 +13814,15 @@ int ai_Unk4e3390(void)
 int ai_Unk4e33d0(int a)
 {
     if (cm_SkipEvents == 0)
-        ai_Unk6f0dbc = d3t_CreateRain(a);
+        cm_SceneRain = d3t_CreateRain(a);
 }
 /* 0x4e33f0, frees the thing 0x4e33d0 remembered */
 
 int ai_Unk4e33f0(void)
 {
     if (cm_SkipEvents == 0) {
-        d3t_DeleteRain(ai_Unk6f0dbc);
-        ai_Unk6f0dbc = 0;
+        d3t_DeleteRain(cm_SceneRain);
+        cm_SceneRain = 0;
     }
 }
 /* 0x4e3420, runs the scene for a ticks (frame wait with the flag 0x8000): the end sets the stop flag 0x6f22a0 */
@@ -14429,7 +14429,7 @@ int ai_Unk4e4b50(char *m)
    the timers (0x4fe140) are fed, the owner's own party asks "ready?" (0x4e4b50: -1 gives the timer 5, 0 the timers 0x1e / 9 (old ones cancel the party
    0x4c5ef0), else the callback of the kind (0x92c510) runs), a finished party is run (0x4e4060) and dropped (0x4e5180). ROUGH */
 
-int ai_Unk4e4cc0(void)
+int cm_UpdateParties(void)
 {
     char *r;
     G17T14 tmp;
@@ -14957,7 +14957,7 @@ extern int ai_Unk9367d0;
 extern int ai_Unk9367d4;
 extern G17MSG cm_RecvPool[0x2000];
 extern int cm_LastSyncCount;
-extern int ai_Unka687e4;
+extern int cm_NextNetStep;
 extern unsigned char ai_Unka68800[1024];
 extern G17MSG * cm_RecvFree;
 extern unsigned int cm_GroupEndSeq;
@@ -14973,7 +14973,7 @@ extern char * ai_Unka68d34;
 extern unsigned char ai_Unka68d40[1024];
 extern G17MSG cm_SendRing[0x8000];
 extern char * cm_LoadBuf;
-extern int ai_Unkf31144;
+extern int cm_DayEndRequest;
 extern G17STAT cm_SendStates[0x8000];
 extern G17MSG * cm_SendQueue;
 extern unsigned int ai_Unkf81164;
@@ -15089,7 +15089,7 @@ char * ai_Unk6332b4 = 0;  /* 0x6332b4 */
 int ai_ClockMs = 0;  /* 0x6333cc, a clock */
 unsigned int ai_Unk63349c = 0;  /* 0x63349c */
 int ai_Unk6f0cd0 = 0;  /* 0x6f0cd0, received messages */
-int ai_Unk6f0cd4 = 0;  /* 0x6f0cd4 */
+int cm_NoticeCount = 0;  /* 0x6f0cd4 */
 int ai_Unk6f0cd8 = 0;  /* 0x6f0cd8 */
 int ai_Unk6f0cdc = 0;  /* 0x6f0cdc */
 char * ai_Unk6f0ce0 = 0;  /* 0x6f0ce0 */
@@ -15140,13 +15140,13 @@ int ai_Unk6f0d94 = 0;  /* 0x6f0d94 */
 unsigned int ai_Unk6f0d98 = 0;  /* 0x6f0d98 */
 int ai_Unk6f0d9c = 0;  /* 0x6f0d9c, the scene nesting depth */
 char * ai_Unk6f0da0 = 0;  /* 0x6f0da0, the fade */
-unsigned int ai_Unk6f0da4 = 0;  /* 0x6f0da4, fight start (d3_Time) */
+unsigned int cm_FightStart = 0;  /* 0x6f0da4, fight start (d3_Time) */
 unsigned char ai_Unk6f0da8[2] = {0};  /* 0x6f0da8, +2 / +3: the left / right insult won, +4 / +5 the shot won */
 unsigned char ai_Unk6f0daa = 0;  /* 0x6f0daa */
 int ai_Unk6f0db0 = 0;  /* 0x6f0db0 */
 int ai_Unk6f0db4 = 0;  /* 0x6f0db4 */
 int ai_Unk6f0db8 = 0;  /* 0x6f0db8 */
-int ai_Unk6f0dbc = 0;  /* 0x6f0dbc */
+int cm_SceneRain = 0;  /* 0x6f0dbc */
 int ai_Unk6f0dc0 = 0;  /* 0x6f0dc0 */
 char ai_Unk6f0dc4 = 0;  /* 0x6f0dc4 */
 char * ai_PickedObject = 0;  /* 0x6f22e8 */
@@ -15204,7 +15204,7 @@ int ai_Unk9367d0 = 0;  /* 0x9367d0 */
 int ai_Unk9367d4 = 0;  /* 0x9367d4 */
 G17MSG cm_RecvPool[0x2000] = {0};  /* 0x9367e0, the free receive records */
 int cm_LastSyncCount = 0;  /* 0xa687e0, "cm_LastSyncCount" (net.h) */
-int ai_Unka687e4 = 0;  /* 0xa687e4, d3_Time of the start */
+int cm_NextNetStep = 0;  /* 0xa687e4, d3_Time of the start */
 unsigned char ai_Unka68800[1024] = {0};  /* 0xa68800, a long message to split (ai_Unka68d30 bytes) */
 G17MSG * cm_RecvFree = 0;  /* 0xa68c00, the free list */
 unsigned int cm_GroupEndSeq = 0;  /* 0xa68c04 */
@@ -15220,7 +15220,7 @@ char * ai_Unka68d34 = 0;  /* 0xa68d34 */
 unsigned char ai_Unka68d40[1024] = {0};  /* 0xa68d40, a joined long message */
 G17MSG cm_SendRing[0x8000] = {0};  /* 0xa69140, the send ring */
 char * cm_LoadBuf = 0;  /* 0xf31140, the load buffer ("cm_LoadBuf") */
-int ai_Unkf31144 = 0;  /* 0xf31144 */
+int cm_DayEndRequest = 0;  /* 0xf31144 */
 G17STAT cm_SendStates[0x8000] = {0};  /* 0xf31160 */
 G17MSG * cm_SendQueue = 0;  /* 0xf81160, the messages to send */
 unsigned int ai_Unkf81164 = 0;  /* 0xf81164, length of ai_Unka68d40 */

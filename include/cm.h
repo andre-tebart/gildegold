@@ -45,7 +45,7 @@ typedef struct G17FIELDS {              /* 0x7c bytes, a field block (0xa68c20, 
 typedef char ai_AssertG17MSG[sizeof(G17MSG) == 0x99 ? 1 : -1];
 
 extern G17MSG cm_RecvPool[0x2000];     /* 0x9367e0, the free receive records */
-extern int ai_Unka687e4;                /* 0xa687e4, d3_Time of the start */
+extern int cm_NextNetStep;                /* 0xa687e4, d3_Time of the start */
 extern unsigned char ai_Unka68800[];    /* 0xa68800, a long message to split (ai_Unka68d30 bytes) */
 extern G17MSG *cm_RecvFree;            /* 0xa68c00, the free list */
 extern unsigned int cm_GroupEndSeq;       /* 0xa68c04 */
@@ -213,7 +213,7 @@ void cm_SendRelations(int a, int b, int c, int d);                              
 int cm_SendLongMessage(char *msg);                                                    /* 0x4c4b70, AIMSG (am.h, 0xf8 bytes) */
 int ai_Unk4c4bc0(char *msg, unsigned int len, void *extra);                      /* 0x4c4bc0 */
 void cm_SendExSetHE(unsigned char k, char *p);                                     /* 0x4c4c60 */
-int ai_Unk4c4d40(char *t);                                                       /* 0x4c4d40 */
+int cm_SendTime(char *t);                                                       /* 0x4c4d40 */
 int cm_SendExSysMessage(unsigned char id, void *msg);                               /* 0x4c4db0 */
 void cm_SendKillCharacter(int a, int b);                                                 /* 0x4c4e00 */
 void ai_Unk4c4e40(void *p);                                                      /* 0x4c4e40 */
@@ -360,7 +360,7 @@ extern int ai_MissionPartner;  /* 0x6248a0, the netId of the other player in a n
 extern int ai_Unk631084;  /* 0x631084 */
 extern int * ai_Unk633738;  /* 0x633738 */
 extern int ai_TradeMsgCount;  /* 0x6f046c */
-extern int ai_Unk6f0cd4;  /* 0x6f0cd4 */
+extern int cm_NoticeCount;  /* 0x6f0cd4 */
 extern int ai_GameFlags;  /* 0x6f23f8 */
 extern int cm_RequestedSaveSlot;  /* 0x6f25c8 */
 extern char cm_RequestedSaveName[];  /* 0x6f25d0 */
@@ -370,7 +370,7 @@ extern int cm_SaveAcks[][2];  /* 0x76fa20 */
 extern int ai_Unk91b6e0[0x800][2];  /* 0x91b6e0 */
 extern char ai_Unk91f700[];  /* 0x91f700 */
 extern char ai_Unk92cae0[16][0x35c];  /* 0x92cae0 */
-extern int ai_Unkf31144;  /* 0xf31144 */
+extern int cm_DayEndRequest;  /* 0xf31144 */
 extern int hst_SeedPending;  /* 0xf83650 */
 extern char ai_Unkf895a0[0xb00];  /* 0xf895a0 */
 struct D3SM; struct D3TERRAIN; void d3sm_Build(struct D3SM *h, struct D3TERRAIN *t);  /* 0x45e620, d3_sm.c: void d3sm_Build(D3SM *, D3TERRAIN *) */
@@ -540,7 +540,7 @@ extern char ai_Unk60c7c0[];  /* 0x60c7c0 */
 extern int ai_Unk6f0cd8;  /* 0x6f0cd8 */
 extern int ai_Unk6f0cdc;  /* 0x6f0cdc */
 extern char *ai_Unk6f0d04;  /* 0x6f0d04 */
-extern int ai_Unk6f2448;  /* 0x6f2448 */
+extern int gm_AllowAll;  /* 0x6f2448 */
 extern char ai_Unk930600[];  /* 0x930600 */
 extern G18LOG ai_Unk935da0[15];  /* 0x935da0 */
 extern int ai_Unk9363f4;  /* 0x9363f4 */
@@ -599,7 +599,7 @@ float d3_YawTo();  /* 0x448ac0 */
 extern int ai_Unk60cb5c;  /* 0x60cb5c */
 extern char *ai_Unk6f0d74;  /* 0x6f0d74 */
 
-void ai_Unk4cf370();  /* 0x4cf370 */
+void cm_DrawScrollArrows();  /* 0x4cf370 */
 void * d2_GetPic();  /* 0x4690b0 */
 int d2_DrawShape(int x, int y, void *surf, void *pic, unsigned char i);  /* 0x47c6f0 */
 void d2_SetClipRect(int x0, int y0, int x1, int y1);  /* 0x47cb40 */
@@ -855,14 +855,14 @@ void ai_Unk4d88c0(char *a);  /* 0x4d88c0 */
 void ai_Unk4d8b10(char *a);  /* 0x4d8b10 */
 
 extern int ai_Unk92ca80[16];  /* 0x92ca80 */
-extern unsigned int ai_Unk6f0da4;  /* 0x6f0da4, fight start (d3_Time) */
+extern unsigned int cm_FightStart;  /* 0x6f0da4, fight start (d3_Time) */
 void * d2_SetFont(int font);  /* 0x476030 */
 void d2_DrawTextBox(int x, int y, int w, int h, void *surf, char *text, unsigned int flags);  /* 0x46f1a0 */
 void d2_AddDirty(int x, int y, int w, int h);  /* 0x468eb0 */
 extern int d2_TextDrawnW;  /* 0x6ed968 */
 extern int d2_TextDrawnH;  /* 0x6ed96c */
 void ai_Unk4d8b30();  /* 0x4d8b30 */
-void ai_Unk4d8b50();  /* 0x4d8b50 */
+void cm_DrawFightTime();  /* 0x4d8b50 */
 
 int ai_Unk4e3250();  /* 0x4e3250 */
 void ai_Unk4d8c40();  /* 0x4d8c40 */
@@ -998,7 +998,7 @@ int ai_Unk4e1220(char *m);  /* 0x4e1220 */
 float gm_CharacterHealth();  /* 0x4fc820 */
 int gm_Unk506480();  /* 0x506480 */
 void gm_Unk506e70(unsigned short *c, char *out, int flag);  /* 0x506e70 */
-void ai_Unk5c4150(int param_1, unsigned char param_2, int param_3, int param_4);  /* 0x5c4150 */
+void ai_FamilyTreeWindow(int param_1, unsigned char param_2, int param_3, int param_4);  /* 0x5c4150 */
 int ai_Unk4e1250(char *m);  /* 0x4e1250 */
 /* ai_TimeHour (0x770ae4, the clock's hour) is no object: time_view.h views it in ai_Time + 4 */
 
@@ -1019,7 +1019,7 @@ int ai_Unk4e2bd0();  /* 0x4e2bd0 */
 int ai_Unk4e2dc0();  /* 0x4e2dc0 */
 int ai_Unk4e2e00();  /* 0x4e2e00 */
 void snd_EndSpecialTrack(void);  /* 0x4c2480 */
-extern int ai_Unk6f0dbc;  /* 0x6f0dbc */
+extern int cm_SceneRain;  /* 0x6f0dbc */
 extern int ai_Unk6f0db4;  /* 0x6f0db4 */
 extern int ai_Unk6f0db8;  /* 0x6f0db8 */
 struct D3SKY; struct D3SKYLAYER; void d3sky_DeleteLayer(struct D3SKY *s, struct D3SKYLAYER *l);  /* 0x45d800 */

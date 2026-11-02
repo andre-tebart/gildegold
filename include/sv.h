@@ -124,7 +124,7 @@ void sv_DrawItemNames(void);                                                /* 0
 void sv_DrawBorderArrows(void);                                                /* 0x52d480 */
 void sv_CameraFollow(void);                                             /* 0x52d7a0 */
 void sv_HandleRightClick(unsigned fl);                                         /* 0x52d940 */
-void sv_Unk52e050(void);                                                /* 0x52e050 */
+void sv_DrawHint(void);                                                /* 0x52e050 */
 void sv_DrawStatusText(void);                                                /* 0x52e0c0 */
 void sv_ClearNamePlates(void);                                          /* 0x52e170 */
 void sv_ReleaseNamePlates(void);                                        /* 0x52e190 */
@@ -142,7 +142,7 @@ void sv_StartBand(void);                                                /* 0x52e
 void sv_EndBand(void);                                                /* 0x52eed0 */
 void sv_UpdateBand(void);                                                /* 0x52eee0 */
 void sv_UpdateBandLed(void);                                                /* 0x52f0d0 */
-void sv_Unk52f2c0(void);                                                /* 0x52f2c0 */
+void sv_DrawRubberBand(void);                                                /* 0x52f2c0 */
 void sv_BookKeys(SVBOOK *bk);                                           /* 0x52f340 */
 SVBOOK *sv_OpenBook(char *model, char *at, char n, ...);                         /* 0x52f360 */
 void sv_Unk52f530(int *bk);                                             /* 0x52f530 */
@@ -186,19 +186,19 @@ extern float sv_CameraHeightFar;                            /* 0x623808 */
 extern float sv_CameraAngleFar;                             /* 0x62380c */
 extern float sv_ScrollSpeed;                                  /* 0x623818 */
 extern char sv_CameraEaseOn;                                   /* 0x62381c */
-extern int ai_Unk623820;                                    /* 0x623820 */
-extern int ai_Unk623824;                                    /* 0x623824 */
-extern int ai_Unk623828;                                    /* 0x623828 */
-extern int ai_Unk62382c;                                    /* 0x62382c */
-extern int ai_Unk623830;                                    /* 0x623830 */
-extern int ai_Unk623834;                                    /* 0x623834 */
+extern int sv_ButtonFamilyTree;                                    /* 0x623820 */
+extern int sv_ButtonCompare;                                    /* 0x623824 */
+extern int sv_ButtonCityStats;                                    /* 0x623828 */
+extern int sv_ButtonInventory;                                    /* 0x62382c */
+extern int sv_ButtonPlayerStats;                                    /* 0x623830 */
+extern int sv_ButtonMessages;                                    /* 0x623834 */
 extern int ai_Unk623838;                                    /* 0x623838 */
 extern int ai_Unk62383c;                                    /* 0x62383c */
 extern int ai_Unk623840;                                    /* 0x623840 */
 extern int ai_Unk623844;                                    /* 0x623844 */
-extern int ai_Unk623848;                                    /* 0x623848 */
+extern int sv_ButtonPrivileges;                                    /* 0x623848 */
 extern int ai_Unk62384c;                                    /* 0x62384c */
-extern int ai_Unk623850;                                    /* 0x623850 */
+extern int sv_AdvanceHit;                                    /* 0x623850 */
 extern int sv_PanelPic;                                     /* 0x623854 */
 extern int sv_PlayerBarForm;                                /* 0x62385c */
 extern int sv_PanelForm;                                    /* 0x623860 */

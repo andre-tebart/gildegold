@@ -672,7 +672,7 @@ void unk_Unk4ee360(int w, int sub, char *p, UNKHITS *out)
    of the 3 parts of a used slot (state at +0x74 + 0x68 * j: 0 idle, 1 running, 2 / 3 done) is advanced: running parts create / move their "kugel" object (0x446e10 / 0x43b790), finished ones release the object,
    report to the slot's counter (+0x16c) and callback (+0x168); a slot whose parts are all idle (3) loses flags 1 / 2 and is released (0x4edf10) when flag 4 is set. ROUGH */
 
-void unk_Unk4edf80(void)
+void gv_UpdateEffects(void)
 {
     int dt;
     int sc;

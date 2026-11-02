@@ -137,7 +137,7 @@ void gv_FreeEffectObjects(void);               /* 0x4ede70 */
 char *gv_FindEffect(int id);            /* 0x4eded0 */
 void unk_Unk4edf10(int id);             /* 0x4edf10 */
 void unk_Unk4ee360(int w, int sub, char *p, struct UNKHITS *out);  /* 0x4ee360 */
-void unk_Unk4edf80(void);               /* 0x4edf80 */
+void gv_UpdateEffects(void);               /* 0x4edf80 */
 void unk_Unk4eea70(char *o);             /* 0x4eea70 */
 int gv_ReserveEffect(int id);              /* 0x4eeaa0 */
 int unk_Unk4eeb00(int id);              /* 0x4eeb00 */

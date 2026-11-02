@@ -181,7 +181,7 @@ void ch_SetPos(CHARACTER *ch, D3VECTOR *pos, int unk);                          
 void ch_PlaceAtObject(CHARACTER *ch, D3OBJECT *obj);                                    /* 0x402640 */
 int ch_Count(int scene, int all);                                                       /* 0x4026c0 */
 int ch_CountAt(int scene, int all, D3VECTOR *pos, float eps);                           /* 0x402720 */
-void ch_Unk4027b0(void);                                                                /* 0x4027b0 */
+void ch_SyncObjectOffsets(void);                                                                /* 0x4027b0 */
 void ch_UpdatePositions(void);                                                          /* 0x402800 */
 int ch_Delete(CHARACTER *ch);                                                           /* 0x4028a0 */
 CHARACTER *ch_Alloc(void);                                                              /* 0x4029c0 */

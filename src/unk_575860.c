@@ -567,7 +567,7 @@ extern char ai_Time[14];
 extern unsigned char ai_TimeHour;
 extern char ai_Chars[768][0x21c];
 extern int d2_PointerObj;
-extern int ai_Unk6f2448;
+extern int gm_AllowAll;
 extern int d2_ClickedId;
 extern int d2_LastWindow;
 
@@ -579,7 +579,7 @@ extern int ai_ClickedObject;
 
 extern GAPDATA full_data_62a870[];
 extern GAPDATA full_data_62a88c[];
-extern int ai_Unk6f2448;
+extern int gm_AllowAll;
 extern int ai_ClockMs;
 extern GAPDATA full_data_62a538[];
 extern GAPDATA full_data_62a8a8[];
@@ -8311,7 +8311,7 @@ void ai_Unk586840(char *rec)
         }
         c_mieten = sv_RegisterNamePlate((char *)(unsigned)&full_data_62a740, U_I((unsigned)&full_data_144a5d4), 0x16);
         if (U_I((unsigned)&ai_ClickedObject) == 0) {
-            if (U_I((unsigned)&ai_Unk6f2448) != 0) {
+            if (U_I((unsigned)&gm_AllowAll) != 0) {
                 switch (U_I((unsigned)&kb_Last)) {
                 case 0x1e: ai_Unk586e40(rec); break;
                 case 0x2f: ai_Unk587370(rec); break;
@@ -8846,7 +8846,7 @@ void ai_Unk587810(char *rec)
     n = gm_ClockSeason((char *)(unsigned)&ai_Time);
     if (sv_CheckCharacterFlag(rec) != 0)
         return;
-    if (U_I((unsigned)&ai_Unk6f2448) != 0 || n == 2) {
+    if (U_I((unsigned)&gm_AllowAll) != 0 || n == 2) {
         if (he_FindEvent(2, 0, 0x8f, 3, rec + 1) != 0) {
             txt_Format(buf, (char *)0x413c);
             sv_MessageBox(buf, 4);
@@ -8972,7 +8972,7 @@ int ai_Unk587b70(char *ch, char *b, char *x)
     }
     if (x != 0 && *(unsigned short *)x == 0x21b)
         f |= 0x5000;
-    if (U_I((unsigned)&ai_Unk6f2448) != 0)
+    if (U_I((unsigned)&gm_AllowAll) != 0)
         return -1;
     return f;
 }
@@ -9018,7 +9018,7 @@ void ai_Unk587c90(char *unused)
     if (U_I((unsigned)&ai_ClockMs) < U_I((unsigned)&full_data_62a538) + 0x1194)
         return;
     U_I((unsigned)&full_data_62a538) = U_I((unsigned)&ai_ClockMs);
-    if (U_I((unsigned)&ai_Unk6f2448) == 0 && util_RandomF() < 0.9f)
+    if (U_I((unsigned)&gm_AllowAll) == 0 && util_RandomF() < 0.9f)
         return;
     cnt = 0;
     for (i = 0; i < 0x20; i++) {
@@ -9083,7 +9083,7 @@ int ai_Unk588c60(); void d2_RaiseViewWindows(int view);
    record 0x588bb0, the character 0x588c60 -> win = the new drag window 0x62a8cc = the result; 0x62a8d0 = src,
    0x62a8d4 = 0xfb1024 + win * 0x2ac, 0x5f3240 = 0 when 0x14673a8 != 0. win != -1: 0x6ed9d4 = 1, 0x6f2670 = 1,
    0x4741a0 (win); else the drag reset 0x62a8d0 = -1, 0x6f266c = 0 and 0x6ed9d4 / 0x6f2670 cleared */
-void ai_Unk587e00(void)
+void ai_HandleItemDrag(void)
 {
     char *src;
     char *win;
@@ -9782,7 +9782,7 @@ void ai_Unk589bc0(void)
    0x589670 (); 0x5894d0 (); each slot 0x6f5ec0 + i * 0xc up to 0x6f5f44 whose byte 0 is the key, with
    U_B (0x14681ea) set -> 0x589570 (i) */
 
-void ai_Unk589c90(void)
+void ai_SlotKeys(void)
 {
     char *p;
     int i;
@@ -9810,7 +9810,7 @@ void ai_Quicksave(void); void ai_ApplyOptions(); void ai_Unk4c3f20(void); void a
    byte 0x6f23f8: bit 2 (the network game) - with bit 0x10 the keys 0x4e / 0x4a only raise / lower 0x4c3f20 /
    0x4c3f50, without it they show the text U_I (0x143a3d8) via 0x52e330; without bit 2 they raise / lower and step
    the speed between 0 and 4 * 40 by 40, then 0x5d5e90 applies it (the keys are read once more after each call) */
-void ai_Unk589cf0(void)
+void ai_SpeedKeys(void)
 {
     unsigned char key;
     unsigned char fl;

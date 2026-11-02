@@ -144,13 +144,13 @@ extern char sv_SkyHeavy[];
 extern int d2_HalfScreenH;
 extern int d2_HalfScreenW;
 
-extern int ai_Unk6f0cd4;
-extern unsigned int ai_Unk6f0da4;
-extern int ai_Unk6f0dbc;
+extern int cm_NoticeCount;
+extern unsigned int cm_FightStart;
+extern int cm_SceneRain;
 extern char * ai_PickedObject;
 extern int ai_TimeCopy[4];
-extern int ai_Unka687e4;
-extern int ai_Unkf31144;
+extern int cm_NextNetStep;
+extern int cm_DayEndRequest;
 extern char cm_RequestedSaveName[72];
 extern int cm_RequestedSaveSlot;
 extern int d2_CutsceneActive;
@@ -854,7 +854,7 @@ void sv_BuildScreenLayout(int s)
     int *q;
 
     d2_SetClipRect(0, 0, (int)d2_ScreenW, (int)d2_ScreenH);
-    ai_Unk623850 = d2_AddHitRect(d2_ScreenW - 0x50, 0x11, 0x30, 0x30, 0);
+    sv_AdvanceHit = d2_AddHitRect(d2_ScreenW - 0x50, 0x11, 0x30, 0x30, 0);
     ai_Unk623840 = d2_CreateWindow(4, 10, 0x288, 0x30, 0);
     d2_PlaceWindowScaled(ai_Unk623840, 1);
     if (ai_Unk6f22c0 != 0) {
@@ -942,18 +942,18 @@ void sv_SetPanelEnabled(int n)
     he_Unk53dad0(n);
     if (sv_PanelForm != -1)
         d2_SetViewEnabled(sv_PanelForm, n);
-    if (ai_Unk623820 != -1)
-        d2_EnableObject(ai_Unk623820, n);
-    if (ai_Unk623824 != -1)
-        d2_EnableObject(ai_Unk623824, n);
-    if (ai_Unk623828 != -1)
-        d2_EnableObject(ai_Unk623828, n);
-    if (ai_Unk62382c != -1)
-        d2_EnableObject(ai_Unk62382c, n);
-    if (ai_Unk623830 != -1)
-        d2_EnableObject(ai_Unk623830, n);
-    if (ai_Unk623834 != -1)
-        d2_EnableObject(ai_Unk623834, n);
+    if (sv_ButtonFamilyTree != -1)
+        d2_EnableObject(sv_ButtonFamilyTree, n);
+    if (sv_ButtonCompare != -1)
+        d2_EnableObject(sv_ButtonCompare, n);
+    if (sv_ButtonCityStats != -1)
+        d2_EnableObject(sv_ButtonCityStats, n);
+    if (sv_ButtonInventory != -1)
+        d2_EnableObject(sv_ButtonInventory, n);
+    if (sv_ButtonPlayerStats != -1)
+        d2_EnableObject(sv_ButtonPlayerStats, n);
+    if (sv_ButtonMessages != -1)
+        d2_EnableObject(sv_ButtonMessages, n);
     if (ai_Unk623844 != -1)
         d2_EnableObject(ai_Unk623844, n);
     if (ai_Unk623838 != -1)
@@ -962,8 +962,8 @@ void sv_SetPanelEnabled(int n)
         d2_EnableObject(ai_Unk62383c, n);
     if (ai_Unk6238a4 != -1 && n == 0)
         d2_EnableObject(ai_Unk6238a4, 0);
-    if (ai_Unk623848 != -1)
-        d2_EnableObject(ai_Unk623848, n);
+    if (sv_ButtonPrivileges != -1)
+        d2_EnableObject(sv_ButtonPrivileges, n);
     if (ai_Unk62384c != -1)
         d2_EnableObject(ai_Unk62384c, n);
     if (ai_Unk623840 != -1)
@@ -981,33 +981,33 @@ void sv_Unk522280(void)
 {
     if (sv_PanelForm != -1)
         d2_SetViewEnabled(sv_PanelForm, 0);
-    if (ai_Unk623820 != -1) {
-        d2_RemoveObj(ai_Unk623820);
-        ai_Unk623820 = -1;
+    if (sv_ButtonFamilyTree != -1) {
+        d2_RemoveObj(sv_ButtonFamilyTree);
+        sv_ButtonFamilyTree = -1;
     }
-    if (ai_Unk623824 != -1) {
-        d2_RemoveObj(ai_Unk623824);
-        ai_Unk623824 = -1;
+    if (sv_ButtonCompare != -1) {
+        d2_RemoveObj(sv_ButtonCompare);
+        sv_ButtonCompare = -1;
     }
-    if (ai_Unk623828 != -1) {
-        d2_RemoveObj(ai_Unk623828);
-        ai_Unk623828 = -1;
+    if (sv_ButtonCityStats != -1) {
+        d2_RemoveObj(sv_ButtonCityStats);
+        sv_ButtonCityStats = -1;
     }
     if (ai_Unk623844 != -1) {
         d2_RemoveObj(ai_Unk623844);
         ai_Unk623844 = -1;
     }
-    if (ai_Unk62382c != -1) {
-        d2_RemoveObj(ai_Unk62382c);
-        ai_Unk62382c = -1;
+    if (sv_ButtonInventory != -1) {
+        d2_RemoveObj(sv_ButtonInventory);
+        sv_ButtonInventory = -1;
     }
-    if (ai_Unk623830 != -1) {
-        d2_RemoveObj(ai_Unk623830);
-        ai_Unk623830 = -1;
+    if (sv_ButtonPlayerStats != -1) {
+        d2_RemoveObj(sv_ButtonPlayerStats);
+        sv_ButtonPlayerStats = -1;
     }
-    if (ai_Unk623834 != -1) {
-        d2_RemoveObj(ai_Unk623834);
-        ai_Unk623834 = -1;
+    if (sv_ButtonMessages != -1) {
+        d2_RemoveObj(sv_ButtonMessages);
+        sv_ButtonMessages = -1;
     }
     if (ai_Unk623838 != -1) {
         d2_RemoveObj(ai_Unk623838);
@@ -1017,9 +1017,9 @@ void sv_Unk522280(void)
         d2_RemoveObj(ai_Unk62383c);
         ai_Unk62383c = -1;
     }
-    if (ai_Unk623848 != -1) {
-        d2_RemoveObj(ai_Unk623848);
-        ai_Unk623848 = -1;
+    if (sv_ButtonPrivileges != -1) {
+        d2_RemoveObj(sv_ButtonPrivileges);
+        sv_ButtonPrivileges = -1;
     }
     if (ai_Unk62384c != -1) {
         d2_RemoveObj(ai_Unk62384c);
@@ -1059,8 +1059,8 @@ void sv_DestroyScreen(void)
         d2_RemoveObj(ai_Unk6238a4);
         ai_Unk6238a4 = -1;
     }
-    if (ai_Unk623850 != -1)
-        d2_RemoveHitRect(ai_Unk623850);
+    if (sv_AdvanceHit != -1)
+        d2_RemoveHitRect(sv_AdvanceHit);
     sv_Unk522280();
     sv_PanelPic = -1;
     if (ai_Unk623840 != -1) {
@@ -4039,35 +4039,35 @@ void sv_UpdateCityPanel(unsigned char a, int b)
     if (SV_I((unsigned)&ai_Unk6f22c0) != 0)
         d2_ShpBlit(sv_ViewRectLeft, sv_ViewRectTop, (struct D2SURF *)d2_ScreenSurf, (struct D2SHP *)ai_Unk6f22c0);
     if (a & 1) {
-        if (ai_Unk623820 != -1) { d2_RemoveObj(ai_Unk623820); ai_Unk623820 = -1; }
-        if (ai_Unk623824 != -1) { d2_RemoveObj(ai_Unk623824); ai_Unk623824 = -1; }
-        if (ai_Unk623828 != -1) { d2_RemoveObj(ai_Unk623828); ai_Unk623828 = -1; }
-        if (ai_Unk623848 != -1) { d2_RemoveObj(ai_Unk623848); ai_Unk623848 = -1; }
+        if (sv_ButtonFamilyTree != -1) { d2_RemoveObj(sv_ButtonFamilyTree); sv_ButtonFamilyTree = -1; }
+        if (sv_ButtonCompare != -1) { d2_RemoveObj(sv_ButtonCompare); sv_ButtonCompare = -1; }
+        if (sv_ButtonCityStats != -1) { d2_RemoveObj(sv_ButtonCityStats); sv_ButtonCityStats = -1; }
+        if (sv_ButtonPrivileges != -1) { d2_RemoveObj(sv_ButtonPrivileges); sv_ButtonPrivileges = -1; }
         if (ai_Unk62384c != -1) { d2_RemoveObj(ai_Unk62384c); ai_Unk62384c = -1; }
-        if (ai_Unk62382c != -1) { d2_RemoveObj(ai_Unk62382c); ai_Unk62382c = -1; }
-        if (ai_Unk623830 != -1) { d2_RemoveObj(ai_Unk623830); ai_Unk623830 = -1; }
-        if (ai_Unk623834 != -1) { d2_RemoveObj(ai_Unk623834); ai_Unk623834 = -1; }
+        if (sv_ButtonInventory != -1) { d2_RemoveObj(sv_ButtonInventory); sv_ButtonInventory = -1; }
+        if (sv_ButtonPlayerStats != -1) { d2_RemoveObj(sv_ButtonPlayerStats); sv_ButtonPlayerStats = -1; }
+        if (sv_ButtonMessages != -1) { d2_RemoveObj(sv_ButtonMessages); sv_ButtonMessages = -1; }
         if (ai_Unk623838 != -1) { d2_RemoveObj(ai_Unk623838); ai_Unk623838 = -1; }
         if (ai_Unk62383c != -1) { d2_RemoveObj(ai_Unk62383c); ai_Unk62383c = -1; }
-        ai_Unk623820 = d2_WinOpenPic(0x10, 8, SV_I(((unsigned)&ai_Unk770b89 + 0x4b) + ai_PlayerId * 0x21c), ai_Unk623840);
-        SV_WI(ai_Unk623820, 0x1c0) = 0x43;
-        SV_WI(ai_Unk623820, 0x4c) = 1;
-        ai_Unk623824 = d2_WinOpenPic(0x23a, 0xd, 0x522, ai_Unk623840);
-        SV_WI(ai_Unk623824, 0x1c0) = 0x43;
-        SV_WI(ai_Unk623824, 0x4c) = 1;
-        ai_Unk623848 = d2_CreateWinText(0x39, 0xd, ch_EmptyName, ai_Unk623840);
-        SV_WI(ai_Unk623848, 0x1c0) = 0x43;
-        SV_WI(ai_Unk623848, 0x4c) = 1;
-        SV_WS(ai_Unk623848, 0x74) = 0x55;
-        ai_Unk623830 = d2_CreatePicObjS(d2_ScreenW - 0x8d, d2_ScreenH - 0x73, 0x583);
-        SV_WI(ai_Unk623830, 0x1c0) = 0x43;
-        SV_WI(ai_Unk623830, 0x4c) = 1;
-        ai_Unk623834 = d2_CreatePicObjS(d2_ScreenW - 0x57, d2_ScreenH - 0x4f, 0x7d9);
-        SV_WI(ai_Unk623834, 0x1c0) = 3;
-        SV_WI(ai_Unk623834, 0x4c) = 1;
-        ai_Unk62382c = d2_CreatePicObjS(d2_ScreenW - 0x2a, d2_ScreenH - 0x66, 0x584);
-        SV_WI(ai_Unk62382c, 0x1c0) = 0x43;
-        SV_WI(ai_Unk62382c, 0x4c) = 1;
+        sv_ButtonFamilyTree = d2_WinOpenPic(0x10, 8, SV_I(((unsigned)&ai_Unk770b89 + 0x4b) + ai_PlayerId * 0x21c), ai_Unk623840);
+        SV_WI(sv_ButtonFamilyTree, 0x1c0) = 0x43;
+        SV_WI(sv_ButtonFamilyTree, 0x4c) = 1;
+        sv_ButtonCompare = d2_WinOpenPic(0x23a, 0xd, 0x522, ai_Unk623840);
+        SV_WI(sv_ButtonCompare, 0x1c0) = 0x43;
+        SV_WI(sv_ButtonCompare, 0x4c) = 1;
+        sv_ButtonPrivileges = d2_CreateWinText(0x39, 0xd, ch_EmptyName, ai_Unk623840);
+        SV_WI(sv_ButtonPrivileges, 0x1c0) = 0x43;
+        SV_WI(sv_ButtonPrivileges, 0x4c) = 1;
+        SV_WS(sv_ButtonPrivileges, 0x74) = 0x55;
+        sv_ButtonPlayerStats = d2_CreatePicObjS(d2_ScreenW - 0x8d, d2_ScreenH - 0x73, 0x583);
+        SV_WI(sv_ButtonPlayerStats, 0x1c0) = 0x43;
+        SV_WI(sv_ButtonPlayerStats, 0x4c) = 1;
+        sv_ButtonMessages = d2_CreatePicObjS(d2_ScreenW - 0x57, d2_ScreenH - 0x4f, 0x7d9);
+        SV_WI(sv_ButtonMessages, 0x1c0) = 3;
+        SV_WI(sv_ButtonMessages, 0x4c) = 1;
+        sv_ButtonInventory = d2_CreatePicObjS(d2_ScreenW - 0x2a, d2_ScreenH - 0x66, 0x584);
+        SV_WI(sv_ButtonInventory, 0x1c0) = 0x43;
+        SV_WI(sv_ButtonInventory, 0x4c) = 1;
         ai_Unk623838 = d2_CreatePicObjS(d2_ScreenW - 0x4a, 0xd6, 0x585);
         SV_WI(ai_Unk623838, 0x1c0) = 0x43;
         SV_WI(ai_Unk623838, 0x4c) = 1;
@@ -4083,18 +4083,18 @@ void sv_UpdateCityPanel(unsigned char a, int b)
     } else {
         /* the texts of the six plates come from the text lists 0x1441ec8 .. 0x1441ee0 (or are cleared) */
         if (SV_B((unsigned)&ai_OptionPanelHelp) != 0) {
-            if (ai_Unk623820 != -1) strcpy(SV_W(ai_Unk623820) + 0xbc, SV_C(((unsigned)&ai_MessageFilterTexts + 0x9d4)));
-            if (ai_Unk623824 != -1) strcpy(SV_W(ai_Unk623824) + 0xbc, SV_C(((unsigned)&ai_MessageFilterTexts + 0x9e0)));
-            if (ai_Unk623848 != -1) strcpy(SV_W(ai_Unk623848) + 0xbc, SV_C(((unsigned)&ai_MessageFilterTexts + 0x9d0)));
-            if (ai_Unk623830 != -1) strcpy(SV_W(ai_Unk623830) + 0xbc, SV_C(((unsigned)&ai_MessageFilterTexts + 0x9cc)));
-            if (ai_Unk62382c != -1) strcpy(SV_W(ai_Unk62382c) + 0xbc, SV_C(((unsigned)&ai_MessageFilterTexts + 0x9c8)));
+            if (sv_ButtonFamilyTree != -1) strcpy(SV_W(sv_ButtonFamilyTree) + 0xbc, SV_C(((unsigned)&ai_MessageFilterTexts + 0x9d4)));
+            if (sv_ButtonCompare != -1) strcpy(SV_W(sv_ButtonCompare) + 0xbc, SV_C(((unsigned)&ai_MessageFilterTexts + 0x9e0)));
+            if (sv_ButtonPrivileges != -1) strcpy(SV_W(sv_ButtonPrivileges) + 0xbc, SV_C(((unsigned)&ai_MessageFilterTexts + 0x9d0)));
+            if (sv_ButtonPlayerStats != -1) strcpy(SV_W(sv_ButtonPlayerStats) + 0xbc, SV_C(((unsigned)&ai_MessageFilterTexts + 0x9cc)));
+            if (sv_ButtonInventory != -1) strcpy(SV_W(sv_ButtonInventory) + 0xbc, SV_C(((unsigned)&ai_MessageFilterTexts + 0x9c8)));
             if (ai_Unk62383c != -1) strcpy(SV_W(ai_Unk62383c) + 0xbc, SV_C(((unsigned)&ai_MessageFilterTexts + 0x9d8)));
         } else {
-            if (ai_Unk623820 != -1) SV_WB(ai_Unk623820, 0xbc) = ch_EmptyName[0];
-            if (ai_Unk623824 != -1) SV_WB(ai_Unk623824, 0xbc) = ch_EmptyName[0];
-            if (ai_Unk623848 != -1) SV_WB(ai_Unk623848, 0xbc) = ch_EmptyName[0];
-            if (ai_Unk623830 != -1) SV_WB(ai_Unk623830, 0xbc) = ch_EmptyName[0];
-            if (ai_Unk62382c != -1) SV_WB(ai_Unk62382c, 0xbc) = ch_EmptyName[0];
+            if (sv_ButtonFamilyTree != -1) SV_WB(sv_ButtonFamilyTree, 0xbc) = ch_EmptyName[0];
+            if (sv_ButtonCompare != -1) SV_WB(sv_ButtonCompare, 0xbc) = ch_EmptyName[0];
+            if (sv_ButtonPrivileges != -1) SV_WB(sv_ButtonPrivileges, 0xbc) = ch_EmptyName[0];
+            if (sv_ButtonPlayerStats != -1) SV_WB(sv_ButtonPlayerStats, 0xbc) = ch_EmptyName[0];
+            if (sv_ButtonInventory != -1) SV_WB(sv_ButtonInventory, 0xbc) = ch_EmptyName[0];
             if (ai_Unk62383c != -1) SV_WB(ai_Unk62383c, 0xbc) = ch_EmptyName[0];
         }
         sv_UpdateGroundplan(b);
@@ -4115,7 +4115,7 @@ void sv_UpdateCityPanel(unsigned char a, int b)
         shape = d2_GetPic(0x582);
         d2_DrawShape(d2_ScreenW - 0x50, 0x11, d2_ScreenSurf, shape, h);
         d2_AddDirty(d2_ScreenW - 0x50, 0x11, SV_S((unsigned)&d2_ShpW), SV_S((unsigned)&d2_ShpH));
-        if (SV_I((unsigned)&d2_HitUnderPointer) == ai_Unk623850) {
+        if (SV_I((unsigned)&d2_HitUnderPointer) == sv_AdvanceHit) {
             sprintf(buf, "%02i:%02i", SV_US((unsigned)&ai_TimeHour), SV_I(((unsigned)&ai_Time + 0x6)));
             d2_SetFont(0x54);
             d2_DrawTextBox(d2_ScreenW - 0x50, 2, 0x2e, 0x14, d2_ScreenSurf, buf, 0x28);
@@ -4138,39 +4138,39 @@ void sv_UpdateCityPanel(unsigned char a, int b)
                 d2_EnableObject(ai_Unk62383c, 0);
         }
         d2_SetFont(0x55);
-        if (ai_Unk623848 != -1) {
+        if (sv_ButtonPrivileges != -1) {
             io_CharacterName(ai_PlayerId, 1, 2, name);
             strcpy(buf, name);
-            d2_SetObjText(ai_Unk623848, buf);
+            d2_SetObjText(sv_ButtonPrivileges, buf);
         }
         sprintf(buf, "%i", SV_I(((unsigned)&ai_Selected + 0xc) + ai_PlayerId * 0x21c));
         d2_DrawText(d2_Wins[ai_Unk623840].x + 0x23a, 0x17, d2_ScreenSurf, buf, 0);
-        if (ai_Unk623824 != -1)
-            d2_MoveObj(d2_Wins[ai_Unk623840].x + SV_S((unsigned)&d2_TextDrawnW) + 0x23d, 0x18, ai_Unk623824);
+        if (sv_ButtonCompare != -1)
+            d2_MoveObj(d2_Wins[ai_Unk623840].x + SV_S((unsigned)&d2_TextDrawnW) + 0x23d, 0x18, sv_ButtonCompare);
         if (SV_I((unsigned)&ai_PlayerBuilding) == 0 && SV_I((unsigned)&ai_FallbackBuilding) == 0) {
-            if (ai_Unk623828 == -1) {
+            if (sv_ButtonCityStats == -1) {
                 strcpy(name, (char *)(unsigned)&ai_PlayerSlots + SV_B((unsigned)&ai_OwnPlayer) * 0x2f4);
                 _strupr(name);
                 sprintf(arms, "_STADTWAPPEN_%s", name);
                 pic = d2_FindPic(arms);
                 if (pic != -1)
-                    ai_Unk623828 = d2_CreatePicObjS(d2_ScreenW - 0x6e, 0x5b, pic);
+                    sv_ButtonCityStats = d2_CreatePicObjS(d2_ScreenW - 0x6e, 0x5b, pic);
                 else
-                    ai_Unk623828 = d2_CreatePicObjS(d2_ScreenW - 0x6e, 0x5b, 0x5b1);
-                SV_WI(ai_Unk623828, 0x1c0) = 0x43;
-                SV_WI(ai_Unk623828, 0x4c) = 1;
+                    sv_ButtonCityStats = d2_CreatePicObjS(d2_ScreenW - 0x6e, 0x5b, 0x5b1);
+                SV_WI(sv_ButtonCityStats, 0x1c0) = 0x43;
+                SV_WI(sv_ButtonCityStats, 0x4c) = 1;
             }
             if (SV_B((unsigned)&ai_OptionPanelHelp) != 0) {
-                if (ai_Unk623828 != -1) strcpy(SV_W(ai_Unk623828) + 0xbc, SV_C(((unsigned)&ai_MessageFilterTexts + 0x9dc)));
-            } else if (ai_Unk623828 != -1)
-                SV_WB(ai_Unk623828, 0xbc) = ch_EmptyName[0];
+                if (sv_ButtonCityStats != -1) strcpy(SV_W(sv_ButtonCityStats) + 0xbc, SV_C(((unsigned)&ai_MessageFilterTexts + 0x9dc)));
+            } else if (sv_ButtonCityStats != -1)
+                SV_WB(sv_ButtonCityStats, 0xbc) = ch_EmptyName[0];
             d2_SetFont(0x56);
             strcpy(name, (char *)((unsigned)&ai_PlayerSlots + 0x20) + SV_B((unsigned)&ai_OwnPlayer) * 0x2f4);
             d2_DrawTextBox(d2_ScreenW - 0x70, 0x5d, 0x68, 0x14, d2_ScreenSurf, name, 8);
             d2_AddDirty(d2_ScreenW - 0x70, 0x5d, SV_I((unsigned)&d2_TextDrawnW), SV_I((unsigned)&d2_TextDrawnH));
-        } else if (ai_Unk623828 != -1) {
-            d2_RemoveObj(ai_Unk623828);
-            ai_Unk623828 = -1;
+        } else if (sv_ButtonCityStats != -1) {
+            d2_RemoveObj(sv_ButtonCityStats);
+            sv_ButtonCityStats = -1;
         }
         d2_SetFont(0x54);
         if (SV_I((unsigned)&sv_ResearchClass) == 0) {
@@ -4193,12 +4193,12 @@ void sv_UpdateCityPanel(unsigned char a, int b)
                 d2_SetObjText(ai_Unk62384c, SV_C(((unsigned)&ai_MessageFilterTexts + 0x8c0)));
         }
     }
-    if (ai_Unk623820 != -1 && SV_WI(ai_Unk623820, 8) != SV_I(((unsigned)&ai_Unk770b89 + 0x4b) + ai_PlayerId * 0x21c)) {
-        d2_RemoveObj(ai_Unk623820);
-        ai_Unk623820 = -1;
-        ai_Unk623820 = d2_WinOpenPic(0x10, 8, SV_I(((unsigned)&ai_Unk770b89 + 0x4b) + ai_PlayerId * 0x21c), ai_Unk623840);
-        SV_WI(ai_Unk623820, 0x1c0) = 3;
-        SV_WI(ai_Unk623820, 0x4c) = 1;
+    if (sv_ButtonFamilyTree != -1 && SV_WI(sv_ButtonFamilyTree, 8) != SV_I(((unsigned)&ai_Unk770b89 + 0x4b) + ai_PlayerId * 0x21c)) {
+        d2_RemoveObj(sv_ButtonFamilyTree);
+        sv_ButtonFamilyTree = -1;
+        sv_ButtonFamilyTree = d2_WinOpenPic(0x10, 8, SV_I(((unsigned)&ai_Unk770b89 + 0x4b) + ai_PlayerId * 0x21c), ai_Unk623840);
+        SV_WI(sv_ButtonFamilyTree, 0x1c0) = 3;
+        SV_WI(sv_ButtonFamilyTree, 0x4c) = 1;
     }
     if (SV_I((unsigned)&full_data_62571c) >= 0) {
         if (SV_I((unsigned)&full_data_625718) > 3) {
@@ -6055,7 +6055,7 @@ int d2_WinCreateSlider();                     /* 0x46bf10 */
 void d2_SetObjWidth(int obj, short w);                     /* 0x46c260 */
 
 /* 0x52e050, draws the hint text 0xf8aae0 at the mouse position when the hint flag (0x6f3618 +2) is set */
-void sv_Unk52e050(void)
+void sv_DrawHint(void)
 {
     if (SV_B((unsigned)&d2_CaptionCopy) != 0 && SV_B(((unsigned)&ai_GameSwitches + 0x2)) != 0) {
         d2_SetFont(0x54);
@@ -6594,7 +6594,7 @@ char *util_BaseName();                   /* 0x401040 */
 #define SV_ANIMCTL(o) ((D3ANIMCTL *)(o)->material->animCtl)  /* the animation control of an object's material (D3MATERIAL.animCtl at 0xf4) */
 
 /* 0x52f2c0, draws the rubber band rectangle (0x41e8f0, colour -1) between the corners 0x760444 / 0x760448 and 0x76044c / 0x760450 while 0x760440 is set */
-void sv_Unk52f2c0(void)
+void sv_DrawRubberBand(void)
 {
     if (SV_I((unsigned)&sv_BandActive) != 0) {
         dd_Line(sv_Band.x0, sv_Band.y0, sv_Band.x1, sv_Band.y0, -1);
@@ -7263,158 +7263,164 @@ void sv_UpdateClock(void);
 
 /* 0x5309a0, "MASTER": one frame of the game screen loop, called by every screen with its own callback (the top of the callback stack 0x75f780, 8 bytes per entry, depth 0x6f229c; 0 = nothing to register) and the
    mask of the parts to run (param_2: 1 input, 4 resize, 0x10 objects, 0x20 speech, 0x40 world, 0x100 left click, 0x1000 names, 0x2000 main buttons, 0x4000 weather, 0x10000 paused, 0x100000 modal, ..); returns 1
-   while the caller's screen is the top screen, 0 when it must end. ROUGH (the float operands of the last mouse block are lost) */
+   while the caller's screen is the top screen, 0 when it must end. The Esc key (mask 0x2000) opens the options menu with the music / sfx volumes lowered to a third
+   and restores them after it.
+   @deep Read in full against the original 0x5309a0..0x5315bc; all statements reconciled (frame stack
+   push/pop, the unsigned clock compares, the mask & 0x80 tests, the band / name-plate / scroll-arrow
+   branch orders, the Esc volume block master*1/127 with the 1/3 terms, the save-name clear, name buffer
+   0x104, frame 0x214 now equal, 830 vs 830 instructions). One hunk left: ours CSEs sv_FrameDepth across
+   the merge into the pop arm (- 0x530b21 mov ecx,[sv_FrameDepth] on the err/PopRequest edge, then test ecx
+   / [ecx*8+sv_Frames] / dec ecx), the original reloads it inside the arm (+ 0x530b36 mov
+   eax,[sv_FrameDepth], test eax / [eax*8+sv_Frames] / dec eax). Tried: sv_Frames[sv_FrameDepth--].cb = 0,
+   sv_Frames[++sv_FrameDepth].cb = cb - same. A load placement / register choice: allocation. */
 int sv_RunFrame(int cb, unsigned mask)
 {
-    int r, top, c, i, it;
-    char cv;
+    int r, i;
+    AIBLD *c;
+    G28REC *party;
+    float master;
     unsigned u5;
-    char name[0x100], tmp[0x104];
-    int *p;
+    char name[0x104], tmp[0x104];
 
-    SV_U((unsigned)&sv_FrameMask) = mask;
+    sv_FrameMask = mask;
     sv_PumpMessages();
     di_GetMouse();
     if (cb != 0) {
-        if (SV_I(((unsigned)&ai_Unk75f280 + 0x500) + SV_I((unsigned)&sv_FrameDepth) * 8) != cb)
+        if (sv_Frames[sv_FrameDepth].cb != cb)
             di_ClearButtons();
         if (ai_PlayerId != 0xffff) {
-            i = ai_PlayerId * 0x21c;
-            if ((SV_B(((unsigned)&ai_Chars + 0x2) + i) == 6 || SV_B(((unsigned)&ai_Chars + 0x2) + i) == 7) && SV_B(((unsigned)&ai_CharInts + 0x4) + i) == 0 && SV_I((unsigned)&sv_FrameBase) < SV_I((unsigned)&sv_FrameDepth)
-                && (it = cm_PartyById(SV_I((unsigned)&ai_Unk770d8c + ai_PlayerId * 0x21c))) != 0 && *(char *)(it + 8) == 8 && (mask & 0x10000) == 0) {
-                SV_I((unsigned)&sv_PopRequest) = SV_I((unsigned)&sv_FrameDepth) - SV_I((unsigned)&sv_FrameBase);
-                sv_SetStatusText(SV_C((unsigned)&full_data_143a3e4));
+            if ((ai_CharsT[ai_PlayerId].kind == 6 || ai_CharsT[ai_PlayerId].kind == 7) && ai_CharsT[ai_PlayerId].health == 0 && sv_FrameDepth > sv_FrameBase
+                && (party = (G28REC *)cm_PartyById(ai_CharsT[ai_PlayerId].partyId)) != 0 && party->kind == 8 && (mask & 0x10000) == 0) {
+                sv_PopRequest = sv_FrameDepth - sv_FrameBase;
+                sv_SetStatusText(txt_Ptrs[0x89]);
             }
         }
     }
-    if (SV_I((unsigned)&main_Inactive) != 0)
+    if (main_Inactive != 0)
         return 1;
-    cv = (char)mask;
-    if ((mask & 4) != 0 && (d2_MouseUpdate(), SV_I((unsigned)&main_Inactive) != 0))
-        SV_I((unsigned)&ai_FrameWait) = 1;
-    if (SV_I((unsigned)&sv_PopRequest) == 0 && (mask & 0x100) != 0 && (mask & 0x100000) == 0)
+    if ((mask & 4) != 0 && (d2_MouseUpdate(), main_Inactive != 0))
+        ai_FrameWait = 1;
+    if (sv_PopRequest == 0 && (mask & 0x100) != 0 && (mask & 0x100000) == 0)
         sv_HandleRightClick(mask);
-    if (cb == 0) {
-        r = 1;
-    } else {
-        if (SV_I(((unsigned)&ai_Unk75f280 + 0x500) + SV_I((unsigned)&sv_FrameDepth) * 8) == cb) {
+    if (cb != 0) {
+        if (sv_Frames[sv_FrameDepth].cb == cb) {
             r = 1;
         } else {
-            if (SV_I((unsigned)&sv_PopRequest) == 0) {
-                p = (int *)((unsigned)&ai_Unk75f280 + 0x500);
+            if (sv_PopRequest == 0) {
                 r = 1;
-                do {
-                    if (*p == cb) {
+                for (i = 0; i < 0x80; i++) {
+                    if (sv_Frames[i].cb == cb) {
                         err_Message("MASTER(): Function already registrated!");
                         goto l21;
                     }
-                    p += 2;
-                } while ((int)p < (unsigned)((unsigned)ai_Unk75f280 + 0x900));
-                SV_I((unsigned)&sv_FrameDepth)++;
-                SV_I(((unsigned)&ai_Unk75f280 + 0x500) + SV_I((unsigned)&sv_FrameDepth) * 8) = cb;
+                }
+                sv_FrameDepth++;
+                sv_Frames[sv_FrameDepth].cb = cb;
                 goto l64;
             }
 l21:
             r = 0;
         }
-        if (SV_I((unsigned)&sv_PopRequest) != 0 && r != 0) {
-            SV_I((unsigned)&sv_PopRequest)--;
-            if (SV_I((unsigned)&sv_FrameDepth) != 0) {
-                SV_I(((unsigned)&ai_Unk75f280 + 0x500) + SV_I((unsigned)&sv_FrameDepth) * 8) = 0;
-                SV_I((unsigned)&sv_FrameDepth)--;
+        if (sv_PopRequest != 0 && r != 0) {
+            sv_PopRequest--;
+            if (sv_FrameDepth != 0) {
+                sv_Frames[sv_FrameDepth].cb = 0;
+                sv_FrameDepth--;
             }
             r = 0;
         }
+    } else {
+        r = 1;
     }
 l64:
-    if ((mask & 1) != 0 && SV_I((unsigned)&ai_GameOver) == 0) {
+    if ((mask & 1) != 0 && ai_GameOver == 0) {
         if ((mask & 0x100) != 0)
-            he_Unk53daf0();
-        he_Unk53edf0();
-        if (SV_I((unsigned)&ai_Unk1460ae0) == -1 && SV_I((unsigned)&ai_Unka687e4) < SV_I((unsigned)&ai_ClockMs) && SV_B((unsigned)&ai_GameState) != 0)
-            ai_Unk4c4d40((unsigned)&ai_TimeCopy);
-        if ((mask & 0x10000) == 0 && SV_B((unsigned)&ai_GameState) != 0 && SV_I((unsigned)&sv_PanelFlag) == 0 && ai_Unk4e4cc0() != 0 && sv_Advancing != 0)
-            SV_I((unsigned)&sv_PopRequest) = 1;
+            he_PickActiveEvent();
+        he_RunQuickList();
+        if (net_Conn.s == (unsigned)-1 && (unsigned)ai_ClockMs > (unsigned)cm_NextNetStep && ai_GameState != 0)
+            cm_SendTime((unsigned)&ai_TimeCopy);
+        if ((mask & 0x10000) == 0 && ai_GameState != 0 && sv_PanelFlag == 0 && cm_UpdateParties() != 0 && sv_Advancing != 0)
+            sv_PopRequest = 1;
     }
-    if ((mask & 0x20000) != 0 && SV_I((unsigned)&ai_Unka687e4) < SV_I((unsigned)&ai_ClockMs)) {
+    if ((mask & 0x20000) != 0 && (unsigned)ai_ClockMs > (unsigned)cm_NextNetStep) {
         cm_FlushSendQueue();
         cm_ReceiveMessages();
         cm_ExecCommands();
-        SV_I((unsigned)&ai_Unka687e4) = SV_I((unsigned)&ai_ClockMs) + 7;
+        cm_NextNetStep = ai_ClockMs + 7;
     }
-    if (r == 0 || SV_I((unsigned)&sv_PanelFlag) != 0)
-        SV_I((unsigned)&ai_FrameWait)++;
+    if (r == 0 || sv_PanelFlag != 0)
+        ai_FrameWait++;
     if ((mask & 0x200) != 0)
         evt_StepAll();
-    if (SV_I((unsigned)&ai_FrameWait) == 0 && (cv >= 0 || (d2_FlushDirty(), SV_I((unsigned)&ai_FrameWait) == 0)) && (mask & 0x40) != 0 && SV_I((unsigned)&sv_WorldOn) != 0) {
+    if (ai_FrameWait == 0 && ((mask & 0x80) == 0 || (d2_FlushDirty(), ai_FrameWait == 0)) && (mask & 0x40) != 0 && sv_WorldOn != 0) {
         if ((mask & 0x10000) == 0 && (mask & 0x40000) != 0)
             sv_UpdateSkyPhase((unsigned)&ai_Time);
-        if (SV_I((unsigned)&d3_CurrentScene) == 0)
-            d3q_Mark(SV_I((unsigned)&d3_QuadTree), SV_I((unsigned)&sv_CameraObj), SV_I((unsigned)&d3_FrameCount));
+        if (d3_CurrentScene == 0)
+            d3q_Mark(d3_QuadTree, sv_CameraObj, d3_FrameCount);
         d3t_UpdateCamera();
         d3if_ClearView();
     }
-    c = SV_I((unsigned)&ai_PlayerBuilding);
+    c = (AIBLD *)ai_PlayerBuilding;
     if (c == 0)
-        c = SV_I((unsigned)&ai_FallbackBuilding);
+        c = (AIBLD *)ai_FallbackBuilding;
     u5 = mask & 0x8000;
-    if (u5 == 0 && SV_B((unsigned)&ai_GameState) != 0)
+    if (u5 == 0 && ai_GameState != 0)
         sv_CollectGroupCharacters((char *)c);
     if (c == 0 || (mask & 0x10000) != 0) {
-        SV_I((unsigned)&ch_CurrentGroup) = -1;
+        ch_CurrentGroup = -1;
     } else {
-        sv_RunLocationScripts((AIBLD *)c);
-        sv_UpdateMemberList(c);
-        SV_I((unsigned)&ch_CurrentGroup) = *(int *)(c + 1);
+        sv_RunLocationScripts(c);
+        sv_UpdateMemberList((unsigned char *)c);
+        ch_CurrentGroup = c->id;
     }
-    if (SV_B((unsigned)&ai_GameState) != 0) {
+    if (ai_GameState != 0) {
         ai_UpdateWind();
-        unk_Unk4edf80();
+        gv_UpdateEffects();
     }
-    if (SV_I((unsigned)&sv_CharsOn) != 0) {
+    if (sv_CharsOn != 0) {
         ch_UpdatePositions();
         ch_Update();
-        ch_Unk4027b0();
+        ch_SyncObjectOffsets();
     }
-    if ((mask & 0x4000) != 0 && SV_US((unsigned)&ai_TimeHour) != SV_I((unsigned)&sv_WeatherHour))
+    if ((mask & 0x4000) != 0 && ai_TimeHour != sv_WeatherHour)
         sv_UpdateWeather();
-    if (SV_I((unsigned)&main_WeatherSound) != 0)
+    if (main_WeatherSound != 0)
         snd_UpdateRain();
-    if (SV_I((unsigned)&snd_SfxEnabled) != 0) {
-        ai_Unk4c0e60();
+    if (snd_SfxEnabled != 0) {
+        snd_UpdateAnimals();
         snd_UpdateQueue();
     }
-    if (SV_I((unsigned)&snd_MusicEnabled) != 0 && (mask & 0x40000) != 0)
-        ai_Unk4c2000();
-    if (SV_I((unsigned)&ai_FrameWait) == 0
-        && ((SV_I((unsigned)&ai_Unk633738) == 0 || (mask & 0x4000) == 0 || (mask & 0x40) == 0 || (sv_WeatherFrame(), SV_I((unsigned)&ai_FrameWait) == 0))
-            && ((mask & 0x10000) == 0 || SV_I((unsigned)&ai_Unk6f0dbc) == 0 || (d3t_DrawRain(SV_I((unsigned)&ai_Unk6f0dbc)), SV_I((unsigned)&ai_FrameWait) == 0)) && SV_I((unsigned)&sv_BandActive) != 0)) {
-        if (u5 == 0)
-            sv_UpdateBand();
-        else
+    if (snd_MusicEnabled != 0 && (mask & 0x40000) != 0)
+        snd_UpdateMusic();
+    if (ai_FrameWait == 0
+        && ((d3_Terrain == 0 || (mask & 0x4000) == 0 || (mask & 0x40) == 0 || (sv_WeatherFrame(), ai_FrameWait == 0))
+            && ((mask & 0x10000) == 0 || cm_SceneRain == 0 || (d3t_DrawRain(cm_SceneRain), ai_FrameWait == 0)) && sv_BandActive != 0)) {
+        if (u5 != 0)
             sv_UpdateBandLed();
-        sv_Unk52f2c0();
+        else
+            sv_UpdateBand();
+        sv_DrawRubberBand();
     }
-    if (SV_I((unsigned)&snd_SfxEnabled) != 0) {
+    if (snd_SfxEnabled != 0) {
         d3snd_Update();
-        if (SV_I((unsigned)&main_WeatherSound) != 0)
+        if (main_WeatherSound != 0)
             d3sndw_Update();
         sb_Update();
     }
-    if (SV_I((unsigned)&sv_PopRequest) == 0 && (mask & 0x100000) == 0) {
+    if (sv_PopRequest == 0 && (mask & 0x100000) == 0) {
         if (u5 == 0)
             sv_HoverPick();
         if ((mask & 0x10) == 0) {
-            if (SV_I(((unsigned)&dm_L + 0x28)) != 0)
+            if (dm_L.rclick != 0)
                 goto l2;
-            if (d2_PointerObj == -1 || (SV_B(SV_I((unsigned)&d2_Objs) + 0x1c0 + d2_PointerObj * 0x2ec) & 0x40) == 0)
+            if (d2_PointerObj == -1 || (((D2OBJ *)d2_Objs)[d2_PointerObj].style & 0x40) == 0)
                 d2_CopyCaption(ch_EmptyName);
-            SV_I((unsigned)&ai_PickedObject) = 0;
+            ai_PickedObject = 0;
             sv_HoverItem = 0;
             if (u5 == 0)
                 d2_SetPointerSprite(0, 0);
         }
-        if (SV_I(((unsigned)&dm_L + 0x28)) == 0) {
+        if (dm_L.rclick == 0) {
             if ((mask & 0x10) != 0)
                 sv_HandleObjects();
             if ((mask & 0x20) != 0) {
@@ -7425,148 +7431,149 @@ l64:
     }
 l2:
     if ((mask & 0x400) != 0)
-        ai_Unk587e00();
-    if (SV_I((unsigned)&ai_FrameWait) == 0 && cv < 0 && d2_LockSurface(d2_ScreenSurf) != 0) {
-        if (sv_PanelPic != -1 && (mask & 0x100) != 0 && SV_I((unsigned)&sv_CityPanelOn) != 0)
+        ai_HandleItemDrag();
+    if (ai_FrameWait == 0 && (mask & 0x80) != 0 && d2_LockSurface(d2_ScreenSurf) != 0) {
+        if (sv_PanelPic != -1 && (mask & 0x100) != 0 && sv_CityPanelOn != 0)
             sv_UpdateCityPanel(2, mask);
-        if (SV_I((unsigned)&main_ObjectsOn) != 0)
+        if (main_ObjectsOn != 0)
             d2_DrawObjects();
         d2_UnlockSurface(d2_ScreenSurf);
         d2_DrawFades();
-    } else if (SV_I((unsigned)&sv_PanelFlag) != 0)
+    } else if (sv_PanelFlag != 0)
         d2_FinishFades();
     di_PollMouse();
-    if (SV_I((unsigned)&di_Absolute) != 0) {
-        SV_S((unsigned)&d2_MouseX) = SV_S((unsigned)&dm_P);
-        SV_S((unsigned)&d2_MouseY) = SV_S(((unsigned)&dm_P + 0x2));
+    if (di_Absolute != 0) {
+        d2_MouseX = dm_P.x;
+        d2_MouseY = dm_P.y;
     }
     sv_SetScreenCenter(mask);
-    if (SV_I((unsigned)&ai_FrameWait) == 0 && cv < 0) {
+    if (ai_FrameWait == 0 && (mask & 0x80) != 0) {
         if (d2_LockSurface(d2_ScreenSurf) != 0) {
-            if (SV_I((unsigned)&ai_Unk6f0da4) != 0)
-                ai_Unk4d8b50();
-            if ((mask & 0x1000) != 0 && SV_I((unsigned)&sv_FrameDepth) == SV_I((unsigned)&sv_FrameBase) && SV_I((unsigned)&he_ActiveSlot) == 0) {
+            if (cm_FightStart != 0)
+                cm_DrawFightTime();
+            if ((mask & 0x1000) != 0 && sv_FrameDepth == sv_FrameBase && he_ActiveSlot == 0) {
                 sv_DrawBubbles();
-                if (SV_B(((unsigned)&kb_Down + 0x1d)) == 0) {
-                    if (SV_B(((unsigned)&kb_Down + 0x38)) != 0)
-                        sv_DrawItemNames();
-                } else
+                if (kb_Down[0x1d] != 0)
                     sv_DrawNamePlates();
+                else if (kb_Down[0x38] != 0)
+                    sv_DrawItemNames();
             }
-            if ((mask & 0x80000) == 0) {
-                if (SV_I((unsigned)&sv_PanelShown) != 0 || SV_I((unsigned)&ai_FallbackBuilding) != 0)
-                    sv_DrawBorderArrows();
-            } else
-                ai_Unk4cf370();
-            if ((mask & 0x1000) != 0 && SV_I(((unsigned)&dm_L + 0x28)) == 0 && SV_I((unsigned)&sv_CameraScrolled) == 0 && SV_I((unsigned)&d3t_CamMove) == 0 && SV_I((unsigned)&sv_BandActive) == 0 && SV_I((unsigned)&d2_CutsceneActive) == 0 && SV_I((unsigned)&he_ActiveSlot) == 0)
-                sv_Unk52e050();
+            if ((mask & 0x80000) != 0)
+                cm_DrawScrollArrows();
+            else if (sv_PanelShown != 0 || ai_FallbackBuilding != 0)
+                sv_DrawBorderArrows();
+            if ((mask & 0x1000) != 0 && dm_L.rclick == 0 && sv_CameraScrolled == 0 && d3t_CamMove == 0 && sv_BandActive == 0 && d2_CutsceneActive == 0 && he_ActiveSlot == 0)
+                sv_DrawHint();
             sv_DrawStatusText();
             sv_DrawPanelPointer();
             d2_UnlockSurface(d2_ScreenSurf);
         }
         dd_Flip();
     }
-    if (SV_B((unsigned)&kb_Last) == 1 && (mask & 0x2000) != 0) {
-        msx_SetVolume((int)0.0f);                /* the float operands of this block are lost in the pseudocode */
-        sb_SetMasterVolume((int)0.0f);
+    if (kb_Last == 1 && (mask & 0x2000) != 0) {
+        master = (float)ai_SoundOptions.masterVolume * (1.0f / 127.0f);
+        msx_SetVolume((int)((float)ai_SoundOptions.msxVolume * master * (1.0f / 3.0f)));
+        sb_SetMasterVolume((int)((float)ai_SoundOptions.sfxVolume * master * (1.0f / 3.0f)));
         ai_OptionsMenu();
-        msx_SetVolume((int)0.0f);
-        sb_SetMasterVolume((int)0.0f);
+        master = (float)ai_SoundOptions.masterVolume * (1.0f / 127.0f);
+        msx_SetVolume((int)((float)ai_SoundOptions.msxVolume * master));
+        sb_SetMasterVolume((int)((float)ai_SoundOptions.sfxVolume * master));
     }
     sv_UpdateQuickChat();
-    if (SV_B((unsigned)&ai_GameState) != 0) {
-        if ((SV_U((unsigned)&ai_GameFlags) & 4) != 0 && SV_I((unsigned)&d2_FocusedInput) == 0 && SV_B((unsigned)&kb_Last) == 0x1c && (mask & 0x2000) != 0)
+    if (ai_GameState != 0) {
+        if ((ai_GameFlags & 4) != 0 && d2_FocusedInput == 0 && kb_Last == 0x1c && (mask & 0x2000) != 0)
             sv_ChatConsole();
-        if (SV_B((unsigned)&ai_GameState) != 0) {
-            if ((SV_B((unsigned)&kb_Last) == 0xcf || (SV_I(((unsigned)&dm_L + 0xc)) != 0 && SV_I((unsigned)&d2_HitUnderPointer) == ai_Unk623850)) && (mask & 0x10000) == 0 && sv_Advancing == 0 && (SV_U((unsigned)&ai_GameFlags) & 4) == 0) {
-                if (SV_I((unsigned)&ai_Unk6f2448) == 0)
+        if (ai_GameState != 0) {
+            if ((kb_Last == 0xcf || (dm_L.lup != 0 && d2_HitUnderPointer == sv_AdvanceHit)) && (mask & 0x10000) == 0 && sv_Advancing == 0 && (ai_GameFlags & 4) == 0) {
+                if (gm_AllowAll == 0)
                     sv_AdvanceGame();
                 else {
-                    SV_I((unsigned)&main_DayEnding) = 1;
+                    main_DayEnding = 1;
                     sv_PopTo((int)main_GameLoop);
                 }
             }
-            if (SV_B((unsigned)&ai_GameState) != 0) {
-                if (SV_B((unsigned)&sv_MenuOpen) == 0 && (SV_U((unsigned)&ai_GameFlags) & 4) == 0 && u5 == 0 && SV_B((unsigned)&kb_Last) == '9')
+            if (ai_GameState != 0) {
+                if (sv_MenuOpen == 0 && (ai_GameFlags & 4) == 0 && u5 == 0 && kb_Last == '9')
                     ai_PauseGame();
-                if (SV_B((unsigned)&ai_GameState) != 0 && (mask & 0x300000) == 0)
-                    ai_Unk589cf0();
+                if (ai_GameState != 0 && (mask & 0x300000) == 0)
+                    ai_SpeedKeys();
             }
         }
     }
-    if (sv_PanelPic != -1 && (mask & 0x2000) != 0 && (mask & 0x100000) == 0 && SV_I((unsigned)&sv_FrameDepth) == SV_I((unsigned)&sv_FrameBase)) {
-        if (SV_B((unsigned)&ai_GameState) != 0)
-            ai_Unk589c90();
-        if (ai_PlayerId == 0xffff || SV_B(((unsigned)&ai_CharInts + 0x4) + ai_PlayerId * 0x21c) == 0) {
-            if (SV_I((unsigned)&d2_ClickedId) != -1
-                && (d2_PointerObj == ai_Unk623848 || d2_PointerObj == ai_Unk623824 || d2_PointerObj == ai_Unk62382c || d2_PointerObj == ai_Unk623830 || d2_PointerObj == ai_Unk623828
-                    || d2_PointerObj == ai_Unk623820))
-                sv_SetStatusText(SV_C((unsigned)&full_data_143a3e4));
-        } else if (SV_I((unsigned)&d2_ClickedId) != -1) {
-            if (d2_PointerObj == ai_Unk623848)
-                ai_Unk5c8640();
-            else if (d2_PointerObj == ai_Unk623824)
-                ai_Unk5c82f0();
-            else if (d2_PointerObj == ai_Unk62382c)
-                ai_Unk5bac10();
-            else if (d2_PointerObj == ai_Unk623830)
-                ai_Unk5bcc70();
-            else if (d2_PointerObj == ai_Unk623828)
-                ai_Unk5c7f00();
-            else if (d2_PointerObj == ai_Unk623834)
+    if (sv_PanelPic != -1 && (mask & 0x2000) != 0 && (mask & 0x100000) == 0 && sv_FrameDepth == sv_FrameBase) {
+        if (ai_GameState != 0)
+            ai_SlotKeys();
+        if (ai_PlayerId == 0xffff || ai_CharsT[ai_PlayerId].health <= 0) {
+            if (d2_ClickedId != -1
+                && (d2_PointerObj == sv_ButtonPrivileges || d2_PointerObj == sv_ButtonCompare || d2_PointerObj == sv_ButtonInventory || d2_PointerObj == sv_ButtonPlayerStats || d2_PointerObj == sv_ButtonCityStats
+                    || d2_PointerObj == sv_ButtonFamilyTree))
+                sv_SetStatusText(txt_Ptrs[0x89]);
+        } else if (d2_ClickedId != -1) {
+            if (d2_PointerObj == sv_ButtonPrivileges)
+                ai_PrivilegesPanel();
+            else if (d2_PointerObj == sv_ButtonCompare)
+                ai_PlayerComparePanel();
+            else if (d2_PointerObj == sv_ButtonInventory)
+                ai_InventoryPanel();
+            else if (d2_PointerObj == sv_ButtonPlayerStats)
+                ai_PlayerStatsPanel();
+            else if (d2_PointerObj == sv_ButtonCityStats)
+                ai_CityStatsPanel();
+            else if (d2_PointerObj == sv_ButtonMessages)
                 ai_MessageFilterScreen();
-            else if (d2_PointerObj == ai_Unk623820)
-                ai_Unk5c4150(SV_I((unsigned)&ai_CharInts + ai_PlayerId * 0x21c), 0x11, 0, 0x657c7);
+            else if (d2_PointerObj == sv_ButtonFamilyTree)
+                ai_FamilyTreeWindow(ai_CharsT[ai_PlayerId].netId, 0x11, 0, 0x657c7);
         }
     }
     sv_TickFrames++;
     if ((mask & 0x10000) == 0) {
-        if (SV_I((unsigned)&sv_PopRequest) == 0 && SV_I((unsigned)&sv_PanelFlag) == 0 && SV_I((unsigned)&ai_Unkf31144) != 0 && SV_I((unsigned)&main_DayEnding) == 0) {
+        if (sv_PopRequest == 0 && sv_PanelFlag == 0 && cm_DayEndRequest != 0 && main_DayEnding == 0) {
 l3f5:
-            if ((char)SV_B((unsigned)&ai_GameFlags) >= 0) {
-                SV_I((unsigned)&main_DayEnding) = 1;
+            if ((ai_GameFlags & 0x80) == 0) {
+                main_DayEnding = 1;
                 tb_SetFunctionOff(sv_UpdateClock, 1);
-                SV_U((unsigned)&sv_FrameMask) |= 0x100000;
-                sv_MessageBoxYesNo(SV_I((unsigned)&full_data_143a3c4), 0xc4);
+                sv_FrameMask |= 0x100000;
+                sv_MessageBoxYesNo((int)txt_Ptrs[0x81], 0xc4);
                 sv_PopTo((int)main_GameLoop);
             }
             goto l444;
         }
-        if (SV_I((unsigned)&ai_Unk1460ae0) != -1 || SV_US((unsigned)&ai_TimeHour) < 0x17)
+        if (net_Conn.s != (unsigned)-1 || ai_TimeHour < 0x17)
             goto l444;
-        if (SV_I((unsigned)&main_DayEnding) == 0)
+        if (main_DayEnding == 0)
             goto l3f5;
     } else {
 l444:
-        if (SV_I((unsigned)&main_DayEnding) == 0)
+        if (main_DayEnding == 0)
             goto l473;
     }
-    if (SV_I((unsigned)&sv_PopRequest) == 0 && SV_I(((unsigned)&ai_Unk75f280 + 0x500) + SV_I((unsigned)&sv_FrameDepth) * 8) == (int)ai_GameFrame)
-        SV_I((unsigned)&sv_PopRequest) = 1;
+    if (sv_PopRequest == 0 && sv_Frames[sv_FrameDepth].cb == (int)ai_GameFrame)
+        sv_PopRequest = 1;
 l473:
-    if ((mask & 0x10000) == 0 && SV_B((unsigned)&sv_InMissionComplete) == 0 && SV_I((unsigned)&ai_MissionPartner) != -1 && SV_B((unsigned)&ai_GameState) != 0) {
-        SV_B((unsigned)&sv_InMissionComplete) = 1;
+    if ((mask & 0x10000) == 0 && sv_InMissionComplete == 0 && ai_MissionPartner != -1 && ai_GameState != 0) {
+        sv_InMissionComplete = 1;
         tb_SetFunctionOff(sv_UpdateClock, 1);
         ai_MissionCompleteSequence(0x65fff);
         tb_SetFunctionOff(sv_UpdateClock, 0);
-        SV_B((unsigned)&sv_InMissionComplete) = 0;
+        sv_InMissionComplete = 0;
     }
-    if (SV_B((unsigned)&cm_RequestedSaveName) != 0 && (SV_U((unsigned)&sv_FrameMask) & 0x200000) == 0) {
-        if (SV_I((unsigned)&cm_RequestedSaveSlot) == 1)
+    if (cm_RequestedSaveName[0] != 0 && (sv_FrameMask & 0x200000) == 0) {
+        if (cm_RequestedSaveSlot == 1)
             strcpy(name, "QUICKSAVE");
-        else if (SV_I((unsigned)&cm_RequestedSaveSlot) == 0)
+        else if (cm_RequestedSaveSlot == 0)
             strcpy(name, "AUTOSAVE");
         else
-            sprintf(name, "GILDE_SAVEGAME_%i", SV_I((unsigned)&cm_RequestedSaveSlot));
-        strcpy(tmp, (char *)(unsigned)&cm_RequestedSaveName);
+            sprintf(name, "GILDE_SAVEGAME_%i", cm_RequestedSaveSlot);
+        strcpy(tmp, cm_RequestedSaveName);
+        cm_RequestedSaveName[0] = 0;
         ai_SaveNetworkGame(name, tmp);
     }
-    if (SV_I((unsigned)&ai_Unk6f0cd4) != 0 && (SV_U((unsigned)&sv_FrameMask) & 0x200000) == 0) {
-        SV_I((unsigned)&ai_Unk6f0cd4)--;
-        sv_BroadcastText(mask, SV_C((unsigned)&ai_Unk1441488));
+    if ((unsigned)cm_NoticeCount > 0 && (sv_FrameMask & 0x200000) == 0) {
+        cm_NoticeCount--;
+        sv_BroadcastText(mask, txt_Ptrs[0x1cb2]);
     }
-    if (0 < SV_I((unsigned)&ai_FrameWait))
-        SV_I((unsigned)&ai_FrameWait)--;
+    if (0 < ai_FrameWait)
+        ai_FrameWait--;
     return r;
 }
 /* 0x5315c0, a callback of 0x42ea10 (the screens' wait loops): while the clock is shown by a game speed (0x6f3608: seconds = (speed * 0.00625 + 0.5) * 0x6248b4) it stores that time of day (hours / minutes /
@@ -7635,19 +7642,19 @@ float sv_CameraHeightFar = 1600.0f;  /* 0x623808 */
 float sv_CameraAngleFar = -1.08210409f;  /* 0x62380c */
 float sv_ScrollSpeed = 1.0f;  /* 0x623818 */
 char sv_CameraEaseOn = 1;  /* 0x62381c */
-int ai_Unk623820 = -1;  /* 0x623820 */
-int ai_Unk623824 = -1;  /* 0x623824 */
-int ai_Unk623828 = -1;  /* 0x623828 */
-int ai_Unk62382c = -1;  /* 0x62382c */
-int ai_Unk623830 = -1;  /* 0x623830 */
-int ai_Unk623834 = -1;  /* 0x623834 */
+int sv_ButtonFamilyTree = -1;  /* 0x623820 */
+int sv_ButtonCompare = -1;  /* 0x623824 */
+int sv_ButtonCityStats = -1;  /* 0x623828 */
+int sv_ButtonInventory = -1;  /* 0x62382c */
+int sv_ButtonPlayerStats = -1;  /* 0x623830 */
+int sv_ButtonMessages = -1;  /* 0x623834 */
 int ai_Unk623838 = -1;  /* 0x623838 */
 int ai_Unk62383c = -1;  /* 0x62383c */
 int ai_Unk623840 = -1;  /* 0x623840 */
 int ai_Unk623844 = -1;  /* 0x623844 */
-int ai_Unk623848 = -1;  /* 0x623848 */
+int sv_ButtonPrivileges = -1;  /* 0x623848 */
 int ai_Unk62384c = -1;  /* 0x62384c */
-int ai_Unk623850 = -1;  /* 0x623850 */
+int sv_AdvanceHit = -1;  /* 0x623850 */
 int sv_PanelPic = -1;  /* 0x623854 */
 int sv_PlayerBarForm = -1;  /* 0x62385c, the player bar's form, -1 = closed */
 int sv_PanelForm = -1;  /* 0x623860 */

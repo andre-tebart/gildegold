@@ -15,7 +15,7 @@ void he_Unk53d930(void);
 void he_CloseEventSlots(void);
 void he_ShowEventBar(int pl);
 void he_Unk53dad0(int state);
-void he_Unk53daf0(void);
+void he_PickActiveEvent(void);
 void he_ActivateSlot(int *sl);
 
 typedef struct HEEVSLOT {               /* 12 bytes, a slot of the event bar (he_EventSlots) */
@@ -47,7 +47,7 @@ void he_Unk53ec10(int obj, int a);
 void he_Unk53ec40(unsigned char *r);
 void he_Unk53ed40(unsigned short *pl);
 void he_Unk53ed70(void);
-void he_Unk53edf0(void);
+void he_RunQuickList(void);
 void he_Unk53ee40(void);
 void he_Unk53eea0(void);
 

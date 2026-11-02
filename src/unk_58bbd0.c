@@ -304,7 +304,7 @@ extern int sv_PopRequest;
 
 extern int ai_Unk5b3630();
 extern int ai_Unk5b3f30();
-extern int ai_Unk6f2448;
+extern int gm_AllowAll;
 
 
 
@@ -503,7 +503,7 @@ extern char ch_EmptyName[1];
 extern int d2_ClickedId;
 extern int d2_LastWindow;
 
-extern int ai_Unk6f2448;
+extern int gm_AllowAll;
 
 
 
@@ -595,7 +595,7 @@ extern struct D2PIC *d2_Pics;
 extern GAPDATA full_data_602568[];
 extern int sv_PopRequest;
 
-extern int ai_Unk6f2448;
+extern int gm_AllowAll;
 
 
 
@@ -5347,7 +5347,7 @@ void ai_Unk5965f0(int param_1, int param_2)
         drohbrief = sv_RegisterNamePlate("contact_DROHBRIEF", U_I((unsigned)&full_data_143ff1c), 0xc);
         pamphlet = sv_RegisterNamePlate("contact_PAMPHLET", U_I((unsigned)&full_data_14405f0), 0xc);
         rhetorik = sv_RegisterNamePlate("contact_RHETORIK", U_I((unsigned)&full_data_143fc78), 0xc);
-        if (U_I((unsigned)&ai_Unk6f2448) != 0) {
+        if (U_I((unsigned)&gm_AllowAll) != 0) {
             if (U_I((unsigned)&kb_Last) == 0x19)
                 ai_Unk5b5610(param_1);
             if (U_I((unsigned)&kb_Last) == ' ')
@@ -9380,7 +9380,7 @@ void ai_Unk59fd30(void)
             amt = sv_RegisterNamePlate("contact_AMT_INFO", U_I((unsigned)&full_data_143a3f0), 0x16);
         else
             amt = 0;
-        if (U_I((unsigned)&ai_Unk6f2448) != 0 && *(unsigned char *)(unsigned)&kb_Last == 0x14)
+        if (U_I((unsigned)&gm_AllowAll) != 0 && *(unsigned char *)(unsigned)&kb_Last == 0x14)
             gm_StatisticsScreen();
         clicked = U_I((unsigned)&ai_ClickedObject);
         if (clicked != 0) {
@@ -11036,7 +11036,7 @@ void ai_Unk5a3810(int param_1, int param_2)
             becken = sv_RegisterNamePlate("ob_WEIHWASSERBECKEN", U_I((unsigned)&full_data_1440794), 0x16);
         }
         if (U_I((unsigned)&ai_ClickedObject) == 0) {
-            if (*(char *)(unsigned)&kb_Last == '0' && U_I((unsigned)&ai_Unk6f2448) != 0)
+            if (*(char *)(unsigned)&kb_Last == '0' && U_I((unsigned)&gm_AllowAll) != 0)
                 ai_Unk5a2b60(param_1);
         } else {
             if ((U_I((unsigned)&ai_BuildingPerms) & 0x200) != 0) {
@@ -15997,7 +15997,7 @@ int ai_Unk5ba980(void)
 /* 0x5bac10, a window gated by 0x62c418 == -1 (512 B, ROUGH SKELETON): the 0x1000 path after the check; the body
    is a comment */
 
-int ai_Unk5bac10(void)
+int ai_InventoryPanel(void)
 {
     if (U_I((unsigned)&full_data_62c418) != -1)
         return 0;
@@ -16125,7 +16125,7 @@ int ai_Unk5c33c0(unsigned short param_1, unsigned short param_2, unsigned int *p
    dispatch 0xf8a668 / 0x5fe710 with the window list 0xf8f080 + id * 0x2ec, the text control rows
    0x6f40e4 .. 0x6f4cf4 (six dwords per row: the id -4, the cached value -1 and the three texts) and the
    pump 0x5309a0 (this, 0x657c7). The record 0x6f2f84 keeps the last selected entry */
-int ai_Unk5bcc70(void)
+int ai_PlayerStatsPanel(void)
 {
     int win;
     int ctrlA, ctrlB, ctrlC;
@@ -16217,7 +16217,7 @@ int ai_Unk5bcc70(void)
                 }
             }
         }
-    } while (sv_RunFrame(ai_Unk5bcc70, 0x657c7) != 0);
+    } while (sv_RunFrame(ai_PlayerStatsPanel, 0x657c7) != 0);
     U_I((unsigned)&full_data_6f2f84) = U_I((unsigned)&d2_RadioSel + off);
     d2_RadioClear(id);
     d2_CloseView(win);
@@ -18681,7 +18681,7 @@ void d2_PlotLine();
    0x5c5310 (the character, param_2 & 0x10 ? 0 : the own flag) between 0x475590 (win, 0 / 1); the pump
    0x5309a0 (this, param_4), the exit 0x4758f0 and the event 0x576040 (6, 0, 1, 0). ROUGH: the eight
    positions of the generation blocks are comments, the calls are grouped per block */
-void ai_Unk5c4150(int param_1, unsigned char param_2, int param_3, int param_4)
+void ai_FamilyTreeWindow(int param_1, unsigned char param_2, int param_3, int param_4)
 {
     char *ch;
     int win;
@@ -18755,7 +18755,7 @@ void ai_Unk5c4150(int param_1, unsigned char param_2, int param_3, int param_4)
                character), then 0x475590 (win, 0), 0x5c5310 (the character, param_2 & 0x10 ? 0 : the own
                flag) and 0x475590 (win, 1) */
         }
-        if (sv_RunFrame(ai_Unk5c4150, param_4) == 0)
+        if (sv_RunFrame(ai_FamilyTreeWindow, param_4) == 0)
             break;
     }
     d2_CloseView(win);
@@ -19573,7 +19573,7 @@ float ord_GetStatistics(int *o);
    colour lines 0x4764f0 per row from the 14-byte colour table 0x33 / 0x10 / 0xee); the pump 0x5309a0 and
    the flag rebuild 0x475980 over the five ids. ROUGH: the label section (0x4f9e00 args, 0x5176d0 ids) and
    the pump arguments are sketched from the pseudocode. */
-void ai_Unk5c7f00(void)
+void ai_CityStatsPanel(void)
 {
     unsigned char colors[14];
     int vals[10];
@@ -19651,7 +19651,7 @@ void ai_Unk5c7f00(void)
         }
         if (*(int *)((unsigned)&dm_L + 0x20))
             *(int *)(unsigned)&sv_PopRequest = 1;
-    } while (sv_RunFrame(ai_Unk5c7f00, 0x657c7) != 0);
+    } while (sv_RunFrame(ai_CityStatsPanel, 0x657c7) != 0);
     d2_CloseView(win);
     ai_CampaignStep(0xc, 0, 1, 0);
 }
@@ -19667,7 +19667,7 @@ void gm_Unk506180(int *count, unsigned short *out);   /* 0x506180 (defined in f3
    pos[clamp(char +0x50 - 0x59a, 7)], 0x42, screen) set by 0x475cb0 (0, 100, win) and the score 0x5176d0
    (0x5fe7d0, record +0x20) / 0x5bd0c0 (500, x + 2, 200, 0x55). The row x: count <= 4 -> 0x50 * i + 0x14,
    else 0x3a * i + 2. The pump 0x5309a0 and the end 0x4758f0 / 0x576040 (10, 0, 1, 0). */
-void ai_Unk5c82f0(void)
+void ai_PlayerComparePanel(void)
 {
     int pos[8];
     unsigned short list[144];
@@ -19725,7 +19725,7 @@ void ai_Unk5c82f0(void)
     do {
         if (*(int *)((unsigned)&dm_L + 0x20))
             *(int *)(unsigned)&sv_PopRequest = 1;
-    } while (sv_RunFrame(ai_Unk5c82f0, 0x657c7) != 0);
+    } while (sv_RunFrame(ai_PlayerComparePanel, 0x657c7) != 0);
     d2_CloseView(win);
     ai_CampaignStep(10, 0, 1, 0);
 }
@@ -19742,7 +19742,7 @@ int ord_PrivilegeDialog();
    +0x50 = 1) and the value 9 special case; the message 0x472270 (-1, -1, screen, screen, 0x767) when ten
    entries are shown; the pump 0x5309a0 and the end 0x4758f0 / 0x576040 (8, 0, 1, 0). ROUGH: the pages and
    the click / redraw split follow the pseudocode; the string globals 0x625150 / 0x602568 / 0x60c6c0. */
-void ai_Unk5c8640(void)
+void ai_PrivilegesPanel(void)
 {
     int arr[0x88];
     char title[520];
@@ -19905,7 +19905,7 @@ found:
         }
         if (*(int *)((unsigned)&dm_L + 0x20))
             *(int *)(unsigned)&sv_PopRequest = 1;
-    } while (sv_RunFrame(ai_Unk5c8640, 0x657c7) != 0);
+    } while (sv_RunFrame(ai_PrivilegesPanel, 0x657c7) != 0);
     d2_CloseView(win);
     ai_CampaignStep(8, 0, 1, 0);
 }
