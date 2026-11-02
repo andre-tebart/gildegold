@@ -26,7 +26,7 @@ exe	0x00402140	ch_GetHMap	ch	byte	draft
 exe	0x00402220	ch_GetSceneHMap	ch	byte	draft		
 exe	0x004022e0	ch_UpdateFades	ch	byte	readable		
 exe	0x00402480	ch_SetVisible	ch	byte	draft		byte+readable -> byte+draft at f274727: Q6: the description came from a foreign declaration copy or a file name only (decompanion 399f0a8); the definition has none
-exe	0x00402540	ch_Unk402540	ch	byte	draft		
+exe	0x00402540	ch_InflateModel	ch	byte	draft		
 exe	0x004025c0	ch_SetPos	ch	byte	draft		byte+readable -> byte+draft at f274727: Q6: the description came from a foreign declaration copy or a file name only (decompanion 399f0a8); the definition has none
 exe	0x00402640	ch_PlaceAtObject	ch	byte	readable		
 exe	0x004026c0	ch_Count	ch	byte	readable		
@@ -42,7 +42,7 @@ exe	0x00402af0	ch_SetLowPoly	ch	byte	readable
 exe	0x00402ba0	ch_UpdateLowPoly	ch	draft	draft	deep	
 exe	0x00403070	ch_CreateMesh	ch	byte	draft		
 exe	0x00403390	ch_Create	ch	byte	draft		byte+readable -> byte+draft at f274727: Q6: the description came from a foreign declaration copy or a file name only (decompanion 399f0a8); the definition has none
-exe	0x004033c0	ch_MoveToScene	ch	byte	draft		
+exe	0x004033c0	ch_MoveToScene	ch	byte	readable		
 exe	0x004034e0	ch_AttachTransport	ch	byte	draft		
 exe	0x004035f0	ch_DetachTransport	ch	byte	draft		
 exe	0x00403620	ch_PlaceTransport	ch	byte	readable		
@@ -3028,17 +3028,17 @@ exe	0x00501f60	gm_NearestFreeBuilding	f3gm	byte	readable
 exe	0x00502020	gm_FindBuildingById	f3gm	byte	draft		
 exe	0x00502060	gm_FindBuildingKind	f3gm	shape	readable		
 exe	0x005020a0	gm_ListBuildingsOfType	f3gm	shape	readable		
-exe	0x005020e0	gm_MayTakeJob	f3gm	draft	readable		
+exe	0x005020e0	gm_MayTakeJob	f3gm	shape	readable		
 exe	0x005024f0	gm_IsType10	f3gm	byte	readable		
-exe	0x00502520	gm_IsHomeType	f3gm	draft	draft		
-exe	0x00502570	gm_GoodPicture	f3gm	draft	draft		
-exe	0x005029f0	gm_Unk5029f0	f3gm	byte	draft		
-exe	0x00502a60	gm_ShowSlotObjects	f3gm	draft	draft		
-exe	0x00502b60	gm_AssignBuilding	f3gm	draft	draft		
+exe	0x00502520	gm_IsHomeType	f3gm	byte	readable		
+exe	0x00502570	gm_GoodPicture	f3gm	byte	readable		
+exe	0x005029f0	gm_CollectSlotObject	f3gm	byte	draft		
+exe	0x00502a60	gm_ShowSlotObjects	f3gm	byte	readable		
+exe	0x00502b60	gm_AssignBuilding	f3gm	byte	readable		
 exe	0x00502e30	gm_ShowBuildingObjects	f3gm	byte	draft		
-exe	0x00502eb0	gm_ListWorkers	f3gm	draft	draft		
-exe	0x00502fd0	gm_SellBuilding	f3gm	draft	draft		
-exe	0x005031b0	gm_AllocRaum	f3gm	draft	draft		
+exe	0x00502eb0	gm_ListWorkers	f3gm	draft	readable	deep	
+exe	0x00502fd0	gm_SellBuilding	f3gm	byte	readable		
+exe	0x005031b0	gm_AllocRaum	f3gm	byte	readable		
 exe	0x00503480	gm_RemoveObjectFromBuilding	f3gm	byte	readable		
 exe	0x005034b0	gm_Unk5034b0	f3gm	byte	draft		
 exe	0x00503530	gm_PermissionBits	f3gm	draft	draft		
@@ -3347,11 +3347,11 @@ exe	0x00527e90	sv_FlyCameraToModel	sv	shape	readable	deep
 exe	0x00528140	sv_MoveCameraToView	sv	byte	draft		
 exe	0x00528180	sv_CreateBannerCB	sv	byte	readable		
 exe	0x00528290	sv_ColourBannerCB	sv	byte	draft		
-exe	0x005282f0	sv_Unk5282f0	sv	byte	draft		
+exe	0x005282f0	sv_CreateBanners	sv	byte	draft		
 exe	0x00528390	sv_ColourBanners	sv	byte	readable		
 exe	0x00528490	sv_UpdateChimneySmoke	sv	draft	readable	deep	
 exe	0x00528660	sv_Unk528660	sv	byte	draft		
-exe	0x005286a0	sv_Unk5286a0	sv	byte	draft		
+exe	0x005286a0	sv_RemoveBanners	sv	byte	draft		
 exe	0x00528770	sv_Unk528770	sv	byte	draft		
 exe	0x00528800	sv_AddPanelButton	sv	byte	draft		
 exe	0x00528860	sv_OpenBuildingPanel	sv	draft	readable	deep	
