@@ -3245,7 +3245,7 @@ unsigned char gm_BQType = 0xff;  /* 0x61a66c, the building query: the building t
 int gm_BQId = -1;  /* 0x61a670, the query: id (-1 = any) */
 unsigned short gm_BQMaster = 32767;  /* 0x61a674, the query: the master id (ORDBLD.masterId, 0x7fff = any) */
 unsigned short gm_BQOwner = 32767;  /* 0x61a676, the query: the owner (ORDBLD.owner, 0x7fff = any) */
-char gm_BQClass = -1;  /* 0x61a678, the query: the class of the type (the first byte of its ai_BTypes record, -1 = any) */
+unsigned char gm_BQClass = 0xff;  /* 0x61a678, the query: the class of the type (the first byte of its ai_BTypes record, 0xff = any) */
 int gm_QueryType = 32767;  /* 0x61a67c, the query: object prototype ( */
 int gm_QueryOwner = -1;  /* 0x61a680, the query: owner id (-1 = any) */
 unsigned short gm_QueryOwnerNo = 0xffff;  /* 0x61a684, the query: the owner character number gm_ObjectOwnerNo must give (0xffff = any) */
@@ -3260,7 +3260,7 @@ char gm_TagGebaeudePROT[24] = { 102, 51, 95, 103, 109, 58, 108, 112, 71, 101, 98
 int ai_NextCharNumber = 0;  /* 0x6f1bb8 */
 int ai_NextPlayerNumber = 0;  /* 0x6f1bbc */
 int ai_CharCount = 0;  /* 0x6f1bc0 */
-char * ai_Unk6f1bd0 = 0;  /* 0x6f1bd0 */
+char * gm_BQName = 0;  /* 0x6f1bd0 */
 char gm_BQStopFirst = 0;  /* 0x6f1bd4 */
 char gm_BQFirstCall = 0;  /* 0x6f1bd5, stop at the first, first call */
 int gm_BQTested = 0;  /* 0x6f1bd8, the number of records tested */
@@ -3868,8 +3868,8 @@ unsigned char *gm_BuildNext(void)
                     goto no;
                 m = 1;
             }
-            if (gm_BQClass != (char)0xff)
-                m = ai_BTypes[gm_BQCursor->type * 0x24d] == gm_BQClass;
+            if (gm_BQClass != 0xff)
+                m = (unsigned char)ai_BTypes[gm_BQCursor->type * 0x24d] == gm_BQClass;
         } else {
         no:
             m = 0;
@@ -3889,71 +3889,61 @@ unsigned char *gm_BuildNext(void)
             return (unsigned char *)gm_BQCursor;
     }
 }
-/* 0x501190, starts a building query and returns the first match (0x501030): n criteria follow as (kind, value) pairs: 0 = type class (byte, 0x61a66c), 1 = id, 2 = a string (copied to *0x6f1bd0, unused), 3 / 4 = the words +0x25 / +0x27, 5 = the building type, 6 = stop at the first (no value). Used all over the exe as gm_BuildQuery (1, 5, 10) .. */
+/* 0x501190, starts a building query and returns its first match (gm_BuildNext): resets the criteria, then reads n (kind, value) pairs: 0 the type, 1 the id, 2 a name (copied to gm_BQName, never tested), 3 the master id, 4 the owner, 5 the class of the type, 6 stop at the first (no value); the cursor starts at ai_Blds. Used all over the exe (gm_BuildQuery(1, 5, 10) ..)
+   @deep read against the original: the reset of the nine criteria, the (kind, value) walk with a
+   pre-incremented argument pointer, the seven cases (switch tables equal, strcpy intrinsic for the name)
+   and the tail call to gm_BuildNext all match; gm_BQClass is unsigned char like gm_BQType (the original
+   stores one 0xff register into both). The one hunk left (+0xc, 10 lines) is the same five instructions
+   scheduled and allocated differently: the original loads 0xff into cl, stores type / class, then loads n
+   into ecx; ours loads n into ecx first and takes al for 0xff (its short mov [mem], al form makes ours 2
+   bytes smaller). Tried the class / type stores chained and the copy locals reordered: no change */
 
 unsigned char *gm_BuildQuery(int n, ...)
 {
     int *ap;
     int i;
-    char *s, *d;
-    char c;
 
-    if (ai_BTypes != 0) {
-        gm_BQType = 0xff;
-        gm_BQClass = (char)0xff;
-        gm_BQId = -1;
-        ai_Unk6f1bd0 = 0;
-        gm_BQMaster = 0x7fff;
-        gm_BQOwner = 0x7fff;
-        gm_BQFirstCall = 1;
-        gm_BQTested = 0;
-        gm_BQStopFirst = 0;
-        if (n > 0) {
-            ap = &n;
-            for (i = n; i != 0; i--) {
-                switch ((char)ap[1]) {
-                case 0:
-                    gm_BQType = (unsigned char)ap[2];
-                    ap += 2;
-                    break;
-                case 1:
-                    gm_BQId = ap[2];
-                    ap += 2;
-                    break;
-                case 2:
-                    s = (char *)ap[2];
-                    ap += 2;
-                    d = ai_Unk6f1bd0;
-                    do {
-                        c = *s++;
-                        *d++ = c;
-                    } while (c != 0);
-                    break;
-                case 3:
-                    gm_BQMaster = (short)ap[2];
-                    ap += 2;
-                    break;
-                case 4:
-                    gm_BQOwner = (short)ap[2];
-                    ap += 2;
-                    break;
-                case 5:
-                    gm_BQClass = (char)ap[2];
-                    ap += 2;
-                    break;
-                case 6:
-                    gm_BQStopFirst = 1;
-                    ap += 1;
-                    break;
-                default:
-                    ap += 1;
-                }
+    if (ai_BTypes == 0)
+        return 0;
+    gm_BQType = 0xff;
+    gm_BQClass = 0xff;
+    gm_BQId = -1;
+    gm_BQName = 0;
+    gm_BQMaster = 0x7fff;
+    gm_BQOwner = 0x7fff;
+    gm_BQFirstCall = 1;
+    gm_BQTested = 0;
+    gm_BQStopFirst = 0;
+    if (n > 0) {
+        ap = &n;
+        for (i = n; i != 0; i--) {
+            switch ((unsigned char)*++ap) {
+            case 0:
+                gm_BQType = (unsigned char)*++ap;
+                break;
+            case 1:
+                gm_BQId = *++ap;
+                break;
+            case 2:
+                strcpy(gm_BQName, (char *)*++ap);
+                break;
+            case 3:
+                gm_BQMaster = (unsigned short)*++ap;
+                break;
+            case 4:
+                gm_BQOwner = (unsigned short)*++ap;
+                break;
+            case 5:
+                gm_BQClass = (unsigned char)*++ap;
+                break;
+            case 6:
+                gm_BQStopFirst = 1;
+                break;
             }
         }
-        gm_BQCursor = (ORDBLD *)ai_Blds;
-        return gm_BuildNext();
     }
-    return 0;
+    gm_BQCursor = (ORDBLD *)ai_Blds;
+    return gm_BuildNext();
 }
 /* 0x5012b0, the first free record of the building table (0x100 records of 0xa9 bytes), 0 when it is full */
 
