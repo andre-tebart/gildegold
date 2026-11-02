@@ -111,7 +111,7 @@ exe	0x004076e0	ch_PosToCell	ch	byte	readable
 exe	0x00407740	ch_CellToCell	ch	byte	readable		
 exe	0x00407790	ch_GetWaypoints	ch	draft	readable	deep	
 exe	0x004079b0	ch_GetNewPath	ch	draft	draft	deep	
-exe	0x00408490	ch_PathToTarget	ch	draft	draft	deep	
+exe	0x00408490	ch_PathToTarget	ch	shape	draft	deep	
 exe	0x00408690	ch_InitWalk	ch	shape	draft	deep	
 exe	0x00408ab0	ch_WalkSound	ch	byte	draft		
 exe	0x00408cb0	ch_StartWalkAnim	ch	byte	draft		
@@ -662,7 +662,7 @@ exe	0x0042f600	vfs_CmpEntryI	vfs	byte	readable
 exe	0x0042f620	vfs_FinishedFiles	vfs	byte	readable		
 exe	0x0042f7e0	vfs_FindDir	vfs	draft	readable	deep	
 exe	0x0042f8f0	vfs_FindFile	vfs	byte	readable		
-exe	0x0042fa10	vfs_EntryPath	vfs	draft	readable	deep	
+exe	0x0042fa10	vfs_EntryPath	vfs	shape	readable	deep	
 exe	0x0042fbf0	vfs_DirPath	vfs	byte	readable		
 exe	0x0042fca0	vfs_GetPath	vfs	byte	readable		
 exe	0x0042fce0	vfs_AddDir	vfs	byte	readable		
@@ -1421,7 +1421,7 @@ exe	0x0047bd70	d2_ShpBlit	shp	byte	readable
 exe	0x0047bec0	d2_ShpConvert8To16	shp	draft	readable	deep	
 exe	0x0047c0e0	d2_ShpConvert24To16	shp	draft	readable	deep	
 exe	0x0047c3d0	d2_ShpConvertTo16	shp	byte	readable		
-exe	0x0047c410	d2_BankConvertTo16	shp	draft	readable	deep	
+exe	0x0047c410	d2_BankConvertTo16	shp	shape	readable	deep	
 exe	0x0047c5e0	d2_BankSetPalette	shp	byte	readable		
 exe	0x0047c610	d2_BankAppendShape	shp	byte	readable		
 exe	0x0047c6f0	d2_DrawShape	shp	byte	readable		
@@ -1599,146 +1599,146 @@ exe	0x004957d0	ai_ChooseAction	am	draft	readable	deep
 exe	0x00495a50	ai_ChooseSubAction	am	shape	readable		
 exe	0x00495ce0	ai_ExecuteAction	am	draft	readable	deep	
 exe	0x00495ee0	ai_Unk495ee0	am	byte	draft		
-exe	0x00495fa0	ai_Unk495fa0	am	byte	draft		
-exe	0x00495fc0	ai_Unk495fc0	am	byte	draft		
-exe	0x00495fd0	ai_Unk495fd0	am	byte	draft		
-exe	0x00495ff0	ai_Unk495ff0	am	byte	draft		
-exe	0x00496000	ai_Unk496000	am	byte	draft		
-exe	0x00496020	ai_Unk496020	am	byte	draft		
-exe	0x00496030	ai_Unk496030	am	byte	draft		
-exe	0x00496050	ai_Unk496050	am	byte	draft		
-exe	0x00496070	ai_Unk496070	am	byte	draft		
-exe	0x00496080	ai_Unk496080	am	byte	draft		
-exe	0x004960a0	ai_Unk4960a0	am	byte	draft		
+exe	0x00495fa0	ai_DecideDummyRighteousness	am	byte	draft		
+exe	0x00495fc0	ai_ExecuteDummyRighteousness	am	byte	draft		
+exe	0x00495fd0	ai_DecideDummySafety	am	byte	draft		
+exe	0x00495ff0	ai_ExecuteDummySafety	am	byte	draft		
+exe	0x00496000	ai_DecideDummyProcreation	am	byte	draft		
+exe	0x00496020	ai_ExecuteDummyProcreation	am	byte	draft		
+exe	0x00496030	ai_DecideDummyHealth	am	byte	draft		
+exe	0x00496050	ai_DecideDummyJob	am	byte	draft		
+exe	0x00496070	ai_ExecuteDummyJob	am	byte	draft		
+exe	0x00496080	ai_DecideDummyPleasure	am	byte	draft		
+exe	0x004960a0	ai_ExecuteDummyPleasure	am	byte	draft		
 exe	0x004960b0	ai_DecideTrainSkill	am	draft	readable	deep	
-exe	0x004965b0	ai_Unk4965b0	am	byte	draft		
+exe	0x004965b0	ai_ExecuteTrainSkill	am	byte	draft		
 exe	0x00496610	ai_DecideTrainJobSkill	am	draft	readable	deep	
-exe	0x00496ab0	ai_Unk496ab0	am	byte	draft		
+exe	0x00496ab0	ai_ExecuteTrainJobSkill	am	byte	draft		
 exe	0x00496b10	ai_EvalLeastLikedOfEvent	am	draft	draft	deep	
-exe	0x00496e40	ai_Unk496e40	am	byte	draft		
-exe	0x004972d0	ai_Unk4972d0	am	byte	draft		
-exe	0x004973f0	ai_Unk4973f0	am	byte	draft		
+exe	0x00496e40	ai_DecideBribe	am	byte	readable		
+exe	0x004972d0	ai_ExecuteBribe	am	byte	readable		
+exe	0x004973f0	ai_EvalApplyForOffice	am	byte	draft		
 exe	0x00497490	ai_DecideApplyForOffice	am	shape	readable		
-exe	0x00497630	ai_Unk497630	am	byte	draft		
+exe	0x00497630	ai_ExecuteApplyForOffice	am	byte	readable		
 exe	0x00497660	ai_DecideProduceGood	am	draft	draft	deep	
 exe	0x004979d0	ai_ExecuteProduceGood	am	draft	readable	deep	
-exe	0x00497af0	ai_Unk497af0	am	byte	draft		
-exe	0x00497c80	ai_Unk497c80	am	byte	draft		
-exe	0x00497cf0	ai_Unk497cf0	am	byte	draft		
-exe	0x00497ee0	ai_Unk497ee0	am	byte	draft		
+exe	0x00497af0	ai_DecideBuyRoom	am	byte	draft		
+exe	0x00497c80	ai_ExecuteBuyRoom	am	byte	readable		
+exe	0x00497cf0	ai_DecideRepairBuilding	am	byte	draft		
+exe	0x00497ee0	ai_ExecuteRepairBuilding	am	byte	readable		
 exe	0x00497fa0	ai_DecideBuyBuilding	am	draft	draft	deep	
 exe	0x00498470	ai_ExecuteBuyBuilding	am	draft	readable	deep	
 exe	0x004984d0	ai_DecideBuildResidence	am	draft	readable	deep	
 exe	0x00498a80	ai_ExecuteBuildResidence	am	shape	readable		
 exe	0x00498b80	ai_DecideUpgradeResidence	am	byte	readable		
-exe	0x00498c70	ai_Unk498c70	am	byte	draft		
-exe	0x00499290	ai_Unk499290	am	byte	draft		
+exe	0x00498c70	ai_DecideBuildBusiness	am	byte	draft		
+exe	0x00499290	ai_ExecuteBuildBusiness	am	byte	draft		
 exe	0x00499400	ai_DecideUpgradeBusiness	am	draft	readable	deep	
-exe	0x00499520	ai_Unk499520	am	byte	draft		
-exe	0x00499580	ai_Unk499580	am	byte	draft		
-exe	0x004995d0	ai_Unk4995d0	am	byte	draft		
-exe	0x00499660	ai_Unk499660	am	byte	draft		
-exe	0x00499a90	ai_Unk499a90	am	byte	draft		
-exe	0x00499b80	ai_Unk499b80	am	byte	draft		
+exe	0x00499520	ai_DecideVisitMedicus	am	byte	readable		
+exe	0x00499580	ai_ExecuteVisitMedicus	am	byte	readable		
+exe	0x004995d0	ai_EvalSabotage	am	byte	readable		
+exe	0x00499660	ai_DecideSabotage	am	byte	draft		
+exe	0x00499a90	ai_ExecuteSabotage	am	byte	draft		
+exe	0x00499b80	ai_EvalBeatUp	am	byte	readable		
 exe	0x00499c10	ai_DecideBeatUp	am	shape	readable		
-exe	0x00499f20	ai_Unk499f20	am	byte	draft		
-exe	0x0049a020	ai_Unk49a020	am	byte	draft		
+exe	0x00499f20	ai_ExecuteBeatUp	am	byte	draft		
+exe	0x0049a020	ai_DecideCitizenship	am	byte	readable		
 exe	0x0049a0a0	ai_ExecuteCitizenship	am	draft	readable	deep	
 exe	0x0049a290	ai_DecideSaveAps	am	byte	readable		
-exe	0x0049a380	ai_Unk49a380	am	byte	draft		
+exe	0x0049a380	ai_ExecuteSaveAps	am	byte	readable		
 exe	0x0049a390	ai_DecideUseMilitaryObject	am	shape	readable		
-exe	0x0049a5b0	ai_Unk49a5b0	am	shape	draft		
+exe	0x0049a5b0	ai_ExecuteUseMilitaryObject	am	shape	draft		
 exe	0x0049a690	ai_DecideUseReputationObject	am	shape	readable		
-exe	0x0049aa80	ai_Unk49aa80	am	shape	draft		
+exe	0x0049aa80	ai_ExecuteUseReputationObject	am	shape	draft		
 exe	0x0049ab60	ai_DecideUseApsObject	am	shape	readable		
-exe	0x0049ad80	ai_Unk49ad80	am	shape	draft		
+exe	0x0049ad80	ai_ExecuteUseApsObject	am	shape	draft		
 exe	0x0049ae50	ai_DecideUseEducationObject	am	shape	readable		
-exe	0x0049b050	ai_Unk49b050	am	shape	draft		
+exe	0x0049b050	ai_ExecuteUseEducationObject	am	shape	draft		
 exe	0x0049b120	ai_DecideUseHealthObject	am	shape	readable		
-exe	0x0049b2b0	ai_Unk49b2b0	am	shape	draft		
+exe	0x0049b2b0	ai_ExecuteUseHealthObject	am	shape	draft		
 exe	0x0049b380	ai_DecideUseDynastyObject	am	draft	readable	deep	
 exe	0x0049b6f0	ai_ExecuteUseDynastyObject	am	shape	readable		
 exe	0x0049b7c0	ai_DecideUseMeanObject	am	draft	readable	deep	
-exe	0x0049bc50	ai_Unk49bc50	am	shape	draft		
+exe	0x0049bc50	ai_ExecuteUseMeanObject	am	shape	draft		
 exe	0x0049bd90	ai_DecideUseSafetyObject	am	draft	readable	deep	
-exe	0x0049c000	ai_Unk49c000	am	shape	draft		
-exe	0x0049c0d0	ai_Unk49c0d0	am	byte	draft		
-exe	0x0049c170	ai_Unk49c170	am	byte	draft		
+exe	0x0049c000	ai_ExecuteUseSafetyObject	am	shape	draft		
+exe	0x0049c0d0	ai_EvalUsePerfume	am	byte	readable		
+exe	0x0049c170	ai_DecideUsePerfume	am	byte	readable		
 exe	0x0049c190	ai_ExecuteUsePerfume	am	shape	readable		
-exe	0x0049c320	ai_Unk49c320	am	byte	draft		
-exe	0x0049c3c0	ai_Unk49c3c0	am	byte	draft		
+exe	0x0049c320	ai_EvalUseTrank	am	byte	readable		
+exe	0x0049c3c0	ai_DecideUseTrank	am	byte	readable		
 exe	0x0049c3e0	ai_ExecuteUseTrank	am	shape	readable		
 exe	0x0049c570	ai_DecideSpy	am	byte	readable		
-exe	0x0049c700	ai_Unk49c700	am	byte	draft		
-exe	0x0049c790	ai_Unk49c790	am	byte	draft		
-exe	0x0049c880	ai_Unk49c880	am	byte	draft		
+exe	0x0049c700	ai_ExecuteSpy	am	byte	draft		
+exe	0x0049c790	ai_DecideBuyMarketObject	am	byte	draft		
+exe	0x0049c880	ai_ExecuteBuyMarketObject	am	byte	readable		
 exe	0x0049c8e0	ai_DecideBuyIndulgence	am	shape	readable		
-exe	0x0049cb60	ai_Unk49cb60	am	shape	draft		
-exe	0x0049cd30	ai_Unk49cd30	am	byte	draft		
-exe	0x0049cdb0	ai_Unk49cdb0	am	byte	draft		
-exe	0x0049cdd0	ai_Unk49cdd0	am	byte	draft		
+exe	0x0049cb60	ai_ExecuteBuyIndulgence	am	shape	draft		
+exe	0x0049cd30	ai_DecideUseOffice	am	byte	readable		
+exe	0x0049cdb0	ai_ExecuteUseOffice	am	byte	readable		
+exe	0x0049cdd0	ai_EvalThreaten	am	byte	readable		
 exe	0x0049ce50	ai_DecideThreaten	am	draft	readable	deep	
-exe	0x0049d030	ai_Unk49d030	am	byte	draft		
-exe	0x0049d050	ai_Unk49d050	am	byte	draft		
+exe	0x0049d030	ai_ExecuteThreaten	am	byte	draft		
+exe	0x0049d050	ai_EvalPamphlets	am	byte	readable		
 exe	0x0049d0f0	ai_DecidePamphlets	am	shape	readable		
-exe	0x0049d280	ai_Unk49d280	am	byte	draft		
+exe	0x0049d280	ai_ExecutePamphlets	am	byte	readable		
 exe	0x0049d2d0	ai_DecideDenounce	am	shape	readable		
-exe	0x0049d460	ai_Unk49d460	am	byte	draft		
-exe	0x0049d4b0	ai_Unk49d4b0	am	byte	draft		
-exe	0x0049d550	ai_Unk49d550	am	byte	draft		
-exe	0x0049d5e0	ai_Unk49d5e0	am	byte	draft		
-exe	0x0049d600	ai_Unk49d600	am	byte	draft		
-exe	0x0049d6a0	ai_Unk49d6a0	am	byte	draft		
-exe	0x0049d730	ai_Unk49d730	am	byte	draft		
-exe	0x0049d750	ai_Unk49d750	am	byte	draft		
-exe	0x0049d7d0	ai_Unk49d7d0	am	byte	draft		
+exe	0x0049d460	ai_ExecuteDenounce	am	byte	readable		
+exe	0x0049d4b0	ai_EvalInsult	am	byte	readable		
+exe	0x0049d550	ai_DecideInsult	am	byte	readable		
+exe	0x0049d5e0	ai_ExecuteInsult	am	byte	readable		
+exe	0x0049d600	ai_EvalBlackmail	am	byte	readable		
+exe	0x0049d6a0	ai_DecideBlackmail	am	byte	readable		
+exe	0x0049d730	ai_ExecuteBlackmail	am	byte	readable		
+exe	0x0049d750	ai_DecideUsePrivileges	am	byte	readable		
+exe	0x0049d7d0	ai_ExecuteUsePrivileges	am	byte	readable		
 exe	0x0049d7f0	ai_EvalMayor	am	shape	readable		
 exe	0x0049d8d0	ai_DecideMayor	am	draft	readable	deep	
-exe	0x0049dc10	ai_Unk49dc10	am	byte	draft		
-exe	0x0049dd90	ai_Unk49dd90	am	byte	draft		
+exe	0x0049dc10	ai_ExecuteMayor	am	byte	draft		
+exe	0x0049dd90	ai_DecideMayorUpgrade	am	byte	readable		
 exe	0x0049def0	ai_DecideMayorTownHall	am	byte	readable		
-exe	0x0049e230	ai_Unk49e230	am	byte	draft		
+exe	0x0049e230	ai_ExecuteMayorTownHall	am	byte	draft		
 exe	0x0049e350	ai_DecideMayorPrison	am	byte	readable		
-exe	0x0049e680	ai_Unk49e680	am	byte	draft		
+exe	0x0049e680	ai_ExecuteMayorPrison	am	byte	draft		
 exe	0x0049e7a0	ai_DecideMasterBuilder	am	draft	readable	deep	
 exe	0x0049ea90	ai_ExecuteMasterBuilder	am	draft	readable	deep	
 exe	0x0049ec10	ai_EvalDarkCorner	am	byte	readable		
-exe	0x0049ed10	ai_Unk49ed10	am	byte	draft		
+exe	0x0049ed10	ai_DecideDarkCorner	am	byte	readable		
 exe	0x0049ee20	ai_ExecuteDarkCorner	am	byte	readable		
 exe	0x0049eec0	ai_DecideTakeCredit	am	byte	readable		
-exe	0x0049f370	ai_Unk49f370	am	byte	draft		
-exe	0x0049f4f0	ai_Unk49f4f0	am	byte	draft		
+exe	0x0049f370	ai_ExecuteTakeCredit	am	byte	draft		
+exe	0x0049f4f0	ai_EvalChangeProfession	am	byte	readable		
 exe	0x0049f5c0	ai_DecideChangeProfession	am	draft	readable	deep	
 exe	0x0049f7f0	ai_ExecuteChangeProfession	am	byte	readable		
 exe	0x0049f850	ai_DecideStammtisch	am	draft	readable	deep	
 exe	0x0049fb80	ai_ExecuteStammtisch	am	byte	readable		
 exe	0x0049fc90	ai_DecidePriceManipulation	am	draft	readable	deep	
-exe	0x004a0040	ai_Unk4a0040	am	byte	draft		
-exe	0x004a0090	ai_Unk4a0090	am	byte	draft		
-exe	0x004a01f0	ai_Unk4a01f0	am	byte	draft		
+exe	0x004a0040	ai_ExecutePriceManipulation	am	byte	readable		
+exe	0x004a0090	ai_DecideGuildRiot	am	byte	readable		
+exe	0x004a01f0	ai_ExecuteGuildRiot	am	byte	readable		
 exe	0x004a0240	ai_PickLeastLikedRival	am	draft	readable	deep	
 exe	0x004a0410	ai_PickDislikedColumn	am	byte	readable		
 exe	0x004a05e0	ai_Unk4a05e0	am	byte	draft		
-exe	0x004a0890	ai_Unk4a0890	am	byte	draft		
-exe	0x004a0940	ai_Unk4a0940	am	byte	draft		
-exe	0x004a0990	ai_Unk4a0990	am	byte	draft		
+exe	0x004a0890	ai_DecideGuildLevel3	am	byte	draft		
+exe	0x004a0940	ai_ExecuteGuildLevel3	am	byte	readable		
+exe	0x004a0990	ai_EvalUpgradeGuild	am	byte	readable		
 exe	0x004a0a70	ai_DecideUpgradeGuild	am	draft	readable	deep	
-exe	0x004a0e60	ai_Unk4a0e60	am	byte	draft		
-exe	0x004a1000	ai_Unk4a1000	am	byte	draft		
-exe	0x004a1170	ai_Unk4a1170	am	shape	draft		
-exe	0x004a1360	ai_Unk4a1360	am	byte	draft		
-exe	0x004a13e0	ai_Unk4a13e0	am	shape	draft		
+exe	0x004a0e60	ai_ExecuteUpgradeGuild	am	byte	draft		
+exe	0x004a1000	ai_EvalApprenticeship	am	byte	draft		
+exe	0x004a1170	ai_DecideApprenticeship	am	shape	draft		
+exe	0x004a1360	ai_ExecuteApprenticeship	am	byte	draft		
+exe	0x004a13e0	ai_DecideStudy	am	shape	draft		
 exe	0x004a1640	ai_ExecuteStudy	am	byte	readable		
-exe	0x004a16f0	ai_RegisterBaseActions	am	draft	draft		
-exe	0x004a3a90	ai_Unk4a3a90	am	draft	draft		
-exe	0x004a3af0	ai_FillNearRing	am	draft	draft		
-exe	0x004a4680	ai_GroupPrices	am	draft	draft		
+exe	0x004a16f0	ai_RegisterBaseActions	am	byte	readable		
+exe	0x004a3a90	ai_NextNearRingEntry	am	byte	readable		
+exe	0x004a3af0	ai_FillNearRing	am	draft	readable	deep	
+exe	0x004a4680	ai_GroupPrices	am	byte	readable		
 exe	0x004a47c0	ai_GetDesireByName	am	byte	readable		
-exe	0x004a49a0	ai_EvalMoodWeights	am	draft	readable		
-exe	0x004a4ae0	ai_EvalCurrentNeed	am	draft	readable		
-exe	0x004a4c10	ai_EvalGuiltWeights	am	draft	readable		
+exe	0x004a49a0	ai_EvalMoodWeights	am	draft	readable	deep	
+exe	0x004a4ae0	ai_EvalCurrentNeed	am	byte	readable		
+exe	0x004a4c10	ai_EvalGuiltWeights	am	draft	readable	deep	
 exe	0x004a4e30	ai_RepairCost	am	byte	readable		
-exe	0x004a4e70	ai_Unk4a4e70	am	draft	draft		
+exe	0x004a4e70	ai_PickBuildSite	am	draft	readable	deep	
 exe	0x004a5140	ai_CanBuildType	am	draft	draft		
 exe	0x004a5320	ai_ExecBuildBuilding	am	draft	draft		
 exe	0x004a5540	ai_FindGoodToMake	am	draft	draft		
@@ -1880,7 +1880,7 @@ exe	0x004afe80	ai_Unk4afe80	hst	byte	draft
 exe	0x004aff30	ai_Unk4aff30	hst	shape	draft		
 exe	0x004affc0	ai_CommandFire	hst	byte	draft	deep	
 exe	0x004b0050	ai_CommandTornado	hst	byte	draft	deep	
-exe	0x004b00e0	ai_CommandCityTreasury	hst	draft	draft	deep	
+exe	0x004b00e0	ai_CommandCityTreasury	hst	shape	draft	deep	
 exe	0x004b02a0	ai_CommandWealthTax	hst	draft	readable	deep	
 exe	0x004b0360	ai_CommandWealth	hst	byte	readable		
 exe	0x004b04a0	ai_CommandOfficeStanding	hst	byte	readable		
@@ -1934,7 +1934,7 @@ exe	0x004b3c40	ai_RandomMissionType	unk_4b39f0	byte	readable
 exe	0x004b3ca0	ai_NewMission	unk_4b39f0	byte	draft	deep	
 exe	0x004b3d50	ai_Unk4b3d50	unk_4b39f0	byte	draft		
 exe	0x004b3e70	ai_ChooseMissionType	unk_4b39f0	byte	draft		
-exe	0x004b4040	ai_ChooseMission	unk_4b39f0	draft	readable	deep	
+exe	0x004b4040	ai_ChooseMission	unk_4b39f0	shape	readable	deep	
 exe	0x004b4280	ai_ChooseMissionFrom	unk_4b39f0	byte	readable		
 exe	0x004b44e0	ai_Unk4b44e0	unk_4b39f0	byte	draft		
 exe	0x004b4550	ai_Unk4b4550	unk_4b39f0	byte	draft		
@@ -2740,7 +2740,7 @@ exe	0x004ee360	gv_ExplodeShot	gv	draft	readable	deep
 exe	0x004eea70	unk_Unk4eea70	gv	byte	draft		
 exe	0x004eeaa0	gv_ReserveEffect	gv	byte	readable		
 exe	0x004eeb00	gv_StopEffect	gv	byte	readable		
-exe	0x004eeb70	gv_FireShots	gv	draft	readable	deep	
+exe	0x004eeb70	gv_FireShots	gv	shape	readable	deep	
 exe	0x004eedd0	gv_GetEffect	gv	byte	readable		
 exe	0x004eee00	gv_StartShot	gv	byte	readable		
 exe	0x004eeee0	unk_Unk4eeee0	gv	byte	draft		
