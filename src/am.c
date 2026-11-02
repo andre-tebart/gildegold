@@ -1353,7 +1353,7 @@ int ai_Unk490e00(AIPER *p, int a, int *out)
     u = (p->mood[9][0] - 2.0) * p->mood[9][2];
     v = (p->mood[10][0] - 2.0) * p->mood[10][2];
     w = (p->mood[11][0] - 2.0) * p->mood[11][2];
-    r = unk_Unk4f39e0(p->netId);
+    r = gv_CulpritGuilt(p->netId);
     if (t == 0xb || t == 0xc)
         x += 6.0f;
     else if (t == 9 || t == 7)
@@ -1393,7 +1393,7 @@ int ai_Unk490fc0(AIPER *p, int a, int *out)
     u = (p->mood[9][0] - 2.0) * p->mood[9][2];
     v = (p->mood[10][0] - 2.0) * p->mood[10][2];
     w = (p->mood[11][0] - 2.0) * p->mood[11][2];
-    r = unk_Unk4f39e0(p->netId);
+    r = gv_CulpritGuilt(p->netId);
     if (t == 0xb || t == 0xc)
         x += 7.0f;
     else if (t == 9 || t == 1 || t == 3 || t == 2)
@@ -6739,7 +6739,7 @@ int ai_Unk49c8e0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         return 0;
     if ((p->netId & 7) != (int)ai_TimeT.hour % 8)
         return 0;
-    n1 = unk_Unk4f39e0(p->netId);
+    n1 = gv_CulpritGuilt(p->netId);
     n2 = gv_CountOwnedGraves(p->netId);
     if (util_RandomU(8) + 8 > n1)
         return 0;
@@ -9969,8 +9969,8 @@ int ai_Unk4a4c10(float *a, float *b, int i, AIPER *p, AIDEC *dec)
     if (dec == 0)
         v = 1.0f;
     else
-        v = (float)dec->unk0c;
-    n = unk_Unk4f39e0(p->netId);
+        v = (float)dec->guilt;
+    n = gv_CulpritGuilt(p->netId);
     rank = p->mood[11][0];
     *a = 0.0f;
     *b = 0.0f;

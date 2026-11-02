@@ -3329,23 +3329,21 @@ int gv_CountOwnedGraves(int c)
     } while ((int)p < (int)((unsigned)&amt_Table + 0x5));
     return cnt;
 }
-/* 0x4f39e0, the sum of the +0x18 ints of the table records (0x4f2720 of the byte +0x1c) of the records of the character c in state 1 */
+/* 0x4f39e0, the guilt of the culprit c: the sum of AIDEC.guilt of the laws broken by the open crimes (state 1) of the culprit c */
 
-int unk_Unk4f39e0(int c)
+int gv_CulpritGuilt(int c)
 {
-    int *p;
+    int k;
     int sum;
-    int rec[9];
+    AIDEC rec;
 
-    p = (int *)(gv_Graveyard + 0x25);
     sum = 0;
-    do {
-        if (*(int *)((char *)p - 0xf) == c && *p == 1) {
-            gv_GetTableRecord(*((unsigned char *)p - 9), rec);
-            sum += rec[8];
+    for (k = 0; k < 0x200; k++) {
+        if (gv_CrimesT[k].culprit == c && gv_CrimesT[k].state == 1) {
+            gv_GetTableRecord(gv_CrimesT[k].law, (int *)&rec);
+            sum += rec.guilt;
         }
-        p = (int *)((char *)p + 0x2d);
-    } while ((int)p < ((unsigned)&amt_Table + 0x5));
+    }
     return sum;
 }
 /* 0x4f3fe0, fills out[0x20] (-1 first) with the indexes of the records of 0x91f700 that the character with the slot c (low word of t) owns of the graveyard player p: pairs (character id, record id) of 0x91b6e0 whose record belongs

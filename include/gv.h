@@ -342,7 +342,7 @@ typedef struct AIDEC {                  /* 0x24 bytes, a record of the AI decisi
     short pad02;
     int min;                            /* 0x04 */
     int max;                            /* 0x08 */
-    int unk0c;                          /* 0x0c */
+    int guilt;                          /* 0x0c, the weight of a crime against it (summed per culprit by gv_CulpritGuilt: the indulgence price, ai_Unk4a4c10) */
     int crimeCount;                     /* 0x10, the CRIME.count a crime against it starts with (gv_Accuse) */
     int rule;                           /* 0x14, low byte: how gv_Accuse compares cur with a deed's value (1 .. 7: broken unless ==, unless !=, ..) */
     int cur;                            /* 0x18, the current value */
@@ -373,7 +373,7 @@ int gv_EvidenceSlot(int a, int b);        /* 0x4f3780 */
 
 int gv_HandOverCrimes(int owner, int culprit, int state, int hand);  /* 0x4f3910 */
 int gv_CountOwnedGraves(int c);               /* 0x4f39b0 */
-int unk_Unk4f39e0(int c);               /* 0x4f39e0 */
+int gv_CulpritGuilt(int c);               /* 0x4f39e0 */
 
 int unk_Unk4f3fe0(int p, int *out, unsigned t);  /* 0x4f3fe0 */
 int unk_Unk4f4080(int p, int *out, unsigned t);  /* 0x4f4080 */

@@ -10332,7 +10332,7 @@ void ai_Unk5a1af0(int param_1)
     }
 }
 
-int gv_CountOwnedGraves(); int unk_Unk4f39e0(int c); int gm_GetWorth(unsigned short id); float gm_Liking();
+int gv_CountOwnedGraves(); int gv_CulpritGuilt(int c); int gm_GetWorth(unsigned short id); float gm_Liking();
 int ai_InventoryHas(void *ch, int id); int d2_OpenForm(); void d2_SetPointerSprite(int a, int pic); 
 int d2_SetForm(int view, int n); void sv_FitForm(int f); int io_PrintText(char *fmt, ...); int d2_GetWinObj();
 int sv_CheckGoodAmount(); void cm_BeginFieldBlock(char *o, int id); int cm_AddFieldValues(unsigned char size, unsigned char n, unsigned short field, void *v); void cm_SendFieldDeltas(void);
@@ -10377,7 +10377,7 @@ void ai_IndulgenceWindow(int param_1, int param_2)
 
     id = U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x21c);
     n2 = gv_CountOwnedGraves(id);
-    n1 = unk_Unk4f39e0(id);
+    n1 = gv_CulpritGuilt(id);
     if (n1 != 0) {
         owner = U_W(param_1 + 0x27);
         a = gm_GetWorth(U_W((unsigned)&ai_PlayerId)) * 0.005f;
