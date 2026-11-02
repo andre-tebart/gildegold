@@ -677,7 +677,9 @@ typedef struct G5CH {                   /* a character, 0x21c bytes (ai_Chars[76
     unsigned int ailments;              /* 0x02c, bit fields of counters (4,4,4,2,3,3,3,2,4 bits, the dump 0x4e5980) the
                                            daily update 0x4fbe90 runs down; reasoned: the character's ailments, as
                                            "UseObject (Unversehrtheit)" wants the good 0x17e while one is set */
-    char pad030[0x58];
+    char pad030[0x2c];
+    int relatives[8];                   /* 0x05c, the netIds of the character's relatives (ai.h AICHAR), -1 none */
+    char pad07c[0xc];
     float mood[14][3];                  /* 0x088, (a, b, value) */
     unsigned char sel;                  /* 0x130, the current need */
     unsigned char prev;                 /* 0x131, the previous action */
@@ -859,7 +861,7 @@ int ai_DecideUseEducationObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);   
 int ai_Unk49b050(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49b050 */
 int ai_DecideUseHealthObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49b120 */
 int ai_Unk49b2b0(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49b2b0 */
-int ai_Unk49b380(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49b380 */
+int ai_DecideUseDynastyObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49b380 */
 int ai_Unk49b6f0(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49b6f0 */
 int ai_Unk49b7c0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49b7c0 */
 int ai_Unk49bc50(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49bc50 */

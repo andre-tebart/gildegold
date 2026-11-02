@@ -264,7 +264,7 @@ typedef struct AICHAR {                 /* 0x21c bytes, ai_Chars[768] */
         struct {
             char padname5c[0x2c];
             int relatives[8];           /* 0x05c, the netIds of the character's relatives (gm_KillSpieler clears
-                                           them when one dies, ai_Unk49b380 walks [3..7]); relatives[0] is never
+                                           them when one dies, ai_DecideUseDynastyObject walks [3..7]); relatives[0] is never
                                            picked as a partner (ai_DecideOfficePartner) */
         };
     };

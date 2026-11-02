@@ -6332,126 +6332,139 @@ int ai_Unk49b2b0(G5CH *p, AIARG *s1, AIARG *s2)
     }
     return 0;
 }
-/* 0x49b380, decide callback 0x20: gifts for a young child (0x162..0x164), a fiancee (0x167) or a wedding
-   ring (0x170) */
+/* 0x49b380, decide callback of "UseObject (Dynastie)" (0x20): the gifts 0x162..0x164 for a relative (3..7) younger
+   than 40, else, with no relatives[0], the good 0x167 for the partner of the character's pair event 0x41 or the
+   wedding ring 0x170; with fewer than six goods and none usable, the sub-action 2 to get a random missing one
+   (weight 0.05; o2 the character itself), else the action 0x20 with a random usable one (o1 kind 1, its inventory
+   entry) for the relative / the partner (o2 kind 7), the ring through the sub-action 3
+   @deep read the whole function against the original: the relative loops (twice, c spilled to f's slot as
+   the original), the pair event 0x41 search, the else path's w = p (the original loads p into w's ebp
+   there), the shared ChooseSubAction call (goto done), the switch (tables equal, the ref-first case bodies
+   merge as the original's) and the 0x170 sub-action branch order all reconciled. Left is allocation: p and
+   w swap registers (diffclass regs ebp<->edi at +0xd2,+0xf3,+0x128,+0x19f,+0x280), so p is loaded before
+   the memset (ours mov ebp,[esp+0x84] at +0x8f vs the original's mov edi,[esp+0x84] after rep stosd), and
+   with it the cross-jump of the 0x167 / 0x170 recs tails differs (ours jumps the 0x167 path to the else's
+   stores, the original keeps its own stores and esi=1 and joins after mov ebp,[esp+0x84]); 247 vs 249
+   instructions. Tried: decl order of c / w, the recs tail written in each branch, ref-first case bodies */
 
-int ai_Unk49b380(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
+int ai_DecideUseDynastyObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 {
     int k, i, n, r;
-    int *rel;
-    AIPER *c;
     AIPER *w;
+    AIPER *c;
     AIJOB *j;
     int st[3];
     AIARG s1;
     AIARG s2;
-    G8REC recs[3];
+    G9REC recs[3];
 
     k = a;
     if (a == 0)
         k = 0x20;
-    if (f != 0 || a != 0)
-        return 0;
-    rel = (int *)((char *)p + 0x5c);
-    for (i = 3; i < 8; i++) {
-        c = gm_FindPer(rel[i]);
-        if (c != 0 && c->age < 0x28)
-            break;
-    }
-    for (i = 3; i < 8; i++) {
-        c = gm_FindPer(rel[i]);
-        if (c != 0 && c->age < 0x28)
-            break;
-    }
-    memset(recs, 0, sizeof(recs));
-    if (c != 0) {
-        recs[0].item = 0x162;
-        recs[1].item = 0x163;
-        recs[2].item = 0x164;
-        n = 3;
-    } else {
-        if (rel[0] != -1)
-            return 0;
-        for (j = he_FindEvent(1, 0, 0x41); j != 0; j = he_NextEvent()) {
-            if (((int *)j)[0xac / 4] == (int)p->netId)
+    if (f == 0 && a == 0) {
+        for (i = 3; i < 8; i++) {
+            c = gm_FindPer(p->relatives[i]);
+            if (c != 0 && c->age < 40)
                 break;
         }
-        if (j != 0) {
-            w = gm_FindPer(((int *)j)[0xb0 / 4]);
-            if (w == 0)
-                return 0;
-            recs[0].item = 0x167;
+        for (i = 3; i < 8; i++) {
+            c = gm_FindPer(p->relatives[i]);
+            if (c != 0 && c->age < 40)
+                break;
+        }
+        memset(recs, 0, sizeof(recs));
+        if (c != 0) {
+            recs[0].item = 0x162;
+            recs[1].item = 0x163;
+            recs[2].item = 0x164;
+            n = 3;
         } else {
-            recs[0].item = 0x170;
+            if (p->relatives[0] != -1)
+                return 0;
+            for (j = (AIJOB *)he_FindEvent(1, 0, 0x41); j != 0; j = (AIJOB *)he_NextEvent()) {
+                if (j->partner1 == (int)p->netId)
+                    break;
+            }
+            if (j != 0) {
+                w = gm_FindPer(j->partner2);
+                if (w == 0)
+                    return 0;
+                recs[0].item = 0x167;
+                recs[1].item = 0;
+                recs[2].item = 0;
+                n = 1;
+            } else {
+                recs[0].item = 0x170;
+                recs[1].item = 0;
+                recs[2].item = 0;
+                n = 1;
+                w = (AIPER *)p;             /* the ring is the character's own (the original sets it, unused) */
+            }
         }
-        recs[1].item = 0;
-        recs[2].item = 0;
-        n = 1;
-    }
-    ai_FindWantedItems(p, n, (int *)recs, st);
-    if (st[0] == 6 && st[2] == 0)
-        return 0;
-    if (st[1] == n)
-        return 0;
-    if (st[0] < 6) {
-        if (st[2] == 0) {
+        ai_FindWantedItems(p, n, recs, st);
+        if ((st[0] != 6 || st[2] != 0) && st[1] != n) {
+            if (st[0] < 6) {
+                if (st[2] == 0) {
+                    i = util_RandomU(n);
+                    while (recs[i].value != 0)
+                        i = (i + 1) % n;
+                    s2.kind = 2;
+                    s2.ref = recs[i].item;
+                    s1.ref = p->netId;
+                    s2.arg = 1;
+                    s2.fvalue = 0.05f;
+                    s1.kind = 7;
+                    s1.arg = 1;
+                    r = ai_ChooseSubAction(k, p->id, 2, &s2, &s1);
+                    goto done;
+                }
+            } else if (st[2] == 0) {
+                return 0;
+            }
             i = util_RandomU(n);
-            while (recs[i].unk04 != 0)
+            while (recs[i].value < 1)
                 i = (i + 1) % n;
-            s2.kind = 2;
-            s2.ref = recs[i].item;
-            s1.ref = p->netId;
+            s2.kind = 1;
             s2.arg = 1;
+            s2.ref = recs[i].entryId;
             s2.fvalue = 0.05f;
-            s1.kind = 7;
-            s1.arg = 1;
-            r = ai_ChooseSubAction(k, p->id, 2, &s2, &s1);
-            goto done;
-        }
-    } else if (st[2] == 0) {
-        return 0;
-    }
-    i = util_RandomU(n);
-    while (recs[i].unk04 < 1)
-        i = (i + 1) % n;
-    s2.kind = 1;
-    s2.arg = 1;
-    s2.ref = recs[i].unk08;
-    s2.fvalue = 0.05f;
-    switch (recs[i].item) {
-    case 0x170:
-        s1.kind = 0;
-        s1.arg = -1;
-        s1.ref = -1;
-        break;
-    case 0x167:
-        s1.kind = 7;
-        s1.arg = -1;
-        s1.ref = w->netId;
-        break;
-    case 0x162:
-    case 0x163:
-    case 0x164:
-        s1.kind = 7;
-        s1.arg = -1;
-        s1.ref = c->netId;
-        break;
-    default:
-        return 0;
-    }
-    s1.arg2 = 0x20;
-    if (recs[i].item != 0x170) {
-        *o1 = s2;
-        *o2 = s1;
-        return 0x20;
-    }
-    r = ai_ChooseSubAction(k, p->id, 3, &s2, &s1);
+            switch (recs[i].item) {
+            case 0x170:
+                s1.kind = 0;
+                s1.arg = -1;
+                s1.ref = -1;
+                break;
+            case 0x167:
+                s1.ref = w->netId;
+                s1.kind = 7;
+                s1.arg = -1;
+                break;
+            case 0x162:
+            case 0x163:
+            case 0x164:
+                s1.ref = c->netId;
+                s1.kind = 7;
+                s1.arg = -1;
+                break;
+            default:
+                return 0;
+            }
+            s1.arg2 = 0x20;
+            if (recs[i].item == 0x170) {
+                r = ai_ChooseSubAction(k, p->id, 3, &s2, &s1);
 done:
-    if (r == 0)
-        return r;
-    *o1 = s2;
-    *o2 = s1;
-    return r;
+                if (r == 0)
+                    return 0;
+                *o1 = s2;
+                *o2 = s1;
+                return r;
+            }
+            *o1 = s2;
+            *o2 = s1;
+            return 0x20;
+        }
+    }
+    return 0;
 }
 /* 0x49b6f0, execute callback 0x20: uses the object s1->unk04 of the character's list */
 
@@ -9609,7 +9622,7 @@ int ai_RegisterBaseActions(int a)
     act.id = 0x20;
     strcpy(act.name, "UseObject (Dynastie)");
     act.eval = ai_EvalMoodWeights;
-    act.decide = ai_Unk49b380;
+    act.decide = ai_DecideUseDynastyObject;
     act.exec = ai_Unk49b6f0;
     act.flags = 0x17;
     if (!am_RegisterMethod(&act, a))
