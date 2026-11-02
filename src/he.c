@@ -9394,7 +9394,7 @@ int cm_GetSlotValue(int h);
 unsigned char *gm_BuildQuery(int n, ...);
 char *gm_Query(void *list, int n, ...);
 void cm_SendExSellObject(int a, int b, short c, int d, unsigned char e, int f);
-int unk_Unk4f0a90();
+int gv_OrderOpenSize();
 int cm_SendLongMessage(char *msg);
 int cm_SendExSysMessage(unsigned char id, void *msg);
 void he_MessageBoxQuickjump(int a1, int a2, char *text, char fl, int a5, int a6, int a7, char *jump, char *text2);
@@ -9442,11 +9442,11 @@ void he_Unk553e90(int ev)
     }
     ty = *(unsigned short *)p;
     if (ty == 0x1f9)
-        unk_Unk4f0a90((unsigned)&ai_Chars + *(unsigned short *)(b + 0x27) * 0x21c, b, 1);
+        gv_OrderOpenSize((unsigned)&ai_Chars + *(unsigned short *)(b + 0x27) * 0x21c, b, 1);
     else if (ty == 0x1fd)
-        unk_Unk4f0a90((unsigned)&ai_Chars + *(unsigned short *)(b + 0x27) * 0x21c, b, 2);
+        gv_OrderOpenSize((unsigned)&ai_Chars + *(unsigned short *)(b + 0x27) * 0x21c, b, 2);
     else if (ty == 0x201)
-        unk_Unk4f0a90((unsigned)&ai_Chars + *(unsigned short *)(b + 0x27) * 0x21c, b, 3);
+        gv_OrderOpenSize((unsigned)&ai_Chars + *(unsigned short *)(b + 0x27) * 0x21c, b, 3);
     else if (ty == 0x12d) {
         memset(msg, 0, sizeof(msg));
         msg[4] = 0x2a;

@@ -2002,25 +2002,25 @@ int gv_SetGraveHolder(GVORDER *m)
     e->id = id;
     return 0;
 }
-/* 0x4f0a90, the message 0x4c60b0 type 4 (graveyard id +4 of g or -1, object id +1 of o, value v); -1 when o is 0 */
+/* 0x4f0a90, sends graveyard order type 4 (GVORDER, cm_SendGraveOrder): opens the grave sizes up to `size` of the graveyard
+   building o for the character c (c[1]: its AICHAR.netId, -1 when c is 0); returns the sender's result, -1 when o is 0 */
 
-int unk_Unk4f0a90(int *g, char *o, int v)
+int gv_OrderOpenSize(int *c, char *o, int size)
 {
-    char m[0x1d];
+    GVORDER m;
+    int chr;
 
     if (o == 0)
         return -1;
-    if (g == 0)
-        *(int *)(m + 4) = -1;
-    else
-        *(int *)(m + 4) = g[1];
-    *(int *)(m + 8) = *(int *)(o + 1);
-    *(int *)m = 4;
-    *(int *)(m + 0xc) = v;
-    m[0x10] = 0;
-    *(short *)(m + 0x11) = 0;
-    *(int *)(m + 0x13) = 0;
-    return ((int (*)(void *))cm_SendGraveOrder)(m);
+    chr = c == 0 ? -1 : c[1];
+    m.chr = chr;
+    m.bld = ((AIBLD *)o)->id;
+    m.type = 4;
+    m.size = size;
+    m.entry = 0;
+    m.years = 0;
+    m.price = 0;
+    return ((int (*)(void *))cm_SendGraveOrder)(&m);
 }
 /* 0x4f0af0, graveyard order type 4 (p: +4 a character id, +8 the object id, +0xc the list 1 .. 3): switches on the list for the record rec (flags +0x19 / +0x1a / +0x1b = 1 for the lists up to it); 0 or a negative reason
    (-8 other list, -7 the list is missing or the kind too small, as 0x4f0240 otherwise) */

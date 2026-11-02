@@ -643,3 +643,4 @@
 2026-11-02T03:59:25 0x004f0770 func unk_Unk4f0770 -> gv_ExtendGrave by:main why:graveyard order type 2: adds years to a grave entry's lease (GVENTRY.until) for a price
 2026-11-02T04:01:50 0x004f0900 func unk_Unk4f0900 -> gv_OrderSetGraveHolder by:main why:sends graveyard order type 3 (GVORDER, cm_SendGraveOrder); the handler 0x4f0970 sets GVENTRY.id to the order's character or -1
 2026-11-02T04:02:42 0x004f0970 func unk_Unk4f0970 -> gv_SetGraveHolder by:main why:graveyard order type 3 handler: sets GVENTRY.id / w08 to the order's character or -1 / 0xffff (sent by gv_OrderSetGraveHolder)
+2026-11-02T04:03:14 0x004f0a90 func unk_Unk4f0a90 -> gv_OrderOpenSize by:main why:sends graveyard order type 4 (GVORDER, cm_SendGraveOrder); its handler 0x4f0af0 sets GVYARD.open for the sizes up to GVORDER.size
