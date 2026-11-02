@@ -35,21 +35,21 @@ int ai_Unk6f0470 = 0;  /* 0x6f0470, number of characters of kind 5, 6, 7 */
 AGCH ai_DuelOpponent = {0};  /* 0x6f0478 */
 G9SHOT ai_Unk6f0698 = {0};  /* 0x6f0698 */
 unsigned int ai_Unk6f070c = 0;  /* 0x6f070c, the number of entries */
-int ai_Unk6f2464 = 0;  /* 0x6f2464, set: write the action table */
+int ai_WriteActionTable = 0;  /* 0x6f2464, set: write the action table */
 char ai_DataPath[608] = {0};  /* 0x75dca0, the data path */
 /* ai_Unk7e3f80: view of ai_PlayerSlots (tools/data_views.py) */
 /* ai_Unk7e3f84: view of ai_PlayerSlots (tools/data_views.py) */
 /* ai_Unk7e4274: view of ai_PlayerSlots (tools/data_views.py) */
 G6RING ai_Unkf83c20[32] = {0};  /* 0xf83c20 */
-char ai_Unkf83da0[260] = {0};  /* 0xf83da0, the ini file of the actions */
+char ai_ActionIniPath[260] = {0};  /* 0xf83da0, the ini file of the actions */
 int ai_Unkf83ea4 = 0;  /* 0xf83ea4, the depth of the evaluation stack */
-AIACT ai_Unkf83ec0[0x49] = {0};  /* 0xf83ec0, the registered actions (0x49 of them: the init clears 0x49 * 0x94 bytes) */
-/* ai_Unkf84c40: view of ai_Unkf83ec0 (tools/data_views.py) */
-/* ai_Unkf84c60: view of ai_Unkf83ec0 (tools/data_views.py) */
-/* ai_Unkf84cd4: view of ai_Unkf83ec0 (tools/data_views.py) */
-/* ai_Unkf84cf4: view of ai_Unkf83ec0 (tools/data_views.py) */
-/* ai_Unkf86894: view of ai_Unkf83ec0 (+0x29d4, in the last action record) */
-/* ai_Unkf868b4: view of ai_Unkf83ec0 (+0x29f4, in the last action record) */
+AIACT ai_Actions[0x49] = {0};  /* 0xf83ec0, the registered actions (0x49 of them: the init clears 0x49 * 0x94 bytes) */
+/* ai_Unkf84c40: view of ai_Actions (tools/data_views.py) */
+/* ai_Unkf84c60: view of ai_Actions (tools/data_views.py) */
+/* ai_Unkf84cd4: view of ai_Actions (tools/data_views.py) */
+/* ai_Unkf84cf4: view of ai_Actions (tools/data_views.py) */
+/* ai_Unkf86894: view of ai_Actions (+0x29d4, in the last action record) */
+/* ai_Unkf868b4: view of ai_Actions (+0x29f4, in the last action record) */
 int ai_Unkf86900[73] = {0};  /* 0xf86900, the actions being evaluated */
 
 #include "time_view.h"
@@ -936,7 +936,7 @@ int ai_ExecUseAlchemyItems(AIPX *p, AIARG *s1, AIARG *s2)
 }
 /* 0x48fb70, registers five actions (0x40..0x43, 0x48) */
 
-int ai_Unk48fb70(int a)
+int ai_RegisterBuildingActions(int a)
 {
     AIACT act;
 
@@ -1389,7 +1389,7 @@ int ai_Unk490b90(AGCH *p, AGARG *s1, AGARG *s2)
 }
 /* 0x490c10, registers three actions */
 
-int ai_Unk490c10(int a)
+int ai_RegisterGraveActions(int a)
 {
     AIACT act;
 
@@ -3360,94 +3360,114 @@ int ai_Unk494d90(AIC4 *a, AIC4 *b, int *out)
         return 1;
     return 0;
 }
-/* 0x494e70, loads the action table from /gamedata/ai/ai_data_2.dfn (or, with ai_Unk6f2464 set, registers
-   the actions from ai_method_addon.ini and writes the table) */
+/* the action table file is written and read field by field; a failed transfer closes the file and fails */
+#define AM_WRITE(p, size) if (vfs_fwrite(p, size, 1, f) <= 0) { vfs_fclose(f); return 0; }
+#define AM_READ(p, size) if ((unsigned)vfs_fread(p, size, 1, f) <= 0) { vfs_fclose(f); return 0; }
 
+/* 0x494e70, loads the action table from /gamedata/ai/ai_data_2.dfn (or, with ai_WriteActionTable set, registers
+   the actions from ai_method_addon.ini and writes the table) */
 int ai_LoadActionTable(void)
 {
     unsigned int n;
     int hdr[2];
     G5ACT r;
-    G5ACT *act;
-    void *f;
     unsigned int i;
+    int k;
 
-    memset(ai_Unkf83ec0, 0, 0x49 * sizeof(G5ACT));
     n = 0x49;
+    memset(ai_Actions, 0, 0x49 * sizeof(G5ACT));
     hdr[0] = 0x6144466e;
-    if (ai_Unk6f2464 == 0) {
-        f = vfs_Tfopen("/gamedata/ai/ai_data_2.dfn", "rb", vfs_Root);
-        if (f == 0)
-            return 0;
-        if (ai_Unk4a16f0(ai_Unk6f2464) != 0 && ai_Unk490c10(ai_Unk6f2464) != 0 &&
-            ai_Unk48fb70(ai_Unk6f2464) != 0 && ai_Unk4abed0(ai_Unk6f2464) != 0 &&
-            vfs_fread(hdr, 4, 1, f) != 0) {
-            if (hdr[0] != 0x6144466e)
-                return 0;
-            if (vfs_fread(&n, 4, 1, f) != 0) {
-                for (i = 0; i < n; i++) {
-                    if (vfs_fread(&r.id, 1, 1, f) == 0 || vfs_fread(r.name, 0x20, 1, f) == 0 ||
-                        vfs_fread(&r.w1[0].k, 1, 1, f) == 0 || vfs_fread(&r.w1[0].w, 4, 1, f) == 0 ||
-                        vfs_fread(&r.w1[1].k, 1, 1, f) == 0 || vfs_fread(&r.w1[1].w, 4, 1, f) == 0 ||
-                        vfs_fread(&r.w1[2].k, 1, 1, f) == 0 || vfs_fread(&r.w1[2].w, 4, 1, f) == 0 ||
-                        vfs_fread(&r.w1[3].k, 1, 1, f) == 0 || vfs_fread(&r.w1[3].w, 4, 1, f) == 0 ||
-                        vfs_fread(&r.w2[0].k, 1, 1, f) == 0 || vfs_fread(&r.w2[0].w, 4, 1, f) == 0 ||
-                        vfs_fread(&r.w2[1].k, 1, 1, f) == 0 || vfs_fread(&r.w2[1].w, 4, 1, f) == 0 ||
-                        vfs_fread(&r.w2[2].k, 1, 1, f) == 0 || vfs_fread(&r.w2[2].w, 4, 1, f) == 0 ||
-                        vfs_fread(&r.w2[3].k, 1, 1, f) == 0 || vfs_fread(&r.w2[3].w, 4, 1, f) == 0)
-                        goto fail;
-                    memcpy(r.w3, r.w1, 0x20);
-                    if (r.id < 0x49) {
-                        act = &G5_ACTS[r.id];
-                        act->id = r.id;
-                        strcpy(act->name, r.name);
-                        memcpy(act->w1, r.w1, 0x20);
-                        memcpy(act->w2, r.w2, 0x20);
-                        memcpy(act->w3, r.w3, 0x20);
-                    }
-                }
-            }
-            vfs_fclose(f);
-            return 1;
-        }
-    } else {
+    if (ai_WriteActionTable != 0) {
+        void *f;
+
         hdr[1] = 0x49;
-        GetModuleFileNameA(main_Instance, ai_Unkf83da0, 0x104);
-        strrchr(ai_Unkf83da0, '\\')[1] = 0;
-        strcat(ai_Unkf83da0, "ai_method_addon.ini");
-        if (ai_Unk4a16f0(ai_Unk6f2464) == 0)
+        GetModuleFileNameA(main_Instance, ai_ActionIniPath, 0x104);
+        strrchr(ai_ActionIniPath, 0x5c)[1] = 0;
+        strcat(ai_ActionIniPath, "ai_method_addon.ini");
+        if (ai_RegisterBaseActions(ai_WriteActionTable) == 0)
             return 0;
-        if (ai_Unk490c10(ai_Unk6f2464) == 0)
+        if (ai_RegisterGraveActions(ai_WriteActionTable) == 0)
             return 0;
-        if (ai_Unk48fb70(ai_Unk6f2464) == 0)
+        if (ai_RegisterBuildingActions(ai_WriteActionTable) == 0)
             return 0;
-        if (ai_Unk4abed0(ai_Unk6f2464) == 0)
+        if (ai_RegisterSocialActions(ai_WriteActionTable) == 0)
             return 0;
         f = vfs_Tfopen("/gamedata/ai/ai_data_2.dfn", "wb", vfs_Root);
         if (f == 0)
             return 0;
-        if (vfs_fwrite(&hdr[0], 4, 1, f) != 0 && vfs_fwrite(&hdr[1], 4, 1, f) != 0) {
-            for (act = G5_ACTS; vfs_fwrite(&act->id, 1, 1, f) != 0 && vfs_fwrite(act->name, 0x20, 1, f) != 0 &&
-                 vfs_fwrite(&act->w1[0].k, 1, 1, f) != 0 && vfs_fwrite(&act->w1[0].w, 4, 1, f) != 0 &&
-                 vfs_fwrite(&act->w1[1].k, 1, 1, f) != 0 && vfs_fwrite(&act->w1[1].w, 4, 1, f) != 0 &&
-                 vfs_fwrite(&act->w1[2].k, 1, 1, f) != 0 && vfs_fwrite(&act->w1[2].w, 4, 1, f) != 0 &&
-                 vfs_fwrite(&act->w1[3].k, 1, 1, f) != 0 && vfs_fwrite(&act->w1[3].w, 4, 1, f) != 0 &&
-                 vfs_fwrite(&act->w2[0].k, 1, 1, f) != 0 && vfs_fwrite(&act->w2[0].w, 4, 1, f) != 0 &&
-                 vfs_fwrite(&act->w2[1].k, 1, 1, f) != 0 && vfs_fwrite(&act->w2[1].w, 4, 1, f) != 0 &&
-                 vfs_fwrite(&act->w2[2].k, 1, 1, f) != 0 && vfs_fwrite(&act->w2[2].w, 4, 1, f) != 0 &&
-                 vfs_fwrite(&act->w2[3].k, 1, 1, f) != 0 && vfs_fwrite(&act->w2[3].w, 4, 1, f) != 0; ) {
-                act++;
-                if (act >= G5_ACTS + 0x49) {
-                    vfs_fclose(f);
-                    return 1;
-                }
+        AM_WRITE(&hdr[0], 4);
+        AM_WRITE(&hdr[1], 4);
+        for (k = 0; k < 0x49; k++) {
+            AM_WRITE(&G5_ACTS[k].id, 1);
+            AM_WRITE(G5_ACTS[k].name, 0x20);
+            AM_WRITE(&G5_ACTS[k].w1[0].k, 1);
+            AM_WRITE(&G5_ACTS[k].w1[0].w, 4);
+            AM_WRITE(&G5_ACTS[k].w1[1].k, 1);
+            AM_WRITE(&G5_ACTS[k].w1[1].w, 4);
+            AM_WRITE(&G5_ACTS[k].w1[2].k, 1);
+            AM_WRITE(&G5_ACTS[k].w1[2].w, 4);
+            AM_WRITE(&G5_ACTS[k].w1[3].k, 1);
+            AM_WRITE(&G5_ACTS[k].w1[3].w, 4);
+            AM_WRITE(&G5_ACTS[k].w2[0].k, 1);
+            AM_WRITE(&G5_ACTS[k].w2[0].w, 4);
+            AM_WRITE(&G5_ACTS[k].w2[1].k, 1);
+            AM_WRITE(&G5_ACTS[k].w2[1].w, 4);
+            AM_WRITE(&G5_ACTS[k].w2[2].k, 1);
+            AM_WRITE(&G5_ACTS[k].w2[2].w, 4);
+            AM_WRITE(&G5_ACTS[k].w2[3].k, 1);
+            AM_WRITE(&G5_ACTS[k].w2[3].w, 4);
+        }
+        vfs_fclose(f);
+        return 1;
+    } else {
+        void *f;
+
+        f = vfs_Tfopen("/gamedata/ai/ai_data_2.dfn", "rb", vfs_Root);
+        if (f == 0)
+            return 0;
+        if (ai_RegisterBaseActions(ai_WriteActionTable) == 0 || ai_RegisterGraveActions(ai_WriteActionTable) == 0 ||
+            ai_RegisterBuildingActions(ai_WriteActionTable) == 0 || ai_RegisterSocialActions(ai_WriteActionTable) == 0) {
+            vfs_fclose(f);
+            return 0;
+        }
+        AM_READ(hdr, 4);
+        if (hdr[0] != 0x6144466e)
+            return 0;
+        AM_READ(&n, 4);
+        for (i = 0; i < n; i++) {
+            AM_READ(&r.id, 1);
+            AM_READ(r.name, 0x20);
+            AM_READ(&r.w1[0].k, 1);
+            AM_READ(&r.w1[0].w, 4);
+            AM_READ(&r.w1[1].k, 1);
+            AM_READ(&r.w1[1].w, 4);
+            AM_READ(&r.w1[2].k, 1);
+            AM_READ(&r.w1[2].w, 4);
+            AM_READ(&r.w1[3].k, 1);
+            AM_READ(&r.w1[3].w, 4);
+            AM_READ(&r.w2[0].k, 1);
+            AM_READ(&r.w2[0].w, 4);
+            AM_READ(&r.w2[1].k, 1);
+            AM_READ(&r.w2[1].w, 4);
+            AM_READ(&r.w2[2].k, 1);
+            AM_READ(&r.w2[2].w, 4);
+            AM_READ(&r.w2[3].k, 1);
+            AM_READ(&r.w2[3].w, 4);
+            memmove(r.w3, r.w1, 0x20);
+            if (r.id < 0x49) {
+                G5_ACTS[r.id].id = r.id;
+                strcpy(G5_ACTS[r.id].name, r.name);
+                memcpy(G5_ACTS[r.id].w1, r.w1, 0x20);
+                memcpy(G5_ACTS[r.id].w2, r.w2, 0x20);
+                memcpy(G5_ACTS[r.id].w3, r.w3, 0x20);
             }
         }
+        vfs_fclose(f);
+        return 1;
     }
-fail:
-    vfs_fclose(f);
-    return 0;
 }
+#undef AM_WRITE
+#undef AM_READ
 /* 0x495520, registers an action: its need weights come from the ini file when ini is set */
 
 int ai_Unk495520(AIACT *a, int ini)
@@ -3470,23 +3490,23 @@ int ai_Unk495520(AIACT *a, int ini)
         } else {
             for (i = 1; i <= 4; i++) {
                 sprintf(key, "ShortDesire%li", i);
-                if (GetPrivateProfileStringA(act->name, key, "", val, 0x80, ai_Unkf83da0) == 0) {
+                if (GetPrivateProfileStringA(act->name, key, "", val, 0x80, ai_ActionIniPath) == 0) {
                     act->w1[i - 1].k = 0xff;
                     act->w1[i - 1].w = 0.0f;
                 } else {
                     act->w1[i - 1].k = (unsigned char)ai_Unk4a47c0(val);
                     sprintf(key, "ShortChange%li", i);
-                    GetPrivateProfileStringA(act->name, key, "", val, 0x80, ai_Unkf83da0);
+                    GetPrivateProfileStringA(act->name, key, "", val, 0x80, ai_ActionIniPath);
                     act->w1[i - 1].w = (float)atof(val);
                 }
                 sprintf(key, "LongDesire%li", i);
-                if (GetPrivateProfileStringA(act->name, key, "", val, 0x80, ai_Unkf83da0) == 0) {
+                if (GetPrivateProfileStringA(act->name, key, "", val, 0x80, ai_ActionIniPath) == 0) {
                     act->w2[i - 1].k = 0xff;
                     act->w2[i - 1].w = 0.0f;
                 } else {
                     act->w2[i - 1].k = (unsigned char)ai_Unk4a47c0(val);
                     sprintf(key, "LongChange%li", i);
-                    GetPrivateProfileStringA(act->name, key, "", val, 0x80, ai_Unkf83da0);
+                    GetPrivateProfileStringA(act->name, key, "", val, 0x80, ai_ActionIniPath);
                     act->w2[i - 1].w = (float)atof(val);
                 }
             }
@@ -4099,7 +4119,7 @@ int ai_Unk496b10(float *a, float *b, int i, AIPER *p, int f, AIARG *o1, AIARG *o
         *b = -1.0e30f;
         return 0;
     }
-    act = &ai_Unkf83ec0[i];
+    act = &ai_Actions[i];
     *a = 0.0f;
     *b = 0.0f;
     if (!p->unk168) {
@@ -9164,7 +9184,7 @@ int ai_Unk4a1640(G5CH *p, AIARG *s1, AIARG *s2)
 }
 /* 0x4a16f0, registers the actions 0x01..0x3b (eval / decide / execute callbacks of this run and of am.c) */
 
-int ai_Unk4a16f0(int a)
+int ai_RegisterBaseActions(int a)
 {
     AIACT act;
 
@@ -11022,13 +11042,13 @@ int ai_Unk495a50(int kind, int id, int c, AIARG *o1, AIARG *o2)
     return r1;
 }
 /* unlinked: the "Use Seance" decide callback returns 0; LINK folds it (/OPT:ICF) into sv_ReturnZero, 0x52a040,
-   which is where the original's reference in ai_Unk490c10 points */
+   which is where the original's reference in ai_RegisterGraveActions points */
 int ai_SeanceDecide(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 {
     return 0;
 }
 /* unlinked: the "Use Seance" execute callback returns 0; LINK folds it (/OPT:ICF) into sv_ReturnZero, 0x52a040,
-   which is where the original's reference in ai_Unk490c10 points */
+   which is where the original's reference in ai_RegisterGraveActions points */
 int ai_SeanceExec(G5CH *p, AIARG *s1, AIARG *s2)
 {
     return 0;

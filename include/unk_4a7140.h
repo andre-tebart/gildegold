@@ -146,5 +146,5 @@ int ai_DecideTheater(int a, AIPER *p, int c, struct AIARG *m);                  
 int ai_Unk4abc60(AIPER *p, unsigned char *m);                                    /* 0x4abc60 */
 int ai_Unk4abd00(int a, AIPER *p, int c, unsigned char *m);                     /* 0x4abd00 */
 int ai_Unk4abe60(AIPER *p, unsigned char *m);                                    /* 0x4abe60 */
-int ai_Unk4abed0(int a);                                                         /* 0x4abed0 */
+int ai_RegisterSocialActions(int a);                                                         /* 0x4abed0 */
 #endif

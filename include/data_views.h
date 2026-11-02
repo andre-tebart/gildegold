@@ -40,14 +40,14 @@
 /* d2_Views */
 #define ai_Unkfb1030             (*(char (*)[32816])((char *)&d2_Views + 0x10))  /* 0xfb1030 */
 
-/* ai_Unkf83ec0 */
-#define ai_ActionFlags           (*(unsigned int (*)[22][37])((char *)&ai_Unkf83ec0 + 0x90))  /* 0xf83f50 */
-#define ai_Unkf84c40             (*(float (*)[8])((char *)&ai_Unkf83ec0 + 0xd80))  /* 0xf84c40 */
-#define ai_Unkf84c60             (*(float (*)[8])((char *)&ai_Unkf83ec0 + 0xda0))  /* 0xf84c60 */
-#define ai_Unkf84cd4             (*(float (*)[8])((char *)&ai_Unkf83ec0 + 0xe14))  /* 0xf84cd4 */
-#define ai_Unkf84cf4             (*(float (*)[8])((char *)&ai_Unkf83ec0 + 0xe34))  /* 0xf84cf4 */
-#define ai_Unkf86894             (*(float *)((char *)&ai_Unkf83ec0 + 0x29d4))  /* 0xf86894 */
-#define ai_Unkf868b4             (*(float *)((char *)&ai_Unkf83ec0 + 0x29f4))  /* 0xf868b4 */
+/* ai_Actions */
+#define ai_ActionFlags           (*(unsigned int (*)[22][37])((char *)&ai_Actions + 0x90))  /* 0xf83f50 */
+#define ai_Unkf84c40             (*(float (*)[8])((char *)&ai_Actions + 0xd80))  /* 0xf84c40 */
+#define ai_Unkf84c60             (*(float (*)[8])((char *)&ai_Actions + 0xda0))  /* 0xf84c60 */
+#define ai_Unkf84cd4             (*(float (*)[8])((char *)&ai_Actions + 0xe14))  /* 0xf84cd4 */
+#define ai_Unkf84cf4             (*(float (*)[8])((char *)&ai_Actions + 0xe34))  /* 0xf84cf4 */
+#define ai_Unkf86894             (*(float *)((char *)&ai_Actions + 0x29d4))  /* 0xf86894 */
+#define ai_Unkf868b4             (*(float *)((char *)&ai_Actions + 0x29f4))  /* 0xf868b4 */
 
 /* cm_SendStates */
 #define ls_RefTargets            (*(int (*)[17574])((char *)&cm_SendStates + 0x6))  /* 0xf31166 */

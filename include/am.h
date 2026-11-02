@@ -105,7 +105,7 @@ typedef char ai_AssertAIACT[sizeof(AIACT) == 0x94 ? 1 : -1];
 }
 
 
-int ai_Unk490c10(int a);                                        /* 0x490c10 */
+int ai_RegisterGraveActions(int a);                                        /* 0x490c10 */
 int ai_Unk490e00(AIPER *p, int a, int *out);                    /* 0x490e00, decision 0 */
 int ai_Unk490fc0(AIPER *p, int a, int *out);                    /* 0x490fc0, decision 1 */
 int ai_Unk491200(AIPER *p, int a, int *out);                    /* 0x491200, decision 2 */
@@ -191,7 +191,7 @@ typedef struct AIXMSG {                 /* 0xf8 bytes, an AIMSG (ai.h) as these 
 
 typedef char ai_AssertAIXMSG[sizeof(AIXMSG) == 0xf8 ? 1 : -1];
 
-extern AIACT ai_Unkf83ec0[];            /* 0xf83ec0, the registered actions */
+extern AIACT ai_Actions[];            /* 0xf83ec0, the registered actions */
 #define AI_6F0468 ((AIPER *)ai_Partner)  /* ai.h declares it AICHAR * */
 
 void ai_Unk495ee0(void);                                                        /* 0x495ee0 */
@@ -541,7 +541,7 @@ int ai_DecideBuildSculpture(int a, AIPX *p, int b, AIARG *o1, AIARG *o2);       
 int ai_ExecBuildSculpture(AIPX *p, AIARG *s1, AIARG *s2);                                /* 0x48f500 */
 int ai_DecideUseAlchemyItems(int a, AIPX *p, int b, AIARG *o1, AIARG *o2);                  /* 0x48f600 */
 int ai_ExecUseAlchemyItems(AIPX *p, AIARG *s1, AIARG *s2);                                /* 0x48f990 */
-int ai_Unk48fb70(int a);                                                        /* 0x48fb70 */
+int ai_RegisterBuildingActions(int a);                                                        /* 0x48fb70 */
 AIPX *ai_PickRandomBuildingChar(AIBLD *b);                                                   /* 0x48feb0 */
 int ai_DecideGraveyardOwner0(AIPX *p, AIBLD *b, AIARG *o1, AIARG *o2);                      /* 0x48ff50 */
 int ai_ExecGraveyardOwner0(AIPX *p, AIBLD *b, int unused, AIARG *o);                      /* 0x4900c0 */
@@ -708,12 +708,12 @@ typedef char ai_AssertG5CH[sizeof(G5CH) == 0x21c ? 1 : -1];
 typedef char ai_AssertG5ACT[sizeof(G5ACT) == 0x94 ? 1 : -1];
 
 #define G5_CHARS ((G5CH *)ai_Chars)
-#define G5_ACTS ((G5ACT *)ai_Unkf83ec0)
+#define G5_ACTS ((G5ACT *)ai_Actions)
 
 extern int ai_Unkf83ea4;                /* 0xf83ea4, the depth of the evaluation stack */
 extern int ai_Unkf86900[];              /* 0xf86900, the actions being evaluated */
-extern char ai_Unkf83da0[];             /* 0xf83da0, the ini file of the actions */
-extern int ai_Unk6f2464;               /* 0x6f2464, set: write the action table */
+extern char ai_ActionIniPath[];             /* 0xf83da0, the ini file of the actions */
+extern int ai_WriteActionTable;               /* 0x6f2464, set: write the action table */
 
 int ai_LoadActionTable(void);                                         /* 0x494e70 */
 /* 0x495520 ai_Unk495520 is declared in am.h */
@@ -734,8 +734,8 @@ int unk_Unk4fc7a0(char *c);                                      /* 0x4fc7a0 */
 int amt_GetOfficeCandidates(char *c, int n, struct AMTCAND *out);                     /* 0x4e7150 */
 /* ai_TimeHour (0x770ae4, the clock's hour) is no object: time_view.h views it in ai_Time + 4 */
 extern void *main_Instance;              /* 0x75e140, the module handle */
-int ai_Unk48fb70(int a);                                                        /* 0x48fb70 */
-int ai_Unk4a16f0(int a);                                                        /* 0x4a16f0 */
+int ai_RegisterBuildingActions(int a);                                                        /* 0x48fb70 */
+int ai_RegisterBaseActions(int a);                                                        /* 0x4a16f0 */
 
 /* ---- small functions 0x4984d0..0x4a3af0 (was unk_4984d0.h) ---- */
 typedef struct G6RING {                 /* 12 bytes, the ring at 0xf83c20 (ai_FillNearRing fills it) */
@@ -960,7 +960,7 @@ int ai_Unk4a13e0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  
 int ai_Unk4a1640(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x4a1640 */
 int ai_SeanceDecide(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);    /* unlinked: LINK folds it (/OPT:ICF) into sv_ReturnZero */
 int ai_SeanceExec(G5CH *p, AIARG *s1, AIARG *s2);                   /* unlinked: LINK folds it (/OPT:ICF) into sv_ReturnZero */
-int ai_Unk4a16f0(int a);                                                        /* 0x4a16f0 */
+int ai_RegisterBaseActions(int a);                                                        /* 0x4a16f0 */
 #define G8_4C4830(a, b, k, d) ((void (*)(int, unsigned int, unsigned char, int))cm_SendMoveGoodsUnchecked)(a, b, k, d)  /* above: c is int */
 /* 0x4c4830 with an int c (unk_48e070.h: unsigned char) */
 #define G8_4C4830I(a, b, c, d) ((void (*)(int, unsigned int, int, int))cm_SendMoveGoodsUnchecked)(a, b, c, d)

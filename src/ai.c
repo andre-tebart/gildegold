@@ -5971,7 +5971,7 @@ AIBLD * ai_MarketBuilding = 0;  /* 0x6f1bc8, the market building (gm_BuildQuery(
 unsigned short * ai_PlayerChar = 0;  /* 0x6f1bf8 */
 int ai_CurrentPlayer = 0;  /* 0x6f2590, the player index whose turn the local round loop simulates */
 AIGRID ai_Grid[8][8] = {0}; /* 0x91ae60 */
-/* ai_ActionFlags: view of ai_Unkf83ec0 (tools/data_views.py) */
+/* ai_ActionFlags: view of ai_Actions (tools/data_views.py) */
 int ai_TradeMsgOff = 0;  /* 0xf86a24, read-only in every source: nonzero suppresses the trade
                                            message and its count (never set in this build) */
 int ai_NSlots = 0;  /* 0xf86a28 */

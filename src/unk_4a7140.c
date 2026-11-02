@@ -2630,7 +2630,7 @@ int ai_Unk4abe60(AIPER *p, unsigned char *m)
 }
 /* 0x4abed0, registers the actions 0x44 "Blutrache", 0x45 "Verfluchen", 0x46 "Theater" and 0x47 "Ehrerbietung" */
 
-int ai_Unk4abed0(int a)
+int ai_RegisterSocialActions(int a)
 {
     AIACT act;
 

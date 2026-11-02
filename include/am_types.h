@@ -1,5 +1,5 @@
 /* The item group record of f3gm.c's table ai_Unk61a348 (am.h's G7GRP) and the action record of am.c's
-   ai_Unkf83ec0 (AIACT), for the units that declare or define them without the rest of am.h: types only.
+   ai_Actions (AIACT), for the units that declare or define them without the rest of am.h: types only.
    am.h includes it. */
 #ifndef AM_TYPES_H
 #define AM_TYPES_H
