@@ -5838,15 +5838,48 @@ int gm_SexForTitle(int x)
     }
     return 2;
 }
-/* 0x503fa0, the building type of the job of the character kind x (0x504ad0 maps x to the job number first; 0 for none) */
-
+/* 0x503fa0, the building type of the job of the title x (gm_TitleGroup maps x to its job group first): the same
+   table as gm_JobBuildingType, written out here (1 -> 0x12, 2 -> 0x14, 3 -> 0x15, 4 -> 0x16, 5 -> 0xe, 6 -> 8,
+   7 -> 7, 8 -> 9, 9 -> 5, 10 -> 0x13, 0xb -> 4, 0xc -> 0x10, 0xd -> 0x1d; the groups 0xe .. 0x10 and none: 0) */
 int gm_BuildingTypeOfJob(int x)
 {
     int k;
 
     k = gm_TitleGroup(x);
-    if (k != 0)
-        return gm_JobBuildingType(k);
+    if (k != 0) {
+        switch (k) {
+        case 0xb:
+            return 4;
+        case 9:
+            return 5;
+        case 7:
+            return 7;
+        case 6:
+            return 8;
+        case 8:
+            return 9;
+        case 5:
+            return 0xe;
+        case 0xc:
+            return 0x10;
+        case 1:
+            return 0x12;
+        case 10:
+            return 0x13;
+        case 2:
+            return 0x14;
+        case 3:
+            return 0x15;
+        case 4:
+            return 0x16;
+        case 0xd:
+            return 0x1d;
+        case 0xe:
+        case 0xf:
+        case 0x10:
+            return 0;
+        }
+    }
     return 0;
 }
 /* 0x504050, the building type of the job number x (1 -> 0x12, 2 -> 0x14, 3 -> 0x15, 4 -> 0x16, 5 -> 0xe, 6 -> 8, 7 -> 7, 8 -> 9, 9 -> 5, 10 -> 0x13, 0xb -> 4, 0xc -> 0x10, 0xd -> 0x1d, else 0) */
