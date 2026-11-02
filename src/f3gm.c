@@ -8392,52 +8392,49 @@ float gm_JobWage(char *c, int k, int a, int b)
         f = (1.0 - (2 - ai_Difficulty) * 0.25) * f;
     return f;
 }
-/* 0x5087f0, the price of the object item for n pieces: the prototype's base value (4.0 without a building, else the building's two values) times the amount per unit (+0x22 / +0x36), the sub-objects (four words at +0x2e, weights at +0x26) added; cached in the prototype word +0x38 (value / 32). ROUGH */
+/* 0x5087f0, the price of n pieces of the goods item: cached in the prototype (price, the price / 32 of 100 pieces;
+   x 1.5 for the class 3). Else computed and cached: the base value (4.0 without a building type that makes it, else
+   the two values of its type record +0x233, as gm_ObjectValue) times half its production time per unit
+   (workTime / batch); the goods of type 0x17 return that x 2.2 uncached; else the prices of the goods it is made of
+   (in[], up to 4, each need[] / batch of them; 0xffff is reported as missing) are added */
 
 float gm_ItemPrice(int item, unsigned char n)
 {
-    char *p;
-    float s, f;
+    GMGOOD *g;
+    float s, f, rate;
     int i;
-    unsigned short *w;
+    unsigned char *t;
     char buf[0x100];
-    unsigned char *bp;
 
-    p = OPROTO(item);
-    if (*(int *)(p + 0x38) == 0) {
-        if (gm_GoodBuilding[item] == 0)
-            f = 4.0f;
-        else {
-            bp = (unsigned char *)(ai_BTypes + gm_GoodBuilding[item] * 0x24d);
-            f = 0.0f;
-            i = 0;
-            do {
-                f += bp[0x233 + i] * 896.0f * 0.0013888888888888887;
-                i++;
-            } while (i < 2);
-        }
-        s = (float)(f * 0.5 * ((double)*(unsigned *)(p + 0x22) / ((*(unsigned short *)(p + 0x36) == 0) + *(unsigned short *)(p + 0x36))));
-        if (*p == 0x17)
-            return s * 2.2f;
-        i = 0;
-        w = (unsigned short *)(p + 0x2e);
-        do {
-            if (*w == 0)
-                break;
-            if (*w == 0xffff)
-                sprintf(buf, "eval_ObjektPreis2Credits:Unterobjekt f\xfcr '%s' nicht vorhanden!!!", (char *)txt_ObjectNames[item][0]);
-            else
-                s = (float)(gm_ItemPrice(*w, n) * w[-4] / *(unsigned short *)(p + 0x36) + s);
-            i++;
-            w++;
-        } while (i < 4);
-        *(int *)(p + 0x38) = (int)(s * 0.06875f);
-        return n * s * 0.01f * 2.2f;
+    g = GM_GOOD(item);
+    if (g->price != 0) {
+        f = (float)(g->price << 5) * n * 0.01f;
+        if (g->cls == 3)
+            f *= 1.5f;
+        return f;
     }
-    f = (*(int *)(p + 0x38) << 5) * n * 0.01f;
-    if (p[0x21] == 3)
-        f *= 1.5f;
-    return f;
+    rate = (float)g->workTime / ((g->batch == 0) + g->batch);
+    t = (unsigned char *)ai_BTypes + gm_GoodBuilding[item] * 0x24d;   /* its building type's record */
+    if (gm_GoodBuilding[item] != 0) {
+        f = 0.0f;
+        for (i = 0; i < 2; i++)
+            f += t[0x233 + i] * 896.0f * 0.0013888888888888887;
+    } else
+        f = 4.0f;
+    s = rate * (f * 0.5);
+    if (g->type == 0x17)
+        return s * 2.2f;
+    for (i = 0; i < 4; i++) {
+        if (g->in[i] == 0)
+            break;
+        if (g->in[i] != 0xffff)
+            s = gm_ItemPrice(g->in[i], n) * g->need[i] / g->batch + s;
+        else
+            sprintf(buf, "eval_ObjektPreis2Credits:Unterobjekt f\xfcr '%s' nicht vorhanden!!!", (char *)txt_ObjectNames[item][0]);
+    }
+    g->price = (int)(s * 0.06875f);
+    f = n * s * 0.01f;
+    return f * 2.2f;
 }
 /* 0x5089c0, the price of the goods id for the player slot p: the goods record's value (+0x38) or the base price */
 

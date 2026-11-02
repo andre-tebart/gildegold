@@ -33,7 +33,8 @@ typedef struct GMGOOD {
     unsigned short need[4];             /* 0x26 */
     unsigned short in[4];               /* 0x2e, the goods it is made of */
     unsigned short batch;               /* 0x36, AIGOOD.batch, the amount one production run makes */
-    char pad38[8];
+    int price;                          /* 0x38, the cached price of 100 pieces / 32 (gm_ItemPrice), 0: not computed yet */
+    char pad3c[4];
     unsigned char b40;                  /* 0x40 */
 } GMGOOD;
 #pragma pack(pop)
