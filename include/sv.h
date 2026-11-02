@@ -121,7 +121,7 @@ void sv_DrawBubbles(void);                                                /* 0x5
 void sv_DrawGateName(struct D3OBJECT *part);                               /* 0x52d010, draws a contact gate's name */
 void sv_DrawNamePlates(void);                                                /* 0x52d1e0 */
 void sv_DrawItemNames(void);                                                /* 0x52d2a0 */
-void sv_Unk52d480(void);                                                /* 0x52d480 */
+void sv_DrawBorderArrows(void);                                                /* 0x52d480 */
 void sv_CameraFollow(void);                                             /* 0x52d7a0 */
 void sv_Unk52d940(unsigned fl);                                         /* 0x52d940 */
 void sv_Unk52e050(void);                                                /* 0x52e050 */
