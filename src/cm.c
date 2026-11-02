@@ -5818,7 +5818,7 @@ int ai_Unk4cce10(G17MSG *m, G17STAT *s)
         r = gv_SetGraveHolder(&m->data[0]);
         break;
     case 4:
-        r = unk_Unk4f0af0(&m->data[0]);
+        r = gv_OpenSize(&m->data[0]);
         break;
     case 5:
         r = unk_Unk4f0c80(&m->data[0]);

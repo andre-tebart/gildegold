@@ -285,7 +285,7 @@ int gv_SetGraveHolder(GVORDER *m);         /* 0x4f0970 */
 int gv_OrderOpenSize(int *c, char *o, int size);  /* 0x4f0a90 */
 int gm_AddNegative();                     /* 0x500ae0 */
 int gm_AddObjekt(int id, int proto, int n);                     /* 0x500970 */
-int unk_Unk4f0af0(char *p);             /* 0x4f0af0 */
+int gv_OpenSize(GVORDER *m);           /* 0x4f0af0 */
 int unk_Unk4f0c20(char *o, int v, int b, int x);  /* 0x4f0c20 */
 int unk_Unk4f0c80(unsigned char *p);    /* 0x4f0c80 */
 int unk_Unk4f0d70(char *o, int x);      /* 0x4f0d70 */

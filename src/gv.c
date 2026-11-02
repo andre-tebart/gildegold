@@ -2022,48 +2022,54 @@ int gv_OrderOpenSize(int *c, char *o, int size)
     m.price = 0;
     return ((int (*)(void *))cm_SendGraveOrder)(&m);
 }
-/* 0x4f0af0, graveyard order type 4 (p: +4 a character id, +8 the object id, +0xc the list 1 .. 3): switches on the list for the record rec (flags +0x19 / +0x1a / +0x1b = 1 for the lists up to it); 0 or a negative reason
-   (-8 other list, -7 the list is missing or the kind too small, as 0x4f0240 otherwise) */
+/* 0x4f0af0, graveyard order type 4 (GVORDER m, sent by gv_OrderOpenSize): opens the grave sizes 1 .. m->size (GVYARD.open)
+   of the graveyard building m->bld, when that size's list exists and the yard's level (GVYARD.kind) reaches it. Returns 0,
+   -8 for a size other than 1 .. 3, -7 when the size cannot be opened, otherwise a negative reason as gv_BuryCharacter
+   @deep read whole against the original: every check, constant and branch matches (kind >= 3 / >= 2
+   signed, the -7 / -8 tails, if-chain on m->size; a switch is further off). Remaining: the original
+   cross-jumps size 1's 'open[1] = 1; return 0' into size 2's tail (+ 0x4f0bfe jne into 0x4f0be7, its pop
+   edi after the stores at 0x4f0bea) while ours schedules pop edi before size 2's stores (- 0x4f0be4 pop
+   edi, order 6) so no common tail exists and size 1 keeps its own copy (- je / mov [esi+0x19], cl / pop
+   edi / xor / pop / pop / ret, code 8). Tried: goto into the shared tail (same code), switch (worse).
+   Scheduling / tail merge only */
 
-int unk_Unk4f0af0(char *p)
+int gv_OpenSize(GVORDER *m)
 {
-    unsigned char *o;
-    char *rec;
-    int *c;
-    int l;
+    AIBLD *bld;
+    AICHAR *c;
+    GVYARD *g;
 
-    gm_FindById(&o, 0, 0, *(int *)(p + 8));
-    if (o == 0 || *(unsigned short *)(o + 0x27) == 0xffff || ai_Chars[*(unsigned short *)(o + 0x27)] == ai_PlayerCharC)
+    gm_FindById((int *)&bld, 0, 0, m->bld);
+    if (bld == 0 || bld->owner == 0xffff || &gv_CharsT[bld->owner] == gv_PlayerAiChar)
         return -1;
-    if (ai_BTypes[o[0] * 0x24d] != 0x1d)
+    if (((AIBTYPE *)(ai_BTypes + bld->type * 0x24d))->kind != 0x1d)
         return -2;
-    rec = *(char **)(o + 0x65);
-    if (rec == 0)
+    g = bld->yard;
+    if (g == 0)
         return -3;
-    gm_FindById(0, 0, &c, *(int *)(p + 4));
+    gm_FindById(0, 0, (int *)&c, m->chr);
     if (c == 0)
         return -6;
-    l = *(int *)(p + 0xc);
-    if (l == 3) {
-        if (*(int *)(rec + 0x14) != 0 && *(int *)(rec + 4) > 2) {
-            rec[0x1b] = 1;
-            rec[0x1a] = 1;
-            rec[0x19] = 1;
+    if (m->size == 3) {
+        if (g->lists[3] != 0 && g->kind >= 3) {
+            g->open[3] = 1;
+            g->open[2] = 1;
+            g->open[1] = 1;
             return 0;
         }
-    } else if (l == 2) {
-        if (*(int *)(rec + 0x10) != 0 && *(int *)(rec + 4) > 1) {
-            rec[0x1a] = 1;
-            rec[0x19] = 1;
+    } else if (m->size == 2) {
+        if (g->lists[2] != 0 && g->kind >= 2) {
+            g->open[2] = 1;
+            g->open[1] = 1;
+            return 0;
+        }
+    } else if (m->size == 1) {
+        if (g->lists[1] != 0) {
+            g->open[1] = 1;
             return 0;
         }
     } else {
-        if (l != 1)
-            return -8;
-        if (*(int *)(rec + 0xc) != 0) {
-            rec[0x19] = 1;
-            return 0;
-        }
+        return -8;
     }
     return -7;
 }
