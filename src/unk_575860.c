@@ -7044,64 +7044,57 @@ void ai_AlchemistLabContact(AIBLD *rec, AIOBJ *room)
 
 void cm_BeginFieldBlock(char *o, int id); int cm_AddFieldDelta(int size, int n, short field, void *v); void cm_SendFieldDeltas(void);
 
-/* 0x5823b0, the unit purchase window (429 B): arg 1 = the record (unused), arg 2 = the entry list; its +0x20 is
-   the price; the window "Locations_Domizil_kabinett" (0x62a418) with 0x476f80 / 0x475600, the sound 0x52ea30,
-   the texts 0x602568 / 0x407d / 0x4171 (the price) and the entries 0x407e / +1 in 0x475b80 (window, 2, text); the
-   pump loop 0x5309a0 (this handler, 0x677c7): the escape 0x14673a0 -> 0x6f22a0 = 1; the first entry:
-   0x520f90 (the character 0x770b80 + 0x6f25b8 * 0x21c, the price) == 1 -> 0x4c5f60 (the character, -the price),
-   0x4c3ba0 (the list, the list + 2), 0x4c3c00 (4, 1, 0x1c, &0) / (4, 1, 0x20, &0), 0x4c49a0 () and the wait on
-   0x4c3ae0 (pump 0x20007), 0x6f22a0 = 1; the second entry -> 0x6f22a0 = 1; the pump 0 -> 0x4758f0 (window),
-   0x52d7a0 () */
-void ai_UnlockRoomWindow(char *rec, char *list)
+/* 0x5823b0, the window that unlocks a room of the building rec (rec unused): the form "Locations\Domizil\kabinett"
+   with the texts 0x407d / 0x4171 (the room's unlockPrice) and the two buttons from the text 0x407e on (pay /
+   leave). Pay: when the player has the money (sv_CheckMoney), it is taken off (gm_SendMoneyDelta), the room's
+   locked and unlockPrice are set to 0 through a field block (cm_BeginFieldBlock / cm_AddFieldDelta, sent by
+   cm_SendFieldDeltas), its slot is waited for and the window leaves; the right button or the second button leaves
+   too. At the end the view is closed and the camera follows again */
+void ai_UnlockRoomWindow(AIBLD *rec, AIOBJ *room)
 {
     int win;
-    int b1;
-    int b2;
+    int btnPay;
+    int btnLeave;
     int price;
-    int i;
-    int v;
+    int k;
+    int zero;
 
-    price = U_I(list + 0x20);
-    win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62a418);
+    price = room->unlockPrice;
+    win = d2_OpenForm(0, 0, "Locations\\Domizil\\kabinett");
     d2_SetPointerSprite(0, 0);
     d2_CentreViewWindows(win);
     d2_SetForm(win, 0);
-    sv_FitForm(U_I((unsigned)&d2_LastWindow));
+    sv_FitForm(d2_LastWindow);
     d2_SetForm(win, 1);
-    io_PrintText((char *)(unsigned)"$C");
-    io_PrintText(0x407d, 0x4171, price);
+    io_PrintText("$C");
+    io_PrintText((char *)0x407d, 0x4171, price);
     d2_SetForm(win, 2);
-    i = io_PrintText(0x407e);
-    b1 = d2_GetWinObj(win, 2, i);
-    b2 = d2_GetWinObj(win, 2, i + 1);
-    for (;;) {
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0) {
-            U_I((unsigned)&sv_PopRequest) = 1;
-        } else if (U_I((unsigned)&d2_ClickedId) != -1) {
-            if (U_I((unsigned)&d2_PointerObj) == b1) {
-                if (sv_CheckMoney((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, price) == 1) {
-                    v = 0;
-                    cm_SendMoneyDelta(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c), -price);
-                    cm_BeginFieldBlock(list, U_I(list + 2));
-                    cm_AddFieldDelta(4, 1, 0x1c, &v);
-                    cm_AddFieldDelta(4, 1, 0x20, &v);
-                    i = ((int (*)())cm_SendFieldDeltas)();
-                    if (i != -1) {
-                        while (cm_GetSlotState(i) == 0)
-                            sv_RunFrame(0, 0x20007);
-                    }
-                    U_I((unsigned)&sv_PopRequest) = 1;
+    k = io_PrintText((char *)0x407e);
+    btnPay = d2_GetWinObj(win, 2, k);
+    btnLeave = d2_GetWinObj(win, 2, k + 1);
+    do {
+        if (dm_L.rup != 0) {
+            sv_PopRequest = 1;
+        } else if (d2_ClickedId != -1) {
+            if (d2_PointerObj == btnPay) {
+                if (sv_CheckMoney(ai_Chars[ai_PlayerId], price) == 1) {
+                    zero = 0;
+                    gm_SendMoneyDelta(((AICHAR *)ai_Chars[ai_PlayerId])->netId, -price);
+                    cm_BeginFieldBlock((char *)room, room->objId);
+                    cm_AddFieldDelta(4, 1, 0x1c, &zero);
+                    cm_AddFieldDelta(4, 1, 0x20, &zero);
+                    k = ((int (*)(void))cm_SendFieldDeltas)();  /* cm.c defines it void; the original's callers use eax: the slot of the block */
+                    while (k != -1 && cm_GetSlotState(k) == 0)
+                        sv_RunFrame(0, 0x20007);
+                    sv_PopRequest = 1;
                 }
-            } else if (U_I((unsigned)&d2_PointerObj) == b2) {
-                U_I((unsigned)&sv_PopRequest) = 1;
+            } else if (d2_PointerObj == btnLeave) {
+                sv_PopRequest = 1;
             }
         }
-        if (sv_RunFrame(ai_UnlockRoomWindow, 0x677c7) == 0) {
-            d2_CloseView(win);
-            sv_CameraFollow();
-            return;
-        }
-    }
+    } while (sv_RunFrame(ai_UnlockRoomWindow, 0x677c7) != 0);
+    d2_CloseView(win);
+    sv_CameraFollow();
 }
 /* 0x582560, the cannon contact dispatcher (159 B): arg 1 = the record, arg 2 = the entry list. 0x52e190 once,
    then the pump loop 0x5309a0 (this dispatcher, 0x67fff): the contact flags 0x6f231c bit 0x400 -> the id
