@@ -343,7 +343,10 @@ typedef struct AIDEC {                  /* 0x24 bytes, a record of the AI decisi
     int unk10;                          /* 0x10 */
     int unk14;                          /* 0x14 */
     int cur;                            /* 0x18, the current value */
-    unsigned char unk1c[4];             /* 0x1c */
+    unsigned char office;               /* 0x1c, the office kind (AICHAR.officeKind) the decision belongs to (gv_FindTableRecord) */
+    unsigned char officeNo;             /* 0x1d, the decision's number within that office (1, 2, ..) */
+    char b1e;                           /* 0x1e, -1 or 0 .. 0x11 in the table */
+    char pad1f;
     void *fn;                           /* 0x20 */
 } AIDEC;
 int gv_GetTableRecord(int i, int *out);     /* 0x4f2720 */

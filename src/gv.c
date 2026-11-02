@@ -2821,26 +2821,21 @@ int gv_GetTableRecord(int i, int *out)
     *rec = gv_Decisions[i];
     return 1;
 }
-/* 0x4f2870, finds the record of the table whose bytes +0x1c / +0x1d are (c[+0x166], b) and copies it to out; 0 when none */
+/* 0x4f2870, finds the AI decision record of the office held by the character c (AICHAR.officeKind, +0x166) with the number b and copies it to out; 0 when none */
 
 int gv_FindTableRecord(char *c, unsigned b, int *out)
 {
-    unsigned char *p;
-    int i, k;
-    int *s;
+    AIDEC *rec;
+    int i;
 
-    i = 0;
-    p = (unsigned char *)unk_Tab611258 + 0x1d;
-    while ((unsigned char)c[0x166] != p[-1] || b != *p) {
-        p += 0x24;
-        i++;
-        if ((int)p > ((unsigned)&unk_Tab611258 + 0x430))
-            return 0;
+    for (i = 0; i < 0x1d; i++) {
+        if ((unsigned char)c[0x166] == gv_Decisions[i].office && b == gv_Decisions[i].officeNo) {
+            rec = (AIDEC *)out;
+            *rec = gv_Decisions[i];
+            return 1;
+        }
     }
-    s = (int *)(unk_Tab611258 + i * 0x24);
-    for (k = 9; k != 0; k--)
-        *out++ = *s++;
-    return 1;
+    return 0;
 }
 /* 0x4f28d0, writes the graveyard game state to the file f: the tag 0x1d, the ints +0x18 of the 0x1d table records (0x611270), 0x6f1b88, the counts of the used 0x2d-byte records at 0x91f700 (first int not -1) and of the used pairs at 0x91b6e0, then
    the used records (fields 4, 0xe, 4, 4, 2, 1, 4, 4, 4 bytes) and the used pairs; 1 when all was written. ROUGH */
