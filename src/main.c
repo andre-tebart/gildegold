@@ -4837,7 +4837,7 @@ void main_GameLoop(int ctl)
     if ((U_I((unsigned)&ai_GameFlags) & 1) != 0 && (U_I((unsigned)&ai_GameFlags) & 0x40) == 0) {
         unk_Unk511790();
         unk_Unk511840();
-        ai_Unk589e50();
+        ai_BookmarksPreset();
     }
     ai_ApplyOptions();
     d3_SetViewport((float)(U_I((unsigned)&sv_ViewRectRight) - U_I((unsigned)&sv_ViewRectLeft)), (float)(U_I((unsigned)&sv_ViewRectBottom) - U_I((unsigned)&sv_ViewRectTop)), (float)U_I((unsigned)&sv_ViewRectLeft), (float)U_I((unsigned)&sv_ViewRectTop),

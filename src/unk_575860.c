@@ -10898,7 +10898,7 @@ int gm_BuildingMainObject(unsigned char *b); void gm_GetGebaeudeHauptraum(unsign
 /* 0x589e00, fills slot i of the table 0x6f5ec0 from the building b (79 B): the building's byte +0 is its kind, its
    id at +1 -> the slot's +4; the main object of the building (0x501b50, else 0x501ce0; none for the kind 0x1d)
    gives its id at +2 -> the slot's +8, -1 without an object */
-void ai_Unk589e00(int i, char *b)
+void ai_BookmarkSetBuilding(int i, char *b)
 {
     char *o;
     int off;
@@ -10919,38 +10919,32 @@ void ai_Unk589e00(int i, char *b)
 
 unsigned char * gm_BuildNext(void); unsigned char * gm_BuildQuery(int n, ...);
 
-/* 0x589e50, fills the building slots of the player (184 B): the table 0x6f5ec0 (0x589e00) gets slot 0 the market
-   building 0x6f1bc8, slot 1 the town hall (the query 0x501190 (1, 5, 0xf) = the building type 0xf), the next slot
-   the building at +0x170 of the first character of the kind 6 (the records 0x770b80 + i * 0x21c, at most 0x300),
-   then from slot 3 the player's buildings (0x501190 (1, 4, i) / 0x501030, the word +0x27 = the character index)
-   whose building kind record (0x7e3f30 + kind * 0x24d) byte 0 is not 2 */
-void ai_Unk589e50(void)
+/* 0x589e50, presets the function-key bookmarks: F1 the market, F2 the town hall (gm_BuildQuery (1, 5, 0xf), the
+   building type 0xf) when there is one, the next key the home (AICHAR.bld2) of the first character of the kind 6,
+   then from F4 on every building the player's character owns (key 4) whose type's kind is not 2 */
+void ai_BookmarksPreset(void)
 {
-    unsigned char *b;
+    AIBLD *b;
     int i;
     int n;
 
-    i = 0;
-    b = (unsigned char *)((unsigned)&ai_Chars + 0x2);
-    do {
-        if (*b == 6)
+    for (i = 0; i < 768; i++) {
+        if (ai_CharsT[i].kind == 6)
             break;
-        b += 0x21c;
-        i++;
-    } while ((int)b < (unsigned)((unsigned)ai_Chars + 0x65402));
+    }
     n = 1;
-    ai_Unk589e00(0, (char *)U_I((unsigned)&ai_MarketBuilding));
-    b = (unsigned char *)gm_BuildQuery(1, 5, 0xf);
+    ai_BookmarkSetBuilding(0, (char *)ai_MarketBuilding);
+    b = (AIBLD *)gm_BuildQuery(1, 5, 0xf);
     if (b != 0)
-        ai_Unk589e00(n++, (char *)b);
-    b = (unsigned char *)U_I(((unsigned)&ai_Unk770cec + 0x4) + i * 0x21c);
+        ai_BookmarkSetBuilding(n++, (char *)b);
+    b = ai_CharsT[i].bld2;
     if (b != 0)
-        ai_Unk589e00(n, (char *)b);
+        ai_BookmarkSetBuilding(n, (char *)b);
     n = 3;
-    b = (unsigned char *)gm_BuildQuery(1, 4, i);
+    b = (AIBLD *)gm_BuildQuery(1, 4, i);
     while (b != 0) {
-        if (*(unsigned char *)(U_I((unsigned)&ai_BTypes) + *b * 0x24d) != 2)
-            ai_Unk589e00(n++, (char *)b);
-        b = (unsigned char *)gm_BuildNext();
+        if (((AIBTYPE *)ai_BTypes)[b->type].kind != 2)
+            ai_BookmarkSetBuilding(n++, (char *)b);
+        b = (AIBLD *)gm_BuildNext();
     }
 }
