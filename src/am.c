@@ -5809,55 +5809,56 @@ int ai_Unk49a380(G5CH *p, AIARG *s1, AIARG *s2)
 {
     return 0x1a;
 }
-/* 0x49a390, decide callback: a building of type 0x161 for the character's workshop, if its workers are
-   not too tired */
+/* 0x49a390, decide callback of "UseObject (Military)" (0x1b): for one of the character's buildings of the kinds in
+   mask 0x90010 (ai_PickActionBuilding) whose workers average at least 6 - a random 0..3 in AICHAR.b1c5, the good
+   0x161: with fewer than six goods and none usable, the sub-action 0x1c to get it from the character (weight
+   0.05; k is a or 0x1c, and only a = 0 gets this far), else with a usable one the action 0x1b on it (o1 kind 1,
+   its inventory entry; o2 the building) */
 
-int ai_Unk49a390(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
+int ai_DecideUseMilitaryObject(int a, AIPER *p, int f, AIARG *o1, AIARG *o2)
 {
     int k;
-    int b;
-    float x;
+    int id;
     int st[3];
-    int rec[4];
+    G9REC rec;
     AIARG s1;
     AIARG s2;
-    int o;
-    int n, sum, r;
-    unsigned char *c;
+    AIBLD *b;
+    int i, n, sum, r;
+    LARGE_INTEGER mask;
 
     k = a;
     if (a == 0)
         k = 0x1c;
     if (f != 0 || a != 0)
         return 0;
-    if (ai_PickActionBuilding((AIPER *)p, 4, 0x90010, 0, 100.0f, &b) == 0)
+    mask.LowPart = 0x90010;
+    mask.HighPart = 0;
+    if (ai_PickActionBuilding(p, 4, mask.QuadPart, 0, 100.0f, &id) == 0)
         return 0;
-    G8_4FEA50(&o, 0, 0, b);
-    if (o == 0)
+    gm_FindById((int *)&b, 0, 0, id);
+    if (b == 0)
         return 0;
     n = 0;
     sum = 0;
-    for (c = (unsigned char *)ai_CharsT; c < (unsigned char *)(ai_CharsT + 768); c += 0x21c) {
-        if (*(int *)(c + 0x16c) == o) {
+    for (i = 0; i < 768; i++) {
+        if (ai_CharsT[i].bld == b) {
             n++;
-            sum += c[0x1c5];
+            sum += ai_CharsT[i].b1c5;
         }
     }
-    x = (float)util_RandomU(4);
-    if (x + (float)sum / (float)n > 6.0f)
+    if (util_RandomU(4) + (float)sum / n < 6.0f)
         return 0;
-    rec[1] = 0;
-    rec[2] = 0;
-    rec[3] = 0;
-    rec[0] = 0x161;
-    ai_FindWantedItems(p, 1, rec, st);
+    memset(&rec, 0, sizeof(rec));
+    rec.item = 0x161;
+    ai_FindWantedItems((G5CH *)p, 1, &rec, st);
     if (st[0] == 6 && st[2] == 0)
         return 0;
     if (st[1] == 1)
         return 0;
     if (st[0] < 6) {
         if (st[2] == 0) {
-            s1.ref = rec[0];
+            s1.ref = rec.item;
             s2.ref = p->netId;
             s1.kind = 2;
             s1.arg = 1;
@@ -5875,11 +5876,11 @@ int ai_Unk49a390(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         return 0;
     }
     s1.kind = 1;
-    s1.ref = rec[2];
+    s1.ref = rec.entryId;
     s1.arg = 1;
     *o1 = s1;
     s2.kind = 4;
-    s2.ref = *(int *)((char *)o + 1);
+    s2.ref = b->id;
     s2.arg = -1;
     s2.arg2 = 0x1b;
     *o2 = s2;
@@ -9557,7 +9558,7 @@ int ai_RegisterBaseActions(int a)
     act.id = 0x1b;
     strcpy(act.name, "UseObject (Military)");
     act.eval = ai_EvalMoodWeights;
-    act.decide = ai_Unk49a390;
+    act.decide = ai_DecideUseMilitaryObject;
     act.exec = ai_Unk49a5b0;
     act.flags = 0x3;
     if (!am_RegisterMethod(&act, a))
@@ -10512,7 +10513,7 @@ check:
     return 0;
 }
 /* 0x4a5760: for n wanted items rec[i].item, finds them in the character's inventory list (0x178, next at 0x3f;
-   goods of kind 9 skipped): rec[i].unk08 the entry's id, rec[i].unk0c the entry, rec[i].unk04 its 0x0e value when
+   goods of kind 9 skipped): rec[i].entryId the entry's id, rec[i].entry the entry, rec[i].value its 0x0e value when
    usable (0x5ba620 class matches 0x1ec or 0x5ba6b0 refuses), else -1. st[0] counts the entries, st[1] the
    unusable, st[2] the usable ones */
 
@@ -10525,8 +10526,8 @@ void ai_FindWantedItems(G5CH *p, int n, G9REC *rec, int *st)
 
     if (n > 0) {
         for (r = rec, i = n; i != 0; i--, r++) {
-            r->unk08 = -1;
-            r->unk04 = 0;
+            r->entryId = -1;
+            r->value = 0;
         }
     }
     st[1] = 0;
@@ -10543,30 +10544,30 @@ void ai_FindWantedItems(G5CH *p, int n, G9REC *rec, int *st)
             if (c == 0) {
                 v = -1;
                 r = &rec[i];
-                r->unk04 = -1;
+                r->value = -1;
                 st[1]++;
-                r->unk0c = 0;
+                r->entry = 0;
             } else {
                 if (!(*(unsigned int *)(c + 0x10) & *(unsigned int *)((unsigned char *)p + 0x1ec))
                     && ai_InventoryHas(p, *e) == 0) {
                     st[2]++;
-                    rec[i].unk04 = *(int *)(e + 7);
-                    rec[i].unk08 = *(int *)(e + 1);
-                    rec[i].unk0c = (int)e;
+                    rec[i].value = *(int *)(e + 7);
+                    rec[i].entryId = *(int *)(e + 1);
+                    rec[i].entry = (int)e;
                     break;
                 }
                 r = &rec[i];
-                r->unk04 = -1;
+                r->value = -1;
                 st[1]++;
                 v = *(int *)(e + 1);
-                r->unk0c = (int)e;
+                r->entry = (int)e;
             }
-            r->unk08 = v;
+            r->entryId = v;
             break;
         }
     }
     for (; n > 0; n--, rec++) {
-        if (rec->unk08 == -1 && (c = (unsigned char *)G8_5BA620(rec->item)) != 0
+        if (rec->entryId == -1 && (c = (unsigned char *)G8_5BA620(rec->item)) != 0
             && (*(unsigned int *)(c + 0x10) & *(unsigned int *)((unsigned char *)p + 0x1ec)))
             st[1]++;
     }

@@ -315,7 +315,9 @@ typedef struct AICHAR {                 /* 0x21c bytes, ai_Chars[768] */
         int target;                     /* 0x1c0, a building id or -1 */
         int unk1c0;                     /* 0x1c0 */
     };
-    char pad1c4[4];
+    char pad1c4;
+    unsigned char b1c5;                 /* 0x1c5, a per-worker value am.c 0x49a390 averages over a building's workers (at least 6 with a random 0..3 added lets the AI use the good 0x161 there); the meaning is not known */
+    char pad1c6[2];
     unsigned int flags1c8;              /* 0x1c8 */
     unsigned int flags1cc;              /* 0x1cc */
     char pad1d0[0x14];

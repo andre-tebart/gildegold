@@ -1469,7 +1469,7 @@ exe	0x004817a0	ai_CalcAngriff	ai	draft	draft	deep
 exe	0x00481ef0	ai_CalcMeisterDiebe	ai	draft	draft	deep	
 exe	0x00482f00	ai_CalcMeisterRaeuber	ai	draft	readable	deep	
 exe	0x004836a0	ai_CalcMeisterBank	ai	byte	draft	deep	
-exe	0x00483a60	ai_Unk483a60	ai	byte	draft	deep	
+exe	0x00483a60	ai_Unk483a60	ai	shape	draft	deep	byte+draft -> shape+draft at d690dc7: ai.h AICHAR gains the field b1c5 (0x1c5, split from pad1c4) that ai_DecideUseMilitaryObject (am.c 0x49a390) reads instead of raw byte access; ai_Unk483a60 does not use it, the fall is the known VC6 declaration-set tie-break of this function ([esp+0x10]/[esp+0x18] slot swap, the same flip am.c's lead and hst.c 0x4afd.. record for AIJOB / AITIME member changes), so its byte match was no evidence of the original's declarations [waits for: ai.c's declaration set (the AICHAR / AIJOB / AITIME types in ai.h) settling; then a variant round on ai_Unk483a60]
 exe	0x00483d30	ai_StartBuildingWork	ai	shape	draft	deep	
 exe	0x00483ee0	ai_EndWorkerPose	ai	byte	readable		
 exe	0x00483fc0	ai_Unk483fc0	ai	draft	draft	deep	

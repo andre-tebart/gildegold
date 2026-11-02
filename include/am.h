@@ -837,7 +837,7 @@ typedef struct G8REC {                  /* 16 bytes, filled by 0x4a5760 (unk_48e
 int ai_ExecuteCitizenship(G5CH *p);                                                      /* 0x49a0a0 */
 int ai_DecideSaveAps(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49a290 */
 int ai_Unk49a380(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49a380 */
-int ai_Unk49a390(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49a390 */
+int ai_DecideUseMilitaryObject(int a, AIPER *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49a390 */
 /* unk_48e070.h declares ai_FindWantedItems with its AIPX / AIRECX views (unify at the join) */
 void ai_FindWantedItems(struct G5CH *p, int n, struct G9REC *rec, int *st);                           /* 0x4a5760 */
 #define G8_4FEA50(a, b, c, d) ((int (*)(int *, int, int, int))gm_FindById)(a, b, c, d)  /* ai.h: other types */
@@ -982,10 +982,10 @@ char unk_Unk5020e0(int k, int c);                                      /* 0x5020
 extern char ai_DataPath[];                                                      /* 0x75dca0, the data path */
 /* 0x4a5320 ai_ExecBuildBuilding is declared in am.h */
 typedef struct G9REC {                  /* 16 bytes, filled by 0x4a5760 (unk_49a0a0.h G8REC, unk_48e070.h AIRECX) */
-    int item;                           /* 0x0 */
-    int unk04;                          /* 0x4 */
-    int unk08;                          /* 0x8 */
-    int unk0c;                          /* 0xc */
+    int item;                           /* 0x0, the wanted item */
+    int value;                          /* 0x4, the inventory entry's value at +0x0e when usable, else -1 */
+    int entryId;                        /* 0x8, the inventory entry's id (+0x02), -1 none */
+    int entry;                          /* 0xc, the inventory entry itself */
 } G9REC;
 void ai_FindWantedItems(struct G5CH *p, int n, struct G9REC *rec, int *st);                          /* 0x4a5760, declared int elsewhere */
 /* 0x4a58d0 ai_PickPartnerChain is declared in am.h (b is really a float) */
