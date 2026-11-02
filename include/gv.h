@@ -384,7 +384,7 @@ short * gm_FindChar(int id);                   /* 0x505df0 */
 
 void unk_Unk4f4d10(void);               /* 0x4f4d10 */
 int gv_GetGraveInfo(int id, short *a, int *v, short *c, unsigned *k);  /* 0x4f4d30 */
-void unk_Unk4f4970(unsigned i);              /* 0x4f4970 */
+void gv_CheckRankUp(unsigned i);              /* 0x4f4970 */
 int gm_Unk505e60(unsigned id, int again);                     /* 0x505e60 */
 float gm_Liking();                   /* 0x50c550 */
 
@@ -403,7 +403,7 @@ int gv_RankCulprits(int *ids, int *cnt, unsigned short t);/* 0x4f3c50 */
 
 int gv_RankCulpritsAll(int *ids, int *open, int *total, unsigned short t);  /* 0x4f3dd0 */
 
-extern const int unk_Tab5ee0f8[];             /* 0x5ee0f8, experience thresholds per level */
+extern const int gv_RankWorth[];             /* 0x5ee0f8, experience thresholds per level */
 extern unsigned char ai_NumPlayers;     /* 0x62489c, the number of players (as ai.h / cm.h / unk_4b39f0.c) */
 int gm_GetWorth(unsigned short id);    /* 0x50a640 */
 void cm_SendSetField(int a, int b, int c, int d, int e);                     /* 0x4c4a60 */

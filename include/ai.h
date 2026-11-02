@@ -427,6 +427,11 @@ typedef struct AIMSG {                  /* 0xf8 bytes, given to cm_SendLongMessa
                 } s;
             } u;
         };
+        struct {                        /* the rank message 0x69 (gv_CheckRankUp) */
+            unsigned char rank;         /* 0x58, the new rank (AICHAR.b00d) */
+            char pad59[3];
+            int ch;                     /* 0x5c, the netId of the character who rose */
+        } rankUp;
         struct {                        /* the pamphlet message 0x35 (0x4aa940) */
             AITIME when;                /* 0x58, the game time it was sent */
             char pad66[2];
