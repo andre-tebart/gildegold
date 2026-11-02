@@ -3834,89 +3834,76 @@ int gv_RankCulprits(int *ids, int *cnt, unsigned short t)
         n = 0x20;
     return n;
 }
-/* 0x4f3dd0, as 0x4f3c50 over all the records of the character slot t (any state): groups the pairs by owner, per owner the count of records (c2[]) and of those in state 1 (c1[]); the 32 owners with the most records are kept in
-   ids[] / c1[] / c2[] sorted by c2 (descending); returns the number of owners (at most 0x20). ROUGH */
+/* 0x4f3dd0, as gv_RankCulprits over all the crimes (state not 0) the character t holds evidence of: per culprit the
+   count of crimes (tot) and of the open ones (state 1, st); the 32 culprits with the most crimes are kept in ids[] /
+   open[] / total[], sorted by total (descending, one insertion pass per culprit); returns the number of culprits (at
+   most 0x20). The test of a new culprit compares tot with open[0x1f], not total[0x1f] (as the original does).
+   @deep read whole function against the original and reconciled every statement (memsets, evidence walk
+   with gv_FindCrime and the unsigned state test, per-culprit count of total/open, the open[0x1f] compare
+   as the original codes it, the 3-array insertion pass, the clamp); instruction counts equal (154/154),
+   only stack-slot assignment differs: the m/i+1/&rec[i] slots rotate (0x1c/0x20/0x24) and in the sort the
+   counter/x/y slots rotate (ours 0x10/0x18/0x28, the original's 0x18/0x28/0x10: the original's counter
+   shares own's slot and y st's), plus 'xor edi,edi; mov [m],edi' scheduled before 'mov esi,
+   &ai_Evidence[0][1]' at 0x4f3e25 */
 
-int unk_Unk4f3dd0(int *ids, int *c1, int *c2, unsigned t)
+int gv_RankCulpritsAll(int *ids, int *open, int *total, unsigned short t)
 {
-    char *rec[512];
-    int n, i, j, k, m, own, tot, st, id, x, y;
-    int *q, *q2, *q3;
-    unsigned *s;
-    char *r, *r2;
+    CRIME *rec[0x200];
+    int n, m, i, k, tot, st, own, x, y, id;
+    ORDCHAR *ch;
 
-    for (i = 0; i < 0x20; i++)
-        ids[i] = -1;
+    memset(ids, 0xff, 0x20 * sizeof(int));
     n = 0;
-    for (i = 0; i < 0x20; i++)
-        c1[i] = 0;
-    for (i = 0; i < 0x20; i++)
-        c2[i] = 0;
-    for (i = 0; i < 0x200; i++)
-        rec[i] = 0;
-    q = (int *)(unk_Tab91b6e0 + 4);
+    memset(open, 0, 0x20 * sizeof(int));
+    memset(total, 0, 0x20 * sizeof(int));
+    memset(rec, 0, sizeof(rec));
     m = 0;
-    id = *(int *)(ai_Chars[t & 0xffff] + 4);
-    do {
-        if (q[-1] == id) {
-            k = gv_FindCrime(*q);
-            if (k != -1 && *(int *)(gv_Graveyard + 0x25 + k * 0x2d) != 0) {
-                rec[m] = gv_Graveyard + k * 0x2d;
-                m++;
-            }
+    ch = &ORD_CHARS[t];
+    for (i = 0; i < 0x800; i++) {
+        if (ai_Evidence[i][0] == ch->netId) {
+            k = gv_FindCrime(ai_Evidence[i][1]);
+            if (k != -1 && (unsigned)gv_CrimesT[k].state > 0)
+                rec[m++] = &gv_CrimesT[k];
         }
-        q += 2;
-    } while ((int)q < ((unsigned)unk_Tab91b6e0 + 0x4004));
-    if (m > 0) {
-        j = 1;
-        for (i = 0; ; i++) {
-            tot = 1;
-            r = rec[i];
-            if (r != 0) {
-                own = *(int *)(r + 0x16);
-                n++;
-                st = (*(int *)(r + 0x25) == 1);
-                for (k = j; k < 0x200; k++) {
-                    r2 = rec[k];
-                    if (r2 != 0 && *(int *)(r2 + 0x16) == *(int *)(rec[i] + 0x16)) {
-                        tot++;
-                        if (*(int *)(r2 + 0x25) == 1)
-                            st++;
-                        rec[k] = 0;
-                    }
-                }
-                rec[i] = 0;
-                s = (unsigned *)c1 + 0x1f;
-                if ((int)c1[0x1f] < tot) {
-                    *s = st;
-                    c2[0x1f] = tot;
-                    ids[0x1f] = own;
-                }
-                q2 = c2 + 0x1e;
-                for (k = 0x1f; k != 0; k--) {
-                    x = q2[1];
-                    if (*q2 < x) {
-                        y = *s;
-                        id = *(int *)((char *)s + ((char *)ids - (char *)c1));
-                        *(int *)((char *)s + ((char *)ids - (char *)c1)) = *(int *)((char *)q2 + ((char *)ids - (char *)c2));
-                        q2[1] = *q2;
-                        *s = *(unsigned *)((char *)q2 + ((char *)c1 - (char *)c2));
-                        *(int *)((char *)q2 + ((char *)ids - (char *)c2)) = id;
-                        *q2 = x;
-                        *(int *)((char *)q2 + ((char *)c1 - (char *)c2)) = y;
-                    }
-                    q2--;
-                    s--;
-                }
-            }
-            if (!(j < m))
-                break;
-            j++;
-        }
-        if (n > 0x20)
-            return 0x20;
     }
-    return n;
+    for (i = 0; i < m; i++) {
+        tot = 1;
+        st = 0;
+        if (rec[i] != 0) {
+            own = rec[i]->culprit;
+            n++;
+            if (rec[i]->state == 1)
+                st = 1;
+            for (k = i + 1; k < 0x200; k++) {
+                if (rec[k] != 0 && rec[k]->culprit == rec[i]->culprit) {
+                    tot++;
+                    if (rec[k]->state == 1)
+                        st++;
+                    rec[k] = 0;
+                }
+            }
+            rec[i] = 0;
+            if (tot > open[0x1f]) {
+                open[0x1f] = st;
+                total[0x1f] = tot;
+                ids[0x1f] = own;
+            }
+            for (k = 0x1f; k != 0; k--) {
+                x = total[k];
+                if (x > total[k - 1]) {
+                    id = ids[k];
+                    y = open[k];
+                    ids[k] = ids[k - 1];
+                    total[k] = total[k - 1];
+                    open[k] = open[k - 1];
+                    ids[k - 1] = id;
+                    total[k - 1] = x;
+                    open[k - 1] = y;
+                }
+            }
+        }
+    }
+    return n > 0x20 ? 0x20 : n;
 }
 /* 0x4f4460, executes a character action (a = 0 .. 9) for the character c: 0 / 2 message 0x5c (value 3, kind 1 / 3), 1 / 3 message 0x5b (value 0.03 * the 0x50a640 value, kind 1 / 4), 4 / 6 / 8 0x4c5fa0 (id, 1 / 2 / 3, 0), 5 0x4e6680 (byte
    +0x166, kind 4), 7 sets byte 0xd of the character's record (2 or 1) and sends it, 9 a message to the players near (0x18 targets) and 0x4e6680 (kind 3). ROUGH */

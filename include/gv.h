@@ -401,7 +401,7 @@ int gv_RetireCrimeIds(int p, int n, int *ids);  /* 0x4f3b40 */
 
 int gv_RankCulprits(int *ids, int *cnt, unsigned short t);/* 0x4f3c50 */
 
-int unk_Unk4f3dd0(int *ids, int *c1, int *c2, unsigned t);  /* 0x4f3dd0 */
+int gv_RankCulpritsAll(int *ids, int *open, int *total, unsigned short t);  /* 0x4f3dd0 */
 
 extern const int unk_Tab5ee0f8[];             /* 0x5ee0f8, experience thresholds per level */
 extern unsigned char ai_NumPlayers;     /* 0x62489c, the number of players (as ai.h / cm.h / unk_4b39f0.c) */

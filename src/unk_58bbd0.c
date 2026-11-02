@@ -20276,7 +20276,7 @@ int ai_BlackmailBuildingListener(unsigned short *param_1, int param_2)  /* @orig
     id = *(int *)(unsigned)&d2_LastWindow;
     d2_SetForm(win, 3);
     d2_CreateScrollButtons(-1, -1, *(int *)(unsigned)&d2_LastWindow, id, 0x767);
-    cnt = unk_Unk4f3dd0(ids, ranks, keys, *param_1);
+    cnt = gv_RankCulpritsAll(ids, ranks, keys, *param_1);
     n = 0;
     for (i = 0; i < cnt; i++) {
         h = (int)gm_FindChar(ids[i]);
