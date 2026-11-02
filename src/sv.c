@@ -6045,6 +6045,7 @@ done:
 
 #include <stdarg.h>
 #include "cm_types.h"
+#include "net.h"
 extern unsigned char ai_GameState;
 extern unsigned char d3_MipSkip;
 
