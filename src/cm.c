@@ -6642,7 +6642,7 @@ char *ai_Unk4ce130(int id)
 }
 /* 0x4ce170 */
 
-int ai_Unk4ce170(int idx, char *c)
+int ai_LedSelectBits(int idx, char *c)
 {
     int r = 0;
 
@@ -7144,7 +7144,7 @@ void ai_Unk4cf000()
         if (rr != 0 && *rr == 0x172) {
             fl = 0;
             if (ai_Unk6f0d74 != 0)
-                fl = ai_Unk4ce170(*(unsigned short *)ai_Unk6f0d74, c);
+                fl = ai_LedSelectBits(*(unsigned short *)ai_Unk6f0d74, c);
             if (fl & 0x800) {
                 col = 0x80;
                 mdl = *(char **)(*(char **)(c + 0x184) + 0x34);
@@ -7293,7 +7293,7 @@ void ai_Unk4cf670()
     for (pp = ai_Unk7603a0V; (int)pp < ((unsigned)&ai_SceneChars + 0x7c); pp++) {
         c = *pp;
         if (c != 0 && c[0x188] != 0) {
-            if (ai_Unk4ce170(*(unsigned short *)ai_Unk6f0d74, c) & 0x800) {
+            if (ai_LedSelectBits(*(unsigned short *)ai_Unk6f0d74, c) & 0x800) {
                 if (kb_Down[0x36] == 0) {
                     r = ai_Unk4cda50(c);
                     if (r != 0) {
@@ -7332,7 +7332,7 @@ void ai_Unk4cf670()
             return;
         }
         if (*(int *)(ai_PickedObject + 0x220) == 2 && n != 0) {
-            if (!(ai_Unk4ce170(*(unsigned short *)ai_Unk6f0d74, *(int *)(ai_PickedObject + 0x200)) & 0x800) ||
+            if (!(ai_LedSelectBits(*(unsigned short *)ai_Unk6f0d74, *(int *)(ai_PickedObject + 0x200)) & 0x800) ||
                 kb_Down[0x36] != 0) {
                 ai_Unk6f0ce0 = ai_PickedObject;
                 d2_PointerLook = cur;
@@ -7440,7 +7440,7 @@ void ai_Unk4cfc10()
     for (pp = ai_Unk7603a0V; e < ai_Unk930400 + 0xc0 && (int)pp < ((unsigned)&ai_SceneChars + 0x7c); pp++) {
         if (*pp == 0)
             continue;
-        if (!(ai_Unk4ce170(*(unsigned short *)ai_Unk6f0d74, *pp) & 0x800))
+        if (!(ai_LedSelectBits(*(unsigned short *)ai_Unk6f0d74, *pp) & 0x800))
             continue;
         G19_E(e, 4) = d2_CreatePicObj(x + 0x18, 0xf, 0x5da);
         G19_E(e, 8) = d2_CreateWindow(x, 0, 0x80, 0x4b, 0x110);
@@ -7497,7 +7497,7 @@ void ai_Unk4cfeb0()
     ai_ClickedObject = 0;
     for (pp = ai_Unk7603a0V; (int)pp < (int)ai_Unk760420V; pp++) {
         c = *pp;
-        if (c != 0 && c[0x188] != 0 && (ai_Unk4ce170(*(unsigned short *)t, c) & 0x800) && *(int *)(c + 0x184) != 0 &&
+        if (c != 0 && c[0x188] != 0 && (ai_LedSelectBits(*(unsigned short *)t, c) & 0x800) && *(int *)(c + 0x184) != 0 &&
             c[8] != 0)
             break;
     }
@@ -7505,7 +7505,7 @@ void ai_Unk4cfeb0()
         sel = ai_PickedObject;
         if (sel != 0 && *(int *)(sel + 0x220) == 2) {
             o = *(char **)(sel + 0x200);
-            if ((ai_Unk4ce170(*(unsigned short *)t, o) & 0x800) && kb_Down[0x36] == 0 &&
+            if ((ai_LedSelectBits(*(unsigned short *)t, o) & 0x800) && kb_Down[0x36] == 0 &&
                 (c == 0 || ai_Unk4ce270(c, o) == 0)) {
                 ai_Unk4d08c0();
                 o[0x188] = 1;
@@ -7765,7 +7765,7 @@ void ai_Unk4d0740(char *rec)
     } else if (dm_L.lup != 0) {
         for (pp = ai_Unk7603a0V; (int)pp < (int)ai_Unk760420V; pp++) {
             c = *pp;
-            if (c != 0 && c[0x188] != 0 && (ai_Unk4ce170(*(unsigned short *)ai_Unk6f0d74, c) & 0x800) &&
+            if (c != 0 && c[0x188] != 0 && (ai_LedSelectBits(*(unsigned short *)ai_Unk6f0d74, c) & 0x800) &&
                 *(int *)(c + 0x184) != 0 && c[8] != 0) {
                 if (ai_Unk4d0570(rec, c)) {
                     if (ai_Unk6f0d74 == (char *)ai_Unk6f0cec)

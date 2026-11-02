@@ -523,7 +523,7 @@ int *ai_Unk4cdf80(char *c);  /* 0x4cdf80 */
 int ai_Unk4cdfe0(int x, int y);  /* 0x4cdfe0 */
 int ai_Unk4ce040(int a, int b, int *ox, int *oy);  /* 0x4ce040 */
 char *ai_Unk4ce130(int id);  /* 0x4ce130 */
-int ai_Unk4ce170(int idx, char *c);  /* 0x4ce170 */
+int ai_LedSelectBits(int idx, char *c);  /* 0x4ce170 */
 float ai_Unk4ce1b0(char *c, char *o);  /* 0x4ce1b0 */
 float ai_Unk4ce200(char *c, int x, int y);  /* 0x4ce200 */
 int ai_Unk4ce270(char *a, char *b);  /* 0x4ce270 */
