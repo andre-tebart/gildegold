@@ -957,3 +957,5 @@
 2026-11-02T11:05:58 0x005772d0 func ai_Unk5772d0 -> ai_MarkerChapter5Step2 by:main why:the marker step callback (+0x60, called by ai_TutorialMarkerUpdate) of the run record FTInitChapter5Step2 (id c5s2)
 2026-11-02T11:06:36 0x005773f0 func ai_Unk5773f0 -> ai_MarkerChapter3Step8 by:main why:the marker step callback (+0x60, called by ai_TutorialMarkerUpdate) of the run record FTInitChapter3Step8 (id c3s8)
 2026-11-02T11:07:27 0x005775c0 func ai_Unk5775c0 -> ai_HookChapter5Step4 by:main why:the run hook (+0x34) of the run record FTInitChapter5Step4 (id c5s4)
+2026-11-02T11:08:01 0x00577610 func ai_Unk577610 -> ai_HookChapter5Step5 by:main why:the run hook (+0x34) of the run record FTInitChapter5Step5 (id c5s5)
+2026-11-02T11:08:31 0x004eaa00 data amt_Unk4eaa00 -> amt_AnnounceOfficeFree by:main why:finds the office of the kind k in amt_Table and sends amt_SendOfficeMessage (idx, 0, 0, 3, 0xff): its own comment, announces the office as free

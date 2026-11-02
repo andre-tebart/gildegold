@@ -2866,7 +2866,7 @@ int amt_GetOwnedOfficePay(void)
 }
 /* 0x4eaa00, announces the office of the kind k as free (0x4e6680, the kind 3) */
 
-void amt_Unk4eaa00(unsigned int k)
+void amt_AnnounceOfficeFree(unsigned int k)
 {
     int i;
 

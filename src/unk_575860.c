@@ -1926,29 +1926,30 @@ void ai_HookChapter5Step4(int end)
     cm_SendSetField(chr->netId, 0x1c8, 4, 0x4000, 0);
     cm_SendMoveGoodsUnchecked(chr->netId, -1, 0, 0x3e80);
 }
-/* 0x577610, when `arg` is 0: 0x4eaa00 (1); when it is 1: finds the character record 0x770b80 + i * 0x21c whose
-   byte +2 is 5, asks 0x4e7150 (rec, 1, &v) and, when it answers > 0, calls 0x4e6180 (rec, v) */
+/* 0x577610, the run hook of the run record FTInitChapter5Step5: at the run's start (end 0) announces the office of the
+   kind 1 as free (amt_AnnounceOfficeFree); at its end (1) finds the first character of the kind 5 and, when amt_GetOfficeCandidates offers it an office,
+   lets it apply for the first candidate's office (amt_ApplyForOffice) */
 
-void ai_Unk577610(int arg)
+void ai_HookChapter5Step5(int end)
 {
-    char *rec;
-    int v;
-    int p, i;
+    AICHAR *chr;
+    AMTCAND cand;
+    int i;
 
-    if (arg == 0) {
-        amt_Unk4eaa00(1);
+    if (end == 0) {
+        amt_AnnounceOfficeFree(1);
         return;
     }
-    if (arg != 1)
+    if (end != 1)
         return;
-    for (p = ((unsigned)&ai_Chars + 0x2), i = 0; p < (unsigned)((unsigned)ai_Chars + 0x65402); p += 0x21c, i++)
-        if (*(unsigned char *)p == 5)
-            break;
-    if (p >= (unsigned)((unsigned)ai_Chars + 0x65402))
-        return;
-    rec = (char *)((unsigned)&ai_Chars + i * 0x21c);
-    if (amt_GetOfficeCandidates(rec, 1, &v) > 0)
-        amt_ApplyForOffice(rec, v);
+    for (i = 0; i < 768; i++) {
+        if (ai_CharsT[i].kind == 5) {
+            chr = &ai_CharsT[i];
+            if (amt_GetOfficeCandidates((char *)chr, 1, &cand) > 0)
+                amt_ApplyForOffice((char *)chr, cand.kind);
+            return;
+        }
+    }
 }
 /* 0x577690, when `arg` is 0 and 0x4e8160() answers non-zero: builds a 0x114-byte record (zeroed) out of the
    character records 0x770b80 + i * 0x21c (the kind byte +2: 6 -> its id to +0xc, 7 -> the ids +0x34, count +0x30,
@@ -4048,7 +4049,7 @@ int ai_Unk57aeb0(void)
     U_I(r + 0x28) = (unsigned)(full_data_629fd4 + 0x18);
     U_I(r + 0x2c) = 0x429;
     U_I(r + 0x30) = 0xd5;
-    U_I(r + 0x34) = (unsigned)&ai_Unk577610;
+    U_I(r + 0x34) = (unsigned)&ai_HookChapter5Step5;
     U_I(r + 0x40) = 0x2f;
     U_I(r + 0x44) = 0x2148;
     U_I(r + 0x48) = 0xa;
