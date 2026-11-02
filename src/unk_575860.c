@@ -1258,20 +1258,19 @@ int ai_QueryChapter2Step6(int *args)
     }
     return 1;
 }
-/* 0x576680, the same as 0x576640 for the table bytes 0xf / 2 / 0x12 */
+/* 0x576680, the query callback of the run record FTInitChapter2Step7: refuses the event 0x19 on a building of
+   another type kind than 0xf, 2 or 0x12, allows everything else */
 
-int ai_Unk576680(int *p)
+int ai_QueryChapter2Step7(int *args)
 {
-    int kind;
-    unsigned char c;
+    AIBTYPE *type;
 
-    if (p[0] != 0x19 || !p[1])
-        return 1;
-    kind = *(unsigned char *)p[1];
-    c = *(unsigned char *)(*(char **)(unsigned)&ai_BTypes + kind * 0x24d);
-    if (c == 0xf || c == 2 || c == 0x12)
-        return 1;
-    return 0;
+    if (args[0] == 0x19 && args[1]) {
+        type = &((AIBTYPE *)ai_BTypes)[((AIBLD *)args[1])->type];
+        if (type->kind != 0xf && type->kind != 2 && type->kind != 0x12)
+            return 0;
+    }
+    return 1;
 }
 /* 0x5766d0, a transition callback on the step arguments: 1 when the step applied a state change (the kind 0xa
    step p[2] 0 / 1 drives the states 4 <-> 9 / 0xa -> 0xb), 3 otherwise; the kind 7 with a record whose byte +2
@@ -2993,7 +2992,7 @@ int ai_Unk578e40(void)
     U_I(r + 0x18) = (unsigned)&full_data_62974c;
     U_I(r + 0x30) = 0x8e;
     U_I(r + 0x38) = (unsigned)&ai_Unk576b50;
-    U_I(r + 0x3c) = (unsigned)&ai_Unk576680;
+    U_I(r + 0x3c) = (unsigned)&ai_QueryChapter2Step7;
     U_I(r + 0x48) = 0xa;
     U_I(r + 0x68) = 0x5837;
     U_I(r + 0x6c) = 0x1e00;

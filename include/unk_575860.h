@@ -94,7 +94,7 @@ int ai_QueryChapter2Step3(int *p);               /* 0x576590, step callback pred
 int ai_Unk5765e0(int *p);               /* 0x5765e0, step callback predicate */
 int ai_QueryChapter2Step5(int *p);               /* 0x576600, step callback predicate */
 int ai_QueryChapter2Step6(int *p);               /* 0x576640, step callback predicate */
-int ai_Unk576680(int *p);               /* 0x576680, step callback predicate */
+int ai_QueryChapter2Step7(int *p);               /* 0x576680, step callback predicate */
 int ai_Unk5766d0(int *p);               /* 0x5766d0, transition callback */
 int ai_Unk5767d0(int *p);               /* 0x5767d0, transition callback */
 int ai_Unk576830(int *p);               /* 0x576830, transition callback */
