@@ -9880,7 +9880,7 @@ void ai_Unk5a0f10(int param_1)
     sv_MessageBox((char *)U_I((unsigned)&full_data_143fbd8), 0);
 }
 
-int amt_Unk4e94a0(); int amt_CanUseMayorPower3(); int amt_ExecutePriceMessage(char *c, int *m); int ai_Unk5c1b40();
+int amt_MayorBonusStep(); int amt_CanUseMayorPower3(); int amt_ExecutePriceMessage(char *c, int *m); int ai_Unk5c1b40();
 int amt_GetOfficeCandidatesFull(); int amt_GetOfficeCandidates();
 
 /* 0x5a1000, the guild level 1 window "LOCATIONS\ZUNFTHAUS\LEVEL1" (1968 B, ROUGH): 0x4e94a0 (the player) == 1
@@ -9906,7 +9906,7 @@ void ai_Unk5a1000(int param_1)
     int r;
 
     per = (char *)(unsigned)&ai_Chars + U_W((unsigned)&ai_PlayerId) * 0x21c;
-    r = amt_Unk4e94a0(per);
+    r = amt_MayorBonusStep(per);
     if (r != 1) {
         if (r != -1) {
             sv_CheckMoney(per, 3);
@@ -10211,7 +10211,7 @@ void ai_Unk5a1a60(int param_1)
 
     sv_ReleaseNamePlates();
     while (sv_RunFrame(ai_Unk5a1a60, 0x67fff) != 0) {
-        if (amt_Unk4e94a0((char *)(unsigned)&ai_Chars + U_W((unsigned)&ai_PlayerId) * 0x21c) != 0)
+        if (amt_MayorBonusStep((char *)(unsigned)&ai_Chars + U_W((unsigned)&ai_PlayerId) * 0x21c) != 0)
             c = sv_RegisterNamePlate("contact_ZUNFTLEVEL1", U_I((unsigned)&full_data_143fac4), 0x16);
         if (U_I((unsigned)&ai_ClickedObject) != 0 && U_I((unsigned)&ai_ClickedObject) == c)
             ai_Unk5a1000(param_1);

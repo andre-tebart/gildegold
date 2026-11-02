@@ -234,7 +234,7 @@ void amt_ElectKind22(void);            /* 0x4e8c20 */
 void amt_CalcZuenfte(unsigned int kind);  /* 0x4e8dc0 */
 void amt_CheckOffices(void);               /* 0x4e9260 */
 int amt_HasTownObject(int k);               /* 0x4e9400 */
-int amt_Unk4e94a0(char *c);             /* 0x4e94a0 */
+int amt_MayorBonusStep(char *c);             /* 0x4e94a0 */
 int amt_CanUseMayorPower2(char *c);             /* 0x4e94e0 */
 int amt_CanUseMayorPower3(char *c);             /* 0x4e95a0 */
 

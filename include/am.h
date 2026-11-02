@@ -777,8 +777,8 @@ int ai_ExecuteDarkCorner(G5CH *p, AIARG *s1, AIARG *s2);                        
 G5CH *ai_Unk4a0240(G5CH *p);                                                    /* 0x4a0240 */
 G6RING *ai_Unk4a3a90(void);                                                     /* 0x4a3a90 */
 int ai_Unk4a0410(G5CH *p);                                                      /* 0x4a0410 */
-int ai_Unk49fc90(int a, G5CH *p, int f, AIARG *o1);                             /* 0x49fc90 */
-int amt_Unk4e94a0(char *c);                                                      /* 0x4e94a0 */
+int ai_DecidePriceManipulation(int a, G5CH *p, int f, AIARG *o1);                             /* 0x49fc90 */
+int amt_MayorBonusStep(char *c);                                                      /* 0x4e94a0 */
 int ai_DecideBuildResidence(int a, struct AIPER *p, int f, struct AIARG *o1, struct AIARG *o2);                 /* 0x4984d0 */
 int ai_CanBuildType(int a, struct AIPER *p, int b, struct AIARG *s1, struct AIARG *s2, int f);           /* 0x4a5140 */
 int gm_BuildingKindCost(int unused, int kind);                                               /* 0x509dc0 */
@@ -987,7 +987,7 @@ typedef struct G7MKT {                  /* 0xb4 bytes, the prices of an item gro
 
 extern G7GRP ai_Unk61a348[];            /* 0x61a348 */
 
-int ai_Unk4a4680(G7MKT *m);
+int ai_GroupPrices(G7MKT *m);
 int ai_Unk4a4e30(struct AIBLD *b, int k);                                              /* 0x4a4e30 */
 int ai_Unk4a4e70(AIPER *p, int name);                                           /* 0x4a4e70 */
 extern int d3_CurrentScene;             /* 0x633444 */

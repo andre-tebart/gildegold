@@ -8195,6 +8195,8 @@ int ai_ExecuteDarkCorner(G5CH *p, AIARG *s1, AIARG *s2)
     }
     return 0;
 }
+#define AI_WORKSHOP_KINDS 0x744180  /* mask of the building kinds (1 << kind) ai_DecidePriceManipulation counts as workshops: 7, 8, 14, 18, 20, 21, 22 */
+#define AI_WORKSHOP_KINDS_HI 0  /* the same mask's kinds 32..63: none */
 #define AI_CREDIT_KINDS 0x7d4390  /* mask of the building kinds (1 << kind) a credit is taken for: 4, 7, 8, 9, 14, 16, 18..22 */
 /* 0x49eec0, decide callback of "Kredit Nehmen" (0x33; also asked by 0x13 / 0x10 / 0x11 with o1 kind 0x12, the sum
    needed): unless the character already runs more credits (events 0x23) than a random 0..9, picks one of its own
@@ -8619,65 +8621,84 @@ int ai_ExecuteStammtisch(G5CH *p, AIARG *s1, AIARG *s2)
     }
     return 0;
 }
-/* 0x49fc90, decide callback: trade in the item group where the character's share of the workshops is lowest */
+/* 0x49fc90, decide callback of "Zunft Preismanipulation" (0x36): a mayor whose bonus step is 1 counts, per job
+   group 1..7, the workshop levels (AI_WORKSHOP_KINDS, cap247) of all owners and its own, and the best type; scores
+   each group by its prices (ai_GroupPrices) and its share, then pushes the prices of the lowest-scored group
+   (o1->ref = group, o1->arg2 = -1 down / +1 up)
+   @deep read in full against the original and reconciled: the AI_ZERO inline-asm clears, the 64-bit kind
+   mask (lo32 / hi32 with the masks in locals so hi32 stays a store), the min(...,15) clamps, the score
+   expression order, lo = 1 (sic) and both if/else-if chains; 301 vs 303 instructions. Left: slots and
+   block layout only: hi32 lives in the f parameter slot [ebp+0x10] where the original gives it a local
+   [ebp-0x58] (frame 0x55c vs 0x564, so score[] sits at -0x70 vs -0x78 and m[] at -0x55c vs -0x564: the fpu
+   / 'code' hunks at 0x49fe75, 0x49fee3, 0x49ff50 are those offsets), and the original lays the lo path
+   (m[lo].avg > 1 / own[lo] == 0 / d = 1) before the util_RandomU block where ours places it after
+   (0x49ffd2 'jge' vs 'jl' and the moved 10-instruction block); tried if/else, negated condition, goto set
+   and goto none forms: all compile to the same layout */
 
-int ai_Unk49fc90(int a, G5CH *p, int f, AIARG *o1)
+int ai_DecidePriceManipulation(int a, G5CH *p, int f, AIARG *o1)
 {
     G7MKT m[7];
     float score[7];
-
     unsigned int best[7];
     int all[7];
     int own[7];
-    unsigned char *b;
-    unsigned char *bt;
+    AIBLD *b;
+    AIBTYPE *bt;
     unsigned int lo32;
-    int hi32;
-    int off, g, i, lo, hi, d;
+    unsigned int hi32;
+    unsigned int mlo, mhi;
+    unsigned char hit;
+    int j, g, i, lo, hi, d;
     float v;
 
-    if (a == 0 && f == 0 && amt_Unk4e94a0(p) == 1) {
-        memset(own, 0, sizeof(own));
-        memset(all, 0, sizeof(all));
-        memset(best, 0, sizeof(best));
-        for (off = 0; off < 0xa900; off += 0xa9) {
-            b = (unsigned char *)ai_BldsT + off;
-            if (b[0] != 0 && *(short *)(b + 0x27) != -1) {
-                bt = (unsigned char *)ai_BTypesT + b[0] * 0x24d;
+    mlo = AI_WORKSHOP_KINDS;
+    mhi = AI_WORKSHOP_KINDS_HI;
+    if (a == 0 && f == 0 && amt_MayorBonusStep(p) == 1) {
+        AI_ZERO(own, sizeof(own));
+        AI_ZERO(all, sizeof(all));
+        AI_ZERO(best, sizeof(best));
+        for (j = 0; j < 0x100; j++) {
+            b = &ai_BldsT[j];
+            if (b->type != 0 && b->owner != 0xffff) {
+                bt = &ai_BTypesT[b->type];
                 lo32 = 0;
                 hi32 = 0;
-                if (bt[0] < 0x20)
-                    lo32 = 1 << bt[0];
+                if ((unsigned char)bt->kind > 0x1f)
+                    hi32 = 1 << ((unsigned char)bt->kind - 0x20);
                 else
-                    hi32 = 1 << (bt[0] - 0x20);
-                if ((lo32 & ((unsigned)&he_Events + 0x49640)) != 0 && (g = gm_BuildingJob(bt[0])) != 0 && g < 8) {
+                    lo32 = 1 << (unsigned char)bt->kind;
+                hit = (lo32 & mlo) != 0 || (hi32 & mhi) != 0;
+                if (hit && (g = gm_BuildingJob((unsigned char)bt->kind)) != 0 && g <= 7) {
                     g--;
-                    if (*(short *)(b + 0x27) == (short)p->id)
-                        own[g] += bt[0x247];
-                    all[g] += bt[0x247];
+                    if (b->owner == p->id)
+                        own[g] += bt->cap247;
+                    all[g] += bt->cap247;
                     if (best[g] == 0)
-                        best[g] = b[0];
-                    else if (((unsigned char *)ai_BTypesT)[best[g] * 0x24d + 0x247] < bt[0x247])
-                        best[g] = b[0];
+                        best[g] = b->type;
+                    else if (bt->cap247 > ai_BTypesT[best[g]].cap247)
+                        best[g] = b->type;
                 }
             }
         }
-        hi = -1;
         lo = -1;
+        hi = -1;
         for (i = 0; i < 7; i++) {
             score[i] = -1.0f;
             m[i].key = best[i];
             m[i].n = 0;
-            if (all[i] > 14)
-                all[i] = 15;
-            if (own[i] > 14)
-                own[i] = 15;
-            if (all[i] > 0 && ai_Unk4a4680(&m[i]) != 0) {
-                v = (16.0f - (float)own[i]) * 0.06666667f * (((float)all[i] + 1.0f - (float)own[i]) / (float)all[i]) * m[i].avg;
+            all[i] = all[i] < 15 ? all[i] : 15;
+            own[i] = own[i] < 15 ? own[i] : 15;
+            if (all[i] > 0 && ai_GroupPrices(&m[i]) != 0) {
+                v = ((float)all[i] + 1.0f - (float)own[i]) / (float)all[i]
+                    * ((16.0f - (float)own[i]) * 0.06666667f) * m[i].avg;
                 score[i] = v;
-                if (lo == -1 || v < score[lo])
+                if (lo == -1)
                     lo = i;
-                if (hi == -1 || score[hi] < v)
+                else if (v < score[lo])
+                    lo = 1;             /* sic: the original stores 1, not i */
+                if (hi == -1)
+                    hi = i;
+                else if (v > score[hi])
                     hi = i;
             }
         }
@@ -8686,26 +8707,25 @@ int ai_Unk49fc90(int a, G5CH *p, int f, AIARG *o1)
             if (m[lo].avg > 1.0f || own[lo] == 0) {
                 if (m[hi].avg < 1.0f)
                     return 0;
-                if (all[hi] <= own[hi] * 2 + 1)
+                if (own[hi] * 2 + 1 >= all[hi])
                     return 0;
                 d = -1;
             }
-            if (m[hi].avg < 1.0f || all[hi] <= own[hi] * 2 + 1) {
-                if (m[lo].avg <= 1.0f && own[lo] != 0) {
-                    d = 1;
-                    goto set;
-                }
-            } else {
-                if (d == 0)
-                    d = util_RandomU(4) - 1;
-                if (d == -1 || d == 1) {
-set:
-                    o1->kind = 0x15;
-                    o1->ref = lo + 1;
-                    o1->arg2 = d;
-                    return 0x36;
-                }
+            if (m[hi].avg < 1.0f || own[hi] * 2 + 1 >= all[hi]) {
+                if (m[lo].avg > 1.0f || own[lo] == 0)
+                    return 0;
+                d = 1;
+                goto set;
             }
+            if (d == 0)
+                d = util_RandomU(4) - 1;
+            if (d != -1 && d != 1)
+                return 0;
+set:
+            o1->kind = 0x15;
+            o1->ref = lo + 1;
+            o1->arg2 = d;
+            return 0x36;
         }
     }
     return 0;
@@ -9920,7 +9940,7 @@ int ai_RegisterBaseActions(int a)
     act.id = 0x36;
     strcpy(act.name, "Zunft Preismanipulation");
     act.eval = ai_EvalMoodWeights;
-    act.decide = ai_Unk49fc90;
+    act.decide = ai_DecidePriceManipulation;
     act.exec = ai_Unk4a0040;
     act.flags = 0x3;
     if (!am_RegisterMethod(&act, a))
@@ -10145,7 +10165,7 @@ void ai_FillNearRing(AICHAR *c)
 }
 /* 0x4a4680, the current prices of the items of group m->key against their base prices */
 
-int ai_Unk4a4680(G7MKT *m)
+int ai_GroupPrices(G7MKT *m)
 {
     G7GRP *g;
     int i, k, n;
