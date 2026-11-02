@@ -7,7 +7,8 @@
    kabinett, message 0x99), the room contacts (ai_AlchemistLabContact, ai_CannonContact, ai_CabinetContact) and the
    graveyard windows (ai_GraveWindow with its size buttons, list and detail; the rent-a-grave detail; the move /
    rent / free confirmation forms and the GRAEBER_PFLEGEN / GEHILFEN_ERSCHAFFEN callbacks ai_GraveCare /
-   ai_GraveRaiseHelper), the helpers window ai_GypsyHelperWindow. Start: he.c's last function 0x575710, its jump table and
+   ai_GraveRaiseHelper), the helpers window ai_GypsyHelperWindow, the graveyard chatter tick, the right-button
+   tooltips (ai_HandleItemDrag and its ai_Open*Tooltip views). Start: he.c's last function 0x575710, its jump table and
    nop fill end at 0x575860; the unit's one .data block starts at 0x62918c (ai_TutorialChapterOn, then the "FT"
    state names) and its literals climb in function order to 0x62aa58; the network lobby (0x589f10) is a unit of
    its own. The original file name is unknown (no leaked tag). Names are ours.
@@ -21,7 +22,11 @@
    Open: data: the unit's .rdata block 0x5eec60..0x5eed70 is typed up to ai_CannonZoomRange (0x5eec6c .. 0x5eecac:
    const data, the original loads it); 0x5eec64 / 0x5eec68 / 0x5eec8c / 0x5eec90 (0x54, the recoil time the code
    uses as an immediate) / the floats 0x5eec9c .. 0x5eeca8 and the tables from 0x5eecf0 are not declared yet (the
-   grave size tables 0x5eecb0 .. 0x5eecef are; declared before ai_TutorialInitChapter2 they flip its tie-break).
+   grave size tables 0x5eecb0 .. 0x5eecef are; declared before ai_TutorialInitChapter2 they flip its tie-break,
+   as ai.h's AIBTYPE.v243 did: ai_TutorialInitChapter2 is debt at shape until the declaration set settles).
+   Open: data: ai_DragWindow (0x62a8cc) lies in this unit's .data block between its literals and next to
+   ai_DragObj / ai_DragViewWin, but sv.c defines it (sv.h declares it; sv.c and unk_58bbd0.c use it): owner
+   unk_575860 or sv.
    Open: GVGRAVE.v2c / v30 / nameId: gv.c stores small numbers there, ai_GraveDeadName / ai_GraveDeadDescription
    (byte) read them as pointers to text records; which records is unknown.
    Open: sv_CheckGoodAmount's third parameter: the original's callers push the player byte unextended (a char

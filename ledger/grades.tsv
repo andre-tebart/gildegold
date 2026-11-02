@@ -1477,7 +1477,7 @@ exe	0x00484a60	ai_Unk484a60	ai	draft	draft	deep
 exe	0x004854f0	ai_UpdateProduction	ai	draft	draft	deep	
 exe	0x00486190	ai_FillSlotTable	ai	draft	draft	deep	
 exe	0x004864b0	ai_BuildTradeOffers	ai	draft	draft	deep	
-exe	0x00487040	ai_CalcEntryCost	ai	byte	draft	deep	
+exe	0x00487040	ai_CalcEntryCost	ai	byte	readable		
 exe	0x00487180	ai_HasMaterials	ai	draft	readable	deep	
 exe	0x00487410	ai_StartProduction	ai	draft	readable	deep	
 exe	0x00487780	ai_AddEquipmentNeeds	ai	draft	readable	deep	
@@ -2398,7 +2398,7 @@ exe	0x004cd760	cm_LobbyJoin	cm	byte	draft
 exe	0x004cd7c0	cm_LobbyUpdatePlayer	cm	byte	draft		
 exe	0x004cd820	ai_Unk4cd820	cm	byte	draft		
 exe	0x004cd870	ai_Unk4cd870	cm	draft	draft		
-exe	0x004cd9d0	ai_Unk4cd9d0	cm	byte	draft		
+exe	0x004cd9d0	ai_FindWeaponRecord	cm	byte	draft		
 exe	0x004cda00	ai_Unk4cda00	cm	byte	draft		
 exe	0x004cda50	ai_Unk4cda50	cm	byte	draft		
 exe	0x004cdac0	ai_Unk4cdac0	cm	byte	draft		
@@ -3171,7 +3171,7 @@ exe	0x0050cc50	gm_SendMoneyDelta	f3gm	byte	readable
 exe	0x0050cc60	gm_ResetStock	f3gm	byte	draft		
 exe	0x0050ccd0	gm_Unk50ccd0	f3gm	draft	draft		
 exe	0x0050cd40	gm_Unk50cd40	f3gm	byte	draft		
-exe	0x0050cdc0	gm_Unk50cdc0	f3gm	draft	draft		
+exe	0x0050cdc0	gm_StaffFactor	f3gm	draft	draft		
 exe	0x0050cf60	gm_BathObjectCount	f3gm	byte	draft		
 exe	0x0050cfd0	gm_CurseObjectCount	f3gm	byte	draft		
 exe	0x0050d060	gm_Unk50d060	f3gm	byte	draft		
@@ -4088,15 +4088,15 @@ exe	0x00587700	ai_UpgradeWorkerSend	unk_575860	byte	readable
 exe	0x00587810	ai_UpgradeWorkerWindow	unk_575860	byte	readable		
 exe	0x00587ad0	ai_Unk587ad0	unk_575860	byte	draft		
 exe	0x00587b70	ai_Unk587b70	unk_575860	shape	draft		
-exe	0x00587c40	ai_EndCharExtra	unk_575860	draft	draft		
-exe	0x00587c90	ai_GraveyardChatter	unk_575860	draft	draft		
+exe	0x00587c40	ai_EndCharExtra	unk_575860	byte	readable		
+exe	0x00587c90	ai_GraveyardChatter	unk_575860	byte	readable		
 exe	0x00587de0	ai_ClearTurnTable	unk_575860	byte	draft		
-exe	0x00587e00	ai_HandleItemDrag	unk_575860	draft	draft		
-exe	0x00588160	ai_Unk588160	unk_575860	draft	draft		
-exe	0x00588310	ai_Unk588310	unk_575860	draft	draft		
-exe	0x00588950	ai_Unk588950	unk_575860	draft	draft		
+exe	0x00587e00	ai_HandleItemDrag	unk_575860	draft	readable	deep	
+exe	0x00588160	ai_OpenBuildingTooltip	unk_575860	byte	readable		
+exe	0x00588310	ai_OpenItemTooltip	unk_575860	draft	readable	deep	
+exe	0x00588950	ai_OpenUpgradeTooltip	unk_575860	shape	readable		
 exe	0x00588bb0	ai_OpenHelpTooltip	unk_575860	byte	readable		
-exe	0x00588c60	ai_Unk588c60	unk_575860	draft	draft		
+exe	0x00588c60	ai_OpenCharTooltip	unk_575860	byte	readable		
 exe	0x005890c0	ai_Unk5890c0	unk_575860	draft	draft		
 exe	0x00589400	ai_Unk589400	unk_575860	byte	draft		
 exe	0x00589410	ai_Unk589410	unk_575860	byte	draft		
@@ -4461,7 +4461,7 @@ exe	0x005bd5e0	ai_Unk5bd5e0	unk_58bbd0	draft	draft
 exe	0x005bdb60	ai_Unk5bdb60	unk_58bbd0	draft	draft		
 exe	0x005be1d0	ai_AmountRowStatus	unk_58bbd0	draft	draft		
 exe	0x005be3b0	ai_AmountRow	unk_58bbd0	draft	draft		
-exe	0x005be720	ai_Unk5be720	unk_58bbd0	draft	draft		
+exe	0x005be720	ai_DrawAmountRow	unk_58bbd0	draft	draft		
 exe	0x005bea00	ai_Unk5bea00	unk_58bbd0	shape	draft		
 exe	0x005bea50	ai_Unk5bea50	unk_58bbd0	draft	draft		
 exe	0x005bf0d0	ai_Unk5bf0d0	unk_58bbd0	draft	draft		
