@@ -164,7 +164,10 @@ typedef struct AIJOB {                  /* a job (he_FindEvent / he_NextEvent) *
     AITIME end;                         /* 0x52, the end time of the kinds whose length is fixed at the start (0x40, the building jobs 0x1e / 0x1f) */
     char pad60[0x10];
     int stage;                          /* 0x70, the stage the job has reached (sv_RefreshPanel shows progress only from a kind's timed stage on) */
-    char pad74[0x38];
+    char pad74[0x18];
+    int helpers[4];                     /* 0x8c, of a helper job 0x8c the characters on it, -1: a free place
+                                           (ai_GypsyHelperWindow counts them) */
+    char pad9c[0x10];
     union {
         int unkac;                      /* 0xac, a building id */
         int partner1;                   /* 0xac, of a pair event (kinds 0x41 / 0x6f / 0x45, he_Unk5538b0) the first partner's netId */

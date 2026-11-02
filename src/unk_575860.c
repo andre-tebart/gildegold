@@ -8328,34 +8328,40 @@ int ai_GraveRaiseHelper(AIBLD *rec, GVPICK *pick)
 int sv_CheckCharacterFlag(); char * he_FindEvent(int n, ...); char * he_NextEvent(void); void sv_OpenWindowFrame(int f, int b, int c); void d2_SetCaption();
 void ai_Unk58bbd0(void); int ai_Unk58d720(); void ai_Unk58dd00(int param_1, int param_2, int param_3, int param_4);
 
-/* 0x584d70, the graveyard "create helpers" window (1549 B, ROUGH: the calls and the flow are complete): b = the
-   building record (byte +0 the building kind, +1 the id, +0x27 the owner word, +0x5d the owner record).
-   0x4ffe90 (b+0x5d, 2, 6, 0, 0x2a) kept; 0x520fe0 (b) ends the handler when it fails. The building table
-   0x7e3f30 + kind * 0x24d: the kind 0x1f and the limit byte +0x247 - two grave kinds 0x225 / 0x226 (0x293 /
-   0x294 for the kind 0x1f) and a third 0x227 / 0x295 with the limit >= 2 (n = 2 / 3). The running 0x8c events
-   0x53e400 (2, 0, 0x8c, 3, b + 1) whose +0xac word is a kind count their non-(-1) +0x8c[4] entries. The window
-   "HANDEL\\HANDEL_SUCHEN" (0x62a634) with 0x475600, 0x475f70 (window, 0 / 3), 0x52e6d0 (0x6ed938, 0x70f,
-   0x741) and the text 0x421e / 0x4128 (kind 0x1f), 0x525220 (b, 0), 0x58bbd0 (), 0x475600, then the buttons
-   0x4731d0 (x, i * 0x50 + 0x19, kinds[i] + 0xdf, 0x6ed938) with x = *(short *)(0xf8f128 + 0x6ed938 * 0x3c4)
-   / 2 - 0x80, the table 0xf8f080 +0x4c = 1 / +0x1c0 = 3 / +0x1cc = 100 / +0x1d0 = 0x10 / word +0x74 = 0x54,
-   the icon U_I (0x143c860 + kinds[i] * 8) via 0x473540 and 0x475e40 (id, 1). Each frame 0x58d720 (b, the
-   0x4ffe90 record) and 0x58dd00 (window, 1, 0, b), the counts recounted, 0x475f70 (window, 2), the button texts
-   by the counts (0 / 1 / >= 2: 0x421f / 0x4220 / "%s" 0x5f8318 with kinds[i] * 2 + 0x9a8 for the kind 0x1f,
-   0x4129 / 0x412a / "%s" for the others) into the line and 0x473540 (id, line). The pump loop 0x5309a0 (this
-   window, 0x677c7): the click 0x5fe710 on a button -> the message (type 0x8c at +4, 1 at +0x36, the character
-   0x770b84 + b[0x27] * 0x21c at +8, b + 1 at +0xc, the clock 0x770ae0 / 0x770ae4 / 0x770ae8 / word 0x770aec at
-   +0x28, the kind word at +0x58, the first two selected characters (byte +0x188) at +0x5c / +0x64, the free
-   slots -1) through 0x4c4b70 and 0x4c3ae0 (pump 0x20007), 0x760638 = 0x677c7, 0x52ae40 (); no character ->
-   0x521150 (U_I (0x144a40c), 4) and 0x52ae40 (); the escape 0x14673a0 -> 0x6f22a0 = 1; the pump 0 ->
-   0x52ae40 (), 0x525440 (), 0x4758f0 (window), 0x52d7a0 () */
-void ai_GypsyHelperWindow(char *b)
+/* 0x584d70, the helpers window of a building (the form "HANDEL\HANDEL_SUCHEN"): rec = the building. Its type
+   offers two helper kinds (0x225 / 0x226, of the type kind 0x1f 0x293 / 0x294) and a third (0x227 / 0x295) from
+   the type's level 2 on; a character flag ends it at once. The window frame 0x70f / 0x741, the title txt 0x421e
+   (kind 0x1f) / 0x4128, the player bar and the production table (ai_Unk58bbd0), and one picture button per helper
+   kind (its picture kind + 0xdf, its name the caption) 0x50 apart. Each frame the production lines are redrawn
+   (ai_Unk58d720 with the building's gm_Query record, ai_Unk58dd00), the helpers already on the building's helper
+   jobs 0x8c are counted per kind and each button reads the kind's name with the count (txt 0x421f / 0x4220 for
+   kind 0x1f, 0x4129 / 0x412a for the others, the name alone without one). A click on a button sends the helper
+   job message 0x8c (flags 1, to the owner, the game time, the kind, the first four selected characters) and
+   waits for it; with no character selected the message txt 0x4093; the selection is cleared. A right click
+   ends the window
+   @deep reconstructed in full from the original (all 449 instructions read: the kinds / limit setup, both
+   helper-job counts over AIJOB.helpers, the window and button setup, the per-frame caption texts, the
+   click -> message 0x8c with the selected characters, the closing); 448 vs 449 instructions, the
+   statements and branches match (the one branch-target shift, je at +0xd8, is the 2-byte xor ebx,ebx
+   before the d2_OpenForm it jumps to). Left is the constant register: the original caches 2 in ebx (push
+   ebx for gm_Query / he_FindEvent's 2, cmp al,bl for the level test, n stored from it) and 0x227 in esi,
+   and so saves ebx in the prologue; ours caches 0 in ebx (push ebx for every 0 argument and the counts
+   zeroing, xor ebx,ebx again before d2_OpenForm) and saves it after the sv_CheckCharacterFlag return,
+   which shifts every stack slot by 4 (the slots hunks, inc [esp+edx+0x24] vs 0x20) and turns the second
+   count zeroing into esi vs edx (hunks 0x584d81, 0x584e24, 0x584e86, 0x58503c, 0x58505a, 0x5850a6). Also
+   the button loop's pushes are the same instructions in another register order (0x584f4d, regs eax<->edx
+   at 0x584f0b / 0x584f72), and in the caption loop the kind test is cmp byte [ecx],0x1f (ours, counts[i]
+   already in eax) vs mov al,[ecx] / cmp al / mov eax,counts[i] (0x5850cf). Tried: the statement order of n
+   / kinds[2] / gm_Query (this one best), chained counts zeroing (identical), the count local inside each
+   branch (worse: the name argument is hoisted again), the count tests as > 1 first / a switch (worse) */
+void ai_GypsyHelperWindow(AIBLD *rec)
 {
     char line[0x100];
-    char msg[0xf8];
+    AIMSG msg;
     int btns[3];
-    char *bldg;
-    char *e;
-    int res;
+    AIBTYPE *type;
+    AIJOB *job;
+    char *res;
     int win;
     int counts[3];
     int kinds[3];
@@ -8363,146 +8369,146 @@ void ai_GypsyHelperWindow(char *b)
     int i;
     int j;
     int k;
+    int sel;
+    int c;
     int id;
     int h;
     int x;
 
-    res = gm_Query(b + 0x5d, 2, 6, 0, 0x2a);
-    bldg = (char *)(unsigned)&ai_BTypes + *(unsigned char *)b * 0x24d;
     n = 2;
-    if (*(unsigned char *)(bldg + 0x247) >= 2)
-        n = 3;
-    if (*(unsigned char *)bldg == 0x1f) {
+    kinds[2] = 0x227;
+    res = gm_Query((void *)rec->objList, 2, 6, 0, 0x2a);
+    type = &((AIBTYPE *)ai_BTypes)[rec->type];
+    if (type->kind == 0x1f) {
         kinds[0] = 0x293;
         kinds[1] = 0x294;
-        kinds[2] = 0x295;
+        if (type->cap247 >= 2) {
+            kinds[2] = 0x295;
+            n = 3;
+        }
     } else {
         kinds[0] = 0x225;
         kinds[1] = 0x226;
-        kinds[2] = 0x227;
+        if (type->cap247 >= 2) {
+            kinds[2] = 0x227;
+            n = 3;
+        }
     }
-    if (sv_CheckCharacterFlag(b) != 0)
+    if (sv_CheckCharacterFlag((char *)rec) != 0)
         return;
     counts[0] = 0;
     counts[1] = 0;
     counts[2] = 0;
-    e = (char *)he_FindEvent(2, 0, 0x8c, 3, b + 1);
-    while (e != 0) {
+    for (job = (AIJOB *)he_FindEvent(2, 0, 0x8c, 3, rec->id); job != 0; job = (AIJOB *)he_NextEvent()) {
         for (i = 0; i < 3; i++) {
-            if (*(unsigned short *)(e + 0xac) == kinds[i]) {
+            if (job->u.w.lo == kinds[i]) {
                 for (j = 0; j < 4; j++)
-                    if (*(int *)(e + 0x8c + j * 4) != -1)
+                    if (job->helpers[j] != -1)
                         counts[i]++;
             }
         }
-        e = (char *)he_NextEvent();
     }
-    win = d2_OpenForm(0, 0, (char *)(unsigned)"HANDEL\\HANDEL_SUCHEN");
+    win = d2_OpenForm(0, 0, "HANDEL\\HANDEL_SUCHEN");
     d2_CentreViewWindows(win);
     d2_SetForm(win, 0);
-    sv_OpenWindowFrame(U_I((unsigned)&d2_LastWindow), 0x70f, 0x741);
+    sv_OpenWindowFrame(d2_LastWindow, 0x70f, 0x741);
     d2_SetForm(win, 3);
-    if (*(unsigned char *)bldg == 0x1f)
+    if (type->kind == 0x1f)
         io_PrintText(0x421e);
     else
         io_PrintText(0x4128);
-    sv_OpenPlayerBar(b, 0);
+    sv_OpenPlayerBar((int)rec, 0);
     ai_Unk58bbd0();
     d2_CentreViewWindows(win);
     d2_SetForm(win, 2);
-    x = *(short *)((unsigned)&ai_Unkf8f128 + U_I((unsigned)&d2_LastWindow) * 0x3c4) / 2 - 0x80;
+    x = d2_Wins[d2_LastWindow].w / 2 - 0xa8;
     for (i = 0; i < n; i++) {
-        id = d2_WinOpenPic(x, i * 0x50 + 0x19, (char *)(kinds[i] + 0xdf), U_I((unsigned)&d2_LastWindow));
-        *(int *)(U_I((unsigned)&d2_Objs) + 0x4c + id * 0x2ec) = 1;
-        *(int *)(U_I((unsigned)&d2_Objs) + 0x1c0 + id * 0x2ec) = 3;
-        *(int *)(U_I((unsigned)&d2_Objs) + 0x1cc + id * 0x2ec) = 100;
-        *(int *)(U_I((unsigned)&d2_Objs) + 0x1d0 + id * 0x2ec) = 0x10;
-        *(unsigned short *)(U_I((unsigned)&d2_Objs) + 0x74 + id * 0x2ec) = 0x54;
-        d2_SetCaption(id, (char *)U_I((unsigned)&txt_ObjectNames + kinds[i] * 8));
+        id = d2_WinOpenPic(x + 0x28, i * 0x50 + 0x19, kinds[i] + 0xdf, d2_LastWindow);
+        d2_Objs[id].interactive = 1;
+        d2_Objs[id].style = 3;
+        d2_Objs[id].captionX = 100;
+        d2_Objs[id].captionY = 0x10;
+        d2_Objs[id].font = 0x54;
+        d2_SetCaption(id, (char *)txt_ObjectNames[kinds[i]][0]);
         btns[i] = id;
         d2_SetObjEnabled(id, 1);
     }
     d2_SetPointerSprite(0, 0);
-    ai_Unk58d720(b, res);
-    ai_Unk58dd00(win, 1, 0, b);
-    for (;;) {
-        if (sv_RunFrame(ai_GypsyHelperWindow, 0x677c7) == 0)
-            break;
-        ai_Unk58d720(b, res);
-        ai_Unk58dd00(win, 1, 0, b);
+    ai_Unk58d720(rec, res);
+    ai_Unk58dd00(win, 1, 0, rec);
+    while (sv_RunFrame((int)ai_GypsyHelperWindow, 0x677c7)) {
+        ai_Unk58d720(rec, res);
+        ai_Unk58dd00(win, 1, 0, rec);
         counts[0] = 0;
         counts[1] = 0;
         counts[2] = 0;
-        e = (char *)he_FindEvent(2, 0, 0x8c, 3, b + 1);
-        while (e != 0) {
+        for (job = (AIJOB *)he_FindEvent(2, 0, 0x8c, 3, rec->id); job != 0; job = (AIJOB *)he_NextEvent()) {
             for (i = 0; i < 3; i++) {
-                if (*(unsigned short *)(e + 0xac) == kinds[i]) {
+                if (job->u.w.lo == kinds[i]) {
                     for (j = 0; j < 4; j++)
-                        if (*(int *)(e + 0x8c + j * 4) != -1)
+                        if (job->helpers[j] != -1)
                             counts[i]++;
                 }
             }
-            e = (char *)he_NextEvent();
         }
         d2_SetForm(win, 2);
         for (i = 0; i < n; i++) {
             id = btns[i];
             d2_SetObjEnabled(id, 1);
-            if (*(unsigned char *)bldg == 0x1f) {
-                if (counts[i] == 1)
-                    txt_Format(line, (char *)0x421f, 0x22d, kinds[i] * 2 + 0x9a8);
-                else if (counts[i] <= 1)
-                    txt_Format(line, "%s", kinds[i] * 2 + 0x9a8);
+            c = counts[i];
+            if (type->kind == 0x1f) {
+                if (c == 1)
+                    txt_Format(line, 0x421f, 0x22d, kinds[i] * 2 + 0x9a8);
+                else if (c > 1)
+                    txt_Format(line, 0x4220, c, 0x22d, kinds[i] * 2 + 0x9a8);
                 else
-                    txt_Format(line, (char *)0x4220, counts[i], 0x22d, kinds[i] * 2 + 0x9a8);
+                    txt_Format(line, "%s", kinds[i] * 2 + 0x9a8);
             } else {
-                if (counts[i] == 1)
-                    txt_Format(line, (char *)0x4129, 0x228, kinds[i] * 2 + 0x9a8);
-                else if (counts[i] <= 1)
-                    txt_Format(line, "%s", kinds[i] * 2 + 0x9a8);
+                if (c == 1)
+                    txt_Format(line, 0x4129, 0x228, kinds[i] * 2 + 0x9a8);
+                else if (c > 1)
+                    txt_Format(line, 0x412a, c, 0x228, kinds[i] * 2 + 0x9a8);
                 else
-                    txt_Format(line, (char *)0x412a, counts[i], 0x228, kinds[i] * 2 + 0x9a8);
+                    txt_Format(line, "%s", kinds[i] * 2 + 0x9a8);
             }
             d2_SetCaption(id, line);
         }
-        if (U_I((unsigned)&d2_ClickedId) == -1) {
-            if (U_I(((unsigned)&dm_L + 0x20)) != 0)
-                U_I((unsigned)&sv_PopRequest) = 1;
-        } else {
-            for (i = 0; i < n; i++)
-                if (U_I((unsigned)&d2_PointerObj) == btns[i])
+        if (d2_ClickedId != -1) {
+            sel = -1;
+            for (i = 0; i < n; i++) {
+                if (btns[i] == d2_PointerObj) {
+                    sel = i;
                     break;
-            if (i != n) {
-                memset(msg, 0, 0xf8);
-                *(unsigned char *)(msg + 0x04) = 0x8c;
-                *(unsigned char *)(msg + 0x36) = 1;
-                *(int *)(msg + 0x08) = *(int *)((unsigned)&ai_CharInts + *(unsigned short *)(b + 0x27) * 0x21c);
-                *(int *)(msg + 0x0c) = U_I(b + 1);
-                *(int *)(msg + 0x28) = U_I((unsigned)&ai_Time);
-                *(int *)(msg + 0x2c) = U_I((unsigned)&ai_TimeHour);
-                *(int *)(msg + 0x30) = U_I(((unsigned)&ai_Time + 0x8));
-                *(unsigned short *)(msg + 0x34) = *(unsigned short *)((unsigned)&ai_Time + 0xc);
-                *(unsigned short *)(msg + 0x58) = kinds[i];
+                }
+            }
+            if (sel != -1) {
+                memset(&msg, 0, sizeof(msg));
+                msg.type = 0x8c;
+                msg.flags = 1;
+                msg.to = ai_CharsT[rec->owner].netId;
+                msg.fromId = rec->id;
+                msg.time = ai_TimeT;
+                msg.itemId = kinds[sel];
                 k = 0;
                 for (j = 0; j < 0x300 && k < 4; j++) {
-                    if (*(char *)((unsigned)&ai_CharInts + j * 0x21c + 0x184)) {
-                        *(int *)(msg + 0x5c + k * 4) = *(int *)((unsigned)&ai_CharInts + j * 0x21c);
-                        k++;
-                    }
+                    if (ai_CharsT[j].selected)
+                        msg.ids[k++] = ai_CharsT[j].netId;
                 }
                 for (j = k; j < 4; j += 2)
-                    *(int *)(msg + 0x5c + j * 4) = -1;
-                if (k == 0) {
-                    sv_MessageBox((char *)U_I((unsigned)&full_data_144a40c), 4);
-                    sv_ClearSelection();
-                } else {
-                    h = cm_SendLongMessage(msg);
+                    msg.ids[j] = -1;
+                if (k != 0) {
+                    h = cm_SendLongMessage((char *)&msg);
                     while (h != -1 && cm_GetSlotState(h) == 0)
                         sv_RunFrame(0, 0x20007);
-                    U_I((unsigned)&sv_FrameMask) = 0x677c7;
+                    sv_FrameMask = 0x677c7;
+                    sv_ClearSelection();
+                } else {
+                    sv_MessageBox(txt_Ptrs[0x4093], 4);
                     sv_ClearSelection();
                 }
             }
+        } else if (dm_L.rup != 0) {
+            sv_PopRequest = 1;
         }
     }
     sv_ClearSelection();
@@ -9213,7 +9219,7 @@ void ai_Unk586840(char *rec)
                 else if (U_I((unsigned)&ai_ClickedObject) == c_heim)
                     ai_Unk586ab0(rec);
                 else if (U_I((unsigned)&ai_ClickedObject) == c_zut)
-                    ai_GypsyHelperWindow(rec);
+                    ai_GypsyHelperWindow((AIBLD *)rec);
                 else if (U_I((unsigned)&ai_ClickedObject) == c_graeber)
                     ai_Unk587300(rec);
                 else if (U_I((unsigned)&ai_ClickedObject) == c_gehilfen)

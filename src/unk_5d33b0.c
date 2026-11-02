@@ -3230,7 +3230,7 @@ void ai_GypsyProductionContact(int building)
         if (ai_ClickedObject != 0) {
             if ((ai_BuildingPerms & 0x200) != 0) {
                 if (ai_ClickedObject == zutaten)
-                    ai_GypsyHelperWindow((char *)building);
+                    ai_GypsyHelperWindow((struct AIBLD *)building);
                 else if (ai_ClickedObject == transport)
                     ai_OpenTransport(building);
                 else if (ai_ClickedObject == produktion)

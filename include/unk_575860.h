@@ -6,6 +6,7 @@
 struct HEEVSLOT;
 struct SBSAMPLE;
 struct AHMSTEP;
+struct AIBLD;
 
 typedef struct TUTSTEP {                /* 0x10 bytes, a step of a run record's chain (TUTRUN.steps) */
     unsigned int delay;                 /* 0x00, ms after the step started until its control is enabled */
@@ -92,7 +93,7 @@ typedef struct TUTSTATE {               /* the tutorial state record (0x6fa060, 
     int progressSlider;                 /* 0x6c, its slider */
 } TUTSTATE;
 
-void ai_GypsyHelperWindow(char *b);     /* 0x584d70, the helpers window of a building (HANDEL_SUCHEN form), opened by the gypsy production contact */
+void ai_GypsyHelperWindow(struct AIBLD *rec); /* 0x584d70, the helpers window of a building (HANDEL_SUCHEN form), opened by the gypsy production contact */
 extern int ai_TutorialChapterOn[5];     /* 0x62918c, per chapter 1 = played */
 extern int (*ai_TutorialChapterInit[5])(void);  /* 0x6291a0, the chapter chain builders */
 extern int ai_TutorialBanks[6];         /* 0x6f2640, the tutorial's voice banks */
