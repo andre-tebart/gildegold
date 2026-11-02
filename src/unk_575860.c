@@ -690,7 +690,7 @@ TUTSTATE *const ai_Tutorial = (TUTSTATE *)(full_data_6fa020 + 0x40);  /* 0x5eec6
 #define ai_TimeT (*(AITIME *)&ai_Time)  /* 0x770ae0, ai_Time (anm.c: char[14]) as the AITIME it is */
 #define ai_ClockMsVolatile (*(volatile int *)&ai_ClockMs)  /* 0x6333cc, @original: the byte-matched ai_TutorialTick reloads the clock after every read (a timer-written int; its owner declares it plain int) */
 int ai_TutorialChapterOn[5] = { 1, 1, 1, 1, 1 };  /* 0x62918c, per chapter 1 = played (the start window's check boxes, ai_TutorialWindow) */
-int (*ai_TutorialChapterInit[5])(void) = { ai_TutorialInitChapter1, ai_Unk578e40, ai_Unk579570, ai_Unk57aa80, ai_Unk57aeb0 };  /* 0x6291a0, the chapter chain builders the start appends for every chapter played */
+int (*ai_TutorialChapterInit[5])(void) = { ai_TutorialInitChapter1, ai_TutorialInitChapter2, ai_Unk579570, ai_Unk57aa80, ai_Unk57aeb0 };  /* 0x6291a0, the chapter chain builders the start appends for every chapter played */
 int ai_TutorialBanks[6] = { 0 };  /* 0x6f2640, the voice banks of the main intro / outro and the chapters 1 .. 5 (snd_LoadVoiceBank), unloaded by the stop */
 TUTRUN *ai_TutorialRuns = 0;  /* 0x6f2658, the chain of the tutorial's run records (built by its start 0x578180, freed by its stop 0x578370) */
 int ai_TutorialOn = 0;  /* 0x6f265c, the tutorial runs (set by its start 0x578180, cleared by its end) */
@@ -1224,7 +1224,7 @@ int ai_QueryChapter2Step3(int *args)
 }
 /* 0x5765e0, 1 for the kind 0x1a with a record */
 
-int ai_Unk5765e0(int *p)
+int ai_QueryChapter2Step4(int *p)
 {
     if (p[0] == 0x1a && p[1])
         return 1;
@@ -1323,7 +1323,7 @@ int ai_StepChapter1Step10(int *p)
 /* 0x576830, the kinds 0x17 / 0x18 set the pending state 0xa / 0xb (1), else 3. Ends at 0x57689f; 0x5768a0 is a
    new start without nop padding */
 
-int ai_Unk576830(int *p)
+int ai_StepChapter2Step1(int *p)
 {
     if (p[0] == 0x17) {
         U_I(S) = 0xa;
@@ -1342,7 +1342,7 @@ int ai_Unk576830(int *p)
 /* 0x5768a0, when `arg` is 0, finds a record (0x501190 (1, 5, 0xf)) and writes 0x10e into its word +0x29; no return
    value (0x501190 returns the record) */
 
-void ai_Unk5768a0(int arg)
+void ai_HookChapter2Step2(int arg)
 {
     char *r;
 
@@ -1354,7 +1354,7 @@ void ai_Unk5768a0(int arg)
 }
 /* 0x5768d0, the kind 0x19 with a record whose word is 0x10e moves the pending state to 0xb (1), else 3 */
 
-int ai_Unk5768d0(int *p)
+int ai_StepChapter2Step2(int *p)
 {
     if (p[0] == 0x19 && p[1] && *(unsigned short *)p[1] == 0x10e) {
         U_I(S) = 0xb;
@@ -1366,7 +1366,7 @@ int ai_Unk5768d0(int *p)
 }
 /* 0x576920, the same as 0x5768d0 for the kind 0x19 and the record word 0x110 */
 
-int ai_Unk576920(int *p)
+int ai_StepChapter2Step3(int *p)
 {
     if (p[0] == 0x19 && p[1] && *(unsigned short *)p[1] == 0x110) {
         U_I(S) = 0xb;
@@ -1378,7 +1378,7 @@ int ai_Unk576920(int *p)
 }
 /* 0x576970, the same for the kind 0x1a and the record word 0x110 */
 
-int ai_Unk576970(int *p)
+int ai_StepChapter2Step4(int *p)
 {
     if (p[0] == 0x1a && p[1] && *(unsigned short *)p[1] == 0x110) {
         U_I(S) = 0xb;
@@ -1392,7 +1392,7 @@ int ai_Unk576970(int *p)
    state is 4 (state 0xa), the kind 0x1c in any state (state 0xb); else 3. Ends 0x576a7f; 0x576a80 is a new start
    without nop padding */
 
-int ai_Unk5769c0(int *p)
+int ai_StepChapter2Step5(int *p)
 {
     int kind;
 
@@ -1427,7 +1427,7 @@ fail:
 /* 0x576a80, when `arg` is 1, finds a record (0x501190 (1, 5, 0xa)) and passes it to 0x521960 (r, -1, 0x631090);
    no return value */
 
-void ai_Unk576a80(int arg)
+void ai_HookChapter2Step5(int arg)
 {
     char *r;
 
@@ -1440,7 +1440,7 @@ void ai_Unk576a80(int arg)
 /* 0x576ab0, the kinds 0x19 / 0x1a with a record whose word is 0x13: the kind 0x19 only in the pending state 4
    (state 0xa), the kind 0x1a in any state (state 0xb); else 3 */
 
-int ai_Unk576ab0(int *p)
+int ai_StepChapter2Step6(int *p)
 {
     if (p[0] == 0x19 && p[1] && U_I(S + 4) == 4) {
         if (*(unsigned short *)p[1] != 0x13)
@@ -1460,7 +1460,7 @@ int ai_Unk576ab0(int *p)
 }
 /* 0x576b50, the kind 0x19 with a record whose word is 0x74 moves the pending state to 0xb (1), else 3 */
 
-int ai_Unk576b50(int *p)
+int ai_StepChapter2Step7(int *p)
 {
     if (p[0] == 0x19 && p[1] && *(unsigned short *)p[1] == 0x74) {
         U_I(S) = 0xb;
@@ -2840,211 +2840,258 @@ fail:
     ai_TutorialFreeRuns((char *)head);
     return 0;
 }
-/* 0x578e40, the tutorial chapter 2 chain (1839 B, ROUGH from the disassembly, the same shape as 0x578570): nine
-   0x74-byte step records (mem_Alloc (0x74, name) + memset 0x74): +0 = 2, +4 the magic ("2rtn" 0x6e747232, then
-   0x63327341 .. 0x63327347, the outro 0x75747232), +0xc the text id (0x3f53 .. 0x3f70), +0x10 the text key
-   (CHAPTER_2_INTRO, CHAPTER_2_A_MAIN .. CHAPTER_2_F_MAIN, CHAPTER_2_OUTRO), +0x2c = -1, +0x30 (0x8e / 0x163),
-   +0x3c = 0x576490 (the step predicate; absent on the outro), +0x48 (0xb / 9 / 0xa), +0x68 (0x1837 / 0x5837),
-   the last +0x6c = 0x1e00, the records linked through +0x70; the sample bank "TUTORIAL_CHAPTER_2.sbf" 0x629734
-   into 0x6f2648 (0x4c2830 (name, 0)); the first record, or 0x578440 (the chain) and 0 after a failed alloc */
+/* 0x578e40, builds the run chain of the tutorial's chapter 2 (ai_TutorialChapterInit[1]): nine run records (the
+   intro 'ntr2', the steps 'c2sA' .. 'c2sG' with their hooks and step callbacks, the outro 'utr2'), each
+   allocated under its "FTInitChapter2*" tag, zeroed and filled with its texts / voices ("CHAPTER_2_*"), times,
+   callbacks, goal and allow masks, and linked through next; the voice bank "TUTORIAL_CHAPTER_2.sbf" is loaded
+   into ai_TutorialBanks[2]. The first record, or 0 after a failed allocation (the records built so far freed) */
 
-int ai_Unk578e40(void)
+int ai_TutorialInitChapter2(void)
 {
-    char *rec;
-    char *prev;
-    char *r;
+    TUTRUN *head;
+    TUTRUN *r;
 
-
-    /* FTInitChapter2Intro */
-    rec = (char *)mem_Alloc(0x74, (char *)(unsigned)&full_data_62998c);
-    if (!rec)
-        goto fail;
-    memset(rec, 0, 0x74);
-    U_I(rec) = 0x2;
-    U_I(rec + 0x4) = 0x6e747232;
-    U_I(rec + 0xc) = 0x3f53;
-    U_I(rec + 0x10) = (unsigned)&full_data_629968;
-    U_I(rec + 0x2c) = 0xffffffff;
-    U_I(rec + 0x30) = 0x8e;
-    U_I(rec + 0x3c) = (unsigned)&ai_TutorialQueryDefault;
-    U_I(rec + 0x48) = 0xb;
-    U_I(rec + 0x68) = 0x1837;
-    prev = rec;
-
-    /* FTInitChapter2Step1 */
-    r = (char *)mem_Alloc(0x74, (char *)(unsigned)&full_data_629978);
-    *(char **)(prev + 0x70) = r;
+    head = 0;
+    r = (TUTRUN *)mem_Alloc(sizeof(TUTRUN), "FTInitChapter2Intro");
     if (!r)
         goto fail;
-    memset(r, 0, 0x74);
-    U_I(r) = 0x2;
-    U_I(r + 0x4) = 0x63327341;
-    U_I(r + 0xc) = 0x3f55;
-    U_I(r + 0x10) = (unsigned)&full_data_629940;
-    U_I(r + 0x14) = 0x3f57;
-    U_I(r + 0x18) = (unsigned)&full_data_62992c;
-    U_I(r + 0x2c) = 0x429;
-    U_I(r + 0x30) = 0x8e;
-    U_I(r + 0x38) = (unsigned)&ai_Unk576830;
-    U_I(r + 0x3c) = (unsigned)&ai_TutorialQueryDefault;
-    U_I(r + 0x44) = 0x2148;
-    U_I(r + 0x48) = 0xa;
-    U_I(r + 0x68) = 0x1837;
-    prev = r;
-
-    /* FTInitChapter2Step2 */
-    r = (char *)mem_Alloc(0x74, (char *)(unsigned)&full_data_629954);
-    *(char **)(prev + 0x70) = r;
-    if (!r)
+    AI_ZERO_AT(r, sizeof(TUTRUN));
+    r->id = 2;
+    r->tag = 'ntr2';
+    r->mode = 0;
+    r->mainText = 0x3f53;
+    r->mainVoice = "CHAPTER_2_INTRO";
+    r->text1 = 0;
+    r->text1Voice = 0;
+    r->text2 = 0;
+    r->text2Voice = 0;
+    r->text1Time = -1;
+    r->tail2Time = 0x8e;
+    r->query = ai_TutorialQueryDefault;
+    r->hook = 0;
+    r->stepHook = 0;
+    r->goal = 0;
+    r->tailTime = 0;
+    r->goalState = 0xb;
+    r->allowMask = 0x1837;
+    r->allowMask2 = 0;
+    r->next = 0;
+    head = r;
+    r->next = (TUTRUN *)mem_Alloc(sizeof(TUTRUN), "FTInitChapter2Step1");
+    if (!r->next)
         goto fail;
-    memset(r, 0, 0x74);
-    U_I(r) = 0x2;
-    U_I(r + 0x4) = 0x63327342;
-    U_I(r + 0xc) = 0x3f59;
-    U_I(r + 0x10) = (unsigned)&full_data_6298f0;
-    U_I(r + 0x14) = 0x3f5b;
-    U_I(r + 0x18) = (unsigned)&full_data_6298dc;
-    U_I(r + 0x2c) = 0x429;
-    U_I(r + 0x30) = 0xd5;
-    U_I(r + 0x34) = (unsigned)&ai_Unk5768a0;
-    U_I(r + 0x38) = (unsigned)&ai_Unk5768d0;
-    U_I(r + 0x3c) = (unsigned)&ai_QueryBuilding0f;
-    U_I(r + 0x44) = 0x2148;
-    U_I(r + 0x48) = 0xb;
-    U_I(r + 0x68) = 0x5837;
-    prev = r;
-
-    /* FTInitChapter2Step3 */
-    r = (char *)mem_Alloc(0x74, (char *)(unsigned)&full_data_629904);
-    *(char **)(prev + 0x70) = r;
-    if (!r)
+    r = r->next;
+    AI_ZERO_AT(r, sizeof(TUTRUN));
+    r->id = 2;
+    r->tag = 'c2sA';
+    r->mode = 1;
+    r->mainText = 0x3f55;
+    r->mainVoice = "CHAPTER_2_A_MAIN";
+    r->text1 = 0x3f57;
+    r->text1Voice = "CHAPTER_2_A_REMIND";
+    r->text2 = 0;
+    r->text2Voice = 0;
+    r->statusText = 0x3f58;
+    r->voice = "CHAPTER_2_A_DONE";
+    r->text1Time = 0x429;
+    r->tail2Time = 0x8e;
+    r->query = ai_TutorialQueryDefault;
+    r->hook = 0;
+    r->stepHook = ai_StepChapter2Step1;
+    r->goal = 1;
+    r->tailTime = 0x2148;
+    r->goalState = 0xa;
+    r->allowMask = 0x1837;
+    r->allowMask2 = 0;
+    r->next = 0;
+    r->next = (TUTRUN *)mem_Alloc(sizeof(TUTRUN), "FTInitChapter2Step2");
+    if (!r->next)
         goto fail;
-    memset(r, 0, 0x74);
-    U_I(r) = 0x2;
-    U_I(r + 0x4) = 0x63327343;
-    U_I(r + 0xc) = 0x3f5d;
-    U_I(r + 0x10) = (unsigned)&full_data_6298a0;
-    U_I(r + 0x14) = 0x3f5f;
-    U_I(r + 0x18) = (unsigned)&full_data_62988c;
-    U_I(r + 0x2c) = 0x429;
-    U_I(r + 0x30) = 0x8e;
-    U_I(r + 0x38) = (unsigned)&ai_Unk576920;
-    U_I(r + 0x3c) = (unsigned)&ai_QueryChapter2Step3;
-    U_I(r + 0x44) = 0x2148;
-    U_I(r + 0x48) = 0xa;
-    U_I(r + 0x68) = 0x5837;
-    U_I(r + 0x6c) = 0xe00;
-    prev = r;
-
-    /* FTInitChapter2Step4 */
-    r = (char *)mem_Alloc(0x74, (char *)(unsigned)&full_data_6298b4);
-    *(char **)(prev + 0x70) = r;
-    if (!r)
+    r = r->next;
+    AI_ZERO_AT(r, sizeof(TUTRUN));
+    r->id = 2;
+    r->tag = 'c2sB';
+    r->mode = 1;
+    r->mainText = 0x3f59;
+    r->mainVoice = "CHAPTER_2_B_MAIN";
+    r->text1 = 0x3f5b;
+    r->text1Voice = "CHAPTER_2_B_REMIND";
+    r->text2 = 0;
+    r->text2Voice = 0;
+    r->statusText = 0x3f5c;
+    r->voice = "CHAPTER_2_B_DONE";
+    r->text1Time = 0x429;
+    r->tail2Time = 0xd5;
+    r->query = ai_QueryBuilding0f;
+    r->hook = ai_HookChapter2Step2;
+    r->stepHook = ai_StepChapter2Step2;
+    r->goal = 1;
+    r->tailTime = 0x2148;
+    r->goalState = 0xb;
+    r->allowMask = 0x5837;
+    r->allowMask2 = 0;
+    r->next = 0;
+    r->next = (TUTRUN *)mem_Alloc(sizeof(TUTRUN), "FTInitChapter2Step3");
+    if (!r->next)
         goto fail;
-    memset(r, 0, 0x74);
-    U_I(r) = 0x2;
-    U_I(r + 0x4) = 0x63327344;
-    U_I(r + 0xc) = 0x3f61;
-    U_I(r + 0x10) = (unsigned)&full_data_629850;
-    U_I(r + 0x14) = 0x3f63;
-    U_I(r + 0x18) = (unsigned)&full_data_62983c;
-    U_I(r + 0x2c) = 0x429;
-    U_I(r + 0x30) = 0x8e;
-    U_I(r + 0x38) = (unsigned)&ai_Unk576970;
-    U_I(r + 0x3c) = (unsigned)&ai_Unk5765e0;
-    U_I(r + 0x44) = 0x2148;
-    U_I(r + 0x48) = 0xa;
-    U_I(r + 0x68) = 0x5837;
-    U_I(r + 0x6c) = 0x1e00;
-    prev = r;
-
-    /* FTInitChapter2Step5 */
-    r = (char *)mem_Alloc(0x74, (char *)(unsigned)&full_data_629864);
-    *(char **)(prev + 0x70) = r;
-    if (!r)
+    r = r->next;
+    AI_ZERO_AT(r, sizeof(TUTRUN));
+    r->id = 2;
+    r->tag = 'c2sC';
+    r->mode = 1;
+    r->mainText = 0x3f5d;
+    r->mainVoice = "CHAPTER_2_C_MAIN";
+    r->text1 = 0x3f5f;
+    r->text1Voice = "CHAPTER_2_C_REMIND";
+    r->text2 = 0;
+    r->text2Voice = 0;
+    r->statusText = 0x3f60;
+    r->voice = "CHAPTER_2_C_DONE";
+    r->text1Time = 0x429;
+    r->tail2Time = 0x8e;
+    r->query = ai_QueryChapter2Step3;
+    r->hook = 0;
+    r->stepHook = ai_StepChapter2Step3;
+    r->goal = 1;
+    r->tailTime = 0x2148;
+    r->goalState = 0xa;
+    r->allowMask = 0x5837;
+    r->allowMask2 = 0xe00;
+    r->next = 0;
+    r->next = (TUTRUN *)mem_Alloc(sizeof(TUTRUN), "FTInitChapter2Step4");
+    if (!r->next)
         goto fail;
-    memset(r, 0, 0x74);
-    U_I(r) = 0x2;
-    U_I(r + 0x4) = 0x63327345;
-    U_I(r + 0xc) = 0x3f65;
-    U_I(r + 0x10) = (unsigned)&full_data_629800;
-    U_I(r + 0x14) = 0x3f67;
-    U_I(r + 0x18) = (unsigned)&full_data_6297ec;
-    U_I(r + 0x2c) = 0x429;
-    U_I(r + 0x30) = 0x8e;
-    U_I(r + 0x34) = (unsigned)&ai_Unk576a80;
-    U_I(r + 0x38) = (unsigned)&ai_Unk5769c0;
-    U_I(r + 0x3c) = (unsigned)&ai_QueryChapter2Step5;
-    U_I(r + 0x44) = 0x2148;
-    U_I(r + 0x48) = 0xa;
-    U_I(r + 0x68) = 0x5837;
-    U_I(r + 0x6c) = 0x1e00;
-    prev = r;
-
-    /* FTInitChapter2Step6 */
-    r = (char *)mem_Alloc(0x74, (char *)(unsigned)&full_data_629814);
-    *(char **)(prev + 0x70) = r;
-    if (!r)
+    r = r->next;
+    AI_ZERO_AT(r, sizeof(TUTRUN));
+    r->id = 2;
+    r->tag = 'c2sD';
+    r->mode = 1;
+    r->mainText = 0x3f61;
+    r->mainVoice = "CHAPTER_2_C1_MAIN";
+    r->text1 = 0x3f63;
+    r->text1Voice = "CHAPTER_2_C1_REMIND";
+    r->text2 = 0;
+    r->text2Voice = 0;
+    r->statusText = 0x3f64;
+    r->voice = "CHAPTER_2_C1_DONE";
+    r->text1Time = 0x429;
+    r->tail2Time = 0x8e;
+    r->hook = 0;
+    r->query = ai_QueryChapter2Step4;
+    r->stepHook = ai_StepChapter2Step4;
+    r->goal = 1;
+    r->tailTime = 0x2148;
+    r->goalState = 0xa;
+    r->allowMask = 0x5837;
+    r->allowMask2 = 0x1e00;
+    r->next = 0;
+    r->next = (TUTRUN *)mem_Alloc(sizeof(TUTRUN), "FTInitChapter2Step5");
+    if (!r->next)
         goto fail;
-    memset(r, 0, 0x74);
-    U_I(r) = 0x2;
-    U_I(r + 0x4) = 0x63327346;
-    U_I(r + 0xc) = 0x3f69;
-    U_I(r + 0x10) = (unsigned)&full_data_6297b0;
-    U_I(r + 0x14) = 0x3f6b;
-    U_I(r + 0x18) = (unsigned)&full_data_62979c;
-    U_I(r + 0x2c) = 0x429;
-    U_I(r + 0x30) = 0x8e;
-    U_I(r + 0x34) = (unsigned)&ai_Unk576a80;
-    U_I(r + 0x38) = (unsigned)&ai_Unk576ab0;
-    U_I(r + 0x3c) = (unsigned)&ai_QueryChapter2Step6;
-    U_I(r + 0x44) = 0x2148;
-    U_I(r + 0x48) = 0xa;
-    U_I(r + 0x68) = 0x5837;
-    U_I(r + 0x6c) = 0x1e00;
-    prev = r;
-
-    /* FTInitChapter2Step7 */
-    r = (char *)mem_Alloc(0x74, (char *)(unsigned)&full_data_6297c4);
-    *(char **)(prev + 0x70) = r;
-    if (!r)
+    r = r->next;
+    AI_ZERO_AT(r, sizeof(TUTRUN));
+    r->id = 2;
+    r->tag = 'c2sE';
+    r->mode = 1;
+    r->mainText = 0x3f65;
+    r->mainVoice = "CHAPTER_2_D_MAIN";
+    r->text1 = 0x3f67;
+    r->text1Voice = "CHAPTER_2_D_REMIND";
+    r->text2 = 0;
+    r->text2Voice = 0;
+    r->statusText = 0x3f68;
+    r->voice = "CHAPTER_2_D_DONE";
+    r->text1Time = 0x429;
+    r->tail2Time = 0x8e;
+    r->query = ai_QueryChapter2Step5;
+    r->hook = ai_HookChapter2Step5;
+    r->stepHook = ai_StepChapter2Step5;
+    r->goal = 1;
+    r->tailTime = 0x2148;
+    r->goalState = 0xa;
+    r->allowMask = 0x5837;
+    r->allowMask2 = 0x1e00;
+    r->next = 0;
+    r->next = (TUTRUN *)mem_Alloc(sizeof(TUTRUN), "FTInitChapter2Step6");
+    if (!r->next)
         goto fail;
-    memset(r, 0, 0x74);
-    U_I(r) = 0x2;
-    U_I(r + 0x4) = 0x63327347;
-    U_I(r + 0xc) = 0x3f6d;
-    U_I(r + 0x10) = (unsigned)&full_data_629760;
-    U_I(r + 0x14) = 0x3f6f;
-    U_I(r + 0x18) = (unsigned)&full_data_62974c;
-    U_I(r + 0x30) = 0x8e;
-    U_I(r + 0x38) = (unsigned)&ai_Unk576b50;
-    U_I(r + 0x3c) = (unsigned)&ai_QueryChapter2Step7;
-    U_I(r + 0x48) = 0xa;
-    U_I(r + 0x68) = 0x5837;
-    U_I(r + 0x6c) = 0x1e00;
-    prev = r;
-
-    /* FTInitChapter2Outro */
-    r = (char *)mem_Alloc(0x74, (char *)(unsigned)&full_data_629774);
-    *(char **)(prev + 0x70) = r;
-    if (!r)
+    r = r->next;
+    AI_ZERO_AT(r, sizeof(TUTRUN));
+    r->id = 2;
+    r->tag = 'c2sF';
+    r->mode = 1;
+    r->mainText = 0x3f69;
+    r->mainVoice = "CHAPTER_2_E_MAIN";
+    r->text1 = 0x3f6b;
+    r->text1Voice = "CHAPTER_2_E_REMIND";
+    r->text2 = 0;
+    r->text2Voice = 0;
+    r->statusText = 0x3f6c;
+    r->voice = "CHAPTER_2_E_DONE";
+    r->text1Time = 0x429;
+    r->tail2Time = 0x8e;
+    r->query = ai_QueryChapter2Step6;
+    r->hook = ai_HookChapter2Step5;
+    r->stepHook = ai_StepChapter2Step6;
+    r->goal = 1;
+    r->tailTime = 0x2148;
+    r->goalState = 0xa;
+    r->allowMask = 0x5837;
+    r->allowMask2 = 0x1e00;
+    r->next = 0;
+    r->next = (TUTRUN *)mem_Alloc(sizeof(TUTRUN), "FTInitChapter2Step7");
+    if (!r->next)
         goto fail;
-    memset(r, 0, 0x74);
-    U_I(r) = 0x2;
-    U_I(r + 0x4) = 0x75747232;
-    U_I(r + 0x8) = 0x3;
-    U_I(r + 0xc) = 0x3f70;
-    U_I(r + 0x10) = (unsigned)&full_data_629724;
-    U_I(r + 0x2c) = 0xffffffff;
-    U_I(r + 0x30) = 0x163;
-    U_I(r + 0x48) = 0xb;
-    U_I(r + 0x68) = 0x5837;
-    U_I(r + 0x6c) = 0x1e00;
-    prev = r;
-    ai_TutorialBanks[2] = snd_LoadVoiceBank((char *)(unsigned)&full_data_629734, 0);
-    return (int)rec;
+    r = r->next;
+    AI_ZERO_AT(r, sizeof(TUTRUN));
+    r->id = 2;
+    r->tag = 'c2sG';
+    r->mode = 1;
+    r->mainText = 0x3f6d;
+    r->mainVoice = "CHAPTER_2_F_MAIN";
+    r->text1 = 0x3f6f;
+    r->text1Voice = "CHAPTER_2_F_REMIND";
+    r->text2 = 0;
+    r->text2Voice = 0;
+    r->text1Time = 0x429;
+    r->tail2Time = 0x8e;
+    r->query = ai_QueryChapter2Step7;
+    r->hook = 0;
+    r->stepHook = ai_StepChapter2Step7;
+    r->goal = 1;
+    r->tailTime = 0x429;
+    r->goalState = 0xa;
+    r->allowMask = 0x5837;
+    r->allowMask2 = 0x1e00;
+    r->next = 0;
+    r->next = (TUTRUN *)mem_Alloc(sizeof(TUTRUN), "FTInitChapter2Outro");
+    if (!r->next)
+        goto fail;
+    r = r->next;
+    AI_ZERO_AT(r, sizeof(TUTRUN));
+    r->id = 2;
+    r->tag = 'utr2';
+    r->mode = 3;
+    r->mainText = 0x3f70;
+    r->mainVoice = "CHAPTER_2_OUTRO";
+    r->text1 = 0;
+    r->text1Voice = 0;
+    r->text2 = 0;
+    r->text2Voice = 0;
+    r->text1Time = -1;
+    r->tail2Time = 0x163;
+    r->hook = 0;
+    r->stepHook = 0;
+    r->goal = 0;
+    r->tailTime = 0;
+    r->goalState = 0xb;
+    r->allowMask = 0x5837;
+    r->allowMask2 = 0x1e00;
+    r->next = 0;
+    ai_TutorialBanks[2] = snd_LoadVoiceBank("TUTORIAL_CHAPTER_2.sbf", 0);
+    return (int)head;
 fail:
-    ai_TutorialFreeRuns(rec);
+    ai_TutorialFreeRuns((char *)head);
     return 0;
 }
 

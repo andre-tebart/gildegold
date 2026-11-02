@@ -100,21 +100,21 @@ int ai_TutorialQueryDefault(int *p);               /* 0x576490, step callback pr
 int ai_QueryDefault(int *p);               /* 0x5764b0, step callback predicate */
 int ai_QueryBuilding0f(int *p);               /* 0x576500, step callback predicate */
 int ai_QueryChapter2Step3(int *p);               /* 0x576590, step callback predicate */
-int ai_Unk5765e0(int *p);               /* 0x5765e0, step callback predicate */
+int ai_QueryChapter2Step4(int *p);               /* 0x5765e0, step callback predicate */
 int ai_QueryChapter2Step5(int *p);               /* 0x576600, step callback predicate */
 int ai_QueryChapter2Step6(int *p);               /* 0x576640, step callback predicate */
 int ai_QueryChapter2Step7(int *p);               /* 0x576680, step callback predicate */
 int ai_StepChapter1Step5(int *p);               /* 0x5766d0, transition callback */
 int ai_StepChapter1Step10(int *p);               /* 0x5767d0, transition callback */
-int ai_Unk576830(int *p);               /* 0x576830, transition callback */
-void ai_Unk5768a0(int arg);             /* 0x5768a0, writes a record word */
-int ai_Unk5768d0(int *p);               /* 0x5768d0, transition callback */
-int ai_Unk576920(int *p);               /* 0x576920, transition callback */
-int ai_Unk576970(int *p);               /* 0x576970, transition callback */
-int ai_Unk5769c0(int *p);               /* 0x5769c0, transition callback */
-void ai_Unk576a80(int arg);             /* 0x576a80, record lookup + 0x521960 */
-int ai_Unk576ab0(int *p);               /* 0x576ab0, transition callback */
-int ai_Unk576b50(int *p);               /* 0x576b50, transition callback */
+int ai_StepChapter2Step1(int *p);               /* 0x576830, transition callback */
+void ai_HookChapter2Step2(int arg);             /* 0x5768a0, writes a record word */
+int ai_StepChapter2Step2(int *p);               /* 0x5768d0, transition callback */
+int ai_StepChapter2Step3(int *p);               /* 0x576920, transition callback */
+int ai_StepChapter2Step4(int *p);               /* 0x576970, transition callback */
+int ai_StepChapter2Step5(int *p);               /* 0x5769c0, transition callback */
+void ai_HookChapter2Step5(int arg);             /* 0x576a80, record lookup + 0x521960 */
+int ai_StepChapter2Step6(int *p);               /* 0x576ab0, transition callback */
+int ai_StepChapter2Step7(int *p);               /* 0x576b50, transition callback */
 int ai_Unk576ba0(int *p);               /* 0x576ba0, transition callback */
 int ai_Unk576cd0(int *p);               /* 0x576cd0, step callback predicate */
 int ai_Unk576d40(int *p);               /* 0x576d40, transition callback */
@@ -159,7 +159,7 @@ void ai_TutorialStop(void);                /* 0x578370, the tutorial stop (handl
 void ai_TutorialFreeRuns(char *rec);           /* 0x578440, frees the tutorial record chain */
 int ai_TutorialInitMainIntro(void);                 /* 0x5784a0, allocates the main-intro record */
 int ai_TutorialInitChapter1(void);      /* 0x578570, the chapter 1 chain */
-int ai_Unk578e40(void);                 /* 0x578e40, the chapter 2 chain (ROUGH) */
+int ai_TutorialInitChapter2(void);      /* 0x578e40, the chapter 2 chain */
 int ai_Unk579570(void);                 /* 0x579570, the chapter 3 chain (ROUGH) */
 int ai_Unk57aa80(void);                 /* 0x57aa80, the chapter 4 chain (ROUGH) */
 int ai_Unk57aeb0(void);                 /* 0x57aeb0, the chapter 5 chain (ROUGH) */
