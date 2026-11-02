@@ -2279,7 +2279,7 @@ int gv_SendGrave(unsigned char *o)
     int *e;
     int k;
 
-    if (unk_Unk4f1d50(o, 0) != 1)
+    if (gv_RoomForRaised(o, 0) != 1)
         return -1;
     z = (int *)gv_RandomGrave(o);
     if (z == 0)
@@ -2416,32 +2416,33 @@ int unk_Unk4f17f0(void *f, unsigned char *o)
     }
     return 1;
 }
-/* 0x4f1d50, counts the characters (kind 0x14 at +2, the object at +0x16c = o) of the graveyard o; *n = the count; 1 while it is below the building's two limit bytes (+0x231 + +0x232), -1 for another building or no record */
+/* 0x4f1d50, counts the raised dead persons of the graveyard building o (kind 0x14 characters whose bld is o) into *n
+   (n may be 0); returns 1 while they are fewer than the building type's places k231 + k232, 0 when it is full, -1 for
+   a building that is no graveyard (kind 0x1d) or has no GVYARD */
 
-int unk_Unk4f1d50(unsigned char *o, int *n)
+int gv_RoomForRaised(unsigned char *o, int *n)
 {
-    char *b;
-    unsigned char lim1, lim2;
+    AIBLD *bld;
+    AIBTYPE *t;
+    AICHAR *c;
+    int places;
     int cnt;
-    char *c;
-    int *p;
 
-    b = ai_BTypes + o[0] + o[0] * 0x24c;
-    if (b[0] != 0x1d)
+    bld = (AIBLD *)o;
+    t = (AIBTYPE *)(ai_BTypes + bld->type * 0x24d);
+    if (t->kind != 0x1d)
         return -1;
-    if (*(int *)(o + 0x65) == 0)
+    if (bld->yard == 0)
         return -1;
-    lim1 = (unsigned char)b[0x232];
-    lim2 = (unsigned char)b[0x231];
+    places = t->k232 + t->k231;
     cnt = 0;
-    for (p = (int *)(ai_Chars[0] + 0x16c); (int)p < ((unsigned)((unsigned)ai_Chars + 0x65402) + 0x16a); p += 0x87) {
-        c = (char *)p - 0x16c;
-        if (*(short *)c != -1 && c[2] == 0x14 && (unsigned char *)*p == o)
+    for (c = gv_CharsT; (int)&c->bld < (int)&gv_CharsT[768].bld; c++) {
+        if (c->id != 0xffff && c->kind == 0x14 && c->bld == bld)
             cnt++;
     }
     if (n != 0)
         *n = cnt;
-    return cnt < (int)(lim1 + lim2);
+    return cnt < places;
 }
 /* 0x4f1200, runs a raising of a dead person (GVRAISE m, message 0x62, sent by gv_OrderRaiseDead): the dead GVGRAVE m->grave
    of the entry m->entry of the size m->size of the graveyard building m->bld becomes a living character of kind 0x14 in

@@ -7358,7 +7358,7 @@ int ai_Unk584900(char *rec, char *ev)
     }
 }
 
-int unk_Unk4f1d50(unsigned char *o, int *n); int gv_OrderRaiseDead(); int cm_GetSlotValue(int h); int sprintf(char *buf, const char *fmt, ...);
+int gv_RoomForRaised(unsigned char *o, int *n); int gv_OrderRaiseDead(); int cm_GetSlotValue(int h); int sprintf(char *buf, const char *fmt, ...);
 
 /* 0x584b70, the graveyard "Gehilfen erschaffen" window (501 B, a start Ghidra missed: the callback is reached
    only through a table; the ledger found the dword 0x584d3b): o / ev the event record (its +0 a pointer to a
@@ -7386,7 +7386,7 @@ int ai_Unk584b70(char *o, int *ev)
     char *a;
 
     r = 0;
-    v = unk_Unk4f1d50(o, &n);
+    v = gv_RoomForRaised(o, &n);
     if (v == 1) {
         win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62a5bc);
         d2_SetPointerSprite(0, 0);
