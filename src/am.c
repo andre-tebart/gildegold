@@ -629,7 +629,7 @@ int ai_Unk48f010(int a, AIPX *p, int b, AIARGX *o1, AIARGX *o2)
     }
     if (!gv_FindEffect(bld->id) && !(p->flags1cc & 0x80000000)) {
         cm_SendSetField(p->netId, 0x1e8, 4, 0x80000000, 0);
-        unk_Unk4eea70(bld);
+        gv_RequestEffectLoad(bld);
         return 0;
     }
     m.s.lo = 0xe07c43b4;

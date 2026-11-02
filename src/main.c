@@ -92,7 +92,7 @@ extern int sv_PopRequest;
 
 
 
-extern int ai_Unkfb9060;
+extern int d2_DirtyRectLeft;
 extern int ai_Unkfb9064;
 extern int ai_Unkfb9068;
 extern int ai_Unkfb906c;
@@ -143,7 +143,7 @@ extern GAPDATA full_data_5f1084[];
 extern GAPDATA full_data_602568[];
 extern int sv_FrameMask;
 extern int sv_PopRequest;
-extern int ai_Unkfb9060;
+extern int d2_DirtyRectLeft;
 extern int ai_Unkfb9064;
 extern int ai_Unkfb9068;
 extern int ai_Unkfb906c;
@@ -209,7 +209,7 @@ extern GAPDATA full_data_75e630[];
 extern int sv_FrameMask;
 extern OPTIONBYTES ai_GamePanel;
 extern char ai_MissionMode;
-extern int ai_Unkfb9060;
+extern int d2_DirtyRectLeft;
 extern int ai_Unkfb9064;
 extern int ai_Unkfb9068;
 extern int ai_Unkfb906c;
@@ -230,7 +230,7 @@ extern int ai_NextCharNumber;
 extern GAPDATA full_data_92bca8[];
 extern unsigned char he_Events[339968];
 extern char * he_QuickList[10921];
-extern int ai_Unkfb9060;
+extern int d2_DirtyRectLeft;
 extern int ai_Unkfb9064;
 extern int ai_Unkfb9068;
 extern int ai_Unkfb906c;
@@ -246,7 +246,7 @@ extern char ai_MissionMode;
 
 extern GAPDATA full_data_75e401[];
 extern INIT_PLAYER init_PlayerProfile;
-extern int ai_Unkfb9060;
+extern int d2_DirtyRectLeft;
 extern int ai_Unkfb9064;
 extern int ai_Unkfb9068;
 extern int ai_Unkfb906c;
@@ -1431,7 +1431,7 @@ void main_MoneyDialog(void)
     int dlg, ed, run;
 
     U_I((unsigned)&ai_Unkfb9068) = 0;
-    U_I((unsigned)&ai_Unkfb9060) = 1;
+    U_I((unsigned)&d2_DirtyRectLeft) = 1;
     U_I((unsigned)&ai_Unkfb9064) = 1;
     U_I((unsigned)&ai_Unkfb906c) = 2;
     dlg = d2_CreateWindow(0x20, 0x60, 0x26c, 400, 0x15);
@@ -3862,7 +3862,7 @@ void main_RoundReport(void)
         he_ShowEventBar(0xffff);
         d2_ClearSurface(U_I((unsigned)&d2_ScreenSurf));
         d2_ShowPicture(0x79d);
-        U_I((unsigned)&ai_Unkfb9060) = (int)*(short *)(unsigned)&d2_ScreenW;
+        U_I((unsigned)&d2_DirtyRectLeft) = (int)*(short *)(unsigned)&d2_ScreenW;
         U_I((unsigned)&ai_Unkfb906c) = (int)*(short *)(unsigned)&d2_ScreenH;
         U_I((unsigned)&full_data_6f25c0) = 1;
         U_I((unsigned)&ai_Unkfb9068) = 0;

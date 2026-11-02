@@ -879,7 +879,7 @@ void sv_BuildScreenLayout(int s)
     q = sv_GroundplanButtons;
     for (i = 0xf; i != 0; i--)
         *q++ = -1;
-    ai_Unkfb9060 = sv_ViewRectLeft;
+    d2_DirtyRectLeft = sv_ViewRectLeft;
     ai_Unkfb9064 = sv_ViewRectTop;
     q = tab;
     for (i = 0x10; i != 0; i--)
@@ -7605,7 +7605,7 @@ extern int sv_WeatherHour;
 extern int d3t_Snow;
 extern int d3_SkyLayers[6];
 extern int d2_HitWindow;
-extern int ai_Unkfb9060;
+extern int d2_DirtyRectLeft;
 extern int ai_Unkfb9064;
 extern int ai_Unkfb9068;
 extern int ai_Unkfb906c;
@@ -7833,7 +7833,7 @@ int sv_GroundplanButtons[15] = {0};  /* 0x7662e0, 15 widget ids */
 int sv_SelectedExtra = 0;  /* 0x76631c, a fourth selection word, cleared with sv_SelectedItem / sv_SelectedObject / sv_SelectedModel (its only use; name and int type are a guess) */
 int cm_Bombs[0x40] = {0};  /* 0x935c00, cm's 32 bomb records (object, time), cm.h */
 int d2_HitWindow = 0;  /* 0xf8aad0 */
-int ai_Unkfb9060 = {0}; /* 0xfb9060 */
+int d2_DirtyRectLeft = {0}; /* 0xfb9060 */
 int ai_Unkfb9064 = {0}; /* 0xfb9064 */
 int ai_Unkfb9068 = {0}; /* 0xfb9068 */
 int ai_Unkfb906c = {0}; /* 0xfb906c */

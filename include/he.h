@@ -44,7 +44,7 @@ void he_Unk53e840(int *e);
 void he_Unk53e8b0(unsigned char *r);
 void he_Unk53eba0(void);
 void he_RemoveGfxInfos(int obj);
-void he_Unk53ec10(int obj, int a);
+void he_ShowObjectInfos(int obj, int a);
 void he_Unk53ec40(unsigned char *r);
 void he_Unk53ed40(unsigned short *pl);
 void he_Unk53ed70(void);

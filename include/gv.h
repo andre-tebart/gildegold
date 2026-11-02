@@ -87,7 +87,7 @@ typedef struct GVRAISE {                /* 0x19 bytes, a raising of a dead perso
 typedef struct GVCANNON {               /* 0x20 bytes, the state of the cannon scene (unk_575860 0x57e270 ..), saved with the effects */
     int bld;                            /* 0x00, the record id (rec + 1) the scene was last set up for, -1 after the reset */
     int spare;                          /* 0x04, no reader besides the save game */
-    int camTarget[3];                   /* 0x08, the camera ints kept from the camera +0x84 .. +0x8c */
+    float camTarget[3];                  /* 0x08, the camera angles (camera +0x84 .. +0x8c) the scene looks along */
     int sliderA;                        /* 0x14, the first panel slider (0 .. 4) */
     int sliderB;                        /* 0x18, the second panel slider (0 .. 100) */
     int selected;                       /* 0x1c, the selected object (the scene's +0xa0) */
@@ -254,13 +254,13 @@ char *gv_FindEffect(int id);            /* 0x4eded0 */
 void gv_ReleaseEffect(int id);             /* 0x4edf10 */
 void gv_ExplodeShot(int damage, int effectId, struct SHOTREC *shot, GVEFFARG *out);  /* 0x4ee360 */
 void gv_UpdateEffects(void);               /* 0x4edf80 */
-void unk_Unk4eea70(char *o);             /* 0x4eea70 */
+int gv_RequestEffectLoad(char *o);             /* 0x4eea70 */
 int gv_ReserveEffect(int id);              /* 0x4eeaa0 */
 int gv_StopEffect(int id);              /* 0x4eeb00 */
 int gv_FireShots(struct AIBLD *bld, struct AICHAR *ch, struct SHOTREC *a, struct SHOTREC *b, struct SHOTREC *d, float v, int cost, int x);  /* 0x4eeb70 */
 char *gv_GetEffect(int id);            /* 0x4eedd0 */
 int gv_StartShot(struct GVSHOTMSG *m, int w);       /* 0x4eee00 */
-void unk_Unk4eeee0(int id, void *cb, void *arg);  /* 0x4eeee0 */
+void gv_SetEffectCallback(int id, void *cb, void *arg);  /* 0x4eeee0 */
 float gv_SalvoCharge(int a, int b, int c);  /* 0x4eef50 */
 void gv_CannonKind(int n, int *out);    /* 0x4ef000 */
 int gv_Accuse();                     /* 0x4f2e30 */

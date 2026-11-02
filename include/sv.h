@@ -362,7 +362,7 @@ extern int sv_GroundplanButtons[15];                                /* 0x7662e0 
 extern int sv_SelectedExtra;                                       /* 0x76631c */
 extern int cm_Bombs[0x40];                                  /* 0x935c00 */
 extern int d2_HitWindow;                                    /* 0xf8aad0 */
-extern int ai_Unkfb9060;                                    /* 0xfb9060 */
+extern int d2_DirtyRectLeft;                                    /* 0xfb9060 */
 extern int ai_Unkfb9064;                                    /* 0xfb9064 */
 extern int ai_Unkfb9068;                                    /* 0xfb9068 */
 extern int ai_Unkfb906c;                                    /* 0xfb906c */

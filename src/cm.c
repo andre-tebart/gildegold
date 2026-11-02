@@ -2129,16 +2129,16 @@ void ai_Unk4c61f0(int *p, char *q)
     G17_I(m, 4) = *(int *)(q + 4);
     ai_Unk4c39c0(&m);
 }
-/* 0x4c6230, message 0x66 (two ints of p) */
+/* 0x4c6230, message 0x66 (two ints of p); returns what ai_Unk4c39c0 returns */
 
-void ai_Unk4c6230(int *p)
+int ai_Unk4c6230(int *p)
 {
     G17MSG m;
 
     m.type = 0x66;
     G17_I(m, 0) = p[0];
     G17_I(m, 4) = p[1];
-    ai_Unk4c39c0(&m);
+    return ai_Unk4c39c0(&m);
 }
 /* 0x4c6260, sends message 0x67, the 0x80 bytes of p: cannon balls fired at a building (GVSHOTMSG, gv.c gv_SendShots; the receiver
    starts them in the effect slot, gv.c 0x4eee00); returns what ai_Unk4c39c0 returns */
@@ -14158,7 +14158,7 @@ void ai_Unk4e4060(char *m)
     sprintf(buf, "Exec Cutscene(Mainfunc start) <Type = %i> <id = %i>", (unsigned char)m[8], *(int *)m);
     shown = 0;
     sv_view[2] = ai_Unkfb9068;
-    sv_view[0] = ai_Unkfb9060;
+    sv_view[0] = d2_DirtyRectLeft;
     sv_view[1] = ai_Unkfb9064;
     sv_view[3] = ai_Unkfb906c;
     ai_Unk925510 = d3_CurrentScene;

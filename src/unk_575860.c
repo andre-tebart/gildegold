@@ -224,10 +224,10 @@ extern int d2_PointerObj;
 extern int d2_LastWindow;
 extern GAPDATA full_data_62a2c4[];
 extern const int sv_PhaseMinutes[24];
-extern int ai_Unkfb9060;
-extern int ai_Unkfb9064;
-extern int ai_Unkfb9068;
-extern int ai_Unkfb906c;
+extern int d2_DirtyRectLeft;
+extern int d2_DirtyRectTop;
+extern int d2_DirtyRectRight;
+extern int d2_DirtyRectBottom;
 extern char * sv_CameraObj;
 extern struct D2OBJ *d2_Objs;
 extern float d3s_QuadUV[6];
@@ -689,7 +689,7 @@ typedef struct SHOTENTRY {   /* 0x10 bytes */
     int a;                   /* +0x8 */
     union {
         int b;               /* +0xc */
-        float bf;            /* +0xc, read as a float by ai_Unk57f690 (<= 25.0) */
+        float bf;            /* +0xc, read as a float by ai_CannonShotResults (<= 25.0) */
     };
 } SHOTENTRY;
 
@@ -706,7 +706,7 @@ int ai_TutorialBanks[6] = { 0 };  /* 0x6f2640, the voice banks of the main intro
 TUTRUN *ai_TutorialRuns = 0;  /* 0x6f2658, the chain of the tutorial's run records (built by its start 0x578180, freed by its stop 0x578370) */
 int ai_TutorialOn = 0;  /* 0x6f265c, the tutorial runs (set by its start 0x578180, cleared by its end) */
 int ai_TutorialRunning = 0;  /* 0x6f2660, the tutorial's state machine advances (unk_SetEndGameGate / unk_ClearEndGameGate) */
-int ai_ShotDirty = 0;  /* 0x6f2664, set when ai_ShotTableStore stored a record, cleared by the scene (ai_Unk57f690) */
+int ai_ShotDirty = 0;  /* 0x6f2664, set when ai_ShotTableStore stored a record, cleared by the scene (ai_CannonShotResults) */
 SHOTREC ai_ShotTable[3] = { 0 };  /* 0x6f9f60, the cannon scene's shot results (the callback ai_ShotTableStore fills it, ai_Unk580a50 resets it) */
 
 #include "time_view.h"
@@ -5321,212 +5321,240 @@ int ai_ShotTableStore(SHOTREC *src)
     return 1;
 }
 
-char * gv_FindEffect(int id); void unk_Unk4eea70(char *o); int cm_GetSlotState(); void unk_Unk4eeee0();
+char * gv_FindEffect(int id); int gv_RequestEffectLoad(char *o); int cm_GetSlotState(); void gv_SetEffectCallback();
 struct D2FADE *d2_StartFade(int x, int y, int w, int h, char *name, int dur, unsigned int flags); /* 0x4767d0, d2.h */
 void d3_SetViewport(float w, float h, float x, float y, float zn, float zf, float scale, int a, int b); void sv_SetPanelEnabled(); void d3sky_Init(struct D3SKY *s, char build);
 void d3t_GetObjectBounds(); 
-void ai_Unk580a90(); void ai_Unk57f890(); char d3if_ShowTree(struct D3OBJECT *obj, char show);
+void ai_CannonBuildPanel(); void ai_CannonPanel(); char d3if_ShowTree(struct D3OBJECT *obj, char show);
 struct D3OBJECT;
 char d3if_Delete(struct D3OBJECT *obj);                 /* 0x447190, d3_interface.h */
 char d3if_Show(struct D3OBJECT *obj, char show);        /* 0x4471b0, d3_interface.h */
-void he_Unk53ec10(); void ai_Unk57f5d0(); void ai_Unk57ec40(char *sc, float dt); void ai_Unk57f0e0();
-void ai_Unk57f690(); void ai_Unk57fdd0(char *rec, float *sc, char *run, float sel, int mask); int ai_Unk57f620(); void ai_Unk580160();
+void he_ShowObjectInfos(); void ai_CannonAxes(); void ai_CannonAim(char *sc, float dt); void ai_CannonCamera();
+void ai_CannonShotResults(); void ai_CannonSwitchAnim(char *rec, float *sc, char *run, float sel, int mask); int ai_CannonFireCheck(); void ai_CannonExplosion();
 void sv_SetStatusText(char *s); void d2_RemoveObj(); void sv_RedrawScreen();
 void d3if_Prerender(char map); 
 
-/* 0x57e270, the tutorial cannon scene (2305 B, ROUGH: the whole call sequence and the main loop are written, the
-   3D setup details are comments): arg 1 = the record; the scene struct sc (local_704, 0x39 floats: the camera /
-   target, its control ids at 0xbc / 0xc8 / 0xcc / 0xd0, the selected index at 0xa0, the objects at 0x8c) zeroed;
-   the clock 0x6333cc saved; returns at once without rec + 0x61; the run record 0x4eded0 (rec + 1), else the loader
-   0x4eea70 (rec) waited out on 0x4c3ae0 (pump 0x20007), then 0x4eded0 again (0 -> return); the table callback
-   0x4eeee0 (rec + 1, 0x57e230, 0x6fa020). The camera globals of 0xfc2dec (+0x4c .. +0x54, +0x84 .. +0x8c), the
-   screen 0xfb9060 / 0x64 / 0x68 / 0x6c and 0x633444 saved; the window cleanup 0x476f80 (0, 0) / 0x52ae40 /
-   0x476c70 / 0x520f20, 0x75e8c0 = 0, 0xf8aae0 = 0; the BLOCK "BLACK" (0x5fea38) drawn by 0x4767d0 (0, 0,
-   0xfb9072, 0xfb9070, "BLACK", 0x5a, 1) and waited on (*pb & 4, pump mask 0x10180); the window table 0xf8f080
-   (stride 0x2ec, 0x300 entries) scanned against the list 0xfb11c0 (stride 0xab, to 0xfb9200): an entry with
-   +0x18 set, +0x40 = the list record - 0x68 and +0x38 clear gets +0x38 = 1 and its index into the list; the
-   screen 0x43b950 ("BLACK", the rect 0x6248a4 .. 0x6248b0, 0xfe73b4, 0xfc2564, 0xfc5348), 0x522100 (0), the
-   camera restored, 0x4478e0 (0, 0), 0x45d690 (0x633dd4, 1); 0x413150 (two 4-byte locals, rec + 0x61); the
-   0x925100 block reset (the record + 1 changed) or reused (0x925108 / 0x92510c / 0x925110 = the camera);
-   0x458a20 (rec + 0x61, rec + 0x61 + 0x4c, sc); sc + 0x10 = 0x925108 / 0c / 10, sc + 4 += (a - b) * 0.8; the four
-   scene objects 0x446e10 ("KANONE_UNTERBAU_Aa" 0x62a350, "KANONE_ROHR_Aa" 0x62a340, "KANONE_DOPPEL_ROHR_Aa"
-   0x62a328, "KANONE_DREIFACH_ROHR_Aa" 0x62a310) placed (0x43b790 / 0x43b860) and the wimpel object "AO_KANONE_
-   WIMPEL_Aa" 0x62a2fc with 0x411960 ("ADDON_AO_KANONE_WIMPEL_Aa" 0x62a2dc, 1) and its bytes +0x212 = (b & 0xf7)
-   | 4, then | 0x40, +0x211 &= 0xfd; the mouse 0x4796c0 (0x6ed924), the pump 0x86 (twice); the BLOCK redrawn
-   (0x476860, 0x4767d0 ... 0x5a, 10); 0x580a90 (sc, the run) and 0x57f890 (rec, sc, the run); the selected index
-   = MIN (sc + 0xdc, ...); 0x471b0 (obj[i], 0) for 0..2 and (obj[selected], 1) (the control 0x447300 / 0x53ec10,
-   rec + 0x61, 0); 0xf8a668 = -1; 0x57f5d0 (sc); the 3-entry table 0x6f9f60 / 0x98 / 0xd0 = -1; the main loop
-   while 0x5309a0 (this handler, 0x2656c7): 0x522100 (0), dt = (the clock - last) * 0.013513514; the record + 4
-   set and the escape / click -> 0x6f22a0 = 1, else 0x57ec40 (sc, dt) / 0x57f0e0 (sc) / 0x57f890 / 0x57f690 (sc), the
-   clicks on the ids sc + 0xc8 / 0xcc / 0xd0 -> 0x57fdd0 (rec, sc, the run, 0 / 1 / 2, 0x2656c7), and
-   0x57f620 (sc) -> 0x580160 (sc, rec) and the table reset. The teardown: 0x52e330 (0x631090), the BLOCK, the
-   windows freed (0x4758f0 x3, 0x46e710 x2, 0x47190 x5), 0x447300 / 0x53ec10 (rec + 0x61, 1), the scanned table
-   entries +0x38 = 0, the screen 0x43b950, the camera / 0xfb9060 .. restored, 0x522100 (1), 0x524010,
-   0x4478e0 (saved, 0), 0x45d690, 0x43b790 / 0x43b860 (0xfc2dec, saved), 0x513590 (0x633738, 0), 0x447860 (1),
-   the BLOCK closed, 0x4eeee0 (rec + 1, 0, 0) */
-void ai_Unk57e270(char *rec)
+#pragma pack(push, 1)
+typedef struct CANNONREC {   /* the tutorial's cannon record (ai_CannonScene's argument), read at its byte offsets */
+    char pad0;
+    int id;                  /* +0x01, the effect id gv_FindEffect takes (GVCANNON.bld) */
+    char pad5[0x5c];
+    D3OBJECT *obj;           /* +0x61, the cannon object the scene is built around */
+} CANNONREC;
+#pragma pack(pop)
+#define CR ((CANNONREC *)rec)
+#define CAM ((D3OBJECT *)sv_CameraObj)  /* the camera object d3_Camera (0xfc2dec) */
+typedef struct CANNONSCENE { /* 0xe4 bytes, the scene struct of ai_CannonScene (the other cannon functions still address it by byte offset) */
+    D3VECTOR pos;            /* +0x00, d3_PointToWorld of the cannon object; pos.y gets the height of its bounds * 0.8 */
+    float pad0c;
+    D3VECTOR rot;            /* +0x10, the cannon's angles (GVCANNON.camTarget) */
+    float pad1c;
+    float zoom;              /* +0x20, cleared here, moved by ai_CannonAim */
+    char pad24[0x50];
+    int win74;               /* +0x74, closed at the end */
+    char pad78[0x28];
+    int selected;            /* +0xa0, the selected object */
+    int win_a4;              /* +0xa4, closed at the end */
+    char pada8[0xc];
+    int obj_b4;              /* +0xb4, removed at the end */
+    int fireBtn;             /* +0xb8, removed at the end (ai_CannonFireCheck reads it as the fire button) */
+    int quitBtn;             /* +0xbc, a click on it leaves the scene */
+    int win_c0;              /* +0xc0, closed at the end */
+    int padc4;
+    int selBtn[3];           /* +0xc8, the controls of the three cannon objects (ai_CannonSwitchAnim 0 .. 2) */
+    char padd4[8];
+    int maxSel;              /* +0xdc, the highest selectable object */
+    int pade0;
+} CANNONSCENE;
+
+/* 0x57e270, the tutorial's cannon scene (the record rec = the cannon): the run record gv_FindEffect (rec->id), else
+   loaded by gv_RequestEffectLoad (rec) and waited out (slot state, pump 0x20007), or returns; the clip rectangle,
+   camera and scene saved, the BLACK fade out (pump mask = sv_FrameMask | 0x80 without 0x2108, | 0x10000, | 0x100),
+   the objects of the open views marked disabled (their d2_Objs indices listed) while the scene runs, the viewport
+   and the clip rectangle set to the 3D area, the scene placed from d3_PointToWorld of the cannon object, the cannon
+   base "KANONE_UNTERBAU_Aa" with its three barrel objects (ROHR / DOPPEL_ROHR / DREIFACH_ROHR) and the flag
+   "AO_KANONE_WIMPEL_Aa" (animation _ADDON\AO_KANONE_WIMPEL_Aa.baf), the panel built (ai_CannonBuildPanel) and the
+   selection restored from GVCANNON; the loop pumps 0x2656c7 and, unless the run record is released (flags), steers
+   with ai_CannonAim / ai_CannonCamera / ai_CannonPanel / ai_CannonShotResults, a click on a control starts
+   ai_CannonSwitchAnim (0 .. 2) and a fire (ai_CannonFireCheck) ai_CannonExplosion; a right button release or a click
+   on the quit control sets sv_PopRequest. The teardown fades out again, closes the three windows, removes the two
+   objects, deletes the 3D objects, re-enables the listed objects, restores viewport, clip rectangle, scene, sky and
+   camera and releases the callback of the run record
+   @deep whole function read against the original and rewritten (typed scene/record structs, fade mask,
+   view/object scan as a do-while over an int address (signed jl), unsigned dt, d3_Origin/rot vector,
+   obj[5], literals); the statement structure now equals the original's (same calls, same order, loops of
+   the same form). What is left is allocation: the original pins rec in ebp and run in ebx across the main
+   loop (ours rec ebx, run spilled to [esp+0x38] and reloaded as 'mov ebp,[esp+0x18]'), keeps zero/-1 in
+   esi/edi as loop constants, keeps the flag object in a stack slot so the three stateFlags/objectFlags
+   byte updates reload it and are not merged (ours merges 'or 4' and 'or 0x40' into 'or 0x44'), copies
+   camTarget into the scene through integer registers where ours goes through the FPU (float[3]; typing it
+   as a GVVEC3 record flips the byte match of ai_TutorialInitChapter2 by the declaration set), frame 0x758
+   vs 0x750. remaining asmdiff hunks e.g. 0x57e2c1 'mov ebx,eax / add esp,4 / test ebx,ebx' vs ours 'add
+   esp,4 / mov [esp+0x10],eax / test eax,eax'; 0x57e700 'mov cl,[esi+0x212] / and cl,0xf7 / or cl,0x44' vs
+   the original's three separate read-modify-writes. */
+void ai_CannonScene(char *rec)
 {
-    char sc[0xe4];
-    int list[0x300];
-    int obj[4];
+    CANNONSCENE sc;
+    D3VECTOR mx, mn;
+    D3VECTOR rotv;
+    unsigned short list[0x2f8];
+    D3OBJECT *obj[5];  /* 0 .. 2 the barrels, 3 the base, 4 the flag */
     int sel;
     int n;
-    int item;
-    char *run;
-    char *pb;
     int m;
-    int last;
-    int now;
+    int rect[4];
+    int scene;
+    unsigned last;
+    unsigned now;
+    unsigned mask;
     float dt;
-    char *cam;
-    int cam3[3];
-    int save3[3];
-    int bg[4];
-    int bg5;
-    char a4[4];
-    char b4[4];
-    int *pp;
+    GVEFFECT *run;
+    unsigned char *pb;
+    D3VECTOR cam3;
+    D3VECTOR save3;
 
-    *(unsigned char *)((unsigned)&kb_Down + 0x2f) = 0;
-    memset(sc, 0, 0xe4);
-    last = U_I((unsigned)&ai_ClockMs);
-    if (!U_I(rec + 0x61))
+    kb_Down[0x2f] = 0;
+    memset(&sc, 0, 0xe4);
+    last = ai_ClockMs;
+    mask = sv_FrameMask | 0x80;
+    if (!CR->obj)
         return;
-    run = (char *)gv_FindEffect(U_I(rec + 1));
+    run = (GVEFFECT *)gv_FindEffect(CR->id);
     if (!run) {
-        m = ((int (*)(int))unk_Unk4eea70)(rec);
-        if (m != -1)
-            while (cm_GetSlotState(m) == 0)
-                sv_RunFrame(0, 0x20007);
-        run = (char *)gv_FindEffect(U_I(rec + 1));
+        m = gv_RequestEffectLoad(rec);
+        while (m != -1 && cm_GetSlotState(m) == 0)
+            sv_RunFrame(0, 0x20007);
+        run = (GVEFFECT *)gv_FindEffect(CR->id);
         if (!run)
             return;
     }
-    unk_Unk4eeee0(U_I(rec + 1), ai_ShotTableStore, (char *)(unsigned)&full_data_6fa020);
-    cam = (char *)U_I((unsigned)&sv_CameraObj);
-    cam3[0] = U_I(cam + 0x4c);
-    cam3[1] = U_I(cam + 0x50);
-    cam3[2] = U_I(cam + 0x54);
-    save3[0] = U_I(cam + 0x84);
-    save3[1] = U_I(cam + 0x88);
-    save3[2] = U_I(cam + 0x8c);
-    bg[0] = U_I((unsigned)&ai_Unkfb9068);
-    bg[1] = U_I((unsigned)&ai_Unkfb9060);
-    bg[2] = U_I((unsigned)&ai_Unkfb9064);
-    bg[3] = U_I((unsigned)&ai_Unkfb906c);
-    bg5 = U_I((unsigned)&d3_CurrentScene);
+    gv_SetEffectCallback(CR->id, ai_ShotTableStore, full_data_6fa020);
+    mask = (mask & 0xffffdef7) | 0x10000;
+    cam3.x = CAM->pos.x;
+    cam3.y = CAM->pos.y;
+    cam3.z = CAM->pos.z;
+    save3.x = CAM->rotation.x;
+    save3.y = CAM->rotation.y;
+    save3.z = CAM->rotation.z;
+    rect[0] = d2_DirtyRectLeft;
+    rect[1] = d2_DirtyRectTop;
+    rect[2] = d2_DirtyRectRight;
+    rect[3] = d2_DirtyRectBottom;
+    scene = d3_CurrentScene;
     d2_SetPointerSprite(0, 0);
     sv_ClearSelection();
     d2_ClearPointerItems();
     sv_ResetScreenClip();
-    U_I((unsigned)&sv_PanelFlag) = 0;
-    U_I((unsigned)&d2_CaptionCopy) = 0;
-    pb = (char *)d2_StartFade(0, 0, U_I((unsigned)&d2_ScreenW), U_I((unsigned)&d2_ScreenH), (char *)(unsigned)"BLACK", 0x5a, 1);
-    while (!(*(unsigned char *)pb & 4))
-        sv_RunFrame(0, 0x10180);
+    sv_PanelFlag = 0;
+    d2_CaptionCopy[0] = 0;
+    pb = (unsigned char *)d2_StartFade(0, 0, d2_ScreenW, d2_ScreenH, "BLACK", 0x5a, 1);
+    while (!(*pb & 4))
+        sv_RunFrame(0, mask | 0x100);
     n = 0;
     {
-        int *lp = (int *)((unsigned)&ai_Unkfb1030 + 0x190);
-        for (; (int)lp < (unsigned)&d3s_QuadUV; lp += 0xab / 4) {
-            if (lp[-4] != 0 && lp[0] != 0) {
-                int i = 0;
-                char *e = (char *)U_I((unsigned)&d2_Objs);
-                while (e < (char *)0x8c400 + U_I((unsigned)&d2_Objs)) {
-                    if (*(int *)(e + 0x18) != 0 && *(int *)(e + 0x40) == (int)(lp - 0x68) && *(int *)(e + 0x38) == 0) {
-                        *(int *)(e + 0x38) = 1;
+        int i;
+        int pv;
+
+        pv = (int)&d2_Views[0].enabled;
+        do {
+            if (((D2VIEW *)(pv - 0x1a0))->active != 0 && ((D2VIEW *)(pv - 0x1a0))->enabled != 0) {
+                for (i = 0; i < 0x300; i++) {
+                    if (d2_Objs[i].type != 0 && (int)d2_Objs[i].buf == pv - 0x1a0 && d2_Objs[i].disabled == 0) {
+                        d2_Objs[i].disabled = 1;
                         list[n++] = i;
                     }
-                    i++;
-                    e += 0x2ec;
                 }
             }
-        }
+            pv += sizeof(D2VIEW);
+        } while (pv < (int)d3s_QuadUV);
     }
-    d3_SetViewport((float)U_I((unsigned)&d2_ScreenW), (float)U_I((unsigned)&d2_ScreenH) - 150.0f, 0.0f, 75.0f, *(float *)&U_I((unsigned)&d3_ZNear), *(float *)&U_I((unsigned)&d3_ZFar), *(float *)&U_I((unsigned)&d3_ScaleX), (float)U_I((unsigned)&d2_ScreenW), (float)U_I((unsigned)&d2_ScreenH));
-    U_I((unsigned)&ai_Unkfb9060) = U_I((unsigned)&d2_ScreenW);
-    U_I((unsigned)&ai_Unkfb906c) = U_I((unsigned)&d2_ScreenH) - 0x4b;
-    U_I((unsigned)&ai_Unkfb9068) = 0;
-    U_I((unsigned)&ai_Unkfb9064) = 0x4b;
+    d3_SetViewport((float)d2_ScreenW, (float)d2_ScreenH - 150.0f, 0.0f, 75.0f, d3_ZNear, d3_ZFar, d3_ScaleX, d2_ScreenW, d2_ScreenH);
+    d2_DirtyRectRight = 0;
+    d2_DirtyRectLeft = d2_ScreenW;
+    d2_DirtyRectTop = 0x4b;
+    d2_DirtyRectBottom = d2_ScreenH - 0x4b;
     sv_SetPanelEnabled(0);
-    cam3[0] = U_I(cam + 0x4c);
-    cam3[1] = U_I(cam + 0x50);
-    cam3[2] = U_I(cam + 0x54);
-    save3[0] = U_I(cam + 0x84);
-    save3[1] = U_I(cam + 0x88);
-    save3[2] = U_I(cam + 0x8c);
+    cam3.x = CAM->pos.x;
+    cam3.y = CAM->pos.y;
+    cam3.z = CAM->pos.z;
+    save3.x = CAM->rotation.x;
+    save3.y = CAM->rotation.y;
+    save3.z = CAM->rotation.z;
     d3if_SelectScene(0, 0);
-    if (U_I((unsigned)&d3_Sky))
-        d3sky_Init(U_I((unsigned)&d3_Sky), 1);
-    d3t_GetObjectBounds(a4, b4, U_I(rec + 0x61));
-    if (U_I((unsigned)&gv_Cannon.bld) != U_I(rec + 1)) {
-        U_I((unsigned)&gv_Cannon.sliderA) = 0;
-        U_I((unsigned)&gv_Cannon.sliderB) = 0;
-        U_I((unsigned)&gv_Cannon.selected) = 0;
-        U_I((unsigned)&gv_Cannon.camTarget) = save3[0];
-        U_I(((unsigned)&gv_Cannon.camTarget + 0x4)) = save3[1];
-        U_I(((unsigned)&gv_Cannon.camTarget + 0x8)) = save3[2];
-        U_I((unsigned)&gv_Cannon.bld) = U_I(rec + 1);
+    if (d3_Sky)
+        d3sky_Init(d3_Sky, 1);
+    d3t_GetObjectBounds(&mn, &mx, CR->obj);
+    if (gv_Cannon.bld != CR->id) {
+        gv_Cannon.bld = CR->id;
+        gv_Cannon.sliderA = 0;
+        gv_Cannon.sliderB = 0;
+        gv_Cannon.selected = 0;
+        gv_Cannon.camTarget[0] = save3.x;
+        gv_Cannon.camTarget[1] = save3.y;
+        gv_Cannon.camTarget[2] = save3.z;
     }
-    d3_PointToWorld(U_I(rec + 0x61), U_I(rec + 0x61) + 0x4c, (float *)sc);
-    *(int *)(sc + 0x10) = U_I((unsigned)&gv_Cannon.camTarget);
-    *(int *)(sc + 0x14) = U_I(((unsigned)&gv_Cannon.camTarget + 0x4));
-    *(int *)(sc + 0x18) = U_I(((unsigned)&gv_Cannon.camTarget + 0x8));
-    *(float *)(sc + 4) = (*(float *)(sc + 0xe8) - *(float *)(sc + 0xf8)) * 0.8f + *(float *)(sc + 4);
-    pp = 0;
-    obj[3] = d3_CreateObject(0, (char *)(unsigned)&ai_Unk5ebba4, (char *)&pp, (char *)(unsigned)&full_data_62a350);
-    obj[0] = d3_CreateObject(obj[3], (char *)(unsigned)&ai_Unk5ebba4, (char *)(unsigned)&ai_ZeroRot, (char *)(unsigned)&full_data_62a340);
-    obj[1] = d3_CreateObject(obj[3], (char *)(unsigned)&ai_Unk5ebba4, (char *)(unsigned)&ai_ZeroRot, (char *)(unsigned)&full_data_62a328);
-    obj[2] = d3_CreateObject(obj[3], (char *)(unsigned)&ai_Unk5ebba4, (char *)(unsigned)&ai_ZeroRot, (char *)(unsigned)&full_data_62a310);
-    sel = U_I((unsigned)&gv_Cannon.selected);
-    *(int *)(sc + 0x20) = 0;
-    d3_SetObjectPos(obj[3], (float *)sc);
-    d3_SetObjectRot(obj[3], sc + 0x10);
-    item = d3_CreateObject(obj[3], (char *)((unsigned)&sv_PhaseMinutes + 0x1c8), (char *)(unsigned)&ai_ZeroRot, (char *)(unsigned)&full_data_62a2fc);
-    d3t_PlayAnim(item, (char *)(unsigned)&full_data_62a2dc, 1);
-    *(unsigned char *)(item + 0x212) = (*(unsigned char *)(item + 0x212) & 0xf7) | 4;
-    *(unsigned char *)(item + 0x212) |= 0x40;
-    *(unsigned char *)(item + 0x211) &= 0xfd;
-    d2_ClearSurface(U_I((unsigned)&d2_ScreenSurf));
+    d3_PointToWorld(CR->obj, &CR->obj->pos, &sc.pos);
+    sc.rot.x = gv_Cannon.camTarget[0];
+    sc.rot.y = gv_Cannon.camTarget[1];
+    sc.rot.z = gv_Cannon.camTarget[2];
+    sc.pos.y = (mx.y - mn.y) * 0.8f + sc.pos.y;
+    rotv.x = 0.0f;
+    rotv.y = sc.rot.y;
+    rotv.z = sc.rot.z;
+    obj[3] = d3_CreateObject(0, &d3_Origin, &rotv, "KANONE_UNTERBAU_Aa");
+    obj[0] = d3_CreateObject(obj[3], &d3_Origin, (D3VECTOR *)ai_ZeroRot, "KANONE_ROHR_Aa");
+    obj[1] = d3_CreateObject(obj[3], &d3_Origin, (D3VECTOR *)ai_ZeroRot, "KANONE_DOPPEL_ROHR_Aa");
+    obj[2] = d3_CreateObject(obj[3], &d3_Origin, (D3VECTOR *)ai_ZeroRot, "KANONE_DREIFACH_ROHR_Aa");
+    sel = gv_Cannon.selected;
+    sc.zoom = 0.0f;
+    d3_SetObjectPos(obj[3], &sc.pos);
+    d3_SetObjectRot(obj[3], (D3VECTOR *)&sc.rot);
+    obj[4] = d3_CreateObject(obj[3], (D3VECTOR *)((unsigned)&sv_PhaseMinutes + 0x1c8), (D3VECTOR *)ai_ZeroRot, "AO_KANONE_WIMPEL_Aa");
+    d3t_PlayAnim(obj[4], "_ADDON\\AO_KANONE_WIMPEL_Aa.baf", 1);
+    obj[4]->stateFlags = (obj[4]->stateFlags & 0xf7) | 4;
+    obj[4]->stateFlags |= 0x40;
+    obj[4]->objectFlags &= 0xfd;
+    d2_ClearSurface(d2_ScreenSurf);
     sv_RunFrame(0, 0x86);
-    d2_ClearSurface(U_I((unsigned)&d2_ScreenSurf));
+    d2_ClearSurface(d2_ScreenSurf);
     d2_ReleaseFade(pb);
-    d2_StartFade(0, 0, U_I((unsigned)&d2_ScreenW), U_I((unsigned)&d2_ScreenH), (char *)(unsigned)"BLACK", 0x5a, 10);
-    ai_Unk580a90((float *)sc, run);
-    ai_Unk57f890(rec, (float *)sc, run);
-    if (*(int *)(sc + 0xdc) < sel)
-        sel = *(int *)(sc + 0xdc);
+    d2_StartFade(0, 0, d2_ScreenW, d2_ScreenH, "BLACK", 0x5a, 10);
+    ai_CannonBuildPanel(&sc, run);
+    ai_CannonPanel(rec, &sc, run);
+    if (sel > sc.maxSel)
+        sel = sc.maxSel;
     for (m = 0; m < 3; m++)
-        d3if_Show((struct D3OBJECT *)obj[m], 0);
-    d3if_Show((struct D3OBJECT *)obj[sel], 1);
-    d3if_ShowTree(U_I(rec + 0x61), 0);
-    he_Unk53ec10(U_I(rec + 0x61), 0);
-    U_I((unsigned)&d2_ClickedId) = -1;
-    ai_Unk57f5d0((float *)sc);
+        d3if_Show(obj[m], 0);
+    d3if_Show(obj[sel], 1);
+    d3if_ShowTree(CR->obj, 0);
+    he_ShowObjectInfos((int)CR->obj, 0);
+    d2_ClickedId = -1;
+    ai_CannonAxes(&sc);
     ai_ShotTable[2].id = -1;
     ai_ShotTable[1].id = -1;
     ai_ShotTable[0].id = -1;
-    while (sv_RunFrame(ai_Unk57e270, 0x2656c7) != 0) {
+    while (sv_RunFrame((int)ai_CannonScene, 0x2656c7) != 0) {
         sv_SetPanelEnabled(0);
-        now = U_I((unsigned)&ai_ClockMs);
+        now = ai_ClockMs;
         dt = (float)(now - last) * 0.013513514f;
-        if (U_I(run + 4) == 0 && (U_I(((unsigned)&dm_L + 0x20)) != 0 || (U_I((unsigned)&d2_ClickedId) != -1 && U_I((unsigned)&d2_PointerObj) == *(int *)(sc + 0xbc)))) {
-            U_I((unsigned)&sv_PopRequest) = 1;
+        if (run->flags == 0 && (dm_L.rup != 0 || (d2_ClickedId != -1 && d2_PointerObj == sc.quitBtn))) {
+            sv_PopRequest = 1;
         } else {
-            ai_Unk57ec40((float *)sc, dt);
-            ai_Unk57f0e0((float *)sc);
-            ai_Unk57f890(rec, (float *)sc, run);
-            ai_Unk57f690((float *)sc);
-            if (U_I(run + 4) == 0) {
-                if (U_I((unsigned)&d2_ClickedId) != -1) {
-                    if (U_I((unsigned)&d2_PointerObj) == *(int *)(sc + 0xc8))
-                        ai_Unk57fdd0(rec, (float *)sc, run, 0, 0x2656c7);
-                    else if (U_I((unsigned)&d2_PointerObj) == *(int *)(sc + 0xcc))
-                        ai_Unk57fdd0(rec, (float *)sc, run, 1, 0x2656c7);
-                    else if (U_I((unsigned)&d2_PointerObj) == *(int *)(sc + 0xd0))
-                        ai_Unk57fdd0(rec, (float *)sc, run, 2, 0x2656c7);
+            ai_CannonAim(&sc, dt);
+            ai_CannonCamera(&sc);
+            ai_CannonPanel(rec, &sc, run);
+            ai_CannonShotResults(&sc);
+            if (run->flags == 0) {
+                if (d2_ClickedId != -1) {
+                    if (d2_PointerObj == sc.selBtn[0])
+                        ai_CannonSwitchAnim(rec, &sc, run, 0, 0x2656c7);
+                    else if (d2_PointerObj == sc.selBtn[1])
+                        ai_CannonSwitchAnim(rec, &sc, run, 1, 0x2656c7);
+                    else if (d2_PointerObj == sc.selBtn[2])
+                        ai_CannonSwitchAnim(rec, &sc, run, 2, 0x2656c7);
                 }
-                if (U_I(run + 4) == 0 && ai_Unk57f620((float *)sc) != 0) {
-                    ai_Unk580160((float *)sc, rec);
+                if (run->flags == 0 && ai_CannonFireCheck(&sc) != 0) {
+                    ai_CannonExplosion(&sc, rec);
                     ai_ShotTable[2].id = -1;
                     ai_ShotTable[1].id = -1;
                     ai_ShotTable[0].id = -1;
@@ -5535,41 +5563,46 @@ void ai_Unk57e270(char *rec)
         }
         last = now;
     }
-    sv_SetStatusText((char *)(unsigned)&ch_EmptyName);
-    pb = (char *)d2_StartFade(0, 0, U_I((unsigned)&d2_ScreenW), U_I((unsigned)&d2_ScreenH), (char *)(unsigned)"BLACK", 0x5a, 1);
-    while (!(*(unsigned char *)pb & 4))
-        sv_RunFrame(0, 0x10080);
-    d2_CloseView(*(int *)(sc + 0xa4));
-    d2_CloseView(*(int *)(sc + 0xc0));
-    d2_CloseView(*(int *)(sc + 0x74));
-    d2_RemoveObj(*(int *)(sc + 0xb4));
-    d2_RemoveObj(*(int *)(sc + 0xb8));
-    for (m = 0; m < 4; m++)
-        if (obj[m])
-            d3if_Delete((struct D3OBJECT *)obj[m]);
-    if (item)
-        d3if_Delete((struct D3OBJECT *)item);
-    d3if_ShowTree(U_I(rec + 0x61), 1);
-    he_Unk53ec10(U_I(rec + 0x61), 1);
+    sv_SetStatusText(ch_EmptyName);
+    pb = (unsigned char *)d2_StartFade(0, 0, d2_ScreenW, d2_ScreenH, "BLACK", 0x5a, 1);
+    while (!(*pb & 4))
+        sv_RunFrame(0, mask);
+    d2_CloseView(sc.win_a4);
+    d2_CloseView(sc.win_c0);
+    d2_CloseView(sc.win74);
+    d2_RemoveObj(sc.obj_b4);
+    d2_RemoveObj(sc.fireBtn);
+    if (obj[0])
+        d3if_Delete(obj[0]);
+    if (obj[1])
+        d3if_Delete(obj[1]);
+    if (obj[2])
+        d3if_Delete(obj[2]);
+    if (obj[4])
+        d3if_Delete(obj[4]);
+    if (obj[3])
+        d3if_Delete(obj[3]);
+    d3if_ShowTree(CR->obj, 1);
+    he_ShowObjectInfos((int)CR->obj, 1);
     for (m = 0; m < n; m++)
-        *(int *)(U_I((unsigned)&d2_Objs) + 0x38 + list[m] * 0x2ec) = 0;
-    d3_SetViewport((float)(U_I((unsigned)&sv_ViewRectRight) - U_I((unsigned)&sv_ViewRectLeft)), (float)(U_I((unsigned)&sv_ViewRectBottom) - U_I((unsigned)&sv_ViewRectTop)), (float)U_I((unsigned)&sv_ViewRectLeft), (float)U_I((unsigned)&sv_ViewRectTop), *(float *)&U_I((unsigned)&d3_ZNear), *(float *)&U_I((unsigned)&d3_ZFar), *(float *)&U_I((unsigned)&d3_ScaleX), (float)U_I((unsigned)&d2_ScreenW), (float)U_I((unsigned)&d2_ScreenH));
-    U_I((unsigned)&ai_Unkfb9068) = bg[0];
-    U_I((unsigned)&ai_Unkfb9060) = bg[1];
-    U_I((unsigned)&ai_Unkfb9064) = bg[2];
-    U_I((unsigned)&ai_Unkfb906c) = bg[3];
+        d2_Objs[list[m]].disabled = 0;
+    d3_SetViewport((float)(sv_ViewRectRight - sv_ViewRectLeft), (float)(sv_ViewRectBottom - sv_ViewRectTop), (float)sv_ViewRectLeft, (float)sv_ViewRectTop, d3_ZNear, d3_ZFar, d3_ScaleX, d2_ScreenW, d2_ScreenH);
+    d2_DirtyRectRight = rect[2];
+    d2_DirtyRectLeft = rect[0];
+    d2_DirtyRectTop = rect[1];
+    d2_DirtyRectBottom = rect[3];
     sv_SetPanelEnabled(1);
     sv_RedrawScreen();
-    d3if_SelectScene(bg5, 0);
-    if (U_I((unsigned)&d3_Sky))
-        d3sky_Init(U_I((unsigned)&d3_Sky), 1);
-    d3_SetObjectPos(U_I((unsigned)&sv_CameraObj), (float *)cam3);
-    d3_SetObjectRot(U_I((unsigned)&sv_CameraObj), (char *)save3);
-    init_SetDetailLevel(U_I((unsigned)&ai_Unk633738), 0);
+    d3if_SelectScene(scene, 0);
+    if (d3_Sky)
+        d3sky_Init(d3_Sky, 1);
+    d3_SetObjectPos(CAM, &cam3);
+    d3_SetObjectRot(CAM, (D3VECTOR *)&save3);
+    init_SetDetailLevel(d3_Terrain, 0);
     d3if_Prerender(1);
     d2_ReleaseFade(pb);
-    d2_StartFade(0, 0, U_I((unsigned)&d2_ScreenW), U_I((unsigned)&d2_ScreenH), (char *)(unsigned)"BLACK", 0x5a, 10);
-    unk_Unk4eeee0(U_I(rec + 1), 0, 0);
+    d2_StartFade(0, 0, d2_ScreenW, d2_ScreenH, "BLACK", 0x5a, 10);
+    gv_SetEffectCallback(CR->id, 0, 0);
 }
 
 double _CIfmod();
@@ -5585,7 +5618,7 @@ double _CIfmod();
    the button released (the state 1 -> 0), the speeds fall toward 0. The pitch is clamped to -0.2617994 ..
    0.7853982 (the speed sc + 0x58 zeroed at the stop) and the yaw set from 0x5de73a (float args lost by Ghidra;
    the CRT atan-like helper) */
-void ai_Unk57ec40(char *sc, float dt)
+void ai_CannonAim(char *sc, float dt)
 {
     float f;
     int a;
@@ -5738,7 +5771,7 @@ void d3_MatTranspose(); float d3_VecAngle2(); int ai_GetDefaultEffect();
    entries * 30), 0x54560; the camera placement 0x43b790 (0xfc2dec, the position) / 0x43b860 (0xfc2dec, the
    angle); the recoil sc + 0x78 / sc + 0x7c timer with the fade 0x54560 and the wimpel at -70 / -50 / 120;
    0x43b790 (sc + 0x98, sc) as the default */
-void ai_Unk57f0e0(char *sc)
+void ai_CannonCamera(char *sc)
 {
     float pos[3];
     float ang[3];
@@ -5769,7 +5802,7 @@ void ai_Unk57f0e0(char *sc)
     ang[2] = (float)(d3_VecAngle2((char *)(unsigned)&ai_AxisPair, h) - 1.5707964f) - *(float *)(sc + 0x14);
     d3_SetObjectRot(*(int *)(sc + 0x9c), (char *)ang);
     if (*(float *)(sc + 0x7c) == 0.0f)
-        ai_Unk57f5d0(sc);
+        ai_CannonAxes(sc);
     /* the object's forward vector (the matrix +0x18c / +0x19c / +0x1ac, +0x194 / +0x1a0 / +0x1b0, +0x194 /
        +0x1a4 / +0x1b4 at * 30) -> 0x54560 -> the camera offset from sc + 0x10 / 0x14 / 0x18, the mouse x *
        0.01 as the speed and the pitch sc + 0x10 scaled */
@@ -5798,7 +5831,7 @@ int gm_FindById();
 
 /* 0x57f5d0, copies three vectors of the cannon object (55 B): 0x458810 (sc + 0x8c, 0x5ebb74, sc + 0x24),
    (0x5ebb94, sc + 0x44) and (0x5ebb84, sc + 0x34) */
-void ai_Unk57f5d0(char *sc)
+void ai_CannonAxes(char *sc)
 {
     d3_DirToWorld(*(int *)(sc + 0x8c), (char *)(unsigned)&ai_AxisPair, sc + 0x24);
     d3_DirToWorld(*(int *)(sc + 0x8c), (char *)(unsigned)&d3_YAxis, sc + 0x44);
@@ -5808,7 +5841,7 @@ void ai_Unk57f5d0(char *sc)
    clicked (0xf8a668 / 0x5fe710) or the shot pending 0x14681f2 -> 0x14681f2 = 0, the timer sc + 0x78 = sc + 0x6c,
    the recoil sc + 0x7c = 1; 1, else 0 */
 
-int ai_Unk57f620(char *sc)
+int ai_CannonFireCheck(char *sc)
 {
     if (*(int *)(sc + 0x7c) == 0 && *(float *)(sc + 0x20) <= 0.01f) {
         if (U_I((unsigned)&d2_ClickedId) != -1 && U_I((unsigned)&d2_PointerObj) == *(int *)(sc + 0xb8)) {
@@ -5834,7 +5867,7 @@ int ai_Unk57f620(char *sc)
    with 0x6f2664 set but no entry: the texts 0x602568 / 0x406e, the same; none at all: 0x475590 (sc + 0x74, 0) and
    0x6f2664 = 0 */
 
-void ai_Unk57f690(char *sc)
+void ai_CannonShotResults(char *sc)
 {
     int n;
     int rec;
@@ -5908,7 +5941,7 @@ void txt_Format(char *out, int id0, ...); int gm_CharCurrency(char *c, char p);
    0x515960 (0x602568); the four windows 0x473650 (0x4144a360 / 0x4144a364 texts, the "__T__a" 0x62a364 format
    through 0x5176d0 and 0x509ee0, the screen width 0xf8f128 + 0x6ed938 * 0x3c4 / 2) placed with +0x5c = 1 and
    +0x14 = the width / 2, 0x4760b0 (0x54); the globals 0x925114 / 18 / 1c / 08 / 0c / 10 updated */
-void ai_Unk57f890(char *rec, char *sc, char *run)
+void ai_CannonPanel(char *rec, char *sc, char *run)
 {
     char buf[0x40];
     int a;
@@ -5991,7 +6024,7 @@ float ai_Unk57fdb0(char *sc)
    off (0x471b0) and the selected one on, sc + 0x28 = the selection, sc + 0x1b = the clock */
 
 
-void ai_Unk57fdd0(char *rec, float *sc, char *run, float sel, int mask)
+void ai_CannonSwitchAnim(char *rec, float *sc, char *run, float sel, int mask)
 {
     float v[3];
     float w[3];
@@ -6002,8 +6035,8 @@ void ai_Unk57fdd0(char *rec, float *sc, char *run, float sel, int mask)
 
     start = (float)U_I((unsigned)&ai_ClockMs);
     if (sel != sc[0x28] && (int)sel <= (int)sc[0x37]) {
-        while ((h = sv_RunFrame(ai_Unk57fdd0, mask)) != 0) {
-            ai_Unk57f890(rec, (char *)sc, run);
+        while ((h = sv_RunFrame(ai_CannonSwitchAnim, mask)) != 0) {
+            ai_CannonPanel(rec, (char *)sc, run);
             if ((float)(unsigned int)(U_I((unsigned)&ai_ClockMs) - (int)start) <= 90.0f) {
                 v[0] = sc[9];
                 v[2] = sc[0xb];
@@ -6027,8 +6060,8 @@ void ai_Unk57fdd0(char *rec, float *sc, char *run, float sel, int mask)
         d3if_Show(*(struct D3OBJECT **)&sc[0x23 + (int)sel], 1);
         sc[0x28] = sel;
         start = (float)U_I((unsigned)&ai_ClockMs);
-        while ((h = sv_RunFrame(ai_Unk57fdd0, mask)) != 0) {
-            ai_Unk57f890(rec, (char *)sc, run);
+        while ((h = sv_RunFrame(ai_CannonSwitchAnim, mask)) != 0) {
+            ai_CannonPanel(rec, (char *)sc, run);
             if ((float)(unsigned int)(U_I((unsigned)&ai_ClockMs) - (int)start) <= 90.0f) {
                 v[0] = sc[9];
                 v[2] = sc[0xb];
@@ -6052,7 +6085,7 @@ void ai_Unk57fdd0(char *rec, float *sc, char *run, float sel, int mask)
 }
 
 void gv_CannonScatter(char *o, float *a, float *b); float gv_CannonItemFactor(); void ai_Unk580a50(); int ai_InitShot(struct SHOTREC *shot, struct D3VECTOR *pos, struct D3VECTOR *dir, float charge, float size, float density);
-int ai_ScatterShot(struct SHOTREC *shot, float sideSpread, struct D3VECTOR *side, float otherSpread, struct D3VECTOR *other, float speedSpread); int gv_FireShots(struct AIBLD *bld, struct AICHAR *ch, struct SHOTREC *a, struct SHOTREC *b, struct SHOTREC *d, float v, int cost, int x); struct SBBANK; struct SBSAMPLE *sb_PlayVariation(struct SBBANK *bank, char *name, int idx, int loops, int pan, int volume, int fade); void ai_Unk580a90();
+int ai_ScatterShot(struct SHOTREC *shot, float sideSpread, struct D3VECTOR *side, float otherSpread, struct D3VECTOR *other, float speedSpread); int gv_FireShots(struct AIBLD *bld, struct AICHAR *ch, struct SHOTREC *a, struct SHOTREC *b, struct SHOTREC *d, float v, int cost, int x); struct SBBANK; struct SBSAMPLE *sb_PlayVariation(struct SBBANK *bank, char *name, int idx, int loops, int pan, int volume, int fade); void ai_CannonBuildPanel();
 
 /* 0x580160, the cannon's explosion spawn (1173 B, ROUGH: the branch structure and the effect calls are written,
    the matrix arithmetic is a comment): sc = the scene struct, rec = the record. The two fields sc + 0xb0 / 0xb4
@@ -6063,7 +6096,7 @@ int ai_ScatterShot(struct SHOTREC *shot, float sideSpread, struct D3VECTOR *side
    records), 0x4eef50 the data; the run waited out on 0x4c3ae0 (pump 0x20007); then 0x4287b0 ("LOCATIONS_
    DOMIZIL_KANONE1_esc" 0x62a36c) and 0x429ab0 (4, the counts, the offsets, the wimpel hand sc + 0x23 / 0x24 /
    0x25) for each record and the effect 0x427050 (0, "Explosion" 0x5f36e0, the record count, 1, 0x3f, 0x7f, 0) */
-void ai_Unk580160(char *sc, char *rec)
+void ai_CannonExplosion(char *sc, char *rec)
 {
     int v1;
     int v2;
@@ -6131,7 +6164,7 @@ int d2_WinOpenSlider(); void d2_SetLabel(); void d2_SetList(int id, int n, ...);
    0xf8f080 +0x4c = 1 and +0x1c0 = 3; the two sliders 0x46a960 (4 / 100, the values 0x925114 / 0x925118) into
    sc + 0xb0 / 0xb4 with 0x46bc70 / 0x46bca0; the three bars 0x46a960 (0x7d / 0x4c2) into sc + 0xa8 / 0xac /
    0xc4 (0x5dbc20 and two __ftol 0x5de518 values) with 0x46bc70; sc + 0x70 = the clock 0x6333cc */
-void ai_Unk580a90(char *sc)
+void ai_CannonBuildPanel(char *sc)
 {
     int x;
     int mid;
@@ -6850,7 +6883,7 @@ void ai_Unk582560(char *rec, char *list)
         if (U_I((unsigned)&ai_ClickedObject) != 0) {
             if (U_I(list + 0x1c) == 0) {
                 if (U_I((unsigned)&ai_ClickedObject) == id)
-                    ai_Unk57e270(rec);
+                    ai_CannonScene(rec);
             } else {
                 ai_Unk5823b0(rec, list);
             }

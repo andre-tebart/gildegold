@@ -832,15 +832,15 @@ void gv_UpdateEffects(void)
     }
     d3if_SelectScene(scene, 1);
 }
-/* 0x4eea70, the message 'nCTa' (0x4c6230) with the id at +1 of the object o */
+/* 0x4eea70, the message 'nCTa' (0x4c6230) with the id at +1 of the object o; returns its result (ai_CannonScene waits on the slot it names) */
 
-void unk_Unk4eea70(char *o)
+int gv_RequestEffectLoad(char *o)
 {
     int m[2];
 
     m[0] = 0x6154436e;
     m[1] = *(int *)(o + 1);
-    ai_Unk4c6230(m);
+    return ai_Unk4c6230(m);
 }
 /* 0x4eeaa0, reserves the effect slot of the id: 1 when it has one already or a free one (id -1) is found (the first free one is taken);
    0 for id -1. The original tests first >= -1, so with no free slot it writes the id before slot 0 and returns 1 as well; the slots
@@ -1035,7 +1035,7 @@ found:
 }
 /* 0x4eeee0, sets the callback (+0x168) and its argument (+0x16c) of the slot of the id; without a callback the default one (0x4ed3f0) with the slot's record 0x6f0e48 + 0x38 * n */
 
-void unk_Unk4eeee0(int id, void *cb, void *arg)
+void gv_SetEffectCallback(int id, void *cb, void *arg)
 {
     char *e;
 
