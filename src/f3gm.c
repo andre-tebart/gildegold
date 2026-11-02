@@ -3002,7 +3002,7 @@ extern unsigned short * ai_Unk6f1bf4;
 extern int ai_Unk7e3f38;
 extern int ai_Unk8753e0[20488];
 int gm_FindMarketObject(int id);                     /* 0x500ec0 */
-int gm_FindPlayerBuilding();                     /* 0x501000 */
+int gm_FindPlayerBuilding(int p);                   /* 0x501000 */
 
 /* 0x4ffa10, the price of the goods record n of the player p (0x80 bytes each from 0x7d6a70 + p * 0x2a90): the base price 0x5087f0 (id, 100) when the player has no market object (0x500ec0, or for another player the object of 0x501000 with the group (2, 0, 0x1db, 6)); else the market's stock (the int at +0xe of the goods object of the market object (+0x14 list, id)) against the record's wanted amount (+0x20) and mean (+0x24) gives a factor limited to 0.25 .. 5.0, the price moves 0.4 of the way from the stored price (+0x38) to base * factor and is at least 512.0 (or the base when that is above 512). ROUGH */
 float gm_Unk4ffa10(int p, int n)
@@ -3270,11 +3270,11 @@ char ai_Unk6f1be9 = 0;  /* 0x6f1be9 */
 char ai_Unk6f1bea = 0;  /* 0x6f1bea, first-step flag, scan all, descend into children, stop at the first */
 /* 0x500190 */
 void cm_SendExSellObject(int a, int b, short c, int d, unsigned char e, int f);                     /* 0x4c4880 */
-void ai_Unk4c56d0(void *p, unsigned char k);                     /* 0x4c56d0 */
+void cm_SendGoodsRecord(void *p, unsigned char k);                     /* 0x4c56d0 */
 void cm_BeginSendGroup(void);                     /* 0x4c3b30 */
 void cm_EndSendGroup(void);                     /* 0x4c3b40 */
 int cm_SendGroupState();                     /* 0x4c3b50 */
-int gm_FindPlayerBuilding();                     /* 0x501000 */
+int gm_FindPlayerBuilding(int p);                   /* 0x501000 */
 void gm_ClockToDate(struct GCLOCK *c, unsigned char *out);                     /* 0x4fe2c0 */
 
 /* the goods record n (0x80 bytes) of the player p */
@@ -3444,18 +3444,19 @@ void gm_UpdatePrices(unsigned p, void *t)
 }
 
 #define GM_WAIT(h) while (cm_GetSlotState(h) == 0) sv_PumpNet()
+#define cm_SendExSellObjectH ((int (*)(int, int, int, int, unsigned char, int))cm_SendExSellObject)  /* 0x4c4880: it returns the slot handle of its message (ai_Unk4c39c0's result stays in eax), which cm.h's void prototype drops; @original gm_SyncMarket pushes the goods id zero-extended (int), as ai.c's cm_SendExSellObjectI */
 
-/* 0x4fec10, the market sync of the player p: for the own player (0x6f1bc5) the goods lists are rebuilt as in 0x4ff190 (the flag +4 marks goods in stock or needed), then every goods record is offered to / requested from the market building (0x4c4880 messages: a marked good that is not in stock is requested (1), an unmarked one in stock is sold with its stock (+0xe)) and sent to the player (0x4c56d0); the market object counts (0x92 .. 0x97, 0x2db) are written back to the byte +0x1c of the object of kind 0x11. For another player: the goods of its two market objects (0x1db / 0x1dc) are randomly marked (a byte at +0x28 of the record grows by random 0x18 + 0 .. 7 per call; below 0x81 means offered) and sent (0x4c3b30 .. 0x4c3b50). ROUGH */
+/* 0x4fec10, the market sync of the player p (group 1, 5, 10 is the market building ai_MarketBuilding): for the own player the amount flag of every goods record is set when a building other than kind 10 holds the good in its store (0xff object) or needs it for one it holds (the four needs at +0x2e of its ai_Goods record); then every record is synced with the market object of its marketKind (its store created first with cm_SendExSellObject when missing): a flagged good the store lacks is requested (one), an unflagged one it has is sold with its count; each record goes to the server (cm_SendGoodsRecord), and the goods count of the market objects 0x92 .. 0x97, 0x2db raises the level byte +0x1c of their kind 0x11 object. For another player: the goods its two market objects (0x1db / 0x1dc) hold get the offer counter (random, then + 0x18 .. 0x1f per call; offered up to 0x80) and are sent in one group */
 void gm_SyncMarket(unsigned p)
 {
     int list[8];
-    unsigned rec[0x20];
-    char *g, *g2;
+    GMSTOCK rec;
+    GMSTOCK *stock, *g, *g2;
     unsigned char *b;
-    int o, o2, i, j, k, cnt, m, h, a1;
+    ORDOBJ *o, *o2, *m, *a1;
+    char *gp;
+    int i, j, k, cnt, h;
     int *lp;
-    unsigned short id;
-    unsigned char c28;
 
     list[0] = 0x92;
     list[1] = 0x93;
@@ -3468,24 +3469,25 @@ void gm_SyncMarket(unsigned p)
     ai_MarketBuilding = (struct AIBLD *)gm_BuildQuery(1, 5, 10);
     if (ai_MarketBuilding == 0)
         return;
+    stock = (GMSTOCK *)(init_StockBlocks + p * 0x2a90);
     if (p == ai_OwnPlayer) {
         for (i = 0; i < 0x55; i++)
-            *(int *)(GM_GOODS(p, i) + 4) = 0;
+            stock[i].amount = 0;
         b = (unsigned char *)gm_BuildQuery(1, 6);
         while (b != 0) {
             if (ai_BTypes[*b * 0x24d] != 10) {
-                o = (int)gm_Query(*(int *)(b + 0x5d), 1, 0, 0xff);
-                if (o != 0) {
-                    for (i = 0; i < 0x55; i++) {
-                        g = GM_GOODS(p, i);
-                        id = *(unsigned short *)g;
-                        if (id != 0 && gm_Query(*(int *)(o + 0x14), 1, 0, id) != 0) {
-                            *(int *)(g + 4) = 1;
+                o = (ORDOBJ *)gm_Query(((ORDBLD *)b)->objList, 1, 0, 0xff);
+                for (i = 0; o != 0 && i < 0x55; i++) {
+                    {
+                        g = &stock[i];
+                        if (g->item != 0 && gm_Query(o->list, 1, 0, g->item) != 0) {
+                            g->amount = 1;
+                            gp = ai_Goods + g->item * 0x41;
                             for (j = 0; j < 0x55; j++) {
-                                g2 = GM_GOODS(p, j);
+                                g2 = &stock[j];
                                 for (k = 0; k < 4; k++)
-                                    if (*(unsigned short *)g2 == *(unsigned short *)(ai_Goods + id * 0x41 + 0x2e + k * 2))
-                                        *(int *)(g2 + 4) = 1;
+                                    if (g2->item == ((unsigned short *)(gp + 0x2e))[k])
+                                        g2->amount = 1;
                             }
                         }
                     }
@@ -3494,74 +3496,72 @@ void gm_SyncMarket(unsigned p)
             b = (unsigned char *)gm_BuildNext();
         }
         for (i = 0; i < 0x55; i++) {
-            g = GM_GOODS(p, i);
-            memcpy(rec, GM_GOODS(p, i), 0x80);
-            o = (int)gm_Query(*(int *)((char *)ai_MarketBuilding + 0x5d), 1, 0, *(unsigned short *)(g + 0x3c));
+            g = (GMSTOCK *)(init_StockBlocks + p * 0x2a90) + i;
+            rec = stock[i];
+            o = (ORDOBJ *)gm_Query(((ORDBLD *)ai_MarketBuilding)->objList, 1, 0, g->marketKind);
             if (o != 0) {
-                o2 = (int)gm_Query(*(int *)(o + 0x14), 1, 0, 0xff);
+                o2 = (ORDOBJ *)gm_Query(o->list, 1, 0, 0xff);
                 if (o2 == 0) {
-                    h = ((int (*)(void *, int, int, int, int, int))cm_SendExSellObject)(*(int *)(o + 2), -1, 0xff, 1, ai_OwnPlayer, 0);
+                    h = cm_SendExSellObjectH(o->objId, -1, 0xff, 1, ai_OwnPlayer, 0);
                     GM_WAIT(h);
-                    o2 = cm_GetSlotValue(h);
+                    o2 = (ORDOBJ *)cm_GetSlotValue(h);
                 }
-                if (*(int *)(g + 4) == 0) {
-                    m = (int)gm_Query(*(int *)(o2 + 0x14), 1, 0, *(unsigned short *)g);
-                    if (m != 0) {
-                        h = ((int (*)(int, void *, void *, void *, int, int))cm_SendExSellObject)(-1, *(int *)(o2 + 2), *(unsigned short *)g, *(int *)(m + 0xe), ai_OwnPlayer, 0);
+                if (g->amount != 0) {
+                    m = (ORDOBJ *)gm_Query(o2->list, 1, 0, g->item);
+                    if (m == 0) {
+                        h = cm_SendExSellObjectH(o2->objId, -1, g->item, 1, ai_OwnPlayer, 0);
                         GM_WAIT(h);
                     }
                 } else {
-                    m = (int)gm_Query(*(int *)(o2 + 0x14), 1, 0, *(unsigned short *)g);
-                    if (m == 0) {
-                        h = ((int (*)(void *, int, void *, int, int, int))cm_SendExSellObject)(*(int *)(o2 + 2), -1, *(unsigned short *)g, 1, ai_OwnPlayer, 0);
+                    m = (ORDOBJ *)gm_Query(o2->list, 1, 0, g->item);
+                    if (m != 0) {
+                        h = cm_SendExSellObjectH(-1, o2->objId, g->item, m->count, ai_OwnPlayer, 0);
                         GM_WAIT(h);
                     }
                 }
-                ai_Unk4c56d0(rec, p);
+                cm_SendGoodsRecord(&rec, p);
             }
         }
-        lp = list;
-        k = 0x92;
-        do {
+        for (lp = list; *lp != 0; lp++) {
             cnt = 0;
-            o = (int)gm_Query(*(int *)((char *)ai_MarketBuilding + 0x5d), 1, 0, k);
-            if (o != 0 && (o2 = (int)gm_Query(*(int *)(o + 0x14), 1, 0, 0xff)) != 0) {
-                o2 = (int)gm_Query(*(int *)(o2 + 0x14), 1, 5);
+            o = (ORDOBJ *)gm_Query(((ORDBLD *)ai_MarketBuilding)->objList, 1, 0, *lp);
+            if (o != 0 && (o2 = (ORDOBJ *)gm_Query(o->list, 1, 0, 0xff)) != 0) {
+                o2 = (ORDOBJ *)gm_Query(o2->list, 1, 5);
                 while (o2 != 0) {
                     cnt++;
-                    o2 = (int)gm_QueryNext();
+                    o2 = (ORDOBJ *)gm_QueryNext();
                 }
-                o = (int)gm_Query(*(int *)(o + 0x14), 1, 4, 0x11);
-                if (o != 0 && (int)(unsigned char)*(char *)(o + 0x1c) < cnt) {
-                    cnt -= (unsigned char)*(char *)(o + 0x1c);
-                    cm_BeginFieldBlock(o, *(int *)(o + 2));
-                    cm_AddFieldValues(1, 1, ((char *)o - cm_FieldObject) + 0x1c, &cnt);
+                o = (ORDOBJ *)gm_Query(o->list, 1, 4, 0x11);
+                if (o != 0 && (int)o->lvl1c < cnt) {
+                    cnt -= o->lvl1c;
+                    cm_BeginFieldBlock((char *)o, o->objId);
+                    cm_AddFieldValues(1, 1, (char *)&o->lvl1c - cm_FieldObject, &cnt);
                     cm_SendFieldDeltas();
                 }
             }
-            k = lp[1];
-            lp++;
-        } while (k != 0);
+        }
         return;
     }
-    o = gm_FindPlayerBuilding(p);
-    if (o != 0 && (a1 = (int)gm_Query(*(int *)(o + 0x5d), 2, 0, 0x1db, 6)) != 0 && (o2 = (int)gm_Query(*(int *)(o + 0x5d), 2, 0, 0x1dc, 6)) != 0) {
+    o = (ORDOBJ *)gm_FindPlayerBuilding(p);
+    if (o != 0 && (a1 = (ORDOBJ *)gm_Query(((ORDBLD *)o)->objList, 2, 0, 0x1db, 6)) != 0 && (o2 = (ORDOBJ *)gm_Query(((ORDBLD *)o)->objList, 2, 0, 0x1dc, 6)) != 0) {
         cm_BeginSendGroup();
         for (i = 0; i < 0x55; i++) {
-            memcpy(rec, GM_GOODS(p, i), 0x80);
-            if ((short)rec[0] != 0) {
-                c28 = *((unsigned char *)rec + 0x28);
-                if (gm_Query(*(int *)(a1 + 0x14), 1, 0, rec[0] & 0xffff) == 0 && gm_Query(*(int *)(o2 + 0x14), 1, 0, rec[0] & 0xffff) == 0) {
-                    rec[1] = 0;
-                } else if (c28 == 0) {
-                    c28 = (unsigned char)util_RandomU(0xff);
-                    rec[1] = c28 < 0x81;
-                } else {
-                    c28 = c28 + (char)util_RandomU(8) + 0x18;
-                    rec[1] = c28 < 0x81;
-                }
-                *((unsigned char *)rec + 0x28) = c28;
-                ai_Unk4c56d0(rec, p);
+            rec = stock[i];
+            if (rec.item != 0) {
+                m = (ORDOBJ *)gm_Query(a1->list, 1, 0, rec.item);
+                if (m == 0)
+                    m = (ORDOBJ *)gm_Query(o2->list, 1, 0, rec.item);
+                if (m != 0) {
+                    if (rec.offer == 0) {
+                        rec.offer = (unsigned char)util_RandomU(0xff);
+                        rec.amount = rec.offer <= 0x80;
+                    } else {
+                        rec.offer += util_RandomU(8) + 0x18;
+                        rec.amount = rec.offer <= 0x80;
+                    }
+                } else
+                    rec.amount = 0;
+                cm_SendGoodsRecord(&rec, p);
             }
         }
         cm_EndSendGroup();

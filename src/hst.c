@@ -1603,11 +1603,11 @@ typedef struct G12REC10 {               /* 0x5c bytes, one of the ten records 0x
     int id;                             /* 0x00, the id 0x4cd9d0 matches */
     char pad04[0x58];
 } G12REC10;
-void ai_Unk4c56d0(void *p, unsigned char k);                                /* 0x4c56d0, defined elsewhere */
+void cm_SendGoodsRecord(void *p, unsigned char k);                                /* 0x4c56d0, defined elsewhere */
 
 /* 0x4b11e0, text command "-PLUS_<kind>_n" / "-MINUS_<kind>_n" (kind WAFFEN / BUECHER / ENDPRODUKTE): scales
    the prices of the player's stock of that kind by 1 +- n% (0x4c56d0)
-   @deep meaning read equal against the disassembly (all 14 hunks), only allocation / scheduling left plus a Q2 block. This session: the stock block stride (0x7d6a70 + player * 0x2a90, f3gm.c's GM_GOODS / f3init.c's INIT_STOCKBLOCK; was G12STOCK[][0x55], stride 0x2a80, wrong records for every ai_OwnPlayer > 0) and &e instead of e.unk08 to 0x4c56d0 (that callee memcpy's 0x80 bytes; the original's lea [esp+0x54] with 8 pushed bytes is e+0) are fixed: 332 -> 275 differing instructions, frame 0xbc now equal, every slot equal (sign 0x14, name 0x1c, kind 0x28, e 0x4c). What is left: the register permutation fmt/i/cursor = edx/ebx/ebp here vs ebp/edx/ebx in the original (the original keeps fmt in ebp as ai_CommandLaw does - ours loads it into edx before sub esp and spills i to [esp+0x10] inside the name loop, one extra store), the FPU kept-alive pattern in the three loop tails (original fst g; fmul e.demand, ours fstp g; fld e.demand; fmul g) and the 167-instruction prologue store order (the string copies are verified against .rdata: name MINUS/PLUS at 0x601bc4/0x601bbc, kind WAFFEN/BUECHER/ENDPRODUKTE at 0x601c40/0x601c38/0x601c2c, sign -1/1). Tried and reverted: a per-loop G12STOCK *s pointer local (336 asm, code 48 bytes smaller) - allocation, not meaning. Q2 block: ai_Unk4c56d0 (0x4c56d0 = message 0x3f, k and 0x80 bytes of p, cm.c; cm_SendGoodsRecord is the evidenced name) and ai_FindWeaponRecord (0x4cd9d0, the record of ten with id, cm.c) - both need their own units' evidence before the rename. */
+   @deep meaning read equal against the disassembly (all 14 hunks), only allocation / scheduling left plus a Q2 block. This session: the stock block stride (0x7d6a70 + player * 0x2a90, f3gm.c's GM_GOODS / f3init.c's INIT_STOCKBLOCK; was G12STOCK[][0x55], stride 0x2a80, wrong records for every ai_OwnPlayer > 0) and &e instead of e.unk08 to 0x4c56d0 (that callee memcpy's 0x80 bytes; the original's lea [esp+0x54] with 8 pushed bytes is e+0) are fixed: 332 -> 275 differing instructions, frame 0xbc now equal, every slot equal (sign 0x14, name 0x1c, kind 0x28, e 0x4c). What is left: the register permutation fmt/i/cursor = edx/ebx/ebp here vs ebp/edx/ebx in the original (the original keeps fmt in ebp as ai_CommandLaw does - ours loads it into edx before sub esp and spills i to [esp+0x10] inside the name loop, one extra store), the FPU kept-alive pattern in the three loop tails (original fst g; fmul e.demand, ours fstp g; fld e.demand; fmul g) and the 167-instruction prologue store order (the string copies are verified against .rdata: name MINUS/PLUS at 0x601bc4/0x601bbc, kind WAFFEN/BUECHER/ENDPRODUKTE at 0x601c40/0x601c38/0x601c2c, sign -1/1). Tried and reverted: a per-loop G12STOCK *s pointer local (336 asm, code 48 bytes smaller) - allocation, not meaning. Q2 block: cm_SendGoodsRecord (0x4c56d0 = message 0x3f, k and 0x80 bytes of p, cm.c; cm_SendGoodsRecord is the evidenced name) and ai_FindWeaponRecord (0x4cd9d0, the record of ten with id, cm.c) - both need their own units' evidence before the rename. */
 int ai_CommandDemand(int a, int b, char *fmt)
 {
     G12STOCK e;
@@ -1653,7 +1653,7 @@ int ai_CommandDemand(int a, int b, char *fmt)
                     e = init_StockBlocks[ai_OwnPlayer].rec[i];
                     e.mean = g * e.demand;
                     e.price = gm_ItemPrice(init_StockBlocks[ai_OwnPlayer].rec[i].item, 100) * g;
-                    ai_Unk4c56d0(&e, ai_OwnPlayer);
+                    cm_SendGoodsRecord(&e, ai_OwnPlayer);
                 }
             }
         }
@@ -1666,7 +1666,7 @@ int ai_CommandDemand(int a, int b, char *fmt)
                 e = init_StockBlocks[ai_OwnPlayer].rec[i];
                 e.mean = g * e.demand;
                 e.price = gm_ItemPrice(init_StockBlocks[ai_OwnPlayer].rec[i].item, 100) * g;
-                ai_Unk4c56d0(&e, ai_OwnPlayer);
+                cm_SendGoodsRecord(&e, ai_OwnPlayer);
             }
         }
         break;
@@ -1678,7 +1678,7 @@ int ai_CommandDemand(int a, int b, char *fmt)
                 e = init_StockBlocks[ai_OwnPlayer].rec[i];
                 e.mean = g * e.demand;
                 e.price = gm_ItemPrice(init_StockBlocks[ai_OwnPlayer].rec[i].item, 100) * g;
-                ai_Unk4c56d0(&e, ai_OwnPlayer);
+                cm_SendGoodsRecord(&e, ai_OwnPlayer);
             }
         }
         break;

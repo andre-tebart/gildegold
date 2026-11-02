@@ -234,6 +234,12 @@ typedef struct ORDOBJ {
     unsigned short type;            /* 0x00, the prototype id */
     int objId;                      /* 0x02, the object's own id (messages name the object by it) */
     int ownerId;                    /* 0x06, the id of the building / object / character holding it (gm_ClearObjects finds it by 0x4fea50) */
+    char pad0a[4];
+    int count;                      /* 0x0e, the amount of goods it stands for (ai.h AIOBJ.count) */
+    char pad12[2];
+    int list;                       /* 0x14, the object list it holds (ai.h AIOBJ.list) */
+    char pad18[4];
+    unsigned char lvl1c;            /* 0x1c, a workshop's level (ai.h AIOBJ.lvl1c); gm_SyncMarket raises it to the market's goods count */
 } ORDOBJ;
 #pragma pack(pop)
 

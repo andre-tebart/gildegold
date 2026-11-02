@@ -1681,7 +1681,7 @@ void cm_SendCharModel(int a, const char *s)
 }
 /* 0x4c56d0, message 0x3f: k and 0x80 bytes of p */
 
-void ai_Unk4c56d0(void *p, unsigned char k)
+void cm_SendGoodsRecord(void *p, unsigned char k)
 {
     G17MSG m;
 

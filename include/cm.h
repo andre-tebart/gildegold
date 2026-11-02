@@ -243,7 +243,7 @@ void cm_SendBoss(int a, int b);                                                 
 void ai_Unk4c5580(int a, int b, int c, int d);                                   /* 0x4c5580 */
 int cm_SendMessage3d(char *p, unsigned char b, int c, int d);                        /* 0x4c55d0 */
 void cm_SendCharModel(int a, const char *s);                                         /* 0x4c5690 */
-void ai_Unk4c56d0(void *p, unsigned char k);                                     /* 0x4c56d0 */
+void cm_SendGoodsRecord(void *p, unsigned char k);                                     /* 0x4c56d0 */
 void cm_SendGoodsDelta(char *p, unsigned char k);                                     /* 0x4c5710 */
 void cm_SendMessage41(void *p);                                                      /* 0x4c5800 */
 void ai_Unk4c5840(int a);                                                        /* 0x4c5840 */

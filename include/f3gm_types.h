@@ -59,11 +59,13 @@ typedef struct GMSTOCK {
     char pad10[0x10];
     float demand;                       /* 0x20, the amount the market wants (gm_GoodsDemand) */
     float mean;                         /* 0x24, the mean amount */
-    char pad28[8];
+    unsigned char offer;                /* 0x28, another player's offer counter: random 0 .. 0xff, then + 0x18 .. 0x1f per market sync; up to 0x80 the good is offered (gm_SyncMarket) */
+    char pad29[7];
     int baseStock;                      /* 0x30, the default stock (from the template; gm_UpdatePrices gives it to the players other than the own one as +0x34) */
     int stock;                          /* 0x34, the stock of the kinds 0x17 / 0x25 (gm_GoodsStock) */
     float price;                        /* 0x38, the stored price (gm_ItemPrice of the item, 100) */
-    char pad3c[0x44];
+    unsigned short marketKind;          /* 0x3c, the kind of the market object (0x92 .. 0x97, 0x2db) that holds the good (gm_SyncMarket) */
+    char pad3e[0x42];
 } GMSTOCK;
 
 #endif
