@@ -20,10 +20,8 @@
 #include "d3_tools.h"
 #include "data_views.h"
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, ai_Unk4d88c0 0x4d88c0 move it as a word / movzx) */
-#define d3t_CreateExplosionK ((int (*)())d3t_CreateExplosion)  /* 0x416040 (d3_tools.c): @original this unit's calls were compiled without a prototype (float arguments as double, an int result) */
-#define d3t_CreateEarthK ((int (*)())d3t_CreateEarth)  /* 0x4168e0 (d3_tools.c): @original this unit's calls were compiled without a prototype (float arguments as double, an int result) */
-#define d3t_CreateSmokeK ((int (*)())d3t_CreateSmoke)  /* 0x416340 (d3_tools.c): @original this unit's calls were compiled without a prototype (float arguments as double, an int result) */
-#define d3t_GetMeshBoundsK ((int (*)())d3t_GetMeshBounds)  /* 0x413310 (d3_tools.c): @original this unit's calls were compiled without a prototype (float arguments as double, an int result) */
+#define gv_PlayerAiChar (*(AICHAR **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) as the AICHAR it points to */
+#define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
 #define GAPDATA __declspec(align(1)) unsigned char
 #define gv_EffectsT (*(GVEFFECT (*)[8])&gv_Effects)  /* 0x6f1008, gv_Effects (char[0xb80]) as the 8 GVEFFECT slots */
@@ -526,169 +524,172 @@ found:
     }
 }
 
-/* unlinked */
-static __inline int unk_fb(float f)
-{
-    return *(int *)&f;
-}
 
-typedef struct UNKHIT {                 /* 0x10 bytes: a building hit by the explosion */
-    int id;
-    float dist;
-    int state;                          /* 1 inside the box, 2 in the margin */
-    float val;
-} UNKHIT;
-typedef struct UNKHITS {                /* 0x38 bytes, the slot's record at +0x16c (0x6f0e48 + 0x38 * n) */
-    int h0, h1;
-    UNKHIT e[3];
-} UNKHITS;
-
-/* 0x4ee360, the explosion of the part p (+0x30 .. +0x38 the position, +0x58 the strength, +0x40 / +0x48 / +0x4c the fire direction): finds the (up to 3) buildings (the 256 records of 0xa9 bytes at ai_Blds)
-   whose box the point lies in (state 1, weight 1 / (1 + 0.005 d)) or near (state 2, weight 1 / (1 + (0.0002 d + 0.005) d)), keeps those with the largest strength * weight > 100, starts the particle effects
-   (0x416340 / 0x4168e0 / 0x416040) and the sound "Explosion" (0x426030), and when w is set damages the buildings' owners (state 1: message 0x4f via 0x4c4b70; state 2: skill 0x5c -= value); the hits go to *out (0xe ints).
-   ROUGH, the floats of the box tests and the argument values of the effect calls are as read from the disassembly. */
-void gv_ExplodeShot(int w, int sub, char *p, UNKHITS *out)
+/* 0x4ee360, the explosion of a cannon ball that landed (gv_UpdateEffects): finds the buildings (ai_Blds) whose box (d3t_GetMeshBounds
+   around the world position) holds the ball's position (mode 1, weight 1 / (1 + 0.005 d)) or lies within twice a tenth of its energy
+   of it (mode 2, weight 1 / (1 + (0.0002 d + 0.005) d)); of those with energy * weight > 100 the 3 strongest go to the records of out
+   (the strength / 100, up to 100); starts the smoke, earth and explosion particles at the ball (bigger when a building was hit) and
+   the sound "Explosion" at the nearest building; with damage set the owners of the hit buildings get message 0x4f with the strength
+   (mode 1), or the building's level (field 0x5c) falls by it (mode 2)
+   @deep read the whole function against the original (hit record init, building loop with world position /
+   distance / box tests as >= / <= chains, w1 / w2 weights, the 3-strongest selection, smoke / earth /
+   explosion calls with float arguments through the real d3_tools prototypes and a D3COLOR, the sound, the
+   damage messages as AIMSG); 469 vs 478 instructions, frame 0x1a8 vs 0x1b4. Left: register roles (ours
+   zero in ebx / shot in esi / sel in ebp, the original's zero-and-mode in ebp / shot in ebx / sel in esi;
+   hence ebx pushed after the init loop in the original), the original keeps w1 in a slot computed before
+   d3t_GetMeshBounds where ours sinks it into the inside branch (fmul / fadd / fdivr after mov ebx,1), the
+   selection loop walks &recs[k].value by pointer in the original (lea edx,[esp+0xa8]) and ours by a scaled
+   index (mov esi,0xfffffff0), and the wind direction block keeps scale in a slot and wind x / z on the FPU
+   stack (fld [ebx+0x40]; fld [ebx+0x48]; fld [esp+0x4c]; fmul st(2)) where ours folds them (fld
+   [esi+0x4c]; fld st(0); fmul [esi+0x40]): FPU scheduling and allocation. Tried: sqrt without the float
+   cast (no change), mode = 0 at the loop top (no change). */
+void gv_ExplodeShot(int damage, int effectId, SHOTREC *shot, GVEFFARG *out)
 {
-    UNKHITS h;
-    float pos[3], half[3], mn[3], hi[3], lo[3];
-    float cx, cy, cz;
-    float fv, fd, w1, w2, m, best, cnt;
-    int i, k, sel, nstate;
-    char *o, *bo;
-    char *obj;
-    float dir[3];
-    float a, b, c;
-    char msg[0xb4];
+    GVEFFARG h;
+    D3VECTOR c;
+    D3VECTOR pos, half, mn, hi, lo, dir;
+    float m, fd, best, w1, w2, fv, scale;
+    float radius, height, z;
+    float dx, dy, dz;
+    int i, k, sel, mode, hits;
+    AIBLD *bld, *nearest, *hit;
+    D3COLOR color;
+    struct SBSAMPLE *snd;
+    AIMSG msg;
     char dmg;
-    int idx;
 
-    h.h1 = sub;
-    cnt = 0;
-    bo = 0;
+    h.effectId = effectId;
+    hits = 0;
+    nearest = 0;
     best = 100000.0f;
     for (i = 0; i < 3; i++) {
-        h.e[i].id = -1;
-        h.e[i].dist = 1000000.0f;
-        h.e[i].state = 0;
-        h.e[i].val = 0.0f;
+        h.recs[i].bldId = -1;
+        h.recs[i].dist = 1000000.0f;
+        h.recs[i].mode = 0;
+        h.recs[i].value = 0.0f;
     }
-    cx = *(float *)(p + 0x30);
-    cy = *(float *)(p + 0x34);
-    cz = *(float *)(p + 0x38);
-    for (idx = 0; idx < 0x100; idx++) {
+    c = shot->pos;
+    for (i = 0; i < 256; i++) {
         sel = -1;
-        m = *(float *)(p + 0x58) * 0.1f;
-        o = ai_Blds + idx * 0xa9;
-        if (*(int *)(o + 1) != -1 && *o != 0 && (obj = *(char **)(o + 0x61)) != 0) {
-            d3_PointToWorld(obj, obj + 0x4c, pos);
-            fd = (float)sqrt((cx - pos[0]) * (cx - pos[0]) + (cy - pos[1]) * (cy - pos[1]) + (cz - pos[2]) * (cz - pos[2]));
-            if (bo == 0 || fd < best) {
-                best = fd;
-                bo = o;
+        m = shot->energy * 0.1f;
+        bld = &ai_BldsT[i];
+        if (bld->id == -1 || bld->type == 0 || bld->object == 0)
+            continue;
+        d3_PointToWorld((D3OBJECT *)bld->object, &((D3OBJECT *)bld->object)->pos, &pos);
+        dx = c.x - pos.x;
+        dy = c.y - pos.y;
+        dz = c.z - pos.z;
+        fd = sqrt(dz * dz + dy * dy + dx * dx);
+        if (nearest == 0 || best > fd) {
+            best = fd;
+            nearest = bld;
+        }
+        w1 = 1.0f / (fd * 0.005f + 1.0f);
+        w2 = 1.0f / ((fd * 0.0002f + 0.005f) * fd + 1.0f);
+        d3t_GetMeshBounds(&mn, &half, (D3OBJECT *)bld->object);
+        half.x -= mn.x;
+        half.y -= mn.y;
+        half.z -= mn.z;
+        half.x *= 0.5f;
+        half.y *= 0.5f;
+        half.z *= 0.5f;
+        lo.x = pos.x - half.x;
+        lo.y = pos.y - half.y;
+        lo.z = pos.z - half.z;
+        hi.x = half.x + pos.x;
+        hi.y = half.y + pos.y;
+        hi.z = half.z + pos.z;
+        if (c.x >= lo.x && c.x <= hi.x && c.y >= lo.y && c.y <= hi.y && c.z >= lo.z && c.z <= hi.z) {
+            mode = 1;
+            fv = w1;
+        } else {
+            m = m + m;
+            if (!(m + c.x >= lo.x && c.x - m <= hi.x && m + c.y >= lo.y && c.y - m <= hi.y && m + c.z >= lo.z && c.z - m <= hi.z))
+                continue;
+            mode = 2;
+            fv = w2;
+        }
+        fv = fv * shot->energy;
+        if (fv <= 100.0f)
+            continue;
+        fv = fv * 0.01f;
+        hits++;
+        fv = fv < 100.0f ? fv : 100.0f;
+        nearest = bld;
+        for (k = 0; k < 3; k++) {
+            if (h.recs[k].bldId == -1) {
+                h.recs[k].value = fv;
+                h.recs[k].mode = mode;
+                h.recs[k].bldId = bld->id;
+                h.recs[k].dist = fd;
+                goto next;
             }
-            w1 = 1.0f / (fd * 0.005f + 1.0f);
-            w2 = 1.0f / ((fd * 0.0002f + 0.005f) * fd + 1.0f);
-            d3t_GetMeshBoundsK(mn, half, *(int *)(o + 0x61));
-            half[0] = (half[0] - mn[0]) * 0.5f;
-            half[1] = (half[1] - mn[1]) * 0.5f;
-            half[2] = (half[2] - mn[2]) * 0.5f;
-            lo[1] = pos[1] - half[1];
-            lo[2] = pos[2] - half[2];
-            hi[0] = half[0] + pos[0];
-            hi[1] = half[1] + pos[1];
-            hi[2] = half[2] + pos[2];
-            if (cx < pos[0] - half[0] || cx > hi[0] || cy < lo[1] || cy > hi[1] || cz < lo[2] || cz > hi[2]) {
-                m = m + m;
-                if (m + cx < pos[0] - half[0] || cx - m > hi[0] || m + cy < lo[1] || cy - m > hi[1] || m + cz < lo[2] || cz - m > hi[2])
-                    continue;
-                nstate = 2;
-                fv = w2;
-            } else {
-                nstate = 1;
-                fv = w1;
-            }
-            fv = fv * *(float *)(p + 0x58);
-            if (fv > 100.0f) {
-                fv = fv * 0.01f;
-                cnt = (float)((int)cnt + 1);
-                if (100.0f <= fv)
-                    fv = 100.0f;
-                for (k = 0; k < 3; k++) {
-                    if (h.e[k].id == -1) {
-                        h.e[k].val = fv;
-                        h.e[k].state = nstate;
-                        h.e[k].id = *(int *)(o + 1);
-                        h.e[k].dist = fd;
-                        bo = o;
-                        goto next;
-                    }
-                }
-                for (k = 0; k < 3; k++) {
-                    if (h.e[k].val < fv && (sel == -1 || h.e[k].val < h.e[sel].val))
-                        sel = k;
-                }
-                bo = o;
-                if (sel != -1) {
-                    h.e[sel].val = fv;
-                    h.e[sel].state = nstate;
-                    h.e[sel].id = *(int *)(o + 1);
-                    h.e[sel].dist = fd;
-                }
-            }
+        }
+        for (k = 0; k < 3; k++) {
+            if (h.recs[k].value < fv && (sel == -1 || h.recs[k].value < h.recs[sel].value))
+                sel = k;
+        }
+        if (sel != -1) {
+            h.recs[sel].value = fv;
+            h.recs[sel].mode = mode;
+            h.recs[sel].bldId = bld->id;
+            h.recs[sel].dist = fd;
         }
     next:;
     }
-    m = *(float *)(p + 0x58) * 0.1f;
-    a = *(float *)(p + 0x4c);
-    dir[0] = a * *(float *)(p + 0x40);
-    dir[2] = a * *(float *)(p + 0x48);
-    dir[1] = 0.0f;
-    cy = cy + 10.0f;
-    d3t_CreateSmokeK(0, &cx, 200, 0x41c80000, 0x428c0000, unk_fb(m * 0.25f), 0x44610000, 0x42c80000, 0x428c0000, dir, 0x5dc, 7, 0x7fc0c0c0);
-    d3t_CreateEarthK(0, &cx, 100, 0x40a00000, 0x40200000, 0x3f800000, 0x40400000, 0xc0400000, 0x40800000, 0x40e00000, 0x41000000, 0x7fc0c0c0);
-    if (cnt == 0.0f) {
-        a = m * 0.01f;
-        b = m * 0.3f;
-        c = m * 0.1f;
+    m = shot->energy * 0.1f;
+    scale = shot->wind.scale;
+    color.b = color.g = color.r = 0xc0;
+    color.a = 0x7f;
+    dir.x = scale * shot->wind.pos[0];
+    dir.z = scale * shot->wind.pos[2];
+    dir.y = 0.0f;
+    c.y = c.y + 10.0f;
+    d3t_CreateSmoke(0, &c, 200, 25.0f, 70.0f, m * 0.25f, 900.0f, 100.0f, 70.0f, &dir, 1500, 7, color);
+    d3t_CreateEarth(0, &c, 100, 5.0f, 2.5f, 1.0f, 3.0f, -3.0f, 4.0f, 7.0f, 8.0f, color);
+    if (hits != 0) {
+        z = m * 0.03f;
+        height = m * 0.6f;
+        radius = m * 0.2f;
     } else {
-        a = m * 0.03f;
-        b = m * 0.6f;
-        c = m * 0.2f;
+        z = m * 0.01f;
+        height = m * 0.3f;
+        radius = m * 0.1f;
     }
-    d3t_CreateExplosionK(0, &cx, 0x96, unk_fb(c), unk_fb(b), unk_fb(a), 0x42a00000, 200);
-    k = sb_GetSample(0, "Explosion");
-    if (k != 0)
-        d3snd_PlayAt(k, *(int *)(bo + 0x61), 0x6b, 0x463ea000);
-    if (w != 0) {
+    d3t_CreateExplosion(0, &c, 150, radius, height, z, 80.0f, 200);
+    snd = sb_GetSample(0, "Explosion");
+    if (snd != 0)
+        d3snd_PlayAt((struct SNDHANDLE *)snd, (D3OBJECT *)nearest->object, 0x6b, 12200.0f);
+    if (damage != 0) {
         for (i = 0; i < 3; i++) {
-            if (h.e[i].id != -1 && (gm_FindById(&obj, 0, 0, h.e[i].id), obj != 0)) {
-                if (h.e[i].state == 1) {
-                    msg[4] = 0x4f;
-                    if (*(unsigned short *)(obj + 0x27) == 0xffff)
-                        *(int *)(msg + 8) = *(int *)(ai_PlayerCharC + 4);
-                    else
-                        *(int *)(msg + 8) = *(int *)(ai_Chars[*(unsigned short *)(obj + 0x27)] + 4);
-                    *(int *)(msg + 0xc) = *(int *)(obj + 1);
-                    *(int *)(msg + 0x28) = *(int *)ai_Time;
-                    *(int *)(msg + 0x2c) = *(int *)(ai_Time + 4);
-                    *(int *)(msg + 0x30) = *(int *)(ai_Time + 8);
-                    *(short *)(msg + 0x34) = *(short *)(ai_Time + 12);
-                    msg[0x36] = 2;
-                    *(int *)(msg + 0x58) = *(int *)(obj + 1);
-                    *(int *)(msg + 0x5c) = (int)h.e[i].val;
-                    msg[0xb0] = 1;
-                    cm_SendLongMessage(msg);
-                } else if (h.e[i].state == 2) {
-                    dmg = (char)(int)(-h.e[i].val);
-                    cm_BeginFieldBlock(obj, *(int *)(obj + 1));
-                    cm_AddFieldValues(1, 1, 0x5c, &dmg);
-                    cm_SendFieldDeltas();
-                }
+            if (h.recs[i].bldId == -1)
+                continue;
+            gm_FindById(&hit, 0, 0, h.recs[i].bldId);
+            if (hit == 0)
+                continue;
+            if (h.recs[i].mode == 1) {
+                msg.type = 0x4f;
+                if (hit->owner == 0xffff)
+                    msg.to = gv_PlayerAiChar->netId;
+                else
+                    msg.to = gv_CharsT[hit->owner].netId;
+                msg.fromId = hit->id;
+                msg.time = gv_TimeT;
+                msg.flags = 2;
+                msg.arg[0] = hit->id;
+                msg.arg[1] = (int)h.recs[i].value;
+                msg.extraFlag = 1;
+                cm_SendLongMessage((char *)&msg);
+            } else if (h.recs[i].mode == 2) {
+                dmg = (char)(int)-h.recs[i].value;
+                cm_BeginFieldBlock((char *)hit, hit->id);
+                cm_AddFieldValues(1, 1, 0x5c, &dmg);
+                cm_SendFieldDeltas();
             }
         }
     }
     if (out != 0)
-        memcpy(out, &h, 0x38);
+        *out = h;
 }
 /* 0x4edf80, the per-frame update of the effect slots (the cannon balls in flight): the minutes since gv_LastTime (* 1/60 * 0.1) are added
    to the three fade values of every used slot (up to 1.0); each part in flight (state 1) moves one step (ai_StepShot, ai_StepShotSlow
@@ -771,7 +772,7 @@ void gv_UpdateEffects(void)
                         d3if_Delete(gv_EffectsT[i].objs[j]);
                         gv_EffectsT[i].objs[j] = 0;
                     }
-                    gv_ExplodeShot(gv_EffectsT[i].flags & 1, gv_EffectsT[i].id, (char *)shot, (struct UNKHITS *)gv_EffectsT[i].arg);
+                    gv_ExplodeShot(gv_EffectsT[i].flags & 1, gv_EffectsT[i].id, shot, gv_EffectsT[i].arg);
                     if (gv_EffectsT[i].arg != 0)
                         gv_EffectsT[i].arg->cur = j;
                     if (gv_EffectsT[i].cb != 0)

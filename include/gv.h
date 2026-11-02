@@ -3,7 +3,7 @@ struct D3COLOR;
 struct D3SM;
 struct D3VECTOR;
 struct SNDHANDLE;
-struct UNKHITS;
+struct SHOTREC;
 struct VFSFILE;
 struct D3OBJECT;
 /* Declarations of gv.c (0x4ed170.., the avatar table 0x60f310 and the effect slots 0x6f1008). Names are ours. */
@@ -147,14 +147,14 @@ typedef struct GVEFFPART {              /* 0x68 bytes, one of an effect slot's t
     int e;                              /* 0x64 */
 } GVEFFPART;
 typedef struct GVEFFREC {               /* 16 bytes, a record of an effect slot's argument */
-    int bldId;                          /* 0x00, a building id (gm_BuildQuery(1, 1, id)) */
-    int unk04;
-    int mode;                           /* 0x08, 1: the message depends on value */
-    float value;                        /* 0x0c, compared with 25 */
+    int bldId;                          /* 0x00, a building id (gm_BuildQuery(1, 1, id)), -1: none */
+    float dist;                         /* 0x04, the building's distance from the explosion (gv_ExplodeShot) */
+    int mode;                           /* 0x08, 1: the explosion lay inside the building's box, 2: near it (gv_ExplodeShot); 1: the message depends on value */
+    float value;                        /* 0x0c, the explosion's strength at the building (0 .. 100), compared with 25 */
 } GVEFFREC;
 typedef struct GVEFFARG {               /* 0x38 bytes, the argument of an effect slot's default callback (gv_EffectArgs, one per slot) */
     int cur;                            /* 0x00, the record at hand (0 .. 2) */
-    int unk04;
+    int effectId;                       /* 0x04, the effect slot's id (gv_ExplodeShot) */
     GVEFFREC recs[3];                   /* 0x08 */
 } GVEFFARG;
 typedef struct GVEFFECT {               /* 0x170 bytes, an effect slot of gv_Effects (8) */
@@ -177,7 +177,7 @@ void unk_ResetEffectSlots(void);               /* 0x4eddf0 */
 void gv_FreeEffectObjects(void);               /* 0x4ede70 */
 char *gv_FindEffect(int id);            /* 0x4eded0 */
 void gv_ReleaseEffect(int id);             /* 0x4edf10 */
-void gv_ExplodeShot(int w, int sub, char *p, struct UNKHITS *out);  /* 0x4ee360 */
+void gv_ExplodeShot(int damage, int effectId, struct SHOTREC *shot, GVEFFARG *out);  /* 0x4ee360 */
 void gv_UpdateEffects(void);               /* 0x4edf80 */
 void unk_Unk4eea70(char *o);             /* 0x4eea70 */
 int gv_ReserveEffect(int id);              /* 0x4eeaa0 */

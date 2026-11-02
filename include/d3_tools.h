@@ -56,7 +56,7 @@ void d3t_DrawSnow(struct D3TSNOW *Snow);                                        
 struct D3PARTSYS *d3t_CreateEmitter(struct D3OBJECT *obj, char *tex, char flag, unsigned long color, struct D3VECTOR *pos, int count, int unused, float size, float a, float b, float c, float d); /* 0x415ad0, creates the emitter particle system of an object's mesh: par_Create */
 struct D3PARTSYS *d3t_CreateBlood(void *parent, int n, float a, float b, float c, float d); /* 0x415e90, creates the blood spray: 200 "Blut" particles with the effect */
 struct D3PARTSYS *d3t_CreateExplosion(void *parent, struct D3VECTOR *pos, int count, float radius, float height, float z, float size, unsigned int duration); /* 0x416040, creates the explosion: count "Explosion" particles around pos, with */
-struct D3PARTSYS *d3t_CreateSmoke(void *parent, struct D3VECTOR *pos, int count, float size, int unused, float height, float y, float alpha, float spread, struct D3VECTOR *start, unsigned int duration, int delay, struct D3COLOR color); /* 0x416340 */
+struct D3PARTSYS *d3t_CreateSmoke(void *parent, struct D3VECTOR *pos, int count, float size, float unused, float height, float y, float alpha, float spread, struct D3VECTOR *start, unsigned int duration, int delay, struct D3COLOR color); /* 0x416340 */
 struct D3PARTSYS *d3t_CreateEarth(void *parent, struct D3VECTOR *pos, int count, float size, float a, float b, float c, float d, float e, float f, float g, struct D3COLOR color); /* 0x4168e0, creates the earth-brocken debris: count "Erdbrocken_an0" particles */
 void d3t_CreateSnowMipmaps(void);                                                /* 0x416980 */
 void d3t_FadeOutSunRays(int unused, int b);                                      /* 0x417150 */

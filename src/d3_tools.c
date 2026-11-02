@@ -2064,7 +2064,7 @@ static char d3t_SmokeCB(D3PARTSYS *ps, unsigned long time)
    adding rand() & 7 and the delay, and increments i later); no operand order or type changes it.
    mask is an int local: color.a is loaded as a zero-extended dword before par_SetPos. */
 
-D3PARTSYS *d3t_CreateSmoke(void *parent, D3VECTOR *pos, int count, float size, int unused, float height,
+D3PARTSYS *d3t_CreateSmoke(void *parent, D3VECTOR *pos, int count, float size, float unused, float height,
                            float y, float alpha, float spread, D3VECTOR *start, unsigned int duration,
                            int delay, D3COLOR color)
 {

@@ -426,7 +426,9 @@ typedef struct AIMSG {                  /* 0xf8 bytes, given to cm_SendLongMessa
     unsigned char unk9d;                /* 0x9d */
     char pad9e[2];
     int unka0;                          /* 0xa0 */
-    char pada4[0x54];
+    char pada4[0xc];
+    unsigned char extraFlag;            /* 0xb0, 1 in the explosion message 0x4f (gv_ExplodeShot); the meaning is not known */
+    char padb1[0x47];
 } AIMSG;
 
 typedef char ai_AssertAIMSG[sizeof(AIMSG) == 0xf8 ? 1 : -1];
