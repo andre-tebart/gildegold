@@ -63,7 +63,7 @@ int gm_HasBuilding(int p);  /* 0x5049c0 */
 void gm_EndDayIncomes(unsigned flags);  /* 0x4fabe0, the end of the day for the income histories */
 void gm_DailyCharacters(void);  /* 0x4fc920, the daily step of all characters */
 void gm_UpdatePlayers(void);  /* 0x4feb30 */
-void unk_Unk4fa580(void);  /* 0x4fa580, the daily upkeep of the characters */
+void gm_CharacterUpkeep(void);  /* 0x4fa580, the daily upkeep of the characters */
 void unk_Unk4fa9b0(void);  /* 0x4fa9b0 */
 void unk_Unk4faa00(void);  /* 0x4faa00 */
 float gm_JobWage(char *c, int k, int a, int b);  /* 0x508740, the wage of a job (a) or title (b) of the building kind k for the character c */

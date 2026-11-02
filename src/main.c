@@ -4198,7 +4198,7 @@ void main_BeginPlayerRound(void)
         sv_PumpNet();
         Sleep(100);
         gm_EndDayIncomes(3);
-        unk_Unk4fa580();
+        gm_CharacterUpkeep();
         sv_PumpNet();
         Sleep(100);
         unk_Unk4fa9b0();

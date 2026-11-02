@@ -418,7 +418,7 @@ int gm_CharacterIncomes(unsigned id, GMINCOME *out, unsigned char flags)
 }
 
 struct AMTKIND; int amt_GetKind(int k, struct AMTKIND *out);                   /* 0x4e6f80 */
-float gm_AddHealth();                  /* 0x4fca40 */
+float gm_AddHealth(unsigned id, int d);  /* 0x4fca40 */
 float gm_GetSkill(char *c, int skill);                     /* 0x504ec0 */
 float gm_Mix(int a, int b, int c);                     /* 0x504e20 */
 void ai_BeginNeedBlock(char *p);                     /* 0x4c3e70 */
@@ -428,44 +428,46 @@ void unk_Unk4fb0e0();                   /* 0x4fb0e0 */
 int gm_FindRichest(short *id, int *rate);
 #define I50A640 ((int (*)())gm_GetWorth)
 
-/* 0x4fa580, the daily upkeep of the characters (kind 0, active, with a building at +0x170): rate = 0x5085f0 (0xe - the record 5 rate, 0x6f1bc5); a character whose 0x509e60 is negative: with a master (+0x16c) 0x4c4b00 (-10) tells the master player; without a master and partner (+0x5c = -1) and a debt above twice the rate 0x4fca40 (i, -5000); else (or not negative) a building of kind 1 gets 0x4c4830 (the rate) for the player. Flushes the messages every 0x40. ROUGH */
-void unk_Unk4fa580(void)
+/* 0x4fa580, the upkeep of the characters: rate = gm_PlayerFactor (0xe - the decision 5's value, the own player); for
+   every character in use of the kind 0 with a home (bld2): in debt (gm_GetGoodsValue negative), one without a
+   building or partner whose debt is above twice the rate loses 5000 health, one with a building lowers its relation
+   to the building's owner by 10; then a home of the building kind 1 pays the rate to the player's seat object
+   (gm_PlayerSeat (1)). Pumps the net after every 0x40 messages */
+void gm_CharacterUpkeep(void)
 {
-    char *p;
+    ORDOBJ *seat;
+    AIDEC rec;
+    ORDCHAR *c;
     char *b;
-    char *rec;
-    int rate, i, v, d;
-    int r[9];
+    int rate, i, v;
 
-    rec = (char *)gm_PlayerSeat(1);
-    gv_GetTableRecord(5, r);
-    rate = gm_PlayerFactor(0xe - r[6], ai_OwnPlayer);
+    seat = (ORDOBJ *)gm_PlayerSeat(1);
+    gv_GetTableRecord(5, (int *)&rec);
+    rate = gm_PlayerFactor(0xe - rec.cur, ai_OwnPlayer);
     gm_NetMsgCount = 0;
     for (i = 0; i < 0x300; i++) {
-        p = ai_Chars[i];
+        c = &ORD_CHARS[i];
         if (gm_NetMsgCount > 0x40) {
             sv_PumpNet();
             gm_NetMsgCount = 0;
         }
-        if (*(short *)p != -1 && p[8] != 0 && p[2] == 0 && *(unsigned char **)(p + 0x170) != 0) {
-            b = ai_BTypes + **(unsigned char **)(p + 0x170) * 0x24d;
-            v = gm_GetGoodsValue(p);
-            if (v < 0) {
-                if (*(int *)(p + 0x16c) != 0) {
-                    cm_SendRelations(*(int *)(ai_Chars[*(unsigned short *)(*(int *)(p + 0x16c) + 0x27)] + 4), *(int *)(p + 4), -10, 1);
-                    gm_NetMsgCount++;
-                    goto A;
-                }
-                d = v < 0 ? -v : v;
-                if (*(int *)(p + 0x5c) != -1 || d <= rate * 2)
-                    goto A;
+        if (c->id == 0xffff || c->health == 0 || c->kind != 0 || c->bld2 == 0)
+            continue;
+        b = ai_BTypes + c->bld2->type * 0x24d;
+        v = gm_GetGoodsValue((char *)c);
+        if (v < 0) {
+            if (c->bld == 0 && c->partner == -1 && abs(v) > rate * 2) {
                 gm_AddHealth(i, -5000);
-            } else {
-            A:
-                if (*b != 1)
-                    continue;
-                cm_SendMoveGoodsUnchecked(*(int *)(rec + 2), *(int *)(p + 4), 0, rate);
+                gm_NetMsgCount++;
+                continue;
             }
+            if (c->bld != 0) {
+                cm_SendRelations(ORD_CHARS[c->bld->owner].netId, c->netId, -10, 1);
+                gm_NetMsgCount++;
+            }
+        }
+        if (*b == 1) {
+            cm_SendMoveGoodsUnchecked(seat->objId, c->netId, 0, rate);
             gm_NetMsgCount++;
         }
     }

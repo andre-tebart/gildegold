@@ -1109,3 +1109,4 @@
 2026-11-02T18:14:10 0x004fa060 func unk_Unk4fa060 -> gm_IncomeKind2 by:main why:fills the first free entry of the income record with kind 2 (record 10's rate, sum row 1)
 2026-11-02T18:14:10 0x004fa3d0 func unk_Unk4fa3d0 -> gm_IncomeKind5 by:main why:fills the first free entry of the income record with kind 5 (record 0xb's rate, sum row 4)
 2026-11-02T18:14:10 0x004fd7e0 func unk_Unk4fd7e0 -> gm_IsUnderAge by:main why:1 when the character's age (+10) is below its float +0x20; gm_CharacterIncomes collects no income then (reasoned: the age of majority)
+2026-11-02T18:17:42 0x004fa580 func unk_Unk4fa580 -> gm_CharacterUpkeep by:main why:per character with a home (bld2): checks its goods value; in debt: tells its building's owner (relations -10) or lets it starve (gm_AddHealth -5000); a home of kind 1 pays the rate (decision 5) to the player's seat object
