@@ -18161,7 +18161,7 @@ void he_Unk5746b0(int ev)
     }
     np = 0;
     if (n != 0) {
-        ai_Unk4a5760(per, n, tab, &words[0]);
+        ai_FindWantedItems(per, n, tab, &words[0]);
         for (i = 0; i < n; i++) {
             char *rec = (char *)tab[i][1];
             if (rec != 0) {
@@ -18416,7 +18416,7 @@ void he_Unk575430(char *per)
     memset(w, 0, sizeof w);
     w[0] = ai_Unk5a9f10(3, 6) & 0xffff;
     memset(out, 0, sizeof out);
-    ai_Unk4a5760(per, 1, w, out);
+    ai_FindWantedItems(per, 1, w, out);
     rec = (char *)out[0];
     if (rec == 0) {
         cm_SendExSellObject(HM_I(per, 4), -1, 1, *(unsigned char *)(unsigned)&ai_OwnPlayer, 0, w[0]);

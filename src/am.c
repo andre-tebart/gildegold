@@ -105,7 +105,7 @@ int ai_Unk48e070(AIPX *p, int *out)
             return 2;
         if (p->kind == 5)
             return 1;
-        if ((p->kind == 2 || p->kind == 4) && p->unk00d > 6)
+        if ((p->kind == 2 || p->kind == 4) && p->rank > 6)
             return 1;
     }
     return 0;
@@ -232,7 +232,7 @@ int ai_Unk48e470(int a, AIPX *p, int b, AIARGX *o1, AIARGX *o2)
         s1.kind = 2;
         s1.ref = 0x266;
         s1.arg = 1;
-        s1.unk14 = 0.22f;
+        s1.fvalue = 0.22f;
         s2.kind = 4;
         s2.ref = bld->id;
         s2.arg = 1;
@@ -609,7 +609,7 @@ int ai_Unk48f010(int a, AIPX *p, int b, AIARGX *o1, AIARGX *o2)
         s1.kind = 2;
         s1.ref = 0x256;
         s1.arg = 1;
-        s1.unk14 = 0.22f;
+        s1.fvalue = 0.22f;
         s2.kind = 4;
         s2.ref = bld->id;
         s2.arg = 1;
@@ -670,7 +670,7 @@ int ai_FindOwnBuilding(AIPX *p, AIBLD **out)
             return 2;
         if (p->kind == 5)
             return 1;
-        if ((p->kind == 2 || p->kind == 4) && p->unk00d > 6)
+        if ((p->kind == 2 || p->kind == 4) && p->rank > 6)
             return 1;
     }
     return 0;
@@ -764,9 +764,20 @@ int ai_ExecBuildSculpture(AIPX *p, AIARG *s1, AIARG *s2)
     }
     return ai_ExecBuildBuilding(p, s1, s2) ? 0x43 : 0;
 }
-/* 0x48f600, decide of action 0x48 */
+/* 0x48f600, decide of action 0x48 "UseAlchemistryItems": of the 15 alchemy items 0x2b8..0x2c6 the character holds, uses a random usable one (on a partner chain for the first six, on a building for the seventh), or wants a random missing one bought (year 20+, rank above 4, one year in eight)
+   @deep read the whole function against the original: every statement, constant, callee and field offset
+   equal; fixed the partner flags (a plain 0xf00500, not a relocated cm_SendRing address; the original's
+   immediate has no relocation). Left: allocation and tail merging: the original keeps p in edi and -1 in
+   ebp (ours p in ebp, -1 in edi), holds the mask 0x1a0744380's low word in edi for both
+   ai_PickActionBuilding calls (reloading p from [esp+0x128]), and gives the r < 6, r == 6 and r == 7
+   returns their own epilogues (0x48f8a8..0x48f8bf, 0x48f935..0x48f954, 0x48f962..0x48f974) where ours
+   cross-jumps them into one shared tail (jmp at 0x48f934, jge at 0x48f948). A __int64 mask local compiles
+   the same (kept: the real prototype instead of the cast macro). (size: 227 vs 246 instructions,
+   explained: the 19 extra instructions of the original are its two more epilogues (pop edi / pop esi / pop
+   ebp / pop ebx / add esp / ret and the 0x48 store each) that ours merges into one tail, and the mov
+   edi,0xa0744380 / p reload of the register-held mask) */
 
-int ai_Unk48f600(int a, AIPX *p, int b, AIARG *o1, AIARG *o2)
+int ai_DecideUseAlchemyItems(int a, AIPX *p, int b, AIARG *o1, AIARG *o2)
 {
     AIRECX rec[15];
     int st[3];
@@ -792,7 +803,7 @@ int ai_Unk48f600(int a, AIPX *p, int b, AIARG *o1, AIARG *o2)
     rec[12].item = 0x2c0;
     rec[13].item = 0x2be;
     rec[14].item = 0x2b9;
-    ai_Unk4a5760(p, 15, rec, st);
+    ai_FindWantedItems(p, 15, rec, st);
     if (st[0] == 6 && !st[2])
         goto fail;
     if (st[1] == 15)
@@ -801,19 +812,19 @@ int ai_Unk48f600(int a, AIPX *p, int b, AIARG *o1, AIARG *o2)
         if (!st[2]) {
             if (ai_TimeT.year < 0x14)
                 goto fail;
-            if (p->unk00d <= 4)
+            if (p->rank <= 4)
                 goto fail;
             if (ai_TimeT.year % 8 != (p->netId & 7))
                 goto fail;
             if (p->flags1cc & 0x40000000)
                 goto fail;
             r = util_RandomU(15);
-            while (rec[r].unk04)
+            while (rec[r].value)
                 r = (r + 1) % 15;
             o1->kind = 2;
             o1->arg = 1;
             o1->ref = rec[r].item;
-            o1->unk14 = 0.05f;
+            o1->fvalue = 0.05f;
             o1->arg2 = 1;
             o2->kind = 0;
             return 0x48;
@@ -821,12 +832,12 @@ int ai_Unk48f600(int a, AIPX *p, int b, AIARG *o1, AIARG *o2)
     } else if (!st[2])
         goto fail;
     r = util_RandomU(15);
-    while (rec[r].unk04 < 1)
+    while (rec[r].value < 1)
         r = (r + 1) % 15;
     o1->kind = 1;
     o1->arg = 1;
-    o1->ref = rec[r].unk08;
-    o1->unk14 = 0.05f;
+    o1->ref = rec[r].id;
+    o1->fvalue = 0.05f;
     o1->arg2 = 3;
     o2->kind = 0;
     o2->ref = -1;
@@ -835,7 +846,7 @@ int ai_Unk48f600(int a, AIPX *p, int b, AIARG *o1, AIARG *o2)
         unsigned short id;
         int flags;
 
-        flags = ((unsigned)&cm_SendRing + 0x4973c0);
+        flags = (0xf << 20) | (5 << 8);  /* the partner flags 0xf00500 (bits 8, 10, 20..23) */
         if (!ai_PickPartnerChain((AIPER *)p, 1, &flags, 0, util_RandomU(0x20) + 10.0f, &id))
             goto fail;
         o2->kind = 7;
@@ -846,14 +857,16 @@ int ai_Unk48f600(int a, AIPX *p, int b, AIARG *o1, AIARG *o2)
     }
     if (r == 6) {
         int out;
+        __int64 mask;
 
+        mask = 0x1a0744380i64;
         out = -1;
         if (ai_Partner) {
-            AI_4A63F0_7(ai_Partner, 4, 0xa0744380, 1, 0, 100.0f, &out);
+            ai_PickActionBuilding((AIPER *)ai_Partner, 4, mask, 0, 100.0f, &out);
             if (out != -1)
                 goto done;
         }
-        if (!AI_4A63F0_7(p, 6, 0xa0744380, 1, 0, util_RandomU(0x20) + 16.0f, &out))
+        if (!ai_PickActionBuilding((AIPER *)p, 6, mask, 0, util_RandomU(0x20) + 16.0f, &out))
             goto fail;
     done:
         o2->kind = 4;
@@ -871,7 +884,7 @@ fail:
 }
 /* 0x48f990, execute of action 0x48 */
 
-int ai_Unk48f990(AIPX *p, AIARG *s1, AIARG *s2)
+int ai_ExecUseAlchemyItems(AIPX *p, AIARG *s1, AIARG *s2)
 {
     AIBLD *bl;
     AIOBJ *o, *q;
@@ -967,8 +980,8 @@ int ai_Unk48fb70(int a)
     act.id = 0x48;
     strcpy(act.name, "UseAlchemistryItems");
     act.eval = ai_Unk4a49a0;
-    act.decide = ai_Unk48f600;
-    act.exec = ai_Unk48f990;
+    act.decide = ai_DecideUseAlchemyItems;
+    act.exec = ai_ExecUseAlchemyItems;
     act.flags = 0x1c3;
     return ai_Unk495520(&act, a) != 0;
 }
@@ -3151,7 +3164,7 @@ int ai_Unk4946c0(AIC4 *ch, AIPLAN *q)
     if (n == 5) {
         if (c->officeKind == 0)
             n = 4;
-    } else if (n == 7 && c->unk00d < 2)
+    } else if (n == 7 && c->rank < 2)
         n = 6;
     n = n <= 0 ? 0 : n;
     if (n >= 9)
@@ -3743,7 +3756,7 @@ int ai_Unk4960b0(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
         s1.kind = 0;
         s1.ref = 0;
         s1.arg = 0;
-        s1.unk14 = 0.66f;
+        s1.fvalue = 0.66f;
         s2.kind = 0;
         s2.ref = 0;
         s2.arg = 0;
@@ -3841,7 +3854,7 @@ int ai_Unk4960b0(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
             s1.kind = 2;
             s1.ref = id;
             s1.arg = 1;
-            s1.unk14 = 0.44f;
+            s1.fvalue = 0.44f;
             s2.kind = 4;
             s2.ref = p->bld2->id;
             s2.arg = 1;
@@ -3919,7 +3932,7 @@ int ai_Unk496610(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
         s1.kind = 0;
         s1.ref = 0;
         s1.arg = 0;
-        s1.unk14 = 0.66f;
+        s1.fvalue = 0.66f;
         s2.kind = 0;
         s2.ref = 0;
         s2.arg = 0;
@@ -4020,7 +4033,7 @@ int ai_Unk496610(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
             s1.kind = 2;
             s1.ref = id;
             s1.arg = 1;
-            s1.unk14 = 0.44f;
+            s1.fvalue = 0.44f;
             s2.kind = 4;
             s2.ref = p->bld2->id;
             s2.arg = 1;
@@ -4145,7 +4158,7 @@ int ai_Unk496e40(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
         s1.kind = 0;
         s1.ref = 0;
         s1.arg = 0;
-        s1.unk14 = 0.66f;
+        s1.fvalue = 0.66f;
         s2.kind = 0;
         s2.ref = 0;
         s2.arg = 0;
@@ -4167,7 +4180,7 @@ int ai_Unk496e40(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
         s1.kind = 2;
         s1.ref = 0x14;
         s1.arg = 1;
-        s1.unk14 = 0.22f;
+        s1.fvalue = 0.22f;
         s2.kind = 4;
         s2.ref = p->bld2->id;
         s2.arg = 1;
@@ -4298,11 +4311,11 @@ int ai_Unk497490(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     int r, k;
 
     if (f == 0) {
-        if (p->unk00d < 2) {
+        if (p->rank < 2) {
             s1.kind = 13;
             s1.ref = 2;
             s1.arg = 1;
-            s1.unk14 = 0.44f;
+            s1.fvalue = 0.44f;
             memset(&s2, 0, sizeof(s2));
             r = ai_Unk495a50(10, p->id, 1, &s1, &s2);
             if (r != 0) {
@@ -4421,8 +4434,8 @@ rate:
             v = o2->arg2;
             o1->arg2 = 0x39;
         }
-        if (o1->unk14 > 0.0f && o1->unk14 < 1.0f)
-            v = (int)(v * o1->unk14);
+        if (o1->fvalue > 0.0f && o1->fvalue < 1.0f)
+            v = (int)(v * o1->fvalue);
         return v < (int)gm_GoodsPrice(o1->ref, ai_OwnPlayer) ? 0 : 11;
     }
     return 0;
@@ -4495,8 +4508,8 @@ int ai_Unk497af0(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
         return 0;
     c = (AIPER *)&ai_CharsT[bld->owner];
     v = gm_CharCurrency(c, ai_OwnPlayer);
-    if (o1->unk14 > 0.0f && o1->unk14 < 1.0f)
-        v = (int)(v * o1->unk14);
+    if (o1->fvalue > 0.0f && o1->fvalue < 1.0f)
+        v = (int)(v * o1->fvalue);
     if (v < (int)gm_GoodsPrice(o1->ref, ai_OwnPlayer))
         return 0;
     t = &AI_BTX[bld->type];
@@ -4554,7 +4567,7 @@ int ai_Unk497cf0(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
         o1->ref = best->id;
         o1->arg = 1;
         o1->arg2 = v;
-        o1->unk14 = f;
+        o1->fvalue = f;
         o2->kind = 7;
         o2->ref = p->netId;
         o2->arg = (int)lim;
@@ -4570,7 +4583,7 @@ int ai_Unk497cf0(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
                 f = ai_Unk4a4e30(bl, o1->arg2);
                 if (f == 0.0f || f > o2->arg)
                     return 0;
-                o1->unk14 = f;
+                o1->fvalue = f;
                 return 15;
             }
         }
@@ -4592,12 +4605,12 @@ int ai_Unk497ee0(AIPER *p, AIARG *s1, AIARG *s2)
     msg.arg[0] = s1->ref;
     msg.arg[1] = s1->arg2;
     cm_BeginGroup("renovieren");
-    cm_SendMoveGoods(-1, s2->ref, ai_OwnPlayer, (int)s1->unk14);
+    cm_SendMoveGoods(-1, s2->ref, ai_OwnPlayer, (int)s1->fvalue);
     cm_SendLongMessage(&msg);
     cm_EndGroup("renovieren");
     fin = (AIFINX *)gm_PlayerRecord((AICHAR *)p);
     if (fin)
-        fin->renovationSpent = (int)(fin->renovationSpent + s1->unk14);
+        fin->renovationSpent = (int)(fin->renovationSpent + s1->fvalue);
     return 15;
 }
 /* 0x497fa0, decide: pay off a building's job when it is cheap enough (action 16) */
@@ -4953,7 +4966,7 @@ int ai_Unk498b80(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
                 s2.ref = *(int *)((char *)b + 1);
             }
             s2.arg = 1;
-            s2.unk14 = 0.44f;
+            s2.fvalue = 0.44f;
             r = ai_Unk495a50(0x15, p->id, 1, &s1, &s2);
             if (r != 0) {
                 *o1 = s1;
@@ -5190,7 +5203,7 @@ int ai_Unk499400(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
     s1.kind = 2;
     s1.ref = w;
     s1.arg = 1;
-    s1.unk14 = 0.44f;
+    s1.fvalue = 0.44f;
     if (z != -1) {
         s2.kind = 1;
         s2.ref = z;
@@ -5199,7 +5212,7 @@ int ai_Unk499400(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
         s2.ref = y->id;
     }
     s2.arg = 1;
-    s2.unk14 = 0.44f;
+    s2.fvalue = 0.44f;
     r = ai_Unk495a50(0x15, p->id, 1, &s1, &s2);
     if (!r)
         return 0;
@@ -5278,7 +5291,7 @@ int ai_Unk499660(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
             s1.kind = 2;
             s1.ref = 0x14;
             s1.arg = 1;
-            s1.unk14 = 0.22f;
+            s1.fvalue = 0.22f;
             s2.kind = 4;
             s2.ref = p->bld2->id;
             s2.arg = 1;
@@ -5312,7 +5325,7 @@ int ai_Unk499660(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
                             s1.kind = 0xe;
                             s1.ref = 2;
                             s1.arg = 1;
-                            s1.unk14 = 0.0f;
+                            s1.fvalue = 0.0f;
                             s2.kind = 0;
                             s2.ref = 0;
                             s2.arg = 0;
@@ -5330,7 +5343,7 @@ int ai_Unk499660(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
                             o1->ref = y->id;
                             o1->arg = 1;
                             o1->arg2 = v;
-                            o1->unk14 = (float)(d.cur * 2 + 1);
+                            o1->fvalue = (float)(d.cur * 2 + 1);
                             return 0x17;
                         }
                     }
@@ -5365,10 +5378,10 @@ int ai_Unk499a90(AIPER *p, AIARG *s1, AIARG *s2)
     cm_BeginGroup("sabotage");
     cm_SendLongMessage(&msg);
     cm_EndGroup("sabotage");
-    ai_Unkf84c60[0] = ai_Unkf84c40[0] * s1->unk14;
-    ai_Unkf84c60[2] = ai_Unkf84c40[2] * s1->unk14;
-    ai_Unkf84c60[4] = ai_Unkf84c40[4] * s1->unk14;
-    ai_Unkf84c60[6] = ai_Unkf84c40[6] * s1->unk14;
+    ai_Unkf84c60[0] = ai_Unkf84c40[0] * s1->fvalue;
+    ai_Unkf84c60[2] = ai_Unkf84c40[2] * s1->fvalue;
+    ai_Unkf84c60[4] = ai_Unkf84c40[4] * s1->fvalue;
+    ai_Unkf84c60[6] = ai_Unkf84c40[6] * s1->fvalue;
     return 0x17;
 }
 /* 0x499b80, evaluate: decision record 0x15, the default rating without it */
@@ -5425,7 +5438,7 @@ int ai_Unk499c10(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
                 s1.kind = 2;
                 s1.ref = 0x14;
                 s1.arg = 1;
-                s1.unk14 = 0.22f;
+                s1.fvalue = 0.22f;
                 s2.kind = 4;
                 s2.ref = p->bld2->id;
                 s2.arg = 1;
@@ -5439,7 +5452,7 @@ int ai_Unk499c10(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
             gv_GetTableRecord(0x15, &d);
             if (!d.cur || util_RandomU(3) || ai_Partner) {
                 if (o1->kind == 0) {
-                    flags = ((unsigned)&cm_SendRing + 0x4973c0);
+                    flags = 0xf00500;
                     t = util_RandomU(0x20) + 32.0f;
                     if (ai_PickPartnerChain(p, 1, &flags, 0, t, &cid)) {
                         c = (AIPER *)&ai_CharsT[cid];
@@ -5449,7 +5462,7 @@ int ai_Unk499c10(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
                                 s1.kind = 0xe;
                                 s1.ref = 3;
                                 s1.arg = 1;
-                                s1.unk14 = 0.0f;
+                                s1.fvalue = 0.0f;
                                 s2.kind = 0;
                                 s2.ref = 0;
                                 s2.arg = 0;
@@ -5465,7 +5478,7 @@ int ai_Unk499c10(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
                                 o1->ref = c->netId;
                                 o1->arg = 1;
                                 o1->arg2 = v;
-                                o1->unk14 = (float)(d.cur * 2 + 1);
+                                o1->fvalue = (float)(d.cur * 2 + 1);
                                 return 0x18;
                             }
                         }
@@ -5499,10 +5512,10 @@ int ai_Unk499f20(AIPER *p, AIARG *s1, AIARG *s2)
     msg.u.s.unk84 = s1->arg2;
     msg.ch = c->netId;
     msg.arg[0] = unk_Unk4f8700(c);
-    ai_Unkf84cf4[0] = ai_Unkf84cd4[0] * s1->unk14;
-    ai_Unkf84cf4[2] = ai_Unkf84cd4[2] * s1->unk14;
-    ai_Unkf84cf4[4] = ai_Unkf84cd4[4] * s1->unk14;
-    ai_Unkf84cf4[6] = ai_Unkf84cd4[6] * s1->unk14;
+    ai_Unkf84cf4[0] = ai_Unkf84cd4[0] * s1->fvalue;
+    ai_Unkf84cf4[2] = ai_Unkf84cd4[2] * s1->fvalue;
+    ai_Unkf84cf4[4] = ai_Unkf84cd4[4] * s1->fvalue;
+    ai_Unkf84cf4[6] = ai_Unkf84cd4[6] * s1->fvalue;
     cm_BeginGroup("pruegel");
     cm_SendLongMessage(&msg);
     cm_EndGroup("pruegel");
@@ -5520,7 +5533,7 @@ int ai_Unk49a020(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
     } else if (o1->kind != 0xd || o1->ref != 2)
         return 0;
     {
-        if (p->unk00d < 2 && (p->flags1c8 & 0x4000)) {
+        if (p->rank < 2 && (p->flags1c8 & 0x4000)) {
             m = gm_CharCurrency(p, ai_OwnPlayer);
             if (m >= 0 && !(m * 0.44f < 16000.0f)) {
                 o1->kind = 0xd;
@@ -5659,7 +5672,7 @@ int ai_Unk49a390(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     rec[2] = 0;
     rec[3] = 0;
     rec[0] = 0x161;
-    ai_Unk4a5760(p, 1, rec, st);
+    ai_FindWantedItems(p, 1, rec, st);
     if (st[0] == 6 && st[2] == 0)
         return 0;
     if (st[1] == 1)
@@ -5670,7 +5683,7 @@ int ai_Unk49a390(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             s2.ref = p->netId;
             s1.kind = 2;
             s1.arg = 1;
-            s1.unk14 = 0.05f;
+            s1.fvalue = 0.05f;
             s2.kind = 7;
             s2.arg = 1;
             r = ai_Unk495a50(k, p->id, 2, &s1, &s2);
@@ -5755,7 +5768,7 @@ int ai_Unk49a690(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     recs[9].item = 0x167;
     recs[10].item = 0x229;
     recs[11].item = 0x2b6;
-    ai_Unk4a5760(p, 12, (int *)recs, st);
+    ai_FindWantedItems(p, 12, (int *)recs, st);
     if (st[0] == 6 && st[2] == 0)
         return 0;
     if (st[1] == 12)
@@ -5774,7 +5787,7 @@ int ai_Unk49a690(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             s2.ref = p->netId;
             s1.kind = 2;
             s1.arg = 1;
-            s1.unk14 = 0.05f;
+            s1.fvalue = 0.05f;
             s2.kind = 7;
             s2.arg = 1;
             r = ai_Unk495a50(k, p->id, 2, &s1, &s2);
@@ -5871,7 +5884,7 @@ int ai_Unk49ab60(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     memset(recs, 0, sizeof(recs));
     recs[0].item = 0x173;
     recs[1].item = 0x15b;
-    ai_Unk4a5760(p, 2, (int *)recs, st);
+    ai_FindWantedItems(p, 2, (int *)recs, st);
     if (st[0] == 6 && st[2] == 0)
         return 0;
     if (st[1] == 2)
@@ -5886,7 +5899,7 @@ int ai_Unk49ab60(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             s1.arg = 1;
             s2.arg = 1;
             s2.ref = p->netId;
-            s1.unk14 = 0.05f;
+            s1.fvalue = 0.05f;
             s2.kind = 7;
             r = ai_Unk495a50(k, p->id, 2, &s1, &s2);
             if (r == 0)
@@ -5970,7 +5983,7 @@ int ai_Unk49ae50(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     recs[1].item = 0x16c;
     recs[2].item = 0x297;
     recs[3].item = 0x2b7;
-    ai_Unk4a5760(p, 4, (int *)recs, st);
+    ai_FindWantedItems(p, 4, (int *)recs, st);
     if (st[0] == 6 && st[2] == 0)
         return 0;
     if (st[1] == 4)
@@ -5985,7 +5998,7 @@ int ai_Unk49ae50(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             s1.arg = 1;
             s2.arg = 1;
             s2.ref = p->netId;
-            s1.unk14 = 0.05f;
+            s1.fvalue = 0.05f;
             s2.kind = 7;
             r = ai_Unk495a50(k, p->id, 2, &s1, &s2);
             if (r == 0)
@@ -6066,7 +6079,7 @@ int ai_Unk49b120(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         return 0;
     else
         rec.item = 0x175;
-    ai_Unk4a5760(p, 1, (int *)&rec, st);
+    ai_FindWantedItems(p, 1, (int *)&rec, st);
     if (st[0] == 6 && st[2] == 0)
         return 0;
     if (st[1] == 1)
@@ -6077,7 +6090,7 @@ int ai_Unk49b120(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             s2.ref = p->netId;
             s1.kind = 2;
             s1.arg = 1;
-            s1.unk14 = 0.05f;
+            s1.fvalue = 0.05f;
             s2.kind = 7;
             s2.arg = 1;
             r = ai_Unk495a50(k, p->id, 2, &s1, &s2);
@@ -6190,7 +6203,7 @@ int ai_Unk49b380(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         recs[2].item = 0;
         n = 1;
     }
-    ai_Unk4a5760(p, n, (int *)recs, st);
+    ai_FindWantedItems(p, n, (int *)recs, st);
     if (st[0] == 6 && st[2] == 0)
         return 0;
     if (st[1] == n)
@@ -6204,7 +6217,7 @@ int ai_Unk49b380(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             s2.ref = recs[i].item;
             s1.ref = p->netId;
             s2.arg = 1;
-            s2.unk14 = 0.05f;
+            s2.fvalue = 0.05f;
             s1.kind = 7;
             s1.arg = 1;
             r = ai_Unk495a50(k, p->id, 2, &s2, &s1);
@@ -6219,7 +6232,7 @@ int ai_Unk49b380(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     s2.kind = 1;
     s2.arg = 1;
     s2.ref = recs[i].unk08;
-    s2.unk14 = 0.05f;
+    s2.fvalue = 0.05f;
     switch (recs[i].item) {
     case 0x170:
         s1.kind = 0;
@@ -6317,7 +6330,7 @@ int ai_Unk49b7c0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     recs[9].item = 0x22d;
     recs[10].item = 0x29a;
     recs[11].item = 0x29c;
-    ai_Unk4a5760(p, 12, (int *)recs, st);
+    ai_FindWantedItems(p, 12, (int *)recs, st);
     if (st[0] == 6 && st[2] == 0)
         return 0;
     if (st[1] == 12)
@@ -6331,7 +6344,7 @@ int ai_Unk49b7c0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             s2.ref = p->netId;
             s1.kind = 2;
             s1.arg = 1;
-            s1.unk14 = 0.05f;
+            s1.fvalue = 0.05f;
             s2.kind = 7;
             s2.arg = 1;
             r = ai_Unk495a50(k, p->id, 2, &s1, &s2);
@@ -6349,7 +6362,7 @@ int ai_Unk49b7c0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         i = (i + 1) % 12;
     s1.kind = 1;
     s1.arg = 1;
-    s1.unk14 = 0.05f;
+    s1.fvalue = 0.05f;
     rp = &recs[i];
     s1.ref = recs[i].unk08;
     if (rp->item == 0x169 || rp->item == 0x16d) {
@@ -6479,7 +6492,7 @@ int ai_Unk49bd90(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     recs[7].item = 0x2b4;
     recs[8].item = 0x2b5;
     recs[9].item = 0x2b3;
-    ai_Unk4a5760(p, 10, (int *)recs, st);
+    ai_FindWantedItems(p, 10, (int *)recs, st);
     if (st[0] == 6 && st[2] == 0)
         return 0;
     if (st[1] == 10)
@@ -6493,7 +6506,7 @@ int ai_Unk49bd90(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             s1.arg = 1;
             s2.arg = 1;
             s1.kind = 2;
-            s1.unk14 = 0.05f;
+            s1.fvalue = 0.05f;
             s2.kind = 7;
             s2.ref = p->netId;
             r = ai_Unk495a50(k, p->id, 2, &s1, &s2);
@@ -6735,7 +6748,7 @@ int ai_Unk49c700(G5CH *p, AIARG *s1)
     return 0x25;
 }
 /* 0x49c790, callback 0x0c: buy the good s1->unk04 at the place that sells it, if the character can pay
-   (s1->unk14 in (0, 1) is the share of the money to use) */
+   (s1->fvalue in (0, 1) is the share of the money to use) */
 
 int ai_Unk49c790(int a, G5CH *p, int f, AIARG *s1, AIARG *o)
 {
@@ -6749,8 +6762,8 @@ int ai_Unk49c790(int a, G5CH *p, int f, AIARG *s1, AIARG *o)
             obj = gm_Query(*(int *)(bld + 0x14), 1, 0, s1->ref);
             if (obj != 0 && gm_ListAmount(bld, obj) >= 1) {
                 money = gm_CharCurrency((AIPER *)p, ai_OwnPlayer);
-                if (s1->unk14 > 0.0f && s1->unk14 < 1.0f)
-                    money = (int)(money * s1->unk14);
+                if (s1->fvalue > 0.0f && s1->fvalue < 1.0f)
+                    money = (int)(money * s1->fvalue);
                 if (money >= (int)gm_GoodsPrice(s1->ref, ai_OwnPlayer)) {
                     o->kind = 1;
                     o->ref = *(int *)(bld + 2);
@@ -6821,7 +6834,7 @@ int ai_Unk49c8e0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         o1->kind = 4;
         o1->ref = *(int *)(b + 1);
         o1->arg2 = w;
-        o1->unk14 = (float)n2;
+        o1->fvalue = (float)n2;
         o2->kind = 0x12;
         return 0x26;
     }
@@ -6835,7 +6848,7 @@ int ai_Unk49c8e0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     o1->kind = 4;
     o1->ref = *(int *)(b + 1);
     o1->arg2 = c;
-    o1->unk14 = (float)w;
+    o1->fvalue = (float)w;
     o2->kind = 0xf;
     return 0x26;
 }
@@ -6862,15 +6875,15 @@ int ai_Unk49cb60(G5CH *p, AIARG *s1, AIARG *s2)
         cm_SendFieldDeltas();
         G8_4C4830(-1, p->netId, ai_OwnPlayer, s1->arg2);
         G8_4C4830(ai_CharsT[*(unsigned short *)(b + 0x27)].netId, -1, ai_OwnPlayer, d);
-        gv_RetireCrimesOf(p->netId, (int)s1->unk14);
+        gv_RetireCrimesOf(p->netId, (int)s1->fvalue);
         ai_Unk5a8b80(p, &ai_CharsT[*(unsigned short *)(b + 0x27)], b, d, s1->arg2);
-        G5_ACTS[0x26].w3[0].w = G5_ACTS[0x26].w1[0].w * s1->unk14;
-        G5_ACTS[0x26].w3[1].w = G5_ACTS[0x26].w1[1].w * s1->unk14;
-        G5_ACTS[0x26].w3[2].w = G5_ACTS[0x26].w1[2].w * s1->unk14;
+        G5_ACTS[0x26].w3[0].w = G5_ACTS[0x26].w1[0].w * s1->fvalue;
+        G5_ACTS[0x26].w3[1].w = G5_ACTS[0x26].w1[1].w * s1->fvalue;
+        G5_ACTS[0x26].w3[2].w = G5_ACTS[0x26].w1[2].w * s1->fvalue;
         return 0x26;
     }
     if (s2->kind == 0xf && o != 0) {
-        gv_RetireCrimesOf(p->netId, (int)s1->unk14);
+        gv_RetireCrimesOf(p->netId, (int)s1->fvalue);
         gm_SendMoneyDelta(p->netId, -s1->arg2);
         gm_SendMoneyDelta(ai_CharsT[*(unsigned short *)(b + 0x27)].netId, 1);
         ai_Unk5a8c00(p, &ai_CharsT[*(unsigned short *)(b + 0x27)], b);
@@ -6947,7 +6960,7 @@ int ai_Unk49ce50(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             s1.kind = 2;
             s1.ref = 0x15;
             s1.arg = 1;
-            s1.unk14 = 0.44f;
+            s1.fvalue = 0.44f;
             s2.kind = 4;
             s2.ref = *(int *)(h + 1);
             s2.arg = 1;
@@ -6968,7 +6981,7 @@ find:
         s1.kind = 4;
         s1.ref = 3;
         s1.arg = 1;
-        s1.unk14 = 0.0f;
+        s1.fvalue = 0.0f;
         s2.kind = 0;
         s2.ref = 0;
         s2.arg = 0;
@@ -7042,7 +7055,7 @@ int ai_Unk49d0f0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             s1.kind = 2;
             s1.ref = 0x15;
             s1.arg = 1;
-            s1.unk14 = 0.44f;
+            s1.fvalue = 0.44f;
             s2.kind = 4;
             s2.ref = *(int *)(h + 1);
             s2.arg = 1;
@@ -7109,7 +7122,7 @@ int ai_Unk49d2d0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             s1.kind = 2;
             s1.ref = 0x15;
             s1.arg = 1;
-            s1.unk14 = 0.44f;
+            s1.fvalue = 0.44f;
             s2.kind = 4;
             s2.ref = *(int *)(h + 1);
             s2.arg = 1;
@@ -7463,7 +7476,7 @@ int ai_Unk49dd90(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             s2.ref = y->id;
         }
         s2.arg = 1;
-        s2.unk14 = 0.44f;
+        s2.fvalue = 0.44f;
         r = ai_Unk495a50(0x15, p->id, 1, &s1, &s2);
         if (r != 0) {
             *o1 = s1;
@@ -7529,7 +7542,7 @@ int ai_Unk49def0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             s2.ref = y->id;
         }
         s2.arg = 1;
-        s2.unk14 = 0.44f;
+        s2.fvalue = 0.44f;
         r = ai_Unk495a50(0x15, p->id, 1, &s1, &s2);
         if (r != 0)
             goto done;
@@ -7650,7 +7663,7 @@ int ai_Unk49e350(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             s2.ref = y->id;
         }
         s2.arg = 1;
-        s2.unk14 = 0.44f;
+        s2.fvalue = 0.44f;
         r = ai_Unk495a50(0x15, p->id, 1, &s1, &s2);
         if (r != 0)
             goto done;
@@ -8828,7 +8841,7 @@ int ai_Unk4a0a70(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             s2.ref = bl->id;
         }
         s2.arg = 1;
-        *(int *)&s2.unk14 = 0;
+        *(int *)&s2.fvalue = 0;
         amt = (int)gm_GoodsPrice(f, ai_OwnPlayer);
         c = 1;
         if (amt < money) {
@@ -10325,7 +10338,7 @@ check:
    usable (0x5ba620 class matches 0x1ec or 0x5ba6b0 refuses), else -1. st[0] counts the entries, st[1] the
    unusable, st[2] the usable ones */
 
-void ai_Unk4a5760(G5CH *p, int n, G9REC *rec, int *st)
+void ai_FindWantedItems(G5CH *p, int n, G9REC *rec, int *st)
 {
     unsigned short *e;
     G9REC *r;

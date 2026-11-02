@@ -8066,7 +8066,7 @@ void ai_Unk585f30(char *ch, char *ev)
         evt_Stop((EVTSCRIPT *)script);
 }
 
-void ai_Unk4a5760(struct G5CH *p, int n, struct G9REC *rec, int *st);
+void ai_FindWantedItems(struct G5CH *p, int n, struct G9REC *rec, int *st);
 
 /* 0x586200, the graveyard seance with a ghost lottery (860 B): ch / ev as 0x585cb0. 0x4c24e0 (ev + 0x14, ev +
    0x4c) the voice, 0x5859c0 (ch, ev) the ritual (the script handle). The fifteen wanted items 0x2b8, 0x2bb,
@@ -8110,7 +8110,7 @@ void ai_Unk586200(char *ch, char *ev)
     rec[12][0] = 0x2c0;
     rec[13][0] = 0x2be;
     rec[14][0] = 0x2b9;
-    ai_Unk4a5760((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, 0xf, (int *)rec, st);
+    ai_FindWantedItems((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, 0xf, (int *)rec, st);
     item = 0;
     if (st[0] == 6 && st[2] == 0) {
         mode = 1;

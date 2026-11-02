@@ -30,7 +30,7 @@ typedef struct AIPER {                  /* a character, 0x21c bytes (ai_Chars[76
     char pad008[0x2];
     unsigned short unk00a;              /* 0x00a */
     unsigned char unk00c;               /* 0x00c */
-    unsigned char unk00d;               /* 0x00d */
+    unsigned char rank;                  /* 0x00d, the rank (ai.h AICHAR.b00d: gv_CheckRankUp sends it as the new rank) */
     char pad00e[0xe];
     float unk01c;                       /* 0x01c */
     char pad020[0x60];
@@ -156,7 +156,7 @@ typedef struct AIARG {                  /* 0x18 bytes, what a decide callback fi
     unsigned int arg;                   /* 0x08, a second value of the kind: a count (kind 7 at 0x4a8ad0: 1..5), -1 = none */
     int ref2;                           /* 0x0c, a second reference: a character's netId (the helper at 0x4ab3e0, the sender msg.fromId) */
     int arg2;                           /* 0x10, a third value of the kind, passed on in the action's message (msg.arg[3] at 0x48ff40): a count (0x4a9030: graves), a step */
-    float unk14;                        /* 0x14 */
+    float fvalue;                       /* 0x14, a float value of the kind: the share 0..1 of a money amount to use (0x4a.. callbacks scale by it), a weight factor, a count */
 } AIARG;
 
 typedef struct AIX6 {                   /* 6 bytes, returned by value from 0x503ee0 */
@@ -447,7 +447,7 @@ typedef struct AIPX {                   /* a character, 0x21c bytes (ai_Chars[76
     int netId;                         /* 0x004 */
     unsigned char unk008;               /* 0x008 */
     char pad009[4];
-    unsigned char unk00d;               /* 0x00d */
+    unsigned char rank;                  /* 0x00d, the rank (ai.h AICHAR.b00d: gv_CheckRankUp sends it as the new rank) */
     char pad00e[0x15e];
     union { AIBLD *bld; AIBLD *bld16c; };   /* 0x16c */
     union { AIBLD *bld2; AIBLD *bld170; };  /* 0x170 */
@@ -468,10 +468,10 @@ typedef struct AIGDX {                  /* what 0x5ba620 returns */
 } AIGDX;
 
 typedef struct AIRECX {                  /* 16 bytes, filled by 0x4a5760 */
-    int item;                           /* 0x0 */
-    int unk04;                          /* 0x4 */
-    int unk08;                          /* 0x8 */
-    int unk0c;                          /* 0xc */
+    int item;                           /* 0x0, the wanted item */
+    int value;                          /* 0x4, the inventory entry's value when usable, -1 unusable, 0 not found */
+    int id;                             /* 0x8, the inventory entry's id, -1 not found */
+    int entry;                          /* 0xc, the inventory entry */
 } AIRECX;
 
 typedef struct AIUSE {                  /* 20 bytes, given to 0x5cf8a0 */
@@ -539,8 +539,8 @@ extern float ai_Unkf868b4;              /* 0xf868b4 */
 int ai_FindOwnBuilding(AIPX *p, AIBLD **out);                                         /* 0x48f250 */
 int ai_DecideBuildSculpture(int a, AIPX *p, int b, AIARG *o1, AIARG *o2);                  /* 0x48f2b0 */
 int ai_ExecBuildSculpture(AIPX *p, AIARG *s1, AIARG *s2);                                /* 0x48f500 */
-int ai_Unk48f600(int a, AIPX *p, int b, AIARG *o1, AIARG *o2);                  /* 0x48f600 */
-int ai_Unk48f990(AIPX *p, AIARG *s1, AIARG *s2);                                /* 0x48f990 */
+int ai_DecideUseAlchemyItems(int a, AIPX *p, int b, AIARG *o1, AIARG *o2);                  /* 0x48f600 */
+int ai_ExecUseAlchemyItems(AIPX *p, AIARG *s1, AIARG *s2);                                /* 0x48f990 */
 int ai_Unk48fb70(int a);                                                        /* 0x48fb70 */
 AIPX *ai_Unk48feb0(AIBLD *b);                                                   /* 0x48feb0 */
 int ai_Unk48ff50(AIPX *p, AIBLD *b, AIARG *o1, AIARG *o2);                      /* 0x48ff50 */
@@ -556,7 +556,7 @@ int ai_Unk490690(int a, AIPX *p, int b, AIARG *o1, AIARG *o2);                  
 /* callees outside this file */
 int ai_CanBuildType(int a, struct AIPER *p, int b, struct AIARG *s1, struct AIARG *s2, int f);           /* 0x4a5140 */
 int ai_ExecBuildBuilding(struct AIPER *p, struct AIARG *s1, struct AIARG *s2);                                /* 0x4a5320 */
-void ai_Unk4a5760(struct G5CH *p, int n, struct G9REC *rec, int *st);                         /* 0x4a5760 */
+void ai_FindWantedItems(struct G5CH *p, int n, struct G9REC *rec, int *st);                         /* 0x4a5760 */
 /* am.h declares 0x4a63f0 with an __int64 mask; 0x48ff50..0x490350 pass it as two ints */
 /* am.h: id is an int; 0x490690 passes an unsigned short */
 #define AI_5044B0_US(id, a) ((int (*)(unsigned short, int))gm_TitleJob)(id, a)
@@ -573,7 +573,7 @@ typedef struct AIC4 {                   /* 0x21c bytes, ai_Chars[] with the fiel
     char pad002[2];
     unsigned int netId;                /* 0x004 */
     char pad008[5];
-    unsigned char unk00d;               /* 0x00d */
+    unsigned char rank;                  /* 0x00d, the rank (ai.h AICHAR.b00d: gv_CheckRankUp sends it as the new rank) */
     char pad00e[0xe];
     float unk01c;                       /* 0x01c */
     char pad020[4];
@@ -673,7 +673,7 @@ typedef struct G5CH {                   /* a character, 0x21c bytes (ai_Chars[76
     char pad008[2];
     unsigned short unk00a;              /* 0x00a */
     char pad00c;
-    unsigned char unk00d;               /* 0x00d */
+    unsigned char rank;                  /* 0x00d, the rank (ai.h AICHAR.b00d: gv_CheckRankUp sends it as the new rank) */
     char pad00e[0x7a];
     float mood[14][3];                  /* 0x088, (a, b, value) */
     unsigned char sel;                  /* 0x130, the current need */
@@ -858,8 +858,8 @@ int ai_Unk49a0a0(G5CH *p);                                                      
 int ai_Unk49a290(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49a290 */
 int ai_Unk49a380(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49a380 */
 int ai_Unk49a390(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49a390 */
-/* unk_48e070.h declares ai_Unk4a5760 with its AIPX / AIRECX views (unify at the join) */
-void ai_Unk4a5760(struct G5CH *p, int n, struct G9REC *rec, int *st);                           /* 0x4a5760 */
+/* unk_48e070.h declares ai_FindWantedItems with its AIPX / AIRECX views (unify at the join) */
+void ai_FindWantedItems(struct G5CH *p, int n, struct G9REC *rec, int *st);                           /* 0x4a5760 */
 #define G8_4FEA50(a, b, c, d) ((int (*)(int *, int, int, int))gm_FindById)(a, b, c, d)  /* ai.h: other types */
 int ai_Unk49a5b0(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49a5b0 */
 /* 0x5ba620 with an int id (the callers here zero-extend; unk_48e070.h: unsigned short) */
@@ -1007,7 +1007,7 @@ typedef struct G9REC {                  /* 16 bytes, filled by 0x4a5760 (unk_49a
     int unk08;                          /* 0x8 */
     int unk0c;                          /* 0xc */
 } G9REC;
-void ai_Unk4a5760(struct G5CH *p, int n, struct G9REC *rec, int *st);                          /* 0x4a5760, declared int elsewhere */
+void ai_FindWantedItems(struct G5CH *p, int n, struct G9REC *rec, int *st);                          /* 0x4a5760, declared int elsewhere */
 /* 0x4a58d0 ai_PickPartnerChain is declared in am.h (b is really a float) */
 int ai_PickPartnerInRange(AIPER *p, unsigned int fl, int n, unsigned short *ids, float lo, float hi, unsigned short *id); /* 0x4a5a30 */
 extern const int ai_Unk5ed100[16];                                                    /* 0x5ed100, random steps */
