@@ -104,8 +104,8 @@
 /* ai_Crimes */
 #define ai_Unk91f716             (*(char (*)[23018])((char *)&ai_Crimes + 0x16))  /* 0x91f716 */
 
-/* ai_Unk61a686 */
-#define ai_Unk61a688             (*(char (*)[548])((char *)&ai_Unk61a686 + 0x2))  /* 0x61a688 */
+/* gm_QueryKind */
+#define ai_Unk61a688             (*(char (*)[548])((char *)&gm_QueryKind + 0x2))  /* 0x61a688 */
 
 /* ch_Motions */
 #define ai_Unk1469700            (*(int (*)[1216])((char *)&ch_Motions + 0x20))  /* 0x1469700 */

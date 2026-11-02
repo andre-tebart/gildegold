@@ -81,7 +81,7 @@ void gm_FreeObjectExtra(unsigned short *o);
 void gm_ShowBuildingObjects(unsigned char *b);
 void gm_ResetCharacters(void);
 int gm_TitleJob(int i, int p);
-unsigned short gm_Unk50a0b0(unsigned short *o);
+unsigned short gm_ObjectOwnerNo(unsigned short *o);
 void gm_UpdatePrices(unsigned p, void *t);
 
 struct GCLOCK;  /* f3gm.h typedef; file-scope tag for the gm_AddTime prototype */
@@ -2997,16 +2997,16 @@ void gm_RandomMarketShake(int unused)
     }
 }
 
-extern int ai_Unk61a67c;
-extern int ai_Unk61a680;
-extern short ai_Unk61a684;
+extern int gm_QueryType;
+extern int gm_QueryOwner;
+extern unsigned short gm_QueryOwnerNo;
 #define ALIGN1 __declspec(align(1))
-extern ALIGN1 char ai_Unk61a686[550];
-extern char ai_Unk6f1be0, ai_Unk6f1be8, ai_Unk6f1be9, ai_Unk6f1bea;  /* 0x6f1be0, 0x6f1be8, 0x6f1be9, 0x6f1bea, first-step flag, scan all, descend into children, stop at the first */
-extern int ai_Unk6f1be4;
-extern unsigned short * ai_Unk6f1bf4;
-extern int ai_Unk7e3f38;
-extern int ai_Unk8753e0[20488];
+extern ALIGN1 char gm_QueryKind[550];
+extern char gm_QueryFirst, gm_QueryScanAll, gm_QueryChildren, gm_QueryStopFirst;  /* 0x6f1be0, 0x6f1be8, 0x6f1be9, 0x6f1bea, first-step flag, scan all, descend into children, stop at the first */
+extern int gm_QueryScanned;
+extern ORDOBJ *gm_QueryCursor;
+extern int gm_QueryDepth;
+extern int gm_QueryStack[20488];
 int gm_FindMarketObject(int id);                     /* 0x500ec0 */
 int gm_FindPlayerBuilding(int p);                   /* 0x501000 */
 
@@ -3054,93 +3054,84 @@ float gm_StockPrice(int p, int n)
     }
     return r;
 }
-/* 0x4ffcc0, the next match of the object query set up by 0x4ffe90: walks the instance list from the current record (0x6f1bf4; with the scan flag through the whole table by 0x43-byte steps, else along the next pointers at +0x3f, with the child stack 0x8753e0 when descending), tests the query (prototype 0x61a67c, owner id 0x61a680, 0x50a0b0 value 0x61a684, prototype kind 0x61a686) and returns the last match (the first with flag 0x6f1bea), 0 when none. ROUGH */
+/* 0x4ffcc0, the next match of the object query gm_Query set up: from the cursor record it walks the whole instance table (gm_QueryScanAll, skipping empty records, counting them in gm_QueryScanned) or the next pointers of the list (with gm_QueryChildren the child lists go on gm_QueryStack and are walked when a list ends), tests each record against the set criteria (prototype, owner id, the owner's character number gm_ObjectOwnerNo, the prototype kind) and returns the last record that matched before the first match ends the walk (or, with gm_QueryStopFirst, the first record looked at); 0 when none
+   @deep read the whole function against 0x4ffcc0..0x4ffe83 and reconciled every statement: the first-step
+   push of the cursor's child list, the scanned < count loop with the cursor / match break, the
+   empty-record skip, the four criteria in the original's order (prototype, objId at +2, the owner number
+   as an unsigned short against 0xffff: the imm16 'cmp bp, 0xffff' now matches, the prototype kind byte
+   with sete), the scan-all step and the list step with the child stack (gm_QueryDepth is the global the
+   original caches in edi and reloads after the call). Tried: the criteria as a goto chain, as an if/else
+   with the no: label, as nested ifs with three else m = 0 (worse, 473 bytes), the no: block placed after a
+   continue (identical object: VC6 normalizes it), the null check before the res / m init (worse). What
+   remains: (1) the original's mismatch block 'xor cl,cl; jmp 0x4ffddb' sits out of line at 0x4ffe02 (the
+   jne at +0xb2 / +0xc4 and the jmp at +0x141 that diffclass reports as branch targets), ours keeps it
+   inline after the kind test: a block placement VC6 picks the same for every source order tried; (2) ours
+   keeps the zeroed m register (xor edx,edx) as a constant 0 and compares with it ('cmp eax, edx', 'cmp cl,
+   dl', 'mov byte [gm_QueryFirst], dl'), the original zeroes m in cl alone and uses test / an immediate 0
+   (0x4ffcc5..0x4ffcf4); (3) the rest is the register rotation res ebx/ebp, m cl/dl, the stack depth
+   edi/esi, the goods base esi/ebx (diffclass: regs 58) (size: 2 of the instruction difference are shared /
+   inline tails) */
 
 unsigned short *gm_QueryNext(void)
 {
-    unsigned short *p, *q, *res;
-    int m, sp;
-    short s;
+    ORDOBJ *res;
+    char m;
 
-    p = ai_Unk6f1bf4;
     res = 0;
     m = 0;
-    if (ai_Unk6f1bf4 == 0)
+    if (gm_QueryCursor == 0)
         return 0;
-    if (ai_Unk6f1be0 != 0) {
-        ai_Unk6f1be0 = 0;
-        if (ai_Unk6f1be9 != 0 && *(int *)(ai_Unk6f1bf4 + 10) != 0) {
-            ai_Unk8753e0[ai_Unk7e3f38] = *(int *)(ai_Unk6f1bf4 + 10);
-            ai_Unk7e3f38++;
+    if (gm_QueryFirst != 0) {
+        gm_QueryFirst = 0;
+        if (gm_QueryChildren != 0 && gm_QueryCursor->list != 0)
+            gm_QueryStack[gm_QueryDepth++] = gm_QueryCursor->list;
+    }
+    while (gm_QueryScanned < f3gm_ObjectCount) {
+        if (gm_QueryCursor == 0 || m)
+            break;
+        while (gm_QueryCursor->type == 0)
+            gm_QueryCursor++;
+        if (gm_QueryStopFirst != 0)
+            m = 1;
+        if (gm_QueryType == 0x7fff || gm_QueryCursor->type == gm_QueryType) {
+            if (gm_QueryType != 0x7fff)
+                m = 1;
+            if (gm_QueryOwner != -1) {
+                if (gm_QueryCursor->objId != gm_QueryOwner)
+                    goto no;
+                m = 1;
+            }
+            if (gm_QueryOwnerNo != 0xffff) {
+                if (gm_ObjectOwnerNo((unsigned short *)gm_QueryCursor) != gm_QueryOwnerNo)
+                    goto no;
+                m = 1;
+            }
+            if (gm_QueryKind[0] != -1)
+                m = ai_Goods[gm_QueryCursor->type * 0x41] == gm_QueryKind[0];
+        } else {
+        no:
+            m = 0;
+        }
+        if (gm_QueryScanAll != 0) {
+            if (m)
+                res = gm_QueryCursor;
+            gm_QueryCursor++;
+            gm_QueryScanned++;
+        } else {
+            if (m)
+                res = gm_QueryCursor;
+            gm_QueryCursor = gm_QueryCursor->next;
+            if (gm_QueryCursor != 0) {
+                if (gm_QueryCursor->list != 0 && gm_QueryChildren != 0)
+                    gm_QueryStack[gm_QueryDepth++] = gm_QueryCursor->list;
+            } else if (gm_QueryChildren != 0 && gm_QueryDepth != 0) {
+                gm_QueryCursor = (ORDOBJ *)gm_QueryStack[--gm_QueryDepth];
+                if (gm_QueryCursor->list != 0)
+                    gm_QueryStack[gm_QueryDepth++] = gm_QueryCursor->list;
+            }
         }
     }
-    sp = ai_Unk7e3f38;
-    if (ai_Unk6f1be4 < f3gm_ObjectCount) {
-        do {
-            if (p == 0)
-                return res;
-            if (m)
-                return res;
-            q = ai_Unk6f1bf4;
-            while (ai_Unk6f1bf4 = p, *p == 0) {
-                q = (unsigned short *)((char *)ai_Unk6f1bf4 + 0x43);
-                p = q;
-            }
-            if (ai_Unk6f1bea != 0)
-                m = 1;
-            if (ai_Unk61a67c == 0x7fff || *ai_Unk6f1bf4 == ai_Unk61a67c) {
-                if (ai_Unk61a67c != 0x7fff)
-                    m = 1;
-                if (ai_Unk61a680 != -1) {
-                    if (*(int *)(ai_Unk6f1bf4 + 1) != ai_Unk61a680)
-                        goto no;
-                    m = 1;
-                }
-                if (ai_Unk61a684 != -1) {
-                    s = (short)gm_Unk50a0b0(ai_Unk6f1bf4);
-                    sp = ai_Unk7e3f38;
-                    if (s != ai_Unk61a684)
-                        goto no;
-                    m = 1;
-                }
-                if (ai_Unk61a686[0] != -1)
-                    m = ai_Goods[*ai_Unk6f1bf4 * 0x41] == ai_Unk61a686[0];
-            } else {
-            no:
-                m = 0;
-            }
-            if (ai_Unk6f1be8 == 0) {
-                if (m)
-                    res = ai_Unk6f1bf4;
-                p = *(unsigned short **)((char *)ai_Unk6f1bf4 + 0x3f);
-                ai_Unk6f1bf4 = p;
-                if (p == 0) {
-                    if (ai_Unk6f1be9 != 0 && sp != 0) {
-                        p = (unsigned short *)ai_Unk8753e0[sp - 1];
-                        sp--;
-                        ai_Unk6f1bf4 = p;
-                        ai_Unk7e3f38 = sp;
-                        if (*(int *)(p + 10) != 0) {
-                            ai_Unk8753e0[sp] = *(int *)(p + 10);
-                            sp++;
-                            ai_Unk7e3f38 = sp;
-                        }
-                    }
-                } else if (*(int *)(p + 10) != 0 && ai_Unk6f1be9 != 0) {
-                    ai_Unk8753e0[sp] = *(int *)(p + 10);
-                    sp++;
-                    ai_Unk7e3f38 = sp;
-                }
-            } else {
-                if (m)
-                    res = ai_Unk6f1bf4;
-                p = (unsigned short *)((char *)ai_Unk6f1bf4 + 0x43);
-                ai_Unk6f1be4++;
-                ai_Unk6f1bf4 = p;
-            }
-        } while (ai_Unk6f1be4 < f3gm_ObjectCount);
-    }
-    return res;
+    return (unsigned short *)res;
 }
 /* 0x4ffe90, starts an object query over the list (or, with the flag 7, over the whole instance table) and returns the first match (0x4ffcc0): n criteria follow as (kind, value) pairs: kind 0 = prototype, 1 = owner id, 3 = the 0x50a0b0 value, 4 = the prototype kind (each with a value), 5 = stop at the first match, 6 = descend into the children, 7 = scan the whole table (without value). Not set criteria match everything; 0 without a table or list. Used as gm_Query (list, 2, 6, 0, 0x115) .. all over the exe */
 
@@ -3153,38 +3144,38 @@ char *gm_Query(void *list, int n, ...)
     if (ai_Goods != 0) {
         scan = 0;
         kids = 0;
-        ai_Unk61a67c = 0x7fff;
-        ai_Unk61a680 = -1;
-        ai_Unk61a684 = -1;
-        ai_Unk61a686[0] = (char)0xff;
-        ai_Unk6f1bea = 0;
-        ai_Unk6f1be8 = 0;
-        ai_Unk6f1be9 = 0;
-        ai_Unk6f1be0 = 1;
-        ai_Unk6f1be4 = 0;
-        ai_Unk7e3f38 = 0;
+        gm_QueryType = 0x7fff;
+        gm_QueryOwner = -1;
+        gm_QueryOwnerNo = -1;
+        gm_QueryKind[0] = (char)0xff;
+        gm_QueryStopFirst = 0;
+        gm_QueryScanAll = 0;
+        gm_QueryChildren = 0;
+        gm_QueryFirst = 1;
+        gm_QueryScanned = 0;
+        gm_QueryDepth = 0;
         if (n > 0) {
             ap = &n + 1;
             for (i = n; i != 0; i--) {
                 switch ((char)*ap) {
                 case 0:
-                    ai_Unk61a67c = (unsigned short)ap[1];
+                    gm_QueryType = (unsigned short)ap[1];
                     ap += 2;
                     break;
                 case 1:
-                    ai_Unk61a680 = ap[1];
+                    gm_QueryOwner = ap[1];
                     ap += 2;
                     break;
                 case 3:
-                    ai_Unk61a684 = (short)ap[1];
+                    gm_QueryOwnerNo = (unsigned short)ap[1];
                     ap += 2;
                     break;
                 case 4:
-                    ai_Unk61a686[0] = (char)ap[1];
+                    gm_QueryKind[0] = (char)ap[1];
                     ap += 2;
                     break;
                 case 5:
-                    ai_Unk6f1bea = 1;
+                    gm_QueryStopFirst = 1;
                     ap += 1;
                     break;
                 case 6:
@@ -3199,21 +3190,21 @@ char *gm_Query(void *list, int n, ...)
                     ap += 1;
                 }
             }
-            ai_Unk6f1be8 = scan;
-            ai_Unk6f1be9 = kids;
+            gm_QueryScanAll = scan;
+            gm_QueryChildren = kids;
             if (scan != 0) {
                 if (kids != 0) {
-                    ai_Unk6f1be0 = 1;
-                    ai_Unk6f1be4 = 0;
-                    ai_Unk7e3f38 = 0;
+                    gm_QueryFirst = 1;
+                    gm_QueryScanned = 0;
+                    gm_QueryDepth = 0;
                     return 0;
                 }
-                ai_Unk6f1bf4 = (unsigned short *)ai_Objects;
+                gm_QueryCursor = (ORDOBJ *)ai_Objects;
                 return (char *)gm_QueryNext();
             }
         }
         if (list != 0) {
-            ai_Unk6f1bf4 = (unsigned short *)list;
+            gm_QueryCursor = (ORDOBJ *)list;
             return (char *)gm_QueryNext();
         }
     }
@@ -3246,10 +3237,10 @@ int ai_Unk61a670 = -1;  /* 0x61a670, the query: id (-1 = any) */
 short ai_Unk61a674 = 32767;  /* 0x61a674 / */
 short ai_Unk61a676 = 32767;  /* 0x61a676, the query: the words + */
 char ai_Unk61a678 = -1;  /* 0x61a678, the query: building type (-1 = any) */
-int ai_Unk61a67c = 32767;  /* 0x61a67c, the query: object prototype ( */
-int ai_Unk61a680 = -1;  /* 0x61a680, the query: owner id (-1 = any) */
-short ai_Unk61a684 = -1;  /* 0x61a684, the query: */
-ALIGN1 char ai_Unk61a686[550] = { 255, 0, 0, 0, 0, 0, 0, 0, 105, 105, -25, -25, 105, 4, 63, 63, -67, -67, 63, 3, 63, 63, 126, 126, 42, 2, 63, 42, 84, 84, 21, 2, 63, 21, 84, 84, 21, 1, 42, 21, 84, 84, 21, 1, -109, 105, -109, 105, -67, 4, 105, 63, 105, 63, -109, 3, 105, 42, 84, 63, 105, 2, 105, 21, 63, 42, 63, 2, 105, 21, 63, 21, 63, 1, 84, 21, 63, 21, 63, 1, 105, 126, -109, 105, -46, 4, 63, 84, 105, 63, -88, 3, 63, 63, 84, 63, 126, 2, 63, 63, 63, 21, 84, 2, 42, 63, 63, 21, 84, 1, 21, 63, 63, 21, 84, 1, -46, -88, 105, 105, 105, 4, -88, 126, 63, 63, 63, 3, 126, 105, 63, 42, 63, 2, 84, 84, 63, 21, 42, 2, 84, 84, 63, 21, 21, 1, 84, 84, 42, 21, 21, 1, -25, 105, 105, 105, -109, 4, -67, 63, 63, 63, 105, 3, -109, 63, 63, 42, 84, 2, 126, 21, 42, 42, 63, 2, 126, 21, 42, 42, 42, 1, 105, 21, 42, 42, 42, 1, 84, 105, 63, 84, 42, 2, 84, 105, 63, 84, 42, 2, 84, 105, 63, 84, 42, 2, -88, -67, 105, 105, 126, 4, 126, -109, 63, 63, 84, 3, 105, 105, 63, 63, 63, 2, 84, 105, 42, 21, 42, 2, 84, 105, 21, 21, 42, 1, 84, 84, 21, 21, 42, 1, 105, 105, -88, -46, 105, 4, 63, 63, 126, -88, 63, 3, 63, 63, 105, 126, 42, 2, 42, 21, 84, 126, 21, 2, 42, 21, 84, 105, 21, 1, 42, 21, 84, 84, 21, 1, -88, -46, 105, 105, 105, 4, 126, -88, 63, 63, 63, 3, 105, 126, 63, 63, 42, 2, 84, 126, 42, 21, 21, 2, 84, 126, 21, 21, 21, 1, 84, 105, 21, 21, 21, 1, 105, 105, -88, -46, 105, 4, 63, 63, 126, -88, 63, 3, 63, 63, 105, 126, 42, 2, 63, 21, 105, 84, 21, 2, 42, 21, 105, 84, 21, 1, 42, 21, 84, 84, 21, 1, -88, -46, 105, 105, 105, 4, 126, -88, 63, 63, 63, 3, 105, 126, 63, 63, 42, 2, 84, 126, 42, 21, 21, 2, 84, 126, 21, 21, 21, 1, 84, 105, 21, 21, 21, 1, -88, -46, 105, 105, 105, 4, 126, -88, 63, 63, 63, 3, 105, 126, 63, 63, 42, 2, 84, 126, 42, 21, 21, 2, 84, 126, 21, 21, 21, 1, 84, 105, 21, 21, 21, 1, -67, -88, 105, 105, 126, 4, -109, 126, 63, 63, 84, 3, 105, 105, 63, 42, 84, 2, 84, 105, 42, 21, 42, 2, 84, 84, 42, 21, 42, 1, 84, 84, 21, 21, 42, 1, -109, -109, -67, 105, 105, 4, 105, 105, -109, 63, 63, 3, 84, 84, 105, 42, 63, 2, 63, 84, 84, 21, 21, 2, 63, 63, 84, 21, 21, 1, 63, 63, 84, 21, 21, 1, 0, 0, 0, 0, 0, 1, -67, -109, -109, 105, 105, 4, -109, 105, 105, 63, 63, 3, 105, 84, 84, 42, 63, 2, 84, 63, 63, 21, 21, 2, 84, 63, 63, 21, 21, 1, 84, 63, 63, 21, 21, 1, -88, -67, 105, 105, 126, 4, 126, -109, 63, 63, 84, 3, 105, 105 };  /* 0x61a686, the query: prototype kind (-1 = any); the
+int gm_QueryType = 32767;  /* 0x61a67c, the query: object prototype ( */
+int gm_QueryOwner = -1;  /* 0x61a680, the query: owner id (-1 = any) */
+unsigned short gm_QueryOwnerNo = 0xffff;  /* 0x61a684, the query: the owner character number gm_ObjectOwnerNo must give (0xffff = any) */
+ALIGN1 char gm_QueryKind[550] = { 255, 0, 0, 0, 0, 0, 0, 0, 105, 105, -25, -25, 105, 4, 63, 63, -67, -67, 63, 3, 63, 63, 126, 126, 42, 2, 63, 42, 84, 84, 21, 2, 63, 21, 84, 84, 21, 1, 42, 21, 84, 84, 21, 1, -109, 105, -109, 105, -67, 4, 105, 63, 105, 63, -109, 3, 105, 42, 84, 63, 105, 2, 105, 21, 63, 42, 63, 2, 105, 21, 63, 21, 63, 1, 84, 21, 63, 21, 63, 1, 105, 126, -109, 105, -46, 4, 63, 84, 105, 63, -88, 3, 63, 63, 84, 63, 126, 2, 63, 63, 63, 21, 84, 2, 42, 63, 63, 21, 84, 1, 21, 63, 63, 21, 84, 1, -46, -88, 105, 105, 105, 4, -88, 126, 63, 63, 63, 3, 126, 105, 63, 42, 63, 2, 84, 84, 63, 21, 42, 2, 84, 84, 63, 21, 21, 1, 84, 84, 42, 21, 21, 1, -25, 105, 105, 105, -109, 4, -67, 63, 63, 63, 105, 3, -109, 63, 63, 42, 84, 2, 126, 21, 42, 42, 63, 2, 126, 21, 42, 42, 42, 1, 105, 21, 42, 42, 42, 1, 84, 105, 63, 84, 42, 2, 84, 105, 63, 84, 42, 2, 84, 105, 63, 84, 42, 2, -88, -67, 105, 105, 126, 4, 126, -109, 63, 63, 84, 3, 105, 105, 63, 63, 63, 2, 84, 105, 42, 21, 42, 2, 84, 105, 21, 21, 42, 1, 84, 84, 21, 21, 42, 1, 105, 105, -88, -46, 105, 4, 63, 63, 126, -88, 63, 3, 63, 63, 105, 126, 42, 2, 42, 21, 84, 126, 21, 2, 42, 21, 84, 105, 21, 1, 42, 21, 84, 84, 21, 1, -88, -46, 105, 105, 105, 4, 126, -88, 63, 63, 63, 3, 105, 126, 63, 63, 42, 2, 84, 126, 42, 21, 21, 2, 84, 126, 21, 21, 21, 1, 84, 105, 21, 21, 21, 1, 105, 105, -88, -46, 105, 4, 63, 63, 126, -88, 63, 3, 63, 63, 105, 126, 42, 2, 63, 21, 105, 84, 21, 2, 42, 21, 105, 84, 21, 1, 42, 21, 84, 84, 21, 1, -88, -46, 105, 105, 105, 4, 126, -88, 63, 63, 63, 3, 105, 126, 63, 63, 42, 2, 84, 126, 42, 21, 21, 2, 84, 126, 21, 21, 21, 1, 84, 105, 21, 21, 21, 1, -88, -46, 105, 105, 105, 4, 126, -88, 63, 63, 63, 3, 105, 126, 63, 63, 42, 2, 84, 126, 42, 21, 21, 2, 84, 126, 21, 21, 21, 1, 84, 105, 21, 21, 21, 1, -67, -88, 105, 105, 126, 4, -109, 126, 63, 63, 84, 3, 105, 105, 63, 42, 84, 2, 84, 105, 42, 21, 42, 2, 84, 84, 42, 21, 42, 1, 84, 84, 21, 21, 42, 1, -109, -109, -67, 105, 105, 4, 105, 105, -109, 63, 63, 3, 84, 84, 105, 42, 63, 2, 63, 84, 84, 21, 21, 2, 63, 63, 84, 21, 21, 1, 63, 63, 84, 21, 21, 1, 0, 0, 0, 0, 0, 1, -67, -109, -109, 105, 105, 4, -109, 105, 105, 63, 63, 3, 105, 84, 84, 42, 63, 2, 84, 63, 63, 21, 21, 2, 84, 63, 63, 21, 21, 1, 84, 63, 63, 21, 21, 1, -88, -67, 105, 105, 126, 4, 126, -109, 63, 63, 84, 3, 105, 105 };  /* 0x61a686, the query: prototype kind (-1 = any); the
                                    table at +2 is ai_Unk61a688 (the same storage, one block as in the original) */
 /* ---- layout 2026-10-23: the value / price helpers 0x5085b0 .. 0x509ee0 (ROUGH drafts) ---- */
 char ai_Unk61a8ac[] = "?*T\002iT*\025*\002TT*\025*\001TT\025\025*\001";  /* 0x61a8ac, a table of ints indexed by the word + */
@@ -3265,11 +3256,11 @@ char ai_Unk6f1bd4 = 0;  /* 0x6f1bd4 */
 char ai_Unk6f1bd5 = 0;  /* 0x6f1bd5, stop at the first, first call */
 int ai_Unk6f1bd8 = 0;  /* 0x6f1bd8, the number of records tested */
 int f3gm_ObjectCount = 0;  /* 0x6f1bdc, the number of object instances in use */
-char ai_Unk6f1be0 = 0;  /* 0x6f1be0 */
-int ai_Unk6f1be4 = 0;  /* 0x6f1be4, the number of records scanned */
-char ai_Unk6f1be8 = 0;  /* 0x6f1be8 */
-char ai_Unk6f1be9 = 0;  /* 0x6f1be9 */
-char ai_Unk6f1bea = 0;  /* 0x6f1bea, first-step flag, scan all, descend into children, stop at the first */
+char gm_QueryFirst = 0;  /* 0x6f1be0 */
+int gm_QueryScanned = 0;  /* 0x6f1be4, the number of records scanned */
+char gm_QueryScanAll = 0;  /* 0x6f1be8 */
+char gm_QueryChildren = 0;  /* 0x6f1be9 */
+char gm_QueryStopFirst = 0;  /* 0x6f1bea, first-step flag, scan all, descend into children, stop at the first */
 /* 0x500190 */
 void cm_SendExSellObject(int a, int b, short c, int d, unsigned char e, int f);                     /* 0x4c4880 */
 void cm_SendGoodsRecord(void *p, unsigned char k);                     /* 0x4c56d0 */
@@ -5004,7 +4995,7 @@ int gm_IsHomeType(unsigned char *b)
 
 int gm_JobBuildingType(int x);
 extern unsigned short * sv_PanelShown;                /* 0x6f2310 */
-/* ai_Unk61a688: view of ai_Unk61a686 (tools/data_views.py) */
+/* ai_Unk61a688: view of gm_QueryKind (tools/data_views.py) */
 extern int ai_CharCount, ai_NextCharNumber, ai_NextPlayerNumber;  /* 0x6f1bc0, 0x6f1bb8, 0x6f1bbc */
 char d3if_ShowTree(struct D3OBJECT *obj, char show);                     /* 0x447300 */
 void cm_BeginGroup(const char *s);                     /* 0x4c4540 */
@@ -5808,7 +5799,7 @@ void gm_ResetCharacters(void)
     ai_NextCharNumber = 0;
     ai_NextPlayerNumber = 0;
 }
-#define gm_JobTalents (*(JOBTALENTS (*)[0x5b])((char *)&ai_Unk61a686 + 0x2))  /* 0x61a688, the job records */
+#define gm_JobTalents (*(JOBTALENTS (*)[0x5b])((char *)&gm_QueryKind + 0x2))  /* 0x61a688, the job records */
 
 /* 0x503ee0, the talents record of the job, by value (the hidden result pointer; jobs 0x5f and above: the first record) */
 
@@ -5909,7 +5900,7 @@ int gm_JobBuildingType(int x)
 }
 
 
-unsigned short * ai_Unk6f1bf4 = 0;  /* 0x6f1bf4, the current record */
+ORDOBJ *gm_QueryCursor = 0;  /* 0x6f1bf4, the current record */
 int ai_PermsDirty = 0;  /* 0x6f2318 */
 unsigned char * gm_FirstBuilding(int n);                   /* 0x50b010 */
 short * gm_PlayerRecord(char *c);                     /* 0x506430 */
@@ -8927,7 +8918,7 @@ unsigned short *gm_ObjectBuildingOwner(unsigned short *o)
 }
 /* 0x50a0b0, the character number of the owner of the object o */
 
-unsigned short gm_Unk50a0b0(unsigned short *o)
+unsigned short gm_ObjectOwnerNo(unsigned short *o)
 {
     int b;
 
@@ -10046,11 +10037,11 @@ int gm_PlayerRecords[688] = {0};  /* 0x7d5f80, the 16 player records ( */
 int ai_Unk7d6a40 = 0;  /* 0x7d6a40, the number of family records */
 char gm_StockBlocks[0xd4d0] = {0}; /* 0x7d6a60, the five stock blocks (five rows of four header ints plus 0x55 records of 0x80 bytes); a tentative definition, so the COMMON linker reserves the whole span and no other global lands inside it. init_StockBlock is the same object (data.csv alias). */
 struct AIOBJ *ai_Objects = 0;  /* 0x7e3f34, the object instances (AIOBJ, ai.h) */
-int ai_Unk7e3f38 = 0;  /* 0x7e3f38, the depth of the child stack */
+int gm_QueryDepth = 0;  /* 0x7e3f38, the depth of the child stack */
 int gm_NOffers = 0;  /* 0x7e3f3c, the number of offers */
 AISTORE gm_Offers[88] = {0};  /* 0x7e4b20, the offers (ai.h's AISTORE rows of 6 ints: building, market, goods object, supply, price float, flag) */
 int gm_ClassBuilding[32] = {0};  /* 0x875360 */
-int ai_Unk8753e0[20488] = {0};  /* 0x8753e0, the child stack (the first word of */
+int gm_QueryStack[20488] = {0};  /* 0x8753e0, the child stack (the first word of */
 unsigned ai_Unk889400[732] = {0};  /* 0x889400 */
 int ai_Unk889f70 = 0;  /* 0x889f70 */
 char * ai_Blds = 0;  /* 0x889f74, the buildings ( */

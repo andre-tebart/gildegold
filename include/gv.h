@@ -240,7 +240,9 @@ typedef struct ORDOBJ {
     int list;                       /* 0x14, the object list it holds (ai.h AIOBJ.list) */
     char pad18[4];
     unsigned char lvl1c;            /* 0x1c, a workshop's level (ai.h AIOBJ.lvl1c); gm_SyncMarket raises it to the market's goods count */
-} ORDOBJ;
+    char pad1d[0x22];
+    struct ORDOBJ *next;            /* 0x3f, the next object of its list (ai.h AIOBJ.next) */
+} ORDOBJ;                           /* 0x43 bytes, the records of the instance table ai_Objects */
 #pragma pack(pop)
 
 /* a record of the event list (he_FindEvent / he_NextEvent) as the order handlers read it */

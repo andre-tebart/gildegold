@@ -55,7 +55,7 @@ extern GAPDATA full_data_92bcb3[];
 extern void main_Unk537b60(int kind, int cur, int total);
 extern int ai_Unk7d6a40;
 #include "ch_types.h"
-extern int ai_Unk7e3f38;
+extern int gm_QueryDepth;
 
 #include "cm.h"
 int ai_NextPartyId = 1;  /* 0x61a658 */
