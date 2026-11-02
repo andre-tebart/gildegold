@@ -694,6 +694,8 @@ TUTSTATE *const ai_Tutorial = (TUTSTATE *)(full_data_6fa020 + 0x40);  /* 0x5eec6
 #define ai_TimeK (*(AHMCLOCK *)&ai_Time)  /* 0x770ae0, ai_Time as the messages here copy it: @original 3 ints and a short (ahm.h AHMCLOCK) */
 #define ai_ClockMsVolatile (*(volatile int *)&ai_ClockMs)  /* 0x6333cc, @original: the byte-matched ai_TutorialTick reloads the clock after every read (a timer-written int; its owner declares it plain int) */
 #define sv_CheckGoodAmountB ((int (*)(char *, int, unsigned char))sv_CheckGoodAmount)  /* @original: ai_AlchemistHire pushes the player byte unextended (mov al, ai_OwnPlayer / push eax), a char third parameter; sv_CheckGoodAmount itself masks it (t & 0xff) */
+#define gm_ConvertMoney3 ((int (*)(int, unsigned char, int))gm_ConvertMoney)  /* @original: ai_AlchemistFundWindow passes a third word (the previous result) to the second and third call */
+#define ahm_SendAddValueF ((int (*)(char *, float))ahm_SendAddValue)  /* @original: ai_AlchemistFundWindow passes the float by value (ahm_SendAddValue takes the bits of a float) */
 int ai_TutorialChapterOn[5] = { 1, 1, 1, 1, 1 };  /* 0x62918c, per chapter 1 = played (the start window's check boxes, ai_TutorialWindow) */
 int (*ai_TutorialChapterInit[5])(void) = { ai_TutorialInitChapter1, ai_TutorialInitChapter2, ai_TutorialInitChapter3, ai_TutorialInitChapter4, ai_TutorialInitChapter5 };  /* 0x6291a0, the chapter chain builders the start appends for every chapter played */
 int ai_TutorialBanks[6] = { 0 };  /* 0x6f2640, the voice banks of the main intro / outro and the chapters 1 .. 5 (snd_LoadVoiceBank), unloaded by the stop */
@@ -5153,88 +5155,87 @@ int ai_AlchemistTrainShareWindow(unsigned char *obj, AHMREC *rec, int idx)
         }
     }
 }
-/* 0x57de60, the tutorial training window (631 B, the 0x57dc50 sibling): the skill points 0x4ec3d0 (record) and
-   their tenth 0x4ec3d0 / 10; the run record 0x4eaa50 (record), 0 for none -> 0; the factor 0x4eab20 (record, 3)
-   (a float); the window "Locations_Domizil_skill" (0x62a2c4) with 0x476f80 (0, 0) / 0x475600, the sound
-   0x52ea30 (0x6ed938), the text 0x403a (0x182, the byte 0x6f1bc5) into the entry 0x475b80 (window, 1, text),
-   the number 0x5085b0 (tenth, 0x6f1bc5) / (points) / (tenth) into 0x475cb0 (entry), the texts 0x403b / +1 into
-   the entries 0x475b80 (window, 2, text), 0xf8a668 = -1; the pump loop 0x5309a0 (this handler, 0x677c7):
-   0x4eaa50 (record) 0 -> 0x6f22a0 = 1, the pump 0x20007, 0x4758f0 (window), 0; the click 0x14673a0 ->
-   0x6f22a0 = 1; the window 0x5fe710 == the first 0x403b entry -> the field text 0x475980 (the 0x403a entry,
-   0x6f1bc5) parsed 0x5085f0 and checked 0x521040 (the character 0x770b80 + player 0x6f25b8 * 0x21c, value,
-   0x6f1bc5): non-zero -> 0x4ecd50 (record, value / points * the factor * 0.75), the result 1, 0x6f22a0 = 1 and
-   0x4c47e0 (record +4, the character 0x770b84 + player * 0x21c, 0x6f1bc5, value); the second entry -> 0x6f22a0
-   = 1; the pump 0 -> 0x4758f0 (window), the result */
-int ai_AlchemistFundWindow(char *rec)
+/* 0x57de60, the money window of the alchemist object obj ("Locations\\Domizil\\skill"; rec is not read): the
+   object's value (ahm_ObjectValue) and its tenth, the share 3 of the owning character (ahm_Share; no owner
+   answers 0 at once), the text 0x403a with an input field (d2_GetWinObj) preset with the tenth converted to the
+   player's money (gm_ConvertMoney, called the original's way: the second and third call get the previous result
+   as a third word) and the answers 0x403b. The first answer takes the field's amount (gm_PlayerFactor) from
+   the player's character when sv_CheckGoodAmount agrees: the value is raised by amount / object value * share
+   * 0.75 (ahm_SendAddValue, the float passed by value), the amount is moved from the player (cm_SendMoveGoods)
+   and the window closes with the answer 1; the second answer and the right mouse button close it. The window
+   closes with 0 when the owner is gone
+   @deep read whole against the original and reconstructed typed (signature (obj, rec) as the caller
+   pushes, gm_ConvertMoney's extra third word through a cast macro, the float passed by value to
+   ahm_SendAddValue through a cast macro, the loop as a do-while with the owner test on top; 625 vs 631
+   bytes, asmdiff --symbols: every call, argument, constant and branch in the original's order, 8
+   instructions apart). Left: stack-pop scheduling only: the original pops the three gm_ConvertMoney calls
+   separately (add esp,0x14 / 8 / 8 after the first, second and third call) and the whole prologue pile
+   once later (add esp,0x34), ours defers them into one add esp,0x40 / 0x18; the original's field-object
+   slot is [esp+0x3c] vs ours [esp+0x20] */
+int ai_AlchemistFundWindow(unsigned char *obj, AHMREC *rec)
 {
-    char *rr;
-    char *win;
-    int sp;
-    int q;
-    float f;
-    int fld;
-    int b1;
-    int b2;
+    char *owner;
+    int win;
+    int points;
+    int tenth;
+    float share;
+    int field;
+    int ok;
+    int cancel;
     int v;
     int done;
 
     done = 0;
-    sp = ahm_ObjectValue(rec);
-    q = sp / 10;
-    rr = (char *)ahm_OwnerChar(rec);
-    if (!rr)
+    points = ahm_ObjectValue(obj);
+    tenth = points / 10;
+    owner = ahm_OwnerChar(obj);
+    if (!owner)
         return 0;
-    f = ahm_Share(rr, 3);
-    win = (char *)d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62a2c4);
+    share = ahm_Share(owner, 3);
+    win = d2_OpenForm(0, 0, "Locations\\Domizil\\skill");
     d2_SetPointerSprite(0, 0);
     d2_CentreViewWindows(win);
     d2_SetForm(win, 0);
-    sv_FitForm(U_I((unsigned)&d2_LastWindow));
+    sv_FitForm(d2_LastWindow);
     d2_SetForm(win, 1);
-    v = io_PrintText(0x403a, 0x182, *(unsigned char *)(unsigned)&ai_OwnPlayer);
-    fld = d2_GetWinObj(win, 1, v);
-    v = gm_ConvertMoney(q, *(unsigned char *)(unsigned)&ai_OwnPlayer);
-    v = ((int (*)(int, int, int))gm_ConvertMoney)(sp, *(unsigned char *)(unsigned)&ai_OwnPlayer, v);
-    v = ((int (*)(int, int, int))gm_ConvertMoney)(q, *(unsigned char *)(unsigned)&ai_OwnPlayer, v);
-    d2_SetObjValue(fld, v);
+    v = io_PrintText(0x403a, 0x182, ai_OwnPlayer);
+    field = d2_GetWinObj(win, 1, v);
+    v = gm_ConvertMoney(tenth, ai_OwnPlayer);
+    v = gm_ConvertMoney3(points, ai_OwnPlayer, v);
+    v = gm_ConvertMoney3(tenth, ai_OwnPlayer, v);
+    d2_SetObjValue(field, v);
     d2_SetForm(win, 2);
     v = io_PrintText(0x403b);
-    b1 = d2_GetWinObj(win, 2, v);
-    b2 = d2_GetWinObj(win, 2, v + 1);
-    U_I((unsigned)&d2_ClickedId) = -1;
-    for (;;) {
-        rr = (char *)ahm_OwnerChar(rec);
-        if (!rr) {
-            U_I((unsigned)&sv_PopRequest) = 1;
-            sv_RunFrame(ai_AlchemistFundWindow, 0x20007);
+    ok = d2_GetWinObj(win, 2, v);
+    cancel = d2_GetWinObj(win, 2, v + 1);
+    d2_ClickedId = -1;
+    do {
+        owner = ahm_OwnerChar(obj);
+        if (!owner) {
+            sv_PopRequest = 1;
+            sv_RunFrame((int)ai_AlchemistFundWindow, 0x20007);
             d2_CloseView(win);
             return 0;
         }
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0) {
-            U_I((unsigned)&sv_PopRequest) = 1;
-        } else if (U_I((unsigned)&d2_ClickedId) != -1) {
-            if (U_I((unsigned)&d2_PointerObj) == b1) {
-                v = ((int (*)(int))gm_PlayerFactor)(d2_GetObjValue(fld, *(unsigned char *)(unsigned)&ai_OwnPlayer));
-                if (sv_CheckGoodAmount((char *)(unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c, v, *(unsigned char *)(unsigned)&ai_OwnPlayer) != 0) {
-                    ahm_SendAddValue(rr, ((float)v / (float)sp) * f * 0.75f);
+        if (dm_L.rup != 0) {
+            sv_PopRequest = 1;
+        } else if (d2_ClickedId != -1) {
+            if (d2_PointerObj == ok) {
+                v = gm_PlayerFactor(d2_GetObjValue(field), ai_OwnPlayer);
+                if (sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], v, ai_OwnPlayer)) {
+                    ahm_SendAddValueF(owner, (float)v / (float)points * share * 0.75f);
                     done = 1;
-                    U_I((unsigned)&sv_PopRequest) = 1;
-                    cm_SendMoveGoods(*(int *)(rr + 4), *(int *)((unsigned)&ai_CharInts + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c), *(unsigned char *)(unsigned)&ai_OwnPlayer, v);
+                    sv_PopRequest = 1;
+                    cm_SendMoveGoods(((AICHAR *)owner)->netId, ai_CharInts[ai_PlayerId][0], ai_OwnPlayer, v);
                 }
-            } else if (U_I((unsigned)&d2_PointerObj) == b2) {
-                U_I((unsigned)&sv_PopRequest) = 1;
+            } else if (d2_PointerObj == cancel) {
+                sv_PopRequest = 1;
             }
         }
-        if (sv_RunFrame(ai_AlchemistFundWindow, 0x677c7) == 0) {
-            d2_CloseView(win);
-            return done;
-        }
-    }
+    } while (sv_RunFrame((int)ai_AlchemistFundWindow, 0x677c7));
+    d2_CloseView(win);
+    return done;
 }
-
-void ahm_RescheduleResearch();
-int ahm_SendDelete();
-
 /* 0x57e0e0, the tutorial skill "use" window (336 B, the 0x57de60 sibling): the run record 0x4eaa50 (record),
    0 for none -> 0; the window "Locations_Domizil_skill" (0x62a2c4) with 0x476f80 (0, 0) / 0x475600, the sound
    0x52ea30 (0x6ed938), the text 0x403d (0x182) and the entries 0x403e / +1 via 0x475b80 (window, 2, text),
