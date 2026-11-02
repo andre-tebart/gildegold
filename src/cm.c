@@ -2535,7 +2535,7 @@ int ai_Unk4c6bf0(G17MSG *m, G17STAT *s)
         if (b == 0)
             return 1;
     }
-    k = gm_Unk507690(m->data[4], *(int *)&m->data[5], *(int *)&m->data[9], *(unsigned short *)&m->data[0xd], b, m->data[0x13], m->data[0x14], m->data[0x15]);
+    k = gm_CreateCharacter(m->data[4], *(int *)&m->data[5], *(int *)&m->data[9], *(unsigned short *)&m->data[0xd], b, m->data[0x13], m->data[0x14], m->data[0x15]);
     if (k == 0xffff)
         return 1;
     cm_LastCharId = *(int *)(ai_Chars[k] + 4);
@@ -2558,7 +2558,7 @@ int ai_Unk4c6cd0(G17MSG *m, G17STAT *s)
     else
         *(int *)&m->data[0x35] = rand();
     util_Seed(*(int *)&m->data[0x12]);
-    k = gm_Unk507690(s != 0 ? 6 : 7, *(int *)&m->data[4], *(int *)&m->data[8], *(unsigned short *)&m->data[0xc], 0, m->data[0xe], 0, m->data[0x13]);
+    k = gm_CreateCharacter(s != 0 ? 6 : 7, *(int *)&m->data[4], *(int *)&m->data[8], *(unsigned short *)&m->data[0xc], 0, m->data[0xe], 0, m->data[0x13]);
     if (k == 0xffff)
         return 1;
     c = ai_Chars[k];
@@ -5036,7 +5036,7 @@ int ai_Unk4cba10(G17MSG *m, G17STAT *s)
         if (bo == 0)
             return 1;
     }
-    id = gm_Unk507690(m->data[4], -1, -1, 0x14, 0, m->data[0xf], m->data[0x10], 0);
+    id = gm_CreateCharacter(m->data[4], -1, -1, 0x14, 0, m->data[0xf], m->data[0x10], 0);
     if (id == 0xffff)
         return 1;
     if (G17_I(*m, 0xb) != -1 && (t = gm_FindObjectInst(G17_I(*m, 0xb))) != 0)

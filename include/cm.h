@@ -125,7 +125,7 @@ unsigned char * he_Unk53e040(unsigned char *m);                                 
 char * he_FindEvent(int n, ...);                                                  /* 0x53e400, ai.h: AIJOB * */
 extern int ai_NextObjectId;                /* 0x61a654 */
 unsigned char * gm_CreateBuilding(unsigned char kind, unsigned short owner);                    /* 0x501580 */
-unsigned short gm_Unk507690(int type, int a2, int a3, int a4, unsigned char *a5, unsigned a6, int a7, int a8); /* 0x507690 */
+unsigned short gm_CreateCharacter(int type, int a2, int a3, int a4, unsigned char *a5, unsigned a6, int a7, int a8); /* 0x507690 */
 short * gm_PlayerRecord(char *ch);                                                    /* 0x506430, ai.h: AIFIN *(AICHAR *) */
 unsigned gm_Unk5064d0(int a, int b);                                                  /* 0x5064d0 */
 int gv_FindHeldEntry(void *a, unsigned char **o, int *e);                                    /* 0x4f2540 */

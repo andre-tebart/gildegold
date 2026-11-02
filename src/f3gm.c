@@ -2029,7 +2029,7 @@ extern char d2_GfxDir[256];
 int ai_Unk6f1bb4 = 0;  /* 0x6f1bb4 */
 extern char gm_CharacterStatistics[128];
 char * ai_Unk60c1ec = (void *)((unsigned)&he_Events + 0xc234);  /* 0x60c1ec, the memory pool tag */
-unsigned short gm_Unk507690(int type, int a2, int a3, int a4, unsigned char *a5, unsigned a6, int a7, int a8);                     /* 0x507690 */
+unsigned short gm_CreateCharacter(int type, int a2, int a3, int a4, unsigned char *a5, unsigned a6, int a7, int a8);                     /* 0x507690 */
 int gm_Unk503f30();                     /* 0x503f30 */
 int gm_Unk503f50();                     /* 0x503f50 */
 int gm_Opinion(int a, int b);                     /* 0x50c520 */
@@ -2037,68 +2037,50 @@ float gm_CharAge(unsigned short id);  /* 0x505e30 */
 void * mem_Alloc(int size, char *tag);                   /* 0x4223c0 */
 void mem_Free(void *p);                    /* 0x422620 */
 
-/* 0x4fd5c0, picks two characters (kinds 0 .. 5, active, old enough (age +10 not below the float +0x20), with a chance by the number of the relatives at +0x68 (table 0x60 0x4b 0x28 0x17 9 0 of 256) against random 1 .. 256; 16 tries each, the range shrinking by 3/4 on a free slot) and starts the event 0x507690 (0, id1, id2, param, 0, 0, 0, 2). Returns its result. ROUGH */
-unsigned unk_Unk4fd5c0(int param)
+/* 0x4fd5c0, creates the child (aged age) of two random parents and returns its id (0 when no parents are
+   found). A parent is a character of a kind below 6, alive and grown up (w00a not below f020), taken with the
+   chance chance[its number of children] in 256; each parent gets 16 draws, the range of the draw shrinking by
+   a quarter on every free slot hit */
+unsigned short gm_CreateRandomChild(int age)
 {
-    int tab[6];
-    int tries, cnt, k, range;
+    int chance[6] = { 0x60, 0x4b, 0x28, 0x17, 9, 0 };
+    int tries, n, k, range;
     unsigned short a, b;
-    unsigned r;
-    int *q;
-    char *c;
 
-    tab[0] = 0x60;
-    tab[1] = 0x4b;
-    tab[2] = 0x28;
-    tab[3] = 0x17;
-    tab[4] = 9;
-    tab[5] = 0;
     range = 0x300;
     for (tries = 0; tries < 0x10; tries++) {
         a = util_RandomU(range);
-        c = ai_Chars[a];
-        r = a * 0xf;
-        if (*(short *)c == -1) {
-            range = (range * 3) >> 2;
-            r = range;
-        } else if ((unsigned char)c[2] > 5 || (float)*(unsigned short *)(c + 10) < *(float *)(c + 0x20) || c[8] == 0) {
-            a = 0xffff;
-            r = 0;
-        } else {
-            q = (int *)(c + 0x68);
-            cnt = 0;
-            for (k = 5; k != 0; k--, q++)
-                if (*q != -1)
-                    cnt++;
-            r = (util_RandomU(0x100) & 0xffff) + 1;
-            if ((int)r < tab[cnt])
+        if (ORD_CHARS[a].id == 0xffff)
+            range = range * 3 / 4;
+        else if (ORD_CHARS[a].kind < 6 && !((float)ORD_CHARS[a].w00a < ORD_CHARS[a].f020) && ORD_CHARS[a].health != 0) {
+            n = 0;
+            for (k = 3; k < 8; k++)
+                if (ORD_CHARS[a].relatives[k] != -1)
+                    n++;
+            if (util_RandomU(0x100) + 1 < chance[n])
                 break;
-        }
+        } else
+            a = 0xffff;
     }
     if (a == 0xffff)
-        return r & 0xffff0000;
+        return 0;
     for (tries = 0; tries < 0x10; tries++) {
         b = util_RandomU(range);
-        c = ai_Chars[b];
-        if (*(short *)c == -1)
-            range = (range * 3) >> 2;
-        else if ((unsigned char)c[2] > 5 || (float)*(unsigned short *)(c + 10) < *(float *)(c + 0x20) || c[8] == 0)
-            b = 0xffff;
-        else {
-            q = (int *)(c + 0x68);
-            cnt = 0;
-            for (k = 5; k != 0; k--, q++)
-                if (*q != -1)
-                    cnt++;
-            r = (util_RandomU(0x100) & 0xffff) + 1;
-            if ((int)r < tab[cnt])
+        if (ORD_CHARS[b].id == 0xffff)
+            range = range * 3 / 4;
+        else if (ORD_CHARS[b].kind < 6 && !((float)ORD_CHARS[b].w00a < ORD_CHARS[b].f020) && ORD_CHARS[b].health != 0) {
+            n = 0;
+            for (k = 3; k < 8; k++)
+                if (ORD_CHARS[b].relatives[k] != -1)
+                    n++;
+            if (util_RandomU(0x100) + 1 < chance[n])
                 break;
-        }
-        r = tries + 1;
+        } else
+            b = 0xffff;
     }
-    if (b != 0xffff)
-        return gm_Unk507690(0, *(int *)(ai_Chars[a] + 4), *(int *)(ai_Chars[b] + 4), param, 0, 0, 0, 2);
-    return r & 0xffff0000;
+    if (b == 0xffff)
+        return 0;
+    return gm_CreateCharacter(0, ORD_CHARS[a].netId, ORD_CHARS[b].netId, age, 0, 0, 0, 2);
 }
 /* 0x4fd7e0, 1 when the character id is younger than its lifetime float (+0x20): age (+10) below it */
 
@@ -2283,10 +2265,10 @@ short *unk_Unk4fddb0(unsigned char flags, int p2, int p3, unsigned char p4, unsi
     char *o;
 
     if ((flags & 1) == 0) {
-        id = gm_Unk507690(p2, -1, -1, p3, 0, p4, p5, 2);
+        id = gm_CreateCharacter(p2, -1, -1, p3, 0, p4, p5, 2);
         id &= 0xffff;
     } else {
-        id = unk_Unk4fd5c0(p3);
+        id = gm_CreateRandomChild(p3);
         id &= 0xffff;
         if (id == 0xffff)
             return 0;
@@ -7738,7 +7720,7 @@ int sprintf(char *buf, const char *fmt, ...);                     /* 0x5de652 */
    copied from the avatar record), the home objects (+0x16c / +0x170 from the building a5 by its class), and either rolls the 14 float skills (+0x88 + 12 * i: value, 0.001 * value, 900 + rand) from the table 0x5ee160
    by the kind (0x504ad0), or inherits them from the two parents a2 / a3 (a random mix, the parents' child slots +0x5c ..) and picks names (0x143ac5c / 0x143af70 / 0x143b178, 0xf characters) and the portrait
    (+0x50). ROUGH */
-unsigned short gm_Unk507690(int type, int a2, int a3, int a4, unsigned char *a5, unsigned a6, int a7, int a8)
+unsigned short gm_CreateCharacter(int type, int a2, int a3, int a4, unsigned char *a5, unsigned a6, int a7, int a8)
 {
     int idx, i, n, kind, w;
     char *c;
