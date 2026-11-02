@@ -119,8 +119,6 @@ extern int d2_HalfScreenH;
 extern int d2_HalfScreenW;
 extern void *d2_ScreenSurf;  /* 0x6ed924 */
 extern int ai_Unk6f2318;
-extern GAPDATA full_data_6f23e4[];
-extern GAPDATA full_data_6f23e8[];
 extern GAPDATA full_data_6f262c[];
 extern GAPDATA full_data_6f2630[];
 extern GAPDATA full_data_6faa80[];
@@ -6054,12 +6052,12 @@ l72:
         if (*(unsigned short *)(who + 0x27) == ai_PlayerId || (sv_PanelPerms & 0x1000) != 0)
             sv_BorderCameraView();
     }
-    if (SV_I((unsigned)&full_data_6f23e4) != who || SV_I((unsigned)&full_data_6f23e8) != SV_I((unsigned)&sv_PanelShown) || SV_I((unsigned)&ai_Unk6f2318) != 0) {
+    if (SV_I((unsigned)&sv_PermsBuilding) != who || SV_I((unsigned)&sv_PermsRoom) != SV_I((unsigned)&sv_PanelShown) || SV_I((unsigned)&ai_Unk6f2318) != 0) {
         SV_I((unsigned)&ai_BuildingPerms) = gm_PermissionBits(ai_PlayerId, who, SV_I((unsigned)&sv_PanelShown), 0);
         sv_ReleaseNamePlates();
-        SV_I((unsigned)&full_data_6f23e8) = SV_I((unsigned)&sv_PanelShown);
+        SV_I((unsigned)&sv_PermsRoom) = SV_I((unsigned)&sv_PanelShown);
         SV_I((unsigned)&ai_Unk6f2318) = 0;
-        SV_I((unsigned)&full_data_6f23e4) = who;
+        SV_I((unsigned)&sv_PermsBuilding) = who;
     }
 }
 
@@ -7886,6 +7884,8 @@ int sv_ShownOther = 0;  /* 0x6f23d4, sv_OtherSelected when sv_UpdatePanel last b
 int sv_ShownCount = 0;  /* 0x6f23d8, ai_SelectedCount when sv_UpdatePanel last built the panel */
 int sv_PointerSpriteFor = 0;  /* 0x6f23dc, reset with the pointer sprite (-1 / 0 when sv_HoverPick frees d2_PointerSprite; reasoned: what the sprite was made for) */
 char * sv_LastPicked = 0;  /* 0x6f23e0, ai_PickedObject at the last click (sv_HandleObjects; nothing reads it) */
+char *sv_PermsBuilding = 0;  /* 0x6f23e4, the building ai_BuildingPerms was last computed for (the right-click handler 0x52d940) */
+unsigned short *sv_PermsRoom = 0;  /* 0x6f23e8, the room (sv_PanelShown) it was computed for */
 unsigned char ai_GameState = 0;  /* 0x6f25ac */
 int ai_OptionScrollSpeed = 0;  /* 0x6f3614 */
 int sv_PanelFlag = 0;  /* 0x75e8c0, 1 when the panel is up (an int; cm.h / f3init.c) */

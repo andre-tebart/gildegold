@@ -305,6 +305,8 @@ extern int sv_HoverItemPerms;  /* 0x6f2328 */
 extern int sv_HoverCharPerms;  /* 0x6f232c */
 extern int sv_PointerSpriteFor;  /* 0x6f23dc */
 extern char * sv_LastPicked;  /* 0x6f23e0 */
+extern char *sv_PermsBuilding;  /* 0x6f23e4, the building ai_BuildingPerms was last computed for */
+extern unsigned short *sv_PermsRoom;  /* 0x6f23e8, its room */
 extern unsigned char sv_OtherSelected;  /* 0x6f2338 */
 extern int sv_ShownBuilding;  /* 0x6f23bc */
 extern int sv_ShownFallback;  /* 0x6f23c0 */
