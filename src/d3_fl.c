@@ -28,6 +28,7 @@
 #include "unk_458810.h"
 #include "vfs.h"
 #include "ch.h"
+#include "cm.h"
 #define tex_GetFrameF ((D3FLTEX *(*)(int, unsigned char))tex_GetFrame)  /* 0x460b00 (TSTEXTURE *): this unit's D3FLTEX view of the texture */
 #define tex_FindF ((D3FLTEX *(*)(char *))tex_Find)  /* 0x45f980 (TSTEXTURE *): this unit's D3FLTEX view of the texture */
 #define d3_DirToWorldD ((void (*)(D3OBJECT *, D3VECTOR *, D3VECTOR *))d3_DirToWorld)  /* 0x458810 (unk_458810.h: XOBJ *, float *, float *): this unit's D3OBJECT / vector view */
@@ -2776,7 +2777,7 @@ float d3fl_FarDist(D3FLMAP *map, D3VECTOR *pos, D3MATRIX *m)
 {
     D3VECTOR4 pl[4];
     D3VECTOR4 u, v;
-    float dx, dy, dz, f, best, zmin, t, t4, t5, t6, one = -1.0f;
+    float dx, dy, dz, f, best, zmin, t, t4, t5, t6;
     int i, j;
     D3VECTOR4 *r;
 
@@ -2787,11 +2788,11 @@ float d3fl_FarDist(D3FLMAP *map, D3VECTOR *pos, D3MATRIX *m)
     u.y = dy * m->_22 + dz * m->_32 + dx * m->_12;
     u.z = dx * m->_13 + dy * m->_23 + dz * m->_33;
     t4 = m->_21 * 0.0f;
-    pl[0].x = (m->_11 * 0.0f + m->_31 * one) + t4;
+    pl[0].x = (m->_11 * 0.0f - m->_31 * ai_FloatOne) + t4;
     t5 = m->_22 * 0.0f;
-    pl[0].y = (m->_12 * 0.0f - m->_32 * one) + t5;
+    pl[0].y = (m->_12 * 0.0f - m->_32 * ai_FloatOne) + t5;
     t6 = m->_23 * 0.0f;
-    pl[0].z = (m->_13 * 0.0f - m->_33 * one) + t6;
+    pl[0].z = (m->_13 * 0.0f - m->_33 * ai_FloatOne) + t6;
     pl[0].w = pl[0].x * u.x + pl[0].y * u.y + pl[0].z * u.z;
     pl[1].x = (m->_31 * 0.0f + t4) + m->_11;
     pl[1].y = (m->_32 * 0.0f + t5) + m->_12;
@@ -2810,9 +2811,9 @@ float d3fl_FarDist(D3FLMAP *map, D3VECTOR *pos, D3MATRIX *m)
     u.x = v.y * m->_21 + v.z * m->_31 + v.x * m->_11;
     u.y = v.y * m->_22 + v.z * m->_32 + v.x * m->_12;
     u.z = v.x * m->_13 + v.y * m->_23 + v.z * m->_33;
-    pl[2].x = (m->_31 * 0.0f + t4) + m->_11 * one;
-    pl[2].y = (m->_32 * 0.0f + t5) - m->_12 * one;
-    pl[2].z = (m->_33 * 0.0f + t6) - m->_13 * one;
+    pl[2].x = (m->_31 * 0.0f + t4) - m->_11 * ai_FloatOne;
+    pl[2].y = (m->_32 * 0.0f + t5) - m->_12 * ai_FloatOne;
+    pl[2].z = (m->_33 * 0.0f + t6) - m->_13 * ai_FloatOne;
     pl[2].w = pl[2].x * u.x + pl[2].y * u.y + pl[2].z * u.z;
     pl[3].x = (m->_11 * 0.0f + t4) + m->_31;
     pl[3].y = (m->_12 * 0.0f + t5) + m->_32;

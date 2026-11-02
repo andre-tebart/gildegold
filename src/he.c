@@ -97,7 +97,7 @@ extern char ai_Crimes[];
 extern const int sv_PhaseMinutes[24];
 extern int ai_ClockMs;
 extern unsigned short * ai_PlayerChar;
-extern float ai_Unk5eb780;
+extern float ai_FloatOne;
 extern char ai_Unk625820[115][0x20];
 extern const char ai_AxisPair[];
 extern GAPDATA full_data_60d0d4[];
@@ -190,7 +190,7 @@ extern G13MIS ai_Missions[];
 extern float gm_DayStartHours[];
 extern float gm_DayEndHours[];
 extern float ai_Unk5eb788;
-extern float ai_Unk5eb780;
+extern float ai_FloatOne;
 extern GAPDATA full_data_628dc8[];
 
 extern GAPDATA full_data_628dc8[];
@@ -242,7 +242,7 @@ extern unsigned char ai_TimeHour;
 extern GAPDATA full_data_629054[];
 extern int gm_AllowAll;
 extern GAPDATA full_data_629070[];
-extern float ai_Unk5eb780;
+extern float ai_FloatOne;
 extern double ai_Unk5ebbe8;
 extern GAPDATA full_rdata_5ee01c[];
 extern GAPDATA full_data_6f263c[];
@@ -6731,7 +6731,7 @@ void he_Unk5432f0(int ev)
     }
     if (st == 2) {
         f = gm_Mix(q, p, 4);
-        if (!(util_RandomF() + f < *(float *)(unsigned)&ai_Unk5eb780)) {
+        if (!(util_RandomF() + f < *(float *)(unsigned)&ai_FloatOne)) {
             txt_Format(buf, 0x1764, *(unsigned short *)r, *(unsigned short *)p);
             he_ShowNews(*(int *)(q + 4), *(int *)(q + 4), buf, 0, 0x5fa, (char *)0);
             cm_SendRelations(*(int *)(p + 4), *(int *)(r + 4), -20, 1);
@@ -8672,7 +8672,7 @@ void he_Unk552270(int ev)
             f = 0.1f;
         x = gm_GetWorth(*(unsigned short *)ch);
         v = (int)gm_CharacterHealth(ch);
-        t = (float)v * (*(float *)(unsigned)&ai_Unk5eb780 - f) * 0.5f;
+        t = (float)v * (*(float *)(unsigned)&ai_FloatOne - f) * 0.5f;
         gm_AddHealth(*(unsigned short *)ch, -(int)t);
         pay = (int)((float)x * f * (0.0599999987f));
         cm_SendMoveGoodsUnchecked(*(int *)(ev + 0xac), -1, *(unsigned char *)(unsigned)&ai_OwnPlayer, pay);
@@ -15249,18 +15249,18 @@ void he_Unk56de10(int ev)
                                      (int)*(float *)((unsigned)&gm_DayStartHours + h * 4);
     *(int *)(ev + 0x58) = util_Random(4) * 15;
     if (*(int *)(ev + 0xac) != 0) {
-        f = (util_RandomF() + *(float *)(unsigned)&ai_Unk5eb780) * 0.25f;
+        f = (util_RandomF() + *(float *)(unsigned)&ai_FloatOne) * 0.25f;
         ahm_SendAddValue(c, f);
         *(int *)(ev + 0xac) = 0;
         cm_SendExSetHE(0, ev);
         return;
     }
     v = ahm_ResearchState(*(int *)(c + 0x16c), &b, &a, 1);
-    f = (util_RandomF() + *(float *)(unsigned)&ai_Unk5eb780) * 0.25f;
+    f = (util_RandomF() + *(float *)(unsigned)&ai_FloatOne) * 0.25f;
     if (f <= *(float *)(*(int *)(*(int *)(c + 0x16c) + 0x65) + 4)) {
         switch (v) {
         case 1:
-            f = -(util_RandomF() + *(float *)(unsigned)&ai_Unk5eb780) * (0.100000001f);
+            f = -(util_RandomF() + *(float *)(unsigned)&ai_FloatOne) * (0.100000001f);
             break;
         case 2:
             f = -(util_RandomF() * (0.150000006f) + (0.100000001f));
@@ -18299,11 +18299,11 @@ void ai_Unk575030(int ev)
     if (bld == 0)
         return;
     v = gm_BuildingSkill(bld, 0x1d, 1);
-    f = (float)v * *(float *)(unsigned)&full_rdata_5ee01c + *(float *)(unsigned)&ai_Unk5eb780;
+    f = (float)v * *(float *)(unsigned)&full_rdata_5ee01c + *(float *)(unsigned)&ai_FloatOne;
     n = gm_GetSkill(per, 2);
     for (i = n; i > 0; i--)
         HM_I(ev, 0xac) = HM_I(ev, 0xac) + (int)((util_RandomF() + f) * *(double *)((unsigned)&sv_PhaseMinutes + 0x1a0) + *(double *)(unsigned)&ai_Unk5ebbe8) * f;
-    if (util_RandomF() + *(float *)(unsigned)&ai_Unk5eb780 >= (-1.58818684e-23f))
+    if (util_RandomF() + *(float *)(unsigned)&ai_FloatOne >= (-1.58818684e-23f))
         return;
     for (i = 0; i < 4; i++) {
         if (*(unsigned short *)(ev + 0xc8 + i * 2) == 0) {
@@ -18445,7 +18445,7 @@ void he_Unk575570(char *per)
     float f;
 
     f = ((float (*)(int, unsigned char))gm_GoodsPrice)(0x2b7, *(unsigned char *)(unsigned)&ai_OwnPlayer);
-    ((int (*)(int, int, unsigned char, int))cm_SendMoveGoodsUnchecked)(HM_I(per, 4), -1, *(unsigned char *)(unsigned)&ai_OwnPlayer, (int)((util_RandomF() * 2.0f + *(float *)(unsigned)&ai_Unk5eb780) * f));
+    ((int (*)(int, int, unsigned char, int))cm_SendMoveGoodsUnchecked)(HM_I(per, 4), -1, *(unsigned char *)(unsigned)&ai_OwnPlayer, (int)((util_RandomF() * 2.0f + *(float *)(unsigned)&ai_FloatOne) * f));
 }
 /* 0x5755c0, copies the INI path `s` to 0x6fa0e0 and loads "Game" / "message_filter_mask" from it (GetPrivateProfileIntA) into 0x6f263c */
 

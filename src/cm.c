@@ -8915,14 +8915,14 @@ float ai_Unk4d2e30(char *c, int type)
     case 2:
         if (c[0x1c4] != 2)
             return 0.5f;
-        return ai_Unk5eb780;
+        return ai_FloatOne;
     case 3:
-        return ai_Unk5eb780;
+        return ai_FloatOne;
     case 4:
     case 5:
         if (c[0x1c4] == 2)
             return 0.2f;
-        return ai_Unk5eb780 / gm_HealthRatio(c);
+        return ai_FloatOne / gm_HealthRatio(c);
     }
     return ai_Unk5eb788;
 }
@@ -15012,7 +15012,7 @@ extern int ai_Unkfa5f04;
 /* ai_Unk14413c8: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_Unk1441488: view of txt_Ptrs (build/mk_txt_views.py) */
 extern char * ai_Unk1468ae0[0x300];
-float ai_Unk5eb780 = 1.0f;  /* 0x5eb780 */
+float ai_FloatOne = 1.0f;  /* 0x5eb780 */
 float ai_Unk5eb788 = 0.0f;  /* 0x5eb788 */
 /* 0x5eb798 / 0x5eb79c are the pooled floats 70.0f / 0.25f (0x428c0000 / 0x3e800000), not a
    double: a 8-byte definition here claims two literals another unit owns. */

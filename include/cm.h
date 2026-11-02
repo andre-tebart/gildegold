@@ -773,7 +773,7 @@ float ai_Unk4d2e30(char *c, int type);  /* 0x4d2e30 */
 void ai_Unk4d2f80(int side);  /* 0x4d2f80 */
 float util_RandomF();  /* 0x42ec20 */
 double ai_Unk4e5360();  /* 0x4e5360 */
-extern float ai_Unk5eb780;  /* 0x5eb780 */
+extern float ai_FloatOne;  /* 0x5eb780 */
 extern double ai_Unk5eb9b0;  /* 0x5eb9b0 */
 
 void ai_Unk4d3120(char *rec, char *c);  /* 0x4d3120 */
