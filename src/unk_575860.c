@@ -7099,32 +7099,27 @@ void ai_UnlockRoomWindow(AIBLD *rec, AIOBJ *room)
     d2_CloseView(win);
     sv_CameraFollow();
 }
-/* 0x582560, the cannon contact dispatcher (159 B): arg 1 = the record, arg 2 = the entry list. 0x52e190 once,
-   then the pump loop 0x5309a0 (this dispatcher, 0x67fff): the contact flags 0x6f231c bit 0x400 -> the id
-   0x52e1c0 ("contact_KANONE" 0x62a4bc, the text 0x144a334, 0x16); the escape 0x14673a0 -> 0x6f22a0 = 1; the
-   clicked contact 0x6f22e4: with the list +0x1c clear and the id KANONE -> 0x57e270 (the cannon scene); with the
-   list set -> 0x5823b0 (the record, the list) */
-
-void ai_Unk582560(char *rec, char *list)
+/* 0x582560, the contacts of the cannon room (the room kind 0x256 of the enter-building driver ai_Unk59e420):
+   rec = the building, room = the room object. The name plates are released once, then each frame (pump 0x67fff,
+   the right button leaves): with the building permission 0x400 the plate "contact_KANONE" (txt 0x405d, 0x16) is
+   registered; any click in a locked room opens ai_UnlockRoomWindow, a click on the cannon the cannon scene */
+void ai_CannonContact(AIBLD *rec, AIOBJ *room)
 {
-    int k;
-    int id;
+    int cannon;
 
-    id = 0;
+    cannon = 0;
     sv_ReleaseNamePlates();
-    while (sv_RunFrame(ai_Unk582560, 0x67fff) != 0) {
-        if (U_I((unsigned)&ai_BuildingPerms) & 0x400)
-            id = sv_RegisterNamePlate((char *)(unsigned)&full_data_62a4bc, (char *)U_I((unsigned)&full_data_144a334), 0x16);
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0)
-            U_I((unsigned)&sv_PopRequest) = 1;
-        if (U_I((unsigned)&ai_ClickedObject) != 0) {
-            if (U_I(list + 0x1c) == 0) {
-                if (U_I((unsigned)&ai_ClickedObject) == id)
-                    ai_CannonScene(rec);
-            } else {
-                ai_UnlockRoomWindow(rec, list);
-            }
-        }
+    while (sv_RunFrame(ai_CannonContact, 0x67fff) != 0) {
+        if (ai_BuildingPerms & 0x400)
+            cannon = sv_RegisterNamePlate("contact_KANONE", txt_Ptrs[0x405d], 0x16);
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
+        if (ai_ClickedObject == 0)
+            continue;
+        if (room->locked != 0)
+            ai_UnlockRoomWindow(rec, room);
+        else if (ai_ClickedObject == cannon)
+            ai_CannonScene((char *)rec);
     }
 }
 /* 0x582600, the spy contact dispatcher (289 B): arg 1 = the record, arg 2 = the entry list. 0x52e190 once, then

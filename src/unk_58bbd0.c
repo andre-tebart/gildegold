@@ -8337,7 +8337,7 @@ struct SBSAMPLE * sb_PlaySample(); void ai_ThievesGuildEmptyListener(); void ai_
 void ai_Unk5a5bc0(); void ai_DungeonContact(); void ai_Unk5a3df0(); void ai_DungeonEmptyListener(); void ai_Unk5a3810(); void ai_ChurchContact();
 void ai_Unk5a1a60(); void ai_Unk5a36c0(); void ai_Unk5a07d0(); void ai_Unk5a18d0();
 void ai_Unk5a1960(); void ai_Unk5a6a90(); void ai_Unk5a67a0(); void ai_Unk5a6920();
-void ai_AlchemistLabContact(struct AIBLD *rec, struct AIOBJ *room); void ai_Unk582560(char *rec, char *list); void ai_Unk582600(char *rec, char *list); void ai_ProductionContact(int building, int arg);
+void ai_AlchemistLabContact(struct AIBLD *rec, struct AIOBJ *room); void ai_CannonContact(struct AIBLD *rec, struct AIOBJ *room); void ai_Unk582600(char *rec, char *list); void ai_ProductionContact(int building, int arg);
 void ai_Unk5a2de0(); void ai_Unk59fd30();
 void ai_Unk59fca0();
 
@@ -8931,7 +8931,7 @@ void ai_Unk59e420(unsigned char *param_1, int param_2)
             case 0x146: ai_Unk5a67a0(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x14c: ai_Unk5a6920(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x24b: ai_AlchemistLabContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            case 0x256: ai_Unk582560(U_I((unsigned)&ai_PlayerBuilding), room); break;
+            case 0x256: ai_CannonContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x266: ai_Unk582600(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x29e: ai_ProductionContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
             default: ai_PumpFrames(room); break;
