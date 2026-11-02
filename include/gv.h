@@ -146,7 +146,7 @@ typedef struct ORDCHAR {
     char pad16a[2];
     struct ORDBLD *bld;             /* 0x16c, the character's building (ai.h AICHAR.bld) */
     struct ORDBLD *bld2;            /* 0x170, the character's own building (its home), 0 when none */
-    char pad174[4];
+    int jobDays;                    /* 0x174, the days served in the current job: a job change clears it (gm_SetJob 0x504790), gm_TitlePeriodServed weighs it against the title period */
     int inventory;                  /* 0x178, the character's goods inventory, an object list (ai.h AICHAR.inventory) */
     char pad17c[8];
     struct CHARACTER *model;        /* 0x184, the character's model (ai.h AICHAR.model, ch.h CHARACTER) */

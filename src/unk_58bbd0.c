@@ -5560,7 +5560,7 @@ void ai_MistressContact(int building, int room)
     }
 }
 
-int gm_TitlesLeft(); float gm_Unk504510(int n, int *out); int d2_WinOpenSlider();
+int gm_TitlesLeft(); float gm_TitlePeriodServed(int n, int *out); int d2_WinOpenSlider();
 void d2_SetObjValue(); int gm_TitleGroup(); void gm_AddTime(struct GCLOCK *c, int hours, int mins, int secs);
 
 /* 0x596ff0, the master-exam window "locations\wohnsitz\meisterpruefung" (897 B, ROUGH SKELETON from the Ghidra
@@ -5590,7 +5590,7 @@ void ai_Unk596ff0(void)
     d2_SetForm(win, 0);
     sv_FitForm(U_I((unsigned)&d2_LastWindow));
     sv_ResetScreenClip();
-    total = gm_Unk504510(U_W((unsigned)&ai_PlayerId), name);
+    total = gm_TitlePeriodServed(U_W((unsigned)&ai_PlayerId), name);
     b = he_FindEvent(2, 2, U_W((unsigned)&ai_PlayerId), 0, 0x26);
     if (b == 0) {
         if (total < 1.0f || n > 6) {

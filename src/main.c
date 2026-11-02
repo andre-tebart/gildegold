@@ -3917,9 +3917,9 @@ void main_RoundReport(void)
 }
 
 #define PL(i) ((unsigned)&ai_CharsT + (i) * 0x21c)
-float gm_Unk504510(int n, int *out);
+float gm_TitlePeriodServed(int n, int *out);
 
-/* 0x53a250, per-player update of figure `i` by the kind byte at +2: kinds 6 / 7 get the field delta 0x174 = 1 sent, kinds 0 .. 9 otherwise: the same delta for kinds 1 / 2 / 4 / 5 or a character with a building (ai_Unk770cec), and the master-exam start (message kind 0x24 when gm_Unk504510 reaches 1.0 and the title group is below 6) for a character with a job @deep Read against the original: the frame is right now (ev must be 0x42 ints, giving sub esp,0x210 as the original), the string / message / sprintf calls and constants match, the top-level shape (kind 6 -> je block, kind 7 -> retest at 0x53a3fc, kind >= 10 -> ret, tail-jump to cm_SendFieldDeltas) is the draft's. Left: (1) the jump threading of kind == 7: the original's 'cmp al,7; je 0x53a3fc' goes to a second 'cmp al,6; je; cmp al,7; jne ret' before the block, ours threads both to the block ('je 0x53a407'), 2) allocation: the original keeps i on the stack ([esp+0x23c] after the prologue, 'mov eax,[esp+4]' before sub esp), base in edi and &ai_Chars[i] in esi, ours keeps i in ebx and base in esi (diffclass: first line 0x53a250). Tried: typed AICHAR pointer, block-scoped locals, if / else restructure (all worse, 'cmp al,0xa; jae' vs ours 'cmp al,9; ja' differs only in encoding of the same test). */
+/* 0x53a250, per-player update of figure `i` by the kind byte at +2: kinds 6 / 7 get the field delta 0x174 = 1 sent, kinds 0 .. 9 otherwise: the same delta for kinds 1 / 2 / 4 / 5 or a character with a building (ai_Unk770cec), and the master-exam start (message kind 0x24 when gm_TitlePeriodServed reaches 1.0 and the title group is below 6) for a character with a job @deep Read against the original: the frame is right now (ev must be 0x42 ints, giving sub esp,0x210 as the original), the string / message / sprintf calls and constants match, the top-level shape (kind 6 -> je block, kind 7 -> retest at 0x53a3fc, kind >= 10 -> ret, tail-jump to cm_SendFieldDeltas) is the draft's. Left: (1) the jump threading of kind == 7: the original's 'cmp al,7; je 0x53a3fc' goes to a second 'cmp al,6; je; cmp al,7; jne ret' before the block, ours threads both to the block ('je 0x53a407'), 2) allocation: the original keeps i on the stack ([esp+0x23c] after the prologue, 'mov eax,[esp+4]' before sub esp), base in edi and &ai_Chars[i] in esi, ours keeps i in ebx and base in esi (diffclass: first line 0x53a250). Tried: typed AICHAR pointer, block-scoped locals, if / else restructure (all worse, 'cmp al,0xa; jae' vs ours 'cmp al,9; ja' differs only in encoding of the same test). */
 void main_UpdateFigure(int i)
 {
     int base = i * 0x21c;
@@ -3945,7 +3945,7 @@ void main_UpdateFigure(int i)
                 pr = gm_TitlesLeft(*(char *)(((unsigned)&ai_CharInts + 0x160) + base));
                 iv = he_FindEvent(2, 2, U_I((unsigned)&ai_CharsT + base), 0, 0x24);
                 U_I(((unsigned)&ai_Unk770cec + 0x8) + base) += 1;
-                f = gm_Unk504510(i, ev);
+                f = gm_TitlePeriodServed(i, ev);
                 U_I(((unsigned)&ai_Unk770cec + 0x8) + base) -= 1;
                 if (iv == 0 && pr != 0 && pr < 6 && 1.0 <= f && U_I(((unsigned)&ai_Selected + 0xc) + base) > -1) {
                     memset(ev, 0, 0xf8);

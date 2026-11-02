@@ -5083,7 +5083,7 @@ void ch_InflateModel();                     /* 0x402540 */
 int ch_Delete();                     /* 0x4028a0 */
 void ai_ShowEvidenceVoidNews(int param_1, unsigned short *param_2);                     /* 0x5a9430 */
 int gm_FreeList();                     /* 0x500140 */
-int gm_TitlesLeft();                     /* 0x504ce0 */
+int gm_TitlesLeft(int n);                     /* 0x504ce0 */
 float gm_GetSkill(char *c, int skill);                     /* 0x504ec0 */
 void gm_AddTime(struct GCLOCK *c, int hours, int mins, int secs);                     /* 0x4fe140 */
 int gm_CompareTime();                     /* 0x4fe210 */
@@ -6132,61 +6132,61 @@ int gm_TitleJob(int i, int p)
         return 0;
     return rec[0x74 + p];
 }
-/* 0x504510, the date a character n (the player slot of 0x770b80) next gets its portion: from the character's kind (0x504ce0 must be 1 .. 5, 0x504ad0 gives a class 8 .. 12 mapped to 0 .. 4: 11 -> 2, 12 / 10 -> 3, 8 -> 0, 9 -> 4, else 1) 0x504ec0 gives a period; the date is computed from the clock 0x770ae0 (day, hour part 0x770ae4, with the fraction 6 .. 21 of the day: before 7 the hour + 6, above 21 the next day), compared with the character's own date +0xcf4 (0x4fe210), and when later it is written to out (3 words and a short, 0x4fe280 / 0x4fe140 add the fraction in ticks of 0x18 per day). Returns the fraction as a float (0.0 when the character has no portion kind, 1.0 when the date is not later). ROUGH: all float operands are lost in the pseudocode (the __ftol calls) */
+/* 0x504510, the share of its title period the character n has served in its job: the period is (16 * the titles
+   left (gm_TitlesLeft, 1 .. 5) + 72) hours over (1 + the skill of its job group, at least 0.25: group 11 -> skill 2,
+   12 / 10 -> 3, 8 -> 0, 9 -> 4, else 1), its hour of day moved into 7 .. 21; the time served is the job's days
+   (+0x174, cleared by a job change) at the clock's hour. Served less than the period: returns served / period in
+   minutes and writes to *out (a GCLOCK; the callers declare int *) the date the period completes (now + period -
+   served); else returns 1.0; 0.0 when the character has no title left in 1 .. 5 */
 
-float gm_Unk504510(int n, int *out)
+float gm_TitlePeriodServed(int n, int *out)
 {
-    int k, cls, period;
-    int d[4], e[4];
+    GCLOCK period, served, zero;
+    GCLOCK *when;
+    double h;
+    int k, group, hours, days;
     unsigned short hour;
-    unsigned t;
-    float f;
-    int c;
+    float f, share;
 
-    k = gm_TitlesLeft(ai_Chars[n][0x164]);
-    if (k == 0 || k > 5)
+    k = gm_TitlesLeft(ORD_CHARS[n].jobId);
+    if (k == 0 || k >= 6)
         return 0.0f;
-    cls = gm_TitleGroup(ai_Chars[n][0x164]);
-    if (cls == 0xb)
-        period = 2;
-    else if (cls == 0xc)
-        period = 3;
-    else if (cls == 10)
-        period = 3;
-    else if (cls == 8)
-        period = 0;
-    else if (cls == 9)
-        period = 4;
+    group = gm_TitleGroup(ORD_CHARS[n].jobId);
+    if (group == 0xb)
+        f = gm_GetSkill(ai_Chars[n], 2);
+    else if (group == 0xc)
+        f = gm_GetSkill(ai_Chars[n], 3);
+    else if (group == 0xa)
+        f = gm_GetSkill(ai_Chars[n], 3);
+    else if (group == 8)
+        f = gm_GetSkill(ai_Chars[n], 0);
+    else if (group == 9)
+        f = gm_GetSkill(ai_Chars[n], 4);
     else
-        period = 1;
-    f = gm_GetSkill(ai_Chars[n], period);
-    (void)(int)f;                                /* lost */
-    memset(d, 0, sizeof(d));
-    memset(e, 0, sizeof(e));
-    d[0] = (int)f;                               /* lost */
-    hour = (unsigned short)(int)f;               /* lost */
-    e[0] = hour;
-    if ((float)hour <= 21.0f) {
-        if ((float)hour < 7.0f)
-            e[0] = hour + 6;
-    } else {
-        d[0]++;
-        e[0] = (short)(int)f;                    /* lost */
-    }
-    t = *(unsigned *)(ai_Time + 4);
-    c = *(int *)(ai_Chars[n] + 0x174);
-    e[1] = (short)t;
-    e[3] = c;
-    if (gm_CompareTime(e + 3, d) < 0) {
-        gm_MinutesBetween(e + 0, e + 3);
-        gm_MinutesBetween(e + 0, d);
-        gm_AddTime(d, (t & 0xffff) + *(int *)ai_Time * 0x18, 0, 0);
-        f = (float)((int (*)(struct GCLOCK *, int, int, int))gm_AddTime)(d, c * -0x18 - (t & 0xffff), 0, 0);
-        out[0] = d[0];
-        out[1] = e[0];
-        out[2] = e[2];
-        *(short *)(out + 3) = (short)e[3];
-        return f;
+        f = gm_GetSkill(ai_Chars[n], 1);
+    f = f > 0.25f ? f : 0.25f;
+    memset(&period, 0, sizeof(period));
+    memset(&served, 0, sizeof(served));
+    memset(&zero, 0, sizeof(zero));
+    hours = (int)((k * 16.0f + 72.0f) / (f + 1.0f));
+    period.day = (int)((h = hours) * (1.0 / 24.0));
+    period.hour = (unsigned short)(int)fmod(h, 24.0);
+    if (period.hour > 21.0f) {
+        period.day++;
+        period.hour = (unsigned short)(int)(period.hour - 21.0f + 7.0f);
+    } else if (period.hour < 7.0f)
+        period.hour += 6;
+    days = ORD_CHARS[n].jobDays;
+    hour = GM_NOW.hour;
+    served.day = days;
+    served.hour = hour;
+    if (gm_CompareTime(&served, &period) < 0) {
+        share = (float)((double)gm_MinutesBetween(&zero, &served) / (double)gm_MinutesBetween(&zero, &period));
+        gm_AddTime(&period, hour + GM_NOW.day * 24, 0, 0);
+        gm_AddTime(&period, -hour - days * 24, 0, 0);
+        when = (GCLOCK *)out;
+        *when = period;
+        return share;
     }
     return 1.0f;
 }

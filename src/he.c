@@ -12991,7 +12991,7 @@ void he_Unk567620(int ev)
     gm_AddTime(ev + 0x52, 0, 0x14, 0);
 }
 
-float gm_Unk504510(int n, int *out);
+float gm_TitlePeriodServed(int n, int *out);
 
 /* 0x567660, a Ghidra miss: the run handler that warns a player once (ROUGH): state 0 with the flag word of the player (0x770d48 + id * 0x21c) negative (already warned) waits 4 units; else when his value 0x504510 (id, &out)
    is below 1.0 waits 20 units, else sends the message ('%', the player, +0x36 = 9, +0x60 = 2) 0x4c4b70, sets the sign bit of the flag word and waits 4 units; -1 / -2 free */
@@ -13017,7 +13017,7 @@ void he_Unk567660(int ev)
         gm_AddTime(ev + 0x52, 4, 0, 0);
         return;
     }
-    v = gm_Unk504510(id, out);
+    v = gm_TitlePeriodServed(id, out);
     if (v < 1.0) {
         *(HETIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 0x14, 0);
