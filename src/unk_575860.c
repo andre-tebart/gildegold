@@ -6211,7 +6211,20 @@ int ai_ScatterShot(struct SHOTREC *shot, float sideSpread, struct D3VECTOR *side
    building's spreads (gv_CannonScatter, ai_ScatterShot along side / up), the salvo fired (gv_FireShots with
    gv_SalvoCharge) and its slot awaited (pump 0x20007). Then one LOCATIONS\DOMIZIL\KANONE1.esc script per ball
    runs at the barrel's object (sc->obj8c[sel]) with its offset (x, y, z) and the "Explosion" sound plays (the
-   variation 3 for one ball, 2 for two, 1 for three) */
+   variation 3 for one ball, 2 for two, 1 for three)
+   @deep Read against the whole original 0x580160..0x580a4d and reconciled: the wait loop corrected to
+   while (h != -1 && cm_GetSlotState(h) == 0) (one call, top test; the calls now equal); every call,
+   argument, constant and the statement order of the three barrel cases match (t = v*k, p += t per
+   component, the same order up*5/up*-3/side*5/side*-5, the same shots to InitShot/ScatterShot/FireShots,
+   the same tail). What is left is x87 stack allocation and frame packing: the original spills one base
+   component per case to a dead int slot (x2 0x2c / y3 0x60) and int-copies it (mov edx,[esp+0x60]; mov
+   [esp+0x38],edx), keeps base.x duplicated on the FPU stack (fld st(0)/fld st(3)) where ours re-reads
+   memory, so its frame is 0x18 larger (0x1cc vs 0x1b4, all slots shifted), the a*12 index lands in ecx
+   after the call instead of edi before it (0x5801fd hunk), and the push/load orders around
+   InitShot/ScatterShot/SalvoCharge differ (0x5802a9, 0x58045a, 0x5804ba hunks). Tried: a base vector with
+   struct copies p1 = p2 = base (dist 514 -> 475 but 656 vs 645 instructions, all three components
+   int-copied where the original copies one), p2 = p1 (487), a ball pointer for ai_CannonBalls[a] (no
+   change); kept the chain assignments. ours 635 vs original 645. */
 void ai_CannonExplosion(CANNONSCENE *sc, char *rec)
 {
     SHOTREC shotA;
@@ -6355,10 +6368,8 @@ void ai_CannonExplosion(CANNONSCENE *sc, char *rec)
         n = 3;
     } else
         return;
-    if (h != -1) {
-        while (cm_GetSlotState(h) == 0)
-            sv_RunFrame(0, 0x20007);
-    }
+    while (h != -1 && cm_GetSlotState(h) == 0)
+        sv_RunFrame(0, 0x20007);
     if (n == 0)
         return;
     if (n == 3) {
