@@ -34,6 +34,7 @@ struct D3FLMAP;
 typedef struct G18POP { float t; int v; int h; char *c; int kind; } G18POP;      /* 0x14 bytes, a floating number */
 typedef struct G18LOG { char text[0x40]; char name[0x24]; int x; int id; } G18LOG;      /* 0x6c bytes, a chat line */
 
+#include "ai_types.h"                /* AITIME, for CRIME */
 #pragma pack(push, 1)
 #include "cm_types.h"                /* G17MSG, G17STAT */
 typedef struct G17FIELDS {              /* 0x7c bytes, a field block (0xa68c20, 0xa68ca0) */
@@ -43,7 +44,7 @@ typedef struct G17FIELDS {              /* 0x7c bytes, a field block (0xa68c20, 
 } G17FIELDS;
 typedef struct CRIME {                  /* 0x2d bytes, a crime record of ai_Crimes (message 0x22, "cm_ExAddStraftat"; saved by gv_WriteCrimes) */
     int id;                             /* 0x00, ai_NextCrimeId at the record's creation, -1 when free */
-    char b04[0xe];                      /* 0x04 */
+    AITIME time;                        /* 0x04, the game time of the crime (ai_Time) */
     int victim;                         /* 0x12, the victim's netId ("opfer") */
     int culprit;                        /* 0x16, the culprit's netId ("taeter"), -1 when free */
     short count;                        /* 0x1a, counts down to the record's retirement (0x4f37e0) */
@@ -229,7 +230,7 @@ void cm_SendExSetHE(unsigned char k, char *p);                                  
 int cm_SendTime(char *t);                                                       /* 0x4c4d40 */
 int cm_SendExSysMessage(unsigned char id, void *msg);                               /* 0x4c4db0 */
 void cm_SendKillCharacter(int a, int b);                                                 /* 0x4c4e00 */
-void ai_Unk4c4e40(void *p);                                                      /* 0x4c4e40 */
+int cm_SendCrime(void *p);                                                       /* 0x4c4e40 */
 void ai_Unk4c4e90(int a, int b);                                                 /* 0x4c4e90 */
 void cm_SendProofExecuted(int a, int b);                                                 /* 0x4c4ed0 */
 void ai_Unk4c4f10(int a, int b, int c);                                          /* 0x4c4f10 */

@@ -2876,7 +2876,7 @@ int gv_WriteCrimes(void *f)
         if (gv_CrimesT[i].id != -1) {
             if (vfs_fwrite(&gv_CrimesT[i].id, 4, 1, f) == (unsigned)-1)
                 return 0;
-            if (vfs_fwrite(gv_CrimesT[i].b04, 0xe, 1, f) == (unsigned)-1)
+            if (vfs_fwrite(&gv_CrimesT[i].time, 0xe, 1, f) == (unsigned)-1)
                 return 0;
             if (vfs_fwrite(&gv_CrimesT[i].victim, 4, 1, f) == (unsigned)-1)
                 return 0;
@@ -2906,7 +2906,7 @@ int gv_WriteCrimes(void *f)
 }
 /* 0x4f2da0, the highest level (0x5092e0 (b, 10, 1)) among the school buildings (kind 7) of the character *c's, times 0.01; 0.75 when one has exactly 0x4b */
 
-float unk_Unk4f2da0(short *c)
+float gv_SchoolLevelFactor(short *c)
 {
     int best, i, v;
     unsigned char *b;
@@ -2961,7 +2961,7 @@ int gv_ReadCrimes(int f)
     for (i = 0; i < crimes; i++) {
         if (ls_Read(&gv_CrimesT[i].id, 4, 1, f) == 0)
             return 0;
-        if (ls_Read(gv_CrimesT[i].b04, 0xe, 1, f) == 0)
+        if (ls_Read(&gv_CrimesT[i].time, 0xe, 1, f) == 0)
             return 0;
         if (ls_Read(&gv_CrimesT[i].victim, 4, 1, f) == 0)
             return 0;
@@ -4188,73 +4188,73 @@ int gv_OnDecisionValue(GVDECMSG *p)
     }
     return 1;
 }
-/* 0x4f2e30, an accusation by the character a of the character b (obj) with the table record i and the value v: the record's rule (byte +0x18, by kind 1 .. 7) compares v with its limit (+0x14); when it holds and the school
-   factor (0x4f2da0 of a) does not exceed a random float (0x42ec20) (and, with the skill 0x22a, a second one is above 0.5), the message 0x4c4e40 is sent (time, record byte, value, ids); -1 otherwise. ROUGH */
+/* 0x4f2e30, the character a commits a crime against the character b at the object obj by breaking the law (AI decision
+   record) i with the value v: the law's rule (AIDEC.rule 1 .. 7) compares its current value with v; when it is
+   broken, unless the culprit's school level (gv_SchoolLevelFactor) beats a random float or, holding the item 0x22a, a
+   second random float is above 0.5, the crime is reported (cm_SendCrime); -1 when nothing is reported */
 
 int gv_Accuse(int i, int v, int a, int b, int obj)
 {
-    int rec[9];
-    char *ca, *cb;
-    int tgt;
-    float f;
-    char m[0x40];
-    int ok;
+    AIDEC rec;
+    char *culprit;
+    int place;
+    float escape;
+    CRIME m;
 
-    if (gv_GetTableRecord(i, rec) == 0)
+    if (gv_GetTableRecord(i, (int *)&rec) == 0)
         return -1;
-    ca = gm_FindChar(a);
-    cb = gm_FindChar(b);
-    gm_FindById(&tgt, 0, 0, obj);
-    ok = 1;
-    switch ((unsigned char)rec[4]) {
+    culprit = (char *)gm_FindChar(a);
+    gm_FindChar(b);
+    gm_FindById(&place, 0, 0, obj);
+    switch ((unsigned char)rec.rule) {
     case 1:
-        if (rec[5] != v)
-            return -1;
+        if (rec.cur != v)
+            goto unreported;
         break;
     case 2:
-        if (rec[5] == v)
-            return -1;
-        break;
-    case 3:
-        if (rec[5] <= v)
-            return -1;
-        break;
-    case 4:
-        if (rec[5] < v)
-            return -1;
-        break;
-    case 5:
-        if (v <= rec[5])
-            return -1;
+        if (rec.cur == v)
+            goto unreported;
         break;
     case 6:
-        if (v < rec[5])
-            return -1;
+        if (rec.cur > v)
+            goto unreported;
+        break;
+    case 5:
+        if (rec.cur >= v)
+            goto unreported;
+        break;
+    case 4:
+        if (rec.cur < v)
+            goto unreported;
+        break;
+    case 3:
+        if (rec.cur <= v)
+            goto unreported;
         break;
     case 7:
-        if (rec[5] == v)
-            return -1;
-        if (rec[5] == 2)
-            return -1;
+        if (rec.cur == v)
+            goto unreported;
+        if (rec.cur == 2)
+            goto unreported;
         break;
     default:
-        return -1;
+        goto unreported;
     }
-    f = unk_Unk4f2da0((short *)ca);
-    if (f <= util_RandomF()) {
-        if (ai_InventoryHas(ca, 0x22a) == 0 || util_RandomF() <= 0.5f) {
-            *(int *)(m + 4) = *(int *)ai_Time;
-            *(int *)(m + 8) = *(int *)(ai_Time + 4);
-            *(short *)(m + 0x10) = *(short *)(ai_Time + 12);
-            *(int *)(m + 0x1b) = v;
-            m[0x1a] = (char)rec[0];
-            *(int *)(m + 0x16) = (int)cb;
-            *(short *)(m + 0x1e) = (short)rec[2];
-            *(int *)(m + 0x2b) = 1;
-            *(int *)(m + 0x27) = obj;
-            return ((int (*)(void *))ai_Unk4c4e40)(m);
-        }
-    }
+    escape = gv_SchoolLevelFactor((short *)culprit);
+    if (util_RandomF() < escape)
+        goto unreported;
+    if (ai_InventoryHas(culprit, 0x22a) != 0 && util_RandomF() > 0.5)
+        goto unreported;
+    m.time = gv_TimeT;
+    m.v1d = v;
+    m.law = (unsigned char)rec.id;
+    m.victim = b;
+    m.culprit = a;
+    m.count = (short)rec.crimeCount;
+    m.state = 1;
+    m.place = obj;
+    return cm_SendCrime(&m);
+unreported:
     return -1;
 }
 /* 0x4f1de0, the turn step of the graveyard building o (main.c): walks its used grave entries (gv_FindEntry with

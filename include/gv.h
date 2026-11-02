@@ -336,12 +336,12 @@ int gv_FindHeldEntry(void *a, unsigned char **o, int *e);  /* 0x4f2540 */
 int gv_FindReservedEntry(void *a, unsigned char **o, int *e);  /* 0x4f25d0 */
 float unk_Unk4f2660(char *o);           /* 0x4f2660 */
 typedef struct AIDEC {                  /* 0x24 bytes, a record of the AI decision table 0x611258 (29 records, gv_GetTableRecord copies one) */
-    int unk00;                          /* 0x00 */
+    int id;                             /* 0x00, the record's own index 0 .. 0x1c (CRIME.law of a crime against it) */
     int min;                            /* 0x04 */
     int max;                            /* 0x08 */
     int unk0c;                          /* 0x0c */
-    int unk10;                          /* 0x10 */
-    int unk14;                          /* 0x14 */
+    int crimeCount;                     /* 0x10, the CRIME.count a crime against it starts with (gv_Accuse) */
+    int rule;                           /* 0x14, low byte: how gv_Accuse compares cur with a deed's value (1 .. 7: broken unless ==, unless !=, ..) */
     int cur;                            /* 0x18, the current value */
     unsigned char office;               /* 0x1c, the office kind (AICHAR.officeKind) the decision belongs to (gv_FindTableRecord) */
     unsigned char officeNo;             /* 0x1d, the decision's number within that office (1, 2, ..) */
@@ -354,7 +354,7 @@ int gv_FindTableRecord(char *c, unsigned b, int *out);  /* 0x4f2870 */
 extern char unk_Tab611258[];            /* 0x611258, 0x1d records of 0x24 bytes */
 
 int gv_WriteCrimes(void *f);             /* 0x4f28d0 */
-float unk_Unk4f2da0(short *c);          /* 0x4f2da0 */
+float gv_SchoolLevelFactor(short *c);          /* 0x4f2da0 */
 extern char gv_Graveyard[];            /* 0x91f700 */
 extern char unk_Tab91b6e0[];            /* 0x91b6e0 */
 int gm_BuildingSkill();                     /* 0x5092e0 */

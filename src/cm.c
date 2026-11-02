@@ -1322,9 +1322,9 @@ void cm_SendKillCharacter(int a, int b)
     G17_I(m, 4) = b;
     ai_Unk4c39c0(&m);
 }
-/* 0x4c4e40, message 0x22: 0x2d bytes of p, the id ai_NextCrimeId, 1 and a random number */
+/* 0x4c4e40, sends message 0x22, a new crime: the CRIME record p (0x2d bytes) with the id ai_NextCrimeId, the state 1 and a random seed; the send's result */
 
-void ai_Unk4c4e40(void *p)
+int cm_SendCrime(void *p)
 {
     G17MSG m;
 
@@ -1333,7 +1333,7 @@ void ai_Unk4c4e40(void *p)
     G17_I(m, 0) = ai_NextCrimeId;
     G17_I(m, 0x25) = 1;
     G17_I(m, 0x29) = rand();
-    ai_Unk4c39c0(&m);
+    return ai_Unk4c39c0(&m);
 }
 /* 0x4c4e90, message 0x23 */
 

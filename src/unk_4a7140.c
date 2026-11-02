@@ -1028,10 +1028,10 @@ int ai_DecideTableValue(int a, AIPER *p, int *ctx, int d, unsigned char *m)
     int v;
 
     if (gv_GetTableRecord(ctx[1], &dec) != 0) {
-        if (((int (*)(AIPER *, int, int *))dec.fn)(p, (unsigned char)dec.unk00, &v) != 0 && v != dec.cur
+        if (((int (*)(AIPER *, int, int *))dec.fn)(p, (unsigned char)dec.id, &v) != 0 && v != dec.cur
             && v >= dec.min && v <= dec.max) {
             m[0] = 0x11;
-            *(unsigned int *)(m + 4) = (unsigned char)dec.unk00;
+            *(unsigned int *)(m + 4) = (unsigned char)dec.id;
             *(int *)(m + 8) = v;
             return 1;
         }
