@@ -4869,31 +4869,214 @@ int ai_AlchemistSendResearchStart(unsigned char *obj, AHMREC *rec)
     cm_SendLongMessage((char *)&msg);
     return 1;
 }
-/* 0x57cf90, the tutorial window handler (3264 B, ROUGH SKELETON - the 0x57c690 shape): arg 1 = the record; the
-   lookup 0x4eaa50 (record), the dword record +0x65, 0x4eb180 (record, &local, &local2, 0), the clock 0x6333cc,
-   the nine dwords at esp+0x2c set to -1, 0xf8a668 = -1, the window 0x4741f0 (0, 0, 0x62a2a4), 0x476f80 (0, 0),
-   0x475600 (window), 0x475f70 (window, 0). The rest of the body (the entries, the pump and the tail) is not
-   written yet, see the disassembly */
+int ai_AlchemistTrainShareWindow(); int ai_AlchemistFundWindow(); int ai_AlchemistRescheduleWindow();
+int d2_WinOpenSlider(); void d2_SetObjWidth(int obj, short w); void d2_SetViewEnabled(int view, int on); int d2_GetWinObj();
 
-int ai_Unk57cf90(char *rec)
+/* 0x57cf90, the alchemist's window of the alchemist object obj ("Locations\Domizil\Alchemistry3"): without an
+   owning character only the text 0x4051 (0x182); else the character panel (ai_AlchemistPanel; rebuilt when the
+   research state changed or 0x32 ms passed, the character still existing: gone, the window closes), the
+   research slider and text as in ai_AlchemistResearchWindow, and the buttons: a click on one of the four share
+   bars opens the skill window ai_AlchemistTrainShareWindow (obj, record, the bar), the extra button ai_AlchemistFundWindow and the button
+   with the text 0x4049 ai_AlchemistRescheduleWindow (whose answer closes the window); the form is disabled meanwhile. The right
+   mouse button closes the window; the camera follows again at the end
+   @deep reconstructed whole (990 vs 990-ish: 3272 vs 3264 bytes; asmdiff --symbols: every call, argument,
+   constant, text id and branch in the original's order; the character panel is written out twice, as the
+   original expands it, the -1 fill of the nine ids is a loop (rep stosd), the click loop walks a pointer
+   over the bar ids). Left: allocation and scheduling only (hunks: order 46, slots 58, frame 124, code 22 =
+   spill stores): the original spills win2 to [esp+0x1c] and the extra button id to [esp+0x48] right after
+   they are set (ours keeps them in registers), puts the add esp,0xc of the first io_PrintText before the
+   d2_SetForm(form, 2) pair, keeps the owner in ebp and the object in esi (ours swapped), compares cmp
+   [ecx], eax in the click loop; frame 0x248 vs 0x240 */
+void ai_AlchemistWindow(unsigned char *obj)
 {
-    char *r;
+    char msg[0x100];
+    char line[0x100];
+    int bars[9];
+    AHMREC *rec;
+    AICHAR *owner;
+    int state;
+    int lastState;
+    unsigned lastClock;
     int a;
-    int b;
-    int l1;
-    int l2;
+    float f;
+    int form;
+    int win2;
+    int extra;
+    int back;
+    int slider;
+    int t;
+    int j;
+    int k;
+    int *pb;
 
-    r = (char *)ahm_OwnerChar(rec);
-    a = U_I(rec + 0x65);
-    b = ahm_ResearchState(rec, &l1, &l2, 0);
-    l1 = U_I((unsigned)&ai_ClockMs);
-    U_I((unsigned)&d2_ClickedId) = -1;
-    r = (char *)d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62a2a4);
+    owner = (AICHAR *)ahm_OwnerChar(obj);
+    rec = ((AHMOBJ *)obj)->rec;
+    lastState = ahm_ResearchState(obj, &a, &f, 0);
+    lastClock = ai_ClockMs;
+    for (k = 0; k < 9; k++)
+        bars[k] = -1;
+    d2_ClickedId = -1;
+    form = d2_OpenForm(0, 0, "Locations\\Domizil\\Alchemistry3");
     d2_SetPointerSprite(0, 0);
-    d2_CentreViewWindows(r);
-    d2_SetForm(r, 0);
-    /* ROUGH: the rest is not written yet */
-    return 0;
+    d2_CentreViewWindows(form);
+    d2_SetForm(form, 0);
+    sv_FitForm(d2_LastWindow);
+    d2_SetForm(form, 2);
+    win2 = d2_LastWindow;
+    d2_SetForm(form, 1);
+    io_PrintText(0x4039);
+    d2_SetForm(form, 2);
+    if (owner == 0) {
+        io_PrintText(0x4051, 0x182);
+        do {
+            if (dm_L.rup != 0)
+                sv_PopRequest = 1;
+        } while (sv_RunFrame((int)ai_AlchemistResearchWindow, 0x677c7));
+        d2_CloseView(form);
+        return;
+    }
+    d2_WinOpenPic(d2_LastWindowPtr->w / 2 - 0x18, 0x1e, 0x6c7, win2);
+    d2_WinOpenPic(d2_LastWindowPtr->w / 2 - 0x16, 0x20, owner->picture, win2);
+    slider = d2_WinOpenSlider((d2_LastWindowPtr->w - 0x32) / 2, 0x55, 0x32, 0, 100, 0x75, 0x42, d2_LastWindow);
+    d2_SetObjValue(slider, 0, 100, (int)(rec->value * 100.0f));
+    txt_Format(line, (int)"%s %s", owner->first, owner->family);
+    t = d2_CreateWinText(0, 0, line, win2);
+    d2_Objs[t].w = d2_Wins[win2].w;
+    d2_Objs[t].centred = 1;
+    d2_SetObjFont(t, 0x53);
+    txt_Format(line, 0x403f, owner->w00a);
+    t = d2_CreateWinText(0x12c, 0x64, line, win2);
+    d2_SetObjFont(t, 0x53);
+    d2_Objs[t].centred = 1;
+    d2_Objs[t].w = 0xc8;
+    txt_Format(line, 0x4040, ahm_ObjectValue(obj));
+    t = d2_CreateWinText(0x12c, 0x82, line, win2);
+    d2_SetObjFont(t, 0x53);
+    d2_Objs[t].centred = 1;
+    d2_Objs[t].w = 0xc8;
+    txt_Format(line, (int)"%s", txt_Ptrs[0x4172]);
+    extra = d2_WinCreateSlider(0x14a, 0xbe, 0xc5, txt_Ptrs[0x42f9], win2);
+    d2_SetObjWidth(extra, d2_Wins[win2].w / 3 - 0x14);
+    d2_SetObjFont(extra, 0x54);
+    txt_Format(line, (int)"%s", txt_Ptrs[0x4172]);
+    bars[0] = d2_WinCreateSlider(10, 0x64, 0xc5, line, win2);
+    d2_SetObjWidth(bars[0], d2_Wins[win2].w / 3 - 0x14);
+    d2_SetObjFont(bars[0], 0x54);
+    sv_ValueBar(d2_Wins[win2].w / 3 + 10, 0x68, rec->share[0], 0x4df);
+    txt_Format(line, (int)"%s", txt_Ptrs[0x4173]);
+    bars[1] = d2_WinCreateSlider(10, 0x82, 0xc5, line, win2);
+    d2_SetObjWidth(bars[1], d2_Wins[win2].w / 3 - 0x14);
+    d2_SetObjFont(bars[1], 0x54);
+    sv_ValueBar(d2_Wins[win2].w / 3 + 10, 0x86, rec->share[1], 0x4df);
+    txt_Format(line, (int)"%s", txt_Ptrs[0x4174]);
+    bars[2] = d2_WinCreateSlider(10, 0xa0, 0xc5, line, win2);
+    d2_SetObjWidth(bars[2], d2_Wins[win2].w / 3 - 0x14);
+    d2_SetObjFont(bars[2], 0x54);
+    sv_ValueBar(d2_Wins[win2].w / 3 + 10, 0xa4, rec->share[2], 0x4df);
+    txt_Format(line, (int)"%s", txt_Ptrs[0x4175]);
+    bars[3] = d2_WinCreateSlider(10, 0xbe, 0xc5, line, win2);
+    d2_SetObjWidth(bars[3], d2_Wins[win2].w / 3 - 0x14);
+    d2_SetObjFont(bars[3], 0x54);
+    sv_ValueBar(d2_Wins[win2].w / 3 + 10, 0xc2, rec->share[3], 0x4df);
+    d2_SetForm(form, 3);
+    back = d2_GetWinObj(form, 3, io_PrintText(0x4049));
+    do {
+        state = ahm_ResearchState(obj, &a, &f, 0);
+        d2_SetForm(form, 4);
+        io_PrintText("$C");
+        if (state != 0) {
+            slider = d2_WinOpenSlider((d2_LastWindowPtr->w - 300) / 2, 0x12, 300, 0, 100, 0x75, 0x42, d2_LastWindow);
+            if (state == 1)
+                txt_Format(msg, 0x404b);
+            else if (state == 2)
+                txt_Format(msg, 0x404c, a * 2 + 0x9a8);
+            else if (state == 3)
+                txt_Format(msg, 0x404d, a + 0x4172);
+            t = d2_CreateWinText(0, 0, msg, d2_LastWindow);
+            d2_Objs[t].w = d2_LastWindowPtr->w;
+            d2_Objs[t].centred = 1;
+            d2_SetObjFont(t, 0x54);
+            d2_SetObjValue(slider, 0, 100, (int)(f * 100.0f));
+        }
+        if (state != lastState || ai_ClockMs > lastClock + 0x32) {
+            owner = (AICHAR *)ahm_OwnerChar(obj);
+            if (owner == 0) {
+                sv_PopRequest = 1;
+                sv_RunFrame((int)ai_AlchemistWindow, 0x20007);
+                d2_CloseView(form);
+                return;
+            }
+            d2_SetForm(form, 2);
+            io_PrintText("$C");
+            d2_WinOpenPic(d2_LastWindowPtr->w / 2 - 0x18, 0x1e, 0x6c7, win2);
+            d2_WinOpenPic(d2_LastWindowPtr->w / 2 - 0x16, 0x20, owner->picture, win2);
+            slider = d2_WinOpenSlider((d2_LastWindowPtr->w - 0x32) / 2, 0x55, 0x32, 0, 100, 0x75, 0x42, d2_LastWindow);
+            d2_SetObjValue(slider, 0, 100, (int)(rec->value * 100.0f));
+            txt_Format(line, (int)"%s %s", owner->first, owner->family);
+            t = d2_CreateWinText(0, 0, line, win2);
+            d2_Objs[t].w = d2_Wins[win2].w;
+            d2_Objs[t].centred = 1;
+            d2_SetObjFont(t, 0x53);
+            txt_Format(line, 0x403f, owner->w00a);
+            t = d2_CreateWinText(0x12c, 0x64, line, win2);
+            d2_SetObjFont(t, 0x53);
+            d2_Objs[t].centred = 1;
+            d2_Objs[t].w = 0xc8;
+            txt_Format(line, 0x4040, ahm_ObjectValue(obj));
+            t = d2_CreateWinText(0x12c, 0x82, line, win2);
+            d2_SetObjFont(t, 0x53);
+            d2_Objs[t].centred = 1;
+            d2_Objs[t].w = 0xc8;
+            txt_Format(line, (int)"%s", txt_Ptrs[0x4172]);
+            extra = d2_WinCreateSlider(0x14a, 0xbe, 0xc5, txt_Ptrs[0x42f9], win2);
+            d2_SetObjWidth(extra, d2_Wins[win2].w / 3 - 0x14);
+            d2_SetObjFont(extra, 0x54);
+            txt_Format(line, (int)"%s", txt_Ptrs[0x4172]);
+            bars[0] = d2_WinCreateSlider(10, 0x64, 0xc5, line, win2);
+            d2_SetObjWidth(bars[0], d2_Wins[win2].w / 3 - 0x14);
+            d2_SetObjFont(bars[0], 0x54);
+            sv_ValueBar(d2_Wins[win2].w / 3 + 10, 0x68, rec->share[0], 0x4df);
+            txt_Format(line, (int)"%s", txt_Ptrs[0x4173]);
+            bars[1] = d2_WinCreateSlider(10, 0x82, 0xc5, line, win2);
+            d2_SetObjWidth(bars[1], d2_Wins[win2].w / 3 - 0x14);
+            d2_SetObjFont(bars[1], 0x54);
+            sv_ValueBar(d2_Wins[win2].w / 3 + 10, 0x86, rec->share[1], 0x4df);
+            txt_Format(line, (int)"%s", txt_Ptrs[0x4174]);
+            bars[2] = d2_WinCreateSlider(10, 0xa0, 0xc5, line, win2);
+            d2_SetObjWidth(bars[2], d2_Wins[win2].w / 3 - 0x14);
+            d2_SetObjFont(bars[2], 0x54);
+            sv_ValueBar(d2_Wins[win2].w / 3 + 10, 0xa4, rec->share[2], 0x4df);
+            txt_Format(line, (int)"%s", txt_Ptrs[0x4175]);
+            bars[3] = d2_WinCreateSlider(10, 0xbe, 0xc5, line, win2);
+            d2_SetObjWidth(bars[3], d2_Wins[win2].w / 3 - 0x14);
+            d2_SetObjFont(bars[3], 0x54);
+            sv_ValueBar(d2_Wins[win2].w / 3 + 10, 0xc2, rec->share[3], 0x4df);
+        }
+        if (dm_L.rup != 0) {
+            sv_PopRequest = 1;
+        } else if (d2_ClickedId != -1) {
+            for (j = 0, pb = bars; j < 4; j++, pb++) {
+                if (*pb == d2_PointerObj) {
+                    d2_SetViewEnabled(form, 0);
+                    ai_AlchemistTrainShareWindow(obj, rec, j);
+                    d2_SetViewEnabled(form, 1);
+                    d2_PointerObj = -1;
+                }
+            }
+            if (d2_PointerObj == extra) {
+                d2_SetViewEnabled(form, 0);
+                ai_AlchemistFundWindow(obj, rec);
+                d2_SetViewEnabled(form, 1);
+            } else if (d2_PointerObj == back) {
+                d2_SetViewEnabled(form, 0);
+                if (ai_AlchemistRescheduleWindow(obj, rec))
+                    sv_PopRequest = 1;
+                d2_SetViewEnabled(form, 1);
+            }
+        }
+    } while (sv_RunFrame((int)ai_AlchemistWindow, 0x677c7));
+    d2_CloseView(form);
+    sv_CameraFollow();
 }
 /* 0x57dc50, a tutorial skill window (520 B): arg 1 = the record, arg 2 = the value put into the message, arg 3 =
    the skill index. The lookup 0x4eb180 (record, &a, &b, 0) != 0 or index 3 clears the answer flag; the window
@@ -4908,7 +5091,7 @@ int ai_Unk57cf90(char *rec)
 
 
 
-int ai_Unk57dc50(char *rec, int *arg, int idx)
+int ai_AlchemistTrainShareWindow(char *rec, int *arg, int idx)
 {
     char msg[0xf8];
     char *win;
@@ -4962,7 +5145,7 @@ int ai_Unk57dc50(char *rec, int *arg, int idx)
                 U_I((unsigned)&sv_PopRequest) = 1;
             }
         }
-        if (sv_RunFrame(ai_Unk57dc50, 0x677c7) == 0) {
+        if (sv_RunFrame(ai_AlchemistTrainShareWindow, 0x677c7) == 0) {
             d2_CloseView(win);
             return 1;
         }
@@ -4991,7 +5174,7 @@ void cm_SendMoveGoods(int a, int b, unsigned char c, int d);
    0x6f1bc5): non-zero -> 0x4ecd50 (record, value / points * the factor * 0.75), the result 1, 0x6f22a0 = 1 and
    0x4c47e0 (record +4, the character 0x770b84 + player * 0x21c, 0x6f1bc5, value); the second entry -> 0x6f22a0
    = 1; the pump 0 -> 0x4758f0 (window), the result */
-int ai_Unk57de60(char *rec)
+int ai_AlchemistFundWindow(char *rec)
 {
     char *rr;
     char *win;
@@ -5032,7 +5215,7 @@ int ai_Unk57de60(char *rec)
         rr = (char *)ahm_OwnerChar(rec);
         if (!rr) {
             U_I((unsigned)&sv_PopRequest) = 1;
-            sv_RunFrame(ai_Unk57de60, 0x20007);
+            sv_RunFrame(ai_AlchemistFundWindow, 0x20007);
             d2_CloseView(win);
             return 0;
         }
@@ -5051,7 +5234,7 @@ int ai_Unk57de60(char *rec)
                 U_I((unsigned)&sv_PopRequest) = 1;
             }
         }
-        if (sv_RunFrame(ai_Unk57de60, 0x677c7) == 0) {
+        if (sv_RunFrame(ai_AlchemistFundWindow, 0x677c7) == 0) {
             d2_CloseView(win);
             return done;
         }
@@ -5068,7 +5251,7 @@ int ahm_SendDelete();
    0x20007, 0x4758f0 (window), 0; the click 0x14673a0 -> 0x6f22a0 = 1; the first entry -> the result 1,
    0x4eb410 (record) and 0x4ece10 (the run record), 0x6f22a0 = 1; the second entry -> 0x6f22a0 = 1; the pump 0 ->
    0x4758f0 (window), the result */
-int ai_Unk57e0e0(char *rec)
+int ai_AlchemistRescheduleWindow(char *rec)
 {
     char *rr;
     char *win;
@@ -5097,7 +5280,7 @@ int ai_Unk57e0e0(char *rec)
         rr = (char *)ahm_OwnerChar(rec);
         if (!rr) {
             U_I((unsigned)&sv_PopRequest) = 1;
-            sv_RunFrame(ai_Unk57e0e0, 0x20007);
+            sv_RunFrame(ai_AlchemistRescheduleWindow, 0x20007);
             d2_CloseView(win);
             return 0;
         }
@@ -5113,7 +5296,7 @@ int ai_Unk57e0e0(char *rec)
                 U_I((unsigned)&sv_PopRequest) = 1;
             }
         }
-        if (sv_RunFrame(ai_Unk57e0e0, 0x677c7) == 0) {
+        if (sv_RunFrame(ai_AlchemistRescheduleWindow, 0x677c7) == 0) {
             d2_CloseView(win);
             return done;
         }
@@ -6523,7 +6706,7 @@ void ai_Unk581db0(char *rec)
 }
 
 void sv_ReleaseNamePlates(void); int sv_RegisterNamePlate(); int ai_OpenTransport(); int ai_StorageWindow();
-int ai_ProductionWindow(); void ai_Unk5823b0(); void ai_AlchemistResearchWindow(); int ai_Unk57cf90();
+int ai_ProductionWindow(); void ai_Unk5823b0(); void ai_AlchemistResearchWindow(); void ai_AlchemistWindow();
 
 /* 0x5821d0, the contact dispatcher (467 B): arg 1 = the record, arg 2 = the window's entry list. 0x52e190 once,
    then the pump loop 0x5309a0 (this dispatcher, 0x67fff): the escape 0x14673a0 -> 0x6f22a0 = 1; the contact
@@ -6582,7 +6765,7 @@ void ai_Unk5821d0(char *rec, char *list)
                 } else if (U_I((unsigned)&ai_ClickedObject) == c6) {
                     ai_AlchemistResearchWindow(rec);
                 } else if (U_I((unsigned)&ai_ClickedObject) == c4) {
-                    ai_Unk57cf90(rec);
+                    ai_AlchemistWindow(rec);
                 } else if (U_I((unsigned)&ai_ClickedObject) == c1) {
                     ai_AlchemistCandidates(rec);
                 }
