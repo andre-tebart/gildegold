@@ -6001,7 +6001,7 @@ int ai_Unk4cd1e0(G17MSG *m, G17STAT *s)
         s->unk01 = 0;
         s->value = 0;
     }
-    r = unk_Unk4eee00(&m->data[0], s);
+    r = gv_StartShot((struct GVSHOTMSG *)&m->data[0], s);
     if (s != 0 && r != 0)
         s->state = 1;
     if (r != 0)

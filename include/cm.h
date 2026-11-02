@@ -489,7 +489,7 @@ int ahm_AddValue();  /* 0x4ecdb0 */
 int ahm_DeleteAlchemist();  /* 0x4ece60 */
 int gv_ReserveEffect();  /* 0x4eeaa0 */
 int gv_StopEffect();  /* 0x4eeb00 */
-int unk_Unk4eee00();  /* 0x4eee00 */
+int gv_StartShot();  /* 0x4eee00 */
 
 char *ai_Unk4cd350();  /* 0x4cd350 */
 char *ai_Unk4cd380(int id);  /* 0x4cd380 */

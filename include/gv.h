@@ -6,6 +6,7 @@ struct SNDHANDLE;
 struct SHOTREC;
 struct AIBLD;
 struct AICHAR;
+struct GVSHOTMSG;
 struct VFSFILE;
 struct D3OBJECT;
 /* Declarations of gv.c (0x4ed170.., the avatar table 0x60f310 and the effect slots 0x6f1008). Names are ours. */
@@ -144,9 +145,9 @@ typedef struct GVEFFPART {              /* 0x68 bytes, one of an effect slot's t
     float v3[4];                        /* 0x30, not saved */
     float v4[4];                        /* 0x40 */
     int a, b, c;                        /* 0x50 */
-    int flags;                          /* 0x5c, the part is a SHOTREC (unk_5d33b0.h): this is its state, 0 idle, 1 in flight, 2 landed, 3 left the map (gv_UpdateEffects) */
+    int state;                          /* 0x5c, the part is a SHOTREC (unk_5d33b0.h): this is its state, 0 idle, 1 in flight, 2 landed, 3 left the map (gv_UpdateEffects) */
     int time;                           /* 0x60, not saved: the reader sets it to ai_ClockMs */
-    int e;                              /* 0x64 */
+    int steps;                          /* 0x64, the flight steps made (SHOTREC.steps) */
 } GVEFFPART;
 typedef struct GVEFFREC {               /* 16 bytes, a record of an effect slot's argument */
     int bldId;                          /* 0x00, a building id (gm_BuildQuery(1, 1, id)), -1: none */
@@ -162,7 +163,12 @@ typedef struct GVEFFARG {               /* 0x38 bytes, the argument of an effect
 typedef struct GVEFFECT {               /* 0x170 bytes, an effect slot of gv_Effects (8) */
     int id;                             /* 0x000, -1: free */
     int flags;                          /* 0x004, 4: to be released (gv_ReleaseEffect) */
-    float f08, f0c, f10;                /* 0x008, 1.0 after the reset; the per-frame step adds dt up to 1.0 */
+    union {
+        struct {
+            float f08, f0c, f10;        /* 0x008, 1.0 after the reset; the per-frame step adds dt up to 1.0 */
+        };
+        float charge[3];                /* 0x008, by the salvo's mode (0 .. 2): a received salvo takes its value off (0x4eee00, not below 0) */
+    };
     int f14;                            /* 0x014 */
     GVEFFPART parts[3];                 /* 0x018 */
     int tail[3];                        /* 0x150, 0: the part is free (gv_UpdateEffects clears it when the part ends) */
@@ -186,7 +192,7 @@ int gv_ReserveEffect(int id);              /* 0x4eeaa0 */
 int gv_StopEffect(int id);              /* 0x4eeb00 */
 int gv_FireShots(struct AIBLD *bld, struct AICHAR *ch, struct SHOTREC *a, struct SHOTREC *b, struct SHOTREC *d, float v, int cost, int x);  /* 0x4eeb70 */
 char *gv_GetEffect(int id);            /* 0x4eedd0 */
-int unk_Unk4eee00(int *p, int w);       /* 0x4eee00 */
+int gv_StartShot(struct GVSHOTMSG *m, int w);       /* 0x4eee00 */
 void unk_Unk4eeee0(int id, void *cb, void *arg);  /* 0x4eeee0 */
 float unk_Unk4eef50(int a, int b, int c);  /* 0x4eef50 */
 void unk_Unk4ef000(int n, int *out);    /* 0x4ef000 */
