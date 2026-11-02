@@ -473,66 +473,85 @@ void gm_CharacterUpkeep(void)
     }
     gm_NetMsgCount = 0;
 }
-/* 0x4fa700, the wage figures of the character id for the report: out[0] = the byte +0x166, out[1] = +0x169, out[2] = the kind 0x23 .. 0x27 by the highest of the flag bits 0x200 .. 0x2000 of the int +0x1cc, out[4] / [8] / [0xc] = the three amounts (0x4e6f80 of the kinds, 0 when the character is no active person); flag != 0 sends the amounts to the player (and for kind 3 a random extra, 0x4c5f60). Returns 1 when amounts were computed. ROUGH */
+/* 0x4fa700, the wages of the character id: out gets the two profession ids, the wage kind 0x23 .. 0x27 by the
+   highest privilege flag 0x200 .. 0x2000 (0x1000 first), and for a person in use (kind below 10, alive) with a
+   profession or a privilege the three wages: the AMTKIND salary of each times 32 times amt_Pay of the decision
+   0xf's value. flag != 0 pays them (the player's seat object must exist): one goods move each from the character,
+   and for the kind 3 a random extra ((0 .. level + 1) + level) * 0x1900 and a money delta of the level.
+   Returns 1 when the wages were computed
+   @deep Read whole against the original and rewritten (ORDWAGES / ORDCHAR / AMTKIND / AIDEC typed): the
+   kind chain into a local, the index form ORD_CHARS[id] (the original folds ai_Chars into the
+   displacements), the wage order job2 / job / kind, the money delta of AMTKIND.level (was the column), the
+   random extra via a temp. 207 = 207 instructions, statement structure equal (the je/jae targets differ by
+   the one byte of the end). Remaining: hunk 0x4fa95e (code 6) is the same three instructions reordered
+   with the commutative add's destination swapped: ours add ecx,eax / lea eax,[ecx+ecx*4] / mov
+   ecx,[esi+netId], the original mov edx,[esi+netId] / add eax,ecx / lea eax,[eax+eax*4]; hunk 0x4fa974
+   (regs 14) is the rotation eax->ecx ecx->edx edx->eax that follows from it through the two sends. Tried
+   (r + level) and (level + r), an int and an unsigned short temp, the one-expression form: no change.
+   Allocation / scheduling of the kind-3 tail only. */
 
-int gm_CharacterWages(unsigned short id, int flag, unsigned char *out)  /* the callers pass a 16-bit id and the original call site loads it without an extension (0x4f5a80: mov cx,[esi]) */
+int gm_CharacterWages(unsigned short id, int flag, unsigned char *rec_)  /* the callers pass a 16-bit id and the original call site loads it without an extension (0x4f5a80: mov cx,[esi]) */
 {
-    char *c;
-    unsigned f;
     int res;
-    int tmp[3];
-    int r[9];
-    unsigned char b;
+    AMTKIND kind;
+    AIDEC rec;
+    float pay;
+    ORDBLD *b;
+    int f, k;
+    unsigned short r;
+    ORDWAGES *out;
 
+    out = (ORDWAGES *)rec_;
     res = 0;
-    c = ai_Chars[id];
-    out[0] = c[0x166];
-    out[1] = c[0x169];
-    f = *(unsigned *)(c + 0x1cc);
+    out->job = ORD_CHARS[id].job;
+    out->job2 = ORD_CHARS[id].job2;
+    f = ORD_CHARS[id].flags1cc;
     if (f & 0x1000)
-        b = 0x26;
+        k = 0x26;
     else if (f & 0x2000)
-        b = 0x27;
+        k = 0x27;
     else if (f & 0x800)
-        b = 0x25;
+        k = 0x25;
     else if (f & 0x400)
-        b = 0x24;
+        k = 0x24;
     else
-        b = (f & 0x200) ? 0x23 : 0;
-    out[2] = b;
-    *(int *)(out + 4) = 0;
-    *(int *)(out + 8) = 0;
-    *(int *)(out + 0xc) = 0;
-    if (*(short *)c != -1 && (unsigned char)c[2] < 10 && c[8] != 0 && (c[0x166] != 0 || c[0x169] != 0 || (f & 0xe00) != 0)) {
-        gv_GetTableRecord(0xf, r);
-        *(int *)(out + 8) = (int)amt_GetKind(c[0x169], tmp);
-        *(int *)(out + 4) = (int)amt_GetKind(c[0x166], tmp);
-        *(int *)(out + 0xc) = (int)amt_GetKind(out[2], tmp);
+        k = (f & 0x200) ? 0x23 : 0;
+    out->kind = k;
+    out->amount = 0;
+    out->amount2 = 0;
+    out->amount3 = 0;
+    if (ORD_CHARS[id].id != 0xffff && ORD_CHARS[id].kind < 10 && ORD_CHARS[id].health > 0 && (ORD_CHARS[id].job != 0 || ORD_CHARS[id].job2 != 0 || (ORD_CHARS[id].flags1cc & 0xe00) != 0)) {
+        gv_GetTableRecord(0xf, (int *)&rec);
+        pay = amt_Pay[rec.cur];
+        amt_GetKind(ORD_CHARS[id].job2, &kind);
+        out->amount2 = (int)(kind.salary * 32 * pay);
+        amt_GetKind(ORD_CHARS[id].job, &kind);
+        out->amount = (int)(kind.salary * 32 * pay);
+        amt_GetKind(out->kind, &kind);
+        out->amount3 = (int)(kind.salary * 32 * pay);
         res = 1;
         if (flag != 0) {
-            char *bl = (char *)gm_FirstBuilding(1);
-            char *o;
-            if (bl == 0)
+            b = (ORDBLD *)gm_FirstBuilding(1);
+            if (b == 0)
                 return 0;
-            o = (char *)gm_Query(*(int *)(bl + 0x5d), 2, 6, 0, 0x115);
-            if (o == 0)
+            if (gm_Query((void *)b->objList, 2, 6, 0, 0x115) == 0)
                 return 0;
-            if (*(int *)(out + 4) != 0) {
-                cm_SendMoveGoodsUnchecked(*(int *)(c + 4), -1, 0, *(int *)(out + 4));
+            if (out->amount != 0) {
+                cm_SendMoveGoodsUnchecked(ORD_CHARS[id].netId, -1, 0, out->amount);
                 gm_NetMsgCount++;
             }
-            if (*(int *)(out + 8) != 0) {
-                cm_SendMoveGoodsUnchecked(*(int *)(c + 4), -1, 0, *(int *)(out + 8));
+            if (out->amount2 != 0) {
+                cm_SendMoveGoodsUnchecked(ORD_CHARS[id].netId, -1, 0, out->amount2);
                 gm_NetMsgCount++;
             }
-            if (*(int *)(out + 0xc) != 0) {
-                cm_SendMoveGoodsUnchecked(*(int *)(c + 4), -1, 0, *(int *)(out + 0xc));
+            if (out->amount3 != 0) {
+                cm_SendMoveGoodsUnchecked(ORD_CHARS[id].netId, -1, 0, out->amount3);
                 gm_NetMsgCount++;
             }
-            if (c[2] == 3) {
-                unsigned short rr = util_RandomU((tmp[2] & 0xff) + 2);
-                cm_SendMoveGoodsUnchecked(*(int *)(c + 4), -1, 0, (rr + (tmp[2] & 0xff)) * 0x1900);
-                cm_SendMoneyDelta(*(int *)(c + 4), r[2] & 0xff);
+            if (ORD_CHARS[id].kind == 3) {
+                r = util_Random((unsigned short)(kind.level + 2));
+                cm_SendMoveGoodsUnchecked(ORD_CHARS[id].netId, -1, 0, (r + kind.level) * 0x1900);
+                cm_SendMoneyDelta(ORD_CHARS[id].netId, kind.level);
                 gm_NetMsgCount += 2;
             }
         }
