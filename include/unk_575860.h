@@ -9,8 +9,8 @@ struct SBSAMPLE;
 typedef struct TUTSTEP {                /* 0x10 bytes, a step of a run record's chain (TUTRUN.steps) */
     unsigned int delay;                 /* 0x00, ms after the step started until its control is enabled */
     int kind;                           /* 0x04, the chapter kind 0 .. 3 (ai_TutorialStepForm) */
-    int text;                           /* 0x08 */
-    int unk0c;                          /* 0x0c */
+    int text;                           /* 0x08, the step's text (control 1 of the step form) */
+    char *voice;                        /* 0x0c, the voice played with it, 0 = none */
 } TUTSTEP;
 
 typedef struct TUTRUN {                 /* 0x74 bytes, a run (chapter) record of the tutorial, chained by next */
@@ -34,7 +34,7 @@ typedef struct TUTRUN {                 /* 0x74 bytes, a run (chapter) record of
     int goalState;                      /* 0x48, the state a completed goal switches to */
     int text2Goal;                      /* 0x4c, the event index that ends the second text window; set: the chain ends in the state 9, else 0xa */
     unsigned int stepCount;             /* 0x50 */
-    char pad54[4];
+    void (*stepShown)(void);            /* 0x54, called after every step form is shown and when the chain is done (ai_TutorialStepForm) */
     TUTSTEP *steps;                     /* 0x58 */
     char pad5c[8];
     int marker;                         /* 0x64, set: the position marker runs (ai_TutorialMarkerUpdate) */
@@ -66,7 +66,7 @@ typedef struct TUTSTATE {               /* the tutorial state record (0x6fa060, 
     int goalDone;                       /* 0x38, set by the run's step callbacks when their goal is met, 0 when a run starts */
     int phase;                          /* 0x3c, 0 .. 3 */
     unsigned int step;                  /* 0x40, the step of the run's chain */
-    int unk44;                          /* 0x44 */
+    int stepKind;                       /* 0x44, the kind 0 .. 3 of the open step form, 4 = none */
     int stepForm;                       /* 0x48, ai_TutorialStepForm's form */
     int stepControl;                    /* 0x4c, its control, -1 = none */
     int stepArg;                        /* 0x50, ai_CampaignStep's argument b of the step that ended the chain */
