@@ -3942,11 +3942,20 @@ int ai_Unk4965b0(AIPER *p, AIARG *s1, AIARG *s2)
     cm_SendLongMessage((AIMSG *)&m);
     return 4;
 }
-/* 0x496610, decide: the strongest of five needs (action 5) */
+/* 0x496610, decide of action 5: one of the two skills its job rates highest (gm_GetJobTalents), affordable and below 252, to train (o1 kind 0xe, ref the skill, arg2 the price); else the building it needs, or the sub-actions 0xe (no job) / 0xf (none affordable)
+   @deep read against 0x496610..0x496aa5: same statements, calls, arguments, constants and conditions;
+   gm_GetJobTalents now returns its record by value (the original's hidden-pointer copy mov ecx,[eax] / mov
+   dx,[eax+4] matches), and the no-job block's s2-first stores keep VC6 from cross-jumping it into the kind
+   0xf block (ours 347 vs 349 instructions, was 330). Left is allocation: the original keeps ka in
+   [esp+0x14] and reloads it into ebx at the rotated loop head (jmp 0x49678c / mov ebx,[esp+0x14]), the
+   skill byte c in bl and 1 in edi (mov edi,1); ours keeps ka in ebx across the loop, spills c to
+   [esp+0x5c] (mov byte ptr [esp+0x5c], al / mov ecx,[esp+0x5c]; and ecx,0xff) and loads 1 into edx; that
+   extra slot shifts every low local by 4 (slots hunks [esp+0x14]->[0x18], s1/s2 0x18/0x30 -> 0x1c/0x34)
+   and the in-block store order after the pushes is scheduling. Needs variant rounds. */
 
-int ai_Unk496610(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
+int ai_DecideTrainJobSkill(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
 {
-    JOBTALENTS r6;
+    JOBTALENTS jt;
     int q[0x88];
     float w[5];
     unsigned int cnt[5], n[5];
@@ -3969,11 +3978,11 @@ int ai_Unk496610(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
         AIARG s1, s2;
 
         s2.kind = 0;
+        s2.ref = 0;
+        s2.arg = 0;
         s1.kind = 0xe;
         s1.ref = 0;
         s1.arg = 0;
-        s2.ref = 0;
-        s2.arg = 0;
         r = ai_ChooseSubAction(5, p->id, 0, &s1, &s2);
         if (r) {
             *o1 = s1;
@@ -3981,7 +3990,7 @@ int ai_Unk496610(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
         }
         return r;
     }
-    r6 = gm_GetJobTalents(p->jobId);
+    jt = gm_GetJobTalents(p->jobId);
     if (p->bld2 == 0 && p->kind != 3) {
         AIARG s1, s2;
 
@@ -4005,7 +4014,7 @@ int ai_Unk496610(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
     kb = util_RandomU(5);
     for (i = 0; i < 5; i++) {
         memset(q, 0, sizeof(q));
-        v = r6.skills[i];
+        v = jt.skills[i];
         q[0] = 1;
         if (v > best) {
             if (best > 0) {
@@ -9246,7 +9255,7 @@ int ai_RegisterBaseActions(int a)
     act.id = 0x5;
     strcpy(act.name, "Bildung (Beruf)");
     act.eval = ai_Unk4a49a0;
-    act.decide = ai_Unk496610;
+    act.decide = ai_DecideTrainJobSkill;
     act.exec = ai_Unk496ab0;
     act.flags = 0x1;
     if (!am_RegisterMethod(&act, a))

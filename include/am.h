@@ -205,7 +205,7 @@ int ai_Unk496080(int a, AIPER *p, int b, AIARG *o1, AIARG *o2);                 
 int ai_Unk4960a0(AIPER *p, AIARG *s1, AIARG *s2);                               /* 0x4960a0 */
 int ai_DecideTrainSkill(int a, AIPER *p, int b, AIARG *o1, AIARG *o2);                 /* 0x4960b0 */
 int ai_Unk4965b0(AIPER *p, AIARG *s1, AIARG *s2);                               /* 0x4965b0 */
-int ai_Unk496610(int a, AIPER *p, int b, AIARG *o1, AIARG *o2);                 /* 0x496610 */
+int ai_DecideTrainJobSkill(int a, AIPER *p, int b, AIARG *o1, AIARG *o2);                 /* 0x496610 */
 int ai_Unk496ab0(AIPER *p, AIARG *s1, AIARG *s2);                               /* 0x496ab0 */
 int ai_Unk496b10(float *a, float *b, int i, AIPER *p, int f, AIARG *o1, AIARG *o2); /* 0x496b10 */
 int ai_Unk496e40(int a, AIPER *p, int b, AIARG *o1, AIARG *o2);                 /* 0x496e40 */
