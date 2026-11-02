@@ -772,7 +772,7 @@ exe	0x0043ce10	d3_InitSurf	d3_engine	byte	readable
 exe	0x0043ce60	d3_InitObject	d3_engine	shape	draft	deep	
 exe	0x0043cfb0	d3_AddObjectDrawData	d3_engine	byte	readable		
 exe	0x0043d0e0	d3_Unlink	d3_engine	byte	readable		
-exe	0x0043d180	d3_CloneObject	d3_engine	byte	draft	deep	
+exe	0x0043d180	d3_CloneObject	d3_engine	shape	draft	deep	byte+draft -> shape+draft at 16bd236: ai.h AIOBJ gained the room fields locked / unlockPrice (anonymous struct in the 0x1c union) for ai_AlchemistLabContact (byte) and ai_UnlockRoomWindow: truer types than the byte offsets; d3_CloneObject uses no AIOBJ, it only sees ai.h through d3_engine's includes and flips byte -> shape (order 8) on the declaration set alone (any form of the member tried: named, anonymous, other position), so the match was no evidence [waits for: d3_engine's include set settling (VC6 /O2 declaration-set tie-break)]
 exe	0x0043d430	d3_SetObjectAlpha	d3_engine	shape	readable	deep	
 exe	0x0043d630	d3_SetAlphaCB	d3_engine	byte	readable		
 exe	0x0043d690	d3_SetAlpha	d3_engine	byte	readable		

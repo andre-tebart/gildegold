@@ -98,6 +98,10 @@ typedef struct AIOBJ {                  /* 0x43 bytes, an object (table behind a
             struct AIJOB *job24;        /* 0x24, of a cart: a job whose cartBld names a building (sv_RefreshPanel prints that building's kind; reasoned: the job the cart runs) */
         };
         int recs[3];                    /* 0x1c..0x27, of a gm_Query kind 300 object in a shop: three record ids for gv_EvidencePrice (0x4ab080 tries them in turn) */
+        struct {                        /* of a room of a building (the objects of AIBLD.objList the enter-building driver walks) */
+            int locked;                 /* 0x1c, nonzero: the room's contacts open ai_UnlockRoomWindow, which clears it when paid */
+            int unlockPrice;            /* 0x20, the money ai_UnlockRoomWindow asks; cleared with locked */
+        };
     };
     char pad28[2];
     int unk2a;                          /* 0x2a */
