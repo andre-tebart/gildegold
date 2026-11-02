@@ -2823,18 +2823,21 @@ void ai_DuelNextPhase(AGDUEL *d)
     }
     d->phase = 5;
 }
-/* 0x493be0, a message that makes o's owner (character p) take a victim or let go */
+/* 0x493be0, sets object o's target (field 0x1e) for its owner p: an office holder (sel 7) picks a colleague of his office column he dislikes, sel 10 a partner from the random walk; without one the target is cleared to -1 (always for sel 3 / 4, else two times in three)
+   @deep read the whole function against the original and rewrote it: the goto to the release tail for
+   officeKind 0 / no partner / other sel, q reset after a failed liking test, AMTKIND/AMTREC records,
+   amt_GetKind widening, id reused for the random draw (frame now equal 0xbc). Left is allocation only:
+   after the office loop ours reloads ebx=r before esi=o (order, idiv [esp+0x1c] vs [esp+0x14]: cnt/liking
+   slots swapped), and the release tail: the original keeps -1 in ebx (or ebx,-1; mov [esp+0x1c],ebx; later
+   mov [esp+0x3b],bl for v=0xff) where ours stores the immediates (mov [esp+0x14],-1 / mov
+   [esp+0x3b],0xff). Tried v=-1, v=(unsigned char)id, statement orders, declaration orders: no better. */
 
-int ai_Unk493be0(AGCH *p, AIOBJ *o)
+int ai_ChooseObjectTarget(AGCH *p, AIOBJ *o)
 {
-    struct {
-        int a;
-        int id;
-        int c[4];
-    } rec[6];
-    int info[6];
-    AGCH *q, *w;
-    int r, nn, cnt, i;
+    AMTREC offices[6];
+    AMTKIND kind;
+    AGCH *q;
+    int r, n, cnt, i, id;  /* id also holds the liking threshold's random draw (the original's slot) */
     unsigned char v;
 
     q = 0;
@@ -2842,39 +2845,37 @@ int ai_Unk493be0(AGCH *p, AIOBJ *o)
     if (p == 0 || o == 0 || p->sel == 0 || p->money < 2)
         return 0;
     if (p->sel == 7) {
-        if (p->officeKind != 0) {
-            float d;
-            int x;
+        float liking;
 
-            if (amt_GetKindB(p->officeKind, info) == 0)
-                return 0;
-            nn = amt_GetColumnOffices(info[1], 6, rec);
-            if (nn == 0)
-                return 0;
-            cnt = nn;
-            i = util_RandomU(nn);
-            do {
-                if (p->netId != rec[i].id && (w = AG_CH(rec[i].id)) != 0) {
-                    d = gm_Liking(p->id, w->id, 1);
-                    x = util_RandomU(30);
-                    if (d < x + 40.0f) {
-                        q = w;
-                        break;
-                    }
-                }
-                nn--;
-                i = (i + 1) % cnt;
-            } while (nn != 0);
-        }
+        if (p->officeKind == 0)
+            goto release;
+        if (amt_GetKind(p->officeKind, &kind) == 0)
+            return 0;
+        n = amt_GetColumnOffices(kind.col, 6, offices);
+        cnt = n;
+        if (n == 0)
+            return 0;
+        i = util_RandomU(n);
+        do {
+            if (p->netId != offices[i].owner && (q = AG_CH(offices[i].owner)) != 0) {
+                liking = gm_Liking(p->id, q->id, 1);
+                id = util_RandomU(30);
+                if (liking < id + 40.0f)
+                    break;
+                q = 0;
+            }
+            n--;
+            i = (i + 1) % cnt;
+        } while (n != 0);
     } else if (p->sel == 10) {
         int flags;
-        int x;
 
         flags = 0xc00;
-        x = util_RandomU(30);
-        if (ai_Unk4a5b50(p, 1, &flags, 0, x + 40.0f, (unsigned int *)&x) != 0)
-            q = (AGCH *)&ai_CharsT[x & 0xffff];
-    }
+        if (ai_FindPartnersRandomWalk((AIPER *)p, 1, &flags, 0.0f, util_RandomU(30) + 40.0f, (unsigned short *)&id) == 0)
+            goto release;
+        q = (AGCH *)&ai_CharsT[id & 0xffff];
+    } else
+        goto release;
     if (q != 0) {
         v = 1;
         cm_BeginFieldBlock(o, o->objId);
@@ -2887,21 +2888,18 @@ int ai_Unk493be0(AGCH *p, AIOBJ *o)
         cm_SendFieldDeltas();
         return 1;
     }
+release:
     if (p->sel != 3 && p->sel != 4 && r == 0)
         return 0;
-    {
-        int neg;
-
-        v = 1;
-        neg = -1;
-        cm_BeginFieldBlock(o, o->objId);
-        cm_AddFieldDelta(4, 1, 0x1e, &neg);
-        cm_AddFieldDelta(1, 1, 0x22, &v);
-        v = 0xff;
-        cm_AddFieldDelta(1, 1, 0x1c, &v);
-        cm_AddFieldDelta(1, 1, 0x1d, &v);
-        cm_SendFieldDeltas();
-    }
+    id = -1;
+    v = 1;
+    cm_BeginFieldBlock(o, o->objId);
+    cm_AddFieldDelta(4, 1, 0x1e, &id);
+    cm_AddFieldDelta(1, 1, 0x22, &v);
+    v = 0xff;
+    cm_AddFieldDelta(1, 1, 0x1c, &v);
+    cm_AddFieldDelta(1, 1, 0x1d, &v);
+    cm_SendFieldDeltas();
     return 1;
 }
 /* 0x493ea0, picks a character for p (its watchers, listed at 0x68) */
@@ -10501,7 +10499,7 @@ int ai_PickPartnerInRange(AIPER *p, unsigned int fl, int n, unsigned short *ids,
 /* 0x4a5b50: as 0x4a58d0, but the partners come from a random walk over all 768 characters (steps 0x5ed100);
    the rating window [lo, hi] (0x50c550) only counts when it is narrower than 0..100 */
 
-int ai_Unk4a5b50(AIPER *p, unsigned int a, int *flags, float lo, float hi, unsigned short *id)
+int ai_FindPartnersRandomWalk(AIPER *p, unsigned int a, int *flags, float lo, float hi, unsigned short *id)
 {
     unsigned int q[0x14];
     unsigned int i, c;

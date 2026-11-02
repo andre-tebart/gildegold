@@ -6495,7 +6495,7 @@ void he_Unk542490(int ev)
     }
 }
 
-int ai_Unk493be0();
+int ai_ChooseObjectTarget();
 int unk_Unk4fae50();
 void ai_Unk5a8e10(char *param_1, char *param_2, int param_3);
 
@@ -6536,7 +6536,7 @@ void he_Unk542590(int ev)
     if (st == 0) {
         idx = *(unsigned short *)(bld + 0x27) * 0x21c;
         if (*(char *)(((unsigned)&ai_Chars + 0x2) + idx) != 6 && *(char *)(((unsigned)&ai_Chars + 0x2) + idx) != 7) {
-            if (r != 0 && ai_Unk493be0((unsigned)&ai_Chars + idx, r) != 0) {
+            if (r != 0 && ai_ChooseObjectTarget((unsigned)&ai_Chars + idx, r) != 0) {
                 gm_AddTime(ev + 0x52, 1, 0, 0);
                 *(int *)(ev + 0x84) = cm_SendExSetHE(1, ev);
                 return;
@@ -8204,7 +8204,7 @@ int he_Unk551340(int *s)
     return 0;
 }
 
-int ai_Unk4a5b50(struct AIPER *p, unsigned int a, int *flags, float lo, float hi, unsigned short *id);
+int ai_FindPartnersRandomWalk(struct AIPER *p, unsigned int a, int *flags, float lo, float hi, unsigned short *id);
 int ai_PickActionBuilding(struct AIPER *p, int a, __int64 mask, int c, float f, int *out);
 float util_RandomF();
 
@@ -8229,7 +8229,7 @@ int he_Unk551440(unsigned char *slot, int n, int m)
         pair[1] = 0x20a0;
     }
     ch = (unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c;
-    if (ai_Unk4a5b50(ch, 1, pair, 0, 100.0f, &out) == 0 && ai_Unk4a5b50(ch, 1, pair + 1, 0, 100.0f, &out) == 0)
+    if (ai_FindPartnersRandomWalk(ch, 1, pair, 0, 100.0f, &out) == 0 && ai_FindPartnersRandomWalk(ch, 1, pair + 1, 0, 100.0f, &out) == 0)
         return -1;
     ch = (unsigned)&ai_Chars + (unsigned short)out * 0x21c;
     r = *(int *)(ch + 0x170);

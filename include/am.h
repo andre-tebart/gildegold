@@ -425,7 +425,7 @@ void ai_DuelThrow(AGDUEL *d, AGCH *c, int k);                   /* 0x493420 */
 int ai_Unk4937a0(AGDUEL *d, AGCH *c, int k);                    /* 0x4937a0 */
 int ai_DuelOpponentAction(AGDUEL *d, AGCH *c);                           /* 0x493890 */
 void ai_DuelNextPhase(AGDUEL *d);                                   /* 0x493a40 */
-int ai_Unk493be0(AGCH *p, AIOBJ *o);                            /* 0x493be0 */
+int ai_ChooseObjectTarget(AGCH *p, AIOBJ *o);                            /* 0x493be0 */
 AGCH *ai_Unk493ea0(AGCH *p);                                    /* 0x493ea0 */
 
 int gm_CharCurrency(char *c, char p);                     /* 0x509ee0 */
@@ -1010,7 +1010,7 @@ void ai_FindWantedItems(struct G5CH *p, int n, struct G9REC *rec, int *st);     
 /* 0x4a58d0 ai_PickPartnerChain is declared in am.h (b is really a float) */
 int ai_PickPartnerInRange(AIPER *p, unsigned int fl, int n, unsigned short *ids, float lo, float hi, unsigned short *id); /* 0x4a5a30 */
 extern const int ai_Unk5ed100[16];                                                    /* 0x5ed100, random steps */
-int ai_Unk4a5b50(AIPER *p, unsigned int a, int *flags, float lo, float hi, unsigned short *id); /* 0x4a5b50, unk_490830.h: other view */
+int ai_FindPartnersRandomWalk(AIPER *p, unsigned int a, int *flags, float lo, float hi, unsigned short *id); /* 0x4a5b50, unk_490830.h: other view */
 int ai_Unk4a5d30(AIPER *p, unsigned int fl, int n, unsigned short *ids, float lo, float hi, unsigned short *id); /* 0x4a5d30 */
 unsigned int ai_FindCandidates(AIPER *p, unsigned int n, unsigned int fl, float lo, float hi, unsigned short *out); /* 0x4a5ef0 */
 unsigned int ai_PickPartnerChainLevel(AIPER *p, unsigned int a, unsigned int fl, float lo, float hi, int d, unsigned short *id); /* 0x4a61d0 */

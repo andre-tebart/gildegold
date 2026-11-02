@@ -493,7 +493,7 @@ int ai_Unk4b78c0(G14MSG *m)
     if (c == 0)
         return 1;
     fl = (unsigned)&full_data_600c00;
-    if (!ai_Unk4a5b50((AIPER *)c, 1, &fl, 0.0f, 100.0f, &id))
+    if (!ai_FindPartnersRandomWalk((AIPER *)c, 1, &fl, 0.0f, 100.0f, &id))
         return 0x400;
     p = &ai_CharsT[id];
     n = util_RandomU(4) * 2 + 4;
@@ -515,7 +515,7 @@ int ai_Unk4b79c0(G14MSG *m)
     if (c == 0)
         return 1;
     fl = (unsigned)&full_data_600c00;
-    if (!ai_Unk4a5b50((AIPER *)c, 1, &fl, 33.0f, 100.0f, &id))
+    if (!ai_FindPartnersRandomWalk((AIPER *)c, 1, &fl, 33.0f, 100.0f, &id))
         return 0x400;
     p = &ai_CharsT[id];
     n = util_RandomU(5) * 2 + 6;
@@ -537,7 +537,7 @@ int ai_Unk4b7ac0(G14MSG *m)
     if (c == 0)
         return 1;
     fl = (unsigned)&full_data_600c01;
-    if (!ai_Unk4a5b50((AIPER *)c, 1, &fl, 33.0f, 100.0f, &id))
+    if (!ai_FindPartnersRandomWalk((AIPER *)c, 1, &fl, 33.0f, 100.0f, &id))
         return 0x400;
     p = &ai_CharsT[id];
     n = util_RandomU(7) * 2 + 6;
@@ -642,7 +642,7 @@ int ai_Unk4b7f40(G14MSG *m)
     if (ai_InventoryHas(c, 0x290))
         return 0x400;
     fl = (unsigned)&full_data_600c00;
-    if (!ai_Unk4a5b50((AIPER *)c, 1, &fl, 0.0f, 100.0f, &id))
+    if (!ai_FindPartnersRandomWalk((AIPER *)c, 1, &fl, 0.0f, 100.0f, &id))
         return 0x400;
     p = &ai_CharsT[id];
     n = util_RandomU(5) * 2 + 6;
@@ -666,7 +666,7 @@ int ai_Unk4b8060(G14MSG *m)
     if (ai_InventoryHas(c, 0x290))
         return 0x400;
     fl = (unsigned)&full_data_600c00;
-    if (!ai_Unk4a5b50((AIPER *)c, 1, &fl, 0.0f, 100.0f, &id))
+    if (!ai_FindPartnersRandomWalk((AIPER *)c, 1, &fl, 0.0f, 100.0f, &id))
         return 0x400;
     p = &ai_CharsT[id];
     if (p == 0)
@@ -692,7 +692,7 @@ int ai_Unk4b81a0(G14MSG *m)
     if (ai_InventoryHas(c, 0x290))
         return 0x400;
     fl = (unsigned)&full_data_600c00;
-    if (!ai_Unk4a5b50((AIPER *)c, 1, &fl, 0.0f, 100.0f, &id))
+    if (!ai_FindPartnersRandomWalk((AIPER *)c, 1, &fl, 0.0f, 100.0f, &id))
         return 0x400;
     p = &ai_CharsT[id];
     n = util_RandomU(8) * 2 + 4;
