@@ -387,14 +387,14 @@ typedef struct AGDUEL {                 /* a dice duel between two characters (0
     AGCH *side1;                        /* 0x0c */
     unsigned char n1;                   /* 0x10 */
     char pad11[3];
-    unsigned int unk14;                 /* 0x14 */
+    unsigned int stats1;                /* 0x14, an AI opponent's classes (ai_MakeDuelOpponent: second << 8 | first), 0xffff for a player's side */
     unsigned char t1[0x10];             /* 0x18 */
     int kind1;                          /* 0x28 */
     int unk2c;                          /* 0x2c */
     AGCH *side2;                        /* 0x30 */
     unsigned char n2;                   /* 0x34 */
     char pad35[3];
-    unsigned int unk38;                 /* 0x38 */
+    unsigned int stats2;                /* 0x38, as stats1 for side2 */
     unsigned char t2[0x10];             /* 0x3c */
     int kind2;                          /* 0x4c */
     int unk50;                          /* 0x50 */
@@ -423,7 +423,7 @@ int ai_Unk493390(AGDUEL *d, AGCH *c, int k);                    /* 0x493390 */
 int ai_Unk4933d0(AGDUEL *d, AGCH *c, int k);                    /* 0x4933d0 */
 void ai_DuelThrow(AGDUEL *d, AGCH *c, int k);                   /* 0x493420 */
 int ai_Unk4937a0(AGDUEL *d, AGCH *c, int k);                    /* 0x4937a0 */
-int ai_Unk493890(AGDUEL *d, AGCH *c);                           /* 0x493890 */
+int ai_DuelOpponentAction(AGDUEL *d, AGCH *c);                           /* 0x493890 */
 void ai_Unk493a40(AGDUEL *d);                                   /* 0x493a40 */
 int ai_Unk493be0(AGCH *p, AIOBJ *o);                            /* 0x493be0 */
 AGCH *ai_Unk493ea0(AGCH *p);                                    /* 0x493ea0 */

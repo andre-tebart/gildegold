@@ -2443,15 +2443,15 @@ int ai_Unk493200(AGCH *p, AGDUEL *d, int k)
     d->unk50 = 0;
     if (fin->unk58 < util_RandomF()) {
         d->side1 = p;
-        d->unk14 = 0xffff;
+        d->stats1 = 0xffff;
         d->side2 = &ai_DuelOpponent;
-        d->unk38 = stats;
+        d->stats2 = stats;
         fin->unk58 = util_RandomF() * 0.11f + fin->unk58 + 0.2f;
     } else {
     d->side2 = p;
-    d->unk38 = 0xffff;
+    d->stats2 = 0xffff;
     d->side1 = &ai_DuelOpponent;
-    d->unk14 = stats;
+    d->stats1 = stats;
     old = fin->unk58;
     fin->unk58 = (old - 0.2f) - util_RandomF() * 0.11f;
     }
@@ -2686,20 +2686,19 @@ int ai_Unk4937a0(AGDUEL *d, AGCH *c, int k)
         return 0;
     }
 }
-/* 0x493890, what side c does next in the duel (0 none, 1 ... 4) */
+/* 0x493890, the next action of the AI duel opponent c (kind 10) for ai_Unk4937a0: state 0 throws (1); states 1 / 2 take one more die (2) while the points short of 17 are 6 or more, else stop (3) or another die by a chance from the shortfall and its class; state 3 answers 3 or 4 by its sum against the other side's dice; 0 for any other side or state */
 
-int ai_Unk493890(AGDUEL *d, AGCH *c)
+int ai_DuelOpponentAction(AGDUEL *d, AGCH *c)
 {
     unsigned char b1, b2;
     unsigned char *t;
-    unsigned int u;
-    int me, n, i, sum, s;
-    float f, g;
+    int u, me, i, sum, s;
+    float f;
 
     if (c->kind == 10) {
         if (c == d->side1) {
             s = d->kind1;
-            u = d->unk14;
+            u = d->stats1 & 0xff;
             b1 = d->n1;
             t = d->t1;
             b2 = d->n2;
@@ -2708,44 +2707,35 @@ int ai_Unk493890(AGDUEL *d, AGCH *c)
             if (c != d->side2)
                 return 0;
             s = d->kind2;
-            u = d->unk38;
+            u = d->stats2 & 0xff;
             b1 = d->n2;
             t = d->t2;
             b2 = d->n1;
             me = 1;
         }
-        n = b1;
-        i = 0;
-        sum = 0;
-        if (n > 0) {
-            do {
-                sum += t[i];
-                i++;
-            } while (i < n);
-        }
+        for (i = 0, sum = 0; i < b1; i++)
+            sum += t[i];
         switch (s) {
         case 0:
             return 1;
         case 1:
         case 2:
             sum = 0x11 - sum;
-            if (sum > 5)
+            if (sum >= 6)
                 return 2;
             if (sum == 0)
                 return 3;
-            f = ((1.0f - (u & 0xff) * 0.2f) * 0.25f + 1.0f) * (sum * 0.16666667f);
-            if (util_RandomF() < f)
+            f = ((1.0f - u * 0.2f) * 0.25f + 1.0f) * (sum * 0.16666667f);
+            if (f > util_RandomF())
                 return 2;
             break;
         case 3:
             f = (sum + me) * 0.05882353f;
-            if (1.0f <= f)
+            if (f >= 1.0f)
                 return 3;
-            g = (float)(int)(6 - (u & 0xff));
-            f = f - b2 * 3.5f;
-            if (f > g)
-                return 4;
-            break;
+            if (6 - u >= f - b2 * 3.5f)
+                break;
+            return 4;
         default:
             return 0;
         }
