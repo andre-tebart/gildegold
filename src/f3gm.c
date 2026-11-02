@@ -2262,31 +2262,38 @@ char *gm_CharacterHome(char *c, int *out2, int *out3)
     }
     return 0;
 }
-/* 0x4fddb0, creates a character: flags bit 0 = 0x4fd5c0 (a pair born from the group), else 0x507690 (p2, -1, -1, p3, 0, p4, p5, 2); bit 1: stores the job bytes p4 / p5 (+0x164 / +0x165); bit 2: puts it on the stage of the building p6 (0x4fbd10). Returns the character or 0 */
+/* 0x4fddb0, creates a character: flags bit 0 = gm_CreateRandomChild(age), else gm_CreateCharacter(type, -1, -1, age, 0, job, title, 2); bit 1 (random child only): sets its jobId / title; bit 2: places it on the stage of the building bld at its gm_HomeObject. Returns the character or 0
+   @deep statements read against the original 0x4fddb0 and reconciled (random-child / gm_CreateCharacter
+   branches, the 0xffff checks, title then jobId stores, the flags&4 home-object placement); every
+   remaining asmdiff line is callee-saved register placement: the original pushes edi in the prologue (+0x8
+   'push edi', 'pop edi' before the shared return 0) and esi only inside the flags&4 branch (+0x50 'push
+   esi' / +0x7e 'pop esi'), ours pushes esi+edi together after the 0xffff check (+0x3c/+0x3d); the [esp+N]
+   differences are the shift that follows. Tried: combined vs nested flags&4 condition, unsigned short id,
+   local declaration orders, no c temporary (worse) */
 
-short *unk_Unk4fddb0(unsigned char flags, int p2, int p3, unsigned char p4, unsigned char p5, char *p6)
+short *gm_SpawnCharacter(unsigned char flags, int type, int age, unsigned char job, unsigned char title, char *bld)
 {
     unsigned id;
-    char *o;
+    ORDCHAR *c;
+    ORDOBJ *o;
 
-    if ((flags & 1) == 0) {
-        id = gm_CreateCharacter(p2, -1, -1, p3, 0, p4, p5, 2);
+    if (flags & 1) {
+        id = gm_CreateRandomChild(age);
         id &= 0xffff;
-    } else {
-        id = gm_CreateRandomChild(p3);
-        id &= 0xffff;
-        if (id == 0xffff)
-            return 0;
-        if (flags & 2) {
-            ai_Chars[id][0x165] = p5;
-            ai_Chars[id][0x164] = p4;
+        if (id != 0xffff && (flags & 2)) {
+            ORD_CHARS[id].title = title;
+            ORD_CHARS[id].jobId = job;
         }
+    } else {
+        id = gm_CreateCharacter(type, -1, -1, age, 0, job, title, 2);
+        id &= 0xffff;
     }
     if (id == 0xffff)
         return 0;
-    if ((flags & 4) != 0 && p6 != 0 && (o = gm_HomeObject((unsigned char *)p6)) != 0)
-        gm_PlaceOnStage(*(int *)(ai_Chars[id] + 4), *(int *)(p6 + 1), *(int *)(o + 2), 0, 0);
-    return (short *)ai_Chars[id];
+    c = &ORD_CHARS[id];
+    if ((flags & 4) && bld != 0 && (o = (ORDOBJ *)gm_HomeObject((unsigned char *)bld)) != 0)
+        gm_PlaceOnStage(c->netId, ((ORDBLD *)bld)->id, o->objId, 0, 0);
+    return (short *)c;
 }
 /* 0x4fde90, loads the icon names: counts the 0x80-byte records of "<root>Character_Names.dat" (0x6f1b90 of them), allocates 0x30 bytes per name (0x6f1b94) and copies each name; resets the three flag bytes at 0x6f0454 */
 

@@ -426,7 +426,7 @@ void ai_ResetJob(struct AICHAR *c);  /* 0x47e940 */
 int gv_HandOverCrimes();  /* 0x4f3910 */
 void unk_Unk4fda10(char *c, char *b);  /* 0x4fda10 */
 char *gm_HomeObject(unsigned char *b);  /* 0x4fdc10 */
-short *unk_Unk4fddb0(unsigned char flags, int p2, int p3, unsigned char p4, unsigned char p5, char *p6);  /* 0x4fddb0 */
+short *gm_SpawnCharacter(unsigned char flags, int p2, int p3, unsigned char p4, unsigned char p5, char *p6);  /* 0x4fddb0 */
 unsigned short * gm_QueryNext(void);  /* 0x4ffcc0 */
 int gm_BuildingMainObject(unsigned char *b);  /* 0x501b50 */
 void gm_Unk5034b0(int o);  /* 0x5034b0 */

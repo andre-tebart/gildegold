@@ -4734,7 +4734,7 @@ int ai_Unk4cb250(G17MSG *m, G17STAT *s)
     } else if (c != 0)
         bo = *(char **)(c + 0x170);
     if (c == 0 || *(int *)(c + 0x16c) != 0)
-        c = unk_Unk4fddb0(6, m->data[8], 0x12, m->data[0xe], m->data[0xd], bo);
+        c = gm_SpawnCharacter(6, m->data[8], 0x12, m->data[0xe], m->data[0xd], bo);
     if (c == 0) {
         if (s != 0) {
             s->state = 2;
