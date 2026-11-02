@@ -7262,23 +7262,17 @@ void sv_AdvanceGame(void)
 void sv_SetScreenCenter(unsigned fl)
 {
     if ((fl & 0x40) != 0) {
-        int w, h;
-
         if ((fl & 0x100) != 0) {
-            w = (int)(*(float *)(unsigned)&d3_ViewW * 0.5f + *(float *)(unsigned)&d3_ViewX
-                      - *(float *)(unsigned)&d2_ScreenScale * 6.0f);
-            h = (int)(*(float *)(unsigned)&d3_ViewH * 0.5f + *(float *)(unsigned)&d2_ScreenScale * 10.0f
-                      + *(float *)(unsigned)&d3_ViewY);
+            d2_HalfScreenW = (int)(d3_ViewW * 0.5f + d3_ViewX - d2_ScreenScale * 6.0f);
+            d2_HalfScreenH = (int)(d3_ViewH * 0.5f + d2_ScreenScale * 10.0f + d3_ViewY);
         } else {
-            w = (int)(*(float *)(unsigned)&d3_ViewW * 0.5f + *(float *)(unsigned)&d3_ViewX);
-            h = (int)(*(float *)(unsigned)&d3_ViewH * 0.5f + *(float *)(unsigned)&d3_ViewY);
+            d2_HalfScreenW = (int)(d3_ViewW * 0.5f + d3_ViewX);
+            d2_HalfScreenH = (int)(d3_ViewH * 0.5f + d3_ViewY);
         }
-        SV_I((unsigned)&d2_HalfScreenW) = w;
-        SV_I((unsigned)&d2_HalfScreenH) = h;
         return;
     }
-    SV_I((unsigned)&d2_HalfScreenW) = (int)SV_S((unsigned)&d2_ScreenW) >> 1;
-    SV_I((unsigned)&d2_HalfScreenH) = (int)SV_S((unsigned)&d2_ScreenH) >> 1;
+    d2_HalfScreenW = d2_ScreenW >> 1;
+    d2_HalfScreenH = d2_ScreenH >> 1;
 }
 
 int cm_PartyById();                     /* 0x4e50a0 */
