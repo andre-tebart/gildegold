@@ -920,7 +920,7 @@ int ai_DecideMayorPrison(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);          
 int ai_Unk49e680(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49e680 */
 int ai_DecideMasterBuilder(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49e7a0 */
 int ai_ExecuteMasterBuilder(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49ea90 */
-int ai_Unk49ec10(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2); /* 0x49ec10 */
+int ai_EvalDarkCorner(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2); /* 0x49ec10 */
 int ai_Unk49ed10(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49ed10 */
 extern const int ai_Unk5ed140[16];                                                   /* 0x5ed140, random steps */
 int gm_Unk50a250(int b, unsigned short *p, unsigned cnt, int *out);                       /* 0x50a250 */

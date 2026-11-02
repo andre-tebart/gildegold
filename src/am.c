@@ -8112,10 +8112,11 @@ int ai_ExecuteMasterBuilder(G5CH *p, AIARG *s1, AIARG *s2)
         G5_ACTS[0x2f].w3[n].w = G5_ACTS[0x2f].w1[0].w * 2.0f;
     return 0x2f;
 }
-/* 0x49ec10, eval callback 0x32: rated 6 / 2 times higher when 0x5044b0(p, 4) has more than two entries and
-   0x4aaef0 finds something; else only from hour 20 on */
+/* 0x49ec10, eval callback of "Dunkle Ecke" (0x32): with a title job 4 (gm_TitleJob) that has more than two
+   titles left, rated as the current need times 6 / 2 when ai_FindDarkCornerTarget finds a building (its pick
+   into o1 / o2), else 0; without one, the mood weights from hour 20 on */
 
-int ai_Unk49ec10(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2)
+int ai_EvalDarkCorner(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2)
 {
     AIARG s1;
     AIARG s2;
@@ -8127,14 +8128,15 @@ int ai_Unk49ec10(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2
         return 0;
     q = gm_TitleJobI(p->id, 4);
     if (q != 0 && gm_TitlesLeft(q) > 2) {
-        if (ai_Unk4aaef0(p, &s1, &s2) == 0)
-            return 0;
-        AI_EvalCurrentNeed7(a, b, i, p, 0, o1, o2);
-        *o1 = s1;
-        *o2 = s2;
-        *a *= 6.0f;
-        *b *= 2.0f;
-        return 1;
+        if (ai_FindDarkCornerTarget(p, &s1, &s2) != 0) {
+            AI_EvalCurrentNeed7(a, b, i, p, 0, o1, o2);
+            *o1 = s1;
+            *o2 = s2;
+            *a *= 6.0f;
+            *b *= 2.0f;
+            return 1;
+        }
+        return 0;
     }
     if (ai_TimeT.hour < 0x14)
         return 0;
@@ -8159,7 +8161,7 @@ int ai_Unk49ed10(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     if (q != 0 && gm_TitlesLeft(q) > 2) {
         if (o1->kind == 4 && o2->kind == 1)
             return 0x32;
-        if (ai_Unk4aaef0(p, &s1, &s2) != 0) {
+        if (ai_FindDarkCornerTarget(p, &s1, &s2) != 0) {
             *o1 = s1;
             *o2 = s2;
             return 0x32;
@@ -9858,7 +9860,7 @@ int ai_RegisterBaseActions(int a)
     AI_ZERO(&act, sizeof(act));
     act.id = 0x32;
     strcpy(act.name, "Dunkle Ecke");
-    act.eval = ai_Unk49ec10;
+    act.eval = ai_EvalDarkCorner;
     act.decide = ai_Unk49ed10;
     act.exec = ai_Unk49ee20;
     act.flags = 0x69;

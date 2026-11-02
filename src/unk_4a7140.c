@@ -2140,7 +2140,7 @@ int ai_TrustedOfFour(int k, AIPER *p, int *ids, int *out)
 /* 0x4aaef0, decide callback: a building of p (type with cap > 1) with a free workplace object (lists 0x120 / 300)
    and no job 0x74 yet, into a (kind 4) and b (kind 1) */
 
-int ai_Unk4aaef0(AIPER *p, unsigned char *a, unsigned char *b)
+int ai_FindDarkCornerTarget(AIPER *p, unsigned char *a, unsigned char *b)
 {
     AIBLD *bld;
     AIOBJ *o, *o2;
