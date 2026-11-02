@@ -1747,13 +1747,13 @@ exe	0x004a58d0	ai_PickPartnerChain	am	shape	readable
 exe	0x004a5a30	ai_PickPartnerInRange	am	byte	readable		
 exe	0x004a5b50	ai_FindPartnersRandomWalk	am	byte	readable		
 exe	0x004a5d30	ai_PickPartnerRandomWalk	am	draft	readable	deep	
-exe	0x004a5ef0	ai_FindCandidates	am	draft	draft		
-exe	0x004a61d0	ai_PickPartnerChainLevel	am	draft	draft		
-exe	0x004a63f0	ai_PickActionBuilding	am	draft	draft		
-exe	0x004a6570	ai_Unk4a6570	am	draft	draft		
-exe	0x004a66f0	ai_Unk4a66f0	am	byte	draft		
-exe	0x004a67a0	ai_Unk4a67a0	am	draft	draft		
-exe	0x004a6ae0	ai_Unk4a6ae0	am	draft	draft		
+exe	0x004a5ef0	ai_FindCandidates	am	draft	readable	deep	
+exe	0x004a61d0	ai_PickPartnerChainLevel	am	byte	readable		
+exe	0x004a63f0	ai_PickActionBuilding	am	draft	readable	deep	
+exe	0x004a6570	ai_PickActionBuildings	am	draft	readable	deep	
+exe	0x004a66f0	ai_BuildingAimPoints	am	byte	readable		
+exe	0x004a67a0	ai_AimCannon	am	shape	readable		
+exe	0x004a6ae0	ai_FireCannon	am	draft	readable	deep	
 exe	0x004a7140	ai_PokerStart	unk_4a7140	byte	readable		
 exe	0x004a7430	ai_PokerDealRound	unk_4a7140	byte	readable		
 exe	0x004a74e0	ai_PokerStep	unk_4a7140	byte	readable		
@@ -2749,7 +2749,7 @@ exe	0x004ef000	gv_CannonKind	gv	shape	readable
 exe	0x004ef090	gv_CannonCost	gv	byte	readable		
 exe	0x004ef170	gv_BuildingCannon	gv	byte	readable		
 exe	0x004ef260	gv_CannonScatter	gv	byte	readable		
-exe	0x004ef330	unk_Unk4ef330	gv	byte	draft		
+exe	0x004ef330	gv_CannonItemFactor	gv	byte	draft		
 exe	0x004ef3c0	gv_GraveCount	gv	byte	readable		
 exe	0x004ef440	gv_GravesInUse	gv	byte	draft		
 exe	0x004ef470	gv_EntryCount	gv	byte	readable		
@@ -3084,7 +3084,7 @@ exe	0x00505da0	gm_RandomAge	f3gm	draft	readable
 exe	0x00505df0	gm_FindChar	f3gm	draft	readable		
 exe	0x00505e30	gm_CharAge	f3gm	byte	draft		
 exe	0x00505e60	gm_CharLevel	f3gm	draft	draft		
-exe	0x00505f30	gm_Unk505f30	f3gm	draft	draft		
+exe	0x00505f30	gm_CharPrevLevel	f3gm	draft	draft		
 exe	0x00506000	gm_BirthDate	f3gm	draft	draft		
 exe	0x005060d0	gm_BirthDate2	f3gm	draft	draft		
 exe	0x00506180	gm_Unk506180	f3gm	draft	draft		
@@ -3933,10 +3933,10 @@ exe	0x005755c0	he_Unk5755c0	he	byte	draft
 exe	0x00575600	he_SaveMessageFilter	he	byte	draft		
 exe	0x00575640	he_IsMessageKindFiltered	he	draft	draft		
 exe	0x00575710	he_SetMessageKindFiltered	he	byte	draft		
-exe	0x00575860	ai_TutorialTick	unk_575860	draft	draft		
-exe	0x00576020	unk_ClearEndGameGate	unk_575860	byte	draft		
-exe	0x00576030	unk_SetEndGameGate	unk_575860	byte	draft		
-exe	0x00576040	ai_CampaignStep	unk_575860	draft	draft		
+exe	0x00575860	ai_TutorialTick	unk_575860	byte	readable		
+exe	0x00576020	unk_ClearEndGameGate	unk_575860	byte	readable		
+exe	0x00576030	unk_SetEndGameGate	unk_575860	byte	readable		
+exe	0x00576040	ai_CampaignStep	unk_575860	draft	readable	deep	
 exe	0x00576340	ai_ScriptQuery	unk_575860	draft	draft		
 exe	0x005763c0	ai_RunAllows	unk_575860	byte	draft		
 exe	0x00576410	ai_Unk576410	unk_575860	byte	draft		
@@ -3986,17 +3986,17 @@ exe	0x00577690	ai_Unk577690	unk_575860	draft	draft
 exe	0x00577740	ai_Unk577740	unk_575860	byte	draft		
 exe	0x00577820	ai_Unk577820	unk_575860	byte	draft		
 exe	0x00577850	ai_Unk577850	unk_575860	byte	draft		
-exe	0x005778b0	ai_Unk5778b0	unk_575860	draft	draft		
-exe	0x00577a00	ai_Unk577a00	unk_575860	draft	draft		
-exe	0x00577a90	ai_Unk577a90	unk_575860	draft	draft		
-exe	0x00577b60	ai_Unk577b60	unk_575860	byte	draft		
-exe	0x00577b90	ai_Unk577b90	unk_575860	draft	draft		
-exe	0x00577c60	ai_Unk577c60	unk_575860	byte	draft		
+exe	0x005778b0	ai_TutorialShowRunText	unk_575860	draft	draft		
+exe	0x00577a00	ai_TutorialIntroAnswered	unk_575860	draft	draft		
+exe	0x00577a90	ai_TutorialShowText	unk_575860	draft	draft		
+exe	0x00577b60	ai_TutorialHideText	unk_575860	byte	draft		
+exe	0x00577b90	ai_TutorialShowText2	unk_575860	draft	draft		
+exe	0x00577c60	ai_TutorialHideText2	unk_575860	byte	draft		
 exe	0x00577cd0	ai_Unk577cd0	unk_575860	byte	draft		
 exe	0x00577d60	ai_Unk577d60	unk_575860	byte	draft		
-exe	0x00577d90	ai_Unk577d90	unk_575860	draft	draft		
-exe	0x00577e50	ai_Unk577e50	unk_575860	draft	draft		
-exe	0x005780e0	ai_Unk5780e0	unk_575860	byte	draft		
+exe	0x00577d90	ai_TutorialProgressSlider	unk_575860	draft	draft		
+exe	0x00577e50	ai_TutorialStepForm	unk_575860	draft	draft		
+exe	0x005780e0	ai_TutorialStepClicked	unk_575860	byte	draft		
 exe	0x00578120	ai_Unk578120	unk_575860	byte	draft		
 exe	0x00578150	ai_Unk578150	unk_575860	byte	draft		
 exe	0x00578170	ai_Unk578170	unk_575860	byte	draft		
@@ -4011,7 +4011,7 @@ exe	0x0057aa80	ai_Unk57aa80	unk_575860	draft	draft
 exe	0x0057aeb0	ai_Unk57aeb0	unk_575860	draft	draft		
 exe	0x0057b750	ai_Unk57b750	unk_575860	draft	draft		
 exe	0x0057b810	ai_Unk57b810	unk_575860	shape	draft		
-exe	0x0057b8a0	ai_Unk57b8a0	unk_575860	draft	draft		
+exe	0x0057b8a0	ai_TutorialMarkerUpdate	unk_575860	draft	draft		
 exe	0x0057bc30	ai_SetupTutorialPlayer	unk_575860	shape	draft		
 exe	0x0057bce0	ai_TutorialWindow	unk_575860	draft	draft		
 exe	0x0057bf00	ai_Unk57bf00	unk_575860	draft	draft		
@@ -4502,7 +4502,7 @@ exe	0x005c2a10	ai_Unk5c2a10	unk_58bbd0	draft	draft
 exe	0x005c2b90	ai_Unk5c2b90	unk_58bbd0	draft	draft		
 exe	0x005c3200	ai_MasterLetterWindow	unk_58bbd0	draft	draft		
 exe	0x005c33c0	ai_PassesPartnerFilter	unk_58bbd0	draft	draft		
-exe	0x005c37a0	ai_Unk5c37a0	unk_58bbd0	draft	draft		
+exe	0x005c37a0	ai_PassesBuildingFilter	unk_58bbd0	draft	draft		
 exe	0x005c39a0	ai_Unk5c39a0	unk_58bbd0	draft	draft		
 exe	0x005c3bb0	ai_Unk5c3bb0	unk_58bbd0	draft	draft		
 exe	0x005c4100	ai_Unk5c4100	unk_58bbd0	draft	draft		

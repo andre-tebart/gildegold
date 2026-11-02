@@ -5,8 +5,11 @@
    jump table and nop fill end at 0x575860; the unit's one .data block starts at 0x62918c (the "FT" state names)
    and its literals climb in function order to 0x62aa58; the network lobby (0x589f10) is a unit of its own.
    The original file name is unknown (no leaked tag). Names are ours.
-   Open: type debt - the state record S, the 0x74-byte chapter records and the message (AIMSG) / contact-list
-   records are accessed by byte offset; ai.h's AIMSG and a record type would clear most of the drafts' offsets.
+   Open: type debt - the state record (TUTSTATE, ai_Tutorial) and the run records (TUTRUN) are typed in
+   unk_575860.h, but most functions still reach them through the S / U_I byte-offset macros; the message (AIMSG)
+   and contact-list records are still accessed by byte offset.
+   Open: ai_ClockMs is volatile in the original (ai_TutorialTick reloads it after every read, byte-matched through
+   the unit's view ai_ClockMsVolatile); its owner and the other units declare it plain int.
    Open: not included yet (dcp headers conflicts unk_575860 HEADER): d2.h gfx.h sv.h unk_5d33b0.h; held by own
    declarations that differ from the owner's: d2_CreateWinText, SHOTREC; calls whose argument count differs from
    the definition (read the original's pushes): d2_GetObjValue, d2_PlaceMainWindow, sv_DrawBalanceBar.
