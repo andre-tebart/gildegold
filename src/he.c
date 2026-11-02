@@ -9187,7 +9187,7 @@ int he_Unk553060(void)
 void ai_Unk4c5580(int a, int b, int c, int d);
 
 /* 0x5538b0, ends every running event record that involves the person `p` (+4 the id; nothing for a free slot): the records of the types 0x41, 0x6f, 0x45 (the two partners +0xac / +0xb0, the other one is looked up (0x505df0) before the record is ended by 0x541200), 0x2c (the partners +0xac / +0xb4 / +0xc0 get the message 0x4c5580 (+0xac, +0xb0, +4, 0)), 0x47 (+0xac or +0xb0), 0x5e and 0x5f (+0xac); only records with a bit of 3 in +0x78 are touched (ROUGH) */
-void he_Unk5538b0(unsigned short *p)
+void he_EndPersonEvents(unsigned short *p)
 {
     char *e;
     int id, a, b;
@@ -13500,7 +13500,7 @@ int he_Unk568310(void)
 }
 /* 0x568aa0, calls the handler 0x541200 for every event of the type 0x23 with the flags +0x78 & 3 whose +0xb0 equals the day +4 of this event */
 
-void he_Unk568aa0(int ev)
+void he_EndKind23Events(int ev)
 {
     int o;
 

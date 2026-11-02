@@ -4990,8 +4990,8 @@ int d3t_SceneIndex();                     /* 0x411be0 */
 int ch_Delete();                     /* 0x4028a0 */
 int gm_Unk50a0f0(int y);                     /* 0x50a0f0 */
 void sv_MoveToGroup(unsigned char *o, short *it, int c, char *g);                     /* 0x524260 */
-void he_Unk5538b0(unsigned short *p);                     /* 0x5538b0 */
-void he_Unk568aa0(int ev);                     /* 0x568aa0 */
+void he_EndPersonEvents(unsigned short *p);                     /* 0x5538b0 */
+void he_EndKind23Events(int ev);                     /* 0x568aa0 */
 void d3io_NoopCallback();                     /* 0x44ee40 */
 int amt_ClearOffices();                     /* 0x4e6d80 */
 void unk_Unk503c60(int c, int mode);                     /* 0x503c60 */
@@ -5656,14 +5656,14 @@ fin:
         v = 0;
     return v;
 }
-/* 0x503c20, releases what hangs on the character c (not for a free slot): 0x524260 (0, 0, id, 0), 0x5538b0, 0x568aa0, 0x44ee40, 0x4e6d80 */
+/* 0x503c20, releases what hangs on the character c before it dies or its slot is freed (nothing for a free slot, id 0xffff): moves it out of its group (sv_MoveToGroup), ends the events it takes part in (he_EndPersonEvents, he_EndKind23Events), the empty callback 0x44ee40 and gives up its offices (amt_ClearOffices) */
 
-void gm_Unk503c20(short *c)
+void gm_ReleaseCharacter(ORDCHAR *c)
 {
-    if (c != 0 && *c != -1) {
-        sv_MoveToGroup(0, 0, *c, 0);
-        he_Unk5538b0(c);
-        he_Unk568aa0(c);
+    if (c != 0 && c->id != 0xffff) {
+        sv_MoveToGroup(0, 0, c->id, 0);
+        he_EndPersonEvents(&c->id);
+        he_EndKind23Events((int)c);
         d3io_NoopCallback(c);
         amt_ClearOffices(c);
     }
@@ -5685,7 +5685,7 @@ void unk_Unk503c60(int c, int mode)
     if (p[2] != 0xf) {
         *(int *)(p + 8) = 0;
         *(unsigned short *)(p + 0x28) = *(unsigned short *)ai_Time;
-        gm_Unk503c20(p);
+        gm_ReleaseCharacter((ORDCHAR *)p);
         p[2] = 0xf;
         peer = 0;
         cnt = 0;
@@ -7313,8 +7313,8 @@ unsigned gm_Unk5064d0(int a, int b)
     if (cb == 0)
         return -2;
     he_Unk53ed40(ca);
-    he_Unk5538b0(ca);
-    he_Unk5538b0(cb);
+    he_EndPersonEvents(ca);
+    he_EndPersonEvents(cb);
     sb = *cb;
     if (ca[0x28] != cb[0x28])
         cb[0x28] = ca[0x28];
