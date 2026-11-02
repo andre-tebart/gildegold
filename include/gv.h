@@ -17,12 +17,27 @@ struct D3OBJECT;
 extern char unk_Avatars[0x20][0xf4];    /* 0x60f310 */
 extern char gv_Effects[];             /* 0x6f1008, 8 slots of 0x170 bytes */
 extern AITIME gv_LastTime;              /* 0x6f0e38, ai_Time at the last effect step (struct copies of it) */
+typedef struct GVGRAVE {                /* 0x44 bytes, a dead person in a grave (GVYARD.graves; filled by gv_BuryNewDead) */
+    int id;                             /* 0x00, the object id (ai_NextObjectId), -1 when free */
+    char first[0x10];                   /* 0x04, the first name (txt_MaleFirstNames / txt_FemaleFirstNames by sex) */
+    char family[0x10];                  /* 0x14, the family name (txt_FamilyNames) */
+    unsigned char traits[5];            /* 0x24, five values 42 .. 189 (random 0 .. 7 * 21 + 42) */
+    char pad29[3];
+    int v2c;                            /* 0x2c, 1 .. 9 */
+    int v30;                            /* 0x30, 1 .. 2 */
+    int nameId;                         /* 0x34, 1 .. 0x5e, the id of its gm_NameRecord */
+    int sex;                            /* 0x38, 0 male, 1 female (picks the first-name list and the gm_NameRecord table) */
+    int icon;                           /* 0x3c, 0x639 + one of the name record's four words +0x34 (0xff: none) */
+    int year;                           /* 0x40, a year 1 .. 4 before the burial (ai_Time.year), a guess: the year of death */
+} GVGRAVE;
 typedef struct GVENTRY {                /* 0x14 bytes, an entry of a graveyard's lists (gv_AllocGraveyard) */
     int size;                           /* 0x00, the list (grave size) 0 .. 3 it belongs to */
     int id;                             /* 0x04, -1 when free */
-    unsigned short w08;                 /* 0x08, 0xffff when free */
-    char pad0a[6];
-    char *grave;                        /* 0x10, its grave record (0x44 << size bytes) in GVYARD.graves */
+    unsigned short w08;                 /* 0x08, 0xffff when free (0x7fff for a new dead person) */
+    unsigned short until;               /* 0x0a, ai_Time.year + 5 at the burial (a guess: the year the grave runs out) */
+    unsigned char b0c;                  /* 0x0c, 0xff for a new dead person */
+    char pad0d[3];
+    GVGRAVE *grave;                     /* 0x10, its grave record (0x44 << size bytes) in GVYARD.graves */
 } GVENTRY;
 typedef struct GVYARD {                 /* 0x24 bytes, the graveyard record of a kind 0x1d building (AIBLD.yard; gv_AllocGraveyard) */
     int id;                             /* 0x00, the building's id */
@@ -30,7 +45,7 @@ typedef struct GVYARD {                 /* 0x24 bytes, the graveyard record of a
     GVENTRY *lists[4];                  /* 0x08, the entries (0x14 bytes) of the four grave sizes (0x44 << i bytes each) */
     unsigned char open[4];              /* 0x18, the size i is in use (open[0] is set at allocation; 0x19 .. 0x1b by expansion) */
     GVENTRY *entries;                   /* 0x1c, all entries ("gv_Alloc:_all_graves") */
-    int *graves;                        /* 0x20, the grave records, 0x44 bytes each, first word -1 when free ("gv_Alloc:_all_zombies") */
+    GVGRAVE *graves;                    /* 0x20, the grave records, first word -1 when free ("gv_Alloc:_all_zombies") */
 } GVYARD;
 typedef struct GVCANNON {               /* 0x20 bytes, the state of the cannon scene (unk_575860 0x57e270 ..), saved with the effects */
     int bld;                            /* 0x00, the record id (rec + 1) the scene was last set up for, -1 after the reset */
@@ -231,10 +246,10 @@ int gv_EntryIsUsed(int *a, int *b);      /* 0x4ef770 */
 int gv_EntryHasId(int *a, int *b);      /* 0x4ef780 */
 unsigned gv_FindEntry(void *a, unsigned char *o, unsigned after, int (*cb)(), int l);  /* 0x4ef7c0 */
 unsigned gv_LoadGraveyard(unsigned char *o, int *e);  /* 0x4ef900 */
-int *gv_RandomGrave(unsigned char *o);  /* 0x4ef930 */
+GVGRAVE *gv_RandomGrave(unsigned char *o);/* 0x4ef930 */
 extern const int gv_EntryCounts[];             /* 0x5ee054, entries per kind */
 extern const int gv_ListEntries[4][4];         /* 0x5ee084 */
-int unk_Unk4ef9c0(unsigned char *o, int n);  /* 0x4ef9c0 */
+int gv_BuryNewDead(unsigned char *o, int n);  /* 0x4ef9c0 */
 int *gv_AllocGraveyard(unsigned char *o);   /* 0x4efc10, allocates the graveyard record of the building o ("gv_AllocGraveyardField", at +0x65 of o) */
 extern const int gv_EntryTotals[];             /* 0x5ee064 */
 extern const int gv_GraveTotals[];             /* 0x5ee074 */

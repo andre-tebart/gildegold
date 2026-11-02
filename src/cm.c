@@ -12629,13 +12629,13 @@ void ai_Unk4e01e0(char *m)
     ai_Unk4e3620("cd2\\ArmerDelinquent.mp3");
     if (w == 1)
         ai_Unk4e33d0(0x1f4);
-    nm = v != 0 ? (char *)gm_CharNameRecord(*(unsigned short *)v) : (char *)unk_Unk4fb330((unsigned short)util_RandomU(2), (unsigned short)util_RandomU(0x5e) + 1);
+    nm = v != 0 ? (char *)gm_CharNameRecord(*(unsigned short *)v) : (char *)gm_NameRecord((unsigned short)util_RandomU(2), (unsigned short)util_RandomU(0x5e) + 1);
     sprintf(buf, "%s ", nm + 4);
-    nm = p1 != 0 ? (char *)gm_CharNameRecord(*(unsigned short *)p1) : (char *)unk_Unk4fb330((unsigned short)util_RandomU(2), (unsigned short)util_RandomU(0x5e) + 1);
+    nm = p1 != 0 ? (char *)gm_CharNameRecord(*(unsigned short *)p1) : (char *)gm_NameRecord((unsigned short)util_RandomU(2), (unsigned short)util_RandomU(0x5e) + 1);
     sprintf(buf + strlen(buf), "%s ", nm + 4);
-    nm = p2 != 0 ? (char *)gm_CharNameRecord(*(unsigned short *)p2) : (char *)unk_Unk4fb330((unsigned short)util_RandomU(2), (unsigned short)util_RandomU(0x5e) + 1);
+    nm = p2 != 0 ? (char *)gm_CharNameRecord(*(unsigned short *)p2) : (char *)gm_NameRecord((unsigned short)util_RandomU(2), (unsigned short)util_RandomU(0x5e) + 1);
     sprintf(buf + strlen(buf), "%s ", nm + 4);
-    nm = p3 != 0 ? (char *)gm_CharNameRecord(*(unsigned short *)p3) : (char *)unk_Unk4fb330((unsigned short)util_RandomU(2), (unsigned short)util_RandomU(0x5e) + 1);
+    nm = p3 != 0 ? (char *)gm_CharNameRecord(*(unsigned short *)p3) : (char *)gm_NameRecord((unsigned short)util_RandomU(2), (unsigned short)util_RandomU(0x5e) + 1);
     sprintf(buf + strlen(buf), "%s", nm + 4);
     ai_Unk4e2c30("cutscenes\\hinrichtung\\hinrichtung-create", buf);
     ai_Unk4e2c70(ai_Unk4e2c30("cutscenes\\hinrichtung\\hinrichtung-intro.", &ch_EmptyName));

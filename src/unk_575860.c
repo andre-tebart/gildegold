@@ -4430,7 +4430,7 @@ int ai_Unk57bf00(void *rec)
     int n;
     int i;
 
-    v = (char *)unk_Unk4fb330(0, 0x52);
+    v = (char *)gm_NameRecord(0, 0x52);
     n = 0;
     for (i = 0; i < 3; i++) {
         per[n] = (char *)ahm_WalkStep(i);
@@ -7854,12 +7854,12 @@ int ai_Unk5859c0(char *unused, char *ev)
     d2_SetForm(win, 0);
     script = (int)evt_Load((char *)(unsigned)&full_data_62a6b8);
     if (script != 0) {
-        name1 = (char *)unk_Unk4fb330(*(unsigned char *)((unsigned)&ai_Unk770b89 + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c), *(unsigned char *)(((unsigned)&ai_CharInts + 0x160) + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c));
+        name1 = (char *)gm_NameRecord(*(unsigned char *)((unsigned)&ai_Unk770b89 + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c), *(unsigned char *)(((unsigned)&ai_CharInts + 0x160) + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c));
         if (name1 == 0)
-            name1 = (char *)unk_Unk4fb330(*(unsigned char *)((unsigned)&ai_Unk770b89 + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c), 0);
-        name2 = (char *)unk_Unk4fb330(U_I(ev + 0x4c), U_I(ev + 0x48));
+            name1 = (char *)gm_NameRecord(*(unsigned char *)((unsigned)&ai_Unk770b89 + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c), 0);
+        name2 = (char *)gm_NameRecord(U_I(ev + 0x4c), U_I(ev + 0x48));
         if (name2 == 0)
-            name2 = (char *)unk_Unk4fb330(U_I(ev + 0x4c), 0);
+            name2 = (char *)gm_NameRecord(U_I(ev + 0x4c), 0);
         sprintf(buf, (char *)(unsigned)"%s %s", name1 + 4, name2 + 4);
         evt_RunCommand((EVTSCRIPT *)script, buf);
     }

@@ -1437,7 +1437,7 @@ unsigned gv_LoadGraveyard(unsigned char *o, int *e)
 /* 0x4ef930, a random used grave (GVYARD.graves, first word not -1) of the graveyard building o, searched cyclically from a
    random start among its gv_GraveCount small graves; 0 when none or o is no graveyard (kind 0x1d) of level 1 .. 3 */
 
-int *gv_RandomGrave(unsigned char *o)
+GVGRAVE *gv_RandomGrave(unsigned char *o)
 {
     AIBLD *bld = (AIBLD *)o;
     AIBTYPE *bt;
@@ -1452,8 +1452,8 @@ int *gv_RandomGrave(unsigned char *o)
         k = n;
         if (n != 0) {
             do {
-                if (g->graves[i * 0x11] != -1)          /* 0x44-byte grave records */
-                    return &g->graves[i * 0x11];
+                if (g->graves[i].id != -1)
+                    return &g->graves[i];
                 k--;
                 i = (i + 1) % n;
             } while (k != 0);
@@ -1461,65 +1461,65 @@ int *gv_RandomGrave(unsigned char *o)
     }
     return 0;
 }
-/* 0x4ef9c0, fills n (up to the free ones) free entries of the list 0 (entry id +4 = -1; 0x4ef760) of the graveyard of the object o (building kind 0x1d, kind byte 1 .. 3) with new dead persons: id from
-   ai_NextObjectId, a record (+0x10: 0x44 bytes) with five random bytes (+0x24 .. : rand(8) * 21 + 42), age fields, a random name pair (0x143ac5c / 0x143af70 and 0x143b178) and the grave kind (0x4fb330); returns how many. ROUGH */
+/* 0x4ef9c0, buries up to n new dead persons in the free entries of the smallest graves (list 0, gv_EntryIsFree) of the
+   graveyard building o (kind 0x1d, level 1 .. 3): each grave gets a new object id, random traits, values and year, a random
+   family and first name by sex and an icon from its gm_NameRecord; returns how many were buried (0 for no graveyard)
+   @deep Read in full against the original (all 185 instructions reconciled): statements, field stores, the
+   traits fpu loop, the icon do-while and the name strncpys match instruction for instruction. Tried: early
+   return 0 first, the whole body inside the kind/level if (kept), i = 0 before the if (worse, fpu hunks).
+   Remaining only the callee-saved register pushes/pops: the original pushes ebx/esi/edi in the prologue
+   (+0x0b..+0x10) and pops them on the return-0 path (+0x241: pop edi; pop esi; xor eax,eax; pop ebx), ours
+   pushes them after the kind/level check (+0x46) and returns 0 without pops; the [esp+0x10] vs [esp+0x1c]
+   load of n is the same slot shifted by those pushes. Prologue placement is allocation, not meaning. */
 
-int unk_Unk4ef9c0(unsigned char *o, int n)
+int gv_BuryNewDead(unsigned char *o, int n)
 {
-    unsigned char kind;
-    char *e;
-    char *z;
-    char *g;
-    int i, cnt, k;
-    unsigned r;
+    AIBLD *bld = (AIBLD *)o;
+    AIBTYPE *bt;
+    GVENTRY *e;
+    unsigned *rec;
+    int i, k, r;
 
-    kind = (unsigned char)ai_BTypes[o[0] + o[0] * 0x24c + 0x247];
-    if (ai_BTypes[o[0] + o[0] * 0x24c] != 0x1d || kind == 0 || kind > 3)
-        return 0;
-    i = 0;
-    cnt = 0;
-    if (n > 0) {
-        do {
-            e = (char *)gv_FindEntry(0, o, 0, gv_EntryIsFree, 0);
+    bt = (AIBTYPE *)(ai_BTypes + bld->type + bld->type * 0x24c);
+    if (bt->kind == 0x1d && bt->cap247 >= 1 && bt->cap247 <= 3) {
+        for (i = 0; i < n; i++) {
+            e = (GVENTRY *)gv_FindEntry(0, o, 0, gv_EntryIsFree, 0);
             if (e == 0)
-                return cnt;
-            z = *(char **)(e + 0x10);
-            *(int *)z = ai_NextObjectId;
+                break;
+            e->grave->id = ai_NextObjectId;
             ai_NextObjectId++;
-            *(int *)(e + 4) = *(int *)z;
-            *(short *)(e + 8) = 0x7fff;
-            e[0xc] = (char)0xff;
-            *(short *)(e + 10) = (short)(*(int *)ai_Time + 5);
-            for (k = 0; k < 5; k++) {
-                z[0x24 + k] = (char)(int)((float)util_RandomU(8) * 21.0f + 42.0f);
-            }
-            *(int *)(z + 0x2c) = util_RandomU(9) + 1;
-            *(int *)(z + 0x30) = util_RandomU(2) + 1;
-            *(int *)(z + 0x34) = util_RandomU(0x5e) + 1;
-            *(int *)(z + 0x40) = *(int *)ai_Time - util_RandomU(4) - 1;
-            *(int *)(z + 0x38) = util_RandomU(2);
-            strncpy(z + 0x14, txt_FamilyNames[util_RandomU(0x95)], 0xf);
-            g = (char *)unk_Unk4fb330(*(int *)(z + 0x38), *(int *)(z + 0x34));
-            *(int *)(z + 0x3c) = 0xff;
+            e->id = e->grave->id;
+            e->w08 = 0x7fff;
+            e->until = (unsigned short)(gv_TimeT.year + 5);
+            e->b0c = 0xff;
+            for (k = 0; k < 5; k++)
+                e->grave->traits[k] = (unsigned char)(int)((float)util_RandomU(8) * 21.0f + 42.0f);
+            e->grave->v2c = util_RandomU(9) + 1;
+            e->grave->v30 = util_RandomU(2) + 1;
+            e->grave->nameId = util_RandomU(0x5e) + 1;
+            e->grave->year = gv_TimeT.year - util_RandomU(4) - 1;
+            e->grave->sex = util_RandomU(2);
+            strncpy(e->grave->family, txt_FamilyNames[util_RandomU(0x95)], 0xf);
+            rec = gm_NameRecord(e->grave->sex, e->grave->nameId);
+            e->grave->icon = 0xff;
             r = util_RandomU(4);
             k = 4;
-            do {
-                if (*(int *)(g + 0x34 + r * 4) != 0xff) {
-                    *(int *)(z + 0x3c) = *(int *)(g + 0x34 + r * 4) + 0x639;
+            do {                                    /* one of the record's four words +0x34 that is set, from a random one */
+                if (rec[0xd + r] != 0xff) {
+                    e->grave->icon = rec[0xd + r] + 0x639;
                     break;
                 }
                 k--;
-                r = (r + 1) & 3;
+                r = (r + 1) % 4;
             } while (k != 0);
-            if (*(int *)(z + 0x38) == 0)
-                strncpy(z + 4, txt_MaleFirstNames[util_RandomU(0xbf)], 0xf);
+            if (e->grave->sex == 0)
+                strncpy(e->grave->first, txt_MaleFirstNames[util_RandomU(0xbf)], 0xf);
             else
-                strncpy(z + 4, txt_FemaleFirstNames[util_RandomU(0x70)], 0xf);
-            cnt++;
-            i = cnt;
-        } while (cnt < n);
+                strncpy(e->grave->first, txt_FemaleFirstNames[util_RandomU(0x70)], 0xf);
+        }
+        return i;
     }
-    return i;
+    return 0;
 }
 /* 0x4efc10, allocates the graveyard record of the object o (0x24 bytes, "gv_AllocGraveyardField"; kind 1 .. 3 of the building kind 0x1d): +0 the object id, +4 the kind, +8 the entries (0x14 bytes: the list number,
    id -1, short 0xffff, the record at +0x10) of 8 / 12 / 16 small (0x44 bytes) graves, then 4 / 6 / 8 of 0x88, 2 / 2 / 4 of 0x110 and (kind 3) 2 of 0x220 bytes, the entry tables +0xc / +0x10 / +0x14 for the
@@ -2110,7 +2110,7 @@ int unk_Unk4f0dd0(unsigned char *p)
         return -2;
     if (*(int *)(o + 0x65) == 0)
         return -3;
-    n = unk_Unk4ef9c0(o, *(int *)(p + 0x13));
+    n = gv_BuryNewDead(o, *(int *)(p + 0x13));
     return (n > 0) - 1 & 0xfffffffc;
 }
 /* 0x4f0e80, the message 0x4c60f0 (g +4, o +1, v, byte b, int x at +0xd, int y at +0x11) */

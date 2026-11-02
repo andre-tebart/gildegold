@@ -808,7 +808,7 @@ int ch_CurrentGroup = -1;  /* 0x5f1294 */
 char d3if_SelectTextureSet(struct D3OBJECT *obj, struct D3SURF *surf, unsigned char set, char reload);                     /* 0x446f30 */
 
 /* 0x4fb330, the record of the table kind (0: 0x612bd8, 1: 0x614518) with the id: prepared by 0x4fb620 (the head numbers); the first free record when the id is not found (0x5f records of 0x44 bytes); 0 for another kind */
-unsigned *unk_Unk4fb330(int kind, int id)
+unsigned *gm_NameRecord(int kind, int id)
 {
     unsigned *t;
     int i;
@@ -4330,7 +4330,7 @@ void gm_SetCapacities(unsigned char *b)
         *(char *)(o + 0x1c) = k[0x23f];
 }
 
-int unk_Unk4ef9c0();                     /* 0x4ef9c0 */
+int gv_BuryNewDead();                     /* 0x4ef9c0 */
 void gm_GetGebaeudeHauptraum(unsigned char *b);                     /* 0x501ce0 */
 int gm_BuildingClass();                     /* 0x501d80 */
 /* ai_BuildingNames: view of txt_Ptrs (build/mk_txt_views.py) */
@@ -4510,7 +4510,7 @@ unsigned char *gm_CreateBuilding(unsigned char k, unsigned short own)
     case 0x49:
     case 0x4a:
         *(int *)(b + 0x65) = gv_AllocGraveyard(b);
-        unk_Unk4ef9c0(b, 3);
+        gv_BuryNewDead(b, 3);
         break;
     case 0x4b:
     case 0x4c:
