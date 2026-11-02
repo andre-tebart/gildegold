@@ -8383,10 +8383,21 @@ int ai_Unk49f4f0(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2
     *b *= 3.0f;
     return 1;
 }
-/* 0x49f5c0, decide callback 0x34: a kind-5 character (0x194 >= 4, money / 32 >= 5000, no job 0x24 of its own)
-   builds a building of a random class (0x5043d0) it has fewer than 1..4 of and none of in its list */
+/* 0x49f5c0, decide callback of "Change Profession" (0x34): a kind-5 character (money field >= 4, currency / 32
+   >= 5000, no event 0x24 for it) picks a random title class r (1..15) of which its player record (+0x75) has
+   no titles left and fewer than 1..4 buildings run that job, and builds the first building of that class's
+   title (gm_TitleNumber / gm_FirstTitleNumber) when it can pay for it; o1->arg2 is the title
+   @deep read whole against the original: guards (kind 5, money >= 4, currency / 32 >= 5000, event 0x24
+   netId), the count of buildings per job (indexed loop over ai_BldsT, unsigned kind), the random class
+   walk (loop exit returns 0, break path tests r == -1), the build and the copy-out all match; 175 vs 176
+   instructions. Left: the induction variables of the own[] loop - the original keeps l = q + 0x75 in ebp
+   and own's byte offset in esi ('+ lea ebp, [esi + 0x75] / mov al, [ebp] / mov [esp + esi + 0x90], eax /
+   add esi, 4 / inc ebp / cmp esi, 0x3c'), ours folds l into k ('- mov al, [esi + ebp + 0x75] / mov [esp +
+   esi*4 + 0x80], eax / inc esi / cmp esi, 0xf'); *l++ and k, l++ forms give the same; plus a zero register
+   edi set before that loop, and a frame of 0xbc vs our 0xac (4-byte holes around cnt / own; own[16] tried,
+   no change). */
 
-int ai_Unk49f5c0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
+int ai_DecideChangeProfession(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 {
     AIARG s1;
     AIARG s2;
@@ -8394,36 +8405,37 @@ int ai_Unk49f5c0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     int own[15];
     unsigned char *q, *l;
     AIJOB *j;
-    AIBLD *b;
     int money, k, n, r, c, x, y;
 
     q = (unsigned char *)gm_PlayerRecord((AICHAR *)p);
-    if (((unsigned char *)p)[2] != 5 || *(int *)((unsigned char *)p + 0x194) < 4 || q == 0)
+    if (p->kind != 5 || p->money < 4 || q == 0)
         return 0;
     money = gm_CharCurrency((AIPER *)p, ai_OwnPlayer);
     if (money / 32 < 5000)
         return 0;
     for (j = he_FindEvent(1, 0, 0x24); j != 0; j = he_NextEvent()) {
-        if (j->unkac == (int)p->netId)
+        if (j->ownerCh == (int)p->netId)
             return 0;
     }
     gm_TitlesLeft(((unsigned char *)p)[0x164]);
     memset(cnt, 0, sizeof(cnt));
     l = q + 0x75;
-    for (k = 0; k < 15; k++, l++)
-        own[k] = gm_TitlesLeft(*l);
-    for (b = ai_BldsT, k = 0; k < 0x100; k++, b++) {
-        if (b->type != 0)
-            cnt[gm_BuildingJob(ai_BTypesT[b->type].kind) - 1]++;
+    for (k = 0; k < 15; k++)
+        own[k] = gm_TitlesLeft(*l++);
+    for (k = 0; k < 0x100; k++) {
+        if (ai_BldsT[k].type != 0)
+            cnt[gm_BuildingJob((unsigned char)ai_BTypesT[ai_BldsT[k].type].kind) - 1]++;
     }
     n = util_RandomU(4) + 1;
     r = util_RandomU(0x10);
-    for (c = 0x10; c != 0; c--) {
+    for (c = 0x10;; ) {
         if (r != 0 && own[r - 1] == 0 && cnt[r - 1] < n)
             break;
         r = (r + 1) % 0x10;
+        if (--c == 0)
+            return 0;
     }
-    if (c == 0 || r == -1)
+    if (r == -1)
         return 0;
     x = gm_TitleNumber(r, 1);
     y = gm_FirstTitleNumber(x);
@@ -9875,7 +9887,7 @@ int ai_RegisterBaseActions(int a)
     act.id = 0x34;
     strcpy(act.name, "Change Profession");
     act.eval = ai_Unk49f4f0;
-    act.decide = ai_Unk49f5c0;
+    act.decide = ai_DecideChangeProfession;
     act.exec = ai_Unk49f7f0;
     act.flags = 0x7;
     if (!am_RegisterMethod(&act, a))

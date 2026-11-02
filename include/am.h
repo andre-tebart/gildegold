@@ -928,7 +928,7 @@ int ai_DecideTakeCredit(int a, struct G5CH *p, int f, struct AIARG *o1, struct A
 int ai_Unk49f370(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49f370 */
 int ai_Unk49f4f0(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2); /* 0x49f4f0 */
 int gm_TitleNumber(int r, int n);                                                 /* 0x5043d0 */
-int ai_Unk49f5c0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49f5c0 */
+int ai_DecideChangeProfession(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49f5c0 */
 void ai_Unk4c59b0(int a, unsigned char b);                                      /* 0x4c59b0 */
 void gm_SendMoneyDelta(int a, int b);                                      /* 0x50cc50, unk_48e070.h: int id */
 int ai_Unk49f7f0(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49f7f0 */

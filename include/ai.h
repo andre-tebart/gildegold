@@ -163,6 +163,7 @@ typedef struct AIJOB {                  /* a job (he_FindEvent / he_NextEvent) *
     union {
         int unkac;                      /* 0xac, a building id */
         int partner1;                   /* 0xac, of a pair event (kinds 0x41 / 0x6f / 0x45, he_Unk5538b0) the first partner's netId */
+        int ownerCh;                    /* 0xac, of an event 0x24 the netId of the character it is for (ai_DecideChangeProfession skips a character that has one) */
         union {
             int id;                     /* 0xac */
             struct {
