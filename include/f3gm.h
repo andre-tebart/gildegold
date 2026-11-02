@@ -132,6 +132,7 @@ int gm_SumSlotAmounts(void *list, unsigned char p);  /* 0x508660 */
 int gm_CharLevel(unsigned short id, int again);  /* 0x505e60, the level of the character id (its job's kind level + 1, raised to the parent's) */
 int gm_CharPrevLevel(unsigned short id, int again);  /* 0x505f30, gm_CharLevel for the previous office (+0x167) */
 struct ORDCHAR; struct GMDATE; void gm_BirthDate(struct ORDCHAR *c, struct GMDATE *out);  /* 0x506000, the birthday of the character c (its birth year, a month and day from its first name) */
+struct ORDCHAR; struct GMDATE; int gm_DeathDate(struct ORDCHAR *c, struct GMDATE *out);  /* 0x5060d0, the day of death of the character c; 0 for a living one */
 float gm_Unk50cd40(char *c, int k, int a, int b);  /* 0x50cd40 */
 unsigned short *gm_QueryNext(void);  /* 0x4ffcc0 */
 int gm_OwnerWorth(char *b, int flag);  /* 0x509c80 */

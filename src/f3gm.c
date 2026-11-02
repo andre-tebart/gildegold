@@ -6929,26 +6929,26 @@ void gm_BirthDate(ORDCHAR *c, GMDATE *out)
     d.one = (unsigned char)((x >> 5) % 28) + 1;
     *out = d;
 }
-/* 0x5060d0, the birthday of an inactive character c (word +0x28 the birth day) into out; 0 for an active one, 1 else (month = ((x >> 3) % 7 + day % 19) % 12 + 1) */
+/* 0x5060d0, the day of death of the character c as a calendar record in out: 0 for a living one, else 1 with the
+   year w028 and a month ((x >> 3) % 7 + year % 19) % 12 + 1 and day (x >> 5) % 28 + 1 from x = the first name's first
+   four bytes xor the calendar year (gm_BirthDate's scheme) */
 
-int gm_BirthDate2(char *c, unsigned *out)
+int gm_DeathDate(ORDCHAR *c, GMDATE *out)
 {
-    short day;
-    int clk[4];
-    unsigned char d[16];
+    GCLOCK clk;
+    GMDATE d;
+    int year;
     unsigned x;
 
-    if (c[8] != 0)
+    if (c->health != 0)
         return 0;
-    day = *(short *)(c + 0x28);
-    clk[0] = day;
-    gm_ClockToDate(clk, d);
-    x = *(unsigned *)(c + 0x30) ^ *(unsigned short *)(d + 2);
-    d[1] = (char)(((x >> 3) % 7 + day % 0x13) % 0xc) + 1;
-    d[0] = (char)((x >> 5) % 0x1c) + 1;
-    out[0] = *(unsigned *)d;
-    out[1] = *(unsigned *)(d + 4);
-    *(short *)(out + 2) = *(short *)(d + 8);
+    year = c->w028;
+    clk.day = year;
+    gm_ClockToDate(&clk, (unsigned char *)&d);
+    x = c->nameKey ^ d.year;
+    d.month = (char)(((x >> 3) % 7 + year % 19) % 12) + 1;
+    d.one = (unsigned char)((x >> 5) % 28) + 1;
+    *out = d;
     return 1;
 }
 

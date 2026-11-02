@@ -1210,3 +1210,4 @@
 2026-11-02T23:39:52 0x00505840 data gm_Unk505840 -> gm_CureDisease by:main why:it clears one set disease field (2 .. 9, the gm_CatchDisease fields of the word +0x2c) of the character and sends the word
 2026-11-02T23:41:12 0x005059d0 data gm_Unk5059d0 -> gm_CureMinorDisease by:main why:it clears one held field of the diseases 2 .. 5 (gm_CatchMinorDisease's) and sends the word
 2026-11-02T23:41:51 0x00505ad0 data gm_Unk505ad0 -> gm_CureUpperDisease by:main why:it clears one held field of the diseases 6, 7, 8 and 3 and sends the word, the cure twin of gm_CatchUpperDisease's range
+2026-11-02T23:49:28 0x005060d0 func gm_BirthDate2 -> gm_DeathDate by:main why:0 for a living character; for a dead one (health 0) it dates the calendar record from w028, the year gm_BirthDate uses as the end of a dead character's age (birth year = w028 - age): the year of death
