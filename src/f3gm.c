@@ -4764,32 +4764,33 @@ unsigned char *gm_NearestBuilding(unsigned char *b, unsigned kind)
     }
     return 0;
 }
-/* 0x501f60, like 0x501e40 for buildings without an owner (+0x27 = -1), taking the positions directly from the objects (+0x4c .. +0x54) */
+/* 0x501f60, the building of the kind kind nearest to the building b (by the scene positions of their objects) among those without an owner, as gm_NearestBuilding (0x501e40) but owner 0xffff only: of the query (1, 6), not a home (gm_IsHomeType), not of type 10 (gm_IsType10), with a scene object, not b itself. Returns it, 0 when there is none */
 
-unsigned char *gm_NearestFreeBuilding(unsigned char *b, unsigned kind)
+unsigned char *gm_NearestFreeBuilding(unsigned char *p, unsigned kind)
 {
+    ORDBLD *b = (ORDBLD *)p;
     float best, d, dx, dy, dz;
-    unsigned char *r, *p;
-    int o, bo;
+    ORDBLD *r, *q;
+    struct D3OBJECT *o;
 
     best = 1e+08f;
     r = 0;
-    p = (unsigned char *)gm_BuildQuery(1, 6);
-    while (p != 0) {
-        if (gm_IsHomeType(p) == 0 && gm_IsType10(p) == 0 && (o = *(int *)(p + 0x61)) != 0 && p != b && *p == kind && *(short *)(p + 0x27) == -1) {
-            bo = *(int *)(b + 0x61);
-            dx = *(float *)(o + 0x4c) - *(float *)(bo + 0x4c);
-            dy = *(float *)(o + 0x50) - *(float *)(bo + 0x50);
-            dz = *(float *)(o + 0x54) - *(float *)(bo + 0x54);
+    q = (ORDBLD *)gm_BuildQuery(1, 6);
+    while (q != 0) {
+        if (gm_IsHomeType((unsigned char *)q) == 0 && gm_IsType10((unsigned char *)q) == 0 && (o = q->object) != 0
+            && q != b && q->type == kind && q->owner == 0xffff) {
+            dx = o->pos.x - b->object->pos.x;
+            dy = o->pos.y - b->object->pos.y;
+            dz = o->pos.z - b->object->pos.z;
             d = (float)sqrt(dx * dx + dy * dy + dz * dz);
             if (d < best) {
-                r = p;
+                r = q;
                 best = d;
             }
         }
-        p = gm_BuildNext();
+        q = (ORDBLD *)gm_BuildNext();
     }
-    return r;
+    return (unsigned char *)r;
 }
 /* 0x502020, the building with the id (+1) in the building table, 0 when none */
 
