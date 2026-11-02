@@ -8174,20 +8174,20 @@ int ai_Unk49ed10(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     }
     return 0;
 }
-/* 0x49ee20, execute callback */
+/* 0x49ee20, execute callback of "Dunkle Ecke" (0x32): s1 kind 4 with s2 kind 1 runs the message 0x74 on that
+   building (ai_ExecMessage74); s1 kind 0x13 with s2 kind 4 sets bit 0x2000000 of field 0x1cc and buys the dark
+   corner (ai_ExecBuyDunkleEcke); s1 kind 0 only sets that bit */
 
-int ai_Unk49ee20(G5CH *p, AIARG *s1, AIARG *s2)
+int ai_ExecuteDarkCorner(G5CH *p, AIARG *s1, AIARG *s2)
 {
-    unsigned char k = s1->kind;
-
-    if (k == 4 && s2->kind == 1) {
+    if (s1->kind == 4 && s2->kind == 1) {
         if (ai_ExecMessage74(p, s1, s2) != 0)
             return 0x32;
-    } else if (k == 0x13 && s2->kind == 4) {
+    } else if (s1->kind == 0x13 && s2->kind == 4) {
         cm_SendSetField(p->netId, 0x1cc, 4, 0x2000000, 0);
         if (ai_ExecBuyDunkleEcke(p, s1, s2) != 0)
             return 0x32;
-    } else if (k == 0) {
+    } else if (s1->kind == 0) {
         cm_SendSetField(p->netId, 0x1cc, 4, 0x2000000, 0);
         return 0x32;
     }
@@ -9862,7 +9862,7 @@ int ai_RegisterBaseActions(int a)
     strcpy(act.name, "Dunkle Ecke");
     act.eval = ai_EvalDarkCorner;
     act.decide = ai_Unk49ed10;
-    act.exec = ai_Unk49ee20;
+    act.exec = ai_ExecuteDarkCorner;
     act.flags = 0x69;
     if (!am_RegisterMethod(&act, a))
         return 0;

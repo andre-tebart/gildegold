@@ -766,7 +766,7 @@ extern G6RING *ai_Unk60034c;            /* 0x60034c, the next entry */
 extern int ai_Unk600350;                /* 0x600350, the step */
 extern unsigned int ai_Unk6f070c;       /* 0x6f070c, the number of entries */
 
-int ai_Unk49ee20(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49ee20 */
+int ai_ExecuteDarkCorner(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49ee20 */
 G5CH *ai_Unk4a0240(G5CH *p);                                                    /* 0x4a0240 */
 G6RING *ai_Unk4a3a90(void);                                                     /* 0x4a3a90 */
 int ai_Unk4a0410(G5CH *p);                                                      /* 0x4a0410 */

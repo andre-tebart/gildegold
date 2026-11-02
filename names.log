@@ -814,3 +814,4 @@
 2026-11-02T08:01:27 0x0049ea90 func ai_Unk49ea90 -> ai_ExecuteMasterBuilder by:main why:execute callback of action 0x2f 'Baumeister' (registered in 0x4a16f0)
 2026-11-02T08:02:28 0x0049ec10 data ai_Unk49ec10 -> ai_EvalDarkCorner by:main why:0x49ec10 is the eval callback of action 0x32 'Dunkle Ecke' (registered in 0x4a16f0); 0x4aaef0 picks the building and object for that action (called only from 0x32's eval and from 0x49eda1); the name is ours
 2026-11-02T08:02:28 0x004aaef0 data ai_Unk4aaef0 -> ai_FindDarkCornerTarget by:main why:0x49ec10 is the eval callback of action 0x32 'Dunkle Ecke' (registered in 0x4a16f0); 0x4aaef0 picks the building and object for that action (called only from 0x32's eval and from 0x49eda1); the name is ours
+2026-11-02T08:03:32 0x0049ee20 data ai_Unk49ee20 -> ai_ExecuteDarkCorner by:main why:execute callback of action 0x32 'Dunkle Ecke' (registered in 0x4a16f0)
