@@ -57,7 +57,6 @@ extern GAPDATA full_data_6f2354[];
 extern void *d2_ScreenSurf;  /* 0x6ed924 */
 extern void *d2_ScreenSurf;  /* 0x6ed924 */
 extern char sv_SkyHeavy[];
-extern const char ai_AxisPair[];
 
 #include "unk_5d33b0_types.h"
 #include "ai_types.h"
@@ -88,7 +87,6 @@ extern int d2_PointerSprite;
 
 
 
-extern int ai_CameraStep;  /* 0x623814, the camera move step (100 - camera speed); sv.c converts it with fild at the float uses */
 extern char * ai_PickedObject;
 extern int ai_PickedChar;
 extern int d2_HitUnderPointer;
@@ -143,7 +141,6 @@ extern GAPDATA full_data_602568[];
 extern char cm_ChatLog[2048];
 extern unsigned char ai_TimeHour;
 extern char sv_SkyHeavy[];
-extern int ai_OptionSpeed;
 extern int d2_HalfScreenH;
 extern int d2_HalfScreenW;
 
@@ -174,7 +171,6 @@ extern GAPDATA full_data_6f25a8[];
 extern int snd_MusicEnabled;
 extern int snd_SfxEnabled;
 extern void *d2_ScreenSurf;  /* 0x6ed924 */
-extern int ai_GameFlags;
 extern int ai_OptionSpeed;
 extern unsigned char ai_TimeHour;
 extern int ai_TimeCopy[4];
@@ -186,7 +182,6 @@ void d2_SetObjWidth(int obj, short w);
 void d2_BlitPart();
 void d2_EnableObject();
 void d2_RemoveObj();
-void d2_SetObjEnabled();
 void d2_SetObjFont();
 void d2_SetObjWidth(int obj, short w);
 
@@ -197,9 +192,7 @@ struct D3SURF;        /* d3_engine.h typedef; file-scope tag for the d3if_Select
 extern int di_Absolute, di_MinX, di_MinY, di_MaxX, di_MaxY;  /* 0x5f3240, 0x6310b0, 0x6310b4, 0x5f3238, 0x5f323c (di_input.c) */
 extern short d2_ScreenW;  /* 0xfb9072 (d2.h), the screen size */
 extern short d2_ScreenH;  /* 0xfb9070 */
-extern int d2_LastWindow;  /* 0x6ed938 */
 extern char *d2_LastWindowPtr;  /* 0x6ed980, window created last; @original: d2.h declares D2WIN *; the units add byte offsets to it and do not include d2.h yet (their own char * declarations of d2_Objs / d2_LastWindowPtr supersede d2.h's) */
-extern int d2_ClickedId;  /* 0xf8a668 */
 extern unsigned char d2_HoverBlocked;  /* 0x6ed9c8 (d2.h) */
 extern unsigned char kb_Last;  /* 0x1468410 */
 /* d2_RadioSel: view of d2_Radios (tools/data_views.py) */
@@ -208,19 +201,13 @@ extern char *d2_Objs;  /* 0xf8f080, 0x2ec bytes each; @original: d2.h declares D
 void d2_SetPointerSprite(int a, int pic);      /* 0x476f80, gfx.c */
 void d2_ClearPointerItems(void);                     /* 0x476c70 */
 void d2_CopyCaption(char *caption);            /* 0x478870, gfx.c */
-int d2_OpenForm(int x, int y, char *name);                     /* 0x4741f0 */
 int d2_SetForm(int view, int n);                     /* 0x475f70 */
 void d2_CentreViewWindows(int view);            /* 0x475600 */
-int d2_CreateRadioGroup(int n, ...);                     /* 0x46c490 */
 void d2_RadioAdd(int g, int obj);                     /* 0x46c560 */
 void d2_RadioSelect(int g, int sel);                     /* 0x46c630 */
-int d2_WinOpenSlider(int x, int y, int len, int p4, int p5, int pic, unsigned int flags, int win);                     /* 0x46a960 */
-void d2_MenuNavigate(int g);                     /* 0x46c6c0 */
 void d2_RaiseViewWindows(int view);                     /* 0x4741a0 */
-void d2_SetObjValue();                     /* 0x475cb0 */
 #define d2_SetObjValue4 ((void (*)(int, int, int, int))d2_SetObjValue)  /* 0x475cb0 (d2.c: five parameters): @original sv_OpenBuildingPanel pushes 4 arguments (0x528a1e), as rt.c's calls */
 extern D2WIN d2_Wins[];  /* 0xf8f120, d2.h */
-void d2_RadioClear(int g);                     /* 0x46c600 */
 void d2_CloseView(int view);            /* 0x4758f0 */
 /* ai_SeasonCloudChance: view of ai_PlayerSlots (tools/data_views.py) */
 /* ai_SeasonClimate: view of ai_PlayerSlots (tools/data_views.py) */
@@ -327,7 +314,6 @@ int d2_UnlockSurface();                     /* 0x4790e0 */
 struct D2SURF * d2_MakeSurface(struct D2SURF *desc, int flags);                     /* 0x478cc0 */
 int d2_CreatePicObj();                     /* 0x46cd80 */
 void d2_EnableObject();                     /* 0x475aa0 */
-void d2_SetViewEnabled(int view, int on);  /* 0x475590 */
 void d2_RemoveObj();                     /* 0x46e710 */
 int d2_FreeSurface(struct D2SURF *s);                     /* 0x478fc0 */
 void d2_RemoveHitRect();                     /* 0x4788f0 */
@@ -399,6 +385,7 @@ void sv_UnregisterTick(void)
     tb_CloseFunction(sv_UpdateFramesPerTick);
 }
 #include "ch.h"
+#include "unk_5d33b0.h"
 /* 0x520f20, resets the screen clip and the scene state 0x631090 and the window metrics 0x5f3238 / 0x5f323c (screen height - 8, width) */
 void sv_ResetScreenClip(void)
 {
@@ -6912,7 +6899,7 @@ void d2_SetViewEnabled(int view, int on);  /* 0x475590 */
 int cm_FlushSendQueue();                     /* 0x4c3680 */
 int cm_ReceiveMessages();                     /* 0x4c3fd0 */
 int cm_ExecCommands();                     /* 0x4c4190 */
-void d2_PlaceMainWindow();                     /* 0x475850 */
+#define d2_PlaceMainWindowF ((void (*)(int, int))d2_PlaceMainWindow)  /* 0x475850 (d2.c: int view): @original the callers pass the placement flags too, which the original's tail jump leaves on the stack for d2_PlaceWindowScaled */
 void d2_SetObjValue();                     /* 0x475cb0 */
 void d2_SetObjFont();                     /* 0x4760b0 */
 int io_PrintText(char *fmt, ...);                     /* 0x515960 */
@@ -7010,7 +6997,7 @@ void sv_ChatConsole(void)
     ids[7] = -1;
     sv_ChatTime = 0;
     f = d2_OpenForm(0, 0, "misc\\chatconsole");
-    d2_PlaceMainWindow(f, 3);
+    d2_PlaceMainWindowF(f, 3);
     d2_SetForm(f, 3);
     i = 0;
     for (k = 0; k < 768; k++) {
@@ -7068,7 +7055,7 @@ void sv_UpdateQuickChat(void)
     } else {
         if (sv_QuickChatForm == -1) {
             sv_QuickChatForm = d2_OpenForm(0, 0, "misc\\quickchat");
-            d2_PlaceMainWindow(sv_QuickChatForm, 3);
+            d2_PlaceMainWindowF(sv_QuickChatForm, 3);
             if (sv_QuickChatForm == -1)
                 return;
         }
