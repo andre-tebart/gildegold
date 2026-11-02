@@ -23,6 +23,24 @@ typedef struct GMINCOME {               /* 0x38 bytes, a character's incomes (0x
 
 #include "ai_types.h"
 
+#pragma pack(push, 1)
+/* a goods prototype (ai.h AIGOOD, 0x41 bytes, ai_Goods) as this unit reads it: ai.h is not includable here */
+typedef struct GMGOOD {
+    char type;                          /* 0x00 */
+    char name[0x20];                    /* 0x01 */
+    unsigned char cls;                  /* 0x21, the goods class (gm_ClassBuilding's index) */
+    unsigned int workTime;              /* 0x22, AIGOOD.workTime, the production time of one unit */
+    unsigned short need[4];             /* 0x26 */
+    unsigned short in[4];               /* 0x2e, the goods it is made of */
+    unsigned short batch;               /* 0x36, AIGOOD.batch, the amount one production run makes */
+    char pad38[8];
+    unsigned char b40;                  /* 0x40 */
+} GMGOOD;
+#pragma pack(pop)
+typedef char gm_AssertGMGOOD[sizeof(GMGOOD) == 0x41 ? 1 : -1];
+#define GM_GOOD(i) ((GMGOOD *)ai_Goods + (i))  /* the goods prototype i of ai_Goods (char *) */
+
+
 /* the long message (ai.h AIMSG, 0xf8 bytes, cm_SendLongMessage) as this unit fills it: ai.h is not includable here */
 typedef struct GMMSG {
     int unk00;                          /* 0x00 */

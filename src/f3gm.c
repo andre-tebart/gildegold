@@ -8356,22 +8356,23 @@ int gm_SumSlotAmounts(void *list, unsigned char p)
     }
     return s;
 }
-/* 0x5086b0, the value of the object n: the base values of its building (two bytes at +0x233) times its amount per unit. ROUGH */
+/* 0x5086b0, the value of the goods n: the two base values of the building type that makes it (gm_GoodBuilding; the
+   bytes +0x233 / +0x234 of its type record) times 896 / 720, times its production time per unit of a run
+   (workTime / batch) */
 
 float gm_ObjectValue(int n)
 {
     float f;
     int i;
-    char *p;
+    unsigned char *t;
+    GMGOOD *g;
 
     f = 0.0f;
-    i = 0;
-    do {
-        f += (unsigned char)(ai_BTypes + gm_GoodBuilding[n] * 0x24d)[0x233 + i] * 896.0f * 0.0013888888888888887;
-        i++;
-    } while (i < 2);
-    p = OPROTO(n);
-    return f * *(int *)(p + 0x22) / *(unsigned short *)(p + 0x36);
+    t = (unsigned char *)ai_BTypes + gm_GoodBuilding[n] * 0x24d + 0x233;
+    for (i = 0; i < 2; i++)
+        f += t[i] * 896.0f * 0.0013888888888888887;
+    g = GM_GOOD(n);
+    return f * g->workTime / g->batch;
 }
 /* 0x508740, the wage of a job (a) or title (b) of the building kind k for the character c, reduced for the kinds 6 / 7 */
 
