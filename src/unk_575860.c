@@ -574,7 +574,6 @@ extern GAPDATA full_data_62a870[];
 extern GAPDATA full_data_62a88c[];
 extern int gm_AllowAll;
 extern int ai_ClockMs;
-extern GAPDATA full_data_62a8a8[];
 extern GAPDATA full_data_6f5f60[];
 extern char ai_Chars[768][0x21c];
 extern int d2_PointerObj;
@@ -9842,69 +9841,66 @@ void ai_EndCharExtra(char *ch, int f)
     }
     c->flags1b4 ^= (c->flags1b4 ^ f) & 1;    /* bit 0 = f's bit 0 */
 }
-/* 0x587c90, the graveyard idle-chatter tick (329 B, the argument is not used): only every 0x1194 units of the
-   clock 0x6333cc (0x62a538 the last run); with U_I (0x6f2448) == 0 and 0x42ec20 () < 0.9f no chatter. The scene's
-   0x20 object slots 0x7603a0 .. 0x760420: the objects of the kind 0x14 (byte +2) whose building [obj + 0x184]
-   is 0x5fb5b0 (+0x88) are collected; none -> return; one (x) and, with more than one, a second different one (y)
-   are picked at random: a = (x + 4) % 3, or 3 + ((x + 4) & 1) when x + 9 == 1; b = -1, or the same for y; the
-   script "locations\friedhof\gespraeche.esc" (0x62a8a8) -> 0x4287b0 and 0x429ab0 (the script, 3,
-   x's building + 0x184, a, b) */
+/* 0x587c90, the graveyard idle-chatter tick (the argument is not used): at most every 0x1194 ms of ai_ClockMs
+   (ai_GraveChatterAt the last run), and unless gm_AllowAll only with a 10% chance; collects the scene characters
+   (ai_SceneChars) of the kind 0x14 whose model stands in d3_DefaultScene, picks one (x) and, with more than one,
+   a second different one (y) at random, and runs the script "locations\friedhof\gespraeche.esc" with
+   (x's model, a, b): a / b the speaker's line set, netId % 3, or 3 + (netId & 1) for sex 1; b = -1 without y */
 
 void ai_GraveyardChatter(char *unused)
 {
-    int list[0x20];
+    AICHAR *list[0x20];
     int cnt;
     int n;
     int a;
     int b;
-    char *x;
-    char *y;
-    char *p;
-    int i;
-    int s;
+    AICHAR *x;
+    AICHAR *y;
+    AICHAR *c;
+    int *slot;
+    EVTSCRIPT *script;
 
-    if (U_I((unsigned)&ai_ClockMs) < ai_GraveChatterAt + 0x1194)
-        return;
-    ai_GraveChatterAt = U_I((unsigned)&ai_ClockMs);
-    if (U_I((unsigned)&gm_AllowAll) == 0 && util_RandomF() < 0.9f)
-        return;
+    y = 0;
     cnt = 0;
-    for (i = 0; i < 0x20; i++) {
-        p = *(char **)((unsigned)&ai_SceneChars + i * 4);
-        if (p != 0 && *(unsigned char *)(p + 2) == 0x14 && *(int *)(p + 0x184) != 0 &&
-            *(int *)(*(int *)(p + 0x184) + 0x88) == U_I((unsigned)&ai_Unk5fb5b0))
-            list[cnt++] = (int)p;
+    a = 0;
+    b = -1;
+    if ((unsigned)ai_ClockMsVolatile < ai_GraveChatterAt + 0x1194)
+        return;
+    ai_GraveChatterAt = ai_ClockMsVolatile;
+    if (gm_AllowAll == 0 && util_RandomF() < 0.9f)
+        return;
+    for (slot = ai_SceneChars; (int)slot < (int)(ai_SceneChars + 0x20); slot++) {
+        c = (AICHAR *)*slot;
+        if (c != 0 && c->kind == 0x14 && c->model != 0 && (void *)c->model->scene == (void *)d3_DefaultScene)
+            list[cnt++] = c;
     }
     if (cnt == 0)
         return;
     n = util_Random(cnt) & 0xffff;
-    x = (char *)list[n];
-    y = 0;
+    x = list[n];
     if (cnt > 1) {
         n = util_Random(cnt) & 0xffff;
-        y = (char *)list[n];
+        y = list[n];
         if (y == x) {
             n++;
-            y = (char *)list[n % cnt];
+            y = list[n % cnt];
         }
     }
-    a = 0;
     if (x != 0) {
-        if (*(unsigned char *)(x + 9) == 1)
-            a = (*(int *)(x + 4) & 1) + 3;
+        if (x->sex == 1)
+            a = (x->netId & 1) + 3;
         else
-            a = *(int *)(x + 4) % 3;
+            a = x->netId % 3;
     }
-    b = -1;
     if (y != 0) {
-        if (*(unsigned char *)(y + 9) == 1)
-            b = (*(int *)(y + 4) & 1) + 3;
+        if (y->sex == 1)
+            b = (y->netId & 1) + 3;
         else
-            b = *(int *)(y + 4) % 3;
+            b = y->netId % 3;
     }
-    s = (int)evt_Load((char *)(unsigned)&full_data_62a8a8);
-    if (s != 0)
-        evt_RunScriptArgs((EVTSCRIPT *)s, 3, *(int *)(x + 0x184), a, b);
+    script = evt_Load("locations\\friedhof\\gespraeche.esc");
+    if (script != 0)
+        evt_RunScriptArgs(script, 3, (int)x->model, a, b);
 }
 /* 0x587de0, clears the 0x4000-byte table 0x6f5f60 (17 B), called from main.c 0x532160 (the per-turn reset) */
 
