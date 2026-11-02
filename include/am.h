@@ -549,9 +549,9 @@ int ai_DecideGraveyardOwner1(AIPX *p, AIBLD *b, AIARG *o1, AIARG *o2);          
 int ai_Unk4902b0(AIPX *p, AIBLD *b, int unused, AIARG *o);                      /* 0x4902b0 */
 int ai_DecideGraveyardOwner2(AIPX *p, AIBLD *b, AIARG *o1, AIARG *o2);                      /* 0x490350 */
 int ai_ExecGraveyardOwner2(AIPX *p, AIBLD *b, int unused, AIARG *o);                      /* 0x4904c0 */
-int ai_Unk490570(AIPX *p, AIBLD *b, AIARG *o1, AIARG *o2);                      /* 0x490570 */
+int ai_DecideGraveyardOwner3(AIPX *p, AIBLD *b, AIARG *o1, AIARG *o2);                      /* 0x490570 */
 int ai_Unk490600(AIPX *p, AIBLD *b, int unused, AIARG *o);                      /* 0x490600 */
-int ai_Unk490690(int a, AIPX *p, int b, AIARG *o1, AIARG *o2);                  /* 0x490690 */
+int ai_DecideGraveyardOwner(int a, AIPX *p, int b, AIARG *o1, AIARG *o2);                  /* 0x490690 */
 
 /* callees outside this file */
 int ai_CanBuildType(int a, struct AIPER *p, int b, struct AIARG *s1, struct AIARG *s2, int f);           /* 0x4a5140 */
@@ -559,7 +559,6 @@ int ai_ExecBuildBuilding(struct AIPER *p, struct AIARG *s1, struct AIARG *s2);  
 void ai_FindWantedItems(struct G5CH *p, int n, struct G9REC *rec, int *st);                         /* 0x4a5760 */
 /* am.h declares 0x4a63f0 with an __int64 mask; 0x48ff50..0x490350 pass it as two ints */
 /* am.h: id is an int; 0x490690 passes an unsigned short */
-#define AI_5044B0_US(id, a) ((int (*)(unsigned short, int))gm_TitleJob)(id, a)
 #define AI_4A63F0_7(p, a, fl, b, c, f, o) ((int (*)(void *, int, unsigned int, int, int, float, int *))ai_PickActionBuilding)(p, a, fl, b, c, f, o)
 int ai_DecideTakeCredit(int a, struct G5CH *p, int f, struct AIARG *o1, struct AIARG *o2);                  /* 0x49eec0 */
 int gm_BuildingKindValue(int a);                                                        /* 0x509d30 */

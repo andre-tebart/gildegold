@@ -1005,7 +1005,7 @@ AIPX *ai_PickRandomBuildingChar(AIBLD *b)
         return 0;
     return &AIC[list[util_RandomU(n)]];
 }
-/* 0x48ff50, way 0 of the "Graveyard Owner" decide (ai_Unk490690): with money and a 0x1fc object in the graveyard, picks one of its characters and a partner chain for message 0x88 and a building of the partner */
+/* 0x48ff50, way 0 of the "Graveyard Owner" decide (ai_DecideGraveyardOwner): with money and a 0x1fc object in the graveyard, picks one of its characters and a partner chain for message 0x88 and a building of the partner */
 
 int ai_DecideGraveyardOwner0(AIPX *p, AIBLD *b, AIARG *o1, AIARG *o2)
 {
@@ -1068,7 +1068,7 @@ int ai_ExecGraveyardOwner0(AIPX *p, AIBLD *b, int unused, AIARG *o)
     cm_SendLongMessage(&msg);
     return 0x3d;
 }
-/* 0x490170, way 1 of the "Graveyard Owner" decide (ai_Unk490690): two random factors 2..4 whose product the money must cover, a 0x211 object in the graveyard and no event 0x90 of it pending; picks a building (mask 0x1a07c43b4) of the partner, else of its own; o2 = the two factors (arg, ref) and the building (ref2) */
+/* 0x490170, way 1 of the "Graveyard Owner" decide (ai_DecideGraveyardOwner): two random factors 2..4 whose product the money must cover, a 0x211 object in the graveyard and no event 0x90 of it pending; picks a building (mask 0x1a07c43b4) of the partner, else of its own; o2 = the two factors (arg, ref) and the building (ref2) */
 
 int ai_DecideGraveyardOwner1(AIPX *p, AIBLD *b, AIARG *o1, AIARG *o2)
 {
@@ -1122,7 +1122,7 @@ int ai_Unk4902b0(AIPX *p, AIBLD *b, int unused, AIARG *o)
     cm_SendLongMessage(&msg);
     return 0x3d;
 }
-/* 0x490350, way 2 of the "Graveyard Owner" decide (ai_Unk490690): with a 0x204 object in the graveyard and no event 0x89 of it pending, picks one of its characters and a partner chain for message 0x89 and a building of the partner (else one of the player's, mask 0x7b4c4a0)
+/* 0x490350, way 2 of the "Graveyard Owner" decide (ai_DecideGraveyardOwner): with a 0x204 object in the graveyard and no event 0x89 of it pending, picks one of its characters and a partner chain for message 0x89 and a building of the partner (else one of the player's, mask 0x7b4c4a0)
    @deep read whole against the original and fixed the meaning (partner flags 0xf00500 for the stray
    cm_SendRing+0x4973c0 address, the bld2/bld/player-pick tail as in way 0 with the __int64 mask);
    instruction counts equal (131/131), all calls, constants and branches agree. Left is stack-slot
@@ -1192,7 +1192,7 @@ int ai_ExecGraveyardOwner2(AIPX *p, AIBLD *b, int unused, AIARG *o)
 }
 /* 0x490570, decide of method 0x8a */
 
-int ai_Unk490570(AIPX *p, AIBLD *b, AIARG *o1, AIARG *o2)
+int ai_DecideGraveyardOwner3(AIPX *p, AIBLD *b, AIARG *o1, AIARG *o2)
 {
     AIPX *c;
 
@@ -1225,40 +1225,45 @@ int ai_Unk490600(AIPX *p, AIBLD *b, int unused, AIARG *o)
     cm_SendLongMessage(&msg);
     return 0x3d;
 }
-/* 0x490690, decide of "Graveyard Owner" (0x3d) */
+/* 0x490690, decide of the AI method "Graveyard Owner" (0x3d): for a character with a job in the title group 0xd and a graveyard (a building of mask 0x20000000), runs its four ways and takes the first that can act from a random start; returns 0x3d with o1 / o2 of that way, else 0 */
 
-int ai_Unk490690(int a, AIPX *p, int b, AIARG *o1, AIARG *o2)
+int ai_DecideGraveyardOwner(int a, AIPX *p, int b, AIARG *o1, AIARG *o2)
 {
     AIARG s1[4], s2[4];
     int r[4] = { 0, 0, 0, 0 };
-    int v, x, i, n, fl = 0x20000000;
+    int v, x, i, n;
+    LARGE_INTEGER mask;
 
+    mask.LowPart = 0x20000000;
+    mask.HighPart = 0;
     if (b)
         return 0;
     if (a != 0x3d && a != 0)
         return 0;
     if (p->kind == 3)
         return 0;
-    if (!AI_5044B0_US(p->id, 0xd))
+    if (!gm_TitleJob(p->id, 0xd))
         return 0;
-    if (!AI_4A63F0_7(p, 4, fl, 0, 0, 100.0f, &x))
+    if (!ai_PickActionBuilding((AIPER *)p, 4, mask.QuadPart, 0, 100.0f, &x))
         return 0;
-    AI_4FEA50_4(&v, 0, 0, x);
+    gm_FindById(&v, 0, 0, x);
     if (!v)
         return 0;
     r[0] = ai_DecideGraveyardOwner0(p, (AIBLD *)v, &s1[0], &s2[0]);
     r[1] = ai_DecideGraveyardOwner1(p, (AIBLD *)v, &s1[1], &s2[1]);
     r[2] = ai_DecideGraveyardOwner2(p, (AIBLD *)v, &s1[2], &s2[2]);
-    r[3] = ai_Unk490570(p, (AIBLD *)v, &s1[3], &s2[3]);
+    r[3] = ai_DecideGraveyardOwner3(p, (AIBLD *)v, &s1[3], &s2[3]);
     i = util_RandomU(4);
-    for (n = 4; n; n--) {
+    n = 4;
+    do {
         if (r[i]) {
             *o1 = s1[i];
             *o2 = s2[i];
             return 0x3d;
         }
+        n--;
         i = (i + 1) % 4;
-    }
+    } while (n != 0);
     return 0;
 }
 /* 0x490830, the execute callback of "Graveyard Owner" */
@@ -1392,7 +1397,7 @@ int ai_Unk490c10(int a)
     act.id = 0x3d;
     strcpy(act.name, "Graveyard Owner");
     act.eval = ai_Unk4a49a0;
-    act.decide = ai_Unk490690;
+    act.decide = ai_DecideGraveyardOwner;
     act.exec = ai_Unk490830;
     act.flags = 0x1c3;
     if (!ai_Unk495520(&act, a))

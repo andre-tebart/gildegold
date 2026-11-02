@@ -73,7 +73,7 @@ char *gm_FindCharacterByMaster(int m);
 void gm_FreeObjectExtra(unsigned short *o);
 void gm_ShowBuildingObjects(unsigned char *b);
 void gm_ResetCharacters(void);
-unsigned char gm_TitleJob(int i, int p);
+int gm_TitleJob(int i, int p);
 unsigned short gm_Unk50a0b0(unsigned short *o);
 void gm_UpdatePrices(unsigned p, void *t);
 
@@ -5996,7 +5996,7 @@ int gm_TitleNumber(int a, int r)
 /* 0x5044b0, the job byte (+0x164) of the character i when its group (0x504ad0) is p, else the byte of the job record of the character (0x506430, +0x74 + p) or 0 */
 
 
-unsigned char gm_TitleJob(int i, int p)
+int gm_TitleJob(int i, int p)
 {
     int k, r;
 
