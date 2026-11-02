@@ -41,7 +41,7 @@ int gm_IsBankrupt(unsigned short *p, int n);                                  /*
 /* declared in other units' headers before (moved to the owner) */
 struct ORDCHAR; int gm_CatchUpperDisease(struct ORDCHAR *c);  /* 0x5056a0, the character catches one of the upper diseases 5 .. 8; the kind or 0 */
 struct ORDCHAR; int gm_CureDisease(struct ORDCHAR *c);  /* 0x505840, cures one disease of the character; the kind or 0 */
-int gm_Unk5059d0(char *c);  /* 0x5059d0 */
+struct ORDCHAR; int gm_CureMinorDisease(struct ORDCHAR *c);  /* 0x5059d0, cures one of the minor diseases 2 .. 5 of the character; the kind or 0 */
 int gm_Unk505ad0(char *c);  /* 0x505ad0 */
 int gm_CurseTargetCount(char *b);  /* 0x50d0b0 */
 int gm_Season(char *d);  /* 0x4fe330 */
