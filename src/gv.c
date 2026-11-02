@@ -16,8 +16,15 @@
    gv_MoveGrave), a raising of a dead person GVRAISE (message 0x62, gv_OrderRaiseDead -> gv_RaiseDead): the raised dead are
    kind 0x14 characters living at the graveyard (gv_RoomForRaised, decaying by gv_DecayRaisedDead); gv_GraveyardTurn is the
    building's turn step (care wear, lease ends via gv_LeasePrice / gv_OrderExtendGrave, new dead).
-   Open: the avatars, the effect slots and the graveyard may be several modules sharing one .data block.
-   Open: the functions from 0x4f2720 on still read GVYARD / GVENTRY through raw offsets, and some index ai_PlayerSlots with the stride 0x5e8 where gv_ReserveGrave shows 0x2f4 (gv_PlayerRecs);
+   The AI decision (law) table 0x611258 (unk_Tab611258, a char initializer read as 0x1d AIDEC records through gv_Decisions)
+   is read and set by gv_GetTableRecord / gv_SetTableRecord (message 0x46, GVDECMSG, gv_OnDecisionValue); breaking a law
+   is a crime (gv_Accuse -> cm_SendCrime): the CRIME records ai_Crimes (cm.c, viewed as gv_CrimesT) and the evidence pairs
+   ai_Evidence, saved by gv_WriteCrimes / gv_ReadCrimes.
+   Open: the avatars, the effect slots, the graveyard and the crimes may be several modules sharing one .data block.
+   Open: gv_Graveyard (0x91f700) and unk_Tab91b6e0 are second names of ai_Crimes / ai_Evidence (the crime records, not
+   graves); the functions from 0x4f30a0 on still read them through raw offsets; unk_Tab611258's initializer holds the
+   callbacks (AIDEC.fn) as raw original addresses.
+   Open: some functions index ai_PlayerSlots with the stride 0x5e8 where gv_ReserveGrave shows 0x2f4 (gv_PlayerRecs);
    gv_FindEntry's callback is an unprototyped int (*)() (its callbacks take differing pointer types).
    Open: head: cm.h redeclares gv functions (gv_GrowGraveyard as struct GVYARD *); cm.c cannot include gv.h yet (two
    calls conflict: unk_Unk4f3580, unk_Unk4f4460).
