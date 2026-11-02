@@ -2155,33 +2155,29 @@ void ai_TutorialHideText(void)
     io_PrintText((char *)(unsigned)"$C");
     d2_SetViewEnabled(U_I(S + 0x24), 0);
 }
-/* 0x577b90, the sibling of 0x577a90 for the second text window S+0x34 (203 B): nothing without the run record
-   or its second text +0x1c; else the window S+0x34 is rewritten (0x52e330, control 0 with the text 0x602568 and
-   the record text +0x1c, 0x475590 control 1) and, when the record word +0x20 is set, the window S+0x14 recreated
-   by 0x4c2760 (0xfffffff9, 0, +0x20, -1) after releasing the previous one (0x426f20 / 0x427290) */
+/* 0x577b90, shows the run's second text window, the sibling of ai_TutorialShowText: nothing without a run record
+   or its text2; else the status text is cleared and the window text2Win rewritten with the run's text2 and
+   enabled, and when the run has a text2Voice, the playing voice is stopped and text2Voice played in its place */
 
 void ai_TutorialShowText2(void)
 {
-    char *r;
-
-    if (!*(int *)(S + 0x18))
+    if (!ai_Tutorial->run)
         return;
-    if (!*(int *)(*(char **)(S + 0x18) + 0x1c))
+    if (!ai_Tutorial->run->text2)
         return;
-    sv_SetStatusText((char *)(unsigned)&ch_EmptyName);
-    d2_SetForm(U_I(S + 0x34), 0);
-    io_PrintText((char *)(unsigned)"$C");
-    io_PrintText(*(int *)(*(char **)(S + 0x18) + 0x1c));
-    d2_SetViewEnabled(U_I(S + 0x34), 1);
-    if (!*(int *)(*(char **)(S + 0x18) + 0x20))
+    sv_SetStatusText(ch_EmptyName);
+    d2_SetForm(ai_Tutorial->text2Win, 0);
+    io_PrintText("$C");
+    io_PrintText((char *)ai_Tutorial->run->text2);
+    d2_SetViewEnabled(ai_Tutorial->text2Win, 1);
+    if (!ai_Tutorial->run->text2Voice)
         return;
-    if (U_I(S + 0x14)) {
-        if (sb_IsPlaying(U_I(S + 0x14)))
-            sb_Stop(U_I(S + 0x14), 0);
-        U_I(S + 0x14) = 0;
+    if (ai_Tutorial->voice) {
+        if (sb_IsPlaying(ai_Tutorial->voice))
+            sb_Stop(ai_Tutorial->voice, 0);
+        ai_Tutorial->voice = 0;
     }
-    r = *(char **)(S + 0x18);
-    U_I(S + 0x14) = snd_PlayVoice(0xfffffff9, 0, *(int *)(r + 0x20), -1);
+    ai_Tutorial->voice = (struct SBSAMPLE *)snd_PlayVoice(-7, 0, ai_Tutorial->run->text2Voice, -1);
 }
 /* 0x577c60, clears the second text window S+0x34 (106 B): control 0 off (0x475f70), the text 0x602568
    (0x515960), 0x475590 (S+0x34, 0); then the window S+0x14 is released (0x426f20 / 0x427290) and cleared */
