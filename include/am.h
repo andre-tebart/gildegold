@@ -873,7 +873,7 @@ int ai_Unk49c3c0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  
 int ai_Unk49c000(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49c000 */
 int ai_Unk49c0d0(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2); /* 0x49c0d0 */
 int ai_Unk49c320(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2); /* 0x49c320 */
-int ai_Unk49c570(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49c570 */
+int ai_DecideSpy(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49c570 */
 int ai_Unk49c700(G5CH *p, AIARG *s1);                                            /* 0x49c700 */
 int ai_ExecuteUsePerfume(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49c190 */
 int ai_ExecuteUseTrank(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49c3e0 */

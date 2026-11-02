@@ -86,6 +86,7 @@ int ai_Unkf86900[73] = {0};  /* 0xf86900, the actions being evaluated */
 #define AI_CHAIN_BEATUP 0xf00500  /* the partner-chain flags (ai_PickPartnerChain) of action 0x18 "Verpruegeln" (ai_DecideBeatUp); the bits are not named yet */
 #define AI_CHAIN_USEREPUTATION 0xf00500  /* the partner-chain flags of action 0x1c "UseObject (Ansehen)" (ai_DecideUseReputationObject), as AI_CHAIN_BEATUP; the bits are not named yet */
 #define AI_CHAIN_MEAN 0xf00500  /* the partner-chain flags of action 0x21 "UseObject (Gemeinheit)" (ai_DecideUseMeanObject; | 0x800 for the good 0x29a, | 0x10000 for 0x177), as AI_CHAIN_BEATUP */
+#define AI_CHAIN_SPY 0xf00500  /* the partner-chain flags of action 0x25 (spying, 0x49c570), as AI_CHAIN_BEATUP */
 /* 0x48e070, the building of a master (kind != 3) in *out; 2: has one, 1: has a good one, 0: none */
 
 int ai_Unk48e070(AIPX *p, int *out)
@@ -6915,14 +6916,15 @@ int ai_ExecuteUseTrank(G5CH *p, AIARG *s1, AIARG *s2)
 }
 /* 0x49c570, decide callback 0x25: spying on a character (0x49c700 sends "spionage"), if the character can pay for it */
 
-int ai_Unk49c570(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
+int ai_DecideSpy(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 {
     unsigned int flags;
     unsigned short id;
     int r, money, v, x;
+    float w;
     G5CH *c;
 
-    flags = ((unsigned)&cm_SendRing + 0x4973c0);
+    flags = AI_CHAIN_SPY;
     r = util_RandomU(3);
     money = gm_CharCurrency((AIPER *)p, ai_OwnPlayer);
     if (f != 0)
@@ -6930,9 +6932,10 @@ int ai_Unk49c570(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     if (ai_PickPartnerChain((AIPER *)p, 1, (int *)&flags, 0, (float)util_RandomU(0x19) + 10.0, &id) == 0)
         return 0;
     c = &G5_CHARS[id];
-    x = (int)(gm_GetWorth(c->id) * 0.005f + gm_GetWorth(p->id) * 0.005f);
+    w = gm_GetWorth(p->id) * 0.005f;
+    x = (int)(gm_GetWorth(c->id) * 0.005f + w);
     v = (int)(x * ((float)r * 0.33f + 1.0f));
-    if (!((float)v <= money * 0.22f))
+    if (money * 0.22f < v)
         return 0;
     if (he_FindEvent(2, 0, 0x18, 2, (int)p->id) != 0)
         return 0;
@@ -9692,7 +9695,7 @@ int ai_RegisterBaseActions(int a)
     act.id = 0x25;
     strcpy(act.name, "Spionage");
     act.eval = ai_EvalMoodWeights;
-    act.decide = ai_Unk49c570;
+    act.decide = ai_DecideSpy;
     act.exec = ai_Unk49c700;
     act.flags = 0x69;
     if (!am_RegisterMethod(&act, a))
