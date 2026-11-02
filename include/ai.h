@@ -134,7 +134,15 @@ typedef struct AIBTYPE {                /* 0x24d bytes, ai_BTypes[] */
     char kind;                          /* 0x000 */
     char pad001[0x21];
     unsigned char nslots;               /* 0x022 */
-    unsigned short slot[0x100];         /* 0x023, needed goods (bit 15 = flag) */
+    union {
+        unsigned short slot[0x100];     /* 0x023, needed goods (bit 15 = flag) */
+        struct {
+            unsigned short objs[0x40];  /* 0x023, the objects the type can hold, goods ids (bit 15 = flag; f3gm.c 0x509300) */
+            char pad0a3[0x100];
+            unsigned char objClass[0x40];   /* 0x1a3, per object its effect class (0x509300 sums by it) */
+            unsigned char objValue[0x40];   /* 0x1e3, per object its effect value */
+        };
+    };
     unsigned char unk223;               /* 0x223 */
     char pad224[0xc];
     union {

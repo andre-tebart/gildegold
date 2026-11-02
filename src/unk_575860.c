@@ -10242,67 +10242,76 @@ int ai_OpenItemTooltip(int idx)
         io_PrintText("$C");
     return view;
 }
-/* 0x588950, the drag window of a goods item (598 B, ROUGH: a start Ghidra missed - 0x588970 is the body, the
-   guard falls through): idx = the item index, item = 0x91aaf0 + idx * 0x41; the kind 0x1d -> -1. The window
-   "ToolTip\ToolTip_Objekte_Upgrade" (0x62a984) with 0x475600, the position from the window record and the screen
-   width 0xfb9072 in 0x46cda0; the sections 2 / 1 / 3, 0x4731d0 (0, 0, idx + 0xdf), the texts idx * 2 + 0x9a9 /
-   idx * 2 + 0x9a8, 0x21 (the byte +0x40) or 0x23 (0x5087f0 (idx, 0x64) * (0x6f23fc * 0.25 + 0.5) -> int); the
-   text 0x20 (the dword +0x22). With 0x6f2308 / 0x6f230c / 0x75ec60 (the first non-0) and the item kind not 2 / 6:
-   the building record of that object (0x7e3f30 + kind * 0x24d), its 0x40 words at +0x23 (& 0x7fff) against the
-   item's word, the bytes +0x1a3 / +0x1e3, the text 0x24 and 0xf9e / 0xfe0 / the word + 0xf98 in 0x515960
-   (0x62a978 / 0x62a96c / 0x62a960); the window */
-
+/* 0x588950, opens the upgrade tooltip view of the goods item idx (-1 for an item of the type 0x1d): the form
+   "ToolTip\ToolTip_Objekte_Upgrades", centred and kept left of the screen's right edge; section 2 the item's
+   picture (object id idx + 0xdf) and description (text idx * 2 + 0x9a9), section 1 its name (idx * 2 + 0x9a8),
+   section 3 the byte +0x40 (text 0x21) or the price scaled by the difficulty (0.5 + ai_Difficulty / 4, text
+   0x23) and the work time (text 0x20). In a building (ai_PlayerBuilding, ai_FallbackBuilding, sv_SelectedObject)
+   and for an item type other than 2 / 6: when the building's type lists the item among its objects, the
+   object's effect (text 0x24) by its class: 3 "+%a" (text 0xf9e), 0x24 "+%i" (text 0xfe0), else "%i%%" (text
+   class * 2 + 0xf98), with the object's value; returns the view */
 int ai_OpenUpgradeTooltip(int idx)
 {
-    char *item;
-    char *o;
-    int win;
+    int view;
+    AIGOOD *item;
+    D2WIN *win;
+    char *bld;
+    AIBTYPE *bt;
     int i;
-    int v;
+    int cls;
+    int value;
+    float f;
 
-    item = (char *)U_I((unsigned)&ai_Goods) + idx * 0x41;
-    if (*(unsigned char *)item == 0x1d)
+    if (((AIGOOD *)ai_Goods)[idx].type == 0x1d)
         return -1;
-    win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62a984);
-    d2_CentreViewWindows(win);
+    view = d2_OpenForm(0, 0, "ToolTip\\ToolTip_Objekte_Upgrades");
+    d2_CentreViewWindows(view);
+    win = &d2_Wins[d2_Views[view].wins[0]];
+    if (win->x + win->w > d2_ScreenW - 0x10)
+        d2_MoveObj(d2_ScreenW - win->w - 0x10, win->y, win->parent);
     d2_SetForm(0, 2);
-    d2_WinOpenPic(0, 0, (char *)(idx + 0xdf), U_I((unsigned)&d2_LastWindow));
+    d2_WinOpenPic(0, 0, idx + 0xdf, d2_LastWindow);
     io_PrintText(idx * 2 + 0x9a9);
     d2_SetForm(0, 1);
     io_PrintText(idx * 2 + 0x9a8);
+    item = (AIGOOD *)ai_Goods + idx;
     d2_SetForm(0, 3);
-    if (*(unsigned char *)(item + 0x40) != 0)
-        io_PrintText(0x21, *(unsigned char *)(item + 0x40));
-    else
-        io_PrintText(0x23, (int)(gm_ItemPrice(idx, 0x64) * (float)(U_I((unsigned)&ai_Difficulty) * 0.25 + 0.5)));
-    io_PrintText(0x20, *(int *)(item + 0x22));
-    v = U_I((unsigned)&ai_PlayerBuilding);
-    if (v == 0)
-        v = U_I((unsigned)&ai_FallbackBuilding);
-    if (v == 0)
-        v = U_I((unsigned)&sv_SelectedObject);
-    if (v == 0)
-        return win;
-    if (*(unsigned char *)item == 2 || *(unsigned char *)item == 6)
-        return win;
-    o = (char *)U_I((unsigned)&ai_BTypes) + *(unsigned char *)v * 0x24d;
-    for (i = 0; i < 0x40; i++)
-        if ((*(unsigned short *)(o + 0x23 + i * 2) & 0x7fff) == *(unsigned short *)item)
-            break;
-    if (i == 0x40)
-        return win;
-    io_PrintText(0x24);
-    v = *(unsigned char *)(o + 0x1a3 + i);
-    i = *(unsigned char *)(o + 0x1e3 + i);
-    if (v == 0 || v == -1 || v == 0xff)
-        return win;
-    if (v == 3)
-        io_PrintText((char *)(unsigned)&full_data_62a978, i, 0xf9e);
-    else if (v == 0x24)
-        io_PrintText((char *)(unsigned)&full_data_62a96c, i, 0xfe0);
-    else
-        io_PrintText((char *)(unsigned)&full_data_62a960, i, v * 2 + 0xf98);
-    return win;
+    if (item->b40 != 0)
+        io_PrintText(0x21, item->b40);
+    else {
+        f = ai_Difficulty * 0.25 + 0.5;
+        io_PrintText(0x23, (int)(gm_ItemPrice(idx, 0x64) * f));
+    }
+    io_PrintText(0x20, item->workTime);
+    bld = ai_PlayerBuilding;
+    if (bld == 0) {
+        bld = ai_FallbackBuilding;
+        if (bld == 0) {
+            bld = sv_SelectedObject;
+            if (bld == 0)
+                return view;
+        }
+    }
+    if (item->type == 2 || item->type == 6)
+        return view;
+    bt = (AIBTYPE *)ai_BTypes + ((AIBLD *)bld)->type;
+    for (i = 0; i < 0x40; i++) {
+        if ((bt->objs[i] & 0x7fff) == idx) {
+            cls = bt->objClass[i];
+            value = bt->objValue[i];
+            if (cls == 0 || cls == -1 || cls == 0xff)
+                return view;
+            io_PrintText(0x24);
+            if (cls == 3)
+                io_PrintText("+%a %s$N", value, 0xf9e);
+            else if (cls == 0x24)
+                io_PrintText("+%i %s$N", value, 0xfe0);
+            else
+                io_PrintText("%i%% %s$N", value, cls * 2 + 0xf98);
+            return view;
+        }
+    }
+    return view;
 }
 
 float gm_CharAge(); int ai_AmountRowStatus(); int ai_Unk5be720(); short * gm_FindChar(int id); int gm_TitlesLeft();
