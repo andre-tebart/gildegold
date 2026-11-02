@@ -1348,7 +1348,7 @@ int ai_Unk4908d0(int a, AGCH *p, int b, AGARG *o1, AGARG *o2)
     }
     if (n == 0)
         return 0;
-    if (util_RandomU(8) + p->unk00a < 0x23)
+    if (util_RandomU(8) + p->age < 0x23)
         return 0;
     bld = list[util_RandomU(n)];
     r2 = gv_FindEntry(0, bld, 0, gv_EntryIsFree, 0xff);
@@ -1482,7 +1482,7 @@ int ai_Unk490fc0(AIPER *p, int a, int *out)
         x += 3.0f;
     else
         x += 5.0f;
-    n = 40 - p->unk00a;
+    n = 40 - p->age;
     x = r / (n * 0.1f + x);
     gv_GetTableRecord(1, &d);
     if (x > 1.0f && d.cur == 0) {
@@ -2919,7 +2919,7 @@ AGCH *ai_Unk493ea0(AGCH *p)
         q = AG_CH(*lp);
         if (q != 0) {
             n++;
-            if (q->unk008 > 0 && q->unk00a > 11)
+            if (q->unk008 > 0 && q->age > 11)
                 list[m++] = q;
         }
     }
@@ -4377,13 +4377,13 @@ int ai_Unk4973f0(float *a, float *b, int i, AIPER *p, int f, AIARG *o1, AIARG *o
     *b *= k;
     return 1;
 }
-/* 0x497490, decide callback */
+/* 0x497490, decide of action 10: below rank 2 first the sub-action 13 (o1 kind 13), else from hour 13, without an application and with 3 years left to live, apply for a random office of amt_GetOfficeCandidates (o1 kind 10, ref the office), or one time in four a leisure action (0x27) */
 
-int ai_Unk497490(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
+int ai_DecideApplyForOffice(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 {
     int list[6];
-    AIARG s2;
     AIARG s1;
+    AIARG s2;
     int r, k;
 
     if (f == 0) {
@@ -4392,14 +4392,14 @@ int ai_Unk497490(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             s1.ref = 2;
             s1.arg = 1;
             s1.fvalue = 0.44f;
-            memset(&s2, 0, sizeof(s2));
+            AI_ZERO(&s2, sizeof(s2));
             r = ai_ChooseSubAction(10, p->id, 1, &s1, &s2);
             if (r != 0) {
                 *o1 = s1;
                 *o2 = s2;
-                return r;
             }
-        } else if (ai_TimeHour > 12 && p->appliedOffice == 0 && unk_Unk4fc7a0(p) - p->unk00a > 2) {
+            return r;
+        } else if (ai_TimeHour >= 13 && p->appliedOffice == 0 && gm_ExpectedDeathAge(p) - p->age >= 3) {
             k = amt_GetOfficeCandidates(p, 2, list);
             if (k == 0) {
                 if (util_RandomU(4) == 0) {
@@ -4414,7 +4414,7 @@ int ai_Unk497490(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
                 }
             } else {
                 r = list[util_RandomU(k) * 3];
-                if (r != 0 && r < 0x1c) {
+                if (r != 0 && r <= 0x1b) {
                     o1->ref = r;
                     o1->kind = 10;
                     return 10;
@@ -6246,12 +6246,12 @@ int ai_Unk49b380(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     rel = (int *)((char *)p + 0x5c);
     for (i = 3; i < 8; i++) {
         c = gm_FindPer(rel[i]);
-        if (c != 0 && c->unk00a < 0x28)
+        if (c != 0 && c->age < 0x28)
             break;
     }
     for (i = 3; i < 8; i++) {
         c = gm_FindPer(rel[i]);
-        if (c != 0 && c->unk00a < 0x28)
+        if (c != 0 && c->age < 0x28)
             break;
     }
     memset(recs, 0, sizeof(recs));
@@ -9036,9 +9036,9 @@ int ai_Unk4a1000(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2
     for (m = 0; m < 5; m++) {
         c = (G5CH *)gm_FindChar(((int *)((unsigned char *)p + 0x68))[m]);
         if (c != 0 && ((unsigned char *)c)[8] > 0
-            && (float)(c->unk00a + 4) >= *(float *)((unsigned char *)c + 0x20)
+            && (float)(c->age + 4) >= *(float *)((unsigned char *)c + 0x20)
             && ((unsigned char *)c)[0x164] == 0 && he_FindEvent(2, 2, c->id, 0, 0x5e) == 0
-            && (best == 0 || c->unk00a > best->unk00a))
+            && (best == 0 || c->age > best->age))
             best = c;
     }
     if (best == 0)
@@ -9046,7 +9046,7 @@ int ai_Unk4a1000(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2
     *a = 0.0f;
     *b = 0.0f;
     ai_EvalMoodWeights(a, b, i, (AIPER *)p, 0, o1, o2);
-    w = (float)(best->unk00a + 4) >= *(float *)((unsigned char *)best + 0x20) ? 1 : 0;
+    w = (float)(best->age + 4) >= *(float *)((unsigned char *)best + 0x20) ? 1 : 0;
     *a = w * *a;
     *b = w * *b;
     return 1;
@@ -9080,9 +9080,9 @@ int ai_Unk4a1170(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     for (m = 0; m < 5; m++) {
         c = (G5CH *)gm_FindChar(((int *)((unsigned char *)p + 0x68))[m]);
         if (c != 0 && ((unsigned char *)c)[8] > 0
-            && (float)(c->unk00a + 4) >= *(float *)((unsigned char *)c + 0x20)
+            && (float)(c->age + 4) >= *(float *)((unsigned char *)c + 0x20)
             && ((unsigned char *)c)[0x164] == 0 && he_FindEvent(2, 2, c->id, 0, 0x5e) == 0
-            && (best == 0 || c->unk00a > best->unk00a))
+            && (best == 0 || c->age > best->age))
             best = c;
     }
     if (best == 0)
@@ -9164,7 +9164,7 @@ int ai_Unk4a13e0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         c = (G5CH *)gm_FindChar(((int *)((unsigned char *)p + 0x68))[m]);
         if (c != 0 && ((unsigned char *)c)[8] > 0 && ((unsigned char *)c)[0x164] != 0
             && !(*(int *)((unsigned char *)c + 0x1c8) & 0x10000)
-            && (best == 0 || c->unk00a > best->unk00a))
+            && (best == 0 || c->age > best->age))
             best = c;
     }
     if (best == 0)
@@ -9311,7 +9311,7 @@ int ai_RegisterBaseActions(int a)
     act.id = 0xa;
     strcpy(act.name, "Amtsbewerbung");
     act.eval = ai_Unk4973f0;
-    act.decide = ai_Unk497490;
+    act.decide = ai_DecideApplyForOffice;
     act.exec = ai_Unk497630;
     act.flags = 0x1b;
     if (!am_RegisterMethod(&act, a))

@@ -28,7 +28,7 @@ typedef struct AIPER {                  /* a character, 0x21c bytes (ai_Chars[76
     char pad003[0x1];
     int netId;                         /* 0x004 */
     char pad008[0x2];
-    unsigned short unk00a;              /* 0x00a */
+    unsigned short age;                 /* 0x00a, the age in years (children above 11, below 40; 0x4fc7a0 projects the age at death from it) */
     unsigned char unk00c;               /* 0x00c */
     unsigned char rank;                  /* 0x00d, the rank (ai.h AICHAR.b00d: gv_CheckRankUp sends it as the new rank) */
     char pad00e[0xe];
@@ -346,7 +346,7 @@ typedef struct AGCH {                   /* a character, 0x21c bytes */
     unsigned int netId;                /* 0x004, the id */
     unsigned char unk008;               /* 0x008 */
     unsigned char sex;                  /* 0x009, 0 male / 1 female (0x492fd0 picks the first-name list by it) */
-    unsigned short unk00a;              /* 0x00a */
+    unsigned short age;                 /* 0x00a, the age in years (children above 11, below 40; 0x4fc7a0 projects the age at death from it) */
     char pad00c[0x24];
     char name[0x20];                    /* 0x030 */
     unsigned short unk050;              /* 0x050 */
@@ -666,7 +666,7 @@ typedef struct G5CH {                   /* a character, 0x21c bytes (ai_Chars[76
     char pad002[2];
     unsigned int netId;                /* 0x004 */
     char pad008[2];
-    unsigned short unk00a;              /* 0x00a */
+    unsigned short age;                 /* 0x00a, the age in years (children above 11, below 40; 0x4fc7a0 projects the age at death from it) */
     char pad00c;
     unsigned char rank;                  /* 0x00d, the rank (ai.h AICHAR.b00d: gv_CheckRankUp sends it as the new rank) */
     char pad00e[0x7a];
@@ -717,7 +717,7 @@ void ai_PushAction(int k);                                       /* 0x495770 */
 void ai_PopAction(void);                                        /* 0x495790 */
 int ai_ActionOnStack(int k);                                        /* 0x4957a0 */
 /* ai_ExecuteAction: ai.h */                                         /* 0x495ce0 */
-int ai_Unk497490(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);  /* 0x497490 */
+int ai_DecideApplyForOffice(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);  /* 0x497490 */
 int ai_Unk497630(G5CH *p, AIARG *s1);                            /* 0x497630 */
 int amt_ApplyForOffice(char *c, unsigned int kind);                                /* 0x4e6180 */
 int ai_Unk498470(G5CH *p, AIARG *s1);                            /* 0x498470 */
@@ -726,7 +726,7 @@ int ai_GetDesireByName(char *s);                                      /* 0x4a47c
 void ai_BeginNeedBlock(char *p);                                     /* 0x4c3e70 */
 int ai_AddNeedDelta(int k, float v);                    /* 0x4c3eb0 */
 void ai_SendNeedBlock(void);                                        /* 0x4c4a20 */
-int unk_Unk4fc7a0(char *c);                                      /* 0x4fc7a0 */
+int gm_ExpectedDeathAge(char *c);                                      /* 0x4fc7a0 */
 int amt_GetOfficeCandidates(char *c, int n, struct AMTCAND *out);                     /* 0x4e7150 */
 /* ai_TimeHour (0x770ae4, the clock's hour) is no object: time_view.h views it in ai_Time + 4 */
 extern void *main_Instance;              /* 0x75e140, the module handle */

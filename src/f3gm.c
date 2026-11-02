@@ -1490,9 +1490,9 @@ void gm_AgeCharacter(char *c, unsigned short age)
         ai_Unk6f1b98++;
     }
 }
-/* 0x4fc7a0, the health float (+0x1c) of the character c iterated down to 1.0 (v = (v - k) + k / v, k = +0x14), truncated */
+/* 0x4fc7a0, the age the character c dies at: the aging steps (v = (v - k) + k / v, k = +0x14) until its life value +0x1c falls to 1.0, added to max(+0x20, the age +0xa) (the draft below stops after the loop; the original counts the steps and adds them) */
 
-int unk_Unk4fc7a0(char *c)
+int gm_ExpectedDeathAge(char *c)
 {
     float v;
 
