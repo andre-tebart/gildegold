@@ -4620,7 +4620,7 @@ int ai_Unk4cac40(G17MSG *m, G17STAT *s)
                 }
             }
             init_HookObject(o, b, 2);
-            sv_Unk5282f0(b);
+            sv_CreateBanners(b);
             if (*(int *)(b + 0x61) != 0) {
                 ok = gm_ClockSeason(ai_Time);
                 if (ok == 1)
@@ -5181,7 +5181,7 @@ int ai_Unk4cbca0(G17MSG *m, G17STAT *s)
             }
         } else
             err_Message("cm_ExCreateGeb(): could not lc_GetGebaeudeBauplatz()...");
-        sv_Unk5282f0(b);
+        sv_CreateBanners(b);
         rd_BuildRoad(*(int *)(b + 0x61), (unsigned char)b[0]);
     }
     d3if_SelectScene(save, 1);

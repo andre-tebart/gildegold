@@ -3215,7 +3215,7 @@ char sv_ColourBannerCB(char *o, char *b)
 /* 0x5282f0, colours the banner of the building b (+0x61 its model) for a character owner (type 5 / 6 / 7, +0x27): the model's parts are walked (0x438d40, 0x100, the callback 0x528180) with the model's +0x1f0 cleared
    when its flag +0x210 & 1 is not set */
 
-void sv_Unk5282f0(char *b)
+void sv_CreateBanners(char *b)
 {
     char *m;
     char c;
@@ -3349,7 +3349,7 @@ int sv_AddPanelButton(int x, int y, int text);
 
 /* 0x5286a0, tints the banners of the building b: its model's parts named "sp_WIMPEL" (0x438d40, 0x40, the collector 0x528660; the model's +0x1f0 cleared when its flag +0x210 & 1 is not set) are recoloured
    (0x458780 with the colour 0x6f1c28, when set) and updated (0x447190) */
-void sv_Unk5286a0(char *b)
+void sv_RemoveBanners(char *b)
 {
     int list[33];
     int i, m, save;
@@ -3393,8 +3393,8 @@ void sv_Unk528770(void)
         if (*(unsigned short *)(o + 0x27) != 0xffff)
             c = ai_Chars[*(unsigned short *)(o + 0x27)];
         if (c != 0 && c != ai_PlayerCharC && ((t = c[2]) == 6 || t == 7 || t == 5) && (o[0x5a] & 1) == 0) {
-            sv_Unk5286a0(o);
-            sv_Unk5282f0(o);
+            sv_RemoveBanners(o);
+            sv_CreateBanners(o);
         }
         o = (char *)gm_BuildNext();
     }

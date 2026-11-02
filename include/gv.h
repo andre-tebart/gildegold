@@ -161,7 +161,9 @@ typedef struct ORDCHAR {
     char pad1ac[4];
     unsigned char b1b0;             /* 0x1b0, scales the chance that gm_HandOutMoney takes money from the character (x 0.25) */
     unsigned char b1b1;             /* 0x1b1, gm_PartnerStep takes no step unless it is 0 */
-    char pad1b2[0x16];
+    char pad1b2[2];
+    unsigned int flags1b4;          /* 0x1b4, bit 0 is cleared when the character's master building changes hands (gm_AssignBuilding) */
+    char pad1b8[0x10];
     int flags1c8;                   /* 0x1c8, order flags: 0x100 answer, 0x200 / 0x80000 / 0x100000 / 0x200000 / 0x400000 */
     int flags1cc;                   /* 0x1cc, privilege flags: 0xe00 */
     float loyalty;                  /* 0x1d0, 0 .. 1, starts at 0.25 .. 0.75; gm_ShiftLoyalty / gm_HandOutMoney move it (reasoned guess: the loyalty) */

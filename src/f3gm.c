@@ -5064,9 +5064,9 @@ extern int ai_Unk770ae0_day;            /* the clock's day (0x770ae0) */
 extern unsigned short ai_TimeHour;     /* 0x770ae4, the clock's hour (unaligned view) */
 #endif
 extern char ai_Unk770ce4[];             /* 0x770ce4: the field +0x164 of the character records (stride 0x21c) */
-void sv_Unk5286a0(char *b);                     /* 0x5286a0 */
-void sv_Unk5282f0(char *b);                     /* 0x5282f0 */
-void ch_Unk402540();                     /* 0x402540 */
+void sv_RemoveBanners(char *b);                     /* 0x5286a0 */
+void sv_CreateBanners(char *b);                     /* 0x5282f0 */
+void ch_InflateModel();                     /* 0x402540 */
 int ch_Delete();                     /* 0x4028a0 */
 void ai_ShowEvidenceVoidNews(int param_1, unsigned short *param_2);                     /* 0x5a9430 */
 int gm_FreeList();                     /* 0x500140 */
@@ -5080,81 +5080,87 @@ double _CIfmod();                     /* 0x5de73a: a CRT call */
 extern int ai_CharCount;  /* 0x6f1bc0 */
 extern int f3gm_ObjectCount;  /* 0x6f1bdc */
 
-/* 0x502b60, hands the building b over to the owner (character slot) own, at the place a: the old owner (a kind 6 character) loses it (0x5a86c0), the new one (kind 6) gets it (0x5a8560); the person living in it is cleaned up, the objects of kind 0x1d (graveyard) in its list get the owner, and the scene objects are refreshed (0x5286a0 / 0x5282f0). ROUGH */
-void gm_AssignBuilding(unsigned char *b, unsigned short place, unsigned own)
+/* 0x502b60, hands the building b to the owner own (a character slot, 0xffff: only the master is set) with the master character master: a player owner (kind 6) loses the building's production setting (ai_FreeProdSetting), a player new owner gets one (ai_ProdSetting); the old owner's home (bld2) link is cleared; a home (type 2) shows its objects (gm_ShowBuildingObjects) and becomes the new owner's home unless it has one of a higher type; for a person owner (kind 6 / 7) the character working there under the master (gm_FindCharacterByMaster) loses title and flag, and its building for the types 5 / 9; every cart (goods kind 0x1d) of the building gets the owner's netId and its model the owner's texture set (v054 - 0x599 for the kinds 5 / 6 / 7); last the banners are removed in scene 0 (sv_RemoveBanners) and, for another character of kind 5 / 6 / 7 than the player's with a model, made again (sv_CreateBanners) */
+void gm_AssignBuilding(unsigned char *b, unsigned short master, unsigned own)
 {
-    char *p;
+    ORDBLD *bd;
+    unsigned char *p;
     unsigned short o;
-    char *bl;
-    int per;
-    unsigned short *w;
-    int cnt, scn, ob, owid;
+    ORDBLD *home;
+    ORDCHAR *per;
+    ORDCHAR *ch;
+    ORDOBJ *w;
+    CHARACTER *ob;
+    int cnt, scn, owid;
     char t;
 
-    p = ai_BTypes + (unsigned)*b * 0x24d;
-    *(unsigned short *)(b + 0x25) = place;
+    bd = (ORDBLD *)b;
+    p = (unsigned char *)ai_BTypes + bd->type * 0x24d;
+    bd->masterId = master;
     if (own != 0xffff) {
-        o = *(unsigned short *)(b + 0x27);
+        o = bd->owner;
         if (o != own) {
-            if (o != 0xffff && ai_Chars[o][2] == 6)
-                ai_FreeProdSetting(*(int *)(b + 1));
-            if (ai_Chars[own][2] == 6)
+            if (o != 0xffff && ORD_CHARS[o].kind == 6)
+                ai_FreeProdSetting(bd->id);
+            if (ORD_CHARS[own].kind == 6)
                 ai_ProdSettingK(b);
         }
-        o = *(unsigned short *)(b + 0x27);
-        if (o != 0xffff && *(unsigned char **)(ai_Chars[o] + 0x170) == b)
-            *(int *)(ai_Chars[o] + 0x170) = 0;
-        *(unsigned short *)(b + 0x27) = own;
+        o = bd->owner;
+        if (o != 0xffff && ORD_CHARS[o].bld2 == bd)
+            ORD_CHARS[o].bld2 = 0;
+        bd->owner = own;
         if (*p == 2) {
             gm_ShowBuildingObjects(b);
             if (*p == 2) {
-                bl = *(char **)(ai_Chars[*(unsigned short *)(b + 0x27)] + 0x170);
-                if (bl == 0 || (unsigned char)*bl <= *b)
-                    *(unsigned char **)(ai_Chars[*(unsigned short *)(b + 0x27)] + 0x170) = b;
+                home = ORD_CHARS[bd->owner].bld2;
+                if (home == 0 || home->type <= bd->type)
+                    ORD_CHARS[bd->owner].bld2 = bd;
             }
         }
-        t = ai_Chars[own][2];
+        t = ORD_CHARS[own].kind;
         if (t == 6 || t == 7) {
-            per = gm_FindCharacterByMaster(b);
+            per = (ORDCHAR *)gm_FindCharacterByMaster((int)b);
             if (per != 0) {
-                *(char *)(per + 0x165) = 0;
-                *(unsigned *)(per + 0x1b4) = *(unsigned *)(per + 0x1b4) & 0xfffffffe;
+                per->title = 0;
+                per->flags1b4 &= ~1u;
                 if (*p == 5 || *p == 9)
-                    *(int *)(per + 0x16c) = 0;
+                    per->bld = 0;
             }
         }
         cnt = 0x5008;
-        w = (unsigned short *)ai_Objects;
+        w = (ORDOBJ *)ai_Objects;
         do {
-            if (*w != 0 && ai_Goods[*w * 0x41] == 0x1d && *(int *)(w + 0xe) == *(int *)(b + 1)) {
-                *(int *)(w + 5) = *(int *)(ai_Chars[own] + 4);
-                if (*(int *)(w + 10) != 0)
-                    *(int *)(*(int *)(w + 10) + 10) = *(int *)(ai_Chars[own] + 4);
+            if (w->type != 0 && ai_Goods[w->type * 0x41] == 0x1d && w->cartBld == bd->id) {
+                w->holderId = ORD_CHARS[own].netId;
+                if (w->list != 0)
+                    ((ORDOBJ *)w->list)->holderId = ORD_CHARS[own].netId;
                 scn = d3_CurrentScene;
-                ob = *(int *)((char *)w + 0x3b);
-                if (*(int *)(ai_Chars[own] + 0x54) == 0 || ((t = ai_Chars[own][2]) != 5 && t != 6 && t != 7))
+                ob = w->model;
+                if (ORD_CHARS[own].v054 == 0 || ((t = ORD_CHARS[own].kind) != 5 && t != 6 && t != 7))
                     owid = 0;
                 else
-                    owid = *(int *)(ai_Chars[own] + 0x54) - 0x599;
-                d3if_SelectScene(d3t_SceneIndex(*(int *)(ob + 0x88)), 1);
-                if (*(int *)(*(int *)(ob + 0x34) + 0x1cc) == 0)
-                    ch_Unk402540(ob);
-                d3if_SelectTextureSet(**(int **)(ob + 0x124), *(int *)(**(int **)(ob + 0x124) + 0x1cc), owid, 1);
+                    owid = ORD_CHARS[own].v054 - 0x599;
+                d3if_SelectScene(d3t_SceneIndex(ob->scene), 1);
+                if (ob->obj->info == 0)
+                    ch_InflateModel(ob);
+                d3if_SelectTextureSet(*ob->transport, (struct D3SURF *)(*ob->transport)->info, owid, 1);
                 d3if_SelectScene(scn, 1);
             }
-            scn = d3_CurrentScene;
-            w = (unsigned short *)((char *)w + 0x43);
+            w = (ORDOBJ *)((char *)w + 0x43);
             cnt--;
         } while (cnt != 0);
-        if (ai_Chars[own] != ai_PlayerCharC && *(int *)(b + 0x61) != 0 && ((t = ai_Chars[own][2]) == 6 || t == 7 || t == 5)) {
+        ch = &ORD_CHARS[own];
+        if ((char *)ch != ai_PlayerCharC && bd->object != 0 && ((t = ch->kind) == 6 || t == 7 || t == 5)) {
+            scn = d3_CurrentScene;
             d3if_SelectScene(0, 1);
-            sv_Unk5286a0(b);
-            sv_Unk5282f0(b);
+            sv_RemoveBanners(b);
+            sv_CreateBanners(b);
             d3if_SelectScene(scn, 1);
             return;
         }
+        scn = d3_CurrentScene;
         d3if_SelectScene(0, 1);
-        sv_Unk5286a0(b);
+        sv_RemoveBanners(b);
         d3if_SelectScene(scn, 1);
     }
 }

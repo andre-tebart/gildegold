@@ -5,7 +5,7 @@
    Open: no evidenced role / type yet for fields and globals the action and walk code share: CH_UNK080
    (D3ANIMDATA *next, but ch_TakingObject prints it with %s), CH_ACTOBJ.unk170 / unk174 (a room id or an
    animation, per action), u.walk.unk0fc (written -1, never read), CHARACTER.unk1a0, ch_Unk631058 /
-   ch_Unk631060, ch_Unk402540. cm_SpeedFactor (0x5f1290, the game speed factor) is defined here under cm's name.
+   ch_Unk631060, ch_InflateModel. cm_SpeedFactor (0x5f1290, the game speed factor) is defined here under cm's name.
    Open: D3OBJ_UNK200 reads D3OBJECT.owner (d3.h, the game record of the object) as the int d3_WriteObject
    saves and rd_object restores (the item pointer of the sprite spawners).
    Open: not included yet (dcp headers conflicts ch HEADER): sv.h; held by calls whose argument count differs
@@ -211,7 +211,7 @@ void ch_SetVisible(CHARACTER *ch, int show)
 }
 /* 0x402540 */
 
-void ch_Unk402540(CHARACTER *ch)
+void ch_InflateModel(CHARACTER *ch)
 {
     if (!ch->obj->info)
         d3_InflateObject(ch->obj);
@@ -649,7 +649,7 @@ int ch_MoveToScene(CHARACTER *ch, D3SCENE *scene)
             D3OBJ_BITS(ch->obj, 0x211)->b3 = 0;
         if (scene == d3_DefaultScene && !ch->obj->info) {
             sprintf(msg, "ch_MoveCharacter2Universe(): character deflated, will be inflated:%s", ch->fullname);
-            ch_Unk402540(ch);
+            ch_InflateModel(ch);
         }
         return 1;
     }
@@ -1781,7 +1781,7 @@ void ch_ReleaseSit(CHARACTER *ch)
     if (ch->flags.all & 0x10) {
         if (CH_SLOT2(ch)) {
             if (!ch->obj->info)
-                ch_Unk402540(ch);
+                ch_InflateModel(ch);
             if (CH_SLOT2(ch)->data)
                 d3_ReleaseTexture(ch->obj->material->animCtl, CH_SLOT2(ch)->data->name);
             CH_SLOT2(ch) = 0;
@@ -3120,7 +3120,7 @@ int ch_StartWalkAnim(CHACTION *a, D3SM *h)
     }
     d3t_ReleaseObjectTextures(ch->obj);
     if (!ch->obj->info)
-        ch_Unk402540(ch);
+        ch_InflateModel(ch);
     if (ch->transport)
         s = (CHSLOT *)ch_AttachAni(ch, "bewegung/karren_ziehen", 1);
     else
@@ -3506,7 +3506,7 @@ void ch_ActWalk(CHACTION *a)
 }
 /* 0x409bd0, action callback 0x3a: walks along the cells of a->u.walk.path (0x100 cells, filled by the caller;
    empty cells are skipped) to the cell args[0], args[1] in scene args[2]
-   @deep B3 far draft, 2130/3376 bytes, 138 differing instructions of 971 (ours 969, two fewer - the same redundant ch->slot test as ch_ActWalk: the source writes '!ch->slot || CH_XSLOT(ch)->f6d_20 || !ch->slot' and VC6 propagates the slot value, see ch_ActWalk's @deep for the exhaustive spelling list). All other code hunks were read against the original (the function is the inline copy of ch_InitWalk/ch_StartWalkAnim/ch_WalkSound/ch_NextWaypoint/ch_WalkRotate; the noted sign bug of the original's right turn - the 2.0943952f branch subtracting, step*0.32f - is already reproduced) and are allocation: 104 slots hunks, the frame 4 bytes larger (n in a stack slot) and the cell-skip loop bound min(0x100, n+32) hoisted (the 'n = cur + 1; for (i = n; ...)' form reproduces the original loop but moves ground into edi and spills the constant 0 - tried and reverted). Readability: no gap left beyond the unit-wide ones in the lead comment (CH_UNK080, D3OBJ_UNK200, ch_Unk402540, cm_SpeedFactor, ch_Unk631058/60, u.walk.unk0fc, CHARACTER.unk1a0). */
+   @deep B3 far draft, 2130/3376 bytes, 138 differing instructions of 971 (ours 969, two fewer - the same redundant ch->slot test as ch_ActWalk: the source writes '!ch->slot || CH_XSLOT(ch)->f6d_20 || !ch->slot' and VC6 propagates the slot value, see ch_ActWalk's @deep for the exhaustive spelling list). All other code hunks were read against the original (the function is the inline copy of ch_InitWalk/ch_StartWalkAnim/ch_WalkSound/ch_NextWaypoint/ch_WalkRotate; the noted sign bug of the original's right turn - the 2.0943952f branch subtracting, step*0.32f - is already reproduced) and are allocation: 104 slots hunks, the frame 4 bytes larger (n in a stack slot) and the cell-skip loop bound min(0x100, n+32) hoisted (the 'n = cur + 1; for (i = n; ...)' form reproduces the original loop but moves ground into edi and spills the constant 0 - tried and reverted). Readability: no gap left beyond the unit-wide ones in the lead comment (CH_UNK080, D3OBJ_UNK200, ch_InflateModel, cm_SpeedFactor, ch_Unk631058/60, u.walk.unk0fc, CHARACTER.unk1a0). */
 
 void ch_ActWalkCells(CHACTION *a)
 {
@@ -3579,7 +3579,7 @@ void ch_ActWalkCells(CHACTION *a)
         }
         d3t_ReleaseObjectTextures(ch->obj);
         if (!ch->obj->info)
-            ch_Unk402540(ch);
+            ch_InflateModel(ch);
         if (ch->transport)
             s = (CHSLOT *)ch_AttachAni(ch, "bewegung/karren_ziehen", 1);
         else

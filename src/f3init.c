@@ -3695,7 +3695,7 @@ void init_AfterTownLoad(void)
 
                     if (*(int *)(*(int *)(o + 0x34) + 0x1cc) == 0
                         || (*(int *)(o + 0x22c) != 0 && *(int *)(*(int *)(o + 0x22c) + 0x1cc) == 0))
-                        ch_Unk402540(o);
+                        ch_InflateModel(o);
                     ch_SetVisible(*p, 1);
                     gm_SelectModelVariant(p - 0x61);
                 }
