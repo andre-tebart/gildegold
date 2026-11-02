@@ -106,6 +106,7 @@ extern int ai_DragObj;  /* 0x62a8d0, the right-held d2 object whose tooltip ai_D
 extern int ai_DragViewWin;  /* 0x62a8d4, the first window of the tooltip view */
 extern char *ai_DragPicked;  /* 0x6f266c, the picked object the tooltip was last opened for */
 extern int ai_DragCutscene;  /* 0x6f2670, 1 while the tooltip view holds d2_CutsceneActive set */
+extern int ai_ScreenshotCount;  /* 0x6f2674, the number of the next screenshot */
 extern AIBOOKMARK ai_Bookmarks[11];  /* 0x6f5ec0, the function-key building bookmarks */
 extern unsigned int ai_GraveChatterAt;  /* 0x62a538, ai_ClockMs at the last graveyard chatter tick */
 extern int ai_TutorialBanks[6];         /* 0x6f2640, the tutorial's voice banks */

@@ -626,7 +626,6 @@ extern short d2_ScreenW;
 
 extern GAPDATA full_data_62aa4c[];
 extern GAPDATA full_data_62aa58[];
-extern GAPDATA full_data_6f2674[];
 extern int sv_FrameMask;
 extern GAPDATA full_data_6f5f44[];
 extern unsigned char kb_Last;
@@ -701,6 +700,7 @@ int ai_TutorialRunning = 0;  /* 0x6f2660, the tutorial's state machine advances 
 int ai_ShotDirty = 0;  /* 0x6f2664, set when ai_ShotTableStore stored a record, cleared by the scene (ai_CannonShotResults) */
 char *ai_DragPicked = 0;  /* 0x6f266c, the picked object (ai_PickedObject) the tooltip was last opened for, 0 = none */
 int ai_DragCutscene = 0;  /* 0x6f2670, 1 while the tooltip view holds d2_CutsceneActive set */
+int ai_ScreenshotCount = 0;  /* 0x6f2674, the number of the next screenshot (gamedata/screenshots/gilde%04i.bmp, ai_Screenshot) */
 AIBOOKMARK ai_Bookmarks[11] = { 0 };  /* 0x6f5ec0, the function-key building bookmarks (ai_BookmarksInit sets the keys F1 .. F11) */
 SHOTRESULT ai_ShotTable[3] = { 0 };  /* 0x6f9f60, the cannon scene's shot results (the callback ai_ShotTableStore fills it, ai_ShotTableReset resets it) */
 
@@ -10800,8 +10800,8 @@ void ai_Unk589bc0(void)
 
     sv_SetStatusText((char *)(unsigned)&ch_EmptyName);
     sv_RunFrame(0, U_I((unsigned)&sv_FrameMask));
-    n = U_I((unsigned)&full_data_6f2674);
-    U_I((unsigned)&full_data_6f2674) = n + 1;
+    n = ai_ScreenshotCount;
+    ai_ScreenshotCount = n + 1;
     sprintf(name, (char *)(unsigned)&full_data_62aa58, n);
     img = (char *)mem_Alloc(*(short *)(unsigned)&d2_ScreenW * *(short *)(unsigned)&d2_ScreenH * 3, (char *)(unsigned)&full_data_62aa4c);
     dd_Lock();
