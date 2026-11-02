@@ -300,7 +300,7 @@ int gv_AdjustEntry(GVORDER *m);          /* 0x4f0c80 */
 int unk_Unk4f0d70(char *o, int x);      /* 0x4f0d70 */
 int unk_Unk4f0dd0(unsigned char *p);    /* 0x4f0dd0 */
 void gv_OrderMoveGrave(int *c, int to, char *o, int from, int entry, int price);  /* 0x4f0e80 */
-int unk_Unk4f0ed0(int *p);              /* 0x4f0ed0 */
+int gv_MoveGrave(GVMOVE *m);           /* 0x4f0ed0 */
 int unk_Unk4f1170(char *o, int v, int b, int x, int y);  /* 0x4f1170 */
 int gv_SendGrave(unsigned char *o);    /* 0x4f15e0 */
 int unk_Unk4f1660(char *c);             /* 0x4f1660 */

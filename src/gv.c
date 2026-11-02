@@ -73,6 +73,7 @@ extern GAPDATA full_data_91f6e4[];
 #include "unk_458810.h"
 #include "d3_engine.h"
 #include "unk_5d33b0.h"
+#include "net.h"
 extern int gm_PlayerRecords[688];
 
 extern const float gv_SaleShares[];
@@ -2171,80 +2172,80 @@ void gv_OrderMoveGrave(int *c, int to, char *o, int from, int entry, int price)
     m.price = price;
     cm_SendGraveMove(&m);
 }
-/* 0x4f0ed0, graveyard order type 1 (p: +0 a character id, +4 the object id, +8 the source list, +0xc the entry, +0xd the target list, +0x11 a price, +0x15 a counter): moves the grave of the entry (its 0x44-byte
-   records, compacting the free ones) from the source list to the first free entry of the target list, copies the character id and short, time +10 + 0x770ae0, clears the source; with a price the owner's money changes;
-   0 or a negative reason (as 0x4f0240, -7 no entry / free entry). ROUGH */
+/* 0x4f0ed0, runs a grave move (GVMOVE m, message 0x61, sent by gv_OrderMoveGrave): the entry m->entry of the size m->from
+   of the graveyard building m->bld, held by the character m->chr (GVENTRY.w08 == AICHAR.w050), moves to the first free
+   entry of the size m->to (gv_FindEntry, gv_EntryIsFree): its dead (GVGRAVE records in use) are packed into the free
+   records of the new entry and cleared at the old one; the holder goes over, the new lease runs to ai_Time.year + 10.
+   With a price the character pays it and the owner gets the target size's share (gv_SaleShares). Returns 0, or a
+   negative reason as gv_BuryCharacter (-6 no such character, -7 no such held entry or no free one) */
 
-int unk_Unk4f0ed0(int *p)
+int gv_MoveGrave(GVMOVE *m)
 {
-    unsigned char *o;
-    int *c;
-    char *rec;
-    char *src, *dst;
-    int *s, *s2, *d, *send, *dend, *q;
-    int n, i, list;
+    AIBLD *bld;
+    AICHAR *c;
+    GVENTRY *src;
+    GVENTRY *dst;
+    GVGRAVE *s;
+    GVGRAVE *send;
+    GVGRAVE *d;
+    GVGRAVE *dend;
+    int from;
+    int n;
 
-    gm_FindById(0, 0, &c, p[0]);
+    gm_FindById(0, 0, (int *)&c, m->chr);
     if (c == 0)
         return -6;
-    gm_FindById(&o, 0, 0, p[1]);
-    if (o == 0 || *(unsigned short *)(o + 0x27) == 0xffff || ai_Chars[*(unsigned short *)(o + 0x27)] == ai_PlayerCharC)
+    gm_FindById((int *)&bld, 0, 0, m->bld);
+    if (bld == 0 || bld->owner == 0xffff || &gv_CharsT[bld->owner] == gv_PlayerAiChar)
         return -1;
-    if (ai_BTypes[o[0] * 0x24d] != 0x1d)
+    if (((AIBTYPE *)(ai_BTypes + bld->type * 0x24d))->kind != 0x1d)
         return -2;
-    if (*(int *)(o + 0x65) == 0)
+    if (bld->yard == 0)
         return -3;
-    list = p[2];
-    if (gv_SizeOpen(*(char **)(o + 0x65), list) == 0)
+    from = m->from;
+    if (gv_SizeOpen((char *)bld->yard, from) == 0)
         return -4;
-    src = (char *)gv_ListEntry(*(char **)(o + 0x65), list, *(unsigned char *)(p + 3));
-    if (src != 0 && *(short *)(src + 8) == *(short *)((char *)c + 0x50)) {
-        s = *(int **)(src + 0x10);
-        n = gv_EntryCounts[list];
-        dst = (char *)gv_FindEntry(c, o, 0, gv_EntryIsFree, *(int *)((char *)p + 0xd));
-        if (dst != 0) {
-            d = *(int **)(dst + 0x10);
-            dend = d + gv_EntryCounts[*(int *)((char *)p + 0xd)] * 0x11;
-            send = s + n * 0x11;
-            for (; d < dend; d += 0x11) {
-                if (*d == -1) {
-                    while (1) {
-                        if (send <= s)
-                            goto done;
-                        if (*s != -1)
-                            break;
-                        s += 0x11;
-                    }
-                    s2 = s;
-                    q = d;
-                    for (i = 0x11; i != 0; i--)
-                        *q++ = *s2++;
-                    s2 = s;
-                    for (i = 0x11; i != 0; i--)
-                        *s2++ = 0;
-                    *s = -1;
-                    if (send <= s)
-                        break;
+    src = (GVENTRY *)gv_ListEntry((char *)bld->yard, from, m->entry);
+    if (src == 0 || src->w08 != c->w050)
+        return -7;
+    s = src->grave;
+    n = gv_EntryCounts[from];
+    dst = (GVENTRY *)gv_FindEntry(c, (unsigned char *)bld, 0, gv_EntryIsFree, m->to);
+    if (dst == 0)
+        return -7;
+    d = dst->grave;
+    dend = d + gv_EntryCounts[m->to];
+    send = s + n;
+    for (; d < dend; d++) {
+        if (d->id == -1) {
+            for (; s < send; s++) {
+                if (s->id != -1) {
+                    *d = *s;
+                    memset(s, 0, sizeof(GVGRAVE));
+                    s->id = -1;
+                    break;
                 }
             }
-        done:
-            *(int *)(dst + 4) = *(int *)(src + 4);
-            *(int *)(src + 4) = -1;
-            *(short *)(dst + 8) = *(short *)(src + 8);
-            *(short *)(src + 8) = (short)0xffff;
-            *(short *)(dst + 10) = (short)*(int *)ai_Time + 10;
-            dst[0xc] = (char)0xff;
-            *(short *)(src + 10) = 0xff;
-            if (ai_Unk1460ae0 != -1)
-                ai_NextObjectId = *(int *)((char *)p + 0x15);
-            if (*(int *)((char *)p + 0x11) > 0) {
-                gm_AddNegative(c[1], *(int *)(ai_Unk7e3f94 + ai_OwnPlayer * 0x5e8), *(int *)((char *)p + 0x11));
-                gm_AddObjekt(*(int *)(ai_Chars[*(unsigned short *)(o + 0x27)] + 4), *(int *)(ai_Unk7e3f94 + ai_OwnPlayer * 0x5e8), 0);
-            }
-            return 0;
+            if (s >= send)
+                break;
         }
     }
-    return -7;
+moved:
+    dst->id = src->id;
+    src->id = -1;
+    dst->w08 = src->w08;
+    src->w08 = 0xffff;
+    dst->until = (unsigned short)(gv_TimeT.year + 10);
+    dst->b0c = 0xff;
+    src->until = 0xff;
+    if (net_Conn.s != INVALID_SOCKET)
+        ai_NextObjectId = m->objId;
+    if (m->price > 0) {
+        gm_AddNegative(c->netId, gv_PlayerRecs[ai_OwnPlayer].currency, m->price);
+        gm_AddObjekt(gv_CharsT[bld->owner].netId, gv_PlayerRecs[ai_OwnPlayer].currency,
+                     (int)(m->price * gv_SaleShares[m->to]));
+    }
+    return 0;
 }
 /* 0x4f1170, the message 0x4c6130 about the object o (a character +0x27, not the player's): graveyard 0x4f2e30 (0x1b, 1, id, -1, object id) first; fields v at +8, byte b at +0x10, x at +0x11, y at +0x15; -1 for no character,
    the player's own object or b -1 */
