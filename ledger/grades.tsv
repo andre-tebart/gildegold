@@ -1501,27 +1501,27 @@ exe	0x0048d010	ai_MeisterTradeFernEinkauf	ai	draft	draft	deep
 exe	0x0048d810	ai_MeisterTradeFernEinkauf2	ai	draft	draft	deep	
 exe	0x0048e070	ai_Unk48e070	am	byte	draft		
 exe	0x0048e120	ai_Unk48e120	am	draft	draft	deep	
-exe	0x0048e370	ai_Unk48e370	am	draft	draft		
+exe	0x0048e370	ai_ExecBuildDomizil	am	draft	readable	deep	
 exe	0x0048e470	ai_Unk48e470	am	byte	draft		
 exe	0x0048e620	ai_Unk48e620	am	byte	draft		
 exe	0x0048e730	ai_Unk48e730	am	byte	draft		
 exe	0x0048e830	ai_Unk48e830	am	byte	draft		
 exe	0x0048e9f0	ai_Unk48e9f0	am	byte	draft		
 exe	0x0048eab0	ai_Unk48eab0	am	byte	draft		
-exe	0x0048eb50	ai_Unk48eb50	am	draft	draft		
-exe	0x0048ec90	ai_Unk48ec90	am	draft	draft		
-exe	0x0048edc0	ai_Unk48edc0	am	draft	draft		
-exe	0x0048ef10	ai_Unk48ef10	am	draft	draft		
+exe	0x0048eb50	ai_ExecSecretRoom0	am	draft	readable	deep	
+exe	0x0048ec90	ai_ExecSecretRoom1	am	draft	readable	deep	
+exe	0x0048edc0	ai_ExecSecretRoom2	am	draft	readable	deep	
+exe	0x0048ef10	ai_ExecSecretRoom3	am	draft	readable	deep	
 exe	0x0048f010	ai_Unk48f010	am	byte	draft		
 exe	0x0048f1e0	ai_Unk48f1e0	am	byte	draft		
-exe	0x0048f250	ai_Unk48f250	am	byte	draft		
-exe	0x0048f2b0	ai_Unk48f2b0	am	draft	draft		
-exe	0x0048f500	ai_Unk48f500	am	byte	draft		
-exe	0x0048f600	ai_Unk48f600	am	draft	draft		
-exe	0x0048f990	ai_Unk48f990	am	byte	draft		
+exe	0x0048f250	ai_FindOwnBuilding	am	byte	readable		
+exe	0x0048f2b0	ai_DecideBuildSculpture	am	draft	readable	deep	
+exe	0x0048f500	ai_ExecBuildSculpture	am	byte	readable		
+exe	0x0048f600	ai_DecideUseAlchemyItems	am	draft	readable	deep	
+exe	0x0048f990	ai_ExecUseAlchemyItems	am	byte	draft		
 exe	0x0048fb70	ai_Unk48fb70	am	byte	draft		
-exe	0x0048feb0	ai_Unk48feb0	am	byte	draft		
-exe	0x0048ff50	ai_Unk48ff50	am	draft	draft		
+exe	0x0048feb0	ai_PickRandomBuildingChar	am	byte	draft		
+exe	0x0048ff50	ai_DecideGraveyardOwner0	am	shape	readable		
 exe	0x004900c0	ai_Unk4900c0	am	draft	draft		
 exe	0x00490170	ai_Unk490170	am	draft	draft		
 exe	0x004902b0	ai_Unk4902b0	am	byte	draft		
@@ -1705,7 +1705,7 @@ exe	0x0049ea90	ai_Unk49ea90	am	draft	draft
 exe	0x0049ec10	ai_Unk49ec10	am	draft	draft		
 exe	0x0049ed10	ai_Unk49ed10	am	byte	draft		
 exe	0x0049ee20	ai_Unk49ee20	am	draft	draft		
-exe	0x0049eec0	ai_Unk49eec0	am	draft	draft		
+exe	0x0049eec0	ai_DecideTakeCredit	am	draft	draft		
 exe	0x0049f370	ai_Unk49f370	am	byte	draft		
 exe	0x0049f4f0	ai_Unk49f4f0	am	byte	draft		
 exe	0x0049f5c0	ai_Unk49f5c0	am	draft	draft		
@@ -1739,10 +1739,10 @@ exe	0x004a4ae0	ai_Unk4a4ae0	am	draft	draft
 exe	0x004a4c10	ai_Unk4a4c10	am	draft	draft		
 exe	0x004a4e30	ai_Unk4a4e30	am	byte	draft		
 exe	0x004a4e70	ai_Unk4a4e70	am	draft	draft		
-exe	0x004a5140	ai_Unk4a5140	am	draft	draft		
-exe	0x004a5320	ai_Unk4a5320	am	draft	draft		
+exe	0x004a5140	ai_CanBuildType	am	draft	draft		
+exe	0x004a5320	ai_ExecBuildBuilding	am	draft	draft		
 exe	0x004a5540	ai_Unk4a5540	am	draft	draft		
-exe	0x004a5760	ai_Unk4a5760	am	draft	draft		
+exe	0x004a5760	ai_FindWantedItems	am	draft	draft		
 exe	0x004a58d0	ai_PickPartnerChain	am	draft	draft		
 exe	0x004a5a30	ai_PickPartnerInRange	am	draft	draft		
 exe	0x004a5b50	ai_Unk4a5b50	am	draft	draft		
@@ -3122,7 +3122,7 @@ exe	0x005099e0	gm_Unk5099e0	f3gm	draft	draft
 exe	0x00509b10	gm_EquipmentValue	f3gm	draft	draft		
 exe	0x00509c80	gm_OwnerWorth	f3gm	draft	draft		
 exe	0x00509d30	gm_BuildingKindValue	f3gm	draft	readable		
-exe	0x00509dc0	gm_Unk509dc0	f3gm	draft	draft		
+exe	0x00509dc0	gm_BuildingKindCost	f3gm	draft	draft		
 exe	0x00509e30	gm_SumListAmounts	f3gm	byte	draft		
 exe	0x00509e60	gm_GetGoodsValue	f3gm	byte	draft		
 exe	0x00509eb0	gm_Unk509eb0	f3gm	byte	draft		
