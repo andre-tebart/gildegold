@@ -2411,7 +2411,7 @@ exe	0x004cdf80	ai_Unk4cdf80	cm	draft	draft
 exe	0x004cdfe0	ai_Unk4cdfe0	cm	byte	draft		
 exe	0x004ce040	ai_Unk4ce040	cm	draft	draft		
 exe	0x004ce130	ai_Unk4ce130	cm	byte	draft		
-exe	0x004ce170	ai_Unk4ce170	cm	byte	draft		
+exe	0x004ce170	ai_LedSelectBits	cm	byte	draft		
 exe	0x004ce1b0	ai_Unk4ce1b0	cm	draft	draft		
 exe	0x004ce200	ai_Unk4ce200	cm	draft	draft		
 exe	0x004ce270	ai_Unk4ce270	cm	byte	draft		
@@ -3065,7 +3065,7 @@ exe	0x00504a80	gm_PlayerSeat	f3gm	byte	draft
 exe	0x00504ad0	gm_TitleGroup	f3gm	draft	readable		
 exe	0x00504c00	gm_TitleJobGroup	f3gm	draft	readable		
 exe	0x00504ce0	gm_TitlesLeft	f3gm	draft	readable		
-exe	0x00504e00	gm_Unk504e00	f3gm	byte	draft		
+exe	0x00504e00	gm_SkillPoints	f3gm	byte	readable		
 exe	0x00504e20	gm_Mix	f3gm	shape	readable		
 exe	0x00504e80	gm_Mix2	f3gm	shape	readable		
 exe	0x00504ec0	gm_GetSkill	f3gm	draft	draft		
@@ -3398,20 +3398,20 @@ exe	0x0052e600	sv_DisableVisibleWidgets	sv	shape	readable
 exe	0x0052e6d0	sv_OpenWindowFrame	sv	byte	readable		
 exe	0x0052e860	sv_CreateScrollButtons	sv	byte	readable		
 exe	0x0052ea30	sv_FitForm	sv	byte	draft		
-exe	0x0052eaa0	sv_ValueBar	sv	draft	draft		
-exe	0x0052eb50	sv_DrawBalanceBar	sv	draft	draft		
-exe	0x0052ee50	sv_StartBand	sv	draft	draft		
+exe	0x0052eaa0	sv_ValueBar	sv	shape	readable		
+exe	0x0052eb50	sv_DrawBalanceBar	sv	byte	readable		
+exe	0x0052ee50	sv_StartBand	sv	byte	readable		
 exe	0x0052eed0	sv_EndBand	sv	byte	draft		
-exe	0x0052eee0	sv_Unk52eee0	sv	draft	draft		
-exe	0x0052f0d0	sv_Unk52f0d0	sv	draft	draft		
+exe	0x0052eee0	sv_UpdateBand	sv	draft	readable	deep	
+exe	0x0052f0d0	sv_UpdateBandLed	sv	draft	readable	deep	
 exe	0x0052f2c0	sv_Unk52f2c0	sv	byte	draft		
-exe	0x0052f340	sv_Unk52f340	sv	byte	draft		
-exe	0x0052f360	sv_Unk52f360	sv	draft	draft		
+exe	0x0052f340	sv_BookKeys	sv	byte	draft		
+exe	0x0052f360	sv_OpenBook	sv	draft	readable	deep	
 exe	0x0052f530	sv_Unk52f530	sv	byte	draft		
-exe	0x0052f600	sv_Unk52f600	sv	draft	draft		
-exe	0x0052f710	sv_Unk52f710	sv	draft	draft		
-exe	0x0052f9f0	sv_Unk52f9f0	sv	byte	draft		
-exe	0x0052fa00	sv_Unk52fa00	sv	byte	draft		
+exe	0x0052f600	sv_UpdateBook	sv	byte	readable		
+exe	0x0052f710	sv_TurnBook	sv	byte	readable		
+exe	0x0052f9f0	sv_BookForward	sv	byte	readable		
+exe	0x0052fa00	sv_BookBack	sv	byte	readable		
 exe	0x0052fa10	sv_CreateScrollForm	sv	byte	draft		
 exe	0x0052fa90	sv_DestroyScrollForm	sv	byte	draft		
 exe	0x0052fad0	sv_Unk52fad0	sv	byte	draft		
