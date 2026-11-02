@@ -125,7 +125,7 @@ int ai_Unk577450(int *p);               /* 0x577450, step predicate */
 int ai_Unk577490(void);                 /* 0x577490, releases the pending id S+0x50 */
 void ai_Unk5774d0(int arg);             /* 0x5774d0, posts a record message */
 void ai_Unk577540(int arg);             /* 0x577540, posts a record message */
-void ai_Unk5775c0(int arg);             /* 0x5775c0, posts two character messages */
+void ai_HookChapter5Step4(int arg);             /* 0x5775c0, posts two character messages */
 void ai_Unk577610(int arg);             /* 0x577610, character record lookup + 0x4e6180 */
 void ai_Unk577690(int arg);             /* 0x577690, builds a save record (ROUGH) */
 int ai_Unk577740(void);                 /* 0x577740, the tutorial start ("tutorial\main") */

@@ -1912,19 +1912,19 @@ void ai_Unk577540(int arg)
         return;
     sv_SelectPanelObjectK(r, *(int *)(q + 2), (char *)(unsigned)&ch_EmptyName);
 }
-/* 0x5775c0, when `arg` is 0: two messages on the player's character id (0x770b80 + id * 0x21c, +4):
-   0x4c4a60 (id, 0x1c8, 4, 0x4000, 0) and 0x4c4830 (id, -1, 0, 0x3e80) */
+/* 0x5775c0, the run hook of the run record FTInitChapter5Step4: at the run's start (end 0) sends two messages for
+   the player's character - cm_SendSetField (netId, 0x1c8, 4, 0x4000, 0) and cm_SendMoveGoodsUnchecked (netId, -1,
+   0, 0x3e80) */
 
-void ai_Unk5775c0(int arg)
+void ai_HookChapter5Step4(int end)
 {
-    char *rec;
-    int id;
+    AICHAR *chr;
 
-    id = *(int *)((unsigned)&ai_CharInts + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c);
-    if (arg)
+    chr = &ai_CharsT[ai_PlayerId];
+    if (end)
         return;
-    cm_SendSetField(id, 0x1c8, 4, 0x4000, 0);
-    cm_SendMoveGoodsUnchecked(id, -1, 0, 0x3e80);
+    cm_SendSetField(chr->netId, 0x1c8, 4, 0x4000, 0);
+    cm_SendMoveGoodsUnchecked(chr->netId, -1, 0, 0x3e80);
 }
 /* 0x577610, when `arg` is 0: 0x4eaa00 (1); when it is 1: finds the character record 0x770b80 + i * 0x21c whose
    byte +2 is 5, asks 0x4e7150 (rec, 1, &v) and, when it answers > 0, calls 0x4e6180 (rec, v) */
@@ -4023,7 +4023,7 @@ int ai_Unk57aeb0(void)
     U_I(r + 0x28) = (unsigned)(full_data_62a014 + 0x14);
     U_I(r + 0x2c) = 0x429;
     U_I(r + 0x30) = 0x163;
-    U_I(r + 0x34) = (unsigned)&ai_Unk5775c0;
+    U_I(r + 0x34) = (unsigned)&ai_HookChapter5Step4;
     U_I(r + 0x40) = 0x2e;
     U_I(r + 0x44) = 0x2148;
     U_I(r + 0x48) = 0xa;
