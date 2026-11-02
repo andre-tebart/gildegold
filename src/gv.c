@@ -1272,7 +1272,7 @@ int gv_ListEntry(char *r, int i, unsigned char n)
             return 0;
         if (kind == 3 && n >= 0x10)
             return 0;
-        return (int)((char *)g->lists[0] + n * 0x14);
+        return (int)&g->lists[0][n];
     }
     if (i == 1) {
         if (gv_SizeOpen(r, i) == 0)
@@ -1283,7 +1283,7 @@ int gv_ListEntry(char *r, int i, unsigned char n)
             return 0;
         if (kind == 3 && n >= 8)
             return 0;
-        return (int)((char *)g->lists[1] + n * 0x14);
+        return (int)&g->lists[1][n];
     }
     if (i == 2) {
         if (gv_SizeOpen(r, i) == 0)
@@ -1294,7 +1294,7 @@ int gv_ListEntry(char *r, int i, unsigned char n)
             return 0;
         if (kind == 3 && n >= 4)
             return 0;
-        return (int)((char *)g->lists[2] + n * 0x14);
+        return (int)&g->lists[2][n];
     }
     if (i == 3) {
         if (gv_SizeOpen(r, i) == 0)
@@ -1305,29 +1305,26 @@ int gv_ListEntry(char *r, int i, unsigned char n)
             return 0;
         if (kind == 3 && n >= 2)
             return 0;
-        return (int)((char *)g->lists[3] + n * 0x14);
+        return (int)&g->lists[3][n];
     }
     return 0;
 }
-/* 0x4ef6b0, the index of the entry e (0x14 bytes, e[0] the list number 0 .. 3) within its list of the record r; -1 for another list */
+/* 0x4ef6b0, the index of the entry e (GVENTRY, its size the list 0 .. 3) within its list of the graveyard record r (GVYARD.lists); -1 for another list */
 
 int gv_EntryIndex(char *r, int *e)
 {
-    int base;
+    GVYARD *g = (GVYARD *)r;
+    GVENTRY *en = (GVENTRY *)e;
 
-    base = e[0];
-    if (base == 0)
-        base = *(int *)(r + 8);
-    else if (base == 1)
-        base = *(int *)(r + 0xc);
-    else if (base == 2)
-        base = *(int *)(r + 0x10);
-    else {
-        if (base != 3)
-            return -1;
-        base = *(int *)(r + 0x14);
-    }
-    return ((int)e - base) / 0x14;
+    if (en->size == 0)
+        return en - g->lists[0];
+    if (en->size == 1)
+        return en - g->lists[1];
+    if (en->size == 2)
+        return en - g->lists[2];
+    if (en->size == 3)
+        return en - g->lists[3];
+    return -1;
 }
 /* 0x4ef710, 1 when the +8 word of b is the +0x50 word of a and not 0x7fff */
 

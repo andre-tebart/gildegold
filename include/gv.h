@@ -17,12 +17,19 @@ struct D3OBJECT;
 extern char unk_Avatars[0x20][0xf4];    /* 0x60f310 */
 extern char gv_Effects[];             /* 0x6f1008, 8 slots of 0x170 bytes */
 extern AITIME gv_LastTime;              /* 0x6f0e38, ai_Time at the last effect step (struct copies of it) */
+typedef struct GVENTRY {                /* 0x14 bytes, an entry of a graveyard's lists (gv_AllocGraveyard) */
+    int size;                           /* 0x00, the list (grave size) 0 .. 3 it belongs to */
+    int id;                             /* 0x04, -1 when free */
+    unsigned short w08;                 /* 0x08, 0xffff when free */
+    char pad0a[6];
+    char *grave;                        /* 0x10, its grave record (0x44 << size bytes) in GVYARD.graves */
+} GVENTRY;
 typedef struct GVYARD {                 /* 0x24 bytes, the graveyard record of a kind 0x1d building (AIBLD.yard; gv_AllocGraveyard) */
     int id;                             /* 0x00, the building's id */
     int kind;                           /* 0x04, 1 .. 3, the building type's level when allocated */
-    int *lists[4];                      /* 0x08, the entries (0x14 bytes) of the four grave sizes (0x44 << i bytes each) */
+    GVENTRY *lists[4];                  /* 0x08, the entries (0x14 bytes) of the four grave sizes (0x44 << i bytes each) */
     unsigned char open[4];              /* 0x18, the size i is in use (open[0] is set at allocation; 0x19 .. 0x1b by expansion) */
-    int *entries;                       /* 0x1c, all entries ("gv_Alloc:_all_graves") */
+    GVENTRY *entries;                   /* 0x1c, all entries ("gv_Alloc:_all_graves") */
     int *graves;                        /* 0x20, the grave records, 0x44 bytes each, first word -1 when free ("gv_Alloc:_all_zombies") */
 } GVYARD;
 typedef struct GVCANNON {               /* 0x20 bytes, the state of the cannon scene (unk_575860 0x57e270 ..), saved with the effects */
