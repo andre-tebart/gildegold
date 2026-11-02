@@ -2775,8 +2775,9 @@ void gm_Free(void)
 
 int gm_FindById(int *bld, int *obj, int *chr, int id)
 {
-    short *p;
-    char *b;
+    ORDCHAR *c;
+    ORDBLD *b;
+    ORDOBJ *o;
     int i;
 
     if (ai_Goods != 0) {
@@ -2786,39 +2787,39 @@ int gm_FindById(int *bld, int *obj, int *chr, int id)
             *obj = 0;
         if (chr != 0) {
             *chr = 0;
-            p = (short *)ai_Chars[0];
+            c = ORD_CHARS;
             i = 0;
             do {
-                if (*p != -1 && *(int *)(p + 2) == id) {
-                    *chr = (int)p;
+                if (c->id != 0xffff && c->netId == id) {
+                    *chr = (int)c;
                     return 3;
                 }
-                p += 0x10e;
+                c++;
                 i++;
             } while (i < 0x300);
         }
         if (bld != 0) {
             i = 0;
-            b = ai_Blds;
+            b = (ORDBLD *)ai_Blds;
             do {
-                if (*b != 0 && *(int *)(b + 1) == id) {
+                if (b->type != 0 && b->id == id) {
                     *bld = (int)b;
                     return 1;
                 }
                 i++;
-                b += 0xa9;
+                b++;
             } while (i < 0x100);
         }
-        if (obj != 0 && (i = 0, p = (short *)ai_Objects, 0 < f3gm_ObjectCount)) {
+        if (obj != 0 && (i = 0, o = (ORDOBJ *)ai_Objects, 0 < f3gm_ObjectCount)) {
             do {
-                if (*p != 0) {
-                    if (*(int *)(p + 1) == id) {
-                        *obj = (int)p;
+                if (o->type != 0) {
+                    if (o->objId == id) {
+                        *obj = (int)o;
                         return 2;
                     }
                     i++;
                 }
-                p = (short *)((char *)p + 0x43);
+                o = (ORDOBJ *)((char *)o + 0x43);
             } while (i < f3gm_ObjectCount);
         }
     }
