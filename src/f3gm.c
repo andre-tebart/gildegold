@@ -8468,7 +8468,8 @@ float gm_HealthFactor(int c)
         return 1.0f;
     return f * 0.000992063492063492 + 1.0;
 }
-/* 0x508a80, formats the amount v for the player slot k into out: "%i%c" below 1000, else with a '.' every three digits ("%s%c", the unit char 0x11 at the end), "0%c" for zero, a '-' in front for negative values. ROUGH */
+/* 0x508a80, formats the amount v (converted for the player slot k, gm_ConvertMoney) into out with the unit char 0x11:
+   "%i" below 1000, else with a '.' between every three digits, "0" for zero, a '-' in front of a negative one */
 
 void gm_FormatAmount(int v, unsigned char k, char *out)
 {
@@ -8476,48 +8477,44 @@ void gm_FormatAmount(int v, unsigned char k, char *out)
     char a[0x40], b[0x80];
     char *q;
 
-    n = gm_ConvertMoney(v < 0 ? -v : v, k);
+    n = gm_ConvertMoney(abs(v), k);
     if (v < 0) {
         if (n != 0) {
-            if (n < 1000) {
-                sprintf(out, "-%i%c", n, 0x11);
+            if (n >= 1000) {
+                _itoa(n, a, 10);
+                e = (strlen(a) - 1) / 3.0f + strlen(a);     /* the digits and their dots */
+                j = -1;
+                i = strlen(a);          /* from the terminator on */
+                if (i >= 0) {
+                    q = b + e;
+                    do {
+                        *q-- = a[i];
+                        if (i != 0 && j > 0 && (j + 1) % 3 == 0)
+                            *q-- = '.';
+                        j++;
+                    } while (--i >= 0);
+                }
+                b[e] = 0;
+                sprintf(out, "-%s%c", b, 0x11);
                 return;
             }
-            _itoa(n, a, 10);
-            e = (int)((strlen(a) - 1) / 3.0f) + strlen(a);
-            j = -1;
-            i = strlen(a) - 1;
-            if (i >= 0) {
-                q = b + e;
-                do {
-                    *q = a[i];
-                    q--;
-                    if (i != 0 && j > 0 && (j + 1) % 3 == 0)
-                        *q-- = '.';
-                    j++;
-                    i--;
-                } while (i >= 0);
-            }
-            b[e] = 0;
-            sprintf(out, "-%s%c", b, 0x11);
+            sprintf(out, "-%i%c", n, 0x11);
             return;
         }
     } else {
-        if (n > 999) {
+        if (n >= 1000) {
             _itoa(n, a, 10);
-            e = (int)((strlen(a) - 1) / 3.0f) + strlen(a);
+            e = (strlen(a) - 1) / 3.0f + strlen(a);
             j = -1;
-            i = strlen(a) - 1;
+            i = strlen(a);          /* from the terminator on */
             if (i >= 0) {
                 q = b + e;
                 do {
-                    *q = a[i];
-                    q--;
+                    *q-- = a[i];
                     if (i != 0 && j > 0 && (j + 1) % 3 == 0)
                         *q-- = '.';
                     j++;
-                    i--;
-                } while (i >= 0);
+                } while (--i >= 0);
             }
             b[e] = 0;
             sprintf(out, "%s%c", b, 0x11);
