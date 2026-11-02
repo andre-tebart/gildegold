@@ -8,7 +8,7 @@
    Names are ours.
    Open: not included yet (dcp headers conflicts cm HEADER): am.h amt.h anm.h ch.h d2.h f3gm.h gfx.h gv.h he.h
    hmt.h hst.h rt.h unk_4a7140.h unk_4b39f0.h unk_5d33b0.h; held by calls whose argument count differs from the
-   definition (read the original's pushes): ai_Unk4941b0, ai_Unk4941d0, ch_Create, d2_SetObjValue, gm_Unk504e00,
+   definition (read the original's pushes): ai_Unk4941b0, ai_Unk4941d0, ch_Create, d2_SetObjValue, gm_SkillPoints,
    unk_Unk4f3580, unk_Unk4f4460, he_Unk555210.
    unit of rea 8cef7d5b (src/game/cm.c); boundaries in decl/text.dcl */
 #include "d2_types.h"
@@ -6991,7 +6991,7 @@ void ai_Unk4cec30(int a, char *c)
     d2_WinOpenPic(w - 0x18, 0, 0x7b1, d2_LastWindow);
     hnd = d2_LastWindow;
     *(short *)(ai_Unkf8f39c + hnd * 0x3c4) = 0x54;
-    sv_ValueBar(4, 4, gm_Unk504e00(c, 3), 0x4df);
+    sv_ValueBar(4, 4, gm_SkillPoints(c, 3), 0x4df);
     hnd = (int)(gm_HealthRatio(c) * 100.0);
     d2_WinOpenSlider(0, 0xe, 0x40, 0, 0x64, 0x75, 0x442, d2_LastWindow);
     d2_SetObjValue(d2_LastWindow, 0, 0x64, hnd);
@@ -7462,7 +7462,7 @@ void ai_Unk4cfc10()
         G19_R(G19_E(e, 0x10), 0x74, short) = 0x54;
         G19_R(G19_E(e, 0x10), 0x14, short) = 0x80;
         G19_R(G19_E(e, 0x10), 0x5c, int) = 1;
-        t = gm_Unk504e00();
+        t = gm_SkillPoints();
         sv_ValueBar(0x24, 0x41, (int)(double)t, 0x4df);
         x += 0x80;
         e += 0x20;
@@ -9476,7 +9476,7 @@ void ai_Unk4d4340(int *ids, int x, int y)
         py = y + i / 6 * 100;
         d2_WinOpenPic(px - 0x10, py, 0x5da, d2_LastWindow);
         d2_WinOpenPic(px - 4, py, *(int *)(c + 0x18c), d2_LastWindow);
-        v = gm_Unk504e00(c, 3);
+        v = gm_SkillPoints(c, 3);
         sv_ValueBar(px, py + 0x3c, (int)(double)(float)v, 0x4eb);
         t = d2_CreateWinText(px - 0x24, py - 0x11, &ch_EmptyName, d2_LastWindow);
         G19_R(t, 0x14, short) = 0x78;
@@ -9546,7 +9546,7 @@ int ai_Unk4d4540(char *a)
                     io_PrintText(0x1135);
             }
             if (fv >= 0.75) {
-                v = gm_Unk504e00(ai_Unk6f0ce8, 3);
+                v = gm_SkillPoints(ai_Unk6f0ce8, 3);
                 r = (int)(v * 0.023809524f);
                 if (r > 4)
                     r = 4;
@@ -9605,7 +9605,7 @@ int ai_Unk4d4540(char *a)
             if (p != 0)
                 io_PrintText(0x113d, st, 0xc10, p, *(unsigned short *)ai_Unk6f0cec, esi);
         }
-        v = gm_Unk504e00(ai_Unk6f0ce8, 3);
+        v = gm_SkillPoints(ai_Unk6f0ce8, 3);
         r = (int)(v * 0.023809524f);
         if (r > 4)
             r = 4;

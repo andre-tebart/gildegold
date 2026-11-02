@@ -6286,7 +6286,6 @@ void sv_TabButtonRow(int f, int y, int *out, int n, ...)
     }
 }
 
-int gm_Unk504e00();                     /* 0x504e00 */
 int ai_Unk4ce170();                     /* 0x4ce170 */
 
 /* 0x52e600, on != 0: disables (D2OBJ.disabled) every used d2 object that draws into an active, enabled view (d2_Views)
@@ -6423,99 +6422,58 @@ void sv_ValueBar(int x, int y, int value, int k)
     if (odd != 0)
         d2_WinOpenPic(i * w + x, y, k + 1, d2_LastWindow);
 }
-/* 0x52eb50, draws the two-sided bar (current value 0x504e00 (a, b) against the byte at b + 0x80 + a): equal (within 1 %) a single bar, the picture k (+1 for an odd tile), smaller / larger the base bar
-   in k and the difference in k + 2 / k + 3 or k + 4 / k + 5 (the float operands deciding the tile counts are lost in the pseudocode: n = placeholders); ROUGH */
+/* 0x52eb50, draws the skill skill of the character c as a row of tiles at (x, y) in d2_LastWindow, 21 points a
+   tile (sv_ValueBar's tiles): the current value gm_SkillPoints against the base byte c[0x80 + skill]. Within 1 %
+   of each other one bar in the picture k (k + 1 the half tile); a current value below the base draws the base in
+   k + 2 / k + 3 and the current value over it in k / k + 1; above the base the current value in k + 4 / k + 5 and
+   the base over it in k, its half tile in k too (the original pushes k there). */
 
-void sv_DrawBalanceBar(int x, int y, int a, int b, unsigned k)
+void sv_DrawBalanceBar(int x, int y, char *c, int skill, int k)
 {
-    unsigned u1, u2, n, odd;
-    int pic, w, i;
-    double dd;
+    int cur, base, top, n, odd, w, i;
 
-    pic = k;
-    w = *(short *)(SV_I((unsigned)&d2_Pics) + 0x50 + k * 0x54) + 2;
-    u1 = gm_Unk504e00(a, b);
-    u2 = *(unsigned char *)(b + 0x80 + a);
-    k = u1;
-    if ((int)u1 <= (int)u2)
-        k = u2;
-    dd = (double)(int)(u1 - u2);
-    if (dd < 0)
-        dd = -dd;
-    if (dd / (double)(int)k <= 0.01) {
-        n = (int)0.0f;
-        odd = n & 0x80000001;
-        if ((int)odd < 0)
-            odd = (odd - 1 | 0xfffffffe) + 1;
-        i = 0;
-        if (0 < (int)n / 2) {
-            do {
-                d2_WinOpenPic(w * i + x, y, pic, SV_I((unsigned)&d2_LastWindow));
-                i++;
-            } while (i < (int)n / 2);
+    w = d2_Pics[k].w + 2;
+    cur = gm_SkillPoints(c, skill);
+    base = (unsigned char)c[0x80 + skill];
+    top = cur;
+    if (cur <= base)
+        top = base;
+    if (fabs((double)(cur - base)) / top > 0.01f) {
+        if (cur < base) {
+            n = (int)(base / 21.0f);
+            odd = n % 2;
+            for (i = 0; i < n / 2; i++)
+                d2_WinOpenPic(i * w + x, y, k + 2, d2_LastWindow);
+            if (odd != 0)
+                d2_WinOpenPic(i * w + x, y, k + 3, d2_LastWindow);
+            n = (int)(cur / 21.0f);
+            odd = n % 2;
+            for (i = 0; i < n / 2; i++)
+                d2_WinOpenPic(i * w + x, y, k, d2_LastWindow);
+            if (odd != 0)
+                d2_WinOpenPic(i * w + x, y, k + 1, d2_LastWindow);
+        } else if (cur > base) {
+            n = (int)(cur / 21.0f);
+            odd = n % 2;
+            for (i = 0; i < n / 2; i++)
+                d2_WinOpenPic(i * w + x, y, k + 4, d2_LastWindow);
+            if (odd != 0)
+                d2_WinOpenPic(i * w + x, y, k + 5, d2_LastWindow);
+            n = (int)(base / 21.0f);
+            odd = n % 2;
+            for (i = 0; i < n / 2; i++)
+                d2_WinOpenPic(i * w + x, y, k, d2_LastWindow);
+            if (odd != 0)
+                d2_WinOpenPic(i * w + x, y, k, d2_LastWindow);    /* the original's: k, not k + 1 */
         }
-        if (odd == 0)
-            return;
-        pic++;
-    } else if ((int)u1 < (int)u2) {
-        n = (int)0.0f;
-        odd = n & 0x80000001;
-        if ((int)odd < 0)
-            odd = (odd - 1 | 0xfffffffe) + 1;
-        i = 0;
-        if (0 < (int)n / 2) {
-            do {
-                d2_WinOpenPic(w * i + x, y, pic + 2, SV_I((unsigned)&d2_LastWindow));
-                i++;
-            } while (i < (int)n / 2);
-        }
-        if (odd != 0)
-            d2_WinOpenPic(w * i + x, y, pic + 3, SV_I((unsigned)&d2_LastWindow));
-        n = (int)0.0f;
-        odd = n & 0x80000001;
-        if ((int)odd < 0)
-            odd = (odd - 1 | 0xfffffffe) + 1;
-        i = 0;
-        if (0 < (int)n / 2) {
-            do {
-                d2_WinOpenPic(w * i + x, y, pic, SV_I((unsigned)&d2_LastWindow));
-                i++;
-            } while (i < (int)n / 2);
-        }
-        if (odd == 0)
-            return;
-        pic++;
     } else {
-        if ((int)u1 <= (int)u2)
-            return;
-        n = (int)0.0f;
-        odd = n & 0x80000001;
-        if ((int)odd < 0)
-            odd = (odd - 1 | 0xfffffffe) + 1;
-        i = 0;
-        if (0 < (int)n / 2) {
-            do {
-                d2_WinOpenPic(w * i + x, y, pic + 4, SV_I((unsigned)&d2_LastWindow));
-                i++;
-            } while (i < (int)n / 2);
-        }
+        n = (int)(base / 21.0f);
+        odd = n % 2;
+        for (i = 0; i < n / 2; i++)
+            d2_WinOpenPic(i * w + x, y, k, d2_LastWindow);
         if (odd != 0)
-            d2_WinOpenPic(w * i + x, y, pic + 5, SV_I((unsigned)&d2_LastWindow));
-        n = (int)0.0f;
-        odd = n & 0x80000001;
-        if ((int)odd < 0)
-            odd = (odd - 1 | 0xfffffffe) + 1;
-        i = 0;
-        if (0 < (int)n / 2) {
-            do {
-                d2_WinOpenPic(w * i + x, y, pic, SV_I((unsigned)&d2_LastWindow));
-                i++;
-            } while (i < (int)n / 2);
-        }
-        if (odd == 0)
-            return;
+            d2_WinOpenPic(i * w + x, y, k + 1, d2_LastWindow);
     }
-    d2_WinOpenPic(w * i + x, y, pic, SV_I((unsigned)&d2_LastWindow));
 }
 /* 0x52ee50, starts the rubber band selection (0x760440 = 1): both corners (0x760444 / 0x760448 and 0x76044c / 0x760450) are the mouse position clamped to the view rectangle 0xfc2930 .. 0xfc293c */
 

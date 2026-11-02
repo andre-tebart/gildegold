@@ -6422,9 +6422,9 @@ int gm_TitlesLeft(int n)
 /* 0x504e00, the 0x504ec0 value of (a, b) times 252, truncated (a tail through __ftol) */
 
 
-int gm_Unk504e00(int a, int b)
+int gm_SkillPoints(char *c, int skill)
 {
-    return (int)(gm_GetSkill(a, b) * 252.0f);
+    return (int)(gm_GetSkill(c, skill) * 252.0f);
 }
 /* 0x504e20, mixes the two 0x504ec0 values u = f (a, c) and v = f (b, c): ((u * u - v) * 0.4 + 0.6 + (u - v * v) * 0.6 + 0.4) * 0.5 */
 

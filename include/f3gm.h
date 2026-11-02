@@ -81,7 +81,7 @@ extern char gm_CharacterStatistics[128];  /* 0x91b500 */
 int gm_CharacterWages(unsigned short id, int flag, unsigned char *out);  /* 0x4fa700 */
 int gm_TakeObjekt(int id, int proto, int n);  /* 0x500a40 */
 void gm_Unk5034b0(int o);  /* 0x5034b0 */
-int gm_Unk504e00(int a, int b);  /* 0x504e00 */
+int gm_SkillPoints(char *c, int skill);  /* 0x504e00 */
 int gm_Unk506480(char *c, int *n);  /* 0x506480 */
 unsigned gm_Unk5064d0(int a, int b);  /* 0x5064d0 */
 void gm_Unk506e70(unsigned short *c, char *out, int flag);  /* 0x506e70 */

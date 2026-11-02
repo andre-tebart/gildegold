@@ -137,7 +137,7 @@ void sv_OpenWindowFrame(int f, int b, int c);                                 /*
 int sv_CreateScrollButtons(int x, int y, int f, int g, int p5, int *b, int *a, int *c); /* 0x52e860 */
 void sv_FitForm(int f);                                                 /* 0x52ea30 */
 void sv_ValueBar(int x, int y, int value, int k);                      /* 0x52eaa0, value / 21 half tiles of the picture k */
-void sv_DrawBalanceBar(int x, int y, int a, int b, unsigned k);              /* 0x52eb50 */
+void sv_DrawBalanceBar(int x, int y, char *c, int skill, int k);              /* 0x52eb50 */
 void sv_StartBand(void);                                                /* 0x52ee50 */
 void sv_EndBand(void);                                                /* 0x52eed0 */
 void sv_Unk52eee0(void);                                                /* 0x52eee0 */

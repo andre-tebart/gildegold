@@ -574,7 +574,7 @@ int d2_CreateWindow();  /* 0x472390 */
 int d2_RemoveWindow();  /* 0x472ce0 */
 int d2_WinOpenPic(short x, short y, int pic, int win);  /* 0x4731d0 */
 void d2_SetObjValue();  /* 0x475cb0 */
-int gm_Unk504e00();  /* 0x504e00 */
+int gm_SkillPoints();  /* 0x504e00 */
 extern int d2_LastWindow;  /* 0x6ed938 */
 extern int cm_SkipEvents;  /* 0x6f0d8c */
 extern int ai_Unk935d20[];  /* 0x935d20 */
