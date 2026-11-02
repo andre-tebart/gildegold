@@ -317,7 +317,7 @@ int gm_IncomeKind4(unsigned id, GMINCOME *out, unsigned char flags)
     b = (ORDBLD *)gm_FirstBuilding(1);
     gm_Query((void *)b->objList, 2, 6, 0, 0x115);
     id &= 0xffff;
-    base = ORD_CHARS[id].v1a4 + ORD_CHARS[id].v1a0;
+    base = ORD_CHARS[id].v1a0 + ORD_CHARS[id].v1a4;
     x = (float)(rate * 0.01f);
     x = (float)(x * base);
     if (!(x > 0))
