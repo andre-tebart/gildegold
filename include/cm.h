@@ -435,7 +435,7 @@ typedef struct G17B16 { char b[16]; } G17B16;
 
 int amt_AcceptApplication();  /* 0x4e6430 */
 int amt_ExecuteOfficeMessage();  /* 0x4e67a0, amt.h */
-int unk_Unk4f27d0();  /* 0x4f27d0 */
+int gv_OnDecisionValue();  /* 0x4f27d0 */
 void ord_LoadStatistics(void *p);  /* 0x4f9020 */
 int gm_ChooseHeadIcon(unsigned short *c);  /* 0x4fb890 */
 void gm_SetJob(int i, unsigned n);  /* 0x504790 */

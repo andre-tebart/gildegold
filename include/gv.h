@@ -429,7 +429,7 @@ int ord_EspionageResultOrder(char *c, int *m);     /* 0x4f4ff0 */
 int ord_PrivilegeDialog(char *text, int mode, int arg);  /* 0x4f8200, the privilege dialog */
 
 int gv_SetTableRecord(struct AICHAR *c, int i, int v);  /* 0x4f2750 */
-int unk_Unk4f27d0(int *p);              /* 0x4f27d0 */
+int gv_OnDecisionValue(GVDECMSG *p);              /* 0x4f27d0 */
 
 int gv_Accuse(int i, int v, int a, int b, int obj);  /* 0x4f2e30 */
 float util_RandomF(void);               /* 0x42ec20 */
