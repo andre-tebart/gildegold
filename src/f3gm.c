@@ -426,7 +426,7 @@ float gm_Mix(int a, int b, int c);                     /* 0x504e20 */
 void ai_BeginNeedBlock(char *p);                     /* 0x4c3e70 */
 int ai_AddNeedDelta(int k, float v);                     /* 0x4c3eb0 */
 void ai_SendNeedBlock(void);                     /* 0x4c4a20 */
-void unk_Unk4fb0e0();                   /* 0x4fb0e0 */
+void gm_ShiftLoyalty();                   /* 0x4fb0e0 */
 int gm_FindRichest(short *id, int *rate);
 #define I50A640 ((int (*)())gm_GetWorth)
 extern char * cm_FieldObject;                /* 0xa68d2c */
@@ -627,60 +627,70 @@ void gm_UpdateWorthMood(void)
     }
     gm_NetMsgCount = 0;
 }
-/* 0x4fabe0, the end of the day for the incomes: shifts the 17-entry history of each of the five sums (0x91b580 / 0x91b5c4 / 0x91b608 / 0x91b64c / 0x91b690, 0x40 bytes) one place and clears the sums 0x91b5c0 / 0x91b604 / 0x91b648 / 0x91b68c / 0x91b6d0; runs 0x4fa4b0 (i, out, flags) for the 0x300 characters (clearing +0x198 / +0x19c); with flag 1 also 0x4fb0e0 and a list of up to 8 objects of the group (1, 5, 7) (0x501190 / 0x501030); then clears the ints +0x4d and (for kinds 11 .. 13) +0x69 in the 256 building records. ROUGH */
+/* 0x4fabe0, the end of the day for the incomes: shifts the 17-round history of each of the five income sums one
+   place and clears the current sums; settles every character's incomes (gm_CharacterIncomes) and clears its
+   v198 / wage; with flag 1 also shifts the loyalties (gm_ShiftLoyalty) and lists up to 8 owned buildings of the
+   query (1, 5, 7) with their type levels (the list is not used further); then clears every building's roundSum
+   and, for the kinds 11 .. 13, its daySum.
+   @deep Read whole against the original: the five memmoves, the sum clears, the character loop (i < 0x300
+   strength-reduced to the +0x198 pointer), the twin flags&1 tests (esi = flags & 1 reused), the 8-entry
+   owned-building list sharing the incomes buffer (union, frame equal), the building loop (11..13 unsigned)
+   all equal. One hunk left at 0x4facdf: the type-level load: the original keeps the BTypes base in ebx
+   (xor edx,edx; mov ebx,[ai_BTypes]; mov dl,[eax]; add ebx,edx; lea ecx,[edx+edx*2] .. mov
+   dl,[ebx+ecx*4+0x247]) plus a dead lea ecx,[ebx+ecx*4]; ours uses eax/ecx/edx for the same ops (mov
+   cl,[eax]; lea eax,[ecx+ecx*2] ... mov cl,[eax+edx*4+0x247]). Tried: a temp pointer t before/after the
+   list store, levels[n++], a struct-typed index (same code): register choice and the materialised dead
+   address only. */
 
 void gm_EndDayIncomes(unsigned flags)
 {
-    unsigned char *o;
-    int *c;
-    int i, k, j;
-    unsigned v[8];
-    int ent[14];
+    ORDBLD *b;
+    int i, n;
+    char *t;
+    unsigned levels[8];
+    union {                     /* one buffer: the original's frame holds the list where the incomes were */
+        GMINCOME inc;
+        ORDBLD *list[8];
+    } u;
 
-    memmove(gm_IncomeHistory, gm_IncomeHistory + 4, 0x40);
-    memmove(gm_IncomeHistory + 0x44, gm_IncomeHistory + 0x48, 0x40);
-    memmove(gm_IncomeHistory + 0x88, gm_IncomeHistory + 0x8c, 0x40);
-    memmove(gm_IncomeHistory + 0xcc, gm_IncomeHistory + 0xd0, 0x40);
-    memmove(gm_IncomeHistory + 0x110, gm_IncomeHistory + 0x114, 0x40);
-    *(int *)ai_Unk91b5c0 = 0;
-    *(int *)ai_Unk91b604 = 0;
-    *(int *)ai_Unk91b648 = 0;
-    *(int *)ai_Unk91b68c = 0;
-    *(int *)ai_Unk91b6d0 = 0;
+    memmove(gm_IncomeRows[0], gm_IncomeRows[0] + 1, 16 * sizeof(int));
+    memmove(gm_IncomeRows[1], gm_IncomeRows[1] + 1, 16 * sizeof(int));
+    memmove(gm_IncomeRows[2], gm_IncomeRows[2] + 1, 16 * sizeof(int));
+    memmove(gm_IncomeRows[3], gm_IncomeRows[3] + 1, 16 * sizeof(int));
+    memmove(gm_IncomeRows[4], gm_IncomeRows[4] + 1, 16 * sizeof(int));
+    gm_IncomeRows[0][16] = 0;
+    gm_IncomeRows[1][16] = 0;
+    gm_IncomeRows[2][16] = 0;
+    gm_IncomeRows[3][16] = 0;
+    gm_IncomeRows[4][16] = 0;
     gm_NetMsgCount = 0;
     for (i = 0; i < 0x300; i++) {
-        gm_CharacterIncomes(i, (GMINCOME *)ent, flags);
-        c = (int *)(ai_Chars[i] + 0x198);
-        c[1] = 0;
-        c[0] = 0;
+        gm_CharacterIncomes(i, &u.inc, flags);
+        ORD_CHARS[i].wage = 0;
+        ORD_CHARS[i].v198 = 0;
         if (gm_NetMsgCount > 0x40) {
             sv_PumpNet();
             gm_NetMsgCount = 0;
         }
     }
+    if (flags & 1)
+        gm_ShiftLoyalty();
     if (flags & 1) {
-        unk_Unk4fb0e0();
-        o = (unsigned char *)gm_BuildQuery(1, 5, 7);
-        if (o != 0) {
-            k = 0;
-            do {
-                if (k > 0x1f)
-                    break;
-                j = k;
-                if (*(short *)(o + 0x27) != -1) {
-                    *(unsigned char **)((char *)ent + k) = o;
-                    j = k + 4;
-                    *(unsigned *)((char *)v + k) = *(unsigned char *)(ai_BTypes + *o * 0x24d + 0x247);
-                }
-                o = (unsigned char *)gm_BuildNext();
-                k = j;
-            } while (o != 0);
+        b = (ORDBLD *)gm_BuildQuery(1, 5, 7);
+        n = 0;
+        while (b != 0 && n < 8) {
+            if (b->owner != 0xffff) {
+                t = ai_BTypes + b->type * 0x24d;
+                u.list[n] = b;
+                levels[n++] = (unsigned char)t[0x247];
+            }
+            b = (ORDBLD *)gm_BuildNext();
         }
     }
-    for (k = 0; k < 0xa900; k += 0xa9) {
-        *(int *)(ai_Blds + k + 0x4d) = 0;
-        if ((unsigned char)ai_Blds[k] > 10 && (unsigned char)ai_Blds[k] < 0xe)
-            *(int *)(ai_Blds + k + 0x69) = 0;
+    for (i = 0; i < 0x100; i++) {
+        ((ORDBLD *)ai_Blds)[i].roundSum = 0;
+        if (((ORDBLD *)ai_Blds)[i].type >= 11 && ((ORDBLD *)ai_Blds)[i].type <= 13)
+            ((ORDBLD *)ai_Blds)[i].daySum = 0;
     }
 }
 /* 0x4fad60, finds the character with the highest 0x50a640 value (of the active persons of kind < 10, +8 set), caches it in 0x6f1bac / 0x617730 until the clock 0x770ae0 passes 0x61772c or the cached record is gone; out: its id (-1 when none) and the value (0xc80 when none). Returns 1 when found */
@@ -787,7 +797,7 @@ int unk_Unk4fae50(char *b, int *out)
 }
 /* 0x4fb0e0, every fourth day (the clock int % 4 == 0): by the record 2 (rate 2: a random loyalty shift for the characters above 0xb, 0x4c3c00 (1, 1, 0xc, ..); other rates: 0x4f2e30 (2, ..) and a loyalty drop of 0.1) over the characters of kinds 1 .. 9 except 6 / 7 / 8. ROUGH */
 
-void unk_Unk4fb0e0(void)
+void gm_ShiftLoyalty(void)
 {
     int r[9];
     int i, t, m;

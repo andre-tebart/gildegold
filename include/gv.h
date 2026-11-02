@@ -121,7 +121,9 @@ typedef struct ORDCHAR {
     char pad16a[2];
     struct ORDBLD *bld;             /* 0x16c, the character's building (ai.h AICHAR.bld) */
     struct ORDBLD *bld2;            /* 0x170, the character's own building (its home), 0 when none */
-    char pad174[0x2c];
+    char pad174[0x24];
+    int v198;                       /* 0x198, cleared with wage at the end of every day (f3gm.c gm_EndDayIncomes) */
+    int wage;                       /* 0x19c, the wage paid in the last round settlement (ai.h AICHAR.wage) */
     int v1a0;                       /* 0x1a0, a trade sum cm.c's goods move adds to (price x amount) for an object of the type 0x1dc (seller) / 0x1db (buyer); the income kind 4 taxes v1a0 + v1a4 */
     int v1a4;                       /* 0x1a4, the same for the types 0x1db (seller) / 0x1dc (buyer) */
     int v1a8;                       /* 0x1a8, an amount the income kind 3 (f3gm.c gm_IncomeKind3) taxes at the decision 0xd's rate and clears once paid */
@@ -179,11 +181,15 @@ typedef struct ORDBLD {
     unsigned char type;             /* 0x00, index into ai_BTypes */
     char pad01[0x26];
     unsigned short owner;           /* 0x27, index into ai_Chars, 0xffff = none */
-    char pad29[0x33];
+    char pad29[0x24];
+    int roundSum;                   /* 0x4d, ai.h AIBLD.roundSums[0], cleared at the end of every day (gm_EndDayIncomes) */
+    char pad51[0xb];
     char level;                     /* 0x5c, the building's level 0 .. 100 */
     int objList;                    /* 0x5d */
     char *object;                   /* 0x61, its object in the scene */
-    char pad65[0x44];
+    char pad65[4];
+    int daySum;                     /* 0x69, ai.h AIBLD.unk69, cleared for the kinds 11 .. 13 at the end of every day (reasoned guess: a per-day sum, as roundSum) */
+    char pad6d[0x3c];
 } ORDBLD;
 
 /* the head of an object record ai.h's AIOBJ, as gm_Query returns it (gv.h and ai.h cannot be in one TU) */
