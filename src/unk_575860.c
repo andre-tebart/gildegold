@@ -6767,16 +6767,7 @@ void ai_CabinetSpyOnCharacter(AIBLD *rec)
    the amount is taken off (gm_SendMoneyDelta), the message 0x99 goes to the building's owner (flags 2, the game
    time, the target's netId, 1, the step, the target's own building / building, else ai_PickActionBuilding's pick),
    its slot is waited for, the voice "KOMMENTARE" plays and the window leaves; the right button or the second
-   button leaves too
-   @deep Rewritten from the whole original 0x581950..0x581dae (AMOUNTCFG, AICHAR target, the amounts n+3 /
-   n+5 / n+8 from n = level/3 + 2 as the original adds them to n, AIMSG kind 1, the LARGE_INTEGER mask, the
-   bld2 / bld / pick chain); 1117 vs 1117 bytes, same instruction count, no branch-target difference. Left:
-   the frame is 4 larger (0x16c vs 0x168): the original lets pick share the spill slot of the step i
-   (S+0x10, lea edx,[esp+0x10] / mov [esp+0x28],esi), ours gives pick a slot of its own, so every slot
-   above shifts by 4 (the frame hunks); the code hunk at 0x581c7c is the msg store order around the time
-   copy and the bld2 load (mov eax,[ebx+0x170] scheduled before the hour store). Tried: i itself as the
-   pick's variable (172 ins: the address-taken step leaves the register), seven orders of the msg stores
-   (kept the best). */
+   button leaves too */
 void ai_CabinetSpyByMoney(AIBLD *rec)
 {
     AIMSG msg;
@@ -6791,7 +6782,6 @@ void ai_CabinetSpyByMoney(AIBLD *rec)
     int i;
     int k;
     int id;
-    int pick;
     LARGE_INTEGER mask;
 
     memset(&q, 0, sizeof(q));
@@ -6854,6 +6844,8 @@ void ai_CabinetSpyByMoney(AIBLD *rec)
                     else if (p->bld != 0)
                         msg.arg[0] = p->bld->id;
                     else {
+                        int pick;
+
                         mask.LowPart = 0x7b4c4a0;
                         mask.HighPart = 0;
                         pick = -1;
