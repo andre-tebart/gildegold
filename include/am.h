@@ -1,5 +1,5 @@
 /* Declarations of am.c, the AI "methods" unit 0x48e070..0x4a7140 (its parts below, each marked with the header it was). 0x490c10..0x492fd0: the registration of three AI actions (0x490c10) and the
-   decision callbacks of the AI decision table at 0x611258 (29 records of 0x24 bytes, the callback at +0x20).
+   decision callbacks of the AI decision table at 0x611258 (29 AIDEC records, gv.h, the callback at +0x20).
    ai.h is included for what it has; AIPER is our view of a character (0x21c bytes, ai_Chars at 0x770b80).
    Names are ours. */
 #ifndef AM_H
@@ -16,6 +16,7 @@ struct AIARG;
 struct AIBLD;
 struct AIC4;
 struct AIPER;
+struct AIDEC;
 struct AMTKIND;
 struct G5CH;
 struct G9REC;
@@ -56,18 +57,6 @@ typedef struct AIPER {                  /* a character, 0x21c bytes (ai_Chars[76
     unsigned int flags1e8;              /* 0x1e8 */
     char pad1ec[0x30];
 } AIPER;
-
-typedef struct AIDEC {                  /* 0x24 bytes, the decision table at 0x611258 (29 records) */
-    int unk00;                          /* 0x00 */
-    int min;                            /* 0x04 */
-    int max;                            /* 0x08 */
-    int unk0c;                          /* 0x0c */
-    int unk10;                          /* 0x10 */
-    int unk14;                          /* 0x14 */
-    int cur;                            /* 0x18, the current value */
-    unsigned char unk1c[4];             /* 0x1c */
-    void *fn;                           /* 0x20 */
-} AIDEC;
 
 #include "am_types.h"                /* G7GRP, AIACTW, AIACT */
 #pragma pack(pop)
@@ -227,7 +216,7 @@ int ai_Unk4972d0(AIPER *p, AIARG *s1, AIARG *s2);                               
 int ai_Unk4973f0(float *a, float *b, int i, AIPER *p, int f, AIARG *o1, AIARG *o2); /* 0x4973f0 */
 
 int ai_Unk495a50(int kind, int id, int c, AIARG *s1, AIARG *s2);                /* 0x495a50 */
-int ai_Unk4a4c10(float *a, float *b, int i, AIPER *p, AIDEC *d);                /* 0x4a4c10 */
+int ai_Unk4a4c10(float *a, float *b, int i, AIPER *p, struct AIDEC *d);                /* 0x4a4c10 */
 int ai_PickPartnerChain(AIPER *p, int a, int *flags, int b, float f, unsigned short *id); /* 0x4a58d0 */
 void cm_SendSetField(int a, int b, int c, int d, int e);                   /* 0x4c4a60 */
 void cm_SendMoneyDelta(int a, int b);                                               /* 0x4c5f60 */

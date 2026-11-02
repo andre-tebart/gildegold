@@ -330,6 +330,17 @@ int unk_Unk4f22a0(char *o, unsigned char m);  /* 0x4f22a0 */
 int gv_FindHeldEntry(void *a, unsigned char **o, int *e);  /* 0x4f2540 */
 int gv_FindReservedEntry(void *a, unsigned char **o, int *e);  /* 0x4f25d0 */
 float unk_Unk4f2660(char *o);           /* 0x4f2660 */
+typedef struct AIDEC {                  /* 0x24 bytes, a record of the AI decision table 0x611258 (29 records, gv_GetTableRecord copies one) */
+    int unk00;                          /* 0x00 */
+    int min;                            /* 0x04 */
+    int max;                            /* 0x08 */
+    int unk0c;                          /* 0x0c */
+    int unk10;                          /* 0x10 */
+    int unk14;                          /* 0x14 */
+    int cur;                            /* 0x18, the current value */
+    unsigned char unk1c[4];             /* 0x1c */
+    void *fn;                           /* 0x20 */
+} AIDEC;
 int gv_GetTableRecord(int i, int *out);     /* 0x4f2720 */
 int gv_FindTableRecord(char *c, unsigned b, int *out);  /* 0x4f2870 */
 extern char unk_Tab611258[];            /* 0x611258, 0x1d records of 0x24 bytes */

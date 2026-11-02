@@ -37,6 +37,7 @@
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, ai_Unk4d88c0 0x4d88c0 move it as a word / movzx) */
 #define gv_PlayerAiChar (*(AICHAR **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) as the AICHAR it points to */
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
+#define gv_Decisions (*(AIDEC (*)[0x1d])&unk_Tab611258)  /* 0x611258, the AI decision table (char initializer) as its 0x1d AIDEC records */
 #define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
 #define GAPDATA __declspec(align(1)) unsigned char
 #define gv_EffectsT (*(GVEFFECT (*)[8])&gv_Effects)  /* 0x6f1008, gv_Effects (char[0xb80]) as the 8 GVEFFECT slots */
@@ -2808,18 +2809,16 @@ float unk_Unk4f2660(char *o)
         x = x + 25.0f;
     return x * 0.0125f * 0.5f + 0.5f;
 }
-/* 0x4f2720, copies the record i (0 .. 0x1c, 0x24 bytes at 0x611258) of the table to out; 0 for i > 0x1c */
+/* 0x4f2720, copies the AI decision record i (0 .. 0x1c, an AIDEC of the table 0x611258) to out (a struct copy); 0 for i > 0x1c */
 
 int gv_GetTableRecord(int i, int *out)
 {
-    int *s;
-    int k;
+    AIDEC *rec;
 
-    if (i > 0x1c)
+    if (i >= 0x1d)
         return 0;
-    s = (int *)(unk_Tab611258 + i * 0x24);
-    for (k = 9; k != 0; k--)
-        *out++ = *s++;
+    rec = (AIDEC *)out;
+    *rec = gv_Decisions[i];
     return 1;
 }
 /* 0x4f2870, finds the record of the table whose bytes +0x1c / +0x1d are (c[+0x166], b) and copies it to out; 0 when none */
