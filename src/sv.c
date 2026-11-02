@@ -160,14 +160,7 @@ extern short d2_MouseX;
 extern short d2_MouseY;
 
 
-extern GAPDATA full_data_623eac[];
-extern GAPDATA full_data_623eb0[];
-extern GAPDATA full_data_623eb4[];
-extern GAPDATA full_data_62457c[];
-extern GAPDATA full_data_6f23f1[];
-extern GAPDATA full_data_6f2580[];
 extern int main_Inactive;
-extern GAPDATA full_data_6f25a8[];
 extern int snd_MusicEnabled;
 extern int snd_SfxEnabled;
 extern void *d2_ScreenSurf;  /* 0x6ed924 */
@@ -6051,6 +6044,7 @@ done:
 }
 
 #include <stdarg.h>
+#include "cm_types.h"
 extern unsigned char ai_GameState;
 extern unsigned char d3_MipSkip;
 
@@ -7351,7 +7345,7 @@ l64:
         SV_I((unsigned)&ai_FrameWait)++;
     if ((mask & 0x200) != 0)
         evt_StepAll();
-    if (SV_I((unsigned)&ai_FrameWait) == 0 && (cv >= 0 || (d2_FlushDirty(), SV_I((unsigned)&ai_FrameWait) == 0)) && (mask & 0x40) != 0 && SV_I((unsigned)&full_data_623eb0) != 0) {
+    if (SV_I((unsigned)&ai_FrameWait) == 0 && (cv >= 0 || (d2_FlushDirty(), SV_I((unsigned)&ai_FrameWait) == 0)) && (mask & 0x40) != 0 && SV_I((unsigned)&sv_WorldOn) != 0) {
         if ((mask & 0x10000) == 0 && (mask & 0x40000) != 0)
             sv_UpdateSkyPhase((unsigned)&ai_Time);
         if (SV_I((unsigned)&d3_CurrentScene) == 0)
@@ -7376,14 +7370,14 @@ l64:
         ai_UpdateWind();
         unk_Unk4edf80();
     }
-    if (SV_I((unsigned)&full_data_623eac) != 0) {
+    if (SV_I((unsigned)&sv_CharsOn) != 0) {
         ch_UpdatePositions();
         ch_Update();
         ch_Unk4027b0();
     }
     if ((mask & 0x4000) != 0 && SV_US((unsigned)&ai_TimeHour) != SV_I((unsigned)&sv_WeatherHour))
         sv_UpdateWeather();
-    if (SV_I((unsigned)&full_data_6f2580) != 0)
+    if (SV_I((unsigned)&main_WeatherSound) != 0)
         snd_UpdateRain();
     if (SV_I((unsigned)&snd_SfxEnabled) != 0) {
         ai_Unk4c0e60();
@@ -7402,7 +7396,7 @@ l64:
     }
     if (SV_I((unsigned)&snd_SfxEnabled) != 0) {
         d3snd_Update();
-        if (SV_I((unsigned)&full_data_6f2580) != 0)
+        if (SV_I((unsigned)&main_WeatherSound) != 0)
             d3sndw_Update();
         sb_Update();
     }
@@ -7432,9 +7426,9 @@ l2:
     if ((mask & 0x400) != 0)
         ai_Unk587e00();
     if (SV_I((unsigned)&ai_FrameWait) == 0 && cv < 0 && d2_LockSurface(d2_ScreenSurf) != 0) {
-        if (sv_PanelPic != -1 && (mask & 0x100) != 0 && SV_I((unsigned)&full_data_623eb4) != 0)
+        if (sv_PanelPic != -1 && (mask & 0x100) != 0 && SV_I((unsigned)&sv_CityPanelOn) != 0)
             sv_UpdateCityPanel(2, mask);
-        if (SV_I((unsigned)&full_data_62457c) != 0)
+        if (SV_I((unsigned)&main_ObjectsOn) != 0)
             d2_DrawObjects();
         d2_UnlockSurface(d2_ScreenSurf);
         d2_DrawFades();
@@ -7487,7 +7481,7 @@ l2:
                 if (SV_I((unsigned)&ai_Unk6f2448) == 0)
                     sv_AdvanceGame();
                 else {
-                    SV_I((unsigned)&full_data_6f25a8) = 1;
+                    SV_I((unsigned)&main_DayEnding) = 1;
                     sv_PopTo((int)main_GameLoop);
                 }
             }
@@ -7526,10 +7520,10 @@ l2:
     }
     sv_TickFrames++;
     if ((mask & 0x10000) == 0) {
-        if (SV_I((unsigned)&sv_PopRequest) == 0 && SV_I((unsigned)&sv_PanelFlag) == 0 && SV_I((unsigned)&ai_Unkf31144) != 0 && SV_I((unsigned)&full_data_6f25a8) == 0) {
+        if (SV_I((unsigned)&sv_PopRequest) == 0 && SV_I((unsigned)&sv_PanelFlag) == 0 && SV_I((unsigned)&ai_Unkf31144) != 0 && SV_I((unsigned)&main_DayEnding) == 0) {
 l3f5:
             if ((char)SV_B((unsigned)&ai_GameFlags) >= 0) {
-                SV_I((unsigned)&full_data_6f25a8) = 1;
+                SV_I((unsigned)&main_DayEnding) = 1;
                 tb_SetFunctionOff(sv_UpdateClock, 1);
                 SV_U((unsigned)&sv_FrameMask) |= 0x100000;
                 sv_MessageBoxYesNo(SV_I((unsigned)&full_data_143a3c4), 0xc4);
@@ -7539,22 +7533,22 @@ l3f5:
         }
         if (SV_I((unsigned)&ai_Unk1460ae0) != -1 || SV_US((unsigned)&ai_TimeHour) < 0x17)
             goto l444;
-        if (SV_I((unsigned)&full_data_6f25a8) == 0)
+        if (SV_I((unsigned)&main_DayEnding) == 0)
             goto l3f5;
     } else {
 l444:
-        if (SV_I((unsigned)&full_data_6f25a8) == 0)
+        if (SV_I((unsigned)&main_DayEnding) == 0)
             goto l473;
     }
     if (SV_I((unsigned)&sv_PopRequest) == 0 && SV_I(((unsigned)&ai_Unk75f280 + 0x500) + SV_I((unsigned)&sv_FrameDepth) * 8) == (int)ai_GameFrame)
         SV_I((unsigned)&sv_PopRequest) = 1;
 l473:
-    if ((mask & 0x10000) == 0 && SV_B((unsigned)&full_data_6f23f1) == 0 && SV_I((unsigned)&ai_MissionPartner) != -1 && SV_B((unsigned)&ai_GameState) != 0) {
-        SV_B((unsigned)&full_data_6f23f1) = 1;
+    if ((mask & 0x10000) == 0 && SV_B((unsigned)&sv_InMissionComplete) == 0 && SV_I((unsigned)&ai_MissionPartner) != -1 && SV_B((unsigned)&ai_GameState) != 0) {
+        SV_B((unsigned)&sv_InMissionComplete) = 1;
         tb_SetFunctionOff(sv_UpdateClock, 1);
         ai_MissionCompleteSequence(0x65fff);
         tb_SetFunctionOff(sv_UpdateClock, 0);
-        SV_B((unsigned)&full_data_6f23f1) = 0;
+        SV_B((unsigned)&sv_InMissionComplete) = 0;
     }
     if (SV_B((unsigned)&cm_RequestedSaveName) != 0 && (SV_U((unsigned)&sv_FrameMask) & 0x200000) == 0) {
         if (SV_I((unsigned)&cm_RequestedSaveSlot) == 1)
@@ -7696,6 +7690,9 @@ int sv_PickY = -1;  /* 0x623e9c, the pointer y of the last hover pick */
 int ai_Unk623ea0 = -1;  /* 0x623ea0 */
 int ai_Unk623ea4 = -1;  /* 0x623ea4 */
 int ai_Unk623ea8 = -1;  /* 0x623ea8 */
+int sv_CharsOn = 1;  /* 0x623eac, nonzero: sv_RunFrame updates the characters (ch_UpdatePositions, ch_Update, ..) */
+int sv_WorldOn = 1;  /* 0x623eb0, nonzero: sv_RunFrame steps the 3D world (sky phase, quad tree, camera, view clear) */
+int sv_CityPanelOn = 1;  /* 0x623eb4, nonzero: sv_RunFrame redraws the city panel */
 unsigned char sv_ChatRecipients[8] = { 1, 1, 1, 1, 1, 1, 1, 1 };  /* 0x623ebc, the chat console's recipient buttons, one per human player in ai_Chars order (1 = checked), kept between openings */
 unsigned sv_ChatTime = 0xffffffff;  /* 0x623ec4, d3_Time when the last chat line arrived (cm.c's 0x4b handler), 0 / -1: none */
 int sv_QuickChatForm = -1;  /* 0x623ec8 */

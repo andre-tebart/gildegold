@@ -303,8 +303,15 @@ typedef struct AICHAR {                 /* 0x21c bytes, ai_Chars[768] */
     char pad1e8[4];
     int unk1ec;                         /* 0x1ec, cleared for every character at the round start (main.c 0x53b2e0) */
     char pad1f0[4];
-    char ownName[0x1c];                 /* 0x1f4, the character's own name, empty: the job's name record
+    union {
+        char ownName[0x1c];             /* 0x1f4, the character's own name, empty: the job's name record
                                            (gm_CharNameRecord) */
+        struct {
+            char padOwnName[0x18];
+            int partyId;                /* 0x20c, the scene party the character belongs to (sv_RunFrame passes it to
+                                           cm_PartyById); reasoned: it overlays the last 4 bytes of ownName */
+        };
+    };
     int partner;                        /* 0x210 */
     signed char unk214;                 /* 0x214 */
     unsigned char unk215;               /* 0x215 */

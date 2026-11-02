@@ -346,6 +346,10 @@ extern int sv_SeasonClimate;                                    /* 0x760484 */
 extern SVWEATHER sv_Weather;                                /* 0x760488 */
 extern int sv_WinterWeather;                                    /* 0x760610 */
 extern int sv_WeatherHour;                                    /* 0x760614 */
+extern int sv_CharsOn;                                    /* 0x623eac */
+extern int sv_WorldOn;                                    /* 0x623eb0 */
+extern int sv_CityPanelOn;                                    /* 0x623eb4 */
+extern unsigned char sv_InMissionComplete;                    /* 0x6f23f1 */
 extern int d3t_Snow;                                    /* 0x76061c */
 extern int d3_SkyLayers[6];                                 /* 0x760620, the sky layer handles (sv creates 0 .. 2) */
 extern char sv_StatusText[128];                             /* 0x761f40 */

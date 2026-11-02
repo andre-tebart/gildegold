@@ -330,6 +330,7 @@ void ai_Unk47e990(struct AICHAR *c);  /* 0x47e990 */
 void ai_Unk4b3bd0(int owner, int type);  /* 0x4b3bd0 */
 int ai_Unk4b44e0();  /* 0x4b44e0 */
 int cm_PartyById();  /* 0x4e50a0 */
+extern G28REC ai_Unk925520[96];  /* 0x925520, the scene party records (cm.c) */
 int ai_Unk4e5150();  /* 0x4e5150 */
 int ai_Unk4e51b0();  /* 0x4e51b0 */
 int ai_Unk4e5210();  /* 0x4e5210 */

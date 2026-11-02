@@ -13479,20 +13479,6 @@ void ai_Unk4e2910(char *o, int id)
     }
 }
 
-/* the scene party records (0x925520, 96 of 0x114 bytes: +0 id (-1 free), +8 kind, +0x14 the thing, +0x26 flags, +0x30 used) */
-typedef struct G28REC {
-    int id;
-    char pad04[4];
-    unsigned char kind;                 /* 0x08 */
-    char pad09[0xb];
-    int thing;                          /* 0x14 */
-    char pad18[0xe];
-    unsigned char flags;                /* 0x26 */
-    char pad27[9];
-    unsigned char used;                 /* 0x30 */
-    char pad31[0x114 - 0x31];
-} G28REC;
-extern G28REC ai_Unk925520[96];
 /* ai_Unk925538: view of ai_Unk925520 (tools/data_views.py) */
 
 /* the random seed of the scenes (0x92c4e0), a linear congruence; the number is the high word modulo 0x7fff */

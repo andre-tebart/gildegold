@@ -50,7 +50,6 @@ typedef struct GMSTOCKBLOCK {       /* 0x2a90 bytes, one of the five blocks of g
 extern unsigned ai_Unk91ac40[136];
 extern unsigned char ord_Statistics;
 extern unsigned char ord_StatisticsClock;
-extern char ai_Unk925520[];
 extern GAPDATA full_data_92bcb3[];
 #include "cm_types.h"
 extern void main_Unk537b60(int kind, int cur, int total);

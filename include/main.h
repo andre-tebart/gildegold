@@ -50,6 +50,9 @@ int main_NetworkMenu(void);
 /* declared in other units' headers before (moved to the owner) */
 void main_GameLoop(int ctl);  /* 0x53bb20 */
 extern int main_ScreenRestart;  /* 0x6f25a4 */
+extern int main_ObjectsOn;  /* 0x62457c, nonzero: sv_RunFrame draws the gui objects */
+extern int main_WeatherSound;  /* 0x6f2580, the [Sound] weather key */
+extern int main_DayEnding;  /* 0x6f25a8, the day is ending (sv_RunFrame sets, main_GameLoop clears) */
 extern int snd_SystemBank;  /* 0x6f2400 */
 
 #endif
