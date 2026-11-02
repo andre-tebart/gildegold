@@ -268,7 +268,7 @@ int rt_Unk4bdcd0(unsigned char *b, int x, int def)
                     *(int *)(d2_ObjsC + o * 0x2ec + 0x4c) = 1;
                     *(int *)(d2_ObjsC + o * 0x2ec + 0x1c0) = 3;
                     *(int *)(d2_ObjsC + o * 0x2ec + 0x1d4) = 0x525;
-                    ai_Unk889400[n] = *g;
+                    gm_KindObjs[n] = *g;
                     n++;
                 }
             }
@@ -284,7 +284,7 @@ int rt_Unk4bdcd0(unsigned char *b, int x, int def)
                     *(int *)(d2_ObjsC + o * 0x2ec + 0x4c) = 1;
                     *(int *)(d2_ObjsC + o * 0x2ec + 0x1c0) = 3;
                     *(int *)(d2_ObjsC + o * 0x2ec + 0x1d4) = 0x525;
-                    ai_Unk889400[n] = *g;
+                    gm_KindObjs[n] = *g;
                     n++;
                 }
             }
@@ -293,23 +293,23 @@ int rt_Unk4bdcd0(unsigned char *b, int x, int def)
         gm_BuildKindObjects(b);
         s = gm_Query(*(int *)(b + 0x5d), 2, 0, 0xff, 6);
         n = 0;
-        for (i = 0; i < ai_Unk76fdc4; i++) {
-            e = gm_Query(*(int *)(s + 0x14), 1, 0, ai_Unk889400[n]);
+        for (i = 0; i < gm_KindObjCount; i++) {
+            e = gm_Query(*(int *)(s + 0x14), 1, 0, gm_KindObjs[n]);
             if (e != 0 && *(int *)(e + 0xe) > 1) {
-                o = d2_WinOpenPic((int)n % 4 << 6, (int)n / 4 << 6, ai_Unk889400[n] + 0xdf, d2_LastWindow);
+                o = d2_WinOpenPic((int)n % 4 << 6, (int)n / 4 << 6, gm_KindObjs[n] + 0xdf, d2_LastWindow);
                 objs[n] = o;
                 *(int *)(d2_ObjsC + o * 0x2ec + 0x4c) = 1;
                 *(int *)(d2_ObjsC + o * 0x2ec + 0x1c0) = 0x23;
                 *(int *)(d2_ObjsC + o * 0x2ec + 0x1d4) = 0x525;
                 *(int *)(d2_ObjsC + o * 0x2ec + 0x1cc) = 4;
                 *(int *)(d2_ObjsC + o * 0x2ec + 0x1d0) = 0xf;
-                sprintf(d2_ObjsC + o * 0x2ec + 0xbc, "%s", *(char **)(txt_ObjectNames + ai_Unk889400[n] * 8));
+                sprintf(d2_ObjsC + o * 0x2ec + 0xbc, "%s", *(char **)(txt_ObjectNames + gm_KindObjs[n] * 8));
                 n++;
             }
         }
     }
-    ai_Unk76fdc4 = (unsigned short)n;
-    ai_Unk889400[n] = 0;
+    gm_KindObjCount = (unsigned short)n;
+    gm_KindObjs[n] = 0;
     o = d2_WinOpenPic((int)n % 4 * 0x40 + 7, (int)n / 4 * 0x40 + 7, 0x527, d2_LastWindow);
     objs[n] = o;
     *(int *)(d2_ObjsC + o * 0x2ec + 0x4c) = 1;
@@ -319,9 +319,9 @@ int rt_Unk4bdcd0(unsigned char *b, int x, int def)
         if (dm_L.rup != 0)
             sv_PopRequest = 1;
         if (d2_ClickedId != -1) {
-            for (i = 0; i < ai_Unk76fdc4 + 1; i++) {
+            for (i = 0; i < gm_KindObjCount + 1; i++) {
                 if (d2_PointerObj == objs[i]) {
-                    ret = ai_Unk889400[i];
+                    ret = gm_KindObjs[i];
                     sv_PopRequest = 1;
                     break;
                 }

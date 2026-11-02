@@ -224,8 +224,8 @@ extern int d2_Unkf8aac4;
 extern GAPDATA full_data_6f5320[];
 extern GAPDATA full_data_6f5354[];
 extern unsigned short * sv_PanelShown;
-extern unsigned short ai_Unk76fdc4;
-extern unsigned ai_Unk889400[732];
+extern unsigned short gm_KindObjCount;
+extern unsigned gm_KindObjs[732];
 extern GAPDATA full_data_6f5324[];
 extern GAPDATA full_data_6f534c[];
 extern GAPDATA full_data_6f5a60[];
@@ -3929,8 +3929,8 @@ int ai_Unk593150(int param_1)
                 /* ROUGH: the goods list 0x889400 (0x76fdc4 entries): the kind 0x17 is skipped, the four needs
                    at +0x2e must be available (0x4ffe90, the record +0xe == 2 or the building kind 0x1e); the
                    accepted ids become the new columns 0x6f5320 + cols * 0x58 */
-                for (n = 0; n < U_I((unsigned)&ai_Unk76fdc4) && cols < 0x10; n++) {
-                    id = U_I((unsigned)&ai_Unk889400 + n * 4);
+                for (n = 0; n < U_I((unsigned)&gm_KindObjCount) && cols < 0x10; n++) {
+                    id = U_I((unsigned)&gm_KindObjs + n * 4);
                     if (*(char *)(U_I((unsigned)&ai_Goods) + id * 0x40) == 0x17)
                         continue;
                     add = 1;

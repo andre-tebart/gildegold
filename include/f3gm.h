@@ -49,8 +49,8 @@ int gm_HeadIconNumber(char *name);  /* 0x4fb770 */
 int gm_FindRichest(short *id, int *rate);  /* 0x4fad60 */
 void gm_Shuffle(unsigned n, int *out);  /* 0x505d30 */
 int gm_SexForJob(int x);  /* 0x503f30 */
-extern unsigned short ai_Unk76fdc4;  /* 0x76fdc4 */
-extern unsigned ai_Unk889400[732];  /* 0x889400 */
+extern unsigned short gm_KindObjCount;  /* 0x76fdc4 */
+extern unsigned gm_KindObjs[732];  /* 0x889400 */
 int gm_BuildKindObjects(char *b);  /* 0x500b90 */
 int gm_BathObjectCount(char *b);  /* 0x50cf60 */
 int gm_CurseObjectCount(char *b);  /* 0x50cfd0 */

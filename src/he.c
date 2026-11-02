@@ -176,8 +176,8 @@ extern GAPDATA full_data_628a28[];
 extern char * ai_BTypes;
 #include "cm_types.h"
 extern G17STAT cm_SendStates[];
-extern unsigned short ai_Unk76fdc4;
-extern unsigned ai_Unk889400[732];
+extern unsigned short gm_KindObjCount;
+extern unsigned gm_KindObjs[732];
 extern int d2_ClickedId;
 extern int d2_Unkf8aac4;
 extern char *ai_Unk5fb5b0;
@@ -14122,8 +14122,8 @@ void he_Unk56a3d0(int ev)
         if (g != 0) {
             cm_SendExSellObject(*(int *)(b + 2), -1, *(unsigned short *)g, 1, *(unsigned char *)(unsigned)&ai_OwnPlayer, 0);
             gm_BuildKindObjects(bo2[0]);
-            for (i = 0; i < *(unsigned short *)(unsigned)&ai_Unk76fdc4; i++) {
-                id = *(int *)((unsigned)&ai_Unk889400 + i * 4);
+            for (i = 0; i < *(unsigned short *)(unsigned)&gm_KindObjCount; i++) {
+                id = *(int *)((unsigned)&gm_KindObjs + i * 4);
                 r91 = (char *)U_I((unsigned)&ai_Goods) + id * 0x41;
                 if (*r91 == 0x17)
                     continue;

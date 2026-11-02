@@ -3610,8 +3610,8 @@ int gm_GoodsStock(int p, int i)
 extern short ai_Unk61a674, ai_Unk61a676;/* 0x61a674 / 0x61a676, the query: the words +0x25 / +0x27 (0x7fff = any) */
 extern char ai_Unk6f1bd4, ai_Unk6f1bd5; /* 0x6f1bd4, 0x6f1bd5, stop at the first, first call */
 char * ai_Unk6f1bf0 = 0;  /* 0x6f1bf0, the current building */
-extern unsigned ai_Unk889400[732];
-extern unsigned short ai_Unk76fdc4;
+extern unsigned gm_KindObjs[732];
+extern unsigned short gm_KindObjCount;
 void rt_FreePoints();                     /* 0x4bd9e0 */
 /* 0x500190 */
 int ai_Unk5a86c0();                     /* 0x5a86c0 */
@@ -3764,34 +3764,38 @@ int gm_AddNegative(int id, int proto, int n)
         gm_RemoveObject(list, proto);
     return 1;
 }
-/* 0x500b90, looks the building kind of the building b up in the table 0x61a348 (0x1e records of 0x15 bytes: a kind byte and ten object words) and collects the non-zero words into 0x889400 (count 0x76fdc4); 1 when the kind is not there (or no tables), else 0 */
+/* 0x500b90, looks the kind of the building b up in gm_BuildingItemGroups (37 records: a kind byte and ten object prototypes) and collects its non-zero prototypes into the list gm_KindObjs (count gm_KindObjCount); 1 when the kind is not there (or no tables), else 0
+   @deep the statements match the original (the group lookup, the null test and the first 23 instructions
+   are equal); the one remaining hunk at +0x4b is VC6 keeping the global gm_KindObjCount in dx through the
+   copy loop (xor dx,dx / mov [cnt],dx / mov di,dx / inc dx / store at exit) where ours reads and
+   increments it in memory. Verified: with the definition of gm_KindObjCount removed from f3gm.c, or
+   written as a tentative definition 'unsigned short gm_KindObjCount;', the function is byte-identical (0
+   ins / 0 bytes); the initialised definition '= 0' that D5 requires blocks the promotion. So the remaining
+   difference is the global's definition form / owner (D5 vs the bytes), not this function's statements;
+   the branch targets differ only by the shorter loop body. */
 
 int gm_BuildKindObjects(char *b)
 {
-    char *t;
+    G7GRP *g;
     int i, k;
-    unsigned short *w;
 
     if (ai_Goods == 0)
         return 1;
-    i = 0;
-    t = (char *)gm_BuildingItemGroups;
-    do {
-        if (*t == *b) {
-            if (i * 0x15 == -(unsigned)&gm_BuildingItemGroups)
-                return 1;
-            ai_Unk76fdc4 = 0;
-            w = gm_BuildingItemGroups[i].items;
-            for (k = 10; k != 0; k--, w++) {
-                if (*w != 0)
-                    ai_Unk889400[ai_Unk76fdc4++] = *w;
-            }
-            return 0;
+    g = 0;
+    for (i = 0; i < 37; i++) {
+        if (gm_BuildingItemGroups[i].key == ((ORDBLD *)b)->type) {
+            g = &gm_BuildingItemGroups[i];
+            break;
         }
-        t += 0x15;
-        i++;
-    } while ((int)t < ((unsigned)&gm_BuildingItemGroups + 0x309));
-    return 1;
+    }
+    if (g == 0)
+        return 1;
+    gm_KindObjCount = 0;
+    for (k = 0; k < 10; k++) {
+        if (g->items[k] != 0)
+            gm_KindObjs[gm_KindObjCount++] = g->items[k];
+    }
+    return 0;
 }
 /* 0x501000, the building of the type 0x47 (group (1, 0, 0x47)) whose int at +0x65 is the player p, 0 when none */
 
@@ -9426,7 +9430,7 @@ int gm_Unk50ad70(char *c, int proto, int n)
 
 int ai_Difficulty = 0;  /* 0x6f23fc */
 int gm_AllowAll = 0;  /* 0x6f2448 */
-unsigned short ai_Unk76fdc4 = 0;  /* 0x76fdc4 */
+unsigned short gm_KindObjCount = 0;  /* 0x76fdc4 */
 int ai_Unk76fdc8 = 0;  /* 0x76fdc8 */
 /* ---- layout 2026-10-23: the standing / family helpers 0x50b010 .. 0x50d0b0 (ROUGH drafts) ---- */
 char ai_Unk76fde0[3328] = {0};  /* 0x76fde0, the family records ( */
@@ -10064,7 +10068,7 @@ int gm_NOffers = 0;  /* 0x7e3f3c, the number of offers */
 AISTORE gm_Offers[88] = {0};  /* 0x7e4b20, the offers (ai.h's AISTORE rows of 6 ints: building, market, goods object, supply, price float, flag) */
 int gm_ClassBuilding[32] = {0};  /* 0x875360 */
 int gm_QueryStack[20488] = {0};  /* 0x8753e0, the child stack (the first word of */
-unsigned ai_Unk889400[732] = {0};  /* 0x889400 */
+unsigned gm_KindObjs[732] = {0};  /* 0x889400 */
 int ai_Unk889f70 = 0;  /* 0x889f70 */
 char * ai_Blds = 0;  /* 0x889f74, the buildings ( */
 int gm_GoodBuilding[732] = {0};  /* 0x919f80 */
