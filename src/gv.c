@@ -9,10 +9,15 @@
    gv_StartShot, moved by gv_UpdateEffects and exploded by gv_ExplodeShot; the save game writes gv_LastTime, the cannon
    scene state gv_Cannon (cannon scene of unk_575860) and the slots field by field.
    A graveyard building (kind 0x1d) holds a GVYARD (AIBLD.yard): four grave sizes, each a list of GVENTRY entries opened by
-   GVYARD.open, counted per type level by gv_ListEntries / gv_EntryCount / gv_GraveCount and walked by gv_FindEntry.
+   GVYARD.open, counted per type level by gv_ListEntries / gv_EntryCount / gv_GraveCount and walked by gv_FindEntry; each
+   entry points at its GVGRAVE records (a dead person). Graveyard orders are GVORDER records (message 0x60, sent by the
+   gv_Order* senders through cm_SendGraveOrder, run by type: gv_BuryCharacter, gv_ReserveGrave, gv_ExtendGrave, ..).
    Open: the avatars, the effect slots and the graveyard may be several modules sharing one .data block.
-   Open: the graveyard functions past gv_FindEntry still read GVYARD / GVENTRY through raw offsets; gv_FindEntry's
-   callback is an unprototyped int (*)() (its callbacks take differing pointer types).
+   Open: the order senders and handlers past gv_ExtendGrave (0x4f0900 ..) still read GVORDER / GVYARD / GVENTRY through
+   raw offsets, and some index ai_PlayerSlots with the stride 0x5e8 where gv_ReserveGrave shows 0x2f4 (gv_PlayerRecs);
+   gv_FindEntry's callback is an unprototyped int (*)() (its callbacks take differing pointer types).
+   Open: head: cm.h redeclares gv functions (gv_GrowGraveyard as struct GVYARD *); cm.c cannot include gv.h yet (two
+   calls conflict: unk_Unk4f3580, unk_Unk4f4460).
    Open: GVEFFPART duplicates SHOTREC and UNKHITS-style copies remain (am.h G9KIND / G9CANNON view gv's records); gv.h
    does not include unk_5d33b0.h, so the parts are cast to SHOTREC.
    unit of rea 8cef7d5b (src/game/gv.c); boundaries in decl/text.dcl */

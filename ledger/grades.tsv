@@ -2256,7 +2256,7 @@ exe	0x004c5fa0	ai_Unk4c5fa0	cm	byte	draft
 exe	0x004c5fe0	cm_SendTradeMessage	cm	byte	draft		
 exe	0x004c6020	ai_Unk4c6020	cm	byte	draft		
 exe	0x004c6060	ai_Unk4c6060	cm	byte	draft		
-exe	0x004c60b0	ai_Unk4c60b0	cm	byte	draft		
+exe	0x004c60b0	cm_SendGraveOrder	cm	byte	draft		
 exe	0x004c60f0	ai_Unk4c60f0	cm	byte	draft		
 exe	0x004c6130	ai_Unk4c6130	cm	byte	draft		
 exe	0x004c6170	cm_SendCreateAlchemist	cm	byte	draft		
@@ -2763,17 +2763,17 @@ exe	0x004ef770	gv_EntryIsUsed	gv	byte	readable
 exe	0x004ef780	gv_EntryHasId	gv	byte	readable		
 exe	0x004ef7c0	gv_FindEntry	gv	byte	readable		
 exe	0x004ef900	gv_LoadGraveyard	gv	byte	readable		
-exe	0x004ef930	unk_Unk4ef930	gv	draft	draft		
-exe	0x004ef9c0	unk_Unk4ef9c0	gv	draft	draft		
-exe	0x004efc10	gv_AllocGraveyard	gv	draft	draft		
-exe	0x004eff50	unk_Unk4eff50	gv	draft	draft		
+exe	0x004ef930	gv_RandomGrave	gv	byte	readable		
+exe	0x004ef9c0	gv_BuryNewDead	gv	draft	readable	deep	
+exe	0x004efc10	gv_AllocGraveyard	gv	draft	readable	deep	
+exe	0x004eff50	gv_GrowGraveyard	gv	draft	readable	deep	
 exe	0x004f0180	gv_FreeGraveyard	gv	byte	readable		
 exe	0x004f01d0	unk_Unk4f01d0	gv	shape	draft		
-exe	0x004f0240	unk_Unk4f0240	gv	draft	draft		
-exe	0x004f0430	unk_Unk4f0430	gv	draft	draft		
-exe	0x004f0490	unk_Unk4f0490	gv	draft	draft		
+exe	0x004f0240	gv_BuryCharacter	gv	shape	readable		
+exe	0x004f0430	gv_OrderReserveGrave	gv	byte	readable		
+exe	0x004f0490	gv_ReserveGrave	gv	byte	readable		
 exe	0x004f0700	unk_Unk4f0700	gv	byte	draft		
-exe	0x004f0770	unk_Unk4f0770	gv	draft	draft		
+exe	0x004f0770	gv_ExtendGrave	gv	byte	readable		
 exe	0x004f0900	unk_Unk4f0900	gv	draft	draft		
 exe	0x004f0970	unk_Unk4f0970	gv	draft	draft		
 exe	0x004f0a90	unk_Unk4f0a90	gv	draft	draft		
@@ -2939,7 +2939,7 @@ exe	0x004fabe0	gm_EndDayIncomes	f3gm	draft	draft
 exe	0x004fad60	gm_FindRichest	f3gm	draft	draft		
 exe	0x004fae50	unk_Unk4fae50	f3gm	draft	draft		
 exe	0x004fb0e0	unk_Unk4fb0e0	f3gm	draft	draft		
-exe	0x004fb330	unk_Unk4fb330	f3gm	byte	draft		
+exe	0x004fb330	gm_NameRecord	f3gm	byte	draft		
 exe	0x004fb390	gm_CharNameRecord	f3gm	draft	draft		
 exe	0x004fb5a0	gm_SelectModelVariant	f3gm	draft	draft		
 exe	0x004fb620	unk_Unk4fb620	f3gm	shape	draft		
@@ -4352,7 +4352,7 @@ exe	0x005a9330	ai_SendSwapText	unk_58bbd0	byte	draft
 exe	0x005a9430	ai_Unk5a9430	unk_58bbd0	byte	draft		
 exe	0x005a9470	ai_GypsyDeliveryText	unk_58bbd0	draft	draft		
 exe	0x005a9690	ai_Unk5a9690	unk_58bbd0	byte	draft		
-exe	0x005a96e0	ai_Unk5a96e0	unk_58bbd0	draft	draft		
+exe	0x005a96e0	ai_NotifySale	unk_58bbd0	draft	draft		
 exe	0x005a9780	ai_Unk5a9780	unk_58bbd0	byte	draft		
 exe	0x005a97e0	ai_Unk5a97e0	unk_58bbd0	draft	draft		
 exe	0x005a9880	ai_Unk5a9880	unk_58bbd0	draft	draft		
