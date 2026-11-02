@@ -7479,69 +7479,166 @@ void ai_GraveDeadDescription(GVGRAVE *g, char *out)
 
 void d2_SetViewEnabled(int view, int on);
 
-/* 0x583240, the graveyard contact window (1205 B, ROUGH SKELETON): out = the picked entry (0 / the entry, its
-   id, the byte 0x4ef6b0, the second entry, its id), rec = the record, title = the window's title text, flag =
-   0 / 1, cb = the callback. The window "Locations_Friedhof_Graves" (0x62a580) with 0x476f80 (0, 0) / 0x475600,
-   the sound 0x52ea30, the texts 0x62a578 ("%C Z %s", title) and the sections 2 / 3 / 6 / 4 / 5 / 7 (0x6ed938 is
-   kept per section); then the buttons 0x582730 (rec, w), the list 0x5828c0 (rec, w, -1) and the detail
-   0x582b40 (rec, w, -1, flag); 0xf8a668 = -1 and the pump loop 0x5309a0 (this window, 0x677c7): the clicks on
-   the four buttons (w + 0x??, the selection 0x170), the entries (0x6c) and the detail (param_4 = 1, w + 0x68)
-   are dispatched here: a button sets the selection and redraws (0x82730 / 0x828c0 / 0x82b40 again, the second
-   from the entry index), an entry fills out (the entry / its id / 0x4ef6b0 / the second entry) and with no
-   callback sets 0x6f22a0 = 1 or calls cb (rec, &the entry) between 0x475590 (the window, 0) / (1); the timer
-   0x6333cc + 0x96 redraws the three parts each tick; the escape 0x14673a0 -> 0x6f22a0 = 1 */
-void ai_Unk583240(int *out, char *rec, char *title, int flag, void (*cb)())
-{
-    int w[0x50];
-    int win;
-    int sel;
-    int entry;
-    int redraw;
-    int tick;
-    int i;
+/* the grave the graveyard window hands out (ai_GraveWindow's out and its callback's record) */
+typedef struct GVPICK {
+    GVENTRY *entry;             /* 0x00, the selected grave entry */
+    int size;                   /* 0x04, its size (list) */
+    unsigned char index;        /* 0x08, its index in that list (gv_EntryIndex) */
+    GVGRAVE *grave;             /* 0x0c, the dead person picked in it, 0: the grave itself (the slider) */
+    int id;                     /* 0x10, that dead person's id, -1: none */
+} GVPICK;
 
+/* 0x583240, the graveyard window "Locations\Friedhof\Graves": out = the picked grave (0: none wanted), rec = the
+   graveyard building, title = the window's title, flag = 0: the dead persons in the grave can be picked, 1: the
+   grave itself through the detail's slider, cb = called (rec, the pick) with the window disabled, 0: a pick ends
+   the window. The window list w keeps the window and its sections 1 .. 7 (each one's d2_LastWindow); it starts at
+   size 0, row 0 and draws the size buttons, the grave list and the detail. Each frame (pump 0x677c7): the right
+   button ends it; a click on another size button selects it (row 0, all redrawn), on another row of the list
+   selects it (list and detail redrawn), on a dead person (flag 0) or the slider (flag 1) fills out and calls cb
+   (or ends the window when out is wanted and there is no cb); 150 ms after the start everything is redrawn every
+   frame
+   @deep reconstructed in full from the original (every instruction read: the setup with the seven section
+   windows, the frame loop with the size-button, row, dead-person and slider clicks, the out / callback
+   picks, the three redraw bits); the statements and the branch structure match (each hunk's jumps go to
+   the same statements). Left is allocation: the original keeps out in edi, w[0x4d] in ebx and ebp as the
+   zero / loop pointer, rec on the stack ([esp+0x1f4] at every use); ours keeps rec in ebx, w[0x4d] in ebp
+   and out on the stack, so every out store, gv_EntryIndex(rec->yard) push and redraw call differs by
+   register (the regs / code hunks 0x583247 .. 0x583376, 0x5834ad .. 0x5835f1, 0x583644 .. 0x5836a7); with
+   ebp free the original strength-reduces the size-button loop to a walking pointer (lea ebp,[esp+0x6c];
+   add ebp,4) where ours indexes [esp+eax*4+0x6c], keeps the redraw bits in memory across the row loop
+   (ours in ecx), reloads d2_PointerObj after each call (ours at the loop top) and tail-merges the
+   right-button sv_PopRequest store with the flag 1 one (ours: a reload of out sits at that join). Tried:
+   the entry through a temporary vs re-read out->entry (identical) */
+void ai_GraveWindow(GVPICK *out, AIBLD *rec, char *title, int flag, void (*cb)(AIBLD *rec, GVPICK *pick))
+{
+    int redraw;
+    int j;
+    int detailRow;
+    unsigned next;
+    int prevSize;
+    GVPICK pick;
+    GVPICK whole;
+    int w[0x68];
+    int handled;
+    int i;
+    int win;
+
+    next = ai_ClockMs;
     if (out) {
-        out[0] = 0;
-        out[3] = 0;
+        out->entry = 0;
+        out->grave = 0;
     }
-    win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62a580);
-    memset(w, 0, sizeof(w));
+    win = d2_OpenForm(0, 0, "Locations\\Friedhof\\Graves");
     w[0] = win;
     d2_SetPointerSprite(0, 0);
     d2_CentreViewWindows(win);
     d2_SetForm(win, 0);
-    sv_FitForm(U_I((unsigned)&d2_LastWindow));
+    sv_FitForm(d2_LastWindow);
     d2_SetForm(win, 1);
-    io_PrintText((char *)(unsigned)&full_data_62a578, title);
+    w[1] = d2_LastWindow;
+    io_PrintText("$C$Z%s", title);
     d2_SetForm(win, 2);
+    w[2] = d2_LastWindow;
     d2_SetForm(win, 3);
+    w[3] = d2_LastWindow;
     d2_SetForm(win, 6);
+    w[4] = d2_LastWindow;
     d2_SetForm(win, 4);
+    w[5] = d2_LastWindow;
     d2_SetForm(win, 5);
+    w[6] = d2_LastWindow;
     d2_SetForm(win, 7);
-    sel = 0;
-    entry = 0;
+    w[7] = d2_LastWindow;
+    w[0xc] = 0;
+    w[0x4d] = 0;
+    w[0x67] = 0;
     ai_GraveSizeButtons(rec, w);
     ai_GraveList(rec, w, -1);
     ai_GraveDetail(rec, w, -1, flag);
-    U_I((unsigned)&d2_ClickedId) = -1;
-    /* ROUGH: the click dispatch (the four buttons, the 16 entries and the detail) and the redraw flags are not
-       written yet; the window list w matches local_1a0, its selection w[0x170] / entry w[0x6c] the locals */
-    for (;;) {
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0)
-            U_I((unsigned)&sv_PopRequest) = 1;
-        if (sv_RunFrame(ai_Unk583240, 0x677c7) == 0) {
-            d2_CloseView(win);
-            return;
+    next += 0x96;
+    d2_ClickedId = -1;
+    do {
+        redraw = 0;
+        handled = 0;
+        prevSize = w[0xc];
+        detailRow = w[0x4d];
+        if (ai_ClockMs > next)
+            redraw = 7;
+        if (dm_L.rup != 0) {
+            sv_PopRequest = 1;
+        } else if (d2_ClickedId != -1) {
+            for (i = 0; !handled && i < 4; i++) {
+                if (d2_PointerObj == w[8 + i] && i != w[0xc]) {
+                    redraw |= 7;
+                    w[0xc] = i;
+                    w[0x4d] = 0;
+                    detailRow = -1;
+                    handled = 1;
+                }
+            }
+            for (i = 0; !handled && i < 0x10; i++) {
+                if (d2_PointerObj == ((GVROW *)(w + 0xd))[i].btn && i != w[0x4d]) {
+                    w[0x4d] = i;
+                    redraw |= 3;
+                    handled = 1;
+                }
+            }
+            if (flag == 0) {
+                for (j = 0; !handled && j < 8; j++) {
+                    if (d2_PointerObj != ((GVITEM *)(w + 0x4f))[j].btn)
+                        continue;
+                    w[0x67] = j;
+                    handled = 1;
+                    if (out) {
+                        out->entry = ((GVROW *)(w + 0xd))[w[0x4d]].entry;
+                        out->size = out->entry->size;
+                        out->index = gv_EntryIndex((char *)rec->yard, (int *)out->entry);
+                        out->grave = ((GVITEM *)(w + 0x4f))[j].grave;
+                        out->id = out->grave->id;
+                    }
+                    if (cb) {
+                        pick.entry = ((GVROW *)(w + 0xd))[w[0x4d]].entry;
+                        pick.size = pick.entry->size;
+                        pick.index = gv_EntryIndex((char *)rec->yard, (int *)pick.entry);
+                        pick.grave = ((GVITEM *)(w + 0x4f))[j].grave;
+                        pick.id = pick.grave->id;
+                        d2_SetViewEnabled(w[0], 0);
+                        cb(rec, &pick);
+                        d2_SetViewEnabled(w[0], 1);
+                    } else if (out) {
+                        sv_PopRequest = 1;
+                    }
+                }
+            } else if (flag == 1 && d2_PointerObj == w[0x4e]) {
+                if (out) {
+                    out->entry = ((GVROW *)(w + 0xd))[w[0x4d]].entry;
+                    out->size = out->entry->size;
+                    out->index = gv_EntryIndex((char *)rec->yard, (int *)out->entry);
+                    out->grave = 0;
+                    out->id = -1;
+                }
+                if (cb) {
+                    whole.entry = ((GVROW *)(w + 0xd))[w[0x4d]].entry;
+                    whole.size = whole.entry->size;
+                    whole.index = gv_EntryIndex((char *)rec->yard, (int *)whole.entry);
+                    whole.grave = 0;
+                    whole.id = -1;
+                    d2_SetViewEnabled(w[0], 0);
+                    cb(rec, &whole);
+                    d2_SetViewEnabled(w[0], 1);
+                } else if (out) {
+                    sv_PopRequest = 1;
+                }
+            }
         }
-        tick = U_I((unsigned)&ai_ClockMs);
-        (void)tick;
-        (void)sel;
-        (void)entry;
-        (void)cb;
-        (void)i;
-        (void)redraw;
-    }
+        if (redraw & 4)
+            ai_GraveSizeButtons(rec, w);
+        if (redraw & 2)
+            ai_GraveList(rec, w, prevSize);
+        if (redraw & 1)
+            ai_GraveDetail(rec, w, detailRow, flag);
+    } while (sv_RunFrame(ai_GraveWindow, 0x677c7) != 0);
+    d2_CloseView(w[0]);
 }
 /* 0x583700, the graveyard detail panel (1123 B, ROUGH: the collection, the item widgets and the three detail
    texts are written, the layout numbers are from the disassembly): w = the window list (0 the window, 2 the
@@ -9435,7 +9532,7 @@ void ai_Unk586e40(char *rec)
 
 void ai_Unk5871c0(char *rec)
 {
-    ai_Unk583240(0, rec, (char *)U_I((unsigned)&full_data_144a5d0), 0, 0);
+    ai_GraveWindow(0, rec, (char *)U_I((unsigned)&full_data_144a5d0), 0, 0);
     sv_CameraFollow();
 }
 
@@ -9481,7 +9578,7 @@ void ai_Unk587300(char *rec)
 {
     if (sv_CheckCharacterFlag(rec) != 0)
         return;
-    ai_Unk583240(0, rec, (char *)U_I((unsigned)&full_data_144a638), 1, ai_Unk584900);
+    ai_GraveWindow(0, rec, (char *)U_I((unsigned)&full_data_144a638), 1, ai_Unk584900);
     sv_CameraFollow();
 }
 /* 0x587340, the graveyard "GEHILFEN_ERSCHAFFEN" contact (47 B): 0x520fe0 (rec) == 0 -> the contact window
@@ -9490,7 +9587,7 @@ void ai_Unk587300(char *rec)
 void ai_Unk587340(char *rec)
 {
     if (sv_CheckCharacterFlag(rec) == 0)
-        ai_Unk583240(0, rec, (char *)U_I((unsigned)&full_data_144a684), 0, ai_Unk584b70);
+        ai_GraveWindow(0, rec, (char *)U_I((unsigned)&full_data_144a684), 0, ai_Unk584b70);
     sv_CameraFollow();
 }
 /* 0x587370, the graveyard "VERSICHERUNG" contact (485 B): rec = the contact record (+0x27 the owner word, +1 a
