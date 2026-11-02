@@ -6638,16 +6638,7 @@ int ai_AmountMenu(); int amt_GetKindLevel(int k); int sv_CheckMoney(); void cm_S
    amount taken off (gm_SendMoneyDelta), the message 0x99 goes to the building's owner (flags 2, the game time,
    the target's netId, 2, the step, the target's own building / building, else ai_PickActionBuilding's pick), its
    slot is waited for, the voice "KOMMENTARE" plays and the window leaves; the right button or the second button
-   leaves too
-   @deep Rewritten from the whole original 0x581400..0x58194c (AMOUNTCFG, AICHAR target, AIMSG, the
-   LARGE_INTEGER mask, gm_SendMoneyDelta, the bld2 / bld / pick chain); 380 vs 380 instructions, no
-   branch-target difference, every call and constant equal. Left: the frame packing only: cost[] at S+0x1c
-   where the original has S+0x18 (the two code hunks are that array base in the indexed loads: mov
-   eax,[esp+ebx*4+0x38] vs +0x34 at 0x581660, [esp+ebx*4+0x1c] vs +0x18 at 0x5816a8 / 0x58173f), btnPay
-   sharing the level temp's slot S+0x10 where the original puts it at S+0x28 and pick there, btnLeave
-   S+0x28 vs S+0x24; and two 'order' hunks (the msg stores around the time copy, 0x5817a6 / 0x581815).
-   Declaration order (no effect), an int level with (float) conversions (no effect) and nine orders of the
-   message stores tried (kept the best, arg[2] before arg[1]). */
+   leaves too */
 void ai_CabinetSpyOnCharacter(AIBLD *rec)
 {
     AIMSG msg;
@@ -6660,7 +6651,6 @@ void ai_CabinetSpyOnCharacter(AIBLD *rec)
     int cost[3];
     float level;
     int worth;
-    int pick;
     AICHAR *p;
     int i;
     int k;
@@ -6736,6 +6726,8 @@ void ai_CabinetSpyOnCharacter(AIBLD *rec)
                     else if (p->bld != 0)
                         msg.arg[0] = p->bld->id;
                     else {
+                        int pick;
+
                         mask.LowPart = 0x7b4c4a0;
                         mask.HighPart = 0;
                         pick = -1;
