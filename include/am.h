@@ -875,7 +875,7 @@ int ai_Unk49c0d0(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2
 int ai_Unk49c320(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2); /* 0x49c320 */
 int ai_Unk49c570(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49c570 */
 int ai_Unk49c700(G5CH *p, AIARG *s1);                                            /* 0x49c700 */
-int ai_Unk49c190(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49c190 */
+int ai_ExecuteUsePerfume(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49c190 */
 int ai_Unk49c3e0(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49c3e0 */
 int ai_Unk49c790(int a, G5CH *p, int f, AIARG *s1, AIARG *o);                   /* 0x49c790 */
 int ai_Unk49c880(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49c880 */
