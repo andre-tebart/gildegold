@@ -231,7 +231,7 @@ int gv_EntryIsUsed(int *a, int *b);      /* 0x4ef770 */
 int gv_EntryHasId(int *a, int *b);      /* 0x4ef780 */
 unsigned gv_FindEntry(void *a, unsigned char *o, unsigned after, int (*cb)(), int l);  /* 0x4ef7c0 */
 unsigned gv_LoadGraveyard(unsigned char *o, int *e);  /* 0x4ef900 */
-int unk_Unk4ef930(unsigned char *o);    /* 0x4ef930 */
+int *gv_RandomGrave(unsigned char *o);  /* 0x4ef930 */
 extern const int gv_EntryCounts[];             /* 0x5ee054, entries per kind */
 extern const int gv_ListEntries[4][4];         /* 0x5ee084 */
 int unk_Unk4ef9c0(unsigned char *o, int n);  /* 0x4ef9c0 */

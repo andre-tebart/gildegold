@@ -1434,27 +1434,28 @@ unsigned gv_LoadGraveyard(unsigned char *o, int *e)
         return gv_FindEntry(e, o, 0, gv_EntryHasId, 0xff);
     return 0;
 }
-/* 0x4ef930, a random used slot (first word not -1; 0x44 bytes each at the table +0x20 of the record, 0x4ef3c0 of them, from a random start, cyclic) of the object o of the building kind 0x1d with the kind byte 1 .. 3; 0 when none */
+/* 0x4ef930, a random used grave (GVYARD.graves, first word not -1) of the graveyard building o, searched cyclically from a
+   random start among its gv_GraveCount small graves; 0 when none or o is no graveyard (kind 0x1d) of level 1 .. 3 */
 
-int unk_Unk4ef930(unsigned char *o)
+int *gv_RandomGrave(unsigned char *o)
 {
-    char *rec;
-    char *b;
-    int n, k;
-    unsigned i;
+    AIBLD *bld = (AIBLD *)o;
+    AIBTYPE *bt;
+    GVYARD *g;
+    int n, k, i;
 
-    rec = *(char **)(o + 0x65);
-    b = ai_BTypes + o[0] + o[0] * 0x24c;
-    if (b[0] == 0x1d && (unsigned char)b[0x247] != 0 && (unsigned char)b[0x247] < 4) {
+    bt = (AIBTYPE *)(ai_BTypes + bld->type + bld->type * 0x24c);
+    g = bld->yard;
+    if (bt->kind == 0x1d && bt->cap247 >= 1 && bt->cap247 <= 3) {
         n = gv_GraveCount(o);
-        i = util_RandomU(n) & 0xffff;
+        i = util_RandomU(n);
+        k = n;
         if (n != 0) {
-            k = n;
             do {
-                if (*(int *)(*(char **)(rec + 0x20) + i * 0x44) != -1)
-                    return (int)(*(char **)(rec + 0x20) + i * 0x44);
+                if (g->graves[i * 0x11] != -1)          /* 0x44-byte grave records */
+                    return &g->graves[i * 0x11];
                 k--;
-                i = (int)(i + 1) % n;
+                i = (i + 1) % n;
             } while (k != 0);
         }
     }
@@ -2231,7 +2232,7 @@ int gv_SendGrave(unsigned char *o)
 
     if (unk_Unk4f1d50(o, 0) != 1)
         return -1;
-    z = (int *)unk_Unk4ef930(o);
+    z = (int *)gv_RandomGrave(o);
     if (z == 0)
         return -1;
     e = (int *)gv_LoadGraveyard(o, z);
