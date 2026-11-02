@@ -1893,7 +1893,7 @@ exe	0x004b0b50	ai_CommandLawChange	hst	shape	readable	deep
 exe	0x004b0d40	ai_CommandFaithChange	hst	shape	readable	deep	
 exe	0x004b0fd0	ai_CommandRiot	hst	draft	readable	deep	
 exe	0x004b1060	ai_Unk4b1060	hst	shape	draft		
-exe	0x004b11e0	ai_CommandDemand	hst	draft	draft	deep	
+exe	0x004b11e0	ai_CommandDemand	hst	draft	readable	deep	
 exe	0x004b1600	ai_Unk4b1600	hst	byte	draft		
 exe	0x004b16e0	ai_Unk4b16e0	hst	byte	draft		
 exe	0x004b17c0	ai_Unk4b17c0	hst	byte	draft		
@@ -2225,7 +2225,7 @@ exe	0x004c5540	cm_SendBoss	cm	byte	draft
 exe	0x004c5580	ai_Unk4c5580	cm	byte	draft		
 exe	0x004c55d0	cm_SendMessage3d	cm	draft	draft		
 exe	0x004c5690	cm_SendCharModel	cm	byte	draft		
-exe	0x004c56d0	ai_Unk4c56d0	cm	byte	draft		
+exe	0x004c56d0	cm_SendGoodsRecord	cm	byte	draft		
 exe	0x004c5710	cm_SendGoodsDelta	cm	draft	draft		
 exe	0x004c5800	cm_SendMessage41	cm	byte	draft		
 exe	0x004c5840	ai_Unk4c5840	cm	byte	draft		
@@ -2978,22 +2978,22 @@ exe	0x004fe310	gm_AddTime2	f3gm	byte	readable
 exe	0x004fe330	gm_Season	f3gm	byte	draft		
 exe	0x004fe350	gm_ClockSeason	f3gm	byte	readable		
 exe	0x004fe370	gm_InitBuildingTables	f3gm	draft	readable	deep	
-exe	0x004fe570	gm_LoadTables	f3gm	draft	draft		
+exe	0x004fe570	gm_LoadTables	f3gm	draft	readable	deep	
 exe	0x004fe7f0	gm_ClearBuildings	f3gm	byte	readable		
-exe	0x004fe830	gm_ClearObjects	f3gm	draft	draft		
+exe	0x004fe830	gm_ClearObjects	f3gm	draft	readable	deep	
 exe	0x004fe900	gm_FindObjectProto	f3gm	shape	readable		
-exe	0x004fe940	gm_IsBuildingKind	f3gm	draft	draft		
+exe	0x004fe940	gm_IsBuildingKind	f3gm	byte	readable		
 exe	0x004fe980	gm_FindObjectInst	f3gm	byte	draft		
 exe	0x004fe9c0	gm_Free	f3gm	byte	readable		
-exe	0x004fea50	gm_FindById	f3gm	draft	draft		
+exe	0x004fea50	gm_FindById	f3gm	byte	readable		
 exe	0x004feb30	gm_UpdatePlayers	f3gm	byte	readable		
-exe	0x004feb60	gm_InitPlayerRecord	f3gm	draft	draft		
-exe	0x004fec10	gm_SyncMarket	f3gm	draft	draft		
-exe	0x004ff190	gm_RefreshGoodsLists	f3gm	draft	draft		
+exe	0x004feb60	gm_InitPlayerRecord	f3gm	byte	readable		
+exe	0x004fec10	gm_SyncMarket	f3gm	shape	readable		
+exe	0x004ff190	gm_RefreshGoodsLists	f3gm	shape	readable		
 exe	0x004ff450	gm_RandomMarketShake	f3gm	draft	draft		
 exe	0x004ff550	gm_UpdatePrices	f3gm	draft	draft		
-exe	0x004ff8c0	gm_Unk4ff8c0	f3gm	draft	draft		
-exe	0x004ff950	gm_Unk4ff950	f3gm	byte	draft		
+exe	0x004ff8c0	gm_GoodsDemand	f3gm	draft	draft		
+exe	0x004ff950	gm_GoodsStock	f3gm	byte	draft		
 exe	0x004ffa10	gm_Unk4ffa10	f3gm	draft	draft		
 exe	0x004ffbf0	gm_GoodsValue	f3gm	byte	draft		
 exe	0x004ffc40	gm_FindGoods	f3gm	byte	readable		
