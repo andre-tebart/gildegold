@@ -25,6 +25,7 @@
 #define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
 #define GAPDATA __declspec(align(1)) unsigned char
 #define gv_EffectsT (*(GVEFFECT (*)[8])&gv_Effects)  /* 0x6f1008, gv_Effects (char[0xb80]) as the 8 GVEFFECT slots */
+#define gv_TimeT (*(AITIME *)&ai_Time)  /* 0x770ae0, ai_Time (anm.c: char[14]) as the AITIME it is */
 #define gv_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
@@ -224,13 +225,13 @@ int gv_WriteEffects(void *f)
     int i;
     GVEFFECT *e;
 
-    if (vfs_fwrite(&gv_LastTime.t.year, 4, 1, (struct VFSFILE *)f) <= 0)
+    if (vfs_fwrite(&gv_LastTime.year, 4, 1, (struct VFSFILE *)f) <= 0)
         return 0;
-    if (vfs_fwrite(&gv_LastTime.t.hour, 2, 1, (struct VFSFILE *)f) <= 0)
+    if (vfs_fwrite(&gv_LastTime.hour, 2, 1, (struct VFSFILE *)f) <= 0)
         return 0;
-    if (vfs_fwrite(&gv_LastTime.t.min, 4, 1, (struct VFSFILE *)f) <= 0)
+    if (vfs_fwrite(&gv_LastTime.min, 4, 1, (struct VFSFILE *)f) <= 0)
         return 0;
-    if (vfs_fwrite(&gv_LastTime.t.xy, 4, 1, (struct VFSFILE *)f) <= 0)
+    if (vfs_fwrite(&gv_LastTime.xy, 4, 1, (struct VFSFILE *)f) <= 0)
         return 0;
     if (vfs_fwrite(&gv_CannonBld, 4, 1, (struct VFSFILE *)f) <= 0)
         return 0;
@@ -332,13 +333,13 @@ int gv_ReadEffects(void *f, int v)
     GVEFFECT *e;
     GVEFFARG *q;
 
-    if (ls_Read(&gv_LastTime.t.year, 4, 1, (int)f) == 0)
+    if (ls_Read(&gv_LastTime.year, 4, 1, (int)f) == 0)
         return 0;
-    if (ls_Read(&gv_LastTime.t.hour, 2, 1, (int)f) == 0)
+    if (ls_Read(&gv_LastTime.hour, 2, 1, (int)f) == 0)
         return 0;
-    if (ls_Read(&gv_LastTime.t.min, 4, 1, (int)f) == 0)
+    if (ls_Read(&gv_LastTime.min, 4, 1, (int)f) == 0)
         return 0;
-    if (ls_Read(&gv_LastTime.t.xy, 4, 1, (int)f) == 0)
+    if (ls_Read(&gv_LastTime.xy, 4, 1, (int)f) == 0)
         return 0;
     if (ls_Read(&gv_CannonBld, 4, 1, (int)f) == 0)
         return 0;
@@ -449,10 +450,7 @@ void unk_ResetEffectSlots(void)
         *(float *)&p[3] = 1.0f;
         *(float *)&p[4] = 1.0f;
     }
-    gv_LastTime.raw[0] = *(int *)ai_Time;
-    gv_LastTime.raw[1] = *(int *)(ai_Time + 4);
-    gv_LastTime.raw[2] = *(int *)(ai_Time + 8);
-    gv_LastTime.raw[3] = *(int *)(ai_Time + 12);
+    gv_LastTime = gv_TimeT;
     memset(gv_CannonBld, 0, 0x20);
     *(int *)gv_CannonBld = -1;
 }
@@ -718,11 +716,8 @@ void gv_UpdateEffects(void)
     sc = d3_CurrentScene;
     if (dt < 0)
         dt = 0;
-    gv_LastTime.raw[0] = *(int *)ai_Time;
-    gv_LastTime.raw[1] = *(int *)(ai_Time + 4);
+    gv_LastTime = gv_TimeT;
     step = (float)dt * 0.016666668f * 0.1f;
-    gv_LastTime.raw[2] = *(int *)(ai_Time + 8);
-    gv_LastTime.raw[3] = *(int *)(ai_Time + 12);
     d3if_SelectScene(0, 1);
     off = 0;
     idx = 0;
@@ -4389,7 +4384,7 @@ char unk_Avatars[0x20][0xf4] = { { 110, 101, 86, 109, 77, 97, 118, 101, 110, 0, 
 char unk_Tab611258[] = { 0, 1, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 2, 0, 0, 0, 24, 1, -1, 0, 0, 14, 73, 0, 1, 2, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 24, 2, -1, 0, -64, 15, 73, 0, 2, 3, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 6, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 26, 1, 0, 0, 0, 18, 73, 0, 3, 2, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 2, 0, 0, 0, 6, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 18, 1, 1, 0, -32, 18, 73, 0, 4, 2, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 4, 0, 0, 0, 10, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 22, 1, 2, 0, 48, 20, 73, 0, 5, 1, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 14, 1, -1, 0, 96, 21, 73, 0, 6, 1, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 10, 1, -1, 0, -16, 21, 73, 0, 7, 1, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 11, 1, -1, 0, 80, 22, 73, 0, 8, 2, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 27, 1, 3, 0, -128, 43, 73, 0, 9, 0, 0, 0, 8, 0, 0, 0, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 0, 0, 0, 15, 1, -1, 0, -48, 22, 73, 0, 10, 0, 0, 0, 6, 0, 0, 0, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 0, 0, 0, 15, 2, -1, 0, 96, 24, 73, 0, 11, 0, 0, 0, 6, 0, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 0, 0, 21, 1, -1, 0, 64, 26, 73, 0, 12, 0, 0, 0, 5, 0, 0, 0, 11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 0, 0, 12, 1, -1, 0, 32, 27, 73, 0, 13, 0, 0, 0, 10, 0, 0, 0, 25, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 16, 0, 0, 0, 14, 2, -1, 0, -16, 27, 73, 0, 14, 0, 0, 0, 10, 0, 0, 0, 25, 0, 0, 0, 3, 0, 0, 0, 10, 0, 0, 0, 5, 0, 0, 0, 16, 0, 0, 0, 16, 1, 4, 0, -80, 28, 73, 0, 15, 1, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 25, 1, -1, 0, -128, 29, 73, 0, 16, 2, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 12, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 13, 1, 5, 0, -128, 30, 73, 0, 17, 2, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 12, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 25, 2, 6, 0, -80, 31, 73, 0, 18, 2, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 12, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 18, 1, 7, 0, -64, 32, 73, 0, 19, 2, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 12, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 19, 1, 8, 0, -48, 33, 73, 0, 20, 2, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 2, 0, 0, 0, 12, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 19, 2, 9, 0, -32, 34, 73, 0, 21, 2, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 5, 0, 0, 0, 12, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 17, 1, 10, 0, 16, 36, 73, 0, 22, 2, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 4, 0, 0, 0, 12, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 20, 1, 11, 0, 64, 37, 73, 0, 23, 2, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 5, 0, 0, 0, 12, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 23, 1, 12, 0, -128, 38, 73, 0, 24, 2, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 5, 0, 0, 0, 12, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 22, 2, 13, 0, -64, 39, 73, 0, 25, 2, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 5, 0, 0, 0, 12, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 23, 2, 14, 0, 0, 41, 73, 0, 26, 2, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 5, 0, 0, 0, 12, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 20, 2, 15, 0, 64, 42, 73, 0, 27, 2, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 5, 0, 0, 0, 12, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 26, 2, 16, 0, 80, 45, 73, 0, 28, 2, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 5, 0, 0, 0, 12, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 27, 2, 17, 0, -112, 46, 73, 0 };  /* 0x611258 */
 int (*ord_OrderHandlers[0x3a])(char *c, int *m) = { ord_ApplyForOffice, ord_LevelOrder, unk_Unk4f5070, ord_SpyTargetOrder, ord_BlackmailBuildingOrder, ord_Level3Order, ord_EspionageResultOrder, ord_BlackmailContactVariantOrder, ord_BlackmailContactOrder, ord_Level4Order, ord_Level4Order2, ord_Level4To5Order, ord_Level5UpOrder, ord_Level5UpOrder2, unk_Unk4f5800, ord_Level6UpOrder, ord_Level6UpOrder2, ord_WageReportOrder, ord_EmbezzlementOrder, ord_LawOrder, ord_LawOrder2, ord_Job11Order, ord_JobMultiOrder, ord_Job28Order, ord_Job29Order, ord_Job34Order, ord_JobRangeOrder, ord_JobMultiOrder2, ord_EmbezzlementContractOrder, ord_CounterEspionageOrder, ord_Job17Order, ord_Job17Order2, ord_JobMultiOrder4, ord_MisappropriationOrder, ord_Job10Order, ord_Job15Order, ord_CounterEspionageWindowOrder, ord_EspionageWindowOrder, ord_JobMultiOrder3, ord_EspionagePaymentOrder, ord_EspionageOrder, ord_EspionagePaymentOrder2, ord_EspionageRelationOrder, ord_EspionageAmountOrder, ord_SpyTargetFlagOrder, ord_EspionageOverviewOrder, ord_Level7Order, ord_Level8Order, ord_Level9UpOrder, ord_InterrogationOrder, ord_DismissalOrder, ord_Flag800Order, ord_Flag800Order2, ord_InterrogationOrder2, ord_Flag200Order, ord_InterrogationOrder3, ord_Flag400Order, ord_DismissWorkerOrder };  /* 0x611768, the order handler of each order number */
 char ord_KindTable[] = { 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 50, 0, 0, 0, 0, 0, 12, 0, 75, 0, 0, 0, 0, 0, 20, 0, 125, 0, 0, 0, 0, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 12, 0, 0, 0, 0, 0, 0, 0, 15, 0, 0, 0, 0, 0, 0, 0, 20, 0, 0, 0, 0, 0, 0, 0, 10, 0, 0, 0, 3, 0, 0, 0, 15, 0, 0, 0, 9, 0, 0, 0, 25, 0, 0, 0, 16, 0, 0, 0, 20, 0, 6, 0, 20, 0, 0, 0, 30, 0, 9, 0, 60, 0, 0, 0, 45, 0, 12, 0, 110, 0, 0, 0, 30, 0, 0, 0, 10, 0, 0, 0, 45, 0, 0, 0, 30, 0, 0, 0, 70, 0, 0, 0, 60, 0, 0, 0, 10, 0, 0, 0, 10, 0, 0, 0, 20, 0, 0, 0, 30, 0, 0, 0, 25, 0, 0, 0, 60, 0, 0, 0, 30, 0, 3, 0, 15, 0, 0, 0, 45, 0, 6, 0, 50, 0, 0, 0, 80, 0, 9, 0, 120, 0, 0, 0, 30, 0, 3, 0, 20, 0, 0, 0, 50, 0, 5, 0, 50, 0, 0, 0, 75, 0, 6, 0, 100, 0, 0, 0, 30, 0, 0, 0, 15, 0, 0, 0, 50, 0, 0, 0, 35, 0, 0, 0, 75, 0, 0, 0, 70, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 30, 0, 10, 0, 30, 0, 0, 0, 30, 0, 10, 0, 30, 0, 0, 0, 30, 0, 10, 0, 30, 0, 0, 0, 30, 0, 3, 0, 20, 0, 0, 0, 50, 0, 5, 0, 50, 0, 0, 0, 75, 0, 6, 0, 100, 0, 0, 0, 20, 0, 0, 0, 5, 0, 0, 0, 40, 0, 0, 0, 10, 0, 0, 0, 100, 0, 0, 0, 20, 0, 0, 0, 30, 0, 12, 0, 30, 0, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0, 30, 0, 3, 0, 20, 0, 0, 0, 50, 0, 5, 0, 50, 0, 0, 0, 75, 0, 6, 0, 100, 0, 0, 0, 30, 0, 8, 0, 20, 0, 0, 0, 50, 0, 10, 0, 40, 0, 0, 0, 75, 0, 12, 0, 80, 0, 0, 0, 30, 0, 3, 0, 20, 0, 0, 0, 50, 0, 5, 0, 50, 0, 0, 0, 75, 0, 6, 0, 100, 0, 0, 0, 30, 0, 3, 0, 20, 0, 0, 0, 50, 0, 5, 0, 50, 0, 0, 0, 75, 0, 6, 0, 100, 0, 0, 0, 30, 0, 4, 0, 25, 0, 0, 0, 50, 0, 5, 0, 40, 0, 0, 0, 80, 0, 6, 0, 70, 0, 0, 0, 20, 0, 0, 0, 5, 0, 0, 0, 40, 0, 0, 0, 10, 0, 0, 0, 80, 0, 0, 0, 20, 0, 0, 0, 20, 0, 0, 0, 5, 0, 0, 0, 40, 0, 0, 0, 10, 0, 0, 0, 80, 0, 0, 0, 20, 0, 0, 0, 20, 0, 0, 0, 5, 0, 0, 0, 40, 0, 0, 0, 10, 0, 0, 0, 80, 0, 0, 0, 20, 0, 0, 0, 20, 0, 0, 0, 5, 0, 0, 0, 40, 0, 0, 0, 10, 0, 0, 0, 80, 0, 0, 0, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0 };  /* 0x617468 */
-GVTIME gv_LastTime = {0};  /* 0x6f0e38, the game time ai_Time of the last effect step (gv_UpdateEffects) */
+AITIME gv_LastTime = {0};  /* 0x6f0e38, the game time ai_Time of the last effect step (gv_UpdateEffects) */
 GVEFFARG gv_EffectArgs[8] = {0};  /* 0x6f0e48, the argument of each effect slot's default callback */
 char gv_Effects[2944] = {0};  /* 0x6f1008, 8 slots of */
 int ai_RatingBase = 0;  /* 0x6f1b9c, the rating's old value (stored as bits; ai.h's ai_Rating follows it at */
