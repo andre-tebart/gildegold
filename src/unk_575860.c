@@ -684,8 +684,8 @@ void sv_CameraFollow();
 void sv_SetStatusText(char *s);
 void sv_SelectPanelObject(unsigned char *o, int b, char *c);
 int he_Unk55ea60();
-void sv_Unk52f9f0();
-void sv_Unk52fa00();
+void sv_BookForward();
+void sv_BookBack();
 void sv_FitForm(int f);
 void ai_Unk577a90();
 void ai_Unk577b60();
@@ -1924,9 +1924,9 @@ int ai_Unk577490(void)
 
     st = S;
     if (*(int *)(st + 0x40) == 2 && *(int *)(st + 0x50))
-        sv_Unk52f9f0(*(int *)(st + 0x50));
+        sv_BookForward(*(int *)(st + 0x50));
     else if (*(int *)(st + 0x40) == 3 && *(int *)(st + 0x50))
-        sv_Unk52fa00(*(int *)(st + 0x50));
+        sv_BookBack(*(int *)(st + 0x50));
     return 0;
 }
 /* 0x5774d0, when `arg` is 0 and the building 0x6f2308 is not already of the table byte 0x12: finds a record

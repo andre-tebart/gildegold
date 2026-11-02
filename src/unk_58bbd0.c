@@ -17630,7 +17630,7 @@ int ai_Unk5c1e10(int param_1)
     return 0;
 }
 
-struct SVBOOK *sv_OpenBook(char *model, char *at, char n, ...); void sv_Unk52f600(int bk); void sv_Unk52f530(int *bk); int gv_TableRecordText();
+struct SVBOOK *sv_OpenBook(char *model, char *at, char n, ...); void sv_UpdateBook(struct SVBOOK *bk); void sv_Unk52f530(int *bk); int gv_TableRecordText();
 void ai_Unk5c2410();
 
 /* 0x5c2160, the law book listener (657 B): the pages 0x111 (Strafrecht), 0x112 (Steuern) and 0x113
@@ -17723,7 +17723,7 @@ int ai_Unk5c2160(int param_1)
                 }
             }
         }
-        sv_Unk52f600(win);
+        sv_UpdateBook(win);
         if (U_I(((unsigned)&dm_L + 0x20)) != 0)
             U_I((unsigned)&sv_PopRequest) = 1;
         if (sv_RunFrame(ai_Unk5c2160, 0x677c7) == 0) {

@@ -146,10 +146,10 @@ void sv_Unk52f2c0(void);                                                /* 0x52f
 void sv_Unk52f340(int *book);                                           /* 0x52f340 */
 SVBOOK *sv_OpenBook(char *model, char *at, char n, ...);                         /* 0x52f360 */
 void sv_Unk52f530(int *bk);                                             /* 0x52f530 */
-void sv_Unk52f600(int bk);                                              /* 0x52f600 */
+void sv_UpdateBook(SVBOOK *bk);                                           /* 0x52f600 */
 int sv_Unk52f710(int *bk, char dir);                                    /* 0x52f710 */
-void sv_Unk52f9f0(int *bk);                                             /* 0x52f9f0 */
-void sv_Unk52fa00(int *bk);                                             /* 0x52fa00 */
+void sv_BookForward(SVBOOK *bk);                                           /* 0x52f9f0 */
+void sv_BookBack(SVBOOK *bk);                                           /* 0x52fa00 */
 int sv_CreateScrollForm(void);                                                 /* 0x52fa10 */
 void sv_DestroyScrollForm(void);                                                /* 0x52fa90 */
 void sv_Unk52fad0(void);                                                /* 0x52fad0 */

@@ -6613,8 +6613,6 @@ void d2_EnableViewObjects();                     /* 0x4754d0 */
 void d3d_SetWBuffer(char w);                     /* 0x437060 */
 char *util_BaseName();                   /* 0x401040 */
 int sv_Unk52f710(int *book, char dir);
-void sv_Unk52f9f0(int *book);
-void sv_Unk52fa00(int *book);
 
 /* 0x52f2c0, draws the rubber band rectangle (0x41e8f0, colour -1) between the corners 0x760444 / 0x760448 and 0x76044c / 0x760450 while 0x760440 is set */
 void sv_Unk52f2c0(void)
@@ -6631,11 +6629,11 @@ void sv_Unk52f2c0(void)
 void sv_Unk52f340(int *book)
 {
     if (SV_I((unsigned)&d2_ClickedId) == 0x767) {
-        sv_Unk52f9f0(book);
+        sv_BookForward((SVBOOK *)book);
         return;
     }
     if (SV_I((unsigned)&d2_ClickedId) == 0x768)
-        sv_Unk52fa00(book);
+        sv_BookBack((SVBOOK *)book);
 }
 /* 0x52f360, opens a book: the model named model (d3t_FindObject), or, given the scene object name at, a copy of it
    created there (the model hidden until the close); n page views follow as variable arguments (the d2_LoadView
@@ -6733,41 +6731,30 @@ void sv_Unk52f530(int *bk)
         sb_PlaySample(snd_BookBank, "Zuklappen_s", 1, 0x3f, 0x7f, 0, 0);
     }
 }
-/* 0x52f600, per frame update of an open book: hides the page widgets outside the shown pair (+0x270 .. +0x270 + 1), turns the page when a page button (+0x268 / +0x26c) is the focus, and shows the shown
-   pair (blink 0x6f23f0) */
+/* 0x52f600, the per frame update of an open book: disables the page views outside the shown pair (page, page + 1),
+   turns the book on a click (dm_L.lup) on its backward / forward button, redraws one page of the shown pair (the
+   one sv_BookPhase picks; the phase flips every frame). */
 
-void sv_Unk52f600(int bk)
+void sv_UpdateBook(SVBOOK *bk)
 {
-    int *p, i;
+    int i;
 
-    if (bk != 0) {
-        i = 0;
-        if (*(char *)(bk + 0x271) > 0) {
-            p = (int *)(bk + 0x228);
-            do {
-                if (i < *(char *)(bk + 0x270) || *(char *)(bk + 0x270) + 1 < i)
-                    d2_EnableViewObjects(*p, 0);
-                i++;
-                p++;
-            } while (i < *(char *)(bk + 0x271));
-        }
-        if (*(int *)(bk + 0x26c) != -1 && d2_PointerObj == *(int *)(bk + 0x26c) && SV_I(((unsigned)&dm_L + 0xc)) != 0)
-            sv_Unk52fa00((int *)bk);
-        if (*(int *)(bk + 0x268) != -1 && d2_PointerObj == *(int *)(bk + 0x268) && SV_I(((unsigned)&dm_L + 0xc)) != 0)
-            sv_Unk52f9f0((int *)bk);
-        i = (int)*(char *)(bk + 0x270) + sv_BookPhase;
-        if (i < *(char *)(bk + 0x271)) {
-            p = (int *)(bk + 0x228 + i * 4);
-            do {
-                if ((int)*(char *)(bk + 0x270) + sv_BookPhase < i)
-                    break;
-                d2_RedrawView(*p);
-                i++;
-                p++;
-            } while (i < *(char *)(bk + 0x271));
-        }
-        sv_BookPhase ^= 1;
+    if (bk == 0)
+        return;
+    for (i = 0; i < bk->npages; i++) {
+        if (i < bk->page || i > bk->page + 1)
+            d2_EnableViewObjects(bk->views[i], 0);
     }
+    if (bk->btnPrev != -1 && d2_PointerObj == bk->btnPrev && dm_L.lup != 0)
+        sv_BookBack(bk);
+    if (bk->btnNext != -1 && d2_PointerObj == bk->btnNext && dm_L.lup != 0)
+        sv_BookForward(bk);
+    for (i = bk->page + sv_BookPhase; i < bk->npages; i++) {
+        if (i > bk->page + sv_BookPhase)
+            break;
+        d2_RedrawView(bk->views[i]);
+    }
+    sv_BookPhase ^= 1;
 }
 /* 0x52f710, turns the book bk by dir pages (2 forward / -2 backward): checks the limits and that the page animations of the book model (+0x1ec) are finished ("buch\Buch_vorblaettern.baf" /
    "buch\Buch_zurueckblaettern.baf"), sets the page pictures of the n page widgets, starts the animation, advances the first page (+0x270), plays "Umblaettern_s"; returns 1 when turned; ROUGH */
@@ -6847,15 +6834,15 @@ int sv_Unk52f710(int *bk, char dir)
 }
 /* 0x52f9f0 / 0x52fa00, turn the book forward / backward by two pages */
 
-void sv_Unk52f9f0(int *bk)
+void sv_BookForward(SVBOOK *bk)
 {
-    sv_Unk52f710(bk, 2);
+    sv_Unk52f710((int *)bk, 2);
 }
-/* 0x52fa00 */
+/* 0x52fa00, turns the book backward by two pages */
 
-void sv_Unk52fa00(int *bk)
+void sv_BookBack(SVBOOK *bk)
 {
-    sv_Unk52f710(bk, -2);
+    sv_Unk52f710((int *)bk, -2);
 }
 
 extern int ai_Unk623ea0, ai_Unk623ea4, ai_Unk623ea8;  /* 0x623ea0, 0x623ea4, 0x623ea8 */
