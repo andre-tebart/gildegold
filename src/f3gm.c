@@ -3133,7 +3133,19 @@ unsigned short *gm_QueryNext(void)
     }
     return (unsigned short *)res;
 }
-/* 0x4ffe90, starts an object query over the list (or, with the flag 7, over the whole instance table) and returns the first match (0x4ffcc0): n criteria follow as (kind, value) pairs: kind 0 = prototype, 1 = owner id, 3 = the 0x50a0b0 value, 4 = the prototype kind (each with a value), 5 = stop at the first match, 6 = descend into the children, 7 = scan the whole table (without value). Not set criteria match everything; 0 without a table or list. Used as gm_Query (list, 2, 6, 0, 0x115) .. all over the exe */
+/* 0x4ffe90, starts an object query over the list (or, with the flag 7, over the whole instance table) and returns the first match (gm_QueryNext): n criteria follow as (kind, value) pairs: kind 0 = prototype, 1 = owner id, 3 = the owner's character number (gm_ObjectOwnerNo), 4 = the prototype kind (each with a value), 5 = stop at the first match, 6 = descend into the children, 7 = scan the whole table (without value). Not set criteria match everything; 0 without the goods table or a list, and for 6 together with 7. Used as gm_Query (list, 2, 6, 0, 0x115) .. all over the exe
+   @deep read the whole function against 0x4ffe90..0x4fff9b and reconciled every statement: the reset of
+   the query state in the original's store order, the argument walk (ap = &n, pre-incremented, switch on
+   the low byte as unsigned char: the 8-entry jump table is equal), the per-kind value reads (word / dword
+   / word / byte), the flags, the scan-all exit (0 with 6 and 7 together, else the instance table) and the
+   list start, both as tail calls of gm_QueryNext. Tried: the ai_Goods test as an early return or wrapping
+   the body, the list test both ways, scan / kids as char or unsigned char: the object is the same. Left is
+   allocation: ours takes esi as the zero register (push esi at entry, 'xor esi,esi; cmp eax,esi', the
+   stores of 0 from esi) and keeps -1 in eax ('or eax,-1', gm_QueryOwner and gm_QueryKind[0] from eax /
+   al), the original uses eax as the zero register and immediates for the -1 stores, and pushes esi only
+   inside the n > 0 block (0x4ffef7 / 0x4fff6d): that is the 3 extra instructions and the 1-byte shift
+   diffclass reports for the three jumps to the return-0 block (+0x108 vs +0x107); the zero stores of the
+   flags come from bl / dl / al by the same choice (diffclass: regs, slots) */
 
 char *gm_Query(void *list, int n, ...)
 {
@@ -3142,71 +3154,63 @@ char *gm_Query(void *list, int n, ...)
     int i;
 
     if (ai_Goods != 0) {
-        scan = 0;
-        kids = 0;
-        gm_QueryType = 0x7fff;
-        gm_QueryOwner = -1;
-        gm_QueryOwnerNo = -1;
-        gm_QueryKind[0] = (char)0xff;
-        gm_QueryStopFirst = 0;
-        gm_QueryScanAll = 0;
-        gm_QueryChildren = 0;
-        gm_QueryFirst = 1;
-        gm_QueryScanned = 0;
-        gm_QueryDepth = 0;
-        if (n > 0) {
-            ap = &n + 1;
-            for (i = n; i != 0; i--) {
-                switch ((char)*ap) {
-                case 0:
-                    gm_QueryType = (unsigned short)ap[1];
-                    ap += 2;
-                    break;
-                case 1:
-                    gm_QueryOwner = ap[1];
-                    ap += 2;
-                    break;
-                case 3:
-                    gm_QueryOwnerNo = (unsigned short)ap[1];
-                    ap += 2;
-                    break;
-                case 4:
-                    gm_QueryKind[0] = (char)ap[1];
-                    ap += 2;
-                    break;
-                case 5:
-                    gm_QueryStopFirst = 1;
-                    ap += 1;
-                    break;
-                case 6:
-                    kids = 1;
-                    ap += 1;
-                    break;
-                case 7:
-                    scan = 1;
-                    ap += 1;
-                    break;
-                default:
-                    ap += 1;
-                }
-            }
-            gm_QueryScanAll = scan;
-            gm_QueryChildren = kids;
-            if (scan != 0) {
-                if (kids != 0) {
-                    gm_QueryFirst = 1;
-                    gm_QueryScanned = 0;
-                    gm_QueryDepth = 0;
-                    return 0;
-                }
-                gm_QueryCursor = (ORDOBJ *)ai_Objects;
-                return (char *)gm_QueryNext();
+    scan = 0;
+    kids = 0;
+    gm_QueryType = 0x7fff;
+    gm_QueryOwner = -1;
+    gm_QueryOwnerNo = 0xffff;
+    gm_QueryKind[0] = (char)0xff;
+    gm_QueryStopFirst = 0;
+    gm_QueryScanAll = scan;
+    gm_QueryChildren = kids;
+    gm_QueryFirst = 1;
+    gm_QueryScanned = 0;
+    gm_QueryDepth = 0;
+    if (n > 0) {
+        ap = &n;
+        for (i = n; i != 0; i--) {
+            ap++;
+            switch ((unsigned char)*ap) {
+            case 0:
+                ap++;
+                gm_QueryType = (unsigned short)*ap;
+                break;
+            case 1:
+                gm_QueryOwner = ap[1];
+                ap++;
+                break;
+            case 3:
+                gm_QueryOwnerNo = (unsigned short)ap[1];
+                ap++;
+                break;
+            case 4:
+                gm_QueryKind[0] = (char)ap[1];
+                ap++;
+                break;
+            case 5:
+                gm_QueryStopFirst = 1;
+                break;
+            case 6:
+                kids = 1;
+                break;
+            case 7:
+                scan = 1;
+                break;
             }
         }
-        if (list != 0) {
-            gm_QueryCursor = (ORDOBJ *)list;
+        gm_QueryScanAll = scan;
+        gm_QueryChildren = kids;
+        if (scan != 0) {
+            if (kids != 0)
+                return 0;
+            gm_QueryCursor = (ORDOBJ *)ai_Objects;
             return (char *)gm_QueryNext();
         }
+    }
+    if (list != 0) {
+        gm_QueryCursor = (ORDOBJ *)list;
+        return (char *)gm_QueryNext();
+    }
     }
     return 0;
 }
