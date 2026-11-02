@@ -14523,13 +14523,14 @@ void ai_Unk5a9dd0(int param_1, int param_2, int param_3, int param_4)
     he_MessageBoxQuickjump(*(int *)(param_1 + 4), -1, (char *)(unsigned)&full_data_6f26c8, 1, 0x5ec, *(int *)(param_3 + 1), -1, 0,
                  (char *)(unsigned)&full_data_62c3e8);
 }
-/* 0x5a9e40, a Domizil message without the kind test (76 B): the format text 0x4070 with param_2 and its +0x4071
-   field (a name), then 0x53dee0 with the +1 field of param_2 and the key "_NACHRICHTEN_DOMIZIL_12" 0x62c400 */
+/* 0x5a9e40, a Domizil message without the kind test (76 B): formats the text 0x4070 with the building b and the
+   text 0x4071 + n, then posts it (0x53dee0) to the character ch (+4, its netId) with b's id (+1) and the key
+   "_NACHRICHTEN_DOMIZIL_12" 0x62c400 */
 
-void ai_Unk5a9e40(int param_1, int param_2)
+void ai_DomizilMessage12(char *ch, char *b, int n)
 {
-    txt_Format((char *)(unsigned)&full_data_6f26c8, 0x4070, param_2, param_2 + 0x4071);
-    he_MessageBoxQuickjump(*(int *)(param_1 + 4), -1, (char *)(unsigned)&full_data_6f26c8, 1, 0x5ec, *(int *)(param_2 + 1), -1, 0,
+    txt_Format((char *)(unsigned)&full_data_6f26c8, 0x4070, b, n + 0x4071);
+    he_MessageBoxQuickjump(*(int *)(ch + 4), -1, (char *)(unsigned)&full_data_6f26c8, 1, 0x5ec, *(int *)(b + 1), -1, 0,
                  (char *)(unsigned)&full_data_62c400);
 }
 /* 0x5a9e90, a free entry of the Domizil table (215 B): 0x42ec00 (the count 0x62cb58) picks an index into the 0x42

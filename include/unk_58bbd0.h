@@ -106,7 +106,7 @@ void ai_Unk5a9430(int param_1, unsigned short *param_2);  /* 0x5a9430 */
 void ai_Unk5a9690(int param_1, int param_2);  /* 0x5a9690 */
 void ai_Unk5a96e0(int param_1, unsigned short *param_2, int param_3, int param_4, int param_5, int param_6);  /* 0x5a96e0 */
 void ai_Unk5a9780(int param_1, int param_2, int param_3, int param_4);  /* 0x5a9780 */
-void ai_Unk5a9e40(int param_1, int param_2);  /* 0x5a9e40 */
+void ai_DomizilMessage12(char *ch, char *b, int n);  /* 0x5a9e40, posts the Domizil message 12 (text 0x4071 + n) about the building b to the character ch */
 int ai_Unk5c8bc0(unsigned short *param_1, void *unused);  /* 0x5c8bc0, the caller (ord 0x4f50ae) pushes a second argument the handler does not read */
 int ai_Unk5c8ef0(unsigned short *param_1, void *unused);  /* 0x5c8ef0, the caller (ord 0x4f58a4) pushes a second argument the handler does not read */
 int ai_WorkerDismissalWindow(int param_1, int *m);  /* 0x5ce7f0 */

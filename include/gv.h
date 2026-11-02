@@ -129,7 +129,18 @@ extern char ai_Unk6f0e40[], ai_Unk6f0e44[];  /* 0x6f0e40, 0x6f0e44 */
 char *gv_AllocAvatar(void);              /* 0x4ed170 */
 int gv_WriteAvatars(void *f);             /* 0x4ed1e0 */
 int gv_ReadAvatars(void *f);             /* 0x4ed270 */
-int unk_Unk4ed3f0(int *p);              /* 0x4ed3f0 */
+typedef struct GVEFFREC {               /* 16 bytes, a record of an effect slot's argument */
+    int bldId;                          /* 0x00, a building id (gm_BuildQuery(1, 1, id)) */
+    int unk04;
+    int mode;                           /* 0x08, 1: the message depends on value */
+    float value;                        /* 0x0c, compared with 25 */
+} GVEFFREC;
+typedef struct GVEFFARG {               /* 0x38 bytes, the argument of an effect slot's default callback (ai_Unk6f0e48, one per slot) */
+    int cur;                            /* 0x00, the record at hand (0 .. 2) */
+    int unk04;
+    GVEFFREC recs[3];                   /* 0x08 */
+} GVEFFARG;
+int gv_EffectNotifyOwner(GVEFFARG *a);  /* 0x4ed3f0, the default effect slot callback: tells the owner of the current record's building */
 int unk_Unk4ed480(void *f);             /* 0x4ed480 */
 int unk_Unk4ed910(void *f, int v);      /* 0x4ed910 */
 void unk_ResetEffectSlots(void);               /* 0x4eddf0 */

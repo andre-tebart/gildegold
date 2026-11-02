@@ -24,7 +24,7 @@
 #define d3t_GetMeshBoundsK ((int (*)())d3t_GetMeshBounds)  /* 0x413310 (d3_tools.c): @original this unit's calls were compiled without a prototype (float arguments as double, an int result) */
 #define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
 #define GAPDATA __declspec(align(1)) unsigned char
-#define ai_Unk5a9e40K ((int (*)())ai_Unk5a9e40)  /* 0x5a9e40: @original the call passes more arguments than the draft definition names, compiled without a prototype (as before the definition's spelling reached this unit) */
+#define gv_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 extern GAPDATA full_data_91f6e3[];
@@ -176,39 +176,34 @@ int gv_ReadAvatars(void *f)
     }
     return 1;
 }
-/* 0x4ed3f0, callback of an effect slot (p: 3 entries of 4 ints; the entry p[0] says is the one at hand: +8 an object id (0x501190 (1, 1, id)), +0x10 a mode, +0x14 a float): when the object's
-   character (+0x27) is a player (kind 6), calls 0x5a9e40 (character, object, 1 or 2 when mode 1 and the float > 25, else 0) */
+/* 0x4ed3f0, the default callback of an effect slot (its argument: the slot's GVEFFARG): for the current record
+   (cur), the building of its id (gm_BuildQuery(1, 1, id)); when its owner character is a player (kind 6), posts the
+   Domizil message 12 to it, text 0x4071 + 0 / 1 / 2 (2 when the record's mode is 1 and its value above 25, 1 when
+   mode 1 and the value at most 25) */
 
-int unk_Unk4ed3f0(int *p)
+int gv_EffectNotifyOwner(GVEFFARG *a)
 {
-    int *q;
     int i;
-    char *o;
-    unsigned short c;
+    AIBLD *b;
+    AICHAR *ch;
     int m;
 
-    i = 0;
-    q = p;
-    do {
-        if (*p == i) {
-            o = (char *)gm_BuildQuery(1, 1, q[2]);
+    for (i = 0; i < 3; i++) {
+        if (a->cur == i) {
+            b = (AIBLD *)gm_BuildQuery(1, 1, a->recs[i].bldId);
             m = 0;
-            if (o != 0) {
-                c = *(unsigned short *)(o + 0x27);
-                if (c != 0xffff) {
-                    if (q[4] == 1) {
-                        m = 2;
-                        if (*(float *)&q[5] <= 25.0f)
-                            m = 1;
-                    }
-                    if (ai_Chars[c][2] == 6)
-                        ai_Unk5a9e40K(ai_Chars[c], o, m);
+            if (b != 0 && b->owner != 0xffff) {
+                ch = &gv_CharsT[b->owner];
+                if (a->recs[i].mode == 1) {
+                    m = 2;
+                    if (!(a->recs[i].value > 25.0f))
+                        m = 1;
                 }
+                if (ch->kind == 6)
+                    ai_DomizilMessage12((char *)ch, (char *)b, m);
             }
         }
-        i++;
-        q += 4;
-    } while (i < 3);
+    }
     return 0;
 }
 /* 0x4ed480, writes the game state of the effect slots to the file f: the globals 0x6f0e38 .. 0x92511c, then the 8 slots of 0x170 bytes at 0x6f1008 (fields by offset); 1 when all was written */
@@ -412,7 +407,7 @@ int unk_Unk4ed910(void *f, int v)
         if (UNK_FR(e + 0x150, 12, 1, f) == 0)
             return 0;
         *(char **)(e + 0x16c) = q;
-        *(void **)(e + 0x168) = unk_Unk4ed3f0;
+        *(void **)(e + 0x168) = gv_EffectNotifyOwner;
         q += 0x38;
     }
     return 1;
@@ -1024,7 +1019,7 @@ void unk_Unk4eeee0(int id, void *cb, void *arg)
                 *(void **)(e + 0x16c) = arg;
                 return;
             }
-            *(void **)(e + 0x168) = unk_Unk4ed3f0;
+            *(void **)(e + 0x168) = gv_EffectNotifyOwner;
             *(char **)(e + 0x16c) = ai_Unk6f0e48 + ((e - gv_Effects) / 0x170) * 0x38;
         }
     }
