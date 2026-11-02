@@ -5184,38 +5184,47 @@ void gm_ShowBuildingObjects(unsigned char *b)
             gm_ShowSlotObjects((int)b, l[i], *(unsigned short *)(b + 0x27));
     }
 }
-/* 0x502eb0, sorts the characters that work in the building b into the lists of an output record and returns their number: out[0] = their number, out[1 ..] (0x18 words, -1 filled) the workers of the first job class (type bytes +0x22f), out[0xd ..] (0xc) of the second (+0x230), out[0x19 ..] (0xc) the others (not the building's own two special jobs +0x223 / +0x224), out[0x25] = the one of the special jobs. ROUGH */
-
+/* 0x502eb0, lists the characters working in the building b (their building, bld, is b) into out and returns their number (also out[0]): out[1 ..] (0xc) those with the title of the kind's first job rank (+0x22f), out[0xd ..] (0xc) of the second (+0x230), out[0x19 ..] (0xc) the others, out[0x25] the one whose job is one of the kind's two jobs (+0x223 / +0x224, both set); the lists are filled with 0xffff
+   @deep Read whole against the original and rewritten (ORDCHAR walk, c->bld at +0x16c - the draft compared
+   bld2 +0x170, a meaning fix; the three 0xffff-filled lists, the special job test): the statement
+   structure and every operand match, block order equal (bld test, rank 1 -> p1, rank 2 -> p2, the
+   0x223/0x224 job test -> out[0x25], else p3, n++). What is left is the allocation of the six live values:
+   the original keeps p3 in ebp, out in edx and n in out's dead argument slot ([esp+0x24], inc dword ptr),
+   k / p1 / p2 in slots ([esp+0x18] / [esp+0x10] / [esp+0x14]); ours keeps k in ebp, out in esi, p1 in ebx
+   with a slot copy (mov [esp+0x18], ebx / mov ebx, [esp+0x18]: the 3 extra instructions), n / p3 in slots
+   and p2 in the argument slot. The c->bld compare (cmp [ecx+7], edx vs mov eax, [esi+7]; cmp eax, ecx) and
+   the rank loads (mov al, [ebp+0x22f]; cmp al, dl vs cmp [ecx+0x22f], al) follow from that choice. Tried:
+   pointer loop (worse, jb), index loop (kept), declaration orders, unsigned list pointers, n kept in
+   out[0], the p3 branch written twice (worse) */
 int gm_ListWorkers(unsigned char *b, int *out)
 {
     int i, n, j;
-    char *k;
-    char *c;
-    unsigned *p1, *p2, *p3;
+    unsigned char *k;
+    ORDCHAR *c;
+    int *p1, *p2, *p3;
 
-    k = ai_BTypes + *b * 0x24d;
-    p1 = (unsigned *)(out + 1);
+    k = (unsigned char *)ai_BTypes + *b * 0x24d;
+    p1 = out + 1;
     out[0] = 0;
     for (j = 0; j < 0x18; j++)
         p1[j] = 0xffff;
-    p3 = (unsigned *)(out + 0x19);
+    p3 = out + 0x19;
     for (j = 0; j < 0xc; j++)
         p3[j] = 0xffff;
     out[0x25] = 0xffff;
-    p2 = (unsigned *)(out + 0xd);
+    p2 = out + 0xd;
     n = 0;
     for (i = 0; i < 0x300; i++) {
-        c = ai_Chars[i];
-        if (*(unsigned char **)(c + 0x170) == b) {
-            if (k[0x22f] == c[0x165]) {
-                *p1++ = *(unsigned short *)c;
-            } else if (k[0x230] == c[0x165]) {
-                *p2++ = *(unsigned short *)c;
-            } else if (k[0x223] == 0 || k[0x224] == 0 || (k[0x223] != c[0x164] && k[0x224] != c[0x164])) {
-                *p3++ = *(unsigned short *)c;
-            } else {
+        c = &ORD_CHARS[i];
+        if (c->bld == (ORDBLD *)b) {
+            if (k[0x22f] == (unsigned char)c->title)
+                *p1++ = c->id;
+            else if (k[0x230] == (unsigned char)c->title)
+                *p2++ = c->id;
+            else if (k[0x223] != 0 && k[0x224] != 0 && (k[0x223] == c->jobId || k[0x224] == c->jobId))
                 out[0x25] = i;
-            }
+            else
+                *p3++ = c->id;
             n++;
         }
     }
