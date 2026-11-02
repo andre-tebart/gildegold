@@ -1200,36 +1200,36 @@ int unk_Unk4ef440(unsigned char *o)
     }
     return cnt;
 }
-/* 0x4ef470, as 0x4ef3c0 with the sizes 8 / 12, 12 / 18 + 2, 16 / 24 + 4 + 2 */
+/* 0x4ef470, the number of grave entries (GVYARD.entries, 0x14 bytes each) the graveyard building o has in use, as gv_GraveCount
+   by its type's level and GVYARD.open: level 1: 8, 12 with open[1]; level 2: 12 / 18 with open[1], + 2 with open[2]; else
+   16 / 24 with open[1], + 4 with open[2], + 2 with open[3] (each open size adds its entries, gv_AllocGraveyard) */
 
-int unk_Unk4ef470(unsigned char *o)
+int gv_EntryCount(unsigned char *o)
 {
-    char *rec;
-    char k, f;
+    AIBLD *bld = (AIBLD *)o;
+    char *bt;
+    GVYARD *g;
     int n;
 
-    rec = *(char **)(o + 0x65);
-    f = rec[0x19];
-    k = ai_BTypes[o[0] * 0x24d + 0x247];
-    if (k == 1) {
+    bt = ai_BTypes + bld->type + bld->type * 0x24c;
+    g = bld->yard;
+    if (((AIBTYPE *)bt)->level == 1) {
         n = 8;
-        if (f == 1)
+        if (g->open[1] == 1)
             return 0xc;
+    } else if (((AIBTYPE *)bt)->level == 2) {
+        n = 0xc;
+        if (g->open[1] == 1)
+            n = 0x12;
+        if (g->open[2] == 1)
+            n = n + 2;
     } else {
-        if (k == 2) {
-            n = 0xc;
-            if (f == 1)
-                n = 0x12;
-            f = rec[0x1a];
-        } else {
-            n = 0x10;
-            if (f == 1)
-                n = 0x18;
-            if (rec[0x1a] == 1)
-                n = n + 4;
-            f = rec[0x1b];
-        }
-        if (f == 1)
+        n = 0x10;
+        if (g->open[1] == 1)
+            n = 0x18;
+        if (g->open[2] == 1)
+            n = n + 4;
+        if (g->open[3] == 1)
             n = n + 2;
     }
     return n;
@@ -1381,7 +1381,7 @@ unsigned gv_FindEntry(void *a, unsigned char *o, unsigned after, int (*cb)(), in
     else {
         if (l != 0xff)
             return 0;
-        n = unk_Unk4ef470(o);
+        n = gv_EntryCount(o);
         end = *(int *)(rec + 0x1c) + n * 0x14;
     }
     if (after == 0) {

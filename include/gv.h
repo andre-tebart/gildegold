@@ -212,7 +212,7 @@ void gv_CannonScatter(char *o, float *spread, float *speedSpread);  /* 0x4ef260 
 float unk_Unk4ef330(char *o);           /* 0x4ef330 */
 int gv_GraveCount(unsigned char *o);    /* 0x4ef3c0 */
 int unk_Unk4ef440(unsigned char *o);    /* 0x4ef440 */
-int unk_Unk4ef470(unsigned char *o);    /* 0x4ef470 */
+int gv_EntryCount(unsigned char *o);    /* 0x4ef470 */
 int unk_Unk4ef4f0(char *r, int i);      /* 0x4ef4f0 */
 extern char *ai_BTypes;              /* 0x7e3f30 */
 int unk_Unk4ef570(char *r, int i, unsigned char n);  /* 0x4ef570 */
