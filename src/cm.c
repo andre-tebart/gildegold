@@ -2090,7 +2090,7 @@ void cm_SendGraveMove(void *p)
 }
 /* 0x4c6130, message 0x62 (0x19 bytes of p) */
 
-void ai_Unk4c6130(void *p)
+void cm_SendRaiseDead(void *p)
 {
     G17MSG m;
 

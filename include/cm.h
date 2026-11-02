@@ -275,7 +275,7 @@ void ai_Unk4c6020(int a, int b, int c);                                         
 void ai_Unk4c6060(char *o, void *p);                                             /* 0x4c6060 */
 void cm_SendGraveOrder(void *p);                                                      /* 0x4c60b0 */
 void cm_SendGraveMove(void *p);                                                      /* 0x4c60f0 */
-void ai_Unk4c6130(void *p);                                                      /* 0x4c6130 */
+void cm_SendRaiseDead(void *p);                                                      /* 0x4c6130 */
 void cm_SendCreateAlchemist(void *p);                                                      /* 0x4c6170 */
 void cm_SendCommand(void *p);                                                      /* 0x4c61b0 */
 void ai_Unk4c61f0(int *p, char *q);                                              /* 0x4c61f0 */

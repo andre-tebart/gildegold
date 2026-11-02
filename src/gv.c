@@ -2247,23 +2247,25 @@ moved:
     }
     return 0;
 }
-/* 0x4f1170, the message 0x4c6130 about the object o (a character +0x27, not the player's): graveyard 0x4f2e30 (0x1b, 1, id, -1, object id) first; fields v at +8, byte b at +0x10, x at +0x11, y at +0x15; -1 for no character,
-   the player's own object or b -1 */
+/* 0x4f1170, sends a raising of a dead person (GVRAISE, message 0x62, cm_SendRaiseDead): the dead GVGRAVE.id `grave` of the
+   entry `entry` of the size `size` of the graveyard building o, as kind `kind` (0x1b / 0x1c); first files gv_Accuse (0x1b,
+   1, the owner's netId, -1, the building's id). Returns the sender's result, -1 when the building has no owner, is the
+   player's own or entry is -1 */
 
-int unk_Unk4f1170(char *o, int v, int b, int x, int y)
+int gv_OrderRaiseDead(char *o, int size, int entry, int grave, int kind)
 {
-    unsigned short ch;
-    char m[0x19];
+    unsigned short owner;
+    GVRAISE m;
 
-    ch = *(unsigned short *)(o + 0x27);
-    if (ch != 0xffff && ch != *(unsigned short *)ai_PlayerCharC && b != -1) {
-        *(int *)(m + 8) = *(int *)(o + 1);
-        m[0x10] = (char)b;
-        *(int *)(m + 0x11) = x;
-        *(int *)(m + 0xc) = v;
-        *(int *)(m + 0x15) = y;
-        gv_Accuse(0x1b, 1, *(int *)(ai_Chars[ch] + 4), -1, *(int *)(m + 8));
-        return ((int (*)(void *))ai_Unk4c6130)(m);
+    owner = ((AIBLD *)o)->owner;
+    if (owner != 0xffff && owner != *ai_PlayerChar && entry != -1) {
+        m.bld = ((AIBLD *)o)->id;
+        m.size = size;
+        m.entry = (unsigned char)entry;
+        m.grave = grave;
+        m.kind = kind;
+        gv_Accuse(0x1b, 1, gv_CharsT[owner].netId, -1, m.bld);
+        return ((int (*)(void *))cm_SendRaiseDead)(&m);
     }
     return -1;
 }
@@ -2286,7 +2288,7 @@ int gv_SendGrave(unsigned char *o)
     k = gv_EntryIndex(*(char **)(o + 0x65), e);
     if (k == -1)
         return -1;
-    return unk_Unk4f1170((char *)o, *e, k, *z, 0x1c);
+    return gv_OrderRaiseDead((char *)o, *e, k, *z, 0x1c);
 }
 /* 0x4f1660, 1 while the character c (kind 0x14 at +2, +8 set) still owes its grave payment: with an object (+0x16c, not the player's) the owed amount (+0x14 - 50 * 0x4f16f0 (object)) is set (0x4c4ac0 (id, 0x1c, -owed))
    and the character is done when +0x1c does not exceed it; without one the amount is -1000.0; 0 for other characters */
