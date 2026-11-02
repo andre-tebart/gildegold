@@ -84,6 +84,7 @@ int ai_Unkf86900[73] = {0};  /* 0xf86900, the actions being evaluated */
 #define cm_SendExSellObjectI ((void (*)(int, int, int, int, unsigned char, int))cm_SendExSellObject)  /* 0x4c4880 (cm.h: short c): @original this unit pushes the third argument as an int (byte-matched ai_MeisterBewaffnen / ai_Unk497c80 / ai_Unk49c880) */
 #define amt_GetKindB ((int (*)(unsigned char, void *))amt_GetKind)  /* 0x4e6f80 (amt.h: int k): @original ai_Unk4a05e0 passes (unsigned char)k without widening */
 #define AI_CHAIN_BEATUP 0xf00500  /* the partner-chain flags (ai_PickPartnerChain) of action 0x18 "Verpruegeln" (ai_DecideBeatUp); the bits are not named yet */
+#define AI_CHAIN_USEREPUTATION 0xf00500  /* the partner-chain flags of action 0x1c "UseObject (Ansehen)" (ai_DecideUseReputationObject), as AI_CHAIN_BEATUP; the bits are not named yet */
 /* 0x48e070, the building of a master (kind != 3) in *out; 2: has one, 1: has a good one, 0: none */
 
 int ai_Unk48e070(AIPX *p, int *out)
@@ -5916,18 +5917,22 @@ int ai_Unk49a5b0(G5CH *p, AIARG *s1, AIARG *s2)
     }
     return 0;
 }
-/* 0x49a690, decide callback 0x1c: one of twelve goods (0x155..0x2b6) the character lacks */
+/* 0x49a690, decide callback of "UseObject (Ansehen)" (0x1c): of twelve reputation goods (0x155..0x2b6), with fewer
+   than six goods and none of them usable, the sub-action 2 to get one fitting the office level (weight 0.05; o2
+   the character itself); else with a usable one the action 0x1c on a random one (o1 kind 1, its inventory entry):
+   goods 9 and 10 with a partner of the other / the same sex (ai_PickPartnerChain, o2 kind 7), good 8 through the
+   sub-action 3 */
 
-int ai_Unk49a690(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
+int ai_DecideUseReputationObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 {
     int k, i, r;
-    unsigned int flags;
+    int flags;
     unsigned short id;
     AIARG s1;
     AIARG s2;
     int st[3];
-    G8REC recs[12];
-    int info[4];
+    G9REC recs[12];
+    AMTKIND kind;
 
     k = a;
     if (a == 0)
@@ -5947,20 +5952,20 @@ int ai_Unk49a690(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     recs[9].item = 0x167;
     recs[10].item = 0x229;
     recs[11].item = 0x2b6;
-    ai_FindWantedItems(p, 12, (int *)recs, st);
+    ai_FindWantedItems(p, 12, recs, st);
     if (st[0] == 6 && st[2] == 0)
         return 0;
     if (st[1] == 12)
         return 0;
     if (st[0] < 6) {
         if (st[2] == 0) {
-            if (amt_GetKindB(((unsigned char *)p)[0x166], info) == 0)
+            if (amt_GetKind(p->officeKind, &kind) == 0)
                 i = 7;
-            else if ((unsigned char)info[2] < 4)
+            else if (kind.level < 4)
                 i = 0;
             else
-                i = (unsigned char)info[2] < 7 ? 2 : 4;
-            while (recs[i].unk04 != 0)
+                i = kind.level < 7 ? 2 : 4;
+            while (recs[i].value != 0)
                 i = (i + 1) % 12;
             s1.ref = recs[i].item;
             s2.ref = p->netId;
@@ -5980,25 +5985,25 @@ int ai_Unk49a690(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         return 0;
     }
     i = util_RandomU(12);
-    while (recs[i].unk04 < 1)
+    while (recs[i].value < 1)
         i = (i + 1) % 12;
     s2.kind = 1;
-    s2.ref = recs[i].unk08;
+    s2.ref = recs[i].entryId;
     s2.arg = 1;
     s1.kind = 0;
     s1.ref = -1;
     s1.arg = -1;
     s1.arg2 = 0x1c;
     if (i == 9) {
-        flags = (((unsigned char *)p)[9] != 0 ? 1 : 2) | ((unsigned)&cm_SendRing + 0x4973c0);
-        if (G8_4A58D0(p, 1, &flags, 10.0f, (float)util_RandomU(0x20) + 40.0f, &id) == 0)
+        flags = (p->sex != 0 ? 1 : 2) | AI_CHAIN_USEREPUTATION;
+        if (ai_PickPartnerChain((AIPER *)p, 1, &flags, 10.0f, (float)util_RandomU(0x20) + 40.0f, &id) == 0)
             return 0;
         s1.kind = 7;
         s1.ref = ai_CharsT[id].netId;
         s1.arg = -1;
     } else if (i == 10) {
-        flags = (((unsigned char *)p)[9] != 1 ? 1 : 2) | ((unsigned)&cm_SendRing + 0x4973c0);
-        if (G8_4A58D0(p, 1, &flags, 10.0f, (float)util_RandomU(0x20) + 40.0f, &id) == 0)
+        flags = (p->sex != 1 ? 1 : 2) | AI_CHAIN_USEREPUTATION;
+        if (ai_PickPartnerChain((AIPER *)p, 1, &flags, 10.0f, (float)util_RandomU(0x20) + 40.0f, &id) == 0)
             return 0;
         s1.kind = 7;
         s1.ref = ai_CharsT[id].netId;
@@ -6564,7 +6569,7 @@ int ai_Unk49b7c0(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         if (!(ai_Partner && (ai_PickActionBuilding((AIPER *)ai_Partner, 4, mask.QuadPart, 0, 100.0f, &v), v != -1))
             && !ai_PickActionBuilding((AIPER *)p, 6, mask.QuadPart, 0, (float)util_RandomU(0x40), &v))
             return 0;
-    } else if (G8_4A58D0(p, n, flags, 0.0f, (float)util_RandomU(0x40), id) == 0) {
+    } else if (ai_PickPartnerChain((AIPER *)p, n, (int *)flags, 0.0f, (float)util_RandomU(0x40), id) == 0) {
         return 0;
     }
     switch (rp->item) {
@@ -9567,7 +9572,7 @@ int ai_RegisterBaseActions(int a)
     act.id = 0x1c;
     strcpy(act.name, "UseObject (Ansehen)");
     act.eval = ai_EvalMoodWeights;
-    act.decide = ai_Unk49a690;
+    act.decide = ai_DecideUseReputationObject;
     act.exec = ai_Unk49aa80;
     act.flags = 0x19;
     if (!am_RegisterMethod(&act, a))
@@ -10576,7 +10581,7 @@ void ai_FindWantedItems(G5CH *p, int n, G9REC *rec, int *st)
    ai_Partner first when 0x5c33c0 accepts it, then for each further slot the next ring entry (0x4a3a90) whose
    rating lies in [b, f] and that 0x5c33c0 accepts with the chain so far; ids into id[] */
 
-int ai_PickPartnerChain(AIPER *p, int a, int *flags, int b, float f, unsigned short *id)
+int ai_PickPartnerChain(AIPER *p, int a, int *flags, float b, float f, unsigned short *id)
 {
     unsigned int q[0x14];
     G6RING *e;
@@ -10613,7 +10618,7 @@ int ai_PickPartnerChain(AIPER *p, int a, int *flags, int b, float f, unsigned sh
                 }
                 if (e->who == 0)
                     return 0;
-                if (*(float *)&b <= e->dist && e->dist <= f
+                if (b <= e->dist && e->dist <= f
                     && ai_Unk5c33c0(*(unsigned short *)p, *(unsigned short *)e->who, q, 0) != 0) {
                     found = 1;
                     id[i] = *(unsigned short *)e->who;

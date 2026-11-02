@@ -1177,7 +1177,7 @@ int ai_DecideUnfriendlyPair(int a, AIPER *p, int c, int d, AIARG *m)
 
     flags[0] = PARTNER_FLAGS_ANY;
     flags[1] = PARTNER_FLAGS_ANY;
-    if (ai_PickPartnerChainF(p, 2, flags, 33.0f, (float)util_RandomU(0x18) + 77.0f, id) == 0)
+    if (ai_PickPartnerChain(p, 2, flags, 33.0f, (float)util_RandomU(0x18) + 77.0f, id) == 0)
         return 0;
     l1 = gm_Liking(id[0], id[1], 1);
     l2 = gm_Liking(id[1], id[0], 1);
@@ -1395,7 +1395,7 @@ int ai_DecideFarChar(int a, AIPER *p, int c, int d, unsigned char *m)
     if ((p->flags1cc & 0x80000) != 0)
         return 0;
     flags = ((unsigned)&cm_SendRing + 0x497bc0);
-    if (ai_PickPartnerChainF(p, 1, &flags, 20.0f, (float)util_RandomU(0x20) + 32.0f, &id) == 0)
+    if (ai_PickPartnerChain(p, 1, &flags, 20.0f, (float)util_RandomU(0x20) + 32.0f, &id) == 0)
         return 0;
     m[0] = 7;
     *(int *)(m + 4) = ((AIPER *)ai_CharsT)[id].netId;
@@ -2352,7 +2352,7 @@ int ai_DecideBlutrache(int a, AIPER *p, int c, AIARG *m, AIARG *m2)
     if (best == 0 || bestv == 0)
         return 0;
     flags = PARTNER_FLAGS_ANY;
-    if (ai_PickPartnerChainF(p, 1, (int *)&flags, 0.0f, (float)util_RandomU(0x20) + 25.0f, &id) == 0)
+    if (ai_PickPartnerChain(p, 1, (int *)&flags, 0.0f, (float)util_RandomU(0x20) + 25.0f, &id) == 0)
         return 0;
     o = &((AIPER *)ai_CharsT)[id];
     s = amt_GetKindLevel(o->officeKind) / 3 + 2;
@@ -2458,7 +2458,7 @@ int ai_Unk4ab7f0(int a, AIPER *p, int c, unsigned char *m)
     if (best == 0 || bestv == 0)
         return 0;
     flags = PARTNER_FLAGS_ANY;
-    if (ai_PickPartnerChainF(p, 1, (int *)&flags, 0.0f, (float)util_RandomU(0x20) + 25.0f, &id) == 0)
+    if (ai_PickPartnerChain(p, 1, (int *)&flags, 0.0f, (float)util_RandomU(0x20) + 25.0f, &id) == 0)
         return 0;
     o = &((AIPER *)ai_CharsT)[id];
     money = (int)(gm_SumListAmounts(*(int *)((unsigned char *)p + 0x178), ai_OwnPlayer) * 0.25f);
@@ -2597,7 +2597,7 @@ int ai_Unk4abd00(int a, AIPER *p, int c, unsigned char *m)
         if (b->type != 0 && b->owner == p->id && ai_BTypesT[b->type].kind == 0x1f
             && gm_Query(b->objList, 2, 6, 0, 0x276) != 0) {
             flags = PARTNER_FLAGS_ANY;
-            if (ai_PickPartnerChainF(p, 1, (int *)&flags, 0.0f, (float)util_RandomU(0x20) + 25.0f, &id) == 0)
+            if (ai_PickPartnerChain(p, 1, (int *)&flags, 0.0f, (float)util_RandomU(0x20) + 25.0f, &id) == 0)
                 return 0;
             o = &((AIPER *)ai_CharsT)[id];
             n = util_RandomU(p->money < 8 ? p->money : 8);

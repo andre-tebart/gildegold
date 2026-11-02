@@ -105,8 +105,6 @@ int ai_DecideTwoNearChars(int a, AIPER *p, int c, int d, unsigned char *m);     
 int ai_DecideNearChar(int a, AIPER *p, int c, int d, unsigned char *m);              /* 0x4a8d20 */
 int ai_DecideBuildingResident(int a, AIPER *p, int c, int d, struct AIARG *m);              /* 0x4a8db0 */
 int ai_EvalTitleGroup7(int a, AIPER *p);                                               /* 0x4a8ee0 */
-/* am.h declares ai_PickPartnerChain with an int b (really a float) */
-#define ai_PickPartnerChainF(p, a, fl, b, f, id) ((int (*)(AIPER *, int, int *, float, float, unsigned short *))ai_PickPartnerChain)(p, a, fl, b, f, id)
 int ai_DecideUnfriendlyPair(int a, AIPER *p, int c, int d, struct AIARG *m);              /* 0x4a8f20 */
 int ai_EvalGraveCount(int a, AIPER *p, int c, AIARG *m);                            /* 0x4a9030 */
 int ai_DecideAcquaintance(int a, AICHAR *p, int c, int d, AIARG *m);                     /* 0x4a9080 */

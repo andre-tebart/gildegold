@@ -217,7 +217,7 @@ int ai_Unk4973f0(float *a, float *b, int i, AIPER *p, int f, AIARG *o1, AIARG *o
 
 int ai_ChooseSubAction(int kind, int id, int c, AIARG *s1, AIARG *s2);                /* 0x495a50 */
 int ai_EvalGuiltWeights(float *a, float *b, int i, AIPER *p, struct AIDEC *d);                /* 0x4a4c10 */
-int ai_PickPartnerChain(AIPER *p, int a, int *flags, int b, float f, unsigned short *id); /* 0x4a58d0 */
+int ai_PickPartnerChain(AIPER *p, int a, int *flags, float b, float f, unsigned short *id); /* 0x4a58d0 */
 void cm_SendSetField(int a, int b, int c, int d, int e);                   /* 0x4c4a60 */
 void cm_SendMoneyDelta(int a, int b);                                               /* 0x4c5f60 */
 int amt_GetOfficeApplicants(int k, int n, char **out);                                   /* 0x4e76b0 */
@@ -668,7 +668,8 @@ typedef struct G5CH {                   /* a character, 0x21c bytes (ai_Chars[76
     unsigned short id;                  /* 0x000 */
     char pad002[2];
     unsigned int netId;                /* 0x004 */
-    char pad008[2];
+    char pad008;
+    unsigned char sex;                  /* 0x009, 0 male / 1 female */
     unsigned short age;                 /* 0x00a, the age in years (children above 11, below 40; 0x4fc7a0 projects the age at death from it) */
     char pad00c;
     unsigned char rank;                  /* 0x00d, the rank (ai.h AICHAR.b00d: gv_CheckRankUp sends it as the new rank) */
@@ -680,7 +681,9 @@ typedef struct G5CH {                   /* a character, 0x21c bytes (ai_Chars[76
     char pad133;
     AIARG arg1;                         /* 0x134 */
     AIARG arg2;                         /* 0x14c */
-    char pad164[4];
+    char pad164[2];
+    unsigned char officeKind;           /* 0x166, the kind of the office held, 0 = none */
+    char pad167;
     unsigned char appliedOffice;        /* 0x168, the office kind applied for, 0 = none (ai.h AICHAR) */
     char pad169[0xa7];
     int partner;                        /* 0x210 */
@@ -844,8 +847,7 @@ void ai_FindWantedItems(struct G5CH *p, int n, struct G9REC *rec, int *st);     
 int ai_Unk49a5b0(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49a5b0 */
 /* 0x5ba620 with an int id (the callers here zero-extend; unk_48e070.h: unsigned short) */
 #define G8_5BA620(id) ((void *(*)(int))ai_Unk5ba620)(id)
-int ai_Unk49a690(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49a690 */
-#define G8_4A58D0(p, a, fl, b, f, id)     ((int (*)(AIPER *, int, unsigned int *, float, float, unsigned short *))ai_PickPartnerChain)((AIPER *)(p), a, fl, b, f, id)  /* am.h: b is int */
+int ai_DecideUseReputationObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49a690 */
 int ai_Unk49aa80(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49aa80 */
 int ai_Unk49ab60(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49ab60 */
 int ai_Unk49ad80(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49ad80 */

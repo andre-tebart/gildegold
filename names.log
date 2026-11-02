@@ -785,3 +785,4 @@
 2026-11-02T07:10:58 0x0049a0a0 func ai_Unk49a0a0 -> ai_ExecuteCitizenship by:main why:registered as the execute callback of action 0x19 "Buergerrecht" (0x4a16f0): pays 16000 and raises the character to rank 2
 2026-11-02T07:12:09 0x0049a290 data ai_Unk49a290 -> ai_DecideSaveAps by:main why:registered as the decide callback of action 0x1a "ApsSparen" (0x4a16f0); Aps kept as the original spells it
 2026-11-02T07:14:17 0x0049a390 func ai_Unk49a390 -> ai_DecideUseMilitaryObject by:main why:registered as the decide callback of action 0x1b "UseObject (Military)" (0x4a16f0)
+2026-11-02T07:19:08 0x0049a690 func ai_Unk49a690 -> ai_DecideUseReputationObject by:main why:registered as the decide callback of action 0x1c "UseObject (Ansehen)" (0x4a16f0)
