@@ -20590,7 +20590,7 @@ unsigned char ai_BlackmailContactVariant(int param_1, int param_2)  /* @original
     return ai_AmountMenu(cfg, text, 0, (void *)ai_Unk5c9df0) != 0;
 }
 
-int gv_SetTableRecord(short *c, int i, int v);   /* 0x4f2750 */
+int gv_SetTableRecord(struct AICHAR *c, int i, int v);   /* 0x4f2750 */
 
 /* 0x5ca150, the law / privilege window "privillegien_gesetz" 0x62d518 (1019 B, ROUGH): param_1 is the
    message record (AIMSG: +2 the type, +4 the handle, +0x194 the amount), param_2 a record (dword +0: 3

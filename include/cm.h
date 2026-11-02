@@ -250,7 +250,7 @@ void ai_Unk4c5840(int a);                                                       
 void ai_Unk4c5870(int a);                                                        /* 0x4c5870 */
 int cm_SendApplication(char *p);                                                       /* 0x4c58a0 */
 int cm_SendOfficeRecord(char *p);                                                      /* 0x4c58e0 */
-void ai_Unk4c5930(char *p);                                                      /* 0x4c5930 */
+int cm_SendDecisionValue(char *p);                                                       /* 0x4c5930 */
 void ai_Unk4c5970(int a, int b, int c);                                          /* 0x4c5970 */
 void ai_Unk4c59b0(int a, unsigned char b);                                       /* 0x4c59b0 */
 void ai_Unk4c59f0(unsigned char a, int b, int c, unsigned char d, unsigned char e, unsigned char f, const char *s); /* 0x4c59f0 */

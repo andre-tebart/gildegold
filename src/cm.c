@@ -1765,15 +1765,15 @@ int cm_SendOfficeRecord(char *p)
     *(G17B15 *)m.data = *(G17B15 *)p;
     return ai_Unk4c39c0(&m);
 }
-/* 0x4c5930, message 0x46 (two ints, char of p) */
+/* 0x4c5930, sends message 0x46, an AI decision record's new value (the 9 bytes of p, a GVDECMSG of gv_SetTableRecord); the send's result */
 
-void ai_Unk4c5930(char *p)
+int cm_SendDecisionValue(char *p)
 {
     G17MSG m;
 
     m.type = 0x46;
     *(G17B9 *)m.data = *(G17B9 *)p;
-    ai_Unk4c39c0(&m);
+    return ai_Unk4c39c0(&m);
 }
 /* 0x4c5970, message 0x47 */
 

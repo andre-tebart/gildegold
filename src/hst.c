@@ -1340,7 +1340,6 @@ int ai_CommandOfficeInventoryPlus(int a, int b, char *fmt)
     return 1;
 }
 
-int gv_SetTableRecord(short *c, int i, int v);                                        /* 0x4f2750, sets the AI decision table record i of the character c to v (clamped) */
 
 /* 0x4b09f0, the GESETZ text command (callback 0x601b50[13], name 0x601070[13])
    "-RECHTSPRECHUNG_HAERTE_n" / "-AEMTEREINKOMMEN_n": sets the AI decision 0 / 15 to n, clamped to its range
