@@ -8797,29 +8797,36 @@ int ai_Unk4a01f0(G5CH *p, AIARG *s1, AIARG *s2)
     }
     return 0;
 }
-/* 0x4a0240, the nearest partner of character p */
+/* 0x4a0240, the character p likes least among its rivals: without an office the holders of an office whose
+   kind (of p's previous office) has level <= 1; with one the other applicants for its applied office (kept
+   only when the liking stays <= 8 * applicants + 52); else a partner-chain pick (0xc00, 25.0)
+   @deep read in full against the original and reconciled: AMTKIND / AMTREC buffers (kind.level <= 1, not
+   an uninitialised byte), amt_GetKind widened, the index loop (jl), list[i] re-read so the two gm_Liking
+   calls stay apart, the 8 * n + 52 test; ours=original=159 instructions. Left: stack slots only: the
+   original keeps flags (0xc00) and bd in p's parameter slot [esp+0x5c] and id in n's slot [esp+0x10]
+   (frame 0x48), ours gives them own slots (frame 0x50), so list[] sits at +0x1c vs +0x14 (the two 'code'
+   lines 0x4a0336 / 0x4a037f are that offset) and &flags / &id differ at 0x4a03b9 / 0x4a03c9 */
 
-G5CH *ai_Unk4a0240(G5CH *p)
+G5CH *ai_PickLeastLikedRival(G5CH *p)
 {
     G5CH *best = 0;
     G5CH *o;
     float d, bd;
-    unsigned int n;
-    int i;
+    int n, i;
     AIPER *list[5];
-    char key[8];
-    unsigned char info[16];
-    char out[24];
+    AMTKIND kind;
+    AMTREC office;
     unsigned short id;
     int flags;
 
-    if (((unsigned char *)p)[0x166] == 0) {
-        amt_GetKindB(((unsigned char *)p)[0x167], key);
-        for (o = G5_CHARS; o < G5_CHARS + 768; o++) {
-            if (((unsigned char *)o)[0x166] != 0 && amt_FindOffice(o, key, out) != 0 && info[0] < 2) {
+    if (p->officeKind == 0) {
+        amt_GetKind(p->prevOffice, &kind);
+        for (i = 0; i < 768; i++) {
+            o = &G5_CHARS[i];
+            if (o->officeKind != 0 && amt_FindOffice((char *)o, &kind, &office) != 0 && kind.level <= 1) {
                 if (best == 0) {
-                    bd = gm_Liking(p->id, o->id, 1);
                     best = o;
+                    bd = gm_Liking(p->id, o->id, 1);
                 } else {
                     d = gm_Liking(p->id, o->id, 1);
                     if (d < bd) {
@@ -8829,31 +8836,32 @@ G5CH *ai_Unk4a0240(G5CH *p)
                 }
             }
         }
-    } else {
-        if (p->appliedOffice != 0 && (n = amt_GetOfficeApplicants((char)p->appliedOffice, 5, list)) != 0) {
-            for (i = 0; i < (int)n; i++) {
-                o = (G5CH *)list[i];
-                if (o != p) {
-                    if (best == 0) {
-                        bd = gm_Liking(p->id, o->id, 1);
-                        best = o;
-                    } else {
-                        d = gm_Liking(p->id, o->id, 1);
-                        if (d < bd) {
-                            best = (G5CH *)list[i];
-                            bd = d;
-                        }
+        return best;
+    }
+    if (p->appliedOffice != 0 && (n = amt_GetOfficeApplicants(p->appliedOffice, 5, (char **)list)) != 0) {
+        for (i = 0; i < n; i++) {
+            if (list[i] != (AIPER *)p) {
+                if (best == 0) {
+                    best = (G5CH *)list[i];
+                    bd = gm_Liking(p->id, best->id, 1);
+                } else {
+                    d = gm_Liking(p->id, list[i]->id, 1);
+                    if (d < bd) {
+                        best = (G5CH *)list[i];
+                        bd = d;
                     }
                 }
             }
-            if (best != 0 && bd <= (float)(int)n * 8.0f + 52.0f)
-                return best;
         }
-        best = 0;
-        flags = 0xc00;
-        if (ai_PickPartnerChain((AIPER *)p, 1, &flags, 0, 25.0f, &id) != 0)
-            return &G5_CHARS[id];
+        if (best != 0) {
+            if (!((float)n * 8.0f + 52.0f < bd))
+                return best;
+            best = 0;
+        }
     }
+    flags = 0xc00;
+    if (ai_PickPartnerChain((AIPER *)p, 1, &flags, 0, 25.0f, &id) != 0)
+        return &G5_CHARS[id];
     return best;
 }
 /* 0x4a0410, a district for character p: few neighbours closer than 66 */
@@ -9000,7 +9008,7 @@ int ai_Unk4a0890(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         return 0;
     k = ((unsigned char *)p)[0x169];
     if (k == 0x1e) {
-        c = ai_Unk4a0240(p);
+        c = ai_PickLeastLikedRival(p);
         if (c == 0)
             return 0;
         o1->kind = 7;

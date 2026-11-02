@@ -690,7 +690,7 @@ typedef struct G5CH {                   /* a character, 0x21c bytes (ai_Chars[76
     AIARG arg2;                         /* 0x14c */
     char pad164[2];
     unsigned char officeKind;           /* 0x166, the kind of the office held, 0 = none */
-    char pad167;
+    unsigned char prevOffice;           /* 0x167, the office kind held before the current one (ai.h AICHAR) */
     unsigned char appliedOffice;        /* 0x168, the office kind applied for, 0 = none (ai.h AICHAR) */
     char pad169[0x7];
     AIBLDX *bld2;                       /* 0x170, its house (AIPER.bld2) */
@@ -774,7 +774,7 @@ extern int ai_Unk600350;                /* 0x600350, the step */
 extern unsigned int ai_Unk6f070c;       /* 0x6f070c, the number of entries */
 
 int ai_ExecuteDarkCorner(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49ee20 */
-G5CH *ai_Unk4a0240(G5CH *p);                                                    /* 0x4a0240 */
+G5CH *ai_PickLeastLikedRival(G5CH *p);                                                    /* 0x4a0240 */
 G6RING *ai_Unk4a3a90(void);                                                     /* 0x4a3a90 */
 int ai_Unk4a0410(G5CH *p);                                                      /* 0x4a0410 */
 int ai_DecidePriceManipulation(int a, G5CH *p, int f, AIARG *o1);                             /* 0x49fc90 */
