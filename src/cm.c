@@ -2140,15 +2140,16 @@ void ai_Unk4c6230(int *p)
     G17_I(m, 4) = p[1];
     ai_Unk4c39c0(&m);
 }
-/* 0x4c6260, message 0x67 (0x80 bytes of p) */
+/* 0x4c6260, sends message 0x67, the 0x80 bytes of p: cannon balls fired at a building (GVSHOTMSG, gv.c gv_SendShots; the receiver
+   starts them in the effect slot, gv.c 0x4eee00); returns what ai_Unk4c39c0 returns */
 
-void ai_Unk4c6260(void *p)
+int cm_SendShots(void *p)
 {
     G17MSG m;
 
     m.type = 0x67;
     memcpy(m.data, p, 0x80);
-    ai_Unk4c39c0(&m);
+    return ai_Unk4c39c0(&m);
 }
 /* 0x4c62a0, message 0x68: the route points pts (0x40 bytes each, next at +0x3c) of o as the long message */
 
@@ -12442,7 +12443,7 @@ int ai_Unk4dfa20(char *m)
                 ra = *(int *)(*(int *)(a + 0x170) + 1);
             else if (*(int *)(b + 0x170) != 0)
                 ra = *(int *)(*(int *)(b + 0x170) + 1);
-            unk_Unk4f2e30(0x14, 1, *(int *)(a + 4), *(int *)(b + 4), ra);
+            gv_Accuse(0x14, 1, *(int *)(a + 4), *(int *)(b + 4), ra);
         }
         return flag;
     }

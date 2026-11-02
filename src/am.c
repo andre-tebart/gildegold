@@ -10831,7 +10831,7 @@ int ai_Unk4a6ae0(AIPER *p, AIBLD *b)
             pa[2] = ai_Unk6f0698.a[2] + ai_Unk6f0698.b[2] * 50.0f;
             ai_InitShot(s1, pa, ai_Unk6f0698.b, f, c, ai_Unk5eee08);
             ai_ScatterShot(s1, u, ai_Unk6f0698.d, u, ai_Unk6f0698.c, v);
-            unk_Unk4eeb70(b, p, s1, 0, 0, unk_Unk4eef50(ai_Unk6f0698.kind, ai_Unk6f0698.k, 1), x, cost);
+            gv_FireShots(b, p, s1, 0, 0, unk_Unk4eef50(ai_Unk6f0698.kind, ai_Unk6f0698.k, 1), x, cost);
             return 1;
         }
         if (ai_Unk6f0698.charge == 2) {
@@ -10848,7 +10848,7 @@ int ai_Unk4a6ae0(AIPER *p, AIBLD *b)
             ai_InitShot(s1, pb, ai_Unk6f0698.b, f, c, ai_Unk5eee08);
             ai_ScatterShot(s2, u, ai_Unk6f0698.d, u, ai_Unk6f0698.c, v);
             ai_ScatterShot(s1, u, ai_Unk6f0698.d, u, ai_Unk6f0698.c, v);
-            unk_Unk4eeb70(b, p, s2, s1, 0, unk_Unk4eef50(ai_Unk6f0698.kind, ai_Unk6f0698.k, 2), x, cost);
+            gv_FireShots(b, p, s2, s1, 0, unk_Unk4eef50(ai_Unk6f0698.kind, ai_Unk6f0698.k, 2), x, cost);
             return 1;
         }
         if (ai_Unk6f0698.charge == 3) {
@@ -10871,7 +10871,7 @@ int ai_Unk4a6ae0(AIPER *p, AIBLD *b)
             ai_ScatterShot(s3, u, ai_Unk6f0698.d, u, ai_Unk6f0698.c, v);
             ai_ScatterShot(s1, u, ai_Unk6f0698.d, u, ai_Unk6f0698.c, v);
             ai_ScatterShot(s2, u, ai_Unk6f0698.d, u, ai_Unk6f0698.c, v);
-            unk_Unk4eeb70(b, p, s3, s1, s2, unk_Unk4eef50(ai_Unk6f0698.kind, ai_Unk6f0698.k, 3), x, cost);
+            gv_FireShots(b, p, s3, s1, s2, unk_Unk4eef50(ai_Unk6f0698.kind, ai_Unk6f0698.k, 3), x, cost);
             return 1;
         }
     }

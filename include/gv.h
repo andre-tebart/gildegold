@@ -4,6 +4,8 @@ struct D3SM;
 struct D3VECTOR;
 struct SNDHANDLE;
 struct SHOTREC;
+struct AIBLD;
+struct AICHAR;
 struct VFSFILE;
 struct D3OBJECT;
 /* Declarations of gv.c (0x4ed170.., the avatar table 0x60f310 and the effect slots 0x6f1008). Names are ours. */
@@ -182,13 +184,13 @@ void gv_UpdateEffects(void);               /* 0x4edf80 */
 void unk_Unk4eea70(char *o);             /* 0x4eea70 */
 int gv_ReserveEffect(int id);              /* 0x4eeaa0 */
 int gv_StopEffect(int id);              /* 0x4eeb00 */
-int unk_Unk4eeb70(char *o, int *c, int *a, int *b, int *d, float v, int n, int x);  /* 0x4eeb70 */
-char *unk_Unk4eedd0(int id);            /* 0x4eedd0 */
+int gv_FireShots(struct AIBLD *bld, struct AICHAR *ch, struct SHOTREC *a, struct SHOTREC *b, struct SHOTREC *d, float v, int cost, int x);  /* 0x4eeb70 */
+char *gv_GetEffect(int id);            /* 0x4eedd0 */
 int unk_Unk4eee00(int *p, int w);       /* 0x4eee00 */
 void unk_Unk4eeee0(int id, void *cb, void *arg);  /* 0x4eeee0 */
 float unk_Unk4eef50(int a, int b, int c);  /* 0x4eef50 */
 void unk_Unk4ef000(int n, int *out);    /* 0x4ef000 */
-int unk_Unk4f2e30();                     /* 0x4f2e30 */
+int gv_Accuse();                     /* 0x4f2e30 */
 void cm_SendMoneyDelta(int a, int b);                     /* 0x4c5f60 */
 extern unsigned char ai_OwnPlayer;      /* 0x6f1bc5 */
 void unk_Unk4ef170(char *o, unsigned *a, unsigned *b);  /* 0x4ef170 */
@@ -346,7 +348,7 @@ int ord_PrivilegeDialog(char *text, int mode, int arg);  /* 0x4f8200, the privil
 int gv_SetTableRecord(short *c, int i, int v);  /* 0x4f2750 */
 int unk_Unk4f27d0(int *p);              /* 0x4f27d0 */
 
-int unk_Unk4f2e30(int i, int v, int a, int b, int obj);  /* 0x4f2e30 */
+int gv_Accuse(int i, int v, int a, int b, int obj);  /* 0x4f2e30 */
 float util_RandomF(void);               /* 0x42ec20 */
 
 void unk_Unk4f1de0(char *o);            /* 0x4f1de0 */

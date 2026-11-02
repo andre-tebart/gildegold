@@ -2468,7 +2468,7 @@ void he_Unk541a80(int r)
 
 float gm_GetSkill(char *c, int skill);
 void gm_SendMoneyDelta(int a, int b);
-int unk_Unk4f2e30();
+int gv_Accuse();
 void ai_Unk5a8d00(int param_1);
 void ai_Unk5a8d40(int param_1);
 void ai_Unk5a8d80(int param_1, int param_2);
@@ -2510,7 +2510,7 @@ void he_Unk544070(int ev)
             t2 = *(int *)(t + 1);
         else
             t2 = -1;
-        unk_Unk4f2e30(3, 1, U_I((unsigned)&ai_CharInts + idx), *(int *)(ev + 0xbc), t2);
+        gv_Accuse(3, 1, U_I((unsigned)&ai_CharInts + idx), *(int *)(ev + 0xbc), t2);
         *(int *)(ev + 0xc4) = util_Random(0x300) & 0xffff;
         *(int *)(ev + 0xc8) = U_I((unsigned)&ai_Unk5ed100 + (util_Random(0x10) & 0xffff) * 4);
         *(float *)(ev + 0xd0) = gm_GetSkill((unsigned)&ai_Chars + *(unsigned short *)(ev + 8) * 0x21c, 4);
@@ -3035,7 +3035,7 @@ void he_Unk547750(int ev)
         r = *(int *)(b + 0x170);
     if (r != 0)
         x = *(int *)(r + 1);
-    unk_Unk4f2e30(4, 1, *(int *)(a + 4), *(int *)(b + 4), x);
+    gv_Accuse(4, 1, *(int *)(a + 4), *(int *)(b + 4), x);
     if (*(char *)(b + 2) == 6 || *(char *)(b + 2) == 7) {
         memset(msg, 0, sizeof(msg));
         *(int *)(msg + 8) = *(int *)(b + 4);
@@ -6623,7 +6623,7 @@ void he_Unk543020(int ev)
             if (t != 0)
                 id = *(int *)(t + 1);
         }
-        unk_Unk4f2e30(0x13, 1, *(int *)(ev + 0xb0), *(int *)(ev + 0xac), id);
+        gv_Accuse(0x13, 1, *(int *)(ev + 0xb0), *(int *)(ev + 0xac), id);
     }
 }
 /* 0x543180, a Ghidra miss (disassembled): the follow-up of the quarrel: tells b (news 0x175d, message 0x5fa) when flag 2 is set, then re-posts in 1 unit (state 0 only) */
@@ -7373,7 +7373,7 @@ void he_Unk545840(int ev)
     }
 }
 
-int unk_Unk4f2e30();
+int gv_Accuse();
 int unk_Unk4f4080();
 void gm_Shuffled(unsigned char n, int *out);
 void ai_Unk4c4f10(int a, int b, int c);
@@ -7671,7 +7671,7 @@ void he_Unk546c40(int ev)
             r = *(int *)(b + 0x170);
         if (r != 0)
             x = *(int *)(r + 1);
-        unk_Unk4f2e30(0x16, 1, *(int *)(a + 4), *(int *)(b + 4), x);
+        gv_Accuse(0x16, 1, *(int *)(a + 4), *(int *)(b + 4), x);
         cm_SendRelations(*(int *)(a + 4), *(int *)(b + 4), 0x34, 1);
         n = unk_Unk4f4080(*(int *)(b + 4), arr, *(unsigned short *)a);
         gm_Shuffled(n < 0x10 ? n : 0x10, sel);
@@ -10710,7 +10710,7 @@ void he_Unk558e70(int ev)
     *(int *)(ev + 0xc8) = ((int (*)(int, int, int, int, int, int, const char *))ai_Unk4c59f0)(0, *(int *)(ev + 0x10), -1, 0, 1, 0x174, "SABOTAGE");
 }
 
-int unk_Unk4f2e30();
+int gv_Accuse();
 void cm_SendProofExecuted(int a, int b);
 void cm_BeginGroup(const char *s);
 void cm_EndGroup(const char *s);
@@ -12890,7 +12890,7 @@ void he_Unk566830(int ev)
             rec[2] = ev;
             rec[3] = 0;
             if (he_Unk553ae0(rec) != 0) {
-                *(int *)(ev + 0xb4) = unk_Unk4f2e30(0x17, 1, *(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), *(int *)((unsigned)&ai_Chars + idx * 0x21c + 4), *(int *)(b + 1));
+                *(int *)(ev + 0xb4) = gv_Accuse(0x17, 1, *(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), *(int *)((unsigned)&ai_Chars + idx * 0x21c + 4), *(int *)(b + 1));
                 *(int *)(ev + 0xb8) = *(int *)(rec[3] + 4);
                 *(int *)(ev + 0xbc) = *(int *)(rec[3] + 0xb0);
                 *(int *)(ev + 0x70) = 3;
@@ -15731,7 +15731,7 @@ int he_Unk56f1b0(int a, int b, int c)
                 id = *(int *)(*(int *)(b + 0x16c) + 1);
             else
                 id = -1;
-            unk_Unk4f2e30(slot, 1, *(int *)(b + 4), *(int *)(a + 4), id);
+            gv_Accuse(slot, 1, *(int *)(b + 4), *(int *)(a + 4), id);
             return 1;
         }
     }
@@ -16172,7 +16172,7 @@ void he_Unk570130(int ev)
         r = HM_I(per, 4);
     else
         r = -1;
-    unk_Unk4f2e30(0x1b, 1, *(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), r, id);
+    gv_Accuse(0x1b, 1, *(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), r, id);
 }
 
 void ai_Unk5a9990(int param_1);                 /* 0x5a9990 */
@@ -17593,7 +17593,7 @@ void he_Unk5734b0(int ev)
         x = HM_I(x, 1);
     else
         x = -1;
-    unk_Unk4f2e30(0x1c, 1, HM_I(ev, 0xc), HM_I(per, 4), x);
+    gv_Accuse(0x1c, 1, HM_I(ev, 0xc), HM_I(per, 4), x);
     HM_I(ev, 0x84) = cm_SendExSetHE(0, ev);
 }
 

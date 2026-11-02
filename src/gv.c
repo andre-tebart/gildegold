@@ -855,67 +855,82 @@ found:
     gv_EffectsT[i].flags = 0;
     return 1;
 }
-/* 0x4eeb70, sends the explosion parts (a, b, d: 0x68-byte records, any may be 0) of the object o to the server: the message 0x4c6260 (id +1 of o, v, mode 1 / 2, the record); before the first one
-   the charge is taken (0x4f2e30 (8, 1, c[1], -1, -1), 0x4c5f60 (c[1], -n), 0x4c4830 (-1, c[1], player, x)); returns the answer or -1. ROUGH */
+typedef struct GVSHOTMSG {              /* 0x80 bytes, the data of message 0x67 (cm_SendShots): a cannon ball fired at a building; the receiver (0x4eee00) starts it as a part of the effect slot */
+    int id;                             /* 0x00, the building's id, the effect slot's id */
+    float v;                            /* 0x04, taken off the slot's fade value of the mode (only the first ball of a salvo carries it, then 0) */
+    int mode;                           /* 0x08, 0 one ball, 1 two, 2 three */
+    SHOTREC shot;                       /* 0x0c */
+    int pad74[3];
+} GVSHOTMSG;
 
-int unk_Unk4eeb70(char *o, int *c, int *a, int *b, int *d, float v, int n, int x)
+/* 0x4eeb70, fires up to three cannon balls (a, b, d: SHOTREC, b and d may be 0) of the character ch at the building bld: unless the
+   building's effect slot is busy (flag 2), the first ball pays (gm_SendMoneyDelta(-cost), cm_SendMoveGoodsUnchecked of x; the ball a
+   also files an accusation, gv_Accuse (8, 1, ch)), and each ball is sent as message 0x67 (GVSHOTMSG); returns the last answer, -1
+   when nothing was sent
+   @deep read the whole function against the original (slot busy test, mode by d / b, memset, the three
+   ball blocks with payment / accusation, the GVSHOTMSG fields and SHOTREC copies, v2 cleared after the
+   first ball, the return value of cm_SendShots); 167 vs 167 instructions. Left: slot assignment (v2 / mode
+   and first / r swapped: mov [esp+8] vs [esp+0xc], [esp+0x18] vs [esp+0x1c]) and in the first ball block
+   ours reads the parameter v where the original reads its copy v2 (mov ecx,[esp+0xe4] vs mov
+   ecx,[esp+0x40]): VC6 forwards v2 = v in ours, the copy stays a slot in the original; m.v / m.mode store
+   order follows from it ([esp+0x50] / [esp+0x54]). */
+
+int gv_FireShots(AIBLD *bld, AICHAR *ch, SHOTREC *a, SHOTREC *b, SHOTREC *d, float v, int cost, int x)
 {
+    float v2;
     int first;
-    char *s;
-    int m[32];
-    int mode, r, v2, i;
+    int r;
+    int mode;
+    char *e;
+    GVSHOTMSG m;
 
     v2 = v;
     first = 1;
     r = -1;
     mode = 0;
-    if (o != 0) {
-        s = unk_Unk4eedd0(*(int *)(o + 1));
-        if (s != 0 && (((unsigned char *)s)[4] & 2) == 0) {
-            if (d == 0) {
-                if (b != 0)
-                    mode = 1;
-            } else
+    if (bld != 0) {
+        e = gv_GetEffect(bld->id);
+        if (e != 0 && (((GVEFFECT *)e)->flags & 2) == 0) {
+            if (d != 0)
                 mode = 2;
-            memset(m, 0, 0x80);
+            else if (b != 0)
+                mode = 1;
+            memset(&m, 0, sizeof(m));
             if (a != 0) {
-                unk_Unk4f2e30(8, 1, c[1], -1, -1);
-                cm_SendMoneyDelta(c[1], -n);
-                cm_SendMoveGoodsUnchecked(-1, c[1], ai_OwnPlayer, x);
-                m[0] = *(int *)(o + 1);
-                m[2] = mode;
-                m[1] = v;
-                for (i = 0; i < 0x1a; i++)
-                    m[3 + i] = a[i];
+                gv_Accuse(8, 1, ch->netId, -1, -1);
+                gm_SendMoneyDelta(ch->netId, -cost);
+                cm_SendMoveGoodsUnchecked(-1, ch->netId, ai_OwnPlayer, x);
+                m.id = bld->id;
+                m.mode = mode;
+                m.v = v2;
+                m.shot = *a;
                 first = 0;
-                v2 = 0;
-                r = ((int (*)(int))ai_Unk4c6260)(m);
+                v2 = 0.0f;
+                r = cm_SendShots(&m);
             }
             if (b != 0) {
                 if (first) {
-                    cm_SendMoneyDelta(c[1], -n);
-                    cm_SendMoveGoodsUnchecked(-1, c[1], ai_OwnPlayer, x);
+                    gm_SendMoneyDelta(ch->netId, -cost);
+                    cm_SendMoveGoodsUnchecked(-1, ch->netId, ai_OwnPlayer, x);
                     first = 0;
                 }
-                m[0] = *(int *)(o + 1);
-                m[2] = mode;
-                m[1] = v2;
-                for (i = 0; i < 0x1a; i++)
-                    m[3 + i] = b[i];
-                v2 = 0;
-                r = ((int (*)(int))ai_Unk4c6260)(m);
+                m.id = bld->id;
+                m.mode = mode;
+                m.v = v2;
+                m.shot = *b;
+                v2 = 0.0f;
+                r = cm_SendShots(&m);
             }
             if (d != 0) {
                 if (first) {
-                    cm_SendMoneyDelta(c[1], -n);
-                    cm_SendMoveGoodsUnchecked(-1, c[1], ai_OwnPlayer, x);
+                    gm_SendMoneyDelta(ch->netId, -cost);
+                    cm_SendMoveGoodsUnchecked(-1, ch->netId, ai_OwnPlayer, x);
                 }
-                m[0] = *(int *)(o + 1);
-                m[1] = v2;
-                m[2] = mode;
-                for (i = 0; i < 0x1a; i++)
-                    m[3 + i] = d[i];
-                r = ((int (*)(int))ai_Unk4c6260)(m);
+                m.id = bld->id;
+                m.v = v2;
+                m.mode = mode;
+                m.shot = *d;
+                r = cm_SendShots(&m);
             }
             return r;
         }
@@ -924,7 +939,7 @@ int unk_Unk4eeb70(char *o, int *c, int *a, int *b, int *d, float v, int n, int x
 }
 /* 0x4eedd0, the effect slot of the id or 0 */
 
-char *unk_Unk4eedd0(int id)
+char *gv_GetEffect(int id)
 {
     int *p;
     int i;
@@ -959,7 +974,7 @@ int unk_Unk4eee00(int *p, int w)
     d = rec;
     for (i = 0x1a; i != 0; i--)
         *d++ = *s++;
-    e = unk_Unk4eedd0(id);
+    e = gv_GetEffect(id);
     if (e != 0) {
         j = 0;
         q = (int *)(e + 0x150);
@@ -997,7 +1012,7 @@ void unk_Unk4eeee0(int id, void *cb, void *arg)
     char *e;
 
     if (id != -1) {
-        e = unk_Unk4eedd0(id);
+        e = gv_GetEffect(id);
         if (e != 0) {
             if (cb != 0) {
                 *(void **)(e + 0x168) = cb;
@@ -2209,7 +2224,7 @@ int unk_Unk4f1170(char *o, int v, int b, int x, int y)
         *(int *)(m + 0x11) = x;
         *(int *)(m + 0xc) = v;
         *(int *)(m + 0x15) = y;
-        unk_Unk4f2e30(0x1b, 1, *(int *)(ai_Chars[ch] + 4), -1, *(int *)(m + 8));
+        gv_Accuse(0x1b, 1, *(int *)(ai_Chars[ch] + 4), -1, *(int *)(m + 8));
         return ((int (*)(void *))ai_Unk4c6130)(m);
     }
     return -1;
@@ -4145,7 +4160,7 @@ int unk_Unk4f27d0(int *p)
 /* 0x4f2e30, an accusation by the character a of the character b (obj) with the table record i and the value v: the record's rule (byte +0x18, by kind 1 .. 7) compares v with its limit (+0x14); when it holds and the school
    factor (0x4f2da0 of a) does not exceed a random float (0x42ec20) (and, with the skill 0x22a, a second one is above 0.5), the message 0x4c4e40 is sent (time, record byte, value, ids); -1 otherwise. ROUGH */
 
-int unk_Unk4f2e30(int i, int v, int a, int b, int obj)
+int gv_Accuse(int i, int v, int a, int b, int obj)
 {
     int rec[9];
     char *ca, *cb;

@@ -11913,7 +11913,7 @@ void ai_Unk5a5080(int param_1)
     } while (sv_RunFrame(ai_Unk5a5080, 0x67fff) != 0);
 }
 
-int ai_PickActionBuilding(struct AIPER *p, int a, __int64 mask, int c, float f, int *out); int unk_Unk4f2e30();
+int ai_PickActionBuilding(struct AIPER *p, int a, __int64 mask, int c, float f, int *out); int gv_Accuse();
 
 /* 0x5a5120, the kidnapping window "locations\diebesgilde\diebesgilde_entfuehrung" (698 B): param_1 the building
    (byte +0x1b1 a running attempt -> the text 0x19ba), the live character 0x520f90 (3, 0x770b80 + slot * 0x21c),
@@ -11993,7 +11993,7 @@ int ai_Unk5a5120(int param_1)
                 } else {
                     cm_SendLongMessage(msg);
                     cm_SendMoneyDelta(U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x21c), -3);
-                    unk_Unk4f2e30(0x1a, 1, U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x21c), U_I(param_1 + 4), -1);
+                    gv_Accuse(0x1a, 1, U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x21c), U_I(param_1 + 4), -1);
                     snd_PlayFavourComment();
                     sv_ClearSelection();
                     ret = 1;
@@ -22466,7 +22466,7 @@ int ai_Unk5cf8a0(int param_1, int *param_2)
             target = -1;
         else
             target = *(int *)(*(int *)(param_1 + 0x170) + 1);
-        unk_Unk4f2e30(*(int *)(rec + 8), 1, *(int *)(param_1 + 4), -1, target);
+        gv_Accuse(*(int *)(rec + 8), 1, *(int *)(param_1 + 4), -1, target);
     }
     if (*(char *)(param_1 + 2) == 6 && param_2[4] == 0) {
         h = ai_Unk5ba660(*param_2, &out);

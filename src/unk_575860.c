@@ -5532,7 +5532,7 @@ void ai_Unk57fdd0(char *rec, float *sc, char *run, float sel, int mask)
 }
 
 void unk_Unk4ef260(char *o, float *a, float *b); float unk_Unk4ef330(); void ai_Unk580a50(); int ai_InitShot(struct SHOTREC *shot, struct D3VECTOR *pos, struct D3VECTOR *dir, float charge, float size, float density);
-int ai_ScatterShot(struct SHOTREC *shot, float sideSpread, struct D3VECTOR *side, float otherSpread, struct D3VECTOR *other, float speedSpread); int unk_Unk4eeb70(char *o, int *c, int *a, int *b, int *d, float v, int n, int x); struct SBBANK; struct SBSAMPLE *sb_PlayVariation(struct SBBANK *bank, char *name, int idx, int loops, int pan, int volume, int fade); void ai_Unk580a90();
+int ai_ScatterShot(struct SHOTREC *shot, float sideSpread, struct D3VECTOR *side, float otherSpread, struct D3VECTOR *other, float speedSpread); int gv_FireShots(struct AIBLD *bld, struct AICHAR *ch, struct SHOTREC *a, struct SHOTREC *b, struct SHOTREC *d, float v, int cost, int x); struct SBBANK; struct SBSAMPLE *sb_PlayVariation(struct SBBANK *bank, char *name, int idx, int loops, int pan, int volume, int fade); void ai_Unk580a90();
 
 /* 0x580160, the cannon's explosion spawn (1173 B, ROUGH: the branch structure and the effect calls are written,
    the matrix arithmetic is a comment): sc = the scene struct, rec = the record. The two fields sc + 0xb0 / 0xb4

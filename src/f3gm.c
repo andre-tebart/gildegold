@@ -779,7 +779,7 @@ void unk_Unk4fb0e0(void)
             t = -1;
             if (*(int *)(c + 0x170) != 0)
                 t = *(int *)(*(int *)(c + 0x170) + 1);
-            m = unk_Unk4f2e30(2, r[6] == 0, *(int *)(c + 4), -1, t);
+            m = gv_Accuse(2, r[6] == 0, *(int *)(c + 4), -1, t);
             if (m != -1)
                 ai_Unk6f1b98++;
             if (*(float *)(c + 0x1d0) > 0.1)

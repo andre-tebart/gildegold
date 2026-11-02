@@ -280,7 +280,7 @@ void cm_SendCreateAlchemist(void *p);                                           
 void cm_SendCommand(void *p);                                                      /* 0x4c61b0 */
 void ai_Unk4c61f0(int *p, char *q);                                              /* 0x4c61f0 */
 void ai_Unk4c6230(int *p);                                                       /* 0x4c6230 */
-void ai_Unk4c6260(void *p);                                                      /* 0x4c6260 */
+int cm_SendShots(void *p);                                                      /* 0x4c6260 */
 void ai_Unk4c62a0(char *o, char *pts);                                           /* 0x4c62a0, rt.c's route points */
 void ai_Unk4c6320(char *o);                                                      /* 0x4c6320 */
 int ai_Unk4c6350(G17MSG *m);                                                     /* 0x4c6350, check of 0xf */
@@ -956,7 +956,7 @@ void ai_Unk4ded10(char *m);  /* 0x4ded10 */
 
 
 
-int unk_Unk4f2e30();  /* 0x4f2e30 */
+int gv_Accuse();  /* 0x4f2e30 */
 int ai_Unk4dfa20(char *m);  /* 0x4dfa20 */
 void ai_Unk4dfcb0(char *m);  /* 0x4dfcb0 */
 void ai_Unk4dfdd0(char *m);  /* 0x4dfdd0 */
