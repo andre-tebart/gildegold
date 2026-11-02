@@ -1011,39 +1011,23 @@ void unk_Unk4eeee0(int id, void *cb, void *arg)
         }
     }
 }
-/* 0x4eef50, the sum of c (1 .. 3) terms t, t / 2, t / 4: t = (a + 1) * (b * 0.25 + 25) * 0.002 + 0.1 with a clamped to 0 .. 4 and b to 0 .. 100 */
+/* 0x4eef50, the charge a salvo of c balls (1 .. 3) takes off its effect slot (gv_FireShots' v, am.c): the sum of the c terms t, t / 2,
+   t / 4 with t = (a + 1) * (b * 0.25 + 25) * 0.002 + 0.1, a (the cannon's kind) clamped to 0 .. 4 and b to 0 .. 100 */
 
-float unk_Unk4eef50(int a, int b, int c)
+float gv_SalvoCharge(int a, int b, int c)
 {
-    int k;
-    float sum, t;
+    int k, lvl;
+    float bt, sum, t;
 
-    if (a < 4) {
-        if (a < 1)
-            a = 0;
-    } else
-        a = 4;
-    k = a + 1;
-    if (b < 100) {
-        if (b < 1)
-            a = 0;
-        else
-            a = b;
-    } else
-        a = 100;
-    if (c < 3) {
-        if (c < 2)
-            c = 1;
-    } else
-        c = 3;
+    k = max(min(a, 4), 0) + 1;
+    lvl = max(min(b, 100), 0);
+    bt = (float)lvl * 0.25f + 25.0f;
+    c = max(min(c, 3), 1);
+    t = (float)k * bt * 0.002f + 0.1f;
     sum = 0.0f;
-    if (c > 0) {
-        t = (float)k * ((float)a * 0.25f + 25.0f) * 0.002f + 0.1f;
-        do {
-            sum = sum + t;
-            t = t * 0.5f;
-            c--;
-        } while (c != 0);
+    for (; c > 0; c--) {
+        sum = sum + t;
+        t = t * 0.5f;
     }
     return sum;
 }

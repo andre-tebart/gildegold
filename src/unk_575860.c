@@ -5371,7 +5371,7 @@ void ai_Unk57f690(char *sc)
     }
 }
 
-float unk_Unk4eef50(); void unk_Unk4ef170(char *o, unsigned *a, unsigned *b); int unk_Unk4ef090(); float ai_GetDefaultEffectScale();
+float gv_SalvoCharge(); void unk_Unk4ef170(char *o, unsigned *a, unsigned *b); int unk_Unk4ef090(); float ai_GetDefaultEffectScale();
 int _ftol(); float ai_Unk57fdb0(); int d2_CreateWinText(); void d2_SetObjFont();  /* @original: the call at 4110 passes 1 argument to d2.h's 4-parameter prototype */
 void txt_Format(char *out, int id0, ...); int gm_Unk509ee0(char *c, char p);
 
@@ -5403,7 +5403,7 @@ void ai_Unk57f890(char *rec, char *sc, char *run)
 
     a = d2_GetObjValue(*(int *)(sc + 0xb0));
     b = d2_GetObjValue(*(int *)(sc + 0xb4));
-    c = (int)unk_Unk4eef50(a, b, 1);
+    c = (int)gv_SalvoCharge(a, b, 1);
     unk_Unk4ef170(rec, (int *)(sc + 0xdc), (int *)(sc + 0xe0));
     n = *(int *)(sc + 0xe0);
     if (n < a)
