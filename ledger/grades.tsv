@@ -2237,7 +2237,7 @@ exe	0x004c5970	ai_Unk4c5970	cm	byte	draft
 exe	0x004c59b0	ai_Unk4c59b0	cm	byte	draft		
 exe	0x004c59f0	ai_Unk4c59f0	cm	draft	draft		
 exe	0x004c5a70	ai_Unk4c5a70	cm	byte	draft		
-exe	0x004c5aa0	ai_Unk4c5aa0	cm	byte	draft		
+exe	0x004c5aa0	cm_SendChat	cm	byte	draft		
 exe	0x004c5ae0	cm_RequestCreateGeb	cm	draft	draft		
 exe	0x004c5b90	ai_Unk4c5b90	cm	byte	draft		
 exe	0x004c5bc0	ai_Unk4c5bc0	cm	byte	draft		
@@ -3415,17 +3415,17 @@ exe	0x0052fa00	sv_BookBack	sv	byte	readable
 exe	0x0052fa10	sv_CreateScrollForm	sv	byte	draft		
 exe	0x0052fa90	sv_DestroyScrollForm	sv	byte	draft		
 exe	0x0052fad0	sv_Unk52fad0	sv	byte	draft		
-exe	0x0052fb50	sv_PopTo	sv	draft	draft		
+exe	0x0052fb50	sv_PopTo	sv	byte	readable		
 exe	0x0052fb80	sv_PumpMessages	sv	byte	draft		
-exe	0x0052fc10	sv_NetworkSyncWait	sv	draft	draft		
-exe	0x0052fcf0	sv_BroadcastText	sv	draft	readable		
+exe	0x0052fc10	sv_NetworkSyncWait	sv	byte	readable		
+exe	0x0052fcf0	sv_BroadcastText	sv	byte	readable		
 exe	0x0052fd80	sv_Unk52fd80	sv	byte	draft		
 exe	0x0052fe00	sv_PumpNet	sv	byte	readable		
-exe	0x0052fe10	sv_Unk52fe10	sv	draft	draft		
-exe	0x00530100	sv_Unk530100	sv	draft	draft		
-exe	0x005301a0	sv_Unk5301a0	sv	draft	draft		
-exe	0x00530670	sv_Unk530670	sv	draft	draft		
-exe	0x005307f0	sv_Unk5307f0	sv	draft	draft		
+exe	0x0052fe10	sv_ChatConsole	sv	byte	readable		
+exe	0x00530100	sv_UpdateQuickChat	sv	shape	readable		
+exe	0x005301a0	sv_UpdateWeather	sv	shape	readable		
+exe	0x00530670	sv_WeatherFrame	sv	draft	readable	deep	
+exe	0x005307f0	sv_AdvanceGame	sv	shape	readable		
 exe	0x00530900	sv_SetScreenCenter	sv	draft	draft		
 exe	0x005309a0	sv_RunFrame	sv	draft	draft		
 exe	0x005315c0	sv_UpdateClock	sv	byte	draft		

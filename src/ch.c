@@ -5,7 +5,7 @@
    Open: no evidenced role / type yet for fields and globals the action and walk code share: CH_UNK080
    (D3ANIMDATA *next, but ch_TakingObject prints it with %s), CH_ACTOBJ.unk170 / unk174 (a room id or an
    animation, per action), u.walk.unk0fc (written -1, never read), CHARACTER.unk1a0, ch_Unk631058 /
-   ch_Unk631060, cm_SpeedFactor, ch_Unk402540.
+   ch_Unk631060, ch_Unk402540. cm_SpeedFactor (0x5f1290, the game speed factor) is defined here under cm's name.
    Open: D3OBJ_UNK200 reads D3OBJECT.owner (d3.h, the game record of the object) as the int d3_WriteObject
    saves and rd_object restores (the item pointer of the sprite spawners).
    Open: not included yet (dcp headers conflicts ch HEADER): sv.h; held by calls whose argument count differs

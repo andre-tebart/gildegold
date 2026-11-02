@@ -7,10 +7,10 @@
    This blocks Q4 / Q7 of every function that touches widgets or calls a K&R d2 / gfx prototype.
    Open: head: include/gfx.h, include/d2.h unsettled (d2_Objs / d2_LastWindowPtr char *, d2_AddHitRect and
    d2_BlitPartMode K&R; 39 K&R d2 prototypes whose calls need a re-grade); also not included: cm.h (the same
-   d2_Objs / d2_LastWindowPtr clash; the cm_SendChr* calls stay without a prototype), f3snd.h rt.h sblib.h
+   d2_Objs / d2_LastWindowPtr clash; the cm_SendChr* / cm_GetSlotState calls stay without a prototype), f3snd.h rt.h sblib.h
    unk_5d33b0.h (d2_Wins is declared in the head as D2WIN[], the D2OBJ fields through ((D2OBJ *)d2_Objs)[i]).
-   Calls whose argument count differs from the definition (read the original's pushes): sb_PlaySample,
-   d2_SetObjValue, d2_PlaceMainWindow. The
+   Calls whose argument count differs from the definition (read the original's pushes): sb_PlaySample (sblib.h:
+   6 calls to re-grade), d2_SetObjValue, d2_PlaceMainWindow. The
    @original cast macros (d2_PutPixelRGBc, d2_CreatePicObjS, d2_WinOpenPicStyledS, d2_OpenFormS, d2_SetObjValue4,
    ai_SwitchRoomI, cm_SendExSetHEI) record the parameter types the original's calls show.
    Open: data: 0x623ac0 sv_SkyHeavy, owner sv or cm (defined in cm.c as char[], lies in sv's data block between
