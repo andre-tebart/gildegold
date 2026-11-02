@@ -39,6 +39,7 @@ extern D2RADIO d2_Radios[];
 #include "di_input.h"
 #include "evt.h"
 #include "data_views.h"
+#include "ai.h"
 #define GAPDATA __declspec(align(1)) unsigned char
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
@@ -338,7 +339,6 @@ extern GAPDATA full_data_62a474[];
 extern GAPDATA full_data_62a488[];
 extern GAPDATA full_data_62a4a8[];
 extern int sv_PopRequest;
-extern char ai_Chars[768][0x21c];
 extern unsigned short ai_PlayerId;
 extern int d2_PointerObj;
 extern int d2_ClickedId;
@@ -453,13 +453,11 @@ extern GAPDATA full_data_62a69c[];
 extern GAPDATA full_data_62a6b8[];
 extern GAPDATA full_data_62a6dc[];
 extern char ai_Chars[768][0x21c];
-extern unsigned char ai_OwnPlayer;
 extern int d2_ClickedId;
 extern int d2_LastWindow;
 extern GAPDATA full_data_62a5bc[];
 extern GAPDATA full_data_62a6f8[];
 extern GAPDATA full_data_62a70c[];
-extern char ai_Time[14];
 extern unsigned char ai_TimeHour;
 extern int d2_PointerObj;
 extern const int sv_PhaseMinutes[24];
