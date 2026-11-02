@@ -10623,13 +10623,21 @@ int ai_ExecBuildBuilding(AIPER *p, AIARG *s1, AIARG *s2)
 }
 /* 0x4a5540: the first good of building type b->type that b's store does not hold yet while it holds both of its
    two ingredients (slot 0x40 + 2i, 0x41 + 2i); goods of kind 2 / 6 need a free cart (list 4) or one carrying it.
-   *item gets the good, *obj the cart's id (-1 for none) */
+   *item gets the good, *obj the cart's id (-1 for none)
+   @deep read against the original: the slot loop (for over nslots, unsigned short ingredients
+   in[-1]/in[0], the '!' skip), the two cart queries (kinds 2 and 6, count of non-0xfd carts against the
+   type's cart cap at +0x21), the found -> list/cart, the three store queries and the *item/*obj results
+   all match; fixed the slot loop form (jbe), unsigned ingredients, o->list / cart->objId. Left: order hunk
+   at +0x35 (prologue stores), the goods kind load 'mov al,[eax+ebx]' vs the original's 'add eax,ebx; mov
+   al,[eax]' (same address, tried the char-pointer spelling: identical code), and the kind-6 cart loop
+   which the original leaves unrotated (jmp back to test eax,eax at +0xf8) where ours rotates (test/jne at
+   +0x10e); tried while, for(;;)-break, goto, combined-condition forms: VC6 gives the same code for all */
 
 int ai_FindGoodToMake(int *item, int *obj, AIBLD *b, int f)
 {
     AIBTYPE *t;
     unsigned short *s;
-    short *in;
+    unsigned short *in;
     AIOBJ *o, *cart;
     int list, n, i, found;
     char k;
@@ -10637,59 +10645,51 @@ int ai_FindGoodToMake(int *item, int *obj, AIBLD *b, int f)
     list = b->objList;
     t = &ai_BTypesT[b->type];
     cart = 0;
-    i = 0;
-    if (t->nslots == 0)
-        return 0;
-    in = (short *)&t->slot[0x41];
+    in = &t->slot[0x41];
     s = t->slot;
-    do {
+    for (i = 0; i < t->nslots; i++, s++, in += 2) {
         k = ai_GoodsT[*s & 0x7fff].type;
-        if (k != '!') {
-            if (k == 2 || k == 6) {
-                n = 0;
-                found = 0;
-                cart = 0;
-                for (o = gm_Query(b->objList, 1, 4, 2); o != 0; o = gm_QueryNext()) {
-                    if (o->id != 0xfd)
-                        n++;
-                    if (o->id == (*s & 0x7fff)) {
-                        list = *(int *)((unsigned short *)o + 10);
-                        found = 1;
-                        cart = o;
-                        break;
-                    }
-                }
-                if (n < (unsigned char)t->pad001[0x20] && !found) {
-                    for (o = gm_Query(b->objList, 1, 4, 6); o != 0; o = gm_QueryNext()) {
-                        if (o->id == (*s & 0x7fff)) {
-                            list = *(int *)((unsigned short *)o + 10);
-                            found = 1;
-                            cart = o;
-                            break;
-                        }
-                    }
-                    if (n < (unsigned char)t->pad001[0x20] && !found)
-                        goto check;
-                }
-            } else {
-check:
-                if (gm_Query(list, 1, 0, *s & 0x7fff) == 0
-                    && (in[-1] == 0 || gm_Query(list, 1, 0, in[-1]) != 0)
-                    && (in[0] == 0 || gm_Query(list, 1, 0, in[0]) != 0)) {
-                    *item = t->slot[i] & 0x7fff;
-                    if (cart != 0) {
-                        *obj = *(int *)((unsigned short *)cart + 1);
-                        return 1;
-                    }
-                    *obj = -1;
-                    return 1;
+        if (k == '!')
+            continue;
+        if (k == 2 || k == 6) {
+            n = 0;
+            found = 0;
+            cart = 0;
+            for (o = gm_Query(b->objList, 1, 4, 2); o != 0; o = gm_QueryNext()) {
+                if (o->id != 0xfd)
+                    n++;
+                if (o->id == (*s & 0x7fff)) {
+                    list = o->list;
+                    found = 1;
+                    cart = o;
+                    break;
                 }
             }
+            if (n >= (unsigned char)t->pad001[0x20] || found)
+                continue;
+            for (o = gm_Query(b->objList, 1, 4, 6); o != 0; o = gm_QueryNext()) {
+                if (o->id == (*s & 0x7fff)) {
+                    list = o->list;
+                    found = 1;
+                    cart = o;
+                    break;
+                }
+            }
+            if (n >= (unsigned char)t->pad001[0x20] || found)
+                continue;
         }
-        in += 2;
-        i++;
-        s++;
-    } while (i < t->nslots);
+        if (gm_Query(list, 1, 0, *s & 0x7fff) == 0
+            && (in[-1] == 0 || gm_Query(list, 1, 0, in[-1]) != 0)
+            && (in[0] == 0 || gm_Query(list, 1, 0, in[0]) != 0)) {
+            *item = t->slot[i] & 0x7fff;
+            if (cart != 0) {
+                *obj = cart->objId;
+                return 1;
+            }
+            *obj = -1;
+            return 1;
+        }
+    }
     return 0;
 }
 /* 0x4a5760: for n wanted items rec[i].item, finds them in the character's inventory list (0x178, next at 0x3f;
