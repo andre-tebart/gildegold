@@ -2919,22 +2919,24 @@ float gm_MapDistance(int a, int b, int c, int d)
 {
     return (float)(sqrt(fabs((double)a - (double)c) * fabs((double)a - (double)c) + fabs((double)b - (double)d) * fabs((double)b - (double)d)) * 2.90816330909729);
 }
-/* 0x4fffc0, the first free record of the object instance table (0x5008 records of 0x43 bytes), 0 when it is full */
+/* 0x4fffc0, the first free record (prototype 0) of the object instance table ai_Objects (0x5008 records of 0x43 bytes), 0 when it is full */
 
 short *gm_FindFreeObject(void)
 {
     int i;
-    short *p;
+    ORDOBJ *p, *res;
 
+    res = 0;
     i = 0;
-    p = (short *)ai_Objects;
-    while (i <= 0x5007) {
-        if (*p == 0)
-            return p;
-        i++;
-        p = (short *)((char *)p + 0x43);
+    p = (ORDOBJ *)ai_Objects;
+    while (res == 0 && i < 0x5008) {
+        if (p->type != 0) {
+            i++;
+            p++;
+        } else
+            res = p;
     }
-    return 0;
+    return (short *)res;
 }
 /* 0x4ffff0, removes the object instance with the prototype id from the singly linked list whose head pointer is *list (the next pointer sits at +0x3f of each node): frees its extra part (0x500140 of the pointer at +0x14), the node itself (0x500080), relinks, marks the record free and decrements the count 0x6f1bdc. Returns 0, -1 for an empty list, -2 when not found */
 
