@@ -1213,16 +1213,16 @@ void cm_SendSetField(int a, int b, int c, int d, int e)
     G17_I(m, 0x10) = e;
     ai_Unk4c39c0(&m);
 }
-/* 0x4c4ac0, message 0x1a */
+/* 0x4c4ac0, sends message 0x1a: adds delta to the float field at the offset field of the character with the netId id */
 
-void ai_Unk4c4ac0(int a, int b, int c)
+void cm_SendFloatDelta(int id, int field, float delta)
 {
     G17MSG m;
 
-    G17_I(m, 0) = a;
+    G17_I(m, 0) = id;
     m.type = 0x1a;
-    G17_I(m, 4) = b;
-    G17_I(m, 8) = c;
+    G17_I(m, 4) = field;
+    *(float *)&m.data[8] = delta;
     ai_Unk4c39c0(&m);
 }
 /* 0x4c4b00, message 0x1b */

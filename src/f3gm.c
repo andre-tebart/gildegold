@@ -571,7 +571,7 @@ void unk_Unk4faa00(void)
             q = 1.0f - (float)a / (float)top;
             cm_SendFieldDeltas();
             ai_Unk6f1b98++;
-            ai_Unk4c4ac0(*(int *)(c + 4), 0x1e4, -(*(float *)(c + 0x1e4) - ((float)lim + q) * 0.5));
+            cm_SendFloatDelta(*(int *)(c + 4), 0x1e4, -(*(float *)(c + 0x1e4) - ((float)lim + q) * 0.5));
             q = -(*(float *)(c + 0xb4) - *(float *)(c + 0xb4) * 0.95);
             ai_Unk4c3e70(c);
             ai_Unk4c3eb0(3, q);
@@ -726,7 +726,7 @@ int unk_Unk4fae50(char *b, int *out)
                     cm_SendMoveGoodsUnchecked(-1, *(int *)(c + 4), ai_OwnPlayer, v);
                     n++;
                     if (*(float *)(c + 0x1d0) < 0.95 && 0.05 < *(float *)(c + 0x1d0))
-                        ai_Unk4c4ac0(*(int *)(c + 4), 0x1d0, lo);
+                        cm_SendFloatDelta(*(int *)(c + 4), 0x1d0, lo);
                     if (out[2] != 0) {
                         gm_Mix(u, c, 4);
                         cm_SendRelations(*(int *)(out[2] + 4), *(int *)(c + 4), (int)lo, 1);
@@ -757,7 +757,7 @@ void unk_Unk4fb0e0(void)
             c = ai_Chars[i];
             if (*(short *)c != -1 && (unsigned char)c[2] < 10 && c[2] != 0 && c[2] != 6 && c[2] != 7 && c[2] != 8 && *(unsigned short *)(c + 10) > 0xb && *(float *)(c + 0x1d0) < util_RandomF2() * 0.2) {
                 loc = c[0xc] == 0;
-                ai_Unk4c4ac0(*(int *)(c + 4), 0x1d0, (float)(util_RandomF2() * 0.5 + 0.25));
+                cm_SendFloatDelta(*(int *)(c + 4), 0x1d0, (float)(util_RandomF2() * 0.5 + 0.25));
                 ai_Unk6f1b98++;
                 cm_BeginFieldBlock(c, *(int *)(c + 4));
                 cm_AddFieldDelta(1, 1, 0xc, &loc);
@@ -783,7 +783,7 @@ void unk_Unk4fb0e0(void)
             if (m != -1)
                 ai_Unk6f1b98++;
             if (*(float *)(c + 0x1d0) > 0.1)
-                ai_Unk4c4ac0(*(int *)(c + 4), 0x1d0, -0.1f);
+                cm_SendFloatDelta(*(int *)(c + 4), 0x1d0, -0.1f);
             ai_Unk6f1b98++;
             if (ai_Unk6f1b98 > 0x40) {
                 sv_PumpNet();
@@ -1482,7 +1482,7 @@ void gm_AgeCharacter(char *c, unsigned short age)
         } else {
             d = *(float *)(c + 0x18) - *(float *)(c + 0x1c);
         }
-        ai_Unk4c4ac0(*(int *)(c + 4), 0x1c, d);
+        cm_SendFloatDelta(*(int *)(c + 4), 0x1c, d);
         cm_BeginFieldBlock(c, *(int *)(c + 4));
         cm_AddFieldDelta(2, 1, 10, &age);
         cm_SendFieldDeltas();
@@ -1615,7 +1615,7 @@ float gm_AddHealth(unsigned id, int d)
             G_MSG72(m, c);
             return 0.0f;
         }
-        ai_Unk4c4ac0(*(int *)(c + 4), 0x1c, a);
+        cm_SendFloatDelta(*(int *)(c + 4), 0x1c, a);
         return fc;
     }
     a = (float)*(unsigned short *)(c + 10);
@@ -1711,7 +1711,7 @@ void unk_Unk4fccc0(char *c)
         return;
     o = gm_FindChar(*(int *)(c + 0x5c));
     if (1.0 < *(float *)(c + 0x7c)) {
-        ai_Unk4c4ac0(*(int *)(c + 4), 0x7c, (float)(util_RandomF2() * -0.5 - *(float *)(c + 0x7c)));
+        cm_SendFloatDelta(*(int *)(c + 4), 0x7c, (float)(util_RandomF2() * -0.5 - *(float *)(c + 0x7c)));
         ai_Unk6f1b98++;
         if (o == 0)
             return;
@@ -1816,7 +1816,7 @@ void unk_Unk4fccc0(char *c)
                     return;
             }
             fv = (float)((util_RandomF2() + 1.0) * ai_Unk617734[cnt]);
-            ai_Unk4c4ac0(*(int *)(c + 4), 0x7c, fv);
+            cm_SendFloatDelta(*(int *)(c + 4), 0x7c, fv);
             ai_Unk6f1b98++;
         }
     }
@@ -7298,7 +7298,7 @@ unsigned gm_Unk5064d0(int a, int b)
 int gm_EquipmentValue(unsigned char *b, int unused);                     /* 0x509b10 */
 int gm_Unk509eb0();                     /* 0x509eb0 */
 void ai_Unk4c5010(int a, int b, int c);                     /* 0x4c5010 */
-void ai_Unk4c4ac0(int a, int b, int c);                     /* 0x4c4ac0 */
+void cm_SendFloatDelta(int id, int field, float delta);                     /* 0x4c4ac0 */
 void cm_SendMoveGoods(int a, int b, unsigned char c, int d);                     /* 0x4c47e0 */
 int gm_PlayerFactor(int a, unsigned char k);                     /* 0x5085f0 */
 float util_RandomSq(void);                  /* 0x42ec40 */
@@ -7536,11 +7536,11 @@ void gm_Unk506e70(unsigned short *c, char *out, int flag)
         cm_AddFieldDelta(1, 1, (char *)c - cm_FieldObject + 0x1b1, &z3);
         cm_SendSetField(*(int *)(c + 2), 0x1c8, 4, ((unsigned)&ai_Relations + 0x1aca0), 0);
         cm_SendFieldDeltas();
-        ai_Unk4c4ac0(*(int *)(c + 2), 0x7c, -*(float *)(c + 0x3e));
-        ai_Unk4c4ac0(*(int *)(c + 2), 0x14, (float)(util_RandomSq() * 7.0 + 30.0 - *(float *)(c + 10)));
-        ai_Unk4c4ac0(*(int *)(c + 2), 0x1c, 1000.0f - *(float *)(c + 0xe));
-        ai_Unk4c4ac0(*(int *)(c + 2), 0x18, 1000.0f - *(float *)(c + 0xc));
-        ai_Unk4c4ac0(*(int *)(c + 2), 0x20, 12.0f - *(float *)(c + 0x10));
+        cm_SendFloatDelta(*(int *)(c + 2), 0x7c, -*(float *)(c + 0x3e));
+        cm_SendFloatDelta(*(int *)(c + 2), 0x14, (float)(util_RandomSq() * 7.0 + 30.0 - *(float *)(c + 10)));
+        cm_SendFloatDelta(*(int *)(c + 2), 0x1c, 1000.0f - *(float *)(c + 0xe));
+        cm_SendFloatDelta(*(int *)(c + 2), 0x18, 1000.0f - *(float *)(c + 0xc));
+        cm_SendFloatDelta(*(int *)(c + 2), 0x20, 12.0f - *(float *)(c + 0x10));
         cm_BeginFieldBlock(c, *(int *)(c + 2));
         for (i = 0; i < 5; i++) {
             z3 = 0;

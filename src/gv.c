@@ -2303,11 +2303,11 @@ int unk_Unk4f1660(char *c)
     if (c != 0 && c[2] == 0x14 && c[8] != 0) {
         o = *(char **)(c + 0x16c);
         if (o == 0 || *(short *)(o + 0x27) == -1 || *(unsigned short *)(o + 0x27) == *(unsigned short *)ai_PlayerCharC) {
-            ai_Unk4c4ac0(*(int *)(c + 4), 0x1c, 0xc47a0000);
+            cm_SendFloatDelta(*(int *)(c + 4), 0x1c, -1000.0f);
         } else {
             owed = *(float *)(c + 0x14) - unk_Unk4f16f0(o) * 50.0f;
             rest = *(float *)(c + 0x1c) - owed;
-            ai_Unk4c4ac0(*(int *)(c + 4), 0x1c, -owed);
+            cm_SendFloatDelta(*(int *)(c + 4), 0x1c, -owed);
             if (rest > 0.0f)
                 return 0;
         }

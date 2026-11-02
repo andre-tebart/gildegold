@@ -2665,7 +2665,7 @@ int gv_EntryIndex(char *r, int *e);
 int gv_OrderSetGraveHolder();
 int ai_Unk4c4fa0(void *p);
 void cm_SendRelations(int a, int b, int c, int d);
-void ai_Unk4c4ac0(int a, int b, int c);
+void cm_SendFloatDelta(int id, int field, float delta);
 
 #define HE_W(p) (*(unsigned short *)(p))
 #define HE_END(b) ((b) + strlen(b))
@@ -2824,7 +2824,7 @@ void he_Unk544840(int ev)
                     who = b;
                 txt_Format(buf3, 0x1d31, HE_W(b));
                 he_ShowNews(*(int *)(a + 4), *(int *)(a + 4), buf3, 0, 0x5f4, (char *)0);
-                ai_Unk4c4ac0(*(int *)(who + 4), 0x7c, 1.1f - *(float *)(who + 0x7c));
+                cm_SendFloatDelta(*(int *)(who + 4), 0x7c, 1.1f - *(float *)(who + 0x7c));
             }
             if (unk_Unk4f25d0(b, &x1, &x2) != 0)
                 gv_OrderSetGraveHolder(0, x1, *(int *)x2, gv_EntryIndex(*(int *)(x1 + 0x65), x2));
@@ -16000,14 +16000,14 @@ void he_Unk56fbc0(int rec, unsigned short num)
         return;
     fnum = (float)num;
     if (fnum <= *(float *)(rec + 0x20)) {
-        ((int (*)(int, int, float))ai_Unk4c4ac0)(*(int *)(rec + 4), 0x1c, *(float *)(rec + 0x18) - *(float *)(rec + 0x1c));
+        ((int (*)(int, int, float))cm_SendFloatDelta)(*(int *)(rec + 4), 0x1c, *(float *)(rec + 0x18) - *(float *)(rec + 0x1c));
         return;
     }
     f = *(float *)(rec + 0x14);
     v = fnum - *(float *)(rec + 0x20);
     for (n = (int)v; n > 0; n--)
         v = v - f + f / v;
-    ((int (*)(int, int, float))ai_Unk4c4ac0)(*(int *)(rec + 4), 0x1c, v - *(float *)(rec + 0x1c));
+    ((int (*)(int, int, float))cm_SendFloatDelta)(*(int *)(rec + 4), 0x1c, v - *(float *)(rec + 0x1c));
 }
 /* 0x56fc50, the alloc of the event 0x88 (a work at the building +0xb0 of the player +8): paused -> nothing; with a running event 0x88 of the same player and building the text 0x4096 and state -1; else the due clock now + 1 hour and state 0 (0x4c4c60), or -1 when +0xb4 is -1, and the message 0x50cc50 (pid, -(+0xb8)) */
 

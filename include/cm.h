@@ -209,7 +209,7 @@ void cm_SendFieldDeltas(void);                                                  
 void cm_SendFieldValues(void);                                                         /* 0x4c49e0 */
 void ai_Unk4c4a20(void);                                                         /* 0x4c4a20 */
 void cm_SendSetField(int a, int b, int c, int d, int e);                            /* 0x4c4a60 */
-void ai_Unk4c4ac0(int a, int b, int c);                                          /* 0x4c4ac0 */
+void cm_SendFloatDelta(int id, int field, float delta);                                          /* 0x4c4ac0 */
 void cm_SendRelations(int a, int b, int c, int d);                                   /* 0x4c4b00 */
 int cm_SendLongMessage(char *msg);                                                    /* 0x4c4b70, AIMSG (am.h, 0xf8 bytes) */
 int ai_Unk4c4bc0(char *msg, unsigned int len, void *extra);                      /* 0x4c4bc0 */

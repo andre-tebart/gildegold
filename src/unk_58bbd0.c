@@ -51,7 +51,7 @@ struct D3SM;
 #include "d3_light.h"
 #include "data_views.h"
 
-extern void ai_Unk4c4ac0(int a, int b, int c);
+extern void cm_SendFloatDelta(int id, int field, float delta);
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 extern GAPDATA full_data_6f5a84[];
 extern GAPDATA full_data_6f4f64[];
@@ -22495,7 +22495,7 @@ int ai_Unk5cfb80(int param_1, int param_2)
     char text[0x800];
 
     if (*(int *)(param_2 + 0xc) == 1) {
-        ((void (*)(int, int, float))(unsigned)&ai_Unk4c4ac0)(*(int *)(param_1 + 4), 0x1c,
+        ((void (*)(int, int, float))(unsigned)&cm_SendFloatDelta)(*(int *)(param_1 + 4), 0x1c,
                                              *(float *)(param_1 + 0x1c) * (0.100000001f));
     } else if (*(int *)(param_2 + 0xc) == 0 && *(char *)(param_1 + 2) == 6) {
         *(int *)(param_2 + 0x10) = 1;

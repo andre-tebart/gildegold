@@ -315,7 +315,7 @@ int gv_SendGrave(unsigned char *o);    /* 0x4f15e0 */
 int unk_Unk4f1660(char *c);             /* 0x4f1660 */
 int unk_Unk4f1d50(unsigned char *o, int *n);  /* 0x4f1d50 */
 float unk_Unk4f16f0(char *o);           /* 0x4f16f0 */
-void ai_Unk4c4ac0(int a, int b, int c);                     /* 0x4c4ac0 */
+void cm_SendFloatDelta(int id, int field, float delta);  /* 0x4c4ac0 */
 extern int ai_Unk1460ae0;               /* 0x1460ae0 */
 int unk_Unk4f17f0(void *f, unsigned char *o);  /* 0x4f17f0 */
 char * gm_Query(void *list, int n, ...);                   /* 0x4ffe90 */
