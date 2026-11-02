@@ -4647,43 +4647,6 @@ int ai_AlchemistHire(unsigned char *obj, AHMSTEP *step, int value)
 int ai_AlchemistSendRecipeResearch(); int ai_AlchemistSendResearchStart(); int ahm_ResearchState(); char * ahm_OwnerChar(); AHMGRID * ahm_RandomRecipe();
 int d2_WinOpenSlider(); void d2_SetObjValue(); void d2_MenuNavigate(int group);
 
-/* the recipe places of the record rec as selectable pictures (a good's picture 0xdf + id, its name text
-   0x9a8 + id * 2 and a bar of its value v * 252), two to a row (240 pixels apart, 80 pixels per row), each
-   added to the radio group; pics gets the picture objects. Answers how many places are in use */
-static __inline int ai_ResearchSlots(AHMREC *rec, int group, int win, int *pics)
-{
-    AHMSLOT *slot;
-    int *pic;
-    char line[0x100];
-    int k;
-    int i;
-    int x;
-    int y;
-    int t;
-
-    i = 0;
-    pic = pics;
-    slot = rec->slots;
-    for (k = 0; k < 6; k++, slot++) {
-        if (slot->id == 0)
-            continue;
-        x = (i & 1) * 240 + 10;
-        y = i / 2 * 80 + 10;
-        *pic = d2_WinOpenPic(x, y, slot->id + 0xdf, win);
-        d2_Objs[*pic].interactive = 1;
-        d2_Objs[*pic].user = ai_Goods + slot->id * 0x41;
-        d2_RadioAdd(group, *pic);
-        txt_Format(line, (int)"%s", slot->id * 2 + 0x9a8);
-        t = d2_CreateWinText(x + 0x3c, y + 5, line, win);
-        d2_Objs[t].w = d2_Wins[win].w / 2 - 10;
-        d2_SetObjFont(t, 0x54);
-        sv_ValueBar(x + 0x3c, y + 0x19, (int)(slot->v * 252.0f), 0x4df);
-        i++;
-        pic++;
-    }
-    return i;
-}
-
 /* 0x57c690, the alchemist's research window of the alchemist object obj ("Locations\Domizil\Alchemistry2"):
    without an owning character only the text 0x4051 (0x182); else the places of the record at +0x65 as
    selectable pictures (ai_ResearchSlots; rebuilt, keeping the selection, when the research state changed or
@@ -4693,24 +4656,36 @@ static __inline int ai_ResearchSlots(AHMREC *rec, int group, int win, int *pics)
    ai_AlchemistSendRecipeResearch when ahm_RandomRecipe gives the owner a recipe, else the message 0x41b0. The second is enabled
    while no research runs and calls ai_AlchemistSendResearchStart. The right mouse button closes the window; the camera follows
    again at the end
-   @deep reconstructed whole (544 vs 563 instructions; asmdiff --symbols: every call, argument, constant,
-   text id and branch in the original's order, the unsigned clock compare (jbe) and the buttons copied out
-   of the ButtonRow array into locals matched; the slot loop is a static __inline helper expanded twice, as
-   in the original's two radio-rebuild blocks). Left: allocation only. The original keeps owner in edi and
-   the record in ebp (ours swapped), win2 spilled to [esp+0x40] and reloaded after each text (ours keeps it
-   in ebx), the slot pointer / picture pointer / counter in slots [esp+0x14] / [esp+0x10] / [esp+0x1c] with
-   i in edi (ours i in a slot, slot pointer in edi), d2_LastWindow loaded before d2_LastWindowPtr in the
-   slider call; frame 0x264 vs 0x25c */
+   @deep read whole against the original, reconstructed (559 vs 563 instructions, asmdiff --symbols has no
+   symbol/argument/constant difference; no branch-target class remains after inlining the slot loop twice
+   with function-level n/pic/slot). Left (dcp diffclass: code 140, slots 122, frame 34, order 20, regs 8),
+   all allocation: (1) the original keeps owner in edi and the record in ebp, form in esi, ours form in
+   ebp/record in esi (regs esi<->ebp rotate: asmdiff --regs esi=ebp,ebp=esi turns the push/pop lines
+   equal); (2) win2 is spilled by the original to [esp+0x40] right after d2_SetForm(form,2) ('+ mov dword
+   ptr [esp + 0x40], ebx' at 0x57c725) and reloaded as mov ebx,[esp+0x64] after each text, ours keeps it in
+   ebx; (3) in the slot loop the original holds x in ebp, y in esi, i in edi and the slot/picture pointers
+   in [esp+0x14]/[esp+0x10] with the counter in [esp+0x1c], ours x in esi, y in ebp, counter [esp+0x24] and
+   a different lea schedule (lea eax,[eax+eax*2]; lea esi,[eax+eax*4] vs lea ebp,[eax+eax*2]; ...; lea
+   ebp,[ebp+ebp*4]); tried: the helper as __inline function, the loop written out twice, a picture-id
+   local, declaration order; frame 0x264 vs 0x25c */
 void ai_AlchemistResearchWindow(unsigned char *obj)
 {
     char msg[0x100];
     char line[0x100];
     int pics[6];
+    AHMREC *rec;
+    char *owner;
+    int *pic;
+    AHMSLOT *slot;
+    int n;
+    int x;
+    int y;
+    int k;
+    int pid;
+    int t;
     int row[2];
     int start;
     int other;
-    AHMREC *rec;
-    char *owner;
     int state;
     int lastState;
     unsigned lastClock;
@@ -4722,8 +4697,6 @@ void ai_AlchemistResearchWindow(unsigned char *obj)
     int win3;
     int group;
     int slider;
-    int t;
-    int n;
     int j;
 
     owner = ahm_OwnerChar(obj);
@@ -4757,7 +4730,27 @@ void ai_AlchemistResearchWindow(unsigned char *obj)
     d2_SetForm(form, 2);
     io_PrintText("$C");
     group = d2_CreateRadioGroup(0);
-    n = ai_ResearchSlots(rec, group, win2, pics);
+    n = 0;
+    pic = pics;
+    slot = rec->slots;
+    for (k = 0; k < 6; k++, slot++) {
+        if (slot->id == 0)
+            continue;
+        x = (n & 1) * 240 + 10;
+        y = n / 2 * 80 + 10;
+        pid = d2_WinOpenPic(x, y, slot->id + 0xdf, win2);
+        *pic = pid;
+        d2_Objs[pid].interactive = 1;
+        d2_Objs[pid].user = ai_Goods + slot->id * 0x41;
+        d2_RadioAdd(group, pid);
+        txt_Format(line, (int)"%s", slot->id * 2 + 0x9a8);
+        t = d2_CreateWinText(x + 0x3c, y + 5, line, win2);
+        d2_Objs[t].w = d2_Wins[win2].w / 2 - 10;
+        d2_SetObjFont(t, 0x54);
+        sv_ValueBar(x + 0x3c, y + 0x19, (int)(slot->v * 252.0f), 0x4df);
+        n++;
+        pic++;
+    }
     do {
         state = ahm_ResearchState(obj, &a, &f, 0);
         d2_SetForm(form, 4);
@@ -4786,7 +4779,27 @@ void ai_AlchemistResearchWindow(unsigned char *obj)
             d2_SetForm(form, 2);
             io_PrintText("$C");
             group = d2_CreateRadioGroup(0);
-            n = ai_ResearchSlots(rec, group, win2, pics);
+        n = 0;
+        pic = pics;
+        slot = rec->slots;
+        for (k = 0; k < 6; k++, slot++) {
+            if (slot->id == 0)
+                continue;
+            x = (n & 1) * 240 + 10;
+            y = n / 2 * 80 + 10;
+            pid = d2_WinOpenPic(x, y, slot->id + 0xdf, win2);
+            *pic = pid;
+            d2_Objs[pid].interactive = 1;
+            d2_Objs[pid].user = ai_Goods + slot->id * 0x41;
+            d2_RadioAdd(group, pid);
+            txt_Format(line, (int)"%s", slot->id * 2 + 0x9a8);
+            t = d2_CreateWinText(x + 0x3c, y + 5, line, win2);
+            d2_Objs[t].w = d2_Wins[win2].w / 2 - 10;
+            d2_SetObjFont(t, 0x54);
+            sv_ValueBar(x + 0x3c, y + 0x19, (int)(slot->v * 252.0f), 0x4df);
+            n++;
+            pic++;
+        }
             d2_Radios[group].sel = sel;
             d2_MenuNavigate(group);
         }
