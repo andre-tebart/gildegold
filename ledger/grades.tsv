@@ -2439,7 +2439,7 @@ exe	0x004cfeb0	ai_Unk4cfeb0	cm	byte	draft
 exe	0x004cffd0	ai_Unk4cffd0	cm	draft	draft		
 exe	0x004d0200	ai_Unk4d0200	cm	draft	draft		
 exe	0x004d02d0	ai_Unk4d02d0	cm	byte	draft		
-exe	0x004d0380	ai_Unk4d0380	cm	draft	draft		
+exe	0x004d0380	ai_Unk4d0380	cm	shape	draft		
 exe	0x004d0460	ai_Unk4d0460	cm	draft	draft		
 exe	0x004d0520	ai_Unk4d0520	cm	byte	draft		
 exe	0x004d0570	ai_Unk4d0570	cm	draft	draft		
@@ -3190,7 +3190,7 @@ exe	0x0050dba0	init_BuildingKindName	f3init	draft	readable	deep
 exe	0x0050dc30	init_LoadBuildingScene	f3init	draft	readable	deep	
 exe	0x0050e0d0	init_StartNewGame	f3init	draft	readable	deep	
 exe	0x0050e330	init_CreateOpponents	f3init	draft	draft	deep	
-exe	0x0050e5a0	init_PlaceOffices	f3init	shape	readable	deep	
+exe	0x0050e5a0	init_PlaceOffices	f3init	draft	readable	deep	shape+readable -> draft+readable at 6520924: promote --accept-falls
 exe	0x0050e690	init_CreateStartCharacters	f3init	draft	readable	deep	
 exe	0x0050f0b0	init_CreateOpeningObjects	f3init	byte	readable		
 exe	0x0050f340	init_StockMarketStalls	f3init	draft	readable	deep	
@@ -3343,7 +3343,7 @@ exe	0x00526cf0	sv_MouseCamera	sv	draft	readable	deep
 exe	0x00527640	sv_UpdateCamera	sv	byte	readable		
 exe	0x00527840	sv_FlyCameraToObject	sv	shape	readable		
 exe	0x00527bb0	sv_CameraToObject	sv	shape	readable		
-exe	0x00527e90	sv_FlyCameraToModel	sv	draft	readable	deep	
+exe	0x00527e90	sv_FlyCameraToModel	sv	shape	readable	deep	
 exe	0x00528140	sv_MoveCameraToView	sv	byte	draft		
 exe	0x00528180	sv_CreateBannerCB	sv	byte	readable		
 exe	0x00528290	sv_ColourBannerCB	sv	byte	draft		
@@ -4345,7 +4345,7 @@ exe	0x005a8f90	ai_Unk5a8f90	unk_58bbd0	draft	draft
 exe	0x005a9050	ai_Unk5a9050	unk_58bbd0	draft	draft		
 exe	0x005a9110	ai_ShowCharacterNews	unk_58bbd0	byte	draft		
 exe	0x005a9170	ai_Unk5a9170	unk_58bbd0	byte	draft		
-exe	0x005a91c0	ai_Unk5a91c0	unk_58bbd0	shape	draft		
+exe	0x005a91c0	ai_Unk5a91c0	unk_58bbd0	draft	draft		shape+draft -> draft+draft at 6520924: promote --accept-falls
 exe	0x005a9240	ai_Unk5a9240	unk_58bbd0	draft	draft		
 exe	0x005a92b0	ai_Unk5a92b0	unk_58bbd0	draft	draft		
 exe	0x005a9330	ai_SendSwapText	unk_58bbd0	byte	draft		
