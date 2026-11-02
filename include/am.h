@@ -509,7 +509,7 @@ extern int ai_Unk5ffd1c;                /* 0x5ffd1c, the game day the count belo
 extern int ai_Unk6f0470;                /* 0x6f0470, number of characters of kind 5, 6, 7 */
 
 int ai_AimCannon(struct AIPER *p, struct AIBLD *b, struct AIBLD *t);                        /* 0x4a67a0 */
-int ai_Unk4a6ae0(struct AIPER *p, struct AIBLD *b);                                    /* 0x4a6ae0 */
+int ai_FireCannon(struct AIPER *p, struct AIBLD *b);                                    /* 0x4a6ae0 */
 void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d);                 /* 0x4c4830 */
 int amt_GetKindLevel(int v);                                                 /* 0x4e7c40 */
 void gm_SendMoneyDelta(int a, int b);                                        /* 0x50cc50 */
@@ -1079,7 +1079,7 @@ int ai_SolveCannonAim(float *a, float *b, float *rng, float *x, float *y, float 
 int ai_AimCannon(struct AIPER *p, struct AIBLD *b, struct AIBLD *t);                                  /* 0x4a67a0 */
 int ai_InitShot(struct SHOTREC *shot, struct D3VECTOR *pos, struct D3VECTOR *dir, float charge, float size, float density); /* 0x5dc240 */
 int ai_ScatterShot(struct SHOTREC *shot, float sideSpread, struct D3VECTOR *side, float otherSpread, struct D3VECTOR *other, float speedSpread);    /* 0x5dc3a0 */
-int ai_Unk4a6ae0(struct AIPER *p, struct AIBLD *b);                                            /* 0x4a6ae0 */
+int ai_FireCannon(struct AIPER *p, struct AIBLD *b);                                            /* 0x4a6ae0 */
 #undef amt_GetKindLevel
 
 /* declared in other units' headers before (moved to the owner) */

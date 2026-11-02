@@ -661,7 +661,7 @@ int ai_Unk48f1e0(AIPX *p, AIARGX *s1, AIARGX *s2)
     gm_FindById((int)&y, 0, 0, s2->ref);
     if (!y)
         return 0;
-    return ai_Unk4a6ae0(p, x) ? 0x42 : 0;
+    return ai_FireCannon(p, x) ? 0x42 : 0;
 }
 /* 0x48f250, finds the building of a character: 2 found, 1 it has none but needs one, 0 nothing to do */
 
@@ -11243,69 +11243,121 @@ int ai_AimCannon(AIPER *p, AIBLD *b, AIBLD *t)
     memcpy(ai_CannonShot.par, par, sizeof(par));
     return 1;
 }
-/* 0x4a6ae0, execute callback of the cannon shot: fires the 1..3 balls the decide callback 0x4a67a0 planned
-   into ai_CannonShot (one ball from 50 units along the barrel, two or three side by side from 40) */
+/* 0x4a6ae0, execute callback of the cannon shot: fires the 1..3 balls ai_AimCannon planned into ai_CannonShot: one
+   ball from 50 units along the barrel b; two from 40 units, 5 to either side along d; three from 40 units, one 5
+   along c, two 3 back along c and 5 to either side along d. Each ball: ai_InitShot, ai_ScatterShot by the
+   cannon's spread (gv_CannonScatter); then gv_FireShots with the charge, 1 when fired
+   @deep read in full against the original (0x4a6ae0..0x4a713d): the ball record pointer, f = (g*b - a) *
+   (k*0.01) + a (fild k; fmul; fmulp), the three charge cases as vector steps through four 4-float locals
+   (v1 0x18, v2 0x28, v3 0x38, v4 0x58 in the original's frame: start = b*40 + a copied to the shot
+   positions, then += c*5 / c*-3 / d*5 / d*-5) with the same InitShot / ScatterShot / FireShots pairing
+   (s3@0x138, s1@0x68, s2@0xd0). 442/437 instructions. Left: x87 scheduling and allocation: the original
+   keeps the first one or two products of each step on the FPU stack and stores only the rest ('+ fld
+   st(0); fld a1; fadd [esp+0x30]; fst [esp+0x40]', '+ fxch st(2); fstp [esp+0x4c]'), ours stores each
+   product ('- fstp [esp+0x30] / [esp+0x34] / [esp+0x38]'); cost spilled to a local (+ mov [esp+0x54], edi)
+   with edi/ebx reused for c and f in cases 2/3, ours keeps a different set (frame 0x18c vs 0x190) */
 
-int ai_Unk4a6ae0(AIPER *p, AIBLD *b)
+int ai_FireCannon(AIPER *p, AIBLD *b)
 {
     float u, v;
-    float pa[3], pb[3], pc[3];
-    float f, c, g, s;
-    float x0, x1, x2;
+    float v1[4], v2[4], v3[4], v4[4];
+    float f, c, g;
     char s1[104], s2[104], s3[104];
     int cost, x;
+    const G9BALL *bl;
 
-    if (ai_CannonShot.who == *(int *)((unsigned char *)p + 4) && ai_CannonShot.bld == b->id) {
+    if (ai_CannonShot.who == p->netId && ai_CannonShot.bld == b->id) {
         gv_CannonScatter(b, &u, &v);
         g = gv_CannonItemFactor(b);
         cost = ai_CannonShot.cost;
         x = ai_CannonShot.x;
-        c = ai_CannonBalls[ai_CannonShot.kind].c;
-        f = ai_CannonShot.k * 0.01f * (g * ai_CannonBalls[ai_CannonShot.kind].b - ai_CannonBalls[ai_CannonShot.kind].a)
-            + ai_CannonBalls[ai_CannonShot.kind].a;
+        bl = &ai_CannonBalls[ai_CannonShot.kind];
+        c = bl->c;
+        f = (g * bl->b - bl->a) * (ai_CannonShot.k * 0.01f) + bl->a;
         if (ai_CannonShot.charge == 1) {
-            pa[0] = ai_CannonShot.a[0] + ai_CannonShot.b[0] * 50.0f;
-            pa[1] = ai_CannonShot.a[1] + ai_CannonShot.b[1] * 50.0f;
-            pa[2] = ai_CannonShot.a[2] + ai_CannonShot.b[2] * 50.0f;
-            ai_InitShot(s1, pa, ai_CannonShot.b, f, c, ai_IronDensity);
+            v1[0] = ai_CannonShot.b[0] * 50.0f;
+            v1[1] = ai_CannonShot.b[1] * 50.0f;
+            v1[2] = ai_CannonShot.b[2] * 50.0f;
+            v1[0] = ai_CannonShot.a[0] + v1[0];
+            v1[1] = ai_CannonShot.a[1] + v1[1];
+            v1[2] = ai_CannonShot.a[2] + v1[2];
+            ai_InitShot(s1, v1, ai_CannonShot.b, f, c, ai_IronDensity);
             ai_ScatterShot(s1, u, ai_CannonShot.d, u, ai_CannonShot.c, v);
             gv_FireShots(b, p, s1, 0, 0, gv_SalvoCharge(ai_CannonShot.kind, ai_CannonShot.k, 1), x, cost);
             return 1;
         }
         if (ai_CannonShot.charge == 2) {
-            x0 = ai_CannonShot.b[0] * 40.0f + ai_CannonShot.a[0];
-            x1 = ai_CannonShot.a[1] + ai_CannonShot.b[1] * 40.0f;
-            x2 = ai_CannonShot.b[2] * 40.0f + ai_CannonShot.a[2];
-            pa[0] = ai_CannonShot.d[0] * 5.0f + x0;
-            pa[1] = ai_CannonShot.d[1] * 5.0f + x1;
-            pa[2] = ai_CannonShot.d[2] * 5.0f + x2;
-            pb[0] = ai_CannonShot.d[0] * -5.0f + x0;
-            pb[1] = ai_CannonShot.d[1] * -5.0f + x1;
-            pb[2] = ai_CannonShot.d[2] * -5.0f + x2;
-            ai_InitShot(s2, pa, ai_CannonShot.b, f, c, ai_IronDensity);
-            ai_InitShot(s1, pb, ai_CannonShot.b, f, c, ai_IronDensity);
+            v1[0] = ai_CannonShot.b[0] * 40.0f;
+            v1[1] = ai_CannonShot.b[1] * 40.0f;
+            v1[2] = ai_CannonShot.b[2] * 40.0f;
+            v2[0] = v1[0] + ai_CannonShot.a[0];
+            v2[1] = v1[1] + ai_CannonShot.a[1];
+            v2[2] = v1[2] + ai_CannonShot.a[2];
+            v3[0] = v2[0];
+            v3[1] = v2[1];
+            v3[2] = v2[2];
+            v1[0] = ai_CannonShot.d[0] * 5.0f;
+            v1[1] = ai_CannonShot.d[1] * 5.0f;
+            v1[2] = ai_CannonShot.d[2] * 5.0f;
+            v2[0] = v1[0] + v2[0];
+            v2[1] = v1[1] + v2[1];
+            v2[2] = v1[2] + v2[2];
+            v1[0] = ai_CannonShot.d[0] * -5.0f;
+            v1[1] = ai_CannonShot.d[1] * -5.0f;
+            v1[2] = ai_CannonShot.d[2] * -5.0f;
+            v3[0] = v1[0] + v3[0];
+            v3[1] = v1[1] + v3[1];
+            v3[2] = v1[2] + v3[2];
+            ai_InitShot(s2, v2, ai_CannonShot.b, f, c, ai_IronDensity);
+            ai_InitShot(s1, v3, ai_CannonShot.b, f, c, ai_IronDensity);
             ai_ScatterShot(s2, u, ai_CannonShot.d, u, ai_CannonShot.c, v);
             ai_ScatterShot(s1, u, ai_CannonShot.d, u, ai_CannonShot.c, v);
             gv_FireShots(b, p, s2, s1, 0, gv_SalvoCharge(ai_CannonShot.kind, ai_CannonShot.k, 2), x, cost);
             return 1;
         }
         if (ai_CannonShot.charge == 3) {
-            x0 = ai_CannonShot.b[0] * 40.0f + ai_CannonShot.a[0];
-            x1 = ai_CannonShot.b[1] * 40.0f + ai_CannonShot.a[1];
-            x2 = ai_CannonShot.b[2] * 40.0f + ai_CannonShot.a[2];
-            pc[0] = ai_CannonShot.c[0] * 5.0f + x0;
-            pc[1] = ai_CannonShot.c[1] * 5.0f + x1;
-            pc[2] = ai_CannonShot.c[2] * 5.0f + x2;
-            s = ai_CannonShot.c[0] * -3.0f;
-            pa[0] = ai_CannonShot.d[0] * 5.0f + x0 + s;
-            pa[1] = ai_CannonShot.d[1] * 5.0f + ai_CannonShot.c[1] * -3.0f + x1;
-            pa[2] = ai_CannonShot.d[2] * 5.0f + ai_CannonShot.c[2] * -3.0f + x2;
-            pb[0] = ai_CannonShot.d[0] * -5.0f + s + x0;
-            pb[1] = ai_CannonShot.d[1] * -5.0f + ai_CannonShot.c[1] * -3.0f + x1;
-            pb[2] = ai_CannonShot.d[2] * -5.0f + ai_CannonShot.c[2] * -3.0f + x2;
-            ai_InitShot(s3, pa, ai_CannonShot.b, f, c, ai_IronDensity);
-            ai_InitShot(s1, pb, ai_CannonShot.b, f, c, ai_IronDensity);
-            ai_InitShot(s2, pc, ai_CannonShot.b, f, c, ai_IronDensity);
+            v1[0] = ai_CannonShot.b[0] * 40.0f;
+            v1[1] = ai_CannonShot.b[1] * 40.0f;
+            v1[2] = ai_CannonShot.b[2] * 40.0f;
+            v1[0] = v1[0] + ai_CannonShot.a[0];
+            v1[1] = v1[1] + ai_CannonShot.a[1];
+            v1[2] = v1[2] + ai_CannonShot.a[2];
+            v4[0] = v1[0];
+            v4[1] = v1[1];
+            v4[2] = v1[2];
+            v3[0] = v1[0];
+            v3[1] = v1[1];
+            v3[2] = v1[2];
+            v2[0] = ai_CannonShot.c[0] * 5.0f;
+            v2[1] = ai_CannonShot.c[1] * 5.0f;
+            v2[2] = ai_CannonShot.c[2] * 5.0f;
+            v1[0] = v2[0] + v1[0];
+            v1[1] = v2[1] + v1[1];
+            v1[2] = v2[2] + v1[2];
+            v2[0] = ai_CannonShot.c[0] * -3.0f;
+            v2[1] = ai_CannonShot.c[1] * -3.0f;
+            v2[2] = ai_CannonShot.c[2] * -3.0f;
+            v4[0] = v2[0] + v4[0];
+            v4[1] = v2[1] + v4[1];
+            v4[2] = v2[2] + v4[2];
+            v3[0] = v2[0] + v3[0];
+            v3[1] = v2[1] + v3[1];
+            v3[2] = v2[2] + v3[2];
+            v2[0] = ai_CannonShot.d[0] * 5.0f;
+            v2[1] = ai_CannonShot.d[1] * 5.0f;
+            v2[2] = ai_CannonShot.d[2] * 5.0f;
+            v4[0] = v2[0] + v4[0];
+            v4[1] = v2[1] + v4[1];
+            v4[2] = v2[2] + v4[2];
+            v2[0] = ai_CannonShot.d[0] * -5.0f;
+            v2[1] = ai_CannonShot.d[1] * -5.0f;
+            v2[2] = ai_CannonShot.d[2] * -5.0f;
+            v3[0] = v2[0] + v3[0];
+            v3[1] = v2[1] + v3[1];
+            v3[2] = v2[2] + v3[2];
+            ai_InitShot(s3, v4, ai_CannonShot.b, f, c, ai_IronDensity);
+            ai_InitShot(s1, v3, ai_CannonShot.b, f, c, ai_IronDensity);
+            ai_InitShot(s2, v1, ai_CannonShot.b, f, c, ai_IronDensity);
             ai_ScatterShot(s3, u, ai_CannonShot.d, u, ai_CannonShot.c, v);
             ai_ScatterShot(s1, u, ai_CannonShot.d, u, ai_CannonShot.c, v);
             ai_ScatterShot(s2, u, ai_CannonShot.d, u, ai_CannonShot.c, v);
