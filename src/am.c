@@ -10356,62 +10356,69 @@ int ai_EvalCurrentNeed(float *a, float *b, int i, AIPER *p)
     }
     return found;
 }
-/* 0x4a4c10, eval callback with the character's rank and the decision's value */
+/* 0x4a4c10, eval callback with the character's rank and the decision's value
+   @deep read in full against the original and reconciled: rank = (n + v) * (mood[11][0] - 2) before the
+   outputs are zeroed, the flags branch first (40/50, found=1), k >= 4 bounds, the w > 0 test first with
+   mood * w / (d + rank), else (sel ? w / d1 : w / d2) * mood. Left is allocation only: the original keeps
+   a in ebx and b in ecx (0x4a4c46: + mov ebx,[esp+0x18]; mov ecx,[esp+0x1c]), ours the other way round
+   (regs ebx<->ecx, the zeroing stores reordered), so the *a sum goes through ebx in the original and
+   through [esp+0x14] in ours (0x4a4d90: + fadd [ebx]; fstp [ebx] / - mov eax,[esp+0x14]; fadd [eax]; fstp
+   [eax]) and *b the reverse (0x4a4e04); writing *b = 0 first only swaps which side carries the reload */
 
 int ai_EvalGuiltWeights(float *a, float *b, int i, AIPER *p, AIDEC *dec)
 {
     G5ACT *act;
     float v, rank, d1, d2, t;
     int n, k, found;
-    unsigned char c;
 
     if (dec == 0)
         v = 1.0f;
     else
         v = (float)dec->guilt;
     n = gv_CulpritGuilt(p->netId);
-    rank = p->mood[11][0];
+    rank = ((float)n + v) * (p->mood[11][0] - 2.0f);
     *a = 0.0f;
     *b = 0.0f;
     act = &G5_ACTS[i];
-    rank = (rank - 2.0f) * ((float)n + v);
-    if ((act->flags & G7_MASK(p)) == 0) {
-        d1 = 50.0f;
-        d2 = 100.0f;
-        found = 0;
-    } else {
+    if (act->flags & G7_MASK(p)) {
         d1 = 40.0f;
         d2 = 50.0f;
         found = 1;
+    } else {
+        d1 = 50.0f;
+        d2 = 100.0f;
+        found = 0;
     }
     for (k = 0; !found; k++) {
-        if (k > 3)
+        if (k >= 4)
             break;
         if (act->w1[k].k == p->sel && act->w1[k].w > 0.0f)
             found = 1;
     }
     for (k = 0; !found; k++) {
-        if (k > 3)
+        if (k >= 4)
             break;
         if (act->w2[k].k == p->sel && act->w2[k].w > 0.0f)
             found = 1;
     }
     for (k = 0; k < 4; k++) {
-        c = act->w1[k].k;
-        if (act->w1[k].w <= 0.0f)
-            t = act->w1[k].w / (c == p->sel ? d1 : d2) * p->mood[c][2];
-        else if (c == p->sel)
-            t = p->mood[c][2] * act->w1[k].w / (d1 + rank);
-        else
-            t = p->mood[c][2] * act->w1[k].w / (d2 + rank);
+        if (act->w1[k].w > 0.0f) {
+            if (act->w1[k].k == p->sel)
+                t = p->mood[act->w1[k].k][2] * act->w1[k].w / (d1 + rank);
+            else
+                t = p->mood[act->w1[k].k][2] * act->w1[k].w / (d2 + rank);
+        } else {
+            t = (act->w1[k].k == p->sel ? act->w1[k].w / d1 : act->w1[k].w / d2) * p->mood[act->w1[k].k][2];
+        }
         *a = t + *a;
-        c = act->w2[k].k;
-        if (act->w2[k].w <= 0.0f)
-            t = act->w2[k].w / (c == p->sel ? d1 : d2) * p->mood[c][2];
-        else if (c == p->sel)
-            t = p->mood[c][2] * act->w2[k].w / (d1 + rank);
-        else
-            t = p->mood[c][2] * act->w2[k].w / (d2 + rank);
+        if (act->w2[k].w > 0.0f) {
+            if (act->w2[k].k == p->sel)
+                t = p->mood[act->w2[k].k][2] * act->w2[k].w / (d1 + rank);
+            else
+                t = p->mood[act->w2[k].k][2] * act->w2[k].w / (d2 + rank);
+        } else {
+            t = (act->w2[k].k == p->sel ? act->w2[k].w / d1 : act->w2[k].w / d2) * p->mood[act->w2[k].k][2];
+        }
         *b = t + *b;
     }
     return found;
