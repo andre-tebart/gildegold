@@ -127,7 +127,7 @@ void ai_Unk5774d0(int arg);             /* 0x5774d0, posts a record message */
 void ai_Unk577540(int arg);             /* 0x577540, posts a record message */
 void ai_HookChapter5Step4(int arg);             /* 0x5775c0, posts two character messages */
 void ai_HookChapter5Step5(int arg);             /* 0x577610, character record lookup + 0x4e6180 */
-void ai_Unk577690(int arg);             /* 0x577690, builds a save record (ROUGH) */
+void ai_HookChapter5Step6(int arg);             /* 0x577690, builds a save record (ROUGH) */
 int ai_Unk577740(void);                 /* 0x577740, the tutorial start ("tutorial\main") */
 int ai_Unk577820(void);                 /* 0x577820, 0x53d800 (player) */
 int ai_Unk577850(void);                 /* 0x577850, run window controls 1 / 2 */

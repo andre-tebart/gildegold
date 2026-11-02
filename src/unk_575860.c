@@ -697,6 +697,7 @@ extern char *txt_Ptrs[]; /* 0x143a1c0 */
 TUTSTATE *const ai_Tutorial = (TUTSTATE *)(full_data_6fa020 + 0x40);  /* 0x5eec60, the pointer to the tutorial state record */
 #define S (*(char **)(unsigned)&ai_Tutorial)  /* the tutorial state record (at 0x6fa060): the pointer ai_Tutorial holds */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
+#define ai_TimeT (*(AITIME *)&ai_Time)  /* 0x770ae0, ai_Time (anm.c: char[14]) as the AITIME it is */
 #define ai_ClockMsVolatile (*(volatile int *)&ai_ClockMs)  /* 0x6333cc, @original: the byte-matched ai_TutorialTick reloads the clock after every read (a timer-written int; its owner declares it plain int) */
 int ai_TutorialOn = 0;  /* 0x6f265c, the tutorial runs (set by its start 0x578180, cleared by its end) */
 int ai_TutorialRunning = 0;  /* 0x6f2660, the tutorial's state machine advances (unk_SetEndGameGate / unk_ClearEndGameGate) */
@@ -1951,40 +1952,34 @@ void ai_HookChapter5Step5(int end)
         }
     }
 }
-/* 0x577690, when `arg` is 0 and 0x4e8160() answers non-zero: builds a 0x114-byte record (zeroed) out of the
-   character records 0x770b80 + i * 0x21c (the kind byte +2: 6 -> its id to +0xc, 7 -> the ids +0x34, count +0x30,
-   byte), copies the game time 0x770ae0 .. 0x770aec, sets the bytes +0x10 = 1 / +0x2e = 0xa0 / the dword +0x1c = -1
-   and calls 0x4c4fa0 (record). ROUGH: the record's field offsets are the disassembly's; its type is unknown.
-   Ends 0x57773f; the next start 0x577740 has no nop padding */
+/* 0x577690, the run hook of the run record FTInitChapter5Step6: at the run's start (end 0), when
+   amt_CheckOfficeColumns answers, sends a new scene party (cm_SendNewParty, a G28REC: kind 1, thing -1, the flags
+   0xa0, now): its members are the characters of the kinds 6 and 7, and the (last) one of the kind 6 is its host */
 
-void ai_Unk577690(int arg)
+void ai_HookChapter5Step6(int end)
 {
-    char rec[0x114];
-    char *p;
+    G28REC party;
     int i, n;
 
-    if (arg)
+    if (end)
         return;
     if (!amt_CheckOfficeColumns())
         return;
-    memset(rec, 0, sizeof rec);
+    memset(&party, 0, sizeof party);
     n = 0;
-    for (p = (char *)(unsigned)&ai_CharInts; p < (char *)((unsigned)((unsigned)ai_CharInts + 0x653fe) + 0x2); p += 0x21c) {
-        if (*(unsigned char *)(p - 2) == 6)
-            *(int *)(rec + 0xc) = *(int *)p;
-        else if (*(unsigned char *)(p - 2) == 7) {
-            *(int *)(rec + 0x34 + n * 4) = *(int *)p;
-            n++;
-        }
+    for (i = 0; i < 768; i++) {
+        if (ai_CharsT[i].kind == 6) {
+            party.host = ai_CharsT[i].netId;
+            party.members[n++] = ai_CharsT[i].netId;
+        } else if (ai_CharsT[i].kind == 7)
+            party.members[n++] = ai_CharsT[i].netId;
     }
-    rec[0x30] = (char)n;
-    *(int *)(rec + 0x18) = U_I((unsigned)&ai_Time);
-    *(int *)(rec + 0x1c) = -1;
-    *(int *)(rec + 0x28) = U_I(((unsigned)&ai_Time + 0x8));
-    *(unsigned short *)(rec + 0x2c) = *(unsigned short *)((unsigned)&ai_Time + 0xc);
-    rec[0x10] = 1;
-    rec[0x2e] = (char)0xa0;
-    cm_SendNewParty(rec);
+    party.used = n;
+    party.time = ai_TimeT;
+    party.kind = 1;
+    party.flags = 0xa0;
+    party.thing = -1;
+    cm_SendNewParty(&party);
 }
 
 #define R8 (*(int *)(*(char **)(*(char **)(S + 0x1c) + 0x74) + 8))
@@ -4070,7 +4065,7 @@ int ai_Unk57aeb0(void)
     U_I(r + 0x10) = (unsigned)&full_data_629fc0;
     U_I(r + 0x2c) = 0x429;
     U_I(r + 0x30) = 0x8e;
-    U_I(r + 0x34) = (unsigned)&ai_Unk577690;
+    U_I(r + 0x34) = (unsigned)&ai_HookChapter5Step6;
     U_I(r + 0x40) = 0x30;
     U_I(r + 0x48) = 0xb;
     U_I(r + 0x68) = 0x18f7;
