@@ -148,7 +148,7 @@ unsigned short * gm_AllocRaum(unsigned char *b, unsigned n);                    
 void txt_Format(char *buf, int id, ...);                                       /* 0x5176d0 */
 struct SBSAMPLE *sb_PlaySample(struct SBBANK *bank, char *name, int loops, int pan, int volume, int fade, int delay); /* 0x426fa0, sblib.c (this header's units: sb_PlaySampleI) */
 float gm_ItemPrice(int item, unsigned char n);                                   /* 0x5087f0 */
-int gm_Unk50a0f0(int y);                                                     /* 0x50a0f0 */
+int gm_ObjectBuilding(int y);                                                     /* 0x50a0f0 */
 void util_Seed(unsigned int seed);                                               /* 0x42ec90, tr.c */
 extern int cm_NetFlags;                /* 0x6f2594, flags */
 extern unsigned cm_LoadSize;           /* 0xa68d28, size of the load buffer */

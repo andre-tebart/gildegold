@@ -2932,7 +2932,7 @@ int ai_Unk4c78c0(G17MSG *m, G17STAT *s)
             *(int *)(o + 0x1c) = 4;
     }
     v = (int)(gm_ItemPrice(*(unsigned short *)&m->data[4], 100) * n);
-    e = gm_Unk50a0f0(y);
+    e = gm_ObjectBuilding(y);
     if (e != 0)
         *(int *)(e + 0x4d) += v;
     st = gm_FindGoods(ai_OwnPlayer, *(unsigned short *)&m->data[4]);

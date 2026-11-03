@@ -5000,7 +5000,7 @@ void cm_SendExSetHE(unsigned char k, char *p);                     /* 0x4c4c60 *
 void he_MessageBoxQuickjump(int a1, int a2, char *text, char fl, int a5, int a6, int a7, char *jump, char *text2);                     /* 0x53dee0 */
 int d3t_SceneIndex();                     /* 0x411be0 */
 int ch_Delete();                     /* 0x4028a0 */
-int gm_Unk50a0f0(int y);                     /* 0x50a0f0 */
+int gm_ObjectBuilding(int y);                     /* 0x50a0f0 */
 void sv_MoveToGroup(unsigned char *o, short *it, int c, char *g);                     /* 0x524260 */
 void he_EndPersonEvents(unsigned short *p);                     /* 0x5538b0 */
 void he_EndKind23Events(int ev);                     /* 0x568aa0 */
@@ -5390,7 +5390,7 @@ void gm_Unk5034b0(int o)
         ch_Delete(m);
         d3if_SelectScene(saved, 1);
     }
-    r = gm_Unk50a0f0(o);
+    r = gm_ObjectBuilding(o);
     if (r != 0)
         gm_RemoveOwned((int *)(r + 0x5d), *(int *)(o + 2));
 }
@@ -9298,24 +9298,22 @@ unsigned short gm_ObjectOwnerNo(unsigned short *o)
         return *(unsigned short *)(b + 0x27);
     return 0xffff;
 }
-/* 0x50a0f0, walks up the owner chain of the object o (the id at +6) to the first character */
+/* 0x50a0f0, the building that holds the object o (an ORDOBJ as int), through any objects holding it in turn: its holder's id (ownerId) is looked up (gm_FindById) until a building is found; 0 when a character holds it or an id is unknown */
 
-int gm_Unk50a0f0(int o)
+int gm_ObjectBuilding(int o)
 {
-    int r, id, bld, chr;
+    int id, bld, holder, chr;
 
-    id = *(int *)(o + 6);
-    while (1) {
-        if (id == -1 || (r = gm_FindById(&o, &bld, &chr, id)) == 0)
-            return 0;
-        if (o != 0)
-            return o;
-        if (chr != 0)
+    id = ((ORDOBJ *)o)->ownerId;
+    while (id != -1) {
+        if (gm_FindById(&bld, &holder, &chr, id) == 0)
             break;
         if (bld != 0)
-            id = *(int *)(bld + 6);
-        chr = 0;
-        o = 0;
+            return bld;
+        if (chr != 0)
+            break;
+        if (holder != 0)
+            id = ((ORDOBJ *)holder)->ownerId;
     }
     return 0;
 }
@@ -9633,7 +9631,7 @@ int gm_FreeCapacity(short *l, int id, int n)
     char *p;
     int t;
 
-    o = (unsigned char *)gm_Unk50a0f0((int)l);
+    o = (unsigned char *)gm_ObjectBuilding((int)l);
     if (o == 0)
         return 0;
     cls = gm_BuildingClass(*o);

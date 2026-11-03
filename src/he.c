@@ -13320,7 +13320,7 @@ void he_Unk567f50(int ev, unsigned short *c)
             *(int *)(ev + 0x84) = ((int (*)())cm_SendFieldValues)();
             return;
         }
-        k = gm_Unk50a0f0(c);
+        k = gm_ObjectBuilding(c);
         if (k != 0) {
             memset(m, 0, sizeof(m));
             *(int *)(m + 8) = *(int *)(o + 4);
