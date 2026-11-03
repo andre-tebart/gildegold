@@ -8963,13 +8963,13 @@ int cm_MostThreatenedCellNear(char *c, int cx, int cy, int r, int *ox, int *oy)
         return 1;
     return 0;
 }
-/* 0x4d2450, a callback of the object walk: collects the objects named "sp_ESCAPE" into list[ai_Unk6f0d60++] */
+/* 0x4d2450, a callback of the object walk: collects the objects named "sp_ESCAPE" into list[cm_PointCount++] */
 
 char ai_Unk4d2450(char *o, int *list)
 {
     if (_stricmp(o, "sp_ESCAPE") == 0) {
-        list[ai_Unk6f0d60] = (int)o;
-        ai_Unk6f0d60++;
+        list[cm_PointCount] = (int)o;
+        cm_PointCount++;
     }
     return 1;
 }
@@ -8985,11 +8985,11 @@ char *ai_Unk4d2490(char *c)
     char *m, *o;
     int i, n;
 
-    ai_Unk6f0d60 = 0;
+    cm_PointCount = 0;
     d3_ForEachObject(ai_Unk5fb5b0, 0, 0xc0, ai_Unk4d2450, list);
     m = *(char **)(*(char **)(c + 0x184) + 0x34);
     d3_PointToWorld(m, m + 0x4c, v);
-    n = ai_Unk6f0d60;
+    n = cm_PointCount;
     for (i = 0; i < n; i++) {
         o = (char *)list[i];
         dx = v[0] - *(float *)(o + 0x4c);
@@ -9004,14 +9004,14 @@ char *ai_Unk4d2490(char *c)
     return res;
 }
 /* 0x4d2550, a callback: collects the objects "WARE_" whose owner (+0x200, a record with the side in +0xa) is not the side
-   of the character c into ai_Unk930380[ai_Unk6f0d60++] */
+   of the character c into cm_PointList[cm_PointCount++] */
 
 char ai_Unk4d2550(char *o, char *c)
 {
     char *side = *(char **)(c + 0x16c);
 
     if (strncmp(o, "WARE_", 5) == 0 && *(int *)(*(char **)(o + 0x200) + 0xa) != *(unsigned short *)side)
-        ai_Unk930380[ai_Unk6f0d60++] = o;
+        cm_PointList[cm_PointCount++] = o;
     return 1;
 }
 /* 0x4d25a0, the closest object of 0x4d2550 to the character c, or 0 */
@@ -9025,13 +9025,13 @@ char *ai_Unk4d25a0(char *c)
     char *m, *o;
     int i, n;
 
-    ai_Unk6f0d60 = 0;
+    cm_PointCount = 0;
     d3_ForEachObject(ai_Unk5fb5b0, 0, 0x40, ai_Unk4d2550, c);
     m = *(char **)(*(char **)(c + 0x184) + 0x34);
     d3_PointToWorld(m, m + 0x4c, v);
-    n = ai_Unk6f0d60;
+    n = cm_PointCount;
     for (i = 0; i < n; i++) {
-        o = ai_Unk930380[i];
+        o = cm_PointList[i];
         dx = v[0] - *(float *)(o + 0x4c);
         dy = v[1] - *(float *)(o + 0x50);
         dz = v[2] - *(float *)(o + 0x54);
@@ -9043,54 +9043,53 @@ char *ai_Unk4d25a0(char *c)
     }
     return res;
 }
-/* 0x4d2650, a callback: collects the objects "sp_CONQUER*" into ai_Unk930380[ai_Unk6f0d60++] */
+/* 0x4d2650, a callback: collects the objects "sp_CONQUER*" into cm_PointList[cm_PointCount++] */
 
-char ai_Unk4d2650(char *o)
+char cm_CollectConquerPoint(char *o)
 {
     if (strncmp(o, "sp_CONQUER", 10) == 0)
-        ai_Unk930380[ai_Unk6f0d60++] = o;
+        cm_PointList[cm_PointCount++] = o;
     return 1;
 }
-/* 0x4d2680, the closest "sp_CONQUER" object to the character c, the distance weighted by the owner (+0x200: 5eb990 for
-   an own friend, 5eb7b0 for another one that is not a friend, 5ebbe8 otherwise); 0 when it is owned by c itself. Rough draft. */
+/* 0x4d2680, the conquer point (an "sp_CONQUER" object, cm_CollectConquerPoint) to go for: the least distance to the
+   fighter c's body, weighted by the point's owner (10 for an owner of another side (cm_OtherBuilding), 15 for an
+   owner of c's own side other than c, 25 for c itself); 0 when the point chosen is c's own */
 
-char *ai_Unk4d2680(char *c)
+D3OBJECT *cm_NearestConquerPoint(AICHAR *c)
 {
-    float v[3];
-    float best = 1000000.0f;
+    D3VECTOR4 v;
+    float best;
+    D3OBJECT *res;
+    D3OBJECT *body, *o;
+    void *owner;
     float d, dx, dy, dz;
-    char *res = 0;
-    char *m, *o, *e;
     int i;
 
-    ai_Unk6f0d60 = 0;
-    d3_ForEachObject(ai_Unk5fb5b0, 0, 0x40, ai_Unk4d2650, c);
-    m = *(char **)(*(char **)(c + 0x184) + 0x34);
-    d3_PointToWorld(m, m + 0x4c, v);
-    for (i = 0; i < ai_Unk6f0d60; i++) {
-        o = ai_Unk930380[i];
-        dx = v[0] - *(float *)(o + 0x4c);
-        dy = v[1] - *(float *)(o + 0x50);
-        dz = v[2] - *(float *)(o + 0x54);
+    best = 1000000.0f;
+    res = 0;
+    cm_PointCount = 0;
+    d3_ForEachObject(d3_DefaultScene, 0, 0x40, cm_CollectConquerPoint, c);
+    body = c->model->body;
+    d3_PointToWorld(body, &body->pos, (D3VECTOR *)&v);
+    for (i = 0; i < cm_PointCount; i++) {
+        o = (D3OBJECT *)cm_PointList[i];
+        dx = v.x - o->pos.x;
+        dy = v.y - o->pos.y;
+        dz = v.z - o->pos.z;
         d = (float)sqrt(dx * dx + dy * dy + dz * dz);
-        e = *(char **)(o + 0x200);
-        if (e != 0) {
-            if (cm_OtherBuilding(c, e) != 0)
-                d = (float)(d * ai_Unk5eb990);
-            else if (e != 0) {
-                if (cm_OtherBuilding(c, e) == 0 && e != c)
-                    d = (float)(d * ai_Unk5eb7b0);
-                else if (e != 0)
-                    d = (float)(d * ai_Unk5ebbe8);
-            }
-        }
+        if (o->owner != 0 && cm_OtherBuilding((char *)c, o->owner) != 0)
+            d = (float)(d * 10.0);
+        else if (o->owner != 0 && cm_OtherBuilding((char *)c, o->owner) == 0 && o->owner != c)
+            d = (float)(d * 15.0);
+        else if (o->owner != 0)
+            d = (float)(d * 25.0);
         if (d < best) {
             best = d;
             res = o;
         }
     }
-    if (*(char **)(res + 0x200) == c)
-        return 0;
+    if (res->owner == c)
+        res = 0;
     return res;
 }
 /* 0x4d27a0, builds the table ai_Unk9300a0[6][5][6] of floats (the values by (row, column) for the six kinds, stored one by one,
@@ -9476,7 +9475,7 @@ void ai_Unk4d3120(char *rec, char *c)
         cm_OrderWare3(rec, c, o);
         return;
     case 2:
-        o = ai_Unk4d2680(c);
+        o = (char *)cm_NearestConquerPoint((AICHAR *)c);
         if (o == 0)
             return;
         cm_OrderConquer(rec, c, o);
@@ -15376,7 +15375,7 @@ extern int ai_Unk92ca80[16];
 extern int ai_Unk92cac0;
 extern char cm_CutInfos[16][0x35c];
 extern float ai_Unk9300a0[0xb4];
-extern char * ai_Unk930380[32];
+extern char * cm_PointList[32];
 extern CMPORTRAIT cm_Portraits[6];
 extern G18POP cm_DamagePops[16];
 extern char cm_Fighters[21376];
@@ -15561,7 +15560,7 @@ int cm_AttackerRole = 0;  /* 0x6f0d50 */
 int cm_DefenderRole = 0;  /* 0x6f0d54 */
 int cm_FlagObjectCount = 0;  /* 0x6f0d58 */
 int cm_BootsObject = 0;  /* 0x6f0d5c */
-int ai_Unk6f0d60 = 0;  /* 0x6f0d60 */
+int cm_PointCount = 0;  /* 0x6f0d60 */
 int ai_Unk6f0d64 = 0;  /* 0x6f0d64 */
 int ai_Unk6f0d68 = 0;  /* 0x6f0d68 */
 int ai_Unk6f0d6c = 0;  /* 0x6f0d6c */
@@ -15622,7 +15621,7 @@ int ai_Unk92ca80[16] = {0};  /* 0x92ca80 */
 int ai_Unk92cac0 = 0;  /* 0x92cac0 */
 char cm_CutInfos[16][0x35c] = {0};  /* 0x92cae0 */
 float ai_Unk9300a0[0xb4] = {0};  /* 0x9300a0 */
-char * ai_Unk930380[32] = {0};  /* 0x930380 */
+char * cm_PointList[32] = {0};  /* 0x930380 */
 CMPORTRAIT cm_Portraits[6] = {0};  /* 0x930400 */
 G18POP cm_DamagePops[16] = {0};  /* 0x9304c0 */
 char cm_Fighters[21376] = {0};  /* 0x930600 */

@@ -758,10 +758,10 @@ char ai_Unk4d2450(char *o, int *list);  /* 0x4d2450 */
 char *ai_Unk4d2490(char *c);  /* 0x4d2490 */
 char ai_Unk4d2550(char *o, char *c);  /* 0x4d2550 */
 char *ai_Unk4d25a0(char *c);  /* 0x4d25a0 */
-char ai_Unk4d2650(char *o);  /* 0x4d2650 */
-char *ai_Unk4d2680(char *c);  /* 0x4d2680 */
-extern int ai_Unk6f0d60;  /* 0x6f0d60 */
-extern char *ai_Unk930380[];  /* 0x930380 */
+char cm_CollectConquerPoint(char *o);  /* 0x4d2650 */
+struct D3OBJECT *cm_NearestConquerPoint(struct AICHAR *c);  /* 0x4d2680 */
+extern int cm_PointCount;  /* 0x6f0d60 */
+extern char *cm_PointList[];  /* 0x930380 */
 extern float ai_Unk5eb788;  /* 0x5eb788 */
 extern float ai_Unk5eb988;  /* 0x5eb988 */
 extern double ai_Unk5eb990;  /* 0x5eb990 */
