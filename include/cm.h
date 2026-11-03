@@ -513,7 +513,7 @@ void ai_Unk4cdb20(char *c);  /* 0x4cdb20 */
 char ai_Unk4cdb80(char *c);  /* 0x4cdb80 */
 float ai_Unk4cdcf0(char *c);  /* 0x4cdcf0 */
 void cm_UpdateHandObject(char *c);  /* 0x4cde20 */
-int *ai_Unk4cdf00(char *rec, char *c);  /* 0x4cdf00 */
+int *cm_CutEntrySlot(char *rec, char *c);  /* 0x4cdf00 */
 int *ai_Unk4cdf80(char *c);  /* 0x4cdf80 */
 int ai_Unk4cdfe0(int x, int y);  /* 0x4cdfe0 */
 int ai_Unk4ce040(int a, int b, int *ox, int *oy);  /* 0x4ce040 */

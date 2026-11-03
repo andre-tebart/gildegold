@@ -234,6 +234,14 @@ typedef struct CMCUTENTRY {             /* 0x2c bytes, a character's entry of a 
     char pad08[0x24];
 } CMCUTENTRY;
 
+typedef struct G17CUTENTRYMSG {         /* 0x34 bytes, the data of messages 0x50 / 0x51 (ai_Unk4c5c40 / ai_Unk4c5ca0
+                                           send, the handlers 0x4cc1b0 / 0x4cc270 store the entry) */
+    int playerId;                       /* 0x00, the player whose cutscene record (CMCUTINFO.playerId) it is */
+    CMCUTENTRY entry;                   /* 0x04, the character's entry, copied whole */
+    int fightId;                        /* 0x30, the sender's *cm_CurrentFight (-1: none); the receiver drops a message
+                                           whose fight is not its player's AICHAR.partyId */
+} G17CUTENTRYMSG;
+
 typedef struct CMCUTINFO {              /* 0x35c bytes, cm_CutInfos[16]: a player's cutscene (fight) record, received
                                            whole by cm_ExSendCutInfo */
     int unk00;                          /* 0x00 */
@@ -338,6 +346,7 @@ typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head 
         G17SYSMSG sys;                  /* 0x10, message 0x20 */
         CRIME crime;                    /* 0x10, message 0x22 */
         G17CUTMSG cut;                  /* 0x10, message 0x26 */
+        G17CUTENTRYMSG cutEntry;        /* 0x10, messages 0x50 / 0x51 */
         G17REMOVEMSG remove;            /* 0x10, message 0x2b */
         G17PLANTMSG plant;              /* 0x10, message 0x2c */
         G17TABLEMSG table;              /* 0x10, message 0x54 */

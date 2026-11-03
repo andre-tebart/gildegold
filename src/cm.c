@@ -5509,29 +5509,33 @@ int ai_Unk4cc110(G17MSG *m, G17STAT *s)
     }
     return 0;
 }
-/* 0x4cc1b0, handler of type 0x50: the cutscene record data[0] (when it is our player's) gets the entry data[4] */
+/* 0x4cc1b0, handler of message 0x50: when the message's fight is our player's party, the entry m->cutEntry.entry is
+   stored into the cutscene record of player m->cutEntry.playerId, in the slot of its character (a fighter or any
+   character; cm_CutEntrySlot finds or takes the slot); an entry of state 0 frees the slot again (charId -1). Returns 1
+   for a message of another fight, else 0 */
 
-int ai_Unk4cc1b0(G17MSG *m, G17STAT *s)
+int cm_ExCutEntry(G17MSG *m, G17STAT *s)
 {
-    char *rec, *c, *r;
+    CMCUTINFO *rec;
+    CMCUTENTRY *r;
+    char *c;
     int i;
 
-    if (m->data[0x30] != ai_CharInts[ai_PlayerId][0x82])
+    if (m->cutEntry.fightId != ai_CharsT[ai_PlayerId].partyId)
         return 1;
     for (i = 0; i < 16; i++) {
-        if (*(int *)(cm_CutInfos[i] + 0x10) == G17_I(*m, 0))
+        if (cm_CutInfosT[i].playerId == m->cutEntry.playerId) {
+            rec = &cm_CutInfosT[i];
+            c = cm_FindFighter(m->cutEntry.entry.charId);
+            if (c == 0)
+                c = (char *)gm_FindChar(m->cutEntry.entry.charId);
+            if (c != 0) {
+                r = (CMCUTENTRY *)cm_CutEntrySlot((char *)rec, c);
+                *r = m->cutEntry.entry;
+                if (r->state == 0)
+                    r->charId = -1;
+            }
             break;
-    }
-    if (i < 16) {
-        rec = cm_CutInfos[i];
-        c = cm_FindFighter(G17_I(*m, 4));
-        if (c == 0)
-            c = gm_FindChar(G17_I(*m, 4));
-        if (c != 0) {
-            r = ai_Unk4cdf00(rec, c);
-            memcpy(r, &m->data[4], 0x2c);
-            if (*(int *)(r + 4) == 0)
-                *(int *)r = -1;
         }
     }
     if (s != 0) {
@@ -5555,7 +5559,7 @@ int ai_Unk4cc270(G17MSG *m, G17STAT *s)
             break;
     }
     if (i < 16) {
-        r = ai_Unk4cdf00(cm_CutInfos[i], cm_FindFighter(G17_I(*m, 4)));
+        r = cm_CutEntrySlot(cm_CutInfos[i], cm_FindFighter(G17_I(*m, 4)));
         if (*(int *)(r + 4) == G17_I(*m, 8)) {
             if (*(int *)(r + 4) != 2 || *(int *)(r + 0x10) == G17_I(*m, 0x14))
                 memcpy(r, &m->data[4], 0x2c);
@@ -6793,7 +6797,7 @@ void cm_UpdateHandObject(char *c)
 /* 0x4cdf00, the record of the character c in the 16 records (0x2c bytes, id at +0) of rec + 0x94, else a free one
    (id -1), 0: none */
 
-int *ai_Unk4cdf00(char *rec, char *c)
+int *cm_CutEntrySlot(char *rec, char *c)
 {
     int id = *(int *)(c + 4);
     int i;
@@ -7225,7 +7229,7 @@ void ai_Unk4cec30(int a, char *c)
     }
     if (i >= 0x20)
         return;
-    ai_Unk4cdf00((char *)a, c);
+    cm_CutEntrySlot((char *)a, c);
     ai_Unk935d20[i] = d2_CreateWindow(x0, y0, w, h, 0x10);
     d2_WinOpenPic(0, 0, 0x7b0, d2_LastWindow);
     d2_WinOpenPic(w - 0x18, 0, 0x7b1, d2_LastWindow);
@@ -7778,7 +7782,7 @@ int ai_Unk4cffd0(char *rec, char *c, char *tgt, int x, int z)
         return -1;
     if ((char)d3_GetHeightAt(sc, *(char **)(*(char **)(tgt + 0x184) + 0x34) + 0x4c, &x, &z, &h) == 0)
         return -1;
-    q = (char *)ai_Unk4cdf00(rec, c);
+    q = (char *)cm_CutEntrySlot(rec, c);
     if (q == 0)
         return -1;
     q[0x1c] = 0;
@@ -7843,7 +7847,7 @@ int ai_Unk4d0200(char *rec, char *c, char *tgt)
     d3_PointToWorld(tgt, tgt + 0x4c, v);
     if ((char)d3_GetHeightAt(sc, v, &a, &b, &h) == 0)
         return -1;
-    q = (char *)ai_Unk4cdf00(rec, c);
+    q = (char *)cm_CutEntrySlot(rec, c);
     if (q == 0)
         return -1;
     q[0xc] = 0;
@@ -7868,7 +7872,7 @@ int ai_Unk4d02d0(char *rec, char *c, char *tgt)
     d3_PointToWorld(tgt, tgt + 0x4c, v);
     if ((char)d3_GetHeightAt(sc, v, &x, &z, &h) == 0)
         return 0;
-    q = (char *)ai_Unk4cdf00(rec, c);
+    q = (char *)cm_CutEntrySlot(rec, c);
     q[0xc] = 0;
     strcpy(q + 0x10, tgt);
     *(int *)q = *(int *)(c + 4);
@@ -7892,7 +7896,7 @@ int ai_Unk4d0380(char *rec, char *c, char *tgt, unsigned char a)
     d3_PointToWorld(tgt, tgt + 0x4c, v);
     if ((char)d3_GetHeightAt(sc, v, &x, &z, &h) == 0 || *(int *)(c + 0x1ac) != 0)
         return -1;
-    q = (char *)ai_Unk4cdf00(rec, c);
+    q = (char *)cm_CutEntrySlot(rec, c);
     q[0xc] = 0;
     memcpy(L, q, 0x2c);
     L[0] = *(int *)(c + 4);
@@ -7917,7 +7921,7 @@ int ai_Unk4d0460(char *rec, char *c, int a)
         return -1;
     if (ai_Unk4d2170(c, z, x, 8, &a, &z) == 0)
         return -1;
-    q = (char *)ai_Unk4cdf00(rec, c);
+    q = (char *)cm_CutEntrySlot(rec, c);
     q[0xc] = 0;
     memcpy(L, q, 0x2c);
     L[0] = *(int *)(c + 4);
@@ -7933,7 +7937,7 @@ void ai_Unk4d0520(char *rec, char *c)
     char *q;
     int L[11];
 
-    q = (char *)ai_Unk4cdf00(rec, c);
+    q = (char *)cm_CutEntrySlot(rec, c);
     q[0xc] = 0;
     memcpy(L, q, 0x2c);
     L[0] = *(int *)(c + 4);
@@ -7973,7 +7977,7 @@ char ai_Unk4d0570(char *rec, char *c)
                 ret = 1;
             }
         } else if ((char)d3sm_PickK(*(char **)(ai_Unk5fb5b0 + 0xb0), dm_L.x + 0x1a, dm_L.y + 0x1a, &x, &z)) {
-            q = (char *)ai_Unk4cdf00(rec, c);
+            q = (char *)cm_CutEntrySlot(rec, c);
             q[0xc] = 0;
             memcpy(L, q, 0x2c);
             L[0] = *(int *)(c + 4);
@@ -9549,7 +9553,7 @@ char *ai_Unk4d3b30(char *rec)
         n = (unsigned char)ai_Unk6f0d04[0x30];
         for (i = 0; i < n && *(int *)(ai_Unk6f0d04 + 0x34 + i * 4) == -1; i++)
             ;
-        rr = (char *)ai_Unk4cdf00(cm_CutInfos[i], ret);
+        rr = (char *)cm_CutEntrySlot(cm_CutInfos[i], ret);
         memcpy(sl, rr, 0x2c);
         sl[0] = *(int *)(ret + 4);
         sl[1] = 5;
@@ -10499,7 +10503,7 @@ void ai_Unk4d6970(char *r)
     ai_Unk4ce830();
     if (ai_Unk6f0d88 == 0 && ai_Unk6f0cf4 == 0) {
         if (d2_ClickedId != -1 && d2_PointerObj == ai_Unk60cb68) {
-            q = ai_Unk4cdf00(r, ai_Unk6f0d74);
+            q = cm_CutEntrySlot(r, ai_Unk6f0d74);
             memcpy(sl, q, 0x2c);
             sl[0] = *(int *)(ai_Unk6f0d74 + 4);
             sl[1] = 5;
@@ -10816,7 +10820,7 @@ int ai_Unk4d7360(char *rec, char *c, char *g)
                 break;
             }
         }
-        r2 = (char *)ai_Unk4cdf00(other, g);
+        r2 = (char *)cm_CutEntrySlot(other, g);
         if (*(int *)(r2 + 8) == -1 || cm_GetSlotState(*(int *)(r2 + 8)) == 0) {
             id = *(int *)(r2 + 4);
             *(int *)(r2 + 8) = -1;
@@ -10972,7 +10976,7 @@ void ai_Unk4d76a0(int *rec)
                                     break;
                                 }
                             }
-                            r2 = (char *)ai_Unk4cdf00(other, x);
+                            r2 = (char *)cm_CutEntrySlot(other, x);
                             if ((*(int *)(r2 + 8) == -1 || cm_GetSlotState(*(int *)(r2 + 8)) != 0) &&
                                 (*(int *)(r2 + 8) = -1, *(int *)(r2 + 4) == 0) &&
                                 ai_Unk4cdac0(x) != 0 && *(int *)(ai_Unk4cdac0(x) + 0x20) > 0) {
@@ -15291,7 +15295,7 @@ int cm_LastCharId = -1;  /* 0x60bd88, = -1 */
 int cm_LastBuildingId = -1;  /* 0x60bd8c, = -1 */
 int cm_LastObjectId = -1;  /* 0x60bd90, = -1 */
 int cm_LeftPlayerId = -1;  /* 0x60bd94, = -1 */
-int (*cm_Handlers[0x6a])(G17MSG *m, G17STAT *s) = { ai_Unk4c6a20, ai_Unk4c6a50, ai_AlwaysTrue, ai_Unk4c6a20, ai_Unk4c6a60, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a90, ai_Unk4c6ad0, ai_Unk4c6b20, cm_ExCreateCharacter, cm_ExCreateNamedCharacter, cm_ExTakeOverCharacter, ai_Unk4c6ec0, ai_Unk4c6f60, ai_Unk4c7010, cm_ExSellObjekt, cm_ExMakeGoods, cm_ExMoveObject, ai_Unk4c7d80, ai_Unk4c7e20, cm_ExFieldDeltas, cm_ExFieldValues, cm_ExMoodDeltas, ai_Unk4c8110, ai_Unk4c81d0, cm_ExRelations, ai_Unk4c85c0, ai_Unk4c87a0, ai_Unk4c88a0, ai_Unk4c8990, cm_ExSysMessage, ai_Unk4c8de0, cm_ExAddStraftat, ai_Unk4c9090, ai_Unk4c90d0, ai_Unk4c9110, cm_ExSendCutInfo, ai_Unk4c9280, ai_Unk4c9340, ai_Unk4c93b0, ai_Unk4c9400, cm_ExRemoveOwned, cm_ExSetPlant, ai_Unk4c9740, ai_Unk4c97c0, ai_Unk4c9830, ai_Unk4c99b0, ai_Unk4c9c10, ai_Unk4c9c80, ai_Unk4c9d00, ai_Unk4c9d80, cm_ExChrGotoBuilding, cm_ExChrUseGates, ai_Unk4caa20, ai_Unk4caaa0, cm_ExSetHome, cm_ExGebUpgrade, ai_Unk4cb100, ai_Unk4cb210, cm_ExHire, cm_ExCharModel, ai_Unk4cb6e0, ai_Unk4cb730, ai_Unk4cb7c0, ai_Unk4cb7f0, ai_Unk4cb850, ai_Unk4cb890, ai_Unk4cb8d0, ai_Unk4cb910, ai_Unk4cb940, ai_Unk4cb9b0, cm_ExSpawnCharacter, ai_Unk4cbb90, cm_ExChat, cm_ExCreateGeb, ai_Unk4cbff0, ai_Unk4cc050, ai_Unk4cc110, ai_Unk4cc1b0, ai_Unk4cc270, ai_Unk4cc330, ai_Unk4cc390, ai_Unk4cc510, ai_Unk4cc7b0, ai_Unk4cc8e0, ai_Unk4cc920, ai_Unk4cc980, ai_Unk4cca10, ai_Unk4ccaa0, ai_Unk4ccb10, ai_Unk4ccbd0, ai_Unk4ccc20, ai_Unk4ccce0, ai_Unk4cce00, ai_Unk4cce10, ai_Unk4cced0, ai_Unk4ccf10, ai_Unk4ccf90, ai_Unk4cd010, ai_Unk4cd130, ai_Unk4cd180, ai_Unk4cd1e0, ai_Unk4cd220, ai_Unk4cd2f0 };  /* 0x60bd98, the handler of each message type */
+int (*cm_Handlers[0x6a])(G17MSG *m, G17STAT *s) = { ai_Unk4c6a20, ai_Unk4c6a50, ai_AlwaysTrue, ai_Unk4c6a20, ai_Unk4c6a60, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a90, ai_Unk4c6ad0, ai_Unk4c6b20, cm_ExCreateCharacter, cm_ExCreateNamedCharacter, cm_ExTakeOverCharacter, ai_Unk4c6ec0, ai_Unk4c6f60, ai_Unk4c7010, cm_ExSellObjekt, cm_ExMakeGoods, cm_ExMoveObject, ai_Unk4c7d80, ai_Unk4c7e20, cm_ExFieldDeltas, cm_ExFieldValues, cm_ExMoodDeltas, ai_Unk4c8110, ai_Unk4c81d0, cm_ExRelations, ai_Unk4c85c0, ai_Unk4c87a0, ai_Unk4c88a0, ai_Unk4c8990, cm_ExSysMessage, ai_Unk4c8de0, cm_ExAddStraftat, ai_Unk4c9090, ai_Unk4c90d0, ai_Unk4c9110, cm_ExSendCutInfo, ai_Unk4c9280, ai_Unk4c9340, ai_Unk4c93b0, ai_Unk4c9400, cm_ExRemoveOwned, cm_ExSetPlant, ai_Unk4c9740, ai_Unk4c97c0, ai_Unk4c9830, ai_Unk4c99b0, ai_Unk4c9c10, ai_Unk4c9c80, ai_Unk4c9d00, ai_Unk4c9d80, cm_ExChrGotoBuilding, cm_ExChrUseGates, ai_Unk4caa20, ai_Unk4caaa0, cm_ExSetHome, cm_ExGebUpgrade, ai_Unk4cb100, ai_Unk4cb210, cm_ExHire, cm_ExCharModel, ai_Unk4cb6e0, ai_Unk4cb730, ai_Unk4cb7c0, ai_Unk4cb7f0, ai_Unk4cb850, ai_Unk4cb890, ai_Unk4cb8d0, ai_Unk4cb910, ai_Unk4cb940, ai_Unk4cb9b0, cm_ExSpawnCharacter, ai_Unk4cbb90, cm_ExChat, cm_ExCreateGeb, ai_Unk4cbff0, ai_Unk4cc050, ai_Unk4cc110, cm_ExCutEntry, ai_Unk4cc270, ai_Unk4cc330, ai_Unk4cc390, ai_Unk4cc510, ai_Unk4cc7b0, ai_Unk4cc8e0, ai_Unk4cc920, ai_Unk4cc980, ai_Unk4cca10, ai_Unk4ccaa0, ai_Unk4ccb10, ai_Unk4ccbd0, ai_Unk4ccc20, ai_Unk4ccce0, ai_Unk4cce00, ai_Unk4cce10, ai_Unk4cced0, ai_Unk4ccf10, ai_Unk4ccf90, ai_Unk4cd010, ai_Unk4cd130, ai_Unk4cd180, ai_Unk4cd1e0, ai_Unk4cd220, ai_Unk4cd2f0 };  /* 0x60bd98, the handler of each message type */
 int (*cm_Checks[0x6a])(G17MSG *m) = { sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c6350, sv_ReturnZero, ai_Unk4c63e0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c65b0, sv_ReturnZero, sv_ReturnZero, ai_Unk4c66c0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c6750, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c6780, ai_Unk4c67a0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c67c0, cm_CheckTableRequest, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c69c0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero };  /* 0x60bf40, the check of each type (groups 5..6) */
 char ai_Unk60c4a0[20] = "cm_ExChrWalkToDummy";  /* 0x60c4a0 */
 char cm_TextNewline[4] = { 36, 65, 0, 0 };  /* 0x60c6c0 */
