@@ -55,7 +55,7 @@ extern GAPDATA full_data_625710[];
 extern GAPDATA full_data_625714[];
 extern GAPDATA full_data_6f2624[];
 extern GAPDATA full_data_6f2628[];
-extern const float ai_Unk5ebba4[];
+extern const struct D3VECTOR d3_Origin;
 #include "unk_5d33b0_types.h"
 extern OPTIONBYTES ai_GameSwitches;
 extern char ai_Chars[768][0x21c];
@@ -66,7 +66,6 @@ extern int ai_Difficulty;
 extern unsigned char ai_OwnPlayer;
 extern const int sv_PhaseMinutes[24];
 extern char * cm_FieldObject;
-extern char *ai_Unk5fb5b0;
 extern const int ai_CharWalkSteps[16];
 extern signed char ai_Relations[768][768];
 extern char ai_Unk625820[115][0x20];
@@ -95,11 +94,11 @@ extern signed char ai_Relations[768][768];
 extern const int ai_CharWalkSteps[16];
 extern char ai_Crimes[];
 extern const int sv_PhaseMinutes[24];
-extern int ai_ClockMs;
+extern volatile unsigned long d3_Time;
 extern unsigned short * ai_PlayerChar;
 extern float ai_FloatOne;
 extern char ai_Unk625820[115][0x20];
-extern const char ai_AxisPair[];
+extern const struct D3VECTOR d3_ZAxis;
 extern GAPDATA full_data_60d0d4[];
 extern GAPDATA full_data_6f2634[];
 extern struct G16TRACKHANDLES snd_TrackHandles;
@@ -109,7 +108,6 @@ extern int ai_GameOver;
 extern char * ai_Goods;
 extern GAPDATA full_data_5f1890[];
 extern int ai_PermsDirty;
-extern char *ai_Unk5fb5b0;
 extern char * ai_PlayerBuilding;
 extern int ai_Unk75f280[576];
 extern int sv_FrameDepth;
@@ -180,7 +178,6 @@ extern unsigned short gm_KindObjCount;
 extern unsigned gm_KindObjs[732];
 extern int d2_ClickedId;
 extern int d2_Unkf8aac4;
-extern char *ai_Unk5fb5b0;
 extern GAPDATA full_data_627e98[];
 extern GAPDATA full_data_627ea8[];
 extern char ai_MissionMode;
@@ -1103,7 +1100,7 @@ int he_Unk53e5f0(int e, int name, int obj)
     d3_PointToWorld(obj, obj + 0x4c, vec);
     d3t_GetHeightRange(obj, &mn, &mx);
     vec[1] = mx;
-    o = d3_CreateObject(0, vec, (char *)(unsigned)&ai_Unk5ebba4, name);
+    o = d3_CreateObject(0, vec, (char *)&d3_Origin, name);
     *(int *)(e + 0xc) = o;
     *(int *)(e + 8) = obj;
     if (o != 0) {
@@ -2298,7 +2295,7 @@ void he_Unk541280(int ev, int p2)
             if (*pi != -1 && (o = gm_FindChar(*pi)) != 0 && *(int *)(*(int *)(o + 0x184) + 0x128) == 0) {
                 us = util_Random(100);
                 if (us < 0x29) {
-                    ec = *(int *)(U_I((unsigned)&ai_Unk5fb5b0) + 0xb0);
+                    ec = (int)d3_DefaultScene->hmap;
                     u = util_Random(3);
                     n = rd_PointsNear(p2, (u & 0xffff) + 1, buf);
                     pu = buf;
@@ -6248,7 +6245,7 @@ int he_Unk550070(int ev)
                 *(unsigned char *)(*(int *)(ev + 0xc8) + 0x212) = *(unsigned char *)(*(int *)(ev + 0xc8) + 0x212) | 0xc;
                 *(unsigned char *)(*(int *)(ev + 0xc8) + 0x213) = *(unsigned char *)(*(int *)(ev + 0xc8) + 0x213) & 0xfb;
                 d3t_PlayAnim(*(int *)(ev + 0xc8), "*sensenmann.baf");
-                *(int *)(ev + 0xec) = U_I((unsigned)&ai_ClockMs);
+                *(int *)(ev + 0xec) = U_I((unsigned)&d3_Time);
                 d3if_SelectScene(sc, 1);
                 return 1;
             }
@@ -7782,7 +7779,7 @@ int he_Unk550370(int ev)
     if (a == 0 || *(int *)(a + 0x1cc) == 0 || *(int *)(*(int *)(a + 0x1cc) + 0x10) == 0)
         goto fail;
     if (*(int *)(*(int *)(ev + 0xc8) + 0x1d0) != 0) {
-        *(int *)(ev + 0xec) = U_I((unsigned)&ai_ClockMs);
+        *(int *)(ev + 0xec) = U_I((unsigned)&d3_Time);
         d3if_SelectScene(sc, 1);
         return 1;
     }
@@ -7803,9 +7800,9 @@ int he_Unk550370(int ev)
         d3if_SelectScene(sc, 1);
         return rv;
     }
-    dt = (float)((double)U_I((unsigned)&ai_ClockMs) - (double)*(unsigned int *)(ev + 0xec));
+    dt = (float)((double)U_I((unsigned)&d3_Time) - (double)*(unsigned int *)(ev + 0xec));
     w = (float)ai_Unk4c3f80() * 0.25f + 0.5f;
-    *(int *)(ev + 0xec) = U_I((unsigned)&ai_ClockMs);
+    *(int *)(ev + 0xec) = U_I((unsigned)&d3_Time);
     d3_Normalize(np);
     np[0] = np[0] * w * dt + n[0];
     np[1] = np[1] * w * dt + n[1];
@@ -7892,7 +7889,7 @@ int he_Unk550850(int ev)
     d[0] = t[0] - c[0];
     d[1] = t[1] - c[1];
     d[2] = t[2] - c[2];
-    d3_DirToWorld(*(int *)(ev + 0xc8), (void *)(unsigned)&ai_AxisPair, r);
+    d3_DirToWorld(*(int *)(ev + 0xc8), (void *)&d3_ZAxis, r);
     d3_VecAngle2(r, d);
     obj = *(int *)(ev + 0xc8);
     if (obj == 0)
@@ -9831,10 +9828,10 @@ int he_RandomTransporter(char *obj)
     if (obj != 0 && (*(unsigned char *)(obj + 0x210) & 1) == 0) {
         save = *(int *)(obj + 0x1f0);
         *(int *)(obj + 0x1f0) = 0;
-        d3_ForEachObject(U_I((unsigned)&ai_Unk5fb5b0), obj, 0x100, (void *)he_CollectTransporter, list);
+        d3_ForEachObject(d3_DefaultScene, obj, 0x100, (void *)he_CollectTransporter, list);
         *(int *)(obj + 0x1f0) = save;
     } else {
-        d3_ForEachObject(U_I((unsigned)&ai_Unk5fb5b0), obj, 0x100, (void *)he_CollectTransporter, list);
+        d3_ForEachObject(d3_DefaultScene, obj, 0x100, (void *)he_CollectTransporter, list);
     }
     if (list[0x20] == 0)
         return 0;
@@ -14568,7 +14565,7 @@ void he_ShowConstruction(int ev)
     if (w == -1 && obj != 0) {
         list[0x41] = 0;
         list[0] = obj;
-        d3_ForEachObject(U_I((unsigned)&ai_Unk5fb5b0), obj, 0x2c0, (unsigned)&he_Unk56b750, list);
+        d3_ForEachObject(d3_DefaultScene, obj, 0x2c0, (unsigned)&he_Unk56b750, list);
         for (i = 0; i < list[0x41]; i++) {
             o = list[i + 1];
             if (*(int *)(o + 0x220) != 5 || (*(unsigned char *)(o + 0x213) & 4)) {
@@ -14584,7 +14581,7 @@ void he_ShowConstruction(int ev)
         if (obj != 0) {
             list[0x41] = 0;
             list[0] = obj;
-            d3_ForEachObject(U_I((unsigned)&ai_Unk5fb5b0), obj, 0x2c0, (unsigned)&he_Unk56b750, list);
+            d3_ForEachObject(d3_DefaultScene, obj, 0x2c0, (unsigned)&he_Unk56b750, list);
             for (i = 0; i < list[0x41]; i++) {
                 o = list[i + 1];
                 if (*(int *)(o + 0x220) != 5 || (*(unsigned char *)(o + 0x213) & 4)) {
@@ -14646,7 +14643,7 @@ int he_Unk56bac0(int ev)
     obj = d3_FindObject(0, 0x1c0, 0, name);
     list[0] = obj;
     list[0x41] = 0;
-    d3_ForEachObject(U_I((unsigned)&ai_Unk5fb5b0), obj, 0x2c0, (unsigned)&he_Unk56b750, list);
+    d3_ForEachObject(d3_DefaultScene, obj, 0x2c0, (unsigned)&he_Unk56b750, list);
     if (list[0x41] > 1) {
         for (idx = 1; idx < list[0x41]; idx++) {
             o = list[idx + 1];

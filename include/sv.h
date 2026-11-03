@@ -363,6 +363,5 @@ extern int d2_DirtyRectLeft;                                    /* 0xfb9060 */
 extern int d2_DirtyRectTop;                                    /* 0xfb9064 */
 extern int d2_DirtyRectRight;                                    /* 0xfb9068 */
 extern int d2_DirtyRectBottom;                                    /* 0xfb906c */
-extern char * sv_CameraObj;                                 /* 0xfc2dec */
 
 #endif

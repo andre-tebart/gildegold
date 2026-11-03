@@ -18,9 +18,6 @@
    (ai_GameState + 2) fails D7 until ai_GameState is declared at its real size.
    Open: data: 0x623ac0 sv_SkyHeavy, owner sv or cm (defined in cm.c as char[], lies in sv's data block between
    sv_SkyMedium and sv_DayTables; sv reads it through the SVSKYREC view sv_SkyHeavyT, cm by byte offsets).
-   Open: the camera 0xfc2dec has two names: sv_CameraObj (char *, read by raw offsets in the older functions) and
-   d3.h's typed d3_Camera (the camera and panel functions use it); likewise ai_Unk5fb5b0 (char *) for d3_DefaultScene
-   and d3_Unk6333fc for vfs_Root in the older functions.
    unit of rea 8cef7d5b (src/game/sv.c); boundaries in decl/text.dcl */
 struct CHARACTER;
 struct D2SHP;
@@ -546,7 +543,7 @@ int sv_MessageBox(int text, unsigned flags)
     d2_CloseView(form);
     return ret;
 }
-/* 0x521410, the green message box ("misc\\MessageBoxGreen" 0x623ed0) with an optional title text a and the text b; like 0x521150, a button returns its number + 1. Not reentrant (sv_MessageBoxGreenOpen, 0x6f2351) @deep behaviour: 73 code hunks, all read: the statement set is complete and matches 0x521150's twin (form, a/b texts, timed/quick/n, do-while frame loop); the residue is allocation - the original keeps the constant 1 in ebx (cmp eax,ebx / mov ds:X,ebx / cmp BYTE PTR ds:X,bl) and hoists bar = -1 into its own frame+0x10 slot with form in ebp, ours uses immediates and puts form in edi (the first attempts at the hoist made the count worse: 73 -> 267, reverted). Readability as far as base evidence goes: sv_FitForm (0x52ea30), d2_OpenForm / d2_SetForm / d2_RadioAdd / d2_RadioSelect / d2_RaiseViewWindows / d2_WinOpenSlider / d2_RadioSel / d2_ClickedId / d2_SetObjValue, kb_Last / ai_ClockMs / d2_LastWindowPtr / d2_Objs and sv_MessageBoxGreenOpen named, marker dropped; open: Q4 6 raw accesses need the D2WIN / D2OBJ typed views (sv.c does not include d2.h yet: its char * views of d2_Objs / d2_LastWindowPtr supersede d2.h's); Q7 d2_SetObjValue K&R (2..5 argument callers, no canonical prototype). */
+/* 0x521410, the green message box ("misc\\MessageBoxGreen" 0x623ed0) with an optional title text a and the text b; like 0x521150, a button returns its number + 1. Not reentrant (sv_MessageBoxGreenOpen, 0x6f2351) @deep behaviour: 73 code hunks, all read: the statement set is complete and matches 0x521150's twin (form, a/b texts, timed/quick/n, do-while frame loop); the residue is allocation - the original keeps the constant 1 in ebx (cmp eax,ebx / mov ds:X,ebx / cmp BYTE PTR ds:X,bl) and hoists bar = -1 into its own frame+0x10 slot with form in ebp, ours uses immediates and puts form in edi (the first attempts at the hoist made the count worse: 73 -> 267, reverted). Readability as far as base evidence goes: sv_FitForm (0x52ea30), d2_OpenForm / d2_SetForm / d2_RadioAdd / d2_RadioSelect / d2_RaiseViewWindows / d2_WinOpenSlider / d2_RadioSel / d2_ClickedId / d2_SetObjValue, kb_Last / d3_Time / d2_LastWindowPtr / d2_Objs and sv_MessageBoxGreenOpen named, marker dropped; open: Q4 6 raw accesses need the D2WIN / D2OBJ typed views (sv.c does not include d2.h yet: its char * views of d2_Objs / d2_LastWindowPtr supersede d2.h's); Q7 d2_SetObjValue K&R (2..5 argument callers, no canonical prototype). */
 
 int sv_MessageBoxGreen(int a, int b, unsigned flags)
 {
@@ -1968,7 +1965,6 @@ extern int d3t_Snow;  /* 0x76061c */
 extern int sv_SkyPhase;  /* 0x760464 */
 extern int sv_ThunderFog;  /* 0x6f2370 */
 extern int d3_SkyLayers[6];  /* 0x760620 */
-extern int ai_Unk633dd4;  /* 0x633dd4 */
 extern int sv_SkyScene;  /* 0x75ec20 */
 extern struct D3ANIM *d3t_CamMove;  /* 0x6310e8 */
 extern int sv_LampPhase;  /* 0x623e80 */
@@ -1979,7 +1975,6 @@ extern float sv_DayPhaseFrac;  /* 0x623e94 */
 /* ai_MapRefs: view of d3_Scenes (tools/data_views.py) */
 const int sv_PhaseMinutes[24] = { 390, 510, 630, 1050, 1170, 1290, 300, 420, 540, 1140, 1260, 1380, 420, 540, 660, 1020, 1140, 1260, 480, 600, 690, 960, 1020, 1140 };  /* 0x5eeab8 */
 
-extern char *ai_Unk5fb5b0;              /* 0x5fb5b0 */
 extern int ai_Unk623cc0[], ai_Unk623e10[];  /* 0x623cc0, 0x623e10 */
 int d2_GetWinObj();                     /* 0x475b80 */
 void d2_SetViewEnabled(int view, int on);  /* 0x475590 */
@@ -2348,7 +2343,6 @@ void sv_UpdateSkyPhase(AITIME *t)
     d3_SetFogSet(0, 1, a);
 }
 
-extern char * sv_CameraObj;
 extern float sv_CameraHeightFactor, sv_CameraAngleFactor, sv_CameraHeightStep, sv_ScrollVelX, sv_ScrollVelY, sv_ScrollVelXPrev, sv_ScrollVelYPrev;  /* 0x6f22d4, 0x6f22d8, 0x6f2374, 0x6f2388, 0x6f2390, 0x6f238c, 0x6f1c44 */
 extern float sv_CameraHeightNear, sv_CameraAngleNear, sv_CameraHeightFar, sv_CameraAngleFar, sv_ScrollSpeed;  /* 0x623800, 0x623804, 0x623808, 0x62380c, 0x623818 */
 extern int sv_BorderMoved;  /* 0x6f2378 */
@@ -2548,7 +2542,7 @@ int sv_ScrollCamera(void)
     D3SM *hm;                       /* the scene's height map */
     float lo, hi;
     int dirs;
-    const float *ax = (const float *)ai_AxisPair;
+    const float *ax = (const float *)&d3_ZAxis;
 
     moved = 0;
     dirs = 0;
@@ -2674,7 +2668,7 @@ scroll:
             fwd[0] = 0.0f * right[8] + v[0] * right[0] + v[1] * right[4];
             fwd[2] = 0.0f * right[10] + v[0] * right[2] + v[1] * right[6];
         } else {                                                /* else rotated by the view's heading */
-            a = -d3_VecAngle2((char *)(unsigned)&ai_AxisPair, fwd);
+            a = -d3_VecAngle2((char *)&d3_ZAxis, fwd);
             sn = (float)sin(a);
             dst[1] = 0.0f;
             dst[2] = v[1];
@@ -2759,12 +2753,12 @@ int sv_MouseCamera(void)
     D3VECTOR zpos, zrot;            /* the camera position / rotation of the zoom and turn */
     float dst[3], right[16], fwd[3], v[2];   /* right is a D3MATRIX: d3_MatTranspose writes 0x40 bytes */
     D3SM *hm;                       /* the scene's height map */
-    const float *ax = (const float *)ai_AxisPair;
+    const float *ax = (const float *)&d3_ZAxis;
 
     if (d3t_CamMoving != 0)
         return 0;
     my = dm_P.y;
-    cam = sv_CameraObj;
+    cam = (char *)d3_Camera;
     if (dm_L.rhold == 0) {
     chk:
         if (dm_L.ldown != 0 && dm_L.rhold != 0)
@@ -2870,7 +2864,7 @@ go:
                     fwd[0] = 0.0f * right[8] + v[0] * right[0] + v[1] * right[4];
                     fwd[2] = 0.0f * right[10] + v[0] * right[2] + v[1] * right[6];
                 } else {                                                /* else rotated by the view's heading */
-                    ang = -d3_VecAngle2((char *)(unsigned)&ai_AxisPair, fwd);
+                    ang = -d3_VecAngle2((char *)&d3_ZAxis, fwd);
                     sn = (float)sin(ang);
                     dst[1] = 0.0f;
                     dst[2] = v[1];
@@ -2984,7 +2978,7 @@ void sv_FlyCameraToObject(int b)
     char *obj;
     D3OBJECT *cam;
     AIFIN *rec;
-    const float *ax = (const float *)ai_AxisPair;
+    const float *ax = (const float *)&d3_ZAxis;
     float vx, vy, vz;               /* the view axis (0, 0, 1) scaled to -600 */
 
     obj = ((AIBLD *)b)->object;
@@ -3105,7 +3099,7 @@ void sv_CameraToObject(int b)
     double t;                       /* the mean terrain height there */
     char *obj;
     AIFIN *rec;
-    const float *ax = (const float *)ai_AxisPair;
+    const float *ax = (const float *)&d3_ZAxis;
     float vx, vy, vz;               /* the view axis (0, 0, 1) scaled to -600 */
 
     obj = ((AIBLD *)b)->object;
@@ -3171,7 +3165,7 @@ void sv_FlyCameraToModel(int m)
     double t;                       /* the mean terrain height there */
     float step, dx, dy, dz, len;
     D3OBJECT *cam;
-    const float *ax = (const float *)ai_AxisPair;
+    const float *ax = (const float *)&d3_ZAxis;
     float vx, vy, vz;               /* the view axis (0, 0, 1) scaled to -600 */
 
     d3t_GetHeightRange((char *)m, &lo, &hi);
@@ -3213,7 +3207,7 @@ void sv_FlyCameraToModel(int m)
 
 void sv_MoveCameraToView(void)
 {
-    d3t_PlaceObject(sv_CameraObj, *(float *)&sv_ViewPosX, *(float *)&sv_ViewPosY, *(float *)&sv_ViewPosZ, *(float *)&sv_ViewRotX, *(float *)&sv_ViewRotY, *(float *)&sv_ViewRotZ, ai_CameraStep, 8);
+    d3t_PlaceObject(d3_Camera, *(float *)&sv_ViewPosX, *(float *)&sv_ViewPosY, *(float *)&sv_ViewPosZ, *(float *)&sv_ViewRotX, *(float *)&sv_ViewRotY, *(float *)&sv_ViewRotZ, ai_CameraStep, 8);
 }
 /* 0x528290, a callback over the objects of a model (name o): for the one named "sp_WIMPEL" (the banner) sets its colour (0x446f30 (o, o +0x1cc, 0x66 + the byte +0x54 of the character record (0x770bd4) of the owner, 1))
    when the owner (+0x27) is valid; returns 1 */
@@ -3242,11 +3236,11 @@ void sv_CreateBanners(char *b)
             if ((*(unsigned char *)(m + 0x210) & 1) == 0) {
                 save = *(int *)(m + 0x1f0);
                 *(int *)(m + 0x1f0) = 0;
-                d3_ForEachObject(ai_Unk5fb5b0, *(int *)(b + 0x61), 0x100, sv_CreateBannerCB, b);
+                d3_ForEachObject(d3_DefaultScene, *(int *)(b + 0x61), 0x100, sv_CreateBannerCB, b);
                 *(int *)(*(int *)(b + 0x61) + 0x1f0) = save;
                 return;
             }
-            d3_ForEachObject(ai_Unk5fb5b0, m, 0x100, sv_CreateBannerCB, b);
+            d3_ForEachObject(d3_DefaultScene, m, 0x100, sv_CreateBannerCB, b);
         }
     }
 }
@@ -3375,10 +3369,10 @@ void sv_RemoveBanners(char *b)
         if ((*(unsigned char *)(m + 0x210) & 1) == 0) {
             save = *(int *)(m + 0x1f0);
             *(int *)(m + 0x1f0) = 0;
-            d3_ForEachObject(ai_Unk5fb5b0, *(int *)(b + 0x61), 0x40, sv_Unk528660, list);
+            d3_ForEachObject(d3_DefaultScene, *(int *)(b + 0x61), 0x40, sv_Unk528660, list);
             *(int *)(*(int *)(b + 0x61) + 0x1f0) = save;
         } else
-            d3_ForEachObject(ai_Unk5fb5b0, m, 0x40, sv_Unk528660, list);
+            d3_ForEachObject(d3_DefaultScene, m, 0x40, sv_Unk528660, list);
         i = 0;
         if (0 < list[0]) {
             do {
@@ -4863,10 +4857,10 @@ void sv_RunLocationScripts(AIBLD *a)
     if (sv_PanelShown != 0 && *sv_PanelShown != 0xfd)
         cls = &ai_GoodsT[*sv_PanelShown];
     kind = &ai_BTypesT[a->type];
-    if (ai_ClockMs > sv_SceneEventTime + 500) {
+    if (d3_Time > sv_SceneEventTime + 500) {
         if (d3_DefaultScene != 0 && d3_DefaultScene->events != 0 && d3_DefaultScene->events[6].fn != 0)
             d3_DefaultScene->events[6].fn(d3_DefaultScene, 6, d3_DefaultScene->events[6].name, 0);
-        sv_SceneEventTime = ai_ClockMs;
+        sv_SceneEventTime = d3_Time;
     }
     season = gm_ClockSeason(&ai_Time);
     for (i = 0; i < 0x20; i++) {
@@ -5293,11 +5287,11 @@ void sv_ReleaseBubble(int o)
    text, or the own text name, goes into a free sv_Bubbles record, else into the last one stamped before now; ch's delete
    callback becomes sv_ReleaseBubble
    @deep read whole against the original: the three loops (own entry, free entry with the cmp 0x40 after
-   the break, last entry stamped before ai_ClockMs), the stores time/ch/text, onDelete, strcpy/empty name
-   all match; SVBUBBLE typed. Left: VC6 keeps ai_ClockMs in esi from inside loop 2 (0x52c524 mov
-   esi,[ai_ClockMs]) through the time store (mov [eax+4],esi), saving esi in the prologue; the original
-   loads it in the expiry block only (push esi; mov esi,[ai_ClockMs] at 0x52c53c .. pop esi 0x52c562) and
-   reloads it for the store (0x52c572 mov ecx,[ai_ClockMs]). Tried: a local now, indexed stores without b,
+   the break, last entry stamped before d3_Time), the stores time/ch/text, onDelete, strcpy/empty name
+   all match; SVBUBBLE typed. Left: VC6 keeps d3_Time in esi from inside loop 2 (0x52c524 mov
+   esi,[d3_Time]) through the time store (mov [eax+4],esi), saving esi in the prologue; the original
+   loads it in the expiry block only (push esi; mov esi,[d3_Time] at 0x52c53c .. pop esi 0x52c562) and
+   reloads it for the store (0x52c572 mov ecx,[d3_Time]). Tried: a local now, indexed stores without b,
    goto found, i == 0x40: all equal or worse. The branch-target hunks follow from the 5 byte
    prologue/epilogue size. */
 
@@ -5319,14 +5313,14 @@ void sv_ShowBubble(CHARACTER *ch, int text, char *name)
     if (i >= 0x40) {
         i = -1;
         for (j = 0; j < 0x40; j++) {
-            if (sv_Bubbles[j].time < ai_ClockMs)
+            if (sv_Bubbles[j].time < d3_Time)
                 i = j;
         }
         if (i == -1)
             return;
     }
     b = &sv_Bubbles[i];
-    b->time = ai_ClockMs;
+    b->time = d3_Time;
     b->ch = (struct CHARACTER *)ch;
     b->text = text;
     ch->onDelete = (void (*)(struct CHARACTER *))sv_ReleaseBubble;
@@ -5552,11 +5546,11 @@ void sv_SpeakPicked(void)
 /* 0x52cef0, frees the speech bubbles shown more than 300 ms ago and draws the others as text boxes (font 0x54, 0xa0 x 0x60)
    above the screen box of their character's body (its low-poly body while the body is hidden, type 1), for the
    characters of the current scene; the text is the bubble's own or the d2_Strings line
-   @deep read whole against the original: the expiry loop (time + 300u unsigned against ai_ClockMs), the
+   @deep read whole against the original: the expiry loop (time + 300u unsigned against d3_Time), the
    draw loop with the body / low-poly body screen box (two ScreenBox calls, cross-jumped as in the
    original), the two DrawTextBox calls (own text / d2_Strings), AddDirty; instruction count 91/92. Left:
    the draw loop's induction pointer is sv_Bubbles+0xc (name) in ours, +8 (ch) in the original (mov
-   eax,[ebx-4] vs [ebx]; mov al,[ebx] vs mov cl,[ebx+4] / lea eax,[ebx+4]), ai_ClockMs hoisted out of the
+   eax,[ebx-4] vs [ebx]; mov al,[ebx] vs mov cl,[ebx+4] / lea eax,[ebx+4]), d3_Time hoisted out of the
    expiry loop in ours (0x52cef0) and loaded per entry in the original (0x52cf00), d2_ScreenSurf loaded
    before the text branch in ours. Tried: a SVBUBBLE pointer per entry, a pointer walk (counter loop:
    worse), a text pointer variable, a ternary condition: same or worse. d2_AddDirty is K&R in sv's head
@@ -5570,7 +5564,7 @@ void sv_DrawBubbles(void)
     D3RECT box;
 
     for (i = 0; i < 0x40; i++) {
-        if (sv_Bubbles[i].ch != 0 && ai_ClockMs > sv_Bubbles[i].time + 300u)
+        if (sv_Bubbles[i].ch != 0 && d3_Time > sv_Bubbles[i].time + 300u)
             sv_Bubbles[i].ch = 0;
     }
     d2_SetFont(0x54);
@@ -7203,7 +7197,7 @@ void sv_WeatherFrame(void)
     if (d3t_Snow != 0)
         d3t_DrawSnow(d3t_Snow);
     if (sv_Weather.storm[ai_TimeHour] != 0 && (util_RandomU(300) == 0 || (sv_Weather.storm[ai_TimeHour] == 3 && util_RandomU(100) == 0))) {
-        sv_Weather.thunderStart = ai_ClockMs;
+        sv_Weather.thunderStart = d3_Time;
         sv_Weather.thunderLen = util_RandomU(8) + 8;
         sb_PlaySample(snd_ThunderBank, "DonnerMittel_s", 1, 0x3f, (int)(init_SoundVolume * 127.0f), 0, 0);
     }
@@ -7354,16 +7348,16 @@ l64:
         if ((mask & 0x100) != 0)
             he_PickActiveEvent();
         he_RunQuickList();
-        if (net_Conn.s == (unsigned)-1 && (unsigned)ai_ClockMs > (unsigned)cm_NextNetStep && ai_GameState != 0)
+        if (net_Conn.s == (unsigned)-1 && (unsigned)d3_Time > (unsigned)cm_NextNetStep && ai_GameState != 0)
             cm_SendTime((unsigned)&ai_TimeCopy);
         if ((mask & 0x10000) == 0 && ai_GameState != 0 && sv_PanelFlag == 0 && cm_UpdateParties() != 0 && sv_Advancing != 0)
             sv_PopRequest = 1;
     }
-    if ((mask & 0x20000) != 0 && (unsigned)ai_ClockMs > (unsigned)cm_NextNetStep) {
+    if ((mask & 0x20000) != 0 && (unsigned)d3_Time > (unsigned)cm_NextNetStep) {
         cm_FlushSendQueue();
         cm_ReceiveMessages();
         cm_ExecCommands();
-        cm_NextNetStep = ai_ClockMs + 7;
+        cm_NextNetStep = d3_Time + 7;
     }
     if (r == 0 || sv_PanelFlag != 0)
         ai_FrameWait++;
@@ -7373,7 +7367,7 @@ l64:
         if ((mask & 0x10000) == 0 && (mask & 0x40000) != 0)
             sv_UpdateSkyPhase((unsigned)&ai_Time);
         if (d3_CurrentScene == 0)
-            d3q_Mark(d3_QuadTree, sv_CameraObj, d3_FrameCount);
+            d3q_Mark(d3_QuadTree, d3_Camera, d3_FrameCount);
         d3t_UpdateCamera();
         d3if_ClearView();
     }
@@ -7636,7 +7630,7 @@ float sv_FramesPerTick = 30.0f;  /* 0x62378c */
 int sv_TickFrames = 30;  /* 0x623790, the frames drawn since the last timer tick (counted by the frame loop) */
 char sv_GroundplanColours[] = "\377\376\005\005%\377\377/\021\005\377\030\3746\343\377\231\005\005\377\366z\005\005\266W\377<\005P\031H\005\013\304^\305\005g\357\234\231\005\010r";  /* 0x623794, the table of */
 int sv_StatusTime = -1;  /* 0x6237c4, when the status line was set (d3_Time) */
-unsigned sv_SceneEventTime = 0xffffffff;  /* 0x6237c8, ai_ClockMs when sv_RunLocationScripts last fired event 6 of the default scene (every 500 ms; the scene changes of unk_58bbd0.c reset it to 0) */
+unsigned sv_SceneEventTime = 0xffffffff;  /* 0x6237c8, d3_Time when sv_RunLocationScripts last fired event 6 of the default scene (every 500 ms; the scene changes of unk_58bbd0.c reset it to 0) */
 int sv_PanelRebuild = 1;  /* 0x6237cc */
 /* 0x6237d0, the camera limits: three settings of (height, angle), first the near view pair and then (+3 pairs)
    the far one. ai_ApplyGfxOptions (0x5d5c40) copies the pair of the camera_limits option (ai_GfxFloor.byte[1])
@@ -7847,4 +7841,3 @@ int d2_DirtyRectLeft = {0}; /* 0xfb9060 */
 int d2_DirtyRectTop = {0}; /* 0xfb9064 */
 int d2_DirtyRectRight = {0}; /* 0xfb9068 */
 int d2_DirtyRectBottom = {0}; /* 0xfb906c */
-char * sv_CameraObj = {0}; /* 0xfc2dec, the camera object */

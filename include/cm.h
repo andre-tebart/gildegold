@@ -355,7 +355,6 @@ void ai_NotifyPlayerOfChar(unsigned short *param_1, int param_2);  /* 0x5a9170 *
 int ai_Unk5ba750();  /* 0x5ba750 */
 void ai_ApplyOptions(void);  /* 0x5d5e90 */
 extern const int cm_SpeedTicks[];  /* 0x5edc10 */
-extern char *ai_Unk5fb5b0;  /* 0x5fb5b0 */
 extern int cm_SpeedTick;  /* 0x60bd80 */
 extern int ai_NextPartyId;  /* 0x61a658 */
 extern int ai_Unk624570;  /* 0x624570 */
@@ -365,7 +364,7 @@ extern char ai_MissionMode;  /* 0x624580 */
 extern unsigned char ai_NumPlayers;  /* 0x62489c */
 extern int ai_MissionPartner;  /* 0x6248a0, the netId of the other player in a network mission (-1 none; set by message 8, cleared by 10) */
 extern struct D3SCENE *ch_Saved0;  /* 0x631084 */
-extern int * ai_Unk633738;  /* 0x633738 */
+extern void *d3_Terrain;  /* 0x633738, d3_fl.c: the current terrain map */
 extern int ai_TradeMsgCount;  /* 0x6f046c */
 extern int cm_NoticeCount;  /* 0x6f0cd4 */
 extern int ai_GameFlags;  /* 0x6f23f8 */
@@ -423,7 +422,7 @@ int gm_ClockSeason();  /* 0x4fe350 */
 void gm_RefreshGoodsLists(unsigned p);  /* 0x4ff190 */
 void gm_AssignBuilding(unsigned char *b, unsigned short place, unsigned own);  /* 0x502b60 */
 void ai_DropObjectAt(int obj, int target);  /* 0x58feb0 */
-extern const char ai_AxisPair[];  /* 0x5ebb74 */
+extern const struct D3VECTOR d3_ZAxis;  /* 0x5ebb74, (0, 0, 1), d3_vec.c */
 extern const double cm_EffectRadiusScale;  /* 0x5edc28 */
 extern struct VFSDIR *vfs_Root;  /* 0x6333fc */
 extern char ai_DataPath[];  /* 0x75dca0 */
@@ -623,7 +622,7 @@ int d2_DrawShape(int x, int y, void *surf, void *pic, unsigned char i);  /* 0x47
 void d2_SetClipRect(int x0, int y0, int x1, int y1);  /* 0x47cb40 */
 extern float ai_Unk5eb7fc;  /* 0x5eb7fc */
 extern float ai_Unk5eb81c;  /* 0x5eb81c */
-extern const float ai_Unk5ebba4[];  /* 0x5ebba4 */
+extern const struct D3VECTOR d3_Origin;  /* 0x5ebba4, (0, 0, 0), d3_vec.c */
 extern const float ai_Unk5edc50;  /* 0x5edc50 */
 extern float d2_ScreenScale;  /* 0x5fe708 */
 extern void *d2_ScreenSurf;  /* 0x6ed924, the screen surface (d2.c defines it) */
@@ -634,7 +633,6 @@ struct D3OBJECT * d3if_Pick(float x, float y, int mask, int one);  /* 0x448630 *
 struct D3SM; char d3sm_Pick(struct D3SM *h, int sx, int sy, int *px, int *pz);  /* 0x45f2b0 */
 char d3if_Show(struct D3OBJECT *obj, char show);  /* 0x4471b0 */
 void cm_UpdatePointer();  /* 0x4cf670 */
-extern char *ai_Unk5fb5b0;  /* 0x5fb5b0 */
 extern float ai_Unk5ebb68;  /* 0x5ebb68 */
 extern int cm_SelectedCount;  /* 0x6f0d08 */
 extern char *cm_HoverObject;  /* 0x6f0ce0 */
@@ -714,7 +712,6 @@ struct D3IOOBJ * d3io_LoadObjectRef();  /* 0x44e190 */
 struct D3SM * d3sm_Create(struct D3TERRAIN *t, int size, int mask);  /* 0x45eeb0, d3_sm.h */
 void gm_ShuffledBytes(unsigned char n, unsigned char *out);  /* 0x505be0 */
 int gm_BuildingSkill(unsigned char *b, unsigned k, int flag);  /* 0x5092e0, f3gm.h (not includable here, cm.c lead comment) */
-extern int ai_Unk633dd4;  /* 0x633dd4 */
 extern int cm_FightDefender;  /* 0x6f0ce8 */
 extern int cm_FightWinner;  /* 0x6f0cf4 */
 extern int cm_FightSounds;  /* 0x6f0d0c */
@@ -1130,7 +1127,6 @@ int ai_Unk4e5120();  /* 0x4e5120 */
 
 
 extern unsigned int ai_Unk92c4e0;  /* 0x92c4e0, the random seed of the scenes */
-extern int ai_ClockMs;  /* 0x6333cc, a clock */
 extern int ai_Unk6f0dc0;  /* 0x6f0dc0 */
 
 extern int ai_Unk60d374;  /* 0x60d374 */

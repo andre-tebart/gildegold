@@ -10424,7 +10424,7 @@ int gm_Unk50c340(int form, unsigned char *p, unsigned short *q)
 
     gm_TechTreeView = d2_OpenForm(0, 0, form);
     d2_CentreViewWindows(gm_TechTreeView);
-    ai_Unk76fdc8 = ai_ClockMs;
+    ai_Unk76fdc8 = d3_Time;
     w = *(int *)(ai_Unkfb1030 + gm_TechTreeView * 0x2ac);
     d2_SetForm(0, 1);
     if (*q == 0xfd)

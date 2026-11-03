@@ -189,7 +189,7 @@ typedef struct D3FLMAP {
 extern float d3fl_LightMargin;            /* 0x633740, world units added to map->scale when a light's
                                              ground radius is converted to map cells (d3fl_LightCB; no writer) */
 char map_Pick(D3FLMAP *map, D3VECTOR *pos, char lod, int *x, int *y, float *h);      /* 0x4463b0 */
-extern D3VECTOR d3fl_Down;                  /* 0x5ebb74, {0, 0, 1} */
+extern const D3VECTOR d3_ZAxis;             /* 0x5ebb74, (0, 0, 1) */
 extern float d3fl_Shade[1024];              /* 0xfb9940, sun shade by -cos(angle) * 1023 */
 /* float to int with fistp (current rounding mode), as d3_FtoI in d3_engine.h */
 __inline void d3fl_FtoI(int *dst, float f)

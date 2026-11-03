@@ -2526,8 +2526,11 @@ D3EVHANDLER d3e_DefaultResolve(void *obj, int id, char *name)
     return (D3EVHANDLER)ai_AlwaysTrue;
 }
 
-D3SCENE *d3_DefaultScene = d3_Scenes;  /* 0x5fb5b0, the current scene (d3.h; f3gm.c and cm.c use the
-                                       bytes with their own ai_Unk5fb5b0 char * view) */
+/* 0x5eba80, per triangle vertex i: [i][0] the next vertex, [i][1] the previous one (the edge opposite i);
+   d3s.c and d3_sm.c read it, its .rdata lies between vfs.c's and d3_fl.c's, among this unit's constants */
+const int d3_TriEdge[3][2] = { { 1, 2 }, { 2, 0 }, { 0, 1 } };
+
+D3SCENE *d3_DefaultScene = d3_Scenes;  /* 0x5fb5b0, the current scene (d3.h) */
 /* the initial D3D mode: bpp / mode / device flags, then d3if_Unk5fb5c0 (the last dword is that global,
    which the interface's scene select saves and restores; d3d_SetConfig reads only the first three) */
 char d3_DefaultD3DConfig[] = { 94, 1, 0, 0, 3, 0, 0, 0, 2, 0, 0, 0, 4, 0, 0, 0 };  /* 0x5fb5b4 */
@@ -2627,6 +2630,7 @@ float d3_InvZFar = 0;  /* 0xfc2dd4, 1 / d3_ZFar */
 float d3_FogEnd = 0;  /* 0xfc2dd8 */
 float d3_Unkfc2ddc = 0;  /* 0xfc2ddc */
 D3SORTENT * d3_SortBuf = 0;  /* 0xfc2de0 */
+D3OBJECT *d3_Camera = 0;  /* 0xfc2dec, the camera object */
 int d3_Unkfc2df0 = 0;  /* 0xfc2df0 */
 int d3_Unkfc2df4 = 0;  /* 0xfc2df4 */
 char d3_Unkfc2e00[0x200] = {0};  /* 0xfc2e00, the head sentinel of the stock object list; its next field at +0x1fc (0xfc2ffc) is d3_StockListHead (a header macro, not a separate object) */

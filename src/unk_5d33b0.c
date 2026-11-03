@@ -278,7 +278,7 @@ int ai_MessageBox(int param_1, int param_2)
     unsigned int start;
     char *name;
 
-    start = (unsigned int)U_I((unsigned)&ai_ClockMs);
+    start = (unsigned int)U_I((unsigned)&d3_Time);
     ret = 0;
     if (U_B(((unsigned)&ai_GfxResolution + 0x1)) != 0)
         return 0;
@@ -327,7 +327,7 @@ created:
         }
         if (U_I(((unsigned)&dm_L + 0x20)) != 0)
             U_I((unsigned)&sv_PopRequest) = 1;
-        if ((param_2 & 4) != 0 && start + 500 < (unsigned int)U_I((unsigned)&ai_ClockMs))
+        if ((param_2 & 4) != 0 && start + 500 < (unsigned int)U_I((unsigned)&d3_Time))
             U_I((unsigned)&sv_PopRequest) = 1;
     }
     U_B(((unsigned)&ai_GfxResolution + 0x1)) = 0;
@@ -4325,7 +4325,7 @@ float ai_NormalizeEffectScale(float value)
    target. The error is the flight time (vertical speed / g plus the fall from the height difference) times the
    horizontal speed minus the horizontal distance; too short raises the angle (the speed once the angle is at
    its maximum), too far lowers the speed (the angle once the speed is at its minimum). Returns 0 with the
-   speed in *outSpeed, the elevation in *outElev, the heading angle (d3_VecAngle2 against ai_AxisPair) in
+   speed in *outSpeed, the elevation in *outElev, the heading angle (d3_VecAngle2 against d3_ZAxis) in
    *outYaw and three vectors: outDir the horizontal direction tilted by the elevation, outUp d3_YAxis tilted
    the same way, outSide their cross product; -1 when no setting in the range hits (reasoned: the names follow
    the use in am.c). */
@@ -4349,7 +4349,7 @@ int ai_SolveCannonAim(float *from, float *to, float *range, float *outElev, floa
     horiz = (float)sqrt(dir.x * dir.x + dir.z * dir.z);
     d3_Normalize(&dir);
     d3_Normalize(&hdir);
-    *outYaw = d3_VecAngle2((D3VECTOR *)ai_AxisPair, (D3VECTOR *)&dir);
+    *outYaw = d3_VecAngle2((D3VECTOR *)&d3_ZAxis, (D3VECTOR *)&dir);
     drop = (float)fabs(to[1] - from[1]) * 0.0254f;
     horiz = 0.0254f * horiz;
     sign = 0;

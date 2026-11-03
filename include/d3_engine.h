@@ -189,6 +189,7 @@ typedef struct D3MESH {             /* 0x970 bytes, what D3OBJECT::material poin
 } D3MESH;
 #define D3_MESH(o) ((D3MESH *)(o)->material)
 
+extern const int d3_TriEdge[3][2];        /* 0x5eba80, per triangle vertex: [0] the next one, [1] the previous one */
 extern D3OBJECT *d3s_Object;              /* 0x633448 */
 extern struct D3SKY *d3_Sky;                /* 0x633dd4, d3_sky.c (D3SKY, d3_sky.h) */
 extern int d3s_NumUVs;                /* 0xfb925c */

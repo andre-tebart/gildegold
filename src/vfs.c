@@ -16,6 +16,7 @@
 #include "err.h"
 
 static int gz_magic[2] = {0x1f, 0x8b};   /* 0x5f9004, the first data of this file (as in gzio.c) */
+VFSDIR *vfs_Root = 0;  /* 0x6333fc, the root of the VFS directory tree */
 struct MPOOL * vfs_EntryPool = 0;  /* 0x633400 */
 struct MPOOL * vfs_FilePool = 0;  /* 0x633404 */
 char vfs_IgnoreCase = 0;  /* 0x633408 */

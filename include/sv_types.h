@@ -9,7 +9,7 @@ typedef struct SVWEATHER {              /* 0x188 bytes at 0x760488: the day's we
                                            low bit halves the rain under snow) */
     unsigned storm[24];                 /* +0x060, the thunder of the hour (0 .. 2, 3 = frequent; only at 999 / 1000
                                            clouds out of winter weather) */
-    int thunderStart;                   /* +0x0c0, ai_ClockMs of the last thunder */
+    int thunderStart;                   /* +0x0c0, d3_Time of the last thunder */
     int thunderLen;                     /* +0x0c4, its length (8 .. 15) */
     float windX[24];                    /* +0x0c8, the wind direction of the hour: sin of the angle */
     float windY[24];                    /* +0x128, cos of the angle */
@@ -36,7 +36,7 @@ typedef struct SVBOOK {                 /* 0x274 bytes, an open book ("f3_sv:Ope
 
 typedef struct SVBUBBLE {               /* 0x10c bytes, a speech bubble over a character (sv_Bubbles) */
     int text;                           /* +0x000, the d2_Strings id shown when name is empty */
-    int time;                           /* +0x004, ai_ClockMs when it was shown (freed 300 ms later) */
+    int time;                           /* +0x004, d3_Time when it was shown (freed 300 ms later) */
     struct CHARACTER *ch;               /* +0x008, the character it belongs to, 0 = free */
     char name[0x100];                   /* +0x00c, its own text, "" = the d2_Strings line */
 } SVBUBBLE;

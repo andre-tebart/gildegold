@@ -136,7 +136,7 @@ char d3if_Show(struct D3OBJECT *obj, char show);                                
 char d3if_ShowTree(D3OBJECT *obj, char show);                                             /* 0x447300 */
 void d3_DirToWorld(struct XOBJ *obj, float *in, float *out);                           /* 0x458810 */
 float d3_VecAngle(D3VECTOR *a, D3VECTOR *b);                                            /* 0x4539f0 */
-extern D3VECTOR d3_ZAxis;                   /* 0x5ebb74, (0, 0, 1) */
+extern const D3VECTOR d3_ZAxis;             /* 0x5ebb74, (0, 0, 1) */
 struct D3SM * d3sm_Create(struct D3TERRAIN *t, int size, int mask);                          /* 0x45eeb0 */
 void err_Message(char *msg);                                                            /* 0x4222b0 */
 int d3t_ReleaseObjectTextures(D3OBJECT *obj);                                           /* 0x411b70 */

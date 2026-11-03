@@ -1565,3 +1565,14 @@
 2026-11-03T17:11:27 0x00fba9c0 data ai_Unkfba9c0 -> d3if_Levels by:main why:one object (0xfba9c0): the seven light sets D3LIGHTSET[7], moved from sv.c next to d3if_Fog
 2026-11-03T17:11:27 0x00fba9c0 data d3o_Sets -> d3if_Levels by:main why:one object (0xfba9c0): the seven light sets D3LIGHTSET[7]
 2026-11-03T17:11:27 0x00fb91c0 data d3o_SkyCol -> d3sky_Colors by:main why:one object (0xfb91c0): d3_sky.c's six sky colours D3COLORU[6]
+2026-11-03T17:32:11 0x005eba80 data d3s_Next -> d3_TriEdge by:main why:one object (0x5eba80): const int [3][2], the next / previous vertex per triangle vertex, defined in d3_engine.c
+2026-11-03T17:32:11 0x005ebb74 data ai_AxisPair -> d3_ZAxis by:main why:one object (0x5ebb74): const D3VECTOR (0, 0, 1) in d3_vec.c; the 32-byte placeholder was d3_ZAxis and d3_XAxis
+2026-11-03T17:32:11 0x005ebb74 data d3fl_Down -> d3_ZAxis by:main why:one object (0x5ebb74): const D3VECTOR (0, 0, 1)
+2026-11-03T17:32:11 0x005ebba4 data ai_Unk5ebba4 -> d3_Origin by:main why:one object (0x5ebba4): const D3VECTOR (0, 0, 0) in d3_vec.c
+2026-11-03T17:32:11 0x005fb5b0 data ai_Unk5fb5b0 -> d3_DefaultScene by:main why:one object (0x5fb5b0): D3SCENE *, d3_engine.c
+2026-11-03T17:32:11 0x006333cc data ai_ClockMs -> d3_Time by:main why:one object (0x6333cc): volatile unsigned long, the millisecond counter, defined in tb.c
+2026-11-03T17:32:11 0x006333cc data d3_Unk6333cc -> d3_Time by:main why:one object (0x6333cc)
+2026-11-03T17:32:11 0x006333fc data d3_Unk6333fc -> vfs_Root by:main why:one object (0x6333fc): VFSDIR *, defined in vfs.c
+2026-11-03T17:32:11 0x00633738 data ai_Unk633738 -> d3_Terrain by:main why:one object (0x633738): the terrain map pointer, defined in d3_fl.c
+2026-11-03T17:32:11 0x00633dd4 data ai_Unk633dd4 -> d3_Sky by:main why:one object (0x633dd4): D3SKY *, d3_sky.c
+2026-11-03T17:32:11 0x00fc2dec data sv_CameraObj -> d3_Camera by:main why:one object (0xfc2dec): D3OBJECT *, defined in d3_engine.c; users read its fields

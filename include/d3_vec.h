@@ -6,8 +6,10 @@ struct D3VECTOR4;
 #define UNK_453920_H
 #include "d3.h"                       /* the D3 records and typedefs this header names */
 
+extern const D3VECTOR d3_ZAxis;          /* 0x5ebb74, (0, 0, 1) */
+extern const D3VECTOR d3_XAxis;          /* 0x5ebb84, (1, 0, 0) */
 extern const D3VECTOR d3_YAxis;          /* 0x5ebb94, (0, 1, 0) */
-extern D3VECTOR d3_ZAxis;                /* 0x5ebb74, (0, 0, 1) */
+extern const D3VECTOR d3_Origin;         /* 0x5ebba4, (0, 0, 0) */
 
 void d3_ShadeInit(unsigned int visible_budget, unsigned int culled_budget); /* 0x453920 */
 void d3_ShadeReset(void);                                              /* 0x453990 */

@@ -33,8 +33,8 @@
    (byte) read them as pointers to text records; which records is unknown.
    Open: sv_CheckGoodAmount's third parameter: the original's callers push the player byte unextended (a char
    parameter, kept as the cast macro sv_CheckGoodAmountB), sv.h / sv.c declare it unsigned and mask it.
-   Open: ai_ClockMs is volatile in the original (ai_TutorialTick reloads it after every read; the step callbacks
-   and the marker update load it in the original's order only through the unit's view ai_ClockMsVolatile); its
+   Open: d3_Time is volatile in the original (ai_TutorialTick reloads it after every read; the step callbacks
+   and the marker update load it in the original's order only through the unit's view d3_Time); its
    owner and the other units declare it plain int.
    Open: head: include/d2.h not included (the d2_* calls lack prototypes, M7): it supersedes the local
    d2_CreateWinText declaration and its trial drops 6 shape functions to draft (dcp headers conflicts unk_575860
@@ -256,7 +256,6 @@ extern int d2_DirtyRectLeft;
 extern int d2_DirtyRectTop;
 extern int d2_DirtyRectRight;
 extern int d2_DirtyRectBottom;
-extern char * sv_CameraObj;
 extern struct D2OBJ *d2_Objs;
 extern float d3s_QuadUV[6];
 extern GAPDATA full_data_5fea38[];
@@ -276,7 +275,7 @@ extern GAPDATA full_data_602568[];
 
 
 extern GAPDATA full_data_602568[];
-extern int ai_ClockMs;
+extern volatile unsigned long d3_Time;
 extern int sv_PopRequest;
 extern GAPDATA full_data_5f36e0[];
 extern int d2_LastWindow;
@@ -390,7 +389,7 @@ extern GAPDATA full_data_602568[];
 extern GAPDATA full_data_60c7b8[];
 extern GAPDATA full_data_623594[];
 extern GAPDATA full_data_62a570[];
-extern int ai_ClockMs;
+extern volatile unsigned long d3_Time;
 extern int d2_ClickedId;
 extern int d2_LastWindow;
 extern GAPDATA full_data_62a578[];
@@ -471,7 +470,7 @@ extern int d2_LastWindow;
 extern GAPDATA full_data_62a680[];
 extern int sv_PopRequest;
 extern unsigned short ai_PlayerId;
-extern int ai_ClockMs;
+extern volatile unsigned long d3_Time;
 extern GAPDATA full_data_60c7b8[];
 extern GAPDATA full_data_62a69c[];
 extern GAPDATA full_data_62a6b8[];
@@ -584,7 +583,7 @@ extern int ai_ClickedObject;
 extern GAPDATA full_data_62a870[];
 extern GAPDATA full_data_62a88c[];
 extern int gm_AllowAll;
-extern int ai_ClockMs;
+extern volatile unsigned long d3_Time;
 extern GAPDATA full_data_6f5f60[];
 extern char ai_Chars[768][0x21c];
 extern int d2_PointerObj;
@@ -676,7 +675,6 @@ TUTSTATE *const ai_Tutorial = (TUTSTATE *)full_data_6fa060;  /* 0x5eec60, the po
 #define ai_TimeT (*(AITIME *)&ai_Time)  /* 0x770ae0, ai_Time (anm.c: char[14]) as the AITIME it is */
 #define ai_TimeK (*(AHMCLOCK *)&ai_Time)  /* 0x770ae0, ai_Time as the messages here copy it: @original 3 ints and a short (ahm.h AHMCLOCK) */
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original ai_SeanceGhost reads the 16-bit result (mov si, ax) */
-#define ai_ClockMsVolatile (*(volatile int *)&ai_ClockMs)  /* 0x6333cc, @original: the byte-matched ai_TutorialTick reloads the clock after every read (a timer-written int; its owner declares it plain int) */
 typedef struct SHOTENTRY {   /* 0x10 bytes */
     int obj;                 /* +0x0, -1 when empty */
     float dist;              /* +0x4 */
@@ -696,7 +694,7 @@ typedef struct SHOTRESULT {     /* 0x38 bytes, three of them in ai_ShotTable: th
 #define gm_ConvertMoney3 ((int (*)(int, unsigned char, int))gm_ConvertMoney)  /* @original: the calls at 0x57df2c / 0x57df3d push a third word (the previous result) that f3gm.c:7921 never reads (it takes a, k); no byte-matched caller, the evidence is the pushes in the original (the same 3-push shape is noted at hst.c ai_SplitTokenFormat); header unchanged because every matched caller passes two words */
 int ai_TutorialChapterOn[5] = { 1, 1, 1, 1, 1 };  /* 0x62918c, per chapter 1 = played (the start window's check boxes, ai_TutorialWindow) */
 int (*ai_TutorialChapterInit[5])(void) = { ai_TutorialInitChapter1, ai_TutorialInitChapter2, ai_TutorialInitChapter3, ai_TutorialInitChapter4, ai_TutorialInitChapter5 };  /* 0x6291a0, the chapter chain builders the start appends for every chapter played */
-unsigned int ai_GraveChatterAt = 0xffffffff;  /* 0x62a538, ai_ClockMs at the last graveyard chatter tick (ai_GraveyardChatter runs every 0x1194 ms) */
+unsigned int ai_GraveChatterAt = 0xffffffff;  /* 0x62a538, d3_Time at the last graveyard chatter tick (ai_GraveyardChatter runs every 0x1194 ms) */
 int ai_DragObj = -1;  /* 0x62a8d0, the right-held d2 object (d2_RightHeldObj) whose tooltip ai_DragWindow shows, -1 = none */
 int ai_DragViewWin = -1;  /* 0x62a8d4, the first window of the tooltip view ai_DragWindow (d2_Views[].wins[0]), -1 = none */
 int ai_TutorialBanks[6] = { 0 };  /* 0x6f2640, the voice banks of the main intro / outro and the chapters 1 .. 5 (snd_LoadVoiceBank), unloaded by the stop */
@@ -828,8 +826,8 @@ int ai_TutorialTick(void)
         if (ai_TutorialIntroAnswered() != 1)
             return 0;
         ai_Tutorial->state = ai_Tutorial->next;
-        ai_Tutorial->textAt = ai_ClockMsVolatile;
-        ai_Tutorial->stepAt = ai_ClockMsVolatile;
+        ai_Tutorial->textAt = d3_Time;
+        ai_Tutorial->stepAt = d3_Time;
         ai_Tutorial->campaignSteps = 0;
         he_ActivateSlot(0);
         return 0;
@@ -844,16 +842,16 @@ int ai_TutorialTick(void)
             ai_CampaignStep(0, 0, 0, 0);
             return 0;
         }
-        if (ai_ClockMsVolatile > ai_Tutorial->textAt + ai_Tutorial->run->text1Time) {
-            ai_Tutorial->textAt = ai_ClockMsVolatile;
+        if (d3_Time > ai_Tutorial->textAt + ai_Tutorial->run->text1Time) {
+            ai_Tutorial->textAt = d3_Time;
             if (ai_Tutorial->text1Shown == 0 && ai_Tutorial->run->text1) {
                 ai_Tutorial->text1Shown = 1;
                 ai_TutorialShowText();
             }
-        } else if (ai_ClockMsVolatile > ai_Tutorial->textAt + 0x238) {
+        } else if (d3_Time > ai_Tutorial->textAt + 0x238) {
             if (ai_Tutorial->text1Shown != 1)
                 return 0;
-            ai_Tutorial->textAt = ai_ClockMsVolatile;
+            ai_Tutorial->textAt = d3_Time;
             ai_Tutorial->text1Shown = 0;
             ai_TutorialHideText();
         }
@@ -862,7 +860,7 @@ int ai_TutorialTick(void)
         d2_RaiseViewWindows(ai_Tutorial->text1Win);
         return 0;
     case 5:                     /* drop the first text window, open the first step */
-        ai_Tutorial->textAt = ai_ClockMsVolatile;
+        ai_Tutorial->textAt = d3_Time;
         ai_Tutorial->text1Shown = 0;
         ai_TutorialHideText();
         ai_Tutorial->phase = 2;
@@ -877,14 +875,14 @@ int ai_TutorialTick(void)
         ai_Tutorial->next = 7;
         return 0;
     case 6:                     /* one step of the chain: its control is enabled after the step's delay */
-        tb_Paused = ai_ClockMsVolatile >= ai_Tutorial->run->steps[ai_Tutorial->step].delay + ai_Tutorial->stepAt;
+        tb_Paused = d3_Time >= ai_Tutorial->run->steps[ai_Tutorial->step].delay + ai_Tutorial->stepAt;
         d2_SetObjEnabled(ai_Tutorial->stepControl, tb_Paused);
         if (ai_TutorialStepClicked() != 1)
             return 0;
         ai_Tutorial->step++;
-        ai_Tutorial->textAt = ai_ClockMsVolatile;
+        ai_Tutorial->textAt = d3_Time;
         if (ai_Tutorial->step < ai_Tutorial->run->stepCount) {
-            ai_Tutorial->stepAt = ai_ClockMsVolatile;
+            ai_Tutorial->stepAt = d3_Time;
             ai_TutorialStepForm();
             return 0;
         }
@@ -893,7 +891,7 @@ int ai_TutorialTick(void)
         return 0;
     case 7:                     /* the chain is done: the second text window or the tail */
         ai_Tutorial->phase = 3;
-        ai_Tutorial->stepAt = ai_ClockMsVolatile;
+        ai_Tutorial->stepAt = d3_Time;
         ai_Tutorial->stepArg = 0;
         ai_TutorialStepForm();
         tb_Paused = 0;
@@ -908,7 +906,7 @@ int ai_TutorialTick(void)
         return 0;
     case 9:                     /* the second text window and the marker */
         if (ai_Tutorial->text1Shown == 1) {
-            ai_Tutorial->textAt = ai_ClockMsVolatile;
+            ai_Tutorial->textAt = d3_Time;
             ai_Tutorial->text1Shown = 0;
             ai_TutorialHideText();
         }
@@ -923,16 +921,16 @@ int ai_TutorialTick(void)
         return 0;
     case 0xa:                   /* the tail: after tailTime the camera returns and the state 0xb follows */
         if (ai_Tutorial->text1Shown == 1) {
-            ai_Tutorial->textAt = ai_ClockMsVolatile;
+            ai_Tutorial->textAt = d3_Time;
             ai_Tutorial->text1Shown = 0;
             ai_TutorialHideText();
         }
-        if (ai_ClockMsVolatile > ai_Tutorial->run->tailTime + ai_Tutorial->stepAt) {
+        if (d3_Time > ai_Tutorial->run->tailTime + ai_Tutorial->stepAt) {
             sv_CameraFollow();
             sv_PopRequest = sv_FrameDepth - sv_FrameBase;
             ai_Tutorial->state = 0xb;
             ai_Tutorial->next = 0xb;
-            ai_Tutorial->stepAt = ai_ClockMsVolatile;
+            ai_Tutorial->stepAt = d3_Time;
         }
         if (ai_Tutorial->statusShown)
             return 0;
@@ -952,16 +950,16 @@ int ai_TutorialTick(void)
         return 0;
     case 0xb:                   /* the second tail: after tail2Time the state 0xc */
         if (ai_Tutorial->text1Shown == 1) {
-            ai_Tutorial->textAt = ai_ClockMsVolatile;
+            ai_Tutorial->textAt = d3_Time;
             ai_Tutorial->text1Shown = 0;
             ai_TutorialHideText();
         }
-        if (ai_ClockMsVolatile > ai_Tutorial->run->tail2Time + ai_Tutorial->stepAt) {
+        if (d3_Time > ai_Tutorial->run->tail2Time + ai_Tutorial->stepAt) {
             sv_CameraFollow();
             sv_PopRequest = sv_FrameDepth - sv_FrameBase;
             ai_Tutorial->state = 0xc;
             ai_Tutorial->next = 0xc;
-            ai_Tutorial->stepAt = ai_ClockMsVolatile;
+            ai_Tutorial->stepAt = d3_Time;
         }
         if (ai_Tutorial->statusShown)
             return 0;
@@ -981,7 +979,7 @@ int ai_TutorialTick(void)
         return 0;
     case 0xc:                   /* the run is over: the next run record */
         if (ai_Tutorial->text1Shown == 1) {
-            ai_Tutorial->textAt = ai_ClockMsVolatile;
+            ai_Tutorial->textAt = d3_Time;
             ai_Tutorial->text1Shown = 0;
             ai_TutorialHideText();
         }
@@ -1044,10 +1042,10 @@ void ai_CampaignStep(int a, int b, int c, int d)
             return;
         }
         if (ai_Tutorial->run->goal == 3) {
-            if (ai_ClockMsVolatile > ai_Tutorial->run->tailTime + ai_Tutorial->stepAt) {
+            if (d3_Time > ai_Tutorial->run->tailTime + ai_Tutorial->stepAt) {
                 ai_Tutorial->state = ai_Tutorial->run->goalState;
                 ai_Tutorial->next = ai_Tutorial->run->goalState;
-                ai_Tutorial->stepAt = ai_ClockMsVolatile;
+                ai_Tutorial->stepAt = d3_Time;
                 ai_Tutorial->statusShown = 1;
             }
             return;
@@ -1073,13 +1071,13 @@ void ai_CampaignStep(int a, int b, int c, int d)
         if (c == 0) {
             if (ai_Tutorial->run->goal == a) {
                 ai_Tutorial->next = 5;
-                ai_Tutorial->stepAt = ai_ClockMsVolatile;
+                ai_Tutorial->stepAt = d3_Time;
                 if (b)
                     ai_Tutorial->stepArg = b;
             }
         } else if (c == 1 && ai_Tutorial->run->goal == a) {
             ai_Tutorial->next = 4;
-            ai_Tutorial->stepAt = ai_ClockMsVolatile;
+            ai_Tutorial->stepAt = d3_Time;
             ai_Tutorial->text2Shown = 0;
             ai_TutorialHideText2();
             ai_TutorialMarkerUpdate(2);
@@ -1093,14 +1091,14 @@ void ai_CampaignStep(int a, int b, int c, int d)
             if (ai_Tutorial->run->text2Goal && ai_Tutorial->run->text2Goal == a) {
                 ai_Tutorial->state = 0xa;
                 ai_Tutorial->next = 0xa;
-                ai_Tutorial->stepAt = ai_ClockMsVolatile;
+                ai_Tutorial->stepAt = d3_Time;
                 ai_Tutorial->campaignSteps++;
                 return;
             }
             if (ai_Tutorial->run->goal == a && c == 1) {
                 ai_Tutorial->state = 4;
                 ai_Tutorial->next = 4;
-                ai_Tutorial->stepAt = ai_ClockMsVolatile;
+                ai_Tutorial->stepAt = d3_Time;
                 ai_Tutorial->text2Shown = 0;
                 ai_TutorialHideText2();
                 ai_TutorialMarkerUpdate(2);
@@ -1123,7 +1121,7 @@ void ai_CampaignStep(int a, int b, int c, int d)
     }
     goto count;
 started:
-    ai_Tutorial->stepAt = ai_ClockMsVolatile;
+    ai_Tutorial->stepAt = d3_Time;
 count:
     ai_Tutorial->campaignSteps++;
 }
@@ -1305,27 +1303,27 @@ int ai_StepChapter1Step5(int *args)
         if (args[2] == 0 && ai_Tutorial->next == 4) {
             ai_Tutorial->state = 9;
             ai_Tutorial->next = 9;
-            ai_Tutorial->stepAt = ai_ClockMsVolatile;
+            ai_Tutorial->stepAt = d3_Time;
             return 1;
         }
         if (args[2] == 1) {
             if (ai_Tutorial->next == 9) {
                 ai_Tutorial->state = 4;
                 ai_Tutorial->next = 4;
-                ai_Tutorial->stepAt = ai_ClockMsVolatile;
+                ai_Tutorial->stepAt = d3_Time;
                 return 1;
             }
             if (ai_Tutorial->next == 0xa) {
                 ai_Tutorial->state = 0xb;
                 ai_Tutorial->next = 0xb;
-                ai_Tutorial->stepAt = ai_ClockMsVolatile;
+                ai_Tutorial->stepAt = d3_Time;
                 return 1;
             }
         }
     } else if (args[0] == 7 && args[1] && ai_Tutorial->next == 9 && ((unsigned char *)args[1])[2] == 5) {
         ai_Tutorial->state = 0xa;
         ai_Tutorial->next = 0xa;
-        ai_Tutorial->stepAt = ai_ClockMsVolatile;
+        ai_Tutorial->stepAt = d3_Time;
         return 1;
     }
     return 3;
@@ -1341,7 +1339,7 @@ int ai_StepChapter1Step10(int *p)
         if (*(unsigned char *)(*(char **)(unsigned)&ai_BTypes + kind * 0x24d) == 0xa) {
             U_I(S) = 0xb;
             U_I(S + 4) = 0xb;
-            U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
+            U_I(S + 0xc) = U_I((unsigned)&d3_Time);
             return 1;
         }
     }
@@ -1355,13 +1353,13 @@ int ai_StepChapter2Step1(int *p)
     if (p[0] == 0x17) {
         U_I(S) = 0xa;
         U_I(S + 4) = 0xa;
-        U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
+        U_I(S + 0xc) = U_I((unsigned)&d3_Time);
         return 1;
     }
     if (p[0] == 0x18) {
         U_I(S) = 0xb;
         U_I(S + 4) = 0xb;
-        U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
+        U_I(S + 0xc) = U_I((unsigned)&d3_Time);
         return 1;
     }
     return 3;
@@ -1386,7 +1384,7 @@ int ai_StepChapter2Step2(int *p)
     if (p[0] == 0x19 && p[1] && *(unsigned short *)p[1] == 0x10e) {
         U_I(S) = 0xb;
         U_I(S + 4) = 0xb;
-        U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
+        U_I(S + 0xc) = U_I((unsigned)&d3_Time);
         return 1;
     }
     return 3;
@@ -1398,7 +1396,7 @@ int ai_StepChapter2Step3(int *p)
     if (p[0] == 0x19 && p[1] && *(unsigned short *)p[1] == 0x110) {
         U_I(S) = 0xb;
         U_I(S + 4) = 0xb;
-        U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
+        U_I(S + 0xc) = U_I((unsigned)&d3_Time);
         return 1;
     }
     return 3;
@@ -1410,7 +1408,7 @@ int ai_StepChapter2Step4(int *p)
     if (p[0] == 0x1a && p[1] && *(unsigned short *)p[1] == 0x110) {
         U_I(S) = 0xb;
         U_I(S + 4) = 0xb;
-        U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
+        U_I(S + 0xc) = U_I((unsigned)&d3_Time);
         return 1;
     }
     return 3;
@@ -1433,7 +1431,7 @@ int ai_StepChapter2Step5(int *p)
             goto fail;
         U_I(S) = 0xa;
         U_I(S + 4) = 0xa;
-        U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
+        U_I(S + 0xc) = U_I((unsigned)&d3_Time);
         return 1;
     }
 next:
@@ -1445,7 +1443,7 @@ next:
             goto fail;
         U_I(S) = 0xb;
         U_I(S + 4) = 0xb;
-        U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
+        U_I(S + 0xc) = U_I((unsigned)&d3_Time);
         return 1;
     }
 fail:
@@ -1474,13 +1472,13 @@ int ai_StepChapter2Step6(int *p)
             return 3;
         U_I(S) = 0xa;
         U_I(S + 4) = 0xa;
-        U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
+        U_I(S + 0xc) = U_I((unsigned)&d3_Time);
         return 1;
     }
     if (p[0] == 0x1a && p[1] && *(unsigned short *)p[1] == 0x13) {
         U_I(S) = 0xb;
         U_I(S + 4) = 0xb;
-        U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
+        U_I(S + 0xc) = U_I((unsigned)&d3_Time);
         return 1;
     }
     return 3;
@@ -1492,7 +1490,7 @@ int ai_StepChapter2Step7(int *p)
     if (p[0] == 0x19 && p[1] && *(unsigned short *)p[1] == 0x74) {
         U_I(S) = 0xb;
         U_I(S + 4) = 0xb;
-        U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
+        U_I(S + 0xc) = U_I((unsigned)&d3_Time);
         return 1;
     }
     return 3;
@@ -1519,7 +1517,7 @@ int ai_StepChapter4Step2(int *p)
         U_I(S + 0x38) = 1;
         U_I(S + 4) = 0xa;
         U_I(S) = U_I(S + 4);
-        U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
+        U_I(S + 0xc) = U_I((unsigned)&d3_Time);
         return 3;
     }
     if (p[0] != 0x10 || !p[1])
@@ -1538,7 +1536,7 @@ int ai_StepChapter4Step2(int *p)
             U_I(S + 4) = 4;
     }
     U_I(S) = U_I(S + 4);
-    U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
+    U_I(S + 0xc) = U_I((unsigned)&d3_Time);
     return 1;
 }
 /* 0x576cd0, a predicate: 1 for the kinds 0x1a / 0x19 / 0x1c, and for the kind 0x2b on the player's building (byte
@@ -1581,7 +1579,7 @@ int ai_StepChapter4Step4(int *p)
         ai_Tutorial->goalDone = 1;
         ai_Tutorial->next = 0xa;
         ai_Tutorial->state = ai_Tutorial->next;
-        ai_Tutorial->stepAt = ai_ClockMsVolatile;
+        ai_Tutorial->stepAt = d3_Time;
         return 3;
     }
     if (p[0] != 0x11 || !p[1])
@@ -1600,7 +1598,7 @@ int ai_StepChapter4Step4(int *p)
             ai_Tutorial->next = 4;
     }
     ai_Tutorial->state = ai_Tutorial->next;
-    ai_Tutorial->stepAt = ai_ClockMsVolatile;
+    ai_Tutorial->stepAt = d3_Time;
     return 1;
 }
 /* 0x576e70, the predicate twin of 0x576cd0: 1 for the player's building (byte 0x12, word +0x27 = 0x6f25b8) with
@@ -1640,7 +1638,7 @@ int ai_StepChapter4Step5(int *p)
         U_I(S + 0x38) = 1;
         U_I(S + 4) = 0xa;
         U_I(S) = U_I(S + 4);
-        U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
+        U_I(S + 0xc) = U_I((unsigned)&d3_Time);
         return 3;
     }
     if (p[0] != 0x10 || !p[1])
@@ -1659,7 +1657,7 @@ int ai_StepChapter4Step5(int *p)
             U_I(S + 4) = 4;
     }
     U_I(S) = U_I(S + 4);
-    U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
+    U_I(S + 0xc) = U_I((unsigned)&d3_Time);
     return 1;
 }
 /* 0x577020, the predicate twin of 0x576ee0: 1 for a building of the table byte 0x2 with the step word
@@ -2245,7 +2243,7 @@ void ai_TutorialCloseProgress(void)
 }
 
 
-#define TUT_SINCE(at) (ai_ClockMsVolatile - (at) ? ai_ClockMsVolatile - (at) : 0)
+#define TUT_SINCE(at) (d3_Time - (at) ? d3_Time - (at) : 0)
 #define MINU(a, b) ((a) < (b) ? (a) : (b))
 /* 0x577d90, updates the tutorial progress slider of the state 0xa: without a run record or in another state the
    progress form is released (ai_TutorialCloseProgress); else the form is opened when it is not, and its slider set to the
@@ -2436,8 +2434,8 @@ int ai_TutorialStart(void)
         goto fail;
     ai_Tutorial->state = 1;
     ai_Tutorial->next = 1;
-    ai_Tutorial->textAt = ai_ClockMsVolatile;
-    ai_Tutorial->stepAt = ai_ClockMsVolatile;
+    ai_Tutorial->textAt = d3_Time;
+    ai_Tutorial->stepAt = d3_Time;
     ai_Tutorial->campaignSteps = 0;
     ai_Tutorial->voice = 0;
     ai_Tutorial->run = ai_TutorialRuns;
@@ -4310,7 +4308,7 @@ void ai_TutorialMarkerUpdate(int mode)
             mode = 2;
         } else if (pick >= 0 && pick < ai_Tutorial->run->markCount && pick != ai_Tutorial->markerStep) {
             ai_Tutorial->markerPhase = 2;
-            ai_Tutorial->markerAt = ai_ClockMsVolatile;
+            ai_Tutorial->markerAt = d3_Time;
             ai_Tutorial->markerStep = pick;
         }
     }
@@ -4323,7 +4321,7 @@ void ai_TutorialMarkerUpdate(int mode)
     }
     if (mode == 0) {
         ai_Tutorial->markerDepth = sv_FrameDepth;
-        ai_Tutorial->markerAt = ai_ClockMsVolatile;
+        ai_Tutorial->markerAt = d3_Time;
         ai_Tutorial->markerPhase = 2;
         if (ai_Tutorial->markerObj == -1) {
             m = &ai_Tutorial->run->marks[ai_Tutorial->markerStep];
@@ -4333,29 +4331,29 @@ void ai_TutorialMarkerUpdate(int mode)
         d2_MoveObj((int)m->from[0], (int)m->from[1], ai_Tutorial->markerObj);
     } else if (mode == 1) {
         if (ai_Tutorial->markerPhase == 2) {
-            if ((float)ai_Tutorial->markerAt + ai_Tutorial->run->marks[ai_Tutorial->markerStep].wait > (float)(unsigned)ai_ClockMsVolatile)
+            if ((float)ai_Tutorial->markerAt + ai_Tutorial->run->marks[ai_Tutorial->markerStep].wait > (float)(unsigned)d3_Time)
                 return;
             ai_Tutorial->markerPhase = 3;
-            ai_Tutorial->markerAt = ai_ClockMsVolatile;
+            ai_Tutorial->markerAt = d3_Time;
         }
         if (ai_Tutorial->markerPhase == 3) {
             m = &ai_Tutorial->run->marks[ai_Tutorial->markerStep];
-            if ((float)ai_Tutorial->markerAt + m->travel > (float)(unsigned)ai_ClockMsVolatile) {
-                t = (float)(ai_ClockMsVolatile - ai_Tutorial->markerAt) / m->travel;
+            if ((float)ai_Tutorial->markerAt + m->travel > (float)(unsigned)d3_Time) {
+                t = (float)(d3_Time - ai_Tutorial->markerAt) / m->travel;
                 ai_TutorialBezier(m->from, m->ctrl1, m->ctrl2, m->to, t, pos);
                 d2_MoveObj((int)pos[0], (int)pos[1], ai_Tutorial->markerObj);
                 return;
             }
             ai_Tutorial->markerPhase = 4;
-            ai_Tutorial->markerAt = ai_ClockMsVolatile;
+            ai_Tutorial->markerAt = d3_Time;
             m = &ai_Tutorial->run->marks[ai_Tutorial->markerStep];
             d2_MoveObj((int)m->to[0], (int)m->to[1], ai_Tutorial->markerObj);
         }
         if (ai_Tutorial->markerPhase == 4) {
-            if ((float)ai_Tutorial->markerAt + ai_Tutorial->run->marks[ai_Tutorial->markerStep].rest > (float)(unsigned)ai_ClockMsVolatile)
+            if ((float)ai_Tutorial->markerAt + ai_Tutorial->run->marks[ai_Tutorial->markerStep].rest > (float)(unsigned)d3_Time)
                 return;
             ai_Tutorial->markerPhase = 2;
-            ai_Tutorial->markerAt = ai_ClockMsVolatile;
+            ai_Tutorial->markerAt = d3_Time;
             m = &ai_Tutorial->run->marks[ai_Tutorial->markerStep];
             d2_MoveObj((int)m->from[0], (int)m->from[1], ai_Tutorial->markerObj);
         }
@@ -4714,7 +4712,7 @@ void ai_AlchemistResearchWindow(unsigned char *obj)
     owner = ahm_OwnerChar(obj);
     rec = ((AHMOBJ *)obj)->rec;
     lastState = ahm_ResearchState(obj, &a, &f, 0);
-    lastClock = ai_ClockMs;
+    lastClock = d3_Time;
     d2_ClickedId = -1;
     form = d2_OpenForm(0, 0, "Locations\\Domizil\\Alchemistry2");
     d2_SetPointerSprite(0, 0);
@@ -4783,8 +4781,8 @@ void ai_AlchemistResearchWindow(unsigned char *obj)
         }
         d2_SetObjEnabled(start, d2_Radios[group].sel != -1 && n != 0 && state == 0 ? 1 : 0);
         d2_SetObjEnabled(other, state == 0);
-        if (state != lastState || ai_ClockMs > lastClock + 0x32) {
-            lastClock = ai_ClockMs;
+        if (state != lastState || d3_Time > lastClock + 0x32) {
+            lastClock = d3_Time;
             lastState = state;
             sel = d2_Radios[group].sel;
             d2_RadioClear(group);
@@ -4949,7 +4947,7 @@ void ai_AlchemistWindow(unsigned char *obj)
     owner = (AICHAR *)ahm_OwnerChar(obj);
     rec = ((AHMOBJ *)obj)->rec;
     lastState = ahm_ResearchState(obj, &a, &f, 0);
-    lastClock = ai_ClockMs;
+    lastClock = d3_Time;
     for (k = 0; k < 9; k++)
         bars[k] = -1;
     d2_ClickedId = -1;
@@ -5035,7 +5033,7 @@ void ai_AlchemistWindow(unsigned char *obj)
             d2_SetObjFont(t, 0x54);
             d2_SetObjValue(slider, 0, 100, (int)(f * 100.0f));
         }
-        if (state != lastState || ai_ClockMs > lastClock + 0x32) {
+        if (state != lastState || d3_Time > lastClock + 0x32) {
             owner = (AICHAR *)ahm_OwnerChar(obj);
             if (owner == 0) {
                 sv_PopRequest = 1;
@@ -5346,7 +5344,6 @@ typedef struct CANNONREC {   /* the tutorial's cannon record (ai_CannonScene's a
 } CANNONREC;
 #pragma pack(pop)
 #define CR ((CANNONREC *)rec)
-#define CAM ((D3OBJECT *)sv_CameraObj)  /* the camera object d3_Camera (0xfc2dec) */
 typedef struct CANNONSCENE { /* 0xe4 bytes, the scene struct of ai_CannonScene (the other cannon functions still address it by byte offset) */
     D3VECTOR pos;            /* +0x00, d3_PointToWorld of the cannon object; pos.y gets the height of its bounds * 0.8 */
     float pad0c;
@@ -5463,7 +5460,7 @@ void ai_CannonScene(char *rec)
 
     kb_Down[0x2f] = 0;
     memset(&sc, 0, 0xe4);
-    sc.last = ai_ClockMs;
+    sc.last = d3_Time;
     mask = sv_FrameMask | 0x80;
     if (!CR->obj)
         return;
@@ -5478,12 +5475,12 @@ void ai_CannonScene(char *rec)
     }
     gv_SetEffectCallback(CR->id, ai_ShotTableStore, ai_ShotCallbackArg);
     mask = (mask & 0xffffdef7) | 0x10000;
-    cam3.x = CAM->pos.x;
-    cam3.y = CAM->pos.y;
-    cam3.z = CAM->pos.z;
-    save3.x = CAM->rotation.x;
-    save3.y = CAM->rotation.y;
-    save3.z = CAM->rotation.z;
+    cam3.x = d3_Camera->pos.x;
+    cam3.y = d3_Camera->pos.y;
+    cam3.z = d3_Camera->pos.z;
+    save3.x = d3_Camera->rotation.x;
+    save3.y = d3_Camera->rotation.y;
+    save3.z = d3_Camera->rotation.z;
     rect[2] = d2_DirtyRectRight;
     rect[0] = d2_DirtyRectLeft;
     rect[1] = d2_DirtyRectTop;
@@ -5520,12 +5517,12 @@ void ai_CannonScene(char *rec)
     d2_DirtyRectTop = 0x4b;
     d2_DirtyRectBottom = d2_ScreenH - 0x4b;
     sv_SetPanelEnabled(0);
-    cam3.x = CAM->pos.x;
-    cam3.y = CAM->pos.y;
-    cam3.z = CAM->pos.z;
-    save3.x = CAM->rotation.x;
-    save3.y = CAM->rotation.y;
-    save3.z = CAM->rotation.z;
+    cam3.x = d3_Camera->pos.x;
+    cam3.y = d3_Camera->pos.y;
+    cam3.z = d3_Camera->pos.z;
+    save3.x = d3_Camera->rotation.x;
+    save3.y = d3_Camera->rotation.y;
+    save3.z = d3_Camera->rotation.z;
     d3if_SelectScene(0, 0);
     if (d3_Sky)
         d3sky_Init(d3_Sky, 1);
@@ -5577,7 +5574,7 @@ void ai_CannonScene(char *rec)
     ai_ShotTable[0].id = -1;
     while (sv_RunFrame((int)ai_CannonScene, 0x2656c7) != 0) {
         sv_SetPanelEnabled(0);
-        sc.now = ai_ClockMs;
+        sc.now = d3_Time;
         dt = (float)(sc.now - sc.last) * 0.013513514f;
         if (run->flags == 0 && (dm_L.rup != 0 || (d2_ClickedId != -1 && d2_PointerObj == sc.quitBtn))) {
             sv_PopRequest = 1;
@@ -5638,8 +5635,8 @@ void ai_CannonScene(char *rec)
     d3if_SelectScene(scene, 0);
     if (d3_Sky)
         d3sky_Init(d3_Sky, 1);
-    d3_SetObjectPos(CAM, &cam3);
-    d3_SetObjectRot(CAM, (D3VECTOR *)&save3);
+    d3_SetObjectPos(d3_Camera, &cam3);
+    d3_SetObjectRot(d3_Camera, (D3VECTOR *)&save3);
     init_SetDetailLevel(d3_Terrain, 0);
     d3if_Prerender(1);
     d2_ReleaseFade(pb);
@@ -5787,7 +5784,6 @@ clamp:
 
 void d3_MatTranspose(); float d3_VecAngle2(); int ai_GetDefaultEffect();
 
-#define CAM_AXIS (*(D3VECTOR4 *)&ai_AxisPair)   /* 0x5ebb74, the (0, 0, 1) axis (the (0, 1, 0) one follows it) */
 
 /* 0x57f0e0, the cannon camera update (1254 B): sc = the scene struct. The cannon object (sc->obj98) and the
    three barrels (sc->obj8c) get their rotation reset, the wimpel (sc->obj9c) is turned from the aim axis
@@ -5844,15 +5840,15 @@ void ai_CannonCamera(CANNONSCENE *sc)
     pos.w = 0;
     def = ai_GetDefaultEffect();
     d3_MatTranspose(&sc->obj98->matrix, (char *)&t);
-    pos.y = (float)(d3_VecAngle2((char *)&CAM_AXIS, def) - 1.5707964f) - sc->rot.y;
+    pos.y = (float)(d3_VecAngle2((char *)&d3_ZAxis, def) - 1.5707964f) - sc->rot.y;
     pos.x = 0;
     pos.z = 0;
     d3_SetObjectRot(sc->obj9c, (char *)&pos);
     if (sc->fired == 0)
         ai_CannonAxes((char *)sc);
-    v.x = CAM_AXIS.x * sc->obj98->matrix._11 + CAM_AXIS.y * sc->obj98->matrix._21 + CAM_AXIS.z * sc->obj98->matrix._31;
-    v.y = CAM_AXIS.x * sc->obj98->matrix._12 + CAM_AXIS.y * sc->obj98->matrix._22 + CAM_AXIS.z * sc->obj98->matrix._32;
-    v.z = CAM_AXIS.x * sc->obj98->matrix._13 + CAM_AXIS.y * sc->obj98->matrix._23 + CAM_AXIS.z * sc->obj98->matrix._33;
+    v.x = d3_ZAxis.x * sc->obj98->matrix._11 + d3_ZAxis.y * sc->obj98->matrix._21 + d3_ZAxis.z * sc->obj98->matrix._31;
+    v.y = d3_ZAxis.x * sc->obj98->matrix._12 + d3_ZAxis.y * sc->obj98->matrix._22 + d3_ZAxis.z * sc->obj98->matrix._32;
+    v.z = d3_ZAxis.x * sc->obj98->matrix._13 + d3_ZAxis.y * sc->obj98->matrix._23 + d3_ZAxis.z * sc->obj98->matrix._33;
     d3_Normalize((char *)&v);
     pos.x = v.x * 30.0f;
     pos.y = v.y * 30.0f;
@@ -5911,9 +5907,9 @@ void ai_CannonCamera(CANNONSCENE *sc)
             v.y = sc->pos.y - v.y;
             v.z = sc->pos.z - v.z;
             d3_SetObjectPos(sc->obj98, (char *)&v);
-            pos.x = CAM_AXIS.x;
-            pos.y = CAM_AXIS.y;
-            pos.z = CAM_AXIS.z;
+            pos.x = d3_ZAxis.x;
+            pos.y = d3_ZAxis.y;
+            pos.z = d3_ZAxis.z;
             pos.x = fade * pos.x;
             pos.y = fade * pos.y;
             pos.z = fade * pos.z;
@@ -5930,13 +5926,13 @@ void ai_CannonCamera(CANNONSCENE *sc)
 void d3_DirToWorld();
 int gm_FindById();
 
-/* 0x57f5d0, copies three vectors of the cannon object (55 B): 0x458810 (sc + 0x8c, 0x5ebb74, sc + 0x24),
-   (0x5ebb94, sc + 0x44) and (0x5ebb84, sc + 0x34) */
+/* 0x57f5d0, the cannon's three axes in world space (55 B): d3_DirToWorld of the object sc + 0x8c turns
+   d3_ZAxis into sc + 0x24, d3_YAxis into sc + 0x44 and d3_XAxis into sc + 0x34 */
 void ai_CannonAxes(char *sc)
 {
-    d3_DirToWorld(*(int *)(sc + 0x8c), (char *)(unsigned)&ai_AxisPair, sc + 0x24);
-    d3_DirToWorld(*(int *)(sc + 0x8c), (char *)(unsigned)&d3_YAxis, sc + 0x44);
-    d3_DirToWorld(*(int *)(sc + 0x8c), (char *)((unsigned)&ai_AxisPair + 0x10), sc + 0x34);
+    d3_DirToWorld(*(int *)(sc + 0x8c), (char *)&d3_ZAxis, sc + 0x24);
+    d3_DirToWorld(*(int *)(sc + 0x8c), (char *)&d3_YAxis, sc + 0x44);
+    d3_DirToWorld(*(int *)(sc + 0x8c), (char *)&d3_XAxis, sc + 0x34);
 }
 /* 0x57f620, the fire check: nothing (0) while a shot runs (sc->fired) or the zoom is above 0.01; a click on the
    fire button (sc->fireBtn) or the key kb_Down[0x32] (DIK_M) fires: the key is cleared, the recoil clock starts
@@ -5978,8 +5974,8 @@ void ai_CannonShotResults(CANNONSCENE *sc)
     unsigned short w;
 
     n = 0;
-    if (sc->resultClock + 0x15e <= (unsigned)ai_ClockMsVolatile) {
-        sc->resultClock = ai_ClockMsVolatile;
+    if (sc->resultClock + 0x15e <= (unsigned)d3_Time) {
+        sc->resultClock = d3_Time;
         d2_SetForm(sc->win74, 0);
         for (rec = 0; rec < 3; rec++) {
             i = 0;
@@ -6112,15 +6108,15 @@ float ai_CannonPitchRatio(char *sc)
    (0 .. 2), mask = the pump mask; nothing for the selected barrel or one above sc->maxSel. Two halves of
    ai_CannonSwitchMs each, every frame pumping sv_RunFrame (this function, mask) and updating the panel
    (ai_CannonPanel); past the half's time sv_PopRequest ends it. The cannon object sinks back along the level aim
-   direction by ai_CannonSwitchDist * f and the wimpel moves from ai_WimpelPos along CAM_AXIS by as much, f going
+   direction by ai_CannonSwitchDist * f and the wimpel moves from ai_WimpelPos along d3_ZAxis by as much, f going
    0 -> 1 in the first half and 1 -> 0 in the second; between them the barrels are switched (only sel shown) and
    sc->selected = sel; at the end sc->now = the clock
    @deep read whole against the original (241 vs 247 ins). Fixed meaning: the two halves were written with
    the wrong offsets; now the scene's fields (dirX / dirZ, pos, obj98 / obj9c, obj8c, selected, maxSel,
    now), the half's time and the sink distance are the const data ai_CannonSwitchMs / ai_CannonSwitchDist
    (0x5eec94 / 98: the original divides by it, a literal would be a multiply), the clock is read through
-   ai_ClockMsVolatile (the original reloads it for the compare and for f), past the time sv_PopRequest, v =
-   dist * f * v then pos - v, the wimpel ai_WimpelPos + (dist * f) * CAM_AXIS. Remaining, each allocation:
+   d3_Time (the original reloads it for the compare and for f), past the time sv_PopRequest, v =
+   dist * f * v then pos - v, the wimpel ai_WimpelPos + (dist * f) * d3_ZAxis. Remaining, each allocation:
    +0x98 / +0x253 code 22 / 25: the same sub / mov / fild of the elapsed time with eax/ecx/edx rotated and
    the dirX / dirZ copies scheduled around the fild; the frame 0x28 vs 0x30: the original keeps the
    compare's and f's qword temps apart (0x10 and 0x18), ours shares one; +0x14c / +0x30e fpu 12: the wimpel
@@ -6135,18 +6131,18 @@ void ai_CannonSwitchAnim(char *rec, CANNONSCENE *sc, GVEFFECT *run, int sel, int
     float f;
     int i;
 
-    start = ai_ClockMs;
+    start = d3_Time;
     if (sel == sc->selected || sel > sc->maxSel)
         return;
     while (sv_RunFrame((int)ai_CannonSwitchAnim, mask) != 0) {
         ai_CannonPanel(rec, sc, run);
-        if ((float)(ai_ClockMsVolatile - start) > ai_CannonSwitchMs) {
+        if ((float)(d3_Time - start) > ai_CannonSwitchMs) {
             sv_PopRequest = 1;
         } else {
             v.x = sc->dirX;
             v.y = 0;
             v.z = sc->dirZ;
-            f = (float)(ai_ClockMsVolatile - start) / ai_CannonSwitchMs;
+            f = (float)(d3_Time - start) / ai_CannonSwitchMs;
             d3_Normalize((char *)&v);
             v.x = ai_CannonSwitchDist * f * v.x;
             v.y = ai_CannonSwitchDist * f * v.y;
@@ -6155,9 +6151,9 @@ void ai_CannonSwitchAnim(char *rec, CANNONSCENE *sc, GVEFFECT *run, int sel, int
             v.y = sc->pos.y - v.y;
             v.z = sc->pos.z - v.z;
             d3_SetObjectPos(sc->obj98, (char *)&v);
-            w.x = CAM_AXIS.x;
-            w.y = CAM_AXIS.y;
-            w.z = CAM_AXIS.z;
+            w.x = d3_ZAxis.x;
+            w.y = d3_ZAxis.y;
+            w.z = d3_ZAxis.z;
             f = ai_CannonSwitchDist * f;
             w.x = f * w.x;
             w.y = f * w.y;
@@ -6172,16 +6168,16 @@ void ai_CannonSwitchAnim(char *rec, CANNONSCENE *sc, GVEFFECT *run, int sel, int
         d3if_Show(sc->obj8c[i], 0);
     d3if_Show(sc->obj8c[sel], 1);
     sc->selected = sel;
-    start = ai_ClockMs;
+    start = d3_Time;
     while (sv_RunFrame((int)ai_CannonSwitchAnim, mask) != 0) {
         ai_CannonPanel(rec, sc, run);
-        if ((float)(ai_ClockMsVolatile - start) > ai_CannonSwitchMs) {
+        if ((float)(d3_Time - start) > ai_CannonSwitchMs) {
             sv_PopRequest = 1;
         } else {
             v.x = sc->dirX;
             v.y = 0;
             v.z = sc->dirZ;
-            f = 1.0f - (float)(ai_ClockMsVolatile - start) / ai_CannonSwitchMs;
+            f = 1.0f - (float)(d3_Time - start) / ai_CannonSwitchMs;
             d3_Normalize((char *)&v);
             v.x = ai_CannonSwitchDist * f * v.x;
             v.y = ai_CannonSwitchDist * f * v.y;
@@ -6190,9 +6186,9 @@ void ai_CannonSwitchAnim(char *rec, CANNONSCENE *sc, GVEFFECT *run, int sel, int
             v.y = sc->pos.y - v.y;
             v.z = sc->pos.z - v.z;
             d3_SetObjectPos(sc->obj98, (char *)&v);
-            w.x = CAM_AXIS.x;
-            w.y = CAM_AXIS.y;
-            w.z = CAM_AXIS.z;
+            w.x = d3_ZAxis.x;
+            w.y = d3_ZAxis.y;
+            w.z = d3_ZAxis.z;
             f = ai_CannonSwitchDist * f;
             w.x = f * w.x;
             w.y = f * w.y;
@@ -6203,7 +6199,7 @@ void ai_CannonSwitchAnim(char *rec, CANNONSCENE *sc, GVEFFECT *run, int sel, int
             d3_SetObjectPos(sc->obj9c, (char *)&w);
         }
     }
-    sc->now = ai_ClockMs;
+    sc->now = d3_Time;
 }
 
 void gv_CannonScatter(char *o, float *a, float *b); float gv_CannonItemFactor(); void ai_ShotTableReset(); int ai_InitShot(struct SHOTREC *shot, struct D3VECTOR *pos, struct D3VECTOR *dir, float charge, float size, float density);
@@ -6519,7 +6515,7 @@ void ai_CannonBuildPanel(CANNONSCENE *sc, GVEFFECT *run)
     sc->win74 = d2_OpenForm(0, 0, "Locations\\domizil\\cannon_res");
     d2_PlaceMainWindowF(sc->win74, 3);
     d2_SetViewEnabled(sc->win74, 0);
-    sc->resultClock = ai_ClockMs;
+    sc->resultClock = d3_Time;
 }
 
 int he_Unk56f170(); int sv_MessageBox();
@@ -7529,7 +7525,7 @@ void ai_GraveWindow(GVPICK *out, AIBLD *rec, char *title, int flag, void (*cb)(A
     int i;
     int win;
 
-    next = ai_ClockMs;
+    next = d3_Time;
     if (out) {
         out->entry = 0;
         out->grave = 0;
@@ -7568,7 +7564,7 @@ void ai_GraveWindow(GVPICK *out, AIBLD *rec, char *title, int flag, void (*cb)(A
         handled = 0;
         prevSize = w[0xc];
         detailRow = w[0x4d];
-        if (ai_ClockMs > next)
+        if (d3_Time > next)
             redraw = 7;
         if (dm_L.rup != 0) {
             sv_PopRequest = 1;
@@ -8729,7 +8725,7 @@ void ai_SeanceRollFormulas(); int sb_IsInit(); void d2_PlaceViewWindows(int view
    @deep Read whole against the original 0x5859c0..0x585c3e: the formula roll, the Seance2 form, the
    SEANCE_KRYPTA script with the two names (the original drops the player's fallback name record: kept as a
    bare call), the sb_IsInit voice path (formula k = id - 0x40d7 as its own local: sub vs add-negative
-   fixed) and the clock path (ai_ClockMsVolatile, the nine waits written out as the original stores them);
+   fixed) and the clock path (d3_Time, the nine waits written out as the original stores them);
    196 of 200 instructions equal. Left is one moved instruction: the original loads ev (mov edi,
    [esp+0x57c]) at the head of the script block (0x585a23) before the first gm_NameRecord, ours just before
    the ev->grave loads (0x585a77); the branch-target difference (jne at +0x93) is that move. Scheduling, no
@@ -8783,7 +8779,7 @@ int ai_SeanceRitual(char *ch, GVSEANCE *ev)
                 sv_RunFrame(0, 0x743c7);
         }
     } else {
-        t = ai_ClockMsVolatile;
+        t = d3_Time;
         wait[0] = 0x47;
         wait[1] = 0xf8;
         wait[2] = 0xf8;
@@ -8794,8 +8790,8 @@ int ai_SeanceRitual(char *ch, GVSEANCE *ev)
         wait[7] = 0xf8;
         wait[8] = 0xf8;
         do {
-            if (t + wait[i] < (unsigned int)ai_ClockMsVolatile) {
-                t = ai_ClockMsVolatile;
+            if (t + wait[i] < (unsigned int)d3_Time) {
+                t = d3_Time;
                 d2_SetForm(win, 0);
                 if (i >= 8) {
                     sv_PopRequest = 1;
@@ -9837,7 +9833,7 @@ void ai_EndCharExtra(char *ch, int f)
     }
     c->flags1b4 ^= (c->flags1b4 ^ f) & 1;    /* bit 0 = f's bit 0 */
 }
-/* 0x587c90, the graveyard idle-chatter tick (the argument is not used): at most every 0x1194 ms of ai_ClockMs
+/* 0x587c90, the graveyard idle-chatter tick (the argument is not used): at most every 0x1194 ms of d3_Time
    (ai_GraveChatterAt the last run), and unless gm_AllowAll only with a 10% chance; collects the scene characters
    (ai_SceneChars) of the kind 0x14 whose model stands in d3_DefaultScene, picks one (x) and, with more than one,
    a second different one (y) at random, and runs the script "locations\friedhof\gespraeche.esc" with
@@ -9860,9 +9856,9 @@ void ai_GraveyardChatter(char *unused)
     cnt = 0;
     a = 0;
     b = -1;
-    if ((unsigned)ai_ClockMsVolatile < ai_GraveChatterAt + 0x1194)
+    if ((unsigned)d3_Time < ai_GraveChatterAt + 0x1194)
         return;
-    ai_GraveChatterAt = ai_ClockMsVolatile;
+    ai_GraveChatterAt = d3_Time;
     if (gm_AllowAll == 0 && util_RandomF() < 0.9f)
         return;
     for (slot = ai_SceneChars; (int)slot < (int)(ai_SceneChars + 0x20); slot++) {

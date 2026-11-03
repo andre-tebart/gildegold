@@ -139,7 +139,7 @@ typedef struct D3FINDCTX {          /* context of the name lookups */
     char *found;
 } D3FINDCTX;
 
-extern D3VECTOR d3_ZAxis;                   /* 0x5ebb74, (0, 0, 1) */
+extern const D3VECTOR d3_ZAxis;             /* 0x5ebb74, (0, 0, 1) */
 typedef struct D3CORNERPT { int x, y; } D3CORNERPT;
 typedef struct D3CORNERCTX {        /* 0x88 bytes: context of d3_CornerCB */
     void *tex;                      /* 0x00, the texture whose polygons are examined */

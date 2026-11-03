@@ -2606,7 +2606,7 @@ void unk_Unk511790(void)
     d3_ForEachObject(d3_DefaultScene, 0, 0x40, init_TownBuildingHook, 0);
     unk_Unk5116b0();
     ai_CheckBuildSites();
-    d3sm_Build(*(int *)((char *)d3_DefaultScene + 0xb0), ai_Unk633738);
+    d3sm_Build(*(int *)((char *)d3_DefaultScene + 0xb0), d3_Terrain);
 }
 /* 0x511810, scene object callback: an object of the type 0 / 1 / 3 / 4 (+0x220) gets the flag 4 in +0x213 */
 
@@ -2872,7 +2872,6 @@ char d3t_GetBoundingSphere(struct D3OBJECT *obj, struct D3OBJECT *camera, struct
 int gm_IsBuildingKind(int n);           /* 0x4fe940, f3gm.c: 1 when the object prototype n is a building part */
 int gm_FindObjectProto(char *name);     /* 0x4fe900, f3gm.c: the object prototype of the name */
 extern unsigned char init_TextureSet;      /* 0x6f1c24 */
-extern char * sv_CameraObj;                /* 0xfc2dec */
 /* 0x511f20, a scene callback of the object o (a function start Ghidra missed, registered with 0x438e60 (0x1e0) by
    0x513050; base is the object list of the scene: the scene object's +0x14, else the scene building's list): links an
    object of the object prototypes (kind byte +0x4b = 1) with its instance record and shows / hides it.
@@ -3672,10 +3671,10 @@ void init_AfterTownLoad(void)
         if (c == 0 || *(int *)(c + 0x88) == -0x40800000) {
             sv_PlaceCamera(0x3ea8f5c3);
         } else {
-            d3_SetObjectPos(sv_CameraObj, c + 0x8c);
+            d3_SetObjectPos(d3_Camera, c + 0x8c);
             sv_PlaceCamera(*(int *)(c + 0x88));
-            *(int *)(sv_CameraObj + 0x88) = *(int *)(c + 0xa0);
-            d3_SetObjectRot(sv_CameraObj, sv_CameraObj + 0x84);
+            *(int *)&d3_Camera->rotation.y = *(int *)(c + 0xa0);
+            d3_SetObjectRot(d3_Camera, &d3_Camera->rotation);
         }
         for (p = (int *)((unsigned)&ai_Unk770cec + 0x18); (int)p < (int)((unsigned)&ai_Unk770cec + 0x65418); p += 0x87) {
             if (*p != 0) {
@@ -3707,7 +3706,7 @@ void init_AfterTownLoad(void)
                 (*(void (**)())(hook + 0x210))(d3_DefaultScene, 4, hook + 0x214, 0);
         }
         init_SetSeasonTextures();
-        init_SetDetailLevel((int)ai_Unk633738, 0);
+        init_SetDetailLevel((int)d3_Terrain, 0);
         d3_FogByDistance = 1;
         evt_NoGroup = 0;
         d3o_FogScale = 1.0f - (float)(ai_GfxFog.word & 0xff) * 0.01f;

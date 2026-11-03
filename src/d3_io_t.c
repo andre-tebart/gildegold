@@ -523,7 +523,7 @@ void d3io_ReleaseObject(D3IOOBJ *obj)
     if (obj != 0 && obj->refs > 0)
         d3iot_DeleteStockObject((D3BGF *)obj);
 }
-/* 0x44e2e0, loads the animation file (name + ".oam") of an object: keys of a path @deep Q2: d3_Unk6333cc (global 0x6333cc, only read here into obj->unk40, no writer, string or caller shows its meaning) and D3IOOBJ.unk40 (written only from that global, meaning unknown); the other names are derivable (vfs_Root for 0x6333fc, the frame stepper 0x4324e0, the anim release 0x433b10) but these two keep Q2 failing, so no invented names */
+/* 0x44e2e0, loads the animation file (name + ".oam") of an object: keys of a path @deep Q2: D3IOOBJ.unk40 (the millisecond clock d3_Time at the load; nothing here reads it back, meaning unknown); the other names are derivable (vfs_Root for 0x6333fc, the frame stepper 0x4324e0, the anim release 0x433b10) but unk40 keeps Q2 failing, so no invented name */
 
 D3IOPATH *d3_LoadObjectAnim(char *file, D3IOOBJ *obj, char reload)
 {
@@ -539,7 +539,7 @@ D3IOPATH *d3_LoadObjectAnim(char *file, D3IOOBJ *obj, char reload)
         d3anim_FreePath((D3OBJECT *)obj);
     path = d3io_StockFile(file, ".oam");
     if ((path != 0 && obj->type == 4) || obj->type == 3) {
-        f = vfs_Tfopen(path, "rb", d3_Unk6333fc);
+        f = vfs_Tfopen(path, "rb", (int)vfs_Root);
         bio_rd_i(f, &magic);
         if (magic == 0x3a610001) {
             p = (D3IOPATH *)mem_Alloc(0x44, "d3_io:ObjAnim");
@@ -574,7 +574,7 @@ D3IOPATH *d3_LoadObjectAnim(char *file, D3IOOBJ *obj, char reload)
         vfs_fclose(f);
     }
     obj->path = p;
-    obj->unk40 = d3_Unk6333cc;
+    obj->unk40 = d3_Time;
     return p;
 }
 /* 0x44e4a0, loads an animation stream "animations/" + name and links it into the animation list */

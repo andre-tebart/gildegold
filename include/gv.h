@@ -360,7 +360,7 @@ typedef struct ORDEVENT {
     int ownerId;                    /* 0x0ac, the character the event belongs to */
     int targetId;                   /* 0x0b0, the event's other character */
 } ORDEVENT;
-extern int ai_ClockMs;                /* 0x6333cc */
+extern volatile unsigned long d3_Time;  /* 0x6333cc, milliseconds (tb.c) */
 extern int d3_CurrentScene;                /* 0x633444 */
 
 int util_Random(unsigned short n);      /* 0x42ec00, tr.c; the callers that read a 16-bit result (ch_RandomNear, anm_Update, cm_FightLoop ..) call util_RandomU, a cast in their head */
@@ -377,7 +377,7 @@ int cm_AddFieldValues(unsigned char size, unsigned char n, unsigned short field,
 void cm_SendFieldDeltas(void);                     /* 0x4c49a0 */
 extern char *ai_Blds;                   /* 0x889f74, 256 records of 0xa9 bytes */
 extern unsigned short *ai_PlayerChar;    /* 0x6f1bf8, the player's character (ai.c; this header's units add byte offsets through ai_PlayerCharC) */
-extern const float ai_Unk5ebba4[];          /* 0x5ebba4, d3_Origin (as cm.h) */
+extern const struct D3VECTOR d3_Origin;     /* 0x5ebba4, (0, 0, 0), d3_vec.c */
 extern const char ai_ZeroRot[];                 /* 0x5ebbb4 */
 
 char *gv_AllocAvatar(void);              /* 0x4ed170 */
@@ -391,7 +391,7 @@ typedef struct GVEFFPART {              /* 0x68 bytes, one of an effect slot's t
     float v4[4];                        /* 0x40 */
     int a, b, c;                        /* 0x50 */
     int state;                          /* 0x5c, the part is a SHOTREC (unk_5d33b0.h): this is its state, 0 idle, 1 in flight, 2 landed, 3 left the map (gv_UpdateEffects) */
-    int time;                           /* 0x60, not saved: the reader sets it to ai_ClockMs */
+    int time;                           /* 0x60, not saved: the reader sets it to d3_Time */
     int steps;                          /* 0x64, the flight steps made (SHOTREC.steps) */
 } GVEFFPART;
 typedef struct GVEFFREC {               /* 16 bytes, a record of an effect slot's argument */

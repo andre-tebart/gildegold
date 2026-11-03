@@ -351,9 +351,9 @@ int gv_WriteEffects(void *f)
 }
 /* 0x4ed910, reads what gv_WriteEffects wrote from the save file f (version v: the saves before 0x10055 have no fields
    f0c / f10, they are 1.0); sets each slot's callback to gv_EffectNotifyOwner with its gv_EffectArgs record and the
-   parts' time to ai_ClockMs; 1 when all was read
+   parts' time to d3_Time; 1 when all was read
    @deep Read in full against 0x4ed910..0x4ede42: the 10 global reads, per slot the 5 + 3x9 + 1 reads of
-   GVEFFECT in order, the v >= 0x10055 branch (else f0c = f10 = 1.0), the three parts' time = ai_ClockMs
+   GVEFFECT in order, the v >= 0x10055 branch (else f0c = f10 = 1.0), the three parts' time = d3_Time
    and the arg / cb stores with q stepping through gv_EffectArgs all match (445 vs 446). The rest is the
    slot pointer's bias, as in gv_WriteEffects: ours esi = slot + 0xc (- lea eax,[esi-0xc] ...), the
    original's esi = slot + 0x38 (+ lea eax,[esi-0x38] ...), every displacement shifted by 0x2c; with its
@@ -422,7 +422,7 @@ int gv_ReadEffects(void *f, int v)
             return 0;
         if (ls_Read(&e->parts[0].steps, 4, 1, (int)f) == 0)
             return 0;
-        e->parts[0].time = ai_ClockMs;
+        e->parts[0].time = d3_Time;
         if (ls_Read(e->parts[1].v0, 16, 1, (int)f) == 0)
             return 0;
         if (ls_Read(e->parts[1].v1, 16, 1, (int)f) == 0)
@@ -441,7 +441,7 @@ int gv_ReadEffects(void *f, int v)
             return 0;
         if (ls_Read(&e->parts[1].steps, 4, 1, (int)f) == 0)
             return 0;
-        e->parts[1].time = ai_ClockMs;
+        e->parts[1].time = d3_Time;
         if (ls_Read(e->parts[2].v0, 16, 1, (int)f) == 0)
             return 0;
         if (ls_Read(e->parts[2].v1, 16, 1, (int)f) == 0)
@@ -460,7 +460,7 @@ int gv_ReadEffects(void *f, int v)
             return 0;
         if (ls_Read(&e->parts[2].steps, 4, 1, (int)f) == 0)
             return 0;
-        e->parts[2].time = ai_ClockMs;
+        e->parts[2].time = d3_Time;
         if (ls_Read(e->tail, 12, 1, (int)f) == 0)
             return 0;
         e->arg = q;
@@ -990,7 +990,7 @@ char *gv_GetEffect(int id)
     return 0;
 }
 /* 0x4eee00, starts a received cannon ball (message 0x67, GVSHOTMSG) in the effect slot of m->id: the first free part (tail 0)
-   takes it (tail 1, the SHOTREC copied, state 1 in flight, time ai_ClockMs, steps 0), m->v is taken off the slot's charge of
+   takes it (tail 1, the SHOTREC copied, state 1 in flight, time d3_Time, steps 0), m->v is taken off the slot's charge of
    m->mode (not below 0), the slot gets flag 2 (and 1 when w); 1 when started, 0 without a slot or a free part */
 
 int gv_StartShot(GVSHOTMSG *m, int w)
@@ -1017,7 +1017,7 @@ found:
     e->charge[mode] = f > 0.0f ? f : 0.0f;
     e->parts[j] = part;
     e->flags |= 2;
-    e->parts[j].time = ai_ClockMs;
+    e->parts[j].time = d3_Time;
     e->parts[j].state = 1;
     e->parts[j].steps = 0;
     if (w != 0)

@@ -34,7 +34,6 @@ struct TSTEXTURE; struct TSTEXTURE *tex_Create(char *name, int size, char hicol,
 extern int d3s_EdgeX[4];
 extern int d3s_EdgeY[4];
 extern int d3s_EdgeC[3];
-extern int d3s_Next[6];                     /* 0x5eba80, per vertex: the next and the previous one */
 extern int d3s_SlopeL;
 extern int d3s_SlopeR;
 extern int d3s_SlopeC;
@@ -292,16 +291,16 @@ void d3s_ShadowTriangle(float *p, unsigned char *c, unsigned char *dst, int pitc
         if (dst == 0)
             *(unsigned char *)&flags &= 5;
         if ((unsigned char)flags != 0) {
-            e = d3s_Next[t * 2];
+            e = d3_TriEdge[t][0];
             if (d3s_EdgeY[e] == minY) {
-                b = d3s_Next[t * 2 + 1];
+                b = d3_TriEdge[t][1];
                 d = e;
-                e = d3s_Next[e * 2];
+                e = d3_TriEdge[e][0];
                 l = t;
             } else {
-                l = d3s_Next[t * 2 + 1];
+                l = d3_TriEdge[t][1];
                 if (d3s_EdgeY[l] == minY) {
-                    b = d3s_Next[l * 2 + 1];
+                    b = d3_TriEdge[l][1];
                     d = t;
                 } else {
                     b = l;
@@ -430,16 +429,16 @@ void d3s_ShadowPoly(D3SPOLY *poly, unsigned char bpp, int size)
         if (d3s_EdgeX[i] < 0 || d3s_EdgeX[i] > lim - 1 || d3s_EdgeY[i] < 0 || d3s_EdgeY[i] > lim - 1)
             return;
     }
-    a = d3s_Next[top * 2];
+    a = d3_TriEdge[top][0];
     if (d3s_EdgeY[a] == size) {
-        b = d3s_Next[top * 2 + 1];
+        b = d3_TriEdge[top][1];
         c = top;
         top = a;
-        a = d3s_Next[top * 2];
+        a = d3_TriEdge[top][0];
     } else {
-        c = d3s_Next[top * 2 + 1];
+        c = d3_TriEdge[top][1];
         if (d3s_EdgeY[c] == size) {
-            b = d3s_Next[c * 2 + 1];
+            b = d3_TriEdge[c][1];
         } else {
             b = c;
             c = top;
@@ -770,7 +769,7 @@ const float d3s_Dist[2] = { 60.0f, 200.0f };  /* 0x5ebbd8 */
 const unsigned char d3s_Palette[] = { 0, 0, 0, 0xff, 0xff, 0xff, 0, 0 };  /* 0x5ebbe0, palette */
 extern int d3_FrameCount;          /* 0x63343c */
 extern unsigned char d3_Hardware;                    /* 0x633450 */
-extern D3VECTOR d3_ZAxis;                   /* 0x5ebb74 */
+extern const D3VECTOR d3_ZAxis;             /* 0x5ebb74 */
 
 float * d3s_Verts = 0;  /* 0xfb9258, 6 floats each */
 int d3s_NumUVs = 0;  /* 0xfb925c */

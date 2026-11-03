@@ -1284,7 +1284,7 @@ void d3fl_MakeLight(D3FLMAP *map)
             map->ambient[0] = D3_L(ctx.light)->color.x * (1.0f / 255.0f);
             map->ambient[1] = D3_L(ctx.light)->color.y * (1.0f / 255.0f);
             map->ambient[2] = D3_L(ctx.light)->color.z * (1.0f / 255.0f);
-            d3_DirToWorldD(ctx.light, &d3fl_Down, (D3VECTOR *)&dir);
+            d3_DirToWorldD(ctx.light, &d3_ZAxis, (D3VECTOR *)&dir);
             lp = map->light;
             h = map->height;
             kx = map->negScale * map->hscale * 2.0f;
@@ -1824,7 +1824,7 @@ void d3fl_DrawWater(D3FLMAP *map, D3FLTILE *t)
         v = (D3PVERT *)t->wpoints;
         light = map->light;
         npolys = t->nwpolys;
-        k = 0.5f - (float)fabs(d3fl_Down.x * sun.x + d3fl_Down.y * sun.y + d3fl_Down.z * sun.z);
+        k = 0.5f - (float)fabs(d3_ZAxis.x * sun.x + d3_ZAxis.y * sun.y + d3_ZAxis.z * sun.z);
         for (r = t->wregions; r->y >= 0; r++) {
             ym = r->y & 3;
             row = (r->y & mask) * size;
@@ -2845,6 +2845,7 @@ void d3fl_SetShift(D3FLMAP *map, unsigned char shift, char light)
 }
 
 D3BOXVERT d3fl_Box[8] = {0};  /* 0x6334b8, result of d3fl_TileBox */
+void *d3_Terrain = 0;  /* 0x633738, the current scene's terrain map (a D3FLMAP; d3_sm.c / d3s.c read it as D3TERRAIN) */
 char d3fl_Mips = 0;  /* 0x63373c */
 char d3fl_MapShift = 0;  /* 0x63373d, texture shift copied into D3FLMAP.shift (d3fl_Init argument) */
 float d3fl_LightMargin = 0;  /* 0x633740, world units added to map->scale when a light's

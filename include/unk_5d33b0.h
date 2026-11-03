@@ -267,7 +267,7 @@ static const volatile int ai_CardBack = 0x18;  /* 0x5ed1bc, .rdata: the picture 
 static const volatile unsigned __int64 gypsyFilter = 0x1a7fdfbb6;
 static const float ai_InchPerMeter = 39.37008f;  /* 0x5eedf4, .rdata: world units (inches) per meter */
 static const float ai_Gravity = 9.81f;            /* 0x5eedfc, .rdata: m/s^2 */
-extern const char ai_AxisPair[];    /* 0x5ebb74, cm.h: the (0, 0, 1) / (0, 1, 0) axis pair, 32 bytes */
+extern const struct D3VECTOR d3_ZAxis;  /* 0x5ebb74, (0, 0, 1), d3_vec.c */
 static const float ai_ShotStep = 0.013513514f;    /* 0x5eee00, .rdata: 1/74, the time (s) of one flight step of ai_StepShot */
 static const float ai_ShotHalfStep = 0.0067567569f;  /* 0x5eee04, .rdata: 1/148, the step of ai_StepShotSlow */
 static const float ai_AirDensity = 1.2f;          /* 0x5eee0c, .rdata: kg/m^3 */

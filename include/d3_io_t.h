@@ -114,7 +114,7 @@ struct D3IOANIMDATA {               /* a loaded animation stream: D3BASTREAM (d3
 typedef struct D3IOOBJ D3IOOBJ;
 struct D3IOOBJ {                    /* a D3OBJECT as the loaders see it (0x220+ bytes) */
     char pad000[0x40];
-    int unk40;                      /* 0x40, set to d3_Unk6333cc by d3_LoadObjectAnim */
+    int unk40;                      /* 0x40, set to d3_Time by d3_LoadObjectAnim */
     char pad044[0x8];
     float pos[3];                   /* 0x4c */
     char pad058[0x2c];
@@ -182,7 +182,7 @@ extern D3IOOBJ d3_StockHead;                                                    
 extern D3IOOBJ *d3_StockList;                                                   /* 0xfc4c40 */
 #endif
 extern char d3_AnimDir[];                                                       /* 0x5fbf80, "animations/" */
-extern int d3_Unk6333cc;                                                        /* 0x6333cc */
+extern volatile unsigned long d3_Time;                                          /* 0x6333cc, milliseconds (tb.c) */
 #ifndef DATA_VIEWS_H
 extern D3IOANIMDATA *d3_AnimList;                                                    /* 0xfe75a4 */
 #endif

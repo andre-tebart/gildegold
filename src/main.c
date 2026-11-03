@@ -73,7 +73,6 @@ extern GAPDATA full_data_60da10[];
 extern GAPDATA full_data_624b48[];
 extern GAPDATA full_data_624b4c[];
 extern GAPDATA full_data_624b50[];
-extern void * d3_Unk6333fc;
 extern GAPDATA full_data_5f1084[];
 extern GAPDATA full_data_624b48[];
 extern GAPDATA full_data_624b4c[];
@@ -82,7 +81,6 @@ extern char ai_OptionsFile[288];
 
 extern char ai_OptionsFile[288];
 extern char ai_Unk9364e0[752];
-extern void * d3_Unk6333fc;
 
 
 
@@ -134,9 +132,7 @@ extern int ai_Opponents[7];
 
 
 extern int sv_PopRequest;
-extern char * sv_CameraObj;
 
-extern void * d3_Unk6333fc;
 
 
 extern GAPDATA full_data_5f1084[];
@@ -234,7 +230,6 @@ extern int d2_DirtyRectLeft;
 extern int d2_DirtyRectTop;
 extern int d2_DirtyRectRight;
 extern int d2_DirtyRectBottom;
-extern char * sv_CameraObj;
 extern GAPDATA full_data_6024e4[];
 extern GAPDATA full_data_624560[];
 extern GAPDATA full_data_6f25b0[];
@@ -1100,7 +1095,7 @@ int main_EnterHostAddress(void)
     return r;
 }
 
-/* 0x532da0, the network game search window "Menu\SEARCH_NETWORK": every 1.5 s (the clock ai_ClockMs) or on the
+/* 0x532da0, the network game search window "Menu\SEARCH_NETWORK": every 1.5 s (the clock d3_Time) or on the
    refresh button (btn[1]) it scans the LAN (udp_FindServers, port 12345, 3 s, up to 8 hosts) under the message
    txt 0x1cb1 and lists each host's game: its city arms ("_STADTWAPPEN_<city>", "_STADTWAPPEN_BERLIN" without
    one), the host, the name and the players (txt 0x1cbc). saved 0 lists the new games (0x3f), saved 1 the saved
@@ -1118,7 +1113,7 @@ int d2_FindPic();
 int sv_OpenMessageBox(int text, unsigned char flags);
 int ls_ReadSaveHeader();
 
-/* 0x532da0, the network game search window "Menu\SEARCH_NETWORK": every 1.5 s (the clock ai_ClockMs) or on the
+/* 0x532da0, the network game search window "Menu\SEARCH_NETWORK": every 1.5 s (the clock d3_Time) or on the
    refresh button (btn[1]) it scans the LAN (udp_FindServers, port 12345, 3 s, up to 8 hosts) under the message
    txt 0x1cb1 and lists each host's game: its city arms ("_STADTWAPPEN_<city>", "_STADTWAPPEN_BERLIN" without
    one), the host, the name and the players (txt 0x1cbc). saved 0 lists the new games (0x3f), saved 1 the saved
@@ -1145,7 +1140,7 @@ int main_SearchNetworkGame(int saved)
 
     ret = 0;
     redraw = 1;
-    ts = ai_ClockMs;
+    ts = d3_Time;
     list = -1;
     f = d2_OpenForm(0, 0, "Menu\\SEARCH_NETWORK");
     d2_PlaceViewWindows(f, 1);
@@ -1159,7 +1154,7 @@ int main_SearchNetworkGame(int saved)
     d2_SetObjEnabled(btn[0], 0);
     if (sv_RunFrame((int)main_SearchNetworkGame, 0x24087) != 0) {
         do {
-            if ((unsigned)ai_ClockMs > ts + 0x5dc || redraw) {
+            if ((unsigned)d3_Time > ts + 0x5dc || redraw) {
                 ok = 1;
                 d2_CutsceneActive = 1;
                 h = sv_OpenMessageBox((int)txt_Ptrs[0x1cb1], 0);
@@ -1228,7 +1223,7 @@ int main_SearchNetworkGame(int saved)
                     io_PrintText(0x1cbc, recs[i].ip, recs[i].info.game.name, recs[i].info.game.players);
                 }
                 redraw = 0;
-                ts = ai_ClockMs;
+                ts = d3_Time;
             }
             if (dm_L.rup != 0 || kb_Last == 1)
                 sv_PopRequest = 1;
@@ -1730,8 +1725,8 @@ int main_Unk5344f0(int a, int b, int k)
         dir[0] = 0;
         dir[1] = 0.0f;
         dir[2] = 0;
-        d3_DirToWorld(o, (char *)(unsigned)&ai_AxisPair, loc);
-        dir[1] = d3_VecAngle((char *)(unsigned)&ai_AxisPair, loc);
+        d3_DirToWorld(o, (char *)&d3_ZAxis, loc);
+        dir[1] = d3_VecAngle((char *)&d3_ZAxis, loc);
         d3_SetObjectRot(*(int *)(p + 0x34), dir);
         ch_PlaceOnGround(p, 0);
         *(int *)(*(int *)(p + 0x34) + 0x200) = p;
@@ -2104,7 +2099,7 @@ int main_ChooseModel(int job)
 /* 0x5359f0, the family choice of the character creation ("Menu\CHOOSECITY_HEADER" over the sky "Sky_Mittel_02"): nine template persons (0x5344f0: thief / gypsy 0 / 8, craftsmen 1 / 7, fighter 4, traders 3 / 5, priest 2 / 6) stand
    in the scene; the player clicks one for each of the four slots 0x75e180 [4] (father) and [5] (mother) (the clicked person 0x6f22e4 + 0x200 gets the slot in +0x23c and the dummy name "dummy_VATER" / "dummy_MUTTER" ..), the
    value stored in the slot is the profession group 0 .. 4; with both slots set the talent choice main_ChooseTalents and the model choice main_ChooseModel follow; returns 1 when the character was created (the dummy name table
-   dn[6] of 0x30 bytes, entries 4 / 5 are the only ones used) @deep read against the original and corrected: the odd slot (mother, k=5) is tested first in both the camera target choice (+0xfc.. before +0xe4..) and the click handling, both branches share the slot store; k >= 6; talents ok -> (lobby_ChooseProfession(0xc6) && main_ChooseModel(job)) else pop with ret 0, then if (ret == 0) d2_SetViewEnabled (the original's jump threading). Left is allocation only: the original pushes ebp in the prologue and keeps f in ebp (ours esi), zeroes ret / fade via ebp before the dn table copies (ours esi after them), and has one more stack slot (frame 0x16c vs 0x168: dn at esp+0x5c vs 0x58). Q7 / Q4 open: ch_* (ch.h does not include into main), the ai_Unk5fb5b0 / sv_CameraObj records are untyped */
+   dn[6] of 0x30 bytes, entries 4 / 5 are the only ones used) @deep read against the original and corrected: the odd slot (mother, k=5) is tested first in both the camera target choice (+0xfc.. before +0xe4..) and the click handling, both branches share the slot store; k >= 6; talents ok -> (lobby_ChooseProfession(0xc6) && main_ChooseModel(job)) else pop with ret 0, then if (ret == 0) d2_SetViewEnabled (the original's jump threading). Left is allocation only: the original pushes ebp in the prologue and keeps f in ebp (ours esi), zeroes ret / fade via ebp before the dn table copies (ours esi after them), and has one more stack slot (frame 0x16c vs 0x168: dn at esp+0x5c vs 0x58). Q7 / Q4 open: ch_* (ch.h does not include into main), the scene event table (D3EVENT) is read by offsets */
 
 int main_ChooseFamily(int unused)
 {
@@ -2125,12 +2120,12 @@ int main_ChooseFamily(int unused)
     sv_ClearNamePlates();
     sv_ReleaseNamePlates();
     d3if_SelectScene(1, 0);
-    p = (int *)U_I((unsigned)&ai_Unk5fb5b0);
+    p = (int *)d3_DefaultScene;
     if (p != 0 && (q = p[0x3c8 / 4]) != 0 && *(int *)(q + 0x210) != 0)
         ((void (*)(int *, int, int, int))*(int *)(q + 0x210))(p, 4, q + 0x214, 0);
     scene = U_I((unsigned)&evt_LastId);
-    if (U_I((unsigned)&ai_Unk633738) != 0)
-        *(unsigned char *)(U_I((unsigned)&ai_Unk633738) + 0x1c70) = (*(unsigned char *)(U_I((unsigned)&ai_Unk633738) + 0x1c70) & 0xeb) | 8;
+    if ((int)d3_Terrain != 0)
+        *(unsigned char *)((int)d3_Terrain + 0x1c70) = (*(unsigned char *)((int)d3_Terrain + 0x1c70) & 0xeb) | 8;
     o1 = main_Unk5344f0((int)"dummy_NACHT_UND_NEBEL_MANN", (int)"dieb_MANN2", 0);
     o2 = main_Unk5344f0((int)"dummy_NACHT_UND_NEBEL_FRAU", (int)"zigeunerin_FRAU", 8);
     o3 = main_Unk5344f0((int)"dummy_HANDWERKSKUNST_MANN", (int)"handwerker_MANN", 1);
@@ -2162,24 +2157,24 @@ int main_ChooseFamily(int unused)
                             io_PrintText((unsigned)"$C");
                             io_PrintText(0x1ae6, k + 0x1aea);
                             if (k % 2 != 0) {
-                                r1[0] = *(int *)(U_I((unsigned)&sv_CameraObj) + 0xfc);
-                                r1[1] = *(int *)(U_I((unsigned)&sv_CameraObj) + 0x100);
-                                r1[2] = *(int *)(U_I((unsigned)&sv_CameraObj) + 0x104);
-                                r2[0] = *(int *)(U_I((unsigned)&sv_CameraObj) + 0x108);
-                                r2[1] = *(int *)(U_I((unsigned)&sv_CameraObj) + 0x10c);
-                                r2[2] = *(int *)(U_I((unsigned)&sv_CameraObj) + 0x110);
+                                r1[0] = *(int *)&d3_Camera->views[4].pos.x;
+                                r1[1] = *(int *)&d3_Camera->views[4].pos.y;
+                                r1[2] = *(int *)&d3_Camera->views[4].pos.z;
+                                r2[0] = *(int *)&d3_Camera->views[4].dir.x;
+                                r2[1] = *(int *)&d3_Camera->views[4].dir.y;
+                                r2[2] = *(int *)&d3_Camera->views[4].dir.z;
                             } else {
-                                r1[0] = *(int *)(U_I((unsigned)&sv_CameraObj) + 0xe4);
-                                r1[1] = *(int *)(U_I((unsigned)&sv_CameraObj) + 0xe8);
-                                r1[2] = *(int *)(U_I((unsigned)&sv_CameraObj) + 0xec);
-                                r2[0] = *(int *)(U_I((unsigned)&sv_CameraObj) + 0xf0);
-                                r2[1] = *(int *)(U_I((unsigned)&sv_CameraObj) + 0xf4);
-                                r2[2] = *(int *)(U_I((unsigned)&sv_CameraObj) + 0xf8);
+                                r1[0] = *(int *)&d3_Camera->views[3].pos.x;
+                                r1[1] = *(int *)&d3_Camera->views[3].pos.y;
+                                r1[2] = *(int *)&d3_Camera->views[3].pos.z;
+                                r2[0] = *(int *)&d3_Camera->views[3].dir.x;
+                                r2[1] = *(int *)&d3_Camera->views[3].dir.y;
+                                r2[2] = *(int *)&d3_Camera->views[3].dir.z;
                             }
-                            d3anim_FreePath(U_I((unsigned)&sv_CameraObj));
+                            d3anim_FreePath((int)d3_Camera);
                             U_I((unsigned)&d3t_CamMoving) = 0;
                             U_I((unsigned)&d3t_CamMove) = 0;
-                            d3t_PlaceObjectV(U_I((unsigned)&sv_CameraObj), r1, r2, 0x50, 8);
+                            d3t_PlaceObjectV((int)d3_Camera, r1, r2, 0x50, 8);
                         }
                         break;
                     }
@@ -2224,10 +2219,10 @@ lskip:
                 d2_SetForm(f, 0);
                 io_PrintText((unsigned)"$C");
                 d2_SetViewEnabled(f, 0);
-                d3anim_FreePath(U_I((unsigned)&sv_CameraObj));
+                d3anim_FreePath((int)d3_Camera);
                 U_I((unsigned)&d3t_CamMoving) = 0;
                 U_I((unsigned)&d3t_CamMove) = 0;
-                d3t_PlaceObjectV(U_I((unsigned)&sv_CameraObj), U_I((unsigned)&sv_CameraObj) + 0x114, U_I((unsigned)&sv_CameraObj) + 0x120, 0x50, 8);
+                d3t_PlaceObjectV((int)d3_Camera, &d3_Camera->views[5].pos, &d3_Camera->views[5].dir, 0x50, 8);
                 if (main_ChooseTalents() != 0) {
                     if (lobby_ChooseProfession(0xc6) != 0 && main_ChooseModel(init_PlayerProfile.job) != 0) {
                         sv_PopRequest = 1;
@@ -2274,15 +2269,15 @@ lskip:
             evt_Stop((EVTSCRIPT *)h);
         sv_Unk52bb70(scene);
     }
-    if (*(int *)(U_I((unsigned)&ai_Unk5fb5b0) + 0xb0) != 0) {
-        d3sm_Destroy(*(int *)(U_I((unsigned)&ai_Unk5fb5b0) + 0xb0));
-        *(int *)(U_I((unsigned)&ai_Unk5fb5b0) + 0xb0) = 0;
+    if ((int)d3_DefaultScene->hmap != 0) {
+        d3sm_Destroy((int)d3_DefaultScene->hmap);
+        d3_DefaultScene->hmap = 0;
     }
     ai_Unk4e3390();
-    p = (int *)U_I((unsigned)&ai_Unk5fb5b0);
+    p = (int *)d3_DefaultScene;
     if (p != 0 && (q = p[0x3c8 / 4]) != 0 && *(int *)(q + 0x294) != 0)
         ((void (*)(int *, int, int, int))*(int *)(q + 0x294))(p, 5, q + 0x298, 0);
-    d3anim_FreePath(U_I((unsigned)&sv_CameraObj));
+    d3anim_FreePath((int)d3_Camera);
     U_I((unsigned)&d3t_CamMoving) = 0;
     U_I((unsigned)&d3t_CamMove) = 0;
     if (fade != 0)
@@ -2741,15 +2736,15 @@ int main_ChooseCity(int unused, int host)
     sv_ClearNamePlates();
     sv_ReleaseNamePlates();
     d3if_SelectScene(0, 0);
-    d3_SetObjectPos(U_I((unsigned)&sv_CameraObj), U_I((unsigned)&sv_CameraObj) + 0x5c);
-    d3_SetObjectRot(U_I((unsigned)&sv_CameraObj), U_I((unsigned)&sv_CameraObj) + 0x90);
+    d3_SetObjectPos((int)d3_Camera, &d3_Camera->savedPos);
+    d3_SetObjectRot((int)d3_Camera, &d3_Camera->savedRot);
     d3_SetLightSet(0, 0.0f, 1.0f, 0);
     if (host == 0)
         n = ai_ListFiles("gamedata/cities", ".CTY", (char *)recs);
     else
         n = ai_ListFiles("gamedata/cities", ".NET", (char *)recs);
     for (i = 0; i < n; i++) {
-        f = vfs_Tfopen(recs[i] + 0x109, (char *)(unsigned)"rb", U_I((unsigned)&d3_Unk6333fc));
+        f = vfs_Tfopen(recs[i] + 0x109, (char *)(unsigned)"rb", (int)vfs_Root);
         if (f == 0)
             return 0;
         if (ls_ReadSaveHeader(f, hdr) == 0) {
@@ -3692,8 +3687,8 @@ void main_RoundReport(void)
     }
     bk = gm_PlayerRecord((unsigned)&ai_CharsT + MAIN_PID * 0x21c);
     *(int *)(bk + 0x3c) = *(int *)(bk + 0x3c) + (U_I(((unsigned)&ai_Selected + 0x1c) + MAIN_PID * 0x21c) + U_I(((unsigned)&ai_Selected + 0x18) + MAIN_PID * 0x21c));
-    d3_SetObjectPos(U_I((unsigned)&sv_CameraObj), bk + 0x8c);
-    d3_SetObjectRot(U_I((unsigned)&sv_CameraObj), bk + 0x9c);
+    d3_SetObjectPos((int)d3_Camera, bk + 0x8c);
+    d3_SetObjectRot((int)d3_Camera, bk + 0x9c);
     if (U_I((unsigned)&full_data_624560) != 0) {
         w1f8 = 0;
         d2_SetPointerSprite(0, 0);

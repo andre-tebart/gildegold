@@ -96,7 +96,7 @@ extern int ai_NextPartyId;                                    /* 0x61a658 */
 extern int ls_Language;                                     /* 0x62364c */
 extern int ls_Version;                                      /* 0x623650 */
 extern const char ls_LanguageNames[][0x40];                 /* 0x5ee978 */
-extern int * ai_Unk633738;                                  /* 0x633738 */
+extern void *d3_Terrain;                                    /* 0x633738, d3_fl.c: the current terrain map */
 extern int ai_NextCrimeId;                                    /* 0x6f1b88 */
 extern int ls_SpareInt;                                    /* 0x6f1bcc */
 extern unsigned char ls_SaveSlot;                           /* 0x6f1c38 */

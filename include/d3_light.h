@@ -148,7 +148,7 @@ extern D3OBJECT *d3_Camera;                 /* 0xfc2dec */
 extern float d3_LightRadiusMargin;          /* 0x633b18, added to the mesh radius for the light reach:
                                                the matrix z offset (m->_43) or 0 */
 extern D3VECTOR d3_AmbientColor;               /* 0x5fcc78, ambient light colour */
-extern D3VECTOR d3_ZAxis;                   /* 0x5ebb74, (0, 0, 1) */
+extern const D3VECTOR d3_ZAxis;             /* 0x5ebb74, (0, 0, 1) */
 
 /* float to int with fistp (current rounding mode), as d3_FtoI in d3_engine.h but float first */
 __inline void d3l_FtoI2(float f, int *dst)

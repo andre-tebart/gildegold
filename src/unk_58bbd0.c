@@ -154,9 +154,7 @@ extern GAPDATA full_data_6f4f10[];
 extern GAPDATA full_data_6f52f0[];
 extern GAPDATA full_data_6f58b0[];
 extern GAPDATA full_data_6f5a70[];
-extern char *ai_Unk5fb5b0;
 extern char * ai_BTypes;
-extern char * sv_CameraObj;
 extern GAPDATA full_data_6f26b0[];
 extern unsigned char kb_Last;
 
@@ -181,7 +179,6 @@ extern int sv_PanelFlag;
 extern char * sv_PanelObject;
 extern unsigned short * sv_PanelRecord;
 extern int ai_Unk75f280[576];
-extern char * sv_CameraObj;
 extern char ai_Chars[768][0x21c];
 extern int ai_GameFlags;
 extern unsigned char ai_GameState;
@@ -338,7 +335,7 @@ extern GAPDATA full_data_6f2450[];
 extern unsigned char kb_Last;
 extern int d2_LastWindow;
 extern int sv_PopRequest;
-extern int ai_ClockMs;
+extern volatile unsigned long d3_Time;
 extern char ai_Chars[768][0x21c];
 extern unsigned char ai_TimeHour;
 extern int d2_PointerObj;
@@ -356,12 +353,12 @@ extern int d2_LastWindow;
 extern struct D2OBJ *d2_Objs;
 extern int ai_CameraStep;
 extern char ai_PlayerSlots[4][0x2f4];
-extern int ai_ClockMs;
+extern volatile unsigned long d3_Time;
 extern char gm_StockBlocks[0xd4d0];
 extern D2VIEW d2_Views[];
 extern D2WIN d2_Wins[];
 extern int sv_PopRequest;
-extern const float ai_Unk5ebba4[];
+extern const struct D3VECTOR d3_Origin;
 extern char * ai_PickedObject;
 
 extern struct AIBLD *ai_MarketBuilding;
@@ -456,7 +453,6 @@ extern int d2_LastWindow;
 extern char * ai_PlayerBuilding;
 extern int sv_BorderViewX;
 extern int sv_BorderViewY;
-extern char * sv_CameraObj;
 extern int sv_FrameBase;
 extern int sv_FrameDepth;
 extern int sv_PopRequest;
@@ -470,16 +466,14 @@ extern int ai_GameFlags;
 
 extern int sv_PanelFlag;
 extern char * ai_PlayerBuilding;
-extern const float ai_Unk5ebba4[];
+extern const struct D3VECTOR d3_Origin;
 extern int ch_CurrentGroup;
 extern int evt_LastId;
-extern char *ai_Unk5fb5b0;
 extern int sv_BorderViewX;
 extern int sv_BorderViewY;
 extern float sv_ViewPos[4];  /* 0x75fb80, sv.c: the stored camera position */
 extern float sv_ViewRot[4];  /* 0x75fb90, its rotation */
 extern int sv_SelectedChar;
-extern char * sv_CameraObj;
 extern int ch_CurrentScriptGroup;
 extern char ch_StepSample[];
 extern int d2_CutsceneActive;
@@ -494,7 +488,6 @@ extern char * ai_BTypes;
 extern char * ai_FallbackBuilding;
 #include "unk_5d33b0_types.h"
 extern OPTIONBYTES ai_GfxFloor;
-extern int * ai_Unk633738;
 extern G16AMBIENTON snd_AmbientOn;
 extern char ai_Chars[768][0x21c];
 extern unsigned char ai_OwnPlayer;
@@ -737,7 +730,6 @@ extern unsigned char ai_OwnPlayer;
 extern char * ai_PlayerBuilding;
 extern char ai_PlayerSlots[4][0x2f4];
 extern char ai_Unk625820[115][0x20];
-extern char * sv_CameraObj;
 extern int d2_LastWindow;
 extern struct D2WIN *d2_LastWindowPtr;
 extern struct D2OBJ *d2_Objs;
@@ -769,7 +761,7 @@ extern char * ai_Unk1468ae0[0x300];
 extern int d2_PointerObj;
 extern int ai_DragWindow;
 extern int ai_Unk62c26c;
-extern int ai_ClockMs;
+extern volatile unsigned long d3_Time;
 extern int d2_RightHeldObj;
 extern D2VIEW d2_Views[];
 extern GAPDATA full_data_6f26c0[];
@@ -1022,7 +1014,7 @@ extern GAPDATA full_data_62d468[];
 
 extern int d2_PointerObj;
 extern char cm_TextNewline[4];
-extern int ai_ClockMs;
+extern volatile unsigned long d3_Time;
 extern int d2_ClickedId;
 extern int d2_LastWindow;
 extern struct D2OBJ *d2_Objs;
@@ -2508,7 +2500,7 @@ int ai_FindBauplaetze(char *prefix, int *list)
 
     U_I((unsigned)&ai_BauplatzCount) = 0;
     U_I((unsigned)&ai_BauplatzList) = (int)list;
-    d3_ForEachObject(U_I((unsigned)&ai_Unk5fb5b0), 0, 0x180, ai_BauplatzFilter, prefix);
+    d3_ForEachObject(d3_DefaultScene, 0, 0x180, ai_BauplatzFilter, prefix);
     for (i = 0; i < U_I((unsigned)&ai_BauplatzCount); i++) {
         obj = list[i];
         if (obj == 0)
@@ -2738,7 +2730,7 @@ struct XOBJ;
 void d3_LocalToWorld(struct XOBJ *obj, float *in, float *out);  /* 0x458c10 (unk_458810.c) */
 void d3_DirToWorld(struct XOBJ *obj, float *in, float *out);    /* 0x458810 (unk_458810.c) */
 float d3_VecAngle(struct D3VECTOR *a, struct D3VECTOR *b);      /* 0x4539f0 (d3_vec.c) */
-extern struct D3VECTOR d3_ZAxis;                                /* 0x5ebb74, (0, 0, 1) */
+extern const struct D3VECTOR d3_ZAxis;                          /* 0x5ebb74, (0, 0, 1) */
 
 /* 0x58fd40, the world position of a plot record's origin, written to out (79 B): d3if_SelectScene (0, 1) brackets
    the work; the zeroed 0x10-byte vector goes through d3_LocalToWorld (the plot, the vector, out), which applies
@@ -2914,9 +2906,9 @@ int ai_Unk58ff00(int kind, char *out)
                 *(unsigned char *)(obj + 0x211) &= 0xfd;
                 ((void (*)(void *, void *, int))d3_SetObjectAlpha)(obj, 0, 0);
                 d3t_SetTreeColor(obj);
-                if ((((pos[0] - *(float *)((unsigned)&sv_CameraObj + 0x4c)) * (pos[0] - *(float *)((unsigned)&sv_CameraObj + 0x4c))) +
-                     ((pos[1] - *(float *)((unsigned)&sv_CameraObj + 0x50)) * (pos[1] - *(float *)((unsigned)&sv_CameraObj + 0x50))) +
-                     ((pos[2] - *(float *)((unsigned)&sv_CameraObj + 0x54)) * (pos[2] - *(float *)((unsigned)&sv_CameraObj + 0x54)))) < bd) {
+                if ((((pos[0] - d3_Camera->pos.x) * (pos[0] - d3_Camera->pos.x)) +
+                     ((pos[1] - d3_Camera->pos.y) * (pos[1] - d3_Camera->pos.y)) +
+                     ((pos[2] - d3_Camera->pos.z) * (pos[2] - d3_Camera->pos.z))) < bd) {
                     /* ROUGH: the distance of the original is a sqrt of the three axes */
                     sel = obj;
                     bd = 0.0f;
@@ -3151,14 +3143,14 @@ void ai_Unk591480(void)
 {
     float v[3];
 
-    if (U_I((unsigned)&kb_Last) == '1' && U_I((unsigned)&sv_CameraObj) != 0 &&
+    if (U_I((unsigned)&kb_Last) == '1' && d3_Camera != 0 &&
         *(int *)(((unsigned)&ai_Unk75f280 + 0x500) + U_I((unsigned)&sv_FrameDepth) * 8) == (int)ai_GameFrame) {
         ai_CampaignStep(0x16, 0, 0, 0);
-        v[0] = *(float *)(U_I((unsigned)&sv_CameraObj) + 0x84);
+        v[0] = d3_Camera->rotation.x;
         v[1] = 0;
-        v[2] = *(float *)(U_I((unsigned)&sv_CameraObj) + 0x8c);
-        if (d3_VecEqual((void *)(U_I((unsigned)&sv_CameraObj) + 0x84), v, 0.1f) == 0)
-            d3t_PlaceObjectV(U_I((unsigned)&sv_CameraObj), U_I((unsigned)&sv_CameraObj) + 0x4c, v, 0x1e, 0x28);
+        v[2] = d3_Camera->rotation.z;
+        if (d3_VecEqual(&d3_Camera->rotation, v, 0.1f) == 0)
+            d3t_PlaceObjectV((int)d3_Camera, &d3_Camera->pos, v, 0x1e, 0x28);
     }
 }
 /* 0x591520, the main game frame callback (1445 B, ROUGH SKELETON from the Ghidra pseudocode): the clock index
@@ -3188,7 +3180,7 @@ void ai_GameFrame(void)
     U_I((unsigned)&full_data_5f3418) = -1;
     init_AfterTownLoad();
     if (U_I((unsigned)&full_data_6f1c2c) != 0) {
-        d3fl_MakeDivide(U_I((unsigned)&ai_Unk633738));
+        d3fl_MakeDivide((int)d3_Terrain);
         U_I((unsigned)&full_data_6f1c2c) = 0;
     }
     s0 = U_I((unsigned)&di_MaxX);
@@ -5914,50 +5906,50 @@ void ai_Unk597a10(int param_1, int *param_2, int mode, int win, int frame, int w
     if (fast == 0) {
         if (mode == 1) {
             txt_Format(text, 0x1883, *param_2 + 0x30);
-            end = U_I((unsigned)&ai_ClockMs) + wait;
-            t0 = U_I((unsigned)&ai_ClockMs);
+            end = U_I((unsigned)&d3_Time) + wait;
+            t0 = U_I((unsigned)&d3_Time);
             while (t0 < end) {
                 sv_RunFrame(0, 0x777c7);
                 if (*(char *)(((unsigned)&ai_CharInts + 0x4) + U_W((unsigned)&ai_PlayerId) * 0x21c) == 0)
                     return;
-                if (t0 + step < U_I((unsigned)&ai_ClockMs)) {
+                if (t0 + step < U_I((unsigned)&d3_Time)) {
                     d2_SetForm(win, frame);
                     ai_Unk597780(text);
                     step = step + step / 2;
-                    t0 = U_I((unsigned)&ai_ClockMs);
+                    t0 = U_I((unsigned)&d3_Time);
                 }
             }
         } else if (mode == 2) {
             txt_Format(text, 0x1884, *param_2 + 0x30, U_I(param_1 + 4));
-            end = U_I((unsigned)&ai_ClockMs) + wait;
-            t0 = U_I((unsigned)&ai_ClockMs);
+            end = U_I((unsigned)&d3_Time) + wait;
+            t0 = U_I((unsigned)&d3_Time);
             while (t0 < end) {
                 sv_RunFrame(0, 0x777c7);
                 if (*(char *)(((unsigned)&ai_CharInts + 0x4) + U_W((unsigned)&ai_PlayerId) * 0x21c) == 0)
                     return;
-                if (t0 + step < U_I((unsigned)&ai_ClockMs)) {
+                if (t0 + step < U_I((unsigned)&d3_Time)) {
                     d2_SetForm(win, frame);
                     ai_Unk597810(text, param_2);
                     step = step + step / 2;
-                    t0 = U_I((unsigned)&ai_ClockMs);
+                    t0 = U_I((unsigned)&d3_Time);
                 }
             }
         } else if (mode == 3) {
             txt_Format(text, 0x1885, *param_2 + 0x30, U_I(param_1 + 4));
-            t0 = U_I((unsigned)&ai_ClockMs);
+            t0 = U_I((unsigned)&d3_Time);
             d2_SetForm(win, frame);
             ai_Unk597920(text, param_2);
-            while (t0 + wait > U_I((unsigned)&ai_ClockMs)) {
+            while (t0 + wait > U_I((unsigned)&d3_Time)) {
                 if (*(char *)(((unsigned)&ai_CharInts + 0x4) + U_W((unsigned)&ai_PlayerId) * 0x21c) == 0)
                     return;
                 sv_RunFrame(0, 0x777c7);
             }
         } else if (mode == 4) {
             txt_Format(text, 0x1886, *param_2 + 0x30, U_I(param_1 + 4));
-            t0 = U_I((unsigned)&ai_ClockMs);
+            t0 = U_I((unsigned)&d3_Time);
             d2_SetForm(win, frame);
             ai_Unk597920(text, param_2);
-            while (t0 + wait > U_I((unsigned)&ai_ClockMs)) {
+            while (t0 + wait > U_I((unsigned)&d3_Time)) {
                 if (*(char *)(((unsigned)&ai_CharInts + 0x4) + U_W((unsigned)&ai_PlayerId) * 0x21c) == 0)
                     return;
                 sv_RunFrame(0, 0x777c7);
@@ -5973,10 +5965,10 @@ void ai_Unk597a10(int param_1, int *param_2, int mode, int win, int frame, int w
         txt_Format(text, 0x1885, *param_2 + 0x30, U_I(param_1 + 4));
     else if (mode == 4)
         txt_Format(text, 0x1886, *param_2 + 0x30, U_I(param_1 + 4));
-    t0 = U_I((unsigned)&ai_ClockMs);
+    t0 = U_I((unsigned)&d3_Time);
     d2_SetForm(win, frame);
     ai_Unk597920(text, param_2);
-    while (U_I((unsigned)&ai_ClockMs) < t0 + wait &&
+    while (U_I((unsigned)&d3_Time) < t0 + wait &&
            *(char *)(((unsigned)&ai_CharInts + 0x4) + U_W((unsigned)&ai_PlayerId) * 0x21c) != 0)
         sv_RunFrame(0, 0x777c7);
 }
@@ -6881,7 +6873,7 @@ void ai_Unk599ef0(char *param_1, int param_2)
             ctl = (char *)((unsigned)&d2_Wins + n * 0x3c4);
             sprintf(text, "Wappen128_ns_Stadt_%s", (char *)(unsigned)&ai_PlayerSlots + U_I(param_1 + 0x65) * 0x2f4);
             d2_SetBackgroundTexture(text, U_I(ctl));
-            tick = U_I((unsigned)&ai_ClockMs);
+            tick = U_I((unsigned)&d3_Time);
             U_I(((unsigned)&ai_Unkf8f39c + 0x118) + n * 0x3c4) = 0;
             g1 = gm_Query(U_I(param_1 + 0x5d), 2, 0, 0x1db, 6);
             if (g1 == 0)
@@ -6915,7 +6907,7 @@ void ai_Unk599ef0(char *param_1, int param_2)
             }
             first = 1;
         }
-        *(float *)(ctl + 0x394) = (float)(U_I((unsigned)&ai_ClockMs) - tick) * 0.0015384615384615385f;
+        *(float *)(ctl + 0x394) = (float)(U_I((unsigned)&d3_Time) - tick) * 0.0015384615384615385f;
         if (*(float *)(ctl + 0x394) >= 0.35f)
             *(float *)(ctl + 0x394) = 0.35f;
     } while (sv_RunFrame(ai_Unk599ef0, 0x677c7) != 0);
@@ -6954,7 +6946,7 @@ int ai_Unk59a2c0(char *param_1)
     if (obj == 0)
         return 0;
     d3_PointToWorld(obj, (float *)(obj + 0x4c), (float *)v);
-    obj = d3_CreateObject(0, (float *)v, (float *)(unsigned)&ai_Unk5ebba4, "sp_STADTPUNKT_K");
+    obj = d3_CreateObject(0, (float *)v, (float *)&d3_Origin, "sp_STADTPUNKT_K");
     U_I(obj + 0x220) = 4;
     U_I(obj + 0x224) = 1;
     *(unsigned char *)(obj + 0x211) |= 4;
@@ -8679,8 +8671,8 @@ void ai_SwitchRoom(int param_1, unsigned short param_2)
         *(unsigned short *)(U_I((unsigned)&ai_PlayerBuilding) + 0x29) = *p;
     }
     U_I((unsigned)&sv_PopRequest) = (U_I((unsigned)&sv_FrameDepth) - U_I((unsigned)&sv_FrameBase)) + 1;
-    d3_SetObjectPos((void *)U_I((unsigned)&sv_CameraObj), (void *)(U_I((unsigned)&sv_CameraObj) + 0x10));
-    d3_SetObjectRot((void *)U_I((unsigned)&sv_CameraObj), (void *)(U_I((unsigned)&sv_CameraObj) + 0x20));
+    d3_SetObjectPos(d3_Camera, sv_ViewPos);
+    d3_SetObjectRot(d3_Camera, sv_ViewRot);
     U_I((unsigned)&sv_BorderViewX) = 0;
     U_I((unsigned)&sv_BorderViewY) = 0;
     sb_PlaySample(snd_RoomBank, "RaumWechseln_s", 1, 0x3f, 0x7f, 0, 0);
@@ -8849,28 +8841,28 @@ void ai_Unk59e420(unsigned char *param_1, int param_2)
                 *(unsigned short *)(param_1 + 0x29) = *room;
                 d3if_SelectScene(*(signed char *)((unsigned)&init_ObjectUniverse + *room), 0);
                 d3_InflateScene(3);
-                d3_ForEachObject2((void *)U_I((unsigned)&ai_Unk5fb5b0), 0, 0xe0, (void *)(unsigned)&d3s_ResetShadows);
+                d3_ForEachObject2(d3_DefaultScene, 0, 0xe0, (void *)(unsigned)&d3s_ResetShadows);
                 init_SetCharacterAnimations(param_1);
                 init_ShowBuildingScene(U_I((unsigned)&ai_PlayerBuilding), *(unsigned short *)(U_I((unsigned)&ai_PlayerBuilding) + 0x29));
                 init_FinishBuildingScene(U_I((unsigned)&ai_PlayerBuilding), U_I((unsigned)&sv_PanelShown));
-                d3_SetObjectPos((void *)U_I((unsigned)&sv_CameraObj), (void *)(U_I((unsigned)&sv_CameraObj) + 0x5c));
-                d3_SetObjectRot((void *)U_I((unsigned)&sv_CameraObj), (void *)(U_I((unsigned)&sv_CameraObj) + 0x90));
+                d3_SetObjectPos(d3_Camera, &d3_Camera->savedPos);
+                d3_SetObjectRot(d3_Camera, &d3_Camera->savedRot);
                 /* ROUGH: the device callback (0x5fb5b0 + 0x3c8 -> +0x210) */
                 if (*(unsigned short *)(param_1 + 0x27) != U_W((unsigned)&ai_PlayerId)) {
                     v = gm_BuildingClass(*param_1);
                     if ((v == 1 || v == 8) &&
-                        d3_VecEqual((void *)(U_I((unsigned)&sv_CameraObj) + 0x114), (float *)(unsigned)&ai_Unk5ebba4, 0x3dcccccd) == 0 &&
-                        d3_VecEqual((void *)(U_I((unsigned)&sv_CameraObj) + 0x120), (float *)(unsigned)&ai_Unk5ebba4, 0x3dcccccd) == 0) {
-                        d3_SetObjectPos((void *)U_I((unsigned)&sv_CameraObj), (void *)(U_I((unsigned)&sv_CameraObj) + 0x114));
-                        d3_SetObjectRot((void *)U_I((unsigned)&sv_CameraObj), (void *)(U_I((unsigned)&sv_CameraObj) + 0x120));
+                        d3_VecEqual(&d3_Camera->views[5].pos, (float *)&d3_Origin, 0x3dcccccd) == 0 &&
+                        d3_VecEqual(&d3_Camera->views[5].dir, (float *)&d3_Origin, 0x3dcccccd) == 0) {
+                        d3_SetObjectPos(d3_Camera, &d3_Camera->views[5].pos);
+                        d3_SetObjectRot(d3_Camera, &d3_Camera->views[5].dir);
                     }
                 }
-                U_I((unsigned)&sv_ViewPosX) = U_I(U_I((unsigned)&sv_CameraObj) + 0x4c);
-                U_I((unsigned)&sv_ViewPosY) = U_I(U_I((unsigned)&sv_CameraObj) + 0x50);
-                U_I((unsigned)&sv_ViewPosZ) = U_I(U_I((unsigned)&sv_CameraObj) + 0x54);
-                U_I((unsigned)&sv_ViewRotX) = U_I(U_I((unsigned)&sv_CameraObj) + 0x84);
-                U_I((unsigned)&sv_ViewRotY) = U_I(U_I((unsigned)&sv_CameraObj) + 0x88);
-                U_I((unsigned)&sv_ViewRotZ) = U_I(U_I((unsigned)&sv_CameraObj) + 0x8c);
+                U_I((unsigned)&sv_ViewPosX) = *(int *)&d3_Camera->pos.x;
+                U_I((unsigned)&sv_ViewPosY) = *(int *)&d3_Camera->pos.y;
+                U_I((unsigned)&sv_ViewPosZ) = *(int *)&d3_Camera->pos.z;
+                U_I((unsigned)&sv_ViewRotX) = *(int *)&d3_Camera->rotation.x;
+                U_I((unsigned)&sv_ViewRotY) = *(int *)&d3_Camera->rotation.y;
+                U_I((unsigned)&sv_ViewRotZ) = *(int *)&d3_Camera->rotation.z;
                 U_I((unsigned)&sv_BorderViewX) = 0;
                 U_I((unsigned)&sv_BorderViewY) = 0;
             }
@@ -9013,44 +9005,44 @@ void ai_Unk59ee40(unsigned char *param_1)
         U_I((unsigned)&ch_CurrentScriptGroup) = U_I(room + 1);
         d3if_SelectScene(idx, 0);
         d3_InflateScene(3);
-        if (U_I((unsigned)&ai_Unk633738) != 0) {
+        if ((int)d3_Terrain != 0) {
             if (*(unsigned char *)((unsigned)&ai_GfxFloor + 2) == 2)
-                *(unsigned char *)(U_I((unsigned)&ai_Unk633738) + 0x1c70) = (*(unsigned char *)(U_I((unsigned)&ai_Unk633738) + 0x1c70) & 0xe7) | 4;
+                *(unsigned char *)((int)d3_Terrain + 0x1c70) = (*(unsigned char *)((int)d3_Terrain + 0x1c70) & 0xe7) | 4;
             else
-                *(unsigned char *)(U_I((unsigned)&ai_Unk633738) + 0x1c70) = (*(unsigned char *)(U_I((unsigned)&ai_Unk633738) + 0x1c70) & 0xeb) | 8;
+                *(unsigned char *)((int)d3_Terrain + 0x1c70) = (*(unsigned char *)((int)d3_Terrain + 0x1c70) & 0xeb) | 8;
             d3fl_SetDetail(0x40);
         }
         init_ShowBuildingScene(U_I((unsigned)&ai_FallbackBuilding), *room);
         init_FinishBuildingScene(U_I((unsigned)&ai_FallbackBuilding), room);
         /* ROUGH: the device callback (0x5fb5b0 + 0x3c8 -> +0x210) */
         if (*(unsigned short *)(param_1 + 0x27) == U_W((unsigned)&ai_PlayerId)) {
-            d3_SetObjectPos((void *)U_I((unsigned)&sv_CameraObj), (void *)(U_I((unsigned)&sv_CameraObj) + 0x5c));
-            d3_SetObjectRot((void *)U_I((unsigned)&sv_CameraObj), (void *)(U_I((unsigned)&sv_CameraObj) + 0x90));
+            d3_SetObjectPos(d3_Camera, &d3_Camera->savedPos);
+            d3_SetObjectRot(d3_Camera, &d3_Camera->savedRot);
         } else {
             kind = gm_BuildingClass(*param_1);
             if (kind == 2) {
-                if (d3_VecEqual((void *)(U_I((unsigned)&sv_CameraObj) + 0x114), (float *)(unsigned)&ai_Unk5ebba4, 0x3dcccccd) == 0 &&
-                    d3_VecEqual((void *)(U_I((unsigned)&sv_CameraObj) + 0x120), (float *)(unsigned)&ai_Unk5ebba4, 0x3dcccccd) == 0) {
-                    d3_SetObjectPos((void *)U_I((unsigned)&sv_CameraObj), (void *)(U_I((unsigned)&sv_CameraObj) + 0x114));
-                    d3_SetObjectRot((void *)U_I((unsigned)&sv_CameraObj), (void *)(U_I((unsigned)&sv_CameraObj) + 0x120));
+                if (d3_VecEqual(&d3_Camera->views[5].pos, (float *)&d3_Origin, 0x3dcccccd) == 0 &&
+                    d3_VecEqual(&d3_Camera->views[5].dir, (float *)&d3_Origin, 0x3dcccccd) == 0) {
+                    d3_SetObjectPos(d3_Camera, &d3_Camera->views[5].pos);
+                    d3_SetObjectRot(d3_Camera, &d3_Camera->views[5].dir);
                 }
             } else if (*(char *)(U_I((unsigned)&ai_BTypes) + *param_1 * 0x24d) == 0x1c) {
-                d3_SetObjectPos((void *)U_I((unsigned)&sv_CameraObj), (void *)(U_I((unsigned)&sv_CameraObj) + 0x5c));
-                d3_SetObjectRot((void *)U_I((unsigned)&sv_CameraObj), (void *)(U_I((unsigned)&sv_CameraObj) + 0x90));
+                d3_SetObjectPos(d3_Camera, &d3_Camera->savedPos);
+                d3_SetObjectRot(d3_Camera, &d3_Camera->savedRot);
             } else {
-                if (d3_VecEqual((void *)(U_I((unsigned)&sv_CameraObj) + 0x114), (float *)(unsigned)&ai_Unk5ebba4, 0x3dcccccd) == 0 &&
-                    d3_VecEqual((void *)(U_I((unsigned)&sv_CameraObj) + 0x120), (float *)(unsigned)&ai_Unk5ebba4, 0x3dcccccd) == 0) {
-                    d3_SetObjectPos((void *)U_I((unsigned)&sv_CameraObj), (void *)(U_I((unsigned)&sv_CameraObj) + 0x114));
-                    d3_SetObjectRot((void *)U_I((unsigned)&sv_CameraObj), (void *)(U_I((unsigned)&sv_CameraObj) + 0x120));
+                if (d3_VecEqual(&d3_Camera->views[5].pos, (float *)&d3_Origin, 0x3dcccccd) == 0 &&
+                    d3_VecEqual(&d3_Camera->views[5].dir, (float *)&d3_Origin, 0x3dcccccd) == 0) {
+                    d3_SetObjectPos(d3_Camera, &d3_Camera->views[5].pos);
+                    d3_SetObjectRot(d3_Camera, &d3_Camera->views[5].dir);
                 }
             }
         }
-        U_I((unsigned)&sv_ViewPosX) = U_I(U_I((unsigned)&sv_CameraObj) + 0x4c);
-        U_I((unsigned)&sv_ViewPosY) = U_I(U_I((unsigned)&sv_CameraObj) + 0x50);
-        U_I((unsigned)&sv_ViewPosZ) = U_I(U_I((unsigned)&sv_CameraObj) + 0x54);
-        U_I((unsigned)&sv_ViewRotX) = U_I(U_I((unsigned)&sv_CameraObj) + 0x84);
-        U_I((unsigned)&sv_ViewRotY) = U_I(U_I((unsigned)&sv_CameraObj) + 0x88);
-        U_I((unsigned)&sv_ViewRotZ) = U_I(U_I((unsigned)&sv_CameraObj) + 0x8c);
+        U_I((unsigned)&sv_ViewPosX) = *(int *)&d3_Camera->pos.x;
+        U_I((unsigned)&sv_ViewPosY) = *(int *)&d3_Camera->pos.y;
+        U_I((unsigned)&sv_ViewPosZ) = *(int *)&d3_Camera->pos.z;
+        U_I((unsigned)&sv_ViewRotX) = *(int *)&d3_Camera->rotation.x;
+        U_I((unsigned)&sv_ViewRotY) = *(int *)&d3_Camera->rotation.y;
+        U_I((unsigned)&sv_ViewRotZ) = *(int *)&d3_Camera->rotation.z;
         U_I((unsigned)&sv_BorderViewX) = 0;
         U_I((unsigned)&sv_BorderViewY) = 0;
     }
@@ -9158,14 +9150,14 @@ void ai_Unk59f410(unsigned short *param_1)
         init_FinishBuildingScene(U_I((unsigned)&ai_FallbackBuilding), param_1);
         /* ROUGH: the device callback (0x5fb5b0 + 0x3c8 -> +0x210) */
         idx = U_I((unsigned)&evt_LastId);
-        d3_SetObjectPos((void *)U_I((unsigned)&sv_CameraObj), (void *)(U_I((unsigned)&sv_CameraObj) + 0x5c));
-        d3_SetObjectRot((void *)U_I((unsigned)&sv_CameraObj), (void *)(U_I((unsigned)&sv_CameraObj) + 0x90));
-        U_I((unsigned)&sv_ViewPosX) = U_I(U_I((unsigned)&sv_CameraObj) + 0x4c);
-        U_I((unsigned)&sv_ViewPosY) = U_I(U_I((unsigned)&sv_CameraObj) + 0x50);
-        U_I((unsigned)&sv_ViewPosZ) = U_I(U_I((unsigned)&sv_CameraObj) + 0x54);
-        U_I((unsigned)&sv_ViewRotX) = U_I(U_I((unsigned)&sv_CameraObj) + 0x84);
-        U_I((unsigned)&sv_ViewRotY) = U_I(U_I((unsigned)&sv_CameraObj) + 0x88);
-        U_I((unsigned)&sv_ViewRotZ) = U_I(U_I((unsigned)&sv_CameraObj) + 0x8c);
+        d3_SetObjectPos(d3_Camera, &d3_Camera->savedPos);
+        d3_SetObjectRot(d3_Camera, &d3_Camera->savedRot);
+        U_I((unsigned)&sv_ViewPosX) = *(int *)&d3_Camera->pos.x;
+        U_I((unsigned)&sv_ViewPosY) = *(int *)&d3_Camera->pos.y;
+        U_I((unsigned)&sv_ViewPosZ) = *(int *)&d3_Camera->pos.z;
+        U_I((unsigned)&sv_ViewRotX) = *(int *)&d3_Camera->rotation.x;
+        U_I((unsigned)&sv_ViewRotY) = *(int *)&d3_Camera->rotation.y;
+        U_I((unsigned)&sv_ViewRotZ) = *(int *)&d3_Camera->rotation.z;
         U_I((unsigned)&sv_BorderViewX) = 0;
         U_I((unsigned)&sv_BorderViewY) = 0;
     }
@@ -13149,7 +13141,7 @@ void ai_Unk5a6cb0(int *m_)
             obj = (char *)*(int *)(obj + 0x61);
     }
     if (obj == 0)
-        obj = (char *)*(int *)((unsigned)&sv_CameraObj);
+        obj = (char *)d3_Camera;
     if (obj == 0)
         return;
     d3_PointToWorld((int)obj, (int)(obj + 0x4c), pos);
@@ -13374,9 +13366,9 @@ void ai_Unk5a7cd0(int *m_)
         m_[0x9e7] = ai_Unk5a79e0((int)rec);
         m_[0x9e7] |= ai_Unk5a7bc0((int)rec);
         if (m_[0x9e7] != 0)
-            m_[0x9e8] = *(int *)((unsigned)&ai_ClockMs);
+            m_[0x9e8] = *(int *)((unsigned)&d3_Time);
     }
-    if (*(int *)((unsigned)&d2_RightHeldObj) != -1 && m_[0x9e8] + 0x4b < *(int *)((unsigned)&ai_ClockMs) &&
+    if (*(int *)((unsigned)&d2_RightHeldObj) != -1 && m_[0x9e8] + 0x4b < *(int *)((unsigned)&d3_Time) &&
         *(int *)(((unsigned)&dm_L + 0x28)) != 0 && *(int *)((unsigned)&ai_DragWindow) == -1 && m_[0x9e9] > 0) {
         i = 0;
         e = (int *)(p + 0xe0);
@@ -19769,14 +19761,14 @@ void ai_PrivilegesPanel(void)
     for (i = 0; i < 0x3a; i++)
         cur[i] = 1;
     *(int *)(unsigned)&d2_ClickedId = -1;
-    last = *(unsigned int *)(unsigned)&ai_ClockMs;
+    last = *(unsigned int *)(unsigned)&d3_Time;
     do {
         int old;
 
         old = open;
         selected = 0;
-        if (last <= *(unsigned int *)(unsigned)&ai_ClockMs || changed) {
-            last = *(unsigned int *)(unsigned)&ai_ClockMs + 500;
+        if (last <= *(unsigned int *)(unsigned)&d3_Time || changed) {
+            last = *(unsigned int *)(unsigned)&d3_Time + 500;
             if ((*(unsigned int *)(((unsigned)&ai_Selected + 0x40) + *(int *)(unsigned)&ai_PlayerId * 0x21c) & 0x100) != 0 || open != 0) {
                 p = (int *)he_FindEvent(1, 0, 0x45);
                 while (p != 0) {

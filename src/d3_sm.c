@@ -23,7 +23,6 @@ extern const char d3_ScrollPool[];
 void d3_TransformMeshes(void);                                                                /* 0x43d840 */
 
 void d3s_ShadowTriangle(float *p, unsigned char *c, unsigned char *dst, int pitch, unsigned int flags, char *base, int radius);                                       /* 0x45a2e0 */
-const int d3_TriEdge[3][2] = { { 1, 2 }, { 2, 0 }, { 0, 1 } };  /* 0x5eba80, {1, 2}, {2, 0}, {0, 1} */
 char d3sm_GroundNames[15][9] = { "_ill*", "_unk*", "SAND", "ERDE", "WIESE", "MOOR", "PFLASTER", "KIESEL", "FELS", "EIS", "WASSER", "WEG", "WEG", "_ill*", "" };  /* 0x5fcfa0, "_ill*", "_unk*", "SAND", ...; TODO define here once .data is matched */
 
 int d3sm_Ground[8] = {0};                   /* 0x633dd8, ground type per terrain material */

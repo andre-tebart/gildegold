@@ -108,6 +108,5 @@ void tex_Init(int count, int maxhicol, int mips, unsigned int cache);  /* 0x45fa
 void tex_ReloadAll(char keep, void (*cb)(int, int, int));  /* 0x461090 */
 void ts_UpdateScroll(unsigned long time);  /* 0x460cb0 */
 char *tex_FindFile(char *name);  /* 0x45f9f0 */
-extern void * d3_Unk6333fc;  /* 0x6333fc */
 
 #endif

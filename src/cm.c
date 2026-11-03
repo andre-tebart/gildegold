@@ -6879,11 +6879,11 @@ int *cm_FightCutEntry(char *c)
     }
     return 0;
 }
-/* 0x4cdfe0, 1 when the cell (x, y) of the map ai_Unk5fb5b0 + 0xb0 is inside and passable */
+/* 0x4cdfe0, 1 when the cell (x, y) of the height map d3_DefaultScene->hmap is inside and passable */
 
 int cm_CellUsable(int x, int y)
 {
-    char *g = *(char **)(ai_Unk5fb5b0 + 0xb0);
+    char *g = (char *)d3_DefaultScene->hmap;
     int w = *(int *)(g + 0x20);
 
     if (x > w || x < 0 || y < 0 || y > w || x >= w || y >= w)
@@ -7534,8 +7534,9 @@ turn:
     }
     cm_UpdateDamagePops();
 }
-/* 0x4cf370, draws the scroll arrows (sprite ids 0 .. 7 of the sheet d2_GetPic(0x52c)): the mouse hit tests against
-   the boxes at sv_CameraObj + 0xb4 / 0xcc / 0xe4 / 0xfc pick the pressed (2) or the free (1) look. Rough draft. */
+/* 0x4cf370, draws the scroll arrows (sprite ids 0 .. 7 of the sheet d2_GetPic(0x52c)): the mouse hit tests and
+   whether the camera's preset views d3_Camera->views[1] .. [4] are set (their position not d3_Origin) pick the
+   pressed (2) or the free (1) look. Rough draft. */
 
 void cm_DrawScrollArrows()
 {
@@ -7545,30 +7546,30 @@ void cm_DrawScrollArrows()
     t = d2_GetPic(0x52c);
     if (sv_BorderViewX == -1) {
         up = 1;
-        if (d3_VecEqual((float *)(sv_CameraObj + 0xfc), ai_Unk5ebba4, 0.2f) == 0)
+        if (d3_VecEqual(&d3_Camera->views[4].pos, &d3_Origin, 0.2f) == 0)
             up = 2;
     } else if (sv_BorderViewX == 1) {
         e = 1;
-        if (d3_VecEqual((float *)(sv_CameraObj + 0xe4), ai_Unk5ebba4, 0.2f) == 0)
+        if (d3_VecEqual(&d3_Camera->views[3].pos, &d3_Origin, 0.2f) == 0)
             e = 2;
     } else if (sv_BorderViewX == 0) {
-        if (d3_VecEqual((float *)(sv_CameraObj + 0xe4), ai_Unk5ebba4, 0.2f) == 0)
+        if (d3_VecEqual(&d3_Camera->views[3].pos, &d3_Origin, 0.2f) == 0)
             e = 1;
-        if (d3_VecEqual((float *)(sv_CameraObj + 0xfc), ai_Unk5ebba4, 0.2f) == 0)
+        if (d3_VecEqual(&d3_Camera->views[4].pos, &d3_Origin, 0.2f) == 0)
             up = 1;
     }
     if (sv_BorderViewY == -1) {
         a = 1;
-        if (d3_VecEqual((float *)(sv_CameraObj + 0xb4), ai_Unk5ebba4, 0.2f) == 0)
+        if (d3_VecEqual(&d3_Camera->views[1].pos, &d3_Origin, 0.2f) == 0)
             a = 2;
     } else if (sv_BorderViewY == 1) {
         b = 1;
-        if (d3_VecEqual((float *)(sv_CameraObj + 0xcc), ai_Unk5ebba4, 0.2f) == 0)
+        if (d3_VecEqual(&d3_Camera->views[2].pos, &d3_Origin, 0.2f) == 0)
             b = 2;
     } else if (sv_BorderViewY == 0) {
-        if (d3_VecEqual((float *)(sv_CameraObj + 0xb4), ai_Unk5ebba4, 0.2f) == 0)
+        if (d3_VecEqual(&d3_Camera->views[1].pos, &d3_Origin, 0.2f) == 0)
             a = 1;
-        if (d3_VecEqual((float *)(sv_CameraObj + 0xcc), ai_Unk5ebba4, 0.2f) == 0)
+        if (d3_VecEqual(&d3_Camera->views[2].pos, &d3_Origin, 0.2f) == 0)
             b = 1;
     }
     d2_SetClipRect(0, 0, *(int *)((char *)d2_ScreenSurf + 4), *(int *)((char *)d2_ScreenSurf + 8));
@@ -8003,7 +8004,7 @@ int cm_OrderEscape(char *rec, char *c, char *tgt)
 
 int cm_OrderConquer(char *rec, char *c, char *tgt)
 {
-    char *sc = *(char **)(ai_Unk5fb5b0 + 0xb0);
+    char *sc = (char *)d3_DefaultScene->hmap;
     char *q;
     float v[4];
     int x, z, h;
@@ -8026,7 +8027,7 @@ int cm_OrderConquer(char *rec, char *c, char *tgt)
 
 int cm_OrderWare(char *rec, char *c, char *tgt, unsigned char a)
 {
-    char *sc = *(char **)(ai_Unk5fb5b0 + 0xb0);
+    char *sc = (char *)d3_DefaultScene->hmap;
     char *q;
     float v[4];
     int L[11];
@@ -8327,7 +8328,7 @@ char ai_Unk4d0a80(char *o)
 void cm_PlaceFlagObjects()
 {
     cm_FlagObjectCount = 0;
-    d3_ForEachObject(ai_Unk5fb5b0, 0, 0x100, ai_Unk4d0a80, 0);
+    d3_ForEachObject(d3_DefaultScene, 0, 0x100, ai_Unk4d0a80, 0);
 }
 /* 0x4d0cd0, the first free (-1) of 16 slots, else -1 */
 
@@ -8438,8 +8439,8 @@ typedef struct CMFIGHTREC {
    n - 1, the dummy object in ebx; ours inc esi, n in a register: 'inc esi' vs 'lea edi,[esi+1]', 'cmp
    ebx,edi' vs 'test ebx,ebx', the cart pointer slot [esp+0x18] vs [esp+0x10]) and the slot layout of order
    / goods / pos (the prover stops at gm_ShuffledBytes(9, frame-0x10 vs frame-0x1c)). (references: M8 at
-   +0x96b: ours refers to d3_DefaultScene (0x5fb5b0), the original's field to 0x633738 (ai_Unk633738,
-   d3_Terrain), explained: the M8 at +0x96b is an alignment artifact: both sides load d3_DefaultScene and
+   +0x96b: ours refers to d3_DefaultScene (0x5fb5b0), the original's field to 0x633738 (d3_Terrain),
+   explained: the M8 at +0x96b is an alignment artifact: both sides load d3_DefaultScene and
    d3_Terrain and push d3_Terrain then hmap for d3sm_Build (ours ecx=scene eax=terrain, the original
    edx=scene ecx=terrain); the aligner pairs our scene load with the original's terrain load by register) */
 void cm_SetupFightScene(CMFIGHTREC *rec)
@@ -8775,8 +8776,8 @@ void cm_PlaceFighters(int *ids, char *side)
         rot.x = 0;
         rot.y = 0;
         rot.z = 0;
-        d3_DirToWorld((struct XOBJ *)o, (float *)ai_AxisPair, (float *)&dir);
-        rot.y = d3_VecAngle((D3VECTOR *)ai_AxisPair, &dir);
+        d3_DirToWorld((struct XOBJ *)o, (float *)&d3_ZAxis, (float *)&dir);
+        rot.y = d3_VecAngle((D3VECTOR *)&d3_ZAxis, &dir);
         d3_SetObjectRot(c->scene->obj, &rot);
     }
 }
@@ -9018,7 +9019,7 @@ char *ai_Unk4d2490(char *c)
     int i, n;
 
     cm_PointCount = 0;
-    d3_ForEachObject(ai_Unk5fb5b0, 0, 0xc0, ai_Unk4d2450, list);
+    d3_ForEachObject(d3_DefaultScene, 0, 0xc0, ai_Unk4d2450, list);
     m = *(char **)(*(char **)(c + 0x184) + 0x34);
     d3_PointToWorld(m, m + 0x4c, v);
     n = cm_PointCount;
@@ -9058,7 +9059,7 @@ char *ai_Unk4d25a0(char *c)
     int i, n;
 
     cm_PointCount = 0;
-    d3_ForEachObject(ai_Unk5fb5b0, 0, 0x40, ai_Unk4d2550, c);
+    d3_ForEachObject(d3_DefaultScene, 0, 0x40, ai_Unk4d2550, c);
     m = *(char **)(*(char **)(c + 0x184) + 0x34);
     d3_PointToWorld(m, m + 0x4c, v);
     n = cm_PointCount;
@@ -9506,7 +9507,7 @@ void cm_CarryOutOrder(char *rec, char *c)
         if ((*(int *)(k + 0x58) == 1 || *(int *)(k + 0x58) == 2) && *(int *)(cm_CharWeaponItem(c) + 0x20) <= 0)
             return;
         if (*(int *)(k + 0x58) == 2) {
-            sc = *(char **)(ai_Unk5fb5b0 + 0xb0);
+            sc = (char *)d3_DefaultScene->hmap;
             if ((char)d3_GetHeightAt(sc, *(char **)(*(char **)(c + 0x184) + 0x34) + 0x4c, &x, &y, &h) == 0)
                 return;
             r = (int)(500.0f / *(float *)(sc + 0x10));
@@ -11601,7 +11602,7 @@ void cm_FightLoop(char *a)
             ai_Unk6f0ce4 = ai_Unk6f0ce4 == 0;
             for (i = 0; i < 32; i++) {
                 o = ai_Unk7603a0V[i];
-                if (o != 0 && *(char **)(*(char **)(o + 0x184) + 0x88) == ai_Unk5fb5b0)
+                if (o != 0 && *(char **)(*(char **)(o + 0x184) + 0x88) == (char *)d3_DefaultScene)
                     ch_PauseAnim(*(char **)(o + 0x184), ai_Unk6f0ce4);
             }
             sv_SetStatusText(&ch_EmptyName);
@@ -15047,16 +15048,16 @@ void cm_LoadEventScene(char *name)
     d3_LoadScene(path, 0, 0);
     d3if_SelectScene(0, 1);
     d3if_SelectScene(idx, 0);
-    if (ai_Unk633738 != 0) {
+    if (d3_Terrain != 0) {
         if (ai_Unk6f35ca == 0) {
-            *(unsigned char *)((char *)ai_Unk633738 + 0x1c70) = (*(unsigned char *)((char *)ai_Unk633738 + 0x1c70) & 0xeb) | 0x8;
+            *(unsigned char *)((char *)d3_Terrain + 0x1c70) = (*(unsigned char *)((char *)d3_Terrain + 0x1c70) & 0xeb) | 0x8;
             sh = 2;
         } else {
-            *(unsigned char *)((char *)ai_Unk633738 + 0x1c70) = (*(unsigned char *)((char *)ai_Unk633738 + 0x1c70) & 0xe7) | 0x4;
+            *(unsigned char *)((char *)d3_Terrain + 0x1c70) = (*(unsigned char *)((char *)d3_Terrain + 0x1c70) & 0xe7) | 0x4;
             sh = 1;
         }
         d3fl_SetDetail(0x40);
-        d3fl_SetShift((struct D3FLMAP *)ai_Unk633738, sh >> 1, 1);
+        d3fl_SetShift((struct D3FLMAP *)d3_Terrain, sh >> 1, 1);
     }
     if (((char *)cm_CurrentFight)[0x26] & 0x20) {
         d2_ClearSurface(d2_ScreenSurf);
@@ -15069,12 +15070,12 @@ void cm_LoadEventScene(char *name)
     k = ai_Unk6f0d9c + 1;
     evt_NoGroup = -2;
     ai_Unk6f0d9c = k;
-    if (ai_Unk5fb5b0 != 0) {
-        t = *(int *)(ai_Unk5fb5b0 + 0x3c8);
+    if (d3_DefaultScene != 0) {
+        t = (int)d3_DefaultScene->events;
         if (t != 0) {
             cb = *(int (**)())(t + 0x210);
             if (cb != 0)
-                cb(ai_Unk5fb5b0, 4, t + 0x214, 0);
+                cb(d3_DefaultScene, 4, t + 0x214, 0);
         }
     }
     ai_Unk60d36c = evt_LastId;
@@ -15113,7 +15114,7 @@ int cm_LeaveEventScene(void)
         if (o != 0)
             evt_Stop((EVTSCRIPT *)o);
     }
-    t = (char *)ai_Unk5fb5b0;
+    t = (char *)d3_DefaultScene;
     if (t != 0 && *(int *)(t + 0x3c8) != 0 && *(int *)(*(char **)(t + 0x3c8) + 0x294) != 0)
         (*(int (**)(char *, int, char *, int))(*(char **)(t + 0x3c8) + 0x294))(t, 5, *(char **)(t + 0x3c8) + 0x298, 0);
     id = evt_LastId;
@@ -15134,12 +15135,12 @@ int cm_LeaveEventScene(void)
             o = (char *)evt_FindById(ai_Unk60d36c);
         }
     }
-    t = (char *)ai_Unk5fb5b0;
+    t = (char *)d3_DefaultScene;
     if (*(int *)(t + 0xb0) != 0) {
         d3sm_Destroy(*(int *)(t + 0xb0));
-        *(int *)((char *)ai_Unk5fb5b0 + 0xb0) = 0;
+        d3_DefaultScene->hmap = 0;
     }
-    d3anim_FreePath(sv_CameraObj);
+    d3anim_FreePath(d3_Camera);
     d3t_CamMoveI = 0;
     d3t_CamMoving = 0;
     d3if_Reset();
@@ -15210,7 +15211,7 @@ int ai_Unk4e32f0(int a)
     if (cm_SkipEvents == 0) {
         id = d3sky_CreateK(0xc0100000, 0xbe4ccccd, 0x44160000);
         v = 0;
-        ai_Unk6f0db8 = ai_Unk633dd4 = id;
+        ai_Unk6f0db8 = (int)(d3_Sky = (D3SKY *)id);
         ai_Unk6f0db4 = d3sky_CreateLayerK(id, 0, a, (((char *)&v)[2] = 0, v), 0x40400000, 0, 0x3f4ccccd, 0xbe800000);
         d3sky_SetLayerSpeed(ai_Unk6f0db8, ai_Unk6f0db4, 0);
         d3sky_FadeLayer(ai_Unk6f0db8, ai_Unk6f0db4, 0xff, 0x41200000);
@@ -15224,7 +15225,7 @@ int ai_Unk4e3390(void)
         if (ai_Unk6f0db4 != 0)
             d3sky_DeleteLayer(ai_Unk6f0db8, ai_Unk6f0db4);
         d3sky_Destroy(ai_Unk6f0db8);
-        ai_Unk633dd4 = 0;
+        d3_Sky = 0;
     }
 }
 /* 0x4e33d0, remembers the result of 0x413b30(a) in 0x6f0dbc */
@@ -15333,8 +15334,8 @@ int cm_EndSpecialTrack(void)
 void cm_ApplySeason(void)
 {
     gm_ClockSeason(&ai_Time);
-    d3_ForEachObject2(ai_Unk5fb5b0, 0, 0xc0, init_PlantTextureSetHook);
-    d3_ForEachObject2(ai_Unk5fb5b0, 0, 0xc0, init_TextureSetHook);
+    d3_ForEachObject2(d3_DefaultScene, 0, 0xc0, init_PlantTextureSetHook);
+    d3_ForEachObject2(d3_DefaultScene, 0, 0xc0, init_TextureSetHook);
     init_SetSeasonTextures();
 }
 /* 0x4e36a0, resets the 16 member slots of 0x92cae0 for the party m (+0x34 the ids, +0x30 the count, +8 the kind): used, nothing announced, the id
@@ -16116,11 +16117,11 @@ int cm_DialogTimer(int dlg, int a, int c)
 
     v = 100;
     if (c != 0) {
-        ai_Unk6f0dc0 = ai_ClockMs;
+        ai_Unk6f0dc0 = d3_Time;
         ai_Unk60d374 = a;
         d2_SetObjEnabled(dlg, 0);
     } else {
-        v = (int)((1.0f - (float)(unsigned int)(ai_ClockMs - ai_Unk6f0dc0) / ai_Unk60d374) * 100.0f);
+        v = (int)((1.0f - (float)(unsigned int)(d3_Time - ai_Unk6f0dc0) / ai_Unk60d374) * 100.0f);
         v = v > 0 ? v : 0;
     }
     d2_SetObjValue(dlg, 0, 100, v);
@@ -16137,7 +16138,7 @@ int cm_MessageBox(int id, int flags)
     int *list;
     char *dlg;
 
-    t0 = ai_ClockMs;
+    t0 = d3_Time;
     ret = -1;
     win = 0;
     if (ai_Unk6f0dc4 != 0)
@@ -16200,8 +16201,8 @@ int cm_MessageBox(int id, int flags)
             if (dm_L.rup != 0)
                 sv_PopRequest = 1;
             if (timed != 0 && slider != -1)
-                d2_SetObjValue(slider, 0, 0x1f4, ai_ClockMs - t0);
-            if (n != 0 && ai_ClockMs > t0 + 0x1f4)
+                d2_SetObjValue(slider, 0, 0x1f4, d3_Time - t0);
+            if (n != 0 && d3_Time > t0 + 0x1f4)
                 sv_PopRequest = 1;
         } while (sv_RunFrame(fl, cm_MessageBox) != 0);
     }
@@ -16446,8 +16447,6 @@ float ai_Unk5eb988 = 5.0f;  /* 0x5eb988 */
 double ai_Unk5eb990 = 10.0;  /* 0x5eb990 */
 double ai_Unk5eb9b0 = 0.25;  /* 0x5eb9b0 */
 const double cm_WeaponSpeedScale = 0.2857142857142857;  /* 0x5eb9b8 */
-const char ai_AxisPair[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -128, 63, 0, 0, 0, 0, 0, 0, -128, 63, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };  /* 0x5ebb74 */
-const float ai_Unk5ebba4[] = { 0.0f, 0.0f, 0.0f, 0.0f };  /* 0x5ebba4, the origin (d3_Origin): read-only, the original keeps it in .rdata */
 double ai_Unk5ebbe8 = 25.0;  /* 0x5ebbe8 */
 float ai_Unk5ebc1c = 1.75f;  /* 0x5ebc1c */
 double ai_Unk5ece60 = 0.01;  /* 0x5ece60 */
@@ -16503,7 +16502,6 @@ char ai_Unk625820[115][0x20] = { "HE_NULL", "HE_HISTORIE", "HE_UPGRADE_DUMMY", "
 int ch_LowPoly = 0;  /* 0x631064 */
 struct D3SCENE *ch_Saved0 = 0;  /* 0x631084 */
 char * ai_Unk6332b4 = 0;  /* 0x6332b4 */
-int ai_ClockMs = 0;  /* 0x6333cc, a clock */
 unsigned int d3_SceneFlags = 0;  /* 0x63349c */
 int ai_Unk6f0cd0 = 0;  /* 0x6f0cd0, received messages */
 int cm_NoticeCount = 0;  /* 0x6f0cd4 */

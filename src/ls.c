@@ -65,7 +65,6 @@ const char ls_LanguageNames[][0x40] = { "GERMAN", "ENGLISH", "FRENCH", "ITALIAN"
 extern int gm_PlayerRecords[688];          /* 0x7d5f80, the 16 player records (0xac bytes each; gm_PlayerRecord, f3gm.c) */
 /* gm_PlayerRecordBytes: view of gm_PlayerRecords (tools/data_views.py) */
 extern char *ls_ActionQueue;            /* 0x631050, the action queue (ch.h: CHACTION *ch_Queue) */
-int * ai_Unk633738 = 0;  /* 0x633738, the scene (its first word the kind: */
 int ai_NextCrimeId = 0;  /* 0x6f1b88 .. */
 int ls_SpareInt = 0;  /* 0x6f1bcc */
 unsigned char ls_SaveSlot = 0;  /* 0x6f1c38, the slot the save header records */
@@ -1458,7 +1457,7 @@ int ls_LoadGame(int name, int kind)
     sv_Unk528770();
     unk_Unk511790();
     init_AfterTownLoad();
-    init_SetDetailLevel((int)ai_Unk633738, 1);
+    init_SetDetailLevel((int)d3_Terrain, 1);
     strcpy(ls_SavePath.path, ai_Unk76f9bc);
     return 1;
 close:
@@ -1546,17 +1545,17 @@ int ls_LoadScene(int f)
     d3_LoadScene(0, f, (void *)(unsigned)&main_Unk537b60);
     d3if_SelectScene(1, 0);
     d3if_SelectScene(0, 0);
-    *(int *)ai_Unkfd7c50 = d3sm_Create(ai_Unk633738,
-                                (*ai_Unk633738 == 0x80 || *ai_Unk633738 != 0x40) ? 0x100 : 0x80, 2);
+    *(int *)ai_Unkfd7c50 = d3sm_Create(d3_Terrain,
+                                (((D3FLMAP *)d3_Terrain)->size == 0x80 || ((D3FLMAP *)d3_Terrain)->size != 0x40) ? 0x100 : 0x80, 2);
     saved = d3_CurrentScene;
     d3if_SelectScene(0, 0);
-    if (ai_Unk633738 != 0) {
-        b = (unsigned char *)ai_Unk633738 + 0x71c * 4;
+    if (d3_Terrain != 0) {
+        b = (unsigned char *)d3_Terrain + 0x1c70;
         *b = ((init_Detail << 2 ^ *b) & 0x1c) ^ *b;
         d3fl_SetDetail(0x80);
     }
-    d3_ForEachObject2(ai_Unk5fb5b0, 0, 0x1c0, (void *)(unsigned)&ls_HookBuildingCB);
-    d3_ForEachObject2(ai_Unk5fb5b0, 0, 0xc0, (void *)(unsigned)&ls_ClearObjectFlag);
+    d3_ForEachObject2(d3_DefaultScene, 0, 0x1c0, (void *)(unsigned)&ls_HookBuildingCB);
+    d3_ForEachObject2(d3_DefaultScene, 0, 0xc0, (void *)(unsigned)&ls_ClearObjectFlag);
     d3if_SelectScene(saved, 0);
     return 1;
 }

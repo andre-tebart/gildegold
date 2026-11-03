@@ -314,4 +314,9 @@ void d3_TriNormal(D3VECTOR4 *a, D3VECTOR4 *b, D3VECTOR4 *c, D3VECTOR4 *n)
     d3_Normalize(n);
 }
 
-const D3VECTOR d3_YAxis = { 0.0f, 1.0f, 0.0f };  /* 0x5ebb94, (0, 1, 0), read-only: the original keeps it in .rdata */
+/* the engine's axes and origin, read-only (.rdata), each in a 16-byte slot of the original (12 bytes, then
+   4 zero bytes nothing reads) */
+const D3VECTOR d3_ZAxis = { 0.0f, 0.0f, 1.0f };  /* 0x5ebb74, (0, 0, 1) */
+const D3VECTOR d3_XAxis = { 1.0f, 0.0f, 0.0f };  /* 0x5ebb84, (1, 0, 0) */
+const D3VECTOR d3_YAxis = { 0.0f, 1.0f, 0.0f };  /* 0x5ebb94, (0, 1, 0) */
+const D3VECTOR d3_Origin = { 0.0f, 0.0f, 0.0f };  /* 0x5ebba4, (0, 0, 0) */

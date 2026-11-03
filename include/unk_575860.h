@@ -65,8 +65,8 @@ typedef struct TUTHOST {                /* the record at TUTSTATE.host; only its
 typedef struct TUTSTATE {               /* the tutorial state record (0x6fa060, ai_Tutorial points to it) */
     int state;                          /* 0x00, 1 .. 0xc (ai_TutorialTick) */
     int next;                           /* 0x04, the state to return to */
-    unsigned int textAt;                /* 0x08, ai_ClockMs when the first text window last changed */
-    unsigned int stepAt;                /* 0x0c, ai_ClockMs when the step / tail started */
+    unsigned int textAt;                /* 0x08, d3_Time when the first text window last changed */
+    unsigned int stepAt;                /* 0x0c, d3_Time when the step / tail started */
     int campaignSteps;                  /* 0x10, counts ai_CampaignStep's handled steps, 0 when a run starts */
     struct SBSAMPLE *voice;             /* 0x14, the playing voice */
     TUTRUN *run;                        /* 0x18, the current run record */
@@ -86,7 +86,7 @@ typedef struct TUTSTATE {               /* the tutorial state record (0x6fa060, 
     int stepArg;                        /* 0x50, ai_CampaignStep's argument b of the step that ended the chain */
     int markerStep;                     /* 0x54, the marker's path (TUTRUN.marks) */
     int markerPhase;                    /* 0x58, 1 hidden, 2 waiting at the start, 3 moving, 4 resting at the end */
-    unsigned int markerAt;              /* 0x5c, ai_ClockMs when the marker's phase started */
+    unsigned int markerAt;              /* 0x5c, d3_Time when the marker's phase started */
     int markerObj;                      /* 0x60, the marker's picture object, -1 = none */
     int markerDepth;                    /* 0x64, sv_FrameDepth when the marker was placed: it is enabled only while that is current */
     int progressForm;                   /* 0x68, the progress form of the state 0xa (ai_TutorialOpenProgress), -1 = none */
@@ -108,7 +108,7 @@ extern char *ai_DragPicked;  /* 0x6f266c, the picked object the tooltip was last
 extern int ai_DragCutscene;  /* 0x6f2670, 1 while the tooltip view holds d2_CutsceneActive set */
 extern int ai_ScreenshotCount;  /* 0x6f2674, the number of the next screenshot */
 extern AIBOOKMARK ai_Bookmarks[11];  /* 0x6f5ec0, the function-key building bookmarks */
-extern unsigned int ai_GraveChatterAt;  /* 0x62a538, ai_ClockMs at the last graveyard chatter tick */
+extern unsigned int ai_GraveChatterAt;  /* 0x62a538, d3_Time at the last graveyard chatter tick */
 extern int ai_TutorialBanks[6];         /* 0x6f2640, the tutorial's voice banks */
 extern TUTRUN *ai_TutorialRuns;         /* 0x6f2658, the chain of the tutorial's run records */
 extern int ai_TutorialOn;               /* 0x6f265c, the tutorial runs */

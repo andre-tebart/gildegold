@@ -52,7 +52,6 @@ extern unsigned char d3_MipSkip;
 #define d3_TexFormat16 d3d_UsedTexFormat.pf2          /* 0xfe79ec */
 #define d3_Unkfe7a0d d3d_UsedTexFormat.same           /* 0xfe7a0d */
 extern long d3_ddhr;                        /* 0x146356c, result of the last unchecked DirectDraw call */
-void * d3_Unk6333fc = 0;  /* 0x6333fc */
 unsigned char d3_MipSkip = 0;  /* 0x63342c */
 char d3_Unk633e00[256] = {0};  /* 0x633e00 */
 /* 0x5ebc20, the epsilon of d3sm_Pick and the scroll speed table are one block in the original: the double
@@ -271,7 +270,7 @@ char *tex_FindFile(char *name)
     strcpy(path, "*");
     strcat(path, name);
     strcat(path, ".BMP");
-    return vfs_GetPath(path, ts_Palette, d3_Unk6333fc, d3_Unk633e00);
+    return vfs_GetPath(path, ts_Palette, vfs_Root, d3_Unk633e00);
 }
 /* 0x45fa80 */
 
@@ -298,7 +297,7 @@ void tex_Init(int count, int maxhicol, int mips, unsigned int cache)
 
 void tex_SetPalette(void *pal)
 {
-    ts_Palette = vfs_FindDir(pal, d3_Unk6333fc);
+    ts_Palette = vfs_FindDir(pal, vfs_Root);
 }
 /* 0x45fb50 */
 
