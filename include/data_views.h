@@ -100,19 +100,8 @@
 #define d3_SortMax               (*(int *)((char *)&d3_Cfg + 0x18))  /* 0xfe73f8 */
 #define d3_Unkfe7400             (*(int *)((char *)&d3_Cfg + 0x20))  /* 0xfe7400 */
 
-/* d3_MipSkip */
-#define d3d_ZEnabled             (*(char *)((char *)&d3_MipSkip + 0x1))  /* 0x63342d */
-#define d3d_balpha               (*(unsigned char *)((char *)&d3_MipSkip + 0x2))  /* 0x63342e */
-#define d3d_glow                 (*(unsigned char *)((char *)&d3_MipSkip + 0x3))  /* 0x63342f */
-
-/* ai_GameState */
-#define sv_MenuOpen              (*(unsigned char *)((char *)&ai_GameState + 0x2))  /* 0x6f25ae */
-
 /* d3d_Config */
 #define d3_ShadowMode            (*(struct D3BITS3 *)((char *)&d3d_Config + 0x1))  /* 0xfe7671 */
-
-/* dd_GBits */
-#define dd_GLoss                 (*(unsigned char *)((char *)&dd_GBits + 0x1))  /* 0x1463581 */
 
 /* sv_ViewPos / sv_ViewRot (the stored camera view, read and copied as ints by the units that save it) */
 #define sv_ViewPosX              (*(int *)((char *)&sv_ViewPos + 0x0))  /* 0x75fb80 */
@@ -133,9 +122,6 @@
 #define full_data_76f994         (*(int *)((char *)&ai_Unk76f920 + 0x74))  /* 0x76f994 */
 #define ai_Unk76f9b8             (*(int *)((char *)&ai_Unk76f920 + 0x98))  /* 0x76f9b8 */
 #define ai_Unk76f9bc             (*(char (*)[100])((char *)&ai_Unk76f920 + 0x9c))  /* 0x76f9bc */
-
-/* d3if_Unk6339db */
-#define d3if_Unk6339dc           (*(unsigned int *)((char *)&d3if_Unk6339db + 0x1))  /* 0x6339dc */
 
 /* he_EventSlots (the event bar's 16 slots of 12 bytes) */
 #define full_data_6faa84         (*(unsigned char (*)[188])((char *)&he_EventSlots + 0x4))  /* 0x6faa84 */

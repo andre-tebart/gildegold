@@ -376,4 +376,16 @@ void mem_Free(void *p);                                                         
 }
 #endif
 
+/* 0x63345c: d3_D3DActive and the unaligned int d3_NoTextures right after it (0x63345d) are one packed object of the
+   original (VC6 places no int of its own at an odd address); the names are its fields */
+#pragma pack(push, 1)
+typedef struct D3ACTIVE {
+    unsigned char active;           /* 0x00, a Direct3D device was created (d3d_Init / d3d_CreateDevice) */
+    int notextures;                 /* 0x01, textures off (ecmd.c's flag) */
+} D3ACTIVE;
+#pragma pack(pop)
+extern D3ACTIVE d3_Active;          /* 0x63345c, d3_engine.c */
+#define d3_D3DActive d3_Active.active         /* 0x63345c */
+#define d3_NoTextures d3_Active.notextures    /* 0x63345d */
+
 #endif

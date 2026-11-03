@@ -496,10 +496,6 @@ int ocmd_DetachAnimFromAll(char **pattern)
 char d3if_SelectTextureSet(struct D3OBJECT *obj, struct D3SURF *surf, unsigned char set, char reload); /* 0x446f30 */
 char d3_SetLightSet(unsigned int set, float t, float scale, char calc);                /* 0x449de0 */
 char d3_SetFogSet(unsigned int a, unsigned int b, float t);                            /* 0x44a170 */
-extern unsigned char d3_D3DActive;   /* 0x63345c, d3_engine.c */
-/* 0x63345d is the unaligned dword right after d3_D3DActive (0x63345c, d3_engine.c): a view of the
-   byte's storage, not a second definition inside the unit's block. */
-#define d3_NoTextures (*(int *)((char *)&d3_D3DActive + 1))  /* 0x63345d */
 
 /* 0x40e560, d3_ForEachObject callback of SelectAllTextureSets */
 char ocmd_SelectTextureSetCB(D3OBJECT *obj, OCMDTEXSEL *ctx)

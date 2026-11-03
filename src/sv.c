@@ -1,4 +1,4 @@
-/* sv.c -- the screen / message box unit (0x520ec0 ..): the tag "sv_" ("sv_ChangePlayerHE" 0x624120, "sv_HandleObjects" 0x6242c4, "f3_sv:OpenBook" 0x624428, "sv_NetworkSync"), the message boxes ("misc\\Messagebox" 0x60ea68,
+/* sv.c -- the screen / message box unit (0x520ec0 ..): the tag "sv_" ("sv_ChangePlayerHE" 0x624120, "sv_HandleObjects" 0x6242c4, "f3_sv:OpenBook:b" 0x624428, "sv_NetworkSync"), the message boxes ("misc\\Messagebox" 0x60ea68,
    "misc\\MessageBoxGreen" 0x623ed0), the groundplan bitmaps, the city / time panels, the pause / player bar, the book. Starts at 0x520ec0 (a tick callback, registered by 0x520ee0); ends before
    0x531670, main.c's program level code. Names are ours.
    Open: the start and the end rest on the .data order only.
@@ -14,8 +14,8 @@
    @original cast macros (d2_PutPixelRGBc, d2_CreatePicObjS, d2_WinOpenPicStyledS, d2_OpenFormS, d2_SetObjValue4,
    ai_SwitchRoomI, cm_SendExSetHEI, d2_PlaceMainWindowF) record the parameter types the original's calls show.
    Open: data: 0x6f23f1 sv_InMissionComplete, owner sv (only sv_RunFrame uses it; it follows sv_BookPhase) but kept
-   typed in main.c's gap block: defining it in sv's bss moves ai_GameState's neighbour and the sv_MenuOpen view
-   (ai_GameState + 2) fails D7 until ai_GameState is declared at its real size.
+   typed in main.c's gap block. ai_GameState, main_GameEnded and sv_MenuOpen (0x6f25ac..ae) lie in main's block
+   (0x6f25a4..): whose unit they are is open.
    unit of rea 8cef7d5b (src/game/sv.c); boundaries in decl/text.dcl */
 struct CHARACTER;
 struct D2SHP;
@@ -6043,7 +6043,9 @@ done:
 #include "cm_types.h"
 #include "net.h"
 extern unsigned char ai_GameState;
+extern unsigned char sv_MenuOpen;
 extern unsigned char d3_MipSkip;
+extern char d3d_ZEnabled;
 
 struct D3OBJECT * d3t_FindObject(char *name, char flags);                     /* 0x411900 */
 int d2_TextWidth();                     /* 0x46ea10 */
@@ -6614,14 +6616,7 @@ void sv_BookKeys(SVBOOK *bk)
    created there (the model hidden until the close); n page views follow as variable arguments (the d2_LoadView
    names), each with the textures "Buch_Seite<i>_oben_ns_nm" / "Buch_Seite<i>_unten_ns_nm", the pages past the
    first pair disabled; the w-buffer is switched off while the book is open; plays "Aufklappen_s". Returns the
-   record, 0 when the model or a view is missing.
-   @deep read whole against the original and reconstructed (SVBOOK record, the copy at the scene object,
-   the va_arg page views, the w-buffer save, the sound); every hunk is equal or regs but the read of
-   d3d_ZEnabled: ours 'mov ax, word ptr [d3_MipSkip]; test ah, ah; mov [esi+0x272], ah', the original's
-   'mov al, byte ptr [0x63342d]; test al, al; mov [esi+0x272], al'. d3d_ZEnabled is the data_views.h view
-   (*(char *)((char *)&d3_MipSkip + 1)) of the 1-byte d3_MipSkip (ts_texture.c, C.name.alias with
-   d3_MipSkip): VC6 folds the +1 byte into a word load. It needs the datum declared as its own char (a
-   data / owner question for d3_d3d / ts_texture), not a change in this function. */
+   record, 0 when the model or a view is missing. */
 
 SVBOOK *sv_OpenBook(char *model, char *at, char n, ...)
 {
@@ -6630,7 +6625,7 @@ SVBOOK *sv_OpenBook(char *model, char *at, char n, ...)
     char top[0x60], bottom[0x60];
     va_list ap;
 
-    bk = (SVBOOK *)mem_Alloc(sizeof(SVBOOK), "f3_sv:OpenBook");
+    bk = (SVBOOK *)mem_Alloc(sizeof(SVBOOK), "f3_sv:OpenBook:b");
     if (bk == 0)
         return 0;
     bk->obj = d3t_FindObject(model, 1);
@@ -7793,6 +7788,9 @@ unsigned short *sv_PermsRoom = 0;  /* 0x6f23e8, the room (sv_PanelShown) it was 
 int sv_DisabledCount = 0;  /* 0x6f23ec, the entries of sv_DisabledWidgets */
 unsigned char sv_BookPhase = 0;  /* 0x6f23f0, toggled 0 / 1 each frame by the open book's update: which page of the shown pair is redrawn this frame */
 unsigned char ai_GameState = 0;  /* 0x6f25ac */
+/* the two flags after ai_GameState are objects of their own (the original reads each as a byte: no views of it) */
+unsigned char main_GameEnded = 0;  /* 0x6f25ad, nonzero when the player has reached the game's goal: the round start plays the fanfare and the outro (cleared at the game start) */
+unsigned char sv_MenuOpen = 0;  /* 0x6f25ae, 1 while a menu screen runs */
 int ai_OptionScrollSpeed = 0;  /* 0x6f3614 */
 int sv_PanelFlag = 0;  /* 0x75e8c0, 1 when the panel is up (an int; cm.h / f3init.c) */
 char * sv_PanelObject = 0;  /* 0x75e8c4, the object the info panel shows */

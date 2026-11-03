@@ -3268,7 +3268,7 @@ void main_RundenBeginn(void)
 #define main_PlayerIdInt (*(int *)&ai_PlayerId)  /* 0x6f25b8, ai_PlayerId (unsigned short) as the int the round change reads and masks */
 #define MAIN_PLAYER (main_PlayerIdInt & 0xffff)  /* the player character's index */
 #define main_ApEvents (*(HEAPEVENT (*)[0x100])((char *)&he_RunHandlers + 0x6a0))  /* 0x758ca0, the AP events (he.h; ls.c's he_RunHandlers block holds them) */
-#define main_GameEnded (*(unsigned char *)((char *)&ai_GameState + 0x1))  /* 0x6f25ad, nonzero when the player has reached the game's goal: the round start plays the fanfare and the outro (cleared at the game start) */
+extern unsigned char main_GameEnded;  /* 0x6f25ad, sv.c */
 #define main_GfxOn (*(int *)&full_data_624560)  /* 0x624560, nonzero when the round change shows its pages and fades (main_RoundReport tests it too) */
 #define main_NoRoundFade (*(int *)&full_data_6f25c0)  /* 0x6f25c0, 1 skips the black fade before the round page (set by main_RoundReport, cleared by the round start) */
 #define main_Season (*(int *)&full_data_760454)  /* 0x760454, the season of the game clock (sv_ClockSeason / gm_ClockSeason) */

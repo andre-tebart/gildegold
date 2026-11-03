@@ -805,7 +805,7 @@ unsigned char dd_GShift = 0;  /* 0x1463578 */
 unsigned char dd_RShift = 0;  /* 0x1463579 */
 int dd_LockPitch = 0;  /* 0x146357c */
 unsigned char dd_GBits = {0}; /* 0x1463580 */
-/* dd_GLoss: view of dd_GBits (tools/data_views.py) */
+unsigned char dd_GLoss = 0;  /* 0x1463581, an object of its own after dd_GBits (the original reads it as a byte) */
 void *dd_MemBuff = 0;  /* 0x1463584 */
 int dd_Pitch = {0}; /* 0x1463588 */
 int dd_MemSize = 0;  /* 0x146358c */

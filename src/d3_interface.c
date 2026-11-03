@@ -1659,7 +1659,7 @@ D3VECTOR d3_AmbientColor = {200.0f, 200.0f, 200.0f};  /* 0x5fcc78, the ambient c
 int d3if_CamOben = 0;  /* 0x6338b8 */
 int d3if_CamVorne = 0;  /* 0x6338bc */
 int d3if_CamSeite = 0;  /* 0x6338c0 */
-/* d3if_Unk6339dc: view of d3if_Unk6339db (tools/data_views.py) */
+unsigned int d3if_Unk6339dc = 0;  /* 0x6339dc, counts the scene switches (an object of its own: 4-aligned after the byte d3if_Unk6339db) */
 int d3s_ShadowMapSize = 0;  /* 0x633dcc */
 char d3if_ParList[788] = {0};  /* 0xfb95e0 */
 int d3if_Unkfba944 = 0;  /* 0xfba944 (own object: d3io_StockDir is a 4-byte pointer) */

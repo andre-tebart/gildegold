@@ -52,7 +52,6 @@ extern unsigned char d3_MipSkip;
 #define d3_TexFormat16 d3d_UsedTexFormat.pf2          /* 0xfe79ec */
 #define d3_Unkfe7a0d d3d_UsedTexFormat.same           /* 0xfe7a0d */
 extern ULONG dd_Ref;                        /* 0x146356c, result of the last Release (dd_vesa.c) */
-unsigned char d3_MipSkip = 0;  /* 0x63342c */
 char d3_Unk633e00[256] = {0};  /* 0x633e00 */
 /* 0x5ebc20, the epsilon of d3sm_Pick and the scroll speed table are one block in the original: the double
    (a float 0.0001f promoted, d3_SnapEpsilon at +0) is at 0x5ebc20 and the speed table starts in its upper

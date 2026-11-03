@@ -1027,9 +1027,12 @@ LPDIRECT3D3 d3d_D3D = {0};  /* 0x633414 */
 struct IDirect3DDevice3 * d3d_Device = 0;  /* 0x633418 */
 LPDIRECT3DVIEWPORT3 d3d_Viewport = {0};  /* 0x63341c */
 LPDIRECTDRAWSURFACE4 d3d_ZBuffer = {0};  /* 0x633420 */
-/* d3d_ZEnabled: view of d3_MipSkip (tools/data_views.py) */
-/* d3d_balpha: view of d3_MipSkip (tools/data_views.py) */
-/* d3d_glow: view of d3_MipSkip (tools/data_views.py) */
+/* d3_MipSkip and the three flags after it are four objects of this unit's block (0x633410..), each read as a
+   byte by the original: no views of one char */
+unsigned char d3_MipSkip = 0;  /* 0x63342c */
+char d3d_ZEnabled = 0;  /* 0x63342d */
+unsigned char d3d_balpha = 0;  /* 0x63342e */
+unsigned char d3d_glow = 0;  /* 0x63342f */
 unsigned char d3d_colorkey = 0;  /* 0x633430 */
 unsigned char d3d_alphatest = 0;  /* 0x633431 */
 unsigned char d3d_fog = 0;  /* 0x633432 */

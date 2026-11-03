@@ -205,7 +205,6 @@ extern int d3_DrawnVerts;              /* 0xfe75b0, vertices drawn this frame (d
 /* a byte read as an int bitfield (mov dword; and 0xff): d3_Init passes d3_D3DActive so */
 struct D3BITS8 { unsigned int on : 8; };
 extern unsigned char d3_EngineReady;          /* 0x633451, engine up: set at the end of d3_Init, cleared in d3_Shutdown */
-extern unsigned char d3_D3DActive;          /* 0x63345c, a Direct3D device was created (d3d_Init / d3d_CreateDevice) */
 struct D3BITS3 { unsigned char mode : 3; };  /* d3_ShadowMode (0xfe7671) is a view of d3d_Config + 1 (data_views.h): bit 0 = object shadows on (d3_UpdateObject / d3_Render); set by d3_ApplyGraphicsOptions */
 extern unsigned char d3_MipSkip;          /* 0x63342c, d3_d3d.c */
 extern int d3_FrameCount;                    /* 0x63343c */
@@ -517,7 +516,6 @@ void d3_Shutdown(void);                     /* 0x43c240, stops the engine */
 /* 0xfe73f8 / 0xfe7400 lie inside D3INITCFG (.maxpolys / .maxhicol), but they stay separate definitions:
    spelling them as struct fields costs d3_MirDrawObject's and d3sm_GetGround's byte grade (the load
    schedule changes).  The two ledger overlaps are the price; the macro form is in the note. */
-extern unsigned char d3_D3DActive;          /* 0x63345c, a Direct3D device was created (d3d_Init / d3d_CreateDevice) */
 extern int d3_ClipNone;                    /* 0xfc5060 */
 extern unsigned char d3_Unkfc5064, d3_Unkfc5065;  /* 0xfc5064, 0xfc5065 */
 extern D3OBJECT d3_TopHead;               /* 0xfc5100, list start marker */
@@ -567,9 +565,8 @@ extern float d3_ZScale;                     /* 0xfc532c */
 extern float d3_ZOfs;                       /* 0xfc7b64 */
 extern float d3_UOfs, d3_VOfs;              /* 0xfe73ac, 0xfc26ec */
 extern float ts_ScrollV[32], ts_ScrollU[32];    /* 0xfb9120, 0xfb90a0 */
-/* 0x63345d is the byte after d3_D3DActive, i.e. the first byte of the unaligned dword d3_NoTextures
-   (ecmd.c's flag).  A separate definition cannot live inside the unit's block. */
-#define d3_Unk63345d (*(unsigned char *)((char *)&d3_D3DActive + 1))  /* 0x63345d */
+/* 0x63345d: the first byte of d3_NoTextures (d3.h), read as a byte */
+#define d3_Unk63345d (*(unsigned char *)((char *)&d3_Active + 1))  /* 0x63345d */
 int d3d_GetVertexBuffer(void **buf, int *n);                                            /* 0x4364f0, d3_d3d.c */
 void d3d_DrawTriangles(void *unk, struct _D3DTLVERTEX *buf, DWORD num);                                /* 0x436510, d3_d3d.c */
 /* Inline asm: one transformed vertex from a D3PVERT and a texture coordinate pair (u, v at uv). */
