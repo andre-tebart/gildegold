@@ -2188,44 +2188,40 @@ void he_PostEvent67(void)
         }
     }
 }
-/* 0x540e40, the inn report: for every inn (kind 5 / 0x16) with an owner (flag 1 at +0x5a clear) whose figure is kind 6 / 7 and has guests (+0x69, +0x6b shorts): message 0x18a1 (ratio < 0.5) or 0x18a2 with the numbers, then resets the counters (+0x65 -> +0x6d, 0 -> +0x65, +0x69, +0x6b) (ROUGH) */
-
-void he_Unk540e40(void)
+/* 0x540e40, the inn report of the round: for every inn (kind 5 / 0x16) with an owner and flag 1 of flags5a clear, when
+   the owner is a character of kind 6 / 7 and the inn had guests, sends the owner the report 0x18a1 (fewer than half of
+   the guests bought, with the jump "_NACHRICHTEN_HS_82") or 0x18a2 (the guests, the takings); then moves the takings to
+   lastTakings and clears the round's counters (field deltas) */
+void he_InnReport(void)
 {
-    int f;
-    int c1, c2, v1, v2;
+    AIBLD *b;
+    unsigned short owner;
+    int none, noneW, guests, served;
     char buf1[512], buf2[512];
-    char *txt;
-    char *t2;
 
-    f = gm_BuildQuery(1, 5, 0x16);
-    while (f != 0) {
-        if (*(unsigned short *)(f + 0x27) != 0xffff && (*(unsigned char *)(f + 0x5a) & 1) == 0) {
-            c2 = 0;
-            c1 = 0;
-            if ((*(char *)(((unsigned)&ai_Chars + 0x2) + *(unsigned short *)(f + 0x27) * 0x21c) == 6 || *(char *)(((unsigned)&ai_Chars + 0x2) + *(unsigned short *)(f + 0x27) * 0x21c) == 7)
-                && *(short *)(f + 0x69) > 0) {
-                v2 = (int)*(short *)(f + 0x6b);
-                v1 = (int)*(short *)(f + 0x69);
-                if (0.5 <= (double)v2 / (double)v1) {
-                    txt_Format(buf2, 0x18a2, f, v1, *(int *)(f + 0x65));
-                    t2 = (char *)(unsigned)&ch_EmptyName;
-                    txt = buf2;
+    for (b = (AIBLD *)gm_BuildQuery(1, 5, 0x16); b != 0; b = (AIBLD *)gm_BuildNext()) {
+        owner = b->owner;
+        if (owner != 0xffff && (b->flags5a & 1) == 0) {
+            none = 0;
+            noneW = 0;
+            if ((ai_CharsT[owner].kind == 6 || ai_CharsT[owner].kind == 7) && b->inn.guests > 0) {
+                served = b->inn.served;
+                guests = b->inn.guests;
+                if ((double)served / guests < 0.5) {
+                    txt_Format(buf1, 0x18a1, b, guests, b->inn.takings);
+                    he_MessageBoxQuickjump(ai_CharsT[b->owner].netId, -1, buf1, 0, 0x5fc, b->id, -1, 0, "_NACHRICHTEN_HS_82");
                 } else {
-                    txt_Format(buf1, 0x18a1, f, v1, *(int *)(f + 0x65));
-                    t2 = "_NACHRICHTEN_HS_82";
-                    txt = buf1;
+                    txt_Format(buf2, 0x18a2, b, guests, b->inn.takings);
+                    he_MessageBoxQuickjump(ai_CharsT[b->owner].netId, -1, buf2, 0, 0x5fc, b->id, -1, 0, ch_EmptyName);
                 }
-                he_MessageBoxQuickjump(U_I((unsigned)&ai_CharInts + *(unsigned short *)(f + 0x27) * 0x21c), -1, txt, 0, 0x5fc, *(int *)(f + 1), -1, 0, t2);
             }
-            cm_BeginFieldBlock(f, *(int *)(f + 1));
-            cm_AddFieldDelta(4, 1, f - U_I((unsigned)&cm_FieldObject) + 0x6d, f + 0x65);
-            cm_AddFieldDelta(4, 1, f - U_I((unsigned)&cm_FieldObject) + 0x65, &c2);
-            cm_AddFieldDelta(2, 1, f - U_I((unsigned)&cm_FieldObject) + 0x6b, &c1);
-            cm_AddFieldDelta(2, 1, f - U_I((unsigned)&cm_FieldObject) + 0x69, &c1);
+            cm_BeginFieldBlock((char *)b, b->id);
+            cm_AddFieldDelta(4, 1, (char *)b - cm_FieldObject + 0x6d, &b->inn.takings);
+            cm_AddFieldDelta(4, 1, (char *)b - cm_FieldObject + 0x65, &none);
+            cm_AddFieldDelta(2, 1, (char *)b - cm_FieldObject + 0x6b, &noneW);
+            cm_AddFieldDelta(2, 1, (char *)b - cm_FieldObject + 0x69, &noneW);
             cm_SendFieldDeltas();
         }
-        f = gm_BuildNext();
     }
 }
 /* 0x540fe0, the daily event checks */
@@ -2237,7 +2233,7 @@ void he_Unk540fe0(void)
     he_PostEvent67();
     he_Unk53f500();
     he_Unk53f430();
-    he_Unk540e40();
+    he_InnReport();
     he_PostWorkshopEvents98();
 }
 /* 0x541010, posts the event 0x3a for the current player (flag 1) */

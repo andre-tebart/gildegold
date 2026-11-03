@@ -33,14 +33,25 @@ typedef struct AIBLD {                  /* 0xa9 bytes, ai_Blds[256] */
                                            released with gm_RemoveObject) */
     char *object;                       /* 0x61, its 3D object in the scene */
     union {
-        int unk65;                      /* 0x65, moved by +-1 per event towards AIPOS.unk18 (ai.c 0x4836a0) */
-        int playerSlot;                 /* 0x65, of a kind 0x47 building: its ai_PlayerSlots index (sv_OpenBuildingPanel) */
-        unsigned char residents;        /* 0x65, of a home (AIBTYPE.kind 1): the characters whose bld2 it is, below the
-                                           capacity of its ord kind record (cm_ExSetHome) */
-        struct GVYARD *yard;            /* 0x65, of a kind 0x1d building: its graveyard record (gv.h, gv_AllocGraveyard) */
+        struct {
+            union {
+                int unk65;                      /* 0x65, moved by +-1 per event towards AIPOS.unk18 (ai.c 0x4836a0) */
+                int playerSlot;                 /* 0x65, of a kind 0x47 building: its ai_PlayerSlots index (sv_OpenBuildingPanel) */
+                unsigned char residents;        /* 0x65, of a home (AIBTYPE.kind 1): the characters whose bld2 it is, below the
+                                                   capacity of its ord kind record (cm_ExSetHome) */
+                struct GVYARD *yard;            /* 0x65, of a kind 0x1d building: its graveyard record (gv.h, gv_AllocGraveyard) */
+            };
+            int unk69;                          /* 0x69, cleared for the kind 7 buildings at every round start (main.c 0x53b2e0) */
+            char pad6d[4];
+        };
+        struct {                        /* 0x65, of an inn (kind 5 / 0x16): the round's counters of the inn simulation
+                                           (he.c 0x54d260 adds to them per sale, he_InnReport reports and resets them) */
+            int takings;                /* 0x65, what the guests paid this round (the prices of the sales) */
+            short guests;               /* 0x69, the guests of the round */
+            short served;               /* 0x6b, the guests who bought (served / guests below 0.5: the bad report) */
+            int lastTakings;            /* 0x6d, the takings of the last round (he_InnReport copies them) */
+        } inn;
     };
-    int unk69;                          /* 0x69, cleared for the kind 7 buildings at every round start (main.c 0x53b2e0) */
-    char pad6d[4];
     int plants;                         /* 0x71, the 64 G15PLANT records (0x18 bytes each, rd.h) of the
                                            building's vegetation map (rd.c: veg_Fits / veg_FindPlantId) */
     char pad75[0x20];
