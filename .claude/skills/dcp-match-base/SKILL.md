@@ -59,8 +59,9 @@ dist='N ins / M bytes, size ours vs original'`. `section=draft`: the experiment 
 experiment is shape or byte, only readability is missing. `gates=` names the failing rules.
 
 ### 2.1 Reading: the tools
-- `dcp grade NAME` - the failing rules with their evidence (B1..B3: the experiment, byte / shape / draft; Q1..Q6, Q8:
-  readability, kept apart), `dist`, and the calls without a prototype (`M7 consistency:`, the experiment's side).
+- `dcp grade NAME` - the failing rules with their evidence (B1..B3: the experiment, byte / shape / draft, or open when
+  its unit does not compile; Q1..Q6, Q8: readability, kept apart), `dist`, and the calls without a prototype
+  (`M7 consistency:`, the experiment's side).
 - `dcp asmdiff NAME` - our instructions against the original's, aligned; `--regs eax=ecx,esi=edi` renames
   registers on our side, `--regs auto` by the renaming most of the function agrees on (the head shows it:
   `regs=...`). Views: `--changed` (only the differing lines, `--context N` around each), `--at 0xADDR` (a
@@ -73,7 +74,7 @@ experiment is shape or byte, only readability is missing. `gates=` names the fai
   `--symbols` prints the call targets, data and string literals by name instead of `X`; `!` marks an equal
   instruction that names another symbol or literal than the original's (a wrong callee, datum or string); `=`
   one that names the same address or literal by another name (an alias, `sym+off` for a bare address: no
-  error; two source names of one datum are a `C.name.alias` warning of `dcp check --strict`). A compare against
+  error; two names of ours at one address are a `C.name.alias` error of `dcp check`). A compare against
   an address (`cmp ecx, 0xfb91e4 (or d2_Views+0x81c4)`) also names the array below it the function uses: a
   loop's end pointer lies past the array's end, inside the next object. A `!` line ends with both addresses
   (`0x770ae4 | 0x770ae0`); a floating constant shows its value on both sides; `calls: _ftol ours x2, the
@@ -150,6 +151,9 @@ work, however long.
   field: two loads swapped, a wrong index), `M9 at +0x..: our literal "a\\b" where the original's field refers to
   "ab" at 0x...` (M10 for a constant: a missing prefix, `1e-7` where the original has `1e-7f`, a wrong value). A
   byte match with such a difference is also an M8 / M9 / M10 error of `dcp check`: equal bytes at this layout only.
+  `M.contain` (ill-formed, an error even on a byte match; asmdiff's `contain:` line): `&sym + N` outside sym's
+  declared size is no address of sym. Usually a constant written as an address (`&cm_SendRing + 0x4973c0` is the
+  mask 0xf00500): write the number; else name the object the address belongs to.
   Named references that only cross (two independent stores in the other order) stay shape when the prover shows the
   effects the same. Not checked, listed as `open:` (`dcp grade NAME`, asmdiff, diffclass): a symbol without an
   address (give it its address comment), and `our literal ... where the original refers to the datum NAME`: either
@@ -233,12 +237,14 @@ the commit went in (`git status` clean) before the next function.
   recompiles only its includers, and no function anywhere may get worse (`dcp check`: no M1) except by
   an accepted fall (2.6).
 - Never rename struct fields or types other units' matched code uses without checking them (`dcp refs`).
-- Data errors (D1, D4, D5, D7, D8) are not base work, except the ones your own change causes; `dcp data map UNIT`
-  shows a unit's data when a function needs it. D7 (a view past its container's end) and D8 (the original's code
-  uses more bytes as one object than the declaration holds: a field access, a loop bound, a block copy, a reader
-  call) are run-time corruption the gate cannot see otherwise: declare the object at the size D8 names, with the
-  names inside it as views or fields of its type. A reader or copier of the game (`vfs_fread(buf, size, n, f)`)
-  tells S.extent its size through `dcp decl add "0xADDR writes ptr=a0 size=a1*a2 -- why"`.
+- Data errors (D1, D4, D5, D7, D8, D9) are not base work, except the ones your own change causes; `dcp data map UNIT`
+  shows a unit's data when a function needs it, with `room_ref` lines for the addresses after a datum the original's
+  code reads. D9 (the original reads the padding our object gives a datum), D7 (a view past its container's
+  declared size) and D8 (the original's code uses more bytes as one object than the declaration holds: a field
+  access, a loop bound, a block copy, a reader call) are run-time corruption the gate cannot see otherwise: declare
+  the object at the size D8 names, with the names inside it as views or fields of its type. A reader or copier of
+  the game (`vfs_fread(buf, size, n, f)`) tells S.extent its size through
+  `dcp decl add "0xADDR writes ptr=a0 size=a1*a2 -- why"`.
 - Gap data: the `full_data_<addr>` / `full_rdata_<addr>` blocks (defined in the gap block at the end of `src/main.c`,
   `extern GAPDATA` elsewhere) are bytes no symbol covers yet: name, type, extent and owner are all unknown, and
   their place in main says nothing about ownership. When the function you raise shows what one is, settle all
