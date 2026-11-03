@@ -23,7 +23,6 @@
 
 extern D3ANIMDATA d3anim_Head;              /* 0xfc2580, list head; d3anim_Head.next at 0xfc26e0 */
 extern D3ANIMDATA d3anim_Tail;              /* 0xfe7440, list end */
-extern unsigned int d3anim_Clock;           /* 0x63343c */
 unsigned int d3anim_CacheMax = 4194304;  /* 0x5f927c, bytes */
 extern int d3_Busy;                     /* 0x633b04 */
 
@@ -510,7 +509,7 @@ char d3anim_StepObject(D3OBJECT *obj, void *ctx)
                 } else
                     limit = data->last;
                 s->flags.b[1] &= ~0x20;
-                data->lastuse = d3anim_Clock;
+                data->lastuse = d3_FrameCount;
                 d3_UpdateObject(obj, 1);
                 done = 0;
                 if (s->fadeStart != s->fadeEnd) {
@@ -1196,7 +1195,7 @@ char d3anim_Purge(int limit, int size)
         return 0;
     while (size > limit) {
         oldest = 0;
-        t = d3anim_Clock;
+        t = d3_FrameCount;
         for (a = d3anim_Head.next; a != &d3anim_Tail; a = a->next) {
             if (a->refs == 0 && a->lastuse <= t) {
                 t = a->lastuse;
@@ -1411,7 +1410,7 @@ int d3anim_StartAnim(void *list, char *name, D3ANIMFLAGS f)
             s->frameTime = 0;
             s->timeout = 100;
             data->refs++;
-            data->lastuse = d3anim_Clock;
+            data->lastuse = d3_FrameCount;
             if (!data->normals && ctl->mesh) {
                 d3anim_CalculateAnimNormals(data, ctl->mesh);
                 data->normals = 1;

@@ -73,6 +73,8 @@ typedef struct D3DCONFIG {          /* 12 bytes, render options; d3d_Config hold
     unsigned char dither : 1;
     unsigned char perspective : 1;
     unsigned char subpixel : 1;
+    unsigned char unk5 : 1;
+    unsigned char mirrors : 1;      /* bit 6: mirror reflections drawn (d3_Render, d3_MirDrawObject) */
     char pad01[3];
     int fillmode;                   /* 0x04 */
     int mipfilter;                  /* 0x08 */
@@ -103,31 +105,10 @@ typedef struct D3DZBUFCTX {         /* 0x28 bytes, d3d_UsedZBufferFormat */
     DDPIXELFORMAT pf;               /* 0x08 */
 } D3DZBUFCTX;
 
-typedef struct D3DCARDINFO {        /* 0x2c bytes */
-    unsigned char caps;             /* 0x00: 0x04 perspective, 0x10 bilinear, 0x20 z buffer, 0x40 antialias, 0x80 dither */
-    unsigned char flags;            /* 0x01: 4 = ?, 0x10 = z buffer usable */
-    char pad02[0x2];
-    DWORD minw, minh;               /* 0x04, texture size limits */
-    DWORD maxw, maxh;               /* 0x0c */
-    int zmode;                      /* 0x14, D3DRENDERSTATE_ZENABLE value */
-    int trans_destblend;            /* 0x18 */
-    int trans_srcblend;             /* 0x1c */
-    int glow_destblend;             /* 0x20 */
-    int glow_srcblend;              /* 0x24 */
-    int maxMipFilter;               /* 0x28, highest D3DTSS_MIPFILTER value the card supports */
-} D3DCARDINFO;
-
-typedef struct D3DCARD {            /* 0x338 bytes, filled by d3d_EnumDeviceCallback (Dd_vesa.c) */
-    GUID Guid;
-    char pad010[0x2fc];
-    D3DCARDINFO info;               /* 0x30c */
-} D3DCARD;
-
 extern D3DTEXFMTCTX d3d_UsedTexFormat;      /* 0xfe79c0 */
 extern D3DZBUFCTX d3d_UsedZBufferFormat;    /* 0xfe7620 */
 extern D3DCONFIG d3d_Config;               /* 0xfe7670 */
-extern D3DCARD d3d_UsedCard;                /* 0xfe7680 */
-extern D3DCARD d3d_Cards[];                 /* 0x14635e0, Dd_vesa.c */
+struct D3DCARD; extern struct D3DCARD d3d_UsedCard;   /* 0xfe7680, the device in use (D3DCARD, dd_vesa.h) */
 extern int d3d_NumDevices;                    /* 0x1464fa8, Dd_vesa.c */
 extern D3DTLVERTEX d3d_PrecacheBuffer[3];   /* 0xfe7a20 */
 extern void *d3d_VertexBuffer;              /* 0x633410, 0x800 bytes */
@@ -137,7 +118,7 @@ extern LPDIRECTDRAWSURFACE4 d3d_ZBuffer;    /* 0x633420 */
 #ifndef DATA_VIEWS_H
 extern char d3d_ZEnabled;                   /* 0x63342d */
 #endif
-extern unsigned long d3d_RefCount;          /* 0x146356c, result of the last Release */
+extern ULONG dd_Ref;                   /* 0x146356c, result of the last Release (dd_vesa.c) */
 extern LPDIRECTDRAW4 dd_DD;                 /* 0x631204, Dd_vesa.c */
 extern LPDIRECTDRAWSURFACE4 dd_BackBuffer;  /* 0x631208, Dd_vesa.c */
 extern char dd_Cleared;                 /* 0x631222, Dd_vesa.c */

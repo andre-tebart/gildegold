@@ -146,7 +146,6 @@ typedef struct CMBOMB {             /* 8 bytes, one of the 32 bombs of cm_Bombs 
 #define ai_Unk760420V (*(char * (*)[])&sv_SkyScale)  /* 0x760420, @original the end of ai_Unk7603a0V's walk in ai_Unk4cfeb0 (0x4cfeb0, byte) */
 #define ai_TrustedOfFourB ((int (*)(unsigned char, AICHAR *, int *, int *))ai_TrustedOfFour)  /* 0x4aad30 (unk_4a7140.h: int k): @original cm_AskElectVote (0x4dab50, byte) pushes its unsigned char office raw (push ebp), cm_SessionAskAI (0x4dae90) a byte (mov al / push eax) */
 #define d2_LastWindowPtrT (*(struct D2WIN **)&d2_LastWindowPtr)  /* 0x6ed980, d2_LastWindowPtr (d2.c: D2WIN *) as the window record */
-#define cm_PicsT (*(struct D2PIC **)&ai_Unk6ed918)  /* 0x6ed918, ai_Unk6ed918 (cm.h: char *), d2.c's d2_Pics, as the D2PIC records it points to */
 typedef struct CMAMOUNTROW {        /* 0x38 bytes, one row of the special-amount list (ai_AmountRowStatus / ai_AmountRow read it
                                        as ints; unk_5d33b0.c GYPSYROW) */
     AICHAR *rec;                    /* 0x00, the character the row shows */
@@ -11899,7 +11898,7 @@ void cm_RunCouncilSession(G28REC *a)
             d2_SetForm(viewBottom, 0);
             d2_RemoveWindowObjects(d2_LastWindow, 1);
             if (nvoters > 0) {
-                step = (0x320 - cm_PicsT[0x5da].w * nvoters) / (nvoters + 1);
+                step = (0x320 - d2_Pics[0x5da].w * nvoters) / (nvoters + 1);
                 shown = 0;
                 for (i = 0; i < nh; i++) {
                     if (holders[i]->officeKind != 0) {
@@ -11907,7 +11906,7 @@ void cm_RunCouncilSession(G28REC *a)
                         holderRows[i].y = 0;
                         holderRows[i].x30 = 0;
                         ai_AmountRowStatus(&holderRows[i]);
-                        ai_AmountRow((shown + 1) * step + cm_PicsT[0x5da].w * shown, 0, d2_LastWindow, 0x54, &holderRows[i], 0);
+                        ai_AmountRow((shown + 1) * step + d2_Pics[0x5da].w * shown, 0, d2_LastWindow, 0x54, &holderRows[i], 0);
                         shown++;
                     }
                 }
@@ -12078,7 +12077,7 @@ void cm_RunCouncilSession(G28REC *a)
                     applicantRows[napp].x2c = 0;
                     applicantRows[napp].x30 = 0;
                     ai_AmountRowStatus(&applicantRows[napp]);
-                    ai_AmountRow((0xa0 - cm_PicsT[0x5da].w) / 2, 0, d2_LastWindow, 0x54, &applicantRows[napp], 1);
+                    ai_AmountRow((0xa0 - d2_Pics[0x5da].w) / 2, 0, d2_LastWindow, 0x54, &applicantRows[napp], 1);
                     elect.ids[napp] = c->netId;
                     napp++;
                 }
@@ -12102,7 +12101,7 @@ void cm_RunCouncilSession(G28REC *a)
             d2_SetForm(viewBottom, 0);
             d2_RemoveWindowObjects(d2_LastWindow, 1);
             if (nvoters > 0) {
-                step = (0x320 - cm_PicsT[0x5da].w * nvoters) / (nvoters + 1);
+                step = (0x320 - d2_Pics[0x5da].w * nvoters) / (nvoters + 1);
                 shown = 0;
                 for (i = 0; i < nh; i++) {
                     if (amt_CanTakeOffice((char *)holders[i], elect.kind) != 0) {
@@ -12110,7 +12109,7 @@ void cm_RunCouncilSession(G28REC *a)
                         holderRows[i].y = 0;
                         holderRows[i].x30 = 0;
                         ai_AmountRowStatus(&holderRows[i]);
-                        ai_AmountRow((shown + 1) * step + cm_PicsT[0x5da].w * shown, 0, d2_LastWindow, 0x54, &holderRows[i], 0);
+                        ai_AmountRow((shown + 1) * step + d2_Pics[0x5da].w * shown, 0, d2_LastWindow, 0x54, &holderRows[i], 0);
                         shown++;
                     }
                 }
@@ -14849,9 +14848,9 @@ void ai_Unk4e2910(char *o, int id)
     if (((char *)ai_PlayerBuildingT == o && *(unsigned short *)(o + 0x29) == id) || ((char *)ai_FallbackBuildingT == o && *(unsigned short *)(o + 0x29) == id)) {
         if (((char *)cm_CurrentFight)[0x26] & 0x20) {
             d2_ClearSurface(d2_ScreenSurf);
-            G27_FRAME(d2_ScreenSurf, ai_Unk6ed92c);
+            G27_FRAME(d2_ScreenSurf, d2_BackSurf);
             sv_RunFrame(0, 0x86);
-            G27_FRAME(ai_Unk6ed92c, d2_ScreenSurf);
+            G27_FRAME(d2_BackSurf, d2_ScreenSurf);
         }
         if (ai_Unk6f0da0 != 0) {
             d2_ReleaseFade(ai_Unk6f0da0);
@@ -14887,9 +14886,9 @@ void ai_Unk4e2910(char *o, int id)
     }
     if (((char *)cm_CurrentFight)[0x26] & 0x20) {
         d2_ClearSurface(d2_ScreenSurf);
-        G27_FRAME(d2_ScreenSurf, ai_Unk6ed92c);
+        G27_FRAME(d2_ScreenSurf, d2_BackSurf);
         sv_RunFrame(0, 0x86);
-        G27_FRAME(ai_Unk6ed92c, d2_ScreenSurf);
+        G27_FRAME(d2_BackSurf, d2_ScreenSurf);
     }
     if (ai_Unk6f0da0 != 0) {
         d2_ReleaseFade(ai_Unk6f0da0);
@@ -15061,9 +15060,9 @@ void cm_LoadEventScene(char *name)
     }
     if (((char *)cm_CurrentFight)[0x26] & 0x20) {
         d2_ClearSurface(d2_ScreenSurf);
-        G27_FRAME(d2_ScreenSurf, ai_Unk6ed92c);
+        G27_FRAME(d2_ScreenSurf, d2_BackSurf);
         sv_RunFrame(0, 0x86);
-        G27_FRAME(ai_Unk6ed92c, d2_ScreenSurf);
+        G27_FRAME(d2_BackSurf, d2_ScreenSurf);
     }
     if (gm_ClockSeason(ai_Time) == 3)
         sv_UpdateSkyColors();

@@ -148,7 +148,7 @@ D3OBJECT *d3t_FindObject(char *name, char flags)
     return d3t_FoundObject;
 }
 /* 0x411960, starts the animation <name> on obj: an already loaded one by its base name, else the file
-   <d3_AnimPath><name>.oam. */
+   <d3io_StockDir><name>.oam. */
 
 int d3t_PlayAnim(D3OBJECT *obj, char *name, unsigned int flags)
 {
@@ -179,7 +179,7 @@ int d3t_PlayAnim(D3OBJECT *obj, char *name, unsigned int flags)
     af.b[8] |= 2;
     if (obj->material && d3anim_StartAnim(obj->material->animCtl, base, af))
         return 1;
-    sprintf(msg, "%s%s.oam", d3_AnimPath, name);
+    sprintf(msg, "%s%s.oam", d3io_StockDir, name);
     anim = (D3ANIM *)d3_LoadObjectAnim(msg, obj, 1);
     if (!anim)
         return 0;

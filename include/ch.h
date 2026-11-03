@@ -153,7 +153,7 @@ typedef struct CHANIMFLAGS {
     unsigned int a : 1, b : 1, r : 30;                  /* 0x04 */
     unsigned char a8 : 1, b8 : 1, r8 : 6;               /* 0x08, b8 = D3ANIMSLOT.play */
 } CHANIMFLAGS;
-struct D3IOANIMDATA *d3_LoadAnimStream(char *name, char *file, char unk);                              /* 0x44e4a0, loads an animation, d3_io_t.c */
+struct D3ANIMDATA *d3_LoadAnimStream(char *name, char *file, char unk);                                /* 0x44e4a0, loads an animation, d3_io_t.c */
 
 /* bits of the D3OBJECT flag bytes 0x210..0x213 (by offset; d3_engine.h's D3OBJBITS names the bits of 0x210) */
 typedef struct CHOBJBITS {

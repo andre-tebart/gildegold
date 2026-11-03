@@ -819,7 +819,7 @@ unsigned int dd_Unk14635a8 = 0;  /* 0x14635a8 */
 int dd_Mode = 0;  /* 0x14635ac */
 int dd_NumDevices = 0;  /* 0x14635b0 */
 RECT dd_ClipRect = {0};  /* 0x14635c0 */
-D3DDEVINFO d3d_Devices[8] = {0}; /* 0x14635e0 */
+D3DCARD d3d_Devices[8] = {0}; /* 0x14635e0 */
 int dd_LockBytes = 0;  /* 0x1464fa0 */
 unsigned int dd_RMask = 0;  /* 0x1464fa4 */
 int d3d_NumDevices = {0}; /* 0x1464fa8 */
@@ -924,87 +924,87 @@ BOOL WINAPI dd_EnumDriverCallback(GUID *guid, LPSTR desc, LPSTR name, LPVOID ctx
     dd_NumDevices++;
     return dd_NumDevices != 8;
 }
-/* 0x41c080, condenses a device description into the flags and limits at info->unk30c.. */
+/* 0x41c080, condenses a device description into the flags and limits of card->info */
 
-void d3d_GetDeviceInfo(D3DDEVICEDESC *caps, D3DDEVINFO *info)
+void d3d_GetDeviceInfo(D3DDEVICEDESC *caps, D3DCARD *card)
 {
-    int sw = info->software;
+    int sw = card->info.software;
     int tex;
 
-    D3_ZERO(&info->caps + 1, 0x2c);
-    info->software = sw;
+    D3_ZERO(&card->info, 0x2c);
+    card->info.software = sw;
     if ((caps->dwFlags & 0x300) && (caps->dwFlags & D3DDD_TRICAPS) && (caps->dpcTriCaps.dwTextureBlendCaps & 0x82))
         tex = 1;
     else
         tex = 0;
-    info->unk30c_3 = (caps->dwFlags & 1) && caps->bClipping == 1 ? 1 : 0;
+    card->info.clipping = (caps->dwFlags & 1) && caps->bClipping == 1 ? 1 : 0;
     if (caps->dwFlags & D3DDD_TRICAPS) {
-        info->unk30c_5 = ~(caps->dpcTriCaps.dwRasterCaps >> 15);
-        if (info->unk30c_5) {
-            info->zmode = 1;
-            info->unk30d_4 = caps->dpcTriCaps.dwRasterCaps >> 18;
+        card->info.zbuffer = ~(caps->dpcTriCaps.dwRasterCaps >> 15);
+        if (card->info.zbuffer) {
+            card->info.zmode = 1;
+            card->info.wbuffer = caps->dpcTriCaps.dwRasterCaps >> 18;
         } else
-            info->zmode = 0;
-        info->unk30c_7 = caps->dpcTriCaps.dwRasterCaps;
-        info->unk30c_6 = caps->dpcTriCaps.dwRasterCaps >> 11;
+            card->info.zmode = 0;
+        card->info.dither = caps->dpcTriCaps.dwRasterCaps;
+        card->info.antialias = caps->dpcTriCaps.dwRasterCaps >> 11;
         /* written as two tests: VC6 merges them into one `test dh,0x50` but keeps the branchy 0/1 result
            (a single `& 0x5000` compiles to setne and shifts the whole register allocation) */
-        info->unk30c_0 = (caps->dpcTriCaps.dwShadeCaps & D3DPSHADECAPS_ALPHAGOURAUDBLEND)
+        card->info.alphablend = (caps->dpcTriCaps.dwShadeCaps & D3DPSHADECAPS_ALPHAGOURAUDBLEND)
                       || (caps->dpcTriCaps.dwShadeCaps & D3DPSHADECAPS_ALPHAFLATBLEND) ? 1 : 0;
-        if (!info->unk30c_0)
-            info->unk30c_1 = (caps->dpcTriCaps.dwShadeCaps & 0x2000) || (caps->dpcTriCaps.dwRasterCaps & 0x200) ? 1 : 0;
-        info->unk30d_3 = !info->unk30c_0 && info->unk30c_1 ? 1 : 0;
-        info->unk30d_5 = caps->dpcTriCaps.dwRasterCaps >> 7;
+        if (!card->info.alphablend)
+            card->info.stipple = (caps->dpcTriCaps.dwShadeCaps & 0x2000) || (caps->dpcTriCaps.dwRasterCaps & 0x200) ? 1 : 0;
+        card->info.stippled = !card->info.alphablend && card->info.stipple ? 1 : 0;
+        card->info.fogvertex = caps->dpcTriCaps.dwRasterCaps >> 7;
     }
     if (tex) {
-        info->unk30c_2 = caps->dpcTriCaps.dwTextureCaps;
-        info->unk30c_4 = caps->dpcTriCaps.dwTextureFilterCaps >> 1;
-        info->maxMipFilter = 1;
-        if (info->unk30c_4) {
+        card->info.perspective = caps->dpcTriCaps.dwTextureCaps;
+        card->info.bilinear = caps->dpcTriCaps.dwTextureFilterCaps >> 1;
+        card->info.maxMipFilter = 1;
+        if (card->info.bilinear) {
             if (caps->dpcTriCaps.dwTextureFilterCaps & 0x20)
-                info->maxMipFilter = 3;
+                card->info.maxMipFilter = 3;
             else if (caps->dpcTriCaps.dwTextureFilterCaps & 8)
-                info->maxMipFilter = 2;
+                card->info.maxMipFilter = 2;
         } else {
             if (caps->dpcTriCaps.dwTextureFilterCaps & 0x10)
-                info->maxMipFilter = 3;
+                card->info.maxMipFilter = 3;
             else if (caps->dpcTriCaps.dwTextureFilterCaps & 4)
-                info->maxMipFilter = 2;
+                card->info.maxMipFilter = 2;
         }
-        info->unk30d_0 = caps->dpcTriCaps.dwRasterCaps >> 5;
-        info->unk30d_1 = caps->wMaxSimultaneousTextures >= 2 && (caps->dwTextureOpCaps & 8) && !info->software ? 1 : 0;
-        info->minw = caps->dwMinTextureWidth;
-        info->minh = caps->dwMinTextureHeight;
-        info->maxw = caps->dwMaxTextureWidth;
-        if (!info->maxw)
-            info->maxw = 0x400;
-        info->maxh = caps->dwMaxTextureHeight;
-        if (!info->maxh)
-            info->maxh = 0x400;
+        card->info.subpixel = caps->dpcTriCaps.dwRasterCaps >> 5;
+        card->info.multitexture = caps->wMaxSimultaneousTextures >= 2 && (caps->dwTextureOpCaps & 8) && !card->info.software ? 1 : 0;
+        card->info.minw = caps->dwMinTextureWidth;
+        card->info.minh = caps->dwMinTextureHeight;
+        card->info.maxw = caps->dwMaxTextureWidth;
+        if (!card->info.maxw)
+            card->info.maxw = 0x400;
+        card->info.maxh = caps->dwMaxTextureHeight;
+        if (!card->info.maxh)
+            card->info.maxh = 0x400;
         if ((caps->dpcTriCaps.dwDestBlendCaps & 0x20) && (caps->dpcTriCaps.dwSrcBlendCaps & 0x10)) {
-            info->trans_destblend = 6;
-            info->trans_srcblend = 5;
+            card->info.trans_destblend = 6;
+            card->info.trans_srcblend = 5;
         } else {
             if (caps->dpcTriCaps.dwDestBlendCaps & 0x20)
-                info->trans_destblend = 6;
+                card->info.trans_destblend = 6;
             else if ((caps->dpcTriCaps.dwDestBlendCaps & 2) && (caps->dpcTriCaps.dwSrcBlendCaps & 2))
-                info->trans_destblend = 2;
+                card->info.trans_destblend = 2;
             else if (caps->dpcTriCaps.dwDestBlendCaps & 4)
-                info->trans_destblend = 3;
+                card->info.trans_destblend = 3;
             else if (caps->dpcTriCaps.dwDestBlendCaps & 0x100)
-                info->trans_destblend = 9;
+                card->info.trans_destblend = 9;
             else {
-                info->trans_destblend = 1;
-                info->unk30c_0 = 0;
+                card->info.trans_destblend = 1;
+                card->info.alphablend = 0;
             }
-            info->trans_srcblend = 2;
+            card->info.trans_srcblend = 2;
         }
         if ((caps->dpcTriCaps.dwDestBlendCaps & 2) && (caps->dpcTriCaps.dwSrcBlendCaps & 2)) {
-            info->glow_destblend = 2;
-            info->glow_srcblend = 2;
+            card->info.glow_destblend = 2;
+            card->info.glow_srcblend = 2;
         } else {
-            info->glow_destblend = info->trans_destblend;
-            info->glow_srcblend = info->trans_srcblend;
+            card->info.glow_destblend = card->info.trans_destblend;
+            card->info.glow_srcblend = card->info.trans_srcblend;
         }
     }
 }
@@ -1035,11 +1035,11 @@ HRESULT WINAPI d3d_EnumDeviceCallback(GUID *guid, LPSTR desc, LPSTR name,
             return D3DENUMRET_OK;
         if (!(hw->dwFlags & D3DDD_TRICAPS))
             return D3DENUMRET_OK;
-        D3_COPY(&d3d_Devices[d3d_NumDevices].guid, guid, sizeof(GUID));
+        D3_COPY(&d3d_Devices[d3d_NumDevices].Guid, guid, sizeof(GUID));
         strcpy(d3d_Devices[d3d_NumDevices].desc, desc);
         strcpy(d3d_Devices[d3d_NumDevices].name, name);
         D3_COPY(&d3d_Devices[d3d_NumDevices].caps, hw, sizeof(D3DDEVICEDESC));
-        d3d_Devices[d3d_NumDevices].software = 0;
+        d3d_Devices[d3d_NumDevices].info.software = 0;
         d3d_GetDeviceInfo(&d3d_Devices[d3d_NumDevices].caps, &d3d_Devices[d3d_NumDevices]);
         d3d_NumDevices++;
     } else {
@@ -1049,11 +1049,11 @@ HRESULT WINAPI d3d_EnumDeviceCallback(GUID *guid, LPSTR desc, LPSTR name,
             return D3DENUMRET_OK;
         if (!(hel->dwFlags & D3DDD_TRICAPS))
             return D3DENUMRET_OK;
-        D3_COPY(&d3d_Devices[d3d_NumDevices].guid, guid, sizeof(GUID));
+        D3_COPY(&d3d_Devices[d3d_NumDevices].Guid, guid, sizeof(GUID));
         strcpy(d3d_Devices[d3d_NumDevices].desc, desc);
         strcpy(d3d_Devices[d3d_NumDevices].name, name);
         D3_COPY(&d3d_Devices[d3d_NumDevices].caps, hel, sizeof(D3DDEVICEDESC));
-        d3d_Devices[d3d_NumDevices].software = 1;
+        d3d_Devices[d3d_NumDevices].info.software = 1;
         d3d_GetDeviceInfo(&d3d_Devices[d3d_NumDevices].caps, &d3d_Devices[d3d_NumDevices]);
         d3d_NumDevices++;
     }
@@ -1148,8 +1148,8 @@ BOOL CALLBACK dd_DlgProc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
                 strcat(buf, d3d_Devices[i].name);
                 strcat(buf, ")");
                 idx = SendMessage(dd_DevCombo, CB_ADDSTRING, 0, (LPARAM)buf);
-                SendMessage(dd_DevCombo, CB_SETITEMDATA, idx, (LPARAM)&d3d_Devices[i].guid);
-                if (!d3d_Devices[i].software)
+                SendMessage(dd_DevCombo, CB_SETITEMDATA, idx, (LPARAM)&d3d_Devices[i].Guid);
+                if (!d3d_Devices[i].info.software)
                     sel = idx;
             }
             SendMessage(dd_DevCombo, CB_SETCURSEL, sel, 0);
@@ -1180,8 +1180,8 @@ BOOL CALLBACK dd_DlgProc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
                 strcat(buf, d3d_Devices[i].name);
                 strcat(buf, ")");
                 idx = SendMessage(dd_DevCombo, CB_ADDSTRING, 0, (LPARAM)buf);
-                SendMessage(dd_DevCombo, CB_SETITEMDATA, idx, (LPARAM)&d3d_Devices[i].guid);
-                if (!d3d_Devices[i].software)
+                SendMessage(dd_DevCombo, CB_SETITEMDATA, idx, (LPARAM)&d3d_Devices[i].Guid);
+                if (!d3d_Devices[i].info.software)
                     sel = idx;
             }
             SendMessage(dd_DevCombo, CB_SETCURSEL, sel, 0);

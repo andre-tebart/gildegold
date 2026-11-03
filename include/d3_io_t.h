@@ -67,7 +67,10 @@ typedef struct D3BGFDESC {          /* 0x198 bytes, what the file reader (0x44f8
 } D3BGFDESC;
 
 typedef struct D3BGF D3BGF;
-struct D3BGF {                      /* 0x20c bytes, a loaded mesh ("d3_io:LoadAGI_obj") */
+struct D3LINFO;
+struct D3BGF {                      /* 0x20c bytes, a loaded mesh ("d3_io:LoadAGI_obj"): a stock object, the mesh driver
+                                       of the surfaces that show it (D3OBJINFO.mesh, read as D3OPS in d3_engine.h);
+                                       the loaded ones are linked between the sentinels d3_Unkfc2e00 and d3_StockListEnd */
     char name[0x40];
     float *verts;                   /* 0x40, 6 floats each, followed by the 8 corners of the bounding box */
     int nverts;                     /* 0x44 */
@@ -81,9 +84,13 @@ struct D3BGF {                      /* 0x20c bytes, a loaded mesh ("d3_io:LoadAG
     int refs;                       /* 0x1dc */
     int ntex;                       /* 0x1e0 */
     int nsets;                      /* 0x1e4, texture sets of the name table (D3OPS.nsets, d3_engine.h) */
-    char pad1e8[0x14];
-    D3BGF *prev;                    /* 0x1fc */
-    D3BGF *next;                    /* 0x200 */
+    void (*Release)(D3BGF *m);      /* 0x1e8, the stock object's callbacks (d3io_LoadObjectFile): d3iot_DeleteStockObject */
+    void (*TransformNormals)(struct D3OBJECT *obj, struct D3LINFO *info);                       /* 0x1ec */
+    void (*Transform)(struct D3OBJECT *obj, struct D3LINFO *info, struct D3MATRIX *m);          /* 0x1f0 */
+    struct D3BOXVERT *(*GetBox)(struct D3OBJECT *obj, struct D3OBJINFO *info, void *unk);       /* 0x1f4 */
+    float (*GetRadius)(int unused, struct D3OBJINFO *info);                                     /* 0x1f8 */
+    D3BGF *next;                    /* 0x1fc, the stock object list: towards d3_StockListEnd */
+    D3BGF *prev;                    /* 0x200, towards the head sentinel d3_Unkfc2e00 */
     char *texnames;                 /* 0x204, ntex names of 0x40 bytes */
     char pad208[4];
 };
@@ -104,15 +111,8 @@ float d3iot_GetRadius(int unused, D3OBJINFO *info);                             
 
 /* 0x44df40..0x44e570 (worker d3io3, joined at the round-10 close) */
 
-typedef struct D3IOANIMDATA D3IOANIMDATA;
-struct D3IOANIMDATA {               /* a loaded animation stream: D3BASTREAM (d3_io_b.h) as the list code sees it */
-    char pad000[0x160];
-    D3IOANIMDATA *prev;             /* 0x160, list of the loaded animations */
-    D3IOANIMDATA *next;             /* 0x164 */
-};
-
 typedef struct D3IOOBJ D3IOOBJ;
-struct D3IOOBJ {                    /* a D3OBJECT as the loaders see it (0x220+ bytes) */
+struct D3IOOBJ {                    /* a D3OBJECT as d3_LoadObjectAnim sees it (the stock objects are D3BGF) */
     char pad000[0x40];
     int unk40;                      /* 0x40, set to d3_Time by d3_LoadObjectAnim */
     char pad044[0x8];
@@ -121,18 +121,7 @@ struct D3IOOBJ {                    /* a D3OBJECT as the loaders see it (0x220+ 
     float rot[3];                   /* 0x84 */
     char pad090[0x140];
     struct D3IOPATH *path;          /* 0x1d0 */
-    char pad1d4[0x8];
-    int refs;                       /* 0x1dc, reference count of a stock object */
-    char pad1e0[0x8];
-    void *fn1e8;                    /* 0x1e8..0x1f8: the stock object's callbacks */
-    void *fn1ec;
-    void *fn1f0;
-    void *fn1f4;
-    void *fn1f8;
-    D3IOOBJ *prev;                  /* 0x1fc, list of stock objects */
-    D3IOOBJ *next;                  /* 0x200 */
-    void *data;                     /* 0x204, buffer returned by d3_Unk44d1f0 */
-    char pad208[0x10];
+    char pad1d4[0x44];
     int type;                       /* 0x218, 3 / 4 = mesh */
 };
 
@@ -177,25 +166,17 @@ typedef struct D3IOPATH {           /* 0x44 bytes, the animation of an object (o
 } D3IOPATH;
 
 struct D3OBJECT; struct D3LINFO; void d3_TransformNormals(struct D3OBJECT *obj, struct D3LINFO *info);                                                        /* 0x4598d0, stock object callback */
-extern D3IOOBJ d3_StockHead;                                                    /* 0xfc4a40, list sentinel */
-#ifndef DATA_VIEWS_H
-extern D3IOOBJ *d3_StockList;                                                   /* 0xfc4c40 */
-#endif
 extern char d3_AnimDir[];                                                       /* 0x5fbf80, "animations/" */
 extern volatile unsigned long d3_Time;                                          /* 0x6333cc, milliseconds (tb.c) */
-#ifndef DATA_VIEWS_H
-extern D3IOANIMDATA *d3_AnimList;                                                    /* 0xfe75a4 */
-#endif
-extern D3IOANIMDATA d3_AnimHead;                                                     /* 0xfe7440 */
 
 struct D3BASTREAM *d3_LoadBinaryAnimStream(char *path, char *name, char relative);   /* 0x44f8c0, d3_io_b.c */
 
-D3IOOBJ *d3io_LoadObjectFile(char *name, char *file);                           /* 0x44df40 */
-D3IOOBJ *d3io_LoadObject(char *a, char *b);                                     /* 0x44e080 */
-D3IOOBJ *d3io_LoadObjectRef(char *a, char *b);                                  /* 0x44e190 */
-void d3io_ReleaseObject(D3IOOBJ *obj);                                          /* 0x44e2c0 */
+D3BGF *d3io_LoadObjectFile(char *name, char *file);                           /* 0x44df40 */
+D3BGF *d3io_LoadObject(char *a, char *b);                                     /* 0x44e080 */
+D3BGF *d3io_LoadObjectRef(char *a, char *b);                                  /* 0x44e190 */
+void d3io_ReleaseObject(D3BGF *obj);                                          /* 0x44e2c0 */
 D3IOPATH *d3_LoadObjectAnim(char *file, D3IOOBJ *obj, char reload);             /* 0x44e2e0 */
-D3IOANIMDATA *d3_LoadAnimStream(char *name, char *file, char unk);                    /* 0x44e4a0 */
+struct D3ANIMDATA *d3_LoadAnimStream(char *name, char *file, char unk);              /* 0x44e4a0 */
 
 
 #endif

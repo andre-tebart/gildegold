@@ -82,17 +82,6 @@
 /* d3_DefaultD3DConfig */
 #define d3if_Unk5fb5c0           (*(int *)((char *)&d3_DefaultD3DConfig + 0xc))  /* 0x5fb5c0 */
 
-/* d3_StockHead */
-#define d3_Unkfc4c3c             (*(int *)((char *)&d3_StockHead + 0x1fc))  /* 0xfc4c3c */
-#define d3_StockList             (*(D3IOOBJ **)((char *)&d3_StockHead + 0x200))  /* 0xfc4c40 */
-#define d3_Unkfc4c40             (*(void **)((char *)&d3_StockHead + 0x200))  /* 0xfc4c40 */
-#define d3_FovY                  (*(float *)((char *)&d3_StockHead + 0x20c))  /* 0xfc4c4c */
-
-/* d3_AnimHead */
-#define d3_Unkfe75a0             (*(int *)((char *)&d3_AnimHead + 0x160))  /* 0xfe75a0 */
-#define d3_AnimList              (*(D3IOANIMDATA **)((char *)&d3_AnimHead + 0x164))  /* 0xfe75a4 */
-#define d3_Unkfe75a4             (*(void **)((char *)&d3_AnimHead + 0x164))  /* 0xfe75a4 */
-
 /* d3_Scenes */
 #define ai_MapRefs               (*(void **)((char *)&d3_Scenes + 0xac))  /* 0xfd7c4c */
 #define ai_Unkfd7c50             (*(char (*)[805])((char *)&d3_Scenes + 0xb0))  /* 0xfd7c50 */
@@ -151,9 +140,6 @@
 
 /* d3if_Unk6339db */
 #define d3if_Unk6339dc           (*(unsigned int *)((char *)&d3if_Unk6339db + 0x1))  /* 0x6339dc */
-
-/* ai_Unk6f0454 */
-#define ai_Unk6f0455             (*(char (*)[2])((char *)&ai_Unk6f0454 + 0x1))  /* 0x6f0455 */
 
 /* he_EventSlots (the event bar's 16 slots of 12 bytes) */
 #define full_data_6faa84         (*(unsigned char (*)[188])((char *)&he_EventSlots + 0x4))  /* 0x6faa84 */

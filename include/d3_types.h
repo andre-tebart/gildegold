@@ -31,7 +31,7 @@ typedef struct D3EVENT {            /* 0x84 bytes, D3E_NEVENTS of them in D3OBJX
 } D3EVENT;
 
 typedef struct D3SCENE {            /* 0x3e0 bytes, 64 of them in d3_Scenes */
-    char pad000[0x80];
+    char name[0x80];                /* 0x000, the scene (file) name; f3init.c names a reserved universe after its building type or goods */
     struct D3OBJECT *first;         /* 0x80, first top-level object (D3SCENELISTS.first, d3_engine.h) */
     char pad084[0x28];
     void *map;                      /* 0x0ac, the scene's terrain map (D3FLMAP, d3_Terrain; d3fl_ReloadTextures) */

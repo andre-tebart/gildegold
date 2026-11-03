@@ -38,12 +38,7 @@ typedef struct D2BANK {             /* a bank of shapes (0x845 byte header) */
 } D2BANK;
 #pragma pack(pop)
 
-typedef struct D2KEY {              /* a colour key: 3 compared bytes, padded to a 4 byte stride */
-    unsigned char r;
-    unsigned short gb;
-} D2KEY;
-
-extern D2KEY d2_TransparentColour;          /* 0x6f0454 */
+extern D2KEY d2_TransparentColour;          /* 0x6f0454, f3gm.c */
 extern D2KEY d2_EndMarkerColour;          /* 0x5fed74 */
 extern D2KEY d2_StartMarkerColour;          /* 0x5fed78 */
 extern unsigned char d2_Palette[256][4];  /* 0xf8a120, palette */

@@ -111,7 +111,7 @@ __inline D3OBJBITS *d3_ObjBits(D3OBJECT *obj)
 #define D3_OBJBITS(o) (*d3_ObjBits(o))
 
 typedef struct D3OPS D3OPS;
-struct D3OPS {                      /* the "driver" behind D3OBJINFO::unk10 (starts with the mesh name) */
+struct D3OPS {                      /* the "driver" behind D3OBJINFO::unk10: a stock object, the same records as D3BGF (d3_io_t.h; not merged yet) */
     char pad000[0x1e0];
     int count;                      /* 0x1e0, number of textures */
     int nsets;                      /* 0x1e4, texture sets in the name table (D3BGF.nsets, d3_io_t.h) */
@@ -119,7 +119,7 @@ struct D3OPS {                      /* the "driver" behind D3OBJINFO::unk10 (sta
     int unk1ec;
     void (*Transform)(D3OBJECT *obj, D3OBJINFO *info, void *ctx);       /* 0x1f0 */
     void *(*GetBox)(D3OBJECT *obj, D3OBJINFO *info, void *unk);         /* 0x1f4 */
-    char pad1f8[0xc];               /* 0x1f8, the driver's other callbacks and stock list links (D3IOOBJ, d3_io_t.h) */
+    char pad1f8[0xc];               /* 0x1f8, the driver's other callbacks and stock list links (D3BGF, d3_io_t.h) */
     char *texnames;                 /* 0x204, nsets * count texture names of 0x40 bytes, set-major (D3BGF.texnames) */
 };
 #define D3_OPS(info) ((D3OPS *)(info)->mesh)
@@ -202,8 +202,8 @@ extern D3SORTENT *d3_SortPtr;               /* 0xfc2dc8 */
 extern int d3_TriCount;                /* 0xfc7b60 */
 extern int d3_VertCount;                /* 0xfc2dc4 */
 extern int d3_DrawnVerts;              /* 0xfe75b0, vertices drawn this frame (d3_DrawSorted resets it) */
-/* 0x633450 read as an int bitfield by d3_SetHardwareMode (mov dword; and 0xff), as a byte elsewhere */
-extern struct D3BITS8 { unsigned int on : 8; } d3_HardwareBits;
+/* a byte read as an int bitfield (mov dword; and 0xff): d3_Init passes d3_D3DActive so */
+struct D3BITS8 { unsigned int on : 8; };
 extern unsigned char d3_EngineReady;          /* 0x633451, engine up: set at the end of d3_Init, cleared in d3_Shutdown */
 extern unsigned char d3_D3DActive;          /* 0x63345c, a Direct3D device was created (d3d_Init / d3d_CreateDevice) */
 struct D3BITS3 { unsigned char mode : 3; };  /* d3_ShadowMode (0xfe7671) is a view of d3d_Config + 1 (data_views.h): bit 0 = object shadows on (d3_UpdateObject / d3_Render); set by d3_ApplyGraphicsOptions */
@@ -265,7 +265,7 @@ void d3_FreeObjectData(D3OBJECT *obj);                                          
 void d3fl_Inflate(struct D3FLMAP *map);                                                 /* 0x441ea0, d3_fl.c */
 struct D3SM; struct D3TERRAIN; void d3sm_Build(struct D3SM *h, struct D3TERRAIN *t);                                                    /* 0x45e620, d3_sm.c: void d3sm_Build(D3SM *, D3TERRAIN *) */
 void d3_AttachMesh(D3OBJECT *obj, int unk, char *name);                                  /* 0x44cbb0 */
-struct D3IOOBJ *d3io_LoadObject(char *a, char *b);                                         /* 0x44e080, d3_io_t.c (d3io_LoadObject; d3_io_t.h declares it too) */
+struct D3BGF *d3io_LoadObject(char *a, char *b);                                         /* 0x44e080, d3_io_t.c (d3io_LoadObject; d3_io_t.h declares it too) */
 
 typedef struct D3LIGHTENTRY {       /* 0x38 bytes */
     char pad00[0x30];
@@ -362,10 +362,10 @@ void d3_UnlinkTop(D3OBJECT *obj);                                               
 #define D3_SCENE3C8(s) ((s)->events)   /* D3SCENE.events (d3.h); the typed view is the field itself */
 extern unsigned int d3s_MaxPolys;           /* 0x633dc4 */
 extern int d3if_MegaCam;                    /* 0x6338c4 */
-extern D3OPS *d3_StockListHead;             /* 0xfc2ffc, head of the mesh driver (stock object) list, walked with ->Release (a view of d3_Unkfc2e00+0x1fc in the units that use it) */
-extern D3OPS d3_StockListEnd;               /* 0xfc4a40, its end marker (d3_StockHead, D3IOOBJ, d3_io_t.h) */
-extern void *d3_AnimListHead;               /* 0xfc26e0, head of the animation list, walked with d3anim_Release (a view of d3_Unkfc2580+0x160 in the units that use it) */
-extern char d3_AnimListEnd[];               /* 0xfe7440, its end marker (d3_AnimHead, D3IOANIMDATA, d3_io_t.h) */
+extern struct D3BGF *d3_StockListHead;      /* 0xfc2ffc, head of the stock object (mesh driver, D3BGF in d3_io_t.h) list, walked with ->Release (a view of d3_Unkfc2e00+0x1fc in the units that use it) */
+extern struct D3BGF d3_StockListEnd;       /* 0xfc4a40, its end sentinel */
+extern struct D3ANIMDATA d3anim_Head;      /* 0xfc2580, the animation cache list (D3ANIMDATA, d3_anim.h): its head sentinel */
+extern struct D3ANIMDATA d3anim_Tail;      /* 0xfe7440, and its end sentinel */
 extern D3SORTENT *d3_SortTmp;               /* 0xfe75c0 */
 extern unsigned int d3_RadixCount[256];     /* 0xfc29c0 */
 extern D3SORTENT *d3_RadixSrc;          /* 0xfe73c0 */
@@ -522,16 +522,9 @@ extern int d3_ClipNone;                    /* 0xfc5060 */
 extern unsigned char d3_Unkfc5064, d3_Unkfc5065;  /* 0xfc5064, 0xfc5065 */
 extern D3OBJECT d3_TopHead;               /* 0xfc5100, list start marker */
 #ifndef DATA_VIEWS_H
-extern int d3_Unkfc4c3c, d3_Unkfc3000, d3_Unkfe75a0, d3_Unkfc26e4, d3_Unkfe7400;  /* 0xfc4c3c, 0xfc3000, 0xfe75a0, 0xfc26e4, 0xfe7400 */
+extern int d3_Unkfc3000, d3_Unkfe7400;  /* 0xfc3000, 0xfe7400 */
 #endif
 extern char d3_Unkfc2e00[];                 /* 0xfc2e00, the head sentinel; its next field at +0x1fc is d3_StockListHead */
-#ifndef DATA_VIEWS_H
-extern void *d3_Unkfc4c40;                  /* d3_StockHead.next (0xfc4c40, a view now) */
-#endif
-#ifndef DATA_VIEWS_H
-extern void *d3_Unkfe75a4;                  /* d3_AnimHead.next (0xfe75a4, a view now) */
-#endif
-extern char d3_Unkfc2580[];                 /* 0xfc2580, the head sentinel; its next / prev fields at +0x160 / +0x164 are the animation list head */
 extern char d3_DefaultD3DConfig[];          /* 0x5fb5b4 */
 extern unsigned char dd_BBits, dd_GBits, dd_RBits;  /* 0x1464fbd, 0x1463580, 0x1463570 */
 extern float d3_Unkfe7600;              /* 0xfe7600 */
@@ -662,7 +655,6 @@ extern int d3_MirrorObject;                    /* 0x63344c, the object the frame
 #ifndef DATA_VIEWS_H
 extern unsigned char d3_Unkfb9928;          /* 0xfb9928 */
 #endif
-extern unsigned char d3d_ConfigBits;        /* 0xfe7670, d3d_Config (d3_d3d.h) as a byte */
 extern int d3_TextureSwitches;                /* 0xfe75b4 */
 extern int d3_Unkfc2dc0;                /* 0xfc2dc0 */
 extern int d3_Unk633470;                /* 0x633470, frame statistics */

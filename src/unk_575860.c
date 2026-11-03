@@ -3130,13 +3130,7 @@ fail:
    a step table ("FTInitScriptChapter3Step*"), the steps 2, 6, 8 and 10 the position marker's path
    ("FTInitAnimChapter3Step*"), whose points depend on the screen width (800, 1024, else). The voice bank
    "TUTORIAL_CHAPTER_3.sbf" is loaded into ai_TutorialBanks[3]. The first record, or 0 after a failed allocation
-   (the records built so far freed)
-   @deep Byte-matched before an unrelated declaration change (CMCUTENTRY in cm_types.h, debt entry): the
-   same 1213 instructions, the same stores of the same float constants; left only VC6's register tie-break
-   for the constants 0x420c0000 / 0x430e0000 / 0x428e0000 / 0x442f0000 / 0x44670000 (hunks +0xc88: ours
-   edi/ebx/ecx, the original ecx/edi/ebx, with the loads scheduled before / after the [esi+0x64] reloads;
-   +0xda8 regs; +0xec0 the same rotation) - allocation, flipped by the declaration set alone
-   (ai_TutorialInitChapter2 flips on renames too) */
+   (the records built so far freed) */
 
 int ai_TutorialInitChapter3(void)
 {

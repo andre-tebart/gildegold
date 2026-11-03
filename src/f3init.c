@@ -252,7 +252,7 @@ typedef struct INIT_SITELIST {
 #define INIT_PROTO_MASK ((unsigned)&txt_Keys + 0x181bf)        /* the prototype reference's index bits (o + 0x48) */
 #define INIT_PLAYER_SLOTS_END ((unsigned)&init_SlotCurrency + 0x888)   /* one past the player slot table 0x7e3f40 (0x2f4 bytes per slot) */
 #define INIT_SLOT_CURRENCY_END ((unsigned)&gm_Offers + 0x44)  /* one past the currency words of the player slots 1 .. 3 (0x7e4288 + 3 * 0x2f4) */
-#define INIT_SCENE_HEIGHTMAP_END ((unsigned)init_SceneHeightMaps + 0x40 * 0x3e0) /* one past the height map of the last scene: 0xfd7c50 + 0x40 * 0x3e0 (init_FreeScenes); anchored on the array, not on d3_AnimHead's 0x10 (their linked distance differs from the original's) */
+#define INIT_SCENE_HEIGHTMAP_END ((unsigned)init_SceneHeightMaps + 0x40 * 0x3e0) /* one past the height map of the last scene: 0xfd7c50 + 0x40 * 0x3e0 (init_FreeScenes); anchored on the array, not on d3anim_Tail + 0x10 (their linked distance differs from the original's) */
 #define INIT_CHARACTER_COUNT 0x300      /* ch.h's CH_MAX: the slots of the character list ch_List (0x1468ae0) */
 #define INIT_START_CHARACTERS_END ((unsigned)&ai_Unk770d8c + 0x1fb4) /* one past the 16th character record: 0x770b80 + 16 * 0x21c (init_StartNewGame) */
 #define INIT_CHARACTERS_END ((unsigned)ai_Chars + 0x300 * 0x21c)  /* one past the character table ai_Chars (0x770b80 + 0x300 * 0x21c = 0x7d5f80; the original's gm_PlayerRecords follows it there, not in our link) */
@@ -274,7 +274,6 @@ unsigned gm_PermissionBits(unsigned p1, unsigned char *b, unsigned short *o, int
 
 struct D3SCENE;
 /* init_SceneDirty: view of d3_Scenes (tools/data_views.py) */
-extern char init_SceneName[];             /* 0xfd7ba0, the name of each scene record (0x3e0 bytes apart) */
 extern char * ai_Unk1468ae0[0x300];             /* 0x1468ae0, the scene objects (0x100) */
 extern unsigned char ai_GameState;      /* 0x6f25ac */
 extern int sv_FrameMask;           /* 0x760638 */
@@ -2839,11 +2838,11 @@ int init_ObjectSceneUniverse(unsigned short *p)
             return -1;
         init_ObjectUniverse[*p] = uni;
         init_SceneDirty[uni * 0x3e0] = 1;
-        strcpy(init_SceneName + uni * 0x3e0, ai_Goods + *p * 0x41 + 1);
+        strcpy(d3_Scenes[uni].name, ai_Goods + *p * 0x41 + 1);
     }
     return init_ObjectUniverse[*p];
 }
-/* 0x511e60, the universe of the scene of the building b's type (0x76fa60): reserved (marked dirty, named after the type) when it is not the current building, else loaded at once by 0x50dc30; -1 when no universe is free @deep behaviour: 35 code hunks / 54 of 176 bytes, meaning read whole against 0x511e60..0x511f11 (the k = ai_BTypes[*b * 0x24d] lookup, the -1 test on init_BuildingUniverse[k], the fallback building / type 0x1e case that loads at once, the free scene, the dirty flag, the name strcpy, the two returns) - no meaning difference left. Meaning/type fixes this session: init_SceneName (was d3_Scenes), the t local removed so *b is read where the original re-reads it (0x511ec9), and k as unsigned with a (unsigned char) cast on the table byte: that is what the original does (xor ebx,ebx / mov bl,BYTE / mov esi,ebx, the byte compare cmp BYTE [esi+0x76fa60],0xff) and it took 144 -> 54 differing bytes / 84 -> 35 code hunks. Left (allocation): the inlined strcpy's registers - the original computes the name destination into ecx (lea ecx,[ecx+0xfd7ba0]) before re-reading *b and walks the source in eax/edx, ours keeps the destination in esi after re-reading *b; and the two returns read the byte from memory (movsx eax,BYTE [esi+0x76fa60]) where ours reuses al. Same instructions, only the register assignment and the block order. */
+/* 0x511e60, the universe of the scene of the building b's type (0x76fa60): reserved (marked dirty, named after the type) when it is not the current building, else loaded at once by 0x50dc30; -1 when no universe is free @deep behaviour: 35 code hunks / 54 of 176 bytes, meaning read whole against 0x511e60..0x511f11 (the k = ai_BTypes[*b * 0x24d] lookup, the -1 test on init_BuildingUniverse[k], the fallback building / type 0x1e case that loads at once, the free scene, the dirty flag, the name strcpy, the two returns) - no meaning difference left. Meaning/type fixes this session: the t local removed so *b is read where the original re-reads it (0x511ec9), and k as unsigned with a (unsigned char) cast on the table byte: that is what the original does (xor ebx,ebx / mov bl,BYTE / mov esi,ebx, the byte compare cmp BYTE [esi+0x76fa60],0xff) and it took 144 -> 54 differing bytes / 84 -> 35 code hunks. Left (allocation): the inlined strcpy's registers - the original computes the name destination into ecx (lea ecx,[ecx+0xfd7ba0]) before re-reading *b and walks the source in eax/edx, ours keeps the destination in esi after re-reading *b; and the two returns read the byte from memory (movsx eax,BYTE [esi+0x76fa60]) where ours reuses al. Same instructions, only the register assignment and the block order. */
 
 
 int init_BuildingSceneUniverse(unsigned char *b)
@@ -2859,7 +2858,7 @@ int init_BuildingSceneUniverse(unsigned char *b)
                 return -1;
             init_BuildingUniverse[k] = uni;
             init_SceneDirty[uni * 0x3e0] = 1;
-            strcpy(init_SceneName + uni * 0x3e0, ai_BTypes + *b * 0x24d + 1);
+            strcpy(d3_Scenes[uni].name, ai_BTypes + *b * 0x24d + 1);
             return init_BuildingUniverse[k];
         }
         init_LoadBuildingScene(*b);

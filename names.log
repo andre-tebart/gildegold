@@ -1576,3 +1576,10 @@
 2026-11-03T17:32:11 0x00633738 data ai_Unk633738 -> d3_Terrain by:main why:one object (0x633738): the terrain map pointer, defined in d3_fl.c
 2026-11-03T17:32:11 0x00633dd4 data ai_Unk633dd4 -> d3_Sky by:main why:one object (0x633dd4): D3SKY *, d3_sky.c
 2026-11-03T17:32:11 0x00fc2dec data sv_CameraObj -> d3_Camera by:main why:one object (0xfc2dec): D3OBJECT *, defined in d3_engine.c; users read its fields
+2026-11-03T17:44:18 0x0063343c data d3anim_Clock -> d3_FrameCount by:main why:0x63343c is one int: d3_engine.c defines d3_FrameCount, d3_anim.c read it as d3anim_Clock
+2026-11-03T17:44:18 0x006ed918 data ai_Unk6ed918 -> d2_Pics by:main why:0x6ed918 is d2.c's D2PIC *d2_Pics; cm.h had a char * placeholder
+2026-11-03T17:44:18 0x006ed92c data ai_Unk6ed92c -> d2_BackSurf by:main why:0x6ed92c is d2.c's d2_BackSurf (the offscreen surface); cm.h / sv.c had a char * placeholder
+2026-11-03T17:44:18 0x006f0454 data ai_Unk6f0454 -> d2_TransparentColour by:main why:0x6f0454 is shp.h's D2KEY d2_TransparentColour; f3gm.c defined it as a char[3] placeholder
+2026-11-03T17:45:10 0x0146356c data d3_ddhr -> dd_Ref by:main why:0x146356c is one ULONG: dd_vesa.c defines dd_Ref (the result of the last Release), ts_texture.c called it d3_ddhr
+2026-11-03T17:45:10 0x0146356c data d3d_RefCount -> dd_Ref by:main why:0x146356c is one ULONG: dd_vesa.c defines dd_Ref, d3_d3d.h called it d3d_RefCount
+2026-11-03T17:45:10 0x00fba940 data d3_AnimPath -> d3io_StockDir by:main why:0xfba940 is the stock object directory (VFSDIR *, set by d3io_SetStockDir in d3_int_io.c); d3_engine.c defined it as char *d3_AnimPath

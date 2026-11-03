@@ -51,7 +51,6 @@ extern D2VIEW d2_Views[];
 #define GAPDATA __declspec(align(1)) unsigned char
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
-extern void *d2_BackSurf;
 extern GAPDATA full_data_623e84[];
 extern GAPDATA full_data_6f2354[];
 extern void *d2_ScreenSurf;  /* 0x6ed924 */
@@ -206,10 +205,9 @@ void d2_CloseView(int view);            /* 0x4758f0 */
 /* ai_SeasonClimate: view of ai_PlayerSlots (tools/data_views.py) */
 extern int ai_Unk6f22c0;  /* 0x6f22c0 */
 extern struct D2SURF *sv_GroundplanSurf, *sv_GroundplanView;  /* 0x6f22c4, 0x6f22c8 */
-extern char ai_Unk6f0454[3];  /* 0x6f0454 */
-extern char *ai_Unk6ed92c;  /* 0x6ed92c */
+extern void *d2_BackSurf;  /* 0x6ed92c */
 extern OPTIONBYTES ai_GamePanel;  /* 0x6f3668 */
-/* ai_Unk6f0455: view of ai_Unk6f0454 (tools/data_views.py) */
+#define d2_TransparentBytes ((unsigned char *)&d2_TransparentColour)  /* 0x6f0454, @original: sv_BuildScreenLayout clears the key byte by byte (mov byte [0x6f0454] / [0x6f0455] / [0x6f0456], bl), not through the D2KEY word gb */
 /* the object / character record fields sv.c reads (AIBLD / AICHAR in ai.h; ai.h cannot be included here: its
    declarations of ai_Time / ai_Chars / ai_BTypes / ai_Blds clash with gv.h's char views). Views, as gv.h's ORDCHAR */
 #pragma pack(push, 1)
@@ -862,15 +860,15 @@ void sv_BuildScreenLayout(int s)
         ai_Unk6f22c0 = 0;
     }
     t = d2_GetPic(s);
-    if (d2_LockSurface(ai_Unk6ed92c) != 0) {
-        d2_ClearSurface(ai_Unk6ed92c);
-        d2_DrawShape(0, 0, ai_Unk6ed92c, t, 0);
-        ai_Unk6f0454[0] = 0;
-        ai_Unk6f0454[1] = 0;
-        ai_Unk6f0454[2] = 0;
-        ai_Unk6f22c0 = d2_GrabShape(sv_ViewRectLeft, sv_ViewRectTop, (sv_ViewRectRight - sv_ViewRectLeft) + 1, sv_ViewRectBottom - sv_ViewRectTop, ai_Unk6ed92c, 0, 1);
-        d2_ClearSurface(ai_Unk6ed92c);
-        d2_UnlockSurface(ai_Unk6ed92c);
+    if (d2_LockSurface(d2_BackSurf) != 0) {
+        d2_ClearSurface(d2_BackSurf);
+        d2_DrawShape(0, 0, d2_BackSurf, t, 0);
+        d2_TransparentBytes[0] = 0;
+        d2_TransparentBytes[1] = 0;
+        d2_TransparentBytes[2] = 0;
+        ai_Unk6f22c0 = d2_GrabShape(sv_ViewRectLeft, sv_ViewRectTop, (sv_ViewRectRight - sv_ViewRectLeft) + 1, sv_ViewRectBottom - sv_ViewRectTop, d2_BackSurf, 0, 1);
+        d2_ClearSurface(d2_BackSurf);
+        d2_UnlockSurface(d2_BackSurf);
     }
     d2_DirtyRectRight = sv_ViewRectRight;
     q = sv_GroundplanButtons;
@@ -1426,12 +1424,12 @@ void sv_RedrawScreen(void)
         sv_UpdateCityPanel(1, 0);
         d2_UnlockSurface(d2_ScreenSurf);
     }
-    d2_BlitPart(0, 0, *(int *)(ai_Unk6ed92c + 4), *(int *)(ai_Unk6ed92c + 8), d2_ScreenSurf, 0, 0, ai_Unk6ed92c);
+    d2_BlitPart(0, 0, ((D2SURF *)d2_BackSurf)->w, ((D2SURF *)d2_BackSurf)->h, d2_ScreenSurf, 0, 0, d2_BackSurf);
     r = d2_StartFade(0, 0, (int)d2_ScreenW, (int)d2_ScreenH, "BLACK", 0, 1);
     sv_RunFrame(0, 0x1c6);
     d2_ReleaseFade(r);
     d2_PlaceWindow(ai_Unk623840, 1);
-    d2_BlitPart(0, 0, (int)d2_ScreenW, (int)d2_ScreenH, ai_Unk6ed92c, 0, 0, d2_ScreenSurf);
+    d2_BlitPart(0, 0, (int)d2_ScreenW, (int)d2_ScreenH, d2_BackSurf, 0, 0, d2_ScreenSurf);
 }
 /* 0x524100, enters the character c (index) into the first free (-1) of the 8 member slots of the group record
    g, unless he is a member already; a member slot holds the character's AICHAR.netId */

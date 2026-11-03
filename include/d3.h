@@ -262,7 +262,7 @@ void d3_UnwrapAngles(float *a, float *b, float *ra, float *rb);                 
 int d3_FindAnim(char *name);                                                           /* 0x433f40, anim loaded? */
 int d3anim_StartAnim(void *list, char *name, D3ANIMFLAGS f);                                /* 0x435550, @original: this typedef spelling (not struct D3ANIMFLAGS) keeps the /O2 operand order of the byte-matched d3_LoadScene44be60 (d3_int_io.c, 0x27f) */
 struct D3IOPATH *d3_LoadObjectAnim(char *file, struct D3IOOBJ *obj, char reload);                                 /* 0x44e2e0 */
-extern char *d3_AnimPath;                   /* 0xfba940 */
+extern struct VFSDIR *d3io_StockDir;          /* 0xfba940, the stock object directory (d3io_SetStockDir, d3_int_io.c) */
 char *util_BaseName(char *path);            /* 0x401040, strips the extension in place, returns the file name */
 extern D3VECTOR d3t_PlaceTarget;             /* 0x1466620, camera target position */
 extern D3VECTOR d3_Unk1466630;              /* 0x1466630, camera target angles */

@@ -94,7 +94,6 @@ struct D3IOSTOCK {                  /* a loaded stock object (mesh driver, D3OPS
     char (*texnames)[0x40];         /* 0x204 */
 };
 
-extern void *d3io_StockDir;                 /* 0xfba940, the stock object directory */
 extern char d3io_StockPath[];               /* 0x633a00 */
 struct VFSDIR * vfs_FindDir(char *path, struct VFSDIR *d);                                                 /* 0x42f7e0, vfs.c */
 char * vfs_GetPath(char *name, struct VFSDIR *d, struct VFSDIR *stop, char *out);                          /* 0x42fca0, vfs.c */

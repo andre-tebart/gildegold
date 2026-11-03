@@ -322,7 +322,7 @@ void d3if_Reset(void)
     D3IF_SCENE(d3_CurrentScene).first = 0;
     D3IF_SCENE(d3_CurrentScene).dirty = 0;
     D3IF_SCENE(d3_CurrentScene).loaded = 0;
-    d3_Scenes[d3_CurrentScene].pad000[0] = 0;
+    d3_Scenes[d3_CurrentScene].name[0] = 0;
 }
 /* 0x4475f0, initializes an empty scene: its first object is a camera ("MegaCam") @deep Q2 unk3cc / unk3d0: the D3IFSCENE mirrors of 0x5fb5c0 / 0x5fb5c4, same write-only pair as in d3if_Reset (no reader in the exe, initials 4 / 0xf, no evidenced meaning); all other identifiers of the function named this session (hmap, mapSize, sceneFlags, hardware, loaded, dirty) */
 
@@ -668,7 +668,7 @@ D3TEXHANDLE *d3if_LoadSprite(char *name, char glow)
     memset(&f, 0, sizeof f);
     f.bits.alpha = 0x7f;
     f.bits.glow = glow;
-    if (d3d_Device && (d3d_UsedCard.info.caps & 1)) {
+    if (d3d_Device && (d3d_UsedCard.info.alphablend)) {
         t = (D3TEXHANDLE *)tex_Load(name, f.raw, 0, 0);
         if (t)
             tex_Reload(t, 0);
@@ -1662,6 +1662,6 @@ int d3if_CamSeite = 0;  /* 0x6338c0 */
 /* d3if_Unk6339dc: view of d3if_Unk6339db (tools/data_views.py) */
 int d3s_ShadowMapSize = 0;  /* 0x633dcc */
 char d3if_ParList[788] = {0};  /* 0xfb95e0 */
-int d3if_Unkfba944 = 0;  /* 0xfba944 (own object: d3_AnimPath is a 4-byte pointer) */
+int d3if_Unkfba944 = 0;  /* 0xfba944 (own object: d3io_StockDir is a 4-byte pointer) */
 D3FOGSET d3if_Fog[6] = {0}; /* 0xfba960 */
 D3LIGHTSET d3if_Levels[7] = {0}; /* 0xfba9c0 */

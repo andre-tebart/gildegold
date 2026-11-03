@@ -9,7 +9,7 @@ struct CHACTION;
 struct CHARACTER;
 struct D3HMAP;
 struct GMSTOCK;
-struct D3IOOBJ;
+struct D3BGF;
 struct D3TRAIN;
 struct G15PLANT;
 struct SBBANK;
@@ -708,7 +708,7 @@ int cm_FightRole();  /* 0x4d4050 */
 void cm_LoadEventScene(char *name);  /* 0x4e2e60, loads the scene file name into a free scene and fades it in */
 void cm_ApplySeason(void);  /* 0x4e3650 */
 void d3sky_Init(struct D3SKY *s, char build);  /* 0x45d690 */
-struct D3IOOBJ * d3io_LoadObjectRef();  /* 0x44e190 */
+struct D3BGF * d3io_LoadObjectRef();  /* 0x44e190 */
 struct D3SM * d3sm_Create(struct D3TERRAIN *t, int size, int mask);  /* 0x45eeb0, d3_sm.h */
 void gm_ShuffledBytes(unsigned char n, unsigned char *out);  /* 0x505be0 */
 int gm_BuildingSkill(unsigned char *b, unsigned k, int flag);  /* 0x5092e0, f3gm.h (not includable here, cm.c lead comment) */
@@ -903,7 +903,7 @@ typedef struct G22ENT {                 /* 0x18 bytes, one participant of a sess
     char pad[7];
 } G22ENT;
 #define G22_4C5580 ((int (*)())cm_SendHandOverCrimes)  /* cut.c calls it without arguments */
-extern char *ai_Unk6ed918;  /* 0x6ed918 */
+extern struct D2PIC *d2_Pics;  /* 0x6ed918 */
 int cm_LoadVoiceBank();  /* 0x4e3270 */
 int cm_PlaySpecialTrack();  /* 0x4e3620 */
 int amt_GetColumnOffices(int col, int max, struct AMTREC *out);  /* 0x4e6fc0 */
@@ -1091,7 +1091,7 @@ void d2_BlitPart(int sx, int sy, int w, int h, struct D2SURF *src, int x, int y,
 void d2_ReleaseFade(struct D2FADE *f);  /* 0x476860 */
 struct D2FADE * d2_StartFade(int x, int y, int w, int h, char *name, int dur, unsigned int flags);  /* 0x4767d0 */
 char d3_InflateScene(unsigned int flags);  /* 0x43deb0 */
-extern char *ai_Unk6ed92c;  /* 0x6ed92c */
+extern void *d2_BackSurf;  /* 0x6ed92c */
 extern unsigned int d3_SceneFlags;  /* 0x63349c */
 extern unsigned int ai_Unk6f0d98;  /* 0x6f0d98 */
 

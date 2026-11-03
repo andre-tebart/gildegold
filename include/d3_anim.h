@@ -30,7 +30,7 @@ struct D3ANIMDATA {                 /* 0x16c bytes, cached animation (LRU list) 
     int refs;                       /* 0x14c */
     int first;                      /* 0x150, first frame of the animation range (D3BASTREAM.first) */
     int last;                       /* 0x154, last frame, -1: nframes (D3BASTREAM.last) */
-    unsigned int lastuse;           /* 0x158, d3anim_Clock at the last use */
+    unsigned int lastuse;           /* 0x158, d3_FrameCount at the last use */
     D3ANIMFRAME *frames;            /* 0x15c */
     D3ANIMDATA *next;               /* 0x160 */
     D3ANIMDATA *prev;               /* 0x164 */

@@ -51,7 +51,7 @@ extern unsigned char d3_MipSkip;
 #define d3_TexFormat16Bpp d3d_UsedTexFormat.bpp2      /* 0xfe79e8 */
 #define d3_TexFormat16 d3d_UsedTexFormat.pf2          /* 0xfe79ec */
 #define d3_Unkfe7a0d d3d_UsedTexFormat.same           /* 0xfe7a0d */
-extern long d3_ddhr;                        /* 0x146356c, result of the last unchecked DirectDraw call */
+extern ULONG dd_Ref;                        /* 0x146356c, result of the last Release (dd_vesa.c) */
 unsigned char d3_MipSkip = 0;  /* 0x63342c */
 char d3_Unk633e00[256] = {0};  /* 0x633e00 */
 /* 0x5ebc20, the epsilon of d3sm_Pick and the scroll speed table are one block in the original: the double
@@ -132,11 +132,11 @@ void ts_FreeCache(void)
         for (i = 0, sce = ts_Cache; i < ts_CacheSize; i++, sce++) {
             if (sce->size > 0) {
                 if (sce->d3dtex) {
-                    d3_ddhr = sce->d3dtex->lpVtbl->Release(sce->d3dtex);
+                    dd_Ref = sce->d3dtex->lpVtbl->Release(sce->d3dtex);
                     sce->d3dtex = 0;
                 }
                 if (sce->surf) {
-                    d3_ddhr = sce->surf->lpVtbl->Release(sce->surf);
+                    dd_Ref = sce->surf->lpVtbl->Release(sce->surf);
                     sce->surf = 0;
                 }
                 sce->size = 0;
@@ -154,11 +154,11 @@ void ts_CacheStore(TSCACHE *sce, TSTEXTURE *tex)
 {
     if (sce->size > 0) {
         if (sce->d3dtex) {
-            d3_ddhr = sce->d3dtex->lpVtbl->Release(sce->d3dtex);
+            dd_Ref = sce->d3dtex->lpVtbl->Release(sce->d3dtex);
             sce->d3dtex = 0;
         }
         if (sce->surf) {
-            d3_ddhr = sce->surf->lpVtbl->Release(sce->surf);
+            dd_Ref = sce->surf->lpVtbl->Release(sce->surf);
             sce->surf = 0;
         }
     }
@@ -196,11 +196,11 @@ void ts_CacheRelease(TSTEXTURE *tex)
             return;
         }
         if (tex->d3dtex) {
-            d3_ddhr = tex->d3dtex->lpVtbl->Release(tex->d3dtex);
+            dd_Ref = tex->d3dtex->lpVtbl->Release(tex->d3dtex);
             tex->d3dtex = 0;
         }
         if (tex->surf) {
-            d3_ddhr = tex->surf->lpVtbl->Release(tex->surf);
+            dd_Ref = tex->surf->lpVtbl->Release(tex->surf);
             tex->surf = 0;
         }
     } else {
@@ -309,11 +309,11 @@ void tex_Free(TSTEXTURE *tex)
         tex->surf = 0;
     } else {
         if (tex->d3dtex) {
-            d3_ddhr = tex->d3dtex->lpVtbl->Release(tex->d3dtex);
+            dd_Ref = tex->d3dtex->lpVtbl->Release(tex->d3dtex);
             tex->d3dtex = 0;
         }
         if (tex->surf) {
-            d3_ddhr = tex->surf->lpVtbl->Release(tex->surf);
+            dd_Ref = tex->surf->lpVtbl->Release(tex->surf);
             tex->surf = 0;
         }
     }
@@ -841,11 +841,11 @@ void tex_Reload(TSTEXTURE *tex, char keep)
         if (tex->surf && !keep)
             goto done;
         if (tex->surf) {
-            d3_ddhr = tex->surf->lpVtbl->Release(tex->surf);
+            dd_Ref = tex->surf->lpVtbl->Release(tex->surf);
             tex->surf = 0;
         }
         if (tex->d3dtex) {
-            d3_ddhr = tex->d3dtex->lpVtbl->Release(tex->d3dtex);
+            dd_Ref = tex->d3dtex->lpVtbl->Release(tex->d3dtex);
             tex->d3dtex = 0;
         }
         if (keep && tex->data) {
@@ -868,11 +868,11 @@ void tex_Reload(TSTEXTURE *tex, char keep)
         if (!tex->surf && !tex->d3dtex && tex->data && !keep)
             goto done;
         if (tex->surf) {
-            d3_ddhr = tex->surf->lpVtbl->Release(tex->surf);
+            dd_Ref = tex->surf->lpVtbl->Release(tex->surf);
             tex->surf = 0;
         }
         if (tex->d3dtex) {
-            d3_ddhr = tex->d3dtex->lpVtbl->Release(tex->d3dtex);
+            dd_Ref = tex->d3dtex->lpVtbl->Release(tex->d3dtex);
             tex->d3dtex = 0;
         }
         if (!keep && tex->data)
@@ -926,11 +926,11 @@ char tex_Unload(TSTEXTURE *tex)
 {
     if (tex && d3_Hardware && !tex->alias) {
         if (tex->surf) {
-            d3_ddhr = tex->surf->lpVtbl->Release(tex->surf);
+            dd_Ref = tex->surf->lpVtbl->Release(tex->surf);
             tex->surf = 0;
         }
         if (tex->d3dtex) {
-            d3_ddhr = tex->d3dtex->lpVtbl->Release(tex->d3dtex);
+            dd_Ref = tex->d3dtex->lpVtbl->Release(tex->d3dtex);
             tex->d3dtex = 0;
         }
         if (tex->mask && tex->name[0] != '*')

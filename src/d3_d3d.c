@@ -137,7 +137,7 @@ char d3d_Init(int bitplanes, int a, int b)
             D3DCHECK(d3d_D3D->lpVtbl->EnumDevices(d3d_D3D, d3d_EnumDeviceCallback, (void *)bitplanes));
             if (!d3d_hr && d3d_NumDevices) {
                 for (sel = 0; sel < d3d_NumDevices; sel++)
-                    if (!(d3d_Cards[sel].info.flags & 4))
+                    if (!(d3d_Devices[sel].info.software))
                         break;
                 if (sel >= d3d_NumDevices)
                     sel = 0;
@@ -151,7 +151,7 @@ char d3d_Init(int bitplanes, int a, int b)
                         if (h != -1) {
                             if (reg_GetString(h, "d3d_Guid", guidstr) && dd_StringToGuid(guidstr, &guid)) {
                                 for (i = 0; i < d3d_NumDevices; i++) {
-                                    if (!memcmp(&guid, &d3d_Cards[i].Guid, sizeof(GUID))) {
+                                    if (!memcmp(&guid, &d3d_Devices[i].Guid, sizeof(GUID))) {
                                         ask = 0;
                                         sel = i;
                                     }
@@ -165,9 +165,9 @@ char d3d_Init(int bitplanes, int a, int b)
                         again = 1;
                     }
                 }
-                D3_COPY_TO(offset d3d_UsedCard, &d3d_Cards[sel], sizeof(D3DCARD));
+                D3_COPY_TO(offset d3d_UsedCard, &d3d_Devices[sel], sizeof(D3DCARD));
                 d3d_Mipmaps = d3d_UsedCard.info.maxMipFilter > 1;
-                d3d_ZBufferCaps = (d3d_UsedCard.info.flags & 4) ? 0x800 : 0x6000;
+                d3d_ZBufferCaps = (d3d_UsedCard.info.software) ? 0x800 : 0x6000;
                 return 1;
             }
         }
@@ -239,7 +239,7 @@ char d3d_CreateDevice(DWORD texbpp, DWORD fourcc, DWORD texbpp2, DWORD zbpp)
     d3d_fog = 0;
     d3d_zbuffer = 1;
     d3d_Near = d3d_Far = d3d_ViewW = d3d_ViewH = d3d_ViewX = d3d_ViewY = -1.0f;
-    if (d3d_UsedCard.info.caps & 0x20) {
+    if (d3d_UsedCard.info.zbuffer) {
         d3d_UsedZBufferFormat.bpp = zbpp;
 #line 397
         D3DCHECK(d3d_D3D->lpVtbl->EnumZBufferFormats(d3d_D3D, &d3d_UsedCard.Guid, d3d_EnumZBufferFormatsCallback, (void *) &d3d_UsedZBufferFormat));
@@ -326,7 +326,7 @@ void d3d_SetConfig(D3DCONFIG *c)
             D3DCHECK(d3d_Device->lpVtbl->SetTextureStageState(d3d_Device, 0, D3DTSS_MIPFILTER, mipfilter));
         }
         if (d3d_Config.perspective != c->perspective) {
-            if ((d3d_UsedCard.info.caps & 4) && c->perspective) {
+            if ((d3d_UsedCard.info.perspective) && c->perspective) {
 #line 530
                 D3DCHECK(d3d_Device->lpVtbl->SetRenderState(d3d_Device, D3DRENDERSTATE_TEXTUREPERSPECTIVE, TRUE));
             } else {
@@ -334,7 +334,7 @@ void d3d_SetConfig(D3DCONFIG *c)
                 D3DCHECK(d3d_Device->lpVtbl->SetRenderState(d3d_Device, D3DRENDERSTATE_TEXTUREPERSPECTIVE, FALSE));
             }
         }
-        if (d3d_Config.filter != c->filter && (d3d_UsedCard.info.caps & 0x10)) {
+        if (d3d_Config.filter != c->filter && (d3d_UsedCard.info.bilinear)) {
             if (c->filter) {
 #line 539
                 D3DCHECK(d3d_Device->lpVtbl->SetTextureStageState(d3d_Device, 0, D3DTSS_MAGFILTER, D3DTFG_LINEAR));
@@ -345,7 +345,7 @@ void d3d_SetConfig(D3DCONFIG *c)
                 D3DCHECK(d3d_Device->lpVtbl->SetTextureStageState(d3d_Device, 0, D3DTSS_MINFILTER, D3DTFG_POINT));
             }
         }
-        if (d3d_Config.antialias != c->antialias && (d3d_UsedCard.info.caps & 0x40)) {
+        if (d3d_Config.antialias != c->antialias && (d3d_UsedCard.info.antialias)) {
             if (c->antialias) {
 #line 552
                 D3DCHECK(d3d_Device->lpVtbl->SetRenderState(d3d_Device, D3DRENDERSTATE_ANTIALIAS, D3DANTIALIAS_SORTINDEPENDENT));
@@ -354,10 +354,10 @@ void d3d_SetConfig(D3DCONFIG *c)
                 D3DCHECK(d3d_Device->lpVtbl->SetRenderState(d3d_Device, D3DRENDERSTATE_ANTIALIAS, D3DANTIALIAS_NONE));
             }
         }
-        if (d3d_Config.dither != c->dither && (d3d_UsedCard.info.caps & 0x80))
+        if (d3d_Config.dither != c->dither && (d3d_UsedCard.info.dither))
 #line 558
             D3DCHECK(d3d_Device->lpVtbl->SetRenderState(d3d_Device, D3DRENDERSTATE_DITHERENABLE, c->dither));
-        if (d3d_Config.subpixel != c->subpixel && (d3d_UsedCard.info.flags & 1))
+        if (d3d_Config.subpixel != c->subpixel && (d3d_UsedCard.info.subpixel))
 #line 561
             D3DCHECK(d3d_Device->lpVtbl->SetRenderState(d3d_Device, D3DRENDERSTATE_SUBPIXEL, c->subpixel));
         D3_COPY_AT(offset d3d_Config, c, sizeof(D3DCONFIG));
@@ -376,7 +376,7 @@ void d3d_SetConfig(D3DCONFIG *c)
         D3DCHECK(d3d_Device->lpVtbl->SetTextureStageState(d3d_Device, 0, D3DTSS_ALPHAOP, D3DTOP_MODULATE));
         D3DCHECK(d3d_Device->lpVtbl->SetTextureStageState(d3d_Device, 0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE));
         D3DCHECK(d3d_Device->lpVtbl->SetTextureStageState(d3d_Device, 0, D3DTSS_ALPHAARG2, D3DTA_DIFFUSE));
-        if ((d3d_UsedCard.info.caps & 4) && c->perspective) {
+        if ((d3d_UsedCard.info.perspective) && c->perspective) {
 #line 585
             D3DCHECK(d3d_Device->lpVtbl->SetRenderState(d3d_Device, D3DRENDERSTATE_TEXTUREPERSPECTIVE, TRUE));
         } else {
@@ -388,7 +388,7 @@ void d3d_SetConfig(D3DCONFIG *c)
             mipfilter = c->mipfilter;
 #line 592
         D3DCHECK(d3d_Device->lpVtbl->SetTextureStageState(d3d_Device, 0, D3DTSS_MIPFILTER, mipfilter));
-        if ((d3d_UsedCard.info.caps & 0x10) && c->filter) {
+        if ((d3d_UsedCard.info.bilinear) && c->filter) {
 #line 596
             D3DCHECK(d3d_Device->lpVtbl->SetTextureStageState(d3d_Device, 0, D3DTSS_MINFILTER, D3DTFG_LINEAR));
             D3DCHECK(d3d_Device->lpVtbl->SetTextureStageState(d3d_Device, 0, D3DTSS_MAGFILTER, D3DTFG_LINEAR));
@@ -400,17 +400,17 @@ void d3d_SetConfig(D3DCONFIG *c)
 #line 605
         D3DCHECK(d3d_Device->lpVtbl->SetLightState(d3d_Device, D3DLIGHTSTATE_FOGMODE, D3DFOG_NONE));
         D3DCHECK(d3d_Device->lpVtbl->SetRenderState(d3d_Device, D3DRENDERSTATE_FOGTABLEMODE, D3DFOG_NONE));
-        if (c->antialias && (d3d_UsedCard.info.caps & 0x40)) {
+        if (c->antialias && (d3d_UsedCard.info.antialias)) {
 #line 609
             D3DCHECK(d3d_Device->lpVtbl->SetRenderState(d3d_Device, D3DRENDERSTATE_ANTIALIAS, D3DANTIALIAS_SORTINDEPENDENT));
         } else {
 #line 611
             D3DCHECK(d3d_Device->lpVtbl->SetRenderState(d3d_Device, D3DRENDERSTATE_ANTIALIAS, D3DANTIALIAS_NONE));
         }
-        if (c->dither && (d3d_UsedCard.info.caps & 0x80))
+        if (c->dither && (d3d_UsedCard.info.dither))
 #line 614
             D3DCHECK(d3d_Device->lpVtbl->SetRenderState(d3d_Device, D3DRENDERSTATE_DITHERENABLE, TRUE));
-        if (c->subpixel && (d3d_UsedCard.info.flags & 1))
+        if (c->subpixel && (d3d_UsedCard.info.subpixel))
 #line 617
             D3DCHECK(d3d_Device->lpVtbl->SetRenderState(d3d_Device, D3DRENDERSTATE_SUBPIXEL, c->subpixel));
         d3d_StatesSet = 1;
@@ -468,7 +468,7 @@ void d3d_SetViewport(float w, float h, float x, float y, float zn, float zf)
 
 void d3d_SetWBuffer(char w)
 {
-    if (d3d_Device && d3d_ZBuffer && (d3d_UsedCard.info.flags & 0x10) && w != d3d_ZEnabled) {
+    if (d3d_Device && d3d_ZBuffer && (d3d_UsedCard.info.wbuffer) && w != d3d_ZEnabled) {
         d3d_UsedCard.info.zmode = (w != 0) + 1;
 #line 699
         D3DCHECK(d3d_Device->lpVtbl->SetRenderState(d3d_Device, D3DRENDERSTATE_ZENABLE, d3d_UsedCard.info.zmode));
@@ -493,21 +493,21 @@ void d3d_Exit(void)
 #line 737
             D3DCHECK(dd_BackBuffer->lpVtbl->DeleteAttachedSurface(dd_BackBuffer, 0, d3d_ZBuffer));
         }
-        d3d_RefCount = d3d_ZBuffer->lpVtbl->Release(d3d_ZBuffer);
+        dd_Ref = d3d_ZBuffer->lpVtbl->Release(d3d_ZBuffer);
         d3d_ZBuffer = 0;
     }
     if (d3d_Viewport) {
 #line 742
         D3DCHECK(d3d_Device->lpVtbl->DeleteViewport(d3d_Device, d3d_Viewport));
-        d3d_RefCount = d3d_Viewport->lpVtbl->Release(d3d_Viewport);
+        dd_Ref = d3d_Viewport->lpVtbl->Release(d3d_Viewport);
         d3d_Viewport = 0;
     }
     if (d3d_Device) {
-        d3d_RefCount = d3d_Device->lpVtbl->Release(d3d_Device);
+        dd_Ref = d3d_Device->lpVtbl->Release(d3d_Device);
         d3d_Device = 0;
     }
     if (d3d_D3D) {
-        d3d_RefCount = d3d_D3D->lpVtbl->Release(d3d_D3D);
+        dd_Ref = d3d_D3D->lpVtbl->Release(d3d_D3D);
         d3d_D3D = 0;
     }
     d3d_ZEnabled = 0;
@@ -582,11 +582,11 @@ void d3d_LoadTexture(char *name, DDPIXELFORMAT *pf, LPDIRECTDRAWSURFACE4 *surf, 
     if (!d3d_Mipmaps)
         mips = 0;
     if (*surf) {
-        d3d_RefCount = (*surf)->lpVtbl->Release(*surf);
+        dd_Ref = (*surf)->lpVtbl->Release(*surf);
         *surf = 0;
     }
     if (*surftext) {
-        d3d_RefCount = (*surftext)->lpVtbl->Release(*surftext);
+        dd_Ref = (*surftext)->lpVtbl->Release(*surftext);
         *surftext = 0;
     }
     D3_ZERO(pal, sizeof(pal));
@@ -657,7 +657,7 @@ void d3d_LoadTexture(char *name, DDPIXELFORMAT *pf, LPDIRECTDRAWSURFACE4 *surf, 
         D3DCHECK(stretcht->lpVtbl->Lock(stretcht, 0, &dest, DDLOCK_WAIT | DDLOCK_NOSYSLOCK | DDLOCK_WRITEONLY, NULL));
         surf_ScaleBlit(&dest, &loadddsd);
         D3DCHECK(loadt->lpVtbl->Unlock(loadt, NULL));
-        d3d_RefCount = loadt->lpVtbl->Release(loadt);
+        dd_Ref = loadt->lpVtbl->Release(loadt);
         loadt = stretcht;
         D3_COPY3(&loadddsd, &dest, sizeof(loadddsd));
     }
@@ -697,7 +697,7 @@ void d3d_LoadTexture(char *name, DDPIXELFORMAT *pf, LPDIRECTDRAWSURFACE4 *surf, 
 #line 957
         D3DCHECK(dd_DD->lpVtbl->CreatePalette(dd_DD, DDPCAPS_8BIT | DDPCAPS_ALLOW256 | DDPCAPS_ALPHA, adw, &Palette, NULL));
         D3DCHECK(texture->lpVtbl->SetPalette(texture, Palette));
-        d3d_RefCount = Palette->lpVtbl->Release(Palette);
+        dd_Ref = Palette->lpVtbl->Release(Palette);
         Palette = 0;
     } else
         ddk.dwColorSpaceHighValue = ddk.dwColorSpaceLowValue = RGB_MAKE(pal[0], pal[1], pal[2]);
@@ -778,7 +778,7 @@ void d3d_LoadTexture(char *name, DDPIXELFORMAT *pf, LPDIRECTDRAWSURFACE4 *surf, 
                     D3DCHECK(texture->lpVtbl->Unlock(texture, NULL));
                 }
             }
-            d3d_RefCount = tempt->lpVtbl->Release(tempt);
+            dd_Ref = tempt->lpVtbl->Release(tempt);
             tempt = 0;
             if (i < levels - 1) {
                 ddscaps2.dwCaps = DDSCAPS_TEXTURE | DDSCAPS_MIPMAP;
@@ -789,7 +789,7 @@ void d3d_LoadTexture(char *name, DDPIXELFORMAT *pf, LPDIRECTDRAWSURFACE4 *surf, 
             }
         }
     }
-    d3d_RefCount = loadt->lpVtbl->Release(loadt);
+    dd_Ref = loadt->lpVtbl->Release(loadt);
 }
 /* 0x438180, gives a palettized surface and its mip levels the palette and the color key. */
 
@@ -823,7 +823,7 @@ void d3d_SetSurfacePalette(DDSURFACEDESC2 *desc, LPDIRECTDRAWSURFACE4 surf, DWOR
 #line 1106
             D3DCHECK(dd_DD->lpVtbl->CreatePalette(dd_DD, DDPCAPS_8BIT | DDPCAPS_ALLOW256 | DDPCAPS_ALPHA, adw, &Palette, NULL));
             D3DCHECK(surf->lpVtbl->SetPalette(surf, Palette));
-            d3d_RefCount = Palette->lpVtbl->Release(Palette);
+            dd_Ref = Palette->lpVtbl->Release(Palette);
         }
         while (surf) {
 #line 1116
@@ -856,11 +856,11 @@ void d3d_CreateTexture(DWORD size, DDPIXELFORMAT *pf, LPDIRECTDRAWSURFACE4 *surf
     int m;
 
     if (*surf) {
-        d3d_RefCount = (*surf)->lpVtbl->Release(*surf);
+        dd_Ref = (*surf)->lpVtbl->Release(*surf);
         *surf = 0;
     }
     if (*surftext) {
-        d3d_RefCount = (*surftext)->lpVtbl->Release(*surftext);
+        dd_Ref = (*surftext)->lpVtbl->Release(*surftext);
         *surftext = 0;
     }
     if (!d3d_Mipmaps)
@@ -951,7 +951,7 @@ void d3_SetBlendState(unsigned char balpha, unsigned char glow, unsigned char co
             }
 #line 1288
             D3DCHECK(d3d_Device->lpVtbl->SetRenderState(d3d_Device, D3DRENDERSTATE_ALPHABLENDENABLE, TRUE));
-            if (d3d_UsedCard.info.flags & 8) {
+            if (d3d_UsedCard.info.stippled) {
 #line 1290
                 D3DCHECK(d3d_Device->lpVtbl->SetRenderState(d3d_Device, D3DRENDERSTATE_STIPPLEDALPHA, TRUE));
             }
@@ -987,7 +987,7 @@ void d3_SetBlendState(unsigned char balpha, unsigned char glow, unsigned char co
         }
 #line 1315
         D3DCHECK(d3d_Device->lpVtbl->SetRenderState(d3d_Device, D3DRENDERSTATE_ALPHABLENDENABLE, FALSE));
-        if (d3d_UsedCard.info.flags & 8) {
+        if (d3d_UsedCard.info.stippled) {
 #line 1317
             D3DCHECK(d3d_Device->lpVtbl->SetRenderState(d3d_Device, D3DRENDERSTATE_STIPPLEDALPHA, FALSE));
         }

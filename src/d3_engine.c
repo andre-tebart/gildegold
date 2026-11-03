@@ -65,12 +65,10 @@
 #define d3_MirBeginFrameE ((void (*)(D3OBJECT *, D3OBJECT **))d3_MirBeginFrame)  /* 0x4554b0 (d3_mir.h: D3MIRROR *): this unit passes the mirror as its D3OBJECT ** view */
 #define d3_PointToRefD ((void (*)(D3OBJECT *, D3OBJECT *, D3VECTOR *, D3VECTOR4 *))d3_PointToRef)  /* 0x458b20 (unk_458810.h: XOBJ *, XOBJ *, float *, float *): this unit's D3OBJECT / vector view */
 #define d3_WorldMatrixD ((void (*)(D3OBJECT *, D3OBJECT *, int, void *))d3_WorldMatrix)  /* 0x458da0 (unk_458810.h: XOBJ *, XOBJ *, char, D3MATRIX *): this unit's D3OBJECT view of the object */
-/* The two list heads live inside their 0xfc2e00 / 0xfc2580 head sentinels (the original's +0x1fc /
-   +0x160 relationship). As separate COMMON pointers the linker would not keep them adjacent, so the
-   loader would link the first object into one address while the readers start from another. */
-#define d3_StockListHead (*(D3OPS **)((char *)d3_Unkfc2e00 + 0x1fc))  /* 0xfc2ffc */
-#define d3_AnimListHead (*(void **)((char *)d3_Unkfc2580 + 0x160))    /* 0xfc26e0 */
-#define d3_Unkfc26e4 (*(int *)((char *)d3_Unkfc2580 + 0x164))         /* 0xfc26e4 */
+/* The stock list head lives inside its 0xfc2e00 head sentinel (the original's +0x1fc relationship). As a
+   separate COMMON pointer the linker would not keep it adjacent, so the loader would link the first object
+   into one address while the readers start from another. */
+#define d3_StockListHead (*(D3BGF **)((char *)d3_Unkfc2e00 + 0x1fc))  /* 0xfc2ffc */
 extern D3INITCFG d3_Cfg;
 extern D3PARTSYS d3_ParEnd;
 void d3fl_FreeMap(struct D3FLMAP *map);     /* 0x43ff90, d3_fl.c (d3.h types d3_Terrain as void *) */
@@ -1251,18 +1249,18 @@ void d3_SetViewport(float w, float h, float x, float y, float zn, float zf, floa
 
 void d3_SetHardwareMode(int on)
 {
-    int old = d3_HardwareBits.on;
+    int old = d3_Hardware;
 
     if (d3_D3DActive && on) {
-        d3_HardwareBits.on = 1;
+        d3_Hardware = 1;
         if (d3_EngineReady)
             d3_ForEachObject2(d3_DefaultScene, 0, 0x40, d3s_FreeShadows);
         d3fl_Flush();
         if (d3_Sky)
             d3sky_Init(d3_Sky, 1);
     } else
-        d3_HardwareBits.on = 0;
-    if (old != d3_HardwareBits.on && d3_EngineReady) {
+        d3_Hardware = 0;
+    if (old != d3_Hardware && d3_EngineReady) {
         d3_UpdateAll(0);
         tex_ReloadAll(1, 0);
         d3_LightInvalidate(1);
@@ -1270,7 +1268,7 @@ void d3_SetHardwareMode(int on)
 }
 /* 0x43bc20, starts the engine: copies the configuration, sets the display mode (and Direct3D), allocates
    the sort buffers and the shadow object, sets the viewport and fills the noise table.
-   @deep Q2: d3io_NoopCallback has no evidence (d3_io_a.c 0x44ee40: the empty no-op triangle filler assigned to d3_TriFuncs[0..5], called with different signatures, recorded @deep there); the list heads / sentinels d3_StockListHead = &d3_StockListEnd, d3_AnimListHead = d3_AnimListEnd, d3_Unkfc4c40 = d3_Unkfc2e00, d3_Unkfe75a4 = d3_Unkfc2580 and the flags d3_Unkfc26e4 / d3_Unkfc4c3c / d3_Unkfc3000 / d3_Unkfe75a0 / d3_Unkfe7400 / d3_Unkfc5064 / d3_Unkfc5065 / d3_Unkfe7600 / d3_Unkfe75bc are only stored here (write-only, header comments state the list role but not a reader; the d3_io_t.h names d3_StockHead / d3_AnimHead / d3_AnimList are different struct views at the same addresses and cannot replace the D3OPS / void* view); d3s_Object = d3s_Object would need its extern moved to d3s.h, which flipped d3_CloneObject and d3_MirDrawObject when tried; dd_RBits / 1463580 / 1464fbd are dd_RBits / dd_GBits / dd_BBits (dd_vesa.c) but d3_d3d.h declares them char where dd_vesa.c defines unsigned char and d3_d3d.c 0x436xxx reads them (the byte-matched use needs the unsigned char view). Renamed this session: d3_Camera / d3_Scenes / d3_AnimPath / d3_ShadeInit / d3fl_Init / par_Init. Q4: the D3_ZERO_AT-style macro raw dereference. */
+   @deep Q2: d3io_NoopCallback has no evidence (d3_io_a.c 0x44ee40: the empty no-op triangle filler assigned to d3_TriFuncs[0..5], called with different signatures, recorded @deep there); the stock list's head sentinel d3_Unkfc2e00 (its next is d3_StockListHead; the sentinels' links are D3BGF / D3ANIMDATA fields) and the flags d3_Unkfc3000 / d3_Unkfe7400 / d3_Unkfc5064 / d3_Unkfc5065 / d3_Unkfe7600 / d3_Unkfe75bc are only stored here (write-only, no reader); d3s_Object = d3s_Object would need its extern moved to d3s.h, which flipped d3_CloneObject and d3_MirDrawObject when tried; dd_RBits / 1463580 / 1464fbd are dd_RBits / dd_GBits / dd_BBits (dd_vesa.c) but d3_d3d.h declares them char where dd_vesa.c defines unsigned char and d3_d3d.c 0x436xxx reads them (the byte-matched use needs the unsigned char view). Renamed this session: d3_Camera / d3_Scenes / d3io_StockDir / d3_ShadeInit / d3fl_Init / par_Init. Q4: the D3_ZERO_AT-style macro raw dereference. */
 
 char d3_Init(D3INITCFG *cfg, HWND wnd, int unk)
 {
@@ -1321,14 +1319,14 @@ char d3_Init(D3INITCFG *cfg, HWND wnd, int unk)
     d3_TopLast = &d3_TopHead;
     d3_Camera = 0;
     d3_StockListHead = &d3_StockListEnd;
-    d3_Unkfc4c3c = 0;
+    d3_StockListEnd.next = 0;
     d3_Unkfc3000 = 0;
-    d3_Unkfc4c40 = d3_Unkfc2e00;
-    d3_Unkfe75a0 = 0;
-    d3_Unkfc26e4 = 0;
-    d3_AnimListHead = d3_AnimListEnd;
-    d3_Unkfe75a4 = d3_Unkfc2580;
-    d3_AnimPath = 0;
+    d3_StockListEnd.prev = (D3BGF *)d3_Unkfc2e00;
+    d3anim_Tail.next = 0;
+    d3anim_Head.prev = 0;
+    d3anim_Head.next = &d3anim_Tail;
+    d3anim_Tail.prev = &d3anim_Head;
+    d3io_StockDir = 0;
     d3_ShadeInit(0x200, 1);
     d3_FrameCount = 0;
     d3_Unkfe7400 = 0;
@@ -1383,7 +1381,7 @@ char d3_Init(D3INITCFG *cfg, HWND wnd, int unk)
     return 1;
 }
 /* 0x43c240, frees all scenes and the engine: the shadow object, then every scene's object, emitter, terrain,
-   sky and event lists, then the two global lists (mesh drivers via d3_StockListHead / d3_AnimListHead), the
+   sky and event lists, then the two global lists (the mesh drivers from d3_StockListHead, the animations from d3anim_Head), the
    sort buffers, the mirror planes, the sky, the shadows, the textures and finally Direct3D. */
 
 void d3_Shutdown(void)
@@ -1439,8 +1437,8 @@ void d3_Shutdown(void)
         }
         while (d3_StockListHead != &d3_StockListEnd)
             d3_StockListHead->Release(d3_StockListHead);
-        while (d3_AnimListHead != d3_AnimListEnd)
-            d3anim_Release(d3_AnimListHead, 1);
+        while (d3anim_Head.next != &d3anim_Tail)
+            d3anim_Release(d3anim_Head.next, 1);
         if (d3_Mirror.obj && d3_Mirror.planes) {
             mem_Free(d3_Mirror.planes);
             d3_Mirror.planes = 0;
@@ -1456,7 +1454,7 @@ void d3_Shutdown(void)
         d3fl_Exit();
         tex_Exit();
         d3_ShadeReset();
-        d3_AnimPath = 0;
+        d3io_StockDir = 0;
         if (d3_D3DActive)
             d3d_Exit();
         dd_Exit();
@@ -2449,7 +2447,7 @@ void d3_Render(unsigned int mask, char flag)
             d3sky_Draw(d3_Sky);
         if (flag)
             d3_LightUpdate();
-        if ((d3d_ConfigBits & 0x40) == 0x40 && d3_MirrorObject && d3_Mirror.info && d3_Mirror.planes && (d3_Unkfb9928 & 1))
+        if (d3d_Config.mirrors == 1 && d3_MirrorObject && d3_Mirror.info && d3_Mirror.planes && (d3_Unkfb9928 & 1))
             d3_ForEachObject(d3_DefaultScene, 0, mask, (D3OBJECTCB)d3_MirDrawObject, &d3_Mirror.obj);
         if (d3_MinZ == 1e10f)
             d3_MinZ = 0.0f;
@@ -2609,9 +2607,9 @@ D3PARTSYS d3_ParEnd = {0};  /* 0xfb9280, particle system list end marker */
 /* d3_ParTail: view of d3_ParEnd (tools/data_views.py) */
 struct D3PARTSYS * d3_ParHead = 0;  /* 0xfb98f4, particle list head (D3PARTSYS * in d3_par.h) */
 /* d3_Unkfb9928: view of d3_Mirror (tools/data_views.py) */
-char * d3_AnimPath = {0}; /* 0xfba940 */
+struct VFSDIR *d3io_StockDir = {0}; /* 0xfba940, the stock object directory */
 float d3_ZFar = 0;  /* 0xfc2564 */
-char d3_Unkfc2580[0x168] = {0}; /* 0xfc2580, the animation list head sentinel (the next / prev fields at +0x160 / +0x164 are d3_AnimListHead / d3_Unkfc26e4, header macros) */
+D3ANIMDATA d3anim_Head = {0}; /* 0xfc2580, the head sentinel of the animation cache list (d3_anim.c): its next is the first animation */
 
 float d3_VOfs = 0;  /* 0xfc26ec */
 D3OBJECT d3_ObjEnd = {0};  /* 0xfc2700, list end marker */
@@ -2638,8 +2636,8 @@ int d3_Unkfc3000 = 0;  /* 0xfc3000 */
 float d3_FogStart = 0;  /* 0xfc300c */
 char d3_ClipInfo[64][0x68] = {0};  /* 0xfc3020 */
 float d3_FovX = 0;  /* 0xfc4a20 */
-/* d3_Unkfc4c3c: view of d3_StockHead (tools/data_views.py) */
-/* d3_FovY: view of d3_StockHead (tools/data_views.py) */
+D3BGF d3_StockListEnd = {0};  /* 0xfc4a40, the end sentinel of the stock object list (D3BGF, d3_io_t.h): d3io_LoadObjectFile links new ones in before it */
+float d3_FovY = 0;  /* 0xfc4c4c, half the vertical view angle (d3_FovX the horizontal one) */
 D3CVERT * d3_ClipList[2][0x80] = {0};  /* 0xfc4c60, polygon vertex lists (ping-pong) */
 int d3_ClipNone = 0;  /* 0xfc5060 */
 unsigned char d3_Unkfc5064 = 0;  /* 0xfc5064 */
@@ -2670,7 +2668,7 @@ float d3_ViewW = 0;  /* 0xfe73c8 */
 D3INITCFG d3_Cfg = {0};  /* 0xfe73e0 */
 /* d3_SortMax: view of d3_Cfg (tools/data_views.py) */
 /* d3_Unkfe7400: view of d3_Cfg (tools/data_views.py) */
-/* d3_Unkfe75a0: view of d3_AnimHead (tools/data_views.py) */
+D3ANIMDATA d3anim_Tail = {0}; /* 0xfe7440, the end sentinel of the animation cache list (d3_anim.c): new animations are linked in before it */
 int d3_DrawnVerts = 0;  /* 0xfe75b0, vertices drawn this frame (d3_DrawSorted resets it) */
 int d3_TextureSwitches = 0;  /* 0xfe75b4 */
 float d3_HalfH = 0;  /* 0xfe75b8 */

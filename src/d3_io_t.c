@@ -23,8 +23,6 @@
 #include "unk_4591a0.h"
 #include "vfs.h"
 #define d3anim_NextFrameIo ((int (*)(D3IOANIMFLAGS, int, int, int, int))d3anim_NextFrame)  /* 0x4324e0 (d3_anim.h: D3ANIMFLAGS f): @original this unit passes its field-wise D3IOANIMFLAGS (12 bytes), as the original TU did */
-extern D3IOANIMDATA d3_AnimHead;
-extern D3IOOBJ d3_StockHead;
 
 /* 0x44cd40, drops a reference to a mesh and frees it with its textures when the last one is gone */
 void d3iot_DeleteStockObject(D3BGF *m)
@@ -34,8 +32,8 @@ void d3iot_DeleteStockObject(D3BGF *m)
     int z = 0;
 
     if (--m->refs <= z) {
-        m->prev->next = m->next;
         m->next->prev = m->prev;
+        m->prev->next = m->next;
         max = -1;
         for (i = z; i < m->npolys; i++)
             if (m->polys[i].tex > max)
@@ -418,9 +416,9 @@ float d3iot_GetRadius(int unused, D3OBJINFO *info)
 }
 /* 0x44df40, loads an object file (name + ".bgf") and links it into the stock list */
 
-D3IOOBJ *d3io_LoadObjectFile(char *name, char *file)
+D3BGF *d3io_LoadObjectFile(char *name, char *file)
 {
-    D3IOOBJ *obj = 0;
+    D3BGF *obj = 0;
     char *p;
     void *data;
     int y, z;
@@ -437,35 +435,35 @@ D3IOOBJ *d3io_LoadObjectFile(char *name, char *file)
         if (data == 0)
             d3iot_LoadTexSet(name, (char **)&data, &y, &z);
         keep = data;
-        obj = (D3IOOBJ *)d3iot_LoadBGF(path, file, (char *)data, y, z);
+        obj = d3iot_LoadBGF(path, file, (char *)data, y, z);
         if (obj != 0) {
-            if (keep != 0 && obj->data != keep)
+            if (keep != 0 && obj->texnames != keep)
                 mem_Free(keep);
-            obj->fn1e8 = (void *)d3iot_DeleteStockObject;
-            obj->fn1ec = (void *)d3_TransformNormals;
-            obj->fn1f0 = (void *)d3_TransformVerts;
-            obj->fn1f4 = (void *)d3_GetBoxVerts;
-            obj->fn1f8 = (void *)d3iot_GetRadius;
+            obj->Release = d3iot_DeleteStockObject;
+            obj->TransformNormals = d3_TransformNormals;
+            obj->Transform = d3_TransformVerts;
+            obj->GetBox = d3_GetBoxVerts;
+            obj->GetRadius = d3iot_GetRadius;
         } else {
             if (keep != 0)
                 mem_Free(keep);
         }
         if (obj != 0) {
-            obj->next = d3_StockList;
-            d3_StockList = obj;
-            obj->prev = &d3_StockHead;
-            obj->next->prev = obj;
+            obj->prev = d3_StockListEnd.prev;
+            d3_StockListEnd.prev = obj;
+            obj->next = &d3_StockListEnd;
+            obj->prev->next = obj;
         }
     }
     return obj;
 }
 /* 0x44e080, loads an object file and its variants (the name pair for lod -1, 1, 2) */
 
-D3IOOBJ *d3io_LoadObject(char *a, char *b)
+D3BGF *d3io_LoadObject(char *a, char *b)
 {
     char x[256];
     char y[256];
-    D3IOOBJ *ret;
+    D3BGF *ret;
     int t;
     int i;
 
@@ -484,16 +482,16 @@ D3IOOBJ *d3io_LoadObject(char *a, char *b)
         }
         return ret;
     }
-    return (D3IOOBJ *)t;
+    return (D3BGF *)t;
 }
 /* 0x44e190, the same, counting a reference on every object loaded */
 
-D3IOOBJ *d3io_LoadObjectRef(char *a, char *b)
+D3BGF *d3io_LoadObjectRef(char *a, char *b)
 {
     char x[256];
     char y[256];
-    D3IOOBJ *ret;
-    D3IOOBJ *o;
+    D3BGF *ret;
+    D3BGF *o;
     int t;
     int i;
 
@@ -514,14 +512,14 @@ D3IOOBJ *d3io_LoadObjectRef(char *a, char *b)
         }
         return ret;
     }
-    return (D3IOOBJ *)t;
+    return (D3BGF *)t;
 }
 /* 0x44e2c0, frees a stock object that still has references */
 
-void d3io_ReleaseObject(D3IOOBJ *obj)
+void d3io_ReleaseObject(D3BGF *obj)
 {
     if (obj != 0 && obj->refs > 0)
-        d3iot_DeleteStockObject((D3BGF *)obj);
+        d3iot_DeleteStockObject(obj);
 }
 /* 0x44e2e0, loads the animation file (name + ".oam") of an object: keys of a path @deep Q2: D3IOOBJ.unk40 (the millisecond clock d3_Time at the load; nothing here reads it back, meaning unknown); the other names are derivable (vfs_Root for 0x6333fc, the frame stepper 0x4324e0, the anim release 0x433b10) but unk40 keeps Q2 failing, so no invented name */
 
@@ -577,32 +575,29 @@ D3IOPATH *d3_LoadObjectAnim(char *file, D3IOOBJ *obj, char reload)
     obj->unk40 = d3_Time;
     return p;
 }
-/* 0x44e4a0, loads an animation stream "animations/" + name and links it into the animation list */
+/* 0x44e4a0, loads an animation stream "animations/" + name and links it into the animation list, before its
+   end sentinel d3anim_Tail */
 
-D3IOANIMDATA *d3_LoadAnimStream(char *name, char *file, char unk)
+D3ANIMDATA *d3_LoadAnimStream(char *name, char *file, char unk)
 {
     char buf[256];
-    D3IOANIMDATA *a;
+    D3ANIMDATA *a;
 
     strcpy(buf, d3_AnimDir);
     strcat(buf, name);
-    a = (D3IOANIMDATA *)d3_FindAnim(file);
+    a = (D3ANIMDATA *)d3_FindAnim(file);
     if (a != 0) {
         sprintf(buf, "d3_LoadAnimStream(): animation already in stock: %s", name);
         return a;
     }
-    a = (D3IOANIMDATA *)d3_LoadBinaryAnimStream(buf, file, unk);
+    a = (D3ANIMDATA *)d3_LoadBinaryAnimStream(buf, file, unk);
     if (a != 0) {
-        a->next = d3_AnimList;
-        d3_AnimList = a;
-        a->prev = &d3_AnimHead;
-        a->next->prev = a;
+        a->prev = d3anim_Tail.prev;
+        d3anim_Tail.prev = a;
+        a->next = &d3anim_Tail;
+        a->prev->next = a;
     }
     return a;
 }
 
-D3IOOBJ d3_StockHead = {0}; /* 0xfc4a40, list sentinel */
-/* d3_StockList: view of d3_StockHead (tools/data_views.py) */
-D3IOANIMDATA d3_AnimHead = {0}; /* 0xfe7440 */
-/* d3_AnimList: view of d3_AnimHead (tools/data_views.py) */
 char d3_AnimDir[256] = { 97, 110, 105, 109, 97, 116, 105, 111, 110, 115, 47, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };  /* 0x5fbf80, "animations/" */

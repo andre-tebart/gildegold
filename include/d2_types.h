@@ -274,4 +274,12 @@ typedef struct D2OBJ {              /* 0x2ec bytes, d2_Objs has 0x2ff: pictures,
                                        (unk_4b39f0's mission type, unk_5d33b0's gypsy row) */
 } D2OBJ;
 
+#pragma pack(push, 1)
+typedef struct D2KEY {              /* a colour key (shp.c): the 3 compared bytes r, g, b, padded to a 4 byte stride */
+    unsigned char r;
+    unsigned short gb;              /* 0x01, g in the low byte, b in the high one: the shape grabbers read it as one word */
+    unsigned char pad;
+} D2KEY;
+#pragma pack(pop)
+
 #endif

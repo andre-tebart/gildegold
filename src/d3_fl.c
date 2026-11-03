@@ -1665,7 +1665,7 @@ D3FLMAP *d3fl_LoadMap(D3FLDESC *desc)
         map->height = mem_Alloc(n * n, "d3_fl:Height");
         D3FL_COPY(map->height, desc->height, map->size * map->size);
     } else {
-        vfs_DirPath(d3_AnimPath, vfs_Root, path);
+        vfs_DirPath(d3io_StockDir, vfs_Root, path);
         strcat(path, "boden/");
         strcpy(dir, path);
         strcat(path, desc->name);
