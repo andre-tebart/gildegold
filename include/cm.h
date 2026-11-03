@@ -976,7 +976,7 @@ int ai_Unk4e0010(int scene);  /* 0x4e0010 */
 
 int cm_ExecutionAftermath(G28REC *m);  /* 0x4e0040 */
 
-int cm_CreateSceneSky();  /* 0x4e32f0 */
+void cm_CreateSceneSky(char *tex);  /* 0x4e32f0 */
 int cm_StartSceneRain();  /* 0x4e33d0 */
 int cm_StopSceneRain();  /* 0x4e33f0 */
 int cm_DestroySceneSky();  /* 0x4e3390 */
@@ -1027,8 +1027,8 @@ int cm_StopGroupScripts();  /* 0x4e2dc0 */
 void cm_WaitGroupScripts(void);  /* 0x4e2e00 */
 void snd_EndSpecialTrack(void);  /* 0x4c2480 */
 extern int cm_SceneRain;  /* 0x6f0dbc */
-extern int ai_Unk6f0db4;  /* 0x6f0db4 */
-extern int ai_Unk6f0db8;  /* 0x6f0db8 */
+extern struct D3SKYLAYER *cm_SkyLayer;  /* 0x6f0db4, the layer of cm_CreateSceneSky's sky */
+extern struct D3SKY *cm_SceneSky;  /* 0x6f0db8, the scene's sky (cm_CreateSceneSky) */
 struct D3SKY; struct D3SKYLAYER; void d3sky_DeleteLayer(struct D3SKY *s, struct D3SKYLAYER *l);  /* 0x45d800 */
 void d3sky_Destroy();  /* 0x45daa0 */
 int ai_Unk4e37a0();  /* 0x4e37a0 */
@@ -1040,7 +1040,7 @@ struct D3SKY; struct D3SKY *d3sky_Create(float horizon, float fogstart, float fo
 /* d3sky_CreateLayer (0x45d880): declared in cm's head after d3.h (its D3TEXFLAGS parameter is passed by value) */
 void d3sky_SetLayerSpeed(struct D3SKY *s, struct D3SKYLAYER *l, float speed);  /* 0x45d960 */
 void d3sky_FadeLayer(struct D3SKY *s, struct D3SKYLAYER *l, unsigned char alpha, float time);  /* 0x45d9a0 */
-int cm_CreateSceneSky();  /* 0x4e32f0 */
+void cm_CreateSceneSky(char *tex);  /* 0x4e32f0 */
 int cm_RunSceneTicks();  /* 0x4e3570 */
 int cm_RunSceneTicksOrClick();  /* 0x4e3490 */
 extern char *ai_Unk6f0da0;  /* 0x6f0da0, the fade 0x4e3060 started */

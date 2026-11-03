@@ -101,8 +101,6 @@ extern GAPDATA full_data_92bcb8[];
 #include "am_types.h"
 #include "gv.h"
 #define d3sm_PickK ((int (*)())d3sm_Pick)  /* 0x45f2b0 (d3_sm.c): @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
-#define d3sky_CreateLayerK ((int (*)())d3sky_CreateLayer)  /* 0x45d880 (d3_sky.c): @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) (floats as bit patterns, the flags as an int) */
-#define d3sky_CreateK ((int (*)())d3sky_Create)  /* 0x45da30 (d3_sky.c): @original the calls pass the three floats as dword bit patterns without a prototype (cm_CreateSceneSky 0x4e32f0: push 0x44160000 ..) */
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, cm_FightLoop 0x4d88c0 move it as a word / movzx) */
 #define d3t_CamMoveI (*(int *)&d3t_CamMove)  /* 0x6310e8, d3t_CamMove (d3_tools.c: D3ANIM *) as the int this unit tests */
 #define d3t_CreateEarthK ((int (*)())d3t_CreateEarth)  /* 0x4168e0 (d3_tools.c): @original this unit's calls were compiled without a prototype (float arguments as double, an int result) */
@@ -14187,11 +14185,11 @@ void cm_RunExecution(G28REC *m)
     d3_SetLightSet(0, 0, 1.0f, 1);
     d3_SetFogSet(0, 0, 0);
     if (w == 1)
-        cm_CreateSceneSky(&sv_SkyHeavy[cm_Random(3)]);
+        cm_CreateSceneSky(sv_SkyHeavy[cm_Random(3)].name);
     else if (w == 2)
-        cm_CreateSceneSky(&sv_SkyMedium[cm_Random(3)]);
+        cm_CreateSceneSky(sv_SkyMedium[cm_Random(3)].name);
     else
-        cm_CreateSceneSky(&sv_SkyFair[cm_Random(4)]);
+        cm_CreateSceneSky(sv_SkyFair[cm_Random(4)].name);
     cm_PlaySpecialTrack("cd2\\ArmerDelinquent.mp3");
     if (w == 1)
         cm_StartSceneRain(0x1f4);
@@ -15473,20 +15471,21 @@ int cm_QueueVoice(int a, int b, int c, int d, int e)
         return 0;
     return snd_QueueVoice(a, b, c, d, e);
 }
-/* 0x4e32f0, sets up the scene's light / camera object 0x6f0db8 (0x45da30 -2.25, -0.2, 600.0) with the attachment 0x6f0db4 (0x45d880, 3.0, 0.8, -0.25;
-   the colour 0 and a the tint) and fades it in (0x45d960, 0x45d9a0 255, 10.0) */
+/* 0x4e32f0, unless replaying: the scene's sky cm_SceneSky (also d3_Sky; d3sky_Create horizon -2.25, fog start -0.2, scale 600)
+   with the one layer cm_SkyLayer of the texture tex (flags 0, scale 3.0, v scale 0.8, v offset -0.25, as the SVSKYREC records
+   give them), standing still and faded in to 255 over 10.0 */
 
-int cm_CreateSceneSky(int a)
+void cm_CreateSceneSky(char *tex)
 {
-    int v, id;
+    D3TEXFLAGS flags;
 
     if (cm_SkipEvents == 0) {
-        id = d3sky_CreateK(0xc0100000, 0xbe4ccccd, 0x44160000);
-        v = 0;
-        ai_Unk6f0db8 = (int)(d3_Sky = (D3SKY *)id);
-        ai_Unk6f0db4 = d3sky_CreateLayerK(id, 0, a, (((char *)&v)[2] = 0, v), 0x40400000, 0, 0x3f4ccccd, 0xbe800000);
-        d3sky_SetLayerSpeed(ai_Unk6f0db8, ai_Unk6f0db4, 0);
-        d3sky_FadeLayer(ai_Unk6f0db8, ai_Unk6f0db4, 0xff, 0x41200000);
+        d3_Sky = cm_SceneSky = d3sky_Create(-2.25f, -0.2f, 600.0f);
+        flags.all = 0;
+        flags.b[2] = 0;
+        cm_SkyLayer = d3sky_CreateLayer(cm_SceneSky, 0, tex, flags, 3.0f, 0, 0.8f, -0.25f);
+        d3sky_SetLayerSpeed(cm_SceneSky, cm_SkyLayer, 0);
+        d3sky_FadeLayer(cm_SceneSky, cm_SkyLayer, 0xff, 10.0f);
     }
 }
 /* 0x4e3390, releases the scene's sound / object slot 0x6f0db8 (0x45d800 first when 0x6f0db4 is set) */
@@ -15494,9 +15493,9 @@ int cm_CreateSceneSky(int a)
 int cm_DestroySceneSky(void)
 {
     if (cm_SkipEvents == 0) {
-        if (ai_Unk6f0db4 != 0)
-            d3sky_DeleteLayer(ai_Unk6f0db8, ai_Unk6f0db4);
-        d3sky_Destroy(ai_Unk6f0db8);
+        if (cm_SkyLayer != 0)
+            d3sky_DeleteLayer(cm_SceneSky, cm_SkyLayer);
+        d3sky_Destroy(cm_SceneSky);
         d3_Sky = 0;
     }
 }
@@ -16832,8 +16831,8 @@ unsigned char cm_DuelRightInsultWon = 0;  /* 0x6f0dab, the right duellist won th
 unsigned char cm_DuelLeftRollWon = 0;  /* 0x6f0dac, the left duellist won the roll round (cm_DuelRound): the right one's shot does less damage */
 unsigned char cm_DuelRightRollWon = 0;  /* 0x6f0dad, the right duellist won the roll round: the left one's shot does less damage */
 int ai_Unk6f0db0 = 0;  /* 0x6f0db0 */
-int ai_Unk6f0db4 = 0;  /* 0x6f0db4 */
-int ai_Unk6f0db8 = 0;  /* 0x6f0db8 */
+struct D3SKYLAYER *cm_SkyLayer = 0;  /* 0x6f0db4 */
+struct D3SKY *cm_SceneSky = 0;  /* 0x6f0db8 */
 int cm_SceneRain = 0;  /* 0x6f0dbc */
 int ai_Unk6f0dc0 = 0;  /* 0x6f0dc0 */
 char ai_Unk6f0dc4 = 0;  /* 0x6f0dc4 */
