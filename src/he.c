@@ -882,60 +882,71 @@ void he_FreeEvent(int *r)
         he_EventTop = he_EventTop < 0 ? 0 : he_EventTop;
     }
 }
-/* 0x53e300, the next record that matches the filter of 0x53e400 (type 0x625708, owner 0x62570c, player 0x625710, argument +0x10 0x625714) after the cursor 0x7585e0; 0 at the end */
+#define he_Cursor (*(AIJOB **)((char *)&he_QuickList + 0xaaa0))  /* 0x7585e0, the record he_NextEvent stands on, 0: the search ended */
 
+/* 0x53e300, the next event record after he_Cursor that passes he_FindEvent's filter (he_FindKind, he_FindId, he_FindChr,
+   he_FindFrom; a record whose first filters matched stays matched through the free records after it), up to the last
+   used record he_EventTop (an error when that is out of range); 0 at the end
+   @deep read whole against the original and rewritten on AIJOB with the typed filter globals: the
+   he_EventTop range check and its error, the cursor checks (0 / == last / > last), the he_FindFirst step,
+   the filters hoisted (kind byte 0xff, id -1, chr word 0xffff, from -1), the ok flag kept over the free
+   records, the step to last and the cursor clear all match instruction for instruction. Left is
+   allocation: ours keeps the cursor in eax (returned directly) and saves edi late (push edi before the chr
+   load), the original keeps it in esi, pushes esi at the entry and moves it to eax in the shared epilogue
+   (+0x3ee mov eax, esi), so eax / esi / edi / edx rename through the function and the last local's slot
+   moves [esp+8] -> [esp+0xc]; tried the cursor as a local with returns in place, the single exit, and
+   he_Cursor itself throughout: the same two allocations */
 char *he_NextEvent(void)
 {
-    int ok = 0;
-    char *last = 0;
-    char *cur;
+    char ok = 0;
+    AIJOB *last = 0;
 
-    if (U_I((unsigned)&he_EventTop) < 0 || U_I((unsigned)&he_EventTop) > 0x3ff)
+    if (he_EventTop < 0 || he_EventTop >= 0x400)
         err_Message("he_fn_Handlung(): invalid Handlungen_LAST");
     else
-        last = (char *)((unsigned)&he_Events + U_I((unsigned)&he_EventTop) * 0x14c);
-    if (U_I(((unsigned)&he_QuickList + 0xaaa0)) == 0 || (char *)U_I(((unsigned)&he_QuickList + 0xaaa0)) == last || last < (char *)U_I(((unsigned)&he_QuickList + 0xaaa0)))
+        last = &he_Jobs[he_EventTop];
+    if (he_Cursor == 0 || he_Cursor == last || he_Cursor > last)
         return 0;
-    if (he_FindFirst == 0)
-        U_I(((unsigned)&he_QuickList + 0xaaa0)) += 0x14c;
-    else
+    if (he_FindFirst != 0)
         he_FindFirst = 0;
-    do {
-        cur = (char *)U_I(((unsigned)&he_QuickList + 0xaaa0));
-        if (*cur == 0) {
-L_chk:
-            if (ok)
-                return (char *)U_I(((unsigned)&he_QuickList + 0xaaa0));
-        } else {
-            if (he_FindKind == 0xff) {
-L_a:
-                if (he_FindId != -1) {
-                    if (*(int *)(cur + 4) != he_FindId)
-                        goto L_no;
-                    ok = 1;
-                }
-                if (he_FindChr != 0xffff) {
-                    if (*(unsigned short *)(cur + 8) != he_FindChr)
-                        goto L_no;
-                    ok = 1;
-                }
-                if (he_FindFrom == -1)
-                    goto L_chk;
-                if (*(int *)(cur + 0x10) == he_FindFrom)
-                    return (char *)U_I(((unsigned)&he_QuickList + 0xaaa0));
-            } else if (*cur == (char)he_FindKind) {
+    else
+        he_Cursor++;
+    for (;;) {
+        if (he_Cursor->kind != 0) {
+            if (he_FindKind != 0xff) {
+                if ((unsigned char)he_Cursor->kind != he_FindKind)
+                    goto mismatch;
                 ok = 1;
-                goto L_a;
             }
-L_no:
-            ok = 0;
+            if (he_FindId != -1) {
+                if (he_Cursor->id != he_FindId)
+                    goto mismatch;
+                ok = 1;
+            }
+            if (he_FindChr != 0xffff) {
+                if (he_Cursor->chr != he_FindChr)
+                    goto mismatch;
+                ok = 1;
+            }
+            if (he_FindFrom != -1) {
+                if (he_Cursor->from == he_FindFrom)
+                    break;
+                goto mismatch;
+            }
         }
-        if (last <= (char *)U_I(((unsigned)&he_QuickList + 0xaaa0))) {
-            U_I(((unsigned)&he_QuickList + 0xaaa0)) = 0;
-            return 0;
+        if (ok)
+            break;
+        goto step;
+mismatch:
+        ok = 0;
+step:
+        if (he_Cursor >= last) {
+            he_Cursor = 0;
+            break;
         }
-        U_I(((unsigned)&he_QuickList + 0xaaa0)) += 0x14c;
-    } while (1);
+        he_Cursor++;
+    }
+    return (char *)he_Cursor;
 }
 /* 0x53e400, starts a search of the records: n pairs (kind, value): 0 type (byte), 1 owner (+4), 2 player (+8, word), 3 argument (+0x10); returns the first match (0x53e300 gives the next) */
 
