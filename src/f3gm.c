@@ -9090,24 +9090,24 @@ int gm_EquipmentValue(unsigned char *b, int level)
     } while (i < 0x40);
     return (int)(value * (level * 0.01f));
 }
-/* 0x509c80, the worth of the building b's owner: the value of the character's objects (0x509e60) for a person, plus (with flag) the prices of the building's first kind 0x2a object's goods (0x5089c0 for the player 0x6f1bc5) */
+/* 0x509c80, the worth of the building b's owner: the value of the owning character's goods (gm_GetGoodsValue) when it is a person (kind below 10), plus with flag the prices (gm_GoodsPrice for the own player) of the goods in the building's stall (its first object 0x2a) */
 
 int gm_OwnerWorth(char *b, int flag)
 {
+    ORDBLD *bld = (ORDBLD *)b;
     unsigned short id;
     int v;
-    char *l;
-    unsigned short *o;
+    ORDOBJ *stall, *o;
 
     v = 0;
-    id = *(unsigned short *)(b + 0x27);
-    if (id != 0xffff && (unsigned char)ai_Chars[id][2] < 10)
-        v = gm_GetGoodsValue(ai_Chars[id]);
-    if (flag != 0 && (l = gm_Query(*(void **)(b + 0x5d), 2, 6, 0, 0x2a)) != 0) {
-        o = (unsigned short *)gm_Query(*(void **)(l + 0x14), 1, 5);
-        while (o) {
-            v = (int)gm_GoodsPrice(*o, ai_OwnPlayer);
-            o = (unsigned short *)gm_QueryNext();
+    id = bld->owner;
+    if (id != 0xffff && ORD_CHARS[id].kind < 10)
+        v = gm_GetGoodsValue((char *)&ORD_CHARS[id]);
+    if (flag != 0 && (stall = (ORDOBJ *)gm_Query((void *)bld->objList, 2, 6, 0, 0x2a)) != 0) {
+        o = (ORDOBJ *)gm_Query((void *)stall->list, 1, 5);
+        while (o != 0) {
+            v += gm_GoodsPrice(o->type, ai_OwnPlayer);
+            o = (ORDOBJ *)gm_QueryNext();
         }
     }
     return v;
