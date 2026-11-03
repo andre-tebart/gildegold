@@ -282,8 +282,11 @@ typedef struct ORDBLD {
     char pad51[4];
     int v55;                        /* 0x55, of a kind 5 building an income per round (gm_BuildingBalance out[10]) */
     char pad59;
-    unsigned char flags5a;          /* 0x5a, bit 0: takes no new inhabitants (gm_FindHome) */
-    char pad5b;
+    union {
+        unsigned char flags5a;      /* 0x5a, bit 0: takes no new inhabitants (gm_FindHome) */
+        unsigned short flags5aw;    /* 0x5a, read as a word (ai.h AIBLD.flags5aw): 0x1000 adds 0.1 to the building's
+                                       staff factor (gm_StaffFactor) */
+    };
     char level;                     /* 0x5c, the building's level 0 .. 100 */
     int objList;                    /* 0x5d */
     struct D3OBJECT *object;        /* 0x61, its object in the scene */

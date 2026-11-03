@@ -13510,7 +13510,7 @@ void he_EndKind23Events(int ev)
     }
 }
 
-float gm_Unk50c980(int c, int n, int *ids);
+float gm_MeanLiking(int c, int n, int *ids);
 
 /* 0x568ae0, the allocation handler of a building event (a Ghidra miss; ROUGH): +0xb0 = the value at 0x91aaf0 [+0xac * 0x41 + 0x22] (+0xb4 as a float), the clocks +0x52 / +0x60 are the start clock (+0x44), 0x50c980 (player id, 8, +0x8c) - 0.5 times 0.25 is the float +0xc4,
    +0xc8 = 0; every player record whose +0x17c is this event is locked (0x524260 (object of +0xb8, id, 0, ev)); the first run is one unit ahead */
@@ -13524,7 +13524,7 @@ void he_Unk568ae0(int ev)
     *(HETIME *)(ev + 0x52) = *(HETIME *)(ev + 0x44);
     *(float *)(ev + 0xb4) = (float)v;
     *(HETIME *)(ev + 0x60) = *(HETIME *)(ev + 0x44);
-    d = gm_Unk50c980(*(unsigned short *)(ev + 8), 8, ev + 0x8c) - 0.5;
+    d = gm_MeanLiking(*(unsigned short *)(ev + 8), 8, ev + 0x8c) - 0.5;
     *(char *)(ev + 0xc8) = 0;
     *(float *)(ev + 0xc4) = (float)(d * 0.25);
     o = gm_FindBuildingById(*(int *)(ev + 0xb8));
@@ -13581,7 +13581,7 @@ void he_Unk568be0(int ev)
                     if (*(int *)(ev + 0x8c + i * 4) != -1 && *(int *)(b2[4] + 0x41) != 2)
                         cm_SendRelations(*(int *)(ebp + 4), *(int *)(ev + 0x8c + i * 4), 2 - *(int *)(b2[4] + 0x41), 0);
                 }
-                *(float *)(ev + 0xc4) = (float)((gm_Unk50c980(*(unsigned short *)ebp, 8, ev + 0x8c) - 0.5) * 0.25);
+                *(float *)(ev + 0xc4) = (float)((gm_MeanLiking(*(unsigned short *)ebp, 8, ev + 0x8c) - 0.5) * 0.25);
             }
             *(char *)(ev + 0xc8) = 0;
         }
@@ -13676,7 +13676,7 @@ void he_Unk5690c0(int r)
         if (*(int *)(rec + 0x17c) == r)
             sv_MoveToGroup(b, *(unsigned short *)rec, 0, r);
     }
-    *(float *)(r + 0xcc) = (gm_Unk50c980(*(unsigned short *)(r + 8), 8, r + 0x8c) - 0.5) * 0.25;
+    *(float *)(r + 0xcc) = (gm_MeanLiking(*(unsigned short *)(r + 8), 8, r + 0x8c) - 0.5) * 0.25;
     *(int *)(r + 0xd4) = 0x3f800000;
 }
 
@@ -13876,7 +13876,7 @@ fetch:
                 *(float *)(ev + 0xd4) = *(float *)(ev + 0xd4) * 0.9f;
         }
         sv_CountGroupMembers(ev);
-        *(float *)(ev + 0xcc) = (gm_Unk50c980(*(unsigned short *)(b + 0x27), 8, ev + 0x8c) - 0.5) * 0.25;
+        *(float *)(ev + 0xcc) = (gm_MeanLiking(*(unsigned short *)(b + 0x27), 8, ev + 0x8c) - 0.5) * 0.25;
         *(unsigned char *)(ev + 0xd0) = 0;
     }
     ck = ev + 0x60;

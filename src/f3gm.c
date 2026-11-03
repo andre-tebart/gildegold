@@ -10637,7 +10637,7 @@ float gm_Liking(unsigned a, unsigned b, int c)
 /* 0x50c980, the mean opinion (0x50c550 for the persons of the list ids[0 .. n - 1] about the character c) * 0.01; 0.5 without any */
 
 
-float gm_Unk50c980(int c, int n, int *ids)
+float gm_MeanLiking(int c, int n, int *ids)
 {
     int cnt, i, id;
     float s;
@@ -10801,49 +10801,56 @@ float gm_Unk50cd40(char *c, int k, int a, int b)
         return gm_JobWage(c, k, a, b) * 3.0f;
     return gm_JobWage(c, k, a, b) * 9.0f;
 }
-/* 0x50cdc0, the standing of the building b with the persons ids[0 .. n - 1]: the mean of their 0x4fc8e0 weights (+0.3 for those whose title matches the building's), added to the owner's factor. ROUGH */
+/* 0x50cdc0, the staff factor of the building b with the workers ids[0 .. n - 1]: the mean gm_HealthRatio of the
+   workers plus the mean of 0.3 for each whose title suits the building's type, times the sum of 1 + 1% of the
+   building's skill (gm_BuildingSkill kind 1), the owner's (or master's) skill 1 / 1008 for a player character,
+   0.1 for the flag 0x1000 of flags5aw, (the workers' mean liking of the owner - 0.5) / 4 and (workRate - 2) / 10 */
 
 float gm_StaffFactor(unsigned char *b, int n, int *ids)
 {
-    char *p, *c;
+    ORDBLD *bld = (ORDBLD *)b;
+    GMBTYPE *t;
+    ORDCHAR *c;
     int i, cnt, id;
-    float a, s, m, f, t;
+    float sum, health, fit, f, inv;
+    float skill, opinion;
 
-    p = ai_BTypes + *b * 0x24d;
+    t = GM_BTYPE(bld->type);
+    health = 0.0f;
     i = 0;
-    a = 0.0f;
     cnt = 0;
-    s = 0.0f;
-    m = 0.0f;
-    gm_BuildingSkill(b, 1, 1);
-    c = gm_FindCharacterByMaster((int)b);
+    sum = 0.0f;
+    fit = 0.0f;
+    skill = gm_BuildingSkill(b, 1, 1) * 0.01 + 1.0;
+    c = (ORDCHAR *)gm_FindCharacterByMaster((int)b);
     if (c == 0)
-        c = ai_Chars[*(unsigned short *)(b + 0x27)];
-    if (c[2] == 6 || c[2] == 7)
-        f = (unsigned char)c[0x81] * 0.000992063492063492;
+        c = &ORD_CHARS[bld->owner];
+    if (c->kind == 6 || c->kind == 7)
+        f = c->skills[1] * 0.000992063492063492;
     else
         f = 0.0f;
-    if (0 < n) {
+    f = f + skill;
+    if (n > 0) {
         do {
             id = ids[i];
-            if (id != -1 && (c = gm_FindChar(id)) != 0) {
-                s = (float)(gm_HealthRatio((short *)c) + s);
-                if (p[0x22f] == c[0x165])
-                    m = m + 0.3;
+            if (id != -1 && (c = (ORDCHAR *)gm_FindChar(id)) != 0) {
+                sum += gm_HealthRatio((short *)c);
+                if (t->title == c->title)
+                    fit = fit + 0.3;
                 cnt++;
             }
             i++;
         } while (i < n);
         if (cnt != 0) {
-            a = s * (1.0f / (float)cnt);
-            m = (1.0f / (float)cnt) * m;
+            inv = 1.0f / (float)cnt;
+            health = sum * inv;
+            fit = inv * fit;
         }
     }
-    t = gm_Unk50c980(*(unsigned short *)(b + 0x27), n, ids);
-    f = (float)(f + 0);
-    if ((b[0x5b] & 0x10) != 0)
-        f = f + 0.1;
-    return (m + a) * ((t - 0.5) * 0.25 + f + (*(int *)(b + 0x41) - 2) * 0.1);
+    opinion = (gm_MeanLiking(bld->owner, n, ids) - 0.5) * 0.25;
+    if ((bld->flags5aw & 0x1000) != 0)
+        f = f + 0.1f;
+    return (fit + health) * (opinion + f + (bld->workRate - 2) * 0.1);
 }
 /* 0x50cf60, the number of the kitchen / bath objects (0x27a, 0x27b, 0x292) the building b has: 1 + .. */
 
