@@ -351,7 +351,10 @@ typedef struct AICHAR {                 /* 0x21c bytes, ai_Chars[768] */
     int v1a0;                           /* 0x1a0, the money of sales from an object of kind 0x1dc / purchases into one of kind
                                            0x1db (cm.c 0x4c70b0) */
     int v1a4;                           /* 0x1a4, the same for sales from 0x1db / purchases into 0x1dc */
-    char pad1a8[9];
+    char pad1a8[4];
+    int v1ac;                           /* 0x1ac, a scene object of the fighter (cm.c 0x4d1xxx puts it at the body, shows it and
+                                           clears it; the fighter copy cm_AddFighter starts with 0) */
+    char pad1b0;
     unsigned char heldRounds;           /* 0x1b1, rounds the character is held: message 0x5b (cm.c 0x4ccb10) adds to it, each
                                            round adds 0xff (main.c); nonzero: the AI chooses no new action (ai.c
                                            0x47e360), the character takes no office (amt.c), the player's room click

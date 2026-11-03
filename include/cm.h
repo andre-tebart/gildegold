@@ -545,7 +545,9 @@ typedef struct AIWEAPON {               /* 0x5c bytes, the 10 weapon records at 
     char pad04;
     unsigned char dmgMin;               /* 0x05, the least damage (the bomb adds a random part below dmgMax - dmgMin) */
     unsigned char dmgMax;               /* 0x06, the most damage */
-    char pad07[0x51];
+    char pad07[2];
+    unsigned char speed;                /* 0x09, times 2/7 the fighter's CHARACTER.walkSpeed (cm_AddFighter) */
+    char pad0a[0x4e];
     int kind;                           /* 0x58, 1 / 2: used up with the item (cm_CharWeapon refuses an item with nothing left) */
 } AIWEAPON;
 extern char ai_Unk60c7c0[];  /* 0x60c7c0 */
@@ -681,9 +683,9 @@ extern int cm_AttackerOrderVoices;  /* 0x6f0d34 */
 extern int cm_DefenderOrderVoices;  /* 0x6f0d38 */
 
 void cm_ClearMarks();  /* 0x4d08c0 */
-char *ai_Unk4d0920(char *c, int a);  /* 0x4d0920 */
+char *cm_AddFighter(int id, char *dummy);  /* 0x4d0920 */
 int gm_CreateCharModel();  /* 0x4fbb80 */
-extern const double ai_Unk5eb9b8;  /* 0x5eb9b8 */
+extern const double cm_WeaponSpeedScale;  /* 0x5eb9b8 */
 
 void ai_Unk4d0a30();  /* 0x4d0a30 */
 char ai_Unk4d0a80(char *o);  /* 0x4d0a80 */

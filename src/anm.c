@@ -4,7 +4,7 @@
    End: the place helpers after anm_UpdateSheep (0x4bc2e0..) share "dummy_TUER" with the road code, so they are rd.c's.
    Names are ours.
    Open: the animal object is read through raw offsets although anm.c sees ch.h and d3.h now (the CHARACTER /
-   D3OBJECT views can replace them); CHARACTER.unk1a0 (a scale) and D3OBJECT.unk224 still need names.
+   D3OBJECT views can replace them); D3OBJECT.unk224 still needs a name.
    unit of rea 8cef7d5b (src/game/anm.c); boundaries in decl/text.dcl */
 #include <stdio.h>
 #include <string.h>

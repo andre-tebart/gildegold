@@ -87,7 +87,8 @@ typedef struct CHARACTER {         /* 0x244 bytes */
                                        AIOBJ (a cart); the save keeps its id (ls_ReadSceneRecords) */
     char body[0x40];                /* 0x130, the part of the name after the last but one '_' */
     char fullname[0x30];            /* 0x170 */
-    float unk1a0;
+    float walkSpeed;                /* 0x1a0, a factor of the walk animation's playSpeed (ch.c); 1.0 at creation, a
+                                       fighter's AIWEAPON.speed * 2/7 (cm_AddFighter) */
     float speedScale;               /* 0x1a4, walk animation speed scale 0.4 .. 1: a factor of
                                        CH_XSLOT(ch)->playSpeed, lowered by ch_GetNewPath the closer a blocking
                                        character is (0.5 minimum) and raised again by 0.01 per walk update */

@@ -1401,3 +1401,5 @@
 2026-11-03T13:58:17 0x004cec00 data ai_Unk4cec00 -> cm_CloseCharInfoWins by:main why:0x4cec00 closes the 32 windows of cm_CharInfoWins
 2026-11-03T13:58:17 0x0060cb60 data ai_Unk60cb60 -> cm_FightView by:main why:0x60cb60: a d2 view id (-1: none) that 0x4cefe0 closes with d2_CloseView; no code of the original stores another value (reasoned: a view of the fight screen that is never opened)
 2026-11-03T13:58:17 0x004cefe0 data ai_Unk4cefe0 -> cm_CloseFightView by:main why:0x4cefe0 closes the view cm_FightView (d2_CloseView) and sets it to -1
+2026-11-03T14:01:11 0x004d0920 data ai_Unk4d0920 -> cm_AddFighter by:main why:0x4d0920 copies the character with the netId id (gm_FindChar) into the first free cm_Fighters record and gives the copy a scene character at the dummy object (gm_CreateCharModel, named cmb_<netId>); the fight setup calls it for the 16 attackers (dummy_OFFENSE_ENTRY) and defenders (dummy_DEFENSE_ENTRY)
+2026-11-03T14:01:11 0x005eb9b8 data ai_Unk5eb9b8 -> cm_WeaponSpeedScale by:main why:0x5eb9b8 is the double 2/7 (0.2857142857142857) cm_AddFighter multiplies AIWEAPON.speed by for the fighter's CHARACTER.walkSpeed

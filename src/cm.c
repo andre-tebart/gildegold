@@ -8202,38 +8202,42 @@ void cm_ClearMarks()
     cm_CloseCharInfoWins();
     cm_CloseFightView();
 }
-/* 0x4d0920, a record of the 32 cm_Fighters[0x21c] for the character c: the first free one (+0 == 0xffff) gets a copy of
-   the template of 0x505df0 (0x87 ints), an object (4fbb80) with the name "%i" of its id and the speed from the
-   character's kind; the kind 2 gets the count 6, else 0xf. Rough draft. */
+/* 0x4d0920, the fight copy of the character with the netId id: the first free record of cm_Fighters (id 0xffff; 0 when
+   all 32 are taken) gets a copy of the AICHAR, without its object v1ac and scene character, and a new scene character
+   (gm_CreateCharModel at the dummy object, path type 4, flag 0x8000) with its hand object, the speed of its weapon
+   (AIWEAPON.speed * 2/7) and "cmb_<netId>" as its body's name; the weapon item's uses are reset to 6 (kind 2) or 15 */
 
-char *ai_Unk4d0920(char *c, int a)
+char *cm_AddFighter(int id, char *dummy)
 {
-    char *t, *r, *k, *w;
+    AICHAR *c;
+    AIWEAPON *w;
+    AIOBJ *item;
     int i;
 
-    t = gm_FindChar((int)c);
-    for (i = 0, r = cm_Fighters; *(unsigned short *)r != 0xffff; i++, r += 0x21c) {
-        if ((int)(r + 0x21c) >= ((unsigned)&cm_Fighters + 0x4380))
-            return 0;
+    c = (AICHAR *)gm_FindChar(id);
+    for (i = 0; i < 32; i++) {
+        if (cm_FightersT[i].id == 0xffff) {
+            memcpy(&cm_FightersT[i], c, sizeof(AICHAR));
+            cm_FightersT[i].v1ac = 0;
+            cm_FightersT[i].scene = 0;
+            gm_CreateCharModel(&cm_FightersT[i], d3_CurrentScene, 0, 0, 0, dummy);
+            cm_FightersT[i].scene->pathType = 4;
+            cm_FightersT[i].scene->flags.bytes.hi |= 0x80;
+            cm_UpdateHandObject((char *)&cm_FightersT[i]);
+            w = (AIWEAPON *)cm_CharWeapon((char *)c);
+            cm_FightersT[i].scene->walkSpeed = w->speed * cm_WeaponSpeedScale;
+            sprintf(cm_FightersT[i].scene->obj->name, "cmb_%i", cm_FightersT[i].netId);
+            item = (AIOBJ *)cm_CharWeaponItem((char *)c);
+            if (item != 0) {
+                if (w->kind == 2)
+                    item->usesLeft = 6;
+                else
+                    item->usesLeft = 0xf;
+            }
+            return (char *)&cm_FightersT[i];
+        }
     }
-    memcpy(r, t, 0x21c);
-    *(int *)(r + 0x1ac) = 0;
-    *(int *)(r + 0x184) = 0;
-    gm_CreateCharModel(r, d3_CurrentScene, 0, 0, 0, a);
-    *(char *)(*(char **)(r + 0x184) + 0x240) = 4;
-    *(char *)(*(char **)(r + 0x184) + 0x8d) |= 0x80;
-    cm_UpdateHandObject(r);
-    k = cm_CharWeapon(c);
-    *(float *)(*(char **)(r + 0x184) + 0x1a0) = (float)(unsigned char)k[9] * ai_Unk5eb9b8;
-    sprintf(*(char **)(*(char **)(r + 0x184) + 0x34), "%i", *(int *)(r + 4));
-    w = cm_CharWeaponItem(c);
-    if (w != 0) {
-        if (*(int *)(k + 0x58) == 2)
-            *(int *)(w + 0x20) = 6;
-        else
-            *(int *)(w + 0x20) = 0xf;
-    }
-    return r;
+    return 0;
 }
 /* 0x4d0a30, fills ai_SceneChars[] (32 pointers) with the records of cm_Fighters whose object belongs to the scene ai_Unk5fb5b0 */
 
@@ -8509,7 +8513,7 @@ void ai_Unk4d0fa0(char *rec)
     }
     for (i = 0; i < 16; i++) {
         if (*(int *)(rec + 0xc0 + i * 4) != -1) {
-            r = ai_Unk4d0920((char *)*(int *)(rec + 0xc0 + i * 4), (int)"dummy_OFFENSE_ENTRY");
+            r = cm_AddFighter(*(int *)(rec + 0xc0 + i * 4), "dummy_OFFENSE_ENTRY");
             *(int *)(r + 0x16c) = cm_FightAttacker;
             if (*(char **)(r + 0x184) != 0) {
                 o = *(char **)(*(char **)(r + 0x184) + 0x34);
@@ -8519,7 +8523,7 @@ void ai_Unk4d0fa0(char *rec)
     }
     for (i = 0; i < 16; i++) {
         if (*(int *)(rec + 0x80 + i * 4) != -1) {
-            r = ai_Unk4d0920((char *)*(int *)(rec + 0x80 + i * 4), (int)"dummy_DEFENSE_ENTRY");
+            r = cm_AddFighter(*(int *)(rec + 0x80 + i * 4), "dummy_DEFENSE_ENTRY");
             *(int *)(r + 0x16c) = ai_Unk6f0ce8;
             *(float *)(*(char **)(r + 0x184) + 0x1a0) = *(float *)(*(char **)(r + 0x184) + 0x1a0) * ai_Unk5eb8b8;
             if (*(char **)(r + 0x184) != 0) {
@@ -15416,7 +15420,7 @@ float ai_Unk5eb94c = 0.75f;  /* 0x5eb94c */
 float ai_Unk5eb988 = 5.0f;  /* 0x5eb988 */
 double ai_Unk5eb990 = 10.0;  /* 0x5eb990 */
 double ai_Unk5eb9b0 = 0.25;  /* 0x5eb9b0 */
-const double ai_Unk5eb9b8 = 0.2857142857142857;  /* 0x5eb9b8 */
+const double cm_WeaponSpeedScale = 0.2857142857142857;  /* 0x5eb9b8 */
 const char ai_AxisPair[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -128, 63, 0, 0, 0, 0, 0, 0, -128, 63, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };  /* 0x5ebb74 */
 const float ai_Unk5ebba4[] = { 0.0f, 0.0f, 0.0f, 0.0f };  /* 0x5ebba4, the origin (d3_Origin): read-only, the original keeps it in .rdata */
 double ai_Unk5ebbe8 = 25.0;  /* 0x5ebbe8 */
