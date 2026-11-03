@@ -8022,29 +8022,32 @@ int ai_Unk4d0380(char *rec, char *c, char *tgt, unsigned char a)
     ((char *)L)[0x1d] = ((char *)v)[0];
     cm_SendCutEntry(*(int *)(rec + 0x10), L);
 }
-/* 0x4d0460, an order kind 7 to the ground point of the character c (4d2170 checks the way): L[4] = the argument,
-   L[5] a float of the lookup; -1 when the point is not on the ground. Rough draft (0x45f170 / 0x4d2170 write through the
-   addresses of the parameters in the original). */
+/* 0x4d0460, orders the character c of the cutscene record rec (CMCUTINFO) to the best ground cell within 8 rings of
+   its own (cm_BestCellNear, formation type 4): its entry (cm_CutEntrySlot, b0c cleared there) is copied with state 7 and
+   that cell in stateArg / x, and sent as message 0x50 (cm_SendCutEntry). -1 when c's body is not on the ground or no
+   cell is found; else the original returns nothing (VC6 keeps x in c's dead parameter slot) */
 
-int ai_Unk4d0460(char *rec, char *c, int a)
+int cm_OrderToBestCell(char *rec, char *c)
 {
-    char *sc = *(char **)(ai_Unk5fb5b0 + 0xb0);
-    char *q;
-    int L[11];
+    D3SM *hmap = (D3SM *)d3_DefaultScene->hmap;
+    AICHAR *ch = (AICHAR *)c;
+    CMCUTENTRY *e;
+    CMCUTENTRY order;
     int x, z;
+    float y;
 
-    if ((char)d3_GetHeightAt(sc, *(char **)(*(char **)(c + 0x184) + 0x34) + 0x4c, &a, &x, &z) == 0)
+    if (d3_GetHeightAt(hmap, &ch->scene->obj->pos, &x, &z, &y) == 0)
         return -1;
-    if (ai_Unk4d2170(c, z, x, 8, &a, &z) == 0)
+    if (cm_BestCellNear(c, x, z, 8, &x, &z) == 0)
         return -1;
-    q = (char *)cm_CutEntrySlot(rec, c);
-    q[0xc] = 0;
-    memcpy(L, q, 0x2c);
-    L[0] = *(int *)(c + 4);
-    L[4] = a;
-    L[1] = 7;
-    L[5] = z;
-    cm_SendCutEntry(*(int *)(rec + 0x10), L);
+    e = (CMCUTENTRY *)cm_CutEntrySlot(rec, c);
+    e->b0c = 0;
+    memcpy(&order, e, sizeof(order));
+    order.charId = ch->netId;
+    order.stateArg = x;
+    order.state = 7;
+    order.x = z;
+    cm_SendCutEntry(((CMCUTINFO *)rec)->playerId, &order);
 }
 /* 0x4d0520, an order kind 8 for the character c */
 
@@ -8818,7 +8821,7 @@ float ai_Unk4d2010(char *c, int a, int b, float limit)
    cell types other than 0 / 0xd are rated with 0x4d2010 (limit r * radius * 2), the least value wins; returns 0 when no
    cell was rated. Rough draft. */
 
-int ai_Unk4d2170(char *c, int cx, int cy, int r, int *ox, int *oy)
+int cm_BestCellNear(char *c, int cx, int cy, int r, int *ox, int *oy)
 {
     char *sc = *(char **)(ai_Unk5fb5b0 + 0xb0);
     float best = 1000000000.0f;
@@ -9404,7 +9407,7 @@ void ai_Unk4d3120(char *rec, char *c)
         ai_Unk4d02d0(rec, c, o);
         return;
     case 4:
-        ((int (*)(char *, char *))ai_Unk4d0460)(rec, c);
+        cm_OrderToBestCell(rec, c);
         return;
     case 3:
         ai_Unk4d0520(rec, c);
@@ -10726,7 +10729,7 @@ void ai_Unk4d6ba0(char *f)
         if (*(int *)(cm_CutChar + 4) == cm_FightOwner) {
             if (!d3_GetHeightAt(h, *(char **)(*(char **)(c + 0x184) + 0x34) + 0x4c, &ai_Unkfa5f00, &ai_Unkfa5f04, &py))
                 return;
-            ai_Unk4d2170(c, ai_Unkfa5f00, ai_Unkfa5f04, 8, &ox, &oy);
+            cm_BestCellNear(c, ai_Unkfa5f00, ai_Unkfa5f04, 8, &ox, &oy);
             ai_Unk4c5bc0(*(char **)(*(char **)(c + 0x184) + 0x34), ox, oy, 0);
             *(int *)f = -1;
             *(int *)(f + 4) = 0;
@@ -11123,7 +11126,7 @@ void ai_Unk4d76a0(int *rec)
                                 if (d3_GetHeightAt(h, G21_POS(c), &q[2], &q[3], tmp) == 0 ||
                                     (x != 0 && d3_GetHeightAt(h, G21_POS(x), p + 5, p + 6, tmp) == 0))
                                     break;
-                                if (ai_Unk4d2170(c, p[5], p[6], 0, &ix, &iz) != 0) {
+                                if (cm_BestCellNear(c, p[5], p[6], 0, &ix, &iz) != 0) {
                                     res = G21_BC0(*(char **)(G21_CH(c) + 0x34), ix, iz, 0);
                                     p[2] = res;
                                 }
@@ -11135,7 +11138,7 @@ test1d:
                     }
                     if ((*(int *)k == 0x16e || *(int *)k == 0x172) && p[8] != 0 &&
                         d3_GetHeightAt(h, G21_POS(c), &ai_Unkfa5f00, &ai_Unkfa5f04, tmp) != 0) {
-                        if (ai_Unk4d2170(c, ai_Unkfa5f00, ai_Unkfa5f04, 0xc, &ix, &iz) != 0)
+                        if (cm_BestCellNear(c, ai_Unkfa5f00, ai_Unkfa5f04, 0xc, &ix, &iz) != 0)
                             p[2] = G21_BC0(*(char **)(G21_CH(c) + 0x34), ix, iz, 0);
                         m[0] = *(int *)(c + 4);
                         m[1] = 0;
@@ -11153,7 +11156,7 @@ attack:
                         m[1] = 0;
                         if (d3_GetHeightAt(h, G21_POS(c), &ai_Unkfa5f00, &ai_Unkfa5f04, tmp) == 0)
                             break;
-                        if (ai_Unk4d2170(c, ai_Unkfa5f00, ai_Unkfa5f04, 0xc, &ix, &iz) != 0)
+                        if (cm_BestCellNear(c, ai_Unkfa5f00, ai_Unkfa5f04, 0xc, &ix, &iz) != 0)
                             p[2] = G21_BC0(*(char **)(G21_CH(c) + 0x34), ix, iz, 0);
                         res = G21_C40(rec[4], m);
                     } else {
