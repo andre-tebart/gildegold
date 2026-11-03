@@ -9934,33 +9934,38 @@ int gm_ResearchClass(int k, int *out)
     int r;
 
     r = 1;
-    switch (ai_BTypes[k * 0x24d]) {
-    case 4:
-        *out = 7;
-        return 0;
-    case 7:
-        *out = 6;
-        return 0;
+    switch ((unsigned char)GM_BTYPE(k)->kind) {
     case 0xf:
         *out = 1;
-        return r;
-    case 0x10:
-        *out = 7;
         break;
     case 0x17:
         *out = 2;
-        return r;
+        break;
     case 0x18:
         *out = 3;
-        return r;
+        break;
     case 0x19:
         *out = 4;
-        return r;
+        break;
     case 0x1a:
         *out = 5;
-        return r;
+        break;
+    case 7:
+        *out = 6;
+        r = 0;
+        break;
+    case 4:
+        *out = 7;
+        r = 0;
+        break;
+    case 0x10:
+        *out = 7;
+        r = 0;
+        break;
+    default:
+        r = 0;
     }
-    return 0;
+    return r;
 }
 /* 0x50b170, the rank (1 = best) of the character c among the living persons by the score at +0x1ac (plus d) */
 
