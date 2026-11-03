@@ -166,9 +166,17 @@ extern int evt_Loaded;              /* 0x14602f0 */
 extern char evt_StrResult[0x100];   /* 0x1460300 */
 extern char evt_StrArgs[8][0x60];   /* 0x1460400 */
 extern char evt_Ops[30][5];         /* 0x1460700, [0] unused */
-extern EVTVAR *evt_Globals;         /* 0x14607a0 */
-extern int evt_NGlobals;            /* 0x14607a4 */
-extern unsigned int evt_MaxGlobals;         /* 0x14607a8 */
+/* 0x14607a0: the global variables, their count and the capacity are one object of the original (evt_Init
+   clears its 12 bytes with one memset); the names are its fields */
+typedef struct EVTGLOBALS {
+    EVTVAR *vars;                   /* 0x00 */
+    int n;                          /* 0x04 */
+    unsigned int max;               /* 0x08 */
+} EVTGLOBALS;
+extern EVTGLOBALS evt_G;            /* 0x14607a0 */
+#define evt_Globals evt_G.vars      /* 0x14607a0 */
+#define evt_NGlobals evt_G.n        /* 0x14607a4 */
+#define evt_MaxGlobals evt_G.max    /* 0x14607a8 */
 extern int evt_FloatResult;         /* 0x14607ac */
 extern EVTLOG *evt_Log;             /* 0x14607b0 */
 extern EVTSCRIPT *evt_Stack[32];    /* 0x145e1e0, evt_Cur of the callers of evt_Step */

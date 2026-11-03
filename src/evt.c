@@ -1742,7 +1742,7 @@ int evt_Init(void)
     strcpy(evt_Keywords[6], "#singlestep");
     strcpy(evt_Keywords[7], "#normalstep");
     strcpy(evt_Keywords[8], "#multistep");
-    memset(&evt_Globals, 0, 12);   /* evt_Globals, evt_NGlobals, evt_MaxGlobals: one struct? 3 stores late from xor eax,eax */
+    memset(&evt_G, 0, sizeof(evt_G));
     return 1;
 }
 /* 0x42b410 */
@@ -1892,9 +1892,7 @@ int evt_Loaded = 0;  /* 0x14602f0 */
 char evt_StrResult[0x100] = {0};  /* 0x1460300 */
 char evt_StrArgs[8][0x60] = {0};  /* 0x1460400 */
 char evt_Ops[30][5] = {0};  /* 0x1460700, [0] unused */
-EVTVAR * evt_Globals = 0;  /* 0x14607a0 */
-int evt_NGlobals = 0;  /* 0x14607a4 */
-unsigned int evt_MaxGlobals = 0;  /* 0x14607a8 */
+EVTGLOBALS evt_G = { 0 };  /* 0x14607a0, evt_Globals / evt_NGlobals / evt_MaxGlobals (evt.h) */
 int evt_FloatResult = 0;  /* 0x14607ac */
 EVTLOG * evt_Log = 0;  /* 0x14607b0 */
 char evt_Path[] = "x:\\engine\\gfx\\scripts\\";  /* 0x5f8330, the scripts directory */
