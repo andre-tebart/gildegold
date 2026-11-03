@@ -368,7 +368,7 @@ exe	0x00417e30	d3snd_PlayAt	d3_snd	byte	readable
 exe	0x00417ec0	d3sndw_Init	d3_snd	byte	draft		
 exe	0x00418030	d3sndw_Exit	d3_snd	byte	readable		
 exe	0x00418080	d3sndw_GetSound	d3_snd	byte	readable		
-exe	0x004183d0	d3sndw_Update	d3_snd	draft	draft	deep	
+exe	0x004183d0	d3sndw_Update	d3_snd	draft	readable	deep	
 exe	0x00418ce0	d3_InitKeyCodes	dd_vesa	byte	readable		
 exe	0x00418e90	d3d_Error	dd_vesa	byte	readable		
 exe	0x0041bdd0	dd_Restore	dd_vesa	byte	readable		
@@ -2518,16 +2518,16 @@ exe	0x004daf80	cm_CheckTrial	cm	byte	readable
 exe	0x004db700	cm_RunTrial	cm	draft	readable	deep	
 exe	0x004dd960	cm_TrialAskPlayer	cm	shape	readable		
 exe	0x004de340	ai_Unk4de340	cm	byte	draft		
-exe	0x004de4b0	ai_Unk4de4b0	cm	draft	draft		
-exe	0x004de530	ai_Unk4de530	cm	byte	draft		
-exe	0x004de5e0	ai_Unk4de5e0	cm	byte	draft		
-exe	0x004de610	ai_Unk4de610	cm	byte	draft		
-exe	0x004de640	ai_Unk4de640	cm	draft	draft		
-exe	0x004de900	ai_Unk4de900	cm	draft	draft		
-exe	0x004debe0	ai_Unk4debe0	cm	draft	draft		
-exe	0x004ded10	ai_Unk4ded10	cm	draft	draft		
-exe	0x004dfa20	ai_Unk4dfa20	cm	draft	draft		
-exe	0x004dfcb0	ai_Unk4dfcb0	cm	draft	draft		
+exe	0x004de4b0	cm_SinkDownAction	cm	shape	readable		
+exe	0x004de530	cm_DuelSinkDown	cm	byte	draft		
+exe	0x004de5e0	cm_DuelInitVariants	cm	byte	draft		
+exe	0x004de610	cm_DuelVariant	cm	byte	draft		
+exe	0x004de640	cm_DuelShotAction	cm	shape	readable		
+exe	0x004de900	cm_DuelRound	cm	shape	readable		
+exe	0x004debe0	cm_DuelOutcome	cm	shape	readable		
+exe	0x004ded10	cm_RunDuel	cm	draft	readable	deep	
+exe	0x004dfa20	cm_DuelAftermath	cm	byte	readable		
+exe	0x004dfcb0	cm_DuelAskPlayer	cm	byte	readable		
 exe	0x004dfdd0	ai_Unk4dfdd0	cm	draft	draft		
 exe	0x004dff80	ai_Unk4dff80	cm	byte	draft		
 exe	0x004dfff0	ai_Unk4dfff0	cm	byte	draft		
@@ -2549,12 +2549,12 @@ exe	0x004e26d0	ai_Unk4e26d0	cm	draft	draft
 exe	0x004e2860	ai_Unk4e2860	cm	byte	draft		
 exe	0x004e2910	ai_Unk4e2910	cm	byte	draft		
 exe	0x004e2bd0	cm_SetViewEnabled	cm	draft	readable		
-exe	0x004e2bf0	ai_Unk4e2bf0	cm	byte	draft		
+exe	0x004e2bf0	cm_StartScript	cm	byte	draft		
 exe	0x004e2c30	cm_StartEventArg	cm	byte	draft		
 exe	0x004e2c70	cm_WaitEvent	cm	byte	readable		
 exe	0x004e2cc0	ai_Unk4e2cc0	cm	byte	draft		
 exe	0x004e2d40	cm_WaitEventFull	cm	byte	readable		
-exe	0x004e2d90	ai_Unk4e2d90	cm	byte	draft		
+exe	0x004e2d90	cm_StopScript	cm	byte	readable		
 exe	0x004e2dc0	ai_Unk4e2dc0	cm	byte	draft		
 exe	0x004e2e00	ai_Unk4e2e00	cm	draft	draft		
 exe	0x004e2e60	cm_LoadEventScene	cm	shape	draft		
@@ -2562,7 +2562,7 @@ exe	0x004e3060	cm_FadeToBlack	cm	byte	draft
 exe	0x004e30c0	cm_LeaveEventScene	cm	draft	draft		shape+draft -> draft+draft at 7a3ed50: dcp's reference check (decompanion ef0c0b3) pairs reordered loads / stores of equal text crosswise and reads them as other targets; the effects are the same, the prover cannot show it yet [waits for: decompanion normalized-alignment / prover-coverage]
 exe	0x004e3210	ai_Unk4e3210	cm	byte	draft		
 exe	0x004e3230	ai_Unk4e3230	cm	byte	draft		
-exe	0x004e3250	ai_Unk4e3250	cm	byte	draft		
+exe	0x004e3250	cm_DeleteChar	cm	byte	readable		
 exe	0x004e3270	cm_LoadVoiceBank	cm	byte	draft		
 exe	0x004e3290	cm_UnloadVoiceBank	cm	byte	draft		
 exe	0x004e32b0	cm_PlayVoice	cm	byte	draft		
@@ -2576,8 +2576,8 @@ exe	0x004e3490	ai_Unk4e3490	cm	draft	draft
 exe	0x004e3570	cm_RunSceneTicks	cm	byte	draft		
 exe	0x004e3620	cm_PlaySpecialTrack	cm	byte	draft		
 exe	0x004e3640	cm_EndSpecialTrack	cm	byte	draft		
-exe	0x004e3650	cm_ApplySeason	cm	byte	draft		
-exe	0x004e36a0	ai_Unk4e36a0	cm	draft	draft		
+exe	0x004e3650	cm_ApplySeason	cm	byte	readable		
+exe	0x004e36a0	cm_ResetCutInfos	cm	draft	draft		
 exe	0x004e3750	ai_Unk4e3750	cm	draft	draft		
 exe	0x004e37a0	ai_Unk4e37a0	cm	byte	draft		
 exe	0x004e3800	ai_Unk4e3800	cm	byte	draft		
@@ -2594,7 +2594,7 @@ exe	0x004e4f40	ai_Unk4e4f40	cm	byte	draft
 exe	0x004e4f80	ai_RunPendingParties	cm	byte	draft		
 exe	0x004e5050	ai_Unk4e5050	cm	byte	draft		
 exe	0x004e50a0	cm_PartyById	cm	byte	draft		
-exe	0x004e50e0	ai_Unk4e50e0	cm	byte	draft		
+exe	0x004e50e0	cm_CutInfoById	cm	byte	draft		
 exe	0x004e5120	ai_Unk4e5120	cm	byte	draft		
 exe	0x004e5150	ai_Unk4e5150	cm	byte	draft		
 exe	0x004e5180	ai_Unk4e5180	cm	byte	draft		
@@ -2818,7 +2818,7 @@ exe	0x004f3640	gv_AddEvidence	gv	byte	readable
 exe	0x004f36b0	gv_FreeCrimeSlot	gv	byte	readable		
 exe	0x004f36e0	gv_FindCrime	gv	byte	readable		
 exe	0x004f3700	gv_SendCrimes	gv	draft	readable	deep	
-exe	0x004f3780	gv_EvidenceSlot	gv	byte	draft		
+exe	0x004f3780	gv_EvidenceSlot	gv	byte	readable		
 exe	0x004f37e0	gv_RetireCrime	gv	byte	readable		
 exe	0x004f3910	gv_HandOverCrimes	gv	byte	readable		
 exe	0x004f39b0	gv_CountOwnedGraves	gv	byte	draft		
@@ -3485,7 +3485,7 @@ exe	0x0053b830	main_Unk53b830	main	byte	draft
 exe	0x0053b840	main_CreateStartCouple	main	shape	readable	deep	
 exe	0x0053bb20	main_GameLoop	main	draft	draft	deep	
 exe	0x0053c9b0	main_Unk53c9b0	main	byte	draft		
-exe	0x0053cb40	main_PlayOutro	main	draft	readable	deep	
+exe	0x0053cb40	main_PlayOutro	main	byte	readable		
 exe	0x0053ccf0	WinMain	main	draft	draft	deep	
 exe	0x0053d430	he_Unk53d430	he	byte	draft		
 exe	0x0053d470	he_Unk53d470	he	byte	draft		
@@ -4005,8 +4005,8 @@ exe	0x00578370	ai_TutorialStop	unk_575860	byte	draft
 exe	0x00578440	ai_TutorialFreeRuns	unk_575860	byte	draft		
 exe	0x005784a0	ai_TutorialInitMainIntro	unk_575860	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	unk_575860	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	shape	readable		byte+readable -> shape+readable at 6407c687: cm_FighterAct typed: ch.h's CHACTION gets the pot / bomb members of its 0x178 union and cm.h the CMFIGHTACT prototype and the names of the fight's bomb actions (closer: typed records instead of raw offsets). Either header change alone flips this function's constant register choice (6 bytes at +0x5e0): a VC6 declaration-set tie-break, no evidence of the original's source [waits for: the unit's head (unk_575860 includes ch.h and cm.h whole); re-grade when its declarations settle]
-exe	0x00579570	ai_TutorialInitChapter3	unk_575860	draft	readable	deep	byte+readable -> draft+readable at aae86bd3: register allocation flips (ecx/edi swaps, one store scheduled apart) when stale declarations leave ch.h / cm.h (C.name.alias cleanup): the function reacts to the number of declarations in scope, not to one of them [waits for: the headers' final declaration set (consistent declarations of the units it includes)]
+exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	byte	readable		
+exe	0x00579570	ai_TutorialInitChapter3	unk_575860	shape	readable	deep	byte+readable -> draft+readable at aae86bd3: register allocation flips (ecx/edi swaps, one store scheduled apart) when stale declarations leave ch.h / cm.h (C.name.alias cleanup): the function reacts to the number of declarations in scope, not to one of them [waits for: the headers' final declaration set (consistent declarations of the units it includes)]
 exe	0x0057aa80	ai_TutorialInitChapter4	unk_575860	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	unk_575860	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	unk_575860	byte	readable		
@@ -4239,7 +4239,7 @@ exe	0x0059d5e0	ai_Unk59d5e0	unk_58bbd0	draft	draft
 exe	0x0059dc00	ai_Unk59dc00	unk_58bbd0	draft	draft		
 exe	0x0059df10	ai_Unk59df10	unk_58bbd0	draft	draft		
 exe	0x0059df80	ai_Unk59df80	unk_58bbd0	byte	draft		
-exe	0x0059e0a0	ai_SwitchRoom	unk_58bbd0	draft	draft		
+exe	0x0059e0a0	ai_SwitchRoom	unk_58bbd0	shape	draft		
 exe	0x0059e170	ai_Unk59e170	unk_58bbd0	draft	draft		
 exe	0x0059e210	ai_Unk59e210	unk_58bbd0	draft	draft		
 exe	0x0059e420	ai_Unk59e420	unk_58bbd0	draft	draft		
