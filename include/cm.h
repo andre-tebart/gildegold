@@ -872,7 +872,7 @@ extern int d2_TextDrawnH;  /* 0x6ed96c */
 void ai_Unk4d8b30();  /* 0x4d8b30 */
 void cm_DrawFightTime();  /* 0x4d8b50 */
 
-int ai_Unk4e3250();  /* 0x4e3250 */
+int cm_DeleteChar();  /* 0x4e3250 */
 void ai_Unk4d8c40();  /* 0x4d8c40 */
 
 int d2_RemoveWindowObjects();  /* 0x472d20 */
@@ -946,20 +946,20 @@ extern int ai_Unk60d370;  /* 0x60d370 */
 extern int ai_Unk6f0db0;  /* 0x6f0db0 */
 extern int ai_Unk92bcc0[];  /* 0x92bcc0 */
 void gm_Shuffled(unsigned char n, int *out);  /* 0x505ca0 */
-void ai_Unk4de5e0(int n);  /* 0x4de5e0 */
+void cm_DuelInitVariants(int n);  /* 0x4de5e0 */
 int cm_DuelVariant(int n);  /* 0x4de610 */
 void cm_DuelShotAction(struct CHACTION *a);  /* 0x4de640 */
 extern unsigned char cm_DuelLeftInsultWon;  /* 0x6f0daa */
 extern int cm_DuelRight;  /* 0x92bca0 */
 int amt_FindOffice();  /* 0x4e6030 */
 void cm_DuelOutcome(G28REC *m);  /* 0x4debe0 */
-int ai_Unk4e36a0();  /* 0x4e36a0 */
+int cm_ResetCutInfos();  /* 0x4e36a0 */
 char d3_SetFogSet(unsigned int a, unsigned int b, float t);  /* 0x44a170 */
-int ai_Unk4e2bf0();  /* 0x4e2bf0 */
+int cm_StartScript();  /* 0x4e2bf0 */
 int cm_PlayVoice();  /* 0x4e32b0 */
 int sb_IsPlaying();  /* 0x426f20 */
-int ai_Unk4e2d90();  /* 0x4e2d90 */
-void ai_Unk4ded10(char *m);  /* 0x4ded10 */
+int cm_StopScript();  /* 0x4e2d90 */
+void cm_RunDuel(G28REC *m);  /* 0x4ded10 */
 
 
 
@@ -998,7 +998,7 @@ void d2_CentreViewWindows(int view);  /* 0x475600 */
 void d2_SetObjMax();  /* 0x475f40 */
 void d2_FocusInput();  /* 0x478320 */
 int d2_GetObjValue();  /* 0x475980 */
-int ai_Unk4e2bf0();  /* 0x4e2bf0 */
+int cm_StartScript();  /* 0x4e2bf0 */
 int cm_QueueVoice();  /* 0x4e32d0 */
 int ai_Unk4e0f70(char *m);  /* 0x4e0f70 */
 int ai_Unk4e1220(char *m);  /* 0x4e1220 */
@@ -1042,7 +1042,7 @@ int ai_Unk4e32f0();  /* 0x4e32f0 */
 int cm_RunSceneTicks();  /* 0x4e3570 */
 int ai_Unk4e3490();  /* 0x4e3490 */
 extern char *ai_Unk6f0da0;  /* 0x6f0da0, the fade 0x4e3060 started */
-int ai_Unk4e36a0();  /* 0x4e36a0 */
+int cm_ResetCutInfos();  /* 0x4e36a0 */
 int tb_SetFunctionOff();  /* 0x42ea10 */
 int ai_Unk4e3fe0();  /* 0x4e3fe0 */
 int ai_Unk4e4020();  /* 0x4e4020 */

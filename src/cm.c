@@ -11675,7 +11675,7 @@ void ai_Unk4d8c40()
 
     for (i = 0; i < 16; i++) {
         if (ai_Unk92ca80[i] != 0)
-            ai_Unk4e3250(ai_Unk92ca80[i]);
+            cm_DeleteChar(ai_Unk92ca80[i]);
     }
 }
 
@@ -13474,7 +13474,7 @@ int cm_DuelSinkDown(char *c, int dmg)
 }
 /* 0x4de5e0, fills the 0x92bcc0 table (0x505ca0) for n entries */
 
-void ai_Unk4de5e0(int n)
+void cm_DuelInitVariants(int n)
 {
     gm_Shuffled(n, ai_Unk92bcc0);
     ai_Unk60d370 = n;
@@ -13676,149 +13676,272 @@ void cm_DuelOutcome(G28REC *m)
         }
     }
 }
-/* 0x4ded10, "cut_MainDuell": the duel of the characters m + 0x34 / m + 0x38 (m + 0x7c the scene; with 0x6f0d8c set only the result is
-   announced, 0x4debe0): the scene "cutscenes\\duell\\enter_DUELL.esc" with music, the two duellists (copies of the character records, put
-   at "dummy_DUELLANT_A_ENTRY" / "_B_ENTRY"), the pistols "ob_PISTOLE", then three rounds (0x4de900 for both sides: the intro texts, the
-   shot 0x4de640) until 0x6f0d94 (a fighter down), the result texts 0x111c .. 0x1123 and the damage dealt (0x6f0da8 / 0x6f0da9) taken off
-   the life with 0x4fca40, the doctor ("_DUELL_INTRO_C2_DOKTOR"), and the message to the other characters. ROUGH: control flow of
-   the shot rounds and the text numbers from the disassembly, argument orders of the scene helpers unchecked. */
+/* 0x4ded10, "cut_MainDuell": the duel of the characters m->members[0] / [1] (copies ca / cb; with cm_SkipEvents set only
+   the outcome, cm_DuelOutcome): the scene sc[m->variant], light, fog and music by the season, the scene
+   "cutscenes\\duell\\enter_DUELL.esc", the duellists put at "dummy_DUELLANT_A_ENTRY" / "_B_ENTRY" with pistols, the three
+   intro voices, the walk to the start and shot marks; a side whose player chose the cheat (round 1) walks to its
+   "dummy_DUELL_BETRUG" mark and its second shoots at the other (cm_DuelShotAction); then up to three rounds of cm_DuelRound
+   for both sides (the doctor's text when both won one) until a fighter is down (cm_DuelOver): the loser is the one with the
+   lower health (text 0x111d), else a draw (0x111c); for each side the damage text (0x111e .. 0x1121: the cheater's own
+   lines) and the damage taken off its health and v024; the loser loses an office he holds (texts 0x1123 + sex, the news
+   0x10c7 to every character of the kinds 6 / 7, when m's host is the player's character) or the draw text 0x1122; the
+   player's host sends the relations of both; then the scene is torn down
+   @deep reconstructed from the original's disassembly (all 873 instructions read: the block-scoped scene
+   name table, the cheat round (BETRUG marks, the seconds' shots), the rounds, the result / damage / office
+   texts, the teardown); instruction counts equal (873/873), the frame equal (0xa08). Left: two hunks of
+   allocation and scheduling only. 0x4df899: the original computes (w->sex != 0) + 0x10c8 in eax with cl as
+   the byte temp (mov cl,[edi+9]; xor eax,eax; test cl,cl; setne al), ours in ecx with al (mov al,[edi+9];
+   xor ecx,ecx; ...), the same pushes after a renaming. 0x4df935: before the host test the original
+   computes the ai_CharsT index first and reloads m from [esp+0xa1c] after add esp,4, ours loads m
+   ([esp+0xa20]) before the add (same compare, netId == m->host). The rest are regs hunks. The prover stops
+   at the scene name table's initializer (a 4-byte store across two cells). */
 
-void ai_Unk4ded10(char *m)
+void cm_RunDuel(G28REC *m)
 {
-    char sc[6][0x20] = {"duell.ed3", "duell.ed3", "duell.ed3", "duell.ed3", "duell.ed3", "duell.ed3"};
-    char ca[0x21c], cb[0x21c];
-    char buf[0x400];
-    char *a, *b, *w, *rec, *oa, *ob;
-    int i, k, n, r, snd1, snd2, scene, hita, hitb, obj;
-    int ids[2];
+    AICHAR *a, *b, *w;
+    AICHAR ca, cb;
+    AMTKIND kind;
+    AMTREC office;
+    CMCUTINFO *rec;
+    CHACTION *act;
+    char buf[200];
+    char text[0x400];
+    int i, n, r, v, snd1, snd2;
+    D3OBJECT *mark;
+    int scene;
+    int hita, hitb;
+    float fa;
 
-    r = (unsigned short)util_RandomU(100) - 5;
-    a = (char *)gm_FindChar(*(int *)(m + 0x34));
-    b = (char *)gm_FindChar(*(int *)(m + 0x38));
-    if (a == 0 || b == 0) {
-        err_Message("cut_MainDuell(): Could not create character");
-        return;
+    {
+        char sc[6][0x20] = {"duell.ed3", "duell.ed3", "duell.ed3", "duell.ed3", "duell.ed3", "duell.ed3"};
+        int k;
+
+        hita = 0;
+        hitb = 0;
+        r = util_RandomU(3) - 5;
+        w = 0;
+        a = (AICHAR *)gm_FindChar(m->members[0]);
+        b = (AICHAR *)gm_FindChar(m->members[1]);
+        if (a == 0 || b == 0)
+            return;
+        if (cm_SkipEvents != 0) {
+            cm_DuelOutcome(m);
+            return;
+        }
+        cm_ResetCutInfos(m);
+        v = (char)m->variant;
+        cm_LoadEventScene(sc[v]);
+        cm_DuelInitVariants(10);
+        cm_ApplySeason();
+        k = gm_ClockSeason(&ai_Time);
+        if (k == 3)
+            k = 0;
+        else if (k == 0 || k == 2)
+            k = 1;
+        else if (k == 1)
+            k = 2;
+        d3_SetLightSet(k, 0, 1.0f, 1);
+        d3_SetFogSet(0, 1, 0);
+        cm_InitDamagePops();
+        if (k == 0)
+            cm_PlaySpecialTrack("cd2\\satisfaktion.mp3");
+        else if (k == 1)
+            cm_PlaySpecialTrack("cd2\\DerSeuchenzug.mp3");
+        else
+            cm_PlaySpecialTrack("cd2\\AmKuehlenGrabe.mp3");
     }
-    if (cm_SkipEvents != 0) {
-        cm_DuelOutcome((G28REC *)m);
-        return;
-    }
-    ai_Unk4e36a0();
-    cm_LoadEventScene(sc[*(char *)(m + 0x7c)]);
-    ai_Unk4de5e0(10);
-    cm_ApplySeason();
-    k = gm_ClockSeason(&ai_Time);
-    if (k == 3)
-        k = 0;
-    else if (k == 0 || k == 2)
-        k = 1;
-    else if (k == 1)
-        k = 2;
-    d3_SetLightSet(k, 0, 0x3f800000, 1);
-    d3_SetFogSet(0, 1, 0);
-    cm_InitDamagePops();
-    if (k == 0)
-        cm_PlaySpecialTrack("cd2\\satisfaktion.mp3");
-    else if (k == 1)
-        cm_PlaySpecialTrack("cd2\\DerSeuchenzug.mp3");
-    else
-        cm_PlaySpecialTrack("cd2\\AmKuehlenGrabe.mp3");
-    snd1 = sb_LoadSampleBank("duell_sfx.sbf", 0);
+    snd1 = (int)sb_LoadSampleBank("duell_sfx.sbf", 0);
     snd2 = snd_LoadVoiceBank("duell.sbf", 0);
-    scene = ai_Unk4e2bf0("cutscenes\\duell\\enter_DUELL.esc");
-    memcpy(ca, a, 0x21c);
-    memcpy(cb, b, 0x21c);
-    cm_DuelLeft = (int)ca;
-    cm_DuelRight = (int)cb;
+    scene = cm_StartScript("cutscenes\\duell\\enter_DUELL.esc");
+    a = (AICHAR *)gm_FindChar(m->members[0]);
+    b = (AICHAR *)gm_FindChar(m->members[1]);
+    ca = *a;
+    cb = *b;
+    cm_DuelLeft = (int)&ca;
+    cm_DuelRight = (int)&cb;
     cm_DuelScore[0] = 0;
     cm_DuelScore[1] = 0;
-    gm_CreateCharModel(ca + 0x10, d3_CurrentScene, 0, 0, 0, "dummy_DUELLANT_A_ENTRY");
-    gm_CreateCharModel(cb + 0x10, d3_CurrentScene, 0, 0, 0, "dummy_DUELLANT_B_ENTRY");
-    oa = *(char **)(ca + 0x1b4 - 0x10 + 0x10);
-    ob = *(char **)(cb + 0x1b4 - 0x10 + 0x10);
-    if (oa == 0 || ob == 0) {
+    gm_CreateCharModel(&ca, d3_CurrentScene, 0, 0, 0, "dummy_DUELLANT_A_ENTRY");
+    gm_CreateCharModel(&cb, d3_CurrentScene, 0, 0, 0, "dummy_DUELLANT_B_ENTRY");
+    if (ca.scene == 0 || cb.scene == 0) {
         err_Message("cut_MainDuell(): Could not create character");
         return;
     }
-    ch_SetHandObject(oa, 2, "ob_PISTOLE");
-    ch_SetHandObject(ob, 2, "ob_PISTOLE");
-    *(unsigned char *)(oa + 0x240) = 4;
-    *(unsigned char *)(ob + 0x240) = 4;
+    ch_SetHandObject(ca.scene, 2, "ob_PISTOLE");
+    ca.scene->pathType = 4;
+    ch_SetHandObject(cb.scene, 2, "ob_PISTOLE");
+    cb.scene->pathType = 4;
     for (i = 0; i < 3; i++) {
         d2_SetForm(cm_TextBox, 0);
         io_PrintText("$C");
-        io_PrintText(*(char *)(m + 0x7c) * 3 + 0x10cb + i);
+        io_PrintText(v * 3 + 0x10cb + i);
         sprintf(buf, "_DUELL_INTRO_NEU_0%d", i);
-        n = cm_PlayVoice(-7, buf, 0, -1);
+        n = cm_PlayVoice(-7, 0, buf, -1);
         while (n != 0 && sb_IsPlaying(n) != 0)
             cm_WaitTicks(2);
     }
-    ch_WalkToObject(oa, d3_FindObject(0, 0x100, 0, "dummy_DUELL_START_A"));
-    ch_AddAction(oa, 0x35, d3_FindObject(0, 0x100, 0, "dummy_DUELL_SCHUSS_A"));
-    ch_WalkToObject(ob, d3_FindObject(0, 0x100, 0, "dummy_DUELL_START_B"));
-    ch_AddAction(ob, 0x35, d3_FindObject(0, 0x100, 0, "dummy_DUELL_SCHUSS_B"));
+    ch_WalkToObject(ca.scene, d3_FindObject(0, 0x100, 0, "dummy_DUELL_START_A"));
+    ch_AddAction(ca.scene, 0x35, d3_FindObject(0, 0x100, 0, "dummy_DUELL_SCHUSS_A"));
+    ch_WalkToObject(cb.scene, d3_FindObject(0, 0x100, 0, "dummy_DUELL_START_B"));
+    ch_AddAction(cb.scene, 0x35, d3_FindObject(0, 0x100, 0, "dummy_DUELL_SCHUSS_B"));
     d2_SetForm(cm_TextBox, 0);
     io_PrintText("$C");
     io_PrintText(0x10dd);
     cm_WaitTicks(4);
     io_PrintText("$C");
-    snd_PlayVoice(-7, "_DUELL_INTRO_BEGRUESSUNG_RUECKEN", 0, -1);
-    cm_RunSceneParty(scene, 0);
-    rec = (char *)cm_CutInfoById(*(int *)(ca + 0x10 - 0x10 + 0));
-    /* the seconds: with the first round of kind 1 each side gets a shot object (callback 0x4de640, "kampf/schiessen_pistole") */
-    hita = 0;
-    hitb = 0;
+    snd_PlayVoice(-7, 0, "_DUELL_INTRO_BEGRUESSUNG_RUECKEN", -1);
+    cm_RunSceneParty(m, 0);
+
+    /* a cheater (round 1) walks to his cheat mark, and his second shoots at the other */
+    rec = (CMCUTINFO *)cm_CutInfoById(ca.netId);
+    if (rec->duel.round == 1)
+        mark = d3_FindObject(0, 0x100, 0, "dummy_DUELL_BETRUG_A");
+    else
+        mark = d3_FindObject(0, 0x100, 0, "dummy_DUELL_SCHUSS_A");
+    ch_WalkToObject(ca.scene, mark);
+    ch_AddAction(ca.scene, 0x35, cb.scene->obj);
+    if (rec->duel.round == 1) {
+        n = cm_DuelVariant(6);
+        d2_SetForm(cm_TextBox, 0);
+        io_PrintText(n + 0x10df);
+        io_PrintText(cm_TextNewline);
+        snd_PlayVoice(r, snd2, "_DUELL_INTRO_C2_SEKUNDANTEN", n);
+        act = ch_AddActionCBK(ca.scene, cm_DuelShotAction, 6, 0x2e, 1);
+        act->shot.target = &cb;
+        act->shot.shooter = &ca;
+        strcpy(act->u.name, "kampf/schiessen_pistole");
+        hita = 1;
+    }
+    rec = (CMCUTINFO *)cm_CutInfoById(cb.netId);
+    if (rec->duel.round == 1)
+        mark = d3_FindObject(0, 0x100, 0, "dummy_DUELL_BETRUG_B");
+    else
+        mark = d3_FindObject(0, 0x100, 0, "dummy_DUELL_SCHUSS_B");
+    ch_WalkToObject(cb.scene, mark);
+    ch_AddAction(cb.scene, 0x35, ca.scene->obj);
+    if (rec->duel.round == 1) {
+        n = cm_DuelVariant(6);
+        d2_SetForm(cm_TextBox, 0);
+        io_PrintText(n + 0x10df);
+        snd_PlayVoice(r, snd2, "_DUELL_INTRO_C2_SEKUNDANTEN", n);
+        act = ch_AddActionCBK(cb.scene, cm_DuelShotAction, 6, 0x2e, 1);
+        act->shot.target = &ca;
+        act->shot.shooter = &cb;
+        strcpy(act->u.name, "kampf/schiessen_pistole");
+        hitb = 1;
+    }
+    cm_WaitTicks(6);
+
+    /* the rounds */
+    cm_DuelOver = 0;
     for (i = 0; i < 3 && cm_DuelOver == 0; i++) {
-        cm_RunSceneParty(scene, scene);
-        rec = (char *)cm_CutInfoById(*(int *)(m + 0x34));
-        cm_DuelScore[2] = 0;
+        cm_RunSceneParty(m, m);
+        rec = (CMCUTINFO *)cm_CutInfoById(cb.netId);
+        cm_DuelLeftInsultWon = 0;
         cm_DuelScore[3] = 0;
         cm_DuelScore[4] = 0;
         cm_DuelScore[5] = 0;
-        if (rec[0x94] == 2 || rec[0x94] == 3) {
-            cm_DuelRound(cb, ca, "B");
-            cm_DuelRound(ca, cb, "A");
+        if (rec->duel.round == 2 || rec->duel.round == 3) {
+            cm_DuelRound(&cb, &ca, "B");
+            cm_DuelRound(&ca, &cb, "A");
         } else {
-            cm_DuelRound(ca, cb, "A");
-            cm_DuelRound(cb, ca, "B");
+            cm_DuelRound(&ca, &cb, "A");
+            cm_DuelRound(&cb, &ca, "B");
         }
-        if ((cm_DuelScore[2] != 0 || cm_DuelScore[4] != 0) && (cm_DuelScore[3] != 0 || cm_DuelScore[5] != 0)) {
+        if ((cm_DuelLeftInsultWon != 0 || cm_DuelScore[4] != 0) && (cm_DuelScore[3] != 0 || cm_DuelScore[5] != 0)) {
             n = cm_Random(9);
             d2_SetForm(cm_TextBox, 0);
             io_PrintText(n + 0x1113);
-            snd_PlayVoice(-5, "_DUELL_INTRO_C2_DOKTOR", 0, n);
+            snd_PlayVoice(-5, 0, "_DUELL_INTRO_C2_DOKTOR", n);
             cm_WaitTicks(5);
         }
         d2_SetForm(cm_TextBox, 0);
         io_PrintText("$C");
     }
-    /* result: who is down (the lower life 0x4fc8e0), the texts 0x111c / 0x111d, the damage 0x6f0da8 / 0x6f0da9 off the life */
-    if (cm_DuelOver != 0)
-        w = gm_HealthRatio(cb) < gm_HealthRatio(ca) ? cb : ca;
+
+    /* the result: the one with the lower health is down */
+    if (cm_DuelOver != 0) {
+        fa = gm_HealthRatio((short *)&ca);
+        if ((float)gm_HealthRatio((short *)&cb) < fa)
+            w = &cb;
+        else
+            w = &ca;
+        d2_SetForm(cm_TextBox, 0);
+        io_PrintText("$C");
+        io_PrintText(0x111d, w->id, w->id);
+        cm_WaitTicks(5);
+    } else {
+        d2_SetForm(cm_TextBox, 0);
+        io_PrintText("$C");
+        io_PrintText(0x111c);
+    }
+    d2_SetForm(cm_TextBox, 0);
+    io_PrintText("$C");
+    if (hita == 0) {
+        if (cm_DuelScore[0] != 0) {
+            io_PrintText(0x111e, ca.id);
+            gm_AddHealth(ca.id, (int)(cm_DuelScore[0] * 5.0));
+            ca.v024 = (int)(ca.v024 + cm_DuelScore[0] * 5.0);
+        } else
+            io_PrintText(0x111f, ca.id, ca.id);
+    } else if (cm_DuelScore[0] != 0)
+        io_PrintText(0x1120, ca.id);
     else
-        w = 0;
-    if (w != 0 && w[0x166] != 0 && amt_FindOffice(w, buf, ids) != 0 && *(int *)(m + 0xc) == ai_CharInts[ai_PlayerId][0]) {
-        amt_SendOfficeMessage(ids[0], 0, 0, 4, 0xff);
-        for (i = 0; i < 768; i++) {
-            if (ai_Chars[i][2] == 6 || ai_Chars[i][2] == 7) {
-                txt_Format(buf, 0x10c7, *(unsigned short *)w, (w[9] != 0) + 0x10c8);
-                he_ShowNews(*(int *)(ai_Chars[i] + 4), -1, buf, 0, 0x5fe, &ch_EmptyName);
+        io_PrintText(0x1121, ca.id);
+    cm_WaitTicks(4);
+    d2_SetForm(cm_TextBox, 0);
+    io_PrintText("$C");
+    if (hitb == 0) {
+        if (cm_DuelScore[1] != 0) {
+            io_PrintText(0x111e, cb.id);
+            gm_AddHealth(cb.id, (int)(cm_DuelScore[1] * 5.0));
+            cb.v024 = (int)(cb.v024 + cm_DuelScore[1] * 5.0);
+        } else
+            io_PrintText(0x111f, cb.id, cb.id);
+    } else if (cm_DuelScore[1] != 0)
+        io_PrintText(0x1120, cb.id);
+    else
+        io_PrintText(0x1121, cb.id);
+    cm_WaitTicks(4);
+    d2_SetForm(cm_TextBox, 0);
+    io_PrintText("$C");
+
+    /* the loser's office */
+    if (w != 0) {
+        if (w->officeKind != 0) {
+            io_PrintText(w->sex + 0x1123, w->id);
+            snd_PlayVoice(-8, 0, "_DUELL_INTRO_D2", w->sex + 1);
+            if (amt_FindOffice((char *)w, &kind, &office) != 0 && m->host == ai_CharsT[ai_PlayerId].netId) {
+                amt_SendOfficeMessage(office.idx, 0, 0, 4, 0xff);
+                for (i = 0; i < 768; i++) {
+                    AICHAR *c = &ai_CharsT[i];
+
+                    if (c->kind == 6 || c->kind == 7) {
+                        txt_Format(text, 0x10c7, w->id, (w->sex != 0) + 0x10c8);
+                        he_ShowNews(c->netId, -1, text, 0, 0x5fe, &ch_EmptyName);
+                    }
+                }
             }
         }
+    } else {
+        io_PrintText(0x1122, ca.id, cb.id);
+        snd_PlayVoice(-8, 0, "_DUELL_INTRO_D2", 0);
     }
-    cm_RandomFloat();
-    if (*(int *)(m + 0xc) == ai_CharInts[ai_PlayerId][0]) {
-        cm_SendRelations(*(int *)(cb + 4), *(int *)(ca + 4), 0xf, 1);
-        cm_SendRelations(*(int *)(ca + 4), *(int *)(cb + 4), 0xf, 1);
+    cm_WaitTicks(5);
+    if (ai_CharsT[ai_PlayerId].netId == m->host) {
+        cm_SendRelations(ca.netId, cb.netId, 0xf, 1);
+        cm_SendRelations(cb.netId, ca.netId, 0xf, 1);
     }
     cm_FadeToBlack();
-    ai_Unk4e3250(oa);
-    ai_Unk4e3250(ob);
-    ai_Unk4e2d90(scene);
+    cm_DeleteChar(ca.scene);
+    ca.scene = 0;
+    cm_DeleteChar(cb.scene);
+    cb.scene = 0;
+    cm_StopScript(scene);
     cm_WaitEventFull(scene);
     cm_LeaveEventScene();
-    sb_UnloadSampleBank(snd1);
     sb_UnloadSampleBank(snd2);
+    sb_UnloadSampleBank(snd1);
     cm_ClearDamagePops();
     cm_EndSpecialTrack();
 }
@@ -14144,7 +14267,7 @@ int ai_Unk4e06d0(int *s)
     if (s[1] != -1)
         d2_CloseView(s[1]);
     if (s[0] != -1)
-        ai_Unk4e2d90(s[0]);
+        cm_StopScript(s[0]);
     s[0] = cm_StartEventArg("cutscenes\\hochzeit\\hochzeit-exit.esc", &ch_EmptyName);
     cm_WaitEvent(s[0]);
     s[0] = -1;
@@ -14308,7 +14431,7 @@ int ai_Unk4e0f70(char *m)
     snd = cm_LoadVoiceBank("GEBURT.sbf", 0);
     cm_PlaySpecialTrack("cd2\\Geburt.mp3");
     cm_LoadEventScene("Geburt.ed3");
-    sc = ai_Unk4e2bf0("cutscenes\\geburt\\enter_Geburt.esc");
+    sc = cm_StartScript("cutscenes\\geburt\\enter_Geburt.esc");
     if (ai_Unk4e3490(0x1964, 0, 0) == 0) {
         if (a[9] == 0)
             n = cm_Random(2) + (b[9] == 0 ? 0 : 2);
@@ -14343,7 +14466,7 @@ int ai_Unk4e0f70(char *m)
     cm_SendFieldDeltas();
     d2_CloseView(v);
     cm_FadeToBlack();
-    ai_Unk4e2d90(sc);
+    cm_StopScript(sc);
     cm_WaitEvent(sc);
     snd_ClearQueue();
     cm_UnloadVoiceBank(snd);
@@ -14454,7 +14577,7 @@ int ai_Unk4e1250(char *m)
         }
     }
     cm_FadeToBlack();
-    ai_Unk4e2d90(sc);
+    cm_StopScript(sc);
     cm_WaitEvent(sc);
     ai_Unk4e3390();
     cm_LeaveEventScene();
@@ -14518,7 +14641,7 @@ int ai_Unk4e1700(char *m)
         txt_Format(buf, 0x1ab1, *(unsigned short *)a);
     cm_MessageBox(buf, 0);
     cm_FadeToBlack();
-    ai_Unk4e2d90(sc);
+    cm_StopScript(sc);
     cm_WaitEvent(sc);
     ai_Unk4e3390();
     ai_Unk4e33f0();
@@ -14702,10 +14825,10 @@ void ai_Unk4e1a80(char *m)
     cm_WaitEvent(cm_StartEventArg("cutscenes\\auktion\\Auktion_Outro.esc", &ch_EmptyName));
     d2_CloseView(v);
     cm_FadeToBlack();
-    cm_WaitEvent(ai_Unk4e2d90(0));
+    cm_WaitEvent(cm_StopScript(0));
     for (i = 0; i < n; i++)
         if (ai_Unk4e3230(0, 0) != 0)
-            ai_Unk4e3250(0);
+            cm_DeleteChar(0);
     cm_LeaveEventScene();
     snd_ClearQueue();
     cm_UnloadVoiceBank(0);
@@ -14921,7 +15044,7 @@ int cm_SetViewEnabled(int a, int b)
 }
 /* 0x4e2bf0, loads the named thing (0x4287b0, then 0x4299a0) and returns its +0x100; 0 in the replay mode */
 
-int ai_Unk4e2bf0(char *name)
+int cm_StartScript(char *name)
 {
     char *p;
 
@@ -14994,7 +15117,7 @@ int cm_WaitEventFull(int a)
 }
 /* 0x4e2d90, 0x429e90 of what 0x4284a0 finds */
 
-int ai_Unk4e2d90(int a)
+int cm_StopScript(int a)
 {
     int r;
 
@@ -15171,7 +15294,7 @@ int ai_Unk4e3230(void)
 }
 /* 0x4e3250, the scene helpers 0x4e3250 .. 0x4e3640 pass their arguments on to the sound / object calls unless the replay mode (0x6f0d8c) is on */
 
-int ai_Unk4e3250(int a)
+int cm_DeleteChar(int a)
 {
     if (cm_SkipEvents != 0)
         return 1;
@@ -15349,7 +15472,7 @@ void cm_ApplySeason(void)
 /* 0x4e36a0, resets the 16 member slots of 0x92cae0 for the party m (+0x34 the ids, +0x30 the count, +8 the kind): used, nothing announced, the id
    (-1 without a party); for a kind 3 party the 16 sub entries (+0x98.., 0x2c bytes) of its used slots are cleared. ROUGH */
 
-int ai_Unk4e36a0(char *m)
+int cm_ResetCutInfos(char *m)
 {
     int j, i, q;
     char *s, *t;
@@ -15443,7 +15566,7 @@ void cm_RunSceneParty(char *m, int ctx)
     int (*cb)();
 
     saved = cut_GetRandSeed();
-    ai_Unk4e36a0(m);
+    cm_ResetCutInfos(m);
     if (ai_GameFlags & 4) {
         if (*(int *)(m + 0xc) == ai_CharInts[ai_PlayerId][0] && cm_SkipEvents == 0) {
             memset(msg, 0, sizeof(msg));
@@ -15660,7 +15783,7 @@ void ai_Unk4e4060(char *m)
         ((int (*)())d3io_NoopCallback)();
         ai_Unk4d8b30();
     } else if (cm_CurrentFight == 0)
-        ai_Unk4e36a0(m);
+        cm_ResetCutInfos(m);
     win_old = cm_TextBox;
     *(int *)(m + 0x2c) = d2_OpenForm(m[8] == 2 ? "cutscenes\\prozess_main" : (m[0x26] & 0x20) ? "cutscenes\\announcement_cinemascope" : "cutscenes\\announcement", 0, 0);
     cm_TextBox = *(int *)(m + 0x2c);
@@ -15682,9 +15805,9 @@ void ai_Unk4e4060(char *m)
         tb_CloseFunction(ai_Unk4e3210);
         for (i = 0; i < shown; i++)
             *(int *)(d2_ObjsC + ai_Unk92bee0[i] * 0x2ec + 0x38) = 0;
-        ai_Unk4e36a0(m);
+        cm_ResetCutInfos(m);
     } else
-        ai_Unk4e36a0(m);
+        cm_ResetCutInfos(m);
     if (*(int *)(m + 0xc) == ai_CharInts[ai_PlayerId][0]) {
         for (i = 0; i < 16; i++) {
             *(int *)(cm_CutInfos[i] + 4) = 0;
@@ -16246,7 +16369,7 @@ void ai_Unk4e5770(void)
     ai_Unk4e5730(1, (int)cm_RunCouncilSession, (int)cm_SessionAskPlayer, (int)cm_SessionAskAI, 0, 0);
     ai_Unk4e5730(2, (int)cm_RunTrial, (int)cm_TrialAskPlayer, (int)ai_Unk4de340, (int)cm_CheckTrial, 0);
     ai_Unk4e5730(3, (int)cm_RunFight, (int)cm_FightMember, 0, (int)ai_Unk4d60b0, 1);
-    ai_Unk4e5730(4, (int)ai_Unk4ded10, (int)ai_Unk4dfff0, (int)ai_Unk4dff80, (int)ai_Unk4dfa20, 0);
+    ai_Unk4e5730(4, (int)cm_RunDuel, (int)ai_Unk4dfff0, (int)ai_Unk4dff80, (int)ai_Unk4dfa20, 0);
     ai_Unk4e5730(5, (int)ai_Unk4e01e0, 0, 0, (int)ai_Unk4e0040, 0);
     ai_Unk4e5730(6, (int)ai_Unk4e0770, 0, 0, (int)ai_Unk4e0580, 0);
     ai_Unk4e5730(7, (int)ai_Unk4e0f70, 0, 0, (int)ai_Unk4e0e90, 0);
@@ -16254,7 +16377,7 @@ void ai_Unk4e5770(void)
     ai_Unk4e5730(9, (int)ai_Unk4e1700, 0, 0, 0, 0);
     ai_Unk4e5730(10, (int)ai_Unk4e1a80, (int)ai_Unk4e24c0, (int)ai_Unk4e26d0, (int)ai_Unk4e19a0, 1);
     ai_Unk4e5730(11, (int)ai_Unk4e2860, 0, 0, 0, 0);
-    ai_Unk4e36a0(0);
+    cm_ResetCutInfos(0);
 }
 /* 0x4e58e0, the debug dump of a person (log of the cutscenes): one line of tab separated fields (time, +4, id, the name of the kind (0x60eae0, 24 bytes each) ...) */
 
