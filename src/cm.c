@@ -7943,32 +7943,36 @@ int cm_OrderAttack(char *rec, char *c, char *tgt, int x, int z)
         order.held = 1;
     cm_SendCutEntry(((CMCUTINFO *)rec)->playerId, &order);
 }
-/* 0x4d0200, like 0x4cffd0, the order kind 3 with the ground point of tgt (record 4cdf00 copied; L[0] the character id,
-   L[4] / L[5] the arguments c / tgt as they are in the original). Rough draft. */
+/* 0x4d0200, orders the character c of the cutscene record rec (CMCUTINFO) to flee to the escape object tgt
+   ("sp_ESCAPE"): its entry (cm_CutEntrySlot, b0c cleared there) is copied with state 3 and the ground cell of tgt's
+   world position in stateArg / x, and sent as message 0x50 (cm_SendCutEntry). -1 when tgt, c or rec is missing or the
+   position has no cell; else the original returns nothing (VC6 keeps x, z, y in the dead parameters' slots) */
 
-int ai_Unk4d0200(char *rec, char *c, char *tgt)
+int cm_OrderEscape(char *rec, char *c, char *tgt)
 {
-    char *sc = *(char **)(ai_Unk5fb5b0 + 0xb0);
-    char *q;
-    float v[3];
-    int L[11];
-    int a, b, h;
+    D3SM *hmap = (D3SM *)d3_DefaultScene->hmap;
+    D3OBJECT *o = (D3OBJECT *)tgt;
+    CMCUTENTRY *e;
+    CMCUTENTRY order;
+    float v[4];                         /* d3_PointToWorld writes the point and the angle after it */
+    int x, z;
+    float y;
 
-    if (tgt == 0 || c == 0 || rec == 0)
+    if (o == 0 || c == 0 || rec == 0)
         return -1;
-    d3_PointToWorld(tgt, tgt + 0x4c, v);
-    if ((char)d3_GetHeightAt(sc, v, &a, &b, &h) == 0)
+    d3_PointToWorld(o, &o->pos, (D3VECTOR *)v);
+    if (d3_GetHeightAt(hmap, (D3VECTOR *)v, &x, &z, &y) == 0)
         return -1;
-    q = (char *)cm_CutEntrySlot(rec, c);
-    if (q == 0)
+    e = (CMCUTENTRY *)cm_CutEntrySlot(rec, c);
+    if (e == 0)
         return -1;
-    q[0xc] = 0;
-    memcpy(L, q, 0x2c);
-    L[4] = (int)tgt;
-    L[0] = *(int *)(c + 4);
-    L[1] = 3;
-    L[5] = (int)c;
-    cm_SendCutEntry(*(int *)(rec + 0x10), L);
+    e->b0c = 0;
+    memcpy(&order, e, sizeof(order));
+    order.charId = ((AICHAR *)c)->netId;
+    order.stateArg = x;
+    order.state = 3;
+    order.x = z;
+    cm_SendCutEntry(((CMCUTINFO *)rec)->playerId, &order);
 }
 /* 0x4d02d0, an order kind 4 for the character c with the name of the object tgt (strcpy to +0x10) and its ground
    point (x, z); returns 1, 0 when the point is not on the ground. Rough draft. */
@@ -8079,7 +8083,7 @@ char ai_Unk4d0570(char *rec, char *c)
                         ret = 1;
                 }
             } else if (strcmp(sel, "sp_ESCAPE") == 0) {
-                ai_Unk4d0200(rec, c, sel);
+                cm_OrderEscape(rec, c, sel);
                 ret = 1;
             } else if (strncmp(sel, "sp_CONQUER", 10) == 0) {
                 ai_Unk4d02d0(rec, c, (char *)ai_ClickedObject);
@@ -9385,7 +9389,7 @@ void ai_Unk4d3120(char *rec, char *c)
         o = ai_Unk4d2490(c);
         if (o == 0)
             return;
-        ai_Unk4d0200(rec, c, o);
+        cm_OrderEscape(rec, c, o);
         return;
     case 1:
         o = ai_Unk4d25a0(c);

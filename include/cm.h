@@ -662,7 +662,7 @@ char d3_GetHeightAt(struct D3SM *h, struct D3VECTOR *pos, int *px, int *pz, floa
 
 
 
-int ai_Unk4d0200(char *rec, char *c, char *tgt);  /* 0x4d0200 */
+int cm_OrderEscape(char *rec, char *c, char *tgt);  /* 0x4d0200 */
 
 int ai_Unk4d02d0(char *rec, char *c, char *tgt);  /* 0x4d02d0 */
 int ai_Unk4d0380(char *rec, char *c, char *tgt, unsigned char a);  /* 0x4d0380 */

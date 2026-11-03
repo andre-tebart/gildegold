@@ -1385,3 +1385,4 @@
 2026-11-03T13:46:32 0x0143e8a4 data ai_Unk143e8a4 -> txt_WeaponEmpty15e by:main why:the status text cm_OrderAttack (0x4cffd0) shows when a weapon of kind 0x15e/0x160 has no uses left (AIOBJ.usesLeft <= 0); reasoned name
 2026-11-03T13:46:32 0x0143e8a8 data ai_Unk143e8a8 -> txt_WeaponEmpty174 by:main why:the status text cm_OrderAttack (0x4cffd0) shows when a weapon of kind 0x174 has no uses left (AIOBJ.usesLeft <= 0); reasoned name
 2026-11-03T13:46:32 0x0143e8ac data ai_Unk143e8ac -> txt_WeaponEmpty176 by:main why:the status text cm_OrderAttack (0x4cffd0) shows when a weapon of kind 0x176 has no uses left (AIOBJ.usesLeft <= 0); reasoned name
+2026-11-03T13:48:50 0x004d0200 func ai_Unk4d0200 -> cm_OrderEscape by:main why:0x4d0200 is called for the "sp_ESCAPE" object (0x4d1xxx click handler, formation type 5 with the closest sp_ESCAPE 0x4d2490) and sends the character's CMCUTENTRY in state 3 with the ground cell of that object
