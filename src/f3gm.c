@@ -9503,26 +9503,25 @@ int gm_IsBankrupt(unsigned short *p, int n)
     he_ShowNews(c->netId, c->netId, msg, 1, 0x5ff, "_NACHRICHTEN_HS_69");
     return got <= share / 2;
 }
-/* 0x50a810, the first kind 6 / 7 / 1 / 2 character with a job whose master (+0x16c) is m */
+/* 0x50a810, the first character of the kinds 6 / 7 / 1 / 2 with a job (jobId) whose building (bld) is m; 0 when none
+   or m is 0 */
 
 
 char *gm_FindCharacterByMaster(int m)
 {
-    char *p;
+    char *found = 0;
     int i;
-    char k;
 
     if (m == 0)
-        return 0;
-    i = 0;
-    p = ai_Chars[0] + 2;
-    while (p[0x162] == 0 || *(int *)(p + 0x16a) != m || ((k = *p) != 6 && k != 7 && k != 1 && k != 2)) {
-        p += 0x21c;
-        i++;
-        if ((int)p > ((unsigned)((unsigned)ai_Chars + 0x65400) + 0x1))
-            return 0;
+        return found;
+    for (i = 0; i < 0x300; i++) {
+        if (ORD_CHARS[i].jobId != 0 && (int)ORD_CHARS[i].bld == m
+            && (ORD_CHARS[i].kind == 6 || ORD_CHARS[i].kind == 7 || ORD_CHARS[i].kind == 1 || ORD_CHARS[i].kind == 2)) {
+            found = ai_Chars[i];
+            break;
+        }
     }
-    return ai_Chars[i];
+    return found;
 }
 /* 0x50a880, sorts the n ids by their names (0x5143d0 gets the name of an id) */
 
