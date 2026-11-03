@@ -1728,7 +1728,7 @@ void cm_SendBoss(int a, int b)
 }
 /* 0x4c5580, message 0x3c */
 
-void ai_Unk4c5580(int a, int b, int c, int d)
+void cm_SendHandOverCrimes(int a, int b, int c, int d)
 {
     G17MSG m;
 
@@ -10552,7 +10552,7 @@ void cm_FightEndDialog(char *a)
    building 0x4d4050, bit 4: 0x11e6 / 0x11e7), the suffix of the kind (0x143e948 / 0x143e954 / 0x143e960) appended and
    handed to 0x4e48b0. 0 when a leader is missing or the leaders are the same, a cart has no goods (0x50aa00) or the
    target is gone. Rough draft.
-   @deep Read against the original in full: each branch ends with its own ai_Unk4e48b0(cb, ...) call (the
+   @deep Read against the original in full: each branch ends with its own cm_SendPartyNote(cb, ...) call (the
    original has 5 calls: &1 and &4 share the second call's tail at 0x4d6373, &2 keeps its own with its own
    return 1), now on our side too (calls equal, frame equal, ins 283 vs 282). Left: allocation - the
    original keeps i in a slot ([esp+0x10], 0x4d60fc / 0x4d6142..0x4d614d) and cb in esi + slot [esp+0x18],
@@ -10588,25 +10588,25 @@ int ai_Unk4d60b0(char *a)
     if (a[0x7c] & 1) {
         txt_Format(buf, 0x11e0, G20_US(cb));
         strcat(buf, ai_Unk143e948);
-        ai_Unk4e48b0(ca, a, buf, &ch_EmptyName);
+        cm_SendPartyNote(ca, a, buf, &ch_EmptyName);
         txt_Format(buf, 0x11e1, G20_US(ca));
         strcat(buf, ai_Unk143e948);
-        ai_Unk4e48b0(cb, a, buf, &ch_EmptyName);
+        cm_SendPartyNote(cb, a, buf, &ch_EmptyName);
     } else if (a[0x7c] & 2) {
         role = cm_FightRole((unsigned char *)gm_FindBuildingById(*(int *)(a + 0x10c))) + 0x1125;
         txt_Format(buf, 0x11e3, role, G20_US(cb), edi);
         strcat(buf, ai_Unk143e954);
-        ai_Unk4e48b0(ca, a, buf, &ch_EmptyName);
+        cm_SendPartyNote(ca, a, buf, &ch_EmptyName);
         txt_Format(buf, 0x11e4, G20_US(ca), role, edi);
         strcat(buf, ai_Unk143e954);
-        ai_Unk4e48b0(cb, a, buf, &ch_EmptyName);
+        cm_SendPartyNote(cb, a, buf, &ch_EmptyName);
     } else if (a[0x7c] & 4) {
         txt_Format(buf, 0x11e6, G20_US(cb));
         strcat(buf, ai_Unk143e960);
-        ai_Unk4e48b0(ca, a, buf, &ch_EmptyName);
+        cm_SendPartyNote(ca, a, buf, &ch_EmptyName);
         txt_Format(buf, 0x11e7, G20_US(ca));
         strcat(buf, ai_Unk143e960);
-        ai_Unk4e48b0(cb, a, buf, &ch_EmptyName);
+        cm_SendPartyNote(cb, a, buf, &ch_EmptyName);
     }
     return 1;
 }
@@ -12404,71 +12404,173 @@ void cm_SessionAskAI(CMCUTINFO *r, CMSESSIONREQ *m)
     r->session.answer = res;
     sprintf(r->text, ch_EmptyName);
 }
-/* 0x4daf80, a trial / session request p (+0x34 .. +0x44 five character ids, +0x48 a sixth one when the byte +0x30 is >= 6): every character must
-   exist, not be of kind 0xf, be alive (+8) and, when +0x1b1 is set, not be among the characters of the list 0x53e400 / 0x53e300 with the same
-   +0xac as its +4 (code 6; 7 while the list is scanned). A bad slot i gives the error code i + 1 (slots 3 and 4 both 4, the sixth 5), the
-   error texts 0x11d8 .. 0x11df are shown through 0x53dda0 (-1, text, 0x5f5); with no error the messages 0x11d0 .. 0x11d7 go to the
-   participants of kind 6 / 7 (0x5176d0 formats, 0x4e48b0 sends). ROUGH, the notification part is only sketched */
+/* 0x4daf80, the check function of the trial (scene kind 2, run function 0x4db700) for its party p: the six participants
+   (members[0 .. 4], members[5] only with six or more) must exist, not be of kind 0xf and be alive, and one held (heldRounds)
+   must not have an event 0x3d of its own (else code 6, else 7). The first failing slot gives the code: slot i the code
+   i + 1, slot 4 the code 4 as slot 3 does, slot 5 the code 5; slot 1 tests the held state of participant 0, as the
+   original does. All available: the participants of kind 6 / 7 get their invitation (texts 0x11d0 .. 0x11d5 with
+   0x11d7, cm_SendPartyNote), 1. Else every participant of kind 6 / 7 but the held one is told why (texts 0x11d8 ..
+   0x11df, he_ShowNews), the crimes go back to open (cm_SendHandOverCrimes), 0 */
 
-void ai_Unk4daf80(char *p)
+int cm_CheckTrial(G28REC *p)
 {
-    char text[0x200];
-    char *ch[6];
-    int ids[6], code, i, k;
-    char *c, *n;
+    char intro[0x40];
+    char msg[0x200];
+    AICHAR *c0, *c1, *c2, *c3, *c4, *c5, *held;
+    AIJOB *ev;
+    int code;
 
+    held = 0;
     code = 0;
-    ch[0] = 0;
-    ids[0] = *(int *)(p + 0x34);
-    ids[1] = *(int *)(p + 0x38);
-    ids[2] = *(int *)(p + 0x3c);
-    ids[3] = *(int *)(p + 0x40);
-    ids[4] = *(int *)(p + 0x44);
-    ids[5] = *(int *)(p + 0x48);
-    for (i = 0; i < 6; i++) {
-        c = (char *)gm_FindChar(ids[i]);
-        ch[i] = c;
-        if (code != 0)
-            continue;
-        if (i == 5 && *(unsigned char *)(p + 0x30) < 6)
-            continue;
-        if (c == 0 || c[2] == 0xf || c[8] == 0) {
-            code = (i == 5) ? 5 : (i == 4) ? 4 : i + 1;
-            continue;
-        }
-        if (*(unsigned char *)(c + 0x1b1) != 0) {
+    c0 = (AICHAR *)gm_FindChar(p->members[0]);
+    if (c0 == 0 || c0->kind == 0xf || c0->health == 0)
+        code = 1;
+    else if (c0->heldRounds != 0) {
+        held = c0;
+        code = 7;
+        for (ev = (AIJOB *)he_FindEvent(1, 0, 0x3d); ev != 0; ev = (AIJOB *)he_NextEvent())
+            if (ev->ownerCh == c0->netId) {
+                code = 6;
+                break;
+            }
+    }
+    c1 = (AICHAR *)gm_FindChar(p->members[1]);
+    if (code == 0) {
+        if (c1 == 0 || c1->kind == 0xf || c1->health == 0)
+            code = 2;
+        else if (c0->heldRounds != 0) {
+            held = c0;
             code = 7;
-            for (n = (char *)he_FindEvent(1, 0, 0x3d); n != 0; n = (char *)he_NextEvent()) {
-                if (*(int *)(n + 0xac) == *(int *)(c + 4)) {
+            for (ev = (AIJOB *)he_FindEvent(1, 0, 0x3d); ev != 0; ev = (AIJOB *)he_NextEvent())
+                if (ev->ownerCh == c0->netId) {
                     code = 6;
                     break;
                 }
-            }
         }
     }
-    if (code != 0) {
-        switch (code) {
-        case 1: txt_Format(text, 0x11d8); break;
-        case 2: txt_Format(text, 0x11d9); break;
-        case 3: txt_Format(text, 0x11da); break;
-        case 4: txt_Format(text, 0x11db); break;
-        case 5: txt_Format(text, 0x11dc); break;
-        case 6: txt_Format(text, 0x11de); break;
-        case 7: txt_Format(text, 0x11df); break;
-        }
-        ((int (*)(int, int, int))he_ShowNews)(-1, text, 0x5f5);
-        return;
-    }
-    for (i = 0; i < 6; i++) {
-        k = (unsigned char)ch[i][2];
-        if (k == 6 || k == 7) {
-            txt_Format(text, 0x11d0 + i, *(unsigned short *)ch[i]);
-            strcat(text, &ch_EmptyName);
-            ai_Unk4e48b0(ch[i], 0, text);
+    c2 = (AICHAR *)gm_FindChar(p->members[2]);
+    if (code == 0) {
+        if (c2 == 0 || c2->kind == 0xf || c2->health == 0)
+            code = 3;
+        else if (c2->heldRounds != 0) {
+            held = c2;
+            code = 7;
+            for (ev = (AIJOB *)he_FindEvent(1, 0, 0x3d); ev != 0; ev = (AIJOB *)he_NextEvent())
+                if (ev->ownerCh == c2->netId) {
+                    code = 6;
+                    break;
+                }
         }
     }
-    ((int (*)(int, int, int))he_ShowNews)(-1, text, 0x5f5);
-    G22_4C5580();
+    c3 = (AICHAR *)gm_FindChar(p->members[3]);
+    if (code == 0) {
+        if (c3 == 0 || c3->kind == 0xf || c3->health == 0)
+            code = 4;
+        else if (c3->heldRounds != 0) {
+            held = c3;
+            code = 7;
+            for (ev = (AIJOB *)he_FindEvent(1, 0, 0x3d); ev != 0; ev = (AIJOB *)he_NextEvent())
+                if (ev->ownerCh == c3->netId) {
+                    code = 6;
+                    break;
+                }
+        }
+    }
+    c4 = (AICHAR *)gm_FindChar(p->members[4]);
+    if (code == 0) {
+        if (c4 == 0 || c4->kind == 0xf || c4->health == 0)
+            code = 4;
+        else if (c4->heldRounds != 0) {
+            held = c4;
+            code = 7;
+            for (ev = (AIJOB *)he_FindEvent(1, 0, 0x3d); ev != 0; ev = (AIJOB *)he_NextEvent())
+                if (ev->ownerCh == c4->netId) {
+                    code = 6;
+                    break;
+                }
+        }
+    }
+    c5 = (AICHAR *)gm_FindChar(p->members[5]);
+    if (code == 0 && p->used >= 6) {
+        if (c5 == 0 || c5->kind == 0xf || c5->health == 0)
+            code = 5;
+        else if (c5->heldRounds != 0) {
+            held = c5;
+            code = 7;
+            for (ev = (AIJOB *)he_FindEvent(1, 0, 0x3d); ev != 0; ev = (AIJOB *)he_NextEvent())
+                if (ev->ownerCh == c5->netId) {
+                    code = 6;
+                    break;
+                }
+        }
+    }
+    if (code == 0) {
+        txt_Format(intro, (int)"%s", 0x11d7);
+        if (c0->kind == 6 || c0->kind == 7) {
+            txt_Format(msg, 0x11d0, c1->id);
+            strcat(msg, intro);
+            cm_SendPartyNote(c0, p, msg, ch_EmptyName);
+        }
+        if (c1->kind == 6 || c1->kind == 7) {
+            txt_Format(msg, 0x11d1, c0->id);
+            strcat(msg, intro);
+            cm_SendPartyNote(c1, p, msg, ch_EmptyName);
+        }
+        if (c2->kind == 6 || c2->kind == 7) {
+            txt_Format(msg, 0x11d2, c0->id, c1->id);
+            strcat(msg, intro);
+            cm_SendPartyNote(c2, p, msg, ch_EmptyName);
+        }
+        txt_Format(msg, 0x11d3, c0->id, c1->id);
+        strcat(msg, intro);
+        if (c3->kind == 6 || c3->kind == 7)
+            cm_SendPartyNote(c3, p, msg, ch_EmptyName);
+        if (c4->kind == 6 || c4->kind == 7)
+            cm_SendPartyNote(c4, p, msg, ch_EmptyName);
+        if (c5 != 0 && (c5->kind == 6 || c5->kind == 7)) {
+            txt_Format(msg, 0x11d5, c0->id, c1->id);
+            strcat(msg, intro);
+            cm_SendPartyNote(c5, p, msg, ch_EmptyName);
+        }
+        return 1;
+    }
+    switch (code) {
+    case 1:
+        txt_Format(msg, 0x11d8);
+        break;
+    case 2:
+        txt_Format(msg, 0x11d9);
+        break;
+    case 3:
+        txt_Format(msg, 0x11da);
+        break;
+    case 4:
+        txt_Format(msg, 0x11db);
+        break;
+    case 5:
+        txt_Format(msg, 0x11dc);
+        break;
+    case 6:
+        txt_Format(msg, 0x11df, held->id);
+        break;
+    case 7:
+        txt_Format(msg, 0x11de, held->id);
+        break;
+    }
+    if (c0 != 0 && c0 != held && (c0->kind == 6 || c0->kind == 7))
+        he_ShowNews(c0->netId, -1, msg, 0, 0x5f5, 0);
+    if (c1 != 0 && c1 != held && (c1->kind == 6 || c1->kind == 7))
+        he_ShowNews(c1->netId, -1, msg, 0, 0x5f5, 0);
+    if (c2 != 0 && c2 != held && (c2->kind == 6 || c2->kind == 7))
+        he_ShowNews(c2->netId, -1, msg, 0, 0x5f5, 0);
+    if (c3 != 0 && c3 != held && (c3->kind == 6 || c3->kind == 7))
+        he_ShowNews(c3->netId, -1, msg, 0, 0x5f5, 0);
+    if (c4 != 0 && c4 != held && (c4->kind == 6 || c4->kind == 7))
+        he_ShowNews(c4->netId, -1, msg, 0, 0x5f5, 0);
+    if (c5 != 0 && c5 != held && (c5->kind == 6 || c5->kind == 7))
+        he_ShowNews(c5->netId, -1, msg, 0, 0x5f5, 0);
+    cm_SendHandOverCrimes(p->members[0], p->members[0], p->crimeState, 0);
+    return 0;
 }
 
 extern char ai_Unk60de4c;
@@ -13406,13 +13508,13 @@ int ai_Unk4dfa20(char *m)
         if (b[2] == 6 || b[2] == 7) {
             txt_Format(buf, 0x11ca, *(unsigned short *)b);
             strcat(buf + 12, ai_Unk143e8f4);
-            ai_Unk4e48b0(a, *(int *)(m + 0x10), buf + 12, &ch_EmptyName);
+            cm_SendPartyNote(a, *(int *)(m + 0x10), buf + 12, &ch_EmptyName);
             flag = 1;
         }
         if (a[2] == 6 || a[2] == 7) {
             txt_Format(buf, 0x11ca, *(unsigned short *)a);
             strcat(buf + 12, ai_Unk143e8f4);
-            ai_Unk4e48b0(b, *(int *)(m + 0x10), buf + 12, &ch_EmptyName);
+            cm_SendPartyNote(b, *(int *)(m + 0x10), buf + 12, &ch_EmptyName);
             flag = 1;
         }
         if (flag != 0) {
@@ -13560,7 +13662,7 @@ int ai_Unk4e0040(char *m)
         if (p[2] == 6 || p[2] == 7) {
             txt_Format(buf, 0x11c5);
             strcat(buf + 8, ai_Unk143e8e4);
-            ai_Unk4e48b0(p, m, buf + 8, &ch_EmptyName);
+            cm_SendPartyNote(p, m, buf + 8, &ch_EmptyName);
         }
         txt_Format(buf, 0x11c8, *(unsigned short *)p);
     } else {
@@ -13572,7 +13674,7 @@ int ai_Unk4e0040(char *m)
     for (i = 1; i < (unsigned char)m[0x30]; i++) {
         q = (char *)gm_FindChar(*(int *)(m + 0x34 + i * 4));
         if (q != 0 && (q[2] == 6 || q[2] == 7))
-            ai_Unk4e48b0(q, m, buf, &ch_EmptyName);
+            cm_SendPartyNote(q, m, buf, &ch_EmptyName);
     }
     return 1;
 }
@@ -13662,7 +13764,7 @@ int ai_Unk4e0580(char *m)
         if (b != 0 && a[9] != b[9]) {
             if (a[2] == 6 || a[2] == 7) {
                 txt_Format(buf, 0x11c3, *(unsigned short *)b);
-                ai_Unk4e48b0(a, m, buf, "_PA_WERBUNG_EVENT_ZUSAGE_M1_00");
+                cm_SendPartyNote(a, m, buf, "_PA_WERBUNG_EVENT_ZUSAGE_M1_00");
             }
             if (a[2] == 6 || a[2] == 7 || a[2] == 5) {
                 txt_Format(buf, 0x11c4, *(unsigned short *)a, *(unsigned short *)b);
@@ -13829,7 +13931,7 @@ int ai_Unk4e0e90(char *m)
             if (a[2] == 6 || a[2] == 7) {
                 txt_Format(buf, 0x11c1);
                 strcat(buf + 8, ai_Unk143e8c8);
-                ai_Unk4e48b0(a, m, buf + 8, &ch_EmptyName);
+                cm_SendPartyNote(a, m, buf + 8, &ch_EmptyName);
             }
             return 1;
         }
@@ -14109,7 +14211,7 @@ int ai_Unk4e19a0(char *m)
     for (i = 0; i < (unsigned char)m[0x30]; i++) {
         p = (char *)gm_FindChar(*(int *)(m + 0x34 + i * 4));
         if (p != 0 && (p[2] == 6 || p[2] == 7))
-            ai_Unk4e48b0(p, m, buf, &ch_EmptyName);
+            cm_SendPartyNote(p, m, buf, &ch_EmptyName);
     }
     return 1;
 }
@@ -15281,7 +15383,7 @@ int ai_Unk4e4870(int id, char *m)
    its id, +0x26 bit 4: a text follows): the text `text` (and the second one, joined, flag 0x10) after the header at +0xf8 of the buffer;
    +0x60 gets the kind of the building's thing (0x501ce0 / 0x4ffe90 +2), -1 without. ROUGH */
 
-void ai_Unk4e48b0(int *a, char *b, char *text, char *extra)
+void cm_SendPartyNote(int *a, char *b, char *text, char *extra)
 {
     char buf[0x8f8];
     char *o, *p;
@@ -15796,7 +15898,7 @@ void ai_Unk4e5770(void)
         ai_Unk925520[i].id = -1;
     ai_Unk4e5730(0, (int)ai_Unk4e0010, (int)d3io_NoopCallback, 0, 0, 0);
     ai_Unk4e5730(1, (int)cm_RunCouncilSession, (int)cm_SessionAskPlayer, (int)cm_SessionAskAI, 0, 0);
-    ai_Unk4e5730(2, (int)ai_Unk4db700, (int)ai_Unk4dd960, (int)ai_Unk4de340, (int)ai_Unk4daf80, 0);
+    ai_Unk4e5730(2, (int)ai_Unk4db700, (int)ai_Unk4dd960, (int)ai_Unk4de340, (int)cm_CheckTrial, 0);
     ai_Unk4e5730(3, (int)cm_RunFight, (int)cm_FightMember, 0, (int)ai_Unk4d60b0, 1);
     ai_Unk4e5730(4, (int)ai_Unk4ded10, (int)ai_Unk4dfff0, (int)ai_Unk4dff80, (int)ai_Unk4dfa20, 0);
     ai_Unk4e5730(5, (int)ai_Unk4e01e0, 0, 0, (int)ai_Unk4e0040, 0);

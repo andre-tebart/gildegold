@@ -246,7 +246,7 @@ void cm_SendOwnership(int a, int b, int c);                                     
 void ai_Unk4c54e0(int a);                                                        /* 0x4c54e0 */
 void cm_SendBuildingDestroyed(int a);                                                        /* 0x4c5510 */
 void cm_SendBoss(int a, int b);                                                 /* 0x4c5540 */
-void ai_Unk4c5580(int a, int b, int c, int d);                                   /* 0x4c5580 */
+void cm_SendHandOverCrimes(int a, int b, int c, int d);                                   /* 0x4c5580 */
 int cm_SendMessage3d(char *p, unsigned char b, int c, int d);                        /* 0x4c55d0 */
 void cm_SendCharModel(int a, const char *s);                                         /* 0x4c5690 */
 void cm_SendGoodsRecord(void *p, unsigned char k);                                     /* 0x4c56d0 */
@@ -836,7 +836,7 @@ void cm_RunSceneParty();  /* 0x4e3830 */
 char d3_SetLightSet(unsigned int set, float t, float scale, char calc);  /* 0x449de0 */
 extern int cm_SceneDuration;  /* 0x60d364 */
 extern int cm_FightFixedLight;  /* 0x6f244c */
-void ai_Unk4e48b0();  /* 0x4e48b0 */
+void cm_SendPartyNote();  /* 0x4e48b0 */
 
 
 
@@ -906,7 +906,7 @@ typedef struct G22ENT {                 /* 0x18 bytes, one participant of a sess
     char kind;                          /* 0x10, 2 = candidate, 3 = voter */
     char pad[7];
 } G22ENT;
-#define G22_4C5580 ((int (*)())ai_Unk4c5580)  /* cut.c calls it without arguments */
+#define G22_4C5580 ((int (*)())cm_SendHandOverCrimes)  /* cut.c calls it without arguments */
 extern char *ai_Unk6ed918;  /* 0x6ed918 */
 int cm_LoadVoiceBank();  /* 0x4e3270 */
 int cm_PlaySpecialTrack();  /* 0x4e3620 */

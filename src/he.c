@@ -6783,7 +6783,7 @@ void he_Unk5436a0(int ev)
     }
 }
 
-void ai_Unk4c5580(int a, int b, int c, int d);
+void cm_SendHandOverCrimes(int a, int b, int c, int d);
 
 /* 0x542960, a Ghidra miss (disassembled): starts an offer event between the figures +0xac (p) and +0xb0 (q): sets the offer's own clock (+0xc5, packed, +0x18 units, state word 0xa at +0xc9) and, when flag 2 is set, looks through the other pending 0x2c events of the same kind (+0xc4): one with the same p only gets "0x1bbe" (message 0x5f5) and this event is re-posted at once, an earlier one of another p moves our clock to its time; at the end the offer is created (0x4c5580, kept at +0xd4) and posted (ROUGH) */
 void he_Unk542960(int ev)
@@ -6820,7 +6820,7 @@ void he_Unk542960(int ev)
             }
             r = (int)he_NextEvent();
         }
-        *(int *)(ev + 0xd4) = ((int (*)(int, int, int, int))ai_Unk4c5580)(*(int *)(ev + 0xac), *(int *)(ev + 0xb0), *(int *)(ev + 4), 1);
+        *(int *)(ev + 0xd4) = ((int (*)(int, int, int, int))cm_SendHandOverCrimes)(*(int *)(ev + 0xac), *(int *)(ev + 0xb0), *(int *)(ev + 4), 1);
         *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);
     }
 }
@@ -9184,7 +9184,7 @@ int he_Unk553060(void)
     return he_Unk53d600(0xa5, (void *)he_Unk552c30, (void *)he_Unk552ca0) != 0;
 }
 
-void ai_Unk4c5580(int a, int b, int c, int d);
+void cm_SendHandOverCrimes(int a, int b, int c, int d);
 
 /* 0x5538b0, ends every running event record that involves the person `p` (+4 the id; nothing for a free slot): the records of the types 0x41, 0x6f, 0x45 (the two partners +0xac / +0xb0, the other one is looked up (0x505df0) before the record is ended by 0x541200), 0x2c (the partners +0xac / +0xb4 / +0xc0 get the message 0x4c5580 (+0xac, +0xb0, +4, 0)), 0x47 (+0xac or +0xb0), 0x5e and 0x5f (+0xac); only records with a bit of 3 in +0x78 are touched (ROUGH) */
 void he_EndPersonEvents(unsigned short *p)
@@ -9238,7 +9238,7 @@ void he_EndPersonEvents(unsigned short *p)
             continue;
         a = *(int *)(e + 0xac);
         if (a == id || *(int *)(e + 0xb4) == id || *(int *)(e + 0xc0) == id) {
-            ai_Unk4c5580(a, *(int *)(e + 0xb0), *(int *)(e + 4), 0);
+            cm_SendHandOverCrimes(a, *(int *)(e + 0xb0), *(int *)(e + 4), 0);
             he_Unk541200((int)e);
         } else if (*(int *)(e + 0xb0) == id) {
             he_Unk541200((int)e);

@@ -517,9 +517,15 @@ typedef struct G28REC {
     char pad31[3];
     int members[16];                    /* 0x34, the members' netIds (-1 for one removed, ai_Unk4e5210) */
     char pad74[8];
-    unsigned char variant;              /* 0x7c, written by gv_PassSentence with a random 0 .. 4 */
-    unsigned char zero7d;               /* 0x7d, only seen written 0 (gv_PassSentence) */
-    char pad7e[0x114 - 0x7e];
+    union {
+        struct {
+            unsigned char variant;      /* 0x7c, written by gv_PassSentence with a random 0 .. 4 */
+            unsigned char zero7d;       /* 0x7d, only seen written 0 (gv_PassSentence) */
+        };
+        int crimeState;                 /* 0x7c, of a trial: the state its crimes were handed over in (cm_CheckTrial opens them
+                                           again with cm_SendHandOverCrimes) */
+    };
+    char pad80[0x114 - 0x80];
 } G28REC;
 typedef char cm_AssertG28REC[sizeof(G28REC) == 0x114 ? 1 : -1];
 
