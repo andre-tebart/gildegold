@@ -8949,51 +8949,57 @@ int gm_FixedWorkMinutesBetween(GCLOCK *a, GCLOCK *b)
     x = (int)GM_MIN(GM_MAX(360.0f, t.hour * 60 + t.min), 1380.0f);
     return (acc - x) + y;
 }
-/* 0x5098a0, the goods list of the building b: out (0x2e ints) gets the max count (out[0]), the number of entries (out[1]), per entry the goods id (words at +0x48), its stock (+8 ints: 0x50ab50) and its price (+0x68: 0x50aaf0); out[0x2d] the building's market object. kind 0: the objects that are not 0x17 / 0x25; else those. 0 when it has no such object (0xfd). */
+/* 0x5098a0, the goods list of the building b (ai.h AIRECIPE): out (0x2e ints) is cleared, then gets the capacity
+   (out[0]), the number of entries (out[1]), per entry its stock (out[2 + n], gm_ListStock), the goods id (the words
+   from out[0x12]) and its amount (out[0x1a + n], gm_ListAmount); out[0x2d] the stall object. The stall is the
+   building's object 0x2a, else 0x116 (the market). kind 0: the goods that are not of the types 0x17 / 0x25, the
+   capacity its cap[1] (of a market the larger of both caps); else those goods, the capacity its cap[0], and nothing
+   for a market. Every goods of a market counts. 0 when the building has no object 0xfd or no stall
+   @deep Read whole against the original and rewritten through ORDBLD / ORDOBJ (cap[0] / cap[1]): the
+   clear, the 0xfd / 0x2a / 0x116 queries, the kind != 0 branch first (as the original's fall-through), the
+   market's capacity GM_MAX on ints (jg), the goods filter, the amount / stock / id stores and the count
+   all match (the prologue's push order too); 317 vs 318 bytes. Left: the goods type load at +0xca: ours
+   'mov al,[eax+ecx]', the original 'add eax,ecx; mov al,[eax]' (GM_GOOD(id)->type, the same addressing
+   gm_ListObjectsAfter is deep for). Tried: *(char *)GM_GOOD(id) (no change). */
 
 int gm_BuildingGoodsList(char *b, unsigned *out, int kind)
 {
-    char k;
-    short *l;
-    unsigned short *o;
-    unsigned v;
-    int i;
+    ORDBLD *bld;
+    ORDOBJ *stall, *o;
+    char type;
+    int i, cap;
 
+    bld = (ORDBLD *)b;
     for (i = 0; i < 0x2e; i++)
         out[i] = 0;
-    if (gm_Query(*(void **)(b + 0x5d), 1, 0, 0xfd) == 0)
+    if (gm_Query((void *)bld->objList, 1, 0, 0xfd) == 0)
         return 0;
-    l = (short *)gm_Query(*(void **)(b + 0x5d), 2, 6, 0, 0x2a);
-    if (l == 0 && (l = (short *)gm_Query(*(void **)(b + 0x5d), 2, 6, 0, 0x116)) == 0)
+    stall = (ORDOBJ *)gm_Query((void *)bld->objList, 2, 6, 0, 0x2a);
+    if (stall == 0 && (stall = (ORDOBJ *)gm_Query((void *)bld->objList, 2, 6, 0, 0x116)) == 0)
         return 0;
-    if (kind == 0) {
-        v = *(unsigned char *)((char *)l + 0x1d);
-        out[0] = v;
-        if (*l == 0x116) {
-            if (v <= *(unsigned char *)(l + 0xe))
-                v = *(unsigned char *)(l + 0xe);
-            out[0] = v;
-        }
-    } else {
-        if (*l == 0x116)
+    if (kind != 0) {
+        if (stall->type == 0x116)
             return 0;
-        v = *(unsigned char *)(l + 0xe);
-        out[0] = v;
+        out[0] = stall->cap[0];
+    } else {
+        cap = stall->cap[1];
+        out[0] = cap;
+        if (stall->type == 0x116)
+            out[0] = GM_MAX(cap, (int)stall->cap[0]);
     }
-    o = (unsigned short *)gm_Query(*(void **)(l + 10), 1, 5);
+    o = (ORDOBJ *)gm_Query((void *)stall->list, 1, 5);
     while (o) {
-        k = ai_Goods[*o * 0x41];
-        if ((((k == 0x17 || k == 0x25) && kind != 0) || ((k != 0x17 && k != 0x25) && kind == 0)) || *l == 0x116) {
-            v = gm_ListAmount(l, o);
-            out[out[1] + 0x1a] = v;
-            v = gm_ListStock(l, *o);
-            out[out[1] + 2] = v;
-            *(unsigned short *)((char *)out + out[1] * 2 + 0x48) = *o;
+        type = GM_GOOD(o->type)->type;
+        if (((type == 0x17 || type == 0x25) && kind != 0) || ((type != 0x17 && type != 0x25) && kind == 0)
+            || stall->type == 0x116) {
+            out[0x1a + out[1]] = gm_ListAmount((short *)stall, (char *)o);
+            out[2 + out[1]] = gm_ListStock((short *)stall, o->type);
+            ((unsigned short *)(out + 0x12))[out[1]] = o->type;
             out[1]++;
         }
-        o = (unsigned short *)gm_QueryNext();
+        o = (ORDOBJ *)gm_QueryNext();
     }
-    out[0x2d] = (unsigned)l;
+    out[0x2d] = (unsigned)stall;
     return 1;
 }
 /* 0x5099e0, the same list with the other loop shape (the kinds 0x17 only when kind != 0, the others only when kind == 0) */
