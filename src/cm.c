@@ -13440,7 +13440,7 @@ void ai_Unk4de340(char *r, int *m)
         return;
     }
 }
-/* 0x4de4b0, the sink-to-ground action's callback (ai_Unk4de530): a blood puddle "ub_Blutlache" turned at random at
+/* 0x4de4b0, the sink-to-ground action's callback (cm_DuelSinkDown): a blood puddle "ub_Blutlache" turned at random at
    the character's place, as cm_FallDownAction without the sound */
 
 void cm_SinkDownAction(CHACTION *a)
@@ -13457,7 +13457,7 @@ void cm_SinkDownAction(CHACTION *a)
 }
 /* 0x4de530, a fighter whose life (0x4fc8e0) is under 0.2 sinks to the ground ("bewegung/zu_boden_sinken"): 1 */
 
-int ai_Unk4de530(char *c, int dmg)
+int cm_DuelSinkDown(char *c, int dmg)
 {
     char *o;
 
@@ -13467,7 +13467,7 @@ int ai_Unk4de530(char *c, int dmg)
         o = (char *)ch_AddActionCBK(*(char **)(c + 0x184), cm_SinkDownAction, 0x12, 0x36, 1);
         strcpy(o + 0xf0, "bewegung/zu_boden_sinken");
         *(int *)(*(char **)(*(char **)(c + 0x184) + 0x34) + 0x220) = 0;
-        ai_Unk6f0d94 = 1;
+        cm_DuelOver = 1;
         return 1;
     }
     return 0;
@@ -13482,7 +13482,7 @@ void ai_Unk4de5e0(int n)
 }
 /* 0x4de610, the next number of the table modulo n */
 
-int ai_Unk4de610(int n)
+int cm_DuelVariant(int n)
 {
     int i, r;
 
@@ -13491,65 +13491,67 @@ int ai_Unk4de610(int n)
     ai_Unk6f0db0 = ai_Unk6f0db0 + 1;
     return r;
 }
-/* 0x4de640, the pistol shot of a duel (callback of the object made by 0x4de900: o + 0x180 shoots at o + 0x17c): the hit chance
-   0x504ec0(shooter, 3) * 0.8 (* 1.5 with the skill 0x16f, * 0.66 for a player who lost the insult round), the damage 5 + (0..15) or
-   15 + (0..30) (* 0.75 with the skill 0x2b5) added to the counters 0x6f0da8 / 0x6f0da9, the life 0x4cedc0, the texts 0x1102 / 0x1109 */
+/* 0x4de640, the pistol shot of a duel (the action ai_Unk4de900 queues: a->shot.shooter shoots at a->shot.target): the hit
+   chance gm_GetSkill(shooter, 3) * 0.8 (* 1.5 with the item 0x16f, * 0.66 for the fighter who lost the insult round), on a hit
+   the damage 5 + (0..15) when the other won the roll round, else 15 + (0..30) (* 0.75 when the target has the item 0x2b5), added
+   to the target's score byte cm_DuelScore[0] / [1] and shown (cm_ShowDamage); the shot sound, then the target sinks
+   (cm_DuelSinkDown: the duel is over) or, on a hit, bleeds, staggers and loses the damage from v024 and its health (text
+   0x1102 + variant), on a miss dodges (text 0x1109 + variant) */
 
-void ai_Unk4de640(char *o)
+void cm_DuelShotAction(CHACTION *a)
 {
-    char *sh = *(char **)(o + 0x180);
-    char *tg = *(char **)(o + 0x17c);
+    AICHAR *sh = a->shot.shooter;
+    AICHAR *tg = a->shot.target;
     float acc, b;
     int hit, dmg, n;
 
     d2_SetForm(cm_TextBox, 0);
-    acc = (float)gm_GetSkill(sh, 3);
-    gm_GetSkill(tg, 3);
+    acc = (float)gm_GetSkill((char *)sh, 3);
+    gm_GetSkill((char *)tg, 3);
     acc = (float)(acc * 0.8);
     if (ai_InventoryHas(sh, 0x16f) != 0)
         acc = (float)(acc * 1.5);
-    if (((int)sh == ai_Unk92bca4 && ai_Unk6f0da8[3] != 0) || ((int)sh == ai_Unk92bca0 && ai_Unk6f0daa != 0))
+    if (((int)sh == cm_DuelLeft && cm_DuelScore[3] != 0) || ((int)sh == cm_DuelRight && cm_DuelLeftInsultWon != 0))
         acc = (float)(acc * 0.66);
-    if (cm_RandomFloat() < acc) {
+    if ((float)cm_RandomFloat() < acc) {
         hit = 1;
-        if (((int)sh == ai_Unk92bca4 && ai_Unk6f0da8[5] != 0) || ((int)sh == ai_Unk92bca0 && ai_Unk6f0da8[4] != 0))
+        if (((int)sh == cm_DuelLeft && cm_DuelScore[5] != 0) || ((int)sh == cm_DuelRight && cm_DuelScore[4] != 0))
             dmg = cm_Random(0xf) + 5;
         else
             dmg = cm_Random(0x1e) + 0xf;
         if (ai_InventoryHas(tg, 0x2b5) != 0)
             dmg = (int)(dmg * 0.75f);
-        if ((int)tg == ai_Unk92bca4)
-            ai_Unk6f0da8[0] += dmg;
+        if ((int)tg == cm_DuelLeft)
+            cm_DuelScore[0] += dmg;
         else
-            ai_Unk6f0da8[1] += dmg;
-        cm_ShowDamage(tg, (int)(*(float *)(tg + 0x1c) * 0.01 * dmg), 0);
+            cm_DuelScore[1] += dmg;
+        cm_ShowDamage((char *)tg, (int)(tg->f01c * 0.01 * dmg), 0);
     } else {
         hit = 0;
         dmg = 0;
     }
     sb_PlaySampleI(0, "Schuss", 1, 0x3f, 0x7f, 0, 0);
-    if (ai_Unk4de530(tg, dmg) != 0) {
-        ai_Unk6f0d94 = 1;
-        return;
-    }
-    if (hit != 0) {
-        d3t_CreateBloodK(*(int *)(*(char **)(tg + 0x184) + 0x34), 0x40, 0x3e800000, 0x3dcccccd, 0x3e0f5c29, 0x425c0000);
-        if (*(int *)(*(char **)(tg + 0x184) + 0x128) == 0)
-            ch_QueueAnim(*(char **)(tg + 0x184), "kampf/taumeln", 1);
-        d2_SetForm(cm_TextBox, 0);
-        n = ai_Unk4de610(6);
-        io_PrintText(n + 0x1102, *(unsigned short *)tg);
-        snd_PlayVoice(*(unsigned short *)tg, 0, "_DUELL_INTRO_C2_AUSWAHL_SCHIESSEN_TREFFE", n);
-        b = (float)(*(float *)(tg + 0x1c) * dmg * 0.01);
-        *(int *)(tg + 0x24) = (int)(*(int *)(tg + 0x24) - b);
-        gm_AddHealth(*(unsigned short *)tg, (int)-b);
-    } else {
-        if (*(int *)(*(char **)(tg + 0x184) + 0x128) == 0)
-            ch_QueueAnim(*(char **)(tg + 0x184), "kampf/stich_ausweichen", 1);
-        n = ai_Unk4de610(9);
-        io_PrintText(n + 0x1109, *(unsigned short *)tg);
-        snd_PlayVoice(*(unsigned short *)tg, 0, "_DUELL_INTRO_C2_AUSWAHL_SCHIESSEN_DANEBE", n);
-    }
+    if (cm_DuelSinkDown((char *)tg, dmg) == 0) {
+        if (hit != 0) {
+            d3t_CreateBloodK(tg->scene->obj, 0x40, 0x3e800000, 0x3dcccccd, 0x3e0f5c29, 0x425c0000);
+            if (tg->scene->actions == 0)
+                ch_QueueAnim(tg->scene, "kampf/taumeln", 1);
+            d2_SetForm(cm_TextBox, 0);
+            n = cm_DuelVariant(6);
+            io_PrintText(n + 0x1102, tg->id);
+            snd_PlayVoice(tg->id, 0, "_DUELL_INTRO_C2_AUSWAHL_SCHIESSEN_TREFFER", n);
+            b = (float)(tg->f01c * dmg * 0.01);
+            tg->v024 = (int)(tg->v024 - b);
+            gm_AddHealth(tg->id, (int)-b);
+        } else {
+            if (tg->scene->actions == 0)
+                ch_QueueAnim(tg->scene, "kampf/stich_ausweichen", 1);
+            n = cm_DuelVariant(9);
+            io_PrintText(n + 0x1109, tg->id);
+            snd_PlayVoice(tg->id, 0, "_DUELL_INTRO_C2_AUSWAHL_SCHIESSEN_DANEBEN", n);
+        }
+    } else
+        cm_DuelOver = 1;
 }
 /* 0x4de900, the intro text of the duel round of the fighter a against b ("_DUELL_INTRO_C2_AUSWAHL_*": kind of the round at +0x94 of the
    record 0x4e50e0: 2 insult (laestern: the better insult value 0x504ec0(.., 4) + a roll wins, flag 0x6f0daa / 0x6f0dab), 3 a roll against
@@ -13561,7 +13563,7 @@ void ai_Unk4de900(char *a, char *b)
     int n;
     double fa, fb, ra, rb;
 
-    if (ai_Unk6f0d94 != 0)
+    if (cm_DuelOver != 0)
         return;
     rec = (char *)ai_Unk4e50e0(*(int *)(a + 4));
     d2_SetForm(cm_TextBox, 0);
@@ -13569,7 +13571,7 @@ void ai_Unk4de900(char *a, char *b)
     if (rec[0x94] == 2) {
         d2_SetForm(cm_TextBox, 0);
         io_PrintText(0x10e8, *(unsigned short *)a);
-        n = ai_Unk4de610(8);
+        n = cm_DuelVariant(8);
         io_PrintText(n + 0x10e9);
         snd_PlayVoice(*(unsigned short *)a, 0, "_DUELL_INTRO_C2_AUSWAHL_LAESTERN", n);
         io_PrintText("$N");
@@ -13590,10 +13592,10 @@ void ai_Unk4de900(char *a, char *b)
                 io_PrintText(0x10f2, *(unsigned short *)b);
             else
                 io_PrintText(0x10f3, *(unsigned short *)b);
-            if ((int)a == ai_Unk92bca4)
-                ai_Unk6f0da8[2] = 1;
+            if ((int)a == cm_DuelLeft)
+                cm_DuelScore[2] = 1;
             else
-                ai_Unk6f0da8[3] = 1;
+                cm_DuelScore[3] = 1;
         }
     } else if (rec[0x94] == 3) {
         d2_SetForm(cm_TextBox, 0);
@@ -13609,19 +13611,19 @@ void ai_Unk4de900(char *a, char *b)
                 io_PrintText(0x10f6, *(unsigned short *)a);
             else
                 io_PrintText(0x10f7, *(unsigned short *)a);
-            if ((int)a == ai_Unk92bca4)
-                ai_Unk6f0da8[4] = 1;
+            if ((int)a == cm_DuelLeft)
+                cm_DuelScore[4] = 1;
             else
-                ai_Unk6f0da8[5] = 1;
+                cm_DuelScore[5] = 1;
         }
     } else if (rec[0x94] == 4) {
         d2_SetForm(cm_TextBox, 0);
-        n = ai_Unk4de610(7);
+        n = cm_DuelVariant(7);
         io_PrintText(n + 0x10fa, *(unsigned short *)a);
         snd_PlayVoice(*(unsigned short *)a, 0, "_DUELL_INTRO_C2_AUSWAHL_SCHIESSEN", n);
         cm_WaitTicks(2);
         io_PrintText("$N");
-        n = ch_AddActionCBK(*(char **)(a + 0x184), ai_Unk4de640, 6, 0x2e, 1);
+        n = ch_AddActionCBK(*(char **)(a + 0x184), cm_DuelShotAction, 6, 0x2e, 1);
         *(char **)(n + 0x17c) = b;
         *(char **)(n + 0x180) = a;
         strcpy((char *)n + 0xf0, "kampf/schiessen_pistole");
@@ -13720,10 +13722,10 @@ void ai_Unk4ded10(char *m)
     scene = ai_Unk4e2bf0("cutscenes\\duell\\enter_DUELL.esc");
     memcpy(ca, a, 0x21c);
     memcpy(cb, b, 0x21c);
-    ai_Unk92bca4 = (int)ca;
-    ai_Unk92bca0 = (int)cb;
-    ai_Unk6f0da8[0] = 0;
-    ai_Unk6f0da8[1] = 0;
+    cm_DuelLeft = (int)ca;
+    cm_DuelRight = (int)cb;
+    cm_DuelScore[0] = 0;
+    cm_DuelScore[1] = 0;
     gm_CreateCharModel(ca + 0x10, d3_CurrentScene, 0, 0, 0, "dummy_DUELLANT_A_ENTRY");
     gm_CreateCharModel(cb + 0x10, d3_CurrentScene, 0, 0, 0, "dummy_DUELLANT_B_ENTRY");
     oa = *(char **)(ca + 0x1b4 - 0x10 + 0x10);
@@ -13760,13 +13762,13 @@ void ai_Unk4ded10(char *m)
     /* the seconds: with the first round of kind 1 each side gets a shot object (callback 0x4de640, "kampf/schiessen_pistole") */
     hita = 0;
     hitb = 0;
-    for (i = 0; i < 3 && ai_Unk6f0d94 == 0; i++) {
+    for (i = 0; i < 3 && cm_DuelOver == 0; i++) {
         cm_RunSceneParty(scene, scene);
         rec = (char *)ai_Unk4e50e0(*(int *)(m + 0x34));
-        ai_Unk6f0da8[2] = 0;
-        ai_Unk6f0da8[3] = 0;
-        ai_Unk6f0da8[4] = 0;
-        ai_Unk6f0da8[5] = 0;
+        cm_DuelScore[2] = 0;
+        cm_DuelScore[3] = 0;
+        cm_DuelScore[4] = 0;
+        cm_DuelScore[5] = 0;
         if (rec[0x94] == 2 || rec[0x94] == 3) {
             ai_Unk4de900(cb, "B");
             ai_Unk4de900(ca, "A");
@@ -13774,7 +13776,7 @@ void ai_Unk4ded10(char *m)
             ai_Unk4de900(ca, "A");
             ai_Unk4de900(cb, "B");
         }
-        if ((ai_Unk6f0da8[2] != 0 || ai_Unk6f0da8[4] != 0) && (ai_Unk6f0da8[3] != 0 || ai_Unk6f0da8[5] != 0)) {
+        if ((cm_DuelScore[2] != 0 || cm_DuelScore[4] != 0) && (cm_DuelScore[3] != 0 || cm_DuelScore[5] != 0)) {
             n = cm_Random(9);
             d2_SetForm(cm_TextBox, 0);
             io_PrintText(n + 0x1113);
@@ -13785,7 +13787,7 @@ void ai_Unk4ded10(char *m)
         io_PrintText("$C");
     }
     /* result: who is down (the lower life 0x4fc8e0), the texts 0x111c / 0x111d, the damage 0x6f0da8 / 0x6f0da9 off the life */
-    if (ai_Unk6f0d94 != 0)
+    if (cm_DuelOver != 0)
         w = gm_HealthRatio(cb) < gm_HealthRatio(ca) ? cb : ca;
     else
         w = 0;
@@ -16341,8 +16343,8 @@ extern int cm_SaveAcks[8][2];
 extern int ai_Evidence[0x800][2];
 extern char ai_Crimes[0x5a00];
 extern int ai_Unk925510;
-extern int ai_Unk92bca0;
-extern int ai_Unk92bca4;
+extern int cm_DuelRight;
+extern int cm_DuelLeft;
 extern int ai_Unk92bcc0[128];
 extern int cm_OrderTicks;
 extern unsigned short ai_Unk92bee0[768];
@@ -16550,13 +16552,13 @@ int ai_Unk6f0d84 = 0;  /* 0x6f0d84 */
 int ai_Unk6f0d88 = 0;  /* 0x6f0d88 */
 int cm_SkipEvents = 0;  /* 0x6f0d8c */
 int * cm_CurrentFight = 0;  /* 0x6f0d90 */
-int ai_Unk6f0d94 = 0;  /* 0x6f0d94 */
+int cm_DuelOver = 0;  /* 0x6f0d94 */
 unsigned int ai_Unk6f0d98 = 0;  /* 0x6f0d98 */
 int ai_Unk6f0d9c = 0;  /* 0x6f0d9c, the scene nesting depth */
 char * ai_Unk6f0da0 = 0;  /* 0x6f0da0, the fade */
 unsigned int cm_FightStart = 0;  /* 0x6f0da4, fight start (d3_Time) */
-unsigned char ai_Unk6f0da8[2] = {0};  /* 0x6f0da8, +2 / +3: the left / right insult won, +4 / +5 the shot won */
-unsigned char ai_Unk6f0daa = 0;  /* 0x6f0daa */
+unsigned char cm_DuelScore[2] = {0};  /* 0x6f0da8, +2 / +3: the left / right insult won, +4 / +5 the shot won */
+unsigned char cm_DuelLeftInsultWon = 0;  /* 0x6f0daa */
 int ai_Unk6f0db0 = 0;  /* 0x6f0db0 */
 int ai_Unk6f0db4 = 0;  /* 0x6f0db4 */
 int ai_Unk6f0db8 = 0;  /* 0x6f0db8 */
@@ -16582,8 +16584,8 @@ char ai_Crimes[0x5a00] = {0}; /* 0x91f700, the crime records (0x2d bytes each) u
                                     table ai_Unk91f716 is the same storage, a view at +0x16 */
 int ai_Unk925510 = 0;  /* 0x925510 */
 G28REC ai_Unk925520[96] = {0};  /* 0x925520 */
-int ai_Unk92bca0 = 0;  /* 0x92bca0 */
-int ai_Unk92bca4 = 0;  /* 0x92bca4 */
+int cm_DuelRight = 0;  /* 0x92bca0 */
+int cm_DuelLeft = 0;  /* 0x92bca4 */
 int ai_Unk92bcc0[128] = {0};  /* 0x92bcc0 */
 int cm_OrderTicks = 0;  /* 0x92bec0 */
 unsigned short ai_Unk92bee0[768] = {0};  /* 0x92bee0 */

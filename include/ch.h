@@ -326,6 +326,11 @@ struct CHACTION {                   /* 0x194 bytes, 2000 of them in ch_Queue; fu
             int y;                      /* 0x184 */
             int sideId;                 /* 0x188, the netId of the thrower's side leader */
         } bomb;
+        struct {                        /* the duel's pistol shot (cm.c: cm_DuelShotAction, queued by ai_Unk4de900) */
+            int unk178;
+            struct AICHAR *target;      /* 0x17c */
+            struct AICHAR *shooter;     /* 0x180 */
+        } shot;
     };
     char stop;                      /* 0x190 */
     char pad191[0x3];

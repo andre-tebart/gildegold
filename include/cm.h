@@ -934,23 +934,23 @@ int cm_AskDeposeVote(char *a, char *b, char *c, int *out);  /* 0x4da9e0 */
 int cm_AskElectVote(unsigned char office, struct AICHAR *b, int *ids, int *click);  /* 0x4dab50 */
 void cm_SessionAskPlayer(CMCUTINFO *r, CMSESSIONREQ *m);  /* 0x4dada0 */
 
-extern int ai_Unk6f0d94;  /* 0x6f0d94 */
-extern int ai_Unk92bca4;  /* 0x92bca4 */
-extern unsigned char ai_Unk6f0da8[];  /* 0x6f0da8, +2 / +3: the left / right insult won, +4 / +5 the shot won */
+extern int cm_DuelOver;  /* 0x6f0d94 */
+extern int cm_DuelLeft;  /* 0x92bca4 */
+extern unsigned char cm_DuelScore[];  /* 0x6f0da8, +2 / +3: the left / right insult won, +4 / +5 the shot won */
 int ai_Unk4e50e0();  /* 0x4e50e0 */
 int cm_WaitTicks();  /* 0x4e3420 */
 void cm_SinkDownAction(struct CHACTION *a);  /* 0x4de4b0 */
-int ai_Unk4de530(char *c, int dmg);  /* 0x4de530 */
+int cm_DuelSinkDown(char *c, int dmg);  /* 0x4de530 */
 void ai_Unk4de900(char *a, char *b);  /* 0x4de900 */
 extern int ai_Unk60d370;  /* 0x60d370 */
 extern int ai_Unk6f0db0;  /* 0x6f0db0 */
 extern int ai_Unk92bcc0[];  /* 0x92bcc0 */
 void gm_Shuffled(unsigned char n, int *out);  /* 0x505ca0 */
 void ai_Unk4de5e0(int n);  /* 0x4de5e0 */
-int ai_Unk4de610(int n);  /* 0x4de610 */
-void ai_Unk4de640(char *o);  /* 0x4de640 */
-extern unsigned char ai_Unk6f0daa;  /* 0x6f0daa */
-extern int ai_Unk92bca0;  /* 0x92bca0 */
+int cm_DuelVariant(int n);  /* 0x4de610 */
+void cm_DuelShotAction(struct CHACTION *a);  /* 0x4de640 */
+extern unsigned char cm_DuelLeftInsultWon;  /* 0x6f0daa */
+extern int cm_DuelRight;  /* 0x92bca0 */
 int amt_FindOffice();  /* 0x4e6030 */
 void ai_Unk4debe0(char *m);  /* 0x4debe0 */
 int ai_Unk4e36a0();  /* 0x4e36a0 */
