@@ -943,7 +943,7 @@ int amt_GetOfficeApplicants();  /* 0x4e76b0 */
 
 int cm_AskDeposeVote(char *a, char *b, char *c, int *out);  /* 0x4da9e0 */
 int cm_AskElectVote(unsigned char office, struct AICHAR *b, int *ids, int *click);  /* 0x4dab50 */
-void cm_SessionAskPlayer(struct CMCUTINFO *r, struct CMSESSIONREQ *m);  /* 0x4dada0 */
+void cm_SessionAskPlayer(CMCUTINFO *r, CMSESSIONREQ *m);  /* 0x4dada0 */
 
 extern int ai_Unk6f0d94;  /* 0x6f0d94 */
 extern int ai_Unk92bca4;  /* 0x92bca4 */

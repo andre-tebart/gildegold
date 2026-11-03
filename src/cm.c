@@ -153,14 +153,6 @@ typedef struct CMAMOUNTROW {        /* 0x38 bytes, one row of the special-amount
     int x30;                        /* 0x30 */
     int pad34;
 } CMAMOUNTROW;
-typedef struct CMSESSIONREQ {       /* 0x1c bytes, the request of a council session vote that cm_RunSceneParty hands to the
-                                       member callbacks (cm_SessionAskPlayer reads it as int *) */
-    int mode;                       /* 0x00, 1: deposition, 2: election */
-    unsigned char office;           /* 0x04, the office's index (AMTREC.idx) */
-    char pad05[3];
-    int kind;                       /* 0x08, the office kind */
-    int ids[4];                     /* 0x0c, mode 1: the holder and the challenger, mode 2: the applicants (-1 none) */
-} CMSESSIONREQ;
 /* 0x4c3180, the size in bytes of the game message m by its type: fixed per type, the lists 0x16 / 0x17 a 0x15-byte
    head and data[4] records of w * h + 4 bytes, 0x18 a head and data[4] records of 5, 0x20 by its kind byte data[0];
    0x91 (the whole G17MSG body) for any other type

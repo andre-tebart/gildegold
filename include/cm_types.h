@@ -313,6 +313,16 @@ typedef struct CMCUTINFO {              /* 0x35c bytes, cm_CutInfos[16]: a playe
 } CMCUTINFO;
 typedef char cm_AssertCMCUTINFO[sizeof(CMCUTINFO) == 0x35c ? 1 : -1];
 
+typedef struct CMSESSIONREQ {       /* 0x1c bytes, the request of a council session vote that cm_RunSceneParty hands to the
+                                       member callbacks (cm_SessionAskPlayer) */
+    int mode;                       /* 0x00, 1: deposition, 2: election */
+    unsigned char office;           /* 0x04, the office's index (AMTREC.idx) */
+    char pad05[3];
+    int kind;                       /* 0x08, the office kind */
+    int ids[4];                     /* 0x0c, mode 1: the holder and the challenger, mode 2: the applicants (-1 none) */
+} CMSESSIONREQ;
+typedef char cm_AssertCMSESSIONREQ[sizeof(CMSESSIONREQ) == 0x1c ? 1 : -1];
+
 typedef struct G17CUTMSG {              /* 8 bytes, the data of message 0x26 ("cm_ExSendCutInfo", handler 0x4c9170; the
                                            record itself follows as the joined long message cm_LongMsg) */
     int playerId;                       /* 0x00, the player whose cutscene record (CMCUTINFO.playerId) it is */
