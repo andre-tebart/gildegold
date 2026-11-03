@@ -357,7 +357,7 @@ int cm_WaitHello(void)
     if (*(int *)&m->data[0] != 0xa03ef57c)
         return 1;
     ai_Unk4cd580(*(int *)&m->data[4], *(int *)&m->data[8]);
-    ai_Unk4c4130(m);
+    cm_FreeReceived(m);
     return 0;
 }
 /* 0x4c3680, sends the queued messages one by one while the connection takes them (0 when the send is still busy);
@@ -865,7 +865,7 @@ int cm_EnqueueReceived(G17MSG *src)
 }
 /* 0x4c4130, takes m out of the receive list and frees it */
 
-void ai_Unk4c4130(G17MSG *m)
+void cm_FreeReceived(G17MSG *m)
 {
     if (m->prev != 0)
         m->prev->next = m->next;
@@ -878,27 +878,32 @@ void ai_Unk4c4130(G17MSG *m)
     cm_RecvFree = m;
 }
 /* 0x4c4190, "cm_ExecCommand": runs the received messages (groups 5..6 checked first by 0x4c43c0), frees them;
-   when the connection is closed, fails all of them */
+   when the connection is closed, fails all of them
+   @deep read against 0x4c4190..0x4c43b0: fixed the meaning (no cm_RecvQueue=0 after the closed-connection
+   loop, the state reset loop is an int index with jl, the group check clears ok only on 0). Same
+   statements and calls in the same order now; left is allocation: ours keeps 0 in ebx (cmp reg,ebx / mov
+   [eax+1],bl) and grp/ok in ebp/edi, the original codes immediates, keeps grp in ebx, ok in ebp and
+   &t->next in edi (lea edi,[esi+0x95]; mov edx,[edi]; mov [edi],edx); it loads cm_RecvQueue into esi
+   before the closed test and reloads it after sv_PopTo (scheduling). 162 vs 165 ins. */
 
 int cm_ExecCommands(void)
 {
     G17MSG *m, *t, *next, *grp;
     G17STAT *s;
-    int ok;
+    int ok, i;
 
     if (net_Conn.closed != 0) {
         while ((m = cm_RecvQueue) != 0) {
             if (m->idx != -1) {
                 s = &cm_SendStates[m->idx & 0x7fff];
                 s->state = 2;
-                s->unk01 = 0;
+                s->kind = 0;
                 s->value = 0;
             }
-            ai_Unk4c4130(m);
+            cm_FreeReceived(m);
         }
-        cm_RecvQueue = 0;
-        for (s = cm_SendStates; s < cm_SendStates + 0x8000; s++)
-            s->state = 2;
+        for (i = 0; i < 0x8000; i++)
+            cm_SendStates[i].state = 2;
         if (ai_GameOver == 0) {
             ai_GameOver = 1;
             sv_PopTo(main_GameLoop);
@@ -913,7 +918,8 @@ int cm_ExecCommands(void)
             if (m->type == 5)
                 grp = m;
         } else if (m->type == 6) {
-            ok = ai_Unk4c43c0(grp) != 0;
+            if (cm_CheckGroup(grp) == 0)
+                ok = 0;
             t = grp;
             next = grp->next;
             grp = 0;
@@ -938,25 +944,25 @@ int cm_ExecCommands(void)
                 } else {
                     s = &cm_SendStates[t->idx & 0x7fff];
                     s->state = 2;
-                    s->unk01 = 0;
+                    s->kind = 0;
                     s->value = 0;
-                    if (t->seq != ai_Unka68d1c + 1) {
+                    if (t->seq != cm_LastRequCount + 1) {
                         if (t->seq == (unsigned int)cm_LastSyncCount) {
                             char buf[0x100];
-                            sprintf(buf, "cm_ExecCommand(): Received a Command with Count == cm_LastSyncCount, cmd->Count is %li, LastRequCnt is %li", t->seq, ai_Unka68d1c);
+                            sprintf(buf, "cm_ExecCommand(): Received a Command with Count == cm_LastSyncCount, cmd->Count is %li, LastRequCnt is %li", t->seq, cm_LastRequCount);
                         } else if (t->type == 0x20 && t->data[0] == 0x0e) {
                             char buf[0x100];
-                            sprintf(buf, "cm_ExecCommand(): Received Sync, cmd->Count is %li, LastRequCnt is %li", t->seq, ai_Unka68d1c);
+                            sprintf(buf, "cm_ExecCommand(): Received Sync, cmd->Count is %li, LastRequCnt is %li", t->seq, cm_LastRequCount);
                         } else {
                             char buf[0x100];
-                            sprintf(buf, "cm_ExecCommand(): Lost a Command, cmd->Count is %li, cm_LastRequCount is %li", t->seq, ai_Unka68d1c);
-                            ai_Unka68d1c = t->seq;
+                            sprintf(buf, "cm_ExecCommand(): Lost a Command, cmd->Count is %li, cm_LastRequCount is %li", t->seq, cm_LastRequCount);
+                            cm_LastRequCount = t->seq;
                         }
                     } else {
-                        ai_Unka68d1c = t->seq;
+                        cm_LastRequCount = t->seq;
                     }
                 }
-                ai_Unk60bd98[t->type](t, s);
+                cm_Handlers[t->type](t, s);
             }
         }
     }
@@ -964,7 +970,7 @@ int cm_ExecCommands(void)
 }
 /* 0x4c43c0, checks the messages of the group grp (5 .. 6): all pass: 1 at both ends, else 2 for all */
 
-int ai_Unk4c43c0(G17MSG *grp)
+int cm_CheckGroup(G17MSG *grp)
 {
     G17MSG *p;
     int ok;
@@ -2551,7 +2557,7 @@ int ai_Unk4c6b20(G17MSG *m, G17STAT *s)
         memcpy(b + 0x65, &m->data[0x10], 0x30);
     if (s != 0) {
         s->state = 1;
-        s->unk01 = 2;
+        s->kind = 2;
         s->value = (int)b;
     }
     return 0;
@@ -2582,7 +2588,7 @@ int ai_Unk4c6bf0(G17MSG *m, G17STAT *s)
     cm_LastCharId = *(int *)(ai_Chars[k] + 4);
     if (s != 0) {
         s->state = 1;
-        s->unk01 = 1;
+        s->kind = 1;
         s->value = (int)ai_Chars[k];
     }
     return 0;
@@ -2619,7 +2625,7 @@ int ai_Unk4c6cd0(G17MSG *m, G17STAT *s)
     c[0xc] = m->data[0x14];
     if (s != 0) {
         s->state = 1;
-        s->unk01 = 1;
+        s->kind = 1;
         s->value = (int)c;
     }
     return 0;
@@ -2639,10 +2645,10 @@ int ai_Unk4c6e10(G17MSG *m, G17STAT *s)
             c = gm_FindChar(*(int *)&m->data[4]);
             if (gv_FindHeldEntry(c, &y, &x) != 0)
                 gv_OrderBury(c, y, *x, gv_EntryIndex(*(int *)(y + 0x65), x));
-            s->unk01 = 1;
+            s->kind = 1;
             s->value = (int)ai_Chars[k];
         } else {
-            s->unk01 = 0;
+            s->kind = 0;
             s->value = 0;
         }
     }
@@ -2893,7 +2899,7 @@ money:
     if (s != 0) {
         s->state = 1;
         if (*(int *)&m->data[0] != -1) {
-            s->unk01 = 3;
+            s->kind = 3;
             s->value = (int)o2;
         }
     }
@@ -2937,7 +2943,7 @@ int ai_Unk4c78c0(G17MSG *m, G17STAT *s)
         n = gm_FreeCapacity(y, *(unsigned short *)&m->data[4], *(unsigned short *)(g + 0x36) * n) / *(unsigned short *)(g + 0x36);
     if (n == 0) {
         if (s != 0)
-            s->unk01 = 8;
+            s->kind = 8;
         return 1;
     }
     for (i = 0; i < 4; i++) {
@@ -2946,7 +2952,7 @@ int ai_Unk4c78c0(G17MSG *m, G17STAT *s)
             o = gm_Query(*(int *)(y + 0x14), 1, 0, id);
             if (o == 0) {
                 if (s != 0)
-                    s->unk01 = 8;
+                    s->kind = 8;
                 return 1;
             }
             *(int *)(o + 0xe) -= ((unsigned short *)(g + 0x26))[i] * n;
@@ -2964,7 +2970,7 @@ int ai_Unk4c78c0(G17MSG *m, G17STAT *s)
         o = gm_CreateObject(*(int *)(y + 2), *(unsigned short *)&m->data[4], *(unsigned short *)(g + 0x36) * n);
         if (o == 0) {
             if (s != 0)
-                s->unk01 = 6;
+                s->kind = 6;
             return 1;
         }
         if (*(short *)y == 0x2a)
@@ -2985,7 +2991,7 @@ int ai_Unk4c78c0(G17MSG *m, G17STAT *s)
     if (s != 0) {
         s->state = 1;
         if (*(int *)&m->data[0] != -1) {
-            s->unk01 = 3;
+            s->kind = 3;
             s->value = (int)o;
         }
     }
@@ -3420,7 +3426,7 @@ set:
     }
     if (s != 0) {
         s->state = 1;
-        s->unk01 = 4;
+        s->kind = 4;
         s->value = (int)o;
     }
     return 0;
@@ -3434,7 +3440,7 @@ int ai_Unk4c87a0(G17MSG *m, G17STAT *s)
 
     if (s != 0) {
         s->state = 2;
-        s->unk01 = 4;
+        s->kind = 4;
         s->value = 0;
     }
     p = he_FindEvent(1, 1, *(int *)&m->data[0]);
@@ -3449,7 +3455,7 @@ int ai_Unk4c87a0(G17MSG *m, G17STAT *s)
     memcpy(p + 0xac, cm_LongMsg, 0xa0);
     if (s != 0) {
         s->state = 1;
-        s->unk01 = 4;
+        s->kind = 4;
         s->value = (int)p;
     }
     return 0;
@@ -3634,7 +3640,7 @@ int ai_Unk4c89b0(G17MSG *m, G17STAT *s)
     }
     sprintf(buf, "cm_ExSysMessage() type: %i", msg.data[0]);
     if (s != 0) {
-        s->unk01 = 0;
+        s->kind = 0;
         s->state = ret;
         s->value = 0;
     }
@@ -3722,7 +3728,7 @@ int ai_Unk4c8e70(G17MSG *m, G17STAT *s)
     }
     if (s != 0) {
         s->state = 1;
-        s->unk01 = 6;
+        s->kind = 6;
         s->value = (int)rec;
     }
     return 0;
@@ -3805,7 +3811,7 @@ int ai_Unk4c9170(G17MSG *m, G17STAT *s)
     }
     if (s != 0) {
         s->state = 1;
-        s->unk01 = 8;
+        s->kind = 8;
         s->value = (int)ai_Unk92cae0[i];
     }
     return 0;
@@ -3828,7 +3834,7 @@ int ai_Unk4c9280(G17MSG *m, G17STAT *s)
         *(int *)(o + 0x78) = G17_I(*m, 4);
         if (s != 0) {
             s->state = 1;
-            s->unk01 = 9;
+            s->kind = 9;
             s->value = (int)o;
         }
     } else
@@ -3857,7 +3863,7 @@ int ai_Unk4c9340(G17MSG *m, G17STAT *s)
         o[0x26] |= 0x80;
     if (s != 0) {
         s->state = 1;
-        s->unk01 = 9;
+        s->kind = 9;
         s->value = (int)o;
     }
     return 0;
@@ -3956,7 +3962,7 @@ int ai_Unk4c9520(G17MSG *m, G17STAT *s)
             if (s != 0) {
                 s->value = (int)o;
                 s->state = 1;
-                s->unk01 = 5;
+                s->kind = 5;
             }
             return 0;
         }
@@ -3975,7 +3981,7 @@ int ai_Unk4c9520(G17MSG *m, G17STAT *s)
     if (s != 0) {
         s->value = (int)o;
         s->state = r;
-        s->unk01 = 5;
+        s->kind = 5;
     }
     return 0;
 }
@@ -3999,7 +4005,7 @@ int ai_Unk4c9740(G17MSG *m, G17STAT *s)
     o[0x22] = 0;
     if (s != 0) {
         s->state = 1;
-        s->unk01 = 3;
+        s->kind = 3;
         s->value = (int)o;
     }
     return 0;
@@ -4017,7 +4023,7 @@ int ai_Unk4c97c0(G17MSG *m, G17STAT *s)
         ch_AddAction(p, 0x2d, G17_I(*m, 4), G17_I(*m, 8), G17_I(*m, 0xc));
         if (s != 0) {
             s->state = 2;
-            s->unk01 = 0;
+            s->kind = 0;
             s->value = 0;
         }
     }
@@ -4073,7 +4079,7 @@ int ai_Unk4c9830(G17MSG *m, G17STAT *s)
     }
     if (s != 0) {
         s->state = 1;
-        s->unk01 = 0;
+        s->kind = 0;
         s->value = 0;
     }
     return 0;
@@ -4149,7 +4155,7 @@ body:
 end:
     if (s != 0) {
         s->state = 2;
-        s->unk01 = 0;
+        s->kind = 0;
         s->value = 0;
     }
     return 0;
@@ -4168,7 +4174,7 @@ int ai_Unk4c9c10(G17MSG *m, G17STAT *s)
     ch_StopActions(p);
     if (s != 0) {
         s->state = 2;
-        s->unk01 = 0;
+        s->kind = 0;
         s->value = 0;
     }
     return 0;
@@ -4187,7 +4193,7 @@ int ai_Unk4c9c80(G17MSG *m, G17STAT *s)
     ch_SetPos(p, &m->data[4], 1);
     if (s != 0) {
         s->state = 2;
-        s->unk01 = 0;
+        s->kind = 0;
         s->value = 0;
     }
     return 0;
@@ -4206,7 +4212,7 @@ int ai_Unk4c9d00(G17MSG *m, G17STAT *s)
     ch_AddAction(p, 0x38, G17_I(*m, 4));
     if (s != 0) {
         s->state = 2;
-        s->unk01 = 0;
+        s->kind = 0;
         s->value = 0;
     }
     return 0;
@@ -4222,7 +4228,7 @@ int ai_Unk4c9d80(G17MSG *m, G17STAT *s)
         return 1;
     if (s != 0) {
         s->state = 2;
-        s->unk01 = 7;
+        s->kind = 7;
         s->value = (int)o;
     }
     return 0;
@@ -4466,7 +4472,7 @@ done:
     d3if_SelectScene(save, 1);
     if (s != 0) {
         s->state = 1;
-        s->unk01 = 7;
+        s->kind = 7;
         s->value = (int)p;
     }
     return 0;
@@ -4503,7 +4509,7 @@ int ai_Unk4ca8a0(G17MSG *m, G17STAT *s)
         ch_UseGate(p, gate, gate2, k, *(int *)(b + 1), *(int *)(q + 2));
     if (s != 0) {
         s->state = 2;
-        s->unk01 = 0;
+        s->kind = 0;
         s->value = 0;
     }
     return 0;
@@ -4522,7 +4528,7 @@ int ai_Unk4caa20(G17MSG *m, G17STAT *s)
     ch_QueueAnim(p, &m->data[4], m->data[0x34]);
     if (s != 0) {
         s->state = 2;
-        s->unk01 = 0;
+        s->kind = 0;
         s->value = 0;
     }
     return 0;
@@ -4545,7 +4551,7 @@ int ai_Unk4caaa0(G17MSG *m, G17STAT *s)
     gm_AssignBuildingK(b, *(unsigned short *)c2, *(unsigned short *)c1);
     if (s != 0) {
         s->state = 2;
-        s->unk01 = 0;
+        s->kind = 0;
         s->value = 0;
     }
     return 0;
@@ -4577,7 +4583,7 @@ int ai_Unk4cab40(G17MSG *m, G17STAT *s)
     *(char **)(c + 0x170) = b;
     if (s != 0) {
         s->state = 1;
-        s->unk01 = 0;
+        s->kind = 0;
         s->value = 0;
     }
     return 0;
@@ -4691,7 +4697,7 @@ int ai_Unk4cac40(G17MSG *m, G17STAT *s)
     gm_RefreshGoodsLists(ai_OwnPlayer);
     if (s != 0) {
         s->state = 2;
-        s->unk01 = 0;
+        s->kind = 0;
         s->value = 0;
     }
     return 0;
@@ -4731,7 +4737,7 @@ int ai_Unk4cb100(G17MSG *m, G17STAT *s)
     gm_FreeBuilding(b);
     if (s != 0) {
         s->state = 2;
-        s->unk01 = 0;
+        s->kind = 0;
         s->value = 0;
     }
     return 0;
@@ -4746,7 +4752,7 @@ int ai_Unk4cb210(G17MSG *m, G17STAT *s)
         r = 1;
     if (s != 0) {
         s->state = r;
-        s->unk01 = 0;
+        s->kind = 0;
         s->value = 0;
     }
     return 0;
@@ -4779,7 +4785,7 @@ int ai_Unk4cb250(G17MSG *m, G17STAT *s)
     if (c == 0) {
         if (s != 0) {
             s->state = 2;
-            s->unk01 = 1;
+            s->kind = 1;
             s->value = 0;
         }
         return 2;
@@ -4827,7 +4833,7 @@ int ai_Unk4cb250(G17MSG *m, G17STAT *s)
         *(int *)(c + 0x1b8) = *(int *)(b + 0x39);
     if (s != 0) {
         s->state = 1;
-        s->unk01 = 1;
+        s->kind = 1;
         s->value = (int)c;
     }
     return 0;
@@ -4885,7 +4891,7 @@ int ai_Unk4cb4a0(G17MSG *m, G17STAT *s)
     d3if_SelectScene(save, 1);
     if (s != 0) {
         s->state = 2;
-        s->unk01 = 1;
+        s->kind = 1;
         s->value = (int)c;
     }
     return 0;
@@ -4902,7 +4908,7 @@ int ai_Unk4cb6e0(G17MSG *m, G17STAT *s)
     memcpy(r, &m->data[1], 0x80);
     if (s != 0) {
         s->state = 1;
-        s->unk01 = 0;
+        s->kind = 0;
         s->value = 0;
     }
     return 0;
@@ -4925,7 +4931,7 @@ int ai_Unk4cb730(G17MSG *m, G17STAT *s)
     *(float *)(r + 0x38) += *(float *)&m->data[0x1b];
     if (s != 0) {
         s->state = 1;
-        s->unk01 = 0;
+        s->kind = 0;
         s->value = 0;
     }
     return 0;
@@ -4937,7 +4943,7 @@ int ai_Unk4cb7c0(G17MSG *m, G17STAT *s)
     ord_LoadStatistics(&m->data[0]);
     if (s != 0) {
         s->state = 1;
-        s->unk01 = 0;
+        s->kind = 0;
         s->value = 0;
     }
     return 0;
@@ -4953,7 +4959,7 @@ int ai_Unk4cb7f0(G17MSG *m, G17STAT *s)
         sv_UpdateChimneySmoke(b);
     if (s != 0) {
         s->state = 1;
-        s->unk01 = 0;
+        s->kind = 0;
         s->value = 0;
     }
     return 0;
@@ -4969,7 +4975,7 @@ int ai_Unk4cb850(G17MSG *m, G17STAT *s)
         gm_ShowBuildingObjects(*(char **)(c + 0x170));
     if (s != 0) {
         s->state = 1;
-        s->unk01 = 0;
+        s->kind = 0;
         s->value = 0;
     }
     return 0;
@@ -4982,7 +4988,7 @@ int ai_Unk4cb890(G17MSG *m, G17STAT *s)
 
     r = amt_AcceptApplication(&m->data[0]);
     if (s != 0) {
-        s->unk01 = 0;
+        s->kind = 0;
         s->state = (r == 0) + 1;
         s->value = 0;
     }
@@ -4996,7 +5002,7 @@ int ai_Unk4cb8d0(G17MSG *m, G17STAT *s)
 
     r = amt_ExecuteOfficeMessage(&m->data[0]);
     if (s != 0) {
-        s->unk01 = 0;
+        s->kind = 0;
         s->state = (r == 0) + 1;
         s->value = 0;
     }
@@ -5010,7 +5016,7 @@ int ai_Unk4cb910(G17MSG *m, G17STAT *s)
 
     r = gv_OnDecisionValue(&m->data[0]);
     if (s != 0) {
-        s->unk01 = 0;
+        s->kind = 0;
         s->value = 0;
         s->state = (r == 0) + 1;
     }
@@ -5029,7 +5035,7 @@ int ai_Unk4cb940(G17MSG *m, G17STAT *s)
         sv_MoveToGroup(*(int *)(c + 0x16c), G17_I(*m, 4), *(unsigned short *)c, 0);
     if (s != 0) {
         s->state = 1;
-        s->unk01 = 0;
+        s->kind = 0;
         s->value = 0;
     }
     return 0;
@@ -5047,7 +5053,7 @@ int ai_Unk4cb9b0(G17MSG *m, G17STAT *s)
     gm_ChooseHeadIcon(c);
     if (s != 0) {
         s->state = 1;
-        s->unk01 = 0;
+        s->kind = 0;
         s->value = 0;
     }
     return 0;
@@ -5066,7 +5072,7 @@ int ai_Unk4cba10(G17MSG *m, G17STAT *s)
         G17_I(*m, 0x12) = timeGetTime();
     if (s != 0) {
         s->state = 2;
-        s->unk01 = 1;
+        s->kind = 1;
         s->value = 0;
     }
     util_Seed(G17_I(*m, 0x12));
@@ -5093,7 +5099,7 @@ int ai_Unk4cba10(G17MSG *m, G17STAT *s)
     cm_LastCharId = ai_CharInts[id][0];
     if (s != 0) {
         s->state = 1;
-        s->unk01 = 1;
+        s->kind = 1;
         s->value = (int)ai_Chars[id];
     }
     return 0;
@@ -5110,7 +5116,7 @@ int ai_Unk4cbb90(G17MSG *m, G17STAT *s)
     gm_Unk5034b0(t);
     if (s != 0) {
         s->state = 1;
-        s->unk01 = 0;
+        s->kind = 0;
         s->value = 0;
     }
     return 0;
@@ -5147,7 +5153,7 @@ int ai_Unk4cbbd0(G17MSG *m, G17STAT *s)
     sv_ChatTime = d3_Time;
     if (s != 0) {
         s->state = 1;
-        s->unk01 = 0;
+        s->kind = 0;
         s->value = 0;
     }
     return 0;
@@ -5229,7 +5235,7 @@ int ai_Unk4cbca0(G17MSG *m, G17STAT *s)
 done:
     if (s != 0) {
         s->state = 1;
-        s->unk01 = 2;
+        s->kind = 2;
         s->value = (int)b;
     }
     return 0;
@@ -5248,7 +5254,7 @@ int ai_Unk4cbff0(G17MSG *m, G17STAT *s)
         evt_Stop(evt_FindById(*(int *)(g + 0x28)));
     if (s != 0) {
         s->state = 1;
-        s->unk01 = 0;
+        s->kind = 0;
         s->value = 0;
     }
     return 0;
@@ -5274,7 +5280,7 @@ int ai_Unk4cc050(G17MSG *m, G17STAT *s)
             *(int *)(r + 0x160) |= 8;
         }
         s->state = 1;
-        s->unk01 = 0;
+        s->kind = 0;
         s->value = 0;
         return 0;
     }
@@ -5307,7 +5313,7 @@ int ai_Unk4cc110(G17MSG *m, G17STAT *s)
     }
     if (s != 0) {
         s->state = 1;
-        s->unk01 = 0;
+        s->kind = 0;
         s->value = 0;
     }
     return 0;
@@ -5339,7 +5345,7 @@ int ai_Unk4cc1b0(G17MSG *m, G17STAT *s)
     }
     if (s != 0) {
         s->state = 1;
-        s->unk01 = 8;
+        s->kind = 8;
         s->value = 0;
     }
     return 0;
@@ -5366,7 +5372,7 @@ int ai_Unk4cc270(G17MSG *m, G17STAT *s)
     }
     if (s != 0) {
         s->state = 1;
-        s->unk01 = 8;
+        s->kind = 8;
         s->value = 0;
     }
     return 0;
@@ -5385,7 +5391,7 @@ int ai_Unk4cc330(G17MSG *m, G17STAT *s)
     }
     if (s != 0) {
         s->state = 1;
-        s->unk01 = 8;
+        s->kind = 8;
         s->value = 0;
     }
     return 0;
@@ -5400,7 +5406,7 @@ int ai_Unk4cc390(G17MSG *m, G17STAT *s)
 
     if (s != 0) {
         s->state = 2;
-        s->unk01 = 0;
+        s->kind = 0;
         s->value = 0;
     }
     if (G17_I(*m, 0) == 0x636c6572) {
@@ -5451,7 +5457,7 @@ int ai_Unk4cc510(G17MSG *m, G17STAT *s)
 
     if (s != 0) {
         s->state = 2;
-        s->unk01 = 0;
+        s->kind = 0;
         s->value = 0;
     }
     if (G17_I(*m, 0) == 0x6a6f696e) {
@@ -5587,7 +5593,7 @@ int ai_Unk4cc7b0(G17MSG *m, G17STAT *s)
     }
     if (s != 0) {
         s->state = 1;
-        s->unk01 = 8;
+        s->kind = 8;
         s->value = 0;
     }
     return 0;
@@ -5598,7 +5604,7 @@ int ai_Unk4cc8e0(G17MSG *m, G17STAT *s)
 {
     if (s != 0) {
         s->state = 2;
-        s->unk01 = 0;
+        s->kind = 0;
         s->value = 0;
     }
     if (ord_HandleMessageRecord(&m->data[0]) == 0)
@@ -5615,7 +5621,7 @@ int ai_Unk4cc920(G17MSG *m, G17STAT *s)
 
     if (s != 0) {
         s->state = 2;
-        s->unk01 = 0;
+        s->kind = 0;
         s->value = 0;
     }
     c = gm_FindChar(G17_I(*m, 0));
@@ -5649,7 +5655,7 @@ int ai_Unk4cc980(G17MSG *m, G17STAT *s)
     ai_Unk4e5180(G17_I(*m, 0));
     if (s != 0) {
         s->state = 1;
-        s->unk01 = 0;
+        s->kind = 0;
         s->value = 0;
     }
     return 0;
@@ -5678,7 +5684,7 @@ int ai_Unk4cca10(G17MSG *m, G17STAT *s)
     }
     if (s != 0) {
         s->state = 1;
-        s->unk01 = 0;
+        s->kind = 0;
         s->value = 0;
     }
     return 0;
@@ -5693,7 +5699,7 @@ int ai_Unk4ccaa0(G17MSG *m, G17STAT *s)
     c = gm_FindChar(G17_I(*m, 0));
     if (s != 0) {
         s->state = 2;
-        s->unk01 = 0;
+        s->kind = 0;
         s->value = 0;
     }
     if (c == 0)
@@ -5717,7 +5723,7 @@ int ai_Unk4ccb10(G17MSG *m, G17STAT *s)
     c = gm_FindChar(G17_I(*m, 0));
     if (s != 0) {
         s->state = 2;
-        s->unk01 = 0;
+        s->kind = 0;
         s->value = 0;
     }
     if (c == 0)
@@ -5744,7 +5750,7 @@ int ai_Unk4ccbd0(G17MSG *m, G17STAT *s)
 
     if (s != 0) {
         s->state = 2;
-        s->unk01 = 0;
+        s->kind = 0;
         s->value = 0;
     }
     r = amt_ExecuteSwapMessage(&m->data[0]);
@@ -5764,7 +5770,7 @@ int ai_Unk4ccc20(G17MSG *m, G17STAT *s)
 
     if (s != 0) {
         s->state = 2;
-        s->unk01 = 0;
+        s->kind = 0;
         s->value = 0;
     }
     c = gm_FindChar(G17_I(*m, 0));
@@ -5791,7 +5797,7 @@ int ai_Unk4ccce0(G17MSG *m, G17STAT *s)
         ai_NextObjectId = G17_I(*m, 0);
     if (s != 0) {
         s->state = 2;
-        s->unk01 = 0;
+        s->kind = 0;
         s->value = 0;
     }
     a = gm_FindBuildingById(G17_I(*m, 0x16));
@@ -5839,7 +5845,7 @@ int ai_Unk4cce10(G17MSG *m, G17STAT *s)
 
     if (s != 0) {
         s->state = 2;
-        s->unk01 = 0;
+        s->kind = 0;
         s->value = 0;
     }
     if (ai_Unk1460ae0 != -1)
@@ -5883,7 +5889,7 @@ int ai_Unk4cced0(G17MSG *m, G17STAT *s)
 
     if (s != 0) {
         s->state = 2;
-        s->unk01 = 0;
+        s->kind = 0;
         s->value = 0;
     }
     r = gv_MoveGrave(&m->data[0]);
@@ -5899,7 +5905,7 @@ int ai_Unk4ccf10(G17MSG *m, G17STAT *s)
 
     if (s != 0) {
         s->state = 2;
-        s->unk01 = 0;
+        s->kind = 0;
         s->value = 0;
     }
     if (ai_Unk1460ae0 != -1)
@@ -5912,7 +5918,7 @@ int ai_Unk4ccf10(G17MSG *m, G17STAT *s)
         return -1;
     if (s != 0) {
         s->state = 1;
-        s->unk01 = 1;
+        s->kind = 1;
         s->value = (int)ai_Chars[id];
     }
     return 0;
@@ -5925,7 +5931,7 @@ int ai_Unk4ccf90(G17MSG *m, G17STAT *s)
 
     if (s != 0) {
         s->state = 2;
-        s->unk01 = 0;
+        s->kind = 0;
         s->value = 0;
     }
     if (ai_Unk1460ae0 != -1)
@@ -5938,7 +5944,7 @@ int ai_Unk4ccf90(G17MSG *m, G17STAT *s)
         return -1;
     if (s != 0) {
         s->state = 1;
-        s->unk01 = 1;
+        s->kind = 1;
         s->value = (int)ai_Chars[id];
     }
     return 0;
@@ -5953,7 +5959,7 @@ int ai_Unk4cd010(G17MSG *m, G17STAT *s)
 
     if (s != 0) {
         s->state = 2;
-        s->unk01 = 0;
+        s->kind = 0;
         s->value = 0;
     }
     c = gm_FindChar(G17_I(*m, 4));
@@ -5998,7 +6004,7 @@ int ai_Unk4cd130(G17MSG *m, G17STAT *s)
 
     if (s != 0) {
         s->state = 2;
-        s->unk01 = 0;
+        s->kind = 0;
         s->value = 0;
     }
     q = cm_PartyById(G17_I(*m, 0));
@@ -6017,7 +6023,7 @@ int ai_Unk4cd180(G17MSG *m, G17STAT *s)
 
     if (s != 0) {
         s->state = 2;
-        s->unk01 = 0;
+        s->kind = 0;
         s->value = 0;
     }
     if (G17_I(*m, 0) == 0x6154436e)
@@ -6040,7 +6046,7 @@ int ai_Unk4cd1e0(G17MSG *m, G17STAT *s)
 
     if (s != 0) {
         s->state = 2;
-        s->unk01 = 0;
+        s->kind = 0;
         s->value = 0;
     }
     r = gv_StartShot((struct GVSHOTMSG *)&m->data[0], s);
@@ -6061,7 +6067,7 @@ int ai_Unk4cd220(G17MSG *m, G17STAT *s)
 
     if (s != 0) {
         s->state = 2;
-        s->unk01 = 0;
+        s->kind = 0;
         s->value = 0;
     }
     q = gm_FindObjectInst(G17_I(*m, 0));
@@ -6093,7 +6099,7 @@ int ai_Unk4cd2f0(G17MSG *m, G17STAT *s)
 
     if (s != 0) {
         s->state = 2;
-        s->unk01 = 0;
+        s->kind = 0;
         s->value = 0;
     }
     q = gm_FindObjectInst(G17_I(*m, 0));
@@ -15007,7 +15013,7 @@ extern unsigned int cm_GroupEndSeq;
 extern int cm_FieldBlockLen;
 extern G17FIELDS cm_FieldBlock;
 extern G17FIELDS ai_NeedBlock;
-extern unsigned int ai_Unka68d1c;
+extern unsigned int cm_LastRequCount;
 extern int ai_NeedBlockLen;
 extern G17MSG * cm_RecvQueue;
 extern char * cm_FieldObject;
@@ -15093,7 +15099,7 @@ int cm_LastCharId = -1;  /* 0x60bd88, = -1 */
 int cm_LastBuildingId = -1;  /* 0x60bd8c, = -1 */
 int cm_LastObjectId = -1;  /* 0x60bd90, = -1 */
 int cm_LeftPlayerId = -1;  /* 0x60bd94, = -1 */
-int (*ai_Unk60bd98[0x6a])(G17MSG *m, G17STAT *s) = { ai_Unk4c6a20, ai_Unk4c6a50, ai_AlwaysTrue, ai_Unk4c6a20, ai_Unk4c6a60, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a90, ai_Unk4c6ad0, ai_Unk4c6b20, ai_Unk4c6bf0, ai_Unk4c6cd0, ai_Unk4c6e10, ai_Unk4c6ec0, ai_Unk4c6f60, ai_Unk4c7010, ai_Unk4c70b0, ai_Unk4c78c0, ai_Unk4c7c30, ai_Unk4c7d80, ai_Unk4c7e20, ai_Unk4c7e90, ai_Unk4c7f70, ai_Unk4c8050, ai_Unk4c8110, ai_Unk4c81d0, ai_Unk4c8240, ai_Unk4c85c0, ai_Unk4c87a0, ai_Unk4c88a0, ai_Unk4c8990, ai_Unk4c89b0, ai_Unk4c8de0, ai_Unk4c8e70, ai_Unk4c9090, ai_Unk4c90d0, ai_Unk4c9110, ai_Unk4c9170, ai_Unk4c9280, ai_Unk4c9340, ai_Unk4c93b0, ai_Unk4c9400, ai_Unk4c9450, ai_Unk4c9520, ai_Unk4c9740, ai_Unk4c97c0, ai_Unk4c9830, ai_Unk4c99b0, ai_Unk4c9c10, ai_Unk4c9c80, ai_Unk4c9d00, ai_Unk4c9d80, ai_Unk4c9dc0, ai_Unk4ca8a0, ai_Unk4caa20, ai_Unk4caaa0, ai_Unk4cab40, ai_Unk4cac40, ai_Unk4cb100, ai_Unk4cb210, ai_Unk4cb250, ai_Unk4cb4a0, ai_Unk4cb6e0, ai_Unk4cb730, ai_Unk4cb7c0, ai_Unk4cb7f0, ai_Unk4cb850, ai_Unk4cb890, ai_Unk4cb8d0, ai_Unk4cb910, ai_Unk4cb940, ai_Unk4cb9b0, ai_Unk4cba10, ai_Unk4cbb90, ai_Unk4cbbd0, ai_Unk4cbca0, ai_Unk4cbff0, ai_Unk4cc050, ai_Unk4cc110, ai_Unk4cc1b0, ai_Unk4cc270, ai_Unk4cc330, ai_Unk4cc390, ai_Unk4cc510, ai_Unk4cc7b0, ai_Unk4cc8e0, ai_Unk4cc920, ai_Unk4cc980, ai_Unk4cca10, ai_Unk4ccaa0, ai_Unk4ccb10, ai_Unk4ccbd0, ai_Unk4ccc20, ai_Unk4ccce0, ai_Unk4cce00, ai_Unk4cce10, ai_Unk4cced0, ai_Unk4ccf10, ai_Unk4ccf90, ai_Unk4cd010, ai_Unk4cd130, ai_Unk4cd180, ai_Unk4cd1e0, ai_Unk4cd220, ai_Unk4cd2f0 };  /* 0x60bd98, the handler of each message type */
+int (*cm_Handlers[0x6a])(G17MSG *m, G17STAT *s) = { ai_Unk4c6a20, ai_Unk4c6a50, ai_AlwaysTrue, ai_Unk4c6a20, ai_Unk4c6a60, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a90, ai_Unk4c6ad0, ai_Unk4c6b20, ai_Unk4c6bf0, ai_Unk4c6cd0, ai_Unk4c6e10, ai_Unk4c6ec0, ai_Unk4c6f60, ai_Unk4c7010, ai_Unk4c70b0, ai_Unk4c78c0, ai_Unk4c7c30, ai_Unk4c7d80, ai_Unk4c7e20, ai_Unk4c7e90, ai_Unk4c7f70, ai_Unk4c8050, ai_Unk4c8110, ai_Unk4c81d0, ai_Unk4c8240, ai_Unk4c85c0, ai_Unk4c87a0, ai_Unk4c88a0, ai_Unk4c8990, ai_Unk4c89b0, ai_Unk4c8de0, ai_Unk4c8e70, ai_Unk4c9090, ai_Unk4c90d0, ai_Unk4c9110, ai_Unk4c9170, ai_Unk4c9280, ai_Unk4c9340, ai_Unk4c93b0, ai_Unk4c9400, ai_Unk4c9450, ai_Unk4c9520, ai_Unk4c9740, ai_Unk4c97c0, ai_Unk4c9830, ai_Unk4c99b0, ai_Unk4c9c10, ai_Unk4c9c80, ai_Unk4c9d00, ai_Unk4c9d80, ai_Unk4c9dc0, ai_Unk4ca8a0, ai_Unk4caa20, ai_Unk4caaa0, ai_Unk4cab40, ai_Unk4cac40, ai_Unk4cb100, ai_Unk4cb210, ai_Unk4cb250, ai_Unk4cb4a0, ai_Unk4cb6e0, ai_Unk4cb730, ai_Unk4cb7c0, ai_Unk4cb7f0, ai_Unk4cb850, ai_Unk4cb890, ai_Unk4cb8d0, ai_Unk4cb910, ai_Unk4cb940, ai_Unk4cb9b0, ai_Unk4cba10, ai_Unk4cbb90, ai_Unk4cbbd0, ai_Unk4cbca0, ai_Unk4cbff0, ai_Unk4cc050, ai_Unk4cc110, ai_Unk4cc1b0, ai_Unk4cc270, ai_Unk4cc330, ai_Unk4cc390, ai_Unk4cc510, ai_Unk4cc7b0, ai_Unk4cc8e0, ai_Unk4cc920, ai_Unk4cc980, ai_Unk4cca10, ai_Unk4ccaa0, ai_Unk4ccb10, ai_Unk4ccbd0, ai_Unk4ccc20, ai_Unk4ccce0, ai_Unk4cce00, ai_Unk4cce10, ai_Unk4cced0, ai_Unk4ccf10, ai_Unk4ccf90, ai_Unk4cd010, ai_Unk4cd130, ai_Unk4cd180, ai_Unk4cd1e0, ai_Unk4cd220, ai_Unk4cd2f0 };  /* 0x60bd98, the handler of each message type */
 int (*ai_Unk60bf40[0x6a])(G17MSG *m) = { sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c6350, sv_ReturnZero, ai_Unk4c63e0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c65b0, sv_ReturnZero, sv_ReturnZero, ai_Unk4c66c0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c6750, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c6780, ai_Unk4c67a0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c67c0, ai_Unk4c6870, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c69c0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero };  /* 0x60bf40, the check of each type (groups 5..6) */
 char ai_Unk60c4a0[20] = "cm_ExChrWalkToDummy";  /* 0x60c4a0 */
 char cm_TextNewline[4] = { 36, 65, 0, 0 };  /* 0x60c6c0 */
@@ -15254,7 +15260,7 @@ unsigned int cm_GroupEndSeq = 0;  /* 0xa68c04 */
 int cm_FieldBlockLen = 0;  /* 0xa68c08, bytes used in cm_FieldBlock.buf */
 G17FIELDS cm_FieldBlock = {0};  /* 0xa68c20 */
 G17FIELDS ai_NeedBlock = {0};  /* 0xa68ca0 */
-unsigned int ai_Unka68d1c = 0;  /* 0xa68d1c, "cm_LastRequCount" */
+unsigned int cm_LastRequCount = 0;  /* 0xa68d1c, "cm_LastRequCount" */
 int ai_NeedBlockLen = 0;  /* 0xa68d20, bytes used in ai_NeedBlock.buf */
 G17MSG * cm_RecvQueue = 0;  /* 0xa68d24, the received messages */
 char * cm_FieldObject = 0;  /* 0xa68d2c, the object of the field block (fields are offsets into it) */

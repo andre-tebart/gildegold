@@ -25,7 +25,7 @@ typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head 
 
 typedef struct G17STAT {                /* 10 bytes, cm_SendStates[]: the state of a sent message */
     unsigned char state;                /* 0x00, 0 sent, 1 free, 2 failed */
-    unsigned char unk01;
+    unsigned char kind;                 /* 0x01, what value holds: 0 nothing, 1 a character, 2 a building */
     int idx;                            /* 0x02 */
     int value;                          /* 0x06 */
 } G17STAT;

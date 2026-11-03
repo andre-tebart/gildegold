@@ -71,9 +71,9 @@ extern int cm_LastCharId;                /* 0x60bd88, = -1 */
 extern int cm_LastBuildingId;                /* 0x60bd8c, = -1 */
 extern int cm_LastObjectId;                /* 0x60bd90, = -1 */
 extern int cm_LeftPlayerId;                /* 0x60bd94, = -1 */
-extern int (*ai_Unk60bd98[0x6a])(G17MSG *m, G17STAT *s);  /* 0x60bd98, the handler of each message type */
+extern int (*cm_Handlers[0x6a])(G17MSG *m, G17STAT *s);  /* 0x60bd98, the handler of each message type */
 extern int (*ai_Unk60bf40[0x6a])(G17MSG *m);             /* 0x60bf40, the check of each type (groups 5..6) */
-extern unsigned int ai_Unka68d1c;       /* 0xa68d1c, "cm_LastRequCount" */
+extern unsigned int cm_LastRequCount;       /* 0xa68d1c, "cm_LastRequCount" */
 extern int cm_LastSyncCount;               /* 0xa687e0, "cm_LastSyncCount" (net.h) */
 extern int ai_GameOver;                /* 0x6f259c */
 extern float ai_DifficultyValue;              /* 0x5fef04 */
@@ -185,9 +185,9 @@ int cm_SendPlayerId(void);                                                      
 int cm_ReceiveMessages(void);                                                          /* 0x4c3fd0 */
 G17MSG *cm_WaitMessage(unsigned char type, int timeout);                                    /* 0x4c4030 */
 int cm_EnqueueReceived(G17MSG *src);                                                   /* 0x4c4080 */
-void ai_Unk4c4130(G17MSG *m);                                                    /* 0x4c4130 */
+void cm_FreeReceived(G17MSG *m);                                                    /* 0x4c4130 */
 int cm_ExecCommands(void);                                                          /* 0x4c4190, "cm_ExecCommand" */
-int ai_Unk4c43c0(G17MSG *grp);                                                   /* 0x4c43c0 */
+int cm_CheckGroup(G17MSG *grp);                                                   /* 0x4c43c0 */
 int ai_Unk4c4450(int a, int id);                                                 /* 0x4c4450 */
 int ai_Unk4c4480(unsigned short len, void *p);                                   /* 0x4c4480 */
 void cm_SendLoadSize(int v);                                                        /* 0x4c44d0 */
